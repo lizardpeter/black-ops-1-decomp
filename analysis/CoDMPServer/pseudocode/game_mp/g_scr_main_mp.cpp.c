@@ -12,6 +12,8 @@ void __cdecl GScr_IsCollectors(void)
 {
   uint uVar1;
   gentity_s *pgVar2;
+  gentity_s *ent;
+  int clientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
@@ -30,18 +32,18 @@ void __cdecl GScr_IsCollectors(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PIXSetMarker(int param_1,char *param_2)
+void __cdecl PIXSetMarker(int Color,char *Name)
 
 {
   DWORD DVar1;
-  WCHAR local_20c [258];
+  WCHAR w [258];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
-    MultiByteToWideChar(0,0,param_2,-1,local_20c,0x100);
-    _D3DPERF_SetMarker_8(param_1,local_20c);
+    MultiByteToWideChar(0,0,Name,-1,w,0x100);
+    _D3DPERF_SetMarker_8(Color,w);
   }
   return;
 }
@@ -49,12 +51,12 @@ void __cdecl PIXSetMarker(int param_1,char *param_2)
 
 // 00641450  GScr_AllocString  (game_mp/g_scr_main_mp.cpp:167)
 
-uint __cdecl GScr_AllocString(char *param_1)
+uint __cdecl GScr_AllocString(char *s)
 
 {
   uint uVar1;
   
-  uVar1 = Scr_AllocString(param_1,1,SCRIPTINSTANCE_SERVER);
+  uVar1 = Scr_AllocString(s,1,SCRIPTINSTANCE_SERVER);
   return uVar1;
 }
 
@@ -75,11 +77,12 @@ void __cdecl TRACK_g_scr_main(void)
 void __cdecl Scr_LoadLevel(void)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort t;
   
   if (g_scr_data.levelscript != 0) {
-    uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.levelscript,0);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+    handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.levelscript,0);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -90,11 +93,12 @@ void __cdecl Scr_LoadLevel(void)
 void __cdecl Scr_LoadPreGame(void)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort t;
   
   if (g_scr_data.pregamescript != 0) {
-    uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.pregamescript,0);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+    handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.pregamescript,0);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -103,12 +107,13 @@ void __cdecl Scr_LoadPreGame(void)
 // 006416F0  GScr_LoadScriptAndLabel  (game_mp/g_scr_main_mp.cpp:204)
 
 int __cdecl
-GScr_LoadScriptAndLabel(scriptInstance_t param_1,char *param_2,char *param_3,int param_4)
+GScr_LoadScriptAndLabel(scriptInstance_t inst,char *filename,char *label,int bEnforceExists)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
+  int func;
   
   if ((g_loadScripts == (dvar_s *)0x0) || ((g_loadScripts->current).enabled == false)) {
     bVar1 = false;
@@ -117,12 +122,12 @@ GScr_LoadScriptAndLabel(scriptInstance_t param_1,char *param_2,char *param_3,int
     bVar1 = true;
   }
   if (bVar1) {
-    uVar3 = Scr_LoadScript(param_1,param_2);
-    if ((uVar3 == 0) && (param_4 != 0)) {
+    uVar3 = Scr_LoadScript(inst,filename);
+    if ((uVar3 == 0) && (bEnforceExists != 0)) {
       Com_Error(ERR_DROP,"\x15Could not find script \'%s\'");
     }
-    iVar2 = Scr_GetFunctionHandle(param_1,param_2,param_3);
-    if ((iVar2 == 0) && (param_4 != 0)) {
+    iVar2 = Scr_GetFunctionHandle(inst,filename,label);
+    if ((iVar2 == 0) && (bEnforceExists != 0)) {
       Com_Error(ERR_DROP,"\x15Could not find label \'%s\' in script \'%s\'");
     }
   }
@@ -140,12 +145,12 @@ GScr_LoadScriptAndLabel(scriptInstance_t param_1,char *param_2,char *param_3,int
 void __cdecl GScr_LoadGameTypeScript(void)
 
 {
-  char local_4c [68];
+  char filename [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_4c,0x40,"maps/mp/gametypes/%s");
-  g_scr_data.gametype.main = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER,local_4c,"main",1);
+  Com_sprintf(filename,0x40,"maps/mp/gametypes/%s");
+  g_scr_data.gametype.main = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER,filename,"main",1);
   g_scr_data.gametype.startupgametype =
        GScr_LoadScriptAndLabel
                  (SCRIPTINSTANCE_SERVER,"maps/mp/gametypes/_callbacksetup",
@@ -206,19 +211,18 @@ void __cdecl GScr_LoadGameTypeScript(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-GScr_LoadSingleAnimScript(scriptInstance_t param_1,scr_animscript_t *param_2,char *param_3)
+void __cdecl GScr_LoadSingleAnimScript(scriptInstance_t inst,scr_animscript_t *pAnim,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  char local_4c [68];
+  char filename [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == (scr_animscript_t *)0x0) {
+  if (pAnim == (scr_animscript_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x110,0
                              ,"%s");
     if (!bVar2) {
@@ -227,7 +231,7 @@ GScr_LoadSingleAnimScript(scriptInstance_t param_1,scr_animscript_t *param_2,cha
       return;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x111,0
                              ,"%s");
     if (!bVar2) {
@@ -236,29 +240,29 @@ GScr_LoadSingleAnimScript(scriptInstance_t param_1,scr_animscript_t *param_2,cha
       return;
     }
   }
-  Com_sprintf(local_4c,0x40,"maps/mp/animscripts/%s");
-  uVar3 = GScr_AllocString(param_3);
-  param_2->name = (ushort)uVar3;
-  iVar4 = GScr_LoadScriptAndLabel(param_1,local_4c,"main",1);
-  param_2->func = iVar4;
+  Com_sprintf(filename,0x40,"maps/mp/animscripts/%s");
+  uVar3 = GScr_AllocString(name);
+  pAnim->name = (ushort)uVar3;
+  iVar4 = GScr_LoadScriptAndLabel(inst,filename,"main",1);
+  pAnim->func = iVar4;
   return;
 }
 
 
 // 006418B0  GScr_LoadDogAnimScripts  (game_mp/g_scr_main_mp.cpp:282)
 
-void __cdecl GScr_LoadDogAnimScripts(scriptInstance_t param_1)
+void __cdecl GScr_LoadDogAnimScripts(scriptInstance_t inst)
 
 {
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.combat,"dog_combat");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.death,"dog_death");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.init,"dog_init");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.pain,"dog_pain");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.move,"dog_move");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.stop,"dog_stop");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.flashed,"dog_flashed");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.jump,"dog_jump");
-  GScr_LoadSingleAnimScript(param_1,&g_scr_data.dogAnim.turn,"dog_turn");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.combat,"dog_combat");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.death,"dog_death");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.init,"dog_init");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.pain,"dog_pain");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.move,"dog_move");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.stop,"dog_stop");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.flashed,"dog_flashed");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.jump,"dog_jump");
+  GScr_LoadSingleAnimScript(inst,&g_scr_data.dogAnim.turn,"dog_turn");
   g_animScriptTable[0] = &g_scr_data.dogAnim;
   return;
 }
@@ -266,12 +270,12 @@ void __cdecl GScr_LoadDogAnimScripts(scriptInstance_t param_1)
 
 // 00641C70  GScr_AnimscriptAlloc  (game_mp/g_scr_main_mp.cpp:299)
 
-void * __cdecl GScr_AnimscriptAlloc(int param_1)
+void * __cdecl GScr_AnimscriptAlloc(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocLow(param_1,"GScr_AnimscriptAlloc",5);
+  pvVar1 = Hunk_AllocLow(size,"GScr_AnimscriptAlloc",5);
   return pvVar1;
 }
 
@@ -281,50 +285,51 @@ void * __cdecl GScr_AnimscriptAlloc(int param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl GScr_SetScriptsForPathNode(scriptInstance_t param_1,pathnode_t *param_2)
+void __cdecl GScr_SetScriptsForPathNode(scriptInstance_t inst,pathnode_t *loadNode)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  void *pvVar4;
-  int iVar5;
-  char local_4c [68];
+  char *name;
+  void *pvVar3;
+  int iVar4;
+  char *animscript;
+  char filename [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = G_ExitAfterToolComplete();
-  if ((!bVar2) && ((param_2->constant).type != NODE_BADNODE)) {
-    if ((param_2->constant).type == NODE_NEGOTIATION_BEGIN) {
-      if ((param_2->constant).animscript == 0) {
+  if ((!bVar2) && ((loadNode->constant).type != NODE_BADNODE)) {
+    if ((loadNode->constant).type == NODE_NEGOTIATION_BEGIN) {
+      if ((loadNode->constant).animscript == 0) {
         Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) has no animscript specified\n");
-        (param_2->constant).type = NODE_BADNODE;
+        (loadNode->constant).type = NODE_BADNODE;
       }
       else {
-        pcVar3 = SL_ConvertToString((uint)(param_2->constant).animscript,SCRIPTINSTANCE_SERVER);
-        if ((pcVar3 == (char *)0x0) &&
+        name = SL_ConvertToString((uint)(loadNode->constant).animscript,SCRIPTINSTANCE_SERVER);
+        if ((name == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp"
                                      ,0x148,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        pvVar4 = Hunk_FindDataForFile(1,pcVar3);
-        (param_2->constant).animscriptfunc = (int)pvVar4;
-        if ((param_2->constant).animscriptfunc == 0) {
-          Com_sprintf(local_4c,0x40,"maps/mp/animscripts/traverse/%s");
-          iVar5 = GScr_LoadScriptAndLabel(param_1,local_4c,"main",1);
-          (param_2->constant).animscriptfunc = iVar5;
-          Hunk_SetDataForFile(1,pcVar3,(void *)(param_2->constant).animscriptfunc,
+        pvVar3 = Hunk_FindDataForFile(1,name);
+        (loadNode->constant).animscriptfunc = (int)pvVar3;
+        if ((loadNode->constant).animscriptfunc == 0) {
+          Com_sprintf(filename,0x40,"maps/mp/animscripts/traverse/%s");
+          iVar4 = GScr_LoadScriptAndLabel(inst,filename,"main",1);
+          (loadNode->constant).animscriptfunc = iVar4;
+          Hunk_SetDataForFile(1,name,(void *)(loadNode->constant).animscriptfunc,
                               GScr_AnimscriptAlloc);
         }
-        if ((param_2->constant).animscriptfunc == 0) {
+        if ((loadNode->constant).animscriptfunc == 0) {
           Com_PrintError(1,"ERROR: Pathnode (%s) at (%g %g %g) cannot find animscript \'%s\'\n");
-          (param_2->constant).type = NODE_BADNODE;
+          (loadNode->constant).type = NODE_BADNODE;
         }
       }
     }
-    else if (((param_2->constant).animscript != 0) &&
+    else if (((loadNode->constant).animscript != 0) &&
             (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp"
                                       ,0x13c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -360,14 +365,14 @@ void __cdecl GScr_SetScriptsForPathNodes(void)
 void __cdecl GScr_LoadLevelScript(void)
 
 {
-  char local_4c [64];
+  char filename [64];
   uint local_c;
-  dvar_s *local_8;
+  dvar_s *mapname;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = _Dvar_RegisterString("mapname","",0x44,"The current map name");
-  Com_sprintf(local_4c,0x40,"maps/mp/%s");
-  g_scr_data.levelscript = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER,local_4c,"main",0);
+  mapname = _Dvar_RegisterString("mapname","",0x44,"The current map name");
+  Com_sprintf(filename,0x40,"maps/mp/%s");
+  g_scr_data.levelscript = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER,filename,"main",0);
   return;
 }
 
@@ -379,25 +384,30 @@ void __cdecl GScr_LoadLevelScript(void)
 void __cdecl GScr_LoadPreGameScript(void)
 
 {
-  char local_4c [68];
+  char filename [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_4c,0x40,"maps/mp/gametypes/_pregame");
-  g_scr_data.pregamescript = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER,local_4c,"main",0);
+  Com_sprintf(filename,0x40,"maps/mp/gametypes/_pregame");
+  g_scr_data.pregamescript = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER,filename,"main",0);
   return;
 }
 
 
 // 00641D50  GScr_PostLoadScripts  (game_mp/g_scr_main_mp.cpp:384)
 
-void __cdecl GScr_PostLoadScripts(scriptInstance_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GScr_PostLoadScripts(scriptInstance_t inst)
 
 {
-  undefined4 local_8;
+  int classnum;
   
-  for (local_8 = 0; (int)local_8 < 5; local_8 = local_8 + 1) {
-    Scr_SetClassMap(param_1,local_8);
+  for (classnum = 0; classnum < 5; classnum = classnum + 1) {
+    Scr_SetClassMap(inst,classnum);
   }
   GScr_AddFieldsForEntity();
   GScr_AddFieldsForHudElems();
@@ -410,40 +420,40 @@ void __cdecl GScr_PostLoadScripts(scriptInstance_t param_1)
 
 // 006417A0  GScr_LoadScripts  (game_mp/g_scr_main_mp.cpp:401)
 
-void __cdecl GScr_LoadScripts(scriptInstance_t param_1)
+void __cdecl GScr_LoadScripts(scriptInstance_t inst)
 
 {
-  Scr_BeginLoadScripts(param_1,1);
-  g_scr_data.delete_ = GScr_LoadScriptAndLabel(param_1,"codescripts/delete","main",1);
-  g_scr_data.initstructs = GScr_LoadScriptAndLabel(param_1,"codescripts/struct","initstructs",1);
-  g_scr_data.createstruct = GScr_LoadScriptAndLabel(param_1,"codescripts/struct","createstruct",1);
-  g_scr_data.findstruct = GScr_LoadScriptAndLabel(param_1,"codescripts/struct","findstruct",1);
+  Scr_BeginLoadScripts(inst,1);
+  g_scr_data.delete_ = GScr_LoadScriptAndLabel(inst,"codescripts/delete","main",1);
+  g_scr_data.initstructs = GScr_LoadScriptAndLabel(inst,"codescripts/struct","initstructs",1);
+  g_scr_data.createstruct = GScr_LoadScriptAndLabel(inst,"codescripts/struct","createstruct",1);
+  g_scr_data.findstruct = GScr_LoadScriptAndLabel(inst,"codescripts/struct","findstruct",1);
   g_scr_data.destructible_callback =
-       GScr_LoadScriptAndLabel(param_1,"maps/mp/_destructible","CodeCallback_DestructibleEvent",1);
+       GScr_LoadScriptAndLabel(inst,"maps/mp/_destructible","CodeCallback_DestructibleEvent",1);
   g_scr_data.updatespawnpoints =
        GScr_LoadScriptAndLabel
-                 (param_1,"maps/mp/gametypes/_spawning","CodeCallback_UpdateSpawnPoints",1);
-  GScr_LoadDogAnimScripts(param_1);
+                 (inst,"maps/mp/gametypes/_spawning","CodeCallback_UpdateSpawnPoints",1);
+  GScr_LoadDogAnimScripts(inst);
   GScr_SetScriptsForPathNodes();
   GScr_LoadPreGameScript();
   GScr_LoadGameTypeScript();
   GScr_LoadLevelScript();
-  Scr_PostCompileScripts(param_1);
-  GScr_PostLoadScripts(param_1);
-  Scr_EndLoadScripts(param_1);
+  Scr_PostCompileScripts(inst);
+  GScr_PostLoadScripts(inst);
+  Scr_EndLoadScripts(inst);
   return;
 }
 
 
 // 00641DA0  GScr_FreeScripts  (game_mp/g_scr_main_mp.cpp:435)
 
-void __cdecl GScr_FreeScripts(scriptInstance_t param_1)
+void __cdecl GScr_FreeScripts(scriptInstance_t inst)
 
 {
-  undefined4 local_8;
+  int classnum;
   
-  for (local_8 = 0; (int)local_8 < 5; local_8 = local_8 + 1) {
-    Scr_RemoveClassMap(param_1,local_8);
+  for (classnum = 0; classnum < 5; classnum = classnum + 1) {
+    Scr_RemoveClassMap(inst,classnum);
   }
   return;
 }
@@ -456,15 +466,15 @@ void __cdecl GScr_FreeScripts(scriptInstance_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl GetEntity(scr_entref_t param_1)
+gentity_s * __cdecl GetEntity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   
-  if (param_1.classnum == 0) {
-    if (0x3ff < param_1.entnum) {
+  if (entref.classnum == 0) {
+    if (0x3ff < entref.entnum) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x1c1
                                ,0,"%s");
       if (!bVar2) {
@@ -473,7 +483,7 @@ gentity_s * __cdecl GetEntity(scr_entref_t param_1)
         return pgVar3;
       }
     }
-    pgVar3 = g_entities + param_1.entnum;
+    pgVar3 = g_entities + entref.entnum;
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
@@ -490,16 +500,17 @@ gentity_s * __cdecl GetEntity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl GetPlayerEntity(scr_entref_t param_1)
+gentity_s * __cdecl GetPlayerEntity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if ((pgVar3 == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x1cf
                                ,0,"%s"), !bVar2)) {
@@ -511,12 +522,12 @@ gentity_s * __cdecl GetPlayerEntity(scr_entref_t param_1)
     if (pgVar3->targetname != 0) {
       SL_ConvertToString((uint)pgVar3->targetname,SCRIPTINSTANCE_SERVER);
     }
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va(
-               "only valid on players; called on entity %i at %.0f %.0f %.0f classname %s targetname %s\n"
-               );
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va(
+              "only valid on players; called on entity %i at %.0f %.0f %.0f classname %s targetname %s\n"
+              );
+    Scr_Error(error,(bool)force_terminal);
   }
   return pgVar3;
 }
@@ -524,7 +535,7 @@ gentity_s * __cdecl GetPlayerEntity(scr_entref_t param_1)
 
 // 00641DE0  ScrCmd_GetClanId  (game_mp/g_scr_main_mp.cpp:484)
 
-void __cdecl ScrCmd_GetClanId(scr_entref_t param_1)
+void __cdecl ScrCmd_GetClanId(scr_entref_t entref)
 
 {
   Scr_AddString("0",SCRIPTINSTANCE_SERVER);
@@ -534,7 +545,7 @@ void __cdecl ScrCmd_GetClanId(scr_entref_t param_1)
 
 // 00641E00  ScrCmd_GetClanName  (game_mp/g_scr_main_mp.cpp:511)
 
-void __cdecl ScrCmd_GetClanName(scr_entref_t param_1)
+void __cdecl ScrCmd_GetClanName(scr_entref_t entref)
 
 {
   Scr_AddString("",SCRIPTINSTANCE_SERVER);
@@ -549,14 +560,15 @@ void __cdecl GScr_CreatePrintChannel(void)
 {
   bool bVar1;
   uint uVar2;
-  char *pcVar3;
+  char *name_00;
+  char *name;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 1) {
     Scr_Error("illegal call to createprintchannel()",false);
   }
-  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = Con_OpenChannel(pcVar3,true);
+  name_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  bVar1 = Con_OpenChannel(name_00,true);
   if (!bVar1) {
     Scr_Error("Unable to create new channel.  Maximum number of channels exeeded.",false);
   }
@@ -574,45 +586,46 @@ void __cdecl GScr_CreatePrintChannel(void)
 void __cdecl GScr_printChannelSet(void)
 
 {
-  int iVar1;
-  bool bVar2;
-  uint uVar3;
-  int iVar4;
-  int local_c;
-  char *local_8;
+  int value;
+  bool bVar1;
+  uint uVar2;
+  int iVar3;
+  int oldChannel;
+  int channel;
+  char *name;
   
-  local_c = 0x19;
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  iVar1 = level.scriptPrintChannel;
-  if (uVar3 != 1) {
+  channel = 0x19;
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  value = level.scriptPrintChannel;
+  if (uVar2 != 1) {
     Scr_Error("illegal call to setprintchannel()",false);
     return;
   }
-  iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  if (iVar4 == 2) {
-    local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    bVar2 = Con_GetChannel(local_8,&local_c);
-    if (!bVar2) {
+  iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+  if (iVar3 == 2) {
+    name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    bVar1 = Con_GetChannel(name,&channel);
+    if (!bVar1) {
       Scr_ParamError(0,"Invalid Print Channel",SCRIPTINSTANCE_SERVER);
       return;
     }
   }
   else {
-    if (iVar4 != 6) {
+    if (iVar3 != 6) {
       Scr_ParamError(0,"Invalid Print Channel",SCRIPTINSTANCE_SERVER);
       return;
     }
-    local_c = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    bVar2 = Con_IsChannelOpen(local_c);
-    if (!bVar2) {
+    channel = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    bVar1 = Con_IsChannelOpen(channel);
+    if (!bVar1) {
       Scr_ParamError(0,"Invalid Print Channel",SCRIPTINSTANCE_SERVER);
       return;
     }
   }
-  bVar2 = Con_ScriptHasPermission(local_c);
-  if (bVar2) {
-    level.scriptPrintChannel = local_c;
-    Scr_AddInt(iVar1,SCRIPTINSTANCE_SERVER);
+  bVar1 = Con_ScriptHasPermission(channel);
+  if (bVar1) {
+    level.scriptPrintChannel = channel;
+    Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
   }
   else {
     Scr_ParamError(0,"Script does not have permission to print to this channel",
@@ -633,12 +646,13 @@ void __cdecl print(void)
 
 {
   uint uVar1;
-  uint local_8;
+  int num;
+  int i;
   
   if ((g_NoScriptSpam->current).enabled == false) {
     uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    for (local_8 = 0; (int)local_8 < (int)uVar1; local_8 = local_8 + 1) {
-      Scr_GetDebugString(local_8,SCRIPTINSTANCE_SERVER);
+    for (i = 0; i < (int)uVar1; i = i + 1) {
+      Scr_GetDebugString(i,SCRIPTINSTANCE_SERVER);
       Com_Printf(level.scriptPrintChannel,"%s");
     }
   }
@@ -666,49 +680,49 @@ void __cdecl println(void)
 
 // 00642040  Scr_LocalizationError  (game_mp/g_scr_main_mp.cpp:614)
 
-void __cdecl Scr_LocalizationError(int param_1,char *param_2)
+void __cdecl Scr_LocalizationError(int iParm,char *pszErrorMessage)
 
 {
-  Scr_ParamError(param_1,param_2,SCRIPTINSTANCE_SERVER);
+  Scr_ParamError(iParm,pszErrorMessage,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00642450  Scr_ValidateLocalizedStringRef  (game_mp/g_scr_main_mp.cpp:624)
 
-void __cdecl Scr_ValidateLocalizedStringRef(int param_1,char *param_2,int param_3)
+void __cdecl Scr_ValidateLocalizedStringRef(int parmIndex,char *token,int tokenLen)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  int local_8;
+  char *error;
+  scriptInstance_t inst;
+  int charIter;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((token == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x273
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 0) &&
+  if ((tokenLen < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x274
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (1 < param_3) {
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      iVar3 = isalnum((int)param_2[local_8]);
-      if ((iVar3 == 0) && (param_2[local_8] != '_')) {
-        sVar5 = SCRIPTINSTANCE_SERVER;
-        pcVar4 = va(
-                   "Illegal localized string reference: %s must contain only alpha-numeric characters and underscores"
-                   );
-        Scr_ParamError(param_1,pcVar4,sVar5);
+  if (1 < tokenLen) {
+    for (charIter = 0; charIter < tokenLen; charIter = charIter + 1) {
+      iVar3 = isalnum((int)token[charIter]);
+      if ((iVar3 == 0) && (token[charIter] != '_')) {
+        inst = SCRIPTINSTANCE_SERVER;
+        error = va(
+                  "Illegal localized string reference: %s must contain only alpha-numeric characters and underscores"
+                  );
+        Scr_ParamError(parmIndex,error,inst);
       }
     }
   }
@@ -724,7 +738,8 @@ void __cdecl Scr_ValidateLocalizedStringRef(int param_1,char *param_2,int param_
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_ConstructMessageString(int param_1,int param_2,char *param_3,char *param_4,uint param_5)
+Scr_ConstructMessageString
+          (int firstParmIndex,int lastParmIndex,char *errorContext,char *string,uint stringLimit)
 
 {
   char cVar1;
@@ -735,79 +750,83 @@ Scr_ConstructMessageString(int param_1,int param_2,char *param_3,char *param_4,u
   char *local_4c;
   char *local_3c;
   char *local_2c;
-  uint local_24;
-  uint local_20;
-  uint local_10;
-  char *local_c;
-  int local_8;
+  bool useLocalization;
+  uint charIndex;
+  uint tokenLen;
+  bool enableLocalization;
+  int type;
+  gentity_s *ent;
+  int parmIndex;
+  char *token;
+  uint stringLen;
   
-  local_8 = 0;
-  local_10 = param_1;
+  stringLen = 0;
+  parmIndex = firstParmIndex;
   do {
-    if (param_2 < (int)local_10) {
-      param_4[local_8] = '\0';
+    if (lastParmIndex < parmIndex) {
+      string[stringLen] = '\0';
       return;
     }
-    iVar2 = Scr_GetType(local_10,SCRIPTINSTANCE_SERVER);
+    iVar2 = Scr_GetType(parmIndex,SCRIPTINSTANCE_SERVER);
     if (iVar2 == 3) {
-      local_c = Scr_GetIString(local_10,SCRIPTINSTANCE_SERVER);
-      local_2c = local_c;
+      token = Scr_GetIString(parmIndex,SCRIPTINSTANCE_SERVER);
+      local_2c = token;
       do {
         cVar1 = *local_2c;
         local_2c = local_2c + 1;
       } while (cVar1 != '\0');
-      local_20 = (int)local_2c - (int)(local_c + 1);
-      Scr_ValidateLocalizedStringRef(local_10,local_c,local_20);
-      if (param_5 <= local_8 + 1 + local_20) {
+      tokenLen = (int)local_2c - (int)(token + 1);
+      Scr_ValidateLocalizedStringRef(parmIndex,token,tokenLen);
+      if (stringLimit <= stringLen + 1 + tokenLen) {
         sVar5 = SCRIPTINSTANCE_SERVER;
         pcVar3 = va("%s is too long. Max length is %i\n");
-        Scr_ParamError(local_10,pcVar3,sVar5);
+        Scr_ParamError(parmIndex,pcVar3,sVar5);
       }
-      if (local_8 != 0) {
-        param_4[local_8] = '\x14';
-        local_8 = local_8 + 1;
+      if (stringLen != 0) {
+        string[stringLen] = '\x14';
+        stringLen = stringLen + 1;
       }
     }
     else if ((iVar2 == 1) &&
-            (iVar2 = Scr_GetPointerType(local_10,SCRIPTINSTANCE_SERVER), iVar2 == 0x13)) {
-      pgVar4 = Scr_GetEntity(local_10);
+            (iVar2 = Scr_GetPointerType(parmIndex,SCRIPTINSTANCE_SERVER), iVar2 == 0x13)) {
+      pgVar4 = Scr_GetEntity(parmIndex);
       if (pgVar4->client == (gclient_s *)0x0) {
-        Scr_ParamError(local_10,"Entity is not a player",SCRIPTINSTANCE_SERVER);
+        Scr_ParamError(parmIndex,"Entity is not a player",SCRIPTINSTANCE_SERVER);
       }
       CS_DisplayName(&(pgVar4->client->sess).cs,3);
-      local_c = va("%s^7");
-      local_3c = local_c;
+      token = va("%s^7");
+      local_3c = token;
       do {
         cVar1 = *local_3c;
         local_3c = local_3c + 1;
       } while (cVar1 != '\0');
-      local_20 = (int)local_3c - (int)(local_c + 1);
-      if (param_5 <= local_8 + 1 + local_20) {
+      tokenLen = (int)local_3c - (int)(token + 1);
+      if (stringLimit <= stringLen + 1 + tokenLen) {
         sVar5 = SCRIPTINSTANCE_SERVER;
         pcVar3 = va("%s is too long. Max length is %i\n");
-        Scr_ParamError(local_10,pcVar3,sVar5);
+        Scr_ParamError(parmIndex,pcVar3,sVar5);
       }
-      if (local_20 != 0) {
-        param_4[local_8] = '\x15';
-        local_8 = local_8 + 1;
+      if (tokenLen != 0) {
+        string[stringLen] = '\x15';
+        stringLen = stringLen + 1;
       }
     }
     else {
-      local_c = Scr_GetString(local_10,SCRIPTINSTANCE_SERVER);
-      local_4c = local_c;
+      token = Scr_GetString(parmIndex,SCRIPTINSTANCE_SERVER);
+      local_4c = token;
       do {
         cVar1 = *local_4c;
         local_4c = local_4c + 1;
       } while (cVar1 != '\0');
-      local_20 = (int)local_4c - (int)(local_c + 1);
-      for (local_24 = 0; local_24 < local_20; local_24 = local_24 + 1) {
-        if (((local_c[local_24] == '\x14') || (local_c[local_24] == '\x15')) ||
-           (local_c[local_24] == '\x16')) {
+      tokenLen = (int)local_4c - (int)(token + 1);
+      for (charIndex = 0; charIndex < tokenLen; charIndex = charIndex + 1) {
+        if (((token[charIndex] == '\x14') || (token[charIndex] == '\x15')) ||
+           (token[charIndex] == '\x16')) {
           sVar5 = SCRIPTINSTANCE_SERVER;
           pcVar3 = va("bad escape character (%i) present in string");
-          Scr_ParamError(local_10,pcVar3,sVar5);
+          Scr_ParamError(parmIndex,pcVar3,sVar5);
         }
-        iVar2 = isalpha((int)local_c[local_24]);
+        iVar2 = isalpha((int)token[charIndex]);
         if (iVar2 != 0) {
           if ((loc_warnings->current).enabled != false) {
             if ((loc_warningsAsErrors->current).enabled == false) {
@@ -818,33 +837,33 @@ Scr_ConstructMessageString(int param_1,int param_2,char *param_3,char *param_4,u
             else {
               pcVar3 = va("non-localized %s strings are not allowed to have letters in them: \"%s\""
                          );
-              Scr_LocalizationError(local_10,pcVar3);
+              Scr_LocalizationError(parmIndex,pcVar3);
             }
           }
           break;
         }
       }
-      if (param_5 <= local_8 + 1 + local_20) {
+      if (stringLimit <= stringLen + 1 + tokenLen) {
         sVar5 = SCRIPTINSTANCE_SERVER;
         pcVar3 = va("%s is too long. Max length is %i\n");
-        Scr_ParamError(local_10,pcVar3,sVar5);
+        Scr_ParamError(parmIndex,pcVar3,sVar5);
       }
-      if (local_20 != 0) {
-        param_4[local_8] = '\x15';
-        local_8 = local_8 + 1;
+      if (tokenLen != 0) {
+        string[stringLen] = '\x15';
+        stringLen = stringLen + 1;
       }
     }
-    for (local_24 = 0; local_24 < local_20; local_24 = local_24 + 1) {
-      if (((local_c[local_24] == '\x14') || (local_c[local_24] == '\x15')) ||
-         (local_c[local_24] == '\x16')) {
-        param_4[local_8] = '.';
+    for (charIndex = 0; charIndex < tokenLen; charIndex = charIndex + 1) {
+      if (((token[charIndex] == '\x14') || (token[charIndex] == '\x15')) ||
+         (token[charIndex] == '\x16')) {
+        string[stringLen] = '.';
       }
       else {
-        param_4[local_8] = local_c[local_24];
+        string[stringLen] = token[charIndex];
       }
-      local_8 = local_8 + 1;
+      stringLen = stringLen + 1;
     }
-    local_10 = local_10 + 1;
+    parmIndex = parmIndex + 1;
   } while( true );
 }
 
@@ -852,32 +871,36 @@ Scr_ConstructMessageString(int param_1,int param_2,char *param_3,char *param_4,u
 // 00642520  Scr_MakeGameMessage  (game_mp/g_scr_main_mp.cpp:751)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_MakeGameMessage(int param_1,char *param_2)
+void __cdecl Scr_MakeGameMessage(int iClientNum,char *pszCmd)
 
 {
   uint uVar1;
   char *pcVar2;
-  char *pcVar3;
-  uint uVar4;
-  char local_40c [1028];
+  char *errorContext;
+  uint stringLimit;
+  char string [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar4 = 0x400;
-  pcVar2 = local_40c;
-  pcVar3 = "Game Message";
+  stringLimit = 0x400;
+  pcVar2 = string;
+  errorContext = "Game Message";
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(0,uVar1 - 1,pcVar3,pcVar2,uVar4);
+  Scr_ConstructMessageString(0,uVar1 - 1,errorContext,pcVar2,stringLimit);
   pcVar2 = va("%s \"%s\"");
-  SV_GameSendServerCommand(param_1,SV_CMD_CAN_IGNORE,pcVar2);
+  SV_GameSendServerCommand(iClientNum,SV_CMD_CAN_IGNORE,pcVar2);
   return;
 }
 
 
 // 006425A0  Scr_VerifyWeaponIndex  (game_mp/g_scr_main_mp.cpp:760)
 
-void __cdecl Scr_VerifyWeaponIndex(int param_1,char *param_2)
+void __cdecl Scr_VerifyWeaponIndex(int weaponIndex,char *weaponName)
 
 {
   code *pcVar1;
@@ -886,7 +909,7 @@ void __cdecl Scr_VerifyWeaponIndex(int param_1,char *param_2)
   char *pcVar4;
   scriptInstance_t sVar5;
   
-  if (param_2 == (char *)0x0) {
+  if (weaponName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x2f9,0
                              ,"%s");
     if (!bVar2) {
@@ -895,8 +918,8 @@ void __cdecl Scr_VerifyWeaponIndex(int param_1,char *param_2)
       return;
     }
   }
-  if (param_1 == 0) {
-    iVar3 = I_stricmp("none",param_2);
+  if (weaponIndex == 0) {
+    iVar3 = I_stricmp("none",weaponName);
     if (iVar3 == 0) {
       sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar4 = va("Weapon name \"%s\" is not valid.\n");
@@ -919,10 +942,10 @@ void __cdecl Scr_VerifyWeaponIndex(int param_1,char *param_2)
 void __cdecl iprintln(void)
 
 {
-  char *pcVar1;
+  char *pszCmd;
   
-  pcVar1 = va("%c");
-  Scr_MakeGameMessage(-1,pcVar1);
+  pszCmd = va("%c");
+  Scr_MakeGameMessage(-1,pszCmd);
   return;
 }
 
@@ -932,10 +955,10 @@ void __cdecl iprintln(void)
 void __cdecl iprintlnbold(void)
 
 {
-  char *pcVar1;
+  char *pszCmd;
   
-  pcVar1 = va("%c");
-  Scr_MakeGameMessage(-1,pcVar1);
+  pszCmd = va("%c");
+  Scr_MakeGameMessage(-1,pszCmd);
   return;
 }
 
@@ -946,41 +969,41 @@ void __cdecl GScr_print3d(void)
 
 {
   uint uVar1;
-  int local_38;
-  float local_34 [3];
-  float local_28;
+  int duration;
+  float origin [3];
+  float rgb;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
+  float scale;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  char *local_8;
+  char *text;
   
-  local_38 = 1;
-  local_1c = 1.0;
-  local_18 = 1.0;
+  duration = 1;
+  scale = 1.0;
+  color = 1.0;
   local_14 = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   case 6:
-    local_38 = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   case 5:
-    local_1c = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+    scale = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
   case 4:
     local_c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   case 3:
-    Scr_GetVector(2,&local_28,SCRIPTINSTANCE_SERVER);
-    local_18 = local_28;
+    Scr_GetVector(2,&rgb,SCRIPTINSTANCE_SERVER);
+    color = rgb;
     local_14 = local_24;
     local_10 = local_20;
   case 2:
-    local_8 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(0,local_34,SCRIPTINSTANCE_SERVER);
-    G_AddDebugString(local_34,&local_18,local_1c,local_8,local_38);
+    text = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+    G_AddDebugString(origin,&color,scale,text,duration);
     break;
   default:
     Scr_Error("illegal call to print3d()",false);
@@ -995,45 +1018,45 @@ void __cdecl GScr_line(void)
 
 {
   uint uVar1;
-  int local_40;
-  float local_3c;
+  int duration;
+  float rgb;
   float local_38;
   float local_34;
-  float local_30 [3];
-  float local_24 [3];
-  float local_18;
+  float start [3];
+  float end [3];
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int depthTest;
   
-  local_40 = 0;
-  local_8 = 0;
-  local_18 = 1.0;
+  duration = 0;
+  depthTest = 0;
+  color = 1.0;
   local_14 = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   case 6:
-    local_40 = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   case 5:
-    local_8 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+    depthTest = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
   case 4:
     local_c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   case 3:
-    Scr_GetVector(2,&local_3c,SCRIPTINSTANCE_SERVER);
-    local_18 = local_3c;
+    Scr_GetVector(2,&rgb,SCRIPTINSTANCE_SERVER);
+    color = rgb;
     local_14 = local_38;
     local_10 = local_34;
   case 2:
-    Scr_GetVector(1,local_24,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(0,local_30,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,end,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(0,start,SCRIPTINSTANCE_SERVER);
     break;
   default:
     Scr_Error("illegal call to line()",false);
   }
-  CL_AddDebugLine(local_30,local_24,&local_18,local_8,local_40);
+  CL_AddDebugLine(start,end,&color,depthTest,duration);
   return;
 }
 
@@ -1046,43 +1069,51 @@ void __cdecl GScr_box(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  float local_50 [3];
-  int local_44;
-  float local_40;
+  float pos [3];
+  int duration;
+  float rgb;
   float local_3c;
   float local_38;
-  float local_34 [11];
-  int local_8;
+  float mins [3];
+  float yaw;
+  float maxs;
+  float local_20;
+  float local_1c;
+  float color;
+  float local_14;
+  float local_10;
+  float local_c;
+  int depthTest;
   
-  local_44 = 0;
-  local_8 = 0;
-  local_34[7] = 1.0;
-  local_34[8] = 1.0;
-  local_34[9] = 1.0;
-  local_34[10] = 1.0;
-  local_34[3] = 0.0;
-  local_34[0] = -10.0;
-  local_34[1] = -10.0;
-  local_34[2] = -10.0;
-  local_34[4] = 10.0;
-  local_34[5] = 10.0;
-  local_34[6] = 10.0;
+  duration = 0;
+  depthTest = 0;
+  color = 1.0;
+  local_14 = 1.0;
+  local_10 = 1.0;
+  local_c = 1.0;
+  yaw = 0.0;
+  mins[0] = -10.0;
+  mins[1] = -10.0;
+  mins[2] = -10.0;
+  maxs = 10.0;
+  local_20 = 10.0;
+  local_1c = 10.0;
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar3) {
   case 8:
-    local_44 = Scr_GetInt(7,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(7,SCRIPTINSTANCE_SERVER);
   case 7:
-    local_8 = Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
+    depthTest = Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
   case 6:
-    local_34[10] = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
+    local_c = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
   case 5:
-    Scr_GetVector(4,&local_40,SCRIPTINSTANCE_SERVER);
-    local_34[7] = local_40;
-    local_34[8] = local_3c;
-    local_34[9] = local_38;
+    Scr_GetVector(4,&rgb,SCRIPTINSTANCE_SERVER);
+    color = rgb;
+    local_14 = local_3c;
+    local_10 = local_38;
   case 4:
-    local_34[3] = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-    if (((local_34[3] < 0.0) || (360.0 < local_34[3])) &&
+    yaw = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+    if (((yaw < 0.0) || (360.0 < yaw)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0x38a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1090,16 +1121,16 @@ void __cdecl GScr_box(void)
       return;
     }
   case 3:
-    Scr_GetVector(2,local_34 + 4,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(2,&maxs,SCRIPTINSTANCE_SERVER);
   case 2:
-    Scr_GetVector(1,local_34,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,mins,SCRIPTINSTANCE_SERVER);
   case 1:
-    Scr_GetVector(0,local_50,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
     break;
   default:
     Scr_Error("illegal call to box()",false);
   }
-  G_DebugBox(local_50,local_34,local_34 + 4,local_34[3],local_34 + 7,local_8,local_44);
+  G_DebugBox(pos,mins,&maxs,yaw,&color,depthTest,duration);
   return;
 }
 
@@ -1110,18 +1141,18 @@ void __cdecl GScr_debugstar(void)
 
 {
   uint uVar1;
-  int local_30;
-  float local_2c;
+  int duration;
+  float rgb;
   float local_28;
   float local_24;
-  float local_20 [3];
-  float local_14;
+  float location [3];
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  local_30 = 10;
-  local_14 = 1.0;
+  duration = 10;
+  color = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
   local_8 = 1.0;
@@ -1132,16 +1163,16 @@ void __cdecl GScr_debugstar(void)
         Scr_Error("illegal call to debugstar()",false);
         goto LAB_00642bc0;
       }
-      Scr_GetVector(2,&local_2c,SCRIPTINSTANCE_SERVER);
-      local_14 = local_2c;
+      Scr_GetVector(2,&rgb,SCRIPTINSTANCE_SERVER);
+      color = rgb;
       local_10 = local_28;
       local_c = local_24;
     }
-    local_30 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   }
-  Scr_GetVector(0,local_20,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,location,SCRIPTINSTANCE_SERVER);
 LAB_00642bc0:
-  CL_AddDebugStar(local_20,&local_14,local_30);
+  CL_AddDebugStar(location,&color,duration);
   return;
 }
 
@@ -1152,49 +1183,49 @@ void __cdecl GScr_circle(void)
 
 {
   uint uVar1;
-  int local_3c;
-  int local_38;
-  float local_34;
+  int onGround;
+  int duration;
+  float rgb;
   float local_30;
   float local_2c;
-  float local_28;
-  float local_24;
+  float radius;
+  float color;
   float local_20;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10 [3];
+  int depthTest;
+  float center [3];
   
-  local_38 = 0;
-  local_3c = 0;
-  local_14 = 0;
-  local_24 = 1.0;
+  duration = 0;
+  onGround = 0;
+  depthTest = 0;
+  color = 1.0;
   local_20 = 1.0;
   local_1c = 1.0;
   local_18 = 1.0;
-  local_28 = 10.0;
+  radius = 10.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   case 6:
-    local_38 = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   case 5:
-    local_3c = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+    onGround = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
   case 4:
-    local_14 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    depthTest = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   case 3:
-    Scr_GetVector(2,&local_34,SCRIPTINSTANCE_SERVER);
-    local_24 = local_34;
+    Scr_GetVector(2,&rgb,SCRIPTINSTANCE_SERVER);
+    color = rgb;
     local_20 = local_30;
     local_1c = local_2c;
   case 2:
-    local_28 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    radius = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   case 1:
-    Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(0,center,SCRIPTINSTANCE_SERVER);
     break;
   default:
     Scr_Error("illegal call to circle()",false);
   }
-  G_DebugCircle(local_10,local_28,&local_24,local_14,local_3c,local_38);
+  G_DebugCircle(center,radius,&color,depthTest,onGround,duration);
   return;
 }
 
@@ -1205,51 +1236,51 @@ void __cdecl GScr_sphere(void)
 
 {
   uint uVar1;
-  int local_3c;
-  int local_38;
-  float local_34;
+  int sideCount;
+  int duration;
+  float rgb;
   float local_30;
   float local_2c;
-  float local_28;
-  float local_24;
+  float radius;
+  float color;
   float local_20;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10 [3];
+  int depthTest;
+  float center [3];
   
-  local_38 = 0;
-  local_3c = 10;
-  local_14 = 0;
-  local_24 = 1.0;
+  duration = 0;
+  sideCount = 10;
+  depthTest = 0;
+  color = 1.0;
   local_20 = 1.0;
   local_1c = 1.0;
   local_18 = 1.0;
-  local_28 = 10.0;
+  radius = 10.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   case 7:
-    local_38 = Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
   case 6:
-    local_3c = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    sideCount = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   case 5:
-    local_14 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+    depthTest = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
   case 4:
     local_18 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   case 3:
-    Scr_GetVector(2,&local_34,SCRIPTINSTANCE_SERVER);
-    local_24 = local_34;
+    Scr_GetVector(2,&rgb,SCRIPTINSTANCE_SERVER);
+    color = rgb;
     local_20 = local_30;
     local_1c = local_2c;
   case 2:
-    local_28 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    radius = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   case 1:
-    Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(0,center,SCRIPTINSTANCE_SERVER);
     break;
   default:
     Scr_Error("illegal call to sphere()",false);
   }
-  G_DebugSphere(local_10,local_28,&local_24,local_3c,local_14,local_38);
+  G_DebugSphere(center,radius,&color,sideCount,depthTest,duration);
   return;
 }
 
@@ -1257,7 +1288,9 @@ void __cdecl GScr_sphere(void)
 // 00642EA0  Scr_GetArrayValues_Vector  (game_mp/g_scr_main_mp.cpp:1091)
 
 long __cdecl
-Scr_GetArrayValues_Vector(long param_1,long param_2,float (*param_3) [3],long param_4,char *param_5)
+Scr_GetArrayValues_Vector
+          (long parameter_index,long parent_id,float (*vector_array) [3],long vector_array_size,
+          char *array_type_description)
 
 {
   float *pfVar1;
@@ -1271,24 +1304,27 @@ Scr_GetArrayValues_Vector(long param_1,long param_2,float (*param_3) [3],long pa
   float (*pafVar9) [3];
   char *pcVar10;
   scriptInstance_t sVar11;
-  uint local_10;
+  long script_array_size;
+  long vector_array_index;
+  VariableValueInternal *entry_value;
+  long id;
   
-  local_10 = 0;
-  if ((param_3 == (float (*) [3])0x0) &&
+  vector_array_index = 0;
+  if ((vector_array == (float (*) [3])0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x449
                                ,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     lVar5 = (*pcVar2)();
     return lVar5;
   }
-  if ((param_2 == 0) &&
+  if ((parent_id == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x44a
                                ,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     lVar5 = (*pcVar2)();
     return lVar5;
   }
-  iVar6 = GetObjectType(SCRIPTINSTANCE_SERVER,param_2);
+  iVar6 = GetObjectType(SCRIPTINSTANCE_SERVER,parent_id);
   if ((iVar6 != 0x14) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",1099,
                                0,"%s"), !bVar4)) {
@@ -1296,15 +1332,15 @@ Scr_GetArrayValues_Vector(long param_1,long param_2,float (*param_3) [3],long pa
     lVar5 = (*pcVar2)();
     return lVar5;
   }
-  uVar7 = GetArraySize(SCRIPTINSTANCE_SERVER,param_2);
-  if (param_4 < (int)uVar7) {
+  uVar7 = GetArraySize(SCRIPTINSTANCE_SERVER,parent_id);
+  if (vector_array_size < (int)uVar7) {
     sVar11 = SCRIPTINSTANCE_SERVER;
     pcVar10 = va("contents of vector array are too large (must be <= %ld) (%s)");
-    Scr_ParamError(param_1,pcVar10,sVar11);
+    Scr_ParamError(parameter_index,pcVar10,sVar11);
   }
   else {
-    for (; (int)local_10 < (int)uVar7; local_10 = local_10 + 1) {
-      uVar8 = GetArrayVariable(SCRIPTINSTANCE_SERVER,param_2,local_10);
+    for (; vector_array_index < (int)uVar7; vector_array_index = vector_array_index + 1) {
+      uVar8 = GetArrayVariable(SCRIPTINSTANCE_SERVER,parent_id,vector_array_index);
       if ((uVar8 == 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0x452,0,"%s"), !bVar4)) {
@@ -1324,17 +1360,17 @@ Scr_GetArrayValues_Vector(long param_1,long param_2,float (*param_3) [3],long pa
       if ((pVVar3[iVar6].w.status & 0x1f) != 4) {
         sVar11 = SCRIPTINSTANCE_SERVER;
         pcVar10 = va("contents of array must be vectors (%s)");
-        Scr_ParamError(param_1,pcVar10,sVar11);
+        Scr_ParamError(parameter_index,pcVar10,sVar11);
         return 0;
       }
-      pafVar9 = param_3 + local_10;
+      pafVar9 = vector_array + vector_array_index;
       pfVar1 = (float *)pVVar3[iVar6].u.next;
       (*pafVar9)[0] = *pfVar1;
       (*pafVar9)[1] = pfVar1[1];
       (*pafVar9)[2] = pfVar1[2];
     }
   }
-  return local_10;
+  return vector_array_index;
 }
 
 
@@ -1344,55 +1380,56 @@ void __cdecl GScr_linelist(void)
 
 {
   uint uVar1;
-  float (*pafVar2) [3];
-  long lVar3;
-  char *pcVar4;
-  int local_c34;
-  int local_c30;
-  float local_c2c [769];
-  int local_28;
-  float local_24;
+  float (*vector_array) [3];
+  long vector_array_size;
+  char *array_type_description;
+  long point_index;
+  int depth_test;
+  float points [769];
+  int duration;
+  float rgb;
   float local_20;
   float local_1c;
-  long local_18;
-  float local_14;
+  long point_count;
+  float color;
   float local_10;
   float local_c;
   float local_8;
   
-  local_18 = 0;
-  local_28 = 0;
-  local_c30 = 0;
-  local_14 = 1.0;
+  point_count = 0;
+  duration = 0;
+  depth_test = 0;
+  color = 1.0;
   local_10 = 1.0;
   local_c = 1.0;
   local_8 = 1.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   case 5:
-    local_28 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+    duration = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
   case 4:
-    local_c30 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    depth_test = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   case 3:
     local_8 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   case 2:
-    Scr_GetVector(1,&local_24,SCRIPTINSTANCE_SERVER);
-    local_14 = local_24;
+    Scr_GetVector(1,&rgb,SCRIPTINSTANCE_SERVER);
+    color = rgb;
     local_10 = local_20;
     local_c = local_1c;
   case 1:
-    pcVar4 = "line list";
-    lVar3 = 0x100;
-    pafVar2 = (float (*) [3])local_c2c;
+    array_type_description = "line list";
+    vector_array_size = 0x100;
+    vector_array = (float (*) [3])points;
     uVar1 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-    local_18 = Scr_GetArrayValues_Vector(0,uVar1,pafVar2,lVar3,pcVar4);
+    point_count = Scr_GetArrayValues_Vector
+                            (0,uVar1,vector_array,vector_array_size,array_type_description);
     break;
   default:
     Scr_Error("illegal call to linelist()",false);
   }
-  for (local_c34 = 0; local_c34 < local_18 + -1; local_c34 = local_c34 + 2) {
-    CL_AddDebugLine(local_c2c + local_c34 * 3,local_c2c + (local_c34 + 1) * 3,&local_14,local_c30,
-                    local_28);
+  for (point_index = 0; point_index < point_count + -1; point_index = point_index + 2) {
+    CL_AddDebugLine(points + point_index * 3,points + (point_index + 1) * 3,&color,depth_test,
+                    duration);
   }
   return;
 }
@@ -1419,15 +1456,15 @@ void __cdecl assertexCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  undefined1 uVar3;
+  char *error;
+  undefined1 force_terminal;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar3 = 0;
+    force_terminal = 0;
     Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("assert fail: %s");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("assert fail: %s");
+    Scr_Error(error,(bool)force_terminal);
   }
   return;
 }
@@ -1438,13 +1475,13 @@ void __cdecl assertexCmd(void)
 void __cdecl assertmsgCmd(void)
 
 {
-  char *pcVar1;
-  undefined1 uVar2;
+  char *error;
+  undefined1 force_terminal;
   
-  uVar2 = 0;
+  force_terminal = 0;
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pcVar1 = va("assert fail: %s");
-  Scr_Error(pcVar1,(bool)uVar2);
+  error = va("assert fail: %s");
+  Scr_Error(error,(bool)force_terminal);
   return;
 }
 
@@ -1458,6 +1495,7 @@ void __cdecl GScr_IsDefined(void)
   bool bVar2;
   int iVar3;
   int local_c;
+  int type;
   
   iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar3 == 1) {
@@ -1500,10 +1538,10 @@ void __cdecl GScr_IsDefined(void)
 void __cdecl GScr_AddDebugCommand(void)
 
 {
-  char *pcVar1;
+  char *text;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  Cbuf_AddText(0,pcVar1);
+  text = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  Cbuf_AddText(0,text);
   return;
 }
 
@@ -1524,11 +1562,11 @@ void __cdecl GScr_IsFloat(void)
 
 {
   int iVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt((uint)(iVar1 == 5),sVar2);
+  Scr_AddInt((uint)(iVar1 == 5),inst);
   return;
 }
 
@@ -1539,11 +1577,11 @@ void __cdecl GScr_IsInt(void)
 
 {
   int iVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt((uint)(iVar1 == 6),sVar2);
+  Scr_AddInt((uint)(iVar1 == 6),inst);
   return;
 }
 
@@ -1554,11 +1592,11 @@ void __cdecl GScr_IsVec(void)
 
 {
   int iVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt((uint)(iVar1 == 4),sVar2);
+  Scr_AddInt((uint)(iVar1 == 4),inst);
   return;
 }
 
@@ -1569,11 +1607,11 @@ void __cdecl GScr_IsString(void)
 
 {
   int iVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt((uint)(iVar1 == 2),sVar2);
+  Scr_AddInt((uint)(iVar1 == 2),inst);
   return;
 }
 
@@ -1586,6 +1624,7 @@ void __cdecl GScr_IsArray(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int type;
   
   iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar3 == 1) {
@@ -1629,6 +1668,7 @@ void __cdecl GScr_IsAlive(void)
 {
   int iVar1;
   gentity_s *pgVar2;
+  gentity_s *pEnt;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 1) {
@@ -1659,19 +1699,20 @@ void __cdecl GScr_GetDvar(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  undefined4 local_8;
+  char *dvarName_00;
+  char *dvarName;
+  char *dvarValue;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 6) {
     iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    local_8 = SV_Archived_Dvar_GetVariantString(iVar1);
+    dvarValue = SV_Archived_Dvar_GetVariantString(iVar1);
   }
   else {
-    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_8 = SV_Archived_Dvar_GetVariantString(pcVar2);
+    dvarName_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    dvarValue = SV_Archived_Dvar_GetVariantString(dvarName_00);
   }
-  Scr_AddString(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(dvarValue,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1683,20 +1724,21 @@ void __cdecl GScr_GetDvarInt(void)
 {
   int iVar1;
   char *pcVar2;
-  undefined4 local_8;
+  char *dvarName;
+  int dvarValue;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 6) {
     iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = SV_Archived_Dvar_GetVariantString(iVar1);
-    local_8 = atoi(pcVar2);
+    dvarValue = atoi(pcVar2);
   }
   else {
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = SV_Archived_Dvar_GetVariantString(pcVar2);
-    local_8 = atoi(pcVar2);
+    dvarValue = atoi(pcVar2);
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(dvarValue,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1709,7 +1751,8 @@ void __cdecl GScr_GetDvarFloat(void)
   int iVar1;
   char *pcVar2;
   double dVar3;
-  undefined4 local_8;
+  char *dvarName;
+  float dvarValue;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 6) {
@@ -1722,8 +1765,8 @@ void __cdecl GScr_GetDvarFloat(void)
     pcVar2 = SV_Archived_Dvar_GetVariantString(pcVar2);
     dVar3 = atof(pcVar2);
   }
-  local_8 = (float)dVar3;
-  Scr_AddFloat(local_8,SCRIPTINSTANCE_SERVER);
+  dvarValue = (float)dVar3;
+  Scr_AddFloat(dvarValue,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1734,19 +1777,20 @@ void __cdecl GScr_GetDvarColorRed(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  undefined4 local_8;
+  char *dvarName_00;
+  char *dvarName;
+  float value;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 6) {
     iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Dvar_GetColorRed(iVar1);
+    value = Dvar_GetColorRed(iVar1);
   }
   else {
-    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Dvar_GetColorRed(pcVar2);
+    dvarName_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    value = Dvar_GetColorRed(dvarName_00);
   }
-  Scr_AddFloat(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(value,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1757,19 +1801,20 @@ void __cdecl GScr_GetDvarColorGreen(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  undefined4 local_8;
+  char *dvarName_00;
+  char *dvarName;
+  float value;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 6) {
     iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Dvar_GetColorGreen(iVar1);
+    value = Dvar_GetColorGreen(iVar1);
   }
   else {
-    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Dvar_GetColorGreen(pcVar2);
+    dvarName_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    value = Dvar_GetColorGreen(dvarName_00);
   }
-  Scr_AddFloat(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(value,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1780,42 +1825,43 @@ void __cdecl GScr_GetDvarColorBlue(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  undefined4 local_8;
+  char *dvarName_00;
+  char *dvarName;
+  float value;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 6) {
     iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Dvar_GetColorBlue(iVar1);
+    value = Dvar_GetColorBlue(iVar1);
   }
   else {
-    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Dvar_GetColorBlue(pcVar2);
+    dvarName_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    value = Dvar_GetColorBlue(dvarName_00);
   }
-  Scr_AddFloat(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(value,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00643A20  CleanDvarValue  (game_mp/g_scr_main_mp.cpp:1470)
 
-void __cdecl CleanDvarValue(char *param_1,char *param_2,int param_3)
+void __cdecl CleanDvarValue(char *dvarValue,char *outString,int size)
 
 {
   char cVar1;
-  int local_c;
-  char *local_8;
+  int i;
+  char *pCh;
   
-  local_8 = param_2;
-  for (local_c = 0; (local_c < param_3 + -1 && (param_1[local_c] != '\0')); local_c = local_c + 1) {
-    cVar1 = I_CleanChar(param_1[local_c]);
-    *local_8 = cVar1;
-    if (*local_8 == '\"') {
-      *local_8 = '\'';
+  pCh = outString;
+  for (i = 0; (i < size + -1 && (dvarValue[i] != '\0')); i = i + 1) {
+    cVar1 = I_CleanChar(dvarValue[i]);
+    *pCh = cVar1;
+    if (*pCh == '\"') {
+      *pCh = '\'';
     }
-    local_8 = local_8 + 1;
+    pCh = pCh + 1;
   }
-  *local_8 = '\0';
+  *pCh = '\0';
   return;
 }
 
@@ -1823,6 +1869,11 @@ void __cdecl CleanDvarValue(char *param_1,char *param_2,int param_3)
 // 006438B0  GScr_SetDvar  (game_mp/g_scr_main_mp.cpp:1485)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: serverInfo */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_SetDvar(void)
 
@@ -1832,38 +1883,39 @@ void __cdecl GScr_SetDvar(void)
   char *pcVar3;
   uint uVar4;
   int iVar5;
-  char *pcVar6;
-  uint uVar7;
+  char *errorContext;
+  uint stringLimit;
   undefined4 local_824;
-  char local_81c [1024];
-  char local_41c [1028];
+  int serverInfo;
+  char string [1024];
+  char outString [1028];
   uint local_18;
-  char *local_14;
-  int local_10;
-  dvar_s *local_c;
-  char *local_8;
+  char *dvarName;
+  int type;
+  dvar_s *dvar;
+  char *dvarValue;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  bVar2 = Dvar_IsValidName(local_14);
+  dvarName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  bVar2 = Dvar_IsValidName(dvarName);
   if (!bVar2) {
     bVar2 = false;
     pcVar3 = va("Dvar %s has an invalid dvar name");
     Scr_Error(pcVar3,bVar2);
   }
-  local_10 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
-  if (local_10 == 3) {
-    uVar7 = 0x400;
-    pcVar3 = local_81c;
-    pcVar6 = "Dvar Value";
+  type = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
+  if (type == 3) {
+    stringLimit = 0x400;
+    pcVar3 = string;
+    errorContext = "Dvar Value";
     uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    Scr_ConstructMessageString(1,uVar4 - 1,pcVar6,pcVar3,uVar7);
-    local_8 = local_81c;
+    Scr_ConstructMessageString(1,uVar4 - 1,errorContext,pcVar3,stringLimit);
+    dvarValue = string;
   }
   else {
-    local_8 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    dvarValue = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
   }
-  CleanDvarValue(local_8,local_41c,0x400);
+  CleanDvarValue(dvarValue,outString,0x400);
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (2 < uVar4) {
     iVar5 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
@@ -1874,9 +1926,9 @@ void __cdecl GScr_SetDvar(void)
   }
   local_824 = 0;
 LAB_006439a6:
-  Dvar_SetFromStringByName(local_14,local_8);
-  local_c = Dvar_FindVar(local_14);
-  if (local_c == (dvar_s *)0x0) {
+  Dvar_SetFromStringByName(dvarName,dvarValue);
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x5eb,0
                              ,"%s");
     if (!bVar2) {
@@ -1885,7 +1937,7 @@ LAB_006439a6:
       return;
     }
   }
-  Dvar_AddFlags(local_c,0x400);
+  Dvar_AddFlags(dvar,0x400);
   return;
 }
 
@@ -1912,12 +1964,14 @@ void __cdecl GScr_GetTime(void)
 void __cdecl GScr_GetAttachmentIndex(void)
 
 {
-  char *pcVar1;
-  eAttachment eVar2;
+  char *name;
+  eAttachment value;
+  eAttachment attachmentIndex;
+  char *attachmentName;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  eVar2 = BG_GetAttachmentIndex(pcVar1);
-  Scr_AddInt(eVar2,SCRIPTINSTANCE_SERVER);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  value = BG_GetAttachmentIndex(name);
+  Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1933,6 +1987,8 @@ void __cdecl Scr_GetEntByNum(void)
 
 {
   uint uVar1;
+  gentity_s *ent;
+  int entnum;
   
   uVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((uVar1 < 0x400) && (g_entities[uVar1].r.inuse != '\0')) {
@@ -1948,25 +2004,29 @@ void __cdecl Scr_GetWeaponStowedModel(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  int iVar4;
+  uint weaponIndex;
+  WeaponDef *pWVar2;
+  int iVar3;
+  int weaponModel;
+  int iWeaponIndex;
+  char *pszWeaponName;
+  WeaponDef *weapDef;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  if (uVar2 == 0) {
+  weaponIndex = G_GetWeaponIndexForName(pcVar1);
+  pWVar2 = BG_GetWeaponDef(weaponIndex);
+  if (weaponIndex == 0) {
     if (*pcVar1 != '\0') {
-      iVar4 = I_stricmp(pcVar1,"none");
-      if (iVar4 != 0) {
+      iVar3 = I_stricmp(pcVar1,"none");
+      if (iVar3 != 0) {
         pcVar1 = va("unknown weapon \'%s\' in WeaponHasStowedModel\n");
         Com_Printf(0x11,pcVar1);
       }
     }
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
-  else if (((pWVar3->worldModel[1] == (XModel *)0x0) || (pWVar3->weapClass == WEAPCLASS_GRENADE)) ||
-          (pWVar3->weapClass == WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON)) {
+  else if (((pWVar2->worldModel[1] == (XModel *)0x0) || (pWVar2->weapClass == WEAPCLASS_GRENADE)) ||
+          (pWVar2->weapClass == WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON)) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1982,20 +2042,22 @@ void __cdecl Scr_GetWeaponModel(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
-  scriptInstance_t sVar6;
-  int local_10;
+  uint weaponIndex;
+  int iVar2;
+  uint uVar3;
+  WeaponDef *pWVar4;
+  scriptInstance_t inst;
+  int weaponModel;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  local_10 = 0;
-  if (uVar2 == 0) {
+  weaponIndex = G_GetWeaponIndexForName(pcVar1);
+  weaponModel = 0;
+  if (weaponIndex == 0) {
     if (*pcVar1 != '\0') {
-      iVar3 = I_stricmp(pcVar1,"none");
-      if (iVar3 != 0) {
+      iVar2 = I_stricmp(pcVar1,"none");
+      if (iVar2 != 0) {
         pcVar1 = va("unknown weapon \'%s\' in getWeaponModel\n");
         Com_Printf(0x11,pcVar1);
       }
@@ -2003,23 +2065,23 @@ void __cdecl Scr_GetWeaponModel(void)
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (uVar4 == 2) {
-      local_10 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-      if ((local_10 < 0) || (0xff < local_10)) {
-        local_10 = 0;
+    uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+    if (uVar3 == 2) {
+      weaponModel = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+      if ((weaponModel < 0) || (0xff < weaponModel)) {
+        weaponModel = 0;
       }
       else {
-        pWVar5 = BG_GetWeaponDef(uVar2);
-        if (pWVar5->worldModel[local_10] == (XModel *)0x0) {
-          local_10 = 0;
+        pWVar4 = BG_GetWeaponDef(weaponIndex);
+        if (pWVar4->worldModel[weaponModel] == (XModel *)0x0) {
+          weaponModel = 0;
         }
       }
     }
-    sVar6 = SCRIPTINSTANCE_SERVER;
-    pWVar5 = BG_GetWeaponDef(uVar2);
-    pcVar1 = XModelGetName(pWVar5->worldModel[local_10]);
-    Scr_AddString(pcVar1,sVar6);
+    inst = SCRIPTINSTANCE_SERVER;
+    pWVar4 = BG_GetWeaponDef(weaponIndex);
+    pcVar1 = XModelGetName(pWVar4->worldModel[weaponModel]);
+    Scr_AddString(pcVar1,inst);
   }
   return;
 }
@@ -2032,17 +2094,20 @@ void __cdecl Scr_GetWeaponModel(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetAmmoCount(scr_entref_t param_1)
+void __cdecl GScr_GetAmmoCount(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
+  char *name;
+  int iVar4;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x65e,0
                              ,"%s");
@@ -2061,15 +2126,15 @@ void __cdecl GScr_GetAmmoCount(scr_entref_t param_1)
       return;
     }
   }
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar5 = G_GetWeaponIndexForName(pcVar4);
-  if (iVar5 == 0) {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar4 = G_GetWeaponIndexForName(name);
+  if (iVar4 == 0) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    sVar6 = SCRIPTINSTANCE_SERVER;
-    iVar5 = BG_WeaponAmmo(&pgVar3->client->ps,iVar5);
-    Scr_AddInt(iVar5,sVar6);
+    inst = SCRIPTINSTANCE_SERVER;
+    iVar4 = BG_WeaponAmmo(&pgVar3->client->ps,iVar4);
+    Scr_AddInt(iVar4,inst);
   }
   return;
 }
@@ -2082,19 +2147,21 @@ void __cdecl GScr_GetAnimLength(void)
 {
   bool bVar1;
   scr_anim_s sVar2;
-  XAnim_s *pXVar3;
-  float fVar4;
-  scriptInstance_t sVar5;
+  XAnim_s *anims_00;
+  float value;
+  scriptInstance_t inst;
+  scr_anim_s anim;
+  XAnim_s *anims;
   
   sVar2 = Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
-  pXVar3 = Scr_GetAnims((uint)sVar2.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
-  bVar1 = XAnimIsPrimitive(pXVar3,(uint)sVar2.field0_0x0 & 0xffff);
+  anims_00 = Scr_GetAnims((uint)sVar2.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
+  bVar1 = XAnimIsPrimitive(anims_00,(uint)sVar2.field0_0x0 & 0xffff);
   if (!bVar1) {
     Scr_ParamError(0,"non-primitive animation has no concept of length",SCRIPTINSTANCE_SERVER);
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  fVar4 = XAnimGetLength(pXVar3,(uint)sVar2.field0_0x0 & 0xffff);
-  Scr_AddFloat(fVar4,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = XAnimGetLength(anims_00,(uint)sVar2.field0_0x0 & 0xffff);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -2107,18 +2174,20 @@ void __cdecl GScr_AnimHasNotetrack(void)
   bool bVar1;
   scr_anim_s sVar2;
   uint uVar3;
-  XAnim_s *pXVar4;
-  uint uVar5;
-  scriptInstance_t sVar6;
+  XAnim_s *anims;
+  uint animIndex;
+  scriptInstance_t inst;
+  ushort name;
+  scr_anim_s anim;
   
   sVar2 = Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  sVar6 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   uVar3 = uVar3 & 0xffff;
-  uVar5 = (uint)sVar2.field0_0x0 & 0xffff;
-  pXVar4 = Scr_GetAnims((uint)sVar2.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
-  bVar1 = XAnimNotetrackExists(pXVar4,uVar5,uVar3);
-  Scr_AddBool((uint)bVar1,sVar6);
+  animIndex = (uint)sVar2.field0_0x0 & 0xffff;
+  anims = Scr_GetAnims((uint)sVar2.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
+  bVar1 = XAnimNotetrackExists(anims,animIndex,uVar3);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -2129,16 +2198,18 @@ void __cdecl GScr_GetNotetrackTimes(void)
 
 {
   scr_anim_s sVar1;
-  uint uVar2;
-  XAnim_s *pXVar3;
-  uint uVar4;
+  uint name_00;
+  XAnim_s *anims;
+  uint animIndex;
+  uint name;
+  scr_anim_s anim;
   
   sVar1 = Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
-  uVar2 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
+  name_00 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  uVar4 = (uint)sVar1.field0_0x0 & 0xffff;
-  pXVar3 = Scr_GetAnims((uint)sVar1.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
-  XAnimAddNotetrackTimesToScriptArray(pXVar3,uVar4,uVar2);
+  animIndex = (uint)sVar1.field0_0x0 & 0xffff;
+  anims = Scr_GetAnims((uint)sVar1.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
+  XAnimAddNotetrackTimesToScriptArray(anims,animIndex,name_00);
   return;
 }
 
@@ -2154,15 +2225,16 @@ void __cdecl GScr_GetBrushModelCenter(void)
 
 {
   gentity_s *pgVar1;
-  float local_10;
+  gentity_s *pEnt;
+  float vCenter;
   float local_c;
   float local_8;
   
   pgVar1 = Scr_GetEntity(0);
-  local_10 = ((pgVar1->r).absmin[0] + (pgVar1->r).absmax[0]) * 0.5;
+  vCenter = ((pgVar1->r).absmin[0] + (pgVar1->r).absmax[0]) * 0.5;
   local_c = ((pgVar1->r).absmin[1] + (pgVar1->r).absmax[1]) * 0.5;
   local_8 = ((pgVar1->r).absmin[2] + (pgVar1->r).absmax[2]) * 0.5;
-  Scr_AddVector(&local_10,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(&vCenter,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2179,40 +2251,40 @@ void __cdecl GScr_Spawn(void)
 {
   uint uVar1;
   int iVar2;
-  char *pcVar3;
-  undefined1 uVar4;
-  float local_1c;
+  char *error;
+  undefined1 force_terminal;
+  float origin;
   float local_18;
   float local_14;
-  int local_10;
-  ushort local_c;
-  gentity_s *local_8;
+  int iSpawnFlags;
+  ushort classname;
+  gentity_s *ent;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  local_c = (ushort)uVar1;
-  Scr_GetVector(1,&local_1c,SCRIPTINSTANCE_SERVER);
+  classname = (ushort)uVar1;
+  Scr_GetVector(1,&origin,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 3) {
-    local_10 = 0;
+    iSpawnFlags = 0;
   }
   else {
-    local_10 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+    iSpawnFlags = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
   }
-  local_8 = G_Spawn();
-  Scr_SetString(&local_8->classname,(uint)local_c,SCRIPTINSTANCE_SERVER);
-  (local_8->r).currentOrigin[0] = local_1c;
-  (local_8->r).currentOrigin[1] = local_18;
-  (local_8->r).currentOrigin[2] = local_14;
-  local_8->spawnflags = local_10;
-  iVar2 = G_CallSpawnEntity(local_8);
+  ent = G_Spawn();
+  Scr_SetString(&ent->classname,(uint)classname,SCRIPTINSTANCE_SERVER);
+  (ent->r).currentOrigin[0] = origin;
+  (ent->r).currentOrigin[1] = local_18;
+  (ent->r).currentOrigin[2] = local_14;
+  ent->spawnflags = iSpawnFlags;
+  iVar2 = G_CallSpawnEntity(ent);
   if (iVar2 == 0) {
-    uVar4 = 0;
-    SL_ConvertToString((uint)local_c,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("unable to spawn \"%s\" entity");
-    Scr_Error(pcVar3,(bool)uVar4);
+    force_terminal = 0;
+    SL_ConvertToString((uint)classname,SCRIPTINSTANCE_SERVER);
+    error = va("unable to spawn \"%s\" entity");
+    Scr_Error(error,(bool)force_terminal);
   }
   else {
-    Scr_AddEntity(local_8,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -2228,40 +2300,40 @@ void __cdecl GScr_Spawn(void)
 void __cdecl GScr_SpawnCollision(void)
 
 {
-  char *pcVar1;
-  scriptInstance_t sVar2;
-  float local_28;
+  char *error;
+  scriptInstance_t inst;
+  float origin;
   float local_24;
   float local_20;
-  float local_1c;
+  float angles;
   float local_18;
   float local_14;
-  uint local_10;
-  gentity_s *local_c;
-  char *local_8;
+  uint targetname;
+  gentity_s *ent;
+  char *modelname;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_10 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,&local_28,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(3,&local_1c,SCRIPTINSTANCE_SERVER);
-  local_c = G_Spawn();
-  Scr_SetString(&local_c->classname,(uint)scr_const.script_model,SCRIPTINSTANCE_SERVER);
-  G_SetModel(local_c,local_8);
-  if (local_c->model == 0) {
-    sVar2 = SCRIPTINSTANCE_SERVER;
-    pcVar1 = va("SpawnCollision: Collision model name %s is not valid.");
-    Scr_ParamError(0,pcVar1,sVar2);
+  modelname = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  targetname = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,&origin,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(3,&angles,SCRIPTINSTANCE_SERVER);
+  ent = G_Spawn();
+  Scr_SetString(&ent->classname,(uint)scr_const.script_model,SCRIPTINSTANCE_SERVER);
+  G_SetModel(ent,modelname);
+  if (ent->model == 0) {
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("SpawnCollision: Collision model name %s is not valid.");
+    Scr_ParamError(0,error,inst);
   }
-  Scr_SetString(&local_c->targetname,local_10,SCRIPTINSTANCE_SERVER);
-  (local_c->r).currentOrigin[0] = local_28;
-  (local_c->r).currentOrigin[1] = local_24;
-  (local_c->r).currentOrigin[2] = local_20;
-  (local_c->r).currentAngles[0] = local_1c;
-  (local_c->r).currentAngles[1] = local_18;
-  (local_c->r).currentAngles[2] = local_14;
-  G_CallSpawnEntity(local_c);
-  (local_c->s).lerp.eFlags = (local_c->s).lerp.eFlags | 0x200;
-  Scr_AddEntity(local_c,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&ent->targetname,targetname,SCRIPTINSTANCE_SERVER);
+  (ent->r).currentOrigin[0] = origin;
+  (ent->r).currentOrigin[1] = local_24;
+  (ent->r).currentOrigin[2] = local_20;
+  (ent->r).currentAngles[0] = angles;
+  (ent->r).currentAngles[1] = local_18;
+  (ent->r).currentAngles[2] = local_14;
+  G_CallSpawnEntity(ent);
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x200;
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2278,51 +2350,51 @@ void __cdecl GScr_SpawnVehicle(void)
 {
   char *pcVar1;
   uint uVar2;
-  scriptInstance_t sVar3;
-  int iVar4;
-  float local_30;
+  scriptInstance_t inst;
+  int load;
+  float origin;
   float local_2c;
   float local_28;
-  float local_24;
+  float angles;
   float local_20;
   float local_1c;
-  uint local_18;
-  uint local_14;
-  gentity_s *local_10;
-  uint local_c;
-  char *local_8;
+  uint targetname;
+  uint vehicletype;
+  gentity_s *ent;
+  uint destructibledef;
+  char *modelname;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_18 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  local_14 = Scr_GetConstString(2,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(3,&local_30,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(4,&local_24,SCRIPTINSTANCE_SERVER);
-  local_10 = G_Spawn();
-  Scr_SetString(&local_10->classname,(uint)scr_const.script_vehicle,SCRIPTINSTANCE_SERVER);
-  G_SetModel(local_10,local_8);
-  if (local_10->model == 0) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
+  modelname = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  targetname = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
+  vehicletype = Scr_GetConstString(2,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(3,&origin,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(4,&angles,SCRIPTINSTANCE_SERVER);
+  ent = G_Spawn();
+  Scr_SetString(&ent->classname,(uint)scr_const.script_vehicle,SCRIPTINSTANCE_SERVER);
+  G_SetModel(ent,modelname);
+  if (ent->model == 0) {
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar1 = va("SpawnVehicle: Vehicle model name %s is not valid.");
-    Scr_ParamError(0,pcVar1,sVar3);
+    Scr_ParamError(0,pcVar1,inst);
   }
-  Scr_SetString(&local_10->targetname,local_18,SCRIPTINSTANCE_SERVER);
-  (local_10->r).currentOrigin[0] = local_30;
-  (local_10->r).currentOrigin[1] = local_2c;
-  (local_10->r).currentOrigin[2] = local_28;
-  (local_10->r).currentAngles[0] = local_24;
-  (local_10->r).currentAngles[1] = local_20;
-  (local_10->r).currentAngles[2] = local_1c;
+  Scr_SetString(&ent->targetname,targetname,SCRIPTINSTANCE_SERVER);
+  (ent->r).currentOrigin[0] = origin;
+  (ent->r).currentOrigin[1] = local_2c;
+  (ent->r).currentOrigin[2] = local_28;
+  (ent->r).currentAngles[0] = angles;
+  (ent->r).currentAngles[1] = local_20;
+  (ent->r).currentAngles[2] = local_1c;
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (5 < uVar2) {
-    local_c = Scr_GetConstString(5,SCRIPTINSTANCE_SERVER);
-    pcVar1 = SL_ConvertToString(local_c,SCRIPTINSTANCE_SERVER);
-    G_SetupDestructible(local_10,pcVar1);
+    destructibledef = Scr_GetConstString(5,SCRIPTINSTANCE_SERVER);
+    pcVar1 = SL_ConvertToString(destructibledef,SCRIPTINSTANCE_SERVER);
+    G_SetupDestructible(ent,pcVar1);
   }
-  iVar4 = 0;
-  pcVar1 = SL_ConvertToString(local_14,SCRIPTINSTANCE_SERVER);
-  G_SpawnVehicle(local_10,pcVar1,iVar4);
-  Scr_AddEntity(local_10,SCRIPTINSTANCE_SERVER);
-  G_MakeVehicleUsable(local_10,true);
+  load = 0;
+  pcVar1 = SL_ConvertToString(vehicletype,SCRIPTINSTANCE_SERVER);
+  G_SpawnVehicle(ent,pcVar1,load);
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
+  G_MakeVehicleUsable(ent,true);
   return;
 }
 
@@ -2341,40 +2413,40 @@ void __cdecl GScr_SpawnPlane(void)
   bool bVar2;
   uint uVar3;
   int iVar4;
-  char *pcVar5;
-  undefined1 uVar6;
-  float local_28;
+  char *error;
+  undefined1 force_terminal;
+  float origin;
   float local_24;
   float local_20;
-  int local_1c;
-  team_t local_18;
-  gentity_s *local_14;
-  ushort local_10;
-  gentity_s *local_c;
-  uint local_8;
+  int iSpawnFlags;
+  int team;
+  gentity_s *owner;
+  ushort classname;
+  gentity_s *ent;
+  int ownerIndex;
   
-  local_14 = Scr_GetEntity(0);
-  if (local_14->client == (gclient_s *)0x0) {
+  owner = Scr_GetEntity(0);
+  if (owner->client == (gclient_s *)0x0) {
     Scr_ParamError(0,"Owner entity is not a player",SCRIPTINSTANCE_SERVER);
   }
   uVar3 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  local_10 = (ushort)uVar3;
-  Scr_GetVector(2,&local_28,SCRIPTINSTANCE_SERVER);
+  classname = (ushort)uVar3;
+  Scr_GetVector(2,&origin,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 < 4) {
-    local_1c = 0;
+    iSpawnFlags = 0;
   }
   else {
-    local_1c = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    iSpawnFlags = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   }
-  local_c = G_Spawn();
-  Scr_SetString(&local_c->classname,(uint)local_10,SCRIPTINSTANCE_SERVER);
-  (local_c->r).currentOrigin[0] = local_28;
-  (local_c->r).currentOrigin[1] = local_24;
-  (local_c->r).currentOrigin[2] = local_20;
-  local_c->spawnflags = local_1c;
-  local_18 = (local_14->client->sess).cs.team;
-  if (TEAM_SPECTATOR < local_18) {
+  ent = G_Spawn();
+  Scr_SetString(&ent->classname,(uint)classname,SCRIPTINSTANCE_SERVER);
+  (ent->r).currentOrigin[0] = origin;
+  (ent->r).currentOrigin[1] = local_24;
+  (ent->r).currentOrigin[2] = local_20;
+  ent->spawnflags = iSpawnFlags;
+  team = (owner->client->sess).cs.team;
+  if (TEAM_SPECTATOR < (uint)team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x754,0
                              ,"team doesn\'t index (1 << 2)\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2383,8 +2455,8 @@ void __cdecl GScr_SpawnPlane(void)
       return;
     }
   }
-  local_8 = ((int)local_14->client - (int)level.clients) / 0x29e0;
-  if ((uint)level.maxclients <= local_8) {
+  ownerIndex = ((int)owner->client - (int)level.clients) / 0x29e0;
+  if ((uint)level.maxclients <= (uint)ownerIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x756,0
                              ,"ownerIndex doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2393,19 +2465,19 @@ void __cdecl GScr_SpawnPlane(void)
       return;
     }
   }
-  iVar4 = G_CallSpawnEntity(local_c);
+  iVar4 = G_CallSpawnEntity(ent);
   if (iVar4 == 0) {
-    (local_c->s).eType = 0xd;
-    (local_c->s).faction.iHeadIconTeam = (byte)(local_8 << 2) | (byte)local_18;
-    uVar6 = 0;
-    SL_ConvertToString((uint)local_10,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("unable to spawn \"%s\" entity");
-    Scr_Error(pcVar5,(bool)uVar6);
+    (ent->s).eType = 0xd;
+    (ent->s).faction.iHeadIconTeam = (byte)(ownerIndex << 2) | (byte)team;
+    force_terminal = 0;
+    SL_ConvertToString((uint)classname,SCRIPTINSTANCE_SERVER);
+    error = va("unable to spawn \"%s\" entity");
+    Scr_Error(error,(bool)force_terminal);
   }
   else {
-    Scr_AddEntity(local_c,SCRIPTINSTANCE_SERVER);
-    (local_c->s).eType = 0xd;
-    (local_c->s).faction.iHeadIconTeam = (byte)(local_8 << 2) | (byte)local_18;
+    Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
+    (ent->s).eType = 0xd;
+    (ent->s).faction.iHeadIconTeam = (byte)(ownerIndex << 2) | (byte)team;
   }
   return;
 }
@@ -2422,53 +2494,54 @@ void __cdecl GScr_SpawnTimedFX(void)
 
 {
   byte bVar1;
-  char *pcVar2;
-  uint uVar3;
-  float local_2c [3];
-  int local_20;
-  uint local_1c;
-  gentity_s *local_18;
-  float local_14 [3];
-  WeaponDef *local_8;
+  char *name;
+  uint uVar2;
+  char *weaponName;
+  float origin [3];
+  int time;
+  int weaponIndex;
+  gentity_s *ent;
+  float direction [3];
+  WeaponDef *weapDef;
   
-  local_14[0] = 0.0;
-  local_14[1] = 0.0;
-  local_14[2] = 1.0;
-  local_20 = 10;
-  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_2c,SCRIPTINSTANCE_SERVER);
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (2 < uVar3) {
-    Scr_GetVector(2,local_14,SCRIPTINSTANCE_SERVER);
+  direction[0] = 0.0;
+  direction[1] = 0.0;
+  direction[2] = 1.0;
+  time = 10;
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (2 < uVar2) {
+    Scr_GetVector(2,direction,SCRIPTINSTANCE_SERVER);
   }
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (3 < uVar3) {
-    local_20 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (3 < uVar2) {
+    time = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   }
-  local_1c = G_GetWeaponIndexForName(pcVar2);
-  Scr_VerifyWeaponIndex(local_1c,pcVar2);
-  local_8 = BG_GetWeaponDef(local_1c);
-  local_18 = G_Spawn();
-  G_SetOrigin(local_18,local_2c);
-  (local_18->s).weapon = (ushort)local_1c;
-  Vec3Normalize(local_14);
-  (local_18->s).eType = 0;
-  (local_18->s).lerp.eFlags = (local_18->s).lerp.eFlags | 0x20;
-  (local_18->s).weapon = (local_18->s).weapon;
-  G_BroadcastEntity(local_18);
-  bVar1 = DirToByte(local_14);
-  G_AddEvent(local_18,0x43,(uint)bVar1);
-  (local_18->s).lerp.pos.trBase[0] = (float)(int)(local_18->s).lerp.pos.trBase[0];
-  (local_18->s).lerp.pos.trBase[1] = (float)(int)(local_18->s).lerp.pos.trBase[1];
-  (local_18->s).lerp.pos.trBase[2] = (float)(int)(local_18->s).lerp.pos.trBase[2];
-  G_SetOrigin(local_18,(local_18->s).lerp.pos.trBase);
-  (local_18->s).lerp.eFlags = (local_18->s).lerp.eFlags | 0x4000;
-  (local_18->s).lerp.u.missile.launchTime = level.time;
-  (local_18->s).time2 = local_20 * 1000 + level.time;
-  (local_18->s).lerp.eFlags = (local_18->s).lerp.eFlags | 0x10;
-  local_18->handler = '\v';
-  local_18->nextthink = level.time + 1;
-  SV_LinkEntity(local_18);
+  weaponIndex = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(weaponIndex,name);
+  weapDef = BG_GetWeaponDef(weaponIndex);
+  ent = G_Spawn();
+  G_SetOrigin(ent,origin);
+  (ent->s).weapon = (ushort)weaponIndex;
+  Vec3Normalize(direction);
+  (ent->s).eType = 0;
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x20;
+  (ent->s).weapon = (ent->s).weapon;
+  G_BroadcastEntity(ent);
+  bVar1 = DirToByte(direction);
+  G_AddEvent(ent,0x43,(uint)bVar1);
+  (ent->s).lerp.pos.trBase[0] = (float)(int)(ent->s).lerp.pos.trBase[0];
+  (ent->s).lerp.pos.trBase[1] = (float)(int)(ent->s).lerp.pos.trBase[1];
+  (ent->s).lerp.pos.trBase[2] = (float)(int)(ent->s).lerp.pos.trBase[2];
+  G_SetOrigin(ent,(ent->s).lerp.pos.trBase);
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x4000;
+  (ent->s).lerp.u.missile.launchTime = level.time;
+  (ent->s).time2 = time * 1000 + level.time;
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x10;
+  ent->handler = '\v';
+  ent->nextthink = level.time + 1;
+  SV_LinkEntity(ent);
   return;
 }
 
@@ -2480,18 +2553,19 @@ void __cdecl GScr_SpawnTimedFX(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl SpawnTurretInternal(uint param_1,float *param_2,char *param_3)
+gentity_s * __cdecl SpawnTurretInternal(uint classname,float *origin,char *weaponinfoname)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *self;
+  gentity_s *ent;
   
-  pgVar1 = G_Spawn();
-  Scr_SetString(&pgVar1->classname,param_1,SCRIPTINSTANCE_SERVER);
-  (pgVar1->r).currentOrigin[0] = *param_2;
-  (pgVar1->r).currentOrigin[1] = param_2[1];
-  (pgVar1->r).currentOrigin[2] = param_2[2];
-  G_SpawnTurret(pgVar1,param_3,(SpawnVar *)0x0);
-  return pgVar1;
+  self = G_Spawn();
+  Scr_SetString(&self->classname,classname,SCRIPTINSTANCE_SERVER);
+  (self->r).currentOrigin[0] = *origin;
+  (self->r).currentOrigin[1] = origin[1];
+  (self->r).currentOrigin[2] = origin[2];
+  G_SpawnTurret(self,weaponinfoname,(SpawnVar *)0x0);
+  return self;
 }
 
 
@@ -2506,21 +2580,21 @@ void __cdecl GScr_SpawnTurret(void)
 
 {
   uint uVar1;
-  float local_1c [3];
-  ushort local_10;
-  gentity_s *local_c;
-  char *local_8;
+  float origin [3];
+  ushort classname;
+  gentity_s *ent;
+  char *weaponinfoname;
   
-  local_c = (gentity_s *)0x0;
+  ent = (gentity_s *)0x0;
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  local_10 = (ushort)uVar1;
-  Scr_GetVector(1,local_1c,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-  local_c = SpawnTurretInternal((uint)local_10,local_1c,local_8);
-  local_c->takedamage = '\x01';
-  (local_c->r).svFlags = '\x04';
-  SV_LinkEntity(local_c);
-  Scr_AddEntity(local_c,SCRIPTINSTANCE_SERVER);
+  classname = (ushort)uVar1;
+  Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
+  weaponinfoname = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
+  ent = SpawnTurretInternal((uint)classname,origin,weaponinfoname);
+  ent->takedamage = '\x01';
+  (ent->r).svFlags = '\x04';
+  SV_LinkEntity(ent);
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2535,35 +2609,35 @@ void __cdecl GScr_SpawnTurret(void)
 void __cdecl GScr_SpawnHelicopter(void)
 
 {
-  float local_2c;
+  float origin;
   float local_28;
   float local_24;
-  gentity_s *local_20;
-  char *local_1c;
-  float local_18;
+  gentity_s *owner;
+  char *vehicleInfoName;
+  float angles;
   float local_14;
   float local_10;
-  gentity_s *local_c;
-  char *local_8;
+  gentity_s *ent;
+  char *modelname;
   
-  local_20 = Scr_GetEntity(0);
-  if (local_20->client == (gclient_s *)0x0) {
+  owner = Scr_GetEntity(0);
+  if (owner->client == (gclient_s *)0x0) {
     Scr_ParamError(0,"Owner entity is not a player",SCRIPTINSTANCE_SERVER);
   }
-  Scr_GetVector(1,&local_2c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,&local_18,SCRIPTINSTANCE_SERVER);
-  local_1c = Scr_GetString(3,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetString(4,SCRIPTINSTANCE_SERVER);
-  local_c = G_Spawn();
-  Scr_SetString(&local_c->classname,(uint)scr_const.script_vehicle,SCRIPTINSTANCE_SERVER);
-  (local_c->r).currentOrigin[0] = local_2c;
-  (local_c->r).currentOrigin[1] = local_28;
-  (local_c->r).currentOrigin[2] = local_24;
-  (local_c->r).currentAngles[0] = local_18;
-  (local_c->r).currentAngles[1] = local_14;
-  (local_c->r).currentAngles[2] = local_10;
-  G_SpawnHelicopter(local_c,local_20,local_1c,local_8);
-  Scr_AddEntity(local_c,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&origin,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,&angles,SCRIPTINSTANCE_SERVER);
+  vehicleInfoName = Scr_GetString(3,SCRIPTINSTANCE_SERVER);
+  modelname = Scr_GetString(4,SCRIPTINSTANCE_SERVER);
+  ent = G_Spawn();
+  Scr_SetString(&ent->classname,(uint)scr_const.script_vehicle,SCRIPTINSTANCE_SERVER);
+  (ent->r).currentOrigin[0] = origin;
+  (ent->r).currentOrigin[1] = local_28;
+  (ent->r).currentOrigin[2] = local_24;
+  (ent->r).currentAngles[0] = angles;
+  (ent->r).currentAngles[1] = local_14;
+  (ent->r).currentAngles[2] = local_10;
+  G_SpawnHelicopter(ent,owner,vehicleInfoName,modelname);
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2575,23 +2649,24 @@ void __cdecl GScr_SpawnHelicopter(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTurretCarried(scr_entref_t param_1)
+void __cdecl GScr_SetTurretCarried(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  char *pcVar2;
-  int iVar3;
-  undefined1 uVar4;
+  gentity_s *self_00;
+  char *error;
+  int carried;
+  undefined1 force_terminal;
+  gentity_s *self;
   
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar4 = 0;
-    SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar4);
+  self_00 = GetEntity(entref);
+  if (self_00->pTurretInfo == (TurretInfo *)0x0) {
+    force_terminal = 0;
+    SL_ConvertToString((uint)self_00->classname,SCRIPTINSTANCE_SERVER);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  Turret_SetTurretCarried(pgVar1,iVar3);
+  carried = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  Turret_SetTurretCarried(self_00,carried);
   return;
 }
 
@@ -2605,11 +2680,12 @@ void __cdecl GScr_GetAnimTreesLoaded(void)
   XAnim_s *pXVar2;
   char *pcVar3;
   char *local_10;
-  ushort local_8;
+  scr_animtree_t animTree;
+  ushort treeIndex;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 1; local_8 <= gScrAnimPub[0].xanim_num[1]; local_8 = local_8 + 1) {
-    pXVar2 = gScrAnimPub[0].xanim_lookup[1][local_8].anims;
+  for (treeIndex = 1; treeIndex <= gScrAnimPub[0].xanim_num[1]; treeIndex = treeIndex + 1) {
+    pXVar2 = gScrAnimPub[0].xanim_lookup[1][treeIndex].anims;
     if (((pXVar2 != (XAnim_s *)0x0) && (1 < pXVar2->size)) && (pXVar2->debugName != (char *)0x0)) {
       local_10 = pXVar2->debugName;
       pcVar3 = local_10 + 1;
@@ -2645,12 +2721,15 @@ void __cdecl GScr_FindAnimByName(void)
   byte *local_44;
   byte *local_34;
   byte *local_24;
-  ushort local_20;
-  XAnim_s *local_1c;
-  scr_anim_s local_18;
-  ushort local_8;
+  ushort i;
+  scr_animtree_t animTree;
+  scr_anim_s retAnim;
+  char *temp;
+  char *animNameParam;
+  char *treeNameParam;
+  ushort treeIndex;
   
-  local_1c = (XAnim_s *)0x0;
+  animTree.anims = (XAnim_s *)0x0;
   pbVar2 = (byte *)Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   local_24 = pbVar2;
   do {
@@ -2665,8 +2744,8 @@ void __cdecl GScr_FindAnimByName(void)
       local_34 = local_34 + 1;
     } while (bVar1 != 0);
     if (local_34 != pbVar3 + 1) {
-      for (local_8 = 1; local_8 <= gScrAnimPub[0].xanim_num[1]; local_8 = local_8 + 1) {
-        local_48 = (byte *)(gScrAnimPub[0].xanim_lookup[1][local_8].anims)->debugName;
+      for (treeIndex = 1; treeIndex <= gScrAnimPub[0].xanim_num[1]; treeIndex = treeIndex + 1) {
+        local_48 = (byte *)(gScrAnimPub[0].xanim_lookup[1][treeIndex].anims)->debugName;
         local_44 = pbVar2;
         do {
           bVar1 = *local_48;
@@ -2686,19 +2765,19 @@ LAB_00644e29:
         local_50 = 0;
 LAB_00644e31:
         if (local_50 == 0) {
-          local_1c = gScrAnimPub[0].xanim_lookup[1][local_8].anims;
+          animTree.anims = gScrAnimPub[0].xanim_lookup[1][treeIndex].anims;
           break;
         }
       }
-      if (local_1c == (XAnim_s *)0x0) {
+      if (animTree.anims == (XAnim_s *)0x0) {
         bVar5 = false;
         pcVar4 = va("Couldn\'t find animtree %s\n");
         Scr_Error(pcVar4,bVar5);
       }
       else {
-        for (local_20 = 1; (uint)local_20 <= local_1c->size - 1; local_20 = local_20 + 1) {
-          if (local_1c->entries[local_20].bCreated != 0) {
-            local_5c = (byte *)local_1c->debugAnimNames[local_20];
+        for (i = 1; (uint)i <= (animTree.anims)->size - 1; i = i + 1) {
+          if ((animTree.anims)->entries[i].bCreated != 0) {
+            local_5c = (byte *)(animTree.anims)->debugAnimNames[i];
             local_58 = pbVar3;
             do {
               bVar1 = *local_5c;
@@ -2718,9 +2797,9 @@ LAB_00644f0d:
             local_64 = 0;
 LAB_00644f15:
             if (local_64 == 0) {
-              local_18.field0_0x0._s_0.tree = local_8;
-              local_18.field0_0x0._s_0.index = local_20;
-              Scr_AddAnim(local_18,SCRIPTINSTANCE_SERVER);
+              retAnim.field0_0x0._s_0.tree = treeIndex;
+              retAnim.field0_0x0._s_0.index = i;
+              Scr_AddAnim(retAnim,SCRIPTINSTANCE_SERVER);
               return;
             }
           }
@@ -2746,14 +2825,15 @@ LAB_00644f15:
 void __cdecl GScr_PrecacheTurret(void)
 
 {
-  char *pcVar1;
+  char *name;
+  char *turretInfo;
   
   if (level.initializing == 0) {
     Scr_Error("precacheTurret must be called before any wait statements in the level script\n",false
              );
   }
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  G_GetWeaponIndexForName(pcVar1);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  G_GetWeaponIndexForName(name);
   return;
 }
 
@@ -2765,15 +2845,16 @@ void __cdecl GScr_PrecacheTurret(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetMoveSpeedScale(scr_entref_t param_1)
+void __cdecl ScrCmd_SetMoveSpeedScale(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   float fVar4;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x8a9,0
                              ,"%s");
@@ -2805,14 +2886,15 @@ void __cdecl ScrCmd_SetMoveSpeedScale(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetMoveSpeedScale(scr_entref_t param_1)
+void __cdecl ScrCmd_GetMoveSpeedScale(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x8b6,0
                              ,"%s");
@@ -2843,85 +2925,91 @@ void __cdecl ScrCmd_GetMoveSpeedScale(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_attach(scr_entref_t param_1)
+void __cdecl ScrCmd_attach(scr_entref_t entref)
 
 {
   char cVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  char *pcVar6;
-  undefined1 uVar7;
+  gentity_s *ent_00;
+  char *pcVar2;
+  uint uVar3;
+  int iVar4;
+  char *error;
+  undefined1 uVar5;
   char *local_34;
   char *local_30;
   int local_28;
   uint local_24;
-  int local_20;
+  int i;
+  uint tagName;
+  char *weaponName;
+  char *modelName;
+  gentity_s *ent;
+  int ignoreCollision;
+  int modelOptions;
   
-  pgVar2 = GetEntity(param_1);
-  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 < 2) {
+  ent_00 = GetEntity(entref);
+  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 < 2) {
     local_24 = (uint)scr_const._;
   }
   else {
     local_24 = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER);
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 < 3) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 < 3) {
     local_28 = 0;
   }
   else {
     local_28 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (3 < uVar4) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (3 < uVar3) {
     Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 < 5) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 < 5) {
     local_30 = "";
   }
   else {
     local_30 = Scr_GetString(4,SCRIPTINSTANCE_SERVER);
   }
-  iVar5 = G_EntDetach(pgVar2,pcVar3,local_24);
-  if (iVar5 != 0) {
-    uVar7 = 0;
+  iVar4 = G_EntDetach(ent_00,pcVar2,local_24);
+  if (iVar4 != 0) {
+    uVar5 = 0;
     SL_ConvertToString(local_24,SCRIPTINSTANCE_SERVER);
-    pcVar6 = va("model \'%s\' already attached to tag \'%s\'");
-    Scr_Error(pcVar6,(bool)uVar7);
+    error = va("model \'%s\' already attached to tag \'%s\'");
+    Scr_Error(error,(bool)uVar5);
   }
-  iVar5 = G_EntAttach(pgVar2,pcVar3,local_24,local_28);
-  if (iVar5 == 0) {
-    uVar7 = 0;
+  iVar4 = G_EntAttach(ent_00,pcVar2,local_24,local_28);
+  if (iVar4 == 0) {
+    uVar5 = 0;
     SL_ConvertToString(local_24,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("failed to attach model \'%s\' to tag \'%s\'");
-    Scr_Error(pcVar3,(bool)uVar7);
+    pcVar2 = va("failed to attach model \'%s\' to tag \'%s\'");
+    Scr_Error(pcVar2,(bool)uVar5);
   }
   local_34 = local_30;
   do {
     cVar1 = *local_34;
     local_34 = local_34 + 1;
   } while (cVar1 != '\0');
-  if ((local_34 == local_30 + 1) || (pgVar2->client == (gclient_s *)0x0)) {
-    (pgVar2->client->ps).stowedWeapon = 0;
+  if ((local_34 == local_30 + 1) || (ent_00->client == (gclient_s *)0x0)) {
+    (ent_00->client->ps).stowedWeapon = 0;
   }
   else {
-    uVar4 = BG_FindWeaponIndexForName(local_30);
-    (pgVar2->client->ps).stowedWeapon = uVar4;
-    (pgVar2->client->ps).stowedWeaponCamo = '\0';
-    for (local_20 = 0; local_20 < 0xf; local_20 = local_20 + 1) {
-      if ((pgVar2->client->ps).heldWeapons[local_20].weapon == (pgVar2->client->ps).stowedWeapon) {
-        (pgVar2->client->ps).stowedWeaponCamo =
-             (byte)(pgVar2->client->ps).heldWeapons[local_20].options.field0_0x0.i & 0x3f;
+    uVar3 = BG_FindWeaponIndexForName(local_30);
+    (ent_00->client->ps).stowedWeapon = uVar3;
+    (ent_00->client->ps).stowedWeaponCamo = '\0';
+    for (i = 0; i < 0xf; i = i + 1) {
+      if ((ent_00->client->ps).heldWeapons[i].weapon == (ent_00->client->ps).stowedWeapon) {
+        (ent_00->client->ps).stowedWeaponCamo =
+             (byte)(ent_00->client->ps).heldWeapons[i].options.field0_0x0.i & 0x3f;
         break;
       }
     }
   }
-  if (pgVar2->client != (gclient_s *)0x0) {
-    *(undefined4 *)(level_bgs.clientinfo + (pgVar2->s).number * 0x5c8 + 0x45c) = 1;
+  if (ent_00->client != (gclient_s *)0x0) {
+    *(undefined4 *)(level_bgs.clientinfo + (ent_00->s).number * 0x5c8 + 0x45c) = 1;
   }
   return;
 }
@@ -2934,43 +3022,46 @@ void __cdecl ScrCmd_attach(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_detach(scr_entref_t param_1)
+void __cdecl ScrCmd_detach(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  char *pcVar2;
-  uint uVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  undefined1 uVar6;
+  gentity_s *ent_00;
+  char *pcVar1;
+  uint uVar2;
+  int iVar3;
+  scriptInstance_t inst;
+  undefined1 force_terminal;
   uint local_18;
-  int local_8;
+  uint tagName;
+  char *modelName;
+  gentity_s *ent;
+  int i;
   
-  pgVar1 = GetEntity(param_1);
-  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar3 < 2) {
+  ent_00 = GetEntity(entref);
+  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar2 < 2) {
     local_18 = (uint)scr_const._;
   }
   else {
     local_18 = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER);
   }
-  iVar4 = G_EntDetach(pgVar1,pcVar2,local_18);
-  if (iVar4 == 0) {
+  iVar3 = G_EntDetach(ent_00,pcVar1,local_18);
+  if (iVar3 == 0) {
     Com_Printf(0x18,"Current attachments:\n");
-    for (local_8 = 0; local_8 < 0x13; local_8 = local_8 + 1) {
-      if ((pgVar1->attachModelNames[local_8] != 0) && (pgVar1->attachTagNames[local_8] != 0)) {
-        SL_ConvertToString((uint)pgVar1->attachTagNames[local_8],SCRIPTINSTANCE_SERVER);
-        sVar5 = SCRIPTINSTANCE_SERVER;
-        uVar3 = G_ModelName((uint)pgVar1->attachModelNames[local_8]);
-        SL_ConvertToString(uVar3,sVar5);
+    for (i = 0; i < 0x13; i = i + 1) {
+      if ((ent_00->attachModelNames[i] != 0) && (ent_00->attachTagNames[i] != 0)) {
+        SL_ConvertToString((uint)ent_00->attachTagNames[i],SCRIPTINSTANCE_SERVER);
+        inst = SCRIPTINSTANCE_SERVER;
+        uVar2 = G_ModelName((uint)ent_00->attachModelNames[i]);
+        SL_ConvertToString(uVar2,inst);
         Com_Printf(0x18,"model: \'%s\', tag: \'%s\'\n");
       }
     }
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString(local_18,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("failed to detach model \'%s\' from tag \'%s\'");
-    Scr_Error(pcVar2,(bool)uVar6);
+    pcVar1 = va("failed to detach model \'%s\' from tag \'%s\'");
+    Scr_Error(pcVar1,(bool)force_terminal);
   }
   return;
 }
@@ -2983,13 +3074,14 @@ void __cdecl ScrCmd_detach(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_detachAll(scr_entref_t param_1)
+void __cdecl ScrCmd_detachAll(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent_00;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  G_EntDetachAll(pgVar1);
+  ent_00 = GetEntity(entref);
+  G_EntDetachAll(ent_00);
   return;
 }
 
@@ -3001,17 +3093,17 @@ void __cdecl ScrCmd_detachAll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAttachSize(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAttachSize(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  int local_8;
+  gentity_s *ent;
+  int i;
   
-  pgVar1 = GetEntity(param_1);
-  for (local_8 = 0; (local_8 < 0x13 && (pgVar1->attachModelNames[local_8] != 0));
-      local_8 = local_8 + 1) {
+  pgVar1 = GetEntity(entref);
+  for (i = 0; (i < 0x13 && (pgVar1->attachModelNames[i] != 0)); i = i + 1) {
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(i,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -3023,21 +3115,23 @@ void __cdecl ScrCmd_GetAttachSize(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAttachModelName(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAttachModelName(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
+  gentity_s *ent;
+  int i;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   uVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((0x12 < uVar2) || (pgVar1->attachModelNames[uVar2] == 0)) {
     Scr_ParamError(0,"bad index",SCRIPTINSTANCE_SERVER);
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   uVar2 = G_ModelName((uint)pgVar1->attachModelNames[uVar2]);
-  Scr_AddConstString(uVar2,sVar3);
+  Scr_AddConstString(uVar2,inst);
   return;
 }
 
@@ -3049,15 +3143,17 @@ void __cdecl ScrCmd_GetAttachModelName(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAttachTagName(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAttachTagName(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   uint uVar4;
+  gentity_s *ent;
+  int i;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   uVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((0x12 < uVar4) || (pgVar3->attachModelNames[uVar4] == 0)) {
     Scr_ParamError(0,"bad index",SCRIPTINSTANCE_SERVER);
@@ -3083,13 +3179,15 @@ void __cdecl ScrCmd_GetAttachTagName(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAttachIgnoreCollision(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAttachIgnoreCollision(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
+  gentity_s *ent;
+  int i;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   uVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((0x12 < uVar2) || (pgVar1->attachModelNames[uVar2] == 0)) {
     Scr_ParamError(0,"bad index",SCRIPTINSTANCE_SERVER);
@@ -3107,13 +3205,13 @@ void __cdecl ScrCmd_GetAttachIgnoreCollision(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_EntityStateSetPartBits(gentity_s *param_1,uint *param_2)
+void __cdecl G_EntityStateSetPartBits(gentity_s *ent,uint *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x953,0
                              ,"%s");
     if (!bVar2) {
@@ -3122,11 +3220,11 @@ void __cdecl G_EntityStateSetPartBits(gentity_s *param_1,uint *param_2)
       return;
     }
   }
-  (param_1->s).partBits[0] = *param_2;
-  (param_1->s).partBits[1] = param_2[1];
-  (param_1->s).partBits[2] = param_2[2];
-  (param_1->s).partBits[3] = param_2[3];
-  (param_1->s).partBits[4] = param_2[4];
+  (ent->s).partBits[0] = *partBits;
+  (ent->s).partBits[1] = partBits[1];
+  (ent->s).partBits[2] = partBits[2];
+  (ent->s).partBits[3] = partBits[3];
+  (ent->s).partBits[4] = partBits[4];
   return;
 }
 
@@ -3138,13 +3236,13 @@ void __cdecl G_EntityStateSetPartBits(gentity_s *param_1,uint *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_EntityStateGetPartBits(gentity_s *param_1,uint *param_2)
+void __cdecl G_EntityStateGetPartBits(gentity_s *ent,uint *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x95a,0
                              ,"%s");
     if (!bVar2) {
@@ -3153,11 +3251,11 @@ void __cdecl G_EntityStateGetPartBits(gentity_s *param_1,uint *param_2)
       return;
     }
   }
-  *param_2 = (param_1->s).partBits[0];
-  param_2[1] = (param_1->s).partBits[1];
-  param_2[2] = (param_1->s).partBits[2];
-  param_2[3] = (param_1->s).partBits[3];
-  param_2[4] = (param_1->s).partBits[4];
+  *partBits = (ent->s).partBits[0];
+  partBits[1] = (ent->s).partBits[1];
+  partBits[2] = (ent->s).partBits[2];
+  partBits[3] = (ent->s).partBits[3];
+  partBits[4] = (ent->s).partBits[4];
   return;
 }
 
@@ -3169,52 +3267,53 @@ void __cdecl G_EntityStateGetPartBits(gentity_s *param_1,uint *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_hidepart(scr_entref_t param_1)
+void __cdecl ScrCmd_hidepart(scr_entref_t entref)
 
 {
+  uint name;
   uint uVar1;
-  uint uVar2;
-  int iVar3;
-  char *pcVar4;
-  undefined1 uVar5;
-  byte local_25;
-  DObj *local_24;
-  char *local_20;
-  gentity_s *local_1c;
-  uint local_18 [5];
+  int iVar2;
+  char *pcVar3;
+  undefined1 uVar4;
+  uint tagName;
+  uchar boneIndex;
+  DObj *obj;
+  char *modelName;
+  gentity_s *ent;
+  uint partBits [5];
   
-  local_1c = GetEntity(param_1);
-  local_24 = Com_GetServerDObj((local_1c->s).number);
-  if (local_24 == (DObj *)0x0) {
+  ent = GetEntity(entref);
+  obj = Com_GetServerDObj((ent->s).number);
+  if (obj == (DObj *)0x0) {
     Scr_Error("entity has no model",false);
   }
-  local_25 = 0xfe;
-  uVar1 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 == 1) {
-    iVar3 = DObjGetBoneIndex(local_24,uVar1,&local_25,-1);
-    if (iVar3 == 0) {
-      uVar5 = 0;
-      SL_ConvertToString(uVar1,SCRIPTINSTANCE_SERVER);
-      pcVar4 = va("cannot find part \'%s\' in entity model");
-      Scr_Error(pcVar4,(bool)uVar5);
+  boneIndex = 0xfe;
+  name = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 == 1) {
+    iVar2 = DObjGetBoneIndex(obj,name,&boneIndex,-1);
+    if (iVar2 == 0) {
+      uVar4 = 0;
+      SL_ConvertToString(name,SCRIPTINSTANCE_SERVER);
+      pcVar3 = va("cannot find part \'%s\' in entity model");
+      Scr_Error(pcVar3,(bool)uVar4);
     }
   }
   else {
-    local_20 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    iVar3 = DObjGetModelBoneIndex(local_24,local_20,uVar1,&local_25);
-    if (iVar3 == 0) {
-      uVar5 = 0;
-      SL_ConvertToString(uVar1,SCRIPTINSTANCE_SERVER);
-      pcVar4 = va("cannot find part \'%s\' in entity model \'%s\'");
-      Scr_Error(pcVar4,(bool)uVar5);
+    modelName = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    iVar2 = DObjGetModelBoneIndex(obj,modelName,name,&boneIndex);
+    if (iVar2 == 0) {
+      uVar4 = 0;
+      SL_ConvertToString(name,SCRIPTINSTANCE_SERVER);
+      pcVar3 = va("cannot find part \'%s\' in entity model \'%s\'");
+      Scr_Error(pcVar3,(bool)uVar4);
     }
   }
-  G_EntityStateGetPartBits(local_1c,local_18);
-  local_18[(int)(uint)local_25 >> 5] =
-       0x80000000U >> (local_25 & 0x1f) | local_18[(int)(uint)local_25 >> 5];
-  DObjSetHidePartBits(local_24,local_18);
-  G_EntityStateSetPartBits(local_1c,local_18);
+  G_EntityStateGetPartBits(ent,partBits);
+  partBits[(int)(uint)boneIndex >> 5] =
+       0x80000000U >> (boneIndex & 0x1f) | partBits[(int)(uint)boneIndex >> 5];
+  DObjSetHidePartBits(obj,partBits);
+  G_EntityStateSetPartBits(ent,partBits);
   return;
 }
 
@@ -3226,52 +3325,53 @@ void __cdecl ScrCmd_hidepart(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_showpart(scr_entref_t param_1)
+void __cdecl ScrCmd_showpart(scr_entref_t entref)
 
 {
+  uint name;
   uint uVar1;
-  uint uVar2;
-  int iVar3;
-  char *pcVar4;
-  undefined1 uVar5;
-  byte local_25;
-  DObj *local_24;
-  char *local_20;
-  gentity_s *local_1c;
-  uint local_18 [5];
+  int iVar2;
+  char *pcVar3;
+  undefined1 uVar4;
+  uint tagName;
+  uchar boneIndex;
+  DObj *obj;
+  char *modelName;
+  gentity_s *ent;
+  uint partBits [5];
   
-  local_1c = GetEntity(param_1);
-  local_24 = Com_GetServerDObj((local_1c->s).number);
-  if (local_24 == (DObj *)0x0) {
+  ent = GetEntity(entref);
+  obj = Com_GetServerDObj((ent->s).number);
+  if (obj == (DObj *)0x0) {
     Scr_Error("entity has no model",false);
   }
-  local_25 = 0xfe;
-  uVar1 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 == 1) {
-    iVar3 = DObjGetBoneIndex(local_24,uVar1,&local_25,-1);
-    if (iVar3 == 0) {
-      uVar5 = 0;
-      SL_ConvertToString(uVar1,SCRIPTINSTANCE_SERVER);
-      pcVar4 = va("cannot find part \'%s\' in entity model");
-      Scr_Error(pcVar4,(bool)uVar5);
+  boneIndex = 0xfe;
+  name = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 == 1) {
+    iVar2 = DObjGetBoneIndex(obj,name,&boneIndex,-1);
+    if (iVar2 == 0) {
+      uVar4 = 0;
+      SL_ConvertToString(name,SCRIPTINSTANCE_SERVER);
+      pcVar3 = va("cannot find part \'%s\' in entity model");
+      Scr_Error(pcVar3,(bool)uVar4);
     }
   }
   else {
-    local_20 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    iVar3 = DObjGetModelBoneIndex(local_24,local_20,uVar1,&local_25);
-    if (iVar3 == 0) {
-      uVar5 = 0;
-      SL_ConvertToString(uVar1,SCRIPTINSTANCE_SERVER);
-      pcVar4 = va("cannot find part \'%s\' in entity model \'%s\'");
-      Scr_Error(pcVar4,(bool)uVar5);
+    modelName = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    iVar2 = DObjGetModelBoneIndex(obj,modelName,name,&boneIndex);
+    if (iVar2 == 0) {
+      uVar4 = 0;
+      SL_ConvertToString(name,SCRIPTINSTANCE_SERVER);
+      pcVar3 = va("cannot find part \'%s\' in entity model \'%s\'");
+      Scr_Error(pcVar3,(bool)uVar4);
     }
   }
-  G_EntityStateGetPartBits(local_1c,local_18);
-  local_18[(int)(uint)local_25 >> 5] =
-       ~(0x80000000U >> (local_25 & 0x1f)) & local_18[(int)(uint)local_25 >> 5];
-  DObjSetHidePartBits(local_24,local_18);
-  G_EntityStateSetPartBits(local_1c,local_18);
+  G_EntityStateGetPartBits(ent,partBits);
+  partBits[(int)(uint)boneIndex >> 5] =
+       ~(0x80000000U >> (boneIndex & 0x1f)) & partBits[(int)(uint)boneIndex >> 5];
+  DObjSetHidePartBits(obj,partBits);
+  G_EntityStateSetPartBits(ent,partBits);
   return;
 }
 
@@ -3283,25 +3383,27 @@ void __cdecl ScrCmd_showpart(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_showallparts(scr_entref_t param_1)
+void __cdecl ScrCmd_showallparts(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  DObj *pDVar2;
-  uint local_18 [5];
+  gentity_s *ent_00;
+  DObj *obj_00;
+  DObj *obj;
+  gentity_s *ent;
+  uint partBits [5];
   
-  pgVar1 = GetEntity(param_1);
-  pDVar2 = Com_GetServerDObj((pgVar1->s).number);
-  if (pDVar2 == (DObj *)0x0) {
+  ent_00 = GetEntity(entref);
+  obj_00 = Com_GetServerDObj((ent_00->s).number);
+  if (obj_00 == (DObj *)0x0) {
     Scr_Error("entity has no model",false);
   }
-  local_18[0] = 0;
-  local_18[1] = 0;
-  local_18[2] = 0;
-  local_18[3] = 0;
-  local_18[4] = 0;
-  DObjSetHidePartBits(pDVar2,local_18);
-  G_EntityStateSetPartBits(pgVar1,local_18);
+  partBits[0] = 0;
+  partBits[1] = 0;
+  partBits[2] = 0;
+  partBits[3] = 0;
+  partBits[4] = 0;
+  DObjSetHidePartBits(obj_00,partBits);
+  G_EntityStateSetPartBits(ent_00,partBits);
   return;
 }
 
@@ -3313,7 +3415,7 @@ void __cdecl ScrCmd_showallparts(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetVisibleToPlayer(scr_entref_t param_1)
+void __cdecl ScrCmd_SetVisibleToPlayer(scr_entref_t entref)
 
 {
   int iVar1;
@@ -3322,8 +3424,11 @@ void __cdecl ScrCmd_SetVisibleToPlayer(scr_entref_t param_1)
   gentity_s *pgVar4;
   gentity_s *pgVar5;
   int iVar6;
+  gentity_s *ent;
+  int clientNum;
+  gentity_s *player;
   
-  pgVar4 = GetEntity(param_1);
+  pgVar4 = GetEntity(entref);
   pgVar5 = Scr_GetEntity(0);
   if (pgVar5->client == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x9c0,0
@@ -3348,7 +3453,7 @@ void __cdecl ScrCmd_SetVisibleToPlayer(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetInvisibleToPlayer(scr_entref_t param_1)
+void __cdecl ScrCmd_SetInvisibleToPlayer(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -3358,10 +3463,13 @@ void __cdecl ScrCmd_SetInvisibleToPlayer(scr_entref_t param_1)
   gentity_s *pgVar5;
   uint uVar6;
   int iVar7;
-  int local_14;
+  int invisible;
+  gentity_s *ent;
+  int clientNum;
+  gentity_s *player;
   
-  local_14 = 1;
-  pgVar4 = GetEntity(param_1);
+  invisible = 1;
+  pgVar4 = GetEntity(entref);
   pgVar5 = Scr_GetEntity(0);
   if (pgVar5->client == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x9d0,0
@@ -3375,11 +3483,11 @@ void __cdecl ScrCmd_SetInvisibleToPlayer(scr_entref_t param_1)
   iVar7 = (pgVar5->s).number;
   uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (1 < uVar6) {
-    local_14 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    invisible = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   }
   bVar2 = (byte)iVar7;
   iVar7 = iVar7 >> 5;
-  if (local_14 == 0) {
+  if (invisible == 0) {
     (pgVar4->r).clientMask[iVar7] = ~(1 << (bVar2 & 0x1f)) & (pgVar4->r).clientMask[iVar7];
   }
   else {
@@ -3396,12 +3504,13 @@ void __cdecl ScrCmd_SetInvisibleToPlayer(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetVisibleToAll(scr_entref_t param_1)
+void __cdecl ScrCmd_SetVisibleToAll(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->r).clientMask[0] = 0;
   return;
 }
@@ -3414,12 +3523,13 @@ void __cdecl ScrCmd_SetVisibleToAll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetForceNoCull(scr_entref_t param_1)
+void __cdecl ScrCmd_SetForceNoCull(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->s).lerp.eFlags2 = (pgVar1->s).lerp.eFlags2 | 0x4000000;
   return;
 }
@@ -3432,12 +3542,13 @@ void __cdecl ScrCmd_SetForceNoCull(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetInvisibleToAll(scr_entref_t param_1)
+void __cdecl ScrCmd_SetInvisibleToAll(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->r).clientMask[0] = -1;
   return;
 }
@@ -3450,42 +3561,44 @@ void __cdecl ScrCmd_SetInvisibleToAll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetVisibleToTeam(scr_entref_t param_1)
+void __cdecl ScrCmd_SetVisibleToTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   uint uVar4;
-  char *pcVar5;
-  undefined1 uVar6;
-  team_t local_18;
-  int local_10;
-  gentity_s *local_8;
+  char *error;
+  undefined1 force_terminal;
+  int teamNum;
+  ushort team;
+  int entIndex;
+  gentity_s *ent;
+  gentity_s *clientEnt;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   uVar4 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if (((uVar4 & 0xffff) != (uint)scr_const.allies) && ((uVar4 & 0xffff) != (uint)scr_const.axis)) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar4 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("Illegal team string \'%s\'. Must be allies, or axis.");
-    Scr_Error(pcVar5,(bool)uVar6);
+    error = va("Illegal team string \'%s\'. Must be allies, or axis.");
+    Scr_Error(error,(bool)force_terminal);
   }
   if ((ushort)uVar4 == scr_const.allies) {
-    local_18 = TEAM_ALLIES;
+    teamNum = 2;
   }
   else {
-    local_18 = TEAM_AXIS;
+    teamNum = 1;
   }
   (pgVar3->r).clientMask[0] = -1;
-  local_8 = g_entities;
-  local_10 = 0;
+  clientEnt = g_entities;
+  entIndex = 0;
   do {
-    if ((com_maxclients->current).integer <= local_10) {
+    if ((com_maxclients->current).integer <= entIndex) {
       return;
     }
-    if ((local_8->r).inuse != '\0') {
-      if (local_8->client == (gclient_s *)0x0) {
+    if ((clientEnt->r).inuse != '\0') {
+      if (clientEnt->client == (gclient_s *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0xa3d,0,"%s");
         if (!bVar2) {
@@ -3494,14 +3607,14 @@ void __cdecl ScrCmd_SetVisibleToTeam(scr_entref_t param_1)
           return;
         }
       }
-      if ((local_8->client->sess).cs.team == local_18) {
-        (pgVar3->r).clientMask[(local_8->s).number >> 5] =
-             ~(1 << ((byte)(local_8->s).number & 0x1f)) &
-             (pgVar3->r).clientMask[(local_8->s).number >> 5];
+      if ((clientEnt->client->sess).cs.team == teamNum) {
+        (pgVar3->r).clientMask[(clientEnt->s).number >> 5] =
+             ~(1 << ((byte)(clientEnt->s).number & 0x1f)) &
+             (pgVar3->r).clientMask[(clientEnt->s).number >> 5];
       }
     }
-    local_10 = local_10 + 1;
-    local_8 = local_8 + 1;
+    entIndex = entIndex + 1;
+    clientEnt = clientEnt + 1;
   } while( true );
 }
 
@@ -3513,28 +3626,30 @@ void __cdecl ScrCmd_SetVisibleToTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_IsLinkedTo(scr_entref_t param_1)
+void __cdecl ScrCmd_IsLinkedTo(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  int iVar2;
-  gentity_s *pgVar3;
-  scriptInstance_t sVar4;
+  gentity_s *ent_00;
+  int iVar1;
+  gentity_s *parent_00;
+  scriptInstance_t inst;
+  gentity_s *parent;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  iVar2 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  if ((iVar2 != 1) || (iVar2 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar2 != 0x13)) {
+  ent_00 = GetEntity(entref);
+  iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+  if ((iVar1 != 1) || (iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar1 != 0x13)) {
     Scr_ParamError(0,"not an entity",SCRIPTINSTANCE_SERVER);
   }
-  if ((pgVar1->flags & 0x1000U) != 0) {
-    pgVar3 = Scr_GetEntity(0);
-    iVar2 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-    if ((iVar2 != 1) || (iVar2 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar2 != 0x13)) {
+  if ((ent_00->flags & 0x1000U) != 0) {
+    parent_00 = Scr_GetEntity(0);
+    iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+    if ((iVar1 != 1) || (iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar1 != 0x13)) {
       Scr_ParamError(0,"not an entity",SCRIPTINSTANCE_SERVER);
     }
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    iVar2 = G_EntIsLinkedTo(pgVar1,pgVar3);
-    Scr_AddInt(iVar2,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    iVar1 = G_EntIsLinkedTo(ent_00,parent_00);
+    Scr_AddInt(iVar1,inst);
     return;
   }
   Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
@@ -3549,7 +3664,7 @@ void __cdecl ScrCmd_IsLinkedTo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_LinkTo(scr_entref_t param_1)
+void __cdecl ScrCmd_LinkTo(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -3559,66 +3674,66 @@ void __cdecl ScrCmd_LinkTo(scr_entref_t param_1)
   uint uVar5;
   scriptInstance_t sVar6;
   undefined1 uVar7;
-  uint local_2c;
-  float local_28 [3];
-  float local_1c [3];
-  uint local_10;
-  gentity_s *local_c;
-  gentity_s *local_8;
+  uint tagName;
+  float originOffset [3];
+  float anglesOffset [3];
+  int numParam;
+  gentity_s *parent;
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
+  ent = GetEntity(entref);
   iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if ((iVar3 != 1) || (iVar3 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar3 != 0x13)) {
     Scr_ParamError(0,"not an entity",SCRIPTINSTANCE_SERVER);
   }
-  if ((local_8->flags & 0x1000U) == 0) {
+  if ((ent->flags & 0x1000U) == 0) {
     sVar6 = SCRIPTINSTANCE_SERVER;
-    SL_ConvertToString((uint)local_8->classname,SCRIPTINSTANCE_SERVER);
+    SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
     pcVar4 = va("entity (classname: \'%s\') does not currently support linkTo");
     Scr_ObjectError(pcVar4,sVar6);
   }
-  local_c = Scr_GetEntity(0);
-  local_10 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  local_2c = 0;
-  if ((1 < (int)local_10) &&
-     (local_2c = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER), local_2c == scr_const._)) {
-    local_2c = 0;
+  parent = Scr_GetEntity(0);
+  numParam = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  tagName = 0;
+  if ((1 < numParam) &&
+     (tagName = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER), tagName == scr_const._)) {
+    tagName = 0;
   }
-  if ((int)local_10 < 3) {
-    iVar3 = G_EntLinkTo(local_8,local_c,local_2c);
+  if (numParam < 3) {
+    iVar3 = G_EntLinkTo(ent,parent,tagName);
   }
   else {
-    Scr_GetVector(2,local_28,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(3,local_1c,SCRIPTINSTANCE_SERVER);
-    iVar3 = G_EntLinkToWithOffset(local_8,local_c,local_2c,local_28,local_1c);
+    Scr_GetVector(2,originOffset,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(3,anglesOffset,SCRIPTINSTANCE_SERVER);
+    iVar3 = G_EntLinkToWithOffset(ent,parent,tagName,originOffset,anglesOffset);
   }
   if (iVar3 == 0) {
-    iVar3 = SV_DObjExists(local_c);
+    iVar3 = SV_DObjExists(parent);
     if (iVar3 == 0) {
-      if (local_c->model == 0) {
+      if (parent->model == 0) {
         Scr_Error("failed to link entity since parent has no model",false);
       }
       uVar7 = 0;
       sVar6 = SCRIPTINSTANCE_SERVER;
-      uVar5 = G_ModelName((uint)local_c->model);
+      uVar5 = G_ModelName((uint)parent->model);
       SL_ConvertToString(uVar5,sVar6);
       pcVar4 = va("failed to link entity since parent model \'%s\' is invalid");
       Scr_Error(pcVar4,(bool)uVar7);
     }
-    if ((local_c->model == 0) &&
+    if ((parent->model == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0xa98,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((local_2c != 0) && (iVar3 = SV_DObjGetBoneIndex(local_c,local_2c), iVar3 < 0)) {
-      SV_DObjDumpInfo(local_c);
+    if ((tagName != 0) && (iVar3 = SV_DObjGetBoneIndex(parent,tagName), iVar3 < 0)) {
+      SV_DObjDumpInfo(parent);
       uVar7 = 0;
       sVar6 = SCRIPTINSTANCE_SERVER;
-      uVar5 = G_ModelName((uint)local_c->model);
+      uVar5 = G_ModelName((uint)parent->model);
       SL_ConvertToString(uVar5,sVar6);
-      SL_ConvertToString(local_2c,SCRIPTINSTANCE_SERVER);
+      SL_ConvertToString(tagName,SCRIPTINSTANCE_SERVER);
       pcVar4 = va("failed to link entity since tag \'%s\' does not exist in parent model \'%s\'");
       Scr_Error(pcVar4,(bool)uVar7);
     }
@@ -3635,7 +3750,7 @@ void __cdecl ScrCmd_LinkTo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
+void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
@@ -3655,45 +3770,45 @@ void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
   float local_68;
   float local_64;
   float local_60;
-  uint local_5c;
-  float local_58 [3];
-  float local_4c [3];
-  uint local_40;
-  gentity_s *local_3c;
-  float local_38 [12];
-  gentity_s *local_8;
+  uint tagName;
+  float originOffset [3];
+  float anglesOffset [3];
+  int numParam;
+  gentity_s *parent;
+  float parentAxis [12];
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
+  ent = GetEntity(entref);
   iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if ((iVar4 != 1) || (iVar4 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar4 != 0x13)) {
     Scr_ParamError(0,"not an entity",SCRIPTINSTANCE_SERVER);
   }
-  if (local_8->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     Scr_ObjectError("not a player entity",SCRIPTINSTANCE_SERVER);
   }
-  if (((local_8->flags & 0x1000U) == 0) &&
+  if (((ent->flags & 0x1000U) == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xab5
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_3c = Scr_GetEntity(0);
-  local_40 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  local_5c = 0;
-  if (((1 < (int)local_40) && (iVar4 = Scr_GetType(1,SCRIPTINSTANCE_SERVER), iVar4 != 0)) &&
-     (local_5c = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER), local_5c == scr_const._)) {
-    local_5c = 0;
+  parent = Scr_GetEntity(0);
+  numParam = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  tagName = 0;
+  if (((1 < numParam) && (iVar4 = Scr_GetType(1,SCRIPTINSTANCE_SERVER), iVar4 != 0)) &&
+     (tagName = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER), tagName == scr_const._)) {
+    tagName = 0;
   }
-  if ((int)local_40 < 3) {
+  if (numParam < 3) {
     local_84 = 0.0;
   }
   else {
     local_84 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   }
-  local_8->client->linkAnglesFrac = local_84;
-  local_8->client->linkAnglesLocked = false;
-  if ((int)local_40 < 4) {
+  ent->client->linkAnglesFrac = local_84;
+  ent->client->linkAnglesLocked = false;
+  if (numParam < 4) {
     local_64 = 180.0;
   }
   else {
@@ -3711,8 +3826,8 @@ void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
   else {
     local_88 = 0.0;
   }
-  local_8->client->linkAnglesMinClamp[1] = -local_88;
-  if ((int)local_40 < 5) {
+  ent->client->linkAnglesMinClamp[1] = -local_88;
+  if (numParam < 5) {
     local_6c = 180.0;
   }
   else {
@@ -3730,8 +3845,8 @@ void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
   else {
     local_8c = 0.0;
   }
-  local_8->client->linkAnglesMaxClamp[1] = local_8c;
-  if ((int)local_40 < 6) {
+  ent->client->linkAnglesMaxClamp[1] = local_8c;
+  if (numParam < 6) {
     local_74 = 180.0;
   }
   else {
@@ -3749,8 +3864,8 @@ void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
   else {
     local_90 = 0.0;
   }
-  local_8->client->linkAnglesMinClamp[0] = -local_90;
-  if ((int)local_40 < 7) {
+  ent->client->linkAnglesMinClamp[0] = -local_90;
+  if (numParam < 7) {
     local_7c = 180.0;
   }
   else {
@@ -3768,41 +3883,41 @@ void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
   else {
     local_94 = 0.0;
   }
-  local_8->client->linkAnglesMaxClamp[0] = local_94;
-  G_UpdateViewAngleClamp(local_8->client,(local_3c->r).currentAngles);
-  if (((int)local_40 < 8) || (iVar4 = Scr_GetInt(7,SCRIPTINSTANCE_SERVER), iVar4 == 0)) {
-    (local_8->client->ps).linkFlags = (local_8->client->ps).linkFlags & 0xfffffffd;
+  ent->client->linkAnglesMaxClamp[0] = local_94;
+  G_UpdateViewAngleClamp(ent->client,(parent->r).currentAngles);
+  if ((numParam < 8) || (iVar4 = Scr_GetInt(7,SCRIPTINSTANCE_SERVER), iVar4 == 0)) {
+    (ent->client->ps).linkFlags = (ent->client->ps).linkFlags & 0xfffffffd;
   }
   else {
-    (local_8->client->ps).linkFlags = (local_8->client->ps).linkFlags | 2;
+    (ent->client->ps).linkFlags = (ent->client->ps).linkFlags | 2;
   }
-  local_8->client->prevLinkAnglesSet = false;
-  (local_3c->r).svFlags = (local_3c->r).svFlags & 0xfe;
-  if ((int)local_40 < 9) {
-    iVar4 = G_EntLinkTo(local_8,local_3c,local_5c);
+  ent->client->prevLinkAnglesSet = false;
+  (parent->r).svFlags = (parent->r).svFlags & 0xfe;
+  if (numParam < 9) {
+    iVar4 = G_EntLinkTo(ent,parent,tagName);
     if (iVar4 == 0) {
       Scr_Error("failed to link entity",false);
       return;
     }
   }
   else {
-    Scr_GetVector(8,local_58,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(9,local_4c,SCRIPTINSTANCE_SERVER);
-    iVar4 = G_EntLinkToWithOffset(local_8,local_3c,local_5c,local_58,local_4c);
+    Scr_GetVector(8,originOffset,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(9,anglesOffset,SCRIPTINSTANCE_SERVER);
+    iVar4 = G_EntLinkToWithOffset(ent,parent,tagName,originOffset,anglesOffset);
     if (iVar4 == 0) {
       Scr_Error("failed to link entity",false);
       return;
     }
   }
-  if (((local_8->client->ps).linkFlags & 2U) == 0) {
-    pgVar1 = local_8->client;
+  if (((ent->client->ps).linkFlags & 2U) == 0) {
+    pgVar1 = ent->client;
     (pgVar1->ps).linkAngles[0] = 0.0;
     (pgVar1->ps).linkAngles[1] = 0.0;
     (pgVar1->ps).linkAngles[2] = 0.0;
   }
   else {
-    G_CalcTagParentAxis(local_8,(float (*) [3])local_38);
-    AxisToAngles((float (*) [3])local_38,(local_8->client->ps).linkAngles);
+    G_CalcTagParentAxis(ent,(float (*) [3])parentAxis);
+    AxisToAngles((float (*) [3])parentAxis,(ent->client->ps).linkAngles);
   }
   return;
 }
@@ -3815,17 +3930,18 @@ void __cdecl ScrCmd_PlayerLinkToDelta(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_Unlink(scr_entref_t param_1)
+void __cdecl ScrCmd_Unlink(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent_00;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  if ((pgVar1->client == (gclient_s *)0x0) || (((pgVar1->client->ps).eFlags & 0x4000U) == 0)) {
-    G_EntUnlink(pgVar1);
+  ent_00 = GetEntity(entref);
+  if ((ent_00->client == (gclient_s *)0x0) || (((ent_00->client->ps).eFlags & 0x4000U) == 0)) {
+    G_EntUnlink(ent_00);
   }
   else {
-    VEH_UnlinkPlayer(pgVar1,false,"ScrCmd_Unlink");
+    VEH_UnlinkPlayer(ent_00,false,"ScrCmd_Unlink");
   }
   return;
 }
@@ -3838,24 +3954,25 @@ void __cdecl ScrCmd_Unlink(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_EnableLinkTo(scr_entref_t param_1)
+void __cdecl ScrCmd_EnableLinkTo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if ((pgVar3->flags & 0x1000U) != 0) {
     Scr_ObjectError("entity already has linkTo enabled",SCRIPTINSTANCE_SERVER);
   }
   if (((pgVar3->s).eType != 0) || (pgVar3->physicsObject != '\0')) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity (classname: \'%s\') does not currently support enableLinkTo");
-    Scr_ObjectError(pcVar4,sVar5);
+    error = va("entity (classname: \'%s\') does not currently support enableLinkTo");
+    Scr_ObjectError(error,inst);
   }
   if (pgVar3->client != (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xb10,0
@@ -3878,19 +3995,19 @@ void __cdecl ScrCmd_EnableLinkTo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetOrigin(scr_entref_t param_1)
+void __cdecl ScrCmd_GetOrigin(scr_entref_t entref)
 
 {
-  float local_14;
+  float origin;
   float local_10;
   float local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  local_14 = (local_8->r).currentOrigin[0];
-  local_10 = (local_8->r).currentOrigin[1];
-  local_c = (local_8->r).currentOrigin[2];
-  Scr_AddVector(&local_14,SCRIPTINSTANCE_SERVER);
+  ent = GetEntity(entref);
+  origin = (ent->r).currentOrigin[0];
+  local_10 = (ent->r).currentOrigin[1];
+  local_c = (ent->r).currentOrigin[2];
+  Scr_AddVector(&origin,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -3902,12 +4019,13 @@ void __cdecl ScrCmd_GetOrigin(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAngles(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAngles(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *pSelf;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddVector((pgVar1->r).currentAngles,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -3920,12 +4038,13 @@ void __cdecl ScrCmd_GetAngles(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetMins(scr_entref_t param_1)
+void __cdecl ScrCmd_GetMins(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddVector((pgVar1->r).mins,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -3938,12 +4057,13 @@ void __cdecl ScrCmd_GetMins(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetMaxs(scr_entref_t param_1)
+void __cdecl ScrCmd_GetMaxs(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddVector((pgVar1->r).maxs,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -3956,12 +4076,13 @@ void __cdecl ScrCmd_GetMaxs(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAbsMins(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAbsMins(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddVector((pgVar1->r).absmin,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -3974,12 +4095,13 @@ void __cdecl ScrCmd_GetAbsMins(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetAbsMaxs(scr_entref_t param_1)
+void __cdecl ScrCmd_GetAbsMaxs(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddVector((pgVar1->r).absmax,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -3992,46 +4114,50 @@ void __cdecl ScrCmd_GetAbsMaxs(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetPointInBounds(scr_entref_t param_1)
+void __cdecl ScrCmd_GetPointInBounds(scr_entref_t entref)
 
 {
-  float fVar1;
-  float fVar2;
-  float local_18 [3];
-  gentity_s *local_c;
-  float local_8;
+  float ratioFromCenterX;
+  float ratioFromCenterZ;
+  float ratioX;
+  float ratioZ;
+  float result [3];
+  gentity_s *ent;
+  float ratioY;
   
-  local_c = GetEntity(param_1);
-  fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  fVar2 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  G_GetEntityBoundsPoint(local_c,fVar1,local_8,fVar2,local_18);
-  Scr_AddVector(local_18,SCRIPTINSTANCE_SERVER);
+  ent = GetEntity(entref);
+  ratioFromCenterX = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  ratioY = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  ratioFromCenterZ = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  G_GetEntityBoundsPoint(ent,ratioFromCenterX,ratioY,ratioFromCenterZ,result);
+  Scr_AddVector(result,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00646BA0  ScrCmd_GetEye  (game_mp/g_scr_main_mp.cpp:2931)
 
+/* WARNING: Variable defined which should be unmapped: ent */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetEye(scr_entref_t param_1)
+void __cdecl ScrCmd_GetEye(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  undefined1 uVar3;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   float *in_stack_fffffff0;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->sentient == (sentient_s *)0x0) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("getEye must be called on an AI or player, not on a \'%s\'");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("getEye must be called on an AI or player, not on a \'%s\'");
+    Scr_Error(error,(bool)force_terminal);
   }
   Sentient_GetEyePosition((sentient_s *)pgVar1,in_stack_fffffff0);
   Scr_AddVector((float *)&stack0xfffffff0,SCRIPTINSTANCE_SERVER);
@@ -4046,19 +4172,20 @@ void __cdecl ScrCmd_GetEye(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetEyeApprox(scr_entref_t param_1)
+void __cdecl ScrCmd_GetEyeApprox(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  float local_10;
+  gentity_s *ent;
+  float eye;
   float local_c;
   float local_8;
   
-  pgVar1 = GetEntity(param_1);
-  local_10 = (pgVar1->r).currentOrigin[0];
+  pgVar1 = GetEntity(entref);
+  eye = (pgVar1->r).currentOrigin[0];
   local_c = (pgVar1->r).currentOrigin[1];
   local_8 = (pgVar1->r).currentOrigin[2] + 40.0;
-  Scr_AddVector(&local_10,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(&eye,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -4070,18 +4197,20 @@ void __cdecl ScrCmd_GetEyeApprox(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_UseBy(scr_entref_t param_1)
+void __cdecl ScrCmd_UseBy(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  gentity_s *pgVar2;
+  gentity_s *ent;
+  gentity_s *ent_00;
+  gentity_s *pOther;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
-  pgVar2 = Scr_GetEntity(0);
-  Scr_AddEntity(pgVar2,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(pgVar1,scr_const.trigger,1);
-  if (*(code **)(&DAT_00e07ce0 + (uint)pgVar1->handler * 0x30) != (code *)0x0) {
-    (**(code **)(&DAT_00e07ce0 + (uint)pgVar1->handler * 0x30))(pgVar1,(short)pgVar2,(char)pgVar2);
+  ent = GetEntity(entref);
+  ent_00 = Scr_GetEntity(0);
+  Scr_AddEntity(ent_00,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(ent,scr_const.trigger,1);
+  if (*(code **)(&DAT_00e07ce0 + (uint)ent->handler * 0x30) != (code *)0x0) {
+    (**(code **)(&DAT_00e07ce0 + (uint)ent->handler * 0x30))(ent,(short)ent_00,(char)ent_00);
   }
   return;
 }
@@ -4094,50 +4223,52 @@ void __cdecl ScrCmd_UseBy(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_IsTouching(scr_entref_t param_1)
+void __cdecl ScrCmd_IsTouching(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  DWORD DVar4;
-  gentity_s *local_3c;
-  float local_38;
+  gentity_s *pgVar3;
+  uint uVar4;
+  int value;
+  DWORD DVar5;
+  gentity_s *pOther;
+  float vMins;
   float local_34;
   float local_30;
-  gentity_s *local_28;
-  int local_24;
-  gentity_s *local_20;
-  float local_1c;
+  PIXProfile pp;
+  gentity_s *pEnt;
+  int bTouching;
+  gentity_s *pTemp;
+  float vMaxs;
   float local_18;
   float local_14;
-  float local_10;
+  float extraBoundary;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"ScrCmd_IsTouching");
-  local_24 = 0;
-  local_28 = GetEntity(param_1);
-  if (((local_28->r).bmodel == '\0') && (((local_28->r).svFlags & 0x60) == 0)) {
-    local_3c = Scr_GetEntity(0);
+  pgVar3 = GetEntity(entref);
+  if (((pgVar3->r).bmodel == '\0') && (((pgVar3->r).svFlags & 0x60) == 0)) {
+    pOther = Scr_GetEntity(0);
+    pEnt = pgVar3;
   }
   else {
-    local_20 = local_28;
-    local_28 = Scr_GetEntity(0);
-    if (((local_28->r).bmodel != '\0') || (((local_28->r).svFlags & 0x60) != 0)) {
+    pEnt = Scr_GetEntity(0);
+    pOther = pgVar3;
+    if (((pEnt->r).bmodel != '\0') || (((pEnt->r).svFlags & 0x60) != 0)) {
       Scr_Error("istouching cannot be called on 2 brush/cylinder entities",false);
     }
-    local_3c = local_20;
   }
-  if ((local_28 == (gentity_s *)0x0) &&
+  if ((pEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbbb
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_28->r).maxs[0] < (local_28->r).mins[0]) {
-    SL_ConvertToString((uint)local_28->classname,SCRIPTINSTANCE_SERVER);
+  if ((pEnt->r).maxs[0] < (pEnt->r).mins[0]) {
+    SL_ConvertToString((uint)pEnt->classname,SCRIPTINSTANCE_SERVER);
     va("entnum: %d, origin: %g %g %g, classname: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbbc,0
                              ,"%s\n\t%s");
@@ -4147,8 +4278,8 @@ void __cdecl ScrCmd_IsTouching(scr_entref_t param_1)
       return;
     }
   }
-  if ((local_28->r).maxs[1] < (local_28->r).mins[1]) {
-    SL_ConvertToString((uint)local_28->classname,SCRIPTINSTANCE_SERVER);
+  if ((pEnt->r).maxs[1] < (pEnt->r).mins[1]) {
+    SL_ConvertToString((uint)pEnt->classname,SCRIPTINSTANCE_SERVER);
     va("entnum: %d, origin: %g %g %g, classname: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbbd,0
                              ,"%s\n\t%s");
@@ -4158,8 +4289,8 @@ void __cdecl ScrCmd_IsTouching(scr_entref_t param_1)
       return;
     }
   }
-  if ((local_28->r).maxs[2] < (local_28->r).mins[2]) {
-    SL_ConvertToString((uint)local_28->classname,SCRIPTINSTANCE_SERVER);
+  if ((pEnt->r).maxs[2] < (pEnt->r).mins[2]) {
+    SL_ConvertToString((uint)pEnt->classname,SCRIPTINSTANCE_SERVER);
     va("entnum: %d, origin: %g %g %g, classname: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbbe,0
                              ,"%s\n\t%s");
@@ -4169,30 +4300,30 @@ void __cdecl ScrCmd_IsTouching(scr_entref_t param_1)
       return;
     }
   }
-  local_38 = (local_28->r).currentOrigin[0] + (local_28->r).mins[0];
-  local_34 = (local_28->r).currentOrigin[1] + (local_28->r).mins[1];
-  local_30 = (local_28->r).currentOrigin[2] + (local_28->r).mins[2];
-  local_1c = (local_28->r).currentOrigin[0] + (local_28->r).maxs[0];
-  local_18 = (local_28->r).currentOrigin[1] + (local_28->r).maxs[1];
-  local_14 = (local_28->r).currentOrigin[2] + (local_28->r).maxs[2];
-  local_10 = 0.0;
+  vMins = (pEnt->r).currentOrigin[0] + (pEnt->r).mins[0];
+  local_34 = (pEnt->r).currentOrigin[1] + (pEnt->r).mins[1];
+  local_30 = (pEnt->r).currentOrigin[2] + (pEnt->r).mins[2];
+  vMaxs = (pEnt->r).currentOrigin[0] + (pEnt->r).maxs[0];
+  local_18 = (pEnt->r).currentOrigin[1] + (pEnt->r).maxs[1];
+  local_14 = (pEnt->r).currentOrigin[2] + (pEnt->r).maxs[2];
+  extraBoundary = 0.0;
   local_c = 0.0;
   local_8 = 0.0;
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (1 < uVar3) {
-    Scr_GetVector(1,&local_10,SCRIPTINSTANCE_SERVER);
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (1 < uVar4) {
+    Scr_GetVector(1,&extraBoundary,SCRIPTINSTANCE_SERVER);
   }
-  local_38 = local_38 - local_10;
+  vMins = vMins - extraBoundary;
   local_34 = local_34 - local_c;
   local_30 = local_30 - local_8;
-  local_1c = local_1c + local_10;
+  vMaxs = vMaxs + extraBoundary;
   local_18 = local_18 + local_c;
   local_14 = local_14 + local_8;
-  ExpandBoundsToWidth(&local_38,&local_1c);
-  local_24 = SV_EntityContact(&local_38,&local_1c,local_3c);
-  Scr_AddInt(local_24,SCRIPTINSTANCE_SERVER);
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  ExpandBoundsToWidth(&vMins,&vMaxs);
+  value = SV_EntityContact(&vMins,&vMaxs,pOther);
+  Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
+  DVar5 = GetCurrentThreadId();
+  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -4206,49 +4337,53 @@ void __cdecl ScrCmd_IsTouching(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_IsTouchingSwept(scr_entref_t param_1)
+void __cdecl ScrCmd_IsTouchingSwept(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  DWORD DVar4;
+  gentity_s *pgVar3;
+  uint uVar4;
+  int value;
+  DWORD DVar5;
   float local_58;
   float local_54;
-  gentity_s *local_30;
-  float local_2c;
+  float endZ;
+  float startZ;
+  gentity_s *pOther;
+  float vMins;
   float local_28;
   float local_24;
-  gentity_s *local_1c;
-  int local_18;
-  gentity_s *local_14;
-  float local_10;
+  PIXProfile pp;
+  gentity_s *pEnt;
+  int bTouching;
+  gentity_s *pTemp;
+  float vMaxs;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"ScrCmd_IsTouchingSwept");
-  local_18 = 0;
-  local_1c = GetEntity(param_1);
-  if (((local_1c->r).bmodel == '\0') && (((local_1c->r).svFlags & 0x60) == 0)) {
-    local_30 = Scr_GetEntity(0);
+  pgVar3 = GetEntity(entref);
+  if (((pgVar3->r).bmodel == '\0') && (((pgVar3->r).svFlags & 0x60) == 0)) {
+    pOther = Scr_GetEntity(0);
+    pEnt = pgVar3;
   }
   else {
-    local_14 = local_1c;
-    local_1c = Scr_GetEntity(0);
-    if (((local_1c->r).bmodel != '\0') || (((local_1c->r).svFlags & 0x60) != 0)) {
+    pEnt = Scr_GetEntity(0);
+    pOther = pgVar3;
+    if (((pEnt->r).bmodel != '\0') || (((pEnt->r).svFlags & 0x60) != 0)) {
       Scr_Error("istouchingswept cannot be called on 2 brush/cylinder entities",false);
     }
-    local_30 = local_14;
   }
-  if ((local_1c == (gentity_s *)0x0) &&
+  if ((pEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbe9
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_1c->r).maxs[0] < (local_1c->r).mins[0]) {
-    SL_ConvertToString((uint)local_1c->classname,SCRIPTINSTANCE_SERVER);
+  if ((pEnt->r).maxs[0] < (pEnt->r).mins[0]) {
+    SL_ConvertToString((uint)pEnt->classname,SCRIPTINSTANCE_SERVER);
     va("entnum: %d, origin: %g %g %g, classname: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbea,0
                              ,"%s\n\t%s");
@@ -4258,8 +4393,8 @@ void __cdecl ScrCmd_IsTouchingSwept(scr_entref_t param_1)
       return;
     }
   }
-  if ((local_1c->r).maxs[1] < (local_1c->r).mins[1]) {
-    SL_ConvertToString((uint)local_1c->classname,SCRIPTINSTANCE_SERVER);
+  if ((pEnt->r).maxs[1] < (pEnt->r).mins[1]) {
+    SL_ConvertToString((uint)pEnt->classname,SCRIPTINSTANCE_SERVER);
     va("entnum: %d, origin: %g %g %g, classname: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbeb,0
                              ,"%s\n\t%s");
@@ -4269,8 +4404,8 @@ void __cdecl ScrCmd_IsTouchingSwept(scr_entref_t param_1)
       return;
     }
   }
-  if ((local_1c->r).maxs[2] < (local_1c->r).mins[2]) {
-    SL_ConvertToString((uint)local_1c->classname,SCRIPTINSTANCE_SERVER);
+  if ((pEnt->r).maxs[2] < (pEnt->r).mins[2]) {
+    SL_ConvertToString((uint)pEnt->classname,SCRIPTINSTANCE_SERVER);
     va("entnum: %d, origin: %g %g %g, classname: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xbec,0
                              ,"%s\n\t%s");
@@ -4280,33 +4415,33 @@ void __cdecl ScrCmd_IsTouchingSwept(scr_entref_t param_1)
       return;
     }
   }
-  local_2c = (local_1c->r).currentOrigin[0] + (local_1c->r).mins[0];
-  local_28 = (local_1c->r).currentOrigin[1] + (local_1c->r).mins[1];
-  local_24 = (local_1c->r).currentOrigin[2] + (local_1c->r).mins[2];
-  local_10 = (local_1c->r).currentOrigin[0] + (local_1c->r).maxs[0];
-  local_c = (local_1c->r).currentOrigin[1] + (local_1c->r).maxs[1];
-  local_8 = (local_1c->r).currentOrigin[2] + (local_1c->r).maxs[2];
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (1 < uVar3) {
+  vMins = (pEnt->r).currentOrigin[0] + (pEnt->r).mins[0];
+  local_28 = (pEnt->r).currentOrigin[1] + (pEnt->r).mins[1];
+  local_24 = (pEnt->r).currentOrigin[2] + (pEnt->r).mins[2];
+  vMaxs = (pEnt->r).currentOrigin[0] + (pEnt->r).maxs[0];
+  local_c = (pEnt->r).currentOrigin[1] + (pEnt->r).maxs[1];
+  local_8 = (pEnt->r).currentOrigin[2] + (pEnt->r).maxs[2];
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (1 < uVar4) {
     local_54 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
     if (local_24 - local_54 < 0.0) {
       local_54 = local_24;
     }
     local_24 = local_54;
   }
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (2 < uVar3) {
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (2 < uVar4) {
     local_58 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
     if (local_58 - local_8 < 0.0) {
       local_58 = local_8;
     }
     local_8 = local_58;
   }
-  ExpandBoundsToWidth(&local_2c,&local_10);
-  local_18 = SV_EntityContact(&local_2c,&local_10,local_30);
-  Scr_AddInt(local_18,SCRIPTINSTANCE_SERVER);
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  ExpandBoundsToWidth(&vMins,&vMaxs);
+  value = SV_EntityContact(&vMins,&vMaxs,pOther);
+  Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
+  DVar5 = GetCurrentThreadId();
+  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -4318,14 +4453,15 @@ void __cdecl ScrCmd_IsTouchingSwept(scr_entref_t param_1)
 void __cdecl ScrCmd_SoundExists(void)
 
 {
-  char *pcVar1;
-  snd_alias_list_t *psVar2;
-  scriptInstance_t sVar3;
+  char *name;
+  snd_alias_list_t *psVar1;
+  scriptInstance_t inst;
+  char *soundName;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  psVar2 = SND_FindAlias(pcVar1);
-  Scr_AddBool((uint)(psVar2 != (snd_alias_list_t *)0x0),sVar3);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  inst = SCRIPTINSTANCE_SERVER;
+  psVar1 = SND_FindAlias(name);
+  Scr_AddBool((uint)(psVar1 != (snd_alias_list_t *)0x0),inst);
   return;
 }
 
@@ -4337,14 +4473,16 @@ void __cdecl ScrCmd_SoundExists(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl StartScriptPlayBattleChatterOnEnt(scr_entref_t param_1)
+gentity_s * __cdecl StartScriptPlayBattleChatterOnEnt(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   char *pcVar2;
   uint uVar3;
+  gentity_s *tmp;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   pgVar1 = G_TempEntity((pgVar1->r).currentOrigin,6);
   (pgVar1->r).svFlags = (pgVar1->r).svFlags | 8;
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
@@ -4364,29 +4502,29 @@ gentity_s * __cdecl StartScriptPlayBattleChatterOnEnt(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlaySound(scr_entref_t param_1)
+void __cdecl ScrCmd_PlaySound(scr_entref_t entref)
 
 {
   uint uVar1;
   char *pcVar2;
-  gentity_s *pgVar3;
-  uint uVar4;
-  undefined1 uVar5;
-  uint uVar6;
+  gentity_s *ent;
+  uint notifyString;
+  undefined1 force_terminal;
+  uint bone;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
-    uVar5 = 0;
+    force_terminal = 0;
     Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     pcVar2 = va("playsound has %d parameters.  There should be exactly one.");
-    Scr_Error(pcVar2,(bool)uVar5);
+    Scr_Error(pcVar2,(bool)force_terminal);
   }
-  uVar6 = 0;
-  uVar4 = 0;
+  bone = 0;
+  notifyString = 0;
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   uVar1 = SND_FindAliasId(pcVar2);
-  pgVar3 = GetEntity(param_1);
-  G_PlaySoundAlias(pgVar3,uVar1,uVar4,uVar6);
+  ent = GetEntity(entref);
+  G_PlaySoundAlias(ent,uVar1,notifyString,bone);
   return;
 }
 
@@ -4398,50 +4536,52 @@ void __cdecl ScrCmd_PlaySound(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlaySoundOnTag(scr_entref_t param_1)
+void __cdecl ScrCmd_PlaySoundOnTag(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  uint uVar2;
-  char *pcVar3;
-  int iVar4;
-  uint uVar5;
-  scriptInstance_t sVar6;
-  scriptInstance_t sVar7;
-  uint local_10;
-  uint local_c;
+  gentity_s *ent_00;
+  uint uVar1;
+  char *pcVar2;
+  int iVar3;
+  uint stringValue;
+  scriptInstance_t inst;
+  scriptInstance_t inst_00;
+  uint tag;
+  uint tagIndex;
+  uint sound;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  local_c = 0;
-  local_10 = 0;
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 != 0) {
-    pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_c = SND_FindAliasId(pcVar3);
+  ent_00 = GetEntity(entref);
+  sound = 0;
+  tagIndex = 0;
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 != 0) {
+    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    sound = SND_FindAliasId(pcVar2);
   }
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (1 < uVar2) {
-    uVar2 = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER);
-    if (uVar2 != scr_const.tag_origin) {
-      iVar4 = SV_DObjGetBoneIndex(pgVar1,uVar2);
-      if (iVar4 < 0) {
-        SV_DObjDumpInfo(pgVar1);
-        sVar7 = SCRIPTINSTANCE_SERVER;
-        sVar6 = SCRIPTINSTANCE_SERVER;
-        uVar5 = G_ModelName((uint)pgVar1->model);
-        SL_ConvertToString(uVar5,sVar6);
-        SL_ConvertToString(uVar2,SCRIPTINSTANCE_SERVER);
-        pcVar3 = va("tag \'%s\' does not exist on entity with model \'%s\'");
-        Scr_ParamError(1,pcVar3,sVar7);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (1 < uVar1) {
+    uVar1 = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER);
+    if (uVar1 != scr_const.tag_origin) {
+      iVar3 = SV_DObjGetBoneIndex(ent_00,uVar1);
+      if (iVar3 < 0) {
+        SV_DObjDumpInfo(ent_00);
+        inst_00 = SCRIPTINSTANCE_SERVER;
+        inst = SCRIPTINSTANCE_SERVER;
+        stringValue = G_ModelName((uint)ent_00->model);
+        SL_ConvertToString(stringValue,inst);
+        SL_ConvertToString(uVar1,SCRIPTINSTANCE_SERVER);
+        pcVar2 = va("tag \'%s\' does not exist on entity with model \'%s\'");
+        Scr_ParamError(1,pcVar2,inst_00);
         goto LAB_006477d8;
       }
     }
-    pcVar3 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    local_10 = G_TagIndex(pcVar3);
+    pcVar2 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    tagIndex = G_TagIndex(pcVar2);
   }
 LAB_006477d8:
-  if ((pgVar1 != (gentity_s *)0x0) && (local_c != 0)) {
-    G_PlaySoundAlias(pgVar1,local_c,0,local_10);
+  if ((ent_00 != (gentity_s *)0x0) && (sound != 0)) {
+    G_PlaySoundAlias(ent_00,sound,0,tagIndex);
   }
   return;
 }
@@ -4454,7 +4594,7 @@ LAB_006477d8:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlaySoundToTeam(scr_entref_t param_1)
+void __cdecl ScrCmd_PlaySoundToTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -4463,40 +4603,44 @@ void __cdecl ScrCmd_PlaySoundToTeam(scr_entref_t param_1)
   char *pcVar4;
   gentity_s *pgVar5;
   DWORD DVar6;
-  uint uVar7;
-  undefined1 uVar8;
-  scriptInstance_t sVar9;
-  uint uVar10;
-  gentity_s *local_14;
-  int local_10;
-  gentity_s *local_8;
+  uint notifyString;
+  undefined1 force_terminal;
+  scriptInstance_t inst;
+  uint bone;
+  gentity_s *tempEnt;
+  int teamNum;
+  ushort team;
+  gentity_s *ignoreClientEnt;
+  int entIndex;
+  PIXProfile pp;
+  gentity_s *clientEnt;
   
   PIXBeginNamedEvent(-1,"ScrCmd_PlaySoundToTeam");
   uVar3 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
   if (((uVar3 & 0xffff) != (uint)scr_const.allies) && ((uVar3 & 0xffff) != (uint)scr_const.axis)) {
-    uVar8 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar3 & 0xffff,SCRIPTINSTANCE_SERVER);
     pcVar4 = va("Illegal team string \'%s\'. Must be allies, or axis.");
-    Scr_Error(pcVar4,(bool)uVar8);
+    Scr_Error(pcVar4,(bool)force_terminal);
   }
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 < 3) {
-    local_14 = (gentity_s *)0x0;
+    ignoreClientEnt = (gentity_s *)0x0;
   }
   else {
-    local_14 = Scr_GetEntity(2);
-    if (local_14->client == (gclient_s *)0x0) {
-      sVar9 = SCRIPTINSTANCE_SERVER;
+    ignoreClientEnt = Scr_GetEntity(2);
+    if (ignoreClientEnt->client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar9);
+      Scr_ObjectError(pcVar4,inst);
     }
   }
-  uVar10 = 0;
-  uVar7 = 0;
+  bone = 0;
+  notifyString = 0;
   pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   uVar3 = SND_FindAliasId(pcVar4);
-  pgVar5 = GetEntity(param_1);
-  pgVar5 = G_PlaySoundAlias(pgVar5,uVar3,uVar7,uVar10);
+  pgVar5 = GetEntity(entref);
+  pgVar5 = G_PlaySoundAlias(pgVar5,uVar3,notifyString,bone);
   if (pgVar5 == (gentity_s *)0x0) {
     DVar6 = GetCurrentThreadId();
     if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -4505,21 +4649,21 @@ void __cdecl ScrCmd_PlaySoundToTeam(scr_entref_t param_1)
   }
   else {
     (pgVar5->r).clientMask[0] = -1;
-    local_8 = g_entities;
-    for (local_10 = 0; local_10 < (com_maxclients->current).integer; local_10 = local_10 + 1) {
-      if (((local_8->r).inuse != '\0') && (local_8 != local_14)) {
-        if ((local_8->client == (gclient_s *)0x0) &&
+    clientEnt = g_entities;
+    for (entIndex = 0; entIndex < (com_maxclients->current).integer; entIndex = entIndex + 1) {
+      if (((clientEnt->r).inuse != '\0') && (clientEnt != ignoreClientEnt)) {
+        if ((clientEnt->client == (gclient_s *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp"
                                      ,0xc83,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        (pgVar5->r).clientMask[(local_8->s).number >> 5] =
-             ~(1 << ((byte)(local_8->s).number & 0x1f)) &
-             (pgVar5->r).clientMask[(local_8->s).number >> 5];
+        (pgVar5->r).clientMask[(clientEnt->s).number >> 5] =
+             ~(1 << ((byte)(clientEnt->s).number & 0x1f)) &
+             (pgVar5->r).clientMask[(clientEnt->s).number >> 5];
       }
-      local_8 = local_8 + 1;
+      clientEnt = clientEnt + 1;
     }
     DVar6 = GetCurrentThreadId();
     if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -4532,79 +4676,83 @@ void __cdecl ScrCmd_PlaySoundToTeam(scr_entref_t param_1)
 
 // 00647A50  ScrCmd_PlayBattleChatterToTeam  (game_mp/g_scr_main_mp.cpp:3226)
 
+/* WARNING: Variable defined which should be unmapped: teamNum */
+/* WARNING: Variable defined which should be unmapped: team */
+/* WARNING: Variable defined which should be unmapped: ignoreClientEnt */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlayBattleChatterToTeam(scr_entref_t param_1)
+void __cdecl ScrCmd_PlayBattleChatterToTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
-  gentity_s *pgVar4;
-  uint uVar5;
-  char *pcVar6;
-  undefined1 uVar7;
-  scriptInstance_t sVar8;
-  team_t tVar9;
-  gentity_s *pgVar10;
-  int local_c;
-  gentity_s *local_8;
+  gentity_s *pgVar3;
+  uint uVar4;
+  char *pcVar5;
+  uint uVar6;
+  undefined1 force_terminal;
+  scriptInstance_t inst;
+  gentity_s *tempEnt;
+  int teamNum;
+  ushort team;
+  gentity_s *ignoreClientEnt;
+  int entIndex;
+  gentity_s *clientEnt;
   
-  pgVar4 = StartScriptPlayBattleChatterOnEnt(param_1);
-  uVar5 = Scr_GetConstString(2,SCRIPTINSTANCE_SERVER);
-  uVar3 = (ushort)uVar5;
-  if (((uVar5 & 0xffff) != (uint)scr_const.allies) && ((uVar5 & 0xffff) != (uint)scr_const.axis)) {
-    uVar7 = 0;
-    SL_ConvertToString(uVar5 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar6 = va("Illegal team string \'%s\'. Must be allies, or axis.");
-    Scr_Error(pcVar6,(bool)uVar7);
+  pgVar3 = StartScriptPlayBattleChatterOnEnt(entref);
+  uVar4 = Scr_GetConstString(2,SCRIPTINSTANCE_SERVER);
+  if (((uVar4 & 0xffff) != (uint)scr_const.allies) && ((uVar4 & 0xffff) != (uint)scr_const.axis)) {
+    force_terminal = 0;
+    SL_ConvertToString(uVar4 & 0xffff,SCRIPTINSTANCE_SERVER);
+    pcVar5 = va("Illegal team string \'%s\'. Must be allies, or axis.");
+    Scr_Error(pcVar5,(bool)force_terminal);
   }
-  if (uVar3 == scr_const.allies) {
-    tVar9 = TEAM_ALLIES;
-  }
-  else {
-    tVar9 = TEAM_AXIS;
-  }
-  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar5 < 4) {
-    pgVar10 = (gentity_s *)0x0;
+  if ((ushort)uVar4 == scr_const.allies) {
+    teamNum = 2;
   }
   else {
-    pgVar10 = Scr_GetEntity(3);
-    if (pgVar10->client == (gclient_s *)0x0) {
-      sVar8 = SCRIPTINSTANCE_SERVER;
-      pcVar6 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar6,sVar8);
+    teamNum = 1;
+  }
+  uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar6 < 4) {
+    ignoreClientEnt = (gentity_s *)0x0;
+  }
+  else {
+    ignoreClientEnt = Scr_GetEntity(3);
+    if (ignoreClientEnt->client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar5 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar5,inst);
     }
   }
-  (pgVar4->r).clientMask[0] = -1;
-  local_8 = g_entities;
-  local_c = 0;
+  (pgVar3->r).clientMask[0] = -1;
+  clientEnt = g_entities;
+  entIndex = 0;
   do {
-    if ((com_maxclients->current).integer <= local_c) {
+    if ((com_maxclients->current).integer <= entIndex) {
       return;
     }
-    if ((local_8->r).inuse != '\0') {
-      if (local_8->client == (gclient_s *)0x0) {
+    if ((clientEnt->r).inuse != '\0') {
+      if (clientEnt->client == (gclient_s *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0xcc5,0,"%s");
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
-          (*pcVar1)(tVar9,uVar3,pgVar10);
+          (*pcVar1)(teamNum,(ushort)uVar4,ignoreClientEnt);
           return;
         }
       }
-      if ((local_8->client->sess).cs.team == tVar9) {
-        (pgVar4->r).clientMask[(local_8->s).number >> 5] =
-             ~(1 << ((byte)(local_8->s).number & 0x1f)) &
-             (pgVar4->r).clientMask[(local_8->s).number >> 5];
+      if ((clientEnt->client->sess).cs.team == teamNum) {
+        (pgVar3->r).clientMask[(clientEnt->s).number >> 5] =
+             ~(1 << ((byte)(clientEnt->s).number & 0x1f)) &
+             (pgVar3->r).clientMask[(clientEnt->s).number >> 5];
       }
     }
-    local_c = local_c + 1;
-    local_8 = local_8 + 1;
+    entIndex = entIndex + 1;
+    clientEnt = clientEnt + 1;
   } while( true );
 }
 
@@ -4616,33 +4764,35 @@ void __cdecl ScrCmd_PlayBattleChatterToTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlaySoundToPlayer(scr_entref_t param_1)
+void __cdecl ScrCmd_PlaySoundToPlayer(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   char *pcVar2;
-  uint uVar3;
-  gentity_s *pgVar4;
-  uint uVar5;
-  scriptInstance_t sVar6;
-  uint uVar7;
+  uint alias;
+  gentity_s *pgVar3;
+  uint notifyString;
+  scriptInstance_t inst;
+  uint bone;
+  gentity_s *tempEnt;
+  gentity_s *clientEnt;
   
   pgVar1 = Scr_GetEntity(1);
   if (pgVar1->client == (gclient_s *)0x0) {
-    sVar6 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar2 = va("entity %i is not a player");
-    Scr_ObjectError(pcVar2,sVar6);
+    Scr_ObjectError(pcVar2,inst);
   }
-  uVar7 = 0;
-  uVar5 = 0;
+  bone = 0;
+  notifyString = 0;
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar3 = SND_FindAliasId(pcVar2);
-  pgVar4 = GetEntity(param_1);
-  pgVar4 = G_PlaySoundAlias(pgVar4,uVar3,uVar5,uVar7);
-  if (pgVar4 != (gentity_s *)0x0) {
-    (pgVar4->r).clientMask[0] = -1;
-    (pgVar4->r).clientMask[(pgVar1->s).number >> 5] =
-         ~(1 << ((byte)(pgVar1->s).number & 0x1f)) & (pgVar4->r).clientMask[(pgVar1->s).number >> 5]
+  alias = SND_FindAliasId(pcVar2);
+  pgVar3 = GetEntity(entref);
+  pgVar3 = G_PlaySoundAlias(pgVar3,alias,notifyString,bone);
+  if (pgVar3 != (gentity_s *)0x0) {
+    (pgVar3->r).clientMask[0] = -1;
+    (pgVar3->r).clientMask[(pgVar1->s).number >> 5] =
+         ~(1 << ((byte)(pgVar1->s).number & 0x1f)) & (pgVar3->r).clientMask[(pgVar1->s).number >> 5]
     ;
   }
   return;
@@ -4661,20 +4811,20 @@ void __cdecl Scr_PlaySoundAtPosition(void)
 {
   uint uVar1;
   char *pcVar2;
-  undefined1 uVar3;
-  float local_10 [3];
+  undefined1 force_terminal;
+  float origin [3];
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 2) {
-    uVar3 = 0;
+    force_terminal = 0;
     Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     pcVar2 = va("playsoundatposition has %d parameters.  There should be two.");
-    Scr_Error(pcVar2,(bool)uVar3);
+    Scr_Error(pcVar2,(bool)force_terminal);
   }
-  Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   uVar1 = SND_FindAliasId(pcVar2);
-  G_PlaySoundAliasAtPoint(local_10,uVar1);
+  G_PlaySoundAliasAtPoint(origin,uVar1);
   return;
 }
 
@@ -4686,32 +4836,34 @@ void __cdecl Scr_PlaySoundAtPosition(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlayLoopSound(scr_entref_t param_1)
+void __cdecl ScrCmd_PlayLoopSound(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   char *pcVar2;
   uint uVar3;
-  scriptInstance_t sVar4;
-  float local_c;
+  float fVar4;
+  scriptInstance_t inst;
+  float fadeTime;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->r).broadcastTime = -1;
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   uVar3 = SND_FindAliasId(pcVar2);
   (pgVar1->s).loopSoundId = uVar3;
-  local_c = 0.0;
+  fadeTime = 0.0;
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 2) {
-    local_c = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    if ((local_c < 0.0) || (32.0 < local_c)) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+    fVar4 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    if ((fVar4 < 0.0) || (32.0 < fVar4)) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar2 = va("playloopsound: invalid fade value %f. it must be between 0 and 32 seconds.");
-      Scr_ParamError(1,pcVar2,sVar4);
+      Scr_ParamError(1,pcVar2,inst);
     }
-    local_c = local_c * 1000.0;
+    fadeTime = fVar4 * 1000.0;
   }
-  (pgVar1->s).loopSoundFade = (short)(int)local_c;
+  (pgVar1->s).loopSoundFade = (short)(int)fadeTime;
   return;
 }
 
@@ -4723,32 +4875,34 @@ void __cdecl ScrCmd_PlayLoopSound(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_StopLoopSound(scr_entref_t param_1)
+void __cdecl ScrCmd_StopLoopSound(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  float local_c;
+  char *error;
+  float fVar3;
+  scriptInstance_t inst;
+  float fadeTime;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->r).broadcastTime = level.time + 300;
-  local_c = 0.0;
+  fadeTime = 0.0;
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 0) {
     (pgVar1->s).loopSoundId = 0;
   }
   else {
-    local_c = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    if ((local_c < 0.0) || (32.0 < local_c)) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("stoploopsound: invalid fade value %f. it must be between 0 and 32 seconds.");
-      Scr_ParamError(0,pcVar3,sVar4);
+    fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+    if ((fVar3 < 0.0) || (32.0 < fVar3)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("stoploopsound: invalid fade value %f. it must be between 0 and 32 seconds.");
+      Scr_ParamError(0,error,inst);
     }
-    local_c = local_c * -1000.0;
+    fadeTime = fVar3 * -1000.0;
   }
-  (pgVar1->s).loopSoundFade = (short)(int)local_c;
+  (pgVar1->s).loopSoundFade = (short)(int)fadeTime;
   return;
 }
 
@@ -4760,20 +4914,21 @@ void __cdecl ScrCmd_StopLoopSound(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_Delete(scr_entref_t param_1)
+void __cdecl ScrCmd_Delete(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->client != (gclient_s *)0x0) {
+  ent = GetEntity(entref);
+  if (ent->client != (gclient_s *)0x0) {
     Scr_Error("Cannot delete a client entity",false);
   }
-  if (level.currentEntityThink == (pgVar1->s).number) {
+  if (level.currentEntityThink == (ent->s).number) {
     Scr_Error("Cannot delete entity during its think",false);
   }
-  Scr_Notify(pgVar1,scr_const.death,0);
-  G_FreeEntity(pgVar1);
+  Scr_Notify(ent,scr_const.death,0);
+  G_FreeEntity(ent);
   return;
 }
 
@@ -4785,23 +4940,24 @@ void __cdecl ScrCmd_Delete(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SetModelInternal(gentity_s *param_1,char *param_2)
+void __cdecl SetModelInternal(gentity_s *ent,char *modelName)
 
 {
-  DObj *pDVar1;
-  uint uVar2;
+  DObj *obj_00;
+  uint uVar1;
+  DObj *obj;
   
-  G_SetModel(param_1,param_2);
-  G_DObjUpdate(param_1);
-  if ((param_1->s).eType == 6) {
-    pDVar1 = Com_GetServerDObj((param_1->s).number);
-    if (pDVar1 != (DObj *)0x0) {
-      uVar2 = DObjGetContents(pDVar1);
-      (param_1->r).contents = uVar2 | (param_1->r).contents;
-      DObjCalcBounds(pDVar1,(param_1->r).mins,(param_1->r).maxs);
+  G_SetModel(ent,modelName);
+  G_DObjUpdate(ent);
+  if ((ent->s).eType == 6) {
+    obj_00 = Com_GetServerDObj((ent->s).number);
+    if (obj_00 != (DObj *)0x0) {
+      uVar1 = DObjGetContents(obj_00);
+      (ent->r).contents = uVar1 | (ent->r).contents;
+      DObjCalcBounds(obj_00,(ent->r).mins,(ent->r).maxs);
     }
   }
-  SV_LinkEntity(param_1);
+  SV_LinkEntity(ent);
   return;
 }
 
@@ -4813,15 +4969,17 @@ void __cdecl SetModelInternal(gentity_s *param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetModel(scr_entref_t param_1)
+void __cdecl ScrCmd_SetModel(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  char *pcVar2;
+  gentity_s *ent;
+  char *modelName_00;
+  char *modelName;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
-  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  SetModelInternal(pgVar1,pcVar2);
+  ent = GetEntity(entref);
+  modelName_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  SetModelInternal(ent,modelName_00);
   return;
 }
 
@@ -4833,24 +4991,26 @@ void __cdecl ScrCmd_SetModel(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetEnemyModel(scr_entref_t param_1)
+void __cdecl ScrCmd_SetEnemyModel(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  uint uVar5;
-  short local_8;
+  char *name;
+  uint uVar4;
+  char *modelName;
+  gentity_s *pEnt;
+  int modelIndex;
   
-  pgVar3 = GetEntity(param_1);
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  if (*pcVar4 == '\0') {
+  pgVar3 = GetEntity(entref);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  if (*name == '\0') {
     (pgVar3->s).enemyModel = 0;
   }
   else {
-    uVar5 = G_ModelIndex(pcVar4);
-    if (uVar5 != (uVar5 & 0xffff)) {
+    uVar4 = G_ModelIndex(name);
+    if (uVar4 != (uVar4 & 0xffff)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0xde6
                                ,0,"%s");
       if (!bVar2) {
@@ -4859,8 +5019,8 @@ void __cdecl ScrCmd_SetEnemyModel(scr_entref_t param_1)
         return;
       }
     }
-    local_8 = (short)uVar5;
-    (pgVar3->s).enemyModel = local_8;
+    modelIndex._0_2_ = (short)uVar4;
+    (pgVar3->s).enemyModel = (short)modelIndex;
   }
   return;
 }
@@ -4873,12 +5033,13 @@ void __cdecl ScrCmd_SetEnemyModel(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetNormalHealth(scr_entref_t param_1)
+void __cdecl ScrCmd_GetNormalHealth(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_AddFloat((float)pgVar1->health,SCRIPTINSTANCE_SERVER);
   }
@@ -4900,37 +5061,38 @@ void __cdecl ScrCmd_GetNormalHealth(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetNormalHealth(scr_entref_t param_1)
+void __cdecl ScrCmd_SetNormalHealth(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  int local_10;
-  float local_c;
+  char *text;
+  int newHealth;
+  float normalHealth;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  local_c = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (1.0 < local_c) {
-    local_c = 1.0;
+  pgVar1 = GetEntity(entref);
+  normalHealth = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (1.0 < normalHealth) {
+    normalHealth = 1.0;
   }
   if (pgVar1->client == (gclient_s *)0x0) {
     if (pgVar1->maxHealth == 0) {
-      local_10 = (int)local_c;
+      newHealth = (int)normalHealth;
     }
     else {
-      local_10 = (int)((float)pgVar1->maxHealth * local_c);
+      newHealth = (int)((float)pgVar1->maxHealth * normalHealth);
     }
   }
   else {
-    local_10 = (int)ROUND((float)(pgVar1->client->sess).maxHealth * local_c + 9.313226e-10);
-    pcVar2 = va("%c \"%i\"");
-    SV_GameSendServerCommand((int)pgVar1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar2);
+    newHealth = (int)ROUND((float)(pgVar1->client->sess).maxHealth * normalHealth + 9.313226e-10);
+    text = va("%c \"%i\"");
+    SV_GameSendServerCommand((int)pgVar1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
-  if (local_10 < 1) {
+  if (newHealth < 1) {
     Com_PrintError(0x18,"ERROR: Cannot setnormalhealth to 0 or below.\n");
   }
   else {
-    pgVar1->health = local_10;
+    pgVar1->health = newHealth;
   }
   return;
 }
@@ -4943,7 +5105,7 @@ void __cdecl ScrCmd_SetNormalHealth(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_DoDamage(scr_entref_t param_1)
+void __cdecl ScrCmd_DoDamage(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
@@ -4952,119 +5114,120 @@ void __cdecl ScrCmd_DoDamage(scr_entref_t param_1)
   uint uVar4;
   char *pcVar5;
   int iVar6;
+  gentity_s *self;
   DWORD DVar7;
+  float damgeInner;
   float fVar8;
-  float fVar9;
   meansOfDeath_t local_a0;
-  gentity_s *local_44;
-  float local_3c;
+  gentity_s *attacker;
+  float damage;
+  float source;
   float local_38;
   float local_34;
-  meansOfDeath_t local_30;
-  float local_2c;
+  meansOfDeath_t mod;
+  float from;
   float local_28;
   float local_24;
-  float *local_20;
-  int local_1c;
-  uint local_18;
-  gentity_s *local_10;
-  gentity_s *local_c;
-  hitLocation_t local_8;
+  float *dir;
+  int weapon;
+  int dflags;
+  PIXProfile pp;
+  gentity_s *ent;
+  gentity_s *inflictor;
+  hitLocation_t hitLoc;
   
   PIXBeginNamedEvent(-1,"ScrCmd_DoDamage");
-  local_18 = 0;
-  local_44 = (gentity_s *)0x0;
-  local_c = (gentity_s *)0x0;
-  local_8 = HITLOC_HEAD;
-  local_30 = MOD_UNKNOWN;
-  local_1c = -1;
+  dflags = 0;
+  attacker = (gentity_s *)0x0;
+  inflictor = (gentity_s *)0x0;
+  hitLoc = HITLOC_HEAD;
+  mod = MOD_UNKNOWN;
+  weapon = -1;
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar4) {
   case 8:
     pcVar5 = Scr_GetString(7,SCRIPTINSTANCE_SERVER);
-    local_1c = G_GetWeaponIndexForName(pcVar5);
+    weapon = G_GetWeaponIndexForName(pcVar5);
   case 7:
-    local_18 = Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
+    dflags = Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
   case 6:
-    local_30 = G_MeansOfDeathFromScriptParam(5);
+    mod = G_MeansOfDeathFromScriptParam(5);
   case 5:
     iVar6 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
     if (iVar6 == 0) {
-      local_8 = HITLOC_NONE;
+      hitLoc = HITLOC_NONE;
     }
   case 4:
-    local_c = Scr_GetEntity(3);
+    inflictor = Scr_GetEntity(3);
   case 3:
-    local_44 = Scr_GetEntity(2);
+    attacker = Scr_GetEntity(2);
   case 2:
-    Scr_GetVector(1,&local_3c,SCRIPTINSTANCE_SERVER);
-    fVar8 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    local_10 = GetEntity(param_1);
-    if (((((uint)local_3c & 0x7f800000) == 0x7f800000) ||
+    Scr_GetVector(1,&source,SCRIPTINSTANCE_SERVER);
+    damgeInner = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+    self = GetEntity(entref);
+    if (((((uint)source & 0x7f800000) == 0x7f800000) ||
         (((uint)local_38 & 0x7f800000) == 0x7f800000)) ||
        (((uint)local_34 & 0x7f800000) == 0x7f800000)) {
       bVar3 = false;
       pcVar5 = va("Source Damage vector is invalid : %f %f %f");
       Scr_Error(pcVar5,bVar3);
     }
-    if (local_10->client == (gclient_s *)0x0) {
-      if ((((((uint)(local_10->r).currentOrigin[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)(local_10->r).currentOrigin[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)(local_10->r).currentOrigin[2] & 0x7f800000) == 0x7f800000)) &&
+    if (self->client == (gclient_s *)0x0) {
+      if ((((((uint)(self->r).currentOrigin[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)(self->r).currentOrigin[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)(self->r).currentOrigin[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0xe7d,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_2c = (local_10->r).currentOrigin[0] - local_3c;
-      local_28 = (local_10->r).currentOrigin[1] - local_38;
-      local_24 = (local_10->r).currentOrigin[2] - local_34;
+      from = (self->r).currentOrigin[0] - source;
+      local_28 = (self->r).currentOrigin[1] - local_38;
+      local_24 = (self->r).currentOrigin[2] - local_34;
     }
     else {
-      if ((((((uint)(local_10->client->ps).origin[0] & 0x7f800000) == 0x7f800000) ||
-           (((uint)(local_10->client->ps).origin[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)(local_10->client->ps).origin[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)(self->client->ps).origin[0] & 0x7f800000) == 0x7f800000) ||
+           (((uint)(self->client->ps).origin[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)(self->client->ps).origin[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0xe78,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      pgVar1 = local_10->client;
-      local_2c = (pgVar1->ps).origin[0] - local_3c;
+      pgVar1 = self->client;
+      from = (pgVar1->ps).origin[0] - source;
       local_28 = (pgVar1->ps).origin[1] - local_38;
       local_24 = (pgVar1->ps).origin[2] - local_34;
     }
-    if ((((((uint)local_2c & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_28 & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_24 & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)from & 0x7f800000) == 0x7f800000) || (((uint)local_28 & 0x7f800000) == 0x7f800000)
+         ) || (((uint)local_24 & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0xe81,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    fVar9 = Vec3Normalize(&local_2c);
-    if (fVar9 == 0.0) {
-      local_20 = (float *)0x0;
+    fVar8 = Vec3Normalize(&from);
+    if (fVar8 == 0.0) {
+      dir = (float *)0x0;
     }
     else {
-      local_20 = &local_2c;
+      dir = &from;
     }
-    if ((local_10->scr_vehicle == (scr_vehicle_s *)0x0) &&
-       (local_10->destructible != (Destructible *)0x0)) {
-      if (local_30 == MOD_UNKNOWN) {
+    if ((self->scr_vehicle == (scr_vehicle_s *)0x0) && (self->destructible != (Destructible *)0x0))
+    {
+      if (mod == MOD_UNKNOWN) {
         local_a0 = MOD_EXPLOSIVE;
       }
       else {
-        local_a0 = local_30;
+        local_a0 = mod;
       }
-      DestructibleRadiusDamage(local_10,&local_3c,fVar8,10.0,400.0,local_a0,local_44);
-      local_18 = local_18 | 0x10;
+      DestructibleRadiusDamage(self,&source,damgeInner,10.0,400.0,local_a0,attacker);
+      dflags = dflags | 0x10;
     }
-    G_Damage(local_10,local_c,local_44,local_20,&local_3c,(int)fVar8,local_18,local_30,local_1c,
-             local_8,0,0,0);
+    G_Damage(self,inflictor,attacker,dir,&source,(int)damgeInner,dflags,mod,weapon,hitLoc,0,0,0);
     DVar7 = GetCurrentThreadId();
     if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -5089,39 +5252,39 @@ void __cdecl ScrCmd_DoDamage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetVelocity(scr_entref_t param_1)
+void __cdecl ScrCmd_GetVelocity(scr_entref_t entref)
 
 {
   scr_vehicle_s *psVar1;
   gclient_s *pgVar2;
   sentient_s *in_stack_ffffffe0;
   float *in_stack_ffffffe4;
-  float local_14;
+  float velocity;
   float local_10;
   float local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
-  local_14 = 0.0;
+  velocity = 0.0;
   local_10 = 0.0;
   local_c = 0.0;
-  local_8 = GetEntity(param_1);
-  if (local_8->sentient == (sentient_s *)0x0) {
-    if (local_8->scr_vehicle == (scr_vehicle_s *)0x0) {
-      if (local_8->client == (gclient_s *)0x0) {
-        local_14 = (local_8->s).lerp.pos.trDelta[0];
-        local_10 = (local_8->s).lerp.pos.trDelta[1];
-        local_c = (local_8->s).lerp.pos.trDelta[2];
+  ent = GetEntity(entref);
+  if (ent->sentient == (sentient_s *)0x0) {
+    if (ent->scr_vehicle == (scr_vehicle_s *)0x0) {
+      if (ent->client == (gclient_s *)0x0) {
+        velocity = (ent->s).lerp.pos.trDelta[0];
+        local_10 = (ent->s).lerp.pos.trDelta[1];
+        local_c = (ent->s).lerp.pos.trDelta[2];
       }
       else {
-        pgVar2 = local_8->client;
-        local_14 = (pgVar2->ps).velocity[0];
+        pgVar2 = ent->client;
+        velocity = (pgVar2->ps).velocity[0];
         local_10 = (pgVar2->ps).velocity[1];
         local_c = (pgVar2->ps).velocity[2];
       }
     }
     else {
-      psVar1 = local_8->scr_vehicle;
-      local_14 = (psVar1->phys).vel[0];
+      psVar1 = ent->scr_vehicle;
+      velocity = (psVar1->phys).vel[0];
       local_10 = (psVar1->phys).vel[1];
       local_c = (psVar1->phys).vel[2];
     }
@@ -5129,7 +5292,7 @@ void __cdecl ScrCmd_GetVelocity(scr_entref_t param_1)
   else {
     Sentient_GetVelocity(in_stack_ffffffe0,in_stack_ffffffe4);
   }
-  Scr_AddVector(&local_14,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(&velocity,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -5141,52 +5304,52 @@ void __cdecl ScrCmd_GetVelocity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_FakeFire(scr_entref_t param_1)
+void __cdecl GScr_FakeFire(scr_entref_t entref)
 
 {
-  char *pcVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
-  float local_24 [3];
-  uint local_18;
-  gentity_s *local_14;
-  gentity_s *local_10;
-  char *local_c;
-  uint local_8;
+  char *error;
+  int iVar1;
+  scriptInstance_t inst;
+  float origin [3];
+  int iWeaponIndex;
+  gentity_s *owner;
+  gentity_s *ent;
+  char *pszWeaponName;
+  int argc;
   
-  local_10 = GetEntity(param_1);
-  local_8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (local_8 != 4) {
+  ent = GetEntity(entref);
+  argc = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (argc != 4) {
     Scr_Error("FakeFire( <owner>, <origin>, <weapon>, <shot count> ) takes 4 parameters",false);
   }
-  local_14 = Scr_GetEntity(0);
-  if (local_14->client == (gclient_s *)0x0) {
+  owner = Scr_GetEntity(0);
+  if (owner->client == (gclient_s *)0x0) {
     Scr_ParamError(0,"Owner entity is not a player",SCRIPTINSTANCE_SERVER);
   }
-  Scr_GetVector(1,local_24,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-  local_18 = G_GetWeaponIndexForName(local_c);
-  if (local_18 == 0) {
-    if (*local_c == '\0') {
+  Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
+  pszWeaponName = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
+  iWeaponIndex = G_GetWeaponIndexForName(pszWeaponName);
+  if (iWeaponIndex == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar1 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar1,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  (local_10->s).lerp.eFlags = (local_10->s).lerp.eFlags | 0x40;
-  if ((local_10->s).eType == 1) {
-    local_10 = G_TempEntity(local_24,0x45);
-    (local_10->s).eventParm = (ushort)local_18;
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x40;
+  if ((ent->s).eType == 1) {
+    ent = G_TempEntity(origin,0x45);
+    (ent->s).eventParm = (ushort)iWeaponIndex;
   }
   else {
-    G_AddEvent(local_10,0x45,local_18);
+    G_AddEvent(ent,0x45,iWeaponIndex);
   }
-  (local_10->s).otherEntityNum = (short)(local_14->s).number;
-  iVar2 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-  (local_10->s).un1.scale = (uchar)iVar2;
+  (ent->s).otherEntityNum = (short)(owner->s).number;
+  iVar1 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+  (ent->s).un1.scale = (uchar)iVar1;
   return;
 }
 
@@ -5198,15 +5361,17 @@ void __cdecl GScr_FakeFire(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetCameraSpikeActive(scr_entref_t param_1)
+void __cdecl GScr_SetCameraSpikeActive(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
   WeaponDef *pWVar3;
   int iVar4;
+  int toggle;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -5240,53 +5405,55 @@ void __cdecl GScr_SetCameraSpikeActive(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_MakeUsable(scr_entref_t param_1)
+void __cdecl ScrCmd_MakeUsable(scr_entref_t entref)
 
 {
   code *pcVar1;
-  ushort uVar2;
-  bool bVar3;
-  gentity_s *pgVar4;
-  uint uVar5;
-  char *pcVar6;
-  int iVar7;
+  bool bVar2;
+  gentity_s *ent_00;
+  uint uVar3;
+  char *s0;
+  int iVar4;
+  int team;
+  char *teamString;
+  gentity_s *ent;
   
-  pgVar4 = GetEntity(param_1);
-  if ((pgVar4->s).eType == 0xe) {
-    G_MakeVehicleUsable(pgVar4,true);
+  ent_00 = GetEntity(entref);
+  if ((ent_00->s).eType == 0xe) {
+    G_MakeVehicleUsable(ent_00,true);
   }
   else {
-    (pgVar4->r).contents = (pgVar4->r).contents | 0x200000;
+    (ent_00->r).contents = (ent_00->r).contents | 0x200000;
   }
-  if ((pgVar4->s).eType == 6) {
-    uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (uVar5 != 0) {
-      pcVar6 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-      uVar2 = 0;
-      iVar7 = I_stricmp(pcVar6,"allies");
-      if (iVar7 == 0) {
-        uVar2 = 2;
+  if ((ent_00->s).eType == 6) {
+    uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+    if (uVar3 != 0) {
+      s0 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+      team = 0;
+      iVar4 = I_stricmp(s0,"allies");
+      if (iVar4 == 0) {
+        team = 2;
       }
       else {
-        iVar7 = I_stricmp(pcVar6,"axis");
-        if (iVar7 == 0) {
-          uVar2 = 1;
+        iVar4 = I_stricmp(s0,"axis");
+        if (iVar4 == 0) {
+          team = 1;
         }
       }
-      if (3 < uVar2) {
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
+      if (3 < (uint)team) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0xf44,0,"%s");
-        if (!bVar3) {
+        if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
       }
-      if (3 < uVar2) {
-        uVar2 = 0;
+      if (3 < (uint)team) {
+        team = 0;
       }
-      (pgVar4->s).eventParm = (pgVar4->s).eventParm & 0x3fff;
-      (pgVar4->s).eventParm = (pgVar4->s).eventParm | uVar2 << 0xe;
+      (ent_00->s).eventParm = (ent_00->s).eventParm & 0x3fff;
+      (ent_00->s).eventParm = (ent_00->s).eventParm | (ushort)(team << 0xe);
     }
   }
   return;
@@ -5300,17 +5467,18 @@ void __cdecl ScrCmd_MakeUsable(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_MakeUnusable(scr_entref_t param_1)
+void __cdecl ScrCmd_MakeUnusable(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent_00;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  if ((pgVar1->s).eType == 0xe) {
-    G_MakeVehicleUsable(pgVar1,false);
+  ent_00 = GetEntity(entref);
+  if ((ent_00->s).eType == 0xe) {
+    G_MakeVehicleUsable(ent_00,false);
   }
   else {
-    (pgVar1->r).contents = (pgVar1->r).contents & 0xffdfffff;
+    (ent_00->r).contents = (ent_00->r).contents & 0xffdfffff;
   }
   return;
 }
@@ -5323,12 +5491,13 @@ void __cdecl ScrCmd_MakeUnusable(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_Show(scr_entref_t param_1)
+void __cdecl ScrCmd_Show(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags & 0xffffffdf;
   if (pgVar1->client != (gclient_s *)0x0) {
     (pgVar1->client->ps).eFlags = (pgVar1->client->ps).eFlags & 0xffffffdf;
@@ -5345,21 +5514,22 @@ void __cdecl ScrCmd_Show(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_Hide(scr_entref_t param_1)
+void __cdecl ScrCmd_Hide(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
-  (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags | 0x20;
-  if (pgVar1->client != (gclient_s *)0x0) {
-    (pgVar1->client->ps).eFlags = (pgVar1->client->ps).eFlags | 0x20;
+  ent = GetEntity(entref);
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x20;
+  if (ent->client != (gclient_s *)0x0) {
+    (ent->client->ps).eFlags = (ent->client->ps).eFlags | 0x20;
   }
-  (pgVar1->r).clientMask[0] = -1;
-  if ((pgVar1->s).eType == 0xe) {
-    G_HideVehicle(pgVar1);
+  (ent->r).clientMask[0] = -1;
+  if ((ent->s).eType == 0xe) {
+    G_HideVehicle(ent);
   }
-  G_ClearGroundEntityRefs(pgVar1);
+  G_ClearGroundEntityRefs(ent);
   return;
 }
 
@@ -5371,12 +5541,13 @@ void __cdecl ScrCmd_Hide(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_Ghost(scr_entref_t param_1)
+void __cdecl ScrCmd_Ghost(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags | 0x20;
   if (pgVar1->client != (gclient_s *)0x0) {
     (pgVar1->client->ps).eFlags = (pgVar1->client->ps).eFlags | 0x20;
@@ -5392,13 +5563,15 @@ void __cdecl ScrCmd_Ghost(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_ShowToPlayer(scr_entref_t param_1)
+void __cdecl ScrCmd_ShowToPlayer(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   gentity_s *pgVar2;
+  gentity_s *pEnt;
+  gentity_s *clientEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   pgVar2 = Scr_GetEntity(0);
   if ((pgVar2->s).number < 0x20) {
     (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags & 0xffffffdf;
@@ -5420,17 +5593,19 @@ void __cdecl ScrCmd_ShowToPlayer(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SetContents(scr_entref_t param_1)
+void __cdecl ScrCmd_SetContents(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  int iVar2;
+  gentity_s *gEnt;
+  int iVar1;
+  int contents;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt((pgVar1->r).contents,SCRIPTINSTANCE_SERVER);
-  (pgVar1->r).contents = iVar2;
-  SV_LinkEntity(pgVar1);
+  gEnt = GetEntity(entref);
+  iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((gEnt->r).contents,SCRIPTINSTANCE_SERVER);
+  (gEnt->r).contents = iVar1;
+  SV_LinkEntity(gEnt);
   return;
 }
 
@@ -5442,22 +5617,24 @@ void __cdecl ScrCmd_SetContents(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StartFiring(scr_entref_t param_1)
+void __cdecl GScr_StartFiring(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
   gentity_s *pgVar4;
-  char *pcVar5;
-  undefined1 uVar6;
+  char *error;
+  undefined1 force_terminal;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
   
-  pgVar4 = GetEntity(param_1);
+  pgVar4 = GetEntity(entref);
   if (pgVar4->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar4->classname,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar5,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   pTVar1 = pgVar4->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
@@ -5481,22 +5658,24 @@ void __cdecl GScr_StartFiring(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopFiring(scr_entref_t param_1)
+void __cdecl GScr_StopFiring(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
   gentity_s *pgVar4;
-  char *pcVar5;
-  undefined1 uVar6;
+  char *error;
+  undefined1 force_terminal;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
   
-  pgVar4 = GetEntity(param_1);
+  pgVar4 = GetEntity(entref);
   if (pgVar4->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar4->classname,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar5,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   pTVar1 = pgVar4->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
@@ -5520,25 +5699,27 @@ void __cdecl GScr_StopFiring(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ShootTurret(scr_entref_t param_1)
+void __cdecl GScr_ShootTurret(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  char *pcVar2;
-  DWORD DVar3;
-  undefined1 uVar4;
+  gentity_s *self;
+  char *error;
+  DWORD DVar1;
+  undefined1 force_terminal;
+  PIXProfile pixProfile;
+  gentity_s *ent;
   
   PIXBeginNamedEvent(-1,"shootturret");
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar4 = 0;
-    SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar4);
+  self = GetEntity(entref);
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
+    force_terminal = 0;
+    SL_ConvertToString((uint)self->classname,SCRIPTINSTANCE_SERVER);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
-  turret_shoot(pgVar1);
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  turret_shoot(self);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -5552,19 +5733,20 @@ void __cdecl GScr_ShootTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopShootTurret(scr_entref_t param_1)
+void __cdecl GScr_StopShootTurret(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  undefined1 uVar3;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags & 0xffffffbf;
   return;
@@ -5578,23 +5760,26 @@ void __cdecl GScr_StopShootTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetMode(scr_entref_t param_1)
+void __cdecl GScr_SetMode(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   code *pcVar2;
   bool bVar3;
   gentity_s *pgVar4;
-  char *pcVar5;
-  uint uVar6;
-  undefined1 uVar7;
+  char *error;
+  uint uVar5;
+  undefined1 force_terminal;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
+  uint mode;
   
-  pgVar4 = GetEntity(param_1);
+  pgVar4 = GetEntity(entref);
   if (pgVar4->pTurretInfo == (TurretInfo *)0x0) {
-    uVar7 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar4->classname,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar5,(bool)uVar7);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   pTVar1 = pgVar4->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
@@ -5606,19 +5791,19 @@ void __cdecl GScr_SetMode(scr_entref_t param_1)
       return;
     }
   }
-  uVar6 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  if (uVar6 == scr_const.auto_ai) {
+  uVar5 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  if (uVar5 == scr_const.auto_ai) {
     pTVar1->flags = pTVar1->flags & 0xfffffffc;
     pTVar1->flags = pTVar1->flags | 3;
   }
-  else if (uVar6 == scr_const.manual) {
+  else if (uVar5 == scr_const.manual) {
     pTVar1->flags = pTVar1->flags & 0xfffffffc;
   }
-  else if (uVar6 == scr_const.manual_ai) {
+  else if (uVar5 == scr_const.manual_ai) {
     pTVar1->flags = pTVar1->flags & 0xfffffffc;
     pTVar1->flags = pTVar1->flags | 1;
   }
-  else if (uVar6 == scr_const.auto_nonai) {
+  else if (uVar5 == scr_const.auto_nonai) {
     pTVar1->flags = pTVar1->flags & 0xfffffffc;
     pTVar1->flags = pTVar1->flags | 2;
   }
@@ -5636,25 +5821,26 @@ void __cdecl GScr_SetMode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetTurretOwner(scr_entref_t param_1)
+void __cdecl GScr_GetTurretOwner(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  int iVar3;
-  undefined1 uVar4;
+  char *error;
+  int iVar2;
+  undefined1 force_terminal;
   gentity_s *local_c;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar4 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar4);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar1->active != '\0') {
-    iVar3 = EntHandle::isDefined(&(pgVar1->r).ownerNum);
-    if (iVar3 == 0) {
+    iVar2 = EntHandle::isDefined(&(pgVar1->r).ownerNum);
+    if (iVar2 == 0) {
       local_c = g_entities + 0x3ff;
     }
     else {
@@ -5673,22 +5859,23 @@ void __cdecl GScr_GetTurretOwner(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTargetEntity(scr_entref_t param_1)
+void __cdecl GScr_SetTargetEntity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  gentity_s *pgVar5;
-  undefined1 uVar6;
+  char *error;
+  gentity_s *ent_00;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x10b0,
@@ -5699,8 +5886,8 @@ void __cdecl GScr_SetTargetEntity(scr_entref_t param_1)
       return;
     }
   }
-  pgVar5 = Scr_GetEntity(0);
-  EntHandle::setEnt(&pgVar3->pTurretInfo->manualTarget,pgVar5);
+  ent_00 = Scr_GetEntity(0);
+  EntHandle::setEnt(&pgVar3->pTurretInfo->manualTarget,ent_00);
   return;
 }
 
@@ -5712,22 +5899,23 @@ void __cdecl GScr_SetTargetEntity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetAiSpread(scr_entref_t param_1)
+void __cdecl GScr_SetAiSpread(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  float fVar5;
-  undefined1 uVar6;
+  char *error;
+  float fVar4;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x10c9,
@@ -5738,8 +5926,8 @@ void __cdecl GScr_SetAiSpread(scr_entref_t param_1)
       return;
     }
   }
-  fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  pgVar3->pTurretInfo->aiSpread = fVar5;
+  fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  pgVar3->pTurretInfo->aiSpread = fVar4;
   return;
 }
 
@@ -5751,22 +5939,23 @@ void __cdecl GScr_SetAiSpread(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetPlayerSpread(scr_entref_t param_1)
+void __cdecl GScr_SetPlayerSpread(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  float fVar5;
-  undefined1 uVar6;
+  char *error;
+  float fVar4;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x10e2,
@@ -5777,8 +5966,8 @@ void __cdecl GScr_SetPlayerSpread(scr_entref_t param_1)
       return;
     }
   }
-  fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  pgVar3->pTurretInfo->playerSpread = fVar5;
+  fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  pgVar3->pTurretInfo->playerSpread = fVar4;
   return;
 }
 
@@ -5790,31 +5979,34 @@ void __cdecl GScr_SetPlayerSpread(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetConvergenceTime(scr_entref_t param_1)
+void __cdecl GScr_SetConvergenceTime(scr_entref_t entref)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
   gentity_s *pgVar4;
-  char *pcVar5;
-  uint uVar6;
+  char *error;
+  uint uVar5;
   int extraout_EAX;
-  undefined1 uVar7;
+  undefined1 force_terminal;
   int local_38;
   byte *local_30;
   byte *local_2c;
   int local_24;
   byte *local_1c;
   byte *local_18;
-  int local_8;
+  int paramCount;
+  char *typeString;
+  gentity_s *ent;
+  int type;
   
-  pgVar4 = GetEntity(param_1);
+  pgVar4 = GetEntity(entref);
   if (pgVar4->pTurretInfo == (TurretInfo *)0x0) {
-    uVar7 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar4->classname,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar5,(bool)uVar7);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar4->pTurretInfo == (TurretInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x10fe,
@@ -5825,9 +6017,9 @@ void __cdecl GScr_SetConvergenceTime(scr_entref_t param_1)
       return;
     }
   }
-  uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  local_8 = 1;
-  if (1 < (int)uVar6) {
+  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  type = 1;
+  if (1 < (int)uVar5) {
     local_30 = (byte *)Scr_GetString(1,SCRIPTINSTANCE_SERVER);
     local_18 = &s_yaw;
     local_1c = local_30;
@@ -5849,7 +6041,7 @@ LAB_00649896:
     local_24 = 0;
 LAB_0064989e:
     if (local_24 == 0) {
-      local_8 = 1;
+      type = 1;
     }
     else {
       local_2c = (byte *)0xcc370c;
@@ -5871,14 +6063,14 @@ LAB_006498fd:
       local_38 = 0;
 LAB_00649905:
       if (local_38 == 0) {
-        local_8 = 0;
+        type = 0;
       }
       else {
         Scr_Error("Convergence type should be either \'pitch\' or \'yaw\'",false);
       }
     }
   }
-  if ((local_8 != 0) && (local_8 != 1)) {
+  if ((type != 0) && (type != 1)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x110e,
                              0,"%s");
     if (!bVar3) {
@@ -5889,7 +6081,7 @@ LAB_00649905:
   }
   Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   _ftol2_sse();
-  pgVar4->pTurretInfo->convergenceTime[local_8] = extraout_EAX;
+  pgVar4->pTurretInfo->convergenceTime[type] = extraout_EAX;
   return;
 }
 
@@ -5901,22 +6093,23 @@ LAB_00649905:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetSuppressionTime(scr_entref_t param_1)
+void __cdecl GScr_SetSuppressionTime(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
+  char *error;
   int extraout_EAX;
-  undefined1 uVar5;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x1126,
@@ -5941,21 +6134,22 @@ void __cdecl GScr_SetSuppressionTime(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ClearTargetEntity(scr_entref_t param_1)
+void __cdecl GScr_ClearTargetEntity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x113e,
@@ -5978,48 +6172,50 @@ void __cdecl GScr_ClearTargetEntity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTurretTeam(scr_entref_t param_1)
+void __cdecl GScr_SetTurretTeam(scr_entref_t entref)
 
 {
   char *pcVar1;
   gentity_s *pgVar2;
-  char *pcVar3;
-  int iVar4;
-  undefined1 uVar5;
-  bool bVar6;
+  char *error;
+  int iVar3;
+  undefined1 force_terminal;
+  bool force_terminal_00;
+  gentity_s *ent;
+  char *pszTeam;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   if (pgVar2->pTurretInfo == (TurretInfo *)0x0) {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar2->classname,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar3,(bool)uVar5);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   (pgVar2->s).faction.iHeadIconTeam = (pgVar2->s).faction.iHeadIconTeam & 0xfe;
   (pgVar2->s).faction.iHeadIconTeam = (pgVar2->s).faction.iHeadIconTeam & 0xfd;
   (pgVar2->s).faction = (pgVar2->s).faction;
-  iVar4 = I_stricmp(pcVar1,"axis");
-  if (iVar4 == 0) {
+  iVar3 = I_stricmp(pcVar1,"axis");
+  if (iVar3 == 0) {
     pgVar2->pTurretInfo->eTeam = TEAM_AXIS;
     (pgVar2->s).faction.iHeadIconTeam = (pgVar2->s).faction.iHeadIconTeam | 1;
   }
   else {
-    iVar4 = I_stricmp(pcVar1,"allies");
-    if (iVar4 == 0) {
+    iVar3 = I_stricmp(pcVar1,"allies");
+    if (iVar3 == 0) {
       pgVar2->pTurretInfo->eTeam = TEAM_ALLIES;
       (pgVar2->s).faction.iHeadIconTeam = (pgVar2->s).faction.iHeadIconTeam | 2;
     }
     else {
-      iVar4 = I_stricmp(pcVar1,"free");
-      if (iVar4 == 0) {
+      iVar3 = I_stricmp(pcVar1,"free");
+      if (iVar3 == 0) {
         pgVar2->pTurretInfo->eTeam = TEAM_BAD;
         (pgVar2->s).faction = (pgVar2->s).faction;
       }
       else {
-        bVar6 = false;
+        force_terminal_00 = false;
         pcVar1 = va("unknown team \'%s\', should be \'axis\' or \'allies\' or \'free\'\n");
-        Scr_Error(pcVar1,bVar6);
+        Scr_Error(pcVar1,force_terminal_00);
       }
     }
   }
@@ -6034,22 +6230,24 @@ void __cdecl GScr_SetTurretTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTurretIgnoreGoals(scr_entref_t param_1)
+void __cdecl GScr_SetTurretIgnoreGoals(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  int iVar5;
-  undefined1 uVar6;
+  char *error;
+  int iVar4;
+  undefined1 force_terminal;
+  int ignoreGoals;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x1184,
@@ -6060,8 +6258,8 @@ void __cdecl GScr_SetTurretIgnoreGoals(scr_entref_t param_1)
       return;
     }
   }
-  iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (iVar5 == 0) {
+  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (iVar4 == 0) {
     pgVar3->pTurretInfo->flags = pgVar3->pTurretInfo->flags & 0xffffdfff;
   }
   else {
@@ -6078,21 +6276,22 @@ void __cdecl GScr_SetTurretIgnoreGoals(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_MakeTurretUsable(scr_entref_t param_1)
+void __cdecl GScr_MakeTurretUsable(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x11a1,
@@ -6115,21 +6314,22 @@ void __cdecl GScr_MakeTurretUsable(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_MakeTurretUnusable(scr_entref_t param_1)
+void __cdecl GScr_MakeTurretUnusable(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x11b8,
@@ -6147,7 +6347,7 @@ void __cdecl GScr_MakeTurretUnusable(scr_entref_t param_1)
 
 // 00649EE0  GScr_SetTurretAccuracy  (game_mp/g_scr_main_mp.cpp:4554)
 
-void __cdecl GScr_SetTurretAccuracy(scr_entref_t param_1)
+void __cdecl GScr_SetTurretAccuracy(scr_entref_t entref)
 
 {
   Com_PrintWarning(0x18,"WARNING: Turret Accuracy no longer has any effect\n");
@@ -6162,23 +6362,24 @@ void __cdecl GScr_SetTurretAccuracy(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetTurretTarget(scr_entref_t param_1)
+void __cdecl GScr_GetTurretTarget(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  int iVar5;
-  undefined1 uVar6;
-  scriptInstance_t sVar7;
+  char *error;
+  int iVar4;
+  undefined1 force_terminal;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
-    uVar6 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar4,(bool)uVar6);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x11e0,
@@ -6189,11 +6390,11 @@ void __cdecl GScr_GetTurretTarget(scr_entref_t param_1)
       return;
     }
   }
-  iVar5 = EntHandle::isDefined(&pgVar3->pTurretInfo->target);
-  if ((iVar5 != 0) && ((pgVar3->pTurretInfo->flags & 0x40U) != 0)) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
+  iVar4 = EntHandle::isDefined(&pgVar3->pTurretInfo->target);
+  if ((iVar4 != 0) && ((pgVar3->pTurretInfo->flags & 0x40U) != 0)) {
+    inst = SCRIPTINSTANCE_SERVER;
     pgVar3 = EntHandle::ent(&pgVar3->pTurretInfo->target);
-    Scr_AddEntity(pgVar3,sVar7);
+    Scr_AddEntity(pgVar3,inst);
   }
   return;
 }
@@ -6206,26 +6407,27 @@ void __cdecl GScr_GetTurretTarget(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisconnectPaths(scr_entref_t param_1)
+void __cdecl GScr_DisconnectPaths(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  int iVar2;
-  char *pcVar3;
-  undefined1 uVar4;
+  gentity_s *ent_00;
+  int iVar1;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  iVar2 = Path_IsDynamicBlockingEntity(pgVar1);
-  if (iVar2 == 0) {
-    if (pgVar1->classname == scr_const.script_brushmodel) {
+  ent_00 = GetEntity(entref);
+  iVar1 = Path_IsDynamicBlockingEntity(ent_00);
+  if (iVar1 == 0) {
+    if (ent_00->classname == scr_const.script_brushmodel) {
       Scr_Error("script_brushmodel must have DYNAMICPATH set to disconnect paths",false);
     }
-    uVar4 = 0;
-    SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("entity of type \'%s\' cannot disconnect paths.\n \n ");
-    Scr_Error(pcVar3,(bool)uVar4);
+    force_terminal = 0;
+    SL_ConvertToString((uint)ent_00->classname,SCRIPTINSTANCE_SERVER);
+    error = va("entity of type \'%s\' cannot disconnect paths.\n \n ");
+    Scr_Error(error,(bool)force_terminal);
   }
-  Path_DisconnectPathsForEntity(pgVar1);
+  Path_DisconnectPathsForEntity(ent_00);
   return;
 }
 
@@ -6237,26 +6439,27 @@ void __cdecl GScr_DisconnectPaths(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ConnectPaths(scr_entref_t param_1)
+void __cdecl GScr_ConnectPaths(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  int iVar2;
-  char *pcVar3;
-  undefined1 uVar4;
+  gentity_s *ent_00;
+  int iVar1;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  iVar2 = Path_IsDynamicBlockingEntity(pgVar1);
-  if (iVar2 == 0) {
-    if (pgVar1->classname == scr_const.script_brushmodel) {
+  ent_00 = GetEntity(entref);
+  iVar1 = Path_IsDynamicBlockingEntity(ent_00);
+  if (iVar1 == 0) {
+    if (ent_00->classname == scr_const.script_brushmodel) {
       Scr_Error("script_brushmodel must have DYNAMICPATH set to connect paths",false);
     }
-    uVar4 = 0;
-    SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("entity of type \'%s\' cannot connect paths \n\n");
-    Scr_Error(pcVar3,(bool)uVar4);
+    force_terminal = 0;
+    SL_ConvertToString((uint)ent_00->classname,SCRIPTINSTANCE_SERVER);
+    error = va("entity of type \'%s\' cannot connect paths \n\n");
+    Scr_Error(error,(bool)force_terminal);
   }
-  Path_ConnectPathsForEntity(pgVar1);
+  Path_ConnectPathsForEntity(ent_00);
   return;
 }
 
@@ -6268,12 +6471,13 @@ void __cdecl GScr_ConnectPaths(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetStance(scr_entref_t param_1)
+void __cdecl ScrCmd_GetStance(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("GetStance is only defined for players.",false);
   }
@@ -6299,13 +6503,15 @@ void __cdecl ScrCmd_GetStance(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetStableMissile(scr_entref_t param_1)
+void __cdecl Scr_SetStableMissile(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   int iVar2;
+  int stableMissile;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((pgVar1->s).eType != 1) {
     Scr_Error("Type should be a player",false);
@@ -6327,7 +6533,7 @@ void __cdecl Scr_SetStableMissile(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetCursorHint(scr_entref_t param_1)
+void __cdecl GScr_SetCursorHint(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -6335,9 +6541,11 @@ void __cdecl GScr_SetCursorHint(scr_entref_t param_1)
   gentity_s *pgVar3;
   char *pcVar4;
   int iVar5;
-  int local_8;
+  char *pszHint;
+  gentity_s *pEnt;
+  int i;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (((pgVar3->s).eType == 4) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x124f,0,"%s"), !bVar2)) {
@@ -6354,9 +6562,9 @@ void __cdecl GScr_SetCursorHint(scr_entref_t param_1)
     (pgVar3->s).un3.item = -1;
     return;
   }
-  local_8 = 1;
+  i = 1;
   while( true ) {
-    if (7 < local_8) {
+    if (7 < i) {
       Com_Printf(0x18,"List of valid hint type strings\n");
       if (((pgVar3->classname == scr_const.trigger_use) ||
           (pgVar3->classname == scr_const.trigger_use_touch)) ||
@@ -6366,7 +6574,7 @@ void __cdecl GScr_SetCursorHint(scr_entref_t param_1)
                    "HINT_INHERIT (for trigger_use or trigger_use_touch or trigger_radius entities only)\n"
                   );
       }
-      for (local_8 = 1; local_8 < 8; local_8 = local_8 + 1) {
+      for (i = 1; i < 8; i = i + 1) {
         Com_Printf(0x18,"%s\n");
       }
       bVar2 = false;
@@ -6374,11 +6582,11 @@ void __cdecl GScr_SetCursorHint(scr_entref_t param_1)
       Scr_Error(pcVar4,bVar2);
       return;
     }
-    iVar5 = I_stricmp(pcVar4,*(char **)(&hintStrings + local_8 * 4));
+    iVar5 = I_stricmp(pcVar4,*(char **)(&hintStrings + i * 4));
     if (iVar5 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  (pgVar3->s).un3.item = local_8;
+  (pgVar3->s).un3.item = i;
   return;
 }
 
@@ -6386,8 +6594,13 @@ void __cdecl GScr_SetCursorHint(scr_entref_t param_1)
 // 0064A440  G_GetHintStringIndex  (game_mp/g_scr_main_mp.cpp:4722)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetHintStringIndex(int *param_1,char *param_2)
+int __cdecl G_GetHintStringIndex(int *piIndex,char *pszString)
 
 {
   byte bVar1;
@@ -6395,25 +6608,25 @@ int __cdecl G_GetHintStringIndex(int *param_1,char *param_2)
   int local_41c;
   byte *local_414;
   byte *local_410;
-  byte local_40c [1024];
+  byte szConfigString [1024];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x5f < local_8) {
-      *param_1 = -1;
+    if (0x5f < i) {
+      *piIndex = -1;
       return 0;
     }
-    SV_GetConfigstring(local_8 + 0x1a3,(char *)local_40c,0x400);
-    if (local_40c[0] == 0) {
-      SV_SetConfigstring(local_8 + 0x1a3,param_2);
-      *param_1 = local_8;
+    SV_GetConfigstring(i + 0x1a3,(char *)szConfigString,0x400);
+    if (szConfigString[0] == 0) {
+      SV_SetConfigstring(i + 0x1a3,pszString);
+      *piIndex = i;
       return 1;
     }
-    local_410 = local_40c;
-    local_414 = (byte *)param_2;
+    local_410 = szConfigString;
+    local_414 = (byte *)pszString;
     do {
       bVar1 = *local_414;
       bVar2 = bVar1 < *local_410;
@@ -6432,10 +6645,10 @@ LAB_0064a538:
     local_41c = 0;
 LAB_0064a543:
     if (local_41c == 0) {
-      *param_1 = local_8;
+      *piIndex = i;
       return 1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -6448,58 +6661,58 @@ LAB_0064a543:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetHintString(scr_entref_t param_1)
+void __cdecl GScr_SetHintString(scr_entref_t entref)
 
 {
   char *pcVar1;
   int iVar2;
   uint uVar3;
-  char *pcVar4;
+  char *errorContext;
+  undefined1 uVar4;
+  bool force_terminal;
   undefined1 uVar5;
-  bool bVar6;
-  undefined1 uVar7;
-  undefined2 uVar8;
-  char local_414 [1024];
+  undefined2 uVar6;
+  char szHint [1024];
   uint local_14;
-  int local_10;
-  gentity_s *local_c;
-  <unnamed_type_un1> local_8 [4];
+  int type;
+  gentity_s *pEnt;
+  <unnamed_type_un1> i [4];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = GetEntity(param_1);
-  if ((((local_c->classname != scr_const.trigger_use) &&
-       (local_c->classname != scr_const.trigger_use_touch)) &&
-      (local_c->classname != scr_const.trigger_radius)) &&
-     ((local_c->classname != scr_const.trigger_radius_use && ((local_c->s).eType != 6)))) {
+  pEnt = GetEntity(entref);
+  if ((((pEnt->classname != scr_const.trigger_use) &&
+       (pEnt->classname != scr_const.trigger_use_touch)) &&
+      (pEnt->classname != scr_const.trigger_radius)) &&
+     ((pEnt->classname != scr_const.trigger_radius_use && ((pEnt->s).eType != 6)))) {
     Scr_Error("The setHintString command only works on trigger_use, trigger_radius, trigger_radius_use, trigger_use_touch, or script mover entities.\n"
               ,false);
   }
-  local_10 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  if (local_10 == 2) {
-    uVar5 = 0xf9;
-    uVar7 = 0xb;
-    uVar8 = 0xc6;
+  type = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+  if (type == 2) {
+    uVar4 = 0xf9;
+    uVar5 = 0xb;
+    uVar6 = 0xc6;
     pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    iVar2 = I_stricmp(pcVar1,(char *)CONCAT22(uVar8,CONCAT11(uVar7,uVar5)));
+    iVar2 = I_stricmp(pcVar1,(char *)CONCAT22(uVar6,CONCAT11(uVar5,uVar4)));
     if (iVar2 == 0) {
-      (local_c->s).un1.scale = 0xff;
+      (pEnt->s).un1.scale = 0xff;
       return;
     }
   }
-  uVar5 = 0;
-  uVar7 = 4;
-  uVar8 = 0;
-  pcVar1 = local_414;
-  pcVar4 = "Hint String";
+  uVar4 = 0;
+  uVar5 = 4;
+  uVar6 = 0;
+  pcVar1 = szHint;
+  errorContext = "Hint String";
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(0,uVar3 - 1,pcVar4,pcVar1,CONCAT22(uVar8,CONCAT11(uVar7,uVar5)));
-  iVar2 = G_GetHintStringIndex((int *)&local_8[0].scale,local_414);
+  Scr_ConstructMessageString(0,uVar3 - 1,errorContext,pcVar1,CONCAT22(uVar6,CONCAT11(uVar5,uVar4)));
+  iVar2 = G_GetHintStringIndex((int *)&i[0].scale,szHint);
   if (iVar2 == 0) {
-    bVar6 = false;
+    force_terminal = false;
     pcVar1 = va("Too many different hintstring values. Max allowed is %i different strings");
-    Scr_Error(pcVar1,bVar6);
+    Scr_Error(pcVar1,force_terminal);
   }
-  (local_c->s).un1 = local_8[0];
+  (pEnt->s).un1 = i[0];
   return;
 }
 
@@ -6512,7 +6725,7 @@ void __cdecl GScr_SetHintString(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetHintStringForPerk(scr_entref_t param_1)
+void __cdecl GScr_SetHintStringForPerk(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -6523,16 +6736,16 @@ void __cdecl GScr_SetHintStringForPerk(scr_entref_t param_1)
   undefined1 uVar6;
   undefined1 uVar7;
   undefined2 uVar8;
-  byte local_418 [4];
-  char local_414 [1024];
+  byte hintIndex [4];
+  char szHint [1024];
   uint local_14;
-  uint local_10;
-  int local_c;
-  gentity_s *local_8;
+  int perkIndex;
+  int type;
+  gentity_s *pEnt;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = GetEntity(param_1);
-  if ((local_8->s).eType != 6) {
+  pEnt = GetEntity(entref);
+  if ((pEnt->s).eType != 6) {
     Scr_Error("The SetHintStringForPerk command only works on script mover entities.\n",false);
   }
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -6540,10 +6753,10 @@ void __cdecl GScr_SetHintStringForPerk(scr_entref_t param_1)
     Scr_Error("SetHintStringForPerk Usage: <perk>, <hint string>",false);
   }
   pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_10 = BG_GetPerkIndexForName(pcVar4);
-  (local_8->s).eventParm = (local_8->s).eventParm & 0xc000;
-  local_c = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
-  if (local_c == 2) {
+  perkIndex = BG_GetPerkIndexForName(pcVar4);
+  (pEnt->s).eventParm = (pEnt->s).eventParm & 0xc000;
+  type = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
+  if (type == 2) {
     uVar6 = 0xf9;
     uVar7 = 0xb;
     uVar8 = 0xc6;
@@ -6553,25 +6766,25 @@ void __cdecl GScr_SetHintStringForPerk(scr_entref_t param_1)
       return;
     }
   }
-  Scr_ConstructMessageString(1,1,"Hint String",local_414,0x400);
-  iVar5 = G_GetHintStringIndex((int *)local_418,local_414);
+  Scr_ConstructMessageString(1,1,"Hint String",szHint,0x400);
+  iVar5 = G_GetHintStringIndex((int *)hintIndex,szHint);
   if (iVar5 == 0) {
     bVar2 = false;
     pcVar4 = va("Too many different hintstring values. Max allowed is %i different strings");
     Scr_Error(pcVar4,bVar2);
   }
-  if ((0x3f < (int)local_10) &&
+  if ((0x3f < perkIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x12e0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (0x3f < (int)local_10) {
-    local_10 = 0;
+  if (0x3f < perkIndex) {
+    perkIndex = 0;
   }
-  (local_8->s).eventParm = (local_8->s).eventParm | (ushort)(local_10 << 8);
-  (local_8->s).eventParm = (local_8->s).eventParm | (ushort)local_418[0];
+  (pEnt->s).eventParm = (pEnt->s).eventParm | (ushort)(perkIndex << 8);
+  (pEnt->s).eventParm = (pEnt->s).eventParm | (ushort)hintIndex[0];
   return;
 }
 
@@ -6583,14 +6796,15 @@ void __cdecl GScr_SetHintStringForPerk(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetHintLowPriority(scr_entref_t param_1)
+void __cdecl GScr_SetHintLowPriority(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
   int iVar3;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 1) {
     Scr_Error("SetHintLowPriority Usage: <bool>",false);
@@ -6614,7 +6828,7 @@ void __cdecl GScr_SetHintLowPriority(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetReviveHintString(scr_entref_t param_1)
+void __cdecl GScr_SetReviveHintString(scr_entref_t entref)
 
 {
   byte bVar1;
@@ -6631,34 +6845,35 @@ void __cdecl GScr_SetReviveHintString(scr_entref_t param_1)
   int local_428;
   byte *local_420;
   byte *local_41c;
-  char local_414 [1024];
+  char *team;
+  char szHint [1024];
   uint local_14;
-  int local_10;
-  gentity_s *local_c;
-  <unnamed_type_un1> local_8 [4];
+  int type;
+  gentity_s *pEnt;
+  <unnamed_type_un1> i [4];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = GetEntity(param_1);
-  if (((local_c->classname != scr_const.trigger_use) &&
-      (local_c->classname != scr_const.trigger_use_touch)) &&
-     (local_c->classname != scr_const.trigger_radius)) {
+  pEnt = GetEntity(entref);
+  if (((pEnt->classname != scr_const.trigger_use) &&
+      (pEnt->classname != scr_const.trigger_use_touch)) &&
+     (pEnt->classname != scr_const.trigger_radius)) {
     Scr_Error("The setHintString command only works on trigger_use, trigger_radius or trigger_use_touch entities.\n"
               ,false);
   }
-  local_10 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  if (local_10 == 2) {
+  type = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+  if (type == 2) {
     uVar6 = 0xf9;
     uVar7 = 0xb;
     uVar8 = 0xc6;
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
     iVar3 = I_stricmp(pcVar2,(char *)CONCAT22(uVar8,CONCAT11(uVar7,uVar6)));
     if (iVar3 == 0) {
-      (local_c->s).un1.scale = 0xff;
+      (pEnt->s).un1.scale = 0xff;
       return;
     }
   }
-  if (local_c->classname == scr_const.trigger_radius) {
-    local_c->team = '\0';
+  if (pEnt->classname == scr_const.trigger_radius) {
+    pEnt->team = '\0';
     uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (1 < uVar4) {
       local_434 = (byte *)Scr_GetString(1,SCRIPTINSTANCE_SERVER);
@@ -6682,7 +6897,7 @@ LAB_0064aaac:
       local_428 = 0;
 LAB_0064aab7:
       if (local_428 == 0) {
-        local_c->team = '\x02';
+        pEnt->team = '\x02';
       }
       else {
         local_430 = &s_axis;
@@ -6704,19 +6919,19 @@ LAB_0064ab4f:
         local_43c = 0;
 LAB_0064ab5a:
         if (local_43c == 0) {
-          local_c->team = '\x01';
+          pEnt->team = '\x01';
         }
       }
     }
   }
-  Scr_ConstructMessageString(0,0,"Hint String",local_414,0x400);
-  iVar3 = G_GetHintStringIndex((int *)&local_8[0].scale,local_414);
+  Scr_ConstructMessageString(0,0,"Hint String",szHint,0x400);
+  iVar3 = G_GetHintStringIndex((int *)&i[0].scale,szHint);
   if (iVar3 == 0) {
     bVar5 = false;
     pcVar2 = va("Too many different hintstring values. Max allowed is %i different strings");
     Scr_Error(pcVar2,bVar5);
   }
-  (local_c->s).un1 = local_8[0];
+  (pEnt->s).un1 = i[0];
   return;
 }
 
@@ -6728,12 +6943,13 @@ LAB_0064ab5a:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_UseTriggerRequireLookAt(scr_entref_t param_1)
+void __cdecl GScr_UseTriggerRequireLookAt(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->classname != scr_const.trigger_use) {
     Scr_Error("The UseTriggerRequireLookAt command only works on trigger_use entities.\n",false);
   }
@@ -6749,12 +6965,13 @@ void __cdecl GScr_UseTriggerRequireLookAt(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsMartyrdomGrenade(scr_entref_t param_1)
+void __cdecl GScr_IsMartyrdomGrenade(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddBool((uint)((pgVar1->flags & 0x8000U) != 0),SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -6767,12 +6984,13 @@ void __cdecl GScr_IsMartyrdomGrenade(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetEntityNumber(scr_entref_t param_1)
+void __cdecl GScr_GetEntityNumber(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *pEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_AddInt((pgVar1->s).number,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -6785,12 +7003,13 @@ void __cdecl GScr_GetEntityNumber(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_EnableGrenadeTouchDamage(scr_entref_t param_1)
+void __cdecl GScr_EnableGrenadeTouchDamage(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->classname != scr_const.trigger_damage) {
     Scr_Error("Currently on supported on damage triggers",false);
   }
@@ -6806,12 +7025,13 @@ void __cdecl GScr_EnableGrenadeTouchDamage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisableGrenadeTouchDamage(scr_entref_t param_1)
+void __cdecl GScr_DisableGrenadeTouchDamage(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->classname != scr_const.trigger_damage) {
     Scr_Error("Currently on supported on damage triggers",false);
   }
@@ -6827,17 +7047,20 @@ void __cdecl GScr_DisableGrenadeTouchDamage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_MissileSetTarget(scr_entref_t param_1)
+void __cdecl GScr_MissileSetTarget(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   int iVar2;
-  char *pcVar3;
-  uint uVar4;
-  bool bVar5;
+  char *error;
+  uint uVar3;
+  bool force_terminal;
   gentity_s *local_18;
+  gentity_s *target;
+  gentity_s *missile;
+  int type;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   iVar2 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar2 == 0) {
     local_18 = (gentity_s *)0x0;
@@ -6846,13 +7069,13 @@ void __cdecl GScr_MissileSetTarget(scr_entref_t param_1)
     local_18 = Scr_GetEntity(0);
   }
   if (pgVar1->classname != scr_const.rocket) {
-    bVar5 = false;
-    pcVar3 = va("Entity %i is not a rocket\n");
-    Scr_Error(pcVar3,bVar5);
+    force_terminal = false;
+    error = va("Entity %i is not a rocket\n");
+    Scr_Error(error,force_terminal);
   }
   EntHandle::setEnt(&pgVar1->missileTargetEnt,local_18);
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 < 2) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 < 2) {
     (pgVar1->field36_0x21c).item[4].index = 0;
     (pgVar1->field36_0x21c).item[5].ammoCount = 0;
     (pgVar1->field36_0x21c).item[5].clipAmmoCount = 0;
@@ -6871,12 +7094,13 @@ void __cdecl GScr_MissileSetTarget(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_EnableAimAssist(scr_entref_t param_1)
+void __cdecl GScr_EnableAimAssist(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((pgVar1->r).bmodel == '\0') {
     Scr_Error("Currently only supported on entities with brush models",false);
   }
@@ -6892,12 +7116,13 @@ void __cdecl GScr_EnableAimAssist(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisableAimAssist(scr_entref_t param_1)
+void __cdecl GScr_DisableAimAssist(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((pgVar1->r).bmodel == '\0') {
     Scr_Error("Currently only supported on entities with brush models",false);
   }
@@ -6916,10 +7141,10 @@ void __cdecl GScr_DisableAimAssist(scr_entref_t param_1)
 void __cdecl G_InitObjectives(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    ClearObjective(level.objectives + local_8);
+  for (i = 0; i < 0x20; i = i + 1) {
+    ClearObjective(level.objectives + i);
   }
   return;
 }
@@ -6927,24 +7152,24 @@ void __cdecl G_InitObjectives(void)
 
 // 0064AFC0  ObjectiveStateIndexFromString  (game_mp/g_scr_main_mp.cpp:5039)
 
-int __cdecl ObjectiveStateIndexFromString(objectiveState_t *param_1,uint param_2)
+int __cdecl ObjectiveStateIndexFromString(objectiveState_t *piStateIndex,uint stateString)
 
 {
-  if (param_2 == scr_const.empty) {
-    *param_1 = OBJST_EMPTY;
+  if (stateString == scr_const.empty) {
+    *piStateIndex = OBJST_EMPTY;
   }
-  else if (param_2 == scr_const.invisible) {
-    *param_1 = OBJST_INVISIBLE;
+  else if (stateString == scr_const.invisible) {
+    *piStateIndex = OBJST_INVISIBLE;
   }
-  else if (param_2 == scr_const.current) {
-    *param_1 = OBJST_CURRENT;
+  else if (stateString == scr_const.current) {
+    *piStateIndex = OBJST_CURRENT;
   }
   else {
-    if (param_2 != scr_const.active) {
-      *param_1 = OBJST_EMPTY;
+    if (stateString != scr_const.active) {
+      *piStateIndex = OBJST_EMPTY;
       return 0;
     }
-    *param_1 = OBJST_ACTIVE;
+    *piStateIndex = OBJST_ACTIVE;
   }
   return 1;
 }
@@ -6957,17 +7182,18 @@ int __cdecl ObjectiveStateIndexFromString(objectiveState_t *param_1,uint param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClearObjective_OnEntity(objective_t *param_1)
+void __cdecl ClearObjective_OnEntity(objective_t *obj)
 
 {
   int iVar1;
+  gentity_s *pEnt;
   
-  if (param_1->entNum != 0x3ff) {
-    iVar1 = param_1->entNum;
+  if (obj->entNum != 0x3ff) {
+    iVar1 = obj->entNum;
     if (g_entities[iVar1].r.inuse != '\0') {
       g_entities[iVar1].r.svFlags = g_entities[iVar1].r.svFlags & 0xef;
     }
-    param_1->entNum = 0x3ff;
+    obj->entNum = 0x3ff;
   }
   return;
 }
@@ -6975,46 +7201,47 @@ void __cdecl ClearObjective_OnEntity(objective_t *param_1)
 
 // 0064B040  ClearObjective  (game_mp/g_scr_main_mp.cpp:5074)
 
-void __cdecl ClearObjective(objective_t *param_1)
+void __cdecl ClearObjective(objective_t *obj)
 
 {
-  param_1->state = OBJST_EMPTY;
-  param_1->origin[0] = 0.0;
-  param_1->origin[1] = 0.0;
-  param_1->origin[2] = 0.0;
-  param_1->entNum = 0x3ff;
-  param_1->teamNum = 0;
-  param_1->icon = 0;
+  obj->state = OBJST_EMPTY;
+  obj->origin[0] = 0.0;
+  obj->origin[1] = 0.0;
+  obj->origin[2] = 0.0;
+  obj->entNum = 0x3ff;
+  obj->teamNum = 0;
+  obj->icon = 0;
   return;
 }
 
 
 // 0064B290  SetObjectiveIcon  (game_mp/g_scr_main_mp.cpp:5084)
 
-void __cdecl SetObjectiveIcon(objective_t *param_1,int param_2)
+void __cdecl SetObjectiveIcon(objective_t *obj,int paramNum)
 
 {
+  char *name;
   char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  scriptInstance_t sVar4;
-  int local_8;
+  int iVar2;
+  scriptInstance_t sVar3;
+  char *shaderName;
+  int i;
   
-  pcVar1 = Scr_GetString(param_2,SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; pcVar1[local_8] != '\0'; local_8 = local_8 + 1) {
-    if ((pcVar1[local_8] < ' ') || ('~' < pcVar1[local_8])) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Illegal character \'%c\'(ascii %i) in objective icon name: %s\n");
-      Scr_ParamError(3,pcVar2,sVar4);
+  name = Scr_GetString(paramNum,SCRIPTINSTANCE_SERVER);
+  for (i = 0; name[i] != '\0'; i = i + 1) {
+    if ((name[i] < ' ') || ('~' < name[i])) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      pcVar1 = va("Illegal character \'%c\'(ascii %i) in objective icon name: %s\n");
+      Scr_ParamError(3,pcVar1,sVar3);
     }
   }
-  if (0x3f < local_8) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("Objective icon name is too long (> %i): %s\n");
-    Scr_ParamError(3,pcVar2,sVar4);
+  if (0x3f < i) {
+    sVar3 = SCRIPTINSTANCE_SERVER;
+    pcVar1 = va("Objective icon name is too long (> %i): %s\n");
+    Scr_ParamError(3,pcVar1,sVar3);
   }
-  iVar3 = G_MaterialIndex(pcVar1);
-  param_1->icon = iVar3;
+  iVar2 = G_MaterialIndex(name);
+  obj->icon = iVar2;
   return;
 }
 
@@ -7033,50 +7260,50 @@ void __cdecl Scr_Objective_Add(void)
   uint uVar2;
   int iVar3;
   scriptInstance_t sVar4;
-  objectiveState_t local_18;
-  objective_t *local_14;
-  uint local_10;
-  ushort local_c;
-  int local_8;
+  objectiveState_t state;
+  objective_t *obj;
+  int numParam;
+  ushort stateName;
+  int objNum;
   
-  local_10 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((int)local_10 < 2) {
+  numParam = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (numParam < 2) {
     Scr_Error("objective_add needs at least the first two parameters out of its parameter list of: index state [string] [position]\n"
               ,false);
   }
-  local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((local_8 < 0) || (0x1f < local_8)) {
+  objNum = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((objNum < 0) || (0x1f < objNum)) {
     sVar4 = SCRIPTINSTANCE_SERVER;
     pcVar1 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
     Scr_ParamError(0,pcVar1,sVar4);
   }
-  local_14 = level.objectives + local_8;
-  level.objectivesClientMask[local_8][0] = 0;
-  level.objectivesClientMask[local_8][1] = 0;
-  ClearObjective_OnEntity(local_14);
+  obj = level.objectives + objNum;
+  level.objectivesClientMask[objNum][0] = 0;
+  level.objectivesClientMask[objNum][1] = 0;
+  ClearObjective_OnEntity(obj);
   uVar2 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  local_c = (ushort)uVar2;
-  iVar3 = ObjectiveStateIndexFromString(&local_18,uVar2 & 0xffff);
+  stateName = (ushort)uVar2;
+  iVar3 = ObjectiveStateIndexFromString(&state,uVar2 & 0xffff);
   if (iVar3 == 0) {
     sVar4 = SCRIPTINSTANCE_SERVER;
-    SL_ConvertToString((uint)local_c,SCRIPTINSTANCE_SERVER);
+    SL_ConvertToString((uint)stateName,SCRIPTINSTANCE_SERVER);
     pcVar1 = va(
                "Illegal objective state \"%s\". Valid states are \"empty\", \"invisible\", \"current\", \"active\"\n"
                );
     Scr_ParamError(1,pcVar1,sVar4);
   }
-  local_14->state = local_18;
-  if (2 < (int)local_10) {
-    Scr_GetVector(2,local_14->origin,SCRIPTINSTANCE_SERVER);
-    local_14->origin[0] = (float)(int)local_14->origin[0];
-    local_14->origin[1] = (float)(int)local_14->origin[1];
-    local_14->origin[2] = (float)(int)local_14->origin[2];
-    local_14->entNum = 0x3ff;
-    if (3 < (int)local_10) {
-      SetObjectiveIcon(local_14,3);
+  obj->state = state;
+  if (2 < numParam) {
+    Scr_GetVector(2,obj->origin,SCRIPTINSTANCE_SERVER);
+    obj->origin[0] = (float)(int)obj->origin[0];
+    obj->origin[1] = (float)(int)obj->origin[1];
+    obj->origin[2] = (float)(int)obj->origin[2];
+    obj->entNum = 0x3ff;
+    if (3 < numParam) {
+      SetObjectiveIcon(obj,3);
     }
   }
-  local_14->teamNum = 0;
+  obj->teamNum = 0;
   return;
 }
 
@@ -7092,14 +7319,15 @@ void __cdecl Scr_Objective_Delete(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   ClearObjective_OnEntity(level.objectives + iVar1);
   ClearObjective(level.objectives + iVar1);
@@ -7123,21 +7351,21 @@ void __cdecl Scr_Objective_State(void)
   uint uVar2;
   int iVar3;
   scriptInstance_t sVar4;
-  objectiveState_t local_14;
-  objective_t *local_10;
-  undefined2 local_c;
-  int local_8;
+  objectiveState_t state;
+  objective_t *obj;
+  ushort stateName;
+  int objNum;
   
-  local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((local_8 < 0) || (0x1f < local_8)) {
+  objNum = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((objNum < 0) || (0x1f < objNum)) {
     sVar4 = SCRIPTINSTANCE_SERVER;
     pcVar1 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
     Scr_ParamError(0,pcVar1,sVar4);
   }
-  local_10 = level.objectives + local_8;
+  obj = level.objectives + objNum;
   uVar2 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  local_c = (undefined2)uVar2;
-  iVar3 = ObjectiveStateIndexFromString(&local_14,uVar2 & 0xffff);
+  stateName = (ushort)uVar2;
+  iVar3 = ObjectiveStateIndexFromString(&state,uVar2 & 0xffff);
   if (iVar3 == 0) {
     sVar4 = SCRIPTINSTANCE_SERVER;
     Scr_GetString(1,SCRIPTINSTANCE_SERVER);
@@ -7146,9 +7374,9 @@ void __cdecl Scr_Objective_State(void)
                );
     Scr_ParamError(1,pcVar1,sVar4);
   }
-  local_10->state = local_14;
-  if ((local_14 == OBJST_EMPTY) || (local_14 == OBJST_INVISIBLE)) {
-    ClearObjective_OnEntity(local_10);
+  obj->state = state;
+  if ((state == OBJST_EMPTY) || (state == OBJST_INVISIBLE)) {
+    ClearObjective_OnEntity(obj);
   }
   return;
 }
@@ -7165,14 +7393,15 @@ void __cdecl Scr_Objective_Icon(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   SetObjectiveIcon(level.objectives + iVar1,1);
   return;
@@ -7190,14 +7419,16 @@ void __cdecl Scr_Objective_Position(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
+  objective_t *obj;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   ClearObjective_OnEntity(level.objectives + iVar1);
   Scr_GetVector(1,level.objectives[iVar1].origin,SCRIPTINSTANCE_SERVER);
@@ -7219,20 +7450,23 @@ void __cdecl Scr_Objective_OnEntity(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  gentity_s *pgVar3;
-  scriptInstance_t sVar4;
+  char *error;
+  gentity_s *pgVar2;
+  scriptInstance_t inst;
+  objective_t *obj;
+  gentity_s *ent;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar2,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   ClearObjective_OnEntity(level.objectives + iVar1);
-  pgVar3 = Scr_GetEntity(1);
-  (pgVar3->r).svFlags = (pgVar3->r).svFlags | 0x10;
-  level.objectives[iVar1].entNum = (pgVar3->s).number;
+  pgVar2 = Scr_GetEntity(1);
+  (pgVar2->r).svFlags = (pgVar2->r).svFlags | 0x10;
+  level.objectives[iVar1].entNum = (pgVar2->s).number;
   return;
 }
 
@@ -7248,33 +7482,35 @@ void __cdecl Scr_Objective_Current(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  objective_t *poVar3;
-  scriptInstance_t sVar4;
-  int local_8c [32];
-  uint local_c;
-  int local_8;
+  char *error;
+  objective_t *poVar2;
+  scriptInstance_t inst;
+  objective_t *obj;
+  int numParam;
+  int makeCurrent [32];
+  int i;
+  int objNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  memset((uchar *)local_8c,'\0',0x80);
-  for (local_c = 0; (int)local_c < (int)uVar1; local_c = local_c + 1) {
-    local_8 = Scr_GetInt(local_c,SCRIPTINSTANCE_SERVER);
-    if ((local_8 < 0) || (0x1f < local_8)) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-      Scr_ParamError(local_c,pcVar2,sVar4);
+  memset((uchar *)makeCurrent,'\0',0x80);
+  for (i = 0; i < (int)uVar1; i = i + 1) {
+    objNum = Scr_GetInt(i,SCRIPTINSTANCE_SERVER);
+    if ((objNum < 0) || (0x1f < objNum)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+      Scr_ParamError(i,error,inst);
     }
-    local_8c[local_8] = 1;
+    makeCurrent[objNum] = 1;
   }
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    poVar3 = level.objectives + local_8;
-    if (local_8c[local_8] == 0) {
-      if (poVar3->state == OBJST_CURRENT) {
-        poVar3->state = OBJST_ACTIVE;
+  for (objNum = 0; objNum < 0x20; objNum = objNum + 1) {
+    poVar2 = level.objectives + objNum;
+    if (makeCurrent[objNum] == 0) {
+      if (poVar2->state == OBJST_CURRENT) {
+        poVar2->state = OBJST_ACTIVE;
       }
     }
     else {
-      poVar3->state = OBJST_CURRENT;
+      poVar2->state = OBJST_CURRENT;
     }
   }
   return;
@@ -7295,19 +7531,22 @@ void __cdecl Scr_Objective_SetVisibleToPlayer(void)
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  char *pcVar5;
-  gentity_s *pgVar6;
-  int iVar7;
-  scriptInstance_t sVar8;
+  char *error;
+  gentity_s *pgVar5;
+  int iVar6;
+  scriptInstance_t inst;
+  int objNum;
+  int clientNum;
+  gentity_s *player;
   
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar4 < 0) || (0x1f < iVar4)) {
-    sVar8 = SCRIPTINSTANCE_SERVER;
-    pcVar5 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar5,sVar8);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
-  pgVar6 = Scr_GetEntity(1);
-  if (pgVar6->client == (gclient_s *)0x0) {
+  pgVar5 = Scr_GetEntity(1);
+  if (pgVar5->client == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x14ad,
                              0,"%s");
     if (!bVar3) {
@@ -7316,10 +7555,10 @@ void __cdecl Scr_Objective_SetVisibleToPlayer(void)
       return;
     }
   }
-  iVar1 = (pgVar6->s).number;
-  iVar7 = iVar1 >> 5;
-  *(uint *)(iVar7 * 4 + 0x3e518c8 + iVar4 * 8) =
-       ~(1 << ((byte)iVar1 & 0x1f)) & *(uint *)(iVar7 * 4 + 0x3e518c8 + iVar4 * 8);
+  iVar1 = (pgVar5->s).number;
+  iVar6 = iVar1 >> 5;
+  *(uint *)(iVar6 * 4 + 0x3e518c8 + iVar4 * 8) =
+       ~(1 << ((byte)iVar1 & 0x1f)) & *(uint *)(iVar6 * 4 + 0x3e518c8 + iVar4 * 8);
   return;
 }
 
@@ -7338,19 +7577,22 @@ void __cdecl Scr_Objective_SetInvisibleToPlayer(void)
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  char *pcVar5;
-  gentity_s *pgVar6;
-  int iVar7;
-  scriptInstance_t sVar8;
+  char *error;
+  gentity_s *pgVar5;
+  int iVar6;
+  scriptInstance_t inst;
+  int objNum;
+  int clientNum;
+  gentity_s *player;
   
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar4 < 0) || (0x1f < iVar4)) {
-    sVar8 = SCRIPTINSTANCE_SERVER;
-    pcVar5 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar5,sVar8);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
-  pgVar6 = Scr_GetEntity(1);
-  if (pgVar6->client == (gclient_s *)0x0) {
+  pgVar5 = Scr_GetEntity(1);
+  if (pgVar5->client == (gclient_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x14c8,
                              0,"%s");
     if (!bVar3) {
@@ -7359,10 +7601,10 @@ void __cdecl Scr_Objective_SetInvisibleToPlayer(void)
       return;
     }
   }
-  iVar1 = (pgVar6->s).number;
-  iVar7 = iVar1 >> 5;
-  *(uint *)(iVar7 * 4 + 0x3e518c8 + iVar4 * 8) =
-       1 << ((byte)iVar1 & 0x1f) | *(uint *)(iVar7 * 4 + 0x3e518c8 + iVar4 * 8);
+  iVar1 = (pgVar5->s).number;
+  iVar6 = iVar1 >> 5;
+  *(uint *)(iVar6 * 4 + 0x3e518c8 + iVar4 * 8) =
+       1 << ((byte)iVar1 & 0x1f) | *(uint *)(iVar6 * 4 + 0x3e518c8 + iVar4 * 8);
   return;
 }
 
@@ -7378,14 +7620,15 @@ void __cdecl Scr_Objective_SetVisibleToAll(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   level.objectivesClientMask[iVar1][0] = 0;
   level.objectivesClientMask[iVar1][1] = 0;
@@ -7404,14 +7647,15 @@ void __cdecl Scr_Objective_SetInvisibleToAll(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   level.objectivesClientMask[iVar1][0] = -1;
   level.objectivesClientMask[iVar1][1] = -1;
@@ -7431,11 +7675,16 @@ void __cdecl Scr_Objective_SetSize(void)
 {
   uint uVar1;
   int iVar2;
-  char *pcVar3;
-  gentity_s *pgVar4;
+  char *error;
+  gentity_s *pgVar3;
+  float fVar4;
   float fVar5;
-  float fVar6;
-  scriptInstance_t sVar7;
+  scriptInstance_t inst;
+  float width;
+  float height;
+  gentity_s *ent;
+  objective_t *objective;
+  int objectiveIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
@@ -7443,28 +7692,28 @@ void __cdecl Scr_Objective_SetSize(void)
   }
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar2 < 0) || (0x1f < iVar2)) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar3,sVar7);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 2) {
-    pgVar4 = Scr_GetEntity(1);
-    if (pgVar4 == (gentity_s *)0x0) {
+    pgVar3 = Scr_GetEntity(1);
+    if (pgVar3 == (gentity_s *)0x0) {
       Scr_ParamError(1,"Illegal entity parameter for Objective_SetSize.",SCRIPTINSTANCE_SERVER);
     }
     else {
-      fVar5 = (pgVar4->r).maxs[1];
-      fVar6 = (pgVar4->r).mins[1];
-      level.objectives[iVar2].size[0] = (pgVar4->r).maxs[0] - (pgVar4->r).mins[0];
-      level.objectives[iVar2].size[1] = fVar5 - fVar6;
+      fVar4 = (pgVar3->r).maxs[1];
+      fVar5 = (pgVar3->r).mins[1];
+      level.objectives[iVar2].size[0] = (pgVar3->r).maxs[0] - (pgVar3->r).mins[0];
+      level.objectives[iVar2].size[1] = fVar4 - fVar5;
     }
   }
   else {
-    fVar5 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    fVar6 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-    level.objectives[iVar2].size[0] = fVar5;
-    level.objectives[iVar2].size[1] = fVar6;
+    fVar4 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    fVar5 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+    level.objectives[iVar2].size[0] = fVar4;
+    level.objectives[iVar2].size[1] = fVar5;
   }
   return;
 }
@@ -7482,9 +7731,11 @@ void __cdecl Scr_Objective_SetColor(void)
 {
   uint uVar1;
   int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  float local_14;
+  char *error;
+  scriptInstance_t inst;
+  objective_t *objective;
+  int objectiveIndex;
+  float color;
   float local_10;
   float local_c;
   float local_8;
@@ -7495,11 +7746,11 @@ void __cdecl Scr_Objective_SetColor(void)
   }
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar2 < 0) || (0x1f < iVar2)) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
-    Scr_ParamError(0,pcVar3,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("index %i is an illegal objective index. Valid indexes are 0 to %i\n");
+    Scr_ParamError(0,error,inst);
   }
-  local_14 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  color = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   local_10 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   local_c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   local_8 = 1.0;
@@ -7507,7 +7758,7 @@ void __cdecl Scr_Objective_SetColor(void)
   if (uVar1 == 5) {
     local_8 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
   }
-  Byte4PackRgba(&local_14,(uchar *)&level.objectives[iVar2].color);
+  Byte4PackRgba(&color,(uchar *)&level.objectives[iVar2].color);
   return;
 }
 
@@ -7526,6 +7777,9 @@ void __cdecl GScr_Objective_Team(void)
   char *pcVar2;
   uint uVar3;
   scriptInstance_t sVar4;
+  objective_t *obj;
+  ushort team;
+  int objNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
@@ -7560,7 +7814,7 @@ void __cdecl GScr_Objective_Team(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetNormalised2DMapPosition(float *param_1,float *param_2)
+void __cdecl GetNormalised2DMapPosition(float *inPos,float *outPos)
 
 {
   float fVar1;
@@ -7570,17 +7824,17 @@ void __cdecl GetNormalised2DMapPosition(float *param_1,float *param_2)
   float local_18;
   float local_10;
   
-  *param_2 = *param_1;
-  param_2[1] = param_1[1];
-  fVar1 = *param_2 - level.compassMapUpperLeft[0];
-  fVar2 = param_2[1] - level.compassMapUpperLeft[1];
-  *param_2 = level.compassNorth[1] * fVar1 - level.compassNorth[0] * fVar2;
-  param_2[1] = -level.compassNorth[1] * fVar2 - level.compassNorth[0] * fVar1;
+  *outPos = *inPos;
+  outPos[1] = inPos[1];
+  fVar1 = *outPos - level.compassMapUpperLeft[0];
+  fVar2 = outPos[1] - level.compassMapUpperLeft[1];
+  *outPos = level.compassNorth[1] * fVar1 - level.compassNorth[0] * fVar2;
+  outPos[1] = -level.compassNorth[1] * fVar2 - level.compassNorth[0] * fVar1;
   if ((level.compassMapWorldSize[0] != 0.0) && (level.compassMapWorldSize[1] != 0.0)) {
-    *param_2 = *param_2 / level.compassMapWorldSize[0];
-    param_2[1] = param_2[1] / level.compassMapWorldSize[1];
+    *outPos = *outPos / level.compassMapWorldSize[0];
+    outPos[1] = outPos[1] / level.compassMapWorldSize[1];
   }
-  fVar1 = *param_2;
+  fVar1 = *outPos;
   local_10 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_10 = 1.0;
@@ -7591,8 +7845,8 @@ void __cdecl GetNormalised2DMapPosition(float *param_1,float *param_2)
   else {
     local_20 = 0.0;
   }
-  *param_2 = local_20;
-  fVar1 = param_2[1];
+  *outPos = local_20;
+  fVar1 = outPos[1];
   local_18 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_18 = 1.0;
@@ -7603,7 +7857,7 @@ void __cdecl GetNormalised2DMapPosition(float *param_1,float *param_2)
   else {
     local_24 = 0.0;
   }
-  param_2[1] = local_24;
+  outPos[1] = local_24;
   return;
 }
 
@@ -7620,82 +7874,86 @@ void __cdecl SetArtilleryIconLocation(void)
 {
   gclient_s *pgVar1;
   uint uVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  uint local_4c;
-  int local_40;
-  float local_3c;
+  char *error;
+  scriptInstance_t inst;
+  long activeBits;
+  playerState_s *ps;
+  gentity_s *player;
+  int i;
+  float outPos;
   float local_38;
-  undefined2 local_34;
-  float local_2c;
+  ushort team;
+  int yPos;
+  float vPos;
   float local_28;
   float local_24;
-  team_t local_1c;
-  int local_18;
-  int local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  int xPos;
+  int teamNum;
+  int isActive;
+  int isMortar;
+  long artilleryIconLocation;
+  int numParams;
+  int clientNum;
   
-  local_c = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (((int)local_c < 2) || (5 < (int)local_c)) {
+  numParams = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((numParams < 2) || (5 < numParams)) {
     Scr_Error("Incorrect number of parameters to artilleryiconlocation\n",false);
   }
-  local_14 = 0;
-  local_8 = 0xffffffff;
-  if (4 < (int)local_c) {
-    local_8 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+  isMortar = 0;
+  clientNum = -1;
+  if (4 < numParams) {
+    clientNum = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
   }
-  if (3 < (int)local_c) {
-    local_14 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+  if (3 < numParams) {
+    isMortar = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   }
-  local_18 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  local_1c = TEAM_BAD;
-  local_10 = 0;
-  if (local_18 != 0) {
-    Scr_GetVector(0,&local_2c,SCRIPTINSTANCE_SERVER);
-    local_2c = (float)(int)local_2c;
+  isActive = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  teamNum = 0;
+  artilleryIconLocation = 0;
+  if (isActive != 0) {
+    Scr_GetVector(0,&vPos,SCRIPTINSTANCE_SERVER);
+    vPos = (float)(int)vPos;
     local_28 = (float)(int)local_28;
     local_24 = (float)(int)local_24;
-    GetNormalised2DMapPosition(&local_2c,&local_3c);
+    GetNormalised2DMapPosition(&vPos,&outPos);
     uVar2 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-    local_34 = (undefined2)uVar2;
+    team = (ushort)uVar2;
     if ((uVar2 & 0xffff) == (uint)scr_const.allies) {
-      local_1c = TEAM_ALLIES;
+      teamNum = 2;
     }
     else if ((uVar2 & 0xffff) == (uint)scr_const.axis) {
-      local_1c = TEAM_AXIS;
+      teamNum = 1;
     }
     else if ((uVar2 & 0xffff) == (uint)scr_const.none) {
-      local_1c = TEAM_BAD;
+      teamNum = 0;
     }
     else {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       SL_ConvertToString(uVar2 & 0xffff,SCRIPTINSTANCE_SERVER);
-      pcVar3 = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
-      Scr_ParamError(1,pcVar3,sVar4);
+      error = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
+      Scr_ParamError(1,error,inst);
     }
-    local_10 = ((int)(local_38 * 255.0) & 0xffU) << 8 | (int)(local_3c * 255.0) & 0xffU;
+    artilleryIconLocation = ((int)(local_38 * 255.0) & 0xffU) << 8 | (int)(outPos * 255.0) & 0xffU;
   }
-  for (local_40 = 0; local_40 < (com_maxclients->current).integer; local_40 = local_40 + 1) {
-    if (g_entities[local_40].client != (gclient_s *)0x0) {
-      pgVar1 = g_entities[local_40].client;
-      if (local_18 == 0) {
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (g_entities[i].client != (gclient_s *)0x0) {
+      pgVar1 = g_entities[i].client;
+      if (isActive == 0) {
         (pgVar1->ps).artilleryInboundIconLocation =
              (pgVar1->ps).artilleryInboundIconLocation & 0xfff8ffff;
       }
       else {
-        if (((local_1c == TEAM_BAD) && (local_8 != (pgVar1->ps).clientNum)) ||
-           (((g_entities[local_40].client)->sess).cs.team != local_1c)) {
-          local_4c = 0x20000;
+        if (((teamNum == 0) && (clientNum != (uint)(pgVar1->ps).clientNum)) ||
+           (((g_entities[i].client)->sess).cs.team != teamNum)) {
+          activeBits = 0x20000;
         }
         else {
-          local_4c = 0x10000;
+          activeBits = 0x10000;
         }
-        if (local_14 != 0) {
-          local_10 = local_10 | 0x40000;
+        if (isMortar != 0) {
+          artilleryIconLocation = artilleryIconLocation | 0x40000;
         }
-        (pgVar1->ps).artilleryInboundIconLocation = local_10 | local_4c;
+        (pgVar1->ps).artilleryInboundIconLocation = artilleryIconLocation | activeBits;
       }
     }
   }
@@ -7713,30 +7971,31 @@ void __cdecl GScr_LogPrint(void)
   char cVar1;
   char *pcVar2;
   char *local_420;
-  char *local_41c;
-  char local_414 [1024];
+  int iStringLen;
+  int iTokenLen;
+  char string [1024];
   uint local_14;
-  uint local_10;
-  uint local_c;
-  char *local_8;
+  int iNumParms;
+  int i;
+  char *pszToken;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_414[0] = '\0';
-  local_41c = (char *)0x0;
-  local_10 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  for (local_c = 0; (int)local_c < (int)local_10; local_c = local_c + 1) {
-    local_8 = Scr_GetString(local_c,SCRIPTINSTANCE_SERVER);
-    pcVar2 = local_8 + 1;
-    local_420 = local_8;
+  string[0] = '\0';
+  iStringLen = 0;
+  iNumParms = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < iNumParms; i = i + 1) {
+    pszToken = Scr_GetString(i,SCRIPTINSTANCE_SERVER);
+    pcVar2 = pszToken + 1;
+    local_420 = pszToken;
     do {
       cVar1 = *local_420;
       local_420 = local_420 + 1;
     } while (cVar1 != '\0');
-    if (0x3ff < (int)(local_420 + ((int)local_41c - (int)pcVar2))) break;
-    I_strncat(local_414,0x400,local_8);
-    local_41c = local_420 + ((int)local_41c - (int)pcVar2);
+    if (0x3ff < (int)(local_420 + (iStringLen - (int)pcVar2))) break;
+    I_strncat(string,0x400,pszToken);
+    iStringLen = (int)(local_420 + (iStringLen - (int)pcVar2));
   }
-  G_LogPrintf(local_414);
+  G_LogPrintf(string);
   return;
 }
 
@@ -7761,46 +8020,50 @@ void __cdecl GScr_WorldEntNumber(void)
 void __cdecl GScr_Obituary(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  meansOfDeath_t mVar4;
-  gentity_s *pgVar5;
-  gentity_s *pgVar6;
-  int iVar7;
-  ushort local_10;
-  ushort local_8;
+  char *name;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  meansOfDeath_t mVar2;
+  gentity_s *pgVar3;
+  gentity_s *pgVar4;
+  int iVar5;
+  gentity_s *pOtherEnt;
+  char *pszWeapon;
+  WeaponDef *weapondef;
+  int iWeaponNum;
+  gentity_s *pEnt;
+  int iMODNum;
   
-  pcVar1 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  mVar4 = G_MeansOfDeathFromScriptParam(3);
-  pgVar5 = Scr_GetEntity(0);
-  pgVar6 = G_TempEntity(vec3_origin,0x5e);
-  (pgVar6->s).otherEntityNum = (short)(pgVar5->s).number;
-  iVar7 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
-  if (iVar7 == 1) {
-    iVar7 = Scr_GetPointerType(1,SCRIPTINSTANCE_SERVER);
-    if (iVar7 == 0x13) {
-      pgVar5 = Scr_GetEntity(1);
-      (pgVar6->s).attackerEntityNum = (short)(pgVar5->s).number;
+  name = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
+  weaponIndex = G_GetWeaponIndexForName(name);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  mVar2 = G_MeansOfDeathFromScriptParam(3);
+  pgVar3 = Scr_GetEntity(0);
+  pgVar4 = G_TempEntity(vec3_origin,0x5e);
+  (pgVar4->s).otherEntityNum = (short)(pgVar3->s).number;
+  iVar5 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
+  if (iVar5 == 1) {
+    iVar5 = Scr_GetPointerType(1,SCRIPTINSTANCE_SERVER);
+    if (iVar5 == 0x13) {
+      pgVar3 = Scr_GetEntity(1);
+      (pgVar4->s).attackerEntityNum = (short)(pgVar3->s).number;
       goto LAB_0064c31f;
     }
   }
-  (pgVar6->s).attackerEntityNum = 0x3fe;
+  (pgVar4->s).attackerEntityNum = 0x3fe;
 LAB_0064c31f:
-  (pgVar6->r).svFlags = '\b';
-  if ((((mVar4 == MOD_IMPACT) && (pWVar3->impactType != IMPACT_TYPE_BLADE)) || (mVar4 == MOD_MELEE))
-     || (((mVar4 == MOD_HEAD_SHOT || (mVar4 == MOD_SUICIDE)) ||
-         ((mVar4 == MOD_FALLING || (mVar4 == MOD_CRUSH)))))) {
-    local_8 = (ushort)mVar4;
-    (pgVar6->s).eventParm = local_8;
-    (pgVar6->s).weaponModel = '\0';
+  (pgVar4->r).svFlags = '\b';
+  if ((((mVar2 == MOD_IMPACT) && (pWVar1->impactType != IMPACT_TYPE_BLADE)) || (mVar2 == MOD_MELEE))
+     || (((mVar2 == MOD_HEAD_SHOT || (mVar2 == MOD_SUICIDE)) ||
+         ((mVar2 == MOD_FALLING || (mVar2 == MOD_CRUSH)))))) {
+    iMODNum._0_2_ = (ushort)mVar2;
+    (pgVar4->s).eventParm = (ushort)iMODNum;
+    (pgVar4->s).weaponModel = '\0';
   }
   else {
-    local_10 = (ushort)uVar2;
-    (pgVar6->s).eventParm = local_10;
-    (pgVar6->s).weaponModel = '\x01';
+    iWeaponNum._0_2_ = (ushort)weaponIndex;
+    (pgVar4->s).eventParm = (ushort)iWeaponNum;
+    (pgVar4->s).weaponModel = '\x01';
   }
   return;
 }
@@ -7820,20 +8083,23 @@ void __cdecl GScr_ReviveObituary(void)
   gentity_s *pgVar2;
   gentity_s *pgVar3;
   int iVar4;
-  int local_14;
-  ushort local_c;
+  gentity_s *player_entity;
+  int entity_index;
+  gentity_s *temporary_entity;
+  int client_index;
+  gentity_s *victim_entity;
   
   pgVar2 = Scr_GetEntity(0);
   if ((pgVar2->s).eType == 1) {
     pgVar3 = G_TempEntity(vec3_origin,0x5f);
     bVar1 = (pgVar2->client->ps).clientNum;
     (pgVar3->r).clientMask[0] = -1;
-    local_c = (ushort)bVar1;
-    (pgVar3->s).eventParms[0] = local_c;
-    for (local_14 = 0; local_14 < level.num_entities; local_14 = local_14 + 1) {
-      if ((g_entities[local_14].client != (gclient_s *)0x0) &&
-         (((g_entities[local_14].client)->sess).cs.team == (pgVar2->client->sess).cs.team)) {
-        bVar1 = ((g_entities[local_14].client)->ps).clientNum;
+    client_index._0_2_ = (ushort)bVar1;
+    (pgVar3->s).eventParms[0] = (ushort)client_index;
+    for (entity_index = 0; entity_index < level.num_entities; entity_index = entity_index + 1) {
+      if ((g_entities[entity_index].client != (gclient_s *)0x0) &&
+         (((g_entities[entity_index].client)->sess).cs.team == (pgVar2->client->sess).cs.team)) {
+        bVar1 = ((g_entities[entity_index].client)->ps).clientNum;
         iVar4 = (int)(uint)bVar1 >> 5;
         (pgVar3->r).clientMask[iVar4] = ~(1 << (bVar1 & 0x1f)) & (pgVar3->r).clientMask[iVar4];
       }
@@ -7856,6 +8122,10 @@ void __cdecl GScr_LerpFloat(void)
   float fVar3;
   float local_1c;
   float local_18;
+  float from;
+  float time;
+  float to;
+  float retVal;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   fVar2 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
@@ -7883,19 +8153,19 @@ void __cdecl GScr_LerpVector(void)
   float fVar1;
   float local_34;
   float local_30;
-  float local_2c;
+  float from;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  float time;
+  float to;
   float local_18;
   float local_14;
-  float local_10;
+  float retVal;
   float local_c;
   float local_8;
   
-  Scr_GetVector(0,&local_2c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_1c,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,&from,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&to,SCRIPTINSTANCE_SERVER);
   fVar1 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   local_30 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
@@ -7907,11 +8177,11 @@ void __cdecl GScr_LerpVector(void)
   else {
     local_34 = 0.0;
   }
-  local_20 = local_34;
-  local_10 = (local_1c - local_2c) * local_34 + local_2c;
+  time = local_34;
+  retVal = (to - from) * local_34 + from;
   local_c = (local_18 - local_28) * local_34 + local_28;
   local_8 = (local_14 - local_24) * local_34 + local_24;
-  Scr_AddVector(&local_10,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(&retVal,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -7922,26 +8192,29 @@ void __cdecl GScr_AddDemoBookmark(void)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
-  int local_c;
+  int type_00;
+  int time_00;
+  int clientNum1_00;
+  uint uVar2;
+  int time;
+  int clientNum1;
+  int clientNum2;
+  int type;
   
   bVar1 = Demo_IsEnabled();
   if ((bVar1) && (bVar1 = Demo_IsRecording(), bVar1)) {
-    local_c = 0xff;
-    iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    iVar4 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-    uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (uVar5 == 4) {
-      local_c = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    clientNum2 = 0xff;
+    type_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    time_00 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    clientNum1_00 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+    uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+    if (uVar2 == 4) {
+      clientNum2 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
     }
-    if (0x20 < local_c) {
-      local_c = 0xff;
+    if (0x20 < clientNum2) {
+      clientNum2 = 0xff;
     }
-    Demo_AddBookmark(iVar2,iVar3,iVar4,local_c);
+    Demo_AddBookmark(type_00,time_00,clientNum1_00,clientNum2);
   }
   return;
 }
@@ -7952,10 +8225,11 @@ void __cdecl GScr_AddDemoBookmark(void)
 void __cdecl Scr_UpdateSpawnPoints(void)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
-  uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.updatespawnpoints,0);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.updatespawnpoints,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -7968,28 +8242,30 @@ void __cdecl Scr_UpdateSpawnPoints(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl _Scr_BoundsWouldTelefrag(float *param_1,float *param_2)
+void __cdecl _Scr_BoundsWouldTelefrag(float *mins,float *maxs)
 
 {
   int iVar1;
   int local_1020;
-  int local_1014 [1024];
-  undefined4 local_14;
-  gentity_s *local_10;
-  int local_c;
-  int local_8;
+  pmtype_t pmtype;
+  int etype;
+  int touch [1024];
+  int contentMask;
+  gentity_s *hit;
+  int num;
+  int i;
   
-  local_8 = 0x64c81d;
-  local_14 = 0x2800000;
-  local_c = CM_AreaEntities(param_1,param_2,local_1014,0x400,0x2800000);
-  local_8 = 0;
+  i = 0x64c81d;
+  contentMask = 0x2800000;
+  num = CM_AreaEntities(mins,maxs,touch,0x400,0x2800000);
+  i = 0;
   while( true ) {
-    if (local_c <= local_8) {
+    if (num <= i) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
       return;
     }
-    iVar1 = local_1014[local_8];
-    local_10 = g_entities + iVar1;
+    iVar1 = touch[i];
+    hit = g_entities + iVar1;
     if (g_entities[iVar1].client == (gclient_s *)0x0) {
       local_1020 = 9;
     }
@@ -7997,7 +8273,7 @@ void __cdecl _Scr_BoundsWouldTelefrag(float *param_1,float *param_2)
       local_1020 = ((g_entities[iVar1].client)->ps).pm_type;
     }
     if ((local_1020 < 9) || (g_entities[iVar1].s.eType == 0xe)) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   return;
@@ -8006,74 +8282,85 @@ void __cdecl _Scr_BoundsWouldTelefrag(float *param_1,float *param_2)
 
 // 0064C770  GScr_positionWouldTelefrag  (game_mp/g_scr_main_mp.cpp:5923)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl GScr_positionWouldTelefrag(void)
 
 {
-  float local_28;
+  float mins;
   float local_24;
   float local_20;
-  float local_1c;
+  float maxs;
   float local_18;
   float local_14;
-  float local_10;
+  float vPos;
   float local_c;
   float local_8;
   
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  local_28 = local_10 + -15.0;
+  Scr_GetVector(0,&vPos,SCRIPTINSTANCE_SERVER);
+  mins = vPos + -15.0;
   local_24 = local_c + -15.0;
   local_20 = local_8 + 0.0;
-  local_1c = local_10 + 15.0;
+  maxs = vPos + 15.0;
   local_18 = local_c + 15.0;
   local_14 = local_8 + 70.0;
-  _Scr_BoundsWouldTelefrag(&local_28,&local_1c);
+  _Scr_BoundsWouldTelefrag(&mins,&maxs);
   return;
 }
 
 
 // 0064C900  GScr_BoundsWouldTelefrag  (game_mp/g_scr_main_mp.cpp:5948)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl GScr_BoundsWouldTelefrag(void)
 
 {
-  float local_1c [3];
-  float local_10 [3];
+  float mins [3];
+  float maxs [3];
   
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
-  _Scr_BoundsWouldTelefrag(local_1c,local_10);
+  Scr_GetVector(0,mins,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,maxs,SCRIPTINSTANCE_SERVER);
+  _Scr_BoundsWouldTelefrag(mins,maxs);
   return;
 }
 
 
 // 0064C940  GScr_ReadTeamForSpawnPoints  (game_mp/g_scr_main_mp.cpp:5958)
 
-int __cdecl GScr_ReadTeamForSpawnPoints(int param_1)
+int __cdecl GScr_ReadTeamForSpawnPoints(int index)
 
 {
   uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  int local_8;
+  char *error;
+  scriptInstance_t inst;
+  ushort teamName;
+  int team;
   
-  uVar1 = Scr_GetConstString(param_1,SCRIPTINSTANCE_SERVER);
+  uVar1 = Scr_GetConstString(index,SCRIPTINSTANCE_SERVER);
   if ((uVar1 & 0xffff) == (uint)scr_const.allies) {
-    local_8 = 2;
+    team = 2;
   }
   else if ((uVar1 & 0xffff) == (uint)scr_const.axis) {
-    local_8 = 1;
+    team = 1;
   }
   else if ((uVar1 & 0xffff) == (uint)scr_const.free) {
-    local_8 = 0;
+    team = 0;
   }
   else {
-    sVar3 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("team \"%s\" should be \"allies\", \"axis\", or \"free\"");
-    Scr_ParamError(0,pcVar2,sVar3);
-    local_8 = 0;
+    error = va("team \"%s\" should be \"allies\", \"axis\", or \"free\"");
+    Scr_ParamError(0,error,inst);
+    team = 0;
   }
-  return local_8;
+  return team;
 }
 
 
@@ -8087,14 +8374,14 @@ int __cdecl GScr_ReadTeamForSpawnPoints(int param_1)
 void __cdecl GScr_RecordUsedSpawnPoint(void)
 
 {
-  float local_18 [3];
-  int local_c;
-  gentity_s *local_8;
+  float origin [3];
+  int point_team;
+  gentity_s *player;
   
-  local_8 = Scr_GetEntity(0);
-  local_c = GScr_ReadTeamForSpawnPoints(1);
-  Scr_GetVector(2,local_18,SCRIPTINSTANCE_SERVER);
-  GamerProfile_WriteSettings((int)local_8);
+  player = Scr_GetEntity(0);
+  point_team = GScr_ReadTeamForSpawnPoints(1);
+  Scr_GetVector(2,origin,SCRIPTINSTANCE_SERVER);
+  GamerProfile_WriteSettings((int)player);
   return;
 }
 
@@ -8117,40 +8404,47 @@ void __cdecl GScr_getStartTime(void)
 // 0064CA50  GScr_PrecacheMenu  (game_mp/g_scr_main_mp.cpp:6023)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_PrecacheMenu(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  char *pcVar3;
-  bool bVar4;
-  int local_410;
-  char local_40c [1028];
+  char *val;
+  int iVar1;
+  char *error;
+  bool force_terminal;
+  char *pszNewMenu;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_410 = 0;
+  val = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iConfigNum = 0;
   while( true ) {
-    if (0x1f < local_410) {
-      local_410 = 0;
-      while ((local_410 < 0x20 &&
-             (SV_GetConfigstring(local_410 + 0x9f4,local_40c,0x400), local_40c[0] != '\0'))) {
-        local_410 = local_410 + 1;
+    if (0x1f < iConfigNum) {
+      iConfigNum = 0;
+      while ((iConfigNum < 0x20 &&
+             (SV_GetConfigstring(iConfigNum + 0x9f4,szConfigString,0x400), szConfigString[0] != '\0'
+             ))) {
+        iConfigNum = iConfigNum + 1;
       }
-      if (local_410 == 0x20) {
-        bVar4 = false;
-        pcVar3 = va("Too many menus precached. Max allowed menus is %i");
-        Scr_Error(pcVar3,bVar4);
+      if (iConfigNum == 0x20) {
+        force_terminal = false;
+        error = va("Too many menus precached. Max allowed menus is %i");
+        Scr_Error(error,force_terminal);
       }
-      SV_SetConfigstring(local_410 + 0x9f4,pcVar1);
+      SV_SetConfigstring(iConfigNum + 0x9f4,val);
       return;
     }
-    SV_GetConfigstring(local_410 + 0x9f4,local_40c,0x400);
-    iVar2 = I_stricmp(local_40c,pcVar1);
-    if (iVar2 == 0) break;
-    local_410 = local_410 + 1;
+    SV_GetConfigstring(iConfigNum + 0x9f4,szConfigString,0x400);
+    iVar1 = I_stricmp(szConfigString,val);
+    if (iVar1 == 0) break;
+    iConfigNum = iConfigNum + 1;
   }
   Com_DPrintf(0x18,"Script tried to precache the menu \'%s\' more than once\n");
   return;
@@ -8161,71 +8455,78 @@ void __cdecl GScr_PrecacheMenu(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl GScr_GetScriptMenuIndex(char *param_1)
+int __cdecl GScr_GetScriptMenuIndex(char *pszMenu)
 
 {
   int iVar1;
-  char *pcVar2;
-  bool bVar3;
-  int local_410;
-  char local_40c [1028];
+  char *error;
+  bool force_terminal;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_410 = 0;
+  iConfigNum = 0;
   while( true ) {
-    if (0x1f < local_410) {
-      bVar3 = false;
-      pcVar2 = va("Menu \'%s\' was not precached\n");
-      Scr_Error(pcVar2,bVar3);
+    if (0x1f < iConfigNum) {
+      force_terminal = false;
+      error = va("Menu \'%s\' was not precached\n");
+      Scr_Error(error,force_terminal);
       return 0;
     }
-    SV_GetConfigstring(local_410 + 0x9f4,local_40c,0x400);
-    iVar1 = I_stricmp(local_40c,param_1);
+    SV_GetConfigstring(iConfigNum + 0x9f4,szConfigString,0x400);
+    iVar1 = I_stricmp(szConfigString,pszMenu);
     if (iVar1 == 0) break;
-    local_410 = local_410 + 1;
+    iConfigNum = iConfigNum + 1;
   }
-  return local_410;
+  return iConfigNum;
 }
 
 
 // 0064CC50  GScr_PrecacheStatusIcon  (game_mp/g_scr_main_mp.cpp:6089)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_PrecacheStatusIcon(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  char *pcVar3;
-  bool bVar4;
-  int local_410;
-  char local_40c [1028];
+  char *val;
+  int iVar1;
+  char *error;
+  bool force_terminal;
+  char *pszNewIcon;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_410 = 0;
+  val = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iConfigNum = 0;
   while( true ) {
-    if (7 < local_410) {
-      local_410 = 0;
-      while ((local_410 < 8 &&
-             (SV_GetConfigstring(local_410 + 0xc14,local_40c,0x400), local_40c[0] != '\0'))) {
-        local_410 = local_410 + 1;
+    if (7 < iConfigNum) {
+      iConfigNum = 0;
+      while ((iConfigNum < 8 &&
+             (SV_GetConfigstring(iConfigNum + 0xc14,szConfigString,0x400), szConfigString[0] != '\0'
+             ))) {
+        iConfigNum = iConfigNum + 1;
       }
-      if (local_410 == 8) {
-        bVar4 = false;
-        pcVar3 = va("Too many player status icons precached. Max allowed is %i");
-        Scr_Error(pcVar3,bVar4);
+      if (iConfigNum == 8) {
+        force_terminal = false;
+        error = va("Too many player status icons precached. Max allowed is %i");
+        Scr_Error(error,force_terminal);
       }
-      SV_SetConfigstring(local_410 + 0xc14,pcVar1);
+      SV_SetConfigstring(iConfigNum + 0xc14,val);
       return;
     }
-    SV_GetConfigstring(local_410 + 0xc14,local_40c,0x400);
-    iVar2 = I_stricmp(local_40c,pcVar1);
-    if (iVar2 == 0) break;
-    local_410 = local_410 + 1;
+    SV_GetConfigstring(iConfigNum + 0xc14,szConfigString,0x400);
+    iVar1 = I_stricmp(szConfigString,val);
+    if (iVar1 == 0) break;
+    iConfigNum = iConfigNum + 1;
   }
   Com_DPrintf(0x18,"Script tried to precache the player status icon \'%s\' more than once\n");
   return;
@@ -8236,28 +8537,28 @@ void __cdecl GScr_PrecacheStatusIcon(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl GScr_GetStatusIconIndex(char *param_1)
+int __cdecl GScr_GetStatusIconIndex(char *pszIcon)
 
 {
   int iVar1;
-  char *pcVar2;
-  bool bVar3;
-  int local_410;
-  char local_40c [1028];
+  char *error;
+  bool force_terminal;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (*param_1 != '\0') {
-    for (local_410 = 0; local_410 < 8; local_410 = local_410 + 1) {
-      SV_GetConfigstring(local_410 + 0xc14,local_40c,0x400);
-      iVar1 = I_stricmp(local_40c,param_1);
+  if (*pszIcon != '\0') {
+    for (iConfigNum = 0; iConfigNum < 8; iConfigNum = iConfigNum + 1) {
+      SV_GetConfigstring(iConfigNum + 0xc14,szConfigString,0x400);
+      iVar1 = I_stricmp(szConfigString,pszIcon);
       if (iVar1 == 0) {
-        return local_410 + 1;
+        return iConfigNum + 1;
       }
     }
-    bVar3 = false;
-    pcVar2 = va("Status icon \'%s\' was not precached\n");
-    Scr_Error(pcVar2,bVar3);
+    force_terminal = false;
+    error = va("Status icon \'%s\' was not precached\n");
+    Scr_Error(error,force_terminal);
   }
   return 0;
 }
@@ -8266,40 +8567,47 @@ int __cdecl GScr_GetStatusIconIndex(char *param_1)
 // 0064CE60  GScr_PrecacheHeadIcon  (game_mp/g_scr_main_mp.cpp:6158)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_PrecacheHeadIcon(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  char *pcVar3;
-  bool bVar4;
-  int local_410;
-  char local_40c [1028];
+  char *val;
+  int iVar1;
+  char *error;
+  bool force_terminal;
+  char *pszNewIcon;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_410 = 0;
+  val = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iConfigNum = 0;
   while( true ) {
-    if (0xe < local_410) {
-      local_410 = 0;
-      while ((local_410 < 0xf &&
-             (SV_GetConfigstring(local_410 + 0xc1c,local_40c,0x400), local_40c[0] != '\0'))) {
-        local_410 = local_410 + 1;
+    if (0xe < iConfigNum) {
+      iConfigNum = 0;
+      while ((iConfigNum < 0xf &&
+             (SV_GetConfigstring(iConfigNum + 0xc1c,szConfigString,0x400), szConfigString[0] != '\0'
+             ))) {
+        iConfigNum = iConfigNum + 1;
       }
-      if (local_410 == 0xf) {
-        bVar4 = false;
-        pcVar3 = va("Too many player head icons precached. Max allowed is %i");
-        Scr_Error(pcVar3,bVar4);
+      if (iConfigNum == 0xf) {
+        force_terminal = false;
+        error = va("Too many player head icons precached. Max allowed is %i");
+        Scr_Error(error,force_terminal);
       }
-      SV_SetConfigstring(local_410 + 0xc1c,pcVar1);
+      SV_SetConfigstring(iConfigNum + 0xc1c,val);
       return;
     }
-    SV_GetConfigstring(local_410 + 0xc1c,local_40c,0x400);
-    iVar2 = I_stricmp(local_40c,pcVar1);
-    if (iVar2 == 0) break;
-    local_410 = local_410 + 1;
+    SV_GetConfigstring(iConfigNum + 0xc1c,szConfigString,0x400);
+    iVar1 = I_stricmp(szConfigString,val);
+    if (iVar1 == 0) break;
+    iConfigNum = iConfigNum + 1;
   }
   Com_DPrintf(0x18,"Script tried to precache the player head icon \'%s\' more than once\n");
   return;
@@ -8310,28 +8618,28 @@ void __cdecl GScr_PrecacheHeadIcon(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl GScr_GetHeadIconIndex(char *param_1)
+int __cdecl GScr_GetHeadIconIndex(char *pszIcon)
 
 {
   int iVar1;
-  char *pcVar2;
-  bool bVar3;
-  int local_410;
-  char local_40c [1028];
+  char *error;
+  bool force_terminal;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (*param_1 != '\0') {
-    for (local_410 = 0; local_410 < 0xf; local_410 = local_410 + 1) {
-      SV_GetConfigstring(local_410 + 0xc1c,local_40c,0x400);
-      iVar1 = I_stricmp(local_40c,param_1);
+  if (*pszIcon != '\0') {
+    for (iConfigNum = 0; iConfigNum < 0xf; iConfigNum = iConfigNum + 1) {
+      SV_GetConfigstring(iConfigNum + 0xc1c,szConfigString,0x400);
+      iVar1 = I_stricmp(szConfigString,pszIcon);
       if (iVar1 == 0) {
-        return local_410 + 1;
+        return iConfigNum + 1;
       }
     }
-    bVar3 = false;
-    pcVar2 = va("Head icon \'%s\' was not precached\n");
-    Scr_Error(pcVar2,bVar3);
+    force_terminal = false;
+    error = va("Head icon \'%s\' was not precached\n");
+    Scr_Error(error,force_terminal);
   }
   return 0;
 }
@@ -8342,16 +8650,18 @@ int __cdecl GScr_GetHeadIconIndex(char *param_1)
 void __cdecl GScr_WeaponClipSize(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  char *name;
+  int iVar1;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(iVar2,pcVar1);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  iVar2 = BG_GetClipSize(iVar2);
-  Scr_AddInt(iVar2,sVar3);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(iVar1,name);
+  inst = SCRIPTINSTANCE_SERVER;
+  iVar1 = BG_GetClipSize(iVar1);
+  Scr_AddInt(iVar1,inst);
   return;
 }
 
@@ -8361,15 +8671,18 @@ void __cdecl GScr_WeaponClipSize(void)
 void __cdecl GScr_WeaponIsSemiAuto(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  char *name;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  char *weaponName;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(uVar2,pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  Scr_AddInt((uint)(pWVar3->fireType == WEAPON_FIRETYPE_SINGLESHOT),SCRIPTINSTANCE_SERVER);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex_00 = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(weaponIndex_00,name);
+  pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+  Scr_AddInt((uint)(pWVar1->fireType == WEAPON_FIRETYPE_SINGLESHOT),SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8379,15 +8692,18 @@ void __cdecl GScr_WeaponIsSemiAuto(void)
 void __cdecl GScr_WeaponIsBoltAction(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  char *name;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  char *weaponName;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(uVar2,pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  Scr_AddInt((uint)pWVar3->bBoltAction,SCRIPTINSTANCE_SERVER);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex_00 = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(weaponIndex_00,name);
+  pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+  Scr_AddInt((uint)pWVar1->bBoltAction,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8398,17 +8714,20 @@ void __cdecl GScr_WeaponType(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  scriptInstance_t sVar4;
+  uint weaponIndex_00;
+  WeaponDef *pWVar2;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(uVar2,pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  pcVar1 = BG_GetWeaponTypeName(pWVar3->weapType);
-  Scr_AddString(pcVar1,sVar4);
+  weaponIndex_00 = G_GetWeaponIndexForName(pcVar1);
+  Scr_VerifyWeaponIndex(weaponIndex_00,pcVar1);
+  pWVar2 = BG_GetWeaponDef(weaponIndex_00);
+  inst = SCRIPTINSTANCE_SERVER;
+  pcVar1 = BG_GetWeaponTypeName(pWVar2->weapType);
+  Scr_AddString(pcVar1,inst);
   return;
 }
 
@@ -8419,20 +8738,23 @@ void __cdecl GScr_WeaponClass(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  scriptInstance_t sVar4;
+  uint weaponIndex_00;
+  WeaponDef *pWVar2;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  if (uVar2 == 0) {
+  weaponIndex_00 = G_GetWeaponIndexForName(pcVar1);
+  if (weaponIndex_00 == 0) {
     Scr_AddString("none",SCRIPTINSTANCE_SERVER);
   }
   else {
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar1 = BG_GetWeaponClassName(pWVar3->weapClass);
-    Scr_AddString(pcVar1,sVar4);
+    pWVar2 = BG_GetWeaponDef(weaponIndex_00);
+    inst = SCRIPTINSTANCE_SERVER;
+    pcVar1 = BG_GetWeaponClassName(pWVar2->weapClass);
+    Scr_AddString(pcVar1,inst);
   }
   return;
 }
@@ -8443,14 +8765,17 @@ void __cdecl GScr_WeaponClass(void)
 void __cdecl GScr_WeaponIsMountable(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  char *name;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  char *weaponName;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  Scr_AddInt((uint)pWVar3->mountableWeapon,SCRIPTINSTANCE_SERVER);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex_00 = G_GetWeaponIndexForName(name);
+  pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+  Scr_AddInt((uint)pWVar1->mountableWeapon,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8461,17 +8786,20 @@ void __cdecl GScr_WeaponInventoryType(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
-  scriptInstance_t sVar4;
+  uint weaponIndex_00;
+  WeaponDef *pWVar2;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(uVar2,pcVar1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  pcVar1 = BG_GetWeaponInventoryTypeName(pWVar3->inventoryType);
-  Scr_AddString(pcVar1,sVar4);
+  weaponIndex_00 = G_GetWeaponIndexForName(pcVar1);
+  Scr_VerifyWeaponIndex(weaponIndex_00,pcVar1);
+  pWVar2 = BG_GetWeaponDef(weaponIndex_00);
+  inst = SCRIPTINSTANCE_SERVER;
+  pcVar1 = BG_GetWeaponInventoryTypeName(pWVar2->inventoryType);
+  Scr_AddString(pcVar1,inst);
   return;
 }
 
@@ -8481,16 +8809,18 @@ void __cdecl GScr_WeaponInventoryType(void)
 void __cdecl GScr_WeaponStartAmmo(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  char *name;
+  int iVar1;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(iVar2,pcVar1);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  iVar2 = BG_GetStartAmmo(iVar2);
-  Scr_AddInt(iVar2,sVar3);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(iVar1,name);
+  inst = SCRIPTINSTANCE_SERVER;
+  iVar1 = BG_GetStartAmmo(iVar1);
+  Scr_AddInt(iVar1,inst);
   return;
 }
 
@@ -8500,16 +8830,18 @@ void __cdecl GScr_WeaponStartAmmo(void)
 void __cdecl GScr_WeaponMaxAmmo(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  char *name;
+  int iVar1;
+  scriptInstance_t inst;
+  char *weaponName;
+  int weaponIndex;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(iVar2,pcVar1);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  iVar2 = BG_GetMaxAmmo(iVar2);
-  Scr_AddInt(iVar2,sVar3);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(iVar1,name);
+  inst = SCRIPTINSTANCE_SERVER;
+  iVar1 = BG_GetMaxAmmo(iVar1);
+  Scr_AddInt(iVar1,inst);
   return;
 }
 
@@ -8520,21 +8852,25 @@ void __cdecl GScr_WeaponAltWeaponName(void)
 
 {
   char *pcVar1;
-  uint uVar2;
-  WeaponVariantDef *pWVar3;
-  scriptInstance_t sVar4;
+  uint weaponIndex_00;
+  WeaponVariantDef *pWVar2;
+  scriptInstance_t inst;
+  char *weaponName;
+  int altWeaponIndex;
+  WeaponVariantDef *weapVariantDef;
+  int weaponIndex;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(uVar2,pcVar1);
-  pWVar3 = BG_GetWeaponVariantDef(uVar2);
-  if (pWVar3->altWeaponIndex == 0) {
+  weaponIndex_00 = G_GetWeaponIndexForName(pcVar1);
+  Scr_VerifyWeaponIndex(weaponIndex_00,pcVar1);
+  pWVar2 = BG_GetWeaponVariantDef(weaponIndex_00);
+  if (pWVar2->altWeaponIndex == 0) {
     Scr_AddConstString((uint)scr_const.none,SCRIPTINSTANCE_SERVER);
   }
   else {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar1 = BG_WeaponName(pWVar3->altWeaponIndex);
-    Scr_AddString(pcVar1,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    pcVar1 = BG_WeaponName(pWVar2->altWeaponIndex);
+    Scr_AddString(pcVar1,inst);
   }
   return;
 }
@@ -8546,17 +8882,17 @@ void __cdecl GScr_GetWatcherWeapons(void)
 
 {
   WeaponDef *pWVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  uint local_8;
+  char *value;
+  scriptInstance_t inst;
+  uint i;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < bg_lastParsedWeaponIndex; local_8 = local_8 + 1) {
-    pWVar1 = BG_GetWeaponDef(local_8);
+  for (i = 0; i < bg_lastParsedWeaponIndex; i = i + 1) {
+    pWVar1 = BG_GetWeaponDef(i);
     if (pWVar1->bDieOnRespawn != false) {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = BG_WeaponName(local_8);
-      Scr_AddString(pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      value = BG_WeaponName(i);
+      Scr_AddString(value,inst);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -8570,17 +8906,17 @@ void __cdecl GScr_GetRetrievableWeapons(void)
 
 {
   WeaponDef *pWVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  uint local_8;
+  char *value;
+  scriptInstance_t inst;
+  uint i;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < bg_lastParsedWeaponIndex; local_8 = local_8 + 1) {
-    pWVar1 = BG_GetWeaponDef(local_8);
+  for (i = 0; i < bg_lastParsedWeaponIndex; i = i + 1) {
+    pWVar1 = BG_GetWeaponDef(i);
     if (pWVar1->bRetrievable != false) {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = BG_WeaponName(local_8);
-      Scr_AddString(pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      value = BG_WeaponName(i);
+      Scr_AddString(value,inst);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -8593,12 +8929,14 @@ void __cdecl GScr_GetRetrievableWeapons(void)
 void __cdecl GScr_GetWeaponIndexFromName(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *name;
+  int value;
+  char *weaponName;
+  int weaponIndex;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_AddInt(iVar2,SCRIPTINSTANCE_SERVER);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  value = G_GetWeaponIndexForName(name);
+  Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8608,17 +8946,18 @@ void __cdecl GScr_GetWeaponIndexFromName(void)
 void __cdecl GScr_GetWeaponFireSound(void)
 
 {
-  uint uVar1;
-  WeaponDef *pWVar2;
-  char *local_c;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  char *weaponFireSound;
+  int weaponIndex;
   
-  local_c = "";
-  uVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((uVar1 != 0) && (uVar1 != 0xffffffff)) {
-    pWVar2 = BG_GetWeaponDef(uVar1);
-    local_c = pWVar2->fireSound;
+  weaponFireSound = "";
+  weaponIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((weaponIndex_00 != 0) && (weaponIndex_00 != 0xffffffff)) {
+    pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+    weaponFireSound = pWVar1->fireSound;
   }
-  Scr_AddString(local_c,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(weaponFireSound,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8628,17 +8967,18 @@ void __cdecl GScr_GetWeaponFireSound(void)
 void __cdecl GScr_GetWeaponFireSoundPlayer(void)
 
 {
-  uint uVar1;
-  WeaponDef *pWVar2;
-  char *local_8;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  int weaponIndex;
+  char *weaponFireSoundPlayer;
   
-  local_8 = "";
-  uVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((uVar1 != 0) && (uVar1 != 0xffffffff)) {
-    pWVar2 = BG_GetWeaponDef(uVar1);
-    local_8 = pWVar2->fireSoundPlayer;
+  weaponFireSoundPlayer = "";
+  weaponIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((weaponIndex_00 != 0) && (weaponIndex_00 != 0xffffffff)) {
+    pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+    weaponFireSoundPlayer = pWVar1->fireSoundPlayer;
   }
-  Scr_AddString(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(weaponFireSoundPlayer,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8648,17 +8988,18 @@ void __cdecl GScr_GetWeaponFireSoundPlayer(void)
 void __cdecl GScr_GetWeaponPickupSound(void)
 
 {
-  uint uVar1;
-  WeaponDef *pWVar2;
-  char *local_8;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  int weaponIndex;
+  char *weaponPickupSound;
   
-  local_8 = "";
-  uVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((uVar1 != 0) && (uVar1 != 0xffffffff)) {
-    pWVar2 = BG_GetWeaponDef(uVar1);
-    local_8 = pWVar2->pickupSound;
+  weaponPickupSound = "";
+  weaponIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((weaponIndex_00 != 0) && (weaponIndex_00 != 0xffffffff)) {
+    pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+    weaponPickupSound = pWVar1->pickupSound;
   }
-  Scr_AddString(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(weaponPickupSound,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8668,17 +9009,18 @@ void __cdecl GScr_GetWeaponPickupSound(void)
 void __cdecl GScr_GetWeaponPickupSoundPlayer(void)
 
 {
-  uint uVar1;
-  WeaponDef *pWVar2;
-  char *local_8;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  int weaponIndex;
+  char *weaponPickupSoundPlayer;
   
-  local_8 = "";
-  uVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((uVar1 != 0) && (uVar1 != 0xffffffff)) {
-    pWVar2 = BG_GetWeaponDef(uVar1);
-    local_8 = pWVar2->pickupSoundPlayer;
+  weaponPickupSoundPlayer = "";
+  weaponIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((weaponIndex_00 != 0) && (weaponIndex_00 != 0xffffffff)) {
+    pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+    weaponPickupSoundPlayer = pWVar1->pickupSoundPlayer;
   }
-  Scr_AddString(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(weaponPickupSoundPlayer,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8694,34 +9036,35 @@ void __cdecl GScr_IsTurretFiring(void)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  undefined1 uVar3;
-  byte local_5;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
+  bool firing;
   
   pgVar1 = Scr_GetEntity(0);
   if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (((pgVar1->s).lerp.eFlags & 0x40U) == 0) {
     if (pgVar1->pTurretInfo->state == 0) {
       if ((pgVar1->pTurretInfo->flags & 4U) == 0) {
-        local_5 = 0;
+        firing = false;
       }
       else {
-        local_5 = 1;
+        firing = true;
       }
     }
     else {
-      local_5 = 1;
+      firing = true;
     }
   }
   else {
-    local_5 = 1;
+    firing = true;
   }
-  Scr_AddBool((uint)local_5,SCRIPTINSTANCE_SERVER);
+  Scr_AddBool((uint)firing,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -8733,22 +9076,26 @@ void __cdecl GScr_IsTurretFiring(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetDefaultDropPitch(scr_entref_t param_1)
+void __cdecl GScr_SetDefaultDropPitch(scr_entref_t entref)
 
 {
   uint uVar1;
-  gentity_s *pgVar2;
-  float fVar3;
+  gentity_s *self;
+  float pitch_00;
+  TurretInfo *pTurretInfo;
+  char *usage;
+  float pitch;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
-    if (pgVar2->pTurretInfo == (TurretInfo *)0x0) {
+    self = GetEntity(entref);
+    if (self->pTurretInfo == (TurretInfo *)0x0) {
       Scr_Error("entity is not a turret",false);
     }
     else {
-      fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-      turret_SetDefaultDropPitch(pgVar2,fVar3);
+      pitch_00 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+      turret_SetDefaultDropPitch(self,pitch_00);
     }
   }
   else {
@@ -8765,22 +9112,26 @@ void __cdecl GScr_SetDefaultDropPitch(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetScanningPitch(scr_entref_t param_1)
+void __cdecl GScr_SetScanningPitch(scr_entref_t entref)
 
 {
   uint uVar1;
-  gentity_s *pgVar2;
-  float fVar3;
+  gentity_s *self;
+  float pitch_00;
+  TurretInfo *pTurretInfo;
+  char *usage;
+  float pitch;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
-    if (pgVar2->pTurretInfo == (TurretInfo *)0x0) {
+    self = GetEntity(entref);
+    if (self->pTurretInfo == (TurretInfo *)0x0) {
       Scr_Error("entity is not a turret",false);
     }
     else {
-      fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-      turret_SetScanningPitch(pgVar2,fVar3);
+      pitch_00 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+      turret_SetScanningPitch(self,pitch_00);
     }
   }
   else {
@@ -8795,18 +9146,21 @@ void __cdecl GScr_SetScanningPitch(scr_entref_t param_1)
 void __cdecl GScr_WeaponFireTime(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  char *name;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  WeaponDef *weapDef;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  if (uVar2 == 0) {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex = G_GetWeaponIndexForName(name);
+  if (weaponIndex == 0) {
     Scr_AddFloat(0.0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    Scr_AddFloat((float)pWVar3->iFireTime * 0.001,SCRIPTINSTANCE_SERVER);
+    pWVar1 = BG_GetWeaponDef(weaponIndex);
+    Scr_AddFloat((float)pWVar1->iFireTime * 0.001,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -8817,19 +9171,22 @@ void __cdecl GScr_WeaponFireTime(void)
 void __cdecl GScr_WeaponReloadTime(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  char *name;
+  uint weaponIndex_00;
+  WeaponDef *pWVar1;
+  WeaponDef *weapDef;
+  char *weaponName;
+  int weaponIndex;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(uVar2,pcVar1);
-  if (uVar2 == 0) {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex_00 = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(weaponIndex_00,name);
+  if (weaponIndex_00 == 0) {
     Scr_AddFloat(0.0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    Scr_AddFloat((float)pWVar3->iReloadAddTime * 0.001,SCRIPTINSTANCE_SERVER);
+    pWVar1 = BG_GetWeaponDef(weaponIndex_00);
+    Scr_AddFloat((float)pWVar1->iReloadAddTime * 0.001,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -8840,19 +9197,21 @@ void __cdecl GScr_WeaponReloadTime(void)
 void __cdecl GScr_IsWeaponClipOnly(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  char *name;
+  int iVar1;
+  scriptInstance_t inst;
+  char *weapName;
+  int weapIdx;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = G_GetWeaponIndexForName(pcVar1);
-  if (iVar2 == 0) {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = G_GetWeaponIndexForName(name);
+  if (iVar1 == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    iVar2 = BG_WeaponIsClipOnly(iVar2);
-    Scr_AddBool(iVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    iVar1 = BG_WeaponIsClipOnly(iVar1);
+    Scr_AddBool(iVar1,inst);
   }
   return;
 }
@@ -8863,18 +9222,21 @@ void __cdecl GScr_IsWeaponClipOnly(void)
 void __cdecl GScr_IsWeaponDetonationTimed(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  char *name;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  char *weapName;
+  int weapIdx;
+  WeaponDef *weapDef;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = G_GetWeaponIndexForName(pcVar1);
-  if (uVar2 == 0) {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex = G_GetWeaponIndexForName(name);
+  if (weaponIndex == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    pWVar3 = BG_GetWeaponDef(uVar2);
-    Scr_AddBool((uint)pWVar3->timedDetonation,SCRIPTINSTANCE_SERVER);
+    pWVar1 = BG_GetWeaponDef(weaponIndex);
+    Scr_AddBool((uint)pWVar1->timedDetonation,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -8883,40 +9245,46 @@ void __cdecl GScr_IsWeaponDetonationTimed(void)
 // 0064DA70  GScr_PrecacheLocationSelector  (game_mp/g_scr_main_mp.cpp:6718)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_PrecacheLocationSelector(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  bool bVar3;
-  int local_410;
-  char local_40c [1024];
+  char *error;
+  bool force_terminal;
+  int iConfigNum;
+  char szConfigString [1024];
   uint local_c;
-  char *local_8;
+  char *pszNewMtl;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_410 = 0;
+  pszNewMtl = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iConfigNum = 0;
   while( true ) {
-    if (0xe < local_410) {
-      local_410 = 0;
-      while ((local_410 < 0xf &&
-             (SV_GetConfigstring(local_410 + 0x611,local_40c,0x400), local_40c[0] != '\0'))) {
-        local_410 = local_410 + 1;
+    if (0xe < iConfigNum) {
+      iConfigNum = 0;
+      while ((iConfigNum < 0xf &&
+             (SV_GetConfigstring(iConfigNum + 0x611,szConfigString,0x400), szConfigString[0] != '\0'
+             ))) {
+        iConfigNum = iConfigNum + 1;
       }
-      if (local_410 == 0xf) {
-        bVar3 = false;
-        pcVar2 = va("Too many location selectors precached. Max allowed is %i");
-        Scr_Error(pcVar2,bVar3);
+      if (iConfigNum == 0xf) {
+        force_terminal = false;
+        error = va("Too many location selectors precached. Max allowed is %i");
+        Scr_Error(error,force_terminal);
       }
-      SV_SetConfigstring(local_410 + 0x611,local_8);
+      SV_SetConfigstring(iConfigNum + 0x611,pszNewMtl);
       return;
     }
-    SV_GetConfigstring(local_410 + 0x611,local_40c,0x400);
-    iVar1 = I_stricmp(local_40c,local_8);
+    SV_GetConfigstring(iConfigNum + 0x611,szConfigString,0x400);
+    iVar1 = I_stricmp(szConfigString,pszNewMtl);
     if (iVar1 == 0) break;
-    local_410 = local_410 + 1;
+    iConfigNum = iConfigNum + 1;
   }
   Com_DPrintf(0x18,"Script tried to precache the location selector \'%s\' more than once\n");
   return;
@@ -8927,36 +9295,36 @@ void __cdecl GScr_PrecacheLocationSelector(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl GScr_GetLocSelIndex(char *param_1)
+int __cdecl GScr_GetLocSelIndex(char *mtlName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int local_410;
-  char local_40c [1028];
+  char *error;
+  int iConfigNum;
+  char szConfigString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((mtlName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x1a68,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (*param_1 != '\0') {
-    for (local_410 = 0; local_410 < 0xf; local_410 = local_410 + 1) {
-      SV_GetConfigstring(local_410 + 0x611,local_40c,0x400);
-      iVar3 = I_stricmp(local_40c,param_1);
+  if (*mtlName != '\0') {
+    for (iConfigNum = 0; iConfigNum < 0xf; iConfigNum = iConfigNum + 1) {
+      SV_GetConfigstring(iConfigNum + 0x611,szConfigString,0x400);
+      iVar3 = I_stricmp(szConfigString,mtlName);
       if (iVar3 == 0) {
-        return local_410 + 1;
+        return iConfigNum + 1;
       }
     }
     bVar2 = false;
-    pcVar4 = va("Location selector \'%s\' was not precached\n");
-    Scr_Error(pcVar4,bVar2);
+    error = va("Location selector \'%s\' was not precached\n");
+    Scr_Error(error,bVar2);
   }
   return 0;
 }
@@ -8975,105 +9343,105 @@ void __cdecl Scr_BulletTrace(void)
 {
   int iVar1;
   uint uVar2;
-  char *pcVar3;
-  DWORD DVar4;
-  scriptInstance_t sVar5;
-  float local_94;
+  char *value;
+  DWORD DVar3;
+  scriptInstance_t inst;
+  float vNorm;
   float local_90;
   float local_8c;
-  int local_88;
-  float local_84;
+  int bIgnoreWater;
+  float vEnd;
   float local_80;
   float local_7c;
-  int local_78;
-  gentity_s *local_74;
-  uint local_70;
-  int local_6c;
-  float4 local_68;
+  int bIgnoreGlass;
+  gentity_s *pIgnoreEnt;
+  int iClipMask;
+  int bHitCharacters;
+  float4 trace;
   float local_58;
   uint local_54;
   uint local_30;
-  float local_2c [4];
-  int local_1c;
-  int local_18;
-  float local_14;
+  float endpos [3];
+  PIXProfile pp;
+  int iIgnoreEntNum;
+  int iSurfaceTypeIndex;
+  float vStart;
   float local_10;
   float local_c;
-  ushort local_8;
+  ushort hitEntId;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"Scr_BulletTrace");
-  local_74 = (gentity_s *)0x0;
-  local_1c = 0x3ff;
-  local_70 = 0x280e033;
-  local_68.v[0] = 0.0;
-  local_68.v[1] = 0.0;
-  local_68.v[2] = 0.0;
-  local_68.v[3] = 0.0;
-  Scr_GetVector(0,&local_14,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_84,SCRIPTINSTANCE_SERVER);
-  local_6c = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  if (local_6c == 0) {
-    local_70 = local_70 & 0xfdff7fff;
+  pIgnoreEnt = (gentity_s *)0x0;
+  iIgnoreEntNum = 0x3ff;
+  iClipMask = 0x280e033;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  Scr_GetVector(0,&vStart,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&vEnd,SCRIPTINSTANCE_SERVER);
+  bHitCharacters = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  if (bHitCharacters == 0) {
+    iClipMask = iClipMask & 0xfdff7fff;
   }
   iVar1 = Scr_GetType(3,SCRIPTINSTANCE_SERVER);
   if ((iVar1 == 1) && (iVar1 = Scr_GetPointerType(3,SCRIPTINSTANCE_SERVER), iVar1 == 0x13)) {
-    local_74 = Scr_GetEntity(3);
-    local_1c = (local_74->s).number;
+    pIgnoreEnt = Scr_GetEntity(3);
+    iIgnoreEntNum = (pIgnoreEnt->s).number;
   }
-  local_88 = 0;
+  bIgnoreWater = 0;
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 5) {
-    local_88 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+    bIgnoreWater = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
   }
-  if (local_88 != 0) {
-    local_70 = local_70 & 0xffffffdf;
+  if (bIgnoreWater != 0) {
+    iClipMask = iClipMask & 0xffffffdf;
   }
-  local_78 = 0;
+  bIgnoreGlass = 0;
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 6) {
-    local_78 = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    bIgnoreGlass = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   }
-  if (local_78 != 0) {
-    local_70 = local_70 & 0xffffffef;
+  if (bIgnoreGlass != 0) {
+    iClipMask = iClipMask & 0xffffffef;
   }
-  G_LocationalTrace((trace_t *)&local_68,&local_14,&local_84,local_1c,local_70,(uchar *)0x0,
+  G_LocationalTrace((trace_t *)&trace,&vStart,&vEnd,iIgnoreEntNum,iClipMask,(uchar *)0x0,
                     (_func___cdecl_int_int_col_context_t_ptr *)0x0);
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
   Scr_AddFloat(local_58,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.fraction,SCRIPTINSTANCE_SERVER);
-  Vec3Lerp(&local_14,&local_84,local_58,local_2c);
-  Scr_AddVector(local_2c,SCRIPTINSTANCE_SERVER);
+  Vec3Lerp(&vStart,&vEnd,local_58,endpos);
+  Scr_AddVector(endpos,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.position,SCRIPTINSTANCE_SERVER);
-  local_8 = Trace_GetEntityHitId((trace_t *)&local_68);
-  if ((local_8 == 0x3ff) || (local_8 == 0x3fe)) {
+  hitEntId = Trace_GetEntityHitId((trace_t *)&trace);
+  if ((hitEntId == 0x3ff) || (hitEntId == 0x3fe)) {
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddEntity(g_entities + local_8,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(g_entities + hitEntId,SCRIPTINSTANCE_SERVER);
   }
   Scr_AddArrayStringIndexed((uint)scr_const.entity,SCRIPTINSTANCE_SERVER);
   if (1.0 <= local_58) {
-    local_94 = local_84 - local_14;
+    vNorm = vEnd - vStart;
     local_90 = local_80 - local_10;
     local_8c = local_7c - local_c;
-    Vec3Normalize(&local_94);
-    Scr_AddVector(&local_94,SCRIPTINSTANCE_SERVER);
+    Vec3Normalize(&vNorm);
+    Scr_AddVector(&vNorm,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.normal,SCRIPTINSTANCE_SERVER);
     Scr_AddConstString((uint)scr_const.none,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.surfacetype,SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddVector(local_68.v,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(trace.v,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.normal,SCRIPTINSTANCE_SERVER);
-    local_18 = (int)(local_54 & 0x3f00000) >> 0x14;
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = Com_SurfaceTypeToName(local_18);
-    Scr_AddString(pcVar3,sVar5);
+    inst = SCRIPTINSTANCE_SERVER;
+    value = Com_SurfaceTypeToName((int)(local_54 & 0x3f00000) >> 0x14);
+    Scr_AddString(value,inst);
     Scr_AddArrayStringIndexed((uint)scr_const.surfacetype,SCRIPTINSTANCE_SERVER);
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -9091,39 +9459,39 @@ void __cdecl Scr_BulletTracePassed(void)
 
 {
   int iVar1;
-  scriptInstance_t sVar2;
-  int local_58;
-  col_context_t local_54;
-  float local_2c [3];
-  gentity_s *local_20;
-  uint local_1c;
-  int local_18;
-  int local_14;
-  float local_10 [3];
+  scriptInstance_t inst;
+  int hitnum;
+  col_context_t context;
+  float vEnd [3];
+  gentity_s *pIgnoreEnt;
+  int iClipMask;
+  int bHitCharacters;
+  int iIgnoreEntNum;
+  float vStart [3];
   
-  local_20 = (gentity_s *)0x0;
-  local_14 = 0x3ff;
-  local_1c = 0x280e033;
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_2c,SCRIPTINSTANCE_SERVER);
-  local_18 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  if (local_18 == 0) {
-    local_1c = local_1c & 0xfdff7fff;
+  pIgnoreEnt = (gentity_s *)0x0;
+  iIgnoreEntNum = 0x3ff;
+  iClipMask = 0x280e033;
+  Scr_GetVector(0,vStart,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,vEnd,SCRIPTINSTANCE_SERVER);
+  bHitCharacters = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  if (bHitCharacters == 0) {
+    iClipMask = iClipMask & 0xfdff7fff;
   }
   iVar1 = Scr_GetType(3,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 1) {
     iVar1 = Scr_GetPointerType(3,SCRIPTINSTANCE_SERVER);
     if (iVar1 == 0x13) {
-      local_20 = Scr_GetEntity(3);
-      local_14 = (local_20->s).number;
+      pIgnoreEnt = Scr_GetEntity(3);
+      iIgnoreEntNum = (pIgnoreEnt->s).number;
     }
   }
-  col_context_t::col_context_t(&local_54,local_1c);
-  col_context_t::init_locational(&local_54,local_14);
-  local_58 = -1;
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  iVar1 = SV_SightTracePoint(&local_58,local_10,local_2c,&local_54);
-  Scr_AddBool(iVar1,sVar2);
+  col_context_t::col_context_t(&context,iClipMask);
+  col_context_t::init_locational(&context,iIgnoreEntNum);
+  hitnum = -1;
+  inst = SCRIPTINSTANCE_SERVER;
+  iVar1 = SV_SightTracePoint(&hitnum,vStart,vEnd,&context);
+  Scr_AddBool(iVar1,inst);
   return;
 }
 
@@ -9139,36 +9507,36 @@ void __cdecl Scr_SightTracePassed(void)
 
 {
   int iVar1;
-  col_context_t local_58;
-  float local_30 [3];
-  gentity_s *local_24;
-  uint local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  float local_10 [3];
+  col_context_t context;
+  float vEnd [3];
+  gentity_s *pIgnoreEnt;
+  int iClipMask;
+  int bHitCharacters;
+  int iIgnoreEntNum;
+  int hitNum;
+  float vStart [3];
   
-  local_24 = (gentity_s *)0x0;
-  local_18 = 0x3ff;
-  local_20 = 0x2809803;
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_30,SCRIPTINSTANCE_SERVER);
-  local_1c = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  if (local_1c == 0) {
-    local_20 = local_20 & 0xfdff7fff;
+  pIgnoreEnt = (gentity_s *)0x0;
+  iIgnoreEntNum = 0x3ff;
+  iClipMask = 0x2809803;
+  Scr_GetVector(0,vStart,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,vEnd,SCRIPTINSTANCE_SERVER);
+  bHitCharacters = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  if (bHitCharacters == 0) {
+    iClipMask = iClipMask & 0xfdff7fff;
   }
   iVar1 = Scr_GetType(3,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 1) {
     iVar1 = Scr_GetPointerType(3,SCRIPTINSTANCE_SERVER);
     if (iVar1 == 0x13) {
-      local_24 = Scr_GetEntity(3);
-      local_18 = (local_24->s).number;
+      pIgnoreEnt = Scr_GetEntity(3);
+      iIgnoreEntNum = (pIgnoreEnt->s).number;
     }
   }
-  col_context_t::col_context_t(&local_58,local_20);
-  local_58.passEntityNum0 = local_18;
-  SV_SightTracePoint(&local_14,local_10,local_30,&local_58);
-  Scr_AddBool((uint)(local_14 == 0),SCRIPTINSTANCE_SERVER);
+  col_context_t::col_context_t(&context,iClipMask);
+  context.passEntityNum0 = iIgnoreEntNum;
+  SV_SightTracePoint(&hitNum,vStart,vEnd,&context);
+  Scr_AddBool((uint)(hitNum == 0),SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -9186,109 +9554,108 @@ void __cdecl Scr_PhysicsTrace(void)
 {
   uint uVar1;
   int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  float local_cc;
+  char *value;
+  scriptInstance_t inst;
+  float vNorm;
   float local_c8;
   float local_c4;
-  uint local_c0;
-  col_context_t local_bc;
-  float local_94 [4];
+  int i;
+  col_context_t context;
+  float mins [4];
   float local_84;
   float local_80;
-  float local_7c;
+  float end;
   float local_78;
   float local_74;
-  uint local_70;
-  gentity_s *local_6c;
-  float local_68 [3];
-  float4 local_5c;
+  int maskType;
+  gentity_s *pIgnoreEnt;
+  float endpos [3];
+  float4 trace;
   float local_4c;
   uint local_48;
   uint local_24;
-  float local_20 [3];
-  uint local_14;
-  int local_10;
-  int local_c;
-  ushort local_8;
+  float maxs [3];
+  int mask;
+  int iIgnoreEntNum;
+  int iSurfaceTypeIndex;
+  ushort hitEntId;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5c.v[0] = 0.0;
-  local_5c.v[1] = 0.0;
-  local_5c.v[2] = 0.0;
-  local_5c.v[3] = 0.0;
-  local_70 = 1;
-  local_6c = (gentity_s *)0x0;
-  local_10 = 0x3ff;
-  Scr_GetVector(0,local_94 + 3,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_7c,SCRIPTINSTANCE_SERVER);
-  local_94[0] = 0.0;
-  local_94[1] = 0.0;
-  local_94[2] = 0.0;
-  local_20[0] = 0.0;
-  local_20[1] = 0.0;
-  local_20[2] = 0.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  maskType = 1;
+  pIgnoreEnt = (gentity_s *)0x0;
+  iIgnoreEntNum = 0x3ff;
+  Scr_GetVector(0,mins + 3,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&end,SCRIPTINSTANCE_SERVER);
+  mins[0] = 0.0;
+  mins[1] = 0.0;
+  mins[2] = 0.0;
+  maxs[0] = 0.0;
+  maxs[1] = 0.0;
+  maxs[2] = 0.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   case 6:
-    local_70 = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    maskType = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   case 5:
     iVar2 = Scr_GetType(4,SCRIPTINSTANCE_SERVER);
     if ((iVar2 == 1) && (iVar2 = Scr_GetPointerType(4,SCRIPTINSTANCE_SERVER), iVar2 == 0x13)) {
-      local_6c = Scr_GetEntity(4);
-      local_10 = (local_6c->s).number;
+      pIgnoreEnt = Scr_GetEntity(4);
+      iIgnoreEntNum = (pIgnoreEnt->s).number;
     }
   case 4:
-    Scr_GetVector(3,local_20,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(3,maxs,SCRIPTINSTANCE_SERVER);
   case 3:
-    Scr_GetVector(2,local_94,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(2,mins,SCRIPTINSTANCE_SERVER);
   case 2:
-    Scr_GetVector(0,local_94 + 3,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(1,&local_7c,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(0,mins + 3,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,&end,SCRIPTINSTANCE_SERVER);
     break;
   default:
     Scr_Error("illegal call to PhysicsTrace()",false);
   }
-  local_14 = 0;
-  for (local_c0 = 0; local_c0 < 3; local_c0 = local_c0 + 1) {
-    if ((1 << ((byte)local_c0 & 0x1f) & local_70) != 0) {
-      local_14 = local_14 | scriptMaskToPhysicsMask[local_c0];
+  mask = 0;
+  for (i = 0; (uint)i < 3; i = i + 1) {
+    if ((1 << ((byte)i & 0x1f) & maskType) != 0) {
+      mask = mask | scriptMaskToPhysicsMask[i];
     }
   }
-  col_context_t::col_context_t(&local_bc);
-  G_TraceCapsule((trace_t *)&local_5c,local_94 + 3,local_94,local_20,&local_7c,local_10,local_14,
-                 &local_bc);
-  Vec3Lerp(local_94 + 3,&local_7c,local_4c,local_68);
+  col_context_t::col_context_t(&context);
+  G_TraceCapsule((trace_t *)&trace,mins + 3,mins,maxs,&end,iIgnoreEntNum,mask,&context);
+  Vec3Lerp(mins + 3,&end,local_4c,endpos);
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
   Scr_AddFloat(local_4c,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.fraction,SCRIPTINSTANCE_SERVER);
-  Scr_AddVector(local_68,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(endpos,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.position,SCRIPTINSTANCE_SERVER);
-  local_8 = Trace_GetEntityHitId((trace_t *)&local_5c);
-  if ((local_8 == 0x3ff) || (local_8 == 0x3fe)) {
+  hitEntId = Trace_GetEntityHitId((trace_t *)&trace);
+  if ((hitEntId == 0x3ff) || (hitEntId == 0x3fe)) {
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddEntity(g_entities + local_8,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(g_entities + hitEntId,SCRIPTINSTANCE_SERVER);
   }
   Scr_AddArrayStringIndexed((uint)scr_const.entity,SCRIPTINSTANCE_SERVER);
   if (1.0 <= local_4c) {
-    local_cc = local_7c - local_94[3];
+    vNorm = end - mins[3];
     local_c8 = local_78 - local_84;
     local_c4 = local_74 - local_80;
-    Vec3Normalize(&local_cc);
-    Scr_AddVector(&local_cc,SCRIPTINSTANCE_SERVER);
+    Vec3Normalize(&vNorm);
+    Scr_AddVector(&vNorm,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.normal,SCRIPTINSTANCE_SERVER);
     Scr_AddConstString((uint)scr_const.none,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.surfacetype,SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddVector(local_5c.v,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(trace.v,SCRIPTINSTANCE_SERVER);
     Scr_AddArrayStringIndexed((uint)scr_const.normal,SCRIPTINSTANCE_SERVER);
-    local_c = (int)(local_48 & 0x3f00000) >> 0x14;
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = Com_SurfaceTypeToName(local_c);
-    Scr_AddString(pcVar3,sVar4);
+    iSurfaceTypeIndex = (int)(local_48 & 0x3f00000) >> 0x14;
+    inst = SCRIPTINSTANCE_SERVER;
+    value = Com_SurfaceTypeToName(iSurfaceTypeIndex);
+    Scr_AddString(value,inst);
     Scr_AddArrayStringIndexed((uint)scr_const.surfacetype,SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -9302,26 +9669,25 @@ void __cdecl Scr_PhysicsTrace(void)
 void __cdecl Scr_PlayerPhysicsTrace(void)
 
 {
-  col_context_t local_8c;
-  float local_64 [3];
-  float local_58 [3];
-  float local_4c [3];
-  float4 local_40;
+  col_context_t context;
+  float start [3];
+  float end [3];
+  float endpos [3];
+  float4 trace;
   float local_30;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40.v[0] = 0.0;
-  local_40.v[1] = 0.0;
-  local_40.v[2] = 0.0;
-  local_40.v[3] = 0.0;
-  Scr_GetVector(0,local_64,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_58,SCRIPTINSTANCE_SERVER);
-  col_context_t::col_context_t(&local_8c);
-  G_TraceCapsule((trace_t *)&local_40,local_64,playerMins,playerMaxs,local_58,0x3ff,0x820011,
-                 &local_8c);
-  Vec3Lerp(local_64,local_58,local_30,local_4c);
-  Scr_AddVector(local_4c,SCRIPTINSTANCE_SERVER);
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  Scr_GetVector(0,start,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,end,SCRIPTINSTANCE_SERVER);
+  col_context_t::col_context_t(&context);
+  G_TraceCapsule((trace_t *)&trace,start,playerMins,playerMaxs,end,0x3ff,0x820011,&context);
+  Vec3Lerp(start,end,local_30,endpos);
+  Scr_AddVector(endpos,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -9332,7 +9698,8 @@ void __cdecl Scr_RandomInt(void)
 
 {
   int iVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
+  int iMax;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 < 1) {
@@ -9340,9 +9707,9 @@ void __cdecl Scr_RandomInt(void)
     Scr_Error("RandomInt parm must be positive integer.\n",false);
   }
   else {
-    sVar2 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     iVar1 = G_irand(0,iVar1);
-    Scr_AddInt(iVar1,sVar2);
+    Scr_AddInt(iVar1,inst);
   }
   return;
 }
@@ -9354,12 +9721,13 @@ void __cdecl Scr_RandomFloat(void)
 
 {
   float fVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
+  float fMax;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   fVar1 = G_flrand(0.0,fVar1);
-  Scr_AddFloat(fVar1,sVar2);
+  Scr_AddFloat(fVar1,inst);
   return;
 }
 
@@ -9370,18 +9738,20 @@ void __cdecl Scr_RandomIntRange(void)
 
 {
   int iVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  int max;
+  scriptInstance_t inst;
+  int iMax;
+  int iMin;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  if (iVar2 <= iVar1) {
+  max = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  if (max <= iVar1) {
     Com_Printf(0x18,"RandomIntRange parms: %d %d ");
     Scr_Error("RandomIntRange range must be positive integer.\n",false);
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  iVar1 = G_irand(iVar1,iVar2);
-  Scr_AddInt(iVar1,sVar3);
+  inst = SCRIPTINSTANCE_SERVER;
+  iVar1 = G_irand(iVar1,max);
+  Scr_AddInt(iVar1,inst);
   return;
 }
 
@@ -9392,18 +9762,20 @@ void __cdecl Scr_RandomFloatRange(void)
 
 {
   float fVar1;
-  float fVar2;
-  scriptInstance_t sVar3;
+  float max;
+  scriptInstance_t inst;
+  float fMin;
+  float fMax;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  fVar2 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  if (fVar2 < fVar1) {
+  max = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  if (max < fVar1) {
     Com_Printf(0x18,"Scr_RandomFloatRange parms: %f %f ");
     Scr_Error("Scr_RandomFloatRange range must be positive float.\n",false);
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  fVar1 = G_flrand(fVar1,fVar2);
-  Scr_AddFloat(fVar1,sVar3);
+  inst = SCRIPTINSTANCE_SERVER;
+  fVar1 = G_flrand(fVar1,max);
+  Scr_AddFloat(fVar1,inst);
   return;
 }
 
@@ -9415,13 +9787,13 @@ void __cdecl GScr_log(void)
 {
   double dVar1;
   float fVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   dVar1 = (double)fVar2;
   __libm_sse2_log((double)((ulonglong)(uint)fVar2 << 0x20));
-  Scr_AddFloat((float)dVar1,sVar3);
+  Scr_AddFloat((float)dVar1,inst);
   return;
 }
 
@@ -9433,13 +9805,13 @@ void __cdecl GScr_sin(void)
 {
   double dVar1;
   float fVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   dVar1 = (double)(fVar2 * 0.017453292);
   __libm_sse2_sin((double)((ulonglong)(uint)(fVar2 * 0.017453292) << 0x20));
-  Scr_AddFloat((float)dVar1,sVar3);
+  Scr_AddFloat((float)dVar1,inst);
   return;
 }
 
@@ -9451,13 +9823,13 @@ void __cdecl GScr_cos(void)
 {
   double dVar1;
   float fVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   dVar1 = (double)(fVar2 * 0.017453292);
   __libm_sse2_cos((double)((ulonglong)(uint)(fVar2 * 0.017453292) << 0x20));
-  Scr_AddFloat((float)dVar1,sVar3);
+  Scr_AddFloat((float)dVar1,inst);
   return;
 }
 
@@ -9470,6 +9842,8 @@ void __cdecl GScr_tan(void)
   float10 fVar1;
   float10 fVar2;
   float fVar3;
+  float sinT;
+  float cosT;
   
   fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   fVar1 = (float10)fcos((float10)(fVar3 * 0.017453292));
@@ -9484,50 +9858,56 @@ void __cdecl GScr_tan(void)
 
 // 0064E9E0  GScr_asin  (game_mp/g_scr_main_mp.cpp:7148)
 
+/* WARNING: Variable defined which should be unmapped: x */
+
 void __cdecl GScr_asin(void)
 
 {
-  char *pcVar1;
-  double dVar2;
-  float fVar3;
-  bool bVar4;
-  scriptInstance_t sVar5;
+  char *error;
+  double dVar1;
+  float fVar2;
+  bool force_terminal;
+  scriptInstance_t inst;
+  float x;
   
-  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if ((fVar3 < -1.0) || (1.0 < fVar3)) {
-    bVar4 = false;
-    pcVar1 = va("%g out of range");
-    Scr_Error(pcVar1,bVar4);
+  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if ((fVar2 < -1.0) || (1.0 < fVar2)) {
+    force_terminal = false;
+    error = va("%g out of range");
+    Scr_Error(error,force_terminal);
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  dVar2 = (double)fVar3;
-  __libm_sse2_asin((double)((ulonglong)(uint)fVar3 << 0x20));
-  Scr_AddFloat((float)dVar2 * 57.295776,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  dVar1 = (double)fVar2;
+  __libm_sse2_asin((double)((ulonglong)(uint)fVar2 << 0x20));
+  Scr_AddFloat((float)dVar1 * 57.295776,inst);
   return;
 }
 
 
 // 0064EA60  GScr_acos  (game_mp/g_scr_main_mp.cpp:7159)
 
+/* WARNING: Variable defined which should be unmapped: x */
+
 void __cdecl GScr_acos(void)
 
 {
-  char *pcVar1;
-  double dVar2;
-  float fVar3;
-  bool bVar4;
-  scriptInstance_t sVar5;
+  char *error;
+  double dVar1;
+  float fVar2;
+  bool force_terminal;
+  scriptInstance_t inst;
+  float x;
   
-  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if ((fVar3 < -1.0) || (1.0 < fVar3)) {
-    bVar4 = false;
-    pcVar1 = va("%g out of range");
-    Scr_Error(pcVar1,bVar4);
+  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if ((fVar2 < -1.0) || (1.0 < fVar2)) {
+    force_terminal = false;
+    error = va("%g out of range");
+    Scr_Error(error,force_terminal);
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  dVar2 = (double)fVar3;
-  __libm_sse2_acos((double)((ulonglong)(uint)fVar3 << 0x20));
-  Scr_AddFloat((float)dVar2 * 57.295776,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  dVar1 = (double)fVar2;
+  __libm_sse2_acos((double)((ulonglong)(uint)fVar2 << 0x20));
+  Scr_AddFloat((float)dVar1 * 57.295776,inst);
   return;
 }
 
@@ -9539,13 +9919,13 @@ void __cdecl GScr_atan(void)
 {
   double dVar1;
   float fVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   dVar1 = (double)fVar2;
   __libm_sse2_atan((double)((ulonglong)(uint)fVar2 << 0x20));
-  Scr_AddFloat((float)dVar1 * 57.295776,sVar3);
+  Scr_AddFloat((float)dVar1 * 57.295776,inst);
   return;
 }
 
@@ -9605,12 +9985,12 @@ void __cdecl GScr_floor(void)
 
 {
   float10 extraout_ST0;
-  scriptInstance_t sVar1;
+  scriptInstance_t inst;
   
   Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar1 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   floor();
-  Scr_AddFloat((float)extraout_ST0,sVar1);
+  Scr_AddFloat((float)extraout_ST0,inst);
   return;
 }
 
@@ -9621,12 +10001,12 @@ void __cdecl GScr_ceil(void)
 
 {
   float10 extraout_ST0;
-  scriptInstance_t sVar1;
+  scriptInstance_t inst;
   
   Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  sVar1 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   ceil();
-  Scr_AddFloat((float)extraout_ST0,sVar1);
+  Scr_AddFloat((float)extraout_ST0,inst);
   return;
 }
 
@@ -9650,7 +10030,7 @@ void __cdecl GScr_CastInt(void)
 
 {
   int iVar1;
-  int extraout_EAX;
+  int value;
   char *pcVar2;
   scriptInstance_t sVar3;
   
@@ -9665,7 +10045,7 @@ void __cdecl GScr_CastInt(void)
     sVar3 = SCRIPTINSTANCE_SERVER;
     Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
     _ftol2_sse();
-    Scr_AddInt(extraout_EAX,sVar3);
+    Scr_AddInt(value,sVar3);
   }
   else if (iVar1 == 6) {
     sVar3 = SCRIPTINSTANCE_SERVER;
@@ -9689,32 +10069,32 @@ void __cdecl GScr_CastFloat(void)
 {
   int iVar1;
   char *pcVar2;
-  float fVar3;
-  double dVar4;
-  scriptInstance_t sVar5;
+  float value;
+  double dVar3;
+  scriptInstance_t sVar4;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 2) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
+    sVar4 = SCRIPTINSTANCE_SERVER;
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    dVar4 = atof(pcVar2);
-    Scr_AddFloat((float)dVar4,sVar5);
+    dVar3 = atof(pcVar2);
+    Scr_AddFloat((float)dVar3,sVar4);
   }
   else if (iVar1 == 5) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    Scr_AddFloat(fVar3,sVar5);
+    sVar4 = SCRIPTINSTANCE_SERVER;
+    value = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+    Scr_AddFloat(value,sVar4);
   }
   else if (iVar1 == 6) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
+    sVar4 = SCRIPTINSTANCE_SERVER;
     iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    Scr_AddFloat((float)iVar1,sVar5);
+    Scr_AddFloat((float)iVar1,sVar4);
   }
   else {
-    sVar5 = SCRIPTINSTANCE_SERVER;
+    sVar4 = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("cannot cast %s to float");
-    Scr_ParamError(0,pcVar2,sVar5);
+    Scr_ParamError(0,pcVar2,sVar4);
   }
   return;
 }
@@ -9726,47 +10106,47 @@ void __cdecl GScr_VectorFromLineToPoint(void)
 
 {
   float fVar1;
-  float local_54;
+  float segmentB;
   float local_50;
   float local_4c;
-  float local_48;
+  float result;
   float local_44;
   float local_40;
-  float local_3c;
+  float BA;
   float local_38;
   float local_34;
-  float local_30;
+  float PA;
   float local_2c;
   float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
+  float fraction;
+  float segmentLengthSq;
+  float segmentA;
   float local_18;
   float local_14;
-  float local_10;
+  float P;
   float local_c;
   float local_8;
   
-  Scr_GetVector(0,&local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_54,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,&local_10,SCRIPTINSTANCE_SERVER);
-  local_3c = local_54 - local_1c;
+  Scr_GetVector(0,&segmentA,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&segmentB,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,&P,SCRIPTINSTANCE_SERVER);
+  BA = segmentB - segmentA;
   local_38 = local_50 - local_18;
   local_34 = local_4c - local_14;
-  local_20 = local_3c * local_3c + local_38 * local_38 + local_34 * local_34;
-  if (local_20 == 0.0) {
+  segmentLengthSq = BA * BA + local_38 * local_38 + local_34 * local_34;
+  if (segmentLengthSq == 0.0) {
     Scr_ParamError(0,"The two points on the line must be different from each other",
                    SCRIPTINSTANCE_SERVER);
   }
-  local_30 = local_10 - local_1c;
+  PA = P - segmentA;
   local_2c = local_c - local_18;
   local_28 = local_8 - local_14;
-  local_24 = (local_3c * local_30 + local_38 * local_2c + local_34 * local_28) / local_20;
-  fVar1 = -local_24;
-  local_48 = fVar1 * local_3c + local_30;
+  fraction = (BA * PA + local_38 * local_2c + local_34 * local_28) / segmentLengthSq;
+  fVar1 = -fraction;
+  result = fVar1 * BA + PA;
   local_44 = fVar1 * local_38 + local_2c;
   local_40 = fVar1 * local_34 + local_28;
-  Scr_AddVector(&local_48,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(&result,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -9776,54 +10156,54 @@ void __cdecl GScr_VectorFromLineToPoint(void)
 void __cdecl GScr_PointOnSegmentNearestToPoint(void)
 
 {
-  float local_54;
+  float segmentB;
   float local_50;
   float local_4c;
-  float local_48;
+  float BA;
   float local_44;
   float local_40;
-  float local_3c;
+  float PA;
   float local_38;
   float local_34;
-  float local_30;
-  float local_2c;
-  float local_28;
+  float fraction;
+  float segmentLengthSq;
+  float segmentA;
   float local_24;
   float local_20;
-  float local_1c;
+  float P;
   float local_18;
   float local_14;
-  float local_10;
+  float nearPoint;
   float local_c;
   float local_8;
   
-  Scr_GetVector(0,&local_28,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_54,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,&local_1c,SCRIPTINSTANCE_SERVER);
-  local_48 = local_54 - local_28;
+  Scr_GetVector(0,&segmentA,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&segmentB,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,&P,SCRIPTINSTANCE_SERVER);
+  BA = segmentB - segmentA;
   local_44 = local_50 - local_24;
   local_40 = local_4c - local_20;
-  local_2c = local_48 * local_48 + local_44 * local_44 + local_40 * local_40;
-  if (local_2c == 0.0) {
+  segmentLengthSq = BA * BA + local_44 * local_44 + local_40 * local_40;
+  if (segmentLengthSq == 0.0) {
     Scr_ParamError(0,"Line segment must not have zero length",SCRIPTINSTANCE_SERVER);
   }
-  local_3c = local_1c - local_28;
+  PA = P - segmentA;
   local_38 = local_18 - local_24;
   local_34 = local_14 - local_20;
-  local_30 = (local_48 * local_3c + local_44 * local_38 + local_40 * local_34) / local_2c;
-  if (0.0 <= local_30) {
-    if (local_30 <= 1.0) {
-      local_10 = local_30 * local_48 + local_28;
-      local_c = local_30 * local_44 + local_24;
-      local_8 = local_30 * local_40 + local_20;
-      Scr_AddVector(&local_10,SCRIPTINSTANCE_SERVER);
+  fraction = (BA * PA + local_44 * local_38 + local_40 * local_34) / segmentLengthSq;
+  if (0.0 <= fraction) {
+    if (fraction <= 1.0) {
+      nearPoint = fraction * BA + segmentA;
+      local_c = fraction * local_44 + local_24;
+      local_8 = fraction * local_40 + local_20;
+      Scr_AddVector(&nearPoint,SCRIPTINSTANCE_SERVER);
     }
     else {
-      Scr_AddVector(&local_54,SCRIPTINSTANCE_SERVER);
+      Scr_AddVector(&segmentB,SCRIPTINSTANCE_SERVER);
     }
   }
   else {
-    Scr_AddVector(&local_28,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(&segmentA,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -9834,16 +10214,16 @@ void __cdecl GScr_PointOnSegmentNearestToPoint(void)
 void __cdecl Scr_Distance(void)
 
 {
-  float fVar1;
-  scriptInstance_t sVar2;
-  float local_1c [3];
-  float local_10 [3];
+  float value;
+  scriptInstance_t inst;
+  float v0 [3];
+  float v1 [3];
   
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  fVar1 = Vec3Distance(local_1c,local_10);
-  Scr_AddFloat(fVar1,sVar2);
+  Scr_GetVector(0,v0,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,v1,SCRIPTINSTANCE_SERVER);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Vec3Distance(v0,v1);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -9853,22 +10233,22 @@ void __cdecl Scr_Distance(void)
 void __cdecl Scr_Distance2D(void)
 
 {
-  float fVar1;
-  scriptInstance_t sVar2;
+  float value;
+  scriptInstance_t inst;
   float local_24;
   float local_20;
-  float local_1c;
+  float v0;
   float local_18;
-  float local_10;
+  float v1;
   float local_c;
   
-  Scr_GetVector(0,&local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_10,SCRIPTINSTANCE_SERVER);
-  local_24 = local_10 - local_1c;
+  Scr_GetVector(0,&v0,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&v1,SCRIPTINSTANCE_SERVER);
+  local_24 = v1 - v0;
   local_20 = local_c - local_18;
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  fVar1 = Vec2Length(&local_24);
-  Scr_AddFloat(fVar1,sVar2);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Vec2Length(&local_24);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -9878,16 +10258,16 @@ void __cdecl Scr_Distance2D(void)
 void __cdecl Scr_DistanceSquared(void)
 
 {
-  float fVar1;
-  scriptInstance_t sVar2;
-  float local_1c [3];
-  float local_10 [3];
+  float value;
+  scriptInstance_t inst;
+  float v0 [3];
+  float v1 [3];
   
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  fVar1 = Vec3DistanceSq(local_1c,local_10);
-  Scr_AddFloat(fVar1,sVar2);
+  Scr_GetVector(0,v0,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,v1,SCRIPTINSTANCE_SERVER);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Vec3DistanceSq(v0,v1);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -9897,14 +10277,14 @@ void __cdecl Scr_DistanceSquared(void)
 void __cdecl Scr_Length(void)
 
 {
-  float fVar1;
-  scriptInstance_t sVar2;
-  float local_10 [3];
+  float value;
+  scriptInstance_t inst;
+  float v [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  fVar1 = Abs((phys_vec3 *)local_10);
-  Scr_AddFloat(fVar1,sVar2);
+  Scr_GetVector(0,v,SCRIPTINSTANCE_SERVER);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Abs((phys_vec3 *)v);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -9914,12 +10294,12 @@ void __cdecl Scr_Length(void)
 void __cdecl Scr_LengthSquared(void)
 
 {
-  float local_10;
+  float v;
   float local_c;
   float local_8;
   
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  Scr_AddFloat(local_10 * local_10 + local_c * local_c + local_8 * local_8,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,&v,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(v * v + local_c * local_c + local_8 * local_8,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -9931,17 +10311,18 @@ void __cdecl Scr_Closer(void)
 {
   float fVar1;
   uint local_4c;
-  float local_2c [3];
-  float local_20;
-  float local_1c [3];
-  float local_10 [3];
+  float fDistBSqrd;
+  float vB [3];
+  float fDistASqrd;
+  float vRef [3];
+  float vA [3];
   
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,local_2c,SCRIPTINSTANCE_SERVER);
-  local_20 = Vec3DistanceSq(local_10,local_1c);
-  fVar1 = Vec3DistanceSq(local_2c,local_1c);
-  local_4c = (uint)(local_20 < fVar1);
+  Scr_GetVector(0,vRef,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,vA,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,vB,SCRIPTINSTANCE_SERVER);
+  fDistASqrd = Vec3DistanceSq(vA,vRef);
+  fVar1 = Vec3DistanceSq(vB,vRef);
+  local_4c = (uint)(fDistASqrd < fVar1);
   Scr_AddInt(local_4c,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -9952,16 +10333,16 @@ void __cdecl Scr_Closer(void)
 void __cdecl Scr_VectorDot(void)
 
 {
-  float local_1c;
+  float b;
   float local_18;
   float local_14;
-  float local_10;
+  float a;
   float local_c;
   float local_8;
   
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_1c,SCRIPTINSTANCE_SERVER);
-  Scr_AddFloat(local_10 * local_1c + local_c * local_18 + local_8 * local_14,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,&a,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&b,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(a * b + local_c * local_18 + local_8 * local_14,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -9971,14 +10352,14 @@ void __cdecl Scr_VectorDot(void)
 void __cdecl Scr_VectorCross(void)
 
 {
-  float local_28 [3];
-  float local_1c [3];
-  float local_10 [3];
+  float b [3];
+  float tempVec [3];
+  float a [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_28,SCRIPTINSTANCE_SERVER);
-  Vec3Cross(local_10,local_28,local_1c);
-  Scr_AddVector(local_1c,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,a,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,b,SCRIPTINSTANCE_SERVER);
+  Vec3Cross(a,b,tempVec);
+  Scr_AddVector(tempVec,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -9989,10 +10370,10 @@ void __cdecl Scr_VectorNormalize(void)
 
 {
   uint uVar1;
-  float local_1c;
+  float b;
   undefined4 local_18;
   undefined4 local_14;
-  float local_10;
+  float a;
   undefined4 local_c;
   undefined4 local_8;
   
@@ -10000,12 +10381,12 @@ void __cdecl Scr_VectorNormalize(void)
   if (uVar1 != 1) {
     Scr_Error("wrong number of arguments to vectornormalize!",false);
   }
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  local_1c = local_10;
+  Scr_GetVector(0,&a,SCRIPTINSTANCE_SERVER);
+  b = a;
   local_18 = local_c;
   local_14 = local_8;
-  Vec3Normalize(&local_1c);
-  Scr_AddVector(&local_1c,SCRIPTINSTANCE_SERVER);
+  Vec3Normalize(&b);
+  Scr_AddVector(&b,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10016,16 +10397,16 @@ void __cdecl Scr_VectorToAngles(void)
 
 {
   uint uVar1;
-  float local_1c [3];
-  float local_10 [3];
+  float angles [3];
+  float vec [3];
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     Scr_Error("wrong number of arguments to vectortoangle!",false);
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  vectoangles(local_10,local_1c);
-  Scr_AddVector(local_1c,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,vec,SCRIPTINSTANCE_SERVER);
+  vectoangles(vec,angles);
+  Scr_AddVector(angles,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10036,20 +10417,20 @@ void __cdecl Scr_VectorLerp(void)
 
 {
   uint uVar1;
-  float local_2c [3];
-  float local_20 [3];
-  float local_14;
-  float local_10 [3];
+  float from [3];
+  float result [3];
+  float fraction;
+  float to [3];
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 3) {
     Scr_Error("wrong number of arguments to vectorlerp",false);
   }
-  Scr_GetVector(0,local_2c,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
-  local_14 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  Vec3Lerp(local_2c,local_10,local_14,local_20);
-  Scr_AddVector(local_20,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,from,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,to,SCRIPTINSTANCE_SERVER);
+  fraction = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  Vec3Lerp(from,to,fraction,result);
+  Scr_AddVector(result,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10059,12 +10440,12 @@ void __cdecl Scr_VectorLerp(void)
 void __cdecl Scr_AnglesToUp(void)
 
 {
-  float local_1c [3];
-  float local_10 [3];
+  float angles [3];
+  float up [3];
   
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-  AngleVectors(local_1c,(float *)0x0,(float *)0x0,local_10);
-  Scr_AddVector(local_10,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,angles,SCRIPTINSTANCE_SERVER);
+  AngleVectors(angles,(float *)0x0,(float *)0x0,up);
+  Scr_AddVector(up,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10074,12 +10455,12 @@ void __cdecl Scr_AnglesToUp(void)
 void __cdecl Scr_AnglesToRight(void)
 
 {
-  float local_1c [3];
-  float local_10 [3];
+  float right [3];
+  float angles [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  AngleVectors(local_10,(float *)0x0,local_1c,(float *)0x0);
-  Scr_AddVector(local_1c,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,angles,SCRIPTINSTANCE_SERVER);
+  AngleVectors(angles,(float *)0x0,right,(float *)0x0);
+  Scr_AddVector(right,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10089,12 +10470,12 @@ void __cdecl Scr_AnglesToRight(void)
 void __cdecl Scr_AnglesToForward(void)
 
 {
-  float local_1c [3];
-  float local_10 [3];
+  float forward [3];
+  float angles [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  AngleVectors(local_10,local_1c,(float *)0x0,(float *)0x0);
-  Scr_AddVector(local_1c,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,angles,SCRIPTINSTANCE_SERVER);
+  AngleVectors(angles,forward,(float *)0x0,(float *)0x0);
+  Scr_AddVector(forward,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10104,20 +10485,20 @@ void __cdecl Scr_AnglesToForward(void)
 void __cdecl Scr_CombineAngles(void)
 
 {
-  float local_94 [3];
-  float local_88 [9];
-  float local_64 [3];
-  float local_58 [9];
-  float local_34 [3];
-  float local_28 [9];
+  float anglesfinal [3];
+  float axisB [9];
+  float anglesA [3];
+  float axisA [9];
+  float anglesB [3];
+  float combinedaxis [9];
   
-  Scr_GetVector(0,local_64,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_34,SCRIPTINSTANCE_SERVER);
-  AnglesToAxis(local_64,(float (*) [3])local_58);
-  AnglesToAxis(local_34,(float (*) [3])local_88);
-  MatrixMultiply((float (*) [3])local_88,(float (*) [3])local_58,(float (*) [3])local_28);
-  AxisToAngles((float (*) [3])local_28,local_94);
-  Scr_AddVector(local_94,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,anglesA,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,anglesB,SCRIPTINSTANCE_SERVER);
+  AnglesToAxis(anglesA,(float (*) [3])axisA);
+  AnglesToAxis(anglesB,(float (*) [3])axisB);
+  MatrixMultiply((float (*) [3])axisB,(float (*) [3])axisA,(float (*) [3])combinedaxis);
+  AxisToAngles((float (*) [3])combinedaxis,anglesfinal);
+  Scr_AddVector(anglesfinal,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10129,6 +10510,8 @@ void __cdecl Scr_ClampAngle180(void)
 {
   float10 extraout_ST0;
   float fVar1;
+  float angle;
+  float angleFrac;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   floor();
@@ -10150,6 +10533,8 @@ void __cdecl Scr_AbsAngleClamp180(void)
 {
   float10 extraout_ST0;
   float fVar1;
+  float angle;
+  float angleFrac;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   floor();
@@ -10169,16 +10554,16 @@ void __cdecl Scr_AbsAngleClamp180(void)
 void __cdecl Scr_RotatePoint(void)
 
 {
-  float local_38 [3];
-  float local_2c [4];
-  float local_1c [3];
-  float local_10 [3];
+  float result [3];
+  float quat [4];
+  float angles [3];
+  float point [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_1c,SCRIPTINSTANCE_SERVER);
-  AnglesToQuat(local_1c,local_2c);
-  RotatePoint(local_10,local_2c,local_38);
-  Scr_AddVector(local_38,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,point,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,angles,SCRIPTINSTANCE_SERVER);
+  AnglesToQuat(angles,quat);
+  RotatePoint(point,quat,result);
+  Scr_AddVector(result,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10188,16 +10573,16 @@ void __cdecl Scr_RotatePoint(void)
 void __cdecl Scr_IsSubStr(void)
 
 {
-  uchar *puVar1;
-  uchar *puVar2;
+  uchar *str2;
+  uchar *str1;
   int extraout_EAX;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  puVar1 = (uchar *)Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  puVar2 = (uchar *)Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  strstr(puVar2,puVar1);
-  Scr_AddBool((uint)(extraout_EAX != 0),sVar3);
+  inst = SCRIPTINSTANCE_SERVER;
+  str2 = (uchar *)Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  str1 = (uchar *)Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  strstr(str1,str2);
+  Scr_AddBool((uint)(extraout_EAX != 0),inst);
   return;
 }
 
@@ -10211,17 +10596,18 @@ void __cdecl Scr_GetSubStr(void)
 {
   uint uVar1;
   int local_428;
-  int local_424;
-  char local_41c [1028];
+  int source;
+  char c;
+  char tempString [1028];
   uint local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  int start;
+  int end;
+  int dest;
+  char *s;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_14 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  s = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  start = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 3) {
     local_428 = 0x7fffffff;
@@ -10229,18 +10615,18 @@ void __cdecl Scr_GetSubStr(void)
   else {
     local_428 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
   }
-  local_10 = local_428;
-  local_c = 0;
-  for (local_424 = local_14; local_424 < local_10; local_424 = local_424 + 1) {
-    if (0x3ff < local_c) {
+  end = local_428;
+  dest = 0;
+  for (source = start; source < end; source = source + 1) {
+    if (0x3ff < dest) {
       Scr_Error("string too long",false);
     }
-    if (local_8[local_424] == '\0') break;
-    local_41c[local_c] = local_8[local_424];
-    local_c = local_c + 1;
+    if (s[source] == '\0') break;
+    tempString[dest] = s[source];
+    dest = dest + 1;
   }
-  local_41c[local_c] = '\0';
-  Scr_AddString(local_41c,SCRIPTINSTANCE_SERVER);
+  tempString[dest] = '\0';
+  Scr_AddString(tempString,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10253,26 +10639,27 @@ void __cdecl Scr_ToLower(void)
 
 {
   int iVar1;
-  char local_414 [1028];
+  char c;
+  char tempString [1028];
   uint local_10;
-  char *local_c;
-  int local_8;
+  char *s;
+  int i;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_8 = 0;
+  s = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  i = 0;
   while( true ) {
-    if (0x3ff < local_8) {
+    if (0x3ff < i) {
       Scr_Error("string too long",false);
       return;
     }
-    iVar1 = tolower((int)*local_c);
-    local_414[local_8] = (char)iVar1;
+    iVar1 = tolower((int)*s);
+    tempString[i] = (char)iVar1;
     if ((char)iVar1 == '\0') break;
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    i = i + 1;
+    s = s + 1;
   }
-  Scr_AddString(local_414,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(tempString,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -10285,67 +10672,69 @@ void __cdecl Scr_StrTok(void)
 
 {
   char cVar1;
-  uint uVar2;
+  uint stringValue;
   char *local_434;
-  int local_430;
-  char local_424 [1028];
+  int source;
+  char c;
+  uint delimId;
+  char tempString [1028];
   uint local_20;
-  char *local_1c;
-  int local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  char *delim;
+  int dest;
+  char *s;
+  int i;
+  int delimLen;
+  uint sId;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  uVar2 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
-  local_14 = SL_ConvertToString(local_8,SCRIPTINSTANCE_SERVER);
-  local_1c = SL_ConvertToString(uVar2,SCRIPTINSTANCE_SERVER);
-  SL_AddRefToString(local_8,SCRIPTINSTANCE_SERVER);
-  SL_AddRefToString(uVar2,SCRIPTINSTANCE_SERVER);
-  local_434 = local_1c;
+  sId = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  stringValue = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
+  s = SL_ConvertToString(sId,SCRIPTINSTANCE_SERVER);
+  delim = SL_ConvertToString(stringValue,SCRIPTINSTANCE_SERVER);
+  SL_AddRefToString(sId,SCRIPTINSTANCE_SERVER);
+  SL_AddRefToString(stringValue,SCRIPTINSTANCE_SERVER);
+  local_434 = delim;
   do {
     cVar1 = *local_434;
     local_434 = local_434 + 1;
   } while (cVar1 != '\0');
-  local_c = (int)local_434 - (int)(local_1c + 1);
-  local_18 = 0;
+  delimLen = (int)local_434 - (int)(delim + 1);
+  dest = 0;
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  local_430 = 0;
+  source = 0;
   do {
-    cVar1 = local_14[local_430];
+    cVar1 = s[source];
     if (cVar1 == '\0') {
-      if (local_18 != 0) {
-        local_424[local_18] = '\0';
-        Scr_AddString(local_424,SCRIPTINSTANCE_SERVER);
+      if (dest != 0) {
+        tempString[dest] = '\0';
+        Scr_AddString(tempString,SCRIPTINSTANCE_SERVER);
         Scr_AddArray(SCRIPTINSTANCE_SERVER);
-        local_18 = 0;
+        dest = 0;
       }
-      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,local_8);
-      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,uVar2);
+      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,sId);
+      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,stringValue);
       return;
     }
-    for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-      if (cVar1 == local_1c[local_10]) {
-        if (local_18 != 0) {
-          local_424[local_18] = '\0';
-          Scr_AddString(local_424,SCRIPTINSTANCE_SERVER);
+    for (i = 0; i < delimLen; i = i + 1) {
+      if (cVar1 == delim[i]) {
+        if (dest != 0) {
+          tempString[dest] = '\0';
+          Scr_AddString(tempString,SCRIPTINSTANCE_SERVER);
           Scr_AddArray(SCRIPTINSTANCE_SERVER);
-          local_18 = 0;
+          dest = 0;
         }
         goto LAB_0064fb56;
       }
     }
-    local_424[local_18] = cVar1;
-    local_18 = local_18 + 1;
-    if (0x3ff < local_18) {
-      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,local_8);
-      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,uVar2);
+    tempString[dest] = cVar1;
+    dest = dest + 1;
+    if (0x3ff < dest) {
+      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,sId);
+      SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,stringValue);
       Scr_Error("string too long",false);
     }
 LAB_0064fb56:
-    local_430 = local_430 + 1;
+    source = source + 1;
   } while( true );
 }
 
@@ -10357,7 +10746,7 @@ LAB_0064fb56:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_NeedsRevive(scr_entref_t param_1)
+void __cdecl GScr_NeedsRevive(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -10365,9 +10754,12 @@ void __cdecl GScr_NeedsRevive(scr_entref_t param_1)
   gentity_s *pgVar3;
   int iVar4;
   clientState_s *pcVar5;
-  uint local_8;
+  clientState_s *client;
+  int needsReviveInt;
+  gentity_s *pEnt;
+  int needsRevive;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if ((pgVar3->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x1e2f,0,"%s"), !bVar2)) {
@@ -10376,7 +10768,7 @@ void __cdecl GScr_NeedsRevive(scr_entref_t param_1)
     return;
   }
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  local_8 = (uint)(iVar4 != 0);
+  needsRevive = (int)(iVar4 != 0);
   if ((0x1f < (pgVar3->client->ps).clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x1e38,0,
@@ -10386,10 +10778,10 @@ void __cdecl GScr_NeedsRevive(scr_entref_t param_1)
     (*pcVar1)();
     return;
   }
-  *(uint *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x100 +
-           (uint)(pgVar3->client->ps).clientNum * 0x5c8) = local_8;
+  *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x100 +
+          (uint)(pgVar3->client->ps).clientNum * 0x5c8) = needsRevive;
   pcVar5 = G_GetClientState((uint)(pgVar3->client->ps).clientNum);
-  pcVar5->needsRevive = local_8;
+  pcVar5->needsRevive = needsRevive;
   return;
 }
 
@@ -10401,15 +10793,17 @@ void __cdecl GScr_NeedsRevive(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsInSecondChance(scr_entref_t param_1)
+void __cdecl GScr_IsInSecondChance(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   clientState_s *pcVar4;
+  clientState_s *client;
+  gentity_s *pEnt;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x1e53,
                              0,"%s");
@@ -10443,29 +10837,32 @@ void __cdecl GScr_IsInSecondChance(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetBurn(scr_entref_t param_1)
+void __cdecl GScr_SetBurn(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  float fVar3;
-  int local_c;
+  char *text;
+  float fVar2;
+  int burnTimeMs;
+  gentity_s *ent;
+  int clientNum;
+  float burnTime;
   
-  local_c = -1;
-  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (fVar3 < 0.0) {
+  clientNum = -1;
+  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (fVar2 < 0.0) {
     Scr_ParamError(1,"Time must be positive",SCRIPTINSTANCE_SERVER);
   }
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (((pgVar1 == (gentity_s *)0x0) || ((pgVar1->r).inuse == '\0')) ||
      (pgVar1->client == (gclient_s *)0x0)) {
     Scr_Error("setburn() called on an invalid client entity.\n",false);
   }
   else {
-    local_c = (pgVar1->s).number;
+    clientNum = (pgVar1->s).number;
   }
-  pcVar2 = va("%c %i");
-  SV_GameSendServerCommand(local_c,SV_CMD_RELIABLE,pcVar2);
+  text = va("%c %i");
+  SV_GameSendServerCommand(clientNum,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10477,29 +10874,32 @@ void __cdecl GScr_SetBurn(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetElectrified(scr_entref_t param_1)
+void __cdecl GScr_SetElectrified(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  float fVar3;
-  int local_8;
+  char *text;
+  float fVar2;
+  int effectTimeMs;
+  float effectTime;
+  gentity_s *ent;
+  int clientNum;
   
-  local_8 = -1;
-  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (fVar3 < 0.0) {
+  clientNum = -1;
+  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (fVar2 < 0.0) {
     Scr_ParamError(1,"Time must be positive",SCRIPTINSTANCE_SERVER);
   }
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (((pgVar1 == (gentity_s *)0x0) || ((pgVar1->r).inuse == '\0')) ||
      (pgVar1->client == (gclient_s *)0x0)) {
     Scr_Error("setelectrified() called on an invalid client entity.\n",false);
   }
   else {
-    local_8 = (pgVar1->s).number;
+    clientNum = (pgVar1->s).number;
   }
-  pcVar2 = va("%c %i");
-  SV_GameSendServerCommand(local_8,SV_CMD_RELIABLE,pcVar2);
+  text = va("%c %i");
+  SV_GameSendServerCommand(clientNum,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10511,12 +10911,13 @@ void __cdecl GScr_SetElectrified(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StartTanning(scr_entref_t param_1)
+void __cdecl GScr_StartTanning(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     (pgVar1->s).lerp.eFlags2 = (pgVar1->s).lerp.eFlags2 | 0x200000;
   }
@@ -10534,12 +10935,13 @@ void __cdecl GScr_StartTanning(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopBurning(scr_entref_t param_1)
+void __cdecl GScr_StopBurning(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     (pgVar1->s).lerp.eFlags2 = (pgVar1->s).lerp.eFlags2 & 0xffdfffff;
   }
@@ -10557,51 +10959,52 @@ void __cdecl GScr_StopBurning(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SpawnNapalmGroundFlame(scr_entref_t param_1)
+void __cdecl GScr_SpawnNapalmGroundFlame(scr_entref_t entref)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  float local_2c [3];
-  int local_20;
-  uint local_1c;
-  gentity_s *local_18;
-  float local_14 [3];
-  WeaponDef *local_8;
+  char *name;
+  uint uVar1;
+  char *weaponName;
+  float origin [3];
+  int time;
+  int weaponIndex;
+  gentity_s *ent;
+  float direction [3];
+  WeaponDef *weapDef;
   
-  local_18 = GetEntity(param_1);
-  local_20 = 10;
-  Scr_GetVector(0,local_2c,SCRIPTINSTANCE_SERVER);
-  pcVar1 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,local_14,SCRIPTINSTANCE_SERVER);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (3 < uVar2) {
-    local_20 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+  ent = GetEntity(entref);
+  time = 10;
+  Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+  name = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,direction,SCRIPTINSTANCE_SERVER);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (3 < uVar1) {
+    time = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   }
-  local_1c = G_GetWeaponIndexForName(pcVar1);
-  Scr_VerifyWeaponIndex(local_1c,pcVar1);
-  local_8 = BG_GetWeaponDef(local_1c);
-  G_SetOrigin(local_18,local_2c);
-  G_SetAngle(local_18,local_14);
-  (local_18->s).weapon = (ushort)local_1c;
-  (local_18->s).eType = 0;
-  (local_18->s).lerp.eFlags = (local_18->s).lerp.eFlags | 0x20;
-  (local_18->s).weapon = (local_18->s).weapon;
-  G_BroadcastEntity(local_18);
-  G_AddEvent(local_18,0x42,0);
-  (local_18->s).lerp.pos.trBase[0] = (float)(int)(local_18->s).lerp.pos.trBase[0];
-  (local_18->s).lerp.pos.trBase[1] = (float)(int)(local_18->s).lerp.pos.trBase[1];
-  (local_18->s).lerp.pos.trBase[2] = (float)(int)(local_18->s).lerp.pos.trBase[2];
-  G_SetOrigin(local_18,(local_18->s).lerp.pos.trBase);
-  G_SetAngle(local_18,(local_18->s).lerp.apos.trBase);
-  (local_18->s).lerp.eFlags = (local_18->s).lerp.eFlags | 0x4000;
-  (local_18->s).lerp.u.missile.launchTime = level.time;
-  (local_18->s).time2 = local_20 * 1000 + level.time;
-  (local_18->s).lerp.eFlags = (local_18->s).lerp.eFlags | 0x10;
-  (local_18->s).lerp.eFlags2 = (local_18->s).lerp.eFlags2 | 1;
-  local_18->handler = '\v';
-  local_18->nextthink = level.time + 1;
-  SV_LinkEntity(local_18);
+  weaponIndex = G_GetWeaponIndexForName(name);
+  Scr_VerifyWeaponIndex(weaponIndex,name);
+  weapDef = BG_GetWeaponDef(weaponIndex);
+  G_SetOrigin(ent,origin);
+  G_SetAngle(ent,direction);
+  (ent->s).weapon = (ushort)weaponIndex;
+  (ent->s).eType = 0;
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x20;
+  (ent->s).weapon = (ent->s).weapon;
+  G_BroadcastEntity(ent);
+  G_AddEvent(ent,0x42,0);
+  (ent->s).lerp.pos.trBase[0] = (float)(int)(ent->s).lerp.pos.trBase[0];
+  (ent->s).lerp.pos.trBase[1] = (float)(int)(ent->s).lerp.pos.trBase[1];
+  (ent->s).lerp.pos.trBase[2] = (float)(int)(ent->s).lerp.pos.trBase[2];
+  G_SetOrigin(ent,(ent->s).lerp.pos.trBase);
+  G_SetAngle(ent,(ent->s).lerp.apos.trBase);
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x4000;
+  (ent->s).lerp.u.missile.launchTime = level.time;
+  (ent->s).time2 = time * 1000 + level.time;
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x10;
+  (ent->s).lerp.eFlags2 = (ent->s).lerp.eFlags2 | 1;
+  ent->handler = '\v';
+  ent->nextthink = level.time + 1;
+  SV_LinkEntity(ent);
   return;
 }
 
@@ -10613,20 +11016,23 @@ void __cdecl GScr_SpawnNapalmGroundFlame(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_RestoreDefaultDropPitch(scr_entref_t param_1)
+void __cdecl GScr_RestoreDefaultDropPitch(scr_entref_t entref)
 
 {
   uint uVar1;
-  gentity_s *pgVar2;
+  gentity_s *self;
+  TurretInfo *pTurretInfo;
+  char *usage;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 0) {
-    pgVar2 = GetEntity(param_1);
-    if (pgVar2->pTurretInfo == (TurretInfo *)0x0) {
+    self = GetEntity(entref);
+    if (self->pTurretInfo == (TurretInfo *)0x0) {
       Scr_Error("entity is not a turret",false);
     }
     else {
-      turret_RestoreDefaultDropPitch(pgVar2);
+      turret_RestoreDefaultDropPitch(self);
     }
   }
   else {
@@ -10643,17 +11049,19 @@ void __cdecl GScr_RestoreDefaultDropPitch(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_clearCenterPopups(scr_entref_t param_1)
+void __cdecl GScr_clearCenterPopups(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar2 = GetEntity(param_1);
-  iVar1 = (pgVar2->s).number;
-  pcVar3 = va("%c %c");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+  pgVar1 = GetEntity(entref);
+  clientNum_00 = (pgVar1->s).number;
+  text = va("%c %c");
+  SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10665,17 +11073,19 @@ void __cdecl GScr_clearCenterPopups(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_clearPopups(scr_entref_t param_1)
+void __cdecl GScr_clearPopups(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar2 = GetEntity(param_1);
-  iVar1 = (pgVar2->s).number;
-  pcVar3 = va("%c %c");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+  pgVar1 = GetEntity(entref);
+  clientNum_00 = (pgVar1->s).number;
+  text = va("%c %c");
+  SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10688,26 +11098,29 @@ void __cdecl GScr_clearPopups(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayGameModeMessage(scr_entref_t param_1)
+void __cdecl GScr_DisplayGameModeMessage(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  uint uVar3;
-  char *pcVar4;
-  char local_8c [132];
+  int clientNum;
+  gentity_s *pgVar1;
+  uint uVar2;
+  char *text;
+  int sentToClientNum;
+  char *sound;
+  gentity_s *sendToEntity;
+  char gameModeMessage [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pgVar2 = GetEntity(param_1);
-  iVar1 = (pgVar2->s).number;
-  Scr_ConstructMessageString(0,0,"Game Message",local_8c,0x80);
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar3 == 2) {
+  pgVar1 = GetEntity(entref);
+  clientNum = (pgVar1->s).number;
+  Scr_ConstructMessageString(0,0,"Game Message",gameModeMessage,0x80);
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar2 == 2) {
     Scr_GetString(1,SCRIPTINSTANCE_SERVER);
   }
-  pcVar4 = va("%c %c %s %s");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar4);
+  text = va("%c %c %s %s");
+  SV_GameSendServerCommand(clientNum,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10720,31 +11133,32 @@ void __cdecl GScr_DisplayGameModeMessage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayTeamMessage(scr_entref_t param_1)
+void __cdecl GScr_DisplayTeamMessage(scr_entref_t entref)
 
 {
   uint uVar1;
-  char *pcVar2;
-  char local_9c [132];
+  char *text;
+  int configStringIndex;
+  char message [132];
   uint local_18;
-  gentity_s *local_14;
-  char *local_10;
-  gentity_s *local_c;
-  int local_8;
+  gentity_s *playerEnt;
+  char *sound;
+  gentity_s *sendToEntity;
+  int clientNum;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = GetEntity(param_1);
-  local_14 = Scr_GetEntity(1);
-  local_10 = "";
-  Scr_ConstructMessageString(0,0,"Team Message String",local_9c,0x80);
+  sendToEntity = GetEntity(entref);
+  playerEnt = Scr_GetEntity(1);
+  sound = "";
+  Scr_ConstructMessageString(0,0,"Team Message String",message,0x80);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 3) {
-    local_10 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
+    sound = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
   }
-  G_LocalizedStringIndex(local_9c);
-  local_8 = (local_c->s).number;
-  pcVar2 = va("%c %c %i %i %s");
-  SV_GameSendServerCommand(local_8,SV_CMD_RELIABLE,pcVar2);
+  G_LocalizedStringIndex(message);
+  clientNum = (sendToEntity->s).number;
+  text = va("%c %c %i %i %s");
+  SV_GameSendServerCommand(clientNum,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10756,21 +11170,27 @@ void __cdecl GScr_DisplayTeamMessage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayMedal(scr_entref_t param_1)
+void __cdecl GScr_DisplayMedal(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  char *sound;
+  float xpScale;
+  gentity_s *player_entity;
+  int teamBased;
+  int clientNum;
+  int medalIndex;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   Scr_GetString(3,SCRIPTINSTANCE_SERVER);
-  iVar1 = (pgVar2->s).number;
-  pcVar3 = va("%c %c %i %i %.2f %s");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+  clientNum_00 = (pgVar1->s).number;
+  text = va("%c %c %i %i %.2f %s");
+  SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10782,24 +11202,29 @@ void __cdecl GScr_DisplayMedal(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayContract(scr_entref_t param_1)
+void __cdecl GScr_DisplayContract(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  uint uVar3;
-  char *pcVar4;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  uint uVar2;
+  char *text;
+  int contractIndex;
+  int passed;
+  char *sound;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar3 == 3) {
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar2 == 3) {
     Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
   }
-  iVar1 = (pgVar2->s).number;
-  pcVar4 = va("%c %c %i %s %i");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar4);
+  clientNum_00 = (pgVar1->s).number;
+  text = va("%c %c %i %s %i");
+  SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10811,71 +11236,90 @@ void __cdecl GScr_DisplayContract(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayChallengeComplete(scr_entref_t param_1)
+void __cdecl GScr_DisplayChallengeComplete(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  int tier;
+  char *sound;
+  float xpScale;
+  int index;
+  int weaponIndex;
+  char *type;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar2 = GetEntity(param_1);
-  iVar1 = (pgVar2->s).number;
+  pgVar1 = GetEntity(entref);
+  clientNum_00 = (pgVar1->s).number;
   Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
   Scr_GetString(4,SCRIPTINSTANCE_SERVER);
   Scr_GetString(5,SCRIPTINSTANCE_SERVER);
-  pcVar3 = va("%c %c %i %i %.2f %i %s %s");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+  text = va("%c %c %i %i %.2f %i %s %s");
+  SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   return;
 }
 
 
 // 00650840  GScr_DisplayEndGameMilestoneComplete  (game_mp/g_scr_main_mp.cpp:8115)
 
+/* WARNING: Variable defined which should be unmapped: slot */
+/* WARNING: Variable defined which should be unmapped: index */
+/* WARNING: Variable defined which should be unmapped: weaponIndex */
+/* WARNING: Variable defined which should be unmapped: type */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayEndGameMilestoneComplete(scr_entref_t param_1)
+void __cdecl GScr_DisplayEndGameMilestoneComplete(scr_entref_t entref)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
-  gentity_s *pgVar4;
+  int clientNum_00;
+  code *pcVar1;
+  bool bVar2;
+  gentity_s *pgVar3;
+  int iVar4;
   int iVar5;
   int iVar6;
-  int iVar7;
-  char *pcVar8;
-  uint uVar9;
+  char *pcVar7;
+  uint uVar8;
+  int tier;
+  int slot;
+  int index;
+  int weaponIndex;
+  char *type;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar4 = GetEntity(param_1);
-  iVar1 = (pgVar4->s).number;
-  iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  pgVar3 = GetEntity(entref);
+  clientNum_00 = (pgVar3->s).number;
+  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  iVar6 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  iVar7 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-  pcVar8 = Scr_GetString(4,SCRIPTINSTANCE_SERVER);
-  uVar9 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((uVar9 != 5) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
-                               0x1fbd,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)(iVar5,iVar6,iVar7,pcVar8);
+  iVar5 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  iVar6 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+  pcVar7 = Scr_GetString(4,SCRIPTINSTANCE_SERVER);
+  uVar8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((uVar8 != 5) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
+                               0x1fbd,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)(iVar4,iVar5,iVar6,pcVar7);
     return;
   }
-  uVar9 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar9 == 5) {
+  uVar8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar8 == 5) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
     Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
     Scr_GetString(4,SCRIPTINSTANCE_SERVER);
-    pcVar8 = va("%c %c %i %i %i %i %s");
-    SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar8);
+    pcVar7 = va("%c %c %i %i %i %i %s");
+    SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,pcVar7);
   }
   return;
 }
@@ -10883,42 +11327,51 @@ void __cdecl GScr_DisplayEndGameMilestoneComplete(scr_entref_t param_1)
 
 // 00650980  GScr_DisplayEndGame  (game_mp/g_scr_main_mp.cpp:8151)
 
+/* WARNING: Variable defined which should be unmapped: challengeIndex0 */
+/* WARNING: Variable defined which should be unmapped: promoted */
+/* WARNING: Variable defined which should be unmapped: challengeIndex1 */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayEndGame(scr_entref_t param_1)
+void __cdecl GScr_DisplayEndGame(scr_entref_t entref)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
-  gentity_s *pgVar4;
+  int clientNum_00;
+  code *pcVar1;
+  bool bVar2;
+  gentity_s *pgVar3;
+  int iVar4;
   int iVar5;
   int iVar6;
-  int iVar7;
-  uint uVar8;
-  char *pcVar9;
+  uint uVar7;
+  char *text;
+  int challengeIndex2;
+  int challengeIndex0;
+  int promoted;
+  int challengeIndex1;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar4 = GetEntity(param_1);
-  iVar1 = (pgVar4->s).number;
-  iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar6 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  iVar7 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  pgVar3 = GetEntity(entref);
+  clientNum_00 = (pgVar3->s).number;
+  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  iVar6 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-  uVar8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((uVar8 != 4) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
-                               0x1fe0,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)(iVar6,iVar5,iVar7);
+  uVar7 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((uVar7 != 4) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
+                               0x1fe0,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)(iVar5,iVar4,iVar6);
     return;
   }
-  uVar8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar8 == 4) {
-    pcVar9 = va("%c %c %i %i %i %i");
-    SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar9);
+  uVar7 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar7 == 4) {
+    text = va("%c %c %i %i %i %i");
+    SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   }
   return;
 }
@@ -10931,17 +11384,19 @@ void __cdecl GScr_DisplayEndGame(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ClearEndGameComplete(scr_entref_t param_1)
+void __cdecl GScr_ClearEndGameComplete(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  gentity_s *player_entity;
+  int clientNum;
   
-  pgVar2 = GetEntity(param_1);
-  iVar1 = (pgVar2->s).number;
-  pcVar3 = va("%c %c");
-  SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+  pgVar1 = GetEntity(entref);
+  clientNum_00 = (pgVar1->s).number;
+  text = va("%c %c");
+  SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -10953,20 +11408,24 @@ void __cdecl GScr_ClearEndGameComplete(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayKillstreak(scr_entref_t param_1)
+void __cdecl GScr_DisplayKillstreak(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  int streakCount;
+  int killstreakTableNumber;
+  int clientNum;
+  gentity_s *player_entity;
   
-  pgVar2 = GetEntity(param_1);
-  if ((pgVar2->s).eType == 1) {
+  pgVar1 = GetEntity(entref);
+  if ((pgVar1->s).eType == 1) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    iVar1 = (pgVar2->s).number;
-    pcVar3 = va("%c %c %i %i");
-    SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+    clientNum_00 = (pgVar1->s).number;
+    text = va("%c %c %i %i");
+    SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   }
   return;
 }
@@ -10979,21 +11438,26 @@ void __cdecl GScr_DisplayKillstreak(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayRankUp(scr_entref_t param_1)
+void __cdecl GScr_DisplayRankUp(scr_entref_t entref)
 
 {
-  int iVar1;
-  gentity_s *pgVar2;
-  char *pcVar3;
+  int clientNum_00;
+  gentity_s *pgVar1;
+  char *text;
+  int prestige;
+  int rank;
+  char *sound;
+  int clientNum;
+  gentity_s *player_entity;
   
-  pgVar2 = GetEntity(param_1);
-  if ((pgVar2->s).eType == 1) {
+  pgVar1 = GetEntity(entref);
+  if ((pgVar1->s).eType == 1) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-    iVar1 = (pgVar2->s).number;
-    pcVar3 = va("%c %c %i %i %s");
-    SV_GameSendServerCommand(iVar1,SV_CMD_RELIABLE,pcVar3);
+    clientNum_00 = (pgVar1->s).number;
+    text = va("%c %c %i %i %s");
+    SV_GameSendServerCommand(clientNum_00,SV_CMD_RELIABLE,text);
   }
   return;
 }
@@ -11006,7 +11470,7 @@ void __cdecl GScr_DisplayRankUp(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayWagerPopup(scr_entref_t param_1)
+void __cdecl GScr_DisplayWagerPopup(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
@@ -11014,8 +11478,15 @@ void __cdecl GScr_DisplayWagerPopup(scr_entref_t param_1)
   int iVar3;
   uint uVar4;
   int iVar5;
+  char *subMessageString;
+  int subMessageStringIndex;
+  int messageStringIndex;
+  int points;
+  char *messageString;
+  int clientNum;
+  gentity_s *player_entity;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((pgVar1->s).eType == 1) {
     pcVar2 = Scr_GetIString(0,SCRIPTINSTANCE_SERVER);
     iVar3 = G_FindConfigstringIndex(pcVar2,0x203,0x3ff,0,"WAGER POPUP ERROR:");
@@ -11054,20 +11525,24 @@ void __cdecl GScr_DisplayWagerPopup(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DisplayHudAnim(scr_entref_t param_1)
+void __cdecl GScr_DisplayHudAnim(scr_entref_t entref)
 
 {
   byte bVar1;
   gentity_s *pgVar2;
-  char *pcVar3;
+  char *text;
+  char *hudAnimName;
+  char *hudMenuName;
+  int clientNum;
+  gentity_s *player_entity;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   if ((pgVar2->s).eType == 1) {
     bVar1 = (pgVar2->client->ps).clientNum;
     Scr_GetString(1,SCRIPTINSTANCE_SERVER);
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("%c %c %s %s");
-    SV_GameSendServerCommand((uint)bVar1,SV_CMD_RELIABLE,pcVar3);
+    text = va("%c %c %s %s");
+    SV_GameSendServerCommand((uint)bVar1,SV_CMD_RELIABLE,text);
   }
   return;
 }
@@ -11080,25 +11555,26 @@ void __cdecl GScr_DisplayHudAnim(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsFiringTurret(scr_entref_t param_1)
+void __cdecl GScr_IsFiringTurret(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  char *pcVar2;
-  int iVar3;
-  undefined1 uVar4;
-  scriptInstance_t sVar5;
+  gentity_s *self;
+  char *error;
+  int value;
+  undefined1 force_terminal;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar4 = 0;
-    SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar4);
+  self = GetEntity(entref);
+  if (self->pTurretInfo == (TurretInfo *)0x0) {
+    force_terminal = 0;
+    SL_ConvertToString((uint)self->classname,SCRIPTINSTANCE_SERVER);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  iVar3 = turret_IsFiring(pgVar1);
-  Scr_AddBool(iVar3,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = turret_IsFiring(self);
+  Scr_AddBool(value,inst);
   return;
 }
 
@@ -11110,19 +11586,20 @@ void __cdecl GScr_IsFiringTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsTurretLockedOn(scr_entref_t param_1)
+void __cdecl GScr_IsTurretLockedOn(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  undefined1 uVar3;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->pTurretInfo == (TurretInfo *)0x0) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("entity type \'%s\' is not a turret");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("entity type \'%s\' is not a turret");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (pgVar1->pTurretInfo->state == 1) {
     Scr_AddBool(1,SCRIPTINSTANCE_SERVER);
@@ -11141,18 +11618,21 @@ void __cdecl GScr_IsTurretLockedOn(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ShootUp(scr_entref_t param_1)
+void __cdecl GScr_ShootUp(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  trajectory_t *ptVar4;
-  float fVar5;
+  trajectory_t *tr;
+  float fVar4;
+  float totalTime;
+  trajectory_t *trajectory;
+  gentity_s *pEnt;
   
-  pgVar3 = GetEntity(param_1);
-  fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  ptVar4 = &(pgVar3->s).lerp.pos;
+  pgVar3 = GetEntity(entref);
+  fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  tr = &(pgVar3->s).lerp.pos;
   (pgVar3->s).lerp.pos.trTime = level.time;
   (pgVar3->s).lerp.pos.trDuration = 1000000;
   (pgVar3->s).lerp.pos.trBase[0] = (pgVar3->r).currentOrigin[0];
@@ -11160,7 +11640,7 @@ void __cdecl GScr_ShootUp(scr_entref_t param_1)
   (pgVar3->s).lerp.pos.trBase[2] = (pgVar3->r).currentOrigin[2];
   (pgVar3->s).lerp.pos.trDelta[0] = 0.0;
   (pgVar3->s).lerp.pos.trDelta[1] = 0.0;
-  (pgVar3->s).lerp.pos.trDelta[2] = fVar5;
+  (pgVar3->s).lerp.pos.trDelta[2] = fVar4;
   if (((((uint)(pgVar3->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
       (((uint)(pgVar3->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
      (((uint)(pgVar3->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
@@ -11172,8 +11652,8 @@ void __cdecl GScr_ShootUp(scr_entref_t param_1)
       return;
     }
   }
-  ptVar4->trType = '\x06';
-  BG_EvaluateTrajectory(ptVar4,level.time,(pgVar3->r).currentOrigin);
+  tr->trType = '\x06';
+  BG_EvaluateTrajectory(tr,level.time,(pgVar3->r).currentOrigin);
   return;
 }
 
@@ -11183,12 +11663,12 @@ void __cdecl GScr_ShootUp(scr_entref_t param_1)
 void __cdecl GScr_GetWaterHeight(void)
 
 {
-  float local_14 [3];
-  float local_8;
+  float pos [3];
+  float height;
   
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  local_8 = CM_GetWaterHeight(local_14,200.0,-200.0);
-  Scr_AddFloat(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
+  height = CM_GetWaterHeight(pos,200.0,-200.0);
+  Scr_AddFloat(height,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -11200,13 +11680,15 @@ void __cdecl GScr_GetWaterHeight(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DepthInWater(scr_entref_t param_1)
+void __cdecl GScr_DepthInWater(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   float local_10;
+  float waterHeight;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   local_10 = CM_GetWaterHeight((pgVar1->r).currentOrigin,200.0,-200.0);
   local_10 = local_10 - (pgVar1->r).currentOrigin[2];
   if (local_10 - 0.0 < 0.0) {
@@ -11224,14 +11706,15 @@ void __cdecl GScr_DepthInWater(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DepthOfPlayerInWater(scr_entref_t param_1)
+void __cdecl GScr_DepthOfPlayerInWater(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x210b,
                              0,"%s");
@@ -11252,7 +11735,9 @@ void __cdecl Scr_SoundFade(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *text;
+  float fTargetVol;
+  int iFadeTime;
   
   Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -11260,8 +11745,8 @@ void __cdecl Scr_SoundFade(void)
     Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
     _ftol2_sse();
   }
-  pcVar2 = va("%c %f %i\n");
-  SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,pcVar2);
+  text = va("%c %f %i\n");
+  SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -11271,20 +11756,20 @@ void __cdecl Scr_SoundFade(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Scr_ErrorOnDefaultAsset(XAssetType param_1,char *param_2)
+void __cdecl Scr_ErrorOnDefaultAsset(XAssetType type,char *assetName)
 
 {
   bool bVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
   
-  DB_FindXAssetHeader(param_1,param_2,true,-1);
-  bVar1 = DB_IsXAssetDefault(param_1,param_2);
+  DB_FindXAssetHeader(type,assetName,true,-1);
+  bVar1 = DB_IsXAssetDefault(type,assetName);
   if (bVar1) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    DB_GetXAssetTypeName(param_1);
-    pcVar2 = va("precache %s \'%s\' failed");
-    Scr_NeverTerminalError(pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    DB_GetXAssetTypeName(type);
+    error = va("precache %s \'%s\' failed");
+    Scr_NeverTerminalError(error,inst);
   }
   return;
 }
@@ -11301,20 +11786,21 @@ void __cdecl Scr_ErrorOnDefaultAsset(XAssetType param_1,char *param_2)
 void __cdecl Scr_PrecacheModel(void)
 
 {
-  char *pcVar1;
+  char *assetName;
+  char *modelName;
   
   if (level.initializing == 0) {
     Scr_Error("precacheModel must be called before any wait statements in the gametype or level script\n"
               ,false);
   }
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  if (*pcVar1 == '\0') {
+  assetName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  if (*assetName == '\0') {
     Scr_ParamError(0,"Model name string is empty",SCRIPTINSTANCE_SERVER);
   }
   if ((useFastFile->current).enabled != false) {
-    Scr_ErrorOnDefaultAsset(ASSET_TYPE_XMODEL,pcVar1);
+    Scr_ErrorOnDefaultAsset(ASSET_TYPE_XMODEL,assetName);
   }
-  G_ModelIndex(pcVar1);
+  G_ModelIndex(assetName);
   return;
 }
 
@@ -11329,23 +11815,25 @@ void __cdecl Scr_PrecacheModel(void)
 void __cdecl Scr_PrecacheShellShock(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  int iVar3;
-  shellshock_parms_t *psVar4;
+  char *name;
+  int index_00;
+  int iVar1;
+  shellshock_parms_t *parms;
+  char *shellshockName;
+  int index;
   
   if (level.initializing == 0) {
     Scr_Error("precacheShellShock must be called before any wait statements in the gametype or level script\n"
               ,false);
   }
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = G_ShellShockIndex(pcVar1);
-  iVar3 = BG_LoadShellShockDvars(pcVar1);
-  if (iVar3 == 0) {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  index_00 = G_ShellShockIndex(name);
+  iVar1 = BG_LoadShellShockDvars(name);
+  if (iVar1 == 0) {
     Com_Error(ERR_DROP,"\x15couldn\'t find shell shock \'%s\' -- see console\n");
   }
-  psVar4 = BG_GetShellshockParms(iVar2);
-  BG_SetShellShockParmsFromDvars(psVar4);
+  parms = BG_GetShellshockParms(index_00);
+  BG_SetShellShockParmsFromDvars(parms);
   return;
 }
 
@@ -11362,7 +11850,9 @@ void __cdecl Scr_PrecacheItem(void)
 {
   char *pcVar1;
   gitem_s *pgVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
+  gitem_s *pItem;
+  char *pszItemName;
   
   if (level.initializing == 0) {
     Scr_Error("precacheItem must be called before any wait statements in the gametype or level script\n"
@@ -11371,9 +11861,9 @@ void __cdecl Scr_PrecacheItem(void)
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   pgVar2 = G_FindItem(pcVar1,0);
   if (pgVar2 == (gitem_s *)0x0) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar1 = va("unknown item \'%s\'");
-    Scr_ParamError(0,pcVar1,sVar3);
+    Scr_ParamError(0,pcVar1,inst);
   }
   return;
 }
@@ -11389,17 +11879,18 @@ void __cdecl Scr_PrecacheItem(void)
 void __cdecl Scr_PrecacheShader(void)
 
 {
-  char *pcVar1;
+  char *name;
+  char *shaderName;
   
   if (level.initializing == 0) {
     Scr_Error("precacheShader must be called before any wait statements in the gametype or level script\n"
               ,false);
   }
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  if (*pcVar1 == '\0') {
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  if (*name == '\0') {
     Scr_ParamError(0,"Shader name string is empty",SCRIPTINSTANCE_SERVER);
   }
-  G_MaterialIndex(pcVar1);
+  G_MaterialIndex(name);
   return;
 }
 
@@ -11414,15 +11905,16 @@ void __cdecl Scr_PrecacheShader(void)
 void __cdecl Scr_PrecacheString(void)
 
 {
-  char *pcVar1;
+  char *string;
+  char *stringName;
   
   if (level.initializing == 0) {
     Scr_Error("precacheString must be called before any wait statements in the gametype or level script\n"
               ,false);
   }
-  pcVar1 = Scr_GetIString(0,SCRIPTINSTANCE_SERVER);
-  if (*pcVar1 != '\0') {
-    G_LocalizedStringIndex(pcVar1);
+  string = Scr_GetIString(0,SCRIPTINSTANCE_SERVER);
+  if (*string != '\0') {
+    G_LocalizedStringIndex(string);
   }
   return;
 }
@@ -11440,43 +11932,42 @@ void __cdecl Scr_GrenadeExplosionEffect(void)
 
 {
   byte bVar1;
-  col_context_t local_9c;
-  float local_74 [4];
+  col_context_t context;
+  float vDir [4];
   undefined4 local_64;
   float local_60;
-  float local_5c;
+  float vEnd;
   undefined4 local_58;
   float local_54;
-  float4 local_50;
+  float4 trace;
   uint local_3c;
   uint local_18;
-  gentity_s *local_14;
-  float local_10;
+  gentity_s *pEnt;
+  float vPos;
   undefined4 local_c;
   float local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  col_context_t::col_context_t(&local_9c);
-  Scr_GetVector(0,local_74 + 3,SCRIPTINSTANCE_SERVER);
-  local_10 = local_74[3];
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  Scr_GetVector(0,vDir + 3,SCRIPTINSTANCE_SERVER);
+  vPos = vDir[3];
   local_c = local_64;
   local_8 = local_60 + 1.0;
-  local_14 = G_TempEntity(&local_10,0x39);
-  local_74[0] = 0.0;
-  local_74[1] = 0.0;
-  local_74[2] = 1.0;
-  bVar1 = DirToByte(local_74);
-  (local_14->s).eventParm = (ushort)bVar1;
-  local_5c = local_10;
+  pEnt = G_TempEntity(&vPos,0x39);
+  vDir[0] = 0.0;
+  vDir[1] = 0.0;
+  vDir[2] = 1.0;
+  bVar1 = DirToByte(vDir);
+  (pEnt->s).eventParm = (ushort)bVar1;
+  vEnd = vPos;
   local_58 = local_c;
   local_54 = local_8 - 17.0;
-  G_TraceCapsule((trace_t *)&local_50,&local_10,vec3_origin,vec3_origin,&local_5c,0x3ff,0x811,
-                 &local_9c);
-  (local_14->s).surfType = (uchar)((int)(local_3c & 0x3f00000) >> 0x14);
+  G_TraceCapsule((trace_t *)&trace,&vPos,vec3_origin,vec3_origin,&vEnd,0x3ff,0x811,&context);
+  (pEnt->s).surfType = (uchar)((int)(local_3c & 0x3f00000) >> 0x14);
   return;
 }
 
@@ -11488,52 +11979,53 @@ void __cdecl Scr_GrenadeExplosionEffect(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_RadiusDamageInternal(gentity_s *param_1)
+void __cdecl GScr_RadiusDamageInternal(gentity_s *inflictor)
 
 {
   uint uVar1;
   int iVar2;
-  char *pcVar3;
-  float fVar4;
-  gentity_s *local_28;
-  meansOfDeath_t local_24;
-  float local_1c [3];
-  float local_10;
-  int local_c;
-  float local_8;
+  char *name;
+  float fInnerDamage;
+  gentity_s *attacker;
+  meansOfDeath_t mod;
+  float max_damage;
+  float origin [3];
+  float range;
+  int weapon;
+  float min_damage;
   
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-  local_10 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  fVar4 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  local_28 = g_entities + 0x3fe;
+  Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+  range = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  fInnerDamage = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  min_damage = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  attacker = g_entities + 0x3fe;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (4 < uVar1) {
     iVar2 = Scr_GetType(4,SCRIPTINSTANCE_SERVER);
     if (iVar2 != 0) {
-      local_28 = Scr_GetEntity(4);
+      attacker = Scr_GetEntity(4);
     }
   }
-  local_24 = MOD_EXPLOSIVE;
+  mod = MOD_EXPLOSIVE;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (5 < uVar1) {
     iVar2 = Scr_GetType(5,SCRIPTINSTANCE_SERVER);
     if (iVar2 != 0) {
-      local_24 = G_MeansOfDeathFromScriptParam(5);
+      mod = G_MeansOfDeathFromScriptParam(5);
     }
   }
-  local_c = -1;
+  weapon = -1;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (6 < uVar1) {
     iVar2 = Scr_GetType(6,SCRIPTINSTANCE_SERVER);
     if (iVar2 != 0) {
-      pcVar3 = Scr_GetString(6,SCRIPTINSTANCE_SERVER);
-      local_c = G_GetWeaponIndexForName(pcVar3);
+      name = Scr_GetString(6,SCRIPTINSTANCE_SERVER);
+      weapon = G_GetWeaponIndexForName(name);
     }
   }
   level.bPlayerIgnoreRadiusDamage = level.bPlayerIgnoreRadiusDamageLatched;
-  G_RadiusDamage(local_1c,param_1,local_28,fVar4,local_8,local_10,1.0,(float *)0x0,param_1,local_24,
-                 local_c);
+  G_RadiusDamage(origin,inflictor,attacker,fInnerDamage,min_damage,range,1.0,(float *)0x0,inflictor,
+                 mod,weapon);
   level.bPlayerIgnoreRadiusDamage = 0;
   return;
 }
@@ -11561,13 +12053,14 @@ void __cdecl GScr_RadiusDamage(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_EntityRadiusDamage(scr_entref_t param_1)
+void __cdecl GScr_EntityRadiusDamage(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *inflictor;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  GScr_RadiusDamageInternal(pgVar1);
+  inflictor = GetEntity(entref);
+  GScr_RadiusDamageInternal(inflictor);
   return;
 }
 
@@ -11579,25 +12072,26 @@ void __cdecl GScr_GlassRadiusDamage(void)
 {
   uint uVar1;
   int iVar2;
-  float fVar3;
-  meansOfDeath_t local_20;
-  float local_18 [3];
-  float local_c;
-  float local_8;
+  float innerDamage;
+  meansOfDeath_t mod;
+  float max_damage;
+  float origin [3];
+  float range;
+  float min_damage;
   
-  Scr_GetVector(0,local_18,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  fVar3 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  local_20 = MOD_EXPLOSIVE;
+  Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+  range = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  innerDamage = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  min_damage = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  mod = MOD_EXPLOSIVE;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (4 < uVar1) {
     iVar2 = Scr_GetType(4,SCRIPTINSTANCE_SERVER);
     if (iVar2 != 0) {
-      local_20 = G_MeansOfDeathFromScriptParam(4);
+      mod = G_MeansOfDeathFromScriptParam(4);
     }
   }
-  GlassSv_RadiusDamage(local_18,local_c,1.0,(float *)0x0,fVar3,local_8,local_20);
+  GlassSv_RadiusDamage(origin,range,1.0,(float *)0x0,innerDamage,min_damage,mod);
   return;
 }
 
@@ -11609,36 +12103,38 @@ void __cdecl GScr_GlassRadiusDamage(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_Detonate(scr_entref_t param_1)
+void __cdecl GScr_Detonate(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  WeaponDef *pWVar2;
-  uint uVar3;
-  int iVar4;
-  gentity_s *local_8;
+  gentity_s *ent_00;
+  WeaponDef *pWVar1;
+  uint uVar2;
+  int iVar3;
+  gentity_s *ent;
+  WeaponDef *weapDef;
+  gentity_s *player;
   
-  pgVar1 = GetEntity(param_1);
-  pWVar2 = BG_GetWeaponDef((uint)(pgVar1->s).weapon);
-  if ((((pgVar1->s).eType != 4) || (pWVar2 == (WeaponDef *)0x0)) ||
-     ((pWVar2->weapType != WEAPTYPE_GRENADE && (pWVar2->weapType != WEAPTYPE_PROJECTILE)))) {
+  ent_00 = GetEntity(entref);
+  pWVar1 = BG_GetWeaponDef((uint)(ent_00->s).weapon);
+  if ((((ent_00->s).eType != 4) || (pWVar1 == (WeaponDef *)0x0)) ||
+     ((pWVar1->weapType != WEAPTYPE_GRENADE && (pWVar1->weapType != WEAPTYPE_PROJECTILE)))) {
     Scr_ObjectError("entity is not a grenade or projectile",SCRIPTINSTANCE_SERVER);
   }
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar3 != 0) {
-    iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-    if (iVar4 == 0) {
-      local_8 = g_entities + 0x3fe;
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar2 != 0) {
+    iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+    if (iVar3 == 0) {
+      player = g_entities + 0x3fe;
     }
     else {
-      local_8 = Scr_GetEntity(0);
-      if (local_8->client == (gclient_s *)0x0) {
+      player = Scr_GetEntity(0);
+      if (player->client == (gclient_s *)0x0) {
         Scr_ParamError(0,"Entity is not a player",SCRIPTINSTANCE_SERVER);
       }
     }
-    EntHandle::setEnt(&pgVar1->parent,local_8);
+    EntHandle::setEnt(&ent_00->parent,player);
   }
-  G_ExplodeMissile(pgVar1);
+  G_ExplodeMissile(ent_00);
   return;
 }
 
@@ -11665,7 +12161,7 @@ void __cdecl GScr_SetPlayerIgnoreRadiusDamage(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DamageConeTraceInternal(scr_entref_t param_1,int param_2)
+void __cdecl GScr_DamageConeTraceInternal(scr_entref_t entref,int contentMask)
 
 {
   uint uVar1;
@@ -11674,18 +12170,18 @@ void __cdecl GScr_DamageConeTraceInternal(scr_entref_t param_1,int param_2)
   undefined1 uVar4;
   undefined2 uVar5;
   undefined4 in_stack_ffffffc4;
-  float fVar6;
+  float coneAngleCos_00;
   gentity_s *local_34;
-  float local_30 [3];
-  float local_24;
-  gentity_s *local_20;
-  float local_1c [3];
-  gentity_s *local_10;
-  float local_c;
-  float local_8;
+  float damageAngles [3];
+  float coneAngleDegrees;
+  gentity_s *target;
+  float damageOrigin [3];
+  gentity_s *ignoreEnt;
+  float damageAmount;
+  float coneAngleCos;
   
-  local_20 = GetEntity(param_1);
-  Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
+  target = GetEntity(entref);
+  Scr_GetVector(0,damageOrigin,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
     local_34 = (gentity_s *)0x0;
@@ -11693,54 +12189,64 @@ void __cdecl GScr_DamageConeTraceInternal(scr_entref_t param_1,int param_2)
   else {
     local_34 = Scr_GetEntity(1);
   }
-  local_10 = local_34;
+  ignoreEnt = local_34;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (2 < uVar1) {
-    Scr_GetVector(2,local_30,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(2,damageAngles,SCRIPTINSTANCE_SERVER);
   }
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 4) {
-    local_24 = 65.0;
+    coneAngleDegrees = 65.0;
   }
   else {
-    local_24 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+    coneAngleDegrees = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   }
-  dVar2 = (double)(local_24 * 0.017453292);
-  __libm_sse2_cos((double)CONCAT44(local_24,in_stack_ffffffc4));
-  local_8 = (float)dVar2;
+  dVar2 = (double)(coneAngleDegrees * 0.017453292);
+  __libm_sse2_cos((double)CONCAT44(coneAngleDegrees,in_stack_ffffffc4));
+  coneAngleCos = (float)dVar2;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  fVar6 = local_8;
+  coneAngleCos_00 = coneAngleCos;
   if (uVar1 < 3) {
-    fVar6 = 1.0;
+    coneAngleCos_00 = 1.0;
   }
-  uVar3 = (undefined1)param_2;
-  uVar4 = (undefined1)((uint)param_2 >> 8);
-  uVar5 = (undefined2)((uint)param_2 >> 0x10);
+  uVar3 = (undefined1)contentMask;
+  uVar4 = (undefined1)((uint)contentMask >> 8);
+  uVar5 = (undefined2)((uint)contentMask >> 0x10);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  local_c = CanDamage(local_20,local_10,local_1c,fVar6,
-                      (float *)(-(uint)(2 < uVar1) & (uint)local_30),
-                      CONCAT22(uVar5,CONCAT11(uVar4,uVar3)));
-  Scr_AddFloat(local_c,SCRIPTINSTANCE_SERVER);
+  damageAmount = CanDamage(target,ignoreEnt,damageOrigin,coneAngleCos_00,
+                           (float *)(-(uint)(2 < uVar1) & (uint)damageAngles),
+                           CONCAT22(uVar5,CONCAT11(uVar4,uVar3)));
+  Scr_AddFloat(damageAmount,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 006519D0  GScr_DamageConeTrace  (game_mp/g_scr_main_mp.cpp:8768)
 
-void __cdecl GScr_DamageConeTrace(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GScr_DamageConeTrace(scr_entref_t entref)
 
 {
-  GScr_DamageConeTraceInternal(param_1,0x802013);
+  GScr_DamageConeTraceInternal(entref,0x802013);
   return;
 }
 
 
 // 00651B50  GScr_SightConeTrace  (game_mp/g_scr_main_mp.cpp:8788)
 
-void __cdecl GScr_SightConeTrace(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GScr_SightConeTrace(scr_entref_t entref)
 
 {
-  GScr_DamageConeTraceInternal(param_1,0x3801);
+  GScr_DamageConeTraceInternal(entref,0x3801);
   return;
 }
 
@@ -11752,56 +12258,55 @@ void __cdecl GScr_SightConeTrace(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_PlayerSightTrace(scr_entref_t param_1)
+void __cdecl GScr_PlayerSightTrace(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
   float fVar2;
-  col_context_t local_70;
-  float local_48;
-  int local_44;
-  float local_40;
+  col_context_t context;
+  float dist;
+  int distance;
+  float viewdir;
   float local_3c;
   float local_38;
-  gentity_s *local_34;
-  int local_30;
-  float local_2c;
+  gentity_s *ent;
+  int hitNum;
+  float itemPosition;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  float dot;
+  float playerEyes;
   float local_18;
   float local_14;
-  float local_10;
+  float objdir;
   float local_c;
   float local_8;
   
-  local_34 = GetEntity(param_1);
-  pgVar1 = local_34->client;
-  local_1c = (pgVar1->ps).origin[0];
+  ent = GetEntity(entref);
+  pgVar1 = ent->client;
+  playerEyes = (pgVar1->ps).origin[0];
   local_18 = (pgVar1->ps).origin[1];
-  local_14 = (pgVar1->ps).origin[2] + (local_34->client->ps).viewHeightCurrent;
-  Scr_GetVector(0,&local_2c,SCRIPTINSTANCE_SERVER);
-  local_44 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  local_30 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  AngleVectors((local_34->r).currentAngles,&local_40,(float *)0x0,(float *)0x0);
-  local_10 = local_2c - local_1c;
+  local_14 = (pgVar1->ps).origin[2] + (ent->client->ps).viewHeightCurrent;
+  Scr_GetVector(0,&itemPosition,SCRIPTINSTANCE_SERVER);
+  distance = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  hitNum = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  AngleVectors((ent->r).currentAngles,&viewdir,(float *)0x0,(float *)0x0);
+  objdir = itemPosition - playerEyes;
   local_c = local_28 - local_18;
   local_8 = local_24 - local_14;
-  local_48 = Abs((phys_vec3 *)&local_10);
-  fVar2 = 1.0 / local_48;
-  local_10 = fVar2 * local_10;
+  dist = Abs((phys_vec3 *)&objdir);
+  fVar2 = 1.0 / dist;
+  objdir = fVar2 * objdir;
   local_c = fVar2 * local_c;
   local_8 = fVar2 * local_8;
-  Vec3Normalize(&local_40);
-  Vec3Normalize(&local_10);
-  local_20 = local_40 * local_10 + local_3c * local_c + local_38 * local_8;
-  if (((0.707 <= local_20) && (local_48 <= (float)local_44)) ||
-     ((local_48 < 100.0 && (0.0 < local_20)))) {
-    col_context_t::col_context_t(&local_70,0x806823);
-    local_70.passEntityNum0 = (local_34->s).number;
-    SV_SightTracePoint(&local_30,&local_1c,&local_2c,&local_70);
-    Scr_AddInt(local_30,SCRIPTINSTANCE_SERVER);
+  Vec3Normalize(&viewdir);
+  Vec3Normalize(&objdir);
+  dot = viewdir * objdir + local_3c * local_c + local_38 * local_8;
+  if (((0.707 <= dot) && (dist <= (float)distance)) || ((dist < 100.0 && (0.0 < dot)))) {
+    col_context_t::col_context_t(&context,0x806823);
+    context.passEntityNum0 = (ent->s).number;
+    SV_SightTracePoint(&hitNum,&playerEyes,&itemPosition,&context);
+    Scr_AddInt(hitNum,SCRIPTINSTANCE_SERVER);
   }
   else {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
@@ -11817,31 +12322,31 @@ void __cdecl GScr_PlayerSightTrace(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_HeliTurretSightTrace(scr_entref_t param_1)
+void __cdecl GScr_HeliTurretSightTrace(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
-  col_context_t local_50;
-  gentity_s *local_28;
-  float local_24 [3];
-  int local_18;
-  gentity_s *local_14;
-  float local_10;
+  col_context_t context;
+  gentity_s *copterEnt;
+  float turretPosition [3];
+  int hitNum;
+  gentity_s *player;
+  float playerEyes;
   float local_c;
   float local_8;
   
-  local_28 = GetEntity(param_1);
-  Scr_GetVector(0,local_24,SCRIPTINSTANCE_SERVER);
-  local_14 = Scr_GetEntity(1);
-  pgVar1 = local_14->client;
-  local_10 = (pgVar1->ps).origin[0];
+  copterEnt = GetEntity(entref);
+  Scr_GetVector(0,turretPosition,SCRIPTINSTANCE_SERVER);
+  player = Scr_GetEntity(1);
+  pgVar1 = player->client;
+  playerEyes = (pgVar1->ps).origin[0];
   local_c = (pgVar1->ps).origin[1];
-  local_8 = (pgVar1->ps).origin[2] + (local_14->client->ps).viewHeightCurrent;
-  local_18 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  col_context_t::col_context_t(&local_50,0x3801);
-  local_50.passEntityNum0 = (local_28->s).number;
-  SV_SightTracePoint(&local_18,&local_10,local_24,&local_50);
-  Scr_AddInt(local_18,SCRIPTINSTANCE_SERVER);
+  local_8 = (pgVar1->ps).origin[2] + (player->client->ps).viewHeightCurrent;
+  hitNum = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  col_context_t::col_context_t(&context,0x3801);
+  context.passEntityNum0 = (copterEnt->s).number;
+  SV_SightTracePoint(&hitNum,&playerEyes,turretPosition,&context);
+  Scr_AddInt(hitNum,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -11853,29 +12358,30 @@ void __cdecl GScr_HeliTurretSightTrace(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_HeliTurretDogTrace(scr_entref_t param_1)
+void __cdecl GScr_HeliTurretDogTrace(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  col_context_t local_4c;
-  gentity_s *local_24;
-  float local_20 [3];
-  int local_14;
-  float local_10;
+  gentity_s *dog;
+  col_context_t context;
+  gentity_s *copterEnt;
+  float turretPosition [3];
+  int hitNum;
+  float dogEyes;
   float local_c;
   float local_8;
   
-  local_24 = GetEntity(param_1);
-  Scr_GetVector(0,local_20,SCRIPTINSTANCE_SERVER);
+  copterEnt = GetEntity(entref);
+  Scr_GetVector(0,turretPosition,SCRIPTINSTANCE_SERVER);
   pgVar1 = Scr_GetEntity(1);
-  local_10 = (pgVar1->r).currentOrigin[0];
+  dogEyes = (pgVar1->r).currentOrigin[0];
   local_c = (pgVar1->r).currentOrigin[1];
   local_8 = (pgVar1->r).currentOrigin[2] + 24.0;
-  local_14 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  col_context_t::col_context_t(&local_4c,0x3801);
-  local_4c.passEntityNum0 = (local_24->s).number;
-  SV_SightTracePoint(&local_14,&local_10,local_20,&local_4c);
-  Scr_AddInt(local_14,SCRIPTINSTANCE_SERVER);
+  hitNum = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  col_context_t::col_context_t(&context,0x3801);
+  context.passEntityNum0 = (copterEnt->s).number;
+  SV_SightTracePoint(&hitNum,&dogEyes,turretPosition,&context);
+  Scr_AddInt(hitNum,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -11887,7 +12393,7 @@ void __cdecl GScr_HeliTurretDogTrace(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_VisionSetLerpRatio(scr_entref_t param_1)
+void __cdecl GScr_VisionSetLerpRatio(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -11896,8 +12402,10 @@ void __cdecl GScr_VisionSetLerpRatio(scr_entref_t param_1)
   float fVar4;
   float local_14;
   float local_10;
+  float visionSetLerpRatio;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -11931,7 +12439,7 @@ void __cdecl GScr_VisionSetLerpRatio(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DirectionalHitIndicator(scr_entref_t param_1)
+void __cdecl GScr_DirectionalHitIndicator(scr_entref_t entref)
 
 {
   byte bVar1;
@@ -11939,14 +12447,17 @@ void __cdecl GScr_DirectionalHitIndicator(scr_entref_t param_1)
   uint uVar3;
   int iVar4;
   gentity_s *pgVar5;
-  ushort local_20;
-  float local_1c [4];
-  int local_c;
+  gentity_s *pSelf;
+  int hitEntBitArray1;
+  float zero_vec [3];
+  gentity_s *temporary_entity;
+  int hitEntBitArray0;
+  int client_index;
   
-  pgVar2 = GetEntity(param_1);
-  local_c = 0;
-  local_20 = 0;
-  local_c = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  pgVar2 = GetEntity(entref);
+  hitEntBitArray0 = 0;
+  hitEntBitArray1._0_2_ = 0;
+  hitEntBitArray0 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 < 3) {
     uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -11957,15 +12468,15 @@ LAB_006520cc:
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 2) {
     iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    local_20 = (ushort)iVar4;
+    hitEntBitArray1._0_2_ = (ushort)iVar4;
   }
-  local_1c[0] = 0.0;
-  local_1c[1] = 0.0;
-  local_1c[2] = 0.0;
-  pgVar5 = G_TempEntity(local_1c,0x60);
+  zero_vec[0] = 0.0;
+  zero_vec[1] = 0.0;
+  zero_vec[2] = 0.0;
+  pgVar5 = G_TempEntity(zero_vec,0x60);
   (pgVar5->r).clientMask[0] = -1;
-  (pgVar5->s).eventParms[0] = (ushort)local_c;
-  (pgVar5->s).eventParms[1] = local_20;
+  (pgVar5->s).eventParms[0] = (ushort)hitEntBitArray0;
+  (pgVar5->s).eventParms[1] = (ushort)hitEntBitArray1;
   bVar1 = (pgVar2->client->ps).clientNum;
   iVar4 = (int)(uint)bVar1 >> 5;
   (pgVar5->r).clientMask[iVar4] = ~(1 << (bVar1 & 0x1f)) & (pgVar5->r).clientMask[iVar4];
@@ -11980,15 +12491,17 @@ LAB_006520cc:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_DoCowardsWayAnims(scr_entref_t param_1)
+void __cdecl GScr_DoCowardsWayAnims(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   int iVar4;
+  int duration;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12015,14 +12528,15 @@ void __cdecl GScr_DoCowardsWayAnims(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StartPoisoning(scr_entref_t param_1)
+void __cdecl GScr_StartPoisoning(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12047,14 +12561,15 @@ void __cdecl GScr_StartPoisoning(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopPoisoning(scr_entref_t param_1)
+void __cdecl GScr_StopPoisoning(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12079,14 +12594,15 @@ void __cdecl GScr_StopPoisoning(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StartBinocs(scr_entref_t param_1)
+void __cdecl GScr_StartBinocs(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12111,14 +12627,15 @@ void __cdecl GScr_StartBinocs(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopBinocs(scr_entref_t param_1)
+void __cdecl GScr_StopBinocs(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12143,15 +12660,16 @@ void __cdecl GScr_StopBinocs(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsFlared(scr_entref_t param_1)
+void __cdecl GScr_IsFlared(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  uint local_8;
+  gentity_s *ent;
+  int isFlared;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12162,8 +12680,8 @@ void __cdecl GScr_IsFlared(scr_entref_t param_1)
     (*pcVar1)();
     return;
   }
-  local_8 = (uint)(0.0 < (pgVar3->client->ps).visionSetLerpRatio);
-  Scr_AddBool(local_8,SCRIPTINSTANCE_SERVER);
+  isFlared = (int)(0.0 < (pgVar3->client->ps).visionSetLerpRatio);
+  Scr_AddBool(isFlared,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -12175,14 +12693,15 @@ void __cdecl GScr_IsFlared(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsPoisoned(scr_entref_t param_1)
+void __cdecl GScr_IsPoisoned(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_Error("USAGE: Must be called on a client\n",false);
   }
@@ -12206,41 +12725,41 @@ void __cdecl GScr_GetMoveDelta(void)
 
 {
   uint uVar1;
-  XAnim_s *pXVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float fVar5;
-  float fVar6;
-  float local_24 [3];
-  float local_18;
-  float local_14;
-  float local_10 [2];
-  scr_anim_s_u_0 local_8;
+  XAnim_s *anims;
+  float *rot_00;
+  float *trans_00;
+  float time1;
+  float time2;
+  float trans [3];
+  float endTime;
+  float startTime;
+  float rot [2];
+  scr_anim_s anim;
   
-  local_14 = 0.0;
-  local_18 = 1.0;
+  startTime = 0.0;
+  endTime = 1.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     if (uVar1 != 2) {
-      local_18 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-      if ((local_18 < 0.0) || (1.0 < local_18)) {
+      endTime = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+      if ((endTime < 0.0) || (1.0 < endTime)) {
         Scr_ParamError(2,"end time must be between 0 and 1",SCRIPTINSTANCE_SERVER);
       }
     }
-    local_14 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    if ((local_14 < 0.0) || (1.0 < local_14)) {
+    startTime = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    if ((startTime < 0.0) || (1.0 < startTime)) {
       Scr_ParamError(1,"start time must be between 0 and 1",SCRIPTINSTANCE_SERVER);
     }
   }
-  local_8._s_0 = (scr_anim_s_u_0_s_0)Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
-  pfVar4 = local_24;
-  pfVar3 = local_10;
-  uVar1 = (uint)local_8 & 0xffff;
-  fVar5 = local_14;
-  fVar6 = local_18;
-  pXVar2 = Scr_GetAnims((uint)local_8 >> 0x10,SCRIPTINSTANCE_SERVER);
-  XAnimGetRelDelta(pXVar2,uVar1,pfVar3,pfVar4,fVar5,fVar6);
-  Scr_AddVector(local_24,SCRIPTINSTANCE_SERVER);
+  anim = Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
+  trans_00 = trans;
+  rot_00 = rot;
+  uVar1 = (uint)anim.field0_0x0 & 0xffff;
+  time1 = startTime;
+  time2 = endTime;
+  anims = Scr_GetAnims((uint)anim.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
+  XAnimGetRelDelta(anims,uVar1,rot_00,trans_00,time1,time2);
+  Scr_AddVector(trans,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -12251,44 +12770,44 @@ void __cdecl GScr_GetAngleDelta(void)
 
 {
   uint uVar1;
-  XAnim_s *pXVar2;
-  float fVar3;
-  float *pfVar4;
-  float *pfVar5;
-  scriptInstance_t sVar6;
-  float fVar7;
-  float local_24 [3];
-  float local_18;
-  float local_14;
-  float local_10 [2];
-  scr_anim_s_u_0 local_8;
+  XAnim_s *anims;
+  float fVar2;
+  float *rot_00;
+  float *trans_00;
+  scriptInstance_t inst;
+  float time2;
+  float trans [3];
+  float endTime;
+  float startTime;
+  float rot [2];
+  scr_anim_s anim;
   
-  local_14 = 0.0;
-  local_18 = 1.0;
+  startTime = 0.0;
+  endTime = 1.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     if (uVar1 != 2) {
-      local_18 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-      if ((local_18 < 0.0) || (1.0 < local_18)) {
+      endTime = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+      if ((endTime < 0.0) || (1.0 < endTime)) {
         Scr_ParamError(2,"end time must be between 0 and 1",SCRIPTINSTANCE_SERVER);
       }
     }
-    local_14 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    if ((local_14 < 0.0) || (1.0 < local_14)) {
+    startTime = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    if ((startTime < 0.0) || (1.0 < startTime)) {
       Scr_ParamError(1,"start time must be between 0 and 1",SCRIPTINSTANCE_SERVER);
     }
   }
-  local_8._s_0 = (scr_anim_s_u_0_s_0)Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
-  pfVar5 = local_24;
-  pfVar4 = local_10;
-  uVar1 = (uint)local_8 & 0xffff;
-  fVar3 = local_14;
-  fVar7 = local_18;
-  pXVar2 = Scr_GetAnims((uint)local_8 >> 0x10,SCRIPTINSTANCE_SERVER);
-  XAnimGetRelDelta(pXVar2,uVar1,pfVar4,pfVar5,fVar3,fVar7);
-  sVar6 = SCRIPTINSTANCE_SERVER;
-  fVar3 = RotationToYaw(local_10);
-  Scr_AddFloat(fVar3,sVar6);
+  anim = Scr_GetAnim(0,(XAnimTree_s *)0x0,SCRIPTINSTANCE_SERVER);
+  trans_00 = trans;
+  rot_00 = rot;
+  uVar1 = (uint)anim.field0_0x0 & 0xffff;
+  fVar2 = startTime;
+  time2 = endTime;
+  anims = Scr_GetAnims((uint)anim.field0_0x0 >> 0x10,SCRIPTINSTANCE_SERVER);
+  XAnimGetRelDelta(anims,uVar1,rot_00,trans_00,fVar2,time2);
+  inst = SCRIPTINSTANCE_SERVER;
+  fVar2 = RotationToYaw(rot);
+  Scr_AddFloat(fVar2,inst);
   return;
 }
 
@@ -12301,30 +12820,31 @@ void __cdecl GScr_GetNorthYaw(void)
 
 {
   double dVar1;
-  scriptInstance_t sVar2;
-  char local_28 [32];
+  scriptInstance_t inst;
+  char northYawString [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  SV_GetConfigstring(0x60c,local_28,0x20);
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  dVar1 = atof(local_28);
-  Scr_AddFloat((float)dVar1,sVar2);
+  SV_GetConfigstring(0x60c,northYawString,0x20);
+  inst = SCRIPTINSTANCE_SERVER;
+  dVar1 = atof(northYawString);
+  Scr_AddFloat((float)dVar1,inst);
   return;
 }
 
 
 // 00652AF0  Scr_SetFxAngles  (game_mp/g_scr_main_mp.cpp:9238)
 
-void __cdecl Scr_SetFxAngles(int param_1,float (*param_2) [3],float *param_3)
+void __cdecl Scr_SetFxAngles(int givenAxisCount,float (*axis) [3],float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  float fVar4;
+  char *error;
+  float fVar3;
+  float dot;
   
-  if ((param_1 < 0) || (2 < param_1)) {
+  if ((givenAxisCount < 0) || (2 < givenAxisCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x2419,
                              0,"givenAxisCount not in [0, 2]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -12333,28 +12853,27 @@ void __cdecl Scr_SetFxAngles(int param_1,float (*param_2) [3],float *param_3)
       return;
     }
   }
-  if (param_1 == 1) {
-    vectoangles(*param_2,param_3);
+  if (givenAxisCount == 1) {
+    vectoangles(*axis,angles);
   }
-  else if (param_1 == 2) {
-    fVar4 = -((*param_2)[0] * param_2[2][0] + (*param_2)[1] * param_2[2][1] +
-             (*param_2)[2] * param_2[2][2]);
-    param_2[2][0] = fVar4 * (*param_2)[0] + param_2[2][0];
-    param_2[2][1] = fVar4 * (*param_2)[1] + param_2[2][1];
-    param_2[2][2] = fVar4 * (*param_2)[2] + param_2[2][2];
-    fVar4 = Vec3Normalize(param_2[2]);
-    if (fVar4 == 0.0) {
+  else if (givenAxisCount == 2) {
+    fVar3 = -((*axis)[0] * axis[2][0] + (*axis)[1] * axis[2][1] + (*axis)[2] * axis[2][2]);
+    axis[2][0] = fVar3 * (*axis)[0] + axis[2][0];
+    axis[2][1] = fVar3 * (*axis)[1] + axis[2][1];
+    axis[2][2] = fVar3 * (*axis)[2] + axis[2][2];
+    fVar3 = Vec3Normalize(axis[2]);
+    if (fVar3 == 0.0) {
       bVar2 = false;
-      pcVar3 = va("forward and up vectors are the same direction or exact opposite directions");
-      Scr_Error(pcVar3,bVar2);
+      error = va("forward and up vectors are the same direction or exact opposite directions");
+      Scr_Error(error,bVar2);
     }
-    Vec3Cross(param_2[2],*param_2,param_2[1]);
-    AxisToAngles(param_2,param_3);
+    Vec3Cross(axis[2],*axis,axis[1]);
+    AxisToAngles(axis,angles);
   }
   else {
-    *param_3 = 270.0;
-    param_3[1] = 0.0;
-    param_3[2] = 0.0;
+    *angles = 270.0;
+    angles[1] = 0.0;
+    angles[2] = 0.0;
   }
   return;
 }
@@ -12370,20 +12889,22 @@ void __cdecl Scr_SetFxAngles(int param_1,float (*param_2) [3],float *param_3)
 void __cdecl Scr_LoadFX(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *s0;
+  int iVar1;
+  char *filename;
+  int id;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = I_strncmp(pcVar1,"fx/",3);
-  if (iVar2 == 0) {
+  s0 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = I_strncmp(s0,"fx/",3);
+  if (iVar1 == 0) {
     Scr_ParamError(0,"effect name should start after the \'fx\' folder.",SCRIPTINSTANCE_SERVER);
   }
-  iVar2 = G_EffectIndex(pcVar1);
-  if ((iVar2 == 0) && (level.initializing == 0)) {
+  iVar1 = G_EffectIndex(s0);
+  if ((iVar1 == 0) && (level.initializing == 0)) {
     Scr_Error("loadFx must be called before any wait statements in the level script, or on an already loaded effect\n"
               ,false);
   }
-  Scr_AddInt(iVar2,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(iVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -12392,18 +12913,18 @@ void __cdecl Scr_LoadFX(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Scr_FxParamError(int param_1,char *param_2,int param_3)
+void __cdecl Scr_FxParamError(int paramIndex,char *errorString,int fxId)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_40c [1028];
+  char *error;
+  scriptInstance_t inst;
+  char fxName [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == (char *)0x0) {
+  if (errorString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x2445,
                              0,"%s");
     if (!bVar2) {
@@ -12412,15 +12933,15 @@ void __cdecl Scr_FxParamError(int param_1,char *param_2,int param_3)
       return;
     }
   }
-  if (param_3 == 0) {
-    builtin_strncpy(local_40c,"not successfully loaded",0x18);
+  if (fxId == 0) {
+    builtin_strncpy(fxName,"not successfully loaded",0x18);
   }
   else {
-    SV_GetConfigstring(param_3 + 0x820,local_40c,0x400);
+    SV_GetConfigstring(fxId + 0x820,fxName,0x400);
   }
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  pcVar3 = va("%s (effect = %s)\n");
-  Scr_ParamError(param_1,pcVar3,sVar4);
+  inst = SCRIPTINSTANCE_SERVER;
+  error = va("%s (effect = %s)\n");
+  Scr_ParamError(paramIndex,error,inst);
   return;
 }
 
@@ -12437,22 +12958,22 @@ void __cdecl Scr_PlayFX(void)
 {
   code *pcVar1;
   bool bVar2;
-  float local_44 [3];
-  uint local_38;
-  int local_34;
-  gentity_s *local_30;
-  float local_2c [6];
+  float pos [3];
+  int numParams;
+  int fxId;
+  gentity_s *ent;
+  float axis [6];
   float local_14 [3];
-  float local_8;
+  float vecLength;
   
-  local_38 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (((int)local_38 < 2) || (4 < (int)local_38)) {
+  numParams = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((numParams < 2) || (4 < numParams)) {
     Scr_Error("Incorrect number of parameters",false);
   }
-  local_34 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_44,SCRIPTINSTANCE_SERVER);
-  local_30 = G_TempEntity(local_44,0x46);
-  if ((local_30->s).lerp.apos.trType != '\0') {
+  fxId = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,pos,SCRIPTINSTANCE_SERVER);
+  ent = G_TempEntity(pos,0x46);
+  if ((ent->s).lerp.apos.trType != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x2462,
                              1,"%s");
     if (!bVar2) {
@@ -12461,12 +12982,12 @@ void __cdecl Scr_PlayFX(void)
       return;
     }
   }
-  (local_30->s).eventParm = (ushort)(byte)local_34;
-  if (local_38 == 2) {
-    Scr_SetFxAngles(0,(float (*) [3])local_2c,(local_30->s).lerp.apos.trBase);
+  (ent->s).eventParm = (ushort)(byte)fxId;
+  if (numParams == 2) {
+    Scr_SetFxAngles(0,(float (*) [3])axis,(ent->s).lerp.apos.trBase);
   }
   else {
-    if ((local_38 != 3) && (local_38 != 4)) {
+    if ((numParams != 3) && (numParams != 4)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x246a,1,"%s\n\t(numParams) = %i");
       if (!bVar2) {
@@ -12475,16 +12996,16 @@ void __cdecl Scr_PlayFX(void)
         return;
       }
     }
-    Scr_GetVector(2,local_2c,SCRIPTINSTANCE_SERVER);
-    local_8 = Vec3Normalize(local_2c);
-    if (local_8 == 0.0) {
-      Scr_FxParamError(2,"playFx called with (0 0 0) forward direction",local_34);
+    Scr_GetVector(2,axis,SCRIPTINSTANCE_SERVER);
+    vecLength = Vec3Normalize(axis);
+    if (vecLength == 0.0) {
+      Scr_FxParamError(2,"playFx called with (0 0 0) forward direction",fxId);
     }
-    if (local_38 == 3) {
-      Scr_SetFxAngles(1,(float (*) [3])local_2c,(local_30->s).lerp.apos.trBase);
+    if (numParams == 3) {
+      Scr_SetFxAngles(1,(float (*) [3])axis,(ent->s).lerp.apos.trBase);
     }
     else {
-      if (local_38 != 4) {
+      if (numParams != 4) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0x2477,1,"%s\n\t(numParams) = %i");
         if (!bVar2) {
@@ -12494,11 +13015,11 @@ void __cdecl Scr_PlayFX(void)
         }
       }
       Scr_GetVector(3,local_14,SCRIPTINSTANCE_SERVER);
-      local_8 = Vec3Normalize(local_14);
-      if (local_8 == 0.0) {
-        Scr_FxParamError(3,"playFx called with (0 0 0) up direction",local_34);
+      vecLength = Vec3Normalize(local_14);
+      if (vecLength == 0.0) {
+        Scr_FxParamError(3,"playFx called with (0 0 0) up direction",fxId);
       }
-      Scr_SetFxAngles(2,(float (*) [3])local_2c,(local_30->s).lerp.apos.trBase);
+      Scr_SetFxAngles(2,(float (*) [3])axis,(ent->s).lerp.apos.trBase);
     }
   }
   return;
@@ -12520,16 +13041,20 @@ void __cdecl Scr_PlayFXOnTag(void)
   uint uVar3;
   int iVar4;
   char *pcVar5;
-  gentity_s *pgVar6;
-  uchar *puVar7;
+  gentity_s *ent_00;
+  uchar *string;
   int extraout_EAX;
-  uint uVar8;
-  int iVar9;
-  int iVar10;
-  scriptInstance_t sVar11;
-  uchar uVar12;
-  scriptInstance_t sVar13;
-  char *pcVar14;
+  uint stringValue;
+  int max;
+  int create;
+  scriptInstance_t sVar6;
+  uchar chr;
+  scriptInstance_t inst;
+  char *errormsg;
+  int fxId;
+  gentity_s *ent;
+  uint tag;
+  int csIndex;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 3) {
@@ -12537,39 +13062,39 @@ void __cdecl Scr_PlayFXOnTag(void)
   }
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar4 < 1) || (0xc3 < iVar4)) {
-    sVar11 = SCRIPTINSTANCE_SERVER;
+    sVar6 = SCRIPTINSTANCE_SERVER;
     pcVar5 = va("effect id %i is invalid\n");
-    Scr_ParamError(0,pcVar5,sVar11);
+    Scr_ParamError(0,pcVar5,sVar6);
   }
-  pgVar6 = Scr_GetEntity(1);
-  if (pgVar6->model == 0) {
+  ent_00 = Scr_GetEntity(1);
+  if (ent_00->model == 0) {
     Scr_ParamError(1,"cannot play fx on entity with no model",SCRIPTINSTANCE_SERVER);
   }
   uVar3 = Scr_GetConstLowercaseString(2,SCRIPTINSTANCE_SERVER);
-  uVar12 = '\"';
-  puVar7 = (uchar *)SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
-  strchr(puVar7,uVar12);
+  chr = '\"';
+  string = (uchar *)SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
+  strchr(string,chr);
   if (extraout_EAX != 0) {
     Scr_ParamError(2,"cannot use \" characters in tag names\n",SCRIPTINSTANCE_SERVER);
   }
-  iVar4 = SV_DObjGetBoneIndex(pgVar6,uVar3);
+  iVar4 = SV_DObjGetBoneIndex(ent_00,uVar3);
   if (iVar4 < 0) {
-    SV_DObjDumpInfo(pgVar6);
-    sVar13 = SCRIPTINSTANCE_SERVER;
-    sVar11 = SCRIPTINSTANCE_SERVER;
-    uVar8 = G_ModelName((uint)pgVar6->model);
-    SL_ConvertToString(uVar8,sVar11);
+    SV_DObjDumpInfo(ent_00);
+    inst = SCRIPTINSTANCE_SERVER;
+    sVar6 = SCRIPTINSTANCE_SERVER;
+    stringValue = G_ModelName((uint)ent_00->model);
+    SL_ConvertToString(stringValue,sVar6);
     SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
     pcVar5 = va("tag \'%s\' does not exist on entity with model \'%s\'");
-    Scr_ParamError(2,pcVar5,sVar13);
+    Scr_ParamError(2,pcVar5,inst);
   }
-  pcVar14 = (char *)0x0;
-  iVar10 = 1;
-  iVar9 = 0x100;
+  errormsg = (char *)0x0;
+  create = 1;
+  max = 0x100;
   iVar4 = 0x8e4;
   SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
   pcVar5 = va("%03d%s");
-  uVar3 = G_FindConfigstringIndex(pcVar5,iVar4,iVar9,iVar10,pcVar14);
+  uVar3 = G_FindConfigstringIndex(pcVar5,iVar4,max,create,errormsg);
   if (((int)uVar3 < 1) || (0xff < (int)uVar3)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x24a2,
                              0,"%s");
@@ -12579,7 +13104,7 @@ void __cdecl Scr_PlayFXOnTag(void)
       return;
     }
   }
-  G_AddEvent(pgVar6,0x47,uVar3);
+  G_AddEvent(ent_00,0x47,uVar3);
   return;
 }
 
@@ -12598,65 +13123,65 @@ void __cdecl Scr_PlayLoopedFX(void)
   bool bVar2;
   uint uVar3;
   float fVar4;
-  float local_48 [3];
-  uint local_3c;
-  float local_38;
-  gentity_s *local_34;
-  int local_30;
-  float local_2c [6];
+  float pos [3];
+  int fxId;
+  int repeat;
+  gentity_s *ent;
+  int givenAxisCount;
+  float axis [6];
   float local_14 [3];
-  float local_8;
+  float cullDist;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((uVar3 < 3) || (uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER), 6 < uVar3)) {
     Scr_Error("Incorrect number of parameters",false);
   }
-  local_30 = 0;
-  local_8 = 0.0;
-  local_3c = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  givenAxisCount = 0;
+  cullDist = 0.0;
+  fxId = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 4) {
     if (uVar3 != 5) {
       if (uVar3 != 6) goto LAB_00653069;
-      local_30 = local_30 + 1;
+      givenAxisCount = givenAxisCount + 1;
       Scr_GetVector(5,local_14,SCRIPTINSTANCE_SERVER);
       fVar4 = Vec3Normalize(local_14);
       if (fVar4 == 0.0) {
-        Scr_FxParamError(5,"playLoopedFx called with (0 0 0) up direction",local_3c);
+        Scr_FxParamError(5,"playLoopedFx called with (0 0 0) up direction",fxId);
       }
     }
-    Scr_GetVector(4,local_2c,SCRIPTINSTANCE_SERVER);
-    fVar4 = Vec3Normalize(local_2c);
+    Scr_GetVector(4,axis,SCRIPTINSTANCE_SERVER);
+    fVar4 = Vec3Normalize(axis);
     if (fVar4 == 0.0) {
-      Scr_FxParamError(4,"playLoopedFx called with (0 0 0) forward direction",local_3c);
+      Scr_FxParamError(4,"playLoopedFx called with (0 0 0) forward direction",fxId);
     }
-    local_30 = local_30 + 1;
+    givenAxisCount = givenAxisCount + 1;
   }
-  local_8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  cullDist = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
 LAB_00653069:
-  Scr_GetVector(2,local_48,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,pos,SCRIPTINSTANCE_SERVER);
   fVar4 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  local_38 = (float)(int)ROUND(fVar4 * 1000.0 + 9.313226e-10);
-  if ((int)local_38 < 1) {
-    Scr_FxParamError(1,"playLoopedFx called with repeat < 0.001 seconds",local_3c);
+  repeat = (int)ROUND(fVar4 * 1000.0 + 9.313226e-10);
+  if (repeat < 1) {
+    Scr_FxParamError(1,"playLoopedFx called with repeat < 0.001 seconds",fxId);
   }
-  local_34 = G_Spawn();
-  (local_34->s).eType = 9;
-  (local_34->r).svFlags = (local_34->r).svFlags | 8;
-  (local_34->s).un1.scale = (uchar)local_3c;
-  if (((local_34->s).un1.scale != local_3c) &&
+  ent = G_Spawn();
+  (ent->s).eType = 9;
+  (ent->r).svFlags = (ent->r).svFlags | 8;
+  (ent->s).un1.scale = (uchar)fxId;
+  if (((uint)(ent->s).un1.scale != fxId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x24d4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  G_SetOrigin(local_34,local_48);
-  Scr_SetFxAngles(local_30,(float (*) [3])local_2c,(local_34->s).lerp.apos.trBase);
-  (local_34->s).lerp.u.turret.gunAngles[0] = local_8;
-  (local_34->s).lerp.u.turret.gunAngles[1] = local_38;
-  SV_LinkEntity(local_34);
-  Scr_AddEntity(local_34,SCRIPTINSTANCE_SERVER);
+  G_SetOrigin(ent,pos);
+  Scr_SetFxAngles(givenAxisCount,(float (*) [3])axis,(ent->s).lerp.apos.trBase);
+  (ent->s).lerp.u.turret.gunAngles[0] = cullDist;
+  (ent->s).lerp.u.loopFx.period = repeat;
+  SV_LinkEntity(ent);
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -12675,64 +13200,64 @@ void __cdecl Scr_SpawnFX(void)
   bool bVar2;
   uint uVar3;
   float fVar4;
-  float local_40;
+  float pos;
   float local_3c;
   float local_38;
-  uint local_34;
-  gentity_s *local_30;
-  int local_2c;
-  float local_28 [6];
+  int fxId;
+  gentity_s *ent;
+  int givenAxisCount;
+  float axis [6];
   float local_10 [3];
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((uVar3 < 2) || (uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER), 4 < uVar3)) {
     Scr_Error("Incorrect number of parameters",false);
   }
-  local_2c = 0;
-  local_34 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  givenAxisCount = 0;
+  fxId = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 3) {
     if (uVar3 != 4) goto LAB_00653283;
     Scr_GetVector(3,local_10,SCRIPTINSTANCE_SERVER);
     fVar4 = Vec3Normalize(local_10);
     if (fVar4 == 0.0) {
-      Scr_FxParamError(3,"spawnFx called with (0 0 0) up direction",local_34);
+      Scr_FxParamError(3,"spawnFx called with (0 0 0) up direction",fxId);
     }
-    local_2c = local_2c + 1;
+    givenAxisCount = givenAxisCount + 1;
   }
-  Scr_GetVector(2,local_28,SCRIPTINSTANCE_SERVER);
-  fVar4 = Vec3Normalize(local_28);
+  Scr_GetVector(2,axis,SCRIPTINSTANCE_SERVER);
+  fVar4 = Vec3Normalize(axis);
   if (fVar4 == 0.0) {
-    Scr_FxParamError(2,"spawnFx called with (0 0 0) forward direction",local_34);
+    Scr_FxParamError(2,"spawnFx called with (0 0 0) forward direction",fxId);
   }
-  local_2c = local_2c + 1;
+  givenAxisCount = givenAxisCount + 1;
 LAB_00653283:
-  Scr_GetVector(1,&local_40,SCRIPTINSTANCE_SERVER);
-  local_30 = G_Spawn();
-  (local_30->s).eType = 8;
-  (local_30->r).svFlags = (local_30->r).svFlags | 8;
-  (local_30->s).un1.scale = (uchar)local_34;
-  if (((local_30->s).un1.scale != local_34) &&
+  Scr_GetVector(1,&pos,SCRIPTINSTANCE_SERVER);
+  ent = G_Spawn();
+  (ent->s).eType = 8;
+  (ent->r).svFlags = (ent->r).svFlags | 8;
+  (ent->s).un1.scale = (uchar)fxId;
+  if (((uint)(ent->s).un1.scale != fxId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x2502,0,"ent->s.un1.eventParm2 == fxId\n\t%i, %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_40 = (float)(int)local_40;
+  pos = (float)(int)pos;
   local_3c = (float)(int)local_3c;
   local_38 = (float)(int)local_38;
-  G_SetOrigin(local_30,&local_40);
-  Scr_SetFxAngles(local_2c,(float (*) [3])local_28,(local_30->s).lerp.apos.trBase);
-  if (((local_30->s).time2 != 0) &&
+  G_SetOrigin(ent,&pos);
+  Scr_SetFxAngles(givenAxisCount,(float (*) [3])axis,(ent->s).lerp.apos.trBase);
+  if (((ent->s).time2 != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x2508,1,"%s\n\t(ent->s.time2) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  SV_LinkEntity(local_30);
-  Scr_AddEntity(local_30,SCRIPTINSTANCE_SERVER);
+  SV_LinkEntity(ent);
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -12752,6 +13277,7 @@ void __cdecl Scr_TriggerFX(void)
   uint uVar3;
   gentity_s *pgVar4;
   float fVar5;
+  gentity_s *ent;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 0) {
@@ -12792,43 +13318,45 @@ LAB_006533e3:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SpawnActor(scr_entref_t param_1)
+void __cdecl ScrCmd_SpawnActor(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  char *pcVar2;
-  uint uVar3;
-  gentity_s *pgVar4;
-  undefined1 uVar5;
-  int local_10;
-  uint local_c;
+  gentity_s *ent_00;
+  char *error;
+  uint uVar1;
+  gentity_s *ent_01;
+  undefined1 force_terminal;
+  gentity_s *guy;
+  int noEnemyInfo;
+  uint targetname;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  if ((pgVar1->s).eType != 0x12) {
-    if (pgVar1->targetname != 0) {
-      SL_ConvertToString((uint)pgVar1->targetname,SCRIPTINSTANCE_SERVER);
+  ent_00 = GetEntity(entref);
+  if ((ent_00->s).eType != 0x12) {
+    if (ent_00->targetname != 0) {
+      SL_ConvertToString((uint)ent_00->targetname,SCRIPTINSTANCE_SERVER);
     }
-    uVar5 = 0;
-    SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va(
-               "dospawn can only be called on actor spawners\nattempted to call dospawn on entity with name \'%s\' of type \'%s\' at (%.0f %.0f %.0f)\n"
-               );
-    Scr_Error(pcVar2,(bool)uVar5);
+    force_terminal = 0;
+    SL_ConvertToString((uint)ent_00->classname,SCRIPTINSTANCE_SERVER);
+    error = va(
+              "dospawn can only be called on actor spawners\nattempted to call dospawn on entity with name \'%s\' of type \'%s\' at (%.0f %.0f %.0f)\n"
+              );
+    Scr_Error(error,(bool)force_terminal);
   }
-  local_10 = 0;
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar3 != 0) {
-    local_10 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  noEnemyInfo = 0;
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 != 0) {
+    noEnemyInfo = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   }
-  local_c = 0;
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (1 < uVar3) {
-    local_c = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
+  targetname = 0;
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (1 < uVar1) {
+    targetname = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
   }
-  pgVar4 = SpawnActor(pgVar1,local_c,FORCE_SPAWN,(uint)(local_10 == 0));
-  if (pgVar4 != (gentity_s *)0x0) {
-    (pgVar1->field36_0x21c).item[0].clipAmmoCount = level.time;
-    Scr_AddEntity(pgVar4,SCRIPTINSTANCE_SERVER);
+  ent_01 = SpawnActor(ent_00,targetname,FORCE_SPAWN,(uint)(noEnemyInfo == 0));
+  if (ent_01 != (gentity_s *)0x0) {
+    (ent_00->field36_0x21c).item[0].clipAmmoCount = level.time;
+    Scr_AddEntity(ent_01,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -12845,49 +13373,50 @@ void __cdecl GScr_CreateDynEntAndLaunch(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  gentity_s *pgVar3;
-  float local_40 [3];
-  float local_34;
+  char *name;
+  gentity_s *pgVar2;
+  float pos [3];
+  float force;
   float local_30;
   float local_2c;
-  float local_28;
+  float angles;
   float local_24;
   float local_20;
-  int local_1c;
-  float local_18;
+  int fxId;
+  float hitpos;
   float local_14;
   float local_10;
-  int local_c;
+  int modelIndex;
+  gentity_s *tempent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 5) {
     Scr_Error("CreateDynEntAndLaunch called with invalid params. CreateDynEntAndLaunch( <model>, <pos>, <angles>, <hitpos>, <force>, <fx> )"
               ,false);
   }
-  local_1c = 0;
-  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_c = G_ModelIndex(pcVar2);
-  Scr_GetVector(1,local_40,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,&local_28,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(3,&local_18,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(4,&local_34,SCRIPTINSTANCE_SERVER);
+  fxId = 0;
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  modelIndex = G_ModelIndex(name);
+  Scr_GetVector(1,pos,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,&angles,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(3,&hitpos,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(4,&force,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (5 < uVar1) {
-    local_1c = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
+    fxId = Scr_GetInt(5,SCRIPTINSTANCE_SERVER);
   }
-  pgVar3 = G_TempEntity(local_40,0x4c);
-  (pgVar3->s).lerp.pos.trDelta[0] = local_18;
-  (pgVar3->s).lerp.pos.trDelta[1] = local_14;
-  (pgVar3->s).lerp.pos.trDelta[2] = local_10;
-  (pgVar3->s).lerp.apos.trBase[0] = local_28;
-  (pgVar3->s).lerp.apos.trBase[1] = local_24;
-  (pgVar3->s).lerp.apos.trBase[2] = local_20;
-  (pgVar3->s).lerp.apos.trDelta[0] = local_34;
-  (pgVar3->s).lerp.apos.trDelta[1] = local_30;
-  (pgVar3->s).lerp.apos.trDelta[2] = local_2c;
-  (pgVar3->s).index.brushmodel = (short)local_c;
-  (pgVar3->s).un1.scale = (uchar)local_1c;
+  pgVar2 = G_TempEntity(pos,0x4c);
+  (pgVar2->s).lerp.pos.trDelta[0] = hitpos;
+  (pgVar2->s).lerp.pos.trDelta[1] = local_14;
+  (pgVar2->s).lerp.pos.trDelta[2] = local_10;
+  (pgVar2->s).lerp.apos.trBase[0] = angles;
+  (pgVar2->s).lerp.apos.trBase[1] = local_24;
+  (pgVar2->s).lerp.apos.trBase[2] = local_20;
+  (pgVar2->s).lerp.apos.trDelta[0] = force;
+  (pgVar2->s).lerp.apos.trDelta[1] = local_30;
+  (pgVar2->s).lerp.apos.trDelta[2] = local_2c;
+  (pgVar2->s).index.brushmodel = (short)modelIndex;
+  (pgVar2->s).un1.scale = (uchar)fxId;
   return;
 }
 
@@ -12906,8 +13435,8 @@ void __cdecl Scr_PhysicsExplosionSphere(void)
   uint uVar2;
   int iVar3;
   float fVar4;
-  float local_14 [3];
-  gentity_s *local_8;
+  float pos [3];
+  gentity_s *ent;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (3 < uVar2) {
@@ -12916,32 +13445,32 @@ void __cdecl Scr_PhysicsExplosionSphere(void)
   }
   Scr_Error("Incorrect number of parameters",false);
 LAB_00653793:
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  local_8 = G_TempEntity(local_14,0x48);
+  Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
+  ent = G_TempEntity(pos,0x48);
   iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  (local_8->s).eventParm = (ushort)iVar3;
+  (ent->s).eventParm = (ushort)iVar3;
   fVar4 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  (local_8->s).lerp.u.turret.gunAngles[0] = fVar4;
-  (local_8->s).lerp.u.turret.gunAngles[2] = 0.0;
-  (local_8->s).lerp.u.turret.heatVal = 0.0;
-  pLVar1 = &(local_8->s).lerp.u;
+  (ent->s).lerp.u.turret.gunAngles[0] = fVar4;
+  (ent->s).lerp.u.turret.gunAngles[2] = 0.0;
+  (ent->s).lerp.u.turret.heatVal = 0.0;
+  pLVar1 = &(ent->s).lerp.u;
   if ((pLVar1->turret).gunAngles[0] <= 0.0 && (pLVar1->turret).gunAngles[0] != 0.0) {
     Scr_ParamError(2,"Radius is negative",SCRIPTINSTANCE_SERVER);
   }
-  if ((float)(local_8->s).eventParm < (local_8->s).lerp.u.turret.gunAngles[0]) {
+  if ((float)(ent->s).eventParm < (ent->s).lerp.u.turret.gunAngles[0]) {
     Scr_Error("Inner radius is outside the outer radius",false);
   }
   fVar4 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  (local_8->s).lerp.u.turret.gunAngles[1] = fVar4;
+  (ent->s).lerp.u.turret.gunAngles[1] = fVar4;
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (4 < uVar2) {
     fVar4 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-    (local_8->s).lerp.u.turret.heatVal = fVar4;
+    (ent->s).lerp.u.turret.heatVal = fVar4;
   }
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (5 < uVar2) {
     fVar4 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-    (local_8->s).lerp.u.turret.gunAngles[2] = fVar4;
+    (ent->s).lerp.u.turret.gunAngles[2] = fVar4;
   }
   return;
 }
@@ -12960,27 +13489,27 @@ void __cdecl Scr_CreateStreamerHint(void)
   LerpEntityStateTypeUnion *pLVar1;
   uint uVar2;
   float fVar3;
-  float local_14 [3];
-  gentity_s *local_8;
+  float origin [3];
+  gentity_s *ent;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 2) {
     Scr_Error("Incorrect number of parameters",false);
   }
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  local_8 = G_Spawn();
-  G_SetOrigin(local_8,local_14);
-  (local_8->s).eType = 0x14;
-  local_8->flags = local_8->flags | 0x1000;
-  (local_8->s).lerp.pos.trType = '\0';
+  Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+  ent = G_Spawn();
+  G_SetOrigin(ent,origin);
+  (ent->s).eType = 0x14;
+  ent->flags = ent->flags | 0x1000;
+  (ent->s).lerp.pos.trType = '\0';
   fVar3 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  (local_8->s).lerp.u.turret.gunAngles[0] = fVar3;
-  pLVar1 = &(local_8->s).lerp.u;
+  (ent->s).lerp.u.turret.gunAngles[0] = fVar3;
+  pLVar1 = &(ent->s).lerp.u;
   if ((pLVar1->turret).gunAngles[0] <= 0.0 && (pLVar1->turret).gunAngles[0] != 0.0) {
     Scr_ParamError(1,"streamer hint factor is negative",SCRIPTINSTANCE_SERVER);
   }
-  SV_LinkEntity(local_8);
-  Scr_AddEntity(local_8,SCRIPTINSTANCE_SERVER);
+  SV_LinkEntity(ent);
+  Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -13000,37 +13529,36 @@ void __cdecl Scr_PhysicsRadiusJolt(void)
   uint uVar3;
   int iVar4;
   float fVar5;
-  float local_14 [3];
-  gentity_s *local_8;
+  float pos [3];
+  gentity_s *ent;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 4) {
     Scr_Error("Incorrect number of parameters",false);
   }
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  local_8 = G_TempEntity(local_14,0x4a);
+  Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
+  ent = G_TempEntity(pos,0x4a);
   iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  (local_8->s).eventParm = (ushort)iVar4;
+  (ent->s).eventParm = (ushort)iVar4;
   fVar5 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  (local_8->s).lerp.u.turret.gunAngles[0] = fVar5;
-  pLVar1 = &(local_8->s).lerp.u;
+  (ent->s).lerp.u.turret.gunAngles[0] = fVar5;
+  pLVar1 = &(ent->s).lerp.u;
   if ((pLVar1->turret).gunAngles[0] <= 0.0 && (pLVar1->turret).gunAngles[0] != 0.0) {
     Scr_ParamError(2,"Radius is negative",SCRIPTINSTANCE_SERVER);
   }
-  if ((float)(local_8->s).eventParm < (local_8->s).lerp.u.turret.gunAngles[0]) {
+  if ((float)(ent->s).eventParm < (ent->s).lerp.u.turret.gunAngles[0]) {
     Scr_Error("Inner radius is outside the outer radius",false);
   }
-  Scr_GetVector(3,(local_8->s).lerp.u.turret.gunAngles + 1,SCRIPTINSTANCE_SERVER);
-  if ((((local_8->s).lerp.u.turret.gunAngles[1] == 0.0) &&
-      ((local_8->s).lerp.u.turret.gunAngles[2] == 0.0)) &&
-     ((local_8->s).lerp.u.primaryLight.cosHalfFovOuter == 0.0)) {
+  Scr_GetVector(3,(ent->s).lerp.u.turret.gunAngles + 1,SCRIPTINSTANCE_SERVER);
+  if ((((ent->s).lerp.u.turret.gunAngles[1] == 0.0) && ((ent->s).lerp.u.turret.gunAngles[2] == 0.0))
+     && ((ent->s).lerp.u.primaryLight.cosHalfFovOuter == 0.0)) {
     bVar2 = true;
   }
   else {
     bVar2 = false;
   }
   if (bVar2) {
-    (local_8->s).lerp.u.turret.gunAngles[1] = 1.1754944e-38;
+    (ent->s).lerp.u.turret.gunAngles[1] = 1.1754944e-38;
   }
   return;
 }
@@ -13050,28 +13578,28 @@ void __cdecl Scr_PhysicsExplosionCylinder(void)
   uint uVar2;
   int iVar3;
   float fVar4;
-  float local_14 [3];
-  gentity_s *local_8;
+  float pos [3];
+  gentity_s *ent;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 4) {
     Scr_Error("Incorrect number of parameters",false);
   }
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  local_8 = G_TempEntity(local_14,0x49);
+  Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
+  ent = G_TempEntity(pos,0x49);
   iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  (local_8->s).eventParm = (ushort)iVar3;
+  (ent->s).eventParm = (ushort)iVar3;
   fVar4 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  (local_8->s).lerp.u.turret.gunAngles[0] = fVar4;
-  pLVar1 = &(local_8->s).lerp.u;
+  (ent->s).lerp.u.turret.gunAngles[0] = fVar4;
+  pLVar1 = &(ent->s).lerp.u;
   if ((pLVar1->turret).gunAngles[0] <= 0.0 && (pLVar1->turret).gunAngles[0] != 0.0) {
     Scr_ParamError(2,"Radius is negative",SCRIPTINSTANCE_SERVER);
   }
-  if ((float)(local_8->s).eventParm < (local_8->s).lerp.u.turret.gunAngles[0]) {
+  if ((float)(ent->s).eventParm < (ent->s).lerp.u.turret.gunAngles[0]) {
     Scr_Error("Inner radius is outside the outer radius",false);
   }
   fVar4 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  (local_8->s).lerp.u.turret.gunAngles[1] = fVar4;
+  (ent->s).lerp.u.turret.gunAngles[1] = fVar4;
   return;
 }
 
@@ -13079,21 +13607,21 @@ void __cdecl Scr_PhysicsExplosionCylinder(void)
 // 00653D80  Scr_SetFog  (game_mp/g_scr_main_mp.cpp:9732)
 
 void __cdecl
-Scr_SetFog(char *param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float param_10,float param_11,float param_12,
-          float param_13,float param_14,float param_15,float param_16,float param_17,float param_18,
-          float param_19)
+Scr_SetFog(char *cmd,float start,float density,float heightDensity,float baseHeight,float r,float g,
+          float b,float time,float colorScale,float sunColR,float sunColG,float sunColB,
+          float sunDirX,float sunDirY,float sunDirZ,float sunStartAng,float sunEndAng,
+          float maxFogOpacity)
 
 {
   char *pcVar1;
   bool bVar2;
   
-  if (param_2 < 0.0) {
+  if (start < 0.0) {
     bVar2 = false;
     pcVar1 = va("%s: near distance must be >= 0");
     Scr_Error(pcVar1,bVar2);
   }
-  if (param_9 < 0.0) {
+  if (time < 0.0) {
     bVar2 = false;
     pcVar1 = va("%s: transition time must be >= 0 seconds");
     Scr_Error(pcVar1,bVar2);
@@ -13112,36 +13640,43 @@ void __cdecl Scr_SetExponentialFog(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  float fVar4;
-  float fVar5;
-  float fVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
-  float fVar10;
+  float density_00;
+  float value;
+  float value_00;
+  float r;
+  float g;
+  float b;
+  float time_00;
+  float green;
+  float startDist;
+  float blue;
+  float red;
+  float density;
+  float time;
+  float halfwayDist;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 6) {
     Scr_Error("Incorrect number of parameters\nUSAGE: setExpFog(<startDist>, <halfwayDist>, <red>, <green>, <blue>, <transition time>)\n"
               ,false);
   }
-  fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (fVar5 < 0.0) {
+  value = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (value < 0.0) {
     Scr_Error("setExpFog: startDist must be greater or equal to 0",false);
   }
-  fVar6 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  if (fVar6 <= 0.0) {
+  value_00 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  if (value_00 <= 0.0) {
     Scr_Error("setExpFog: halfwayDist must be greater than 0",false);
   }
-  fVar4 = 1.0 / fVar6;
-  fVar7 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  fVar8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  fVar9 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-  fVar10 = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
-  Dvar_SetColor(g_fogColorReadOnly,fVar7,fVar8,fVar9,1.0);
-  Dvar_SetFloat(g_fogStartDistReadOnly,fVar5);
-  Dvar_SetFloat(g_fogHalfDistReadOnly,fVar6);
-  if ((fVar4 <= 0.0) || (1.0 < fVar4)) {
+  density_00 = 1.0 / value_00;
+  r = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  g = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  b = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+  time_00 = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
+  Dvar_SetColor(g_fogColorReadOnly,r,g,b,1.0);
+  Dvar_SetFloat(g_fogStartDistReadOnly,value);
+  Dvar_SetFloat(g_fogHalfDistReadOnly,value_00);
+  if ((density_00 <= 0.0) || (1.0 < density_00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x2640,
                              0,"%s\n\t(density) = %g");
     if (!bVar2) {
@@ -13150,8 +13685,8 @@ void __cdecl Scr_SetExponentialFog(void)
       return;
     }
   }
-  Scr_SetFog("setExpFog",fVar5,fVar4,0.0,0.0,fVar7,fVar8,fVar9,fVar10,1.0,0.5,0.5,0.5,1.0,0.0,0.0,
-             0.0,0.0,1.0);
+  Scr_SetFog("setExpFog",value,density_00,0.0,0.0,r,g,b,time_00,1.0,0.5,0.5,0.5,1.0,0.0,0.0,0.0,0.0,
+             1.0);
   return;
 }
 
@@ -13165,94 +13700,101 @@ void __cdecl Scr_SetVolumetricFog(void)
   bool bVar2;
   uint uVar3;
   float fVar4;
+  float start;
   float fVar5;
-  float fVar6;
-  float fVar7;
+  float baseHeight_00;
   float local_60;
   float local_5c;
-  float local_54;
-  float local_50;
-  float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
-  float local_34;
-  float local_2c;
-  float local_28;
-  float local_20;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
+  float invScale;
+  float sunDirY;
+  float green;
+  float startDist;
+  float baseHeight;
+  float blue;
+  float sunStartAng;
+  float red;
+  float fogColorScale;
+  float maxFogOpacity;
+  float density;
+  float time;
+  float sunColorB;
+  float halfwayDist;
+  float sunDirZ;
+  float halfwayHeight;
+  float sunStopAng;
+  float sunColorR;
+  float sunColorG;
+  float sunDirX;
+  float heightDensity;
   
-  local_14 = 0.5;
-  local_10 = 0.5;
-  local_28 = 0.5;
-  local_c = 1.0;
-  local_54 = 0.0;
-  local_20 = 0.0;
-  local_40 = 0.0;
-  local_18 = 0.0;
-  local_34 = 1.0;
+  sunColorR = 0.5;
+  sunColorG = 0.5;
+  sunColorB = 0.5;
+  sunDirX = 1.0;
+  sunDirY = 0.0;
+  sunDirZ = 0.0;
+  sunStartAng = 0.0;
+  sunStopAng = 0.0;
+  maxFogOpacity = 1.0;
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((uVar3 != 8) && (uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER), uVar3 != 0x12)) {
     Scr_Error("Incorrect number of parameters\nUSAGE: setVolFog(<startDist>, <halfwayDist>, <halfwayHeight>, <baseHeight>, <red>, <green>, <blue>, <transition time>)\nOR:    SetVolFog(<startDist>, <halfwayDist>, <halfwayHeight>, <baseHeight>, <red>, <green>, <blue>, <fogColorScale>, <sunFogRed>, <sunFogGreen>, <sunFogBlue>, <sunFogDirX>, <sunFogDirY>, <sunFogDirZ>, <sunFogStartAng>, <sunFogEndAng>, <transition time>)\n"
               ,false);
   }
-  fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (fVar5 < 0.0) {
+  start = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (start < 0.0) {
     Scr_Error("setExpFog: startDist must be greater or equal to 0",false);
   }
-  fVar6 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  if (fVar6 <= 0.0) {
+  fVar5 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  if (fVar5 <= 0.0) {
     Scr_Error("setVolFog: halfwayDist must be greater than 0",false);
   }
   local_5c = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
   if (local_5c < 0.0) {
     Scr_Error("setVolFog: halfwayHeight must be greater or equal to 0",false);
   }
-  fVar7 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  fVar6 = 1.0 / fVar6;
+  baseHeight_00 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  fVar5 = 1.0 / fVar5;
   if (local_5c < 1.0) {
     local_5c = 0.0;
   }
   else {
     local_5c = 1.0 / local_5c;
   }
-  local_3c = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-  local_50 = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
-  local_44 = Scr_GetFloat(6,SCRIPTINSTANCE_SERVER);
+  red = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+  green = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
+  blue = Scr_GetFloat(6,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 0x12) {
-    local_38 = Scr_GetFloat(7,SCRIPTINSTANCE_SERVER);
-    local_14 = Scr_GetFloat(8,SCRIPTINSTANCE_SERVER);
-    local_10 = Scr_GetFloat(9,SCRIPTINSTANCE_SERVER);
-    local_28 = Scr_GetFloat(10,SCRIPTINSTANCE_SERVER);
-    local_c = Scr_GetFloat(0xb,SCRIPTINSTANCE_SERVER);
-    local_54 = Scr_GetFloat(0xc,SCRIPTINSTANCE_SERVER);
-    local_20 = Scr_GetFloat(0xd,SCRIPTINSTANCE_SERVER);
-    local_40 = Scr_GetFloat(0xe,SCRIPTINSTANCE_SERVER);
-    local_18 = Scr_GetFloat(0xf,SCRIPTINSTANCE_SERVER);
-    local_2c = Scr_GetFloat(0x10,SCRIPTINSTANCE_SERVER);
-    local_34 = Scr_GetFloat(0x11,SCRIPTINSTANCE_SERVER);
+    fogColorScale = Scr_GetFloat(7,SCRIPTINSTANCE_SERVER);
+    sunColorR = Scr_GetFloat(8,SCRIPTINSTANCE_SERVER);
+    sunColorG = Scr_GetFloat(9,SCRIPTINSTANCE_SERVER);
+    sunColorB = Scr_GetFloat(10,SCRIPTINSTANCE_SERVER);
+    sunDirX = Scr_GetFloat(0xb,SCRIPTINSTANCE_SERVER);
+    sunDirY = Scr_GetFloat(0xc,SCRIPTINSTANCE_SERVER);
+    sunDirZ = Scr_GetFloat(0xd,SCRIPTINSTANCE_SERVER);
+    sunStartAng = Scr_GetFloat(0xe,SCRIPTINSTANCE_SERVER);
+    sunStopAng = Scr_GetFloat(0xf,SCRIPTINSTANCE_SERVER);
+    time = Scr_GetFloat(0x10,SCRIPTINSTANCE_SERVER);
+    maxFogOpacity = Scr_GetFloat(0x11,SCRIPTINSTANCE_SERVER);
   }
   else {
     Com_Printf(1,"setVolFog: Old syntax used. Please update script.\n");
-    local_60 = local_3c;
-    if (local_3c < local_50) {
-      local_60 = local_50;
+    local_60 = red;
+    if (red < green) {
+      local_60 = green;
     }
-    local_38 = local_60;
-    if (local_60 < local_44) {
-      local_38 = local_44;
+    fogColorScale = local_60;
+    if (local_60 < blue) {
+      fogColorScale = blue;
     }
-    fVar4 = 1.0 / local_38;
-    local_3c = local_3c * fVar4;
-    local_50 = local_50 * fVar4;
-    local_44 = local_44 * fVar4;
-    local_2c = Scr_GetFloat(7,SCRIPTINSTANCE_SERVER);
+    fVar4 = 1.0 / fogColorScale;
+    red = red * fVar4;
+    green = green * fVar4;
+    blue = blue * fVar4;
+    time = Scr_GetFloat(7,SCRIPTINSTANCE_SERVER);
   }
-  if (((fVar6 <= 0.0) || (1.0 < fVar6)) &&
+  if (((fVar5 <= 0.0) || (1.0 < fVar5)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x26ad,0,"%s\n\t(density) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -13266,38 +13808,53 @@ void __cdecl Scr_SetVolumetricFog(void)
     (*pcVar1)();
     return;
   }
-  Scr_SetFog("setVolFog",fVar5,fVar6,local_5c,fVar7,local_3c,local_50,local_44,local_2c,local_38,
-             local_14,local_10,local_28,local_c,local_54,local_20,local_40,local_18,local_34);
+  Scr_SetFog("setVolFog",start,fVar5,local_5c,baseHeight_00,red,green,blue,time,fogColorScale,
+             sunColorR,sunColorG,sunColorB,sunDirX,sunDirY,sunDirZ,sunStartAng,sunStopAng,
+             maxFogOpacity);
   return;
 }
 
 
 // 00654340  Scr_SetCullDist  (game_mp/g_scr_main_mp.cpp:9919)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Scr_SetCullDist(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *val;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     Scr_Error("Incorrect number of parameters\n",false);
   }
   Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  pcVar2 = va("%g");
-  SV_SetConfigstring(7,pcVar2);
+  val = va("%g");
+  SV_SetConfigstring(7,val);
   return;
 }
 
 
 // 00654390  Scr_VisionSetNaked  (game_mp/g_scr_main_mp.cpp:9928)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Scr_VisionSetNaked(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *val;
+  int duration;
+  char *name;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
@@ -13308,19 +13865,27 @@ void __cdecl Scr_VisionSetNaked(void)
     Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   }
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pcVar2 = va("\"%s\" %i");
-  SV_SetConfigstring(0x60e,pcVar2);
+  val = va("\"%s\" %i");
+  SV_SetConfigstring(0x60e,val);
   return;
 }
 
 
 // 00654430  Scr_VisionSetNight  (game_mp/g_scr_main_mp.cpp:9949)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Scr_VisionSetNight(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *val;
+  int duration;
+  char *name;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
@@ -13331,8 +13896,8 @@ void __cdecl Scr_VisionSetNight(void)
     Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   }
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pcVar2 = va("\"%s\" %i");
-  SV_SetConfigstring(0x60f,pcVar2);
+  val = va("\"%s\" %i");
+  SV_SetConfigstring(0x60f,val);
   return;
 }
 
@@ -13344,9 +13909,12 @@ void __cdecl Scr_TableLookupRowNum(void)
 {
   uint uVar1;
   char *pcVar2;
-  int iVar3;
-  StringTable *local_c;
-  int local_8;
+  int value;
+  char *filename;
+  char *stringValue;
+  int returnValueRow;
+  StringTable *tablePtr;
+  int comparisonColumn;
   
   if ((useFastFile->current).enabled == false) {
     Com_Printf(0x10,"You cannot do table lookups without fastfiles.\n");
@@ -13358,11 +13926,11 @@ void __cdecl Scr_TableLookupRowNum(void)
       Scr_Error("USAGE: tableLookupRowNum( filename, searchColumnNum, searchValue )\n",false);
     }
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    StringTable_GetAsset(pcVar2,&local_c);
-    local_8 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    StringTable_GetAsset(pcVar2,&tablePtr);
+    comparisonColumn = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     pcVar2 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-    iVar3 = StringTable_LookupRowNumForValue(local_c,local_8,pcVar2);
-    Scr_AddInt(iVar3,SCRIPTINSTANCE_SERVER);
+    value = StringTable_LookupRowNumForValue(tablePtr,comparisonColumn,pcVar2);
+    Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -13375,9 +13943,11 @@ void __cdecl Scr_TableLookupColumnForRow(void)
 {
   uint uVar1;
   char *pcVar2;
-  StringTable *local_10;
-  int local_c;
-  int local_8;
+  char *filename;
+  char *returnValue;
+  StringTable *tablePtr;
+  int row;
+  int column;
   
   if ((useFastFile->current).enabled == false) {
     Com_Printf(0x10,"You cannot do table lookups without fastfiles.\n");
@@ -13389,10 +13959,10 @@ void __cdecl Scr_TableLookupColumnForRow(void)
       Scr_Error("USAGE: tableLookupColumnForRow( filename, row, column )\n",false);
     }
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    StringTable_GetAsset(pcVar2,&local_10);
-    local_c = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    local_8 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-    pcVar2 = StringTable_GetColumnValueForRow(local_10,local_c,local_8);
+    StringTable_GetAsset(pcVar2,&tablePtr);
+    row = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    column = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+    pcVar2 = StringTable_GetColumnValueForRow(tablePtr,row,column);
     Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -13406,9 +13976,12 @@ void __cdecl Scr_TableLookup(void)
 {
   uint uVar1;
   char *pcVar2;
-  StringTable *local_10;
-  int local_c;
-  int local_8;
+  char *stringValue;
+  char *filename;
+  char *returnValue;
+  StringTable *tablePtr;
+  int returnValueColumn;
+  int comparisonColumn;
   
   if ((useFastFile->current).enabled == false) {
     Com_Printf(0x10,"You cannot do table lookups without fastfiles.\n");
@@ -13421,11 +13994,11 @@ void __cdecl Scr_TableLookup(void)
                 ,false);
     }
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    StringTable_GetAsset(pcVar2,&local_10);
-    local_8 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    StringTable_GetAsset(pcVar2,&tablePtr);
+    comparisonColumn = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     pcVar2 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-    local_c = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-    pcVar2 = StringTable_Lookup(local_10,local_8,pcVar2,local_c);
+    returnValueColumn = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    pcVar2 = StringTable_Lookup(tablePtr,comparisonColumn,pcVar2,returnValueColumn);
     Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -13439,9 +14012,12 @@ void __cdecl Scr_TableLookupIString(void)
 {
   uint uVar1;
   char *pcVar2;
-  StringTable *local_10;
-  int local_c;
-  int local_8;
+  char *stringValue;
+  char *filename;
+  char *returnValue;
+  StringTable *tablePtr;
+  int returnValueColumn;
+  int comparisonColumn;
   
   if ((useFastFile->current).enabled == false) {
     Com_Printf(0x10,"You cannot do table lookups without fastfiles.\n");
@@ -13454,11 +14030,11 @@ void __cdecl Scr_TableLookupIString(void)
                 ,false);
     }
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    StringTable_GetAsset(pcVar2,&local_10);
-    local_8 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    StringTable_GetAsset(pcVar2,&tablePtr);
+    comparisonColumn = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     pcVar2 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-    local_c = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-    pcVar2 = StringTable_Lookup(local_10,local_8,pcVar2,local_c);
+    returnValueColumn = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    pcVar2 = StringTable_Lookup(tablePtr,comparisonColumn,pcVar2,returnValueColumn);
     Scr_AddIString(pcVar2,SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -13471,12 +14047,13 @@ void __cdecl Scr_GetReflectionLocs(void)
 
 {
   uint uVar1;
-  uint local_c;
+  uint i;
+  uint count;
   
   uVar1 = R_GetDebugReflectionProbeLocs(locs,0xff);
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_c = 0; local_c < uVar1; local_c = local_c + 1) {
-    Scr_AddVector(locs[local_c],SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < uVar1; i = i + 1) {
+    Scr_AddVector(locs[i],SCRIPTINSTANCE_SERVER);
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -13489,18 +14066,18 @@ void __cdecl Scr_GetReflectionOrigin(void)
 
 {
   uint uVar1;
-  float local_20 [3];
-  float local_14 [3];
-  uint local_8;
+  float probePos [3];
+  float queryPos [3];
+  uint index;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     Com_Error(ERR_DROP,"\x15Invalid origin");
   }
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  local_8 = R_CalcReflectionProbeIndex(local_14);
-  R_GetReflectionProbePosition(local_8,local_20);
-  Scr_AddVector(local_20,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,queryPos,SCRIPTINSTANCE_SERVER);
+  index = R_CalcReflectionProbeIndex(queryPos);
+  R_GetReflectionProbePosition(index,probePos);
+  Scr_AddVector(probePos,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -13517,6 +14094,7 @@ void __cdecl GScr_IsPlayer(void)
 {
   int iVar1;
   gentity_s *pgVar2;
+  gentity_s *pEnt;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (((iVar1 == 1) && (iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar1 == 0x13)) &&
@@ -13535,6 +14113,7 @@ void __cdecl GScr_IsPlayerNumber(void)
 
 {
   int iVar1;
+  int iEntNum;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar1 < 0) || (0x1f < iVar1)) {
@@ -13554,28 +14133,31 @@ void __cdecl GScr_IsPlayerNumber(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl GScr_SetWinningPlayer(void)
 
 {
-  char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  char local_40c [1024];
+  char *value;
+  char *s0;
+  int iVar1;
+  char *s1;
+  char *pszWinner;
+  int iWinner;
+  char cs [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *pEnt;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetEntity(0);
-  SV_GetConfigstring(0x15,local_40c,0x400);
-  pcVar1 = va("%i");
-  pcVar4 = pcVar1;
-  pcVar2 = Info_ValueForKey(local_40c,"winner");
-  iVar3 = I_stricmp(pcVar2,pcVar4);
-  if (iVar3 != 0) {
-    Info_SetValueForKey(local_40c,"winner",pcVar1);
-    SV_SetConfigstring(0x15,local_40c);
+  pEnt = Scr_GetEntity(0);
+  SV_GetConfigstring(0x15,cs,0x400);
+  value = va("%i");
+  s1 = value;
+  s0 = Info_ValueForKey(cs,"winner");
+  iVar1 = I_stricmp(s0,s1);
+  if (iVar1 != 0) {
+    Info_SetValueForKey(cs,"winner",value);
+    SV_SetConfigstring(0x15,cs);
   }
   return;
 }
@@ -13584,38 +14166,46 @@ void __cdecl GScr_SetWinningPlayer(void)
 // 00654A60  GScr_SetWinningTeam  (game_mp/g_scr_main_mp.cpp:10283)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_SetWinningTeam(void)
 
 {
   uint uVar1;
   char *pcVar2;
-  char *pcVar3;
-  char *pcVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  char local_40c [1028];
+  char *value;
+  char *s0;
+  int iVar3;
+  scriptInstance_t inst;
+  char *pszWinner;
+  ushort team;
+  int iWinner;
+  char cs [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((((uVar1 & 0xffff) == (uint)scr_const.allies) || ((uVar1 & 0xffff) == (uint)scr_const.axis))
      || ((uVar1 & 0xffff) == (uint)scr_const.none)) {
-    SV_GetConfigstring(0x15,local_40c,0x400);
-    pcVar3 = va("%i");
-    pcVar2 = pcVar3;
-    pcVar4 = Info_ValueForKey(local_40c,"winner");
-    iVar5 = I_stricmp(pcVar4,pcVar2);
-    if (iVar5 != 0) {
-      Info_SetValueForKey(local_40c,"winner",pcVar3);
-      SV_SetConfigstring(0x15,local_40c);
+    SV_GetConfigstring(0x15,cs,0x400);
+    value = va("%i");
+    pcVar2 = value;
+    s0 = Info_ValueForKey(cs,"winner");
+    iVar3 = I_stricmp(s0,pcVar2);
+    if (iVar3 != 0) {
+      Info_SetValueForKey(cs,"winner",value);
+      SV_SetConfigstring(0x15,cs);
     }
   }
   else {
-    sVar6 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
-    Scr_ParamError(0,pcVar2,sVar6);
+    Scr_ParamError(0,pcVar2,inst);
   }
   return;
 }
@@ -13624,27 +14214,31 @@ void __cdecl GScr_SetWinningTeam(void)
 // 00654BB0  GScr_Announcement  (game_mp/g_scr_main_mp.cpp:10325)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_Announcement(void)
 
 {
   uint uVar1;
   char *pcVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  uint uVar5;
-  char local_40c [1028];
+  char *errorContext;
+  scriptInstance_t inst;
+  uint stringLimit;
+  char string [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar5 = 0x400;
-  pcVar2 = local_40c;
-  pcVar3 = "Announcement";
+  stringLimit = 0x400;
+  pcVar2 = string;
+  errorContext = "Announcement";
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(0,uVar1 - 2,pcVar3,pcVar2,uVar5);
-  sVar4 = SCRIPTINSTANCE_SERVER;
+  Scr_ConstructMessageString(0,uVar1 - 2,errorContext,pcVar2,stringLimit);
+  inst = SCRIPTINSTANCE_SERVER;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_GetInt(uVar1 - 1,sVar4);
+  Scr_GetInt(uVar1 - 1,inst);
   pcVar2 = va("%c \"%s\" %i");
   SV_GameSendServerCommand(-1,SV_CMD_CAN_IGNORE,pcVar2);
   return;
@@ -13664,25 +14258,25 @@ void __cdecl GScr_ClientAnnouncement(void)
 {
   uint uVar1;
   char *pcVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  uint uVar5;
-  char local_40c [1024];
+  char *errorContext;
+  scriptInstance_t inst;
+  uint stringLimit;
+  char string [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *pEnt;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetEntity(0);
-  uVar5 = 0x400;
-  pcVar2 = local_40c;
-  pcVar3 = "Announcement";
+  pEnt = Scr_GetEntity(0);
+  stringLimit = 0x400;
+  pcVar2 = string;
+  errorContext = "Announcement";
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(1,uVar1 - 2,pcVar3,pcVar2,uVar5);
-  sVar4 = SCRIPTINSTANCE_SERVER;
+  Scr_ConstructMessageString(1,uVar1 - 2,errorContext,pcVar2,stringLimit);
+  inst = SCRIPTINSTANCE_SERVER;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_GetInt(uVar1 - 1,sVar4);
+  Scr_GetInt(uVar1 - 1,inst);
   pcVar2 = va("%c \"%s\" %i");
-  SV_GameSendServerCommand((local_8->s).number,SV_CMD_CAN_IGNORE,pcVar2);
+  SV_GameSendServerCommand((pEnt->s).number,SV_CMD_CAN_IGNORE,pcVar2);
   return;
 }
 
@@ -13698,24 +14292,25 @@ void __cdecl GScr_GetTeamScore(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  undefined1 uVar3;
-  int local_c;
+  char *error;
+  undefined1 force_terminal;
+  int iTeamScore;
+  ushort team;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if (((uVar1 & 0xffff) != (uint)scr_const.allies) && ((uVar1 & 0xffff) != (uint)scr_const.axis)) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("Illegal team string \'%s\'. Must be allies, or axis.");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("Illegal team string \'%s\'. Must be allies, or axis.");
+    Scr_Error(error,(bool)force_terminal);
   }
   if ((ushort)uVar1 == scr_const.allies) {
-    local_c = level.teamScores[2];
+    iTeamScore = level.teamScores[2];
   }
   else {
-    local_c = level.teamScores[1];
+    iTeamScore = level.teamScores[1];
   }
-  Scr_AddInt(local_c,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(iTeamScore,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -13733,14 +14328,16 @@ void __cdecl GScr_SetTeamScore(void)
   uint uVar1;
   char *pcVar2;
   int iVar3;
-  undefined1 uVar4;
+  undefined1 force_terminal;
+  ushort team;
+  int teamScore;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if (((uVar1 & 0xffff) != (uint)scr_const.allies) && ((uVar1 & 0xffff) != (uint)scr_const.axis)) {
-    uVar4 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Illegal team string \'%s\'. Must be allies, or axis.");
-    Scr_Error(pcVar2,(bool)uVar4);
+    Scr_Error(pcVar2,(bool)force_terminal);
   }
   iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   if ((uVar1 & 0xffff) == (uint)scr_const.allies) {
@@ -13769,6 +14366,7 @@ void __cdecl GScr_SetClientNameMode(void)
 
 {
   uint uVar1;
+  ushort mode;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar1 & 0xffff) == (uint)scr_const.auto_change) {
@@ -13800,24 +14398,24 @@ void __cdecl GScr_UpdateClientNames(void)
   int local_40;
   char *local_38;
   char *local_34;
-  gclient_s *local_30;
-  char local_2c [32];
+  gclient_s *cl;
+  char oldname [32];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (level.manualNameChange == 0) {
     Scr_Error("Only works in [manual_change] mode",false);
   }
-  local_8 = 0;
-  local_30 = level.clients;
+  i = 0;
+  cl = level.clients;
   do {
-    if (level.maxclients <= local_8) {
+    if (level.maxclients <= i) {
       return;
     }
-    if ((local_30->sess).connected == CON_CONNECTED) {
-      local_34 = (local_30->sess).newnetname;
-      local_38 = (local_30->sess).cs.name;
+    if ((cl->sess).connected == CON_CONNECTED) {
+      local_34 = (cl->sess).newnetname;
+      local_38 = (cl->sess).cs.name;
       do {
         bVar1 = *local_38;
         bVar2 = bVar1 < (byte)*local_34;
@@ -13836,13 +14434,13 @@ LAB_00654f8f:
       local_40 = 0;
 LAB_00654f97:
       if (local_40 != 0) {
-        I_strncpyz(local_2c,(local_30->sess).cs.name,0x20);
-        I_strncpyz((local_30->sess).cs.name,(local_30->sess).newnetname,0x20);
-        ClientUserinfoChanged(local_8);
+        I_strncpyz(oldname,(cl->sess).cs.name,0x20);
+        I_strncpyz((cl->sess).cs.name,(cl->sess).newnetname,0x20);
+        ClientUserinfoChanged(i);
       }
     }
-    local_8 = local_8 + 1;
-    local_30 = local_30 + 1;
+    i = i + 1;
+    cl = cl + 1;
   } while( true );
 }
 
@@ -13858,34 +14456,35 @@ void __cdecl GScr_GetTeamPlayersAlive(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  undefined1 uVar3;
-  int local_18;
-  team_t local_10;
-  int local_8;
+  char *error;
+  undefined1 force_terminal;
+  int iLivePlayers;
+  ushort team;
+  int iTeamNum;
+  gentity_s *pEnt;
+  int i;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if (((uVar1 & 0xffff) != (uint)scr_const.allies) && ((uVar1 & 0xffff) != (uint)scr_const.axis)) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("Illegal team string \'%s\'. Must be allies, or axis.");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("Illegal team string \'%s\'. Must be allies, or axis.");
+    Scr_Error(error,(bool)force_terminal);
   }
   if ((ushort)uVar1 == scr_const.allies) {
-    local_10 = TEAM_ALLIES;
+    iTeamNum = 2;
   }
   else {
-    local_10 = TEAM_AXIS;
+    iTeamNum = 1;
   }
-  local_18 = 0;
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    if (((g_entities[local_8].r.inuse != '\0') &&
-        (((g_entities[local_8].client)->sess).cs.team == local_10)) &&
-       (0 < g_entities[local_8].health)) {
-      local_18 = local_18 + 1;
+  iLivePlayers = 0;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (((g_entities[i].r.inuse != '\0') && (((g_entities[i].client)->sess).cs.team == iTeamNum)) &&
+       (0 < g_entities[i].health)) {
+      iLivePlayers = iLivePlayers + 1;
     }
   }
-  Scr_AddInt(local_18,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(iLivePlayers,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -13901,15 +14500,16 @@ void __cdecl GScr_GetDroppedWeapons(void)
 
 {
   int iVar1;
-  gentity_s *pgVar2;
-  int local_8;
+  gentity_s *ent_00;
+  gentity_s *ent;
+  int i;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    iVar1 = EntHandle::isDefined(level.droppedWeaponCue + local_8);
+  for (i = 0; i < 0x20; i = i + 1) {
+    iVar1 = EntHandle::isDefined(level.droppedWeaponCue + i);
     if (iVar1 != 0) {
-      pgVar2 = EntHandle::ent(level.droppedWeaponCue + local_8);
-      Scr_AddEntity(pgVar2,SCRIPTINSTANCE_SERVER);
+      ent_00 = EntHandle::ent(level.droppedWeaponCue + i);
+      Scr_AddEntity(ent_00,SCRIPTINSTANCE_SERVER);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -13922,16 +14522,17 @@ void __cdecl GScr_GetDroppedWeapons(void)
 void __cdecl GScr_GetNumParts(void)
 
 {
-  char *pcVar1;
-  XModel *pXVar2;
-  int iVar3;
-  scriptInstance_t sVar4;
+  char *name;
+  XModel *pose;
+  int value;
+  scriptInstance_t inst;
+  XModel *model;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pXVar2 = SV_XModelGet(pcVar1);
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  iVar3 = XModelNumBones(pXVar2);
-  Scr_AddInt(iVar3,sVar4);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  pose = SV_XModelGet(name);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = XModelNumBones(pose);
+  Scr_AddInt(value,inst);
   return;
 }
 
@@ -13943,23 +14544,27 @@ void __cdecl GScr_GetPartName(void)
 {
   ushort uVar1;
   char *pcVar2;
-  XModel *pXVar3;
+  XModel *pose;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
-  ushort *puVar6;
-  scriptInstance_t sVar7;
+  ushort *puVar5;
+  scriptInstance_t inst;
+  XModel *model;
+  ushort name;
+  uint index;
+  uint numbones;
   
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pXVar3 = SV_XModelGet(pcVar2);
-  uVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  uVar5 = XModelNumBones(pXVar3);
-  if (uVar5 <= uVar4) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
+  pose = SV_XModelGet(pcVar2);
+  uVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  uVar4 = XModelNumBones(pose);
+  if (uVar4 <= uVar3) {
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar2 = va("index out of range (0 - %d)");
-    Scr_ParamError(1,pcVar2,sVar7);
+    Scr_ParamError(1,pcVar2,inst);
   }
-  puVar6 = XModelBoneNames(pXVar3);
-  uVar1 = puVar6[uVar4];
+  puVar5 = XModelBoneNames(pose);
+  uVar1 = puVar5[uVar3];
   if (uVar1 == 0) {
     Scr_ParamError(0,"bad model",SCRIPTINSTANCE_SERVER);
   }
@@ -13983,40 +14588,42 @@ void __cdecl GScr_Earthquake(void)
   gentity_s *pgVar3;
   int iVar4;
   float fVar5;
-  float local_24 [4];
-  float local_14;
-  gentity_s *local_10;
-  float local_c;
-  float local_8;
+  int clientNum;
+  float source [3];
+  gentity_s *tent;
+  int duration;
+  gentity_s *target;
+  float radius;
+  float scale;
   
-  local_8 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  scale = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   fVar5 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  local_14 = (float)(int)ROUND(fVar5 * 1000.0 + 9.313226e-10);
-  Scr_GetVector(2,local_24,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  if (local_8 <= 0.0) {
+  duration = (int)ROUND(fVar5 * 1000.0 + 9.313226e-10);
+  Scr_GetVector(2,source,SCRIPTINSTANCE_SERVER);
+  radius = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  if (scale <= 0.0) {
     Scr_ParamError(0,"Scale must be greater than 0",SCRIPTINSTANCE_SERVER);
   }
-  if ((int)local_14 < 1) {
+  if (duration < 1) {
     Scr_ParamError(1,"duration must be greater than 0",SCRIPTINSTANCE_SERVER);
   }
-  if (local_c <= 0.0) {
+  if (radius <= 0.0) {
     Scr_ParamError(3,"Radius must be greater than 0",SCRIPTINSTANCE_SERVER);
   }
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 < 5) {
-    local_10 = (gentity_s *)0x0;
+    target = (gentity_s *)0x0;
   }
   else {
-    local_10 = Scr_GetEntity(4);
+    target = Scr_GetEntity(4);
   }
-  pgVar3 = G_TempEntity(local_24,0x58);
-  (pgVar3->s).lerp.u.turret.gunAngles[0] = local_8;
-  (pgVar3->s).lerp.u.turret.gunAngles[2] = local_14;
-  (pgVar3->s).lerp.u.turret.gunAngles[1] = local_c;
-  if ((local_10 != (gentity_s *)0x0) && (local_10->client != (gclient_s *)0x0)) {
+  pgVar3 = G_TempEntity(source,0x58);
+  (pgVar3->s).lerp.u.turret.gunAngles[0] = scale;
+  (pgVar3->s).lerp.u.actor.team = duration;
+  (pgVar3->s).lerp.u.turret.gunAngles[1] = radius;
+  if ((target != (gentity_s *)0x0) && (target->client != (gclient_s *)0x0)) {
     (pgVar3->r).clientMask[0] = -1;
-    bVar1 = (local_10->client->ps).clientNum;
+    bVar1 = (target->client->ps).clientNum;
     iVar4 = (int)(uint)bVar1 >> 5;
     (pgVar3->r).clientMask[iVar4] = ~(1 << (bVar1 & 0x1f)) & (pgVar3->r).clientMask[iVar4];
   }
@@ -14034,7 +14641,7 @@ void __cdecl GScr_Earthquake(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ShellShock(scr_entref_t param_1)
+void __cdecl GScr_ShellShock(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
@@ -14048,23 +14655,27 @@ void __cdecl GScr_ShellShock(scr_entref_t param_1)
   DWORD DVar8;
   uint extraout_EDX;
   float fVar9;
-  scriptInstance_t sVar10;
-  char local_40c [1024];
+  scriptInstance_t inst;
+  int duration;
+  char *shock;
+  PIXProfile pp;
+  gentity_s *ent;
+  char s [1024];
   uint local_c;
-  int local_8;
+  int id;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"GScr_ShellShock");
   SV_CheckThread();
-  pgVar4 = GetPlayerEntity(param_1);
+  pgVar4 = GetPlayerEntity(entref);
   uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar5 != 2) {
     Scr_Error("USAGE: <player> shellshock(<shellshockname>, <duration>)\n",false);
   }
   pcVar6 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_8 = 1;
+  id = 1;
   while( true ) {
-    if (0xf < local_8) {
+    if (0xf < id) {
       bVar3 = false;
       pcVar6 = va("shellshock \'%s\' was not precached\n");
       Scr_Error(pcVar6,bVar3);
@@ -14074,19 +14685,19 @@ void __cdecl GScr_ShellShock(scr_entref_t param_1)
       }
       return;
     }
-    SV_GetConfigstring(local_8 + 0x9e4,local_40c,0x400);
-    iVar7 = I_stricmp(local_40c,pcVar6);
+    SV_GetConfigstring(id + 0x9e4,s,0x400);
+    iVar7 = I_stricmp(s,pcVar6);
     if (iVar7 == 0) break;
-    local_8 = local_8 + 1;
+    id = id + 1;
   }
   fVar9 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   iVar7 = (int)ROUND(fVar9 * 1000.0 + 9.313226e-10);
   if ((iVar7 < 0) || (60000 < iVar7)) {
-    sVar10 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar6 = va("duration %g should be >= 0 and <= 60");
-    Scr_ParamError(1,pcVar6,sVar10);
+    Scr_ParamError(1,pcVar6,inst);
   }
-  (pgVar4->client->ps).shellshockIndex = local_8;
+  (pgVar4->client->ps).shellshockIndex = id;
   (pgVar4->client->ps).shellshockTime = level.time;
   (pgVar4->client->ps).shellshockDuration = iVar7;
   pgVar1 = pgVar4->client;
@@ -14128,13 +14739,14 @@ void __cdecl GScr_ShellShock(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopShellShock(scr_entref_t param_1)
+void __cdecl GScr_StopShellShock(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
+  gentity_s *ent;
   
-  pgVar1 = GetPlayerEntity(param_1);
+  pgVar1 = GetPlayerEntity(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 0) {
     Scr_Error("USAGE: <player> stopshellshock()\n",false);
@@ -14155,53 +14767,53 @@ void __cdecl GScr_StopShellShock(scr_entref_t param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-GScr_UpdateTagInternal(gentity_s *param_1,uint param_2,cached_tag_mat_t *param_3,int param_4)
+GScr_UpdateTagInternal(gentity_s *ent,uint tagName,cached_tag_mat_t *cachedTag,int showScriptError)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  uint uVar5;
-  scriptInstance_t sVar6;
-  scriptInstance_t sVar7;
+  uint stringValue;
+  scriptInstance_t sVar5;
+  scriptInstance_t inst;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x29d4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((param_1->s).number != param_3->entnum) || (level.time != param_3->time)) ||
-     (param_2 != param_3->name)) {
-    iVar3 = SV_DObjExists(param_1);
+  if ((((ent->s).number != cachedTag->entnum) || (level.time != cachedTag->time)) ||
+     (tagName != cachedTag->name)) {
+    iVar3 = SV_DObjExists(ent);
     if (iVar3 == 0) {
-      if (param_4 != 0) {
-        sVar6 = SCRIPTINSTANCE_SERVER;
-        SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+      if (showScriptError != 0) {
+        sVar5 = SCRIPTINSTANCE_SERVER;
+        SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
         pcVar4 = va("entity has no model defined (classname \'%s\')");
-        Scr_ObjectError(pcVar4,sVar6);
+        Scr_ObjectError(pcVar4,sVar5);
       }
       return 0;
     }
-    iVar3 = G_DObjGetWorldTagMatrix(param_1,param_2,param_3->tagMat);
+    iVar3 = G_DObjGetWorldTagMatrix(ent,tagName,cachedTag->tagMat);
     if (iVar3 == 0) {
-      if (param_4 != 0) {
-        SV_DObjDumpInfo(param_1);
-        sVar7 = SCRIPTINSTANCE_SERVER;
-        sVar6 = SCRIPTINSTANCE_SERVER;
-        uVar5 = G_ModelName((uint)param_1->model);
-        SL_ConvertToString(uVar5,sVar6);
-        SL_ConvertToString(param_2,SCRIPTINSTANCE_SERVER);
+      if (showScriptError != 0) {
+        SV_DObjDumpInfo(ent);
+        inst = SCRIPTINSTANCE_SERVER;
+        sVar5 = SCRIPTINSTANCE_SERVER;
+        stringValue = G_ModelName((uint)ent->model);
+        SL_ConvertToString(stringValue,sVar5);
+        SL_ConvertToString(tagName,SCRIPTINSTANCE_SERVER);
         pcVar4 = va("tag \'%s\' does not exist in model \'%s\' (or any attached submodels)");
-        Scr_ParamError(0,pcVar4,sVar7);
+        Scr_ParamError(0,pcVar4,inst);
       }
       return 0;
     }
-    param_3->entnum = (param_1->s).number;
-    param_3->time = level.time;
-    Scr_SetString(&param_3->name,param_2,SCRIPTINSTANCE_SERVER);
+    cachedTag->entnum = (ent->s).number;
+    cachedTag->time = level.time;
+    Scr_SetString(&cachedTag->name,tagName,SCRIPTINSTANCE_SERVER);
   }
   return 1;
 }
@@ -14214,15 +14826,17 @@ GScr_UpdateTagInternal(gentity_s *param_1,uint param_2,cached_tag_mat_t *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetTagOrigin(scr_entref_t param_1)
+void __cdecl GScr_GetTagOrigin(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  uint uVar2;
+  gentity_s *ent_00;
+  uint tagName_00;
+  uint tagName;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  uVar2 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
-  GScr_UpdateTagInternal(pgVar1,uVar2,&level.cachedTagMat,1);
+  ent_00 = GetEntity(entref);
+  tagName_00 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
+  GScr_UpdateTagInternal(ent_00,tagName_00,&level.cachedTagMat,1);
   Scr_AddVector(level.cachedTagMat.tagMat[3],SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -14235,28 +14849,29 @@ void __cdecl GScr_GetTagOrigin(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetTagAngles(scr_entref_t param_1)
+void __cdecl GScr_GetTagAngles(scr_entref_t entref)
 
 {
-  uint uVar1;
-  float local_14 [3];
-  gentity_s *local_8;
+  uint tagName_00;
+  uint tagName;
+  float angles [3];
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  uVar1 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
-  GScr_UpdateTagInternal(local_8,uVar1,&level.cachedTagMat,1);
-  AxisToAngles(level.cachedTagMat.tagMat,local_14);
-  Scr_AddVector(local_14,SCRIPTINSTANCE_SERVER);
+  ent = GetEntity(entref);
+  tagName_00 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_SERVER);
+  GScr_UpdateTagInternal(ent,tagName_00,&level.cachedTagMat,1);
+  AxisToAngles(level.cachedTagMat.tagMat,angles);
+  Scr_AddVector(angles,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00655A60  GScr_GetEntnum  (game_mp/g_scr_main_mp.cpp:10777)
 
-void __cdecl GScr_GetEntnum(scr_entref_t param_1)
+void __cdecl GScr_GetEntnum(scr_entref_t entref)
 
 {
-  Scr_AddInt((uint)param_1.entnum,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((uint)entref.entnum,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -14268,7 +14883,7 @@ void __cdecl GScr_GetEntnum(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetDepthOfField(scr_entref_t param_1)
+void __cdecl GScr_SetDepthOfField(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
@@ -14277,32 +14892,35 @@ void __cdecl GScr_SetDepthOfField(scr_entref_t param_1)
   float fVar4;
   float fVar5;
   scriptInstance_t sVar6;
-  float local_18;
-  float local_14;
-  float local_c;
-  float local_8;
+  float dofNearBlur;
+  float dofFarBlur;
+  float dofNearStart;
+  float dofFarStart;
+  gentity_s *ent;
+  float dofFarEnd;
+  float dofNearEnd;
   
-  pgVar1 = GetPlayerEntity(param_1);
+  pgVar1 = GetPlayerEntity(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 6) {
     Scr_Error("Incorrect number of parameters\n",false);
   }
-  local_18 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  local_14 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  dofNearStart = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  dofNearEnd = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  dofFarStart = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  dofFarEnd = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   fVar4 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
   fVar5 = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
-  if (local_18 < 0.0) {
+  if (dofNearStart < 0.0) {
     Scr_ParamError(0,"near start must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  if (local_8 < 0.0) {
+  if (dofNearEnd < 0.0) {
     Scr_ParamError(1,"near end must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  if (local_14 < 0.0) {
+  if (dofFarStart < 0.0) {
     Scr_ParamError(2,"far start must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  if (local_c < 0.0) {
+  if (dofFarEnd < 0.0) {
     Scr_ParamError(3,"far end must be >= 0",SCRIPTINSTANCE_SERVER);
   }
   if ((fVar4 < 4.0) || (10.0 < fVar4)) {
@@ -14315,23 +14933,23 @@ void __cdecl GScr_SetDepthOfField(scr_entref_t param_1)
     pcVar3 = va("far blur should be >= %g and <= near blur");
     Scr_ParamError(5,pcVar3,sVar6);
   }
-  if (local_8 <= local_18) {
-    local_18 = 0.0;
-    local_8 = 0.0;
+  if (dofNearEnd <= dofNearStart) {
+    dofNearStart = 0.0;
+    dofNearEnd = 0.0;
   }
-  if ((local_c <= local_14) || (fVar5 == 0.0)) {
-    local_14 = 0.0;
-    local_c = 0.0;
+  if ((dofFarEnd <= dofFarStart) || (fVar5 == 0.0)) {
+    dofFarStart = 0.0;
+    dofFarEnd = 0.0;
   }
-  else if (local_14 < local_8) {
+  else if (dofFarStart < dofNearEnd) {
     Scr_ParamError(2,
                    "far start must be >= near end, or far depth of field should be disabled with far start >= far end or far blur == 0"
                    ,SCRIPTINSTANCE_SERVER);
   }
-  (pgVar1->client->ps).dofNearStart = local_18;
-  (pgVar1->client->ps).dofNearEnd = local_8;
-  (pgVar1->client->ps).dofFarStart = local_14;
-  (pgVar1->client->ps).dofFarEnd = local_c;
+  (pgVar1->client->ps).dofNearStart = dofNearStart;
+  (pgVar1->client->ps).dofNearEnd = dofNearEnd;
+  (pgVar1->client->ps).dofFarStart = dofFarStart;
+  (pgVar1->client->ps).dofFarEnd = dofFarEnd;
   (pgVar1->client->ps).dofNearBlur = fVar4;
   (pgVar1->client->ps).dofFarBlur = fVar5;
   return;
@@ -14345,28 +14963,29 @@ void __cdecl GScr_SetDepthOfField(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetViewModelDepthOfField(scr_entref_t param_1)
+void __cdecl GScr_SetViewModelDepthOfField(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  float local_c;
-  float local_8;
+  gentity_s *ent;
+  float dofEnd;
+  float dofStart;
   
-  pgVar1 = GetPlayerEntity(param_1);
-  local_8 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  if (local_8 < 0.0) {
+  pgVar1 = GetPlayerEntity(entref);
+  dofStart = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  dofEnd = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  if (dofStart < 0.0) {
     Scr_ParamError(0,"start must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  if (local_c < 0.0) {
+  if (dofEnd < 0.0) {
     Scr_ParamError(1,"end must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  if (local_c <= local_8) {
-    local_8 = 0.0;
-    local_c = 0.0;
+  if (dofEnd <= dofStart) {
+    dofStart = 0.0;
+    dofEnd = 0.0;
   }
-  (pgVar1->client->ps).dofViewmodelStart = local_8;
-  (pgVar1->client->ps).dofViewmodelEnd = local_c;
+  (pgVar1->client->ps).dofViewmodelStart = dofStart;
+  (pgVar1->client->ps).dofViewmodelEnd = dofEnd;
   return;
 }
 
@@ -14378,37 +14997,37 @@ void __cdecl GScr_SetViewModelDepthOfField(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ViewKick(scr_entref_t param_1)
+void __cdecl GScr_ViewKick(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
   gclient_s *pgVar2;
   uint uVar3;
   int iVar4;
-  char *pcVar5;
-  undefined1 uVar6;
-  float local_14;
+  char *error;
+  undefined1 force_terminal;
+  float origin;
   float local_10;
   float local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
-  local_8 = GetPlayerEntity(param_1);
+  ent = GetPlayerEntity(entref);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 2) {
     Scr_Error("USAGE: <player> viewkick <force 0-127> <source position>\n",false);
   }
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  local_8->client->damage_blood = (iVar4 * local_8->maxHealth + 0x32) / 100;
-  if (local_8->client->damage_blood < 0) {
-    uVar6 = 0;
+  ent->client->damage_blood = (iVar4 * ent->maxHealth + 0x32) / 100;
+  if (ent->client->damage_blood < 0) {
+    force_terminal = 0;
     Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    pcVar5 = va("viewkick: damage %g < 0\n");
-    Scr_Error(pcVar5,(bool)uVar6);
+    error = va("viewkick: damage %g < 0\n");
+    Scr_Error(error,(bool)force_terminal);
   }
-  Scr_GetVector(1,&local_14,SCRIPTINSTANCE_SERVER);
-  pgVar1 = local_8->client;
-  pgVar2 = local_8->client;
-  pgVar1->damage_from[0] = (pgVar2->ps).origin[0] - local_14;
+  Scr_GetVector(1,&origin,SCRIPTINSTANCE_SERVER);
+  pgVar1 = ent->client;
+  pgVar2 = ent->client;
+  pgVar1->damage_from[0] = (pgVar2->ps).origin[0] - origin;
   pgVar1->damage_from[1] = (pgVar2->ps).origin[1] - local_10;
   pgVar1->damage_from[2] = (pgVar2->ps).origin[2] - local_c;
   return;
@@ -14422,24 +15041,24 @@ void __cdecl GScr_ViewKick(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_LocalToWorldCoords(scr_entref_t param_1)
+void __cdecl GScr_LocalToWorldCoords(scr_entref_t entref)
 
 {
-  float local_44 [3];
-  float local_38;
+  float vLocal [3];
+  float vWorld;
   float local_34;
   float local_30;
-  gentity_s *local_2c;
-  float local_28 [9];
+  gentity_s *ent;
+  float axis [9];
   
-  local_2c = GetEntity(param_1);
-  Scr_GetVector(0,local_44,SCRIPTINSTANCE_SERVER);
-  AnglesToAxis((local_2c->r).currentAngles,(float (*) [3])local_28);
-  MatrixTransformVector(local_44,(float (*) [3])local_28,&local_38);
-  local_38 = local_38 + (local_2c->r).currentOrigin[0];
-  local_34 = local_34 + (local_2c->r).currentOrigin[1];
-  local_30 = local_30 + (local_2c->r).currentOrigin[2];
-  Scr_AddVector(&local_38,SCRIPTINSTANCE_SERVER);
+  ent = GetEntity(entref);
+  Scr_GetVector(0,vLocal,SCRIPTINSTANCE_SERVER);
+  AnglesToAxis((ent->r).currentAngles,(float (*) [3])axis);
+  MatrixTransformVector(vLocal,(float (*) [3])axis,&vWorld);
+  vWorld = vWorld + (ent->r).currentOrigin[0];
+  local_34 = local_34 + (ent->r).currentOrigin[1];
+  local_30 = local_30 + (ent->r).currentOrigin[2];
+  Scr_AddVector(&vWorld,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -14451,14 +15070,16 @@ void __cdecl GScr_LocalToWorldCoords(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetRightArc(scr_entref_t param_1)
+void __cdecl GScr_SetRightArc(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   gentity_s *pgVar2;
   float fVar3;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   pTVar1 = pgVar2->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     Scr_Error("entity is not a turret",false);
@@ -14479,14 +15100,16 @@ void __cdecl GScr_SetRightArc(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetLeftArc(scr_entref_t param_1)
+void __cdecl GScr_SetLeftArc(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   gentity_s *pgVar2;
   float fVar3;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   pTVar1 = pgVar2->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     Scr_Error("entity is not a turret",false);
@@ -14507,14 +15130,16 @@ void __cdecl GScr_SetLeftArc(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTopArc(scr_entref_t param_1)
+void __cdecl GScr_SetTopArc(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   gentity_s *pgVar2;
   float fVar3;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   pTVar1 = pgVar2->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     Scr_Error("entity is not a turret",false);
@@ -14535,14 +15160,16 @@ void __cdecl GScr_SetTopArc(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetBottomArc(scr_entref_t param_1)
+void __cdecl GScr_SetBottomArc(scr_entref_t entref)
 
 {
   TurretInfo *pTVar1;
   gentity_s *pgVar2;
   float fVar3;
+  TurretInfo *pTurretInfo;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   pTVar1 = pgVar2->pTurretInfo;
   if (pTVar1 == (TurretInfo *)0x0) {
     Scr_Error("entity is not a turret",false);
@@ -14564,55 +15191,55 @@ void __cdecl GScr_SetBottomArc(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_PlaceSpawnPoint(scr_entref_t param_1)
+void __cdecl GScr_PlaceSpawnPoint(scr_entref_t entref)
 
 {
   ushort uVar1;
-  col_context_t local_84;
-  float local_5c;
+  col_context_t context;
+  float vEnd;
   float local_58;
   float local_54;
-  float4 local_50;
+  float4 trace;
   float local_40;
   char local_26;
   uint local_18;
-  gentity_s *local_14;
-  float local_10;
+  gentity_s *pEnt;
+  float vStart;
   float local_c;
   float local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  col_context_t::col_context_t(&local_84);
-  local_14 = GetEntity(param_1);
-  local_10 = (local_14->r).currentOrigin[0];
-  local_c = (local_14->r).currentOrigin[1];
-  local_8 = (local_14->r).currentOrigin[2];
-  local_5c = (local_14->r).currentOrigin[0];
-  local_58 = (local_14->r).currentOrigin[1];
-  local_54 = (local_14->r).currentOrigin[2] + 128.0;
-  G_TraceCapsule((trace_t *)&local_50,&local_10,playerMins,playerMaxs,&local_5c,(local_14->s).number
-                 ,0x2818011,&local_84);
-  Vec3Lerp(&local_10,&local_5c,local_40,&local_10);
-  local_5c = local_10;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  pEnt = GetEntity(entref);
+  vStart = (pEnt->r).currentOrigin[0];
+  local_c = (pEnt->r).currentOrigin[1];
+  local_8 = (pEnt->r).currentOrigin[2];
+  vEnd = (pEnt->r).currentOrigin[0];
+  local_58 = (pEnt->r).currentOrigin[1];
+  local_54 = (pEnt->r).currentOrigin[2] + 128.0;
+  G_TraceCapsule((trace_t *)&trace,&vStart,playerMins,playerMaxs,&vEnd,(pEnt->s).number,0x2818011,
+                 &context);
+  Vec3Lerp(&vStart,&vEnd,local_40,&vStart);
+  vEnd = vStart;
   local_58 = local_c;
   local_54 = local_8 - 262144.0;
-  G_TraceCapsule((trace_t *)&local_50,&local_10,playerMins,playerMaxs,&local_5c,(local_14->s).number
-                 ,0x2818011,&local_84);
-  uVar1 = Trace_GetEntityHitId((trace_t *)&local_50);
-  (local_14->s).groundEntityNum = uVar1;
-  g_entities[(local_14->s).groundEntityNum].flags =
-       g_entities[(local_14->s).groundEntityNum].flags | 0x100000;
-  Vec3Lerp(&local_10,&local_5c,local_40,&local_10);
-  G_TraceCapsule((trace_t *)&local_50,&local_10,playerMins,playerMaxs,&local_10,(local_14->s).number
-                 ,0x2818011,&local_84);
+  G_TraceCapsule((trace_t *)&trace,&vStart,playerMins,playerMaxs,&vEnd,(pEnt->s).number,0x2818011,
+                 &context);
+  uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+  (pEnt->s).groundEntityNum = uVar1;
+  g_entities[(pEnt->s).groundEntityNum].flags =
+       g_entities[(pEnt->s).groundEntityNum].flags | 0x100000;
+  Vec3Lerp(&vStart,&vEnd,local_40,&vStart);
+  G_TraceCapsule((trace_t *)&trace,&vStart,playerMins,playerMaxs,&vStart,(pEnt->s).number,0x2818011,
+                 &context);
   if (local_26 != '\0') {
     Com_PrintWarning(0x18,"WARNING: Spawn point entity %i is in solid at (%i, %i, %i)\n");
   }
-  G_SetOrigin(local_14,&local_10);
+  G_SetOrigin(pEnt,&vStart);
   return;
 }
 
@@ -14624,49 +15251,51 @@ void __cdecl GScr_PlaceSpawnPoint(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_SendFaceEvent(scr_entref_t param_1)
+void __cdecl ScrCmd_SendFaceEvent(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  uint uVar2;
+  gentity_s *ent_00;
+  uint uVar1;
+  ushort face_event;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  uVar2 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  if ((uVar2 & 0xffff) == (uint)scr_const.face_casual) {
-    G_AddEvent(pgVar1,0xc5,0);
+  ent_00 = GetEntity(entref);
+  uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  if ((uVar1 & 0xffff) == (uint)scr_const.face_casual) {
+    G_AddEvent(ent_00,0xc5,0);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_alert) {
-    G_AddEvent(pgVar1,0xc5,1);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_alert) {
+    G_AddEvent(ent_00,0xc5,1);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_cqb) {
-    G_AddEvent(pgVar1,0xc5,2);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_cqb) {
+    G_AddEvent(ent_00,0xc5,2);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_running) {
-    G_AddEvent(pgVar1,0xc5,3);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_running) {
+    G_AddEvent(ent_00,0xc5,3);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_shoot_single) {
-    G_AddEvent(pgVar1,0xc5,4);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_shoot_single) {
+    G_AddEvent(ent_00,0xc5,4);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_shoot_burst) {
-    G_AddEvent(pgVar1,0xc5,5);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_shoot_burst) {
+    G_AddEvent(ent_00,0xc5,5);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_react) {
-    G_AddEvent(pgVar1,0xc5,7);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_react) {
+    G_AddEvent(ent_00,0xc5,7);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_talk) {
-    G_AddEvent(pgVar1,0xc5,8);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_talk) {
+    G_AddEvent(ent_00,0xc5,8);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_talk_long) {
-    G_AddEvent(pgVar1,0xc5,9);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_talk_long) {
+    G_AddEvent(ent_00,0xc5,9);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_pain) {
-    G_AddEvent(pgVar1,0xc5,10);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_pain) {
+    G_AddEvent(ent_00,0xc5,10);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_death) {
-    G_AddEvent(pgVar1,0xc5,0xb);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_death) {
+    G_AddEvent(ent_00,0xc5,0xb);
   }
-  else if ((uVar2 & 0xffff) == (uint)scr_const.face_melee) {
-    G_AddEvent(pgVar1,0xc5,6);
+  else if ((uVar1 & 0xffff) == (uint)scr_const.face_melee) {
+    G_AddEvent(ent_00,0xc5,6);
   }
   else {
     Com_PrintError(0x13,"Invalid face state specified by script\n");
@@ -14682,22 +15311,21 @@ void __cdecl ScrCmd_SendFaceEvent(scr_entref_t param_1)
 void __cdecl GScr_TestSpawnPoint(void)
 
 {
-  col_context_t local_74;
-  float4 local_4c [2];
+  col_context_t context;
+  float4 trace [2];
   char local_22;
   char local_21;
   uint local_14;
-  float local_10 [3];
+  float point [3];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c[0].v[0] = 0.0;
-  local_4c[0].v[1] = 0.0;
-  local_4c[0].v[2] = 0.0;
-  local_4c[0].v[3] = 0.0;
-  col_context_t::col_context_t(&local_74);
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  G_TraceCapsule((trace_t *)local_4c,local_10,playerMins,playerMaxs,local_10,0x3ff,0x810011,
-                 &local_74);
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  Scr_GetVector(0,point,SCRIPTINSTANCE_SERVER);
+  G_TraceCapsule((trace_t *)trace,point,playerMins,playerMaxs,point,0x3ff,0x810011,&context);
   if ((local_21 == '\0') && (local_22 == '\0')) {
     Scr_AddBool(1,SCRIPTINSTANCE_SERVER);
   }
@@ -14755,6 +15383,7 @@ void __cdecl GScr_LoadMap(void)
   char *pcVar2;
   int iVar3;
   char *local_c;
+  char *mapname;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
@@ -14841,15 +15470,17 @@ void __cdecl GScr_KillServer(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl GScr_AddTestClient(void)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent_00;
+  gentity_s *ent;
   
-  pgVar1 = SV_AddTestClient();
-  if (pgVar1 != (gentity_s *)0x0) {
-    Scr_AddEntity(pgVar1,SCRIPTINSTANCE_SERVER);
+  ent_00 = SV_AddTestClient();
+  if (ent_00 != (gentity_s *)0x0) {
+    Scr_AddEntity(ent_00,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -14858,6 +15489,10 @@ void __cdecl GScr_AddTestClient(void)
 // 00656960  GScr_MakeDvarServerInfo  (game_mp/g_scr_main_mp.cpp:11263)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_MakeDvarServerInfo(void)
 
@@ -14865,43 +15500,43 @@ void __cdecl GScr_MakeDvarServerInfo(void)
   bool bVar1;
   char *pcVar2;
   uint uVar3;
-  char *pcVar4;
-  uint uVar5;
-  char local_81c [1024];
-  char local_41c [1028];
+  char *errorContext;
+  uint stringLimit;
+  char string [1024];
+  char outString [1028];
   uint local_18;
-  char *local_14;
-  int local_10;
-  dvar_s *local_c;
-  char *local_8;
+  char *dvarName;
+  int type;
+  dvar_s *dvar;
+  char *dvarValue;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = Dvar_IsValidName(local_14);
+  dvarName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  bVar1 = Dvar_IsValidName(dvarName);
   if (!bVar1) {
     bVar1 = false;
     pcVar2 = va("Dvar %s has an invalid dvar name");
     Scr_Error(pcVar2,bVar1);
   }
-  local_c = Dvar_FindVar(local_14);
-  if (local_c == (dvar_s *)0x0) {
-    local_10 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
-    if (local_10 == 3) {
-      uVar5 = 0x400;
-      pcVar2 = local_81c;
-      pcVar4 = "Dvar Value";
+  dvar = Dvar_FindVar(dvarName);
+  if (dvar == (dvar_s *)0x0) {
+    type = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
+    if (type == 3) {
+      stringLimit = 0x400;
+      pcVar2 = string;
+      errorContext = "Dvar Value";
       uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-      Scr_ConstructMessageString(1,uVar3 - 1,pcVar4,pcVar2,uVar5);
-      local_8 = local_81c;
+      Scr_ConstructMessageString(1,uVar3 - 1,errorContext,pcVar2,stringLimit);
+      dvarValue = string;
     }
     else {
-      local_8 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+      dvarValue = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
     }
-    CleanDvarValue(local_8,local_41c,0x400);
-    _Dvar_RegisterString(local_14,local_8,0x4500,"Script defined user info dvar");
+    CleanDvarValue(dvarValue,outString,0x400);
+    _Dvar_RegisterString(dvarName,dvarValue,0x4500,"Script defined user info dvar");
   }
   else {
-    Dvar_AddFlags(local_c,0x500);
+    Dvar_AddFlags(dvar,0x500);
   }
   return;
 }
@@ -14923,7 +15558,9 @@ void __cdecl GScr_SetBombTimer(void)
   char *pcVar4;
   int iVar5;
   int iVar6;
-  bool bVar7;
+  bool force_terminal;
+  char *name;
+  int value;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   iVar1 = level.matchState.archivedState.bombTimer[0];
@@ -14941,9 +15578,9 @@ void __cdecl GScr_SetBombTimer(void)
         iVar2 = iVar5, iVar6 != 0)) &&
        (iVar5 = I_stricmp("secondary",pcVar4), iVar1 = level.matchState.archivedState.bombTimer[0],
        iVar5 != 0)) {
-      bVar7 = false;
+      force_terminal = false;
       pcVar4 = va("GScr_SetBombTimer: Unknown bomb timer name %s");
-      Scr_Error(pcVar4,bVar7);
+      Scr_Error(pcVar4,force_terminal);
       iVar1 = level.matchState.archivedState.bombTimer[0];
       iVar2 = level.matchState.archivedState.bombTimer[1];
     }
@@ -14968,8 +15605,10 @@ void __cdecl GScr_SetMatchTalkFlag(void)
   char *pcVar2;
   int iVar3;
   int iVar4;
-  bool bVar5;
-  uint local_c;
+  bool force_terminal;
+  char *flagName;
+  int flagBit;
+  int value;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 2) {
@@ -14977,44 +15616,44 @@ void __cdecl GScr_SetMatchTalkFlag(void)
     iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     iVar4 = I_stricmp("EveryoneHearsEveryone",pcVar2);
     if (iVar4 == 0) {
-      local_c = 1;
+      flagBit = 1;
     }
     else {
       iVar4 = I_stricmp("DeadChatWithDead",pcVar2);
       if (iVar4 == 0) {
-        local_c = 2;
+        flagBit = 2;
       }
       else {
         iVar4 = I_stricmp("DeadChatWithTeam",pcVar2);
         if (iVar4 == 0) {
-          local_c = 4;
+          flagBit = 4;
         }
         else {
           iVar4 = I_stricmp("DeadHearTeamLiving",pcVar2);
           if (iVar4 == 0) {
-            local_c = 8;
+            flagBit = 8;
           }
           else {
             iVar4 = I_stricmp("DeadHearAllLiving",pcVar2);
             if (iVar4 != 0) {
-              bVar5 = false;
+              force_terminal = false;
               pcVar2 = va("GScr_SetMatchTalkFlag: Couldn\'t find a matching bit for flag name : %s "
                          );
-              Scr_Error(pcVar2,bVar5);
+              Scr_Error(pcVar2,force_terminal);
               return;
             }
-            local_c = 0x10;
+            flagBit = 0x10;
           }
         }
       }
     }
     if (iVar3 == 0) {
       level.matchState.unarchivedState.talkFlags =
-           ~local_c & level.matchState.unarchivedState.talkFlags;
+           ~flagBit & level.matchState.unarchivedState.talkFlags;
     }
     else {
       level.matchState.unarchivedState.talkFlags =
-           level.matchState.unarchivedState.talkFlags | local_c;
+           level.matchState.unarchivedState.talkFlags | flagBit;
     }
   }
   return;
@@ -15031,99 +15670,103 @@ void __cdecl GScr_SetMatchTalkFlag(void)
 void __cdecl GScr_SetMatchFlag(void)
 
 {
-  byte bVar1;
-  uint uVar2;
-  char *pcVar3;
+  uint uVar1;
+  char *pcVar2;
+  int iVar3;
   int iVar4;
-  int iVar5;
+  sbyte sVar5;
   bool bVar6;
+  char *flagName;
+  bool archived;
+  int flagBit;
+  int value;
   
   bVar6 = true;
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 == 2) {
-    pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    iVar5 = I_stricmp("radar_allies",pcVar3);
-    if (iVar5 == 0) {
-      bVar1 = 6;
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 == 2) {
+    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    iVar4 = I_stricmp("radar_allies",pcVar2);
+    if (iVar4 == 0) {
+      flagBit = 6;
     }
     else {
-      iVar5 = I_stricmp("radar_axis",pcVar3);
-      if (iVar5 == 0) {
-        bVar1 = 7;
+      iVar4 = I_stricmp("radar_axis",pcVar2);
+      if (iVar4 == 0) {
+        flagBit = 7;
       }
       else {
-        iVar5 = I_stricmp("bomb_timer",pcVar3);
-        if (iVar5 == 0) {
-          bVar1 = 9;
+        iVar4 = I_stricmp("bomb_timer",pcVar2);
+        if (iVar4 == 0) {
+          flagBit = 9;
         }
         else {
-          iVar5 = I_stricmp("bomb_timer_a",pcVar3);
-          if (iVar5 == 0) {
-            bVar1 = 10;
+          iVar4 = I_stricmp("bomb_timer_a",pcVar2);
+          if (iVar4 == 0) {
+            flagBit = 10;
           }
           else {
-            iVar5 = I_stricmp("bomb_timer_b",pcVar3);
-            if (iVar5 == 0) {
-              bVar1 = 0xb;
+            iVar4 = I_stricmp("bomb_timer_b",pcVar2);
+            if (iVar4 == 0) {
+              flagBit = 0xb;
             }
             else {
-              iVar5 = I_stricmp("bomb_timer_b",pcVar3);
-              if (iVar5 == 0) {
-                bVar1 = 0xb;
+              iVar4 = I_stricmp("bomb_timer_b",pcVar2);
+              if (iVar4 == 0) {
+                flagBit = 0xb;
               }
               else {
-                iVar5 = I_stricmp("ammocounterhide",pcVar3);
-                if (iVar5 == 0) {
-                  bVar1 = 0xc;
+                iVar4 = I_stricmp("ammocounterhide",pcVar2);
+                if (iVar4 == 0) {
+                  flagBit = 0xc;
                 }
                 else {
-                  iVar5 = I_stricmp("enable_popups",pcVar3);
-                  if (iVar5 == 0) {
-                    bVar1 = 8;
+                  iVar4 = I_stricmp("enable_popups",pcVar2);
+                  if (iVar4 == 0) {
+                    flagBit = 8;
                     bVar6 = false;
                   }
                   else {
-                    iVar5 = I_stricmp("hud_hardcore",pcVar3);
-                    if (iVar5 == 0) {
-                      bVar1 = 0xd;
+                    iVar4 = I_stricmp("hud_hardcore",pcVar2);
+                    if (iVar4 == 0) {
+                      flagBit = 0xd;
                       bVar6 = false;
                     }
                     else {
-                      iVar5 = I_stricmp("pregame",pcVar3);
-                      if (iVar5 == 0) {
-                        bVar1 = 0xe;
+                      iVar4 = I_stricmp("pregame",pcVar2);
+                      if (iVar4 == 0) {
+                        flagBit = 0xe;
                         bVar6 = false;
                       }
                       else {
-                        iVar5 = I_stricmp("final_killcam",pcVar3);
-                        if (iVar5 == 0) {
-                          bVar1 = 4;
+                        iVar4 = I_stricmp("final_killcam",pcVar2);
+                        if (iVar4 == 0) {
+                          flagBit = 4;
                           bVar6 = false;
                         }
                         else {
-                          iVar5 = I_stricmp("round_end_killcam",pcVar3);
-                          if (iVar5 == 0) {
-                            bVar1 = 5;
+                          iVar4 = I_stricmp("round_end_killcam",pcVar2);
+                          if (iVar4 == 0) {
+                            flagBit = 5;
                             bVar6 = false;
                           }
                           else {
-                            iVar5 = I_stricmp("cg_drawSpectatorMessages",pcVar3);
-                            if (iVar5 == 0) {
-                              bVar1 = 0xf;
+                            iVar4 = I_stricmp("cg_drawSpectatorMessages",pcVar2);
+                            if (iVar4 == 0) {
+                              flagBit = 0xf;
                               bVar6 = false;
                             }
                             else {
-                              iVar5 = I_stricmp("disableIngameMenu",pcVar3);
-                              if (iVar5 != 0) {
+                              iVar4 = I_stricmp("disableIngameMenu",pcVar2);
+                              if (iVar4 != 0) {
                                 bVar6 = false;
-                                pcVar3 = va(
+                                pcVar2 = va(
                                            "GScr_SetMatchFlag: Couldn\'t find a matching bit for flag name : %s "
                                            );
-                                Scr_Error(pcVar3,bVar6);
+                                Scr_Error(pcVar2,bVar6);
                                 return;
                               }
-                              bVar1 = 0x10;
+                              flagBit = 0x10;
                               bVar6 = false;
                             }
                           }
@@ -15138,32 +15781,33 @@ void __cdecl GScr_SetMatchFlag(void)
         }
       }
     }
-    if (bVar1 < 0x41) {
+    if ((uint)flagBit < 0x41) {
+      sVar5 = (sbyte)flagBit;
       if (bVar6) {
-        if (iVar4 == 0) {
+        if (iVar3 == 0) {
           level.matchState.archivedState.matchUIVisibilityFlags =
-               ~((1 << bVar1) >> 4) & level.matchState.archivedState.matchUIVisibilityFlags;
+               ~((1 << sVar5) >> 4) & level.matchState.archivedState.matchUIVisibilityFlags;
         }
         else {
           level.matchState.archivedState.matchUIVisibilityFlags =
-               (1 << bVar1) >> 4 | level.matchState.archivedState.matchUIVisibilityFlags;
+               (1 << sVar5) >> 4 | level.matchState.archivedState.matchUIVisibilityFlags;
         }
       }
-      else if (iVar4 == 0) {
+      else if (iVar3 == 0) {
         level.matchState.unarchivedState.matchUIVisibilityFlags =
-             ~((1 << bVar1) >> 4) & level.matchState.unarchivedState.matchUIVisibilityFlags;
+             ~((1 << sVar5) >> 4) & level.matchState.unarchivedState.matchUIVisibilityFlags;
       }
       else {
         level.matchState.unarchivedState.matchUIVisibilityFlags =
-             (1 << bVar1) >> 4 | level.matchState.unarchivedState.matchUIVisibilityFlags;
+             (1 << sVar5) >> 4 | level.matchState.unarchivedState.matchUIVisibilityFlags;
       }
     }
     else {
       bVar6 = false;
-      pcVar3 = va(
+      pcVar2 = va(
                  "GScr_SetMatchFlag: Couldn\'t set bit for flagName %s. Exceeded the limit of match flag bits."
                  );
-      Scr_Error(pcVar3,bVar6);
+      Scr_Error(pcVar2,bVar6);
     }
   }
   return;
@@ -15176,13 +15820,14 @@ void __cdecl GScr_AllClientsPrint(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *text;
+  char *string;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("%c \"%s\"");
-    SV_GameSendServerCommand(-1,SV_CMD_CAN_IGNORE,pcVar2);
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand(-1,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -15194,14 +15839,15 @@ void __cdecl GScr_MapExists(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  int iVar3;
+  char *name;
+  int iVar2;
+  char *mapname;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
-    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    iVar3 = SV_MapExists(pcVar2);
-    if (iVar3 == 0) {
+    name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    iVar2 = SV_MapExists(name);
+    if (iVar2 == 0) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -15218,14 +15864,15 @@ void __cdecl GScr_IsValidGameType(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  int iVar3;
+  char *pszGameType;
+  int iVar2;
+  char *gametype;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
-    pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    iVar3 = Scr_IsValidGameType(pcVar2);
-    if (iVar3 == 0) {
+    pszGameType = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    iVar2 = Scr_IsValidGameType(pszGameType);
+    if (iVar2 == 0) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -15238,6 +15885,7 @@ void __cdecl GScr_IsValidGameType(void)
 
 // 00657070  GScr_SetVoteString  (game_mp/g_scr_main_mp.cpp:11589)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -15248,6 +15896,7 @@ void __cdecl GScr_SetVoteString(void)
 {
   uint uVar1;
   char *pcVar2;
+  char *string;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
@@ -15266,6 +15915,7 @@ void __cdecl GScr_SetVoteString(void)
 
 // 00657110  GScr_SetVoteTime  (game_mp/g_scr_main_mp.cpp:11613)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -15276,6 +15926,7 @@ void __cdecl GScr_SetVoteTime(void)
 {
   uint uVar1;
   char *pcVar2;
+  int time;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
@@ -15293,6 +15944,7 @@ void __cdecl GScr_SetVoteTime(void)
 
 // 006571A0  GScr_SetVoteYesCount  (game_mp/g_scr_main_mp.cpp:11637)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -15303,6 +15955,7 @@ void __cdecl GScr_SetVoteYesCount(void)
 {
   uint uVar1;
   char *pcVar2;
+  int yes;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
@@ -15318,17 +15971,24 @@ void __cdecl GScr_SetVoteYesCount(void)
 
 // 00657210  GScr_SetVoteNoCount  (game_mp/g_scr_main_mp.cpp:11659)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl GScr_SetVoteNoCount(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *val;
+  int no;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("%i");
-    SV_SetConfigstring(0x12,pcVar2);
+    val = va("%i");
+    SV_SetConfigstring(0x12,val);
   }
   return;
 }
@@ -15343,6 +16003,8 @@ void __cdecl GScr_KickPlayer(void)
 {
   uint uVar1;
   char *pcVar2;
+  int playernum;
+  char *reason;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
@@ -15371,6 +16033,8 @@ void __cdecl GScr_BanPlayer(void)
   int iVar2;
   char *pcVar3;
   bool bVar4;
+  bool temp;
+  int playernum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
@@ -15406,14 +16070,16 @@ void __cdecl GScr_ClientPrint(void)
 {
   uint uVar1;
   gentity_s *pgVar2;
-  char *pcVar3;
+  char *text;
+  char *string;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
     pgVar2 = Scr_GetEntity(0);
     Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("%c \"%s\"");
-    SV_GameSendServerCommand((int)pgVar2[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar3);
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand((int)pgVar2[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -15435,8 +16101,8 @@ void __cdecl GScr_OpenFile(void)
   char *pcVar4;
   int iVar5;
   bool bVar6;
-  int *piVar7;
-  fsMode_t fVar8;
+  int *f_00;
+  fsMode_t mode_00;
   int local_5c;
   byte *local_54;
   byte *local_50;
@@ -15446,30 +16112,33 @@ void __cdecl GScr_OpenFile(void)
   int local_34;
   byte *local_2c;
   byte *local_28;
-  int local_18;
-  int *local_14;
-  byte *local_10;
-  int local_c;
-  int local_8;
+  char *fullpathname;
+  int filesize;
+  char *filename;
+  int tempFile;
+  int *f;
+  char *mode;
+  int res;
+  int filenum;
   
-  local_14 = (int *)0x0;
+  f = (int *)0x0;
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (1 < uVar2) {
     pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_10 = (byte *)Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      if (level.openScriptIOFileHandles[local_8] == 0) {
-        local_14 = level.openScriptIOFileHandles + local_8;
+    mode = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    for (filenum = 0; filenum < 1; filenum = filenum + 1) {
+      if (level.openScriptIOFileHandles[filenum] == 0) {
+        f = level.openScriptIOFileHandles + filenum;
         break;
       }
     }
-    if (local_14 == (int *)0x0) {
+    if (f == (int *)0x0) {
       Com_Printf(0x18,"OpenFile failed.  %i files already open\n");
       Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
     }
     else {
       local_28 = &s_read;
-      local_2c = local_10;
+      local_2c = (byte *)mode;
       do {
         bVar1 = *local_2c;
         bVar6 = bVar1 < *local_28;
@@ -15489,25 +16158,25 @@ LAB_00657547:
 LAB_0065754f:
       if (local_34 == 0) {
         pcVar4 = va("%s/%s");
-        iVar5 = FS_FOpenFileByMode(pcVar4,&local_18,FS_READ);
+        iVar5 = FS_FOpenFileByMode(pcVar4,&tempFile,FS_READ);
         if (iVar5 < 0) {
           Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
         }
         else {
           pcVar4 = Z_VirtualAlloc(iVar5 + 1,"GScr_OpenFile",0xb);
-          level.openScriptIOFileBuffers[local_8] = pcVar4;
-          FS_Read(level.openScriptIOFileBuffers[local_8],iVar5,local_18);
-          FS_FCloseFile(local_18);
-          level.openScriptIOFileBuffers[local_8][iVar5] = '\0';
+          level.openScriptIOFileBuffers[filenum] = pcVar4;
+          FS_Read(level.openScriptIOFileBuffers[filenum],iVar5,tempFile);
+          FS_FCloseFile(tempFile);
+          level.openScriptIOFileBuffers[filenum][iVar5] = '\0';
           Com_BeginParseSession(pcVar3);
           Com_SetCSV(1);
-          level.currentScriptIOLineMark[local_8].lines = 0;
-          Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+          level.currentScriptIOLineMark[filenum].lines = 0;
+          Scr_AddInt(filenum,SCRIPTINSTANCE_SERVER);
         }
       }
       else {
         local_3c = (byte *)0xc8cac8;
-        local_40 = local_10;
+        local_40 = (byte *)mode;
         do {
           bVar1 = *local_40;
           bVar6 = bVar1 < *local_3c;
@@ -15528,17 +16197,17 @@ LAB_0065768c:
         if (local_48 == 0) {
           pcVar3 = va("%s/%s");
           iVar5 = FS_FOpenTextFileWrite(pcVar3);
-          *local_14 = iVar5;
-          if (*local_14 == 0) {
+          *f = iVar5;
+          if (*f == 0) {
             Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
           }
           else {
-            Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+            Scr_AddInt(filenum,SCRIPTINSTANCE_SERVER);
           }
         }
         else {
           local_50 = (byte *)0xc8cac0;
-          local_54 = local_10;
+          local_54 = (byte *)mode;
           do {
             bVar1 = *local_54;
             bVar6 = bVar1 < *local_50;
@@ -15557,15 +16226,15 @@ LAB_00657734:
           local_5c = 0;
 LAB_0065773c:
           if (local_5c == 0) {
-            fVar8 = FS_APPEND;
-            piVar7 = local_14;
+            mode_00 = FS_APPEND;
+            f_00 = f;
             pcVar3 = va("%s/%s");
-            local_c = FS_FOpenFileByMode(pcVar3,piVar7,fVar8);
-            if (local_c < 0) {
+            res = FS_FOpenFileByMode(pcVar3,f_00,mode_00);
+            if (res < 0) {
               Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
             }
             else {
-              Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+              Scr_AddInt(filenum,SCRIPTINSTANCE_SERVER);
             }
           }
           else {
@@ -15594,6 +16263,7 @@ void __cdecl GScr_CloseFile(void)
   bool bVar2;
   uint uVar3;
   int iVar4;
+  int filenum;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 0) {
@@ -15639,16 +16309,18 @@ void __cdecl GScr_CloseFile(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_FPrint_internal(bool param_1)
+void __cdecl Scr_FPrint_internal(bool commaBetweenFields)
 
 {
   char cVar1;
   uint uVar2;
   int iVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
+  char *buffer;
+  scriptInstance_t inst;
   char *local_14;
-  uint local_c;
+  char *s;
+  uint arg;
+  int filenum;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 < 2) {
@@ -15666,26 +16338,26 @@ void __cdecl Scr_FPrint_internal(bool param_1)
       Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
     }
     else {
-      local_c = 1;
+      arg = 1;
       while( true ) {
         uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-        if (uVar2 <= local_c) break;
-        pcVar4 = Scr_GetString(local_c,SCRIPTINSTANCE_SERVER);
-        local_14 = pcVar4;
+        if (uVar2 <= arg) break;
+        buffer = Scr_GetString(arg,SCRIPTINSTANCE_SERVER);
+        local_14 = buffer;
         do {
           cVar1 = *local_14;
           local_14 = local_14 + 1;
         } while (cVar1 != '\0');
-        FS_Write(pcVar4,(int)local_14 - (int)(pcVar4 + 1),level.openScriptIOFileHandles[iVar3]);
-        if (param_1) {
+        FS_Write(buffer,(int)local_14 - (int)(buffer + 1),level.openScriptIOFileHandles[iVar3]);
+        if (commaBetweenFields) {
           FS_Write(&s__,1,level.openScriptIOFileHandles[iVar3]);
         }
-        local_c = local_c + 1;
+        arg = arg + 1;
       }
       FS_Write("\n",1,level.openScriptIOFileHandles[iVar3]);
-      sVar5 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-      Scr_AddInt(uVar2 - 1,sVar5);
+      Scr_AddInt(uVar2 - 1,inst);
     }
   }
   return;
@@ -15726,9 +16398,10 @@ void __cdecl GScr_FReadLn(void)
   uint uVar2;
   int iVar3;
   scriptInstance_t sVar4;
-  char *local_10;
-  char *local_c;
-  int local_8;
+  int eof;
+  char *buf;
+  char *token;
+  int filenum;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 0) {
@@ -15736,36 +16409,36 @@ void __cdecl GScr_FReadLn(void)
     Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
   }
   else {
-    local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    if ((local_8 < 0) || (1 < local_8)) {
+    filenum = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    if ((filenum < 0) || (1 < filenum)) {
       Com_Printf(0x18,"freadln failed, invalid file number %i\n");
       Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
     }
-    else if (level.openScriptIOFileBuffers[local_8] == (char *)0x0) {
+    else if (level.openScriptIOFileBuffers[filenum] == (char *)0x0) {
       Com_Printf(0x18,"freadln failed, file number %i was not open for reading\n");
       Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
     }
     else {
-      local_10 = level.openScriptIOFileBuffers[local_8];
-      if (level.currentScriptIOLineMark[local_8].lines == 0) {
-        Com_ParseSetMark(&local_10,level.currentScriptIOLineMark + local_8);
+      buf = level.openScriptIOFileBuffers[filenum];
+      if (level.currentScriptIOLineMark[filenum].lines == 0) {
+        Com_ParseSetMark(&buf,level.currentScriptIOLineMark + filenum);
         sVar4 = SCRIPTINSTANCE_SERVER;
-        iVar3 = Com_GetArgCountOnLine(&local_10);
+        iVar3 = Com_GetArgCountOnLine(&buf);
         Scr_AddInt(iVar3,sVar4);
       }
       else {
-        Com_ParseReturnToMark(&local_10,level.currentScriptIOLineMark + local_8);
-        Com_SkipRestOfLine(&local_10);
-        Com_ParseSetMark(&local_10,level.currentScriptIOLineMark + local_8);
-        local_c = Com_Parse(&local_10);
-        cVar1 = *local_c;
-        Com_ParseReturnToMark(&local_10,level.currentScriptIOLineMark + local_8);
+        Com_ParseReturnToMark(&buf,level.currentScriptIOLineMark + filenum);
+        Com_SkipRestOfLine(&buf);
+        Com_ParseSetMark(&buf,level.currentScriptIOLineMark + filenum);
+        token = Com_Parse(&buf);
+        cVar1 = *token;
+        Com_ParseReturnToMark(&buf,level.currentScriptIOLineMark + filenum);
         if (cVar1 == '\0') {
           Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
         }
         else {
           sVar4 = SCRIPTINSTANCE_SERVER;
-          iVar3 = Com_GetArgCountOnLine(&local_10);
+          iVar3 = Com_GetArgCountOnLine(&buf);
           Scr_AddInt(iVar3,sVar4);
         }
       }
@@ -15786,11 +16459,11 @@ void __cdecl GScr_FGetArg(void)
 
 {
   uint uVar1;
-  char *local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  char *buf;
+  int arg;
+  int i;
+  char *token;
+  int filenum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
@@ -15798,27 +16471,27 @@ void __cdecl GScr_FGetArg(void)
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    local_14 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    if ((local_8 < 0) || (1 < local_8)) {
+    filenum = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    arg = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    if ((filenum < 0) || (1 < filenum)) {
       Com_Printf(0x18,"freadline failed, invalid file number %i\n");
       Scr_AddString("",SCRIPTINSTANCE_SERVER);
     }
-    else if (local_14 < 0) {
+    else if (arg < 0) {
       Com_Printf(0x18,"freadline failed, invalid argument number %i\n");
       Scr_AddString("",SCRIPTINSTANCE_SERVER);
     }
-    else if (level.openScriptIOFileBuffers[local_8] == (char *)0x0) {
+    else if (level.openScriptIOFileBuffers[filenum] == (char *)0x0) {
       Com_Printf(0x18,"freadline failed, file number %i was not open for reading\n");
       Scr_AddString("",SCRIPTINSTANCE_SERVER);
     }
     else {
-      local_c = (char *)0x0;
-      local_18 = level.openScriptIOFileBuffers[local_8];
-      Com_ParseReturnToMark(&local_18,level.currentScriptIOLineMark + local_8);
-      for (local_10 = 0; local_10 <= local_14; local_10 = local_10 + 1) {
-        local_c = Com_ParseOnLine(&local_18);
-        if (*local_c == '\0') {
+      token = (char *)0x0;
+      buf = level.openScriptIOFileBuffers[filenum];
+      Com_ParseReturnToMark(&buf,level.currentScriptIOLineMark + filenum);
+      for (i = 0; i <= arg; i = i + 1) {
+        token = Com_ParseOnLine(&buf);
+        if (*token == '\0') {
           Com_Printf(0x18,
                      "freadline failed, there aren\'t %i arguments on this line, there are only %i arguments\n"
                     );
@@ -15826,7 +16499,7 @@ void __cdecl GScr_FGetArg(void)
           return;
         }
       }
-      Scr_AddString(local_c,SCRIPTINSTANCE_SERVER);
+      Scr_AddString(token,SCRIPTINSTANCE_SERVER);
     }
   }
   return;
@@ -15839,13 +16512,14 @@ void __cdecl GScr_ExecDevgui(void)
 
 {
   uint uVar1;
-  char *pcVar2;
+  char *text;
+  char *filename;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("exec %s\n");
-    Cbuf_AddText(0,pcVar2);
+    text = va("exec %s\n");
+    Cbuf_AddText(0,text);
   }
   return;
 }
@@ -15867,10 +16541,10 @@ void __cdecl Scr_IsGlobalStatsServer(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int licensetype;
   
-  iVar2 = SV_GetLicenseType();
-  bVar1 = SV_IsServerRanked(iVar2);
+  licensetype = SV_GetLicenseType();
+  bVar1 = SV_IsServerRanked(licensetype);
   if (bVar1) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
@@ -15893,9 +16567,13 @@ void __cdecl GScr_SetPlayerStatsForMatchRecording(void)
 {
   uint uVar1;
   gentity_s *pgVar2;
-  char *pcVar3;
-  int iVar4;
-  DWORD DVar5;
+  char *statName_00;
+  int statValue_00;
+  DWORD DVar3;
+  char *statName;
+  int statValue;
+  PIXProfile pp;
+  gentity_s *ent;
   
   PIXBeginNamedEvent(-1,"GScr_SetPlayerStatsForMatchRecording");
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -15909,14 +16587,14 @@ void __cdecl GScr_SetPlayerStatsForMatchRecording(void)
   if (pgVar2->client == (gclient_s *)0x0) {
     Scr_ParamError(0,"recordPlayerStats Error: param 0 is not an player.",SCRIPTINSTANCE_SERVER);
   }
-  pcVar3 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  if (pcVar3 == (char *)0x0) {
+  statName_00 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  if (statName_00 == (char *)0x0) {
     Scr_ParamError(1,"recordPlayerStats Error: param 1 is not a string.",SCRIPTINSTANCE_SERVER);
   }
-  iVar4 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  MatchRecordSetPlayerStat(pgVar2->client,pcVar3,iVar4);
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  statValue_00 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  MatchRecordSetPlayerStat(pgVar2->client,statName_00,statValue_00);
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -15935,6 +16613,7 @@ void __cdecl GScr_SetPlayerFinalForMatchRecording(void)
 {
   uint uVar1;
   gentity_s *pgVar2;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
@@ -15969,18 +16648,19 @@ void __cdecl GScr_SetBeginForMatchRecording(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SendLeaderboards(scr_entref_t param_1)
+void __cdecl GScr_SendLeaderboards(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
+  char *text;
+  gentity_s *playerEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("sendleaderboards: entity must be a player entity",false);
   }
-  pcVar2 = va("%c");
-  SV_GameSendServerCommand((pgVar1->s).number,SV_CMD_RELIABLE,pcVar2);
+  text = va("%c");
+  SV_GameSendServerCommand((pgVar1->s).number,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -15993,15 +16673,17 @@ void __cdecl GScr_SendLeaderboards(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl GScr_IsItemPurchasedForClientNum(int param_1,int param_2)
+bool __cdecl GScr_IsItemPurchasedForClientNum(int clientNum,int itemIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   uint uVar4;
+  int byteOffset;
+  int bitOffset;
   
-  if ((param_1 < 0) || (0x1f < param_1)) {
+  if ((clientNum < 0) || (0x1f < clientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3146,
                              0,"%s");
     if (!bVar2) {
@@ -16010,7 +16692,7 @@ bool __cdecl GScr_IsItemPurchasedForClientNum(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if ((param_2 < 0) || (0xff < param_2)) {
+  if ((itemIndex < 0) || (0xff < itemIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3147,
                              0,"%s");
     if (!bVar2) {
@@ -16019,13 +16701,13 @@ bool __cdecl GScr_IsItemPurchasedForClientNum(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if ((((param_1 < 0) || (0x1f < param_1)) || (param_2 < 0)) || (0xff < param_2)) {
+  if ((((clientNum < 0) || (0x1f < clientNum)) || (itemIndex < 0)) || (0xff < itemIndex)) {
     bVar2 = false;
   }
   else {
-    uVar4 = 1 << ((byte)param_2 & 7);
-    bVar2 = (*(byte *)((int)svs.clients + (param_2 >> 3) + param_1 * 0x84d00 + 0x6fef1) & uVar4) ==
-            uVar4;
+    uVar4 = 1 << ((byte)itemIndex & 7);
+    bVar2 = (*(byte *)((int)svs.clients + (itemIndex >> 3) + clientNum * 0x84d00 + 0x6fef1) & uVar4)
+            == uVar4;
   }
   return bVar2;
 }
@@ -16037,100 +16719,124 @@ bool __cdecl GScr_IsItemPurchasedForClientNum(int param_1,int param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl GScr_IsItemLockedForChallenge(scr_entref_t param_1,bool param_2)
+bool __cdecl GScr_IsItemLockedForChallenge(scr_entref_t entref,bool purchaseRequired)
 
 {
   bool bVar1;
   gentity_s *pgVar2;
   uint uVar3;
+  int itemIndex_00;
   int iVar4;
-  int iVar5;
-  int iVar6;
-  undefined1 uVar7;
-  undefined1 uVar8;
-  undefined2 uVar9;
-  bool local_d;
+  int pLevel;
+  undefined1 uVar5;
+  undefined1 uVar6;
+  undefined2 uVar7;
+  gentity_s *playerEnt;
+  bool isLocked;
+  int itemIndex;
+  int argc;
   
-  local_d = false;
-  pgVar2 = GetEntity(param_1);
+  isLocked = false;
+  pgVar2 = GetEntity(entref);
   if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->client != (gclient_s *)0x0)) {
     uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar3 == 1) {
-      iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      uVar7 = (undefined1)iVar4;
-      uVar8 = (undefined1)((uint)iVar4 >> 8);
-      uVar9 = (undefined2)((uint)iVar4 >> 0x10);
-      if (((iVar4 != 0) && (iVar4 < 0x100)) && (iVar5 = CL_LocalClient_GetActiveCount(), iVar5 != 0)
-         ) {
-        iVar5 = G_GetClientRank((pgVar2->s).number);
-        iVar6 = G_GetClientPrestige((pgVar2->s).number);
-        local_d = BG_UnlockablesIsItemLockedForRank
-                            (iVar6,iVar5,CONCAT22(uVar9,CONCAT11(uVar8,uVar7)));
+      itemIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+      uVar5 = (undefined1)itemIndex_00;
+      uVar6 = (undefined1)((uint)itemIndex_00 >> 8);
+      uVar7 = (undefined2)((uint)itemIndex_00 >> 0x10);
+      if (((itemIndex_00 != 0) && (itemIndex_00 < 0x100)) &&
+         (iVar4 = CL_LocalClient_GetActiveCount(), iVar4 != 0)) {
+        iVar4 = G_GetClientRank((pgVar2->s).number);
+        pLevel = G_GetClientPrestige((pgVar2->s).number);
+        isLocked = BG_UnlockablesIsItemLockedForRank
+                             (pLevel,iVar4,CONCAT22(uVar7,CONCAT11(uVar6,uVar5)));
       }
-      if ((param_2) && (local_d == false)) {
-        bVar1 = GScr_IsItemPurchasedForClientNum((pgVar2->s).number,iVar4);
-        local_d = (bool)('\x01' - bVar1);
+      if ((purchaseRequired) && (isLocked == false)) {
+        bVar1 = GScr_IsItemPurchasedForClientNum((pgVar2->s).number,itemIndex_00);
+        isLocked = (bool)('\x01' - bVar1);
       }
     }
     else {
       Scr_Error("isItemLocked: takes one parameter.",false);
-      local_d = true;
+      isLocked = true;
     }
   }
   else {
     Scr_Error("isItemLocked: entity must be a player entity",false);
-    local_d = true;
+    isLocked = true;
   }
-  return local_d;
+  return isLocked;
 }
 
 
 // 00658070  GScr_IsItemPurchased  (game_mp/g_scr_main_mp.cpp:12679)
 
-void __cdecl GScr_IsItemPurchased(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GScr_IsItemPurchased(scr_entref_t entref)
 
 {
   bool bVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  bVar1 = GScr_IsItemLockedForChallenge(param_1,true);
-  Scr_AddInt((uint)!bVar1,sVar2);
+  inst = SCRIPTINSTANCE_SERVER;
+  bVar1 = GScr_IsItemLockedForChallenge(entref,true);
+  Scr_AddInt((uint)!bVar1,inst);
   return;
 }
 
 
 // 00658290  GScr_IsItemLocked  (game_mp/g_scr_main_mp.cpp:12694)
 
-void __cdecl GScr_IsItemLocked(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GScr_IsItemLocked(scr_entref_t entref)
 
 {
   bool bVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  bVar1 = GScr_IsItemLockedForChallenge(param_1,false);
-  Scr_AddInt((uint)bVar1,sVar2);
+  inst = SCRIPTINSTANCE_SERVER;
+  bVar1 = GScr_IsItemLockedForChallenge(entref,false);
+  Scr_AddInt((uint)bVar1,inst);
   return;
 }
 
 
 // 006582C0  GScr_GetRefFromItemIndex  (game_mp/g_scr_main_mp.cpp:12709)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl GScr_GetRefFromItemIndex(void)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int itemIndex_00;
+  char *value;
+  int itemIndex;
+  char *itemRef;
   
-  iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  pcVar2 = BG_UnlockablesGetItemRef(iVar1);
-  if ((pcVar2 == (char *)0x0) || (*pcVar2 == '\0')) {
+  itemIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  value = BG_UnlockablesGetItemRef(itemIndex_00);
+  if ((value == (char *)0x0) || (*value == '\0')) {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
+    Scr_AddString(value,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -16138,19 +16844,26 @@ void __cdecl GScr_GetRefFromItemIndex(void)
 
 // 00658320  GScr_GetItemGroupFromItemIndex  (game_mp/g_scr_main_mp.cpp:12739)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl GScr_GetItemGroupFromItemIndex(void)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int itemIndex_00;
+  char *value;
+  int itemIndex;
+  char *itemGroup;
   
-  iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  pcVar2 = BG_UnlockablesGetItemGroup(iVar1);
-  if ((pcVar2 == (char *)0x0) || (*pcVar2 == '\0')) {
+  itemIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  value = BG_UnlockablesGetItemGroup(itemIndex_00);
+  if ((value == (char *)0x0) || (*value == '\0')) {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
+    Scr_AddString(value,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -16161,28 +16874,31 @@ void __cdecl GScr_GetItemGroupFromItemIndex(void)
 void __cdecl GScr_GetBaseWeaponItemIndex(void)
 
 {
-  char *pcVar1;
-  WeaponVariantDef *pWVar2;
-  uint local_18;
-  int local_10;
+  char *name;
+  WeaponVariantDef *pWVar1;
+  uint baseWeapon;
+  WeaponVariantDef *weapVariantDef;
+  int weaponItemIndex;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  local_10 = 0;
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_18 = G_GetWeaponIndexForName(pcVar1);
-  if (local_18 != 0) {
-    pWVar2 = BG_GetWeaponVariantDef(local_18);
-    if ((pWVar2 != (WeaponVariantDef *)0x0) && (pWVar2->weapDef != (WeaponDef *)0x0)) {
-      local_10 = pWVar2->weapDef->itemIndex;
+  weaponItemIndex = 0;
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  baseWeapon = G_GetWeaponIndexForName(name);
+  if (baseWeapon != 0) {
+    pWVar1 = BG_GetWeaponVariantDef(baseWeapon);
+    if ((pWVar1 != (WeaponVariantDef *)0x0) && (pWVar1->weapDef != (WeaponDef *)0x0)) {
+      weaponItemIndex = pWVar1->weapDef->itemIndex;
     }
-    if (local_10 == 0) {
-      pWVar2 = BG_GetWeaponVariantDef(local_18);
-      if (pWVar2->iVariantCount < 0) {
-        local_18 = -pWVar2->iVariantCount;
+    if (weaponItemIndex == 0) {
+      pWVar1 = BG_GetWeaponVariantDef(baseWeapon);
+      if (pWVar1->iVariantCount < 0) {
+        baseWeapon = -pWVar1->iVariantCount;
       }
-      local_10 = BG_GetWeaponTableItemIndex(local_18);
+      weaponItemIndex = BG_GetWeaponTableItemIndex(baseWeapon);
     }
   }
-  Scr_AddInt(local_10,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(weaponItemIndex,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -16194,37 +16910,40 @@ void __cdecl GScr_GetGameTypeEnumFromName(void)
 {
   char *pcVar1;
   int iVar2;
-  bool bVar3;
-  int local_10;
-  char **local_c;
-  int local_8;
+  bool force_terminal;
+  int isWagerMatch;
+  char *gameTypeName;
+  int startIndex;
+  int endIndex;
+  char **gameModeEnum;
+  int currGameMode;
   
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   iVar2 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   if (iVar2 == 0) {
-    local_10 = 0x10;
-    local_c = lbTypeEnum;
+    endIndex = 0x10;
+    gameModeEnum = lbTypeEnum;
   }
   else {
-    local_10 = 4;
-    local_c = lbWagerGameModeEnum;
+    endIndex = 4;
+    gameModeEnum = lbWagerGameModeEnum;
   }
-  local_8 = 0;
+  currGameMode = 0;
   while( true ) {
-    if (local_10 <= local_8) {
-      bVar3 = false;
+    if (endIndex <= currGameMode) {
+      force_terminal = false;
       pcVar1 = va(
                  "GetGameTypeEnumFromName: Invalid gametype parameter: \'%s\' supplied to GetGameTypeEnumFromName"
                  );
-      Scr_Error(pcVar1,bVar3);
+      Scr_Error(pcVar1,force_terminal);
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
       return;
     }
-    iVar2 = I_stricmp(pcVar1,local_c[local_8]);
+    iVar2 = I_stricmp(pcVar1,gameModeEnum[currGameMode]);
     if (iVar2 == 0) break;
-    local_8 = local_8 + 1;
+    currGameMode = currGameMode + 1;
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(currGameMode,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -16234,11 +16953,11 @@ void __cdecl GScr_GetGameTypeEnumFromName(void)
 void __cdecl GScr_GetWagerGametypeList(void)
 
 {
-  int local_8;
+  int i;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    Scr_AddString(lbWagerGameModeEnum[local_8],SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < 4; i = i + 1) {
+    Scr_AddString(lbWagerGameModeEnum[i],SCRIPTINSTANCE_SERVER);
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -16252,28 +16971,29 @@ void __cdecl GScr_GetWagerGametypeList(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLoadoutItemFromProfile(scr_entref_t param_1)
+void __cdecl GScr_GetLoadoutItemFromProfile(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
-  int local_c;
+  int item;
+  gentity_s *playerEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("getloadoutitemfromprofile: entity must be a player entity",false);
   }
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 < 2) {
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_c = CL_GetFirstActiveLocalClient();
+    item = CL_GetFirstActiveLocalClient();
   }
   else {
     Scr_GetString(1,SCRIPTINSTANCE_SERVER);
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_c = CL_GetFirstActiveLocalClient();
+    item = CL_GetFirstActiveLocalClient();
   }
-  Scr_AddInt(local_c,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(item,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -16285,7 +17005,7 @@ void __cdecl GScr_GetLoadoutItemFromProfile(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetDStat(scr_entref_t param_1)
+void __cdecl GScr_GetDStat(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -16294,93 +17014,95 @@ void __cdecl GScr_GetDStat(scr_entref_t param_1)
   gentity_s *pgVar4;
   int iVar5;
   char *pcVar6;
-  uint uVar7;
-  undefined1 uVar8;
-  scriptInstance_t sVar9;
-  undefined1 uVar10;
-  undefined2 uVar11;
-  uint local_20;
-  ddlState_t local_18;
-  uint local_8;
+  uint value;
+  undefined1 uVar7;
+  scriptInstance_t sVar8;
+  undefined1 uVar9;
+  undefined2 uVar10;
+  int i;
+  gentity_s *playerEnt;
+  ddlState_t searchState;
+  int argc;
   
   pdVar3 = LiveStats_GetRootDDLState();
-  local_18.absoluteOffset = pdVar3->absoluteOffset;
-  local_18.arrayIndex = pdVar3->arrayIndex;
-  local_18.member = pdVar3->member;
-  local_18.ddl = pdVar3->ddl;
-  pgVar4 = GetEntity(param_1);
+  searchState.absoluteOffset = pdVar3->absoluteOffset;
+  searchState.arrayIndex = pdVar3->arrayIndex;
+  searchState.member = pdVar3->member;
+  searchState.ddl = pdVar3->ddl;
+  pgVar4 = GetEntity(entref);
   if (pgVar4->client == (gclient_s *)0x0) {
     Scr_Error("getdstat: entity must be a player entity",false);
   }
-  local_8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (8 < (int)local_8) {
+  argc = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (8 < argc) {
     Scr_Error("getdstat: path is too deep.",false);
   }
-  local_20 = 0;
+  i = 0;
   do {
-    if ((int)local_8 <= (int)local_20) {
-      if (local_18.member == (ddlMemberDef_t *)0x0) {
+    if (argc <= i) {
+      if (searchState.member == (ddlMemberDef_t *)0x0) {
         Scr_Error("getdstat: could not find ddl member.",false);
         Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
       }
       else {
-        switch((local_18.member)->type) {
+        switch((searchState.member)->type) {
         case 0:
         case 1:
         case 2:
-          sVar9 = SCRIPTINSTANCE_SERVER;
-          uVar7 = SV_GetClientDIntStat((pgVar4->s).number,&local_18);
-          Scr_AddInt(uVar7,sVar9);
+          sVar8 = SCRIPTINSTANCE_SERVER;
+          value = SV_GetClientDIntStat((pgVar4->s).number,&searchState);
+          Scr_AddInt(value,sVar8);
           break;
         case 3:
-          sVar9 = SCRIPTINSTANCE_SERVER;
-          SV_GetClientDInt64Stat((pgVar4->s).number,&local_18);
+          sVar8 = SCRIPTINSTANCE_SERVER;
+          SV_GetClientDInt64Stat((pgVar4->s).number,&searchState);
           pcVar6 = va("%llu");
-          Scr_AddString(pcVar6,sVar9);
+          Scr_AddString(pcVar6,sVar8);
           break;
         default:
           Scr_Error("getdstat: stat type undefined",false);
           Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
           break;
         case 5:
-          sVar9 = SCRIPTINSTANCE_SERVER;
-          pcVar6 = SV_GetClientDStringStat((pgVar4->s).number,&local_18);
-          Scr_AddString(pcVar6,sVar9);
+          sVar8 = SCRIPTINSTANCE_SERVER;
+          pcVar6 = SV_GetClientDStringStat((pgVar4->s).number,&searchState);
+          Scr_AddString(pcVar6,sVar8);
         }
       }
       return;
     }
-    iVar5 = Scr_GetType(local_20,SCRIPTINSTANCE_SERVER);
+    iVar5 = Scr_GetType(i,SCRIPTINSTANCE_SERVER);
     if (iVar5 == 2) {
-      if ((((local_18.member != (ddlMemberDef_t *)0x0) && (1 < (local_18.member)->arraySize)) &&
-          ((local_18.member)->enumIndex == -1)) && (local_18.arrayIndex == -1)) {
+      if ((((searchState.member != (ddlMemberDef_t *)0x0) && (1 < (searchState.member)->arraySize))
+          && ((searchState.member)->enumIndex == -1)) && (searchState.arrayIndex == -1)) {
         Scr_Error("getdstat: array index (integer) expected. Received a string instead.",false);
       }
-      pcVar6 = Scr_GetString(local_20,SCRIPTINSTANCE_SERVER);
-      iVar5 = DDL_MoveToName(&local_18,&local_18,pcVar6);
+      pcVar6 = Scr_GetString(i,SCRIPTINSTANCE_SERVER);
+      iVar5 = DDL_MoveToName(&searchState,&searchState,pcVar6);
       if (iVar5 == 0) {
-        uVar8 = 0;
-        Scr_GetString(local_20,SCRIPTINSTANCE_SERVER);
+        uVar7 = 0;
+        Scr_GetString(i,SCRIPTINSTANCE_SERVER);
         pcVar6 = va("getdstat: Could not find member name %s.");
-        Scr_Error(pcVar6,(bool)uVar8);
+        Scr_Error(pcVar6,(bool)uVar7);
       }
     }
     else if (iVar5 == 6) {
-      if ((local_18.member == (ddlMemberDef_t *)0x0) &&
+      if ((searchState.member == (ddlMemberDef_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0x329d,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_18.member)->arraySize == 1) {
+      if ((searchState.member)->arraySize == 1) {
         Scr_Error("getdstat: member name (string) expected. Received an integer instead.",false);
       }
-      uVar8 = 1;
+      uVar7 = 1;
+      uVar9 = 0;
       uVar10 = 0;
-      uVar11 = 0;
-      iVar5 = Scr_GetInt(local_20,SCRIPTINSTANCE_SERVER);
-      iVar5 = DDL_MoveToIndex(&local_18,&local_18,iVar5,CONCAT22(uVar11,CONCAT11(uVar10,uVar8)));
+      iVar5 = Scr_GetInt(i,SCRIPTINSTANCE_SERVER);
+      iVar5 = DDL_MoveToIndex(&searchState,&searchState,iVar5,CONCAT22(uVar10,CONCAT11(uVar9,uVar7))
+                             );
       if (iVar5 == 0) {
         Scr_Error("getdstat: Could not find member array index number.",false);
       }
@@ -16388,7 +17110,7 @@ void __cdecl GScr_GetDStat(scr_entref_t param_1)
     else {
       Scr_Error("getdstat: Expected strings or integers only.",false);
     }
-    local_20 = local_20 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -16410,25 +17132,27 @@ void __cdecl GScr_GetMaxActiveContracts(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetIndexForActiveContract(scr_entref_t param_1)
+void __cdecl GScr_GetIndexForActiveContract(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
   int iVar3;
-  scriptInstance_t sVar4;
+  scriptInstance_t inst;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("GetIndexForActiveContract: Entity must be a client",false);
     }
     else {
       iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      sVar4 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       iVar3 = LiveContracts_SV_GetIndexForActiveContract((pgVar2->s).number,iVar3);
-      Scr_AddInt(iVar3,sVar4);
+      Scr_AddInt(iVar3,inst);
     }
   }
   else {
@@ -16444,16 +17168,16 @@ void __cdecl GScr_GetContractStatType(void)
 
 {
   uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  int index;
+  char *value;
+  scriptInstance_t inst;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    pcVar3 = LiveContracts_GetContractStatType(iVar2);
-    Scr_AddString(pcVar3,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    index = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    value = LiveContracts_GetContractStatType(index);
+    Scr_AddString(value,inst);
   }
   else {
     Scr_Error("Invalid number of parameters supplied to GetContractStatType",false);
@@ -16468,16 +17192,16 @@ void __cdecl GScr_GetContractStatName(void)
 
 {
   uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  int index;
+  char *value;
+  scriptInstance_t inst;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    pcVar3 = LiveContracts_GetContractStatName(iVar2);
-    Scr_AddString(pcVar3,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    index = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    value = LiveContracts_GetContractStatName(index);
+    Scr_AddString(value,inst);
   }
   else {
     Scr_Error("Invalid number of parameters supplied to GetContractStatName",false);
@@ -16493,14 +17217,14 @@ void __cdecl GScr_GetContractRewardXP(void)
 {
   uint uVar1;
   int iVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     iVar2 = LiveContracts_GetContractRewardXP(iVar2);
-    Scr_AddInt(iVar2,sVar3);
+    Scr_AddInt(iVar2,inst);
   }
   else {
     Scr_Error("Invalid number of parameters supplied to GetContractRewardXP",false);
@@ -16516,14 +17240,14 @@ void __cdecl GScr_GetContractRewardCP(void)
 {
   uint uVar1;
   int iVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     iVar2 = LiveContracts_GetContractRewardCP(iVar2);
-    Scr_AddInt(iVar2,sVar3);
+    Scr_AddInt(iVar2,inst);
   }
   else {
     Scr_Error("Invalid number of parameters supplied to GetContractRewardCP",false);
@@ -16538,25 +17262,28 @@ void __cdecl GScr_GetContractRequirements(void)
 
 {
   uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  int local_c;
+  int contractIndex_00;
+  char *pcVar2;
+  char *reqData;
+  char *reqType;
+  int i;
+  int contractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    contractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-    for (local_c = 0; local_c < 5; local_c = local_c + 1) {
-      pcVar3 = LiveContracts_GetRequirementType(iVar2,local_c);
-      if (pcVar3 != (char *)0x0) {
-        Scr_AddString(pcVar3,SCRIPTINSTANCE_SERVER);
+    for (i = 0; i < 5; i = i + 1) {
+      pcVar2 = LiveContracts_GetRequirementType(contractIndex_00,i);
+      if (pcVar2 != (char *)0x0) {
+        Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
         Scr_AddArray(SCRIPTINSTANCE_SERVER);
-        pcVar3 = LiveContracts_GetRequirementData(iVar2,local_c);
-        if (pcVar3 == (char *)0x0) {
+        pcVar2 = LiveContracts_GetRequirementData(contractIndex_00,i);
+        if (pcVar2 == (char *)0x0) {
           Scr_AddString("",SCRIPTINSTANCE_SERVER);
         }
         else {
-          Scr_AddString(pcVar3,SCRIPTINSTANCE_SERVER);
+          Scr_AddString(pcVar2,SCRIPTINSTANCE_SERVER);
         }
         Scr_AddArray(SCRIPTINSTANCE_SERVER);
       }
@@ -16575,16 +17302,17 @@ void __cdecl GScr_GetContractName(void)
 
 {
   uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  int index;
+  char *value;
+  scriptInstance_t inst;
+  int contractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = LiveContracts_GetContractName(iVar2);
-    Scr_AddString(pcVar3,sVar4);
+    index = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    inst = SCRIPTINSTANCE_SERVER;
+    value = LiveContracts_GetContractName(index);
+    Scr_AddString(value,inst);
   }
   else {
     Scr_Error("Invalid number of parameters supplied to GetContractName",false);
@@ -16600,14 +17328,15 @@ void __cdecl GScr_GetContractRequiredCount(void)
 {
   uint uVar1;
   int iVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
+  int contractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
     iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    sVar3 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     iVar2 = LiveContracts_GetContractRequiredCount(iVar2);
-    Scr_AddInt(iVar2,sVar3);
+    Scr_AddInt(iVar2,inst);
   }
   else {
     Scr_Error("Invalid number of parameters supplied to GetContractRequiredCount",false);
@@ -16622,18 +17351,20 @@ void __cdecl GScr_GetContractResetConditions(void)
 
 {
   uint uVar1;
-  int iVar2;
-  char *pcVar3;
+  int contractIndex_00;
+  char *value;
+  int contractIndex;
+  char *resetConditions;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    pcVar3 = LiveContracts_GetResetConditions(iVar2);
-    if (pcVar3 == (char *)0x0) {
+    contractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    value = LiveContracts_GetResetConditions(contractIndex_00);
+    if (value == (char *)0x0) {
       Scr_AddString("",SCRIPTINSTANCE_SERVER);
     }
     else {
-      Scr_AddString(pcVar3,SCRIPTINSTANCE_SERVER);
+      Scr_AddString(value,SCRIPTINSTANCE_SERVER);
     }
   }
   else {
@@ -16650,25 +17381,27 @@ void __cdecl GScr_GetContractResetConditions(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetActiveContractProgress(scr_entref_t param_1)
+void __cdecl GScr_GetActiveContractProgress(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
   int iVar3;
-  scriptInstance_t sVar4;
+  scriptInstance_t inst;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("GetActiveContractProgress: Entity must be a client",false);
     }
     else {
       iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      sVar4 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       iVar3 = LiveContracts_SV_GetActiveContractProgress((pgVar2->s).number,iVar3);
-      Scr_AddInt(iVar3,sVar4);
+      Scr_AddInt(iVar3,inst);
     }
   }
   else {
@@ -16685,28 +17418,32 @@ void __cdecl GScr_GetActiveContractProgress(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IncrementActiveContractProgress(scr_entref_t param_1)
+void __cdecl GScr_IncrementActiveContractProgress(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
-  int iVar3;
-  int iVar4;
+  int activeContractIndex_00;
+  int increment_00;
+  int increment;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 2) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("IncrementActiveContractProgress: Entity must be a client",false);
     }
     else {
-      iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-      if (iVar4 < 1) {
+      activeContractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+      increment_00 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+      if (increment_00 < 1) {
         Scr_Error("IncrementActiveContractProgress: <increment> must be >= 0",false);
       }
       else {
-        LiveContracts_SV_IncrementActiveContractProgress((pgVar2->s).number,iVar3,iVar4);
+        LiveContracts_SV_IncrementActiveContractProgress
+                  ((pgVar2->s).number,activeContractIndex_00,increment_00);
       }
     }
   }
@@ -16724,22 +17461,24 @@ void __cdecl GScr_IncrementActiveContractProgress(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ResetActiveContractProgress(scr_entref_t param_1)
+void __cdecl GScr_ResetActiveContractProgress(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
-  int iVar3;
+  int activeContractIndex_00;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("ResetActiveContractProgress: Entity must be a client",false);
     }
     else {
-      iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      LiveContracts_SV_ResetActiveContractProgress((pgVar2->s).number,iVar3);
+      activeContractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+      LiveContracts_SV_ResetActiveContractProgress((pgVar2->s).number,activeContractIndex_00);
     }
   }
   else {
@@ -16756,28 +17495,32 @@ void __cdecl GScr_ResetActiveContractProgress(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IncrementActiveContractTime(scr_entref_t param_1)
+void __cdecl GScr_IncrementActiveContractTime(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
-  int iVar3;
-  int iVar4;
+  int activeContractIndex_00;
+  int increment_00;
+  int increment;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 2) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("IncrementActiveContractTime: Entity must be a client",false);
     }
     else {
-      iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-      if (iVar4 < 0) {
+      activeContractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+      increment_00 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+      if (increment_00 < 0) {
         Scr_Error("IncrementActiveContractTime: <increment> must be >= 0",false);
       }
       else {
-        LiveContracts_SV_IncrementActiveContractTime((pgVar2->s).number,iVar3,iVar4);
+        LiveContracts_SV_IncrementActiveContractTime
+                  ((pgVar2->s).number,activeContractIndex_00,increment_00);
       }
     }
   }
@@ -16795,24 +17538,26 @@ void __cdecl GScr_IncrementActiveContractTime(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsActiveContractComplete(scr_entref_t param_1)
+void __cdecl GScr_IsActiveContractComplete(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
-  int iVar3;
-  ContractStatus_t CVar4;
+  int activeContractIndex_00;
+  ContractStatus_t CVar3;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("IsActiveContractComplete: Entity must be a client",false);
     }
     else {
-      iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      CVar4 = LiveContracts_SV_GetActiveContractStatus((pgVar2->s).number,iVar3);
-      if (CVar4 == CONTRACT_COMPLETE) {
+      activeContractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+      CVar3 = LiveContracts_SV_GetActiveContractStatus((pgVar2->s).number,activeContractIndex_00);
+      if (CVar3 == CONTRACT_COMPLETE) {
         Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
       }
       else {
@@ -16834,24 +17579,26 @@ void __cdecl GScr_IsActiveContractComplete(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_HasActiveContractExpired(scr_entref_t param_1)
+void __cdecl GScr_HasActiveContractExpired(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
-  int iVar3;
-  ContractStatus_t CVar4;
+  int activeContractIndex_00;
+  ContractStatus_t CVar3;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("HasActiveContractExpired: Entity must be a client",false);
     }
     else {
-      iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      CVar4 = LiveContracts_SV_GetActiveContractStatus((pgVar2->s).number,iVar3);
-      if (CVar4 == CONTRACT_EXPIRED) {
+      activeContractIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+      CVar3 = LiveContracts_SV_GetActiveContractStatus((pgVar2->s).number,activeContractIndex_00);
+      if (CVar3 == CONTRACT_EXPIRED) {
         Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
       }
       else {
@@ -16873,25 +17620,27 @@ void __cdecl GScr_HasActiveContractExpired(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetActiveContractTimePassed(scr_entref_t param_1)
+void __cdecl GScr_GetActiveContractTimePassed(scr_entref_t entref)
 
 {
   uint uVar1;
   gentity_s *pgVar2;
   int iVar3;
-  scriptInstance_t sVar4;
+  scriptInstance_t inst;
+  gentity_s *playerEnt;
+  int activeContractIndex;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    pgVar2 = GetEntity(param_1);
+    pgVar2 = GetEntity(entref);
     if (pgVar2->client == (gclient_s *)0x0) {
       Scr_Error("GetActiveContractTimePassed: Entity must be a client",false);
     }
     else {
       iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      sVar4 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       iVar3 = LiveContracts_SV_GetCombatTimePassed((pgVar2->s).number,iVar3);
-      Scr_AddInt(iVar3,sVar4);
+      Scr_AddInt(iVar3,inst);
     }
   }
   else {
@@ -16906,13 +17655,13 @@ void __cdecl GScr_GetActiveContractTimePassed(scr_entref_t param_1)
 void __cdecl GScr_GetFogSettings(void)
 
 {
-  uint local_50;
-  float local_4c [18];
+  int i;
+  float settings [18];
   
-  R_GetFogSettings(local_4c);
+  R_GetFogSettings(settings);
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_50 = 0; local_50 < 0x11; local_50 = local_50 + 1) {
-    Scr_AddFloat(local_4c[local_50],SCRIPTINSTANCE_SERVER);
+  for (i = 0; (uint)i < 0x11; i = i + 1) {
+    Scr_AddFloat(settings[i],SCRIPTINSTANCE_SERVER);
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -16924,12 +17673,14 @@ void __cdecl GScr_GetFogSettings(void)
 void __cdecl GScr_EnableOccluder(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *name;
+  int iVar1;
+  char *occluderName;
+  int enable;
   
-  pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar2 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  R_EnableOccluder(pcVar1,iVar2 != 0);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  R_EnableOccluder(name,iVar1 != 0);
   return;
 }
 
@@ -16941,19 +17692,19 @@ void __cdecl Gscr_GetCustomClassLoadoutItem(void)
 {
   byte bVar1;
   uint uVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
+  char *itemName;
+  int slotNum;
+  scriptInstance_t inst;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 2) {
     Scr_Error("GetCustomClassLoadoutItem usage: <classnum>, <itemname>",false);
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  pcVar3 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = GetCustomClassLoadoutItemForSlot(0,iVar4,pcVar3);
-  Scr_AddInt((uint)bVar1,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  itemName = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  slotNum = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  bVar1 = GetCustomClassLoadoutItemForSlot(0,slotNum,itemName);
+  Scr_AddInt((uint)bVar1,inst);
   return;
 }
 
@@ -16964,19 +17715,19 @@ void __cdecl Gscr_GetCustomClassLoadoutModifier(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  int iVar3;
-  scriptInstance_t sVar4;
+  char *itemName;
+  int iVar2;
+  scriptInstance_t inst;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 2) {
     Scr_Error("GetCustomClassLoadoutItem usage: <classnum>, <itemname>",false);
   }
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar3 = GetCustomClassModifierForClass(0,iVar3,pcVar2);
-  Scr_AddInt(iVar3,sVar4);
+  inst = SCRIPTINSTANCE_SERVER;
+  itemName = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  iVar2 = GetCustomClassModifierForClass(0,iVar2,itemName);
+  Scr_AddInt(iVar2,inst);
   return;
 }
 
@@ -16987,8 +17738,9 @@ void __cdecl Gscr_GetCustomClassLoadoutModifier(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl GScr_SetDStat(scr_entref_t param_1)
+void __cdecl GScr_SetDStat(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -16997,57 +17749,58 @@ void __cdecl GScr_SetDStat(scr_entref_t param_1)
   gentity_s *pgVar4;
   int iVar5;
   char *pcVar6;
-  uint uVar7;
-  ulong64 uVar8;
-  undefined1 uVar9;
-  int iVar10;
-  uint local_20;
-  ddlState_t local_18;
-  uint local_8;
+  uint value;
+  ulong64 value_00;
+  undefined1 force_terminal;
+  int checkValidIndex;
+  int i;
+  gentity_s *playerEnt;
+  ddlState_t searchState;
+  int argc;
   
   pdVar3 = LiveStats_GetRootDDLState();
-  local_18.absoluteOffset = pdVar3->absoluteOffset;
-  local_18.arrayIndex = pdVar3->arrayIndex;
-  local_18.member = pdVar3->member;
-  local_18.ddl = pdVar3->ddl;
-  pgVar4 = GetEntity(param_1);
+  searchState.absoluteOffset = pdVar3->absoluteOffset;
+  searchState.arrayIndex = pdVar3->arrayIndex;
+  searchState.member = pdVar3->member;
+  searchState.ddl = pdVar3->ddl;
+  pgVar4 = GetEntity(entref);
   if (pgVar4->client == (gclient_s *)0x0) {
     Scr_Error("setdstat: entity must be a player entity",false);
   }
-  local_8 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (8 < (int)local_8) {
+  argc = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (8 < argc) {
     Scr_Error("setdstat: path should be at most 8 element deep",false);
   }
-  local_20 = 0;
+  i = 0;
   do {
-    if ((int)(local_8 - 1) <= (int)local_20) {
-      if (((local_18.member != (ddlMemberDef_t *)0x0) && (1 < (local_18.member)->arraySize)) &&
-         (local_18.arrayIndex == -1)) {
+    if (argc + -1 <= i) {
+      if (((searchState.member != (ddlMemberDef_t *)0x0) && (1 < (searchState.member)->arraySize))
+         && (searchState.arrayIndex == -1)) {
         Scr_Error("setdstat: trying to set a non leaf member of the ddl",false);
       }
-      iVar5 = Scr_GetType(local_8 - 1,SCRIPTINSTANCE_SERVER);
+      iVar5 = Scr_GetType(argc - 1,SCRIPTINSTANCE_SERVER);
       if (iVar5 == 2) {
-        if ((local_18.member == (ddlMemberDef_t *)0x0) || ((local_18.member)->type != 3)) {
-          if ((local_18.member == (ddlMemberDef_t *)0x0) || ((local_18.member)->type != 5)) {
+        if ((searchState.member == (ddlMemberDef_t *)0x0) || ((searchState.member)->type != 3)) {
+          if ((searchState.member == (ddlMemberDef_t *)0x0) || ((searchState.member)->type != 5)) {
             Scr_Error("setdstat: member expects a string or 64 bit integer only. For regular integers, don\'t use quotes."
                       ,false);
           }
           else {
-            pcVar6 = Scr_GetString(local_8 - 1,SCRIPTINSTANCE_SERVER);
-            SV_SetClientDStringStat((pgVar4->s).number,&local_18,pcVar6);
+            pcVar6 = Scr_GetString(argc - 1,SCRIPTINSTANCE_SERVER);
+            SV_SetClientDStringStat((pgVar4->s).number,&searchState,pcVar6);
             if ((debugStats != (dvar_s *)0x0) && ((debugStats->current).enabled != false)) {
-              Scr_GetString(local_8 - 1,SCRIPTINSTANCE_SERVER);
+              Scr_GetString(argc - 1,SCRIPTINSTANCE_SERVER);
               Scr_GetString(0,SCRIPTINSTANCE_SERVER);
               Com_Printf(0x10,"setStat %i %s %i\n");
             }
           }
         }
         else {
-          pcVar6 = Scr_GetString(local_8 - 1,SCRIPTINSTANCE_SERVER);
-          uVar8 = I_atoi64(pcVar6);
-          SV_SetClientDInt64Stat((pgVar4->s).number,&local_18,uVar8);
+          pcVar6 = Scr_GetString(argc - 1,SCRIPTINSTANCE_SERVER);
+          value_00 = I_atoi64(pcVar6);
+          SV_SetClientDInt64Stat((pgVar4->s).number,&searchState,value_00);
           if ((debugStats != (dvar_s *)0x0) && ((debugStats->current).enabled != false)) {
-            pcVar6 = Scr_GetString(local_8 - 1,SCRIPTINSTANCE_SERVER);
+            pcVar6 = Scr_GetString(argc - 1,SCRIPTINSTANCE_SERVER);
             I_atoi64(pcVar6);
             Scr_GetString(0,SCRIPTINSTANCE_SERVER);
             Com_Printf(0x10,"setStat %i %s %i\n");
@@ -17055,17 +17808,17 @@ void __cdecl GScr_SetDStat(scr_entref_t param_1)
         }
       }
       else if (iVar5 == 6) {
-        if ((local_18.member == (ddlMemberDef_t *)0x0) ||
-           ((((local_18.member)->type != 2 && ((local_18.member)->type != 0)) &&
-            ((local_18.member)->type != 1)))) {
+        if ((searchState.member == (ddlMemberDef_t *)0x0) ||
+           ((((searchState.member)->type != 2 && ((searchState.member)->type != 0)) &&
+            ((searchState.member)->type != 1)))) {
           Scr_Error("setdstat: member expects a string or 64 bit integers. Pass the value in quotes."
                     ,false);
         }
         else {
-          uVar7 = Scr_GetInt(local_8 - 1,SCRIPTINSTANCE_SERVER);
-          SV_SetClientDIntStat((pgVar4->s).number,&local_18,uVar7);
+          value = Scr_GetInt(argc - 1,SCRIPTINSTANCE_SERVER);
+          SV_SetClientDIntStat((pgVar4->s).number,&searchState,value);
           if ((debugStats != (dvar_s *)0x0) && ((debugStats->current).enabled != false)) {
-            Scr_GetInt(local_8 - 1,SCRIPTINSTANCE_SERVER);
+            Scr_GetInt(argc - 1,SCRIPTINSTANCE_SERVER);
             Scr_GetString(0,SCRIPTINSTANCE_SERVER);
             Com_Printf(0x10,"setStat %i %s %i\n");
           }
@@ -17076,35 +17829,35 @@ void __cdecl GScr_SetDStat(scr_entref_t param_1)
       }
       return;
     }
-    iVar5 = Scr_GetType(local_20,SCRIPTINSTANCE_SERVER);
+    iVar5 = Scr_GetType(i,SCRIPTINSTANCE_SERVER);
     if (iVar5 == 2) {
-      if (((local_18.member != (ddlMemberDef_t *)0x0) && (1 < (local_18.member)->arraySize)) &&
-         (((local_18.member)->enumIndex == -1 && (local_18.arrayIndex == -1)))) {
+      if (((searchState.member != (ddlMemberDef_t *)0x0) && (1 < (searchState.member)->arraySize))
+         && (((searchState.member)->enumIndex == -1 && (searchState.arrayIndex == -1)))) {
         Scr_Error("setdstat: array index (integer) expected. Received a string instead.",false);
       }
-      pcVar6 = Scr_GetString(local_20,SCRIPTINSTANCE_SERVER);
-      iVar5 = DDL_MoveToName(&local_18,&local_18,pcVar6);
+      pcVar6 = Scr_GetString(i,SCRIPTINSTANCE_SERVER);
+      iVar5 = DDL_MoveToName(&searchState,&searchState,pcVar6);
       if (iVar5 == 0) {
-        uVar9 = 0;
-        Scr_GetString(local_20,SCRIPTINSTANCE_SERVER);
+        force_terminal = 0;
+        Scr_GetString(i,SCRIPTINSTANCE_SERVER);
         pcVar6 = va("setdstat: Could not find member name %s.");
-        Scr_Error(pcVar6,(bool)uVar9);
+        Scr_Error(pcVar6,(bool)force_terminal);
       }
     }
     else if (iVar5 == 6) {
-      if ((local_18.member == (ddlMemberDef_t *)0x0) &&
+      if ((searchState.member == (ddlMemberDef_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0x3568,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_18.member)->arraySize == 1) {
+      if ((searchState.member)->arraySize == 1) {
         Scr_Error("setdstat: member name (string) expected. Received an integer instead.",false);
       }
-      iVar10 = 1;
-      iVar5 = Scr_GetInt(local_20,SCRIPTINSTANCE_SERVER);
-      iVar5 = DDL_MoveToIndex(&local_18,&local_18,iVar5,iVar10);
+      checkValidIndex = 1;
+      iVar5 = Scr_GetInt(i,SCRIPTINSTANCE_SERVER);
+      iVar5 = DDL_MoveToIndex(&searchState,&searchState,iVar5,checkValidIndex);
       if (iVar5 == 0) {
         Scr_Error("setdstat: Could not find member array index number.",false);
       }
@@ -17112,7 +17865,7 @@ void __cdecl GScr_SetDStat(scr_entref_t param_1)
     else {
       Scr_Error("setdstat: Expected strings or integers only.",false);
     }
-    local_20 = local_20 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -17123,6 +17876,7 @@ void __cdecl GScr_SetDStat(scr_entref_t param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl GScr_UploadStats(void)
 
@@ -17131,6 +17885,7 @@ void __cdecl GScr_UploadStats(void)
   bool bVar2;
   uint uVar3;
   gentity_s *pgVar4;
+  gentity_s *playerEnt;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 0) {
@@ -17160,28 +17915,34 @@ void __cdecl GScr_UploadStats(void)
 
 // 00659750  GScr_GetItemAttachment  (game_mp/g_scr_main_mp.cpp:13781)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl GScr_GetItemAttachment(void)
 
 {
   uint uVar1;
-  int iVar2;
-  int iVar3;
-  eAttachment eVar4;
-  char *pcVar5;
-  scriptInstance_t sVar6;
+  int itemIndex_00;
+  int attachmentNum_00;
+  eAttachment index;
+  char *value;
+  scriptInstance_t inst;
+  int attachmentNum;
+  int itemIndex;
+  int argc;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 2) {
     Scr_Error("GetItemAttachment( <itemIndex>, <attachmentNum> ) takes 2 parameters",false);
   }
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  sVar6 = SCRIPTINSTANCE_SERVER;
-  eVar4 = BG_UnlockablesGetItemAttachment(iVar2,iVar3);
-  pcVar5 = BG_GetAttachmentName(eVar4);
-  Scr_AddString(pcVar5,sVar6);
+  itemIndex_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  attachmentNum_00 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  inst = SCRIPTINSTANCE_SERVER;
+  index = BG_UnlockablesGetItemAttachment(itemIndex_00,attachmentNum_00);
+  value = BG_GetAttachmentName(index);
+  Scr_AddString(value,inst);
   return;
 }
 
@@ -17193,18 +17954,21 @@ void __cdecl GScr_GetDefaultClassSlot(void)
 {
   uint uVar1;
   char *pcVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *slotName_00;
+  scriptInstance_t inst;
+  char *className;
+  char *slotName;
+  int argc;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 2) {
     Scr_Error("GetDefaultClassSlot( <classname>, <slot> ) takes 2 parameters",false);
   }
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pcVar3 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_UnlockablesGetDefaultClassSlotFromName(pcVar2,pcVar3);
-  Scr_AddString(pcVar2,sVar4);
+  slotName_00 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  inst = SCRIPTINSTANCE_SERVER;
+  pcVar2 = BG_UnlockablesGetDefaultClassSlotFromName(pcVar2,slotName_00);
+  Scr_AddString(pcVar2,inst);
   return;
 }
 
@@ -17216,15 +17980,17 @@ void __cdecl GScr_GetDefaultClassSlot(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTeamForTrigger(scr_entref_t param_1)
+void __cdecl GScr_SetTeamForTrigger(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   char *pcVar2;
   uint uVar3;
   undefined1 uVar4;
+  ushort team;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((((pgVar1->classname != scr_const.trigger_use) &&
        (pgVar1->classname != scr_const.trigger_use_touch)) &&
       (pgVar1->classname != scr_const.trigger_radius)) &&
@@ -17266,38 +18032,40 @@ void __cdecl GScr_SetTeamForTrigger(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetPerkForTrigger(scr_entref_t param_1)
+void __cdecl GScr_SetPerkForTrigger(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   char *pcVar2;
   uint uVar3;
-  undefined1 uVar4;
-  bool bVar5;
-  uchar local_c;
+  undefined1 force_terminal;
+  bool force_terminal_00;
+  char *perkName;
+  uint perkIndex;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((((pgVar1->classname != scr_const.trigger_use) &&
        (pgVar1->classname != scr_const.trigger_use_touch)) &&
       (pgVar1->classname != scr_const.trigger_radius)) &&
      (pgVar1->classname != scr_const.trigger_radius_use)) {
-    uVar4 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)scr_const.trigger_radius_use,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_radius,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use_touch,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("setperkfortrigger: trigger entity must be of type %s, %s, %s or %s");
-    Scr_Error(pcVar2,(bool)uVar4);
+    Scr_Error(pcVar2,(bool)force_terminal);
   }
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   uVar3 = BG_GetPerkIndexForName(pcVar2);
   if (0xff < uVar3) {
-    bVar5 = false;
+    force_terminal_00 = false;
     pcVar2 = va("setperkfortrigger: perk index \'%d\' is out of bounds for perk \'%s\'");
-    Scr_Error(pcVar2,bVar5);
+    Scr_Error(pcVar2,force_terminal_00);
   }
-  local_c = (uchar)uVar3;
-  (pgVar1->field36_0x21c).trigger.perk = local_c;
+  perkIndex._0_1_ = (uchar)uVar3;
+  (pgVar1->field36_0x21c).trigger.perk = (uchar)perkIndex;
   return;
 }
 
@@ -17309,23 +18077,25 @@ void __cdecl GScr_SetPerkForTrigger(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetIgnoreEntForTrigger(scr_entref_t param_1)
+void __cdecl GScr_SetIgnoreEntForTrigger(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  gentity_s *pgVar3;
-  undefined1 uVar4;
+  char *error;
+  gentity_s *pgVar2;
+  undefined1 force_terminal;
+  gentity_s *ignoreEnt;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->classname != scr_const.trigger_radius_use) {
-    uVar4 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)scr_const.trigger_radius_use,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("setperkfortrigger: trigger entity must be of type %s");
-    Scr_Error(pcVar2,(bool)uVar4);
+    error = va("setperkfortrigger: trigger entity must be of type %s");
+    Scr_Error(error,(bool)force_terminal);
   }
-  pgVar3 = Scr_GetEntity(0);
-  (pgVar1->s).otherEntityNum = (short)(pgVar3->s).number;
+  pgVar2 = Scr_GetEntity(0);
+  (pgVar1->s).otherEntityNum = (short)(pgVar2->s).number;
   return;
 }
 
@@ -17337,15 +18107,17 @@ void __cdecl GScr_SetIgnoreEntForTrigger(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ClientClaimTrigger(scr_entref_t param_1)
+void __cdecl GScr_ClientClaimTrigger(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   gentity_s *pgVar2;
-  char *pcVar3;
-  undefined1 uVar4;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *clientEnt;
+  gentity_s *triggerEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("clientclaimtrigger: claimer must be a client.",false);
   }
@@ -17354,13 +18126,13 @@ void __cdecl GScr_ClientClaimTrigger(scr_entref_t param_1)
        (pgVar2->classname != scr_const.trigger_use_touch)) &&
       (pgVar2->classname != scr_const.trigger_radius)) &&
      (pgVar2->classname != scr_const.trigger_radius_use)) {
-    uVar4 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)scr_const.trigger_radius_use,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_radius,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use_touch,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("clientclaimtrigger: trigger entity must be of type %s or %s or %s or %s");
-    Scr_Error(pcVar3,(bool)uVar4);
+    error = va("clientclaimtrigger: trigger entity must be of type %s or %s or %s or %s");
+    Scr_Error(error,(bool)force_terminal);
   }
   if (((pgVar2->field36_0x21c).item[1].ammoCount == 0x3ff) ||
      ((pgVar2->field36_0x21c).item[1].ammoCount == (uint)(pgVar1->client->ps).clientNum)) {
@@ -17377,15 +18149,17 @@ void __cdecl GScr_ClientClaimTrigger(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ClientReleaseTrigger(scr_entref_t param_1)
+void __cdecl GScr_ClientReleaseTrigger(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   gentity_s *pgVar2;
-  char *pcVar3;
-  undefined1 uVar4;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *clientEnt;
+  gentity_s *triggerEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("clientreleasetrigger: releaser must be a client.",false);
   }
@@ -17394,13 +18168,13 @@ void __cdecl GScr_ClientReleaseTrigger(scr_entref_t param_1)
        (pgVar2->classname != scr_const.trigger_use_touch)) &&
       (pgVar2->classname != scr_const.trigger_radius)) &&
      (pgVar2->classname != scr_const.trigger_radius_use)) {
-    uVar4 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)scr_const.trigger_radius_use,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_radius,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use_touch,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use,SCRIPTINSTANCE_SERVER);
-    pcVar3 = va("clientreleasetrigger: trigger entity must be of type %s or %s or %s or %s");
-    Scr_Error(pcVar3,(bool)uVar4);
+    error = va("clientreleasetrigger: trigger entity must be of type %s or %s or %s or %s");
+    Scr_Error(error,(bool)force_terminal);
   }
   if ((pgVar2->field36_0x21c).item[1].ammoCount == (uint)(pgVar1->client->ps).clientNum) {
     (pgVar2->field36_0x21c).item[1].ammoCount = 0x3ff;
@@ -17416,21 +18190,22 @@ void __cdecl GScr_ClientReleaseTrigger(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ReleaseClaimedTrigger(scr_entref_t param_1)
+void __cdecl GScr_ReleaseClaimedTrigger(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  char *pcVar2;
-  undefined1 uVar3;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *triggerEnt;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((pgVar1->classname != scr_const.trigger_use) &&
      (pgVar1->classname != scr_const.trigger_use_touch)) {
-    uVar3 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)scr_const.trigger_use_touch,SCRIPTINSTANCE_SERVER);
     SL_ConvertToString((uint)scr_const.trigger_use,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("releaseclaimedtrigger: trigger entity must be of type %s or %s");
-    Scr_Error(pcVar2,(bool)uVar3);
+    error = va("releaseclaimedtrigger: trigger entity must be of type %s or %s");
+    Scr_Error(error,(bool)force_terminal);
   }
   (pgVar1->field36_0x21c).item[1].ammoCount = 0x3ff;
   return;
@@ -17443,14 +18218,14 @@ void __cdecl GScr_SetMapCenter(void)
 
 {
   uint uVar1;
-  float local_10 [3];
+  float mapCenter [3];
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     Scr_Error("Expected 1 argument to setMapCenter()",false);
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  SV_SetMapCenter(local_10);
+  Scr_GetVector(0,mapCenter,SCRIPTINSTANCE_SERVER);
+  SV_SetMapCenter(mapCenter);
   return;
 }
 
@@ -17462,8 +18237,8 @@ void __cdecl GScr_SetDemoIntermissionPoint(void)
 {
   bool bVar1;
   uint uVar2;
-  float local_1c [3];
-  float local_10 [3];
+  float origin [3];
+  float angles [3];
   
   bVar1 = Demo_IsEnabled();
   if ((bVar1) && (bVar1 = Demo_IsRecording(), bVar1)) {
@@ -17471,9 +18246,9 @@ void __cdecl GScr_SetDemoIntermissionPoint(void)
     if (uVar2 != 2) {
       Scr_Error("Expected 2 argument to SetDemoIntermissionPoint()",false);
     }
-    Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
-    Demo_SetIntermissionPoint(local_1c,local_10);
+    Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,angles,SCRIPTINSTANCE_SERVER);
+    Demo_SetIntermissionPoint(origin,angles);
   }
   return;
 }
@@ -17518,11 +18293,11 @@ void __cdecl GScr_IsDemoRecording(void)
 
 {
   bool bVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   bVar1 = Demo_IsRecording();
-  Scr_AddBool((uint)bVar1,sVar2);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -17533,11 +18308,11 @@ void __cdecl isDemoEnabled(void)
 
 {
   bool bVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
   
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   bVar1 = Demo_IsEnabled();
-  Scr_AddBool((uint)bVar1,sVar2);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -17548,21 +18323,23 @@ void __cdecl isDemoEnabled(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl GScr_isTestClient(scr_entref_t param_1)
+void __cdecl GScr_isTestClient(scr_entref_t entref)
 
 {
   bool bVar1;
   gentity_s *pgVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   if (pgVar2->client == (gclient_s *)0x0) {
     Scr_Error("istestclient: entity must be a player entity",false);
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   bVar1 = SV_IsTestClient((pgVar2->s).number);
-  Scr_AddBool((uint)bVar1,sVar3);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -17573,21 +18350,23 @@ void __cdecl GScr_isTestClient(scr_entref_t param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl GScr_isDemoClient(scr_entref_t param_1)
+void __cdecl GScr_isDemoClient(scr_entref_t entref)
 
 {
   bool bVar1;
   gentity_s *pgVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   if (pgVar2->client == (gclient_s *)0x0) {
     Scr_Error("isdemoclient: entity must be a player entity",false);
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   bVar1 = SV_IsDemoClient((pgVar2->s).number);
-  Scr_AddBool((uint)bVar1,sVar3);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -17598,14 +18377,14 @@ void __cdecl GScr_SetGameEndTime(void)
 
 {
   uint uVar1;
-  int iVar2;
+  int gameEndTime;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     Scr_Error("Expected 1 argument to setGameEndTime()",false);
   }
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  SV_SetGameEndTime(iVar2);
+  gameEndTime = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  SV_SetGameEndTime(gameEndTime);
   return;
 }
 
@@ -17616,16 +18395,16 @@ void __cdecl GScr_SetTimeScale(void)
 
 {
   uint uVar1;
-  int iVar2;
-  float fVar3;
+  int endTime;
+  float endTimeScale;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 2) {
     Scr_Error("Expected 2 arguments to SetTimeScale()",false);
   }
-  iVar2 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  SV_SetTimeScale(fVar3,iVar2);
+  endTime = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  endTimeScale = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  SV_SetTimeScale(endTimeScale,endTime);
   return;
 }
 
@@ -17637,20 +18416,22 @@ void __cdecl GScr_SetTimeScale(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl GScr_SetMiniMap(void)
 
 {
   float10 fVar1;
   uint uVar2;
-  char *pcVar3;
-  float10 fVar4;
+  char *val;
+  float10 fVar3;
+  float fVar4;
   float fVar5;
-  float fVar6;
-  double dVar7;
-  char local_38 [32];
+  double dVar6;
+  char *material;
+  char northYawString [32];
   uint local_18;
-  float local_c;
+  float lowerRight;
   float local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -17659,26 +18440,26 @@ void __cdecl GScr_SetMiniMap(void)
     Scr_Error("Expecting 5 arguments",false);
   }
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  fVar5 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  fVar6 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  fVar4 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  fVar5 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  lowerRight = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
   local_8 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-  SV_GetConfigstring(0x60c,local_38,0x20);
-  dVar7 = atof(local_38);
-  fVar1 = (float10)fcos((float10)((float)dVar7 * 0.017453292));
-  fVar4 = (float10)fsin((float10)((float)dVar7 * 0.017453292));
-  level.compassMapWorldSize[0] = (local_c - fVar5) * (float)fVar4 - (local_8 - fVar6) * (float)fVar1
-  ;
+  SV_GetConfigstring(0x60c,northYawString,0x20);
+  dVar6 = atof(northYawString);
+  fVar1 = (float10)fcos((float10)((float)dVar6 * 0.017453292));
+  fVar3 = (float10)fsin((float10)((float)dVar6 * 0.017453292));
+  level.compassMapWorldSize[0] =
+       (lowerRight - fVar4) * (float)fVar3 - (local_8 - fVar5) * (float)fVar1;
   level.compassMapWorldSize[1] =
-       -(local_c - fVar5) * (float)fVar1 - (local_8 - fVar6) * (float)fVar4;
+       -(lowerRight - fVar4) * (float)fVar1 - (local_8 - fVar5) * (float)fVar3;
   if ((level.compassMapWorldSize[0] < 0.0) || (level.compassMapWorldSize[1] < 0.0)) {
     Scr_Error("lower-right X and Y coordinates must be both south and east of upper-left X and Y coordinates in terms of the northyaw"
               ,false);
   }
-  level.compassMapUpperLeft[0] = fVar5;
-  level.compassMapUpperLeft[1] = fVar6;
-  pcVar3 = va("\"%s\" %f %f %f %f");
-  SV_SetConfigstring(0x60d,pcVar3);
+  level.compassMapUpperLeft[0] = fVar4;
+  level.compassMapUpperLeft[1] = fVar5;
+  val = va("\"%s\" %f %f %f %f");
+  SV_SetConfigstring(0x60d,val);
   return;
 }
 
@@ -17690,12 +18471,14 @@ void __cdecl GScr_IncrementEscrow(void)
 {
   uint uVar1;
   char *pcVar2;
-  ulong64 local_c;
+  char *xuidString;
+  int amount;
+  ulong64 xuid;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 2) {
     pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    StringToXUID(pcVar2,&local_c);
+    StringToXUID(pcVar2,&xuid);
     Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("%s %llu %d\n");
     Cbuf_AddText(0,pcVar2);
@@ -17723,25 +18506,27 @@ void __cdecl GScr_SetTeamSpyplane(void)
   uint uVar4;
   bool bVar5;
   uint uVar6;
-  char *pcVar7;
-  uint uVar8;
-  scriptInstance_t sVar9;
+  char *error;
+  uint uVar7;
+  scriptInstance_t inst;
+  ushort team;
+  uint SpyplaneAvailable;
   
   uVar6 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((((uVar6 & 0xffff) != (uint)scr_const.allies) && ((uVar6 & 0xffff) != (uint)scr_const.axis))
      && ((uVar6 & 0xffff) != (uint)scr_const.none)) {
-    sVar9 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     SL_ConvertToString(uVar6 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar7 = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
-    Scr_ParamError(0,pcVar7,sVar9);
+    error = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
+    Scr_ParamError(0,error,inst);
   }
-  uVar8 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  uVar7 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   uVar2 = level.teamHasSpyplane[0];
   uVar3 = level.teamHasSpyplane[1];
-  uVar4 = uVar8;
+  uVar4 = uVar7;
   if ((((uVar6 & 0xffff) != (uint)scr_const.allies) &&
-      (uVar3 = uVar8, uVar4 = level.teamHasSpyplane[2], (uVar6 & 0xffff) != (uint)scr_const.axis))
-     && ((uVar2 = uVar8, uVar3 = level.teamHasSpyplane[1], (uVar6 & 0xffff) != (uint)scr_const.none
+      (uVar3 = uVar7, uVar4 = level.teamHasSpyplane[2], (uVar6 & 0xffff) != (uint)scr_const.axis))
+     && ((uVar2 = uVar7, uVar3 = level.teamHasSpyplane[1], (uVar6 & 0xffff) != (uint)scr_const.none
          && (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp"
                                       ,0x3810,0,"%s"), uVar3 = level.teamHasSpyplane[1],
             uVar4 = level.teamHasSpyplane[2], !bVar5)))) {
@@ -17767,28 +18552,29 @@ void __cdecl GScr_GetTeamSpyplane(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  uint local_8;
+  char *error;
+  scriptInstance_t inst;
+  ushort team;
+  uint SpyplaneAvailable;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar1 & 0xffff) == (uint)scr_const.allies) {
-    local_8 = level.teamHasSpyplane[2];
+    SpyplaneAvailable = level.teamHasSpyplane[2];
   }
   else if ((uVar1 & 0xffff) == (uint)scr_const.axis) {
-    local_8 = level.teamHasSpyplane[1];
+    SpyplaneAvailable = level.teamHasSpyplane[1];
   }
   else {
     if ((uVar1 & 0xffff) != (uint)scr_const.none) {
-      sVar3 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
-      pcVar2 = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
-      Scr_ParamError(0,pcVar2,sVar3);
+      error = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
+      Scr_ParamError(0,error,inst);
       return;
     }
-    local_8 = level.teamHasSpyplane[0];
+    SpyplaneAvailable = level.teamHasSpyplane[0];
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(SpyplaneAvailable,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -17809,25 +18595,27 @@ void __cdecl GScr_SetTeamSatellite(void)
   uint uVar4;
   bool bVar5;
   uint uVar6;
-  char *pcVar7;
-  uint uVar8;
-  scriptInstance_t sVar9;
+  char *error;
+  uint uVar7;
+  scriptInstance_t inst;
+  ushort team;
+  uint SatelliteAvailable;
   
   uVar6 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((((uVar6 & 0xffff) != (uint)scr_const.allies) && ((uVar6 & 0xffff) != (uint)scr_const.axis))
      && ((uVar6 & 0xffff) != (uint)scr_const.none)) {
-    sVar9 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     SL_ConvertToString(uVar6 & 0xffff,SCRIPTINSTANCE_SERVER);
-    pcVar7 = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
-    Scr_ParamError(0,pcVar7,sVar9);
+    error = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
+    Scr_ParamError(0,error,inst);
   }
-  uVar8 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  uVar7 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   uVar2 = level.teamHasSatellite[0];
   uVar3 = level.teamHasSatellite[1];
-  uVar4 = uVar8;
+  uVar4 = uVar7;
   if ((((uVar6 & 0xffff) != (uint)scr_const.allies) &&
-      (uVar3 = uVar8, uVar4 = level.teamHasSatellite[2], (uVar6 & 0xffff) != (uint)scr_const.axis))
-     && ((uVar2 = uVar8, uVar3 = level.teamHasSatellite[1], (uVar6 & 0xffff) != (uint)scr_const.none
+      (uVar3 = uVar7, uVar4 = level.teamHasSatellite[2], (uVar6 & 0xffff) != (uint)scr_const.axis))
+     && ((uVar2 = uVar7, uVar3 = level.teamHasSatellite[1], (uVar6 & 0xffff) != (uint)scr_const.none
          && (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp"
                                       ,0x385f,0,"%s"), uVar3 = level.teamHasSatellite[1],
             uVar4 = level.teamHasSatellite[2], !bVar5)))) {
@@ -17853,28 +18641,29 @@ void __cdecl GScr_GetTeamSatellite(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  uint local_8;
+  char *error;
+  scriptInstance_t inst;
+  ushort team;
+  uint SatelliteAvailable;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar1 & 0xffff) == (uint)scr_const.allies) {
-    local_8 = level.teamHasSatellite[2];
+    SatelliteAvailable = level.teamHasSatellite[2];
   }
   else if ((uVar1 & 0xffff) == (uint)scr_const.axis) {
-    local_8 = level.teamHasSatellite[1];
+    SatelliteAvailable = level.teamHasSatellite[1];
   }
   else {
     if ((uVar1 & 0xffff) != (uint)scr_const.none) {
-      sVar3 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       SL_ConvertToString(uVar1 & 0xffff,SCRIPTINSTANCE_SERVER);
-      pcVar2 = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
-      Scr_ParamError(0,pcVar2,sVar3);
+      error = va("Illegal team string \'%s\'. Must be allies, axis, or none.");
+      Scr_ParamError(0,error,inst);
       return;
     }
-    local_8 = level.teamHasSatellite[0];
+    SatelliteAvailable = level.teamHasSatellite[0];
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(SatelliteAvailable,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -17885,19 +18674,20 @@ void __cdecl GScr_GetArrayKeys(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  uint uVar3;
-  scriptInstance_t sVar4;
+  char *error;
+  uint parentId;
+  scriptInstance_t inst;
+  uint id;
   
   iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 != 0x14) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("Parameter (%s) must be an array");
-    Scr_ParamError(0,pcVar2,sVar4);
+    error = va("Parameter (%s) must be an array");
+    Scr_ParamError(0,error,inst);
   }
-  uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddArrayKeys(uVar3,SCRIPTINSTANCE_SERVER);
+  parentId = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+  Scr_AddArrayKeys(parentId,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -17909,20 +18699,20 @@ void __cdecl GScr_GetArrayKeys(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_Launch(scr_entref_t param_1)
+void __cdecl GScr_Launch(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  float local_20;
+  char *error;
+  float avelocity;
   float local_1c;
   float local_18;
-  float local_14;
+  float velocity;
   float local_10;
   float local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 0) {
@@ -17931,16 +18721,16 @@ void __cdecl GScr_Launch(scr_entref_t param_1)
   }
   Scr_Error("Incorrect number of parameters\n",false);
 LAB_0065a7f3:
-  local_8 = GetEntity(param_1);
-  Scr_GetVector(0,&local_14,SCRIPTINSTANCE_SERVER);
-  if (((((uint)local_14 & 0x7f800000) == 0x7f800000) ||
+  ent = GetEntity(entref);
+  Scr_GetVector(0,&velocity,SCRIPTINSTANCE_SERVER);
+  if (((((uint)velocity & 0x7f800000) == 0x7f800000) ||
       (((uint)local_10 & 0x7f800000) == 0x7f800000)) || (((uint)local_c & 0x7f800000) == 0x7f800000)
      ) {
     bVar2 = false;
-    pcVar4 = va("invalid velocity parameter in launch command: %f %f %f");
-    Scr_Error(pcVar4,bVar2);
+    error = va("invalid velocity parameter in launch command: %f %f %f");
+    Scr_Error(error,bVar2);
   }
-  if (((((uint)local_14 & 0x7f800000) == 0x7f800000) ||
+  if (((((uint)velocity & 0x7f800000) == 0x7f800000) ||
       (((uint)local_10 & 0x7f800000) == 0x7f800000)) || (((uint)local_c & 0x7f800000) == 0x7f800000)
      ) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x38e1,
@@ -17951,14 +18741,14 @@ LAB_0065a7f3:
       return;
     }
   }
-  (local_8->s).lerp.pos.trType = '\x06';
-  (local_8->s).lerp.pos.trTime = level.time;
-  (local_8->s).lerp.pos.trDelta[0] = local_14;
-  (local_8->s).lerp.pos.trDelta[1] = local_10;
-  (local_8->s).lerp.pos.trDelta[2] = local_c;
-  if (((((uint)(local_8->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)(local_8->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)(local_8->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
+  (ent->s).lerp.pos.trType = '\x06';
+  (ent->s).lerp.pos.trTime = level.time;
+  (ent->s).lerp.pos.trDelta[0] = velocity;
+  (ent->s).lerp.pos.trDelta[1] = local_10;
+  (ent->s).lerp.pos.trDelta[2] = local_c;
+  if (((((uint)(ent->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)(ent->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)(ent->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x38eb,
                              0,"%s");
     if (!bVar2) {
@@ -17969,15 +18759,15 @@ LAB_0065a7f3:
   }
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (1 < uVar3) {
-    Scr_GetVector(1,&local_20,SCRIPTINSTANCE_SERVER);
-    (local_8->s).lerp.apos.trType = '\x03';
-    (local_8->s).lerp.apos.trTime = level.time;
-    (local_8->s).lerp.apos.trDelta[0] = local_20;
-    (local_8->s).lerp.apos.trDelta[1] = local_1c;
-    (local_8->s).lerp.apos.trDelta[2] = local_18;
-    if (((((uint)(local_8->s).lerp.apos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-        (((uint)(local_8->s).lerp.apos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)(local_8->s).lerp.apos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
+    Scr_GetVector(1,&avelocity,SCRIPTINSTANCE_SERVER);
+    (ent->s).lerp.apos.trType = '\x03';
+    (ent->s).lerp.apos.trTime = level.time;
+    (ent->s).lerp.apos.trDelta[0] = avelocity;
+    (ent->s).lerp.apos.trDelta[1] = local_1c;
+    (ent->s).lerp.apos.trDelta[2] = local_18;
+    if (((((uint)(ent->s).lerp.apos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+        (((uint)(ent->s).lerp.apos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+       (((uint)(ent->s).lerp.apos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x38fa,0,"%s");
       if (!bVar2) {
@@ -17987,10 +18777,10 @@ LAB_0065a7f3:
       }
     }
   }
-  local_8->physicsObject = '\x01';
-  if ((local_8->s).eType != 4) {
-    (local_8->r).contents = 0;
-    SV_LinkEntity(local_8);
+  ent->physicsObject = '\x01';
+  if ((ent->s).eType != 4) {
+    (ent->r).contents = 0;
+    SV_LinkEntity(ent);
   }
   return;
 }
@@ -18011,25 +18801,25 @@ void __cdecl GScr_MagicBullet(void)
   uint uVar3;
   char *pcVar4;
   int iVar5;
-  undefined1 uVar6;
-  float local_b0;
+  undefined1 force_terminal;
+  float source;
   float local_ac;
   float local_a8;
-  gentity_s *local_a4;
-  gentity_s *local_a0;
-  float local_9c;
+  gentity_s *tempEnt;
+  gentity_s *attacker;
+  float dir;
   float local_98;
   float local_94;
-  gentity_s *local_90;
-  uint local_8c;
-  char *local_88;
-  gentity_s *local_84;
-  float local_80 [3];
-  weaponParms local_74;
-  float local_28;
+  gentity_s *projectile;
+  int weapon;
+  char *weapName;
+  gentity_s *targetEnt;
+  float angles [3];
+  weaponParms wp;
+  float dest;
   float local_24;
   float local_20;
-  float local_1c [4];
+  float targetOffset [4];
   float local_c;
   float local_8;
   
@@ -18037,78 +18827,77 @@ void __cdecl GScr_MagicBullet(void)
   if (uVar3 < 3) {
     Scr_Error("MagicBullet weaponName sourceLoc destLoc.\n",false);
   }
-  local_88 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_8c = G_GetWeaponIndexForName(local_88);
-  if (local_8c == 0) {
+  weapName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(weapName);
+  if (weapon == 0) {
     bVar2 = false;
     pcVar4 = va("MagicBullet called with unknown weapon name %s\n");
     Scr_Error(pcVar4,bVar2);
   }
-  Scr_GetVector(1,local_1c + 3,SCRIPTINSTANCE_SERVER);
-  local_b0 = local_1c[3];
+  Scr_GetVector(1,targetOffset + 3,SCRIPTINSTANCE_SERVER);
+  source = targetOffset[3];
   local_ac = local_c;
   local_a8 = local_8;
-  Scr_GetVector(2,local_1c + 3,SCRIPTINSTANCE_SERVER);
-  local_28 = local_1c[3];
+  Scr_GetVector(2,targetOffset + 3,SCRIPTINSTANCE_SERVER);
+  dest = targetOffset[3];
   local_24 = local_c;
   local_20 = local_8;
-  Weapon_SetWeaponParamsWeapon(&local_74,local_8c);
-  local_74.muzzleTrace[0] = local_b0;
-  local_74.muzzleTrace[1] = local_ac;
-  local_74.muzzleTrace[2] = local_a8;
-  local_9c = local_28 - local_b0;
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  wp.muzzleTrace[0] = source;
+  wp.muzzleTrace[1] = local_ac;
+  wp.muzzleTrace[2] = local_a8;
+  dir = dest - source;
   local_98 = local_24 - local_ac;
   local_94 = local_20 - local_a8;
-  Vec3Normalize(&local_9c);
-  local_74.forward[0] = local_9c;
-  local_74.forward[1] = local_98;
-  local_74.forward[2] = local_94;
-  local_74.right[0] = 0.0;
-  local_74.right[1] = 0.0;
-  local_74.right[2] = 0.0;
-  local_74.up[0] = 0.0;
-  local_74.up[1] = 0.0;
-  local_74.up[2] = 0.0;
-  local_1c[0] = 0.0;
-  local_1c[1] = 0.0;
-  local_1c[2] = 0.0;
-  if (((local_74.weapDef)->weapType == WEAPTYPE_GRENADE) ||
-     ((local_74.weapDef)->weapType == WEAPTYPE_MINE)) {
+  Vec3Normalize(&dir);
+  wp.forward[0] = dir;
+  wp.forward[1] = local_98;
+  wp.forward[2] = local_94;
+  wp.right[0] = 0.0;
+  wp.right[1] = 0.0;
+  wp.right[2] = 0.0;
+  wp.up[0] = 0.0;
+  wp.up[1] = 0.0;
+  wp.up[2] = 0.0;
+  targetOffset[0] = 0.0;
+  targetOffset[1] = 0.0;
+  targetOffset[2] = 0.0;
+  if (((wp.weapDef)->weapType == WEAPTYPE_GRENADE) || ((wp.weapDef)->weapType == WEAPTYPE_MINE)) {
     Scr_Error("MagicBullet() does not work with grenade-type weapons.\n",false);
   }
-  local_a0 = g_entities + 0x3fe;
+  attacker = g_entities + 0x3fe;
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((3 < uVar3) && (iVar5 = Scr_GetType(3,SCRIPTINSTANCE_SERVER), iVar5 != 0)) {
-    local_a0 = Scr_GetEntity(3);
+    attacker = Scr_GetEntity(3);
   }
-  local_84 = (gentity_s *)0x0;
+  targetEnt = (gentity_s *)0x0;
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (4 < uVar3) {
-    local_84 = Scr_GetEntity(4);
+    targetEnt = Scr_GetEntity(4);
   }
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (5 < uVar3) {
-    Scr_GetVector(5,local_1c,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(5,targetOffset,SCRIPTINSTANCE_SERVER);
   }
-  local_90 = (gentity_s *)0x0;
-  if ((local_74.weapDef)->weapType == WEAPTYPE_BULLET) {
-    Bullet_Fire(local_a0,0.0,&local_74,(gentity_s *)0x0,level.time);
+  projectile = (gentity_s *)0x0;
+  if ((wp.weapDef)->weapType == WEAPTYPE_BULLET) {
+    Bullet_Fire(attacker,0.0,&wp,(gentity_s *)0x0,level.time);
   }
-  else if ((local_74.weapDef)->weapType == WEAPTYPE_PROJECTILE) {
-    if ((local_74.weapDef)->weapClass == WEAPCLASS_GRENADE) {
-      local_90 = Weapon_GrenadeLauncher_Fire(local_a0,local_8c,'\0',&local_74);
+  else if ((wp.weapDef)->weapType == WEAPTYPE_PROJECTILE) {
+    if ((wp.weapDef)->weapClass == WEAPCLASS_GRENADE) {
+      projectile = Weapon_GrenadeLauncher_Fire(attacker,weapon,'\0',&wp);
     }
-    else if ((local_74.weapDef)->weapClass == WEAPCLASS_ROCKETLAUNCHER) {
-      local_90 = Weapon_RocketLauncher_Fire
-                           (local_a0,local_8c,0.0,&local_74,vec3_origin,local_84,local_1c);
+    else if ((wp.weapDef)->weapClass == WEAPCLASS_ROCKETLAUNCHER) {
+      projectile = Weapon_RocketLauncher_Fire
+                             (attacker,weapon,0.0,&wp,vec3_origin,targetEnt,targetOffset);
     }
-    else if ((local_74.weapDef)->weapClass == WEAPCLASS_TURRET) {
-      if ((local_74.weapDef)->weapType == WEAPTYPE_PROJECTILE) {
-        local_90 = Weapon_RocketLauncher_Fire
-                             (local_a0,local_8c,0.0,&local_74,vec3_origin,local_84,local_1c);
+    else if ((wp.weapDef)->weapClass == WEAPCLASS_TURRET) {
+      if ((wp.weapDef)->weapType == WEAPTYPE_PROJECTILE) {
+        projectile = Weapon_RocketLauncher_Fire
+                               (attacker,weapon,0.0,&wp,vec3_origin,targetEnt,targetOffset);
       }
-      else if ((local_74.weapDef)->weapType == WEAPTYPE_BULLET) {
-        Bullet_Fire(local_a0,0.0,&local_74,(gentity_s *)0x0,level.time);
+      else if ((wp.weapDef)->weapType == WEAPTYPE_BULLET) {
+        Bullet_Fire(attacker,0.0,&wp,(gentity_s *)0x0,level.time);
       }
     }
     else {
@@ -18116,28 +18905,28 @@ void __cdecl GScr_MagicBullet(void)
     }
   }
   else {
-    uVar6 = 0;
-    BG_GetWeaponTypeName((local_74.weapDef)->weapType);
+    force_terminal = 0;
+    BG_GetWeaponTypeName((wp.weapDef)->weapType);
     pcVar4 = va("MagicBullet(): Unhandled weapType \"%s\".\n");
-    Scr_Error(pcVar4,(bool)uVar6);
+    Scr_Error(pcVar4,(bool)force_terminal);
   }
-  local_a4 = G_TempEntity(&local_b0,0x1d);
-  vectoangles(&local_9c,local_80);
-  G_SetAngle(local_a4,local_80);
-  (local_a4->s).weapon = (ushort)local_8c;
-  if (((local_a4->s).weapon != local_8c) &&
+  tempEnt = G_TempEntity(&source,0x1d);
+  vectoangles(&dir,angles);
+  G_SetAngle(tempEnt,angles);
+  (tempEnt->s).weapon = (ushort)weapon;
+  if (((uint)(tempEnt->s).weapon != weapon) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x3958,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (local_a4->s).eventParms[(int)(local_a4->s).eventSequence & 3] = 0;
-  if (local_a0 != (gentity_s *)0x0) {
-    (local_a4->s).eventParm = (ushort)(local_a0->s).number;
+  (tempEnt->s).eventParms[(int)(tempEnt->s).eventSequence & 3] = 0;
+  if (attacker != (gentity_s *)0x0) {
+    (tempEnt->s).eventParm = (ushort)(attacker->s).number;
   }
-  if (local_90 != (gentity_s *)0x0) {
-    Scr_AddEntity(local_90,SCRIPTINSTANCE_SERVER);
+  if (projectile != (gentity_s *)0x0) {
+    Scr_AddEntity(projectile,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -18150,65 +18939,64 @@ void __cdecl GScr_MagicBullet(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_LaunchBomb(scr_entref_t param_1)
+void __cdecl GScr_LaunchBomb(scr_entref_t entref)
 
 {
   uint uVar1;
   char *pcVar2;
-  scriptInstance_t sVar3;
-  bool bVar4;
-  float local_80;
+  scriptInstance_t inst;
+  bool force_terminal;
+  float velocity;
   undefined4 local_7c;
   undefined4 local_78;
-  float local_74;
+  float dir;
   undefined4 local_70;
   undefined4 local_6c;
-  uint local_68;
-  weaponParms local_64;
-  float local_1c [3];
-  gentity_s *local_10;
-  char *local_c;
-  gentity_s *local_8;
+  int iWeaponIndex;
+  weaponParms wp;
+  float targetOffset [3];
+  gentity_s *ent;
+  char *pszWeaponName;
+  gentity_s *player;
   
-  local_8 = GetEntity(param_1);
-  if (local_8->client == (gclient_s *)0x0) {
+  player = GetEntity(entref);
+  if (player->client == (gclient_s *)0x0) {
     Scr_Error("LaunchBomb: entity must be a player entity",false);
   }
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 3) {
-    local_c = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_68 = G_GetWeaponIndexForName(local_c);
-    if (local_68 == 0) {
-      if (*local_c == '\0') {
+    pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    iWeaponIndex = G_GetWeaponIndexForName(pszWeaponName);
+    if (iWeaponIndex == 0) {
+      if (*pszWeaponName == '\0') {
         Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
       }
       else {
-        sVar3 = SCRIPTINSTANCE_SERVER;
+        inst = SCRIPTINSTANCE_SERVER;
         pcVar2 = va("Invalid weapon name %s");
-        Scr_ParamError(0,pcVar2,sVar3);
+        Scr_ParamError(0,pcVar2,inst);
       }
     }
-    Weapon_SetWeaponParamsWeapon(&local_64,local_68);
-    if (((((local_64.weapDef)->weapType != WEAPTYPE_BULLET) &&
-         ((local_64.weapDef)->weapType != WEAPTYPE_PROJECTILE)) &&
-        ((local_64.weapDef)->weapType != WEAPTYPE_BOMB)) &&
-       ((local_64.weapDef)->weapType != WEAPTYPE_GAS)) {
-      bVar4 = false;
+    Weapon_SetWeaponParamsWeapon(&wp,iWeaponIndex);
+    if (((((wp.weapDef)->weapType != WEAPTYPE_BULLET) &&
+         ((wp.weapDef)->weapType != WEAPTYPE_PROJECTILE)) &&
+        ((wp.weapDef)->weapType != WEAPTYPE_BOMB)) && ((wp.weapDef)->weapType != WEAPTYPE_GAS)) {
+      force_terminal = false;
       pcVar2 = va("LaunchBomb only support bullet, bomb, gas and projectile weapons\n");
-      Scr_Error(pcVar2,bVar4);
+      Scr_Error(pcVar2,force_terminal);
     }
-    Scr_GetVector(1,local_64.muzzleTrace,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(2,&local_80,SCRIPTINSTANCE_SERVER);
-    local_1c[0] = 0.0;
-    local_1c[1] = 0.0;
-    local_1c[2] = 0.0;
-    local_74 = local_80;
+    Scr_GetVector(1,wp.muzzleTrace,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(2,&velocity,SCRIPTINSTANCE_SERVER);
+    targetOffset[0] = 0.0;
+    targetOffset[1] = 0.0;
+    targetOffset[2] = 0.0;
+    dir = velocity;
     local_70 = local_7c;
     local_6c = local_78;
-    Vec3Normalize(&local_74);
-    local_10 = G_DropBomb(local_8,local_68,local_64.muzzleTrace,&local_74,&local_80,(gentity_s *)0x0
-                          ,local_1c);
-    Scr_AddEntity(local_10,SCRIPTINSTANCE_SERVER);
+    Vec3Normalize(&dir);
+    ent = G_DropBomb(player,iWeaponIndex,wp.muzzleTrace,&dir,&velocity,(gentity_s *)0x0,targetOffset
+                    );
+    Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
   }
   else {
     Scr_Error("illegal call to LaunchBomb(<weapon>, <position>, <velocity>)",false);
@@ -18224,13 +19012,14 @@ void __cdecl GScr_LaunchBomb(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_MakeGrenadeDud(scr_entref_t param_1)
+void __cdecl GScr_MakeGrenadeDud(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
+  gentity_s *grenade;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if ((pgVar1->s).eType == 4) {
     uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar2 == 0) {
@@ -18254,12 +19043,13 @@ void __cdecl GScr_MakeGrenadeDud(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsOnLadder(scr_entref_t param_1)
+void __cdecl GScr_IsOnLadder(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("setstat: entity must be a player entity",false);
   }
@@ -18275,12 +19065,13 @@ void __cdecl GScr_IsOnLadder(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsMantling(scr_entref_t param_1)
+void __cdecl GScr_IsMantling(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_Error("setstat: entity must be a player entity",false);
   }
@@ -18296,12 +19087,13 @@ void __cdecl GScr_IsMantling(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StartDoorBreach(scr_entref_t param_1)
+void __cdecl GScr_StartDoorBreach(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_ObjectError("Not a player entity",SCRIPTINSTANCE_SERVER);
   }
@@ -18317,12 +19109,13 @@ void __cdecl GScr_StartDoorBreach(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StopDoorBreach(scr_entref_t param_1)
+void __cdecl GScr_StopDoorBreach(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (pgVar1->client == (gclient_s *)0x0) {
     Scr_ObjectError("Not a player entity",SCRIPTINSTANCE_SERVER);
   }
@@ -18338,16 +19131,17 @@ void __cdecl GScr_StopDoorBreach(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl GScr_SetupLightEntity(scr_entref_t param_1)
+gentity_s * __cdecl GScr_SetupLightEntity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  char *error;
+  undefined1 force_terminal;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3a1c,
                              0,"%s");
@@ -18358,10 +19152,10 @@ gentity_s * __cdecl GScr_SetupLightEntity(scr_entref_t param_1)
     }
   }
   if ((pgVar3->s).eType != 10) {
-    uVar5 = 0;
+    force_terminal = 0;
     SL_ConvertToString((uint)pgVar3->classname,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("Function can only be called on a \'light\' entity; actual classname is \'%s\'\n");
-    Scr_Error(pcVar4,(bool)uVar5);
+    error = va("Function can only be called on a \'light\' entity; actual classname is \'%s\'\n");
+    Scr_Error(error,(bool)force_terminal);
   }
   return pgVar3;
 }
@@ -18374,15 +19168,16 @@ gentity_s * __cdecl GScr_SetupLightEntity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLightColor(scr_entref_t param_1)
+void __cdecl GScr_GetLightColor(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  float local_14 [4];
+  gentity_s *ent;
+  float unpackedColor [4];
   
-  pgVar1 = GScr_SetupLightEntity(param_1);
-  Byte4UnpackRgba((uchar *)&(pgVar1->s).lerp.u,local_14);
-  Scr_AddVector(local_14,SCRIPTINSTANCE_SERVER);
+  pgVar1 = GScr_SetupLightEntity(entref);
+  Byte4UnpackRgba((uchar *)&(pgVar1->s).lerp.u,unpackedColor);
+  Scr_AddVector(unpackedColor,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -18394,19 +19189,21 @@ void __cdecl GScr_GetLightColor(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetLightColor(scr_entref_t param_1)
+void __cdecl GScr_SetLightColor(scr_entref_t entref)
 
 {
   uchar uVar1;
   gentity_s *pgVar2;
-  float local_14 [3];
+  uchar exponent;
+  gentity_s *ent;
+  float unpackedColor [3];
   undefined4 local_8;
   
-  pgVar2 = GScr_SetupLightEntity(param_1);
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
+  pgVar2 = GScr_SetupLightEntity(entref);
+  Scr_GetVector(0,unpackedColor,SCRIPTINSTANCE_SERVER);
   local_8 = 0;
   uVar1 = (pgVar2->s).lerp.u.primaryLight.colorAndExp[3];
-  Byte4PackRgba(local_14,(uchar *)&(pgVar2->s).lerp.u);
+  Byte4PackRgba(unpackedColor,(uchar *)&(pgVar2->s).lerp.u);
   (pgVar2->s).lerp.u.primaryLight.colorAndExp[3] = uVar1;
   return;
 }
@@ -18419,12 +19216,13 @@ void __cdecl GScr_SetLightColor(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLightIntensity(scr_entref_t param_1)
+void __cdecl GScr_GetLightIntensity(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GScr_SetupLightEntity(param_1);
+  pgVar1 = GScr_SetupLightEntity(entref);
   Scr_AddFloat((pgVar1->s).lerp.u.turret.gunAngles[1],SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -18437,13 +19235,15 @@ void __cdecl GScr_GetLightIntensity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetLightIntensity(scr_entref_t param_1)
+void __cdecl GScr_SetLightIntensity(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   float local_10;
+  float intensity;
+  gentity_s *ent;
   
-  pgVar1 = GScr_SetupLightEntity(param_1);
+  pgVar1 = GScr_SetupLightEntity(entref);
   local_10 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   if (local_10 < -0.001) {
     Scr_ParamError(0,"intensity must be >= 0",SCRIPTINSTANCE_SERVER);
@@ -18463,12 +19263,13 @@ void __cdecl GScr_SetLightIntensity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLightRadius(scr_entref_t param_1)
+void __cdecl GScr_GetLightRadius(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GScr_SetupLightEntity(param_1);
+  pgVar1 = GScr_SetupLightEntity(entref);
   Scr_AddFloat((pgVar1->s).lerp.u.turret.gunAngles[2],SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -18481,20 +19282,23 @@ void __cdecl GScr_GetLightRadius(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetLightRadius(scr_entref_t param_1)
+void __cdecl GScr_SetLightRadius(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   ComPrimaryLight *pCVar4;
-  char *pcVar5;
-  float fVar6;
-  scriptInstance_t sVar7;
+  char *error;
+  float fVar5;
+  scriptInstance_t inst;
   float local_1c;
   float local_14;
+  float radius;
+  gentity_s *ent;
+  ComPrimaryLight *refLight;
   
-  pgVar3 = GScr_SetupLightEntity(param_1);
+  pgVar3 = GScr_SetupLightEntity(entref);
   pCVar4 = Com_GetPrimaryLight((int)(pgVar3->s).index.brushmodel);
   if ((pCVar4 == (ComPrimaryLight *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
@@ -18503,22 +19307,22 @@ void __cdecl GScr_SetLightRadius(scr_entref_t param_1)
     (*pcVar1)();
     return;
   }
-  fVar6 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (-0.001 <= fVar6) {
-    if (pCVar4->radius + 0.001 < fVar6) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      pcVar5 = va("radius must be less than the bsp radius (%g)");
-      Scr_ParamError(0,pcVar5,sVar7);
+  fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (-0.001 <= fVar5) {
+    if (pCVar4->radius + 0.001 < fVar5) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("radius must be less than the bsp radius (%g)");
+      Scr_ParamError(0,error,inst);
     }
   }
   else {
     Scr_ParamError(0,"radius must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  local_14 = fVar6;
-  if (0.0 <= fVar6 - pCVar4->radius) {
+  local_14 = fVar5;
+  if (0.0 <= fVar5 - pCVar4->radius) {
     local_14 = pCVar4->radius;
   }
-  if (0.0 - fVar6 < 0.0) {
+  if (0.0 - fVar5 < 0.0) {
     local_1c = local_14;
   }
   else {
@@ -18531,19 +19335,22 @@ void __cdecl GScr_SetLightRadius(scr_entref_t param_1)
 
 // 0065B7D0  GScr_GetLightFovInner  (game_mp/g_scr_main_mp.cpp:15036)
 
+/* WARNING: Variable defined which should be unmapped: ent */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLightFovInner(scr_entref_t param_1)
+void __cdecl GScr_GetLightFovInner(scr_entref_t entref)
 
 {
   float fVar1;
   gentity_s *pgVar2;
   double dVar3;
+  gentity_s *ent;
+  float fov;
   
-  pgVar2 = GScr_SetupLightEntity(param_1);
+  pgVar2 = GScr_SetupLightEntity(entref);
   fVar1 = (pgVar2->s).lerp.u.turret.heatVal;
   dVar3 = (double)fVar1;
   __libm_sse2_acos((double)CONCAT44(pgVar2,fVar1));
@@ -18554,19 +19361,22 @@ void __cdecl GScr_GetLightFovInner(scr_entref_t param_1)
 
 // 0065B830  GScr_GetLightFovOuter  (game_mp/g_scr_main_mp.cpp:15057)
 
+/* WARNING: Variable defined which should be unmapped: ent */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLightFovOuter(scr_entref_t param_1)
+void __cdecl GScr_GetLightFovOuter(scr_entref_t entref)
 
 {
   float fVar1;
   gentity_s *pgVar2;
   double dVar3;
+  gentity_s *ent;
+  float fov;
   
-  pgVar2 = GScr_SetupLightEntity(param_1);
+  pgVar2 = GScr_SetupLightEntity(entref);
   fVar1 = (pgVar2->s).lerp.u.primaryLight.cosHalfFovOuter;
   dVar3 = (double)fVar1;
   __libm_sse2_acos((double)CONCAT44(pgVar2,fVar1));
@@ -18582,7 +19392,7 @@ void __cdecl GScr_GetLightFovOuter(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetLightFovRange(scr_entref_t param_1)
+void __cdecl GScr_SetLightFovRange(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -18598,9 +19408,14 @@ void __cdecl GScr_SetLightFovRange(scr_entref_t param_1)
   float local_38;
   float local_28;
   float local_20;
-  float local_c;
+  float cosHalfFovOuter;
+  float fovInner;
+  float fovOuter;
+  gentity_s *ent;
+  float cosHalfFovInner;
+  ComPrimaryLight *refLight;
   
-  pgVar3 = GScr_SetupLightEntity(param_1);
+  pgVar3 = GScr_SetupLightEntity(entref);
   pCVar4 = Com_GetPrimaryLight((int)(pgVar3->s).index.brushmodel);
   if ((pCVar4 == (ComPrimaryLight *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
@@ -18641,18 +19456,18 @@ void __cdecl GScr_SetLightFovRange(scr_entref_t param_1)
     if (0.0 <= fVar8 - 1.0) {
       local_28 = 1.0;
     }
-    local_c = local_28;
+    cosHalfFovInner = local_28;
     if (0.0 <= (local_38 + 0.001) - fVar8) {
-      local_c = local_38 + 0.001;
+      cosHalfFovInner = local_38 + 0.001;
     }
   }
   else {
-    local_c = pCVar4->cosHalfFovInner;
+    cosHalfFovInner = pCVar4->cosHalfFovInner;
     if (0.0 <= pCVar4->cosHalfFovInner - (local_38 + 0.001)) {
-      local_c = local_38 + 0.001;
+      cosHalfFovInner = local_38 + 0.001;
     }
   }
-  if (((local_38 <= 0.0) || (local_c <= local_38)) || (1.0 < local_c)) {
+  if (((local_38 <= 0.0) || (cosHalfFovInner <= local_38)) || (1.0 < cosHalfFovInner)) {
     va("%g, %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3b0a,
                              0,"%s\n\t%s");
@@ -18663,7 +19478,7 @@ void __cdecl GScr_SetLightFovRange(scr_entref_t param_1)
     }
   }
   (pgVar3->s).lerp.u.primaryLight.cosHalfFovOuter = local_38;
-  (pgVar3->s).lerp.u.turret.heatVal = local_c;
+  (pgVar3->s).lerp.u.turret.heatVal = cosHalfFovInner;
   return;
 }
 
@@ -18675,12 +19490,13 @@ void __cdecl GScr_SetLightFovRange(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetLightExponent(scr_entref_t param_1)
+void __cdecl GScr_GetLightExponent(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
+  gentity_s *ent;
   
-  pgVar1 = GScr_SetupLightEntity(param_1);
+  pgVar1 = GScr_SetupLightEntity(entref);
   Scr_AddInt((uint)(pgVar1->s).lerp.u.primaryLight.colorAndExp[3],SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -18693,20 +19509,21 @@ void __cdecl GScr_GetLightExponent(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetLightExponent(scr_entref_t param_1)
+void __cdecl GScr_SetLightExponent(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   int iVar2;
-  uchar local_c;
+  int exponent;
+  gentity_s *ent;
   
-  pgVar1 = GScr_SetupLightEntity(param_1);
+  pgVar1 = GScr_SetupLightEntity(entref);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar2 < 0) || (100 < iVar2)) {
     Scr_ParamError(0,"exponent must be in the range from 0 to 100",SCRIPTINSTANCE_SERVER);
   }
-  local_c = (uchar)iVar2;
-  (pgVar1->s).lerp.u.primaryLight.colorAndExp[3] = local_c;
+  exponent._0_1_ = (uchar)iVar2;
+  (pgVar1->s).lerp.u.primaryLight.colorAndExp[3] = (uchar)exponent;
   return;
 }
 
@@ -18718,14 +19535,16 @@ void __cdecl GScr_SetLightExponent(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_StartRagdoll(scr_entref_t param_1)
+void __cdecl GScr_StartRagdoll(scr_entref_t entref)
 
 {
   uchar uVar1;
   gentity_s *pgVar2;
   uint uVar3;
+  int rigIndex;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
+  pgVar2 = GetEntity(entref);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 != 0) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
@@ -18761,17 +19580,18 @@ void __cdecl GScr_StartRagdoll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsRagdoll(scr_entref_t param_1)
+void __cdecl GScr_IsRagdoll(scr_entref_t entref)
 
 {
   bool bVar1;
   gentity_s *pgVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar2 = GetEntity(param_1);
-  sVar3 = SCRIPTINSTANCE_SERVER;
+  pgVar2 = GetEntity(entref);
+  inst = SCRIPTINSTANCE_SERVER;
   bVar1 = Com_IsRagdollTrajectory(&(pgVar2->s).lerp.pos);
-  Scr_AddInt((uint)bVar1,sVar3);
+  Scr_AddInt((uint)bVar1,inst);
   return;
 }
 
@@ -18783,22 +19603,23 @@ void __cdecl GScr_IsRagdoll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_RagdollLaunch(scr_entref_t param_1)
+void __cdecl GScr_RagdollLaunch(scr_entref_t entref)
 
 {
   bool bVar1;
   gentity_s *pgVar2;
   uint uVar3;
   hitLocation_t hVar4;
-  float local_14 [3];
-  gentity_s *local_8;
+  gentity_s *tempent;
+  float force [3];
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  bVar1 = Com_IsRagdollTrajectory(&(local_8->s).lerp.pos);
+  ent = GetEntity(entref);
+  bVar1 = Com_IsRagdollTrajectory(&(ent->s).lerp.pos);
   if (bVar1) {
-    Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-    pgVar2 = G_TempEntity(local_14,0x4b);
-    (pgVar2->s).otherEntityNum = (short)(local_8->s).number;
+    Scr_GetVector(0,force,SCRIPTINSTANCE_SERVER);
+    pgVar2 = G_TempEntity(force,0x4b);
+    (pgVar2->s).otherEntityNum = (short)(ent->s).number;
     uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar3 < 2) {
       (pgVar2->s).eventParm = 0;
@@ -18820,21 +19641,22 @@ void __cdecl GScr_RagdollLaunch(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_VehicleLaunch(scr_entref_t param_1)
+void __cdecl GScr_VehicleLaunch(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   uint uVar2;
   int iVar3;
-  float local_14 [3];
-  gentity_s *local_8;
+  gentity_s *tempent;
+  float force [3];
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  if ((local_8->scr_vehicle != (scr_vehicle_s *)0x0) &&
-     (local_8->scr_vehicle->nitrousVehicle != (NitrousVehicle *)0x0)) {
-    Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-    pgVar1 = G_TempEntity(local_14,0x4b);
-    (pgVar1->s).otherEntityNum = (short)(local_8->s).number;
+  ent = GetEntity(entref);
+  if ((ent->scr_vehicle != (scr_vehicle_s *)0x0) &&
+     (ent->scr_vehicle->nitrousVehicle != (NitrousVehicle *)0x0)) {
+    Scr_GetVector(0,force,SCRIPTINSTANCE_SERVER);
+    pgVar1 = G_TempEntity(force,0x4b);
+    (pgVar1->s).otherEntityNum = (short)(ent->s).number;
     (pgVar1->s).eventParm = 0;
     uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (2 < uVar2) {
@@ -18851,11 +19673,11 @@ void __cdecl GScr_VehicleLaunch(scr_entref_t param_1)
       Scr_GetVector(1,(pgVar1->s).lerp.pos.trDelta,SCRIPTINSTANCE_SERVER);
       if ((pgVar1->s).eventParm == 0) {
         (pgVar1->s).lerp.pos.trDelta[0] =
-             (pgVar1->s).lerp.pos.trDelta[0] - (local_8->r).currentOrigin[0];
+             (pgVar1->s).lerp.pos.trDelta[0] - (ent->r).currentOrigin[0];
         (pgVar1->s).lerp.pos.trDelta[1] =
-             (pgVar1->s).lerp.pos.trDelta[1] - (local_8->r).currentOrigin[1];
+             (pgVar1->s).lerp.pos.trDelta[1] - (ent->r).currentOrigin[1];
         (pgVar1->s).lerp.pos.trDelta[2] =
-             (pgVar1->s).lerp.pos.trDelta[2] - (local_8->r).currentOrigin[2];
+             (pgVar1->s).lerp.pos.trDelta[2] - (ent->r).currentOrigin[2];
       }
     }
   }
@@ -18870,12 +19692,14 @@ void __cdecl GScr_VehicleLaunch(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GiveAchievement(scr_entref_t param_1)
+void __cdecl GScr_GiveAchievement(scr_entref_t entref)
 
 {
   uint uVar1;
   char *pcVar2;
   gentity_s *pgVar3;
+  char *achievement;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
@@ -18885,7 +19709,7 @@ void __cdecl GScr_GiveAchievement(scr_entref_t param_1)
   if (*pcVar2 == '\0') {
     Scr_Error("giveachievement: achievement must be named",false);
   }
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if ((pgVar3 == (gentity_s *)0x0) || (pgVar3->client == (gclient_s *)0x0)) {
     Scr_Error("giveachievement: entity must be a player entity",false);
   }
@@ -18902,7 +19726,7 @@ void __cdecl GScr_GiveAchievement(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetOwner(scr_entref_t param_1)
+void __cdecl GScr_SetOwner(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -18910,8 +19734,12 @@ void __cdecl GScr_SetOwner(scr_entref_t param_1)
   gentity_s *pgVar3;
   gentity_s *pgVar4;
   uint uVar5;
+  int team;
+  gentity_s *owner;
+  gentity_s *ent;
+  int ownerIndex;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (((pgVar3->s).eType == 1) || ((pgVar3->s).eType == 0x11)) {
     Scr_Error("SetOwner can not be used for players or actors",false);
   }
@@ -18947,21 +19775,25 @@ void __cdecl GScr_SetOwner(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTurretOwner(scr_entref_t param_1)
+void __cdecl GScr_SetTurretOwner(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  gentity_s *pgVar3;
-  gentity_s *pgVar4;
-  uint uVar5;
+  gentity_s *self;
+  gentity_s *owner_00;
+  uint uVar3;
+  int team;
+  gentity_s *owner;
+  gentity_s *ent;
+  int ownerIndex;
   
-  pgVar3 = GetEntity(param_1);
-  if (((pgVar3->s).eType == 1) || ((pgVar3->s).eType == 0x11)) {
+  self = GetEntity(entref);
+  if (((self->s).eType == 1) || ((self->s).eType == 0x11)) {
     Scr_Error("SetOwner can not be used for players or actors",false);
   }
-  pgVar4 = Scr_GetEntity(0);
-  if (pgVar4->client == (gclient_s *)0x0) {
+  owner_00 = Scr_GetEntity(0);
+  if (owner_00->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3c17,
                              0,"%s");
     if (!bVar2) {
@@ -18970,8 +19802,8 @@ void __cdecl GScr_SetTurretOwner(scr_entref_t param_1)
       return;
     }
   }
-  uVar5 = ((int)pgVar4->client - (int)level.clients) / 0x29e0;
-  if ((uint)level.maxclients <= uVar5) {
+  uVar3 = ((int)owner_00->client - (int)level.clients) / 0x29e0;
+  if ((uint)level.maxclients <= uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3c19,
                              0,"ownerIndex doesn\'t index level.maxclients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -18980,9 +19812,9 @@ void __cdecl GScr_SetTurretOwner(scr_entref_t param_1)
       return;
     }
   }
-  (pgVar3->s).faction.iHeadIconTeam = (byte)(uVar5 << 2) | (pgVar3->s).faction.iHeadIconTeam & 3;
-  (pgVar3->s).lerp.u.turret.ownerNum = uVar5;
-  Turret_SetTurretOwner(pgVar3,pgVar4);
+  (self->s).faction.iHeadIconTeam = (byte)(uVar3 << 2) | (self->s).faction.iHeadIconTeam & 3;
+  (self->s).lerp.u.turret.ownerNum = uVar3;
+  Turret_SetTurretOwner(self,owner_00);
   return;
 }
 
@@ -18994,7 +19826,7 @@ void __cdecl GScr_SetTurretOwner(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTurretType(scr_entref_t param_1)
+void __cdecl GScr_SetTurretType(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -19002,8 +19834,10 @@ void __cdecl GScr_SetTurretType(scr_entref_t param_1)
   gentity_s *pgVar3;
   char *pcVar4;
   int iVar5;
+  char *pszType;
+  gentity_s *ent;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if (pgVar3->pTurretInfo == (TurretInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3c34,
                              0,"%s");
@@ -19046,50 +19880,53 @@ void __cdecl GScr_SetTurretType(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetTeam(scr_entref_t param_1)
+void __cdecl GScr_SetTeam(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   char *pcVar2;
   int iVar3;
-  bool bVar4;
-  byte local_14;
+  bool force_terminal;
+  int team;
+  gentity_s *ent;
+  int ownerIndex;
+  char *pszTeam;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   if (((pgVar1->s).eType == 1) || ((pgVar1->s).eType == 0x11)) {
     Scr_Error("SetTeam can not be used for players or actors",false);
   }
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_14 = 0;
+  team._0_1_ = 0;
   iVar3 = I_stricmp(pcVar2,"axis");
   if (iVar3 == 0) {
-    local_14 = 1;
+    team._0_1_ = 1;
   }
   else {
     iVar3 = I_stricmp(pcVar2,"allies");
     if (iVar3 == 0) {
-      local_14 = 2;
+      team._0_1_ = 2;
     }
     else {
       iVar3 = I_stricmp(pcVar2,"spectator");
       if (iVar3 == 0) {
-        local_14 = 3;
+        team._0_1_ = 3;
       }
       else {
         iVar3 = I_stricmp(pcVar2,"free");
         if (iVar3 == 0) {
-          local_14 = 0;
+          team._0_1_ = 0;
         }
         else {
-          bVar4 = false;
+          force_terminal = false;
           pcVar2 = va("unknown team \'%s\', should be axis, allies, or neutral\n");
-          Scr_Error(pcVar2,bVar4);
+          Scr_Error(pcVar2,force_terminal);
         }
       }
     }
   }
   (pgVar1->s).faction.iHeadIconTeam =
-       (byte)(((int)(uint)(pgVar1->s).faction.iHeadIconTeam >> 2) << 2) | local_14;
+       (byte)(((int)(uint)(pgVar1->s).faction.iHeadIconTeam >> 2) << 2) | (byte)team;
   return;
 }
 
@@ -19101,34 +19938,35 @@ void __cdecl GScr_SetTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetTeam(scr_entref_t param_1)
+void __cdecl GScr_GetTeam(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
-  team_t local_c;
+  gentity_s *vehEnt;
+  team_t team;
+  gentity_s *ent;
   
-  local_c = TEAM_BAD;
-  pgVar1 = GetEntity(param_1);
-  switch((pgVar1->s).eType) {
+  team = TEAM_BAD;
+  vehEnt = GetEntity(entref);
+  switch((vehEnt->s).eType) {
   case 1:
-    local_c = (pgVar1->client->sess).cs.team;
+    team = (vehEnt->client->sess).cs.team;
     break;
   case 4:
-    local_c = (pgVar1->field36_0x21c).item[2].clipAmmoCount;
+    team = (vehEnt->field36_0x21c).item[2].clipAmmoCount;
     break;
   case 0xe:
-    local_c = G_GetVehicleOccupantsTeam(pgVar1);
+    team = G_GetVehicleOccupantsTeam(vehEnt);
     break;
   case 0x11:
-    local_c = pgVar1->sentient->eTeam;
+    team = vehEnt->sentient->eTeam;
   }
-  if (local_c == TEAM_AXIS) {
+  if (team == TEAM_AXIS) {
     Scr_AddString("axis",SCRIPTINSTANCE_SERVER);
   }
-  else if (local_c == TEAM_ALLIES) {
+  else if (team == TEAM_ALLIES) {
     Scr_AddString("allies",SCRIPTINSTANCE_SERVER);
   }
-  else if (local_c == TEAM_SPECTATOR) {
+  else if (team == TEAM_SPECTATOR) {
     Scr_AddString("spectator",SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -19142,30 +19980,34 @@ void __cdecl GScr_GetTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetCorpseAnim(scr_entref_t param_1)
+void __cdecl GScr_GetCorpseAnim(scr_entref_t entref)
 
 {
   int iVar1;
-  gentity_s *pgVar2;
-  int iVar3;
-  XAnim_s *pXVar4;
-  char *pcVar5;
-  bool bVar6;
-  scr_anim_s local_c;
+  gentity_s *ent_00;
+  int iVar2;
+  XAnim_s *anims;
+  char *error;
+  bool force_terminal;
+  XAnim_s *treeAnims;
+  int corpseIndex;
+  gentity_s *ent;
+  scr_anim_s anim;
+  corpseInfo_t *corpseInfo;
   
-  pgVar2 = GetEntity(param_1);
-  if ((pgVar2->s).eType == 2) {
-    iVar3 = G_GetPlayerCorpseIndex(pgVar2,"GScr_GetCorpseAnim");
-    iVar1 = (pgVar2->s).un2.animState.state;
-    pXVar4 = XAnimGetAnims(*(XAnimTree_s **)(g_scr_data.playerCorpseInfo + iVar3 * 0x5e0));
-    iVar3 = Scr_GetAnimsIndex(pXVar4,SCRIPTINSTANCE_SERVER);
-    local_c.field0_0x0 = (scr_anim_s_u_0)(CONCAT22((short)iVar3,(short)iVar1) & 0xfffffbff);
-    Scr_AddAnim(local_c,SCRIPTINSTANCE_SERVER);
+  ent_00 = GetEntity(entref);
+  if ((ent_00->s).eType == 2) {
+    iVar2 = G_GetPlayerCorpseIndex(ent_00,"GScr_GetCorpseAnim");
+    iVar1 = (ent_00->s).un2.animState.state;
+    anims = XAnimGetAnims(*(XAnimTree_s **)(g_scr_data.playerCorpseInfo + iVar2 * 0x5e0));
+    iVar2 = Scr_GetAnimsIndex(anims,SCRIPTINSTANCE_SERVER);
+    anim.field0_0x0 = (scr_anim_s_u_0)(CONCAT22((short)iVar2,(short)iVar1) & 0xfffffbff);
+    Scr_AddAnim(anim,SCRIPTINSTANCE_SERVER);
   }
   else {
-    bVar6 = false;
-    pcVar5 = va("Only valid on player corpses");
-    Scr_Error(pcVar5,bVar6);
+    force_terminal = false;
+    error = va("Only valid on player corpses");
+    Scr_Error(error,force_terminal);
   }
   return;
 }
@@ -19178,7 +20020,7 @@ void __cdecl GScr_GetCorpseAnim(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_ItemWeaponSetAmmo(scr_entref_t param_1)
+void __cdecl ScrCmd_ItemWeaponSetAmmo(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -19187,13 +20029,18 @@ void __cdecl ScrCmd_ItemWeaponSetAmmo(scr_entref_t param_1)
   int iVar4;
   int iVar5;
   uint uVar6;
-  char *pcVar7;
-  int iVar8;
-  scriptInstance_t sVar9;
+  char *error;
+  int iVar7;
+  scriptInstance_t inst;
   int local_54;
-  int local_10;
+  gitem_s *item;
+  int reserveAmmo;
+  int clipAmmo;
+  int altIndex;
+  int weaponIndex;
+  gentity_s *itemEnt;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if ((pgVar3->s).eType != 3) {
     Scr_Error("Entity is not an item.",false);
   }
@@ -19208,21 +20055,21 @@ void __cdecl ScrCmd_ItemWeaponSetAmmo(scr_entref_t param_1)
   if (iVar5 < 0) {
     Scr_ParamError(1,"Ammo count must not be negative",SCRIPTINSTANCE_SERVER);
   }
-  local_10 = 0;
+  altIndex = 0;
   uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((2 < uVar6) &&
-     ((local_10 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER), local_10 < 0 || (1 < local_10)))) {
-    sVar9 = SCRIPTINSTANCE_SERVER;
-    pcVar7 = va("Value out of range.  Allowed values: 0 to %i");
-    Scr_ParamError(2,pcVar7,sVar9);
+     ((altIndex = Scr_GetInt(2,SCRIPTINSTANCE_SERVER), altIndex < 0 || (1 < altIndex)))) {
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("Value out of range.  Allowed values: 0 to %i");
+    Scr_ParamError(2,error,inst);
   }
-  uVar6 = *(uint *)(pgVar3->attachModelNames + local_10 * 6 + -0x32) & 0x800007ff;
+  uVar6 = *(uint *)(pgVar3->attachModelNames + altIndex * 6 + -0x32) & 0x800007ff;
   if ((int)uVar6 < 0) {
     uVar6 = (uVar6 - 1 | 0xfffff800) + 1;
   }
   if ((uVar6 != 0) && (-1 < (int)uVar6)) {
-    iVar8 = BG_GetClipSize(uVar6);
-    if ((iVar8 < 0) &&
+    iVar7 = BG_GetClipSize(uVar6);
+    if ((iVar7 < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                  0x3cee,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -19233,8 +20080,8 @@ void __cdecl ScrCmd_ItemWeaponSetAmmo(scr_entref_t param_1)
     if (iVar4 <= local_54) {
       local_54 = iVar4;
     }
-    *(int *)(pgVar3->attachModelNames + local_10 * 6 + -0x36) = iVar5;
-    *(int *)(pgVar3->attachModelNames + local_10 * 6 + -0x34) = local_54;
+    *(int *)(pgVar3->attachModelNames + altIndex * 6 + -0x36) = iVar5;
+    *(int *)(pgVar3->attachModelNames + altIndex * 6 + -0x34) = local_54;
   }
   return;
 }
@@ -19263,43 +20110,49 @@ void __cdecl Scr_ResetTimeout(void)
 // 0065C8E0  GScr_ClientSysRegister  (game_mp/g_scr_main_mp.cpp:15642)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl GScr_ClientSysRegister(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  char local_414 [1024];
+  char *s0;
+  int iVar1;
+  char *pRegSysName;
+  char szConfigString [1024];
   uint local_14;
-  int local_10;
-  char local_9;
-  char *local_8;
+  int i;
+  bool bSetString;
+  char *pSysName;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_9 = '\0';
-  local_10 = 0;
+  pSysName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  bSetString = false;
+  i = 0;
   while( true ) {
-    if (7 < local_10) {
+    if (7 < i) {
       Scr_AddInt(-1,SCRIPTINSTANCE_SERVER);
       return;
     }
-    SV_GetConfigstring(local_10 + 0x602,local_414,0x400);
-    if (local_414[0] == '\0') {
-      local_9 = '\x01';
+    SV_GetConfigstring(i + 0x602,szConfigString,0x400);
+    if (szConfigString[0] == '\0') {
+      bSetString = true;
     }
     else {
-      pcVar1 = Info_ValueForKey(local_414,"n");
-      if ((pcVar1 != (char *)0x0) && (iVar2 = I_stricmp(pcVar1,local_8), iVar2 == 0)) {
-        local_9 = '\x01';
+      s0 = Info_ValueForKey(szConfigString,"n");
+      if ((s0 != (char *)0x0) && (iVar1 = I_stricmp(s0,pSysName), iVar1 == 0)) {
+        bSetString = true;
       }
     }
-    if (local_9 != '\0') break;
-    local_10 = local_10 + 1;
+    if (bSetString != false) break;
+    i = i + 1;
   }
-  Info_SetValueForKey(local_414,"n",local_8);
-  SV_SetConfigstring(local_10 + 0x602,local_414);
-  Scr_AddInt(local_10,SCRIPTINSTANCE_SERVER);
+  Info_SetValueForKey(szConfigString,"n",pSysName);
+  SV_SetConfigstring(i + 0x602,szConfigString);
+  Scr_AddInt(i,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -19315,49 +20168,49 @@ void __cdecl GScr_ClientSysSetState(void)
   char *pcVar2;
   bool bVar3;
   char *local_81c;
-  uint local_818;
-  char local_814 [1028];
-  char *local_410;
-  char local_40c [1024];
+  uint j;
+  char str [1028];
+  char *pNewState;
+  char szConfigString [1024];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((local_8 < 0) || (8 < local_8)) {
+  i = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((i < 0) || (8 < i)) {
     bVar3 = true;
     pcVar2 = va("ClientSysSetState - state index (%i) out of bounds (0 - %i)");
     Scr_Error(pcVar2,bVar3);
   }
   else {
-    SV_GetConfigstring(local_8 + 0x602,local_40c,0x400);
-    if (local_40c[0] == '\0') {
+    SV_GetConfigstring(i + 0x602,szConfigString,0x400);
+    if (szConfigString[0] == '\0') {
       bVar3 = true;
       pcVar2 = va("ClientSysSetState - state index (%i) unregistered.  Use ClientSysRegister first."
                  );
       Scr_Error(pcVar2,bVar3);
     }
     else {
-      local_40c[0] = '\0';
-      local_410 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-      local_814[0] = '\0';
-      if (local_410 != (char *)0x0) {
-        I_strncpyz(local_814,local_410,0x400);
-        local_818 = 0;
+      szConfigString[0] = '\0';
+      pNewState = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+      str[0] = '\0';
+      if (pNewState != (char *)0x0) {
+        I_strncpyz(str,pNewState,0x400);
+        j = 0;
         while( true ) {
-          local_81c = local_814;
+          local_81c = str;
           do {
             cVar1 = *local_81c;
             local_81c = local_81c + 1;
           } while (cVar1 != '\0');
-          if ((uint)((int)local_81c - (int)(local_814 + 1)) <= local_818) break;
-          if (local_814[local_818] == ' ') {
-            local_814[local_818] = '!';
+          if ((uint)((int)local_81c - (int)(str + 1)) <= j) break;
+          if (str[j] == ' ') {
+            str[j] = '!';
           }
-          local_818 = local_818 + 1;
+          j = j + 1;
         }
       }
-      Info_SetValueForKey(local_40c,"s",local_814);
+      Info_SetValueForKey(szConfigString,"s",str);
       pcVar2 = va("%c %i %s");
       SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,pcVar2);
     }
@@ -19378,6 +20231,7 @@ void __cdecl GScr_IsAI(void)
 {
   int iVar1;
   gentity_s *pgVar2;
+  gentity_s *ent;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (((iVar1 == 1) && (iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar1 == 0x13)) &&
@@ -19412,6 +20266,7 @@ void __cdecl GScr_IsVehicle(void)
 {
   int iVar1;
   gentity_s *pgVar2;
+  gentity_s *ent;
   
   iVar1 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (((iVar1 == 1) && (iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar1 == 0x13)) &&
@@ -19441,16 +20296,17 @@ void __cdecl GScr_GetVehicleTriggerFlags(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetShootAtPosition(scr_entref_t param_1)
+void __cdecl ScrCmd_GetShootAtPosition(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent_00;
   sentient_s *in_stack_ffffffec;
   float *in_stack_fffffff0;
+  gentity_s *ent;
   
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->sentient == (sentient_s *)0x0) {
-    G_EntityCentroid(pgVar1,(float *)&stack0xffffffec);
+  ent_00 = GetEntity(entref);
+  if (ent_00->sentient == (sentient_s *)0x0) {
+    G_EntityCentroid(ent_00,(float *)&stack0xffffffec);
   }
   else {
     Sentient_GetEyePosition(in_stack_ffffffec,in_stack_fffffff0);
@@ -19471,17 +20327,17 @@ void __cdecl GScr_DisableDestructiblePieces(void)
 
 {
   uint uVar1;
-  float local_14 [3];
-  gentity_s *local_8;
+  float zero_vec [3];
+  gentity_s *tempent;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   DisableDestructiblePiece(uVar1);
-  local_14[0] = 0.0;
-  local_14[1] = 0.0;
-  local_14[2] = 0.0;
-  local_8 = G_TempEntity(local_14,0xb7);
+  zero_vec[0] = 0.0;
+  zero_vec[1] = 0.0;
+  zero_vec[2] = 0.0;
+  tempent = G_TempEntity(zero_vec,0xb7);
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  (local_8->s).eventParm = (ushort)uVar1;
+  (tempent->s).eventParm = (ushort)uVar1;
   return;
 }
 
@@ -19497,13 +20353,14 @@ void __cdecl GScr_EnableAllDestructiblePieces(void)
 
 {
   gentity_s *pgVar1;
-  float local_14 [4];
+  float zero_vec [3];
+  gentity_s *tempent;
   
   EnableAllDestructiblePieces();
-  local_14[0] = 0.0;
-  local_14[1] = 0.0;
-  local_14[2] = 0.0;
-  pgVar1 = G_TempEntity(local_14,0xb7);
+  zero_vec[0] = 0.0;
+  zero_vec[1] = 0.0;
+  zero_vec[2] = 0.0;
+  pgVar1 = G_TempEntity(zero_vec,0xb7);
   (pgVar1->s).eventParm = 0;
   return;
 }
@@ -19525,14 +20382,15 @@ void __cdecl GScr_SetSpawnPointRandomVariation(void)
 
 {
   uint uVar1;
-  float fVar2;
+  float variation_00;
+  float variation;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
     Scr_Error("USAGE: setspawnpointrandomvariation( <variation> )\n",false);
   }
-  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  SpawnSystem_SetRandomVariation(fVar2);
+  variation_00 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  SpawnSystem_SetRandomVariation(variation_00);
   return;
 }
 
@@ -19542,10 +20400,11 @@ void __cdecl GScr_SetSpawnPointRandomVariation(void)
 void __cdecl GScr_ClearSpawnPointsBaseWeight(void)
 
 {
-  int iVar1;
+  int teammask;
+  int team_mask;
   
-  iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  SpawnSystem_ClearPointsBaseWeight(iVar1);
+  teammask = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  SpawnSystem_ClearPointsBaseWeight(teammask);
   return;
 }
 
@@ -19556,21 +20415,23 @@ void __cdecl GScr_SetSpawnPointsBaseWeight(void)
 
 {
   uint uVar1;
-  int iVar2;
-  float fVar3;
-  float local_14 [3];
-  float local_8;
+  int teammask;
+  float angle_00;
+  float angle;
+  int team_mask;
+  float position [3];
+  float score;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 4) {
     Scr_Error("USAGE: setspawnpointsbaseweight( <team mask>, <objective position>, <angle>, <score> )\n"
               ,false);
   }
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_14,SCRIPTINSTANCE_SERVER);
-  fVar3 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  SpawnSystem_SetPointsBaseWeight(iVar2,local_14,fVar3,local_8);
+  teammask = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,position,SCRIPTINSTANCE_SERVER);
+  angle_00 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  score = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  SpawnSystem_SetPointsBaseWeight(teammask,position,angle_00,score);
   return;
 }
 
@@ -19588,19 +20449,25 @@ void __cdecl GScr_AddSpawnPoints(void)
   code *pcVar1;
   VariableValueInternal *pVVar2;
   bool bVar3;
+  int team_00;
+  uint id_00;
   int iVar4;
   uint uVar5;
-  int iVar6;
-  uint uVar7;
-  uint uVar8;
-  char *pcVar9;
-  scr_entref_t sVar10;
-  scriptInstance_t sVar11;
-  uint local_10;
+  uint uVar6;
+  char *pcVar7;
+  scr_entref_t sVar8;
+  scriptInstance_t inst;
+  VariableValueInternal *parentValue;
+  int team;
+  long script_array_size;
+  long parent_id;
+  int i;
+  VariableValueInternal *entry_value;
+  long id;
   
-  iVar4 = GScr_ReadTeamForSpawnPoints(0);
-  uVar5 = Scr_GetObject(1,SCRIPTINSTANCE_SERVER);
-  if (uVar5 == 0) {
+  team_00 = GScr_ReadTeamForSpawnPoints(0);
+  id_00 = Scr_GetObject(1,SCRIPTINSTANCE_SERVER);
+  if (id_00 == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3eac,
                              0,"%s");
     if (!bVar3) {
@@ -19609,8 +20476,8 @@ void __cdecl GScr_AddSpawnPoints(void)
       return;
     }
   }
-  iVar6 = GetObjectType(SCRIPTINSTANCE_SERVER,uVar5);
-  if (iVar6 != 0x14) {
+  iVar4 = GetObjectType(SCRIPTINSTANCE_SERVER,id_00);
+  if (iVar4 != 0x14) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3ead,
                              0,"%s");
     if (!bVar3) {
@@ -19619,16 +20486,16 @@ void __cdecl GScr_AddSpawnPoints(void)
       return;
     }
   }
-  uVar7 = GetArraySize(SCRIPTINSTANCE_SERVER,uVar5);
-  local_10 = 0;
+  uVar5 = GetArraySize(SCRIPTINSTANCE_SERVER,id_00);
+  i = 0;
   do {
-    if ((int)uVar7 <= (int)local_10) {
+    if ((int)uVar5 <= i) {
 LAB_0065d12e:
       SpawnSystem_SortPoints();
       return;
     }
-    uVar8 = GetArrayVariable(SCRIPTINSTANCE_SERVER,uVar5,local_10);
-    if (uVar8 == 0) {
+    uVar6 = GetArrayVariable(SCRIPTINSTANCE_SERVER,id_00,i);
+    if (uVar6 == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x3eb4,0,"%s");
       if (!bVar3) {
@@ -19638,8 +20505,8 @@ LAB_0065d12e:
       }
     }
     pVVar2 = gScrVarGlob[0].variableList;
-    iVar6 = uVar8 + 0x8000;
-    if ((gScrVarGlob[0].variableList[iVar6].w.status & 0x60) == 0) {
+    iVar4 = uVar6 + 0x8000;
+    if ((gScrVarGlob[0].variableList[iVar4].w.status & 0x60) == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x3eb7,0,"%s");
       if (!bVar3) {
@@ -19648,23 +20515,23 @@ LAB_0065d12e:
         return;
       }
     }
-    if ((pVVar2[iVar6].w.status & 0x1f) != 1) {
+    if ((pVVar2[iVar4].w.status & 0x1f) != 1) {
 LAB_0065d10d:
-      sVar11 = SCRIPTINSTANCE_SERVER;
-      pcVar9 = va("contents of spawnpoints array must be entities");
-      Scr_ParamError(1,pcVar9,sVar11);
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar7 = va("contents of spawnpoints array must be entities");
+      Scr_ParamError(1,pcVar7,inst);
       goto LAB_0065d12e;
     }
-    iVar6 = GetObjectType(SCRIPTINSTANCE_SERVER,pVVar2[iVar6].u.next);
-    if (iVar6 != 0x13) goto LAB_0065d10d;
-    sVar10 = Scr_GetEntityIdRef(0xd0,0);
-    bVar3 = SpawnSystem_AddPoint(iVar4,g_entities + (*sVar10._0_4_ & 0xffff));
+    iVar4 = GetObjectType(SCRIPTINSTANCE_SERVER,pVVar2[iVar4].u.next);
+    if (iVar4 != 0x13) goto LAB_0065d10d;
+    sVar8 = Scr_GetEntityIdRef(0xd0,0);
+    bVar3 = SpawnSystem_AddPoint(team_00,g_entities + (*sVar8._0_4_ & 0xffff));
     if (!bVar3) {
       bVar3 = false;
-      pcVar9 = va("Adding to many spawn points to spawnpoint system.  Max: %i\n");
-      Scr_Error(pcVar9,bVar3);
+      pcVar7 = va("Adding to many spawn points to spawnpoint system.  Max: %i\n");
+      Scr_Error(pcVar7,bVar3);
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -19679,38 +20546,40 @@ LAB_0065d10d:
 void __cdecl GScr_GetSortedSpawnPoints(void)
 
 {
+  int point_team_00;
   int iVar1;
-  int iVar2;
-  uint uVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  int local_18;
-  gentity_s *local_c;
-  int local_8;
+  uint uVar2;
+  char *error;
+  scriptInstance_t sVar3;
+  int i;
+  int influencer_team;
+  int point_team;
+  gentity_s *ent;
+  int count;
   
-  iVar1 = GScr_ReadTeamForSpawnPoints(0);
-  iVar2 = GScr_ReadTeamForSpawnPoints(1);
-  local_c = (gentity_s *)0x0;
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar3 == 3) {
-    local_c = Scr_GetEntity(2);
-    if (local_c->client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("getsortedspawnpoints: Entity must be a player");
-      Scr_ParamError(2,pcVar4,sVar5);
+  point_team_00 = GScr_ReadTeamForSpawnPoints(0);
+  iVar1 = GScr_ReadTeamForSpawnPoints(1);
+  ent = (gentity_s *)0x0;
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar2 == 3) {
+    ent = Scr_GetEntity(2);
+    if (ent->client == (gclient_s *)0x0) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      error = va("getsortedspawnpoints: Entity must be a player");
+      Scr_ParamError(2,error,sVar3);
     }
   }
-  if (local_c == (gentity_s *)0x0) {
-    local_8 = SpawnSystem_UpdateSpawnPointsForTeam(iVar1,iVar2);
+  if (ent == (gentity_s *)0x0) {
+    count = SpawnSystem_UpdateSpawnPointsForTeam(point_team_00,iVar1);
   }
   else {
-    local_8 = SpawnSystem_UpdateSpawnPointsForPlayer(local_c,iVar1,iVar2);
+    count = SpawnSystem_UpdateSpawnPointsForPlayer(ent,point_team_00,iVar1);
   }
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_18 = 0; local_18 < local_8; local_18 = local_18 + 1) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    iVar2 = SpawnSystem_GetSortedPointEntNum(iVar1,local_18);
-    Scr_AddEntity(level.gentities + iVar2,sVar5);
+  for (i = 0; i < count; i = i + 1) {
+    sVar3 = SCRIPTINSTANCE_SERVER;
+    iVar1 = SpawnSystem_GetSortedPointEntNum(point_team_00,i);
+    Scr_AddEntity(level.gentities + iVar1,sVar3);
     Scr_AddArray(SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -19729,26 +20598,27 @@ void __cdecl GScr_IsSpawnPointVisible(void)
 {
   bool bVar1;
   uint uVar2;
-  int iVar3;
-  scriptInstance_t sVar4;
-  float local_20 [3];
-  gentity_s *local_14;
-  float local_10 [3];
+  int other_team;
+  scriptInstance_t inst;
+  int team;
+  float angles [3];
+  gentity_s *ent;
+  float point [3];
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 4) {
     Scr_Error("USAGE: isspawnpointvisible( <point>, <angle>, <team>, <ignore player> )\n",false);
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_20,SCRIPTINSTANCE_SERVER);
-  iVar3 = GScr_ReadTeamForSpawnPoints(2);
-  local_14 = Scr_GetEntity(3);
-  if (local_14 == (gentity_s *)0x0) {
+  Scr_GetVector(0,point,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,angles,SCRIPTINSTANCE_SERVER);
+  other_team = GScr_ReadTeamForSpawnPoints(2);
+  ent = Scr_GetEntity(3);
+  if (ent == (gentity_s *)0x0) {
     Scr_Error("USAGE: isspawnpointvisible() ignore player is not a valid entity\n",false);
   }
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  bVar1 = SpawnSystem_IsSpawnPointVisible(local_10,local_20,iVar3,local_14);
-  Scr_AddBool((uint)bVar1,sVar4);
+  inst = SCRIPTINSTANCE_SERVER;
+  bVar1 = SpawnSystem_IsSpawnPointVisible(point,angles,other_team,ent);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -19760,34 +20630,33 @@ void __cdecl GScr_IsSpawnPointVisible(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl InfluencerTypeValidation(int param_1,gentity_s *param_2,char *param_3)
+void __cdecl InfluencerTypeValidation(int type,gentity_s *ent,char *function_name)
 
 {
   char *pcVar1;
   bool bVar2;
   
-  if ((param_1 == 1) && ((param_2 == (gentity_s *)0x0 || (param_2->client == (gclient_s *)0x0)))) {
+  if ((type == 1) && ((ent == (gentity_s *)0x0 || (ent->client == (gclient_s *)0x0)))) {
     bVar2 = false;
     pcVar1 = va("USAGE: %s type PLAYER can only be called on players\n");
     Scr_Error(pcVar1,bVar2);
   }
-  if ((param_1 == 2) && ((param_2 == (gentity_s *)0x0 || (param_2->client == (gclient_s *)0x0)))) {
+  if ((type == 2) && ((ent == (gentity_s *)0x0 || (ent->client == (gclient_s *)0x0)))) {
     bVar2 = false;
     pcVar1 = va("USAGE: %s type WEAPON can only be called on players\n");
     Scr_Error(pcVar1,bVar2);
   }
-  if ((param_1 == 5) && ((param_2 == (gentity_s *)0x0 || (param_2->client == (gclient_s *)0x0)))) {
+  if ((type == 5) && ((ent == (gentity_s *)0x0 || (ent->client == (gclient_s *)0x0)))) {
     bVar2 = false;
     pcVar1 = va("USAGE: %s type SQUAD can only be called on players\n");
     Scr_Error(pcVar1,bVar2);
   }
-  if ((param_1 == 3) && ((param_2 == (gentity_s *)0x0 || (param_2->actor == (actor_s *)0x0)))) {
+  if ((type == 3) && ((ent == (gentity_s *)0x0 || (ent->actor == (actor_s *)0x0)))) {
     bVar2 = false;
     pcVar1 = va("USAGE: %s type DOG can only be called on dogs\n");
     Scr_Error(pcVar1,bVar2);
   }
-  if ((param_1 == 4) &&
-     ((param_2 == (gentity_s *)0x0 || (param_2->scr_vehicle == (scr_vehicle_s *)0x0)))) {
+  if ((type == 4) && ((ent == (gentity_s *)0x0 || (ent->scr_vehicle == (scr_vehicle_s *)0x0)))) {
     bVar2 = false;
     pcVar1 = va("USAGE: %s type VEHICLE can only be called on vehicles\n");
     Scr_Error(pcVar1,bVar2);
@@ -19803,18 +20672,18 @@ void __cdecl InfluencerTypeValidation(int param_1,gentity_s *param_2,char *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_PredictGrenade(scr_entref_t param_1)
+void __cdecl GScr_PredictGrenade(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_18;
-  float local_14 [3];
-  gentity_s *local_8;
+  int timeAtRest;
+  float vLandPos [3];
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  if ((local_8->r).inuse == '\0') {
+  ent = GetEntity(entref);
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3f71,
                              0,"%s");
     if (!bVar2) {
@@ -19823,7 +20692,7 @@ void __cdecl GScr_PredictGrenade(scr_entref_t param_1)
       return;
     }
   }
-  if ((local_8->s).eType != 4) {
+  if ((ent->s).eType != 4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x3f72,
                              0,"%s");
     if (!bVar2) {
@@ -19832,12 +20701,12 @@ void __cdecl GScr_PredictGrenade(scr_entref_t param_1)
       return;
     }
   }
-  iVar3 = G_PredictMissile(local_8,3000,local_14,1,&local_18);
+  iVar3 = G_PredictMissile(ent,3000,vLandPos,1,&timeAtRest);
   if (iVar3 == 0) {
     Scr_AddVector(vec3_origin,SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddVector(local_14,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(vLandPos,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -19854,21 +20723,26 @@ void __cdecl GScr_AddSphereInfluencer(void)
 
 {
   uint uVar1;
+  eInfluencerType type_00;
   char *pcVar2;
   DWORD DVar3;
-  int iVar4;
-  float fVar5;
-  bool bVar6;
+  int value;
+  float score_00;
+  float fVar4;
+  bool bVar5;
   int local_58;
-  eInfluencerScoreCurve local_38;
-  int local_34;
-  float local_2c [3];
-  float local_20;
-  char *local_1c;
-  int local_18;
-  eInfluencerType local_10;
-  gentity_s *local_c;
-  float local_8;
+  float time;
+  int curve;
+  int timeout;
+  int influencer_index;
+  float origin [3];
+  float radius;
+  char *description;
+  int team_mask;
+  PIXProfile pp;
+  int type;
+  gentity_s *ent;
+  float score;
   
   PIXBeginNamedEvent(-1,"GScr_AddSphereInfluencer");
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -19876,48 +20750,45 @@ void __cdecl GScr_AddSphereInfluencer(void)
     Scr_Error("USAGE: addsphereinfluencer( <type>, <origin>, <radius>, <score>, <team mask>, <description>, <curve>, <timeout>, <entity> )\n"
               ,false);
   }
-  local_10 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (((int)local_10 < 0) || (6 < (int)local_10)) {
-    bVar6 = false;
+  type_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (((int)type_00 < 0) || (6 < (int)type_00)) {
+    bVar5 = false;
     pcVar2 = va("USAGE: addsphereinfluencer type must be a value from %i to %i\n");
-    Scr_Error(pcVar2,bVar6);
+    Scr_Error(pcVar2,bVar5);
   }
-  Scr_GetVector(1,local_2c,SCRIPTINSTANCE_SERVER);
-  local_20 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  local_18 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
-  local_1c = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
-  local_38 = INFLUENCER_SC_CONSTANT;
+  Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
+  radius = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  score_00 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+  team_mask = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+  description = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
+  curve = 0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((6 < uVar1) &&
-     ((local_38 = Scr_GetInt(6,SCRIPTINSTANCE_SERVER), (int)local_38 < 0 || (4 < (int)local_38)))) {
-    bVar6 = false;
+  if ((6 < uVar1) && ((curve = Scr_GetInt(6,SCRIPTINSTANCE_SERVER), curve < 0 || (4 < curve)))) {
+    bVar5 = false;
     pcVar2 = va("USAGE: addsphereinfluencer curve must be a value from %i to %i\n");
-    Scr_Error(pcVar2,bVar6);
+    Scr_Error(pcVar2,bVar5);
   }
-  local_34 = 0;
+  timeout = 0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((7 < uVar1) && (fVar5 = Scr_GetFloat(7,SCRIPTINSTANCE_SERVER), 0.001 < fVar5)) {
-    local_34 = (int)(fVar5 * 1000.0);
+  if ((7 < uVar1) && (fVar4 = Scr_GetFloat(7,SCRIPTINSTANCE_SERVER), 0.001 < fVar4)) {
+    timeout = (int)(fVar4 * 1000.0);
   }
-  local_c = (gentity_s *)0x0;
+  ent = (gentity_s *)0x0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((uVar1 < 9) ||
-     ((local_c = Scr_GetEntity(8), local_c != (gentity_s *)0x0 &&
-      ((((((local_c->s).eType == 1 || ((local_c->s).eType == 0x11)) || ((local_c->s).eType == 0xe))
-        || (((local_c->s).eType == 6 || ((local_c->s).eType == 4)))) || ((local_c->s).eType == 0xc))
-      )))) {
-    InfluencerTypeValidation(local_10,local_c,"addsphereinfluencer");
-    if (local_c == (gentity_s *)0x0) {
+     ((ent = Scr_GetEntity(8), ent != (gentity_s *)0x0 &&
+      ((((((ent->s).eType == 1 || ((ent->s).eType == 0x11)) || ((ent->s).eType == 0xe)) ||
+        (((ent->s).eType == 6 || ((ent->s).eType == 4)))) || ((ent->s).eType == 0xc)))))) {
+    InfluencerTypeValidation(type_00,ent,"addsphereinfluencer");
+    if (ent == (gentity_s *)0x0) {
       local_58 = 0x3ff;
     }
     else {
-      local_58 = (local_c->s).number;
+      local_58 = (ent->s).number;
     }
-    iVar4 = SpawnSystem_AddSphereInfluencer
-                      (local_10,local_2c,local_20,local_8,local_38,local_18,local_58,local_34,
-                       local_1c);
-    if (iVar4 == -1) {
+    value = SpawnSystem_AddSphereInfluencer
+                      (type_00,origin,radius,score_00,curve,team_mask,local_58,timeout,description);
+    if (value == -1) {
       Scr_Error("USAGE: addsphereinfluencer could not create influencer \n",false);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -19925,7 +20796,7 @@ void __cdecl GScr_AddSphereInfluencer(void)
       }
     }
     else {
-      Scr_AddInt(iVar4,SCRIPTINSTANCE_SERVER);
+      Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -19954,77 +20825,77 @@ void __cdecl GScr_AddCylinderInfluencer(void)
 {
   uint uVar1;
   char *pcVar2;
-  int iVar3;
-  float fVar4;
-  bool bVar5;
+  int value;
+  float fVar3;
+  bool bVar4;
   int local_58;
-  eInfluencerScoreCurve local_50;
-  int local_4c;
-  float local_44 [3];
-  float local_38;
-  char *local_34;
-  float local_30 [3];
-  int local_24;
-  eInfluencerType local_20;
-  float local_1c [3];
-  gentity_s *local_10;
-  float local_c;
-  float local_8;
+  float time;
+  int curve;
+  int timeout;
+  int influencer_index;
+  float origin [3];
+  float radius;
+  char *description;
+  float forward [3];
+  int team_mask;
+  int type;
+  float up [3];
+  gentity_s *ent;
+  float length;
+  float score;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((uVar1 < 9) || (uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER), 0xc < uVar1)) {
     Scr_Error("USAGE: addcylinderinfluencer( <type>, <origin>, <forward>, <up>, <radius>, <axis length>, <score>, <team mask>, <description>, <curve>, <timeout>, <entity> )\n"
               ,false);
   }
-  local_20 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (((int)local_20 < 0) || (6 < (int)local_20)) {
-    bVar5 = false;
+  type = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((type < 0) || (6 < type)) {
+    bVar4 = false;
     pcVar2 = va("USAGE: addcylinderinfluencer type must be a value from %i to %i\n");
-    Scr_Error(pcVar2,bVar5);
+    Scr_Error(pcVar2,bVar4);
   }
-  Scr_GetVector(1,local_44,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,local_30,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(3,local_1c,SCRIPTINSTANCE_SERVER);
-  local_38 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-  local_c = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(6,SCRIPTINSTANCE_SERVER);
-  local_24 = Scr_GetInt(7,SCRIPTINSTANCE_SERVER);
-  local_34 = Scr_GetString(8,SCRIPTINSTANCE_SERVER);
-  local_50 = INFLUENCER_SC_CONSTANT;
+  Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,forward,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(3,up,SCRIPTINSTANCE_SERVER);
+  radius = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+  length = Scr_GetFloat(5,SCRIPTINSTANCE_SERVER);
+  score = Scr_GetFloat(6,SCRIPTINSTANCE_SERVER);
+  team_mask = Scr_GetInt(7,SCRIPTINSTANCE_SERVER);
+  description = Scr_GetString(8,SCRIPTINSTANCE_SERVER);
+  curve = 0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((9 < uVar1) &&
-     ((local_50 = Scr_GetInt(9,SCRIPTINSTANCE_SERVER), (int)local_50 < 0 || (4 < (int)local_50)))) {
-    bVar5 = false;
+  if ((9 < uVar1) && ((curve = Scr_GetInt(9,SCRIPTINSTANCE_SERVER), curve < 0 || (4 < curve)))) {
+    bVar4 = false;
     pcVar2 = va("USAGE: addcylinderinfluencer curve must be a value from %i to %i\n");
-    Scr_Error(pcVar2,bVar5);
+    Scr_Error(pcVar2,bVar4);
   }
-  local_4c = 0;
+  timeout = 0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((10 < uVar1) && (fVar4 = Scr_GetFloat(10,SCRIPTINSTANCE_SERVER), 0.001 < fVar4)) {
-    local_4c = (int)(fVar4 * 1000.0);
+  if ((10 < uVar1) && (fVar3 = Scr_GetFloat(10,SCRIPTINSTANCE_SERVER), 0.001 < fVar3)) {
+    timeout = (int)(fVar3 * 1000.0);
   }
-  local_10 = (gentity_s *)0x0;
+  ent = (gentity_s *)0x0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((uVar1 < 0xc) ||
-     ((local_10 = Scr_GetEntity(0xb), local_10 != (gentity_s *)0x0 &&
-      (((((local_10->s).eType == 1 || ((local_10->s).eType == 0x11)) || ((local_10->s).eType == 0xe)
-        ) || ((((local_10->s).eType == 6 || ((local_10->s).eType == 4)) ||
-              ((local_10->s).eType == 0xc)))))))) {
-    InfluencerTypeValidation(local_20,local_10,"addcylinderinfluencer");
-    if (local_10 == (gentity_s *)0x0) {
+     ((ent = Scr_GetEntity(0xb), ent != (gentity_s *)0x0 &&
+      (((((ent->s).eType == 1 || ((ent->s).eType == 0x11)) || ((ent->s).eType == 0xe)) ||
+       ((((ent->s).eType == 6 || ((ent->s).eType == 4)) || ((ent->s).eType == 0xc)))))))) {
+    InfluencerTypeValidation(type,ent,"addcylinderinfluencer");
+    if (ent == (gentity_s *)0x0) {
       local_58 = 0x3ff;
     }
     else {
-      local_58 = (local_10->s).number;
+      local_58 = (ent->s).number;
     }
-    iVar3 = SpawnSystem_AddCylinderInfluencer
-                      (local_20,local_44,local_30,local_1c,local_38,local_c,local_8,local_50,
-                       local_24,local_58,local_4c,local_34);
-    if (iVar3 == -1) {
+    value = SpawnSystem_AddCylinderInfluencer
+                      (type,origin,forward,up,radius,length,score,curve,team_mask,local_58,timeout,
+                       description);
+    if (value == -1) {
       Scr_Error("USAGE: addcylinderinfluencer could not create influencer \n",false);
     }
     else {
-      Scr_AddInt(iVar3,SCRIPTINSTANCE_SERVER);
+      Scr_AddInt(value,SCRIPTINSTANCE_SERVER);
     }
   }
   return;
@@ -20038,14 +20909,15 @@ void __cdecl GScr_RemoveInfluencer(void)
 {
   bool bVar1;
   uint uVar2;
-  int iVar3;
+  int influencer_index;
+  int influcencer_id;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 1) {
     Scr_Error("USAGE: removeinfluencer(<influencer id> )\n",false);
   }
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = SpawnSystem_RemoveInfluencer(iVar3);
+  influencer_index = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  bVar1 = SpawnSystem_RemoveInfluencer(influencer_index);
   if (!bVar1) {
     Scr_Error("Trying to remove influencer that does not exist\n",false);
   }
@@ -20060,16 +20932,18 @@ void __cdecl GScr_EnableInfluencer(void)
 {
   bool bVar1;
   uint uVar2;
+  int influencer_index;
   int iVar3;
-  int iVar4;
+  int influcencer_id;
+  int enable;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 2) {
     Scr_Error("USAGE: enableinfluencer(<influencer id>, <enable> )\n",false);
   }
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  bVar1 = SpawnSystem_EnableInfluencer(iVar3,iVar4 != 0);
+  influencer_index = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  bVar1 = SpawnSystem_EnableInfluencer(influencer_index,iVar3 != 0);
   if (!bVar1) {
     Scr_Error("Trying to enable influencer that does not exist\n",false);
   }
@@ -20084,16 +20958,18 @@ void __cdecl GScr_SetInfluencerTeamMask(void)
 {
   bool bVar1;
   uint uVar2;
-  int iVar3;
-  int iVar4;
+  int influencer_index;
+  int team_mask_00;
+  int influcencer_id;
+  int team_mask;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 2) {
     Scr_Error("USAGE: setinfluencerteammask( <influencer id>, <team mask> )\n",false);
   }
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  bVar1 = SpawnSystem_SetInfluencerTeamMask(iVar3,iVar4);
+  influencer_index = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  team_mask_00 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  bVar1 = SpawnSystem_SetInfluencerTeamMask(influencer_index,team_mask_00);
   if (!bVar1) {
     Scr_Error("Trying to set influencer team mask on an influencer that does not exist\n",false);
   }
@@ -20108,6 +20984,7 @@ void __cdecl GScr_SetDebugSideSwitch(void)
 {
   uint uVar1;
   int iVar2;
+  int enabled;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 1) {
@@ -20126,20 +21003,20 @@ void __cdecl GScr_CollisionTestPointsInSphere(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
-  float (*pafVar4) [3];
-  long lVar5;
-  scriptInstance_t sVar6;
+  uint parent_id;
+  float (*vector_array) [3];
+  long vector_array_size;
+  scriptInstance_t sVar3;
   float local_c3c;
-  float local_c2c;
+  float collision_results;
   float local_c28;
   undefined4 local_c24;
-  int local_c20;
-  float local_c1c [768];
-  float local_1c [3];
-  float local_10;
-  float local_c;
-  long local_8;
+  long point_index;
+  float points [768];
+  float sphere_center [3];
+  float sphere_radius;
+  float rsquared;
+  long element_count;
   
   iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0x14) {
@@ -20148,47 +21025,48 @@ void __cdecl GScr_CollisionTestPointsInSphere(void)
       iVar1 = Scr_GetType(2,SCRIPTINSTANCE_SERVER);
       if (iVar1 == 5) {
         pcVar2 = "spawn points";
-        lVar5 = 0x100;
-        pafVar4 = (float (*) [3])local_c1c;
-        uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-        local_8 = Scr_GetArrayValues_Vector(0,uVar3,pafVar4,lVar5,pcVar2);
-        Scr_GetVector(1,local_1c,SCRIPTINSTANCE_SERVER);
-        local_10 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-        local_c = local_10 * local_10;
+        vector_array_size = 0x100;
+        vector_array = (float (*) [3])points;
+        parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+        element_count = Scr_GetArrayValues_Vector(0,parent_id,vector_array,vector_array_size,pcVar2)
+        ;
+        Scr_GetVector(1,sphere_center,SCRIPTINSTANCE_SERVER);
+        sphere_radius = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+        rsquared = sphere_radius * sphere_radius;
         Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-        for (local_c20 = 0; local_c20 < local_8; local_c20 = local_c20 + 1) {
-          local_c28 = Vec3DistanceSq(local_c1c + local_c20 * 3,local_1c);
-          if (local_c <= local_c28) {
+        for (point_index = 0; point_index < element_count; point_index = point_index + 1) {
+          local_c28 = Vec3DistanceSq(points + point_index * 3,sphere_center);
+          if (rsquared <= local_c28) {
             local_c3c = 0.0;
           }
           else {
             local_c3c = 1.0;
           }
-          local_c2c = local_c3c;
+          collision_results = local_c3c;
           local_c24 = 0;
-          Scr_AddVector(&local_c2c,SCRIPTINSTANCE_SERVER);
+          Scr_AddVector(&collision_results,SCRIPTINSTANCE_SERVER);
           Scr_AddArray(SCRIPTINSTANCE_SERVER);
         }
       }
       else {
-        sVar6 = SCRIPTINSTANCE_SERVER;
+        sVar3 = SCRIPTINSTANCE_SERVER;
         Scr_GetTypeName(2,SCRIPTINSTANCE_SERVER);
         pcVar2 = va("Parameter \'%s\' must be a floating point value (sphere radius)");
-        Scr_ParamError(2,pcVar2,sVar6);
+        Scr_ParamError(2,pcVar2,sVar3);
       }
     }
     else {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+      sVar3 = SCRIPTINSTANCE_SERVER;
       Scr_GetTypeName(1,SCRIPTINSTANCE_SERVER);
       pcVar2 = va("Parameter \'%s\' must be a vector (3D point origin)");
-      Scr_ParamError(1,pcVar2,sVar6);
+      Scr_ParamError(1,pcVar2,sVar3);
     }
   }
   else {
-    sVar6 = SCRIPTINSTANCE_SERVER;
+    sVar3 = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Parameter \'%s\' must be an array");
-    Scr_ParamError(0,pcVar2,sVar6);
+    Scr_ParamError(0,pcVar2,sVar3);
   }
   return;
 }
@@ -20201,33 +21079,36 @@ void __cdecl GScr_CollisionTestPointsInCylinder(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
+  uint parent_id;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  float (*pafVar6) [3];
-  long lVar7;
-  scriptInstance_t sVar8;
-  float local_c54;
+  float (*vector_array) [3];
+  long vector_array_size;
+  scriptInstance_t sVar5;
+  float dsquared;
+  float rsquared;
+  float midpoint_axial_distance;
+  float collision_results;
   float local_c50;
   float local_c4c;
-  int local_c48;
-  float local_c44;
-  float local_c40;
-  float local_c3c;
+  long point_index;
+  float half_cylinder_height;
+  float bounding_sphere_radius_squared;
+  float cylinder_base;
   float local_c38;
   float local_c34;
-  float local_c30;
+  float axis_midpoint;
   float local_c2c;
   float local_c28;
-  float local_c24 [768];
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
+  float points [768];
+  float cylinder_height;
+  float cylinder_radius;
+  float cylinder_radius_squared;
+  float cylinder_height_unit_vector;
   float local_14;
   float local_10;
-  float local_c;
-  long local_8;
+  float bounding_sphere_radius;
+  long element_count;
   
   iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0x14) {
@@ -20240,79 +21121,80 @@ void __cdecl GScr_CollisionTestPointsInCylinder(void)
           iVar1 = Scr_GetType(4,SCRIPTINSTANCE_SERVER);
           if (iVar1 == 4) {
             pcVar2 = "spawn points";
-            lVar7 = 0x100;
-            pafVar6 = (float (*) [3])local_c24;
-            uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-            local_8 = Scr_GetArrayValues_Vector(0,uVar3,pafVar6,lVar7,pcVar2);
-            Scr_GetVector(1,&local_c3c,SCRIPTINSTANCE_SERVER);
-            local_20 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-            local_24 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-            local_c44 = local_24 * 0.5;
-            local_1c = local_20 * local_20;
-            local_c = local_20 + local_c44;
-            local_c40 = local_c * local_c;
-            Scr_GetVector(4,&local_18,SCRIPTINSTANCE_SERVER);
-            local_c30 = local_18 * local_c44 + local_c3c;
-            local_c2c = local_14 * local_c44 + local_c38;
-            local_c28 = local_10 * local_c44 + local_c34;
-            Vec3Normalize(&local_18);
+            vector_array_size = 0x100;
+            vector_array = (float (*) [3])points;
+            parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+            element_count =
+                 Scr_GetArrayValues_Vector(0,parent_id,vector_array,vector_array_size,pcVar2);
+            Scr_GetVector(1,&cylinder_base,SCRIPTINSTANCE_SERVER);
+            cylinder_radius = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+            cylinder_height = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+            half_cylinder_height = cylinder_height * 0.5;
+            cylinder_radius_squared = cylinder_radius * cylinder_radius;
+            bounding_sphere_radius = cylinder_radius + half_cylinder_height;
+            bounding_sphere_radius_squared = bounding_sphere_radius * bounding_sphere_radius;
+            Scr_GetVector(4,&cylinder_height_unit_vector,SCRIPTINSTANCE_SERVER);
+            axis_midpoint = cylinder_height_unit_vector * half_cylinder_height + cylinder_base;
+            local_c2c = local_14 * half_cylinder_height + local_c38;
+            local_c28 = local_10 * half_cylinder_height + local_c34;
+            Vec3Normalize(&cylinder_height_unit_vector);
             Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-            for (local_c48 = 0; local_c48 < local_8; local_c48 = local_c48 + 1) {
-              local_c54 = 0.0;
+            for (point_index = 0; point_index < element_count; point_index = point_index + 1) {
+              collision_results = 0.0;
               local_c50 = 0.0;
               local_c4c = 0.0;
-              fVar4 = Vec3DistanceSq(local_c24 + local_c48 * 3,&local_c30);
-              if (fVar4 < local_c40) {
-                fVar4 = ABS((local_c24[local_c48 * 3] - local_c30) * local_18 +
-                            (local_c24[local_c48 * 3 + 1] - local_c2c) * local_14 +
-                            (local_c24[local_c48 * 3 + 2] - local_c28) * local_10);
-                if (fVar4 < local_c44) {
-                  fVar5 = Vec3DistanceSq(local_c24 + local_c48 * 3,&local_c30);
-                  fVar5 = fVar5 - fVar4 * fVar4;
-                  if (fVar5 < local_1c) {
-                    local_c54 = 1.0;
-                    local_c50 = Vec3DistanceSq(&local_c3c,local_c24 + local_c48 * 3);
-                    local_c4c = fVar5;
+              fVar3 = Vec3DistanceSq(points + point_index * 3,&axis_midpoint);
+              if (fVar3 < bounding_sphere_radius_squared) {
+                fVar3 = ABS((points[point_index * 3] - axis_midpoint) * cylinder_height_unit_vector
+                            + (points[point_index * 3 + 1] - local_c2c) * local_14 +
+                            (points[point_index * 3 + 2] - local_c28) * local_10);
+                if (fVar3 < half_cylinder_height) {
+                  fVar4 = Vec3DistanceSq(points + point_index * 3,&axis_midpoint);
+                  fVar4 = fVar4 - fVar3 * fVar3;
+                  if (fVar4 < cylinder_radius_squared) {
+                    collision_results = 1.0;
+                    local_c50 = Vec3DistanceSq(&cylinder_base,points + point_index * 3);
+                    local_c4c = fVar4;
                   }
                 }
               }
-              Scr_AddVector(&local_c54,SCRIPTINSTANCE_SERVER);
+              Scr_AddVector(&collision_results,SCRIPTINSTANCE_SERVER);
               Scr_AddArray(SCRIPTINSTANCE_SERVER);
             }
           }
           else {
-            sVar8 = SCRIPTINSTANCE_SERVER;
+            sVar5 = SCRIPTINSTANCE_SERVER;
             Scr_GetTypeName(4,SCRIPTINSTANCE_SERVER);
             pcVar2 = va("Parameter \'%s\' must be a vector value (cylinder height unit vector)");
-            Scr_ParamError(4,pcVar2,sVar8);
+            Scr_ParamError(4,pcVar2,sVar5);
           }
         }
         else {
-          sVar8 = SCRIPTINSTANCE_SERVER;
+          sVar5 = SCRIPTINSTANCE_SERVER;
           Scr_GetTypeName(3,SCRIPTINSTANCE_SERVER);
           pcVar2 = va("Parameter \'%s\' must be a floating point value (cylinder height)");
-          Scr_ParamError(3,pcVar2,sVar8);
+          Scr_ParamError(3,pcVar2,sVar5);
         }
       }
       else {
-        sVar8 = SCRIPTINSTANCE_SERVER;
+        sVar5 = SCRIPTINSTANCE_SERVER;
         Scr_GetTypeName(2,SCRIPTINSTANCE_SERVER);
         pcVar2 = va("Parameter \'%s\' must be a floating point value (cylinder radius)");
-        Scr_ParamError(2,pcVar2,sVar8);
+        Scr_ParamError(2,pcVar2,sVar5);
       }
     }
     else {
-      sVar8 = SCRIPTINSTANCE_SERVER;
+      sVar5 = SCRIPTINSTANCE_SERVER;
       Scr_GetTypeName(1,SCRIPTINSTANCE_SERVER);
       pcVar2 = va("Parameter \'%s\' must be a vector (3D point origin)");
-      Scr_ParamError(1,pcVar2,sVar8);
+      Scr_ParamError(1,pcVar2,sVar5);
     }
   }
   else {
-    sVar8 = SCRIPTINSTANCE_SERVER;
+    sVar5 = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Parameter \'%s\' must be an array");
-    Scr_ParamError(0,pcVar2,sVar8);
+    Scr_ParamError(0,pcVar2,sVar5);
   }
   return;
 }
@@ -20325,39 +21207,43 @@ void __cdecl GScr_CollisionTestPointsInPill(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
+  uint parent_id;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  float (*pafVar6) [3];
-  long lVar7;
-  scriptInstance_t sVar8;
-  float local_c6c;
+  float (*vector_array) [3];
+  long vector_array_size;
+  scriptInstance_t sVar5;
+  float distance_from_axis;
+  float dsquared;
+  float rsquared;
+  float midpoint_axial_distance;
+  float collision_results;
   float local_c68;
   float local_c64;
-  int local_c60;
-  float local_c5c;
-  float local_c58;
-  float local_c54;
+  long point_index;
+  float half_cylinder_height;
+  float bounding_sphere_radius_squared;
+  float cylinder_radial_vector;
   float local_c50;
   float local_c4c;
-  float local_c48;
+  float cylinder_base;
   float local_c44;
   float local_c40;
-  float local_c3c;
+  float axis_midpoint;
   float local_c38;
   float local_c34;
-  float local_c30;
+  float cylinder_top;
   float local_c2c;
   float local_c28;
-  float local_c24 [768];
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
+  float points [768];
+  float cylinder_height;
+  float cylinder_radius;
+  float cylinder_radius_squared;
+  float cylinder_height_unit_vector;
   float local_14;
   float local_10;
-  float local_c;
-  long local_8;
+  float bounding_sphere_radius;
+  long element_count;
   
   iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0x14) {
@@ -20372,107 +21258,109 @@ void __cdecl GScr_CollisionTestPointsInPill(void)
             iVar1 = Scr_GetType(5,SCRIPTINSTANCE_SERVER);
             if (iVar1 == 4) {
               pcVar2 = "spawn points";
-              lVar7 = 0x100;
-              pafVar6 = (float (*) [3])local_c24;
-              uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-              local_8 = Scr_GetArrayValues_Vector(0,uVar3,pafVar6,lVar7,pcVar2);
-              Scr_GetVector(1,&local_c48,SCRIPTINSTANCE_SERVER);
-              local_20 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-              local_24 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-              local_c5c = local_24 * 0.5;
-              local_1c = local_20 * local_20;
-              local_c = local_20 + local_c5c;
-              local_c58 = local_c * local_c;
-              Scr_GetVector(4,&local_18,SCRIPTINSTANCE_SERVER);
-              local_c3c = local_18 * local_c5c + local_c48;
-              local_c38 = local_14 * local_c5c + local_c44;
-              local_c34 = local_10 * local_c5c + local_c40;
-              local_c30 = local_18 * local_24 + local_c48;
-              local_c2c = local_14 * local_24 + local_c44;
-              local_c28 = local_10 * local_24 + local_c40;
-              Vec3Normalize(&local_18);
-              Scr_GetVector(5,&local_c54,SCRIPTINSTANCE_SERVER);
-              Vec3Normalize(&local_c54);
+              vector_array_size = 0x100;
+              vector_array = (float (*) [3])points;
+              parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+              element_count =
+                   Scr_GetArrayValues_Vector(0,parent_id,vector_array,vector_array_size,pcVar2);
+              Scr_GetVector(1,&cylinder_base,SCRIPTINSTANCE_SERVER);
+              cylinder_radius = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+              cylinder_height = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+              half_cylinder_height = cylinder_height * 0.5;
+              cylinder_radius_squared = cylinder_radius * cylinder_radius;
+              bounding_sphere_radius = cylinder_radius + half_cylinder_height;
+              bounding_sphere_radius_squared = bounding_sphere_radius * bounding_sphere_radius;
+              Scr_GetVector(4,&cylinder_height_unit_vector,SCRIPTINSTANCE_SERVER);
+              axis_midpoint = cylinder_height_unit_vector * half_cylinder_height + cylinder_base;
+              local_c38 = local_14 * half_cylinder_height + local_c44;
+              local_c34 = local_10 * half_cylinder_height + local_c40;
+              cylinder_top = cylinder_height_unit_vector * cylinder_height + cylinder_base;
+              local_c2c = local_14 * cylinder_height + local_c44;
+              local_c28 = local_10 * cylinder_height + local_c40;
+              Vec3Normalize(&cylinder_height_unit_vector);
+              Scr_GetVector(5,&cylinder_radial_vector,SCRIPTINSTANCE_SERVER);
+              Vec3Normalize(&cylinder_radial_vector);
               Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-              for (local_c60 = 0; local_c60 < local_8; local_c60 = local_c60 + 1) {
-                local_c6c = 0.0;
+              for (point_index = 0; point_index < element_count; point_index = point_index + 1) {
+                collision_results = 0.0;
                 local_c68 = 0.0;
                 local_c64 = 0.0;
-                fVar4 = Vec3DistanceSq(local_c24 + local_c60 * 3,&local_c3c);
-                if (fVar4 < local_c58) {
-                  fVar4 = Vec3DistanceSq(local_c24 + local_c60 * 3,&local_c48);
-                  if (local_1c <= fVar4) {
-                    fVar4 = Vec3DistanceSq(local_c24 + local_c60 * 3,&local_c30);
-                    if (local_1c <= fVar4) {
-                      fVar4 = ABS((local_c24[local_c60 * 3] - local_c3c) * local_18 +
-                                  (local_c24[local_c60 * 3 + 1] - local_c38) * local_14 +
-                                  (local_c24[local_c60 * 3 + 2] - local_c34) * local_10);
-                      if (fVar4 < local_c5c) {
-                        fVar5 = Vec3DistanceSq(local_c24 + local_c60 * 3,&local_c3c);
-                        if (fVar5 - fVar4 * fVar4 < local_1c) {
-                          local_c6c = 1.0;
+                fVar3 = Vec3DistanceSq(points + point_index * 3,&axis_midpoint);
+                if (fVar3 < bounding_sphere_radius_squared) {
+                  fVar3 = Vec3DistanceSq(points + point_index * 3,&cylinder_base);
+                  if (cylinder_radius_squared <= fVar3) {
+                    fVar3 = Vec3DistanceSq(points + point_index * 3,&cylinder_top);
+                    if (cylinder_radius_squared <= fVar3) {
+                      fVar3 = ABS((points[point_index * 3] - axis_midpoint) *
+                                  cylinder_height_unit_vector +
+                                  (points[point_index * 3 + 1] - local_c38) * local_14 +
+                                  (points[point_index * 3 + 2] - local_c34) * local_10);
+                      if (fVar3 < half_cylinder_height) {
+                        fVar4 = Vec3DistanceSq(points + point_index * 3,&axis_midpoint);
+                        if (fVar4 - fVar3 * fVar3 < cylinder_radius_squared) {
+                          collision_results = 1.0;
                         }
                       }
                     }
                     else {
-                      local_c6c = 1.0;
+                      collision_results = 1.0;
                     }
                   }
                   else {
-                    local_c6c = 1.0;
+                    collision_results = 1.0;
                   }
                 }
-                if (0.0 < local_c6c) {
-                  fVar4 = (local_c24[local_c60 * 3] - local_c48) * local_c54 +
-                          (local_c24[local_c60 * 3 + 1] - local_c44) * local_c50 +
-                          (local_c24[local_c60 * 3 + 2] - local_c40) * local_c4c;
-                  local_c68 = Vec3DistanceSq(&local_c48,local_c24 + local_c60 * 3);
-                  local_c64 = fVar4 * fVar4;
+                if (0.0 < collision_results) {
+                  fVar3 = (points[point_index * 3] - cylinder_base) * cylinder_radial_vector +
+                          (points[point_index * 3 + 1] - local_c44) * local_c50 +
+                          (points[point_index * 3 + 2] - local_c40) * local_c4c;
+                  local_c68 = Vec3DistanceSq(&cylinder_base,points + point_index * 3);
+                  local_c64 = fVar3 * fVar3;
                 }
-                Scr_AddVector(&local_c6c,SCRIPTINSTANCE_SERVER);
+                Scr_AddVector(&collision_results,SCRIPTINSTANCE_SERVER);
                 Scr_AddArray(SCRIPTINSTANCE_SERVER);
               }
             }
             else {
-              sVar8 = SCRIPTINSTANCE_SERVER;
+              sVar5 = SCRIPTINSTANCE_SERVER;
               Scr_GetTypeName(5,SCRIPTINSTANCE_SERVER);
               pcVar2 = va("Parameter \'%s\' must be a vector value (cylinder radial vector)");
-              Scr_ParamError(5,pcVar2,sVar8);
+              Scr_ParamError(5,pcVar2,sVar5);
             }
           }
           else {
-            sVar8 = SCRIPTINSTANCE_SERVER;
+            sVar5 = SCRIPTINSTANCE_SERVER;
             Scr_GetTypeName(4,SCRIPTINSTANCE_SERVER);
             pcVar2 = va("Parameter \'%s\' must be a vector value (cylinder height unit vector)");
-            Scr_ParamError(4,pcVar2,sVar8);
+            Scr_ParamError(4,pcVar2,sVar5);
           }
         }
         else {
-          sVar8 = SCRIPTINSTANCE_SERVER;
+          sVar5 = SCRIPTINSTANCE_SERVER;
           Scr_GetTypeName(3,SCRIPTINSTANCE_SERVER);
           pcVar2 = va("Parameter \'%s\' must be a floating point value (cylinder height)");
-          Scr_ParamError(3,pcVar2,sVar8);
+          Scr_ParamError(3,pcVar2,sVar5);
         }
       }
       else {
-        sVar8 = SCRIPTINSTANCE_SERVER;
+        sVar5 = SCRIPTINSTANCE_SERVER;
         Scr_GetTypeName(2,SCRIPTINSTANCE_SERVER);
         pcVar2 = va("Parameter \'%s\' must be a floating point value (cylinder radius)");
-        Scr_ParamError(2,pcVar2,sVar8);
+        Scr_ParamError(2,pcVar2,sVar5);
       }
     }
     else {
-      sVar8 = SCRIPTINSTANCE_SERVER;
+      sVar5 = SCRIPTINSTANCE_SERVER;
       Scr_GetTypeName(1,SCRIPTINSTANCE_SERVER);
       pcVar2 = va("Parameter \'%s\' must be a vector (3D point origin)");
-      Scr_ParamError(1,pcVar2,sVar8);
+      Scr_ParamError(1,pcVar2,sVar5);
     }
   }
   else {
-    sVar8 = SCRIPTINSTANCE_SERVER;
+    sVar5 = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Parameter \'%s\' must be an array");
-    Scr_ParamError(0,pcVar2,sVar8);
+    Scr_ParamError(0,pcVar2,sVar5);
   }
   return;
 }
@@ -20485,54 +21373,59 @@ void __cdecl GScr_CollisionTestPointsInCone(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
+  uint parent_id;
+  float fVar3;
   float fVar4;
   float fVar5;
   float fVar6;
-  float fVar7;
-  float (*pafVar8) [3];
-  long lVar9;
-  scriptInstance_t sVar10;
+  float (*vector_array) [3];
+  long vector_array_size;
+  scriptInstance_t sVar7;
   float local_d14;
   float local_d10;
-  float local_c98;
+  float distance_from_axis;
+  float distance_from_origin_squared;
+  float tp_dot_to;
+  float tp_magnitude_squared;
+  float midpoint_axial_distance;
+  float collision_results;
   float local_c94;
   float local_c90;
-  int local_c8c;
-  float local_c88;
-  float local_c84;
+  long point_index;
+  float bounding_sphere_radius_squared;
+  float axis_midpoint;
   float local_c80;
   float local_c7c;
-  float local_c78;
-  float local_c74 [768];
-  float local_74;
-  float local_70;
+  float te_dot_to;
+  float points [768];
+  float cone_height;
+  float radial_edge;
   float local_6c;
   float local_68;
-  float local_64;
-  float local_60;
-  float local_5c;
-  float local_58;
+  float cone_base_radius;
+  float half_cone_height;
+  float te_magnitude_squared;
+  float cone_tip;
   float local_54;
   float local_50;
-  float local_4c;
-  float local_48;
+  float bounding_sphere_radius;
+  float cone_base;
   float local_44;
   float local_40;
-  float local_3c;
+  float cone_height_unit_vector;
   float local_38;
   float local_34;
-  float local_30;
+  float to;
   float local_2c;
   float local_28;
-  float local_24;
+  float te;
   float local_20;
   float local_1c;
-  float local_18;
-  float local_14;
+  float teto2_over_te;
+  float cone_radial_unit_vector;
   float local_10;
   float local_c;
-  long local_8;
+  long element_count;
   
   iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0x14) {
@@ -20547,113 +21440,114 @@ void __cdecl GScr_CollisionTestPointsInCone(void)
             iVar1 = Scr_GetType(5,SCRIPTINSTANCE_SERVER);
             if (iVar1 == 4) {
               pcVar2 = "spawn points";
-              lVar9 = 0x100;
-              pafVar8 = (float (*) [3])local_c74;
-              uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-              local_8 = Scr_GetArrayValues_Vector(0,uVar3,pafVar8,lVar9,pcVar2);
-              Scr_GetVector(1,&local_48,SCRIPTINSTANCE_SERVER);
-              local_64 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-              local_74 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-              Scr_GetVector(4,&local_3c,SCRIPTINSTANCE_SERVER);
-              Scr_GetVector(5,&local_14,SCRIPTINSTANCE_SERVER);
-              local_60 = local_74 * 0.5;
-              local_4c = local_64 + local_60;
-              local_c88 = local_4c * local_4c;
-              local_c84 = local_3c * local_60 + local_48;
-              local_c80 = local_38 * local_60 + local_44;
-              local_c7c = local_34 * local_60 + local_40;
-              local_58 = local_3c * local_74 + local_48;
-              local_54 = local_38 * local_74 + local_44;
-              local_50 = local_34 * local_74 + local_40;
-              local_70 = local_14 * local_64 + local_48;
-              local_6c = local_10 * local_64 + local_44;
-              local_68 = local_c * local_64 + local_40;
-              Vec3Normalize(&local_3c);
-              Vec3Normalize(&local_14);
-              local_24 = local_70 - local_58;
+              vector_array_size = 0x100;
+              vector_array = (float (*) [3])points;
+              parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+              element_count =
+                   Scr_GetArrayValues_Vector(0,parent_id,vector_array,vector_array_size,pcVar2);
+              Scr_GetVector(1,&cone_base,SCRIPTINSTANCE_SERVER);
+              cone_base_radius = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+              cone_height = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+              Scr_GetVector(4,&cone_height_unit_vector,SCRIPTINSTANCE_SERVER);
+              Scr_GetVector(5,&cone_radial_unit_vector,SCRIPTINSTANCE_SERVER);
+              half_cone_height = cone_height * 0.5;
+              bounding_sphere_radius = cone_base_radius + half_cone_height;
+              bounding_sphere_radius_squared = bounding_sphere_radius * bounding_sphere_radius;
+              axis_midpoint = cone_height_unit_vector * half_cone_height + cone_base;
+              local_c80 = local_38 * half_cone_height + local_44;
+              local_c7c = local_34 * half_cone_height + local_40;
+              cone_tip = cone_height_unit_vector * cone_height + cone_base;
+              local_54 = local_38 * cone_height + local_44;
+              local_50 = local_34 * cone_height + local_40;
+              radial_edge = cone_radial_unit_vector * cone_base_radius + cone_base;
+              local_6c = local_10 * cone_base_radius + local_44;
+              local_68 = local_c * cone_base_radius + local_40;
+              Vec3Normalize(&cone_height_unit_vector);
+              Vec3Normalize(&cone_radial_unit_vector);
+              te = radial_edge - cone_tip;
               local_20 = local_6c - local_54;
               local_1c = local_68 - local_50;
-              local_30 = local_48 - local_58;
+              to = cone_base - cone_tip;
               local_2c = local_44 - local_54;
               local_28 = local_40 - local_50;
-              local_c78 = local_24 * local_30 + local_20 * local_2c + local_1c * local_28;
-              local_d10 = local_24 * local_24 + local_20 * local_20 + local_1c * local_1c;
+              te_dot_to = te * to + local_20 * local_2c + local_1c * local_28;
+              local_d10 = te * te + local_20 * local_20 + local_1c * local_1c;
               if (0.0 <= 1e-05 - local_d10) {
                 local_d10 = 1e-05;
               }
-              local_5c = local_d10;
-              local_18 = (local_c78 * local_c78) / local_d10;
+              te_magnitude_squared = local_d10;
+              teto2_over_te = (te_dot_to * te_dot_to) / local_d10;
               Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-              for (local_c8c = 0; local_c8c < local_8; local_c8c = local_c8c + 1) {
-                local_c98 = 0.0;
+              for (point_index = 0; point_index < element_count; point_index = point_index + 1) {
+                collision_results = 0.0;
                 local_c94 = 0.0;
                 local_c90 = 0.0;
-                fVar7 = Vec3DistanceSq(local_c74 + local_c8c * 3,&local_c84);
-                if ((fVar7 < local_c88) &&
-                   (ABS((local_c74[local_c8c * 3] - local_c84) * local_3c +
-                        (local_c74[local_c8c * 3 + 1] - local_c80) * local_38 +
-                        (local_c74[local_c8c * 3 + 2] - local_c7c) * local_34) < local_60)) {
-                  fVar7 = local_c74[local_c8c * 3] - local_58;
-                  fVar4 = local_c74[local_c8c * 3 + 1] - local_54;
-                  fVar5 = local_c74[local_c8c * 3 + 2] - local_50;
-                  fVar6 = fVar7 * local_30 + fVar4 * local_2c + fVar5 * local_28;
-                  local_d14 = fVar7 * fVar7 + fVar4 * fVar4 + fVar5 * fVar5;
+                fVar6 = Vec3DistanceSq(points + point_index * 3,&axis_midpoint);
+                if ((fVar6 < bounding_sphere_radius_squared) &&
+                   (ABS((points[point_index * 3] - axis_midpoint) * cone_height_unit_vector +
+                        (points[point_index * 3 + 1] - local_c80) * local_38 +
+                        (points[point_index * 3 + 2] - local_c7c) * local_34) < half_cone_height)) {
+                  fVar6 = points[point_index * 3] - cone_tip;
+                  fVar3 = points[point_index * 3 + 1] - local_54;
+                  fVar4 = points[point_index * 3 + 2] - local_50;
+                  fVar5 = fVar6 * to + fVar3 * local_2c + fVar4 * local_28;
+                  local_d14 = fVar6 * fVar6 + fVar3 * fVar3 + fVar4 * fVar4;
                   if (0.0 <= 1e-05 - local_d14) {
                     local_d14 = 1e-05;
                   }
-                  if (local_18 < (fVar6 * fVar6) / local_d14) {
-                    local_c94 = Vec3DistanceSq(&local_48,local_c74 + local_c8c * 3);
-                    local_c90 = (local_c74[local_c8c * 3] - local_48) * local_14 +
-                                (local_c74[local_c8c * 3 + 1] - local_44) * local_10 +
-                                (local_c74[local_c8c * 3 + 2] - local_40) * local_c;
-                    local_c98 = 1.0;
+                  if (teto2_over_te < (fVar5 * fVar5) / local_d14) {
+                    local_c94 = Vec3DistanceSq(&cone_base,points + point_index * 3);
+                    local_c90 = (points[point_index * 3] - cone_base) * cone_radial_unit_vector +
+                                (points[point_index * 3 + 1] - local_44) * local_10 +
+                                (points[point_index * 3 + 2] - local_40) * local_c;
+                    collision_results = 1.0;
                     local_c90 = local_c90 * local_c90;
                   }
                 }
-                Scr_AddVector(&local_c98,SCRIPTINSTANCE_SERVER);
+                Scr_AddVector(&collision_results,SCRIPTINSTANCE_SERVER);
                 Scr_AddArray(SCRIPTINSTANCE_SERVER);
               }
             }
             else {
-              sVar10 = SCRIPTINSTANCE_SERVER;
+              sVar7 = SCRIPTINSTANCE_SERVER;
               Scr_GetTypeName(5,SCRIPTINSTANCE_SERVER);
               pcVar2 = va("Parameter \'%s\' must be a vector value (cone radial vector)");
-              Scr_ParamError(5,pcVar2,sVar10);
+              Scr_ParamError(5,pcVar2,sVar7);
             }
           }
           else {
-            sVar10 = SCRIPTINSTANCE_SERVER;
+            sVar7 = SCRIPTINSTANCE_SERVER;
             Scr_GetTypeName(4,SCRIPTINSTANCE_SERVER);
             pcVar2 = va("Parameter \'%s\' must be a vector value (cone height unit vector)");
-            Scr_ParamError(4,pcVar2,sVar10);
+            Scr_ParamError(4,pcVar2,sVar7);
           }
         }
         else {
-          sVar10 = SCRIPTINSTANCE_SERVER;
+          sVar7 = SCRIPTINSTANCE_SERVER;
           Scr_GetTypeName(3,SCRIPTINSTANCE_SERVER);
           pcVar2 = va("Parameter \'%s\' must be a floating point value (cone height)");
-          Scr_ParamError(3,pcVar2,sVar10);
+          Scr_ParamError(3,pcVar2,sVar7);
         }
       }
       else {
-        sVar10 = SCRIPTINSTANCE_SERVER;
+        sVar7 = SCRIPTINSTANCE_SERVER;
         Scr_GetTypeName(2,SCRIPTINSTANCE_SERVER);
         pcVar2 = va("Parameter \'%s\' must be a floating point value (cone radius)");
-        Scr_ParamError(2,pcVar2,sVar10);
+        Scr_ParamError(2,pcVar2,sVar7);
       }
     }
     else {
-      sVar10 = SCRIPTINSTANCE_SERVER;
+      sVar7 = SCRIPTINSTANCE_SERVER;
       Scr_GetTypeName(1,SCRIPTINSTANCE_SERVER);
       pcVar2 = va("Parameter \'%s\' must be a vector (3D point origin)");
-      Scr_ParamError(1,pcVar2,sVar10);
+      Scr_ParamError(1,pcVar2,sVar7);
     }
   }
   else {
-    sVar10 = SCRIPTINSTANCE_SERVER;
+    sVar7 = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Parameter \'%s\' must be an array");
-    Scr_ParamError(0,pcVar2,sVar10);
+    Scr_ParamError(0,pcVar2,sVar7);
   }
   return;
 }
@@ -20666,23 +21560,26 @@ void __cdecl GScr_CollisionTestPointsInBox(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
-  float (*pafVar4) [3];
-  long lVar5;
-  scriptInstance_t sVar6;
+  uint parent_id;
+  float (*vector_array) [3];
+  long vector_array_size;
+  scriptInstance_t sVar3;
   float local_d30;
   float local_cfc;
-  float local_cec;
+  float up_distance;
+  float left_distance;
+  float forward_distance;
+  float collision_results;
   float local_ce8;
   undefined4 local_ce4;
-  float local_ce0;
+  float bp;
   float local_cdc;
   float local_cd8;
-  int local_cd4;
-  float local_cd0;
-  float local_ccc;
-  float local_cc8;
-  float local_cc4;
+  long point_index;
+  float bounding_sphere_radius_squared;
+  float box_depth;
+  float half_box_height;
+  float transform;
   float local_cc0;
   float local_cbc;
   float local_cb8;
@@ -20694,8 +21591,8 @@ void __cdecl GScr_CollisionTestPointsInBox(void)
   undefined4 local_ca0;
   undefined4 local_c9c;
   undefined4 local_c98;
-  float local_c94 [768];
-  float local_94;
+  float points [768];
+  float axes;
   float local_90;
   float local_8c;
   float local_88;
@@ -20704,26 +21601,27 @@ void __cdecl GScr_CollisionTestPointsInBox(void)
   float local_7c;
   undefined4 local_78;
   undefined4 local_74;
-  float local_70;
+  float local_left;
   float local_6c;
   undefined4 local_68;
-  float local_64;
+  float box_up;
   float local_60;
   float local_5c;
-  float local_58;
+  float box_forward;
   float local_54;
   float local_50;
-  float local_4c;
-  float local_48 [3];
-  float local_3c;
-  float local_38;
-  float local_34;
-  float local_30 [4];
-  float local_20;
+  float box_height;
+  float local_up [3];
+  float bounding_sphere_radius;
+  float half_box_width;
+  float box_width;
+  float local_forward [3];
+  float half_box_depth;
+  float box_origin;
   float local_1c;
   float local_18;
-  long local_14;
-  float local_10;
+  long element_count;
+  float box_left;
   float local_c;
   float local_8;
   
@@ -20742,35 +21640,36 @@ void __cdecl GScr_CollisionTestPointsInBox(void)
               iVar1 = Scr_GetType(6,SCRIPTINSTANCE_SERVER);
               if (iVar1 == 4) {
                 pcVar2 = "spawn points";
-                lVar5 = 0x100;
-                pafVar4 = (float (*) [3])local_c94;
-                uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-                local_14 = Scr_GetArrayValues_Vector(0,uVar3,pafVar4,lVar5,pcVar2);
-                Scr_GetVector(1,&local_20,SCRIPTINSTANCE_SERVER);
-                local_34 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-                local_4c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-                local_ccc = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-                Scr_GetVector(5,&local_94,SCRIPTINSTANCE_SERVER);
+                vector_array_size = 0x100;
+                vector_array = (float (*) [3])points;
+                parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+                element_count =
+                     Scr_GetArrayValues_Vector(0,parent_id,vector_array,vector_array_size,pcVar2);
+                Scr_GetVector(1,&box_origin,SCRIPTINSTANCE_SERVER);
+                box_width = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+                box_height = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+                box_depth = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+                Scr_GetVector(5,&axes,SCRIPTINSTANCE_SERVER);
                 Scr_GetVector(6,&local_88,SCRIPTINSTANCE_SERVER);
-                Vec3Cross(&local_94,&local_88,&local_7c);
-                if (local_4c - local_34 < 0.0) {
-                  local_cfc = local_4c;
+                Vec3Cross(&axes,&local_88,&local_7c);
+                if (box_height - box_width < 0.0) {
+                  local_cfc = box_height;
                 }
                 else {
-                  local_cfc = local_34;
+                  local_cfc = box_width;
                 }
-                if (local_ccc - local_cfc < 0.0) {
-                  local_d30 = local_ccc;
+                if (box_depth - local_cfc < 0.0) {
+                  local_d30 = box_depth;
                 }
                 else {
                   local_d30 = local_cfc;
                 }
-                local_3c = (local_34 + local_4c + local_ccc) - local_d30;
-                local_cd0 = local_3c * local_3c;
-                local_38 = local_34 * 0.5;
-                local_cc8 = local_4c * 0.5;
-                local_30[3] = local_ccc * 0.5;
-                local_cc4 = local_94;
+                bounding_sphere_radius = (box_width + box_height + box_depth) - local_d30;
+                bounding_sphere_radius_squared = bounding_sphere_radius * bounding_sphere_radius;
+                half_box_width = box_width * 0.5;
+                half_box_height = box_height * 0.5;
+                half_box_depth = box_depth * 0.5;
+                transform = axes;
                 local_cc0 = local_90;
                 local_cbc = local_8c;
                 local_cb8 = local_88;
@@ -20782,95 +21681,94 @@ void __cdecl GScr_CollisionTestPointsInBox(void)
                 local_ca0 = 0;
                 local_c9c = 0;
                 local_c98 = 0;
-                local_30[0] = local_34;
-                local_30[1] = 0.0;
-                local_30[2] = 0.0;
-                local_70 = 0.0;
-                local_6c = local_4c;
+                local_forward[0] = box_width;
+                local_forward[1] = 0.0;
+                local_forward[2] = 0.0;
+                local_left = 0.0;
+                local_6c = box_height;
                 local_68 = 0;
-                local_48[0] = 0.0;
-                local_48[1] = 0.0;
-                local_48[2] = local_ccc;
-                MatrixTransformVector43(local_30,(float (*) [3])&local_cc4,&local_58);
-                MatrixTransformVector43(local_48,(float (*) [3])&local_cc4,&local_64);
-                MatrixTransformVector43(&local_70,(float (*) [3])&local_cc4,&local_10);
-                Vec3Normalize(&local_58);
-                Vec3Normalize(&local_10);
-                Vec3Normalize(&local_64);
+                local_up[0] = 0.0;
+                local_up[1] = 0.0;
+                local_up[2] = box_depth;
+                MatrixTransformVector43(local_forward,(float (*) [3])&transform,&box_forward);
+                MatrixTransformVector43(local_up,(float (*) [3])&transform,&box_up);
+                MatrixTransformVector43(&local_left,(float (*) [3])&transform,&box_left);
+                Vec3Normalize(&box_forward);
+                Vec3Normalize(&box_left);
+                Vec3Normalize(&box_up);
                 Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-                for (local_cd4 = 0; local_cd4 < local_14; local_cd4 = local_cd4 + 1) {
-                  local_cec = 0.0;
+                for (point_index = 0; point_index < element_count; point_index = point_index + 1) {
+                  collision_results = 0.0;
                   local_ce8 = 0.0;
                   local_ce4 = 0;
-                  local_ce0 = local_c94[local_cd4 * 3] - local_20;
-                  local_cdc = local_c94[local_cd4 * 3 + 1] - local_1c;
-                  local_cd8 = local_c94[local_cd4 * 3 + 2] - local_18;
-                  if (local_ce0 * local_ce0 + local_cdc * local_cdc + local_cd8 * local_cd8 <
-                      local_cd0) {
-                    if (ABS(local_ce0 * local_58 + local_cdc * local_54 + local_cd8 * local_50) <
-                        local_38) {
-                      if (ABS(local_ce0 * local_10 + local_cdc * local_c + local_cd8 * local_8) <
-                          local_cc8) {
-                        if (ABS(local_ce0 * local_64 + local_cdc * local_60 + local_cd8 * local_5c)
-                            < local_30[3]) {
-                          local_cec = 1.0;
-                          local_ce8 = local_ce0 * local_ce0 + local_cdc * local_cdc +
-                                      local_cd8 * local_cd8;
+                  bp = points[point_index * 3] - box_origin;
+                  local_cdc = points[point_index * 3 + 1] - local_1c;
+                  local_cd8 = points[point_index * 3 + 2] - local_18;
+                  if (bp * bp + local_cdc * local_cdc + local_cd8 * local_cd8 <
+                      bounding_sphere_radius_squared) {
+                    if (ABS(bp * box_forward + local_cdc * local_54 + local_cd8 * local_50) <
+                        half_box_width) {
+                      if (ABS(bp * box_left + local_cdc * local_c + local_cd8 * local_8) <
+                          half_box_height) {
+                        if (ABS(bp * box_up + local_cdc * local_60 + local_cd8 * local_5c) <
+                            half_box_depth) {
+                          collision_results = 1.0;
+                          local_ce8 = bp * bp + local_cdc * local_cdc + local_cd8 * local_cd8;
                         }
                       }
                     }
                   }
-                  Scr_AddVector(&local_cec,SCRIPTINSTANCE_SERVER);
+                  Scr_AddVector(&collision_results,SCRIPTINSTANCE_SERVER);
                   Scr_AddArray(SCRIPTINSTANCE_SERVER);
                 }
               }
               else {
-                sVar6 = SCRIPTINSTANCE_SERVER;
+                sVar3 = SCRIPTINSTANCE_SERVER;
                 Scr_GetTypeName(6,SCRIPTINSTANCE_SERVER);
                 pcVar2 = va("Parameter \'%s\' must be a vector (up)");
-                Scr_ParamError(6,pcVar2,sVar6);
+                Scr_ParamError(6,pcVar2,sVar3);
               }
             }
             else {
-              sVar6 = SCRIPTINSTANCE_SERVER;
+              sVar3 = SCRIPTINSTANCE_SERVER;
               Scr_GetTypeName(5,SCRIPTINSTANCE_SERVER);
               pcVar2 = va("Parameter \'%s\' must be a vector (forward)");
-              Scr_ParamError(5,pcVar2,sVar6);
+              Scr_ParamError(5,pcVar2,sVar3);
             }
           }
           else {
-            sVar6 = SCRIPTINSTANCE_SERVER;
+            sVar3 = SCRIPTINSTANCE_SERVER;
             Scr_GetTypeName(4,SCRIPTINSTANCE_SERVER);
             pcVar2 = va("Parameter \'%s\' must be a floating point value (box depth)");
-            Scr_ParamError(4,pcVar2,sVar6);
+            Scr_ParamError(4,pcVar2,sVar3);
           }
         }
         else {
-          sVar6 = SCRIPTINSTANCE_SERVER;
+          sVar3 = SCRIPTINSTANCE_SERVER;
           Scr_GetTypeName(3,SCRIPTINSTANCE_SERVER);
           pcVar2 = va("Parameter \'%s\' must be a floating point value (box length)");
-          Scr_ParamError(3,pcVar2,sVar6);
+          Scr_ParamError(3,pcVar2,sVar3);
         }
       }
       else {
-        sVar6 = SCRIPTINSTANCE_SERVER;
+        sVar3 = SCRIPTINSTANCE_SERVER;
         Scr_GetTypeName(2,SCRIPTINSTANCE_SERVER);
         pcVar2 = va("Parameter \'%s\' must be a floating point value (box width)");
-        Scr_ParamError(2,pcVar2,sVar6);
+        Scr_ParamError(2,pcVar2,sVar3);
       }
     }
     else {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+      sVar3 = SCRIPTINSTANCE_SERVER;
       Scr_GetTypeName(1,SCRIPTINSTANCE_SERVER);
       pcVar2 = va("Parameter \'%s\' must be a vector (3D point origin)");
-      Scr_ParamError(1,pcVar2,sVar6);
+      Scr_ParamError(1,pcVar2,sVar3);
     }
   }
   else {
-    sVar6 = SCRIPTINSTANCE_SERVER;
+    sVar3 = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Parameter \'%s\' must be an array");
-    Scr_ParamError(0,pcVar2,sVar6);
+    Scr_ParamError(0,pcVar2,sVar3);
   }
   return;
 }
@@ -20878,15 +21776,15 @@ void __cdecl GScr_CollisionTestPointsInBox(void)
 
 // 0065F8F0  sort_scored_spawn_point_vectors_ascending  (game_mp/g_scr_main_mp.cpp:17049)
 
-int __cdecl sort_scored_spawn_point_vectors_ascending(void *param_1,void *param_2)
+int __cdecl sort_scored_spawn_point_vectors_ascending(void *a,void *b)
 
 {
   int iVar1;
   
-  if (*(float *)((int)param_1 + 4) < *(float *)((int)param_2 + 4) ||
-      *(float *)((int)param_1 + 4) == *(float *)((int)param_2 + 4)) {
-    if (*(float *)((int)param_2 + 4) < *(float *)((int)param_1 + 4) ||
-        *(float *)((int)param_2 + 4) == *(float *)((int)param_1 + 4)) {
+  if (*(float *)((int)a + 4) < *(float *)((int)b + 4) ||
+      *(float *)((int)a + 4) == *(float *)((int)b + 4)) {
+    if (*(float *)((int)b + 4) < *(float *)((int)a + 4) ||
+        *(float *)((int)b + 4) == *(float *)((int)a + 4)) {
       iVar1 = 0;
     }
     else {
@@ -20907,35 +21805,35 @@ void __cdecl GScr_QSortScoredSpawnPointArrayAscending(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
-  float (*pafVar4) [3];
-  long lVar5;
-  scriptInstance_t sVar6;
-  int local_c10;
-  float local_c0c [769];
-  uint local_8;
+  uint parent_id;
+  float (*vector_array) [3];
+  long vector_array_size;
+  scriptInstance_t inst;
+  long value_index;
+  float scored_spawn_points [769];
+  long element_count;
   
   iVar1 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0x14) {
     pcVar2 = "scored spawn points";
-    lVar5 = 0x100;
-    pafVar4 = (float (*) [3])local_c0c;
-    uVar3 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-    local_8 = Scr_GetArrayValues_Vector(0,uVar3,pafVar4,lVar5,pcVar2);
+    vector_array_size = 0x100;
+    vector_array = (float (*) [3])scored_spawn_points;
+    parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+    element_count = Scr_GetArrayValues_Vector(0,parent_id,vector_array,vector_array_size,pcVar2);
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-    if (0 < (int)local_8) {
-      qsort(local_c0c,local_8,0xc,sort_scored_spawn_point_vectors_ascending);
+    if (0 < element_count) {
+      qsort(scored_spawn_points,element_count,0xc,sort_scored_spawn_point_vectors_ascending);
     }
-    for (local_c10 = 0; local_c10 < (int)local_8; local_c10 = local_c10 + 1) {
-      Scr_AddVector(local_c0c + local_c10 * 3,SCRIPTINSTANCE_SERVER);
+    for (value_index = 0; value_index < element_count; value_index = value_index + 1) {
+      Scr_AddVector(scored_spawn_points + value_index * 3,SCRIPTINSTANCE_SERVER);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
   else {
-    sVar6 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     Scr_GetTypeName(0,SCRIPTINSTANCE_SERVER);
     pcVar2 = va("Parameter \'%s\' must be an array");
-    Scr_ParamError(0,pcVar2,sVar6);
+    Scr_ParamError(0,pcVar2,inst);
   }
   return;
 }
@@ -20951,16 +21849,16 @@ void __cdecl GScr_Matrix4x4TransformPoints(void)
   int iVar3;
   char *pcVar4;
   scriptInstance_t sVar5;
-  float local_674;
+  float transformed_point;
   float local_670;
   float local_66c;
-  int local_668;
-  float local_664 [384];
-  long local_64;
-  uint local_60;
-  uint local_5c;
-  uint local_58;
-  float local_54 [4];
+  long point_index;
+  float points [384];
+  long point_count;
+  long element_index;
+  long matrix_element_size;
+  long parent_id;
+  float matrix_transform [4];
   float local_44;
   float local_40;
   float local_3c;
@@ -20969,15 +21867,15 @@ void __cdecl GScr_Matrix4x4TransformPoints(void)
   float local_30;
   float local_2c;
   float local_28;
-  uint local_14;
-  undefined4 local_10;
-  VariableValueInternal *local_c;
-  uint local_8;
+  long parameter_index;
+  long k_matrix_4x4_element_count;
+  VariableValueInternal *entry_value;
+  long id;
   
-  local_10 = 0x10;
-  local_14 = 0;
-  local_58 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-  iVar3 = GetObjectType(SCRIPTINSTANCE_SERVER,local_58);
+  k_matrix_4x4_element_count = 0x10;
+  parameter_index = 0;
+  parent_id = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+  iVar3 = GetObjectType(SCRIPTINSTANCE_SERVER,parent_id);
   if ((iVar3 != 0x14) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x42d3,0,"%s"), !bVar2)) {
@@ -20985,54 +21883,57 @@ void __cdecl GScr_Matrix4x4TransformPoints(void)
     (*pcVar1)();
     return;
   }
-  local_5c = GetArraySize(SCRIPTINSTANCE_SERVER,local_58);
-  if (local_5c == 0x10) {
-    local_5c = 0x10;
-    for (local_60 = 0; (int)local_60 < 0x10; local_60 = local_60 + 1) {
-      local_8 = GetArrayVariable(SCRIPTINSTANCE_SERVER,local_58,local_60);
-      if ((local_8 == 0) &&
+  matrix_element_size = GetArraySize(SCRIPTINSTANCE_SERVER,parent_id);
+  if (matrix_element_size == 0x10) {
+    matrix_element_size = 0x10;
+    for (element_index = 0; element_index < 0x10; element_index = element_index + 1) {
+      id = GetArrayVariable(SCRIPTINSTANCE_SERVER,parent_id,element_index);
+      if ((id == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0x42dd,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_c = gScrVarGlob[0].variableList + local_8 + 0x8000;
-      if ((((local_c->w).status & 0x60) == 0) &&
+      entry_value = gScrVarGlob[0].variableList + id + 0x8000;
+      if ((((entry_value->w).status & 0x60) == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                    0x42df,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((local_c->w).status & 0x1f) == 5) {
-        local_54[local_60] = (float)(local_c->u).next;
+      if (((entry_value->w).status & 0x1f) == 5) {
+        matrix_transform[element_index] = (float)(entry_value->u).next;
       }
       else {
-        if (((local_c->w).status & 0x1f) != 6) {
+        if (((entry_value->w).status & 0x1f) != 6) {
           sVar5 = SCRIPTINSTANCE_SERVER;
           pcVar4 = va("contents of transformation matrix array must be numbers");
-          Scr_ParamError(local_14,pcVar4,sVar5);
+          Scr_ParamError(parameter_index,pcVar4,sVar5);
           break;
         }
-        local_54[local_60] = (float)(int)(local_c->u).next;
+        matrix_transform[element_index] = (float)(int)(entry_value->u).next;
       }
     }
-    if (local_60 == 0x10) {
-      local_14 = local_14 + 1;
-      local_58 = Scr_GetObject(local_14,SCRIPTINSTANCE_SERVER);
-      local_64 = Scr_GetArrayValues_Vector
-                           (local_14,local_58,(float (*) [3])local_664,0x80,"debug geometry points")
-      ;
+    if (element_index == 0x10) {
+      parameter_index = parameter_index + 1;
+      parent_id = Scr_GetObject(parameter_index,SCRIPTINSTANCE_SERVER);
+      point_count = Scr_GetArrayValues_Vector
+                              (parameter_index,parent_id,(float (*) [3])points,0x80,
+                               "debug geometry points");
       Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-      for (local_668 = 0; local_668 < local_64; local_668 = local_668 + 1) {
-        local_674 = local_664[local_668 * 3] * local_54[0] + local_664[local_668 * 3 + 1] * local_44
-                    + local_664[local_668 * 3 + 2] * local_34 + local_54[3];
-        local_670 = local_664[local_668 * 3] * local_54[1] + local_664[local_668 * 3 + 1] * local_40
-                    + local_664[local_668 * 3 + 2] * local_30 + local_38;
-        local_66c = local_664[local_668 * 3] * local_54[2] + local_664[local_668 * 3 + 1] * local_3c
-                    + local_664[local_668 * 3 + 2] * local_2c + local_28;
-        Scr_AddVector(&local_674,SCRIPTINSTANCE_SERVER);
+      for (point_index = 0; point_index < point_count; point_index = point_index + 1) {
+        transformed_point =
+             points[point_index * 3] * matrix_transform[0] + points[point_index * 3 + 1] * local_44
+             + points[point_index * 3 + 2] * local_34 + matrix_transform[3];
+        local_670 = points[point_index * 3] * matrix_transform[1] +
+                    points[point_index * 3 + 1] * local_40 + points[point_index * 3 + 2] * local_30
+                    + local_38;
+        local_66c = points[point_index * 3] * matrix_transform[2] +
+                    points[point_index * 3 + 1] * local_3c + points[point_index * 3 + 2] * local_2c
+                    + local_28;
+        Scr_AddVector(&transformed_point,SCRIPTINSTANCE_SERVER);
         Scr_AddArray(SCRIPTINSTANCE_SERVER);
       }
     }
@@ -21040,7 +21941,7 @@ void __cdecl GScr_Matrix4x4TransformPoints(void)
   else {
     sVar5 = SCRIPTINSTANCE_SERVER;
     pcVar4 = va("first parameter passed to Matrix4x4TransformPoints must be float[16]");
-    Scr_ParamError(local_14,pcVar4,sVar5);
+    Scr_ParamError(parameter_index,pcVar4,sVar5);
   }
   return;
 }
@@ -21051,6 +21952,8 @@ void __cdecl GScr_Matrix4x4TransformPoints(void)
 void __cdecl GScr_GetNumGVRules(void)
 
 {
+  int count;
+  
   Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -21071,26 +21974,27 @@ void __cdecl GScr_GetGVRule(void)
 void __cdecl GScr_GetWeaponMinDamageRange(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *error;
+  scriptInstance_t inst;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    if (*local_8 == '\0') {
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-  Scr_AddFloat((local_54.weapDef)->fMinDamageRange,SCRIPTINSTANCE_SERVER);
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  Scr_AddFloat((wp.weapDef)->fMinDamageRange,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -21100,26 +22004,27 @@ void __cdecl GScr_GetWeaponMinDamageRange(void)
 void __cdecl GScr_GetWeaponMaxDamageRange(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *error;
+  scriptInstance_t inst;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    if (*local_8 == '\0') {
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-  Scr_AddFloat((local_54.weapDef)->fMaxDamageRange,SCRIPTINSTANCE_SERVER);
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  Scr_AddFloat((wp.weapDef)->fMaxDamageRange,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -21129,26 +22034,27 @@ void __cdecl GScr_GetWeaponMaxDamageRange(void)
 void __cdecl GScr_GetWeaponMinDamage(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *error;
+  scriptInstance_t inst;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    if (*local_8 == '\0') {
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-  Scr_AddFloat((float)(local_54.weapDef)->minDamage,SCRIPTINSTANCE_SERVER);
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  Scr_AddFloat((float)(wp.weapDef)->minDamage,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -21158,26 +22064,27 @@ void __cdecl GScr_GetWeaponMinDamage(void)
 void __cdecl GScr_GetWeaponMaxDamage(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *error;
+  scriptInstance_t inst;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    if (*local_8 == '\0') {
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-  Scr_AddFloat((float)(local_54.weapDef)->damage,SCRIPTINSTANCE_SERVER);
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  Scr_AddFloat((float)(wp.weapDef)->damage,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -21187,26 +22094,27 @@ void __cdecl GScr_GetWeaponMaxDamage(void)
 void __cdecl GScr_GetWeaponFuseTime(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *error;
+  scriptInstance_t inst;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    if (*local_8 == '\0') {
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-  Scr_AddFloat((float)(local_54.weapDef)->fuseTime,SCRIPTINSTANCE_SERVER);
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  Scr_AddFloat((float)(wp.weapDef)->fuseTime,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -21216,30 +22124,31 @@ void __cdecl GScr_GetWeaponFuseTime(void)
 void __cdecl GScr_GetWeaponProjExplosionSound(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *error;
+  scriptInstance_t inst;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    if (*local_8 == '\0') {
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    if (*pszWeaponName == '\0') {
       Scr_ParamError(0,"Invalid weapon name",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar3 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("Invalid weapon name %s");
-      Scr_ParamError(0,pcVar2,sVar3);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("Invalid weapon name %s");
+      Scr_ParamError(0,error,inst);
     }
   }
-  Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-  if ((local_54.weapDef)->projExplosionSound == (char *)0x0) {
+  Weapon_SetWeaponParamsWeapon(&wp,weapon);
+  if ((wp.weapDef)->projExplosionSound == (char *)0x0) {
     Scr_AddString("",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddString((local_54.weapDef)->projExplosionSound,SCRIPTINSTANCE_SERVER);
+    Scr_AddString((wp.weapDef)->projExplosionSound,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -21250,20 +22159,21 @@ void __cdecl GScr_GetWeaponProjExplosionSound(void)
 void __cdecl GScr_IsWeaponSpecificUse(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *fmt;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    pcVar2 = va("WARNING: unknown weapon \'%s\' passed to IsWeaponSpecificUse\n");
-    Com_PrintWarning(0x18,pcVar2);
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    fmt = va("WARNING: unknown weapon \'%s\' passed to IsWeaponSpecificUse\n");
+    Com_PrintWarning(0x18,fmt);
   }
   else {
-    Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-    if ((local_54.weapDef)->offhandSlot == OFFHAND_SLOT_SPECIFIC_USE) {
+    Weapon_SetWeaponParamsWeapon(&wp,weapon);
+    if ((wp.weapDef)->offhandSlot == OFFHAND_SLOT_SPECIFIC_USE) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -21279,20 +22189,21 @@ void __cdecl GScr_IsWeaponSpecificUse(void)
 void __cdecl GScr_IsWeaponEquipment(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *fmt;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    pcVar2 = va("WARNING: unknown weapon \'%s\' passed to IsWeaponEquipment\n");
-    Com_PrintWarning(0x18,pcVar2);
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    fmt = va("WARNING: unknown weapon \'%s\' passed to IsWeaponEquipment\n");
+    Com_PrintWarning(0x18,fmt);
   }
   else {
-    Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-    if ((local_54.weapDef)->offhandSlot == OFFHAND_SLOT_EQUIPMENT) {
+    Weapon_SetWeaponParamsWeapon(&wp,weapon);
+    if ((wp.weapDef)->offhandSlot == OFFHAND_SLOT_EQUIPMENT) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -21308,20 +22219,21 @@ void __cdecl GScr_IsWeaponEquipment(void)
 void __cdecl GScr_IsWeaponPrimary(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *fmt;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    pcVar2 = va("WARNING: unknown weapon \'%s\' passed to IsWeaponPrimary\n");
-    Com_PrintWarning(0x18,pcVar2);
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    fmt = va("WARNING: unknown weapon \'%s\' passed to IsWeaponPrimary\n");
+    Com_PrintWarning(0x18,fmt);
   }
   else {
-    Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-    if ((local_54.weapDef)->inventoryType == WEAPINVENTORY_PRIMARY) {
+    Weapon_SetWeaponParamsWeapon(&wp,weapon);
+    if ((wp.weapDef)->inventoryType == WEAPINVENTORY_PRIMARY) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -21337,20 +22249,21 @@ void __cdecl GScr_IsWeaponPrimary(void)
 void __cdecl GScr_IsWeaponScopeOverlay(void)
 
 {
-  uint uVar1;
-  char *pcVar2;
-  weaponParms local_54;
-  char *local_8;
+  uint weapon;
+  char *fmt;
+  int iWeaponIndex;
+  weaponParms wp;
+  char *pszWeaponName;
   
-  local_8 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar1 = G_GetWeaponIndexForName(local_8);
-  if (uVar1 == 0) {
-    pcVar2 = va("WARNING: unknown weapon \'%s\' passed to IsWeaponEquipment\n");
-    Com_PrintWarning(0x18,pcVar2);
+  pszWeaponName = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weapon = G_GetWeaponIndexForName(pszWeaponName);
+  if (weapon == 0) {
+    fmt = va("WARNING: unknown weapon \'%s\' passed to IsWeaponEquipment\n");
+    Com_PrintWarning(0x18,fmt);
   }
   else {
-    Weapon_SetWeaponParamsWeapon(&local_54,uVar1);
-    if ((local_54.weapDef)->overlayReticle == WEAPOVERLAYRETICLE_NONE) {
+    Weapon_SetWeaponParamsWeapon(&wp,weapon);
+    if ((wp.weapDef)->overlayReticle == WEAPOVERLAYRETICLE_NONE) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -21378,16 +22291,17 @@ void __cdecl GScr_PCServerUpdatePlaylist(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetPregameTeam(scr_entref_t param_1)
+void __cdecl GScr_GetPregameTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
+  int value;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x4499,
                              0,"%s");
@@ -21406,9 +22320,9 @@ void __cdecl GScr_GetPregameTeam(scr_entref_t param_1)
       return;
     }
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  iVar4 = Pregame_GetAssignedPregameTeam((pgVar3->s).number);
-  Scr_AddInt(iVar4,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Pregame_GetAssignedPregameTeam((pgVar3->s).number);
+  Scr_AddInt(value,inst);
   return;
 }
 
@@ -21420,16 +22334,17 @@ void __cdecl GScr_GetPregameTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetPregameClass(scr_entref_t param_1)
+void __cdecl GScr_GetPregameClass(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   char *pcVar4;
-  scriptInstance_t sVar5;
+  scriptInstance_t inst;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x44a9,
                              0,"%s");
@@ -21453,9 +22368,9 @@ void __cdecl GScr_GetPregameClass(scr_entref_t param_1)
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    sVar5 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar4 = Pregame_GetAssignedPregameClass((pgVar3->s).number);
-    Scr_AddString(pcVar4,sVar5);
+    Scr_AddString(pcVar4,inst);
   }
   return;
 }
@@ -21468,16 +22383,18 @@ void __cdecl GScr_GetPregameClass(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetPregameTeam(scr_entref_t param_1)
+void __cdecl GScr_SetPregameTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   uint uVar4;
-  team_t local_10;
+  int teamNum;
+  ushort team;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x44be,
                              0,"%s");
@@ -21498,15 +22415,15 @@ void __cdecl GScr_SetPregameTeam(scr_entref_t param_1)
   }
   uVar4 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar4 & 0xffff) == (uint)scr_const.allies) {
-    local_10 = TEAM_ALLIES;
+    teamNum = 2;
   }
   else if ((uVar4 & 0xffff) == (uint)scr_const.axis) {
-    local_10 = TEAM_AXIS;
+    teamNum = 1;
   }
   else {
-    local_10 = TEAM_SPECTATOR;
+    teamNum = 3;
   }
-  Pregame_SetAssignedPregameTeam((pgVar3->s).number,local_10);
+  Pregame_SetAssignedPregameTeam((pgVar3->s).number,teamNum);
   return;
 }
 
@@ -21518,15 +22435,16 @@ void __cdecl GScr_SetPregameTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetPregameClass(scr_entref_t param_1)
+void __cdecl GScr_SetPregameClass(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  char *pcVar4;
+  char *pclass;
+  gentity_s *ent;
   
-  pgVar3 = GetPlayerEntity(param_1);
+  pgVar3 = GetPlayerEntity(entref);
   if (pgVar3 == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x44d6,
                              0,"%s");
@@ -21545,8 +22463,8 @@ void __cdecl GScr_SetPregameClass(scr_entref_t param_1)
       return;
     }
   }
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  Pregame_SetAssignedPregameClass((pgVar3->s).number,pcVar4);
+  pclass = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  Pregame_SetAssignedPregameClass((pgVar3->s).number,pclass);
   return;
 }
 
@@ -21556,11 +22474,11 @@ void __cdecl GScr_SetPregameClass(scr_entref_t param_1)
 void __cdecl GScr_PixBeginEvent(void)
 
 {
-  char *pcVar1;
+  char *Name;
   
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pcVar1 = va("SCRIPT: %s");
-  PIXBeginNamedEvent(0,pcVar1);
+  Name = va("SCRIPT: %s");
+  PIXBeginNamedEvent(0,Name);
   return;
 }
 
@@ -21570,16 +22488,18 @@ void __cdecl GScr_PixBeginEvent(void)
 void __cdecl GScr_PixMarker(void)
 
 {
-  char *pcVar1;
+  char *Name;
   
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pcVar1 = va("SCRIPT: %s");
-  PIXSetMarker(0,pcVar1);
+  Name = va("SCRIPT: %s");
+  PIXSetMarker(0,Name);
   return;
 }
 
 
 // 00660650  GScr_IncrementCounter  (game_mp/g_scr_main_mp.cpp:17725)
+
+/* WARNING: Variable defined which should be unmapped: counterType */
 
 void __cdecl GScr_IncrementCounter(void)
 
@@ -21588,15 +22508,19 @@ void __cdecl GScr_IncrementCounter(void)
   bool bVar2;
   uint uVar3;
   int iVar4;
-  char *pcVar5;
-  int iVar6;
+  char *counterType_00;
+  int counterID;
+  char *counterType;
+  int counterId;
+  int increment;
+  int numParam;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 2) {
     iVar4 = SV_GetLicenseType();
     bVar2 = SV_IsServerRanked(iVar4);
     if (bVar2) {
-      pcVar5 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+      counterType_00 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
       iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
       if (iVar4 != 0) {
         if ((iVar4 < 0) &&
@@ -21612,12 +22536,12 @@ void __cdecl GScr_IncrementCounter(void)
           ;
         }
         else {
-          iVar6 = LiveCounter_CounterStringToID(pcVar5);
-          if (iVar6 == -1) {
+          counterID = LiveCounter_CounterStringToID(counterType_00);
+          if (counterID == -1) {
             Com_PrintError(0x10,"Invalid counter string id: %s\n");
           }
           else {
-            LiveCounter_IncrementCounterValue(iVar6,CONCAT44(pcVar5,iVar4 >> 0x1f));
+            LiveCounter_IncrementCounterValue(counterID,CONCAT44(counterType_00,iVar4 >> 0x1f));
           }
         }
       }
@@ -21639,31 +22563,34 @@ void __cdecl GScr_GetCounterTotal(void)
 {
   uint uVar1;
   char *pcVar2;
-  int iVar3;
-  long64 lVar4;
-  scriptInstance_t sVar5;
-  int local_1c;
+  int counterID;
+  long64 lVar3;
+  scriptInstance_t inst;
+  int counterValue;
   int local_18;
+  char *counterType;
+  int counterId;
+  int numParam;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    iVar3 = LiveCounter_CounterStringToID(pcVar2);
-    if (iVar3 == -1) {
+    counterID = LiveCounter_CounterStringToID(pcVar2);
+    if (counterID == -1) {
       Com_PrintError(0x10,"Invalid counter string id: %s\n");
       Scr_AddString("",SCRIPTINSTANCE_SERVER);
     }
     else {
-      lVar4 = LiveCounter_GetCounterTotalValue(iVar3);
-      local_1c = (int)lVar4;
-      local_18 = (int)((ulonglong)lVar4 >> 0x20);
-      if ((local_1c == -1) && (local_18 == -1)) {
+      lVar3 = LiveCounter_GetCounterTotalValue(counterID);
+      counterValue = (int)lVar3;
+      local_18 = (int)((ulonglong)lVar3 >> 0x20);
+      if ((counterValue == -1) && (local_18 == -1)) {
         Scr_AddString("",SCRIPTINSTANCE_SERVER);
       }
       else {
-        sVar5 = SCRIPTINSTANCE_SERVER;
+        inst = SCRIPTINSTANCE_SERVER;
         pcVar2 = va("%llu");
-        Scr_AddString(pcVar2,sVar5);
+        Scr_AddString(pcVar2,inst);
       }
     }
   }
@@ -21688,18 +22615,19 @@ void __cdecl GScr_SetScoreboardColumns(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  scoreboardColumnType_t sVar3;
-  uint local_c;
+  char *typeName;
+  scoreboardColumnType_t sVar2;
+  int i;
+  int numParam;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 4) {
-    for (local_c = 0; (int)local_c < 4; local_c = local_c + 1) {
-      pcVar2 = Scr_GetString(local_c,SCRIPTINSTANCE_SERVER);
-      sVar3 = CScr_GetColumnTypeByName(pcVar2);
-      level.matchState.unarchivedState.scoreboardColumnTypes[local_c] = sVar3;
-      if (level.matchState.unarchivedState.scoreboardColumnTypes[local_c] == SB_TYPE_INVALID) {
-        Scr_GetString(local_c,SCRIPTINSTANCE_SERVER);
+    for (i = 0; i < 4; i = i + 1) {
+      typeName = Scr_GetString(i,SCRIPTINSTANCE_SERVER);
+      sVar2 = CScr_GetColumnTypeByName(typeName);
+      level.matchState.unarchivedState.scoreboardColumnTypes[i] = sVar2;
+      if (level.matchState.unarchivedState.scoreboardColumnTypes[i] == SB_TYPE_INVALID) {
+        Scr_GetString(i,SCRIPTINSTANCE_SERVER);
         Com_PrintError(0x10,"Invalid param: %s is not a valid column type.\n");
       }
     }
@@ -21720,39 +22648,42 @@ void __cdecl GScr_SetScoreboardColumns(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl GScr_SetNemesisXuid(scr_entref_t param_1)
+void __cdecl GScr_SetNemesisXuid(scr_entref_t entref)
 
 {
   uint uVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  undefined4 local_24;
+  ddlState_t *searchState;
+  ddlState_t *resultState;
+  int argNum;
+  int numParam;
+  undefined4 nemesisXuid;
   undefined4 local_20;
-  gentity_s *local_1c;
-  char *local_18;
-  ddlState_t local_14;
+  gentity_s *playerEnt;
+  char *nemesisXuidString;
+  ddlState_t localState;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 1) {
-    local_18 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_24 = 0;
+    nemesisXuidString = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    nemesisXuid = 0;
     local_20 = 0;
-    local_1c = GetEntity(param_1);
-    if (local_1c->client == (gclient_s *)0x0) {
+    playerEnt = GetEntity(entref);
+    if (playerEnt->client == (gclient_s *)0x0) {
       Scr_Error("setnemesisxuid: entity must be a player entity",false);
     }
-    else if ((local_1c->client != (gclient_s *)0x0) && (local_18 != (char *)0x0)) {
-      iVar4 = 2;
-      pdVar3 = &local_14;
-      pdVar2 = LiveStats_GetRootDDLState();
-      DDL_MoveTo(pdVar2,pdVar3,iVar4);
-      StringToXUID(local_18,(ulong64 *)&local_24);
+    else if ((playerEnt->client != (gclient_s *)0x0) && (nemesisXuidString != (char *)0x0)) {
+      argNum = 2;
+      resultState = &localState;
+      searchState = LiveStats_GetRootDDLState();
+      DDL_MoveTo(searchState,resultState,argNum);
+      StringToXUID(nemesisXuidString,(ulong64 *)&nemesisXuid);
       SV_SetClientDInt64Stat
-                ((local_1c->s).number,&local_14,
+                ((playerEnt->s).number,&localState,
                  CONCAT26((short)((uint)local_20 >> 0x10),
-                          CONCAT15((char)((uint)local_20 >> 8),CONCAT14((char)local_20,local_24))));
+                          CONCAT15((char)((uint)local_20 >> 8),CONCAT14((char)local_20,nemesisXuid))
+                         ));
     }
   }
   else {
@@ -21820,7 +22751,7 @@ void __cdecl GScr_PregameStartGame(void)
 
 // 00660A50  Scr_GetFunction  (game_mp/g_scr_main_mp.cpp:18429)
 
-_func___cdecl_void * __cdecl Scr_GetFunction(char **param_1,int *param_2)
+_func___cdecl_void * __cdecl Scr_GetFunction(char **pName,int *type)
 
 {
   byte bVar1;
@@ -21828,15 +22759,16 @@ _func___cdecl_void * __cdecl Scr_GetFunction(char **param_1,int *param_2)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x17e < local_8) {
+    if (0x17e < i) {
       return (_func___cdecl_void *)0x0;
     }
-    local_10 = (byte *)functions[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)functions[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -21855,11 +22787,11 @@ LAB_00660acf:
     local_1c = 0;
 LAB_00660ad7:
     if (local_1c == 0) {
-      *param_1 = functions[local_8].actionString;
-      *param_2 = functions[local_8].type;
-      return functions[local_8].actionFunc;
+      *pName = functions[i].actionString;
+      *type = functions[i].type;
+      return functions[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -21871,20 +22803,22 @@ LAB_00660ad7:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetClientFlag(scr_entref_t param_1)
+void __cdecl GScr_SetClientFlag(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int flag;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar2 < 0) || (0xf < iVar2)) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = va("SetClientFlag: Index %i out of range (0 - %i)\n");
-    Scr_ParamError(0,pcVar3,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("SetClientFlag: Index %i out of range (0 - %i)\n");
+    Scr_ParamError(0,error,inst);
   }
   else if (pgVar1->client == (gclient_s *)0x0) {
     (pgVar1->s).lerp.eFlags2 = 1 << ((byte)iVar2 & 0x1f) | (pgVar1->s).lerp.eFlags2;
@@ -21903,20 +22837,22 @@ void __cdecl GScr_SetClientFlag(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_ClearClientFlag(scr_entref_t param_1)
+void __cdecl GScr_ClearClientFlag(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   int iVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int flag;
   
-  pgVar1 = GetEntity(param_1);
+  pgVar1 = GetEntity(entref);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar2 < 0) || (0xf < iVar2)) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = va("ClearClientFlag: Index %i out of range (0 - %i)\n");
-    Scr_ParamError(0,pcVar3,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("ClearClientFlag: Index %i out of range (0 - %i)\n");
+    Scr_ParamError(0,error,inst);
   }
   else if (pgVar1->client == (gclient_s *)0x0) {
     (pgVar1->s).lerp.eFlags2 = ~(1 << ((byte)iVar2 & 0x1f)) & (pgVar1->s).lerp.eFlags2;
@@ -21935,45 +22871,45 @@ void __cdecl GScr_ClearClientFlag(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsMissileInsideHeightLock(scr_entref_t param_1)
+void __cdecl GScr_IsMissileInsideHeightLock(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_24;
+  float meshMaxs;
   float local_20;
   float local_1c;
-  float local_18;
+  float meshMins;
   float local_14;
   float local_10;
-  int local_c;
-  gentity_s *local_8;
+  int i;
+  gentity_s *pSelf;
   
-  local_8 = GetEntity(param_1);
-  if ((local_8 == (gentity_s *)0x0) &&
+  pSelf = GetEntity(entref);
+  if ((pSelf == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x484b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (num_heli_height_lock_patches <= local_c) {
+    if (num_heli_height_lock_patches <= i) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
       return;
     }
-    CM_ModelBounds(heli_height_lock_patches[local_c].brushmodel,&local_18,&local_24);
-    local_18 = local_18 + heli_height_lock_patches[local_c].origin[0];
-    local_14 = local_14 + heli_height_lock_patches[local_c].origin[1];
-    local_10 = local_10 + heli_height_lock_patches[local_c].origin[2];
-    local_24 = local_24 + heli_height_lock_patches[local_c].origin[0];
-    local_20 = local_20 + heli_height_lock_patches[local_c].origin[1];
-    local_1c = local_1c + heli_height_lock_patches[local_c].origin[2];
-    if ((((local_18 <= (local_8->r).currentOrigin[0]) && ((local_8->r).currentOrigin[0] <= local_24)
-         ) && (local_14 <= (local_8->r).currentOrigin[1])) &&
-       ((local_8->r).currentOrigin[1] <= local_20)) break;
-    local_c = local_c + 1;
+    CM_ModelBounds(heli_height_lock_patches[i].brushmodel,&meshMins,&meshMaxs);
+    meshMins = meshMins + heli_height_lock_patches[i].origin[0];
+    local_14 = local_14 + heli_height_lock_patches[i].origin[1];
+    local_10 = local_10 + heli_height_lock_patches[i].origin[2];
+    meshMaxs = meshMaxs + heli_height_lock_patches[i].origin[0];
+    local_20 = local_20 + heli_height_lock_patches[i].origin[1];
+    local_1c = local_1c + heli_height_lock_patches[i].origin[2];
+    if ((((meshMins <= (pSelf->r).currentOrigin[0]) && ((pSelf->r).currentOrigin[0] <= meshMaxs)) &&
+        (local_14 <= (pSelf->r).currentOrigin[1])) && ((pSelf->r).currentOrigin[1] <= local_20))
+    break;
+    i = i + 1;
   }
   Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   return;
@@ -21987,16 +22923,17 @@ void __cdecl GScr_IsMissileInsideHeightLock(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_IsOnGround(scr_entref_t param_1)
+void __cdecl GScr_IsOnGround(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   uint uVar4;
-  int local_8;
+  gentity_s *pSelf;
+  int worldOnly;
   
-  pgVar3 = GetEntity(param_1);
+  pgVar3 = GetEntity(entref);
   if ((pgVar3 == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x4864,0,"%s"), !bVar2)) {
@@ -22004,16 +22941,16 @@ void __cdecl GScr_IsOnGround(scr_entref_t param_1)
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  worldOnly = 0;
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 != 0) {
-    local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    worldOnly = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   }
   if (pgVar3->client == (gclient_s *)0x0) {
     if ((pgVar3->s).groundEntityNum == 0x3fe) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
-    else if ((local_8 == 0) && ((pgVar3->s).groundEntityNum != 0x3ff)) {
+    else if ((worldOnly == 0) && ((pgVar3->s).groundEntityNum != 0x3ff)) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -22025,7 +22962,7 @@ void __cdecl GScr_IsOnGround(scr_entref_t param_1)
       if ((pgVar3->client->ps).groundEntityNum == 0x3fe) {
         Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
       }
-      else if ((local_8 == 0) && ((pgVar3->client->ps).groundEntityNum != 0x3ff)) {
+      else if ((worldOnly == 0) && ((pgVar3->client->ps).groundEntityNum != 0x3ff)) {
         Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
       }
       else {
@@ -22045,16 +22982,16 @@ void __cdecl GScr_IsOnGround(scr_entref_t param_1)
 
 // 006613C0  GScr_HandleAnimError  (game_mp/g_scr_main_mp.cpp:18578)
 
-void __cdecl GScr_HandleAnimError(int param_1)
+void __cdecl GScr_HandleAnimError(int error)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == 1) {
+  if (error == 1) {
     Scr_Error("root anim is not an ancestor of the anim",false);
   }
-  if (param_1 != 2) {
+  if (error != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x4895,
                              0,"%s");
     if (!bVar2) {
@@ -22070,16 +23007,17 @@ void __cdecl GScr_HandleAnimError(int param_1)
 
 // 00661420  GScr_GetOptionalFloat  (game_mp/g_scr_main_mp.cpp:18586)
 
-float __cdecl GScr_GetOptionalFloat(int param_1,float param_2)
+float __cdecl GScr_GetOptionalFloat(int iParamIndex,float fDefault)
 
 {
   int iVar1;
+  int iType;
   
-  iVar1 = Scr_GetType(param_1,SCRIPTINSTANCE_SERVER);
+  iVar1 = Scr_GetType(iParamIndex,SCRIPTINSTANCE_SERVER);
   if (iVar1 != 0) {
-    param_2 = Scr_GetFloat(param_1,SCRIPTINSTANCE_SERVER);
+    fDefault = Scr_GetFloat(iParamIndex,SCRIPTINSTANCE_SERVER);
   }
-  return param_2;
+  return fDefault;
 }
 
 
@@ -22090,22 +23028,23 @@ float __cdecl GScr_GetOptionalFloat(int param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-XAnimTree_s * __cdecl GScr_GetEntAnimTree(gentity_s *param_1)
+XAnimTree_s * __cdecl GScr_GetEntAnimTree(gentity_s *ent)
 
 {
   XAnimTree_s *pXVar1;
-  char *pcVar2;
-  undefined1 uVar3;
+  char *error;
+  undefined1 force_terminal;
+  XAnimTree_s *tree;
   
-  pXVar1 = G_GetEntAnimTree(param_1);
+  pXVar1 = G_GetEntAnimTree(ent);
   if (pXVar1 == (XAnimTree_s *)0x0) {
-    uVar3 = 0;
-    SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
-    G_GetEntityTypeName(param_1);
-    pcVar2 = va(
-               "entity of type \'%s\', classname \'%s\', origin (%f, %f, %f) does not have an animation tree"
-               );
-    Scr_Error(pcVar2,(bool)uVar3);
+    force_terminal = 0;
+    SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
+    G_GetEntityTypeName(ent);
+    error = va(
+              "entity of type \'%s\', classname \'%s\', origin (%f, %f, %f) does not have an animation tree"
+              );
+    Scr_Error(error,(bool)force_terminal);
   }
   return pXVar1;
 }
@@ -22118,11 +23057,11 @@ XAnimTree_s * __cdecl GScr_GetEntAnimTree(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_FlagAnimForUpdate(gentity_s *param_1)
+void __cdecl G_FlagAnimForUpdate(gentity_s *ent)
 
 {
-  if ((param_1->flags & 0x2000U) == 0) {
-    param_1->flags = param_1->flags | 0x40000;
+  if ((ent->flags & 0x2000U) == 0) {
+    ent->flags = ent->flags | 0x40000;
   }
   return;
 }
@@ -22135,86 +23074,87 @@ void __cdecl G_FlagAnimForUpdate(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetAnimInternal(scr_entref_t param_1,uint param_2)
+void __cdecl GScr_SetAnimInternal(scr_entref_t entref,uint flags)
 
 {
+  gentity_s *ent_00;
   uint uVar1;
   uint local_3c;
   uint local_38;
-  float local_28;
-  XAnimTree_s *local_24;
-  DObj *local_20;
-  undefined4 local_1c;
-  float local_18;
-  float local_14;
-  int local_10;
-  scr_anim_s_u_0 local_c;
-  gentity_s *local_8;
+  float rate;
+  XAnimTree_s *tree;
+  DObj *obj;
+  int cmdIndex;
+  float goalWeight;
+  float goalTime;
+  int error;
+  scr_anim_s anim;
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  local_24 = GScr_GetEntAnimTree(local_8);
-  local_28 = 1.0;
-  local_14 = 0.2;
-  local_18 = 1.0;
+  ent_00 = GetEntity(entref);
+  tree = GScr_GetEntAnimTree(ent_00);
+  rate = 1.0;
+  goalTime = 0.2;
+  goalWeight = 1.0;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
-    local_c._s_0 = (scr_anim_s_u_0_s_0)Scr_GetAnim(0,local_24,SCRIPTINSTANCE_SERVER);
-    XAnimGetParamValue(local_24,(uint)local_c & 0xffff,"rate",&local_28);
-    XAnimGetParamValue(local_24,(uint)local_c.linkPointer & 0xffff,"goaltime",&local_14);
-    XAnimGetParamValue(local_24,(uint)local_c.linkPointer & 0xffff,"goalweight",&local_18);
+    anim = Scr_GetAnim(0,tree,SCRIPTINSTANCE_SERVER);
+    XAnimGetParamValue(tree,(uint)anim.field0_0x0 & 0xffff,"rate",&rate);
+    XAnimGetParamValue(tree,(uint)anim.field0_0x0 & 0xffff,"goaltime",&goalTime);
+    XAnimGetParamValue(tree,(uint)anim.field0_0x0 & 0xffff,"goalweight",&goalWeight);
   }
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   switch(uVar1) {
   default:
     Scr_Error("too many parameters",false);
   case 4:
-    local_28 = GScr_GetOptionalFloat(3,local_28);
-    if (local_28 < 0.0) {
+    rate = GScr_GetOptionalFloat(3,rate);
+    if (rate < 0.0) {
       Scr_ParamError(3,"must set nonnegative rate",SCRIPTINSTANCE_SERVER);
     }
   case 3:
-    local_14 = GScr_GetOptionalFloat(2,local_14);
-    if (local_14 < 0.0) {
+    goalTime = GScr_GetOptionalFloat(2,goalTime);
+    if (goalTime < 0.0) {
       Scr_ParamError(2,"must set nonnegative goal time",SCRIPTINSTANCE_SERVER);
     }
   case 2:
-    local_18 = GScr_GetOptionalFloat(1,local_18);
-    if ((local_18 < 0.0) || (1.0 < local_18)) {
+    goalWeight = GScr_GetOptionalFloat(1,goalWeight);
+    if ((goalWeight < 0.0) || (1.0 < goalWeight)) {
       Scr_ParamError(1,"must set nonnegative weight",SCRIPTINSTANCE_SERVER);
     }
   case 1:
-    local_c._s_0 = (scr_anim_s_u_0_s_0)Scr_GetAnim(0,local_24,SCRIPTINSTANCE_SERVER);
-    local_20 = Com_GetServerDObj((local_8->s).number);
-    if (local_20 == (DObj *)0x0) {
+    anim = Scr_GetAnim(0,tree,SCRIPTINSTANCE_SERVER);
+    obj = Com_GetServerDObj((ent_00->s).number);
+    if (obj == (DObj *)0x0) {
       Scr_ObjectError("No model exists.",SCRIPTINSTANCE_SERVER);
     }
-    local_1c = 0;
-    if ((param_2 & 1) == 0) {
-      if (local_18 <= 0.001) {
+    cmdIndex = 0;
+    if ((flags & 1) == 0) {
+      if (goalWeight <= 0.001) {
         local_3c = 0;
       }
       else {
         local_3c = 2;
       }
-      local_10 = XAnimSetGoalWeight(local_20,(uint)local_c.linkPointer & 0xffff,local_18,local_14,
-                                    local_28,0,local_3c,(uint)((param_2 & 2) != 0),0);
+      error = XAnimSetGoalWeight(obj,(uint)anim.field0_0x0 & 0xffff,goalWeight,goalTime,rate,0,
+                                 local_3c,(uint)((flags & 2) != 0),0);
     }
     else {
-      if (local_18 <= 0.001) {
+      if (goalWeight <= 0.001) {
         local_38 = 0;
       }
       else {
         local_38 = 2;
       }
-      local_10 = XAnimSetCompleteGoalWeight
-                           (local_20,(uint)local_c.linkPointer & 0xffff,local_18,local_14,local_28,0
-                            ,local_38,(uint)((param_2 & 2) != 0),0);
+      error = XAnimSetCompleteGoalWeight
+                        (obj,(uint)anim.field0_0x0 & 0xffff,goalWeight,goalTime,rate,0,local_38,
+                         (uint)((flags & 2) != 0),0);
     }
-    if (local_10 == 0) {
-      G_FlagAnimForUpdate(local_8);
+    if (error == 0) {
+      G_FlagAnimForUpdate(ent_00);
     }
     else {
-      GScr_HandleAnimError(local_10);
+      GScr_HandleAnimError(error);
     }
     return;
   }
@@ -22223,13 +23163,19 @@ void __cdecl GScr_SetAnimInternal(scr_entref_t param_1,uint param_2)
 
 // 00661070  GScr_SetAnim  (game_mp/g_scr_main_mp.cpp:18720)
 
-void __cdecl GScr_SetAnim(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GScr_SetAnim(scr_entref_t entref)
 
 {
   DWORD DVar1;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"SetAnim");
-  GScr_SetAnimInternal(param_1,1);
+  GScr_SetAnimInternal(entref,1);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -22245,7 +23191,7 @@ void __cdecl GScr_SetAnim(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SetAnimTree(gentity_s *param_1,scr_animtree_t *param_2)
+void __cdecl G_SetAnimTree(gentity_s *ent,scr_animtree_t *animtree)
 
 {
   code *pcVar1;
@@ -22253,31 +23199,32 @@ void __cdecl G_SetAnimTree(gentity_s *param_1,scr_animtree_t *param_2)
   XAnimTree_s *pXVar3;
   XAnim_s *pXVar4;
   XAnimTree_s *pXVar5;
+  XAnimTree_s *oldAnimTree;
   
-  pXVar3 = G_GetEntAnimTree(param_1);
-  if ((pXVar3 != param_1->pAnimTree) &&
+  pXVar3 = G_GetEntAnimTree(ent);
+  if ((pXVar3 != ent->pAnimTree) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",
                                0x4929,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pXVar3 = param_1->pAnimTree;
-  if (param_2 == (scr_animtree_t *)0x0) {
+  pXVar3 = ent->pAnimTree;
+  if (animtree == (scr_animtree_t *)0x0) {
     if (pXVar3 == (XAnimTree_s *)0x0) {
       return;
     }
-    param_1->pAnimTree = (XAnimTree_s *)0x0;
+    ent->pAnimTree = (XAnimTree_s *)0x0;
   }
   else {
-    if ((pXVar3 != (XAnimTree_s *)0x0) && (pXVar4 = XAnimGetAnims(pXVar3), pXVar4 == param_2->anims)
-       ) {
+    if ((pXVar3 != (XAnimTree_s *)0x0) &&
+       (pXVar4 = XAnimGetAnims(pXVar3), pXVar4 == animtree->anims)) {
       return;
     }
-    pXVar5 = Com_XAnimCreateSmallTree(param_2->anims);
-    param_1->pAnimTree = pXVar5;
+    pXVar5 = Com_XAnimCreateSmallTree(animtree->anims);
+    ent->pAnimTree = pXVar5;
   }
-  G_DObjUpdate(param_1);
+  G_DObjUpdate(ent);
   if (pXVar3 != (XAnimTree_s *)0x0) {
     Com_XAnimFreeSmallTree(pXVar3);
   }
@@ -22292,32 +23239,33 @@ void __cdecl G_SetAnimTree(gentity_s *param_1,scr_animtree_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_UseAnimTree(scr_entref_t param_1)
+void __cdecl GScr_UseAnimTree(scr_entref_t entref)
 
 {
+  gentity_s *ent_00;
   XAnimTree_s *pXVar1;
-  char *pcVar2;
-  undefined1 uVar3;
-  scr_animtree_t local_c;
-  gentity_s *local_8;
+  char *error;
+  undefined1 force_terminal;
+  scr_animtree_t animtree;
+  gentity_s *ent;
   
-  local_8 = GetEntity(param_1);
-  local_c = Scr_GetAnimTree(0,1,SCRIPTINSTANCE_SERVER);
-  pXVar1 = G_GetEntAnimTree(local_8);
-  if (pXVar1 != local_8->pAnimTree) {
-    uVar3 = 0;
-    SL_ConvertToString((uint)local_8->classname,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("cannot change the animtree of classname \'%s\'");
-    Scr_Error(pcVar2,(bool)uVar3);
+  ent_00 = GetEntity(entref);
+  animtree = Scr_GetAnimTree(0,1,SCRIPTINSTANCE_SERVER);
+  pXVar1 = G_GetEntAnimTree(ent_00);
+  if (pXVar1 != ent_00->pAnimTree) {
+    force_terminal = 0;
+    SL_ConvertToString((uint)ent_00->classname,SCRIPTINSTANCE_SERVER);
+    error = va("cannot change the animtree of classname \'%s\'");
+    Scr_Error(error,(bool)force_terminal);
   }
-  G_SetAnimTree(local_8,&local_c);
+  G_SetAnimTree(ent_00,&animtree);
   return;
 }
 
 
 // 00661680  BuiltIn_GetMethod  (game_mp/g_scr_main_mp.cpp:19052)
 
-_func___cdecl_void_scr_entref_t * __cdecl BuiltIn_GetMethod(char **param_1,int *param_2)
+_func___cdecl_void_scr_entref_t * __cdecl BuiltIn_GetMethod(char **pName,int *type)
 
 {
   byte bVar1;
@@ -22325,15 +23273,16 @@ _func___cdecl_void_scr_entref_t * __cdecl BuiltIn_GetMethod(char **param_1,int *
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0xe9 < local_8) {
+    if (0xe9 < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -22352,32 +23301,31 @@ LAB_006616ff:
     local_1c = 0;
 LAB_00661707:
     if (local_1c == 0) {
-      *param_1 = methods[local_8].actionString;
-      *param_2 = methods[local_8].type;
-      return methods[local_8].actionFunc;
+      *pName = methods[i].actionString;
+      *type = methods[i].type;
+      return methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 006615C0  Scr_GetMethod  (game_mp/g_scr_main_mp.cpp:19073)
 
-_func___cdecl_void_scr_entref_t * __cdecl Scr_GetMethod(char **param_1,int *param_2)
+_func___cdecl_void_scr_entref_t * __cdecl Scr_GetMethod(char **pName,int *type)
 
 {
   _func___cdecl_void_scr_entref_t *p_Var1;
   
-  *param_2 = 0;
-  p_Var1 = Player_GetMethod(param_1);
+  *type = 0;
+  p_Var1 = Player_GetMethod(pName);
   if ((((p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0) &&
-       (p_Var1 = ScriptEnt_GetMethod(param_1), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0)) &&
-      (p_Var1 = ScriptVehicle_GetMethod(param_1), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0))
-     && (((p_Var1 = HudElem_GetMethod(param_1), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0 &&
-          (p_Var1 = Helicopter_GetMethod(param_1), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0)
-          ) && (p_Var1 = Actor_GetMethod(param_1), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0)
-         ))) {
-    p_Var1 = BuiltIn_GetMethod(param_1,param_2);
+       (p_Var1 = ScriptEnt_GetMethod(pName), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0)) &&
+      (p_Var1 = ScriptVehicle_GetMethod(pName), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0))
+     && (((p_Var1 = HudElem_GetMethod(pName), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0 &&
+          (p_Var1 = Helicopter_GetMethod(pName), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0))
+         && (p_Var1 = Actor_GetMethod(pName), p_Var1 == (_func___cdecl_void_scr_entref_t *)0x0)))) {
+    p_Var1 = BuiltIn_GetMethod(pName,type);
   }
   return p_Var1;
 }
@@ -22390,15 +23338,15 @@ _func___cdecl_void_scr_entref_t * __cdecl Scr_GetMethod(char **param_1,int *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetOrigin(gentity_s *param_1,int param_2)
+void __cdecl Scr_SetOrigin(gentity_s *ent,int offset)
 
 {
-  float local_10 [3];
+  float org [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  G_SetOrigin(param_1,local_10);
-  if ((param_1->r).linked != '\0') {
-    SV_LinkEntity(param_1);
+  Scr_GetVector(0,org,SCRIPTINSTANCE_SERVER);
+  G_SetOrigin(ent,org);
+  if ((ent->r).linked != '\0') {
+    SV_LinkEntity(ent);
   }
   return;
 }
@@ -22411,13 +23359,13 @@ void __cdecl Scr_SetOrigin(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetAngles(gentity_s *param_1,int param_2)
+void __cdecl Scr_SetAngles(gentity_s *ent,int offset)
 
 {
-  float local_10 [3];
+  float angles [3];
   
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  G_SetAngle(param_1,local_10);
+  Scr_GetVector(0,angles,SCRIPTINSTANCE_SERVER);
+  G_SetAngle(ent,angles);
   return;
 }
 
@@ -22429,13 +23377,14 @@ void __cdecl Scr_SetAngles(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetExposureIndex(gentity_s *param_1,int param_2)
+void __cdecl Scr_SetExposureIndex(gentity_s *ent,int offset)
 
 {
   int iVar1;
+  int index;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (param_1->field36_0x21c).item[1].index = iVar1;
+  (ent->field36_0x21c).item[1].index = iVar1;
   return;
 }
 
@@ -22447,13 +23396,13 @@ void __cdecl Scr_SetExposureIndex(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetExposureLerpToLighter(gentity_s *param_1,int param_2)
+void __cdecl Scr_SetExposureLerpToLighter(gentity_s *ent,int offset)
 
 {
   float fVar1;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  (param_1->field36_0x21c).trigger.exposureLerpToLighter = fVar1;
+  (ent->field36_0x21c).trigger.exposureLerpToLighter = fVar1;
   return;
 }
 
@@ -22465,13 +23414,13 @@ void __cdecl Scr_SetExposureLerpToLighter(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetExposureLerpToDarker(gentity_s *param_1,int param_2)
+void __cdecl Scr_SetExposureLerpToDarker(gentity_s *ent,int offset)
 
 {
   float fVar1;
   
   fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  (param_1->field36_0x21c).trigger.exposureLerpToDarker = fVar1;
+  (ent->field36_0x21c).trigger.exposureLerpToDarker = fVar1;
   return;
 }
 
@@ -22483,19 +23432,20 @@ void __cdecl Scr_SetExposureLerpToDarker(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetHealth(gentity_s *param_1,int param_2)
+void __cdecl Scr_SetHealth(gentity_s *ent,int offset)
 
 {
   int iVar1;
+  int health;
   
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (param_1->client == (gclient_s *)0x0) {
-    param_1->maxHealth = iVar1;
-    param_1->health = iVar1;
+  if (ent->client == (gclient_s *)0x0) {
+    ent->maxHealth = iVar1;
+    ent->health = iVar1;
   }
   else {
-    param_1->health = iVar1;
-    (param_1->client->ps).stats[0] = iVar1;
+    ent->health = iVar1;
+    (ent->client->ps).stats[0] = iVar1;
   }
   return;
 }
@@ -22503,14 +23453,14 @@ void __cdecl Scr_SetHealth(gentity_s *param_1,int param_2)
 
 // 006618A0  GScr_AddVector  (game_mp/g_scr_main_mp.cpp:19222)
 
-void __cdecl GScr_AddVector(float *param_1)
+void __cdecl GScr_AddVector(float *vVec)
 
 {
-  if (param_1 == (float *)0x0) {
+  if (vVec == (float *)0x0) {
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddVector(param_1,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(vVec,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -22523,14 +23473,14 @@ void __cdecl GScr_AddVector(float *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_AddEntity(gentity_s *param_1)
+void __cdecl GScr_AddEntity(gentity_s *pEnt)
 
 {
-  if (param_1 == (gentity_s *)0x0) {
+  if (pEnt == (gentity_s *)0x0) {
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(pEnt,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -22546,57 +23496,59 @@ void __cdecl Scr_ParseGameTypeList_LoadObj(void)
 {
   char cVar1;
   int iVar2;
-  char *pcVar3;
+  char *qpath;
   char *local_1438;
-  char *local_1430;
-  char local_142c [1024];
-  char *local_102c;
-  char *local_1028;
-  char local_1024 [4096];
+  char *fullname;
+  char *pszFileName;
+  char szBuffer [1024];
+  char *pBuffParse;
+  char *pToken;
+  char szGameTypeList [4096];
   uint local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  gameTypeScript_t *local_c;
-  int local_8;
+  int hFile;
+  int len;
+  int iNumGameTypes;
+  int iFileLength;
+  int i;
+  gameTypeScript_t *pGameType;
+  int iNumGameTypeScripts;
   
-  local_8 = 0x66193d;
+  iNumGameTypeScripts = 0x66193d;
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   memset((uchar *)g_scr_data.gametype.list,'\0',0x1080);
-  local_18 = 0;
-  local_8 = FS_GetFileList("maps/mp/gametypes","gsc",FS_LIST_PURE_ONLY,local_1024,0x1000);
-  local_1430 = local_1024;
-  local_10 = 0;
+  iNumGameTypes = 0;
+  iNumGameTypeScripts =
+       FS_GetFileList("maps/mp/gametypes","gsc",FS_LIST_PURE_ONLY,szGameTypeList,0x1000);
+  pszFileName = szGameTypeList;
+  i = 0;
   do {
-    if (local_8 <= local_10) {
-      g_scr_data.gametype.iNumGameTypes = local_18;
+    if (iNumGameTypeScripts <= i) {
+      g_scr_data.gametype.iNumGameTypes = iNumGameTypes;
       return;
     }
-    local_1438 = local_1430;
+    local_1438 = pszFileName;
     do {
       cVar1 = *local_1438;
       local_1438 = local_1438 + 1;
     } while (cVar1 != '\0');
-    local_1c = (int)local_1438 - (int)(local_1430 + 1);
-    if (*local_1430 != '_') {
-      iVar2 = I_stricmp(local_1430 + local_1c + -4,".gsc");
+    len = (int)local_1438 - (int)(pszFileName + 1);
+    if (*pszFileName != '_') {
+      iVar2 = I_stricmp(pszFileName + len + -4,".gsc");
       if (iVar2 == 0) {
-        local_1430[local_1c + -4] = '\0';
+        pszFileName[len + -4] = '\0';
       }
-      if (local_18 == 0x20) {
+      if (iNumGameTypes == 0x20) {
         Com_Printf(0x18,"Too many game type scripts found! Only loading the first %i\n");
-        g_scr_data.gametype.iNumGameTypes = local_18;
+        g_scr_data.gametype.iNumGameTypes = iNumGameTypes;
         return;
       }
-      local_c = g_scr_data.gametype.list + local_18;
-      I_strncpyz(local_c->pszScript,local_1430,0x40);
-      _strlwr(local_c->pszScript);
-      pcVar3 = va("maps/mp/gametypes/%s.txt");
-      local_14 = FS_FOpenFileByMode(pcVar3,&local_20,FS_READ);
-      if ((local_14 < 1) || (0x3ff < local_14)) {
-        if (local_14 < 1) {
+      pGameType = g_scr_data.gametype.list + iNumGameTypes;
+      I_strncpyz(pGameType->pszScript,pszFileName,0x40);
+      _strlwr(pGameType->pszScript);
+      qpath = va("maps/mp/gametypes/%s.txt");
+      iFileLength = FS_FOpenFileByMode(qpath,&hFile,FS_READ);
+      if ((iFileLength < 1) || (0x3ff < iFileLength)) {
+        if (iFileLength < 1) {
           va("maps/mp/gametypes/%s.txt");
           Com_PrintWarning(0x18,
                            "WARNING: Could not load GameType description file %s for gametype %s\n")
@@ -22606,29 +23558,29 @@ void __cdecl Scr_ParseGameTypeList_LoadObj(void)
           va("maps/mp/gametypes/%s.txt");
           Com_PrintWarning(0x18,"WARNING: GameType description file %s is too big to load.\n");
         }
-        I_strncpyz(local_c->pszName,local_c->pszScript,0x40);
-        local_c->bTeamBased = 0;
+        I_strncpyz(pGameType->pszName,pGameType->pszScript,0x40);
+        pGameType->bTeamBased = 0;
       }
       else {
-        FS_Read(local_142c,local_14,local_20);
-        local_102c = local_142c;
-        local_1028 = Com_Parse(&local_102c);
-        I_strncpyz(local_c->pszName,local_1028,0x40);
-        local_1028 = Com_Parse(&local_102c);
-        if ((local_1028 == (char *)0x0) || (iVar2 = I_stricmp(local_1028,"team"), iVar2 != 0)) {
-          local_c->bTeamBased = 0;
+        FS_Read(szBuffer,iFileLength,hFile);
+        pBuffParse = szBuffer;
+        pToken = Com_Parse(&pBuffParse);
+        I_strncpyz(pGameType->pszName,pToken,0x40);
+        pToken = Com_Parse(&pBuffParse);
+        if ((pToken == (char *)0x0) || (iVar2 = I_stricmp(pToken,"team"), iVar2 != 0)) {
+          pGameType->bTeamBased = 0;
         }
         else {
-          local_c->bTeamBased = 1;
+          pGameType->bTeamBased = 1;
         }
       }
-      local_18 = local_18 + 1;
-      if (0 < local_14) {
-        FS_FCloseFile(local_20);
+      iNumGameTypes = iNumGameTypes + 1;
+      if (0 < iFileLength) {
+        FS_FCloseFile(hFile);
       }
     }
-    local_1430 = local_1430 + local_1c + 1;
-    local_10 = local_10 + 1;
+    pszFileName = pszFileName + len + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -22649,28 +23601,33 @@ void __cdecl Scr_ParseGameTypeList_FastFile(void)
   int iVar6;
   int local_48;
   snd_group *local_38;
-  XModelPiece *local_20;
-  char *local_1c;
-  int local_18;
-  int local_14;
-  XAssetHeader local_10;
-  XModelPiece *local_c;
-  gameTypeScript_t *local_8;
+  char *fullname;
+  RawFile *rawfile;
+  char *pszFileName;
+  char *pBuffParse;
+  char *pToken;
+  int iNumGameTypes;
+  int iFileLength;
+  RawFile *gametypesFile;
+  char *gametypesBuf;
+  gameTypeScript_t *pGameType;
   
   memset((uchar *)g_scr_data.gametype.list,'\0',0x1080);
-  local_18 = 0;
-  local_10 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,"maps/mp/gametypes/_gametypes.txt",true,-1);
-  if (local_10.xmodelPieces != (XModelPieces *)0x0) {
-    local_c = (local_10.xmodelPieces)->pieces;
-    while (pcVar4 = Com_Parse((char **)&local_c), local_c != (XModelPiece *)0x0) {
-      if (local_18 == 0x20) {
+  iNumGameTypes = 0;
+  gametypesFile =
+       (RawFile *)DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,"maps/mp/gametypes/_gametypes.txt",true,-1)
+  ;
+  if (gametypesFile != (RawFile *)0x0) {
+    gametypesBuf = *(char **)&(((Material *)gametypesFile)->info).pad;
+    while (pcVar4 = Com_Parse(&gametypesBuf), gametypesBuf != (char *)0x0) {
+      if (iNumGameTypes == 0x20) {
         Com_Printf(0x18,"Too many game type scripts found! Only loading the first %i\n");
-        g_scr_data.gametype.iNumGameTypes = local_18;
+        g_scr_data.gametype.iNumGameTypes = iNumGameTypes;
         return;
       }
-      local_8 = g_scr_data.gametype.list + local_18;
-      I_strncpyz(local_8->pszScript,pcVar4,0x40);
-      I_strlwr(local_8->pszScript);
+      pGameType = g_scr_data.gametype.list + iNumGameTypes;
+      I_strncpyz(pGameType->pszScript,pcVar4,0x40);
+      I_strlwr(pGameType->pszScript);
       pcVar4 = va("maps/mp/gametypes/%s.txt");
       XVar5 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,pcVar4,true,-1);
       if (XVar5.xmodelPieces == (XModelPieces *)0x0) {
@@ -22685,7 +23642,7 @@ void __cdecl Scr_ParseGameTypeList_FastFile(void)
         } while (*pcVar2 != '\0');
         local_48 = (int)local_38 - (int)(pcVar4 + 1);
       }
-      local_14 = local_48;
+      iFileLength = local_48;
       if ((local_48 < 1) || (0x3ff < local_48)) {
         if (local_48 < 1) {
           va("maps/mp/gametypes/%s.txt");
@@ -22697,8 +23654,8 @@ void __cdecl Scr_ParseGameTypeList_FastFile(void)
           va("maps/mp/gametypes/%s.txt");
           Com_PrintWarning(0x18,"WARNING: GameType description file %s is too big to load.\n");
         }
-        I_strncpyz(local_8->pszName,local_8->pszScript,0x40);
-        local_8->bTeamBased = 0;
+        I_strncpyz(pGameType->pszName,pGameType->pszScript,0x40);
+        pGameType->bTeamBased = 0;
       }
       else {
         if ((XVar5.xmodelPieces == (XModelPieces *)0x0) &&
@@ -22708,21 +23665,21 @@ void __cdecl Scr_ParseGameTypeList_FastFile(void)
           (*pcVar1)();
           return;
         }
-        local_20 = (XVar5.xmodelPieces)->pieces;
-        local_1c = Com_Parse((char **)&local_20);
-        I_strncpyz(local_8->pszName,local_1c,0x40);
-        local_1c = Com_Parse((char **)&local_20);
-        if ((local_1c == (char *)0x0) || (iVar6 = I_stricmp(local_1c,"team"), iVar6 != 0)) {
-          local_8->bTeamBased = 0;
+        pBuffParse = *(char **)&((XVar5.material)->info).pad;
+        pToken = Com_Parse(&pBuffParse);
+        I_strncpyz(pGameType->pszName,pToken,0x40);
+        pToken = Com_Parse(&pBuffParse);
+        if ((pToken == (char *)0x0) || (iVar6 = I_stricmp(pToken,"team"), iVar6 != 0)) {
+          pGameType->bTeamBased = 0;
         }
         else {
-          local_8->bTeamBased = 1;
+          pGameType->bTeamBased = 1;
         }
       }
-      local_18 = local_18 + 1;
+      iNumGameTypes = iNumGameTypes + 1;
     }
   }
-  g_scr_data.gametype.iNumGameTypes = local_18;
+  g_scr_data.gametype.iNumGameTypes = iNumGameTypes;
   return;
 }
 
@@ -22747,33 +23704,33 @@ void __cdecl Scr_ParseGameTypeList(void)
 
 // 00661EC0  Scr_GetGameTypeNameForScript  (game_mp/g_scr_main_mp.cpp:19440)
 
-char * __cdecl Scr_GetGameTypeNameForScript(char *param_1)
+char * __cdecl Scr_GetGameTypeNameForScript(char *pszGameTypeScript)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_scr_data.gametype.iNumGameTypes <= local_8) {
+    if (g_scr_data.gametype.iNumGameTypes <= i) {
       return (char *)0x0;
     }
-    iVar1 = I_stricmp(g_scr_data.gametype.list[local_8].pszScript,param_1);
+    iVar1 = I_stricmp(g_scr_data.gametype.list[i].pszScript,pszGameTypeScript);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return g_scr_data.gametype.list[local_8].pszName;
+  return g_scr_data.gametype.list[i].pszName;
 }
 
 
 // 00661F20  Scr_IsValidGameType  (game_mp/g_scr_main_mp.cpp:19455)
 
-int __cdecl Scr_IsValidGameType(char *param_1)
+int __cdecl Scr_IsValidGameType(char *pszGameType)
 
 {
   char *pcVar1;
   
-  pcVar1 = Scr_GetGameTypeNameForScript(param_1);
+  pcVar1 = Scr_GetGameTypeNameForScript(pszGameType);
   return (uint)(pcVar1 != (char *)0x0);
 }
 
@@ -22785,7 +23742,8 @@ void __cdecl Scr_LoadGameType(void)
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
+  ushort handle;
+  ushort t;
   
   if (g_scr_data.gametype.main == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_main_mp.cpp",0x4c0b,
@@ -22796,8 +23754,8 @@ void __cdecl Scr_LoadGameType(void)
       return;
     }
   }
-  uVar3 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.gametype.main,0);
-  Scr_FreeThread(uVar3,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.gametype.main,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -22807,10 +23765,11 @@ void __cdecl Scr_LoadGameType(void)
 void __cdecl Scr_StartupGameType(void)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
-  uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.gametype.startupgametype,0);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.gametype.startupgametype,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -22822,13 +23781,14 @@ void __cdecl Scr_StartupGameType(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_PlayerConnect(gentity_s *param_1)
+void __cdecl Scr_PlayerConnect(gentity_s *self)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.playerconnect,0);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecEntThread(self,g_scr_data.gametype.playerconnect,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -22840,13 +23800,14 @@ void __cdecl Scr_PlayerConnect(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_PlayerDisconnect(gentity_s *param_1)
+void __cdecl Scr_PlayerDisconnect(gentity_s *self)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.playerdisconnect,0);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecEntThread(self,g_scr_data.gametype.playerdisconnect,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -22859,35 +23820,36 @@ void __cdecl Scr_PlayerDisconnect(gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_PlayerDamage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-                int param_6,int param_7,float *param_8,float *param_9,hitLocation_t param_10,
-                int param_11)
+Scr_PlayerDamage(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,int dflags,
+                int meansOfDeath,int iWeapon,float *vPoint,float *vDir,hitLocation_t hitLoc,
+                int timeOffset)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t sVar2;
+  ushort callback;
   
-  Scr_AddInt(param_11,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar1 = G_GetHitLocationString(param_10);
-  Scr_AddConstString((uint)uVar1,sVar3);
-  GScr_AddVector(param_9);
-  GScr_AddVector(param_8);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_7);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_6 < 0) || (0x14 < param_6)) {
+  Scr_AddInt(timeOffset,SCRIPTINSTANCE_SERVER);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  uVar1 = G_GetHitLocationString(hitLoc);
+  Scr_AddConstString((uint)uVar1,sVar2);
+  GScr_AddVector(vDir);
+  GScr_AddVector(vPoint);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,sVar2);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_6],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_5,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.playerdamage,10);
+  Scr_AddInt(dflags,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  uVar1 = Scr_ExecEntThread(self,g_scr_data.gametype.playerdamage,10);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -22901,33 +23863,35 @@ Scr_PlayerDamage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int pa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_PlayerKilled(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-                int param_6,float *param_7,hitLocation_t param_8,int param_9,int param_10)
+Scr_PlayerKilled(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,
+                int meansOfDeath,int iWeapon,float *vDir,hitLocation_t hitLoc,int psTimeOffset,
+                int deathAnimDuration)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t sVar2;
+  ushort callback;
   
-  Scr_AddInt(param_10,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_9,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar1 = G_GetHitLocationString(param_8);
-  Scr_AddConstString((uint)uVar1,sVar3);
-  GScr_AddVector(param_7);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_6);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_5 < 0) || (0x14 < param_5)) {
+  Scr_AddInt(deathAnimDuration,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(psTimeOffset,SCRIPTINSTANCE_SERVER);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  uVar1 = G_GetHitLocationString(hitLoc);
+  Scr_AddConstString((uint)uVar1,sVar2);
+  GScr_AddVector(vDir);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,sVar2);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.playerkilled,9);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  uVar1 = Scr_ExecEntThread(self,g_scr_data.gametype.playerkilled,9);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -22941,35 +23905,36 @@ Scr_PlayerKilled(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int pa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_ActorDamage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-               int param_6,int param_7,float *param_8,float *param_9,hitLocation_t param_10,
-               int param_11)
+Scr_ActorDamage(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,int dflags,
+               int meansOfDeath,int iWeapon,float *vPoint,float *vDir,hitLocation_t hitLoc,
+               int timeOffset)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t sVar2;
+  ushort callback;
   
-  Scr_AddInt(param_11,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar1 = G_GetHitLocationString(param_10);
-  Scr_AddConstString((uint)uVar1,sVar3);
-  GScr_AddVector(param_9);
-  GScr_AddVector(param_8);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_7);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_6 < 0) || (0x14 < param_6)) {
+  Scr_AddInt(timeOffset,SCRIPTINSTANCE_SERVER);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  uVar1 = G_GetHitLocationString(hitLoc);
+  Scr_AddConstString((uint)uVar1,sVar2);
+  GScr_AddVector(vDir);
+  GScr_AddVector(vPoint);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,sVar2);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_6],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_5,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.actordamage,10);
+  Scr_AddInt(dflags,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  uVar1 = Scr_ExecEntThread(self,g_scr_data.gametype.actordamage,10);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -22983,32 +23948,33 @@ Scr_ActorDamage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_ActorKilled(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-               int param_6,float *param_7,hitLocation_t param_8,int param_9)
+Scr_ActorKilled(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,int meansOfDeath
+               ,int iWeapon,float *vDir,hitLocation_t hitLoc,int psTimeOffset)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t sVar2;
+  ushort callback;
   
-  Scr_AddInt(param_9,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar1 = G_GetHitLocationString(param_8);
-  Scr_AddConstString((uint)uVar1,sVar3);
-  GScr_AddVector(param_7);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_6);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_5 < 0) || (0x14 < param_5)) {
+  Scr_AddInt(psTimeOffset,SCRIPTINSTANCE_SERVER);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  uVar1 = G_GetHitLocationString(hitLoc);
+  Scr_AddConstString((uint)uVar1,sVar2);
+  GScr_AddVector(vDir);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,sVar2);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.actorkilled,8);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  uVar1 = Scr_ExecEntThread(self,g_scr_data.gametype.actorkilled,8);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -23023,40 +23989,41 @@ Scr_ActorKilled(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int par
 
 void __cdecl
 Scr_VehicleRadiusDamage
-          (gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,float param_5,
-          float param_6,int param_7,int param_8,int param_9,float *param_10,float param_11,
-          float param_12,float *param_13,int param_14)
+          (gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,float fInnerDamage,
+          float fOuterDamage,int dflags,int meansOfDeath,int iWeapon,float *vPoint,float fRadius,
+          float coneAngleCos,float *coneDirection,int timeOffset)
 
 {
-  ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  ushort handle;
+  char *value;
+  scriptInstance_t inst;
+  ushort callback;
   
-  if (param_9 == -1) {
-    param_9 = 0;
+  if (iWeapon == -1) {
+    iWeapon = 0;
   }
-  Scr_AddInt(param_14,SCRIPTINSTANCE_SERVER);
-  GScr_AddVector(param_13);
-  Scr_AddFloat(param_12,SCRIPTINSTANCE_SERVER);
-  Scr_AddFloat(param_11,SCRIPTINSTANCE_SERVER);
-  GScr_AddVector(param_10);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_9);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_8 < 0) || (0x14 < param_8)) {
+  Scr_AddInt(timeOffset,SCRIPTINSTANCE_SERVER);
+  GScr_AddVector(coneDirection);
+  Scr_AddFloat(coneAngleCos,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(fRadius,SCRIPTINSTANCE_SERVER);
+  GScr_AddVector(vPoint);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,inst);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_8],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_7,SCRIPTINSTANCE_SERVER);
-  Scr_AddFloat(param_6,SCRIPTINSTANCE_SERVER);
-  Scr_AddFloat(param_5,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.vehicleradiusdamage,0xd);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(dflags,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(fOuterDamage,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(fInnerDamage,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  handle = Scr_ExecEntThread(self,g_scr_data.gametype.vehicleradiusdamage,0xd);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -23069,38 +24036,39 @@ Scr_VehicleRadiusDamage
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_VehicleDamage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-                 int param_6,int param_7,float *param_8,float *param_9,hitLocation_t param_10,
-                 int param_11,int param_12,uint param_13,uint param_14)
+Scr_VehicleDamage(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,int dflags,
+                 int meansOfDeath,int iWeapon,float *vPoint,float *vDir,hitLocation_t hitLoc,
+                 int timeOffset,int damageFromUnderneath,uint modelIndex,uint partName)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t sVar2;
+  ushort callback;
   
-  Scr_AddInt(param_14,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_13,SCRIPTINSTANCE_SERVER);
-  Scr_AddBool(param_12,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_11,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar1 = G_GetHitLocationString(param_10);
-  Scr_AddConstString((uint)uVar1,sVar3);
-  GScr_AddVector(param_9);
-  GScr_AddVector(param_8);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_7);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_6 < 0) || (0x14 < param_6)) {
+  Scr_AddInt(partName,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(modelIndex,SCRIPTINSTANCE_SERVER);
+  Scr_AddBool(damageFromUnderneath,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(timeOffset,SCRIPTINSTANCE_SERVER);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  uVar1 = G_GetHitLocationString(hitLoc);
+  Scr_AddConstString((uint)uVar1,sVar2);
+  GScr_AddVector(vDir);
+  GScr_AddVector(vPoint);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,sVar2);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_6],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_5,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.vehicledamage,0xd);
+  Scr_AddInt(dflags,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  uVar1 = Scr_ExecEntThread(self,g_scr_data.gametype.vehicledamage,0xd);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -23114,33 +24082,34 @@ Scr_VehicleDamage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Scr_PlayerLastStand(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5
-                   ,int param_6,float *param_7,hitLocation_t param_8,int param_9)
+Scr_PlayerLastStand(gentity_s *self,gentity_s *inflictor,gentity_s *attacker,int damage,
+                   int meansOfDeath,int iWeapon,float *vDir,hitLocation_t hitLoc,int psTimeOffset)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t sVar2;
+  ushort callback;
   
   Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
-  Scr_AddInt(param_9,SCRIPTINSTANCE_SERVER);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  uVar1 = G_GetHitLocationString(param_8);
-  Scr_AddConstString((uint)uVar1,sVar3);
-  GScr_AddVector(param_7);
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  pcVar2 = BG_WeaponName(param_6);
-  Scr_AddString(pcVar2,sVar3);
-  if ((param_5 < 0) || (0x14 < param_5)) {
+  Scr_AddInt(psTimeOffset,SCRIPTINSTANCE_SERVER);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  uVar1 = G_GetHitLocationString(hitLoc);
+  Scr_AddConstString((uint)uVar1,sVar2);
+  GScr_AddVector(vDir);
+  sVar2 = SCRIPTINSTANCE_SERVER;
+  value = BG_WeaponName(iWeapon);
+  Scr_AddString(value,sVar2);
+  if ((meansOfDeath < 0) || (0x14 < meansOfDeath)) {
     Scr_AddString("badMOD",SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddConstString((uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)*modNames[meansOfDeath],SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-  GScr_AddEntity(param_3);
-  GScr_AddEntity(param_2);
-  uVar1 = Scr_ExecEntThread(param_1,g_scr_data.gametype.playerlaststand,9);
+  Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+  GScr_AddEntity(attacker);
+  GScr_AddEntity(inflictor);
+  uVar1 = Scr_ExecEntThread(self,g_scr_data.gametype.playerlaststand,9);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -23153,13 +24122,13 @@ Scr_PlayerLastStand(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_VoteCalled(gentity_s *param_1,char *param_2,char *param_3,char *param_4)
+void __cdecl Scr_VoteCalled(gentity_s *self,char *command,char *param1,char *param2)
 
 {
-  Scr_AddString(param_4,SCRIPTINSTANCE_SERVER);
-  Scr_AddString(param_3,SCRIPTINSTANCE_SERVER);
-  Scr_AddString(param_2,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(param_1,scr_const.call_vote,3);
+  Scr_AddString(param2,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(param1,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(command,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(self,scr_const.call_vote,3);
   return;
 }
 
@@ -23171,11 +24140,11 @@ void __cdecl Scr_VoteCalled(gentity_s *param_1,char *param_2,char *param_3,char 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_PlayerVote(gentity_s *param_1,char *param_2)
+void __cdecl Scr_PlayerVote(gentity_s *self,char *option)
 
 {
-  Scr_AddString(param_2,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(param_1,scr_const.vote,1);
+  Scr_AddString(option,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(self,scr_const.vote,1);
   return;
 }
 
@@ -23199,32 +24168,34 @@ void __cdecl GScr_Shutdown(void)
 
 // 006627D0  GScr_Gdt_Update  (game_mp/g_scr_main_mp.cpp:19768)
 
-void __cdecl GScr_Gdt_Update(char *param_1,char *param_2)
+void __cdecl GScr_Gdt_Update(char *asset,char *keyValue)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort t;
   
-  Scr_AddString(param_2,SCRIPTINSTANCE_SERVER);
-  Scr_AddString(param_1,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(keyValue,SCRIPTINSTANCE_SERVER);
+  Scr_AddString(asset,SCRIPTINSTANCE_SERVER);
   Scr_AddString("gdt_update",SCRIPTINSTANCE_SERVER);
-  uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.levelnotify,3);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.levelnotify,3);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00662830  Scr_GlassSmash  (game_mp/g_scr_main_mp.cpp:19779)
 
-void __cdecl Scr_GlassSmash(float *param_1,float *param_2)
+void __cdecl Scr_GlassSmash(float *pos,float *dir)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort t;
   
   if (g_scr_data.glassSmash != 0) {
-    Scr_AddVector(param_2,SCRIPTINSTANCE_SERVER);
-    Scr_AddVector(param_1,SCRIPTINSTANCE_SERVER);
-    uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.glassSmash,2);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(dir,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(pos,SCRIPTINSTANCE_SERVER);
+    handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.glassSmash,2);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   }
   return;
 }

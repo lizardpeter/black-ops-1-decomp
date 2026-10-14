@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl HideWindowCallback(HWND__ *param_1,long param_2)
+int __cdecl HideWindowCallback(HWND__ *hwnd,long lParam)
 
 {
   byte bVar1;
@@ -14,15 +14,16 @@ int __cdecl HideWindowCallback(HWND__ *param_1,long param_2)
   int local_420;
   byte *local_418;
   byte *local_414;
-  byte local_40c [1024];
+  long styleEx;
+  byte caption [1024];
   uint local_c;
-  uint local_8;
+  long style;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = GetWindowTextA((HWND)param_1,(LPSTR)local_40c,0x400);
+  iVar2 = GetWindowTextA((HWND)hwnd,(LPSTR)caption,0x400);
   if (iVar2 != 0) {
     local_414 = (byte *)Com_GetBuildDisplayNameR();
-    local_418 = local_40c;
+    local_418 = caption;
     do {
       bVar1 = *local_418;
       bVar4 = bVar1 < *local_414;
@@ -44,13 +45,13 @@ LAB_00787351:
       return 1;
     }
   }
-  local_8 = GetWindowLongA((HWND)param_1,-0x10);
-  uVar3 = GetWindowLongA((HWND)param_1,-0x14);
-  if ((local_8 & 0x10000000) != 0) {
-    g_hwndGame[g_hiddenCount] = param_1;
+  style = GetWindowLongA((HWND)hwnd,-0x10);
+  uVar3 = GetWindowLongA((HWND)hwnd,-0x14);
+  if ((style & 0x10000000U) != 0) {
+    g_hwndGame[g_hiddenCount] = hwnd;
     g_hiddenCount = g_hiddenCount + 1;
-    SetWindowLongA((HWND)param_1,-0x10,local_8 & 0xefffffff);
-    SetWindowLongA((HWND)param_1,-0x14,uVar3 & 0xfffffff7);
+    SetWindowLongA((HWND)hwnd,-0x10,style & 0xefffffff);
+    SetWindowLongA((HWND)hwnd,-0x14,uVar3 & 0xfffffff7);
   }
   return 1;
 }
@@ -64,15 +65,16 @@ void __cdecl FixWindowsDesktop(void)
 
 {
   DWORD dwThreadId;
-  HDC hdc;
+  HDC hdc_00;
   code *lpfn;
   LPARAM lParam;
-  short local_614 [256];
+  HDC__ *hdc;
+  short ramp [256];
   short asStack_414 [256];
   short asStack_214 [258];
   uint local_10;
-  ushort local_c;
-  HWND local_8;
+  ushort i;
+  HWND__ *hwndDesktop;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   ChangeDisplaySettingsA((DEVMODEA *)0x0,0);
@@ -80,15 +82,15 @@ void __cdecl FixWindowsDesktop(void)
   lpfn = HideWindowCallback;
   dwThreadId = GetCurrentThreadId();
   EnumThreadWindows(dwThreadId,lpfn,lParam);
-  local_8 = GetDesktopWindow();
-  hdc = GetDC(local_8);
-  for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-    local_614[local_c] = local_c * 0x101;
-    asStack_414[local_c] = local_c * 0x101;
-    asStack_214[local_c] = local_c * 0x101;
+  hwndDesktop = (HWND__ *)GetDesktopWindow();
+  hdc_00 = GetDC((HWND)hwndDesktop);
+  for (i = 0; i < 0x100; i = i + 1) {
+    ramp[i] = i * 0x101;
+    asStack_414[i] = i * 0x101;
+    asStack_214[i] = i * 0x101;
   }
-  SetDeviceGammaRamp(hdc,local_614);
-  ReleaseDC(local_8,hdc);
+  SetDeviceGammaRamp(hdc_00,ramp);
+  ReleaseDC((HWND)hwndDesktop,hdc_00);
   return;
 }
 
@@ -107,7 +109,7 @@ void __cdecl TRACK_assertive(void)
 
 // 007883C0  ParseError  (universal/assertive.cpp:284)
 
-void __cdecl ParseError(char *param_1)
+void __cdecl ParseError(char *msg)
 
 {
   HWND hWnd;
@@ -117,22 +119,24 @@ void __cdecl ParseError(char *param_1)
   uType = 0x10;
   lpCaption = ".map parse error";
   hWnd = GetActiveWindow();
-  MessageBoxA(hWnd,param_1,lpCaption,uType);
+  MessageBoxA(hWnd,msg,lpCaption,uType);
   return;
 }
 
 
 // 007883E0  ReadLine  (universal/assertive.cpp:299)
 
-bool __cdecl ReadLine(_iobuf *param_1)
+bool __cdecl ReadLine(_iobuf *fp)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  uint count;
   uint uVar4;
-  uint uVar5;
-  int local_8;
+  int readSize;
+  int bytesRead;
+  int i;
   
   do {
     lineBufferEndPos = lineBufferEndPos - lineBufferStartPos;
@@ -145,33 +149,33 @@ bool __cdecl ReadLine(_iobuf *param_1)
     }
     memmove((uchar *)lineBuffer,(uchar *)(lineBuffer + lineBufferStartPos),lineBufferEndPos);
     lineBufferStartPos = 0;
-    for (local_8 = 0; local_8 < lineBufferEndPos; local_8 = local_8 + 1) {
-      if (lineBuffer[local_8] == '\n') {
-        if (local_8 + 1 != lineBufferEndPos) {
-          lineBuffer[local_8] = '\0';
-          if (lineBuffer[local_8 + 1] == '\r') {
-            lineBufferStartPos = local_8 + 2;
+    for (i = 0; i < lineBufferEndPos; i = i + 1) {
+      if (lineBuffer[i] == '\n') {
+        if (i + 1 != lineBufferEndPos) {
+          lineBuffer[i] = '\0';
+          if (lineBuffer[i + 1] == '\r') {
+            lineBufferStartPos = i + 2;
           }
           else {
-            lineBufferStartPos = local_8 + 1;
+            lineBufferStartPos = i + 1;
           }
           return true;
         }
         break;
       }
     }
-    uVar4 = 0xfff - lineBufferEndPos;
-    uVar5 = fread(lineBuffer + lineBufferEndPos,1,uVar4,param_1);
-    if (((int)uVar4 < (int)uVar5) &&
+    count = 0xfff - lineBufferEndPos;
+    uVar4 = fread(lineBuffer + lineBufferEndPos,1,count,fp);
+    if (((int)count < (int)uVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\assertive.cpp",0x14e
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    lineBufferEndPos = lineBufferEndPos + uVar5;
+    lineBufferEndPos = lineBufferEndPos + uVar4;
     lineBuffer[lineBufferEndPos] = '\0';
-    if (uVar5 == 0) {
+    if (uVar4 == 0) {
       if (lineBufferEndPos != 0) {
         lineBufferStartPos = lineBufferEndPos;
       }
@@ -183,20 +187,20 @@ bool __cdecl ReadLine(_iobuf *param_1)
 
 // 00788570  SkipLines  (universal/assertive.cpp:359)
 
-bool __cdecl SkipLines(int param_1,_iobuf *param_2,bool param_3)
+bool __cdecl SkipLines(int lineCount,_iobuf *fp,bool warn)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1 <= local_8) {
+    if (lineCount <= i) {
       return true;
     }
-    bVar1 = ReadLine(param_2);
+    bVar1 = ReadLine(fp);
     if (!bVar1) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return false;
 }
@@ -206,13 +210,14 @@ bool __cdecl SkipLines(int param_1,_iobuf *param_2,bool param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl ParseMapFile(_iobuf *param_1,uint param_2,char *param_3)
+bool __cdecl ParseMapFile(_iobuf *fp,uint baseAddress,char *mapName)
 
 {
   uint uVar1;
   byte bVar2;
-  bool bVar3;
-  int iVar4;
+  uchar *puVar3;
+  bool bVar4;
+  int iVar5;
   int extraout_EAX;
   int extraout_EAX_00;
   undefined1 *extraout_EAX_01;
@@ -220,139 +225,146 @@ bool __cdecl ParseMapFile(_iobuf *param_1,uint param_2,char *param_3)
   int extraout_EAX_03;
   undefined1 *extraout_EAX_04;
   uchar *extraout_EAX_05;
-  uchar *extraout_EAX_06;
+  uchar *string;
+  int extraout_EAX_06;
   int extraout_EAX_07;
-  int extraout_EAX_08;
-  AddressInfo_s *pAVar5;
+  AddressInfo_s *pAVar6;
   int local_88c;
   byte *local_884;
   byte *local_880;
-  int local_868;
-  uint local_864;
-  uchar *local_860;
-  int local_854 [3];
+  char *pszNameStop;
+  char *pszNameStart;
+  uint endAddress;
+  char *filenameSubStr;
+  int j;
+  uint address;
+  char *filename;
+  AddressInfo_s *addressInfo;
+  uint relAddress;
+  int lineOffset [3];
   uchar auStack_845 [1025];
-  int local_444;
-  uint local_440;
-  int local_43c;
-  char *local_438;
-  int local_424;
-  uint local_420 [5];
-  char local_40c;
+  uint offset;
+  uint baseEndAddress;
+  uint group;
+  char *funcName;
+  int i;
+  uint lineNumber [4];
+  char *atChar;
+  char function;
   char acStack_40b [1023];
   uint local_c;
-  int local_8;
+  int readCount;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   lineBufferEndPos = 0;
   lineBufferStartPos = 0;
   do {
-    bVar3 = ReadLine(param_1);
-    if (!bVar3) {
+    bVar4 = ReadLine(fp);
+    if (!bVar4) {
       return false;
     }
-    iVar4 = sscanf(lineBuffer," Preferred load address is %x\r\n");
-  } while (iVar4 != 1);
-  bVar3 = SkipLines(2,param_1,true);
-  if (bVar3) {
-    local_440 = 0;
+    iVar5 = sscanf(lineBuffer," Preferred load address is %x\r\n");
+  } while (iVar5 != 1);
+  bVar4 = SkipLines(2,fp,true);
+  if (bVar4) {
+    baseEndAddress = 0;
     while( true ) {
-      bVar3 = ReadLine(param_1);
-      if (!bVar3) {
+      bVar4 = ReadLine(fp);
+      if (!bVar4) {
         return false;
       }
       if (lineBuffer[0] == '\0') break;
-      iVar4 = sscanf(lineBuffer,"%x:%x %xH %s %s");
-      if (iVar4 != 5) {
+      iVar5 = sscanf(lineBuffer,"%x:%x %xH %s %s");
+      if (iVar5 != 5) {
         ParseError("Unknown line format in the segments section");
         return false;
       }
-      if ((local_43c == 1) && (uVar1 = local_444 + local_864 + 0x1000 + param_2, local_440 < uVar1))
+      if ((group == 1) && (uVar1 = offset + address + 0x1000 + baseAddress, baseEndAddress < uVar1))
       {
-        local_440 = uVar1;
+        baseEndAddress = uVar1;
       }
     }
-    for (local_868 = 0; local_868 < g_assertAddressCount; local_868 = local_868 + 1) {
-      if ((param_2 <= g_assertAddress[local_868].address) &&
-         (g_assertAddress[local_868].address < local_440)) {
-        I_strncpyz(g_assertAddress[local_868].moduleName,param_3,0x40);
+    for (j = 0; j < g_assertAddressCount; j = j + 1) {
+      if ((baseAddress <= g_assertAddress[j].address) &&
+         (g_assertAddress[j].address < baseEndAddress)) {
+        I_strncpyz(g_assertAddress[j].moduleName,mapName,0x40);
       }
     }
     do {
-      bVar3 = ReadLine(param_1);
-      if (!bVar3) {
+      bVar4 = ReadLine(fp);
+      if (!bVar4) {
         return false;
       }
       strstr((uchar *)lineBuffer,(uchar *)"Publics by Value");
     } while (extraout_EAX == 0);
-    bVar3 = SkipLines(1,param_1,true);
-    if (!bVar3) {
+    bVar4 = SkipLines(1,fp,true);
+    if (!bVar4) {
       return false;
     }
     while( true ) {
-      bVar3 = ReadLine(param_1);
-      if (!bVar3) {
+      bVar4 = ReadLine(fp);
+      if (!bVar4) {
         return false;
       }
       if (lineBuffer[0] == '\0') break;
-      iVar4 = sscanf(lineBuffer,"%x:%x %s %x");
-      if (iVar4 != 4) {
+      iVar5 = sscanf(lineBuffer,"%x:%x %s %x");
+      if (iVar5 != 4) {
         ParseError("Unknown line format in the public symbols section");
         return false;
       }
       strrchr((uchar *)lineBuffer,' ');
-      if ((extraout_EAX_00 == 0) || (iVar4 = sscanf((char *)(extraout_EAX_00 + 1),"%s"), iVar4 != 1)
+      if ((extraout_EAX_00 == 0) || (iVar5 = sscanf((char *)(extraout_EAX_00 + 1),"%s"), iVar5 != 1)
          ) {
         ParseError("Couldn\'t parse file name in the public symbols section");
         return false;
       }
-      for (local_868 = 0; local_868 < g_assertAddressCount; local_868 = local_868 + 1) {
-        pAVar5 = g_assertAddress + local_868;
-        if ((((param_2 <= pAVar5->address) && (pAVar5->address < local_440)) &&
-            (local_864 <= pAVar5->address)) &&
-           ((g_assertAddress[local_868].bestFunction[0] == '\0' ||
-            (g_assertAddress[local_868].bestFunctionAddress < local_864)))) {
-          g_assertAddress[local_868].bestFunctionAddress = local_864;
-          local_438 = &local_40c;
-          if ((local_40c == '_') || (local_40c == '?')) {
-            local_438 = acStack_40b;
+      for (j = 0; j < g_assertAddressCount; j = j + 1) {
+        pAVar6 = g_assertAddress + j;
+        if ((((baseAddress <= pAVar6->address) && (pAVar6->address < baseEndAddress)) &&
+            (address <= pAVar6->address)) &&
+           ((g_assertAddress[j].bestFunction[0] == '\0' ||
+            (g_assertAddress[j].bestFunctionAddress < address)))) {
+          g_assertAddress[j].bestFunctionAddress = address;
+          funcName = &function;
+          if ((function == '_') || (function == '?')) {
+            funcName = acStack_40b;
           }
-          I_strncpyz(g_assertAddress[local_868].bestFunction,local_438,0x40);
-          strchr((uchar *)g_assertAddress[local_868].bestFunction,'@');
+          I_strncpyz(g_assertAddress[j].bestFunction,funcName,0x40);
+          strchr((uchar *)g_assertAddress[j].bestFunction,'@');
           if (extraout_EAX_01 != (undefined1 *)0x0) {
             *extraout_EAX_01 = 0;
           }
           strrchr(auStack_845 + 1,'\\');
-          local_860 = extraout_EAX_02;
+          puVar3 = extraout_EAX_02;
           if (extraout_EAX_02 == (uchar *)0x0) {
-            local_860 = auStack_845;
+            puVar3 = auStack_845;
           }
-          local_860 = local_860 + 1;
-          I_strncpyz(g_assertAddress[local_868].bestFunctionFilename,(char *)local_860,0x40);
+          filename = (char *)(puVar3 + 1);
+          I_strncpyz(g_assertAddress[j].bestFunctionFilename,filename,0x40);
         }
       }
     }
-    bVar3 = SkipLines(2,param_1,true);
-    if (!bVar3) {
+    bVar4 = SkipLines(2,fp,true);
+    if (!bVar4) {
       return false;
     }
-    bVar3 = ReadLine(param_1);
-    if (!bVar3) {
+    bVar4 = ReadLine(fp);
+    if (!bVar4) {
       return false;
     }
     local_880 = (byte *)0xd00334;
     local_884 = (byte *)lineBuffer;
     do {
       bVar2 = *local_884;
-      bVar3 = bVar2 < *local_880;
+      bVar4 = bVar2 < *local_880;
       if (bVar2 != *local_880) {
 LAB_00787da9:
-        local_88c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+        local_88c = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
         goto LAB_00787db4;
       }
       if (bVar2 == 0) break;
       bVar2 = local_884[1];
-      bVar3 = bVar2 < local_880[1];
+      bVar4 = bVar2 < local_880[1];
       if (bVar2 != local_880[1]) goto LAB_00787da9;
       local_884 = local_884 + 2;
       local_880 = local_880 + 2;
@@ -360,94 +372,94 @@ LAB_00787da9:
     local_88c = 0;
 LAB_00787db4:
     if (local_88c == 0) {
-      bVar3 = SkipLines(1,param_1,true);
-      if (!bVar3) {
+      bVar4 = SkipLines(1,fp,true);
+      if (!bVar4) {
         return false;
       }
-      while ((bVar3 = ReadLine(param_1), bVar3 && (lineBuffer[0] != '\0'))) {
-        iVar4 = sscanf(lineBuffer,"%x:%x %s %x");
-        if (iVar4 != 4) {
+      while ((bVar4 = ReadLine(fp), bVar4 && (lineBuffer[0] != '\0'))) {
+        iVar5 = sscanf(lineBuffer,"%x:%x %s %x");
+        if (iVar5 != 4) {
           ParseError("Unknown line format in the static symbols section");
           return false;
         }
         strrchr((uchar *)lineBuffer,' ');
         if ((extraout_EAX_03 == 0) ||
-           (iVar4 = sscanf((char *)(extraout_EAX_03 + 1),"%s"), iVar4 != 1)) {
+           (iVar5 = sscanf((char *)(extraout_EAX_03 + 1),"%s"), iVar5 != 1)) {
           ParseError("Couldn\'t parse file name in the static symbols section");
           return false;
         }
-        for (local_868 = 0; local_868 < g_assertAddressCount; local_868 = local_868 + 1) {
-          pAVar5 = g_assertAddress + local_868;
-          if ((((param_2 <= pAVar5->address) && (pAVar5->address < local_440)) &&
-              (local_864 <= pAVar5->address)) &&
-             ((g_assertAddress[local_868].bestFunction[0] == '\0' ||
-              (g_assertAddress[local_868].bestFunctionAddress < local_864)))) {
-            g_assertAddress[local_868].bestFunctionAddress = local_864;
-            local_438 = &local_40c;
-            if ((local_40c == '_') || (local_40c == '?')) {
-              local_438 = acStack_40b;
+        for (j = 0; j < g_assertAddressCount; j = j + 1) {
+          pAVar6 = g_assertAddress + j;
+          if ((((baseAddress <= pAVar6->address) && (pAVar6->address < baseEndAddress)) &&
+              (address <= pAVar6->address)) &&
+             ((g_assertAddress[j].bestFunction[0] == '\0' ||
+              (g_assertAddress[j].bestFunctionAddress < address)))) {
+            g_assertAddress[j].bestFunctionAddress = address;
+            funcName = &function;
+            if ((function == '_') || (function == '?')) {
+              funcName = acStack_40b;
             }
-            I_strncpyz(g_assertAddress[local_868].bestFunction,local_438,0x40);
-            strchr((uchar *)g_assertAddress[local_868].bestFunction,'@');
+            I_strncpyz(g_assertAddress[j].bestFunction,funcName,0x40);
+            strchr((uchar *)g_assertAddress[j].bestFunction,'@');
             if (extraout_EAX_04 != (undefined1 *)0x0) {
               *extraout_EAX_04 = 0;
             }
             strrchr(auStack_845 + 1,'\\');
-            local_860 = extraout_EAX_05;
+            puVar3 = extraout_EAX_05;
             if (extraout_EAX_05 == (uchar *)0x0) {
-              local_860 = auStack_845;
+              puVar3 = auStack_845;
             }
-            local_860 = local_860 + 1;
-            I_strncpyz(g_assertAddress[local_868].bestFunctionFilename,(char *)local_860,0x40);
+            filename = (char *)(puVar3 + 1);
+            I_strncpyz(g_assertAddress[j].bestFunctionFilename,filename,0x40);
           }
         }
       }
     }
     while( true ) {
-      bVar3 = ReadLine(param_1);
-      if (!bVar3) {
+      bVar4 = ReadLine(fp);
+      if (!bVar4) {
         return true;
       }
-      iVar4 = strncmp(lineBuffer,"Line numbers for ",0x11);
-      if (iVar4 != 0) break;
+      iVar5 = strncmp(lineBuffer,"Line numbers for ",0x11);
+      if (iVar5 != 0) break;
       strchr((uchar *)lineBuffer,'(');
-      if (extraout_EAX_06 == (uchar *)0x0) {
+      if (string == (uchar *)0x0) {
         ParseError("Couldn\'t find \'(\' for the name of the source file in line number section");
         return false;
       }
-      strchr(extraout_EAX_06,')');
-      if (extraout_EAX_07 == 0) {
+      strchr(string,')');
+      if (extraout_EAX_06 == 0) {
         ParseError("Couldn\'t find \')\' for the name of the source file in line number section");
         return false;
       }
-      strncpy(auStack_845 + 1,extraout_EAX_06 + 1,(extraout_EAX_07 - (int)extraout_EAX_06) - 1);
-      auStack_845[extraout_EAX_07 - (int)extraout_EAX_06] = '\0';
-      bVar3 = SkipLines(1,param_1,true);
-      if (!bVar3) {
+      strncpy(auStack_845 + 1,string + 1,(extraout_EAX_06 - (int)string) - 1);
+      auStack_845[extraout_EAX_06 - (int)string] = '\0';
+      bVar4 = SkipLines(1,fp,true);
+      if (!bVar4) {
         return false;
       }
-      while ((bVar3 = ReadLine(param_1), bVar3 && (lineBuffer[0] != '\0'))) {
-        local_8 = sscanf(lineBuffer,"%i %x:%x %i %x:%x %i %x:%x %i %x:%x\r\n");
-        if ((local_8 % 3 != 0) || (local_8 / 3 < 1)) {
+      while ((bVar4 = ReadLine(fp), bVar4 && (lineBuffer[0] != '\0'))) {
+        readCount = sscanf(lineBuffer,"%i %x:%x %i %x:%x %i %x:%x %i %x:%x\r\n");
+        if ((readCount % 3 != 0) || (readCount / 3 < 1)) {
           ParseError("unknown line format in the line number section");
           return false;
         }
-        for (local_424 = 0; local_424 * 3 < local_8; local_424 = local_424 + 1) {
-          uVar1 = local_854[local_424] + 0x1000 + param_2;
-          for (local_868 = 0; local_868 < g_assertAddressCount; local_868 = local_868 + 1) {
-            pAVar5 = g_assertAddress + local_868;
-            if ((((param_2 <= pAVar5->address) && (pAVar5->address < local_440)) &&
-                (uVar1 <= pAVar5->address)) &&
-               ((g_assertAddress[local_868].bestLineFilename[0] == '\0' ||
-                (g_assertAddress[local_868].bestLineAddress < uVar1)))) {
-              g_assertAddress[local_868].bestLineAddress = uVar1;
-              g_assertAddress[local_868].bestLineNumber = local_420[local_424];
+        for (i = 0; i * 3 < readCount; i = i + 1) {
+          uVar1 = lineOffset[i] + 0x1000 + baseAddress;
+          for (j = 0; j < g_assertAddressCount; j = j + 1) {
+            pAVar6 = g_assertAddress + j;
+            if ((((baseAddress <= pAVar6->address) && (pAVar6->address < baseEndAddress)) &&
+                (uVar1 <= pAVar6->address)) &&
+               ((g_assertAddress[j].bestLineFilename[0] == '\0' ||
+                (g_assertAddress[j].bestLineAddress < uVar1)))) {
+              g_assertAddress[j].bestLineAddress = uVar1;
+              g_assertAddress[j].bestLineNumber = lineNumber[i];
               strrchr(auStack_845 + 1,'\\');
-              local_860 = auStack_845 + 1;
-              if (extraout_EAX_08 != 0) {
-                local_860 = (uchar *)(extraout_EAX_08 + 1);
+              filename = (char *)(auStack_845 + 1);
+              if (extraout_EAX_07 != 0) {
+                filename = (char *)(extraout_EAX_07 + 1);
               }
-              I_strncpyz(g_assertAddress[local_868].bestLineFilename,(char *)local_860,0x40);
+              I_strncpyz(g_assertAddress[j].bestLineFilename,filename,0x40);
             }
           }
         }
@@ -463,46 +475,46 @@ LAB_00787db4:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl GetModuleBase(char *param_1)
+uint __cdecl GetModuleBase(char *name)
 
 {
   char cVar1;
-  ulong uVar2;
+  int iVar2;
   char *local_120;
-  uchar local_11c [4];
+  uchar moduleName [4];
   undefined1 auStack_118 [260];
   uint local_14;
-  HMODULE local_10;
-  ulong local_c;
-  ulong local_8;
+  HINSTANCE__ *moduleHandle;
+  int nameLength;
+  int nameIndex;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_120 = param_1;
+  local_120 = name;
   do {
     cVar1 = *local_120;
     local_120 = local_120 + 1;
   } while (cVar1 != '\0');
-  local_c = (int)local_120 - (int)(param_1 + 1);
-  local_8 = local_c;
+  nameLength = (int)local_120 - (int)(name + 1);
+  nameIndex = nameLength;
   do {
-    local_8 = local_8 - 1;
-    if ((((int)local_8 < 0) || (param_1[local_8] == '.')) || (param_1[local_8] == '/')) break;
-  } while (param_1[local_8] != '\\');
-  if ((-1 < (int)local_8) && (param_1[local_8] == '.')) {
-    local_c = local_8;
+    nameIndex = nameIndex + -1;
+    if (((nameIndex < 0) || (name[nameIndex] == '.')) || (name[nameIndex] == '/')) break;
+  } while (name[nameIndex] != '\\');
+  if ((-1 < nameIndex) && (name[nameIndex] == '.')) {
+    nameLength = nameIndex;
   }
-  memcpy(local_11c,(uchar *)param_1,local_c);
-  uVar2 = local_c;
-  builtin_memcpy(local_11c + local_c,".exe",4);
-  auStack_118[uVar2] = 0;
-  local_10 = GetModuleHandleA((LPCSTR)local_11c);
-  uVar2 = local_c;
-  if (local_10 == (HMODULE)0x0) {
-    builtin_memcpy(local_11c + local_c,".dll",4);
-    auStack_118[uVar2] = 0;
-    local_10 = GetModuleHandleA((LPCSTR)local_11c);
+  memcpy(moduleName,(uchar *)name,nameLength);
+  iVar2 = nameLength;
+  builtin_memcpy(moduleName + nameLength,".exe",4);
+  auStack_118[iVar2] = 0;
+  moduleHandle = (HINSTANCE__ *)GetModuleHandleA((LPCSTR)moduleName);
+  iVar2 = nameLength;
+  if (moduleHandle == (HINSTANCE__ *)0x0) {
+    builtin_memcpy(moduleName + nameLength,".dll",4);
+    auStack_118[iVar2] = 0;
+    moduleHandle = (HINSTANCE__ *)GetModuleHandleA((LPCSTR)moduleName);
   }
-  return (uint)local_10;
+  return (uint)moduleHandle;
 }
 
 
@@ -511,7 +523,7 @@ uint __cdecl GetModuleBase(char *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LoadMapFilesForDir(char *param_1)
+void __cdecl LoadMapFilesForDir(char *dir)
 
 {
   char cVar1;
@@ -520,53 +532,53 @@ void __cdecl LoadMapFilesForDir(char *param_1)
   char *local_1170;
   char *local_1164;
   CHAR *local_1160;
-  _WIN32_FIND_DATAA local_115c;
-  char local_101c [2052];
-  uint local_818;
-  _iobuf *local_814;
-  HANDLE local_810;
-  char local_80c [2052];
+  _WIN32_FIND_DATAA wfd;
+  char mapName [2052];
+  uint base;
+  _iobuf *fp;
+  void *h;
+  char searchSpec [2052];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (*param_1 == '\0') {
+  if (*dir == '\0') {
     Sys_DefaultInstallPath();
-    sprintf(local_80c,"%s\\*.map");
+    sprintf(searchSpec,"%s\\*.map");
   }
   else {
     Sys_DefaultInstallPath();
-    sprintf(local_80c,"%s\\%s\\*.map");
+    sprintf(searchSpec,"%s\\%s\\*.map");
   }
-  local_810 = FindFirstFileA(local_80c,&local_115c);
-  if (local_810 != (HANDLE)0xffffffff) {
+  h = FindFirstFileA(searchSpec,&wfd);
+  if (h != (HANDLE)0xffffffff) {
     do {
-      local_818 = GetModuleBase(local_115c.cFileName);
-      if (local_818 != 0) {
+      base = GetModuleBase(wfd.cFileName);
+      if (base != 0) {
         Sys_DefaultInstallPath();
-        sprintf(local_101c,"%s\\%s");
-        local_814 = fopen(local_101c,"rb");
-        if (local_814 != (_iobuf *)0x0) {
-          local_1160 = local_115c.cFileName;
-          local_1164 = local_101c;
+        sprintf(mapName,"%s\\%s");
+        fp = fopen(mapName,"rb");
+        if (fp != (_iobuf *)0x0) {
+          local_1160 = wfd.cFileName;
+          local_1164 = mapName;
           do {
             cVar1 = *local_1160;
             *local_1164 = cVar1;
             local_1160 = local_1160 + 1;
             local_1164 = local_1164 + 1;
           } while (cVar1 != '\0');
-          pcVar2 = local_101c;
+          pcVar2 = mapName;
           do {
             local_1170 = pcVar2;
             pcVar2 = local_1170 + 1;
           } while (*local_1170 != '\0');
           local_1170[-4] = '\0';
-          ParseMapFile(local_814,local_818,local_101c);
-          fclose(local_814);
+          ParseMapFile(fp,base,mapName);
+          fclose(fp);
         }
       }
-      BVar3 = FindNextFileA(local_810,&local_115c);
+      BVar3 = FindNextFileA(h,&wfd);
     } while (BVar3 != 0);
-    FindClose(local_810);
+    FindClose(h);
   }
   return;
 }
@@ -574,42 +586,44 @@ void __cdecl LoadMapFilesForDir(char *param_1)
 
 // 00787530  LoadMapFiles  (universal/assertive.cpp:1030)
 
-int __cdecl LoadMapFiles(char *param_1)
+int __cdecl LoadMapFiles(char *msg)
 
 {
   int iVar1;
-  int local_10;
-  char *local_8;
+  char *string;
+  int j;
+  AddressInfo_s *addressInfo;
+  char *curPos;
   
   LoadMapFilesForDir("");
-  if (param_1 == (char *)0x0) {
+  if (msg == (char *)0x0) {
     iVar1 = 0;
   }
   else {
-    local_8 = param_1;
-    for (local_10 = 0; local_10 < g_assertAddressCount; local_10 = local_10 + 1) {
-      if (g_assertAddress[local_10].moduleName[0] != '\0') {
-        iVar1 = sprintf(local_8,"%s:    ");
-        local_8 = local_8 + iVar1;
-        if (g_assertAddress[local_10].bestLineFilename[0] == '\0') {
-          if (g_assertAddress[local_10].bestFunction[0] == '\0') {
-            iVar1 = sprintf(local_8,"%s, address %x");
-            local_8 = local_8 + iVar1;
+    curPos = msg;
+    for (j = 0; j < g_assertAddressCount; j = j + 1) {
+      if (g_assertAddress[j].moduleName[0] != '\0') {
+        iVar1 = sprintf(curPos,"%s:    ");
+        string = curPos + iVar1;
+        if (g_assertAddress[j].bestLineFilename[0] == '\0') {
+          if (g_assertAddress[j].bestFunction[0] == '\0') {
+            iVar1 = sprintf(string,"%s, address %x");
+            curPos = string + iVar1;
           }
           else {
-            iVar1 = sprintf(local_8,"%s        ...%s, address %x");
-            local_8 = local_8 + iVar1;
+            iVar1 = sprintf(string,"%s        ...%s, address %x");
+            curPos = string + iVar1;
           }
         }
         else {
-          iVar1 = sprintf(local_8,"%s        ...%s, line %i");
-          local_8 = local_8 + iVar1;
+          iVar1 = sprintf(string,"%s        ...%s, line %i");
+          curPos = string + iVar1;
         }
-        iVar1 = sprintf(local_8,"\n");
-        local_8 = local_8 + iVar1;
+        iVar1 = sprintf(curPos,"\n");
+        curPos = curPos + iVar1;
       }
     }
-    iVar1 = (int)local_8 - (int)param_1;
+    iVar1 = (int)curPos - (int)msg;
   }
   return iVar1;
 }
@@ -617,15 +631,18 @@ int __cdecl LoadMapFiles(char *param_1)
 
 // 00787450  Assert_DoStackTrace  (universal/assertive.cpp:1123)
 
-int __cdecl Assert_DoStackTrace(char *param_1,int param_2,int param_3,void *param_4)
+int __cdecl Assert_DoStackTrace(char *msg,int nIgnore,int type,void *context)
 
 {
-  int *piVar1;
+  uint uVar1;
   int iVar2;
-  int *local_10;
-  int local_8;
+  int result;
+  bool shouldAbort;
+  uint reg_ebp;
+  uint reg_eip;
+  int i;
   
-  local_10 = (int *)&stack0xfffffffc;
+  reg_ebp = (uint)&stack0xfffffffc;
   if (g_inStackTrace) {
     iVar2 = 0;
   }
@@ -633,19 +650,19 @@ int __cdecl Assert_DoStackTrace(char *param_1,int param_2,int param_3,void *para
     g_inStackTrace = true;
     memset((uchar *)g_assertAddress,'\0',0x2200);
     g_assertAddressCount = 0;
-    if (param_4 != (void *)0x0) {
-      local_10 = param_4;
+    if (context != (void *)0x0) {
+      reg_ebp = (uint)context;
     }
-    for (local_8 = 0; local_8 < param_2 + 0x20; local_8 = local_8 + 1) {
-      piVar1 = (int *)*local_10;
-      if (param_2 <= local_8) {
-        g_assertAddress[g_assertAddressCount].address = local_10[1] - 5;
+    for (i = 0; i < nIgnore + 0x20; i = i + 1) {
+      uVar1 = *(uint *)reg_ebp;
+      if (nIgnore <= i) {
+        g_assertAddress[g_assertAddressCount].address = *(int *)(reg_ebp + 4) - 5;
         g_assertAddressCount = g_assertAddressCount + 1;
-        if (piVar1 == (int *)0x0) break;
+        if (uVar1 == 0) break;
       }
-      local_10 = piVar1;
+      reg_ebp = uVar1;
     }
-    iVar2 = LoadMapFiles(param_1);
+    iVar2 = LoadMapFiles(msg);
     g_inStackTrace = false;
   }
   return iVar2;
@@ -664,10 +681,10 @@ void __cdecl Assert_ResetAddressInfo(void)
 
 // 00788710  Assert_SetMonkeyCallbackHandler  (universal/assertive.cpp:1335)
 
-void __cdecl Assert_SetMonkeyCallbackHandler(_func___cdecl_void_char_ptr *param_1)
+void __cdecl Assert_SetMonkeyCallbackHandler(_func___cdecl_void_char_ptr *AssertCallbackFunc)
 
 {
-  MonkeyAssertCallback = param_1;
+  MonkeyAssertCallback = AssertCallbackFunc;
   return;
 }
 
@@ -685,6 +702,8 @@ void __cdecl CopyMessageToClipboard(void)
   char *local_24;
   char *local_20;
   char *local_10;
+  char *mem;
+  void *memoryHandle;
   
   hWndNewOwner = GetDesktopWindow();
   BVar3 = OpenClipboard(hWndNewOwner);
@@ -719,7 +738,7 @@ void __cdecl CopyMessageToClipboard(void)
 
 // 007889B0  AssertNotify  (universal/assertive.cpp:1406)
 
-bool __cdecl AssertNotify(int param_1,AssertOccurance param_2)
+bool __cdecl AssertNotify(int type,AssertOccurance occurance)
 
 {
   bool bVar1;
@@ -728,27 +747,27 @@ bool __cdecl AssertNotify(int param_1,AssertOccurance param_2)
   BOOL BVar3;
   char *lpText;
   UINT uType;
-  char *local_8;
+  char *msg;
   
   if (MonkeyAssertCallback == (_func___cdecl_void_char_ptr *)0x0) {
     if (AssertCallback != (_func___cdecl_void_char_ptr *)0x0) {
       (*AssertCallback)(assertMessage);
     }
-    if (param_1 == 0) {
-      local_8 = "ASSERTION FAILURE... (this text is on the clipboard)";
+    if (type == 0) {
+      msg = "ASSERTION FAILURE... (this text is on the clipboard)";
     }
-    else if (param_1 == 1) {
-      local_8 = "SANITY CHECK FAILURE... (this text is on the clipboard)";
+    else if (type == 1) {
+      msg = "SANITY CHECK FAILURE... (this text is on the clipboard)";
     }
     else {
-      local_8 = "INTERNAL ERROR";
+      msg = "INTERNAL ERROR";
     }
     ShowCursor(1);
     uType = 0x12011;
     lpText = assertMessage;
     hWnd = GetActiveWindow();
-    iVar2 = MessageBoxA(hWnd,lpText,local_8,uType);
-    if ((iVar2 == 1) && (param_2 != RECURSIVE)) {
+    iVar2 = MessageBoxA(hWnd,lpText,msg,uType);
+    if ((iVar2 == 1) && (occurance != RECURSIVE)) {
       bVar1 = Sys_IsMiniDumpStarted();
       if ((bVar1) && (BVar3 = IsDebuggerPresent(), BVar3 == 0)) {
         RaiseException(1,0,0,(ULONG_PTR *)0x0);
@@ -759,7 +778,7 @@ bool __cdecl AssertNotify(int param_1,AssertOccurance param_2)
   }
   else {
     (*MonkeyAssertCallback)(assertMessage);
-    if (param_2 != RECURSIVE) {
+    if (occurance != RECURSIVE) {
                     /* WARNING: Subroutine does not return */
       ExitProcess(0xffffffff);
     }
@@ -773,13 +792,13 @@ bool __cdecl AssertNotify(int param_1,AssertOccurance param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Assert_BuildAssertMessage
-          (char *param_1,char *param_2,int param_3,int param_4,int param_5,char *param_6)
+Assert_BuildAssertMessage(char *expr,char *filename,int line,int type,int skipLevels,char *message)
 
 {
   DWORD DVar1;
   int iVar2;
   int iVar3;
+  char *curPos;
   
   DVar1 = GetModuleFileNameA((HMODULE)0x0,g_module,0x104);
   if (DVar1 == 0) {
@@ -788,32 +807,34 @@ Assert_BuildAssertMessage
   Com_GetBuildVersion();
   Com_GetBuildName();
   Com_GetBuildDisplayName();
-  iVar2 = sprintf(param_6,"Build: %s %s build %s %s\n");
-  iVar3 = sprintf(param_6 + iVar2,
+  iVar2 = sprintf(message,"Build: %s %s build %s %s\n");
+  iVar3 = sprintf(message + iVar2,
                   "Expression:\n    %s\n\nModule:    %s\nFile:    %s\nLine:    %d\n\n");
-  startOfStackTrace = param_6 + iVar2 + iVar3;
-  Assert_DoStackTrace(startOfStackTrace,param_5 + 1,param_4,(void *)0x0);
+  startOfStackTrace = message + iVar2 + iVar3;
+  Assert_DoStackTrace(startOfStackTrace,skipLevels + 1,type,(void *)0x0);
   return;
 }
 
 
 // 00788720  Assert_MyHandler  (universal/assertive.cpp:1539)
 
-bool __cdecl Assert_MyHandler(char *param_1,int param_2,int param_3,char *param_4)
+bool __cdecl Assert_MyHandler(char *filename,int line,int type,char *fmt)
 
 {
   bool bVar1;
-  char *pcVar2;
+  char *fmt_00;
+  bool shouldBreak;
+  char *vargs;
   
   Sys_EnterCriticalSection(CRITSECT_ASSERT);
-  _vsnprintf(message,0x400,param_4,&stack0x00000014);
+  _vsnprintf(message,0x400,fmt,&stack0x00000014);
   message[0x3ff] = '\0';
   if (isHandlingAssert != 0) {
-    pcVar2 = va("Assert Expression:\n    %s\nFile:    %s\nLine:    %d\n\n");
-    Com_Printf(0x10,pcVar2);
+    fmt_00 = va("Assert Expression:\n    %s\nFile:    %s\nLine:    %d\n\n");
+    Com_Printf(0x10,fmt_00);
     CopyMessageToClipboard();
     AssertNotify(lastAssertType,RECURSIVE);
-    Assert_BuildAssertMessage(message,param_1,param_2,param_3,1,assertMessage);
+    Assert_BuildAssertMessage(message,filename,line,type,1,assertMessage);
     if (isHandlingAssert == 1) {
       isHandlingAssert = 2;
       Com_Printf(0x10,
@@ -827,10 +848,10 @@ bool __cdecl Assert_MyHandler(char *param_1,int param_2,int param_3,char *param_
                     /* WARNING: Subroutine does not return */
     exit(-1);
   }
-  lastAssertType = param_3;
+  lastAssertType = type;
   isHandlingAssert = 1;
   FixWindowsDesktop();
-  Assert_BuildAssertMessage(message,param_1,param_2,param_3,1,assertMessage);
+  Assert_BuildAssertMessage(message,filename,line,type,1,assertMessage);
   Com_Printf(0x10,
              "ASSERTBEGIN -------------------------------------------------------------------\n");
   Com_Printf(0x10,"%s");
@@ -842,7 +863,7 @@ bool __cdecl Assert_MyHandler(char *param_1,int param_2,int param_3,char *param_
     ExitProcess(0xffffffff);
   }
   CopyMessageToClipboard();
-  bVar1 = AssertNotify(param_3,FIRST_TIME);
+  bVar1 = AssertNotify(type,FIRST_TIME);
   isHandlingAssert = 0;
   Sys_LeaveCriticalSection(CRITSECT_ASSERT);
   return (bool)('\x01' - bVar1);

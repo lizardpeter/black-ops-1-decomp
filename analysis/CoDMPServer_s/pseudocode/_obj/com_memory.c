@@ -293,12 +293,12 @@ void * __cdecl Hunk_AllocAlignInternal(int param_1,int param_2)
 
 {
   LPVOID pvVar1;
-  uchar *puVar2;
+  uchar *dst;
   int in_EDX;
-  uint uVar3;
+  uint uVar2;
   SIZE_T dwSize;
   
-  uVar3 = (DAT_01f46324 - DAT_01f4632c) + DAT_03508c18;
+  uVar2 = (DAT_01f46324 - DAT_01f4632c) + DAT_03508c18;
   DAT_01f4632c = DAT_01f4632c + param_1 + (in_EDX - 1U) & ~(in_EDX - 1U);
   DAT_01f46330 = DAT_01f4632c;
   if (DAT_01f46324 < (int)(DAT_01f46338 + DAT_01f4632c)) {
@@ -307,10 +307,10 @@ void * __cdecl Hunk_AllocAlignInternal(int param_1,int param_2)
               (int)(DAT_01f46338 + (DAT_01f46338 >> 0x1f & 0xfffffU)) >> 0x14,
               (int)(DAT_01f4632c + ((int)DAT_01f4632c >> 0x1f & 0xfffffU)) >> 0x14);
   }
-  puVar2 = (uchar *)((DAT_01f46324 - DAT_01f4632c) + DAT_03508c18);
-  dwSize = (uVar3 & 0xfffff000) - (int)((uint)puVar2 & 0xfffff000);
+  dst = (uchar *)((DAT_01f46324 - DAT_01f4632c) + DAT_03508c18);
+  dwSize = (uVar2 & 0xfffff000) - (int)((uint)dst & 0xfffff000);
   if (dwSize != 0) {
-    pvVar1 = VirtualAlloc((LPVOID)((uint)puVar2 & 0xfffff000),dwSize,
+    pvVar1 = VirtualAlloc((LPVOID)((uint)dst & 0xfffff000),dwSize,
                           (0x20000 < (int)dwSize) - 1 & 0x100000 | 0x1000,4);
     if (pvVar1 == (LPVOID)0x0) {
                     /* WARNING: Subroutine does not return */
@@ -318,8 +318,8 @@ void * __cdecl Hunk_AllocAlignInternal(int param_1,int param_2)
                 ("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x1a7);
     }
   }
-  memset(puVar2,'\0',param_1);
-  return puVar2;
+  memset(dst,'\0',param_1);
+  return dst;
 }
 
 
@@ -381,18 +381,18 @@ void _Hunk_ClearTempMemoryHigh(void)
 void * __cdecl Hunk_AllocLowAlignInternal(int param_1,int param_2)
 
 {
-  uchar *puVar1;
-  int iVar2;
+  uchar *dst;
+  int iVar1;
   int in_EAX;
   SIZE_T dwSize;
-  uint uVar3;
-  LPVOID pvVar4;
+  uint uVar2;
+  LPVOID pvVar3;
   
-  iVar2 = DAT_01f46334 + 0xfff;
-  uVar3 = DAT_01f46334 + (in_EAX - 1U) & ~(in_EAX - 1U);
-  puVar1 = (uchar *)(uVar3 + DAT_03508c18);
-  DAT_01f46334 = uVar3 + param_1;
-  pvVar4 = (LPVOID)(iVar2 + DAT_03508c18 & 0xfffff000);
+  iVar1 = DAT_01f46334 + 0xfff;
+  uVar2 = DAT_01f46334 + (in_EAX - 1U) & ~(in_EAX - 1U);
+  dst = (uchar *)(uVar2 + DAT_03508c18);
+  DAT_01f46334 = uVar2 + param_1;
+  pvVar3 = (LPVOID)(iVar1 + DAT_03508c18 & 0xfffff000);
   DAT_01f46338 = DAT_01f46334;
   if (DAT_01f46324 < DAT_01f46330 + DAT_01f46334) {
     Com_Error(ERR_DROP,
@@ -401,17 +401,17 @@ void * __cdecl Hunk_AllocLowAlignInternal(int param_1,int param_2)
               (int)(DAT_01f46334 + (DAT_01f46334 >> 0x1f & 0xfffffU)) >> 0x14,
               (int)(DAT_01f46330 + (DAT_01f46330 >> 0x1f & 0xfffffU)) >> 0x14);
   }
-  dwSize = (DAT_01f46334 + 0xfff + DAT_03508c18 & 0xfffff000U) - (int)pvVar4;
+  dwSize = (DAT_01f46334 + 0xfff + DAT_03508c18 & 0xfffff000U) - (int)pvVar3;
   if (dwSize != 0) {
-    pvVar4 = VirtualAlloc(pvVar4,dwSize,(0x20000 < (int)dwSize) - 1 & 0x100000 | 0x1000,4);
-    if (pvVar4 == (LPVOID)0x0) {
+    pvVar3 = VirtualAlloc(pvVar3,dwSize,(0x20000 < (int)dwSize) - 1 & 0x100000 | 0x1000,4);
+    if (pvVar3 == (LPVOID)0x0) {
                     /* WARNING: Subroutine does not return */
       Sys_OutOfMemErrorInternal
                 ("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_memory.cpp",0x1a7);
     }
   }
-  memset(puVar1,'\0',param_1);
-  return puVar1;
+  memset(dst,'\0',param_1);
+  return dst;
 }
 
 

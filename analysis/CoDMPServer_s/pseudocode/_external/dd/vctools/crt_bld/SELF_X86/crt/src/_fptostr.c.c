@@ -2,7 +2,7 @@
 
 // 00978C33  _fptostr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_fptostr.c:50)
 
-int __cdecl _fptostr(char *param_1,uint param_2,int param_3,_strflt *param_4)
+int __cdecl _fptostr(char *buf,uint sizeInBytes,int digits,_strflt *pflt)
 
 {
   int *piVar1;
@@ -12,22 +12,22 @@ int __cdecl _fptostr(char *param_1,uint param_2,int param_3,_strflt *param_4)
   char *pcVar4;
   int iVar5;
   
-  pcVar4 = param_4->mantissa;
-  if ((param_1 == (char *)0x0) || (param_2 == 0)) {
+  pcVar4 = pflt->mantissa;
+  if ((buf == (char *)0x0) || (sizeInBytes == 0)) {
     piVar1 = _errno();
     iVar5 = 0x16;
     *piVar1 = 0x16;
   }
   else {
-    *param_1 = '\0';
-    iVar5 = param_3;
-    if (param_3 < 1) {
+    *buf = '\0';
+    iVar5 = digits;
+    if (digits < 1) {
       iVar5 = 0;
     }
-    if (iVar5 + 1U < param_2) {
-      *param_1 = '0';
-      pcVar2 = param_1;
-      for (; pcVar2 = pcVar2 + 1, 0 < param_3; param_3 = param_3 + -1) {
+    if (iVar5 + 1U < sizeInBytes) {
+      *buf = '0';
+      pcVar2 = buf;
+      for (; pcVar2 = pcVar2 + 1, 0 < digits; digits = digits + -1) {
         cVar3 = *pcVar4;
         if (cVar3 == '\0') {
           cVar3 = '0';
@@ -38,18 +38,18 @@ int __cdecl _fptostr(char *param_1,uint param_2,int param_3,_strflt *param_4)
         *pcVar2 = cVar3;
       }
       *pcVar2 = '\0';
-      if ((-1 < param_3) && ('4' < *pcVar4)) {
+      if ((-1 < digits) && ('4' < *pcVar4)) {
         while (pcVar2 = pcVar2 + -1, *pcVar2 == '9') {
           *pcVar2 = '0';
         }
         *pcVar2 = *pcVar2 + '\x01';
       }
-      if (*param_1 == '1') {
-        param_4->decpt = param_4->decpt + 1;
+      if (*buf == '1') {
+        pflt->decpt = pflt->decpt + 1;
       }
       else {
-        strlen((uchar *)(param_1 + 1));
-        memmove((uchar *)param_1,(uchar *)(param_1 + 1),extraout_EAX + 1);
+        strlen((uchar *)(buf + 1));
+        memmove((uchar *)buf,(uchar *)(buf + 1),extraout_EAX + 1);
       }
       return 0;
     }

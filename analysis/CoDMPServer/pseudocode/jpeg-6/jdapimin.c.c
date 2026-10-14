@@ -2,212 +2,218 @@
 
 // 00B44530  jpeg_CreateDecompress  (jpeg-6/jdapimin.c:34)
 
-void __cdecl jpeg_CreateDecompress(jpeg_decompress_struct *param_1,int param_2,uint param_3)
+void __cdecl jpeg_CreateDecompress(jpeg_decompress_struct *cinfo,int version,uint structsize)
 
 {
   jpeg_error_mgr *pjVar1;
   void *pvVar2;
   jpeg_alloc *pjVar3;
-  int local_8;
+  void *client_data;
+  jpeg_error_mgr *err;
+  int i;
   
-  param_1->mem = (jpeg_memory_mgr *)0x0;
-  if (param_2 != 0x3e) {
-    param_1->err->msg_code = 0xc;
-    (param_1->err->msg_parm).i[0] = 0x3e;
-    (param_1->err->msg_parm).i[1] = param_2;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  cinfo->mem = (jpeg_memory_mgr *)0x0;
+  if (version != 0x3e) {
+    cinfo->err->msg_code = 0xc;
+    (cinfo->err->msg_parm).i[0] = 0x3e;
+    (cinfo->err->msg_parm).i[1] = version;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_3 != 0x1b8) {
-    param_1->err->msg_code = 0x15;
-    (param_1->err->msg_parm).i[0] = 0x1b8;
-    (param_1->err->msg_parm).i[1] = param_3;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (structsize != 0x1b8) {
+    cinfo->err->msg_code = 0x15;
+    (cinfo->err->msg_parm).i[0] = 0x1b8;
+    (cinfo->err->msg_parm).i[1] = structsize;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  pjVar1 = param_1->err;
-  pvVar2 = param_1->client_data;
-  memset((uchar *)param_1,'\0',0x1b8);
-  param_1->err = pjVar1;
-  param_1->client_data = pvVar2;
-  param_1->is_decompressor = '\x01';
-  jinit_memory_mgr((jpeg_common_struct *)param_1);
+  pjVar1 = cinfo->err;
+  pvVar2 = cinfo->client_data;
+  memset((uchar *)cinfo,'\0',0x1b8);
+  cinfo->err = pjVar1;
+  cinfo->client_data = pvVar2;
+  cinfo->is_decompressor = '\x01';
+  jinit_memory_mgr((jpeg_common_struct *)cinfo);
   pjVar3 = jpeg_get_jpeg_alloc();
-  (param_1->mem->alloc).malloc = pjVar3->malloc;
+  (cinfo->mem->alloc).malloc = pjVar3->malloc;
   pjVar3 = jpeg_get_jpeg_alloc();
-  (param_1->mem->alloc).free = pjVar3->free;
-  param_1->progress = (jpeg_progress_mgr *)0x0;
-  param_1->src = (jpeg_source_mgr *)0x0;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    param_1->quant_tbl_ptrs[local_8] = (JQUANT_TBL *)0x0;
+  (cinfo->mem->alloc).free = pjVar3->free;
+  cinfo->progress = (jpeg_progress_mgr *)0x0;
+  cinfo->src = (jpeg_source_mgr *)0x0;
+  for (i = 0; i < 4; i = i + 1) {
+    cinfo->quant_tbl_ptrs[i] = (JQUANT_TBL *)0x0;
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    param_1->dc_huff_tbl_ptrs[local_8] = (JHUFF_TBL *)0x0;
-    param_1->ac_huff_tbl_ptrs[local_8] = (JHUFF_TBL *)0x0;
+  for (i = 0; i < 4; i = i + 1) {
+    cinfo->dc_huff_tbl_ptrs[i] = (JHUFF_TBL *)0x0;
+    cinfo->ac_huff_tbl_ptrs[i] = (JHUFF_TBL *)0x0;
   }
-  param_1->marker_list = (jpeg_marker_struct *)0x0;
-  jinit_marker_reader(param_1);
-  jinit_input_controller(param_1);
-  param_1->global_state = 200;
+  cinfo->marker_list = (jpeg_marker_struct *)0x0;
+  jinit_marker_reader(cinfo);
+  jinit_input_controller(cinfo);
+  cinfo->global_state = 200;
   return;
 }
 
 
 // 00B446D0  jpeg_destroy_compress  (jpeg-6/jcapimin.c:105)
 
-void __cdecl jpeg_destroy_compress(jpeg_compress_struct *param_1)
+void __cdecl jpeg_destroy_compress(jpeg_compress_struct *cinfo_2)
 
 {
-  jpeg_destroy((jpeg_common_struct *)param_1);
+  jpeg_destroy((jpeg_common_struct *)cinfo_2);
   return;
 }
 
 
 // 00B448D0  default_decompress_parms  (jpeg-6/jdapimin.c:131)
 
-void __cdecl default_decompress_parms(jpeg_decompress_struct *param_1)
+void __cdecl default_decompress_parms(jpeg_decompress_struct *cinfo)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
   jpeg_error_mgr *pjVar4;
+  int *_mp;
+  int cid2;
+  int cid0;
+  int cid1;
   
-  iVar1 = param_1->num_components;
+  iVar1 = cinfo->num_components;
   if (iVar1 == 1) {
-    param_1->jpeg_color_space = JCS_GRAYSCALE;
-    param_1->out_color_space = JCS_GRAYSCALE;
+    cinfo->jpeg_color_space = JCS_GRAYSCALE;
+    cinfo->out_color_space = JCS_GRAYSCALE;
   }
   else if (iVar1 == 3) {
-    if (param_1->saw_JFIF_marker == '\0') {
-      if (param_1->saw_Adobe_marker == '\0') {
-        iVar1 = param_1->comp_info->component_id;
-        iVar2 = param_1->comp_info[1].component_id;
-        iVar3 = param_1->comp_info[2].component_id;
+    if (cinfo->saw_JFIF_marker == '\0') {
+      if (cinfo->saw_Adobe_marker == '\0') {
+        iVar1 = cinfo->comp_info->component_id;
+        iVar2 = cinfo->comp_info[1].component_id;
+        iVar3 = cinfo->comp_info[2].component_id;
         if (((iVar1 == 1) && (iVar2 == 2)) && (iVar3 == 3)) {
-          param_1->jpeg_color_space = JCS_YCbCr;
+          cinfo->jpeg_color_space = JCS_YCbCr;
         }
         else if (((iVar1 == 0x52) && (iVar2 == 0x47)) && (iVar3 == 0x42)) {
-          param_1->jpeg_color_space = JCS_RGB;
+          cinfo->jpeg_color_space = JCS_RGB;
         }
         else {
-          pjVar4 = param_1->err;
+          pjVar4 = cinfo->err;
           (pjVar4->msg_parm).i[0] = iVar1;
           (pjVar4->msg_parm).i[1] = iVar2;
           (pjVar4->msg_parm).i[2] = iVar3;
-          param_1->err->msg_code = 0x6f;
-          (*param_1->err->emit_message)((jpeg_common_struct *)param_1,1);
-          param_1->jpeg_color_space = JCS_YCbCr;
+          cinfo->err->msg_code = 0x6f;
+          (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,1);
+          cinfo->jpeg_color_space = JCS_YCbCr;
         }
       }
-      else if (param_1->Adobe_transform == '\0') {
-        param_1->jpeg_color_space = JCS_RGB;
+      else if (cinfo->Adobe_transform == '\0') {
+        cinfo->jpeg_color_space = JCS_RGB;
       }
-      else if (param_1->Adobe_transform == '\x01') {
-        param_1->jpeg_color_space = JCS_YCbCr;
+      else if (cinfo->Adobe_transform == '\x01') {
+        cinfo->jpeg_color_space = JCS_YCbCr;
       }
       else {
-        param_1->err->msg_code = 0x72;
-        *(uint *)&param_1->err->msg_parm = (uint)param_1->Adobe_transform;
-        (*param_1->err->emit_message)((jpeg_common_struct *)param_1,-1);
-        param_1->jpeg_color_space = JCS_YCbCr;
+        cinfo->err->msg_code = 0x72;
+        *(uint *)&cinfo->err->msg_parm = (uint)cinfo->Adobe_transform;
+        (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,-1);
+        cinfo->jpeg_color_space = JCS_YCbCr;
       }
     }
     else {
-      param_1->jpeg_color_space = JCS_YCbCr;
+      cinfo->jpeg_color_space = JCS_YCbCr;
     }
-    param_1->out_color_space = JCS_RGB;
+    cinfo->out_color_space = JCS_RGB;
   }
   else if (iVar1 == 4) {
-    if (param_1->saw_Adobe_marker == '\0') {
-      param_1->jpeg_color_space = JCS_CMYK;
+    if (cinfo->saw_Adobe_marker == '\0') {
+      cinfo->jpeg_color_space = JCS_CMYK;
     }
-    else if (param_1->Adobe_transform == '\0') {
-      param_1->jpeg_color_space = JCS_CMYK;
+    else if (cinfo->Adobe_transform == '\0') {
+      cinfo->jpeg_color_space = JCS_CMYK;
     }
-    else if (param_1->Adobe_transform == '\x02') {
-      param_1->jpeg_color_space = JCS_YCCK;
+    else if (cinfo->Adobe_transform == '\x02') {
+      cinfo->jpeg_color_space = JCS_YCCK;
     }
     else {
-      param_1->err->msg_code = 0x72;
-      *(uint *)&param_1->err->msg_parm = (uint)param_1->Adobe_transform;
-      (*param_1->err->emit_message)((jpeg_common_struct *)param_1,-1);
-      param_1->jpeg_color_space = JCS_YCCK;
+      cinfo->err->msg_code = 0x72;
+      *(uint *)&cinfo->err->msg_parm = (uint)cinfo->Adobe_transform;
+      (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,-1);
+      cinfo->jpeg_color_space = JCS_YCCK;
     }
-    param_1->out_color_space = JCS_CMYK;
+    cinfo->out_color_space = JCS_CMYK;
   }
   else {
-    param_1->jpeg_color_space = JCS_UNKNOWN;
-    param_1->out_color_space = JCS_UNKNOWN;
+    cinfo->jpeg_color_space = JCS_UNKNOWN;
+    cinfo->out_color_space = JCS_UNKNOWN;
   }
-  param_1->scale_num = 1;
-  param_1->scale_denom = 1;
-  param_1->output_gamma = 1.0;
-  param_1->buffered_image = '\0';
-  param_1->raw_data_out = '\0';
-  param_1->dct_method = JDCT_ISLOW;
-  param_1->do_fancy_upsampling = '\x01';
-  param_1->do_block_smoothing = '\x01';
-  param_1->quantize_colors = '\0';
-  param_1->dither_mode = JDITHER_FS;
-  param_1->two_pass_quantize = '\x01';
-  param_1->desired_number_of_colors = 0x100;
-  param_1->colormap = (uchar **)0x0;
-  param_1->enable_1pass_quant = '\0';
-  param_1->enable_external_quant = '\0';
-  param_1->enable_2pass_quant = '\0';
+  cinfo->scale_num = 1;
+  cinfo->scale_denom = 1;
+  cinfo->output_gamma = 1.0;
+  cinfo->buffered_image = '\0';
+  cinfo->raw_data_out = '\0';
+  cinfo->dct_method = JDCT_ISLOW;
+  cinfo->do_fancy_upsampling = '\x01';
+  cinfo->do_block_smoothing = '\x01';
+  cinfo->quantize_colors = '\0';
+  cinfo->dither_mode = JDITHER_FS;
+  cinfo->two_pass_quantize = '\x01';
+  cinfo->desired_number_of_colors = 0x100;
+  cinfo->colormap = (uchar **)0x0;
+  cinfo->enable_1pass_quant = '\0';
+  cinfo->enable_external_quant = '\0';
+  cinfo->enable_2pass_quant = '\0';
   return;
 }
 
 
 // 00B446F0  jpeg_read_header  (jpeg-6/jdapimin.c:258)
 
-int __cdecl jpeg_read_header(jpeg_decompress_struct *param_1,uchar param_2)
+int __cdecl jpeg_read_header(jpeg_decompress_struct *cinfo,uchar require_image)
 
 {
-  int local_8;
+  int retcode;
   
-  if ((param_1->global_state != 200) && (param_1->global_state != 0xc9)) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if ((cinfo->global_state != 200) && (cinfo->global_state != 0xc9)) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  local_8 = jpeg_consume_input(param_1);
-  if (local_8 == 1) {
-    local_8 = 1;
+  retcode = jpeg_consume_input(cinfo);
+  if (retcode == 1) {
+    retcode = 1;
   }
-  else if (local_8 == 2) {
-    if (param_2 != '\0') {
-      param_1->err->msg_code = 0x33;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  else if (retcode == 2) {
+    if (require_image != '\0') {
+      cinfo->err->msg_code = 0x33;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    jpeg_abort((jpeg_common_struct *)param_1);
-    local_8 = 2;
+    jpeg_abort((jpeg_common_struct *)cinfo);
+    retcode = 2;
   }
-  return local_8;
+  return retcode;
 }
 
 
 // 00B447B0  jpeg_consume_input  (jpeg-6/jdapimin.c:304)
 
-int __cdecl jpeg_consume_input(jpeg_decompress_struct *param_1)
+int __cdecl jpeg_consume_input(jpeg_decompress_struct *cinfo)
 
 {
-  int local_8;
+  int retcode;
   
-  local_8 = 0;
-  switch(param_1->global_state) {
+  retcode = 0;
+  switch(cinfo->global_state) {
   case 200:
-    (*param_1->inputctl->reset_input_controller)(param_1);
-    (*param_1->src->init_source)(param_1);
-    param_1->global_state = 0xc9;
+    (*cinfo->inputctl->reset_input_controller)(cinfo);
+    (*cinfo->src->init_source)(cinfo);
+    cinfo->global_state = 0xc9;
   case 0xc9:
-    local_8 = (*param_1->inputctl->consume_input)(param_1);
-    if (local_8 == 1) {
-      default_decompress_parms(param_1);
-      param_1->global_state = 0xca;
+    retcode = (*cinfo->inputctl->consume_input)(cinfo);
+    if (retcode == 1) {
+      default_decompress_parms(cinfo);
+      cinfo->global_state = 0xca;
     }
     break;
   case 0xca:
-    local_8 = 1;
+    retcode = 1;
     break;
   case 0xcb:
   case 0xcc:
@@ -216,48 +222,48 @@ int __cdecl jpeg_consume_input(jpeg_decompress_struct *param_1)
   case 0xcf:
   case 0xd0:
   case 0xd2:
-    local_8 = (*param_1->inputctl->consume_input)(param_1);
+    retcode = (*cinfo->inputctl->consume_input)(cinfo);
     break;
   default:
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  return local_8;
+  return retcode;
 }
 
 
 // 00B44BC0  jpeg_finish_decompress  (jpeg-6/jdapimin.c:386)
 
-uchar __cdecl jpeg_finish_decompress(jpeg_decompress_struct *param_1)
+uchar __cdecl jpeg_finish_decompress(jpeg_decompress_struct *cinfo)
 
 {
   int iVar1;
   
-  if (((param_1->global_state == 0xcd) || (param_1->global_state == 0xce)) &&
-     (param_1->buffered_image == '\0')) {
-    if (param_1->output_scanline < param_1->output_height) {
-      param_1->err->msg_code = 0x43;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (((cinfo->global_state == 0xcd) || (cinfo->global_state == 0xce)) &&
+     (cinfo->buffered_image == '\0')) {
+    if (cinfo->output_scanline < cinfo->output_height) {
+      cinfo->err->msg_code = 0x43;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    (*param_1->master->finish_output_pass)(param_1);
-    param_1->global_state = 0xd2;
+    (*cinfo->master->finish_output_pass)(cinfo);
+    cinfo->global_state = 0xd2;
   }
-  else if (param_1->global_state == 0xcf) {
-    param_1->global_state = 0xd2;
+  else if (cinfo->global_state == 0xcf) {
+    cinfo->global_state = 0xd2;
   }
-  else if (param_1->global_state != 0xd2) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  else if (cinfo->global_state != 0xd2) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
   do {
-    if (param_1->inputctl->eoi_reached != '\0') {
-      (*param_1->src->term_source)(param_1);
-      jpeg_abort((jpeg_common_struct *)param_1);
+    if (cinfo->inputctl->eoi_reached != '\0') {
+      (*cinfo->src->term_source)(cinfo);
+      jpeg_abort((jpeg_common_struct *)cinfo);
       return '\x01';
     }
-    iVar1 = (*param_1->inputctl->consume_input)(param_1);
+    iVar1 = (*cinfo->inputctl->consume_input)(cinfo);
   } while (iVar1 != 0);
   return '\0';
 }

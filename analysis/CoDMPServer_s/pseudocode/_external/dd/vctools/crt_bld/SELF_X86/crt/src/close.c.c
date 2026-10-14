@@ -5,35 +5,36 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _close(int param_1)
+int __cdecl _close(int fh)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
-  int iStack_20;
+  int _Expr_val;
+  int r;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar3 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) != 0) {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+    if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+      iVar3 = (fh & 0x1fU) * 0x40;
+      if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) != 0) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
-          iStack_20 = -1;
+          r = -1;
         }
         else {
-          iStack_20 = _close_nolock(param_1);
+          r = _close_nolock(fh);
         }
         FUN_0096c833();
-        return iStack_20;
+        return r;
       }
     }
     puVar1 = __doserrno();
@@ -50,40 +51,40 @@ int __cdecl _close(int param_1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl _close_nolock(int param_1)
+int __cdecl _close_nolock(int fh)
 
 {
   int iVar1;
   int iVar2;
   HANDLE hObject;
   BOOL BVar3;
-  DWORD DVar4;
+  DWORD oserrno;
   
-  iVar1 = _get_osfhandle(param_1);
+  iVar1 = _get_osfhandle(fh);
   if (iVar1 != -1) {
-    if (((param_1 == 1) && ((*(byte *)(___pioinfo + 0x84) & 1) != 0)) ||
-       ((param_1 == 2 && ((*(byte *)(___pioinfo + 0x44) & 1) != 0)))) {
+    if (((fh == 1) && ((*(byte *)(___pioinfo + 0x84) & 1) != 0)) ||
+       ((fh == 2 && ((*(byte *)(___pioinfo + 0x44) & 1) != 0)))) {
       iVar1 = _get_osfhandle(2);
       iVar2 = _get_osfhandle(1);
       if (iVar2 == iVar1) goto LAB_0096c73a;
     }
-    hObject = (HANDLE)_get_osfhandle(param_1);
+    hObject = (HANDLE)_get_osfhandle(fh);
     BVar3 = CloseHandle(hObject);
     if (BVar3 == 0) {
-      DVar4 = GetLastError();
+      oserrno = GetLastError();
       goto LAB_0096c73c;
     }
   }
 LAB_0096c73a:
-  DVar4 = 0;
+  oserrno = 0;
 LAB_0096c73c:
-  _free_osfhnd(param_1);
-  *(undefined1 *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + (param_1 & 0x1fU) * 0x40) = 0;
-  if (DVar4 == 0) {
+  _free_osfhnd(fh);
+  *(undefined1 *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + (fh & 0x1fU) * 0x40) = 0;
+  if (oserrno == 0) {
     iVar1 = 0;
   }
   else {
-    _dosmaperr(DVar4);
+    _dosmaperr(oserrno);
     iVar1 = -1;
   }
   return iVar1;

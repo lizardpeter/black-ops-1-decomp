@@ -44,17 +44,17 @@ undefined4 __cdecl basic_credentials(int param_1,int *param_2)
   int iVar2;
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar3;
-  uchar *puVar4;
+  uchar *dst;
+  uchar *src;
   undefined4 extraout_EAX_01;
   int extraout_EAX_02;
-  uchar *puVar5;
-  undefined4 uVar6;
+  uchar *puVar3;
+  undefined4 uVar4;
   uchar *local_24;
   uchar *local_20;
   
   if ((param_1 == 0) || (param_2 == (int *)0x0)) {
-    uVar6 = 0xffffffff;
+    uVar4 = 0xffffffff;
   }
   else {
     if (*param_2 == 0) {
@@ -73,50 +73,50 @@ undefined4 __cdecl basic_credentials(int param_1,int *param_2)
     strlen(local_24);
     iVar2 = extraout_EAX + 5 + extraout_EAX_00;
     iVar1 = (iVar2 / 3) * 4;
-    puVar3 = (uchar *)_HTMemory_calloc(1,iVar2);
-    if (puVar3 == (uchar *)0x0) {
+    dst = (uchar *)_HTMemory_calloc(1,iVar2);
+    if (dst == (uchar *)0x0) {
       _HTMemory_outofmem("basic_credentials",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTAABrow.c",0xe6
                         );
     }
-    *puVar3 = '\0';
+    *dst = '\0';
     if (*param_2 != 0) {
-      strcpy(puVar3,(uchar *)*param_2);
+      strcpy(dst,(uchar *)*param_2);
     }
-    strcat(puVar3,":");
+    strcat(dst,":");
     if (param_2[1] != 0) {
-      strcat(puVar3,(uchar *)param_2[1]);
+      strcat(dst,(uchar *)param_2[1]);
     }
-    puVar4 = (uchar *)_HTMemory_calloc(1,iVar1 + 8);
-    if (puVar4 == (uchar *)0x0) {
+    src = (uchar *)_HTMemory_calloc(1,iVar1 + 8);
+    if (src == (uchar *)0x0) {
       _HTMemory_outofmem("basic_credentials",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTAABrow.c",0xec
                         );
     }
-    puVar5 = puVar4;
-    strlen(puVar3);
-    _HTUU_encode(puVar3,extraout_EAX_01,puVar5);
+    puVar3 = src;
+    strlen(dst);
+    _HTUU_encode(dst,extraout_EAX_01,puVar3);
     strlen((uchar *)"basic");
-    puVar5 = (uchar *)_HTMemory_malloc(extraout_EAX_02 + iVar1 + 9);
-    if (puVar5 == (uchar *)0x0) {
+    puVar3 = (uchar *)_HTMemory_malloc(extraout_EAX_02 + iVar1 + 9);
+    if (puVar3 == (uchar *)0x0) {
       _HTMemory_outofmem("basic_credentials",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTAABrow.c",0xf3
                         );
     }
-    strcpy(puVar5,(uchar *)"Basic ");
-    strcat(puVar5,puVar4);
+    strcpy(puVar3,(uchar *)"Basic ");
+    strcat(puVar3,src);
     if (param_2[3] == 0) {
-      _HTRequest_addCredentials(param_1,"Authorization",puVar5);
+      _HTRequest_addCredentials(param_1,"Authorization",puVar3);
     }
     else {
-      _HTRequest_addCredentials(param_1,"Proxy-Authorization",puVar5);
+      _HTRequest_addCredentials(param_1,"Proxy-Authorization",puVar3);
     }
-    _HTMemory_free(puVar5);
     _HTMemory_free(puVar3);
-    _HTMemory_free(puVar4);
-    uVar6 = 0;
+    _HTMemory_free(dst);
+    _HTMemory_free(src);
+    uVar4 = 0;
   }
-  return uVar6;
+  return uVar4;
 }
 
 
@@ -269,7 +269,7 @@ undefined4 _HTBasic_parse(int param_1,undefined4 param_2,undefined4 param_3,int 
 undefined4 FUN_00bc28d0(int param_1)
 
 {
-  uchar *puVar1;
+  uchar *string;
   int extraout_EAX;
   undefined4 local_c;
   undefined4 local_8;
@@ -280,19 +280,19 @@ undefined4 FUN_00bc28d0(int param_1)
   }
   else {
     local_c = _HTParse(param_1,"",0x19);
-    puVar1 = (uchar *)_HTParse(param_1,"",5);
-    strrchr(puVar1,'/');
+    string = (uchar *)_HTParse(param_1,"",5);
+    strrchr(string,'/');
     if (extraout_EAX != 0) {
       if (*(char *)(extraout_EAX + 1) == '\0') {
-        _HTSACat(&local_c,puVar1);
+        _HTSACat(&local_c,string);
         _HTSACat(&local_c,"*");
       }
       else {
         strcpy((uchar *)(extraout_EAX + 1),(uchar *)"*");
-        _HTSACat(&local_c,puVar1);
+        _HTSACat(&local_c,string);
       }
     }
-    _HTMemory_free(puVar1);
+    _HTMemory_free(string);
     local_8 = local_c;
   }
   return local_8;

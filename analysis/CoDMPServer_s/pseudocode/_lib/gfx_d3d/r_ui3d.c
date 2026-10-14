@@ -45,7 +45,11 @@ void __cdecl R_UI3D_CheckRenderTarget(void)
 
 // 0080DD00  R_UI3D_OnetimeInit  (gfx_d3d/r_ui3d.cpp:151)
 
-void __cdecl R_UI3D_OnetimeInit(ushort param_1,ushort param_2,bool param_3,int param_4,bool param_5)
+/* WARNING: Variable defined which should be unmapped: useDisplaySize */
+
+void __cdecl
+R_UI3D_OnetimeInit(ushort pmemLocation,ushort allocatePingPongBuffer,bool param_3,int param_4,
+                  bool param_5)
 
 {
   GfxRenderTarget *pGVar1;
@@ -57,20 +61,22 @@ void __cdecl R_UI3D_OnetimeInit(ushort param_1,ushort param_2,bool param_3,int p
   float unaff_EDI;
   float10 extraout_ST0;
   float10 fVar3;
-  RenderTargetUsage unaff_retaddr;
+  bool useDisplaySize;
   undefined2 in_stack_00000006;
   undefined2 in_stack_0000000a;
   
-  pGVar1 = _param_1;
-  g_ui3dStatus.useDisplaySize = (bool)(undefined1)param_1;
-  g_ui3dStatus.pmemLocation = _param_2;
+  pGVar1 = _pmemLocation;
+  g_ui3dStatus.useDisplaySize = (bool)(undefined1)pmemLocation;
+  g_ui3dStatus.pmemLocation = _allocatePingPongBuffer;
   g_ui3dStatus.width = in_CX;
   g_ui3dStatus.height = in_AX;
   R_InitSizedRenderTargetImage
-            (0x12,(uint)in_AX,(int)unaff_EDI,unaff_ESI,unaff_EBX,unaff_retaddr,pGVar1,_param_2);
+            (0x12,(uint)in_AX,(int)unaff_EDI,unaff_ESI,unaff_EBX,_useDisplaySize,pGVar1,
+             _allocatePingPongBuffer);
   if (param_3) {
     R_InitSizedRenderTargetImage
-              (0x13,(uint)in_AX,(int)unaff_EDI,unaff_ESI,unaff_EBX,unaff_retaddr,pGVar1,_param_2);
+              (0x13,(uint)in_AX,(int)unaff_EDI,unaff_ESI,unaff_EBX,_useDisplaySize,pGVar1,
+               _allocatePingPongBuffer);
   }
   fVar3 = (float10)0;
   g_ui3dStatus.hasPingPongBuffer = param_3;
@@ -217,7 +223,7 @@ void __cdecl R_UI3D_SetupBackendData(GfxUI3DBackend *param_1)
 // 0080E0A0  R_UI3D_SetupTextureWindow  (gfx_d3d/r_ui3d.cpp:297)
 
 void __cdecl
-R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,float param_5)
+R_UI3D_SetupTextureWindow(int normY,float normWidth,float normHeight,float param_4,float param_5)
 
 {
   int in_EAX;
@@ -229,35 +235,36 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
   float fVar6;
   float fVar7;
   float fVar8;
+  float normX;
   
   if (in_EAX < 6) {
-    fVar8 = (float)param_1;
-    if (0.0 <= (float)param_1 - 1.0) {
+    fVar8 = (float)normY;
+    if (0.0 <= (float)normY - 1.0) {
       fVar8 = 1.0;
     }
-    fVar5 = -(float)param_1;
-    param_1 = (int)fVar8;
+    fVar5 = -(float)normY;
+    normY = (int)fVar8;
     if (0.0 <= fVar5) {
-      param_1 = 0;
+      normY = 0;
     }
-    fVar8 = param_2;
-    if (0.0 <= param_2 - 1.0) {
+    fVar8 = normWidth;
+    if (0.0 <= normWidth - 1.0) {
       fVar8 = 1.0;
     }
-    fVar5 = -param_2;
-    param_2 = fVar8;
+    fVar5 = -normWidth;
+    normWidth = fVar8;
     if (0.0 <= fVar5) {
-      param_2 = 0.0;
+      normWidth = 0.0;
     }
-    fVar8 = 1.0 - (float)param_1;
-    if (0.0 <= (1.0 - (float)param_1) - param_3) {
-      fVar8 = param_3;
+    fVar8 = 1.0 - (float)normY;
+    if (0.0 <= (1.0 - (float)normY) - normHeight) {
+      fVar8 = normHeight;
     }
     if (fVar8 < 0.0) {
       fVar8 = 0.0;
     }
-    fVar5 = 1.0 - param_2;
-    if (0.0 <= (1.0 - param_2) - param_4) {
+    fVar5 = 1.0 - normWidth;
+    if (0.0 <= (1.0 - normWidth) - param_4) {
       fVar5 = param_4;
     }
     if (fVar5 < 0.0) {
@@ -289,12 +296,12 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
     g_ui3d_windows[in_EAX].scrPlace.scaleVirtualToFull[1] = fVar7 * 0.0020833334;
     g_ui3d_windows[in_EAX].scrPlace.scaleRealToVirtual[0] = 640.0 / fVar6;
     g_ui3d_windows[in_EAX].scrPlace.scaleRealToVirtual[1] = 480.0 / fVar7;
-    g_ui3d_windows[in_EAX].vp.x = (int)((float)uVar1 * (float)param_1);
-    g_ui3d_windows[in_EAX].vp.y = (int)((float)uVar3 * param_2);
+    g_ui3d_windows[in_EAX].vp.x = (int)((float)uVar1 * (float)normY);
+    g_ui3d_windows[in_EAX].vp.y = (int)((float)uVar3 * normWidth);
     g_ui3d_windows[in_EAX].vp.width = iVar2;
     g_ui3d_windows[in_EAX].vp.height = iVar4;
-    g_ui3d_windows[in_EAX].normX = (float)param_1;
-    g_ui3d_windows[in_EAX].normY = param_2;
+    g_ui3d_windows[in_EAX].normX = (float)normY;
+    g_ui3d_windows[in_EAX].normY = normWidth;
     g_ui3d_windows[in_EAX].normW = fVar8;
     g_ui3d_windows[in_EAX].normH = fVar5;
   }
@@ -379,42 +386,38 @@ void __cdecl RB_UI3D_SetShaderConstants(GfxCmdBufSourceState *param_1,GfxUI3DBac
 
 // 0080E580  RB_UI3D_RenderToTexture  (gfx_d3d/r_ui3d.cpp:396)
 
-void __cdecl RB_UI3D_RenderToTexture(void *param_1,GfxUI3DBackend *param_2,GfxCmdBufInput *param_3)
+/* WARNING: Variable defined which should be unmapped: scissor_min_y */
+
+void __cdecl RB_UI3D_RenderToTexture(void *rbUI3D,GfxUI3DBackend *input,GfxCmdBufInput *param_3)
 
 {
   float fVar1;
-  int iVar2;
-  GfxViewport *pGVar3;
+  GfxViewport *pGVar2;
+  int iVar3;
   int iVar4;
-  int iVar5;
   GfxViewport *unaff_EBP;
-  int iVar6;
+  int iVar5;
   int *unaff_ESI;
-  int iVar7;
+  int iVar6;
   GfxCmdBufSourceState *unaff_EDI;
-  int iVar8;
-  uchar uVar9;
-  GfxCmdBufPrimState_u_0 GVar10;
-  int iStack_40;
-  int iStack_34;
-  int iStack_30;
-  int iStack_2c;
-  int iStack_28;
-  int iStack_24;
-  int iStack_20;
-  int iStack_1c;
+  void *cmds;
+  uchar uVar7;
+  GfxCmdBufPrimState_u_0 GVar8;
+  int scissor_min_y;
+  int validWindowsCount;
+  GfxViewport vpBounds;
   int aiStack_18 [5];
   float fStack_4;
   
-  if (param_2->totalRenderCmds < 1) {
+  if (input->totalRenderCmds < 1) {
     return;
   }
-  iVar5 = 0;
-  if (param_1 == (void *)0x0) {
+  iVar4 = 0;
+  if (rbUI3D == (void *)0x0) {
     return;
   }
-  iVar2 = RB_UI3D_GetValidWindows((GfxUI3DBackend *)unaff_EDI,unaff_ESI);
-  if (iVar2 == 0) {
+  vpBounds.x = RB_UI3D_GetValidWindows((GfxUI3DBackend *)unaff_EDI,unaff_ESI);
+  if (vpBounds.x == 0) {
     return;
   }
   g_ui3dStatus.rendering = true;
@@ -430,105 +433,92 @@ void __cdecl RB_UI3D_RenderToTexture(void *param_1,GfxUI3DBackend *param_2,GfxCm
   gfxCmdBufSourceState.renderTargetHeight = (int)gfxRenderTargets[0x14].height;
   gfxCmdBufSourceState.viewportBehavior = GFX_USE_VIEWPORT_FOR_VIEW;
   UpdateVPosToWorld(unaff_EDI);
-  R_SetRenderTarget((GfxCmdBufContext)0x349fc800349e1f0,'\x14');
-  iVar8 = 0xfff;
+  R_SetRenderTarget();
+  vpBounds.y = 0xfff;
+  iVar5 = 0;
   iVar6 = 0;
-  iVar7 = 0;
-  iStack_40 = 0xfff;
-  iStack_2c = 0xfff;
-  iStack_30 = iVar8;
-  if (0 < iVar2) {
-    iVar5 = 0;
+  validWindowsCount = 0xfff;
+  vpBounds.width = 0xfff;
+  iVar3 = vpBounds.y;
+  if (0 < vpBounds.x) {
+    iVar4 = 0;
     do {
-      pGVar3 = param_2->viewport + aiStack_18[iVar7];
-      iVar4 = pGVar3->x;
-      if (iVar4 < iVar8) {
-        iVar8 = iVar4;
+      pGVar2 = input->viewport + aiStack_18[iVar6];
+      iVar3 = pGVar2->x;
+      if (iVar3 < vpBounds.y) {
+        vpBounds.y = iVar3;
       }
-      iVar4 = pGVar3->width + iVar4;
-      if (iVar6 < iVar4) {
-        iVar6 = iVar4;
+      iVar3 = pGVar2->width + iVar3;
+      if (iVar5 < iVar3) {
+        iVar5 = iVar3;
       }
-      iVar4 = pGVar3->y;
-      if (iVar4 < iStack_40) {
-        iStack_40 = iVar4;
+      iVar3 = pGVar2->y;
+      if (iVar3 < validWindowsCount) {
+        validWindowsCount = iVar3;
       }
-      iVar4 = pGVar3->height + iVar4;
-      if (iVar5 < iVar4) {
-        iVar5 = iVar4;
+      iVar3 = pGVar2->height + iVar3;
+      if (iVar4 < iVar3) {
+        iVar4 = iVar3;
       }
-      iVar7 = iVar7 + 1;
-    } while (iVar7 < iVar2);
-    iStack_2c = iStack_40;
-    iStack_30 = iVar8;
-    if (iVar8 <= iVar6) goto LAB_0080e6b6;
+      iVar6 = iVar6 + 1;
+    } while (iVar6 < vpBounds.x);
+    vpBounds.width = validWindowsCount;
+    iVar3 = vpBounds.y;
+    if (vpBounds.y <= iVar5) goto LAB_0080e6b6;
   }
-  iVar8 = iVar6;
-  iVar6 = iVar8;
+  vpBounds.y = iVar5;
+  iVar5 = vpBounds.y;
 LAB_0080e6b6:
-  if (iStack_30 < iVar6) {
-    iStack_30 = iVar6;
+  if (iVar3 < iVar5) {
+    iVar3 = iVar5;
   }
-  iStack_30 = iStack_30 - iVar8;
-  iStack_34 = iStack_2c;
-  if (iVar5 < iStack_2c) {
-    iStack_34 = iVar5;
+  vpBounds.height = iVar3 - vpBounds.y;
+  if (iVar4 < vpBounds.width) {
+    vpBounds.width = iVar4;
   }
-  if (iStack_2c < iVar5) {
-    iStack_2c = iVar5;
-  }
-  iStack_2c = iStack_2c - iStack_34;
-  iStack_28 = 0;
-  iStack_24 = 0;
-  iStack_20 = 0;
-  iStack_1c = 0;
   if ((int)pixelCostMode < 3) {
     R_ClearScreenInternal
               ((IDirect3DDevice9 *)&DAT_00000001,'\0',(float *)0x0,(float)unaff_EDI,(uchar)unaff_ESI
                ,unaff_EBP);
   }
-  iVar5 = 0;
-  if (0 < iVar2) {
+  iVar4 = 0;
+  if (0 < vpBounds.x) {
     do {
-      GVar10 = gfxCmdBufState.prim.field0_0x0;
+      GVar8 = gfxCmdBufState.prim.field0_0x0;
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x2a].packed = 0;
       gfxCmdBufSourceState.input.codeImages[0x2a] = rgp.heatMapImage;
       if (rgp.heatMapImage == (GfxImage *)0x0) {
         gfxCmdBufSourceState.input.codeImages[0x2a] = rgp.whiteImage;
       }
-      pGVar3 = param_2->viewport + aiStack_18[iVar5];
-      iStack_28 = pGVar3->x;
-      iStack_24 = pGVar3->y;
-      iStack_20 = pGVar3->width + iStack_28;
-      iStack_1c = pGVar3->height + iStack_24;
+      pGVar2 = input->viewport + aiStack_18[iVar4];
       (**(code **)((int)*gfxCmdBufState.prim.field0_0x0.device + 0xe4))
                 (gfxCmdBufState.prim.field0_0x0.device,0xae,1);
-      (**(code **)((int)*GVar10.device + 300))(GVar10.device,&iStack_34);
-      gfxCmdBufSourceState.sceneViewport.x = pGVar3->x;
-      gfxCmdBufSourceState.sceneViewport.y = pGVar3->y;
-      gfxCmdBufSourceState.sceneViewport.width = pGVar3->width;
-      gfxCmdBufSourceState.sceneViewport.height = pGVar3->height;
+      (**(code **)((int)*GVar8.device + 300))(GVar8.device,&vpBounds.width);
+      gfxCmdBufSourceState.sceneViewport.x = pGVar2->x;
+      gfxCmdBufSourceState.sceneViewport.y = pGVar2->y;
+      gfxCmdBufSourceState.sceneViewport.width = pGVar2->width;
+      gfxCmdBufSourceState.sceneViewport.height = pGVar2->height;
       gfxCmdBufSourceState.viewMode = VIEW_MODE_NONE;
       gfxCmdBufSourceState._6709_3_ = 0;
       gfxCmdBufSourceState.viewportIsDirty = true;
       R_Set2D(unaff_EDI);
       RB_ExecuteRenderCommandsLoop(unaff_EDI,unaff_ESI);
-      iVar5 = iVar5 + 1;
-    } while (iVar5 < iVar2);
+      iVar4 = iVar4 + 1;
+    } while (iVar4 < vpBounds.x);
   }
-  iVar5 = 0xae;
-  GVar10 = gfxCmdBufState.prim.field0_0x0;
+  iVar4 = 0xae;
+  GVar8 = gfxCmdBufState.prim.field0_0x0;
   (**(code **)((int)*gfxCmdBufState.prim.field0_0x0.device + 0xe4))
             (gfxCmdBufState.prim.field0_0x0.device,0xae,0);
-  uVar9 = GVar10._0_1_;
+  uVar7 = GVar8._0_1_;
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x1140);
   fVar1 = fStack_4;
   fStack_4 = *(float *)((int)fStack_4 + 0xdc);
   if ((((0.0 < fStack_4) && (gfxRenderTargets[0x15].image != (GfxImage *)0x0)) &&
       (gfxRenderTargets[0x15].width == gfxRenderTargets[0x14].width)) &&
      (gfxRenderTargets[0x15].height == gfxRenderTargets[0x14].height)) {
-    RB_GaussianFilterImage(fStack_4,'\x14',uVar9,iVar5);
-    RB_GaussianFilterImage(*(float *)((int)fVar1 + 0xdc),'\x15',uVar9,iVar5);
+    RB_GaussianFilterImage(fStack_4,'\x14',uVar7,iVar4);
+    RB_GaussianFilterImage(*(float *)((int)fVar1 + 0xdc),'\x15',uVar7,iVar4);
   }
   g_ui3dStatus.rendering = false;
   return;

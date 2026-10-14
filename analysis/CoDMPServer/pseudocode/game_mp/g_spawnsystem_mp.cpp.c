@@ -61,16 +61,15 @@ void __cdecl SpawnSystem_SortInfluencers(void)
 
 // 00686430  SpawnSystem_SortPointsForTeamByScore  (game_mp/g_spawnsystem_mp.cpp:722)
 
-void __cdecl SpawnSystem_SortPointsForTeamByScore(int param_1)
+void __cdecl SpawnSystem_SortPointsForTeamByScore(int team)
 
 {
   std::_Sort<int_*,int,compare_spawnpoint_score_sort>
-            (g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex,
-             g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex +
-             g_sortedTeamSpawnPoints[param_1].count,
-             (int)(g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex +
-                  g_sortedTeamSpawnPoints[param_1].count) - (int)(g_sortedTeamSpawnPoints + param_1)
-             >> 2,(compare_spawnpoint_score_sort)param_1);
+            (g_sortedTeamSpawnPoints[team].spawnPointsByIndex,
+             g_sortedTeamSpawnPoints[team].spawnPointsByIndex + g_sortedTeamSpawnPoints[team].count,
+             (int)(g_sortedTeamSpawnPoints[team].spawnPointsByIndex +
+                  g_sortedTeamSpawnPoints[team].count) - (int)(g_sortedTeamSpawnPoints + team) >> 2,
+             (compare_spawnpoint_score_sort)team);
   return;
 }
 
@@ -156,11 +155,11 @@ void __cdecl SpawnSystem_RegisterDvars(void)
 
 /* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
-void __cdecl SpawnSystem_Init(bool param_1)
+void __cdecl SpawnSystem_Init(bool restart)
 
 {
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
   
   SpawnSystem_RegisterDvars();
   g_spawnRandomVariation = 0.0;
@@ -176,11 +175,11 @@ void __cdecl SpawnSystem_Init(bool param_1)
   g_lastPointComputeTime[1] = 0;
   g_lastPointComputeTime[2] = 0;
   memset((uchar *)g_spawnInfluencerPresets,'\0',0x23e0);
-  for (local_8 = 0; local_8 < 0x148; local_8 = local_8 + 1) {
-    g_spawnInfluencerPresets[local_8].type = INFLUENCER_TYPE_UNUSED;
+  for (i = 0; i < 0x148; i = i + 1) {
+    g_spawnInfluencerPresets[i].type = INFLUENCER_TYPE_UNUSED;
   }
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    g_lastPointPlayer[local_c] = 0x3ff;
+  for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+    g_lastPointPlayer[i_2] = 0x3ff;
   }
   return;
 }
@@ -188,29 +187,29 @@ void __cdecl SpawnSystem_Init(bool param_1)
 
 // 00686910  SpawnSystem_FindPointByEnt  (game_mp/g_spawnsystem_mp.cpp:845)
 
-int __cdecl SpawnSystem_FindPointByEnt(int param_1)
+int __cdecl SpawnSystem_FindPointByEnt(int entNum)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_spawnPointCount <= local_8) {
+    if (g_spawnPointCount <= i) {
       return -1;
     }
-    if (g_spawnPoints[local_8].entNum == param_1) break;
-    local_8 = local_8 + 1;
+    if (g_spawnPoints[i].entNum == entNum) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 00686960  SpawnSystem_SetRandomVariation  (game_mp/g_spawnsystem_mp.cpp:863)
 
-void __cdecl SpawnSystem_SetRandomVariation(float param_1)
+void __cdecl SpawnSystem_SetRandomVariation(float variation)
 
 {
-  g_spawnRandomVariation = param_1;
+  g_spawnRandomVariation = variation;
   return;
 }
 
@@ -234,16 +233,16 @@ void __cdecl SpawnSystem_ClearPoints(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SpawnSystem_AddPoint(int param_1,gentity_s *param_2)
+bool __cdecl SpawnSystem_AddPoint(int team,gentity_s *ent)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   undefined1 uVar4;
-  int local_8;
+  int index;
   
-  if ((2 < (uint)param_1) &&
+  if ((2 < (uint)team) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x373,0,
                                "team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)"),
@@ -252,19 +251,19 @@ bool __cdecl SpawnSystem_AddPoint(int param_1,gentity_s *param_2)
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  local_8 = SpawnSystem_FindPointByEnt((param_2->s).number);
+  index = SpawnSystem_FindPointByEnt((ent->s).number);
   iVar2 = g_spawnPointCount;
-  if (local_8 == -1) {
+  if (index == -1) {
     if (199 < g_spawnPointCount + 1) {
       return false;
     }
-    g_spawnPoints[g_spawnPointCount].origin[0] = (param_2->r).currentOrigin[0];
-    g_spawnPoints[iVar2].origin[1] = (param_2->r).currentOrigin[1];
-    g_spawnPoints[iVar2].origin[2] = (param_2->r).currentOrigin[2];
-    g_spawnPoints[g_spawnPointCount].yaw = (param_2->r).currentAngles[1];
+    g_spawnPoints[g_spawnPointCount].origin[0] = (ent->r).currentOrigin[0];
+    g_spawnPoints[iVar2].origin[1] = (ent->r).currentOrigin[1];
+    g_spawnPoints[iVar2].origin[2] = (ent->r).currentOrigin[2];
+    g_spawnPoints[g_spawnPointCount].yaw = (ent->r).currentAngles[1];
     g_spawnPoints[g_spawnPointCount].origin[2] =
          g_spawnPoints[g_spawnPointCount].origin[2] + g_legacySpawnPointRaiseHeight;
-    g_spawnPoints[g_spawnPointCount].entNum = (param_2->s).number;
+    g_spawnPoints[g_spawnPointCount].entNum = (ent->s).number;
     iVar2 = g_spawnPointCount;
     g_spawnPoints[g_spawnPointCount].weight[0] = 0.0;
     g_spawnPoints[iVar2].weight[1] = 0.0;
@@ -273,24 +272,24 @@ bool __cdecl SpawnSystem_AddPoint(int param_1,gentity_s *param_2)
     g_spawnPoints[g_spawnPointCount].baseWeight[0] = 0.0;
     g_spawnPoints[iVar2].baseWeight[1] = 0.0;
     g_spawnPoints[iVar2].baseWeight[2] = 0.0;
-    local_8 = g_spawnPointCount;
+    index = g_spawnPointCount;
     g_spawnPoints[g_spawnPointCount].teamMask = 0;
     g_spawnPointCount = g_spawnPointCount + 1;
   }
-  g_spawnPoints[local_8].teamMask = 1 << ((byte)param_1 & 0x1f) | g_spawnPoints[local_8].teamMask;
+  g_spawnPoints[index].teamMask = 1 << ((byte)team & 0x1f) | g_spawnPoints[index].teamMask;
   return true;
 }
 
 
 // 00686B90  SpawnSystem_SetPointBaseWeight  (game_mp/g_spawnsystem_mp.cpp:916)
 
-void __cdecl SpawnSystem_SetPointBaseWeight(SpawnPoint *param_1,int param_2,float param_3)
+void __cdecl SpawnSystem_SetPointBaseWeight(SpawnPoint *point,int teammask,float weight)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (SpawnPoint *)0x0) {
+  if (point == (SpawnPoint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x395,0,"%s");
     if (!bVar2) {
@@ -299,14 +298,14 @@ void __cdecl SpawnSystem_SetPointBaseWeight(SpawnPoint *param_1,int param_2,floa
       return;
     }
   }
-  if ((param_2 & 1U) != 0) {
-    param_1->baseWeight[0] = param_3;
+  if ((teammask & 1U) != 0) {
+    point->baseWeight[0] = weight;
   }
-  if ((param_2 & 2U) != 0) {
-    param_1->baseWeight[1] = param_3;
+  if ((teammask & 2U) != 0) {
+    point->baseWeight[1] = weight;
   }
-  if ((param_2 & 4U) != 0) {
-    param_1->baseWeight[2] = param_3;
+  if ((teammask & 4U) != 0) {
+    point->baseWeight[2] = weight;
   }
   return;
 }
@@ -314,16 +313,16 @@ void __cdecl SpawnSystem_SetPointBaseWeight(SpawnPoint *param_1,int param_2,floa
 
 // 00686B30  SpawnSystem_ClearPointsBaseWeight  (game_mp/g_spawnsystem_mp.cpp:938)
 
-void __cdecl SpawnSystem_ClearPointsBaseWeight(int param_1)
+void __cdecl SpawnSystem_ClearPointsBaseWeight(int teammask)
 
 {
-  int local_8;
+  int i;
   
-  if (param_1 == 0) {
-    param_1 = 7;
+  if (teammask == 0) {
+    teammask = 7;
   }
-  for (local_8 = 0; local_8 < g_spawnPointCount; local_8 = local_8 + 1) {
-    SpawnSystem_SetPointBaseWeight(g_spawnPoints + local_8,param_1,0.0);
+  for (i = 0; i < g_spawnPointCount; i = i + 1) {
+    SpawnSystem_SetPointBaseWeight(g_spawnPoints + i,teammask,0.0);
   }
   return;
 }
@@ -336,60 +335,61 @@ void __cdecl SpawnSystem_ClearPointsBaseWeight(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SpawnSystem_SetPointsBaseWeight(int param_1,float *param_2,float param_3,float param_4)
+void __cdecl
+SpawnSystem_SetPointsBaseWeight(int teammask,float *objective_position,float angle,float score)
 
 {
   code *pcVar1;
   bool bVar2;
   double dVar3;
   double in_stack_ffffffa4;
-  float local_50;
+  float axis;
   float local_4c;
   float local_48;
-  float local_2c;
+  float forward;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  float angle_cos;
+  float direction;
   float local_18;
   float local_14;
-  int local_10;
-  float local_c;
-  SpawnPoint *local_8;
+  int i;
+  float dot;
+  SpawnPoint *point;
   
-  if (param_1 == 0) {
-    param_1 = 7;
+  if (teammask == 0) {
+    teammask = 7;
   }
-  local_8 = (SpawnPoint *)0x0;
-  dVar3 = (double)(param_3 * 0.017453292);
+  point = (SpawnPoint *)0x0;
+  dVar3 = (double)(angle * 0.017453292);
   __libm_sse2_cos(in_stack_ffffffa4);
-  local_20 = (float)dVar3;
-  local_c = 0.0;
-  local_10 = 0;
+  angle_cos = (float)dVar3;
+  dot = 0.0;
+  i = 0;
   do {
-    if (g_spawnPointCount <= local_10) {
+    if (g_spawnPointCount <= i) {
       return;
     }
-    local_8 = g_spawnPoints + local_10;
-    if (g_spawnPoints[local_10].entNum < 0) {
-      YawToAxis(g_spawnPoints[local_10].yaw,(float (*) [3])&local_50);
-      local_2c = local_50;
+    point = g_spawnPoints + i;
+    if (g_spawnPoints[i].entNum < 0) {
+      YawToAxis(g_spawnPoints[i].yaw,(float (*) [3])&axis);
+      forward = axis;
       local_28 = local_4c;
       local_24 = local_48;
     }
     else {
-      AngleVectors(g_entities[g_spawnPoints[local_10].entNum].r.currentAngles,&local_2c,(float *)0x0
-                   ,(float *)0x0);
+      AngleVectors(g_entities[g_spawnPoints[i].entNum].r.currentAngles,&forward,(float *)0x0,
+                   (float *)0x0);
     }
-    local_1c = *param_2 - local_8->origin[0];
-    local_18 = param_2[1] - local_8->origin[1];
-    local_14 = param_2[2] - local_8->origin[2];
-    Vec3Normalize(&local_1c);
-    local_c = local_2c * local_1c + local_28 * local_18 + local_24 * local_14;
-    if (local_c < local_20) {
-      dVar3 = (double)local_c;
+    direction = *objective_position - point->origin[0];
+    local_18 = objective_position[1] - point->origin[1];
+    local_14 = objective_position[2] - point->origin[2];
+    Vec3Normalize(&direction);
+    dot = forward * direction + local_28 * local_18 + local_24 * local_14;
+    if (dot < angle_cos) {
+      dVar3 = (double)dot;
       __libm_sse2_acos(in_stack_ffffffa4);
-      if (((float)dVar3 * 180.0) / 3.1415927 <= param_3) {
+      if (((float)dVar3 * 180.0) / 3.1415927 <= angle) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x3e2,0,"%s");
         if (!bVar2) {
@@ -398,12 +398,12 @@ void __cdecl SpawnSystem_SetPointsBaseWeight(int param_1,float *param_2,float pa
           return;
         }
       }
-      SpawnSystem_SetPointBaseWeight(g_spawnPoints + local_10,param_1,0.0);
+      SpawnSystem_SetPointBaseWeight(g_spawnPoints + i,teammask,0.0);
     }
     else {
-      dVar3 = (double)local_c;
+      dVar3 = (double)dot;
       __libm_sse2_acos(in_stack_ffffffa4);
-      if (param_3 < ((float)dVar3 * 180.0) / 3.1415927) {
+      if (angle < ((float)dVar3 * 180.0) / 3.1415927) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x3dd,0,"%s");
         if (!bVar2) {
@@ -412,22 +412,22 @@ void __cdecl SpawnSystem_SetPointsBaseWeight(int param_1,float *param_2,float pa
           return;
         }
       }
-      SpawnSystem_SetPointBaseWeight(g_spawnPoints + local_10,param_1,param_4);
+      SpawnSystem_SetPointBaseWeight(g_spawnPoints + i,teammask,score);
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00687FC0  QuatMultiply  (universal/com_math.h:962)
 
-void __cdecl QuatMultiply(float *param_1,float *param_2,float *param_3)
+void __cdecl QuatMultiply(float *in1,float *in2,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x3c3,0,"%s"
                             );
     if (!bVar2) {
@@ -436,7 +436,7 @@ void __cdecl QuatMultiply(float *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (param_2 == param_3) {
+  if (in2 == out) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x3c4,0,"%s"
                             );
     if (!bVar2) {
@@ -445,14 +445,10 @@ void __cdecl QuatMultiply(float *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  *param_3 = (*param_1 * param_2[3] + param_1[3] * *param_2 + param_1[2] * param_2[1]) -
-             param_1[1] * param_2[2];
-  param_3[1] = (param_1[1] * param_2[3] - param_1[2] * *param_2) + param_1[3] * param_2[1] +
-               *param_1 * param_2[2];
-  param_3[2] = ((param_1[2] * param_2[3] + param_1[1] * *param_2) - *param_1 * param_2[1]) +
-               param_1[3] * param_2[2];
-  param_3[3] = ((param_1[3] * param_2[3] - *param_1 * *param_2) - param_1[1] * param_2[1]) -
-               param_1[2] * param_2[2];
+  *out = (*in1 * in2[3] + in1[3] * *in2 + in1[2] * in2[1]) - in1[1] * in2[2];
+  out[1] = (in1[1] * in2[3] - in1[2] * *in2) + in1[3] * in2[1] + *in1 * in2[2];
+  out[2] = ((in1[2] * in2[3] + in1[1] * *in2) - *in1 * in2[1]) + in1[3] * in2[2];
+  out[3] = ((in1[3] * in2[3] - *in1 * *in2) - in1[1] * in2[1]) - in1[2] * in2[2];
   return;
 }
 
@@ -462,29 +458,30 @@ void __cdecl QuatMultiply(float *param_1,float *param_2,float *param_3)
 int __cdecl SpawnSystem_FindFreeInfluencer(void)
 
 {
-  int local_8;
+  SpawnInfluencer *list;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x147 < local_8) {
+    if (0x147 < i) {
       return -1;
     }
-    if (g_spawnInfluencers[local_8].used == false) break;
-    local_8 = local_8 + 1;
+    if (g_spawnInfluencers[i].used == false) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 006873F0  SpawnSystem_ComputeInfluencerBounds  (game_mp/g_spawnsystem_mp.cpp:1034)
 
-void __cdecl SpawnSystem_ComputeInfluencerBounds(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_ComputeInfluencerBounds(SpawnInfluencer *influencer)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (SpawnInfluencer *)0x0) {
+  if (influencer == (SpawnInfluencer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x40b,0,"%s");
     if (!bVar2) {
@@ -493,22 +490,22 @@ void __cdecl SpawnSystem_ComputeInfluencerBounds(SpawnInfluencer *param_1)
       return;
     }
   }
-  param_1->bounds[0] = param_1->origin[g_sortAxis] - param_1->boundingRadius;
-  param_1->bounds[1] = param_1->origin[g_sortAxis] + param_1->boundingRadius;
+  influencer->bounds[0] = influencer->origin[g_sortAxis] - influencer->boundingRadius;
+  influencer->bounds[1] = influencer->origin[g_sortAxis] + influencer->boundingRadius;
   return;
 }
 
 
 // 00687460  SpawnSystem_InsertSortedInfluencer  (game_mp/g_spawnsystem_mp.cpp:1046)
 
-void __cdecl SpawnSystem_InsertSortedInfluencer(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_InsertSortedInfluencer(SpawnInfluencer *influencer)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int low;
   
-  if (param_1 == (SpawnInfluencer *)0x0) {
+  if (influencer == (SpawnInfluencer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x417,0,"%s");
     if (!bVar2) {
@@ -517,15 +514,15 @@ void __cdecl SpawnSystem_InsertSortedInfluencer(SpawnInfluencer *param_1)
       return;
     }
   }
-  local_8 = 0;
+  low = 0;
   do {
-    if (g_sortedSpawnInfluencerCount <= local_8) {
-      g_sortedSpawnInfluencers[g_sortedSpawnInfluencerCount] = param_1;
+    if (g_sortedSpawnInfluencerCount <= low) {
+      g_sortedSpawnInfluencers[g_sortedSpawnInfluencerCount] = influencer;
 LAB_006875a6:
       g_sortedSpawnInfluencerCount = g_sortedSpawnInfluencerCount + 1;
       return;
     }
-    if (g_sortedSpawnInfluencers[local_8] == (SpawnInfluencer *)0x0) {
+    if (g_sortedSpawnInfluencers[low] == (SpawnInfluencer *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x41d,0,"%s");
       if (!bVar2) {
@@ -534,7 +531,7 @@ LAB_006875a6:
         return;
       }
     }
-    if (param_1 == g_sortedSpawnInfluencers[local_8]) {
+    if (influencer == g_sortedSpawnInfluencers[low]) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x41f,0,"%s");
       if (!bVar2) {
@@ -543,14 +540,13 @@ LAB_006875a6:
         return;
       }
     }
-    if (param_1->bounds[0] < g_sortedSpawnInfluencers[local_8]->bounds[0]) {
-      memmove((uchar *)(g_sortedSpawnInfluencers + local_8 + 1),
-              (uchar *)(g_sortedSpawnInfluencers + local_8),
-              (g_sortedSpawnInfluencerCount - local_8) * 4);
-      g_sortedSpawnInfluencers[local_8] = param_1;
+    if (influencer->bounds[0] < g_sortedSpawnInfluencers[low]->bounds[0]) {
+      memmove((uchar *)(g_sortedSpawnInfluencers + low + 1),
+              (uchar *)(g_sortedSpawnInfluencers + low),(g_sortedSpawnInfluencerCount - low) * 4);
+      g_sortedSpawnInfluencers[low] = influencer;
       goto LAB_006875a6;
     }
-    local_8 = local_8 + 1;
+    low = low + 1;
   } while( true );
 }
 
@@ -559,14 +555,14 @@ LAB_006875a6:
 
 /* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
-void __cdecl SpawnSystem_RemoveSortedInfluencerByIndex(int param_1)
+void __cdecl SpawnSystem_RemoveSortedInfluencerByIndex(int influencer_index)
 
 {
   code *pcVar1;
   bool bVar2;
   
   if (g_spawnSystemDebugMode == SS_DEBUG_OFF) {
-    if (((uint)g_sortedSpawnInfluencerCount <= (uint)param_1) &&
+    if (((uint)g_sortedSpawnInfluencerCount <= (uint)influencer_index) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x437,0,
                                  "influencer_index doesn\'t index g_sortedSpawnInfluencerCount\n\t%i not in [0, %i)"
@@ -575,10 +571,10 @@ void __cdecl SpawnSystem_RemoveSortedInfluencerByIndex(int param_1)
       (*pcVar1)();
       return;
     }
-    if (param_1 + 1 != g_sortedSpawnInfluencerCount) {
-      memmove((uchar *)(g_sortedSpawnInfluencers + param_1),
-              (uchar *)(g_sortedSpawnInfluencers + param_1 + 1),
-              (g_sortedSpawnInfluencerCount - param_1) * 4);
+    if (influencer_index + 1 != g_sortedSpawnInfluencerCount) {
+      memmove((uchar *)(g_sortedSpawnInfluencers + influencer_index),
+              (uchar *)(g_sortedSpawnInfluencers + influencer_index + 1),
+              (g_sortedSpawnInfluencerCount - influencer_index) * 4);
     }
     g_sortedSpawnInfluencerCount = g_sortedSpawnInfluencerCount + -1;
     g_sortedSpawnInfluencers[g_sortedSpawnInfluencerCount] = (SpawnInfluencer *)0x0;
@@ -591,35 +587,35 @@ void __cdecl SpawnSystem_RemoveSortedInfluencerByIndex(int param_1)
 
 /* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
-void __cdecl SpawnSystem_RemoveSortedInfluencer(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_RemoveSortedInfluencer(SpawnInfluencer *influencer)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int low;
   
   if (g_spawnSystemDebugMode == SS_DEBUG_OFF) {
-    if ((param_1 == (SpawnInfluencer *)0x0) &&
+    if ((influencer == (SpawnInfluencer *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x448,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    for (local_8 = 0; local_8 < g_sortedSpawnInfluencerCount; local_8 = local_8 + 1) {
-      if ((g_sortedSpawnInfluencers[local_8] == (SpawnInfluencer *)0x0) &&
+    for (low = 0; low < g_sortedSpawnInfluencerCount; low = low + 1) {
+      if ((g_sortedSpawnInfluencers[low] == (SpawnInfluencer *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
                                    ,0x44e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (g_sortedSpawnInfluencers[local_8] == param_1) {
-        SpawnSystem_RemoveSortedInfluencerByIndex(local_8);
+      if (g_sortedSpawnInfluencers[low] == influencer) {
+        SpawnSystem_RemoveSortedInfluencerByIndex(low);
         return;
       }
     }
-    if ((param_1 != (SpawnInfluencer *)0x0) &&
+    if ((influencer != (SpawnInfluencer *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x457,0,"%s\n\t%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -634,13 +630,13 @@ void __cdecl SpawnSystem_RemoveSortedInfluencer(SpawnInfluencer *param_1)
 // 00687800  SpawnSystem_CalculateCylinderLength  (game_mp/g_spawnsystem_mp.cpp:1119)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
-void __cdecl SpawnSystem_CalculateCylinderLength(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_CalculateCylinderLength(SpawnInfluencer *influencer)
 
 {
   float *pfVar1;
@@ -648,90 +644,91 @@ void __cdecl SpawnSystem_CalculateCylinderLength(SpawnInfluencer *param_1)
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  float local_84;
+  float end;
   float local_80;
   float local_7c;
-  float local_78;
-  float4 local_74;
+  float fraction;
+  float4 trace;
   float local_64;
   uint local_3c;
-  gentity_s *local_38;
-  gentity_s *local_30;
-  col_context_t local_2c;
+  gentity_s *player;
+  float speedIPS;
+  gentity_s *ent;
+  col_context_t context;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (SpawnInfluencer *)0x0) &&
+  if ((influencer == (SpawnInfluencer *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x460,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_1->preset->shape != INFLUENCER_SHAPE_CYLINDER) &&
+  if ((influencer->preset->shape != INFLUENCER_SHAPE_CYLINDER) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x461,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  col_context_t::col_context_t(&local_2c);
-  if ((param_1->active != false) && (g_spawnSystemDebugMode == SS_DEBUG_OFF)) {
-    if ((param_1->preset->type == INFLUENCER_TYPE_VEHICLE) &&
-       (iVar5 = EntHandle::isDefined(&param_1->entity), iVar5 != 0)) {
-      local_30 = EntHandle::ent(&param_1->entity);
-      if ((local_30->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  col_context_t::col_context_t(&context);
+  if ((influencer->active != false) && (g_spawnSystemDebugMode == SS_DEBUG_OFF)) {
+    if ((influencer->preset->type == INFLUENCER_TYPE_VEHICLE) &&
+       (iVar5 = EntHandle::isDefined(&influencer->entity), iVar5 != 0)) {
+      ent = EntHandle::ent(&influencer->entity);
+      if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
                                    ,0x46f,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      param_1->length = param_1->preset->radius * 0.5;
-      fVar2 = local_30->scr_vehicle->speed;
+      influencer->length = influencer->preset->radius * 0.5;
+      fVar2 = ent->scr_vehicle->speed;
       if (fVar2 < -0.001) {
-        param_1->length = param_1->length * -1.0;
+        influencer->length = influencer->length * -1.0;
       }
-      param_1->length = param_1->preset->originalLength * fVar2 + param_1->length;
+      influencer->length = influencer->preset->originalLength * fVar2 + influencer->length;
     }
-    else if (((param_1->preset->type == INFLUENCER_TYPE_WEAPON) &&
+    else if (((influencer->preset->type == INFLUENCER_TYPE_WEAPON) &&
              ((spawnsystem_weapon_influencer_sight_check->current).enabled != false)) &&
             ((int)((spawnsystem_weapon_influencer_update_interval->current).string +
-                  param_1->lastUpdateTime) < level.time)) {
-      local_38 = EntHandle::ent(&param_1->entity);
-      if ((local_38->client == (gclient_s *)0x0) &&
+                  influencer->lastUpdateTime) < level.time)) {
+      player = EntHandle::ent(&influencer->entity);
+      if ((player->client == (gclient_s *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
                                    ,0x483,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      local_74.v[0] = 0.0;
-      local_74.v[1] = 0.0;
-      local_74.v[2] = 0.0;
-      local_74.v[3] = 0.0;
-      fVar2 = param_1->preset->originalLength;
-      local_84 = fVar2 * param_1->up[0] + param_1->origin[0];
-      local_80 = fVar2 * param_1->up[1] + param_1->origin[1];
-      local_7c = fVar2 * param_1->up[2] + param_1->origin[2];
-      G_TraceCapsule((trace_t *)&local_74,param_1->origin,vec3_origin,vec3_origin,&local_84,
-                     (local_38->s).number,0x806833,&local_2c);
-      local_78 = local_64;
+      trace.v[0] = 0.0;
+      trace.v[1] = 0.0;
+      trace.v[2] = 0.0;
+      trace.v[3] = 0.0;
+      fVar2 = influencer->preset->originalLength;
+      end = fVar2 * influencer->up[0] + influencer->origin[0];
+      local_80 = fVar2 * influencer->up[1] + influencer->origin[1];
+      local_7c = fVar2 * influencer->up[2] + influencer->origin[2];
+      G_TraceCapsule((trace_t *)&trace,influencer->origin,vec3_origin,vec3_origin,&end,
+                     (player->s).number,0x806833,&context);
+      fraction = local_64;
       if (local_64 < (spawnsystem_weapon_influencer_min_length->current).value) {
-        local_78 = (spawnsystem_weapon_influencer_min_length->current).value;
+        fraction = (spawnsystem_weapon_influencer_min_length->current).value;
       }
       if (0.001 <= local_64) {
-        param_1->length =
-             param_1->preset->originalLength * local_78 +
+        influencer->length =
+             influencer->preset->originalLength * fraction +
              (spawnsystem_weapon_influencer_push_through->current).value;
-        pfVar1 = &param_1->preset->originalLength;
-        if (*pfVar1 <= param_1->length && param_1->length != *pfVar1) {
-          param_1->length = param_1->preset->originalLength;
+        pfVar1 = &influencer->preset->originalLength;
+        if (*pfVar1 <= influencer->length && influencer->length != *pfVar1) {
+          influencer->length = influencer->preset->originalLength;
         }
       }
       else {
-        param_1->length = 1.0;
+        influencer->length = 1.0;
       }
-      param_1->lastUpdateTime = level.time;
+      influencer->lastUpdateTime = level.time;
     }
   }
   return;
@@ -745,7 +742,7 @@ void __cdecl SpawnSystem_CalculateCylinderLength(SpawnInfluencer *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SpawnSystem_CalculateCylinderAxis(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_CalculateCylinderAxis(SpawnInfluencer *influencer)
 
 {
   short sVar1;
@@ -758,53 +755,52 @@ void __cdecl SpawnSystem_CalculateCylinderAxis(SpawnInfluencer *param_1)
   float local_a8;
   float local_74;
   float local_68;
-  float local_58;
+  float tempAxis;
   float local_54;
   float local_50;
   float local_40;
   float local_3c;
   float local_38;
-  float local_34;
+  float angles;
   float local_30;
   float local_2c;
-  gentity_s *local_28;
-  float local_24 [4];
-  float local_14;
+  gentity_s *ent;
+  float ent_quat [4];
+  float current_quat;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_1 == (SpawnInfluencer *)0x0) &&
+  if ((influencer == (SpawnInfluencer *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x4ab,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_1->preset->shape != INFLUENCER_SHAPE_CYLINDER) &&
+  if ((influencer->preset->shape != INFLUENCER_SHAPE_CYLINDER) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x4ac,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  iVar5 = EntHandle::isDefined(&param_1->entity);
+  iVar5 = EntHandle::isDefined(&influencer->entity);
   if (iVar5 != 0) {
-    local_28 = EntHandle::ent(&param_1->entity);
-    if ((local_28->client == (gclient_s *)0x0) || (param_1->preset->type != INFLUENCER_TYPE_WEAPON))
-    {
-      local_34 = (local_28->r).currentAngles[0];
-      local_30 = (local_28->r).currentAngles[1];
-      local_2c = (local_28->r).currentAngles[2];
+    ent = EntHandle::ent(&influencer->entity);
+    if ((ent->client == (gclient_s *)0x0) || (influencer->preset->type != INFLUENCER_TYPE_WEAPON)) {
+      angles = (ent->r).currentAngles[0];
+      local_30 = (ent->r).currentAngles[1];
+      local_2c = (ent->r).currentAngles[2];
     }
     else {
-      pgVar2 = local_28->client;
-      local_34 = (pgVar2->ps).viewangles[0];
+      pgVar2 = ent->client;
+      angles = (pgVar2->ps).viewangles[0];
       local_30 = (pgVar2->ps).viewangles[1];
       local_2c = (pgVar2->ps).viewangles[2];
     }
-    if ((local_28->s).eType == 0xc) {
-      fVar6 = AngleNormalize180(local_34);
+    if ((ent->s).eType == 0xc) {
+      fVar6 = AngleNormalize180(angles);
       fVar6 = fVar6 + heliPitchAdjust;
       local_68 = fVar6;
       if (0.0 <= fVar6 - 90.0) {
@@ -816,10 +812,10 @@ void __cdecl SpawnSystem_CalculateCylinderAxis(SpawnInfluencer *param_1)
       else {
         local_a8 = -90.0;
       }
-      local_34 = local_a8;
+      angles = local_a8;
     }
-    else if ((local_28->s).eType == 4) {
-      fVar6 = AngleNormalize180(local_34);
+    else if ((ent->s).eType == 4) {
+      fVar6 = AngleNormalize180(angles);
       fVar6 = fVar6 + missilePitchAdjust;
       local_74 = fVar6;
       if (0.0 <= fVar6 - 90.0) {
@@ -831,33 +827,33 @@ void __cdecl SpawnSystem_CalculateCylinderAxis(SpawnInfluencer *param_1)
       else {
         local_ac = -90.0;
       }
-      local_34 = local_ac;
+      angles = local_ac;
     }
-    AnglesToQuat(&local_34,local_24);
-    Vec4Normalize(local_24);
-    QuatMultiply(param_1->quat,local_24,&local_14);
-    Vec4Normalize(&local_14);
-    param_1->worldQuat[0] = local_14;
-    param_1->worldQuat[1] = local_10;
-    param_1->worldQuat[2] = local_c;
-    param_1->worldQuat[3] = local_8;
-    UnitQuatToAxis(&local_14,(float (*) [3])&local_58);
-    sVar1 = (local_28->s).eType;
+    AnglesToQuat(&angles,ent_quat);
+    Vec4Normalize(ent_quat);
+    QuatMultiply(influencer->quat,ent_quat,&current_quat);
+    Vec4Normalize(&current_quat);
+    influencer->worldQuat[0] = current_quat;
+    influencer->worldQuat[1] = local_10;
+    influencer->worldQuat[2] = local_c;
+    influencer->worldQuat[3] = local_8;
+    UnitQuatToAxis(&current_quat,(float (*) [3])&tempAxis);
+    sVar1 = (ent->s).eType;
     if ((sVar1 == 4) || (sVar1 == 0xc)) {
-      param_1->forward[0] = local_40;
-      param_1->forward[1] = local_3c;
-      param_1->forward[2] = local_38;
-      param_1->up[0] = local_58;
-      param_1->up[1] = local_54;
-      param_1->up[2] = local_50;
+      influencer->forward[0] = local_40;
+      influencer->forward[1] = local_3c;
+      influencer->forward[2] = local_38;
+      influencer->up[0] = tempAxis;
+      influencer->up[1] = local_54;
+      influencer->up[2] = local_50;
     }
     else {
-      param_1->forward[0] = local_58;
-      param_1->forward[1] = local_54;
-      param_1->forward[2] = local_50;
-      param_1->up[0] = local_40;
-      param_1->up[1] = local_3c;
-      param_1->up[2] = local_38;
+      influencer->forward[0] = tempAxis;
+      influencer->forward[1] = local_54;
+      influencer->forward[2] = local_50;
+      influencer->up[0] = local_40;
+      influencer->up[1] = local_3c;
+      influencer->up[2] = local_38;
     }
   }
   return;
@@ -866,14 +862,15 @@ void __cdecl SpawnSystem_CalculateCylinderAxis(SpawnInfluencer *param_1)
 
 // 00688170  SpawnSystem_CalculateCylinderAxisMidpoint  (game_mp/g_spawnsystem_mp.cpp:1254)
 
-void __cdecl SpawnSystem_CalculateCylinderAxisMidpoint(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_CalculateCylinderAxisMidpoint(SpawnInfluencer *influencer)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float half_cylinder_height;
   
-  if (param_1 == (SpawnInfluencer *)0x0) {
+  if (influencer == (SpawnInfluencer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x4e7,0,"%s");
     if (!bVar2) {
@@ -882,7 +879,7 @@ void __cdecl SpawnSystem_CalculateCylinderAxisMidpoint(SpawnInfluencer *param_1)
       return;
     }
   }
-  if (param_1->preset->shape != INFLUENCER_SHAPE_CYLINDER) {
+  if (influencer->preset->shape != INFLUENCER_SHAPE_CYLINDER) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x4e8,0,"%s");
     if (!bVar2) {
@@ -891,10 +888,10 @@ void __cdecl SpawnSystem_CalculateCylinderAxisMidpoint(SpawnInfluencer *param_1)
       return;
     }
   }
-  fVar3 = param_1->length * 0.5;
-  param_1->midPoint[0] = fVar3 * param_1->up[0] + param_1->origin[0];
-  param_1->midPoint[1] = fVar3 * param_1->up[1] + param_1->origin[1];
-  param_1->midPoint[2] = fVar3 * param_1->up[2] + param_1->origin[2];
+  fVar3 = influencer->length * 0.5;
+  influencer->midPoint[0] = fVar3 * influencer->up[0] + influencer->origin[0];
+  influencer->midPoint[1] = fVar3 * influencer->up[1] + influencer->origin[1];
+  influencer->midPoint[2] = fVar3 * influencer->up[2] + influencer->origin[2];
   return;
 }
 
@@ -906,31 +903,32 @@ void __cdecl SpawnSystem_CalculateCylinderAxisMidpoint(SpawnInfluencer *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SpawnSystem_UpdateCylinderInfluencer(SpawnInfluencer *param_1)
+void __cdecl SpawnSystem_UpdateCylinderInfluencer(SpawnInfluencer *influencer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   gentity_s *pgVar4;
+  gentity_s *ent;
   
-  if ((param_1 == (SpawnInfluencer *)0x0) &&
+  if ((influencer == (SpawnInfluencer *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x4f5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->preset->shape != INFLUENCER_SHAPE_CYLINDER) &&
+  if ((influencer->preset->shape != INFLUENCER_SHAPE_CYLINDER) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x4f6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = EntHandle::isDefined(&param_1->entity);
+  iVar3 = EntHandle::isDefined(&influencer->entity);
   if (iVar3 != 0) {
-    pgVar4 = EntHandle::ent(&param_1->entity);
+    pgVar4 = EntHandle::ent(&influencer->entity);
     if (pgVar4->client != (gclient_s *)0x0) {
       if ((pgVar4->client->ps).pm_type == 2) {
         return;
@@ -939,10 +937,10 @@ void __cdecl SpawnSystem_UpdateCylinderInfluencer(SpawnInfluencer *param_1)
         return;
       }
     }
-    SpawnSystem_CalculateCylinderAxis(param_1);
-    SpawnSystem_CalculateCylinderLength(param_1);
+    SpawnSystem_CalculateCylinderAxis(influencer);
+    SpawnSystem_CalculateCylinderLength(influencer);
   }
-  SpawnSystem_CalculateCylinderAxisMidpoint(param_1);
+  SpawnSystem_CalculateCylinderAxisMidpoint(influencer);
   return;
 }
 
@@ -951,18 +949,20 @@ void __cdecl SpawnSystem_UpdateCylinderInfluencer(SpawnInfluencer *param_1)
 
 SpawnInfluencerPreset * __cdecl
 SpawnSystem_SetPresetData
-          (int param_1,eInfluencerType param_2,eInfluencerShape param_3,float param_4,float param_5,
-          float param_6,eInfluencerScoreCurve param_7,char *param_8)
+          (int influencerIndex,eInfluencerType type,eInfluencerShape shape,float length,float radius
+          ,float score,eInfluencerScoreCurve score_curve,char *description)
 
 {
-  g_spawnInfluencerPresets[param_1].index = param_1;
-  g_spawnInfluencerPresets[param_1].type = param_2;
-  g_spawnInfluencerPresets[param_1].shape = param_3;
-  g_spawnInfluencerPresets[param_1].originalLength = param_4;
-  g_spawnInfluencerPresets[param_1].radius = param_5;
-  g_spawnInfluencerPresets[param_1].score = param_6;
-  g_spawnInfluencerPresets[param_1].score_curve = param_7;
-  return g_spawnInfluencerPresets + param_1;
+  SpawnInfluencerPreset *preset;
+  
+  g_spawnInfluencerPresets[influencerIndex].index = influencerIndex;
+  g_spawnInfluencerPresets[influencerIndex].type = type;
+  g_spawnInfluencerPresets[influencerIndex].shape = shape;
+  g_spawnInfluencerPresets[influencerIndex].originalLength = length;
+  g_spawnInfluencerPresets[influencerIndex].radius = radius;
+  g_spawnInfluencerPresets[influencerIndex].score = score;
+  g_spawnInfluencerPresets[influencerIndex].score_curve = score_curve;
+  return g_spawnInfluencerPresets + influencerIndex;
 }
 
 
@@ -975,18 +975,18 @@ SpawnSystem_SetPresetData
 
 void __cdecl
 SpawnSystem_InitInfluencer
-          (SpawnInfluencer *param_1,eInfluencerType param_2,eInfluencerShape param_3,float *param_4,
-          float *param_5,float *param_6,float param_7,float param_8,float param_9,
-          eInfluencerScoreCurve param_10,int param_11,int param_12,int param_13,char *param_14)
+          (SpawnInfluencer *influencer,eInfluencerType type,eInfluencerShape shape,float *origin,
+          float *forward,float *up,float radius,float axis_length,float score,
+          eInfluencerScoreCurve score_curve,int teamMask,int entNum,int timeout,char *description)
 
 {
   code *pcVar1;
   bool bVar2;
   SpawnInfluencerPreset *pSVar3;
-  float local_34;
+  float right;
   undefined4 local_30;
   undefined4 local_2c;
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -996,7 +996,7 @@ SpawnSystem_InitInfluencer
   float local_c;
   float local_8;
   
-  if (0x3ff < (uint)param_12) {
+  if (0x3ff < (uint)entNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x55a,0,"entNum doesn\'t index MAX_GENTITIES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1005,7 +1005,7 @@ SpawnSystem_InitInfluencer
       return;
     }
   }
-  if (INFLUENCER_TYPE_UNUSED < param_2) {
+  if (INFLUENCER_TYPE_UNUSED < type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x55b,0,"type doesn\'t index MAX_INFLUENCER_TYPE\n\t%i not in [0, %i)")
     ;
@@ -1015,7 +1015,7 @@ SpawnSystem_InitInfluencer
       return;
     }
   }
-  if (param_7 <= 0.0) {
+  if (radius <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x55c,0,"%s");
     if (!bVar2) {
@@ -1025,50 +1025,50 @@ SpawnSystem_InitInfluencer
     }
   }
   pSVar3 = SpawnSystem_SetPresetData
-                     ((int)(param_1[-0x826bf].midPoint + 2) / 0x7c,param_2,param_3,param_8,param_7,
-                      param_9,param_10,param_14);
-  param_1->preset = pSVar3;
-  param_1->used = true;
-  param_1->active = true;
-  param_1->teamMask = param_11;
-  param_1->origin[0] = *param_4;
-  param_1->origin[1] = param_4[1];
-  param_1->origin[2] = param_4[2];
-  param_1->forward[0] = *param_5;
-  param_1->forward[1] = param_5[1];
-  param_1->forward[2] = param_5[2];
-  param_1->up[0] = *param_6;
-  param_1->up[1] = param_6[1];
-  param_1->up[2] = param_6[2];
-  param_1->midPoint[0] = *param_4;
-  param_1->midPoint[1] = param_4[1];
-  param_1->midPoint[2] = param_4[2];
-  Vec3Cross(param_6,param_5,&local_34);
-  local_28 = *param_5;
-  local_24 = param_5[1];
-  local_20 = param_5[2];
-  local_1c = local_34;
+                     ((int)(influencer[-0x826bf].midPoint + 2) / 0x7c,type,shape,axis_length,radius,
+                      score,score_curve,description);
+  influencer->preset = pSVar3;
+  influencer->used = true;
+  influencer->active = true;
+  influencer->teamMask = teamMask;
+  influencer->origin[0] = *origin;
+  influencer->origin[1] = origin[1];
+  influencer->origin[2] = origin[2];
+  influencer->forward[0] = *forward;
+  influencer->forward[1] = forward[1];
+  influencer->forward[2] = forward[2];
+  influencer->up[0] = *up;
+  influencer->up[1] = up[1];
+  influencer->up[2] = up[2];
+  influencer->midPoint[0] = *origin;
+  influencer->midPoint[1] = origin[1];
+  influencer->midPoint[2] = origin[2];
+  Vec3Cross(up,forward,&right);
+  axis = *forward;
+  local_24 = forward[1];
+  local_20 = forward[2];
+  local_1c = right;
   local_18 = local_30;
   local_14 = local_2c;
-  local_10 = *param_6;
-  local_c = param_6[1];
-  local_8 = param_6[2];
-  AxisToQuat((float (*) [3])&local_28,param_1->quat);
-  Vec4Normalize(param_1->quat);
-  param_1->worldQuat[0] = param_1->quat[0];
-  param_1->worldQuat[1] = param_1->quat[1];
-  param_1->worldQuat[2] = param_1->quat[2];
-  param_1->worldQuat[3] = param_1->quat[3];
-  param_1->boundingRadius = param_7 * param_7;
-  param_1->length = param_8;
-  if ((param_12 == 0x3ff) || (param_12 == 0x3fe)) {
-    EntHandle::setEnt(&param_1->entity,(gentity_s *)0x0);
+  local_10 = *up;
+  local_c = up[1];
+  local_8 = up[2];
+  AxisToQuat((float (*) [3])&axis,influencer->quat);
+  Vec4Normalize(influencer->quat);
+  influencer->worldQuat[0] = influencer->quat[0];
+  influencer->worldQuat[1] = influencer->quat[1];
+  influencer->worldQuat[2] = influencer->quat[2];
+  influencer->worldQuat[3] = influencer->quat[3];
+  influencer->boundingRadius = radius * radius;
+  influencer->length = axis_length;
+  if ((entNum == 0x3ff) || (entNum == 0x3fe)) {
+    EntHandle::setEnt(&influencer->entity,(gentity_s *)0x0);
   }
   else {
-    if ((((g_entities[param_12].s.eType != 1) && (g_entities[param_12].s.eType != 0x11)) &&
-        (g_entities[param_12].s.eType != 0xe)) &&
-       (((g_entities[param_12].s.eType != 6 && (g_entities[param_12].s.eType != 4)) &&
-        (g_entities[param_12].s.eType != 0xc)))) {
+    if ((((g_entities[entNum].s.eType != 1) && (g_entities[entNum].s.eType != 0x11)) &&
+        (g_entities[entNum].s.eType != 0xe)) &&
+       (((g_entities[entNum].s.eType != 6 && (g_entities[entNum].s.eType != 4)) &&
+        (g_entities[entNum].s.eType != 0xc)))) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x57d,0,"%s");
       if (!bVar2) {
@@ -1077,16 +1077,16 @@ SpawnSystem_InitInfluencer
         return;
       }
     }
-    EntHandle::setEnt(&param_1->entity,g_entities + param_12);
+    EntHandle::setEnt(&influencer->entity,g_entities + entNum);
   }
-  if (param_1->teamMask == 0) {
-    param_1->teamMask = 7;
+  if (influencer->teamMask == 0) {
+    influencer->teamMask = 7;
   }
-  if (param_13 == 0) {
-    param_1->expireTime = 0;
+  if (timeout == 0) {
+    influencer->expireTime = 0;
   }
   else {
-    param_1->expireTime = level.time + param_13;
+    influencer->expireTime = level.time + timeout;
   }
   return;
 }
@@ -1098,62 +1098,71 @@ SpawnSystem_InitInfluencer
 
 int __cdecl
 SpawnSystem_AddSphereInfluencer
-          (eInfluencerType param_1,float *param_2,float param_3,float param_4,
-          eInfluencerScoreCurve param_5,int param_6,int param_7,int param_8,char *param_9)
+          (eInfluencerType type,float *origin,float radius,float score,
+          eInfluencerScoreCurve score_curve,int teamMask,int entNum,int timeout,char *description)
 
 {
   int iVar1;
-  SpawnInfluencer *pSVar2;
-  float local_20 [3];
-  int local_14;
-  float local_10 [3];
+  SpawnInfluencer *influencer_00;
+  SpawnInfluencer *influencer;
+  float forward [3];
+  int index;
+  float up [3];
   
-  local_14 = SpawnSystem_FindFreeInfluencer();
-  if (local_14 == -1) {
+  index = SpawnSystem_FindFreeInfluencer();
+  if (index == -1) {
     Com_Error(ERR_DROP,"No more free spawn influencers");
   }
-  iVar1 = local_14;
-  pSVar2 = g_spawnInfluencers + local_14;
-  local_10[0] = 0.0;
-  local_10[1] = 0.0;
-  local_10[2] = 1.0;
-  local_20[0] = 1.0;
-  local_20[1] = 0.0;
-  local_20[2] = 0.0;
+  iVar1 = index;
+  influencer_00 = g_spawnInfluencers + index;
+  up[0] = 0.0;
+  up[1] = 0.0;
+  up[2] = 1.0;
+  forward[0] = 1.0;
+  forward[1] = 0.0;
+  forward[2] = 0.0;
   SpawnSystem_InitInfluencer
-            (pSVar2,param_1,INFLUENCER_SHAPE_SPHERE,param_2,local_20,local_10,param_3,0.0,param_4,
-             param_5,param_6,param_7,param_8,param_9);
-  g_spawnInfluencers[iVar1].boundingRadius = param_3;
-  SpawnSystem_ComputeInfluencerBounds(pSVar2);
+            (influencer_00,type,INFLUENCER_SHAPE_SPHERE,origin,forward,up,radius,0.0,score,
+             score_curve,teamMask,entNum,timeout,description);
+  g_spawnInfluencers[iVar1].boundingRadius = radius;
+  SpawnSystem_ComputeInfluencerBounds(influencer_00);
   if (g_spawnSystemDebugMode == SS_DEBUG_OFF) {
-    SpawnSystem_InsertSortedInfluencer(pSVar2);
+    SpawnSystem_InsertSortedInfluencer(influencer_00);
   }
-  return local_14;
+  return index;
 }
 
 
 // 006875B0  SpawnSystem_AddCylinderInfluencer  (game_mp/g_spawnsystem_mp.cpp:1467)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
 int __cdecl
 SpawnSystem_AddCylinderInfluencer
-          (eInfluencerType param_1,float *param_2,float *param_3,float *param_4,float param_5,
-          float param_6,float param_7,eInfluencerScoreCurve param_8,int param_9,int param_10,
-          int param_11,char *param_12)
+          (eInfluencerType type,float *origin,float *forward,float *up,float radius,
+          float axis_length,float score,eInfluencerScoreCurve score_curve,int teamMask,int entNum,
+          int timeout,char *description)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  SpawnInfluencer *pSVar4;
+  SpawnInfluencer *influencer_00;
+  float half_cylinder_height;
+  SpawnInfluencer *influencer;
+  float bounding_sphere_radius;
+  int index;
   
   iVar3 = SpawnSystem_FindFreeInfluencer();
   if (iVar3 == -1) {
     Com_Error(ERR_DROP,"No more free spawn influencers");
   }
-  pSVar4 = g_spawnInfluencers + iVar3;
-  if (0x3ff < (uint)param_10) {
+  influencer_00 = g_spawnInfluencers + iVar3;
+  if (0x3ff < (uint)entNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x5c5,0,"entNum doesn\'t index MAX_GENTITIES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1162,7 +1171,7 @@ SpawnSystem_AddCylinderInfluencer
       return iVar3;
     }
   }
-  if (INFLUENCER_TYPE_UNUSED < param_1) {
+  if (INFLUENCER_TYPE_UNUSED < type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x5c6,0,"type doesn\'t index MAX_INFLUENCER_TYPE\n\t%i not in [0, %i)")
     ;
@@ -1172,7 +1181,7 @@ SpawnSystem_AddCylinderInfluencer
       return iVar3;
     }
   }
-  if (param_5 <= 0.0) {
+  if (radius <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x5c7,0,"%s");
     if (!bVar2) {
@@ -1182,13 +1191,13 @@ SpawnSystem_AddCylinderInfluencer
     }
   }
   SpawnSystem_InitInfluencer
-            (pSVar4,param_1,INFLUENCER_SHAPE_CYLINDER,param_2,param_3,param_4,param_5,param_6,
-             param_7,param_8,param_9,param_10,param_11,param_12);
-  g_spawnInfluencers[iVar3].boundingRadius = param_5 + param_6 * 0.5;
-  SpawnSystem_ComputeInfluencerBounds(pSVar4);
-  SpawnSystem_UpdateCylinderInfluencer(pSVar4);
+            (influencer_00,type,INFLUENCER_SHAPE_CYLINDER,origin,forward,up,radius,axis_length,score
+             ,score_curve,teamMask,entNum,timeout,description);
+  g_spawnInfluencers[iVar3].boundingRadius = radius + axis_length * 0.5;
+  SpawnSystem_ComputeInfluencerBounds(influencer_00);
+  SpawnSystem_UpdateCylinderInfluencer(influencer_00);
   if (g_spawnSystemDebugMode == SS_DEBUG_OFF) {
-    SpawnSystem_InsertSortedInfluencer(pSVar4);
+    SpawnSystem_InsertSortedInfluencer(influencer_00);
   }
   return iVar3;
 }
@@ -1196,14 +1205,14 @@ SpawnSystem_AddCylinderInfluencer
 
 // 00688260  SpawnSystem_RemoveInfluencer  (game_mp/g_spawnsystem_mp.cpp:1504)
 
-bool __cdecl SpawnSystem_RemoveInfluencer(int param_1)
+bool __cdecl SpawnSystem_RemoveInfluencer(int influencer_index)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((0x147 < (uint)param_1) &&
+  if ((0x147 < (uint)influencer_index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x5e1,0,
                                "influencer_index doesn\'t index MAX_INFLUENCERS\n\t%i not in [0, %i)"
@@ -1212,10 +1221,10 @@ bool __cdecl SpawnSystem_RemoveInfluencer(int param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = g_spawnInfluencers[param_1].used != false;
+  bVar2 = g_spawnInfluencers[influencer_index].used != false;
   if (bVar2) {
-    g_spawnInfluencers[param_1].used = false;
-    SpawnSystem_RemoveSortedInfluencer(g_spawnInfluencers + param_1);
+    g_spawnInfluencers[influencer_index].used = false;
+    SpawnSystem_RemoveSortedInfluencer(g_spawnInfluencers + influencer_index);
   }
   return bVar2;
 }
@@ -1223,14 +1232,14 @@ bool __cdecl SpawnSystem_RemoveInfluencer(int param_1)
 
 // 00688470  SpawnSystem_EnableInfluencer  (game_mp/g_spawnsystem_mp.cpp:1522)
 
-bool __cdecl SpawnSystem_EnableInfluencer(int param_1,bool param_2)
+bool __cdecl SpawnSystem_EnableInfluencer(int influencer_index,bool enabled)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((0x147 < (uint)param_1) &&
+  if ((0x147 < (uint)influencer_index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x5f3,0,
                                "influencer_index doesn\'t index MAX_INFLUENCERS\n\t%i not in [0, %i)"
@@ -1239,9 +1248,9 @@ bool __cdecl SpawnSystem_EnableInfluencer(int param_1,bool param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = g_spawnInfluencers[param_1].used != false;
+  bVar2 = g_spawnInfluencers[influencer_index].used != false;
   if (bVar2) {
-    *(bool *)(param_1 * 0x7c + 0x3f2c411) = param_2;
+    *(bool *)(influencer_index * 0x7c + 0x3f2c411) = enabled;
   }
   return bVar2;
 }
@@ -1249,14 +1258,14 @@ bool __cdecl SpawnSystem_EnableInfluencer(int param_1,bool param_2)
 
 // 006884D0  SpawnSystem_SetInfluencerTeamMask  (game_mp/g_spawnsystem_mp.cpp:1538)
 
-bool __cdecl SpawnSystem_SetInfluencerTeamMask(int param_1,int param_2)
+bool __cdecl SpawnSystem_SetInfluencerTeamMask(int influencer_index,int team_mask)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((0x147 < (uint)param_1) &&
+  if ((0x147 < (uint)influencer_index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x603,0,
                                "influencer_index doesn\'t index MAX_INFLUENCERS\n\t%i not in [0, %i)"
@@ -1265,9 +1274,9 @@ bool __cdecl SpawnSystem_SetInfluencerTeamMask(int param_1,int param_2)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = g_spawnInfluencers[param_1].used != false;
+  bVar2 = g_spawnInfluencers[influencer_index].used != false;
   if (bVar2) {
-    g_spawnInfluencers[param_1].teamMask = param_2;
+    g_spawnInfluencers[influencer_index].teamMask = team_mask;
   }
   return bVar2;
 }
@@ -1280,34 +1289,34 @@ bool __cdecl SpawnSystem_SetInfluencerTeamMask(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SpawnSystem_ClearEntityInfluencers(gentity_s *param_1)
+void __cdecl SpawnSystem_ClearEntityInfluencers(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   gentity_s *pgVar4;
-  int local_8;
+  int i;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x613,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((param_1->s).eType == 1) || ((param_1->s).eType == 0x11)) || ((param_1->s).eType == 0xe))
-      || (((param_1->s).eType == 6 || ((param_1->s).eType == 4)))) || ((param_1->s).eType == 0xc)) {
-    for (local_8 = 0; local_8 < 0x148; local_8 = local_8 + 1) {
-      if (((g_spawnInfluencers[local_8].used != false) &&
-          (iVar3 = EntHandle::isDefined(&g_spawnInfluencers[local_8].entity), iVar3 != 0)) &&
-         (pgVar4 = EntHandle::ent(&g_spawnInfluencers[local_8].entity), pgVar4 == param_1)) {
-        if (level.time < g_spawnInfluencers[local_8].expireTime) {
-          EntHandle::setEnt(&g_spawnInfluencers[local_8].entity,(gentity_s *)0x0);
+  if ((((((ent->s).eType == 1) || ((ent->s).eType == 0x11)) || ((ent->s).eType == 0xe)) ||
+      (((ent->s).eType == 6 || ((ent->s).eType == 4)))) || ((ent->s).eType == 0xc)) {
+    for (i = 0; i < 0x148; i = i + 1) {
+      if (((g_spawnInfluencers[i].used != false) &&
+          (iVar3 = EntHandle::isDefined(&g_spawnInfluencers[i].entity), iVar3 != 0)) &&
+         (pgVar4 = EntHandle::ent(&g_spawnInfluencers[i].entity), pgVar4 == ent)) {
+        if (level.time < g_spawnInfluencers[i].expireTime) {
+          EntHandle::setEnt(&g_spawnInfluencers[i].entity,(gentity_s *)0x0);
         }
         else {
-          g_spawnInfluencers[local_8].used = false;
-          SpawnSystem_RemoveSortedInfluencer(g_spawnInfluencers + local_8);
+          g_spawnInfluencers[i].used = false;
+          SpawnSystem_RemoveSortedInfluencer(g_spawnInfluencers + i);
         }
       }
     }
@@ -1326,14 +1335,13 @@ void __cdecl SpawnSystem_ClearEntityInfluencers(gentity_s *param_1)
 void __cdecl SpawnSystem_ClearTimedOutInfluencers(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x148; local_8 = local_8 + 1) {
-    if (((g_spawnInfluencers[local_8].used != false) &&
-        (g_spawnInfluencers[local_8].expireTime != 0)) &&
-       (g_spawnInfluencers[local_8].expireTime < level.time)) {
-      g_spawnInfluencers[local_8].used = false;
-      SpawnSystem_RemoveSortedInfluencer(g_spawnInfluencers + local_8);
+  for (i = 0; i < 0x148; i = i + 1) {
+    if (((g_spawnInfluencers[i].used != false) && (g_spawnInfluencers[i].expireTime != 0)) &&
+       (g_spawnInfluencers[i].expireTime < level.time)) {
+      g_spawnInfluencers[i].used = false;
+      SpawnSystem_RemoveSortedInfluencer(g_spawnInfluencers + i);
     }
   }
   return;
@@ -1342,36 +1350,41 @@ void __cdecl SpawnSystem_ClearTimedOutInfluencers(void)
 
 // 006887E0  SpawnSystem_UpdateInfluencerBounds  (game_mp/g_spawnsystem_mp.cpp:1620)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl SpawnSystem_UpdateInfluencerBounds(void)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_sortedSpawnInfluencerCount <= local_8) {
+    if (g_sortedSpawnInfluencerCount <= i) {
       return;
     }
-    if ((g_sortedSpawnInfluencers[local_8] == (SpawnInfluencer *)0x0) &&
+    if ((g_sortedSpawnInfluencers[i] == (SpawnInfluencer *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x659,0,"%s"), !bVar2)) break;
-    if ((g_sortedSpawnInfluencers[local_8]->used == false) &&
+    if ((g_sortedSpawnInfluencers[i]->used == false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x65a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((g_sortedSpawnInfluencers[local_8]->active != false) &&
-        (iVar3 = EntHandle::isDefined(&g_sortedSpawnInfluencers[local_8]->entity), iVar3 != 0)) &&
-       (SpawnSystem_ComputeInfluencerBounds(g_sortedSpawnInfluencers[local_8]),
-       g_sortedSpawnInfluencers[local_8]->preset->shape == INFLUENCER_SHAPE_CYLINDER)) {
-      SpawnSystem_UpdateCylinderInfluencer(g_sortedSpawnInfluencers[local_8]);
+    if (((g_sortedSpawnInfluencers[i]->active != false) &&
+        (iVar3 = EntHandle::isDefined(&g_sortedSpawnInfluencers[i]->entity), iVar3 != 0)) &&
+       (SpawnSystem_ComputeInfluencerBounds(g_sortedSpawnInfluencers[i]),
+       g_sortedSpawnInfluencers[i]->preset->shape == INFLUENCER_SHAPE_CYLINDER)) {
+      SpawnSystem_UpdateCylinderInfluencer(g_sortedSpawnInfluencers[i]);
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -1394,33 +1407,34 @@ void __cdecl SpawnSystem_UpdateInfluencerOriginAngles(void)
   bool bVar3;
   int iVar4;
   gentity_s *pgVar5;
-  int local_8;
+  gentity_s *ent;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_sortedSpawnInfluencerCount <= local_8) {
+    if (g_sortedSpawnInfluencerCount <= i) {
       return;
     }
-    if ((g_sortedSpawnInfluencers[local_8] == (SpawnInfluencer *)0x0) &&
+    if ((g_sortedSpawnInfluencers[i] == (SpawnInfluencer *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x675,0,"%s"), !bVar3)) break;
-    if ((g_sortedSpawnInfluencers[local_8]->used == false) &&
+    if ((g_sortedSpawnInfluencers[i]->used == false) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                  0x676,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (((g_sortedSpawnInfluencers[local_8]->active != false) &&
-        (iVar4 = EntHandle::isDefined(&g_sortedSpawnInfluencers[local_8]->entity), iVar4 != 0)) &&
-       ((pgVar5 = EntHandle::ent(&g_sortedSpawnInfluencers[local_8]->entity),
+    if (((g_sortedSpawnInfluencers[i]->active != false) &&
+        (iVar4 = EntHandle::isDefined(&g_sortedSpawnInfluencers[i]->entity), iVar4 != 0)) &&
+       ((pgVar5 = EntHandle::ent(&g_sortedSpawnInfluencers[i]->entity),
         pgVar5->client == (gclient_s *)0x0 ||
         (((pgVar5->client->ps).pm_type != 2 && ((pgVar5->client->ps).pm_type != 3)))))) {
-      pSVar1 = g_sortedSpawnInfluencers[local_8];
+      pSVar1 = g_sortedSpawnInfluencers[i];
       pSVar1->origin[0] = (pgVar5->r).currentOrigin[0];
       pSVar1->origin[1] = (pgVar5->r).currentOrigin[1];
       pSVar1->origin[2] = (pgVar5->r).currentOrigin[2];
-      if (g_sortedSpawnInfluencers[local_8]->preset->type == INFLUENCER_TYPE_WEAPON) {
+      if (g_sortedSpawnInfluencers[i]->preset->type == INFLUENCER_TYPE_WEAPON) {
         if ((pgVar5->client == (gclient_s *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
                                      ,0x68b,0,"%s"), !bVar3)) {
@@ -1428,14 +1442,14 @@ void __cdecl SpawnSystem_UpdateInfluencerOriginAngles(void)
           (*pcVar2)();
           return;
         }
-        g_sortedSpawnInfluencers[local_8]->origin[2] =
-             g_sortedSpawnInfluencers[local_8]->origin[2] + (pgVar5->client->ps).viewHeightCurrent;
+        g_sortedSpawnInfluencers[i]->origin[2] =
+             g_sortedSpawnInfluencers[i]->origin[2] + (pgVar5->client->ps).viewHeightCurrent;
       }
-      if (g_sortedSpawnInfluencers[local_8]->preset->shape == INFLUENCER_SHAPE_CYLINDER) {
-        SpawnSystem_UpdateCylinderInfluencer(g_sortedSpawnInfluencers[local_8]);
+      if (g_sortedSpawnInfluencers[i]->preset->shape == INFLUENCER_SHAPE_CYLINDER) {
+        SpawnSystem_UpdateCylinderInfluencer(g_sortedSpawnInfluencers[i]);
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   pcVar2 = (code *)swi(3);
   (*pcVar2)();
@@ -1446,6 +1460,10 @@ void __cdecl SpawnSystem_UpdateInfluencerOriginAngles(void)
 // 00688720  SpawnSystem_Update  (game_mp/g_spawnsystem_mp.cpp:1739)
 
 /* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl SpawnSystem_Update(void)
 
@@ -1464,51 +1482,57 @@ void __cdecl SpawnSystem_Update(void)
 // 00688AE0  SpawnSystem_InfluenceWeight  (game_mp/g_spawnsystem_mp.cpp:1781)
 
 float __cdecl
-SpawnSystem_InfluenceWeight(eInfluencerScoreCurve param_1,float param_2,float param_3,float param_4)
+SpawnSystem_InfluenceWeight
+          (eInfluencerScoreCurve curve_type,float influencer_radius_sq,float distance_sq,float score
+          )
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
+  float one_over_influencer_radius_sq;
+  float dist_over_radius;
   
-  if ((param_2 <= 0.001) &&
+  if ((influencer_radius_sq <= 0.001) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x6f6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  fVar4 = SQRT(param_3 * (1.0 / param_2));
-  switch(param_1) {
+  fVar4 = SQRT(distance_sq * (1.0 / influencer_radius_sq));
+  switch(curve_type) {
   case INFLUENCER_SC_LINEAR:
-    param_4 = (1.0 - fVar4) * param_4;
+    score = (1.0 - fVar4) * score;
     break;
   case INFLUENCER_SC_STEEP:
-    param_4 = (1.0 - fVar4) * (1.0 - fVar4) * param_4;
+    score = (1.0 - fVar4) * (1.0 - fVar4) * score;
     break;
   case INFLUENCER_SC_INVERSE_LINEAR:
-    param_4 = param_4 * fVar4;
+    score = score * fVar4;
     break;
   case INFLUENCER_SC_NEGATIVE_TO_POSITIVE:
-    param_4 = (fVar4 * 2.0 - 1.0) * param_4;
+    score = (fVar4 * 2.0 - 1.0) * score;
   }
-  return param_4;
+  return score;
 }
 
 
 // 00688BB0  SpawnSystem_ComputeSphereInfluence  (game_mp/g_spawnsystem_mp.cpp:1830)
 
-float __cdecl SpawnSystem_ComputeSphereInfluence(SpawnInfluencer *param_1,SpawnPoint *param_2)
+float __cdecl SpawnSystem_ComputeSphereInfluence(SpawnInfluencer *influencer,SpawnPoint *point)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  float fVar5;
+  float distance_sq;
+  float influencer_radius_sq;
+  float distanceSq;
   
-  if (param_1 == (SpawnInfluencer *)0x0) {
+  if (influencer == (SpawnInfluencer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x727,0,"%s");
     if (!bVar2) {
@@ -1517,7 +1541,7 @@ float __cdecl SpawnSystem_ComputeSphereInfluence(SpawnInfluencer *param_1,SpawnP
       return (float)fVar3;
     }
   }
-  if (param_2 == (SpawnPoint *)0x0) {
+  if (point == (SpawnPoint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x728,0,"%s");
     if (!bVar2) {
@@ -1526,14 +1550,14 @@ float __cdecl SpawnSystem_ComputeSphereInfluence(SpawnInfluencer *param_1,SpawnP
       return (float)fVar3;
     }
   }
-  fVar5 = Vec3DistanceSq(param_1->origin,param_2->origin);
-  fVar4 = param_1->preset->radius * param_1->preset->radius;
-  if (fVar4 <= fVar5) {
+  distance_sq = Vec3DistanceSq(influencer->origin,point->origin);
+  fVar4 = influencer->preset->radius * influencer->preset->radius;
+  if (fVar4 <= distance_sq) {
     fVar4 = 0.0;
   }
   else {
     fVar4 = SpawnSystem_InfluenceWeight
-                      (param_1->preset->score_curve,fVar4,fVar5,param_1->preset->score);
+                      (influencer->preset->score_curve,fVar4,distance_sq,influencer->preset->score);
   }
   return fVar4;
 }
@@ -1541,7 +1565,7 @@ float __cdecl SpawnSystem_ComputeSphereInfluence(SpawnInfluencer *param_1,SpawnP
 
 // 00688C80  SpawnSystem_ComputeCylinderInfluence  (game_mp/g_spawnsystem_mp.cpp:1852)
 
-float __cdecl SpawnSystem_ComputeCylinderInfluence(SpawnInfluencer *param_1,SpawnPoint *param_2)
+float __cdecl SpawnSystem_ComputeCylinderInfluence(SpawnInfluencer *influencer,SpawnPoint *point)
 
 {
   code *pcVar1;
@@ -1550,38 +1574,43 @@ float __cdecl SpawnSystem_ComputeCylinderInfluence(SpawnInfluencer *param_1,Spaw
   float fVar4;
   float fVar5;
   float fVar6;
-  float local_18;
+  float dsquared;
+  float cylinder_radius_squared;
+  float rsquared;
+  float half_cylinder_height;
+  float udir;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float distanceSq;
+  float midpoint_axial_distance;
   
-  if ((param_1 == (SpawnInfluencer *)0x0) &&
+  if ((influencer == (SpawnInfluencer *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x73d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_2 == (SpawnPoint *)0x0) &&
+  if ((point == (SpawnPoint *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x73e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  local_c = Vec3DistanceSq(param_1->origin,param_2->origin);
-  fVar4 = param_2->origin[0] - param_1->midPoint[0];
-  fVar5 = param_2->origin[1] - param_1->midPoint[1];
-  fVar6 = param_2->origin[2] - param_1->midPoint[2];
-  Vec3NormalizeTo(param_1->up,&local_18);
-  local_8 = ABS(fVar4 * local_18 + fVar5 * local_14 + fVar6 * local_10);
-  if (local_8 < param_1->length * 0.5) {
-    fVar5 = (fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6) - local_8 * local_8;
-    fVar4 = param_1->preset->radius * param_1->preset->radius;
+  distanceSq = Vec3DistanceSq(influencer->origin,point->origin);
+  fVar4 = point->origin[0] - influencer->midPoint[0];
+  fVar5 = point->origin[1] - influencer->midPoint[1];
+  fVar6 = point->origin[2] - influencer->midPoint[2];
+  Vec3NormalizeTo(influencer->up,&udir);
+  midpoint_axial_distance = ABS(fVar4 * udir + fVar5 * local_14 + fVar6 * local_10);
+  if (midpoint_axial_distance < influencer->length * 0.5) {
+    fVar5 = (fVar4 * fVar4 + fVar5 * fVar5 + fVar6 * fVar6) -
+            midpoint_axial_distance * midpoint_axial_distance;
+    fVar4 = influencer->preset->radius * influencer->preset->radius;
     if (fVar5 < fVar4) {
       fVar4 = SpawnSystem_InfluenceWeight
-                        (param_1->preset->score_curve,fVar4,fVar5,param_1->preset->score);
+                        (influencer->preset->score_curve,fVar4,fVar5,influencer->preset->score);
       return fVar4;
     }
   }
@@ -1598,131 +1627,135 @@ float __cdecl SpawnSystem_ComputeCylinderInfluence(SpawnInfluencer *param_1,Spaw
 
 void __cdecl
 SpawnSystem_ComputePointWeight
-          (gentity_s *param_1,int param_2,int param_3,SpawnPoint *param_4,bool param_5)
+          (gentity_s *player,int point_team,int influencer_team,SpawnPoint *point,
+          bool bIsArchiveCall)
 
 {
-  SpawnInfluencer *pSVar1;
-  eInfluencerShape eVar2;
-  eInfluencerType eVar3;
-  code *pcVar4;
-  int iVar5;
-  bool bVar6;
-  int iVar7;
-  gentity_s *pgVar8;
-  int local_44;
-  int local_40;
-  float local_34;
-  float local_30 [8];
-  int local_10;
-  uint local_c;
-  float local_8;
+  SpawnInfluencer *influencer_00;
+  eInfluencerShape eVar1;
+  eInfluencerType eVar2;
+  code *pcVar3;
+  int iVar4;
+  bool bVar5;
+  int iVar6;
+  gentity_s *pgVar7;
+  int influencer_type;
+  int index;
+  int sortedCount;
+  SpawnInfluencer *influencer;
+  float friendly_player_influencer_score;
+  float influencer_scores [8];
+  int axis;
+  int teamMask;
+  float influencer_score;
   
-  if ((2 < (uint)param_2) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
+  if ((2 < (uint)point_team) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x763,0,
                                "point_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)")
-     , !bVar6)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+     , !bVar5)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((2 < (uint)param_3) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
+  if ((2 < (uint)influencer_team) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x764,0,
                                "influencer_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)"
-                              ), !bVar6)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+                              ), !bVar5)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((param_4 == (SpawnPoint *)0x0) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
-                               0x765,0,"%s"), !bVar6)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if ((point == (SpawnPoint *)0x0) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
+                               0x765,0,"%s"), !bVar5)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  iVar5 = g_sortedSpawnInfluencerCount;
-  local_10 = g_sortAxis;
-  local_c = 1 << ((byte)param_3 & 0x1f);
-  local_30[0] = 0.0;
-  local_30[1] = 0.0;
-  local_30[2] = 0.0;
-  local_30[3] = 0.0;
-  local_30[4] = 0.0;
-  local_30[5] = 0.0;
-  local_30[6] = 0.0;
-  local_30[7] = 0.0;
-  local_8 = 0.0;
-  local_34 = 0.0;
-  for (local_40 = 0; local_40 < iVar5; local_40 = local_40 + 1) {
-    if ((g_sortedSpawnInfluencers[local_40] == (SpawnInfluencer *)0x0) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
-                                 0x774,0,"%s"), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+  iVar4 = g_sortedSpawnInfluencerCount;
+  axis = g_sortAxis;
+  teamMask = 1 << ((byte)influencer_team & 0x1f);
+  influencer_scores[0] = 0.0;
+  influencer_scores[1] = 0.0;
+  influencer_scores[2] = 0.0;
+  influencer_scores[3] = 0.0;
+  influencer_scores[4] = 0.0;
+  influencer_scores[5] = 0.0;
+  influencer_scores[6] = 0.0;
+  influencer_scores[7] = 0.0;
+  influencer_score = 0.0;
+  friendly_player_influencer_score = 0.0;
+  for (index = 0; index < iVar4; index = index + 1) {
+    if ((g_sortedSpawnInfluencers[index] == (SpawnInfluencer *)0x0) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
+                                 0x774,0,"%s"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    pSVar1 = g_sortedSpawnInfluencers[local_40];
-    if ((((pSVar1->active != false) && ((local_c & pSVar1->teamMask) != 0)) &&
-        (pSVar1->disableTime < level.time)) &&
-       (param_4->origin[local_10] < pSVar1->bounds[1] ||
-        param_4->origin[local_10] == pSVar1->bounds[1])) {
-      if (param_4->origin[local_10] <= pSVar1->bounds[0] &&
-          pSVar1->bounds[0] != param_4->origin[local_10]) break;
-      if (((param_1 == (gentity_s *)0x0) || (pSVar1->preset->type != INFLUENCER_TYPE_PLAYER)) ||
-         ((iVar7 = EntHandle::isDefined(&pSVar1->entity), iVar7 == 0 ||
-          (pgVar8 = EntHandle::ent(&pSVar1->entity), pgVar8 != param_1)))) {
-        local_8 = 0.0;
-        if ((INFLUENCER_TYPE_UNUSED < pSVar1->preset->type) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
+    influencer_00 = g_sortedSpawnInfluencers[index];
+    if ((((influencer_00->active != false) && ((teamMask & influencer_00->teamMask) != 0)) &&
+        (influencer_00->disableTime < level.time)) &&
+       (point->origin[axis] < influencer_00->bounds[1] ||
+        point->origin[axis] == influencer_00->bounds[1])) {
+      if (point->origin[axis] <= influencer_00->bounds[0] &&
+          influencer_00->bounds[0] != point->origin[axis]) break;
+      if (((player == (gentity_s *)0x0) || (influencer_00->preset->type != INFLUENCER_TYPE_PLAYER))
+         || ((iVar6 = EntHandle::isDefined(&influencer_00->entity), iVar6 == 0 ||
+             (pgVar7 = EntHandle::ent(&influencer_00->entity), pgVar7 != player)))) {
+        influencer_score = 0.0;
+        if ((INFLUENCER_TYPE_UNUSED < influencer_00->preset->type) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
                                      ,0x7a9,0,
                                      "influencer->preset->type doesn\'t index MAX_INFLUENCER_TYPE\n\t%i not in [0, %i)"
-                                    ), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+                                    ), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        eVar2 = pSVar1->preset->shape;
-        if (eVar2 == INFLUENCER_SHAPE_SPHERE) {
-          local_8 = SpawnSystem_ComputeSphereInfluence(pSVar1,param_4);
+        eVar1 = influencer_00->preset->shape;
+        if (eVar1 == INFLUENCER_SHAPE_SPHERE) {
+          influencer_score = SpawnSystem_ComputeSphereInfluence(influencer_00,point);
         }
-        else if (eVar2 == INFLUENCER_SHAPE_CYLINDER) {
-          local_8 = SpawnSystem_ComputeCylinderInfluence(pSVar1,param_4);
+        else if (eVar1 == INFLUENCER_SHAPE_CYLINDER) {
+          influencer_score = SpawnSystem_ComputeCylinderInfluence(influencer_00,point);
         }
-        else if ((eVar2 != INFLUENCER_SHAPE_BOX) &&
-                (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
-                                          ,0x7b6,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        else if ((eVar1 != INFLUENCER_SHAPE_BOX) &&
+                (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp"
+                                          ,0x7b6,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        eVar3 = pSVar1->preset->type;
-        if (eVar3 == INFLUENCER_TYPE_PLAYER) {
+        eVar2 = influencer_00->preset->type;
+        if (eVar2 == INFLUENCER_TYPE_PLAYER) {
           if (((spawnsystem_friend_influencer_stacking->current).enabled != false) ||
-             (local_8 <= 0.0)) goto LAB_0068917f;
-          if (local_34 < local_8) {
-            local_34 = local_8;
+             (influencer_score <= 0.0)) goto LAB_0068917f;
+          if (friendly_player_influencer_score < influencer_score) {
+            friendly_player_influencer_score = influencer_score;
           }
         }
-        else if (eVar3 == INFLUENCER_TYPE_GAME_MODE) {
-          if ((local_8 != 0.0) && (ABS(local_30[6]) < ABS(local_8))) {
-            local_30[6] = local_8;
+        else if (eVar2 == INFLUENCER_TYPE_GAME_MODE) {
+          if ((influencer_score != 0.0) && (ABS(influencer_scores[6]) < ABS(influencer_score))) {
+            influencer_scores[6] = influencer_score;
           }
         }
         else {
 LAB_0068917f:
-          local_30[pSVar1->preset->type] = local_30[pSVar1->preset->type] + local_8;
+          influencer_scores[influencer_00->preset->type] =
+               influencer_scores[influencer_00->preset->type] + influencer_score;
         }
       }
     }
   }
-  if (!param_5) {
-    param_4->weight[param_2] = param_4->baseWeight[param_2];
-    for (local_44 = 0; local_44 < 8; local_44 = local_44 + 1) {
-      param_4->weight[param_2] = param_4->weight[param_2] + local_30[local_44];
+  if (!bIsArchiveCall) {
+    point->weight[point_team] = point->baseWeight[point_team];
+    for (influencer_type = 0; influencer_type < 8; influencer_type = influencer_type + 1) {
+      point->weight[point_team] = point->weight[point_team] + influencer_scores[influencer_type];
     }
-    param_4->weight[param_2] = param_4->weight[param_2] + local_34;
+    point->weight[point_team] = point->weight[point_team] + friendly_player_influencer_score;
   }
   return;
 }
@@ -1732,29 +1765,28 @@ LAB_0068917f:
 
 void __cdecl
 std::_Push_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,int param_2,int param_3,SpawnPoint param_4,
-          compare_spawnpoint_sort param_5)
+          (SpawnPoint *_First,int _Hole,int _Top,SpawnPoint _Val,compare_spawnpoint_sort _Pred)
 
 {
   int iVar1;
   SpawnPoint *pSVar2;
   SpawnPoint *pSVar3;
-  int local_8;
+  int _Idx;
   
-  while ((local_8 = (param_2 + -1) / 2, param_3 < param_2 &&
-         (param_1[local_8].origin[g_sortAxis] <= param_4.origin[g_sortAxis] &&
-          param_4.origin[g_sortAxis] != param_1[local_8].origin[g_sortAxis]))) {
-    pSVar2 = param_1 + local_8;
-    pSVar3 = param_1 + param_2;
+  while ((_Idx = (_Hole + -1) / 2, _Top < _Hole &&
+         (_First[_Idx].origin[g_sortAxis] <= _Val.origin[g_sortAxis] &&
+          _Val.origin[g_sortAxis] != _First[_Idx].origin[g_sortAxis]))) {
+    pSVar2 = _First + _Idx;
+    pSVar3 = _First + _Hole;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       pSVar3->origin[0] = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
       pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
     }
-    param_2 = local_8;
+    _Hole = _Idx;
   }
-  pSVar2 = &param_4;
-  pSVar3 = param_1 + param_2;
+  pSVar2 = &_Val;
+  pSVar3 = _First + _Hole;
   for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
     pSVar3->origin[0] = pSVar2->origin[0];
     pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
@@ -1768,19 +1800,19 @@ std::_Push_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
 
 void __cdecl
 std::_Push_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,int param_2,int param_3,SpawnInfluencer *param_4,
-          compare_spawninfluencer_sort param_5)
+          (SpawnInfluencer **_First,int _Hole,int _Top,SpawnInfluencer *_Val,
+          compare_spawninfluencer_sort _Pred)
 
 {
-  int local_8;
+  int _Idx;
   
-  while ((local_8 = (param_2 + -1) / 2, param_3 < param_2 &&
-         (param_1[local_8]->bounds[0] <= param_4->bounds[0] &&
-          param_4->bounds[0] != param_1[local_8]->bounds[0]))) {
-    param_1[param_2] = param_1[local_8];
-    param_2 = local_8;
+  while ((_Idx = (_Hole + -1) / 2, _Top < _Hole &&
+         (_First[_Idx]->bounds[0] <= _Val->bounds[0] && _Val->bounds[0] != _First[_Idx]->bounds[0]))
+        ) {
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  param_1[param_2] = param_4;
+  _First[_Hole] = _Val;
   return;
 }
 
@@ -1789,21 +1821,21 @@ std::_Push_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluence
 
 void __cdecl
 std::_Push_heap<int_*,int,int,compare_spawnpoint_score_sort>
-          (int *param_1,int param_2,int param_3,int param_4,compare_spawnpoint_score_sort param_5)
+          (int *_First,int _Hole,int _Top,int _Val,compare_spawnpoint_score_sort _Pred)
 
 {
   float *pfVar1;
   float fVar2;
-  int local_8;
+  int _Idx;
   
-  while ((local_8 = (param_2 + -1) / 2, param_3 < param_2 &&
-         (fVar2 = *(float *)(param_1[local_8] * 0x34 + 0x3f29b74 + param_5.m_team * 4),
-         pfVar1 = (float *)(param_4 * 0x34 + 0x3f29b74 + param_5.m_team * 4),
+  while ((_Idx = (_Hole + -1) / 2, _Top < _Hole &&
+         (fVar2 = *(float *)(_First[_Idx] * 0x34 + 0x3f29b74 + _Pred.m_team * 4),
+         pfVar1 = (float *)(_Val * 0x34 + 0x3f29b74 + _Pred.m_team * 4),
          *pfVar1 <= fVar2 && fVar2 != *pfVar1))) {
-    param_1[param_2] = param_1[local_8];
-    param_2 = local_8;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  param_1[param_2] = param_4;
+  _First[_Hole] = _Val;
   return;
 }
 
@@ -1816,16 +1848,19 @@ std::_Push_heap<int_*,int,int,compare_spawnpoint_score_sort>
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
-void __cdecl SpawnSystem_ComputePointWeights(gentity_s *param_1,int param_2,int param_3)
+void __cdecl SpawnSystem_ComputePointWeights(gentity_s *player,int point_team,int influencer_team)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   SpawnPoint *pSVar4;
-  int local_14;
+  int index;
+  SpawnPoint *spList;
+  int spCount;
+  int pointTeamMask;
   
-  if ((2 < (uint)param_2) &&
+  if ((2 < (uint)point_team) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x807,0,
                                "point_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)")
@@ -1834,7 +1869,7 @@ void __cdecl SpawnSystem_ComputePointWeights(gentity_s *param_1,int param_2,int 
     (*pcVar1)();
     return;
   }
-  if ((2 < (uint)param_3) &&
+  if ((2 < (uint)influencer_team) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                                0x808,0,
                                "influencer_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)"
@@ -1843,17 +1878,17 @@ void __cdecl SpawnSystem_ComputePointWeights(gentity_s *param_1,int param_2,int 
     (*pcVar1)();
     return;
   }
-  g_sortedTeamSpawnPoints[param_2].count = 0;
+  g_sortedTeamSpawnPoints[point_team].count = 0;
   iVar3 = SpawnSystem_GetSpawnPointCount();
   pSVar4 = SpawnSystem_GetSpawnPoints();
-  for (local_14 = 0; local_14 < iVar3; local_14 = local_14 + 1) {
-    if ((pSVar4[local_14].teamMask & 1 << ((byte)param_2 & 0x1f)) != 0) {
+  for (index = 0; index < iVar3; index = index + 1) {
+    if ((pSVar4[index].teamMask & 1 << ((byte)point_team & 0x1f)) != 0) {
       if (g_spawnSystemDebugMode != SS_DEBUG_ARCHIVE_VIEW) {
-        SpawnSystem_ComputePointWeight(param_1,param_2,param_3,pSVar4 + local_14,false);
+        SpawnSystem_ComputePointWeight(player,point_team,influencer_team,pSVar4 + index,false);
       }
-      g_sortedTeamSpawnPoints[param_2].spawnPointsByIndex[g_sortedTeamSpawnPoints[param_2].count] =
-           local_14;
-      g_sortedTeamSpawnPoints[param_2].count = g_sortedTeamSpawnPoints[param_2].count + 1;
+      g_sortedTeamSpawnPoints[point_team].spawnPointsByIndex
+      [g_sortedTeamSpawnPoints[point_team].count] = index;
+      g_sortedTeamSpawnPoints[point_team].count = g_sortedTeamSpawnPoints[point_team].count + 1;
     }
   }
   return;
@@ -1862,13 +1897,13 @@ void __cdecl SpawnSystem_ComputePointWeights(gentity_s *param_1,int param_2,int 
 
 // 00689390  SpawnSystem_SortPointsByScore  (game_mp/g_spawnsystem_mp.cpp:2091)
 
-void __cdecl SpawnSystem_SortPointsByScore(int param_1)
+void __cdecl SpawnSystem_SortPointsByScore(int team)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (2 < (uint)param_1) {
+  if (2 < (uint)team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x82c,0,"team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)")
     ;
@@ -1878,7 +1913,7 @@ void __cdecl SpawnSystem_SortPointsByScore(int param_1)
       return;
     }
   }
-  SpawnSystem_SortPointsForTeamByScore(param_1);
+  SpawnSystem_SortPointsForTeamByScore(team);
   return;
 }
 
@@ -1890,14 +1925,14 @@ void __cdecl SpawnSystem_SortPointsByScore(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SpawnSystem_UpdateSpawnPointsForTeam(int param_1,int param_2)
+int __cdecl SpawnSystem_UpdateSpawnPointsForTeam(int point_team,int influencer_team)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (2 < (uint)param_1) {
+  if (2 < (uint)point_team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x83a,0,
                              "point_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)");
@@ -1907,7 +1942,7 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForTeam(int param_1,int param_2)
       return iVar3;
     }
   }
-  if (2 < (uint)param_2) {
+  if (2 < (uint)influencer_team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x83b,0,
                              "influencer_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)"
@@ -1918,14 +1953,14 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForTeam(int param_1,int param_2)
       return iVar3;
     }
   }
-  if (g_lastPointPlayer[param_1] != 0x3ff) {
-    g_sortedTeamSpawnPoints[param_1].sortTime = 0;
-    g_lastPointComputeTime[param_1] = 0;
+  if (g_lastPointPlayer[point_team] != 0x3ff) {
+    g_sortedTeamSpawnPoints[point_team].sortTime = 0;
+    g_lastPointComputeTime[point_team] = 0;
   }
-  SpawnSystem_ComputePointWeights((gentity_s *)0x0,param_1,param_2);
-  SpawnSystem_SortPointsByScore(param_1);
-  g_lastPointPlayer[param_1] = 0x3ff;
-  return g_sortedTeamSpawnPoints[param_1].count;
+  SpawnSystem_ComputePointWeights((gentity_s *)0x0,point_team,influencer_team);
+  SpawnSystem_SortPointsByScore(point_team);
+  g_lastPointPlayer[point_team] = 0x3ff;
+  return g_sortedTeamSpawnPoints[point_team].count;
 }
 
 
@@ -1933,57 +1968,57 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForTeam(int param_1,int param_2)
 
 void __cdecl
 std::_Adjust_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,int param_2,int param_3,SpawnPoint param_4,
-          compare_spawnpoint_sort param_5)
+          (SpawnPoint *_First,int _Hole,int _Bottom,SpawnPoint _Val,compare_spawnpoint_sort _Pred)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
+  int _Top_00;
+  uint uVar1;
+  int iVar2;
+  SpawnPoint *pSVar3;
   SpawnPoint *pSVar4;
-  SpawnPoint *pSVar5;
-  float *pfVar6;
+  float *pfVar5;
   SpawnPoint in_stack_ffffffa4;
-  int local_c;
+  int _Idx;
+  int _Top;
   
-  iVar1 = param_2;
+  _Top_00 = _Hole;
   while( true ) {
-    iVar3 = param_2 * 2;
-    local_c = iVar3 + 2;
-    if (param_3 <= local_c) break;
-    if (param_1[local_c].origin[g_sortAxis] <= param_1[iVar3 + 1].origin[g_sortAxis] &&
-        param_1[iVar3 + 1].origin[g_sortAxis] != param_1[local_c].origin[g_sortAxis]) {
-      local_c = iVar3 + 1;
+    iVar2 = _Hole * 2;
+    _Idx = iVar2 + 2;
+    if (_Bottom <= _Idx) break;
+    if (_First[_Idx].origin[g_sortAxis] <= _First[iVar2 + 1].origin[g_sortAxis] &&
+        _First[iVar2 + 1].origin[g_sortAxis] != _First[_Idx].origin[g_sortAxis]) {
+      _Idx = iVar2 + 1;
     }
-    pSVar4 = param_1 + local_c;
-    pSVar5 = param_1 + param_2;
-    for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-      pSVar5->origin[0] = pSVar4->origin[0];
+    pSVar3 = _First + _Idx;
+    pSVar4 = _First + _Hole;
+    for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
+      pSVar4->origin[0] = pSVar3->origin[0];
+      pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
       pSVar4 = (SpawnPoint *)(pSVar4->origin + 1);
-      pSVar5 = (SpawnPoint *)(pSVar5->origin + 1);
     }
-    param_2 = local_c;
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    pSVar4 = param_1 + param_3 + -1;
-    pSVar5 = param_1 + param_2;
-    for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-      pSVar5->origin[0] = pSVar4->origin[0];
+  if (_Idx == _Bottom) {
+    pSVar3 = _First + _Bottom + -1;
+    pSVar4 = _First + _Hole;
+    for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
+      pSVar4->origin[0] = pSVar3->origin[0];
+      pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
       pSVar4 = (SpawnPoint *)(pSVar4->origin + 1);
-      pSVar5 = (SpawnPoint *)(pSVar5->origin + 1);
     }
-    param_2 = param_3 + -1;
+    _Hole = _Bottom + -1;
   }
-  uVar2 = (uint)(byte)param_5;
-  pSVar4 = &param_4;
-  pfVar6 = (float *)&stack0xffffffa4;
-  for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *pfVar6 = pSVar4->origin[0];
-    pSVar4 = (SpawnPoint *)(pSVar4->origin + 1);
-    pfVar6 = pfVar6 + 1;
+  uVar1 = (uint)(byte)_Pred;
+  pSVar3 = &_Val;
+  pfVar5 = (float *)&stack0xffffffa4;
+  for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
+    *pfVar5 = pSVar3->origin[0];
+    pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
+    pfVar5 = pfVar5 + 1;
   }
   _Push_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
-            (param_1,param_2,iVar1,in_stack_ffffffa4,SUB41(uVar2,0));
+            (_First,_Hole,_Top_00,in_stack_ffffffa4,SUB41(uVar1,0));
   return;
 }
 
@@ -1992,32 +2027,33 @@ std::_Adjust_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
 
 void __cdecl
 std::_Adjust_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,int param_2,int param_3,SpawnInfluencer *param_4,
-          compare_spawninfluencer_sort param_5)
+          (SpawnInfluencer **_First,int _Hole,int _Bottom,SpawnInfluencer *_Val,
+          compare_spawninfluencer_sort _Pred)
 
 {
   int iVar1;
-  int iVar2;
-  int local_c;
+  int _Top_00;
+  int _Idx;
+  int _Top;
   
-  iVar2 = param_2;
+  _Top_00 = _Hole;
   while( true ) {
-    iVar1 = param_2 * 2;
-    local_c = iVar1 + 2;
-    if (param_3 <= local_c) break;
-    if (param_1[local_c]->bounds[0] <= param_1[iVar1 + 1]->bounds[0] &&
-        param_1[iVar1 + 1]->bounds[0] != param_1[local_c]->bounds[0]) {
-      local_c = iVar1 + 1;
+    iVar1 = _Hole * 2;
+    _Idx = iVar1 + 2;
+    if (_Bottom <= _Idx) break;
+    if (_First[_Idx]->bounds[0] <= _First[iVar1 + 1]->bounds[0] &&
+        _First[iVar1 + 1]->bounds[0] != _First[_Idx]->bounds[0]) {
+      _Idx = iVar1 + 1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx == _Bottom) {
+    _First[_Hole] = _First[_Bottom + -1];
+    _Hole = _Bottom + -1;
   }
   _Push_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>
-            (param_1,param_2,iVar2,param_4,param_5);
+            (_First,_Hole,_Top_00,_Val,_Pred);
   return;
 }
 
@@ -2026,33 +2062,34 @@ std::_Adjust_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluen
 
 void __cdecl
 std::_Adjust_heap<int_*,int,int,compare_spawnpoint_score_sort>
-          (int *param_1,int param_2,int param_3,int param_4,compare_spawnpoint_score_sort param_5)
+          (int *_First,int _Hole,int _Bottom,int _Val,compare_spawnpoint_score_sort _Pred)
 
 {
   float *pfVar1;
   float fVar2;
   int iVar3;
-  int iVar4;
-  int local_c;
+  int _Top_00;
+  int _Idx;
+  int _Top;
   
-  iVar4 = param_2;
+  _Top_00 = _Hole;
   while( true ) {
-    iVar3 = param_2 * 2;
-    local_c = iVar3 + 2;
-    if (param_3 <= local_c) break;
-    fVar2 = *(float *)(param_1[local_c] * 0x34 + 0x3f29b74 + param_5.m_team * 4);
-    pfVar1 = (float *)(param_1[iVar3 + 1] * 0x34 + 0x3f29b74 + param_5.m_team * 4);
+    iVar3 = _Hole * 2;
+    _Idx = iVar3 + 2;
+    if (_Bottom <= _Idx) break;
+    fVar2 = *(float *)(_First[_Idx] * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+    pfVar1 = (float *)(_First[iVar3 + 1] * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
     if (*pfVar1 <= fVar2 && fVar2 != *pfVar1) {
-      local_c = iVar3 + 1;
+      _Idx = iVar3 + 1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx == _Bottom) {
+    _First[_Hole] = _First[_Bottom + -1];
+    _Hole = _Bottom + -1;
   }
-  _Push_heap<int_*,int,int,compare_spawnpoint_score_sort>(param_1,param_2,iVar4,param_4,param_5);
+  _Push_heap<int_*,int,int,compare_spawnpoint_score_sort>(_First,_Hole,_Top_00,_Val,_Pred);
   return;
 }
 
@@ -2064,14 +2101,15 @@ std::_Adjust_heap<int_*,int,int,compare_spawnpoint_score_sort>
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *param_1,int param_2,int param_3)
+int __cdecl
+SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *ent,int point_team,int influencer_team)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (2 < (uint)param_2) {
+  if (2 < (uint)point_team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x852,0,
                              "point_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)");
@@ -2081,7 +2119,7 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *param_1,int param_
       return iVar3;
     }
   }
-  if (2 < (uint)param_3) {
+  if (2 < (uint)influencer_team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x853,0,
                              "influencer_team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)"
@@ -2092,7 +2130,7 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *param_1,int param_
       return iVar3;
     }
   }
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x854,0,"%s");
     if (!bVar2) {
@@ -2101,7 +2139,7 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *param_1,int param_
       return iVar3;
     }
   }
-  if (param_1->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x855,0,"%s");
     if (!bVar2) {
@@ -2110,14 +2148,14 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *param_1,int param_
       return iVar3;
     }
   }
-  if ((param_1->s).number != g_lastPointPlayer[param_2]) {
-    g_sortedTeamSpawnPoints[param_2].sortTime = 0;
-    g_lastPointComputeTime[param_2] = 0;
+  if ((ent->s).number != g_lastPointPlayer[point_team]) {
+    g_sortedTeamSpawnPoints[point_team].sortTime = 0;
+    g_lastPointComputeTime[point_team] = 0;
   }
-  SpawnSystem_ComputePointWeights(param_1,param_2,param_3);
-  SpawnSystem_SortPointsByScore(param_2);
-  g_lastPointPlayer[param_2] = (param_1->s).number;
-  return g_sortedTeamSpawnPoints[param_2].count;
+  SpawnSystem_ComputePointWeights(ent,point_team,influencer_team);
+  SpawnSystem_SortPointsByScore(point_team);
+  g_lastPointPlayer[point_team] = (ent->s).number;
+  return g_sortedTeamSpawnPoints[point_team].count;
 }
 
 
@@ -2125,16 +2163,16 @@ int __cdecl SpawnSystem_UpdateSpawnPointsForPlayer(gentity_s *param_1,int param_
 
 void __cdecl
 std::pop_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,compare_spawninfluencer_sort param_3)
+          (SpawnInfluencer **_First,SpawnInfluencer **_Last,compare_spawninfluencer_sort _Pred)
 
 {
-  SpawnInfluencer *pSVar1;
+  SpawnInfluencer *_Val;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    pSVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Val = _Last[-1];
+    _Last[-1] = *_First;
     _Adjust_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,pSVar1,param_3);
+              (_First,0,(int)_Last + (-4 - (int)_First) >> 2,_Val,_Pred);
   }
   return;
 }
@@ -2144,16 +2182,16 @@ std::pop_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
 
 void __cdecl
 std::pop_heap<int_*,compare_spawnpoint_score_sort>
-          (int *param_1,int *param_2,compare_spawnpoint_score_sort param_3)
+          (int *_First,int *_Last,compare_spawnpoint_score_sort _Pred)
 
 {
-  int iVar1;
+  int _Val;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Val = _Last[-1];
+    _Last[-1] = *_First;
     _Adjust_heap<int_*,int,int,compare_spawnpoint_score_sort>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,iVar1,param_3);
+              (_First,0,(int)_Last + (-4 - (int)_First) >> 2,_Val,_Pred);
   }
   return;
 }
@@ -2161,14 +2199,14 @@ std::pop_heap<int_*,compare_spawnpoint_score_sort>
 
 // 006895D0  SpawnSystem_GetSortedPointEntNum  (game_mp/g_spawnsystem_mp.cpp:2202)
 
-int __cdecl SpawnSystem_GetSortedPointEntNum(int param_1,int param_2)
+int __cdecl SpawnSystem_GetSortedPointEntNum(int team,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (2 < (uint)param_1) {
+  if (2 < (uint)team) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x89b,0,"team doesn\'t index MAX_SPAWNPOINT_TEAM\n\t%i not in [0, %i)")
     ;
@@ -2178,7 +2216,7 @@ int __cdecl SpawnSystem_GetSortedPointEntNum(int param_1,int param_2)
       return iVar3;
     }
   }
-  if ((uint)g_sortedTeamSpawnPoints[param_1].count <= (uint)param_2) {
+  if ((uint)g_sortedTeamSpawnPoints[team].count <= (uint)index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x89c,0,
                              "index doesn\'t index g_sortedTeamSpawnPoints[team].count\n\t%i not in [0, %i)"
@@ -2189,8 +2227,7 @@ int __cdecl SpawnSystem_GetSortedPointEntNum(int param_1,int param_2)
       return iVar3;
     }
   }
-  if ((uint)g_spawnPointCount <= (uint)g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex[param_2])
-  {
+  if ((uint)g_spawnPointCount <= (uint)g_sortedTeamSpawnPoints[team].spawnPointsByIndex[index]) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x89d,0,
                              "g_sortedTeamSpawnPoints[team].spawnPointsByIndex[index] doesn\'t index g_spawnPointCount\n\t%i not in [0, %i)"
@@ -2201,8 +2238,7 @@ int __cdecl SpawnSystem_GetSortedPointEntNum(int param_1,int param_2)
       return iVar3;
     }
   }
-  if ((uint)g_spawnPointCount <= (uint)g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex[param_2])
-  {
+  if ((uint)g_spawnPointCount <= (uint)g_sortedTeamSpawnPoints[team].spawnPointsByIndex[index]) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawnsystem_mp.cpp",
                              0x89e,0,
                              "g_sortedTeamSpawnPoints[team].spawnPointsByIndex[index] doesn\'t index g_spawnPointCount\n\t%i not in [0, %i)"
@@ -2213,7 +2249,7 @@ int __cdecl SpawnSystem_GetSortedPointEntNum(int param_1,int param_2)
       return iVar3;
     }
   }
-  return g_spawnPoints[g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex[param_2]].entNum;
+  return g_spawnPoints[g_sortedTeamSpawnPoints[team].spawnPointsByIndex[index]].entNum;
 }
 
 
@@ -2221,7 +2257,7 @@ int __cdecl SpawnSystem_GetSortedPointEntNum(int param_1,int param_2)
 
 void __cdecl
 std::make_heap<SpawnPoint_*,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,SpawnPoint *param_2,compare_spawnpoint_sort param_3)
+          (SpawnPoint *_First,SpawnPoint *_Last,compare_spawnpoint_sort _Pred)
 
 {
   uint uVar1;
@@ -2235,20 +2271,20 @@ std::make_heap<SpawnPoint_*,compare_spawnpoint_sort>
   int local_14;
   SpawnPoint *local_c;
   
-  if (1 < ((int)param_2 - (int)param_1) / 0x34) {
-    local_c = param_2;
-    local_14 = ((int)param_2 - (int)param_1) / 0x34;
+  if (1 < ((int)_Last - (int)_First) / 0x34) {
+    local_c = _Last;
+    local_14 = ((int)_Last - (int)_First) / 0x34;
     local_18 = local_14 / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
-      pSVar3 = param_1 + local_18;
+      pSVar3 = _First + local_18;
       pfVar4 = local_4c;
       for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
         *pfVar4 = pSVar3->origin[0];
         pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
         pfVar4 = pfVar4 + 1;
       }
-      uVar1 = (uint)(byte)param_3;
+      uVar1 = (uint)(byte)_Pred;
       pfVar4 = local_4c;
       pfVar5 = (float *)&stack0xffffff5c;
       for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
@@ -2257,7 +2293,7 @@ std::make_heap<SpawnPoint_*,compare_spawnpoint_sort>
         pfVar5 = pfVar5 + 1;
       }
       _Adjust_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
-                (param_1,local_18,local_14,in_stack_ffffff5c,SUB41(uVar1,0));
+                (_First,local_18,local_14,in_stack_ffffff5c,SUB41(uVar1,0));
     }
   }
   return;
@@ -2268,19 +2304,19 @@ std::make_heap<SpawnPoint_*,compare_spawnpoint_sort>
 
 void __cdecl
 std::make_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,compare_spawninfluencer_sort param_3)
+          (SpawnInfluencer **_First,SpawnInfluencer **_Last,compare_spawninfluencer_sort _Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Bottom = (int)_Last - (int)_First >> 2;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<SpawnInfluencer_*_*,int,SpawnInfluencer_*,compare_spawninfluencer_sort>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -2291,19 +2327,19 @@ std::make_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
 
 void __cdecl
 std::make_heap<int_*,compare_spawnpoint_score_sort>
-          (int *param_1,int *param_2,compare_spawnpoint_score_sort param_3)
+          (int *_First,int *_Last,compare_spawnpoint_score_sort _Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Bottom = (int)_Last - (int)_First >> 2;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<int_*,int,int,compare_spawnpoint_score_sort>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -2312,23 +2348,23 @@ std::make_heap<int_*,compare_spawnpoint_score_sort>
 
 // 00689B10  SpawnSystem_DebugRenderVisibilityBox  (game_mp/g_spawnsystem_mp.cpp:2215)
 
-void __cdecl SpawnSystem_DebugRenderVisibilityBox(float *param_1,float *param_2,float *param_3)
+void __cdecl SpawnSystem_DebugRenderVisibilityBox(float *point1,float *angles1,float *color)
 
 {
-  float local_20 [6];
-  int local_8;
+  float mins [6];
+  int time;
   
-  local_20[0] = -16.0;
-  local_20[1] = -16.0;
-  local_20[2] = 0.0;
-  local_20[3] = 16.0;
-  local_20[4] = 16.0;
-  local_20[5] = 72.0;
-  local_8 = 500;
+  mins[0] = -16.0;
+  mins[1] = -16.0;
+  mins[2] = 0.0;
+  mins[3] = 16.0;
+  mins[4] = 16.0;
+  mins[5] = 72.0;
+  time = 500;
   if (spawnsystem_debug_visibility_time != (dvar_s *)0x0) {
-    local_8 = (spawnsystem_debug_visibility_time->current).integer;
+    time = (spawnsystem_debug_visibility_time->current).integer;
   }
-  G_DebugBox(param_1,local_20,local_20 + 3,param_2[1],param_3,1,local_8);
+  G_DebugBox(point1,mins,mins + 3,angles1[1],color,1,time);
   return;
 }
 
@@ -2343,51 +2379,52 @@ void __cdecl SpawnSystem_DebugRenderVisibilityBox(float *param_1,float *param_2,
 
 void __cdecl
 SpawnSystem_DebugRenderVisibilityCheck
-          (float *param_1,float *param_2,float *param_3,float *param_4,float *param_5,float param_6,
-          gentity_s *param_7,bool param_8)
+          (float *point1,float *angles1,float *point2,float *angles2,float *color,
+          float height_offset,gentity_s *ignore_entity,bool collision_test)
 
 {
   int local_8c;
-  float4 local_84;
+  int iClipMask;
+  float4 trace;
   float local_74;
   uint local_4c;
-  col_context_t local_48;
-  float local_20;
+  col_context_t context;
+  float end;
   float local_1c;
   float local_18;
-  float local_14;
+  float start;
   float local_10;
   float local_c;
-  int local_8;
+  int time;
   
   local_4c = __security_cookie ^ (uint)&stack0xfffffffc;
-  col_context_t::col_context_t(&local_48);
-  local_8 = 500;
+  col_context_t::col_context_t(&context);
+  time = 500;
   if (spawnsystem_debug_visibility_time != (dvar_s *)0x0) {
-    local_8 = (spawnsystem_debug_visibility_time->current).integer;
+    time = (spawnsystem_debug_visibility_time->current).integer;
   }
-  local_14 = *param_1;
-  local_10 = param_1[1];
-  local_c = param_1[2] + param_6;
-  local_20 = *param_3;
-  local_1c = param_3[1];
-  local_18 = param_3[2] + param_6;
-  if (param_8) {
-    local_84.v[0] = 0.0;
-    local_84.v[1] = 0.0;
-    local_84.v[2] = 0.0;
-    local_84.v[3] = 0.0;
-    if (param_7 == (gentity_s *)0x0) {
+  start = *point1;
+  local_10 = point1[1];
+  local_c = point1[2] + height_offset;
+  end = *point2;
+  local_1c = point2[1];
+  local_18 = point2[2] + height_offset;
+  if (collision_test) {
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    if (ignore_entity == (gentity_s *)0x0) {
       local_8c = 0x3ff;
     }
     else {
-      local_8c = (param_7->s).number;
+      local_8c = (ignore_entity->s).number;
     }
-    G_TraceCapsule((trace_t *)&local_84,&local_14,vec3_origin,vec3_origin,&local_20,local_8c,
-                   0x806833,&local_48);
-    Vec3Lerp(&local_14,&local_20,local_74,&local_20);
+    G_TraceCapsule((trace_t *)&trace,&start,vec3_origin,vec3_origin,&end,local_8c,0x806833,&context)
+    ;
+    Vec3Lerp(&start,&end,local_74,&end);
   }
-  G_DebugLineWithDuration(&local_14,&local_20,param_5,1,local_8);
+  G_DebugLineWithDuration(&start,&end,color,1,time);
   return;
 }
 
@@ -2396,7 +2433,7 @@ SpawnSystem_DebugRenderVisibilityCheck
 
 void __cdecl
 std::_Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,SpawnPoint *param_2,compare_spawnpoint_sort param_3)
+          (SpawnPoint *_First,SpawnPoint *_Last,compare_spawnpoint_sort _Pred)
 
 {
   int iVar1;
@@ -2409,24 +2446,24 @@ std::_Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>
   float local_44 [14];
   SpawnPoint *local_c;
   
-  for (; 1 < ((int)param_2 - (int)param_1) / 0x34; param_2 = param_2 + -1) {
-    if (1 < ((int)param_2 - (int)param_1) / 0x34) {
-      local_c = param_2;
-      pSVar3 = param_2 + -1;
+  for (; 1 < ((int)_Last - (int)_First) / 0x34; _Last = _Last + -1) {
+    if (1 < ((int)_Last - (int)_First) / 0x34) {
+      local_c = _Last;
+      pSVar3 = _Last + -1;
       pfVar4 = local_44;
       for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
         *pfVar4 = pSVar3->origin[0];
         pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
         pfVar4 = pfVar4 + 1;
       }
-      pSVar3 = param_1;
+      pSVar3 = _First;
       pSVar5 = local_c + -1;
       for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
         pSVar5->origin[0] = pSVar3->origin[0];
         pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
         pSVar5 = (SpawnPoint *)(pSVar5->origin + 1);
       }
-      uVar2 = (uint)(byte)param_3;
+      uVar2 = (uint)(byte)_Pred;
       pfVar4 = local_44;
       pfVar6 = (float *)&stack0xffffff5c;
       for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -2435,7 +2472,7 @@ std::_Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>
         pfVar6 = pfVar6 + 1;
       }
       _Adjust_heap<SpawnPoint_*,int,SpawnPoint,compare_spawnpoint_sort>
-                (param_1,0,((int)local_c + (-0x34 - (int)param_1)) / 0x34,in_stack_ffffff5c,
+                (_First,0,((int)local_c + (-0x34 - (int)_First)) / 0x34,in_stack_ffffff5c,
                  SUB41(uVar2,0));
     }
   }
@@ -2452,79 +2489,83 @@ std::_Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>
 
 bool __cdecl
 SpawnSystem_IsSpawnPointVisible
-          (float *param_1,float *param_2,int param_3,gentity_s *param_4,bool param_5)
+          (float *origin,float *angles,int other_team,gentity_s *ignore_entity,
+          bool render_mode_success)
 
 {
   int iVar1;
   float fVar2;
   float fVar3;
-  int local_78;
-  int local_64;
-  col_context_t local_60;
-  float local_38 [3];
-  float local_2c;
+  int index;
+  float sight_height;
+  int hitnum;
+  col_context_t context;
+  float point_dir [3];
+  float sight_point;
   float local_28;
   float local_24;
-  float local_20;
+  float player_sight_origin;
   float local_1c;
   float local_18;
-  int local_14;
-  int local_10;
-  gentity_s *local_c;
-  float local_8;
+  int iClipMask;
+  int iIgnoreEntNum;
+  gentity_s *player;
+  float squared_visibility_distance;
   
-  local_c = (gentity_s *)0x0;
-  local_10 = 0x3ff;
-  local_14 = 0x806821;
-  local_8 = (spawnsystem_sight_check_max_distance->current).value *
-            (spawnsystem_sight_check_max_distance->current).value;
-  AngleVectors(param_2,local_38,(float *)0x0,(float *)0x0);
-  local_2c = *param_1;
-  local_28 = param_1[1];
-  local_24 = param_1[2] + 60.0;
-  col_context_t::col_context_t(&local_60,local_14);
-  col_context_t::init_locational(&local_60,local_10);
-  local_64 = -1;
-  local_78 = 0;
+  player = (gentity_s *)0x0;
+  iIgnoreEntNum = 0x3ff;
+  iClipMask = 0x806821;
+  squared_visibility_distance =
+       (spawnsystem_sight_check_max_distance->current).value *
+       (spawnsystem_sight_check_max_distance->current).value;
+  AngleVectors(angles,point_dir,(float *)0x0,(float *)0x0);
+  sight_point = *origin;
+  local_28 = origin[1];
+  local_24 = origin[2] + 60.0;
+  col_context_t::col_context_t(&context,iClipMask);
+  col_context_t::init_locational(&context,iIgnoreEntNum);
+  hitnum = -1;
+  index = 0;
   do {
-    if ((com_maxclients->current).integer <= local_78) {
-      if (((param_5) && ((spawnsystem_debug->current).enabled != false)) &&
+    if ((com_maxclients->current).integer <= index) {
+      if (((render_mode_success) && ((spawnsystem_debug->current).enabled != false)) &&
          ((spawnsystem_debug_visibility->current).enabled != false)) {
-        SpawnSystem_DebugRenderVisibilityBox(param_1,param_2,colorGreen);
+        SpawnSystem_DebugRenderVisibilityBox(origin,angles,colorGreen);
       }
       return false;
     }
-    local_c = g_entities + local_78;
-    if ((((g_entities[local_78].client != (gclient_s *)0x0) && (param_4 != local_c)) &&
-        ((((g_entities[local_78].client)->sess).connected == CON_CONNECTED &&
-         ((((g_entities[local_78].client)->sess).sessionState == SESS_STATE_PLAYING &&
-          (((g_entities[local_78].client)->sess).cs.team == param_3)))))) &&
-       (fVar2 = ((g_entities[local_78].client)->ps).origin[0] - *param_1,
-       fVar3 = ((g_entities[local_78].client)->ps).origin[1] - param_1[1],
-       fVar2 * fVar2 + fVar3 * fVar3 + 0.0 <= local_8)) {
-      local_20 = ((g_entities[local_78].client)->ps).origin[0];
-      local_1c = ((g_entities[local_78].client)->ps).origin[1];
-      local_18 = ((g_entities[local_78].client)->ps).origin[2] + 60.0;
-      if ((!param_5) &&
-         (iVar1 = SV_SightTracePoint(&local_64,&local_20,&local_2c,&local_60), iVar1 != 0)) {
-        if ((!param_5) &&
+    player = g_entities + index;
+    if ((((g_entities[index].client != (gclient_s *)0x0) && (ignore_entity != player)) &&
+        ((((g_entities[index].client)->sess).connected == CON_CONNECTED &&
+         ((((g_entities[index].client)->sess).sessionState == SESS_STATE_PLAYING &&
+          (((g_entities[index].client)->sess).cs.team == other_team)))))) &&
+       (fVar2 = ((g_entities[index].client)->ps).origin[0] - *origin,
+       fVar3 = ((g_entities[index].client)->ps).origin[1] - origin[1],
+       fVar2 * fVar2 + fVar3 * fVar3 + 0.0 <= squared_visibility_distance)) {
+      player_sight_origin = ((g_entities[index].client)->ps).origin[0];
+      local_1c = ((g_entities[index].client)->ps).origin[1];
+      local_18 = ((g_entities[index].client)->ps).origin[2] + 60.0;
+      if ((!render_mode_success) &&
+         (iVar1 = SV_SightTracePoint(&hitnum,&player_sight_origin,&sight_point,&context), iVar1 != 0
+         )) {
+        if ((!render_mode_success) &&
            (((spawnsystem_debug->current).enabled != false &&
             ((spawnsystem_debug_visibility->current).enabled != false)))) {
-          SpawnSystem_DebugRenderVisibilityBox(param_1,param_2,colorRed);
+          SpawnSystem_DebugRenderVisibilityBox(origin,angles,colorRed);
           SpawnSystem_DebugRenderVisibilityCheck
-                    (param_1,param_2,(local_c->client->ps).origin,(local_c->r).currentAngles,
-                     colorRed,60.0,param_4,true);
+                    (origin,angles,(player->client->ps).origin,(player->r).currentAngles,colorRed,
+                     60.0,ignore_entity,true);
         }
         return true;
       }
-      if (((param_5) && ((spawnsystem_debug->current).enabled != false)) &&
+      if (((render_mode_success) && ((spawnsystem_debug->current).enabled != false)) &&
          ((spawnsystem_debug_visibility->current).enabled != false)) {
         SpawnSystem_DebugRenderVisibilityCheck
-                  (param_1,param_2,(local_c->client->ps).origin,(local_c->r).currentAngles,
-                   colorGreen,60.0,param_4,false);
+                  (origin,angles,(player->client->ps).origin,(player->r).currentAngles,colorGreen,
+                   60.0,ignore_entity,false);
       }
     }
-    local_78 = local_78 + 1;
+    index = index + 1;
   } while( true );
 }
 
@@ -2537,14 +2578,14 @@ SpawnSystem_IsSpawnPointVisible
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-SpawnSystem_IsSpawnPointVisible(float *param_1,float *param_2,int param_3,gentity_s *param_4)
+SpawnSystem_IsSpawnPointVisible(float *origin,float *angles,int other_team,gentity_s *ignore_entity)
 
 {
   bool bVar1;
   
-  bVar1 = SpawnSystem_IsSpawnPointVisible(param_1,param_2,param_3,param_4,false);
+  bVar1 = SpawnSystem_IsSpawnPointVisible(origin,angles,other_team,ignore_entity,false);
   if (!bVar1) {
-    SpawnSystem_IsSpawnPointVisible(param_1,param_2,param_3,param_4,true);
+    SpawnSystem_IsSpawnPointVisible(origin,angles,other_team,ignore_entity,true);
   }
   return bVar1;
 }
@@ -2552,17 +2593,17 @@ SpawnSystem_IsSpawnPointVisible(float *param_1,float *param_2,int param_3,gentit
 
 // 00689D30  SpawnSystem_DebugSideSwitch  (game_mp/g_spawnsystem_mp.cpp:2460)
 
-void __cdecl SpawnSystem_DebugSideSwitch(bool param_1)
+void __cdecl SpawnSystem_DebugSideSwitch(bool enabled)
 
 {
-  Dvar_SetBool(spawnsystem_debug_sideswitched,param_1);
+  Dvar_SetBool(spawnsystem_debug_sideswitched,enabled);
   return;
 }
 
 
 // 0068A290  SpawnSystem_DebugRenderTeamPointWeights  (game_mp/g_spawnsystem_mp.cpp:2633)
 
-void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int param_1)
+void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int teamMask)
 
 {
   char *pcVar1;
@@ -2570,30 +2611,30 @@ void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int param_1)
   float *local_38;
   float *local_34;
   float *local_30;
-  int local_2c;
-  float local_28;
+  int index;
+  float origin;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
-  int local_14;
-  float local_10;
-  SpawnPoint *local_c;
-  float local_8;
+  float baseScore;
+  float start_height;
+  int spCount;
+  float height_inc;
+  SpawnPoint *sp;
+  float score;
   
-  local_18 = 45.0;
-  local_10 = 12.0;
-  local_14 = SpawnSystem_GetSpawnPointCount();
-  local_c = SpawnSystem_GetSpawnPoints();
-  for (local_2c = 0; local_2c < local_14; local_2c = local_2c + 1) {
-    if ((local_c->teamMask & param_1) != 0) {
-      local_28 = local_c->origin[0];
-      local_24 = local_c->origin[1];
-      local_20 = local_c->origin[2] + local_18;
-      if ((param_1 & 1U) != 0) {
-        local_8 = local_c->weight[0];
-        local_1c = local_c->baseWeight[0];
-        if (0.0 <= local_8) {
+  start_height = 45.0;
+  height_inc = 12.0;
+  spCount = SpawnSystem_GetSpawnPointCount();
+  sp = SpawnSystem_GetSpawnPoints();
+  for (index = 0; index < spCount; index = index + 1) {
+    if ((sp->teamMask & teamMask) != 0) {
+      origin = sp->origin[0];
+      local_24 = sp->origin[1];
+      local_20 = sp->origin[2] + start_height;
+      if ((teamMask & 1U) != 0) {
+        score = sp->weight[0];
+        baseScore = sp->baseWeight[0];
+        if (0.0 <= score) {
           local_30 = colorGreen;
         }
         else {
@@ -2601,13 +2642,13 @@ void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int param_1)
         }
         iVar2 = 1;
         pcVar1 = va("%.0f\\%.0f");
-        CL_AddDebugString(&local_28,local_30,font_height,pcVar1,iVar2);
-        local_20 = local_20 + local_10;
+        CL_AddDebugString(&origin,local_30,font_height,pcVar1,iVar2);
+        local_20 = local_20 + height_inc;
       }
-      if ((param_1 & 2U) != 0) {
-        local_8 = local_c->weight[1];
-        local_1c = local_c->baseWeight[1];
-        if (0.0 <= local_8) {
+      if ((teamMask & 2U) != 0) {
+        score = sp->weight[1];
+        baseScore = sp->baseWeight[1];
+        if (0.0 <= score) {
           local_34 = colorGreen;
         }
         else {
@@ -2615,13 +2656,13 @@ void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int param_1)
         }
         iVar2 = 1;
         pcVar1 = va("%.0f\\%.0f");
-        CL_AddDebugString(&local_28,local_34,font_height,pcVar1,iVar2);
-        local_20 = local_20 + local_10;
+        CL_AddDebugString(&origin,local_34,font_height,pcVar1,iVar2);
+        local_20 = local_20 + height_inc;
       }
-      if ((param_1 & 4U) != 0) {
-        local_8 = local_c->weight[2];
-        local_1c = local_c->baseWeight[2];
-        if (0.0 <= local_8) {
+      if ((teamMask & 4U) != 0) {
+        score = sp->weight[2];
+        baseScore = sp->baseWeight[2];
+        if (0.0 <= score) {
           local_38 = colorGreen;
         }
         else {
@@ -2629,10 +2670,10 @@ void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int param_1)
         }
         iVar2 = 1;
         pcVar1 = va("%.0f\\%.0f");
-        CL_AddDebugString(&local_28,local_38,font_height,pcVar1,iVar2);
+        CL_AddDebugString(&origin,local_38,font_height,pcVar1,iVar2);
       }
     }
-    local_c = local_c + 1;
+    sp = sp + 1;
   }
   return;
 }
@@ -2640,51 +2681,51 @@ void __cdecl SpawnSystem_DebugRenderTeamPointWeights(int param_1)
 
 // 0068A600  SpawnSystem_DebugRenderSpawnPointBox  (game_mp/g_spawnsystem_mp.cpp:2689)
 
-void __cdecl SpawnSystem_DebugRenderSpawnPointBox(SpawnPoint *param_1,float *param_2,int param_3)
+void __cdecl SpawnSystem_DebugRenderSpawnPointBox(SpawnPoint *sp,float *color,int bDepthTest)
 
 {
-  float local_5c;
+  float origin;
   float local_58;
   float local_54;
-  float local_50 [4];
+  float mins [4];
   float local_40;
   float local_3c;
-  float local_38;
+  float start;
   float local_34;
   float local_30;
-  float local_2c;
+  float forward;
   float local_28;
   float local_24;
-  float local_20;
+  float angles;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float maxs;
   float local_10;
   undefined4 local_c;
-  float local_8;
+  float height_offset;
   
-  local_50[0] = -16.0;
-  local_50[1] = -16.0;
-  local_50[2] = 0.0;
-  local_14 = 16.0;
+  mins[0] = -16.0;
+  mins[1] = -16.0;
+  mins[2] = 0.0;
+  maxs = 16.0;
   local_10 = 16.0;
   local_c = 0x42900000;
-  local_8 = 45.0;
-  local_5c = param_1->origin[0];
-  local_58 = param_1->origin[1];
-  local_54 = param_1->origin[2] - g_legacySpawnPointRaiseHeight;
-  local_20 = 0.0;
+  height_offset = 45.0;
+  origin = sp->origin[0];
+  local_58 = sp->origin[1];
+  local_54 = sp->origin[2] - g_legacySpawnPointRaiseHeight;
+  angles = 0.0;
   local_18 = 0;
-  local_1c = param_1->yaw;
-  G_DebugBox(&local_5c,local_50,&local_14,local_1c,param_2,param_3,0);
-  AngleVectors(&local_20,&local_2c,(float *)0x0,(float *)0x0);
-  local_38 = local_5c;
+  local_1c = sp->yaw;
+  G_DebugBox(&origin,mins,&maxs,local_1c,color,bDepthTest,0);
+  AngleVectors(&angles,&forward,(float *)0x0,(float *)0x0);
+  start = origin;
   local_34 = local_58;
-  local_30 = local_54 + local_8;
-  local_50[3] = local_2c * 48.0 + local_5c;
+  local_30 = local_54 + height_offset;
+  mins[3] = forward * 48.0 + origin;
   local_40 = local_28 * 48.0 + local_58;
   local_3c = local_24 * 48.0 + local_30;
-  G_DebugLine(&local_38,local_50 + 3,param_2,1);
+  G_DebugLine(&start,mins + 3,color,1);
   return;
 }
 
@@ -2697,40 +2738,39 @@ void __cdecl SpawnSystem_DebugRenderSpawnPointBox(SpawnPoint *param_1,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SpawnSystem_DebugRenderTeamPoints(int param_1)
+void __cdecl SpawnSystem_DebugRenderTeamPoints(int teamMask)
 
 {
   float *local_24;
-  float local_1c;
+  float angles;
   float local_18;
   undefined4 local_14;
-  int local_10;
-  int local_c;
-  SpawnPoint *local_8;
+  int index;
+  int spCount;
+  SpawnPoint *sp;
   
-  local_c = SpawnSystem_GetSpawnPointCount();
-  local_8 = SpawnSystem_GetSpawnPoints();
-  for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-    if ((local_8->teamMask & param_1) != 0) {
-      if (local_10 == g_debugHighlightedSpawnPoint) {
+  spCount = SpawnSystem_GetSpawnPointCount();
+  sp = SpawnSystem_GetSpawnPoints();
+  for (index = 0; index < spCount; index = index + 1) {
+    if ((sp->teamMask & teamMask) != 0) {
+      if (index == g_debugHighlightedSpawnPoint) {
         local_24 = colorWhite;
       }
       else {
         local_24 = colorYellow;
       }
       SpawnSystem_DebugRenderSpawnPointBox
-                (local_8,local_24,(uint)((spawnsystem_debug_points->current).integer < 2));
+                (sp,local_24,(uint)((spawnsystem_debug_points->current).integer < 2));
       if (((g_spawnSystemDebugMode == SS_DEBUG_OFF) && (g_entities[0].client != (gclient_s *)0x0))
          && (((g_entities[0].client)->sess).connected == CON_CONNECTED)) {
-        local_18 = local_8->yaw;
-        local_1c = 0.0;
+        local_18 = sp->yaw;
+        angles = 0.0;
         local_14 = 0;
         SpawnSystem_IsSpawnPointVisible
-                  (local_8->origin,&local_1c,((g_entities[0].client)->sess).cs.team,(gentity_s *)0x0
-                  );
+                  (sp->origin,&angles,((g_entities[0].client)->sess).cs.team,(gentity_s *)0x0);
       }
     }
-    local_8 = local_8 + 1;
+    sp = sp + 1;
   }
   return;
 }
@@ -2738,15 +2778,17 @@ void __cdecl SpawnSystem_DebugRenderTeamPoints(int param_1)
 
 // 0068A7A0  SpawnSystem_SetSpawnPointsOrder  (game_mp/g_spawnsystem_mp.cpp:2931)
 
-void __cdecl SpawnSystem_SetSpawnPointsOrder(int param_1)
+void __cdecl SpawnSystem_SetSpawnPointsOrder(int team)
 
 {
   SpawnPoint *pSVar1;
-  int local_c;
+  SpawnPoint *point;
+  int index;
+  SpawnPoint *sp;
   
   pSVar1 = SpawnSystem_GetSpawnPoints();
-  for (local_c = 0; local_c < g_sortedTeamSpawnPoints[param_1].count; local_c = local_c + 1) {
-    pSVar1[g_sortedTeamSpawnPoints[param_1].spawnPointsByIndex[local_c]].orderNum = local_c;
+  for (index = 0; index < g_sortedTeamSpawnPoints[team].count; index = index + 1) {
+    pSVar1[g_sortedTeamSpawnPoints[team].spawnPointsByIndex[index]].orderNum = index;
   }
   return;
 }
@@ -2759,14 +2801,15 @@ void __cdecl SpawnSystem_SetSpawnPointsOrder(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SpawnSystem_DebugUpdateSpawnPoints(gentity_s *param_1,int param_2,int param_3)
+void __cdecl
+SpawnSystem_DebugUpdateSpawnPoints(gentity_s *player,int point_team,int influencer_team)
 
 {
-  if (param_1 == (gentity_s *)0x0) {
-    SpawnSystem_UpdateSpawnPointsForTeam(param_2,param_3);
+  if (player == (gentity_s *)0x0) {
+    SpawnSystem_UpdateSpawnPointsForTeam(point_team,influencer_team);
   }
   else {
-    SpawnSystem_UpdateSpawnPointsForPlayer(param_1,param_2,param_3);
+    SpawnSystem_UpdateSpawnPointsForPlayer(player,point_team,influencer_team);
   }
   return;
 }
@@ -2774,11 +2817,11 @@ void __cdecl SpawnSystem_DebugUpdateSpawnPoints(gentity_s *param_1,int param_2,i
 
 // 00689D50  SpawnSystem_DebugRender  (game_mp/g_spawnsystem_mp.cpp:3008)
 
-/* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "eSpawnSystemDebugMode": Some values do not have unique names */
 
 void __cdecl SpawnSystem_DebugRender(void)
 
@@ -2790,39 +2833,45 @@ void __cdecl SpawnSystem_DebugRender(void)
   float fVar5;
   float fVar6;
   float in_stack_ffffffc8;
-  int local_24;
-  int local_1c;
-  uint local_18;
-  uint local_10;
-  gentity_s *local_c;
-  gentity_s *local_8;
+  float change;
+  float diff;
+  float newSizeScale;
+  SpawnInfluencer *influencerList;
+  int i_2;
+  gentity_s *ent;
+  int i;
+  int influencer_team;
+  int point_team_index;
+  int point_team;
+  gentity_s *localPlayer;
+  gentity_s *player;
   
   if ((spawnsystem_debug->current).enabled != false) {
-    local_10 = 7;
-    local_18 = 7;
+    point_team = 7;
+    influencer_team = 7;
     g_debugHighlightedSpawnPoint = -1;
-    local_c = g_entities;
+    localPlayer = g_entities;
     if ((g_entities[0].client == (gclient_s *)0x0) ||
        (((g_entities[0].client)->sess).connected != CON_CONNECTED)) {
-      local_c = (gentity_s *)0x0;
+      localPlayer = (gentity_s *)0x0;
     }
-    local_8 = (gentity_s *)0x0;
+    player = (gentity_s *)0x0;
     if (*(spawnsystem_debug_team->current).string == '\0') {
-      for (local_1c = 0; local_1c < (com_maxclients->current).integer; local_1c = local_1c + 1) {
-        pgVar3 = g_entities + local_1c;
-        if ((((g_entities[local_1c].client)->sess).connected == CON_CONNECTED) &&
+      for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+        pgVar3 = g_entities + i;
+        if ((((g_entities[i].client)->sess).connected == CON_CONNECTED) &&
            ((*(spawnsystem_debug_player->current).string == '\0' ||
-            (iVar1 = _stricmp(((g_entities[local_1c].client)->sess).cs.name,
+            (iVar1 = _stricmp(((g_entities[i].client)->sess).cs.name,
                               (spawnsystem_debug_player->current).string), iVar1 == 0)))) {
-          local_10 = 1 << ((byte)((g_entities[local_1c].client)->sess).cs.team & 0x1f);
-          local_18 = 1 << ((byte)((g_entities[local_1c].client)->sess).cs.team & 0x1f);
-          local_8 = pgVar3;
+          point_team = 1 << ((byte)((g_entities[i].client)->sess).cs.team & 0x1f);
+          influencer_team = 1 << ((byte)((g_entities[i].client)->sess).cs.team & 0x1f);
+          player = pgVar3;
           if ((spawnsystem_debug_sideswitched->current).enabled != false) {
-            if (((g_entities[local_1c].client)->sess).cs.team == TEAM_AXIS) {
-              local_10 = 4;
+            if (((g_entities[i].client)->sess).cs.team == TEAM_AXIS) {
+              point_team = 4;
             }
             else {
-              local_10 = 2;
+              point_team = 2;
             }
           }
           break;
@@ -2833,53 +2882,52 @@ void __cdecl SpawnSystem_DebugRender(void)
       iVar1 = _stricmp((spawnsystem_debug_team->current).string,"allies");
       if (iVar1 == 0) {
         if ((spawnsystem_debug_sideswitched->current).enabled == false) {
-          local_10 = 4;
+          point_team = 4;
         }
         else {
-          local_10 = 2;
+          point_team = 2;
         }
-        local_18 = 4;
+        influencer_team = 4;
       }
       else {
         iVar1 = _stricmp((spawnsystem_debug_team->current).string,"axis");
         if (iVar1 == 0) {
           if ((spawnsystem_debug_sideswitched->current).enabled == false) {
-            local_10 = 2;
+            point_team = 2;
           }
           else {
-            local_10 = 4;
+            point_team = 4;
           }
-          local_18 = 2;
+          influencer_team = 2;
         }
         else {
           iVar1 = _stricmp((spawnsystem_debug_team->current).string,"free");
           if (iVar1 == 0) {
-            local_10 = 1;
-            local_18 = 1;
+            point_team = 1;
+            influencer_team = 1;
           }
         }
       }
     }
     if ((g_spawnSystemDebugMode == SS_DEBUG_OFF) || (3 < (int)g_spawnSystemDebugMode)) {
-      if ((local_10 & 1) != 0) {
-        SpawnSystem_DebugUpdateSpawnPoints(local_8,0,0);
+      if ((point_team & 1U) != 0) {
+        SpawnSystem_DebugUpdateSpawnPoints(player,0,0);
       }
-      if ((local_10 & 2) != 0) {
+      if ((point_team & 2U) != 0) {
         SpawnSystem_DebugUpdateSpawnPoints
-                  (local_8,1,((spawnsystem_debug_sideswitched->current).enabled != false) + 1);
+                  (player,1,((spawnsystem_debug_sideswitched->current).enabled != false) + 1);
       }
-      if ((local_10 & 4) != 0) {
+      if ((point_team & 4U) != 0) {
         SpawnSystem_DebugUpdateSpawnPoints
-                  (local_8,2,2 - (uint)((spawnsystem_debug_sideswitched->current).enabled != false))
-        ;
+                  (player,2,2 - (uint)((spawnsystem_debug_sideswitched->current).enabled != false));
       }
       SpawnSystem_SetSpawnPointsOrder(0);
     }
     if (0 < (spawnsystem_debug_influencers->current).integer) {
       pSVar2 = SpawnSystem_GetInfluencerList();
       fVar6 = sizeScale;
-      if (local_c != (gentity_s *)0x0) {
-        fVar6 = CMD_GetAnalogButtonValue(&(local_c->client->sess).cmd,0x13);
+      if (localPlayer != (gentity_s *)0x0) {
+        fVar6 = CMD_GetAnalogButtonValue(&(localPlayer->client->sess).cmd,0x13);
         fVar6 = 1.0 - fVar6;
         fVar4 = fVar6 - sizeScale;
         if (0.001 < ABS(fVar4)) {
@@ -2891,36 +2939,36 @@ void __cdecl SpawnSystem_DebugRender(void)
         }
       }
       sizeScale = fVar6;
-      for (local_24 = 0; local_24 < 0x148; local_24 = local_24 + 1) {
-        if ((((pSVar2[local_24].used != false) && (pSVar2[local_24].active != false)) &&
-            ((pSVar2[local_24].teamMask & local_18) != 0)) &&
-           ((pSVar2[local_24].disableTime < level.time &&
-            (((local_8 == (gentity_s *)0x0 ||
-              (iVar1 = EntHandle::isDefined(&pSVar2[local_24].entity), iVar1 == 0)) ||
-             (pgVar3 = EntHandle::ent(&pSVar2[local_24].entity), pgVar3 != local_8)))))) {
-          if ((pSVar2[local_24].preset)->shape == INFLUENCER_SHAPE_SPHERE) {
-            GamerProfile_WriteSettings((int)(pSVar2 + local_24));
+      for (i_2 = 0; i_2 < 0x148; i_2 = i_2 + 1) {
+        if ((((pSVar2[i_2].used != false) && (pSVar2[i_2].active != false)) &&
+            ((pSVar2[i_2].teamMask & influencer_team) != 0)) &&
+           ((pSVar2[i_2].disableTime < level.time &&
+            (((player == (gentity_s *)0x0 ||
+              (iVar1 = EntHandle::isDefined(&pSVar2[i_2].entity), iVar1 == 0)) ||
+             (pgVar3 = EntHandle::ent(&pSVar2[i_2].entity), pgVar3 != player)))))) {
+          if ((pSVar2[i_2].preset)->shape == INFLUENCER_SHAPE_SPHERE) {
+            GamerProfile_WriteSettings((int)(pSVar2 + i_2));
           }
-          else if ((pSVar2[local_24].preset)->shape == INFLUENCER_SHAPE_CYLINDER) {
-            GamerProfile_WriteSettings((int)(pSVar2 + local_24));
+          else if ((pSVar2[i_2].preset)->shape == INFLUENCER_SHAPE_CYLINDER) {
+            GamerProfile_WriteSettings((int)(pSVar2 + i_2));
           }
         }
       }
     }
     if ((spawnsystem_debug_points->current).integer != 0) {
-      SpawnSystem_DebugRenderTeamPoints(local_10);
+      SpawnSystem_DebugRenderTeamPoints(point_team);
     }
     if ((spawnsystem_debug_point_weights->current).enabled != false) {
-      SpawnSystem_DebugRenderTeamPointWeights(local_10);
+      SpawnSystem_DebugRenderTeamPointWeights(point_team);
     }
     if ((spawnsystem_debug_best_points->current).enabled != false) {
-      if ((local_10 & 1) != 0) {
+      if ((point_team & 1U) != 0) {
         GamerProfile_WriteSettings(0);
       }
-      if ((local_10 & 2) != 0) {
+      if ((point_team & 2U) != 0) {
         GamerProfile_WriteSettings(1);
       }
-      if ((local_10 & 4) != 0) {
+      if ((point_team & 4U) != 0) {
         GamerProfile_WriteSettings(2);
       }
     }
@@ -2936,56 +2984,56 @@ void __cdecl SpawnSystem_DebugRender(void)
 
 void __cdecl
 std::_Insertion_sort1<SpawnPoint_*,compare_spawnpoint_sort,SpawnPoint>
-          (SpawnPoint *param_1,SpawnPoint *param_2,compare_spawnpoint_sort param_3,
-          SpawnPoint *param_4)
+          (SpawnPoint *_First,SpawnPoint *_Last,compare_spawnpoint_sort _Pred,SpawnPoint *__formal)
 
 {
   int iVar1;
   SpawnPoint *pSVar2;
   SpawnPoint *pSVar3;
   float *pfVar4;
-  float local_40 [13];
-  SpawnPoint *local_c;
-  SpawnPoint *local_8;
+  SpawnPoint *_First1;
+  float _Val [13];
+  SpawnPoint *_Next1;
+  SpawnPoint *_Next;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
+  if (_First != _Last) {
+    _Next = _First;
     while( true ) {
-      local_8 = local_8 + 1;
-      if (local_8 == param_2) break;
-      local_c = local_8;
-      pSVar2 = local_8;
-      pfVar4 = local_40;
+      _Next = _Next + 1;
+      if (_Next == _Last) break;
+      _Next1 = _Next;
+      pSVar2 = _Next;
+      pfVar4 = _Val;
       for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
         *pfVar4 = pSVar2->origin[0];
         pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
         pfVar4 = pfVar4 + 1;
       }
-      if (param_1->origin[g_sortAxis] < local_40[g_sortAxis] ||
-          param_1->origin[g_sortAxis] == local_40[g_sortAxis]) {
-        while (pSVar2 = local_c + -1,
-              local_40[g_sortAxis] <= pSVar2->origin[g_sortAxis] &&
-              pSVar2->origin[g_sortAxis] != local_40[g_sortAxis]) {
+      if (_First->origin[g_sortAxis] < _Val[g_sortAxis] ||
+          _First->origin[g_sortAxis] == _Val[g_sortAxis]) {
+        while (pSVar2 = _Next1 + -1,
+              _Val[g_sortAxis] <= pSVar2->origin[g_sortAxis] &&
+              pSVar2->origin[g_sortAxis] != _Val[g_sortAxis]) {
           pSVar3 = pSVar2;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
-            local_c->origin[0] = pSVar3->origin[0];
+            _Next1->origin[0] = pSVar3->origin[0];
             pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
-            local_c = (SpawnPoint *)(local_c->origin + 1);
+            _Next1 = (SpawnPoint *)(_Next1->origin + 1);
           }
-          local_c = pSVar2;
+          _Next1 = pSVar2;
         }
-        pfVar4 = local_40;
+        pfVar4 = _Val;
         for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
-          local_c->origin[0] = *pfVar4;
+          _Next1->origin[0] = *pfVar4;
           pfVar4 = pfVar4 + 1;
-          local_c = (SpawnPoint *)(local_c->origin + 1);
+          _Next1 = (SpawnPoint *)(_Next1->origin + 1);
         }
       }
       else {
-        local_c = local_c + 1;
-        stdext::unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>(param_1,local_8,local_c);
-        pfVar4 = local_40;
-        pSVar2 = param_1;
+        _Next1 = _Next1 + 1;
+        stdext::unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>(_First,_Next,_Next1);
+        pfVar4 = _Val;
+        pSVar2 = _First;
         for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
           pSVar2->origin[0] = *pfVar4;
           pfVar4 = pfVar4 + 1;
@@ -3002,37 +3050,39 @@ std::_Insertion_sort1<SpawnPoint_*,compare_spawnpoint_sort,SpawnPoint>
 
 void __cdecl
 std::_Insertion_sort1<SpawnInfluencer_*_*,compare_spawninfluencer_sort,SpawnInfluencer_*>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,compare_spawninfluencer_sort param_3,
-          SpawnInfluencer **param_4)
+          (SpawnInfluencer **_First,SpawnInfluencer **_Last,compare_spawninfluencer_sort _Pred,
+          SpawnInfluencer **__formal)
 
 {
   SpawnInfluencer *pSVar1;
   SpawnInfluencer **ppSVar2;
-  SpawnInfluencer **ppSVar3;
-  SpawnInfluencer **local_c;
-  SpawnInfluencer **local_8;
+  SpawnInfluencer **_Last_10;
+  SpawnInfluencer **_First1;
+  SpawnInfluencer *_Val;
+  SpawnInfluencer **_Next1;
+  SpawnInfluencer **_Next;
   
-  if (param_1 != param_2) {
-    local_8 = param_1;
-    while (ppSVar3 = local_8 + 1, ppSVar3 != param_2) {
-      pSVar1 = *ppSVar3;
-      local_c = ppSVar3;
-      if ((*param_1)->bounds[0] < pSVar1->bounds[0] || (*param_1)->bounds[0] == pSVar1->bounds[0]) {
-        while (ppSVar2 = local_c + -1,
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Last_10 = _Next + 1, _Last_10 != _Last) {
+      pSVar1 = *_Last_10;
+      _Next1 = _Last_10;
+      if ((*_First)->bounds[0] < pSVar1->bounds[0] || (*_First)->bounds[0] == pSVar1->bounds[0]) {
+        while (ppSVar2 = _Next1 + -1,
               pSVar1->bounds[0] <= (*ppSVar2)->bounds[0] &&
               (*ppSVar2)->bounds[0] != pSVar1->bounds[0]) {
-          *local_c = *ppSVar2;
-          local_c = ppSVar2;
+          *_Next1 = *ppSVar2;
+          _Next1 = ppSVar2;
         }
-        *local_c = pSVar1;
-        local_8 = ppSVar3;
+        *_Next1 = pSVar1;
+        _Next = _Last_10;
       }
       else {
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  ((flameGeneric_s **)param_1,(flameGeneric_s **)ppSVar3,
-                   (flameGeneric_s **)(local_8 + 2));
-        *param_1 = pSVar1;
-        local_8 = ppSVar3;
+                  ((flameGeneric_s **)_First,(flameGeneric_s **)_Last_10,
+                   (flameGeneric_s **)(_Next + 2));
+        *_First = pSVar1;
+        _Next = _Last_10;
       }
     }
   }
@@ -3044,40 +3094,42 @@ std::_Insertion_sort1<SpawnInfluencer_*_*,compare_spawninfluencer_sort,SpawnInfl
 
 void __cdecl
 std::_Insertion_sort1<int_*,compare_spawnpoint_score_sort,int>
-          (int *param_1,int *param_2,compare_spawnpoint_score_sort param_3,int *param_4)
+          (int *_First,int *_Last,compare_spawnpoint_score_sort _Pred,int *__formal)
 
 {
   float *pfVar1;
   float fVar2;
   flameGeneric_s *pfVar3;
-  flameGeneric_s **ppfVar4;
-  flameGeneric_s **ppfVar5;
-  flameGeneric_s **local_c;
-  flameGeneric_s **local_8;
+  int *piVar4;
+  flameGeneric_s **_Last_10;
+  int *_First1;
+  int _Val;
+  int *_Next1;
+  int *_Next;
   
-  if (param_1 != param_2) {
-    local_8 = (flameGeneric_s **)param_1;
-    while (ppfVar5 = local_8 + 1, ppfVar5 != (flameGeneric_s **)param_2) {
-      pfVar3 = *ppfVar5;
-      fVar2 = *(float *)((int)pfVar3 * 0x34 + 0x3f29b74 + param_3.m_team * 4);
-      pfVar1 = (float *)(*param_1 * 0x34 + 0x3f29b74 + param_3.m_team * 4);
-      local_c = ppfVar5;
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Last_10 = (flameGeneric_s **)(_Next + 1), _Last_10 != (flameGeneric_s **)_Last) {
+      pfVar3 = *_Last_10;
+      fVar2 = *(float *)((int)pfVar3 * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+      pfVar1 = (float *)(*_First * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+      _Next1 = (int *)_Last_10;
       if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
-        while (ppfVar4 = local_c + -1,
-              fVar2 = *(float *)((int)pfVar3 * 0x34 + 0x3f29b74 + param_3.m_team * 4),
-              pfVar1 = (float *)((int)*ppfVar4 * 0x34 + 0x3f29b74 + param_3.m_team * 4),
+        while (piVar4 = _Next1 + -1,
+              fVar2 = *(float *)((int)pfVar3 * 0x34 + 0x3f29b74 + _Pred.m_team * 4),
+              pfVar1 = (float *)(*piVar4 * 0x34 + 0x3f29b74 + _Pred.m_team * 4),
               *pfVar1 <= fVar2 && fVar2 != *pfVar1) {
-          *local_c = *ppfVar4;
-          local_c = ppfVar4;
+          *_Next1 = *piVar4;
+          _Next1 = piVar4;
         }
-        *local_c = pfVar3;
-        local_8 = ppfVar5;
+        *_Next1 = (int)pfVar3;
+        _Next = (int *)_Last_10;
       }
       else {
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  ((flameGeneric_s **)param_1,ppfVar5,local_8 + 2);
-        *param_1 = (int)pfVar3;
-        local_8 = ppfVar5;
+                  ((flameGeneric_s **)_First,_Last_10,(flameGeneric_s **)(_Next + 2));
+        *_First = (int)pfVar3;
+        _Next = (int *)_Last_10;
       }
     }
   }
@@ -3089,8 +3141,7 @@ std::_Insertion_sort1<int_*,compare_spawnpoint_score_sort,int>
 
 void __cdecl
 std::_Med3<SpawnPoint_*,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,SpawnPoint *param_2,SpawnPoint *param_3,
-          compare_spawnpoint_sort param_4)
+          (SpawnPoint *_First,SpawnPoint *_Mid,SpawnPoint *_Last,compare_spawnpoint_sort _Pred)
 
 {
   int iVar1;
@@ -3105,24 +3156,24 @@ std::_Med3<SpawnPoint_*,compare_spawnpoint_sort>
   int local_8;
   
   local_8 = g_sortAxis;
-  if ((param_2->origin[g_sortAxis] <= param_1->origin[g_sortAxis] &&
-       param_1->origin[g_sortAxis] != param_2->origin[g_sortAxis]) && (param_2 != param_1)) {
-    pSVar2 = param_2;
+  if ((_Mid->origin[g_sortAxis] <= _First->origin[g_sortAxis] &&
+       _First->origin[g_sortAxis] != _Mid->origin[g_sortAxis]) && (_Mid != _First)) {
+    pSVar2 = _Mid;
     pfVar3 = local_3c;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar3 = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
       pfVar3 = pfVar3 + 1;
     }
-    pSVar2 = param_1;
-    pSVar4 = param_2;
+    pSVar2 = _First;
+    pSVar4 = _Mid;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       pSVar4->origin[0] = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
       pSVar4 = (SpawnPoint *)(pSVar4->origin + 1);
     }
     pfVar3 = local_3c;
-    pSVar2 = param_1;
+    pSVar2 = _First;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       pSVar2->origin[0] = *pfVar3;
       pfVar3 = pfVar3 + 1;
@@ -3130,23 +3181,23 @@ std::_Med3<SpawnPoint_*,compare_spawnpoint_sort>
     }
   }
   local_40 = g_sortAxis;
-  if ((param_3->origin[g_sortAxis] <= param_2->origin[g_sortAxis] &&
-       param_2->origin[g_sortAxis] != param_3->origin[g_sortAxis]) && (param_3 != param_2)) {
-    pSVar2 = param_3;
+  if ((_Last->origin[g_sortAxis] <= _Mid->origin[g_sortAxis] &&
+       _Mid->origin[g_sortAxis] != _Last->origin[g_sortAxis]) && (_Last != _Mid)) {
+    pSVar2 = _Last;
     pfVar3 = local_74;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar3 = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
       pfVar3 = pfVar3 + 1;
     }
-    pSVar2 = param_2;
+    pSVar2 = _Mid;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
-      param_3->origin[0] = pSVar2->origin[0];
+      _Last->origin[0] = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
-      param_3 = (SpawnPoint *)(param_3->origin + 1);
+      _Last = (SpawnPoint *)(_Last->origin + 1);
     }
     pfVar3 = local_74;
-    pSVar2 = param_2;
+    pSVar2 = _Mid;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       pSVar2->origin[0] = *pfVar3;
       pfVar3 = pfVar3 + 1;
@@ -3154,26 +3205,26 @@ std::_Med3<SpawnPoint_*,compare_spawnpoint_sort>
     }
   }
   local_78 = g_sortAxis;
-  if ((param_2->origin[g_sortAxis] <= param_1->origin[g_sortAxis] &&
-       param_1->origin[g_sortAxis] != param_2->origin[g_sortAxis]) && (param_2 != param_1)) {
-    pSVar2 = param_2;
+  if ((_Mid->origin[g_sortAxis] <= _First->origin[g_sortAxis] &&
+       _First->origin[g_sortAxis] != _Mid->origin[g_sortAxis]) && (_Mid != _First)) {
+    pSVar2 = _Mid;
     pfVar3 = local_ac;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
       *pfVar3 = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
       pfVar3 = pfVar3 + 1;
     }
-    pSVar2 = param_1;
+    pSVar2 = _First;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
-      param_2->origin[0] = pSVar2->origin[0];
+      _Mid->origin[0] = pSVar2->origin[0];
       pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
-      param_2 = (SpawnPoint *)(param_2->origin + 1);
+      _Mid = (SpawnPoint *)(_Mid->origin + 1);
     }
     pfVar3 = local_ac;
     for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
-      param_1->origin[0] = *pfVar3;
+      _First->origin[0] = *pfVar3;
       pfVar3 = pfVar3 + 1;
-      param_1 = (SpawnPoint *)(param_1->origin + 1);
+      _First = (SpawnPoint *)(_First->origin + 1);
     }
   }
   return;
@@ -3184,29 +3235,29 @@ std::_Med3<SpawnPoint_*,compare_spawnpoint_sort>
 
 void __cdecl
 std::_Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,SpawnInfluencer **param_3,
-          compare_spawninfluencer_sort param_4)
+          (SpawnInfluencer **_First,SpawnInfluencer **_Mid,SpawnInfluencer **_Last,
+          compare_spawninfluencer_sort _Pred)
 
 {
   SpawnInfluencer *pSVar1;
   
-  if (((*param_2)->bounds[0] <= (*param_1)->bounds[0] &&
-       (*param_1)->bounds[0] != (*param_2)->bounds[0]) && (param_2 != param_1)) {
-    pSVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pSVar1;
+  if (((*_Mid)->bounds[0] <= (*_First)->bounds[0] && (*_First)->bounds[0] != (*_Mid)->bounds[0]) &&
+     (_Mid != _First)) {
+    pSVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pSVar1;
   }
-  if (((*param_3)->bounds[0] <= (*param_2)->bounds[0] &&
-       (*param_2)->bounds[0] != (*param_3)->bounds[0]) && (param_3 != param_2)) {
-    pSVar1 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = pSVar1;
+  if (((*_Last)->bounds[0] <= (*_Mid)->bounds[0] && (*_Mid)->bounds[0] != (*_Last)->bounds[0]) &&
+     (_Last != _Mid)) {
+    pSVar1 = *_Last;
+    *_Last = *_Mid;
+    *_Mid = pSVar1;
   }
-  if (((*param_2)->bounds[0] <= (*param_1)->bounds[0] &&
-       (*param_1)->bounds[0] != (*param_2)->bounds[0]) && (param_2 != param_1)) {
-    pSVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pSVar1;
+  if (((*_Mid)->bounds[0] <= (*_First)->bounds[0] && (*_First)->bounds[0] != (*_Mid)->bounds[0]) &&
+     (_Mid != _First)) {
+    pSVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pSVar1;
   }
   return;
 }
@@ -3216,33 +3267,33 @@ std::_Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
 
 void __cdecl
 std::_Med3<int_*,compare_spawnpoint_score_sort>
-          (int *param_1,int *param_2,int *param_3,compare_spawnpoint_score_sort param_4)
+          (int *_First,int *_Mid,int *_Last,compare_spawnpoint_score_sort _Pred)
 
 {
   float *pfVar1;
   float fVar2;
   int iVar3;
   
-  fVar2 = *(float *)(*param_2 * 0x34 + 0x3f29b74 + param_4.m_team * 4);
-  pfVar1 = (float *)(*param_1 * 0x34 + 0x3f29b74 + param_4.m_team * 4);
-  if ((*pfVar1 <= fVar2 && fVar2 != *pfVar1) && (param_2 != param_1)) {
-    iVar3 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = iVar3;
+  fVar2 = *(float *)(*_Mid * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+  pfVar1 = (float *)(*_First * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+  if ((*pfVar1 <= fVar2 && fVar2 != *pfVar1) && (_Mid != _First)) {
+    iVar3 = *_Mid;
+    *_Mid = *_First;
+    *_First = iVar3;
   }
-  fVar2 = *(float *)(*param_3 * 0x34 + 0x3f29b74 + param_4.m_team * 4);
-  pfVar1 = (float *)(*param_2 * 0x34 + 0x3f29b74 + param_4.m_team * 4);
-  if ((*pfVar1 <= fVar2 && fVar2 != *pfVar1) && (param_3 != param_2)) {
-    iVar3 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = iVar3;
+  fVar2 = *(float *)(*_Last * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+  pfVar1 = (float *)(*_Mid * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+  if ((*pfVar1 <= fVar2 && fVar2 != *pfVar1) && (_Last != _Mid)) {
+    iVar3 = *_Last;
+    *_Last = *_Mid;
+    *_Mid = iVar3;
   }
-  fVar2 = *(float *)(*param_2 * 0x34 + 0x3f29b74 + param_4.m_team * 4);
-  pfVar1 = (float *)(*param_1 * 0x34 + 0x3f29b74 + param_4.m_team * 4);
-  if ((*pfVar1 <= fVar2 && fVar2 != *pfVar1) && (param_2 != param_1)) {
-    iVar3 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = iVar3;
+  fVar2 = *(float *)(*_Mid * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+  pfVar1 = (float *)(*_First * 0x34 + 0x3f29b74 + _Pred.m_team * 4);
+  if ((*pfVar1 <= fVar2 && fVar2 != *pfVar1) && (_Mid != _First)) {
+    iVar3 = *_Mid;
+    *_Mid = *_First;
+    *_First = iVar3;
   }
   return;
 }
@@ -3252,24 +3303,22 @@ std::_Med3<int_*,compare_spawnpoint_score_sort>
 
 void __cdecl
 std::_Median<SpawnPoint_*,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,SpawnPoint *param_2,SpawnPoint *param_3,
-          compare_spawnpoint_sort param_4)
+          (SpawnPoint *_First,SpawnPoint *_Mid,SpawnPoint *_Last,compare_spawnpoint_sort _Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if (((int)param_3 - (int)param_1) / 0x34 < 0x29) {
-    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(param_1,param_2,param_3,param_4);
+  if (((int)_Last - (int)_First) / 0x34 < 0x29) {
+    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1) / 0x34 + 1;
+    iVar1 = ((int)_Last - (int)_First) / 0x34 + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
-    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4)
-    ;
-    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
-    _Med3<SpawnPoint_*,compare_spawnpoint_sort>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
+    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
+    _Med3<SpawnPoint_*,compare_spawnpoint_sort>(_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -3279,26 +3328,26 @@ std::_Median<SpawnPoint_*,compare_spawnpoint_sort>
 
 void __cdecl
 std::_Median<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,SpawnInfluencer **param_3,
-          compare_spawninfluencer_sort param_4)
+          (SpawnInfluencer **_First,SpawnInfluencer **_Mid,SpawnInfluencer **_Last,
+          compare_spawninfluencer_sort _Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
-    _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(param_1,param_2,param_3,param_4);
+  if ((int)_Last - (int)_First >> 2 < 0x29) {
+    _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last - (int)_First >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-              (param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
+              (_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
     _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-              (param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
+              (_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
     _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-              (param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+              (_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -3308,22 +3357,22 @@ std::_Median<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
 
 void __cdecl
 std::_Median<int_*,compare_spawnpoint_score_sort>
-          (int *param_1,int *param_2,int *param_3,compare_spawnpoint_score_sort param_4)
+          (int *_First,int *_Mid,int *_Last,compare_spawnpoint_score_sort _Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
-    _Med3<int_*,compare_spawnpoint_score_sort>(param_1,param_2,param_3,param_4);
+  if ((int)_Last - (int)_First >> 2 < 0x29) {
+    _Med3<int_*,compare_spawnpoint_score_sort>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last - (int)_First >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
-    _Med3<int_*,compare_spawnpoint_score_sort>(param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
-    _Med3<int_*,compare_spawnpoint_score_sort>(param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
-    _Med3<int_*,compare_spawnpoint_score_sort>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<int_*,compare_spawnpoint_score_sort>(param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+    _Med3<int_*,compare_spawnpoint_score_sort>(_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<int_*,compare_spawnpoint_score_sort>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred);
+    _Med3<int_*,compare_spawnpoint_score_sort>(_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
+    _Med3<int_*,compare_spawnpoint_score_sort>(_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -3333,7 +3382,7 @@ std::_Median<int_*,compare_spawnpoint_score_sort>
 
 pair<SpawnPoint_*,SpawnPoint_*> __cdecl
 std::_Unguarded_partition<SpawnPoint_*,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,SpawnPoint *param_2,compare_spawnpoint_sort param_3)
+          (SpawnPoint *param_1,SpawnPoint *_First,compare_spawnpoint_sort _Last)
 
 {
   int iVar1;
@@ -3369,50 +3418,50 @@ std::_Unguarded_partition<SpawnPoint_*,compare_spawnpoint_sort>
   int local_28;
   int local_24;
   int local_20;
-  SpawnPoint *local_18;
-  SpawnPoint *local_14;
-  SpawnPoint *local_10;
-  SpawnPoint *local_c;
-  SpawnPoint *local_8;
+  SpawnPoint *_Plast;
+  SpawnPoint *_Glast;
+  SpawnPoint *_Pfirst;
+  SpawnPoint *_Gfirst;
+  SpawnPoint *_Mid;
   
-  local_8 = param_2 + ((int)_param_3 - (int)param_2) / 0x68;
-  _Median<SpawnPoint_*,compare_spawnpoint_sort>(param_2,local_8,_param_3 + -1,in_stack_00000010);
-  local_10 = local_8;
-  local_18 = local_8 + 1;
-  while (((param_2 < local_10 &&
+  _Mid = _First + ((int)__Last - (int)_First) / 0x68;
+  _Median<SpawnPoint_*,compare_spawnpoint_sort>(_First,_Mid,__Last + -1,in_stack_00000010);
+  _Pfirst = _Mid;
+  _Plast = _Mid + 1;
+  while (((_First < _Pfirst &&
           (local_20 = g_sortAxis,
-          local_10->origin[g_sortAxis] < local_10[-1].origin[g_sortAxis] ||
-          local_10->origin[g_sortAxis] == local_10[-1].origin[g_sortAxis])) &&
+          _Pfirst->origin[g_sortAxis] < _Pfirst[-1].origin[g_sortAxis] ||
+          _Pfirst->origin[g_sortAxis] == _Pfirst[-1].origin[g_sortAxis])) &&
          (local_24 = g_sortAxis,
-         local_10[-1].origin[g_sortAxis] < local_10->origin[g_sortAxis] ||
-         local_10[-1].origin[g_sortAxis] == local_10->origin[g_sortAxis]))) {
-    local_10 = local_10 + -1;
+         _Pfirst[-1].origin[g_sortAxis] < _Pfirst->origin[g_sortAxis] ||
+         _Pfirst[-1].origin[g_sortAxis] == _Pfirst->origin[g_sortAxis]))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < _param_3 &&
+  while (((_Plast < __Last &&
           (local_28 = g_sortAxis,
-          local_10->origin[g_sortAxis] < local_18->origin[g_sortAxis] ||
-          local_10->origin[g_sortAxis] == local_18->origin[g_sortAxis])) &&
+          _Pfirst->origin[g_sortAxis] < _Plast->origin[g_sortAxis] ||
+          _Pfirst->origin[g_sortAxis] == _Plast->origin[g_sortAxis])) &&
          (local_2c = g_sortAxis,
-         local_18->origin[g_sortAxis] < local_10->origin[g_sortAxis] ||
-         local_18->origin[g_sortAxis] == local_10->origin[g_sortAxis]))) {
-    local_18 = local_18 + 1;
+         _Plast->origin[g_sortAxis] < _Pfirst->origin[g_sortAxis] ||
+         _Plast->origin[g_sortAxis] == _Pfirst->origin[g_sortAxis]))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
   do {
-    while (pSVar3 = local_18, _param_3 <= local_c) {
+    while (pSVar3 = _Plast, __Last <= _Gfirst) {
 LAB_0068aef4:
-      for (; pSVar2 = local_c, pSVar4 = local_10, pSVar3 = local_18, param_2 < local_14;
-          local_14 = local_14 + -1) {
+      for (; pSVar2 = _Gfirst, pSVar4 = _Pfirst, pSVar3 = _Plast, _First < _Glast;
+          _Glast = _Glast + -1) {
         local_70 = g_sortAxis;
-        if (local_10->origin[g_sortAxis] < local_14[-1].origin[g_sortAxis] ||
-            local_10->origin[g_sortAxis] == local_14[-1].origin[g_sortAxis]) {
+        if (_Pfirst->origin[g_sortAxis] < _Glast[-1].origin[g_sortAxis] ||
+            _Pfirst->origin[g_sortAxis] == _Glast[-1].origin[g_sortAxis]) {
           local_74 = g_sortAxis;
-          if (local_10->origin[g_sortAxis] <= local_14[-1].origin[g_sortAxis] &&
-              local_14[-1].origin[g_sortAxis] != local_10->origin[g_sortAxis]) break;
-          local_ac = local_10 + -1;
-          local_10 = local_ac;
-          local_b0 = local_14 + -1;
+          if (_Pfirst->origin[g_sortAxis] <= _Glast[-1].origin[g_sortAxis] &&
+              _Glast[-1].origin[g_sortAxis] != _Pfirst->origin[g_sortAxis]) break;
+          local_ac = _Pfirst + -1;
+          _Pfirst = local_ac;
+          local_b0 = _Glast + -1;
           if (local_ac != local_b0) {
             pSVar3 = local_ac;
             pfVar5 = local_a8;
@@ -3436,19 +3485,19 @@ LAB_0068aef4:
           }
         }
       }
-      if ((local_14 == param_2) && (local_c == _param_3)) {
-        param_1->origin[0] = (float)local_10;
-        param_1->origin[1] = (float)local_18;
-        pVar6.second = local_10;
+      if ((_Glast == _First) && (_Gfirst == __Last)) {
+        param_1->origin[0] = (float)_Pfirst;
+        param_1->origin[1] = (float)_Plast;
+        pVar6.second = _Pfirst;
         pVar6.first = param_1;
         return pVar6;
       }
-      if (local_14 == param_2) {
-        if (local_18 != local_c) {
-          local_ec = local_18;
-          local_e8 = local_10;
-          if (local_10 != local_18) {
-            pSVar2 = local_10;
+      if (_Glast == _First) {
+        if (_Plast != _Gfirst) {
+          local_ec = _Plast;
+          local_e8 = _Pfirst;
+          if (_Pfirst != _Plast) {
+            pSVar2 = _Pfirst;
             pfVar5 = local_e4;
             for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
               *pfVar5 = pSVar2->origin[0];
@@ -3469,13 +3518,13 @@ LAB_0068aef4:
             }
           }
         }
-        pSVar4 = local_c;
-        pSVar3 = local_10;
-        local_18 = local_18 + 1;
-        local_128 = local_c;
-        local_124 = local_10;
-        local_10 = local_10 + 1;
-        local_c = local_c + 1;
+        pSVar4 = _Gfirst;
+        pSVar3 = _Pfirst;
+        _Plast = _Plast + 1;
+        local_128 = _Gfirst;
+        local_124 = _Pfirst;
+        _Pfirst = _Pfirst + 1;
+        _Gfirst = _Gfirst + 1;
         if (pSVar3 != pSVar4) {
           pSVar2 = pSVar3;
           pfVar5 = local_120;
@@ -3498,12 +3547,12 @@ LAB_0068aef4:
           }
         }
       }
-      else if (local_c == _param_3) {
-        local_14 = local_14 + -1;
-        local_160 = local_10 + -1;
-        local_10 = local_160;
-        if ((local_14 != local_160) && (local_14 != local_160)) {
-          pSVar3 = local_14;
+      else if (_Gfirst == __Last) {
+        _Glast = _Glast + -1;
+        local_160 = _Pfirst + -1;
+        _Pfirst = local_160;
+        if ((_Glast != local_160) && (_Glast != local_160)) {
+          pSVar3 = _Glast;
           pfVar5 = local_15c;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
             *pfVar5 = pSVar3->origin[0];
@@ -3511,7 +3560,7 @@ LAB_0068aef4:
             pfVar5 = pfVar5 + 1;
           }
           pSVar3 = local_160;
-          pSVar4 = local_14;
+          pSVar4 = _Glast;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
             pSVar4->origin[0] = pSVar3->origin[0];
             pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
@@ -3524,12 +3573,12 @@ LAB_0068aef4:
             local_160 = (SpawnPoint *)(local_160->origin + 1);
           }
         }
-        pSVar3 = local_10;
-        local_19c = local_18 + -1;
-        local_18 = local_19c;
-        local_198 = local_10;
-        if (local_10 != local_19c) {
-          pSVar4 = local_10;
+        pSVar3 = _Pfirst;
+        local_19c = _Plast + -1;
+        _Plast = local_19c;
+        local_198 = _Pfirst;
+        if (_Pfirst != local_19c) {
+          pSVar4 = _Pfirst;
           pfVar5 = local_194;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
             *pfVar5 = pSVar4->origin[0];
@@ -3551,41 +3600,41 @@ LAB_0068aef4:
         }
       }
       else {
-        local_14 = local_14 + -1;
-        if (local_c != local_14) {
-          pSVar3 = local_c;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          pSVar3 = _Gfirst;
           pfVar5 = local_1d0;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
             *pfVar5 = pSVar3->origin[0];
             pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
             pfVar5 = pfVar5 + 1;
           }
-          pSVar3 = local_14;
+          pSVar3 = _Glast;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
             pSVar2->origin[0] = pSVar3->origin[0];
             pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
             pSVar2 = (SpawnPoint *)(pSVar2->origin + 1);
           }
           pfVar5 = local_1d0;
-          pSVar3 = local_14;
+          pSVar3 = _Glast;
           for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
             pSVar3->origin[0] = *pfVar5;
             pfVar5 = pfVar5 + 1;
             pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
           }
         }
-        local_c = local_c + 1;
+        _Gfirst = _Gfirst + 1;
       }
     }
     local_30 = g_sortAxis;
-    if (local_c->origin[g_sortAxis] < local_10->origin[g_sortAxis] ||
-        local_c->origin[g_sortAxis] == local_10->origin[g_sortAxis]) {
+    if (_Gfirst->origin[g_sortAxis] < _Pfirst->origin[g_sortAxis] ||
+        _Gfirst->origin[g_sortAxis] == _Pfirst->origin[g_sortAxis]) {
       local_34 = g_sortAxis;
-      if (local_c->origin[g_sortAxis] <= local_10->origin[g_sortAxis] &&
-          local_10->origin[g_sortAxis] != local_c->origin[g_sortAxis]) goto LAB_0068aef4;
-      local_6c = local_18;
-      local_18 = local_18 + 1;
-      if (pSVar3 != local_c) {
+      if (_Gfirst->origin[g_sortAxis] <= _Pfirst->origin[g_sortAxis] &&
+          _Pfirst->origin[g_sortAxis] != _Gfirst->origin[g_sortAxis]) goto LAB_0068aef4;
+      local_6c = _Plast;
+      _Plast = _Plast + 1;
+      if (pSVar3 != _Gfirst) {
         pSVar4 = pSVar3;
         pfVar5 = local_68;
         for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -3593,14 +3642,14 @@ LAB_0068aef4:
           pSVar4 = (SpawnPoint *)(pSVar4->origin + 1);
           pfVar5 = pfVar5 + 1;
         }
-        pSVar4 = local_c;
+        pSVar4 = _Gfirst;
         for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
           pSVar3->origin[0] = pSVar4->origin[0];
           pSVar4 = (SpawnPoint *)(pSVar4->origin + 1);
           pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
         }
         pfVar5 = local_68;
-        pSVar3 = local_c;
+        pSVar3 = _Gfirst;
         for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
           pSVar3->origin[0] = *pfVar5;
           pfVar5 = pfVar5 + 1;
@@ -3608,7 +3657,7 @@ LAB_0068aef4:
         }
       }
     }
-    local_c = local_c + 1;
+    _Gfirst = _Gfirst + 1;
   } while( true );
 }
 
@@ -3617,169 +3666,124 @@ LAB_0068aef4:
 
 pair<SpawnInfluencer_*_*,SpawnInfluencer_*_*> __cdecl
 std::_Unguarded_partition<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,compare_spawninfluencer_sort param_3)
+          (SpawnInfluencer **param_1,SpawnInfluencer **_First,compare_spawninfluencer_sort _Last)
 
 {
-  float fVar1;
-  int iVar2;
-  SpawnInfluencer *pSVar3;
-  bool bVar4;
-  undefined2 uVar5;
-  bool bVar6;
-  bool bVar7;
-  undefined2 uVar8;
-  undefined1 uVar9;
-  int *piVar10;
-  SpawnInfluencer *pSVar11;
-  pair<SpawnInfluencer_*_*,SpawnInfluencer_*_*> pVar12;
+  SpawnInfluencer *pSVar1;
+  SpawnInfluencer **ppSVar2;
+  SpawnInfluencer **ppSVar3;
+  pair<SpawnInfluencer_*_*,SpawnInfluencer_*_*> pVar4;
   undefined3 in_stack_0000000d;
   compare_spawninfluencer_sort in_stack_00000010;
-  SpawnInfluencer *local_18;
-  SpawnInfluencer *local_14;
-  SpawnInfluencer *local_10;
-  SpawnInfluencer *local_c;
+  SpawnInfluencer **_Plast;
+  SpawnInfluencer **_Glast;
+  SpawnInfluencer **_Pfirst;
+  SpawnInfluencer **_Gfirst;
+  SpawnInfluencer **_Mid;
   
-  local_10 = (SpawnInfluencer *)
-             (param_2 +
-             (((int)_param_3 - (int)param_2 >> 2) - ((int)_param_3 - (int)param_2 >> 0x1f) >> 1));
+  _Pfirst = _First + (((int)__Last - (int)_First >> 2) - ((int)__Last - (int)_First >> 0x1f) >> 1);
   _Median<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-            (param_2,(SpawnInfluencer **)local_10,(SpawnInfluencer **)&_param_3[-1].lastUpdateTime,
-             in_stack_00000010);
-  local_18 = (SpawnInfluencer *)&local_10->expireTime;
-  while (((param_2 < local_10 &&
-          (iVar2 = local_10[-1].lastUpdateTime + 0x1c,
-          (*(SpawnInfluencer **)local_10)->bounds[0] < *(float *)iVar2 ||
-          (*(SpawnInfluencer **)local_10)->bounds[0] == *(float *)iVar2)) &&
-         (fVar1 = *(float *)(local_10[-1].lastUpdateTime + 0x1c),
-         fVar1 < (*(SpawnInfluencer **)local_10)->bounds[0] ||
-         fVar1 == (*(SpawnInfluencer **)local_10)->bounds[0]))) {
-    local_10 = (SpawnInfluencer *)&local_10[-1].lastUpdateTime;
+            (_First,_Pfirst,__Last + -1,in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst &&
+          ((*_Pfirst)->bounds[0] < _Pfirst[-1]->bounds[0] ||
+           (*_Pfirst)->bounds[0] == _Pfirst[-1]->bounds[0])) &&
+         (_Pfirst[-1]->bounds[0] < (*_Pfirst)->bounds[0] ||
+          _Pfirst[-1]->bounds[0] == (*_Pfirst)->bounds[0]))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < _param_3 &&
-          ((*(SpawnInfluencer **)local_10)->bounds[0] < (*(SpawnInfluencer **)local_18)->bounds[0]
-           || (*(SpawnInfluencer **)local_10)->bounds[0] ==
-              (*(SpawnInfluencer **)local_18)->bounds[0])) &&
-         ((*(SpawnInfluencer **)local_18)->bounds[0] < (*(SpawnInfluencer **)local_10)->bounds[0] ||
-          (*(SpawnInfluencer **)local_18)->bounds[0] == (*(SpawnInfluencer **)local_10)->bounds[0]))
-        ) {
-    local_18 = (SpawnInfluencer *)&local_18->expireTime;
+  while (((_Plast < __Last &&
+          ((*_Pfirst)->bounds[0] < (*_Plast)->bounds[0] ||
+           (*_Pfirst)->bounds[0] == (*_Plast)->bounds[0])) &&
+         ((*_Plast)->bounds[0] < (*_Pfirst)->bounds[0] ||
+          (*_Plast)->bounds[0] == (*_Pfirst)->bounds[0]))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pSVar3 = local_c;
-  pSVar11 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  ppSVar2 = _Gfirst;
+  ppSVar3 = _Pfirst;
   do {
-    while (local_10 = pSVar11, local_c = pSVar3, _param_3 <= local_c) {
+    while (_Pfirst = ppSVar3, _Gfirst = ppSVar2, __Last <= _Gfirst) {
 LAB_0068b4cb:
-      for (; param_2 < local_14; local_14 = (SpawnInfluencer *)&local_14[-1].lastUpdateTime) {
-        iVar2 = local_14[-1].lastUpdateTime + 0x1c;
-        if ((*(SpawnInfluencer **)local_10)->bounds[0] < *(float *)iVar2 ||
-            (*(SpawnInfluencer **)local_10)->bounds[0] == *(float *)iVar2) {
-          fVar1 = *(float *)(local_14[-1].lastUpdateTime + 0x1c);
-          if ((*(SpawnInfluencer **)local_10)->bounds[0] <= fVar1 &&
-              fVar1 != (*(SpawnInfluencer **)local_10)->bounds[0]) break;
-          local_10 = (SpawnInfluencer *)&local_10[-1].lastUpdateTime;
-          piVar10 = &local_14[-1].lastUpdateTime;
-          if (local_10 != (SpawnInfluencer *)piVar10) {
-            iVar2 = *(int *)local_10;
-            *(int *)local_10 = *piVar10;
-            *piVar10 = iVar2;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        if ((*_Pfirst)->bounds[0] < _Glast[-1]->bounds[0] ||
+            (*_Pfirst)->bounds[0] == _Glast[-1]->bounds[0]) {
+          if ((*_Pfirst)->bounds[0] <= _Glast[-1]->bounds[0] &&
+              _Glast[-1]->bounds[0] != (*_Pfirst)->bounds[0]) break;
+          _Pfirst = _Pfirst + -1;
+          ppSVar2 = _Glast + -1;
+          if (_Pfirst != ppSVar2) {
+            pSVar1 = *_Pfirst;
+            *_Pfirst = *ppSVar2;
+            *ppSVar2 = pSVar1;
           }
         }
       }
-      if ((local_14 == (SpawnInfluencer *)param_2) && (local_c == _param_3)) {
-        *param_1 = local_10;
-        param_1[1] = local_18;
-        pVar12.second = (SpawnInfluencer **)local_10;
-        pVar12.first = param_1;
-        return pVar12;
+      if ((_Glast == _First) && (_Gfirst == __Last)) {
+        *param_1 = (SpawnInfluencer *)_Pfirst;
+        param_1[1] = (SpawnInfluencer *)_Plast;
+        pVar4.second = _Pfirst;
+        pVar4.first = param_1;
+        return pVar4;
       }
-      if (local_14 == (SpawnInfluencer *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          bVar6 = local_10->used;
-          bVar7 = local_10->active;
-          uVar8 = *(undefined2 *)&local_10->field_0x2;
-          bVar4 = local_18->active;
-          uVar5 = *(undefined2 *)&local_18->field_0x2;
-          local_10->used = local_18->used;
-          local_10->active = bVar4;
-          *(undefined2 *)&local_10->field_0x2 = uVar5;
-          local_18->used = bVar6;
-          local_18->active = bVar7;
-          *(undefined2 *)&local_18->field_0x2 = uVar8;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          pSVar1 = *_Pfirst;
+          *_Pfirst = *_Plast;
+          *_Plast = pSVar1;
         }
-        local_18 = (SpawnInfluencer *)&local_18->expireTime;
-        pSVar3 = (SpawnInfluencer *)&local_c->expireTime;
-        pSVar11 = (SpawnInfluencer *)&local_10->expireTime;
-        if (local_10 != local_c) {
-          bVar6 = local_10->used;
-          bVar7 = local_10->active;
-          uVar8 = *(undefined2 *)&local_10->field_0x2;
-          bVar4 = local_c->active;
-          uVar5 = *(undefined2 *)&local_c->field_0x2;
-          local_10->used = local_c->used;
-          local_10->active = bVar4;
-          *(undefined2 *)&local_10->field_0x2 = uVar5;
-          local_c->used = bVar6;
-          local_c->active = bVar7;
-          *(undefined2 *)&local_c->field_0x2 = uVar8;
+        _Plast = _Plast + 1;
+        ppSVar2 = _Gfirst + 1;
+        ppSVar3 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          pSVar1 = *_Pfirst;
+          *_Pfirst = *_Gfirst;
+          *_Gfirst = pSVar1;
         }
       }
-      else if (local_c == _param_3) {
-        local_14 = (SpawnInfluencer *)&local_14[-1].lastUpdateTime;
-        pSVar11 = (SpawnInfluencer *)&local_10[-1].lastUpdateTime;
-        if ((local_14 != pSVar11) && (local_14 != pSVar11)) {
-          iVar2 = *(int *)local_14;
-          *(int *)local_14 = *(int *)pSVar11;
-          *(int *)pSVar11 = iVar2;
+      else if (_Gfirst == __Last) {
+        _Glast = _Glast + -1;
+        ppSVar3 = _Pfirst + -1;
+        if ((_Glast != ppSVar3) && (_Glast != ppSVar3)) {
+          pSVar1 = *_Glast;
+          *_Glast = *ppSVar3;
+          *ppSVar3 = pSVar1;
         }
-        local_18 = (SpawnInfluencer *)&local_18[-1].lastUpdateTime;
-        pSVar3 = local_c;
-        if (pSVar11 != local_18) {
-          iVar2 = *(int *)pSVar11;
-          *(int *)pSVar11 = *(int *)local_18;
-          *(int *)local_18 = iVar2;
+        _Plast = _Plast + -1;
+        ppSVar2 = _Gfirst;
+        if (ppSVar3 != _Plast) {
+          pSVar1 = *ppSVar3;
+          *ppSVar3 = *_Plast;
+          *_Plast = pSVar1;
         }
       }
       else {
-        local_14 = (SpawnInfluencer *)&local_14[-1].lastUpdateTime;
-        if (local_c != local_14) {
-          pSVar3 = *(SpawnInfluencer **)local_c;
-          uVar9 = *(undefined1 *)((int)local_14 + 1);
-          uVar5 = *(undefined2 *)((int)local_14 + 2);
-          local_c->used = (bool)*(undefined1 *)local_14;
-          local_c->active = (bool)uVar9;
-          *(undefined2 *)&local_c->field_0x2 = uVar5;
-          *(SpawnInfluencer **)local_14 = pSVar3;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          pSVar1 = *_Gfirst;
+          *_Gfirst = *_Glast;
+          *_Glast = pSVar1;
         }
-        pSVar3 = (SpawnInfluencer *)&local_c->expireTime;
-        pSVar11 = local_10;
+        ppSVar2 = _Gfirst + 1;
+        ppSVar3 = _Pfirst;
       }
     }
-    pSVar3 = local_18;
-    if ((*(SpawnInfluencer **)local_c)->bounds[0] < (*(SpawnInfluencer **)local_10)->bounds[0] ||
-        (*(SpawnInfluencer **)local_c)->bounds[0] == (*(SpawnInfluencer **)local_10)->bounds[0]) {
-      if ((*(SpawnInfluencer **)local_c)->bounds[0] <= (*(SpawnInfluencer **)local_10)->bounds[0] &&
-          (*(SpawnInfluencer **)local_10)->bounds[0] != (*(SpawnInfluencer **)local_c)->bounds[0])
-      goto LAB_0068b4cb;
-      pSVar3 = (SpawnInfluencer *)&local_18->expireTime;
-      if (local_18 != local_c) {
-        bVar6 = local_18->used;
-        bVar7 = local_18->active;
-        uVar8 = *(undefined2 *)&local_18->field_0x2;
-        bVar4 = local_c->active;
-        uVar5 = *(undefined2 *)&local_c->field_0x2;
-        local_18->used = local_c->used;
-        local_18->active = bVar4;
-        *(undefined2 *)&local_18->field_0x2 = uVar5;
-        local_c->used = bVar6;
-        local_c->active = bVar7;
-        *(undefined2 *)&local_c->field_0x2 = uVar8;
+    ppSVar2 = _Plast;
+    if ((*_Gfirst)->bounds[0] < (*_Pfirst)->bounds[0] ||
+        (*_Gfirst)->bounds[0] == (*_Pfirst)->bounds[0]) {
+      if ((*_Gfirst)->bounds[0] <= (*_Pfirst)->bounds[0] &&
+          (*_Pfirst)->bounds[0] != (*_Gfirst)->bounds[0]) goto LAB_0068b4cb;
+      ppSVar2 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        pSVar1 = *_Plast;
+        *_Plast = *_Gfirst;
+        *_Gfirst = pSVar1;
       }
     }
-    local_18 = pSVar3;
-    pSVar3 = (SpawnInfluencer *)&local_c->expireTime;
-    pSVar11 = local_10;
+    _Plast = ppSVar2;
+    ppSVar2 = _Gfirst + 1;
+    ppSVar3 = _Pfirst;
   } while( true );
 }
 
@@ -3788,7 +3792,7 @@ LAB_0068b4cb:
 
 pair<int_*,int_*> __cdecl
 std::_Unguarded_partition<int_*,compare_spawnpoint_score_sort>
-          (int *param_1,int *param_2,compare_spawnpoint_score_sort param_3)
+          (int *param_1,int *_First,compare_spawnpoint_score_sort _Last)
 
 {
   float *pfVar1;
@@ -3798,123 +3802,124 @@ std::_Unguarded_partition<int_*,compare_spawnpoint_score_sort>
   int *piVar5;
   pair<int_*,int_*> pVar6;
   compare_spawnpoint_score_sort in_stack_00000010;
-  int *local_18;
-  int *local_14;
-  int *local_10;
-  int *local_c;
+  int *_Plast;
+  int *_Glast;
+  int *_Pfirst;
+  int *_Gfirst;
+  int *_Mid;
   
-  local_10 = param_2 + ((param_3.m_team - (int)param_2 >> 2) -
-                        (param_3.m_team - (int)param_2 >> 0x1f) >> 1);
+  _Pfirst = _First + ((_Last.m_team - (int)_First >> 2) - (_Last.m_team - (int)_First >> 0x1f) >> 1)
+  ;
   _Median<int_*,compare_spawnpoint_score_sort>
-            (param_2,local_10,(int *)(param_3.m_team + -4),in_stack_00000010);
-  local_18 = local_10 + 1;
-  while (((param_2 < local_10 &&
-          (fVar2 = *(float *)(local_10[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
-          pfVar1 = (float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+            (_First,_Pfirst,(int *)(_Last.m_team + -4),in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst &&
+          (fVar2 = *(float *)(_Pfirst[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+          pfVar1 = (float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
           fVar2 < *pfVar1 || fVar2 == *pfVar1)) &&
-         (fVar2 = *(float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
-         pfVar1 = (float *)(local_10[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+         (fVar2 = *(float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+         pfVar1 = (float *)(_Pfirst[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
          fVar2 < *pfVar1 || fVar2 == *pfVar1))) {
-    local_10 = local_10 + -1;
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < (uint)param_3.m_team &&
-          (fVar2 = *(float *)(*local_18 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
-          pfVar1 = (float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+  while (((_Plast < (uint)_Last.m_team &&
+          (fVar2 = *(float *)(*_Plast * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+          pfVar1 = (float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
           fVar2 < *pfVar1 || fVar2 == *pfVar1)) &&
-         (fVar2 = *(float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
-         pfVar1 = (float *)(*local_18 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+         (fVar2 = *(float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
+         pfVar1 = (float *)(*_Plast * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4),
          fVar2 < *pfVar1 || fVar2 == *pfVar1))) {
-    local_18 = local_18 + 1;
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  piVar5 = local_c;
-  piVar4 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  piVar5 = _Gfirst;
+  piVar4 = _Pfirst;
   do {
-    while (local_10 = piVar4, local_c = piVar5, (uint)param_3.m_team <= local_c) {
+    while (_Pfirst = piVar4, _Gfirst = piVar5, (uint)_Last.m_team <= _Gfirst) {
 LAB_0068b9e1:
-      for (; param_2 < local_14; local_14 = local_14 + -1) {
-        fVar2 = *(float *)(local_14[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
-        pfVar1 = (float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        fVar2 = *(float *)(_Glast[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+        pfVar1 = (float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
         if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
-          fVar2 = *(float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
-          pfVar1 = (float *)(local_14[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+          fVar2 = *(float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+          pfVar1 = (float *)(_Glast[-1] * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
           if (*pfVar1 <= fVar2 && fVar2 != *pfVar1) break;
-          local_10 = local_10 + -1;
-          piVar5 = local_14 + -1;
-          if (local_10 != piVar5) {
-            iVar3 = *local_10;
-            *local_10 = *piVar5;
+          _Pfirst = _Pfirst + -1;
+          piVar5 = _Glast + -1;
+          if (_Pfirst != piVar5) {
+            iVar3 = *_Pfirst;
+            *_Pfirst = *piVar5;
             *piVar5 = iVar3;
           }
         }
       }
-      if ((local_14 == param_2) && (local_c == (int *)param_3.m_team)) {
-        *param_1 = (int)local_10;
-        param_1[1] = (int)local_18;
-        pVar6.second = local_18;
+      if ((_Glast == _First) && (_Gfirst == (int *)_Last.m_team)) {
+        *param_1 = (int)_Pfirst;
+        param_1[1] = (int)_Plast;
+        pVar6.second = _Plast;
         pVar6.first = param_1;
         return pVar6;
       }
-      if (local_14 == param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          iVar3 = *local_10;
-          *local_10 = *local_18;
-          *local_18 = iVar3;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          iVar3 = *_Pfirst;
+          *_Pfirst = *_Plast;
+          *_Plast = iVar3;
         }
-        local_18 = local_18 + 1;
-        piVar5 = local_c + 1;
-        piVar4 = local_10 + 1;
-        if (local_10 != local_c) {
-          iVar3 = *local_10;
-          *local_10 = *local_c;
-          *local_c = iVar3;
+        _Plast = _Plast + 1;
+        piVar5 = _Gfirst + 1;
+        piVar4 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          iVar3 = *_Pfirst;
+          *_Pfirst = *_Gfirst;
+          *_Gfirst = iVar3;
         }
       }
-      else if (local_c == (int *)param_3.m_team) {
-        local_14 = local_14 + -1;
-        piVar4 = local_10 + -1;
-        if ((local_14 != piVar4) && (local_14 != piVar4)) {
-          iVar3 = *local_14;
-          *local_14 = *piVar4;
+      else if (_Gfirst == (int *)_Last.m_team) {
+        _Glast = _Glast + -1;
+        piVar4 = _Pfirst + -1;
+        if ((_Glast != piVar4) && (_Glast != piVar4)) {
+          iVar3 = *_Glast;
+          *_Glast = *piVar4;
           *piVar4 = iVar3;
         }
-        local_18 = local_18 + -1;
-        piVar5 = local_c;
-        if (piVar4 != local_18) {
+        _Plast = _Plast + -1;
+        piVar5 = _Gfirst;
+        if (piVar4 != _Plast) {
           iVar3 = *piVar4;
-          *piVar4 = *local_18;
-          *local_18 = iVar3;
+          *piVar4 = *_Plast;
+          *_Plast = iVar3;
         }
       }
       else {
-        local_14 = local_14 + -1;
-        if (local_c != local_14) {
-          iVar3 = *local_c;
-          *local_c = *local_14;
-          *local_14 = iVar3;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          iVar3 = *_Gfirst;
+          *_Gfirst = *_Glast;
+          *_Glast = iVar3;
         }
-        piVar5 = local_c + 1;
-        piVar4 = local_10;
+        piVar5 = _Gfirst + 1;
+        piVar4 = _Pfirst;
       }
     }
-    fVar2 = *(float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
-    pfVar1 = (float *)(*local_c * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
-    piVar5 = local_18;
+    fVar2 = *(float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+    pfVar1 = (float *)(*_Gfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+    piVar5 = _Plast;
     if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
-      fVar2 = *(float *)(*local_c * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
-      pfVar1 = (float *)(*local_10 * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+      fVar2 = *(float *)(*_Gfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
+      pfVar1 = (float *)(*_Pfirst * 0x34 + 0x3f29b74 + in_stack_00000010.m_team * 4);
       if (*pfVar1 <= fVar2 && fVar2 != *pfVar1) goto LAB_0068b9e1;
-      piVar5 = local_18 + 1;
-      if (local_18 != local_c) {
-        iVar3 = *local_18;
-        *local_18 = *local_c;
-        *local_c = iVar3;
+      piVar5 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        iVar3 = *_Plast;
+        *_Plast = *_Gfirst;
+        *_Gfirst = iVar3;
       }
     }
-    local_18 = piVar5;
-    piVar5 = local_c + 1;
-    piVar4 = local_10;
+    _Plast = piVar5;
+    piVar5 = _Gfirst + 1;
+    piVar4 = _Pfirst;
   } while( true );
 }
 
@@ -3923,36 +3928,35 @@ LAB_0068b9e1:
 
 void __cdecl
 std::_Sort<SpawnPoint_*,int,compare_spawnpoint_sort>
-          (SpawnPoint *param_1,SpawnPoint *param_2,int param_3,compare_spawnpoint_sort param_4)
+          (SpawnPoint *_First,SpawnPoint *_Last,int _Ideal,compare_spawnpoint_sort _Pred)
 
 {
-  SpawnPoint *local_10;
+  SpawnPoint *_Mid;
   SpawnPoint *local_c;
-  float local_8;
+  int _Count;
   
-  while ((local_8 = (float)(((int)param_2 - (int)param_1) / 0x34), 0x20 < (int)local_8 &&
-         (0 < param_3))) {
+  while ((_Count = ((int)_Last - (int)_First) / 0x34, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<SpawnPoint_*,compare_spawnpoint_sort>
-              ((SpawnPoint *)&local_10,param_1,SUB41(param_2,0));
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if (((int)local_10 - (int)param_1) / 0x34 < ((int)param_2 - (int)local_c) / 0x34) {
-      _Sort<SpawnPoint_*,int,compare_spawnpoint_sort>(param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+              ((SpawnPoint *)&_Mid,_First,SUB41(_Last,0));
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if (((int)_Mid - (int)_First) / 0x34 < ((int)_Last - (int)local_c) / 0x34) {
+      _Sort<SpawnPoint_*,int,compare_spawnpoint_sort>(_First,_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<SpawnPoint_*,int,compare_spawnpoint_sort>(local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+      _Sort<SpawnPoint_*,int,compare_spawnpoint_sort>(local_c,_Last,_Ideal,_Pred);
+      _Last = _Mid;
     }
   }
-  if ((int)local_8 < 0x21) {
-    if (1 < (int)local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<SpawnPoint_*,compare_spawnpoint_sort,SpawnPoint>
-                (param_1,param_2,param_4,(SpawnPoint *)0x0);
+                (_First,_Last,_Pred,(SpawnPoint *)0x0);
     }
   }
   else {
-    make_heap<SpawnPoint_*,compare_spawnpoint_sort>(param_1,param_2,param_4);
-    _Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>(param_1,param_2,param_4);
+    make_heap<SpawnPoint_*,compare_spawnpoint_sort>(_First,_Last,_Pred);
+    _Sort_heap<SpawnPoint_*,compare_spawnpoint_sort>(_First,_Last,_Pred);
   }
   return;
 }
@@ -3962,39 +3966,39 @@ std::_Sort<SpawnPoint_*,int,compare_spawnpoint_sort>
 
 void __cdecl
 std::_Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>
-          (SpawnInfluencer **param_1,SpawnInfluencer **param_2,int param_3,
-          compare_spawninfluencer_sort param_4)
+          (SpawnInfluencer **_First,SpawnInfluencer **_Last,int _Ideal,
+          compare_spawninfluencer_sort _Pred)
 
 {
   SpawnInfluencer **local_ac;
-  SpawnInfluencer *local_10;
+  SpawnInfluencer *_Mid;
   SpawnInfluencer **local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = (int)_Last - (int)_First >> 2, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<SpawnInfluencer_*_*,compare_spawninfluencer_sort>
-              (&local_10,param_1,SUB41(param_2,0));
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
+              (&_Mid,_First,SUB41(_Last,0));
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if ((int)_Mid - (int)_First >> 2 < (int)_Last - (int)local_c >> 2) {
       _Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>
-                (param_1,(SpawnInfluencer **)local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,(SpawnInfluencer **)_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>(local_c,param_2,param_3,param_4);
-      param_2 = (SpawnInfluencer **)local_10;
+      _Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>(local_c,_Last,_Ideal,_Pred);
+      _Last = (SpawnInfluencer **)_Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<SpawnInfluencer_*_*,compare_spawninfluencer_sort,SpawnInfluencer_*>
-                (param_1,param_2,param_4,(SpawnInfluencer **)0x0);
+                (_First,_Last,_Pred,(SpawnInfluencer **)0x0);
     }
   }
   else {
-    make_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(param_1,param_2,param_4);
-    for (local_ac = param_2; 1 < (int)local_ac - (int)param_1 >> 2; local_ac = local_ac + -1) {
-      pop_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(param_1,local_ac,param_4);
+    make_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(_First,_Last,_Pred);
+    for (local_ac = _Last; 1 < (int)local_ac - (int)_First >> 2; local_ac = local_ac + -1) {
+      pop_heap<SpawnInfluencer_*_*,compare_spawninfluencer_sort>(_First,local_ac,_Pred);
     }
   }
   return;
@@ -4005,36 +4009,36 @@ std::_Sort<SpawnInfluencer_*_*,int,compare_spawninfluencer_sort>
 
 void __cdecl
 std::_Sort<int_*,int,compare_spawnpoint_score_sort>
-          (int *param_1,int *param_2,int param_3,compare_spawnpoint_score_sort param_4)
+          (int *_First,int *_Last,int _Ideal,compare_spawnpoint_score_sort _Pred)
 
 {
   int *local_ac;
-  int *local_10;
+  int *_Mid;
   int *local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = (int)_Last - (int)_First >> 2, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<int_*,compare_spawnpoint_score_sort>
-              ((int *)&local_10,param_1,(compare_spawnpoint_score_sort)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
-      _Sort<int_*,int,compare_spawnpoint_score_sort>(param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+              ((int *)&_Mid,_First,(compare_spawnpoint_score_sort)_Last);
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if ((int)_Mid - (int)_First >> 2 < (int)_Last - (int)local_c >> 2) {
+      _Sort<int_*,int,compare_spawnpoint_score_sort>(_First,_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<int_*,int,compare_spawnpoint_score_sort>(local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+      _Sort<int_*,int,compare_spawnpoint_score_sort>(local_c,_Last,_Ideal,_Pred);
+      _Last = _Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
-      _Insertion_sort1<int_*,compare_spawnpoint_score_sort,int>(param_1,param_2,param_4,(int *)0x0);
+  if (_Count < 0x21) {
+    if (1 < _Count) {
+      _Insertion_sort1<int_*,compare_spawnpoint_score_sort,int>(_First,_Last,_Pred,(int *)0x0);
     }
   }
   else {
-    make_heap<int_*,compare_spawnpoint_score_sort>(param_1,param_2,param_4);
-    for (local_ac = param_2; 1 < (int)local_ac - (int)param_1 >> 2; local_ac = local_ac + -1) {
-      pop_heap<int_*,compare_spawnpoint_score_sort>(param_1,local_ac,param_4);
+    make_heap<int_*,compare_spawnpoint_score_sort>(_First,_Last,_Pred);
+    for (local_ac = _Last; 1 < (int)local_ac - (int)_First >> 2; local_ac = local_ac + -1) {
+      pop_heap<int_*,compare_spawnpoint_score_sort>(_First,local_ac,_Pred);
     }
   }
   return;
@@ -4045,7 +4049,7 @@ std::_Sort<int_*,int,compare_spawnpoint_score_sort>
 
 SpawnPoint * __cdecl
 stdext::unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>
-          (SpawnPoint *param_1,SpawnPoint *param_2,SpawnPoint *param_3)
+          (SpawnPoint *_First,SpawnPoint *_Last,SpawnPoint *_Dest)
 
 {
   int iVar1;
@@ -4054,9 +4058,9 @@ stdext::unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>
   SpawnPoint *local_28;
   SpawnPoint *local_24;
   
-  local_28 = param_3;
-  local_24 = param_2;
-  while (param_1 != local_24) {
+  local_28 = _Dest;
+  local_24 = _Last;
+  while (_First != local_24) {
     local_24 = local_24 + -1;
     local_28 = local_28 + -1;
     pSVar2 = local_24;
@@ -4067,6 +4071,6 @@ stdext::unchecked_copy_backward<SpawnPoint_*,SpawnPoint_*>
       pSVar3 = (SpawnPoint *)(pSVar3->origin + 1);
     }
   }
-  return param_3 + -(((int)param_2 - (int)param_1) / 0x34);
+  return _Dest + -(((int)_Last - (int)_First) / 0x34);
 }
 

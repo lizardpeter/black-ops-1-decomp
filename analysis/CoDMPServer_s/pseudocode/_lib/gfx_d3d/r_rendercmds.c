@@ -2,6 +2,8 @@
 
 // 008035A0  R_InitRenderCommands  (gfx_d3d/r_rendercmds.cpp:174)
 
+/* WARNING: Variable defined which should be unmapped: renderCmdWarnSize */
+
 void __cdecl R_InitRenderCommands(void)
 
 {
@@ -12,6 +14,7 @@ void __cdecl R_InitRenderCommands(void)
   int iVar5;
   int *piVar6;
   int *piVar7;
+  int renderCmdWarnSize;
   
   iVar5 = gfxCfg.maxClientViews * 0x18000;
   iVar2 = gfxCfg.maxClientViews * 0x48000;
@@ -81,12 +84,12 @@ void __cdecl R_InitRenderBuffers(void)
   float fVar13;
   GfxMeshData *pGVar14;
   uint *puStack_10;
-  float local_c;
+  uint viewIndex;
   uint uStack_8;
   uint uStack_4;
   
   iVar10 = 0x2a235c8;
-  local_c = 0.0;
+  viewIndex = 0;
   do {
     *(int *)(iVar10 + -0x18) = iVar10 + -0x18;
     iVar5 = _Z_TryVirtualAllocInternal(0x1e000);
@@ -115,11 +118,11 @@ void __cdecl R_InitRenderBuffers(void)
       VirtualFree(pvVar6,0,0x8000);
       goto LAB_00803c34;
     }
-    local_c = (float)((int)local_c + 0x24);
+    viewIndex = viewIndex + 0x24;
     *(LPVOID *)(iVar10 + 4) = pvVar6;
     iVar10 = iVar10 + 0x24;
-  } while ((uint)local_c < 0x48);
-  local_c = 5.8207547e-36;
+  } while (viewIndex < 0x48);
+  viewIndex = 0x4f79668;
   puStack_10 = gfxBuf.dynamicBufferCurrentFrame;
   pGVar14 = g_codeMesh;
   iVar10 = 0x2af4b28;
@@ -156,7 +159,7 @@ void __cdecl R_InitRenderBuffers(void)
     *(LPVOID *)(iVar10 + 4) = pvVar6;
     *puStack_10 = 0;
     uStack_8 = 0;
-    fVar11 = local_c;
+    fVar11 = (float)viewIndex;
     do {
       uVar12 = 0;
       fVar13 = fVar11;
@@ -184,7 +187,7 @@ void __cdecl R_InitRenderBuffers(void)
     } while (uStack_8 < 4);
     pGVar14 = pGVar14 + 1;
     puStack_10 = puStack_10 + 1;
-    local_c = (float)((int)local_c + 0xe380);
+    viewIndex = viewIndex + 0xe380;
     uStack_4 = uStack_4 + 0x186300;
     iVar10 = iVar10 + 0x186300;
   } while (uStack_4 < 0x30c600);
@@ -267,6 +270,8 @@ LAB_00803c34:
 
 // 00803D40  R_InitGlassRenderBuffersCallback  (gfx_d3d/r_rendercmds.cpp:657)
 
+/* WARNING: Variable defined which should be unmapped: numVerts */
+
 void __cdecl R_InitGlassRenderBuffersCallback(void *param_1)
 
 {
@@ -278,6 +283,8 @@ void __cdecl R_InitGlassRenderBuffersCallback(void *param_1)
   char *pcVar6;
   int iVar7;
   int iVar8;
+  void *data;
+  int numVerts;
   
   iVar1 = *(int *)((int)param_1 + 4);
   iVar2 = *(int *)((int)param_1 + 8);
@@ -649,8 +656,8 @@ void __cdecl R_AddCmdEndOfList(void)
 
 void __cdecl
 R_AddCmdDrawStretchComposite
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,GfxImage *param_10)
+          (float w,float h,float s0,float t0,float s1,float t1,float composite,float param_8,
+          float *param_9,GfxImage *param_10)
 
 {
   int iVar1;
@@ -661,6 +668,7 @@ R_AddCmdDrawStretchComposite
   byte bVar5;
   uchar *unaff_ESI;
   GfxCmdHeader in_XMM0_Da;
+  float y;
   
   pGVar2 = s_cmdList;
   iVar1 = s_cmdList->usedTotal;
@@ -691,14 +699,14 @@ R_AddCmdDrawStretchComposite
   }
   pGVar3->byteCount = 0x2c;
   pGVar3[2] = in_XMM0_Da;
-  pGVar3[3] = (GfxCmdHeader)param_1;
-  pGVar3[4] = (GfxCmdHeader)param_2;
-  pGVar3[5] = (GfxCmdHeader)param_3;
-  pGVar3[6] = (GfxCmdHeader)param_4;
-  pGVar3[7] = (GfxCmdHeader)param_5;
-  pGVar3[8] = (GfxCmdHeader)param_6;
+  pGVar3[3] = (GfxCmdHeader)w;
+  pGVar3[4] = (GfxCmdHeader)h;
+  pGVar3[5] = (GfxCmdHeader)s0;
+  pGVar3[6] = (GfxCmdHeader)t0;
+  pGVar3[7] = (GfxCmdHeader)s1;
+  pGVar3[8] = (GfxCmdHeader)t1;
   pGVar3[1] = (GfxCmdHeader)param_8;
-  pGVar3[9] = (GfxCmdHeader)param_7;
+  pGVar3[9] = (GfxCmdHeader)composite;
   pGVar3 = pGVar3 + 10;
   if (in_EAX == 0) {
     pGVar3->byteCount = 0xffff;
@@ -715,8 +723,8 @@ R_AddCmdDrawStretchComposite
 
 void __cdecl
 R_AddCmdDrawStretchPicW
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,Material *param_11)
+          (float y,float w0,float w,float h,float s0,float t0,float s1,float t1,float color,
+          float *material,Material *param_11)
 
 {
   int iVar1;
@@ -727,6 +735,7 @@ R_AddCmdDrawStretchPicW
   byte bVar6;
   GfxCmdHeader GVar7;
   Material *unaff_EDI;
+  float x;
   char *pcVar8;
   char *pcVar9;
   
@@ -784,18 +793,18 @@ LAB_00804870:
     g_ui3d_windows[(int)pdVar5].numRenderCmds = g_ui3d_windows[(int)pdVar5].numRenderCmds + 1;
   }
   pGVar4->byteCount = 0x30;
-  pGVar4[2] = (GfxCmdHeader)param_1;
-  pGVar4[3] = (GfxCmdHeader)param_2;
-  pGVar4[4] = (GfxCmdHeader)param_3;
-  pGVar4[5] = (GfxCmdHeader)param_4;
-  pGVar4[6] = (GfxCmdHeader)param_5;
-  pGVar4[7] = (GfxCmdHeader)param_6;
-  pGVar4[8] = (GfxCmdHeader)param_7;
-  pGVar4[9] = (GfxCmdHeader)param_8;
+  pGVar4[2] = (GfxCmdHeader)y;
+  pGVar4[3] = (GfxCmdHeader)w0;
+  pGVar4[4] = (GfxCmdHeader)w;
+  pGVar4[5] = (GfxCmdHeader)h;
+  pGVar4[6] = (GfxCmdHeader)s0;
+  pGVar4[7] = (GfxCmdHeader)t0;
+  pGVar4[8] = (GfxCmdHeader)s1;
+  pGVar4[9] = (GfxCmdHeader)t1;
   pGVar4[1] = GVar7;
-  pGVar4[10] = (GfxCmdHeader)param_9;
+  pGVar4[10] = (GfxCmdHeader)color;
   pGVar4 = pGVar4 + 0xb;
-  if (param_10 == (float *)0x0) {
+  if (material == (float *)0x0) {
     pGVar4->byteCount = 0xffff;
     pGVar4->id = 0xff;
     pGVar4->ui3d = 0xff;
@@ -810,15 +819,15 @@ LAB_00804870:
 
 void __cdecl
 R_AddCmdDrawStretchPic
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,Material *param_10)
+          (float y,float w,float h,float s0,float t0,float s1,float t1,float param_8,float *param_9,
+          Material *param_10)
 
 {
   Material *in_EAX;
   float *in_ECX;
+  float x;
   
-  R_AddCmdDrawStretchPicW
-            (param_1,param_2,1.0,param_3,param_4,param_5,param_6,param_7,param_8,in_ECX,in_EAX);
+  R_AddCmdDrawStretchPicW(y,w,1.0,h,s0,t0,s1,t1,param_8,in_ECX,in_EAX);
   return;
 }
 
@@ -827,9 +836,8 @@ R_AddCmdDrawStretchPic
 
 void __cdecl
 R_AddCmdDrawStretchPicRotateXYW
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float param_10,float *param_11,
-          Material *param_12)
+          (float w0,float w,float h,float s0,float t0,float s1,float t1,float angle,float color,
+          float material,float *param_11,Material *param_12)
 
 {
   GfxCmdHeader *pGVar1;
@@ -843,6 +851,7 @@ R_AddCmdDrawStretchPicRotateXYW
   float10 fVar8;
   GfxCmdHeader in_XMM0_Da;
   GfxCmdHeader GVar9;
+  float y;
   
   pGVar4 = s_cmdList;
   iVar3 = s_cmdList->usedTotal;
@@ -876,17 +885,17 @@ R_AddCmdDrawStretchPicRotateXYW
     param_11 = (float *)rgp.defaultMaterial;
   }
   pGVar7[2] = in_XMM0_Da;
-  pGVar7[3] = (GfxCmdHeader)param_1;
-  pGVar7[4] = (GfxCmdHeader)param_2;
-  pGVar7[5] = (GfxCmdHeader)param_3;
-  pGVar7[6] = (GfxCmdHeader)param_4;
-  pGVar7[7] = (GfxCmdHeader)param_5;
-  pGVar7[8] = (GfxCmdHeader)param_6;
-  pGVar7[9] = (GfxCmdHeader)param_7;
+  pGVar7[3] = (GfxCmdHeader)w0;
+  pGVar7[4] = (GfxCmdHeader)w;
+  pGVar7[5] = (GfxCmdHeader)h;
+  pGVar7[6] = (GfxCmdHeader)s0;
+  pGVar7[7] = (GfxCmdHeader)t0;
+  pGVar7[8] = (GfxCmdHeader)s1;
+  pGVar7[9] = (GfxCmdHeader)t1;
   pGVar7[1] = (GfxCmdHeader)param_11;
-  pGVar7[10] = (GfxCmdHeader)param_8;
+  pGVar7[10] = (GfxCmdHeader)angle;
   pGVar1 = pGVar7 + 0xb;
-  if (param_10 == 0.0) {
+  if (material == 0.0) {
     pGVar1->byteCount = 0xffff;
     pGVar1->id = 0xff;
     pGVar1->ui3d = 0xff;
@@ -894,8 +903,8 @@ R_AddCmdDrawStretchPicRotateXYW
   else {
     Byte4PackVertexColor((float *)pGVar1,unaff_EDI);
   }
-  fVar8 = (float10)floorf(param_9 * 0.0027777778);
-  GVar2 = (GfxCmdHeader)(float)(((float10)(param_9 * 0.0027777778) - fVar8) * (float10)360.0);
+  fVar8 = (float10)floorf(color * 0.0027777778);
+  GVar2 = (GfxCmdHeader)(float)(((float10)(color * 0.0027777778) - fVar8) * (float10)360.0);
   GVar9 = (GfxCmdHeader)((float)GVar2 - 360.0);
   if ((float)GVar9 < 0.0) {
     GVar9 = GVar2;
@@ -907,18 +916,19 @@ R_AddCmdDrawStretchPicRotateXYW
 
 // 00804B50  R_AddCmdDrawStretchPicRotateXY  (gfx_d3d/r_rendercmds.cpp:1934)
 
+/* WARNING: Variable defined which should be unmapped: y */
+
 void __cdecl
 R_AddCmdDrawStretchPicRotateXY
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,Material *param_11)
+          (float w,float h,float s0,float t0,float s1,float t1,float angle,float material,
+          float param_9,float *param_10,Material *param_11)
 
 {
   float in_ECX;
-  Material *unaff_retaddr;
+  float y;
   
   R_AddCmdDrawStretchPicRotateXYW
-            (param_1,1.0,param_2,param_3,param_4,param_5,param_6,param_7,param_8,in_ECX,
-             (float *)param_9,unaff_retaddr);
+            (w,1.0,h,s0,t0,s1,t1,angle,material,in_ECX,(float *)param_9,(Material *)y);
   return;
 }
 
@@ -927,8 +937,8 @@ R_AddCmdDrawStretchPicRotateXY
 
 void __cdecl
 R_AddCmdDrawStretchPicRotateST
-          (float param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float param_10,float *param_11,
+          (float w,float h,float centerS,float centerT,float radiusST,float scaleFinalS,
+          float scaleFinalT,float angle,float color,float material,float *param_11,
           Material *param_12)
 
 {
@@ -943,6 +953,7 @@ R_AddCmdDrawStretchPicRotateST
   float10 fVar8;
   GfxCmdHeader in_XMM0_Da;
   GfxCmdHeader GVar9;
+  float y;
   
   pGVar4 = s_cmdList;
   iVar3 = s_cmdList->usedTotal;
@@ -976,17 +987,17 @@ R_AddCmdDrawStretchPicRotateST
     param_11 = (float *)rgp.defaultMaterial;
   }
   pGVar7[2] = in_XMM0_Da;
-  pGVar7[3] = (GfxCmdHeader)param_1;
-  pGVar7[4] = (GfxCmdHeader)param_2;
-  pGVar7[5] = (GfxCmdHeader)param_3;
-  pGVar7[6] = (GfxCmdHeader)param_4;
-  pGVar7[7] = (GfxCmdHeader)param_5;
-  pGVar7[8] = (GfxCmdHeader)param_6;
-  pGVar7[9] = (GfxCmdHeader)param_7;
+  pGVar7[3] = (GfxCmdHeader)w;
+  pGVar7[4] = (GfxCmdHeader)h;
+  pGVar7[5] = (GfxCmdHeader)centerS;
+  pGVar7[6] = (GfxCmdHeader)centerT;
+  pGVar7[7] = (GfxCmdHeader)radiusST;
+  pGVar7[8] = (GfxCmdHeader)scaleFinalS;
+  pGVar7[9] = (GfxCmdHeader)scaleFinalT;
   pGVar7[1] = (GfxCmdHeader)param_11;
-  pGVar7[10] = (GfxCmdHeader)param_8;
+  pGVar7[10] = (GfxCmdHeader)angle;
   pGVar1 = pGVar7 + 0xb;
-  if (param_10 == 0.0) {
+  if (material == 0.0) {
     pGVar1->byteCount = 0xffff;
     pGVar1->id = 0xff;
     pGVar1->ui3d = 0xff;
@@ -994,8 +1005,8 @@ R_AddCmdDrawStretchPicRotateST
   else {
     Byte4PackVertexColor((float *)pGVar1,unaff_EDI);
   }
-  fVar8 = (float10)floorf(param_9 * 0.0027777778);
-  GVar2 = (GfxCmdHeader)(float)(((float10)(param_9 * 0.0027777778) - fVar8) * (float10)360.0);
+  fVar8 = (float10)floorf(color * 0.0027777778);
+  GVar2 = (GfxCmdHeader)(float)(((float10)(color * 0.0027777778) - fVar8) * (float10)360.0);
   GVar9 = (GfxCmdHeader)((float)GVar2 - 360.0);
   if ((float)GVar9 < 0.0) {
     GVar9 = GVar2;
@@ -1008,8 +1019,8 @@ R_AddCmdDrawStretchPicRotateST
 // 00804F20  R_AddCmdDrawText  (gfx_d3d/r_rendercmds.cpp:2174)
 
 void __cdecl
-R_AddCmdDrawText(char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6
-                ,float param_7,float param_8,float *param_9,int param_10)
+R_AddCmdDrawText(char *maxChars,int font,Font_s *x,float y,float xScale,float yScale,float rotation,
+                float color,float *style,int param_10)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1018,57 +1029,58 @@ R_AddCmdDrawText(char *param_1,int param_2,Font_s *param_3,float param_4,float p
   GfxCmdArray *pGVar4;
   byte bVar5;
   char *pcVar6;
-  ulong uVar7;
-  dvar_s *pdVar8;
-  uint uVar9;
-  GfxCmdHeader *pGVar10;
+  ulong count;
+  dvar_s *pdVar7;
+  uint uVar8;
+  GfxCmdHeader *pGVar9;
   uchar *unaff_EDI;
+  char *text;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar6 = param_1;
+  if (*maxChars != '\0') {
+    pcVar6 = maxChars;
     do {
       cVar2 = *pcVar6;
       pcVar6 = pcVar6 + 1;
     } while (cVar2 != '\0');
-    uVar7 = (int)pcVar6 - (int)(param_1 + 1);
+    count = (int)pcVar6 - (int)(maxChars + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar9 = uVar7 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar9) {
+    uVar8 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar9;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar8;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar8 = (dvar_s *)0xffffffff;
+      pdVar7 = (dvar_s *)0xffffffff;
       bVar5 = 0;
     }
     else {
-      pdVar8 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar8 < 0) {
+      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar7 < 0) {
         bVar5 = 0;
       }
       else {
-        bVar5 = (byte)pdVar8 | 0x80;
+        bVar5 = (byte)pdVar7 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar5;
-    if (pdVar8 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar8].numRenderCmds = g_ui3d_windows[(int)pdVar8].numRenderCmds + 1;
+    pGVar9->ui3d = bVar5;
+    if (pdVar7 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar9;
-    pGVar10[1] = (GfxCmdHeader)param_4;
-    pGVar10[2] = (GfxCmdHeader)param_5;
-    pGVar10[3] = (GfxCmdHeader)1.0;
-    pGVar10[4] = (GfxCmdHeader)param_8;
-    pGVar10[5] = (GfxCmdHeader)param_3;
-    pGVar10[6] = (GfxCmdHeader)param_6;
-    pGVar10[7] = (GfxCmdHeader)param_7;
-    pGVar1 = pGVar10 + 8;
-    if (param_9 == (float *)0x0) {
+    pGVar9->byteCount = (ushort)uVar8;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)xScale;
+    pGVar9[3] = (GfxCmdHeader)1.0;
+    pGVar9[4] = (GfxCmdHeader)color;
+    pGVar9[5] = (GfxCmdHeader)x;
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[7] = (GfxCmdHeader)rotation;
+    pGVar1 = pGVar9 + 8;
+    if (style == (float *)0x0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1076,29 +1088,29 @@ R_AddCmdDrawText(char *param_1,int param_2,Font_s *param_3,float param_4,float p
     else {
       Byte4PackVertexColor((float *)pGVar1,unaff_EDI);
     }
-    pGVar10[9].byteCount = (undefined2)param_2;
-    pGVar10[9].id = param_2._2_1_;
-    pGVar10[9].ui3d = param_2._3_1_;
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = (undefined2)font;
+    pGVar9[9].id = font._2_1_;
+    pGVar9[9].ui3d = font._3_1_;
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
     if (param_10 == 3) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
     else if (param_10 == 6) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
     else if (param_10 == 0x80) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar7);
-    *(uchar *)((int)pGVar10 + uVar7 + 0x5c) = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)maxChars,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
   }
   return;
 }
@@ -1106,10 +1118,11 @@ R_AddCmdDrawText(char *param_1,int param_2,Font_s *param_3,float param_4,float p
 
 // 00805080  R_AddCmdDrawTextW  (gfx_d3d/r_rendercmds.cpp:2179)
 
+/* WARNING: Variable defined which should be unmapped: rotation */
+
 void __cdecl
-R_AddCmdDrawTextW(char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,
-                 float param_6,float param_7,float param_8,float param_9,float *param_10,
-                 int param_11)
+R_AddCmdDrawTextW(char *maxChars,int font,Font_s *x,float y,float w,float xScale,float yScale,
+                 float color,float style,float *param_10,int param_11)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1118,59 +1131,61 @@ R_AddCmdDrawTextW(char *param_1,int param_2,Font_s *param_3,float param_4,float 
   GfxCmdArray *pGVar4;
   byte bVar5;
   char *pcVar6;
-  ulong uVar7;
-  dvar_s *pdVar8;
-  uint uVar9;
-  GfxCmdHeader *pGVar10;
+  ulong count;
+  dvar_s *pdVar7;
+  uint uVar8;
+  GfxCmdHeader *pGVar9;
   uchar *unaff_EDI;
+  char *text;
+  float rotation;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar6 = param_1;
+  if (*maxChars != '\0') {
+    pcVar6 = maxChars;
     do {
       cVar2 = *pcVar6;
       pcVar6 = pcVar6 + 1;
     } while (cVar2 != '\0');
-    uVar7 = (int)pcVar6 - (int)(param_1 + 1);
+    count = (int)pcVar6 - (int)(maxChars + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar9 = uVar7 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar9) {
+    uVar8 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar9;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar8;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar8 = (dvar_s *)0xffffffff;
+      pdVar7 = (dvar_s *)0xffffffff;
       bVar5 = 0;
     }
     else {
-      pdVar8 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar8 < 0) {
+      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar7 < 0) {
         bVar5 = 0;
       }
       else {
-        bVar5 = (byte)pdVar8 | 0x80;
+        bVar5 = (byte)pdVar7 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar5;
-    if (pdVar8 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar8].numRenderCmds = g_ui3d_windows[(int)pdVar8].numRenderCmds + 1;
+    pGVar9->ui3d = bVar5;
+    if (pdVar7 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar9;
-    pGVar10[1] = (GfxCmdHeader)param_4;
-    pGVar10[2] = (GfxCmdHeader)param_5;
-    pGVar10[3] = (GfxCmdHeader)param_6;
-    pGVar10[4].byteCount = 0;
-    pGVar10[4].id = '\0';
-    pGVar10[4].ui3d = '\0';
-    pGVar10[5] = (GfxCmdHeader)param_3;
-    pGVar10[6] = (GfxCmdHeader)param_7;
-    pGVar10[7] = (GfxCmdHeader)param_8;
-    pGVar1 = pGVar10 + 8;
-    if (param_9 == 0.0) {
+    pGVar9->byteCount = (ushort)uVar8;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)w;
+    pGVar9[3] = (GfxCmdHeader)xScale;
+    pGVar9[4].byteCount = 0;
+    pGVar9[4].id = '\0';
+    pGVar9[4].ui3d = '\0';
+    pGVar9[5] = (GfxCmdHeader)x;
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[7] = (GfxCmdHeader)color;
+    pGVar1 = pGVar9 + 8;
+    if (style == 0.0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1178,29 +1193,29 @@ R_AddCmdDrawTextW(char *param_1,int param_2,Font_s *param_3,float param_4,float 
     else {
       Byte4PackVertexColor((float *)pGVar1,unaff_EDI);
     }
-    pGVar10[9].byteCount = (undefined2)param_2;
-    pGVar10[9].id = param_2._2_1_;
-    pGVar10[9].ui3d = param_2._3_1_;
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = (undefined2)font;
+    pGVar9[9].id = font._2_1_;
+    pGVar9[9].ui3d = font._3_1_;
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
     if (param_10 == (float *)&DAT_00000003) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
     else if (param_10 == (float *)&DAT_00000006) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
     else if (param_10 == (float *)0x80) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar7);
-    *(uchar *)((int)pGVar10 + uVar7 + 0x5c) = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)maxChars,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
   }
   return;
 }
@@ -1208,10 +1223,12 @@ R_AddCmdDrawTextW(char *param_1,int param_2,Font_s *param_3,float param_4,float 
 
 // 008051E0  R_AddCmdDrawTextSubtitle  (gfx_d3d/r_rendercmds.cpp:2184)
 
+/* WARNING: Variable defined which should be unmapped: maxChars */
+
 void __cdecl
 R_AddCmdDrawTextSubtitle
-          (char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,int param_10,float *param_11,bool param_12)
+          (char *font,int x,Font_s *y,float xScale,float yScale,float color,float style,
+          float glowColor,float *cinematic,int param_10,float *param_11,bool param_12)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1219,63 +1236,65 @@ R_AddCmdDrawTextSubtitle
   int iVar3;
   GfxCmdArray *pGVar4;
   char *pcVar5;
-  ulong uVar6;
-  dvar_s *pdVar7;
-  uint uVar8;
-  byte bVar9;
+  ulong count;
+  dvar_s *pdVar6;
+  uint uVar7;
+  byte bVar8;
   float *unaff_ESI;
-  GfxCmdHeader *pGVar10;
+  GfxCmdHeader *pGVar9;
   float *unaff_EDI;
+  char *text;
+  int maxChars;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar5 = param_1;
+  if (*font != '\0') {
+    pcVar5 = font;
     do {
       cVar2 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar2 != '\0');
-    uVar6 = (int)pcVar5 - (int)(param_1 + 1);
+    count = (int)pcVar5 - (int)(font + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar8 = uVar6 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
+    uVar7 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar7) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar8;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar7;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar7 = (dvar_s *)0xffffffff;
-      bVar9 = 0;
+      pdVar6 = (dvar_s *)0xffffffff;
+      bVar8 = 0;
     }
     else {
-      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar7 < 0) {
-        bVar9 = 0;
+      pdVar6 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar6 < 0) {
+        bVar8 = 0;
       }
       else {
-        bVar9 = (byte)pdVar7 | 0x80;
+        bVar8 = (byte)pdVar6 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar9;
-    if (pdVar7 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
+    pGVar9->ui3d = bVar8;
+    if (pdVar6 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar6].numRenderCmds = g_ui3d_windows[(int)pdVar6].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar8;
-    pGVar10[1] = (GfxCmdHeader)param_3;
-    pGVar10[2] = (GfxCmdHeader)param_4;
-    pGVar10[3] = (GfxCmdHeader)1.0;
-    pGVar10[4].byteCount = 0;
-    pGVar10[4].id = '\0';
-    pGVar10[4].ui3d = '\0';
-    pGVar10[6] = (GfxCmdHeader)param_5;
-    pGVar10[5].byteCount = (undefined2)param_2;
-    pGVar10[5].id = param_2._2_1_;
-    pGVar10[5].ui3d = param_2._3_1_;
-    pGVar10[7] = (GfxCmdHeader)param_6;
-    pGVar1 = pGVar10 + 8;
-    if (param_7 == 0.0) {
+    pGVar9->byteCount = (ushort)uVar7;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)xScale;
+    pGVar9[3] = (GfxCmdHeader)1.0;
+    pGVar9[4].byteCount = 0;
+    pGVar9[4].id = '\0';
+    pGVar9[4].ui3d = '\0';
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[5].byteCount = (undefined2)x;
+    pGVar9[5].id = x._2_1_;
+    pGVar9[5].ui3d = x._3_1_;
+    pGVar9[7] = (GfxCmdHeader)color;
+    pGVar1 = pGVar9 + 8;
+    if (style == 0.0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1283,34 +1302,34 @@ R_AddCmdDrawTextSubtitle
     else {
       Byte4PackVertexColor((float *)pGVar1,(uchar *)unaff_EDI);
     }
-    pGVar10[9].byteCount = 0xffff;
-    pGVar10[9].id = 0xff;
-    pGVar10[9].ui3d = '\x7f';
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
-    if (param_8 == 4.2039e-45) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = 0xffff;
+    pGVar9[9].id = 0xff;
+    pGVar9[9].ui3d = '\x7f';
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
+    if (glowColor == 4.2039e-45) {
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 8.40779e-45) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 8.40779e-45) {
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 1.79366e-43) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 1.79366e-43) {
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar6);
-    *(uchar *)((int)pGVar10 + uVar6 + 0x5c) = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)font,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
     if ((char)param_10 != '\0') {
-      pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x200);
+      pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x200);
     }
-    pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x100);
-    SetDrawText2DGlowParms((GfxCmdDrawText2D *)param_7,unaff_EDI,unaff_ESI);
+    pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x100);
+    SetDrawText2DGlowParms((GfxCmdDrawText2D *)style,unaff_EDI,unaff_ESI);
   }
   return;
 }
@@ -1320,9 +1339,10 @@ R_AddCmdDrawTextSubtitle
 
 void __cdecl
 R_AddCmdDrawTextWithEffects
-          (char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,int param_11,float *param_12,
-          Material *param_13,Material *param_14,int param_15,int param_16,int param_17,int param_18)
+          (char *maxChars,int font,Font_s *x,float y,float w,float xScale,float yScale,
+          float rotation,float color,float *style,int glowColor,float *fxMaterial,
+          Material *fxMaterialGlow,Material *fxBirthTime,int fxLetterTime,int fxDecayStartTime,
+          int fxDecayDuration,int param_18)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1330,59 +1350,60 @@ R_AddCmdDrawTextWithEffects
   int iVar3;
   GfxCmdArray *pGVar4;
   char *pcVar5;
-  ulong uVar6;
-  dvar_s *pdVar7;
-  uint uVar8;
-  byte bVar9;
+  ulong count;
+  dvar_s *pdVar6;
+  uint uVar7;
+  byte bVar8;
   float *unaff_ESI;
-  GfxCmdHeader *pGVar10;
+  GfxCmdHeader *pGVar9;
   float *unaff_EDI;
+  char *text;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar5 = param_1;
+  if (*maxChars != '\0') {
+    pcVar5 = maxChars;
     do {
       cVar2 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar2 != '\0');
-    uVar6 = (int)pcVar5 - (int)(param_1 + 1);
+    count = (int)pcVar5 - (int)(maxChars + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar8 = uVar6 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
+    uVar7 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar7) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar8;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar7;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar7 = (dvar_s *)0xffffffff;
-      bVar9 = 0;
+      pdVar6 = (dvar_s *)0xffffffff;
+      bVar8 = 0;
     }
     else {
-      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar7 < 0) {
-        bVar9 = 0;
+      pdVar6 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar6 < 0) {
+        bVar8 = 0;
       }
       else {
-        bVar9 = (byte)pdVar7 | 0x80;
+        bVar8 = (byte)pdVar6 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar9;
-    if (pdVar7 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
+    pGVar9->ui3d = bVar8;
+    if (pdVar6 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar6].numRenderCmds = g_ui3d_windows[(int)pdVar6].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar8;
-    pGVar10[1] = (GfxCmdHeader)param_4;
-    pGVar10[2] = (GfxCmdHeader)param_5;
-    pGVar10[3] = (GfxCmdHeader)param_6;
-    pGVar10[4] = (GfxCmdHeader)param_9;
-    pGVar10[6] = (GfxCmdHeader)param_7;
-    pGVar10[5] = (GfxCmdHeader)param_3;
-    pGVar10[7] = (GfxCmdHeader)param_8;
-    pGVar1 = pGVar10 + 8;
-    if (param_10 == (float *)0x0) {
+    pGVar9->byteCount = (ushort)uVar7;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)w;
+    pGVar9[3] = (GfxCmdHeader)xScale;
+    pGVar9[4] = (GfxCmdHeader)color;
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[5] = (GfxCmdHeader)x;
+    pGVar9[7] = (GfxCmdHeader)rotation;
+    pGVar1 = pGVar9 + 8;
+    if (style == (float *)0x0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1390,49 +1411,50 @@ R_AddCmdDrawTextWithEffects
     else {
       Byte4PackVertexColor((float *)pGVar1,(uchar *)unaff_EDI);
     }
-    pGVar10[9].byteCount = (undefined2)param_2;
-    pGVar10[9].id = param_2._2_1_;
-    pGVar10[9].ui3d = param_2._3_1_;
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
-    if (param_11 == 3) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = (undefined2)font;
+    pGVar9[9].id = font._2_1_;
+    pGVar9[9].ui3d = font._3_1_;
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
+    if (glowColor == 3) {
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_11 == 6) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 6) {
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_11 == 0x80) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 0x80) {
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar6);
-    *(uchar *)((int)pGVar10 + uVar6 + 0x5c) = '\0';
-    SetDrawText2DGlowParms((GfxCmdDrawText2D *)param_10,unaff_EDI,unaff_ESI);
-    if (((param_13 != (Material *)0x0) && (param_14 != (Material *)0x0)) && (param_15 != 0)) {
-      pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x880);
-      pGVar10[0x14] = (GfxCmdHeader)param_13;
-      pGVar10[0x15] = (GfxCmdHeader)param_14;
-      pGVar10[0xe].byteCount = (undefined2)param_15;
-      pGVar10[0xe].id = param_15._2_1_;
-      pGVar10[0xe].ui3d = param_15._3_1_;
-      pGVar10[0xf].byteCount = (undefined2)param_16;
-      pGVar10[0xf].id = param_16._2_1_;
-      pGVar10[0xf].ui3d = param_16._3_1_;
-      pGVar10[0x10].byteCount = (undefined2)param_17;
-      pGVar10[0x10].id = param_17._2_1_;
-      pGVar10[0x10].ui3d = param_17._3_1_;
-      pGVar10[0x11].byteCount = (undefined2)param_18;
-      pGVar10[0x11].id = param_18._2_1_;
-      pGVar10[0x11].ui3d = param_18._3_1_;
-      pGVar10[0x16].byteCount = 0;
-      pGVar10[0x16].id = '\0';
-      pGVar10[0x16].ui3d = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)maxChars,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
+    SetDrawText2DGlowParms((GfxCmdDrawText2D *)style,unaff_EDI,unaff_ESI);
+    if (((fxMaterialGlow != (Material *)0x0) && (fxBirthTime != (Material *)0x0)) &&
+       (fxLetterTime != 0)) {
+      pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x880);
+      pGVar9[0x14] = (GfxCmdHeader)fxMaterialGlow;
+      pGVar9[0x15] = (GfxCmdHeader)fxBirthTime;
+      pGVar9[0xe].byteCount = (undefined2)fxLetterTime;
+      pGVar9[0xe].id = fxLetterTime._2_1_;
+      pGVar9[0xe].ui3d = fxLetterTime._3_1_;
+      pGVar9[0xf].byteCount = (undefined2)fxDecayStartTime;
+      pGVar9[0xf].id = fxDecayStartTime._2_1_;
+      pGVar9[0xf].ui3d = fxDecayStartTime._3_1_;
+      pGVar9[0x10].byteCount = (undefined2)fxDecayDuration;
+      pGVar9[0x10].id = fxDecayDuration._2_1_;
+      pGVar9[0x10].ui3d = fxDecayDuration._3_1_;
+      pGVar9[0x11].byteCount = (undefined2)param_18;
+      pGVar9[0x11].id = param_18._2_1_;
+      pGVar9[0x11].ui3d = param_18._3_1_;
+      pGVar9[0x16].byteCount = 0;
+      pGVar9[0x16].id = '\0';
+      pGVar9[0x16].ui3d = '\0';
     }
   }
   return;
@@ -1441,11 +1463,14 @@ R_AddCmdDrawTextWithEffects
 
 // 00805510  R_AddCmdDrawTextWithCOD7DecodeEffects  (gfx_d3d/r_rendercmds.cpp:2210)
 
+/* WARNING: Variable defined which should be unmapped: maxChars */
+
 void __cdecl
 R_AddCmdDrawTextWithCOD7DecodeEffects
-          (char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,int param_10,float *param_11,Material *param_12
-          ,Material *param_13,int param_14,int param_15,int param_16,int param_17)
+          (char *font,int x,Font_s *y,float xScale,float yScale,float color,float style,
+          float fxMaterial,float *fxMaterialGlow,int fxBirthTime,float *fxLetterTime,
+          Material *fxDecayStartTime,Material *fxDecayDuration,int param_14,int param_15,
+          int param_16,int param_17)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1453,63 +1478,65 @@ R_AddCmdDrawTextWithCOD7DecodeEffects
   int iVar3;
   GfxCmdArray *pGVar4;
   char *pcVar5;
-  ulong uVar6;
-  dvar_s *pdVar7;
-  uint uVar8;
-  byte bVar9;
+  ulong count;
+  dvar_s *pdVar6;
+  uint uVar7;
+  byte bVar8;
   float *unaff_ESI;
-  GfxCmdHeader *pGVar10;
+  GfxCmdHeader *pGVar9;
   float *unaff_EDI;
+  char *text;
+  int maxChars;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar5 = param_1;
+  if (*font != '\0') {
+    pcVar5 = font;
     do {
       cVar2 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar2 != '\0');
-    uVar6 = (int)pcVar5 - (int)(param_1 + 1);
+    count = (int)pcVar5 - (int)(font + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar8 = uVar6 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
+    uVar7 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar7) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar8;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar7;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar7 = (dvar_s *)0xffffffff;
-      bVar9 = 0;
+      pdVar6 = (dvar_s *)0xffffffff;
+      bVar8 = 0;
     }
     else {
-      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar7 < 0) {
-        bVar9 = 0;
+      pdVar6 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar6 < 0) {
+        bVar8 = 0;
       }
       else {
-        bVar9 = (byte)pdVar7 | 0x80;
+        bVar8 = (byte)pdVar6 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar9;
-    if (pdVar7 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
+    pGVar9->ui3d = bVar8;
+    if (pdVar6 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar6].numRenderCmds = g_ui3d_windows[(int)pdVar6].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar8;
-    pGVar10[1] = (GfxCmdHeader)param_3;
-    pGVar10[2] = (GfxCmdHeader)param_4;
-    pGVar10[3] = (GfxCmdHeader)1.0;
-    pGVar10[4].byteCount = 0;
-    pGVar10[4].id = '\0';
-    pGVar10[4].ui3d = '\0';
-    pGVar10[6] = (GfxCmdHeader)param_5;
-    pGVar10[5].byteCount = (undefined2)param_2;
-    pGVar10[5].id = param_2._2_1_;
-    pGVar10[5].ui3d = param_2._3_1_;
-    pGVar10[7] = (GfxCmdHeader)param_6;
-    pGVar1 = pGVar10 + 8;
-    if (param_7 == 0.0) {
+    pGVar9->byteCount = (ushort)uVar7;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)xScale;
+    pGVar9[3] = (GfxCmdHeader)1.0;
+    pGVar9[4].byteCount = 0;
+    pGVar9[4].id = '\0';
+    pGVar9[4].ui3d = '\0';
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[5].byteCount = (undefined2)x;
+    pGVar9[5].id = x._2_1_;
+    pGVar9[5].ui3d = x._3_1_;
+    pGVar9[7] = (GfxCmdHeader)color;
+    pGVar1 = pGVar9 + 8;
+    if (style == 0.0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1517,45 +1544,45 @@ R_AddCmdDrawTextWithCOD7DecodeEffects
     else {
       Byte4PackVertexColor((float *)pGVar1,(uchar *)unaff_EDI);
     }
-    pGVar10[9].byteCount = 0xffff;
-    pGVar10[9].id = 0xff;
-    pGVar10[9].ui3d = '\x7f';
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
-    if (param_8 == 4.2039e-45) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = 0xffff;
+    pGVar9[9].id = 0xff;
+    pGVar9[9].ui3d = '\x7f';
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
+    if (fxMaterial == 4.2039e-45) {
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 8.40779e-45) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (fxMaterial == 8.40779e-45) {
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 1.79366e-43) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (fxMaterial == 1.79366e-43) {
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar6);
-    *(uchar *)((int)pGVar10 + uVar6 + 0x5c) = '\0';
-    SetDrawText2DGlowParms((GfxCmdDrawText2D *)param_7,unaff_EDI,unaff_ESI);
-    if (param_11 != (float *)0x0) {
-      pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x10000);
-      pGVar10[0x14] = (GfxCmdHeader)param_9;
-      pGVar10[0x15].byteCount = (undefined2)param_10;
-      pGVar10[0x15].id = param_10._2_1_;
-      pGVar10[0x15].ui3d = param_10._3_1_;
-      pGVar10[0xe] = (GfxCmdHeader)param_11;
-      pGVar10[0xf] = (GfxCmdHeader)param_12;
-      pGVar10[0x10] = (GfxCmdHeader)param_13;
-      pGVar10[0x11].byteCount = (undefined2)param_14;
-      pGVar10[0x11].id = param_14._2_1_;
-      pGVar10[0x11].ui3d = param_14._3_1_;
-      pGVar10[0x16].byteCount = 0;
-      pGVar10[0x16].id = '\0';
-      pGVar10[0x16].ui3d = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)font,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
+    SetDrawText2DGlowParms((GfxCmdDrawText2D *)style,unaff_EDI,unaff_ESI);
+    if (fxLetterTime != (float *)0x0) {
+      pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x10000);
+      pGVar9[0x14] = (GfxCmdHeader)fxMaterialGlow;
+      pGVar9[0x15].byteCount = (undefined2)fxBirthTime;
+      pGVar9[0x15].id = fxBirthTime._2_1_;
+      pGVar9[0x15].ui3d = fxBirthTime._3_1_;
+      pGVar9[0xe] = (GfxCmdHeader)fxLetterTime;
+      pGVar9[0xf] = (GfxCmdHeader)fxDecayStartTime;
+      pGVar9[0x10] = (GfxCmdHeader)fxDecayDuration;
+      pGVar9[0x11].byteCount = (undefined2)param_14;
+      pGVar9[0x11].id = param_14._2_1_;
+      pGVar9[0x11].ui3d = param_14._3_1_;
+      pGVar9[0x16].byteCount = 0;
+      pGVar9[0x16].id = '\0';
+      pGVar9[0x16].ui3d = '\0';
     }
   }
   return;
@@ -1566,9 +1593,10 @@ R_AddCmdDrawTextWithCOD7DecodeEffects
 
 void __cdecl
 R_AddCmdDrawTextWithCOD7TypeWriterEffects
-          (char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,int param_10,float *param_11,Material *param_12
-          ,Material *param_13,int param_14,int param_15,int param_16,int param_17)
+          (char *font,int x,Font_s *y,float xScale,float yScale,float color,float style,
+          float glowColor,float *fxMaterial,int fxMaterialGlow,float *fxBirthTime,
+          Material *fxLetterTime,Material *param_13,int param_14,int param_15,int param_16,
+          int param_17)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1576,63 +1604,65 @@ R_AddCmdDrawTextWithCOD7TypeWriterEffects
   int iVar3;
   GfxCmdArray *pGVar4;
   char *pcVar5;
-  ulong uVar6;
-  dvar_s *pdVar7;
-  uint uVar8;
-  byte bVar9;
+  ulong count;
+  dvar_s *pdVar6;
+  uint uVar7;
+  byte bVar8;
   float *unaff_ESI;
-  GfxCmdHeader *pGVar10;
+  GfxCmdHeader *pGVar9;
   float *unaff_EDI;
+  char *text;
+  int maxChars;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar5 = param_1;
+  if (*font != '\0') {
+    pcVar5 = font;
     do {
       cVar2 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar2 != '\0');
-    uVar6 = (int)pcVar5 - (int)(param_1 + 1);
+    count = (int)pcVar5 - (int)(font + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar8 = uVar6 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
+    uVar7 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar7) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar8;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar7;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar7 = (dvar_s *)0xffffffff;
-      bVar9 = 0;
+      pdVar6 = (dvar_s *)0xffffffff;
+      bVar8 = 0;
     }
     else {
-      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar7 < 0) {
-        bVar9 = 0;
+      pdVar6 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar6 < 0) {
+        bVar8 = 0;
       }
       else {
-        bVar9 = (byte)pdVar7 | 0x80;
+        bVar8 = (byte)pdVar6 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar9;
-    if (pdVar7 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
+    pGVar9->ui3d = bVar8;
+    if (pdVar6 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar6].numRenderCmds = g_ui3d_windows[(int)pdVar6].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar8;
-    pGVar10[1] = (GfxCmdHeader)param_3;
-    pGVar10[2] = (GfxCmdHeader)param_4;
-    pGVar10[3] = (GfxCmdHeader)1.0;
-    pGVar10[4].byteCount = 0;
-    pGVar10[4].id = '\0';
-    pGVar10[4].ui3d = '\0';
-    pGVar10[6] = (GfxCmdHeader)param_5;
-    pGVar10[5].byteCount = (undefined2)param_2;
-    pGVar10[5].id = param_2._2_1_;
-    pGVar10[5].ui3d = param_2._3_1_;
-    pGVar10[7] = (GfxCmdHeader)param_6;
-    pGVar1 = pGVar10 + 8;
-    if (param_7 == 0.0) {
+    pGVar9->byteCount = (ushort)uVar7;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)xScale;
+    pGVar9[3] = (GfxCmdHeader)1.0;
+    pGVar9[4].byteCount = 0;
+    pGVar9[4].id = '\0';
+    pGVar9[4].ui3d = '\0';
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[5].byteCount = (undefined2)x;
+    pGVar9[5].id = x._2_1_;
+    pGVar9[5].ui3d = x._3_1_;
+    pGVar9[7] = (GfxCmdHeader)color;
+    pGVar1 = pGVar9 + 8;
+    if (style == 0.0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1640,47 +1670,47 @@ R_AddCmdDrawTextWithCOD7TypeWriterEffects
     else {
       Byte4PackVertexColor((float *)pGVar1,(uchar *)unaff_EDI);
     }
-    pGVar10[9].byteCount = 0x40;
-    pGVar10[9].id = '\0';
-    pGVar10[9].ui3d = '\0';
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
-    if (param_8 == 4.2039e-45) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = 0x40;
+    pGVar9[9].id = '\0';
+    pGVar9[9].ui3d = '\0';
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
+    if (glowColor == 4.2039e-45) {
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 8.40779e-45) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 8.40779e-45) {
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 1.79366e-43) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 1.79366e-43) {
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar6);
-    *(uchar *)((int)pGVar10 + uVar6 + 0x5c) = '\0';
-    SetDrawText2DGlowParms((GfxCmdDrawText2D *)param_7,unaff_EDI,unaff_ESI);
-    if (param_12 != (Material *)0x0) {
-      pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x1000);
-      pGVar10[0xe] = (GfxCmdHeader)param_12;
-      pGVar10[0x14].byteCount = (undefined2)param_10;
-      pGVar10[0x14].id = param_10._2_1_;
-      pGVar10[0x14].ui3d = param_10._3_1_;
-      pGVar10[0x15] = (GfxCmdHeader)param_11;
-      pGVar10[0xf] = (GfxCmdHeader)param_13;
-      pGVar10[0x10].byteCount = 4000;
-      pGVar10[0x10].id = '\0';
-      pGVar10[0x10].ui3d = '\0';
-      pGVar10[0x11].byteCount = 1000;
-      pGVar10[0x11].id = '\0';
-      pGVar10[0x11].ui3d = '\0';
-      pGVar10[0x16].byteCount = 0;
-      pGVar10[0x16].id = '\0';
-      pGVar10[0x16].ui3d = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)font,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
+    SetDrawText2DGlowParms((GfxCmdDrawText2D *)style,unaff_EDI,unaff_ESI);
+    if (fxLetterTime != (Material *)0x0) {
+      pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x1000);
+      pGVar9[0xe] = (GfxCmdHeader)fxLetterTime;
+      pGVar9[0x14].byteCount = (undefined2)fxMaterialGlow;
+      pGVar9[0x14].id = fxMaterialGlow._2_1_;
+      pGVar9[0x14].ui3d = fxMaterialGlow._3_1_;
+      pGVar9[0x15] = (GfxCmdHeader)fxBirthTime;
+      pGVar9[0xf] = (GfxCmdHeader)param_13;
+      pGVar9[0x10].byteCount = 4000;
+      pGVar9[0x10].id = '\0';
+      pGVar9[0x10].ui3d = '\0';
+      pGVar9[0x11].byteCount = 1000;
+      pGVar9[0x11].id = '\0';
+      pGVar9[0x11].ui3d = '\0';
+      pGVar9[0x16].byteCount = 0;
+      pGVar9[0x16].id = '\0';
+      pGVar9[0x16].ui3d = '\0';
     }
   }
   return;
@@ -1691,9 +1721,10 @@ R_AddCmdDrawTextWithCOD7TypeWriterEffects
 
 void __cdecl
 R_AddCmdDrawTextWithRedactEffects
-          (char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,int param_10,float *param_11,Material *param_12
-          ,Material *param_13,int param_14,int param_15,int param_16,int param_17,int param_18,
+          (char *font,int x,Font_s *y,float xScale,float yScale,float color,float style,
+          float glowColor,float *fxMaterial,int fxMaterialGlow,float *fxBirthTime,
+          Material *fxLetterTime,Material *fxDecayStartTime,int fxDecayDuration,
+          int fxRedactDecayStartTime,int fxRedactDecayDuration,int param_17,int param_18,
           int param_19)
 
 {
@@ -1702,63 +1733,65 @@ R_AddCmdDrawTextWithRedactEffects
   int iVar3;
   GfxCmdArray *pGVar4;
   char *pcVar5;
-  ulong uVar6;
-  dvar_s *pdVar7;
-  uint uVar8;
-  byte bVar9;
+  ulong count;
+  dvar_s *pdVar6;
+  uint uVar7;
+  byte bVar8;
   float *unaff_ESI;
-  GfxCmdHeader *pGVar10;
+  GfxCmdHeader *pGVar9;
   float *unaff_EDI;
+  char *text;
+  int maxChars;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar5 = param_1;
+  if (*font != '\0') {
+    pcVar5 = font;
     do {
       cVar2 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar2 != '\0');
-    uVar6 = (int)pcVar5 - (int)(param_1 + 1);
+    count = (int)pcVar5 - (int)(font + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar8 = uVar6 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
+    uVar7 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar7) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar8;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar7;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar7 = (dvar_s *)0xffffffff;
-      bVar9 = 0;
+      pdVar6 = (dvar_s *)0xffffffff;
+      bVar8 = 0;
     }
     else {
-      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar7 < 0) {
-        bVar9 = 0;
+      pdVar6 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar6 < 0) {
+        bVar8 = 0;
       }
       else {
-        bVar9 = (byte)pdVar7 | 0x80;
+        bVar8 = (byte)pdVar6 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar9;
-    if (pdVar7 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
+    pGVar9->ui3d = bVar8;
+    if (pdVar6 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar6].numRenderCmds = g_ui3d_windows[(int)pdVar6].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar8;
-    pGVar10[1] = (GfxCmdHeader)param_3;
-    pGVar10[2] = (GfxCmdHeader)param_4;
-    pGVar10[3] = (GfxCmdHeader)1.0;
-    pGVar10[4].byteCount = 0;
-    pGVar10[4].id = '\0';
-    pGVar10[4].ui3d = '\0';
-    pGVar10[6] = (GfxCmdHeader)param_5;
-    pGVar10[5].byteCount = (undefined2)param_2;
-    pGVar10[5].id = param_2._2_1_;
-    pGVar10[5].ui3d = param_2._3_1_;
-    pGVar10[7] = (GfxCmdHeader)param_6;
-    pGVar1 = pGVar10 + 8;
-    if (param_7 == 0.0) {
+    pGVar9->byteCount = (ushort)uVar7;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)xScale;
+    pGVar9[3] = (GfxCmdHeader)1.0;
+    pGVar9[4].byteCount = 0;
+    pGVar9[4].id = '\0';
+    pGVar9[4].ui3d = '\0';
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[5].byteCount = (undefined2)x;
+    pGVar9[5].id = x._2_1_;
+    pGVar9[5].ui3d = x._3_1_;
+    pGVar9[7] = (GfxCmdHeader)color;
+    pGVar1 = pGVar9 + 8;
+    if (style == 0.0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1766,53 +1799,53 @@ R_AddCmdDrawTextWithRedactEffects
     else {
       Byte4PackVertexColor((float *)pGVar1,(uchar *)unaff_EDI);
     }
-    pGVar10[9].byteCount = 0xffff;
-    pGVar10[9].id = 0xff;
-    pGVar10[9].ui3d = '\x7f';
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
-    if (param_8 == 4.2039e-45) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = 0xffff;
+    pGVar9[9].id = 0xff;
+    pGVar9[9].ui3d = '\x7f';
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
+    if (glowColor == 4.2039e-45) {
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 8.40779e-45) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 8.40779e-45) {
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 1.79366e-43) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 1.79366e-43) {
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar6);
-    *(uchar *)((int)pGVar10 + uVar6 + 0x5c) = '\0';
-    SetDrawText2DGlowParms((GfxCmdDrawText2D *)param_7,unaff_EDI,unaff_ESI);
-    if (param_12 != (Material *)0x0) {
-      pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x4000);
-      pGVar10[0x14].byteCount = (undefined2)param_10;
-      pGVar10[0x14].id = param_10._2_1_;
-      pGVar10[0x14].ui3d = param_10._3_1_;
-      pGVar10[0xe] = (GfxCmdHeader)param_12;
-      pGVar10[0x15] = (GfxCmdHeader)param_11;
-      pGVar10[0xf] = (GfxCmdHeader)param_13;
-      pGVar10[0x10].byteCount = (undefined2)param_14;
-      pGVar10[0x10].id = param_14._2_1_;
-      pGVar10[0x10].ui3d = param_14._3_1_;
-      pGVar10[0x11].byteCount = (undefined2)param_15;
-      pGVar10[0x11].id = param_15._2_1_;
-      pGVar10[0x11].ui3d = param_15._3_1_;
-      pGVar10[0x12].byteCount = (undefined2)param_16;
-      pGVar10[0x12].id = param_16._2_1_;
-      pGVar10[0x12].ui3d = param_16._3_1_;
-      pGVar10[0x13].byteCount = (undefined2)param_17;
-      pGVar10[0x13].id = param_17._2_1_;
-      pGVar10[0x13].ui3d = param_17._3_1_;
-      pGVar10[0x16].byteCount = 0;
-      pGVar10[0x16].id = '\0';
-      pGVar10[0x16].ui3d = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)font,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
+    SetDrawText2DGlowParms((GfxCmdDrawText2D *)style,unaff_EDI,unaff_ESI);
+    if (fxLetterTime != (Material *)0x0) {
+      pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x4000);
+      pGVar9[0x14].byteCount = (undefined2)fxMaterialGlow;
+      pGVar9[0x14].id = fxMaterialGlow._2_1_;
+      pGVar9[0x14].ui3d = fxMaterialGlow._3_1_;
+      pGVar9[0xe] = (GfxCmdHeader)fxLetterTime;
+      pGVar9[0x15] = (GfxCmdHeader)fxBirthTime;
+      pGVar9[0xf] = (GfxCmdHeader)fxDecayStartTime;
+      pGVar9[0x10].byteCount = (undefined2)fxDecayDuration;
+      pGVar9[0x10].id = fxDecayDuration._2_1_;
+      pGVar9[0x10].ui3d = fxDecayDuration._3_1_;
+      pGVar9[0x11].byteCount = (undefined2)fxRedactDecayStartTime;
+      pGVar9[0x11].id = fxRedactDecayStartTime._2_1_;
+      pGVar9[0x11].ui3d = fxRedactDecayStartTime._3_1_;
+      pGVar9[0x12].byteCount = (undefined2)fxRedactDecayDuration;
+      pGVar9[0x12].id = fxRedactDecayDuration._2_1_;
+      pGVar9[0x12].ui3d = fxRedactDecayDuration._3_1_;
+      pGVar9[0x13].byteCount = (undefined2)param_17;
+      pGVar9[0x13].id = param_17._2_1_;
+      pGVar9[0x13].ui3d = param_17._3_1_;
+      pGVar9[0x16].byteCount = 0;
+      pGVar9[0x16].id = '\0';
+      pGVar9[0x16].ui3d = '\0';
     }
   }
   return;
@@ -1823,9 +1856,10 @@ R_AddCmdDrawTextWithRedactEffects
 
 void __cdecl
 R_AddCmdDrawTextWithPopInEffects
-          (char *param_1,int param_2,Font_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,float param_8,float *param_9,int param_10,float *param_11,Material *param_12
-          ,Material *param_13,int param_14,int param_15,int param_16,int param_17)
+          (char *font,int x,Font_s *y,float xScale,float yScale,float color,float style,
+          float glowColor,float *fxMaterial,int fxMaterialGlow,float *fxBirthTime,
+          Material *fxLetterTime,Material *param_13,int param_14,int param_15,int param_16,
+          int param_17)
 
 {
   GfxCmdHeader *pGVar1;
@@ -1833,63 +1867,65 @@ R_AddCmdDrawTextWithPopInEffects
   int iVar3;
   GfxCmdArray *pGVar4;
   char *pcVar5;
-  ulong uVar6;
-  dvar_s *pdVar7;
-  uint uVar8;
-  byte bVar9;
+  ulong count;
+  dvar_s *pdVar6;
+  uint uVar7;
+  byte bVar8;
   float *unaff_ESI;
-  GfxCmdHeader *pGVar10;
+  GfxCmdHeader *pGVar9;
   float *unaff_EDI;
+  char *text;
+  int maxChars;
   
   pGVar4 = s_cmdList;
-  if (*param_1 != '\0') {
-    pcVar5 = param_1;
+  if (*font != '\0') {
+    pcVar5 = font;
     do {
       cVar2 = *pcVar5;
       pcVar5 = pcVar5 + 1;
     } while (cVar2 != '\0');
-    uVar6 = (int)pcVar5 - (int)(param_1 + 1);
+    count = (int)pcVar5 - (int)(font + 1);
     iVar3 = s_cmdList->usedTotal;
-    uVar8 = uVar6 + 0x60 & 0xfffffffc;
-    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar8) {
+    uVar7 = count + 0x60 & 0xfffffffc;
+    if (((s_cmdList->byteSize + s_cmdList->usedCritical) - iVar3) + -0x2000 < (int)uVar7) {
       s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
       return;
     }
-    pGVar10 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
-    s_cmdList->usedTotal = iVar3 + uVar8;
-    pGVar4->lastCmd = pGVar10;
-    pGVar10->id = '\x11';
+    pGVar9 = (GfxCmdHeader *)(s_cmdList->cmds + iVar3);
+    s_cmdList->usedTotal = iVar3 + uVar7;
+    pGVar4->lastCmd = pGVar9;
+    pGVar9->id = '\x11';
     if (g_ui3dStack.size == 0) {
-      pdVar7 = (dvar_s *)0xffffffff;
-      bVar9 = 0;
+      pdVar6 = (dvar_s *)0xffffffff;
+      bVar8 = 0;
     }
     else {
-      pdVar7 = (&r_watersim_scroll)[g_ui3dStack.size];
-      if ((int)pdVar7 < 0) {
-        bVar9 = 0;
+      pdVar6 = (&r_watersim_scroll)[g_ui3dStack.size];
+      if ((int)pdVar6 < 0) {
+        bVar8 = 0;
       }
       else {
-        bVar9 = (byte)pdVar7 | 0x80;
+        bVar8 = (byte)pdVar6 | 0x80;
       }
     }
-    pGVar10->ui3d = bVar9;
-    if (pdVar7 < (dvar_s *)0x6) {
-      g_ui3d_windows[(int)pdVar7].numRenderCmds = g_ui3d_windows[(int)pdVar7].numRenderCmds + 1;
+    pGVar9->ui3d = bVar8;
+    if (pdVar6 < (dvar_s *)0x6) {
+      g_ui3d_windows[(int)pdVar6].numRenderCmds = g_ui3d_windows[(int)pdVar6].numRenderCmds + 1;
     }
-    pGVar10->byteCount = (ushort)uVar8;
-    pGVar10[1] = (GfxCmdHeader)param_3;
-    pGVar10[2] = (GfxCmdHeader)param_4;
-    pGVar10[3] = (GfxCmdHeader)1.0;
-    pGVar10[4].byteCount = 0;
-    pGVar10[4].id = '\0';
-    pGVar10[4].ui3d = '\0';
-    pGVar10[6] = (GfxCmdHeader)param_5;
-    pGVar10[5].byteCount = (undefined2)param_2;
-    pGVar10[5].id = param_2._2_1_;
-    pGVar10[5].ui3d = param_2._3_1_;
-    pGVar10[7] = (GfxCmdHeader)param_6;
-    pGVar1 = pGVar10 + 8;
-    if (param_7 == 0.0) {
+    pGVar9->byteCount = (ushort)uVar7;
+    pGVar9[1] = (GfxCmdHeader)y;
+    pGVar9[2] = (GfxCmdHeader)xScale;
+    pGVar9[3] = (GfxCmdHeader)1.0;
+    pGVar9[4].byteCount = 0;
+    pGVar9[4].id = '\0';
+    pGVar9[4].ui3d = '\0';
+    pGVar9[6] = (GfxCmdHeader)yScale;
+    pGVar9[5].byteCount = (undefined2)x;
+    pGVar9[5].id = x._2_1_;
+    pGVar9[5].ui3d = x._3_1_;
+    pGVar9[7] = (GfxCmdHeader)color;
+    pGVar1 = pGVar9 + 8;
+    if (style == 0.0) {
       pGVar1->byteCount = 0xffff;
       pGVar1->id = 0xff;
       pGVar1->ui3d = 0xff;
@@ -1897,47 +1933,47 @@ R_AddCmdDrawTextWithPopInEffects
     else {
       Byte4PackVertexColor((float *)pGVar1,(uchar *)unaff_EDI);
     }
-    pGVar10[9].byteCount = 0x40;
-    pGVar10[9].id = '\0';
-    pGVar10[9].ui3d = '\0';
-    pGVar10[10].byteCount = 0;
-    pGVar10[10].id = '\0';
-    pGVar10[10].ui3d = '\0';
-    if (param_8 == 4.2039e-45) {
-      pGVar10[10].byteCount = 4;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    pGVar9[9].byteCount = 0x40;
+    pGVar9[9].id = '\0';
+    pGVar9[9].ui3d = '\0';
+    pGVar9[10].byteCount = 0;
+    pGVar9[10].id = '\0';
+    pGVar9[10].ui3d = '\0';
+    if (glowColor == 4.2039e-45) {
+      pGVar9[10].byteCount = 4;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 8.40779e-45) {
-      pGVar10[10].byteCount = 0xc;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 8.40779e-45) {
+      pGVar9[10].byteCount = 0xc;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    else if (param_8 == 1.79366e-43) {
-      pGVar10[10].byteCount = 1;
-      pGVar10[10].id = '\0';
-      pGVar10[10].ui3d = '\0';
+    else if (glowColor == 1.79366e-43) {
+      pGVar9[10].byteCount = 1;
+      pGVar9[10].id = '\0';
+      pGVar9[10].ui3d = '\0';
     }
-    memcpy((uchar *)(pGVar10 + 0x17),(uchar *)param_1,uVar6);
-    *(uchar *)((int)pGVar10 + uVar6 + 0x5c) = '\0';
-    SetDrawText2DGlowParms((GfxCmdDrawText2D *)param_7,unaff_EDI,unaff_ESI);
-    if (param_12 != (Material *)0x0) {
-      pGVar10[10] = (GfxCmdHeader)((uint)pGVar10[10] | 0x2000);
-      pGVar10[0xe] = (GfxCmdHeader)param_12;
-      pGVar10[0x14].byteCount = (undefined2)param_10;
-      pGVar10[0x14].id = param_10._2_1_;
-      pGVar10[0x14].ui3d = param_10._3_1_;
-      pGVar10[0x15] = (GfxCmdHeader)param_11;
-      pGVar10[0xf] = (GfxCmdHeader)param_13;
-      pGVar10[0x10].byteCount = 4000;
-      pGVar10[0x10].id = '\0';
-      pGVar10[0x10].ui3d = '\0';
-      pGVar10[0x11].byteCount = 1000;
-      pGVar10[0x11].id = '\0';
-      pGVar10[0x11].ui3d = '\0';
-      pGVar10[0x16].byteCount = 0;
-      pGVar10[0x16].id = '\0';
-      pGVar10[0x16].ui3d = '\0';
+    memcpy((uchar *)(pGVar9 + 0x17),(uchar *)font,count);
+    *(uchar *)((int)pGVar9 + count + 0x5c) = '\0';
+    SetDrawText2DGlowParms((GfxCmdDrawText2D *)style,unaff_EDI,unaff_ESI);
+    if (fxLetterTime != (Material *)0x0) {
+      pGVar9[10] = (GfxCmdHeader)((uint)pGVar9[10] | 0x2000);
+      pGVar9[0xe] = (GfxCmdHeader)fxLetterTime;
+      pGVar9[0x14].byteCount = (undefined2)fxMaterialGlow;
+      pGVar9[0x14].id = fxMaterialGlow._2_1_;
+      pGVar9[0x14].ui3d = fxMaterialGlow._3_1_;
+      pGVar9[0x15] = (GfxCmdHeader)fxBirthTime;
+      pGVar9[0xf] = (GfxCmdHeader)param_13;
+      pGVar9[0x10].byteCount = 4000;
+      pGVar9[0x10].id = '\0';
+      pGVar9[0x10].ui3d = '\0';
+      pGVar9[0x11].byteCount = 1000;
+      pGVar9[0x11].id = '\0';
+      pGVar9[0x11].ui3d = '\0';
+      pGVar9[0x16].byteCount = 0;
+      pGVar9[0x16].id = '\0';
+      pGVar9[0x16].ui3d = '\0';
     }
   }
   return;
@@ -1948,15 +1984,16 @@ R_AddCmdDrawTextWithPopInEffects
 
 void __cdecl
 R_AddCmdDrawConsoleText
-          (char *param_1,int param_2,int param_3,int param_4,Font_s *param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,int param_11)
+          (char *poolSize,int firstChar,int charCount,int y,Font_s *xScale,float yScale,float style,
+          float param_8,float param_9,float *param_10,int param_11)
 
 {
   float in_ECX;
   Font_s *in_EDX;
+  char *textPool;
   
   AddBaseDrawConsoleTextCmd
-            (param_1,param_2,param_3,param_4,in_EDX,(float)param_5,param_6,param_7,in_ECX,
+            (poolSize,firstChar,charCount,y,in_EDX,(float)xScale,yScale,style,in_ECX,
              (float *)param_8,(int)in_ECX);
   return;
 }
@@ -1966,23 +2003,24 @@ R_AddCmdDrawConsoleText
 
 void __cdecl
 R_AddCmdDrawConsoleTextTypewriterFX
-          (char *param_1,int param_2,int param_3,int param_4,Font_s *param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,int param_11,int param_12,
-          int param_13,int param_14,int param_15)
+          (char *poolSize,int firstChar,int charCount,int y,Font_s *xScale,float yScale,float style,
+          float fxBirthTime,float fxLetterTime,float *fxDecayStartTime,int fxDecayDuration,
+          int param_12,int param_13,int param_14,int param_15)
 
 {
   GfxCmdDrawText2D *pGVar1;
   float in_ECX;
   Font_s *in_EDX;
+  char *textPool;
   
   pGVar1 = AddBaseDrawConsoleTextCmd
-                     (param_1,param_2,param_3,param_4,in_EDX,(float)param_5,param_6,param_7,in_ECX,
-                      (float *)param_8,(int)in_ECX);
+                     (poolSize,firstChar,charCount,y,in_EDX,(float)xScale,yScale,style,in_ECX,
+                      (float *)fxBirthTime,(int)in_ECX);
   if (pGVar1 != (GfxCmdDrawText2D *)0x0) {
     pGVar1->renderFlags = pGVar1->renderFlags | 0x880;
-    pGVar1->fxBirthTime = (int)param_9;
-    pGVar1->fxLetterTime = (int)param_10;
-    pGVar1->fxDecayStartTime = param_11;
+    pGVar1->fxBirthTime = (int)fxLetterTime;
+    pGVar1->fxLetterTime = (int)fxDecayStartTime;
+    pGVar1->fxDecayStartTime = fxDecayDuration;
     pGVar1->fxDecayDuration = param_12;
     pGVar1->padding = 1.0;
   }
@@ -1992,24 +2030,28 @@ R_AddCmdDrawConsoleTextTypewriterFX
 
 // 00805DF0  R_AddCmdDrawConsoleTextSubtitle  (gfx_d3d/r_rendercmds.cpp:2374)
 
+/* WARNING: Variable defined which should be unmapped: glowColor */
+/* WARNING: Variable defined which should be unmapped: textPool */
+
 void __cdecl
 R_AddCmdDrawConsoleTextSubtitle
-          (char *param_1,int param_2,int param_3,int param_4,Font_s *param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,int param_11,float *param_12)
+          (char *poolSize,int firstChar,int y,int xScale,Font_s *yScale,float style,float param_7,
+          float param_8,float param_9,float *param_10,int param_11,float *param_12)
 
 {
   GfxCmdDrawText2D *pGVar1;
   Font_s *in_ECX;
   int in_EDX;
   GfxCmdDrawText2D *unaff_ESI;
-  float *unaff_retaddr;
+  char *textPool;
+  float *glowColor;
   
   pGVar1 = AddBaseDrawConsoleTextCmd
-                     (param_1,param_2,param_3,in_EDX,in_ECX,(float)param_4,(float)param_5,param_6,
-                      (float)unaff_ESI,(float *)param_7,(int)unaff_retaddr);
+                     (poolSize,firstChar,y,in_EDX,in_ECX,(float)xScale,(float)yScale,style,
+                      (float)unaff_ESI,(float *)param_7,(int)textPool);
   if (pGVar1 != (GfxCmdDrawText2D *)0x0) {
     pGVar1->renderFlags = pGVar1->renderFlags | 0x100;
-    SetDrawText2DGlowParms(unaff_ESI,unaff_retaddr,(float *)param_1);
+    SetDrawText2DGlowParms(unaff_ESI,(float *)textPool,(float *)poolSize);
   }
   return;
 }
@@ -2019,9 +2061,10 @@ R_AddCmdDrawConsoleTextSubtitle
 
 void __cdecl
 R_AddCmdDrawConsoleTextPulseFX
-          (char *param_1,int param_2,int param_3,int param_4,Font_s *param_5,float param_6,
-          float param_7,float param_8,float param_9,float *param_10,int param_11,float *param_12,
-          int param_13,int param_14,int param_15,int param_16,Material *param_17,Material *param_18)
+          (char *poolSize,int firstChar,int y,int xScale,Font_s *yScale,float style,float glowColor,
+          float fxBirthTime,float fxLetterTime,float *fxDecayStartTime,int fxDecayDuration,
+          float *fxMaterial,int fxMaterialGlow,int param_14,int param_15,int param_16,
+          Material *param_17,Material *param_18)
 
 {
   GfxCmdDrawText2D *pGVar1;
@@ -2030,20 +2073,21 @@ R_AddCmdDrawConsoleTextPulseFX
   float *unaff_EBP;
   float *unaff_ESI;
   GfxCmdDrawText2D *unaff_EDI;
+  char *textPool;
   
   pGVar1 = AddBaseDrawConsoleTextCmd
-                     (param_1,param_2,param_3,in_EDX,in_ECX,(float)param_4,(float)param_5,param_6,
-                      (float)unaff_EDI,(float *)param_7,(int)unaff_ESI);
+                     (poolSize,firstChar,y,in_EDX,in_ECX,(float)xScale,(float)yScale,style,
+                      (float)unaff_EDI,(float *)glowColor,(int)unaff_ESI);
   if (pGVar1 != (GfxCmdDrawText2D *)0x0) {
     SetDrawText2DGlowParms(unaff_EDI,unaff_ESI,unaff_EBP);
-    if (((param_13 != 0) && (param_14 != 0)) && (param_9 != 0.0)) {
+    if (((fxMaterialGlow != 0) && (param_14 != 0)) && (fxLetterTime != 0.0)) {
       pGVar1->renderFlags = pGVar1->renderFlags | 0xc0;
-      pGVar1->fxBirthTime = (int)param_9;
-      pGVar1->fxMaterial = (Material *)param_13;
+      pGVar1->fxBirthTime = (int)fxLetterTime;
+      pGVar1->fxMaterial = (Material *)fxMaterialGlow;
       pGVar1->fxMaterialGlow = (Material *)param_14;
-      pGVar1->fxLetterTime = (int)param_10;
-      pGVar1->fxDecayStartTime = param_11;
-      pGVar1->fxDecayDuration = (int)param_12;
+      pGVar1->fxLetterTime = (int)fxDecayStartTime;
+      pGVar1->fxDecayStartTime = fxDecayDuration;
+      pGVar1->fxDecayDuration = (int)fxMaterial;
       pGVar1->padding = 0.0;
     }
   }
@@ -2067,6 +2111,7 @@ R_AddCmdDrawQuadPicW(float (*param_1) [2],float param_2,float *param_3,Material 
   GfxCmdHeader *unaff_ESI;
   uchar *unaff_EDI;
   GfxCmdHeader in_XMM0_Da;
+  Material *material;
   
   pGVar2 = s_cmdList;
   iVar1 = s_cmdList->usedTotal;
@@ -2134,6 +2179,7 @@ void __cdecl R_AddCmdSetCustomConstant(uint param_1,float *param_2)
   GfxCmdHeader *pGVar6;
   byte bVar7;
   GfxCmdHeader *unaff_ESI;
+  uint type;
   
   pGVar4 = s_cmdList;
   iVar2 = s_cmdList->usedTotal;
@@ -2181,7 +2227,7 @@ void __cdecl R_AddCmdSetCustomConstant(uint param_1,float *param_2)
 
 // 00806080  R_AddCmdSetScissorValues  (gfx_d3d/r_rendercmds.cpp:2514)
 
-void __cdecl R_AddCmdSetScissorValues(bool param_1,int param_2,int param_3,int param_4,int param_5)
+void __cdecl R_AddCmdSetScissorValues(bool x,int y,int width,int height,int param_5)
 
 {
   int iVar1;
@@ -2191,6 +2237,7 @@ void __cdecl R_AddCmdSetScissorValues(bool param_1,int param_2,int param_3,int p
   dvar_s *pdVar5;
   GfxCmdHeader GVar6;
   byte bVar7;
+  bool enabled;
   
   pGVar3 = s_cmdList;
   iVar1 = s_cmdList->usedTotal;
@@ -2225,17 +2272,17 @@ void __cdecl R_AddCmdSetScissorValues(bool param_1,int param_2,int param_3,int p
     pGVar4->byteCount = 0x18;
   }
   GVar6._1_3_ = 0;
-  GVar6.byteCount._0_1_ = param_1;
+  GVar6.byteCount._0_1_ = x;
   pGVar4[1] = GVar6;
-  pGVar4[2].byteCount = (undefined2)param_2;
-  pGVar4[2].id = param_2._2_1_;
-  pGVar4[2].ui3d = param_2._3_1_;
-  pGVar4[3].byteCount = (undefined2)param_3;
-  pGVar4[3].id = param_3._2_1_;
-  pGVar4[3].ui3d = param_3._3_1_;
-  pGVar4[4].byteCount = (undefined2)param_4;
-  pGVar4[4].id = param_4._2_1_;
-  pGVar4[4].ui3d = param_4._3_1_;
+  pGVar4[2].byteCount = (undefined2)y;
+  pGVar4[2].id = y._2_1_;
+  pGVar4[2].ui3d = y._3_1_;
+  pGVar4[3].byteCount = (undefined2)width;
+  pGVar4[3].id = width._2_1_;
+  pGVar4[3].ui3d = width._3_1_;
+  pGVar4[4].byteCount = (undefined2)height;
+  pGVar4[4].id = height._2_1_;
+  pGVar4[4].ui3d = height._3_1_;
   pGVar4[5].byteCount = (undefined2)param_5;
   pGVar4[5].id = param_5._2_1_;
   pGVar4[5].ui3d = param_5._3_1_;
@@ -2298,7 +2345,7 @@ void __cdecl R_AddCmdResolveComposite(_func___cdecl_void_GfxImage_ptr *param_1)
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
 void __cdecl
-R_AddCmdPCCopyImageGenMIP(_func___cdecl_void_void_ptr *param_1,GfxImage *param_2,void *param_3)
+R_AddCmdPCCopyImageGenMIP(_func___cdecl_void_void_ptr *job,GfxImage *param_2,void *param_3)
 
 {
   int iVar1;
@@ -2307,13 +2354,14 @@ R_AddCmdPCCopyImageGenMIP(_func___cdecl_void_void_ptr *param_1,GfxImage *param_2
   dvar_s *pdVar4;
   GfxCmdHeader *pGVar5;
   byte bVar6;
+  GfxImage *image;
   
   pGVar3 = s_cmdList;
   iVar1 = s_cmdList->usedTotal;
   if (s_cmdList->byteSize - iVar1 < 0x10) {
     s_cmdList->lastCmd = (GfxCmdHeader *)0x0;
     _DAT_00000004 = CL_PCCopyImageGenMIPCallback;
-    _DAT_00000008 = param_1;
+    _DAT_00000008 = job;
     pGRam0000000c = param_2;
     return;
   }
@@ -2342,7 +2390,7 @@ R_AddCmdPCCopyImageGenMIP(_func___cdecl_void_void_ptr *param_1,GfxImage *param_2
   }
   pGVar5->byteCount = 0x10;
   pGVar5[1] = (GfxCmdHeader)CL_PCCopyImageGenMIPCallback;
-  pGVar5[2] = (GfxCmdHeader)param_1;
+  pGVar5[2] = (GfxCmdHeader)job;
   pGVar5[3] = (GfxCmdHeader)param_2;
   return;
 }
@@ -2439,6 +2487,7 @@ void __cdecl R_AddCmdClearScreen(int param_1,float *param_2,float param_3,uchar 
   GfxCmdHeader *pGVar5;
   byte bVar6;
   GfxCmdHeader *unaff_ESI;
+  int whichToClear;
   
   pGVar3 = s_cmdList;
   iVar1 = s_cmdList->usedTotal;
@@ -2485,6 +2534,8 @@ void __cdecl R_AddCmdClearScreen(int param_1,float *param_2,float param_3,uchar 
 
 // 008066C0  R_AddCmdDrawQuadList2D  (gfx_d3d/r_rendercmds.cpp:3199)
 
+/* WARNING: Variable defined which should be unmapped: quadCount */
+
 GfxQuadVertex * __cdecl R_AddCmdDrawQuadList2D(Material *param_1,int param_2)
 
 {
@@ -2494,6 +2545,7 @@ GfxQuadVertex * __cdecl R_AddCmdDrawQuadList2D(Material *param_1,int param_2)
   GfxCmdHeader *pGVar3;
   dvar_s *pdVar4;
   byte bVar5;
+  int quadCount;
   
   pGVar2 = s_cmdList;
   if (in_EAX == (GfxCmdHeader)0x0) {
@@ -2538,7 +2590,7 @@ GfxQuadVertex * __cdecl R_AddCmdDrawQuadList2D(Material *param_1,int param_2)
 
 void __cdecl
 R_AddCmdDrawEmblemLayer
-          (Material *param_1,GfxImage *param_2,int param_3,float param_4,float param_5,
+          (Material *colorIdx,GfxImage *outlineSize,int verts,float param_4,float param_5,
           GfxQuadVertex *param_6)
 
 {
@@ -2550,6 +2602,7 @@ R_AddCmdDrawEmblemLayer
   byte bVar5;
   GfxCmdHeader *pGVar6;
   GfxCmdHeader in_XMM0_Da;
+  GfxImage *image;
   
   pGVar1 = s_cmdList;
   if (in_EAX == (GfxCmdHeader)0x0) {
@@ -2583,7 +2636,7 @@ R_AddCmdDrawEmblemLayer
   }
   pGVar2->byteCount = 0x68;
   pGVar2[1] = in_EAX;
-  pGVar2[3] = (GfxCmdHeader)param_2;
+  pGVar2[3] = (GfxCmdHeader)outlineSize;
   pGVar6 = pGVar2 + 6;
   for (iVar4 = 0x14; iVar4 != 0; iVar4 = iVar4 + -1) {
     *pGVar6 = *(GfxCmdHeader *)param_4;
@@ -2591,10 +2644,10 @@ R_AddCmdDrawEmblemLayer
     pGVar6 = pGVar6 + 1;
   }
   pGVar2[5] = in_XMM0_Da;
-  pGVar2[2] = (GfxCmdHeader)param_1;
-  pGVar2[4].byteCount = (undefined2)param_3;
-  pGVar2[4].id = param_3._2_1_;
-  pGVar2[4].ui3d = param_3._3_1_;
+  pGVar2[2] = (GfxCmdHeader)colorIdx;
+  pGVar2[4].byteCount = (undefined2)verts;
+  pGVar2[4].id = verts._2_1_;
+  pGVar2[4].ui3d = verts._3_1_;
   return;
 }
 
@@ -2602,8 +2655,8 @@ R_AddCmdDrawEmblemLayer
 // 008068B0  R_AddCmdDrawFramed  (gfx_d3d/r_rendercmds.cpp:3326)
 
 void __cdecl
-R_AddCmdDrawFramed(float param_1,float param_2,float param_3,float param_4,float param_5,
-                  float param_6,float param_7,int param_8,float *param_9,Material *param_10)
+R_AddCmdDrawFramed(float y,float w,float h,float thicknessW,float thicknessH,float thicknessTex,
+                  float sides,int param_8,float *param_9,Material *param_10)
 
 {
   GfxCmdHeader *pGVar1;
@@ -2615,6 +2668,7 @@ R_AddCmdDrawFramed(float param_1,float param_2,float param_3,float param_4,float
   uchar *unaff_ESI;
   GfxCmdHeader *pGVar6;
   GfxCmdHeader unaff_EDI;
+  float x;
   
   pGVar3 = s_cmdList;
   iVar2 = s_cmdList->usedTotal;
@@ -2657,13 +2711,13 @@ R_AddCmdDrawFramed(float param_1,float param_2,float param_3,float param_4,float
   else {
     Byte4PackVertexColor((float *)pGVar1,unaff_ESI);
   }
-  pGVar6[1] = (GfxCmdHeader)param_1;
-  pGVar6[2] = (GfxCmdHeader)param_2;
-  pGVar6[3] = (GfxCmdHeader)param_3;
-  pGVar6[4] = (GfxCmdHeader)param_4;
-  pGVar6[5] = (GfxCmdHeader)param_5;
-  pGVar6[6] = (GfxCmdHeader)param_6;
-  pGVar6[7] = (GfxCmdHeader)param_7;
+  pGVar6[1] = (GfxCmdHeader)y;
+  pGVar6[2] = (GfxCmdHeader)w;
+  pGVar6[3] = (GfxCmdHeader)h;
+  pGVar6[4] = (GfxCmdHeader)thicknessW;
+  pGVar6[5] = (GfxCmdHeader)thicknessH;
+  pGVar6[6] = (GfxCmdHeader)thicknessTex;
+  pGVar6[7] = (GfxCmdHeader)sides;
   pGVar6[8].byteCount = (undefined2)param_8;
   pGVar6[8].id = param_8._2_1_;
   pGVar6[8].ui3d = param_8._3_1_;

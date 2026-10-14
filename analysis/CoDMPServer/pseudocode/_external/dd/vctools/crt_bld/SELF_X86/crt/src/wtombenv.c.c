@@ -6,30 +6,30 @@ int __cdecl __wtomb_environ(void)
 
 {
   LPCWSTR lpWideCharStr;
-  uint cbMultiByte;
+  uint count;
   int iVar1;
   ushort **ppuVar2;
-  char *local_8;
+  int size;
+  char *envp;
   
-  local_8 = (LPSTR)0x0;
+  envp = (char *)0x0;
   lpWideCharStr = (LPCWSTR)*_wenviron;
   ppuVar2 = _wenviron;
   while( true ) {
     if (lpWideCharStr == (LPCWSTR)0x0) {
       return 0;
     }
-    cbMultiByte = WideCharToMultiByte(0,0,lpWideCharStr,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
-    if ((cbMultiByte == 0) || (local_8 = _calloc_crt(cbMultiByte,1), local_8 == (LPSTR)0x0)) break;
-    iVar1 = WideCharToMultiByte(0,0,(LPCWSTR)*ppuVar2,-1,local_8,cbMultiByte,(LPCSTR)0x0,(LPBOOL)0x0
-                               );
+    count = WideCharToMultiByte(0,0,lpWideCharStr,-1,(LPSTR)0x0,0,(LPCSTR)0x0,(LPBOOL)0x0);
+    if ((count == 0) || (envp = _calloc_crt(count,1), envp == (LPSTR)0x0)) break;
+    iVar1 = WideCharToMultiByte(0,0,(LPCWSTR)*ppuVar2,-1,envp,count,(LPCSTR)0x0,(LPBOOL)0x0);
     if (iVar1 == 0) {
-      free(local_8);
+      free(envp);
       return -1;
     }
-    iVar1 = __crtsetenv(&local_8,0);
-    if ((iVar1 < 0) && (local_8 != (LPSTR)0x0)) {
-      free(local_8);
-      local_8 = (LPSTR)0x0;
+    iVar1 = __crtsetenv(&envp,0);
+    if ((iVar1 < 0) && (envp != (char *)0x0)) {
+      free(envp);
+      envp = (char *)0x0;
     }
     ppuVar2 = ppuVar2 + 1;
     lpWideCharStr = (LPCWSTR)*ppuVar2;

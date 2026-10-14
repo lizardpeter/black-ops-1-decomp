@@ -2,20 +2,20 @@
 
 // 0096D4BF  _get_daylight  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c:35)
 
-int __cdecl _get_daylight(int *param_1)
+int __cdecl _get_daylight(int *_Daylight)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (param_1 == (int *)0x0) {
+  if (_Daylight == (int *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = 0x16;
   }
   else {
-    *param_1 = _daylight;
+    *_Daylight = _daylight;
     iVar2 = 0;
   }
   return iVar2;
@@ -24,20 +24,20 @@ int __cdecl _get_daylight(int *param_1)
 
 // 0096D4F8  _get_dstbias  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c:44)
 
-int __cdecl _get_dstbias(long *param_1)
+int __cdecl _get_dstbias(long *_Daylight_savings_bias)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (param_1 == (long *)0x0) {
+  if (_Daylight_savings_bias == (long *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = 0x16;
   }
   else {
-    *param_1 = _dstbias;
+    *_Daylight_savings_bias = _dstbias;
     iVar2 = 0;
   }
   return iVar2;
@@ -46,20 +46,20 @@ int __cdecl _get_dstbias(long *param_1)
 
 // 0096D531  _get_timezone  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/timeset.c:53)
 
-int __cdecl _get_timezone(long *param_1)
+int __cdecl _get_timezone(long *_Timezone)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (param_1 == (long *)0x0) {
+  if (_Timezone == (long *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = 0x16;
   }
   else {
-    *param_1 = _timezone;
+    *_Timezone = _timezone;
     iVar2 = 0;
   }
   return iVar2;

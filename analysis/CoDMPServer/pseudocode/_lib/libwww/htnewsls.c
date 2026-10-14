@@ -58,27 +58,27 @@ undefined4 FUN_00bd1420(undefined4 param_1)
 
 {
   undefined4 uVar1;
-  uchar *puVar2;
+  uchar *string;
   int extraout_EAX;
-  int iVar3;
+  int iVar2;
   undefined4 local_8;
   
   uVar1 = _HTRequest_anchor(param_1);
-  puVar2 = (uchar *)_HTAnchor_physical(uVar1);
+  string = (uchar *)_HTAnchor_physical(uVar1);
   local_8 = 0;
-  strrchr(puVar2,'*');
+  strrchr(string,'*');
   if (extraout_EAX == 0) {
     _HTSACopy(&local_8,"Newsgroup: ");
   }
   else {
     _HTSACopy(&local_8,"Newsgroups: ");
   }
-  iVar3 = strncasecomp(puVar2,"news:",5);
-  if (iVar3 == 0) {
-    _HTSACat(&local_8,puVar2 + 5);
+  iVar2 = strncasecomp(string,"news:",5);
+  if (iVar2 == 0) {
+    _HTSACat(&local_8,string + 5);
   }
   else {
-    uVar1 = _HTParse(puVar2,"",4);
+    uVar1 = _HTParse(string,"",4);
     _HTSACat(&local_8,uVar1);
   }
   return local_8;

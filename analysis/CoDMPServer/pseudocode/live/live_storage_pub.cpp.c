@@ -20,10 +20,10 @@ bool __cdecl LiveStorage_DoWeHavePlaylists(void)
 
 // 00987550  LiveStorage_SetHavePlaylists  (live/live_storage_pub.cpp:95)
 
-void __cdecl LiveStorage_SetHavePlaylists(bool param_1)
+void __cdecl LiveStorage_SetHavePlaylists(bool val)
 
 {
-  s_havePlaylists = param_1;
+  s_havePlaylists = val;
   return;
 }
 
@@ -43,24 +43,28 @@ void __cdecl _dynamic_initializer_for__s_onlineWADFileInfo__(void)
 
 // 00987BD0  LiveStorage_DecompressBuffer  (live/live_storage_pub.cpp:128)
 
-bool __cdecl LiveStorage_DecompressBuffer(uchar *param_1,uint param_2,uchar *param_3,uint param_4)
+bool __cdecl
+LiveStorage_DecompressBuffer
+          (uchar *compressedBuffer,uint compressedSize,uchar *uncompressedBuffer,
+          uint uncompressedSize)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  z_stream_s local_38;
+  int err;
+  z_stream_s stream;
   
-  local_38.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
-  local_38.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
-  local_38.opaque = (uchar *)0x0;
-  local_38.avail_in = param_2;
-  local_38.next_in = param_1;
-  inflateInit2_(&local_38,0xf,"1.2.3",0x34);
-  local_38.avail_out = param_4;
-  local_38.next_out = param_3;
-  iVar4 = inflate(&local_38,0);
+  stream.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
+  stream.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
+  stream.opaque = (uchar *)0x0;
+  stream.avail_in = compressedSize;
+  stream.next_in = compressedBuffer;
+  inflateInit2_(&stream,0xf,"1.2.3",0x34);
+  stream.avail_out = uncompressedSize;
+  stream.next_out = uncompressedBuffer;
+  iVar4 = inflate(&stream,0);
   if (iVar4 != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_pub.cpp",0x8e,0,
                              "%s");
@@ -70,7 +74,7 @@ bool __cdecl LiveStorage_DecompressBuffer(uchar *param_1,uint param_2,uchar *par
       return (bool)uVar3;
     }
   }
-  inflateEnd(&local_38);
+  inflateEnd(&stream);
   return iVar4 == 1;
 }
 
@@ -89,20 +93,22 @@ void __cdecl LiveStorage_ProcessOnlineWAD(void)
   bool bVar4;
   int iVar5;
   char *pcVar6;
-  uchar *puVar7;
+  WADEntry *s0;
   int unaff_ESI;
-  undefined8 local_24;
-  char *local_1c;
-  uchar *local_18;
-  uint local_14;
-  LargeLocal local_10;
-  uchar *local_8;
+  WADHeader *header;
+  WADEntry *entry;
+  undefined8 genTime;
+  char *language;
+  uchar *uncompressedFileBuffer;
+  uint idx;
+  LargeLocal uncompressedFileBuffer_large_local;
+  WADEntry *toc;
   
-  local_1c = SEH_GetLanguageName((loc_language->current).integer);
+  language = SEH_GetLanguageName((loc_language->current).integer);
   bVar4 = LiveStorage_CompletedOnlineWAD();
   if ((!bVar4) && (bVar4 = LiveStorage_DoWeHaveOnlineWAD(), bVar4)) {
-    LargeLocal::LargeLocal(&local_10,0x40000);
-    local_18 = LargeLocal::GetBuf(&local_10);
+    LargeLocal::LargeLocal(&uncompressedFileBuffer_large_local,0x40000);
+    uncompressedFileBuffer = LargeLocal::GetBuf(&uncompressedFileBuffer_large_local);
     if ((s_onlineWADFileInfo.fetchCompleted != true) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_pub.cpp",
                                  0xac,0,"%s"), !bVar4)) {
@@ -113,63 +119,63 @@ void __cdecl LiveStorage_ProcessOnlineWAD(void)
     LiveStorage_SetHavePlaylists(false);
     s_haveContracts = false;
     s_haveMotd = false;
-    local_8 = s_onlineWADBuffer + 0x10;
+    toc = (WADEntry *)(s_onlineWADBuffer + 0x10);
     if (s_onlineWADBuffer._0_4_ != 0x543377ab) {
       if (s_onlineWADBuffer._0_4_ != -0x5488ccac) {
         Com_PrintError(0x10,"Platform wad file is missing or invalid.\n");
         s_completedOnlineWAD = true;
-        LargeLocal::~LargeLocal(&local_10);
+        LargeLocal::~LargeLocal(&uncompressedFileBuffer_large_local);
         return;
       }
       Com_PrintWarning(0,"WAD: Big-endian WAD on Small-endian machine\n");
       tlEndianSwapMemory32(s_onlineWADBuffer,0x10);
     }
-    local_24._0_1_ = s_onlineWADBuffer[4];
-    local_24._1_1_ = s_onlineWADBuffer[5];
-    local_24._2_1_ = s_onlineWADBuffer[6];
-    local_24._3_1_ = s_onlineWADBuffer[7];
-    local_24._4_4_ = 0;
-    _ctime64(&local_24);
+    genTime._0_1_ = s_onlineWADBuffer[4];
+    genTime._1_1_ = s_onlineWADBuffer[5];
+    genTime._2_1_ = s_onlineWADBuffer[6];
+    genTime._3_1_ = s_onlineWADBuffer[7];
+    genTime._4_4_ = 0;
+    _ctime64(&genTime);
     Com_Printf(0x17,"Got Online WAD. %d entries, generated: %s");
-    for (local_14 = 0; local_14 < (uint)s_onlineWADBuffer._8_4_; local_14 = local_14 + 1) {
-      puVar7 = local_8 + local_14 * 0x2c;
-      memset(local_18,'\0',0x40000);
-      uVar1 = *(uint *)(puVar7 + 0x20);
-      uVar2 = *(uint *)(puVar7 + 0x28);
+    for (idx = 0; idx < (uint)s_onlineWADBuffer._8_4_; idx = idx + 1) {
+      s0 = toc + idx;
+      memset(uncompressedFileBuffer,'\0',0x40000);
+      uVar1 = s0->compressedSize;
+      uVar2 = s0->offset;
       LiveStorage_DecompressBuffer
                 (s_onlineWADBuffer +
                  (uVar2 >> 0x18 | uVar2 >> 8 & 0xff00 | (uVar2 & 0xff00) << 8 | uVar2 << 0x18),
                  uVar1 >> 0x18 | uVar1 >> 8 & 0xff00 | (uVar1 & 0xff00) << 8 | uVar1 << 0x18,
-                 local_18,0x40000);
-      iVar5 = I_stricmp((char *)puVar7,"contracts.dat");
+                 uncompressedFileBuffer,0x40000);
+      iVar5 = I_stricmp(s0->name,"contracts.dat");
       if (iVar5 == 0) {
-        LiveContracts_ParseContracts((char *)local_18);
+        LiveContracts_ParseContracts((char *)uncompressedFileBuffer);
         s_haveContracts = true;
       }
       else {
-        iVar5 = I_stricmp((char *)puVar7,"geogroups.info");
+        iVar5 = I_stricmp(s0->name,"geogroups.info");
         if (iVar5 == 0) {
-          SV_Groups_ParseGeos((char *)local_18);
+          SV_Groups_ParseGeos((char *)uncompressedFileBuffer);
         }
         else {
-          iVar5 = I_stricmp((char *)puVar7,"playlists_mp.info");
+          iVar5 = I_stricmp(s0->name,"playlists_mp.info");
           if (iVar5 == 0) {
-            Playlist_ParsePlaylists((char *)local_18);
+            Playlist_ParsePlaylists((char *)uncompressedFileBuffer);
             LiveStorage_SetHavePlaylists(true);
             SV_AP_Start();
           }
           else {
             pcVar6 = va("motd-mp-%s.txt");
-            iVar5 = I_stricmp((char *)puVar7,pcVar6);
+            iVar5 = I_stricmp(s0->name,pcVar6);
             if (iVar5 == 0) {
               LiveTicker_RemoveStream(TICKER_STREAM_COD);
-              LiveTicker_AddMessages((char *)local_18,TICKER_STREAM_COD,true);
+              LiveTicker_AddMessages((char *)uncompressedFileBuffer,TICKER_STREAM_COD,true);
             }
             else {
               pcVar6 = va("liveblurb-mp-%s.txt");
-              iVar5 = I_stricmp((char *)puVar7,pcVar6);
+              iVar5 = I_stricmp(s0->name,pcVar6);
               if (iVar5 == 0) {
-                Live_FileShare_SetLiveBlurb((char *)local_18);
+                Live_FileShare_SetLiveBlurb((char *)uncompressedFileBuffer);
               }
               else {
                 Com_PrintWarning(0x17,"Unhandled entry \'%s\' in online WAD\n");
@@ -182,7 +188,7 @@ void __cdecl LiveStorage_ProcessOnlineWAD(void)
     SV_SetPlaylistFetchedTime();
     s_completedOnlineWAD = true;
     GamerProfile_WriteSettings(unaff_ESI);
-    LargeLocal::~LargeLocal(&local_10);
+    LargeLocal::~LargeLocal(&uncompressedFileBuffer_large_local);
   }
   return;
 }
@@ -190,7 +196,7 @@ void __cdecl LiveStorage_ProcessOnlineWAD(void)
 
 // 00987740  LiveStorage_FetchOnlineWADNotFound  (live/live_storage_pub.cpp:294)
 
-taskCompleteResults __cdecl LiveStorage_FetchOnlineWADNotFound(int param_1,void *param_2)
+taskCompleteResults __cdecl LiveStorage_FetchOnlineWADNotFound(int controllerIndex,void *data)
 
 {
   Com_Printf(0x10,"Could not find WAD \'%s\' in publisher storage\n");
@@ -202,22 +208,23 @@ taskCompleteResults __cdecl LiveStorage_FetchOnlineWADNotFound(int param_1,void 
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveStorage_FetchOnlineWAD(int param_1)
+TaskRecord * __cdecl LiveStorage_FetchOnlineWAD(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   TaskRecord *pTVar3;
-  ulong uVar4;
-  uchar *local_14;
-  char *local_10;
-  TaskRecord *local_c;
-  undefined4 local_8;
+  ulong count;
+  int fileLen;
+  void *fileBuffer;
+  char *language;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
   bVar2 = SV_IsConnectedToDW();
   if (bVar2) {
-    local_8 = 0;
-    local_10 = SEH_GetLanguageName((loc_language->current).integer);
+    task = (TaskRecord *)0x0;
+    language = SEH_GetLanguageName((loc_language->current).integer);
     Com_sprintf(wadFileName,0x80,"%s%s.wad");
     if ((s_onlineWADFileInfo.fetchCompleted != false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage_pub.cpp",
@@ -232,7 +239,7 @@ TaskRecord * __cdecl LiveStorage_FetchOnlineWAD(int param_1)
         pTVar3 = (TaskRecord *)0x0;
       }
       else {
-        local_c = (TaskRecord *)0x0;
+        nestedTask = (TaskRecord *)0x0;
         s_onlineWADFileInfo.isUserFile = false;
         s_onlineWADFileInfo.isCompressedFile = false;
         s_onlineWADFileInfo.fileTask.m_filename = wadFileName;
@@ -240,20 +247,21 @@ TaskRecord * __cdecl LiveStorage_FetchOnlineWAD(int param_1)
         s_onlineWADFileInfo.bufferSize = 0x10000;
         s_onlineWADFileInfo.fileOperationSucessFunction = GamerProfile_WriteSettings;
         s_onlineWADFileInfo.fileNotFoundFunction = LiveStorage_FetchOnlineWADNotFound;
-        local_c = LiveStorage_ReadDWFile(param_1,&s_onlineWADFileInfo);
+        nestedTask = LiveStorage_ReadDWFile(controllerIndex,&s_onlineWADFileInfo);
         pTVar3 = LiveStorage_SetupNestedTask
-                           (task_LiveFetchOnlineWAD,param_1,local_c,&s_onlineWADFileInfo);
+                           (task_LiveFetchOnlineWAD,controllerIndex,nestedTask,&s_onlineWADFileInfo)
+        ;
       }
     }
     else {
       s_onlineWADFileInfo.fetchCompleted = true;
-      uVar4 = FS_ReadFile(wadFileName,&local_14);
-      if (0 < (int)uVar4) {
-        if ((int)uVar4 < 0x10001) {
-          if (local_14 != (uchar *)0x0) {
-            memcpy(s_onlineWADBuffer,local_14,uVar4);
-            FS_FreeFile(local_14);
-            GamerProfile_WriteSettings(param_1);
+      count = FS_ReadFile(wadFileName,&fileBuffer);
+      if (0 < (int)count) {
+        if ((int)count < 0x10001) {
+          if (fileBuffer != (void *)0x0) {
+            memcpy(s_onlineWADBuffer,fileBuffer,count);
+            FS_FreeFile(fileBuffer);
+            GamerProfile_WriteSettings(controllerIndex);
             return (TaskRecord *)0x0;
           }
         }
@@ -262,7 +270,7 @@ TaskRecord * __cdecl LiveStorage_FetchOnlineWAD(int param_1)
         }
       }
       Com_PrintError(0x10,"Unable to load WAD file \'%s\' locally\n");
-      LiveStorage_FetchOnlineWADNotFound(param_1,(void *)0x0);
+      LiveStorage_FetchOnlineWADNotFound(controllerIndex,(void *)0x0);
       pTVar3 = (TaskRecord *)0x0;
     }
   }
@@ -335,16 +343,16 @@ void __cdecl LiveStorage_ForceWADFetch(void)
 
 // 00987B30  tlEndianSwapMemory32  (<external>/projects_pc/cod/codsrc/tl/base/include/tl_defs.h:651)
 
-void __cdecl tlEndianSwapMemory32(void *param_1,uint param_2)
+void __cdecl tlEndianSwapMemory32(void *Data,uint Bytes)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  uint local_c;
-  uint *local_8;
+  uint i;
+  uint *Ptr;
   
-  if ((param_2 & 3) != 0) {
+  if ((Bytes & 3) != 0) {
     bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\base\\include\\tl_defs.h",0x28c,
                       "(Bytes&3) == 0","Size must be a multiple of 4.");
     if (bVar3) {
@@ -353,11 +361,11 @@ void __cdecl tlEndianSwapMemory32(void *param_1,uint param_2)
       return;
     }
   }
-  local_8 = param_1;
-  for (local_c = 0; local_c < param_2 >> 2; local_c = local_c + 1) {
-    uVar1 = *local_8;
-    *local_8 = uVar1 >> 0x18 | uVar1 >> 8 & 0xff00 | (uVar1 & 0xff00) << 8 | uVar1 << 0x18;
-    local_8 = local_8 + 1;
+  Ptr = Data;
+  for (i = 0; i < Bytes >> 2; i = i + 1) {
+    uVar1 = *Ptr;
+    *Ptr = uVar1 >> 0x18 | uVar1 >> 8 & 0xff00 | (uVar1 & 0xff00) << 8 | uVar1 << 0x18;
+    Ptr = Ptr + 1;
   }
   return;
 }

@@ -3,29 +3,29 @@
 // 008E7F20  DDL_Converter_CopyStates  (ddl/ddl_converter.cpp:19)
 
 void __cdecl
-DDL_Converter_CopyStates(ddlState_t *param_1,char *param_2,ddlState_t *param_3,char *param_4)
+DDL_Converter_CopyStates(ddlState_t *stateFrom,char *bufferFrom,ddlState_t *stateTo,char *bufferTo)
 
 {
   char *pcVar1;
   int iVar2;
-  uint uVar3;
-  ulong64 uVar4;
+  uint value;
+  ulong64 uVar3;
   
-  if (param_1->member->type == param_3->member->type) {
-    pcVar1 = (char *)param_1->member->type;
+  if (stateFrom->member->type == stateTo->member->type) {
+    pcVar1 = (char *)stateFrom->member->type;
     switch(pcVar1) {
     case (char *)0x0:
     case (char *)0x1:
     case (char *)0x2:
-      uVar3 = DDL_GetInt(param_1,param_2);
-      iVar2 = DDL_SetInt(param_3,uVar3,param_4);
+      value = DDL_GetInt(stateFrom,bufferFrom);
+      iVar2 = DDL_SetInt(stateTo,value,bufferTo);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Found member \'%s\' but could not write value.\n");
       }
       break;
     case (char *)0x3:
-      uVar4 = DDL_GetInt64(param_1,param_2);
-      iVar2 = DDL_SetInt64(param_3,CONCAT44(param_4,(int)(uVar4 >> 0x20)),pcVar1);
+      uVar3 = DDL_GetInt64(stateFrom,bufferFrom);
+      iVar2 = DDL_SetInt64(stateTo,CONCAT44(bufferTo,(int)(uVar3 >> 0x20)),pcVar1);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Found member \'%s\' but could not write value.\n");
       }
@@ -34,8 +34,8 @@ DDL_Converter_CopyStates(ddlState_t *param_1,char *param_2,ddlState_t *param_3,c
       DDL_PrintError("DDL: Invalid type reached during ddl conversion for member \'%s\'.\n");
       break;
     case (char *)0x5:
-      pcVar1 = DDL_GetString(param_1,param_2);
-      iVar2 = DDL_SetString(param_3,pcVar1,param_4);
+      pcVar1 = DDL_GetString(stateFrom,bufferFrom);
+      iVar2 = DDL_SetString(stateTo,pcVar1,bufferTo);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Found member \'%s\' but could not write value.\n");
       }
@@ -49,23 +49,23 @@ DDL_Converter_CopyStates(ddlState_t *param_1,char *param_2,ddlState_t *param_3,c
 
 void __cdecl
 DDL_Converter_ProcessStates
-          (ddlStructDef_t *param_1,int param_2,ddlState_t *param_3,ddlState_t *param_4,char *param_5
-          ,char *param_6)
+          (ddlStructDef_t *structDef,int structMemberItr,ddlState_t *oldState,ddlState_t *newState,
+          char *oldBuffer,char *newBuffer)
 
 {
   int iVar1;
   
-  if ((param_3->member->type == 6) && (param_4->member->type == 6)) {
+  if ((oldState->member->type == 6) && (newState->member->type == 6)) {
     DDL_Converter_TraverseStruct
-              (param_3->ddl->structList + param_1->members[param_2].externalIndex,param_3,param_4,
-               param_5,param_6);
+              (oldState->ddl->structList + structDef->members[structMemberItr].externalIndex,
+               oldState,newState,oldBuffer,newBuffer);
   }
   else {
-    iVar1 = DDL_Lookup_IsLeaf(param_3->member);
+    iVar1 = DDL_Lookup_IsLeaf(oldState->member);
     if (iVar1 != 0) {
-      iVar1 = DDL_Lookup_IsLeaf(param_4->member);
+      iVar1 = DDL_Lookup_IsLeaf(newState->member);
       if (iVar1 != 0) {
-        DDL_Converter_CopyStates(param_3,param_5,param_4,param_6);
+        DDL_Converter_CopyStates(oldState,oldBuffer,newState,newBuffer);
       }
     }
   }
@@ -77,42 +77,48 @@ DDL_Converter_ProcessStates
 
 void __cdecl
 DDL_Converter_TraverseStruct
-          (ddlStructDef_t *param_1,ddlState_t *param_2,ddlState_t *param_3,char *param_4,
-          char *param_5)
+          (ddlStructDef_t *structDef,ddlState_t *oldBaseState,ddlState_t *newBaseState,
+          char *oldBuffer,char *newBuffer)
 
 {
   int iVar1;
-  int local_4c;
-  int local_48;
-  ddlState_t local_44;
-  ddlState_t local_34;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  int memberArrayItr;
+  int structMemberItr;
+  ddlState_t newState;
+  ddlState_t oldState;
+  ddlState_t newArrayState;
+  ddlState_t oldArrayState;
   
-  for (local_48 = 0; local_48 < param_1->memberCount; local_48 = local_48 + 1) {
-    iVar1 = DDL_MoveToName(param_3,&local_44,param_1->members[local_48].name);
+  for (structMemberItr = 0; structMemberItr < structDef->memberCount;
+      structMemberItr = structMemberItr + 1) {
+    iVar1 = DDL_MoveToName(newBaseState,&newState,structDef->members[structMemberItr].name);
     if ((iVar1 != 0) &&
-       (iVar1 = DDL_MoveToName(param_2,&local_34,param_1->members[local_48].name), iVar1 != 0)) {
-      for (local_4c = 0; local_4c < (local_34.member)->arraySize; local_4c = local_4c + 1) {
-        if (((local_34.member)->arraySize < 2) || ((local_44.member)->arraySize < 2)) {
-          DDL_Converter_ProcessStates(param_1,local_48,&local_34,&local_44,param_4,param_5);
+       (iVar1 = DDL_MoveToName(oldBaseState,&oldState,structDef->members[structMemberItr].name),
+       iVar1 != 0)) {
+      for (memberArrayItr = 0; memberArrayItr < (oldState.member)->arraySize;
+          memberArrayItr = memberArrayItr + 1) {
+        if (((oldState.member)->arraySize < 2) || ((newState.member)->arraySize < 2)) {
+          DDL_Converter_ProcessStates
+                    (structDef,structMemberItr,&oldState,&newState,oldBuffer,newBuffer);
         }
-        else if (((local_34.member)->enumIndex == -1) && ((local_44.member)->enumIndex == -1)) {
-          if (((local_4c < (local_44.member)->arraySize) &&
-              (iVar1 = DDL_MoveToIndex(&local_34,&local_14,local_4c,1), iVar1 != 0)) &&
-             (iVar1 = DDL_MoveToIndex(&local_44,&local_24,local_4c,1), iVar1 != 0)) {
-            DDL_Converter_ProcessStates(param_1,local_48,&local_14,&local_24,param_4,param_5);
+        else if (((oldState.member)->enumIndex == -1) && ((newState.member)->enumIndex == -1)) {
+          if (((memberArrayItr < (newState.member)->arraySize) &&
+              (iVar1 = DDL_MoveToIndex(&oldState,&oldArrayState,memberArrayItr,1), iVar1 != 0)) &&
+             (iVar1 = DDL_MoveToIndex(&newState,&newArrayState,memberArrayItr,1), iVar1 != 0)) {
+            DDL_Converter_ProcessStates
+                      (structDef,structMemberItr,&oldArrayState,&newArrayState,oldBuffer,newBuffer);
           }
         }
         else {
-          iVar1 = DDL_MoveToName(&local_34,&local_14,
-                                 (local_34.ddl)->enumList[(local_34.member)->enumIndex].members
-                                 [local_4c]);
+          iVar1 = DDL_MoveToName(&oldState,&oldArrayState,
+                                 (oldState.ddl)->enumList[(oldState.member)->enumIndex].members
+                                 [memberArrayItr]);
           if ((iVar1 != 0) &&
-             (iVar1 = DDL_MoveToName(&local_44,&local_24,
-                                     (local_34.ddl)->enumList[(local_34.member)->enumIndex].members
-                                     [local_4c]), iVar1 != 0)) {
-            DDL_Converter_ProcessStates(param_1,local_48,&local_14,&local_24,param_4,param_5);
+             (iVar1 = DDL_MoveToName(&newState,&newArrayState,
+                                     (oldState.ddl)->enumList[(oldState.member)->enumIndex].members
+                                     [memberArrayItr]), iVar1 != 0)) {
+            DDL_Converter_ProcessStates
+                      (structDef,structMemberItr,&oldArrayState,&newArrayState,oldBuffer,newBuffer);
           }
         }
       }
@@ -125,20 +131,23 @@ DDL_Converter_TraverseStruct
 // 008E82D0  DDL_Converter_Versions  (ddl/ddl_converter.cpp:109)
 
 int __cdecl
-DDL_Converter_Versions(ddlDef_t *param_1,ddlDef_t *param_2,char *param_3,char *param_4,int param_5)
+DDL_Converter_Versions
+          (ddlDef_t *ddlVersionFrom,ddlDef_t *ddlVersionTo,char *buffer,char *backupBuffer,
+          int bufferSize)
 
 {
-  ddlState_t local_28;
-  ddlState_t local_18;
-  int local_8;
+  ddlState_t newRootState;
+  ddlState_t oldRootState;
+  int startTime;
   
-  memset((uchar *)param_4,'\0',param_5);
-  DDL_AssociateBuffer(param_4,param_5,param_2);
-  DDL_Reset(&local_18,param_1);
-  DDL_Reset(&local_28,param_2);
-  local_8 = Sys_Milliseconds();
-  DDL_Converter_TraverseStruct(param_1->structList,&local_18,&local_28,param_3,param_4);
-  memcpy((uchar *)param_3,(uchar *)param_4,param_5);
+  memset((uchar *)backupBuffer,'\0',bufferSize);
+  DDL_AssociateBuffer(backupBuffer,bufferSize,ddlVersionTo);
+  DDL_Reset(&oldRootState,ddlVersionFrom);
+  DDL_Reset(&newRootState,ddlVersionTo);
+  startTime = Sys_Milliseconds();
+  DDL_Converter_TraverseStruct
+            (ddlVersionFrom->structList,&oldRootState,&newRootState,buffer,backupBuffer);
+  memcpy((uchar *)buffer,(uchar *)backupBuffer,bufferSize);
   Sys_Milliseconds();
   DDL_NoCheckPrintf("DDL: Conversion from version %d to version %d completed in %d ms.\n");
   return 1;

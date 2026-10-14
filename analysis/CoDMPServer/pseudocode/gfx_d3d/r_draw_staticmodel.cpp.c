@@ -2,7 +2,9 @@
 
 // 00B54850  R_GetNextStaticModelSurf  (gfx_d3d/r_draw_staticmodel.cpp:486)
 
-int __cdecl R_GetNextStaticModelSurf(GfxStaticModelDrawStream *param_1,XSurface **param_2)
+/* WARNING: Variable defined which should be unmapped: primDrawSurfPos */
+
+int __cdecl R_GetNextStaticModelSurf(GfxStaticModelDrawStream *drawStream,XSurface **outSurf)
 
 {
   XSurface *pXVar1;
@@ -11,40 +13,43 @@ int __cdecl R_GetNextStaticModelSurf(GfxStaticModelDrawStream *param_1,XSurface 
   int iVar4;
   uint uVar5;
   uint *puVar6;
+  uint *primDrawSurfPos;
+  uint count;
   
-  param_1->smodelCount = *param_1->primDrawSurfPos & 0xfffffff;
-  param_1->primDrawSurfPos = param_1->primDrawSurfPos + 1;
-  if (param_1->smodelCount == 0) {
+  drawStream->smodelCount = *drawStream->primDrawSurfPos & 0xfffffff;
+  drawStream->primDrawSurfPos = drawStream->primDrawSurfPos + 1;
+  if (drawStream->smodelCount == 0) {
     iVar4 = 0;
   }
   else {
-    uVar5 = param_1->smodelCount + 1 >> 1;
-    puVar6 = param_1->primDrawSurfPos;
-    param_1->primDrawSurfPos = param_1->primDrawSurfPos + uVar5 + 1;
+    uVar5 = drawStream->smodelCount + 1 >> 1;
+    puVar6 = drawStream->primDrawSurfPos;
+    drawStream->primDrawSurfPos = drawStream->primDrawSurfPos + uVar5 + 1;
     pXVar1 = (XSurface *)*puVar6;
     puVar6 = puVar6 + 1;
-    param_1->smodelList = (ushort *)puVar6;
-    puVar6 = puVar6 + uVar5;
-    param_1->localSurf = pXVar1;
-    if (param_1->primStats != (GfxPrimStats *)0x0) {
-      param_1->frameStats->geoIndexCount =
-           (uint)pXVar1->triCount * param_1->smodelCount * 3 + param_1->frameStats->geoIndexCount;
-      if (param_1->primStats == (GfxPrimStats *)0x0) {
+    drawStream->smodelList = (ushort *)puVar6;
+    drawStream->localSurf = pXVar1;
+    if (drawStream->primStats != (GfxPrimStats *)0x0) {
+      drawStream->frameStats->geoIndexCount =
+           (uint)pXVar1->triCount * drawStream->smodelCount * 3 +
+           drawStream->frameStats->geoIndexCount;
+      if (drawStream->primStats == (GfxPrimStats *)0x0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp"
                                  ,0x211,0,"%s");
         if (!bVar3) {
           pcVar2 = (code *)swi(3);
-          iVar4 = (*pcVar2)(puVar6);
+          iVar4 = (*pcVar2)(puVar6 + uVar5);
           return iVar4;
         }
       }
-      param_1->primStats->dynamicIndexCount =
-           (uint)pXVar1->triCount * param_1->smodelCount * 3 + param_1->primStats->dynamicIndexCount
-      ;
-      param_1->primStats->dynamicVertexCount =
-           (uint)pXVar1->vertCount * param_1->smodelCount + param_1->primStats->dynamicVertexCount;
+      drawStream->primStats->dynamicIndexCount =
+           (uint)pXVar1->triCount * drawStream->smodelCount * 3 +
+           drawStream->primStats->dynamicIndexCount;
+      drawStream->primStats->dynamicVertexCount =
+           (uint)pXVar1->vertCount * drawStream->smodelCount +
+           drawStream->primStats->dynamicVertexCount;
     }
-    *param_2 = pXVar1;
+    *outSurf = pXVar1;
     iVar4 = 1;
   }
   return iVar4;
@@ -53,67 +58,69 @@ int __cdecl R_GetNextStaticModelSurf(GfxStaticModelDrawStream *param_1,XSurface 
 
 // 00B54BB0  R_SetStaticModelVertexBuffer  (gfx_d3d/r_draw_staticmodel.cpp:545)
 
-void __cdecl R_SetStaticModelVertexBuffer(GfxCmdBufPrimState *param_1,XSurface *param_2)
+void __cdecl R_SetStaticModelVertexBuffer(GfxCmdBufPrimState *primState,XSurface *xsurf)
 
 {
-  IDirect3DVertexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
+  IDirect3DVertexBuffer9 *vb_00;
+  code *pcVar1;
+  bool bVar2;
+  IDirect3DVertexBuffer9 *vb;
   
-  if (param_2 == (XSurface *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  if (xsurf == (XSurface *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0x224,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pIVar1 = param_2->vb0;
-  if (pIVar1 == (IDirect3DVertexBuffer9 *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  vb_00 = xsurf->vb0;
+  if (vb_00 == (IDirect3DVertexBuffer9 *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0x227,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  R_SetStreamSource(param_1,pIVar1,0,0x20);
+  R_SetStreamSource(primState,vb_00,0,0x20);
   return;
 }
 
 
 // 00B54C30  R_SetStaticModelIndexBuffer  (gfx_d3d/r_draw_staticmodel.cpp:561)
 
-void __cdecl R_SetStaticModelIndexBuffer(GfxCmdBufPrimState *param_1,XSurface *param_2)
+void __cdecl R_SetStaticModelIndexBuffer(GfxCmdBufPrimState *primState,XSurface *xsurf)
 
 {
-  IDirect3DIndexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
+  IDirect3DIndexBuffer9 *ib_00;
+  code *pcVar1;
+  bool bVar2;
+  IDirect3DIndexBuffer9 *ib;
   
-  if (param_2 == (XSurface *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  if (xsurf == (XSurface *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0x234,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pIVar1 = param_2->indexBuffer;
-  if (pIVar1 == (IDirect3DIndexBuffer9 *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  ib_00 = xsurf->indexBuffer;
+  if (ib_00 == (IDirect3DIndexBuffer9 *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0x238,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->indexBuffer != pIVar1) {
-    R_ChangeIndices(param_1,pIVar1);
+  if (primState->indexBuffer != ib_00) {
+    R_ChangeIndices(primState,ib_00);
   }
   return;
 }
@@ -121,13 +128,13 @@ void __cdecl R_SetStaticModelIndexBuffer(GfxCmdBufPrimState *param_1,XSurface *p
 
 // 00B54CF0  R_SetStaticModelVertexPrimArgs  (gfx_d3d/r_draw_staticmodel.cpp:579)
 
-void __cdecl R_SetStaticModelVertexPrimArgs(XSurface *param_1,GfxDrawPrimArgs *param_2)
+void __cdecl R_SetStaticModelVertexPrimArgs(XSurface *xsurf,GfxDrawPrimArgs *args)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (XSurface *)0x0) {
+  if (xsurf == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0x244,0,"%s");
     if (!bVar2) {
@@ -136,19 +143,19 @@ void __cdecl R_SetStaticModelVertexPrimArgs(XSurface *param_1,GfxDrawPrimArgs *p
       return;
     }
   }
-  param_2->vertexCount = (uint)param_1->vertCount;
+  args->vertexCount = (uint)xsurf->vertCount;
   return;
 }
 
 
 // 00B54CC0  R_SetStaticModelPrimArgs  (gfx_d3d/r_draw_staticmodel.cpp:591)
 
-void __cdecl R_SetStaticModelPrimArgs(XSurface *param_1,GfxDrawPrimArgs *param_2)
+void __cdecl R_SetStaticModelPrimArgs(XSurface *xsurf,GfxDrawPrimArgs *args)
 
 {
-  R_SetStaticModelVertexPrimArgs(param_1,param_2);
-  param_2->triCount = (uint)param_1->triCount;
-  param_2->baseIndex = 0;
+  R_SetStaticModelVertexPrimArgs(xsurf,args);
+  args->triCount = (uint)xsurf->triCount;
+  args->baseIndex = 0;
   return;
 }
 
@@ -159,39 +166,39 @@ void __cdecl R_SetStaticModelPrimArgs(XSurface *param_1,GfxDrawPrimArgs *param_2
 
 void __cdecl
 R_DrawStaticModelSurfLit
-          (uint *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3,
-          GfxDrawSurfListInfo *param_4)
+          (uint *primDrawSurfPos,GfxCmdBufContext context,GfxCmdBufContext prepassContext,
+          GfxDrawSurfListInfo *info)
 
 {
   int iVar1;
-  GfxStaticModelDrawStream local_3c;
-  XSurface *local_8;
+  GfxStaticModelDrawStream drawStream;
+  XSurface *surf;
   
-  local_3c._40_4_ = local_3c._40_4_ & 0xfffffffc;
-  local_3c.primDrawSurfPos = param_1;
-  local_3c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_3c.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  local_3c.usingCrossFade =
-       (int)(*(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+  drawStream._40_4_ = drawStream._40_4_ & 0xfffffffc;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.customSamplerFlags = (uint)(context.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.usingCrossFade =
+       (int)(*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                      0x16cf1c) == 0);
-  local_3c.frameStats = &((param_2.field0_0x0._s_0.state)->prim).frameStats;
-  local_3c.primStats = ((param_2.field0_0x0._s_0.state)->prim).primStats;
-  if ((param_4 == (GfxDrawSurfListInfo *)0x0) || (param_4->viewInfo == (GfxViewInfo *)0x0)) {
-    local_3c.dynSModelView = (DynSModelClientView *)0x0;
-    local_3c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.frameStats = &((context.field0_0x0._s_0.state)->prim).frameStats;
+  drawStream.primStats = ((context.field0_0x0._s_0.state)->prim).primStats;
+  if ((info == (GfxDrawSurfListInfo *)0x0) || (info->viewInfo == (GfxViewInfo *)0x0)) {
+    drawStream.dynSModelView = (DynSModelClientView *)0x0;
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    local_3c.dynSModelView =
+    drawStream.dynSModelView =
          (DynSModelClientView *)
-         param_4->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
-    local_3c.dynSModelState =
-         (DynSModelGfxState *)
-         param_4->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1];
+         info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
+    drawStream.dynSModelState =
+         (DynSModelGfxState *)info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1]
+    ;
   }
   while( true ) {
-    iVar1 = R_GetNextStaticModelSurf(&local_3c,&local_8);
+    iVar1 = R_GetNextStaticModelSurf(&drawStream,&surf);
     if (iVar1 == 0) break;
-    R_DrawStaticModelDrawSurfLightingNonOptimized(&local_3c,param_2);
+    R_DrawStaticModelDrawSurfLightingNonOptimized(&drawStream,context);
   }
   return;
 }
@@ -202,38 +209,38 @@ R_DrawStaticModelSurfLit
 /* WARNING: Type propagation algorithm not settling */
 
 void __cdecl
-R_DrawStaticModelSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
+R_DrawStaticModelSurf(uint *primDrawSurfPos,GfxCmdBufContext context,GfxDrawSurfListInfo *info)
 
 {
   int iVar1;
-  GfxStaticModelDrawStream local_3c;
-  XSurface *local_8;
+  GfxStaticModelDrawStream drawStream;
+  XSurface *surf;
   
-  local_3c._40_4_ = local_3c._40_4_ & 0xfffffffc;
-  local_3c.primDrawSurfPos = param_1;
-  local_3c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_3c.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  local_3c.usingCrossFade =
-       (int)(*(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+  drawStream._40_4_ = drawStream._40_4_ & 0xfffffffc;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.customSamplerFlags = (uint)(context.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.usingCrossFade =
+       (int)(*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                      0x16cf1c) == 0);
-  local_3c.frameStats = &((param_2.field0_0x0._s_0.state)->prim).frameStats;
-  local_3c.primStats = ((param_2.field0_0x0._s_0.state)->prim).primStats;
-  if ((param_3 == (GfxDrawSurfListInfo *)0x0) || (param_3->viewInfo == (GfxViewInfo *)0x0)) {
-    local_3c.dynSModelView = (DynSModelClientView *)0x0;
-    local_3c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.frameStats = &((context.field0_0x0._s_0.state)->prim).frameStats;
+  drawStream.primStats = ((context.field0_0x0._s_0.state)->prim).primStats;
+  if ((info == (GfxDrawSurfListInfo *)0x0) || (info->viewInfo == (GfxViewInfo *)0x0)) {
+    drawStream.dynSModelView = (DynSModelClientView *)0x0;
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    local_3c.dynSModelView =
+    drawStream.dynSModelView =
          (DynSModelClientView *)
-         param_3->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
-    local_3c.dynSModelState =
-         (DynSModelGfxState *)
-         param_3->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1];
+         info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
+    drawStream.dynSModelState =
+         (DynSModelGfxState *)info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1]
+    ;
   }
   while( true ) {
-    iVar1 = R_GetNextStaticModelSurf(&local_3c,&local_8);
+    iVar1 = R_GetNextStaticModelSurf(&drawStream,&surf);
     if (iVar1 == 0) break;
-    R_DrawStaticModelDrawSurfNonOptimized(&local_3c,param_2);
+    R_DrawStaticModelDrawSurfNonOptimized(&drawStream,context);
   }
   return;
 }
@@ -244,15 +251,17 @@ R_DrawStaticModelSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-R_DrawStaticModelDrawSurfPlacement(GfxStaticModelDrawInst *param_1,GfxCmdBufSourceState *param_2)
+R_DrawStaticModelDrawSurfPlacement
+          (GfxStaticModelDrawInst *smodelDrawInst,GfxCmdBufSourceState *source)
 
 {
-  GfxMatrix *pGVar1;
-  float local_38;
+  GfxMatrix *out_2;
+  GfxMatrix *matrix;
+  float origin;
   float local_34;
   float local_30;
-  float local_2c;
-  float local_28;
+  float scale;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -262,21 +271,21 @@ R_DrawStaticModelDrawSurfPlacement(GfxStaticModelDrawInst *param_1,GfxCmdBufSour
   float local_c;
   float local_8;
   
-  local_28 = (param_1->placement).axis[0][0];
-  local_24 = (param_1->placement).axis[0][1];
-  local_20 = (param_1->placement).axis[0][2];
-  local_1c = (param_1->placement).axis[1][0];
-  local_18 = (param_1->placement).axis[1][1];
-  local_14 = (param_1->placement).axis[1][2];
-  local_10 = (param_1->placement).axis[2][0];
-  local_c = (param_1->placement).axis[2][1];
-  local_8 = (param_1->placement).axis[2][2];
-  local_2c = (param_1->placement).scale;
-  pGVar1 = R_GetActiveWorldMatrix(param_2);
-  local_38 = (param_1->placement).origin[0] - (param_2->skinnedPlacement).base.origin[0];
-  local_34 = (param_1->placement).origin[1] - (param_2->skinnedPlacement).base.origin[1];
-  local_30 = (param_1->placement).origin[2] - (param_2->skinnedPlacement).base.origin[2];
-  ikMatrixSet44((float (*) [4])pGVar1,&local_38,(float (*) [3])&local_28,local_2c);
+  axis = (smodelDrawInst->placement).axis[0][0];
+  local_24 = (smodelDrawInst->placement).axis[0][1];
+  local_20 = (smodelDrawInst->placement).axis[0][2];
+  local_1c = (smodelDrawInst->placement).axis[1][0];
+  local_18 = (smodelDrawInst->placement).axis[1][1];
+  local_14 = (smodelDrawInst->placement).axis[1][2];
+  local_10 = (smodelDrawInst->placement).axis[2][0];
+  local_c = (smodelDrawInst->placement).axis[2][1];
+  local_8 = (smodelDrawInst->placement).axis[2][2];
+  scale = (smodelDrawInst->placement).scale;
+  out_2 = R_GetActiveWorldMatrix(source);
+  origin = (smodelDrawInst->placement).origin[0] - (source->skinnedPlacement).base.origin[0];
+  local_34 = (smodelDrawInst->placement).origin[1] - (source->skinnedPlacement).base.origin[1];
+  local_30 = (smodelDrawInst->placement).origin[2] - (source->skinnedPlacement).base.origin[2];
+  ikMatrixSet44((float (*) [4])out_2,&origin,(float (*) [3])&axis,scale);
   return;
 }
 
@@ -284,37 +293,41 @@ R_DrawStaticModelDrawSurfPlacement(GfxStaticModelDrawInst *param_1,GfxCmdBufSour
 // 00B54A80  R_DrawStaticModelDrawSurfNonOptimized  (gfx_d3d/r_draw_staticmodel.cpp:2615)
 
 void __cdecl
-R_DrawStaticModelDrawSurfNonOptimized(GfxStaticModelDrawStream *param_1,GfxCmdBufContext param_2)
+R_DrawStaticModelDrawSurfNonOptimized(GfxStaticModelDrawStream *drawStream,GfxCmdBufContext context)
 
 {
-  XSurface *pXVar1;
-  uint uVar2;
-  GfxStaticModelDrawInst *pGVar3;
-  ushort *puVar4;
-  uint uVar5;
-  GfxCmdBufContext GVar6;
-  uint local_18;
-  GfxDrawPrimArgs local_10;
+  XSurface *xsurf_00;
+  uint uVar1;
+  GfxStaticModelDrawInst *pGVar2;
+  ushort *puVar3;
+  uint uVar4;
+  GfxCmdBufContext context_00;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  uint mapDynSModelCount;
+  uint smodelCount;
+  uint index;
+  XSurface *xsurf;
+  GfxDrawPrimArgs args;
   
-  pXVar1 = param_1->localSurf;
-  R_SetStaticModelPrimArgs(pXVar1,&local_10);
-  R_SetStaticModelIndexBuffer(&(param_2.field0_0x0._s_0.state)->prim,pXVar1);
-  R_SetStaticModelVertexBuffer(&(param_2.field0_0x0._s_0.state)->prim,pXVar1);
-  uVar2 = param_1->smodelCount;
-  pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts;
-  puVar4 = param_1->smodelList;
-  uVar5 = param_1->dynSModelState->maxDynSModelIndexInMap;
-  for (local_18 = 0; local_18 < uVar2; local_18 = local_18 + 1) {
-    R_DrawStaticModelDrawSurfPlacement(pGVar3 + puVar4[local_18],param_2.field0_0x0._s_0.source);
-    GVar6.field0_0x0._s_0.state = param_2.field0_0x0._s_0.state;
-    GVar6.field0_0x0._s_0.source = param_2.field0_0x0._s_0.source;
-    R_SetupPassPerPrimArgs(GVar6);
-    if (puVar4[local_18] < uVar5) {
+  xsurf_00 = drawStream->localSurf;
+  R_SetStaticModelPrimArgs(xsurf_00,&args);
+  R_SetStaticModelIndexBuffer(&(context.field0_0x0._s_0.state)->prim,xsurf_00);
+  R_SetStaticModelVertexBuffer(&(context.field0_0x0._s_0.state)->prim,xsurf_00);
+  uVar1 = drawStream->smodelCount;
+  pGVar2 = ((rgp.world)->dpvs).smodelDrawInsts;
+  puVar3 = drawStream->smodelList;
+  uVar4 = drawStream->dynSModelState->maxDynSModelIndexInMap;
+  for (index = 0; index < uVar1; index = index + 1) {
+    R_DrawStaticModelDrawSurfPlacement(pGVar2 + puVar3[index],context.field0_0x0._s_0.source);
+    context_00.field0_0x0._s_0.state = context.field0_0x0._s_0.state;
+    context_00.field0_0x0._s_0.source = context.field0_0x0._s_0.source;
+    R_SetupPassPerPrimArgs(context_00);
+    if (puVar3[index] < uVar4) {
       R_FoliageSetStaticModelShaderConstants
-                (&param_2,(uint)puVar4[local_18],param_1->dynSModelView,param_1->dynSModelState);
+                (&context,(uint)puVar3[index],drawStream->dynSModelView,drawStream->dynSModelState);
     }
-    GamerProfile_WriteSettings((int)param_1);
-    R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_10);
+    GamerProfile_WriteSettings((int)drawStream);
+    R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
   }
   return;
 }
@@ -324,47 +337,49 @@ R_DrawStaticModelDrawSurfNonOptimized(GfxStaticModelDrawStream *param_1,GfxCmdBu
 
 void __cdecl
 R_DrawStaticModelDrawSurfLightingNonOptimized
-          (GfxStaticModelDrawStream *param_1,GfxCmdBufContext param_2)
+          (GfxStaticModelDrawStream *drawStream,GfxCmdBufContext context)
 
 {
-  XSurface *pXVar1;
-  uint uVar2;
-  GfxStaticModelDrawInst *pGVar3;
-  ushort *puVar4;
-  uint uVar5;
-  GfxCmdBufContext GVar6;
-  GfxCmdBufContext GVar7;
-  GfxStaticModelDrawInst *pGVar8;
-  uint local_1c;
-  GfxDrawPrimArgs local_14;
-  ushort local_8;
+  XSurface *xsurf;
+  uint uVar1;
+  GfxStaticModelDrawInst *pGVar2;
+  ushort *puVar3;
+  uint uVar4;
+  GfxCmdBufContext context_00;
+  GfxCmdBufContext context_01;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  uint mapDynSModelCount;
+  uint smodelCount;
+  uint index;
+  GfxDrawPrimArgs args;
+  ushort lightingHandle;
   
-  pXVar1 = param_1->localSurf;
-  R_SetStaticModelPrimArgs(pXVar1,&local_14);
-  R_SetStaticModelIndexBuffer(&(param_2.field0_0x0._s_0.state)->prim,pXVar1);
-  R_SetStaticModelVertexBuffer(&(param_2.field0_0x0._s_0.state)->prim,pXVar1);
-  uVar2 = param_1->smodelCount;
-  pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts;
-  puVar4 = param_1->smodelList;
-  uVar5 = param_1->dynSModelState->maxDynSModelIndexInMap;
-  for (local_1c = 0; local_1c < uVar2; local_1c = local_1c + 1) {
-    pGVar8 = pGVar3 + puVar4[local_1c];
-    GVar6.field0_0x0._4_2_ = (short)param_2.field0_0x0._s_0.state;
-    GVar6.field0_0x0._s_0.source = param_2.field0_0x0._s_0.source;
-    GVar6.field0_0x0._6_2_ = (short)((uint)param_2.field0_0x0._4_4_ >> 0x10);
-    R_SetReflectionProbe(GVar6,(uint)pGVar8->reflectionProbeIndex);
-    R_DrawStaticModelDrawSurfPlacement(pGVar8,param_2.field0_0x0._s_0.source);
-    local_8 = pGVar8->lightingHandle;
-    R_SetModelLightingCoordsForSource(local_8,param_2.field0_0x0._s_0.source);
-    GVar7.field0_0x0._s_0.state = param_2.field0_0x0._s_0.state;
-    GVar7.field0_0x0._s_0.source = param_2.field0_0x0._s_0.source;
-    R_SetupPassPerPrimArgs(GVar7);
-    if (puVar4[local_1c] < uVar5) {
+  xsurf = drawStream->localSurf;
+  R_SetStaticModelPrimArgs(xsurf,&args);
+  R_SetStaticModelIndexBuffer(&(context.field0_0x0._s_0.state)->prim,xsurf);
+  R_SetStaticModelVertexBuffer(&(context.field0_0x0._s_0.state)->prim,xsurf);
+  uVar1 = drawStream->smodelCount;
+  pGVar2 = ((rgp.world)->dpvs).smodelDrawInsts;
+  puVar3 = drawStream->smodelList;
+  uVar4 = drawStream->dynSModelState->maxDynSModelIndexInMap;
+  for (index = 0; index < uVar1; index = index + 1) {
+    smodelDrawInst = pGVar2 + puVar3[index];
+    context_00.field0_0x0._4_2_ = (short)context.field0_0x0._s_0.state;
+    context_00.field0_0x0._s_0.source = context.field0_0x0._s_0.source;
+    context_00.field0_0x0._6_2_ = (short)((uint)context.field0_0x0._4_4_ >> 0x10);
+    R_SetReflectionProbe(context_00,(uint)smodelDrawInst->reflectionProbeIndex);
+    R_DrawStaticModelDrawSurfPlacement(smodelDrawInst,context.field0_0x0._s_0.source);
+    lightingHandle = smodelDrawInst->lightingHandle;
+    R_SetModelLightingCoordsForSource(lightingHandle,context.field0_0x0._s_0.source);
+    context_01.field0_0x0._s_0.state = context.field0_0x0._s_0.state;
+    context_01.field0_0x0._s_0.source = context.field0_0x0._s_0.source;
+    R_SetupPassPerPrimArgs(context_01);
+    if (puVar3[index] < uVar4) {
       R_FoliageSetStaticModelShaderConstants
-                (&param_2,(uint)puVar4[local_1c],param_1->dynSModelView,param_1->dynSModelState);
+                (&context,(uint)puVar3[index],drawStream->dynSModelView,drawStream->dynSModelState);
     }
-    GamerProfile_WriteSettings((int)param_1);
-    R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_14);
+    GamerProfile_WriteSettings((int)drawStream);
+    R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
   }
   return;
 }
@@ -374,22 +389,23 @@ R_DrawStaticModelDrawSurfLightingNonOptimized
 
 void __cdecl
 R_DrawStaticModelSkinnedDrawSurfLighting
-          (int param_1,GfxStaticModelDrawInst *param_2,ushort param_3,GfxDrawPrimArgs *param_4,
-          GfxCmdBufContext param_5,DynSModelClientView *param_6,DynSModelGfxState *param_7)
+          (int smodelIndex,GfxStaticModelDrawInst *smodelDrawInst,ushort lightingHandle,
+          GfxDrawPrimArgs *args,GfxCmdBufContext context,DynSModelClientView *dynSModelView,
+          DynSModelGfxState *dynSModelState)
 
 {
-  GfxCmdBufContext GVar1;
+  GfxCmdBufContext context_00;
   
-  R_SetReflectionProbe(param_5,(uint)param_2->reflectionProbeIndex);
-  R_DrawStaticModelDrawSurfPlacement(param_2,param_5.field0_0x0._s_0.source);
-  R_SetModelLightingCoordsForSource(param_3,param_5.field0_0x0._s_0.source);
-  GVar1.field0_0x0._s_0.state = param_5.field0_0x0._s_0.state;
-  GVar1.field0_0x0._s_0.source = param_5.field0_0x0._s_0.source;
-  R_SetupPassPerPrimArgs(GVar1);
-  if (param_1 < (int)param_7->maxDynSModelIndexInMap) {
-    R_FoliageSetStaticModelShaderConstants(&param_5,param_1,param_6,param_7);
+  R_SetReflectionProbe(context,(uint)smodelDrawInst->reflectionProbeIndex);
+  R_DrawStaticModelDrawSurfPlacement(smodelDrawInst,context.field0_0x0._s_0.source);
+  R_SetModelLightingCoordsForSource(lightingHandle,context.field0_0x0._s_0.source);
+  context_00.field0_0x0._s_0.state = context.field0_0x0._s_0.state;
+  context_00.field0_0x0._s_0.source = context.field0_0x0._s_0.source;
+  R_SetupPassPerPrimArgs(context_00);
+  if (smodelIndex < (int)dynSModelState->maxDynSModelIndexInMap) {
+    R_FoliageSetStaticModelShaderConstants(&context,smodelIndex,dynSModelView,dynSModelState);
   }
-  R_DrawIndexedPrimitive(&(param_5.field0_0x0._s_0.state)->prim,param_4);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,args);
   return;
 }
 
@@ -398,20 +414,21 @@ R_DrawStaticModelSkinnedDrawSurfLighting
 
 void __cdecl
 R_DrawStaticModelSkinnedDrawSurf
-          (int param_1,GfxStaticModelDrawInst *param_2,GfxDrawPrimArgs *param_3,
-          GfxCmdBufContext param_4,DynSModelClientView *param_5,DynSModelGfxState *param_6)
+          (int smodelIndex,GfxStaticModelDrawInst *smodelDrawInst,GfxDrawPrimArgs *args,
+          GfxCmdBufContext context,DynSModelClientView *dynSModelView,
+          DynSModelGfxState *dynSModelState)
 
 {
-  GfxCmdBufContext GVar1;
+  GfxCmdBufContext context_00;
   
-  R_DrawStaticModelDrawSurfPlacement(param_2,param_4.field0_0x0._s_0.source);
-  GVar1.field0_0x0._s_0.state = param_4.field0_0x0._s_0.state;
-  GVar1.field0_0x0._s_0.source = param_4.field0_0x0._s_0.source;
-  R_SetupPassPerPrimArgs(GVar1);
-  if (param_1 < (int)param_6->maxDynSModelIndexInMap) {
-    R_FoliageSetStaticModelShaderConstants(&param_4,param_1,param_5,param_6);
+  R_DrawStaticModelDrawSurfPlacement(smodelDrawInst,context.field0_0x0._s_0.source);
+  context_00.field0_0x0._s_0.state = context.field0_0x0._s_0.state;
+  context_00.field0_0x0._s_0.source = context.field0_0x0._s_0.source;
+  R_SetupPassPerPrimArgs(context_00);
+  if (smodelIndex < (int)dynSModelState->maxDynSModelIndexInMap) {
+    R_FoliageSetStaticModelShaderConstants(&context,smodelIndex,dynSModelView,dynSModelState);
   }
-  R_DrawIndexedPrimitive(&(param_4.field0_0x0._s_0.state)->prim,param_3);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,args);
   return;
 }
 
@@ -419,15 +436,14 @@ R_DrawStaticModelSkinnedDrawSurf
 // 00B553A0  R_SetStaticModelSkinnedPrimArgs  (gfx_d3d/r_draw_staticmodel.cpp:2777)
 
 void __cdecl
-R_SetStaticModelSkinnedPrimArgs
-          (GfxCmdBufPrimState *param_1,XSurface *param_2,GfxDrawPrimArgs *param_3)
+R_SetStaticModelSkinnedPrimArgs(GfxCmdBufPrimState *state,XSurface *xsurf,GfxDrawPrimArgs *args)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2 == (XSurface *)0x0) {
+  if (xsurf == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xada,0,"%s");
     if (!bVar2) {
@@ -436,12 +452,12 @@ R_SetStaticModelSkinnedPrimArgs
       return;
     }
   }
-  iVar3 = XSurfaceGetNumTris(param_2);
-  param_3->triCount = iVar3;
-  iVar3 = XSurfaceGetNumVerts(param_2);
-  param_3->vertexCount = iVar3;
-  iVar3 = R_SetIndexData(param_1,param_2->triIndices,param_3->triCount);
-  param_3->baseIndex = iVar3;
+  iVar3 = XSurfaceGetNumTris(xsurf);
+  args->triCount = iVar3;
+  iVar3 = XSurfaceGetNumVerts(xsurf);
+  args->vertexCount = iVar3;
+  iVar3 = R_SetIndexData(state,xsurf->triIndices,args->triCount);
+  args->baseIndex = iVar3;
   return;
 }
 
@@ -450,45 +466,50 @@ R_SetStaticModelSkinnedPrimArgs
 
 void __cdecl
 R_DrawStaticModelsSkinnedDrawSurfLighting
-          (GfxStaticModelDrawStream *param_1,GfxCmdBufContext param_2)
+          (GfxStaticModelDrawStream *drawStream,GfxCmdBufContext context)
 
 {
-  XSurface *pXVar1;
-  IDirect3DVertexBuffer9 *pIVar2;
-  GfxStaticModelDrawInst *pGVar3;
-  ushort *puVar4;
-  code *pcVar5;
-  bool bVar6;
-  uint uVar7;
-  GfxStaticModelDrawInst *pGVar8;
-  uint local_1c;
-  GfxDrawPrimArgs local_14;
-  ushort local_8;
+  XSurface *xsurf_00;
+  IDirect3DVertexBuffer9 *vb_00;
+  GfxStaticModelDrawInst *pGVar1;
+  ushort *puVar2;
+  code *pcVar3;
+  bool bVar4;
+  uint uVar5;
+  GfxStaticModelDrawInst *smodelDrawInst_00;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  IDirect3DVertexBuffer9 *vb;
+  int vertexOffset;
+  uint smodelCount;
+  uint index;
+  XSurface *xsurf;
+  GfxDrawPrimArgs args;
+  ushort lightingHandle;
   
-  pXVar1 = param_1->localSurf;
-  R_SetStaticModelSkinnedPrimArgs(&(param_2.field0_0x0._s_0.state)->prim,pXVar1,&local_14);
-  R_CheckVertexDataOverflow(local_14.vertexCount << 5);
-  uVar7 = R_SetVertexData(param_2.field0_0x0._s_0.state,pXVar1->verts0,local_14.vertexCount,0x20);
-  pIVar2 = (gfxBuf.dynamicVertexBuffer)->buffer;
-  if (pIVar2 == (IDirect3DVertexBuffer9 *)0x0) {
-    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  xsurf_00 = drawStream->localSurf;
+  R_SetStaticModelSkinnedPrimArgs(&(context.field0_0x0._s_0.state)->prim,xsurf_00,&args);
+  R_CheckVertexDataOverflow(args.vertexCount << 5);
+  uVar5 = R_SetVertexData(context.field0_0x0._s_0.state,xsurf_00->verts0,args.vertexCount,0x20);
+  vb_00 = (gfxBuf.dynamicVertexBuffer)->buffer;
+  if (vb_00 == (IDirect3DVertexBuffer9 *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xaf6,0,"%s");
-    if (!bVar6) {
-      pcVar5 = (code *)swi(3);
-      (*pcVar5)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  R_SetStreamSource(&(param_2.field0_0x0._s_0.state)->prim,pIVar2,uVar7,0x20);
-  uVar7 = param_1->smodelCount;
-  pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts;
-  puVar4 = param_1->smodelList;
-  for (local_1c = 0; local_1c < uVar7; local_1c = local_1c + 1) {
-    pGVar8 = pGVar3 + puVar4[local_1c];
-    local_8 = pGVar8->lightingHandle;
+  R_SetStreamSource(&(context.field0_0x0._s_0.state)->prim,vb_00,uVar5,0x20);
+  uVar5 = drawStream->smodelCount;
+  pGVar1 = ((rgp.world)->dpvs).smodelDrawInsts;
+  puVar2 = drawStream->smodelList;
+  for (index = 0; index < uVar5; index = index + 1) {
+    smodelDrawInst_00 = pGVar1 + puVar2[index];
+    lightingHandle = smodelDrawInst_00->lightingHandle;
     R_DrawStaticModelSkinnedDrawSurfLighting
-              ((uint)puVar4[local_1c],pGVar8,local_8,&local_14,param_2,param_1->dynSModelView,
-               param_1->dynSModelState);
+              ((uint)puVar2[index],smodelDrawInst_00,lightingHandle,&args,context,
+               drawStream->dynSModelView,drawStream->dynSModelState);
   }
   return;
 }
@@ -497,41 +518,46 @@ R_DrawStaticModelsSkinnedDrawSurfLighting
 // 00B55550  R_DrawStaticModelsSkinnedDrawSurf  (gfx_d3d/r_draw_staticmodel.cpp:2824)
 
 void __cdecl
-R_DrawStaticModelsSkinnedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufContext param_2)
+R_DrawStaticModelsSkinnedDrawSurf(GfxStaticModelDrawStream *drawStream,GfxCmdBufContext context)
 
 {
-  XSurface *pXVar1;
-  IDirect3DVertexBuffer9 *pIVar2;
-  GfxStaticModelDrawInst *pGVar3;
-  ushort *puVar4;
-  code *pcVar5;
-  bool bVar6;
-  uint uVar7;
-  uint local_18;
-  GfxDrawPrimArgs local_10;
+  XSurface *xsurf_00;
+  IDirect3DVertexBuffer9 *vb_00;
+  GfxStaticModelDrawInst *pGVar1;
+  ushort *puVar2;
+  code *pcVar3;
+  bool bVar4;
+  uint uVar5;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  IDirect3DVertexBuffer9 *vb;
+  int vertexOffset;
+  uint smodelCount;
+  uint index;
+  XSurface *xsurf;
+  GfxDrawPrimArgs args;
   
-  pXVar1 = param_1->localSurf;
-  R_SetStaticModelSkinnedPrimArgs(&(param_2.field0_0x0._s_0.state)->prim,pXVar1,&local_10);
-  R_CheckVertexDataOverflow(local_10.vertexCount << 5);
-  uVar7 = R_SetVertexData(param_2.field0_0x0._s_0.state,pXVar1->verts0,local_10.vertexCount,0x20);
-  pIVar2 = (gfxBuf.dynamicVertexBuffer)->buffer;
-  if (pIVar2 == (IDirect3DVertexBuffer9 *)0x0) {
-    bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  xsurf_00 = drawStream->localSurf;
+  R_SetStaticModelSkinnedPrimArgs(&(context.field0_0x0._s_0.state)->prim,xsurf_00,&args);
+  R_CheckVertexDataOverflow(args.vertexCount << 5);
+  uVar5 = R_SetVertexData(context.field0_0x0._s_0.state,xsurf_00->verts0,args.vertexCount,0x20);
+  vb_00 = (gfxBuf.dynamicVertexBuffer)->buffer;
+  if (vb_00 == (IDirect3DVertexBuffer9 *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xb1b,0,"%s");
-    if (!bVar6) {
-      pcVar5 = (code *)swi(3);
-      (*pcVar5)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  R_SetStreamSource(&(param_2.field0_0x0._s_0.state)->prim,pIVar2,uVar7,0x20);
-  uVar7 = param_1->smodelCount;
-  pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts;
-  puVar4 = param_1->smodelList;
-  for (local_18 = 0; local_18 < uVar7; local_18 = local_18 + 1) {
+  R_SetStreamSource(&(context.field0_0x0._s_0.state)->prim,vb_00,uVar5,0x20);
+  uVar5 = drawStream->smodelCount;
+  pGVar1 = ((rgp.world)->dpvs).smodelDrawInsts;
+  puVar2 = drawStream->smodelList;
+  for (index = 0; index < uVar5; index = index + 1) {
     R_DrawStaticModelSkinnedDrawSurf
-              ((uint)puVar4[local_18],pGVar3 + puVar4[local_18],&local_10,param_2,
-               param_1->dynSModelView,param_1->dynSModelState);
+              ((uint)puVar2[index],pGVar1 + puVar2[index],&args,context,drawStream->dynSModelView,
+               drawStream->dynSModelState);
   }
   return;
 }
@@ -542,43 +568,44 @@ R_DrawStaticModelsSkinnedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufCon
 /* WARNING: Type propagation algorithm not settling */
 
 void __cdecl
-R_DrawStaticModelSkinnedSurfLit(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
+R_DrawStaticModelSkinnedSurfLit
+          (uint *primDrawSurfPos,GfxCmdBufContext context,GfxDrawSurfListInfo *info)
 
 {
   int iVar1;
-  GfxStaticModelDrawStream local_3c;
-  XSurface *local_8;
+  GfxStaticModelDrawStream drawStream;
+  XSurface *surf;
   
-  local_3c.dynSModelView = (DynSModelClientView *)0x0;
-  local_3c.dynSModelState = (DynSModelGfxState *)0x0;
-  R_SetupPassPerObjectArgs(param_2);
-  local_3c._40_4_ = local_3c._40_4_ & 0xfffffffc;
-  local_3c.primDrawSurfPos = param_1;
-  local_3c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_3c.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  local_3c.usingCrossFade =
-       (int)(*(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+  drawStream.dynSModelView = (DynSModelClientView *)0x0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  R_SetupPassPerObjectArgs(context);
+  drawStream._40_4_ = drawStream._40_4_ & 0xfffffffc;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.customSamplerFlags = (uint)(context.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.usingCrossFade =
+       (int)(*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                      0x16cf1c) == 0);
-  local_3c.frameStats = &((param_2.field0_0x0._s_0.state)->prim).frameStats;
-  local_3c.primStats = ((param_2.field0_0x0._s_0.state)->prim).primStats;
-  if ((param_3 == (GfxDrawSurfListInfo *)0x0) || (param_3->viewInfo == (GfxViewInfo *)0x0)) {
-    local_3c.dynSModelView = (DynSModelClientView *)0x0;
-    local_3c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.frameStats = &((context.field0_0x0._s_0.state)->prim).frameStats;
+  drawStream.primStats = ((context.field0_0x0._s_0.state)->prim).primStats;
+  if ((info == (GfxDrawSurfListInfo *)0x0) || (info->viewInfo == (GfxViewInfo *)0x0)) {
+    drawStream.dynSModelView = (DynSModelClientView *)0x0;
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    local_3c.dynSModelView =
+    drawStream.dynSModelView =
          (DynSModelClientView *)
-         param_3->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
-    local_3c.dynSModelState =
-         (DynSModelGfxState *)
-         param_3->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1];
+         info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
+    drawStream.dynSModelState =
+         (DynSModelGfxState *)info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1]
+    ;
   }
   while( true ) {
-    iVar1 = R_GetNextStaticModelSurf(&local_3c,&local_8);
+    iVar1 = R_GetNextStaticModelSurf(&drawStream,&surf);
     if (iVar1 == 0) break;
-    R_DrawStaticModelsSkinnedDrawSurfLighting(&local_3c,param_2);
+    R_DrawStaticModelsSkinnedDrawSurfLighting(&drawStream,context);
   }
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = local_3c.reflectionProbeTexture;
+  (context.field0_0x0._s_0.state)->samplerTexture[0xf] = drawStream.reflectionProbeTexture;
   return;
 }
 
@@ -588,45 +615,46 @@ R_DrawStaticModelSkinnedSurfLit(uint *param_1,GfxCmdBufContext param_2,GfxDrawSu
 /* WARNING: Type propagation algorithm not settling */
 
 void __cdecl
-R_DrawStaticModelSkinnedSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
+R_DrawStaticModelSkinnedSurf
+          (uint *primDrawSurfPos,GfxCmdBufContext context,GfxDrawSurfListInfo *info)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  GfxStaticModelDrawStream local_3c;
-  XSurface *local_8;
+  GfxStaticModelDrawStream drawStream;
+  XSurface *surf;
   
-  local_3c.dynSModelView = (DynSModelClientView *)0x0;
-  local_3c.dynSModelState = (DynSModelGfxState *)0x0;
-  R_SetupPassPerObjectArgs(param_2);
-  local_3c._40_4_ = local_3c._40_4_ & 0xfffffffc;
-  local_3c.primDrawSurfPos = param_1;
-  local_3c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_3c.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  local_3c.usingCrossFade =
-       (int)(*(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+  drawStream.dynSModelView = (DynSModelClientView *)0x0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  R_SetupPassPerObjectArgs(context);
+  drawStream._40_4_ = drawStream._40_4_ & 0xfffffffc;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.customSamplerFlags = (uint)(context.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.usingCrossFade =
+       (int)(*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                      0x16cf1c) == 0);
-  local_3c.frameStats = &((param_2.field0_0x0._s_0.state)->prim).frameStats;
-  local_3c.primStats = ((param_2.field0_0x0._s_0.state)->prim).primStats;
-  if ((param_3 == (GfxDrawSurfListInfo *)0x0) || (param_3->viewInfo == (GfxViewInfo *)0x0)) {
-    local_3c.dynSModelView = (DynSModelClientView *)0x0;
-    local_3c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.frameStats = &((context.field0_0x0._s_0.state)->prim).frameStats;
+  drawStream.primStats = ((context.field0_0x0._s_0.state)->prim).primStats;
+  if ((info == (GfxDrawSurfListInfo *)0x0) || (info->viewInfo == (GfxViewInfo *)0x0)) {
+    drawStream.dynSModelView = (DynSModelClientView *)0x0;
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    local_3c.dynSModelView =
+    drawStream.dynSModelView =
          (DynSModelClientView *)
-         param_3->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
-    local_3c.dynSModelState =
-         (DynSModelGfxState *)
-         param_3->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1];
+         info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0];
+    drawStream.dynSModelState =
+         (DynSModelGfxState *)info->viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1]
+    ;
   }
   while( true ) {
-    iVar3 = R_GetNextStaticModelSurf(&local_3c,&local_8);
+    iVar3 = R_GetNextStaticModelSurf(&drawStream,&surf);
     if (iVar3 == 0) break;
-    R_DrawStaticModelsSkinnedDrawSurf(&local_3c,param_2);
+    R_DrawStaticModelsSkinnedDrawSurf(&drawStream,context);
   }
-  if ((param_2.field0_0x0._s_0.state)->samplerTexture[0xf] != local_3c.reflectionProbeTexture) {
+  if ((context.field0_0x0._s_0.state)->samplerTexture[0xf] != drawStream.reflectionProbeTexture) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xb4a,0,"%s");
     if (!bVar2) {
@@ -643,8 +671,8 @@ R_DrawStaticModelSkinnedSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfL
 
 GfxStaticModelDrawInst * __cdecl
 R_SetupCachedSModelSurface
-          (GfxCmdBufState *param_1,uint param_2,uint param_3,uint param_4,uint param_5,
-          GfxDrawPrimArgs *param_6,uint *param_7)
+          (GfxCmdBufState *state,uint cachedIndex,uint lod,uint surfIndex,uint count,
+          GfxDrawPrimArgs *args,uint *baseIndex)
 
 {
   code *pcVar1;
@@ -652,8 +680,11 @@ R_SetupCachedSModelSurface
   GfxStaticModelDrawInst *pGVar3;
   GfxCachedSModelSurf *pGVar4;
   XSurface *pXVar5;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  uint streamOffset;
+  XSurface *xsurf;
   
-  if (param_2 == 0) {
+  if (cachedIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xb60,0,"%s");
     if (!bVar2) {
@@ -662,18 +693,18 @@ R_SetupCachedSModelSurface
       return pGVar3;
     }
   }
-  pGVar4 = R_GetCachedSModelSurf(param_2);
+  pGVar4 = R_GetCachedSModelSurf(cachedIndex);
   pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts + pGVar4->smodelIndex;
-  pXVar5 = XModelGetSurface(pGVar3->model,param_3,param_4);
-  if (param_7 != (uint *)0x0) {
-    *param_7 = (uint)pXVar5->baseTriIndex * 3;
+  pXVar5 = XModelGetSurface(pGVar3->model,lod,surfIndex);
+  if (baseIndex != (uint *)0x0) {
+    *baseIndex = (uint)pXVar5->baseTriIndex * 3;
   }
-  param_6->vertexCount = 0x10000;
-  param_6->triCount = pXVar5->triCount * param_5;
-  R_SetStreamSource(&param_1->prim,gfxBuf.smodelCacheVb,(param_2 - 1 & 0xfffff000) << 9,0x20);
-  (param_1->prim).frameStats.geoIndexCount =
-       pXVar5->triCount * param_5 * 3 + (param_1->prim).frameStats.geoIndexCount;
-  if ((param_1->prim).primStats == (GfxPrimStats *)0x0) {
+  args->vertexCount = 0x10000;
+  args->triCount = pXVar5->triCount * count;
+  R_SetStreamSource(&state->prim,gfxBuf.smodelCacheVb,(cachedIndex - 1 & 0xfffff000) << 9,0x20);
+  (state->prim).frameStats.geoIndexCount =
+       pXVar5->triCount * count * 3 + (state->prim).frameStats.geoIndexCount;
+  if ((state->prim).primStats == (GfxPrimStats *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xb72,0,"%s");
     if (!bVar2) {
@@ -682,17 +713,17 @@ R_SetupCachedSModelSurface
       return pGVar3;
     }
   }
-  ((param_1->prim).primStats)->dynamicIndexCount =
-       pXVar5->triCount * param_5 * 3 + ((param_1->prim).primStats)->dynamicIndexCount;
-  ((param_1->prim).primStats)->dynamicVertexCount =
-       pXVar5->vertCount * param_5 + ((param_1->prim).primStats)->dynamicVertexCount;
+  ((state->prim).primStats)->dynamicIndexCount =
+       pXVar5->triCount * count * 3 + ((state->prim).primStats)->dynamicIndexCount;
+  ((state->prim).primStats)->dynamicVertexCount =
+       pXVar5->vertCount * count + ((state->prim).primStats)->dynamicVertexCount;
   return pGVar3;
 }
 
 
 // 00B557E0  R_GetNextStaticModelCachedSurf  (gfx_d3d/r_draw_staticmodel.cpp:2939)
 
-int __cdecl R_GetNextStaticModelCachedSurf(GfxStaticModelDrawStream *param_1)
+int __cdecl R_GetNextStaticModelCachedSurf(GfxStaticModelDrawStream *drawStream)
 
 {
   ushort uVar1;
@@ -702,29 +733,34 @@ int __cdecl R_GetNextStaticModelCachedSurf(GfxStaticModelDrawStream *param_1)
   bool bVar5;
   int iVar6;
   GfxCachedSModelSurf *pGVar7;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  GfxCachedSModelSurf *cachedSurf;
+  XSurface *xsurf;
   
-  param_1->smodelCount = *param_1->primDrawSurfPos;
-  if (((rgp.world)->dpvs).smodelCount < param_1->smodelCount) {
+  drawStream->smodelCount = *drawStream->primDrawSurfPos;
+  if (((rgp.world)->dpvs).smodelCount < drawStream->smodelCount) {
     iVar6 = 0;
   }
   else {
-    param_1->primDrawSurfPos = param_1->primDrawSurfPos + 1;
-    if (param_1->smodelCount == 0) {
+    drawStream->primDrawSurfPos = drawStream->primDrawSurfPos + 1;
+    if (drawStream->smodelCount == 0) {
       iVar6 = 0;
     }
     else {
-      pXVar2 = (XSurface *)*param_1->primDrawSurfPos;
-      param_1->primDrawSurfPos = param_1->primDrawSurfPos + 1;
-      param_1->smodelList = (ushort *)param_1->primDrawSurfPos;
-      param_1->primDrawSurfPos = param_1->primDrawSurfPos + (param_1->smodelCount + 1 >> 1);
-      pGVar7 = R_GetCachedSModelSurf((uint)*param_1->smodelList);
+      pXVar2 = (XSurface *)*drawStream->primDrawSurfPos;
+      drawStream->primDrawSurfPos = drawStream->primDrawSurfPos + 1;
+      drawStream->smodelList = (ushort *)drawStream->primDrawSurfPos;
+      drawStream->primDrawSurfPos = drawStream->primDrawSurfPos + (drawStream->smodelCount + 1 >> 1)
+      ;
+      pGVar7 = R_GetCachedSModelSurf((uint)*drawStream->smodelList);
       uVar1 = pGVar7->smodelIndex;
       pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts;
-      param_1->localSurf = pXVar2;
-      param_1->reflectionProbeIndex = (uint)pGVar3[uVar1].reflectionProbeIndex;
-      param_1->frameStats->geoIndexCount =
-           (uint)pXVar2->triCount * param_1->smodelCount * 3 + param_1->frameStats->geoIndexCount;
-      if (param_1->primStats == (GfxPrimStats *)0x0) {
+      drawStream->localSurf = pXVar2;
+      drawStream->reflectionProbeIndex = (uint)pGVar3[uVar1].reflectionProbeIndex;
+      drawStream->frameStats->geoIndexCount =
+           (uint)pXVar2->triCount * drawStream->smodelCount * 3 +
+           drawStream->frameStats->geoIndexCount;
+      if (drawStream->primStats == (GfxPrimStats *)0x0) {
         bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp"
                                  ,0xb97,0,"%s");
         if (!bVar5) {
@@ -733,11 +769,12 @@ int __cdecl R_GetNextStaticModelCachedSurf(GfxStaticModelDrawStream *param_1)
           return iVar6;
         }
       }
-      param_1->primStats->dynamicIndexCount =
-           (uint)pXVar2->triCount * param_1->smodelCount * 3 + param_1->primStats->dynamicIndexCount
-      ;
-      param_1->primStats->dynamicVertexCount =
-           (uint)pXVar2->vertCount * param_1->smodelCount + param_1->primStats->dynamicVertexCount;
+      drawStream->primStats->dynamicIndexCount =
+           (uint)pXVar2->triCount * drawStream->smodelCount * 3 +
+           drawStream->primStats->dynamicIndexCount;
+      drawStream->primStats->dynamicVertexCount =
+           (uint)pXVar2->vertCount * drawStream->smodelCount +
+           drawStream->primStats->dynamicVertexCount;
       iVar6 = 1;
     }
   }
@@ -748,13 +785,13 @@ int __cdecl R_GetNextStaticModelCachedSurf(GfxStaticModelDrawStream *param_1)
 // 00B55B30  R_GetCurrentStaticModelCachedSurf  (gfx_d3d/r_draw_staticmodel.cpp:2976)
 
 XSurface * __cdecl
-R_GetCurrentStaticModelCachedSurf(GfxStaticModelDrawStream *param_1,uint *param_2)
+R_GetCurrentStaticModelCachedSurf(GfxStaticModelDrawStream *drawStream,uint *reflectionProbeIndex)
 
 {
-  if (param_2 != (uint *)0x0) {
-    *param_2 = param_1->reflectionProbeIndex;
+  if (reflectionProbeIndex != (uint *)0x0) {
+    *reflectionProbeIndex = drawStream->reflectionProbeIndex;
   }
-  return param_1->localSurf;
+  return drawStream->localSurf;
 }
 
 
@@ -762,7 +799,8 @@ R_GetCurrentStaticModelCachedSurf(GfxStaticModelDrawStream *param_1,uint *param_
 
 int __cdecl
 R_ReadStaticModelPreTessDrawSurf
-          (GfxReadCmdBuf *param_1,GfxStaticModelPreTessSurf *param_2,uint *param_3,uint *param_4)
+          (GfxReadCmdBuf *readCmdBuf,GfxStaticModelPreTessSurf *pretessSurf,uint *firstIndex,
+          uint *count)
 
 {
   code *pcVar1;
@@ -770,17 +808,17 @@ R_ReadStaticModelPreTessDrawSurf
   uint uVar3;
   int iVar4;
   
-  uVar3 = Scr_ReadInt((char **)param_1);
-  *param_4 = uVar3;
-  if (*param_4 == 0) {
+  uVar3 = Scr_ReadInt((char **)readCmdBuf);
+  *count = uVar3;
+  if (*count == 0) {
     iVar4 = 0;
   }
   else {
-    uVar3 = Scr_ReadInt((char **)param_1);
-    param_2->packed = uVar3;
-    uVar3 = Scr_ReadInt((char **)param_1);
-    *param_3 = uVar3;
-    if (0xfffff < *param_3) {
+    uVar3 = Scr_ReadInt((char **)readCmdBuf);
+    pretessSurf->packed = uVar3;
+    uVar3 = Scr_ReadInt((char **)readCmdBuf);
+    *firstIndex = uVar3;
+    if (0xfffff < *firstIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xbad,0,
                                "*firstIndex doesn\'t index R_MAX_PRETESS_INDICES\n\t%i not in [0, %i)"
@@ -799,13 +837,13 @@ R_ReadStaticModelPreTessDrawSurf
 
 // 00B55B50  R_SetStaticModelCachedPrimArgs  (gfx_d3d/r_draw_staticmodel.cpp:2994)
 
-void __cdecl R_SetStaticModelCachedPrimArgs(XSurface *param_1,GfxDrawPrimArgs *param_2)
+void __cdecl R_SetStaticModelCachedPrimArgs(XSurface *xsurf,GfxDrawPrimArgs *args)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (XSurface *)0x0) {
+  if (xsurf == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xbb3,0,"%s");
     if (!bVar2) {
@@ -814,18 +852,20 @@ void __cdecl R_SetStaticModelCachedPrimArgs(XSurface *param_1,GfxDrawPrimArgs *p
       return;
     }
   }
-  param_2->vertexCount = 0x10000;
-  param_2->triCount = (uint)param_1->triCount;
+  args->vertexCount = 0x10000;
+  args->triCount = (uint)xsurf->triCount;
   return;
 }
 
 
 // 00B55BA0  R_SetStaticModelCachedBuffer  (gfx_d3d/r_draw_staticmodel.cpp:3002)
 
-void __cdecl R_SetStaticModelCachedBuffer(GfxCmdBufState *param_1,uint param_2)
+void __cdecl R_SetStaticModelCachedBuffer(GfxCmdBufState *state,uint cachedIndex)
 
 {
-  R_SetStreamSource(&param_1->prim,gfxBuf.smodelCacheVb,(param_2 - 1 & 0xfffff000) << 9,0x20);
+  uint streamOffset;
+  
+  R_SetStreamSource(&state->prim,gfxBuf.smodelCacheVb,(cachedIndex - 1 & 0xfffff000) << 9,0x20);
   return;
 }
 
@@ -833,7 +873,8 @@ void __cdecl R_SetStaticModelCachedBuffer(GfxCmdBufState *param_1,uint param_2)
 // 00B55950  R_DrawStaticModelsCachedDrawSurfLighting  (gfx_d3d/r_draw_staticmodel.cpp:3016)
 
 void __cdecl
-R_DrawStaticModelsCachedDrawSurfLighting(GfxStaticModelDrawStream *param_1,GfxCmdBufContext param_2)
+R_DrawStaticModelsCachedDrawSurfLighting
+          (GfxStaticModelDrawStream *drawStream,GfxCmdBufContext context)
 
 {
   uint uVar1;
@@ -842,26 +883,30 @@ R_DrawStaticModelsCachedDrawSurfLighting(GfxStaticModelDrawStream *param_1,GfxCm
   bool bVar4;
   GfxCachedSModelSurf *pGVar5;
   int iVar6;
-  uint local_24;
-  ushort *local_20;
-  uint local_1c;
-  uint local_18;
-  XSurface *local_14;
-  GfxDrawPrimArgs local_10;
+  uint copyBaseIndex;
+  uint baseIndex;
+  uint surfBaseIndex;
+  GfxCachedSModelSurf *cachedSurf;
+  uint reflectionProbeIndex;
+  ushort *list;
+  uint smodelCount;
+  uint index;
+  XSurface *xsurf;
+  GfxDrawPrimArgs args;
   
-  local_14 = R_GetCurrentStaticModelCachedSurf(param_1,&local_24);
-  local_20 = param_1->smodelList;
-  local_1c = param_1->smodelCount;
-  R_SetStaticModelCachedPrimArgs(local_14,&local_10);
-  R_SetStaticModelCachedBuffer(param_2.field0_0x0._s_0.state,(uint)*local_20);
-  R_SetupPassPerPrimArgs(param_2);
-  R_SetReflectionProbe(param_2,local_24);
-  uVar2 = local_14->baseTriIndex;
-  local_10.triCount = local_14->triCount * local_1c;
-  local_10.baseIndex = R_ReserveIndexData(&(param_2.field0_0x0._s_0.state)->prim,local_10.triCount);
-  local_18 = 0;
+  xsurf = R_GetCurrentStaticModelCachedSurf(drawStream,&reflectionProbeIndex);
+  list = drawStream->smodelList;
+  smodelCount = drawStream->smodelCount;
+  R_SetStaticModelCachedPrimArgs(xsurf,&args);
+  R_SetStaticModelCachedBuffer(context.field0_0x0._s_0.state,(uint)*list);
+  R_SetupPassPerPrimArgs(context);
+  R_SetReflectionProbe(context,reflectionProbeIndex);
+  uVar2 = xsurf->baseTriIndex;
+  args.triCount = xsurf->triCount * smodelCount;
+  args.baseIndex = R_ReserveIndexData(&(context.field0_0x0._s_0.state)->prim,args.triCount);
+  index = 0;
   do {
-    pGVar5 = R_GetCachedSModelSurf((uint)local_20[local_18]);
+    pGVar5 = R_GetCachedSModelSurf((uint)list[index]);
     uVar1 = (uint)uVar2 * 3 + pGVar5->baseVertIndex * 4;
     if (0xfffff < uVar1) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
@@ -872,7 +917,7 @@ R_DrawStaticModelsCachedDrawSurfLighting(GfxStaticModelDrawStream *param_1,GfxCm
         return;
       }
     }
-    if (0x100000 < (uint)local_14->triCount * 3 + uVar1) {
+    if (0x100000 < (uint)xsurf->triCount * 3 + uVar1) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xbeb,0,"%s");
       if (!bVar4) {
@@ -881,9 +926,9 @@ R_DrawStaticModelsCachedDrawSurfLighting(GfxStaticModelDrawStream *param_1,GfxCm
         return;
       }
     }
-    iVar6 = R_SetIndexData(&(param_2.field0_0x0._s_0.state)->prim,gfxBuf.smodelCache.indices + uVar1
-                           ,(uint)local_14->triCount);
-    if (iVar6 != (uint)local_14->triCount * 3 * local_18 + local_10.baseIndex) {
+    iVar6 = R_SetIndexData(&(context.field0_0x0._s_0.state)->prim,gfxBuf.smodelCache.indices + uVar1
+                           ,(uint)xsurf->triCount);
+    if (iVar6 != (uint)xsurf->triCount * 3 * index + args.baseIndex) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xbee,1,
                                "copyBaseIndex == args.baseIndex + xsurf->triCount * 3 * index\n\t%i, %i"
@@ -894,9 +939,9 @@ R_DrawStaticModelsCachedDrawSurfLighting(GfxStaticModelDrawStream *param_1,GfxCm
         return;
       }
     }
-    local_18 = local_18 + 1;
-  } while (local_18 < local_1c);
-  R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_10);
+    index = index + 1;
+  } while (index < smodelCount);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
   return;
 }
 
@@ -905,38 +950,40 @@ R_DrawStaticModelsCachedDrawSurfLighting(GfxStaticModelDrawStream *param_1,GfxCm
 
 void __cdecl
 R_DrawStaticModelsPreTessDrawSurfLighting
-          (GfxStaticModelPreTessSurf param_1,uint param_2,uint param_3,GfxCmdBufContext param_4)
+          (GfxStaticModelPreTessSurf pretessSurf,uint firstIndex,uint count,GfxCmdBufContext context
+          )
 
 {
-  IDirect3DIndexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  GfxStaticModelDrawInst *pGVar4;
-  GfxDrawPrimArgs local_10;
+  IDirect3DIndexBuffer9 *ib;
+  code *pcVar1;
+  bool bVar2;
+  GfxStaticModelDrawInst *pGVar3;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  GfxDrawPrimArgs args;
   
-  if (param_3 == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  if (count == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xbfe,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pGVar4 = R_SetupCachedSModelSurface
-                     (param_4.field0_0x0._s_0.state,param_1.packed >> 0x10,
-                      param_1.packed >> 8 & 0xff,param_1.packed & 0xff,param_3,&local_10,(uint *)0x0
-                     );
-  R_SetupPassPerPrimArgs(param_4);
-  R_SetReflectionProbe(param_4,(uint)pGVar4->reflectionProbeIndex);
-  pIVar1 = *(IDirect3DIndexBuffer9 **)
-            (*(int *)((int)((param_4.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
-                     0x16cbdc) + 8);
-  if (((param_4.field0_0x0._s_0.state)->prim).indexBuffer != pIVar1) {
-    R_ChangeIndices(&(param_4.field0_0x0._s_0.state)->prim,pIVar1);
+  pGVar3 = R_SetupCachedSModelSurface
+                     (context.field0_0x0._s_0.state,pretessSurf.packed >> 0x10,
+                      pretessSurf.packed >> 8 & 0xff,pretessSurf.packed & 0xff,count,&args,
+                      (uint *)0x0);
+  R_SetupPassPerPrimArgs(context);
+  R_SetReflectionProbe(context,(uint)pGVar3->reflectionProbeIndex);
+  ib = *(IDirect3DIndexBuffer9 **)
+        (*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] + 0x16cbdc)
+        + 8);
+  if (((context.field0_0x0._s_0.state)->prim).indexBuffer != ib) {
+    R_ChangeIndices(&(context.field0_0x0._s_0.state)->prim,ib);
   }
-  local_10.baseIndex = param_2;
-  R_DrawIndexedPrimitive(&(param_4.field0_0x0._s_0.state)->prim,&local_10);
+  args.baseIndex = firstIndex;
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
   return;
 }
 
@@ -944,7 +991,7 @@ R_DrawStaticModelsPreTessDrawSurfLighting
 // 00B55D00  R_DrawStaticModelsCachedDrawSurf  (gfx_d3d/r_draw_staticmodel.cpp:3090)
 
 void __cdecl
-R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufContext param_2)
+R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *drawStream,GfxCmdBufContext context)
 
 {
   uint uVar1;
@@ -953,25 +1000,31 @@ R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufCont
   uint uVar4;
   code *pcVar5;
   bool bVar6;
-  XSurface *pXVar7;
-  GfxCachedSModelSurf *pGVar8;
-  int iVar9;
-  uint local_18;
-  GfxDrawPrimArgs local_10;
+  XSurface *xsurf_00;
+  GfxCachedSModelSurf *pGVar7;
+  int iVar8;
+  uint copyBaseIndex;
+  uint baseIndex;
+  uint surfBaseIndex;
+  GfxCachedSModelSurf *cachedSurf;
+  uint smodelCount;
+  uint index;
+  XSurface *xsurf;
+  GfxDrawPrimArgs args;
   
-  pXVar7 = R_GetCurrentStaticModelCachedSurf(param_1,(uint *)0x0);
-  puVar3 = param_1->smodelList;
-  uVar4 = param_1->smodelCount;
-  R_SetStaticModelCachedPrimArgs(pXVar7,&local_10);
-  R_SetStaticModelCachedBuffer(param_2.field0_0x0._s_0.state,(uint)*puVar3);
-  R_SetupPassPerPrimArgs(param_2);
-  uVar2 = pXVar7->baseTriIndex;
-  local_10.triCount = pXVar7->triCount * uVar4;
-  local_10.baseIndex = R_ReserveIndexData(&(param_2.field0_0x0._s_0.state)->prim,local_10.triCount);
-  local_18 = 0;
+  xsurf_00 = R_GetCurrentStaticModelCachedSurf(drawStream,(uint *)0x0);
+  puVar3 = drawStream->smodelList;
+  uVar4 = drawStream->smodelCount;
+  R_SetStaticModelCachedPrimArgs(xsurf_00,&args);
+  R_SetStaticModelCachedBuffer(context.field0_0x0._s_0.state,(uint)*puVar3);
+  R_SetupPassPerPrimArgs(context);
+  uVar2 = xsurf_00->baseTriIndex;
+  args.triCount = xsurf_00->triCount * uVar4;
+  args.baseIndex = R_ReserveIndexData(&(context.field0_0x0._s_0.state)->prim,args.triCount);
+  index = 0;
   do {
-    pGVar8 = R_GetCachedSModelSurf((uint)puVar3[local_18]);
-    uVar1 = (uint)uVar2 * 3 + pGVar8->baseVertIndex * 4;
+    pGVar7 = R_GetCachedSModelSurf((uint)puVar3[index]);
+    uVar1 = (uint)uVar2 * 3 + pGVar7->baseVertIndex * 4;
     if (0xfffff < uVar1) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xc32,0,"%s");
@@ -981,7 +1034,7 @@ R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufCont
         return;
       }
     }
-    if (0x100000 < (uint)pXVar7->triCount * 3 + uVar1) {
+    if (0x100000 < (uint)xsurf_00->triCount * 3 + uVar1) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xc33,0,"%s");
       if (!bVar6) {
@@ -990,9 +1043,9 @@ R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufCont
         return;
       }
     }
-    iVar9 = R_SetIndexData(&(param_2.field0_0x0._s_0.state)->prim,gfxBuf.smodelCache.indices + uVar1
-                           ,(uint)pXVar7->triCount);
-    if (iVar9 != (uint)pXVar7->triCount * 3 * local_18 + local_10.baseIndex) {
+    iVar8 = R_SetIndexData(&(context.field0_0x0._s_0.state)->prim,gfxBuf.smodelCache.indices + uVar1
+                           ,(uint)xsurf_00->triCount);
+    if (iVar8 != (uint)xsurf_00->triCount * 3 * index + args.baseIndex) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xc36,1,
                                "copyBaseIndex == args.baseIndex + xsurf->triCount * 3 * index\n\t%i, %i"
@@ -1003,9 +1056,9 @@ R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufCont
         return;
       }
     }
-    local_18 = local_18 + 1;
-  } while (local_18 < uVar4);
-  R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_10);
+    index = index + 1;
+  } while (index < uVar4);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
   return;
 }
 
@@ -1014,35 +1067,36 @@ R_DrawStaticModelsCachedDrawSurf(GfxStaticModelDrawStream *param_1,GfxCmdBufCont
 
 void __cdecl
 R_DrawStaticModelsPreTessDrawSurf
-          (GfxStaticModelPreTessSurf param_1,uint param_2,uint param_3,GfxCmdBufContext param_4)
+          (GfxStaticModelPreTessSurf pretessSurf,uint firstIndex,uint count,GfxCmdBufContext context
+          )
 
 {
-  IDirect3DIndexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  GfxDrawPrimArgs local_10;
+  IDirect3DIndexBuffer9 *ib;
+  code *pcVar1;
+  bool bVar2;
+  GfxDrawPrimArgs args;
   
-  if (param_3 == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
+  if (count == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                              0xc44,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   R_SetupCachedSModelSurface
-            (param_4.field0_0x0._s_0.state,param_1.packed >> 0x10,param_1.packed >> 8 & 0xff,
-             param_1.packed & 0xff,param_3,&local_10,(uint *)0x0);
-  R_SetupPassPerPrimArgs(param_4);
-  pIVar1 = *(IDirect3DIndexBuffer9 **)
-            (*(int *)((int)((param_4.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
-                     0x16cbdc) + 8);
-  if (((param_4.field0_0x0._s_0.state)->prim).indexBuffer != pIVar1) {
-    R_ChangeIndices(&(param_4.field0_0x0._s_0.state)->prim,pIVar1);
+            (context.field0_0x0._s_0.state,pretessSurf.packed >> 0x10,pretessSurf.packed >> 8 & 0xff
+             ,pretessSurf.packed & 0xff,count,&args,(uint *)0x0);
+  R_SetupPassPerPrimArgs(context);
+  ib = *(IDirect3DIndexBuffer9 **)
+        (*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] + 0x16cbdc)
+        + 8);
+  if (((context.field0_0x0._s_0.state)->prim).indexBuffer != ib) {
+    R_ChangeIndices(&(context.field0_0x0._s_0.state)->prim,ib);
   }
-  local_10.baseIndex = param_2;
-  R_DrawIndexedPrimitive(&(param_4.field0_0x0._s_0.state)->prim,&local_10);
+  args.baseIndex = firstIndex;
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
   return;
 }
 
@@ -1052,31 +1106,31 @@ R_DrawStaticModelsPreTessDrawSurf
 /* WARNING: Removing unreachable block (ram,0x00b55775) */
 /* WARNING: Removing unreachable block (ram,0x00b5577d) */
 
-void __cdecl R_DrawStaticModelCachedSurfLit(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelCachedSurfLit(uint *primDrawSurfPos,GfxCmdBufContext context)
 
 {
   int iVar1;
-  GfxStaticModelDrawStream local_38;
+  GfxStaticModelDrawStream drawStream;
   
-  local_38.dynSModelView = (DynSModelClientView *)0x0;
-  local_38.dynSModelState = (DynSModelGfxState *)0x0;
-  R_SetupCachedStaticModelLighting(param_2.field0_0x0._s_0.source);
-  R_SetupPassPerObjectArgs(param_2);
-  local_38._40_4_ = local_38._40_4_ & 0xfffffffc;
-  local_38.primDrawSurfPos = param_1;
-  local_38.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_38.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  local_38.usingCrossFade =
-       (int)(*(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+  drawStream.dynSModelView = (DynSModelClientView *)0x0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  R_SetupCachedStaticModelLighting(context.field0_0x0._s_0.source);
+  R_SetupPassPerObjectArgs(context);
+  drawStream._40_4_ = drawStream._40_4_ & 0xfffffffc;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.customSamplerFlags = (uint)(context.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.usingCrossFade =
+       (int)(*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                      0x16cf1c) == 0);
-  local_38.frameStats = &((param_2.field0_0x0._s_0.state)->prim).frameStats;
-  local_38.primStats = ((param_2.field0_0x0._s_0.state)->prim).primStats;
-  local_38.dynSModelView = (DynSModelClientView *)0x0;
-  local_38.dynSModelState = (DynSModelGfxState *)0x0;
-  while (iVar1 = R_GetNextStaticModelCachedSurf(&local_38), iVar1 != 0) {
-    R_DrawStaticModelsCachedDrawSurfLighting(&local_38,param_2);
+  drawStream.frameStats = &((context.field0_0x0._s_0.state)->prim).frameStats;
+  drawStream.primStats = ((context.field0_0x0._s_0.state)->prim).primStats;
+  drawStream.dynSModelView = (DynSModelClientView *)0x0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  while (iVar1 = R_GetNextStaticModelCachedSurf(&drawStream), iVar1 != 0) {
+    R_DrawStaticModelsCachedDrawSurfLighting(&drawStream,context);
   }
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = local_38.reflectionProbeTexture;
+  (context.field0_0x0._s_0.state)->samplerTexture[0xf] = drawStream.reflectionProbeTexture;
   return;
 }
 
@@ -1086,32 +1140,32 @@ void __cdecl R_DrawStaticModelCachedSurfLit(uint *param_1,GfxCmdBufContext param
 /* WARNING: Removing unreachable block (ram,0x00b55c69) */
 /* WARNING: Removing unreachable block (ram,0x00b55c71) */
 
-void __cdecl R_DrawStaticModelCachedSurf(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelCachedSurf(uint *primDrawSurfPos,GfxCmdBufContext context)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  GfxStaticModelDrawStream local_38;
+  GfxStaticModelDrawStream drawStream;
   
-  local_38.dynSModelView = (DynSModelClientView *)0x0;
-  local_38.dynSModelState = (DynSModelGfxState *)0x0;
-  R_SetupPassPerObjectArgs(param_2);
-  local_38._40_4_ = local_38._40_4_ & 0xfffffffc;
-  local_38.primDrawSurfPos = param_1;
-  local_38.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_38.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  local_38.usingCrossFade =
-       (int)(*(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
+  drawStream.dynSModelView = (DynSModelClientView *)0x0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  R_SetupPassPerObjectArgs(context);
+  drawStream._40_4_ = drawStream._40_4_ & 0xfffffffc;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.customSamplerFlags = (uint)(context.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.usingCrossFade =
+       (int)(*(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] +
                      0x16cf1c) == 0);
-  local_38.frameStats = &((param_2.field0_0x0._s_0.state)->prim).frameStats;
-  local_38.primStats = ((param_2.field0_0x0._s_0.state)->prim).primStats;
-  local_38.dynSModelView = (DynSModelClientView *)0x0;
-  local_38.dynSModelState = (DynSModelGfxState *)0x0;
-  while (iVar3 = R_GetNextStaticModelCachedSurf(&local_38), iVar3 != 0) {
-    R_DrawStaticModelsCachedDrawSurf(&local_38,param_2);
+  drawStream.frameStats = &((context.field0_0x0._s_0.state)->prim).frameStats;
+  drawStream.primStats = ((context.field0_0x0._s_0.state)->prim).primStats;
+  drawStream.dynSModelView = (DynSModelClientView *)0x0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  while (iVar3 = R_GetNextStaticModelCachedSurf(&drawStream), iVar3 != 0) {
+    R_DrawStaticModelsCachedDrawSurf(&drawStream,context);
   }
-  if (((param_2.field0_0x0._s_0.state)->samplerTexture[0xf] != local_38.reflectionProbeTexture) &&
+  if (((context.field0_0x0._s_0.state)->samplerTexture[0xf] != drawStream.reflectionProbeTexture) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_staticmodel.cpp",
                                0xc74,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1124,22 +1178,22 @@ void __cdecl R_DrawStaticModelCachedSurf(uint *param_1,GfxCmdBufContext param_2)
 
 // 00B55ED0  R_DrawStaticModelPreTessSurfLit  (gfx_d3d/r_draw_staticmodel.cpp:3195)
 
-void __cdecl R_DrawStaticModelPreTessSurfLit(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelPreTessSurfLit(uint *primDrawSurfPos,GfxCmdBufContext context)
 
 {
   int iVar1;
-  GfxReadCmdBuf local_14;
-  uint local_10;
-  uint local_c;
-  GfxStaticModelPreTessSurf local_8;
+  GfxReadCmdBuf readCmdBuf;
+  uint firstIndex;
+  uint count;
+  GfxStaticModelPreTessSurf pretessSurf;
   
-  R_SetupCachedStaticModelLighting(param_2.field0_0x0._s_0.source);
-  R_SetupPassPerObjectArgs(param_2);
-  local_14.primDrawSurfPos = param_1;
+  R_SetupCachedStaticModelLighting(context.field0_0x0._s_0.source);
+  R_SetupPassPerObjectArgs(context);
+  readCmdBuf.primDrawSurfPos = primDrawSurfPos;
   while( true ) {
-    iVar1 = R_ReadStaticModelPreTessDrawSurf(&local_14,&local_8,&local_10,&local_c);
+    iVar1 = R_ReadStaticModelPreTessDrawSurf(&readCmdBuf,&pretessSurf,&firstIndex,&count);
     if (iVar1 == 0) break;
-    R_DrawStaticModelsPreTessDrawSurfLighting(local_8,local_10,local_c,param_2);
+    R_DrawStaticModelsPreTessDrawSurfLighting(pretessSurf,firstIndex,count,context);
   }
   return;
 }
@@ -1147,21 +1201,21 @@ void __cdecl R_DrawStaticModelPreTessSurfLit(uint *param_1,GfxCmdBufContext para
 
 // 00B56220  R_DrawStaticModelPreTessSurf  (gfx_d3d/r_draw_staticmodel.cpp:3215)
 
-void __cdecl R_DrawStaticModelPreTessSurf(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelPreTessSurf(uint *primDrawSurfPos,GfxCmdBufContext context)
 
 {
   int iVar1;
-  GfxReadCmdBuf local_14;
-  uint local_10;
-  uint local_c;
-  GfxStaticModelPreTessSurf local_8;
+  GfxReadCmdBuf readCmdBuf;
+  uint firstIndex;
+  uint count;
+  GfxStaticModelPreTessSurf pretessSurf;
   
-  R_SetupPassPerObjectArgs(param_2);
-  local_14.primDrawSurfPos = param_1;
+  R_SetupPassPerObjectArgs(context);
+  readCmdBuf.primDrawSurfPos = primDrawSurfPos;
   while( true ) {
-    iVar1 = R_ReadStaticModelPreTessDrawSurf(&local_14,&local_8,&local_10,&local_c);
+    iVar1 = R_ReadStaticModelPreTessDrawSurf(&readCmdBuf,&pretessSurf,&firstIndex,&count);
     if (iVar1 == 0) break;
-    R_DrawStaticModelsPreTessDrawSurf(local_8,local_10,local_c,param_2);
+    R_DrawStaticModelsPreTessDrawSurf(pretessSurf,firstIndex,count,context);
   }
   return;
 }

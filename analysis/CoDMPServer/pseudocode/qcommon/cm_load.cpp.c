@@ -15,7 +15,7 @@ void __cdecl TRACK_cm_load(void)
 
 // 006A92B0  CM_InitThreadData  (qcommon/cm_load.cpp:78)
 
-void __cdecl CM_InitThreadData(int param_1)
+void __cdecl CM_InitThreadData(int threadContext)
 
 {
   code *pcVar1;
@@ -26,8 +26,9 @@ void __cdecl CM_InitThreadData(int param_1)
   cmodel_t *pcVar6;
   cbrush_t *pcVar7;
   cmodel_t *pcVar8;
+  TraceThreadInfo *traceThreadInfo;
   
-  if (0xb < (uint)param_1) {
+  if (0xb < (uint)threadContext) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load.cpp",0x51,0,
                              "threadContext doesn\'t index THREAD_CONTEXT_TRACE_COUNT\n\t%i not in [0, %i)"
                             );
@@ -37,27 +38,27 @@ void __cdecl CM_InitThreadData(int param_1)
       return;
     }
   }
-  g_traceThreadInfo[param_1].checkcount.global = 0;
+  g_traceThreadInfo[threadContext].checkcount.global = 0;
   piVar3 = Hunk_Alloc(cm.partitionCount << 2,"CM_InitThreadData",0x1d);
-  g_traceThreadInfo[param_1].checkcount.partitions = piVar3;
-  g_traceThreadInfo[param_1].box_brush = g_box_brush + param_1;
+  g_traceThreadInfo[threadContext].checkcount.partitions = piVar3;
+  g_traceThreadInfo[threadContext].box_brush = g_box_brush + threadContext;
   pcVar5 = cm.box_brush;
-  pcVar7 = g_traceThreadInfo[param_1].box_brush;
+  pcVar7 = g_traceThreadInfo[threadContext].box_brush;
   for (iVar4 = 0x18; iVar4 != 0; iVar4 = iVar4 + -1) {
     pcVar7->mins[0] = pcVar5->mins[0];
     pcVar5 = (cbrush_t *)(pcVar5->mins + 1);
     pcVar7 = (cbrush_t *)(pcVar7->mins + 1);
   }
-  g_traceThreadInfo[param_1].box_model = g_box_model + param_1;
+  g_traceThreadInfo[threadContext].box_model = g_box_model + threadContext;
   pcVar6 = &cm.box_model;
-  pcVar8 = g_traceThreadInfo[param_1].box_model;
+  pcVar8 = g_traceThreadInfo[threadContext].box_model;
   for (iVar4 = 0x12; iVar4 != 0; iVar4 = iVar4 + -1) {
     pcVar8->mins[0] = pcVar6->mins[0];
     pcVar6 = (cmodel_t *)(pcVar6->mins + 1);
     pcVar8 = (cmodel_t *)(pcVar8->mins + 1);
   }
-  g_traceThreadInfo[param_1].geoms = g_geoms + param_1;
-  *g_traceThreadInfo[param_1].geoms = (PhysGeomList *)0x0;
+  g_traceThreadInfo[threadContext].geoms = g_geoms + threadContext;
+  *g_traceThreadInfo[threadContext].geoms = (PhysGeomList *)0x0;
   return;
 }
 
@@ -67,12 +68,13 @@ void __cdecl CM_InitThreadData(int param_1)
 void __cdecl CM_InitAllThreadData(void)
 
 {
-  int local_8;
+  int workerIndex;
   
   CM_InitThreadData(0);
   CM_InitThreadData(1);
-  for (local_8 = 0; local_8 < (r_smp_worker_threads->current).integer; local_8 = local_8 + 1) {
-    CM_InitThreadData(local_8 + 2);
+  for (workerIndex = 0; workerIndex < (r_smp_worker_threads->current).integer;
+      workerIndex = workerIndex + 1) {
+    CM_InitThreadData(workerIndex + 2);
   }
   CM_InitThreadData(10);
   CM_InitThreadData(0xb);
@@ -82,14 +84,16 @@ void __cdecl CM_InitAllThreadData(void)
 
 // 006A93D0  CM_LoadMapData_LoadObj  (qcommon/cm_load.cpp:135)
 
-void __cdecl CM_LoadMapData_LoadObj(char *param_1)
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+
+void __cdecl CM_LoadMapData_LoadObj(char *name)
 
 {
   int iVar1;
   
-  if ((cm.isInUse == 0) || (iVar1 = I_stricmp(cm.name,param_1), iVar1 != 0)) {
+  if ((cm.isInUse == 0) || (iVar1 = I_stricmp(cm.name,name), iVar1 != 0)) {
     ProfLoad_Begin("Load bsp collision");
-    CM_LoadMapFromBsp(param_1,true);
+    CM_LoadMapFromBsp(name,true);
     ProfLoad_End();
     ProfLoad_Begin("Load static model collision");
     CM_LoadStaticModels();
@@ -107,14 +111,15 @@ void __cdecl CM_LoadMapData_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl CM_LoadMapData_FastFile(char *param_1)
+void __cdecl CM_LoadMapData_FastFile(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   XAssetHeader XVar3;
+  clipMap_t *clipMap;
   
-  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_CLIPMAP_PVS,param_1,true,-1);
+  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_CLIPMAP_PVS,name,true,-1);
   if ((clipMap_t *)XVar3.xmodelPieces != &cm) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load.cpp",0xa8,0,"%s");
     if (!bVar2) {
@@ -129,7 +134,7 @@ void __cdecl CM_LoadMapData_FastFile(char *param_1)
 
 // 006A9390  CM_LoadMapData  (qcommon/cm_load.cpp:198)
 
-void __cdecl CM_LoadMapData(char *param_1)
+void __cdecl CM_LoadMapData(char *name)
 
 {
   code *local_c;
@@ -140,23 +145,23 @@ void __cdecl CM_LoadMapData(char *param_1)
   else {
     local_c = CM_LoadMapData_FastFile;
   }
-  (*local_c)(param_1);
+  (*local_c)(name);
   return;
 }
 
 
 // 006A91F0  CM_LoadMap  (qcommon/cm_load.cpp:212)
 
-void __cdecl CM_LoadMap(char *param_1,int *param_2)
+void __cdecl CM_LoadMap(char *name,int *checksum)
 
 {
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((name == (char *)0x0) || (*name == '\0')) {
     Com_Error(ERR_DROP,"\x15CM_LoadMap: NULL name");
   }
-  CM_LoadMapData(param_1);
+  CM_LoadMapData(name);
   CM_InitAllThreadData();
   cm.isInUse = 1;
-  *param_2 = cm.checksum;
+  *checksum = cm.checksum;
   return;
 }
 
@@ -166,11 +171,11 @@ void __cdecl CM_LoadMap(char *param_1,int *param_2)
 void __cdecl Rope_InitRopes(void)
 
 {
-  int local_8;
+  int i;
   
   g_mapRopeCount = 0;
-  for (local_8 = 0; local_8 < cm.num_constraints; local_8 = local_8 + 1) {
-    if (cm.constraints[local_8].type == CONSTRAINT_ROPE) {
+  for (i = 0; i < cm.num_constraints; i = i + 1) {
+    if (cm.constraints[i].type == CONSTRAINT_ROPE) {
       g_mapRopeCount = g_mapRopeCount + 1;
     }
   }
@@ -185,10 +190,10 @@ void __cdecl Rope_InitRopes(void)
 void __cdecl ShutdownRopes(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < cm.num_constraints; local_8 = local_8 + 1) {
-    cm.constraints[local_8].constraintHandle = 0;
+  for (i = 0; i < cm.num_constraints; i = i + 1) {
+    cm.constraints[i].constraintHandle = 0;
   }
   g_entsWithRopesCount = 0;
   g_totalRopeCount = 0;
@@ -205,6 +210,7 @@ void __cdecl CM_Shutdown(void)
   code *pcVar1;
   char *pcVar2;
   bool bVar3;
+  char *savedName;
   
   pcVar2 = cm.name;
   Com_Memset(&cm,0,0x14c);
@@ -248,14 +254,14 @@ void __cdecl CM_Unload(void)
 
 // 006A9650  CM_LeafCluster  (qcommon/cm_load.cpp:318)
 
-int __cdecl CM_LeafCluster(int param_1)
+int __cdecl CM_LeafCluster(int leafnum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (cm.numLeafs <= (uint)param_1) {
+  if (cm.numLeafs <= (uint)leafnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_load.cpp",0x13f,0,
                              "leafnum doesn\'t index cm.numLeafs\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -264,57 +270,64 @@ int __cdecl CM_LeafCluster(int param_1)
       return iVar3;
     }
   }
-  return (int)cm.leafs[param_1].cluster;
+  return (int)cm.leafs[leafnum].cluster;
 }
 
 
 // 006A96A0  CM_ModelBounds  (qcommon/cm_load.cpp:335)
 
-void __cdecl CM_ModelBounds(uint param_1,float *param_2,float *param_3)
+void __cdecl CM_ModelBounds(uint model,float *mins,float *maxs)
 
 {
   cmodel_t *pcVar1;
+  cmodel_t *cmod;
   
-  pcVar1 = CM_ClipHandleToModel(param_1);
-  *param_2 = pcVar1->mins[0];
-  param_2[1] = pcVar1->mins[1];
-  param_2[2] = pcVar1->mins[2];
-  *param_3 = pcVar1->maxs[0];
-  param_3[1] = pcVar1->maxs[1];
-  param_3[2] = pcVar1->maxs[2];
+  pcVar1 = CM_ClipHandleToModel(model);
+  *mins = pcVar1->mins[0];
+  mins[1] = pcVar1->mins[1];
+  mins[2] = pcVar1->mins[2];
+  *maxs = pcVar1->maxs[0];
+  maxs[1] = pcVar1->maxs[1];
+  maxs[2] = pcVar1->maxs[2];
   return;
 }
 
 
 // 006A9710  CM_ModelSurfaceFlags  (qcommon/cm_load.cpp:351)
 
-int __cdecl CM_ModelSurfaceFlags(uint param_1)
+int __cdecl CM_ModelSurfaceFlags(uint model)
 
 {
   int iVar1;
   cmodel_t *pcVar2;
-  int local_8;
+  cbrush_t *brush;
+  ushort *brushes;
+  int brushnum;
+  cLeafBrushNode_s *node;
+  cmodel_t *cmod;
+  cLeaf_s *leaf;
+  int surfaceFlags;
   
-  local_8 = 0;
-  if (param_1 < cm.numSubModels) {
-    pcVar2 = CM_ClipHandleToModel(param_1);
+  surfaceFlags = 0;
+  if (model < cm.numSubModels) {
+    pcVar2 = CM_ClipHandleToModel(model);
     iVar1 = (pcVar2->leaf).leafBrushNode;
     if (0 < cm.leafbrushNodes[iVar1].leafBrushCount) {
-      local_8 = cm.brushes[**(ushort **)&cm.leafbrushNodes[iVar1].data].axial_sflags[0][0];
+      surfaceFlags = cm.brushes[**(ushort **)&cm.leafbrushNodes[iVar1].data].axial_sflags[0][0];
     }
   }
-  return local_8;
+  return surfaceFlags;
 }
 
 
 // 006A9790  CM_Hunk_Alloc  (qcommon/cm_load.cpp:382)
 
-void * __cdecl CM_Hunk_Alloc(int param_1,char *param_2,int param_3)
+void * __cdecl CM_Hunk_Alloc(int size,char *name,int type)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,param_2,param_3);
+  pvVar1 = Hunk_Alloc(size,name,type);
   return pvVar1;
 }
 
@@ -331,12 +344,12 @@ void __cdecl CM_Hunk_CheckTempMemoryHighClear(void)
 
 // 006A97C0  CM_Hunk_AllocateTempMemoryHigh  (qcommon/cm_load.cpp:415)
 
-void * __cdecl CM_Hunk_AllocateTempMemoryHigh(int param_1,char *param_2)
+void * __cdecl CM_Hunk_AllocateTempMemoryHigh(int size,char *name)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_AllocateTempMemoryHigh(param_1,param_2);
+  pvVar1 = Hunk_AllocateTempMemoryHigh(size,name);
   return pvVar1;
 }
 

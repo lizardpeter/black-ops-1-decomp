@@ -4,74 +4,74 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl LAN_AddServer(int param_1,char *param_2,char *param_3)
+int __cdecl LAN_AddServer(int source,char *name,char *address)
 
 {
   netadrtype_t *pnVar1;
-  netadr_t nVar2;
-  bool bVar3;
-  int iVar4;
-  int local_24;
-  serverInfo_t *local_20;
-  int *local_1c;
-  netadr_t local_18;
+  netadr_t b;
+  bool bVar2;
+  int iVar3;
+  int max;
+  int i;
+  serverInfo_t *servers;
+  int *count;
+  netadr_t adr;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20 = (serverInfo_t *)0x0;
-  bVar3 = CL_GetServerList(param_1,&local_20,&local_1c);
-  if (((bVar3) && (local_20 != (serverInfo_t *)0x0)) && (*local_1c < 0x80)) {
-    iVar4 = NET_StringToAdr(param_3,&local_18);
-    if (iVar4 == 0) {
-      iVar4 = -2;
+  servers = (serverInfo_t *)0x0;
+  bVar2 = CL_GetServerList(source,&servers,&count);
+  if (((bVar2) && (servers != (serverInfo_t *)0x0)) && (*count < 0x80)) {
+    iVar3 = NET_StringToAdr(address,&adr);
+    if (iVar3 == 0) {
+      iVar3 = -2;
     }
     else {
-      local_24 = 0;
-      while ((local_24 < *local_1c &&
-             (nVar2.ip[0] = local_18.ip[0], nVar2.ip[1] = local_18.ip[1],
-             nVar2.ip[2] = local_18.ip[2], nVar2.ip[3] = local_18.ip[3], nVar2.type = local_18.type,
-             nVar2.port = local_18.port, nVar2._10_2_ = local_18._10_2_,
-             nVar2.addrHandleIndex = local_18.addrHandleIndex,
-             iVar4 = NET_CompareAdr(*(netadr_t *)((int)local_20 + local_24 * 0x178 + 0x50),nVar2),
-             iVar4 == 0))) {
-        local_24 = local_24 + 1;
+      i = 0;
+      while ((i < *count &&
+             (b.ip[0] = adr.ip[0], b.ip[1] = adr.ip[1], b.ip[2] = adr.ip[2], b.ip[3] = adr.ip[3],
+             b.type = adr.type, b.port = adr.port, b._10_2_ = adr._10_2_,
+             b.addrHandleIndex = adr.addrHandleIndex,
+             iVar3 = NET_CompareAdr(*(netadr_t *)((int)servers + i * 0x178 + 0x50),b), iVar3 == 0)))
+      {
+        i = i + 1;
       }
-      if (local_24 < *local_1c) {
-        iVar4 = 0;
+      if (i < *count) {
+        iVar3 = 0;
       }
       else {
-        pnVar1 = (netadrtype_t *)((int)local_20 + *local_1c * 0x178 + 0x50);
-        *pnVar1 = local_18.type;
-        *(uchar (*) [4])(pnVar1 + 1) = local_18.ip;
-        pnVar1[2] = local_18._8_4_;
-        pnVar1[3] = local_18.addrHandleIndex;
-        I_strncpyz((char *)((int)local_20 + *local_1c * 0x178 + 0x7d),param_2,0x20);
-        *(undefined1 *)((int)local_20 + *local_1c * 0x178 + 0x67) = 1;
-        *(undefined1 *)((int)local_20 + *local_1c * 0x178 + 0x7c) = 0;
-        *local_1c = *local_1c + 1;
-        iVar4 = 1;
+        pnVar1 = (netadrtype_t *)((int)servers + *count * 0x178 + 0x50);
+        *pnVar1 = adr.type;
+        *(uchar (*) [4])(pnVar1 + 1) = adr.ip;
+        pnVar1[2] = adr._8_4_;
+        pnVar1[3] = adr.addrHandleIndex;
+        I_strncpyz((char *)((int)servers + *count * 0x178 + 0x7d),name,0x20);
+        *(undefined1 *)((int)servers + *count * 0x178 + 0x67) = 1;
+        *(undefined1 *)((int)servers + *count * 0x178 + 0x7c) = 0;
+        *count = *count + 1;
+        iVar3 = 1;
       }
     }
   }
   else {
-    iVar4 = -1;
+    iVar3 = -1;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
 // 00576460  LAN_GetServerAddressString  (client_mp/cl_ui_pc_mp.cpp:107)
 
-void __cdecl LAN_GetServerAddressString(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl LAN_GetServerAddressString(int source,int n,char *buf,int buflen)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  serverInfo_t *local_c;
-  int *local_8;
+  char *src;
+  serverInfo_t *servers;
+  int *count;
   
-  if (param_3 == (char *)0x0) {
+  if (buf == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_ui_pc_mp.cpp",0x6c,0,
                              "%s");
     if (!bVar2) {
@@ -80,28 +80,28 @@ void __cdecl LAN_GetServerAddressString(int param_1,int param_2,char *param_3,in
       return;
     }
   }
-  local_c = (serverInfo_t *)0x0;
-  bVar2 = CL_GetServerList(param_1,&local_c,&local_8);
-  if (((bVar2) && (0 < param_2)) && (param_2 < *local_8)) {
-    pcVar3 = NET_AdrToString(*(netadr_t *)((int)local_c + param_2 * 0x178 + 0x50));
-    I_strncpyz(param_3,pcVar3,param_4);
+  servers = (serverInfo_t *)0x0;
+  bVar2 = CL_GetServerList(source,&servers,&count);
+  if (((bVar2) && (0 < n)) && (n < *count)) {
+    src = NET_AdrToString(*(netadr_t *)((int)servers + n * 0x178 + 0x50));
+    I_strncpyz(buf,src,buflen);
   }
-  *param_3 = '\0';
+  *buf = '\0';
   return;
 }
 
 
 // 00576510  LAN_GetServerSecurityId  (client_mp/cl_ui_pc_mp.cpp:125)
 
-void __cdecl LAN_GetServerSecurityId(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl LAN_GetServerSecurityId(int source,int n,char *buf,int buflen)
 
 {
   code *pcVar1;
   bool bVar2;
-  serverInfo_t *local_c;
-  int *local_8;
+  serverInfo_t *servers;
+  int *count;
   
-  if (param_3 == (char *)0x0) {
+  if (buf == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_ui_pc_mp.cpp",0x7e,0,
                              "%s");
     if (!bVar2) {
@@ -110,7 +110,7 @@ void __cdecl LAN_GetServerSecurityId(int param_1,int param_2,char *param_3,int p
       return;
     }
   }
-  if (param_4 < 8) {
+  if (buflen < 8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_ui_pc_mp.cpp",0x7f,0,
                              "%s");
     if (!bVar2) {
@@ -119,11 +119,11 @@ void __cdecl LAN_GetServerSecurityId(int param_1,int param_2,char *param_3,int p
       return;
     }
   }
-  local_c = (serverInfo_t *)0x0;
-  bVar2 = CL_GetServerList(param_1,&local_c,&local_8);
-  if (((bVar2) && (local_c != (serverInfo_t *)0x0)) && (param_2 < *local_8)) {
-    *(undefined4 *)param_3 = *(undefined4 *)((int)local_c + param_2 * 0x178 + 0x29);
-    *(undefined4 *)(param_3 + 4) = *(undefined4 *)((int)local_c + param_2 * 0x178 + 0x2d);
+  servers = (serverInfo_t *)0x0;
+  bVar2 = CL_GetServerList(source,&servers,&count);
+  if (((bVar2) && (servers != (serverInfo_t *)0x0)) && (n < *count)) {
+    *(undefined4 *)buf = *(undefined4 *)((int)servers + n * 0x178 + 0x29);
+    *(undefined4 *)(buf + 4) = *(undefined4 *)((int)servers + n * 0x178 + 0x2d);
   }
   return;
 }
@@ -131,22 +131,22 @@ void __cdecl LAN_GetServerSecurityId(int param_1,int param_2,char *param_3,int p
 
 // 005765C0  LAN_ResetPings  (client_mp/cl_ui_pc_mp.cpp:143)
 
-void __cdecl LAN_ResetPings(int param_1)
+void __cdecl LAN_ResetPings(int source)
 
 {
   bool bVar1;
-  int local_10;
-  int *local_c;
-  serverInfo_t *local_8;
+  int i;
+  int *count;
+  serverInfo_t *servers;
   
-  local_8 = (serverInfo_t *)0x0;
-  bVar1 = CL_GetServerList(param_1,&local_8,&local_c);
-  if ((bVar1) && (local_8 != (serverInfo_t *)0x0)) {
+  servers = (serverInfo_t *)0x0;
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if ((bVar1) && (servers != (serverInfo_t *)0x0)) {
     cls.pingedServerCount = 0;
-    for (local_10 = 0; local_10 < *local_c; local_10 = local_10 + 1) {
-      *(undefined2 *)((int)local_8 + local_10 * 0x178 + 0x74) = 0xffff;
-      *(undefined4 *)((int)local_8 + local_10 * 0x178 + 0x78) = 0;
-      *(undefined1 *)((int)local_8 + local_10 * 0x178 + 0x7c) = 0;
+    for (i = 0; i < *count; i = i + 1) {
+      *(undefined2 *)((int)servers + i * 0x178 + 0x74) = 0xffff;
+      *(undefined4 *)((int)servers + i * 0x178 + 0x78) = 0;
+      *(undefined1 *)((int)servers + i * 0x178 + 0x7c) = 0;
     }
   }
   return;
@@ -155,18 +155,18 @@ void __cdecl LAN_ResetPings(int param_1)
 
 // 00576660  LAN_GetServerCount  (client_mp/cl_ui_pc_mp.cpp:161)
 
-int __cdecl LAN_GetServerCount(int param_1)
+int __cdecl LAN_GetServerCount(int source)
 
 {
   bool bVar1;
   int iVar2;
-  serverInfo_t *local_c;
-  int *local_8;
+  serverInfo_t *servers;
+  int *count;
   
-  local_c = (serverInfo_t *)0x0;
-  bVar1 = CL_GetServerList(param_1,&local_c,&local_8);
-  if ((bVar1) && (local_c != (serverInfo_t *)0x0)) {
-    iVar2 = *local_8;
+  servers = (serverInfo_t *)0x0;
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if ((bVar1) && (servers != (serverInfo_t *)0x0)) {
+    iVar2 = *count;
   }
   else {
     iVar2 = 0;
@@ -177,7 +177,7 @@ int __cdecl LAN_GetServerCount(int param_1)
 
 // 005766A0  LAN_WaitServerResponse  (client_mp/cl_ui_pc_mp.cpp:177)
 
-int __cdecl LAN_WaitServerResponse(int param_1)
+int __cdecl LAN_WaitServerResponse(int source)
 
 {
   return cls.waitdwfindsessionsresponse;
@@ -188,124 +188,123 @@ int __cdecl LAN_WaitServerResponse(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LAN_GetServerInfo(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl LAN_GetServerInfo(int source,int n,char *buf,int buflen)
 
 {
   bool bVar1;
   char *pcVar2;
   int iVar3;
   FriendInfo *in_stack_fffff264;
-  undefined8 local_ce4;
-  char *local_4e4;
-  int local_4e0;
-  int local_4dc;
-  int local_4d8;
-  char local_4d4 [128];
-  char local_454;
+  undefined8 userIDs;
+  char *strptr;
+  int i;
+  int numFriends;
+  int stringpos;
+  char userString [128];
+  char xuidstring;
   uchar local_453 [63];
-  char local_414 [1024];
+  char info [1024];
   uint local_14;
-  int local_10;
-  serverInfo_t *local_c;
-  int *local_8;
+  serverInfo_t *server;
+  serverInfo_t *servers;
+  int *count;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = (serverInfo_t *)0x0;
-  local_10 = 0;
-  local_414[0] = '\0';
-  bVar1 = CL_GetServerList(param_1,&local_c,&local_8);
-  if (((bVar1) && (local_c != (serverInfo_t *)0x0)) && (param_2 < *local_8)) {
-    local_10 = param_2 * 0x178 + (int)local_c;
+  servers = (serverInfo_t *)0x0;
+  server = (serverInfo_t *)0x0;
+  info[0] = '\0';
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if (((bVar1) && (servers != (serverInfo_t *)0x0)) && (n < *count)) {
+    server = (serverInfo_t *)(n * 0x178 + (int)servers);
   }
-  if ((local_10 == 0) || (param_3 == (char *)0x0)) {
-    if (param_3 != (char *)0x0) {
-      *param_3 = '\0';
+  if ((server == (serverInfo_t *)0x0) || (buf == (char *)0x0)) {
+    if (buf != (char *)0x0) {
+      *buf = '\0';
     }
   }
   else {
-    *param_3 = '\0';
-    Info_SetValueForKey(local_414,"hostname",(char *)(local_10 + 0x7d));
-    Info_SetValueForKey(local_414,"mapname",(char *)(local_10 + 0x9d));
+    *buf = '\0';
+    Info_SetValueForKey(info,"hostname",server->hostName);
+    Info_SetValueForKey(info,"mapname",server->mapName);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"clients",pcVar2);
+    Info_SetValueForKey(info,"clients",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"com_maxclients",pcVar2);
+    Info_SetValueForKey(info,"com_maxclients",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"ping",pcVar2);
+    Info_SetValueForKey(info,"ping",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"minping",pcVar2);
+    Info_SetValueForKey(info,"minping",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"maxping",pcVar2);
-    Info_SetValueForKey(local_414,"game",(char *)(local_10 + 0xbd));
-    Info_SetValueForKey(local_414,"gametype",(char *)(local_10 + 0xfd));
+    Info_SetValueForKey(info,"maxping",pcVar2);
+    Info_SetValueForKey(info,"game",server->game);
+    Info_SetValueForKey(info,"gametype",(char *)((int)&server->score + 1));
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"nettype",pcVar2);
-    pcVar2 = NET_AdrToString(*(netadr_t *)(local_10 + 0x50));
-    Info_SetValueForKey(local_414,"addr",pcVar2);
+    Info_SetValueForKey(info,"nettype",pcVar2);
+    pcVar2 = NET_AdrToString(server->adr);
+    Info_SetValueForKey(info,"addr",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"pswrd",pcVar2);
+    Info_SetValueForKey(info,"pswrd",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"con_disabled",pcVar2);
+    Info_SetValueForKey(info,"con_disabled",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"pure",pcVar2);
+    Info_SetValueForKey(info,"pure",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"sv_allowAnonymous",pcVar2);
+    Info_SetValueForKey(info,"sv_allowAnonymous",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"ff",pcVar2);
+    Info_SetValueForKey(info,"ff",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"kc",pcVar2);
+    Info_SetValueForKey(info,"kc",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"hc",pcVar2);
+    Info_SetValueForKey(info,"hc",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"hw",pcVar2);
+    Info_SetValueForKey(info,"hw",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"mod",pcVar2);
+    Info_SetValueForKey(info,"mod",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"voice",pcVar2);
+    Info_SetValueForKey(info,"voice",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"pb",pcVar2);
+    Info_SetValueForKey(info,"pb",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"wagerbet",pcVar2);
+    Info_SetValueForKey(info,"wagerbet",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"playlist",pcVar2);
+    Info_SetValueForKey(info,"playlist",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"region",pcVar2);
-    Info_SetValueForKey(local_414,"geolocation",(char *)(local_10 + 0x132));
+    Info_SetValueForKey(info,"region",pcVar2);
+    Info_SetValueForKey(info,"geolocation",(char *)(server[1].xnaddr.addrBuff + 10));
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"wager",pcVar2);
+    Info_SetValueForKey(info,"wager",pcVar2);
     pcVar2 = va("%i");
-    Info_SetValueForKey(local_414,"licensetype",pcVar2);
-    Info_SetValueForKey(local_414,"countrycode",(char *)(local_10 + 0x172));
-    local_454 = '\0';
+    Info_SetValueForKey(info,"licensetype",pcVar2);
+    Info_SetValueForKey(info,"countrycode",(char *)((int)&server[1].nonce + 2));
+    xuidstring = '\0';
     memset(local_453,'\0',0x3f);
-    XUIDToString((ulong64 *)(local_10 + 0x110),&local_454);
-    Info_SetValueForKey(local_414,"dwuserid",&local_454);
-    if (param_1 == 4) {
-      Live_GetFriendsOnServer(*(ulong64 *)(local_10 + 0x110),&local_ce4,&local_4dc);
-      local_4d8 = 0;
-      local_4e4 = local_4d4;
-      for (local_4e0 = 0; (local_4e0 < local_4dc && (local_4e0 < 3)); local_4e0 = local_4e0 + 1) {
-        Friends_GetByID(0,CONCAT44(&stack0xfffff264,
-                                   *(undefined4 *)((int)&local_ce4 + local_4e0 * 8 + 4)),
+    XUIDToString((ulong64 *)(server->city + 2),&xuidstring);
+    Info_SetValueForKey(info,"dwuserid",&xuidstring);
+    if (source == 4) {
+      Live_GetFriendsOnServer(*(ulong64 *)(server->city + 2),&userIDs,&numFriends);
+      stringpos = 0;
+      strptr = userString;
+      for (i = 0; (i < numFriends && (i < 3)); i = i + 1) {
+        Friends_GetByID(0,CONCAT44(&stack0xfffff264,*(undefined4 *)((int)&userIDs + i * 8 + 4)),
                         in_stack_fffff264);
-        iVar3 = sprintf_s(local_4e4,0x80 - local_4d8,"%s\n");
-        local_4d8 = iVar3 + local_4d8;
-        local_4e4 = local_4d4 + local_4d8;
+        iVar3 = sprintf_s(strptr,0x80 - stringpos,"%s\n");
+        stringpos = iVar3 + stringpos;
+        strptr = userString + stringpos;
       }
-      if (local_4dc < 4) {
-        local_4e4 = local_4e4 + -1;
-        if (*local_4e4 == '\n') {
-          *local_4e4 = '\0';
+      if (numFriends < 4) {
+        strptr = strptr + -1;
+        if (*strptr == '\n') {
+          *strptr = '\0';
         }
       }
       else {
-        iVar3 = sprintf_s(local_4e4,0x80 - local_4d8,"...");
-        local_4d8 = iVar3 + local_4d8;
-        local_4e4 = local_4d4 + local_4d8;
+        iVar3 = sprintf_s(strptr,0x80 - stringpos,"...");
+        stringpos = iVar3 + stringpos;
+        strptr = userString + stringpos;
       }
-      Info_SetValueForKey(local_414,"friendsOnServer",local_4d4);
+      Info_SetValueForKey(info,"friendsOnServer",userString);
     }
-    I_strncpyz(param_3,local_414,param_4);
+    I_strncpyz(buf,info,buflen);
   }
   return;
 }
@@ -313,26 +312,26 @@ void __cdecl LAN_GetServerInfo(int param_1,int param_2,char *param_3,int param_4
 
 // 00576DC0  LAN_GetServerPing  (client_mp/cl_ui_pc_mp.cpp:300)
 
-int __cdecl LAN_GetServerPing(int param_1,int param_2)
+int __cdecl LAN_GetServerPing(int source,int n)
 
 {
   bool bVar1;
   int iVar2;
-  int local_10;
-  serverInfo_t *local_c;
-  int *local_8;
+  serverInfo_t *server;
+  serverInfo_t *servers;
+  int *count;
   
-  local_10 = 0;
-  local_c = (serverInfo_t *)0x0;
-  bVar1 = CL_GetServerList(param_1,&local_c,&local_8);
-  if ((((bVar1) && (local_c != (serverInfo_t *)0x0)) && (param_2 < *local_8)) && (-1 < param_2)) {
-    local_10 = param_2 * 0x178 + (int)local_c;
+  server = (serverInfo_t *)0x0;
+  servers = (serverInfo_t *)0x0;
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if ((((bVar1) && (servers != (serverInfo_t *)0x0)) && (n < *count)) && (-1 < n)) {
+    server = (serverInfo_t *)(n * 0x178 + (int)servers);
   }
-  if (local_10 == 0) {
+  if (server == (serverInfo_t *)0x0) {
     iVar2 = -1;
   }
   else {
-    iVar2 = (int)*(short *)(local_10 + 0x74);
+    iVar2 = (int)server->ping;
   }
   return iVar2;
 }
@@ -340,40 +339,41 @@ int __cdecl LAN_GetServerPing(int param_1,int param_2)
 
 // 00576E30  LAN_GetServerPtr  (client_mp/cl_ui_pc_mp.cpp:350)
 
-serverInfo_t * __cdecl LAN_GetServerPtr(int param_1,int param_2)
+serverInfo_t * __cdecl LAN_GetServerPtr(int source,int n)
 
 {
   bool bVar1;
-  serverInfo_t *local_10;
-  serverInfo_t *local_c;
-  int *local_8;
+  serverInfo_t *server;
+  serverInfo_t *servers;
+  int *count;
   
-  local_10 = (serverInfo_t *)0x0;
-  local_c = (serverInfo_t *)0x0;
-  bVar1 = CL_GetServerList(param_1,&local_c,&local_8);
-  if ((((bVar1) && (local_c != (serverInfo_t *)0x0)) && (param_2 < *local_8)) && (-1 < param_2)) {
-    local_10 = (serverInfo_t *)(param_2 * 0x178 + (int)local_c);
+  server = (serverInfo_t *)0x0;
+  servers = (serverInfo_t *)0x0;
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if ((((bVar1) && (servers != (serverInfo_t *)0x0)) && (n < *count)) && (-1 < n)) {
+    server = (serverInfo_t *)(n * 0x178 + (int)servers);
   }
-  return local_10;
+  return server;
 }
 
 
 // 00576E90  LAN_CleanHostname  (client_mp/cl_ui_pc_mp.cpp:367)
 
-void __cdecl LAN_CleanHostname(char *param_1,char *param_2)
+void __cdecl LAN_CleanHostname(char *hostName,char *cleanHostName)
 
 {
   byte bVar1;
   int iVar2;
+  uchar c;
   
-  for (; bVar1 = *param_1, bVar1 != 0; param_1 = param_1 + 1) {
+  for (; bVar1 = *hostName, bVar1 != 0; hostName = hostName + 1) {
     iVar2 = isalpha((uint)bVar1);
     if (iVar2 != 0) {
-      *param_2 = bVar1;
-      param_2 = param_2 + 1;
+      *cleanHostName = bVar1;
+      cleanHostName = cleanHostName + 1;
     }
   }
-  *param_2 = '\0';
+  *cleanHostName = '\0';
   return;
 }
 
@@ -382,22 +382,22 @@ void __cdecl LAN_CleanHostname(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl LAN_CompareHostname(char *param_1,char *param_2)
+int __cdecl LAN_CompareHostname(char *hostName1,char *hostName2)
 
 {
   int local_50;
-  char local_4c [32];
-  char local_2c [32];
+  char cleanHostName2 [32];
+  char cleanHostName1 [32];
   uint local_c;
-  int local_8;
+  int res;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  LAN_CleanHostname(param_1,local_2c);
-  LAN_CleanHostname(param_2,local_4c);
-  local_50 = I_stricmp(local_2c,local_4c);
+  LAN_CleanHostname(hostName1,cleanHostName1);
+  LAN_CleanHostname(hostName2,cleanHostName2);
+  local_50 = I_stricmp(cleanHostName1,cleanHostName2);
   if (local_50 == 0) {
-    local_8 = local_50;
-    local_50 = I_stricmp(param_1,param_2);
+    res = local_50;
+    local_50 = I_stricmp(hostName1,hostName2);
   }
   return local_50;
 }
@@ -405,97 +405,99 @@ int __cdecl LAN_CompareHostname(char *param_1,char *param_2)
 
 // 00576F70  LAN_CompareServers  (client_mp/cl_ui_pc_mp.cpp:399)
 
-int __cdecl LAN_CompareServers(int param_1,int param_2,int param_3,int param_4,int param_5)
+int __cdecl LAN_CompareServers(int source,int sortKey,int sortDir,int s1,int s2)
 
 {
   serverInfo_t *psVar1;
   serverInfo_t *psVar2;
   char *pcVar3;
   char *pcVar4;
-  int local_8;
+  serverInfo_t *server1;
+  serverInfo_t *server2;
+  int res;
   
-  psVar1 = LAN_GetServerPtr(param_1,param_4);
-  psVar2 = LAN_GetServerPtr(param_1,param_5);
+  psVar1 = LAN_GetServerPtr(source,s1);
+  psVar2 = LAN_GetServerPtr(source,s2);
   if ((psVar1 == (serverInfo_t *)0x0) || (psVar2 == (serverInfo_t *)0x0)) {
     return 0;
   }
-  local_8 = 0;
-  switch(param_2) {
+  res = 0;
+  switch(sortKey) {
   case 0:
-    local_8 = *(int *)(psVar1[1].xnaddr.addrBuff + 4) - *(int *)(psVar2[1].xnaddr.addrBuff + 4);
+    res = *(int *)(psVar1[1].xnaddr.addrBuff + 4) - *(int *)(psVar2[1].xnaddr.addrBuff + 4);
     break;
   case 1:
-    local_8 = (uint)psVar1->punkbuster - (uint)psVar2->punkbuster;
+    res = (uint)psVar1->punkbuster - (uint)psVar2->punkbuster;
     break;
   case 2:
-    local_8 = (uint)psVar1->bPassword - (uint)psVar2->bPassword;
+    res = (uint)psVar1->bPassword - (uint)psVar2->bPassword;
     break;
   case 3:
-    local_8 = LAN_CompareHostname(psVar1->hostName,psVar2->hostName);
+    res = LAN_CompareHostname(psVar1->hostName,psVar2->hostName);
     break;
   case 4:
     pcVar3 = UI_GetMapDisplayName(psVar2->mapName);
     pcVar4 = UI_GetMapDisplayName(psVar1->mapName);
-    local_8 = I_stricmp(pcVar4,pcVar3);
+    res = I_stricmp(pcVar4,pcVar3);
     break;
   case 5:
-    local_8 = (uint)psVar1->clients - (uint)psVar2->clients;
+    res = (uint)psVar1->clients - (uint)psVar2->clients;
     break;
   case 6:
     pcVar3 = UI_GetGameTypeDisplayName((char *)((int)&psVar2->score + 1));
     pcVar4 = UI_GetGameTypeDisplayName((char *)((int)&psVar1->score + 1));
-    local_8 = I_stricmp(pcVar4,pcVar3);
+    res = I_stricmp(pcVar4,pcVar3);
     break;
   case 7:
-    local_8 = *(int *)(psVar1->city + 0xe) - *(int *)(psVar2->city + 0xe);
+    res = *(int *)(psVar1->city + 0xe) - *(int *)(psVar2->city + 0xe);
     break;
   case 8:
     goto switchD_00576fc9_caseD_8;
   case 9:
-    local_8 = (uint)psVar1->mod - (uint)psVar2->mod;
+    res = (uint)psVar1->mod - (uint)psVar2->mod;
     break;
   case 10:
-    local_8 = (uint)psVar1->voice - (uint)psVar2->voice;
+    res = (uint)psVar1->voice - (uint)psVar2->voice;
     break;
   default:
     goto switchD_00576fc9_default;
   }
-  if (local_8 == 0) {
-    param_3 = 0;
+  if (res == 0) {
+    sortDir = 0;
 switchD_00576fc9_caseD_8:
-    local_8 = (int)psVar1->ping - (int)psVar2->ping;
-    if ((local_8 == 0) &&
-       (local_8 = I_stricmp((char *)((int)&psVar1->score + 1),(char *)((int)&psVar2->score + 1)),
-       local_8 == 0)) {
-      local_8 = LAN_CompareHostname(psVar1->hostName,psVar2->hostName);
+    res = (int)psVar1->ping - (int)psVar2->ping;
+    if ((res == 0) &&
+       (res = I_stricmp((char *)((int)&psVar1->score + 1),(char *)((int)&psVar2->score + 1)),
+       res == 0)) {
+      res = LAN_CompareHostname(psVar1->hostName,psVar2->hostName);
     }
   }
 switchD_00576fc9_default:
-  if (param_3 != 0) {
-    local_8 = -local_8;
+  if (sortDir != 0) {
+    res = -res;
   }
-  return local_8;
+  return res;
 }
 
 
 // 00577220  LAN_MarkServerDirty  (client_mp/cl_ui_pc_mp.cpp:494)
 
-void __cdecl LAN_MarkServerDirty(int param_1,int param_2,int param_3)
+void __cdecl LAN_MarkServerDirty(int source,int n,int dirty)
 
 {
   bool bVar1;
-  int *local_c;
-  serverInfo_t *local_8;
+  int *count;
+  serverInfo_t *servers;
   
-  bVar1 = CL_GetServerList(param_1,&local_8,&local_c);
-  if ((bVar1) && (local_8 != (serverInfo_t *)0x0)) {
-    if (param_2 == -1) {
-      for (param_2 = 0; param_2 < *local_c; param_2 = param_2 + 1) {
-        *(undefined1 *)((int)local_8 + param_2 * 0x178 + 0x67) = (undefined1)param_3;
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if ((bVar1) && (servers != (serverInfo_t *)0x0)) {
+    if (n == -1) {
+      for (n = 0; n < *count; n = n + 1) {
+        *(undefined1 *)((int)servers + n * 0x178 + 0x67) = (undefined1)dirty;
       }
     }
     else {
-      *(undefined1 *)((int)local_8 + param_2 * 0x178 + 0x67) = (undefined1)param_3;
+      *(undefined1 *)((int)servers + n * 0x178 + 0x67) = (undefined1)dirty;
     }
   }
   return;
@@ -504,17 +506,17 @@ void __cdecl LAN_MarkServerDirty(int param_1,int param_2,int param_3)
 
 // 005772A0  LAN_ServerIsDirty  (client_mp/cl_ui_pc_mp.cpp:516)
 
-int __cdecl LAN_ServerIsDirty(int param_1,int param_2)
+int __cdecl LAN_ServerIsDirty(int source,int n)
 
 {
   bool bVar1;
   uint uVar2;
-  int *local_c;
-  serverInfo_t *local_8;
+  int *count;
+  serverInfo_t *servers;
   
-  bVar1 = CL_GetServerList(param_1,&local_8,&local_c);
-  if ((((bVar1) && (local_8 != (serverInfo_t *)0x0)) && (-1 < param_2)) && (param_2 < *local_c)) {
-    uVar2 = (uint)*(byte *)((int)local_8 + param_2 * 0x178 + 0x67);
+  bVar1 = CL_GetServerList(source,&servers,&count);
+  if ((((bVar1) && (servers != (serverInfo_t *)0x0)) && (-1 < n)) && (n < *count)) {
+    uVar2 = (uint)*(byte *)((int)servers + n * 0x178 + 0x67);
   }
   else {
     uVar2 = 0;
@@ -525,48 +527,48 @@ int __cdecl LAN_ServerIsDirty(int param_1,int param_2)
 
 // 005772F0  LAN_UpdateDirtyPings  (client_mp/cl_ui_pc_mp.cpp:534)
 
-int __cdecl LAN_UpdateDirtyPings(int param_1,int param_2)
+int __cdecl LAN_UpdateDirtyPings(int localClientNum,int source)
 
 {
   int iVar1;
   
-  iVar1 = CL_UpdateDirtyPings(param_1,param_2);
+  iVar1 = CL_UpdateDirtyPings(localClientNum,source);
   return iVar1;
 }
 
 
 // 00577310  LAN_GetServerStatus  (client_mp/cl_ui_pc_mp.cpp:540)
 
-int __cdecl LAN_GetServerStatus(char *param_1,char *param_2,int param_3)
+int __cdecl LAN_GetServerStatus(char *serverSecurityID,char *serverStatus,int maxLen)
 
 {
   int iVar1;
   
-  iVar1 = CL_ServerStatus(param_1,param_2,param_3);
+  iVar1 = CL_ServerStatus(serverSecurityID,serverStatus,maxLen);
   return iVar1;
 }
 
 
 // 00577330  LAN_GetServerStatusScoreBoard  (client_mp/cl_ui_pc_mp.cpp:545)
 
-int __cdecl LAN_GetServerStatusScoreBoard(char *param_1,char *param_2,int param_3)
+int __cdecl LAN_GetServerStatusScoreBoard(char *serverSecurityID,char *serverStatus,int maxLen)
 
 {
   int iVar1;
   
-  iVar1 = CL_ServerStatusScoreBoard(param_1,param_2,param_3);
+  iVar1 = CL_ServerStatusScoreBoard(serverSecurityID,serverStatus,maxLen);
   return iVar1;
 }
 
 
 // 00577350  CLUI_SetPbClStatus  (client_mp/cl_ui_pc_mp.cpp:553)
 
-void __cdecl CLUI_SetPbClStatus(int param_1)
+void __cdecl CLUI_SetPbClStatus(int status)
 
 {
   int iVar1;
   
-  if (param_1 == 0) {
+  if (status == 0) {
     DisablePbCl();
   }
   else {

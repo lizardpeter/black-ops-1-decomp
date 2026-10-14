@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl UI_ParseInfos(char *param_1,int param_2,char **param_3)
+int __cdecl UI_ParseInfos(char *buf,int max,char **infos)
 
 {
   byte bVar1;
@@ -21,21 +21,21 @@ int __cdecl UI_ParseInfos(char *param_1,int param_2,char **param_3)
   int local_824;
   byte *local_81c;
   byte *local_818;
-  char local_814 [1024];
-  char local_414 [1028];
+  char info [1024];
+  char key [1028];
   uint local_10;
-  byte *local_c;
-  int local_8;
+  char *token;
+  int count;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
+  count = 0;
   do {
-    local_c = (byte *)Com_Parse(&param_1);
-    if (*local_c == 0) {
-      return local_8;
+    token = Com_Parse(&buf);
+    if (*token == 0) {
+      return count;
     }
     local_818 = &s__;
-    local_81c = local_c;
+    local_81c = (byte *)token;
     do {
       bVar1 = *local_81c;
       bVar4 = bVar1 < *local_818;
@@ -55,16 +55,16 @@ LAB_0073b739:
 LAB_0073b744:
     if (local_824 != 0) {
       Com_Printf(0xd,"Missing { in info file\n");
-      return local_8;
+      return count;
     }
-    if (local_8 == param_2) {
+    if (count == max) {
       Com_Printf(0xd,"Max infos exceeded\n");
-      return local_8;
+      return count;
     }
-    local_814[0] = '\0';
-    while (local_c = (byte *)Com_Parse(&param_1), *local_c != 0) {
+    info[0] = '\0';
+    while (token = Com_Parse(&buf), *token != 0) {
       local_82c = &s__;
-      local_830 = local_c;
+      local_830 = (byte *)token;
       do {
         bVar1 = *local_830;
         bVar4 = bVar1 < *local_82c;
@@ -83,16 +83,16 @@ LAB_0073b82e:
       local_838 = 0;
 LAB_0073b839:
       if (local_838 == 0) goto LAB_0073b8a7;
-      I_strncpyz(local_414,(char *)local_c,0x400);
-      local_c = (byte *)Com_ParseOnLine(&param_1);
-      if (*local_c == 0) {
-        local_c = (byte *)0xcf3000;
+      I_strncpyz(key,token,0x400);
+      token = Com_ParseOnLine(&buf);
+      if (*token == '\0') {
+        token = "<NULL>";
       }
-      Info_SetValueForKey(local_814,local_414,(char *)local_c);
+      Info_SetValueForKey(info,key,token);
     }
     Com_Printf(0xd,"Unexpected end of info file\n");
 LAB_0073b8a7:
-    local_840 = local_814;
+    local_840 = info;
     do {
       cVar2 = *local_840;
       local_840 = local_840 + 1;
@@ -103,19 +103,19 @@ LAB_0073b8a7:
       cVar2 = *local_850;
       local_850 = local_850 + 1;
     } while (cVar2 != '\0');
-    pcVar3 = UI_Alloc((int)(local_850 +
-                           (int)(local_840 + ((6 - (int)(local_814 + 1)) - (int)pcVar3))),1);
-    param_3[local_8] = pcVar3;
-    if (param_3[local_8] != (char *)0x0) {
-      local_860 = local_814;
-      local_864 = param_3[local_8];
+    pcVar3 = UI_Alloc((int)(local_850 + (int)(local_840 + ((6 - (int)(info + 1)) - (int)pcVar3))),1)
+    ;
+    infos[count] = pcVar3;
+    if (infos[count] != (char *)0x0) {
+      local_860 = info;
+      local_864 = infos[count];
       do {
         cVar2 = *local_860;
         *local_864 = cVar2;
         local_860 = local_860 + 1;
         local_864 = local_864 + 1;
       } while (cVar2 != '\0');
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
   } while( true );
 }
@@ -133,45 +133,47 @@ void __cdecl UI_LoadArenasFromFile_LoadObj(void)
   int iVar2;
   int iVar3;
   char *local_24b0;
-  char local_24a4 [132];
-  char *local_2420;
-  char local_241c [1024];
-  char local_201c [8196];
+  char *szFolderName;
+  int numdirs;
+  char filename [132];
+  char *dirptr;
+  char dirlist [1024];
+  char buf [8196];
   uint local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int len;
+  int f;
+  int i;
+  int dirlen;
   
-  local_8 = 0x73c4dd;
+  dirlen = 0x73c4dd;
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   ui_numArenas = 0;
-  iVar2 = FS_GetFileList("mp","arena",FS_LIST_PURE_ONLY,local_241c,0x400);
-  local_2420 = local_241c;
-  for (local_c = 0; local_c < iVar2; local_c = local_c + 1) {
-    local_24b0 = local_2420;
+  iVar2 = FS_GetFileList("mp","arena",FS_LIST_PURE_ONLY,dirlist,0x400);
+  dirptr = dirlist;
+  for (i = 0; i < iVar2; i = i + 1) {
+    local_24b0 = dirptr;
     do {
       cVar1 = *local_24b0;
       local_24b0 = local_24b0 + 1;
     } while (cVar1 != '\0');
-    local_8 = (int)local_24b0 - (int)(local_2420 + 1);
-    sprintf(local_24a4,"%s/%s");
-    local_14 = FS_FOpenFileByMode(local_24a4,&local_10,FS_READ);
-    if (local_10 == 0) {
+    dirlen = (int)local_24b0 - (int)(dirptr + 1);
+    sprintf(filename,"%s/%s");
+    len = FS_FOpenFileByMode(filename,&f,FS_READ);
+    if (f == 0) {
       Com_PrintError(0xd,"file not found: %s\n");
     }
-    else if (local_14 < 0x2000) {
-      FS_Read(local_201c,local_14,local_10);
-      local_201c[local_14] = '\0';
-      FS_FCloseFile(local_10);
-      iVar3 = UI_ParseInfos(local_201c,0x80 - ui_numArenas,ui_arenaInfos + ui_numArenas);
+    else if (len < 0x2000) {
+      FS_Read(buf,len,f);
+      buf[len] = '\0';
+      FS_FCloseFile(f);
+      iVar3 = UI_ParseInfos(buf,0x80 - ui_numArenas,ui_arenaInfos + ui_numArenas);
       ui_numArenas = iVar3 + ui_numArenas;
     }
     else {
       Com_PrintError(0xd,"file too large: %s is %i, max allowed is %i");
-      FS_FCloseFile(local_10);
+      FS_FCloseFile(f);
     }
-    local_2420 = local_2420 + local_8 + 1;
+    dirptr = dirptr + dirlen + 1;
   }
   return;
 }
@@ -186,6 +188,9 @@ void __cdecl UI_LoadArenasFromFile_FastFile(void)
 
 {
   XAssetHeader XVar1;
+  char *filename;
+  RawFile *rawfile;
+  char *buf;
   
   XVar1 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,"mp/mpmaps.arena",true,-1);
   if (XVar1.xmodelPieces == (XModelPieces *)0x0) {
@@ -208,26 +213,28 @@ bool __cdecl UI_LoadModArenas(void)
 
 {
   bool bVar1;
-  int iVar2;
-  char local_200c [8192];
+  int len;
+  int filesize;
+  char *filename;
+  char buf [8192];
   uint local_c;
-  int local_8;
+  int file;
   
-  local_8 = 0x73bddd;
+  file = 0x73bddd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = FS_FOpenFileRead("mod.arena",&local_8);
-  if (local_8 == 0) {
+  len = FS_FOpenFileRead("mod.arena",&file);
+  if (file == 0) {
     Com_PrintWarning(0xd,"Customized arena file not found: %s\n");
     bVar1 = false;
   }
-  else if (iVar2 == 0) {
+  else if (len == 0) {
     Com_PrintWarning(0xd,"Customized mod.arena file is empty\n");
     bVar1 = false;
   }
-  else if (iVar2 < 0x2001) {
-    FS_Read(local_200c,iVar2,local_8);
-    FS_FCloseFile(local_8);
-    ui_numArenas = UI_ParseInfos(local_200c,0x80 - ui_numArenas,ui_arenaInfos + ui_numArenas);
+  else if (len < 0x2001) {
+    FS_Read(buf,len,file);
+    FS_FCloseFile(file);
+    ui_numArenas = UI_ParseInfos(buf,0x80 - ui_numArenas,ui_arenaInfos + ui_numArenas);
     bVar1 = true;
   }
   else {
@@ -242,7 +249,7 @@ bool __cdecl UI_LoadModArenas(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl UI_LoadModsMap(FF_DIR param_1)
+void __cdecl UI_LoadModsMap(FF_DIR source)
 
 {
   char cVar1;
@@ -258,103 +265,103 @@ void __cdecl UI_LoadModsMap(FF_DIR param_1)
   char *local_56c;
   char *local_55c;
   char *local_54c;
-  int local_548;
-  char local_544 [1028];
-  char *local_140;
-  int local_13c;
-  char local_135;
-  int local_134;
-  char *local_130;
-  char *local_12c;
-  char *local_128;
-  char local_124 [256];
+  int i;
+  char ainfo [1028];
+  char *name;
+  int nameLength;
+  bool IsDupName;
+  int id;
+  char *loadSuffix;
+  int loadSuffixLength;
+  char *baseDir;
+  char netpath [256];
   uint local_24;
-  int local_20;
-  uint local_1c;
-  char *local_18;
-  int local_14;
-  char *local_10;
-  char *local_c;
-  char **local_8;
+  char *basePath;
+  int isMod;
+  char *localizedPrefix;
+  int numSysFiles;
+  int localizedPrefixLength;
+  char *filter;
+  char **sysFiles;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == FFD_MOD_DIR) || (param_1 == FFD_USER_MAP)) {
-    local_1c = (uint)(param_1 == FFD_MOD_DIR);
-    local_130 = "_load";
+  if ((source == FFD_MOD_DIR) || (source == FFD_USER_MAP)) {
+    isMod = (int)(source == FFD_MOD_DIR);
+    loadSuffix = "_load";
     local_54c = "_load";
     pcVar4 = local_54c;
     do {
       local_54c = pcVar4;
       pcVar4 = local_54c + 1;
     } while (*local_54c != '\0');
-    local_12c = local_54c + -0xca31ac;
-    local_18 = "localized_";
+    loadSuffixLength = (int)(local_54c + -0xca31ac);
+    localizedPrefix = "localized_";
     local_55c = "localized_";
     pcVar4 = local_55c;
     do {
       local_55c = pcVar4;
       pcVar4 = local_55c + 1;
     } while (*local_55c != '\0');
-    local_10 = local_55c + -0xcd625c;
-    local_20 = (fs_homepath->current).integer;
-    if (local_1c == 0) {
+    localizedPrefixLength = (int)(local_55c + -0xcd625c);
+    basePath = (fs_homepath->current).string;
+    if (isMod == 0) {
       local_56c = "usermaps";
     }
     else {
-      local_56c = (char *)(fs_gameDirVar->current).integer;
+      local_56c = (fs_gameDirVar->current).string;
     }
-    local_128 = local_56c;
-    if (local_1c == 0) {
+    baseDir = local_56c;
+    if (isMod == 0) {
       local_570 = "/";
     }
     else {
       local_570 = "ff";
     }
-    local_c = local_570;
-    Com_sprintf(local_124,0x100,"%s/%s");
-    local_8 = Sys_ListFiles(local_124,local_c,(char *)0x0,&local_14,0);
-    local_134 = 0;
-    while ((local_134 < local_14 && (ui_numArenas < 0x80))) {
-      local_140 = local_8[local_134];
-      local_574 = local_140;
+    filter = local_570;
+    Com_sprintf(netpath,0x100,"%s/%s");
+    sysFiles = Sys_ListFiles(netpath,filter,(char *)0x0,&numSysFiles,0);
+    id = 0;
+    while ((id < numSysFiles && (ui_numArenas < 0x80))) {
+      name = sysFiles[id];
+      local_574 = name;
       do {
         cVar1 = *local_574;
         local_574 = local_574 + 1;
       } while (cVar1 != '\0');
-      local_13c = (int)local_574 - (int)(local_140 + 1);
-      if (3 < local_13c) {
-        if (local_1c == 0) {
-          bVar2 = DB_FileExists(local_140,param_1);
+      nameLength = (int)local_574 - (int)(name + 1);
+      if (3 < nameLength) {
+        if (isMod == 0) {
+          bVar2 = DB_FileExists(name,source);
           if (!bVar2) goto LAB_0073c084;
         }
         else {
-          local_13c = local_13c + -3;
-          local_140[local_13c] = '\0';
+          nameLength = nameLength + -3;
+          name[nameLength] = '\0';
         }
-        iVar3 = I_stricmp(local_140,"mod");
-        if ((((((iVar3 != 0) && (iVar3 = I_stricmp(local_140,"common_mp"), iVar3 != 0)) &&
-              (iVar3 = I_stricmp(local_140,"code_post_gfx_mp"), iVar3 != 0)) &&
-             ((iVar3 = I_stricmp(local_140,"ui_mp"), iVar3 != 0 &&
-              (iVar3 = I_strnicmp(local_140,"mp_",3), iVar3 == 0)))) &&
-            ((local_13c < (int)local_12c ||
-             (iVar3 = I_stricmp(local_140 + (local_13c - (int)local_12c),local_130), iVar3 != 0))))
-           && ((local_13c < (int)local_10 ||
-               (iVar3 = I_stricmp(local_140 + (local_13c - (int)local_10),local_18), iVar3 != 0))))
-        {
-          local_135 = '\0';
-          Com_sprintf(local_544,0x400,"\\longname\\%s\\loadname\\");
-          for (local_548 = 0; local_548 < ui_numArenas; local_548 = local_548 + 1) {
-            pcVar4 = I_stristr(ui_arenaInfos[local_548],local_544);
+        iVar3 = I_stricmp(name,"mod");
+        if ((((((iVar3 != 0) && (iVar3 = I_stricmp(name,"common_mp"), iVar3 != 0)) &&
+              (iVar3 = I_stricmp(name,"code_post_gfx_mp"), iVar3 != 0)) &&
+             ((iVar3 = I_stricmp(name,"ui_mp"), iVar3 != 0 &&
+              (iVar3 = I_strnicmp(name,"mp_",3), iVar3 == 0)))) &&
+            ((nameLength < loadSuffixLength ||
+             (iVar3 = I_stricmp(name + (nameLength - loadSuffixLength),loadSuffix), iVar3 != 0))))
+           && ((nameLength < localizedPrefixLength ||
+               (iVar3 = I_stricmp(name + (nameLength - localizedPrefixLength),localizedPrefix),
+               iVar3 != 0)))) {
+          IsDupName = false;
+          Com_sprintf(ainfo,0x400,"\\longname\\%s\\loadname\\");
+          for (i = 0; i < ui_numArenas; i = i + 1) {
+            pcVar4 = I_stristr(ui_arenaInfos[i],ainfo);
             if (pcVar4 != (char *)0x0) {
-              local_135 = '\x01';
+              IsDupName = true;
               break;
             }
           }
-          if (local_135 == '\0') {
-            Com_sprintf(local_544,0x400,
+          if (IsDupName == false) {
+            Com_sprintf(ainfo,0x400,
                         "map\\%s\\loadscreen\\loadscreen_mp_temp\\longname\\%s\\loadname\\%s\\gametype\\dm tdm sd sab dom koth twar war sur ctf vdm vtdm mini"
                        );
-            local_584 = local_544;
+            local_584 = ainfo;
             do {
               cVar1 = *local_584;
               local_584 = local_584 + 1;
@@ -366,10 +373,9 @@ void __cdecl UI_LoadModsMap(FF_DIR param_1)
               local_594 = local_594 + 1;
             } while (cVar1 != '\0');
             pcVar4 = UI_Alloc((int)(local_594 +
-                                   (int)(local_584 + ((6 - (int)(local_544 + 1)) - (int)pcVar4))),1)
-            ;
+                                   (int)(local_584 + ((6 - (int)(ainfo + 1)) - (int)pcVar4))),1);
             ui_arenaInfos[ui_numArenas] = pcVar4;
-            local_5a4 = local_544;
+            local_5a4 = ainfo;
             local_5a8 = ui_arenaInfos[ui_numArenas];
             do {
               cVar1 = *local_5a4;
@@ -382,12 +388,12 @@ void __cdecl UI_LoadModsMap(FF_DIR param_1)
         }
       }
 LAB_0073c084:
-      local_134 = local_134 + 1;
+      id = id + 1;
     }
     if (0x7f < ui_numArenas) {
       Com_Printf(0xd,"Warning: Max number of arenas loaded: %d\n");
     }
-    Sys_FreeFileList(local_8);
+    Sys_FreeFileList(sysFiles);
   }
   return;
 }
@@ -421,17 +427,17 @@ void __cdecl UI_LoadArenas(void)
   bool bVar1;
   char *pcVar2;
   int iVar3;
-  char *local_1c;
-  char *local_18;
-  int local_14;
-  int local_10;
-  bool local_9;
-  char *local_8;
+  char *pszText;
+  char *pszGameTypes;
+  int i;
+  int n;
+  bool modloadFromIwd;
+  char *pszToken;
   
-  local_8 = (char *)0x73ba1d;
+  pszToken = (char *)0x73ba1d;
   DAT_098b9e44 = 0;
   ui_numArenas = 0;
-  local_9 = false;
+  modloadFromIwd = false;
   if ((fs_gameDirVar == (dvar_s *)0x0) || (*(fs_gameDirVar->current).string == '\0')) {
     bVar1 = false;
   }
@@ -439,9 +445,9 @@ void __cdecl UI_LoadArenas(void)
     bVar1 = true;
   }
   if (bVar1) {
-    local_9 = UI_LoadModArenas();
+    modloadFromIwd = UI_LoadModArenas();
   }
-  if (local_9 != false) {
+  if (modloadFromIwd != false) {
     if ((fs_gameDirVar == (dvar_s *)0x0) || (*(fs_gameDirVar->current).string == '\0')) {
       bVar1 = false;
     }
@@ -458,40 +464,40 @@ LAB_0073babd:
   else {
     bVar1 = true;
   }
-  if ((bVar1) && (local_9 == false)) {
+  if ((bVar1) && (modloadFromIwd == false)) {
     UI_LoadModsMap(FFD_MOD_DIR);
     UI_LoadModsMap(FFD_USER_MAP);
   }
   ui_browserMapNameTable[0] = UI_SafeTranslateString("MENU_ALL");
-  for (local_10 = 0; local_10 < ui_numArenas; local_10 = local_10 + 1) {
+  for (n = 0; n < ui_numArenas; n = n + 1) {
     iVar3 = 0x18;
-    pcVar2 = Info_ValueForKey(ui_arenaInfos[local_10],"map");
+    pcVar2 = Info_ValueForKey(ui_arenaInfos[n],"map");
     I_strncpyz(&DAT_098b9e68 + DAT_098b9e44 * 0x130,pcVar2,iVar3);
     iVar3 = 0x20;
-    pcVar2 = Info_ValueForKey(ui_arenaInfos[local_10],"longname");
+    pcVar2 = Info_ValueForKey(ui_arenaInfos[n],"longname");
     I_strncpyz(&DAT_098b9e48 + DAT_098b9e44 * 0x130,pcVar2,iVar3);
     iVar3 = 0x20;
-    pcVar2 = Info_ValueForKey(ui_arenaInfos[local_10],"loadname");
+    pcVar2 = Info_ValueForKey(ui_arenaInfos[n],"loadname");
     I_strncpyz(&DAT_098b9e80 + DAT_098b9e44 * 0x130,pcVar2,iVar3);
     (&DAT_098b9f70)[DAT_098b9e44 * 0x4c] = 0;
     iVar3 = 0x2a;
-    pcVar2 = Info_ValueForKey(ui_arenaInfos[local_10],"loadscreen");
+    pcVar2 = Info_ValueForKey(ui_arenaInfos[n],"loadscreen");
     I_strncpyz(&DAT_098b9eb8 + DAT_098b9e44 * 0x130,pcVar2,iVar3);
-    local_18 = Info_ValueForKey(ui_arenaInfos[local_10],"gametype");
-    if ((local_18 == (char *)0x0) || (*local_18 == '\0')) {
+    pszGameTypes = Info_ValueForKey(ui_arenaInfos[n],"gametype");
+    if ((pszGameTypes == (char *)0x0) || (*pszGameTypes == '\0')) {
       (&DAT_098b9eec)[DAT_098b9e44 * 0x4c] = 0xffffffff;
     }
     else {
       (&DAT_098b9eec)[DAT_098b9e44 * 0x4c] = 0;
       pcVar2 = va(".arena files : %s");
       Com_BeginParseSession(pcVar2);
-      local_1c = local_18;
-      while ((local_8 = Com_Parse(&local_1c), local_8 != (char *)0x0 && (*local_8 != '\0'))) {
-        for (local_14 = 0; local_14 < DAT_098b5434; local_14 = local_14 + 1) {
-          iVar3 = I_stricmp(local_8,&DAT_098b5438 + local_14 * 0x74);
+      pszText = pszGameTypes;
+      while ((pszToken = Com_Parse(&pszText), pszToken != (char *)0x0 && (*pszToken != '\0'))) {
+        for (i = 0; i < DAT_098b5434; i = i + 1) {
+          iVar3 = I_stricmp(pszToken,&DAT_098b5438 + i * 0x74);
           if (iVar3 == 0) {
             (&DAT_098b9eec)[DAT_098b9e44 * 0x4c] =
-                 1 << ((byte)local_14 & 0x1f) | (&DAT_098b9eec)[DAT_098b9e44 * 0x4c];
+                 1 << ((byte)i & 0x1f) | (&DAT_098b9eec)[DAT_098b9e44 * 0x4c];
           }
         }
       }
@@ -521,23 +527,23 @@ void __cdecl UI_LoadMaps(void)
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  char *pcVar5;
-  int local_40;
-  int local_3c;
-  char local_38 [20];
+  char *s1;
+  int i_2;
+  int i;
+  char tableName [20];
   uint local_24;
-  char *local_20;
-  StringTable *local_1c;
-  char local_18 [4];
-  int local_14;
-  char local_10 [4];
-  int local_c;
-  int local_8;
+  char *dlcMapPackIndex;
+  StringTable *table;
+  char packIndex [4];
+  int mapPackIndex;
+  char index [4];
+  int mapPackCount;
+  int count;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  I_strncpyz(local_38,"mp/mapsTable.csv",0x12);
-  StringTable_GetAsset(local_38,&local_1c);
-  if (local_1c == (StringTable *)0x0) {
+  I_strncpyz(tableName,"mp/mapsTable.csv",0x12);
+  StringTable_GetAsset(tableName,&table);
+  if (table == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gameinfo_mp.cpp",0x1b2,0,
                              "%s");
     if (!bVar2) {
@@ -547,45 +553,45 @@ void __cdecl UI_LoadMaps(void)
     }
   }
   memset(&DAT_098b9e48,'\0',0x9800);
-  pcVar3 = StringTable_Lookup(local_1c,0,"maxnum_map",1);
+  pcVar3 = StringTable_Lookup(table,0,"maxnum_map",1);
   DAT_098b9e44 = atoi(pcVar3);
-  pcVar3 = StringTable_Lookup(local_1c,0,"mappack_count",1);
-  local_c = atoi(pcVar3);
-  for (local_3c = 0; local_3c < local_c; local_3c = local_3c + 1) {
-    Com_sprintf(local_18,4,"%i");
+  pcVar3 = StringTable_Lookup(table,0,"mappack_count",1);
+  mapPackCount = atoi(pcVar3);
+  for (i = 0; i < mapPackCount; i = i + 1) {
+    Com_sprintf(packIndex,4,"%i");
     iVar4 = 0x10;
-    pcVar3 = StringTable_Lookup(local_1c,1,local_18,0);
-    I_strncpyz(&DAT_098c3648 + local_3c * 0x10,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(table,1,packIndex,0);
+    I_strncpyz(&DAT_098c3648 + i * 0x10,pcVar3,iVar4);
   }
-  local_8 = 0;
-  for (local_40 = 0; local_40 < DAT_098b9e44; local_40 = local_40 + 1) {
-    Com_sprintf(local_10,4,"%i");
-    local_20 = StringTable_Lookup(local_1c,5,local_10,0xb);
-    local_14 = atoi(local_20);
+  count = 0;
+  for (i_2 = 0; i_2 < DAT_098b9e44; i_2 = i_2 + 1) {
+    Com_sprintf(index,4,"%i");
+    dlcMapPackIndex = StringTable_Lookup(table,5,index,0xb);
+    mapPackIndex = atoi(dlcMapPackIndex);
     iVar4 = 0x18;
-    pcVar3 = StringTable_Lookup(local_1c,5,local_10,0);
-    I_strncpyz(&DAT_098b9e68 + local_8 * 0x130,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(table,5,index,0);
+    I_strncpyz(&DAT_098b9e68 + count * 0x130,pcVar3,iVar4);
     iVar4 = 0x20;
-    pcVar3 = StringTable_Lookup(local_1c,5,local_10,3);
-    I_strncpyz(&DAT_098b9e48 + local_8 * 0x130,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(table,5,index,3);
+    I_strncpyz(&DAT_098b9e48 + count * 0x130,pcVar3,iVar4);
     iVar4 = 0x10;
-    pcVar3 = StringTable_Lookup(local_1c,1,local_20,0);
-    I_strncpyz(&DAT_098b9ea4 + local_8 * 0x130,pcVar3,iVar4);
-    *(int *)(&DAT_098b9eb4 + local_8 * 0x130) = local_14;
-    Com_sprintf(&DAT_098b9e80 + local_8 * 0x130,0x20,"%s%s");
-    pcVar5 = "YES";
-    pcVar3 = StringTable_Lookup(local_1c,5,local_10,10);
-    iVar4 = I_strcmp(pcVar3,pcVar5);
+    pcVar3 = StringTable_Lookup(table,1,dlcMapPackIndex,0);
+    I_strncpyz(&DAT_098b9ea4 + count * 0x130,pcVar3,iVar4);
+    *(int *)(&DAT_098b9eb4 + count * 0x130) = mapPackIndex;
+    Com_sprintf(&DAT_098b9e80 + count * 0x130,0x20,"%s%s");
+    s1 = "YES";
+    pcVar3 = StringTable_Lookup(table,5,index,10);
+    iVar4 = I_strcmp(pcVar3,s1);
     if (iVar4 == 0) {
-      *(undefined4 *)(&DAT_098b9ea0 + local_8 * 0x130) = 1;
+      *(undefined4 *)(&DAT_098b9ea0 + count * 0x130) = 1;
     }
     else {
-      *(undefined4 *)(&DAT_098b9ea0 + local_8 * 0x130) = 0;
+      *(undefined4 *)(&DAT_098b9ea0 + count * 0x130) = 0;
     }
-    local_8 = local_8 + 1;
+    count = count + 1;
   }
-  DAT_098b9e44 = local_8;
-  Dvar_SetIntByName("ui_mapCount",local_8);
+  DAT_098b9e44 = count;
+  Dvar_SetIntByName("ui_mapCount",count);
   return;
 }
 
@@ -602,16 +608,16 @@ void __cdecl UI_LoadCustomMatchGameTypes(void)
   char *pcVar3;
   int iVar4;
   char *pcVar5;
-  int local_2c;
-  char local_28 [24];
+  int i;
+  char tableName [24];
   uint local_10;
-  StringTable *local_c;
-  char local_8 [4];
+  StringTable *table;
+  char index [4];
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  I_strncpyz(local_28,"mp/gametypesTable.csv",0x17);
-  StringTable_GetAsset(local_28,&local_c);
-  if (local_c == (StringTable *)0x0) {
+  I_strncpyz(tableName,"mp/gametypesTable.csv",0x17);
+  StringTable_GetAsset(tableName,&table);
+  if (table == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gameinfo_mp.cpp",0x1e6,0,
                              "%s");
     if (!bVar2) {
@@ -620,33 +626,33 @@ void __cdecl UI_LoadCustomMatchGameTypes(void)
       return;
     }
   }
-  pcVar3 = StringTable_Lookup(local_c,0,"maxnum_gametype",1);
+  pcVar3 = StringTable_Lookup(table,0,"maxnum_gametype",1);
   DAT_098b80bc = atoi(pcVar3);
-  for (local_2c = 0; local_2c < DAT_098b80bc; local_2c = local_2c + 1) {
-    Com_sprintf(local_8,4,"%i");
+  for (i = 0; i < DAT_098b80bc; i = i + 1) {
+    Com_sprintf(index,4,"%i");
     iVar4 = 0xc;
-    pcVar3 = StringTable_Lookup(local_c,4,local_8,0);
-    I_strncpyz(&DAT_098b80c0 + local_2c * 0x74,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(table,4,index,0);
+    I_strncpyz(&DAT_098b80c0 + i * 0x74,pcVar3,iVar4);
     iVar4 = 0x20;
-    pcVar3 = StringTable_Lookup(local_c,4,local_8,1);
-    I_strncpyz(&DAT_098b80cc + local_2c * 0x74,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(table,4,index,1);
+    I_strncpyz(&DAT_098b80cc + i * 0x74,pcVar3,iVar4);
     pcVar5 = "YES";
-    pcVar3 = StringTable_Lookup(local_c,4,local_8,5);
+    pcVar3 = StringTable_Lookup(table,4,index,5);
     iVar4 = I_strcmp(pcVar3,pcVar5);
     if (iVar4 == 0) {
-      *(undefined4 *)(&DAT_098b812c + local_2c * 0x74) = 1;
+      *(undefined4 *)(&DAT_098b812c + i * 0x74) = 1;
     }
     else {
-      *(undefined4 *)(&DAT_098b812c + local_2c * 0x74) = 0;
+      *(undefined4 *)(&DAT_098b812c + i * 0x74) = 0;
     }
     pcVar5 = "YES";
-    pcVar3 = StringTable_Lookup(local_c,4,local_8,6);
+    pcVar3 = StringTable_Lookup(table,4,index,6);
     iVar4 = I_strcmp(pcVar3,pcVar5);
     if (iVar4 == 0) {
-      *(undefined4 *)(&DAT_098b8130 + local_2c * 0x74) = 1;
+      *(undefined4 *)(&DAT_098b8130 + i * 0x74) = 1;
     }
     else {
-      *(undefined4 *)(&DAT_098b8130 + local_2c * 0x74) = 0;
+      *(undefined4 *)(&DAT_098b8130 + i * 0x74) = 0;
     }
   }
   return;

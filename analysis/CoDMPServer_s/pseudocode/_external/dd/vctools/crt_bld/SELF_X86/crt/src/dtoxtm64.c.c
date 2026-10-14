@@ -2,99 +2,87 @@
 
 // 0096E06D  __loctotime64_t  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dtoxtm64.c:47)
 
-long64 __cdecl
-__loctotime64_t(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7)
+long64 __cdecl __loctotime64_t(int yr,int mo,int dy,int hr,int mn,int sc,int dstflag)
 
 {
   uint uVar1;
   uint extraout_EAX;
-  uint extraout_EAX_00;
-  int iVar2;
-  int *piVar3;
+  int *piVar2;
+  int iVar3;
   int iVar4;
-  int iVar5;
   int extraout_EDX;
-  int extraout_EDX_00;
-  uint uVar6;
-  bool bVar7;
-  tm tStack_38;
-  int iStack_14;
-  uint uStack_10;
-  int iStack_c;
-  uint uStack_8;
+  uint uVar5;
+  bool bVar6;
+  tm tb;
+  long dstbias;
+  int daylight;
+  long timezone;
   
-  iVar2 = param_1;
-  uVar6 = param_1 - 0x76c;
-  iStack_c = 0;
-  uStack_10 = 0;
-  uStack_8 = 0;
-  if (((((int)uVar6 < 0x46) || (0x44c < (int)uVar6)) || (0xb < param_2 - 1U)) ||
-     (((0x17 < (uint)param_4 || (0x3b < (uint)param_5)) || ((0x3b < (uint)param_6 || (param_3 < 1)))
-      ))) {
+  uVar5 = yr - 0x76c;
+  daylight = 0;
+  dstbias = 0;
+  timezone = 0;
+  if (((((int)uVar5 < 0x46) || (0x44c < (int)uVar5)) || (0xb < mo - 1U)) ||
+     (((0x17 < (uint)hr || (0x3b < (uint)mn)) || ((0x3b < (uint)sc || (dy < 1)))))) {
 LAB_0096e2c3:
-    piVar3 = _errno();
-    *piVar3 = 0x16;
+    piVar2 = _errno();
+    *piVar2 = 0x16;
     uVar1 = 0xffffffff;
-    iVar2 = -1;
+    iVar3 = -1;
   }
   else {
-    if (*(int *)(&_days + param_2 * 4) - _lpdays[param_2 + 0xc] < param_3) {
-      uVar1 = uVar6 & 0x80000003;
-      bVar7 = uVar1 == 0;
+    if (*(int *)(&_days + mo * 4) - _lpdays[mo + 0xc] < dy) {
+      uVar1 = uVar5 & 0x80000003;
+      bVar6 = uVar1 == 0;
       if ((int)uVar1 < 0) {
-        bVar7 = (uVar1 - 1 | 0xfffffffc) == 0xffffffff;
+        bVar6 = (uVar1 - 1 | 0xfffffffc) == 0xffffffff;
       }
-      if ((((!bVar7) || ((int)uVar6 % 100 == 0)) && (param_1 % 400 != 0)) ||
-         ((param_2 != 2 || (0x1d < param_3)))) goto LAB_0096e2c3;
+      if ((((!bVar6) || ((int)uVar5 % 100 == 0)) && (yr % 400 != 0)) || ((mo != 2 || (0x1d < dy))))
+      goto LAB_0096e2c3;
     }
-    iVar4 = _lpdays[param_2 + 0xc] + param_3;
-    uVar1 = uVar6 & 0x80000003;
-    bVar7 = uVar1 == 0;
+    iVar3 = _lpdays[mo + 0xc] + dy;
+    uVar1 = uVar5 & 0x80000003;
+    bVar6 = uVar1 == 0;
     if ((int)uVar1 < 0) {
-      bVar7 = (uVar1 - 1 | 0xfffffffc) == 0xffffffff;
+      bVar6 = (uVar1 - 1 | 0xfffffffc) == 0xffffffff;
     }
-    if ((((bVar7) && ((int)uVar6 % 100 != 0)) ||
-        (iVar5 = param_1 % 400, param_1 = iVar4, iVar5 == 0)) && (param_1 = iVar4, 2 < param_2)) {
-      param_1 = iVar4 + 1;
+    if ((((bVar6) && ((int)uVar5 % 100 != 0)) || (iVar4 = yr % 400, yr = iVar3, iVar4 == 0)) &&
+       (yr = iVar3, 2 < mo)) {
+      yr = iVar3 + 1;
     }
-    iVar4 = iVar2 + -0x76d;
-    uVar1 = ((iVar2 + -0x641) / 400 - iVar4 / 100) + -0x11 +
-            ((int)(iVar4 + (iVar4 >> 0x1f & 3U)) >> 2);
-    iStack_14 = (int)uVar1 >> 0x1f;
     _allmul();
-    iStack_14 = iStack_14 + extraout_EDX + (uint)CARRY4(uVar1,extraout_EAX);
     _allmul();
     _allmul();
     _allmul();
     __tzset();
-    iVar2 = _get_daylight(&iStack_c);
-    if (iVar2 != 0) {
+    iVar3 = _get_daylight(&daylight);
+    if (iVar3 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    iVar2 = _get_dstbias((long *)&uStack_10);
-    if (iVar2 != 0) {
+    iVar3 = _get_dstbias(&dstbias);
+    if (iVar3 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    iVar2 = _get_timezone((long *)&uStack_8);
-    if (iVar2 != 0) {
+    iVar3 = _get_timezone(&timezone);
+    if (iVar3 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    uVar1 = extraout_EAX_00 + param_6 + uStack_8;
-    tStack_38.tm_yday = param_1;
-    iVar2 = extraout_EDX_00 + (param_6 >> 0x1f) + (uint)CARRY4(extraout_EAX_00,param_6) +
-            ((int)uStack_8 >> 0x1f) + (uint)CARRY4(extraout_EAX_00 + param_6,uStack_8);
-    tStack_38.tm_mon = param_2 + -1;
-    tStack_38.tm_hour = param_4;
-    tStack_38.tm_min = param_5;
-    tStack_38.tm_sec = param_6;
-    if ((param_7 == 1) ||
-       (((param_7 == -1 && (iStack_c != 0)) &&
-        (tStack_38.tm_year = uVar6, iVar4 = _isindst(&tStack_38), iVar4 != 0)))) {
-      bVar7 = CARRY4(uVar1,uStack_10);
-      uVar1 = uVar1 + uStack_10;
-      iVar2 = iVar2 + ((int)uStack_10 >> 0x1f) + (uint)bVar7;
+    uVar1 = extraout_EAX + sc + timezone;
+    tb.tm_yday = yr;
+    iVar3 = extraout_EDX + (sc >> 0x1f) + (uint)CARRY4(extraout_EAX,sc) + (timezone >> 0x1f) +
+            (uint)CARRY4(extraout_EAX + sc,timezone);
+    tb.tm_mon = mo + -1;
+    tb.tm_hour = hr;
+    tb.tm_min = mn;
+    tb.tm_sec = sc;
+    if ((dstflag == 1) ||
+       (((dstflag == -1 && (daylight != 0)) &&
+        (tb.tm_year = uVar5, iVar4 = _isindst(&tb), iVar4 != 0)))) {
+      bVar6 = CARRY4(uVar1,dstbias);
+      uVar1 = uVar1 + dstbias;
+      iVar3 = iVar3 + (dstbias >> 0x1f) + (uint)bVar6;
     }
   }
-  return CONCAT44(iVar2,uVar1);
+  return CONCAT44(iVar3,uVar1);
 }
 

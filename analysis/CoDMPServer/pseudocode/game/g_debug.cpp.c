@@ -2,10 +2,10 @@
 
 // 00616D90  G_DebugLine  (game/g_debug.cpp:5)
 
-void __cdecl G_DebugLine(float *param_1,float *param_2,float *param_3,int param_4)
+void __cdecl G_DebugLine(float *start,float *end,float *color,int depthTest)
 
 {
-  CL_AddDebugLine(param_1,param_2,param_3,param_4,0);
+  CL_AddDebugLine(start,end,color,depthTest,0);
   return;
 }
 
@@ -13,20 +13,20 @@ void __cdecl G_DebugLine(float *param_1,float *param_2,float *param_3,int param_
 // 00616DB0  G_DebugLineWithDuration  (game/g_debug.cpp:11)
 
 void __cdecl
-G_DebugLineWithDuration(float *param_1,float *param_2,float *param_3,int param_4,int param_5)
+G_DebugLineWithDuration(float *start_2,float *end_2,float *color_2,int depthTest_2,int duration_2)
 
 {
-  CL_AddDebugLine(param_1,param_2,param_3,param_4,param_5);
+  CL_AddDebugLine(start_2,end_2,color_2,depthTest_2,duration_2);
   return;
 }
 
 
 // 004A54E0  G_DebugStar  (game/g_debug.cpp:17)
 
-void __cdecl G_DebugStar(float *param_1,float *param_2,int param_3)
+void __cdecl G_DebugStar(float *point_2,float *color_2,int duration_2)
 
 {
-  CL_AddDebugStar(param_1,param_2,param_3);
+  CL_AddDebugStar(point_2,color_2,duration_2);
   return;
 }
 
@@ -34,8 +34,8 @@ void __cdecl G_DebugStar(float *param_1,float *param_2,int param_3)
 // 004A5500  G_DebugBox  (game/g_debug.cpp:29)
 
 void __cdecl
-G_DebugBox(float *param_1,float *param_2,float *param_3,float param_4,float *param_5,int param_6,
-          int param_7)
+G_DebugBox(float *origin_2,float *mins_2,float *maxs_2,float yaw_2,float *color_2,int depthTest_2,
+          int duration_2)
 
 {
   float fVar1;
@@ -43,35 +43,37 @@ G_DebugBox(float *param_1,float *param_2,float *param_3,float param_4,float *par
   float10 fVar3;
   float10 fVar4;
   float local_a0;
-  uint local_84;
-  uint local_74;
-  float afStack_6c [26];
+  uint j_2;
+  uint i_2;
+  float fCos_2;
+  float afStack_6c [25];
+  float fSin_2;
   
-  fVar3 = (float10)fcos((float10)(param_4 * 0.017453292));
-  fVar4 = (float10)fsin((float10)(param_4 * 0.017453292));
-  for (local_74 = 0; local_74 < 8; local_74 = local_74 + 1) {
-    for (local_84 = 0; local_84 < 3; local_84 = local_84 + 1) {
-      if ((1 << ((byte)local_84 & 0x1f) & local_74) == 0) {
-        local_a0 = param_2[local_84];
+  fVar3 = (float10)fcos((float10)(yaw_2 * 0.017453292));
+  fVar4 = (float10)fsin((float10)(yaw_2 * 0.017453292));
+  for (i_2 = 0; i_2 < 8; i_2 = i_2 + 1) {
+    for (j_2 = 0; j_2 < 3; j_2 = j_2 + 1) {
+      if ((1 << ((byte)j_2 & 0x1f) & i_2) == 0) {
+        local_a0 = mins_2[j_2];
       }
       else {
-        local_a0 = param_3[local_84];
+        local_a0 = maxs_2[j_2];
       }
-      afStack_6c[local_74 * 3 + local_84] = local_a0;
+      afStack_6c[i_2 * 3 + j_2] = local_a0;
     }
-    fVar1 = afStack_6c[local_74 * 3];
-    fVar2 = afStack_6c[local_74 * 3 + 1];
-    afStack_6c[local_74 * 3] =
-         afStack_6c[local_74 * 3] * (float)fVar3 - afStack_6c[local_74 * 3 + 1] * (float)fVar4;
-    afStack_6c[local_74 * 3 + 1] = fVar1 * (float)fVar4 + fVar2 * (float)fVar3;
-    afStack_6c[local_74 * 3] = afStack_6c[local_74 * 3] + *param_1;
-    afStack_6c[local_74 * 3 + 1] = afStack_6c[local_74 * 3 + 1] + param_1[1];
-    afStack_6c[local_74 * 3 + 2] = afStack_6c[local_74 * 3 + 2] + param_1[2];
+    fVar1 = afStack_6c[i_2 * 3];
+    fVar2 = afStack_6c[i_2 * 3 + 1];
+    afStack_6c[i_2 * 3] =
+         afStack_6c[i_2 * 3] * (float)fVar3 - afStack_6c[i_2 * 3 + 1] * (float)fVar4;
+    afStack_6c[i_2 * 3 + 1] = fVar1 * (float)fVar4 + fVar2 * (float)fVar3;
+    afStack_6c[i_2 * 3] = afStack_6c[i_2 * 3] + *origin_2;
+    afStack_6c[i_2 * 3 + 1] = afStack_6c[i_2 * 3 + 1] + origin_2[1];
+    afStack_6c[i_2 * 3 + 2] = afStack_6c[i_2 * 3 + 2] + origin_2[2];
   }
-  for (local_74 = 0; local_74 < 0xc; local_74 = local_74 + 1) {
+  for (i_2 = 0; i_2 < 0xc; i_2 = i_2 + 1) {
     G_DebugLineWithDuration
-              (afStack_6c + edge[local_74][0] * 3,afStack_6c + edge[local_74][1] * 3,param_5,param_6
-               ,param_7);
+              (afStack_6c + edge[i_2][0] * 3,afStack_6c + edge[i_2][1] * 3,color_2,depthTest_2,
+               duration_2);
   }
   return;
 }
@@ -85,25 +87,25 @@ G_DebugBox(float *param_1,float *param_2,float *param_3,float param_4,float *par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_DebugCircle(float *param_1,float param_2,float *param_3,int param_4,int param_5,int param_6)
+G_DebugCircle(float *center,float radius,float *color,int depthTest,int onGround,int duration)
 
 {
-  float local_10;
+  float dir;
   float local_c;
   float local_8;
   
-  if (param_5 == 0) {
-    local_10 = *param_1 - ((level.clients)->ps).origin[0];
-    local_c = param_1[1] - ((level.clients)->ps).origin[1];
-    local_8 = param_1[2] -
+  if (onGround == 0) {
+    dir = *center - ((level.clients)->ps).origin[0];
+    local_c = center[1] - ((level.clients)->ps).origin[1];
+    local_8 = center[2] -
               (((level.clients)->ps).origin[2] + ((level.clients)->ps).viewHeightCurrent);
   }
   else {
-    local_10 = 0.0;
+    dir = 0.0;
     local_c = 0.0;
     local_8 = 1.0;
   }
-  G_DebugCircleEx(param_1,param_2,&local_10,param_3,param_4,param_6);
+  G_DebugCircleEx(center,radius,&dir,color,depthTest,duration);
   return;
 }
 
@@ -111,10 +113,11 @@ G_DebugCircle(float *param_1,float param_2,float *param_3,int param_4,int param_
 // 00616EC0  G_DebugSphere  (game/g_debug.cpp:103)
 
 void __cdecl
-G_DebugSphere(float *param_1,float param_2,float *param_3,int param_4,int param_5,int param_6)
+G_DebugSphere(float *center_2,float radius_2,float *floatColor,int sideCount_2,int depthTest_2,
+             int duration_2)
 
 {
-  CL_AddDebugSphere(param_1,param_2,param_3,param_4,param_5,param_6);
+  CL_AddDebugSphere(center_2,radius_2,floatColor,sideCount_2,depthTest_2,duration_2);
   return;
 }
 
@@ -122,42 +125,46 @@ G_DebugSphere(float *param_1,float param_2,float *param_3,int param_4,int param_
 // 004A58D0  G_DebugCircleEx  (game/g_debug.cpp:113)
 
 void __cdecl
-G_DebugCircleEx(float *param_1,float param_2,float *param_3,float *param_4,int param_5,int param_6)
+G_DebugCircleEx(float *center_2,float radius_2,float *dir_2,float *color_2,int depthTest_2,
+               int duration_2)
 
 {
   float10 fVar1;
   float10 fVar2;
   float fVar3;
   float fVar4;
-  float local_ec [3];
-  float local_e0;
+  float fAngle_2;
+  float fCos_2;
+  float fSin_2;
+  float normal_2 [3];
+  float right_2;
   float local_dc;
   float local_d8;
-  float local_d4;
+  float up_2;
   float local_d0;
   float local_cc;
-  uint local_c8;
+  uint i_2;
   float afStack_c4 [48];
   
-  Vec3NormalizeTo(param_3,local_ec);
-  PerpendicularVector(local_ec,&local_e0);
-  Vec3Cross(local_ec,&local_e0,&local_d4);
-  for (local_c8 = 0; local_c8 < 0x10; local_c8 = local_c8 + 1) {
-    fVar1 = (float10)fcos((float10)((float)local_c8 * 0.3926991));
-    fVar2 = (float10)fsin((float10)((float)local_c8 * 0.3926991));
-    fVar3 = (float)fVar2 * param_2;
-    fVar4 = (float)fVar1 * param_2;
-    afStack_c4[local_c8 * 3] = fVar3 * local_d4 + *param_1;
-    afStack_c4[local_c8 * 3 + 1] = fVar3 * local_d0 + param_1[1];
-    afStack_c4[local_c8 * 3 + 2] = fVar3 * local_cc + param_1[2];
-    afStack_c4[local_c8 * 3] = fVar4 * local_e0 + afStack_c4[local_c8 * 3];
-    afStack_c4[local_c8 * 3 + 1] = fVar4 * local_dc + afStack_c4[local_c8 * 3 + 1];
-    afStack_c4[local_c8 * 3 + 2] = fVar4 * local_d8 + afStack_c4[local_c8 * 3 + 2];
+  Vec3NormalizeTo(dir_2,normal_2);
+  PerpendicularVector(normal_2,&right_2);
+  Vec3Cross(normal_2,&right_2,&up_2);
+  for (i_2 = 0; i_2 < 0x10; i_2 = i_2 + 1) {
+    fVar1 = (float10)fcos((float10)((float)i_2 * 0.3926991));
+    fVar2 = (float10)fsin((float10)((float)i_2 * 0.3926991));
+    fVar3 = (float)fVar2 * radius_2;
+    fVar4 = (float)fVar1 * radius_2;
+    afStack_c4[i_2 * 3] = fVar3 * up_2 + *center_2;
+    afStack_c4[i_2 * 3 + 1] = fVar3 * local_d0 + center_2[1];
+    afStack_c4[i_2 * 3 + 2] = fVar3 * local_cc + center_2[2];
+    afStack_c4[i_2 * 3] = fVar4 * right_2 + afStack_c4[i_2 * 3];
+    afStack_c4[i_2 * 3 + 1] = fVar4 * local_dc + afStack_c4[i_2 * 3 + 1];
+    afStack_c4[i_2 * 3 + 2] = fVar4 * local_d8 + afStack_c4[i_2 * 3 + 2];
   }
-  for (local_c8 = 0; local_c8 < 0x10; local_c8 = local_c8 + 1) {
+  for (i_2 = 0; i_2 < 0x10; i_2 = i_2 + 1) {
     G_DebugLineWithDuration
-              (afStack_c4 + local_c8 * 3,afStack_c4 + ((local_c8 + 1) % 0x10) * 3,param_4,param_5,
-               param_6);
+              (afStack_c4 + i_2 * 3,afStack_c4 + ((i_2 + 1) % 0x10) * 3,color_2,depthTest_2,
+               duration_2);
   }
   return;
 }
@@ -166,32 +173,34 @@ G_DebugCircleEx(float *param_1,float param_2,float *param_3,float *param_4,int p
 // 00616EF0  G_DebugArc  (game/g_debug.cpp:152)
 
 void __cdecl
-G_DebugArc(float *param_1,float param_2,float param_3,float param_4,float *param_5,int param_6,
-          int param_7)
+G_DebugArc(float *center,float radius,float angle0,float angle1,float *color,int depthTest,
+          int duration)
 
 {
   float10 fVar1;
   float10 fVar2;
-  uint local_cc;
-  float local_c8;
+  float fAngle;
+  float fCos;
+  float fSin;
+  uint i;
+  float scale;
   float afStack_c4 [48];
   
-  local_c8 = (param_4 - param_3) / 15.0;
-  if (local_c8 < 0.0) {
-    param_3 = param_3 - 360.0;
-    local_c8 = (param_4 - param_3) / 15.0;
+  scale = (angle1 - angle0) / 15.0;
+  if (scale < 0.0) {
+    angle0 = angle0 - 360.0;
+    scale = (angle1 - angle0) / 15.0;
   }
-  for (local_cc = 0; local_cc < 0x10; local_cc = local_cc + 1) {
-    fVar2 = (float10)(((float)local_cc * local_c8 + param_3) * 0.017453292);
+  for (i = 0; i < 0x10; i = i + 1) {
+    fVar2 = (float10)(((float)i * scale + angle0) * 0.017453292);
     fVar1 = (float10)fcos(fVar2);
     fVar2 = (float10)fsin(fVar2);
-    afStack_c4[local_cc * 3] = (float)fVar1 * param_2 + *param_1;
-    afStack_c4[local_cc * 3 + 1] = (float)fVar2 * param_2 + param_1[1];
-    afStack_c4[local_cc * 3 + 2] = param_1[2];
+    afStack_c4[i * 3] = (float)fVar1 * radius + *center;
+    afStack_c4[i * 3 + 1] = (float)fVar2 * radius + center[1];
+    afStack_c4[i * 3 + 2] = center[2];
   }
-  for (local_cc = 0; local_cc < 0xf; local_cc = local_cc + 1) {
-    G_DebugLineWithDuration
-              (afStack_c4 + local_cc * 3,afStack_c4 + (local_cc + 1) * 3,param_5,param_6,param_7);
+  for (i = 0; i < 0xf; i = i + 1) {
+    G_DebugLineWithDuration(afStack_c4 + i * 3,afStack_c4 + (i + 1) * 3,color,depthTest,duration);
   }
   return;
 }
@@ -199,52 +208,53 @@ G_DebugArc(float *param_1,float param_2,float param_3,float param_4,float *param
 
 // 00617270  DrawBrushPoly  (game/g_debug.cpp:257)
 
-void __cdecl DrawBrushPoly(int param_1,float (*param_2) [3],float *param_3)
+void __cdecl DrawBrushPoly(int numPoints,float (*points) [3],float *color)
 
 {
-  int local_20;
-  float local_1c [3];
-  float local_10 [3];
+  int i;
+  float start [3];
+  float end [3];
   
-  MatrixTransformVector43(*param_2,g_debugDrawBrushInfo.transform,local_1c);
-  for (local_20 = 0; local_20 < param_1 + -1; local_20 = local_20 + 1) {
-    MatrixTransformVector43(param_2[local_20 + 1],g_debugDrawBrushInfo.transform,local_10);
+  MatrixTransformVector43(*points,g_debugDrawBrushInfo.transform,start);
+  for (i = 0; i < numPoints + -1; i = i + 1) {
+    MatrixTransformVector43(points[i + 1],g_debugDrawBrushInfo.transform,end);
     G_DebugLineWithDuration
-              (local_1c,local_10,param_3,g_debugDrawBrushInfo.depthTest,
-               g_debugDrawBrushInfo.duration);
+              (start,end,color,g_debugDrawBrushInfo.depthTest,g_debugDrawBrushInfo.duration);
   }
-  MatrixTransformVector43(*param_2,g_debugDrawBrushInfo.transform,local_10);
+  MatrixTransformVector43(*points,g_debugDrawBrushInfo.transform,end);
   G_DebugLineWithDuration
-            (local_1c,local_10,param_3,g_debugDrawBrushInfo.depthTest,g_debugDrawBrushInfo.duration)
-  ;
+            (start,end,color,g_debugDrawBrushInfo.depthTest,g_debugDrawBrushInfo.duration);
   return;
 }
 
 
 // 006171C0  G_DebugDrawBrush_r  (game/g_debug.cpp:277)
 
-void __cdecl G_DebugDrawBrush_r(cLeafBrushNode_s *param_1,float *param_2)
+void __cdecl G_DebugDrawBrush_r(cLeafBrushNode_s *node,float *color)
 
 {
   ushort *puVar1;
   code *pcVar2;
   bool bVar3;
-  int local_10;
+  cbrush_t *brush;
+  int k;
+  ushort *brushes;
+  int brushnum;
   
-  if ((param_1 == (cLeafBrushNode_s *)0x0) &&
+  if ((node == (cLeafBrushNode_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_debug.cpp",0x11b,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1->leafBrushCount < 1) {
-    G_DebugDrawBrush_r(param_1 + 1,param_2);
+  if (node->leafBrushCount < 1) {
+    G_DebugDrawBrush_r(node + 1,color);
   }
   else {
-    puVar1 = (param_1->data).leaf.brushes;
-    for (local_10 = 0; local_10 < param_1->leafBrushCount; local_10 = local_10 + 1) {
-      CM_ShowSingleBrushCollision(cm.brushes + puVar1[local_10],param_2,DrawBrushPoly);
+    puVar1 = (node->data).leaf.brushes;
+    for (k = 0; k < node->leafBrushCount; k = k + 1) {
+      CM_ShowSingleBrushCollision(cm.brushes + puVar1[k],color,DrawBrushPoly);
     }
   }
   return;
@@ -258,38 +268,40 @@ void __cdecl G_DebugDrawBrush_r(cLeafBrushNode_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_DebugDrawBrushModel(gentity_s *param_1,float *param_2,int param_3,int param_4)
+void __cdecl G_DebugDrawBrushModel(gentity_s *entity,float *color,int depthTest,int duration)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  cmodel_t *pcVar4;
+  uint handle;
+  cmodel_t *pcVar3;
+  cmodel_t *cmod;
+  int brushModel;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((entity == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_debug.cpp",0x135,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar3 = (uint)(param_1->s).index.brushmodel;
-  if (uVar3 != 0) {
-    g_debugDrawBrushInfo.depthTest = param_3;
-    g_debugDrawBrushInfo.duration = param_4;
-    AnglesToAxis((param_1->r).currentAngles,g_debugDrawBrushInfo.transform);
-    g_debugDrawBrushInfo.transform[3][0] = (param_1->r).currentOrigin[0];
-    g_debugDrawBrushInfo.transform[3][1] = (param_1->r).currentOrigin[1];
-    g_debugDrawBrushInfo.transform[3][2] = (param_1->r).currentOrigin[2];
-    pcVar4 = CM_ClipHandleToModel(uVar3);
-    if ((pcVar4 == (cmodel_t *)0x0) &&
+  handle = (uint)(entity->s).index.brushmodel;
+  if (handle != 0) {
+    g_debugDrawBrushInfo.depthTest = depthTest;
+    g_debugDrawBrushInfo.duration = duration;
+    AnglesToAxis((entity->r).currentAngles,g_debugDrawBrushInfo.transform);
+    g_debugDrawBrushInfo.transform[3][0] = (entity->r).currentOrigin[0];
+    g_debugDrawBrushInfo.transform[3][1] = (entity->r).currentOrigin[1];
+    g_debugDrawBrushInfo.transform[3][2] = (entity->r).currentOrigin[2];
+    pcVar3 = CM_ClipHandleToModel(handle);
+    if ((pcVar3 == (cmodel_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_debug.cpp",0x143,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    G_DebugDrawBrush_r(cm.leafbrushNodes + (pcVar4->leaf).leafBrushNode,param_2);
+    G_DebugDrawBrush_r(cm.leafbrushNodes + (pcVar3->leaf).leafBrushNode,color);
   }
   return;
 }

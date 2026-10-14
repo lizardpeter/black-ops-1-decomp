@@ -2,7 +2,7 @@
 
 // 00C15368  __libm_sse2_exp  (line unknown)
 
-double __cdecl __libm_sse2_exp(double param_1)
+double __cdecl __libm_sse2_exp(double x)
 
 {
   uint uVar1;

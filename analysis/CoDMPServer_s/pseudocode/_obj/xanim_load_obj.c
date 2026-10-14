@@ -19,9 +19,9 @@ GetDeltaQuaternions(XAnimDeltaPart *param_1,_func_void_ptr_int *param_2,uchar *p
   int iVar6;
   undefined4 uVar7;
   int iVar8;
-  uint uVar9;
+  uint count;
   int unaff_EDI;
-  float10 fVar10;
+  float10 fVar9;
   int local_10;
   undefined2 local_c;
   undefined2 uStack_a;
@@ -41,48 +41,48 @@ GetDeltaQuaternions(XAnimDeltaPart *param_1,_func_void_ptr_int *param_2,uchar *p
       *(undefined2 *)(*(int *)(unaff_EDI + 4) + 6) = uStack_a;
       return (uchar *)param_2;
     }
-    uVar9 = (uint)uVar2;
+    count = (uint)uVar2;
     if ((char)param_4 == '\0') {
-      iVar6 = (*(code *)param_1)(uVar9 * 2 + 8);
+      iVar6 = (*(code *)param_1)(count * 2 + 8);
       *(int *)(unaff_EDI + 4) = iVar6;
       if (uVar2 < (ushort)param_3) {
-        memcpy((uchar *)(iVar6 + 8),(uchar *)param_2,uVar9 * 2);
-        param_2 = param_2 + uVar9 * 2;
+        memcpy((uchar *)(iVar6 + 8),(uchar *)param_2,count * 2);
+        param_2 = param_2 + count * 2;
       }
       else {
         iVar6 = 0;
-        if (uVar9 != 0) {
+        if (count != 0) {
           iVar8 = 8;
           do {
             *(short *)(iVar8 + *(int *)(unaff_EDI + 4)) = (short)iVar6;
             iVar6 = iVar6 + 1;
             iVar8 = iVar8 + 2;
-          } while (iVar6 < (int)uVar9);
+          } while (iVar6 < (int)count);
         }
       }
     }
     else {
-      iVar6 = (*(code *)param_1)(uVar9 + 8);
+      iVar6 = (*(code *)param_1)(count + 8);
       *(int *)(unaff_EDI + 4) = iVar6;
       if (uVar2 < (ushort)param_3) {
-        memcpy((uchar *)(iVar6 + 8),(uchar *)param_2,uVar9);
-        param_2 = param_2 + uVar9;
+        memcpy((uchar *)(iVar6 + 8),(uchar *)param_2,count);
+        param_2 = param_2 + count;
       }
       else {
         iVar6 = 0;
-        if (uVar9 != 0) {
+        if (count != 0) {
           do {
             *(char *)(iVar6 + 8 + *(int *)(unaff_EDI + 4)) = (char)iVar6;
             iVar6 = iVar6 + 1;
-          } while (iVar6 < (int)uVar9);
+          } while (iVar6 < (int)count);
         }
       }
     }
     **(short **)(unaff_EDI + 4) = uVar2 - 1;
-    uVar7 = (*(code *)param_1)(uVar9 * 4);
+    uVar7 = (*(code *)param_1)(count * 4);
     iVar6 = 0;
     *(undefined4 *)(*(int *)(unaff_EDI + 4) + 4) = uVar7;
-    if (uVar9 != 0) {
+    if (count != 0) {
       do {
         sVar3 = *(short *)param_2;
         param_2 = param_2 + 2;
@@ -91,18 +91,18 @@ GetDeltaQuaternions(XAnimDeltaPart *param_1,_func_void_ptr_int *param_2,uchar *p
           uVar4 = 0;
         }
         else {
-          fVar10 = (float10)sqrtf((float)iVar8);
-          floorf((float)(fVar10 + (float10)0.5));
+          fVar9 = (float10)sqrtf((float)iVar8);
+          floorf((float)(fVar9 + (float10)0.5));
           _ftol2_sse();
           uVar4 = extraout_AX;
         }
         *(short *)(*(int *)(*(int *)(unaff_EDI + 4) + 4) + iVar6 * 4) = sVar3;
         *(undefined2 *)(*(int *)(*(int *)(unaff_EDI + 4) + 4) + 2 + iVar6 * 4) = uVar4;
         iVar6 = iVar6 + 1;
-      } while (iVar6 < (int)uVar9);
+      } while (iVar6 < (int)count);
     }
     local_10 = 1;
-    if (1 < uVar9) {
+    if (1 < count) {
       do {
         iVar6 = *(int *)(*(int *)(unaff_EDI + 4) + 4);
         sVar3 = *(short *)(iVar6 + 2 + local_10 * 4);
@@ -113,7 +113,7 @@ GetDeltaQuaternions(XAnimDeltaPart *param_1,_func_void_ptr_int *param_2,uchar *p
           psVar1[1] = -sVar3;
         }
         local_10 = local_10 + 1;
-      } while (local_10 < (int)uVar9);
+      } while (local_10 < (int)count);
       return (uchar *)param_2;
     }
   }
@@ -142,17 +142,17 @@ GetDeltaTranslations
   uchar *puVar7;
   int *in_ECX;
   int iVar8;
-  ulong uVar9;
-  ushort *puVar10;
+  ulong count;
+  ushort *src;
   
   uVar1 = *in_EAX;
-  puVar10 = in_EAX + 1;
+  src = in_EAX + 1;
   if (uVar1 == 0) {
     *in_ECX = 0;
-    return (uchar *)puVar10;
+    return (uchar *)src;
   }
   if (uVar1 == 1) {
-    uVar2 = *(undefined4 *)puVar10;
+    uVar2 = *(undefined4 *)src;
     uVar3 = *(undefined4 *)(in_EAX + 3);
     uVar4 = *(undefined4 *)(in_EAX + 5);
     puVar5 = (undefined2 *)(*(code *)param_1)(0x10);
@@ -164,42 +164,42 @@ GetDeltaTranslations
     *(undefined4 *)(iVar6 + 0xc) = uVar4;
     return (uchar *)(in_EAX + 7);
   }
-  uVar9 = (ulong)uVar1;
+  count = (ulong)uVar1;
   if ((char)param_3 == '\0') {
-    iVar6 = (*(code *)param_1)(uVar9 * 2 + 0x20);
+    iVar6 = (*(code *)param_1)(count * 2 + 0x20);
     *in_ECX = iVar6;
     if ((ushort)param_2 <= uVar1) {
       iVar6 = 0;
-      if (uVar9 != 0) {
+      if (count != 0) {
         iVar8 = 0x20;
         do {
           *(short *)(iVar8 + *in_ECX) = (short)iVar6;
           iVar6 = iVar6 + 1;
           iVar8 = iVar8 + 2;
-        } while (iVar6 < (int)uVar9);
+        } while (iVar6 < (int)count);
       }
       goto LAB_006c3b0f;
     }
-    uVar9 = uVar9 * 2;
+    count = count * 2;
   }
   else {
-    iVar6 = (*(code *)param_1)(uVar9 + 0x20);
+    iVar6 = (*(code *)param_1)(count + 0x20);
     *in_ECX = iVar6;
     if ((ushort)param_2 <= uVar1) {
       iVar6 = 0;
-      if (uVar9 != 0) {
+      if (count != 0) {
         do {
           *(char *)(*in_ECX + 0x20 + iVar6) = (char)iVar6;
           iVar6 = iVar6 + 1;
-        } while (iVar6 < (int)uVar9);
+        } while (iVar6 < (int)count);
       }
       goto LAB_006c3b0f;
     }
   }
-  memcpy((uchar *)(iVar6 + 0x20),(uchar *)puVar10,uVar9);
-  puVar10 = (ushort *)((int)puVar10 + uVar9);
+  memcpy((uchar *)(iVar6 + 0x20),(uchar *)src,count);
+  src = (ushort *)((int)src + count);
 LAB_006c3b0f:
-  puVar7 = (uchar *)FUN_006c3910(puVar10);
+  puVar7 = (uchar *)FUN_006c3910(src);
   return puVar7;
 }
 
@@ -241,10 +241,10 @@ XAnimParts * __cdecl XAnimLoadFile(char *param_1,_func_void_ptr_int *param_2,boo
   int iVar25;
   uint uVar26;
   char *unaff_EDI;
-  ulong uVar27;
-  float fVar28;
-  XAnimDeltaPart *pXVar29;
-  undefined1 uVar30;
+  ulong count;
+  float fVar27;
+  XAnimDeltaPart *pXVar28;
+  undefined1 uVar29;
   int iStack_18d0;
   ushort *puStack_18cc;
   XAnimParts XStack_18c5;
@@ -307,7 +307,7 @@ XAnimParts * __cdecl XAnimLoadFile(char *param_1,_func_void_ptr_int *param_2,boo
     return (XAnimParts *)0x0;
   }
   iVar9 = I_strnicmp(param_1,unaff_EDI,unaff_ESI);
-  uVar30 = SUB41(unaff_EDI,0);
+  uVar29 = SUB41(unaff_EDI,0);
   uVar3 = *puVar17;
   puStack_18b8 = (undefined1 *)(uint)(iVar9 == 0);
   sVar2 = psVar19[2];
@@ -350,12 +350,12 @@ XAnimParts * __cdecl XAnimLoadFile(char *param_1,_func_void_ptr_int *param_2,boo
   sVar6 = (short)(pXStack_18c0 + -1);
   *(short *)(pXVar10 + 0xe) = sVar6;
   if (sVar6 == 0) {
-    fVar28 = 0.0;
+    fVar27 = 0.0;
   }
   else {
-    fVar28 = (float)(int)sVar2 / (float)((uint)(pXStack_18c0 + -1) & 0xffff);
+    fVar27 = (float)(int)sVar2 / (float)((uint)(pXStack_18c0 + -1) & 0xffff);
   }
-  *(float *)(pXVar10 + 0x34) = fVar28;
+  *(float *)(pXVar10 + 0x34) = fVar27;
   XStack_18c5 = XVar20;
   p_Stack_18bc = p_Var24;
   pXStack_18ac = pXVar10;
@@ -363,24 +363,24 @@ XAnimParts * __cdecl XAnimLoadFile(char *param_1,_func_void_ptr_int *param_2,boo
     pvVar11 = (*param_2)(8);
     *(void **)(pXVar10 + 100) = pvVar11;
     p_Var13 = param_2;
-    pXVar29 = pXStack_18c0;
+    pXVar28 = pXStack_18c0;
     GetDeltaQuaternions((XAnimDeltaPart *)param_2,p_Var24,(uchar *)pXStack_18c0,(ushort)p_Stack_18b4
-                        ,(bool)uVar30);
+                        ,(bool)uVar29);
     p_Stack_18bc = (_func_void_ptr_int *)
                    GetDeltaTranslations
                              ((char *)param_2,pXStack_18c0,p_Stack_18b4,(uchar *)p_Var13,
-                              (ushort)p_Var24,SUB41(pXVar29,0));
+                              (ushort)p_Var24,SUB41(pXVar28,0));
   }
   if (uVar22 == 0) {
     p_Stack_18b0 = (_func_void_ptr_int *)0x0;
     p_Var24 = p_Stack_18bc;
   }
   else {
-    uVar27 = (uVar22 - 1 >> 3) + 1;
-    p_Var24 = p_Stack_18bc + uVar27;
+    count = (uVar22 - 1 >> 3) + 1;
+    p_Var24 = p_Stack_18bc + count;
     p_Stack_18b0 = p_Stack_18bc;
-    memcpy(auStack_1864,(uchar *)p_Var24,uVar27);
-    p_Var24 = p_Var24 + uVar27;
+    memcpy(auStack_1864,(uchar *)p_Var24,count);
+    p_Var24 = p_Var24 + count;
     p_Stack_18bc = p_Var24;
     memset((uchar *)&iStack_a10,'\0',uVar22 * 8);
     memset((uchar *)&iStack_510,'\0',uVar22 * 8);

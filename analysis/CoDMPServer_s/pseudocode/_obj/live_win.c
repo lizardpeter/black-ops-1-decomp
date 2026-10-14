@@ -829,7 +829,7 @@ bool __cdecl Live_UserGetName(int param_1,char *param_2,int param_3)
   undefined1 uVar1;
   uint in_EAX;
   DWOnlineStatus DVar2;
-  char *pcVar3;
+  char *format;
   char *in_ECX;
   undefined1 extraout_DL;
   uint unaff_EBX;
@@ -842,8 +842,8 @@ bool __cdecl Live_UserGetName(int param_1,char *param_2,int param_3)
     uVar1 = extraout_DL;
     if (DVar2 != 4) {
       if (param_1 == 0) {
-        pcVar3 = UI_SafeTranslateString(unaff_EDI);
-        _snprintf(in_ECX,in_EAX,pcVar3);
+        format = UI_SafeTranslateString(unaff_EDI);
+        _snprintf(in_ECX,in_EAX,format);
         return true;
       }
       UI_SafeTranslateString((char *)(param_1 + 1));
@@ -1742,27 +1742,27 @@ void __cdecl CL_AddFavourite_f(void)
   int *piVar1;
   long lVar2;
   long lVar3;
-  char *pcVar4;
-  int iVar5;
-  char *pcVar6;
+  char *nptr;
+  int iVar4;
+  char *nptr_00;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 3) {
-    pcVar4 = "";
+    nptr = "";
   }
   else {
-    pcVar4 = *(char **)(piVar1[*piVar1 + 0x29] + 8);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 8);
   }
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar6 = "";
+    nptr_00 = "";
   }
   else {
-    pcVar6 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr_00 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  lVar2 = atol(pcVar4);
-  iVar5 = lVar2 >> 0x1f;
-  lVar3 = atol(pcVar6);
-  Live_AddFavourite((longlong)lVar3,CONCAT44(iVar5,lVar2));
+  lVar2 = atol(nptr);
+  iVar4 = lVar2 >> 0x1f;
+  lVar3 = atol(nptr_00);
+  Live_AddFavourite((longlong)lVar3,CONCAT44(iVar4,lVar2));
   return;
 }
 
@@ -1775,18 +1775,18 @@ void __cdecl CL_DeleteFavourite_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  Live_DeleteFavourite(*(__uint64 *)(&DAT_0479ebd8 + iVar3 * 0x180));
+  iVar2 = atoi(nptr);
+  Live_DeleteFavourite(*(__uint64 *)(&DAT_0479ebd8 + iVar2 * 0x180));
   return;
 }
 
@@ -2606,25 +2606,25 @@ void __cdecl Live_AddPlayerAsFriend_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  int *piVar3;
-  long64 lVar4;
+  char *nptr;
+  int *piVar2;
+  long64 lVar3;
   
-  piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar1 = *piVar3;
-  if (piVar3[iVar1 + 0x21] != 2) {
+  piVar2 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+  iVar1 = *piVar2;
+  if (piVar2[iVar1 + 0x21] != 2) {
     Com_Printf(0xe,"usage: xaddfriend <xuid>\n");
     return;
   }
-  if (piVar3[iVar1 + 0x21] < 2) {
-    pcVar2 = "";
+  if (piVar2[iVar1 + 0x21] < 2) {
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar3[iVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar2[iVar1 + 0x29] + 4);
   }
-  lVar4 = _atoi64(pcVar2);
-  piVar3 = (int *)SteamFriends();
-  (**(code **)(*piVar3 + 0x50))("steamid",lVar4);
+  lVar3 = _atoi64(nptr);
+  piVar2 = (int *)SteamFriends();
+  (**(code **)(*piVar2 + 0x50))("steamid",lVar3);
   return;
 }
 

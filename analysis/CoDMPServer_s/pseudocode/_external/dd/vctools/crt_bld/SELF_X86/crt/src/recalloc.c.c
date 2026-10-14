@@ -2,23 +2,23 @@
 
 // 00976EBD  _recalloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/recalloc.c:73)
 
-void * __cdecl _recalloc(void *param_1,uint param_2,uint param_3)
+void * __cdecl _recalloc(void *memblock,uint count,uint size)
 
 {
   int *piVar1;
   void *pvVar2;
+  uint newsize;
   uint uVar3;
-  uint uVar4;
   
-  uVar4 = 0;
-  if ((param_2 == 0) || (param_3 <= 0xffffffe0 / param_2)) {
-    uVar3 = param_2 * param_3;
-    if (param_1 != (void *)0x0) {
-      uVar4 = _msize(param_1);
+  uVar3 = 0;
+  if ((count == 0) || (size <= 0xffffffe0 / count)) {
+    newsize = count * size;
+    if (memblock != (void *)0x0) {
+      uVar3 = _msize(memblock);
     }
-    pvVar2 = realloc(param_1,uVar3);
-    if ((pvVar2 != (void *)0x0) && (uVar4 < uVar3)) {
-      memset((uchar *)(uVar4 + (int)pvVar2),'\0',uVar3 - uVar4);
+    pvVar2 = realloc(memblock,newsize);
+    if ((pvVar2 != (void *)0x0) && (uVar3 < newsize)) {
+      memset((uchar *)(uVar3 + (int)pvVar2),'\0',newsize - uVar3);
     }
   }
   else {

@@ -2,29 +2,29 @@
 
 // 007D9000  speex_alloc  (win32/win_libspeex_misc.cpp:13)
 
-void * __cdecl speex_alloc(int param_1)
+void * __cdecl speex_alloc(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Z_Malloc(param_1,"speex",0x11);
+  pvVar1 = Z_Malloc(size,"speex",0x11);
   return pvVar1;
 }
 
 
 // 007D9020  speex_free  (win32/win_libspeex_misc.cpp:18)
 
-void __cdecl speex_free(void *param_1)
+void __cdecl speex_free(void *ptr)
 
 {
-  Z_Free(param_1,0x11);
+  Z_Free(ptr,0x11);
   return;
 }
 
 
 // 007D9040  speex_realloc  (win32/win_libspeex_misc.cpp:23)
 
-void * __cdecl speex_realloc(void *param_1,int param_2)
+void * __cdecl speex_realloc(void *ptr,int size)
 
 {
   code *pcVar1;

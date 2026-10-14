@@ -270,14 +270,14 @@ DestructibleDef * __cdecl DestructibleDefLoadFile(char *param_1,_func_void_ptr_i
   int iVar5;
   int iVar6;
   DestructibleDef *pDVar7;
-  uchar *puVar8;
-  PhysGeomList *pPVar9;
-  uint uVar10;
+  uchar *dst;
+  PhysGeomList *pPVar8;
+  uint uVar9;
   _func_void_uchar_ptr_char_ptr *unaff_ESI;
-  _func_void_uchar_ptr_char_ptr *p_Var11;
+  _func_void_uchar_ptr_char_ptr *count;
   XModel *unaff_EDI;
-  uint *puVar12;
-  _func_int_uchar_ptr_char_ptr_int_int *p_Var13;
+  uint *puVar10;
+  _func_int_uchar_ptr_char_ptr_int_int *p_Var11;
   scriptInstance_t sStack_805c;
   int iStack_8058;
   int iStack_8054;
@@ -343,21 +343,20 @@ DestructibleDef * __cdecl DestructibleDefLoadFile(char *param_1,_func_void_ptr_i
                            (char *)Destructible_ParseDefSpecificFieldType,iVar5,
                            (_func_int_uchar_ptr_char_ptr_int_int *)unaff_EDI,unaff_ESI);
         if (iVar5 != 0) {
-          p_Var11 = (_func_void_uchar_ptr_char_ptr *)(*(int *)(pDVar7 + 0xc) * 0x138);
-          puVar8 = Hunk_AllocAlignInternal((int)p_Var11,(int)unaff_EDI);
-          p_Var13 = (_func_int_uchar_ptr_char_ptr_int_int *)0x0;
-          *(uchar **)(pDVar7 + 0x10) = puVar8;
-          memset(puVar8,'\0',(ulong)p_Var11);
+          count = (_func_void_uchar_ptr_char_ptr *)(*(int *)(pDVar7 + 0xc) * 0x138);
+          dst = Hunk_AllocAlignInternal((int)count,(int)unaff_EDI);
+          p_Var11 = (_func_int_uchar_ptr_char_ptr_int_int *)0x0;
+          *(uchar **)(pDVar7 + 0x10) = dst;
+          memset(dst,'\0',(ulong)count);
           iVar5 = ParseConfigStringToStruct
                             ((uchar *)pDVar7,acStack_8000,0x1cf,
-                             (char *)Destructible_ParseDefSpecificFieldType,(int)puVar8,p_Var13,
-                             p_Var11);
-          if ((iVar5 != 0) && (puVar12 = *(uint **)(pDVar7 + 4), puVar12 != (uint *)0x0)) {
+                             (char *)Destructible_ParseDefSpecificFieldType,(int)dst,p_Var11,count);
+          if ((iVar5 != 0) && (puVar10 = *(uint **)(pDVar7 + 4), puVar10 != (uint *)0x0)) {
             sStack_805c = SCRIPTINSTANCE_SERVER;
             if (0 < *(int *)(pDVar7 + 0xc)) {
               iStack_804c = 0;
               iStack_8054 = 0;
-              puStack_8050 = puVar12;
+              puStack_8050 = puVar10;
               do {
                 iStack_8058 = 0;
                 iStack_8048 = iStack_8054;
@@ -367,29 +366,29 @@ DestructibleDef * __cdecl DestructibleDefLoadFile(char *param_1,_func_void_ptr_i
                   sVar2 = *(short *)(iStack_8048 + *(int *)(pDVar7 + 0x10));
                   iStack_8044 = iStack_8048 + *(int *)(pDVar7 + 0x10);
                   if (sVar2 != 0) {
-                    uVar10 = 0;
-                    if ((byte)puVar12[1] != 0) {
+                    uVar9 = 0;
+                    if ((byte)puVar10[1] != 0) {
                       do {
-                        if (sVar2 == *(short *)(puVar12[2] + uVar10 * 2)) {
-                          puVar12 = *(uint **)(iStack_8044 + 0x2c);
-                          if ((puVar12 != (uint *)0x0) &&
-                             (pPVar9 = XModelGetCollmapForBoneIndex(unaff_EDI,(int)unaff_ESI),
-                             pPVar9 == (PhysGeomList *)0x0)) {
-                            SL_ConvertToString(*puVar12,(scriptInstance_t)param_1);
+                        if (sVar2 == *(short *)(puVar10[2] + uVar9 * 2)) {
+                          puVar10 = *(uint **)(iStack_8044 + 0x2c);
+                          if ((puVar10 != (uint *)0x0) &&
+                             (pPVar8 = XModelGetCollmapForBoneIndex(unaff_EDI,(int)unaff_ESI),
+                             pPVar8 == (PhysGeomList *)0x0)) {
+                            SL_ConvertToString(*puVar10,(scriptInstance_t)param_1);
                             Com_PrintError(0x14,
                                            "ERROR: No collmap for bone [%s] but it has a physPreset [%s] in destructible file [%s] model [%s] piece [%i] stage [%i]\n"
                                           );
                           }
-                          puVar12 = (uint *)(*(int *)(pDVar7 + 0x10) + 0x124 +
-                                            (((uVar10 & 0xff) >> 5) + iStack_804c) * 4);
-                          *puVar12 = *puVar12 | 0x80000000U >> ((byte)uVar10 & 0x1f);
-                          puVar12 = puStack_8050;
+                          puVar10 = (uint *)(*(int *)(pDVar7 + 0x10) + 0x124 +
+                                            (((uVar9 & 0xff) >> 5) + iStack_804c) * 4);
+                          *puVar10 = *puVar10 | 0x80000000U >> ((byte)uVar9 & 0x1f);
+                          puVar10 = puStack_8050;
                           goto LAB_006d66c3;
                         }
-                        uVar10 = uVar10 + 1;
-                      } while (uVar10 < (byte)puVar12[1]);
+                        uVar9 = uVar9 + 1;
+                      } while (uVar9 < (byte)puVar10[1]);
                     }
-                    SL_ConvertToString(*puVar12,sStack_805c);
+                    SL_ConvertToString(*puVar10,sStack_805c);
                     Com_PrintError(0x14,
                                    "ERROR: Destructible file [%s] can not find bone [%s] in model [%s] for piece [%i] stage [%i]\n"
                                   );

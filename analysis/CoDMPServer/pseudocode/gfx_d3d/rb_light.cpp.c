@@ -2,72 +2,72 @@
 
 // 00ADBD70  R_ShowGridOrigin  (gfx_d3d/rb_light.cpp:81)
 
-void __cdecl R_ShowGridOrigin(float *param_1)
+void __cdecl R_ShowGridOrigin(float *origin)
 
 {
-  float local_1c;
+  float boxMaxs;
   float local_18;
   float local_14;
-  float local_10;
+  float boxMins;
   float local_c;
   float local_8;
   
-  local_10 = *param_1 - 0.5;
-  local_c = param_1[1] - 0.5;
-  local_8 = param_1[2] - 0.5;
-  local_1c = *param_1 + 0.5;
-  local_18 = param_1[1] + 0.5;
-  local_14 = param_1[2] + 0.5;
-  R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_10,&local_1c,colorBlue);
+  boxMins = *origin - 0.5;
+  local_c = origin[1] - 0.5;
+  local_8 = origin[2] - 0.5;
+  boxMaxs = *origin + 0.5;
+  local_18 = origin[1] + 0.5;
+  local_14 = origin[2] + 0.5;
+  R_AddDebugBox(&frontEndDataOut->debugGlobals,&boxMins,&boxMaxs,colorBlue);
   return;
 }
 
 
 // 00ADBE30  R_ShowGridBox  (gfx_d3d/rb_light.cpp:93)
 
-void __cdecl R_ShowGridBox(uint *param_1)
+void __cdecl R_ShowGridBox(uint *pos)
 
 {
-  float local_1c;
+  float boxMaxs;
   float local_18;
   float local_14;
-  float local_10;
+  float boxMins;
   float local_c;
   float local_8;
   
-  local_10 = (float)*param_1 * 32.0 + -131072.0;
-  local_c = (float)param_1[1] * 32.0 + -131072.0;
-  local_8 = (float)param_1[2] * 64.0 + -131072.0;
-  local_1c = local_10 + 32.0;
+  boxMins = (float)*pos * 32.0 + -131072.0;
+  local_c = (float)pos[1] * 32.0 + -131072.0;
+  local_8 = (float)pos[2] * 64.0 + -131072.0;
+  boxMaxs = boxMins + 32.0;
   local_18 = local_c + 32.0;
   local_14 = local_8 + 64.0;
-  R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_10,&local_1c,colorWhite);
+  R_AddDebugBox(&frontEndDataOut->debugGlobals,&boxMins,&boxMaxs,colorWhite);
   return;
 }
 
 
 // 00ADBF20  R_ShowGridCorner  (gfx_d3d/rb_light.cpp:107)
 
-void __cdecl R_ShowGridCorner(uint param_1,uint param_2,uint param_3,float param_4,float *param_5)
+void __cdecl R_ShowGridCorner(uint x,uint y,uint z,float halfSize,float *color)
 
 {
-  float local_1c;
+  float boxMaxs;
   float local_18;
   float local_14;
-  float local_10;
+  float boxMins;
   float local_c;
   float local_8;
   
-  local_1c = (float)param_1 * 32.0 + -131072.0;
-  local_18 = (float)param_2 * 32.0 + -131072.0;
-  local_14 = (float)param_3 * 64.0 + -131072.0;
-  local_10 = local_1c - param_4;
-  local_c = local_18 - param_4;
-  local_8 = local_14 - param_4;
-  local_1c = local_1c + param_4;
-  local_18 = local_18 + param_4;
-  local_14 = local_14 + param_4;
-  R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_10,&local_1c,param_5);
+  boxMaxs = (float)x * 32.0 + -131072.0;
+  local_18 = (float)y * 32.0 + -131072.0;
+  local_14 = (float)z * 64.0 + -131072.0;
+  boxMins = boxMaxs - halfSize;
+  local_c = local_18 - halfSize;
+  local_8 = local_14 - halfSize;
+  boxMaxs = boxMaxs + halfSize;
+  local_18 = local_18 + halfSize;
+  local_14 = local_14 + halfSize;
+  R_AddDebugBox(&frontEndDataOut->debugGlobals,&boxMins,&boxMaxs,color);
   return;
 }
 
@@ -75,28 +75,32 @@ void __cdecl R_ShowGridCorner(uint param_1,uint param_2,uint param_3,float param
 // 00ADBB60  R_ShowLightGrid  (gfx_d3d/rb_light.cpp:122)
 
 void __cdecl
-R_ShowLightGrid(GfxLightGrid *param_1,uint *param_2,float *param_3,GfxLightGridEntry **param_4,
-               bool *param_5,bool param_6)
+R_ShowLightGrid(GfxLightGrid *lightGrid,uint *pos,float *samplePos,GfxLightGridEntry **cornerEntry,
+               bool *suppressEntry,bool honorSuppression)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  uint uVar4;
-  uint uVar5;
-  float fVar6;
-  float fVar7;
-  float fVar8;
-  uint local_2c;
-  uint local_18;
-  uint local_10;
+  uint x_00;
+  uint z_00;
+  uint y_00;
+  float fVar3;
+  float fVar4;
+  float fVar5;
+  uint yBit;
+  uint z;
+  uint cornerIndex;
+  uint zBit;
+  uint xBit;
+  uint x;
+  uint y;
   
-  fVar6 = frontEndDataOut->viewParms[0].origin[0] - *param_3;
-  fVar7 = frontEndDataOut->viewParms[0].origin[1] - param_3[1];
-  fVar8 = frontEndDataOut->viewParms[0].origin[2] - param_3[2];
-  if (fVar6 * fVar6 + fVar7 * fVar7 + fVar8 * fVar8 <= 810000.0) {
-    R_ShowGridOrigin(param_3);
-    R_ShowGridBox(param_2);
+  fVar3 = frontEndDataOut->viewParms[0].origin[0] - *samplePos;
+  fVar4 = frontEndDataOut->viewParms[0].origin[1] - samplePos[1];
+  fVar5 = frontEndDataOut->viewParms[0].origin[2] - samplePos[2];
+  if (fVar3 * fVar3 + fVar4 * fVar4 + fVar5 * fVar5 <= 810000.0) {
+    R_ShowGridOrigin(samplePos);
+    R_ShowGridBox(pos);
     if ((rgp.world == (GfxWorld *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x8b,0,
                                  "%s"), !bVar2)) {
@@ -104,29 +108,29 @@ R_ShowLightGrid(GfxLightGrid *param_1,uint *param_2,float *param_3,GfxLightGridE
       (*pcVar1)();
       return;
     }
-    if (param_1->rowAxis == 0) {
-      local_10 = 4;
-      local_2c = 2;
+    if (lightGrid->rowAxis == 0) {
+      xBit = 4;
+      yBit = 2;
     }
     else {
-      local_10 = 2;
-      local_2c = 4;
+      xBit = 2;
+      yBit = 4;
     }
-    for (local_18 = 0; local_18 < 8; local_18 = local_18 + 1) {
-      if (param_4[local_18] != (GfxLightGridEntry *)0x0) {
-        uVar3 = (uint)((local_18 & local_10) != 0) + *param_2;
-        uVar5 = (uint)((local_18 & local_2c) != 0) + param_2[1];
-        uVar4 = (uint)((local_18 & 1) != 0) + param_2[2];
-        if ((param_5[local_18] == false) || (!param_6)) {
-          if ((param_5[local_18] == false) || (param_6)) {
-            R_ShowGridCorner(uVar3,uVar5,uVar4,0.9,colorGreen);
+    for (cornerIndex = 0; cornerIndex < 8; cornerIndex = cornerIndex + 1) {
+      if (cornerEntry[cornerIndex] != (GfxLightGridEntry *)0x0) {
+        x_00 = (uint)((cornerIndex & xBit) != 0) + *pos;
+        y_00 = (uint)((cornerIndex & yBit) != 0) + pos[1];
+        z_00 = (uint)((cornerIndex & 1) != 0) + pos[2];
+        if ((suppressEntry[cornerIndex] == false) || (!honorSuppression)) {
+          if ((suppressEntry[cornerIndex] == false) || (honorSuppression)) {
+            R_ShowGridCorner(x_00,y_00,z_00,0.9,colorGreen);
           }
           else {
-            R_ShowGridCorner(uVar3,uVar5,uVar4,1.1,colorRed);
+            R_ShowGridCorner(x_00,y_00,z_00,1.1,colorRed);
           }
         }
         else {
-          R_ShowGridCorner(uVar3,uVar5,uVar4,1.0,colorYellow);
+          R_ShowGridCorner(x_00,y_00,z_00,1.0,colorYellow);
         }
       }
     }
@@ -137,16 +141,24 @@ R_ShowLightGrid(GfxLightGrid *param_1,uint *param_2,float *param_3,GfxLightGridE
 
 // 00ADB070  SetPixelColorLightGridVec4_PC  (universal/com_color.h:160)
 
-void __cdecl SetPixelColorLightGridVec4_PC(uchar *param_1,float *param_2,float param_3)
+void __cdecl SetPixelColorLightGridVec4_PC(uchar *v,float *color,float primaryWeight)
 
 {
   float local_28;
   float local_24;
   float local_20;
+  float gf;
+  uchar r;
+  uchar g;
+  uchar b;
+  uint colorAsInt;
+  float rf;
+  uchar a;
+  float bf;
   
-  local_20 = *param_2 / 31.875;
-  local_24 = param_2[1] / 31.875;
-  local_28 = param_2[2] / 31.875;
+  local_20 = *color / 31.875;
+  local_24 = color[1] / 31.875;
+  local_28 = color[2] / 31.875;
   if (1.0 < local_20) {
     local_20 = 1.0;
   }
@@ -156,10 +168,9 @@ void __cdecl SetPixelColorLightGridVec4_PC(uchar *param_1,float *param_2,float p
   if (1.0 < local_28) {
     local_28 = 1.0;
   }
-  *(uint *)param_1 =
-       ((int)(SQRT(local_20) * 255.0) & 0xffU) << 0x10 |
-       ((int)(SQRT(local_24) * 255.0) & 0xffU) << 8 | (int)(SQRT(local_28) * 255.0) & 0xffU |
-       (int)(param_3 * 255.0) << 0x18;
+  *(uint *)v = ((int)(SQRT(local_20) * 255.0) & 0xffU) << 0x10 |
+               ((int)(SQRT(local_24) * 255.0) & 0xffU) << 8 | (int)(SQRT(local_28) * 255.0) & 0xffU
+               | (int)(primaryWeight * 255.0) << 0x18;
   return;
 }
 
@@ -216,7 +227,7 @@ void __cdecl AllocAllMemoryNeeded(void)
 
 // 00ADA3E0  HashXyz  (gfx_d3d/rb_light.cpp:210)
 
-uint __cdecl HashXyz(ushort (*param_1) [3])
+uint __cdecl HashXyz(ushort (*p) [3])
 
 {
   uint extraout_EAX;
@@ -228,7 +239,7 @@ uint __cdecl HashXyz(ushort (*param_1) [3])
 
 // 00ADA430  HashPackPoint  (gfx_d3d/rb_light.cpp:216)
 
-ulong64 __cdecl HashPackPoint(ushort (*param_1) [3])
+ulong64 __cdecl HashPackPoint(ushort (*p) [3])
 
 {
   ushort uVar1;
@@ -237,7 +248,7 @@ ulong64 __cdecl HashPackPoint(ushort (*param_1) [3])
   uint extraout_EDX;
   uint extraout_EDX_00;
   
-  uVar1 = (*param_1)[0];
+  uVar1 = (*p)[0];
   _allshl();
   _allshl();
   return CONCAT44(extraout_EDX | extraout_EDX_00,uVar1 | extraout_EAX | extraout_EAX_00);
@@ -246,24 +257,24 @@ ulong64 __cdecl HashPackPoint(ushort (*param_1) [3])
 
 // 00ADE010  HashUnpackPoint  (gfx_d3d/rb_light.cpp:225)
 
-void __cdecl HashUnpackPoint(ulong64 param_1,ushort (*param_2) [3])
+void __cdecl HashUnpackPoint(ulong64 value,ushort (*p) [3])
 
 {
   ushort extraout_AX;
   ushort extraout_AX_00;
   
-  (*param_2)[0] = (ushort)param_1;
+  (*p)[0] = (ushort)value;
   _aullshr();
-  (*param_2)[1] = extraout_AX;
+  (*p)[1] = extraout_AX;
   _aullshr();
-  (*param_2)[2] = extraout_AX_00;
+  (*p)[2] = extraout_AX_00;
   return;
 }
 
 
 // 00ADA2A0  addHash  (gfx_d3d/rb_light.cpp:233)
 
-htab * __cdecl addHash(ushort (*param_1) [3])
+htab * __cdecl addHash(ushort (*data) [3])
 
 {
   code *pcVar1;
@@ -271,8 +282,10 @@ htab * __cdecl addHash(ushort (*param_1) [3])
   htab *phVar3;
   uint uVar4;
   ulong64 uVar5;
-  htab *local_18;
-  undefined4 local_c;
+  htab *curhash;
+  htab *newhash;
+  uint hashkey;
+  undefined4 hashval;
   undefined4 local_8;
   
   phVar3 = htabAlloc();
@@ -280,7 +293,7 @@ htab * __cdecl addHash(ushort (*param_1) [3])
     phVar3 = (htab *)0x0;
   }
   else {
-    uVar4 = HashXyz(param_1);
+    uVar4 = HashXyz(data);
     if (0x100006 < uVar4) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0xf4,0,
                                "%s");
@@ -290,20 +303,20 @@ htab * __cdecl addHash(ushort (*param_1) [3])
         return phVar3;
       }
     }
-    uVar5 = HashPackPoint(param_1);
-    local_c = (undefined4)uVar5;
-    *(undefined4 *)&phVar3->value = local_c;
+    uVar5 = HashPackPoint(data);
+    hashval = (undefined4)uVar5;
+    *(undefined4 *)&phVar3->value = hashval;
     local_8 = (undefined4)(uVar5 >> 0x20);
     *(undefined4 *)((int)&phVar3->value + 4) = local_8;
     phVar3->next = (htab *)0x0;
-    local_18 = LightGridHashtable[uVar4];
-    if (local_18 == (htab *)0x0) {
+    curhash = LightGridHashtable[uVar4];
+    if (curhash == (htab *)0x0) {
       LightGridHashtable[uVar4] = phVar3;
     }
     else {
-      for (; local_18->next != (htab *)0x0; local_18 = local_18->next) {
+      for (; curhash->next != (htab *)0x0; curhash = curhash->next) {
       }
-      local_18->next = phVar3;
+      curhash->next = phVar3;
     }
     lightPointCount = lightPointCount + 1;
   }
@@ -313,7 +326,7 @@ htab * __cdecl addHash(ushort (*param_1) [3])
 
 // 00ADA470  findhash  (gfx_d3d/rb_light.cpp:266)
 
-htab * __cdecl findhash(ushort (*param_1) [3])
+htab * __cdecl findhash(ushort (*data) [3])
 
 {
   code *pcVar1;
@@ -321,12 +334,13 @@ htab * __cdecl findhash(ushort (*param_1) [3])
   uint uVar3;
   htab *phVar4;
   ulong64 uVar5;
-  htab *local_14;
-  int local_c;
+  htab *curhash;
+  uint hashkey;
+  int value;
   int local_8;
   
   if ((LightGridMemory != (htab *)0x0) && (LightGridHashtable != (htab **)0x0)) {
-    uVar3 = HashXyz(param_1);
+    uVar3 = HashXyz(data);
     if ((0x100006 < uVar3) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x110,0,
                                  "%s"), !bVar2)) {
@@ -334,12 +348,12 @@ htab * __cdecl findhash(ushort (*param_1) [3])
       phVar4 = (htab *)(*pcVar1)();
       return phVar4;
     }
-    uVar5 = HashPackPoint(param_1);
-    for (local_14 = LightGridHashtable[uVar3]; local_14 != (htab *)0x0; local_14 = local_14->next) {
-      local_c = (int)uVar5;
-      if (((int)local_14->value == local_c) &&
-         (local_8 = (int)(uVar5 >> 0x20), *(int *)((int)&local_14->value + 4) == local_8)) {
-        return local_14;
+    uVar5 = HashPackPoint(data);
+    for (curhash = LightGridHashtable[uVar3]; curhash != (htab *)0x0; curhash = curhash->next) {
+      value = (int)uVar5;
+      if (((int)curhash->value == value) &&
+         (local_8 = (int)(uVar5 >> 0x20), *(int *)((int)&curhash->value + 4) == local_8)) {
+        return curhash;
       }
     }
   }
@@ -351,36 +365,35 @@ htab * __cdecl findhash(ushort (*param_1) [3])
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl
-R_SortedHistoryEntry(ushort param_1,ushort param_2,ushort param_3,GfxSortedHistoryAdd param_4)
+bool __cdecl R_SortedHistoryEntry(ushort x,ushort y,ushort z,GfxSortedHistoryAdd addMode)
 
 {
   LONG local_30 [5];
-  htab *local_1c;
-  undefined1 local_15;
-  ushort local_14;
+  htab *added;
+  bool result;
+  ushort gsp;
   ushort local_12;
   ushort local_10;
   uint local_c;
-  htab *local_8;
+  htab *found;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_15 = 0;
-  local_14 = param_1;
-  local_12 = param_2;
-  local_10 = param_3;
+  result = false;
+  gsp = x;
+  local_12 = y;
+  local_10 = z;
   tlAtomicMutex::Lock(&lightGridMutex);
-  local_8 = findhash((ushort (*) [3])&local_14);
-  if (local_8 == (htab *)0x0) {
-    if ((param_4 == SH_ADD_IF_NEW) && (lightPointCount < 0x100000)) {
-      local_1c = addHash((ushort (*) [3])&local_14);
-      if (local_1c != (htab *)0x0) {
-        local_15 = 1;
+  found = findhash((ushort (*) [3])&gsp);
+  if (found == (htab *)0x0) {
+    if ((addMode == SH_ADD_IF_NEW) && (lightPointCount < 0x100000)) {
+      added = addHash((ushort (*) [3])&gsp);
+      if (added != (htab *)0x0) {
+        result = true;
       }
     }
   }
   else {
-    local_15 = 1;
+    result = true;
   }
   lightGridMutex.LockCount = lightGridMutex.LockCount + -1;
   if (lightGridMutex.LockCount == 0) {
@@ -389,31 +402,32 @@ R_SortedHistoryEntry(ushort param_1,ushort param_2,ushort param_3,GfxSortedHisto
     lightGridMutex.ThreadId._0_4_ = 0;
     lightGridMutex.ThreadId._4_4_ = 0;
   }
-  return (bool)local_15;
+  return result;
 }
 
 
 // 00AD9EA0  R_ShowLightVisCachePoints  (gfx_d3d/rb_light.cpp:316)
 
-void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int param_3)
+void __cdecl R_ShowLightVisCachePoints(float *viewOrigin,DpvsPlane *clipPlanes,int clipPlaneCount)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   float *local_a8;
-  int local_38;
-  float local_30;
+  int dx;
+  int spread;
+  float origin;
   float local_2c;
   float local_28;
-  int local_24;
-  uint local_20;
-  uint local_1c;
-  int local_18;
-  uint local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  uint z;
+  uint iz;
+  uint iy;
+  int dz;
+  uint ix;
+  uint x;
+  uint y;
+  int dy;
   
   bVar3 = Sys_IsRenderThread();
   if ((bVar3) &&
@@ -424,33 +438,32 @@ void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int par
     return;
   }
   if ((lightPointCount != 0) && (iVar1 = (r_vc_showlog->current).integer, 0 < iVar1)) {
-    local_10 = (int)ROUND((*param_1 - -131072.0) + 9.313226e-10) >> 5;
-    local_c = (int)ROUND((param_1[1] - -131072.0) + 9.313226e-10) >> 5;
-    local_24 = (int)ROUND((param_1[2] - -131072.0) - 0.5) >> 6;
-    for (local_18 = -1; local_18 < 2; local_18 = local_18 + 1) {
-      local_20 = local_24 + local_18;
-      if (local_20 < 0x1001) {
-        for (local_8 = -iVar1; local_8 <= iVar1; local_8 = local_8 + 1) {
-          local_1c = local_c + local_8;
-          if (local_1c < 0x2001) {
-            for (local_38 = -iVar1; local_38 <= iVar1; local_38 = local_38 + 1) {
-              local_14 = local_10 + local_38;
-              if (local_14 < 0x2001) {
-                local_30 = (float)local_14 * 32.0 + -131072.0;
-                local_2c = (float)local_1c * 32.0 + -131072.0;
-                local_28 = (float)local_20 * 64.0 + -131072.0;
-                bVar3 = R_CullPointAndRadius(&local_30,0.0,param_2,param_3);
+    x = (int)ROUND((*viewOrigin - -131072.0) + 9.313226e-10) >> 5;
+    y = (int)ROUND((viewOrigin[1] - -131072.0) + 9.313226e-10) >> 5;
+    z = (int)ROUND((viewOrigin[2] - -131072.0) - 0.5) >> 6;
+    for (dz = -1; dz < 2; dz = dz + 1) {
+      iz = z + dz;
+      if (iz < 0x1001) {
+        for (dy = -iVar1; dy <= iVar1; dy = dy + 1) {
+          iy = y + dy;
+          if (iy < 0x2001) {
+            for (dx = -iVar1; dx <= iVar1; dx = dx + 1) {
+              ix = x + dx;
+              if (ix < 0x2001) {
+                origin = (float)ix * 32.0 + -131072.0;
+                local_2c = (float)iy * 32.0 + -131072.0;
+                local_28 = (float)iz * 64.0 + -131072.0;
+                bVar3 = R_CullPointAndRadius(&origin,0.0,clipPlanes,clipPlaneCount);
                 if ((!bVar3) &&
-                   (bVar3 = R_SortedHistoryEntry
-                                      ((ushort)local_14,(ushort)local_1c,(ushort)local_20,
-                                       SH_ADD_NEVER), !bVar3)) {
-                  if ((local_18 == 0) || (local_18 == 1)) {
+                   (bVar3 = R_SortedHistoryEntry((ushort)ix,(ushort)iy,(ushort)iz,SH_ADD_NEVER),
+                   !bVar3)) {
+                  if ((dz == 0) || (dz == 1)) {
                     local_a8 = colorGreen;
                   }
                   else {
                     local_a8 = colorYellow;
                   }
-                  R_AddDebugString(&frontEndDataOut->debugGlobals,&local_30,local_a8,1.0,".");
+                  R_AddDebugString(&frontEndDataOut->debugGlobals,&origin,local_a8,1.0,".");
                 }
               }
             }
@@ -465,29 +478,33 @@ void __cdecl R_ShowLightVisCachePoints(float *param_1,DpvsPlane *param_2,int par
 
 // 00ADC000  R_UpdateVisHistory  (gfx_d3d/rb_light.cpp:383)
 
-void __cdecl R_UpdateVisHistory(GfxLightGrid *param_1,uint *param_2,GfxLightGridEntry **param_3)
+void __cdecl R_UpdateVisHistory(GfxLightGrid *lightGrid,uint *pos,GfxLightGridEntry **cornerEntry)
 
 {
-  uint local_20;
-  uint local_18;
-  uint local_10;
+  uint yBit;
+  uint z;
+  uint cornerIndex;
+  uint zBit;
+  uint xBit;
+  uint x;
+  uint y;
   
   if ((LightGridHashtable == (htab **)0x0) || (LightGridMemory == (htab *)0x0)) {
     AllocAllMemoryNeeded();
   }
-  if (param_1->rowAxis == 0) {
-    local_10 = 4;
-    local_20 = 2;
+  if (lightGrid->rowAxis == 0) {
+    xBit = 4;
+    yBit = 2;
   }
   else {
-    local_10 = 2;
-    local_20 = 4;
+    xBit = 2;
+    yBit = 4;
   }
-  for (local_18 = 0; local_18 < 8; local_18 = local_18 + 1) {
+  for (cornerIndex = 0; cornerIndex < 8; cornerIndex = cornerIndex + 1) {
     R_SortedHistoryEntry
-              ((ushort)((local_18 & local_10) != 0) + (short)*param_2,
-               (ushort)((local_18 & local_20) != 0) + (short)param_2[1],
-               (ushort)((local_18 & 1) != 0) + (short)param_2[2],SH_ADD_IF_NEW);
+              ((ushort)((cornerIndex & xBit) != 0) + (short)*pos,
+               (ushort)((cornerIndex & yBit) != 0) + (short)pos[1],
+               (ushort)((cornerIndex & 1) != 0) + (short)pos[2],SH_ADD_IF_NEW);
   }
   return;
 }
@@ -496,107 +513,107 @@ void __cdecl R_UpdateVisHistory(GfxLightGrid *param_1,uint *param_2,GfxLightGrid
 // 00ADA790  R_SetLightGridColorsVec4  (gfx_d3d/rb_light.cpp:1015)
 
 void __cdecl
-R_SetLightGridColorsVec4(GfxDecodedLightGridColors *param_1,float param_2,uchar *param_3)
+R_SetLightGridColorsVec4(GfxDecodedLightGridColors *colors,float primaryWeight,uchar *pixels)
 
 {
   uchar *puVar1;
-  int local_18;
-  float local_14;
+  int i;
+  float ambient;
   float local_10;
   float local_c;
   undefined4 local_8;
   
-  local_14 = 0.0;
+  ambient = 0.0;
   local_10 = 0.0;
   local_c = 0.0;
   local_8 = 0;
-  for (local_18 = 0; local_18 < 0x38; local_18 = local_18 + 1) {
-    local_14 = local_14 + param_1->rgb[local_18][0];
-    local_10 = local_10 + param_1->rgb[local_18][1];
-    local_c = local_c + param_1->rgb[local_18][2];
+  for (i = 0; i < 0x38; i = i + 1) {
+    ambient = ambient + colors->rgb[i][0];
+    local_10 = local_10 + colors->rgb[i][1];
+    local_c = local_c + colors->rgb[i][2];
   }
-  local_14 = local_14 / 56.0;
+  ambient = ambient / 56.0;
   local_10 = local_10 / 56.0;
   local_c = local_c / 56.0;
-  SetPixelColorLightGridVec4_PC(param_3,(float *)param_1,param_2);
-  SetPixelColorLightGridVec4_PC(param_3 + 4,param_1->rgb[1],param_2);
-  SetPixelColorLightGridVec4_PC(param_3 + 8,param_1->rgb[2],param_2);
-  SetPixelColorLightGridVec4_PC(param_3 + 0xc,param_1->rgb[3],param_2);
-  puVar1 = param_3 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[4],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[5],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[6],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[7],param_2);
+  SetPixelColorLightGridVec4_PC(pixels,(float *)colors,primaryWeight);
+  SetPixelColorLightGridVec4_PC(pixels + 4,colors->rgb[1],primaryWeight);
+  SetPixelColorLightGridVec4_PC(pixels + 8,colors->rgb[2],primaryWeight);
+  SetPixelColorLightGridVec4_PC(pixels + 0xc,colors->rgb[3],primaryWeight);
+  puVar1 = pixels + s_lightGridRowDelta;
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[4],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[5],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[6],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[7],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[8],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[9],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[10],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0xb],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[8],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[9],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[10],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0xb],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0xc],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0xd],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0xe],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0xf],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0xc],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0xd],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0xe],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0xf],primaryWeight);
   puVar1 = puVar1 + s_lightGridSliceDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x10],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x11],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x12],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x13],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x10],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x11],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x12],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x13],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x14],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x15],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x14],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x15],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x16],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x17],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x16],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x17],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x18],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x19],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x1a],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x1b],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x18],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x19],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x1a],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x1b],primaryWeight);
   puVar1 = puVar1 + s_lightGridSliceDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x1c],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x1d],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x1e],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x1f],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x1c],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x1d],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x1e],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x1f],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x20],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x21],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x20],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x21],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x22],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,&local_14,param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x23],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x22],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,&ambient,primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x23],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x24],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x25],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x26],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x27],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x24],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x25],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x26],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x27],primaryWeight);
   puVar1 = puVar1 + s_lightGridSliceDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x28],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x29],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x2a],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x2b],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x28],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x29],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x2a],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x2b],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x2c],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x2d],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x2e],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x2f],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x2c],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x2d],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x2e],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x2f],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x30],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x31],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x32],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x33],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x30],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x31],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x32],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x33],primaryWeight);
   puVar1 = puVar1 + s_lightGridRowDelta;
-  SetPixelColorLightGridVec4_PC(puVar1,param_1->rgb[0x34],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 4,param_1->rgb[0x35],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 8,param_1->rgb[0x36],param_2);
-  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,param_1->rgb[0x37],param_2);
+  SetPixelColorLightGridVec4_PC(puVar1,colors->rgb[0x34],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 4,colors->rgb[0x35],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 8,colors->rgb[0x36],primaryWeight);
+  SetPixelColorLightGridVec4_PC(puVar1 + 0xc,colors->rgb[0x37],primaryWeight);
   return;
 }
 
@@ -604,25 +621,35 @@ R_SetLightGridColorsVec4(GfxDecodedLightGridColors *param_1,float param_2,uchar 
 // 00ADB1F0  R_DecodeLightGridColors  (gfx_d3d/rb_light.cpp:1355)
 
 void __cdecl
-R_DecodeLightGridColors(GfxCompressedLightGridColors *param_1,GfxDecodedLightGridColors *param_2)
+R_DecodeLightGridColors
+          (GfxCompressedLightGridColors *colors,GfxDecodedLightGridColors *decodedColors)
 
 {
   uint3 uVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  int local_8;
+  float r;
+  float Y;
+  uint packed;
+  uint z;
+  float g;
+  float b;
+  float u;
+  uint x;
+  uint y;
+  float w;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x38; local_8 = local_8 + 1) {
-    uVar1 = CONCAT12(param_1->rgb[local_8][2],
-                     CONCAT11(param_1->rgb[local_8][1],param_1->rgb[local_8][0]));
+  for (i = 0; i < 0x38; i = i + 1) {
+    uVar1 = CONCAT12(colors->rgb[i][2],CONCAT11(colors->rgb[i][1],colors->rgb[i][0]));
     fVar2 = (float)(uVar1 >> 0xc) / 4095.0;
     fVar2 = fVar2 * fVar2 * 31.875;
     fVar3 = (((float)((uVar1 & 0xfc0) >> 6) / 63.0) * fVar2) / 0.25;
     fVar4 = (((float)(uVar1 & 0x3f) / 63.0) * fVar2) / 0.25;
-    param_2->rgb[local_8][0] = fVar3;
-    param_2->rgb[local_8][1] = ((fVar2 - fVar3 * 0.25) - fVar4 * 0.25) / 0.5;
-    param_2->rgb[local_8][2] = fVar4;
+    decodedColors->rgb[i][0] = fVar3;
+    decodedColors->rgb[i][1] = ((fVar2 - fVar3 * 0.25) - fVar4 * 0.25) / 0.5;
+    decodedColors->rgb[i][2] = fVar4;
   }
   return;
 }
@@ -632,25 +659,35 @@ R_DecodeLightGridColors(GfxCompressedLightGridColors *param_1,GfxDecodedLightGri
 
 void __cdecl
 R_DecodeLightGridColorsWeighted
-          (GfxCompressedLightGridColors *param_1,GfxDecodedLightGridColors *param_2,float param_3)
+          (GfxCompressedLightGridColors *colors,GfxDecodedLightGridColors *decodedColors,
+          float weight)
 
 {
   uint3 uVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  int local_8;
+  float r;
+  float Y;
+  uint packed;
+  uint z;
+  float g;
+  float b;
+  float u;
+  uint x;
+  uint y;
+  float w;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x38; local_8 = local_8 + 1) {
-    uVar1 = CONCAT12(param_1->rgb[local_8][2],
-                     CONCAT11(param_1->rgb[local_8][1],param_1->rgb[local_8][0]));
+  for (i = 0; i < 0x38; i = i + 1) {
+    uVar1 = CONCAT12(colors->rgb[i][2],CONCAT11(colors->rgb[i][1],colors->rgb[i][0]));
     fVar2 = (float)(uVar1 >> 0xc) / 4095.0;
     fVar2 = fVar2 * fVar2 * 31.875;
     fVar3 = (((float)((uVar1 & 0xfc0) >> 6) / 63.0) * fVar2) / 0.25;
     fVar4 = (((float)(uVar1 & 0x3f) / 63.0) * fVar2) / 0.25;
-    param_2->rgb[local_8][0] = fVar3 * param_3;
-    param_2->rgb[local_8][1] = (((fVar2 - fVar3 * 0.25) - fVar4 * 0.25) / 0.5) * param_3;
-    param_2->rgb[local_8][2] = fVar4 * param_3;
+    decodedColors->rgb[i][0] = fVar3 * weight;
+    decodedColors->rgb[i][1] = (((fVar2 - fVar3 * 0.25) - fVar4 * 0.25) / 0.5) * weight;
+    decodedColors->rgb[i][2] = fVar4 * weight;
   }
   return;
 }
@@ -660,23 +697,25 @@ R_DecodeLightGridColorsWeighted
 
 void __cdecl
 R_SetLightGridColorsFromIndex
-          (GfxLightGrid *param_1,uint param_2,float *param_3,float param_4,ushort param_5)
+          (GfxLightGrid *lightGrid,uint colorsIndex,float *heroPos,float primaryLightWeight,
+          ushort dest)
 
 {
   ushort uVar1;
   GfxModelLightingPatch *pGVar2;
+  GfxModelLightingPatch *patch;
   
   pGVar2 = R_BackEndDataAllocAndClearModelLightingPatch(frontEndDataOut);
-  pGVar2->modelLightingIndex = param_5;
-  pGVar2->primaryLightWeight = param_4;
+  pGVar2->modelLightingIndex = dest;
+  pGVar2->primaryLightWeight = primaryLightWeight;
   pGVar2->colorsCount = '\x01';
-  uVar1 = truncate_cast<unsigned_short>(param_2);
+  uVar1 = truncate_cast<unsigned_short>(colorsIndex);
   pGVar2->colorsIndex[0] = uVar1;
-  pGVar2->useHeroLighting = param_3 != (float *)0x0;
-  if (param_3 != (float *)0x0) {
-    pGVar2->heroPos[0] = *param_3;
-    pGVar2->heroPos[1] = param_3[1];
-    pGVar2->heroPos[2] = param_3[2];
+  pGVar2->useHeroLighting = heroPos != (float *)0x0;
+  if (heroPos != (float *)0x0) {
+    pGVar2->heroPos[0] = *heroPos;
+    pGVar2->heroPos[1] = heroPos[1];
+    pGVar2->heroPos[2] = heroPos[2];
   }
   return;
 }
@@ -686,28 +725,29 @@ R_SetLightGridColorsFromIndex
 
 void __cdecl
 R_BlendAndSetLightGridColors
-          (GfxLightGrid *param_1,ushort *param_2,float *param_3,uint param_4,float *param_5,
-          float param_6,float param_7,ushort param_8)
+          (GfxLightGrid *lightGrid,ushort *colorsIndex,float *colorsWeight,uint colorsCount,
+          float *heroPos,float primaryLightWeight,float weightNormalizeScale,ushort dest)
 
 {
   uchar uVar1;
   GfxModelLightingPatch *pGVar2;
-  uint local_c;
+  uint i;
+  GfxModelLightingPatch *patch;
   
   pGVar2 = R_BackEndDataAllocAndClearModelLightingPatch(frontEndDataOut);
-  pGVar2->modelLightingIndex = param_8;
-  pGVar2->primaryLightWeight = param_6;
-  uVar1 = truncate_cast<unsigned_char>(param_4);
+  pGVar2->modelLightingIndex = dest;
+  pGVar2->primaryLightWeight = primaryLightWeight;
+  uVar1 = truncate_cast<unsigned_char>(colorsCount);
   pGVar2->colorsCount = uVar1;
-  for (local_c = 0; local_c < param_4; local_c = local_c + 1) {
-    pGVar2->colorsWeight[local_c] = param_3[local_c] * param_7;
+  for (i = 0; i < colorsCount; i = i + 1) {
+    pGVar2->colorsWeight[i] = colorsWeight[i] * weightNormalizeScale;
   }
-  memcpy((uchar *)pGVar2->colorsIndex,(uchar *)param_2,param_4 << 1);
-  pGVar2->useHeroLighting = param_5 != (float *)0x0;
-  if (param_5 != (float *)0x0) {
-    pGVar2->heroPos[0] = *param_5;
-    pGVar2->heroPos[1] = param_5[1];
-    pGVar2->heroPos[2] = param_5[2];
+  memcpy((uchar *)pGVar2->colorsIndex,(uchar *)colorsIndex,colorsCount << 1);
+  pGVar2->useHeroLighting = heroPos != (float *)0x0;
+  if (heroPos != (float *)0x0) {
+    pGVar2->heroPos[0] = *heroPos;
+    pGVar2->heroPos[1] = heroPos[1];
+    pGVar2->heroPos[2] = heroPos[2];
   }
   return;
 }
@@ -715,44 +755,44 @@ R_BlendAndSetLightGridColors
 
 // 00ADA530  R_ApplyLightGridColorsPatch  (gfx_d3d/rb_light.cpp:1551)
 
-void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *param_1,uchar *param_2)
+void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *patch,uchar *pixels)
 
 {
   float *local_79c;
-  int local_714;
-  uint local_710;
-  GfxDecodedLightGridColors local_70c;
-  float *local_388;
-  GfxDecodedLightGridColors local_384;
+  int j;
+  uint i;
+  GfxDecodedLightGridColors decodedColors;
+  float *heroPos;
+  GfxDecodedLightGridColors accumulatedColors;
   
-  if (param_1->useHeroLighting == '\0') {
+  if (patch->useHeroLighting == '\0') {
     local_79c = (float *)0x0;
   }
   else {
-    local_79c = param_1->heroPos;
+    local_79c = patch->heroPos;
   }
-  local_388 = local_79c;
-  if (param_1->colorsCount == '\x01') {
-    R_DecodeLightGridColors(((rgp.world)->lightGrid).colors + param_1->colorsIndex[0],&local_70c);
-    R_AddHeroOnlyLightsToGridColors(&local_70c,local_388);
-    R_SetLightGridColorsVec4(&local_70c,param_1->primaryLightWeight,param_2);
+  heroPos = local_79c;
+  if (patch->colorsCount == '\x01') {
+    R_DecodeLightGridColors(((rgp.world)->lightGrid).colors + patch->colorsIndex[0],&decodedColors);
+    R_AddHeroOnlyLightsToGridColors(&decodedColors,heroPos);
+    R_SetLightGridColorsVec4(&decodedColors,patch->primaryLightWeight,pixels);
   }
   else {
     R_DecodeLightGridColorsWeighted
-              (((rgp.world)->lightGrid).colors + param_1->colorsIndex[0],&local_384,
-               param_1->colorsWeight[0]);
-    for (local_710 = 1; local_710 < param_1->colorsCount; local_710 = local_710 + 1) {
+              (((rgp.world)->lightGrid).colors + patch->colorsIndex[0],&accumulatedColors,
+               patch->colorsWeight[0]);
+    for (i = 1; i < patch->colorsCount; i = i + 1) {
       R_DecodeLightGridColorsWeighted
-                (((rgp.world)->lightGrid).colors + param_1->colorsIndex[local_710],&local_70c,
-                 param_1->colorsWeight[local_710]);
-      for (local_714 = 0; local_714 < 0x38; local_714 = local_714 + 1) {
-        local_384.rgb[local_714][0] = local_384.rgb[local_714][0] + local_70c.rgb[local_714][0];
-        local_384.rgb[local_714][1] = local_384.rgb[local_714][1] + local_70c.rgb[local_714][1];
-        local_384.rgb[local_714][2] = local_384.rgb[local_714][2] + local_70c.rgb[local_714][2];
+                (((rgp.world)->lightGrid).colors + patch->colorsIndex[i],&decodedColors,
+                 patch->colorsWeight[i]);
+      for (j = 0; j < 0x38; j = j + 1) {
+        accumulatedColors.rgb[j][0] = accumulatedColors.rgb[j][0] + decodedColors.rgb[j][0];
+        accumulatedColors.rgb[j][1] = accumulatedColors.rgb[j][1] + decodedColors.rgb[j][1];
+        accumulatedColors.rgb[j][2] = accumulatedColors.rgb[j][2] + decodedColors.rgb[j][2];
       }
     }
-    R_AddHeroOnlyLightsToGridColors(&local_384,local_388);
-    R_SetLightGridColorsVec4(&local_384,param_1->primaryLightWeight,param_2);
+    R_AddHeroOnlyLightsToGridColors(&accumulatedColors,heroPos);
+    R_SetLightGridColorsVec4(&accumulatedColors,patch->primaryLightWeight,pixels);
   }
   return;
 }
@@ -762,23 +802,23 @@ void __cdecl R_ApplyLightGridColorsPatch(GfxModelLightingPatch *param_1,uchar *p
 
 uchar __cdecl
 R_ExtrapolateLightingAtPoint
-          (GfxLightGrid *param_1,float *param_2,ushort param_3,GfxModelLightExtrapolation param_4,
-          uint param_5)
+          (GfxLightGrid *lightGrid,float *heroPos,ushort dest,
+          GfxModelLightExtrapolation extrapolateBehavior,uint defaultGridEntry)
 
 {
   uchar uVar1;
   
-  if (((param_4 == GFX_MODELLIGHT_SHOW_MISSING) && (param_5 == 0)) &&
+  if (((extrapolateBehavior == GFX_MODELLIGHT_SHOW_MISSING) && (defaultGridEntry == 0)) &&
      ((r_showMissingLightGrid->current).enabled != false)) {
-    R_SetLightGridColorsFromIndex(param_1,param_1->colorCount - 1,(float *)0x0,1.0,param_3);
+    R_SetLightGridColorsFromIndex(lightGrid,lightGrid->colorCount - 1,(float *)0x0,1.0,dest);
     uVar1 = '\0';
   }
-  else if (param_5 < param_1->colorCount) {
-    R_SetLightGridColorsFromIndex(param_1,param_5,param_2,1.0,param_3);
-    uVar1 = (uchar)param_1->sunPrimaryLightIndex;
+  else if (defaultGridEntry < lightGrid->colorCount) {
+    R_SetLightGridColorsFromIndex(lightGrid,defaultGridEntry,heroPos,1.0,dest);
+    uVar1 = (uchar)lightGrid->sunPrimaryLightIndex;
   }
   else {
-    R_SetLightGridColorsFromIndex(param_1,param_1->colorCount - 1,(float *)0x0,1.0,param_3);
+    R_SetLightGridColorsFromIndex(lightGrid,lightGrid->colorCount - 1,(float *)0x0,1.0,dest);
     uVar1 = '\0';
   }
   return uVar1;
@@ -789,15 +829,16 @@ R_ExtrapolateLightingAtPoint
 
 void __cdecl
 R_GetLightGridSampleEntryQuad
-          (GfxLightGrid *param_1,uint *param_2,GfxLightGridEntry **param_3,uint *param_4)
+          (GfxLightGrid *lightGrid,uint *pos,GfxLightGridEntry **entries,uint *defaultGridEntry)
 
 {
   ushort *puVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
+  byte bVar2;
+  code *pcVar3;
+  bool bVar4;
   uint uVar5;
-  int iVar6;
+  uint uVar6;
+  int iVar7;
   GfxLightGridEntry *local_6c;
   GfxLightGridEntry *local_68;
   int local_64;
@@ -809,187 +850,199 @@ R_GetLightGridSampleEntryQuad
   GfxLightGridEntry *local_4c;
   GfxLightGridEntry *local_48;
   uint local_44;
-  int local_3c;
-  uint local_18;
-  ushort *local_14;
-  uint local_8;
+  uint lookup;
+  uint firstBlockEntry;
+  I_spuDmaSave save;
+  uint z;
+  uint rowCount;
+  uint localZ;
+  GfxLightGridRow *row;
+  uchar *rleData;
+  GfxLightGridRow *remoteRow;
+  uint rleSizeFull;
+  uint colIndex;
+  uchar *remote_rleData;
+  ushort rowDataStart;
+  uint rowIndex;
+  uint baseZ;
   
-  uVar4 = param_2[param_1->rowAxis] - (uint)param_1->mins[param_1->rowAxis];
-  if (uVar4 < (param_1->maxs[param_1->rowAxis] + 1) - (uint)param_1->mins[param_1->rowAxis]) {
-    local_44 = (uint)param_1->rowDataStart[uVar4];
+  uVar5 = pos[lightGrid->rowAxis] - (uint)lightGrid->mins[lightGrid->rowAxis];
+  if (uVar5 < (lightGrid->maxs[lightGrid->rowAxis] + 1) - (uint)lightGrid->mins[lightGrid->rowAxis])
+  {
+    local_44 = (uint)lightGrid->rowDataStart[uVar5];
   }
   else {
     local_44 = 0xffff;
   }
   if ((short)local_44 == -1) {
-    *param_3 = (GfxLightGridEntry *)0x0;
-    param_3[1] = (GfxLightGridEntry *)0x0;
-    param_3[2] = (GfxLightGridEntry *)0x0;
-    param_3[3] = (GfxLightGridEntry *)0x0;
+    *entries = (GfxLightGridEntry *)0x0;
+    entries[1] = (GfxLightGridEntry *)0x0;
+    entries[2] = (GfxLightGridEntry *)0x0;
+    entries[3] = (GfxLightGridEntry *)0x0;
   }
   else {
-    if ((param_1->rawRowDataSize <= local_44 << 2) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x69e,0,
+    if ((lightGrid->rawRowDataSize <= local_44 << 2) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x69e,0,
                                  "rowDataStart * 4 doesn\'t index lightGrid->rawRowDataSize\n\t%i not in [0, %i)"
-                                ), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+                                ), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    puVar1 = (ushort *)(param_1->rawRowData + local_44 * 4);
-    if ((param_1->entryCount <= *(uint *)(puVar1 + 4)) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x6a3,0,
+    puVar1 = (ushort *)(lightGrid->rawRowData + local_44 * 4);
+    if ((lightGrid->entryCount <= *(uint *)(puVar1 + 4)) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x6a3,0,
                                  "row->firstEntry doesn\'t index lightGrid->entryCount\n\t%i not in [0, %i)"
-                                ), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+                                ), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    local_18 = param_2[param_1->colAxis] - (uint)*puVar1;
-    uVar4 = param_2[2] - (uint)puVar1[2];
-    if ((uint)puVar1[1] < local_18 + 1) {
-      *param_3 = (GfxLightGridEntry *)0x0;
-      param_3[1] = (GfxLightGridEntry *)0x0;
-      param_3[2] = (GfxLightGridEntry *)0x0;
-      param_3[3] = (GfxLightGridEntry *)0x0;
+    colIndex = pos[lightGrid->colAxis] - (uint)*puVar1;
+    uVar5 = pos[2] - (uint)puVar1[2];
+    if ((uint)puVar1[1] < colIndex + 1) {
+      *entries = (GfxLightGridEntry *)0x0;
+      entries[1] = (GfxLightGridEntry *)0x0;
+      entries[2] = (GfxLightGridEntry *)0x0;
+      entries[3] = (GfxLightGridEntry *)0x0;
     }
-    else if ((uint)puVar1[3] < uVar4 + 1) {
-      *param_3 = (GfxLightGridEntry *)0x0;
-      param_3[1] = (GfxLightGridEntry *)0x0;
-      param_3[2] = (GfxLightGridEntry *)0x0;
-      param_3[3] = (GfxLightGridEntry *)0x0;
-      if (param_2[2] < (uint)puVar1[2]) {
-        *param_4 = 0;
+    else if ((uint)puVar1[3] < uVar5 + 1) {
+      *entries = (GfxLightGridEntry *)0x0;
+      entries[1] = (GfxLightGridEntry *)0x0;
+      entries[2] = (GfxLightGridEntry *)0x0;
+      entries[3] = (GfxLightGridEntry *)0x0;
+      if (pos[2] < (uint)puVar1[2]) {
+        *defaultGridEntry = 0;
       }
     }
     else {
-      local_3c = *(int *)(puVar1 + 4);
-      local_14 = puVar1 + 6;
+      firstBlockEntry = *(uint *)(puVar1 + 4);
+      remote_rleData = (uchar *)(puVar1 + 6);
       local_64 = (0xff < puVar1[3]) + 3;
-      if (local_18 == 0xffffffff) {
-        *param_3 = (GfxLightGridEntry *)0x0;
-        param_3[1] = (GfxLightGridEntry *)0x0;
-        local_8 = (uint)(byte)puVar1[7];
+      if (colIndex == 0xffffffff) {
+        *entries = (GfxLightGridEntry *)0x0;
+        entries[1] = (GfxLightGridEntry *)0x0;
+        baseZ = (uint)(byte)puVar1[7];
         if (0xff < puVar1[3]) {
-          local_8 = (uint)*(byte *)((int)puVar1 + 0xf) * 0x100 + local_8;
+          baseZ = (uint)*(byte *)((int)puVar1 + 0xf) * 0x100 + baseZ;
         }
-        uVar5 = uVar4 - local_8;
-        if (uVar5 < *(byte *)((int)puVar1 + 0xd)) {
-          local_48 = param_1->entries + local_3c + uVar5;
+        uVar6 = uVar5 - baseZ;
+        if (uVar6 < *(byte *)((int)puVar1 + 0xd)) {
+          local_48 = lightGrid->entries + firstBlockEntry + uVar6;
         }
         else {
           local_48 = (GfxLightGridEntry *)0x0;
         }
-        param_3[2] = local_48;
-        if (uVar5 + 1 < (uint)*(byte *)((int)puVar1 + 0xd)) {
-          local_4c = param_1->entries + local_3c + uVar5 + 1;
+        entries[2] = local_48;
+        if (uVar6 + 1 < (uint)*(byte *)((int)puVar1 + 0xd)) {
+          local_4c = lightGrid->entries + firstBlockEntry + uVar6 + 1;
         }
         else {
           local_4c = (GfxLightGridEntry *)0x0;
         }
-        param_3[3] = local_4c;
-        if (uVar4 < local_8) {
-          *param_4 = 0;
+        entries[3] = local_4c;
+        if (uVar5 < baseZ) {
+          *defaultGridEntry = 0;
         }
       }
       else {
-        for (; (byte)*local_14 <= local_18; local_14 = (ushort *)((int)local_14 + local_50)) {
-          local_18 = local_18 - (byte)*local_14;
-          local_3c = (uint)(byte)*local_14 * (uint)*(byte *)((int)local_14 + 1) + local_3c;
+        for (; *remote_rleData <= colIndex; remote_rleData = remote_rleData + local_50) {
+          colIndex = colIndex - *remote_rleData;
+          firstBlockEntry = (uint)*remote_rleData * (uint)remote_rleData[1] + firstBlockEntry;
           local_50 = local_64;
-          if (*(byte *)((int)local_14 + 1) == 0) {
+          if (remote_rleData[1] == '\0') {
             local_50 = 2;
           }
         }
-        if (*(byte *)((int)local_14 + 1) == 0) {
-          *param_3 = (GfxLightGridEntry *)0x0;
-          param_3[1] = (GfxLightGridEntry *)0x0;
-          if (*(byte *)((int)local_14 + 3) != 0) {
-            local_8 = (uint)(byte)local_14[2];
+        if (remote_rleData[1] == '\0') {
+          *entries = (GfxLightGridEntry *)0x0;
+          entries[1] = (GfxLightGridEntry *)0x0;
+          if (remote_rleData[3] != '\0') {
+            baseZ = (uint)remote_rleData[4];
             if (0xff < puVar1[3]) {
-              local_8 = (uint)*(byte *)((int)local_14 + 5) * 0x100 + local_8;
+              baseZ = (uint)remote_rleData[5] * 0x100 + baseZ;
             }
-            if (uVar4 < *(byte *)((int)local_14 + 3) + local_8) {
-              *param_4 = 0;
+            if (uVar5 < remote_rleData[3] + baseZ) {
+              *defaultGridEntry = 0;
             }
           }
-          if (local_18 + 1 < (uint)(byte)*local_14) {
-            param_3[2] = (GfxLightGridEntry *)0x0;
-            param_3[3] = (GfxLightGridEntry *)0x0;
+          if (colIndex + 1 < (uint)*remote_rleData) {
+            entries[2] = (GfxLightGridEntry *)0x0;
+            entries[3] = (GfxLightGridEntry *)0x0;
             return;
           }
         }
         else {
-          local_8 = (uint)(byte)local_14[1];
+          baseZ = (uint)remote_rleData[2];
           if (0xff < puVar1[3]) {
-            local_8 = (uint)*(byte *)((int)local_14 + 3) * 0x100 + local_8;
+            baseZ = (uint)remote_rleData[3] * 0x100 + baseZ;
           }
-          if (uVar4 < local_8) {
-            *param_4 = 0;
+          if (uVar5 < baseZ) {
+            *defaultGridEntry = 0;
           }
-          local_8 = uVar4 - local_8;
-          iVar6 = *(byte *)((int)local_14 + 1) * local_18 + local_3c + local_8;
-          if (local_8 < *(byte *)((int)local_14 + 1)) {
-            local_54 = param_1->entries + iVar6;
+          uVar6 = uVar5 - baseZ;
+          iVar7 = remote_rleData[1] * colIndex + firstBlockEntry + uVar6;
+          if (uVar6 < remote_rleData[1]) {
+            local_54 = lightGrid->entries + iVar7;
           }
           else {
             local_54 = (GfxLightGridEntry *)0x0;
           }
-          *param_3 = local_54;
-          if (local_8 + 1 < (uint)*(byte *)((int)local_14 + 1)) {
-            local_58 = param_1->entries + iVar6 + 1;
+          *entries = local_54;
+          if (uVar6 + 1 < (uint)remote_rleData[1]) {
+            local_58 = lightGrid->entries + iVar7 + 1;
           }
           else {
             local_58 = (GfxLightGridEntry *)0x0;
           }
-          param_3[1] = local_58;
-          if (local_18 + 1 < (uint)(byte)*local_14) {
-            iVar6 = (uint)*(byte *)((int)local_14 + 1) + iVar6;
-            if (local_8 < *(byte *)((int)local_14 + 1)) {
-              local_5c = param_1->entries + iVar6;
+          entries[1] = local_58;
+          if (colIndex + 1 < (uint)*remote_rleData) {
+            bVar2 = remote_rleData[1];
+            if (uVar6 < remote_rleData[1]) {
+              local_5c = lightGrid->entries + (uint)bVar2 + iVar7;
             }
             else {
               local_5c = (GfxLightGridEntry *)0x0;
             }
-            param_3[2] = local_5c;
-            if (local_8 + 1 < (uint)*(byte *)((int)local_14 + 1)) {
-              local_60 = param_1->entries + iVar6 + 1;
+            entries[2] = local_5c;
+            if (uVar6 + 1 < (uint)remote_rleData[1]) {
+              local_60 = lightGrid->entries + (uint)bVar2 + iVar7 + 1;
             }
             else {
               local_60 = (GfxLightGridEntry *)0x0;
             }
-            param_3[3] = local_60;
+            entries[3] = local_60;
             return;
           }
         }
-        if (param_2[param_1->colAxis] + 1 == (uint)*puVar1 + (uint)puVar1[1]) {
-          param_3[2] = (GfxLightGridEntry *)0x0;
-          param_3[3] = (GfxLightGridEntry *)0x0;
+        if (pos[lightGrid->colAxis] + 1 == (uint)*puVar1 + (uint)puVar1[1]) {
+          entries[2] = (GfxLightGridEntry *)0x0;
+          entries[3] = (GfxLightGridEntry *)0x0;
         }
         else {
-          if (*(byte *)((int)local_14 + 1) == 0) {
+          if (remote_rleData[1] == '\0') {
             local_64 = 2;
           }
-          local_8 = (uint)*(byte *)((int)local_14 + local_64 + 2);
+          baseZ = (uint)remote_rleData[local_64 + 2];
           if (0xff < puVar1[3]) {
-            local_8 = (uint)*(byte *)((int)local_14 + local_64 + 3) * 0x100 + local_8;
+            baseZ = (uint)remote_rleData[local_64 + 3] * 0x100 + baseZ;
           }
-          uVar4 = uVar4 - local_8;
-          iVar6 = (uint)(byte)*local_14 * (uint)*(byte *)((int)local_14 + 1) + local_3c + uVar4;
-          if (uVar4 < *(byte *)((int)local_14 + local_64 + 1)) {
-            local_68 = param_1->entries + iVar6;
+          uVar5 = uVar5 - baseZ;
+          iVar7 = (uint)*remote_rleData * (uint)remote_rleData[1] + firstBlockEntry + uVar5;
+          if (uVar5 < remote_rleData[local_64 + 1]) {
+            local_68 = lightGrid->entries + iVar7;
           }
           else {
             local_68 = (GfxLightGridEntry *)0x0;
           }
-          param_3[2] = local_68;
-          if (uVar4 + 1 < (uint)*(byte *)((int)local_14 + local_64 + 1)) {
-            local_6c = param_1->entries + iVar6 + 1;
+          entries[2] = local_68;
+          if (uVar5 + 1 < (uint)remote_rleData[local_64 + 1]) {
+            local_6c = lightGrid->entries + iVar7 + 1;
           }
           else {
             local_6c = (GfxLightGridEntry *)0x0;
           }
-          param_3[3] = local_6c;
+          entries[3] = local_6c;
         }
       }
     }
@@ -1002,32 +1055,34 @@ R_GetLightGridSampleEntryQuad
 
 bool __cdecl
 R_IsValidLightGridSample
-          (GfxLightGrid *param_1,GfxLightGridEntry *param_2,int param_3,uint *param_4,float *param_5
-          )
+          (GfxLightGrid *lightGrid,GfxLightGridEntry *entry,int cornerIndex,uint *pos,
+          float *samplePos)
 
 {
   int iVar1;
-  float local_28;
+  float traceDir;
   float local_24;
   float local_20;
-  float local_1c [4];
+  float gridPos [4];
   float local_c;
   float local_8;
   
-  local_1c[0] = (float)*param_4 * 32.0 + -131072.0;
-  local_1c[1] = (float)param_4[1] * 32.0 + -131072.0;
-  local_1c[2] = (float)param_4[2] * 64.0 + -131072.0;
-  local_1c[param_1->rowAxis] = (float)(-((param_3 & 4U) != 0) & 0x20) + local_1c[param_1->rowAxis];
-  local_1c[param_1->colAxis] = (float)(-((param_3 & 2U) != 0) & 0x20) + local_1c[param_1->colAxis];
-  local_1c[2] = (float)(-((param_3 & 1U) != 0) & 0x40) + local_1c[2];
-  local_28 = *param_5 - local_1c[0];
-  local_24 = param_5[1] - local_1c[1];
-  local_20 = param_5[2] - local_1c[2];
-  Vec3Normalize(&local_28);
-  local_1c[3] = local_28 * 0.01 + local_1c[0];
-  local_c = local_24 * 0.01 + local_1c[1];
-  local_8 = local_20 * 0.01 + local_1c[2];
-  iVar1 = CM_BoxSightTrace(0,param_5,local_1c + 3,vec3_origin,vec3_origin,0,0x2001);
+  gridPos[0] = (float)*pos * 32.0 + -131072.0;
+  gridPos[1] = (float)pos[1] * 32.0 + -131072.0;
+  gridPos[2] = (float)pos[2] * 64.0 + -131072.0;
+  gridPos[lightGrid->rowAxis] =
+       (float)(-((cornerIndex & 4U) != 0) & 0x20) + gridPos[lightGrid->rowAxis];
+  gridPos[lightGrid->colAxis] =
+       (float)(-((cornerIndex & 2U) != 0) & 0x20) + gridPos[lightGrid->colAxis];
+  gridPos[2] = (float)(-((cornerIndex & 1U) != 0) & 0x40) + gridPos[2];
+  traceDir = *samplePos - gridPos[0];
+  local_24 = samplePos[1] - gridPos[1];
+  local_20 = samplePos[2] - gridPos[2];
+  Vec3Normalize(&traceDir);
+  gridPos[3] = traceDir * 0.01 + gridPos[0];
+  local_c = local_24 * 0.01 + gridPos[1];
+  local_8 = local_20 * 0.01 + gridPos[2];
+  iVar1 = CM_BoxSightTrace(0,samplePos,gridPos + 3,vec3_origin,vec3_origin,0,0x2001);
   return (bool)('\x01' - (iVar1 != 0));
 }
 
@@ -1037,8 +1092,8 @@ R_IsValidLightGridSample
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 uchar __cdecl
-R_LightGridLookup(GfxLightGrid *param_1,float *param_2,float *param_3,GfxLightGridEntry **param_4,
-                 uint *param_5)
+R_LightGridLookup(GfxLightGrid *lightGrid,float *samplePos,float *cornerWeight,
+                 GfxLightGridEntry **cornerEntry,uint *defaultGridEntry)
 
 {
   code *pcVar1;
@@ -1048,163 +1103,166 @@ R_LightGridLookup(GfxLightGrid *param_1,float *param_2,float *param_3,GfxLightGr
   int extraout_EAX_00;
   int extraout_EAX_01;
   float fVar4;
-  GfxLightGridEntry local_50;
-  uint local_4c [3];
-  bool local_3d;
-  GfxLightGridEntry *local_3c;
-  int local_38;
-  uint local_34;
-  float local_30;
+  int localEntry;
+  uint pos [3];
+  bool honorSuppression;
+  GfxLightGridEntry *entry;
+  uint cornerTraceBit;
+  uint cornerIndex;
+  float axisLerp;
   float local_2c;
   float local_28;
-  uchar local_21;
-  GfxLightGridEntry *local_20;
-  float local_1c;
-  char local_15;
-  float local_14;
-  bool local_10 [8];
+  uchar primaryLightIndex;
+  GfxLightGridEntry *remoteEntry;
+  float bestPrimaryLightWeight;
+  bool suppressEntry;
+  float quadWeight;
+  bool suppressEntryLog [8];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   floor();
   _ftol2_sse();
-  local_4c[0] = extraout_EAX + 0x20000 >> 5;
+  pos[0] = extraout_EAX + 0x20000 >> 5;
   floor();
   _ftol2_sse();
-  local_4c[1] = extraout_EAX_00 + 0x20000 >> 5;
+  pos[1] = extraout_EAX_00 + 0x20000 >> 5;
   floor();
   _ftol2_sse();
-  local_4c[2] = extraout_EAX_01 + 0x20000 >> 6;
-  if ((((param_1->rowAxis != 0) || (param_1->colAxis != 1)) &&
-      ((param_1->rowAxis != 1 || (param_1->colAxis != 0)))) &&
+  pos[2] = extraout_EAX_01 + 0x20000 >> 6;
+  if ((((lightGrid->rowAxis != 0) || (lightGrid->colAxis != 1)) &&
+      ((lightGrid->rowAxis != 1 || (lightGrid->colAxis != 0)))) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x78e,1,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_30 = (param_2[param_1->rowAxis] - -131072.0) * 0.03125 - (float)local_4c[param_1->rowAxis];
-  local_2c = (param_2[param_1->colAxis] - -131072.0) * 0.03125 - (float)local_4c[param_1->colAxis];
-  local_28 = (param_2[2] - -131072.0) * 0.015625 - (float)local_4c[2];
+  axisLerp = (samplePos[lightGrid->rowAxis] - -131072.0) * 0.03125 - (float)pos[lightGrid->rowAxis];
+  local_2c = (samplePos[lightGrid->colAxis] - -131072.0) * 0.03125 - (float)pos[lightGrid->colAxis];
+  local_28 = (samplePos[2] - -131072.0) * 0.015625 - (float)pos[2];
   fVar4 = (1.0 - local_2c) * (1.0 - local_28);
-  *param_3 = (1.0 - local_30) * fVar4;
-  param_3[4] = fVar4 * local_30;
+  *cornerWeight = (1.0 - axisLerp) * fVar4;
+  cornerWeight[4] = fVar4 * axisLerp;
   fVar4 = (1.0 - local_2c) * local_28;
-  param_3[1] = (1.0 - local_30) * fVar4;
-  param_3[5] = fVar4 * local_30;
+  cornerWeight[1] = (1.0 - axisLerp) * fVar4;
+  cornerWeight[5] = fVar4 * axisLerp;
   fVar4 = (1.0 - local_28) * local_2c;
-  param_3[2] = (1.0 - local_30) * fVar4;
-  param_3[6] = fVar4 * local_30;
-  local_14 = local_2c * local_28;
-  param_3[3] = (1.0 - local_30) * local_14;
-  param_3[7] = local_14 * local_30;
-  *param_5 = 1;
-  R_GetLightGridSampleEntryQuad(param_1,local_4c,param_4,param_5);
-  local_4c[param_1->rowAxis] = local_4c[param_1->rowAxis] + 1;
-  R_GetLightGridSampleEntryQuad(param_1,local_4c,param_4 + 4,param_5);
-  local_4c[param_1->rowAxis] = local_4c[param_1->rowAxis] - 1;
+  cornerWeight[2] = (1.0 - axisLerp) * fVar4;
+  cornerWeight[6] = fVar4 * axisLerp;
+  quadWeight = local_2c * local_28;
+  cornerWeight[3] = (1.0 - axisLerp) * quadWeight;
+  cornerWeight[7] = quadWeight * axisLerp;
+  *defaultGridEntry = 1;
+  R_GetLightGridSampleEntryQuad(lightGrid,pos,cornerEntry,defaultGridEntry);
+  pos[lightGrid->rowAxis] = pos[lightGrid->rowAxis] + 1;
+  R_GetLightGridSampleEntryQuad(lightGrid,pos,cornerEntry + 4,defaultGridEntry);
+  pos[lightGrid->rowAxis] = pos[lightGrid->rowAxis] - 1;
   if ((r_vc_makelog->current).integer != 0) {
-    R_UpdateVisHistory(param_1,local_4c,param_4);
+    R_UpdateVisHistory(lightGrid,pos,cornerEntry);
   }
-  local_21 = '\0';
-  local_1c = 0.0;
-  local_3d = false;
-  local_34 = 0;
-  local_38 = 1;
+  primaryLightIndex = '\0';
+  bestPrimaryLightWeight = 0.0;
+  honorSuppression = false;
+  cornerIndex = 0;
+  cornerTraceBit = 1;
   do {
-    if (7 < local_34) {
+    if (7 < cornerIndex) {
       if ((r_showLightGrid->current).enabled != false) {
-        R_ShowLightGrid(param_1,local_4c,param_2,param_4,local_10,local_3d);
+        R_ShowLightGrid(lightGrid,pos,samplePos,cornerEntry,suppressEntryLog,honorSuppression);
       }
-      return local_21;
+      return primaryLightIndex;
     }
-    local_20 = param_4[local_34];
-    if (local_20 != (GfxLightGridEntry *)0x0) {
-      if (0.001 < param_3[local_34] || param_3[local_34] == 0.001) {
-        local_50 = *local_20;
-        local_3c = &local_50;
-        bVar2 = R_IsValidLightGridSample(param_1,local_3c,local_34,local_4c,param_2);
-        local_15 = '\x01' - bVar2;
-        local_10[local_34] = (bool)local_15;
-        if ((bool)local_15 == false) {
-          if (local_3d != false) goto LAB_00adba8c;
-          local_3d = true;
-          local_1c = param_3[local_34];
-          local_21 = local_3c->primaryLightIndex;
-          memset((uchar *)param_4,'\0',local_34 << 2);
+    remoteEntry = cornerEntry[cornerIndex];
+    if (remoteEntry != (GfxLightGridEntry *)0x0) {
+      if (0.001 < cornerWeight[cornerIndex] || cornerWeight[cornerIndex] == 0.001) {
+        localEntry = *(int *)remoteEntry;
+        entry = (GfxLightGridEntry *)&localEntry;
+        bVar2 = R_IsValidLightGridSample(lightGrid,entry,cornerIndex,pos,samplePos);
+        suppressEntry = (bool)('\x01' - bVar2);
+        suppressEntryLog[cornerIndex] = suppressEntry;
+        if (suppressEntry == false) {
+          if (honorSuppression != false) goto LAB_00adba8c;
+          honorSuppression = true;
+          bestPrimaryLightWeight = cornerWeight[cornerIndex];
+          primaryLightIndex = entry->primaryLightIndex;
+          memset((uchar *)cornerEntry,'\0',cornerIndex << 2);
         }
-        else if (local_3d == false) {
+        else if (honorSuppression == false) {
 LAB_00adba8c:
-          if (local_21 == '\0') {
+          if (primaryLightIndex == '\0') {
             bVar2 = true;
           }
-          else if (local_3c->primaryLightIndex == '\0') {
+          else if (entry->primaryLightIndex == '\0') {
             bVar2 = false;
           }
-          else if (local_21 == 0xff) {
+          else if (primaryLightIndex == 0xff) {
             bVar2 = true;
           }
-          else if (local_3c->primaryLightIndex == 0xff) {
+          else if (entry->primaryLightIndex == 0xff) {
             bVar2 = false;
           }
-          else if (param_3[local_34] <= local_1c) {
+          else if (cornerWeight[cornerIndex] <= bestPrimaryLightWeight) {
             bVar2 = false;
           }
           else {
             bVar2 = true;
           }
           if (bVar2) {
-            local_1c = param_3[local_34];
-            local_21 = local_3c->primaryLightIndex;
+            bestPrimaryLightWeight = cornerWeight[cornerIndex];
+            primaryLightIndex = entry->primaryLightIndex;
           }
         }
         else {
-          param_4[local_34] = (GfxLightGridEntry *)0x0;
+          cornerEntry[cornerIndex] = (GfxLightGridEntry *)0x0;
         }
       }
       else {
-        param_4[local_34] = (GfxLightGridEntry *)0x0;
+        cornerEntry[cornerIndex] = (GfxLightGridEntry *)0x0;
       }
     }
-    local_34 = local_34 + 1;
-    local_38 = local_38 * 2;
+    cornerIndex = cornerIndex + 1;
+    cornerTraceBit = cornerTraceBit * 2;
   } while( true );
 }
 
 
 // 00ADB580  R_GetPrimaryLightFromGrid  (gfx_d3d/rb_light.cpp:2029)
 
-uchar __cdecl R_GetPrimaryLightFromGrid(GfxLightGrid *param_1,float *param_2,uchar param_3)
+uchar __cdecl
+R_GetPrimaryLightFromGrid(GfxLightGrid *lightGrid,float *samplePos,uchar sunPrimaryLightIndex)
 
 {
   GfxLightGridEntry *pGVar1;
   code *pcVar2;
   bool bVar3;
   uchar uVar4;
-  float local_54 [9];
-  uint local_30;
-  uchar local_29;
-  GfxLightGridEntry *local_28 [8];
-  uint local_8;
+  float cornerWeight [8];
+  GfxLightGridEntry *entry;
+  uint cornerIndex;
+  uchar primaryLightIndex;
+  GfxLightGridEntry *cornerEntry [8];
+  uint defaultGridEntry;
   
-  if ((param_1 == (GfxLightGrid *)0x0) &&
+  if ((lightGrid == (GfxLightGrid *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x7f5,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  local_29 = R_LightGridLookup(param_1,param_2,local_54,local_28,&local_8);
-  if (local_29 == 0xff) {
-    local_29 = param_3;
+  primaryLightIndex =
+       R_LightGridLookup(lightGrid,samplePos,cornerWeight,cornerEntry,&defaultGridEntry);
+  if (primaryLightIndex == 0xff) {
+    primaryLightIndex = sunPrimaryLightIndex;
   }
-  local_30 = 0;
-  while ((uVar4 = param_3, local_30 < 8 &&
-         (((pGVar1 = local_28[local_30], pGVar1 == (GfxLightGridEntry *)0x0 ||
+  cornerIndex = 0;
+  while ((uVar4 = sunPrimaryLightIndex, cornerIndex < 8 &&
+         (((pGVar1 = cornerEntry[cornerIndex], pGVar1 == (GfxLightGridEntry *)0x0 ||
            (pGVar1->primaryLightIndex == 0xff)) ||
-          ((uVar4 = local_29, pGVar1->primaryLightIndex != '\0' &&
-           (pGVar1->primaryLightIndex != local_29))))))) {
-    local_30 = local_30 + 1;
+          ((uVar4 = primaryLightIndex, pGVar1->primaryLightIndex != '\0' &&
+           (pGVar1->primaryLightIndex != primaryLightIndex))))))) {
+    cornerIndex = cornerIndex + 1;
   }
   return uVar4;
 }
@@ -1213,13 +1271,15 @@ uchar __cdecl R_GetPrimaryLightFromGrid(GfxLightGrid *param_1,float *param_2,uch
 // 00ADCE90  R_BackEndDataAllocAndClearModelLightingPatch  (gfx_d3d/r_rendercmds.h:2050)
 
 GfxModelLightingPatch * __cdecl
-R_BackEndDataAllocAndClearModelLightingPatch(GfxBackEndData *param_1)
+R_BackEndDataAllocAndClearModelLightingPatch(GfxBackEndData *frontEndDataOut_2)
 
 {
   uint uVar1;
   long *plVar2;
+  GfxModelLightingPatch *patch_2;
+  int patchIndex_2;
   
-  plVar2 = &param_1->modelLightingPatchCount;
+  plVar2 = &frontEndDataOut_2->modelLightingPatchCount;
   LOCK();
   uVar1 = *plVar2;
   *plVar2 = *plVar2 + 1;
@@ -1227,8 +1287,8 @@ R_BackEndDataAllocAndClearModelLightingPatch(GfxBackEndData *param_1)
   if (0xfff < uVar1) {
     Com_Error(ERR_FATAL,"modelLightingPatchList ran out of elements.");
   }
-  memset((uchar *)(param_1->modelLightingPatchList + uVar1),'\0',0x4c);
-  return param_1->modelLightingPatchList + uVar1;
+  memset((uchar *)(frontEndDataOut_2->modelLightingPatchList + uVar1),'\0',0x4c);
+  return frontEndDataOut_2->modelLightingPatchList + uVar1;
 }
 
 
@@ -1236,32 +1296,34 @@ R_BackEndDataAllocAndClearModelLightingPatch(GfxBackEndData *param_1)
 
 bool __cdecl
 R_CanLightInfluenceLightGridCorner
-          (GfxLightGrid *param_1,ComPrimaryLight *param_2,float *param_3,uint param_4)
+          (GfxLightGrid *lightGrid,ComPrimaryLight *light,float *samplePos,uint cornerIndex)
 
 {
   bool bVar1;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
   float10 extraout_ST0_01;
-  float local_10 [3];
+  float gridPos [3];
   
-  if (param_2->type == '\0') {
+  if (light->type == '\0') {
     bVar1 = false;
   }
-  else if (param_2->type == '\x01') {
+  else if (light->type == '\x01') {
     bVar1 = true;
   }
   else {
     floor();
-    local_10[0] = (float)extraout_ST0 * 32.0;
+    gridPos[0] = (float)extraout_ST0 * 32.0;
     floor();
-    local_10[1] = (float)extraout_ST0_00 * 32.0;
+    gridPos[1] = (float)extraout_ST0_00 * 32.0;
     floor();
-    local_10[2] = (float)extraout_ST0_01 * 64.0;
-    local_10[param_1->rowAxis] = (float)(-((param_4 & 4) != 0) & 0x20) + local_10[param_1->rowAxis];
-    local_10[param_1->colAxis] = (float)(-((param_4 & 2) != 0) & 0x20) + local_10[param_1->colAxis];
-    local_10[2] = (float)(-((param_4 & 1) != 0) & 0x40) + local_10[2];
-    bVar1 = Com_CanPrimaryLightAffectPoint(param_2,local_10);
+    gridPos[2] = (float)extraout_ST0_01 * 64.0;
+    gridPos[lightGrid->rowAxis] =
+         (float)(-((cornerIndex & 4) != 0) & 0x20) + gridPos[lightGrid->rowAxis];
+    gridPos[lightGrid->colAxis] =
+         (float)(-((cornerIndex & 2) != 0) & 0x20) + gridPos[lightGrid->colAxis];
+    gridPos[2] = (float)(-((cornerIndex & 1) != 0) & 0x40) + gridPos[2];
+    bVar1 = Com_CanPrimaryLightAffectPoint(light,gridPos);
   }
   return bVar1;
 }
@@ -1274,8 +1336,8 @@ R_CanLightInfluenceLightGridCorner
 
 uint __cdecl
 R_GetLightingAtPoint
-          (GfxLightGrid *param_1,float *param_2,uint param_3,ushort param_4,
-          GfxModelLightExtrapolation param_5,bool param_6)
+          (GfxLightGrid *remoteLightGrid,float *samplePos,uint nonSunPrimaryLightIndex,ushort dest,
+          GfxModelLightExtrapolation extrapolateBehavior,bool useHeroLighting)
 
 {
   float fVar1;
@@ -1287,140 +1349,145 @@ R_GetLightingAtPoint
   int extraout_EAX_00;
   int extraout_EAX_01;
   uint local_e4;
-  GfxLightGridEntry local_bc;
-  int local_b8;
+  int localEntry;
+  int pos;
   int local_b4;
   int local_b0;
-  float local_ac [8];
-  GfxLightGridEntry *local_8c;
-  float *local_88;
-  uint local_84;
-  ushort local_80 [8];
+  float cornerWeight [8];
+  GfxLightGridEntry *entry;
+  float *heroPos;
+  uint cornerIndex;
+  ushort sampleColors [8];
   uint local_70;
-  uint local_6c;
-  GfxLightGridEntry *local_68;
-  float local_64;
-  ComPrimaryLight *local_60;
-  float local_5c;
-  GfxLightGrid *local_58;
-  uint local_54;
-  GfxLightGridEntry *local_50 [8];
-  uint local_30;
-  float local_2c;
-  float local_28 [8];
-  ComPrimaryLight *local_8;
+  uint primaryLightIndex;
+  GfxLightGridEntry *remoteEntry;
+  float primaryVisibleWeight;
+  ComPrimaryLight *light;
+  float maxWeight;
+  GfxLightGrid *lightGrid;
+  uint sampleCount;
+  GfxLightGridEntry *cornerEntry [8];
+  uint defaultGridEntry;
+  float primaryOccludedWeight;
+  float sampleWeight [8];
+  ComPrimaryLight *remoteLight;
   
   local_70 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (GfxLightGrid *)0x0) &&
+  if ((remoteLightGrid == (GfxLightGrid *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x8ef,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar5 = (*pcVar2)();
     return uVar5;
   }
-  local_58 = param_1;
-  bVar4 = R_LightGridLookup(param_1,param_2,local_ac,local_50,&local_30);
-  local_6c = (uint)bVar4;
-  if (local_6c == 0xff) {
-    local_6c = (uint)(byte)local_58->sunPrimaryLightIndex;
+  lightGrid = remoteLightGrid;
+  bVar4 = R_LightGridLookup(remoteLightGrid,samplePos,cornerWeight,cornerEntry,&defaultGridEntry);
+  primaryLightIndex = (uint)bVar4;
+  if (primaryLightIndex == 0xff) {
+    primaryLightIndex = (uint)(byte)lightGrid->sunPrimaryLightIndex;
   }
-  else if ((local_58->hasLightRegions != false) && (local_6c != local_58->sunPrimaryLightIndex)) {
-    local_6c = param_3;
+  else if ((lightGrid->hasLightRegions != false) &&
+          (primaryLightIndex != lightGrid->sunPrimaryLightIndex)) {
+    primaryLightIndex = nonSunPrimaryLightIndex;
   }
   floor();
   _ftol2_sse();
-  local_b8 = extraout_EAX + 0x20000 >> 5;
+  pos = extraout_EAX + 0x20000 >> 5;
   floor();
   _ftol2_sse();
   local_b4 = extraout_EAX_00 + 0x20000 >> 5;
   floor();
   _ftol2_sse();
   local_b0 = extraout_EAX_01 + 0x20000 >> 6;
-  local_88 = (float *)(-(uint)param_6 & (uint)param_2);
-  local_54 = 0;
-  local_5c = 0.0;
-  local_64 = 0.0;
-  local_2c = 0.0;
-  local_84 = 0;
+  heroPos = (float *)(-(uint)useHeroLighting & (uint)samplePos);
+  sampleCount = 0;
+  maxWeight = 0.0;
+  primaryVisibleWeight = 0.0;
+  primaryOccludedWeight = 0.0;
+  cornerIndex = 0;
   do {
-    if (7 < local_84) {
-      if ((local_5c < 0.0) &&
+    if (7 < cornerIndex) {
+      if ((maxWeight < 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x923,
                                    0,"%s\n\t(maxWeight) = %g"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         uVar5 = (*pcVar2)();
         return uVar5;
       }
-      if ((local_64 < 0.0) &&
+      if ((primaryVisibleWeight < 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x924,
                                    0,"%s\n\t(primaryVisibleWeight) = %g"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         uVar5 = (*pcVar2)();
         return uVar5;
       }
-      if (local_54 == 0) {
-        bVar4 = R_ExtrapolateLightingAtPoint(local_58,local_88,param_4,param_5,local_30);
-        local_6c = (uint)bVar4;
+      if (sampleCount == 0) {
+        bVar4 = R_ExtrapolateLightingAtPoint
+                          (lightGrid,heroPos,dest,extrapolateBehavior,defaultGridEntry);
+        primaryLightIndex = (uint)bVar4;
       }
       else {
-        if ((local_5c <= 0.0) &&
+        if ((maxWeight <= 0.0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",
                                      0x92d,1,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           uVar5 = (*pcVar2)();
           return uVar5;
         }
-        if (local_6c == 0) {
-          local_64 = 0.0;
+        if (primaryLightIndex == 0) {
+          primaryVisibleWeight = 0.0;
         }
-        else if (local_2c == 0.0) {
-          if (local_64 != 0.0) {
-            local_64 = 1.0;
+        else if (primaryOccludedWeight == 0.0) {
+          if (primaryVisibleWeight != 0.0) {
+            primaryVisibleWeight = 1.0;
           }
         }
         else {
-          local_64 = local_64 / (local_64 + local_2c);
+          primaryVisibleWeight =
+               primaryVisibleWeight / (primaryVisibleWeight + primaryOccludedWeight);
         }
-        if (local_54 == 1) {
-          R_SetLightGridColorsFromIndex(local_58,(uint)local_80[0],local_88,local_64,param_4);
+        if (sampleCount == 1) {
+          R_SetLightGridColorsFromIndex
+                    (lightGrid,(uint)sampleColors[0],heroPos,primaryVisibleWeight,dest);
         }
         else {
           R_BlendAndSetLightGridColors
-                    (local_58,local_80,local_28,local_54,local_88,local_64,1.0 / local_5c,param_4);
+                    (lightGrid,sampleColors,sampleWeight,sampleCount,heroPos,primaryVisibleWeight,
+                     1.0 / maxWeight,dest);
         }
       }
-      return local_6c;
+      return primaryLightIndex;
     }
-    local_68 = local_50[local_84];
-    if (local_68 != (GfxLightGridEntry *)0x0) {
-      local_bc = *local_68;
-      local_8c = &local_bc;
-      if (local_bc.primaryLightIndex == local_6c) {
-        local_64 = local_64 + local_ac[local_84];
+    remoteEntry = cornerEntry[cornerIndex];
+    if (remoteEntry != (GfxLightGridEntry *)0x0) {
+      localEntry = *(int *)remoteEntry;
+      entry = (GfxLightGridEntry *)&localEntry;
+      if (localEntry._2_1_ == primaryLightIndex) {
+        primaryVisibleWeight = primaryVisibleWeight + cornerWeight[cornerIndex];
       }
-      else if ((local_bc.primaryLightIndex == 0) ||
-              ((local_bc.primaryLightIndex == 0xff && (local_6c != 0)))) {
-        local_60 = Com_GetPrimaryLight(local_6c);
-        local_8 = local_60;
-        bVar3 = R_CanLightInfluenceLightGridCorner(local_58,local_60,param_2,local_84);
+      else if ((localEntry._2_1_ == 0) || ((localEntry._2_1_ == 0xff && (primaryLightIndex != 0))))
+      {
+        light = Com_GetPrimaryLight(primaryLightIndex);
+        remoteLight = light;
+        bVar3 = R_CanLightInfluenceLightGridCorner(lightGrid,light,samplePos,cornerIndex);
         if (bVar3) {
-          local_2c = local_2c + local_ac[local_84];
+          primaryOccludedWeight = primaryOccludedWeight + cornerWeight[cornerIndex];
         }
       }
-      local_5c = local_5c + local_ac[local_84];
-      fVar1 = local_ac[local_84];
-      for (local_e4 = 0; local_e4 < local_54; local_e4 = local_e4 + 1) {
-        if (local_80[local_e4] == local_8c->colorsIndex) {
-          local_28[local_e4] = local_28[local_e4] + fVar1;
+      maxWeight = maxWeight + cornerWeight[cornerIndex];
+      fVar1 = cornerWeight[cornerIndex];
+      for (local_e4 = 0; local_e4 < sampleCount; local_e4 = local_e4 + 1) {
+        if (sampleColors[local_e4] == entry->colorsIndex) {
+          sampleWeight[local_e4] = sampleWeight[local_e4] + fVar1;
           goto LAB_00adca9a;
         }
       }
-      local_80[local_54] = local_8c->colorsIndex;
-      local_28[local_54] = fVar1;
-      local_54 = local_54 + 1;
+      sampleColors[sampleCount] = entry->colorsIndex;
+      sampleWeight[sampleCount] = fVar1;
+      sampleCount = sampleCount + 1;
     }
 LAB_00adca9a:
-    local_84 = local_84 + 1;
+    cornerIndex = cornerIndex + 1;
   } while( true );
 }
 
@@ -1429,129 +1496,134 @@ LAB_00adca9a:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_GetAverageLightingAtPoint(float *param_1,float *param_2)
+void __cdecl R_GetAverageLightingAtPoint(float *samplePos,float *outColor)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   uint local_7d4;
-  int local_7d0;
-  int local_7cc;
-  uint local_7c8;
-  GfxDecodedLightGridColors local_7c4;
-  GfxDecodedLightGridColors local_444;
-  GfxCompressedLightGridColors *local_c0;
-  GfxCompressedLightGridColors *local_bc;
-  float local_b8;
+  int i_2;
+  int j;
+  uint i;
+  GfxDecodedLightGridColors decodedColors;
+  GfxDecodedLightGridColors accumulatedColors;
+  GfxCompressedLightGridColors *remoteColors;
+  GfxCompressedLightGridColors *colors;
+  float average;
   float local_b4;
   float local_b0;
-  float local_a8 [8];
-  GfxLightGridEntry *local_88;
-  uint local_84;
-  ushort local_80 [8];
+  float cornerWeight [8];
+  GfxLightGridEntry *entry;
+  uint cornerIndex;
+  ushort sampleColors [8];
   uint local_70;
-  float local_6c;
-  uchar local_65;
-  float local_64;
+  float weightNormalizeScale;
+  uchar primaryLightIndex;
+  float colorWithSunAlpha;
   float local_60;
   float local_5c;
   float local_58;
-  float local_54;
-  uint local_50;
-  GfxLightGridEntry *local_4c [8];
-  uint local_2c;
-  float local_28 [8];
-  float local_8;
+  float maxWeight;
+  uint sampleCount;
+  GfxLightGridEntry *cornerEntry [8];
+  uint defaultGridEntry;
+  float sampleWeight [8];
+  float primaryWeight;
   
   local_70 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50 = 0;
-  local_54 = 0.0;
-  local_8 = 0.0;
-  local_65 = R_LightGridLookup(&(rgp.world)->lightGrid,param_1,local_a8,local_4c,&local_2c);
-  if (local_65 == '\x01') {
-    for (local_84 = 0; local_84 < 8; local_84 = local_84 + 1) {
-      local_88 = local_4c[local_84];
-      if (local_88 != (GfxLightGridEntry *)0x0) {
-        if ((local_88->primaryLightIndex != '\0') && (local_88->primaryLightIndex != 0xff)) {
-          if (local_88->primaryLightIndex != local_65) goto LAB_00add26a;
-          local_8 = local_8 + local_a8[local_84];
+  sampleCount = 0;
+  maxWeight = 0.0;
+  primaryWeight = 0.0;
+  primaryLightIndex =
+       R_LightGridLookup(&(rgp.world)->lightGrid,samplePos,cornerWeight,cornerEntry,
+                         &defaultGridEntry);
+  if (primaryLightIndex == '\x01') {
+    for (cornerIndex = 0; cornerIndex < 8; cornerIndex = cornerIndex + 1) {
+      entry = cornerEntry[cornerIndex];
+      if (entry != (GfxLightGridEntry *)0x0) {
+        if ((entry->primaryLightIndex != '\0') && (entry->primaryLightIndex != 0xff)) {
+          if (entry->primaryLightIndex != primaryLightIndex) goto LAB_00add26a;
+          primaryWeight = primaryWeight + cornerWeight[cornerIndex];
         }
-        local_54 = local_54 + local_a8[local_84];
-        fVar1 = local_a8[local_84];
-        for (local_7d4 = 0; local_7d4 < local_50; local_7d4 = local_7d4 + 1) {
-          if (local_80[local_7d4] == local_88->colorsIndex) {
-            local_28[local_7d4] = local_28[local_7d4] + fVar1;
+        maxWeight = maxWeight + cornerWeight[cornerIndex];
+        fVar1 = cornerWeight[cornerIndex];
+        for (local_7d4 = 0; local_7d4 < sampleCount; local_7d4 = local_7d4 + 1) {
+          if (sampleColors[local_7d4] == entry->colorsIndex) {
+            sampleWeight[local_7d4] = sampleWeight[local_7d4] + fVar1;
             goto LAB_00add26a;
           }
         }
-        local_80[local_50] = local_88->colorsIndex;
-        local_28[local_50] = fVar1;
-        local_50 = local_50 + 1;
+        sampleColors[sampleCount] = entry->colorsIndex;
+        sampleWeight[sampleCount] = fVar1;
+        sampleCount = sampleCount + 1;
       }
 LAB_00add26a:
     }
-    if ((local_54 < 0.0) &&
+    if ((maxWeight < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x970,0,
                                  "%s\n\t(maxWeight) = %g"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((local_8 < 0.0) &&
+    if ((primaryWeight < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x971,0,
                                  "%s\n\t(primaryWeight) = %g"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (local_50 == 0) {
-      local_64 = 0.0;
+    if (sampleCount == 0) {
+      colorWithSunAlpha = 0.0;
       local_60 = 0.0;
       local_5c = 0.0;
       local_58 = 1.0;
     }
     else {
-      local_6c = 1.0 / local_54;
-      local_c0 = ((rgp.world)->lightGrid).colors + local_80[0];
-      local_bc = local_c0;
-      R_DecodeLightGridColorsWeighted(local_c0,&local_444,local_28[0] * local_6c);
-      for (local_7c8 = 1; local_7c8 < local_50; local_7c8 = local_7c8 + 1) {
-        local_bc = ((rgp.world)->lightGrid).colors + local_80[local_7c8];
-        local_c0 = local_bc;
-        R_DecodeLightGridColorsWeighted(local_bc,&local_7c4,local_28[local_7c8] * local_6c);
-        for (local_7cc = 0; local_7cc < 0x38; local_7cc = local_7cc + 1) {
-          local_444.rgb[local_7cc][0] = local_444.rgb[local_7cc][0] + local_7c4.rgb[local_7cc][0];
-          local_444.rgb[local_7cc][1] = local_444.rgb[local_7cc][1] + local_7c4.rgb[local_7cc][1];
-          local_444.rgb[local_7cc][2] = local_444.rgb[local_7cc][2] + local_7c4.rgb[local_7cc][2];
+      weightNormalizeScale = 1.0 / maxWeight;
+      remoteColors = ((rgp.world)->lightGrid).colors + sampleColors[0];
+      colors = remoteColors;
+      R_DecodeLightGridColorsWeighted
+                (remoteColors,&accumulatedColors,sampleWeight[0] * weightNormalizeScale);
+      for (i = 1; i < sampleCount; i = i + 1) {
+        colors = ((rgp.world)->lightGrid).colors + sampleColors[i];
+        remoteColors = colors;
+        R_DecodeLightGridColorsWeighted
+                  (colors,&decodedColors,sampleWeight[i] * weightNormalizeScale);
+        for (j = 0; j < 0x38; j = j + 1) {
+          accumulatedColors.rgb[j][0] = accumulatedColors.rgb[j][0] + decodedColors.rgb[j][0];
+          accumulatedColors.rgb[j][1] = accumulatedColors.rgb[j][1] + decodedColors.rgb[j][1];
+          accumulatedColors.rgb[j][2] = accumulatedColors.rgb[j][2] + decodedColors.rgb[j][2];
         }
       }
-      local_b8 = 0.0;
+      average = 0.0;
       local_b4 = 0.0;
       local_b0 = 0.0;
-      for (local_7d0 = 0; local_7d0 < 0x38; local_7d0 = local_7d0 + 1) {
-        local_b8 = local_b8 + local_444.rgb[local_7d0][0];
-        local_b4 = local_b4 + local_444.rgb[local_7d0][1];
-        local_b0 = local_b0 + local_444.rgb[local_7d0][2];
+      for (i_2 = 0; i_2 < 0x38; i_2 = i_2 + 1) {
+        average = average + accumulatedColors.rgb[i_2][0];
+        local_b4 = local_b4 + accumulatedColors.rgb[i_2][1];
+        local_b0 = local_b0 + accumulatedColors.rgb[i_2][2];
       }
-      local_64 = local_b8 / 56.0;
+      colorWithSunAlpha = average / 56.0;
       local_60 = local_b4 / 56.0;
       local_5c = local_b0 / 56.0;
-      local_58 = local_8;
+      local_58 = primaryWeight;
     }
   }
   else {
-    local_64 = 0.0;
+    colorWithSunAlpha = 0.0;
     local_60 = 0.0;
     local_5c = 0.0;
     local_58 = 0.25;
   }
-  *param_2 = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[0] *
-             ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3] * local_58 + local_64;
-  param_2[1] = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[1] *
-               ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3] * local_58 + local_60;
-  param_2[2] = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[2] *
-               ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3] * local_58 + local_5c;
+  *outColor = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[0] *
+              ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3] * local_58 +
+              colorWithSunAlpha;
+  outColor[1] = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[1] *
+                ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3] * local_58 + local_60;
+  outColor[2] = ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[2] *
+                ((rgp.world)->sunParse).sunSettings[0].sunDiffuseColor[3] * local_58 + local_5c;
   return;
 }
 
@@ -1560,7 +1632,7 @@ LAB_00add26a:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_GetAverageSecondaryLightingAtPoint(float *param_1,float *param_2)
+void __cdecl R_GetAverageSecondaryLightingAtPoint(float *samplePos,float *outColor)
 
 {
   float fVar1;
@@ -1568,102 +1640,102 @@ void __cdecl R_GetAverageSecondaryLightingAtPoint(float *param_1,float *param_2)
   bool bVar3;
   float local_7f0;
   uint local_7a8;
-  int local_7a4;
-  int local_7a0;
-  GfxDecodedLightGridColors local_79c;
-  GfxCompressedLightGridColors *local_41c;
-  uint local_418;
-  GfxLightGridEntry *local_414;
-  uint local_410;
-  float local_40c [8];
-  float local_3ec [225];
+  int i_2;
+  int j;
+  GfxDecodedLightGridColors decodedColors;
+  GfxCompressedLightGridColors *colors;
+  uint i;
+  GfxLightGridEntry *entry;
+  uint cornerIndex;
+  float cornerWeight [8];
+  float accumulatedColors [225];
   ushort auStack_68 [8];
   uint local_58;
-  float local_54;
-  float local_50;
-  uint local_4c;
-  GfxLightGridEntry *local_48 [8];
-  uint local_28;
+  float weightNormalizeScale;
+  float maxWeight;
+  uint sampleCount;
+  GfxLightGridEntry *cornerEntry [8];
+  uint defaultGridEntry;
   float afStack_24 [8];
   
   local_58 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c = 0;
-  local_50 = 0.0;
-  R_LightGridLookup(&(rgp.world)->lightGrid,param_1,local_40c,local_48,&local_28);
-  local_410 = 0;
+  sampleCount = 0;
+  maxWeight = 0.0;
+  R_LightGridLookup(&(rgp.world)->lightGrid,samplePos,cornerWeight,cornerEntry,&defaultGridEntry);
+  cornerIndex = 0;
   do {
-    if (7 < local_410) {
-      if ((local_50 < 0.0) &&
+    if (7 < cornerIndex) {
+      if ((maxWeight < 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x9c7,
                                    0,"%s\n\t(maxWeight) = %g"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      memset((uchar *)local_3ec,'\0',0x380);
-      if (local_50 <= 0.0) {
+      memset((uchar *)accumulatedColors,'\0',0x380);
+      if (maxWeight <= 0.0) {
         local_7f0 = 0.0;
       }
       else {
-        local_7f0 = 1.0 / local_50;
+        local_7f0 = 1.0 / maxWeight;
       }
-      local_54 = local_7f0;
-      for (local_418 = 0; local_418 < local_4c; local_418 = local_418 + 1) {
-        local_41c = ((rgp.world)->lightGrid).colors + auStack_68[local_418];
-        R_DecodeLightGridColorsWeighted(local_41c,&local_79c,afStack_24[local_418] * local_54);
-        for (local_7a0 = 0; local_7a0 < 0x38; local_7a0 = local_7a0 + 1) {
-          local_3ec[local_7a0 * 4] = local_79c.rgb[local_7a0][0] + local_3ec[local_7a0 * 4];
-          local_3ec[local_7a0 * 4 + 1] = local_79c.rgb[local_7a0][1] + local_3ec[local_7a0 * 4 + 1];
-          local_3ec[local_7a0 * 4 + 2] = local_79c.rgb[local_7a0][2] + local_3ec[local_7a0 * 4 + 2];
+      weightNormalizeScale = local_7f0;
+      for (i = 0; i < sampleCount; i = i + 1) {
+        colors = ((rgp.world)->lightGrid).colors + auStack_68[i];
+        R_DecodeLightGridColorsWeighted(colors,&decodedColors,afStack_24[i] * weightNormalizeScale);
+        for (j = 0; j < 0x38; j = j + 1) {
+          accumulatedColors[j * 4] = decodedColors.rgb[j][0] + accumulatedColors[j * 4];
+          accumulatedColors[j * 4 + 1] = decodedColors.rgb[j][1] + accumulatedColors[j * 4 + 1];
+          accumulatedColors[j * 4 + 2] = decodedColors.rgb[j][2] + accumulatedColors[j * 4 + 2];
         }
       }
-      *param_2 = 0.0;
-      param_2[1] = 0.0;
-      param_2[2] = 0.0;
-      for (local_7a4 = 0; local_7a4 < 0x38; local_7a4 = local_7a4 + 1) {
-        *param_2 = local_3ec[local_7a4 * 4] + *param_2;
-        param_2[1] = local_3ec[local_7a4 * 4 + 1] + param_2[1];
-        param_2[2] = local_3ec[local_7a4 * 4 + 2] + param_2[2];
+      *outColor = 0.0;
+      outColor[1] = 0.0;
+      outColor[2] = 0.0;
+      for (i_2 = 0; i_2 < 0x38; i_2 = i_2 + 1) {
+        *outColor = accumulatedColors[i_2 * 4] + *outColor;
+        outColor[1] = accumulatedColors[i_2 * 4 + 1] + outColor[1];
+        outColor[2] = accumulatedColors[i_2 * 4 + 2] + outColor[2];
       }
-      *param_2 = *param_2 * 0.017857144;
-      param_2[1] = param_2[1] * 0.017857144;
-      param_2[2] = param_2[2] * 0.017857144;
+      *outColor = *outColor * 0.017857144;
+      outColor[1] = outColor[1] * 0.017857144;
+      outColor[2] = outColor[2] * 0.017857144;
       return;
     }
-    local_414 = local_48[local_410];
-    if (local_414 != (GfxLightGridEntry *)0x0) {
-      local_50 = local_50 + local_40c[local_410];
-      fVar1 = local_40c[local_410];
-      for (local_7a8 = 0; local_7a8 < local_4c; local_7a8 = local_7a8 + 1) {
-        if (auStack_68[local_7a8] == local_414->colorsIndex) {
+    entry = cornerEntry[cornerIndex];
+    if (entry != (GfxLightGridEntry *)0x0) {
+      maxWeight = maxWeight + cornerWeight[cornerIndex];
+      fVar1 = cornerWeight[cornerIndex];
+      for (local_7a8 = 0; local_7a8 < sampleCount; local_7a8 = local_7a8 + 1) {
+        if (auStack_68[local_7a8] == entry->colorsIndex) {
           afStack_24[local_7a8] = afStack_24[local_7a8] + fVar1;
           goto LAB_00add82b;
         }
       }
-      auStack_68[local_4c] = local_414->colorsIndex;
-      afStack_24[local_4c] = fVar1;
-      local_4c = local_4c + 1;
+      auStack_68[sampleCount] = entry->colorsIndex;
+      afStack_24[sampleCount] = fVar1;
+      sampleCount = sampleCount + 1;
     }
 LAB_00add82b:
-    local_410 = local_410 + 1;
+    cornerIndex = cornerIndex + 1;
   } while( true );
 }
 
 
 // 00ADDC30  R_SetLightGridSampleDeltas  (gfx_d3d/rb_light.cpp:2531)
 
-void __cdecl R_SetLightGridSampleDeltas(int param_1,int param_2)
+void __cdecl R_SetLightGridSampleDeltas(int rowStride,int sliceStride)
 
 {
-  s_lightGridRowDelta = param_1;
-  s_lightGridSliceDelta = param_2 + param_1 * -3;
+  s_lightGridRowDelta = rowStride;
+  s_lightGridSliceDelta = sliceStride + rowStride * -3;
   return;
 }
 
 
 // 00ADDDA0  R_LightVisHistoryFilename  (gfx_d3d/rb_light.cpp:2542)
 
-void __cdecl R_LightVisHistoryFilename(char *param_1,char *param_2)
+void __cdecl R_LightVisHistoryFilename(char *bspName,char *filename)
 
 {
   char cVar1;
@@ -1673,7 +1745,7 @@ void __cdecl R_LightVisHistoryFilename(char *param_1,char *param_2)
   char *local_18;
   char *local_8;
   
-  if (param_1 == (char *)0x0) {
+  if (bspName == (char *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0x9ef,0,"%s"
                             );
     if (!bVar4) {
@@ -1682,16 +1754,16 @@ void __cdecl R_LightVisHistoryFilename(char *param_1,char *param_2)
       return;
     }
   }
-  Com_StripExtension(param_1,param_2);
-  local_8 = param_2;
+  Com_StripExtension(bspName,filename);
+  local_8 = filename;
   do {
     cVar1 = *local_8;
     local_8 = local_8 + 1;
   } while (cVar1 != '\0');
-  if ((char *)0x3f < local_8 + (5 - (int)(param_2 + 1))) {
+  if ((char *)0x3f < local_8 + (5 - (int)(filename + 1))) {
     Com_Error(ERR_DROP,"\x15light grid log filename \'%s.grid\' is too long\n");
   }
-  pcVar3 = param_2 + -1;
+  pcVar3 = filename + -1;
   do {
     local_18 = pcVar3;
     pcVar3 = local_18 + 1;
@@ -1705,35 +1777,35 @@ void __cdecl R_LightVisHistoryFilename(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_InitLightVisHistory(char *param_1)
+void __cdecl R_InitLightVisHistory(char *bspName)
 
 {
   LONG local_74 [5];
-  ushort local_60;
+  ushort gsp;
   ushort local_5e;
   ushort local_5c;
-  uint local_58;
-  char local_54 [68];
+  uint i;
+  char filename [68];
   uint local_10;
-  void *local_c;
-  uint local_8;
+  void *buffer;
+  int count;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (((r_vc_makelog->current).integer != 0) && ((r_vc_makelog->current).integer == 2)) {
     AllocAllMemoryNeeded();
-    R_LightVisHistoryFilename(param_1,local_54);
-    local_8 = FS_ReadFile(local_54,&local_c);
-    if (-1 < (int)local_8) {
-      if (local_8 % 6 == 0) {
-        if (0x600000 < (int)local_8) {
-          local_8 = 0x600000;
+    R_LightVisHistoryFilename(bspName,filename);
+    count = FS_ReadFile(filename,&buffer);
+    if (-1 < count) {
+      if ((uint)count % 6 == 0) {
+        if (0x600000 < count) {
+          count = 0x600000;
         }
         tlAtomicMutex::Lock(&lightGridMutex);
-        for (local_58 = 0; local_58 < local_8 / 6; local_58 = local_58 + 1) {
-          local_60 = *(ushort *)((int)local_c + local_58 * 6);
-          local_5e = *(ushort *)((int)local_c + local_58 * 6 + 2);
-          local_5c = *(ushort *)((int)local_c + local_58 * 6 + 4);
-          addHash((ushort (*) [3])&local_60);
+        for (i = 0; i < (uint)count / 6; i = i + 1) {
+          gsp = *(ushort *)((int)buffer + i * 6);
+          local_5e = *(ushort *)((int)buffer + i * 6 + 2);
+          local_5c = *(ushort *)((int)buffer + i * 6 + 4);
+          addHash((ushort (*) [3])&gsp);
         }
         lightGridMutex.LockCount = lightGridMutex.LockCount + -1;
         if (lightGridMutex.LockCount == 0) {
@@ -1743,7 +1815,7 @@ void __cdecl R_InitLightVisHistory(char *param_1)
           lightGridMutex.ThreadId._4_4_ = 0;
         }
       }
-      FS_FreeFile(local_c);
+      FS_FreeFile(buffer);
     }
   }
   return;
@@ -1759,25 +1831,25 @@ void __cdecl R_SaveLightVisHistory(void)
 {
   code *pcVar1;
   bool bVar2;
-  htab *local_5c;
-  uint local_58;
-  char local_54 [68];
+  htab *next;
+  htab *curhash;
+  uint i;
+  char filename [68];
   uint local_10;
-  void *local_c;
-  uint local_8;
+  void *buffer;
+  uint count;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (((lightPointCount != 0) && (rgp.world != (GfxWorld *)0x0)) &&
-     (local_c = Z_VirtualAlloc(lightPointCount * 6,"R_SaveLightVisHistory",0),
-     local_c != (void *)0x0)) {
-    R_LightVisHistoryFilename((rgp.world)->name,local_54);
-    local_8 = 0;
-    for (local_58 = 0; local_58 < 0x100007; local_58 = local_58 + 1) {
-      for (local_5c = LightGridHashtable[local_58]; local_5c != (htab *)0x0;
-          local_5c = local_5c->next) {
-        HashUnpackPoint(local_5c->value,(ushort (*) [3])(local_8 * 6 + (int)local_c));
-        local_8 = local_8 + 1;
-        if ((0xfffff < local_8) &&
+     (buffer = Z_VirtualAlloc(lightPointCount * 6,"R_SaveLightVisHistory",0), buffer != (void *)0x0)
+     ) {
+    R_LightVisHistoryFilename((rgp.world)->name,filename);
+    count = 0;
+    for (i = 0; i < 0x100007; i = i + 1) {
+      for (curhash = LightGridHashtable[i]; curhash != (htab *)0x0; curhash = curhash->next) {
+        HashUnpackPoint(curhash->value,(ushort (*) [3])(count * 6 + (int)buffer));
+        count = count + 1;
+        if ((0xfffff < count) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",
                                      0xa32,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -1786,15 +1858,15 @@ void __cdecl R_SaveLightVisHistory(void)
         }
       }
     }
-    if ((local_8 != lightPointCount) &&
+    if ((count != lightPointCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_light.cpp",0xa38,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    FS_WriteFile(local_54,local_c,local_8 * 6);
-    Z_VirtualFree(local_c,0);
+    FS_WriteFile(filename,buffer,count * 6);
+    Z_VirtualFree(buffer,0);
     Z_VirtualFree(LightGridMemory,0);
     Z_VirtualFree(LightGridHashtable,0);
     LightGridHashtable = (htab **)0x0;

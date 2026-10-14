@@ -2,23 +2,23 @@
 
 // 00B01100  R_CullBoxLeaf  (gfx_d3d/r_dpvs_static.cpp:225)
 
-int __cdecl R_CullBoxLeaf(float *param_1,DpvsClipPlanes *param_2)
+int __cdecl R_CullBoxLeaf(float *minmax,DpvsClipPlanes *planes)
 
 {
   float fVar1;
-  DpvsClipPlanes *local_c;
-  uint local_8;
+  DpvsPlane *plane;
+  uint planeIndex;
   
-  local_8 = 0;
-  local_c = param_2;
+  planeIndex = 0;
+  plane = planes->planes;
   while( true ) {
-    if (param_2->count <= local_8) {
+    if (planes->count <= planeIndex) {
       return 0;
     }
-    fVar1 = R_DpvsPlaneMaxSignedDistToBox(local_c->planes,param_1);
+    fVar1 = R_DpvsPlaneMaxSignedDistToBox(plane,minmax);
     if (fVar1 <= 0.0) break;
-    local_8 = local_8 + 1;
-    local_c = (DpvsClipPlanes *)(local_c->planes + 1);
+    planeIndex = planeIndex + 1;
+    plane = plane + 1;
   }
   return 1;
 }
@@ -28,7 +28,7 @@ int __cdecl R_CullBoxLeaf(float *param_1,DpvsClipPlanes *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4])
+bool __cdecl TestOccluders(float (*bounds) [3],int numOccluders,float (*plane) [4])
 
 {
   float fVar1;
@@ -96,39 +96,39 @@ bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4]
   uint local_7d8;
   uint local_7d4;
   uint local_7d0;
-  int local_2c;
+  int i;
   
-  if (param_2 != 0) {
-    uVar21 = (uint)(*param_1)[0] & g_keepXYZ.u[0];
-    uVar26 = (uint)(*param_1)[1] & g_keepXYZ.u[1];
-    uVar17 = (uint)(*param_1)[2] & g_keepXYZ.u[2];
-    uVar22 = (uint)param_1[1][0] & g_keepXYZ.u[3];
-    uVar18 = (uint)param_1[1][0] & g_keepXYZ.u[0];
-    uVar23 = (uint)param_1[1][1] & g_keepXYZ.u[1];
-    uVar27 = (uint)param_1[1][2] & g_keepXYZ.u[2];
-    uVar19 = (uint)param_1[2][0] & g_keepXYZ.u[3];
-    for (local_2c = 0; local_2c < param_2; local_2c = local_2c + 1) {
-      pfVar6 = *param_3;
-      pfVar7 = *param_3;
-      pfVar8 = *param_3;
-      fVar1 = (*param_3)[3];
-      pafVar24 = param_3 + 1;
-      pafVar9 = param_3 + 1;
-      pafVar10 = param_3 + 1;
-      fVar2 = param_3[1][3];
-      pafVar20 = param_3 + 2;
-      pafVar11 = param_3 + 2;
-      pafVar12 = param_3 + 2;
-      fVar3 = param_3[2][3];
-      pafVar28 = param_3 + 3;
-      pafVar13 = param_3 + 3;
-      pafVar14 = param_3 + 3;
-      fVar4 = param_3[3][3];
-      pafVar25 = param_3 + 4;
-      pafVar15 = param_3 + 4;
-      pafVar16 = param_3 + 4;
-      fVar29 = param_3[4][3];
-      param_3 = param_3 + 5;
+  if (numOccluders != 0) {
+    uVar21 = (uint)(*bounds)[0] & g_keepXYZ.u[0];
+    uVar26 = (uint)(*bounds)[1] & g_keepXYZ.u[1];
+    uVar17 = (uint)(*bounds)[2] & g_keepXYZ.u[2];
+    uVar22 = (uint)bounds[1][0] & g_keepXYZ.u[3];
+    uVar18 = (uint)bounds[1][0] & g_keepXYZ.u[0];
+    uVar23 = (uint)bounds[1][1] & g_keepXYZ.u[1];
+    uVar27 = (uint)bounds[1][2] & g_keepXYZ.u[2];
+    uVar19 = (uint)bounds[2][0] & g_keepXYZ.u[3];
+    for (i = 0; i < numOccluders; i = i + 1) {
+      pfVar6 = *plane;
+      pfVar7 = *plane;
+      pfVar8 = *plane;
+      fVar1 = (*plane)[3];
+      pafVar24 = plane + 1;
+      pafVar9 = plane + 1;
+      pafVar10 = plane + 1;
+      fVar2 = plane[1][3];
+      pafVar20 = plane + 2;
+      pafVar11 = plane + 2;
+      pafVar12 = plane + 2;
+      fVar3 = plane[2][3];
+      pafVar28 = plane + 3;
+      pafVar13 = plane + 3;
+      pafVar14 = plane + 3;
+      fVar4 = plane[3][3];
+      pafVar25 = plane + 4;
+      pafVar15 = plane + 4;
+      pafVar16 = plane + 4;
+      fVar29 = plane[4][3];
+      plane = plane + 5;
       if ((*pafVar25)[0] <= 0.0) {
         local_7d0 = 0;
       }
@@ -352,7 +352,8 @@ bool __cdecl TestOccluders(float (*param_1) [3],int param_2,float (*param_3) [4]
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,float (*param_3) [4])
+float (*) [4] __cdecl
+TestOccludersPartial(float (*bounds) [3],int *numOccludersPtr,float (*plane) [4])
 
 {
   float fVar1;
@@ -459,49 +460,50 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
   uint local_dd0;
   uint local_dcc;
   uint local_dc8;
-  int local_8;
+  int idx;
+  int planeIdx;
   
-  if ((((uint)param_3 & 0xf) != 0) &&
+  if ((((uint)plane & 0xf) != 0) &&
      (bVar42 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_static.cpp",
                                 0x120,0,"%s"), !bVar42)) {
     pcVar41 = (code *)swi(3);
     pafVar43 = (float (*) [4])(*pcVar41)();
     return pafVar43;
   }
-  uVar47 = (uint)(*param_1)[0] & g_keepXYZ.u[0];
-  uVar50 = (uint)(*param_1)[1] & g_keepXYZ.u[1];
-  uVar44 = (uint)(*param_1)[2] & g_keepXYZ.u[2];
-  uVar48 = (uint)param_1[1][0] & g_keepXYZ.u[3];
-  uVar45 = (uint)param_1[1][0] & g_keepXYZ.u[0];
-  uVar49 = (uint)param_1[1][1] & g_keepXYZ.u[1];
-  uVar51 = (uint)param_1[1][2] & g_keepXYZ.u[2];
-  uVar46 = (uint)param_1[2][0] & g_keepXYZ.u[3];
-  local_8 = 0;
+  uVar47 = (uint)(*bounds)[0] & g_keepXYZ.u[0];
+  uVar50 = (uint)(*bounds)[1] & g_keepXYZ.u[1];
+  uVar44 = (uint)(*bounds)[2] & g_keepXYZ.u[2];
+  uVar48 = (uint)bounds[1][0] & g_keepXYZ.u[3];
+  uVar45 = (uint)bounds[1][0] & g_keepXYZ.u[0];
+  uVar49 = (uint)bounds[1][1] & g_keepXYZ.u[1];
+  uVar51 = (uint)bounds[1][2] & g_keepXYZ.u[2];
+  uVar46 = (uint)bounds[2][0] & g_keepXYZ.u[3];
+  planeIdx = 0;
   while( true ) {
-    if (*param_2 <= local_8) {
-      return param_3;
+    if (*numOccludersPtr <= planeIdx) {
+      return plane;
     }
-    pafVar43 = param_3 + local_8 * 5;
+    pafVar43 = plane + planeIdx * 5;
     fVar1 = (*pafVar43)[0];
     fVar2 = (*pafVar43)[1];
     fVar3 = (*pafVar43)[2];
     fVar4 = (*pafVar43)[3];
-    pafVar43 = param_3 + local_8 * 5 + 1;
+    pafVar43 = plane + planeIdx * 5 + 1;
     fVar5 = (*pafVar43)[0];
     fVar6 = (*pafVar43)[1];
     fVar7 = (*pafVar43)[2];
     fVar8 = (*pafVar43)[3];
-    pafVar43 = param_3 + local_8 * 5 + 2;
+    pafVar43 = plane + planeIdx * 5 + 2;
     fVar9 = (*pafVar43)[0];
     fVar10 = (*pafVar43)[1];
     fVar11 = (*pafVar43)[2];
     fVar12 = (*pafVar43)[3];
-    pafVar43 = param_3 + local_8 * 5 + 3;
+    pafVar43 = plane + planeIdx * 5 + 3;
     fVar13 = (*pafVar43)[0];
     fVar14 = (*pafVar43)[1];
     fVar15 = (*pafVar43)[2];
     fVar16 = (*pafVar43)[3];
-    pafVar43 = param_3 + local_8 * 5 + 4;
+    pafVar43 = plane + planeIdx * 5 + 4;
     fVar17 = (*pafVar43)[0];
     fVar18 = (*pafVar43)[1];
     fVar19 = (*pafVar43)[2];
@@ -808,100 +810,102 @@ float (*) [4] __cdecl TestOccludersPartial(float (*param_1) [3],int *param_2,flo
       bVar42 = false;
     }
     if (!bVar42) {
-      *param_2 = *param_2 + -1;
-      iVar21 = *param_2;
-      pafVar43 = param_3 + iVar21 * 5;
+      *numOccludersPtr = *numOccludersPtr + -1;
+      iVar21 = *numOccludersPtr;
+      pafVar43 = plane + iVar21 * 5;
       fVar52 = (*pafVar43)[0];
       fVar22 = (*pafVar43)[1];
       fVar23 = (*pafVar43)[2];
       fVar24 = (*pafVar43)[3];
-      pafVar43 = param_3 + iVar21 * 5 + 1;
+      pafVar43 = plane + iVar21 * 5 + 1;
       fVar25 = (*pafVar43)[0];
       fVar26 = (*pafVar43)[1];
       fVar27 = (*pafVar43)[2];
       fVar28 = (*pafVar43)[3];
-      pafVar43 = param_3 + iVar21 * 5 + 2;
+      pafVar43 = plane + iVar21 * 5 + 2;
       fVar29 = (*pafVar43)[0];
       fVar30 = (*pafVar43)[1];
       fVar31 = (*pafVar43)[2];
       fVar32 = (*pafVar43)[3];
-      pafVar43 = param_3 + iVar21 * 5 + 3;
+      pafVar43 = plane + iVar21 * 5 + 3;
       fVar33 = (*pafVar43)[0];
       fVar34 = (*pafVar43)[1];
       fVar35 = (*pafVar43)[2];
       fVar36 = (*pafVar43)[3];
-      pafVar43 = param_3 + iVar21 * 5 + 4;
+      pafVar43 = plane + iVar21 * 5 + 4;
       fVar37 = (*pafVar43)[0];
       fVar38 = (*pafVar43)[1];
       fVar39 = (*pafVar43)[2];
       fVar40 = (*pafVar43)[3];
-      pafVar43 = param_3 + iVar21 * 5;
+      pafVar43 = plane + iVar21 * 5;
       (*pafVar43)[0] = fVar1;
       (*pafVar43)[1] = fVar2;
       (*pafVar43)[2] = fVar3;
       (*pafVar43)[3] = fVar4;
-      pafVar43 = param_3 + iVar21 * 5 + 1;
+      pafVar43 = plane + iVar21 * 5 + 1;
       (*pafVar43)[0] = fVar5;
       (*pafVar43)[1] = fVar6;
       (*pafVar43)[2] = fVar7;
       (*pafVar43)[3] = fVar8;
-      pafVar43 = param_3 + iVar21 * 5 + 2;
+      pafVar43 = plane + iVar21 * 5 + 2;
       (*pafVar43)[0] = fVar9;
       (*pafVar43)[1] = fVar10;
       (*pafVar43)[2] = fVar11;
       (*pafVar43)[3] = fVar12;
-      pafVar43 = param_3 + iVar21 * 5 + 3;
+      pafVar43 = plane + iVar21 * 5 + 3;
       (*pafVar43)[0] = fVar13;
       (*pafVar43)[1] = fVar14;
       (*pafVar43)[2] = fVar15;
       (*pafVar43)[3] = fVar16;
-      pafVar43 = param_3 + iVar21 * 5 + 4;
+      pafVar43 = plane + iVar21 * 5 + 4;
       (*pafVar43)[0] = fVar17;
       (*pafVar43)[1] = fVar18;
       (*pafVar43)[2] = fVar19;
       (*pafVar43)[3] = fVar20;
-      pafVar43 = param_3 + local_8 * 5;
+      pafVar43 = plane + planeIdx * 5;
       (*pafVar43)[0] = fVar52;
       (*pafVar43)[1] = fVar22;
       (*pafVar43)[2] = fVar23;
       (*pafVar43)[3] = fVar24;
-      pafVar43 = param_3 + local_8 * 5 + 1;
+      pafVar43 = plane + planeIdx * 5 + 1;
       (*pafVar43)[0] = fVar25;
       (*pafVar43)[1] = fVar26;
       (*pafVar43)[2] = fVar27;
       (*pafVar43)[3] = fVar28;
-      pafVar43 = param_3 + local_8 * 5 + 2;
+      pafVar43 = plane + planeIdx * 5 + 2;
       (*pafVar43)[0] = fVar29;
       (*pafVar43)[1] = fVar30;
       (*pafVar43)[2] = fVar31;
       (*pafVar43)[3] = fVar32;
-      pafVar43 = param_3 + local_8 * 5 + 3;
+      pafVar43 = plane + planeIdx * 5 + 3;
       (*pafVar43)[0] = fVar33;
       (*pafVar43)[1] = fVar34;
       (*pafVar43)[2] = fVar35;
       (*pafVar43)[3] = fVar36;
-      pafVar43 = param_3 + local_8 * 5 + 4;
+      pafVar43 = plane + planeIdx * 5 + 4;
       (*pafVar43)[0] = fVar37;
       (*pafVar43)[1] = fVar38;
       (*pafVar43)[2] = fVar39;
       (*pafVar43)[3] = fVar40;
     }
-    local_8 = local_8 + 1;
+    planeIdx = planeIdx + 1;
   }
-  *param_2 = 0;
+  *numOccludersPtr = 0;
   return (float (*) [4])0x0;
 }
 
 
 // 00B01070  R_DpvsPlaneMinSignedDistToBox  (gfx_d3d/r_dpvs.h:377)
 
-float __cdecl R_DpvsPlaneMinSignedDistToBox(DpvsPlane *param_1,float *param_2)
+float __cdecl R_DpvsPlaneMinSignedDistToBox(DpvsPlane *plane,float *minmax)
 
 {
-  return *(float *)((int)param_2 + (0x1c - (uint)param_1->side[2])) * param_1->coeffs[2] +
-         *(float *)((int)param_2 + (0x14 - (uint)param_1->side[1])) * param_1->coeffs[1] +
-         *(float *)((int)param_2 + (0xc - (uint)param_1->side[0])) * param_1->coeffs[0] +
-         param_1->coeffs[3];
+  float dist;
+  
+  return *(float *)((int)minmax + (0x1c - (uint)plane->side[2])) * plane->coeffs[2] +
+         *(float *)((int)minmax + (0x14 - (uint)plane->side[1])) * plane->coeffs[1] +
+         *(float *)((int)minmax + (0xc - (uint)plane->side[0])) * plane->coeffs[0] +
+         plane->coeffs[3];
 }
 
 
@@ -912,8 +916,8 @@ float __cdecl R_DpvsPlaneMinSignedDistToBox(DpvsPlane *param_1,float *param_2)
 
 int __cdecl
 R_AddAabbTreeSurfacesInFrustum_r
-          (GfxAabbTree *param_1,DpvsClipPlanes *param_2,int param_3,int param_4,float (*param_5) [4]
-          )
+          (GfxAabbTree *tree,DpvsClipPlanes *planes,int treeDepth,int numOccluders,
+          float (*occluderPlanes) [4])
 
 {
   ushort uVar1;
@@ -927,146 +931,159 @@ R_AddAabbTreeSurfacesInFrustum_r
   uchar uVar9;
   DpvsClipPlanes *pDVar10;
   bool bVar11;
-  GfxStaticModelInst *pGVar12;
-  int iVar13;
-  float (*pafVar14) [3];
-  uint uVar15;
-  float fVar16;
-  uint local_1a4;
-  uint local_18c;
-  uint local_188;
-  DpvsClipPlanes local_174;
+  GfxStaticModelInst *bounds;
+  int iVar12;
+  float (*bounds_00) [3];
+  uint uVar13;
+  float fVar14;
+  GfxAabbTree *children;
+  uint childIndex;
+  uint childCount;
+  uint surfaceCount_2;
+  ushort *indices_4;
+  ushort *indices_3;
+  uint smodelIndexCount_2;
+  uint surfNodeIndex_2;
+  uint smodelChildIndex;
+  uint surfaceCount;
+  ushort *indices_2;
+  ushort *indices;
+  uint smodelIndexCount;
+  DpvsClipPlanes clipPlanes;
   uint local_28;
-  DpvsClipPlanes *local_24;
-  uint local_20;
-  uint local_1c;
-  uint local_14;
-  uint local_10;
-  int local_c;
+  DpvsClipPlanes *plane;
+  uint planeCount;
+  uint smodelIndexIter;
+  uint surfIndex;
+  uint surfNodeIndex;
+  uint planeIndex;
+  int finalTreeDepth;
+  uint smodelIndex;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = param_3;
-  if ((((param_4 != 0) &&
-       (param_5 = TestOccludersPartial(param_1->mins,&param_4,param_5),
-       param_5 != (float (*) [4])0x0)) && (param_4 == 0)) &&
+  finalTreeDepth = treeDepth;
+  if ((((numOccluders != 0) &&
+       (occluderPlanes = TestOccludersPartial(tree->mins,&numOccluders,occluderPlanes),
+       occluderPlanes != (float (*) [4])0x0)) && (numOccluders == 0)) &&
      (2 < (r_showOccluders->current).integer)) {
-    R_AddDebugBox(&frontEndDataOut->debugGlobals,param_1->mins,param_1->maxs,colorCyan);
+    R_AddDebugBox(&frontEndDataOut->debugGlobals,tree->mins,tree->maxs,colorCyan);
   }
-  if (param_5 == (float (*) [4])0x0) {
-    local_174.count = 0;
+  if (occluderPlanes == (float (*) [4])0x0) {
+    clipPlanes.count = 0;
   }
   else {
-    local_174.count = 0;
-    local_20 = param_2->count;
-    local_24 = param_2;
-    for (local_10 = 0; local_10 < local_20; local_10 = local_10 + 1) {
-      fVar16 = R_DpvsPlaneMaxSignedDistToBox(local_24->planes,param_1->mins);
-      if (fVar16 <= 0.0) {
-        return local_c;
+    clipPlanes.count = 0;
+    planeCount = planes->count;
+    plane = planes;
+    for (planeIndex = 0; planeIndex < planeCount; planeIndex = planeIndex + 1) {
+      fVar14 = R_DpvsPlaneMaxSignedDistToBox(plane->planes,tree->mins);
+      if (fVar14 <= 0.0) {
+        return finalTreeDepth;
       }
-      fVar16 = R_DpvsPlaneMinSignedDistToBox(local_24->planes,param_1->mins);
-      pDVar10 = local_24;
-      uVar15 = local_174.count;
-      if (fVar16 < 0.0) {
-        local_174.planes[local_174.count].coeffs[0] = local_24->planes[0].coeffs[0];
-        local_174.planes[uVar15].coeffs[1] = pDVar10->planes[0].coeffs[1];
-        local_174.planes[uVar15].coeffs[2] = pDVar10->planes[0].coeffs[2];
-        local_174.planes[uVar15].coeffs[3] = pDVar10->planes[0].coeffs[3];
+      fVar14 = R_DpvsPlaneMinSignedDistToBox(plane->planes,tree->mins);
+      pDVar10 = plane;
+      uVar13 = clipPlanes.count;
+      if (fVar14 < 0.0) {
+        clipPlanes.planes[clipPlanes.count].coeffs[0] = plane->planes[0].coeffs[0];
+        clipPlanes.planes[uVar13].coeffs[1] = pDVar10->planes[0].coeffs[1];
+        clipPlanes.planes[uVar13].coeffs[2] = pDVar10->planes[0].coeffs[2];
+        clipPlanes.planes[uVar13].coeffs[3] = pDVar10->planes[0].coeffs[3];
         uVar7 = pDVar10->planes[0].side[1];
         uVar8 = pDVar10->planes[0].side[2];
         uVar9 = pDVar10->planes[0].pad;
-        pDVar6 = local_174.planes + uVar15;
+        pDVar6 = clipPlanes.planes + uVar13;
         pDVar6->side[0] = pDVar10->planes[0].side[0];
         pDVar6->side[1] = uVar7;
         pDVar6->side[2] = uVar8;
         pDVar6->pad = uVar9;
-        local_174.count = local_174.count + 1;
+        clipPlanes.count = clipPlanes.count + 1;
       }
-      local_24 = (DpvsClipPlanes *)(local_24->planes + 1);
+      plane = (DpvsClipPlanes *)(plane->planes + 1);
     }
   }
-  if (param_5 == (float (*) [4])0x0) {
+  if (occluderPlanes == (float (*) [4])0x0) {
     if (1 < (r_showOccluders->current).integer) {
-      R_AddDebugBox(&frontEndDataOut->debugGlobals,param_1->mins,param_1->maxs,colorBlue);
+      R_AddDebugBox(&frontEndDataOut->debugGlobals,tree->mins,tree->maxs,colorBlue);
     }
   }
-  else if ((local_174.count == 0) && (param_4 == 0)) {
+  else if ((clipPlanes.count == 0) && (numOccluders == 0)) {
     if ((r_showAabbTrees->current).integer != 0) {
-      R_AddDebugBox(&frontEndDataOut->debugGlobals,param_1->mins,param_1->maxs,colorYellow);
+      R_AddDebugBox(&frontEndDataOut->debugGlobals,tree->mins,tree->maxs,colorYellow);
     }
-    if ((rg.drawSModels != false) && (uVar1 = param_1->smodelIndexCount, uVar1 != 0)) {
-      puVar3 = param_1->smodelIndexes;
-      for (local_1c = 0; local_1c < uVar1; local_1c = local_1c + 1) {
+    if ((rg.drawSModels != false) && (uVar1 = tree->smodelIndexCount, uVar1 != 0)) {
+      puVar3 = tree->smodelIndexes;
+      for (smodelIndexIter = 0; smodelIndexIter < uVar1; smodelIndexIter = smodelIndexIter + 1) {
         *(undefined1 *)
          (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2090) +
-         (uint)puVar3[local_1c]) = 1;
+         (uint)puVar3[smodelIndexIter]) = 1;
       }
     }
-    if ((rg.drawWorld != false) && (uVar1 = param_1->surfaceCount, uVar1 != 0)) {
-      uVar2 = param_1->startSurfIndex;
+    if ((rg.drawWorld != false) && (uVar1 = tree->surfaceCount, uVar1 != 0)) {
+      uVar2 = tree->startSurfIndex;
       puVar3 = g_worldDpvs->sortedSurfIndex;
-      for (local_14 = 0; local_14 < uVar1; local_14 = local_14 + 1) {
+      for (surfNodeIndex = 0; surfNodeIndex < uVar1; surfNodeIndex = surfNodeIndex + 1) {
         *(undefined1 *)
          (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) +
-         (uint)puVar3[uVar2 + local_14]) = 1;
+         (uint)puVar3[uVar2 + surfNodeIndex]) = 1;
       }
     }
   }
-  else if (param_1->childCount == 0) {
+  else if (tree->childCount == 0) {
     if ((r_showAabbTrees->current).integer != 0) {
-      R_AddDebugBox(&frontEndDataOut->debugGlobals,param_1->mins,param_1->maxs,colorOrange);
+      R_AddDebugBox(&frontEndDataOut->debugGlobals,tree->mins,tree->maxs,colorOrange);
     }
-    if ((rg.drawSModels != false) && (uVar1 = param_1->smodelIndexCount, uVar1 != 0)) {
-      puVar3 = param_1->smodelIndexes;
-      for (local_188 = 0; iVar5 = param_4, local_188 < uVar1; local_188 = local_188 + 1) {
-        uVar15 = (uint)puVar3[local_188];
+    if ((rg.drawSModels != false) && (uVar1 = tree->smodelIndexCount, uVar1 != 0)) {
+      puVar3 = tree->smodelIndexes;
+      for (smodelChildIndex = 0; iVar5 = numOccluders, smodelChildIndex < uVar1;
+          smodelChildIndex = smodelChildIndex + 1) {
+        uVar13 = (uint)puVar3[smodelChildIndex];
         if (*(char *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2090) +
-                     uVar15) == '\0') {
-          pGVar12 = g_worldDpvs->smodelInsts + uVar15;
-          iVar13 = R_CullBoxLeaf(pGVar12->mins,&local_174);
-          if (iVar13 == 0) {
-            bVar11 = TestOccluders(pGVar12->mins,iVar5,param_5);
+                     uVar13) == '\0') {
+          bounds = g_worldDpvs->smodelInsts + uVar13;
+          iVar12 = R_CullBoxLeaf(bounds->mins,&clipPlanes);
+          if (iVar12 == 0) {
+            bVar11 = TestOccluders(bounds->mins,iVar5,occluderPlanes);
             if (bVar11) {
               if (1 < (r_showOccluders->current).integer) {
-                R_AddDebugBox(&frontEndDataOut->debugGlobals,pGVar12->mins,pGVar12->maxs,colorOrange
-                             );
+                R_AddDebugBox(&frontEndDataOut->debugGlobals,bounds->mins,bounds->maxs,colorOrange);
               }
             }
             else {
               *(undefined1 *)
                (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2090) +
-               uVar15) = 1;
+               uVar13) = 1;
             }
           }
         }
       }
     }
-    if ((rg.drawWorld != false) && (uVar1 = param_1->surfaceCount, uVar1 != 0)) {
-      uVar2 = param_1->startSurfIndex;
+    if ((rg.drawWorld != false) && (uVar1 = tree->surfaceCount, uVar1 != 0)) {
+      uVar2 = tree->startSurfIndex;
       puVar3 = g_worldDpvs->sortedSurfIndex;
-      for (local_18c = 0; iVar5 = param_4, local_18c < uVar1; local_18c = local_18c + 1) {
-        uVar15 = (uint)puVar3[uVar2 + local_18c];
+      for (surfNodeIndex_2 = 0; iVar5 = numOccluders, surfNodeIndex_2 < uVar1;
+          surfNodeIndex_2 = surfNodeIndex_2 + 1) {
+        uVar13 = (uint)puVar3[uVar2 + surfNodeIndex_2];
         if (*(char *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) +
-                     uVar15) == '\0') {
+                     uVar13) == '\0') {
           pGVar4 = g_worldDpvs->surfaces;
-          pafVar14 = pGVar4[uVar15].bounds;
-          iVar13 = R_CullBoxLeaf(*pafVar14,&local_174);
-          if (iVar13 == 0) {
-            bVar11 = TestOccluders(pafVar14,iVar5,param_5);
+          bounds_00 = pGVar4[uVar13].bounds;
+          iVar12 = R_CullBoxLeaf(*bounds_00,&clipPlanes);
+          if (iVar12 == 0) {
+            bVar11 = TestOccluders(bounds_00,iVar5,occluderPlanes);
             if (bVar11) {
               if (1 < (r_showOccluders->current).integer) {
-                R_AddDebugBox(&frontEndDataOut->debugGlobals,*pafVar14,pGVar4[uVar15].bounds[1],
+                R_AddDebugBox(&frontEndDataOut->debugGlobals,*bounds_00,pGVar4[uVar13].bounds[1],
                               colorOrange);
               }
             }
             else {
               if (((r_showAabbTrees->current).unsignedInt & 2) != 0) {
-                R_AddDebugBox(&frontEndDataOut->debugGlobals,pGVar4[uVar15].bounds[0],
-                              pGVar4[uVar15].bounds[1],colorGreen);
+                R_AddDebugBox(&frontEndDataOut->debugGlobals,pGVar4[uVar13].bounds[0],
+                              pGVar4[uVar13].bounds[1],colorGreen);
               }
               *(undefined1 *)
                (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) +
-               uVar15) = 1;
+               uVar13) = 1;
             }
           }
         }
@@ -1074,65 +1091,74 @@ R_AddAabbTreeSurfacesInFrustum_r
     }
   }
   else {
-    iVar5 = param_1->childrenOffset;
-    uVar1 = param_1->childCount;
-    for (local_1a4 = 0; local_1a4 < uVar1; local_1a4 = local_1a4 + 1) {
+    iVar5 = tree->childrenOffset;
+    uVar1 = tree->childCount;
+    for (childIndex = 0; childIndex < uVar1; childIndex = childIndex + 1) {
       R_AddAabbTreeSurfacesInFrustum_r
-                ((GfxAabbTree *)((int)param_1[local_1a4].mins + iVar5),&local_174,0,param_4,param_5)
-      ;
+                ((GfxAabbTree *)((int)tree[childIndex].mins + iVar5),&clipPlanes,0,numOccluders,
+                 occluderPlanes);
     }
   }
-  return local_c;
+  return finalTreeDepth;
 }
 
 
 // 00B01180  R_CopyClipPlanes  (gfx_d3d/r_dpvs_static.cpp:926)
 
-void __cdecl R_CopyClipPlanes(DpvsPlane *param_1,DpvsPlane *param_2)
+void __cdecl R_CopyClipPlanes(DpvsPlane *in,DpvsPlane *out)
 
 {
   uchar uVar1;
   uchar uVar2;
   uchar uVar3;
   
-  param_2->coeffs[0] = param_1->coeffs[0];
-  param_2->coeffs[1] = param_1->coeffs[1];
-  param_2->coeffs[2] = param_1->coeffs[2];
-  param_2->coeffs[3] = param_1->coeffs[3];
-  uVar1 = param_1->side[1];
-  uVar2 = param_1->side[2];
-  uVar3 = param_1->pad;
-  param_2->side[0] = param_1->side[0];
-  param_2->side[1] = uVar1;
-  param_2->side[2] = uVar2;
-  param_2->pad = uVar3;
+  out->coeffs[0] = in->coeffs[0];
+  out->coeffs[1] = in->coeffs[1];
+  out->coeffs[2] = in->coeffs[2];
+  out->coeffs[3] = in->coeffs[3];
+  uVar1 = in->side[1];
+  uVar2 = in->side[2];
+  uVar3 = in->pad;
+  out->side[0] = in->side[0];
+  out->side[1] = uVar1;
+  out->side[2] = uVar2;
+  out->pad = uVar3;
   return;
 }
 
 
 // 00B003E0  R_CalcSurfaceNoDynamicShadow  (gfx_d3d/r_dpvs_static.cpp:1044)
 
-bool __cdecl R_CalcSurfaceNoDynamicShadow(uint param_1,GfxSurface *param_2,GfxDrawSurf *param_3)
+bool __cdecl
+R_CalcSurfaceNoDynamicShadow(uint bits,GfxSurface *localSurfaces,GfxDrawSurf *localDrawSurfaces)
 
 {
   GfxDrawSurf *pGVar1;
   uint extraout_EAX;
   uint extraout_EDX;
-  uint local_20;
-  int local_1c;
+  float dist;
+  GfxDrawSurf *surfaceMaterials;
+  bool value;
+  uint bit;
+  uint indexLow;
+  bool ret;
+  int index0;
+  int index2;
+  DpvsGlob_sunShadow *sunShadow;
+  int index1;
   
-  local_1c = 0;
-  local_20 = 0x80000000;
-  while (param_1 != 0) {
-    if ((local_20 & param_1) != 0) {
-      param_1 = ~local_20 & param_1;
-      pGVar1 = param_3 + local_1c;
+  indexLow = 0;
+  bit = 0x80000000;
+  while (bits != 0) {
+    if ((bit & bits) != 0) {
+      bits = ~bit & bits;
+      pGVar1 = localDrawSurfaces + indexLow;
       _allshl();
       *(uint *)pGVar1 = *(uint *)pGVar1 | extraout_EAX;
       *(uint *)((int)pGVar1 + 4) = *(uint *)((int)pGVar1 + 4) & 0xfdffffff | extraout_EDX;
     }
-    local_1c = local_1c + 1;
-    local_20 = local_20 >> 1;
+    indexLow = indexLow + 1;
+    bit = bit >> 1;
   }
   return false;
 }
@@ -1143,39 +1169,42 @@ bool __cdecl R_CalcSurfaceNoDynamicShadow(uint param_1,GfxSurface *param_2,GfxDr
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl R_AddCellStaticSurfacesInFrustum(DpvsStaticCellCmd *param_1)
+int __cdecl R_AddCellStaticSurfacesInFrustum(DpvsStaticCellCmd *dpvsCell)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  uint uVar5;
-  uint local_15d4;
-  int local_15d0;
+  uint bits;
+  int lastTrunc;
+  uint visBits_2;
+  uint visBits;
+  uint wordIndex;
+  int i;
   float afStack_15c0 [1297];
-  float (*local_17c) [4];
-  GfxCell *local_178;
-  DpvsClipPlanes local_174;
+  float (*work) [4];
+  GfxCell *cell;
+  DpvsClipPlanes clipPlanes;
   uint local_28;
-  GfxAabbTree *local_24;
-  uint local_20;
-  DpvsPlane *local_1c;
+  GfxAabbTree *tree;
+  int lastBits;
+  DpvsPlane *planes;
   uint local_18;
-  uint local_14;
-  GfxAabbTree *local_10;
-  uint local_c;
-  int local_8;
+  uint surfaceVisDataCount;
+  uint treeEA;
+  uint planeIndex;
+  int treeDepth;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
-  local_178 = (param_1->field1_0x4).cell;
-  local_10 = local_178->aabbTree;
-  if (local_10 == (GfxAabbTree *)0x0) {
-    local_8 = 0;
+  treeDepth = 0;
+  cell = (dpvsCell->field1_0x4).cell;
+  treeEA = (uint)cell->aabbTree;
+  if ((GfxAabbTree *)treeEA == (GfxAabbTree *)0x0) {
+    treeDepth = 0;
   }
   else {
-    local_18 = (uint)param_1->planeCount;
+    local_18 = (uint)dpvsCell->planeCount;
     if ((0x10 < local_18) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_static.cpp",
                                  0x471,0,"%s\n\t(planes.count) = %i"), !bVar2)) {
@@ -1190,56 +1219,55 @@ int __cdecl R_AddCellStaticSurfacesInFrustum(DpvsStaticCellCmd *param_1)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_1c = param_1->planes;
-    local_24 = local_10;
-    for (local_c = 0; local_c < local_18; local_c = local_c + 1) {
-      R_CopyClipPlanes(local_1c + local_c,local_174.planes + local_c);
+    planes = dpvsCell->planes;
+    tree = (GfxAabbTree *)treeEA;
+    for (planeIndex = 0; planeIndex < local_18; planeIndex = planeIndex + 1) {
+      R_CopyClipPlanes(planes + planeIndex,clipPlanes.planes + planeIndex);
     }
-    local_174.count = local_18;
-    if (param_1->viewIndex == 0) {
-      local_17c = (float (*) [4])afStack_15c0;
-      for (local_15d0 = 0; local_15d0 < dpvsGlob.numOccluders * 5; local_15d0 = local_15d0 + 1) {
-        local_17c[local_15d0][0] = dpvsGlob.occluderPlanes[local_15d0][0];
-        afStack_15c0[local_15d0 * 4 + 1] = dpvsGlob.occluderPlanes[local_15d0][1];
-        afStack_15c0[local_15d0 * 4 + 2] = dpvsGlob.occluderPlanes[local_15d0][2];
-        afStack_15c0[local_15d0 * 4 + 3] = dpvsGlob.occluderPlanes[local_15d0][3];
+    clipPlanes.count = local_18;
+    if (dpvsCell->viewIndex == 0) {
+      work = (float (*) [4])afStack_15c0;
+      for (i = 0; i < dpvsGlob.numOccluders * 5; i = i + 1) {
+        work[i][0] = dpvsGlob.occluderPlanes[i][0];
+        afStack_15c0[i * 4 + 1] = dpvsGlob.occluderPlanes[i][1];
+        afStack_15c0[i * 4 + 2] = dpvsGlob.occluderPlanes[i][2];
+        afStack_15c0[i * 4 + 3] = dpvsGlob.occluderPlanes[i][3];
       }
-      local_8 = R_AddAabbTreeSurfacesInFrustum_r
-                          (local_24,&local_174,1,dpvsGlob.numOccluders,local_17c);
+      treeDepth = R_AddAabbTreeSurfacesInFrustum_r(tree,&clipPlanes,1,dpvsGlob.numOccluders,work);
     }
     else {
-      local_8 = R_AddAabbTreeSurfacesInFrustum_r(local_24,&local_174,1,0,dpvsGlob.occluderPlanes);
+      treeDepth = R_AddAabbTreeSurfacesInFrustum_r(tree,&clipPlanes,1,0,dpvsGlob.occluderPlanes);
     }
-    local_14 = g_worldDpvs->staticSurfaceCount >> 5;
-    for (local_15d4 = 0; local_15d4 < local_14; local_15d4 = local_15d4 + 1) {
+    surfaceVisDataCount = g_worldDpvs->staticSurfaceCount >> 5;
+    for (wordIndex = 0; wordIndex < surfaceVisDataCount; wordIndex = wordIndex + 1) {
       uVar4 = (uint)*(byte *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                      0x2094) + local_15d4);
+                                      0x2094) + wordIndex);
       if (uVar4 != 0) {
         R_CalcSurfaceNoDynamicShadow
-                  (uVar4,g_worldDpvs->surfaces + local_15d4 * 0x20,
-                   g_worldDpvs->surfaceMaterials + local_15d4 * 0x20);
+                  (uVar4,g_worldDpvs->surfaces + wordIndex * 0x20,
+                   g_worldDpvs->surfaceMaterials + wordIndex * 0x20);
       }
     }
-    local_20 = g_worldDpvs->staticSurfaceCount % 0x20;
-    if (local_20 != 0) {
+    lastBits = g_worldDpvs->staticSurfaceCount % 0x20;
+    if (lastBits != 0) {
       uVar4 = g_worldDpvs->staticSurfaceCount >> 5;
-      uVar5 = -1 << (0x20U - (char)local_20 & 0x1f) &
-              (uint)*(byte *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                      0x2094) + uVar4);
-      if (uVar5 != 0) {
+      bits = -1 << (0x20U - (char)lastBits & 0x1f) &
+             (uint)*(byte *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                     0x2094) + uVar4);
+      if (bits != 0) {
         R_CalcSurfaceNoDynamicShadow
-                  (uVar5,g_worldDpvs->surfaces + uVar4 * 0x20,
+                  (bits,g_worldDpvs->surfaces + uVar4 * 0x20,
                    g_worldDpvs->surfaceMaterials + uVar4 * 0x20);
       }
     }
   }
-  return local_8;
+  return treeDepth;
 }
 
 
 // 00B011B0  R_AddCellCullGroupsInFrustum  (gfx_d3d/r_dpvs_static.cpp:1380)
 
-void __cdecl R_AddCellCullGroupsInFrustum(DpvsStaticCellCmd *param_1)
+void __cdecl R_AddCellCullGroupsInFrustum(DpvsStaticCellCmd *dpvsCell)
 
 {
   byte bVar1;
@@ -1247,27 +1275,35 @@ void __cdecl R_AddCellCullGroupsInFrustum(DpvsStaticCellCmd *param_1)
   int iVar3;
   ushort *puVar4;
   bool bVar5;
-  GfxCullGroup *pGVar6;
-  float fVar7;
+  GfxCullGroup *minmax;
+  float fVar6;
   DpvsPlane *local_38;
   int local_34;
-  int local_1c;
-  int local_c;
-  int *local_8;
+  uint surfIndex;
+  uint surfaceCount;
+  ushort *indices;
+  int cullGroupIndex;
+  GfxCullGroup *group;
+  int count;
+  GfxCell *cell;
+  int planeCount;
+  DpvsPlane *planes;
+  int groupCount;
+  int *cullGroup;
   
-  pDVar2 = param_1->planes;
-  bVar1 = param_1->planeCount;
-  local_c = ((param_1->field1_0x4).cell)->cullGroupCount;
-  local_8 = ((param_1->field1_0x4).cell)->cullGroups;
+  pDVar2 = dpvsCell->planes;
+  bVar1 = dpvsCell->planeCount;
+  groupCount = ((dpvsCell->field1_0x4).cell)->cullGroupCount;
+  cullGroup = ((dpvsCell->field1_0x4).cell)->cullGroups;
   do {
-    if (local_c == 0) {
+    if (groupCount == 0) {
       return;
     }
-    pGVar6 = g_worldDpvs->cullGroups + *local_8;
+    minmax = g_worldDpvs->cullGroups + *cullGroup;
     local_38 = pDVar2;
     for (local_34 = 0; local_34 < (int)(uint)bVar1; local_34 = local_34 + 1) {
-      fVar7 = R_DpvsPlaneMaxSignedDistToBox(local_38,pGVar6->mins);
-      if (fVar7 <= 0.0) {
+      fVar6 = R_DpvsPlaneMaxSignedDistToBox(local_38,minmax->mins);
+      if (fVar6 <= 0.0) {
         bVar5 = true;
         goto LAB_00b01283;
       }
@@ -1279,39 +1315,41 @@ LAB_00b01283:
       return;
     }
     if (((r_showPortals->current).unsignedInt & 1) != 0) {
-      R_AddDebugBox(&frontEndDataOut->debugGlobals,pGVar6->mins,pGVar6->maxs,colorLtYellow);
+      R_AddDebugBox(&frontEndDataOut->debugGlobals,minmax->mins,minmax->maxs,colorLtYellow);
     }
-    if (pGVar6->surfaceCount == 0) {
+    if (minmax->surfaceCount == 0) {
       return;
     }
-    iVar3 = pGVar6->startSurfIndex;
+    iVar3 = minmax->startSurfIndex;
     puVar4 = g_worldDpvs->sortedSurfIndex;
-    for (local_1c = 0; local_1c < pGVar6->surfaceCount; local_1c = local_1c + 1) {
+    for (count = 0; count < minmax->surfaceCount; count = count + 1) {
       *(undefined1 *)
        (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) +
-       (uint)puVar4[iVar3 + local_1c]) = 1;
+       (uint)puVar4[iVar3 + count]) = 1;
     }
-    local_c = local_c + -1;
-    local_8 = local_8 + 1;
+    groupCount = groupCount + -1;
+    cullGroup = cullGroup + 1;
   } while( true );
 }
 
 
 // 00B005A0  R_AddCellStaticSurfacesInFrustumCmd  (gfx_d3d/r_dpvs_static.cpp:1534)
 
-void __cdecl R_AddCellStaticSurfacesInFrustumCmd(void *param_1)
+void __cdecl R_AddCellStaticSurfacesInFrustumCmd(void *data)
 
 {
   ushort uVar1;
+  DpvsStaticCellCmd *dpvsCell;
+  uint viewIndex;
   
-  uVar1 = *(ushort *)((int)param_1 + 10);
+  uVar1 = *(ushort *)((int)data + 10);
   *(uchar **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2090) =
        g_worldDpvs->smodelVisData[uVar1];
   *(uchar **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) =
        g_worldDpvs->surfaceVisData[uVar1];
-  R_AddCellStaticSurfacesInFrustum(param_1);
+  R_AddCellStaticSurfacesInFrustum(data);
   if (rg.drawWorld != false) {
-    R_AddCellCullGroupsInFrustum(param_1);
+    R_AddCellCullGroupsInFrustum(data);
   }
   return;
 }
@@ -1321,26 +1359,26 @@ void __cdecl R_AddCellStaticSurfacesInFrustumCmd(void *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *param_1,int param_2)
+void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *planes,int planeCount)
 
 {
   int iVar1;
   GfxSurface *pGVar2;
   code *pcVar3;
-  int iVar4;
-  bool bVar5;
-  int iVar6;
-  float (*pafVar7) [3];
-  DpvsClipPlanes local_15c;
+  int numOccluders;
+  bool bVar4;
+  int iVar5;
+  float (*bounds) [3];
+  DpvsClipPlanes clipPlanes;
   uint local_10;
-  int local_c;
-  int local_8;
+  int surfIndex;
+  int planeIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar5 = Sys_IsMainThread();
-  if ((!bVar5) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_static.cpp",0x65e
-                               ,0,"%s"), !bVar5)) {
+  bVar4 = Sys_IsMainThread();
+  if ((!bVar4) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_static.cpp",0x65e
+                               ,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
@@ -1349,24 +1387,24 @@ void __cdecl R_AddSkySurfacesDpvs(DpvsPlane *param_1,int param_2)
        ((rgp.world)->dpvs).smodelVisData[0];
   *(uchar **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) =
        ((rgp.world)->dpvs).surfaceVisData[0];
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    R_CopyClipPlanes(param_1 + local_8,local_15c.planes + local_8);
+  for (planeIndex = 0; planeIndex < planeCount; planeIndex = planeIndex + 1) {
+    R_CopyClipPlanes(planes + planeIndex,clipPlanes.planes + planeIndex);
   }
-  local_15c.count = param_2;
-  for (local_c = 0; iVar4 = dpvsGlob.numOccluders, local_c < (rgp.world)->skySurfCount;
-      local_c = local_c + 1) {
-    iVar1 = (rgp.world)->skyStartSurfs[local_c];
+  clipPlanes.count = planeCount;
+  for (surfIndex = 0; numOccluders = dpvsGlob.numOccluders, surfIndex < (rgp.world)->skySurfCount;
+      surfIndex = surfIndex + 1) {
+    iVar1 = (rgp.world)->skyStartSurfs[surfIndex];
     if (*(char *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2094) +
                  iVar1) == '\0') {
       pGVar2 = g_worldDpvs->surfaces;
-      pafVar7 = pGVar2[iVar1].bounds;
-      iVar6 = R_CullBoxLeaf(*pafVar7,&local_15c);
-      if (iVar6 == 0) {
-        bVar5 = TestOccluders(pafVar7,iVar4,dpvsGlob.occluderPlanes);
-        if (bVar5) {
+      bounds = pGVar2[iVar1].bounds;
+      iVar5 = R_CullBoxLeaf(*bounds,&clipPlanes);
+      if (iVar5 == 0) {
+        bVar4 = TestOccluders(bounds,numOccluders,dpvsGlob.occluderPlanes);
+        if (bVar4) {
           if (1 < (r_showOccluders->current).integer) {
-            R_AddDebugBox(&frontEndDataOut->debugGlobals,*pafVar7,pGVar2[iVar1].bounds[1],
-                          colorOrange);
+            R_AddDebugBox(&frontEndDataOut->debugGlobals,*bounds,pGVar2[iVar1].bounds[1],colorOrange
+                         );
           }
         }
         else {

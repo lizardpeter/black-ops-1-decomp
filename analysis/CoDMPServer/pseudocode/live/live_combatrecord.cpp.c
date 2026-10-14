@@ -2,7 +2,7 @@
 
 // 009570E0  LiveCombatRecord_OpenFriendsCombatRecord  (live/live_combatrecord.cpp:165)
 
-void __cdecl LiveCombatRecord_OpenFriendsCombatRecord(int param_1)
+void __cdecl LiveCombatRecord_OpenFriendsCombatRecord(int localClientNum)
 
 {
   bool bVar1;
@@ -11,9 +11,9 @@ void __cdecl LiveCombatRecord_OpenFriendsCombatRecord(int param_1)
   if (bVar1) {
     bVar1 = Dvar_GetBool("ui_playercardOpen");
     if (bVar1) {
-      UI_CloseMenu(param_1,"menu_playercard");
+      UI_CloseMenu(localClientNum,"menu_playercard");
     }
-    UI_OpenMenu(param_1,"menu_cr_career_summary");
+    UI_OpenMenu(localClientNum,"menu_cr_career_summary");
   }
   return;
 }
@@ -23,8 +23,10 @@ void __cdecl LiveCombatRecord_OpenFriendsCombatRecord(int param_1)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 
-int __cdecl LiveCombatRecord_CompareItemsByStats(void *param_1,void *param_2)
+int __cdecl LiveCombatRecord_CompareItemsByStats(void *arg0,void *arg1)
 
 {
   int iVar1;
@@ -34,21 +36,30 @@ int __cdecl LiveCombatRecord_CompareItemsByStats(void *param_1,void *param_2)
   loadoutSlot_t lVar5;
   loadoutSlot_t lVar6;
   float fVar7;
+  loadoutSlot_t loadoutSlot1;
+  loadoutSlot_t loadoutSlot0;
+  int count0;
+  int count1;
+  itemGroup_t group0;
+  itemGroup_t group1;
+  float precision;
+  sortedItemsData_t *item0;
+  sortedItemsData_t *item1;
   
-  if ((*(float *)((int)param_1 + 4) == 2.1474836e+09) &&
-     (*(float *)((int)param_2 + 4) == 2.1474836e+09)) {
-    if (*(int *)((int)param_1 + 8) == *(int *)((int)param_2 + 8)) {
-      iVar1 = *(int *)param_1 - *(int *)param_2;
+  if ((*(float *)((int)arg0 + 4) == 2.1474836e+09) && (*(float *)((int)arg1 + 4) == 2.1474836e+09))
+  {
+    if (*(int *)((int)arg0 + 8) == *(int *)((int)arg1 + 8)) {
+      iVar1 = *(int *)arg0 - *(int *)arg1;
     }
     else {
-      iVar1 = *(int *)((int)param_2 + 8) - *(int *)((int)param_1 + 8);
+      iVar1 = *(int *)((int)arg1 + 8) - *(int *)((int)arg0 + 8);
     }
   }
-  else if ((*(float *)((int)param_2 + 4) <= *(float *)((int)param_1 + 4) - 1e-05) ||
-          (fVar7 = *(float *)((int)param_1 + 4) + 1e-05,
-          fVar7 < *(float *)((int)param_2 + 4) || fVar7 == *(float *)((int)param_2 + 4))) {
-    if (*(float *)((int)param_2 + 4) < *(float *)((int)param_1 + 4) ||
-        *(float *)((int)param_2 + 4) == *(float *)((int)param_1 + 4)) {
+  else if ((*(float *)((int)arg1 + 4) <= *(float *)((int)arg0 + 4) - 1e-05) ||
+          (fVar7 = *(float *)((int)arg0 + 4) + 1e-05,
+          fVar7 < *(float *)((int)arg1 + 4) || fVar7 == *(float *)((int)arg1 + 4))) {
+    if (*(float *)((int)arg1 + 4) < *(float *)((int)arg0 + 4) ||
+        *(float *)((int)arg1 + 4) == *(float *)((int)arg0 + 4)) {
       iVar1 = -1;
     }
     else {
@@ -56,17 +67,17 @@ int __cdecl LiveCombatRecord_CompareItemsByStats(void *param_1,void *param_2)
     }
   }
   else {
-    iVar2 = BG_UnlockablesGetItemGroupEnum(*(int *)param_1);
-    iVar3 = BG_UnlockablesGetItemGroupEnum(*(int *)param_2);
-    iVar1 = BG_UnlockablesGetItemCount(*(int *)param_1);
-    iVar4 = BG_UnlockablesGetItemCount(*(int *)param_2);
+    iVar2 = BG_UnlockablesGetItemGroupEnum(*(int *)arg0);
+    iVar3 = BG_UnlockablesGetItemGroupEnum(*(int *)arg1);
+    iVar1 = BG_UnlockablesGetItemCount(*(int *)arg0);
+    iVar4 = BG_UnlockablesGetItemCount(*(int *)arg1);
     if ((iVar2 == ITEMGROUP_GLOBAL_ITEMS_START) && (iVar3 == ITEMGROUP_GLOBAL_ITEMS_START)) {
       iVar1 = iVar1 - iVar4;
     }
-    else if ((*(int *)((int)param_1 + 0xc) == 0) && (*(int *)((int)param_2 + 0xc) == 0)) {
+    else if ((*(int *)((int)arg0 + 0xc) == 0) && (*(int *)((int)arg1 + 0xc) == 0)) {
       if ((iVar2 == ITEMGROUP_MISCWEAPON) || (iVar3 == ITEMGROUP_MISCWEAPON)) {
         if (iVar2 == iVar3) {
-          iVar1 = *(int *)param_1 - *(int *)param_2;
+          iVar1 = *(int *)arg0 - *(int *)arg1;
         }
         else {
           iVar1 = iVar2 - iVar3;
@@ -75,24 +86,24 @@ int __cdecl LiveCombatRecord_CompareItemsByStats(void *param_1,void *param_2)
       else if ((iVar2 == ITEMGROUP_GRENADE) ||
               (((iVar2 == ITEMGROUP_EXPLOSIVE || (iVar3 == ITEMGROUP_GRENADE)) ||
                (iVar3 == ITEMGROUP_EXPLOSIVE)))) {
-        lVar5 = BG_UnlockablesGetItemLoadoutSlot(*(int *)param_1);
-        lVar6 = BG_UnlockablesGetItemLoadoutSlot(*(int *)param_2);
+        lVar5 = BG_UnlockablesGetItemLoadoutSlot(*(int *)arg0);
+        lVar6 = BG_UnlockablesGetItemLoadoutSlot(*(int *)arg1);
         if (lVar5 == lVar6) {
-          iVar1 = *(int *)param_1 - *(int *)param_2;
+          iVar1 = *(int *)arg0 - *(int *)arg1;
         }
         else {
           iVar1 = lVar5 - lVar6;
         }
       }
       else if (iVar2 == iVar3) {
-        iVar1 = *(int *)param_1 - *(int *)param_2;
+        iVar1 = *(int *)arg0 - *(int *)arg1;
       }
       else {
         iVar1 = iVar2 - iVar3;
       }
     }
     else {
-      iVar1 = *(int *)((int)param_2 + 0xc) - *(int *)((int)param_1 + 0xc);
+      iVar1 = *(int *)((int)arg1 + 0xc) - *(int *)((int)arg0 + 0xc);
     }
   }
   return iVar1;
@@ -101,37 +112,40 @@ int __cdecl LiveCombatRecord_CompareItemsByStats(void *param_1,void *param_2)
 
 // 009582F0  LiveCombatRecord_CompareMatchCount  (live/live_combatrecord.cpp:240)
 
-int __cdecl LiveCombatRecord_CompareMatchCount(void *param_1,void *param_2)
+int __cdecl LiveCombatRecord_CompareMatchCount(void *arg0,void *arg1)
 
 {
   int iVar1;
   float fVar2;
+  float precision;
+  sortedItemsData_t *item0;
+  sortedItemsData_t *item1;
   
-  if ((*(float *)((int)param_1 + 4) == 2.1474836e+09) &&
-     (*(float *)((int)param_2 + 4) == 2.1474836e+09)) {
-    if (*(int *)((int)param_1 + 8) == *(int *)((int)param_2 + 8)) {
-      iVar1 = *(int *)param_1 - *(int *)param_2;
+  if ((*(float *)((int)arg0 + 4) == 2.1474836e+09) && (*(float *)((int)arg1 + 4) == 2.1474836e+09))
+  {
+    if (*(int *)((int)arg0 + 8) == *(int *)((int)arg1 + 8)) {
+      iVar1 = *(int *)arg0 - *(int *)arg1;
     }
     else {
-      iVar1 = *(int *)((int)param_2 + 8) - *(int *)((int)param_1 + 8);
+      iVar1 = *(int *)((int)arg1 + 8) - *(int *)((int)arg0 + 8);
     }
   }
-  else if ((*(float *)((int)param_2 + 4) <= *(float *)((int)param_1 + 4) - 1e-05) ||
-          (fVar2 = *(float *)((int)param_1 + 4) + 1e-05,
-          fVar2 < *(float *)((int)param_2 + 4) || fVar2 == *(float *)((int)param_2 + 4))) {
-    if (*(float *)((int)param_2 + 4) < *(float *)((int)param_1 + 4) ||
-        *(float *)((int)param_2 + 4) == *(float *)((int)param_1 + 4)) {
+  else if ((*(float *)((int)arg1 + 4) <= *(float *)((int)arg0 + 4) - 1e-05) ||
+          (fVar2 = *(float *)((int)arg0 + 4) + 1e-05,
+          fVar2 < *(float *)((int)arg1 + 4) || fVar2 == *(float *)((int)arg1 + 4))) {
+    if (*(float *)((int)arg1 + 4) < *(float *)((int)arg0 + 4) ||
+        *(float *)((int)arg1 + 4) == *(float *)((int)arg0 + 4)) {
       iVar1 = -1;
     }
     else {
       iVar1 = 1;
     }
   }
-  else if ((*(int *)((int)param_1 + 0xc) == 0) && (*(int *)((int)param_2 + 0xc) == 0)) {
-    iVar1 = *(int *)param_1 - *(int *)param_2;
+  else if ((*(int *)((int)arg0 + 0xc) == 0) && (*(int *)((int)arg1 + 0xc) == 0)) {
+    iVar1 = *(int *)arg0 - *(int *)arg1;
   }
   else {
-    iVar1 = *(int *)((int)param_2 + 0xc) - *(int *)((int)param_1 + 0xc);
+    iVar1 = *(int *)((int)arg1 + 0xc) - *(int *)((int)arg0 + 0xc);
   }
   return iVar1;
 }
@@ -144,8 +158,8 @@ int __cdecl LiveCombatRecord_CompareMatchCount(void *param_1,void *param_2)
 
 void __cdecl
 LiveCombatRecord_BuildSortedItem
-          (int param_1,itemSortingCriteria_t param_2,bool param_3,int param_4,int param_5,
-          int param_6,int param_7)
+          (int controllerIndex,itemSortingCriteria_t criterion,bool forOtherPlayer,int index,
+          int itemNumber,int param,int divisionParam)
 
 {
   code *pcVar1;
@@ -168,71 +182,72 @@ LiveCombatRecord_BuildSortedItem
   bool local_9d49;
   bool local_9d41;
   bool local_9d39;
-  int local_9d34;
-  int local_9d30;
-  int local_9d2c;
-  int local_9d28;
-  char local_9d24 [40172];
+  int max;
+  int recentScoreIndex;
+  int min;
+  int currMatch;
+  char backupBuffer [40172];
   uint local_38;
-  int local_34;
-  char *local_30;
-  uchar *local_2c;
-  uint local_28;
-  char *local_24;
-  ddlState_t local_20;
-  sortedItemsData_t *local_10;
-  undefined4 local_c;
+  int otherPlayerDDLVersion;
+  char *statParam;
+  char *statsBuffer;
+  int kills;
+  char *statDivisionParam;
+  ddlState_t localState;
+  sortedItemsData_t *sortedItemList;
+  int deaths;
   undefined3 uStack_8;
-  char local_5;
+  bool DDLversionMismatch;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
   uStack_8 = 0x9583fd;
-  local_5 = '\0';
-  local_30 = (char *)0x0;
-  local_24 = (char *)0x0;
-  local_28 = 0;
-  local_c = 0;
-  if ((0xff < param_4) &&
+  DDLversionMismatch = false;
+  statParam = (char *)0x0;
+  statDivisionParam = (char *)0x0;
+  kills = 0;
+  deaths = 0;
+  if ((0xff < index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_combatrecord.cpp",
                                0x11a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_4 < 0x100) {
-    if (param_6 != -1) {
-      local_30 = LiveStats_GetPlayerStatStringByKey(param_6);
+  if (index < 0x100) {
+    if (param != -1) {
+      statParam = LiveStats_GetPlayerStatStringByKey(param);
     }
-    if (param_7 != -1) {
-      local_24 = LiveStats_GetPlayerStatStringByKey(param_7);
+    if (divisionParam != -1) {
+      statDivisionParam = LiveStats_GetPlayerStatStringByKey(divisionParam);
     }
-    if (param_3) {
-      local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_OTHERPLAYER,true);
-      local_10 = s_otherPlayerSortedItemList;
-      local_34 = DDL_GetHeaderVersion((char *)local_2c);
+    if (forOtherPlayer) {
+      statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                      (controllerIndex,STATS_LOCATION_OTHERPLAYER,true);
+      sortedItemList = s_otherPlayerSortedItemList;
+      otherPlayerDDLVersion = DDL_GetHeaderVersion(statsBuffer);
       pdVar3 = LiveStats_GetStatsDDL();
       if ((pdVar3 != (ddlDef_t *)0x0) &&
-         (pdVar3 = LiveStats_GetStatsDDL(), pdVar3->version != local_34)) {
+         (pdVar3 = LiveStats_GetStatsDDL(), pdVar3->version != otherPlayerDDLVersion)) {
         iVar10 = 0x9ce8;
-        pcVar9 = local_9d24;
+        pcVar9 = backupBuffer;
         pcVar8 = "ddl_mp/stats_archive.ddl";
         pdVar3 = LiveStats_GetStatsDDL();
-        iVar10 = DDL_FixBufferVersion((char *)local_2c,pdVar3,pcVar8,pcVar9,iVar10);
+        iVar10 = DDL_FixBufferVersion(statsBuffer,pdVar3,pcVar8,pcVar9,iVar10);
         if (iVar10 == 0) {
           iVar10 = 0x9ce8;
-          pcVar9 = local_9d24;
+          pcVar9 = backupBuffer;
           pcVar8 = "ddl_mp/stats.ddl";
           pdVar3 = LiveStats_GetStatsDDL();
-          iVar10 = DDL_FixBufferVersion((char *)local_2c,pdVar3,pcVar8,pcVar9,iVar10);
+          iVar10 = DDL_FixBufferVersion(statsBuffer,pdVar3,pcVar8,pcVar9,iVar10);
           if (iVar10 == 0) {
             LiveStats_GetStatsDDL();
             Com_PrintError(0x10,
                            "DDL: Could not convert other player stats from version %d to version %d.\n"
                           );
-            local_5 = '\x01';
+            DDLversionMismatch = true;
           }
         }
-        if (local_5 == '\0') {
+        if (DDLversionMismatch == false) {
           LiveStats_GetStatsDDL();
           Com_PrintWarning(0x10,"DDL: Converted other player stats from version %d to version %d.\n"
                           );
@@ -240,107 +255,109 @@ LiveCombatRecord_BuildSortedItem
       }
     }
     else {
-      local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      local_10 = s_sortedItemList;
+      statsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      sortedItemList = s_sortedItemList;
     }
-    switch(param_2) {
+    switch(criterion) {
     case PERSONAL_BESTS:
-      if (local_5 == '\0') {
-        if (param_5 < 3) {
+      if (DDLversionMismatch == false) {
+        if (itemNumber < 3) {
           iVar10 = 2;
-          pdVar6 = &local_20;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           DDL_MoveTo(pdVar4,pdVar6,iVar10);
         }
         else {
           iVar10 = 2;
-          pdVar6 = &local_20;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           DDL_MoveTo(pdVar4,pdVar6,iVar10);
         }
-        if (!param_3) {
+        if (!forOtherPlayer) {
           if ((xblive_basictraining == (dvar_s *)0x0) ||
              ((xblive_basictraining->current).enabled == false)) {
-            local_9d39 = LiveStats_GetBasicTrainingState(local_2c);
+            local_9d39 = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
           }
           else {
             local_9d39 = true;
           }
-          if ((local_9d39 == false) && ((local_20.member)->permission == 2)) {
-            local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+          if ((local_9d39 == false) && ((localState.member)->permission == 2)) {
+            statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                            (controllerIndex,STATS_LOCATION_GLOBAL,true);
           }
         }
-        local_10[param_4].itemIndex = param_5;
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].param1 = uVar5;
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].sortKey = (float)uVar5;
+        sortedItemList[index].itemIndex = itemNumber;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].param1 = uVar5;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].sortKey = (float)uVar5;
       }
       break;
     case RECENT_PERFORMANCE:
     case FAVORITE_WEAPON:
-      if (local_5 == '\0') {
+      if (DDLversionMismatch == false) {
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_GAMETYPE);
         va("%d");
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        if (!param_3) {
+        if (!forOtherPlayer) {
           if ((xblive_basictraining == (dvar_s *)0x0) ||
              ((xblive_basictraining->current).enabled == false)) {
-            local_9d41 = LiveStats_GetBasicTrainingState(local_2c);
+            local_9d41 = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
           }
           else {
             local_9d41 = true;
           }
-          if ((local_9d41 == false) && ((local_20.member)->permission == 2)) {
-            local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+          if ((local_9d41 == false) && ((localState.member)->permission == 2)) {
+            statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                            (controllerIndex,STATS_LOCATION_GLOBAL,true);
           }
         }
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].param2 = uVar5;
-        if (param_2 == RECENT_PERFORMANCE) {
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].param2 = uVar5;
+        if (criterion == RECENT_PERFORMANCE) {
           va("%d");
           iVar10 = 3;
-          pdVar6 = &local_20;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           DDL_MoveTo(pdVar4,pdVar6,iVar10);
-          uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-          local_10[param_4].param1 = uVar5;
+          uVar5 = DDL_GetInt(&localState,statsBuffer);
+          sortedItemList[index].param1 = uVar5;
         }
         va("%d");
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].itemIndex = uVar5;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].itemIndex = uVar5;
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_KILLS);
         va("%d");
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        local_28 = DDL_GetInt(&local_20,(char *)local_2c);
+        kills = DDL_GetInt(&localState,statsBuffer);
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_DEATHS);
         va("%d");
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        local_9d88 = DDL_GetInt(&local_20,(char *)local_2c);
-        if ((local_28 == 0) && (local_9d88 == 0)) {
-          local_10[param_4].sortKey = 1.0;
+        local_9d88 = DDL_GetInt(&localState,statsBuffer);
+        if ((kills == 0) && (local_9d88 == 0)) {
+          sortedItemList[index].sortKey = 1.0;
         }
         else {
           if ((int)local_9d88 < 2) {
             local_9d88 = 1;
           }
-          local_10[param_4].sortKey = (float)(int)local_28 / (float)(int)local_9d88;
+          sortedItemList[index].sortKey = (float)kills / (float)(int)local_9d88;
         }
-        if (local_10[param_4].itemIndex != 0) {
-          local_10[10].itemIndex = local_10[10].itemIndex + 1;
+        if (sortedItemList[index].itemIndex != 0) {
+          sortedItemList[10].itemIndex = sortedItemList[10].itemIndex + 1;
         }
       }
       break;
@@ -353,174 +370,178 @@ LiveCombatRecord_BuildSortedItem
     case KILLSTREAKS_FAVORITES:
     case KILLSTREAKS_CALLED:
     case KILLSTREAKS_KILLS:
-      local_10[param_4].itemIndex = param_5;
-      if (local_5 == '\0') {
+      sortedItemList[index].itemIndex = itemNumber;
+      if (DDLversionMismatch == false) {
         va("%d");
         iVar10 = 5;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        if (!param_3) {
+        if (!forOtherPlayer) {
           if ((xblive_basictraining == (dvar_s *)0x0) ||
              ((xblive_basictraining->current).enabled == false)) {
-            local_9d49 = LiveStats_GetBasicTrainingState(local_2c);
+            local_9d49 = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
           }
           else {
             local_9d49 = true;
           }
-          if ((local_9d49 == false) && ((local_20.member)->permission == 2)) {
-            local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+          if ((local_9d49 == false) && ((localState.member)->permission == 2)) {
+            statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                            (controllerIndex,STATS_LOCATION_GLOBAL,true);
           }
         }
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].param1 = uVar5;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].param1 = uVar5;
         va("%d");
         iVar10 = 5;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].param3 = uVar5;
-        local_10[param_4].sortKey = (float)local_10[param_4].param1;
-        if (local_24 != (char *)0x0) {
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].param3 = uVar5;
+        sortedItemList[index].sortKey = (float)sortedItemList[index].param1;
+        if (statDivisionParam != (char *)0x0) {
           va("%d");
           iVar10 = 5;
-          pdVar6 = &local_20;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           DDL_MoveTo(pdVar4,pdVar6,iVar10);
-          uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-          local_10[param_4].param2 = uVar5;
-          if (local_10[param_4].param2 == 0) {
-            if (local_10[param_4].param1 == 0) {
-              local_10[param_4].sortKey = 0.0;
+          uVar5 = DDL_GetInt(&localState,statsBuffer);
+          sortedItemList[index].param2 = uVar5;
+          if (sortedItemList[index].param2 == 0) {
+            if (sortedItemList[index].param1 == 0) {
+              sortedItemList[index].sortKey = 0.0;
             }
             else {
-              local_10[param_4].sortKey = 2.1474836e+09;
+              sortedItemList[index].sortKey = 2.1474836e+09;
             }
           }
           else {
-            local_10[param_4].sortKey =
-                 (float)local_10[param_4].param1 / (float)local_10[param_4].param2;
+            sortedItemList[index].sortKey =
+                 (float)sortedItemList[index].param1 / (float)sortedItemList[index].param2;
           }
         }
-        if (param_2 == WEAPON_ACCURACY) {
-          local_9d8c = local_10[param_4].sortKey;
+        if (criterion == WEAPON_ACCURACY) {
+          local_9d8c = sortedItemList[index].sortKey;
           if (0.0 <= local_9d8c - 1.0) {
             local_9d8c = 1.0;
           }
-          local_10[param_4].sortKey = local_9d8c;
+          sortedItemList[index].sortKey = local_9d8c;
         }
       }
       break;
     case WEAPON_HITLOCATION_HEATMAP:
-      for (local_9d28 = 0; local_9d28 < 10; local_9d28 = local_9d28 + 1) {
+      for (currMatch = 0; currMatch < 10; currMatch = currMatch + 1) {
         va("%d");
         iVar10 = 4;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        if (!param_3) {
+        if (!forOtherPlayer) {
           if ((xblive_basictraining == (dvar_s *)0x0) ||
              ((xblive_basictraining->current).enabled == false)) {
-            local_9d55 = LiveStats_GetBasicTrainingState(local_2c);
+            local_9d55 = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
           }
           else {
             local_9d55 = true;
           }
-          if ((local_9d55 == false) && ((local_20.member)->permission == 2)) {
-            local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+          if ((local_9d55 == false) && ((localState.member)->permission == 2)) {
+            statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                            (controllerIndex,STATS_LOCATION_GLOBAL,true);
           }
         }
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
         if (uVar5 == 0) {
           return;
         }
         va("%d");
         va("%d");
         iVar10 = 4;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].param1 = uVar5 + local_10[param_4].param1;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].param1 = uVar5 + sortedItemList[index].param1;
         va("%d");
         va("%d");
         iVar10 = 4;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].param2 = uVar5 + local_10[param_4].param2;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].param2 = uVar5 + sortedItemList[index].param2;
       }
       break;
     case MATCH_TYPES:
-      local_10[param_4].itemIndex = param_5;
-      if (local_5 == '\0') {
+      sortedItemList[index].itemIndex = itemNumber;
+      if (DDLversionMismatch == false) {
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        if (!param_3) {
+        if (!forOtherPlayer) {
           if ((xblive_basictraining == (dvar_s *)0x0) ||
              ((xblive_basictraining->current).enabled == false)) {
-            local_9d5d = LiveStats_GetBasicTrainingState(local_2c);
+            local_9d5d = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
           }
           else {
             local_9d5d = true;
           }
-          if ((local_9d5d == false) && ((local_20.member)->permission == 2)) {
-            local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+          if ((local_9d5d == false) && ((localState.member)->permission == 2)) {
+            statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                            (controllerIndex,STATS_LOCATION_GLOBAL,true);
           }
         }
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].sortKey = (float)uVar5;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].sortKey = (float)uVar5;
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_LOSSES);
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].sortKey = (float)uVar5 + local_10[param_4].sortKey;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].sortKey = (float)uVar5 + sortedItemList[index].sortKey;
       }
       break;
     case WAGER_MATCH_TYPES:
-      local_10[param_4].itemIndex = param_5;
-      if (local_5 == '\0') {
+      sortedItemList[index].itemIndex = itemNumber;
+      if (DDLversionMismatch == false) {
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        if (!param_3) {
+        if (!forOtherPlayer) {
           if ((xblive_basictraining == (dvar_s *)0x0) ||
              ((xblive_basictraining->current).enabled == false)) {
-            local_9d65 = LiveStats_GetBasicTrainingState(local_2c);
+            local_9d65 = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
           }
           else {
             local_9d65 = true;
           }
-          if ((local_9d65 == false) && ((local_20.member)->permission == 2)) {
-            local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+          if ((local_9d65 == false) && ((localState.member)->permission == 2)) {
+            statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                            (controllerIndex,STATS_LOCATION_GLOBAL,true);
           }
         }
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].sortKey = (float)uVar5;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].sortKey = (float)uVar5;
         LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_LOSSES);
         iVar10 = 3;
-        pdVar6 = &local_20;
+        pdVar6 = &localState;
         pdVar4 = LiveStats_GetRootDDLState();
         DDL_MoveTo(pdVar4,pdVar6,iVar10);
-        uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-        local_10[param_4].sortKey = (float)uVar5 + local_10[param_4].sortKey;
+        uVar5 = DDL_GetInt(&localState,statsBuffer);
+        sortedItemList[index].sortKey = (float)uVar5 + sortedItemList[index].sortKey;
       }
       break;
     case MATCH_PERFORMANCE:
-      if (local_5 == '\0') {
-        local_9d2c = 0;
-        local_9d34 = 0;
-        for (local_9d30 = 0; local_9d30 < 10; local_9d30 = local_9d30 + 1) {
-          iVar10 = param_5 * 10 + local_9d30;
+      if (DDLversionMismatch == false) {
+        min = 0;
+        max = 0;
+        for (recentScoreIndex = 0; recentScoreIndex < 10; recentScoreIndex = recentScoreIndex + 1) {
+          iVar10 = itemNumber * 10 + recentScoreIndex;
           if ((0xff < iVar10) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_combatrecord.cpp"
                                        ,0x201,0,"%s"), !bVar2)) {
@@ -531,76 +552,78 @@ LiveCombatRecord_BuildSortedItem
           LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_SCORE);
           va("%d");
           iVar7 = 5;
-          pdVar6 = &local_20;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           DDL_MoveTo(pdVar4,pdVar6,iVar7);
-          if (!param_3) {
+          if (!forOtherPlayer) {
             if ((xblive_basictraining == (dvar_s *)0x0) ||
                ((xblive_basictraining->current).enabled == false)) {
-              local_9d6d = LiveStats_GetBasicTrainingState(local_2c);
+              local_9d6d = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
             }
             else {
               local_9d6d = true;
             }
-            if ((local_9d6d == false) && ((local_20.member)->permission == 2)) {
-              local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+            if ((local_9d6d == false) && ((localState.member)->permission == 2)) {
+              statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                              (controllerIndex,STATS_LOCATION_GLOBAL,true);
             }
           }
-          uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-          local_10[iVar10].sortKey = (float)uVar5;
+          uVar5 = DDL_GetInt(&localState,statsBuffer);
+          sortedItemList[iVar10].sortKey = (float)uVar5;
           va("%d");
           iVar7 = 5;
-          pdVar6 = &local_20;
+          pdVar6 = &localState;
           pdVar4 = LiveStats_GetRootDDLState();
           DDL_MoveTo(pdVar4,pdVar6,iVar7);
-          uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-          local_10[iVar10].itemIndex = uVar5;
-          if (local_10[iVar10].itemIndex == 0) break;
-          if (local_9d30 == 0) {
-            local_9d2c = (int)local_10[iVar10].sortKey;
-            local_9d34 = (int)local_10[iVar10].sortKey;
+          uVar5 = DDL_GetInt(&localState,statsBuffer);
+          sortedItemList[iVar10].itemIndex = uVar5;
+          if (sortedItemList[iVar10].itemIndex == 0) break;
+          if (recentScoreIndex == 0) {
+            min = (int)sortedItemList[iVar10].sortKey;
+            max = (int)sortedItemList[iVar10].sortKey;
           }
-          if ((float)local_9d34 < local_10[iVar10].sortKey) {
-            local_9d34 = (int)local_10[iVar10].sortKey;
+          if ((float)max < sortedItemList[iVar10].sortKey) {
+            max = (int)sortedItemList[iVar10].sortKey;
           }
-          if (local_10[iVar10].sortKey <= (float)local_9d2c &&
-              (float)local_9d2c != local_10[iVar10].sortKey) {
-            local_9d2c = (int)local_10[iVar10].sortKey;
+          if (sortedItemList[iVar10].sortKey <= (float)min &&
+              (float)min != sortedItemList[iVar10].sortKey) {
+            min = (int)sortedItemList[iVar10].sortKey;
           }
         }
-        local_10[param_5 * 10].itemIndex = local_9d30;
-        local_10[param_5 * 10].param1 = local_9d2c;
-        local_10[param_5 * 10].param2 = local_9d34;
+        sortedItemList[itemNumber * 10].itemIndex = recentScoreIndex;
+        sortedItemList[itemNumber * 10].param1 = min;
+        sortedItemList[itemNumber * 10].param2 = max;
       }
       break;
     case RECENT_EARNINGS:
       LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_SCORE);
       va("%d");
       iVar10 = 3;
-      pdVar6 = &local_20;
+      pdVar6 = &localState;
       pdVar4 = LiveStats_GetRootDDLState();
       DDL_MoveTo(pdVar4,pdVar6,iVar10);
-      if (!param_3) {
+      if (!forOtherPlayer) {
         if ((xblive_basictraining == (dvar_s *)0x0) ||
            ((xblive_basictraining->current).enabled == false)) {
-          local_9d75 = LiveStats_GetBasicTrainingState(local_2c);
+          local_9d75 = LiveStats_GetBasicTrainingState((uchar *)statsBuffer);
         }
         else {
           local_9d75 = true;
         }
-        if ((local_9d75 == false) && ((local_20.member)->permission == 2)) {
-          local_2c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
+        if ((local_9d75 == false) && ((localState.member)->permission == 2)) {
+          statsBuffer = (char *)LiveStorage_GetStatsBuffer
+                                          (controllerIndex,STATS_LOCATION_GLOBAL,true);
         }
       }
-      uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-      local_10[param_5].param1 = uVar5;
+      uVar5 = DDL_GetInt(&localState,statsBuffer);
+      sortedItemList[itemNumber].param1 = uVar5;
       va("%d");
       iVar10 = 3;
-      pdVar6 = &local_20;
+      pdVar6 = &localState;
       pdVar4 = LiveStats_GetRootDDLState();
       DDL_MoveTo(pdVar4,pdVar6,iVar10);
-      uVar5 = DDL_GetInt(&local_20,(char *)local_2c);
-      local_10[param_5].itemIndex = uVar5;
+      uVar5 = DDL_GetInt(&localState,statsBuffer);
+      sortedItemList[itemNumber].itemIndex = uVar5;
     }
   }
   else {
@@ -614,10 +637,13 @@ LiveCombatRecord_BuildSortedItem
 
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 
 bool __cdecl
 LiveCombatRecord_FilterCurrentSortedItem
-          (int param_1,itemSortingCriteria_t param_2,int param_3,sortedStatLoadoutSlots_t param_4)
+          (int controllerIndex,itemSortingCriteria_t criterion,int itemNumber,
+          sortedStatLoadoutSlots_t currLoadout)
 
 {
   bool bVar1;
@@ -632,21 +658,25 @@ LiveCombatRecord_FilterCurrentSortedItem
   bool local_30;
   bool local_28;
   bool local_20;
-  bool local_6;
+  loadoutSlot_t loadoutSlot;
+  int cost;
+  itemGroup_t group;
+  bool isItemValid;
+  bool isPassive;
   
-  bVar2 = BG_UnlockablesIsItemValidNotNull(param_3);
+  bVar2 = BG_UnlockablesIsItemValidNotNull(itemNumber);
   if (bVar2) {
-    bVar2 = BG_UnlockablesIsItemClassifiedGeneric(param_1,param_3);
+    bVar2 = BG_UnlockablesIsItemClassifiedGeneric(controllerIndex,itemNumber);
     if (bVar2) {
-      local_6 = false;
+      isItemValid = false;
     }
     else {
-      local_6 = false;
-      lVar3 = BG_UnlockablesGetItemLoadoutSlot(param_3);
-      iVar4 = BG_UnlockablesGetItemGroupEnum(param_3);
-      bVar2 = BG_UnlockablesIsItemPassive(param_3);
-      iVar5 = BG_UnlockablesGetItemCost(param_3);
-      switch(param_2) {
+      isItemValid = false;
+      lVar3 = BG_UnlockablesGetItemLoadoutSlot(itemNumber);
+      iVar4 = BG_UnlockablesGetItemGroupEnum(itemNumber);
+      bVar2 = BG_UnlockablesIsItemPassive(itemNumber);
+      iVar5 = BG_UnlockablesGetItemCost(itemNumber);
+      switch(criterion) {
       case WEAPON_STATS:
         if (((lVar3 == LOADOUTSLOT_FIRST) || (lVar3 == LOADOUTSLOT_SECONDARY_WEAPON)) ||
            ((iVar4 == ITEMGROUP_MASTERKEY ||
@@ -662,7 +692,7 @@ LiveCombatRecord_FilterCurrentSortedItem
         else {
           local_20 = true;
         }
-        local_6 = local_20;
+        isItemValid = local_20;
         break;
       case WEAPON_ACCURACY:
       case WEAPON_HEADSHOTS:
@@ -679,7 +709,7 @@ LiveCombatRecord_FilterCurrentSortedItem
         else {
           local_28 = false;
         }
-        local_6 = local_28;
+        isItemValid = local_28;
         break;
       case EQUIPMENT_KILLS:
         if ((((lVar3 != LOADOUTSLOT_PRIMARY_GRENADE) && (lVar3 != LOADOUTSLOT_SPECIAL_GRENADE)) &&
@@ -695,7 +725,7 @@ LiveCombatRecord_FilterCurrentSortedItem
         else {
           local_30 = false;
         }
-        local_6 = local_30;
+        isItemValid = local_30;
         break;
       case EQUIPMENT_USAGE:
         if (((lVar3 == LOADOUTSLOT_PRIMARY_GRENADE) || (lVar3 == LOADOUTSLOT_SPECIAL_GRENADE)) ||
@@ -711,16 +741,16 @@ LiveCombatRecord_FilterCurrentSortedItem
         else {
           local_38 = false;
         }
-        local_6 = local_38;
+        isItemValid = local_38;
         break;
       case TIME_SPENT_USING_ITEM:
-        if ((lVar3 == sortedStatLoadoutSlots[param_4]) && (iVar5 != -1)) {
+        if ((lVar3 == sortedStatLoadoutSlots[currLoadout]) && (iVar5 != -1)) {
           local_44 = true;
         }
         else {
           local_44 = false;
         }
-        local_6 = local_44;
+        isItemValid = local_44;
         break;
       case KILLSTREAKS_FAVORITES:
       case KILLSTREAKS_CALLED:
@@ -730,7 +760,7 @@ LiveCombatRecord_FilterCurrentSortedItem
         else {
           local_3c = false;
         }
-        local_6 = local_3c;
+        isItemValid = local_3c;
         break;
       case KILLSTREAKS_KILLS:
         if ((((iVar4 == ITEMGROUP_GLOBAL_ITEMS_START) && (!bVar2)) && (iVar5 != -1)) ||
@@ -740,147 +770,159 @@ LiveCombatRecord_FilterCurrentSortedItem
         else {
           local_40 = false;
         }
-        local_6 = local_40;
+        isItemValid = local_40;
       }
     }
   }
   else {
-    local_6 = false;
+    isItemValid = false;
   }
-  return local_6;
+  return isItemValid;
 }
 
 
 // 00957710  LiveCombatRecord_BuildSortedItemListByStats  (live/live_combatrecord.cpp:616)
 
+/* WARNING: Type propagation algorithm not settling */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+
 void __cdecl
 LiveCombatRecord_BuildSortedItemListByStats
-          (int param_1,itemSortingCriteria_t param_2,int param_3,int param_4)
+          (int controllerIndex,itemSortingCriteria_t criterion,int param,int divisionParam)
 
 {
-  sortedStatLoadoutSlots_t sVar1;
-  bool bVar2;
-  sortedItemsData_t *psVar3;
-  int iVar4;
+  bool bVar1;
+  sortedItemsData_t *psVar2;
+  int iVar3;
   sortedItemsData_t *local_f4;
-  int local_ec;
-  int local_e8;
-  int local_e4;
-  int local_dc;
-  int local_d8;
-  float afStack_d4 [5];
+  int currEarnings;
+  int minEarnings;
+  int maxEarnings;
+  int minScore;
+  int currScore;
+  int maxScore;
+  int itemNumber;
+  int iStack_d4;
+  float afStack_d0 [4];
   int local_c0;
   float local_bc;
   int local_b8;
   int local_b4;
   int local_b0;
-  float afStack_98 [32];
-  char local_15;
-  uint local_14;
-  sortedStatLoadoutSlots_t local_10;
-  sortedItemsData_t *local_c;
-  bool local_5;
+  int iStack_98;
+  float afStack_94 [31];
+  bool comparisonModeOn;
+  int index;
+  int currLoadout;
+  sortedItemsData_t *sortedItemList;
+  bool forOtherPlayer;
   
-  if (param_2 != CRITERION_NULL) {
-    local_5 = Dvar_GetBool("ui_showFriendsCombatRecord");
-    local_15 = Dvar_GetBool("ui_combatComparisonModeOn");
+  if (criterion != CRITERION_NULL) {
+    forOtherPlayer = Dvar_GetBool("ui_showFriendsCombatRecord");
+    comparisonModeOn = Dvar_GetBool("ui_combatComparisonModeOn");
     memset((uchar *)s_sortedItemList,'\0',0x1400);
     memset((uchar *)s_otherPlayerSortedItemList,'\0',0x1400);
-    if (local_5 == false) {
+    if (forOtherPlayer == false) {
       local_f4 = s_sortedItemList;
     }
     else {
       local_f4 = s_otherPlayerSortedItemList;
     }
-    local_c = local_f4;
-    switch(param_2) {
+    sortedItemList = local_f4;
+    switch(criterion) {
     case PERSONAL_BESTS:
-      local_14 = 0;
-      for (local_d8 = 0; local_d8 < 5; local_d8 = local_d8 + 1) {
-        LiveCombatRecord_BuildSortedItem(param_1,param_2,false,local_14,local_d8,param_3,param_4);
-        if ((local_5 != false) || (local_15 != '\0')) {
-          LiveCombatRecord_BuildSortedItem(param_1,param_2,true,local_14,local_d8,param_3,param_4);
+      index = 0;
+      for (itemNumber = 0; itemNumber < 5; itemNumber = itemNumber + 1) {
+        LiveCombatRecord_BuildSortedItem
+                  (controllerIndex,criterion,false,index,itemNumber,param,divisionParam);
+        if ((forOtherPlayer != false) || (comparisonModeOn != false)) {
+          LiveCombatRecord_BuildSortedItem
+                    (controllerIndex,criterion,true,index,itemNumber,param,divisionParam);
         }
-        local_14 = local_14 + 1;
+        index = index + 1;
       }
       DAT_098c3920 = 2;
-      DAT_098c3924 = local_14;
+      DAT_098c3924 = index;
       break;
     case RECENT_PERFORMANCE:
-      local_14 = 0;
-      for (local_d8 = 0; local_d8 < 10; local_d8 = local_d8 + 1) {
-        LiveCombatRecord_BuildSortedItem(param_1,param_2,false,local_14,local_d8,param_3,param_4);
-        if ((local_5 != false) || (local_15 != '\0')) {
-          LiveCombatRecord_BuildSortedItem(param_1,param_2,true,local_14,local_d8,param_3,param_4);
+      index = 0;
+      for (itemNumber = 0; itemNumber < 10; itemNumber = itemNumber + 1) {
+        LiveCombatRecord_BuildSortedItem
+                  (controllerIndex,criterion,false,index,itemNumber,param,divisionParam);
+        if ((forOtherPlayer != false) || (comparisonModeOn != false)) {
+          LiveCombatRecord_BuildSortedItem
+                    (controllerIndex,criterion,true,index,itemNumber,param,divisionParam);
         }
-        local_14 = local_14 + 1;
+        index = index + 1;
       }
-      local_e4 = local_c->param1;
-      local_dc = local_c->param1;
-      for (local_14 = 0; ((int)local_14 < 10 && (local_c[local_14].itemIndex != 0));
-          local_14 = local_14 + 1) {
-        iVar4 = local_c[local_14].param1;
-        if (local_dc < iVar4) {
-          local_dc = iVar4;
+      minScore = sortedItemList->param1;
+      maxScore = sortedItemList->param1;
+      for (index = 0; (index < 10 && (sortedItemList[index].itemIndex != 0)); index = index + 1) {
+        iVar3 = sortedItemList[index].param1;
+        if (maxScore < iVar3) {
+          maxScore = iVar3;
         }
-        if (iVar4 < local_e4) {
-          local_e4 = iVar4;
+        if (iVar3 < minScore) {
+          minScore = iVar3;
         }
       }
-      local_c[10].itemIndex = local_14;
-      local_c[10].param1 = local_e4;
-      local_c[10].param2 = local_dc;
+      sortedItemList[10].itemIndex = index;
+      sortedItemList[10].param1 = minScore;
+      sortedItemList[10].param2 = maxScore;
       DAT_098c3924 = 0xb;
       break;
     case FAVORITE_WEAPON:
     case TIME_SPENT_USING_ITEM:
-      for (local_10 = PRIMARY_WEAPON; (int)local_10 < 9; local_10 = local_10 + SECONDARY_WEAPON) {
-        local_14 = 0;
-        for (local_d8 = 0; local_d8 < 0x100; local_d8 = local_d8 + 1) {
-          bVar2 = LiveCombatRecord_FilterCurrentSortedItem
-                            (param_1,TIME_SPENT_USING_ITEM,local_d8,local_10);
-          if (bVar2) {
+      for (currLoadout = 0; currLoadout < 9; currLoadout = currLoadout + 1) {
+        index = 0;
+        for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+          bVar1 = LiveCombatRecord_FilterCurrentSortedItem
+                            (controllerIndex,TIME_SPENT_USING_ITEM,itemNumber,currLoadout);
+          if (bVar1) {
             LiveCombatRecord_BuildSortedItem
-                      (param_1,TIME_SPENT_USING_ITEM,local_5,local_14,local_d8,param_3,param_4);
-            local_14 = local_14 + 1;
+                      (controllerIndex,TIME_SPENT_USING_ITEM,forOtherPlayer,index,itemNumber,param,
+                       divisionParam);
+            index = index + 1;
           }
         }
-        qsort(local_c,local_14,0x14,LiveCombatRecord_CompareItemsByStats);
-        psVar3 = local_c;
-        sVar1 = local_10;
-        afStack_d4[local_10 * 5] = (float)local_c->itemIndex;
-        afStack_d4[sVar1 * 5 + 1] = psVar3->sortKey;
-        afStack_d4[sVar1 * 5 + 2] = (float)psVar3->param1;
-        afStack_d4[sVar1 * 5 + 3] = (float)psVar3->param2;
-        afStack_d4[sVar1 * 5 + 4] = (float)psVar3->param3;
+        qsort(sortedItemList,index,0x14,LiveCombatRecord_CompareItemsByStats);
+        psVar2 = sortedItemList;
+        iVar3 = currLoadout;
+        (&iStack_d4)[currLoadout * 5] = sortedItemList->itemIndex;
+        afStack_d0[iVar3 * 5] = psVar2->sortKey;
+        afStack_d0[iVar3 * 5 + 1] = (float)psVar2->param1;
+        afStack_d0[iVar3 * 5 + 2] = (float)psVar2->param2;
+        afStack_d0[iVar3 * 5 + 3] = (float)psVar2->param3;
       }
-      for (local_10 = 0; (int)local_10 < 9; local_10 = local_10 + 1) {
-        psVar3 = local_c + local_10;
-        psVar3->itemIndex = (int)afStack_d4[local_10 * 5];
-        psVar3->sortKey = afStack_d4[local_10 * 5 + 1];
-        psVar3->param1 = (int)afStack_d4[local_10 * 5 + 2];
-        psVar3->param2 = (int)afStack_d4[local_10 * 5 + 3];
-        psVar3->param3 = (int)afStack_d4[local_10 * 5 + 4];
+      for (currLoadout = 0; currLoadout < 9; currLoadout = currLoadout + 1) {
+        psVar2 = sortedItemList + currLoadout;
+        psVar2->itemIndex = (&iStack_d4)[currLoadout * 5];
+        psVar2->sortKey = afStack_d0[currLoadout * 5];
+        psVar2->param1 = (int)afStack_d0[currLoadout * 5 + 1];
+        psVar2->param2 = (int)afStack_d0[currLoadout * 5 + 2];
+        psVar2->param3 = (int)afStack_d0[currLoadout * 5 + 3];
       }
       DAT_098c3924 = 9;
-      if (param_2 == FAVORITE_WEAPON) {
-        if (local_c->sortKey <= local_c[1].sortKey && local_c[1].sortKey != local_c->sortKey) {
-          local_c->itemIndex = local_c0;
-          local_c->sortKey = local_bc;
-          local_c->param1 = local_b8;
-          local_c->param2 = local_b4;
-          local_c->param3 = local_b0;
+      if (criterion == FAVORITE_WEAPON) {
+        if (sortedItemList->sortKey <= sortedItemList[1].sortKey &&
+            sortedItemList[1].sortKey != sortedItemList->sortKey) {
+          sortedItemList->itemIndex = local_c0;
+          sortedItemList->sortKey = local_bc;
+          sortedItemList->param1 = local_b8;
+          sortedItemList->param2 = local_b4;
+          sortedItemList->param3 = local_b0;
         }
-        local_c[10].itemIndex = 0;
-        local_14 = 1;
-        for (local_d8 = 0; local_d8 < 5; local_d8 = local_d8 + 1) {
+        sortedItemList[10].itemIndex = 0;
+        index = 1;
+        for (itemNumber = 0; itemNumber < 5; itemNumber = itemNumber + 1) {
           LiveCombatRecord_BuildSortedItem
-                    (param_1,FAVORITE_WEAPON,false,local_14,local_d8,param_3,param_4);
-          if ((local_5 != false) || (local_15 != '\0')) {
+                    (controllerIndex,FAVORITE_WEAPON,false,index,itemNumber,param,divisionParam);
+          if ((forOtherPlayer != false) || (comparisonModeOn != false)) {
             LiveCombatRecord_BuildSortedItem
-                      (param_1,FAVORITE_WEAPON,true,local_14,local_d8,param_3,param_4);
+                      (controllerIndex,FAVORITE_WEAPON,true,index,itemNumber,param,divisionParam);
           }
-          local_14 = local_14 + 1;
+          index = index + 1;
         }
         DAT_098c3924 = 0xb;
       }
@@ -893,100 +935,105 @@ LiveCombatRecord_BuildSortedItemListByStats
     case KILLSTREAKS_FAVORITES:
     case KILLSTREAKS_CALLED:
     case KILLSTREAKS_KILLS:
-      local_14 = 0;
-      for (local_d8 = 0; local_d8 < 0x100; local_d8 = local_d8 + 1) {
-        bVar2 = LiveCombatRecord_FilterCurrentSortedItem(param_1,param_2,local_d8,SLOT_NULL);
-        if (bVar2) {
-          LiveCombatRecord_BuildSortedItem(param_1,param_2,false,local_14,local_d8,param_3,param_4);
-          if ((local_5 != false) || (local_15 != '\0')) {
-            LiveCombatRecord_BuildSortedItem(param_1,param_2,true,local_14,local_d8,param_3,param_4)
-            ;
+      index = 0;
+      for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+        bVar1 = LiveCombatRecord_FilterCurrentSortedItem
+                          (controllerIndex,criterion,itemNumber,SLOT_NULL);
+        if (bVar1) {
+          LiveCombatRecord_BuildSortedItem
+                    (controllerIndex,criterion,false,index,itemNumber,param,divisionParam);
+          if ((forOtherPlayer != false) || (comparisonModeOn != false)) {
+            LiveCombatRecord_BuildSortedItem
+                      (controllerIndex,criterion,true,index,itemNumber,param,divisionParam);
           }
-          local_14 = local_14 + 1;
+          index = index + 1;
         }
       }
       DAT_098c3920 = 2;
-      DAT_098c3924 = local_14;
-      qsort(s_sortedItemList,local_14,0x14,LiveCombatRecord_CompareItemsByStats);
+      DAT_098c3924 = index;
+      qsort(s_sortedItemList,index,0x14,LiveCombatRecord_CompareItemsByStats);
       qsort(s_otherPlayerSortedItemList,DAT_098c3924,0x14,LiveCombatRecord_CompareItemsByStats);
       break;
     case WEAPON_HITLOCATION_HEATMAP:
-      for (local_14 = 0; (int)local_14 < 0x13; local_14 = local_14 + 1) {
-        LiveCombatRecord_BuildSortedItem(param_1,param_2,false,local_14,0,param_3,param_4);
-        if ((local_5 != false) || (local_15 != '\0')) {
-          LiveCombatRecord_BuildSortedItem(param_1,param_2,true,local_14,0,param_3,param_4);
+      for (index = 0; index < 0x13; index = index + 1) {
+        LiveCombatRecord_BuildSortedItem
+                  (controllerIndex,criterion,false,index,0,param,divisionParam);
+        if ((forOtherPlayer != false) || (comparisonModeOn != false)) {
+          LiveCombatRecord_BuildSortedItem
+                    (controllerIndex,criterion,true,index,0,param,divisionParam);
         }
       }
       DAT_098c3924 = 0x13;
       break;
     case MATCH_TYPES:
-      local_14 = 0;
-      for (local_d8 = 0; local_d8 < 0x10; local_d8 = local_d8 + 1) {
+      index = 0;
+      for (itemNumber = 0; itemNumber < 0x10; itemNumber = itemNumber + 1) {
         LiveCombatRecord_BuildSortedItem
-                  (param_1,MATCH_TYPES,local_5,local_14,local_d8,param_3,param_4);
-        local_14 = local_14 + 1;
+                  (controllerIndex,MATCH_TYPES,forOtherPlayer,index,itemNumber,param,divisionParam);
+        index = index + 1;
       }
-      qsort(local_c,local_14,0x14,LiveCombatRecord_CompareMatchCount);
-      for (local_14 = 0; (int)local_14 < 3; local_14 = local_14 + 1) {
-        psVar3 = local_c + local_14;
-        afStack_d4[local_14 * 5] = (float)psVar3->itemIndex;
-        afStack_d4[local_14 * 5 + 1] = psVar3->sortKey;
-        afStack_d4[local_14 * 5 + 2] = (float)psVar3->param1;
-        afStack_d4[local_14 * 5 + 3] = (float)psVar3->param2;
-        afStack_d4[local_14 * 5 + 4] = (float)psVar3->param3;
+      qsort(sortedItemList,index,0x14,LiveCombatRecord_CompareMatchCount);
+      for (index = 0; index < 3; index = index + 1) {
+        psVar2 = sortedItemList + index;
+        (&iStack_d4)[index * 5] = psVar2->itemIndex;
+        afStack_d0[index * 5] = psVar2->sortKey;
+        afStack_d0[index * 5 + 1] = (float)psVar2->param1;
+        afStack_d0[index * 5 + 2] = (float)psVar2->param2;
+        afStack_d0[index * 5 + 3] = (float)psVar2->param3;
       }
-      local_14 = 0;
-      for (local_d8 = 0; local_d8 < 4; local_d8 = local_d8 + 1) {
+      index = 0;
+      for (itemNumber = 0; itemNumber < 4; itemNumber = itemNumber + 1) {
         LiveCombatRecord_BuildSortedItem
-                  (param_1,WAGER_MATCH_TYPES,local_5,local_14,local_d8,param_3,param_4);
-        local_14 = local_14 + 1;
+                  (controllerIndex,WAGER_MATCH_TYPES,forOtherPlayer,index,itemNumber,param,
+                   divisionParam);
+        index = index + 1;
       }
-      qsort(local_c,local_14,0x14,LiveCombatRecord_CompareMatchCount);
-      for (local_14 = 0; (int)local_14 < 3; local_14 = local_14 + 1) {
-        psVar3 = local_c + local_14;
-        iVar4 = local_14 + 3;
-        afStack_d4[iVar4 * 5] = (float)psVar3->itemIndex;
-        afStack_d4[iVar4 * 5 + 1] = psVar3->sortKey;
-        afStack_d4[iVar4 * 5 + 2] = (float)psVar3->param1;
-        afStack_d4[iVar4 * 5 + 3] = (float)psVar3->param2;
-        afStack_d4[iVar4 * 5 + 4] = (float)psVar3->param3;
+      qsort(sortedItemList,index,0x14,LiveCombatRecord_CompareMatchCount);
+      for (index = 0; index < 3; index = index + 1) {
+        psVar2 = sortedItemList + index;
+        iVar3 = index + 3;
+        (&iStack_d4)[iVar3 * 5] = psVar2->itemIndex;
+        afStack_d0[iVar3 * 5] = psVar2->sortKey;
+        afStack_d0[iVar3 * 5 + 1] = (float)psVar2->param1;
+        afStack_d0[iVar3 * 5 + 2] = (float)psVar2->param2;
+        afStack_d0[iVar3 * 5 + 3] = (float)psVar2->param3;
       }
-      for (local_14 = 0; (int)local_14 < 6; local_14 = local_14 + 1) {
-        psVar3 = local_c + local_14;
-        psVar3->itemIndex = (int)afStack_d4[local_14 * 5];
-        psVar3->sortKey = afStack_d4[local_14 * 5 + 1];
-        psVar3->param1 = (int)afStack_d4[local_14 * 5 + 2];
-        psVar3->param2 = (int)afStack_d4[local_14 * 5 + 3];
-        psVar3->param3 = (int)afStack_d4[local_14 * 5 + 4];
+      for (index = 0; index < 6; index = index + 1) {
+        psVar2 = sortedItemList + index;
+        psVar2->itemIndex = (&iStack_d4)[index * 5];
+        psVar2->sortKey = afStack_d0[index * 5];
+        psVar2->param1 = (int)afStack_d0[index * 5 + 1];
+        psVar2->param2 = (int)afStack_d0[index * 5 + 2];
+        psVar2->param3 = (int)afStack_d0[index * 5 + 3];
       }
       DAT_098c3924 = 6;
       break;
     case MATCH_PERFORMANCE:
-      for (local_d8 = 0; local_d8 < 0x10; local_d8 = local_d8 + 1) {
+      for (itemNumber = 0; itemNumber < 0x10; itemNumber = itemNumber + 1) {
         LiveCombatRecord_BuildSortedItem
-                  (param_1,MATCH_PERFORMANCE,local_5,0,local_d8,param_3,param_4);
+                  (controllerIndex,MATCH_PERFORMANCE,forOtherPlayer,0,itemNumber,param,divisionParam
+                  );
       }
       DAT_098c3924 = 0xa0;
       break;
     case RECENT_EARNINGS:
-      for (local_d8 = 0; local_d8 < 10; local_d8 = local_d8 + 1) {
-        LiveCombatRecord_BuildSortedItem(param_1,RECENT_EARNINGS,local_5,0,local_d8,param_3,param_4)
-        ;
+      for (itemNumber = 0; itemNumber < 10; itemNumber = itemNumber + 1) {
+        LiveCombatRecord_BuildSortedItem
+                  (controllerIndex,RECENT_EARNINGS,forOtherPlayer,0,itemNumber,param,divisionParam);
       }
-      local_ec = local_c->param1;
-      local_e8 = local_c->param1;
-      for (local_14 = 0; ((int)local_14 < 10 && (local_c[local_14].itemIndex != 0));
-          local_14 = local_14 + 1) {
-        iVar4 = local_c[local_14].param1;
-        if (local_e8 < iVar4) {
-          local_e8 = iVar4;
+      minEarnings = sortedItemList->param1;
+      maxEarnings = sortedItemList->param1;
+      for (index = 0; (index < 10 && (sortedItemList[index].itemIndex != 0)); index = index + 1) {
+        iVar3 = sortedItemList[index].param1;
+        if (maxEarnings < iVar3) {
+          maxEarnings = iVar3;
         }
-        if (iVar4 < local_ec) {
-          local_ec = iVar4;
+        if (iVar3 < minEarnings) {
+          minEarnings = iVar3;
         }
       }
-      local_c[10].param1 = local_ec;
-      local_c[10].param2 = local_e8;
+      sortedItemList[10].param1 = minEarnings;
+      sortedItemList[10].param2 = maxEarnings;
       DAT_098c3924 = 0xb;
     }
   }
@@ -996,30 +1043,30 @@ LiveCombatRecord_BuildSortedItemListByStats
 
 // 00957130  LiveCombatRecord_GetSortedItemData  (live/live_combatrecord.cpp:846)
 
-float __cdecl
-LiveCombatRecord_GetSortedItemData(int param_1,bool param_2,sortedItemParams_t param_3)
+float __cdecl LiveCombatRecord_GetSortedItemData(int index,bool forFriend,sortedItemParams_t param)
 
 {
   float fVar1;
   sortedItemsData_t *local_c;
+  sortedItemsData_t *data;
   
-  if ((param_1 < 0) || (DAT_098c3924 <= param_1)) {
+  if ((index < 0) || (DAT_098c3924 <= index)) {
     Com_PrintError(0xf,"Invalid index for sorted items array.");
     fVar1 = 0.0;
   }
-  else if (((int)param_3 < 0) || (4 < (int)param_3)) {
+  else if (((int)param < 0) || (4 < (int)param)) {
     Com_PrintError(0xf,"Invalid param for sorted item.");
     fVar1 = 0.0;
   }
   else {
-    if (param_2) {
+    if (forFriend) {
       local_c = s_otherPlayerSortedItemList;
     }
     else {
       local_c = s_sortedItemList;
     }
-    local_c = local_c + param_1;
-    switch(param_3) {
+    local_c = local_c + index;
+    switch(param) {
     case ITEM_INDEX:
       fVar1 = (float)local_c->itemIndex;
       break;
@@ -1045,48 +1092,49 @@ LiveCombatRecord_GetSortedItemData(int param_1,bool param_2,sortedItemParams_t p
 
 // 00957200  LiveCombatRecord_GetSortedItemPositionByItemIndex  (live/live_combatrecord.cpp:881)
 
-int __cdecl LiveCombatRecord_GetSortedItemPositionByItemIndex(int param_1,bool param_2)
+int __cdecl LiveCombatRecord_GetSortedItemPositionByItemIndex(int itemIndex,bool forFriend)
 
 {
   sortedItemsData_t *local_10;
-  int local_c;
+  int currPos;
+  sortedItemsData_t *sortedItemList;
   
-  if (param_2) {
+  if (forFriend) {
     local_10 = s_otherPlayerSortedItemList;
   }
   else {
     local_10 = s_sortedItemList;
   }
-  local_c = 0;
+  currPos = 0;
   while( true ) {
-    if (DAT_098c3924 <= local_c) {
+    if (DAT_098c3924 <= currPos) {
       return 0;
     }
-    if (local_10[local_c].itemIndex == param_1) break;
-    local_c = local_c + 1;
+    if (local_10[currPos].itemIndex == itemIndex) break;
+    currPos = currPos + 1;
   }
-  return local_c;
+  return currPos;
 }
 
 
 // 00957260  LiveCombatRecord_GetEquipmentUsageStringSuffix  (live/live_combatrecord.cpp:896)
 
-char * __cdecl LiveCombatRecord_GetEquipmentUsageStringSuffix(char *param_1)
+char * __cdecl LiveCombatRecord_GetEquipmentUsageStringSuffix(char *equipmentName)
 
 {
   int iVar1;
-  uint local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xd < local_8) {
+    if (0xd < (uint)i) {
       return (char *)0x0;
     }
-    iVar1 = I_stricmp(param_1,combatRecordEquipmentUsageStrings[local_8][0]);
+    iVar1 = I_stricmp(equipmentName,combatRecordEquipmentUsageStrings[i][0]);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return combatRecordEquipmentUsageStrings[local_8][1];
+  return combatRecordEquipmentUsageStrings[i][1];
 }
 
 
@@ -1095,59 +1143,62 @@ char * __cdecl LiveCombatRecord_GetEquipmentUsageStringSuffix(char *param_1)
 void __cdecl LiveCombatRecord_CombatRecordViewUpdateCmd(void)
 
 {
-  itemSortingCriteria_t local_c;
+  int controllerIndex;
+  int param1;
+  itemSortingCriteria_t criterion;
+  int param2;
   
-  local_c = CRITERION_NULL;
+  criterion = CRITERION_NULL;
   switch((ui_combatCurrView->current).integer) {
   case 1:
-    local_c = RECENT_PERFORMANCE;
+    criterion = RECENT_PERFORMANCE;
     break;
   case 2:
-    local_c = PERSONAL_BESTS;
+    criterion = PERSONAL_BESTS;
     break;
   case 3:
-    local_c = FAVORITE_WEAPON;
+    criterion = FAVORITE_WEAPON;
     break;
   case 4:
-    local_c = WEAPON_HITLOCATION_HEATMAP;
+    criterion = WEAPON_HITLOCATION_HEATMAP;
     break;
   case 5:
   case 7:
   case 8:
   case 10:
-    local_c = WEAPON_STATS;
+    criterion = WEAPON_STATS;
     break;
   case 6:
-    local_c = WEAPON_ACCURACY;
+    criterion = WEAPON_ACCURACY;
     break;
   case 9:
-    local_c = WEAPON_HEADSHOTS;
+    criterion = WEAPON_HEADSHOTS;
     break;
   case 0xb:
   case 0xc:
-    local_c = EQUIPMENT_KILLS;
+    criterion = EQUIPMENT_KILLS;
     break;
   case 0xd:
-    local_c = EQUIPMENT_USAGE;
+    criterion = EQUIPMENT_USAGE;
     break;
   case 0xe:
-    local_c = MATCH_PERFORMANCE;
+    criterion = MATCH_PERFORMANCE;
     break;
   case 0x10:
-    local_c = RECENT_EARNINGS;
+    criterion = RECENT_EARNINGS;
     break;
   case 0x12:
-    local_c = KILLSTREAKS_FAVORITES;
+    criterion = KILLSTREAKS_FAVORITES;
     break;
   case 0x13:
-    local_c = KILLSTREAKS_CALLED;
+    criterion = KILLSTREAKS_CALLED;
     break;
   case 0x14:
   case 0x15:
-    local_c = KILLSTREAKS_KILLS;
+    criterion = KILLSTREAKS_KILLS;
   }
   LiveCombatRecord_BuildSortedItemListByStats
-            (0,local_c,CombatRecordStatParams[(ui_combatCurrView->current).integer][0],
+            (0,criterion,CombatRecordStatParams[(ui_combatCurrView->current).integer][0],
              CombatRecordStatParams[(ui_combatCurrView->current).integer][1]);
   Dvar_SetInt(ui_combatCurrViewNum,(ui_combatCurrView->current).integer);
   return;
@@ -1156,25 +1207,25 @@ void __cdecl LiveCombatRecord_CombatRecordViewUpdateCmd(void)
 
 // 009572B0  LiveCombatRecord_GetPersonalBestStatNameByIndex  (live/live_combatrecord.cpp:981)
 
-char * __cdecl LiveCombatRecord_GetPersonalBestStatNameByIndex(int param_1)
+char * __cdecl LiveCombatRecord_GetPersonalBestStatNameByIndex(int index)
 
 {
-  return combatRecordPersonalBestStats[param_1];
+  return combatRecordPersonalBestStats[index];
 }
 
 
 // 009572C0  LiveCombatRecord_GetGameTypeName  (live/live_combatrecord.cpp:986)
 
-char * __cdecl LiveCombatRecord_GetGameTypeName(int param_1)
+char * __cdecl LiveCombatRecord_GetGameTypeName(int index)
 
 {
   char *pcVar1;
   
-  if ((param_1 < 0) || (0xf < param_1)) {
+  if ((index < 0) || (0xf < index)) {
     pcVar1 = "";
   }
   else {
-    pcVar1 = gameTypeNames[param_1];
+    pcVar1 = gameTypeNames[index];
   }
   return pcVar1;
 }
@@ -1182,16 +1233,16 @@ char * __cdecl LiveCombatRecord_GetGameTypeName(int param_1)
 
 // 009572F0  LiveCombatRecord_GetGameTypeLbIndex  (live/live_combatrecord.cpp:998)
 
-int __cdecl LiveCombatRecord_GetGameTypeLbIndex(int param_1)
+int __cdecl LiveCombatRecord_GetGameTypeLbIndex(int index)
 
 {
   int iVar1;
   
-  if ((param_1 < 0) || (0xf < param_1)) {
+  if ((index < 0) || (0xf < index)) {
     iVar1 = 0;
   }
   else {
-    iVar1 = gameTypeLbIndex[param_1];
+    iVar1 = gameTypeLbIndex[index];
   }
   return iVar1;
 }
@@ -1208,14 +1259,14 @@ int __cdecl LiveCombatRecord_GetGameTypeCount(void)
 
 // 00957330  LiveCombatRecord_GetHitLocationImageRef  (live/live_combatrecord.cpp:1019)
 
-char * __cdecl LiveCombatRecord_GetHitLocationImageRef(hitLocation_t param_1)
+char * __cdecl LiveCombatRecord_GetHitLocationImageRef(hitLocation_t hitLocation)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 1) || (0x12 < (int)param_1)) {
+  if (((int)hitLocation < 1) || (0x12 < (int)hitLocation)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_combatrecord.cpp",0x3fc,
                              0,"%s");
     if (!bVar2) {
@@ -1224,11 +1275,11 @@ char * __cdecl LiveCombatRecord_GetHitLocationImageRef(hitLocation_t param_1)
       return pcVar3;
     }
   }
-  if (((int)param_1 < 0) || (0x12 < (int)param_1)) {
+  if (((int)hitLocation < 0) || (0x12 < (int)hitLocation)) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = hitLocationImages[param_1];
+    pcVar3 = hitLocationImages[hitLocation];
   }
   return pcVar3;
 }
@@ -1243,13 +1294,13 @@ void __cdecl LiveCombatRecord_Init(void)
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  int local_14;
-  StringTable *local_10;
-  int local_c;
-  char *local_8;
+  int currGameType;
+  StringTable *gameTypesTable;
+  int currGameTypeLbIndex;
+  char *currGameTypeName;
   
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_10);
-  if (local_10 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if (gameTypesTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_combatrecord.cpp",0x40e,
                              0,"%s");
     if (!bVar2) {
@@ -1259,18 +1310,18 @@ void __cdecl LiveCombatRecord_Init(void)
     }
   }
   totalGametypeCount = 0;
-  local_c = 0;
-  for (local_14 = 0; local_14 < 0x10; local_14 = local_14 + 1) {
+  currGameTypeLbIndex = 0;
+  for (currGameType = 0; currGameType < 0x10; currGameType = currGameType + 1) {
     iVar4 = 3;
     pcVar3 = va("%d");
-    local_8 = StringTable_Lookup(local_10,0,pcVar3,iVar4);
+    currGameTypeName = StringTable_Lookup(gameTypesTable,0,pcVar3,iVar4);
     iVar4 = 5;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_10,0,pcVar3,iVar4);
-    local_c = atoi(pcVar3);
-    if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-      gameTypeNames[totalGametypeCount] = local_8;
-      gameTypeLbIndex[totalGametypeCount] = local_c;
+    pcVar3 = StringTable_Lookup(gameTypesTable,0,pcVar3,iVar4);
+    currGameTypeLbIndex = atoi(pcVar3);
+    if ((currGameTypeName != (char *)0x0) && (*currGameTypeName != '\0')) {
+      gameTypeNames[totalGametypeCount] = currGameTypeName;
+      gameTypeLbIndex[totalGametypeCount] = currGameTypeLbIndex;
       totalGametypeCount = totalGametypeCount + 1;
     }
   }

@@ -2,15 +2,13 @@
 
 // 00789D40  YEncIsCritical  (universal/com_encode.cpp:14)
 
-bool __cdecl YEncIsCritical(uchar param_1)
+bool __cdecl YEncIsCritical(uchar c)
 
 {
   undefined1 local_8;
   
-  if ((((((param_1 == '\0') || (param_1 == '=')) || (param_1 == '\n')) ||
-       ((param_1 == '\r' || (param_1 == '\x7f')))) ||
-      ((param_1 == '\\' || ((param_1 == '%' || (param_1 == 0x92)))))) ||
-     ((param_1 == '\"' || (param_1 == ';')))) {
+  if ((((((c == '\0') || (c == '=')) || (c == '\n')) || ((c == '\r' || (c == '\x7f')))) ||
+      ((c == '\\' || ((c == '%' || (c == 0x92)))))) || ((c == '\"' || (c == ';')))) {
     local_8 = true;
   }
   else {
@@ -22,45 +20,45 @@ bool __cdecl YEncIsCritical(uchar param_1)
 
 // 00789C10  Com_EncodeYEnc  (universal/com_encode.cpp:20)
 
-int __cdecl Com_EncodeYEnc(uchar *param_1,int param_2,char *param_3,int param_4)
+int __cdecl Com_EncodeYEnc(uchar *indata,int inlen,char *outdata,int outlen)
 
 {
   uchar uVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uchar local_d;
-  int local_c;
-  int local_8;
+  uchar c;
+  int len;
+  int in;
   
-  local_c = 0;
-  local_8 = 0;
+  len = 0;
+  in = 0;
   while( true ) {
-    if (param_2 <= local_8) {
-      if ((param_4 <= local_c) &&
+    if (inlen <= in) {
+      if ((outlen <= len) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_encode.cpp",
                                    0x36,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         iVar4 = (*pcVar2)();
         return iVar4;
       }
-      param_3[local_c] = '\0';
-      return local_c;
+      outdata[len] = '\0';
+      return len;
     }
-    uVar1 = param_1[local_8];
-    local_d = uVar1 + '*';
-    bVar3 = YEncIsCritical(local_d);
+    uVar1 = indata[in];
+    c = uVar1 + '*';
+    bVar3 = YEncIsCritical(c);
     if (bVar3) {
-      local_d = uVar1 + 'j';
-      if (local_c + 1 == param_4) {
-        *param_3 = '\0';
+      c = uVar1 + 'j';
+      if (len + 1 == outlen) {
+        *outdata = '\0';
         return 0;
       }
-      param_3[local_c] = '=';
-      local_c = local_c + 1;
+      outdata[len] = '=';
+      len = len + 1;
     }
-    if (local_c + 1 == param_4) break;
-    bVar3 = YEncIsCritical(local_d);
+    if (len + 1 == outlen) break;
+    bVar3 = YEncIsCritical(c);
     if ((bVar3) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_encode.cpp",0x31
                                  ,0,"%s"), !bVar3)) {
@@ -68,46 +66,47 @@ int __cdecl Com_EncodeYEnc(uchar *param_1,int param_2,char *param_3,int param_4)
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    param_3[local_c] = local_d;
-    local_c = local_c + 1;
-    local_8 = local_8 + 1;
+    outdata[len] = c;
+    len = len + 1;
+    in = in + 1;
   }
-  *param_3 = '\0';
+  *outdata = '\0';
   return 0;
 }
 
 
 // 00789DC0  Com_DecodeYEnc  (universal/com_encode.cpp:61)
 
-int __cdecl Com_DecodeYEnc(char *param_1,uchar *param_2,int param_3)
+int __cdecl Com_DecodeYEnc(char *indata,uchar *outdata,int outlen)
 
 {
   bool bVar1;
-  char local_d;
-  int local_c;
+  uchar c;
+  int len;
+  bool escape;
   
   bVar1 = false;
-  local_c = 0;
+  len = 0;
   do {
-    if (*param_1 == '\0') {
-      return local_c;
+    if (*indata == '\0') {
+      return len;
     }
-    local_d = *param_1;
-    if ((bVar1) || (local_d != '=')) {
-      if (local_c == param_3) {
+    c = *indata;
+    if ((bVar1) || (c != '=')) {
+      if (len == outlen) {
         return 0;
       }
       if (bVar1) {
-        local_d = local_d + -0x40;
+        c = c + 0xc0;
         bVar1 = false;
       }
-      param_2[local_c] = local_d + 0xd6;
-      local_c = local_c + 1;
+      outdata[len] = c + 0xd6;
+      len = len + 1;
     }
     else {
       bVar1 = true;
     }
-    param_1 = param_1 + 1;
+    indata = indata + 1;
   } while( true );
 }
 

@@ -4,14 +4,14 @@
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_IsValidClaimNode(pathnode_t *param_1)
+int __cdecl Path_IsValidClaimNode(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.h",0xe0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -19,12 +19,13 @@ int __cdecl Path_IsValidClaimNode(pathnode_t *param_1)
       return iVar3;
     }
   }
-  return (param_1->constant).spawnflags & 0x8000;
+  return (node->constant).spawnflags & 0x8000;
 }
 
 
 // 008F1BC0  Actor_Exposed_FindReacquireNode  (game/actor_exposed.cpp:279)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -35,6 +36,7 @@ void __cdecl Actor_Exposed_FindReacquireNode(actor_s *param_1)
 {
   gentity_s *pgVar1;
   actor_s *in_ECX;
+  actor_s *self;
   
   pgVar1 = Actor_GetTargetEntity(in_ECX);
   if ((pgVar1 == (gentity_s *)0x0) || (in_ECX->eState[in_ECX->stateLevel] != AIS_DEFAULT)) {
@@ -49,6 +51,7 @@ void __cdecl Actor_Exposed_FindReacquireNode(actor_s *param_1)
 
 // 008F1C10  Actor_Exposed_GetReacquireNode  (game/actor_exposed.cpp:317)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -62,6 +65,7 @@ pathnode_t * __cdecl Actor_Exposed_GetReacquireNode(actor_s *param_1)
   pathnode_t *ppVar3;
   gentity_s *pgVar4;
   actor_s *in_ECX;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_exposed.cpp",0x140,0,
@@ -106,6 +110,8 @@ pathnode_t * __cdecl Actor_Exposed_GetReacquireNode(actor_s *param_1)
 
 // 008F1D10  Actor_Exposed_UseReacquireNode  (game/actor_exposed.cpp:351)
 
+/* WARNING: Variable defined which should be unmapped: pNode */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -121,9 +127,11 @@ bool __cdecl Actor_Exposed_UseReacquireNode(actor_s *param_1,pathnode_t *param_2
   float *in_ECX;
   actor_s *in_EDX;
   actor_s *paVar5;
-  actor_s *paVar6;
-  gentity_s *local_14;
-  int local_10;
+  actor_s *vEnd;
+  pathnode_t *pNode;
+  actor_s *self;
+  gentity_s *targetEnt;
+  int vFrom;
   ai_state_t local_c;
   float local_8;
   
@@ -155,8 +163,8 @@ bool __cdecl Actor_Exposed_UseReacquireNode(actor_s *param_1,pathnode_t *param_2
       return (bool)uVar3;
     }
   }
-  local_14 = Actor_GetTargetEntity(in_EDX);
-  if ((local_14 == (gentity_s *)0x0) || (in_ECX[(int)in_ECX[0x12] + 6] != 1.4013e-45)) {
+  targetEnt = Actor_GetTargetEntity(in_EDX);
+  if ((targetEnt == (gentity_s *)0x0) || (in_ECX[(int)in_ECX[0x12] + 6] != 1.4013e-45)) {
     bVar2 = false;
   }
   else {
@@ -165,22 +173,22 @@ bool __cdecl Actor_Exposed_UseReacquireNode(actor_s *param_1,pathnode_t *param_2
       bVar2 = false;
     }
     else {
-      local_10 = in_EDX->legsAnimDuration;
+      vFrom = in_EDX->legsAnimDuration;
       local_c = in_EDX->eState[0];
       local_8 = (float)in_EDX->eState[1] + 64.0;
       Actor_GetTargetLookPosition(in_EDX,in_ECX);
       iVar4 = 0;
-      paVar6 = (actor_s *)&stack0xffffffe0;
+      vEnd = (actor_s *)&stack0xffffffe0;
       bVar2 = Actor_CanSeePointFrom
-                        (paVar6,(float *)0x0,(float *)(local_14->s).number,(float)in_EDX,(int)in_ECX
-                        );
+                        (vEnd,(float *)0x0,(float *)(targetEnt->s).number,(float)in_EDX,(int)in_ECX)
+      ;
       if (bVar2) {
         paVar5 = (actor_s *)&DAT_00000001;
-        bVar2 = Actor_FindPathToNode((actor_s *)&DAT_00000001,(pathnode_t *)paVar6,iVar4);
+        bVar2 = Actor_FindPathToNode((actor_s *)&DAT_00000001,(pathnode_t *)vEnd,iVar4);
         if (bVar2) {
-          Sentient_ClaimNode((sentient_s *)paVar5,(pathnode_t *)paVar6);
+          Sentient_ClaimNode((sentient_s *)paVar5,(pathnode_t *)vEnd);
           in_ECX[0x3bc] = 0.0;
-          Actor_SetSubState(paVar5,(ai_substate_t)paVar6);
+          Actor_SetSubState(paVar5,(ai_substate_t)vEnd);
           bVar2 = true;
         }
         else {
@@ -198,49 +206,53 @@ bool __cdecl Actor_Exposed_UseReacquireNode(actor_s *param_1,pathnode_t *param_2
 
 // 008F1EB0  Actor_Exposed_ReacquireStepMove  (game/actor_exposed.cpp:398)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_Exposed_ReacquireStepMove(actor_s *param_1,float param_2)
+bool __cdecl Actor_Exposed_ReacquireStepMove(actor_s *fDist,float param_2)
 
 {
   gentity_s *pgVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  uint uVar5;
   actor_s *in_ECX;
-  actor_goal_s *paVar5;
+  actor_goal_s *mask;
   float fVar6;
   actor_s *paVar7;
   ai_orient_mode_t aVar8;
   float *pfVar9;
-  float *pfVar10;
+  float *fMaxDistSqrd;
+  actor_s *self;
   float *in_stack_ffffff64;
-  float *pfVar11;
-  float local_78;
+  float *pfVar10;
+  float fScale;
+  float vStepDir;
   float local_74;
   float local_70;
-  float local_6c;
-  undefined1 local_68 [12];
-  float local_5c;
-  gentity_s *local_58;
-  float local_54;
+  float fYaw;
+  undefined1 vTraceEndPos [12];
+  float stepheight;
+  gentity_s *targetEnt;
+  float vStartPos;
   float local_50;
   float local_4c;
-  float local_48;
+  float forward;
   float local_44;
   float local_40;
-  float local_3c;
+  float vEyePos;
   float local_38;
   undefined4 local_34;
-  uint local_30;
-  uint local_2c;
-  float local_28;
+  int iOrder;
+  int i;
+  float vCheckPos;
   float local_24;
   undefined4 local_20;
-  float local_10;
+  float vMovePos;
   float local_c;
   float local_8;
   
@@ -258,25 +270,25 @@ bool __cdecl Actor_Exposed_ReacquireStepMove(actor_s *param_1,float param_2)
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_58 = Actor_GetTargetEntity(in_ECX);
-  if ((local_58 != (gentity_s *)0x0) && (in_ECX->eState[in_ECX->stateLevel] == AIS_DEFAULT)) {
-    local_6c = in_ECX->fDesiredBodyYaw + 90.0;
+  targetEnt = Actor_GetTargetEntity(in_ECX);
+  if ((targetEnt != (gentity_s *)0x0) && (in_ECX->eState[in_ECX->stateLevel] == AIS_DEFAULT)) {
+    fYaw = in_ECX->fDesiredBodyYaw + 90.0;
     Actor_GetTargetLookPosition(in_ECX,in_stack_ffffff64);
-    YawVectors(local_6c,&local_78,(float *)0x0);
+    YawVectors(fYaw,&vStepDir,(float *)0x0);
     pgVar1 = in_ECX->ent;
-    local_48 = (local_58->r).currentOrigin[0] - (pgVar1->r).currentOrigin[0];
-    local_44 = (local_58->r).currentOrigin[1] - (pgVar1->r).currentOrigin[1];
-    local_40 = (local_58->r).currentOrigin[2] - (pgVar1->r).currentOrigin[2];
-    if (1.0 < local_48 * local_48 + local_44 * local_44) {
-      Vec2Normalize(&local_48);
+    forward = (targetEnt->r).currentOrigin[0] - (pgVar1->r).currentOrigin[0];
+    local_44 = (targetEnt->r).currentOrigin[1] - (pgVar1->r).currentOrigin[1];
+    local_40 = (targetEnt->r).currentOrigin[2] - (pgVar1->r).currentOrigin[2];
+    if (1.0 < forward * forward + local_44 * local_44) {
+      Vec2Normalize(&forward);
       local_40 = 0.0;
-      local_74 = -local_48;
-      local_78 = local_44;
+      local_74 = -forward;
+      vStepDir = local_44;
       local_70 = 0.0;
       Actor_GetEyePosition(in_ECX,in_stack_ffffff64);
       pgVar1 = in_ECX->ent;
-      pfVar11 = (pgVar1->r).currentOrigin;
-      local_54 = *pfVar11;
+      pfVar10 = (pgVar1->r).currentOrigin;
+      vStartPos = *pfVar10;
       local_50 = (pgVar1->r).currentOrigin[1];
       local_4c = (pgVar1->r).currentOrigin[2];
       if ((local_70 != 0.0) &&
@@ -286,36 +298,37 @@ bool __cdecl Actor_Exposed_ReacquireStepMove(actor_s *param_1,float param_2)
         uVar4 = (*pcVar2)();
         return (bool)uVar4;
       }
-      local_30 = G_rand();
-      local_30 = local_30 & 1;
-      for (local_2c = 0; (int)local_2c < 2; local_2c = local_2c + 1) {
-        fVar6 = fSign[local_2c ^ local_30] * (float)param_1;
-        local_28 = fVar6 * local_78 + local_3c;
+      uVar5 = G_rand();
+      iOrder = uVar5 & 1;
+      for (i = 0; i < 2; i = i + 1) {
+        fVar6 = fSign[i ^ iOrder] * (float)fDist;
+        vCheckPos = fVar6 * vStepDir + vEyePos;
         local_24 = fVar6 * local_74 + local_38;
         local_20 = local_34;
-        pfVar10 = (float *)in_ECX->fMaxSightDistSqrd;
+        fMaxDistSqrd = (float *)in_ECX->fMaxSightDistSqrd;
         paVar7 = (actor_s *)&stack0xffffffe4;
         bVar3 = Actor_CanSeePointFrom
-                          (paVar7,pfVar10,(float *)(local_58->s).number,(float)in_ECX,(int)pfVar11);
+                          (paVar7,fMaxDistSqrd,(float *)(targetEnt->s).number,(float)in_ECX,
+                           (int)pfVar10);
         if (bVar3) {
-          local_10 = fVar6 * local_78 + local_54;
+          vMovePos = fVar6 * vStepDir + vStartPos;
           local_c = fVar6 * local_74 + local_50;
           local_8 = local_4c;
           if ((in_ECX->Physics).prone == false) {
-            local_5c = 18.0;
+            stepheight = 18.0;
           }
           else {
-            local_5c = 10.0;
+            stepheight = 10.0;
           }
-          paVar5 = (actor_goal_s *)((in_ECX->Physics).iTraceMask | 4);
+          mask = (actor_goal_s *)((in_ECX->Physics).iTraceMask | 4);
           pfVar9 = (float *)0x3ff;
           bVar3 = Path_PredictionTrace
-                            ((float *)0x3ff,(float *)paVar5,(int)local_68,(int)local_5c,
-                             (float *)&DAT_00000001,(float)paVar7,(int)pfVar10);
-          if ((bVar3) && (bVar3 = Actor_PointAtGoal(pfVar9,paVar5), bVar3)) {
+                            ((float *)0x3ff,(float *)mask,(int)vTraceEndPos,(int)stepheight,
+                             (float *)&DAT_00000001,(float)paVar7,(int)fMaxDistSqrd);
+          if ((bVar3) && (bVar3 = Actor_PointAtGoal(pfVar9,mask), bVar3)) {
             aVar8 = AI_ORIENT_INVALID;
             paVar7 = (actor_s *)0x0;
-            Actor_FindPath((actor_s *)0x0,(float *)0x0,(int)pfVar9,SUB41(paVar5,0));
+            Actor_FindPath((actor_s *)0x0,(float *)0x0,(int)pfVar9,SUB41(mask,0));
             bVar3 = Actor_HasPath(paVar7);
             if (bVar3) {
               Actor_SetSubState(paVar7,aVar8);
@@ -333,6 +346,8 @@ bool __cdecl Actor_Exposed_ReacquireStepMove(actor_s *param_1,float param_2)
 
 // 008F22E0  Actor_Exposed_FindReacquireDirectPath  (game/actor_exposed.cpp:509)
 
+/* WARNING: Variable defined which should be unmapped: ignoreSuppression */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -345,14 +360,16 @@ void __cdecl Actor_Exposed_FindReacquireDirectPath(actor_s *param_1,bool param_2
   bool bVar2;
   gentity_s *pgVar3;
   sentient_s *psVar4;
-  actor_s *paVar5;
   float *in_ECX;
-  undefined1 in_DL;
-  actor_s *paVar6;
-  undefined4 in_stack_ffffffe4;
-  actor_s *paVar7;
+  byte in_DL;
+  actor_s *paVar5;
+  actor_s *bSuppressable;
+  bool ignoreSuppression;
+  undefined3 uStack_1b;
+  actor_s *self;
+  sentient_s *enemy;
   
-  paVar7 = (actor_s *)CONCAT31((int3)((uint)in_stack_ffffffe4 >> 8),in_DL);
+  _ignoreSuppression = (actor_s *)CONCAT31(uStack_1b,in_DL);
   if (in_ECX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_exposed.cpp",0x200,0,
                              "%s");
@@ -371,28 +388,30 @@ void __cdecl Actor_Exposed_FindReacquireDirectPath(actor_s *param_1,bool param_2
       return;
     }
   }
-  pgVar3 = Actor_GetTargetEntity(paVar7);
+  pgVar3 = Actor_GetTargetEntity(_ignoreSuppression);
   if ((pgVar3 == (gentity_s *)0x0) || (in_ECX[(int)in_ECX[0x12] + 6] != 1.4013e-45)) {
-    Actor_ClearPath(paVar7);
+    Actor_ClearPath(_ignoreSuppression);
   }
   else {
-    Actor_GetTargetPosition(paVar7,in_ECX);
-    psVar4 = Actor_GetTargetSentient(paVar7);
+    Actor_GetTargetPosition(_ignoreSuppression,in_ECX);
+    psVar4 = Actor_GetTargetSentient(_ignoreSuppression);
     if (psVar4 == (sentient_s *)0x0) {
-      paVar5 = (actor_s *)((uint)paVar7 & 0xff);
-      paVar6 = (actor_s *)&DAT_00000001;
-      Actor_FindPath((actor_s *)&DAT_00000001,(float *)paVar5,(int)paVar7,SUB41(in_ECX,0));
+      bSuppressable = (actor_s *)(uint)in_DL;
+      paVar5 = (actor_s *)&DAT_00000001;
+      self._0_1_ = SUB41(in_ECX,0);
+      Actor_FindPath((actor_s *)&DAT_00000001,(float *)bSuppressable,(int)_ignoreSuppression,
+                     self._0_1_);
     }
     else {
-      paVar5 = (actor_s *)(uint)((char)paVar7 == '\0');
-      paVar6 = (actor_s *)0x8f23a0;
-      Actor_FindPathToSentient(paVar5,(sentient_s *)paVar7,(int)in_ECX);
+      bSuppressable = (actor_s *)(uint)(in_DL == 0);
+      paVar5 = (actor_s *)0x8f23a0;
+      Actor_FindPathToSentient(bSuppressable,(sentient_s *)_ignoreSuppression,(int)in_ECX);
     }
-    bVar2 = Actor_PointAtGoal((float *)paVar6,(actor_goal_s *)paVar5);
+    bVar2 = Actor_PointAtGoal((float *)paVar5,(actor_goal_s *)bSuppressable);
     if (!bVar2) {
-      Actor_ClipPathToGoal(paVar6);
+      Actor_ClipPathToGoal(paVar5);
     }
-    Actor_BeginTrimPath(paVar6);
+    Actor_BeginTrimPath(paVar5);
   }
   return;
 }
@@ -400,6 +419,8 @@ void __cdecl Actor_Exposed_FindReacquireDirectPath(actor_s *param_1,bool param_2
 
 // 008F23E0  Actor_Exposed_FindReacquireProximatePath  (game/actor_exposed.cpp:546)
 
+/* WARNING: Variable defined which should be unmapped: ignoreSuppression */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -412,14 +433,15 @@ void __cdecl Actor_Exposed_FindReacquireProximatePath(actor_s *param_1,bool para
   bool bVar2;
   gentity_s *pgVar3;
   float *in_ECX;
-  undefined1 in_DL;
+  byte in_DL;
   float fVar4;
-  undefined4 in_stack_ffffffd8;
-  actor_s *paVar5;
-  actor_s *local_14;
-  float local_10 [3];
+  bool ignoreSuppression;
+  undefined3 uStack_27;
+  actor_s *self;
+  float fWithinDistSqrd;
+  float vEnemyPos [3];
   
-  paVar5 = (actor_s *)CONCAT31((int3)((uint)in_stack_ffffffd8 >> 8),in_DL);
+  _ignoreSuppression = (actor_s *)CONCAT31(uStack_27,in_DL);
   if (in_ECX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_exposed.cpp",0x225,0,
                              "%s");
@@ -438,20 +460,22 @@ void __cdecl Actor_Exposed_FindReacquireProximatePath(actor_s *param_1,bool para
       return;
     }
   }
-  pgVar3 = Actor_GetTargetEntity(paVar5);
+  pgVar3 = Actor_GetTargetEntity(_ignoreSuppression);
   if ((pgVar3 == (gentity_s *)0x0) || (in_ECX[(int)in_ECX[0x12] + 6] != 1.4013e-45)) {
-    Actor_ClearPath(paVar5);
+    Actor_ClearPath(_ignoreSuppression);
   }
   else {
-    Actor_GetTargetPosition(paVar5,in_ECX);
-    fVar4 = Vec3DistanceSq((float *)((int)*in_ECX + 0x124),local_10);
-    local_14 = (actor_s *)(fVar4 * 0.25);
-    if (in_ECX[0x3c6] * 0.0625 < (float)local_14) {
-      local_14 = (actor_s *)(in_ECX[0x3c6] * 0.0625);
+    Actor_GetTargetPosition(_ignoreSuppression,in_ECX);
+    fVar4 = Vec3DistanceSq((float *)((int)*in_ECX + 0x124),vEnemyPos);
+    fWithinDistSqrd = fVar4 * 0.25;
+    if (in_ECX[0x3c6] * 0.0625 < fWithinDistSqrd) {
+      fWithinDistSqrd = in_ECX[0x3c6] * 0.0625;
     }
+    self._0_1_ = SUB41(in_ECX,0);
     Actor_FindPathInGoalWithLOS
-              (local_14,(float *)((uint)paVar5 & 0xff),(float)paVar5,SUB41(in_ECX,0));
-    Actor_BeginTrimPath(local_14);
+              ((actor_s *)fWithinDistSqrd,(float *)(uint)in_DL,(float)_ignoreSuppression,self._0_1_)
+    ;
+    Actor_BeginTrimPath((actor_s *)fWithinDistSqrd);
   }
   return;
 }
@@ -459,6 +483,7 @@ void __cdecl Actor_Exposed_FindReacquireProximatePath(actor_s *param_1,bool para
 
 // 008F2500  Actor_Exposed_StartReacquireMove  (game/actor_exposed.cpp:581)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -473,6 +498,7 @@ bool __cdecl Actor_Exposed_StartReacquireMove(actor_s *param_1)
   gentity_s *pgVar4;
   actor_s *in_ECX;
   ai_substate_t unaff_EBP;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_exposed.cpp",0x249,0,
@@ -514,6 +540,7 @@ bool __cdecl Actor_Exposed_StartReacquireMove(actor_s *param_1)
 
 // 008F25C0  Actor_Exposed_FlashBanged  (game/actor_exposed.cpp:760)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -525,15 +552,15 @@ void __cdecl Actor_Exposed_FlashBanged(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  ai_animmode_t in_ECX;
   actor_s *paVar4;
   ai_orient_mode_t aVar5;
-  ai_animmode_t extraout_var;
-  ai_animmode_t aVar6;
+  actor_s *self;
   scriptAnimAIFunctionTypes_t in_stack_fffffff0;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"flashbanged");
-  aVar6 = extraout_var;
-  if ((*(int *)(extraout_var + 0x17cc) == 0) &&
+  if ((*(int *)(in_ECX + 0x17cc) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_exposed.cpp",0x2fe,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -542,8 +569,8 @@ void __cdecl Actor_Exposed_FlashBanged(actor_s *param_1)
   }
   aVar5 = AI_ORIENT_TO_ENEMY_OR_MOTION;
   paVar4 = (actor_s *)0x0;
-  Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)&DAT_00000004,'\0',aVar6,in_stack_fffffff0)
-  ;
+  Actor_SetAnimScript((actor_s *)0x0,(scr_animscript_t *)&DAT_00000004,'\0',in_ECX,in_stack_fffffff0
+                     );
   Actor_SetOrientMode(paVar4,aVar5);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -555,6 +582,8 @@ void __cdecl Actor_Exposed_FlashBanged(actor_s *param_1)
 
 // 008F26B0  Actor_Exposed_Touch  (game/actor_exposed.cpp:916)
 
+/* WARNING: Variable defined which should be unmapped: pOther */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -567,6 +596,8 @@ void __cdecl Actor_Exposed_Touch(actor_s *param_1,gentity_s *param_2)
   bool bVar2;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  gentity_s *pOther;
+  actor_s *self;
   
   if ((in_ECX == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_exposed.cpp",0x398,0,

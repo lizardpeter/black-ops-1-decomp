@@ -161,18 +161,18 @@ phys_heap_gjk_cache_system_avl_tree::shutdown(phys_heap_gjk_cache_system_avl_tre
 
 {
   phys_gjk_cache_info_internal *ppVar1;
-  phys_gjk_cache_info_internal *ppVar2;
+  phys_gjk_cache_info_internal *size;
   
   if (this->m_list_head != (phys_gjk_cache_info_internal *)0x0) {
     do {
       ppVar1 = this->m_list_head->m_next_gjk_ci;
       phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
       ::remove(&this->m_search_tree,(phys_gjk_geom_id_pair_key *)&this->m_list_head->_padding_);
-      ppVar2 = this->m_list_head;
-      if (ppVar2 != (phys_gjk_cache_info_internal *)0x0) {
+      size = this->m_list_head;
+      if (size != (phys_gjk_cache_info_internal *)0x0) {
         (this->m_list_phys_gjk_cache_info_internal).m_count =
              (this->m_list_phys_gjk_cache_info_internal).m_count + -1;
-        PMM_FREE(ppVar2,0x90,0x10);
+        PMM_FREE(size,0x90,0x10);
       }
       this->m_list_head = ppVar1;
     } while (ppVar1 != (phys_gjk_cache_info_internal *)0x0);
@@ -192,18 +192,18 @@ phys_heap_gjk_cache_system_avl_tree::~phys_heap_gjk_cache_system_avl_tree
 
 {
   phys_gjk_cache_info_internal *ppVar1;
-  phys_gjk_cache_info_internal *ppVar2;
+  phys_gjk_cache_info_internal *size;
   
   if (this->m_list_head != (phys_gjk_cache_info_internal *)0x0) {
     do {
       ppVar1 = this->m_list_head->m_next_gjk_ci;
       phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
       ::remove(&this->m_search_tree,(phys_gjk_geom_id_pair_key *)&this->m_list_head->_padding_);
-      ppVar2 = this->m_list_head;
-      if (ppVar2 != (phys_gjk_cache_info_internal *)0x0) {
+      size = this->m_list_head;
+      if (size != (phys_gjk_cache_info_internal *)0x0) {
         (this->m_list_phys_gjk_cache_info_internal).m_count =
              (this->m_list_phys_gjk_cache_info_internal).m_count + -1;
-        PMM_FREE(ppVar2,0x90,0x10);
+        PMM_FREE(size,0x90,0x10);
       }
       this->m_list_head = ppVar1;
     } while (ppVar1 != (phys_gjk_cache_info_internal *)0x0);
@@ -220,25 +220,25 @@ void __thiscall
 phys_heap_gjk_cache_system_avl_tree::update_cache(phys_heap_gjk_cache_system_avl_tree *this)
 
 {
-  phys_gjk_cache_info_internal *ppVar1;
-  phys_gjk_cache_info_internal **pppVar2;
+  phys_gjk_cache_info_internal *size;
+  phys_gjk_cache_info_internal **pppVar1;
   
-  pppVar2 = &this->m_list_head;
-  ppVar1 = this->m_list_head;
-  while (ppVar1 != (phys_gjk_cache_info_internal *)0x0) {
-    if ((ppVar1->_padding_ & 1U) == 0) {
-      *pppVar2 = ppVar1->m_next_gjk_ci;
+  pppVar1 = &this->m_list_head;
+  size = this->m_list_head;
+  while (size != (phys_gjk_cache_info_internal *)0x0) {
+    if ((size->_padding_ & 1U) == 0) {
+      *pppVar1 = size->m_next_gjk_ci;
       phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-      ::remove(&this->m_search_tree,(phys_gjk_geom_id_pair_key *)&ppVar1->_padding_);
+      ::remove(&this->m_search_tree,(phys_gjk_geom_id_pair_key *)&size->_padding_);
       (this->m_list_phys_gjk_cache_info_internal).m_count =
            (this->m_list_phys_gjk_cache_info_internal).m_count + -1;
-      PMM_FREE(ppVar1,0x90,0x10);
+      PMM_FREE(size,0x90,0x10);
     }
     else {
-      pppVar2 = &ppVar1->m_next_gjk_ci;
-      ppVar1->_padding_ = ppVar1->_padding_ & 0xfffffffe;
+      pppVar1 = &size->m_next_gjk_ci;
+      size->_padding_ = size->_padding_ & 0xfffffffe;
     }
-    ppVar1 = *pppVar2;
+    size = *pppVar1;
   }
   return;
 }
@@ -277,16 +277,16 @@ void __thiscall bpei_database_t::purge_database(bpei_database_t *this)
 
 {
   broad_phase_environment_info *pbVar1;
-  broad_phase_environment_info *pbVar2;
+  broad_phase_environment_info *size;
   
-  pbVar2 = this->m_bpei_list;
-  while (pbVar2 != (broad_phase_environment_info *)0x0) {
-    pbVar1 = pbVar2->m_next_bpei;
+  size = this->m_bpei_list;
+  while (size != (broad_phase_environment_info *)0x0) {
+    pbVar1 = size->m_next_bpei;
     phys_inplace_avl_tree<bpei_database_id,broad_phase_environment_info,broad_phase_environment_info::avl_tree_accessor>
-    ::remove(&this->m_bpei_map,&pbVar2->m_database_id);
+    ::remove(&this->m_bpei_map,&size->m_database_id);
     (this->m_bpei_allocator).m_count = (this->m_bpei_allocator).m_count + -1;
-    PMM_FREE(pbVar2,0x24,4);
-    pbVar2 = pbVar1;
+    PMM_FREE(size,0x24,4);
+    size = pbVar1;
   }
   this->m_bpei_list = (broad_phase_environment_info *)0x0;
   return;
@@ -469,13 +469,13 @@ gjkcc_info * __cdecl create_gjkcc_info(uint param_1,bool param_2,float *param_3)
 void __cdecl destroy_gjkcc_info(void *param_1)
 
 {
-  undefined4 *puVar1;
+  undefined4 *size;
   
-  puVar1 = *(undefined4 **)((int)param_1 + 0x1e8);
-  if (puVar1 != (undefined4 *)0x0) {
+  size = *(undefined4 **)((int)param_1 + 0x1e8);
+  if (size != (undefined4 *)0x0) {
     _polygon_cylinder_pool = _polygon_cylinder_pool + -1;
-    *puVar1 = gjk_base_t::vftable;
-    PMM_FREE(puVar1,0x80,0x10);
+    *size = gjk_base_t::vftable;
+    PMM_FREE(size,0x80,0x10);
   }
   phys_heap_gjk_cache_system_avl_tree::shutdown
             ((phys_heap_gjk_cache_system_avl_tree *)((int)param_1 + 0x78));

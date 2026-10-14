@@ -2,15 +2,15 @@
 
 // 006DEDF0  add_bit  (qcommon/huffman.cpp:42)
 
-void __cdecl add_bit(char param_1,uchar *param_2)
+void __cdecl add_bit(char bit,uchar *fout)
 
 {
   if ((*(uint *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) & 7) == 0) {
-    param_2[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3] = '\0';
+    fout[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3] = '\0';
   }
-  param_2[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3] =
-       param_2[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3] |
-       (byte)((int)param_1 <<
+  fout[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3] =
+       fout[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3] |
+       (byte)((int)bit <<
              ((byte)*(undefined4 *)
                      (*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) & 7));
   *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) =
@@ -21,13 +21,14 @@ void __cdecl add_bit(char param_1,uchar *param_2)
 
 // 006DEC80  get_bit  (qcommon/huffman.cpp:54)
 
-int __cdecl get_bit(uchar *param_1)
+int __cdecl get_bit(uchar *fin)
 
 {
   byte bVar1;
   undefined4 uVar2;
+  int t;
   
-  bVar1 = param_1[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3];
+  bVar1 = fin[*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) >> 3];
   uVar2 = *(undefined4 *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10);
   *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) =
        *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) + 1;
@@ -37,27 +38,27 @@ int __cdecl get_bit(uchar *param_1)
 
 // 006DED00  Huff_offsetReceive  (qcommon/huffman.cpp:87)
 
-void __cdecl Huff_offsetReceive(nodetype *param_1,int *param_2,uchar *param_3,int *param_4)
+void __cdecl Huff_offsetReceive(nodetype *node,int *ch,uchar *fin,int *offset)
 
 {
   int iVar1;
   
-  *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) = *param_4;
-  while ((param_1 != (nodetype *)0x0 && (param_1->symbol == 0x101))) {
-    iVar1 = get_bit(param_3);
+  *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) = *offset;
+  while ((node != (nodetype *)0x0 && (node->symbol == 0x101))) {
+    iVar1 = get_bit(fin);
     if (iVar1 == 0) {
-      param_1 = param_1->left;
+      node = node->left;
     }
     else {
-      param_1 = param_1->right;
+      node = node->right;
     }
   }
-  if (param_1 == (nodetype *)0x0) {
-    *param_2 = 0;
+  if (node == (nodetype *)0x0) {
+    *ch = 0;
   }
   else {
-    *param_2 = param_1->symbol;
-    *param_4 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10);
+    *ch = node->symbol;
+    *offset = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10);
   }
   return;
 }
@@ -65,18 +66,18 @@ void __cdecl Huff_offsetReceive(nodetype *param_1,int *param_2,uchar *param_3,in
 
 // 006DED90  huffman_send  (qcommon/huffman.cpp:113)
 
-void __cdecl huffman_send(nodetype *param_1,nodetype *param_2,uchar *param_3)
+void __cdecl huffman_send(nodetype *node,nodetype *child,uchar *fout)
 
 {
-  if (param_1->parent != (nodetype *)0x0) {
-    huffman_send(param_1->parent,param_1,param_3);
+  if (node->parent != (nodetype *)0x0) {
+    huffman_send(node->parent,node,fout);
   }
-  if (param_2 != (nodetype *)0x0) {
-    if (param_1->right == param_2) {
-      add_bit('\x01',param_3);
+  if (child != (nodetype *)0x0) {
+    if (node->right == child) {
+      add_bit('\x01',fout);
     }
     else {
-      add_bit('\0',param_3);
+      add_bit('\0',fout);
     }
   }
   return;
@@ -85,100 +86,102 @@ void __cdecl huffman_send(nodetype *param_1,nodetype *param_2,uchar *param_3)
 
 // 006DEEC0  Huff_offsetTransmit  (qcommon/huffman.cpp:182)
 
-void __cdecl Huff_offsetTransmit(huff_t *param_1,int param_2,uchar *param_3,int *param_4)
+void __cdecl Huff_offsetTransmit(huff_t *huff,int ch,uchar *fout,int *offset)
 
 {
-  *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) = *param_4;
-  huffman_send(param_1->loc[param_2],(nodetype *)0x0,param_3);
-  *param_4 = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10);
+  *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10) = *offset;
+  huffman_send(huff->loc[ch],(nodetype *)0x0,fout);
+  *offset = *(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x10);
   return;
 }
 
 
 // 006DEF20  Huff_Init  (qcommon/huffman.cpp:192)
 
-void __cdecl Huff_Init(huffman_t *param_1)
+void __cdecl Huff_Init(huffman_t *huff)
 
 {
-  Com_Memset(param_1,0,0x4c14);
-  (param_1->compressDecompress).loc[0x100] =
-       (param_1->compressDecompress).nodeList + (param_1->compressDecompress).blocNode;
-  (param_1->compressDecompress).blocNode = (param_1->compressDecompress).blocNode + 1;
-  (param_1->compressDecompress).tree = (param_1->compressDecompress).loc[0x100];
-  ((param_1->compressDecompress).tree)->symbol = 0x100;
-  ((param_1->compressDecompress).tree)->weight = 0;
-  ((param_1->compressDecompress).tree)->parent = (nodetype *)0x0;
-  ((param_1->compressDecompress).tree)->left = (nodetype *)0x0;
-  ((param_1->compressDecompress).tree)->right = (nodetype *)0x0;
+  Com_Memset(huff,0,0x4c14);
+  (huff->compressDecompress).loc[0x100] =
+       (huff->compressDecompress).nodeList + (huff->compressDecompress).blocNode;
+  (huff->compressDecompress).blocNode = (huff->compressDecompress).blocNode + 1;
+  (huff->compressDecompress).tree = (huff->compressDecompress).loc[0x100];
+  ((huff->compressDecompress).tree)->symbol = 0x100;
+  ((huff->compressDecompress).tree)->weight = 0;
+  ((huff->compressDecompress).tree)->parent = (nodetype *)0x0;
+  ((huff->compressDecompress).tree)->left = (nodetype *)0x0;
+  ((huff->compressDecompress).tree)->right = (nodetype *)0x0;
   return;
 }
 
 
 // 006DEFB0  Huff_initNode  (qcommon/huffman.cpp:205)
 
-nodetype * __cdecl Huff_initNode(huff_t *param_1,int param_2,int param_3)
+nodetype * __cdecl Huff_initNode(huff_t *huff,int ch,int weight)
 
 {
   nodetype *pnVar1;
+  nodetype *tnode;
   
-  pnVar1 = param_1->nodeList + param_1->blocNode;
-  param_1->blocNode = param_1->blocNode + 1;
-  pnVar1->symbol = param_2;
-  pnVar1->weight = param_3;
+  pnVar1 = huff->nodeList + huff->blocNode;
+  huff->blocNode = huff->blocNode + 1;
+  pnVar1->symbol = ch;
+  pnVar1->weight = weight;
   pnVar1->left = (nodetype *)0x0;
   pnVar1->right = (nodetype *)0x0;
   pnVar1->parent = (nodetype *)0x0;
-  param_1->loc[param_2] = pnVar1;
+  huff->loc[ch] = pnVar1;
   return pnVar1;
 }
 
 
 // 006DF020  nodeCmp  (qcommon/huffman.cpp:222)
 
-int __cdecl nodeCmp(void *param_1,void *param_2)
+int __cdecl nodeCmp(void *left,void *right)
 
 {
-  return *(int *)(*(int *)param_1 + 0xc) - *(int *)(*(int *)param_2 + 0xc);
+  return *(int *)(*(int *)left + 0xc) - *(int *)(*(int *)right + 0xc);
 }
 
 
 // 006DF040  Huff_BuildFromData  (qcommon/huffman.cpp:227)
 
-void __cdecl Huff_BuildFromData(huff_t *param_1,int *param_2)
+void __cdecl Huff_BuildFromData(huff_t *huff,int *msg_hData)
 
 {
   nodetype *pnVar1;
-  int local_414;
-  nodetype *local_40c [256];
-  int local_c;
-  int local_8;
+  int numNodes;
+  nodetype *newNode;
+  nodetype *heap [256];
+  int i;
+  int heapHead;
   
-  local_414 = 0x100;
-  local_8 = 0;
-  for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-    pnVar1 = Huff_initNode(param_1,local_c,param_2[local_c]);
-    local_40c[local_c] = pnVar1;
+  numNodes = 0x100;
+  heapHead = 0;
+  for (i = 0; i < 0x100; i = i + 1) {
+    pnVar1 = Huff_initNode(huff,i,msg_hData[i]);
+    heap[i] = pnVar1;
   }
-  qsort(local_40c,0x100,4,nodeCmp);
-  pnVar1 = Huff_initNode(param_1,0x101,1);
-  pnVar1->left = param_1->tree;
-  pnVar1->right = local_40c[0];
+  qsort(heap,0x100,4,nodeCmp);
+  pnVar1 = Huff_initNode(huff,0x101,1);
+  pnVar1->left = huff->tree;
+  pnVar1->right = heap[0];
   pnVar1->left->parent = pnVar1;
   pnVar1->right->parent = pnVar1;
   pnVar1->weight = pnVar1->left->weight + pnVar1->right->weight;
-  local_40c[0] = pnVar1;
-  for (; 1 < local_414; local_414 = local_414 + -1) {
-    qsort(local_40c + local_8,0x100 - local_8,4,nodeCmp);
-    pnVar1 = Huff_initNode(param_1,0x101,1);
-    pnVar1->left = local_40c[local_8];
-    pnVar1->right = local_40c[local_8 + 1];
+  heap[0] = pnVar1;
+  for (; 1 < numNodes; numNodes = numNodes + -1) {
+    qsort(heap + heapHead,0x100 - heapHead,4,nodeCmp);
+    pnVar1 = Huff_initNode(huff,0x101,1);
+    pnVar1->left = heap[heapHead];
+    pnVar1->right = heap[heapHead + 1];
     pnVar1->left->parent = pnVar1;
     pnVar1->right->parent = pnVar1;
     pnVar1->weight = pnVar1->left->weight + pnVar1->right->weight;
-    local_8 = local_8 + 1;
-    local_40c[local_8] = pnVar1;
+    heapHead = heapHead + 1;
+    heap[heapHead] = pnVar1;
   }
-  param_1->tree = local_40c[local_8];
+  huff->tree = heap[heapHead];
   return;
 }
 

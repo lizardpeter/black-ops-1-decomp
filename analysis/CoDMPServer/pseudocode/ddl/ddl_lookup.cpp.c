@@ -2,12 +2,12 @@
 
 // 008E7F00  DDL_Lookup_IsLeaf  (ddl/ddl_lookup.cpp:40)
 
-int __cdecl DDL_Lookup_IsLeaf(ddlMemberDef_t *param_1)
+int __cdecl DDL_Lookup_IsLeaf(ddlMemberDef_t *member_3)
 
 {
   int iVar1;
   
-  if ((param_1->type == 6) || (param_1->type == 7)) {
+  if ((member_3->type == 6) || (member_3->type == 7)) {
     iVar1 = 0;
   }
   else {
@@ -21,25 +21,25 @@ int __cdecl DDL_Lookup_IsLeaf(ddlMemberDef_t *param_1)
 
 int __cdecl
 DDL_Lookup_IsMemberAtOffset
-          (ddlMemberDef_t *param_1,int param_2,ddlDef_t *param_3,int param_4,int *param_5)
+          (ddlMemberDef_t *member,int parentOffset,ddlDef_t *ddl,int searchOffset,int *arrayIndex)
 
 {
-  int local_8;
+  int currArr;
   
-  local_8 = 0;
+  currArr = 0;
   while( true ) {
-    if (param_1->arraySize <= local_8) {
+    if (member->arraySize <= currArr) {
       return 0;
     }
-    if (param_4 == param_2 + param_1->offset) break;
-    param_2 = param_1->size / param_1->arraySize + param_2;
-    local_8 = local_8 + 1;
+    if (searchOffset == parentOffset + member->offset) break;
+    parentOffset = member->size / member->arraySize + parentOffset;
+    currArr = currArr + 1;
   }
-  if (param_1->arraySize < 2) {
-    *param_5 = -1;
+  if (member->arraySize < 2) {
+    *arrayIndex = -1;
   }
   else {
-    *param_5 = local_8;
+    *arrayIndex = currArr;
   }
   return 1;
 }
@@ -49,25 +49,27 @@ DDL_Lookup_IsMemberAtOffset
 
 ddlMemberDef_t * __cdecl
 DDL_Lookup_FindInStruct
-          (ddlStructDef_t *param_1,ddlDef_t *param_2,int param_3,int param_4,int *param_5)
+          (ddlStructDef_t *structDef,ddlDef_t *ddl,int parentOffset,int searchOffset,int *arrayIndex
+          )
 
 {
   ddlMemberDef_t *pdVar1;
   int iVar2;
-  int local_10;
-  int local_c;
+  int j;
+  int i;
+  ddlMemberDef_t *member;
   
-  local_c = 0;
+  i = 0;
   do {
-    if (param_1->memberCount <= local_c) {
+    if (structDef->memberCount <= i) {
       return (ddlMemberDef_t *)0x0;
     }
-    if (param_1->members[local_c].type == 6) {
-      for (local_10 = 0; local_10 < param_1->members[local_c].arraySize; local_10 = local_10 + 1) {
+    if (structDef->members[i].type == 6) {
+      for (j = 0; j < structDef->members[i].arraySize; j = j + 1) {
         pdVar1 = DDL_Lookup_FindInStruct
-                           (param_2->structList + param_1->members[local_c].externalIndex,param_2,
-                            (param_1->members[local_c].size / param_1->members[local_c].arraySize) *
-                            local_10 + param_3 + param_1->members[local_c].offset,param_4,param_5);
+                           (ddl->structList + structDef->members[i].externalIndex,ddl,
+                            (structDef->members[i].size / structDef->members[i].arraySize) * j +
+                            parentOffset + structDef->members[i].offset,searchOffset,arrayIndex);
         if (pdVar1 != (ddlMemberDef_t *)0x0) {
           return pdVar1;
         }
@@ -75,12 +77,12 @@ DDL_Lookup_FindInStruct
     }
     else {
       iVar2 = DDL_Lookup_IsMemberAtOffset
-                        (param_1->members + local_c,param_3,param_2,param_4,param_5);
+                        (structDef->members + i,parentOffset,ddl,searchOffset,arrayIndex);
       if (iVar2 != 0) {
-        return param_1->members + local_c;
+        return structDef->members + i;
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -88,25 +90,26 @@ DDL_Lookup_FindInStruct
 // 008E8530  DDL_Lookup_GetMemberFromOffset  (ddl/ddl_lookup.cpp:144)
 
 ddlMemberDef_t * __cdecl
-DDL_Lookup_GetMemberFromOffset(int param_1,ddlState_t *param_2,int *param_3)
+DDL_Lookup_GetMemberFromOffset(int offset,ddlState_t *searchState,int *arrayIndex)
 
 {
   ddlMemberDef_t *pdVar1;
   
-  pdVar1 = DDL_Lookup_FindInStruct(param_2->ddl->structList,param_2->ddl,0,param_1,param_3);
+  pdVar1 = DDL_Lookup_FindInStruct
+                     (searchState->ddl->structList,searchState->ddl,0,offset,arrayIndex);
   return pdVar1;
 }
 
 
 // 008E8560  DDL_Lookup_ClearState  (ddl/ddl_lookup.cpp:149)
 
-void __cdecl DDL_Lookup_ClearState(ddlState_t *param_1)
+void __cdecl DDL_Lookup_ClearState(ddlState_t *searchState)
 
 {
-  param_1->member = (ddlMemberDef_t *)0x0;
-  param_1->absoluteOffset = 0;
-  param_1->arrayIndex = -1;
-  param_1->ddl = (ddlDef_t *)0x0;
+  searchState->member = (ddlMemberDef_t *)0x0;
+  searchState->absoluteOffset = 0;
+  searchState->arrayIndex = -1;
+  searchState->ddl = (ddlDef_t *)0x0;
   return;
 }
 
@@ -115,78 +118,82 @@ void __cdecl DDL_Lookup_ClearState(ddlState_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-ddlMemberDef_t * __cdecl DDL_Lookup_FindMemberDef(char *param_1,ddlStructDef_t *param_2)
+ddlMemberDef_t * __cdecl DDL_Lookup_FindMemberDef(char *memberName,ddlStructDef_t *structDef)
 
 {
   int iVar1;
-  int local_11c;
-  char local_114 [260];
+  int low;
+  int result;
+  char lowercaseMemberName [260];
   uint local_10;
-  int local_c;
-  int local_8;
+  int high;
+  int mid;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_11c = 0;
-  local_c = param_2->memberCount + -1;
-  I_strncpyz(local_114,param_1,0x100);
-  I_strlwr(local_114);
+  low = 0;
+  high = structDef->memberCount + -1;
+  I_strncpyz(lowercaseMemberName,memberName,0x100);
+  I_strlwr(lowercaseMemberName);
   while( true ) {
     while( true ) {
-      if (local_c < local_11c) {
+      if (high < low) {
         DDL_PrintError("DDL: Could not find \'%s\' in \'%s\'.\n");
         return (ddlMemberDef_t *)0x0;
       }
-      local_8 = (local_11c + local_c) / 2;
-      iVar1 = I_strcmp(param_2->members[local_8].name,local_114);
+      mid = (low + high) / 2;
+      iVar1 = I_strcmp(structDef->members[mid].name,lowercaseMemberName);
       if (-1 < iVar1) break;
-      local_11c = local_8 + 1;
+      low = mid + 1;
     }
     if (iVar1 < 1) break;
-    local_c = local_8 + -1;
+    high = mid + -1;
   }
-  return param_2->members + local_8;
+  return structDef->members + mid;
 }
 
 
 // 008E8690  DDL_Lookup_MoveToIndex  (ddl/ddl_lookup.cpp:192)
 
-int __cdecl DDL_Lookup_MoveToIndex(ddlState_t *param_1,int param_2,ddlState_t *param_3,int param_4)
+int __cdecl
+DDL_Lookup_MoveToIndex
+          (ddlState_t *searchState,int arrayIndex,ddlState_t *resultState,int checkValidIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int isValidIndex;
   
-  if ((param_1->member == (ddlMemberDef_t *)0x0) &&
+  if ((searchState->member == (ddlMemberDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_lookup.cpp",0xc1,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1->member->arraySize < 2) &&
+  if ((searchState->member->arraySize < 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_lookup.cpp",0xc2,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1->member->enumIndex != -1) &&
+  if ((searchState->member->enumIndex != -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_lookup.cpp",0xc3,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1->arrayIndex != -1) &&
+  if ((searchState->arrayIndex != -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_lookup.cpp",0xc4,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  bVar2 = param_1->member->arraySize <= param_2;
-  if (param_4 == 0) {
+  bVar2 = searchState->member->arraySize <= arrayIndex;
+  if (checkValidIndex == 0) {
     if (bVar2) {
       return 0;
     }
@@ -198,11 +205,12 @@ int __cdecl DDL_Lookup_MoveToIndex(ddlState_t *param_1,int param_2,ddlState_t *p
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  param_3->member = param_1->member;
-  param_3->absoluteOffset =
-       (param_3->member->size / param_3->member->arraySize) * param_2 + param_1->absoluteOffset;
-  param_3->arrayIndex = param_2;
-  param_3->ddl = param_1->ddl;
+  resultState->member = searchState->member;
+  resultState->absoluteOffset =
+       (resultState->member->size / resultState->member->arraySize) * arrayIndex +
+       searchState->absoluteOffset;
+  resultState->arrayIndex = arrayIndex;
+  resultState->ddl = searchState->ddl;
   return 1;
 }
 
@@ -211,39 +219,39 @@ int __cdecl DDL_Lookup_MoveToIndex(ddlState_t *param_1,int param_2,ddlState_t *p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl DDL_Lookup_MoveTo(ddlState_t *param_1,char *param_2,ddlState_t *param_3)
+int __cdecl DDL_Lookup_MoveTo(ddlState_t *searchState,char *name,ddlState_t *resultState)
 
 {
   code *pcVar1;
   bool bVar2;
   ddlMemberDef_t *pdVar3;
   int iVar4;
-  char local_11c [256];
+  char lowercaseMemberName [256];
   uint local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int low;
+  int result;
+  int arrayIndex;
+  int high;
+  int mid;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->member == (ddlMemberDef_t *)0x0) {
-    pdVar3 = DDL_Lookup_FindMemberDef(param_2,param_1->ddl->structList);
-    param_3->member = pdVar3;
-    if (param_3->member == (ddlMemberDef_t *)0x0) {
+  if (searchState->member == (ddlMemberDef_t *)0x0) {
+    pdVar3 = DDL_Lookup_FindMemberDef(name,searchState->ddl->structList);
+    resultState->member = pdVar3;
+    if (resultState->member == (ddlMemberDef_t *)0x0) {
       iVar4 = 0;
     }
     else {
-      param_3->arrayIndex = -1;
-      param_3->absoluteOffset = param_3->member->offset;
-      param_3->ddl = param_1->ddl;
+      resultState->arrayIndex = -1;
+      resultState->absoluteOffset = resultState->member->offset;
+      resultState->ddl = searchState->ddl;
       iVar4 = 1;
     }
   }
-  else if ((param_1->member->arraySize < 2) || (param_1->arrayIndex != -1)) {
-    iVar4 = DDL_Lookup_IsLeaf(param_1->member);
+  else if ((searchState->member->arraySize < 2) || (searchState->arrayIndex != -1)) {
+    iVar4 = DDL_Lookup_IsLeaf(searchState->member);
     if (iVar4 == 0) {
-      if ((param_1->member->type != 6) &&
+      if ((searchState->member->type != 6) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ddl\\ddl_lookup.cpp",0x12f,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -251,15 +259,15 @@ int __cdecl DDL_Lookup_MoveTo(ddlState_t *param_1,char *param_2,ddlState_t *para
         return iVar4;
       }
       pdVar3 = DDL_Lookup_FindMemberDef
-                         (param_2,param_1->ddl->structList + param_1->member->externalIndex);
-      param_3->member = pdVar3;
-      if (param_3->member == (ddlMemberDef_t *)0x0) {
+                         (name,searchState->ddl->structList + searchState->member->externalIndex);
+      resultState->member = pdVar3;
+      if (resultState->member == (ddlMemberDef_t *)0x0) {
         iVar4 = 0;
       }
       else {
-        param_3->arrayIndex = -1;
-        param_3->absoluteOffset = param_1->absoluteOffset + param_3->member->offset;
-        param_3->ddl = param_1->ddl;
+        resultState->arrayIndex = -1;
+        resultState->absoluteOffset = searchState->absoluteOffset + resultState->member->offset;
+        resultState->ddl = searchState->ddl;
         iVar4 = 1;
       }
     }
@@ -268,15 +276,15 @@ int __cdecl DDL_Lookup_MoveTo(ddlState_t *param_1,char *param_2,ddlState_t *para
       iVar4 = 0;
     }
   }
-  else if (param_1->member->enumIndex < 0) {
-    local_10 = atoi(param_2);
-    if (local_10 < param_1->member->arraySize) {
-      param_3->member = param_1->member;
-      param_3->absoluteOffset =
-           (param_3->member->size / param_3->member->arraySize) * local_10 + param_1->absoluteOffset
-      ;
-      param_3->arrayIndex = local_10;
-      param_3->ddl = param_1->ddl;
+  else if (searchState->member->enumIndex < 0) {
+    arrayIndex = atoi(name);
+    if (arrayIndex < searchState->member->arraySize) {
+      resultState->member = searchState->member;
+      resultState->absoluteOffset =
+           (resultState->member->size / resultState->member->arraySize) * arrayIndex +
+           searchState->absoluteOffset;
+      resultState->arrayIndex = arrayIndex;
+      resultState->ddl = searchState->ddl;
       iVar4 = 1;
     }
     else {
@@ -285,28 +293,28 @@ int __cdecl DDL_Lookup_MoveTo(ddlState_t *param_1,char *param_2,ddlState_t *para
     }
   }
   else {
-    local_18 = 0;
-    local_c = param_1->ddl->enumList[param_1->member->enumIndex].memberCount + -1;
-    I_strncpyz(local_11c,param_2,0x100);
-    I_strlwr(local_11c);
-    while (local_18 <= local_c) {
-      local_8 = (local_18 + local_c) / 2;
-      local_14 = I_strcmp(param_1->ddl->enumList[param_1->member->enumIndex].members[local_8],
-                          local_11c);
-      if (local_14 < 0) {
-        local_18 = local_8 + 1;
+    low = 0;
+    high = searchState->ddl->enumList[searchState->member->enumIndex].memberCount + -1;
+    I_strncpyz(lowercaseMemberName,name,0x100);
+    I_strlwr(lowercaseMemberName);
+    while (low <= high) {
+      mid = (low + high) / 2;
+      result = I_strcmp(searchState->ddl->enumList[searchState->member->enumIndex].members[mid],
+                        lowercaseMemberName);
+      if (result < 0) {
+        low = mid + 1;
       }
       else {
-        if (local_14 < 1) {
-          param_3->member = param_1->member;
-          param_3->absoluteOffset =
-               (param_3->member->size / param_3->member->arraySize) * local_8 +
-               param_1->absoluteOffset;
-          param_3->arrayIndex = local_8;
-          param_3->ddl = param_1->ddl;
+        if (result < 1) {
+          resultState->member = searchState->member;
+          resultState->absoluteOffset =
+               (resultState->member->size / resultState->member->arraySize) * mid +
+               searchState->absoluteOffset;
+          resultState->arrayIndex = mid;
+          resultState->ddl = searchState->ddl;
           return 1;
         }
-        local_c = local_8 + -1;
+        high = mid + -1;
       }
     }
     DDL_PrintError("DDL: Enum Index \'%s\' not found.\n");
@@ -318,43 +326,45 @@ int __cdecl DDL_Lookup_MoveTo(ddlState_t *param_1,char *param_2,ddlState_t *para
 
 // 008E8B20  DDL_Lookup_MoveNext  (ddl/ddl_lookup.cpp:319)
 
-int __cdecl DDL_Lookup_MoveNext(ddlState_t *param_1,ddlState_t *param_2)
+int __cdecl DDL_Lookup_MoveNext(ddlState_t *searchState,ddlState_t *resultState)
 
 {
-  int iVar1;
-  ddlMemberDef_t *pdVar2;
-  int local_8;
+  int offset;
+  ddlMemberDef_t *pdVar1;
+  ddlMemberDef_t *member;
+  int nextOffset;
+  int arrayIndex;
   
-  iVar1 = param_1->member->size / param_1->member->arraySize + param_1->absoluteOffset;
-  pdVar2 = DDL_Lookup_GetMemberFromOffset(iVar1,param_1,&local_8);
-  param_2->ddl = param_1->ddl;
-  if (pdVar2 == (ddlMemberDef_t *)0x0) {
-    param_2->member = param_1->member;
-    param_2->absoluteOffset = param_1->absoluteOffset;
-    param_2->arrayIndex = param_1->arrayIndex;
+  offset = searchState->member->size / searchState->member->arraySize + searchState->absoluteOffset;
+  pdVar1 = DDL_Lookup_GetMemberFromOffset(offset,searchState,&arrayIndex);
+  resultState->ddl = searchState->ddl;
+  if (pdVar1 == (ddlMemberDef_t *)0x0) {
+    resultState->member = searchState->member;
+    resultState->absoluteOffset = searchState->absoluteOffset;
+    resultState->arrayIndex = searchState->arrayIndex;
   }
   else {
-    param_2->member = pdVar2;
-    param_2->absoluteOffset = iVar1;
-    param_2->arrayIndex = local_8;
+    resultState->member = pdVar1;
+    resultState->absoluteOffset = offset;
+    resultState->arrayIndex = arrayIndex;
   }
-  return (uint)(pdVar2 != (ddlMemberDef_t *)0x0);
+  return (uint)(pdVar1 != (ddlMemberDef_t *)0x0);
 }
 
 
 // 008E8BC0  DDL_Lookup_MoveToStart  (ddl/ddl_lookup.cpp:359)
 
-int __cdecl DDL_Lookup_MoveToStart(ddlState_t *param_1,ddlDef_t *param_2)
+int __cdecl DDL_Lookup_MoveToStart(ddlState_t *resultState,ddlDef_t *ddl)
 
 {
   ddlMemberDef_t *pdVar1;
-  int local_8;
+  int arrayIndex;
   
-  param_1->ddl = param_2;
-  param_1->absoluteOffset = 0;
-  pdVar1 = DDL_Lookup_GetMemberFromOffset(0,param_1,&local_8);
-  param_1->member = pdVar1;
-  param_1->arrayIndex = local_8;
-  return (uint)(param_1->member != (ddlMemberDef_t *)0x0);
+  resultState->ddl = ddl;
+  resultState->absoluteOffset = 0;
+  pdVar1 = DDL_Lookup_GetMemberFromOffset(0,resultState,&arrayIndex);
+  resultState->member = pdVar1;
+  resultState->arrayIndex = arrayIndex;
+  return (uint)(resultState->member != (ddlMemberDef_t *)0x0);
 }
 

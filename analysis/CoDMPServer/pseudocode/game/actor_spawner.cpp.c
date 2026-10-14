@@ -8,40 +8,42 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SpotWouldTelefrag(gentity_s *param_1)
+int __cdecl SpotWouldTelefrag(gentity_s *spot)
 
 {
   int iVar1;
   int iVar2;
-  int local_102c [1025];
-  float local_28;
+  int touch [1025];
+  float mins;
   float local_24;
   float local_20;
-  float local_18;
+  gentity_s *hit;
+  float maxs;
   float local_14;
   float local_10;
-  int local_8;
+  int num;
+  int i;
   
-  local_8 = 0x91b75d;
-  local_28 = (param_1->r).currentOrigin[0] + -15.0;
-  local_24 = (param_1->r).currentOrigin[1] + -15.0;
-  local_20 = (param_1->r).currentOrigin[2] + 0.0;
-  local_18 = (param_1->r).currentOrigin[0] + 15.0;
-  local_14 = (param_1->r).currentOrigin[1] + 15.0;
-  local_10 = (param_1->r).currentOrigin[2] + 70.0;
-  iVar2 = CM_AreaEntities(&local_28,&local_18,local_102c,0x400,0x2008000);
-  local_8 = 0;
+  i = 0x91b75d;
+  mins = (spot->r).currentOrigin[0] + -15.0;
+  local_24 = (spot->r).currentOrigin[1] + -15.0;
+  local_20 = (spot->r).currentOrigin[2] + 0.0;
+  maxs = (spot->r).currentOrigin[0] + 15.0;
+  local_14 = (spot->r).currentOrigin[1] + 15.0;
+  local_10 = (spot->r).currentOrigin[2] + 70.0;
+  iVar2 = CM_AreaEntities(&mins,&maxs,touch,0x400,0x2008000);
+  i = 0;
   while( true ) {
-    if (iVar2 <= local_8) {
+    if (iVar2 <= i) {
       return 0;
     }
-    iVar1 = local_102c[local_8];
+    iVar1 = touch[i];
     if ((g_entities[iVar1].client != (gclient_s *)0x0) &&
        (((g_entities[iVar1].client)->ps).pm_type < 9)) break;
     if ((g_entities[iVar1].actor != (actor_s *)0x0) && (0 < g_entities[iVar1].health)) {
       return 1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return 1;
 }
@@ -54,36 +56,36 @@ int __cdecl SpotWouldTelefrag(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl PointCouldSeeSpawn(float *param_1,float *param_2,int param_3,int param_4)
+int __cdecl PointCouldSeeSpawn(float *vEyePos,float *vSpawnPos,int iIgnoreEnt1,int iIgnoreEnt2)
 
 {
-  col_context_t local_50;
-  float local_28;
-  uint local_24;
-  float local_20;
+  col_context_t context;
+  float fDistSqrd;
+  uint i;
+  float vCheckPos;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
+  int hitNum;
+  float vDelta;
   float local_c;
   float local_8;
   
-  col_context_t::col_context_t(&local_50);
-  local_10 = *param_1 - *param_2;
-  local_c = param_1[1] - param_2[1];
-  local_8 = param_1[2] - param_2[2];
-  local_28 = local_10 * local_10 + local_c * local_c + local_8 * local_8;
-  if (local_28 * 1.0 <= level.fFogOpaqueDistSqrd) {
-    local_14 = 0;
-    local_50.mask = 0x1801;
-    local_50.passEntityNum0 = param_3;
-    local_50.passEntityNum1 = param_4;
-    for (local_24 = 0; local_24 < 0xb; local_24 = local_24 + 1) {
-      local_20 = *param_2 + -15.0 + g_vSpawnCheckPoints[local_24][0] * 30.0;
-      local_1c = param_2[1] + -15.0 + g_vSpawnCheckPoints[local_24][1] * 30.0;
-      local_18 = param_2[2] + 0.0 + g_vSpawnCheckPoints[local_24][2] * 48.0;
-      SV_SightTracePoint(&local_14,param_1,&local_20,&local_50);
-      if (local_14 == 0) {
+  col_context_t::col_context_t(&context);
+  vDelta = *vEyePos - *vSpawnPos;
+  local_c = vEyePos[1] - vSpawnPos[1];
+  local_8 = vEyePos[2] - vSpawnPos[2];
+  fDistSqrd = vDelta * vDelta + local_c * local_c + local_8 * local_8;
+  if (fDistSqrd * 1.0 <= level.fFogOpaqueDistSqrd) {
+    hitNum = 0;
+    context.mask = 0x1801;
+    context.passEntityNum0 = iIgnoreEnt1;
+    context.passEntityNum1 = iIgnoreEnt2;
+    for (i = 0; i < 0xb; i = i + 1) {
+      vCheckPos = *vSpawnPos + -15.0 + g_vSpawnCheckPoints[i][0] * 30.0;
+      local_1c = vSpawnPos[1] + -15.0 + g_vSpawnCheckPoints[i][1] * 30.0;
+      local_18 = vSpawnPos[2] + 0.0 + g_vSpawnCheckPoints[i][2] * 48.0;
+      SV_SightTracePoint(&hitNum,vEyePos,&vCheckPos,&context);
+      if (hitNum == 0) {
         return 1;
       }
     }
@@ -99,7 +101,8 @@ int __cdecl PointCouldSeeSpawn(float *param_1,float *param_2,int param_3,int par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl SpawnActor(gentity_s *param_1,uint param_2,enumForceSpawn param_3,int param_4)
+gentity_s * __cdecl
+SpawnActor(gentity_s *ent,uint targetname,enumForceSpawn forceSpawn,int getEnemyInfo)
 
 {
   actor_s *paVar1;
@@ -109,38 +112,40 @@ gentity_s * __cdecl SpawnActor(gentity_s *param_1,uint param_2,enumForceSpawn pa
   int iVar5;
   actor_s *in_stack_ffffffc4;
   sentient_s *in_stack_ffffffc8;
-  int local_30;
-  actor_s *local_28;
-  sentient_s *local_24;
-  float local_1c [3];
-  actor_s *local_10;
-  team_t local_c;
-  gentity_s *local_8;
+  int i_2;
+  actor_s *pSelf;
+  actor_s *pActor;
+  sentient_s *pEnemy;
+  gentity_s *spawn;
+  float vEyePos [3];
+  uint i;
+  team_t eTeam;
+  gentity_s *player;
   
   if ((ai_disableSpawn->current).enabled == false) {
-    if (param_3 == CHECK_SPAWN) {
-      iVar5 = SpotWouldTelefrag(param_1);
+    if (forceSpawn == CHECK_SPAWN) {
+      iVar5 = SpotWouldTelefrag(ent);
       if (iVar5 != 0) {
-        if (param_1->targetname != 0) {
-          SL_ConvertToString((uint)param_1->targetname,SCRIPTINSTANCE_SERVER);
+        if (ent->targetname != 0) {
+          SL_ConvertToString((uint)ent->targetname,SCRIPTINSTANCE_SERVER);
         }
         Com_DPrintf(0x12,
                     "^3couldn\'t spawn from %s because spawnpoint (%7.3f %7.3f %7.3f) would telefrag\n"
                    );
         return (gentity_s *)0x0;
       }
-      for (local_30 = 0; local_30 < (com_maxclients->current).integer; local_30 = local_30 + 1) {
-        local_8 = G_GetPlayer(local_30);
-        if (local_8 == (gentity_s *)0x0) {
+      for (i_2 = 0; i_2 < (com_maxclients->current).integer; i_2 = i_2 + 1) {
+        player = G_GetPlayer(i_2);
+        if (player == (gentity_s *)0x0) {
           Scr_Error("Attempt to spawn actor before player setup.",false);
         }
-        if ((local_8->sentient != (sentient_s *)0x0) && (local_8->sentient->eTeam == TEAM_ALLIES)) {
+        if ((player->sentient != (sentient_s *)0x0) && (player->sentient->eTeam == TEAM_ALLIES)) {
           Sentient_GetEyePosition((sentient_s *)in_stack_ffffffc4,(float *)in_stack_ffffffc8);
-          iVar5 = PointCouldSeeSpawn(local_1c,(param_1->r).currentOrigin,(local_8->s).number,
-                                     (param_1->s).number);
+          iVar5 = PointCouldSeeSpawn(vEyePos,(ent->r).currentOrigin,(player->s).number,
+                                     (ent->s).number);
           if (iVar5 != 0) {
-            if (param_1->targetname != 0) {
-              SL_ConvertToString((uint)param_1->targetname,SCRIPTINSTANCE_SERVER);
+            if (ent->targetname != 0) {
+              SL_ConvertToString((uint)ent->targetname,SCRIPTINSTANCE_SERVER);
             }
             Com_DPrintf(0x12,
                         "^3couldn\'t spawn from %s because player can see spawnpoint (%7.3f %7.3f %7.3f)\n"
@@ -151,14 +156,14 @@ gentity_s * __cdecl SpawnActor(gentity_s *param_1,uint param_2,enumForceSpawn pa
       }
     }
     pgVar4 = G_Spawn();
-    G_DuplicateEntityFields(pgVar4,param_1);
-    G_DuplicateScriptFields(pgVar4,param_1);
-    Scr_SetString(&pgVar4->targetname,param_2,SCRIPTINSTANCE_SERVER);
+    G_DuplicateEntityFields(pgVar4,ent);
+    G_DuplicateScriptFields(pgVar4,ent);
+    Scr_SetString(&pgVar4->targetname,targetname,SCRIPTINSTANCE_SERVER);
     pgVar4->spawnflags = pgVar4->spawnflags & 0xfffffffe;
     iVar5 = SP_actor(pgVar4,(SpawnVar *)0x0);
     if (iVar5 == 0) {
-      if (param_1->targetname != 0) {
-        SL_ConvertToString((uint)param_1->targetname,SCRIPTINSTANCE_SERVER);
+      if (ent->targetname != 0) {
+        SL_ConvertToString((uint)ent->targetname,SCRIPTINSTANCE_SERVER);
       }
       Com_DPrintf(0x12,"^3couldn\'t spawn from %s because there are no free actors\n");
       pgVar4 = (gentity_s *)0x0;
@@ -171,35 +176,34 @@ gentity_s * __cdecl SpawnActor(gentity_s *param_1,uint param_2,enumForceSpawn pa
         pgVar4 = (gentity_s *)(*pcVar2)();
         return pgVar4;
       }
-      if ((param_1->spawnflags & 8U) != 0) {
-        local_24 = Sentient_FirstSentient((int)in_stack_ffffffc4);
-        while (local_24 != (sentient_s *)0x0) {
+      if ((ent->spawnflags & 8U) != 0) {
+        pEnemy = Sentient_FirstSentient((int)in_stack_ffffffc4);
+        while (pEnemy != (sentient_s *)0x0) {
           Actor_GetPerfectInfo(in_stack_ffffffc4,in_stack_ffffffc8);
-          local_24 = Sentient_NextSentient((sentient_s *)in_stack_ffffffc4,(int)in_stack_ffffffc8);
+          pEnemy = Sentient_NextSentient((sentient_s *)in_stack_ffffffc4,(int)in_stack_ffffffc8);
         }
       }
       paVar1 = pgVar4->actor;
-      if (param_4 != 0) {
-        local_c = pgVar4->sentient->eTeam;
-        local_28 = Actor_FirstActor((int)in_stack_ffffffc4);
-        while (local_28 != (actor_s *)0x0) {
-          if (paVar1 != local_28) {
-            for (local_10 = (actor_s *)0x0; local_10 < (actor_s *)0x30;
-                local_10 = (actor_s *)((int)&local_10->ent + 1)) {
-              in_stack_ffffffc4 = local_10;
-              SentientInfo_Copy(local_10,local_10,(int)in_stack_ffffffc8);
+      if (getEnemyInfo != 0) {
+        eTeam = pgVar4->sentient->eTeam;
+        pActor = Actor_FirstActor((int)in_stack_ffffffc4);
+        while (pActor != (actor_s *)0x0) {
+          if (paVar1 != pActor) {
+            for (i = 0; i < 0x30; i = i + 1) {
+              in_stack_ffffffc4 = (actor_s *)i;
+              SentientInfo_Copy((actor_s *)i,(actor_s *)i,(int)in_stack_ffffffc8);
             }
           }
-          local_28 = Actor_NextActor(in_stack_ffffffc4,(int)in_stack_ffffffc8);
+          pActor = Actor_NextActor(in_stack_ffffffc4,(int)in_stack_ffffffc8);
         }
       }
       Actor_UpdateSight(in_stack_ffffffc4);
       Actor_UpdateThreat(in_stack_ffffffc4);
       Actor_InitAnimScript(pgVar4->actor);
       Scr_AddEntity(pgVar4,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(param_1,scr_const.spawned,1);
-      if (0 < param_1->count) {
-        param_1->count = param_1->count + -1;
+      Scr_Notify(ent,scr_const.spawned,1);
+      if (0 < ent->count) {
+        ent->count = ent->count + -1;
       }
     }
   }
@@ -223,39 +227,40 @@ void __cdecl G_DropActorSpawnersToFloor(void)
 
 {
   int iVar1;
+  int bInSolid;
   int aiStack_101c [1025];
-  float local_18;
+  float vOrigin;
   float local_14;
   float local_10;
-  gentity_s *local_c;
-  int local_8;
+  gentity_s *ent;
+  int i;
   
-  for (local_8 = 0; local_8 < level.num_entities; local_8 = local_8 + 1) {
-    local_c = level.gentities + local_8;
-    if ((local_c->r).inuse != '\0') {
-      aiStack_101c[local_8] = (local_c->r).contents;
-      iVar1 = Path_IsDynamicBlockingEntity(local_c);
+  for (i = 0; i < level.num_entities; i = i + 1) {
+    ent = level.gentities + i;
+    if ((ent->r).inuse != '\0') {
+      aiStack_101c[i] = (ent->r).contents;
+      iVar1 = Path_IsDynamicBlockingEntity(ent);
       if (iVar1 != 0) {
-        (local_c->r).contents = 0;
+        (ent->r).contents = 0;
       }
     }
   }
-  for (local_8 = 0; local_8 < level.num_entities; local_8 = local_8 + 1) {
-    local_c = level.gentities + local_8;
-    if (((local_c->r).inuse != '\0') && ((local_c->s).eType == 0x12)) {
-      local_18 = (local_c->r).currentOrigin[0];
-      local_14 = (local_c->r).currentOrigin[1];
-      local_10 = (local_c->r).currentOrigin[2];
-      iVar1 = Actor_droptofloor(local_c);
+  for (i = 0; i < level.num_entities; i = i + 1) {
+    ent = level.gentities + i;
+    if (((ent->r).inuse != '\0') && ((ent->s).eType == 0x12)) {
+      vOrigin = (ent->r).currentOrigin[0];
+      local_14 = (ent->r).currentOrigin[1];
+      local_10 = (ent->r).currentOrigin[2];
+      iVar1 = Actor_droptofloor(ent);
       if (iVar1 != 0) {
         Com_Printf(0x12,"^3Spawner at (%g %g %g) is in solid\n");
-        (local_c->r).svFlags = (local_c->r).svFlags & 0xfe;
+        (ent->r).svFlags = (ent->r).svFlags & 0xfe;
       }
     }
   }
-  for (local_8 = 0; local_8 < level.num_entities; local_8 = local_8 + 1) {
-    if (level.gentities[local_8].r.inuse != '\0') {
-      level.gentities[local_8].r.contents = aiStack_101c[local_8];
+  for (i = 0; i < level.num_entities; i = i + 1) {
+    if (level.gentities[i].r.inuse != '\0') {
+      level.gentities[i].r.contents = aiStack_101c[i];
     }
   }
   return;
@@ -269,14 +274,14 @@ void __cdecl G_DropActorSpawnersToFloor(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SP_actor_spawner(gentity_s *param_1,SpawnVar *param_2)
+int __cdecl SP_actor_spawner(gentity_s *pEnt,SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2->spawnVarsValid == false) {
+  if (spawnVar->spawnVarsValid == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_spawner.cpp",0x144,0,
                              "%s");
     if (!bVar2) {
@@ -285,12 +290,12 @@ int __cdecl SP_actor_spawner(gentity_s *param_1,SpawnVar *param_2)
       return iVar3;
     }
   }
-  param_1->clipmask = 0;
-  (param_1->r).contents = 0;
-  (param_1->r).svFlags = '\x01';
-  (param_1->s).eType = 0x12;
-  (param_1->field36_0x21c).item[0].clipAmmoCount = -1;
-  (param_1->field36_0x21c).item[0].ammoCount = 0;
+  pEnt->clipmask = 0;
+  (pEnt->r).contents = 0;
+  (pEnt->r).svFlags = '\x01';
+  (pEnt->s).eType = 0x12;
+  (pEnt->field36_0x21c).item[0].clipAmmoCount = -1;
+  (pEnt->field36_0x21c).item[0].ammoCount = 0;
   return 1;
 }
 

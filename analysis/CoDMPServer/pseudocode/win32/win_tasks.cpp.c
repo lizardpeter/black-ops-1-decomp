@@ -4,13 +4,13 @@
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager_ClearOverlappedTasks(overlappedTask *param_1)
+void __cdecl TaskManager_ClearOverlappedTasks(overlappedTask *overlappedTasks)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    TaskManager_ClearTask(param_1 + local_8);
+  for (i = 0; i < 0x20; i = i + 1) {
+    TaskManager_ClearTask(overlappedTasks + i);
   }
   return;
 }
@@ -21,35 +21,35 @@ void __cdecl TaskManager_ClearOverlappedTasks(overlappedTask *param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 overlappedTask * __cdecl
-TaskManager_GetOpenTaskSlot(overlappedTask *param_1,int param_2,int param_3)
+TaskManager_GetOpenTaskSlot(overlappedTask *overlappedTasks,int controllerIndex,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   overlappedTask *poVar3;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if (param_1[local_8].active == false) {
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (overlappedTasks[i].active == false) {
       bdReference<bdCommonAddr>::operator=
-                ((bdReference<bdCommonAddr> *)(param_1 + local_8),(bdCommonAddr *)0x0);
-      param_1[local_8].type = param_3;
-      if (((param_2 < 0) || (0 < param_2)) &&
+                ((bdReference<bdCommonAddr> *)(overlappedTasks + i),(bdCommonAddr *)0x0);
+      overlappedTasks[i].type = type;
+      if (((controllerIndex < 0) || (0 < controllerIndex)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_tasks.cpp",0x37,0,
                                    "%s\n\t(controllerIndex) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         poVar3 = (overlappedTask *)(*pcVar1)();
         return poVar3;
       }
-      param_1[local_8].controllerIndex = param_2 & 0xff;
-      param_1[local_8].active = true;
-      param_1[local_8].finalStatus = BD_EMPTY;
-      return param_1 + local_8;
+      overlappedTasks[i].controllerIndex = controllerIndex & 0xff;
+      overlappedTasks[i].active = true;
+      overlappedTasks[i].finalStatus = BD_EMPTY;
+      return overlappedTasks + i;
     }
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < i) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_tasks.cpp",0x54,0,
                                "Ran out of task slots!");
       if (bVar2) {
@@ -59,23 +59,23 @@ TaskManager_GetOpenTaskSlot(overlappedTask *param_1,int param_2,int param_3)
       poVar3 = (overlappedTask *)(*pcVar1)();
       return poVar3;
     }
-    if (param_1[local_8].active == false) break;
-    local_8 = local_8 + 1;
+    if (overlappedTasks[i].active == false) break;
+    i = i + 1;
   }
   bdReference<bdCommonAddr>::operator=
-            ((bdReference<bdCommonAddr> *)(param_1 + local_8),(bdCommonAddr *)0x0);
-  param_1[local_8].type = param_3;
-  if (((param_2 < 0) || (0 < param_2)) &&
+            ((bdReference<bdCommonAddr> *)(overlappedTasks + i),(bdCommonAddr *)0x0);
+  overlappedTasks[i].type = type;
+  if (((controllerIndex < 0) || (0 < controllerIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_tasks.cpp",0x4b,0,
                                "%s\n\t(controllerIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     poVar3 = (overlappedTask *)(*pcVar1)();
     return poVar3;
   }
-  param_1[local_8].controllerIndex = param_2 & 0xff;
-  param_1[local_8].active = true;
-  param_1[local_8].finalStatus = BD_EMPTY;
-  return param_1 + local_8;
+  overlappedTasks[i].controllerIndex = controllerIndex & 0xff;
+  overlappedTasks[i].active = true;
+  overlappedTasks[i].finalStatus = BD_EMPTY;
+  return overlappedTasks + i;
 }
 
 
@@ -83,20 +83,20 @@ TaskManager_GetOpenTaskSlot(overlappedTask *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl TaskManager_ClearTask(overlappedTask *param_1)
+void __cdecl TaskManager_ClearTask(overlappedTask *task)
 
 {
-  dwClearTask(param_1);
-  if (param_1 != (overlappedTask *)0x0) {
-    (param_1->overlappedIO).m_ptr = (bdRemoteTask *)0x0;
-    param_1->finalStatus = BD_EMPTY;
-    *(undefined4 *)&param_1->errorCode = 0;
-    param_1->type = 0;
-    *(undefined4 *)&param_1->active = 0;
-    param_1->controllerIndex = 0;
-    param_1->data = (void *)0x0;
-    param_1->miscData = (void *)0x0;
-    param_1->startMS = 0.0;
+  dwClearTask(task);
+  if (task != (overlappedTask *)0x0) {
+    (task->overlappedIO).m_ptr = (bdRemoteTask *)0x0;
+    task->finalStatus = BD_EMPTY;
+    *(undefined4 *)&task->errorCode = 0;
+    task->type = 0;
+    *(undefined4 *)&task->active = 0;
+    task->controllerIndex = 0;
+    task->data = (void *)0x0;
+    task->miscData = (void *)0x0;
+    task->startMS = 0.0;
   }
   return;
 }
@@ -106,18 +106,18 @@ void __cdecl TaskManager_ClearTask(overlappedTask *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager_AnyTaskInProgress(overlappedTask *param_1)
+bool __cdecl TaskManager_AnyTaskInProgress(overlappedTask *overlappedTasks)
 
 {
-  int local_8;
+  int taskIdx;
   
-  local_8 = 0;
+  taskIdx = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < taskIdx) {
       return false;
     }
-    if (param_1[local_8].active != false) break;
-    local_8 = local_8 + 1;
+    if (overlappedTasks[taskIdx].active != false) break;
+    taskIdx = taskIdx + 1;
   }
   return true;
 }
@@ -127,18 +127,18 @@ bool __cdecl TaskManager_AnyTaskInProgress(overlappedTask *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl TaskManager_TaskIsInProgress(overlappedTask *param_1,int param_2)
+bool __cdecl TaskManager_TaskIsInProgress(overlappedTask *overlappedTasks,int type)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < i) {
       return false;
     }
-    if ((param_1[local_8].active != false) && (param_1[local_8].type == param_2)) break;
-    local_8 = local_8 + 1;
+    if ((overlappedTasks[i].active != false) && (overlappedTasks[i].type == type)) break;
+    i = i + 1;
   }
   return true;
 }
@@ -148,14 +148,14 @@ bool __cdecl TaskManager_TaskIsInProgress(overlappedTask *param_1,int param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void * __cdecl TaskManager_GetTaskData(overlappedTask *param_1)
+void * __cdecl TaskManager_GetTaskData(overlappedTask *overlappedTask)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 == (overlappedTask *)0x0) {
+  if (overlappedTask == (overlappedTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_tasks.cpp",0xad,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -163,7 +163,7 @@ void * __cdecl TaskManager_GetTaskData(overlappedTask *param_1)
       return pvVar3;
     }
   }
-  if (param_1->active == false) {
+  if (overlappedTask->active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_tasks.cpp",0xae,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -171,6 +171,6 @@ void * __cdecl TaskManager_GetTaskData(overlappedTask *param_1)
       return pvVar3;
     }
   }
-  return param_1->data;
+  return overlappedTask->data;
 }
 

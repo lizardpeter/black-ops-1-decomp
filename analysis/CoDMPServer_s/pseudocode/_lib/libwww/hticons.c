@@ -9,10 +9,10 @@ char * _HTIcon_alternative(int param_1)
   int in_EAX;
   char *pcVar2;
   int iVar3;
-  ulong uVar4;
+  ulong count;
+  char *pcVar4;
   char *pcVar5;
-  char *pcVar6;
-  uchar *puVar7;
+  uchar *dst;
   
   pcVar2 = (char *)0x0;
   if (in_EAX != 0) {
@@ -21,12 +21,12 @@ char * _HTIcon_alternative(int param_1)
       iVar3 = 0;
     }
     else {
-      pcVar5 = pcVar2 + 1;
+      pcVar4 = pcVar2 + 1;
       do {
         cVar1 = *pcVar2;
         pcVar2 = pcVar2 + 1;
       } while (cVar1 != '\0');
-      iVar3 = (int)pcVar2 - (int)pcVar5;
+      iVar3 = (int)pcVar2 - (int)pcVar4;
     }
     pcVar2 = (char *)_HTMemory_malloc();
     if (pcVar2 == (char *)0x0) {
@@ -38,24 +38,24 @@ char * _HTIcon_alternative(int param_1)
       abort();
     }
     *pcVar2 = (-(param_1 != 0) & 0x3bU) + 0x20;
-    pcVar5 = *(char **)(in_EAX + 4);
-    pcVar6 = pcVar2 + 1;
-    if (pcVar5 != (char *)0x0) {
+    pcVar4 = *(char **)(in_EAX + 4);
+    pcVar5 = pcVar2 + 1;
+    if (pcVar4 != (char *)0x0) {
       do {
-        cVar1 = *pcVar5;
-        *pcVar6 = cVar1;
+        cVar1 = *pcVar4;
+        *pcVar5 = cVar1;
+        pcVar4 = pcVar4 + 1;
         pcVar5 = pcVar5 + 1;
-        pcVar6 = pcVar6 + 1;
       } while (cVar1 != '\0');
     }
-    puVar7 = (uchar *)(pcVar2 + 1 + iVar3);
+    dst = (uchar *)(pcVar2 + 1 + iVar3);
     if (iVar3 < DAT_035477dc) {
-      uVar4 = DAT_035477dc - iVar3;
-      memset(puVar7,' ',uVar4);
-      puVar7 = puVar7 + uVar4;
+      count = DAT_035477dc - iVar3;
+      memset(dst,' ',count);
+      dst = dst + count;
     }
-    *puVar7 = (-(param_1 != 0) & 0x3dU) + 0x20;
-    puVar7[1] = '\0';
+    *dst = (-(param_1 != 0) & 0x3dU) + 0x20;
+    dst[1] = '\0';
   }
   return pcVar2;
 }

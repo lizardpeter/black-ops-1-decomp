@@ -7,7 +7,7 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_Trigger(gentity_s *param_1,gentity_s *param_2)
+void __cdecl G_Trigger(gentity_s *self,gentity_s *other)
 
 {
   code *pcVar1;
@@ -15,15 +15,16 @@ void __cdecl G_Trigger(gentity_s *param_1,gentity_s *param_2)
   bool bVar3;
   int iVar4;
   trigger_info_t *ptVar5;
+  trigger_info_t *trigger_info;
   
-  if (((param_1->r).inuse == '\0') &&
+  if (((self->r).inuse == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0xb,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->r).inuse == '\0') &&
+  if (((other->r).inuse == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0xc,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -34,16 +35,16 @@ void __cdecl G_Trigger(gentity_s *param_1,gentity_s *param_2)
   iVar2 = level.pendingTriggerListSize;
   if (iVar4 != 0) {
     if (level.pendingTriggerListSize == 0x100) {
-      Scr_AddEntity(param_2,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(param_1,scr_const.trigger,1);
+      Scr_AddEntity(other,SCRIPTINSTANCE_SERVER);
+      Scr_Notify(self,scr_const.trigger,1);
     }
     else {
       ptVar5 = level.pendingTriggerList + level.pendingTriggerListSize;
       level.pendingTriggerListSize = level.pendingTriggerListSize + 1;
-      ptVar5->entnum = (ushort)(param_1->s).number;
-      level.pendingTriggerList[iVar2].otherEntnum = (ushort)(param_2->s).number;
-      level.pendingTriggerList[iVar2].useCount = param_1->useCount;
-      level.pendingTriggerList[iVar2].otherUseCount = param_2->useCount;
+      ptVar5->entnum = (ushort)(self->s).number;
+      level.pendingTriggerList[iVar2].otherEntnum = (ushort)(other->s).number;
+      level.pendingTriggerList[iVar2].useCount = self->useCount;
+      level.pendingTriggerList[iVar2].otherUseCount = other->useCount;
     }
   }
   return;
@@ -57,24 +58,24 @@ void __cdecl G_Trigger(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl InitTrigger(gentity_s *param_1)
+bool __cdecl InitTrigger(gentity_s *self)
 
 {
   bool bVar1;
   
-  bVar1 = SV_SetBrushModel(param_1);
+  bVar1 = SV_SetBrushModel(self);
   if (bVar1) {
-    (param_1->r).contents = 0x405c0008;
-    (param_1->r).svFlags = '\x01';
-    (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 1;
-    if (param_1->model == 0) {
-      (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 0x20;
+    (self->r).contents = 0x405c0008;
+    (self->r).svFlags = '\x01';
+    (self->s).lerp.eFlags = (self->s).lerp.eFlags | 1;
+    if (self->model == 0) {
+      (self->s).lerp.eFlags = (self->s).lerp.eFlags | 0x20;
     }
     bVar1 = true;
   }
   else {
     Com_PrintError(1,"Killing trigger at (%f %f %f) because the brush model is invalid.\n");
-    G_FreeEntity(param_1);
+    G_FreeEntity(self);
     bVar1 = false;
   }
   return bVar1;
@@ -88,15 +89,15 @@ bool __cdecl InitTrigger(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl InitTriggerWait(gentity_s *param_1,int param_2,SpawnVar *param_3)
+void __cdecl InitTriggerWait(gentity_s *ent,int spawnflag,SpawnVar *spawnVar)
 
 {
   int iVar1;
-  float local_8;
+  float wait;
   
-  if (((param_3 != (SpawnVar *)0x0) &&
-      (iVar1 = G_SpawnFloat(param_3,"wait","",&local_8), iVar1 != 0)) && (local_8 <= 0.0)) {
-    param_1->spawnflags = param_1->spawnflags | param_2;
+  if (((spawnVar != (SpawnVar *)0x0) && (iVar1 = G_SpawnFloat(spawnVar,"wait","",&wait), iVar1 != 0)
+      ) && (wait <= 0.0)) {
+    ent->spawnflags = ent->spawnflags | spawnflag;
   }
   return;
 }
@@ -109,13 +110,13 @@ void __cdecl InitTriggerWait(gentity_s *param_1,int param_2,SpawnVar *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl InitSentientTrigger(gentity_s *param_1)
+void __cdecl InitSentientTrigger(gentity_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (self == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0x46,0,
                              "%s");
     if (!bVar2) {
@@ -124,21 +125,21 @@ void __cdecl InitSentientTrigger(gentity_s *param_1)
       return;
     }
   }
-  (param_1->r).contents = 0;
-  if ((param_1->spawnflags & 8U) == 0) {
-    (param_1->r).contents = (param_1->r).contents | 0x40000000;
+  (self->r).contents = 0;
+  if ((self->spawnflags & 8U) == 0) {
+    (self->r).contents = (self->r).contents | 0x40000000;
   }
-  if ((param_1->spawnflags & 1U) != 0) {
-    (param_1->r).contents = (param_1->r).contents | 0x40000;
+  if ((self->spawnflags & 1U) != 0) {
+    (self->r).contents = (self->r).contents | 0x40000;
   }
-  if ((param_1->spawnflags & 2U) != 0) {
-    (param_1->r).contents = (param_1->r).contents | 0x80000;
+  if ((self->spawnflags & 2U) != 0) {
+    (self->r).contents = (self->r).contents | 0x80000;
   }
-  if ((param_1->spawnflags & 4U) != 0) {
-    (param_1->r).contents = (param_1->r).contents | 0x100000;
+  if ((self->spawnflags & 4U) != 0) {
+    (self->r).contents = (self->r).contents | 0x100000;
   }
-  if ((param_1->spawnflags & 0x10U) != 0) {
-    (param_1->r).contents = (param_1->r).contents | 8;
+  if ((self->spawnflags & 0x10U) != 0) {
+    (self->r).contents = (self->r).contents | 8;
   }
   return;
 }
@@ -151,11 +152,11 @@ void __cdecl InitSentientTrigger(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl multi_trigger(gentity_s *param_1,gentity_s *param_2)
+void __cdecl multi_trigger(gentity_s *ent,gentity_s *activator)
 
 {
-  if ((param_1->spawnflags & 0x40U) != 0) {
-    G_FreeEntityDelay(param_1);
+  if ((ent->spawnflags & 0x40U) != 0) {
+    G_FreeEntityDelay(ent);
   }
   return;
 }
@@ -168,11 +169,11 @@ void __cdecl multi_trigger(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Touch_Multi(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl Touch_Multi(gentity_s *self,gentity_s *other,int bTouched)
 
 {
-  G_Trigger(param_1,param_2);
-  multi_trigger(param_1,param_2);
+  G_Trigger(self,other);
+  multi_trigger(self,other);
   return;
 }
 
@@ -184,22 +185,22 @@ void __cdecl Touch_Multi(gentity_s *param_1,gentity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_multiple(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_multiple(gentity_s *ent,SpawnVar *spawnVar)
 
 {
   bool bVar1;
   
-  if ((param_1->spawnflags & 0x80U) == 0) {
-    param_1->handler = '\x04';
-    InitTriggerWait(param_1,0x40,param_2);
-    bVar1 = InitTrigger(param_1);
+  if ((ent->spawnflags & 0x80U) == 0) {
+    ent->handler = '\x04';
+    InitTriggerWait(ent,0x40,spawnVar);
+    bVar1 = InitTrigger(ent);
     if (bVar1) {
-      InitSentientTrigger(param_1);
-      SV_LinkEntity(param_1);
+      InitSentientTrigger(ent);
+      SV_LinkEntity(ent);
     }
   }
   else {
-    G_FreeEntity(param_1);
+    G_FreeEntity(ent);
   }
   return;
 }
@@ -212,23 +213,23 @@ void __cdecl SP_trigger_multiple(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl init_trigger_radius(gentity_s *param_1,float param_2,float param_3)
+void __cdecl init_trigger_radius(gentity_s *ent,float radius,float height)
 
 {
-  (param_1->r).mins[0] = -param_2;
-  (param_1->r).mins[1] = -param_2;
-  (param_1->r).mins[2] = 0.0;
-  (param_1->r).maxs[0] = param_2;
-  (param_1->r).maxs[1] = param_2;
-  (param_1->r).maxs[2] = param_3;
-  (param_1->r).svFlags = '!';
-  InitSentientTrigger(param_1);
-  (param_1->r).contents = (param_1->r).contents | 0x200000;
-  (param_1->field36_0x21c).item[1].ammoCount = 0x3ff;
-  (param_1->field36_0x21c).trigger.perk = '4';
-  (param_1->s).un3.item = 0;
-  (param_1->s).un1.scale = 0xff;
-  (param_1->s).otherEntityNum = 0x3ff;
+  (ent->r).mins[0] = -radius;
+  (ent->r).mins[1] = -radius;
+  (ent->r).mins[2] = 0.0;
+  (ent->r).maxs[0] = radius;
+  (ent->r).maxs[1] = radius;
+  (ent->r).maxs[2] = height;
+  (ent->r).svFlags = '!';
+  InitSentientTrigger(ent);
+  (ent->r).contents = (ent->r).contents | 0x200000;
+  (ent->field36_0x21c).item[1].ammoCount = 0x3ff;
+  (ent->field36_0x21c).trigger.perk = '4';
+  (ent->s).un3.item = 0;
+  (ent->s).un1.scale = 0xff;
+  (ent->s).otherEntityNum = 0x3ff;
   return;
 }
 
@@ -240,40 +241,40 @@ void __cdecl init_trigger_radius(gentity_s *param_1,float param_2,float param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_radius(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_radius(gentity_s *ent,SpawnVar *spawnVar)
 
 {
   int iVar1;
   char *pcVar2;
   uint uVar3;
-  float local_c;
-  float local_8;
+  float height;
+  float radius;
   
-  if (param_2 == (SpawnVar *)0x0) {
+  if (spawnVar == (SpawnVar *)0x0) {
     uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar3 < 5) {
       Scr_Error("USAGE: spawn( \"trigger_radius\", <origin>, <spawnflags>, <radius>, <height> )",
                 false);
     }
-    local_8 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-    local_c = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+    radius = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+    height = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
   }
   else {
-    iVar1 = G_SpawnFloat(param_2,"radius","",&local_8);
+    iVar1 = G_SpawnFloat(spawnVar,"radius","",&radius);
     if (iVar1 == 0) {
       pcVar2 = va("radius not specified for trigger_radius at (%g %g %g)");
       Com_Error(ERR_DROP,pcVar2);
     }
-    iVar1 = G_SpawnFloat(param_2,"height","",&local_c);
+    iVar1 = G_SpawnFloat(spawnVar,"height","",&height);
     if (iVar1 == 0) {
       pcVar2 = va("height not specified for trigger_radius at (%g %g %g)");
       Com_Error(ERR_DROP,pcVar2);
     }
   }
-  init_trigger_radius(param_1,local_8,local_c);
-  param_1->handler = '\x04';
-  InitTriggerWait(param_1,0x40,param_2);
-  SV_LinkEntity(param_1);
+  init_trigger_radius(ent,radius,height);
+  ent->handler = '\x04';
+  InitTriggerWait(ent,0x40,spawnVar);
+  SV_LinkEntity(ent);
   return;
 }
 
@@ -285,12 +286,12 @@ void __cdecl SP_trigger_radius(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_radius_use(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_radius_use(gentity_s *ent,SpawnVar *spawnVar)
 
 {
-  init_trigger_radius(param_1,128.0,96.0);
-  param_1->handler = '\x16';
-  SV_LinkEntity(param_1);
+  init_trigger_radius(ent,128.0,96.0);
+  ent->handler = '\x16';
+  SV_LinkEntity(ent);
   return;
 }
 
@@ -302,34 +303,34 @@ void __cdecl SP_trigger_radius_use(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_disk(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_disk(gentity_s *ent,SpawnVar *spawnVar)
 
 {
   int iVar1;
-  char *pcVar2;
-  float local_8;
+  char *fmt;
+  float radius;
   
-  iVar1 = G_SpawnFloat(param_2,"radius","",&local_8);
+  iVar1 = G_SpawnFloat(spawnVar,"radius","",&radius);
   if (iVar1 == 0) {
-    pcVar2 = va("radius not specified for trigger_radius at (%g %g %g)");
-    Com_Error(ERR_DROP,pcVar2);
+    fmt = va("radius not specified for trigger_radius at (%g %g %g)");
+    Com_Error(ERR_DROP,fmt);
   }
-  if ((param_1->spawnflags & 0x80U) == 0) {
-    param_1->handler = '\x04';
-    local_8 = local_8 + 64.0;
-    (param_1->r).mins[0] = -local_8;
-    (param_1->r).mins[1] = -local_8;
-    (param_1->r).mins[2] = -100000.0;
-    (param_1->r).maxs[0] = local_8;
-    (param_1->r).maxs[1] = local_8;
-    (param_1->r).maxs[2] = 100000.0;
-    (param_1->r).svFlags = 'A';
-    InitTriggerWait(param_1,0x40,param_2);
-    InitSentientTrigger(param_1);
-    SV_LinkEntity(param_1);
+  if ((ent->spawnflags & 0x80U) == 0) {
+    ent->handler = '\x04';
+    radius = radius + 64.0;
+    (ent->r).mins[0] = -radius;
+    (ent->r).mins[1] = -radius;
+    (ent->r).mins[2] = -100000.0;
+    (ent->r).maxs[0] = radius;
+    (ent->r).maxs[1] = radius;
+    (ent->r).maxs[2] = 100000.0;
+    (ent->r).svFlags = 'A';
+    InitTriggerWait(ent,0x40,spawnVar);
+    InitSentientTrigger(ent);
+    SV_LinkEntity(ent);
   }
   else {
-    G_FreeEntity(param_1);
+    G_FreeEntity(ent);
   }
   return;
 }
@@ -342,31 +343,30 @@ void __cdecl SP_trigger_disk(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl hurt_touch(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl hurt_touch(gentity_s *self,gentity_s *other,int bTouched)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2->takedamage != '\0') && ((param_1->field36_0x21c).item[0].index <= level.time)) {
-    G_Trigger(param_1,param_2);
-    if ((param_1->spawnflags & 0x10U) == 0) {
-      (param_1->field36_0x21c).item[0].index = level.time + 0x32;
+  if ((other->takedamage != '\0') && ((self->field36_0x21c).item[0].index <= level.time)) {
+    G_Trigger(self,other);
+    if ((self->spawnflags & 0x10U) == 0) {
+      (self->field36_0x21c).item[0].index = level.time + 0x32;
     }
     else {
-      (param_1->field36_0x21c).item[0].index = level.time + 1000;
+      (self->field36_0x21c).item[0].index = level.time + 1000;
     }
-    G_Damage(param_2,param_1,param_1,(float *)0x0,(float *)0x0,param_1->damage,0,0xe,-1,HITLOC_NONE,
-             0,0,0);
-    if ((param_1->spawnflags & 0x20U) != 0) {
-      if ((param_1->handler != '\x06') &&
+    G_Damage(other,self,self,(float *)0x0,(float *)0x0,self->damage,0,0xe,-1,HITLOC_NONE,0,0,0);
+    if ((self->spawnflags & 0x20U) != 0) {
+      if ((self->handler != '\x06') &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",
                                    0x114,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      param_1->handler = '\x05';
+      self->handler = '\x05';
     }
   }
   return;
@@ -380,17 +380,17 @@ void __cdecl hurt_touch(gentity_s *param_1,gentity_s *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl hurt_use(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3)
+void __cdecl hurt_use(gentity_s *self,gentity_s *other,gentity_s *activator)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->handler == '\x06') {
-    param_1->handler = '\x05';
+  if (self->handler == '\x06') {
+    self->handler = '\x05';
   }
   else {
-    if (param_1->handler != '\x05') {
+    if (self->handler != '\x05') {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0x122,
                                0,"%s");
       if (!bVar2) {
@@ -399,7 +399,7 @@ void __cdecl hurt_use(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3)
         return;
       }
     }
-    param_1->handler = '\x06';
+    self->handler = '\x06';
   }
   return;
 }
@@ -412,24 +412,24 @@ void __cdecl hurt_use(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_hurt(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_hurt(gentity_s *self,SpawnVar *spawnVar)
 
 {
   bool bVar1;
-  char *local_8;
+  char *sound;
   
-  bVar1 = InitTrigger(param_1);
+  bVar1 = InitTrigger(self);
   if (bVar1) {
-    G_SpawnString(param_2,"sound","world_hurt_me",&local_8);
-    if (param_1->damage == 0) {
-      param_1->damage = 5;
+    G_SpawnString(spawnVar,"sound","world_hurt_me",&sound);
+    if (self->damage == 0) {
+      self->damage = 5;
     }
-    (param_1->r).contents = 0x405c0008;
-    if ((param_1->spawnflags & 1U) == 0) {
-      param_1->handler = '\x06';
+    (self->r).contents = 0x405c0008;
+    if ((self->spawnflags & 1U) == 0) {
+      self->handler = '\x06';
     }
     else {
-      param_1->handler = '\x05';
+      self->handler = '\x05';
     }
   }
   return;
@@ -443,22 +443,22 @@ void __cdecl SP_trigger_hurt(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_once(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_once(gentity_s *ent,SpawnVar *spawnVar)
 
 {
   bool bVar1;
   
-  if ((param_1->spawnflags & 0x80U) == 0) {
-    param_1->handler = '\x04';
-    param_1->spawnflags = param_1->spawnflags | 0x40;
-    bVar1 = InitTrigger(param_1);
+  if ((ent->spawnflags & 0x80U) == 0) {
+    ent->handler = '\x04';
+    ent->spawnflags = ent->spawnflags | 0x40;
+    bVar1 = InitTrigger(ent);
     if (bVar1) {
-      InitSentientTrigger(param_1);
-      SV_LinkEntity(param_1);
+      InitSentientTrigger(ent);
+      SV_LinkEntity(ent);
     }
   }
   else {
-    G_FreeEntity(param_1);
+    G_FreeEntity(ent);
   }
   return;
 }
@@ -471,20 +471,19 @@ void __cdecl SP_trigger_once(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Respond_trigger_damage(gentity_s *param_1,int param_2)
+int __cdecl Respond_trigger_damage(gentity_s *pEnt,int iMOD)
 
 {
   int iVar1;
   
-  if (((param_1->spawnflags & 1U) == 0) || (param_2 != 1)) {
-    if (((param_1->spawnflags & 2U) == 0) || (param_2 != 2)) {
-      if ((((param_1->spawnflags & 4U) == 0) || (param_2 < 3)) || (6 < param_2)) {
-        if ((((param_1->spawnflags & 8U) == 0) || (param_2 < 3)) ||
-           ((6 < param_2 && (param_2 != 0xf)))) {
-          if (((param_1->spawnflags & 0x10U) == 0) || ((param_2 != 4 && (param_2 != 6)))) {
-            if (((param_1->spawnflags & 0x20U) == 0) || (param_2 != 7)) {
-              if (((param_1->spawnflags & 0x100U) == 0) ||
-                 ((param_2 != 0 && ((param_2 < 10 || (0xe < param_2)))))) {
+  if (((pEnt->spawnflags & 1U) == 0) || (iMOD != 1)) {
+    if (((pEnt->spawnflags & 2U) == 0) || (iMOD != 2)) {
+      if ((((pEnt->spawnflags & 4U) == 0) || (iMOD < 3)) || (6 < iMOD)) {
+        if ((((pEnt->spawnflags & 8U) == 0) || (iMOD < 3)) || ((6 < iMOD && (iMOD != 0xf)))) {
+          if (((pEnt->spawnflags & 0x10U) == 0) || ((iMOD != 4 && (iMOD != 6)))) {
+            if (((pEnt->spawnflags & 0x20U) == 0) || (iMOD != 7)) {
+              if (((pEnt->spawnflags & 0x100U) == 0) ||
+                 ((iMOD != 0 && ((iMOD < 10 || (0xe < iMOD)))))) {
                 iVar1 = 1;
               }
               else {
@@ -525,23 +524,22 @@ int __cdecl Respond_trigger_damage(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Activate_trigger_damage(gentity_s *param_1,gentity_s *param_2,int param_3,int param_4)
+void __cdecl Activate_trigger_damage(gentity_s *pEnt,gentity_s *pOther,int iDamage,int iMOD)
 
 {
   int iVar1;
   
-  if (((((param_1->field36_0x21c).item[0].ammoCount < 1) ||
-       ((param_1->field36_0x21c).item[0].ammoCount <= param_3)) &&
-      (iVar1 = Respond_trigger_damage(param_1,param_4), iVar1 != 0)) &&
-     ((param_1->health = param_1->health - param_3,
-      (param_1->field36_0x21c).item[0].clipAmmoCount == 0 ||
-      ((param_1->field36_0x21c).item[0].clipAmmoCount <= 32000 - param_1->health)))) {
-    if (param_4 != -1) {
-      G_Trigger(param_1,param_2);
+  if (((((pEnt->field36_0x21c).item[0].ammoCount < 1) ||
+       ((pEnt->field36_0x21c).item[0].ammoCount <= iDamage)) &&
+      (iVar1 = Respond_trigger_damage(pEnt,iMOD), iVar1 != 0)) &&
+     ((pEnt->health = pEnt->health - iDamage, (pEnt->field36_0x21c).item[0].clipAmmoCount == 0 ||
+      ((pEnt->field36_0x21c).item[0].clipAmmoCount <= 32000 - pEnt->health)))) {
+    if (iMOD != -1) {
+      G_Trigger(pEnt,pOther);
     }
-    param_1->health = 32000;
-    if ((param_1->spawnflags & 0x200U) != 0) {
-      G_FreeEntityDelay(param_1);
+    pEnt->health = 32000;
+    if ((pEnt->spawnflags & 0x200U) != 0) {
+      G_FreeEntityDelay(pEnt);
     }
   }
   return;
@@ -555,10 +553,10 @@ void __cdecl Activate_trigger_damage(gentity_s *param_1,gentity_s *param_2,int p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Use_trigger_damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3)
+void __cdecl Use_trigger_damage(gentity_s *pEnt,gentity_s *pOther,gentity_s *pActivator)
 
 {
-  Activate_trigger_damage(param_1,param_2,(param_1->field36_0x21c).item[0].clipAmmoCount + 1,-1);
+  Activate_trigger_damage(pEnt,pOther,(pEnt->field36_0x21c).item[0].clipAmmoCount + 1,-1);
   return;
 }
 
@@ -571,11 +569,11 @@ void __cdecl Use_trigger_damage(gentity_s *param_1,gentity_s *param_2,gentity_s 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Pain_trigger_damage(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int param_5,
-                   float *param_6,hitLocation_t param_7,int param_8)
+Pain_trigger_damage(gentity_s *pSelf,gentity_s *pAttacker,int iDamage,float *vPoint,int iMod,
+                   float *vDir,hitLocation_t hitLoc,int weaponIndex)
 
 {
-  Activate_trigger_damage(param_1,param_2,param_3,param_5);
+  Activate_trigger_damage(pSelf,pAttacker,iDamage,iMod);
   return;
 }
 
@@ -589,18 +587,18 @@ Pain_trigger_damage(gentity_s *param_1,gentity_s *param_2,int param_3,float *par
 
 void __cdecl
 Flame_trigger_damage
-          (gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int param_5,
-          float *param_6,hitLocation_t param_7,int param_8)
+          (gentity_s *pSelf,gentity_s *pAttacker,int iDamage,float *vPoint,int iMod,float *vDir,
+          hitLocation_t hitLoc,int weaponIdx)
 
 {
-  if ((param_1->classname == scr_const.trigger_damage) && ((param_1->spawnflags & 0x40U) == 0)) {
-    Scr_AddConstString((uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
-    Scr_AddVector(param_4,SCRIPTINSTANCE_SERVER);
-    Scr_AddVector(param_6,SCRIPTINSTANCE_SERVER);
-    Scr_AddEntity(param_2,SCRIPTINSTANCE_SERVER);
-    Scr_AddInt(param_3,SCRIPTINSTANCE_SERVER);
-    Scr_Notify(param_1,scr_const.damage,5);
-    Activate_trigger_damage(param_1,param_2,param_3,param_5);
+  if ((pSelf->classname == scr_const.trigger_damage) && ((pSelf->spawnflags & 0x40U) == 0)) {
+    Scr_AddConstString((uint)*modNames[iMod],SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(vPoint,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector(vDir,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(pAttacker,SCRIPTINSTANCE_SERVER);
+    Scr_AddInt(iDamage,SCRIPTINSTANCE_SERVER);
+    Scr_Notify(pSelf,scr_const.damage,5);
+    Activate_trigger_damage(pSelf,pAttacker,iDamage,iMod);
   }
   return;
 }
@@ -614,11 +612,11 @@ Flame_trigger_damage
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Die_trigger_damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-                  int param_6,float *param_7,hitLocation_t param_8,int param_9)
+Die_trigger_damage(gentity_s *pSelf,gentity_s *pInflictor,gentity_s *pAttacker,int iDamage,int iMod,
+                  int iWeapon,float *vDir,hitLocation_t hitLoc,int timeOffset)
 
 {
-  Activate_trigger_damage(param_1,param_3,param_4,param_5);
+  Activate_trigger_damage(pSelf,pAttacker,iDamage,iMod);
   return;
 }
 
@@ -630,20 +628,20 @@ Die_trigger_damage(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_damage(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_damage(gentity_s *pSelf,SpawnVar *spawnVar)
 
 {
   bool bVar1;
   
-  G_SpawnInt(param_2,"accumulate","0",&(param_1->field36_0x21c).item[0].clipAmmoCount);
-  G_SpawnInt(param_2,"threshold","0",&(param_1->field36_0x21c).corpse.deathAnimStartTime);
-  param_1->health = 32000;
-  param_1->takedamage = '\x01';
-  param_1->handler = '\a';
-  InitTriggerWait(param_1,0x200,param_2);
-  bVar1 = InitTrigger(param_1);
+  G_SpawnInt(spawnVar,"accumulate","0",&(pSelf->field36_0x21c).item[0].clipAmmoCount);
+  G_SpawnInt(spawnVar,"threshold","0",&(pSelf->field36_0x21c).corpse.deathAnimStartTime);
+  pSelf->health = 32000;
+  pSelf->takedamage = '\x01';
+  pSelf->handler = '\a';
+  InitTriggerWait(pSelf,0x200,spawnVar);
+  bVar1 = InitTrigger(pSelf);
   if (bVar1) {
-    SV_LinkEntity(param_1);
+    SV_LinkEntity(pSelf);
   }
   return;
 }
@@ -658,96 +656,97 @@ void __cdecl SP_trigger_damage(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_CheckHitTriggerDamage(gentity_s *param_1,float *param_2,float *param_3,int param_4,int param_5)
+G_CheckHitTriggerDamage(gentity_s *pActivator,float *vStart,float *vEnd,int iDamage,int iMOD)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_107c [1024];
-  sightclip_t local_7c;
-  float local_30;
+  int iNum;
+  int iTouch [1024];
+  sightclip_t clip;
+  float vDir;
   float local_2c;
   float local_28;
-  float local_24;
+  float vMins;
   float local_20;
   float local_1c;
-  int local_18;
-  gentity_s *local_14;
-  float local_10;
+  int i;
+  gentity_s *pHit;
+  float vMaxs;
   float local_c;
   float local_8;
   
   local_8 = 9.639562e-39;
-  if ((0x14 < (uint)param_5) &&
+  if ((0x14 < (uint)iMOD) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0x235,
                                0,"iMOD doesn\'t index MOD_NUM\n\t%i not in [0, %i)"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*modNames[param_5] == 0) &&
+  if ((*modNames[iMOD] == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0x236,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((vStart == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0x237,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((vEnd == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_trigger_mp.cpp",0x238,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = *param_2;
-  local_20 = param_2[1];
-  local_1c = param_2[2];
-  local_10 = *param_2;
-  local_c = param_2[1];
-  local_8 = param_2[2];
-  AddPointToBounds(param_3,&local_24,&local_10);
-  local_30 = *param_3 - *param_2;
-  local_2c = param_3[1] - param_2[1];
-  local_28 = param_3[2] - param_2[2];
-  Vec3Normalize(&local_30);
-  iVar3 = CM_AreaEntities(&local_24,&local_10,local_107c,0x400,0x400000);
-  local_7c.start[0] = *param_2;
-  local_7c.start[1] = param_2[1];
-  local_7c.start[2] = param_2[2];
-  local_7c.end[0] = *param_3;
-  local_7c.end[1] = param_3[1];
-  local_7c.end[2] = param_3[2];
-  local_7c.mins[0] = 0.0;
-  local_7c.mins[1] = 0.0;
-  local_7c.mins[2] = 0.0;
-  local_7c.maxs[0] = 0.0;
-  local_7c.maxs[1] = 0.0;
-  local_7c.maxs[2] = 0.0;
-  local_7c.contentmask = -1;
-  local_7c.passEntityNum[1] = 0x3ff;
-  local_7c.passEntityNum[0] = 0x3ff;
-  for (local_18 = 0; local_18 < iVar3; local_18 = local_18 + 1) {
-    local_14 = g_entities + local_107c[local_18];
-    if ((g_entities[local_107c[local_18]].classname == scr_const.trigger_damage) &&
-       (iVar4 = SV_SightTraceCapsuleToEntity(&local_7c,(local_14->s).number), iVar4 != 0)) {
-      Scr_AddConstString((uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
+  vMins = *vStart;
+  local_20 = vStart[1];
+  local_1c = vStart[2];
+  vMaxs = *vStart;
+  local_c = vStart[1];
+  local_8 = vStart[2];
+  AddPointToBounds(vEnd,&vMins,&vMaxs);
+  vDir = *vEnd - *vStart;
+  local_2c = vEnd[1] - vStart[1];
+  local_28 = vEnd[2] - vStart[2];
+  Vec3Normalize(&vDir);
+  iVar3 = CM_AreaEntities(&vMins,&vMaxs,iTouch,0x400,0x400000);
+  clip.start[0] = *vStart;
+  clip.start[1] = vStart[1];
+  clip.start[2] = vStart[2];
+  clip.end[0] = *vEnd;
+  clip.end[1] = vEnd[1];
+  clip.end[2] = vEnd[2];
+  clip.mins[0] = 0.0;
+  clip.mins[1] = 0.0;
+  clip.mins[2] = 0.0;
+  clip.maxs[0] = 0.0;
+  clip.maxs[1] = 0.0;
+  clip.maxs[2] = 0.0;
+  clip.contentmask = -1;
+  clip.passEntityNum[1] = 0x3ff;
+  clip.passEntityNum[0] = 0x3ff;
+  for (i = 0; i < iVar3; i = i + 1) {
+    pHit = g_entities + iTouch[i];
+    if ((g_entities[iTouch[i]].classname == scr_const.trigger_damage) &&
+       (iVar4 = SV_SightTraceCapsuleToEntity(&clip,(pHit->s).number), iVar4 != 0)) {
+      Scr_AddConstString((uint)*modNames[iMOD],SCRIPTINSTANCE_SERVER);
       Scr_AddVector(vec3_origin,SCRIPTINSTANCE_SERVER);
-      Scr_AddVector(&local_30,SCRIPTINSTANCE_SERVER);
-      Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
-      Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(local_14,scr_const.damage,5);
-      Activate_trigger_damage(local_14,param_1,param_4,param_5);
-      if ((local_14->field36_0x21c).item[0].clipAmmoCount == 0) {
-        local_14->health = 32000;
+      Scr_AddVector(&vDir,SCRIPTINSTANCE_SERVER);
+      Scr_AddEntity(pActivator,SCRIPTINSTANCE_SERVER);
+      Scr_AddInt(iDamage,SCRIPTINSTANCE_SERVER);
+      Scr_Notify(pHit,scr_const.damage,5);
+      Activate_trigger_damage(pHit,pActivator,iDamage,iMOD);
+      if ((pHit->field36_0x21c).item[0].clipAmmoCount == 0) {
+        pHit->health = 32000;
       }
     }
   }
@@ -764,68 +763,68 @@ G_CheckHitTriggerDamage(gentity_s *param_1,float *param_2,float *param_3,int par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_GrenadeTouchTriggerDamage
-          (gentity_s *param_1,float *param_2,float *param_3,int param_4,int param_5)
+G_GrenadeTouchTriggerDamage(gentity_s *pActivator,float *vStart,float *vEnd,int iDamage,int iMOD)
 
 {
   int iVar1;
   int iVar2;
-  int local_107c [1024];
-  sightclip_t local_7c;
-  float local_30;
+  int iNum;
+  int iTouch [1024];
+  sightclip_t clip;
+  float vDir;
   float local_2c;
   float local_28;
-  float local_24;
+  float vMins;
   float local_20;
   float local_1c;
-  int local_18;
-  gentity_s *local_14;
-  float local_10;
+  int i;
+  gentity_s *pHit;
+  float vMaxs;
   float local_c;
   float local_8;
   
-  local_24 = *param_2;
-  local_20 = param_2[1];
-  local_1c = param_2[2];
-  local_10 = *param_2;
-  local_c = param_2[1];
-  local_8 = param_2[2];
-  AddPointToBounds(param_3,&local_24,&local_10);
-  local_30 = *param_3 - *param_2;
-  local_2c = param_3[1] - param_2[1];
-  local_28 = param_3[2] - param_2[2];
-  Vec3Normalize(&local_30);
-  iVar1 = CM_AreaEntities(&local_24,&local_10,local_107c,0x400,0x400000);
-  local_7c.start[0] = *param_2;
-  local_7c.start[1] = param_2[1];
-  local_7c.start[2] = param_2[2];
-  local_7c.end[0] = *param_3;
-  local_7c.end[1] = param_3[1];
-  local_7c.end[2] = param_3[2];
-  local_7c.mins[0] = 0.0;
-  local_7c.mins[1] = 0.0;
-  local_7c.mins[2] = 0.0;
-  local_7c.maxs[0] = 0.0;
-  local_7c.maxs[1] = 0.0;
-  local_7c.maxs[2] = 0.0;
-  local_7c.contentmask = -1;
-  local_7c.passEntityNum[1] = 0x3ff;
-  local_7c.passEntityNum[0] = 0x3ff;
-  for (local_18 = 0; local_18 < iVar1; local_18 = local_18 + 1) {
-    iVar2 = local_107c[local_18];
-    local_14 = g_entities + iVar2;
+  vMins = *vStart;
+  local_20 = vStart[1];
+  local_1c = vStart[2];
+  vMaxs = *vStart;
+  local_c = vStart[1];
+  local_8 = vStart[2];
+  AddPointToBounds(vEnd,&vMins,&vMaxs);
+  vDir = *vEnd - *vStart;
+  local_2c = vEnd[1] - vStart[1];
+  local_28 = vEnd[2] - vStart[2];
+  Vec3Normalize(&vDir);
+  iVar1 = CM_AreaEntities(&vMins,&vMaxs,iTouch,0x400,0x400000);
+  clip.start[0] = *vStart;
+  clip.start[1] = vStart[1];
+  clip.start[2] = vStart[2];
+  clip.end[0] = *vEnd;
+  clip.end[1] = vEnd[1];
+  clip.end[2] = vEnd[2];
+  clip.mins[0] = 0.0;
+  clip.mins[1] = 0.0;
+  clip.mins[2] = 0.0;
+  clip.maxs[0] = 0.0;
+  clip.maxs[1] = 0.0;
+  clip.maxs[2] = 0.0;
+  clip.contentmask = -1;
+  clip.passEntityNum[1] = 0x3ff;
+  clip.passEntityNum[0] = 0x3ff;
+  for (i = 0; i < iVar1; i = i + 1) {
+    iVar2 = iTouch[i];
+    pHit = g_entities + iVar2;
     if (((g_entities[iVar2].classname == scr_const.trigger_damage) &&
         ((g_entities[iVar2].flags & 0x4000U) != 0)) &&
-       (iVar2 = SV_SightTraceCapsuleToEntity(&local_7c,(local_14->s).number), iVar2 != 0)) {
-      Scr_AddConstString((uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
+       (iVar2 = SV_SightTraceCapsuleToEntity(&clip,(pHit->s).number), iVar2 != 0)) {
+      Scr_AddConstString((uint)*modNames[iMOD],SCRIPTINSTANCE_SERVER);
       Scr_AddVector(vec3_origin,SCRIPTINSTANCE_SERVER);
-      Scr_AddVector(&local_30,SCRIPTINSTANCE_SERVER);
-      Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
-      Scr_AddInt(param_4,SCRIPTINSTANCE_SERVER);
-      Scr_Notify(local_14,scr_const.damage,5);
-      Activate_trigger_damage(local_14,param_1,param_4,param_5);
-      if ((local_14->field36_0x21c).item[0].clipAmmoCount == 0) {
-        local_14->health = 32000;
+      Scr_AddVector(&vDir,SCRIPTINSTANCE_SERVER);
+      Scr_AddEntity(pActivator,SCRIPTINSTANCE_SERVER);
+      Scr_AddInt(iDamage,SCRIPTINSTANCE_SERVER);
+      Scr_Notify(pHit,scr_const.damage,5);
+      Activate_trigger_damage(pHit,pActivator,iDamage,iMOD);
+      if ((pHit->field36_0x21c).item[0].clipAmmoCount == 0) {
+        pHit->health = 32000;
       }
     }
   }
@@ -840,23 +839,23 @@ G_GrenadeTouchTriggerDamage
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_lookat(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_lookat(gentity_s *self,SpawnVar *spawnVar)
 
 {
   bool bVar1;
   
-  bVar1 = SV_SetBrushModel(param_1);
+  bVar1 = SV_SetBrushModel(self);
   if (bVar1) {
-    (param_1->r).contents = 0x20000000;
-    (param_1->r).svFlags = '\x01';
-    (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 1;
-    if (param_1->model == 0) {
-      (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 0x20;
+    (self->r).contents = 0x20000000;
+    (self->r).svFlags = '\x01';
+    (self->s).lerp.eFlags = (self->s).lerp.eFlags | 1;
+    if (self->model == 0) {
+      (self->s).lerp.eFlags = (self->s).lerp.eFlags | 0x20;
     }
   }
   else {
     Com_PrintError(1,"Killing trigger_lookat at (%f %f %f) because the brush model is invalid.\n");
-    G_FreeEntity(param_1);
+    G_FreeEntity(self);
   }
   return;
 }
@@ -869,12 +868,12 @@ void __cdecl SP_trigger_lookat(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl trigger_ik_playerclip_terrain_touch(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl trigger_ik_playerclip_terrain_touch(gentity_s *ent,gentity_s *other,int bTouched)
 
 {
-  if ((param_2->client != (gclient_s *)0x0) || (param_2->actor != (actor_s *)0x0)) {
-    (param_2->s).lerp.eFlags2 = (param_2->s).lerp.eFlags2 | 0x10000;
-    param_2->ikPlayerclipTerrainTime = level.time;
+  if ((other->client != (gclient_s *)0x0) || (other->actor != (actor_s *)0x0)) {
+    (other->s).lerp.eFlags2 = (other->s).lerp.eFlags2 | 0x10000;
+    other->ikPlayerclipTerrainTime = level.time;
   }
   return;
 }
@@ -887,15 +886,15 @@ void __cdecl trigger_ik_playerclip_terrain_touch(gentity_s *param_1,gentity_s *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_trigger_ik_playerclip_terrain(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_trigger_ik_playerclip_terrain(gentity_s *self,SpawnVar *spawnVar)
 
 {
   bool bVar1;
   
-  param_1->handler = '\x1d';
-  bVar1 = InitTrigger(param_1);
+  self->handler = '\x1d';
+  bVar1 = InitTrigger(self);
   if (bVar1) {
-    SV_LinkEntity(param_1);
+    SV_LinkEntity(self);
   }
   return;
 }
@@ -908,13 +907,12 @@ void __cdecl SP_trigger_ik_playerclip_terrain(gentity_s *param_1,SpawnVar *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-trigger_ik_disable_terrain_mapping_touch(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl trigger_ik_disable_terrain_mapping_touch(gentity_s *ent,gentity_s *other,int bTouched)
 
 {
-  if ((param_2->client != (gclient_s *)0x0) || (param_2->actor != (actor_s *)0x0)) {
-    (param_2->s).lerp.eFlags2 = (param_2->s).lerp.eFlags2 | 0x100000;
-    param_2->ikDisableTerrainMappingTime = level.time;
+  if ((other->client != (gclient_s *)0x0) || (other->actor != (actor_s *)0x0)) {
+    (other->s).lerp.eFlags2 = (other->s).lerp.eFlags2 | 0x100000;
+    other->ikDisableTerrainMappingTime = level.time;
   }
   return;
 }

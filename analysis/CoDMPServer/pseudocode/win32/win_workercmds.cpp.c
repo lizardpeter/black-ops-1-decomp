@@ -20,20 +20,23 @@ void __cdecl _dynamic_initializer_for__nuge_physicsModule__(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl nuge_physicsCallback(jqBatch *param_1)
+int __cdecl nuge_physicsCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  char *pcVar2;
-  DWORD DVar3;
+  void *data_00;
+  char *Name;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
+  jqBatch *realbatch;
   
-  pvVar1 = jqLockData(param_1);
-  pcVar2 = va("nuge_physics: %s");
-  PIXBeginNamedEvent(-1,pcVar2);
-  (**(code **)(*(int *)((int)pvVar1 + 0xc) + 8))(pvVar1);
-  jqUnlockData(param_1,pvVar1);
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  data_00 = jqLockData(batch);
+  Name = va("nuge_physics: %s");
+  PIXBeginNamedEvent(-1,Name);
+  (**(code **)(*(int *)((int)data_00 + 0xc) + 8))(data_00);
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -44,13 +47,13 @@ int __cdecl nuge_physicsCallback(jqBatch *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl IW_task_manager_add_batch(jqBatch *param_1)
+void __cdecl IW_task_manager_add_batch(jqBatch *ptr)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->Module == (jqModule *)0x0) {
+  if (ptr->Module == (jqModule *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_workercmds.cpp",0x33,0,
                              "%s");
     if (!bVar2) {
@@ -59,7 +62,7 @@ void __cdecl IW_task_manager_add_batch(jqBatch *param_1)
       return;
     }
   }
-  Sys_AddWorkerCmdInternal(&nuge_physicsWorkerCmd,param_1,(WorkerCmdConditional *)0x0);
+  Sys_AddWorkerCmdInternal(&nuge_physicsWorkerCmd,ptr,(WorkerCmdConditional *)0x0);
   return;
 }
 
@@ -80,10 +83,12 @@ void __cdecl IW_task_manager_flush(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl `anonymous_namespace'::SetupWorkerThread(jqBatch *param_1)
+int __cdecl `anonymous_namespace'::SetupWorkerThread(jqBatch *batch)
 
 {
-  Sys_InitThread(param_1->ParamData[0] + 2);
+  uint thread;
+  
+  Sys_InitThread(batch->ParamData[0] + 2);
   return 0;
 }
 

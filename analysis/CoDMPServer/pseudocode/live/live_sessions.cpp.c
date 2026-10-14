@@ -6,7 +6,7 @@
 /* WARNING: Removing unreachable block (ram,0x00972721) */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Session_BuildQoSPayload(SessionData_s *param_1)
+int __cdecl Session_BuildQoSPayload(SessionData_s *session)
 
 {
   code *pcVar1;
@@ -14,57 +14,58 @@ int __cdecl Session_BuildQoSPayload(SessionData_s *param_1)
   int iVar3;
   int *piVar4;
   int *piVar5;
-  msg_t local_50;
-  undefined1 local_1d;
-  int local_1c;
+  int numPublicSlotsAvailable;
+  msg_t qosMessage;
+  bool isMigrating;
+  int qos_payload;
   uchar local_18 [4];
   uint local_14;
-  int local_10;
-  char local_9;
-  connstate_t local_8;
+  int maxLocalPlayersAllowed;
+  bool allowGuests;
+  connstate_t cstate;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = 1;
-  local_9 = '\x01';
-  local_1c = 0;
+  maxLocalPlayersAllowed = 1;
+  allowGuests = true;
+  qos_payload = 0;
   local_18[0] = '\0';
   local_18[1] = '\0';
   local_18[2] = '\0';
   local_18[3] = '\0';
-  MSG_Init(&local_50,(uchar *)&local_1c,8);
-  MSG_WriteBits(&local_50,0x414,0x10);
-  MSG_WriteBit1(&local_50);
-  local_1d = 0;
-  MSG_WriteBits(&local_50,0,1);
-  MSG_WriteBits(&local_50,1,6);
-  MSG_WriteBits(&local_50,local_10,3);
-  if (local_9 == '\0') {
-    MSG_WriteBit0(&local_50);
+  MSG_Init(&qosMessage,(uchar *)&qos_payload,8);
+  MSG_WriteBits(&qosMessage,0x414,0x10);
+  MSG_WriteBit1(&qosMessage);
+  isMigrating = false;
+  MSG_WriteBits(&qosMessage,0,1);
+  MSG_WriteBits(&qosMessage,1,6);
+  MSG_WriteBits(&qosMessage,maxLocalPlayersAllowed,3);
+  if (allowGuests == false) {
+    MSG_WriteBit0(&qosMessage);
   }
   else {
-    MSG_WriteBit1(&local_50);
+    MSG_WriteBit1(&qosMessage);
   }
   if ((xblive_matchEndingSoon->current).enabled == false) {
-    MSG_WriteBit0(&local_50);
+    MSG_WriteBit0(&qosMessage);
   }
   else {
-    MSG_WriteBit1(&local_50);
+    MSG_WriteBit1(&qosMessage);
   }
-  local_8 = CL_GetLocalClientConnectionState(0);
-  if (local_8 == CA_CHALLENGING) {
-    MSG_WriteBit1(&local_50);
+  cstate = CL_GetLocalClientConnectionState(0);
+  if (cstate == CA_CHALLENGING) {
+    MSG_WriteBit1(&qosMessage);
   }
   else {
-    MSG_WriteBit0(&local_50);
+    MSG_WriteBit0(&qosMessage);
   }
-  if ((local_50.cursize != 4) &&
+  if ((qosMessage.cursize != 4) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions.cpp",0xc4,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((local_50.overflowed != 0) &&
+  if ((qosMessage.overflowed != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions.cpp",0xca,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -73,7 +74,7 @@ int __cdecl Session_BuildQoSPayload(SessionData_s *param_1)
   }
   iVar3 = 2;
   bVar2 = true;
-  piVar4 = &local_1c;
+  piVar4 = &qos_payload;
   piVar5 = (int *)s_qosPayload;
   do {
     if (iVar3 == 0) break;
@@ -83,19 +84,19 @@ int __cdecl Session_BuildQoSPayload(SessionData_s *param_1)
     piVar5 = piVar5 + 1;
   } while (bVar2);
   if (bVar2) {
-    local_50.cursize = 0;
+    qosMessage.cursize = 0;
   }
   else {
-    s_qosPayload[0] = (undefined1)local_1c;
-    s_qosPayload[1] = local_1c._1_1_;
-    s_qosPayload[2] = local_1c._2_1_;
-    s_qosPayload[3] = local_1c._3_1_;
+    s_qosPayload[0] = (undefined1)qos_payload;
+    s_qosPayload[1] = qos_payload._1_1_;
+    s_qosPayload[2] = qos_payload._2_1_;
+    s_qosPayload[3] = qos_payload._3_1_;
     s_qosPayload[4] = local_18[0];
     s_qosPayload[5] = local_18[1];
     s_qosPayload[6] = local_18[2];
     s_qosPayload[7] = local_18[3];
   }
-  return local_50.cursize;
+  return qosMessage.cursize;
 }
 
 
@@ -114,7 +115,7 @@ uchar * __cdecl Session_GetQosPayloadBuffer(void)
 /* WARNING: Removing unreachable block (ram,0x00972899) */
 /* WARNING: Removing unreachable block (ram,0x0097288c) */
 
-bool __cdecl Session_IsHost(SessionData_s *param_1,int param_2)
+bool __cdecl Session_IsHost(SessionData_s *session,int clientNum)
 
 {
   return false;
@@ -123,14 +124,14 @@ bool __cdecl Session_IsHost(SessionData_s *param_1,int param_2)
 
 // 009728B0  Session_HostNum  (live/live_sessions.cpp:339)
 
-int __cdecl Session_HostNum(SessionData_s *param_1)
+int __cdecl Session_HostNum(SessionData_s *session)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (SessionData_s *)0x0) {
+  if (session == (SessionData_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions.cpp",0x154,0,
                              "%s");
     if (!bVar2) {

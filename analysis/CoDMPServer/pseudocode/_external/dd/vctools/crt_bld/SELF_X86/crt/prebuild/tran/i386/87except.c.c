@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl _87except(int param_1,_exception *param_2,ushort *param_3)
+void __cdecl _87except(int opcode,_exception *exc,ushort *pcw16)
 
 {
   ulong uVar1;
@@ -15,8 +15,8 @@ void __cdecl _87except(int param_1,_exception *param_2,ushort *param_3)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_98 = (uint)*param_3;
-  uVar1 = param_2->typ;
+  local_98 = (uint)*pcw16;
+  uVar1 = exc->typ;
   if (uVar1 == 1) {
 LAB_00c2b1cf:
     local_94 = 8;
@@ -33,30 +33,29 @@ LAB_00c2b1cf:
   else {
     if (uVar1 == 5) goto LAB_00c2b1cf;
     if (uVar1 == 7) {
-      param_2->typ = 1;
+      exc->typ = 1;
       goto LAB_00c2b239;
     }
     if (uVar1 != 8) goto LAB_00c2b239;
     local_94 = 0x10;
   }
-  iVar2 = _handle_exc(local_94,(double *)&param_2->retval,local_98);
+  iVar2 = _handle_exc(local_94,(double *)&exc->retval,local_98);
   if (iVar2 == 0) {
-    if (((param_1 == 0x10) || (param_1 == 0x16)) || (param_1 == 0x1d)) {
-      local_90.Operand2.Value.Fp64Value = (double)param_2->arg2;
+    if (((opcode == 0x10) || (opcode == 0x16)) || (opcode == 0x1d)) {
+      local_90.Operand2.Value.Fp64Value = (double)exc->arg2;
       local_90.Operand2._16_4_ = local_90.Operand2._16_4_ & 0xffffffe3 | 3;
     }
     else {
       local_90.Operand2._16_4_ = local_90.Operand2._16_4_ & 0xfffffffe;
     }
-    _raise_exc(&local_90,&local_98,local_94,param_1,(double *)&param_2->arg1,
-               (double *)&param_2->retval);
+    _raise_exc(&local_90,&local_98,local_94,opcode,(double *)&exc->arg1,(double *)&exc->retval);
   }
 LAB_00c2b239:
   _ctrlfp(local_98,0xffff);
-  if (((param_2->typ != 8) && (_matherr_flag == 0)) && (iVar2 = _matherr(param_2), iVar2 != 0)) {
+  if (((exc->typ != 8) && (_matherr_flag == 0)) && (iVar2 = _matherr(exc), iVar2 != 0)) {
     return;
   }
-  _set_errno_from_matherr(param_2->typ);
+  _set_errno_from_matherr(exc->typ);
   return;
 }
 

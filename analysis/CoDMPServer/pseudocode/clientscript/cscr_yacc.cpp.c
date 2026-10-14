@@ -4,20 +4,20 @@
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void __cdecl TextValue(char *param_1,int param_2)
+void __cdecl TextValue(char *str,int len)
 
 {
-  yylval.val.stringValue = SL_GetStringOfSize((scriptInstance_t)_gInst,param_1,0,param_2 + 1,0xe);
+  yylval.val.stringValue = SL_GetStringOfSize((scriptInstance_t)_gInst,str,0,len + 1,0xe);
   return;
 }
 
 
 // 008E5990  HashValue  (clientscript/scr_lex.h:9)
 
-int __cdecl HashValue(char *param_1,int param_2)
+int __cdecl HashValue(char *str,int len)
 
 {
-  yylval.val.intValue = Com_HashString(param_1,param_2);
+  yylval.val.intValue = Com_HashString(str,len);
   return yylval.val.intValue;
 }
 
@@ -28,48 +28,47 @@ int __cdecl HashValue(char *param_1,int param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl StringValue(char *param_1,int param_2)
+int __cdecl StringValue(char *str,int len)
 
 {
   char cVar1;
   int iVar2;
-  char local_200c [8192];
+  char temp [8192];
   uint local_c;
-  char *local_8;
+  char *to;
   
-  local_8 = (char *)0x8e59cd;
+  to = (char *)0x8e59cd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 < 0x2000) {
-    local_8 = local_200c;
-    while (param_2 != 0) {
-      if (*param_1 == '\\') {
-        if (param_2 == 1) break;
-        cVar1 = param_1[1];
+  if (len < 0x2000) {
+    to = temp;
+    while (len != 0) {
+      if (*str == '\\') {
+        if (len == 1) break;
+        cVar1 = str[1];
         if (cVar1 == 'n') {
-          *local_8 = '\n';
+          *to = '\n';
         }
         else if (cVar1 == 'r') {
-          *local_8 = '\r';
+          *to = '\r';
         }
         else if (cVar1 == 't') {
-          *local_8 = '\t';
+          *to = '\t';
         }
         else {
-          *local_8 = param_1[1];
+          *to = str[1];
         }
-        param_2 = param_2 + -2;
-        param_1 = param_1 + 2;
+        len = len + -2;
+        str = str + 2;
       }
       else {
-        param_2 = param_2 + -1;
-        *local_8 = *param_1;
-        param_1 = param_1 + 1;
+        len = len + -1;
+        *to = *str;
+        str = str + 1;
       }
-      local_8 = local_8 + 1;
+      to = to + 1;
     }
-    *local_8 = '\0';
-    yylval.val.stringValue =
-         SL_GetString_((scriptInstance_t)_gInst,local_200c,(uint)g_parse_user,0xe);
+    *to = '\0';
+    yylval.val.stringValue = SL_GetString_((scriptInstance_t)_gInst,temp,(uint)g_parse_user,0xe);
     iVar2 = 1;
   }
   else {
@@ -82,10 +81,10 @@ int __cdecl StringValue(char *param_1,int param_2)
 
 // 008E5B30  IntegerValue  (clientscript/scr_lex.h:60)
 
-void __cdecl IntegerValue(char *param_1)
+void __cdecl IntegerValue(char *str)
 
 {
-  sscanf(param_1,"%d");
+  sscanf(str,"%d");
   return;
 }
 
@@ -94,22 +93,22 @@ void __cdecl IntegerValue(char *param_1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-uint __cdecl LowerCase(uint param_1)
+uint __cdecl LowerCase(uint stringValue)
 
 {
   uint uVar1;
   
-  uVar1 = SL_ConvertToLowercase((scriptInstance_t)_gInst,param_1,(uint)g_parse_user,0xe);
+  uVar1 = SL_ConvertToLowercase((scriptInstance_t)_gInst,stringValue,(uint)g_parse_user,0xe);
   return uVar1;
 }
 
 
 // 008E5B50  FloatValue  (clientscript/scr_lex.h:64)
 
-void __cdecl FloatValue(char *param_1)
+void __cdecl FloatValue(char *str)
 
 {
-  sscanf(param_1,"%f");
+  sscanf(str,"%f");
   return;
 }
 
@@ -125,21 +124,21 @@ int __cdecl CL_LocalClient_GetActiveCount(void)
 
 // 008E3E90  __yy_memcpy  (ddl/ddl_api.cpp:210)
 
-void __cdecl __yy_memcpy(char *param_1,char *param_2,uint param_3)
+void __cdecl __yy_memcpy(char *to,char *from,uint count)
 
 {
-  char *local_10;
-  char *local_c;
-  uint local_8;
+  char *t;
+  char *f;
+  int i;
   
-  local_10 = param_1;
-  local_c = param_2;
-  local_8 = param_3;
-  while (0 < (int)local_8) {
-    *local_10 = *local_c;
-    local_10 = local_10 + 1;
-    local_c = local_c + 1;
-    local_8 = local_8 - 1;
+  t = to;
+  f = from;
+  i = count;
+  while (0 < i) {
+    *t = *f;
+    t = t + 1;
+    f = f + 1;
+    i = i + -1;
   }
   return;
 }
@@ -152,14 +151,15 @@ void __cdecl __yy_memcpy(char *param_1,char *param_2,uint param_3)
 /* WARNING (jumptable): Unable to track spacebase fully for stack */
 /* WARNING: Unable to track spacebase fully for stack */
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl yyparse(void)
 
 {
-  sval_u *psVar1;
+  stype_t *psVar1;
   uint uVar2;
   int iVar3;
-  scriptInstance_t sVar4;
+  scriptInstance_t inst;
   sval_u local_cec;
   int local_ce8;
   undefined1 *local_ce4;
@@ -468,121 +468,121 @@ int __cdecl yyparse(void)
   sval_u local_828;
   sval_u local_824;
   sval_u local_820;
-  int local_81c;
-  sval_u *local_818;
-  short *local_814;
-  int local_810;
-  int local_80c;
-  int local_808;
-  int local_804;
-  undefined4 local_800;
-  short local_7fc [202];
+  int size;
+  stype_t *yyvs1;
+  short *yyss1;
+  int yyerrstatus;
+  int yyfree_stacks;
+  int yyn;
+  int yystate;
+  short *yyssp;
+  short yyssa [202];
   uint local_668;
-  sval_u *local_664;
-  int local_660;
-  short *local_65c;
-  sval_u local_658;
-  sval_u local_654;
-  int local_650;
-  sval_u local_64c [400];
-  sval_u *local_c;
-  int local_8;
+  stype_t *yyvs;
+  int yychar1;
+  short *yyss;
+  sval_u yyval;
+  uint local_654;
+  int yylen;
+  stype_t yyvsa [200];
+  stype_t *yyvsp;
+  int yystacksize;
   
   local_668 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_660 = 0;
-  local_65c = local_7fc;
-  local_664 = local_64c;
-  local_8 = 200;
-  local_80c = 0;
-  local_804 = 0;
-  local_810 = 0;
+  yychar1 = 0;
+  yyss = yyssa;
+  yyvs = yyvsa;
+  yystacksize = 200;
+  yyfree_stacks = 0;
+  yystate = 0;
+  yyerrstatus = 0;
   yynerrs = 0;
-  local_654.stringValue = 0;
+  local_654 = 0;
   yychar = -2;
-  local_800 = (short *)((int)&local_800 + 2);
-  local_c = local_64c;
+  yyssp = (short *)((int)&yyssp + 2);
+  yyvsp = yyvsa;
 LAB_008e0753:
   do {
-    local_800 = local_800 + 1;
-    *local_800 = (short)local_804;
-    if (local_65c + local_8 + -1 <= local_800) {
-      local_818 = local_664;
-      local_814 = local_65c;
-      local_81c = ((int)local_800 - (int)local_65c >> 1) + 1;
-      if (9999 < local_8) {
+    yyssp = yyssp + 1;
+    *yyssp = (short)yystate;
+    if (yyss + yystacksize + -1 <= yyssp) {
+      yyvs1 = yyvs;
+      yyss1 = yyss;
+      size = ((int)yyssp - (int)yyss >> 1) + 1;
+      if (9999 < yystacksize) {
         yyerror("parser stack overflow");
-        if (local_80c != 0) {
-          free(local_65c);
-          free(local_664);
+        if (yyfree_stacks != 0) {
+          free(yyss);
+          free(yyvs);
         }
         return 2;
       }
-      local_8 = local_8 << 1;
-      if (10000 < local_8) {
-        local_8 = 10000;
+      yystacksize = yystacksize << 1;
+      if (10000 < yystacksize) {
+        yystacksize = 10000;
       }
-      iVar3 = local_8 * -2;
+      iVar3 = yystacksize * -2;
       local_ce0 = (undefined1 *)((int)&local_cec + iVar3);
-      local_65c = (short *)((int)&local_cec + iVar3);
-      *(int *)(&stack0xfffff310 + iVar3) = local_81c * 2;
-      *(short **)(&stack0xfffff30c + iVar3) = local_814;
-      *(short **)(&stack0xfffff308 + iVar3) = local_65c;
+      yyss = (short *)((int)&local_cec + iVar3);
+      *(int *)(&stack0xfffff310 + iVar3) = size * 2;
+      *(short **)(&stack0xfffff30c + iVar3) = yyss1;
+      *(short **)(&stack0xfffff308 + iVar3) = yyss;
       *(undefined4 *)(&stack0xfffff304 + iVar3) = 0x8e0851;
       __yy_memcpy(*(char **)(&stack0xfffff308 + iVar3),*(char **)(&stack0xfffff30c + iVar3),
                   *(uint *)(&stack0xfffff310 + iVar3));
       *(undefined4 *)(&stack0xfffff310 + iVar3) = 0x8e085f;
       local_ce4 = (undefined1 *)&local_cec;
-      local_664 = &local_cec;
-      __yy_memcpy((char *)&local_cec.intValue,(char *)&local_818->intValue,local_81c << 3);
-      local_800 = local_65c + local_81c + -1;
-      local_c = local_664 + local_81c * 2 + -2;
-      if (local_65c + local_8 + -1 <= local_800) goto LAB_008e3bf4;
+      yyvs = (stype_t *)&local_cec;
+      __yy_memcpy((char *)&local_cec.intValue,(char *)yyvs1,size << 3);
+      yyssp = yyss + size + -1;
+      yyvsp = yyvs + size + -1;
+      if (yyss + yystacksize + -1 <= yyssp) goto LAB_008e3bf4;
     }
-    local_808 = (int)yypact[local_804];
-    if (local_808 == -0x8000) {
+    yyn = (int)yypact[yystate];
+    if (yyn == -0x8000) {
 LAB_008e0a7b:
-      local_808 = (int)yydefact[local_804];
-      if (local_808 == 0) {
-        local_808 = 0;
+      yyn = (int)yydefact[yystate];
+      if (yyn == 0) {
+        yyn = 0;
 LAB_008e3a4d:
-        if (local_810 == 0) {
+        if (yyerrstatus == 0) {
           yynerrs = yynerrs + 1;
           yyerror("parse error");
         }
-        if (local_810 == 3) {
+        if (yyerrstatus == 3) {
           if (yychar == 0) {
 LAB_008e3bf4:
-            if (local_80c != 0) {
-              free(local_65c);
-              free(local_664);
+            if (yyfree_stacks != 0) {
+              free(yyss);
+              free(yyvs);
             }
             return 1;
           }
           yychar = -2;
         }
-        local_810 = 3;
+        yyerrstatus = 3;
         do {
-          psVar1 = local_c;
-          if (yypact[local_804] == -0x8000) {
-            local_808 = -0x8000;
+          psVar1 = yyvsp;
+          if (yypact[yystate] == -0x8000) {
+            yyn = -0x8000;
           }
           else {
-            local_808 = yypact[local_804] + 1;
-            if (((-1 < local_808) && (local_808 < 0x59c)) && (yycheck[local_808] == 1)) {
-              local_808 = (int)yytable[local_808];
-              if (local_808 < 0) {
-                if (local_808 != -0x8000) {
-                  local_808 = -local_808;
+            yyn = yypact[yystate] + 1;
+            if (((-1 < yyn) && (yyn < 0x59c)) && (yycheck[yyn] == 1)) {
+              yyn = (int)yytable[yyn];
+              if (yyn < 0) {
+                if (yyn != -0x8000) {
+                  yyn = -yyn;
                   break;
                 }
               }
-              else if (local_808 != 0) goto LAB_008e3b8b;
+              else if (yyn != 0) goto LAB_008e3b8b;
             }
           }
-          if (local_800 == local_65c) goto LAB_008e3bf4;
-          local_c = local_c + -2;
-          local_800 = local_800 + -1;
-          local_804 = (int)*local_800;
+          if (yyssp == yyss) goto LAB_008e3bf4;
+          yyvsp = yyvsp + -1;
+          yyssp = yyssp + -1;
+          yystate = (int)*yyssp;
         } while( true );
       }
     }
@@ -590,9 +590,9 @@ LAB_008e3bf4:
       if (yychar == -2) {
         yychar = yylex();
       }
-      psVar1 = local_c;
+      psVar1 = yyvsp;
       if (yychar < 1) {
-        local_660 = 0;
+        yychar1 = 0;
         yychar = 0;
       }
       else {
@@ -602,822 +602,827 @@ LAB_008e3bf4:
         else {
           local_ce8 = 0x78;
         }
-        local_660 = local_ce8;
+        yychar1 = local_ce8;
       }
-      local_808 = local_808 + local_660;
-      if (((local_808 < 0) || (0x59b < local_808)) || (yycheck[local_808] != local_660))
-      goto LAB_008e0a7b;
-      local_808 = (int)yytable[local_808];
-      if (-1 < local_808) {
-        if (local_808 == 0) goto LAB_008e3a4d;
-        if (local_808 == 0x10b) {
+      iVar3 = yyn + yychar1;
+      if (((iVar3 < 0) || (0x59b < iVar3)) || (yycheck[iVar3] != yychar1)) goto LAB_008e0a7b;
+      yyn = (int)yytable[iVar3];
+      if (-1 < yyn) {
+        if (yyn == 0) goto LAB_008e3a4d;
+        if (yyn == 0x10b) {
 LAB_008e3bc9:
-          if (local_80c != 0) {
-            free(local_65c);
-            free(local_664);
+          if (yyfree_stacks != 0) {
+            free(yyss);
+            free(yyvs);
           }
           return 0;
         }
         if (yychar != 0) {
           yychar = -2;
         }
-        local_c = local_c + 2;
-        *local_c = yylval.val;
-        psVar1[3].stringValue = yylval.pos;
-        if (local_810 != 0) {
-          local_810 = local_810 + -1;
+        yyvsp = yyvsp + 1;
+        yyvsp->val = yylval.val;
+        psVar1[1].pos = yylval.pos;
+        if (yyerrstatus != 0) {
+          yyerrstatus = yyerrstatus + -1;
         }
-        local_804 = local_808;
+        yystate = yyn;
         goto LAB_008e0753;
       }
-      if (local_808 == -0x8000) goto LAB_008e3a4d;
-      local_808 = -local_808;
+      if (yyn == -0x8000) goto LAB_008e3a4d;
+      yyn = -yyn;
     }
-    local_650 = (int)yyr2[local_808];
-    if (0 < local_650) {
-      local_658 = local_c[(1 - local_650) * 2];
-      local_654 = local_c[(1 - local_650) * 2 + 1];
+    yylen = (int)yyr2[yyn];
+    if (0 < yylen) {
+      yyval = yyvsp[1 - yylen].val;
+      local_654 = yyvsp[1 - yylen].pos;
     }
-    local_cec.stringValue = local_808 - 1U;
-    sVar4 = (scriptInstance_t)_gInst;
-    switch(local_808 - 1U) {
+    local_cec.stringValue = yyn - 1U;
+    inst = (scriptInstance_t)_gInst;
+    switch(yyn - 1U) {
     case 0:
-      yaccResult = node2_(sVar4,local_c[-2],*local_c);
+      yaccResult = node2_(inst,yyvsp[-1].val,yyvsp->val);
       local_820 = yaccResult;
       break;
     case 1:
-      yaccResult = node1(sVar4,'C',*local_c);
+      yaccResult = node1(inst,'C',yyvsp->val);
       local_824 = yaccResult;
       break;
     case 2:
-      yaccResult = node1(sVar4,'U',*local_c);
+      yaccResult = node1(inst,'U',yyvsp->val);
       local_828 = yaccResult;
       break;
     case 3:
-      yaccResult = node1(sVar4,'U',*local_c);
+      yaccResult = node1(inst,'U',yyvsp->val);
       local_82c = yaccResult;
       break;
     case 4:
-      local_834 = node_pos(local_c[1].stringValue);
-      local_830 = node2((scriptInstance_t)_gInst,'\b',*local_c,local_834);
-      local_658 = local_830;
+      local_834 = node_pos(yyvsp->pos);
+      local_830 = node2((scriptInstance_t)_gInst,'\b',yyvsp->val,local_834);
+      yyval = local_830;
       break;
     case 5:
-      local_83c = node_pos(local_c[-1].stringValue);
-      local_840 = node_pos(local_c[1].stringValue);
-      local_844 = node_pos(local_c[-3].stringValue);
-      local_838 = node5((scriptInstance_t)_gInst,'1',local_c[-4],*local_c,local_844,local_840,
+      local_83c = node_pos(yyvsp[-1].pos);
+      local_840 = node_pos(yyvsp->pos);
+      local_844 = node_pos(yyvsp[-2].pos);
+      local_838 = node5((scriptInstance_t)_gInst,'1',yyvsp[-2].val,yyvsp->val,local_844,local_840,
                         local_83c);
-      local_658 = local_838;
-      local_654 = local_c[-1];
+      yyval = local_838;
+      local_654 = yyvsp[-1].pos;
       break;
     case 6:
-      local_84c = node_pos(local_c[-1].stringValue);
-      local_850 = node_pos(local_c[1].stringValue);
-      local_854 = node_pos(local_c[-3].stringValue);
-      local_848 = node5((scriptInstance_t)_gInst,'2',local_c[-4],*local_c,local_854,local_850,
+      local_84c = node_pos(yyvsp[-1].pos);
+      local_850 = node_pos(yyvsp->pos);
+      local_854 = node_pos(yyvsp[-2].pos);
+      local_848 = node5((scriptInstance_t)_gInst,'2',yyvsp[-2].val,yyvsp->val,local_854,local_850,
                         local_84c);
-      local_658 = local_848;
-      local_654 = local_c[-1];
+      yyval = local_848;
+      local_654 = yyvsp[-1].pos;
       break;
     case 7:
-      local_85c = node_pos(local_c[-1].stringValue);
+      local_85c = node_pos(yyvsp[-1].pos);
       local_860 = node1_((scriptInstance_t)_gInst,0x66);
-      local_858 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_860,local_85c);
-      local_658 = local_858;
-      local_654 = local_c[-1];
+      local_858 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_860,local_85c);
+      yyval = local_858;
+      local_654 = yyvsp[-1].pos;
       break;
     case 8:
-      local_868 = node_pos(local_c[-1].stringValue);
+      local_868 = node_pos(yyvsp[-1].pos);
       local_86c = node1_((scriptInstance_t)_gInst,0x67);
-      local_864 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_86c,local_868);
-      local_658 = local_864;
-      local_654 = local_c[-1];
+      local_864 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_86c,local_868);
+      yyval = local_864;
+      local_654 = yyvsp[-1].pos;
       break;
     case 9:
-      local_874 = node_pos(local_c[-1].stringValue);
+      local_874 = node_pos(yyvsp[-1].pos);
       local_878 = node1_((scriptInstance_t)_gInst,0x68);
-      local_870 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_878,local_874);
-      local_658 = local_870;
-      local_654 = local_c[-1];
+      local_870 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_878,local_874);
+      yyval = local_870;
+      local_654 = yyvsp[-1].pos;
       break;
     case 10:
-      local_880 = node_pos(local_c[-1].stringValue);
+      local_880 = node_pos(yyvsp[-1].pos);
       local_884 = node1_((scriptInstance_t)_gInst,0x69);
-      local_87c = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_884,local_880);
-      local_658 = local_87c;
-      local_654 = local_c[-1];
+      local_87c = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_884,local_880);
+      yyval = local_87c;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0xb:
-      local_88c = node_pos(local_c[-1].stringValue);
+      local_88c = node_pos(yyvsp[-1].pos);
       local_890 = node1_((scriptInstance_t)_gInst,0x6a);
-      local_888 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_890,local_88c);
-      local_658 = local_888;
-      local_654 = local_c[-1];
+      local_888 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_890,local_88c);
+      yyval = local_888;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0xc:
-      local_898 = node_pos(local_c[-1].stringValue);
+      local_898 = node_pos(yyvsp[-1].pos);
       local_89c = node1_((scriptInstance_t)_gInst,0x6b);
-      local_894 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_89c,local_898);
-      local_658 = local_894;
-      local_654 = local_c[-1];
+      local_894 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_89c,local_898);
+      yyval = local_894;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0xd:
-      local_8a4 = node_pos(local_c[-1].stringValue);
+      local_8a4 = node_pos(yyvsp[-1].pos);
       local_8a8 = node1_((scriptInstance_t)_gInst,0x6c);
-      local_8a0 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8a8,local_8a4);
-      local_658 = local_8a0;
-      local_654 = local_c[-1];
+      local_8a0 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8a8,local_8a4);
+      yyval = local_8a0;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0xe:
-      local_8b0 = node_pos(local_c[-1].stringValue);
+      local_8b0 = node_pos(yyvsp[-1].pos);
       local_8b4 = node1_((scriptInstance_t)_gInst,0x6d);
-      local_8ac = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8b4,local_8b0);
-      local_658 = local_8ac;
-      local_654 = local_c[-1];
+      local_8ac = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8b4,local_8b0);
+      yyval = local_8ac;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0xf:
-      local_8bc = node_pos(local_c[-1].stringValue);
+      local_8bc = node_pos(yyvsp[-1].pos);
       local_8c0 = node1_((scriptInstance_t)_gInst,0x6e);
-      local_8b8 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8c0,local_8bc);
-      local_658 = local_8b8;
-      local_654 = local_c[-1];
+      local_8b8 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8c0,local_8bc);
+      yyval = local_8b8;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x10:
-      local_8c8 = node_pos(local_c[-1].stringValue);
+      local_8c8 = node_pos(yyvsp[-1].pos);
       local_8cc = node1_((scriptInstance_t)_gInst,0x6f);
-      local_8c4 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8cc,local_8c8);
-      local_658 = local_8c4;
-      local_654 = local_c[-1];
+      local_8c4 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8cc,local_8c8);
+      yyval = local_8c4;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x11:
-      local_8d4 = node_pos(local_c[-1].stringValue);
+      local_8d4 = node_pos(yyvsp[-1].pos);
       local_8d8 = node1_((scriptInstance_t)_gInst,0x70);
-      local_8d0 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8d8,local_8d4);
-      local_658 = local_8d0;
-      local_654 = local_c[-1];
+      local_8d0 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8d8,local_8d4);
+      yyval = local_8d0;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x12:
-      local_8e0 = node_pos(local_c[-1].stringValue);
+      local_8e0 = node_pos(yyvsp[-1].pos);
       local_8e4 = node1_((scriptInstance_t)_gInst,0x71);
-      local_8dc = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8e4,local_8e0);
-      local_658 = local_8dc;
-      local_654 = local_c[-1];
+      local_8dc = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8e4,local_8e0);
+      yyval = local_8dc;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x13:
-      local_8ec = node_pos(local_c[-1].stringValue);
+      local_8ec = node_pos(yyvsp[-1].pos);
       local_8f0 = node1_((scriptInstance_t)_gInst,0x72);
-      local_8e8 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8f0,local_8ec);
-      local_658 = local_8e8;
-      local_654 = local_c[-1];
+      local_8e8 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8f0,local_8ec);
+      yyval = local_8e8;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x14:
-      local_8f8 = node_pos(local_c[-1].stringValue);
+      local_8f8 = node_pos(yyvsp[-1].pos);
       local_8fc = node1_((scriptInstance_t)_gInst,0x73);
-      local_8f4 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_8fc,local_8f8);
-      local_658 = local_8f4;
-      local_654 = local_c[-1];
+      local_8f4 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_8fc,local_8f8);
+      yyval = local_8f4;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x15:
-      local_904 = node_pos(local_c[-1].stringValue);
+      local_904 = node_pos(yyvsp[-1].pos);
       local_908 = node1_((scriptInstance_t)_gInst,0x74);
-      local_900 = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_908,local_904);
-      local_658 = local_900;
-      local_654 = local_c[-1];
+      local_900 = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_908,local_904);
+      yyval = local_900;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x16:
-      local_910 = node_pos(local_c[-1].stringValue);
+      local_910 = node_pos(yyvsp[-1].pos);
       local_914 = node1_((scriptInstance_t)_gInst,0x75);
-      local_90c = node4((scriptInstance_t)_gInst,'3',local_c[-4],*local_c,local_914,local_910);
-      local_658 = local_90c;
-      local_654 = local_c[-1];
+      local_90c = node4((scriptInstance_t)_gInst,'3',yyvsp[-2].val,yyvsp->val,local_914,local_910);
+      yyval = local_90c;
+      local_654 = yyvsp[-1].pos;
       break;
     case 0x17:
-      local_91c = node_pos(local_c[1].stringValue);
-      local_918 = node2((scriptInstance_t)_gInst,'4',*local_c,local_91c);
-      local_658 = local_918;
+      local_91c = node_pos(yyvsp->pos);
+      local_918 = node2((scriptInstance_t)_gInst,'4',yyvsp->val,local_91c);
+      yyval = local_918;
       break;
     case 0x18:
-      local_924 = node_pos(local_c[1].stringValue);
-      local_920 = node2((scriptInstance_t)_gInst,'5',*local_c,local_924);
-      local_658 = local_920;
+      local_924 = node_pos(yyvsp->pos);
+      local_920 = node2((scriptInstance_t)_gInst,'5',yyvsp->val,local_924);
+      yyval = local_920;
       break;
     case 0x19:
-      local_928 = node1(sVar4,'C',*local_c);
-      local_658 = local_928;
+      local_928 = node1(inst,'C',yyvsp->val);
+      yyval = local_928;
       break;
     case 0x1a:
-      local_92c = node0(sVar4,'\0');
-      local_658 = local_92c;
+      local_92c = node0(inst,'\0');
+      yyval = local_92c;
       break;
     case 0x1b:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_658.stringValue = *(uint *)local_c;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      yyval = yyvsp->val;
       break;
     case 0x1c:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_658.stringValue = *(uint *)local_c;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      yyval = yyvsp->val;
       break;
     case 0x1d:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_934 = node_pos(local_c[-3].stringValue);
-      local_930 = node3((scriptInstance_t)_gInst,'\x17',local_c[-4],*(uint *)local_c,local_934);
-      local_658 = local_930;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_934 = node_pos(yyvsp[-2].pos);
+      local_930 = node3((scriptInstance_t)_gInst,'\x17',yyvsp[-2].val,yyvsp->val,local_934);
+      yyval = local_930;
       gScrCompilePub[_gInst].far_function_count = gScrCompilePub[_gInst].far_function_count + 1;
       break;
     case 0x1e:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_93c = node_pos(local_c[1].stringValue);
-      local_938 = node2((scriptInstance_t)_gInst,'\x16',*(uint *)local_c,local_93c);
-      local_658 = local_938;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_93c = node_pos(yyvsp->pos);
+      local_938 = node2((scriptInstance_t)_gInst,'\x16',yyvsp->val,local_93c);
+      yyval = local_938;
       break;
     case 0x1f:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_944 = node_pos(local_c[-3].stringValue);
-      local_940 = node3((scriptInstance_t)_gInst,'\x17',local_c[-4],*(uint *)local_c,local_944);
-      local_658 = local_940;
-      local_654 = local_c[-1];
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_944 = node_pos(yyvsp[-2].pos);
+      local_940 = node3((scriptInstance_t)_gInst,'\x17',yyvsp[-2].val,yyvsp->val,local_944);
+      yyval = local_940;
+      local_654 = yyvsp[-1].pos;
       gScrCompilePub[_gInst].far_function_count = gScrCompilePub[_gInst].far_function_count + 1;
       break;
     case 0x20:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_94c = node_pos(local_c[-1].stringValue);
-      local_948 = node2((scriptInstance_t)_gInst,'\x16',*(uint *)local_c,local_94c);
-      local_658 = local_948;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_94c = node_pos(yyvsp[-1].pos);
+      local_948 = node2((scriptInstance_t)_gInst,'\x16',yyvsp->val,local_94c);
+      yyval = local_948;
       break;
     case 0x21:
-      local_954 = node_pos(local_c[1].stringValue);
-      local_950 = node2((scriptInstance_t)_gInst,'\x14',*local_c,local_954);
-      local_658 = local_950;
+      local_954 = node_pos(yyvsp->pos);
+      local_950 = node2((scriptInstance_t)_gInst,'\x14',yyvsp->val,local_954);
+      yyval = local_950;
       break;
     case 0x22:
-      local_95c = node_pos(local_c[-3].stringValue);
-      local_958 = node2((scriptInstance_t)_gInst,'\x18',local_c[-4],local_95c);
-      local_658 = local_958;
+      local_95c = node_pos(yyvsp[-2].pos);
+      local_958 = node2((scriptInstance_t)_gInst,'\x18',yyvsp[-2].val,local_95c);
+      yyval = local_958;
       break;
     case 0x23:
-      local_964 = node_pos(local_c[1].stringValue);
-      local_960 = node2((scriptInstance_t)_gInst,'\x1c',*local_c,local_964);
-      local_658 = local_960;
+      local_964 = node_pos(yyvsp->pos);
+      local_960 = node2((scriptInstance_t)_gInst,'\x1c',yyvsp->val,local_964);
+      yyval = local_960;
       break;
     case 0x24:
-      local_96c = node_pos(local_c[1].stringValue);
-      local_970 = node_pos(local_c[-1].stringValue);
-      local_968 = node3((scriptInstance_t)_gInst,' ',*local_c,local_970,local_96c);
-      local_658 = local_968;
-      local_654 = local_c[1];
+      local_96c = node_pos(yyvsp->pos);
+      local_970 = node_pos(yyvsp[-1].pos);
+      local_968 = node3((scriptInstance_t)_gInst,' ',yyvsp->val,local_970,local_96c);
+      yyval = local_968;
+      local_654 = yyvsp->pos;
       break;
     case 0x25:
-      local_978 = node_pos(local_c[-3].stringValue);
-      local_974 = node3((scriptInstance_t)_gInst,'\x19',local_c[-6],local_c[-2],local_978);
-      local_658 = local_974;
-      local_654 = local_c[-3];
+      local_978 = node_pos(yyvsp[-2].pos);
+      local_974 = node3((scriptInstance_t)_gInst,'\x19',yyvsp[-3].val,yyvsp[-1].val,local_978);
+      yyval = local_974;
+      local_654 = yyvsp[-2].pos;
       break;
     case 0x26:
-      local_980 = node_pos(local_c[-3].stringValue);
-      local_984 = node_pos(local_c[-7].stringValue);
-      local_97c = node5((scriptInstance_t)_gInst,'\x1a',local_c[-8],local_c[-6],local_c[-2],
+      local_980 = node_pos(yyvsp[-2].pos);
+      local_984 = node_pos(yyvsp[-4].pos);
+      local_97c = node5((scriptInstance_t)_gInst,'\x1a',yyvsp[-4].val,yyvsp[-3].val,yyvsp[-1].val,
                         local_984,local_980);
-      local_658 = local_97c;
-      local_654 = local_c[-3];
+      yyval = local_97c;
+      local_654 = yyvsp[-2].pos;
       break;
     case 0x27:
-      local_98c = node_pos(local_c[-3].stringValue);
-      local_988 = node2((scriptInstance_t)_gInst,'0',local_c[-2],local_98c);
-      local_658 = local_988;
+      local_98c = node_pos(yyvsp[-2].pos);
+      local_988 = node2((scriptInstance_t)_gInst,'0',yyvsp[-1].val,local_98c);
+      yyval = local_988;
       break;
     case 0x28:
-      local_994 = node_pos(local_c[1].stringValue);
-      local_990 = node2((scriptInstance_t)_gInst,'\t',*local_c,local_994);
-      local_658 = local_990;
+      local_994 = node_pos(yyvsp->pos);
+      local_990 = node2((scriptInstance_t)_gInst,'\t',yyvsp->val,local_994);
+      yyval = local_990;
       break;
     case 0x29:
-      local_99c = node_pos(local_c[1].stringValue);
-      local_998 = node2((scriptInstance_t)_gInst,'\n',*local_c,local_99c);
-      local_658 = local_998;
+      local_99c = node_pos(yyvsp->pos);
+      local_998 = node2((scriptInstance_t)_gInst,'\n',yyvsp->val,local_99c);
+      yyval = local_998;
       break;
     case 0x2a:
-      local_9a4 = node_pos(local_c[-1].stringValue);
-      local_9a0 = node2((scriptInstance_t)_gInst,'\v',*local_c,local_9a4);
-      local_658 = local_9a0;
+      local_9a4 = node_pos(yyvsp[-1].pos);
+      local_9a0 = node2((scriptInstance_t)_gInst,'\v',yyvsp->val,local_9a4);
+      yyval = local_9a0;
       break;
     case 0x2b:
-      local_9ac = node_pos(local_c[-1].stringValue);
-      local_9a8 = node2((scriptInstance_t)_gInst,'\f',*local_c,local_9ac);
-      local_658 = local_9a8;
+      local_9ac = node_pos(yyvsp[-1].pos);
+      local_9a8 = node2((scriptInstance_t)_gInst,'\f',yyvsp->val,local_9ac);
+      yyval = local_9a8;
       break;
     case 0x2c:
-      local_9b4 = node_pos(local_c[1].stringValue);
-      local_9b0 = node2((scriptInstance_t)_gInst,'\r',*local_c,local_9b4);
-      local_658 = local_9b0;
+      local_9b4 = node_pos(yyvsp->pos);
+      local_9b0 = node2((scriptInstance_t)_gInst,'\r',yyvsp->val,local_9b4);
+      yyval = local_9b0;
       break;
     case 0x2d:
-      local_9bc = node_pos(local_c[1].stringValue);
-      local_9b8 = node2((scriptInstance_t)_gInst,'\x0e',*local_c,local_9bc);
-      local_658 = local_9b8;
+      local_9bc = node_pos(yyvsp->pos);
+      local_9b8 = node2((scriptInstance_t)_gInst,'\x0e',yyvsp->val,local_9bc);
+      yyval = local_9b8;
       break;
     case 0x2e:
-      local_9c4 = node_pos(local_c[1].stringValue);
-      local_9c0 = node2((scriptInstance_t)_gInst,'\t',*local_c,local_9c4);
-      local_658 = local_9c0;
+      local_9c4 = node_pos(yyvsp->pos);
+      local_9c0 = node2((scriptInstance_t)_gInst,'\t',yyvsp->val,local_9c4);
+      yyval = local_9c0;
       break;
     case 0x2f:
-      local_9c8 = node1(sVar4,'\x15',*local_c);
-      local_658 = local_9c8;
+      local_9c8 = node1(inst,'\x15',yyvsp->val);
+      yyval = local_9c8;
       break;
     case 0x30:
-      local_9d0 = node_pos(local_c[1].stringValue);
-      local_9cc = node2((scriptInstance_t)_gInst,'\x13',*local_c,local_9d0);
-      local_658 = local_9cc;
+      local_9d0 = node_pos(yyvsp->pos);
+      local_9cc = node2((scriptInstance_t)_gInst,'\x13',yyvsp->val,local_9d0);
+      yyval = local_9cc;
       break;
     case 0x31:
-      local_9d8 = node_pos(local_c[1].stringValue);
+      local_9d8 = node_pos(yyvsp->pos);
       local_9d4 = node1((scriptInstance_t)_gInst,'!',local_9d8);
-      local_658 = local_9d4;
+      yyval = local_9d4;
       break;
     case 0x32:
-      local_9e0 = node_pos(local_c[1].stringValue);
+      local_9e0 = node_pos(yyvsp->pos);
       local_9dc = node1((scriptInstance_t)_gInst,'\"',local_9e0);
-      local_658 = local_9dc;
+      yyval = local_9dc;
       break;
     case 0x33:
-      local_9e8 = node_pos(local_c[1].stringValue);
+      local_9e8 = node_pos(yyvsp->pos);
       local_9e4 = node1((scriptInstance_t)_gInst,'$',local_9e8);
-      local_658 = local_9e4;
+      yyval = local_9e4;
       break;
     case 0x34:
-      local_9f0 = node_pos(local_c[1].stringValue);
+      local_9f0 = node_pos(yyvsp->pos);
       local_9ec = node1((scriptInstance_t)_gInst,'%',local_9f0);
-      local_658 = local_9ec;
+      yyval = local_9ec;
       break;
     case 0x35:
-      local_9f8 = node_pos(local_c[1].stringValue);
+      local_9f8 = node_pos(yyvsp->pos);
       local_9f4 = node1((scriptInstance_t)_gInst,'&',local_9f8);
-      local_658 = local_9f4;
+      yyval = local_9f4;
       break;
     case 0x36:
-      local_a00 = node_pos(local_c[-1].stringValue);
-      local_9fc = node2((scriptInstance_t)_gInst,'6',local_c[-2],local_a00);
-      local_658 = local_9fc;
-      local_654 = local_c[1];
+      local_a00 = node_pos(yyvsp[-1].pos);
+      local_9fc = node2((scriptInstance_t)_gInst,'6',yyvsp[-1].val,local_a00);
+      yyval = local_9fc;
+      local_654 = yyvsp->pos;
       break;
     case 0x37:
-      local_a08 = node_pos(local_c[1].stringValue);
-      local_a04 = node2((scriptInstance_t)_gInst,'\x14',*local_c,local_a08);
-      local_658 = local_a04;
+      local_a08 = node_pos(yyvsp->pos);
+      local_a04 = node2((scriptInstance_t)_gInst,'\x14',yyvsp->val,local_a08);
+      yyval = local_a04;
       break;
     case 0x38:
-      local_a10 = node_pos(local_c[-1].stringValue);
+      local_a10 = node_pos(yyvsp[-1].pos);
       local_a0c = node1((scriptInstance_t)_gInst,'D',local_a10);
-      local_658 = local_a0c;
+      yyval = local_a0c;
       break;
     case 0x39:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_a18 = node_pos(local_c[1].stringValue);
-      local_a14 = node2((scriptInstance_t)_gInst,'E',*(uint *)local_c,local_a18);
-      local_658 = local_a14;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_a18 = node_pos(yyvsp->pos);
+      local_a14 = node2((scriptInstance_t)_gInst,'E',yyvsp->val,local_a18);
+      yyval = local_a14;
       break;
     case 0x3a:
-      local_a20 = node_pos(local_c[1].stringValue);
+      local_a20 = node_pos(yyvsp->pos);
       local_a1c = node1((scriptInstance_t)_gInst,'J',local_a20);
-      local_658 = local_a1c;
+      yyval = local_a1c;
       break;
     case 0x3b:
-      local_a28 = node_pos(local_c[1].stringValue);
+      local_a28 = node_pos(yyvsp->pos);
       local_a24 = node1((scriptInstance_t)_gInst,'K',local_a28);
-      local_658 = local_a24;
+      yyval = local_a24;
       break;
     case 0x3c:
-      local_a30 = node_pos(local_c[1].stringValue);
+      local_a30 = node_pos(yyvsp->pos);
       local_a2c = node1((scriptInstance_t)_gInst,'L',local_a30);
-      local_658 = local_a2c;
+      yyval = local_a2c;
       break;
     case 0x3d:
-      local_a38 = node_pos(local_c[-5].stringValue);
-      local_a34 = node3((scriptInstance_t)_gInst,'M',local_c[-8],local_c[-2],local_a38);
-      local_658 = local_a34;
+      local_a38 = node_pos(yyvsp[-3].pos);
+      local_a34 = node3((scriptInstance_t)_gInst,'M',yyvsp[-4].val,yyvsp[-1].val,local_a38);
+      yyval = local_a34;
       break;
     case 0x3e:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_a40 = node_pos(local_c[-3].stringValue);
-      local_a3c = node3((scriptInstance_t)_gInst,'\x11',local_c[-4],*(uint *)local_c,local_a40);
-      local_658 = local_a3c;
-      local_654 = local_c[1];
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_a40 = node_pos(yyvsp[-2].pos);
+      local_a3c = node3((scriptInstance_t)_gInst,'\x11',yyvsp[-2].val,yyvsp->val,local_a40);
+      yyval = local_a3c;
+      local_654 = yyvsp->pos;
       break;
     case 0x3f:
-      local_a48 = node_pos(local_c[-1].stringValue);
-      local_a4c = node_pos(local_c[-5].stringValue);
-      local_a44 = node4((scriptInstance_t)_gInst,'\x0f',local_c[-6],local_c[-2],local_a4c,local_a48)
-      ;
-      local_658 = local_a44;
-      local_654 = local_c[-3];
+      local_a48 = node_pos(yyvsp[-1].pos);
+      local_a4c = node_pos(yyvsp[-3].pos);
+      local_a44 = node4((scriptInstance_t)_gInst,'\x0f',yyvsp[-3].val,yyvsp[-1].val,local_a4c,
+                        local_a48);
+      yyval = local_a44;
+      local_654 = yyvsp[-2].pos;
       break;
     case 0x40:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_a54 = node_pos(local_c[1].stringValue);
-      local_a50 = node2((scriptInstance_t)_gInst,'\x05',*(uint *)local_c,local_a54);
-      local_658 = local_a50;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_a54 = node_pos(yyvsp->pos);
+      local_a50 = node2((scriptInstance_t)_gInst,'\x05',yyvsp->val,local_a54);
+      yyval = local_a50;
       break;
     case 0x41:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_a5c = node_pos(local_c[-1].stringValue);
-      local_a58 = node2((scriptInstance_t)_gInst,'R',*(uint *)local_c,local_a5c);
-      local_658 = local_a58;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_a5c = node_pos(yyvsp[-1].pos);
+      local_a58 = node2((scriptInstance_t)_gInst,'R',yyvsp->val,local_a5c);
+      yyval = local_a58;
       break;
     case 0x42:
-      local_a64 = node_pos(local_c[-3].stringValue);
-      local_a60 = node2((scriptInstance_t)_gInst,'7',local_c[-4],local_a64);
-      local_658 = local_a60;
-      local_654 = local_c[1];
+      local_a64 = node_pos(yyvsp[-2].pos);
+      local_a60 = node2((scriptInstance_t)_gInst,'7',yyvsp[-2].val,local_a64);
+      yyval = local_a60;
+      local_654 = yyvsp->pos;
       break;
     case 0x43:
-      local_a6c = node_pos(local_c[1].stringValue);
-      local_a70 = node_pos(local_c[-1].stringValue);
-      local_a68 = node4((scriptInstance_t)_gInst,'\x02',local_c[-4],*local_c,local_a70,local_a6c);
-      local_658 = local_a68;
+      local_a6c = node_pos(yyvsp->pos);
+      local_a70 = node_pos(yyvsp[-1].pos);
+      local_a68 = node4((scriptInstance_t)_gInst,'\x02',yyvsp[-2].val,yyvsp->val,local_a70,local_a6c
+                       );
+      yyval = local_a68;
       break;
     case 0x44:
-      local_a78 = node_pos(local_c[-1].stringValue);
-      local_a74 = node2((scriptInstance_t)_gInst,'\x1d',*local_c,local_a78);
-      local_658 = local_a74;
+      local_a78 = node_pos(yyvsp[-1].pos);
+      local_a74 = node2((scriptInstance_t)_gInst,'\x1d',yyvsp->val,local_a78);
+      yyval = local_a74;
       break;
     case 0x45:
-      local_a80 = node_pos(local_c[1].stringValue);
+      local_a80 = node_pos(yyvsp->pos);
       local_a7c = node1((scriptInstance_t)_gInst,'\x1e',local_a80);
-      local_658 = local_a7c;
+      yyval = local_a7c;
       break;
     case 0x46:
-      local_a88 = node_pos(local_c[-1].stringValue);
-      local_a8c = node_pos(local_c[1].stringValue);
-      local_a84 = node3((scriptInstance_t)_gInst,'\x1f',*local_c,local_a8c,local_a88);
-      local_658 = local_a84;
+      local_a88 = node_pos(yyvsp[-1].pos);
+      local_a8c = node_pos(yyvsp->pos);
+      local_a84 = node3((scriptInstance_t)_gInst,'\x1f',yyvsp->val,local_a8c,local_a88);
+      yyval = local_a84;
       break;
     case 0x47:
-      local_a94 = node_pos(local_c[-1].stringValue);
-      local_a90 = node2((scriptInstance_t)_gInst,'+',local_c[-2],local_a94);
-      local_658 = local_a90;
+      local_a94 = node_pos(yyvsp[-1].pos);
+      local_a90 = node2((scriptInstance_t)_gInst,'+',yyvsp[-1].val,local_a94);
+      yyval = local_a90;
       break;
     case 0x48:
-      local_a9c = node_pos(local_c[-1].stringValue);
-      local_a98 = node2((scriptInstance_t)_gInst,',',local_c[-2],local_a9c);
-      local_658 = local_a98;
+      local_a9c = node_pos(yyvsp[-1].pos);
+      local_a98 = node2((scriptInstance_t)_gInst,',',yyvsp[-1].val,local_a9c);
+      yyval = local_a98;
       break;
     case 0x49:
-      local_aa4 = node_pos(local_c[-1].stringValue);
+      local_aa4 = node_pos(yyvsp[-1].pos);
       local_aa8 = node1_((scriptInstance_t)_gInst,0x66);
-      local_aa0 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_aa8,local_aa4);
-      local_658 = local_aa0;
+      local_aa0 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_aa8,local_aa4);
+      yyval = local_aa0;
       break;
     case 0x4a:
-      local_ab0 = node_pos(local_c[-1].stringValue);
+      local_ab0 = node_pos(yyvsp[-1].pos);
       local_ab4 = node1_((scriptInstance_t)_gInst,0x67);
-      local_aac = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_ab4,local_ab0);
-      local_658 = local_aac;
+      local_aac = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_ab4,local_ab0);
+      yyval = local_aac;
       break;
     case 0x4b:
-      local_abc = node_pos(local_c[-1].stringValue);
+      local_abc = node_pos(yyvsp[-1].pos);
       local_ac0 = node1_((scriptInstance_t)_gInst,0x68);
-      local_ab8 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_ac0,local_abc);
-      local_658 = local_ab8;
+      local_ab8 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_ac0,local_abc);
+      yyval = local_ab8;
       break;
     case 0x4c:
-      local_ac8 = node_pos(local_c[-1].stringValue);
+      local_ac8 = node_pos(yyvsp[-1].pos);
       local_acc = node1_((scriptInstance_t)_gInst,0x6f);
-      local_ac4 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_acc,local_ac8);
-      local_658 = local_ac4;
+      local_ac4 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_acc,local_ac8);
+      yyval = local_ac4;
       break;
     case 0x4d:
-      local_ad4 = node_pos(local_c[-1].stringValue);
+      local_ad4 = node_pos(yyvsp[-1].pos);
       local_ad8 = node1_((scriptInstance_t)_gInst,0x70);
-      local_ad0 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_ad8,local_ad4);
-      local_658 = local_ad0;
+      local_ad0 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_ad8,local_ad4);
+      yyval = local_ad0;
       break;
     case 0x4e:
-      local_ae0 = node_pos(local_c[-1].stringValue);
+      local_ae0 = node_pos(yyvsp[-1].pos);
       local_ae4 = node1_((scriptInstance_t)_gInst,0x71);
-      local_adc = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_ae4,local_ae0);
-      local_658 = local_adc;
+      local_adc = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_ae4,local_ae0);
+      yyval = local_adc;
       break;
     case 0x4f:
-      local_aec = node_pos(local_c[-1].stringValue);
+      local_aec = node_pos(yyvsp[-1].pos);
       local_af0 = node1_((scriptInstance_t)_gInst,0x72);
-      local_ae8 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_af0,local_aec);
-      local_658 = local_ae8;
+      local_ae8 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_af0,local_aec);
+      yyval = local_ae8;
       break;
     case 0x50:
-      local_af8 = node_pos(local_c[-1].stringValue);
+      local_af8 = node_pos(yyvsp[-1].pos);
       local_afc = node1_((scriptInstance_t)_gInst,0x73);
-      local_af4 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_afc,local_af8);
-      local_658 = local_af4;
+      local_af4 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_afc,local_af8);
+      yyval = local_af4;
       break;
     case 0x51:
-      local_b04 = node_pos(local_c[-1].stringValue);
+      local_b04 = node_pos(yyvsp[-1].pos);
       local_b08 = node1_((scriptInstance_t)_gInst,0x74);
-      local_b00 = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_b08,local_b04);
-      local_658 = local_b00;
+      local_b00 = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_b08,local_b04);
+      yyval = local_b00;
       break;
     case 0x52:
-      local_b10 = node_pos(local_c[-1].stringValue);
+      local_b10 = node_pos(yyvsp[-1].pos);
       local_b14 = node1_((scriptInstance_t)_gInst,0x75);
-      local_b0c = node4((scriptInstance_t)_gInst,'-',local_c[-4],*local_c,local_b14,local_b10);
-      local_658 = local_b0c;
+      local_b0c = node4((scriptInstance_t)_gInst,'-',yyvsp[-2].val,yyvsp->val,local_b14,local_b10);
+      yyval = local_b0c;
       break;
     case 0x53:
-      local_b1c = node_pos(local_c[-5].stringValue);
-      local_b20 = node_pos(local_c[-7].stringValue);
-      local_b18 = node4((scriptInstance_t)_gInst,'9',local_c[-8],local_c[-2],local_b20,local_b1c);
-      local_658 = local_b18;
+      local_b1c = node_pos(yyvsp[-3].pos);
+      local_b20 = node_pos(yyvsp[-4].pos);
+      local_b18 = node4((scriptInstance_t)_gInst,'9',yyvsp[-4].val,yyvsp[-1].val,local_b20,local_b1c
+                       );
+      yyval = local_b18;
       break;
     case 0x54:
-      local_b28 = node_pos(local_c[-5].stringValue);
-      local_b2c = node_pos(local_c[-7].stringValue);
-      local_b24 = node4((scriptInstance_t)_gInst,':',local_c[-8],local_c[-2],local_b2c,local_b28);
-      local_658 = local_b24;
+      local_b28 = node_pos(yyvsp[-3].pos);
+      local_b2c = node_pos(yyvsp[-4].pos);
+      local_b24 = node4((scriptInstance_t)_gInst,':',yyvsp[-4].val,yyvsp[-1].val,local_b2c,local_b28
+                       );
+      yyval = local_b24;
       break;
     case 0x55:
-      local_b34 = node_pos(local_c[1].stringValue);
+      local_b34 = node_pos(yyvsp->pos);
       local_b30 = node1((scriptInstance_t)_gInst,';',local_b34);
-      local_658 = local_b30;
+      yyval = local_b30;
       break;
     case 0x56:
-      local_b3c = node_pos(local_c[-5].stringValue);
-      local_b40 = node_pos(local_c[-7].stringValue);
-      local_b38 = node4((scriptInstance_t)_gInst,'<',local_c[-8],local_c[-2],local_b40,local_b3c);
-      local_658 = local_b38;
+      local_b3c = node_pos(yyvsp[-3].pos);
+      local_b40 = node_pos(yyvsp[-4].pos);
+      local_b38 = node4((scriptInstance_t)_gInst,'<',yyvsp[-4].val,yyvsp[-1].val,local_b40,local_b3c
+                       );
+      yyval = local_b38;
       break;
     case 0x57:
-      local_b48 = node_pos(local_c[-1].stringValue);
-      local_b4c = node_pos(local_c[-7].stringValue);
-      local_b44 = node4((scriptInstance_t)_gInst,'=',local_c[-8],local_c[-2],local_b4c,local_b48);
-      local_658 = local_b44;
+      local_b48 = node_pos(yyvsp[-1].pos);
+      local_b4c = node_pos(yyvsp[-4].pos);
+      local_b44 = node4((scriptInstance_t)_gInst,'=',yyvsp[-4].val,yyvsp[-1].val,local_b4c,local_b48
+                       );
+      yyval = local_b44;
       break;
     case 0x58:
-      local_b54 = node_pos(local_c[1].stringValue);
+      local_b54 = node_pos(yyvsp->pos);
       local_b50 = node1((scriptInstance_t)_gInst,'A',local_b54);
-      local_658 = local_b50;
+      yyval = local_b50;
       break;
     case 0x59:
-      local_b5c = node_pos(local_c[1].stringValue);
+      local_b5c = node_pos(yyvsp->pos);
       local_b58 = node1((scriptInstance_t)_gInst,'B',local_b5c);
-      local_658 = local_b58;
+      yyval = local_b58;
       break;
     case 0x5a:
-      local_b64 = node_pos(local_c[1].stringValue);
+      local_b64 = node_pos(yyvsp->pos);
       local_b60 = node1((scriptInstance_t)_gInst,'N',local_b64);
-      local_658 = local_b60;
+      yyval = local_b60;
       break;
     case 0x5b:
-      local_b6c = node_pos(local_c[-5].stringValue);
-      local_b68 = node2((scriptInstance_t)_gInst,'O',local_c[-2],local_b6c);
-      local_658 = local_b68;
+      local_b6c = node_pos(yyvsp[-3].pos);
+      local_b68 = node2((scriptInstance_t)_gInst,'O',yyvsp[-1].val,local_b6c);
+      yyval = local_b68;
       break;
     case 0x5c:
-      local_b74 = node_pos(local_c[-5].stringValue);
-      local_b70 = node2((scriptInstance_t)_gInst,'P',local_c[-2],local_b74);
-      local_658 = local_b70;
+      local_b74 = node_pos(yyvsp[-3].pos);
+      local_b70 = node2((scriptInstance_t)_gInst,'P',yyvsp[-1].val,local_b74);
+      yyval = local_b70;
       break;
     case 0x5d:
-      local_b78 = node1(sVar4,'\x1b',*local_c);
-      local_658 = local_b78;
+      local_b78 = node1(inst,'\x1b',yyvsp->val);
+      yyval = local_b78;
       break;
     case 0x5f:
-      local_b7c = node0(sVar4,'\0');
-      local_658 = local_b7c;
+      local_b7c = node0(inst,'\0');
+      yyval = local_b7c;
       break;
     case 0x62:
-      local_b84 = node_pos(local_c[1].stringValue);
-      local_b88 = node_pos(local_c[-3].stringValue);
-      local_b80 = node3((scriptInstance_t)_gInst,'.',local_c[-2],local_b88,local_b84);
-      local_658 = local_b80;
+      local_b84 = node_pos(yyvsp->pos);
+      local_b88 = node_pos(yyvsp[-2].pos);
+      local_b80 = node3((scriptInstance_t)_gInst,'.',yyvsp[-1].val,local_b88,local_b84);
+      yyval = local_b80;
       break;
     case 99:
-      local_b90 = node_pos(local_c[-3].stringValue);
-      local_b8c = node4((scriptInstance_t)_gInst,'\'',local_c[-4],*local_c,local_b90,g_dummyVal);
-      local_658 = local_b8c;
+      local_b90 = node_pos(yyvsp[-2].pos);
+      local_b8c = node4((scriptInstance_t)_gInst,'\'',yyvsp[-2].val,yyvsp->val,local_b90,g_dummyVal)
+      ;
+      yyval = local_b8c;
       break;
     case 100:
-      local_b98 = node_pos(local_c[-1].stringValue);
-      local_b9c = node_pos(local_c[-7].stringValue);
-      local_b94 = node7((scriptInstance_t)_gInst,'(',local_c[-8],local_c[-4],*local_c,local_b9c,
-                        local_b98,g_dummyVal,g_dummyVal);
-      local_658 = local_b94;
+      local_b98 = node_pos(yyvsp[-1].pos);
+      local_b9c = node_pos(yyvsp[-4].pos);
+      local_b94 = node7((scriptInstance_t)_gInst,'(',yyvsp[-4].val,yyvsp[-2].val,yyvsp->val,
+                        local_b9c,local_b98,g_dummyVal,g_dummyVal);
+      yyval = local_b94;
       break;
     case 0x65:
-      local_ba4 = node_pos(local_c[-3].stringValue);
-      local_ba8 = node_pos(local_c[-0xb].stringValue);
-      local_ba0 = node7((scriptInstance_t)_gInst,'(',local_c[-0xc],local_c[-6],local_c[-2],local_ba8
-                        ,local_ba4,g_dummyVal,g_dummyVal);
-      local_658 = local_ba0;
+      local_ba4 = node_pos(yyvsp[-2].pos);
+      local_ba8 = node_pos(yyvsp[-6].pos);
+      local_ba0 = node7((scriptInstance_t)_gInst,'(',yyvsp[-6].val,yyvsp[-3].val,yyvsp[-1].val,
+                        local_ba8,local_ba4,g_dummyVal,g_dummyVal);
+      yyval = local_ba0;
       break;
     case 0x66:
-      local_bb0 = node_pos(local_c[-7].stringValue);
-      local_bb4 = node_pos(local_c[-3].stringValue);
-      local_bac = node5((scriptInstance_t)_gInst,')',local_c[-4],*local_c,local_bb4,local_bb0,
+      local_bb0 = node_pos(yyvsp[-4].pos);
+      local_bb4 = node_pos(yyvsp[-2].pos);
+      local_bac = node5((scriptInstance_t)_gInst,')',yyvsp[-2].val,yyvsp->val,local_bb4,local_bb0,
                         g_dummyVal);
-      local_658 = local_bac;
+      yyval = local_bac;
       break;
     case 0x67:
-      local_bbc = node_pos(local_c[-0xd].stringValue);
-      local_bc0 = node_pos(local_c[-7].stringValue);
-      local_bb8 = node8((scriptInstance_t)_gInst,'*',local_c[-10],local_c[-8],local_c[-4],*local_c,
-                        local_bc0,local_bbc,g_dummyVal,g_dummyVal);
-      local_658 = local_bb8;
+      local_bbc = node_pos(yyvsp[-7].pos);
+      local_bc0 = node_pos(yyvsp[-4].pos);
+      local_bb8 = node8((scriptInstance_t)_gInst,'*',yyvsp[-5].val,yyvsp[-4].val,yyvsp[-2].val,
+                        yyvsp->val,local_bc0,local_bbc,g_dummyVal,g_dummyVal);
+      yyval = local_bb8;
       break;
     case 0x68:
-      local_bc8 = node_pos(local_c[-7].stringValue);
-      local_bc4 = node3((scriptInstance_t)_gInst,'>',local_c[-8],local_c[-2],local_bc8);
-      local_658 = local_bc4;
+      local_bc8 = node_pos(yyvsp[-4].pos);
+      local_bc4 = node3((scriptInstance_t)_gInst,'>',yyvsp[-4].val,yyvsp[-1].val,local_bc8);
+      yyval = local_bc4;
       break;
     case 0x69:
-      local_bd0 = node_pos(local_c[-3].stringValue);
-      local_bcc = node3((scriptInstance_t)_gInst,'/',local_c[-2],local_bd0,g_dummyVal);
-      local_658 = local_bcc;
+      local_bd0 = node_pos(yyvsp[-2].pos);
+      local_bcc = node3((scriptInstance_t)_gInst,'/',yyvsp[-1].val,local_bd0,g_dummyVal);
+      yyval = local_bcc;
       break;
     case 0x6a:
-      local_bd4 = node0(sVar4,'\0');
-      local_658 = local_bd4;
+      local_bd4 = node0(inst,'\0');
+      yyval = local_bd4;
       break;
     case 0x6b:
-      local_bdc = node_pos(local_c[-3].stringValue);
-      local_bd8 = node3((scriptInstance_t)_gInst,'?',local_c[-2],local_bdc,g_dummyVal);
-      local_658 = local_bd8;
+      local_bdc = node_pos(yyvsp[-2].pos);
+      local_bd8 = node3((scriptInstance_t)_gInst,'?',yyvsp[-1].val,local_bdc,g_dummyVal);
+      yyval = local_bd8;
       break;
     case 0x6c:
-      local_be4 = node_pos(local_c[-1].stringValue);
+      local_be4 = node_pos(yyvsp[-1].pos);
       local_be0 = node2((scriptInstance_t)_gInst,'@',local_be4,g_dummyVal);
-      local_658 = local_be0;
+      yyval = local_be0;
       break;
     case 0x6e:
-      local_be8 = append_node(sVar4,local_c[-2],*local_c);
-      local_658 = local_be8;
+      local_be8 = append_node(inst,yyvsp[-1].val,yyvsp->val);
+      yyval = local_be8;
       break;
     case 0x6f:
-      local_bf0 = node0(sVar4,'\0');
+      local_bf0 = node0(inst,'\0');
       local_bec = linked_list_end((scriptInstance_t)_gInst,local_bf0);
-      local_658 = local_bec;
+      yyval = local_bec;
       break;
     case 0x70:
-      local_bfc = node_pos(local_c[1].stringValue);
-      local_bf8 = node2_((scriptInstance_t)_gInst,*local_c,local_bfc);
-      local_bf4 = prepend_node((scriptInstance_t)_gInst,local_bf8,local_c[-4]);
-      local_658 = local_bf4;
+      local_bfc = node_pos(yyvsp->pos);
+      local_bf8 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_bfc);
+      local_bf4 = prepend_node((scriptInstance_t)_gInst,local_bf8,yyvsp[-2].val);
+      yyval = local_bf4;
       break;
     case 0x71:
-      local_c04 = node0(sVar4,'\0');
-      local_c0c = node_pos(local_c[1].stringValue);
-      local_c08 = node2_((scriptInstance_t)_gInst,*local_c,local_c0c);
+      local_c04 = node0(inst,'\0');
+      local_c0c = node_pos(yyvsp->pos);
+      local_c08 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c0c);
       local_c00 = prepend_node((scriptInstance_t)_gInst,local_c08,local_c04);
-      local_658 = local_c00;
+      yyval = local_c00;
       break;
     case 0x73:
-      local_c10 = node0(sVar4,'\0');
-      local_658 = local_c10;
+      local_c10 = node0(inst,'\0');
+      yyval = local_c10;
       break;
     case 0x74:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_c1c = node_pos(local_c[1].stringValue);
-      local_c18 = node2_((scriptInstance_t)_gInst,*(uint *)local_c,local_c1c);
-      local_c14 = append_node((scriptInstance_t)_gInst,local_c[-4],local_c18);
-      local_658 = local_c14;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_c1c = node_pos(yyvsp->pos);
+      local_c18 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c1c);
+      local_c14 = append_node((scriptInstance_t)_gInst,yyvsp[-2].val,local_c18);
+      yyval = local_c14;
       break;
     case 0x75:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_c28 = node_pos(local_c[1].stringValue);
-      local_c24 = node2_((scriptInstance_t)_gInst,*(uint *)local_c,local_c28);
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_c28 = node_pos(yyvsp->pos);
+      local_c24 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c28);
       local_c30 = node0((scriptInstance_t)_gInst,'\0');
       local_c2c = linked_list_end((scriptInstance_t)_gInst,local_c30);
       local_c20 = append_node((scriptInstance_t)_gInst,local_c2c,local_c24);
-      local_658 = local_c20;
+      yyval = local_c20;
       break;
     case 0x77:
-      local_c38 = node0(sVar4,'\0');
+      local_c38 = node0(inst,'\0');
       local_c34 = linked_list_end((scriptInstance_t)_gInst,local_c38);
-      local_658 = local_c34;
+      yyval = local_c34;
       break;
     case 0x78:
-      uVar2 = LowerCase(local_c->stringValue);
-      local_c->stringValue = uVar2;
-      local_c44 = node_pos(local_c[1].stringValue);
-      local_c40 = node2_((scriptInstance_t)_gInst,*(uint *)local_c,local_c44);
-      local_c3c = append_node((scriptInstance_t)_gInst,local_c[-4],local_c40);
-      local_658 = local_c3c;
+      uVar2 = LowerCase((yyvsp->val).stringValue);
+      (yyvsp->val).stringValue = uVar2;
+      local_c44 = node_pos(yyvsp->pos);
+      local_c40 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c44);
+      local_c3c = append_node((scriptInstance_t)_gInst,yyvsp[-2].val,local_c40);
+      yyval = local_c3c;
       break;
     case 0x79:
-      local_c50 = node_pos(local_c[1].stringValue);
-      local_c4c = node2_((scriptInstance_t)_gInst,*local_c,local_c50);
+      local_c50 = node_pos(yyvsp->pos);
+      local_c4c = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c50);
       local_c58 = node0((scriptInstance_t)_gInst,'\0');
       local_c54 = linked_list_end((scriptInstance_t)_gInst,local_c58);
       local_c48 = append_node((scriptInstance_t)_gInst,local_c54,local_c4c);
-      local_658 = local_c48;
+      yyval = local_c48;
       break;
     case 0x7a:
-      local_c64 = node_pos(local_c[1].stringValue);
-      local_c60 = node2_((scriptInstance_t)_gInst,*local_c,local_c64);
-      local_c5c = append_node((scriptInstance_t)_gInst,local_c[-4],local_c60);
-      local_658 = local_c5c;
+      local_c64 = node_pos(yyvsp->pos);
+      local_c60 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c64);
+      local_c5c = append_node((scriptInstance_t)_gInst,yyvsp[-2].val,local_c60);
+      yyval = local_c5c;
       break;
     case 0x7b:
-      local_c70 = node_pos(local_c[1].stringValue);
-      local_c6c = node2_((scriptInstance_t)_gInst,*local_c,local_c70);
+      local_c70 = node_pos(yyvsp->pos);
+      local_c6c = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c70);
       local_c78 = node0((scriptInstance_t)_gInst,'\0');
       local_c74 = linked_list_end((scriptInstance_t)_gInst,local_c78);
       local_c68 = append_node((scriptInstance_t)_gInst,local_c74,local_c6c);
-      local_658 = local_c68;
+      yyval = local_c68;
       break;
     case 0x7c:
-      local_c84 = node_pos(local_c[1].stringValue);
-      local_c80 = node2_((scriptInstance_t)_gInst,*local_c,local_c84);
-      local_c7c = prepend_node((scriptInstance_t)_gInst,local_c80,local_c[-4]);
-      local_658 = local_c7c;
+      local_c84 = node_pos(yyvsp->pos);
+      local_c80 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c84);
+      local_c7c = prepend_node((scriptInstance_t)_gInst,local_c80,yyvsp[-2].val);
+      yyval = local_c7c;
       break;
     case 0x7d:
-      local_c8c = node0(sVar4,'\0');
-      local_c94 = node_pos(local_c[1].stringValue);
-      local_c90 = node2_((scriptInstance_t)_gInst,*local_c,local_c94);
+      local_c8c = node0(inst,'\0');
+      local_c94 = node_pos(yyvsp->pos);
+      local_c90 = node2_((scriptInstance_t)_gInst,yyvsp->val,local_c94);
       local_c88 = prepend_node((scriptInstance_t)_gInst,local_c90,local_c8c);
-      local_658 = local_c88;
+      yyval = local_c88;
       break;
     case 0x7e:
-      uVar2 = LowerCase(local_c[-0xc].stringValue);
-      local_c[-0xc].stringValue = uVar2;
-      local_c9c = node_pos(local_c[1].stringValue);
-      local_ca0 = node_pos(local_c[-0xb].stringValue);
-      local_c98 = node6((scriptInstance_t)_gInst,'F',local_c[-0xc],local_c[-8],local_c[-2],local_ca0
-                        ,local_c9c,g_dummyVal);
-      local_658 = local_c98;
+      uVar2 = LowerCase(yyvsp[-6].val.stringValue);
+      yyvsp[-6].val.stringValue = uVar2;
+      local_c9c = node_pos(yyvsp->pos);
+      local_ca0 = node_pos(yyvsp[-6].pos);
+      local_c98 = node6((scriptInstance_t)_gInst,'F',yyvsp[-6].val,yyvsp[-4].val,yyvsp[-1].val,
+                        local_ca0,local_c9c,g_dummyVal);
+      yyval = local_c98;
       break;
     case 0x7f:
-      local_ca8 = node_pos(local_c[-3].stringValue);
-      local_cac = node_pos(local_c[-7].stringValue);
-      local_ca4 = node3((scriptInstance_t)_gInst,'I',local_c[-4],local_cac,local_ca8);
-      local_658 = local_ca4;
+      local_ca8 = node_pos(yyvsp[-2].pos);
+      local_cac = node_pos(yyvsp[-4].pos);
+      local_ca4 = node3((scriptInstance_t)_gInst,'I',yyvsp[-2].val,local_cac,local_ca8);
+      yyval = local_ca4;
       break;
     case 0x80:
-      local_cb4 = node_pos(local_c[1].stringValue);
+      local_cb4 = node_pos(yyvsp->pos);
       local_cb0 = node1((scriptInstance_t)_gInst,'G',local_cb4);
-      local_658 = local_cb0;
+      yyval = local_cb0;
       break;
     case 0x81:
-      local_cbc = node_pos(local_c[1].stringValue);
+      local_cbc = node_pos(yyvsp->pos);
       local_cb8 = node1((scriptInstance_t)_gInst,'H',local_cbc);
-      local_658 = local_cb8;
+      yyval = local_cb8;
       break;
     case 0x82:
-      local_cc0 = append_node(sVar4,local_c[-2],*local_c);
-      local_658 = local_cc0;
+      local_cc0 = append_node(inst,yyvsp[-1].val,yyvsp->val);
+      yyval = local_cc0;
       break;
     case 0x83:
-      local_cc8 = node0(sVar4,'\0');
+      local_cc8 = node0(inst,'\0');
       local_cc4 = linked_list_end((scriptInstance_t)_gInst,local_cc8);
-      local_658 = local_cc4;
+      yyval = local_cc4;
       break;
     case 0x84:
-      local_cd0 = node_pos(local_c[-1].stringValue);
-      local_ccc = node2((scriptInstance_t)_gInst,'X',*local_c,local_cd0);
-      local_658 = local_ccc;
+      local_cd0 = node_pos(yyvsp[-1].pos);
+      local_ccc = node2((scriptInstance_t)_gInst,'X',yyvsp->val,local_cd0);
+      yyval = local_ccc;
       gScrCompilePub[_gInst].far_function_count = gScrCompilePub[_gInst].far_function_count + 1;
       break;
     case 0x85:
-      local_cd4 = append_node(sVar4,local_c[-4],local_c[-2]);
-      local_658 = local_cd4;
+      local_cd4 = append_node(inst,yyvsp[-2].val,yyvsp[-1].val);
+      yyval = local_cd4;
       break;
     case 0x86:
-      local_cdc = node0(sVar4,'\0');
+      local_cdc = node0(inst,'\0');
       local_cd8 = linked_list_end((scriptInstance_t)_gInst,local_cdc);
-      local_658 = local_cd8;
+      yyval = local_cd8;
     }
-    psVar1 = local_c;
-    local_800 = local_800 + -local_650;
-    local_c = local_c + local_650 * -2 + 2;
-    *local_c = local_658;
-    psVar1[local_650 * -2 + 3] = local_654;
-    local_808 = (int)yyr1[local_808];
-    iVar3 = (int)yypact[local_808 + 0xb0] + (int)*local_800;
-    if (((iVar3 < 0) || (0x59b < iVar3)) || (yycheck[iVar3] != *local_800)) {
-      local_804 = (int)yydefact[local_808 + 0xb0];
+    psVar1 = yyvsp;
+    yyssp = yyssp + -yylen;
+    yyvsp = yyvsp + (1 - yylen);
+    yyvsp->val = yyval;
+    psVar1[1 - yylen].pos = local_654;
+    yyn = (int)yyr1[yyn];
+    iVar3 = (int)yypact[yyn + 0xb0] + (int)*yyssp;
+    if (((iVar3 < 0) || (0x59b < iVar3)) || (yycheck[iVar3] != *yyssp)) {
+      yystate = (int)yydefact[yyn + 0xb0];
     }
     else {
-      local_804 = (int)yytable[iVar3];
+      yystate = (int)yytable[iVar3];
     }
   } while( true );
 LAB_008e3b8b:
-  if (local_808 == 0x10b) goto LAB_008e3bc9;
-  local_c = local_c + 2;
-  *local_c = yylval.val;
-  psVar1[3].stringValue = yylval.pos;
-  local_804 = local_808;
+  if (yyn == 0x10b) goto LAB_008e3bc9;
+  yyvsp = yyvsp + 1;
+  yyvsp->val = yylval.val;
+  psVar1[1].pos = yylval.pos;
+  yystate = yyn;
   goto LAB_008e0753;
 }
 
@@ -1426,7 +1431,7 @@ LAB_008e3b8b:
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-int __cdecl yyerror(char *param_1)
+int __cdecl yyerror(char *s)
 
 {
   if (yychar == 0) {
@@ -1443,26 +1448,26 @@ int __cdecl yyerror(char *param_1)
 
 /* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
 
-void __cdecl ScriptParse(scriptInstance_t param_1,sval_u *param_2,uchar param_3)
+void __cdecl ScriptParse(scriptInstance_t inst,sval_u *parseData,uchar user)
 
 {
   undefined3 in_stack_00000005;
-  yy_buffer_state local_2c;
+  yy_buffer_state buffer_state;
   
   g_out_pos = 0xffffffff;
   g_sourcePos = 0;
-  g_parse_user = param_3;
+  g_parse_user = user;
   g_dummyVal.stringValue = 0;
-  _gInst = _param_1;
+  _gInst = _inst;
   yy_init = 1;
-  local_2c.yy_buf_size = 0x4000;
-  local_2c.yy_ch_buf = ch_buf;
-  local_2c.yy_is_our_buffer = 0;
-  yy_init_buffer(&local_2c,(_iobuf *)0x0);
-  yy_current_buffer = &local_2c;
+  buffer_state.yy_buf_size = 0x4000;
+  buffer_state.yy_ch_buf = ch_buf;
+  buffer_state.yy_is_our_buffer = 0;
+  yy_init_buffer(&buffer_state,(_iobuf *)0x0);
+  yy_current_buffer = &buffer_state;
   yy_start = 3;
   yyparse();
-  *param_2 = yaccResult;
+  *parseData = yaccResult;
   return;
 }
 
@@ -1474,15 +1479,17 @@ void __cdecl ScriptParse(scriptInstance_t param_1,sval_u *param_2,uchar param_3)
 int __cdecl yylex(void)
 
 {
-  uint uVar1;
-  _iobuf *p_Var2;
+  uint sourcePos;
+  _iobuf *p_Var1;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  byte local_15;
-  char *local_14;
-  int local_10;
-  int local_c;
-  byte *local_8;
+  int yy_next_state;
+  int yy_amount_of_matched_text;
+  uchar yy_c;
+  char *yy_bp;
+  int yy_current_state;
+  int yy_act;
+  char *yy_cp;
   
   if (yy_init != 0) {
     yy_init = 0;
@@ -1493,8 +1500,8 @@ int __cdecl yylex(void)
       yyin = __iob_func();
     }
     if (yyout == (_iobuf *)0x0) {
-      p_Var2 = __iob_func();
-      yyout = p_Var2 + 1;
+      p_Var1 = __iob_func();
+      yyout = p_Var1 + 1;
     }
     if (yy_current_buffer == (yy_buffer_state *)0x0) {
       yy_current_buffer = yy_create_buffer(yyin,0x4000);
@@ -1502,40 +1509,40 @@ int __cdecl yylex(void)
     yy_load_buffer_state();
   }
 LAB_008e3f5b:
-  local_8 = (byte *)yy_c_buf_p;
+  yy_cp = yy_c_buf_p;
   *yy_c_buf_p = yy_hold_char;
-  local_14 = yy_c_buf_p;
-  local_10 = yy_start;
+  yy_bp = yy_c_buf_p;
+  yy_current_state = yy_start;
 LAB_008e3f8a:
   do {
-    local_15 = *(byte *)(yy_ec + *local_8);
-    if (yy_accept[local_10] != 0) {
-      yy_last_accepting_state = local_10;
-      yy_last_accepting_cpos = (char *)local_8;
+    yy_c = (uchar)yy_ec[(byte)*yy_cp];
+    if (yy_accept[yy_current_state] != 0) {
+      yy_last_accepting_state = yy_current_state;
+      yy_last_accepting_cpos = yy_cp;
     }
-    while (yy_chk[(int)yy_base[local_10] + (uint)local_15] != local_10) {
-      local_10 = (int)yy_def[local_10];
-      if (0x105 < local_10) {
-        local_15 = *(byte *)(yy_meta + local_15);
+    while (yy_chk[(int)yy_base[yy_current_state] + (uint)yy_c] != yy_current_state) {
+      yy_current_state = (int)yy_def[yy_current_state];
+      if (0x105 < yy_current_state) {
+        yy_c = (uchar)yy_meta[yy_c];
       }
     }
-    local_10 = (int)yy_nxt[(int)yy_base[local_10] + (uint)local_15];
-    local_8 = local_8 + 1;
-  } while (yy_base[local_10] != 0x1bb);
+    yy_current_state = (int)yy_nxt[(int)yy_base[yy_current_state] + (uint)yy_c];
+    yy_cp = yy_cp + 1;
+  } while (yy_base[yy_current_state] != 0x1bb);
 LAB_008e403b:
-  local_c = (int)yy_accept[local_10];
-  if (local_c == 0) {
-    local_8 = (byte *)yy_last_accepting_cpos;
-    local_c = (int)yy_accept[yy_last_accepting_state];
+  yy_act = (int)yy_accept[yy_current_state];
+  if (yy_act == 0) {
+    yy_cp = yy_last_accepting_cpos;
+    yy_act = (int)yy_accept[yy_last_accepting_state];
   }
-  yytext = local_14;
-  yyleng = (int)local_8 - (int)local_14;
-  yy_hold_char = *local_8;
-  *local_8 = 0;
-  yy_c_buf_p = (char *)local_8;
+  yytext = yy_bp;
+  yyleng = (int)yy_cp - (int)yy_bp;
+  yy_hold_char = *yy_cp;
+  *yy_cp = '\0';
+  yy_c_buf_p = yy_cp;
 LAB_008e409d:
-  uVar1 = g_out_pos;
-  switch(local_c) {
+  sourcePos = g_out_pos;
+  switch(yy_act) {
   case 0:
     goto switchD_008e40b0_caseD_0;
   case 1:
@@ -1574,537 +1581,537 @@ LAB_008e409d:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = StringValue(yytext + 1,yyleng + -2);
-    iVar3 = (-(uint)(iVar3 != 0) & 2) + 0x101;
+    iVar2 = StringValue(yytext + 1,yyleng + -2);
+    iVar2 = (-(uint)(iVar2 != 0) & 2) + 0x101;
     break;
   case 8:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = StringValue(yytext + 2,yyleng + -3);
-    iVar3 = (-(uint)(iVar3 != 0) & 3) + 0x101;
+    iVar2 = StringValue(yytext + 2,yyleng + -3);
+    iVar2 = (-(uint)(iVar2 != 0) & 3) + 0x101;
     break;
   case 9:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = HashValue(yytext + 2,yyleng + -3);
-    iVar3 = (-(uint)(iVar3 != 0) & 4) + 0x101;
+    iVar2 = HashValue(yytext + 2,yyleng + -3);
+    iVar2 = (-(uint)(iVar2 != 0) & 4) + 0x101;
     break;
   case 10:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x106;
+    iVar2 = 0x106;
     break;
   case 0xb:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x107;
+    iVar2 = 0x107;
     break;
   case 0xc:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x108;
+    iVar2 = 0x108;
     break;
   case 0xd:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x109;
+    iVar2 = 0x109;
     break;
   case 0xe:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x10a;
+    iVar2 = 0x10a;
     break;
   case 0xf:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x10b;
+    iVar2 = 0x10b;
     break;
   case 0x10:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x10c;
+    iVar2 = 0x10c;
     break;
   case 0x11:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x10d;
+    iVar2 = 0x10d;
     break;
   case 0x12:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x10e;
+    iVar2 = 0x10e;
     break;
   case 0x13:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x10f;
+    iVar2 = 0x10f;
     break;
   case 0x14:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x110;
+    iVar2 = 0x110;
     break;
   case 0x15:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x111;
+    iVar2 = 0x111;
     break;
   case 0x16:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x112;
+    iVar2 = 0x112;
     break;
   case 0x17:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x113;
+    iVar2 = 0x113;
     break;
   case 0x18:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x114;
+    iVar2 = 0x114;
     break;
   case 0x19:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x115;
+    iVar2 = 0x115;
     break;
   case 0x1a:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x116;
+    iVar2 = 0x116;
     break;
   case 0x1b:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x117;
+    iVar2 = 0x117;
     break;
   case 0x1c:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x118;
+    iVar2 = 0x118;
     break;
   case 0x1d:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x119;
+    iVar2 = 0x119;
     break;
   case 0x1e:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x11a;
+    iVar2 = 0x11a;
     break;
   case 0x1f:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x11b;
+    iVar2 = 0x11b;
     break;
   case 0x20:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x11c;
+    iVar2 = 0x11c;
     break;
   case 0x21:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x11d;
+    iVar2 = 0x11d;
     break;
   case 0x22:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x11e;
+    iVar2 = 0x11e;
     break;
   case 0x23:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x11f;
+    iVar2 = 0x11f;
     break;
   case 0x24:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
     IntegerValue(yytext);
-    iVar3 = 0x120;
+    iVar2 = 0x120;
     break;
   case 0x25:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
     FloatValue(yytext);
-    iVar3 = 0x121;
+    iVar2 = 0x121;
     break;
   case 0x26:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x123;
+    iVar2 = 0x123;
     break;
   case 0x27:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x122;
+    iVar2 = 0x122;
     break;
   case 0x28:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x127;
+    iVar2 = 0x127;
     break;
   case 0x29:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x124;
+    iVar2 = 0x124;
     break;
   case 0x2a:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x126;
+    iVar2 = 0x126;
     break;
   case 0x2b:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x125;
+    iVar2 = 0x125;
     break;
   case 0x2c:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x128;
+    iVar2 = 0x128;
     break;
   case 0x2d:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x129;
+    iVar2 = 0x129;
     break;
   case 0x2e:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x12a;
+    iVar2 = 0x12a;
     break;
   case 0x2f:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 299;
+    iVar2 = 299;
     break;
   case 0x30:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 300;
+    iVar2 = 300;
     break;
   case 0x31:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x12d;
+    iVar2 = 0x12d;
     break;
   case 0x32:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x12e;
+    iVar2 = 0x12e;
     break;
   case 0x33:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x12f;
+    iVar2 = 0x12f;
     break;
   case 0x34:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x130;
+    iVar2 = 0x130;
     break;
   case 0x35:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x131;
+    iVar2 = 0x131;
     break;
   case 0x36:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x132;
+    iVar2 = 0x132;
     break;
   case 0x37:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x133;
+    iVar2 = 0x133;
     break;
   case 0x38:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x134;
+    iVar2 = 0x134;
     break;
   case 0x39:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x135;
+    iVar2 = 0x135;
     break;
   case 0x3a:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x136;
+    iVar2 = 0x136;
     break;
   case 0x3b:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x137;
+    iVar2 = 0x137;
     break;
   case 0x3c:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x138;
+    iVar2 = 0x138;
     break;
   case 0x3d:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x139;
+    iVar2 = 0x139;
     break;
   case 0x3e:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x13a;
+    iVar2 = 0x13a;
     break;
   case 0x3f:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x13b;
+    iVar2 = 0x13b;
     break;
   case 0x40:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x13c;
+    iVar2 = 0x13c;
     break;
   case 0x41:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x13d;
+    iVar2 = 0x13d;
     break;
   case 0x42:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x13e;
+    iVar2 = 0x13e;
     break;
   case 0x43:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x13f;
+    iVar2 = 0x13f;
     break;
   case 0x44:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x140;
+    iVar2 = 0x140;
     break;
   case 0x45:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x141;
+    iVar2 = 0x141;
     break;
   case 0x46:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x142;
+    iVar2 = 0x142;
     break;
   case 0x47:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x143;
+    iVar2 = 0x143;
     break;
   case 0x48:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x144;
+    iVar2 = 0x144;
     break;
   case 0x49:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x146;
+    iVar2 = 0x146;
     break;
   case 0x4a:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x147;
+    iVar2 = 0x147;
     break;
   case 0x4b:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x148;
+    iVar2 = 0x148;
     break;
   case 0x4c:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x149;
+    iVar2 = 0x149;
     break;
   case 0x4d:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x14a;
+    iVar2 = 0x14a;
     break;
   case 0x4e:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x14b;
+    iVar2 = 0x14b;
     break;
   case 0x4f:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x14c;
+    iVar2 = 0x14c;
     break;
   case 0x50:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x14d;
+    iVar2 = 0x14d;
     break;
   case 0x51:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x14e;
+    iVar2 = 0x14e;
     break;
   case 0x52:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x14f;
+    iVar2 = 0x14f;
     break;
   case 0x53:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x150;
+    iVar2 = 0x150;
     break;
   case 0x54:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x151;
+    iVar2 = 0x151;
     break;
   case 0x55:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x152;
+    iVar2 = 0x152;
     break;
   case 0x56:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x153;
+    iVar2 = 0x153;
     break;
   case 0x57:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x154;
+    iVar2 = 0x154;
     break;
   case 0x58:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x155;
+    iVar2 = 0x155;
     break;
   case 0x59:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x156;
+    iVar2 = 0x156;
     break;
   case 0x5a:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x157;
+    iVar2 = 0x157;
     break;
   case 0x5b:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    iVar3 = 0x158;
+    iVar2 = 0x158;
     break;
   case 0x5c:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
     TextValue(yytext,yyleng);
-    iVar3 = 0x102;
+    iVar2 = 0x102;
     break;
   case 0x5d:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
     TextValue(yytext,yyleng);
-    iVar3 = 0x145;
+    iVar2 = 0x145;
     break;
   case 0x5e:
     yylval.pos = g_out_pos;
     g_sourcePos = g_out_pos;
     g_out_pos = g_out_pos + yyleng;
-    CompileError((scriptInstance_t)_gInst,uVar1,"bad token \'%s\'");
-    iVar3 = 0x101;
+    CompileError((scriptInstance_t)_gInst,sourcePos,"bad token \'%s\'");
+    iVar2 = 0x101;
     break;
   case 0x5f:
     yylval.pos = g_out_pos;
@@ -2113,67 +2120,67 @@ LAB_008e409d:
     fwrite(yytext,yyleng,1,yyout);
     goto LAB_008e3f5b;
   case 0x60:
-    iVar3 = -1 - (int)yytext;
-    *local_8 = yy_hold_char;
+    iVar2 = -1 - (int)yytext;
+    *yy_cp = yy_hold_char;
     if (yy_current_buffer->yy_buffer_status == 0) {
       yy_n_chars = yy_current_buffer->yy_n_chars;
       yy_current_buffer->yy_input_file = yyin;
       yy_current_buffer->yy_buffer_status = 1;
     }
     if (yy_current_buffer->yy_ch_buf + yy_n_chars < yy_c_buf_p) {
-      iVar4 = yy_get_next_buffer();
-      if (iVar4 == 0) {
-        yy_c_buf_p = yytext + (int)(local_8 + iVar3);
-        local_10 = yy_get_previous_state();
-        local_8 = (byte *)yy_c_buf_p;
-        local_14 = yytext;
+      iVar3 = yy_get_next_buffer();
+      if (iVar3 == 0) {
+        yy_c_buf_p = yytext + (int)(yy_cp + iVar2);
+        yy_current_state = yy_get_previous_state();
+        yy_cp = yy_c_buf_p;
+        yy_bp = yytext;
         goto LAB_008e3f8a;
       }
-      if (iVar4 == 1) {
+      if (iVar3 == 1) {
         yy_did_buffer_switch_on_eof = 0;
-        iVar3 = CL_LocalClient_GetActiveCount();
-        if (iVar3 != 0) goto code_r0x008e570b;
+        iVar2 = CL_LocalClient_GetActiveCount();
+        if (iVar2 != 0) goto code_r0x008e570b;
         if (yy_did_buffer_switch_on_eof == 0) {
           yyrestart(yyin);
         }
         goto LAB_008e3f5b;
       }
-      if (iVar4 != 2) goto LAB_008e3f5b;
+      if (iVar3 != 2) goto LAB_008e3f5b;
       yy_c_buf_p = yy_current_buffer->yy_ch_buf + yy_n_chars;
-      local_10 = yy_get_previous_state();
-      local_8 = (byte *)yy_c_buf_p;
-      local_14 = yytext;
+      yy_current_state = yy_get_previous_state();
+      yy_cp = yy_c_buf_p;
+      yy_bp = yytext;
       goto LAB_008e403b;
     }
-    yy_c_buf_p = yytext + (int)(local_8 + iVar3);
-    local_10 = yy_get_previous_state();
-    iVar3 = yy_try_NUL_trans(local_10);
-    local_14 = yytext;
-    if (iVar3 != 0) {
-      local_8 = (byte *)(yy_c_buf_p + 1);
-      local_10 = iVar3;
+    yy_c_buf_p = yytext + (int)(yy_cp + iVar2);
+    yy_current_state = yy_get_previous_state();
+    iVar2 = yy_try_NUL_trans(yy_current_state);
+    yy_bp = yytext;
+    if (iVar2 != 0) {
+      yy_cp = yy_c_buf_p + 1;
+      yy_current_state = iVar2;
       goto LAB_008e3f8a;
     }
-    local_8 = (byte *)yy_c_buf_p;
+    yy_cp = yy_c_buf_p;
     goto LAB_008e403b;
   case 0x61:
   case 0x62:
   case 99:
-    iVar3 = 0;
+    iVar2 = 0;
     break;
   default:
     yy_fatal_error("fatal flex scanner internal error--no action found");
     goto LAB_008e3f5b;
   }
-  return iVar3;
+  return iVar2;
 code_r0x008e570b:
   yy_c_buf_p = yytext;
-  local_c = (yy_start + -1) / 2 + 0x61;
+  yy_act = (yy_start + -1) / 2 + 0x61;
   goto LAB_008e409d;
 switchD_008e40b0_caseD_0:
-  *local_8 = yy_hold_char;
-  local_8 = (byte *)yy_last_accepting_cpos;
-  local_10 = yy_last_accepting_state;
+  *yy_cp = yy_hold_char;
+  yy_cp = yy_last_accepting_cpos;
+  yy_current_state = yy_last_accepting_state;
   goto LAB_008e403b;
 }
 
@@ -2189,39 +2196,43 @@ int __cdecl yy_get_next_buffer(void)
   char *pcVar2;
   int iVar3;
   char *pcVar4;
-  int local_1c;
-  char *local_18;
-  int local_14;
-  char *local_10;
-  int local_8;
+  int new_size;
+  int yy_c_buf_p_offset;
+  yy_buffer_state *b;
+  int num_to_read;
+  char *source;
+  int ret_val;
+  char *dest;
+  int number_to_move;
+  int i;
   
-  local_10 = yy_current_buffer->yy_ch_buf;
-  local_18 = yytext;
+  dest = yy_current_buffer->yy_ch_buf;
+  source = yytext;
   if (yy_current_buffer->yy_ch_buf + yy_n_chars + 1 < yy_c_buf_p) {
     yy_fatal_error("fatal flex scanner internal error--end of buffer missed");
   }
   if (yy_current_buffer->yy_fill_buffer == 0) {
     if ((int)yy_c_buf_p - (int)yytext == 1) {
-      local_14 = 1;
+      ret_val = 1;
     }
     else {
-      local_14 = 2;
+      ret_val = 2;
     }
   }
   else {
     pcVar2 = yy_c_buf_p + (-1 - (int)yytext);
-    for (local_8 = 0; local_8 < (int)pcVar2; local_8 = local_8 + 1) {
-      *local_10 = *local_18;
-      local_10 = local_10 + 1;
-      local_18 = local_18 + 1;
+    for (i = 0; i < (int)pcVar2; i = i + 1) {
+      *dest = *source;
+      dest = dest + 1;
+      source = source + 1;
     }
     if (yy_current_buffer->yy_buffer_status == 2) {
       yy_n_chars = 0;
       yy_current_buffer->yy_n_chars = 0;
     }
     else {
-      local_1c = yy_current_buffer->yy_buf_size - (int)pcVar2;
-      while (pyVar1 = yy_current_buffer, local_1c = local_1c + -1, local_1c < 1) {
+      iVar3 = yy_current_buffer->yy_buf_size - (int)pcVar2;
+      while (pyVar1 = yy_current_buffer, num_to_read = iVar3 + -1, num_to_read < 1) {
         iVar3 = (int)yy_c_buf_p - (int)yy_current_buffer->yy_ch_buf;
         if (yy_current_buffer->yy_is_our_buffer == 0) {
           yy_current_buffer->yy_ch_buf = (char *)0x0;
@@ -2241,34 +2252,34 @@ int __cdecl yy_get_next_buffer(void)
           yy_fatal_error("fatal error - scanner input buffer overflow");
         }
         yy_c_buf_p = pyVar1->yy_ch_buf + iVar3;
-        local_1c = yy_current_buffer->yy_buf_size - (int)pcVar2;
+        iVar3 = yy_current_buffer->yy_buf_size - (int)pcVar2;
       }
-      if (0x2000 < local_1c) {
-        local_1c = 0x2000;
+      if (0x2000 < num_to_read) {
+        num_to_read = 0x2000;
       }
       yy_n_chars = Scr_ScanFile((scriptInstance_t)_gInst,yy_current_buffer->yy_ch_buf + (int)pcVar2,
-                                local_1c);
+                                num_to_read);
       yy_current_buffer->yy_n_chars = yy_n_chars;
     }
     if (yy_n_chars == 0) {
       if (pcVar2 == (char *)0x0) {
-        local_14 = 1;
+        ret_val = 1;
         yyrestart(yyin);
       }
       else {
-        local_14 = 2;
+        ret_val = 2;
         yy_current_buffer->yy_buffer_status = 2;
       }
     }
     else {
-      local_14 = 0;
+      ret_val = 0;
     }
     yy_n_chars = (int)(pcVar2 + yy_n_chars);
     yy_current_buffer->yy_ch_buf[yy_n_chars] = '\0';
     yy_current_buffer->yy_ch_buf[yy_n_chars + 1] = '\0';
     yytext = yy_current_buffer->yy_ch_buf;
   }
-  return local_14;
+  return ret_val;
 }
 
 
@@ -2277,68 +2288,70 @@ int __cdecl yy_get_next_buffer(void)
 int __cdecl yy_get_previous_state(void)
 
 {
-  byte local_14;
-  byte local_d;
-  int local_c;
-  byte *local_8;
+  uchar local_14;
+  uchar yy_c;
+  int yy_current_state;
+  char *yy_cp;
   
-  local_c = yy_start;
-  for (local_8 = (byte *)yytext; local_8 < yy_c_buf_p; local_8 = local_8 + 1) {
-    if (*local_8 == 0) {
-      local_14 = 1;
+  yy_current_state = yy_start;
+  for (yy_cp = yytext; yy_cp < yy_c_buf_p; yy_cp = yy_cp + 1) {
+    if (*yy_cp == '\0') {
+      local_14 = '\x01';
     }
     else {
-      local_14 = (byte)yy_ec[*local_8];
+      local_14 = (uchar)yy_ec[(byte)*yy_cp];
     }
-    local_d = local_14;
-    if (yy_accept[local_c] != 0) {
-      yy_last_accepting_state = local_c;
-      yy_last_accepting_cpos = (char *)local_8;
+    yy_c = local_14;
+    if (yy_accept[yy_current_state] != 0) {
+      yy_last_accepting_state = yy_current_state;
+      yy_last_accepting_cpos = yy_cp;
     }
-    while (yy_chk[(int)yy_base[local_c] + (uint)local_d] != local_c) {
-      local_c = (int)yy_def[local_c];
-      if (0x105 < local_c) {
-        local_d = *(byte *)(yy_meta + local_d);
+    while (yy_chk[(int)yy_base[yy_current_state] + (uint)yy_c] != yy_current_state) {
+      yy_current_state = (int)yy_def[yy_current_state];
+      if (0x105 < yy_current_state) {
+        yy_c = (uchar)yy_meta[yy_c];
       }
     }
-    local_c = (int)yy_nxt[(int)yy_base[local_c] + (uint)local_d];
+    yy_current_state = (int)yy_nxt[(int)yy_base[yy_current_state] + (uint)yy_c];
   }
-  return local_c;
+  return yy_current_state;
 }
 
 
 // 008E5EF0  yy_try_NUL_trans  (clientscript/scr_lex.h:1661)
 
-int __cdecl yy_try_NUL_trans(int param_1)
+int __cdecl yy_try_NUL_trans(int yy_current_state)
 
 {
-  byte local_9;
+  int yy_is_jam;
+  uchar yy_c;
+  char *yy_cp;
   
-  local_9 = 1;
-  if (yy_accept[param_1] != 0) {
-    yy_last_accepting_state = param_1;
+  yy_c = '\x01';
+  if (yy_accept[yy_current_state] != 0) {
+    yy_last_accepting_state = yy_current_state;
     yy_last_accepting_cpos = yy_c_buf_p;
   }
-  while (yy_chk[(int)yy_base[param_1] + (uint)local_9] != param_1) {
-    param_1 = (int)yy_def[param_1];
-    if (0x105 < param_1) {
-      local_9 = *(byte *)(yy_meta + local_9);
+  while (yy_chk[(int)yy_base[yy_current_state] + (uint)yy_c] != yy_current_state) {
+    yy_current_state = (int)yy_def[yy_current_state];
+    if (0x105 < yy_current_state) {
+      yy_c = (uchar)yy_meta[yy_c];
     }
   }
-  return ~-(uint)((int)yy_nxt[(int)yy_base[param_1] + (uint)local_9] == 0x105) &
-         (int)yy_nxt[(int)yy_base[param_1] + (uint)local_9];
+  return ~-(uint)((int)yy_nxt[(int)yy_base[yy_current_state] + (uint)yy_c] == 0x105) &
+         (int)yy_nxt[(int)yy_base[yy_current_state] + (uint)yy_c];
 }
 
 
 // 008E5FB0  yyrestart  (clientscript/scr_lex.h:1808)
 
-void __cdecl yyrestart(_iobuf *param_1)
+void __cdecl yyrestart(_iobuf *input_file)
 
 {
   if (yy_current_buffer == (yy_buffer_state *)0x0) {
     yy_current_buffer = yy_create_buffer(yyin,0x4000);
   }
-  yy_init_buffer(yy_current_buffer,param_1);
+  yy_init_buffer(yy_current_buffer,input_file);
   yy_load_buffer_state();
   return;
 }
@@ -2360,54 +2373,55 @@ void __cdecl yy_load_buffer_state(void)
 
 // 008E6040  yy_create_buffer  (clientscript/scr_lex.h:1867)
 
-yy_buffer_state * __cdecl yy_create_buffer(_iobuf *param_1,int param_2)
+yy_buffer_state * __cdecl yy_create_buffer(_iobuf *file,int size)
 
 {
-  yy_buffer_state *pyVar1;
-  char *pcVar2;
+  yy_buffer_state *b_00;
+  char *pcVar1;
+  yy_buffer_state *b;
   
-  pyVar1 = yy_flex_alloc(0x28);
-  if (pyVar1 == (yy_buffer_state *)0x0) {
+  b_00 = yy_flex_alloc(0x28);
+  if (b_00 == (yy_buffer_state *)0x0) {
     yy_fatal_error("out of dynamic memory in yy_create_buffer()");
   }
-  pyVar1->yy_buf_size = param_2;
-  pcVar2 = yy_flex_alloc(pyVar1->yy_buf_size + 2);
-  pyVar1->yy_ch_buf = pcVar2;
-  if (pyVar1->yy_ch_buf == (char *)0x0) {
+  b_00->yy_buf_size = size;
+  pcVar1 = yy_flex_alloc(b_00->yy_buf_size + 2);
+  b_00->yy_ch_buf = pcVar1;
+  if (b_00->yy_ch_buf == (char *)0x0) {
     yy_fatal_error("out of dynamic memory in yy_create_buffer()");
   }
-  pyVar1->yy_is_our_buffer = 1;
-  yy_init_buffer(pyVar1,param_1);
-  return pyVar1;
+  b_00->yy_is_our_buffer = 1;
+  yy_init_buffer(b_00,file);
+  return b_00;
 }
 
 
 // 008E60C0  yy_init_buffer  (clientscript/scr_lex.h:1926)
 
-void __cdecl yy_init_buffer(yy_buffer_state *param_1,_iobuf *param_2)
+void __cdecl yy_init_buffer(yy_buffer_state *b,_iobuf *file)
 
 {
-  yy_flush_buffer(param_1);
-  param_1->yy_input_file = param_2;
-  param_1->yy_fill_buffer = 1;
-  param_1->yy_is_interactive = 0;
+  yy_flush_buffer(b);
+  b->yy_input_file = file;
+  b->yy_fill_buffer = 1;
+  b->yy_is_interactive = 0;
   return;
 }
 
 
 // 008E60F0  yy_flush_buffer  (clientscript/scr_lex.h:1951)
 
-void __cdecl yy_flush_buffer(yy_buffer_state *param_1)
+void __cdecl yy_flush_buffer(yy_buffer_state *b)
 
 {
-  if (param_1 != (yy_buffer_state *)0x0) {
-    param_1->yy_n_chars = 0;
-    *param_1->yy_ch_buf = '\0';
-    param_1->yy_ch_buf[1] = '\0';
-    param_1->yy_buf_pos = param_1->yy_ch_buf;
-    param_1->yy_at_bol = 1;
-    param_1->yy_buffer_status = 0;
-    if (param_1 == yy_current_buffer) {
+  if (b != (yy_buffer_state *)0x0) {
+    b->yy_n_chars = 0;
+    *b->yy_ch_buf = '\0';
+    b->yy_ch_buf[1] = '\0';
+    b->yy_buf_pos = b->yy_ch_buf;
+    b->yy_at_bol = 1;
+    b->yy_buffer_status = 0;
+    if (b == yy_current_buffer) {
       yy_load_buffer_state();
     }
   }
@@ -2417,15 +2431,15 @@ void __cdecl yy_flush_buffer(yy_buffer_state *param_1)
 
 // 008E6150  yy_fatal_error  (clientscript/scr_lex.h:2130)
 
-void __cdecl yy_fatal_error(char *param_1)
+void __cdecl yy_fatal_error(char *msg)
 
 {
   _iobuf *p_Var1;
-  char *pcVar2;
+  char *format;
   
-  pcVar2 = "%s\n";
+  format = "%s\n";
   p_Var1 = __iob_func();
-  fprintf(p_Var1 + 2,pcVar2);
+  fprintf(p_Var1 + 2,format);
                     /* WARNING: Subroutine does not return */
   exit(2);
 }
@@ -2433,24 +2447,24 @@ void __cdecl yy_fatal_error(char *param_1)
 
 // 008E6180  yy_flex_alloc  (clientscript/scr_lex.h:2194)
 
-void * __cdecl yy_flex_alloc(uint param_1)
+void * __cdecl yy_flex_alloc(uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = malloc(param_1);
+  pvVar1 = malloc(size);
   return pvVar1;
 }
 
 
 // 008E61A0  yy_flex_realloc  (clientscript/scr_lex.h:2205)
 
-void * __cdecl yy_flex_realloc(void *param_1,uint param_2)
+void * __cdecl yy_flex_realloc(void *ptr,uint size)
 
 {
   void *pvVar1;
   
-  pvVar1 = realloc(param_1,param_2);
+  pvVar1 = realloc(ptr,size);
   return pvVar1;
 }
 

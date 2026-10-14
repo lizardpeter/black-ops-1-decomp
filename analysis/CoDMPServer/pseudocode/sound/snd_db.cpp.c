@@ -3,19 +3,19 @@
 // 0093CC40  SND_ParseInit  (sound/snd_db.cpp:644)
 
 void __cdecl
-SND_ParseInit(uint param_1,snd_group *param_2,uint param_3,snd_curve *param_4,uint param_5,
-             snd_pan *param_6,uint param_7,snd_snapshot_group *param_8)
+SND_ParseInit(uint groupCount,snd_group *groups,uint curveCount,snd_curve *curves,uint panCount,
+             snd_pan *pans,uint snapshotGroupCount,snd_snapshot_group *snapshotGroups)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint j_4;
+  uint i;
+  uint j_3;
+  uint j_2;
+  uint j;
   
-  if (0x3f < param_1) {
+  if (0x3f < groupCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_db.cpp",0x285,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -23,7 +23,7 @@ SND_ParseInit(uint param_1,snd_group *param_2,uint param_3,snd_curve *param_4,ui
       return;
     }
   }
-  if (0x1f < param_3) {
+  if (0x1f < curveCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_db.cpp",0x286,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -32,36 +32,36 @@ SND_ParseInit(uint param_1,snd_group *param_2,uint param_3,snd_curve *param_4,ui
     }
   }
   memset((uchar *)GROUPS,'\0',0x104);
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    GROUPS[local_8] = param_2[local_8].name;
+  for (j = 0; j < groupCount; j = j + 1) {
+    GROUPS[j] = groups[j].name;
   }
   memset((uchar *)PANS,'\0',0x84);
-  for (local_c = 0; local_c < param_5; local_c = local_c + 1) {
-    PANS[local_c] = param_6[local_c].name;
+  for (j_2 = 0; j_2 < panCount; j_2 = j_2 + 1) {
+    PANS[j_2] = pans[j_2].name;
   }
   memset((uchar *)CURVES,'\0',0x84);
-  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {
-    CURVES[local_10] = param_4[local_10].name;
+  for (j_3 = 0; j_3 < curveCount; j_3 = j_3 + 1) {
+    CURVES[j_3] = curves[j_3].name;
   }
   memset((uchar *)(SND_SNAPSHOT_FIELDS + 9),'\0',0x800);
-  for (local_14 = 0; local_14 < param_7; local_14 = local_14 + 1) {
-    if ((param_8 + local_14 == (snd_snapshot_group *)0x0) || (param_8[local_14].name[0] == '\0')) {
-      SND_SNAPSHOT_FIELDS[local_14 + 9].name = (char *)0x0;
+  for (i = 0; i < snapshotGroupCount; i = i + 1) {
+    if ((snapshotGroups + i == (snd_snapshot_group *)0x0) || (snapshotGroups[i].name[0] == '\0')) {
+      SND_SNAPSHOT_FIELDS[i + 9].name = (char *)0x0;
     }
     else {
-      SND_SNAPSHOT_FIELDS[local_14 + 9].name = param_8[local_14].name;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].offset = local_14 * 4 + 0x5c;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].required = true;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].type = SND_CSV_FLOAT;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].minimum = 0.0;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].maximum = 1.0;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].length = 0;
-      SND_SNAPSHOT_FIELDS[local_14 + 9].enum_ids = (char **)0x0;
+      SND_SNAPSHOT_FIELDS[i + 9].name = snapshotGroups[i].name;
+      SND_SNAPSHOT_FIELDS[i + 9].offset = i * 4 + 0x5c;
+      SND_SNAPSHOT_FIELDS[i + 9].required = true;
+      SND_SNAPSHOT_FIELDS[i + 9].type = SND_CSV_FLOAT;
+      SND_SNAPSHOT_FIELDS[i + 9].minimum = 0.0;
+      SND_SNAPSHOT_FIELDS[i + 9].maximum = 1.0;
+      SND_SNAPSHOT_FIELDS[i + 9].length = 0;
+      SND_SNAPSHOT_FIELDS[i + 9].enum_ids = (char **)0x0;
     }
   }
   memset((uchar *)SNAPSHOT_GROUPS,'\0',0x104);
-  for (local_18 = 0; local_18 < param_7; local_18 = local_18 + 1) {
-    SNAPSHOT_GROUPS[local_18] = param_8[local_18].name;
+  for (j_4 = 0; j_4 < snapshotGroupCount; j_4 = j_4 + 1) {
+    SNAPSHOT_GROUPS[j_4] = snapshotGroups[j_4].name;
   }
   return;
 }
@@ -69,13 +69,13 @@ SND_ParseInit(uint param_1,snd_group *param_2,uint param_3,snd_curve *param_4,ui
 
 // 0093CED0  SND_AliasGetFileName  (sound/snd_db.cpp:733)
 
-void __cdecl SND_AliasGetFileName(snd_alias_t *param_1,char *param_2,int param_3)
+void __cdecl SND_AliasGetFileName(snd_alias_t *alias,char *filename,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (snd_alias_t *)0x0) {
+  if (alias == (snd_alias_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_db.cpp",0x2df,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -83,7 +83,7 @@ void __cdecl SND_AliasGetFileName(snd_alias_t *param_1,char *param_2,int param_3
       return;
     }
   }
-  if (param_1->soundFile == (SoundFile *)0x0) {
+  if (alias->soundFile == (SoundFile *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_db.cpp",0x2e0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -91,11 +91,11 @@ void __cdecl SND_AliasGetFileName(snd_alias_t *param_1,char *param_2,int param_3
       return;
     }
   }
-  if (param_1->soundFile->type == '\x01') {
-    I_strncpyz(param_2,((param_1->soundFile->u).loadSnd)->name,param_3);
+  if (alias->soundFile->type == '\x01') {
+    I_strncpyz(filename,((alias->soundFile->u).loadSnd)->name,size);
   }
   else {
-    Com_sprintf(param_2,param_3,"%s");
+    Com_sprintf(filename,size,"%s");
   }
   return;
 }

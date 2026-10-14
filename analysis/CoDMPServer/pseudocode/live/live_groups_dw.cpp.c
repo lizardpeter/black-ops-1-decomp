@@ -26,16 +26,16 @@ void __cdecl LiveGroups_Init(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_c;
-  GroupSet *local_8;
+  int i;
+  GroupSet *gs;
   
   memset((uchar *)s_groupMembership,'\0',0x88);
   s_groupSetCount = 0;
   s_groupCount = 0;
   s_groupUpdateTime = 0;
-  local_8 = s_groupSets;
+  gs = s_groupSets;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (gs->name == (char *)0x0) {
       Cmd_AddCommandInternal
                 ("joinLiveGroup",LiveGroups_JoinGroup_f,
                  (cmd_function_s *)&LiveGroups_JoinGroup_f_VAR);
@@ -46,14 +46,14 @@ void __cdecl LiveGroups_Init(void)
                 ("dumpLiveGroups",LiveGroups_Dump_f,(cmd_function_s *)&LiveGroups_Dump_f_VAR);
       return;
     }
-    local_8->start = s_groupCount;
-    if (local_8->groupNames != (char **)0x0) {
-      local_8->capacity = 0;
-      for (local_c = 0; local_8->groupNames[local_c] != (char *)0x0; local_c = local_c + 1) {
-        local_8->capacity = local_8->capacity + 1;
+    gs->start = s_groupCount;
+    if (gs->groupNames != (char **)0x0) {
+      gs->capacity = 0;
+      for (i = 0; gs->groupNames[i] != (char *)0x0; i = i + 1) {
+        gs->capacity = gs->capacity + 1;
       }
     }
-    if (local_8->capacity < 1) {
+    if (gs->capacity < 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",100,0,
                                "%s");
       if (!bVar2) {
@@ -62,9 +62,9 @@ void __cdecl LiveGroups_Init(void)
         return;
       }
     }
-    s_groupCount = s_groupCount + local_8->capacity;
+    s_groupCount = s_groupCount + gs->capacity;
     s_groupSetCount = s_groupSetCount + 1;
-    local_8 = local_8 + 1;
+    gs = gs + 1;
   } while( true );
 }
 
@@ -73,13 +73,13 @@ void __cdecl LiveGroups_Init(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveGroups_SetGroupsComplete(TaskRecord *param_1)
+void __cdecl LiveGroups_SetGroupsComplete(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->controllerIndex != 0) {
+  if (task->controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x71,0,
                              "task->controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
                             );
@@ -89,9 +89,9 @@ void __cdecl LiveGroups_SetGroupsComplete(TaskRecord *param_1)
       return;
     }
   }
-  s_groupMembership[param_1->controllerIndex].dirty =
-       s_groupMembership[param_1->controllerIndex].dirty + -1;
-  if (s_groupMembership[param_1->controllerIndex].dirty < 0) {
+  s_groupMembership[task->controllerIndex].dirty =
+       s_groupMembership[task->controllerIndex].dirty + -1;
+  if (s_groupMembership[task->controllerIndex].dirty < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x75,0,
                              "%s");
     if (!bVar2) {
@@ -109,25 +109,25 @@ void __cdecl LiveGroups_SetGroupsComplete(TaskRecord *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveGroups_SetGroups(int param_1)
+void __cdecl LiveGroups_SetGroups(int localControllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  bdReference<bdRemoteTask> bVar3;
-  long64 lVar4;
+  bdReference<bdRemoteTask> other_3;
+  long64 lVar3;
   bdReference<bdByteBuffer> local_1020;
-  uint local_101c;
-  TaskRecord *local_1018;
-  int local_1014;
-  int local_1010;
-  bdGroup *local_100c;
-  GroupMembership *local_1008;
-  uint local_1004 [1023];
+  uint i;
+  TaskRecord *task;
+  int idCount;
+  int curtime;
+  bdGroup *group;
+  GroupMembership *membership;
+  uint groupIDs [1023];
   undefined4 uStack_8;
   
   uStack_8 = 0x96698d;
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x7a,0,
                              "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
                             );
@@ -137,28 +137,28 @@ void __cdecl LiveGroups_SetGroups(int param_1)
       return;
     }
   }
-  local_100c = dwGetGroup(param_1);
-  local_1014 = 0;
-  local_1008 = s_groupMembership + param_1;
-  lVar4 = _time64((long64 *)0x0);
-  local_1010 = (int)lVar4;
-  if (((local_100c != (bdGroup *)0x0) && (0 < local_1008->dirty)) &&
-     (0x3c < local_1010 - local_1008->updateTime)) {
-    local_1018 = TaskManager2_CreateTask(task_setGroups,param_1,(TaskRecord *)0x0,0);
-    local_1008->updateTime = local_1010;
-    local_1008->dirty = 1;
-    for (local_101c = 0; local_101c < s_groupCount; local_101c = local_101c + 1) {
-      if ((1 << ((byte)local_101c & 0x1f) & local_1008->bits[local_101c >> 5]) != 0) {
-        local_1004[local_1014] = local_101c;
-        local_1014 = local_1014 + 1;
+  group = dwGetGroup(localControllerIndex);
+  idCount = 0;
+  membership = s_groupMembership + localControllerIndex;
+  lVar3 = _time64((long64 *)0x0);
+  curtime = (int)lVar3;
+  if (((group != (bdGroup *)0x0) && (0 < membership->dirty)) &&
+     (0x3c < curtime - membership->updateTime)) {
+    task = TaskManager2_CreateTask(task_setGroups,localControllerIndex,(TaskRecord *)0x0,0);
+    membership->updateTime = curtime;
+    membership->dirty = 1;
+    for (i = 0; i < s_groupCount; i = i + 1) {
+      if ((1 << ((byte)i & 0x1f) & membership->bits[i >> 5]) != 0) {
+        groupIDs[idCount] = i;
+        idCount = idCount + 1;
       }
     }
-    bVar3 = bdGroup::setGroups(local_100c,(uint *)&local_1020,(uint)local_1004);
+    other_3 = bdGroup::setGroups(group,(uint *)&local_1020,(uint)groupIDs);
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)&local_1018->remoteTask,
-               (bdReference<bdAddrHandle> *)bVar3.m_ptr);
+              ((bdReference<bdAddrHandle> *)&task->remoteTask,
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1020);
-    TaskManager2_StartTask(local_1018);
+    TaskManager2_StartTask(task);
   }
   return;
 }
@@ -168,19 +168,19 @@ void __cdecl LiveGroups_SetGroups(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveGroups_GetGroupCountsComplete(TaskRecord *param_1)
+void __cdecl LiveGroups_GetGroupCountsComplete(TaskRecord *task)
 
 {
   uint uVar1;
-  uint local_8;
+  uint idx;
   
   memset((uchar *)s_groupCounts,'\0',0x1000);
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    uVar1 = bdRemoteTask::getNumResults((param_1->remoteTask).m_ptr);
-    if (uVar1 <= local_8) break;
-    s_groupCounts[s_bdGroupCounts[local_8].m_groupID] = s_bdGroupCounts[local_8].m_groupCount;
-    local_8 = local_8 + 1;
+    uVar1 = bdRemoteTask::getNumResults((task->remoteTask).m_ptr);
+    if (uVar1 <= idx) break;
+    s_groupCounts[s_bdGroupCounts[idx].m_groupID] = s_bdGroupCounts[idx].m_groupCount;
+    idx = idx + 1;
   }
   return;
 }
@@ -191,44 +191,44 @@ void __cdecl LiveGroups_GetGroupCountsComplete(TaskRecord *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveGroups_GetCounts(int param_1)
+void __cdecl LiveGroups_GetCounts(int localControllerIndex)
 
 {
   int iVar1;
-  bdReference<bdRemoteTask> bVar2;
-  long64 lVar3;
+  bdReference<bdRemoteTask> other_3;
+  long64 lVar2;
   bdReference<bdByteBuffer> local_1018;
-  TaskRecord *local_1014;
-  uint local_1010;
-  int local_100c;
-  bdGroup *local_1008;
-  uint local_1004 [1023];
+  TaskRecord *task;
+  uint i;
+  int curtime;
+  bdGroup *group;
+  uint groupIDs [1023];
   undefined4 uStack_8;
   
   uStack_8 = 0x966bad;
-  local_1008 = dwGetGroup(param_1);
-  lVar3 = _time64((long64 *)0x0);
-  local_100c = (int)lVar3;
-  if ((local_1008 != (bdGroup *)0x0) && (900 < local_100c - s_groupUpdateTime)) {
+  group = dwGetGroup(localControllerIndex);
+  lVar2 = _time64((long64 *)0x0);
+  curtime = (int)lVar2;
+  if ((group != (bdGroup *)0x0) && (900 < curtime - s_groupUpdateTime)) {
     iVar1 = TaskManager2_CountTasksInProgress(task_getGroupCounts);
     if (iVar1 == 0) {
-      local_1014 = TaskManager2_CreateTask(task_getGroupCounts,param_1,(TaskRecord *)0x0,0);
-      s_groupUpdateTime = local_100c;
-      for (local_1010 = 0; local_1010 < s_groupCount; local_1010 = local_1010 + 1) {
-        local_1004[local_1010] = local_1010;
+      task = TaskManager2_CreateTask(task_getGroupCounts,localControllerIndex,(TaskRecord *)0x0,0);
+      s_groupUpdateTime = curtime;
+      for (i = 0; i < s_groupCount; i = i + 1) {
+        groupIDs[i] = i;
       }
-      local_1004[local_1010] = 0x1ea;
-      local_1004[local_1010 + 1] = 0x1eb;
-      local_1004[local_1010 + 2] = 0x1ec;
-      local_1010 = local_1010 + 3;
-      bVar2 = bdGroup::getGroupCounts
-                        (local_1008,(uint *)&local_1018,(uint)local_1004,
-                         (bdGroupCount *)(s_groupCount + 3),0xa4e0d00);
+      groupIDs[i] = 0x1ea;
+      groupIDs[i + 1] = 0x1eb;
+      groupIDs[i + 2] = 0x1ec;
+      i = i + 3;
+      other_3 = bdGroup::getGroupCounts
+                          (group,(uint *)&local_1018,(uint)groupIDs,
+                           (bdGroupCount *)(s_groupCount + 3),0xa4e0d00);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_1014->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1018);
-      TaskManager2_StartTask(local_1014);
+      TaskManager2_StartTask(task);
     }
   }
   return;
@@ -237,67 +237,68 @@ void __cdecl LiveGroups_GetCounts(int param_1)
 
 // 00966D30  LiveGroups_GetGroupID  (live/live_groups_dw.cpp:195)
 
-bool __cdecl LiveGroups_GetGroupID(char *param_1,int *param_2,GroupSet **param_3)
+bool __cdecl LiveGroups_GetGroupID(char *path,int *offset,GroupSet **gs)
 
 {
   char cVar1;
   int extraout_EAX;
   int iVar2;
   char *local_1c;
-  int local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int s;
+  char *sep;
+  int setLen;
+  char *groupName;
+  int i;
   
-  local_c = (char *)0x0;
-  strchr((uchar *)param_1,'/');
+  groupName = (char *)0x0;
+  strchr((uchar *)path,'/');
   if (extraout_EAX == 0) {
-    local_1c = param_1;
+    local_1c = path;
     do {
       cVar1 = *local_1c;
       local_1c = local_1c + 1;
     } while (cVar1 != '\0');
-    local_10 = (int)local_1c - (int)(param_1 + 1);
+    setLen = (int)local_1c - (int)(path + 1);
   }
   else {
-    local_10 = extraout_EAX - (int)param_1;
-    local_c = (char *)(extraout_EAX + 1);
-    if (*local_c == '\0') {
-      local_c = (char *)0x0;
+    setLen = extraout_EAX - (int)path;
+    groupName = (char *)(extraout_EAX + 1);
+    if (*groupName == '\0') {
+      groupName = (char *)0x0;
     }
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (s_groupSetCount <= local_8) {
+    if (s_groupSetCount <= i) {
       Com_PrintError(1,"Group \'%s\' not found\n");
       return false;
     }
-    iVar2 = I_strnicmp(param_1,s_groupSets[local_8].name,local_10);
+    iVar2 = I_strnicmp(path,s_groupSets[i].name,setLen);
     if (iVar2 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  *param_3 = s_groupSets + local_8;
-  if (local_c == (char *)0x0) {
-    *param_2 = -1;
+  *gs = s_groupSets + i;
+  if (groupName == (char *)0x0) {
+    *offset = -1;
     return true;
   }
-  if ((*param_3)->groupNames != (char **)0x0) {
-    local_18 = 0;
+  if ((*gs)->groupNames != (char **)0x0) {
+    s = 0;
     while( true ) {
-      if ((*param_3)->capacity <= local_18) {
+      if ((*gs)->capacity <= s) {
         Com_PrintError(1,"Group \'%s\' not found in set \'%s\'\n");
         return false;
       }
-      iVar2 = I_stricmp(local_c,(*param_3)->groupNames[local_18]);
+      iVar2 = I_stricmp(groupName,(*gs)->groupNames[s]);
       if (iVar2 == 0) break;
-      local_18 = local_18 + 1;
+      s = s + 1;
     }
-    *param_2 = local_18;
+    *offset = s;
     return true;
   }
-  iVar2 = atoi(local_c);
-  *param_2 = iVar2;
-  if ((*param_3)->capacity < *param_2) {
+  iVar2 = atoi(groupName);
+  *offset = iVar2;
+  if ((*gs)->capacity < *offset) {
     Com_PrintError(1,"Group ID \'%d\' out of bounds for set \'%s\'\n");
     return false;
   }
@@ -307,7 +308,7 @@ bool __cdecl LiveGroups_GetGroupID(char *param_1,int *param_2,GroupSet **param_3
 
 // 00966F00  LiveGroups_JoinGroup  (live/live_groups_dw.cpp:257)
 
-void __cdecl LiveGroups_JoinGroup(int param_1,char *param_2)
+void __cdecl LiveGroups_JoinGroup(int localControllerIndex,char *path)
 
 {
   code *pcVar1;
@@ -315,14 +316,14 @@ void __cdecl LiveGroups_JoinGroup(int param_1,char *param_2)
   int iVar3;
   GroupMembership *pGVar4;
   uint *puVar5;
-  uint local_98;
-  GroupSet *local_94;
-  int local_90;
-  uint local_8c [33];
-  GroupMembership *local_8;
+  uint id;
+  GroupSet *gs;
+  int offset;
+  uint bits [33];
+  GroupMembership *membership;
   
-  local_94 = (GroupSet *)0x0;
-  if ((param_1 != 0) &&
+  gs = (GroupSet *)0x0;
+  if ((localControllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x107,0
                                ,
                                "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
@@ -331,31 +332,29 @@ void __cdecl LiveGroups_JoinGroup(int param_1,char *param_2)
     (*pcVar1)();
     return;
   }
-  bVar2 = LiveGroups_GetGroupID(param_2,&local_90,&local_94);
+  bVar2 = LiveGroups_GetGroupID(path,&offset,&gs);
   if (bVar2) {
-    local_8 = s_groupMembership + param_1;
-    pGVar4 = s_groupMembership + param_1;
-    puVar5 = local_8c;
+    membership = s_groupMembership + localControllerIndex;
+    pGVar4 = s_groupMembership + localControllerIndex;
+    puVar5 = bits;
     for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
       *puVar5 = pGVar4->bits[0];
       pGVar4 = (GroupMembership *)(pGVar4->bits + 1);
       puVar5 = puVar5 + 1;
     }
-    if (local_94->exclusive != false) {
-      for (local_98 = local_94->start; local_98 < local_94->start + local_94->capacity;
-          local_98 = local_98 + 1) {
-        local_8c[local_98 >> 5] = ~(1 << ((byte)local_98 & 0x1f)) & local_8c[local_98 >> 5];
+    if (gs->exclusive != false) {
+      for (id = gs->start; id < gs->start + gs->capacity; id = id + 1) {
+        bits[id >> 5] = ~(1 << ((byte)id & 0x1f)) & bits[id >> 5];
       }
     }
-    if (-1 < local_90) {
-      local_8c[local_94->start + local_90 >> 5] =
-           1 << ((char)local_94->start + (char)local_90 & 0x1fU) |
-           local_8c[local_94->start + local_90 >> 5];
+    if (-1 < offset) {
+      bits[gs->start + offset >> 5] =
+           1 << ((char)gs->start + (char)offset & 0x1fU) | bits[gs->start + offset >> 5];
     }
     iVar3 = 0x20;
     bVar2 = true;
-    puVar5 = local_8c;
-    pGVar4 = local_8;
+    puVar5 = bits;
+    pGVar4 = membership;
     do {
       if (iVar3 == 0) break;
       iVar3 = iVar3 + -1;
@@ -364,12 +363,12 @@ void __cdecl LiveGroups_JoinGroup(int param_1,char *param_2)
       pGVar4 = (GroupMembership *)(pGVar4->bits + 1);
     } while (bVar2);
     if (!bVar2) {
-      local_8->dirty = local_8->dirty + 1;
-      puVar5 = local_8c;
+      membership->dirty = membership->dirty + 1;
+      puVar5 = bits;
       for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
-        local_8->bits[0] = *puVar5;
+        membership->bits[0] = *puVar5;
         puVar5 = puVar5 + 1;
-        local_8 = (GroupMembership *)(local_8->bits + 1);
+        membership = (GroupMembership *)(membership->bits + 1);
       }
     }
   }
@@ -382,7 +381,7 @@ void __cdecl LiveGroups_JoinGroup(int param_1,char *param_2)
 
 // 009670B0  LiveGroups_LeaveGroup  (live/live_groups_dw.cpp:296)
 
-void __cdecl LiveGroups_LeaveGroup(int param_1,char *param_2)
+void __cdecl LiveGroups_LeaveGroup(int localControllerIndex,char *path)
 
 {
   code *pcVar1;
@@ -390,14 +389,14 @@ void __cdecl LiveGroups_LeaveGroup(int param_1,char *param_2)
   int iVar3;
   GroupMembership *pGVar4;
   uint *puVar5;
-  uint local_98;
-  GroupSet *local_94;
-  int local_90;
-  uint local_8c [33];
-  GroupMembership *local_8;
+  uint id;
+  GroupSet *gs;
+  int offset;
+  uint bits [33];
+  GroupMembership *membership;
   
-  local_94 = (GroupSet *)0x0;
-  if ((param_1 != 0) &&
+  gs = (GroupSet *)0x0;
+  if ((localControllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x12e,0
                                ,
                                "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
@@ -406,31 +405,29 @@ void __cdecl LiveGroups_LeaveGroup(int param_1,char *param_2)
     (*pcVar1)();
     return;
   }
-  bVar2 = LiveGroups_GetGroupID(param_2,&local_90,&local_94);
+  bVar2 = LiveGroups_GetGroupID(path,&offset,&gs);
   if (bVar2) {
-    local_8 = s_groupMembership + param_1;
-    pGVar4 = s_groupMembership + param_1;
-    puVar5 = local_8c;
+    membership = s_groupMembership + localControllerIndex;
+    pGVar4 = s_groupMembership + localControllerIndex;
+    puVar5 = bits;
     for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
       *puVar5 = pGVar4->bits[0];
       pGVar4 = (GroupMembership *)(pGVar4->bits + 1);
       puVar5 = puVar5 + 1;
     }
-    if (local_90 < 0) {
-      for (local_98 = local_94->start; local_98 < local_94->start + local_94->capacity;
-          local_98 = local_98 + 1) {
-        local_8c[local_98 >> 5] = ~(1 << ((byte)local_98 & 0x1f)) & local_8c[local_98 >> 5];
+    if (offset < 0) {
+      for (id = gs->start; id < gs->start + gs->capacity; id = id + 1) {
+        bits[id >> 5] = ~(1 << ((byte)id & 0x1f)) & bits[id >> 5];
       }
     }
     else {
-      local_8c[local_94->start + local_90 >> 5] =
-           ~(1 << ((char)local_94->start + (char)local_90 & 0x1fU)) &
-           local_8c[local_94->start + local_90 >> 5];
+      bits[gs->start + offset >> 5] =
+           ~(1 << ((char)gs->start + (char)offset & 0x1fU)) & bits[gs->start + offset >> 5];
     }
     iVar3 = 0x20;
     bVar2 = true;
-    puVar5 = local_8c;
-    pGVar4 = local_8;
+    puVar5 = bits;
+    pGVar4 = membership;
     do {
       if (iVar3 == 0) break;
       iVar3 = iVar3 + -1;
@@ -439,12 +436,12 @@ void __cdecl LiveGroups_LeaveGroup(int param_1,char *param_2)
       pGVar4 = (GroupMembership *)(pGVar4->bits + 1);
     } while (bVar2);
     if (!bVar2) {
-      local_8->dirty = local_8->dirty + 1;
-      puVar5 = local_8c;
+      membership->dirty = membership->dirty + 1;
+      puVar5 = bits;
       for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
-        local_8->bits[0] = *puVar5;
+        membership->bits[0] = *puVar5;
         puVar5 = puVar5 + 1;
-        local_8 = (GroupMembership *)(local_8->bits + 1);
+        membership = (GroupMembership *)(membership->bits + 1);
       }
     }
   }
@@ -457,46 +454,46 @@ void __cdecl LiveGroups_LeaveGroup(int param_1,char *param_2)
 
 // 00967260  LiveGroups_GetCount  (live/live_groups_dw.cpp:337)
 
-uint __cdecl LiveGroups_GetCount(char *param_1)
+uint __cdecl LiveGroups_GetCount(char *path)
 
 {
   bool bVar1;
-  GroupSet *local_10;
-  uint local_c;
-  int local_8;
+  GroupSet *gs;
+  uint total;
+  int offset;
   
-  local_10 = (GroupSet *)0x0;
-  bVar1 = LiveGroups_GetGroupID(param_1,&local_8,&local_10);
+  gs = (GroupSet *)0x0;
+  bVar1 = LiveGroups_GetGroupID(path,&offset,&gs);
   if (bVar1) {
-    if (local_8 < 0) {
-      local_c = 0;
-      for (local_8 = 0; local_8 < local_10->capacity; local_8 = local_8 + 1) {
-        local_c = local_c + s_groupCounts[local_10->start + local_8];
+    if (offset < 0) {
+      total = 0;
+      for (offset = 0; offset < gs->capacity; offset = offset + 1) {
+        total = total + s_groupCounts[gs->start + offset];
       }
     }
     else {
-      local_c = s_groupCounts[local_10->start + local_8];
+      total = s_groupCounts[gs->start + offset];
     }
   }
   else {
-    local_c = 0;
+    total = 0;
   }
-  return local_c;
+  return total;
 }
 
 
 // 009672F0  LiveGroups_GetCountByType  (live/live_groups_dw.cpp:360)
 
-uint __cdecl LiveGroups_GetCountByType(servertype_t param_1)
+uint __cdecl LiveGroups_GetCountByType(servertype_t type)
 
 {
   uint uVar1;
   
-  if (((int)param_1 < 0) || (0x3ff < param_1)) {
+  if (((int)type < 0) || (0x3ff < type)) {
     uVar1 = 0;
   }
   else {
-    uVar1 = s_groupCounts[param_1];
+    uVar1 = s_groupCounts[type];
   }
   return uVar1;
 }
@@ -504,13 +501,13 @@ uint __cdecl LiveGroups_GetCountByType(servertype_t param_1)
 
 // 00967320  LiveGroups_RegisterPlayer  (live/live_groups_dw.cpp:371)
 
-void __cdecl LiveGroups_RegisterPlayer(int param_1)
+void __cdecl LiveGroups_RegisterPlayer(int localControllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x174,0,
                              "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
                             );
@@ -520,21 +517,23 @@ void __cdecl LiveGroups_RegisterPlayer(int param_1)
       return;
     }
   }
-  memset((uchar *)(s_groupMembership + param_1),'\0',0x80);
-  LiveGroups_JoinGroup(param_1,"online/mp");
+  memset((uchar *)(s_groupMembership + localControllerIndex),'\0',0x80);
+  LiveGroups_JoinGroup(localControllerIndex,"online/mp");
   return;
 }
 
 
 // 00967390  LiveGroups_Update  (live/live_groups_dw.cpp:383)
 
-void __cdecl LiveGroups_Update(int param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl LiveGroups_Update(int localControllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (localControllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_groups_dw.cpp",0x180,0,
                              "localControllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)"
                             );
@@ -544,8 +543,8 @@ void __cdecl LiveGroups_Update(int param_1)
       return;
     }
   }
-  LiveGroups_SetGroups(param_1);
-  LiveGroups_GetCounts(param_1);
+  LiveGroups_SetGroups(localControllerIndex);
+  LiveGroups_GetCounts(localControllerIndex);
   return;
 }
 
@@ -555,10 +554,10 @@ void __cdecl LiveGroups_Update(int param_1)
 void __cdecl LiveGroups_JoinGroup_f(void)
 
 {
-  char *pcVar1;
+  char *path;
   
-  pcVar1 = Cmd_Argv(1);
-  LiveGroups_JoinGroup(0,pcVar1);
+  path = Cmd_Argv(1);
+  LiveGroups_JoinGroup(0,path);
   return;
 }
 
@@ -568,10 +567,10 @@ void __cdecl LiveGroups_JoinGroup_f(void)
 void __cdecl LiveGroups_LeaveGroup_f(void)
 
 {
-  char *pcVar1;
+  char *path;
   
-  pcVar1 = Cmd_Argv(1);
-  LiveGroups_LeaveGroup(0,pcVar1);
+  path = Cmd_Argv(1);
+  LiveGroups_LeaveGroup(0,path);
   return;
 }
 
@@ -581,14 +580,14 @@ void __cdecl LiveGroups_LeaveGroup_f(void)
 void __cdecl LiveGroups_Dump_f(void)
 
 {
-  int local_c;
-  GroupSet *local_8;
+  int i;
+  GroupSet *gs;
   
-  for (local_8 = s_groupSets; local_8->name != (char *)0x0; local_8 = local_8 + 1) {
-    LiveGroups_GetCount(local_8->name);
+  for (gs = s_groupSets; gs->name != (char *)0x0; gs = gs + 1) {
+    LiveGroups_GetCount(gs->name);
     Com_Printf(0,"%s: %u\n");
-    for (local_c = 0; local_c < local_8->capacity; local_c = local_c + 1) {
-      if (local_8->groupNames == (char **)0x0) {
+    for (i = 0; i < gs->capacity; i = i + 1) {
+      if (gs->groupNames == (char **)0x0) {
         Com_Printf(0,"    %d: %u\n");
       }
       else {

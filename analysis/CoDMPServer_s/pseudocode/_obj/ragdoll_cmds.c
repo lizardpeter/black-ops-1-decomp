@@ -10,9 +10,9 @@ void __cdecl Ragdoll_Clear_f(void)
   undefined **ppuVar1;
   int *piVar2;
   int iVar3;
-  char *pcVar4;
-  uint uVar5;
-  undefined **ppuVar6;
+  char *nptr;
+  uint uVar4;
+  undefined **ppuVar5;
   RagdollBodyState unaff_ESI;
   RagdollBody *unaff_EDI;
   
@@ -20,22 +20,22 @@ void __cdecl Ragdoll_Clear_f(void)
   iVar3 = *piVar2;
   if (1 < piVar2[iVar3 + 0x21]) {
     if (piVar2[iVar3 + 0x21] < 2) {
-      pcVar4 = "";
+      nptr = "";
     }
     else {
-      pcVar4 = *(char **)(piVar2[iVar3 + 0x29] + 4);
+      nptr = *(char **)(piVar2[iVar3 + 0x29] + 4);
     }
-    uVar5 = atoi(pcVar4);
-    if (uVar5 < 2) {
-      memset((uchar *)(&ragdollDefs + uVar5 * 0x3c2),'\0',0xf08);
-      ppuVar6 = (undefined **)PTR_g_ragdoll_body_pool_00aeeb3c;
+    uVar4 = atoi(nptr);
+    if (uVar4 < 2) {
+      memset((uchar *)(&ragdollDefs + uVar4 * 0x3c2),'\0',0xf08);
+      ppuVar5 = (undefined **)PTR_g_ragdoll_body_pool_00aeeb3c;
       if ((undefined **)PTR_g_ragdoll_body_pool_00aeeb3c != &g_ragdoll_body_pool) {
         do {
-          if (1 < (int)ppuVar6[0xb]) {
+          if (1 < (int)ppuVar5[0xb]) {
             Ragdoll_BodyNewState(unaff_EDI,unaff_ESI);
           }
-          ppuVar1 = ppuVar6 + 1;
-          ppuVar6 = (undefined **)*ppuVar1;
+          ppuVar1 = ppuVar5 + 1;
+          ppuVar5 = (undefined **)*ppuVar1;
         } while ((undefined **)*ppuVar1 != &g_ragdoll_body_pool);
       }
       return;

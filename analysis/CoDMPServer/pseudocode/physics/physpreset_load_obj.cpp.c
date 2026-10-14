@@ -2,7 +2,7 @@
 
 // 0085CF00  PhysPreset_Strcpy  (physics/physpreset_load_obj.cpp:56)
 
-void __cdecl PhysPreset_Strcpy(uchar *param_1,char *param_2)
+void __cdecl PhysPreset_Strcpy(uchar *member,char *keyValue)
 
 {
   char cVar1;
@@ -10,18 +10,20 @@ void __cdecl PhysPreset_Strcpy(uchar *param_1,char *param_2)
   char *local_24;
   char *local_20;
   char *local_10;
+  char *buf;
+  char **memberString;
   
-  if (*param_2 == '\0') {
-    *(char **)param_1 = "";
+  if (*keyValue == '\0') {
+    *(char **)member = "";
   }
   else {
-    local_10 = param_2;
+    local_10 = keyValue;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    pcVar2 = (*physAlloc)((int)(local_10 + (1 - (int)(param_2 + 1))));
-    local_20 = param_2;
+    pcVar2 = (*physAlloc)((int)(local_10 + (1 - (int)(keyValue + 1))));
+    local_20 = keyValue;
     local_24 = pcVar2;
     do {
       cVar1 = *local_20;
@@ -29,7 +31,7 @@ void __cdecl PhysPreset_Strcpy(uchar *param_1,char *param_2)
       local_20 = local_20 + 1;
       local_24 = local_24 + 1;
     } while (cVar1 != '\0');
-    *(char **)param_1 = pcVar2;
+    *(char **)member = pcVar2;
   }
   return;
 }
@@ -40,7 +42,7 @@ void __cdecl PhysPreset_Strcpy(uchar *param_1,char *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-PhysPreset * __cdecl PhysPresetLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2)
+PhysPreset * __cdecl PhysPresetLoadFile(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   char cVar1;
@@ -56,10 +58,10 @@ PhysPreset * __cdecl PhysPresetLoadFile(char *param_1,_func___cdecl_void_ptr_int
   char *local_40cc;
   float local_40bc;
   float local_40b8;
-  char local_40b4 [64];
-  char local_4074 [16388];
+  char filename [64];
+  char buffer [16388];
   uint local_70;
-  float local_6c;
+  float info;
   float local_68;
   float local_64;
   int local_60;
@@ -78,69 +80,69 @@ PhysPreset * __cdecl PhysPresetLoadFile(char *param_1,_func___cdecl_void_ptr_int
   float local_2c;
   float local_28;
   float local_24;
-  PhysPreset *local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  PhysPreset *physPreset;
+  char *identifierStr;
+  int fileSize;
+  int fileHandle;
+  int identifierStrLength;
   
   local_70 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = "PHYSIC";
+  identifierStr = "PHYSIC";
   local_40cc = "PHYSIC";
   pcVar3 = local_40cc;
   do {
     local_40cc = pcVar3;
     pcVar3 = local_40cc + 1;
   } while (*local_40cc != '\0');
-  local_8 = local_40cc + -0xd1c298;
-  local_40dc = param_1;
+  identifierStrLength = (int)(local_40cc + -0xd1c298);
+  local_40dc = name;
   do {
     cVar1 = *local_40dc;
     local_40dc = local_40dc + 1;
   } while (cVar1 != '\0');
-  if (local_40dc == param_1 + 1) {
-    local_18 = (PhysPreset *)0x0;
+  if (local_40dc == name + 1) {
+    physPreset = (PhysPreset *)0x0;
   }
   else {
-    iVar5 = Com_sprintf(local_40b4,0x40,"physic/%s");
+    iVar5 = Com_sprintf(filename,0x40,"physic/%s");
     if (iVar5 < 0) {
       Com_PrintError(0x14,"ERROR: filename \'%s\' too long\n");
-      local_18 = (PhysPreset *)0x0;
+      physPreset = (PhysPreset *)0x0;
     }
     else {
-      local_10 = FS_FOpenFileByMode(local_40b4,&local_c,FS_READ);
-      if (local_10 < 0) {
+      fileSize = FS_FOpenFileByMode(filename,&fileHandle,FS_READ);
+      if (fileSize < 0) {
         Com_PrintError(0x14,"ERROR: physics preset \'%s\' not found\n");
-        local_18 = (PhysPreset *)0x0;
+        physPreset = (PhysPreset *)0x0;
       }
       else {
-        FS_Read(local_4074,(int)local_8,local_c);
-        local_4074[(int)local_8] = '\0';
-        iVar5 = strncmp(local_4074,local_14,(uint)local_8);
+        FS_Read(buffer,identifierStrLength,fileHandle);
+        buffer[identifierStrLength] = '\0';
+        iVar5 = strncmp(buffer,identifierStr,identifierStrLength);
         if (iVar5 == 0) {
-          if (local_10 - (int)local_8 < 0x4000) {
-            FS_Read(local_4074,local_10 - (int)local_8,local_c);
-            local_4074[local_10 - (int)local_8] = '\0';
-            FS_FCloseFile(local_c);
-            iVar5 = Info_Validate(local_4074);
+          if (fileSize - identifierStrLength < 0x4000) {
+            FS_Read(buffer,fileSize - identifierStrLength,fileHandle);
+            buffer[fileSize - identifierStrLength] = '\0';
+            FS_FCloseFile(fileHandle);
+            iVar5 = Info_Validate(buffer);
             if (iVar5 == 0) {
               Com_PrintError(0x14,"ERROR: physics preset file [%s] is not valid\n");
-              local_18 = (PhysPreset *)0x0;
+              physPreset = (PhysPreset *)0x0;
             }
             else {
-              memset((uchar *)&local_6c,'\0',0x4c);
+              memset((uchar *)&info,'\0',0x4c);
               local_48 = 1.0;
-              physAlloc = param_2;
+              physAlloc = Alloc;
               iVar5 = ParseConfigStringToStruct
-                                ((uchar *)&local_6c,physPresetFields,0x13,local_4074,0,
+                                ((uchar *)&info,physPresetFields,0x13,buffer,0,
                                  (_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0,
                                  PhysPreset_Strcpy);
               if (iVar5 == 0) {
-                local_18 = (PhysPreset *)0x0;
+                physPreset = (PhysPreset *)0x0;
               }
               else {
-                local_18 = (*param_2)(0x54);
-                if (local_18 == (PhysPreset *)0x0) {
+                physPreset = (*Alloc)(0x54);
+                if (physPreset == (PhysPreset *)0x0) {
                   bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physpreset_load_obj.cpp"
                                            ,0x8c,0,"%s");
                   if (!bVar4) {
@@ -149,13 +151,13 @@ PhysPreset * __cdecl PhysPresetLoadFile(char *param_1,_func___cdecl_void_ptr_int
                     return pPVar6;
                   }
                 }
-                if (local_6c - 2000.0 < 0.0) {
-                  local_40b8 = local_6c;
+                if (info - 2000.0 < 0.0) {
+                  local_40b8 = info;
                 }
                 else {
                   local_40b8 = 2000.0;
                 }
-                if (1.0 - local_6c < 0.0) {
+                if (1.0 - info < 0.0) {
                   local_40ec = local_40b8;
                 }
                 else {
@@ -173,84 +175,85 @@ PhysPreset * __cdecl PhysPresetLoadFile(char *param_1,_func___cdecl_void_ptr_int
                 else {
                   local_40f0 = 0.01;
                 }
-                local_18->mass = local_40ec * 0.001;
-                local_18->bounce = local_68;
+                physPreset->mass = local_40ec * 0.001;
+                physPreset->bounce = local_68;
                 if (local_60 == 0) {
                   local_40f4 = local_64;
                 }
                 else {
                   local_40f4 = 1e+10;
                 }
-                local_18->friction = local_40f4;
-                local_18->bulletForceScale = local_5c;
-                local_18->explosiveForceScale = local_58;
-                local_18->piecesSpreadFraction = local_54;
-                local_18->piecesUpwardVelocity = local_50;
-                local_18->canFloat = local_4c;
-                local_18->gravityScale = local_40f0;
-                local_18->centerOfMassOffset[0] = local_44;
-                local_18->centerOfMassOffset[1] = local_40;
-                local_18->centerOfMassOffset[2] = local_3c;
-                local_18->buoyancyBoxMin[0] = local_38;
-                local_18->buoyancyBoxMin[1] = local_34;
-                local_18->buoyancyBoxMin[2] = local_30;
-                local_18->buoyancyBoxMax[0] = local_2c;
-                local_18->buoyancyBoxMax[1] = local_28;
-                local_18->buoyancyBoxMax[2] = local_24;
+                physPreset->friction = local_40f4;
+                physPreset->bulletForceScale = local_5c;
+                physPreset->explosiveForceScale = local_58;
+                physPreset->piecesSpreadFraction = local_54;
+                physPreset->piecesUpwardVelocity = local_50;
+                physPreset->canFloat = local_4c;
+                physPreset->gravityScale = local_40f0;
+                physPreset->centerOfMassOffset[0] = local_44;
+                physPreset->centerOfMassOffset[1] = local_40;
+                physPreset->centerOfMassOffset[2] = local_3c;
+                physPreset->buoyancyBoxMin[0] = local_38;
+                physPreset->buoyancyBoxMin[1] = local_34;
+                physPreset->buoyancyBoxMin[2] = local_30;
+                physPreset->buoyancyBoxMax[0] = local_2c;
+                physPreset->buoyancyBoxMax[1] = local_28;
+                physPreset->buoyancyBoxMax[2] = local_24;
               }
             }
           }
           else {
             Com_PrintError(0x14,"ERROR: physics preset file [%s] is to big\n");
-            FS_FCloseFile(local_c);
-            local_18 = (PhysPreset *)0x0;
+            FS_FCloseFile(fileHandle);
+            physPreset = (PhysPreset *)0x0;
           }
         }
         else {
           Com_PrintError(0x14,"ERROR: file [%s] is not a physics preset file\n");
-          FS_FCloseFile(local_c);
-          local_18 = (PhysPreset *)0x0;
+          FS_FCloseFile(fileHandle);
+          physPreset = (PhysPreset *)0x0;
         }
       }
     }
   }
-  return local_18;
+  return physPreset;
 }
 
 
 // 0085CFB0  PhysPresetPrecache  (physics/physpreset_load_obj.cpp:162)
 
-PhysPreset * __cdecl PhysPresetPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2)
+PhysPreset * __cdecl PhysPresetPrecache(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysPreset *pPVar3;
   char *pcVar4;
+  PhysPreset *physPreset;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physpreset_load_obj.cpp"
                                ,0xa5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PhysPreset *)(*pcVar1)();
     return pPVar3;
   }
-  if ((*param_1 == '\0') &&
+  if ((*name == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physpreset_load_obj.cpp"
                                ,0xa6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pPVar3 = (PhysPreset *)(*pcVar1)();
     return pPVar3;
   }
-  pPVar3 = Hunk_FindDataForFile(7,param_1);
+  pPVar3 = Hunk_FindDataForFile(7,name);
   if (pPVar3 == (PhysPreset *)0x0) {
-    pPVar3 = PhysPresetLoadFile(param_1,param_2);
+    pPVar3 = PhysPresetLoadFile(name,Alloc);
     if (pPVar3 == (PhysPreset *)0x0) {
       Com_PrintError(0x14,"ERROR: Cannot find physics preset \'%s\'.\n");
       pPVar3 = (PhysPreset *)0x0;
     }
     else {
-      pcVar4 = Hunk_SetDataForFile(7,param_1,pPVar3,param_2);
+      pcVar4 = Hunk_SetDataForFile(7,name,pPVar3,Alloc);
       pPVar3->name = pcVar4;
     }
   }
@@ -263,7 +266,7 @@ PhysPreset * __cdecl PhysPresetPrecache(char *param_1,_func___cdecl_void_ptr_int
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-PhysPreset * __cdecl PhysPreset_Register_FastFile(char *param_1)
+PhysPreset * __cdecl PhysPreset_Register_FastFile(char *name)
 
 {
   code *pcVar1;
@@ -272,7 +275,7 @@ PhysPreset * __cdecl PhysPreset_Register_FastFile(char *param_1)
   PhysPreset *pPVar4;
   XAssetHeader XVar5;
   
-  iVar3 = I_strncmp(param_1,"physpreset/",0xb);
+  iVar3 = I_strncmp(name,"physpreset/",0xb);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\physpreset_load_obj.cpp",
                              0xc2,0,"%s\n\t(name) = %s");
@@ -282,38 +285,38 @@ PhysPreset * __cdecl PhysPreset_Register_FastFile(char *param_1)
       return pPVar4;
     }
   }
-  XVar5 = DB_FindXAssetHeader(ASSET_TYPE_PHYSPRESET,param_1,true,-1);
+  XVar5 = DB_FindXAssetHeader(ASSET_TYPE_PHYSPRESET,name,true,-1);
   return (PhysPreset *)XVar5.xmodelPieces;
 }
 
 
 // 0085D080  Hunk_AllocPhysPresetPrecache  (physics/physpreset_load_obj.cpp:203)
 
-void * __cdecl Hunk_AllocPhysPresetPrecache(int param_1)
+void * __cdecl Hunk_AllocPhysPresetPrecache(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"PhysPresetPrecache",0x1e);
+  pvVar1 = Hunk_Alloc(size,"PhysPresetPrecache",0x1e);
   return pvVar1;
 }
 
 
 // 0085D150  PhysPreset_Register_LoadObj  (physics/physpreset_load_obj.cpp:208)
 
-PhysPreset * __cdecl PhysPreset_Register_LoadObj(char *param_1)
+PhysPreset * __cdecl PhysPreset_Register_LoadObj(char *name)
 
 {
   PhysPreset *pPVar1;
   
-  pPVar1 = PhysPresetPrecache(param_1,Hunk_AllocPhysPresetPrecache);
+  pPVar1 = PhysPresetPrecache(name,Hunk_AllocPhysPresetPrecache);
   return pPVar1;
 }
 
 
 // 0085D0A0  PhysPreset_Register  (physics/physpreset_load_obj.cpp:214)
 
-PhysPreset * __cdecl PhysPreset_Register(char *param_1)
+PhysPreset * __cdecl PhysPreset_Register(char *name)
 
 {
   PhysPreset *pPVar1;
@@ -325,7 +328,7 @@ PhysPreset * __cdecl PhysPreset_Register(char *param_1)
   else {
     local_c = PhysPreset_Register_FastFile;
   }
-  pPVar1 = (PhysPreset *)(*local_c)(param_1);
+  pPVar1 = (PhysPreset *)(*local_c)(name);
   return pPVar1;
 }
 

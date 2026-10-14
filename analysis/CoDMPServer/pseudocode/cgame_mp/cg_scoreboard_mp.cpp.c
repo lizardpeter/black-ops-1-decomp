@@ -2,15 +2,16 @@
 
 // 004E4100  CG_BackdropWidth  (cgame_mp/cg_scoreboard_mp.cpp:246)
 
-float __cdecl CG_BackdropWidth(int param_1)
+float __cdecl CG_BackdropWidth(int localClientNum)
 
 {
   float fVar1;
   bool bVar2;
+  float scoreboardMultiplier;
   
   bVar2 = CL_IsRenderingSplitScreen();
   if (bVar2) {
-    bVar2 = CL_IsLastActiveLocalClient(param_1);
+    bVar2 = CL_IsLastActiveLocalClient(localClientNum);
     if (bVar2) {
       fVar1 = (cg_scoreboardSplitscreenWidth->current).value * 1.0;
     }
@@ -27,7 +28,7 @@ float __cdecl CG_BackdropWidth(int param_1)
 
 // 004E4160  CG_BackdropLeft  (cgame_mp/cg_scoreboard_mp.cpp:271)
 
-float __cdecl CG_BackdropLeft(int param_1)
+float __cdecl CG_BackdropLeft(int localClientNum)
 
 {
   float fVar1;
@@ -35,9 +36,9 @@ float __cdecl CG_BackdropLeft(int param_1)
   float fVar3;
   float local_18;
   
-  fVar1 = *(float *)(&DAT_02d9e6a0 + param_1 * 0x78);
-  fVar2 = *(float *)(&DAT_02d9e698 + param_1 * 0x78);
-  fVar3 = CG_BackdropWidth(param_1);
+  fVar1 = *(float *)(&DAT_02d9e6a0 + localClientNum * 0x78);
+  fVar2 = *(float *)(&DAT_02d9e698 + localClientNum * 0x78);
+  fVar3 = CG_BackdropWidth(localClientNum);
   local_18 = ((fVar1 - fVar2) - fVar3) / 2.0;
   if (0.0 <= 0.0 - local_18) {
     local_18 = 0.0;
@@ -48,7 +49,7 @@ float __cdecl CG_BackdropLeft(int param_1)
 
 // 004E41E0  CG_BackdropTop  (cgame_mp/cg_scoreboard_mp.cpp:281)
 
-float __cdecl CG_BackdropTop(int param_1)
+float __cdecl CG_BackdropTop(int localClientNum)
 
 {
   float local_10;
@@ -65,14 +66,14 @@ float __cdecl CG_BackdropTop(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl CG_GetNameForScoreboardColumn(int param_1,int param_2)
+char * __cdecl CG_GetNameForScoreboardColumn(int localClientNum,int columnNumber)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_2 < 0) || (3 < param_2)) {
+  if ((columnNumber < 0) || (3 < columnNumber)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                              0x196,0,"%s");
     if (!bVar2) {
@@ -81,11 +82,11 @@ char * __cdecl CG_GetNameForScoreboardColumn(int param_1,int param_2)
       return pcVar3;
     }
   }
-  if ((param_2 < 0) || (3 < param_2)) {
+  if ((columnNumber < 0) || (3 < columnNumber)) {
     pcVar3 = "";
   }
   else {
-    pcVar3 = sbColumnNames[*(int *)(param_1 * 0xf10 + 0xf55ae8 + param_2 * 4)];
+    pcVar3 = sbColumnNames[*(int *)(localClientNum * 0xf10 + 0xf55ae8 + columnNumber * 4)];
   }
   return pcVar3;
 }
@@ -95,54 +96,56 @@ char * __cdecl CG_GetNameForScoreboardColumn(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CG_GetColumnValue(int param_1,score_s *param_2,scoreboardColumnType_t param_3)
+int __cdecl CG_GetColumnValue(int localClientNum,score_s *score,scoreboardColumnType_t columnType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  if ((param_2 == (score_s *)0x0) &&
+  if ((score == (score_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                                0x1a0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (3 < local_8) {
-      CScr_GetColumnNameByType(param_3);
+    if (3 < i) {
+      CScr_GetColumnNameByType(columnType);
       Com_PrintWarning(1,
                        "Scoreboard column type %s was accessed but is not valid for current gametype.\n"
                       );
       return -1;
     }
-    if (*(scoreboardColumnType_t *)(param_1 * 0xf10 + 0xf55ae8 + local_8 * 4) == param_3) break;
-    local_8 = local_8 + 1;
+    if (*(scoreboardColumnType_t *)(localClientNum * 0xf10 + 0xf55ae8 + i * 4) == columnType) break;
+    i = i + 1;
   }
-  if (param_3 == SB_TYPE_X2SCORE) {
-    return param_2->scoreboardColumns[local_8] * 10;
+  if (columnType == SB_TYPE_X2SCORE) {
+    return score->scoreboardColumns[i] * 10;
   }
-  return param_2->scoreboardColumns[local_8];
+  return score->scoreboardColumns[i];
 }
 
 
 // 004E32B0  CG_GetColumnValueString  (cgame_mp/cg_scoreboard_mp.cpp:435)
 
-char * __cdecl CG_GetColumnValueString(int param_1,score_s *param_2,scoreboardColumnType_t param_3)
+char * __cdecl
+CG_GetColumnValueString(int localClientNum,score_s *score,scoreboardColumnType_t columnType)
 
 {
   char *pcVar1;
+  float deaths;
   
-  if (param_3 == SB_TYPE_KDRATIO) {
-    CG_GetDeaths(param_1,param_2);
-    CG_GetKills(param_1,param_2);
+  if (columnType == SB_TYPE_KDRATIO) {
+    CG_GetDeaths(localClientNum,score);
+    CG_GetKills(localClientNum,score);
     pcVar1 = va("%.2f");
   }
   else {
-    CG_GetColumnValue(param_1,param_2,param_3);
+    CG_GetColumnValue(localClientNum,score,columnType);
     pcVar1 = va("%i");
   }
   return pcVar1;
@@ -155,24 +158,24 @@ char * __cdecl CG_GetColumnValueString(int param_1,score_s *param_2,scoreboardCo
 
 void __cdecl
 CG_AddSBColumnToMatchScoreBoard
-          (int param_1,listColumnTypes_t param_2,float param_3,char *param_4,int param_5,
-          scoreboardColumnType_t param_6)
+          (int localClientNum,listColumnTypes_t columnType,float columnWidth,char *columnName,
+          int alignment,scoreboardColumnType_t sbColumnType)
 
 {
   *(listColumnTypes_t *)
-   (param_1 * 0xf10 + 0xf55af8 + matchScoreBoardData[param_1].numInGameScoreboardColumns * 0x14) =
-       param_2;
-  *(float *)(param_1 * 0xf10 + 0xf55afc +
-            matchScoreBoardData[param_1].numInGameScoreboardColumns * 0x14) = param_3;
-  *(char **)(param_1 * 0xf10 + 0xf55b00 +
-            matchScoreBoardData[param_1].numInGameScoreboardColumns * 0x14) = param_4;
-  *(int *)(param_1 * 0xf10 + 0xf55b04 +
-          matchScoreBoardData[param_1].numInGameScoreboardColumns * 0x14) = param_5;
+   (localClientNum * 0xf10 + 0xf55af8 +
+   matchScoreBoardData[localClientNum].numInGameScoreboardColumns * 0x14) = columnType;
+  *(float *)(localClientNum * 0xf10 + 0xf55afc +
+            matchScoreBoardData[localClientNum].numInGameScoreboardColumns * 0x14) = columnWidth;
+  *(char **)(localClientNum * 0xf10 + 0xf55b00 +
+            matchScoreBoardData[localClientNum].numInGameScoreboardColumns * 0x14) = columnName;
+  *(int *)(localClientNum * 0xf10 + 0xf55b04 +
+          matchScoreBoardData[localClientNum].numInGameScoreboardColumns * 0x14) = alignment;
   *(scoreboardColumnType_t *)
-   (param_1 * 0xf10 + 0xf55b08 + matchScoreBoardData[param_1].numInGameScoreboardColumns * 0x14) =
-       param_6;
-  matchScoreBoardData[param_1].numInGameScoreboardColumns =
-       matchScoreBoardData[param_1].numInGameScoreboardColumns + 1;
+   (localClientNum * 0xf10 + 0xf55b08 +
+   matchScoreBoardData[localClientNum].numInGameScoreboardColumns * 0x14) = sbColumnType;
+  matchScoreBoardData[localClientNum].numInGameScoreboardColumns =
+       matchScoreBoardData[localClientNum].numInGameScoreboardColumns + 1;
   return;
 }
 
@@ -184,113 +187,119 @@ CG_AddSBColumnToMatchScoreBoard
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateMatchScoreboard(int param_1)
+void __cdecl CG_UpdateMatchScoreboard(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  char *pcVar4;
-  int iVar5;
+  char *columnName;
+  int iVar4;
+  undefined4 *puVar5;
   undefined4 *puVar6;
-  undefined4 *puVar7;
-  int iVar8;
-  scoreboardColumnType_t sVar9;
-  int local_28;
-  int local_24;
-  int local_1c;
-  int local_18;
-  float local_10;
-  int local_8;
+  int iVar7;
+  scoreboardColumnType_t sbColumnType;
+  int column_3;
+  int column_2;
+  int clientNum;
+  int i;
+  int column;
+  cg_s *cgameGlob;
+  float currentScoreboardWidthUsed;
+  float dynamicSBColumnWidth;
+  int numDynamicSBColumns;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_8 = 0;
-  matchScoreBoardData[param_1].numAllies = 0;
-  matchScoreBoardData[param_1].numClients = 0;
-  matchScoreBoardData[param_1].numInGameScoreboardColumns = 0;
-  for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
-    *(scoreboardColumnType_t *)(param_1 * 0xf10 + 0xf55ae8 + local_18 * 4) =
-         pcVar3->scoreboardColumnTypes[local_18];
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  numDynamicSBColumns = 0;
+  matchScoreBoardData[localClientNum].numAllies = 0;
+  matchScoreBoardData[localClientNum].numClients = 0;
+  matchScoreBoardData[localClientNum].numInGameScoreboardColumns = 0;
+  for (column = 0; column < 4; column = column + 1) {
+    *(scoreboardColumnType_t *)(localClientNum * 0xf10 + 0xf55ae8 + column * 4) =
+         pcVar3->scoreboardColumnTypes[column];
   }
-  for (local_1c = 0;
-      ((local_1c < 0x20 && (iVar8 = pcVar3->scoreOrder[local_1c], -1 < iVar8)) && (iVar8 < 0x20));
-      local_1c = local_1c + 1) {
-    if (*(int *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8) != 0) {
-      *(int *)(param_1 * 0xf10 + 0xf54cf8 + local_1c * 0x70) = iVar8;
-      *(undefined4 *)(param_1 * 0xf10 + 0xf54cf0 + local_1c * 0x70) =
-           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x50);
-      *(undefined4 *)(param_1 * 0xf10 + 0xf54cf4 + local_1c * 0x70) =
-           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x54);
-      matchScoreBoardData[param_1].matchClientScoreData[local_1c].rank =
-           *(int *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x38);
-      *(undefined4 *)(param_1 * 0xf10 + 0xf54cfc + local_1c * 0x70) =
-           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x90);
-      puVar6 = (undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x60);
-      puVar7 = (undefined4 *)(param_1 * 0xf10 + 0xf54d28 + local_1c * 0x70);
-      for (iVar5 = 0xb; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *puVar7 = *puVar6;
+  for (i = 0; ((i < 0x20 && (iVar7 = pcVar3->scoreOrder[i], -1 < iVar7)) && (iVar7 < 0x20));
+      i = i + 1) {
+    if (*(int *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8) != 0) {
+      *(int *)(localClientNum * 0xf10 + 0xf54cf8 + i * 0x70) = iVar7;
+      *(undefined4 *)(localClientNum * 0xf10 + 0xf54cf0 + i * 0x70) =
+           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x50);
+      *(undefined4 *)(localClientNum * 0xf10 + 0xf54cf4 + i * 0x70) =
+           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x54);
+      matchScoreBoardData[localClientNum].matchClientScoreData[i].rank =
+           *(int *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x38);
+      *(undefined4 *)(localClientNum * 0xf10 + 0xf54cfc + i * 0x70) =
+           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x90);
+      puVar5 = (undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x60);
+      puVar6 = (undefined4 *)(localClientNum * 0xf10 + 0xf54d28 + i * 0x70);
+      for (iVar4 = 0xb; iVar4 != 0; iVar4 = iVar4 + -1) {
+        *puVar6 = *puVar5;
+        puVar5 = puVar5 + 1;
         puVar6 = puVar6 + 1;
-        puVar7 = puVar7 + 1;
       }
-      *(undefined4 *)(param_1 * 0xf10 + 0xf54d54 + local_1c * 0x70) =
-           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x2c);
-      I_strncpyz((char *)(param_1 * 0xf10 + 0xf54d00 + local_1c * 0x70),
-                 (char *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0xc),0x20);
-      I_strncpyz((char *)(param_1 * 0xf10 + 0xf54d20 + local_1c * 0x70),
-                 (char *)((int)(pcVar3->bgs).clientinfo + iVar8 * 0x5c8 + 0x58),8);
-      if (*(int *)(param_1 * 0xf10 + 0xf54d54 + local_1c * 0x70) == 2) {
-        matchScoreBoardData[param_1].numAllies = matchScoreBoardData[param_1].numAllies + 1;
+      *(undefined4 *)(localClientNum * 0xf10 + 0xf54d54 + i * 0x70) =
+           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x2c);
+      I_strncpyz((char *)(localClientNum * 0xf10 + 0xf54d00 + i * 0x70),
+                 (char *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0xc),0x20);
+      I_strncpyz((char *)(localClientNum * 0xf10 + 0xf54d20 + i * 0x70),
+                 (char *)((int)(pcVar3->bgs).clientinfo + iVar7 * 0x5c8 + 0x58),8);
+      if (*(int *)(localClientNum * 0xf10 + 0xf54d54 + i * 0x70) == 2) {
+        matchScoreBoardData[localClientNum].numAllies =
+             matchScoreBoardData[localClientNum].numAllies + 1;
       }
-      matchScoreBoardData[param_1].numClients = matchScoreBoardData[param_1].numClients + 1;
+      matchScoreBoardData[localClientNum].numClients =
+           matchScoreBoardData[localClientNum].numClients + 1;
     }
   }
-  bVar2 = CL_IsLastActiveLocalClient(param_1);
+  bVar2 = CL_IsLastActiveLocalClient(localClientNum);
   if (bVar2) {
-    CG_AddSBColumnToMatchScoreBoard(param_1,LCT_RANK_ICON,0.07,"",1,SB_TYPE_INVALID);
-    CG_AddSBColumnToMatchScoreBoard(param_1,LCT_STATUS_ICON,0.05,"",1,SB_TYPE_INVALID);
-    CG_AddSBColumnToMatchScoreBoard(param_1,LCT_NAME,0.2,"",0,SB_TYPE_INVALID);
-    CG_AddSBColumnToMatchScoreBoard(param_1,LCT_TALKING_ICON,0.05,"",0,SB_TYPE_INVALID);
-    local_10 = 0.37;
+    CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_RANK_ICON,0.07,"",1,SB_TYPE_INVALID);
+    CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_STATUS_ICON,0.05,"",1,SB_TYPE_INVALID);
+    CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_NAME,0.2,"",0,SB_TYPE_INVALID);
+    CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_TALKING_ICON,0.05,"",0,SB_TYPE_INVALID);
+    currentScoreboardWidthUsed = 0.37;
   }
   else {
-    CG_AddSBColumnToMatchScoreBoard(param_1,LCT_NAME,0.45,"",0,SB_TYPE_INVALID);
-    local_10 = 0.45;
+    CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_NAME,0.45,"",0,SB_TYPE_INVALID);
+    currentScoreboardWidthUsed = 0.45;
   }
-  CG_AddSBColumnToMatchScoreBoard(param_1,LCT_SCORE,0.1,"CGAME_SB_SCORE",2,SB_TYPE_INVALID);
-  local_10 = local_10 + 0.1;
+  CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_SCORE,0.1,"CGAME_SB_SCORE",2,SB_TYPE_INVALID);
+  currentScoreboardWidthUsed = currentScoreboardWidthUsed + 0.1;
   if ((cg_scoreboardPingText->current).enabled != false) {
-    local_10 = local_10 + 0.1;
+    currentScoreboardWidthUsed = currentScoreboardWidthUsed + 0.1;
   }
-  for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-    *(scoreboardColumnType_t *)(param_1 * 0xf10 + 0xf55ae8 + local_24 * 4) =
-         pcVar3->scoreboardColumnTypes[local_24];
-    if ((1 < *(int *)(param_1 * 0xf10 + 0xf55ae8 + local_24 * 4)) &&
-       (*(int *)(param_1 * 0xf10 + 0xf55ae8 + local_24 * 4) < 0x12)) {
-      local_8 = local_8 + 1;
+  for (column_2 = 0; column_2 < 4; column_2 = column_2 + 1) {
+    *(scoreboardColumnType_t *)(localClientNum * 0xf10 + 0xf55ae8 + column_2 * 4) =
+         pcVar3->scoreboardColumnTypes[column_2];
+    if ((1 < *(int *)(localClientNum * 0xf10 + 0xf55ae8 + column_2 * 4)) &&
+       (*(int *)(localClientNum * 0xf10 + 0xf55ae8 + column_2 * 4) < 0x12)) {
+      numDynamicSBColumns = numDynamicSBColumns + 1;
     }
   }
-  if ((1.0 <= local_10) &&
+  if ((1.0 <= currentScoreboardWidthUsed) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                                0x220,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (1.0 < local_10) {
-    local_10 = 1.0;
+  if (1.0 < currentScoreboardWidthUsed) {
+    currentScoreboardWidthUsed = 1.0;
   }
-  for (local_28 = 0; local_28 < 4; local_28 = local_28 + 1) {
-    if ((1 < *(int *)(param_1 * 0xf10 + 0xf55ae8 + local_28 * 4)) &&
-       (*(int *)(param_1 * 0xf10 + 0xf55ae8 + local_28 * 4) < 0x12)) {
-      sVar9 = *(scoreboardColumnType_t *)(param_1 * 0xf10 + 0xf55ae8 + local_28 * 4);
-      iVar8 = 2;
-      pcVar4 = CG_GetNameForScoreboardColumn(param_1,local_28);
+  for (column_3 = 0; column_3 < 4; column_3 = column_3 + 1) {
+    if ((1 < *(int *)(localClientNum * 0xf10 + 0xf55ae8 + column_3 * 4)) &&
+       (*(int *)(localClientNum * 0xf10 + 0xf55ae8 + column_3 * 4) < 0x12)) {
+      sbColumnType = *(scoreboardColumnType_t *)(localClientNum * 0xf10 + 0xf55ae8 + column_3 * 4);
+      iVar7 = 2;
+      columnName = CG_GetNameForScoreboardColumn(localClientNum,column_3);
       CG_AddSBColumnToMatchScoreBoard
-                (param_1,LCT_SB_COLUMN,(1.0 - local_10) / (float)local_8,pcVar4,iVar8,sVar9);
+                (localClientNum,LCT_SB_COLUMN,
+                 (1.0 - currentScoreboardWidthUsed) / (float)numDynamicSBColumns,columnName,iVar7,
+                 sbColumnType);
     }
   }
   if ((cg_scoreboardPingText->current).enabled != false) {
-    CG_AddSBColumnToMatchScoreBoard(param_1,LCT_PING,0.1,"CGAME_SB_PING",2,SB_TYPE_INVALID);
+    CG_AddSBColumnToMatchScoreBoard(localClientNum,LCT_PING,0.1,"CGAME_SB_PING",2,SB_TYPE_INVALID);
   }
   return;
 }
@@ -300,24 +309,24 @@ void __cdecl CG_UpdateMatchScoreboard(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CG_GetMatchScoreboardClientCount(int param_1,team_t param_2)
+int __cdecl CG_GetMatchScoreboardClientCount(int localClientNum,team_t team)
 
 {
-  int local_c;
-  int local_8;
+  int i;
+  int clientCount;
   
-  local_8 = 0;
-  if (param_2 == TEAM_NUM_TEAMS) {
-    local_8 = matchScoreBoardData[param_1].numClients;
+  clientCount = 0;
+  if (team == TEAM_NUM_TEAMS) {
+    clientCount = matchScoreBoardData[localClientNum].numClients;
   }
   else {
-    for (local_c = 0; local_c < matchScoreBoardData[param_1].numClients; local_c = local_c + 1) {
-      if (*(team_t *)(param_1 * 0xf10 + 0xf54d54 + local_c * 0x70) == param_2) {
-        local_8 = local_8 + 1;
+    for (i = 0; i < matchScoreBoardData[localClientNum].numClients; i = i + 1) {
+      if (*(team_t *)(localClientNum * 0xf10 + 0xf54d54 + i * 0x70) == team) {
+        clientCount = clientCount + 1;
       }
     }
   }
-  return local_8;
+  return clientCount;
 }
 
 
@@ -325,34 +334,34 @@ int __cdecl CG_GetMatchScoreboardClientCount(int param_1,team_t param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CG_GetMatchScoreboardIndexForTeam(int param_1,int param_2,team_t param_3)
+int __cdecl CG_GetMatchScoreboardIndexForTeam(int localClientNum,int index,team_t team)
 
 {
-  int local_8;
+  int currClient;
   
-  if (param_3 == TEAM_NUM_TEAMS) {
-    if (param_2 < matchScoreBoardData[param_1].numAllies) {
-      param_3 = TEAM_ALLIES;
+  if (team == TEAM_NUM_TEAMS) {
+    if (index < matchScoreBoardData[localClientNum].numAllies) {
+      team = TEAM_ALLIES;
     }
     else {
-      param_2 = param_2 - matchScoreBoardData[param_1].numAllies;
+      index = index - matchScoreBoardData[localClientNum].numAllies;
     }
   }
-  param_2 = param_2 + 1;
-  local_8 = 0;
+  index = index + 1;
+  currClient = 0;
   while( true ) {
-    if (matchScoreBoardData[param_1].numClients <= local_8) {
-      return local_8;
+    if (matchScoreBoardData[localClientNum].numClients <= currClient) {
+      return currClient;
     }
-    if ((*(team_t *)(param_1 * 0xf10 + 0xf54d54 + local_8 * 0x70) == param_3) ||
-       ((param_3 == TEAM_NUM_TEAMS && (*(int *)(param_1 * 0xf10 + 0xf54d54 + local_8 * 0x70) != 2)))
-       ) {
-      param_2 = param_2 + -1;
+    if ((*(team_t *)(localClientNum * 0xf10 + 0xf54d54 + currClient * 0x70) == team) ||
+       ((team == TEAM_NUM_TEAMS &&
+        (*(int *)(localClientNum * 0xf10 + 0xf54d54 + currClient * 0x70) != 2)))) {
+      index = index + -1;
     }
-    if (param_2 == 0) break;
-    local_8 = local_8 + 1;
+    if (index == 0) break;
+    currClient = currClient + 1;
   }
-  return local_8;
+  return currClient;
 }
 
 
@@ -360,16 +369,17 @@ int __cdecl CG_GetMatchScoreboardIndexForTeam(int param_1,int param_2,team_t par
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-team_t __cdecl CG_GetMatchscoreboardTeam(int param_1,int param_2)
+team_t __cdecl CG_GetMatchscoreboardTeam(int localClientNum,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   team_t tVar4;
+  int currClient;
   
-  iVar3 = CG_GetMatchScoreboardIndexForTeam(param_1,param_2,TEAM_NUM_TEAMS);
-  if ((iVar3 < 0) || (matchScoreBoardData[param_1].numClients <= iVar3)) {
+  iVar3 = CG_GetMatchScoreboardIndexForTeam(localClientNum,index,TEAM_NUM_TEAMS);
+  if ((iVar3 < 0) || (matchScoreBoardData[localClientNum].numClients <= iVar3)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                              0x25e,0,"%s");
     if (!bVar2) {
@@ -378,7 +388,7 @@ team_t __cdecl CG_GetMatchscoreboardTeam(int param_1,int param_2)
       return tVar4;
     }
   }
-  return *(team_t *)(param_1 * 0xf10 + 0xf54d54 + iVar3 * 0x70);
+  return *(team_t *)(localClientNum * 0xf10 + 0xf54d54 + iVar3 * 0x70);
 }
 
 
@@ -388,30 +398,33 @@ team_t __cdecl CG_GetMatchscoreboardTeam(int param_1,int param_2)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-CG_GetInGamePlayerListIcon(int param_1,int param_2,int param_3,team_t param_4,Material **param_5)
+CG_GetInGamePlayerListIcon(int localClientNum,int column,int index,team_t team,Material **handle)
 
 {
   bool bVar1;
   int iVar2;
   Material *pMVar3;
   FriendInfo *in_stack_ffffff3c;
+  int currClient;
   
-  if ((-1 < param_3) && (param_3 < matchScoreBoardData[param_1].numClients)) {
-    iVar2 = CG_GetMatchScoreboardIndexForTeam(param_1,param_3,param_4);
-    if (param_2 == 8) {
+  if ((-1 < index) && (index < matchScoreBoardData[localClientNum].numClients)) {
+    iVar2 = CG_GetMatchScoreboardIndexForTeam(localClientNum,index,team);
+    if (column == 8) {
       bVar1 = Friends_GetByID(0,CONCAT44(&stack0xffffff3c,
-                                         *(undefined4 *)(param_1 * 0xf10 + 0xf54cf4 + iVar2 * 0x70))
-                              ,in_stack_ffffff3c);
+                                         *(undefined4 *)
+                                          (localClientNum * 0xf10 + 0xf54cf4 + iVar2 * 0x70)),
+                              in_stack_ffffff3c);
       if (bVar1) {
         pMVar3 = Material_RegisterHandle("pc_friend",7);
-        *param_5 = pMVar3;
+        *handle = pMVar3;
       }
     }
-    else if ((param_2 == 9) &&
-            (bVar1 = CL_IsPlayerMuted(param_1,*(int *)(param_1 * 0xf10 + 0xf54cf8 + iVar2 * 0x70)),
+    else if ((column == 9) &&
+            (bVar1 = CL_IsPlayerMuted(localClientNum,
+                                      *(int *)(localClientNum * 0xf10 + 0xf54cf8 + iVar2 * 0x70)),
             bVar1)) {
       pMVar3 = Material_RegisterHandle("voice_off",7);
-      *param_5 = pMVar3;
+      *handle = pMVar3;
     }
   }
   return;
@@ -422,18 +435,19 @@ CG_GetInGamePlayerListIcon(int param_1,int param_2,int param_3,team_t param_4,Ma
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl CG_GetMatchScoreboardInfo(int param_1,int param_2,int param_3,team_t param_4)
+char * __cdecl CG_GetMatchScoreboardInfo(int localClientNum,int column,int index,team_t team)
 
 {
   char *pcVar1;
   int iVar2;
+  int currClient;
   
-  if ((param_3 < 0) || (matchScoreBoardData[param_1].numClients <= param_3)) {
+  if ((index < 0) || (matchScoreBoardData[localClientNum].numClients <= index)) {
     pcVar1 = "";
   }
   else {
-    iVar2 = CG_GetMatchScoreboardIndexForTeam(param_1,param_3,param_4);
-    switch(param_2) {
+    iVar2 = CG_GetMatchScoreboardIndexForTeam(localClientNum,index,team);
+    switch(column) {
     case 0:
       pcVar1 = va("%llu");
       break;
@@ -441,12 +455,12 @@ char * __cdecl CG_GetMatchScoreboardInfo(int param_1,int param_2,int param_3,tea
       pcVar1 = "";
       break;
     case 2:
-      pcVar1 = CL_GetRankData(matchScoreBoardData[param_1].matchClientScoreData[iVar2].rank,
+      pcVar1 = CL_GetRankData(matchScoreBoardData[localClientNum].matchClientScoreData[iVar2].rank,
                               MP_RANKTABLE_DISPLAYLEVEL);
       break;
     case 4:
-      if (*(char *)(param_1 * 0xf10 + 0xf54d20 + iVar2 * 0x70) == '\0') {
-        pcVar1 = (char *)(param_1 * 0xf10 + 0xf54d00 + iVar2 * 0x70);
+      if (*(char *)(localClientNum * 0xf10 + 0xf54d20 + iVar2 * 0x70) == '\0') {
+        pcVar1 = (char *)(localClientNum * 0xf10 + 0xf54d00 + iVar2 * 0x70);
       }
       else {
         pcVar1 = va("[%s]%s");
@@ -457,23 +471,27 @@ char * __cdecl CG_GetMatchScoreboardInfo(int param_1,int param_2,int param_3,tea
       break;
     case 6:
       pcVar1 = CG_GetColumnValueString
-                         (param_1,(score_s *)(param_1 * 0xf10 + 0xf54d28 + iVar2 * 0x70),
-                          matchScoreBoardData[param_1].scoreboardColumnTypes[0]);
+                         (localClientNum,
+                          (score_s *)(localClientNum * 0xf10 + 0xf54d28 + iVar2 * 0x70),
+                          matchScoreBoardData[localClientNum].scoreboardColumnTypes[0]);
       break;
     case 7:
       pcVar1 = CG_GetColumnValueString
-                         (param_1,(score_s *)(param_1 * 0xf10 + 0xf54d28 + iVar2 * 0x70),
-                          matchScoreBoardData[param_1].scoreboardColumnTypes[1]);
+                         (localClientNum,
+                          (score_s *)(localClientNum * 0xf10 + 0xf54d28 + iVar2 * 0x70),
+                          matchScoreBoardData[localClientNum].scoreboardColumnTypes[1]);
       break;
     case 8:
       pcVar1 = CG_GetColumnValueString
-                         (param_1,(score_s *)(param_1 * 0xf10 + 0xf54d28 + iVar2 * 0x70),
-                          matchScoreBoardData[param_1].scoreboardColumnTypes[2]);
+                         (localClientNum,
+                          (score_s *)(localClientNum * 0xf10 + 0xf54d28 + iVar2 * 0x70),
+                          matchScoreBoardData[localClientNum].scoreboardColumnTypes[2]);
       break;
     case 9:
       pcVar1 = CG_GetColumnValueString
-                         (param_1,(score_s *)(param_1 * 0xf10 + 0xf54d28 + iVar2 * 0x70),
-                          matchScoreBoardData[param_1].scoreboardColumnTypes[3]);
+                         (localClientNum,
+                          (score_s *)(localClientNum * 0xf10 + 0xf54d28 + iVar2 * 0x70),
+                          matchScoreBoardData[localClientNum].scoreboardColumnTypes[3]);
     }
   }
   return pcVar1;
@@ -482,25 +500,26 @@ char * __cdecl CG_GetMatchScoreboardInfo(int param_1,int param_2,int param_3,tea
 
 // 004E35D0  CG_IsInGamePlayerListPlayerTalking  (cgame_mp/cg_scoreboard_mp.cpp:667)
 
-char * __cdecl CG_IsInGamePlayerListPlayerTalking(int param_1,int param_2,Material **param_3)
+char * __cdecl
+CG_IsInGamePlayerListPlayerTalking(int localClientNum,int clientNum,Material **handle)
 
 {
   bool bVar1;
   Material *pMVar2;
   
-  bVar1 = CL_IsPlayerMuted(param_1,param_2);
+  bVar1 = CL_IsPlayerMuted(localClientNum,clientNum);
   if (bVar1) {
     pMVar2 = Material_RegisterHandle("voice_off",7);
-    *param_3 = pMVar2;
+    *handle = pMVar2;
   }
   else {
-    bVar1 = CL_IsPlayerTalking(param_1,param_2);
+    bVar1 = CL_IsPlayerTalking(localClientNum,clientNum);
     if (bVar1) {
       pMVar2 = Material_RegisterHandle("voice_on",7);
-      *param_3 = pMVar2;
+      *handle = pMVar2;
     }
     else {
-      *param_3 = (Material *)0x0;
+      *handle = (Material *)0x0;
     }
   }
   return "";
@@ -513,38 +532,40 @@ char * __cdecl CG_IsInGamePlayerListPlayerTalking(int param_1,int param_2,Materi
 
 char * __cdecl
 CG_GetMatchInGamePlayerListInfo
-          (int param_1,int param_2,int param_3,team_t param_4,Material **param_5)
+          (int localClientNum,int column,int index,team_t team,Material **handle)
 
 {
   char *pcVar1;
-  int local_8;
+  int currClient;
   
-  if ((param_3 < 0) || (matchScoreBoardData[param_1].numClients <= param_3)) {
+  if ((index < 0) || (matchScoreBoardData[localClientNum].numClients <= index)) {
     pcVar1 = "";
   }
   else {
-    param_3 = param_3 + 1;
-    for (local_8 = 0; local_8 < matchScoreBoardData[param_1].numClients; local_8 = local_8 + 1) {
-      if (*(team_t *)(param_1 * 0xf10 + 0xf54d54 + local_8 * 0x70) == param_4) {
-        param_3 = param_3 + -1;
+    index = index + 1;
+    for (currClient = 0; currClient < matchScoreBoardData[localClientNum].numClients;
+        currClient = currClient + 1) {
+      if (*(team_t *)(localClientNum * 0xf10 + 0xf54d54 + currClient * 0x70) == team) {
+        index = index + -1;
       }
-      if (param_3 == 0) break;
+      if (index == 0) break;
     }
-    switch(param_2) {
+    switch(column) {
     case 0:
       pcVar1 = CG_IsInGamePlayerListPlayerTalking
-                         (param_1,*(int *)(param_1 * 0xf10 + 0xf54cf8 + local_8 * 0x70),param_5);
+                         (localClientNum,
+                          *(int *)(localClientNum * 0xf10 + 0xf54cf8 + currClient * 0x70),handle);
       break;
     default:
       pcVar1 = "";
       break;
     case 4:
-      pcVar1 = CL_GetRankData(matchScoreBoardData[param_1].matchClientScoreData[local_8].rank,
-                              MP_RANKTABLE_DISPLAYLEVEL);
+      pcVar1 = CL_GetRankData(matchScoreBoardData[localClientNum].matchClientScoreData[currClient].
+                              rank,MP_RANKTABLE_DISPLAYLEVEL);
       break;
     case 6:
-      if (*(char *)(param_1 * 0xf10 + 0xf54d20 + local_8 * 0x70) == '\0') {
-        pcVar1 = (char *)(param_1 * 0xf10 + 0xf54d00 + local_8 * 0x70);
+      if (*(char *)(localClientNum * 0xf10 + 0xf54d20 + currClient * 0x70) == '\0') {
+        pcVar1 = (char *)(localClientNum * 0xf10 + 0xf54d00 + currClient * 0x70);
       }
       else {
         pcVar1 = va("[%s]%s");
@@ -566,63 +587,69 @@ CG_GetMatchInGamePlayerListInfo
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 char * __cdecl
-CG_GetMatchInGamePlayersInfo(int param_1,int param_2,int param_3,int param_4,Material **param_5)
+CG_GetMatchInGamePlayersInfo
+          (int localClientNum,int column,int index,int feederType,Material **handle)
 
 {
   int iVar1;
   cg_s *pcVar2;
   char *pcVar3;
-  int local_8;
+  int a_count;
+  int team_2;
+  int team;
+  cg_s *cgameGlob;
+  int clientIndex;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  if (((pcVar2 == (cg_s *)0x0) || (param_3 < 0)) || (0x1f < param_3)) {
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  if (((pcVar2 == (cg_s *)0x0) || (index < 0)) || (0x1f < index)) {
     pcVar3 = "";
   }
   else {
-    param_3 = param_3 + 1;
-    switch(param_4) {
+    index = index + 1;
+    switch(feederType) {
     case 0x69:
     case 0x6a:
-      local_8 = 0;
-      while ((local_8 < 0x20 &&
-             (((*(int *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8) == 0 ||
-               (*(int *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8 + 0x2c) !=
-                (param_4 == 0x69) + 1)) || (param_3 = param_3 + -1, param_3 != 0))))) {
-        local_8 = local_8 + 1;
+      clientIndex = 0;
+      while ((clientIndex < 0x20 &&
+             (((*(int *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8) == 0 ||
+               (*(int *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8 + 0x2c) !=
+                (feederType == 0x69) + 1)) || (index = index + -1, index != 0))))) {
+        clientIndex = clientIndex + 1;
       }
       break;
     case 0x6b:
     case 0x6c:
-      iVar1 = (int)ROUND((float)matchScoreBoardData[param_1].numClients * 0.5 + 0.5);
-      local_8 = 0;
-      while ((local_8 < 0x20 &&
-             ((((*(int *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8) == 0 ||
-                (*(int *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8 + 0x2c) != 0)) ||
-               (((param_4 != 0x6b || (iVar1 <= local_8)) && ((param_4 != 0x6c || (local_8 < iVar1)))
-                ))) || (param_3 = param_3 + -1, param_3 != 0))))) {
-        local_8 = local_8 + 1;
+      iVar1 = (int)ROUND((float)matchScoreBoardData[localClientNum].numClients * 0.5 + 0.5);
+      clientIndex = 0;
+      while ((clientIndex < 0x20 &&
+             ((((*(int *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8) == 0 ||
+                (*(int *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8 + 0x2c) != 0)) ||
+               (((feederType != 0x6b || (iVar1 <= clientIndex)) &&
+                ((feederType != 0x6c || (clientIndex < iVar1)))))) ||
+              (index = index + -1, index != 0))))) {
+        clientIndex = clientIndex + 1;
       }
     }
-    if (local_8 < 0x20) {
-      switch(param_2) {
+    if (clientIndex < 0x20) {
+      switch(column) {
       case 3:
-        pcVar3 = CL_GetRankData(*(int *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8 + 0x38),
-                                MP_RANKTABLE_DISPLAYLEVEL);
+        pcVar3 = CL_GetRankData(*(int *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8 + 0x38)
+                                ,MP_RANKTABLE_DISPLAYLEVEL);
         break;
       case 4:
-        *param_5 = *(Material **)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8 + 0x90);
+        *handle = *(Material **)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8 + 0x90);
         pcVar3 = "";
         break;
       case 5:
-        if (*(char *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8 + 0x58) == '\0') {
-          pcVar3 = (char *)((int)(pcVar2->bgs).clientinfo + local_8 * 0x5c8 + 0xc);
+        if (*(char *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8 + 0x58) == '\0') {
+          pcVar3 = (char *)((int)(pcVar2->bgs).clientinfo + clientIndex * 0x5c8 + 0xc);
         }
         else {
           pcVar3 = va("[%s]%s");
         }
         break;
       case 6:
-        pcVar3 = CG_IsInGamePlayerListPlayerTalking(param_1,local_8,param_5);
+        pcVar3 = CG_IsInGamePlayerListPlayerTalking(localClientNum,clientIndex,handle);
         break;
       case 7:
         pcVar3 = "";
@@ -643,22 +670,23 @@ CG_GetMatchInGamePlayersInfo(int param_1,int param_2,int param_3,int param_4,Mat
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl CG_GetMatchInGamePlayerXuid(int param_1,int param_2,team_t param_3)
+char * __cdecl CG_GetMatchInGamePlayerXuid(int localClientNum,int index,team_t team)
 
 {
   char *pcVar1;
-  int local_8;
+  int currClient;
   
-  if ((param_2 < 0) || (matchScoreBoardData[param_1].numClients <= param_2)) {
+  if ((index < 0) || (matchScoreBoardData[localClientNum].numClients <= index)) {
     pcVar1 = "";
   }
   else {
-    param_2 = param_2 + 1;
-    for (local_8 = 0; local_8 < matchScoreBoardData[param_1].numClients; local_8 = local_8 + 1) {
-      if (*(team_t *)(param_1 * 0xf10 + 0xf54d54 + local_8 * 0x70) == param_3) {
-        param_2 = param_2 + -1;
+    index = index + 1;
+    for (currClient = 0; currClient < matchScoreBoardData[localClientNum].numClients;
+        currClient = currClient + 1) {
+      if (*(team_t *)(localClientNum * 0xf10 + 0xf54d54 + currClient * 0x70) == team) {
+        index = index + -1;
       }
-      if (param_2 == 0) break;
+      if (index == 0) break;
     }
     pcVar1 = va("%llu");
   }
@@ -673,48 +701,54 @@ char * __cdecl CG_GetMatchInGamePlayerXuid(int param_1,int param_2,team_t param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_GetMatchInGamePlayersXUID(int param_1,int param_2,int param_3,ulong64 *param_4)
+bool __cdecl
+CG_GetMatchInGamePlayersXUID(int localClientNum,int index,int feederType,ulong64 *retXUID)
 
 {
   int iVar1;
   bool bVar2;
   cg_s *pcVar3;
-  int local_8;
+  int a_count;
+  int team_2;
+  int team;
+  cg_s *cgameGlob;
+  int clientIndex;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if (((pcVar3 == (cg_s *)0x0) || (param_2 < 0)) || (0x1f < param_2)) {
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  if (((pcVar3 == (cg_s *)0x0) || (index < 0)) || (0x1f < index)) {
     bVar2 = false;
   }
   else {
-    param_2 = param_2 + 1;
-    switch(param_3) {
+    index = index + 1;
+    switch(feederType) {
     case 0x69:
     case 0x6a:
-      local_8 = 0;
-      while ((local_8 < 0x20 &&
-             (((*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8) == 0 ||
-               (*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x2c) !=
-                (param_3 == 0x69) + 1)) || (param_2 = param_2 + -1, param_2 != 0))))) {
-        local_8 = local_8 + 1;
+      clientIndex = 0;
+      while ((clientIndex < 0x20 &&
+             (((*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8) == 0 ||
+               (*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x2c) !=
+                (feederType == 0x69) + 1)) || (index = index + -1, index != 0))))) {
+        clientIndex = clientIndex + 1;
       }
       break;
     case 0x6b:
     case 0x6c:
-      iVar1 = (int)ROUND((float)matchScoreBoardData[param_1].numClients * 0.5 + 0.5);
-      local_8 = 0;
-      while ((local_8 < 0x20 &&
-             ((((*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8) == 0 ||
-                (*(int *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x2c) != 0)) ||
-               (((param_3 != 0x6b || (iVar1 <= local_8)) && ((param_3 != 0x6c || (local_8 < iVar1)))
-                ))) || (param_2 = param_2 + -1, param_2 != 0))))) {
-        local_8 = local_8 + 1;
+      iVar1 = (int)ROUND((float)matchScoreBoardData[localClientNum].numClients * 0.5 + 0.5);
+      clientIndex = 0;
+      while ((clientIndex < 0x20 &&
+             ((((*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8) == 0 ||
+                (*(int *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x2c) != 0)) ||
+               (((feederType != 0x6b || (iVar1 <= clientIndex)) &&
+                ((feederType != 0x6c || (clientIndex < iVar1)))))) ||
+              (index = index + -1, index != 0))))) {
+        clientIndex = clientIndex + 1;
       }
     }
-    if (local_8 < 0x20) {
-      *(undefined4 *)param_4 =
-           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x50);
-      *(undefined4 *)((int)param_4 + 4) =
-           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + local_8 * 0x5c8 + 0x54);
+    if (clientIndex < 0x20) {
+      *(undefined4 *)retXUID =
+           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x50);
+      *(undefined4 *)((int)retXUID + 4) =
+           *(undefined4 *)((int)(pcVar3->bgs).clientinfo + clientIndex * 0x5c8 + 0x54);
       bVar2 = true;
     }
     else {
@@ -730,14 +764,15 @@ bool __cdecl CG_GetMatchInGamePlayersXUID(int param_1,int param_2,int param_3,ul
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-CG_GetMatchScoreboardRankIcon(int param_1,int param_2,team_t param_3,Material **param_4)
+CG_GetMatchScoreboardRankIcon(int localClientNum,int index,team_t team,Material **handle)
 
 {
   int iVar1;
+  int currClient;
   
-  if ((-1 < param_2) && (param_2 < matchScoreBoardData[param_1].numClients)) {
-    iVar1 = CG_GetMatchScoreboardIndexForTeam(param_1,param_2,param_3);
-    *param_4 = *(Material **)(param_1 * 0xf10 + 0xf54cfc + iVar1 * 0x70);
+  if ((-1 < index) && (index < matchScoreBoardData[localClientNum].numClients)) {
+    iVar1 = CG_GetMatchScoreboardIndexForTeam(localClientNum,index,team);
+    *handle = *(Material **)(localClientNum * 0xf10 + 0xf54cfc + iVar1 * 0x70);
   }
   return;
 }
@@ -747,28 +782,28 @@ CG_GetMatchScoreboardRankIcon(int param_1,int param_2,team_t param_3,Material **
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CG_GetIndexIntoMatchScoreboard(int param_1,int param_2)
+int __cdecl CG_GetIndexIntoMatchScoreboard(int localClientNum,int controllerIndex)
 
 {
   ulong64 uVar1;
   int local_18;
   int local_14;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (matchScoreBoardData[param_1].numClients <= local_8) {
+    if (matchScoreBoardData[localClientNum].numClients <= i) {
       Com_PrintWarning(0x10,"Couldn\'t find local player in match scoreboard!\n");
       return -1;
     }
-    uVar1 = Live_GetXuid(param_2);
+    uVar1 = Live_GetXuid(controllerIndex);
     local_18 = (int)uVar1;
-    if ((*(int *)(param_1 * 0xf10 + 0xf54cf0 + local_8 * 0x70) == local_18) &&
+    if ((*(int *)(localClientNum * 0xf10 + 0xf54cf0 + i * 0x70) == local_18) &&
        (local_14 = (int)(uVar1 >> 0x20),
-       *(int *)(param_1 * 0xf10 + 0xf54cf4 + local_8 * 0x70) == local_14)) break;
-    local_8 = local_8 + 1;
+       *(int *)(localClientNum * 0xf10 + 0xf54cf4 + i * 0x70) == local_14)) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
@@ -776,28 +811,30 @@ int __cdecl CG_GetIndexIntoMatchScoreboard(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl CG_GetWagerPlaceForMatchScoreboard(int param_1,int param_2)
+int __cdecl CG_GetWagerPlaceForMatchScoreboard(int localClientNum,int matchScoreboardIndex)
 
 {
   int iVar1;
-  int local_10;
-  int local_c;
+  int i;
+  int wagerPlace;
+  int score;
   
-  if ((param_2 < 0) || (matchScoreBoardData[param_1].numClients <= param_2)) {
+  if ((matchScoreboardIndex < 0) ||
+     (matchScoreBoardData[localClientNum].numClients <= matchScoreboardIndex)) {
     Com_Printf(0x10,"Tried to access invalid location in match score board!\n");
-    local_c = 1;
+    wagerPlace = 1;
   }
   else {
-    iVar1 = param_2 * 0x70;
-    local_c = param_2 + 1;
-    while ((local_10 = param_2 + -1, -1 < local_10 &&
-           (*(int *)(param_1 * 0xf10 + 0xf54d34 + local_10 * 0x70) ==
-            *(int *)(param_1 * 0xf10 + 0xf54d34 + iVar1)))) {
-      local_c = local_c + -1;
-      param_2 = local_10;
+    iVar1 = matchScoreboardIndex * 0x70;
+    wagerPlace = matchScoreboardIndex + 1;
+    while ((i = matchScoreboardIndex + -1, -1 < i &&
+           (*(int *)(localClientNum * 0xf10 + 0xf54d34 + i * 0x70) ==
+            *(int *)(localClientNum * 0xf10 + 0xf54d34 + iVar1)))) {
+      wagerPlace = wagerPlace + -1;
+      matchScoreboardIndex = i;
     }
   }
-  return local_c;
+  return wagerPlace;
 }
 
 
@@ -808,18 +845,19 @@ int __cdecl CG_GetWagerPlaceForMatchScoreboard(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-score_s * __cdecl GetClientScore(int param_1,int param_2)
+score_s * __cdecl GetClientScore(int localClientNum,int clientNum)
 
 {
   cg_s *pcVar1;
   score_s *psVar2;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  if (*(int *)((int)(pcVar1->bgs).clientinfo + param_2 * 0x5c8) == 0) {
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  if (*(int *)((int)(pcVar1->bgs).clientinfo + clientNum * 0x5c8) == 0) {
     psVar2 = (score_s *)0x0;
   }
   else {
-    psVar2 = (score_s *)((int)(pcVar1->bgs).clientinfo + param_2 * 0x5c8 + 0x60);
+    psVar2 = (score_s *)((int)(pcVar1->bgs).clientinfo + clientNum * 0x5c8 + 0x60);
   }
   return psVar2;
 }
@@ -832,14 +870,15 @@ score_s * __cdecl GetClientScore(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-score_s * __cdecl UI_GetOurClientScore(int param_1)
+score_s * __cdecl UI_GetOurClientScore(int localClientNum)
 
 {
   cg_s *pcVar1;
   score_s *psVar2;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  psVar2 = GetClientScore(param_1,pcVar1->clientNum);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  psVar2 = GetClientScore(localClientNum,pcVar1->clientNum);
   return psVar2;
 }
 
@@ -851,19 +890,21 @@ score_s * __cdecl UI_GetOurClientScore(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-score_s * __cdecl UI_GetScoreAtRank(int param_1,int param_2)
+score_s * __cdecl UI_GetScoreAtRank(int localClientNum,int rank)
 
 {
   int iVar1;
   cg_s *pcVar2;
   score_s *psVar3;
+  cg_s *cgameGlob;
+  int clientNum;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 < 1) || (0x20 < param_2)) {
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  if ((rank < 1) || (0x20 < rank)) {
     psVar3 = (score_s *)0x0;
   }
   else {
-    iVar1 = pcVar2->teamPlayers[param_2 + 3];
+    iVar1 = pcVar2->teamPlayers[rank + 3];
     if ((iVar1 < 0) || (0x1f < iVar1)) {
       psVar3 = (score_s *)0x0;
     }
@@ -882,66 +923,71 @@ score_s * __cdecl UI_GetScoreAtRank(int param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CG_DrawBackdropServerInfo(int param_1,float param_2)
+void __cdecl CG_DrawBackdropServerInfo(int localClientNum,float alpha)
 
 {
   cgs_t *pcVar1;
   int iVar2;
-  Font_s *pFVar3;
-  int iVar4;
-  ScreenPlacement *pSVar5;
-  float fVar6;
-  float fVar7;
-  char local_12c [256];
+  Font_s *font;
+  int iVar3;
+  ScreenPlacement *scrPlace_00;
+  float fVar4;
+  float fVar5;
+  Font_s *footerFont;
+  ScreenPlacement *scrPlace;
+  int vertAlign;
+  cgs_t *cgs;
+  char serverName [256];
   uint local_2c;
-  char *local_28;
-  int local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
+  char *serverIP;
+  int horzAlign;
+  float x;
+  float y;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float fontScale;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_24 = 1;
-  local_18 = 1.0;
+  horzAlign = 1;
+  color = 1.0;
   local_14 = 1.0;
   local_10 = 1.0;
-  local_c = param_2;
-  pcVar1 = CG_GetLocalClientStaticGlobals(param_1);
-  I_strncpyz(local_12c,pcVar1->szHostName,0x100);
-  UI_UseAltColorPalette(local_12c);
-  local_28 = CL_GetServerIPAddress();
-  iVar2 = I_stricmp(local_28,"0.0.0.0:0");
+  local_c = alpha;
+  pcVar1 = CG_GetLocalClientStaticGlobals(localClientNum);
+  I_strncpyz(serverName,pcVar1->szHostName,0x100);
+  UI_UseAltColorPalette(serverName);
+  serverIP = CL_GetServerIPAddress();
+  iVar2 = I_stricmp(serverIP,"0.0.0.0:0");
   if (iVar2 == 0) {
-    local_28 = "";
+    serverIP = "";
   }
-  local_8 = 0.2;
-  pSVar5 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
+  fontScale = 0.2;
+  scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
   do {
-    pFVar3 = UI_GetFontHandle(pSVar5,(cg_scoreboardFont->current).integer,local_8);
-    iVar2 = UI_TextWidth(local_12c,0,pFVar3,local_8);
-    iVar4 = UI_TextWidth(local_28,0,pFVar3,local_8);
-    fVar6 = CG_BackdropWidth(param_1);
-    if ((float)(iVar2 + 4 + iVar4) <= (fVar6 - 6.0) - 8.0) break;
-    local_8 = local_8 - 0.01;
-  } while (0.075 < local_8);
-  fVar6 = (cg_scoreboardHeight->current).value;
-  fVar7 = CG_BackdropTop(param_1);
-  iVar2 = UI_TextHeight(pFVar3,local_8);
-  local_1c = (((((fVar7 + fVar6) - 3.0) - 2.0) - 14.0) + 14.0) - (float)(0xe - iVar2) * 0.5;
-  fVar6 = CG_BackdropLeft(param_1);
-  local_20 = fVar6 + 3.0 + 2.0 + 4.0;
-  UI_DrawText(pSVar5,local_12c,0x7fffffff,pFVar3,local_20,local_1c,local_24,0,local_8,&local_18,3);
-  fVar6 = CG_BackdropLeft(param_1);
-  fVar7 = CG_BackdropWidth(param_1);
-  local_20 = (((fVar7 + fVar6) - 3.0) - 2.0) - 4.0;
-  iVar2 = UI_TextWidth(local_28,0,pFVar3,local_8);
-  local_20 = local_20 - (float)(iVar2 + 4);
-  UI_DrawText(pSVar5,local_28,0x7fffffff,pFVar3,local_20,local_1c,local_24,0,local_8,&local_18,3);
+    font = UI_GetFontHandle(scrPlace_00,(cg_scoreboardFont->current).integer,fontScale);
+    iVar2 = UI_TextWidth(serverName,0,font,fontScale);
+    iVar3 = UI_TextWidth(serverIP,0,font,fontScale);
+    fVar4 = CG_BackdropWidth(localClientNum);
+    if ((float)(iVar2 + 4 + iVar3) <= (fVar4 - 6.0) - 8.0) break;
+    fontScale = fontScale - 0.01;
+  } while (0.075 < fontScale);
+  fVar4 = (cg_scoreboardHeight->current).value;
+  fVar5 = CG_BackdropTop(localClientNum);
+  iVar2 = UI_TextHeight(font,fontScale);
+  y = (((((fVar5 + fVar4) - 3.0) - 2.0) - 14.0) + 14.0) - (float)(0xe - iVar2) * 0.5;
+  fVar4 = CG_BackdropLeft(localClientNum);
+  x = fVar4 + 3.0 + 2.0 + 4.0;
+  UI_DrawText(scrPlace_00,serverName,0x7fffffff,font,x,y,horzAlign,0,fontScale,&color,3);
+  fVar4 = CG_BackdropLeft(localClientNum);
+  fVar5 = CG_BackdropWidth(localClientNum);
+  x = (((fVar5 + fVar4) - 3.0) - 2.0) - 4.0;
+  iVar2 = UI_TextWidth(serverIP,0,font,fontScale);
+  x = x - (float)(iVar2 + 4);
+  UI_DrawText(scrPlace_00,serverIP,0x7fffffff,font,x,y,horzAlign,0,fontScale,&color,3);
   return;
 }
 
@@ -953,13 +999,14 @@ void __cdecl CG_DrawBackdropServerInfo(int param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char * __cdecl CG_GetGametypeDescription(int param_1)
+char * __cdecl CG_GetGametypeDescription(int localClientNum)
 
 {
   cg_s *pcVar1;
   char *pcVar2;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   pcVar2 = SEH_LocalizeTextMessage(pcVar1->objectiveText,"game objective display",LOCMSG_SAFE);
   return pcVar2;
 }
@@ -967,13 +1014,20 @@ char * __cdecl CG_GetGametypeDescription(int param_1)
 
 // 004E40A0  CG_DrawScoreboard_Backdrop  (cgame_mp/cg_scoreboard_mp.cpp:1154)
 
-void __cdecl CG_DrawScoreboard_Backdrop(int param_1,float param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl CG_DrawScoreboard_Backdrop(int localClientNum,float alpha)
 
 {
-  CG_BackdropLeft(param_1);
-  CG_BackdropTop(param_1);
-  CG_BackdropWidth(param_1);
-  CG_DrawBackdropServerInfo(param_1,param_2);
+  float x;
+  float y;
+  float h;
+  float w;
+  
+  CG_BackdropLeft(localClientNum);
+  CG_BackdropTop(localClientNum);
+  CG_BackdropWidth(localClientNum);
+  CG_DrawBackdropServerInfo(localClientNum,alpha);
   return;
 }
 
@@ -983,12 +1037,12 @@ void __cdecl CG_DrawScoreboard_Backdrop(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x004e4a83) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_GetScoreboardInfo(int param_1,listColumnInfo_t **param_2,int *param_3)
+void __cdecl CG_GetScoreboardInfo(int localClientNum,listColumnInfo_t **colInfo,int *numFields)
 
 {
   Demo_IsPlaying();
-  *param_2 = matchScoreBoardData[param_1].inGameScoreboardColumnInfo;
-  *param_3 = matchScoreBoardData[param_1].numInGameScoreboardColumns;
+  *colInfo = matchScoreBoardData[localClientNum].inGameScoreboardColumnInfo;
+  *numFields = matchScoreBoardData[localClientNum].numInGameScoreboardColumns;
   return;
 }
 
@@ -996,45 +1050,44 @@ void __cdecl CG_GetScoreboardInfo(int param_1,listColumnInfo_t **param_2,int *pa
 // 004E48B0  CG_DrawScoreboard_ListColumnHeaders  (cgame_mp/cg_scoreboard_mp.cpp:1192)
 
 float __cdecl
-CG_DrawScoreboard_ListColumnHeaders
-          (int param_1,float *param_2,float param_3,float param_4,float param_5)
+CG_DrawScoreboard_ListColumnHeaders(int localClientNum,float *color,float y,float h,float listWidth)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  float fVar4;
-  listColumnInfo_t *local_24;
-  Font_s *local_20;
-  ScreenPlacement *local_1c;
-  float local_18;
-  int local_14;
-  float local_10;
-  float local_c;
-  int local_8;
+  char *text;
+  int iVar2;
+  float fVar3;
+  char *translation;
+  listColumnInfo_t *info;
+  Font_s *font;
+  ScreenPlacement *scrPlace;
+  float xAdj;
+  int i;
+  float scale;
+  float x;
+  int fieldCount;
   
-  local_10 = 0.315;
+  scale = 0.315;
   bVar1 = CL_IsRenderingSplitScreen();
   if (bVar1) {
-    local_10 = local_10 * 1.5;
+    scale = scale * 1.5;
   }
-  local_1c = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  local_20 = UI_GetFontHandle(local_1c,(cg_scoreboardFont->current).integer,local_10);
-  fVar4 = CG_BackdropLeft(param_1);
-  local_c = fVar4 + 3.0 + 2.0 + 4.0;
-  CG_GetScoreboardInfo(param_1,&local_24,&local_8);
-  for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 1) {
-    if (*local_24[local_14].pszName != '\0') {
-      pcVar2 = UI_SafeTranslateString(local_24[local_14].pszName);
-      fVar4 = local_24[local_14].fWidth;
-      iVar3 = UI_TextWidth(pcVar2,0,local_20,local_10);
-      local_18 = (fVar4 * param_5 - (float)iVar3) * 0.5;
-      UI_DrawText(local_1c,pcVar2,0x7fffffff,local_20,local_c + local_18,param_3 + param_4,1,0,
-                  local_10,param_2,3);
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+  font = UI_GetFontHandle(scrPlace,(cg_scoreboardFont->current).integer,scale);
+  fVar3 = CG_BackdropLeft(localClientNum);
+  x = fVar3 + 3.0 + 2.0 + 4.0;
+  CG_GetScoreboardInfo(localClientNum,&info,&fieldCount);
+  for (i = 0; i < fieldCount; i = i + 1) {
+    if (*info[i].pszName != '\0') {
+      text = UI_SafeTranslateString(info[i].pszName);
+      fVar3 = info[i].fWidth;
+      iVar2 = UI_TextWidth(text,0,font,scale);
+      xAdj = (fVar3 * listWidth - (float)iVar2) * 0.5;
+      UI_DrawText(scrPlace,text,0x7fffffff,font,x + xAdj,y + h,1,0,scale,color,3);
     }
-    local_c = local_24[local_14].fWidth * param_5 + local_c;
+    x = info[i].fWidth * listWidth + x;
   }
-  return param_3 + param_4 + 4.0;
+  return y + h + 4.0;
 }
 
 
@@ -1045,25 +1098,26 @@ CG_DrawScoreboard_ListColumnHeaders
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_CheckDrawScoreboardLine(int param_1,int *param_2,float param_3,float param_4)
+int __cdecl CG_CheckDrawScoreboardLine(int localClientNum,int *drawLine,float y,float lineHeight)
 
 {
   float fVar1;
   cg_s *pcVar2;
   int iVar3;
   float fVar4;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar2->scoresOffBottom == 0) {
-    if (*param_2 < pcVar2->scoresTop) {
-      *param_2 = *param_2 + 1;
+    if (*drawLine < pcVar2->scoresTop) {
+      *drawLine = *drawLine + 1;
       iVar3 = 0;
     }
     else {
       fVar1 = (cg_scoreboardHeight->current).value;
-      fVar4 = CG_BackdropTop(param_1);
-      if (param_3 + param_4 <= ((((fVar4 + fVar1) - 3.0) - 2.0) - 14.0) - 1.0) {
-        *param_2 = *param_2 + 1;
+      fVar4 = CG_BackdropTop(localClientNum);
+      if (y + lineHeight <= ((((fVar4 + fVar1) - 3.0) - 2.0) - 14.0) - 1.0) {
+        *drawLine = *drawLine + 1;
         iVar3 = 1;
       }
       else {
@@ -1086,7 +1140,7 @@ int __cdecl CG_CheckDrawScoreboardLine(int param_1,int *param_2,float param_3,fl
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-char __cdecl CG_DrawScoreboard_GetTeamColorIndex(int param_1,int param_2)
+char __cdecl CG_DrawScoreboard_GetTeamColorIndex(int team,int localClientNum)
 
 {
   code *pcVar1;
@@ -1094,8 +1148,10 @@ char __cdecl CG_DrawScoreboard_GetTeamColorIndex(int param_1,int param_2)
   char cVar3;
   cg_s *pcVar4;
   int iVar5;
+  cg_s *cgameGlob;
+  clientInfo_t *localPlayer;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_2);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   if (0x1f < (uint)pcVar4->clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                              0x4f3,0,
@@ -1108,10 +1164,10 @@ char __cdecl CG_DrawScoreboard_GetTeamColorIndex(int param_1,int param_2)
     }
   }
   iVar5 = pcVar4->clientNum * 0x5c8;
-  if ((param_1 == 2) || (param_1 == 1)) {
+  if ((team == 2) || (team == 1)) {
     if ((*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) == 2) ||
        (*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) == 1)) {
-      if (*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) == param_1) {
+      if (*(int *)((int)(pcVar4->bgs).clientinfo + iVar5 + 0x2c) == team) {
         cVar3 = '8';
       }
       else {
@@ -1136,25 +1192,27 @@ char __cdecl CG_DrawScoreboard_GetTeamColorIndex(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_GetLivePlayersOnTeam(int param_1,int param_2)
+int __cdecl CG_GetLivePlayersOnTeam(int localClientNum,int team)
 
 {
   int iVar1;
   cg_s *pcVar2;
-  int local_14;
-  int local_c;
+  int clientNum;
+  int i;
+  cg_s *cgameGlob;
+  int livePlayers;
+  score_s *score;
   
-  local_c = 0;
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  for (local_14 = 0; (local_14 < 0x20 && (iVar1 = pcVar2->scoreOrder[local_14], iVar1 != 0x20));
-      local_14 = local_14 + 1) {
+  livePlayers = 0;
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  for (i = 0; (i < 0x20 && (iVar1 = pcVar2->scoreOrder[i], iVar1 != 0x20)); i = i + 1) {
     if (((*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8) != 0) &&
-        (*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8 + 0x2c) == param_2)) &&
+        (*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8 + 0x2c) == team)) &&
        (*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8 + 0x8c) == 0)) {
-      local_c = local_c + 1;
+      livePlayers = livePlayers + 1;
     }
   }
-  return local_c;
+  return livePlayers;
 }
 
 
@@ -1168,148 +1226,156 @@ int __cdecl CG_GetLivePlayersOnTeam(int param_1,int param_2)
 
 float __cdecl
 CG_DrawScoreboard_ListBanner
-          (int param_1,float *param_2,float param_3,float param_4,float param_5,int param_6,
-          int *param_7)
+          (int localClientNum,float *color,float y,float w,float h,int team,int *piDrawLine)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   cg_s *pcVar4;
-  ScreenPlacement *pSVar5;
-  Font_s *pFVar6;
-  Font_s *pFVar7;
-  Material *pMVar8;
-  char *pcVar9;
-  char *pcVar10;
-  float10 fVar11;
-  float fVar12;
-  float fVar13;
-  float fVar14;
-  float fVar15;
-  int iVar16;
-  float fVar17;
-  float *pfVar18;
-  int iVar19;
-  char *pcVar20;
-  float local_30;
-  char *local_24;
-  char *local_20;
-  float local_18;
-  char local_14 [12];
+  ScreenPlacement *scrPlace_00;
+  Font_s *font;
+  Font_s *font_00;
+  Material *material_00;
+  char *pcVar5;
+  char *s0;
+  float10 fVar6;
+  float y_00;
+  float fVar7;
+  float fVar8;
+  float fVar9;
+  int iVar10;
+  float fVar11;
+  float *pfVar12;
+  int style;
+  char *s1;
+  float teamIconY;
+  float teamIconH;
+  Font_s *bannerFont;
+  char *teamName;
+  Font_s *bannerScoreFont;
+  ScreenPlacement *scrPlace;
+  float bannerFontScale;
+  cg_s *cgameGlob;
+  Material *material;
+  char *shaderName;
+  char *displayString;
+  int livePlayers;
+  float x;
+  char teamScore [12];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14[0] = '\0';
-  local_14[1] = '\0';
-  local_14[2] = '\0';
-  local_14[3] = '\0';
-  local_14[4] = '\0';
-  local_14[5] = '\0';
-  local_14[6] = '\0';
-  local_14[7] = '\0';
-  local_14[8] = '\0';
-  local_14[9] = '\0';
-  local_14[10] = '\0';
-  local_14[0xb] = '\0';
-  local_30 = 0.32;
-  iVar3 = CG_CheckDrawScoreboardLine(param_1,param_7,param_3,param_5);
+  teamScore[0] = '\0';
+  teamScore[1] = '\0';
+  teamScore[2] = '\0';
+  teamScore[3] = '\0';
+  teamScore[4] = '\0';
+  teamScore[5] = '\0';
+  teamScore[6] = '\0';
+  teamScore[7] = '\0';
+  teamScore[8] = '\0';
+  teamScore[9] = '\0';
+  teamScore[10] = '\0';
+  teamScore[0xb] = '\0';
+  bannerFontScale = 0.32;
+  iVar3 = CG_CheckDrawScoreboardLine(localClientNum,piDrawLine,y,h);
   if (iVar3 != 0) {
     bVar2 = CL_IsRenderingSplitScreen();
     if (bVar2) {
-      local_30 = 0.48;
+      bannerFontScale = 0.48;
     }
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
-    pSVar5 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    pFVar6 = UI_GetFontHandle(pSVar5,(cg_scoreboardFont->current).integer,local_30);
-    pFVar7 = UI_GetFontHandle(pSVar5,6,local_30);
-    if (param_6 == 0) {
-      local_24 = Dvar_GetString("g_TeamIcon_Free");
-      Com_sprintf(local_14,0xc,"%i");
-      local_20 = "";
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    font = UI_GetFontHandle(scrPlace_00,(cg_scoreboardFont->current).integer,bannerFontScale);
+    font_00 = UI_GetFontHandle(scrPlace_00,6,bannerFontScale);
+    if (team == 0) {
+      shaderName = Dvar_GetString("g_TeamIcon_Free");
+      Com_sprintf(teamScore,0xc,"%i");
+      displayString = "";
     }
-    else if (param_6 == 1) {
-      local_24 = Dvar_GetString("g_TeamIcon_Axis");
-      pcVar9 = Dvar_GetString("g_TeamName_Axis");
-      Com_sprintf(local_14,0xc,"%i");
-      SEH_LocalizeTextMessage(pcVar9,"scoreboard team name",LOCMSG_SAFE);
-      local_20 = va("%s");
+    else if (team == 1) {
+      shaderName = Dvar_GetString("g_TeamIcon_Axis");
+      pcVar5 = Dvar_GetString("g_TeamName_Axis");
+      Com_sprintf(teamScore,0xc,"%i");
+      SEH_LocalizeTextMessage(pcVar5,"scoreboard team name",LOCMSG_SAFE);
+      displayString = va("%s");
     }
-    else if (param_6 == 2) {
-      local_24 = Dvar_GetString("g_TeamIcon_Allies");
-      pcVar9 = Dvar_GetString("g_TeamName_Allies");
-      Com_sprintf(local_14,0xc,"%i");
-      SEH_LocalizeTextMessage(pcVar9,"scoreboard team name",LOCMSG_SAFE);
-      local_20 = va("%s");
+    else if (team == 2) {
+      shaderName = Dvar_GetString("g_TeamIcon_Allies");
+      pcVar5 = Dvar_GetString("g_TeamName_Allies");
+      Com_sprintf(teamScore,0xc,"%i");
+      SEH_LocalizeTextMessage(pcVar5,"scoreboard team name",LOCMSG_SAFE);
+      displayString = va("%s");
     }
     else {
-      if ((param_6 != 3) &&
+      if ((team != 3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
                                    ,0x54e,0,"%s\n\t(team) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        fVar11 = (float10)(*pcVar1)();
-        return (float)fVar11;
+        fVar6 = (float10)(*pcVar1)();
+        return (float)fVar6;
       }
-      local_24 = Dvar_GetString("g_TeamIcon_Spectator");
+      shaderName = Dvar_GetString("g_TeamIcon_Spectator");
       SEH_LocalizeTextMessage("CGAME_SPECTATORS","scoreboard team name",LOCMSG_SAFE);
-      local_20 = va("%s");
+      displayString = va("%s");
     }
-    fVar13 = CG_BackdropLeft(param_1);
-    local_18 = fVar13 + 3.0 + 2.0 + 4.0;
-    pMVar8 = Material_RegisterHandle(local_24,7);
-    bVar2 = CL_IsLastActiveLocalClient(param_1);
-    if (((bVar2) && (bVar2 = Material_IsDefault(pMVar8), !bVar2)) &&
-       (0 < pcVar4->teamPlayers[param_6])) {
-      fVar13 = param_5 * 1.15;
-      fVar12 = (8.0 - fVar13 / 2.0) + ((param_3 + param_5) - 3.0);
-      iVar16 = 0;
+    fVar7 = CG_BackdropLeft(localClientNum);
+    x = fVar7 + 3.0 + 2.0 + 4.0;
+    material_00 = Material_RegisterHandle(shaderName,7);
+    bVar2 = CL_IsLastActiveLocalClient(localClientNum);
+    if (((bVar2) && (bVar2 = Material_IsDefault(material_00), !bVar2)) &&
+       (0 < pcVar4->teamPlayers[team])) {
+      fVar7 = h * 1.15;
+      y_00 = (8.0 - fVar7 / 2.0) + ((y + h) - 3.0);
+      iVar10 = 0;
       iVar3 = 1;
-      fVar15 = fVar13;
-      fVar17 = fVar13;
-      pfVar18 = param_2;
-      fVar14 = CG_BackdropLeft(param_1);
-      UI_DrawHandlePic(pSVar5,((fVar14 + 3.0 + 2.0 + 4.0) - fVar13) - 8.0,fVar12,fVar15,fVar17,iVar3
-                       ,iVar16,pfVar18,pMVar8);
+      fVar9 = fVar7;
+      fVar11 = fVar7;
+      pfVar12 = color;
+      fVar8 = CG_BackdropLeft(localClientNum);
+      UI_DrawHandlePic(scrPlace_00,((fVar8 + 3.0 + 2.0 + 4.0) - fVar7) - 8.0,y_00,fVar9,fVar11,iVar3
+                       ,iVar10,pfVar12,material_00);
     }
-    if (param_6 != 3) {
-      iVar19 = 3;
-      fVar17 = 0.65;
-      iVar16 = 0;
+    if (team != 3) {
+      style = 3;
+      fVar11 = 0.65;
+      iVar10 = 0;
       iVar3 = 1;
-      fVar13 = param_3 + param_5 + 6.0;
-      pfVar18 = param_2;
-      fVar15 = CG_BackdropLeft(param_1);
-      UI_DrawText(pSVar5,local_14,0x7fffffff,pFVar7,fVar15 + 3.0 + 2.0 + 4.0,fVar13,iVar3,iVar16,
-                  fVar17,pfVar18,iVar19);
-      iVar3 = UI_TextWidth(local_14,0x7fffffff,pFVar7,0.65);
-      local_18 = (float)(iVar3 + 8) + local_18;
+      fVar7 = y + h + 6.0;
+      pfVar12 = color;
+      fVar9 = CG_BackdropLeft(localClientNum);
+      UI_DrawText(scrPlace_00,teamScore,0x7fffffff,font_00,fVar9 + 3.0 + 2.0 + 4.0,fVar7,iVar3,
+                  iVar10,fVar11,pfVar12,style);
+      iVar3 = UI_TextWidth(teamScore,0x7fffffff,font_00,0.65);
+      x = (float)(iVar3 + 8) + x;
     }
-    UI_DrawText(pSVar5,local_20,0x7fffffff,pFVar6,local_18,param_3 + param_5,1,0,local_30,param_2,3)
-    ;
-    iVar3 = UI_TextWidth(local_20,0x7fffffff,pFVar6,local_30);
-    local_18 = (float)(iVar3 + 8) + local_18;
-    pcVar9 = va("( %i )");
-    UI_DrawText(pSVar5,pcVar9,0x7fffffff,pFVar6,local_18,param_3 + param_5,1,0,local_30,param_2,3);
-    pcVar20 = "sd";
-    pcVar10 = Dvar_GetString("g_gametype");
-    iVar3 = I_strcmp(pcVar10,pcVar20);
-    if (((iVar3 == 0) && (param_6 != 3)) && (bVar2 = CL_IsLastActiveLocalClient(param_1), bVar2)) {
-      iVar3 = UI_TextWidth(pcVar9,0x7fffffff,pFVar6,local_30);
-      CG_GetLivePlayersOnTeam(param_1,param_6);
+    UI_DrawText(scrPlace_00,displayString,0x7fffffff,font,x,y + h,1,0,bannerFontScale,color,3);
+    iVar3 = UI_TextWidth(displayString,0x7fffffff,font,bannerFontScale);
+    fVar7 = (float)(iVar3 + 8) + x;
+    pcVar5 = va("( %i )");
+    UI_DrawText(scrPlace_00,pcVar5,0x7fffffff,font,fVar7,y + h,1,0,bannerFontScale,color,3);
+    s1 = "sd";
+    s0 = Dvar_GetString("g_gametype");
+    iVar3 = I_strcmp(s0,s1);
+    if (((iVar3 == 0) && (team != 3)) && (bVar2 = CL_IsLastActiveLocalClient(localClientNum), bVar2)
+       ) {
+      iVar3 = UI_TextWidth(pcVar5,0x7fffffff,font,bannerFontScale);
+      CG_GetLivePlayersOnTeam(localClientNum,team);
       SEH_LocalizeTextMessage("MPUI_ALIVE","scoreboard header",LOCMSG_SAFE);
-      pcVar9 = va("    %i %s");
-      UI_DrawText(pSVar5,pcVar9,0x7fffffff,pFVar6,(float)iVar3 + local_18,param_3 + param_5,1,0,
-                  local_30,param_2,3);
+      pcVar5 = va("    %i %s");
+      UI_DrawText(scrPlace_00,pcVar5,0x7fffffff,font,(float)iVar3 + fVar7,y + h,1,0,bannerFontScale,
+                  color,3);
     }
-    param_3 = param_3 + param_5 + 4.0;
+    y = y + h + 4.0;
   }
-  return param_3;
+  return y;
 }
 
 
 // 004E5C70  CalcXAdj  (cgame_mp/cg_scoreboard_mp.cpp:1401)
 
-float __cdecl CalcXAdj(int param_1,float param_2,float param_3)
+float __cdecl CalcXAdj(int align,float maxw,float w)
 
 {
   code *pcVar1;
@@ -1317,14 +1383,14 @@ float __cdecl CalcXAdj(int param_1,float param_2,float param_3)
   bool bVar3;
   float10 fVar4;
   
-  if (param_1 == 1) {
-    fVar2 = (param_2 - param_3) / 2.0;
+  if (align == 1) {
+    fVar2 = (maxw - w) / 2.0;
   }
-  else if (param_1 == 2) {
-    fVar2 = param_2 - param_3;
+  else if (align == 2) {
+    fVar2 = maxw - w;
   }
   else {
-    if (param_1 != 0) {
+    if (align != 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                                0x581,0,"%s");
       if (!bVar3) {
@@ -1342,46 +1408,47 @@ float __cdecl CalcXAdj(int param_1,float param_2,float param_3)
 // 004E5CD0  DrawListString  (cgame_mp/cg_scoreboard_mp.cpp:1416)
 
 void __cdecl
-DrawListString(int param_1,char *param_2,float param_3,float param_4,float param_5,int param_6,
-              Font_s *param_7,float param_8,int param_9,float *param_10)
+DrawListString(int localClientNum,char *string,float x,float y,float width,int alignment,
+              Font_s *font,float scale,int style,float *color)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
-  int iVar6;
-  float fVar7;
-  float local_8;
+  int horzAlign;
+  int vertAlign;
+  float scale_00;
+  ScreenPlacement *scrPlace;
+  float xAdj;
   
-  if (param_2 != (char *)0x0) {
-    while (iVar4 = UI_TextWidth(param_2,0x7fffffff,param_7,param_8), param_5 < (float)iVar4) {
-      param_8 = param_8 - 0.02;
+  if (string != (char *)0x0) {
+    while (iVar4 = UI_TextWidth(string,0x7fffffff,font,scale), width < (float)iVar4) {
+      scale = scale - 0.02;
     }
-    if ((param_8 <= 0.0) &&
+    if ((scale <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
                                  ,0x594,0,"%s\n\t(scale) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (param_8 < 0.16) {
-      param_9 = 0;
+    if (scale < 0.16) {
+      style = 0;
     }
-    iVar4 = UI_TextWidth(param_2,0x7fffffff,param_7,param_8);
-    local_8 = CalcXAdj(param_6,param_5,(float)iVar4);
-    if (param_6 == 2) {
-      local_8 = local_8 - 4.0;
+    iVar4 = UI_TextWidth(string,0x7fffffff,font,scale);
+    xAdj = CalcXAdj(alignment,width,(float)iVar4);
+    if (alignment == 2) {
+      xAdj = xAdj - 4.0;
     }
-    iVar6 = 0;
-    iVar5 = 1;
+    vertAlign = 0;
+    horzAlign = 1;
     fVar1 = (cg_scoreboardTextOffset->current).value;
-    fVar7 = param_8;
-    iVar4 = R_TextHeight(param_7);
-    UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,0x7fffffff,param_7,
-                param_3 + local_8,fVar1 * ((float)iVar4 * param_8 + 12.0) + param_4,iVar5,iVar6,
-                fVar7,param_10,param_9);
+    scale_00 = scale;
+    iVar4 = R_TextHeight(font);
+    UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),string,0x7fffffff,font,
+                x + xAdj,fVar1 * ((float)iVar4 * scale + 12.0) + y,horzAlign,vertAlign,scale_00,
+                color,style);
   }
   return;
 }
@@ -1390,7 +1457,7 @@ DrawListString(int param_1,char *param_2,float param_3,float param_4,float param
 // 004E5E60  CG_DrawClientPing  (cgame_mp/cg_scoreboard_mp.cpp:1441)
 
 void __cdecl
-CG_DrawClientPing(int param_1,int param_2,float param_3,float param_4,float param_5,float param_6)
+CG_DrawClientPing(int localClientNum,int ping,float x,float y,float maxWidth,float maxHeight)
 
 {
   code *pcVar1;
@@ -1398,22 +1465,26 @@ CG_DrawClientPing(int param_1,int param_2,float param_3,float param_4,float para
   Material *pMVar3;
   int iVar4;
   int local_60;
-  int local_48;
-  float local_44;
-  float local_40 [4];
-  int local_30;
-  float local_2c [4];
-  float local_1c [4];
-  float local_c;
-  float local_8;
+  int numBars;
+  int maxBars;
+  ScreenPlacement *scrPlace;
+  Material *material;
+  int bar;
+  float lerp;
+  float endColor [4];
+  int interval;
+  float startColor [4];
+  float color [4];
+  float h;
+  float w;
   
   pMVar3 = Material_RegisterHandle("white",7);
-  Dvar_GetUnpackedColor(cg_ScoresPing_BgColor,local_1c);
-  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,param_4,param_5 + 4.0
-                   ,param_6,1,0,local_1c,pMVar3);
+  Dvar_GetUnpackedColor(cg_ScoresPing_BgColor,color);
+  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,maxWidth + 4.0,
+                   maxHeight,1,0,color,pMVar3);
   iVar4 = Dvar_GetInt(cg_ScoresPing_MaxBars);
-  local_30 = Dvar_GetInt(cg_ScoresPing_Interval);
-  if ((local_30 < 1) &&
+  interval = Dvar_GetInt(cg_ScoresPing_Interval);
+  if ((interval < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                                0x5bc,0,"%s\n\t(interval) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1421,31 +1492,31 @@ CG_DrawClientPing(int param_1,int param_2,float param_3,float param_4,float para
     return;
   }
   pMVar3 = Material_RegisterHandle("white",7);
-  local_60 = iVar4 - param_2 / local_30;
+  local_60 = iVar4 - ping / interval;
   if (local_60 < 1) {
     local_60 = 1;
   }
   if (local_60 < iVar4 / 2) {
-    Dvar_GetUnpackedColor(cg_ScoresPing_HighColor,local_2c);
-    Dvar_GetUnpackedColor(cg_ScoresPing_MedColor,local_40);
-    local_44 = (float)local_60 / (float)(iVar4 / 2);
+    Dvar_GetUnpackedColor(cg_ScoresPing_HighColor,startColor);
+    Dvar_GetUnpackedColor(cg_ScoresPing_MedColor,endColor);
+    lerp = (float)local_60 / (float)(iVar4 / 2);
   }
   else {
-    Dvar_GetUnpackedColor(cg_ScoresPing_MedColor,local_2c);
-    Dvar_GetUnpackedColor(cg_ScoresPing_LowColor,local_40);
-    local_44 = (float)(local_60 - iVar4 / 2) / (float)(iVar4 / 2);
+    Dvar_GetUnpackedColor(cg_ScoresPing_MedColor,startColor);
+    Dvar_GetUnpackedColor(cg_ScoresPing_LowColor,endColor);
+    lerp = (float)(local_60 - iVar4 / 2) / (float)(iVar4 / 2);
   }
-  Vec4Lerp(local_2c,local_40,local_44,local_1c);
-  param_3 = param_3 + 2.0;
-  local_8 = (param_5 - (float)(iVar4 + -1)) / (float)iVar4;
-  if (local_8 < 1.0) {
-    local_8 = 1.0;
+  Vec4Lerp(startColor,endColor,lerp,color);
+  x = x + 2.0;
+  w = (maxWidth - (float)(iVar4 + -1)) / (float)iVar4;
+  if (w < 1.0) {
+    w = 1.0;
   }
-  for (local_48 = 1; local_48 <= local_60; local_48 = local_48 + 1) {
-    local_c = (param_6 * (cg_scoreboardPingHeight->current).value * (float)local_48) / (float)iVar4;
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,
-                     ((param_4 + param_6) - local_c) - 2.0,local_8,local_c,1,0,local_1c,pMVar3);
-    param_3 = local_8 + 1.0 + param_3;
+  for (bar = 1; bar <= local_60; bar = bar + 1) {
+    h = (maxHeight * (cg_scoreboardPingHeight->current).value * (float)bar) / (float)iVar4;
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,
+                     ((y + maxHeight) - h) - 2.0,w,h,1,0,color,pMVar3);
+    x = w + 1.0 + x;
   }
   return;
 }
@@ -1459,8 +1530,8 @@ CG_DrawClientPing(int param_1,int param_2,float param_3,float param_4,float para
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 float __cdecl
-CG_DrawClientScore(int param_1,int param_2,float *param_3,float param_4,score_s *param_5,
-                  float param_6,int param_7)
+CG_DrawClientScore(int localClientNum,int clientNum,float *color,float y,score_s *score,
+                  float listWidth,int selection)
 
 {
   code *pcVar1;
@@ -1468,36 +1539,37 @@ CG_DrawClientScore(int param_1,int param_2,float *param_3,float param_4,score_s 
   int iVar3;
   float10 fVar4;
   float fVar5;
-  int iVar6;
-  Font_s *pFVar7;
-  float fVar8;
-  int iVar9;
-  float *pfVar10;
-  listColumnInfo_t *local_68;
-  ScreenPlacement *local_64;
-  cg_s *local_60;
-  char *local_5c;
-  Material *local_58;
-  float local_54;
-  float local_50;
+  int alignment;
+  Font_s *font;
+  float scale;
+  int style;
+  float *color_00;
+  float ssSizeReduction;
+  listColumnInfo_t *info;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  char *string;
+  Material *material;
+  float xAdj;
+  float textColor;
   float local_4c;
   float local_48;
   float local_44;
-  float local_40 [4];
-  Font_s *local_30;
-  float local_2c;
+  float backing [4];
+  Font_s *listFont;
+  float backColor;
   float local_28;
   float local_24;
   float local_20;
-  clientInfo_t *local_1c;
-  int local_18;
-  float local_14;
-  float local_10;
-  int local_c;
-  float local_8;
+  clientInfo_t *ci;
+  int i;
+  float x;
+  float h;
+  int fieldCount;
+  float w;
   
-  local_60 = CG_GetLocalClientGlobals(param_1);
-  if ((0x1f < (uint)param_2) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((0x1f < (uint)clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp",
                                0x5ee,0,"clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -1505,135 +1577,129 @@ CG_DrawClientScore(int param_1,int param_2,float *param_3,float param_4,score_s 
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  local_1c = (clientInfo_t *)((int)(local_60->bgs).clientinfo + param_2 * 0x5c8);
-  if (local_1c->infoValid != 0) {
-    local_64 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    CG_GetScoreboardInfo(param_1,&local_68,&local_c);
-    fVar5 = CG_BackdropLeft(param_1);
-    local_14 = fVar5 + 3.0 + 2.0 + 4.0;
-    local_10 = 12.0;
-    local_58 = Material_RegisterHandle("white",7);
-    local_2c = *param_3;
-    local_28 = param_3[1];
-    local_24 = param_3[2];
-    local_20 = param_3[3] * 0.5;
-    local_40[0] = 0.5;
-    local_40[1] = 0.5;
-    local_40[2] = 0.5;
-    local_40[3] = 0.5;
-    UI_DrawHandlePic(local_64,local_14,param_4,param_6,local_10,1,0,local_40,local_58);
-    UI_DrawHandlePic(local_64,local_14,param_4,param_6,local_10,1,0,&local_2c,local_58);
-    local_30 = UI_GetFontHandle(local_64,(cg_scoreboardFont->current).integer,0.22);
-    fVar5 = CG_BackdropLeft(param_1);
-    local_14 = fVar5 + 3.0 + 2.0 + 4.0;
-    if (param_2 == local_60->clientNum) {
-      Dvar_GetUnpackedColor(cg_scoreboardMyColor,&local_50);
+  ci = (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8);
+  if (ci->infoValid != 0) {
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    CG_GetScoreboardInfo(localClientNum,&info,&fieldCount);
+    fVar5 = CG_BackdropLeft(localClientNum);
+    x = fVar5 + 3.0 + 2.0 + 4.0;
+    h = 12.0;
+    material = Material_RegisterHandle("white",7);
+    backColor = *color;
+    local_28 = color[1];
+    local_24 = color[2];
+    local_20 = color[3] * 0.5;
+    backing[0] = 0.5;
+    backing[1] = 0.5;
+    backing[2] = 0.5;
+    backing[3] = 0.5;
+    UI_DrawHandlePic(scrPlace,x,y,listWidth,h,1,0,backing,material);
+    UI_DrawHandlePic(scrPlace,x,y,listWidth,h,1,0,&backColor,material);
+    listFont = UI_GetFontHandle(scrPlace,(cg_scoreboardFont->current).integer,0.22);
+    fVar5 = CG_BackdropLeft(localClientNum);
+    x = fVar5 + 3.0 + 2.0 + 4.0;
+    if (clientNum == cgameGlob->clientNum) {
+      Dvar_GetUnpackedColor(cg_scoreboardMyColor,&textColor);
     }
     else {
-      local_50 = 1.0;
+      textColor = 1.0;
       local_4c = 1.0;
       local_48 = 1.0;
     }
-    local_44 = param_3[3];
-    for (local_18 = 0; local_18 < local_c; local_18 = local_18 + 1) {
-      local_8 = local_68[local_18].fWidth * param_6;
-      switch(local_68[local_18].type) {
+    local_44 = color[3];
+    for (i = 0; i < fieldCount; i = i + 1) {
+      w = info[i].fWidth * listWidth;
+      switch(info[i].type) {
       case LCT_RANK_ICON:
-        if (local_1c->hRankIcon != (Material *)0x0) {
-          local_5c = CL_GetRankData(local_1c->rank,MP_RANKTABLE_DISPLAYLEVEL);
-          pfVar10 = colorWhite;
-          iVar9 = 3;
-          fVar8 = 0.22;
-          iVar6 = local_68[local_18].iAlignment;
+        if (ci->hRankIcon != (Material *)0x0) {
+          string = CL_GetRankData(ci->rank,MP_RANKTABLE_DISPLAYLEVEL);
+          color_00 = colorWhite;
+          style = 3;
+          scale = 0.22;
+          alignment = info[i].iAlignment;
           fVar5 = 13.0;
-          pFVar7 = local_30;
-          iVar3 = R_TextHeight(local_30);
-          DrawListString(param_1,local_5c,local_14,(float)iVar3 * 0.055 + param_4,fVar5,iVar6,pFVar7
-                         ,fVar8,iVar9,pfVar10);
-          local_2c = 1.0;
+          font = listFont;
+          iVar3 = R_TextHeight(listFont);
+          DrawListString(localClientNum,string,x,(float)iVar3 * 0.055 + y,fVar5,alignment,font,scale
+                         ,style,color_00);
+          backColor = 1.0;
           local_28 = 1.0;
           local_24 = 1.0;
-          local_20 = param_3[3];
-          UI_DrawHandlePic(local_64,local_14 + 13.0,param_4,13.0,13.0,1,0,&local_2c,
-                           local_1c->hRankIcon);
+          local_20 = color[3];
+          UI_DrawHandlePic(scrPlace,x + 13.0,y,13.0,13.0,1,0,&backColor,ci->hRankIcon);
         }
         break;
       case LCT_STATUS_ICON:
-        if (local_1c->hStatusIcon != (Material *)0x0) {
-          local_54 = CalcXAdj(local_68[local_18].iAlignment,local_8,13.0);
-          local_2c = 1.0;
+        if (ci->hStatusIcon != (Material *)0x0) {
+          xAdj = CalcXAdj(info[i].iAlignment,w,13.0);
+          backColor = 1.0;
           local_28 = 1.0;
           local_24 = 1.0;
-          local_20 = param_3[3];
-          UI_DrawHandlePic(local_64,local_14 + local_54,param_4,13.0,13.0,1,0,&local_2c,
-                           local_1c->hStatusIcon);
+          local_20 = color[3];
+          UI_DrawHandlePic(scrPlace,x + xAdj,y,13.0,13.0,1,0,&backColor,ci->hStatusIcon);
         }
         break;
       case LCT_NAME:
-        bVar2 = CL_IsLastActiveLocalClient(param_1);
+        bVar2 = CL_IsLastActiveLocalClient(localClientNum);
         if (bVar2) {
-          local_5c = BG_DisplayName(local_1c,3);
+          string = BG_DisplayName(ci,3);
         }
         else {
-          local_5c = BG_DisplayName(local_1c,1);
+          string = BG_DisplayName(ci,1);
         }
-        DrawListString(param_1,local_5c,local_14,param_4,local_8,local_68[local_18].iAlignment,
-                       local_30,0.22,3,&local_50);
+        DrawListString(localClientNum,string,x,y,w,info[i].iAlignment,listFont,0.22,3,&textColor);
         break;
       case LCT_TALKING_ICON:
-        bVar2 = CL_IsPlayerMuted(param_1,param_2);
+        bVar2 = CL_IsPlayerMuted(localClientNum,clientNum);
         if (bVar2) {
-          local_58 = Material_RegisterHandle("voice_off",7);
+          material = Material_RegisterHandle("voice_off",7);
         }
         else {
-          bVar2 = CL_IsPlayerTalking(param_1,param_2);
+          bVar2 = CL_IsPlayerTalking(localClientNum,clientNum);
           if (bVar2) {
-            local_58 = Material_RegisterHandle("voice_on",7);
+            material = Material_RegisterHandle("voice_on",7);
           }
           else {
-            local_58 = (Material *)0x0;
+            material = (Material *)0x0;
           }
         }
         bVar2 = Demo_IsPlaying();
         if (bVar2) {
-          local_58 = (Material *)0x0;
+          material = (Material *)0x0;
         }
-        if (local_58 != (Material *)0x0) {
-          local_2c = 1.0;
+        if (material != (Material *)0x0) {
+          backColor = 1.0;
           local_28 = 1.0;
           local_24 = 1.0;
-          local_20 = param_3[3];
-          UI_DrawHandlePic(local_64,local_14,param_4,13.0,13.0,1,0,&local_2c,local_58);
+          local_20 = color[3];
+          UI_DrawHandlePic(scrPlace,x,y,13.0,13.0,1,0,&backColor,material);
         }
         break;
       case LCT_SCORE:
-        if (local_1c->team != TEAM_SPECTATOR) {
-          local_5c = va("%i");
-          DrawListString(param_1,local_5c,local_14,param_4,local_8,local_68[local_18].iAlignment,
-                         local_30,0.22,3,&local_50);
+        if (ci->team != TEAM_SPECTATOR) {
+          string = va("%i");
+          DrawListString(localClientNum,string,x,y,w,info[i].iAlignment,listFont,0.22,3,&textColor);
         }
         break;
       case LCT_SB_COLUMN:
-        if (local_1c->team != TEAM_SPECTATOR) {
-          local_5c = CG_GetColumnValueString(param_1,param_5,local_68[local_18].sbColumnType);
-          DrawListString(param_1,local_5c,local_14,param_4,local_8,local_68[local_18].iAlignment,
-                         local_30,0.22,3,&local_50);
+        if (ci->team != TEAM_SPECTATOR) {
+          string = CG_GetColumnValueString(localClientNum,score,info[i].sbColumnType);
+          DrawListString(localClientNum,string,x,y,w,info[i].iAlignment,listFont,0.22,3,&textColor);
         }
         break;
       case LCT_PING:
-        local_5c = va("%i");
-        DrawListString(param_1,local_5c,local_14,param_4,local_8,local_68[local_18].iAlignment,
-                       local_30,0.22,3,&local_50);
+        string = va("%i");
+        DrawListString(localClientNum,string,x,y,w,info[i].iAlignment,listFont,0.22,3,&textColor);
       }
-      local_14 = local_14 + local_8;
+      x = x + w;
     }
     if ((cg_scoreboardPingGraph->current).enabled != false) {
-      CG_DrawClientPing(param_1,param_5->ping,local_14,param_4,
-                        param_6 * (cg_scoreboardPingWidth->current).value,12.0);
+      CG_DrawClientPing(localClientNum,score->ping,x,y,
+                        listWidth * (cg_scoreboardPingWidth->current).value,12.0);
     }
-    param_4 = param_4 + 12.0;
+    y = y + 12.0;
   }
-  return param_4;
+  return y;
 }
 
 
@@ -1644,35 +1710,36 @@ CG_DrawClientScore(int param_1,int param_2,float *param_3,float param_4,score_s 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_ScoreboardTotalLines(int param_1)
+int __cdecl CG_ScoreboardTotalLines(int localClientNum)
 
 {
   cg_s *pcVar1;
-  int local_8;
+  cg_s *cgameGlob;
+  int total;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_8 = pcVar1->numScores;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  total = pcVar1->numScores;
   if (pcVar1->teamPlayers[0] != 0) {
-    local_8 = local_8 + 1;
+    total = total + 1;
   }
   if (pcVar1->teamPlayers[1] != 0) {
-    local_8 = local_8 + 1;
+    total = total + 1;
   }
   if (pcVar1->teamPlayers[2] != 0) {
-    local_8 = local_8 + 1;
+    total = total + 1;
   }
   if (pcVar1->teamPlayers[3] != 0) {
-    local_8 = local_8 + 1;
+    total = total + 1;
   }
   if (pcVar1->teamPlayers[3] != 0) {
     if ((pcVar1->teamPlayers[1] == 0) && (pcVar1->teamPlayers[2] != 0)) {
-      local_8 = local_8 + 1;
+      total = total + 1;
     }
     else if ((pcVar1->teamPlayers[2] == 0) && (pcVar1->teamPlayers[1] != 0)) {
-      local_8 = local_8 + 1;
+      total = total + 1;
     }
   }
-  return local_8;
+  return total;
 }
 
 
@@ -1685,50 +1752,53 @@ int __cdecl CG_ScoreboardTotalLines(int param_1)
 
 float __cdecl
 CG_DrawTeamOfClientScore
-          (int param_1,float *param_2,float param_3,int param_4,float param_5,int *param_6)
+          (int localClientNum,float *color,float y,int team,float listWidth,int *drawLine)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  cg_s *pcVar4;
-  int iVar5;
-  float10 fVar6;
-  float fVar7;
-  float local_1c [3];
+  uint clientNum_00;
+  code *pcVar1;
+  bool bVar2;
+  cg_s *pcVar3;
+  int iVar4;
+  float10 fVar5;
+  float fVar6;
+  int clientNum;
+  cg_s *cgameGlob;
+  int selection;
+  float teamColor [3];
   float local_10;
-  int local_c;
-  score_s *local_8;
+  int i;
+  score_s *score;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  param_3 = CG_DrawScoreboard_ListBanner
-                      (param_1,param_2,param_3,param_5,
-                       (float)(cg_scoreboardBannerHeight->current).integer,param_4,param_6);
-  local_c = 0;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  y = CG_DrawScoreboard_ListBanner
+                (localClientNum,color,y,listWidth,
+                 (float)(cg_scoreboardBannerHeight->current).integer,team,drawLine);
+  i = 0;
   while( true ) {
-    if (pcVar4->numScores <= local_c) {
-      return param_3;
+    if (pcVar3->numScores <= i) {
+      return y;
     }
-    uVar1 = pcVar4->scoreOrder[local_c];
-    if ((0x1f < uVar1) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
+    clientNum_00 = pcVar3->scoreOrder[i];
+    if ((0x1f < clientNum_00) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
                                  ,0x6ea,0,
                                  "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
-       !bVar3)) break;
-    if (((*(int *)((int)(pcVar4->bgs).clientinfo + uVar1 * 0x5c8) != 0) &&
-        (local_8 = (score_s *)((int)(pcVar4->bgs).clientinfo + uVar1 * 0x5c8 + 0x60),
-        *(int *)((int)(pcVar4->bgs).clientinfo + uVar1 * 0x5c8 + 0x2c) == param_4)) &&
-       (iVar5 = CG_CheckDrawScoreboardLine(param_1,param_6,param_3,12.0), iVar5 != 0)) {
-      CG_ScoreboardTeamColor(param_1,param_4,local_1c);
-      local_10 = param_2[3];
-      fVar7 = CG_DrawClientScore(param_1,uVar1,local_1c,param_3,local_8,param_5,0);
-      param_3 = fVar7 + 4.0;
+       !bVar2)) break;
+    if (((*(int *)((int)(pcVar3->bgs).clientinfo + clientNum_00 * 0x5c8) != 0) &&
+        (score = (score_s *)((int)(pcVar3->bgs).clientinfo + clientNum_00 * 0x5c8 + 0x60),
+        *(int *)((int)(pcVar3->bgs).clientinfo + clientNum_00 * 0x5c8 + 0x2c) == team)) &&
+       (iVar4 = CG_CheckDrawScoreboardLine(localClientNum,drawLine,y,12.0), iVar4 != 0)) {
+      CG_ScoreboardTeamColor(localClientNum,team,teamColor);
+      local_10 = color[3];
+      fVar6 = CG_DrawClientScore(localClientNum,clientNum_00,teamColor,y,score,listWidth,0);
+      y = fVar6 + 4.0;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  pcVar2 = (code *)swi(3);
-  fVar6 = (float10)(*pcVar2)();
-  return (float)fVar6;
+  pcVar1 = (code *)swi(3);
+  fVar5 = (float10)(*pcVar1)();
+  return (float)fVar5;
 }
 
 
@@ -1739,111 +1809,115 @@ CG_DrawTeamOfClientScore
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawScrollbar(int param_1,float param_2)
+void __cdecl CG_DrawScrollbar(int localClientNum,float top)
 
 {
   float fVar1;
   cg_s *pcVar2;
   int iVar3;
-  ScreenPlacement *pSVar4;
-  Material *pMVar5;
+  ScreenPlacement *scrPlace_00;
+  Material *pMVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
-  float local_54;
+  float scrollbarHeight;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  Material *material;
+  int totalLines;
+  float barColor;
   float local_50;
   float local_4c;
   float local_48;
-  float local_44;
-  float local_40;
-  float local_3c;
+  float x;
+  float y;
+  float color;
   undefined4 local_38;
   undefined4 local_34;
   float local_30;
-  float local_2c;
-  float local_28;
+  float h;
+  float handleColor;
   float local_24;
   float local_20;
   float local_1c;
-  float local_18;
+  float arrowColor;
   undefined4 local_14;
   undefined4 local_10;
   float local_c;
-  float local_8;
+  float w;
   
-  local_3c = 0.0;
+  color = 0.0;
   local_38 = 0;
   local_34 = 0;
   local_30 = 1.0;
-  local_28 = 1.0;
+  handleColor = 1.0;
   local_24 = 1.0;
   local_20 = 1.0;
   local_1c = 1.0;
-  local_18 = 0.97;
+  arrowColor = 0.97;
   local_14 = 0x3f147ae1;
   local_10 = 0x3de147ae;
   local_c = 1.0;
   fVar1 = (cg_scoreboardHeight->current).value;
-  fVar6 = CG_BackdropTop(param_1);
-  fVar1 = (((((((fVar6 + fVar1) - 3.0) - 2.0) - 14.0) - 1.0) - param_2) - 0.0) - 15.0;
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  fVar5 = CG_BackdropTop(localClientNum);
+  fVar1 = (((((((fVar5 + fVar1) - 3.0) - 2.0) - 14.0) - 1.0) - top) - 0.0) - 15.0;
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   if ((1 < pcVar2->scoresTop) || (pcVar2->scoresOffBottom != 0)) {
-    iVar3 = CG_ScoreboardTotalLines(param_1);
-    pSVar4 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    local_54 = local_3c;
+    iVar3 = CG_ScoreboardTotalLines(localClientNum);
+    scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    barColor = color;
     local_50 = (float)local_38;
     local_4c = (float)local_34;
-    pMVar5 = Material_RegisterHandle("white",7);
+    pMVar4 = Material_RegisterHandle("white",7);
     local_48 = local_30 * 0.5;
-    fVar6 = CG_BackdropLeft(param_1);
-    fVar7 = CG_BackdropWidth(param_1);
-    local_44 = ((cg_scoreboardPingWidth->current).value + 1.0) * (((fVar7 - 6.0) - 4.0) - 8.0) +
-               fVar6 + 3.0 + 2.0 + 4.0 + 2.0 + 4.0 + 2.0;
-    local_40 = param_2;
-    local_8 = 4.0;
-    local_2c = fVar1;
-    UI_DrawHandlePic(pSVar4,local_44,param_2,4.0,fVar1,1,0,&local_54,pMVar5);
-    local_44 = local_44 + 0.0;
-    local_8 = local_8 - 0.0;
-    local_40 = local_40 + 0.0;
-    local_2c = local_2c - 0.0;
+    fVar5 = CG_BackdropLeft(localClientNum);
+    fVar6 = CG_BackdropWidth(localClientNum);
+    x = ((cg_scoreboardPingWidth->current).value + 1.0) * (((fVar6 - 6.0) - 4.0) - 8.0) +
+        fVar5 + 3.0 + 2.0 + 4.0 + 2.0 + 4.0 + 2.0;
+    y = top;
+    w = 4.0;
+    h = fVar1;
+    UI_DrawHandlePic(scrPlace_00,x,top,4.0,fVar1,1,0,&barColor,pMVar4);
+    x = x + 0.0;
+    w = w - 0.0;
+    y = y + 0.0;
+    h = h - 0.0;
     if (iVar3 != 0) {
-      local_40 = ((float)(pcVar2->scoresTop + -1) / (float)iVar3) * local_2c + local_40;
-      local_2c = ((float)((pcVar2->scoresBottom - pcVar2->scoresTop) + 1) / (float)iVar3) * local_2c
-      ;
+      y = ((float)(pcVar2->scoresTop + -1) / (float)iVar3) * h + y;
+      h = ((float)((pcVar2->scoresBottom - pcVar2->scoresTop) + 1) / (float)iVar3) * h;
     }
-    pMVar5 = Material_RegisterHandle("white",7);
-    local_54 = local_28;
+    pMVar4 = Material_RegisterHandle("white",7);
+    barColor = handleColor;
     local_50 = local_24;
     local_4c = local_20;
     local_48 = local_1c * 0.25;
-    UI_DrawHandlePic(pSVar4,local_44,local_40,local_8,local_2c,1,0,&local_54,pMVar5);
-    local_54 = local_18;
+    UI_DrawHandlePic(scrPlace_00,x,y,w,h,1,0,&barColor,pMVar4);
+    barColor = arrowColor;
     local_50 = (float)local_14;
     local_4c = (float)local_10;
     local_48 = local_c;
-    pMVar5 = Material_RegisterHandle("ui_arrow_right",7);
-    local_44 = (local_44 - 7.0) + 1.0;
-    local_40 = (param_2 - 15.0) + 2.0;
-    local_8 = 15.0;
-    local_2c = 15.0;
-    UI_DrawHandlePicRotated(pSVar4,local_44,local_40,15.0,15.0,1,0,&local_54,270.0,pMVar5);
-    pMVar5 = Material_RegisterHandle("hudscoreboardscroll_upkey",7);
-    local_44 = local_44 - 0.0;
-    local_40 = local_40 + 17.0;
-    local_8 = 16.0;
-    local_2c = 16.0;
-    UI_DrawHandlePic(pSVar4,local_44,local_40,16.0,16.0,1,0,&local_54,pMVar5);
-    pMVar5 = Material_RegisterHandle("ui_arrow_right",7);
-    local_40 = (param_2 + fVar1) - 2.0;
-    local_8 = 15.0;
-    local_2c = 15.0;
-    UI_DrawHandlePicRotated(pSVar4,local_44,local_40,15.0,15.0,1,0,&local_54,90.0,pMVar5);
-    pMVar5 = Material_RegisterHandle("hudscoreboardscroll_downkey",7);
-    local_44 = local_44 - 0.0;
-    local_40 = local_40 - 18.0;
-    local_8 = 16.0;
-    local_2c = 16.0;
-    UI_DrawHandlePic(pSVar4,local_44,local_40,16.0,16.0,1,0,&local_54,pMVar5);
+    pMVar4 = Material_RegisterHandle("ui_arrow_right",7);
+    x = (x - 7.0) + 1.0;
+    y = (top - 15.0) + 2.0;
+    w = 15.0;
+    h = 15.0;
+    UI_DrawHandlePicRotated(scrPlace_00,x,y,15.0,15.0,1,0,&barColor,270.0,pMVar4);
+    pMVar4 = Material_RegisterHandle("hudscoreboardscroll_upkey",7);
+    x = x - 0.0;
+    y = y + 17.0;
+    w = 16.0;
+    h = 16.0;
+    UI_DrawHandlePic(scrPlace_00,x,y,16.0,16.0,1,0,&barColor,pMVar4);
+    pMVar4 = Material_RegisterHandle("ui_arrow_right",7);
+    y = (top + fVar1) - 2.0;
+    w = 15.0;
+    h = 15.0;
+    UI_DrawHandlePicRotated(scrPlace_00,x,y,15.0,15.0,1,0,&barColor,90.0,pMVar4);
+    pMVar4 = Material_RegisterHandle("hudscoreboardscroll_downkey",7);
+    x = x - 0.0;
+    y = y - 18.0;
+    w = 16.0;
+    h = 16.0;
+    UI_DrawHandlePic(scrPlace_00,x,y,16.0,16.0,1,0,&barColor,pMVar4);
   }
   return;
 }
@@ -1856,7 +1930,7 @@ void __cdecl CG_DrawScrollbar(int param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawScoreboard_ScoresList(int param_1,float param_2)
+void __cdecl CG_DrawScoreboard_ScoresList(int localClientNum,float alpha)
 
 {
   code *pcVar1;
@@ -1866,18 +1940,21 @@ void __cdecl CG_DrawScoreboard_ScoresList(int param_1,float param_2)
   float fVar5;
   float fVar6;
   float fVar7;
-  int local_2c;
-  float local_20;
-  float local_1c;
+  float scrollbarTop;
+  int team;
+  cg_s *cgameGlob;
+  float listWidth;
+  float y;
+  float color;
   float local_18;
   float local_14;
   float local_10;
-  float local_c;
-  int local_8;
+  float realListTop;
+  int drawLine;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3->numScores != 0) {
-    iVar4 = CG_ScoreboardTotalLines(param_1);
+    iVar4 = CG_ScoreboardTotalLines(localClientNum);
     if ((iVar4 < pcVar3->scoresTop) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
                                  ,0x81c,0,"%s\n\t(cgameGlob->scoresTop) = %i"), !bVar2)) {
@@ -1886,51 +1963,50 @@ void __cdecl CG_DrawScoreboard_ScoresList(int param_1,float param_2)
       return;
     }
     pcVar3->scoresOffBottom = 0;
-    fVar5 = CG_BackdropTop(param_1);
-    local_1c = 1.0;
+    fVar5 = CG_BackdropTop(localClientNum);
+    color = 1.0;
     local_18 = 1.0;
     local_14 = 1.0;
-    local_10 = param_2;
-    fVar6 = CG_BackdropWidth(param_1);
+    local_10 = alpha;
+    fVar6 = CG_BackdropWidth(localClientNum);
     fVar6 = ((fVar6 - 6.0) - 4.0) - 8.0;
-    local_20 = fVar5 + 3.0 + 2.0 + 36.0 + 1.0 + 15.900001;
-    fVar5 = (float)(cg_scoreboardBannerHeight->current).integer + local_20;
+    y = fVar5 + 3.0 + 2.0 + 36.0 + 1.0 + 15.900001;
+    fVar5 = (float)(cg_scoreboardBannerHeight->current).integer + y;
     if (pcVar3->scoresTop < 2) {
       CG_DrawScoreboard_ListColumnHeaders
-                (param_1,&local_1c,local_20,(float)(cg_scoreboardBannerHeight->current).integer,
-                 fVar6);
+                (localClientNum,&color,y,(float)(cg_scoreboardBannerHeight->current).integer,fVar6);
     }
     else {
-      local_20 = CG_DrawScoreboard_ListColumnHeaders
-                           (param_1,&local_1c,local_20,
-                            (float)(cg_scoreboardBannerHeight->current).integer,fVar6);
+      y = CG_DrawScoreboard_ListColumnHeaders
+                    (localClientNum,&color,y,(float)(cg_scoreboardBannerHeight->current).integer,
+                     fVar6);
     }
-    local_c = local_20;
-    local_8 = 1;
+    realListTop = y;
+    drawLine = 1;
     if ((pcVar3->teamPlayers[1] != 0) || (pcVar3->teamPlayers[2] != 0)) {
-      local_2c = *(int *)((int)(pcVar3->bgs).clientinfo + pcVar3->clientNum * 0x5c8 + 0x2c);
-      if ((local_2c != 1) && (local_2c != 2)) {
-        local_2c = 2;
+      team = *(int *)((int)(pcVar3->bgs).clientinfo + pcVar3->clientNum * 0x5c8 + 0x2c);
+      if ((team != 1) && (team != 2)) {
+        team = 2;
       }
-      fVar7 = CG_DrawTeamOfClientScore(param_1,&local_1c,local_20,local_2c,fVar6,&local_8);
-      if (local_2c == 1) {
-        local_2c = 2;
+      fVar7 = CG_DrawTeamOfClientScore(localClientNum,&color,y,team,fVar6,&drawLine);
+      if (team == 1) {
+        team = 2;
       }
       else {
-        local_2c = 1;
+        team = 1;
       }
-      local_20 = CG_DrawTeamOfClientScore(param_1,&local_1c,fVar7 + 4.0,local_2c,fVar6,&local_8);
-      local_20 = local_20 + 4.0;
+      fVar7 = CG_DrawTeamOfClientScore(localClientNum,&color,fVar7 + 4.0,team,fVar6,&drawLine);
+      y = fVar7 + 4.0;
     }
     if (pcVar3->teamPlayers[0] != 0) {
-      local_20 = CG_DrawTeamOfClientScore(param_1,&local_1c,local_20,0,fVar6,&local_8);
-      local_20 = local_20 + 4.0;
+      fVar7 = CG_DrawTeamOfClientScore(localClientNum,&color,y,0,fVar6,&drawLine);
+      y = fVar7 + 4.0;
     }
     if (pcVar3->teamPlayers[3] != 0) {
-      CG_DrawTeamOfClientScore(param_1,&local_1c,local_20,3,fVar6,&local_8);
+      CG_DrawTeamOfClientScore(localClientNum,&color,y,3,fVar6,&drawLine);
     }
-    pcVar3->scoresBottom = local_8 + -1;
-    CG_DrawScrollbar(param_1,fVar5);
+    pcVar3->scoresBottom = drawLine + -1;
+    CG_DrawScrollbar(localClientNum,fVar5);
   }
   return;
 }
@@ -1943,7 +2019,7 @@ void __cdecl CG_DrawScoreboard_ScoresList(int param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CenterViewOnClient(int param_1)
+void __cdecl CenterViewOnClient(int localClientNum)
 
 {
   int *piVar1;
@@ -1954,22 +2030,28 @@ void __cdecl CenterViewOnClient(int param_1)
   bool bVar6;
   cg_s *pcVar7;
   int extraout_EAX;
-  int local_1c;
-  int local_c;
+  int otherClientNum;
+  clientInfo_t *otherClientInfo;
+  int clientLine;
+  int team;
+  cg_s *cgameGlob;
+  int viewmax;
+  int i;
+  int clientNum;
   
-  pcVar7 = CG_GetLocalClientGlobals(param_1);
-  CG_BackdropTop(param_1);
-  CG_BackdropTop(param_1);
+  pcVar7 = CG_GetLocalClientGlobals(localClientNum);
+  CG_BackdropTop(localClientNum);
+  CG_BackdropTop(localClientNum);
   _ftol2_sse();
   uVar2 = pcVar7->clientNum;
   iVar3 = *(int *)((int)(pcVar7->bgs).clientinfo + uVar2 * 0x5c8 + 0x2c);
-  local_1c = 1;
+  clientLine = 1;
   if (iVar3 == 3) {
     pcVar7->scoresTop = 1;
   }
   else {
-    for (local_c = 0; local_c < pcVar7->numScores; local_c = local_c + 1) {
-      uVar4 = pcVar7->scoreOrder[local_c];
+    for (i = 0; i < pcVar7->numScores; i = i + 1) {
+      uVar4 = pcVar7->scoreOrder[i];
       if ((0x1f < uVar4) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
                                    ,0x877,0,
@@ -1982,11 +2064,11 @@ void __cdecl CenterViewOnClient(int param_1)
       piVar1 = (int *)((int)(pcVar7->bgs).clientinfo + uVar4 * 0x5c8);
       if ((*piVar1 != 0) && (piVar1[0xb] == iVar3)) {
         if (uVar4 == uVar2) break;
-        local_1c = local_1c + 1;
+        clientLine = clientLine + 1;
       }
     }
-    if (extraout_EAX < local_1c) {
-      pcVar7->scoresTop = (local_1c - extraout_EAX / 2) + 1;
+    if (extraout_EAX < clientLine) {
+      pcVar7->scoresTop = (clientLine - extraout_EAX / 2) + 1;
     }
     else {
       pcVar7->scoresTop = 1;
@@ -2004,61 +2086,61 @@ void __cdecl CenterViewOnClient(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_DrawScoreboard(int param_1)
+int __cdecl CG_DrawScoreboard(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_28;
-  char *local_24 [4];
-  char local_11;
-  float *local_10;
-  float local_c;
-  cg_s *local_8;
+  int menuCount;
+  char *menuNames [4];
+  bool clearErrors;
+  float *fadeColor;
+  float fade;
+  cg_s *cgameGlob;
   
   if ((cg_paused->current).integer == 0) {
-    local_8 = CG_GetLocalClientGlobals(param_1);
-    iVar3 = CG_IsScoreboardDisplayed(param_1);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    iVar3 = CG_IsScoreboardDisplayed(localClientNum);
     if (iVar3 == 0) {
-      local_10 = CG_FadeColor(local_8->time,local_8->scoreFadeTime,100,100);
-      if ((local_10 == (float *)0x0) || (bVar2 = Demo_IsPaused(), bVar2)) {
+      fadeColor = CG_FadeColor(cgameGlob->time,cgameGlob->scoreFadeTime,100,100);
+      if ((fadeColor == (float *)0x0) || (bVar2 = Demo_IsPaused(), bVar2)) {
         return 0;
       }
-      local_c = *local_10;
+      fade = *fadeColor;
     }
     else {
-      local_c = 1.0;
-      local_10 = colorWhite;
-      local_24[0] = "error_popmenu_party";
-      local_24[1] = "error_popmenu_lobby";
-      local_24[2] = "error_popmenu";
-      local_24[3] = (char *)0x0;
-      local_11 = '\0';
-      for (local_28 = 0; local_24[local_28] != (char *)0x0; local_28 = local_28 + 1) {
-        bVar2 = Menu_IsMenuOpenAndVisible(param_1,local_24[local_28]);
+      fade = 1.0;
+      fadeColor = colorWhite;
+      menuNames[0] = "error_popmenu_party";
+      menuNames[1] = "error_popmenu_lobby";
+      menuNames[2] = "error_popmenu";
+      menuNames[3] = (char *)0x0;
+      clearErrors = false;
+      for (menuCount = 0; menuNames[menuCount] != (char *)0x0; menuCount = menuCount + 1) {
+        bVar2 = Menu_IsMenuOpenAndVisible(localClientNum,menuNames[menuCount]);
         if (bVar2) {
-          UI_CloseMenu(param_1,local_24[local_28]);
-          local_11 = '\x01';
+          UI_CloseMenu(localClientNum,menuNames[menuCount]);
+          clearErrors = true;
           Com_Printf(0xe,"Clearing Error %s\n");
         }
       }
-      if (local_11 != '\0') {
+      if (clearErrors != false) {
         UI_ClearErrors();
       }
     }
-    if (local_8->scoresTop < 1) {
-      CenterViewOnClient(param_1);
+    if (cgameGlob->scoresTop < 1) {
+      CenterViewOnClient(localClientNum);
     }
-    if ((local_8->scoresTop < 1) &&
+    if ((cgameGlob->scoresTop < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scoreboard_mp.cpp"
                                  ,0x8c8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    CG_DrawScoreboard_Backdrop(param_1,local_c);
-    CG_DrawScoreboard_ScoresList(param_1,local_c);
+    CG_DrawScoreboard_Backdrop(localClientNum,fade);
+    CG_DrawScoreboard_ScoresList(localClientNum,fade);
     iVar3 = 1;
   }
   else {
@@ -2070,12 +2152,12 @@ int __cdecl CG_DrawScoreboard(int param_1)
 
 // 004E6880  CG_IsScoreboardDisplayed  (cgame_mp/cg_scoreboard_mp.cpp:2264)
 
-int __cdecl CG_IsScoreboardDisplayed(int param_1)
+int __cdecl CG_IsScoreboardDisplayed(int localClientNum)
 
 {
   uiMenuCommand_t uVar1;
   
-  uVar1 = UI_GetActiveMenu(param_1);
+  uVar1 = UI_GetActiveMenu(localClientNum);
   return (uint)(uVar1 == UIMENU_SCOREBOARD);
 }
 
@@ -2087,12 +2169,12 @@ int __cdecl CG_IsScoreboardDisplayed(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_IsIntermission(int param_1)
+int __cdecl CG_IsIntermission(int localClientNum)
 
 {
   cg_s *pcVar1;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   return (uint)((pcVar1->nextSnap->ps).pm_type == 5);
 }
 
@@ -2104,13 +2186,13 @@ int __cdecl CG_IsIntermission(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ScrollScoreboardUp(cg_s *param_1)
+void __cdecl CG_ScrollScoreboardUp(cg_s *cgameGlob)
 
 {
-  if ((1 < param_1->scoresTop) &&
-     (param_1->scoresTop = param_1->scoresTop - (cg_scoreboardScrollStep->current).integer,
-     param_1->scoresTop < 2)) {
-    param_1->scoresTop = 1;
+  if ((1 < cgameGlob->scoresTop) &&
+     (cgameGlob->scoresTop = cgameGlob->scoresTop - (cg_scoreboardScrollStep->current).integer,
+     cgameGlob->scoresTop < 2)) {
+    cgameGlob->scoresTop = 1;
   }
   return;
 }
@@ -2123,16 +2205,17 @@ void __cdecl CG_ScrollScoreboardUp(cg_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ScrollScoreboardDown(cg_s *param_1)
+void __cdecl CG_ScrollScoreboardDown(cg_s *cgameGlob)
 
 {
   int iVar1;
+  int totalLines;
   
-  if (param_1->scoresOffBottom != 0) {
-    iVar1 = CG_ScoreboardTotalLines(param_1->localClientNum);
-    param_1->scoresTop = (int)((cg_scoreboardScrollStep->current).string + param_1->scoresTop);
-    if (iVar1 < param_1->scoresTop) {
-      param_1->scoresTop = iVar1;
+  if (cgameGlob->scoresOffBottom != 0) {
+    iVar1 = CG_ScoreboardTotalLines(cgameGlob->localClientNum);
+    cgameGlob->scoresTop = (int)((cg_scoreboardScrollStep->current).string + cgameGlob->scoresTop);
+    if (iVar1 < cgameGlob->scoresTop) {
+      cgameGlob->scoresTop = iVar1;
     }
   }
   return;
@@ -2255,32 +2338,33 @@ void __cdecl CG_RegisterScoreboardGraphics(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Scoreboard_HandleInput(int param_1,int param_2)
+bool __cdecl Scoreboard_HandleInput(int localClientNum,int key)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  cg_s *pcVar3;
+  cg_s *cgameGlob_00;
+  cg_s *cgameGlob;
   
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar2 < 10) {
     bVar1 = false;
   }
   else {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    switch(param_2) {
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    switch(key) {
     case 0x14:
     case 0xa4:
     case 0xb8:
     case 0xce:
-      CG_ScrollScoreboardUp(pcVar3);
+      CG_ScrollScoreboardUp(cgameGlob_00);
       bVar1 = true;
       break;
     case 0x15:
     case 0xa3:
     case 0xbe:
     case 0xcd:
-      CG_ScrollScoreboardDown(pcVar3);
+      CG_ScrollScoreboardDown(cgameGlob_00);
       bVar1 = true;
       break;
     default:
@@ -2293,10 +2377,10 @@ bool __cdecl Scoreboard_HandleInput(int param_1,int param_2)
 
 // 004E6FA0  Gamercard_HandleInput  (cgame_mp/cg_scoreboard_mp.cpp:2754)
 
-bool __cdecl Gamercard_HandleInput(int param_1,int param_2)
+bool __cdecl Gamercard_HandleInput(int localClientNum_2,int key_2)
 
 {
-  CL_GetLocalClientConnectionState(param_1);
+  CL_GetLocalClientConnectionState(localClientNum_2);
   return false;
 }
 
@@ -2308,54 +2392,56 @@ bool __cdecl Gamercard_HandleInput(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_GetPlaceWithTiesForScore(int param_1,int param_2)
+int __cdecl CG_GetPlaceWithTiesForScore(int localClientNum,int score)
 
 {
   int iVar1;
   cg_s *pcVar2;
-  int local_10;
-  int local_8;
+  int clientNum;
+  int i;
+  cg_s *cgameGlob;
+  int place;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  local_8 = 1;
-  local_10 = 0;
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  place = 1;
+  i = 0;
   do {
-    if (pcVar2->numScores <= local_10) {
-      return local_8;
+    if (pcVar2->numScores <= i) {
+      return place;
     }
-    iVar1 = pcVar2->scoreOrder[local_10];
+    iVar1 = pcVar2->scoreOrder[i];
     if (((-1 < iVar1) && (iVar1 < 0x21)) &&
        (*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8) != 0)) {
-      if (*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8 + 0x6c) <= param_2) {
-        return local_8;
+      if (*(int *)((int)(pcVar2->bgs).clientinfo + iVar1 * 0x5c8 + 0x6c) <= score) {
+        return place;
       }
-      local_8 = local_8 + 1;
+      place = place + 1;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 004E7060  CG_GetKills  (cgame_mp/cg_scoreboard_mp.cpp:2813)
 
-int __cdecl CG_GetKills(int param_1,score_s *param_2)
+int __cdecl CG_GetKills(int localClientNum,score_s *score)
 
 {
   int iVar1;
   
-  iVar1 = CG_GetColumnValue(param_1,param_2,SB_TYPE_KILLS);
+  iVar1 = CG_GetColumnValue(localClientNum,score,SB_TYPE_KILLS);
   return iVar1;
 }
 
 
 // 004E7080  CG_GetDeaths  (cgame_mp/cg_scoreboard_mp.cpp:2818)
 
-int __cdecl CG_GetDeaths(int param_1,score_s *param_2)
+int __cdecl CG_GetDeaths(int localClientNum,score_s *score)
 
 {
   int iVar1;
   
-  iVar1 = CG_GetColumnValue(param_1,param_2,SB_TYPE_DEATHS);
+  iVar1 = CG_GetColumnValue(localClientNum,score,SB_TYPE_DEATHS);
   return iVar1;
 }
 

@@ -5,48 +5,48 @@
 _Node * __cdecl
 std::
 _Allocate<std::_Tree_nod<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>::_Node>
-          (uint param_1,_Node *param_2)
+          (uint _Count,_Node *__formal)
 
 {
   _Node *p_Var1;
   char *local_14;
   exception local_10;
   
-  if (param_1 == 0) {
-    param_1 = 0;
+  if (_Count == 0) {
+    _Count = 0;
   }
-  else if ((uint)(0xffffffff / (ulonglong)param_1) < 0x20) {
+  else if ((uint)(0xffffffff / (ulonglong)_Count) < 0x20) {
     local_14 = (char *)0x0;
     exception::exception(&local_10,&local_14);
     local_10._padding_ = (int)bad_alloc::vftable;
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_10,(_s__ThrowInfo *)&__TI2_AVbad_alloc_std__);
   }
-  p_Var1 = operator_new(param_1 << 5);
+  p_Var1 = operator_new(_Count << 5);
   return p_Var1;
 }
 
 
 // 00AEF320  _Allocate<std::_Aux_cont>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/xmemory:36)
 
-_Aux_cont * __cdecl std::_Allocate<std::_Aux_cont>(uint param_1,_Aux_cont *param_2)
+_Aux_cont * __cdecl std::_Allocate<std::_Aux_cont>(uint _Count,_Aux_cont *__formal)
 
 {
   _Aux_cont *p_Var1;
   char *local_14;
   exception local_10;
   
-  if (param_1 == 0) {
-    param_1 = 0;
+  if (_Count == 0) {
+    _Count = 0;
   }
-  else if ((uint)(0xffffffff / (ulonglong)param_1) < 4) {
+  else if ((uint)(0xffffffff / (ulonglong)_Count) < 4) {
     local_14 = (char *)0x0;
     exception::exception(&local_10,&local_14);
     local_10._padding_ = (int)bad_alloc::vftable;
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_10,(_s__ThrowInfo *)&__TI2_AVbad_alloc_std__);
   }
-  p_Var1 = operator_new(param_1 << 2);
+  p_Var1 = operator_new(_Count << 2);
   return p_Var1;
 }
 
@@ -58,7 +58,7 @@ __thiscall
 std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>::
 _Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>
           (_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>
-           *this,less<unsigned___int64> param_1,allocator<unsigned___int64> param_2)
+           *this,less<unsigned___int64> _Parg,allocator<unsigned___int64> _Al)
 
 {
   _Aux_cont *local_30;
@@ -80,7 +80,7 @@ _Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigne
 
 // 00AEC7C0  ReadBlend  (gfx_d3d/r_xsurface_load_obj.cpp:73)
 
-void __cdecl ReadBlend(XSurface *param_1,int *param_2,XBlendLoadInfo *param_3,uchar **param_4)
+void __cdecl ReadBlend(XSurface *surface,int *partBits,XBlendLoadInfo *blend,uchar **pos)
 
 {
   short sVar1;
@@ -89,16 +89,17 @@ void __cdecl ReadBlend(XSurface *param_1,int *param_2,XBlendLoadInfo *param_3,uc
   bool bVar4;
   int iVar5;
   uint uVar6;
-  ushort local_8;
+  int boneIndex;
+  int boneOffset;
   
-  sVar1 = *(short *)*param_4;
-  *param_4 = *param_4 + 2;
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
   iVar5 = (int)sVar1 >> 5;
-  param_2[iVar5] = 0x80000000U >> ((byte)sVar1 & 0x1f) | param_2[iVar5];
+  partBits[iVar5] = 0x80000000U >> ((byte)sVar1 & 0x1f) | partBits[iVar5];
   uVar6 = (int)sVar1 << 6;
-  local_8 = (ushort)uVar6;
-  param_3->boneOffset = local_8;
-  if (uVar6 != param_3->boneOffset) {
+  boneOffset._0_2_ = (ushort)uVar6;
+  blend->boneOffset = (ushort)boneOffset;
+  if (uVar6 != blend->boneOffset) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp",
                              0x51,0,"%s");
     if (!bVar4) {
@@ -107,9 +108,9 @@ void __cdecl ReadBlend(XSurface *param_1,int *param_2,XBlendLoadInfo *param_3,uc
       return;
     }
   }
-  uVar2 = *(ushort *)*param_4;
-  *param_4 = *param_4 + 2;
-  param_3->boneWeight = uVar2;
+  uVar2 = *(ushort *)*pos;
+  *pos = *pos + 2;
+  blend->boneWeight = uVar2;
   return;
 }
 
@@ -141,13 +142,13 @@ _Node * __thiscall
 std::
 allocator<std::_Tree_nod<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>::_Node>
 ::allocate(allocator<std::_Tree_nod<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>::_Node>
-           *this,uint param_1)
+           *this,uint _Count)
 
 {
   _Node *p_Var1;
   
   p_Var1 = _Allocate<std::_Tree_nod<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>::_Node>
-                     (param_1,(_Node *)0x0);
+                     (_Count,(_Node *)0x0);
   return p_Var1;
 }
 
@@ -158,19 +159,18 @@ const_iterator * __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::const_iterator::const_iterator
-          (const_iterator *this,_Node *param_1,
+          (const_iterator *this,_Node *_Pnode,
           _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-          *param_2)
+          *_Plist)
 
 {
   this->_padding_ = 0;
-  this->_Ptr = param_1;
-  if (param_2 ==
-      (_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-       *)0x0) {
+  this->_Ptr = _Pnode;
+  if (_Plist == (_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
+                 *)0x0) {
     _invalid_parameter_noinfo();
   }
-  this->_padding_ = param_2->_padding_;
+  this->_padding_ = _Plist->_padding_;
   return this;
 }
 
@@ -192,7 +192,7 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
 
 void __cdecl
 XModelReadSurface_BuildCollisionTree
-          (XSurface *param_1,uint param_2,_func___cdecl_void_ptr_int *param_3)
+          (XSurface *surface,uint vertListIndex,_func___cdecl_void_ptr_int *Alloc)
 
 {
   longlong lVar1;
@@ -213,198 +213,199 @@ XModelReadSurface_BuildCollisionTree
   ushort local_124;
   ushort local_11c;
   ushort local_114;
-  int local_f8;
-  float local_f4;
+  GenericAabbTree *builtNode;
+  uint leafIndex;
+  float nodeMins;
   float local_f0;
   float local_ec;
-  XSurfaceCollisionNode *local_e8;
-  int local_e4;
-  float local_e0;
+  XSurfaceCollisionNode *outNode;
+  uint leafEnd;
+  float nodeMaxs;
   float local_dc;
   float local_d8;
-  int local_d4;
-  XSurfaceCollisionNode *local_d0;
-  void *local_cc;
-  float local_c8;
-  float local_c4;
-  float local_c0;
+  uint allocSize;
+  uint alignedAddr;
+  uchar *alloced;
+  float combinedVolume;
+  float thisVolume;
+  float tmp;
   float local_bc;
   float local_b8;
-  float local_b4;
-  char local_ad;
-  float local_ac;
+  float prevVolume;
+  bool merge;
+  float triMins;
   float local_a8;
   float local_a4;
-  float local_a0;
+  float triMaxs;
   float local_9c;
   float local_98;
-  XSurfaceCollisionTree *local_94;
-  char local_8d;
-  uint local_8c;
-  uint local_88;
-  float local_84;
+  XSurfaceCollisionTree *tree;
+  bool generateLeafsPass;
+  uint nodeIndex;
+  uint triEndIndex;
+  float prevMins;
   float local_80;
   float local_7c;
-  uint local_78;
-  GenericAabbTreeOptions local_74;
-  uint local_4c;
-  float local_48;
+  uint leafCount;
+  GenericAabbTreeOptions options;
+  uint nodeCount;
+  float globalMaxs;
   float local_44;
   float local_40;
-  uint local_3c;
-  float local_38;
+  uint triIndex;
+  float prevMaxs;
   float local_34;
   float local_30;
-  char local_29;
-  float local_28;
+  bool lastMergeable;
+  float globalMins;
   float local_24;
   float local_20;
-  float local_1c;
+  float globalDelta;
   float local_18;
   float local_14;
-  uint local_10;
-  XRigidVertList *local_c;
-  uint local_8;
+  uint triBeginIndex;
+  XRigidVertList *vertList;
+  uint allocedLeafCount;
   
-  if (((param_1->flags & 0x80) != 0) &&
+  if (((surface->flags & 0x80) != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x14e,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->vertListCount <= param_2) &&
+  if ((surface->vertListCount <= vertListIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x14f,0,"%s\n\t(vertListIndex) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_c = param_1->vertList + param_2;
-  local_94 = (*param_3)(0x28);
-  local_c->collisionTree = local_94;
-  if ((param_1->triCount == 0) &&
+  vertList = surface->vertList + vertListIndex;
+  tree = (*Alloc)(0x28);
+  vertList->collisionTree = tree;
+  if ((surface->triCount == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x154,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_74.items = (XSurfaceCollisionLeaf *)0x0;
-  local_74.itemCount = 0;
-  local_74.itemSize = 0;
-  local_74.mins = (float (*) [3])0x0;
-  local_74.maxs = (float (*) [3])0x0;
-  local_74.treeNodePool = (GenericAabbTree *)0x0;
-  local_74.treeNodeLimit = 0;
-  local_74.minItemsPerLeaf = 0;
-  local_74.maxItemsPerLeaf = 0;
-  local_74.maintainValidBounds = 1;
-  local_74.treeNodePool = malloc(0x20000);
-  local_74.treeNodeLimit = 0x2000;
-  local_74.minItemsPerLeaf = 1;
-  local_74.maxItemsPerLeaf = 0x10;
-  ClearBounds(&local_28,&local_48);
-  local_94->leafs = (XSurfaceCollisionLeaf *)0x0;
-  local_8d = '\0';
-  local_8 = 0;
-  local_10 = (uint)local_c->triOffset;
-  local_88 = local_c->triCount + local_10;
+  options.items = (XSurfaceCollisionLeaf *)0x0;
+  options.itemCount = 0;
+  options.itemSize = 0;
+  options.mins = (float (*) [3])0x0;
+  options.maxs = (float (*) [3])0x0;
+  options.treeNodePool = (GenericAabbTree *)0x0;
+  options.treeNodeLimit = 0;
+  options.minItemsPerLeaf = 0;
+  options.maxItemsPerLeaf = 0;
+  options.maintainValidBounds = 1;
+  options.treeNodePool = malloc(0x20000);
+  options.treeNodeLimit = 0x2000;
+  options.minItemsPerLeaf = 1;
+  options.maxItemsPerLeaf = 0x10;
+  ClearBounds(&globalMins,&globalMaxs);
+  tree->leafs = (XSurfaceCollisionLeaf *)0x0;
+  generateLeafsPass = false;
+  allocedLeafCount = 0;
+  triBeginIndex = (uint)vertList->triOffset;
+  triEndIndex = vertList->triCount + triBeginIndex;
   while( true ) {
-    local_78 = 0;
-    ClearBounds(&local_84,&local_38);
-    local_29 = '\0';
-    for (local_3c = local_10; local_3c != local_88; local_3c = local_3c + 1) {
-      ClearBounds(&local_ac,&local_a0);
-      AddPointToBounds(param_1->verts0[param_1->triIndices[local_3c * 3]].xyz,&local_ac,&local_a0);
-      AddPointToBounds(param_1->verts0[param_1->triIndices[local_3c * 3 + 1]].xyz,&local_ac,
-                       &local_a0);
-      AddPointToBounds(param_1->verts0[param_1->triIndices[local_3c * 3 + 2]].xyz,&local_ac,
-                       &local_a0);
-      ExpandBounds(&local_ac,&local_a0,&local_28,&local_48);
-      local_ad = '\0';
-      if (local_29 != '\0') {
-        local_b4 = (local_38 - local_84) * (local_34 - local_80) * (local_30 - local_7c);
-        local_c0 = local_a0 - local_ac;
+    leafCount = 0;
+    ClearBounds(&prevMins,&prevMaxs);
+    lastMergeable = false;
+    for (triIndex = triBeginIndex; triIndex != triEndIndex; triIndex = triIndex + 1) {
+      ClearBounds(&triMins,&triMaxs);
+      AddPointToBounds(surface->verts0[surface->triIndices[triIndex * 3]].xyz,&triMins,&triMaxs);
+      AddPointToBounds(surface->verts0[surface->triIndices[triIndex * 3 + 1]].xyz,&triMins,&triMaxs)
+      ;
+      AddPointToBounds(surface->verts0[surface->triIndices[triIndex * 3 + 2]].xyz,&triMins,&triMaxs)
+      ;
+      ExpandBounds(&triMins,&triMaxs,&globalMins,&globalMaxs);
+      merge = false;
+      if (lastMergeable != false) {
+        prevVolume = (prevMaxs - prevMins) * (local_34 - local_80) * (local_30 - local_7c);
+        tmp = triMaxs - triMins;
         local_bc = local_9c - local_a8;
         local_b8 = local_98 - local_a4;
-        local_c4 = local_c0 * local_bc * local_b8;
-        ExpandBounds(&local_ac,&local_a0,&local_84,&local_38);
-        local_c0 = local_38 - local_84;
+        thisVolume = tmp * local_bc * local_b8;
+        ExpandBounds(&triMins,&triMaxs,&prevMins,&prevMaxs);
+        tmp = prevMaxs - prevMins;
         local_bc = local_34 - local_80;
         local_b8 = local_30 - local_7c;
-        local_c8 = local_c0 * local_bc * local_b8;
-        if (local_c8 <= local_b4 + local_c4) {
-          local_ad = '\x01';
+        combinedVolume = tmp * local_bc * local_b8;
+        if (combinedVolume <= prevVolume + thisVolume) {
+          merge = true;
         }
       }
-      if (local_ad == '\0') {
-        if (local_8d != '\0') {
-          if ((local_8 <= local_78) &&
+      if (merge == false) {
+        if (generateLeafsPass != false) {
+          if ((allocedLeafCount <= leafCount) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                        ,0x1b7,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if ((0x7fff < local_3c) &&
+          if ((0x7fff < triIndex) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                        ,0x1b8,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          local_94->leafs[local_78].triangleBeginIndex = (ushort)local_3c;
-          if ((local_94->leafs[local_78].triangleBeginIndex != local_3c) &&
+          tree->leafs[leafCount].triangleBeginIndex = (ushort)triIndex;
+          if ((tree->leafs[leafCount].triangleBeginIndex != triIndex) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                        ,0x1ba,0,"%s\n\t(triIndex) = %i"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          pafVar4 = local_74.mins + local_78;
-          (*pafVar4)[0] = local_ac;
+          pafVar4 = options.mins + leafCount;
+          (*pafVar4)[0] = triMins;
           (*pafVar4)[1] = local_a8;
           (*pafVar4)[2] = local_a4;
-          pafVar4 = local_74.maxs + local_78;
-          (*pafVar4)[0] = local_a0;
+          pafVar4 = options.maxs + leafCount;
+          (*pafVar4)[0] = triMaxs;
           (*pafVar4)[1] = local_9c;
           (*pafVar4)[2] = local_98;
         }
-        local_78 = local_78 + 1;
-        local_29 = '\x01';
-        local_84 = local_ac;
+        leafCount = leafCount + 1;
+        lastMergeable = true;
+        prevMins = triMins;
         local_80 = local_a8;
         local_7c = local_a4;
-        local_38 = local_a0;
+        prevMaxs = triMaxs;
         local_34 = local_9c;
         local_30 = local_98;
       }
       else {
-        if (local_8d != '\0') {
-          if ((local_78 == 0) &&
+        if (generateLeafsPass != false) {
+          if ((leafCount == 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                        ,0x1aa,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if ((local_8 <= local_78 - 1) &&
+          if ((allocedLeafCount <= leafCount - 1) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                        ,0x1ab,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          pafVar4 = local_74.mins + (local_78 - 1);
-          (*pafVar4)[0] = local_84;
+          pafVar4 = options.mins + (leafCount - 1);
+          (*pafVar4)[0] = prevMins;
           (*pafVar4)[1] = local_80;
           (*pafVar4)[2] = local_7c;
-          pafVar4 = local_74.maxs + (local_78 - 1);
-          (*pafVar4)[0] = local_38;
+          pafVar4 = options.maxs + (leafCount - 1);
+          (*pafVar4)[0] = prevMaxs;
           (*pafVar4)[1] = local_34;
           (*pafVar4)[2] = local_30;
-          if ((0x7fff < local_94->leafs[local_78 - 1].triangleBeginIndex) &&
+          if ((0x7fff < tree->leafs[leafCount - 1].triangleBeginIndex) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                        ,0x1ae,0,
                                        "%s\n\t(tree->leafs[leafCount - 1].triangleBeginIndex) = %i")
@@ -413,69 +414,69 @@ XModelReadSurface_BuildCollisionTree
             (*pcVar2)();
             return;
           }
-          local_94->leafs[local_78 - 1].triangleBeginIndex =
-               local_94->leafs[local_78 - 1].triangleBeginIndex + 0x8000;
+          tree->leafs[leafCount - 1].triangleBeginIndex =
+               tree->leafs[leafCount - 1].triangleBeginIndex + 0x8000;
         }
-        local_29 = '\0';
+        lastMergeable = false;
       }
     }
-    if (local_8d != '\0') break;
-    local_8d = '\x01';
-    pXVar5 = (*param_3)(local_78 << 1);
-    local_94->leafs = pXVar5;
-    local_94->leafCount = local_78;
-    local_74.mins = malloc(local_78 * 0xc);
-    local_74.maxs = malloc(local_78 * 0xc);
-    local_74.items = local_94->leafs;
-    local_74.itemCount = local_78;
-    local_74.itemSize = 2;
-    local_8 = local_78;
+    if (generateLeafsPass != false) break;
+    generateLeafsPass = true;
+    pXVar5 = (*Alloc)(leafCount << 1);
+    tree->leafs = pXVar5;
+    tree->leafCount = leafCount;
+    options.mins = malloc(leafCount * 0xc);
+    options.maxs = malloc(leafCount * 0xc);
+    options.items = tree->leafs;
+    options.itemCount = leafCount;
+    options.itemSize = 2;
+    allocedLeafCount = leafCount;
   }
-  if ((local_78 != local_8) &&
+  if ((leafCount != allocedLeafCount) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x1c7,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_94->trans[0] = -local_28;
-  local_94->trans[1] = -local_24;
-  local_94->trans[2] = -local_20;
-  local_1c = local_48 - local_28;
+  tree->trans[0] = -globalMins;
+  tree->trans[1] = -local_24;
+  tree->trans[2] = -local_20;
+  globalDelta = globalMaxs - globalMins;
   local_18 = local_44 - local_24;
   local_14 = local_40 - local_20;
-  local_94->scale[0] = 65535.0 / local_1c;
-  local_94->scale[1] = 65535.0 / local_18;
-  local_94->scale[2] = 65535.0 / local_14;
-  local_4c = BuildAabbTree(&local_74);
-  local_94->nodeCount = local_4c;
-  local_d4 = local_4c * 0x10 + 0xf;
-  local_cc = (*param_3)(local_d4);
-  local_d0 = (XSurfaceCollisionNode *)((int)local_cc + 0xfU & 0xfffffff0);
-  local_94->nodes = local_d0;
-  if ((((uint)local_94->nodes & 0xf) != 0) &&
+  tree->scale[0] = 65535.0 / globalDelta;
+  tree->scale[1] = 65535.0 / local_18;
+  tree->scale[2] = 65535.0 / local_14;
+  nodeCount = BuildAabbTree(&options);
+  tree->nodeCount = nodeCount;
+  allocSize = nodeCount * 0x10 + 0xf;
+  alloced = (*Alloc)(allocSize);
+  alignedAddr = (uint)(alloced + 0xf) & 0xfffffff0;
+  tree->nodes = (XSurfaceCollisionNode *)alignedAddr;
+  if ((((uint)tree->nodes & 0xf) != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x1ee,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_8c = 0;
+  nodeIndex = 0;
   do {
-    if (local_8c == local_4c) {
-      free(local_74.mins);
-      free(local_74.maxs);
-      free(local_74.treeNodePool);
+    if (nodeIndex == nodeCount) {
+      free(options.mins);
+      free(options.maxs);
+      free(options.treeNodePool);
       return;
     }
-    local_e8 = local_94->nodes + local_8c;
-    pGVar6 = local_74.treeNodePool + local_8c;
-    local_e4 = pGVar6->firstItem + pGVar6->itemCount;
-    ClearBounds(&local_f4,&local_e0);
-    for (local_f8 = pGVar6->firstItem; local_f8 != local_e4; local_f8 = local_f8 + 1) {
-      ExpandBounds(local_74.mins[local_f8],local_74.maxs[local_f8],&local_f4,&local_e0);
+    outNode = tree->nodes + nodeIndex;
+    pGVar6 = options.treeNodePool + nodeIndex;
+    leafEnd = pGVar6->firstItem + pGVar6->itemCount;
+    ClearBounds(&nodeMins,&nodeMaxs);
+    for (leafIndex = pGVar6->firstItem; leafIndex != leafEnd; leafIndex = leafIndex + 1) {
+      ExpandBounds(options.mins[leafIndex],options.maxs[leafIndex],&nodeMins,&nodeMaxs);
     }
-    lVar1 = (longlong)ROUND((local_f4 + local_94->trans[0]) * local_94->scale[0] - 0.5);
+    lVar1 = (longlong)ROUND((nodeMins + tree->trans[0]) * tree->scale[0] - 0.5);
     local_14c = (int)lVar1;
     if (local_14c < 0) {
       local_114 = 0;
@@ -486,8 +487,8 @@ XModelReadSurface_BuildCollisionTree
     else {
       local_114 = 0xffff;
     }
-    (local_e8->aabb).mins[0] = local_114;
-    lVar1 = (longlong)ROUND((local_f0 + local_94->trans[1]) * local_94->scale[1] - 0.5);
+    (outNode->aabb).mins[0] = local_114;
+    lVar1 = (longlong)ROUND((local_f0 + tree->trans[1]) * tree->scale[1] - 0.5);
     local_15c = (int)lVar1;
     if (local_15c < 0) {
       local_11c = 0;
@@ -498,8 +499,8 @@ XModelReadSurface_BuildCollisionTree
     else {
       local_11c = 0xffff;
     }
-    (local_e8->aabb).mins[1] = local_11c;
-    lVar1 = (longlong)ROUND((local_ec + local_94->trans[2]) * local_94->scale[2] - 0.5);
+    (outNode->aabb).mins[1] = local_11c;
+    lVar1 = (longlong)ROUND((local_ec + tree->trans[2]) * tree->scale[2] - 0.5);
     local_16c = (int)lVar1;
     if (local_16c < 0) {
       local_124 = 0;
@@ -510,8 +511,8 @@ XModelReadSurface_BuildCollisionTree
     else {
       local_124 = 0xffff;
     }
-    (local_e8->aabb).mins[2] = local_124;
-    lVar1 = (longlong)ROUND((local_e0 + local_94->trans[0]) * local_94->scale[0] + 0.5);
+    (outNode->aabb).mins[2] = local_124;
+    lVar1 = (longlong)ROUND((nodeMaxs + tree->trans[0]) * tree->scale[0] + 0.5);
     local_17c = (int)lVar1;
     if (local_17c < 0) {
       local_12c = 0;
@@ -522,8 +523,8 @@ XModelReadSurface_BuildCollisionTree
     else {
       local_12c = 0xffff;
     }
-    (local_e8->aabb).maxs[0] = local_12c;
-    lVar1 = (longlong)ROUND((local_dc + local_94->trans[1]) * local_94->scale[1] + 0.5);
+    (outNode->aabb).maxs[0] = local_12c;
+    lVar1 = (longlong)ROUND((local_dc + tree->trans[1]) * tree->scale[1] + 0.5);
     local_18c = (int)lVar1;
     if (local_18c < 0) {
       local_134 = 0;
@@ -534,8 +535,8 @@ XModelReadSurface_BuildCollisionTree
     else {
       local_134 = 0xffff;
     }
-    (local_e8->aabb).maxs[1] = local_134;
-    lVar1 = (longlong)ROUND((local_d8 + local_94->trans[2]) * local_94->scale[2] + 0.5);
+    (outNode->aabb).maxs[1] = local_134;
+    lVar1 = (longlong)ROUND((local_d8 + tree->trans[2]) * tree->scale[2] + 0.5);
     local_19c = (int)lVar1;
     if (local_19c < 0) {
       local_13c = 0;
@@ -546,7 +547,7 @@ XModelReadSurface_BuildCollisionTree
     else {
       local_13c = 0xffff;
     }
-    (local_e8->aabb).maxs[2] = local_13c;
+    (outNode->aabb).maxs[2] = local_13c;
     if (pGVar6->childCount == 0) {
       if ((pGVar6->itemCount == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
@@ -555,16 +556,16 @@ XModelReadSurface_BuildCollisionTree
         (*pcVar2)();
         return;
       }
-      local_e8->childBeginIndex = (ushort)pGVar6->firstItem;
-      if (((uint)local_e8->childBeginIndex != pGVar6->firstItem) &&
+      outNode->childBeginIndex = (ushort)pGVar6->firstItem;
+      if (((uint)outNode->childBeginIndex != pGVar6->firstItem) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x214,0,"%s\n\t(builtNode->firstItem) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_e8->childCount = (short)pGVar6->itemCount + 0x8000;
-      if (((uint)local_e8->childCount != pGVar6->itemCount + 0x8000U) &&
+      outNode->childCount = (short)pGVar6->itemCount + 0x8000;
+      if (((uint)outNode->childCount != pGVar6->itemCount + 0x8000U) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x216,0,"%s\n\t(builtNode->itemCount) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -573,16 +574,16 @@ XModelReadSurface_BuildCollisionTree
       }
     }
     else {
-      local_e8->childBeginIndex = (ushort)pGVar6->firstChild;
-      if (((uint)local_e8->childBeginIndex != pGVar6->firstChild) &&
+      outNode->childBeginIndex = (ushort)pGVar6->firstChild;
+      if (((uint)outNode->childBeginIndex != pGVar6->firstChild) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x20c,0,"%s\n\t(builtNode->firstChild) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_e8->childCount = (ushort)pGVar6->childCount;
-      if (((uint)local_e8->childCount != pGVar6->childCount) &&
+      outNode->childCount = (ushort)pGVar6->childCount;
+      if (((uint)outNode->childCount != pGVar6->childCount) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x20e,0,"%s\n\t(outNode->childCount) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -590,7 +591,7 @@ XModelReadSurface_BuildCollisionTree
         return;
       }
     }
-    local_8c = local_8c + 1;
+    nodeIndex = nodeIndex + 1;
   } while( true );
 }
 
@@ -686,7 +687,7 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
 ::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
           (_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-           *this,less<unsigned___int64> *param_1,allocator<unsigned___int64> *param_2)
+           *this,less<unsigned___int64> *_Parg,allocator<unsigned___int64> *_Al)
 
 {
   undefined1 local_27;
@@ -704,7 +705,7 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
   _Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>::
   _Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>
             ((_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>
-              *)this,*param_1,SUB41(local_14,0));
+              *)this,*_Parg,SUB41(local_14,0));
   _Init(this);
   return this;
 }
@@ -737,7 +738,7 @@ std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::insert(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
          *this,pair<std::_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>::iterator,bool>
-               *__return_storage_ptr__,ulong64 *param_1)
+               *__return_storage_ptr__,ulong64 *_Val)
 
 {
   uint uVar1;
@@ -745,60 +746,59 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
   bool bVar3;
   iterator iVar4;
   _Node *local_fc;
-  byte local_f8;
+  bool local_f8;
   undefined1 local_44 [11];
   bool local_39;
   undefined1 local_38 [11];
   bool local_2d;
   const_iterator local_2c [2];
-  const_iterator local_18;
-  _Node *local_10;
-  _Node *local_c;
-  byte local_5;
+  const_iterator _Where;
+  _Node *_Trynode;
+  _Node *_Wherenode;
+  bool _Addleft;
   
-  local_10 = this->_Myhead->_Parent;
-  local_c = this->_Myhead;
-  local_5 = 1;
-  while (local_10->_Isnil == '\0') {
-    local_c = local_10;
-    uVar1 = *(uint *)((int)&local_10->_Myval + 4);
-    if ((uVar1 < *(uint *)((int)param_1 + 4)) ||
-       ((uVar1 <= *(uint *)((int)param_1 + 4) && ((uint)local_10->_Myval <= (uint)*param_1)))) {
-      local_f8 = 0;
+  _Trynode = this->_Myhead->_Parent;
+  _Wherenode = this->_Myhead;
+  _Addleft = true;
+  while (_Trynode->_Isnil == '\0') {
+    _Wherenode = _Trynode;
+    uVar1 = *(uint *)((int)&_Trynode->_Myval + 4);
+    if ((uVar1 < *(uint *)((int)_Val + 4)) ||
+       ((uVar1 <= *(uint *)((int)_Val + 4) && ((uint)_Trynode->_Myval <= (uint)*_Val)))) {
+      local_f8 = false;
     }
     else {
-      local_f8 = 1;
+      local_f8 = true;
     }
-    local_5 = local_f8;
-    if (local_f8 == 0) {
-      local_fc = local_10->_Right;
+    _Addleft = local_f8;
+    if (local_f8 == false) {
+      local_fc = _Trynode->_Right;
     }
     else {
-      local_fc = local_10->_Left;
+      local_fc = _Trynode->_Left;
     }
-    local_10 = local_fc;
+    _Trynode = local_fc;
   }
-  const_iterator::const_iterator(&local_18,local_c,this);
-  if (local_5 != 0) {
+  const_iterator::const_iterator(&_Where,_Wherenode,this);
+  if (_Addleft != false) {
     const_iterator::const_iterator(local_2c,this->_Myhead->_Left,this);
-    if ((local_18._padding_ == 0) || (local_18._padding_ != local_2c[0]._padding_)) {
+    if ((_Where._padding_ == 0) || (_Where._padding_ != local_2c[0]._padding_)) {
       _invalid_parameter_noinfo();
     }
-    if (local_18._Ptr == local_2c[0]._Ptr) {
+    if (_Where._Ptr == local_2c[0]._Ptr) {
       local_2d = true;
-      iVar4 = _Insert(this,SUB41(local_38,0),(_Node *)&DAT_00000001,(ulong64 *)local_c);
+      iVar4 = _Insert(this,SUB41(local_38,0),(_Node *)&DAT_00000001,(ulong64 *)_Wherenode);
       uVar2 = iVar4._0_4_[1];
       *(undefined4 *)&__return_storage_ptr__->first = *iVar4._0_4_;
       *(undefined4 *)&(__return_storage_ptr__->first).field_0x4 = uVar2;
       __return_storage_ptr__->second = local_2d;
       return __return_storage_ptr__;
     }
-    const_iterator::_Dec(&local_18);
+    const_iterator::_Dec(&_Where);
   }
-  uVar1 = *(uint *)((int)&(local_18._Ptr)->_Myval + 4);
-  if ((*(uint *)((int)param_1 + 4) < uVar1) ||
-     ((*(uint *)((int)param_1 + 4) <= uVar1 && ((uint)*param_1 <= (uint)(local_18._Ptr)->_Myval))))
-  {
+  uVar1 = *(uint *)((int)&(_Where._Ptr)->_Myval + 4);
+  if ((*(uint *)((int)_Val + 4) < uVar1) ||
+     ((*(uint *)((int)_Val + 4) <= uVar1 && ((uint)*_Val <= (uint)(_Where._Ptr)->_Myval)))) {
     bVar3 = false;
   }
   else {
@@ -806,15 +806,15 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
   }
   if (bVar3) {
     local_39 = true;
-    iVar4 = _Insert(this,SUB41(local_44,0),(_Node *)(uint)local_5,(ulong64 *)local_c);
+    iVar4 = _Insert(this,SUB41(local_44,0),(_Node *)(uint)_Addleft,(ulong64 *)_Wherenode);
     uVar2 = iVar4._0_4_[1];
     *(undefined4 *)&__return_storage_ptr__->first = *iVar4._0_4_;
     *(undefined4 *)&(__return_storage_ptr__->first).field_0x4 = uVar2;
     __return_storage_ptr__->second = local_39;
   }
   else {
-    *(int *)&__return_storage_ptr__->first = local_18._padding_;
-    *(_Node **)&(__return_storage_ptr__->first).field_0x4 = local_18._Ptr;
+    *(int *)&__return_storage_ptr__->first = _Where._padding_;
+    *(_Node **)&(__return_storage_ptr__->first).field_0x4 = _Where._Ptr;
     __return_storage_ptr__->second = false;
   }
   return __return_storage_ptr__;
@@ -845,10 +845,10 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
   undefined1 *local_64;
   basic_string<char,std::char_traits<char>,std::allocator<char>_> local_58;
   logic_error local_3c;
-  _Node *local_14;
-  _Node *local_10;
-  _Node *local_c;
-  _Node *local_8;
+  _Node *_Fixnodeparent;
+  _Node *_Pnode;
+  _Node *_Fixnode;
+  _Node *_Erasednode;
   
   if (in_stack_0000000c->_Isnil != '\0') {
     local_64 = &local_65;
@@ -866,39 +866,39 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_3c,(_s__ThrowInfo *)&__TI3_AVout_of_range_std__);
   }
-  local_8 = in_stack_0000000c;
+  _Erasednode = in_stack_0000000c;
   const_iterator::_Inc((const_iterator *)&param_1._Ptr);
-  local_10 = local_8;
-  if (local_8->_Left->_Isnil == '\0') {
-    if (local_8->_Right->_Isnil == '\0') {
-      local_10 = in_stack_0000000c;
-      local_c = in_stack_0000000c->_Right;
+  _Pnode = _Erasednode;
+  if (_Erasednode->_Left->_Isnil == '\0') {
+    if (_Erasednode->_Right->_Isnil == '\0') {
+      _Pnode = in_stack_0000000c;
+      _Fixnode = in_stack_0000000c->_Right;
     }
     else {
-      local_c = local_8->_Left;
+      _Fixnode = _Erasednode->_Left;
     }
   }
   else {
-    local_c = local_8->_Right;
+    _Fixnode = _Erasednode->_Right;
   }
-  if (local_10 == local_8) {
-    local_14 = local_8->_Parent;
-    if (local_c->_Isnil == '\0') {
-      local_c->_Parent = local_14;
+  if (_Pnode == _Erasednode) {
+    _Fixnodeparent = _Erasednode->_Parent;
+    if (_Fixnode->_Isnil == '\0') {
+      _Fixnode->_Parent = _Fixnodeparent;
     }
-    if (this->_Myhead->_Parent == local_8) {
-      this->_Myhead->_Parent = local_c;
+    if (this->_Myhead->_Parent == _Erasednode) {
+      this->_Myhead->_Parent = _Fixnode;
     }
-    else if (local_14->_Left == local_8) {
-      local_14->_Left = local_c;
+    else if (_Fixnodeparent->_Left == _Erasednode) {
+      _Fixnodeparent->_Left = _Fixnode;
     }
     else {
-      local_14->_Right = local_c;
+      _Fixnodeparent->_Right = _Fixnode;
     }
-    if (this->_Myhead->_Left == local_8) {
-      local_f0 = local_14;
-      if (local_c->_Isnil == '\0') {
-        local_70 = local_c;
+    if (this->_Myhead->_Left == _Erasednode) {
+      local_f0 = _Fixnodeparent;
+      if (_Fixnode->_Isnil == '\0') {
+        local_70 = _Fixnode;
         while (local_70->_Left->_Isnil == '\0') {
           local_70 = local_70->_Left;
         }
@@ -906,10 +906,10 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
       }
       this->_Myhead->_Left = local_f0;
     }
-    if (this->_Myhead->_Right == local_8) {
-      local_f4 = local_14;
-      if (local_c->_Isnil == '\0') {
-        local_78 = local_c;
+    if (this->_Myhead->_Right == _Erasednode) {
+      local_f4 = _Fixnodeparent;
+      if (_Fixnode->_Isnil == '\0') {
+        local_78 = _Fixnode;
         while (local_78->_Right->_Isnil == '\0') {
           local_78 = local_78->_Right;
         }
@@ -919,103 +919,103 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
     }
   }
   else {
-    local_8->_Left->_Parent = local_10;
-    local_10->_Left = local_8->_Left;
-    if (local_10 == local_8->_Right) {
-      local_14 = local_10;
+    _Erasednode->_Left->_Parent = _Pnode;
+    _Pnode->_Left = _Erasednode->_Left;
+    if (_Pnode == _Erasednode->_Right) {
+      _Fixnodeparent = _Pnode;
     }
     else {
-      local_14 = local_10->_Parent;
-      if (local_c->_Isnil == '\0') {
-        local_c->_Parent = local_14;
+      _Fixnodeparent = _Pnode->_Parent;
+      if (_Fixnode->_Isnil == '\0') {
+        _Fixnode->_Parent = _Fixnodeparent;
       }
-      local_14->_Left = local_c;
-      local_10->_Right = local_8->_Right;
-      local_8->_Right->_Parent = local_10;
+      _Fixnodeparent->_Left = _Fixnode;
+      _Pnode->_Right = _Erasednode->_Right;
+      _Erasednode->_Right->_Parent = _Pnode;
     }
-    if (this->_Myhead->_Parent == local_8) {
-      this->_Myhead->_Parent = local_10;
+    if (this->_Myhead->_Parent == _Erasednode) {
+      this->_Myhead->_Parent = _Pnode;
     }
-    else if (local_8->_Parent->_Left == local_8) {
-      local_8->_Parent->_Left = local_10;
+    else if (_Erasednode->_Parent->_Left == _Erasednode) {
+      _Erasednode->_Parent->_Left = _Pnode;
     }
     else {
-      local_8->_Parent->_Right = local_10;
+      _Erasednode->_Parent->_Right = _Pnode;
     }
-    local_10->_Parent = local_8->_Parent;
-    pcVar4 = &local_8->_Color;
-    pcVar3 = &local_10->_Color;
+    _Pnode->_Parent = _Erasednode->_Parent;
+    pcVar4 = &_Erasednode->_Color;
+    pcVar3 = &_Pnode->_Color;
     if (pcVar3 != pcVar4) {
       cVar1 = *pcVar3;
       *pcVar3 = *pcVar4;
       *pcVar4 = cVar1;
     }
   }
-  if (local_8->_Color == '\x01') {
+  if (_Erasednode->_Color == '\x01') {
 LAB_00aeebd6:
-    if ((local_c == this->_Myhead->_Parent) || (local_c->_Color != '\x01')) goto LAB_00aeedd4;
-    if (local_c == local_14->_Left) {
-      local_10 = local_14->_Right;
-      if (local_10->_Color == '\0') {
-        local_10->_Color = '\x01';
-        local_14->_Color = '\0';
-        _Lrotate(this,local_14);
-        local_10 = local_14->_Right;
+    if ((_Fixnode == this->_Myhead->_Parent) || (_Fixnode->_Color != '\x01')) goto LAB_00aeedd4;
+    if (_Fixnode == _Fixnodeparent->_Left) {
+      _Pnode = _Fixnodeparent->_Right;
+      if (_Pnode->_Color == '\0') {
+        _Pnode->_Color = '\x01';
+        _Fixnodeparent->_Color = '\0';
+        _Lrotate(this,_Fixnodeparent);
+        _Pnode = _Fixnodeparent->_Right;
       }
-      if (local_10->_Isnil == '\0') {
-        if ((local_10->_Left->_Color != '\x01') || (local_10->_Right->_Color != '\x01')) {
-          if (local_10->_Right->_Color == '\x01') {
-            local_10->_Left->_Color = '\x01';
-            local_10->_Color = '\0';
-            _Rrotate(this,local_10);
-            local_10 = local_14->_Right;
+      if (_Pnode->_Isnil == '\0') {
+        if ((_Pnode->_Left->_Color != '\x01') || (_Pnode->_Right->_Color != '\x01')) {
+          if (_Pnode->_Right->_Color == '\x01') {
+            _Pnode->_Left->_Color = '\x01';
+            _Pnode->_Color = '\0';
+            _Rrotate(this,_Pnode);
+            _Pnode = _Fixnodeparent->_Right;
           }
-          local_10->_Color = local_14->_Color;
-          local_14->_Color = '\x01';
-          local_10->_Right->_Color = '\x01';
-          _Lrotate(this,local_14);
+          _Pnode->_Color = _Fixnodeparent->_Color;
+          _Fixnodeparent->_Color = '\x01';
+          _Pnode->_Right->_Color = '\x01';
+          _Lrotate(this,_Fixnodeparent);
 LAB_00aeedd4:
-          local_c->_Color = '\x01';
+          _Fixnode->_Color = '\x01';
           goto LAB_00aeeddb;
         }
-        local_10->_Color = '\0';
+        _Pnode->_Color = '\0';
       }
-      local_c = local_14;
+      _Fixnode = _Fixnodeparent;
     }
     else {
-      local_10 = local_14->_Left;
-      if (local_10->_Color == '\0') {
-        local_10->_Color = '\x01';
-        local_14->_Color = '\0';
-        _Rrotate(this,local_14);
-        local_10 = local_14->_Left;
+      _Pnode = _Fixnodeparent->_Left;
+      if (_Pnode->_Color == '\0') {
+        _Pnode->_Color = '\x01';
+        _Fixnodeparent->_Color = '\0';
+        _Rrotate(this,_Fixnodeparent);
+        _Pnode = _Fixnodeparent->_Left;
       }
-      if (local_10->_Isnil == '\0') {
-        if ((local_10->_Right->_Color != '\x01') || (local_10->_Left->_Color != '\x01')) {
-          if (local_10->_Left->_Color == '\x01') {
-            local_10->_Right->_Color = '\x01';
-            local_10->_Color = '\0';
-            _Lrotate(this,local_10);
-            local_10 = local_14->_Left;
+      if (_Pnode->_Isnil == '\0') {
+        if ((_Pnode->_Right->_Color != '\x01') || (_Pnode->_Left->_Color != '\x01')) {
+          if (_Pnode->_Left->_Color == '\x01') {
+            _Pnode->_Right->_Color = '\x01';
+            _Pnode->_Color = '\0';
+            _Lrotate(this,_Pnode);
+            _Pnode = _Fixnodeparent->_Left;
           }
-          local_10->_Color = local_14->_Color;
-          local_14->_Color = '\x01';
-          local_10->_Left->_Color = '\x01';
-          _Rrotate(this,local_14);
+          _Pnode->_Color = _Fixnodeparent->_Color;
+          _Fixnodeparent->_Color = '\x01';
+          _Pnode->_Left->_Color = '\x01';
+          _Rrotate(this,_Fixnodeparent);
           goto LAB_00aeedd4;
         }
-        local_10->_Color = '\0';
-        local_c = local_14;
+        _Pnode->_Color = '\0';
+        _Fixnode = _Fixnodeparent;
       }
       else {
-        local_c = local_14;
+        _Fixnode = _Fixnodeparent;
       }
     }
-    local_14 = local_c->_Parent;
+    _Fixnodeparent = _Fixnode->_Parent;
     goto LAB_00aeebd6;
   }
 LAB_00aeeddb:
-  operator_delete(local_8);
+  operator_delete(_Erasednode);
   if (this->_Mysize != 0) {
     this->_Mysize = this->_Mysize - 1;
   }
@@ -1037,14 +1037,14 @@ LAB_00aeeddb:
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *param_3,
-                 XSurface *param_4,int param_5,char *param_6)
+XModelReadSurface(XModel *model,uchar **pos,_func___cdecl_void_ptr_int *Alloc,XSurface *surface,
+                 int surfIndex,char *name)
 
 {
-  uchar uVar1;
+  char cVar1;
   ushort uVar2;
   short sVar3;
-  float fVar4;
+  XBlendLoadInfo XVar4;
   code *pcVar5;
   bool bVar6;
   float *pfVar7;
@@ -1067,10 +1067,8 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
   uint extraout_EDX_02;
   uint extraout_EDX_03;
   uint extraout_EDX_04;
-  XBlendLoadInfo *pXVar15;
-  XVertexInfo_s *pXVar16;
-  XBlendLoadInfo *pXVar17;
-  iterator iVar18;
+  XVertexInfo_s *pXVar15;
+  iterator iVar16;
   ushort *local_d58;
   XRigidVertList *local_d50;
   float local_d48;
@@ -1080,315 +1078,311 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
   _Node *local_978;
   ulong64 local_974;
   float afStack_96c [16];
-  XBlendLoadInfo local_92c [16];
+  float local_92c [16];
   uint local_8ec;
-  int local_8e8;
-  int local_8e4;
-  int local_8e0;
-  int local_8dc;
-  uint local_8d8;
-  int local_8d4;
-  uint local_8d0;
-  uint local_8cc;
-  uint local_8c8;
-  int local_8c4;
-  int local_8c0;
-  ushort local_8bc;
-  int local_8b8;
-  ushort local_8b4;
-  int local_8b0;
-  ushort local_8ac;
-  int local_8a8;
-  uchar *local_8a4;
-  int local_8a0;
-  XVertexBuffer *local_89c;
-  ushort *local_898;
-  int local_894;
-  ushort local_890;
-  uint local_88c;
-  uint local_888;
-  uint local_884;
+  int db;
+  int src;
+  int dst;
+  int i_6;
+  int idx;
+  int i_5;
+  int c_3;
+  int b_3;
+  int a_3;
+  int score;
+  int k;
+  ushort c_2;
+  int best_k;
+  ushort b_2;
+  int best_score;
+  ushort a_2;
+  int i_4;
+  ushort *vertFlags;
+  int move_count;
+  XVertexInfo_s *verts;
+  ushort *indices;
+  int num_indices;
+  ushort next_index;
+  int c;
+  int b;
+  uint normTri;
   uint local_880;
-  uint local_87c;
-  int local_878;
-  int local_874;
-  int local_870;
+  int a;
+  int i_3;
+  int num_tris;
+  int write_i;
   _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-  local_86c;
-  int local_84c;
-  float local_848;
+  tris;
+  int num_dupes;
+  float check;
   float local_844;
   float local_840;
-  float local_83c;
-  int local_838;
-  float local_834;
-  int local_830;
-  byte local_829;
-  int local_828 [4];
-  ushort *local_818;
-  ushort *local_814;
-  uint local_810;
-  int local_80c;
-  ushort *local_808;
-  uint local_804;
-  int local_800;
-  ushort *local_7fc;
-  uint local_7f8;
-  ulong local_7f4;
-  int local_7f0;
-  char local_7e9;
-  ushort *local_7e8;
-  ushort *local_7e4;
-  uint local_7e0;
-  uint local_7dc;
-  int local_7d8;
-  ushort *local_7d4;
-  uint local_7d0;
-  ushort local_7cc [970];
-  ushort *local_38;
-  XVertexBuffer *local_34;
-  int local_30;
-  ushort *local_2c;
-  int local_28;
-  int local_24;
-  ushort *local_20;
-  uint local_1c;
-  int local_18;
-  ushort *local_14;
-  int local_10;
-  XVertexBuffer *local_c;
-  ushort *local_8;
+  float Value;
+  int i_2;
+  float MagicNumber;
+  int j;
+  uchar numWeights;
+  int weightCount [4];
+  XVertexInfo0 *vert0Out;
+  XVertexInfo2 *vert2Out;
+  int boneIndex;
+  int numblends;
+  XBlendLoadInfo *blendOut;
+  int allocCount;
+  int blendBoneOffset;
+  XRigidVertList *rigidVertList;
+  int rigidVertCount;
+  int vertexBytes;
+  int size;
+  bool deformed;
+  XVertexInfo2 *verts2;
+  XVertexInfo3 *verts3;
+  int startTriIndex;
+  uint vertListIter;
+  int localBoneIndex;
+  XVertexInfo1 *verts1;
+  int vertListCount;
+  XRigidVertList rigidVertListArray [161];
+  XVertexInfo0 *verts0;
+  XBlendLoadInfo *blends;
+  int blendBoneIndex;
+  XVertexInfo1 *vert1Out;
+  int endIndex;
+  int i;
+  ushort *vertsBlendOut;
+  int triIndex;
+  int vertIndex;
+  XVertexInfo0 *vertOut;
+  int sizeInBytes;
+  XVertexBuffer *surfVerts;
+  XVertexInfo3 *vert3Out;
   
   local_8ec = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_828[0] = 0;
-  local_828[1] = 0;
-  local_828[2] = 0;
-  local_828[3] = 0;
-  param_4->flags = 0;
-  param_4->tileMode = **param_2;
-  *param_2 = *param_2 + 1;
-  *param_2 = *param_2 + 2;
-  uVar2 = *(ushort *)*param_2;
-  *param_2 = *param_2 + 2;
-  param_4->vertCount = uVar2;
-  uVar2 = *(ushort *)*param_2;
-  *param_2 = *param_2 + 2;
-  param_4->triCount = uVar2;
-  if ((param_4->triCount == 0) &&
+  weightCount[0] = 0;
+  weightCount[1] = 0;
+  weightCount[2] = 0;
+  weightCount[3] = 0;
+  surface->flags = 0;
+  surface->tileMode = **pos;
+  *pos = *pos + 1;
+  *pos = *pos + 2;
+  uVar2 = *(ushort *)*pos;
+  *pos = *pos + 2;
+  surface->vertCount = uVar2;
+  uVar2 = *(ushort *)*pos;
+  *pos = *pos + 2;
+  surface->triCount = uVar2;
+  if ((surface->triCount == 0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x3c6,0,"%s\n\t(surface->triCount) = %i"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  local_7d0 = 0;
-  local_7f8 = 0;
+  vertListCount = 0;
+  rigidVertCount = 0;
   while( true ) {
-    if ((0xa0 < local_7d0) &&
+    if ((0xa0 < (uint)vertListCount) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x3cd,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    local_7fc = local_7cc + local_7d0 * 6;
-    uVar2 = *(ushort *)*param_2;
-    *param_2 = *param_2 + 2;
-    local_7cc[local_7d0 * 6 + 1] = uVar2;
-    if (local_7cc[local_7d0 * 6 + 1] == 0) break;
-    sVar3 = *(short *)*param_2;
-    *param_2 = *param_2 + 2;
-    local_7d8 = (int)sVar3;
-    *local_7fc = (ushort)(local_7d8 << 6);
-    local_7f8 = local_7cc[local_7d0 * 6 + 1] + local_7f8;
-    local_7d0 = local_7d0 + 1;
+    rigidVertList = rigidVertListArray + vertListCount;
+    uVar2 = *(ushort *)*pos;
+    *pos = *pos + 2;
+    rigidVertListArray[vertListCount].vertCount = uVar2;
+    if (rigidVertListArray[vertListCount].vertCount == 0) break;
+    sVar3 = *(short *)*pos;
+    *pos = *pos + 2;
+    localBoneIndex = (int)sVar3;
+    rigidVertList->boneOffset = (ushort)(localBoneIndex << 6);
+    rigidVertCount = (uint)rigidVertListArray[vertListCount].vertCount + rigidVertCount;
+    vertListCount = vertListCount + 1;
   }
-  local_7e9 = local_7f8 != param_4->vertCount;
-  if ((bool)local_7e9) {
-    local_7d0 = 0;
-    param_4->flags = param_4->flags | 0x82;
+  deformed = rigidVertCount != (uint)surface->vertCount;
+  if (deformed) {
+    vertListCount = 0;
+    surface->flags = surface->flags | 0x82;
   }
-  if (local_7d0 == 1) {
-    local_80c = 0;
-    local_810 = (uint)(local_7cc[0] >> 6);
-    param_4->partBits[(int)local_810 >> 5] =
-         0x80000000U >> ((byte)(local_7cc[0] >> 6) & 0x1f) | param_4->partBits[(int)local_810 >> 5];
+  if (vertListCount == 1) {
+    numblends = 0;
+    boneIndex = (int)(rigidVertListArray[0].boneOffset >> 6);
+    surface->partBits[boneIndex >> 5] =
+         0x80000000U >> ((byte)(rigidVertListArray[0].boneOffset >> 6) & 0x1f) |
+         surface->partBits[boneIndex >> 5];
   }
   else {
-    param_4->flags = param_4->flags | 2;
-    sVar3 = *(short *)*param_2;
-    *param_2 = *param_2 + 2;
-    local_80c = (int)sVar3;
+    surface->flags = surface->flags | 2;
+    sVar3 = *(short *)*pos;
+    *pos = *pos + 2;
+    numblends = (int)sVar3;
   }
-  local_7f0 = (uint)param_4->vertCount * 0x40 + local_80c * 4;
-  local_c = Hunk_AllocateTempMemory(local_7f0,"XModelReadSurface");
-  local_34 = local_c;
-  for (local_830 = 0; local_830 < (int)(uint)param_4->vertCount; local_830 = local_830 + 1) {
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).normal[0] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).normal[1] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).normal[2] = fVar4;
+  size = (uint)surface->vertCount * 0x40 + numblends * 4;
+  surfVerts = Hunk_AllocateTempMemory(size,"XModelReadSurface");
+  blends = (XBlendLoadInfo *)surfVerts;
+  for (j = 0; j < (int)(uint)surface->vertCount; j = j + 1) {
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    *blends = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[1] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[2] = XVar4;
     if ((r_modelVertColor->current).enabled == false) {
-      (local_34->v).color[0] = 0xff;
-      (local_34->v).color[1] = 0xff;
-      (local_34->v).color[2] = 0xff;
-      (local_34->v).color[3] = 0xff;
+      blends[3].boneOffset = 0xffff;
+      blends[3].boneWeight = 0xffff;
     }
     else {
-      Byte4CopyBgraToVertexColor(*param_2,(local_34->v).color);
+      Byte4CopyBgraToVertexColor(*pos,(uchar *)(blends + 3));
     }
-    *param_2 = *param_2 + 4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).texCoordX = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).texCoordY = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).binormal[0] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).binormal[1] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).binormal[2] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).tangent[0] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).tangent[1] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    (local_34->v).tangent[2] = fVar4;
-    local_834 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    if (local_834 == 27397.0) {
-      if ((param_4->vertInfo).tensionData == (float *)0x0) {
-        pfVar7 = (*param_3)((uint)param_4->vertCount * 0x30);
-        (param_4->vertInfo).tensionData = pfVar7;
-        memset((uchar *)(param_4->vertInfo).tensionData,'\0',(uint)param_4->vertCount * 0x30);
+    *pos = *pos + 4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[7] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[0xb] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[4] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[5] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[6] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[8] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[9] = XVar4;
+    XVar4 = *(XBlendLoadInfo *)*pos;
+    *pos = *pos + 4;
+    blends[10] = XVar4;
+    MagicNumber = *(float *)*pos;
+    *pos = *pos + 4;
+    if (MagicNumber == 27397.0) {
+      if ((surface->vertInfo).tensionData == (float *)0x0) {
+        pfVar7 = (*Alloc)((uint)surface->vertCount * 0x30);
+        (surface->vertInfo).tensionData = pfVar7;
+        memset((uchar *)(surface->vertInfo).tensionData,'\0',(uint)surface->vertCount * 0x30);
       }
-      for (local_838 = 0; local_838 < 0xc; local_838 = local_838 + 1) {
-        local_83c = *(float *)*param_2;
-        *param_2 = *param_2 + 4;
-        if (local_83c == 0.0) {
+      for (i_2 = 0; i_2 < 0xc; i_2 = i_2 + 1) {
+        Value = *(float *)*pos;
+        *pos = *pos + 4;
+        if (Value == 0.0) {
           local_d48 = 1.0;
         }
         else {
-          local_d48 = 1.0 / local_83c;
+          local_d48 = 1.0 / Value;
         }
-        (param_4->vertInfo).tensionData[local_830 * 0xc + local_838] = local_d48;
+        (surface->vertInfo).tensionData[j * 0xc + i_2] = local_d48;
       }
     }
-    else if (local_834 != 27398.0) {
-      *param_2 = *param_2 + -4;
+    else if (MagicNumber != 27398.0) {
+      *pos = *pos + -4;
     }
-    local_848 = (local_34->v).normal[0] * (local_34->v).tangent[0] +
-                (local_34->v).normal[1] * (local_34->v).tangent[1] +
-                (local_34->v).normal[2] * (local_34->v).tangent[2];
-    local_844 = (local_34->v).tangent[0] * (local_34->v).binormal[0] +
-                (local_34->v).tangent[1] * (local_34->v).binormal[1] +
-                (local_34->v).tangent[2] * (local_34->v).binormal[2];
-    local_840 = (local_34->v).binormal[0] * (local_34->v).normal[0] +
-                (local_34->v).binormal[1] * (local_34->v).normal[1] +
-                (local_34->v).binormal[2] * (local_34->v).normal[2];
-    if (local_7d0 == 1) {
-      if ((local_7e9 != '\0') &&
+    check = (float)*blends * (float)blends[8] + (float)blends[1] * (float)blends[9] +
+            (float)blends[2] * (float)blends[10];
+    local_844 = (float)blends[8] * (float)blends[4] + (float)blends[9] * (float)blends[5] +
+                (float)blends[10] * (float)blends[6];
+    local_840 = (float)blends[4] * (float)*blends + (float)blends[5] * (float)blends[1] +
+                (float)blends[6] * (float)blends[2];
+    if (vertListCount == 1) {
+      if ((deformed != false) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x45a,0,"%s"), !bVar6)) {
         pcVar5 = (code *)swi(3);
         (*pcVar5)();
         return;
       }
-      (local_34->v).numWeights = '\0';
-      (local_34->v).boneOffset = local_7cc[0];
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      (local_34->v).offset[0] = fVar4;
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      (local_34->v).offset[1] = fVar4;
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      (local_34->v).offset[2] = fVar4;
-      local_34 = (XVertexBuffer *)local_34->w;
+      *(undefined1 *)&blends[0xf].boneOffset = 0;
+      blends[0xf].boneWeight = rigidVertListArray[0].boneOffset;
+      XVar4 = *(XBlendLoadInfo *)*pos;
+      *pos = *pos + 4;
+      blends[0xc] = XVar4;
+      XVar4 = *(XBlendLoadInfo *)*pos;
+      *pos = *pos + 4;
+      blends[0xd] = XVar4;
+      XVar4 = *(XBlendLoadInfo *)*pos;
+      *pos = *pos + 4;
+      blends[0xe] = XVar4;
+      blends = blends + 0x10;
     }
     else {
-      local_829 = **param_2;
-      *param_2 = *param_2 + 1;
-      (local_34->v).numWeights = local_829;
-      if ((3 < local_829) &&
+      numWeights = **pos;
+      *pos = *pos + 1;
+      *(uchar *)&blends[0xf].boneOffset = numWeights;
+      if ((3 < numWeights) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x43e,0,"%s\n\t(numWeights) = %i"), !bVar6)) {
         pcVar5 = (code *)swi(3);
         (*pcVar5)();
         return;
       }
-      local_828[local_829] = local_828[local_829] + 1;
-      sVar3 = *(short *)*param_2;
-      *param_2 = *param_2 + 2;
-      local_30 = (int)sVar3;
-      param_4->partBits[local_30 >> 5] =
-           0x80000000U >> ((byte)sVar3 & 0x1f) | param_4->partBits[local_30 >> 5];
-      local_800 = local_30 << 6;
-      iVar13 = local_800;
-      (local_34->v).boneOffset = (short)local_800;
-      local_800 = iVar13;
-      if ((local_800 != (local_34->v).boneOffset) &&
+      weightCount[numWeights] = weightCount[numWeights] + 1;
+      sVar3 = *(short *)*pos;
+      *pos = *pos + 2;
+      blendBoneIndex = (int)sVar3;
+      surface->partBits[blendBoneIndex >> 5] =
+           0x80000000U >> ((byte)sVar3 & 0x1f) | surface->partBits[blendBoneIndex >> 5];
+      blendBoneOffset = blendBoneIndex << 6;
+      iVar13 = blendBoneOffset;
+      blends[0xf].boneWeight = (ushort)blendBoneOffset;
+      blendBoneOffset = iVar13;
+      if ((blendBoneOffset != (short)blends[0xf].boneWeight) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x445,0,"%s"), !bVar6)) {
         pcVar5 = (code *)swi(3);
         (*pcVar5)();
         return;
       }
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      (local_34->v).offset[0] = fVar4;
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      (local_34->v).offset[1] = fVar4;
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      (local_34->v).offset[2] = fVar4;
-      local_34 = (XVertexBuffer *)local_34->w;
-      if (local_829 != 0) {
-        if ((local_7e9 == '\0') &&
+      XVar4 = *(XBlendLoadInfo *)*pos;
+      *pos = *pos + 4;
+      blends[0xc] = XVar4;
+      XVar4 = *(XBlendLoadInfo *)*pos;
+      *pos = *pos + 4;
+      blends[0xd] = XVar4;
+      XVar4 = *(XBlendLoadInfo *)*pos;
+      *pos = *pos + 4;
+      blends[0xe] = XVar4;
+      blends = blends + 0x10;
+      if (numWeights != '\0') {
+        if ((deformed == false) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x44f,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        for (local_24 = 0; local_24 < (int)(uint)local_829; local_24 = local_24 + 1) {
-          ReadBlend(param_4,param_4->partBits,(XBlendLoadInfo *)local_34,param_2);
-          local_34 = (XVertexBuffer *)((local_34->v).normal + 1);
+        for (i = 0; i < (int)(uint)numWeights; i = i + 1) {
+          ReadBlend(surface,surface->partBits,blends,pos);
+          blends = blends + 1;
         }
       }
     }
   }
-  local_804 = param_4->triCount + 1 & 0xfffffffe;
-  local_10 = (param_4->triCount + 1) * 6;
-  puVar8 = (*param_3)(local_10);
-  param_4->triIndices = puVar8;
-  if ((param_4->triIndices == (ushort *)0x0) &&
+  allocCount = surface->triCount + 1 & 0xfffffffe;
+  sizeInBytes = (surface->triCount + 1) * 6;
+  puVar8 = (*Alloc)(sizeInBytes);
+  surface->triIndices = puVar8;
+  if ((surface->triIndices == (ushort *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x489,0,"%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  for (local_18 = 0; local_18 < (int)((uint)param_4->triCount * 3); local_18 = local_18 + 1) {
-    uVar2 = *(ushort *)*param_2;
-    *param_2 = *param_2 + 2;
-    param_4->triIndices[local_18] = uVar2;
-    if ((param_4->vertCount <= param_4->triIndices[local_18]) &&
+  for (vertIndex = 0; vertIndex < (int)((uint)surface->triCount * 3); vertIndex = vertIndex + 1) {
+    uVar2 = *(ushort *)*pos;
+    *pos = *pos + 2;
+    surface->triIndices[vertIndex] = uVar2;
+    if ((surface->vertCount <= surface->triIndices[vertIndex]) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x48e,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
@@ -1396,97 +1390,97 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
       return;
     }
   }
-  if (local_7d0 == 1) {
-    local_84c = 0;
-    local_874 = local_18 / 3;
-    local_870 = 0;
+  if (vertListCount == 1) {
+    num_dupes = 0;
+    num_tris = vertIndex / 3;
+    write_i = 0;
     std::set<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>_>::
     set<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>_>
               ((set<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>_>
-                *)&local_86c);
-    for (local_878 = 0; local_878 < local_18; local_878 = local_878 + 3) {
-      uVar12 = (uint)param_4->triIndices[local_878];
-      uVar14 = (uint)param_4->triIndices[local_878 + 1];
-      uVar9 = (uint)param_4->triIndices[local_878 + 2];
-      local_88c = uVar9;
-      local_888 = uVar14;
-      local_87c = uVar12;
+                *)&tris);
+    for (i_3 = 0; i_3 < vertIndex; i_3 = i_3 + 3) {
+      uVar12 = (uint)surface->triIndices[i_3];
+      uVar14 = (uint)surface->triIndices[i_3 + 1];
+      uVar9 = (uint)surface->triIndices[i_3 + 2];
+      c = uVar9;
+      b = uVar14;
+      a = uVar12;
       if ((uVar12 < uVar14) && (uVar12 < uVar9)) {
         _allshl();
         _allshl();
-        local_884 = uVar12 | extraout_EAX | extraout_EAX_00;
+        normTri = uVar12 | extraout_EAX | extraout_EAX_00;
         local_880 = extraout_EDX | extraout_EDX_00;
       }
       else if ((uVar14 < uVar9) && (uVar14 < uVar12)) {
         _allshl();
         _allshl();
-        local_884 = uVar14 | extraout_EAX_01 | extraout_EAX_02;
+        normTri = uVar14 | extraout_EAX_01 | extraout_EAX_02;
         local_880 = extraout_EDX_01 | extraout_EDX_02;
       }
       else {
         _allshl();
         _allshl();
-        local_884 = uVar9 | extraout_EAX_03 | extraout_EAX_04;
+        normTri = uVar9 | extraout_EAX_03 | extraout_EAX_04;
         local_880 = extraout_EDX_03 | extraout_EDX_04;
       }
       local_97c = 0;
-      local_978 = local_86c._Myhead;
+      local_978 = tris._Myhead;
       if (&stack0x00000000 == (undefined1 *)0x86c) {
         _invalid_parameter_noinfo();
       }
-      local_97c = local_86c._padding_;
-      iVar18 = std::
+      local_97c = tris._padding_;
+      iVar16 = std::
                _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-               ::find(&local_86c,&local_974);
-      piVar10 = iVar18._0_4_;
+               ::find(&tris,&local_974);
+      piVar10 = iVar16._0_4_;
       if ((*piVar10 == 0) || (*piVar10 != local_97c)) {
         _invalid_parameter_noinfo();
       }
       if ((_Node *)piVar10[1] == local_978) {
-        param_4->triIndices[local_870] = (ushort)local_87c;
-        param_4->triIndices[local_870 + 1] = (ushort)local_888;
-        param_4->triIndices[local_870 + 2] = (ushort)local_88c;
-        local_870 = local_870 + 3;
+        surface->triIndices[write_i] = (ushort)a;
+        surface->triIndices[write_i + 1] = (ushort)b;
+        surface->triIndices[write_i + 2] = (ushort)c;
+        write_i = write_i + 3;
         std::
         _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-        ::insert(&local_86c,&local_988,(ulong64 *)&local_884);
+        ::insert(&tris,&local_988,(ulong64 *)&normTri);
       }
       else {
-        local_84c = local_84c + 1;
+        num_dupes = num_dupes + 1;
       }
     }
-    if (local_84c != 0) {
-      param_4->triCount = param_4->triCount - (short)local_84c;
-      local_18 = (uint)param_4->triCount * 3;
+    if (num_dupes != 0) {
+      surface->triCount = surface->triCount - (short)num_dupes;
+      vertIndex = (uint)surface->triCount * 3;
       Com_Printf(0x10,"deleted %d duplicate polys from %d poly mesh %s\n");
     }
     std::
     _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
     ::
     ~_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-              (&local_86c);
+              (&tris);
   }
-  local_1c = 0;
-  local_28 = 0;
-  for (local_830 = 0; uVar9 = local_1c, local_830 < (int)local_7d0; local_830 = local_830 + 1) {
-    local_7e0 = local_1c;
-    local_7e0._0_2_ = (ushort)local_1c;
-    local_7cc[local_830 * 6 + 2] = (ushort)local_7e0;
-    local_7e0 = uVar9;
-    if ((local_7cc[local_830 * 6 + 2] != uVar9) &&
+  triIndex = 0;
+  endIndex = 0;
+  for (j = 0; iVar13 = triIndex, j < vertListCount; j = j + 1) {
+    startTriIndex = triIndex;
+    startTriIndex._0_2_ = (ushort)triIndex;
+    rigidVertListArray[j].triOffset = (ushort)startTriIndex;
+    startTriIndex = iVar13;
+    if (((uint)rigidVertListArray[j].triOffset != iVar13) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x4c4,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    local_28 = (uint)local_7cc[local_830 * 6 + 1] + local_28;
-    while (((int)local_1c < (int)(uint)param_4->triCount &&
-           ((int)(uint)param_4->triIndices[local_1c * 3] < local_28))) {
-      local_1c = local_1c + 1;
+    endIndex = (uint)rigidVertListArray[j].vertCount + endIndex;
+    while ((triIndex < (int)(uint)surface->triCount &&
+           ((int)(uint)surface->triIndices[triIndex * 3] < endIndex))) {
+      triIndex = triIndex + 1;
     }
-    local_7cc[local_830 * 6 + 3] = (short)local_1c - (short)local_7e0;
-    if (((uint)local_7cc[local_830 * 6 + 3] != local_1c - local_7e0) &&
+    rigidVertListArray[j].triCount = (short)triIndex - (short)startTriIndex;
+    if (((uint)rigidVertListArray[j].triCount != triIndex - startTriIndex) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x4c9,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
@@ -1494,149 +1488,138 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
       return;
     }
   }
-  if (local_7d0 == 1) {
-    local_8a4 = Hunk_AllocateTempMemory((uint)param_4->vertCount << 1,"XModelReadSurface");
-    memset(local_8a4,'\0',(uint)param_4->vertCount << 1);
-    local_898 = param_4->triIndices;
-    uVar2 = *local_898;
-    (local_8a4 + (uint)uVar2 * 2)[0] = '\x01';
-    (local_8a4 + (uint)uVar2 * 2)[1] = '\0';
-    uVar2 = local_898[1];
-    (local_8a4 + (uint)uVar2 * 2)[0] = '\x01';
-    (local_8a4 + (uint)uVar2 * 2)[1] = '\0';
-    uVar2 = local_898[2];
-    (local_8a4 + (uint)uVar2 * 2)[0] = '\x01';
-    (local_8a4 + (uint)uVar2 * 2)[1] = '\0';
-    local_894 = (uint)param_4->triCount * 3;
-    for (local_8a8 = 3; local_8a8 < local_894; local_8a8 = local_8a8 + 3) {
-      local_8b8 = local_8a8;
-      local_8b0 = 0;
-      for (local_8c0 = local_8a8; local_8c0 < local_894; local_8c0 = local_8c0 + 3) {
-        local_8c8 = (uint)local_898[local_8c0];
-        local_8cc = (uint)local_898[local_8c0 + 1];
-        local_8d0 = (uint)local_898[local_8c0 + 2];
-        local_8c4 = ((uint)*(ushort *)(local_8a4 + local_8c8 * 2) +
-                     (uint)*(ushort *)(local_8a4 + local_8cc * 2) + 1 +
-                    (uint)*(ushort *)(local_8a4 + local_8d0 * 2)) * 0x1000000 -
-                    (local_8c8 + local_8cc + local_8d0);
-        if (local_8b0 < local_8c4) {
-          local_8b8 = local_8c0;
-          local_8b0 = local_8c4;
+  if (vertListCount == 1) {
+    vertFlags = Hunk_AllocateTempMemory((uint)surface->vertCount << 1,"XModelReadSurface");
+    memset((uchar *)vertFlags,'\0',(uint)surface->vertCount << 1);
+    indices = surface->triIndices;
+    vertFlags[*indices] = 1;
+    vertFlags[indices[1]] = 1;
+    vertFlags[indices[2]] = 1;
+    num_indices = (uint)surface->triCount * 3;
+    for (i_4 = 3; i_4 < num_indices; i_4 = i_4 + 3) {
+      best_k = i_4;
+      best_score = 0;
+      for (k = i_4; k < num_indices; k = k + 3) {
+        a_3 = (int)indices[k];
+        b_3 = (int)indices[k + 1];
+        c_3 = (int)indices[k + 2];
+        score = ((uint)vertFlags[a_3] + (uint)vertFlags[b_3] + 1 + (uint)vertFlags[c_3]) * 0x1000000
+                - (a_3 + b_3 + c_3);
+        if (best_score < score) {
+          best_k = k;
+          best_score = score;
         }
       }
-      local_8ac = local_898[local_8b8];
-      local_8b4 = local_898[local_8b8 + 1];
-      local_8bc = local_898[local_8b8 + 2];
-      (local_8a4 + (uint)local_8ac * 2)[0] = '\x01';
-      (local_8a4 + (uint)local_8ac * 2)[1] = '\0';
-      (local_8a4 + (uint)local_8b4 * 2)[0] = '\x01';
-      (local_8a4 + (uint)local_8b4 * 2)[1] = '\0';
-      (local_8a4 + (uint)local_8bc * 2)[0] = '\x01';
-      (local_8a4 + (uint)local_8bc * 2)[1] = '\0';
-      if (local_8b8 != local_8a8) {
-        local_898[local_8b8] = local_898[local_8a8];
-        local_898[local_8b8 + 1] = local_898[local_8a8 + 1];
-        local_898[local_8b8 + 2] = local_898[local_8a8 + 2];
-        local_898[local_8a8] = local_8ac;
-        local_898[local_8a8 + 1] = local_8b4;
-        local_898[local_8a8 + 2] = local_8bc;
+      a_2 = indices[best_k];
+      b_2 = indices[best_k + 1];
+      c_2 = indices[best_k + 2];
+      vertFlags[a_2] = 1;
+      vertFlags[b_2] = 1;
+      vertFlags[c_2] = 1;
+      if (best_k != i_4) {
+        indices[best_k] = indices[i_4];
+        indices[best_k + 1] = indices[i_4 + 1];
+        indices[best_k + 2] = indices[i_4 + 2];
+        indices[i_4] = a_2;
+        indices[i_4 + 1] = b_2;
+        indices[i_4 + 2] = c_2;
       }
     }
-    memset(local_8a4,'\0',(uint)param_4->vertCount << 1);
-    local_890 = 1;
-    for (local_8d4 = 0; local_8d4 < local_894; local_8d4 = local_8d4 + 1) {
-      local_8d8 = (uint)local_898[local_8d4];
-      if (*(short *)(local_8a4 + local_8d8 * 2) == 0) {
-        *(ushort *)(local_8a4 + local_8d8 * 2) = local_890;
-        local_890 = local_890 + 1;
+    memset((uchar *)vertFlags,'\0',(uint)surface->vertCount << 1);
+    next_index = 1;
+    for (i_5 = 0; i_5 < num_indices; i_5 = i_5 + 1) {
+      idx = (int)indices[i_5];
+      if (vertFlags[idx] == 0) {
+        vertFlags[idx] = next_index;
+        next_index = next_index + 1;
       }
-      local_898[local_8d4] = *(short *)(local_8a4 + local_8d8 * 2) - 1;
+      indices[i_5] = vertFlags[idx] - 1;
     }
-    if (((uint)local_890 != param_4->vertCount + 1) &&
+    if (((uint)next_index != surface->vertCount + 1) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x51b,1,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    local_89c = local_c;
-    local_8a0 = 0;
-    for (local_8dc = 0; local_8dc < (int)(uint)param_4->vertCount; local_8dc = local_8dc + 1) {
-      local_8e4 = local_8dc;
-      local_8e0 = *(ushort *)(local_8a4 + local_8dc * 2) - 1;
-      if (local_8dc != *(ushort *)(local_8a4 + local_8dc * 2) - 1) {
-        local_8e8 = 0;
-        pXVar15 = (XBlendLoadInfo *)(&local_89c->v + local_8dc);
-        pXVar17 = local_92c;
+    verts = &surfVerts->v;
+    move_count = 0;
+    for (i_6 = 0; i_6 < (int)(uint)surface->vertCount; i_6 = i_6 + 1) {
+      src = i_6;
+      dst = vertFlags[i_6] - 1;
+      if (i_6 != vertFlags[i_6] - 1) {
+        db = 0;
+        pXVar15 = verts + i_6;
+        pfVar7 = local_92c;
         for (iVar13 = 0x10; iVar13 != 0; iVar13 = iVar13 + -1) {
-          *pXVar17 = *pXVar15;
-          pXVar15 = pXVar15 + 1;
-          pXVar17 = pXVar17 + 1;
+          *pfVar7 = pXVar15->normal[0];
+          pXVar15 = (XVertexInfo_s *)(pXVar15->normal + 1);
+          pfVar7 = pfVar7 + 1;
         }
-        for (; local_8e4 != local_8e0; local_8e0 = *(ushort *)(local_8a4 + local_8e0 * 2) - 1) {
-          pXVar16 = &local_89c->v + local_8e0;
-          pfVar7 = afStack_96c + local_8e8 * 0x10;
+        for (; src != dst; dst = vertFlags[dst] - 1) {
+          pXVar15 = verts + dst;
+          pfVar7 = afStack_96c + db * 0x10;
           for (iVar13 = 0x10; iVar13 != 0; iVar13 = iVar13 + -1) {
-            *pfVar7 = pXVar16->normal[0];
-            pXVar16 = (XVertexInfo_s *)(pXVar16->normal + 1);
+            *pfVar7 = pXVar15->normal[0];
+            pXVar15 = (XVertexInfo_s *)(pXVar15->normal + 1);
             pfVar7 = pfVar7 + 1;
           }
-          local_8e8 = 1 - local_8e8;
-          pfVar7 = afStack_96c + local_8e8 * 0x10;
-          pXVar16 = &local_89c->v + local_8e0;
+          db = 1 - db;
+          pfVar7 = afStack_96c + db * 0x10;
+          pXVar15 = verts + dst;
           for (iVar13 = 0x10; iVar13 != 0; iVar13 = iVar13 + -1) {
-            pXVar16->normal[0] = *pfVar7;
+            pXVar15->normal[0] = *pfVar7;
             pfVar7 = pfVar7 + 1;
-            pXVar16 = (XVertexInfo_s *)(pXVar16->normal + 1);
+            pXVar15 = (XVertexInfo_s *)(pXVar15->normal + 1);
           }
-          *(short *)(local_8a4 + local_8e4 * 2) = (short)local_8e4 + 1;
-          local_8e4 = local_8e0;
-          local_8a0 = local_8a0 + 1;
+          vertFlags[src] = (short)src + 1;
+          src = dst;
+          move_count = move_count + 1;
         }
       }
     }
-    if (((int)(uint)param_4->vertCount < local_8a0) &&
+    if (((int)(uint)surface->vertCount < move_count) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x536,1,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    Hunk_FreeTempMemory(local_8a4);
+    Hunk_FreeTempMemory(vertFlags);
   }
-  if ((param_4->triCount & 1) != 0) {
-    if (((int)local_804 <= (int)(uint)param_4->triCount) &&
+  if ((surface->triCount & 1) != 0) {
+    if ((allocCount <= (int)(uint)surface->triCount) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x540,1,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    param_4->triIndices[local_18] = param_4->triIndices[local_18 + -1];
-    param_4->triIndices[local_18 + 1] = param_4->triIndices[local_18 + -1];
-    param_4->triIndices[local_18 + 2] = param_4->triIndices[local_18 + -1];
-    param_4->triCount = param_4->triCount + 1;
+    surface->triIndices[vertIndex] = surface->triIndices[vertIndex + -1];
+    surface->triIndices[vertIndex + 1] = surface->triIndices[vertIndex + -1];
+    surface->triIndices[vertIndex + 2] = surface->triIndices[vertIndex + -1];
+    surface->triCount = surface->triCount + 1;
   }
-  if (0xff < (int)local_7d0) {
+  if (0xff < vertListCount) {
     Com_Error(ERR_FATAL,"vertListCount > 255 !");
   }
-  if (local_7d0 == 0) {
+  if (vertListCount == 0) {
     local_d50 = (XRigidVertList *)0x0;
   }
   else {
-    local_d50 = (*param_3)(local_7d0 * 0xc);
+    local_d50 = (*Alloc)(vertListCount * 0xc);
   }
-  param_4->vertList = local_d50;
-  param_4->vertListCount = (uchar)local_7d0;
-  memcpy((uchar *)param_4->vertList,(uchar *)local_7cc,local_7d0 * 0xc);
-  local_7f4 = (uint)param_4->vertCount * 0x20;
-  pGVar11 = (*param_3)(local_7f4);
-  param_4->verts0 = pGVar11;
-  memset((uchar *)param_4->verts0,'\0',local_7f4);
-  param_1->memUsage = param_1->memUsage + local_7f4;
-  XSurfaceTransfer(local_c,param_4->verts0,param_4->verts0,(uint)param_4->vertCount);
-  if (local_7e9 != '\0') {
-    iVar13 = XModelNumBones(param_1);
+  surface->vertList = local_d50;
+  surface->vertListCount = (uchar)vertListCount;
+  memcpy((uchar *)surface->vertList,(uchar *)rigidVertListArray,vertListCount * 0xc);
+  vertexBytes = (uint)surface->vertCount * 0x20;
+  pGVar11 = (*Alloc)(vertexBytes);
+  surface->verts0 = pGVar11;
+  memset((uchar *)surface->verts0,'\0',vertexBytes);
+  model->memUsage = model->memUsage + vertexBytes;
+  XSurfaceTransfer(surfVerts,surface->verts0,surface->verts0,(uint)surface->vertCount);
+  if (deformed != false) {
+    iVar13 = XModelNumBones(model);
     if ((iVar13 < 2) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x5c7,0,"%s"), !bVar6)) {
@@ -1644,29 +1627,29 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
       (*pcVar5)();
       return;
     }
-    local_38 = (ushort *)0x0;
-    local_7d4 = (ushort *)0x0;
-    local_7e8 = (ushort *)0x0;
-    local_7e4 = (ushort *)0x0;
-    if (local_828[0] != 0) {
-      local_7f0 = local_828[0] << 1;
-      local_38 = (*param_3)(local_7f0);
+    verts0 = (XVertexInfo0 *)0x0;
+    verts1 = (XVertexInfo1 *)0x0;
+    verts2 = (XVertexInfo2 *)0x0;
+    verts3 = (XVertexInfo3 *)0x0;
+    if (weightCount[0] != 0) {
+      size = weightCount[0] << 1;
+      verts0 = (*Alloc)(size);
     }
-    if (local_828[1] != 0) {
-      local_7f0 = local_828[1] * 6;
-      local_7d4 = (*param_3)(local_7f0);
+    if (weightCount[1] != 0) {
+      size = weightCount[1] * 6;
+      verts1 = (*Alloc)(size);
     }
-    if (local_828[2] != 0) {
-      local_7f0 = local_828[2] * 10;
-      local_7e8 = (*param_3)(local_7f0);
+    if (weightCount[2] != 0) {
+      size = weightCount[2] * 10;
+      verts2 = (*Alloc)(size);
     }
-    if (local_828[3] != 0) {
-      local_7f0 = local_828[3] * 0xe;
-      local_7e4 = (*param_3)(local_7f0);
+    if (weightCount[3] != 0) {
+      size = weightCount[3] * 0xe;
+      verts3 = (*Alloc)(size);
     }
-    for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-      (param_4->vertInfo).vertCount[local_24] = (short)local_828[local_24];
-      if (((int)(param_4->vertInfo).vertCount[local_24] != local_828[local_24]) &&
+    for (i = 0; i < 4; i = i + 1) {
+      (surface->vertInfo).vertCount[i] = (short)weightCount[i];
+      if (((int)(surface->vertInfo).vertCount[i] != weightCount[i]) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                    ,0x5e9,0,"%s"), !bVar6)) {
         pcVar5 = (code *)swi(3);
@@ -1674,171 +1657,171 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
         return;
       }
     }
-    local_34 = local_c;
-    local_818 = local_38;
-    local_2c = local_7d4;
-    local_814 = local_7e8;
-    local_8 = local_7e4;
-    for (local_830 = 0; local_830 < (int)(uint)param_4->vertCount; local_830 = local_830 + 1) {
-      uVar1 = (local_34->v).numWeights;
-      if (uVar1 == '\0') {
-        if ((local_818 == (ushort *)0x0) &&
+    blends = (XBlendLoadInfo *)surfVerts;
+    vert0Out = verts0;
+    vert1Out = verts1;
+    vert2Out = verts2;
+    vert3Out = verts3;
+    for (j = 0; j < (int)(uint)surface->vertCount; j = j + 1) {
+      cVar1 = (char)blends[0xf].boneOffset;
+      if (cVar1 == '\0') {
+        if ((vert0Out == (XVertexInfo0 *)0x0) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x5f7,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        local_14 = local_818;
-        local_808 = (ushort *)0x0;
-        local_818 = local_818 + 1;
+        vertOut = vert0Out;
+        blendOut = (XBlendLoadInfo *)0x0;
+        vert0Out = vert0Out + 1;
       }
-      else if (uVar1 == '\x01') {
-        if ((local_2c == (ushort *)0x0) &&
+      else if (cVar1 == '\x01') {
+        if ((vert1Out == (XVertexInfo1 *)0x0) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x5fe,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        local_14 = local_2c;
-        local_808 = local_2c + 1;
-        local_2c = local_2c + 3;
+        vertOut = &vert1Out->vert0;
+        blendOut = vert1Out->blend;
+        vert1Out = vert1Out + 1;
       }
-      else if (uVar1 == '\x02') {
-        if ((local_814 == (ushort *)0x0) &&
+      else if (cVar1 == '\x02') {
+        if ((vert2Out == (XVertexInfo2 *)0x0) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x605,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        local_14 = local_814;
-        local_808 = local_814 + 1;
-        local_814 = local_814 + 5;
+        vertOut = &vert2Out->vert0;
+        blendOut = vert2Out->blend;
+        vert2Out = vert2Out + 1;
       }
       else {
-        if (((local_34->v).numWeights != '\x03') &&
+        if (((char)blends[0xf].boneOffset != '\x03') &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x60c,0,"%s\n\t(verts->numWeights) = %i"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        if ((local_8 == (ushort *)0x0) &&
+        if ((vert3Out == (XVertexInfo3 *)0x0) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x60d,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        local_14 = local_8;
-        local_808 = local_8 + 1;
-        local_8 = local_8 + 7;
+        vertOut = &vert3Out->vert0;
+        blendOut = vert3Out->blend;
+        vert3Out = vert3Out + 1;
       }
-      *local_14 = (local_34->v).boneOffset;
-      local_829 = (local_34->v).numWeights;
-      local_34 = (XVertexBuffer *)local_34->w;
-      if (local_829 != 0) {
-        if ((local_808 == (ushort *)0x0) &&
+      vertOut->boneOffset = blends[0xf].boneWeight;
+      numWeights = (uchar)blends[0xf].boneOffset;
+      blends = blends + 0x10;
+      if (numWeights != '\0') {
+        if ((blendOut == (XBlendLoadInfo *)0x0) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                      ,0x61b,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
           (*pcVar5)();
           return;
         }
-        for (local_24 = 0; local_24 < (int)(uint)local_829; local_24 = local_24 + 1) {
-          *local_808 = *(ushort *)(local_34->v).normal;
-          local_808[1] = *(ushort *)((int)(local_34->v).normal + 2);
-          local_808 = local_808 + 2;
-          local_34 = (XVertexBuffer *)((local_34->v).normal + 1);
+        for (i = 0; i < (int)(uint)numWeights; i = i + 1) {
+          blendOut->boneOffset = blends->boneOffset;
+          blendOut->boneWeight = blends->boneWeight;
+          blendOut = blendOut + 1;
+          blends = blends + 1;
         }
       }
     }
-    if ((local_818 != local_38 + (param_4->vertInfo).vertCount[0]) &&
+    if ((vert0Out != verts0 + (surface->vertInfo).vertCount[0]) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x627,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if ((local_2c != local_7d4 + (param_4->vertInfo).vertCount[1] * 3) &&
+    if ((vert1Out != verts1 + (surface->vertInfo).vertCount[1]) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x628,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if ((local_814 != local_7e8 + (param_4->vertInfo).vertCount[2] * 5) &&
+    if ((vert2Out != verts2 + (surface->vertInfo).vertCount[2]) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x629,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if ((local_8 != local_7e4 + (param_4->vertInfo).vertCount[3] * 7) &&
+    if ((vert3Out != verts3 + (surface->vertInfo).vertCount[3]) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x62a,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    local_7f0 = ((int)(param_4->vertInfo).vertCount[0] + (param_4->vertInfo).vertCount[1] * 3 +
-                 (param_4->vertInfo).vertCount[2] * 5 + (param_4->vertInfo).vertCount[3] * 7) * 2;
-    if (local_7f0 == 0) {
+    size = ((int)(surface->vertInfo).vertCount[0] + (surface->vertInfo).vertCount[1] * 3 +
+            (surface->vertInfo).vertCount[2] * 5 + (surface->vertInfo).vertCount[3] * 7) * 2;
+    if (size == 0) {
       local_d58 = (ushort *)0x0;
     }
     else {
-      local_d58 = (*param_3)(local_7f0);
+      local_d58 = (*Alloc)(size);
     }
-    local_20 = local_d58;
-    param_1->memUsage = param_1->memUsage + local_7f0;
-    (param_4->vertInfo).vertsBlend = local_d58;
-    if ((param_4->vertInfo).vertCount[0] != 0) {
-      local_818 = local_38;
-      for (local_830 = 0; local_830 < (param_4->vertInfo).vertCount[0]; local_830 = local_830 + 1) {
-        *local_20 = *local_818;
-        local_20 = local_20 + 1;
-        local_818 = local_818 + 1;
+    vertsBlendOut = local_d58;
+    model->memUsage = model->memUsage + size;
+    (surface->vertInfo).vertsBlend = local_d58;
+    if ((surface->vertInfo).vertCount[0] != 0) {
+      vert0Out = verts0;
+      for (j = 0; j < (surface->vertInfo).vertCount[0]; j = j + 1) {
+        *vertsBlendOut = vert0Out->boneOffset;
+        vertsBlendOut = vertsBlendOut + 1;
+        vert0Out = vert0Out + 1;
       }
     }
-    if ((param_4->vertInfo).vertCount[1] != 0) {
-      local_2c = local_7d4;
-      for (local_830 = 0; local_830 < (param_4->vertInfo).vertCount[1]; local_830 = local_830 + 1) {
-        *local_20 = *local_2c;
-        local_20[1] = local_2c[1];
-        local_20[2] = local_2c[2];
-        local_20 = local_20 + 3;
-        local_2c = local_2c + 3;
+    if ((surface->vertInfo).vertCount[1] != 0) {
+      vert1Out = verts1;
+      for (j = 0; j < (surface->vertInfo).vertCount[1]; j = j + 1) {
+        *vertsBlendOut = (vert1Out->vert0).boneOffset;
+        vertsBlendOut[1] = vert1Out->blend[0].boneOffset;
+        vertsBlendOut[2] = vert1Out->blend[0].boneWeight;
+        vertsBlendOut = vertsBlendOut + 3;
+        vert1Out = vert1Out + 1;
       }
     }
-    if ((param_4->vertInfo).vertCount[2] != 0) {
-      local_814 = local_7e8;
-      for (local_830 = 0; local_830 < (param_4->vertInfo).vertCount[2]; local_830 = local_830 + 1) {
-        *local_20 = *local_814;
-        local_20[1] = local_814[1];
-        local_20[2] = local_814[2];
-        local_20[3] = local_814[3];
-        local_20[4] = local_814[4];
-        local_20 = local_20 + 5;
-        local_814 = local_814 + 5;
+    if ((surface->vertInfo).vertCount[2] != 0) {
+      vert2Out = verts2;
+      for (j = 0; j < (surface->vertInfo).vertCount[2]; j = j + 1) {
+        *vertsBlendOut = (vert2Out->vert0).boneOffset;
+        vertsBlendOut[1] = vert2Out->blend[0].boneOffset;
+        vertsBlendOut[2] = vert2Out->blend[0].boneWeight;
+        vertsBlendOut[3] = vert2Out->blend[1].boneOffset;
+        vertsBlendOut[4] = vert2Out->blend[1].boneWeight;
+        vertsBlendOut = vertsBlendOut + 5;
+        vert2Out = vert2Out + 1;
       }
     }
-    if ((param_4->vertInfo).vertCount[3] != 0) {
-      local_8 = local_7e4;
-      for (local_830 = 0; local_830 < (param_4->vertInfo).vertCount[3]; local_830 = local_830 + 1) {
-        *local_20 = *local_8;
-        local_20[1] = local_8[1];
-        local_20[2] = local_8[2];
-        local_20[3] = local_8[3];
-        local_20[4] = local_8[4];
-        local_20[5] = local_8[5];
-        local_20[6] = local_8[6];
-        local_20 = local_20 + 7;
-        local_8 = local_8 + 7;
+    if ((surface->vertInfo).vertCount[3] != 0) {
+      vert3Out = verts3;
+      for (j = 0; j < (surface->vertInfo).vertCount[3]; j = j + 1) {
+        *vertsBlendOut = (vert3Out->vert0).boneOffset;
+        vertsBlendOut[1] = vert3Out->blend[0].boneOffset;
+        vertsBlendOut[2] = vert3Out->blend[0].boneWeight;
+        vertsBlendOut[3] = vert3Out->blend[1].boneOffset;
+        vertsBlendOut[4] = vert3Out->blend[1].boneWeight;
+        vertsBlendOut[5] = vert3Out->blend[2].boneOffset;
+        vertsBlendOut[6] = vert3Out->blend[2].boneWeight;
+        vertsBlendOut = vertsBlendOut + 7;
+        vert3Out = vert3Out + 1;
       }
     }
-    if (((int)local_20 - (int)(param_4->vertInfo).vertsBlend != local_7f0) &&
+    if (((int)vertsBlendOut - (int)(surface->vertInfo).vertsBlend != size) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                  ,0x681,0,"%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
@@ -1846,17 +1829,17 @@ XModelReadSurface(XModel *param_1,uchar **param_2,_func___cdecl_void_ptr_int *pa
       return;
     }
   }
-  if ((((param_4->flags & 0x80) != 0) != (param_4->vertListCount == '\0')) &&
+  if ((((surface->flags & 0x80) != 0) != (surface->vertListCount == '\0')) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp"
                                ,0x684,0,"%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  for (local_7dc = 0; local_7dc != param_4->vertListCount; local_7dc = local_7dc + 1) {
-    XModelReadSurface_BuildCollisionTree(param_4,local_7dc,param_3);
+  for (vertListIter = 0; vertListIter != surface->vertListCount; vertListIter = vertListIter + 1) {
+    XModelReadSurface_BuildCollisionTree(surface,vertListIter,Alloc);
   }
-  Hunk_FreeTempMemory(local_c);
+  Hunk_FreeTempMemory(surfVerts);
   return;
 }
 
@@ -1981,10 +1964,10 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
   const_iterator local_20;
   int local_18;
   _Node *local_14;
-  const_iterator local_c;
+  const_iterator _Where;
   
   p_Var4 = _Lbound(this,in_stack_00000008);
-  const_iterator::const_iterator(&local_c,p_Var4,this);
+  const_iterator::const_iterator(&_Where,p_Var4,this);
   local_14 = this->_Myhead;
   local_18 = 0;
   if (this == (_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
@@ -1992,21 +1975,21 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
     _invalid_parameter_noinfo();
   }
   local_18 = this->_padding_;
-  if ((local_c._padding_ == 0) || (local_c._padding_ != local_18)) {
+  if ((_Where._padding_ == 0) || (_Where._padding_ != local_18)) {
     _invalid_parameter_noinfo();
   }
-  if (local_c._Ptr != local_14) {
-    uVar1 = *(uint *)((int)&(local_c._Ptr)->_Myval + 4);
+  if (_Where._Ptr != local_14) {
+    uVar1 = *(uint *)((int)&(_Where._Ptr)->_Myval + 4);
     if ((uVar1 < *(uint *)((int)in_stack_00000008 + 4)) ||
        ((uVar1 <= *(uint *)((int)in_stack_00000008 + 4) &&
-        ((uint)(local_c._Ptr)->_Myval <= (uint)*in_stack_00000008)))) {
+        ((uint)(_Where._Ptr)->_Myval <= (uint)*in_stack_00000008)))) {
       bVar3 = false;
     }
     else {
       bVar3 = true;
     }
     if (!bVar3) {
-      local_4c = &local_c;
+      local_4c = &_Where;
       goto LAB_00aedd64;
     }
   }
@@ -2034,16 +2017,16 @@ void __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::_Erase(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-         *this,_Node *param_1)
+         *this,_Node *_Rootnode)
 
 {
   _Node *p_Var1;
   
-  while (param_1->_Isnil == '\0') {
-    _Erase(this,param_1->_Right);
-    p_Var1 = param_1->_Left;
-    operator_delete(param_1);
-    param_1 = p_Var1;
+  while (_Rootnode->_Isnil == '\0') {
+    _Erase(this,_Rootnode->_Right);
+    p_Var1 = _Rootnode->_Left;
+    operator_delete(_Rootnode);
+    _Rootnode = p_Var1;
   }
   return;
 }
@@ -2079,7 +2062,7 @@ iterator __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::_Insert(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-          *this,bool param_1,_Node *param_2,ulong64 *param_3)
+          *this,bool param_1,_Node *_Addleft,ulong64 *_Wherenode)
 
 {
   _Node *p_Var1;
@@ -2093,72 +2076,72 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
   undefined4 local_54;
   basic_string<char,std::char_traits<char>,std::allocator<char>_> local_50;
   logic_error local_34;
-  _Node *local_c;
-  _Node *local_8;
+  _Node *_Pnode;
+  _Node *_Newnode;
   
   local_54 = 0x1fffffff;
   if (this->_Mysize < 0x1ffffffe) {
-    local_c = _Buynode(this,this->_Myhead,(_Node *)param_3,this->_Myhead,in_stack_00000010,'\0');
+    _Pnode = _Buynode(this,this->_Myhead,(_Node *)_Wherenode,this->_Myhead,in_stack_00000010,'\0');
     this->_Mysize = this->_Mysize + 1;
-    local_8 = local_c;
-    if ((_Node *)param_3 == this->_Myhead) {
-      this->_Myhead->_Parent = local_c;
-      this->_Myhead->_Left = local_c;
-      this->_Myhead->_Right = local_c;
+    _Newnode = _Pnode;
+    if ((_Node *)_Wherenode == this->_Myhead) {
+      this->_Myhead->_Parent = _Pnode;
+      this->_Myhead->_Left = _Pnode;
+      this->_Myhead->_Right = _Pnode;
     }
-    else if ((char)param_2 == '\0') {
-      *(_Node **)(param_3 + 1) = local_c;
-      if ((_Node *)param_3 == this->_Myhead->_Right) {
-        this->_Myhead->_Right = local_c;
+    else if ((char)_Addleft == '\0') {
+      *(_Node **)(_Wherenode + 1) = _Pnode;
+      if ((_Node *)_Wherenode == this->_Myhead->_Right) {
+        this->_Myhead->_Right = _Pnode;
       }
     }
     else {
-      *(_Node **)param_3 = local_c;
-      if ((_Node *)param_3 == this->_Myhead->_Left) {
-        this->_Myhead->_Left = local_c;
+      *(_Node **)_Wherenode = _Pnode;
+      if ((_Node *)_Wherenode == this->_Myhead->_Left) {
+        this->_Myhead->_Left = _Pnode;
       }
     }
-    while (local_c->_Parent->_Color == '\0') {
-      if (local_c->_Parent == local_c->_Parent->_Parent->_Left) {
-        p_Var1 = local_c->_Parent->_Parent->_Right;
+    while (_Pnode->_Parent->_Color == '\0') {
+      if (_Pnode->_Parent == _Pnode->_Parent->_Parent->_Left) {
+        p_Var1 = _Pnode->_Parent->_Parent->_Right;
         if (p_Var1->_Color == '\0') {
-          local_c->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Color = '\x01';
           p_Var1->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          local_c = local_c->_Parent->_Parent;
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Pnode = _Pnode->_Parent->_Parent;
         }
         else {
-          if (local_c == local_c->_Parent->_Right) {
-            local_c = local_c->_Parent;
-            _Lrotate(this,local_c);
+          if (_Pnode == _Pnode->_Parent->_Right) {
+            _Pnode = _Pnode->_Parent;
+            _Lrotate(this,_Pnode);
           }
-          local_c->_Parent->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          _Rrotate(this,local_c->_Parent->_Parent);
+          _Pnode->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Rrotate(this,_Pnode->_Parent->_Parent);
         }
       }
       else {
-        p_Var1 = local_c->_Parent->_Parent->_Left;
+        p_Var1 = _Pnode->_Parent->_Parent->_Left;
         if (p_Var1->_Color == '\0') {
-          local_c->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Color = '\x01';
           p_Var1->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          local_c = local_c->_Parent->_Parent;
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Pnode = _Pnode->_Parent->_Parent;
         }
         else {
-          if (local_c == local_c->_Parent->_Left) {
-            local_c = local_c->_Parent;
-            _Rrotate(this,local_c);
+          if (_Pnode == _Pnode->_Parent->_Left) {
+            _Pnode = _Pnode->_Parent;
+            _Rrotate(this,_Pnode);
           }
-          local_c->_Parent->_Color = '\x01';
-          local_c->_Parent->_Parent->_Color = '\0';
-          _Lrotate(this,local_c->_Parent->_Parent);
+          _Pnode->_Parent->_Color = '\x01';
+          _Pnode->_Parent->_Parent->_Color = '\0';
+          _Lrotate(this,_Pnode->_Parent->_Parent);
         }
       }
     }
     this->_Myhead->_Parent->_Color = '\x01';
     *_param_1 = 0;
-    _param_1[1] = (int)local_8;
+    _param_1[1] = (int)_Newnode;
     if (this == (_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
                  *)0x0) {
       _invalid_parameter_noinfo();
@@ -2191,34 +2174,34 @@ _Node * __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::_Lbound(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-          *this,ulong64 *param_1)
+          *this,ulong64 *_Keyval)
 
 {
   uint uVar1;
   bool bVar2;
-  _Node *local_c;
-  _Node *local_8;
+  _Node *_Pnode;
+  _Node *_Wherenode;
   
-  local_c = this->_Myhead->_Parent;
-  local_8 = this->_Myhead;
-  while (local_c->_Isnil == '\0') {
-    uVar1 = *(uint *)((int)&local_c->_Myval + 4);
-    if ((*(uint *)((int)param_1 + 4) < uVar1) ||
-       ((*(uint *)((int)param_1 + 4) <= uVar1 && ((uint)*param_1 <= (uint)local_c->_Myval)))) {
+  _Pnode = this->_Myhead->_Parent;
+  _Wherenode = this->_Myhead;
+  while (_Pnode->_Isnil == '\0') {
+    uVar1 = *(uint *)((int)&_Pnode->_Myval + 4);
+    if ((*(uint *)((int)_Keyval + 4) < uVar1) ||
+       ((*(uint *)((int)_Keyval + 4) <= uVar1 && ((uint)*_Keyval <= (uint)_Pnode->_Myval)))) {
       bVar2 = false;
     }
     else {
       bVar2 = true;
     }
     if (bVar2) {
-      local_c = local_c->_Right;
+      _Pnode = _Pnode->_Right;
     }
     else {
-      local_8 = local_c;
-      local_c = local_c->_Left;
+      _Wherenode = _Pnode;
+      _Pnode = _Pnode->_Left;
     }
   }
-  return local_8;
+  return _Wherenode;
 }
 
 
@@ -2228,28 +2211,28 @@ void __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::_Lrotate(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-           *this,_Node *param_1)
+           *this,_Node *_Wherenode)
 
 {
   _Node *p_Var1;
   
-  p_Var1 = param_1->_Right;
-  param_1->_Right = p_Var1->_Left;
+  p_Var1 = _Wherenode->_Right;
+  _Wherenode->_Right = p_Var1->_Left;
   if (p_Var1->_Left->_Isnil == '\0') {
-    p_Var1->_Left->_Parent = param_1;
+    p_Var1->_Left->_Parent = _Wherenode;
   }
-  p_Var1->_Parent = param_1->_Parent;
-  if (param_1 == this->_Myhead->_Parent) {
+  p_Var1->_Parent = _Wherenode->_Parent;
+  if (_Wherenode == this->_Myhead->_Parent) {
     this->_Myhead->_Parent = p_Var1;
   }
-  else if (param_1 == param_1->_Parent->_Left) {
-    param_1->_Parent->_Left = p_Var1;
+  else if (_Wherenode == _Wherenode->_Parent->_Left) {
+    _Wherenode->_Parent->_Left = p_Var1;
   }
   else {
-    param_1->_Parent->_Right = p_Var1;
+    _Wherenode->_Parent->_Right = p_Var1;
   }
-  p_Var1->_Left = param_1;
-  param_1->_Parent = p_Var1;
+  p_Var1->_Left = _Wherenode;
+  _Wherenode->_Parent = p_Var1;
   return;
 }
 
@@ -2260,28 +2243,28 @@ void __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::_Rrotate(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-           *this,_Node *param_1)
+           *this,_Node *_Wherenode)
 
 {
   _Node *p_Var1;
   
-  p_Var1 = param_1->_Left;
-  param_1->_Left = p_Var1->_Right;
+  p_Var1 = _Wherenode->_Left;
+  _Wherenode->_Left = p_Var1->_Right;
   if (p_Var1->_Right->_Isnil == '\0') {
-    p_Var1->_Right->_Parent = param_1;
+    p_Var1->_Right->_Parent = _Wherenode;
   }
-  p_Var1->_Parent = param_1->_Parent;
-  if (param_1 == this->_Myhead->_Parent) {
+  p_Var1->_Parent = _Wherenode->_Parent;
+  if (_Wherenode == this->_Myhead->_Parent) {
     this->_Myhead->_Parent = p_Var1;
   }
-  else if (param_1 == param_1->_Parent->_Right) {
-    param_1->_Parent->_Right = p_Var1;
+  else if (_Wherenode == _Wherenode->_Parent->_Right) {
+    _Wherenode->_Parent->_Right = p_Var1;
   }
   else {
-    param_1->_Parent->_Left = p_Var1;
+    _Wherenode->_Parent->_Left = p_Var1;
   }
-  p_Var1->_Right = param_1;
-  param_1->_Parent = p_Var1;
+  p_Var1->_Right = _Wherenode;
+  _Wherenode->_Parent = p_Var1;
   return;
 }
 
@@ -2296,6 +2279,7 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
 
 {
   _Node *p_Var1;
+  int _Linkcnt;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -2330,7 +2314,7 @@ _Node * __thiscall
 std::
 _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
 ::_Buynode(_Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::allocator<unsigned___int64>,0>_>
-           *this,_Node *param_1,_Node *param_2,_Node *param_3,ulong64 *param_4,char param_5)
+           *this,_Node *_Larg,_Node *_Parg,_Node *_Rarg,ulong64 *_Val,char _Carg)
 
 {
   _Node *p_Var1;
@@ -2348,12 +2332,12 @@ _Tree<std::_Tset_traits<unsigned___int64,std::less<unsigned___int64>,std::alloca
                      (1,(_Node *)0x0);
   local_8 = 0;
   if (p_Var1 != (_Node *)0x0) {
-    p_Var1->_Left = param_1;
-    p_Var1->_Parent = param_2;
-    p_Var1->_Right = param_3;
-    *(int *)&p_Var1->_Myval = (int)*param_4;
-    *(undefined4 *)((int)&p_Var1->_Myval + 4) = *(undefined4 *)((int)param_4 + 4);
-    p_Var1->_Color = param_5;
+    p_Var1->_Left = _Larg;
+    p_Var1->_Parent = _Parg;
+    p_Var1->_Right = _Rarg;
+    *(int *)&p_Var1->_Myval = (int)*_Val;
+    *(undefined4 *)((int)&p_Var1->_Myval + 4) = *(undefined4 *)((int)_Val + 4);
+    p_Var1->_Color = _Carg;
     p_Var1->_Isnil = '\0';
   }
   p_Var1 = (_Node *)FUN_00aee7ff();

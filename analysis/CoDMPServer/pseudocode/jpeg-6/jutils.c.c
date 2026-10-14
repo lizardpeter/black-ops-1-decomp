@@ -2,43 +2,47 @@
 
 // 00B58480  jdiv_round_up  (jpeg-6/jutils.c:75)
 
-long __cdecl jdiv_round_up(long param_1,long param_2)
+long __cdecl jdiv_round_up(long a,long b)
 
 {
-  return (param_1 + -1 + param_2) / param_2;
+  return (a + -1 + b) / b;
 }
 
 
 // 00B584A0  jround_up  (jpeg-6/jutils.c:84)
 
-long __cdecl jround_up(long param_1,long param_2)
+long __cdecl jround_up(long a,long b)
 
 {
   int iVar1;
   
-  iVar1 = param_1 + -1 + param_2;
-  return iVar1 - iVar1 % param_2;
+  iVar1 = a + -1 + b;
+  return iVar1 - iVar1 % b;
 }
 
 
 // 00B584C0  jcopy_sample_rows  (jpeg-6/jutils.c:119)
 
 void __cdecl
-jcopy_sample_rows(uchar **param_1,int param_2,uchar **param_3,int param_4,int param_5,uint param_6)
+jcopy_sample_rows(uchar **input_array,int source_row,uchar **output_array,int dest_row,int num_rows,
+                 uint num_cols)
 
 {
-  uchar *puVar1;
-  uchar *puVar2;
-  int local_c;
+  uchar *src;
+  uchar *dst;
+  uchar *outptr;
+  uchar *inptr;
+  int row;
+  uint count;
   
-  param_1 = param_1 + param_2;
-  param_3 = param_3 + param_4;
-  for (local_c = param_5; 0 < local_c; local_c = local_c + -1) {
-    puVar1 = *param_1;
-    param_1 = param_1 + 1;
-    puVar2 = *param_3;
-    param_3 = param_3 + 1;
-    memcpy(puVar2,puVar1,param_6);
+  input_array = input_array + source_row;
+  output_array = output_array + dest_row;
+  for (row = num_rows; 0 < row; row = row + -1) {
+    src = *input_array;
+    input_array = input_array + 1;
+    dst = *output_array;
+    output_array = output_array + 1;
+    memcpy(dst,src,num_cols);
   }
   return;
 }
@@ -46,20 +50,20 @@ jcopy_sample_rows(uchar **param_1,int param_2,uchar **param_3,int param_4,int pa
 
 // 00B58540  jcopy_block_row  (jpeg-6/jutils.c:148)
 
-void __cdecl jcopy_block_row(short (*param_1) [64],short (*param_2) [64],uint param_3)
+void __cdecl jcopy_block_row(short (*input_row) [64],short (*output_row) [64],uint num_blocks)
 
 {
-  memcpy((uchar *)param_2,(uchar *)param_1,param_3 << 7);
+  memcpy((uchar *)output_row,(uchar *)input_row,num_blocks << 7);
   return;
 }
 
 
 // 00A71CD0  R_SetBlackProbe  (gfx_d3d/r_reflection_probe.cpp:327)
 
-void __cdecl R_SetBlackProbe(uchar *param_1,uint param_2)
+void __cdecl R_SetBlackProbe(uchar *target,uint bytestozero)
 
 {
-  memset(param_1,'\0',param_2);
+  memset(target,'\0',bytestozero);
   return;
 }
 

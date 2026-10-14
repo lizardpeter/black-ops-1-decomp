@@ -5,33 +5,33 @@
 undefined4 _HTAssocList_delete(undefined4 *param_1)
 
 {
+  undefined4 *pBlock;
   undefined4 *puVar1;
-  undefined4 *puVar2;
   
-  puVar2 = param_1;
+  puVar1 = param_1;
   if (param_1 == (undefined4 *)0x0) {
     return 0;
   }
-  while (((puVar2 != (undefined4 *)0x0 &&
-          (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
-         (puVar1 = (undefined4 *)*puVar2, puVar1 != (undefined4 *)0x0))) {
-    if ((void *)*puVar1 != (void *)0x0) {
-      free((void *)*puVar1);
+  while (((puVar1 != (undefined4 *)0x0 &&
+          (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+         (pBlock = (undefined4 *)*puVar1, pBlock != (undefined4 *)0x0))) {
+    if ((void *)*pBlock != (void *)0x0) {
+      free((void *)*pBlock);
     }
-    *puVar1 = 0;
-    if ((void *)puVar1[1] != (void *)0x0) {
-      free((void *)puVar1[1]);
+    *pBlock = 0;
+    if ((void *)pBlock[1] != (void *)0x0) {
+      free((void *)pBlock[1]);
     }
-    puVar1[1] = 0;
-    free(puVar1);
+    pBlock[1] = 0;
+    free(pBlock);
   }
   do {
-    puVar2 = (undefined4 *)param_1[1];
+    puVar1 = (undefined4 *)param_1[1];
     if (param_1 != (undefined4 *)0x0) {
       free(param_1);
     }
-    param_1 = puVar2;
-  } while (puVar2 != (undefined4 *)0x0);
+    param_1 = puVar1;
+  } while (puVar1 != (undefined4 *)0x0);
   return 1;
 }
 
@@ -135,31 +135,31 @@ undefined4 _HTAssocList_removeObject(undefined4 *param_1,char *param_2)
 
 {
   char cVar1;
-  void *pvVar2;
-  char *pcVar3;
-  int iVar4;
-  undefined4 uVar5;
-  undefined4 *puVar6;
+  void *pBlock;
+  char *pcVar2;
+  int iVar3;
+  undefined4 uVar4;
+  undefined4 *puVar5;
   
-  uVar5 = 0;
-  if ((param_1 != (undefined4 *)0x0) && (pcVar3 = param_2, param_2 != (char *)0x0)) {
+  uVar4 = 0;
+  if ((param_1 != (undefined4 *)0x0) && (pcVar2 = param_2, param_2 != (char *)0x0)) {
     do {
-      cVar1 = *pcVar3;
-      pcVar3 = pcVar3 + 1;
-      puVar6 = param_1;
+      cVar1 = *pcVar2;
+      pcVar2 = pcVar2 + 1;
+      puVar5 = param_1;
     } while (cVar1 != '\0');
-    while (((puVar6 != (undefined4 *)0x0 &&
-            (puVar6 = (undefined4 *)puVar6[1], puVar6 != (undefined4 *)0x0)) &&
-           (pvVar2 = (void *)*puVar6, pvVar2 != (void *)0x0))) {
-      iVar4 = strncasecomp(param_2);
-      if (iVar4 == 0) {
+    while (((puVar5 != (undefined4 *)0x0 &&
+            (puVar5 = (undefined4 *)puVar5[1], puVar5 != (undefined4 *)0x0)) &&
+           (pBlock = (void *)*puVar5, pBlock != (void *)0x0))) {
+      iVar3 = strncasecomp(param_2);
+      if (iVar3 == 0) {
         _HTList_removeObject();
-        free(pvVar2);
-        uVar5 = 1;
-        puVar6 = param_1;
+        free(pBlock);
+        uVar4 = 1;
+        puVar5 = param_1;
       }
     }
-    return uVar5;
+    return uVar4;
   }
   return 0;
 }

@@ -8,12 +8,12 @@ undefined4 __cdecl
 der_encode_sequence_multi(int param_1,int param_2,int param_3,undefined4 param_4,undefined4 param_5)
 
 {
-  void *pvVar1;
+  void *ptr;
+  undefined4 *puVar1;
   undefined4 *puVar2;
-  undefined4 *puVar3;
-  uint uVar4;
-  int iVar5;
-  undefined4 uVar6;
+  uint size;
+  int iVar3;
+  undefined4 uVar4;
   
   if (param_1 == 0) {
     crypt_argchk("out != NULL",
@@ -25,14 +25,14 @@ der_encode_sequence_multi(int param_1,int param_2,int param_3,undefined4 param_4
                  "C:\\projects_pc\\cod\\codsrc\\libs\\libtomcrypt-1.17\\src\\pk\\asn1\\der\\sequence\\der_encode_sequence_multi.c"
                  ,0x26);
   }
-  uVar4 = 0;
+  size = 0;
   if (param_3 == 0) {
     return 2;
   }
-  puVar2 = &param_5;
-  iVar5 = param_3;
+  puVar1 = &param_5;
+  iVar3 = param_3;
 LAB_00bf99d0:
-  switch(iVar5) {
+  switch(iVar3) {
   case 1:
   case 2:
   case 3:
@@ -51,23 +51,23 @@ LAB_00bf99d0:
   default:
     return 0x10;
   }
-  iVar5 = puVar2[1];
-  uVar4 = uVar4 + 1;
-  puVar2 = puVar2 + 3;
-  if (iVar5 == 0) goto code_r0x00bf99f6;
+  iVar3 = puVar1[1];
+  size = size + 1;
+  puVar1 = puVar1 + 3;
+  if (iVar3 == 0) goto code_r0x00bf99f6;
   goto LAB_00bf99d0;
 code_r0x00bf99f6:
-  if (uVar4 == 0) {
+  if (size == 0) {
     return 2;
   }
-  pvVar1 = tom_game_calloc(0x20,uVar4);
-  if (pvVar1 == (void *)0x0) {
+  ptr = tom_game_calloc(0x20,size);
+  if (ptr == (void *)0x0) {
     return 0xd;
   }
-  iVar5 = 0;
-  puVar2 = &param_5;
-  puVar3 = (undefined4 *)((int)pvVar1 + 4);
-  uVar6 = param_5;
+  iVar3 = 0;
+  puVar1 = &param_5;
+  puVar2 = (undefined4 *)((int)ptr + 4);
+  uVar4 = param_5;
 LAB_00bf9a33:
   switch(param_3) {
   case 1:
@@ -86,23 +86,23 @@ LAB_00bf9a33:
   case 0xf:
     break;
   default:
-    uVar6 = 0x10;
+    uVar4 = 0x10;
     goto LAB_00bf9a8c;
   }
-  puVar3[-1] = param_3;
-  param_3 = puVar2[1];
-  puVar3[1] = param_4;
-  param_4 = puVar2[2];
-  *puVar3 = uVar6;
-  uVar6 = puVar2[3];
-  puVar2 = puVar2 + 3;
-  iVar5 = iVar5 + 1;
-  puVar3 = puVar3 + 8;
+  puVar2[-1] = param_3;
+  param_3 = puVar1[1];
+  puVar2[1] = param_4;
+  param_4 = puVar1[2];
+  *puVar2 = uVar4;
+  uVar4 = puVar1[3];
+  puVar1 = puVar1 + 3;
+  iVar3 = iVar3 + 1;
+  puVar2 = puVar2 + 8;
   if (param_3 == 0) {
-    uVar6 = der_encode_sequence_ex(pvVar1,iVar5,param_1,param_2,0xd);
+    uVar4 = der_encode_sequence_ex(ptr,iVar3,param_1,param_2,0xd);
 LAB_00bf9a8c:
-    tom_game_free(pvVar1);
-    return uVar6;
+    tom_game_free(ptr);
+    return uVar4;
   }
   goto LAB_00bf9a33;
 }

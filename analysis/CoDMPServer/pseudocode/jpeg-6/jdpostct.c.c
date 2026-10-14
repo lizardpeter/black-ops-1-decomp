@@ -2,24 +2,25 @@
 
 // 00B680D0  start_pass_dpost  (jpeg-6/jdpostct.c:74)
 
-void __cdecl start_pass_dpost(jpeg_decompress_struct *param_1,J_BUF_MODE param_2)
+void __cdecl start_pass_dpost(jpeg_decompress_struct *cinfo,J_BUF_MODE pass_mode)
 
 {
   jpeg_d_post_controller *pjVar1;
   uchar **ppuVar2;
+  my_post_controller *post;
   
-  pjVar1 = param_1->post;
-  if (param_2 == JBUF_PASS_THRU) {
-    if (param_1->quantize_colors == '\0') {
-      pjVar1->post_process_data = param_1->upsample->upsample;
+  pjVar1 = cinfo->post;
+  if (pass_mode == JBUF_PASS_THRU) {
+    if (cinfo->quantize_colors == '\0') {
+      pjVar1->post_process_data = cinfo->upsample->upsample;
     }
     else {
       pjVar1->post_process_data = post_process_1pass;
       if (pjVar1[1].post_process_data ==
           (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr_uint_ptr_uint_uchar_ptr_ptr_uint_ptr_uint
            *)0x0) {
-        ppuVar2 = (*param_1->mem->access_virt_sarray)
-                            ((jpeg_common_struct *)param_1,
+        ppuVar2 = (*cinfo->mem->access_virt_sarray)
+                            ((jpeg_common_struct *)cinfo,
                              (jvirt_sarray_control *)pjVar1[1].start_pass,0,
                              (uint)pjVar1[2].start_pass,'\x01');
         pjVar1[1].post_process_data =
@@ -28,23 +29,23 @@ void __cdecl start_pass_dpost(jpeg_decompress_struct *param_1,J_BUF_MODE param_2
       }
     }
   }
-  else if (param_2 == JBUF_CRANK_DEST) {
+  else if (pass_mode == JBUF_CRANK_DEST) {
     if (pjVar1[1].start_pass == (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0) {
-      param_1->err->msg_code = 4;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 4;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     pjVar1->post_process_data = post_process_2pass;
   }
-  else if (param_2 == JBUF_SAVE_AND_PASS) {
+  else if (pass_mode == JBUF_SAVE_AND_PASS) {
     if (pjVar1[1].start_pass == (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0) {
-      param_1->err->msg_code = 4;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 4;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     pjVar1->post_process_data = post_process_prepass;
   }
   else {
-    param_1->err->msg_code = 4;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 4;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
   pjVar1[3].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0;
   pjVar1[2].post_process_data =
@@ -57,26 +58,24 @@ void __cdecl start_pass_dpost(jpeg_decompress_struct *param_1,J_BUF_MODE param_2
 // 00B68200  post_process_1pass  (jpeg-6/jdpostct.c:131)
 
 void __cdecl
-post_process_1pass(jpeg_decompress_struct *param_1,uchar ***param_2,uint *param_3,uint param_4,
-                  uchar **param_5,uint *param_6,uint param_7)
+post_process_1pass(jpeg_decompress_struct *cinfo,uchar ***input_buf,uint *in_row_group_ctr,
+                  uint in_row_groups_avail,uchar **output_buf,uint *out_row_ctr,uint out_rows_avail)
 
 {
-  uint local_10;
-  jpeg_d_post_controller *local_c;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *local_8;
+  uint num_rows;
+  my_post_controller *post;
+  uint max_rows;
   
-  local_c = param_1->post;
-  local_8 = (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)(param_7 - *param_6);
-  if (local_c[2].start_pass < local_8) {
-    local_8 = local_c[2].start_pass;
+  post = (my_post_controller *)cinfo->post;
+  max_rows = out_rows_avail - *out_row_ctr;
+  if (post->strip_height < max_rows) {
+    max_rows = post->strip_height;
   }
-  local_10 = 0;
-  (*param_1->upsample->upsample)
-            (param_1,param_2,param_3,param_4,(uchar **)local_c[1].post_process_data,&local_10,
-             (uint)local_8);
-  (*param_1->cquantize->color_quantize)
-            (param_1,(uchar **)local_c[1].post_process_data,param_5 + *param_6,local_10);
-  *param_6 = *param_6 + local_10;
+  num_rows = 0;
+  (*cinfo->upsample->upsample)
+            (cinfo,input_buf,in_row_group_ctr,in_row_groups_avail,post->buffer,&num_rows,max_rows);
+  (*cinfo->cquantize->color_quantize)(cinfo,post->buffer,output_buf + *out_row_ctr,num_rows);
+  *out_row_ctr = *out_row_ctr + num_rows;
   return;
 }
 
@@ -85,34 +84,36 @@ post_process_1pass(jpeg_decompress_struct *param_1,uchar ***param_2,uint *param_
 
 void __cdecl
 post_process_prepass
-          (jpeg_decompress_struct *param_1,uchar ***param_2,uint *param_3,uint param_4,
-          uchar **param_5,uint *param_6,uint param_7)
+          (jpeg_decompress_struct *cinfo,uchar ***input_buf,uint *in_row_group_ctr,
+          uint in_row_groups_avail,uchar **output_buf,uint *out_row_ctr,uint out_rows_avail)
 
 {
   jpeg_d_post_controller *pjVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *p_Var2;
   uchar **ppuVar3;
   int iVar4;
+  uint num_rows;
+  uint old_next_row;
+  my_post_controller *post;
   
-  pjVar1 = param_1->post;
+  pjVar1 = cinfo->post;
   if (pjVar1[3].start_pass == (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0) {
-    ppuVar3 = (*param_1->mem->access_virt_sarray)
-                        ((jpeg_common_struct *)param_1,(jvirt_sarray_control *)pjVar1[1].start_pass,
+    ppuVar3 = (*cinfo->mem->access_virt_sarray)
+                        ((jpeg_common_struct *)cinfo,(jvirt_sarray_control *)pjVar1[1].start_pass,
                          (uint)pjVar1[2].post_process_data,(uint)pjVar1[2].start_pass,'\x01');
     pjVar1[1].post_process_data =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr_uint_ptr_uint_uchar_ptr_ptr_uint_ptr_uint
           *)ppuVar3;
   }
   p_Var2 = pjVar1[3].start_pass;
-  (*param_1->upsample->upsample)
-            (param_1,param_2,param_3,param_4,(uchar **)pjVar1[1].post_process_data,
-             (uint *)(pjVar1 + 3),(uint)pjVar1[2].start_pass);
+  (*cinfo->upsample->upsample)
+            (cinfo,input_buf,in_row_group_ctr,in_row_groups_avail,
+             (uchar **)pjVar1[1].post_process_data,(uint *)(pjVar1 + 3),(uint)pjVar1[2].start_pass);
   if (p_Var2 < pjVar1[3].start_pass) {
     iVar4 = (int)pjVar1[3].start_pass - (int)p_Var2;
-    (*param_1->cquantize->color_quantize)
-              (param_1,(uchar **)(pjVar1[1].post_process_data + (int)p_Var2 * 4),(uchar **)0x0,iVar4
-              );
-    *param_6 = *param_6 + iVar4;
+    (*cinfo->cquantize->color_quantize)
+              (cinfo,(uchar **)(pjVar1[1].post_process_data + (int)p_Var2 * 4),(uchar **)0x0,iVar4);
+    *out_row_ctr = *out_row_ctr + iVar4;
   }
   if (pjVar1[2].start_pass <= pjVar1[3].start_pass) {
     pjVar1[2].post_process_data = pjVar1[2].post_process_data + (int)pjVar1[2].start_pass;
@@ -125,37 +126,39 @@ post_process_prepass
 // 00B683C0  post_process_2pass  (jpeg-6/jdpostct.c:207)
 
 void __cdecl
-post_process_2pass(jpeg_decompress_struct *param_1,uchar ***param_2,uint *param_3,uint param_4,
-                  uchar **param_5,uint *param_6,uint param_7)
+post_process_2pass(jpeg_decompress_struct *cinfo,uchar ***input_buf,uint *in_row_group_ctr,
+                  uint in_row_groups_avail,uchar **output_buf,uint *out_row_ctr,uint out_rows_avail)
 
 {
   jpeg_d_post_controller *pjVar1;
   uchar **ppuVar2;
   uint uVar3;
-  uint local_10;
+  uint num_rows;
+  my_post_controller *post;
+  uint max_rows;
   
-  pjVar1 = param_1->post;
+  pjVar1 = cinfo->post;
   if (pjVar1[3].start_pass == (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0) {
-    ppuVar2 = (*param_1->mem->access_virt_sarray)
-                        ((jpeg_common_struct *)param_1,(jvirt_sarray_control *)pjVar1[1].start_pass,
+    ppuVar2 = (*cinfo->mem->access_virt_sarray)
+                        ((jpeg_common_struct *)cinfo,(jvirt_sarray_control *)pjVar1[1].start_pass,
                          (uint)pjVar1[2].post_process_data,(uint)pjVar1[2].start_pass,'\0');
     pjVar1[1].post_process_data =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr_uint_ptr_uint_uchar_ptr_ptr_uint_ptr_uint
           *)ppuVar2;
   }
-  local_10 = (int)pjVar1[2].start_pass - (int)pjVar1[3].start_pass;
-  if (param_7 - *param_6 < local_10) {
-    local_10 = param_7 - *param_6;
+  num_rows = (int)pjVar1[2].start_pass - (int)pjVar1[3].start_pass;
+  if (out_rows_avail - *out_row_ctr < num_rows) {
+    num_rows = out_rows_avail - *out_row_ctr;
   }
-  uVar3 = param_1->output_height - (int)pjVar1[2].post_process_data;
-  if (uVar3 < local_10) {
-    local_10 = uVar3;
+  uVar3 = cinfo->output_height - (int)pjVar1[2].post_process_data;
+  if (uVar3 < num_rows) {
+    num_rows = uVar3;
   }
-  (*param_1->cquantize->color_quantize)
-            (param_1,(uchar **)(pjVar1[1].post_process_data + (int)pjVar1[3].start_pass * 4),
-             param_5 + *param_6,local_10);
-  *param_6 = *param_6 + local_10;
-  pjVar1[3].start_pass = pjVar1[3].start_pass + local_10;
+  (*cinfo->cquantize->color_quantize)
+            (cinfo,(uchar **)(pjVar1[1].post_process_data + (int)pjVar1[3].start_pass * 4),
+             output_buf + *out_row_ctr,num_rows);
+  *out_row_ctr = *out_row_ctr + num_rows;
+  pjVar1[3].start_pass = pjVar1[3].start_pass + num_rows;
   if (pjVar1[2].start_pass <= pjVar1[3].start_pass) {
     pjVar1[2].post_process_data = pjVar1[2].post_process_data + (int)pjVar1[2].start_pass;
     pjVar1[3].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0;
@@ -166,7 +169,7 @@ post_process_2pass(jpeg_decompress_struct *param_1,uchar ***param_2,uint *param_
 
 // 00B67FE0  jinit_d_post_controller  (jpeg-6/jdpostct.c:251)
 
-void __cdecl jinit_d_post_controller(jpeg_decompress_struct *param_1,uchar param_2)
+void __cdecl jinit_d_post_controller(jpeg_decompress_struct *cinfo,uchar need_full_buffer)
 
 {
   jpeg_d_post_controller *pjVar1;
@@ -174,21 +177,22 @@ void __cdecl jinit_d_post_controller(jpeg_decompress_struct *param_1,uchar param
   jvirt_sarray_control *pjVar3;
   uchar **ppuVar4;
   _func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *p_Var5;
+  my_post_controller *post;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x1c);
-  param_1->post = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x1c);
+  cinfo->post = pjVar1;
   pjVar1->start_pass = start_pass_dpost;
   pjVar1[1].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0;
   pjVar1[1].post_process_data =
        (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr_uint_ptr_uint_uchar_ptr_ptr_uint_ptr_uint
         *)0x0;
-  if (param_1->quantize_colors != '\0') {
+  if (cinfo->quantize_colors != '\0') {
     pjVar1[2].start_pass =
-         (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)param_1->max_v_samp_factor;
-    if (param_2 == '\0') {
-      ppuVar4 = (*param_1->mem->alloc_sarray)
-                          ((jpeg_common_struct *)param_1,1,
-                           param_1->output_width * param_1->out_color_components,
+         (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)cinfo->max_v_samp_factor;
+    if (need_full_buffer == '\0') {
+      ppuVar4 = (*cinfo->mem->alloc_sarray)
+                          ((jpeg_common_struct *)cinfo,1,
+                           cinfo->output_width * cinfo->out_color_components,
                            (uint)pjVar1[2].start_pass);
       pjVar1[1].post_process_data =
            (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_ptr_uint_ptr_uint_uchar_ptr_ptr_uint_ptr_uint
@@ -196,10 +200,10 @@ void __cdecl jinit_d_post_controller(jpeg_decompress_struct *param_1,uchar param
     }
     else {
       p_Var5 = pjVar1[2].start_pass;
-      uVar2 = jround_up(param_1->output_height,(long)pjVar1[2].start_pass);
-      pjVar3 = (*param_1->mem->request_virt_sarray)
-                         ((jpeg_common_struct *)param_1,1,'\0',
-                          param_1->output_width * param_1->out_color_components,uVar2,(uint)p_Var5);
+      uVar2 = jround_up(cinfo->output_height,(long)pjVar1[2].start_pass);
+      pjVar3 = (*cinfo->mem->request_virt_sarray)
+                         ((jpeg_common_struct *)cinfo,1,'\0',
+                          cinfo->output_width * cinfo->out_color_components,uVar2,(uint)p_Var5);
       pjVar1[1].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)pjVar3;
     }
   }

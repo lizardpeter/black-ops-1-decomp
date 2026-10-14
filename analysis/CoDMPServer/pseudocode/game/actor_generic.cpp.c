@@ -10,16 +10,20 @@
 void __cdecl Actor_Generic_Finish(actor_s *param_1,ai_state_t param_2)
 
 {
+  ai_state_t eNextState_2;
+  actor_s *self_2;
+  
   return;
 }
 
 
 // 008F4EE0  Actor_Generic_Suspend  (game/actor_generic.cpp:26)
 
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: eNextState */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Actor_Generic_Suspend(actor_s *param_1,ai_state_t param_2)
 
@@ -30,6 +34,9 @@ void __cdecl Actor_Generic_Suspend(actor_s *param_1,ai_state_t param_2)
   int in_ECX;
   ai_state_t in_EDX;
   actor_s *unaff_ESI;
+  ai_state_t eNextState;
+  actor_s *self;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"genericsuspend");
   if ((5 < *(uint *)(in_ECX + 0x48)) &&
@@ -68,6 +75,7 @@ void __cdecl Actor_Generic_Suspend(actor_s *param_1,ai_state_t param_2)
 
 // 008F5030  Actor_Generic_Resume  (game/actor_generic.cpp:44)
 
+/* WARNING: Variable defined which should be unmapped: ePrevState */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -82,6 +90,8 @@ bool __cdecl Actor_Generic_Resume(actor_s *param_1,ai_state_t param_2)
   int in_ECX;
   ai_state_t in_EDX;
   actor_s *unaff_ESI;
+  ai_state_t ePrevState;
+  actor_s *self;
   
   if (4 < *(uint *)(in_ECX + 0x48)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_generic.cpp",0x2f,0,
@@ -127,16 +137,20 @@ bool __cdecl Actor_Generic_Resume(actor_s *param_1,ai_state_t param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_Generic_Pain(actor_s *param_1,gentity_s *param_2,int param_3,float *param_4,int param_5,
-                  float *param_6,hitLocation_t param_7)
+Actor_Generic_Pain(actor_s *iDamage,gentity_s *vPoint,int iMod,float *vDir,int hitLoc,float *param_6
+                  ,hitLocation_t param_7)
 
 {
+  gentity_s *attacker;
+  actor_s *self;
+  
   return;
 }
 
 
 // 008F5160  Actor_Generic_Touch  (game/actor_generic.cpp:88)
 
+/* WARNING: Variable defined which should be unmapped: pOther */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -147,6 +161,8 @@ void __cdecl Actor_Generic_Touch(actor_s *param_1,gentity_s *param_2)
 {
   int in_ECX;
   actor_s *in_EDX;
+  gentity_s *pOther;
+  actor_s *self;
   
   if ((in_EDX->ent == *(gentity_s **)(in_ECX + 0x328)) &&
      (level.gentities[*(int *)(in_ECX + 0x328)].client != (gclient_s *)0x0)) {

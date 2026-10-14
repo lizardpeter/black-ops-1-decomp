@@ -12,7 +12,7 @@ void __cdecl _dynamic_initializer_for__TRACKINST_entity_counts__(void)
 
 // 004961C0  CG_DrawScriptUsage  (cgame/cg_draw_debug.cpp:168)
 
-void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
+void __cdecl CG_DrawScriptUsage(ScreenPlacement *scrPlace)
 
 {
   char *pcVar1;
@@ -29,7 +29,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptVars(SCRIPTINSTANCE_SERVER);
   pcVar1 = va("num vars:    %d");
-  CG_DrawStringExt(param_1,480.0,80.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,80.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -37,7 +37,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptVarsParent(SCRIPTINSTANCE_SERVER);
   pcVar1 = va("parent:    %d");
-  CG_DrawStringExt(param_1,480.0,96.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,96.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -45,7 +45,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptVarsChild(SCRIPTINSTANCE_SERVER);
   pcVar1 = va("child:    %d");
-  CG_DrawStringExt(param_1,480.0,112.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,112.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -53,7 +53,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptThreads(SCRIPTINSTANCE_SERVER);
   pcVar1 = va("num threads: %d");
-  CG_DrawStringExt(param_1,480.0,128.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,128.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -61,7 +61,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetStringUsage(SCRIPTINSTANCE_SERVER);
   pcVar1 = va("string usage: %d");
-  CG_DrawStringExt(param_1,480.0,144.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,144.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -69,7 +69,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptVars(SCRIPTINSTANCE_CLIENT);
   pcVar1 = va("num vars:    %d");
-  CG_DrawStringExt(param_1,480.0,160.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,160.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -77,7 +77,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptVarsParent(SCRIPTINSTANCE_CLIENT);
   pcVar1 = va("parent:    %d");
-  CG_DrawStringExt(param_1,480.0,176.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,176.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -85,7 +85,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptVarsChild(SCRIPTINSTANCE_CLIENT);
   pcVar1 = va("child:    %d");
-  CG_DrawStringExt(param_1,480.0,192.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,192.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -93,7 +93,7 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetNumScriptThreads(SCRIPTINSTANCE_CLIENT);
   pcVar1 = va("num threads: %d");
-  CG_DrawStringExt(param_1,480.0,208.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,208.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   iVar6 = 1;
   fVar5 = 16.0;
   iVar4 = 1;
@@ -101,49 +101,49 @@ void __cdecl CG_DrawScriptUsage(ScreenPlacement *param_1)
   pfVar2 = colorWhite;
   Scr_GetStringUsage(SCRIPTINSTANCE_CLIENT);
   pcVar1 = va("string usage: %d");
-  CG_DrawStringExt(param_1,480.0,224.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
+  CG_DrawStringExt(scrPlace,480.0,224.0,pcVar1,pfVar2,iVar3,iVar4,fVar5,iVar6);
   return;
 }
 
 
 // 00497C60  CG_Flash  (cgame/cg_draw_debug.cpp:189)
 
-bool __cdecl CG_Flash(int param_1)
+bool __cdecl CG_Flash(int timeMs)
 
 {
   int iVar1;
   
   iVar1 = Sys_Milliseconds();
-  return iVar1 % (param_1 << 1) < param_1;
+  return iVar1 % (timeMs << 1) < timeMs;
 }
 
 
 // 00494630  CG_CornerDebugPrint  (cgame/cg_draw_debug.cpp:204)
 
 float __cdecl
-CG_CornerDebugPrint(ScreenPlacement *param_1,float param_2,float param_3,float param_4,char *param_5
-                   ,char *param_6,float *param_7)
+CG_CornerDebugPrint(ScreenPlacement *sP,float posX,float posY,float labelWidth,char *text,
+                   char *label,float *color)
 
 {
   int iVar1;
   int local_14;
-  int local_c;
+  int textDelta;
+  int yDelta;
+  int labelDelta;
   
   if ((cg_drawFPSLabels->current).enabled == false) {
-    local_c = CG_DrawDevString(param_1,param_2,param_3,1.0,1.1,param_5,param_7,6,
-                               cgMedia.smallDevFont);
+    yDelta = CG_DrawDevString(sP,posX,posY,1.0,1.1,text,color,6,cgMedia.smallDevFont);
   }
   else {
-    iVar1 = CG_DrawDevString(param_1,param_2 - param_4,param_3,1.0,1.1,param_5,param_7,6,
-                             cgMedia.smallDevFont);
-    local_14 = CG_DrawDevString(param_1,param_2 - param_4,param_3,1.0,1.1,param_6,colorWhiteFaded,5,
+    iVar1 = CG_DrawDevString(sP,posX - labelWidth,posY,1.0,1.1,text,color,6,cgMedia.smallDevFont);
+    local_14 = CG_DrawDevString(sP,posX - labelWidth,posY,1.0,1.1,label,colorWhiteFaded,5,
                                 cgMedia.smallDevFont);
     if (local_14 <= iVar1) {
       local_14 = iVar1;
     }
-    local_c = local_14;
+    yDelta = local_14;
   }
-  return (float)local_c * 0.75;
+  return (float)yDelta * 0.75;
 }
 
 
@@ -151,21 +151,18 @@ CG_CornerDebugPrint(ScreenPlacement *param_1,float param_2,float param_3,float p
 
 float __cdecl
 CG_CornerDebugPrintCaption
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,char *param_5,
-          float *param_6)
+          (ScreenPlacement *sP,float posX,float posY,float labelWidth,char *text,float *color)
 
 {
-  int local_8;
+  int yDelta;
   
   if ((cg_drawFPSLabels->current).enabled == false) {
-    local_8 = CG_DrawDevString(param_1,param_2,param_3,1.0,1.1,param_5,param_6,6,
-                               cgMedia.smallDevFont);
+    yDelta = CG_DrawDevString(sP,posX,posY,1.0,1.1,text,color,6,cgMedia.smallDevFont);
   }
   else {
-    local_8 = CG_DrawDevString(param_1,param_2 - param_4,param_3,1.0,1.1,param_5,param_6,7,
-                               cgMedia.smallDevFont);
+    yDelta = CG_DrawDevString(sP,posX - labelWidth,posY,1.0,1.1,text,color,7,cgMedia.smallDevFont);
   }
-  return (float)local_8 * 0.75;
+  return (float)yDelta * 0.75;
 }
 
 
@@ -176,35 +173,42 @@ CG_CornerDebugPrintCaption
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_DrawSnapshot(int param_1,float param_2)
+float __cdecl CG_DrawSnapshot(int localClientNum,float posY)
 
 {
   char *pcVar1;
   int iVar2;
-  ScreenPlacement *pSVar3;
+  ScreenPlacement *sP;
+  float posX_00;
+  float labelWidth_00;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  float fVar6;
-  float fVar7;
+  char *str;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float labelWidth;
+  float posX;
+  cgs_t *cgs;
   
-  CG_GetLocalClientGlobals(param_1);
-  CG_GetLocalClientStaticGlobals(param_1);
-  iVar2 = param_1 * 0x78;
-  pSVar3 = (ScreenPlacement *)(&scrPlaceView + iVar2);
-  fVar4 = (*(float *)(&DAT_02d9e6a0 + iVar2) - *(float *)(&DAT_02d9e698 + iVar2)) +
-          (cg_debugInfoCornerOffset->current).value;
+  CG_GetLocalClientGlobals(localClientNum);
+  CG_GetLocalClientStaticGlobals(localClientNum);
+  iVar2 = localClientNum * 0x78;
+  sP = (ScreenPlacement *)(&scrPlaceView + iVar2);
+  posX_00 = (*(float *)(&DAT_02d9e6a0 + iVar2) - *(float *)(&DAT_02d9e698 + iVar2)) +
+            (cg_debugInfoCornerOffset->current).value;
   iVar2 = R_TextWidth(" server time",0,cgMedia.smallDevFont);
-  fVar5 = (float)iVar2 * 1.0;
-  fVar6 = CG_CornerDebugPrintCaption(pSVar3,fVar4,param_2,fVar5,"-Snapshot-",colorGreenFaded);
+  labelWidth_00 = (float)iVar2 * 1.0;
+  fVar3 = CG_CornerDebugPrintCaption(sP,posX_00,posY,labelWidth_00,"-Snapshot-",colorGreenFaded);
   pcVar1 = va("%i");
-  fVar7 = CG_CornerDebugPrint(pSVar3,fVar4,fVar6 + param_2,fVar5,pcVar1," server time",colorWhite);
-  fVar7 = fVar7 + fVar6 + param_2;
+  fVar4 = CG_CornerDebugPrint(sP,posX_00,fVar3 + posY,labelWidth_00,pcVar1," server time",colorWhite
+                             );
+  fVar4 = fVar4 + fVar3 + posY;
   pcVar1 = va("%i");
-  fVar6 = CG_CornerDebugPrint(pSVar3,fVar4,fVar7,fVar5,pcVar1," snap num",colorWhite);
-  fVar6 = fVar6 + fVar7;
+  fVar3 = CG_CornerDebugPrint(sP,posX_00,fVar4,labelWidth_00,pcVar1," snap num",colorWhite);
+  fVar3 = fVar3 + fVar4;
   pcVar1 = va("%i");
-  fVar7 = CG_CornerDebugPrint(pSVar3,fVar4,fVar6,fVar5,pcVar1," cmd",colorWhite);
-  return fVar7 + fVar6;
+  fVar4 = CG_CornerDebugPrint(sP,posX_00,fVar3,labelWidth_00,pcVar1," cmd",colorWhite);
+  return fVar4 + fVar3;
 }
 
 
@@ -283,10 +287,12 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00494B10  CG_DrawStatmon  (cgame/cg_draw_debug.cpp:286)
 
-float __cdecl CG_DrawStatmon(ScreenPlacement *param_1,float param_2,meminfo_t *param_3)
+float __cdecl CG_DrawStatmon(ScreenPlacement *scrPlace,float y,meminfo_t *meminfo)
 
 {
-  return param_2;
+  float farRight;
+  
+  return y;
 }
 
 
@@ -297,24 +303,27 @@ float __cdecl CG_DrawStatmon(ScreenPlacement *param_1,float param_2,meminfo_t *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_DrawViewpos(ScreenPlacement *param_1,float param_2,int param_3)
+float __cdecl CG_DrawViewpos(ScreenPlacement *scrPlace,float y,int localClientNum)
 
 {
   cg_s *pcVar1;
-  char *pcVar2;
-  float fVar3;
+  char *text;
+  float fVar2;
+  float farRight;
+  cg_s *cgameGlob;
+  char *s;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_3);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar1->nextSnap != (snapshot_s *)0x0) {
-    fVar3 = ((param_1->virtualViewableMax[0] - param_1->virtualViewableMin[0]) +
+    fVar2 = ((scrPlace->virtualViewableMax[0] - scrPlace->virtualViewableMin[0]) +
             (cg_debugInfoCornerOffset->current).value) - CG_DrawViewposoffset;
-    CG_GetLocalClientGlobals(param_3);
+    CG_GetLocalClientGlobals(localClientNum);
     Dvar_GetString("mapname");
-    pcVar2 = va("%s (%.1f %.1f %.1f) %.1f %.1f");
-    fVar3 = CG_CornerDebugPrint(param_1,fVar3,param_2,0.0,pcVar2,"",colorWhite);
-    param_2 = fVar3 + param_2;
+    text = va("%s (%.1f %.1f %.1f) %.1f %.1f");
+    fVar2 = CG_CornerDebugPrint(scrPlace,fVar2,y,0.0,text,"",colorWhite);
+    y = fVar2 + y;
   }
-  return param_2;
+  return y;
 }
 
 
@@ -325,7 +334,7 @@ float __cdecl CG_DrawViewpos(ScreenPlacement *param_1,float param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl DrawEntityCounts(ScreenPlacement *param_1,float param_2)
+float __cdecl DrawEntityCounts(ScreenPlacement *scrPlace,float posY)
 
 {
   byte bVar1;
@@ -339,59 +348,72 @@ float __cdecl DrawEntityCounts(ScreenPlacement *param_1,float param_2)
   float fVar9;
   float fVar10;
   float fVar11;
-  ushort local_54;
-  int local_48;
-  gentity_s *local_44;
-  int local_40;
-  int local_28;
-  uint local_14;
-  float *local_c;
+  gentity_s *ent_2;
+  ushort index;
+  gentity_s *ent;
+  fake_centity_s *cent;
+  int i_2;
+  gentity_s *e;
+  int numUsedEntities;
+  char *str;
+  int listEntityCountsCurrent;
+  int destructibles;
+  int misc;
+  float labelWidth;
+  int total;
+  int scriptmovers;
+  float posX;
+  int sound;
+  int lights;
+  int i;
+  int fx;
+  float *color;
+  int triggers;
   
   iVar6 = (g_listEntityCounts->current).integer;
   if ((g_maxEntsInSnapshot->current).integer < sv.num_entities) {
     Dvar_SetInt(g_maxEntsInSnapshot,sv.num_entities);
   }
-  fVar8 = (param_1->virtualViewableMax[0] - param_1->virtualViewableMin[0]) +
+  fVar8 = (scrPlace->virtualViewableMax[0] - scrPlace->virtualViewableMin[0]) +
           (cg_debugInfoCornerOffset->current).value;
   if ((iVar6 != 0) || ((cg_drawFPS != (dvar_s *)0x0 && ((cg_drawFPS->current).integer != 0)))) {
     iVar4 = R_TextWidth(" Ent Count",0,cgMedia.smallDevFont);
-    local_40 = sv.num_entities;
-    for (local_44 = level.firstFreeEnt; local_44 != (gentity_s *)0x0; local_44 = local_44->nextFree)
-    {
-      local_40 = local_40 + -1;
+    numUsedEntities = sv.num_entities;
+    for (e = level.firstFreeEnt; e != (gentity_s *)0x0; e = e->nextFree) {
+      numUsedEntities = numUsedEntities + -1;
     }
     pcVar5 = va("%s: %d\n");
-    local_c = colorWhite;
-    if (local_40 < 0x39e) {
-      if (900 < local_40) {
-        local_c = colorYellow;
+    color = colorWhite;
+    if (numUsedEntities < 0x39e) {
+      if (900 < numUsedEntities) {
+        color = colorYellow;
       }
     }
     else {
-      local_c = colorRed;
+      color = colorRed;
     }
-    fVar9 = CG_CornerDebugPrint(param_1,fVar8,param_2,(float)iVar4 * 1.0,pcVar5,"",local_c);
-    param_2 = fVar9 + param_2;
+    fVar9 = CG_CornerDebugPrint(scrPlace,fVar8,posY,(float)iVar4 * 1.0,pcVar5,"",color);
+    posY = fVar9 + posY;
   }
   if (iVar6 != 0) {
     iVar4 = R_TextWidth(" Ent Count High",0,cgMedia.smallDevFont);
     pcVar5 = va("%s: %d\n");
-    local_c = colorWhite;
+    color = colorWhite;
     if ((g_maxEntsInSnapshot->current).integer < 0x39e) {
       if (900 < (g_maxEntsInSnapshot->current).integer) {
-        local_c = colorYellow;
+        color = colorYellow;
       }
     }
     else {
-      local_c = colorRed;
+      color = colorRed;
     }
-    fVar9 = CG_CornerDebugPrint(param_1,fVar8,param_2,(float)iVar4 * 1.0,pcVar5,"",local_c);
-    param_2 = fVar9 + param_2;
-    local_28 = 0;
-    for (local_48 = 0; local_48 < 0x200; local_48 = local_48 + 1) {
-      if (cg_fakeEntitiesInuseArray[(local_48 * 0x32c) / 0x32c] != false) {
-        local_28 = local_28 + 1;
-        switch(cg_fakeEntitiesArray[local_48].cent.nextState.eType) {
+    fVar9 = CG_CornerDebugPrint(scrPlace,fVar8,posY,(float)iVar4 * 1.0,pcVar5,"",color);
+    posY = fVar9 + posY;
+    total = 0;
+    for (i_2 = 0; i_2 < 0x200; i_2 = i_2 + 1) {
+      if (cg_fakeEntitiesInuseArray[(i_2 * 0x32c) / 0x32c] != false) {
+        total = total + 1;
+        switch(cg_fakeEntitiesArray[i_2].cent.nextState.eType) {
         case 6:
           break;
         default:
@@ -403,7 +425,7 @@ float __cdecl DrawEntityCounts(ScreenPlacement *param_1,float param_2)
         }
       }
     }
-    if ((local_28 != cg_fakeEntitiesInuseCount[0]) &&
+    if ((total != cg_fakeEntitiesInuseCount[0]) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_debug.cpp",0x1c1
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -414,109 +436,105 @@ float __cdecl DrawEntityCounts(ScreenPlacement *param_1,float param_2)
     fVar9 = (float)iVar4 * 1.0;
     if (iVar6 == 2) {
       pcVar5 = va("%d");
-      fVar10 = CG_CornerDebugPrint(param_1,fVar8,param_2,fVar9,pcVar5," CEnt Count High",colorWhite)
-      ;
+      fVar10 = CG_CornerDebugPrint(scrPlace,fVar8,posY,fVar9,pcVar5," CEnt Count High",colorWhite);
       pcVar5 = va("%d");
-      fVar11 = CG_CornerDebugPrint(param_1,fVar8,fVar10 + param_2,fVar9,pcVar5," CEnt fx",colorWhite
-                                  );
-      fVar11 = fVar11 + fVar10 + param_2;
+      fVar11 = CG_CornerDebugPrint(scrPlace,fVar8,fVar10 + posY,fVar9,pcVar5," CEnt fx",colorWhite);
+      fVar11 = fVar11 + fVar10 + posY;
       pcVar5 = va("%d");
-      fVar10 = CG_CornerDebugPrint(param_1,fVar8,fVar11,fVar9,pcVar5," CEnt sound",colorWhite);
+      fVar10 = CG_CornerDebugPrint(scrPlace,fVar8,fVar11,fVar9,pcVar5," CEnt sound",colorWhite);
       fVar10 = fVar10 + fVar11;
       pcVar5 = va("%d");
-      fVar11 = CG_CornerDebugPrint(param_1,fVar8,fVar10,fVar9,pcVar5," CEnt scriptmovers",colorWhite
-                                  );
+      fVar11 = CG_CornerDebugPrint(scrPlace,fVar8,fVar10,fVar9,pcVar5," CEnt scriptmovers",
+                                   colorWhite);
       fVar11 = fVar11 + fVar10;
       pcVar5 = va("%d");
-      fVar10 = CG_CornerDebugPrint(param_1,fVar8,fVar11,fVar9,pcVar5," CEnt lights",colorWhite);
+      fVar10 = CG_CornerDebugPrint(scrPlace,fVar8,fVar11,fVar9,pcVar5," CEnt lights",colorWhite);
       fVar10 = fVar10 + fVar11;
       pcVar5 = va("%d");
-      fVar11 = CG_CornerDebugPrint(param_1,fVar8,fVar10,fVar9,pcVar5," CEnt dest",colorWhite);
+      fVar11 = CG_CornerDebugPrint(scrPlace,fVar8,fVar10,fVar9,pcVar5," CEnt dest",colorWhite);
       fVar11 = fVar11 + fVar10;
       pcVar5 = va("%d");
-      fVar10 = CG_CornerDebugPrint(param_1,fVar8,fVar11,fVar9,pcVar5," CEnt triggers",colorWhite);
+      fVar10 = CG_CornerDebugPrint(scrPlace,fVar8,fVar11,fVar9,pcVar5," CEnt triggers",colorWhite);
       fVar10 = fVar10 + fVar11;
       pcVar5 = va("%d");
-      fVar9 = CG_CornerDebugPrint(param_1,fVar8,fVar10,fVar9,pcVar5," CEnt misc",colorWhite);
-      param_2 = fVar9 + fVar10;
+      fVar9 = CG_CornerDebugPrint(scrPlace,fVar8,fVar10,fVar9,pcVar5," CEnt misc",colorWhite);
+      posY = fVar9 + fVar10;
     }
     if ((iVar6 < 3) || (5 < iVar6)) {
       if (iVar6 == 6) {
         memset((uchar *)entity_counts,'\0',0x20000);
-        for (local_14 = 0; (int)local_14 < 0x400; local_14 = local_14 + 1) {
-          if (g_entities[local_14].r.inuse != '\0') {
-            entity_counts[g_entities[local_14].s.eType] =
-                 entity_counts[g_entities[local_14].s.eType] + 1;
+        for (i = 0; i < 0x400; i = i + 1) {
+          if (g_entities[i].r.inuse != '\0') {
+            entity_counts[g_entities[i].s.eType] = entity_counts[g_entities[i].s.eType] + 1;
           }
         }
-        for (local_14 = 0; (int)local_14 < 0x15; local_14 = local_14 + 1) {
-          if (0 < entity_counts[local_14]) {
+        for (i = 0; i < 0x15; i = i + 1) {
+          if (0 < entity_counts[i]) {
             iVar6 = R_TextWidth(" replay time",0,cgMedia.smallDevFont);
-            BG_GetEntityTypeName(local_14);
+            BG_GetEntityTypeName(i);
             pcVar5 = va("%s: %d\n");
-            fVar9 = CG_CornerDebugPrint(param_1,fVar8,param_2,(float)iVar6 * 1.0,pcVar5,"",
-                                        colorWhite);
-            param_2 = fVar9 + param_2;
+            fVar9 = CG_CornerDebugPrint(scrPlace,fVar8,posY,(float)iVar6 * 1.0,pcVar5,"",colorWhite)
+            ;
+            posY = fVar9 + posY;
           }
         }
       }
     }
     else {
       memset((uchar *)entity_counts,'\0',0x20000);
-      for (local_14 = 0; (int)local_14 < 0x400; local_14 = local_14 + 1) {
-        if (g_entities[local_14].r.inuse != '\0') {
-          local_54 = g_entities[local_14].classname;
+      for (i = 0; i < 0x400; i = i + 1) {
+        if (g_entities[i].r.inuse != '\0') {
+          index = g_entities[i].classname;
           if (iVar6 == 3) {
-            bVar1 = g_entities[local_14].r.svFlags;
+            bVar1 = g_entities[i].r.svFlags;
 joined_r0x00495328:
             if ((bVar1 & 1) != 0) goto LAB_004952b0;
           }
           else {
             if (iVar6 == 4) {
-              bVar1 = g_entities[local_14].r.svFlags;
+              bVar1 = g_entities[i].r.svFlags;
               goto joined_r0x00495328;
             }
             if (iVar6 == 5) {
-              if (((g_entities[local_14].r.svFlags & 1) != 0) ||
-                 (g_entities[local_14].classname != scr_const.script_model)) goto LAB_004952b0;
-              local_54 = g_entities[local_14].targetname;
+              if (((g_entities[i].r.svFlags & 1) != 0) ||
+                 (g_entities[i].classname != scr_const.script_model)) goto LAB_004952b0;
+              index = g_entities[i].targetname;
             }
           }
-          entity_counts[local_54] = entity_counts[local_54] + 1;
+          entity_counts[index] = entity_counts[index] + 1;
         }
 LAB_004952b0:
       }
-      for (local_14 = 0; (int)local_14 < 0x10000; local_14 = local_14 + 1) {
-        if (0 < entity_counts[local_14]) {
+      for (i = 0; i < 0x10000; i = i + 1) {
+        if (0 < entity_counts[i]) {
           iVar6 = R_TextWidth(" replay time",0,cgMedia.smallDevFont);
-          if (local_14 != 0) {
-            SL_ConvertToString(local_14,SCRIPTINSTANCE_SERVER);
+          if (i != 0) {
+            SL_ConvertToString(i,SCRIPTINSTANCE_SERVER);
           }
           pcVar5 = va("%s: %d\n");
-          fVar9 = CG_CornerDebugPrint(param_1,fVar8,param_2,(float)iVar6 * 1.0,pcVar5,"",colorWhite)
-          ;
-          param_2 = fVar9 + param_2;
+          fVar9 = CG_CornerDebugPrint(scrPlace,fVar8,posY,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
+          posY = fVar9 + posY;
         }
       }
     }
     iVar6 = R_TextWidth(" ents in snapshot",0,cgMedia.smallDevFont);
     pcVar5 = va("ents in snapshot: %d\n");
-    fVar11 = CG_CornerDebugPrint(param_1,fVar8,param_2,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
+    fVar11 = CG_CornerDebugPrint(scrPlace,fVar8,posY,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
     iVar6 = R_TextWidth(" ents client_once",0,cgMedia.smallDevFont);
     pcVar5 = va("ents client_once: %d\n");
-    fVar9 = CG_CornerDebugPrint(param_1,fVar8,fVar11 + param_2,(float)iVar6 * 1.0,pcVar5,"",
-                                colorWhite);
-    fVar9 = fVar9 + fVar11 + param_2;
+    fVar9 = CG_CornerDebugPrint(scrPlace,fVar8,fVar11 + posY,(float)iVar6 * 1.0,pcVar5,"",colorWhite
+                               );
+    fVar9 = fVar9 + fVar11 + posY;
     iVar6 = R_TextWidth(" ents delta xxxxx",0,cgMedia.smallDevFont);
     pcVar5 = va("ents delta compared: %d\n");
-    fVar11 = CG_CornerDebugPrint(param_1,fVar8,fVar9,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
+    fVar11 = CG_CornerDebugPrint(scrPlace,fVar8,fVar9,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
     fVar11 = fVar11 + fVar9;
     iVar6 = R_TextWidth(" ents transmitted",0,cgMedia.smallDevFont);
     pcVar5 = va("ents transmitted: %d\n");
-    fVar8 = CG_CornerDebugPrint(param_1,fVar8,fVar11,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
-    param_2 = fVar8 + fVar11;
+    fVar8 = CG_CornerDebugPrint(scrPlace,fVar8,fVar11,(float)iVar6 * 1.0,pcVar5,"",colorWhite);
+    posY = fVar8 + fVar11;
   }
-  return param_2;
+  return posY;
 }
 
 
@@ -542,71 +560,75 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 004957F0  DrawSnapshotInfo  (cgame/cg_draw_debug.cpp:998)
 
-float __cdecl DrawSnapshotInfo(ScreenPlacement *param_1,float param_2)
+float __cdecl DrawSnapshotInfo(ScreenPlacement *scrPlace,float posY)
 
 {
-  return param_2;
+  return posY;
 }
 
 
 // 00494550  CG_DrawAnimTagInfo  (cgame/cg_draw_debug.cpp:1093)
 
-float __cdecl CG_DrawAnimTagInfo(ScreenPlacement *param_1,float param_2)
+float __cdecl CG_DrawAnimTagInfo(ScreenPlacement *scrPlace,float posY)
 
 {
   int iVar1;
   float fVar2;
-  int local_8;
+  int i;
   
   if (cgMedia.smallDevFont == (Font_s *)0x0) {
     cgMedia.smallDevFont = CL_RegisterFont("fonts/smalldevfont",1);
   }
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
+  for (i = 0; i < 6; i = i + 1) {
     iVar1 = R_TextWidth("tag name",0,cgMedia.smallDevFont);
-    fVar2 = CG_CornerDebugPrint(param_1,(param_1->virtualViewableMax[0] -
-                                        param_1->virtualViewableMin[0]) +
-                                        (cg_debugInfoCornerOffset->current).value,param_2,
-                                (float)iVar1 * 1.0,g_TagNames[local_8],"tag name",
-                                g_TagColors[local_8]);
-    param_2 = fVar2 + param_2;
+    fVar2 = CG_CornerDebugPrint(scrPlace,(scrPlace->virtualViewableMax[0] -
+                                         scrPlace->virtualViewableMin[0]) +
+                                         (cg_debugInfoCornerOffset->current).value,posY,
+                                (float)iVar1 * 1.0,g_TagNames[i],"tag name",g_TagColors[i]);
+    posY = fVar2 + posY;
   }
-  return param_2;
+  return posY;
 }
 
 
 // 00494750  CG_DrawUpperRightDebugInfo  (cgame/cg_draw_debug.cpp:1106)
 
-void __cdecl CG_DrawUpperRightDebugInfo(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_DrawUpperRightDebugInfo(int localClientNum)
 
 {
   int iVar1;
-  meminfo_t local_1cc;
-  float local_8;
+  meminfo_t meminfo;
+  float y;
   
-  track_getbasicinfo(&local_1cc);
+  track_getbasicinfo(&meminfo);
   R_TrackStatistics((trStatistics_t *)0x0);
-  local_8 = (cg_debugInfoCornerOffset->current).vector[1];
+  y = (cg_debugInfoCornerOffset->current).vector[1];
   iVar1 = Dvar_GetInt("debug_show_viewpos");
   if (iVar1 != 0) {
-    local_8 = CG_DrawViewpos(&scrPlaceFull,local_8,param_1);
+    y = CG_DrawViewpos(&scrPlaceFull,y,localClientNum);
   }
   if ((cg_drawFPS->current).integer != 0) {
-    local_8 = CG_DrawFPS(param_1,&scrPlaceFull,local_8,&local_1cc);
+    y = CG_DrawFPS(localClientNum,&scrPlaceFull,y,&meminfo);
   }
   if ((com_statmon->current).enabled != false) {
-    local_8 = CG_DrawStatmon(&scrPlaceFull,local_8,&local_1cc);
+    y = CG_DrawStatmon(&scrPlaceFull,y,&meminfo);
   }
   if ((cg_drawAnimAttachTags->current).enabled != false) {
-    local_8 = CG_DrawAnimTagInfo(&scrPlaceFull,local_8);
+    y = CG_DrawAnimTagInfo(&scrPlaceFull,y);
   }
   if ((cg_drawSnapshot->current).enabled != false) {
-    local_8 = CG_DrawSnapshot(param_1,local_8);
+    y = CG_DrawSnapshot(localClientNum,y);
   }
   if ((cg_drawSnapshotTime->current).enabled != false) {
-    local_8 = DrawSnapshotInfo(&scrPlaceFull,local_8);
+    y = DrawSnapshotInfo(&scrPlaceFull,y);
   }
   if ((g_listEntityCounts != (dvar_s *)0x0) && ((g_listEntityCounts->current).integer != 0)) {
-    DrawEntityCounts(&scrPlaceFull,local_8);
+    DrawEntityCounts(&scrPlaceFull,y);
   }
   return;
 }
@@ -614,16 +636,16 @@ void __cdecl CG_DrawUpperRightDebugInfo(int param_1)
 
 // 00495900  CG_CompareSndIsActive  (cgame/cg_draw_debug.cpp:1184)
 
-int __cdecl CG_CompareSndIsActive(snd_overlay_info *param_1,snd_overlay_info *param_2)
+int __cdecl CG_CompareSndIsActive(snd_overlay_info *a,snd_overlay_info *b)
 
 {
   int iVar1;
   
-  if ((param_1->pszSampleName[0] == '\0') || (param_2->pszSampleName[0] != '\0')) {
-    if ((param_1->pszSampleName[0] == '\0') && (param_2->pszSampleName[0] != '\0')) {
+  if ((a->pszSampleName[0] == '\0') || (b->pszSampleName[0] != '\0')) {
+    if ((a->pszSampleName[0] == '\0') && (b->pszSampleName[0] != '\0')) {
       iVar1 = 1;
     }
-    else if ((param_1->pszSampleName[0] == '\0') && (param_2->pszSampleName[0] == '\0')) {
+    else if ((a->pszSampleName[0] == '\0') && (b->pszSampleName[0] == '\0')) {
       iVar1 = 1;
     }
     else {
@@ -639,15 +661,17 @@ int __cdecl CG_CompareSndIsActive(snd_overlay_info *param_1,snd_overlay_info *pa
 
 // 00495800  CG_CompareSndInfoChannel  (cgame/cg_draw_debug.cpp:1196)
 
-int __cdecl CG_CompareSndInfoChannel(void *param_1,void *param_2)
+int __cdecl CG_CompareSndInfoChannel(void *va,void *vb)
 
 {
   int iVar1;
+  snd_overlay_info *b;
+  snd_overlay_info *a;
   
-  if (*(int *)((int)param_1 + 0xc0) < *(int *)((int)param_2 + 0xc0)) {
+  if (*(int *)((int)va + 0xc0) < *(int *)((int)vb + 0xc0)) {
     iVar1 = -1;
   }
-  else if (*(int *)((int)param_2 + 0xc0) < *(int *)((int)param_1 + 0xc0)) {
+  else if (*(int *)((int)vb + 0xc0) < *(int *)((int)va + 0xc0)) {
     iVar1 = 1;
   }
   else {
@@ -659,16 +683,18 @@ int __cdecl CG_CompareSndInfoChannel(void *param_1,void *param_2)
 
 // 00495850  CG_CompareSndInfoPriority  (cgame/cg_draw_debug.cpp:1210)
 
-int __cdecl CG_CompareSndInfoPriority(void *param_1,void *param_2)
+int __cdecl CG_CompareSndInfoPriority(void *va,void *vb)
 
 {
   int iVar1;
+  snd_overlay_info *b;
+  snd_overlay_info *a;
   
-  if (*(float *)((int)param_1 + 0xc4) < *(float *)((int)param_2 + 0xc4) ||
-      *(float *)((int)param_1 + 0xc4) == *(float *)((int)param_2 + 0xc4)) {
-    if (*(float *)((int)param_2 + 0xc4) < *(float *)((int)param_1 + 0xc4) ||
-        *(float *)((int)param_2 + 0xc4) == *(float *)((int)param_1 + 0xc4)) {
-      iVar1 = CG_CompareSndInfoChannel(param_1,param_2);
+  if (*(float *)((int)va + 0xc4) < *(float *)((int)vb + 0xc4) ||
+      *(float *)((int)va + 0xc4) == *(float *)((int)vb + 0xc4)) {
+    if (*(float *)((int)vb + 0xc4) < *(float *)((int)va + 0xc4) ||
+        *(float *)((int)vb + 0xc4) == *(float *)((int)va + 0xc4)) {
+      iVar1 = CG_CompareSndInfoChannel(va,vb);
     }
     else {
       iVar1 = 1;
@@ -683,14 +709,17 @@ int __cdecl CG_CompareSndInfoPriority(void *param_1,void *param_2)
 
 // 004958B0  CG_CompareSndInfoAlias  (cgame/cg_draw_debug.cpp:1225)
 
-int __cdecl CG_CompareSndInfoAlias(void *param_1,void *param_2)
+int __cdecl CG_CompareSndInfoAlias(void *va,void *vb)
 
 {
   int iVar1;
+  snd_overlay_info *b;
+  snd_overlay_info *a;
+  int x;
   
-  iVar1 = CG_CompareSndIsActive(param_1,param_2);
+  iVar1 = CG_CompareSndIsActive(va,vb);
   if (iVar1 == 0) {
-    iVar1 = I_stricmp((char *)((int)param_1 + 0x80),(char *)((int)param_2 + 0x80));
+    iVar1 = I_stricmp((char *)((int)va + 0x80),(char *)((int)vb + 0x80));
   }
   return iVar1;
 }
@@ -698,18 +727,21 @@ int __cdecl CG_CompareSndInfoAlias(void *param_1,void *param_2)
 
 // 00495960  CG_CompareSndInfoDryLevel  (cgame/cg_draw_debug.cpp:1238)
 
-int __cdecl CG_CompareSndInfoDryLevel(void *param_1,void *param_2)
+int __cdecl CG_CompareSndInfoDryLevel(void *va,void *vb)
 
 {
   int iVar1;
+  snd_overlay_info *b;
+  snd_overlay_info *a;
+  int x;
   
-  iVar1 = CG_CompareSndIsActive(param_1,param_2);
+  iVar1 = CG_CompareSndIsActive(va,vb);
   if (iVar1 == 0) {
-    if (*(float *)((int)param_1 + 0xcc) < *(float *)((int)param_2 + 0xcc) ||
-        *(float *)((int)param_1 + 0xcc) == *(float *)((int)param_2 + 0xcc)) {
-      if (*(float *)((int)param_2 + 0xcc) < *(float *)((int)param_1 + 0xcc) ||
-          *(float *)((int)param_2 + 0xcc) == *(float *)((int)param_1 + 0xcc)) {
-        iVar1 = CG_CompareSndInfoChannel(param_1,param_2);
+    if (*(float *)((int)va + 0xcc) < *(float *)((int)vb + 0xcc) ||
+        *(float *)((int)va + 0xcc) == *(float *)((int)vb + 0xcc)) {
+      if (*(float *)((int)vb + 0xcc) < *(float *)((int)va + 0xcc) ||
+          *(float *)((int)vb + 0xcc) == *(float *)((int)va + 0xcc)) {
+        iVar1 = CG_CompareSndInfoChannel(va,vb);
       }
       else {
         iVar1 = 1;
@@ -725,18 +757,21 @@ int __cdecl CG_CompareSndInfoDryLevel(void *param_1,void *param_2)
 
 // 004959E0  CG_CompareSndInfoDistance  (cgame/cg_draw_debug.cpp:1257)
 
-int __cdecl CG_CompareSndInfoDistance(void *param_1,void *param_2)
+int __cdecl CG_CompareSndInfoDistance(void *va,void *vb)
 
 {
   int iVar1;
+  snd_overlay_info *b;
+  snd_overlay_info *a;
+  int x;
   
-  iVar1 = CG_CompareSndIsActive(param_1,param_2);
+  iVar1 = CG_CompareSndIsActive(va,vb);
   if (iVar1 == 0) {
-    if (*(float *)((int)param_1 + 0xd4) < *(float *)((int)param_2 + 0xd4) ||
-        *(float *)((int)param_1 + 0xd4) == *(float *)((int)param_2 + 0xd4)) {
-      if (*(float *)((int)param_2 + 0xd4) < *(float *)((int)param_1 + 0xd4) ||
-          *(float *)((int)param_2 + 0xd4) == *(float *)((int)param_1 + 0xd4)) {
-        iVar1 = CG_CompareSndInfoChannel(param_1,param_2);
+    if (*(float *)((int)va + 0xd4) < *(float *)((int)vb + 0xd4) ||
+        *(float *)((int)va + 0xd4) == *(float *)((int)vb + 0xd4)) {
+      if (*(float *)((int)vb + 0xd4) < *(float *)((int)va + 0xd4) ||
+          *(float *)((int)vb + 0xd4) == *(float *)((int)va + 0xd4)) {
+        iVar1 = CG_CompareSndInfoChannel(va,vb);
       }
       else {
         iVar1 = -1;
@@ -752,21 +787,24 @@ int __cdecl CG_CompareSndInfoDistance(void *param_1,void *param_2)
 
 // 00495A60  CG_CompareSndInfoEntity  (cgame/cg_draw_debug.cpp:1276)
 
-int __cdecl CG_CompareSndInfoEntity(void *param_1,void *param_2)
+int __cdecl CG_CompareSndInfoEntity(void *va,void *vb)
 
 {
   int iVar1;
+  snd_overlay_info *b;
+  snd_overlay_info *a;
+  int x;
   
-  iVar1 = CG_CompareSndIsActive(param_1,param_2);
+  iVar1 = CG_CompareSndIsActive(va,vb);
   if (iVar1 == 0) {
-    if (*(int *)((int)param_2 + 0xdc) < *(int *)((int)param_1 + 0xdc)) {
+    if (*(int *)((int)vb + 0xdc) < *(int *)((int)va + 0xdc)) {
       iVar1 = -1;
     }
-    else if (*(int *)((int)param_1 + 0xdc) < *(int *)((int)param_2 + 0xdc)) {
+    else if (*(int *)((int)va + 0xdc) < *(int *)((int)vb + 0xdc)) {
       iVar1 = 1;
     }
     else {
-      iVar1 = CG_CompareSndInfoChannel(param_1,param_2);
+      iVar1 = CG_CompareSndInfoChannel(va,vb);
     }
   }
   return iVar1;
@@ -778,59 +816,60 @@ int __cdecl CG_CompareSndInfoEntity(void *param_1,void *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CG_DrawSoundOverlay(ScreenPlacement *param_1)
+void __cdecl CG_DrawSoundOverlay(ScreenPlacement *scrPlace)
 
 {
   char *pcVar1;
   snd_overlay_info *local_783c;
   snd_overlay_info *local_782c;
-  snd_overlay_info local_7824 [128];
+  char *filename;
+  snd_overlay_info info [128];
   uint local_24;
-  snd_overlay_type local_20;
-  int local_1c;
-  int local_18;
-  float local_14;
-  float local_10;
-  char *local_c;
-  uint local_8;
+  snd_overlay_type drawVar;
+  int activeChannels;
+  int i;
+  float x;
+  float y;
+  char *pszLine;
+  int count;
   
-  local_8 = 0x4964ed;
+  count = 0x4964ed;
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20 = (snd_drawInfo->current).unsignedInt;
-  local_8 = SND_GetSoundOverlay(local_20,local_7824,0x80);
-  qsort(local_7824,local_8,0xf0,CG_SoundCompares[(snd_drawSort->current).integer]);
-  local_1c = 0;
-  for (local_18 = 0; local_18 < (int)local_8; local_18 = local_18 + 1) {
-    if (local_7824[local_18].pszSampleName[0] != '\0') {
-      local_1c = local_1c + 1;
+  drawVar = (snd_drawInfo->current).unsignedInt;
+  count = SND_GetSoundOverlay(drawVar,info,0x80);
+  qsort(info,count,0xf0,CG_SoundCompares[(snd_drawSort->current).integer]);
+  activeChannels = 0;
+  for (i = 0; i < count; i = i + 1) {
+    if (info[i].pszSampleName[0] != '\0') {
+      activeChannels = activeChannels + 1;
     }
   }
-  local_14 = 2.0;
-  local_10 = 82.0;
-  local_c = va("%s sounds  reverb: %s  channels in use %d  sort by %s");
-  CG_DrawStringExt(param_1,local_14,local_10,local_c,colorWhite,0,1,14.0,0);
-  for (local_18 = 0; local_10 = local_10 + 10.0, local_18 < (int)local_8; local_18 = local_18 + 1) {
-    if (local_7824[local_18].pszSampleName[0] == '\0') {
-      local_c = va("%2i");
+  x = 2.0;
+  y = 82.0;
+  pszLine = va("%s sounds  reverb: %s  channels in use %d  sort by %s");
+  CG_DrawStringExt(scrPlace,x,y,pszLine,colorWhite,0,1,14.0,0);
+  for (i = 0; y = y + 10.0, i < count; i = i + 1) {
+    if (info[i].pszSampleName[0] == '\0') {
+      pszLine = va("%2i");
     }
     else {
-      local_783c = local_7824 + local_18;
-      local_782c = local_7824 + local_18;
+      local_783c = info + i;
+      local_782c = info + i;
       do {
         pcVar1 = local_782c->pszSampleName;
         local_782c = (snd_overlay_info *)(local_782c->pszSampleName + 1);
       } while (*pcVar1 != '\0');
-      if (0x19 < (uint)((int)local_782c - (int)(local_7824[local_18].pszSampleName + 1))) {
+      if (0x19 < (uint)((int)local_782c - (int)(info[i].pszSampleName + 1))) {
         do {
           pcVar1 = local_783c->pszSampleName;
           local_783c = (snd_overlay_info *)(local_783c->pszSampleName + 1);
         } while (*pcVar1 != '\0');
       }
-      local_c = va(
+      pszLine = va(
                   "%2i %-28s ^7pri^3% 4.0f ^7los^3%+.2d ^7d/w^3%+.2d/%+.2d ^7dst^3% 5.0f ^7pit^3% 1.2f ^7ent^3% .4d ^7%-25s"
                   );
     }
-    CG_DrawStringExt(param_1,local_14,local_10,local_c,colorWhite,0,1,14.0,0);
+    CG_DrawStringExt(scrPlace,x,y,pszLine,colorWhite,0,1,14.0,0);
   }
   return;
 }
@@ -838,29 +877,29 @@ void __cdecl CG_DrawSoundOverlay(ScreenPlacement *param_1)
 
 // 00495AE0  CG_DrawPerformanceWarnings  (cgame/cg_draw_debug.cpp:1401)
 
-void __cdecl CG_DrawPerformanceWarnings(int param_1)
+void __cdecl CG_DrawPerformanceWarnings(int localClientNum)
 
 {
   int iVar1;
-  statmonitor_s *local_18;
-  int local_14;
-  float local_10;
-  float local_c;
-  int local_8;
+  int time;
+  statmonitor_s *stats;
+  int i;
+  float x;
+  float y;
+  int statCount;
   
   iVar1 = Sys_Milliseconds();
-  StatMon_GetStatsArray(&local_18,&local_8);
-  local_10 = 2.0;
-  local_c = 200.0;
-  for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 1) {
-    if (iVar1 <= local_18[local_14].endtime) {
-      UI_DrawHandlePic(&scrPlaceFull,local_10,local_c,32.0,32.0,1,1,(float *)0x0,
-                       local_18[local_14].material);
+  StatMon_GetStatsArray(&stats,&statCount);
+  x = 2.0;
+  y = 200.0;
+  for (i = 0; i < statCount; i = i + 1) {
+    if (iVar1 <= stats[i].endtime) {
+      UI_DrawHandlePic(&scrPlaceFull,x,y,32.0,32.0,1,1,(float *)0x0,stats[i].material);
     }
-    local_10 = local_10 + 34.0;
-    if (68.0 < local_10 + 32.0) {
-      local_10 = 2.0;
-      local_c = local_c + 34.0;
+    x = x + 34.0;
+    if (68.0 < x + 32.0) {
+      x = 2.0;
+      y = y + 34.0;
     }
   }
   return;
@@ -874,24 +913,24 @@ void __cdecl CG_DrawPerformanceWarnings(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawModelBoneAxis(int param_1)
+void __cdecl CG_DrawModelBoneAxis(int localClientNum)
 
 {
   int iVar1;
-  char *local_14;
-  cg_s *local_10;
-  undefined4 local_c;
-  undefined4 local_8;
+  char *boneName;
+  cg_s *cgameGlob;
+  float x;
+  float y;
   
-  local_10 = CG_GetLocalClientGlobals(param_1);
-  iVar1 = R_PickEntityBone(-1,(local_10->refdef).vieworg,(local_10->refdef).viewaxis[0],
-                           (cg_drawModelAxis->current).integer,&local_14);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  iVar1 = R_PickEntityBone(-1,(cgameGlob->refdef).vieworg,(cgameGlob->refdef).viewaxis[0],
+                           (cg_drawModelAxis->current).integer,&boneName);
   if (iVar1 != 0) {
-    local_c = 0x41c00000;
-    local_8 = 0x43700000;
+    x = 24.0;
+    y = 240.0;
     CG_DrawSmallDevStringColor
-              ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),24.0,240.0,local_14,colorWhite,5)
-    ;
+              ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),24.0,240.0,boneName,
+               colorWhite,5);
   }
   return;
 }
@@ -899,13 +938,13 @@ void __cdecl CG_DrawModelBoneAxis(int param_1)
 
 // 004968B0  CG_DrawFxText  (cgame/cg_draw_debug.cpp:1589)
 
-void __cdecl CG_DrawFxText(char *param_1,float *param_2)
+void __cdecl CG_DrawFxText(char *text,float *profilePos)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (text == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_debug.cpp",0x636,0,
                              "%s");
     if (!bVar2) {
@@ -914,22 +953,22 @@ void __cdecl CG_DrawFxText(char *param_1,float *param_2)
       return;
     }
   }
-  CL_DrawText(&scrPlaceFull,param_1,0x7fffffff,cgMedia.smallDevFont,*param_2,param_2[1],1,1,0.75,
+  CL_DrawText(&scrPlaceFull,text,0x7fffffff,cgMedia.smallDevFont,*profilePos,profilePos[1],1,1,0.75,
               0.75,colorWhiteFaded,0x80);
-  param_2[1] = param_2[1] + 9.0;
+  profilePos[1] = profilePos[1] + 9.0;
   return;
 }
 
 
 // 004969D0  CG_DrawFxPriorityText  (cgame/cg_draw_debug.cpp:1599)
 
-void __cdecl CG_DrawFxPriorityText(char *param_1,float *param_2)
+void __cdecl CG_DrawFxPriorityText(char *text,float *profilePos)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (text == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_debug.cpp",0x640,0,
                              "%s");
     if (!bVar2) {
@@ -938,51 +977,51 @@ void __cdecl CG_DrawFxPriorityText(char *param_1,float *param_2)
       return;
     }
   }
-  CL_DrawText(&scrPlaceFull,param_1,0x7fffffff,cgMedia.smallDevFont,*param_2,param_2[1],1,1,0.75,
+  CL_DrawText(&scrPlaceFull,text,0x7fffffff,cgMedia.smallDevFont,*profilePos,profilePos[1],1,1,0.75,
               0.75,colorWhiteFaded,0x80);
-  param_2[1] = param_2[1] + 9.0;
+  profilePos[1] = profilePos[1] + 9.0;
   return;
 }
 
 
 // 00496870  CG_DrawFxProfile  (cgame/cg_draw_debug.cpp:1609)
 
-void __cdecl CG_DrawFxProfile(int param_1)
+void __cdecl CG_DrawFxProfile(int localClientNum)
 
 {
-  float local_c [2];
+  float profilePos [2];
   
-  local_c[0] = 0.0;
-  local_c[1] = 9.0;
-  FX_DrawProfile(param_1,CG_DrawFxText,local_c);
+  profilePos[0] = 0.0;
+  profilePos[1] = 9.0;
+  FX_DrawProfile(localClientNum,CG_DrawFxText,profilePos);
   return;
 }
 
 
 // 00496950  CG_DrawFxMarkProfile  (cgame/cg_draw_debug.cpp:1619)
 
-void __cdecl CG_DrawFxMarkProfile(int param_1)
+void __cdecl CG_DrawFxMarkProfile(int localClientNum)
 
 {
-  float local_c [2];
+  float profilePos [2];
   
-  local_c[0] = 0.0;
-  local_c[1] = 9.0;
-  FX_DrawMarkProfile(param_1,CG_DrawFxText,local_c);
+  profilePos[0] = 0.0;
+  profilePos[1] = 9.0;
+  FX_DrawMarkProfile(localClientNum,CG_DrawFxText,profilePos);
   return;
 }
 
 
 // 00496990  CG_DrawFxPriorityDebug  (cgame/cg_draw_debug.cpp:1628)
 
-void __cdecl CG_DrawFxPriorityDebug(int param_1)
+void __cdecl CG_DrawFxPriorityDebug(int localClientNum)
 
 {
-  float local_c [2];
+  float profilePos [2];
   
-  local_c[0] = 0.0;
-  local_c[1] = 9.0;
-  FX_DrawPriorityDebug(param_1,CG_DrawFxPriorityText,local_c);
+  profilePos[0] = 0.0;
+  profilePos[1] = 9.0;
+  FX_DrawPriorityDebug(localClientNum,CG_DrawFxPriorityText,profilePos);
   return;
 }
 
@@ -994,7 +1033,7 @@ void __cdecl CG_DrawFxPriorityDebug(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawDebugPlayerHealth(int param_1)
+void __cdecl CG_DrawDebugPlayerHealth(int localClientNum)
 
 {
   code *pcVar1;
@@ -1003,8 +1042,9 @@ void __cdecl CG_DrawDebugPlayerHealth(int param_1)
   float fVar4;
   float local_24;
   float local_20;
-  float local_18;
-  float local_14;
+  cg_s *cgameGlob;
+  float health;
+  float color;
   float local_10;
   undefined4 local_c;
   float local_8;
@@ -1016,10 +1056,10 @@ void __cdecl CG_DrawDebugPlayerHealth(int param_1)
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (((pcVar3->predictedPlayerState).stats[0] == 0) ||
      ((pcVar3->predictedPlayerState).stats[2] == 0)) {
-    local_18 = 0.0;
+    health = 0.0;
   }
   else {
     fVar4 = (float)(pcVar3->predictedPlayerState).stats[0] /
@@ -1034,20 +1074,20 @@ void __cdecl CG_DrawDebugPlayerHealth(int param_1)
     else {
       local_24 = 0.0;
     }
-    local_18 = local_24;
+    health = local_24;
   }
-  local_14 = 0.0;
+  color = 0.0;
   local_10 = 0.0;
   local_c = 0;
   local_8 = 1.0;
-  CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),10.0,10.0,100.0,10.0,1,1,0.0
-                    ,0.0,1.0,1.0,&local_14,cgMedia.whiteMaterial);
-  local_14 = 0.0;
+  CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),10.0,10.0,100.0,10.0,
+                    1,1,0.0,0.0,1.0,1.0,&color,cgMedia.whiteMaterial);
+  color = 0.0;
   local_10 = 1.0;
   local_c = 0;
   local_8 = 1.0;
-  CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),10.0,10.0,local_18 * 100.0,
-                    10.0,1,1,0.0,0.0,local_18,1.0,&local_14,cgMedia.whiteMaterial);
+  CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),10.0,10.0,
+                    health * 100.0,10.0,1,1,0.0,0.0,health,1.0,&color,cgMedia.whiteMaterial);
   return;
 }
 
@@ -1059,62 +1099,73 @@ void __cdecl CG_DrawDebugPlayerHealth(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawDebugPlayerSprint(int param_1)
+void __cdecl CG_DrawDebugPlayerSprint(int localClientNum)
 
 {
   cg_s *pcVar1;
-  playerState_s *ppVar2;
+  playerState_s *ps_00;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  float local_2c;
-  float local_18 [3];
+  SprintState *ss;
+  float width;
+  float lerp;
+  float widthMax;
+  int time;
+  float timeRemain;
+  playerState_s *ps;
+  float color [3];
   float local_c;
-  float local_8;
+  float timeMax;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  iVar3 = pcVar1->time;
-  ppVar2 = CG_GetPredictedPlayerState(param_1);
-  if (((ppVar2->sprintState).sprintDelay == 0) ||
-     ((ppVar2->sprintState).sprintCooldown <= iVar3 - (ppVar2->sprintState).lastSprintEnd)) {
-    iVar3 = PM_GetSprintLeft(ppVar2,iVar3);
-    iVar4 = BG_GetMaxSprintTime(ppVar2);
-    local_8 = (float)iVar4;
-    if (local_8 == 0.0) {
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  iVar2 = pcVar1->time;
+  ps_00 = CG_GetPredictedPlayerState(localClientNum);
+  if (((ps_00->sprintState).sprintDelay == 0) ||
+     ((ps_00->sprintState).sprintCooldown <= iVar2 - (ps_00->sprintState).lastSprintEnd)) {
+    iVar2 = PM_GetSprintLeft(ps_00,iVar2);
+    iVar3 = BG_GetMaxSprintTime(ps_00);
+    timeMax = (float)iVar3;
+    if (timeMax == 0.0) {
       return;
     }
-    local_2c = (float)iVar3 / local_8;
-    Vec4Lerp(colorYellow,colorGreen,local_2c,local_18);
+    lerp = (float)iVar2 / timeMax;
+    Vec4Lerp(colorYellow,colorGreen,lerp,color);
   }
   else {
-    local_8 = (float)(ppVar2->sprintState).sprintCooldown;
-    if (local_8 == 0.0) {
+    timeMax = (float)(ps_00->sprintState).sprintCooldown;
+    if (timeMax == 0.0) {
       return;
     }
-    local_2c = ((float)(ppVar2->sprintState).sprintCooldown -
-               (float)(iVar3 - (ppVar2->sprintState).lastSprintEnd)) / local_8;
-    Vec4Lerp(colorYellow,colorRed,local_2c,local_18);
+    lerp = ((float)(ps_00->sprintState).sprintCooldown -
+           (float)(iVar2 - (ps_00->sprintState).lastSprintEnd)) / timeMax;
+    Vec4Lerp(colorYellow,colorRed,lerp,color);
   }
   local_c = 0.75;
-  CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0.0,0.0,local_2c * 700.0,
-                    10.0,1,3,0.0,0.0,1.0,1.0,local_18,cgMedia.whiteMaterial);
+  CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0.0,0.0,lerp * 700.0,
+                    10.0,1,3,0.0,0.0,1.0,1.0,color,cgMedia.whiteMaterial);
   return;
 }
 
 
 // 00495BE0  CG_DrawDebugOverlays  (cgame/cg_draw_debug.cpp:1720)
 
-void __cdecl CG_DrawDebugOverlays(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_DrawDebugOverlays(int localClientNum)
 
 {
   if ((cg_drawModelAxis->current).integer != -1) {
-    CG_DrawModelBoneAxis(param_1);
+    CG_DrawModelBoneAxis(localClientNum);
   }
   if ((player_debugHealth->current).enabled != false) {
-    CG_DrawDebugPlayerHealth(param_1);
+    CG_DrawDebugPlayerHealth(localClientNum);
   }
-  AimAssist_DrawDebugOverlay(param_1);
+  AimAssist_DrawDebugOverlay(localClientNum);
   if ((player_debugSprint->current).enabled != false) {
-    CG_DrawDebugPlayerSprint(param_1);
+    CG_DrawDebugPlayerSprint(localClientNum);
   }
   return;
 }
@@ -1122,10 +1173,16 @@ void __cdecl CG_DrawDebugOverlays(int param_1)
 
 // 004960E0  CG_DrawFullScreenDebugOverlays  (cgame/cg_draw_debug.cpp:1764)
 
-void __cdecl CG_DrawFullScreenDebugOverlays(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
+void __cdecl CG_DrawFullScreenDebugOverlays(int localClientNum)
 
 {
-  CG_DrawPerformanceWarnings(param_1);
+  CG_DrawPerformanceWarnings(localClientNum);
   if ((fx_mark_profile->current).integer < 1) {
     if ((fx_profile->current).integer < 1) {
       if ((fx_priority_debug->current).integer < 1) {
@@ -1163,318 +1220,310 @@ void __cdecl CG_DrawFullScreenDebugOverlays(int param_1)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-float __cdecl CG_DrawFPS(int param_1,ScreenPlacement *param_2,float param_3,meminfo_t *param_4)
+float __cdecl CG_DrawFPS(int localClientNum,ScreenPlacement *scrPlace,float y,meminfo_t *meminfo)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *label;
+  float fVar3;
   float fVar4;
-  float fVar5;
-  float *pfVar6;
+  float *color_00;
   bool local_d8;
   bool local_d4;
   float local_d0;
   float local_a0;
-  uint local_68;
-  char local_61;
-  uint local_60;
-  float local_5c;
-  bool local_55;
-  float local_54;
-  int local_50;
-  char *local_4c;
-  int local_48;
-  XAssetType local_44;
-  int local_40;
-  trViewStatistics_t *local_3c;
-  float local_38;
-  int local_34;
-  float local_30;
-  float local_2c;
-  float local_28;
-  float local_24 [4];
-  uint local_14;
-  int local_10;
-  char *local_c;
-  float *local_8;
+  uint numSModel;
+  bool shouldDraw_2;
+  uint numSModelMax;
+  float ratio_2;
+  bool shouldDraw;
+  float ratio;
+  int maxAllowed;
+  char *typeName;
+  int numUsed;
+  int type;
+  int fpsMax;
+  trViewStatistics_t *viewstats;
+  float freeMem;
+  int fps;
+  float farRight;
+  float labelWidth;
+  float lerp;
+  float varColor [4];
+  uint frameCount;
+  int fpsMin;
+  char *s;
+  float *color;
   
-  local_3c = rendererViewStats + param_1;
-  local_14 = R_GetFrameCount();
-  local_30 = (param_2->virtualViewableMax[0] - param_2->virtualViewableMin[0]) +
+  viewstats = rendererViewStats + localClientNum;
+  frameCount = R_GetFrameCount();
+  farRight = (scrPlace->virtualViewableMax[0] - scrPlace->virtualViewableMin[0]) +
              (cg_debugInfoCornerOffset->current).value;
   iVar2 = R_TextWidth("wwwwwwwwwwww",0,cgMedia.smallDevFont);
-  local_2c = (float)iVar2 * 1.0;
-  local_10 = (int)ROUND(1000.0 / (float)cg_perfInfo.frame.max + 9.313226e-10);
-  local_40 = (int)ROUND(1000.0 / (float)cg_perfInfo.frame.min + 9.313226e-10);
-  local_34 = (int)ROUND(1000.0 / cg_perfInfo.frame.average + 9.313226e-10);
-  fVar4 = (((float)local_34 - 60.0) + 20.0) / 20.0;
-  local_a0 = fVar4;
-  if (0.0 <= fVar4 - 1.0) {
+  labelWidth = (float)iVar2 * 1.0;
+  fpsMin = (int)ROUND(1000.0 / (float)cg_perfInfo.frame.max + 9.313226e-10);
+  fpsMax = (int)ROUND(1000.0 / (float)cg_perfInfo.frame.min + 9.313226e-10);
+  fps = (int)ROUND(1000.0 / cg_perfInfo.frame.average + 9.313226e-10);
+  fVar3 = (((float)fps - 60.0) + 20.0) / 20.0;
+  local_a0 = fVar3;
+  if (0.0 <= fVar3 - 1.0) {
     local_a0 = 1.0;
   }
-  if (0.0 - fVar4 < 0.0) {
+  if (0.0 - fVar3 < 0.0) {
     local_d0 = local_a0;
   }
   else {
     local_d0 = 0.0;
   }
-  local_28 = local_d0;
-  Vec4Lerp(colorRed,colorWhite,local_d0,local_24);
-  local_8 = local_24;
-  local_c = va("(%i-%i, %i) %i");
-  fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," FPS",local_8);
-  local_c = va("(%i-%i) %1.2f");
-  fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4 + param_3,local_2c,local_c," cg ms/frame",
-                              colorWhite);
-  param_3 = fVar5 + fVar4 + param_3;
+  lerp = local_d0;
+  Vec4Lerp(colorRed,colorWhite,local_d0,varColor);
+  color = varColor;
+  s = va("(%i-%i, %i) %i");
+  fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," FPS",color);
+  s = va("(%i-%i) %1.2f");
+  fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3 + y,labelWidth,s," cg ms/frame",colorWhite);
+  y = fVar4 + fVar3 + y;
   if (1 < (cg_drawFPS->current).integer) {
-    local_c = va("(%2i-%2i) %1.2f");
+    s = va("(%2i-%2i) %1.2f");
     if (40.0 <= cg_perfInfo.server.average) {
       if (50.0 <= cg_perfInfo.server.average) {
-        local_8 = colorRed;
+        color = colorRed;
       }
       else {
-        local_8 = colorYellow;
+        color = colorYellow;
       }
     }
     else {
-      local_8 = colorWhite;
+      color = colorWhite;
     }
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," sv ms/frame",local_8);
-    local_c = va("(%2i-%2i) %1.2f");
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," sv ms/frame",color);
+    s = va("(%2i-%2i) %1.2f");
     if (40.0 <= cg_perfInfo.script.average) {
       if (50.0 <= cg_perfInfo.script.average) {
-        local_8 = colorRed;
+        color = colorRed;
       }
       else {
-        local_8 = colorYellow;
+        color = colorYellow;
       }
     }
     else {
-      local_8 = colorWhite;
+      color = colorWhite;
     }
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4 + param_3,local_2c,local_c," script ms/frame"
-                                ,local_8);
-    param_3 = fVar5 + fVar4 + param_3;
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3 + y,labelWidth,s," script ms/frame",color);
+    y = fVar4 + fVar3 + y;
   }
   iVar2 = CL_GetFirstActiveLocalClient();
-  local_38 = ((float)iVar2 / 1024.0) / 1024.0;
-  if (5.0 <= local_38) {
-    if (10.0 <= local_38) {
-      local_8 = colorWhiteFaded;
+  freeMem = ((float)iVar2 / 1024.0) / 1024.0;
+  if (5.0 <= freeMem) {
+    if (10.0 <= freeMem) {
+      color = colorWhiteFaded;
     }
     else {
-      local_8 = colorRedFaded;
+      color = colorRedFaded;
     }
   }
   else {
     bVar1 = CG_Flash(500);
     if (bVar1) {
-      local_8 = colorRedFaded;
+      color = colorRedFaded;
     }
     else {
-      local_8 = colorWhiteFaded;
+      color = colorWhiteFaded;
     }
   }
-  local_c = va("%3.1f");
+  s = va("%3.1f");
   if (1 < (cg_drawFPS->current).integer) {
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," lvl free",colorWhite);
-    param_3 = fVar4 + param_3;
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," lvl free",colorWhite);
+    y = fVar3 + y;
   }
-  local_c = va("%d/%d");
-  fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," phys objects",colorWhite);
-  local_c = va("%d/%d");
-  fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4 + param_3,local_2c,local_c," ragdolls",
-                              colorWhite);
-  param_3 = fVar5 + fVar4 + param_3;
+  s = va("%d/%d");
+  fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," phys objects",colorWhite);
+  s = va("%d/%d");
+  fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3 + y,labelWidth,s," ragdolls",colorWhite);
+  y = fVar4 + fVar3 + y;
   if (1 < (cg_drawFPS->current).integer) {
-    local_c = va("(%2i-%2i) %1.2f");
+    s = va("(%2i-%2i) %1.2f");
     if (40.0 <= cg_perfInfo.cscript.average) {
       if (50.0 <= cg_perfInfo.cscript.average) {
-        local_8 = colorRed;
+        color = colorRed;
       }
       else {
-        local_8 = colorYellow;
+        color = colorYellow;
       }
     }
     else {
-      local_8 = colorWhite;
+      color = colorWhite;
     }
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," cscript ms/frame",
-                                local_8);
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," cscript ms/frame",color);
     rendererStats.views = rendererViewStats;
     R_TrackStatistics(&rendererStats);
-    fVar4 = CG_CornerDebugPrintCaption
-                      (param_2,local_30,fVar5 + param_3,local_2c,"-Scene-",colorGreenFaded);
-    fVar4 = fVar4 + fVar5 + param_3;
-    local_c = va("%i");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,local_2c,local_c," view tris",colorWhite);
-    param_3 = fVar5 + fVar4;
-    if (local_3c->c_shadowIndexes != 0) {
-      local_c = va("%i");
-      fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," shadow tris",
-                                  colorWhite);
-      param_3 = fVar4 + param_3;
+    fVar3 = CG_CornerDebugPrintCaption
+                      (scrPlace,farRight,fVar4 + y,labelWidth,"-Scene-",colorGreenFaded);
+    fVar3 = fVar3 + fVar4 + y;
+    s = va("%i");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,labelWidth,s," view tris",colorWhite);
+    y = fVar4 + fVar3;
+    if (viewstats->c_shadowIndexes != 0) {
+      s = va("%i");
+      fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," shadow tris",colorWhite);
+      y = fVar3 + y;
     }
-    local_c = va("%i");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," raw geo tris",colorWhite
-                               );
-    local_c = va("%i");
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5 + param_3,local_2c,local_c," raw fx tris",
-                                colorWhite);
-    fVar4 = fVar4 + fVar5 + param_3;
-    local_c = va("%i");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,local_2c,local_c," prim",colorWhite);
-    fVar5 = fVar5 + fVar4;
-    fVar4 = CG_CornerDebugPrintCaption(param_2,local_30,fVar5,local_2c,"-Level-",colorGreenFaded);
-    fVar4 = fVar4 + fVar5;
-    local_c = va("%d");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,local_2c,local_c," tex",colorWhite);
-    fVar5 = fVar5 + fVar4;
+    s = va("%i");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," raw geo tris",colorWhite);
+    s = va("%i");
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4 + y,labelWidth,s," raw fx tris",colorWhite);
+    fVar3 = fVar3 + fVar4 + y;
+    s = va("%i");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,labelWidth,s," prim",colorWhite);
+    fVar4 = fVar4 + fVar3;
+    fVar3 = CG_CornerDebugPrintCaption(scrPlace,farRight,fVar4,labelWidth,"-Level-",colorGreenFaded)
+    ;
+    fVar3 = fVar3 + fVar4;
+    s = va("%d");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,labelWidth,s," tex",colorWhite);
+    fVar4 = fVar4 + fVar3;
     if (rendererStats.c_imageUsage.minspec < 0x3000001) {
-      local_8 = colorWhite;
-      local_c = va("%d");
+      color = colorWhite;
+      s = va("%d");
     }
     else {
-      local_8 = colorRed;
-      local_c = va("(!budget is %g!) %d");
+      color = colorRed;
+      s = va("(!budget is %g!) %d");
     }
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5,local_2c,local_c," min pc tex",local_8);
-    fVar4 = fVar4 + fVar5;
-    local_c = va("%i");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,local_2c,local_c," min pc mem",colorWhite);
-    param_3 = fVar5 + fVar4;
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4,labelWidth,s," min pc tex",color);
+    fVar3 = fVar3 + fVar4;
+    s = va("%i");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,labelWidth,s," min pc mem",colorWhite);
+    y = fVar4 + fVar3;
   }
   if (((r_reflectionProbeGenerate->current).enabled == false) &&
      (0 < (cg_drawBudgets->current).integer)) {
-    local_4c = (char *)0x0;
-    local_48 = 0;
-    local_50 = 0;
-    for (local_44 = ASSET_TYPE_XMODELPIECES; (int)local_44 < 0x2b;
-        local_44 = local_44 + ASSET_TYPE_PHYSPRESET) {
-      DB_GetAssetTypeUsageInfo(local_44,&local_4c,&local_48,&local_50);
-      local_54 = (float)local_48 / (float)local_50;
+    typeName = (char *)0x0;
+    numUsed = 0;
+    maxAllowed = 0;
+    for (type = 0; type < 0x2b; type = type + 1) {
+      DB_GetAssetTypeUsageInfo(type,&typeName,&numUsed,&maxAllowed);
+      ratio = (float)numUsed / (float)maxAllowed;
       if ((cg_drawBudgets->current).integer == 1) {
-        if ((local_50 < 0x20) || ((local_54 <= 0.95 && (local_48 < local_50 + -1)))) {
+        if ((maxAllowed < 0x20) || ((ratio <= 0.95 && (numUsed < maxAllowed + -1)))) {
           local_d4 = false;
         }
         else {
           local_d4 = true;
         }
-        local_55 = local_d4;
+        shouldDraw = local_d4;
       }
       else if ((cg_drawBudgets->current).integer == 2) {
-        local_55 = 0x3f < local_50;
+        shouldDraw = 0x3f < maxAllowed;
       }
       else if ((cg_drawBudgets->current).integer == 3) {
-        if ((local_50 < 0x20) || (0x3f < local_50)) {
+        if ((maxAllowed < 0x20) || (0x3f < maxAllowed)) {
           local_d8 = false;
         }
         else {
           local_d8 = true;
         }
-        local_55 = local_d8;
+        shouldDraw = local_d8;
       }
       else {
-        local_55 = local_50 < 0x20;
+        shouldDraw = maxAllowed < 0x20;
       }
-      if (local_55 != false) {
-        if (local_54 < 0.95) {
-          if (local_54 < 0.88) {
-            local_8 = colorWhite;
+      if (shouldDraw != false) {
+        if (ratio < 0.95) {
+          if (ratio < 0.88) {
+            color = colorWhite;
           }
           else {
-            local_8 = colorYellow;
+            color = colorYellow;
           }
         }
         else {
-          local_8 = colorRed;
+          color = colorRed;
         }
-        local_c = va("%i / %i");
-        pfVar6 = local_8;
-        pcVar3 = va(" %s");
-        fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c,pcVar3,pfVar6);
-        param_3 = fVar4 + param_3;
+        s = va("%i / %i");
+        color_00 = color;
+        label = va(" %s");
+        fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s,label,color_00);
+        y = fVar3 + y;
       }
     }
   }
   if (((r_reflectionProbeGenerate->current).enabled == false) &&
      ((cg_drawDynSModelBudget->current).enabled != false)) {
-    R_DynSModelGetCounts(&local_68,&local_60);
-    local_5c = (float)((float10)local_68 / (float10)local_60);
-    local_61 = '\x01';
-    if (local_5c < 0.95) {
-      if (local_5c < 0.9) {
-        if (local_5c < 0.8) {
-          local_61 = '\0';
+    R_DynSModelGetCounts(&numSModel,&numSModelMax);
+    ratio_2 = (float)((float10)numSModel / (float10)numSModelMax);
+    shouldDraw_2 = true;
+    if (ratio_2 < 0.95) {
+      if (ratio_2 < 0.9) {
+        if (ratio_2 < 0.8) {
+          shouldDraw_2 = false;
         }
         else {
-          local_8 = colorYellow;
+          color = colorYellow;
         }
       }
       else {
-        local_8 = colorOrange;
+        color = colorOrange;
       }
     }
     else {
-      local_8 = colorRed;
+      color = colorRed;
     }
-    if (local_61 != '\0') {
-      local_c = va("%i / %i");
-      fVar4 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," dyn smodel",local_8);
-      param_3 = fVar4 + param_3;
+    if (shouldDraw_2 != false) {
+      s = va("%i / %i");
+      fVar3 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," dyn smodel",color);
+      y = fVar3 + y;
     }
   }
   if ((cg_profile_physics->current).enabled != false) {
-    local_c = va("%4.2f");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,param_3,local_2c,local_c," sv flame",colorWhite);
-    local_c = va("%lld");
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5 + param_3,local_2c,local_c," sv calls",
-                                colorWhite);
-    fVar4 = fVar4 + fVar5 + param_3;
-    local_c = va("%4.2f");
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,local_2c,local_c," cl flame",colorWhite);
-    fVar5 = fVar5 + fVar4;
-    local_c = va("%lld");
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5,local_2c,local_c," cl calls",colorWhite);
-    param_3 = fVar4 + fVar5;
+    s = va("%4.2f");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,y,labelWidth,s," sv flame",colorWhite);
+    s = va("%lld");
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4 + y,labelWidth,s," sv calls",colorWhite);
+    fVar3 = fVar3 + fVar4 + y;
+    s = va("%4.2f");
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,labelWidth,s," cl flame",colorWhite);
+    fVar4 = fVar4 + fVar3;
+    s = va("%lld");
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4,labelWidth,s," cl calls",colorWhite);
+    y = fVar3 + fVar4;
   }
   if ((g_bDebugRenderEntityBrushes->current).enabled != false) {
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,param_3,(float)offs + local_2c,
-                                "                   ","",colorWhite);
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5 + param_3,(float)offs + local_2c,
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,y,(float)offs + labelWidth,"                   ",
+                                "",colorWhite);
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4 + y,(float)offs + labelWidth,
                                 "** ENTITY BRUSHES *","",colorWhite);
-    fVar4 = fVar4 + fVar5 + param_3;
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,(float)offs + local_2c,"*                 *",
-                                "",colorWhite);
-    fVar5 = fVar5 + fVar4;
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5,(float)offs + local_2c,"*  server ents    *",
-                                "",colorCyan);
-    fVar4 = fVar4 + fVar5;
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,(float)offs + local_2c,"*  server trigs   *",
-                                "",colorRed);
-    fVar5 = fVar5 + fVar4;
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5,(float)offs + local_2c,"*  dyn ents       *",
-                                "",colorGreen);
-    fVar4 = fVar4 + fVar5;
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,(float)offs + local_2c,"*  cl only ents   *",
-                                "",colorYellow);
-    fVar5 = fVar5 + fVar4;
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5,(float)offs + local_2c,"*  client trigs   *",
-                                "",colorWhite);
-    fVar4 = fVar4 + fVar5;
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,(float)offs + local_2c,"*                 *",
-                                "",colorWhite);
-    fVar5 = fVar5 + fVar4;
-    fVar4 = CG_CornerDebugPrint(param_2,local_30,fVar5,(float)offs + local_2c,"*******************",
-                                "",colorWhite);
-    fVar4 = fVar4 + fVar5;
-    fVar5 = CG_CornerDebugPrint(param_2,local_30,fVar4,(float)offs + local_2c,"                   ",
-                                "",colorWhite);
-    param_3 = fVar5 + fVar4;
+    fVar3 = fVar3 + fVar4 + y;
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,(float)offs + labelWidth,
+                                "*                 *","",colorWhite);
+    fVar4 = fVar4 + fVar3;
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4,(float)offs + labelWidth,
+                                "*  server ents    *","",colorCyan);
+    fVar3 = fVar3 + fVar4;
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,(float)offs + labelWidth,
+                                "*  server trigs   *","",colorRed);
+    fVar4 = fVar4 + fVar3;
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4,(float)offs + labelWidth,
+                                "*  dyn ents       *","",colorGreen);
+    fVar3 = fVar3 + fVar4;
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,(float)offs + labelWidth,
+                                "*  cl only ents   *","",colorYellow);
+    fVar4 = fVar4 + fVar3;
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4,(float)offs + labelWidth,
+                                "*  client trigs   *","",colorWhite);
+    fVar3 = fVar3 + fVar4;
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,(float)offs + labelWidth,
+                                "*                 *","",colorWhite);
+    fVar4 = fVar4 + fVar3;
+    fVar3 = CG_CornerDebugPrint(scrPlace,farRight,fVar4,(float)offs + labelWidth,
+                                "*******************","",colorWhite);
+    fVar3 = fVar3 + fVar4;
+    fVar4 = CG_CornerDebugPrint(scrPlace,farRight,fVar3,(float)offs + labelWidth,
+                                "                   ","",colorWhite);
+    y = fVar4 + fVar3;
   }
-  return param_3;
+  return y;
 }
 
 
@@ -1483,32 +1532,35 @@ float __cdecl CG_DrawFPS(int param_1,ScreenPlacement *param_2,float param_3,memi
 void __cdecl CG_DrawVersion(void)
 
 {
-  Font_s *pFVar1;
-  int iVar2;
-  float local_30 [10];
-  float local_8;
+  Font_s *font_00;
+  int iVar1;
+  Font_s *font;
+  float shadowColor [8];
+  float fontScale;
+  float h;
+  float w;
   
-  local_30[8] = 0.25;
-  local_30[4] = 0.4;
-  local_30[5] = 0.7;
-  local_30[6] = 1.0;
-  local_30[7] = 0.7;
-  local_30[0] = 0.0;
-  local_30[1] = 0.0;
-  local_30[2] = 0.0;
-  local_30[3] = 0.7;
-  pFVar1 = UI_GetFontHandle(&scrPlaceFullUnsafe,0,0.5);
-  if (pFVar1 != (Font_s *)0x0) {
-    iVar2 = UI_TextWidth((version->current).string,0,pFVar1,local_30[8]);
-    local_8 = (float)iVar2;
-    iVar2 = UI_TextHeight(pFVar1,local_30[8]);
-    local_30[9] = (float)iVar2;
-    UI_DrawText(&scrPlaceFullUnsafe,(version->current).string,0x7fffffff,pFVar1,
-                (-local_8 - (cg_drawVersionX->current).value) + 1.0,
-                (-local_30[9] - (cg_drawVersionY->current).value) + 1.0,3,3,local_30[8],local_30,0);
-    UI_DrawText(&scrPlaceFullUnsafe,(version->current).string,0x7fffffff,pFVar1,
-                -local_8 - (cg_drawVersionX->current).value,
-                -local_30[9] - (cg_drawVersionY->current).value,3,3,local_30[8],local_30 + 4,0);
+  fontScale = 0.25;
+  shadowColor[4] = 0.4;
+  shadowColor[5] = 0.7;
+  shadowColor[6] = 1.0;
+  shadowColor[7] = 0.7;
+  shadowColor[0] = 0.0;
+  shadowColor[1] = 0.0;
+  shadowColor[2] = 0.0;
+  shadowColor[3] = 0.7;
+  font_00 = UI_GetFontHandle(&scrPlaceFullUnsafe,0,0.5);
+  if (font_00 != (Font_s *)0x0) {
+    iVar1 = UI_TextWidth((version->current).string,0,font_00,fontScale);
+    w = (float)iVar1;
+    iVar1 = UI_TextHeight(font_00,fontScale);
+    h = (float)iVar1;
+    UI_DrawText(&scrPlaceFullUnsafe,(version->current).string,0x7fffffff,font_00,
+                (-w - (cg_drawVersionX->current).value) + 1.0,
+                (-h - (cg_drawVersionY->current).value) + 1.0,3,3,fontScale,shadowColor,0);
+    UI_DrawText(&scrPlaceFullUnsafe,(version->current).string,0x7fffffff,font_00,
+                -w - (cg_drawVersionX->current).value,-h - (cg_drawVersionY->current).value,3,3,
+                fontScale,shadowColor + 4,0);
   }
   return;
 }
@@ -1516,13 +1568,15 @@ void __cdecl CG_DrawVersion(void)
 
 // 00497E50  CG_QuickPrint  (cgame/cg_draw_debug.cpp:2585)
 
-void __cdecl CG_QuickPrint(char *param_1)
+void __cdecl CG_QuickPrint(char *fmt)
 
 {
   int iVar1;
+  int result;
+  char *args;
   
-  iVar1 = _vsnprintf(quick_print_buffer + quick_print_buffer_pos,0x13ff - quick_print_buffer_pos,
-                     param_1,&stack0x00000008);
+  iVar1 = _vsnprintf(quick_print_buffer + quick_print_buffer_pos,0x13ff - quick_print_buffer_pos,fmt
+                     ,&stack0x00000008);
   quick_print_buffer_pos = quick_print_buffer_pos + iVar1;
   if (0xeff < quick_print_buffer_pos) {
     CG_QuickPrintFlush();

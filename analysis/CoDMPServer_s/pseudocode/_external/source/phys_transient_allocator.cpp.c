@@ -32,16 +32,16 @@ void __thiscall phys_transient_allocator::resize(phys_transient_allocator *this)
 void __thiscall phys_transient_allocator::reset(phys_transient_allocator *this)
 
 {
-  void *pvVar1;
+  void *slot;
+  block_header *pbVar1;
   block_header *pbVar2;
-  block_header *pbVar3;
   
-  pvVar1 = this->m_slot_pool;
-  pbVar3 = this->m_first_block;
-  while (pbVar3 != (block_header *)0x0) {
-    pbVar2 = pbVar3->m_next_block;
-    PSP_FREE(pvVar1,pbVar3);
-    pbVar3 = pbVar2;
+  slot = this->m_slot_pool;
+  pbVar2 = this->m_first_block;
+  while (pbVar2 != (block_header *)0x0) {
+    pbVar1 = pbVar2->m_next_block;
+    PSP_FREE(slot,pbVar2);
+    pbVar2 = pbVar1;
   }
   this->m_first_block = (block_header *)0x0;
   this->m_cur = (char *)0x0;
@@ -57,18 +57,18 @@ void __thiscall
 phys_transient_allocator::reset_to_state(phys_transient_allocator *this,allocator_state *param_1)
 
 {
-  void *pvVar1;
+  void *slot;
+  block_header *pbVar1;
   block_header *pbVar2;
-  block_header *pbVar3;
   
-  pbVar3 = this->m_first_block;
-  pvVar1 = this->m_slot_pool;
-  if (pbVar3 != param_1->m_first_block) {
+  pbVar2 = this->m_first_block;
+  slot = this->m_slot_pool;
+  if (pbVar2 != param_1->m_first_block) {
     do {
-      pbVar2 = pbVar3->m_next_block;
-      PSP_FREE(pvVar1,pbVar3);
-      pbVar3 = pbVar2;
-    } while (pbVar2 != param_1->m_first_block);
+      pbVar1 = pbVar2->m_next_block;
+      PSP_FREE(slot,pbVar2);
+      pbVar2 = pbVar1;
+    } while (pbVar1 != param_1->m_first_block);
   }
   this->m_first_block = param_1->m_first_block;
   this->m_cur = param_1->m_cur;

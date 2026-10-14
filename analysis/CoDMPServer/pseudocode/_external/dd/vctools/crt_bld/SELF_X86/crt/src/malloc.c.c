@@ -5,24 +5,24 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void * __cdecl V6_HeapAlloc(uint param_1)
+void * __cdecl V6_HeapAlloc(uint size)
 
 {
-  undefined4 local_20;
+  void *pvReturn;
   
-  local_20 = (void *)0x0;
-  if (param_1 <= __sbh_threshold) {
+  pvReturn = (void *)0x0;
+  if (size <= __sbh_threshold) {
     _lock(4);
-    local_20 = __sbh_alloc_block(param_1);
+    pvReturn = __sbh_alloc_block(size);
     FUN_00c114cd();
   }
-  return local_20;
+  return pvReturn;
 }
 
 
 // 00C114D6  malloc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/malloc.c:155)
 
-void * __cdecl malloc(uint param_1)
+void * __cdecl malloc(uint size)
 
 {
   void *pvVar1;
@@ -30,7 +30,7 @@ void * __cdecl malloc(uint param_1)
   int *piVar3;
   uint uVar4;
   
-  if (param_1 < 0xffffffe1) {
+  if (size < 0xffffffe1) {
     do {
       if (_crtheap == (void *)0x0) {
         _FF_MSGBANNER();
@@ -39,16 +39,16 @@ void * __cdecl malloc(uint param_1)
         __crtExitProcess(0xff);
       }
       if (__active_heap == 1) {
-        uVar4 = param_1;
-        if (param_1 == 0) {
+        uVar4 = size;
+        if (size == 0) {
           uVar4 = 1;
         }
 LAB_00c11545:
         pvVar1 = HeapAlloc(_crtheap,0,uVar4);
       }
-      else if ((__active_heap != 3) || (pvVar1 = V6_HeapAlloc(param_1), pvVar1 == (void *)0x0)) {
-        uVar4 = param_1;
-        if (param_1 == 0) {
+      else if ((__active_heap != 3) || (pvVar1 = V6_HeapAlloc(size), pvVar1 == (void *)0x0)) {
+        uVar4 = size;
+        if (size == 0) {
           uVar4 = 1;
         }
         uVar4 = uVar4 + 0xf & 0xfffffff0;
@@ -62,13 +62,13 @@ LAB_00c11545:
         *piVar3 = 0xc;
         break;
       }
-      iVar2 = _callnewh(param_1);
+      iVar2 = _callnewh(size);
     } while (iVar2 != 0);
     piVar3 = _errno();
     *piVar3 = 0xc;
   }
   else {
-    _callnewh(param_1);
+    _callnewh(size);
     piVar3 = _errno();
     *piVar3 = 0xc;
   }

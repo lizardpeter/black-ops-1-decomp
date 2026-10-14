@@ -11,56 +11,58 @@ _iobuf * __cdecl _getstream(void)
   uint uVar1;
   int iVar2;
   void *pvVar3;
-  int iVar4;
-  _iobuf *p_Var5;
-  _iobuf *p_Var6;
+  int i_00;
+  _iobuf *p_Var4;
+  _iobuf *s;
+  int i;
+  _iobuf *retval;
   
-  p_Var5 = (_iobuf *)0x0;
+  p_Var4 = (_iobuf *)0x0;
   _lock(1);
-  iVar4 = 0;
+  i_00 = 0;
   do {
-    p_Var6 = p_Var5;
-    if (_nstream <= iVar4) {
+    s = p_Var4;
+    if (_nstream <= i_00) {
 LAB_00c20671:
-      if (p_Var6 != (_iobuf *)0x0) {
-        p_Var6->_flag = p_Var6->_flag & 0x8000;
-        p_Var6->_cnt = 0;
-        p_Var6->_base = (char *)0x0;
-        p_Var6->_ptr = (char *)0x0;
-        p_Var6->_tmpfname = (char *)0x0;
-        p_Var6->_file = -1;
+      if (s != (_iobuf *)0x0) {
+        s->_flag = s->_flag & 0x8000;
+        s->_cnt = 0;
+        s->_base = (char *)0x0;
+        s->_ptr = (char *)0x0;
+        s->_tmpfname = (char *)0x0;
+        s->_file = -1;
       }
       FUN_00c206a2();
-      return p_Var6;
+      return s;
     }
-    if (__piob[iVar4] == (void *)0x0) {
+    if (__piob[i_00] == (void *)0x0) {
       pvVar3 = _malloc_crt(0x38);
-      __piob[iVar4] = pvVar3;
-      if (__piob[iVar4] != (void *)0x0) {
+      __piob[i_00] = pvVar3;
+      if (__piob[i_00] != (void *)0x0) {
         iVar2 = __crtInitCritSecAndSpinCount
-                          ((_RTL_CRITICAL_SECTION *)((int)__piob[iVar4] + 0x20),4000);
+                          ((_RTL_CRITICAL_SECTION *)((int)__piob[i_00] + 0x20),4000);
         if (iVar2 == 0) {
-          free(__piob[iVar4]);
-          __piob[iVar4] = (void *)0x0;
+          free(__piob[i_00]);
+          __piob[i_00] = (void *)0x0;
         }
         else {
-          EnterCriticalSection((LPCRITICAL_SECTION)((int)__piob[iVar4] + 0x20));
-          p_Var6 = __piob[iVar4];
-          p_Var6->_flag = 0;
+          EnterCriticalSection((LPCRITICAL_SECTION)((int)__piob[i_00] + 0x20));
+          s = __piob[i_00];
+          s->_flag = 0;
         }
       }
       goto LAB_00c20671;
     }
-    uVar1 = *(uint *)((int)__piob[iVar4] + 0xc);
+    uVar1 = *(uint *)((int)__piob[i_00] + 0xc);
     if (((uVar1 & 0x83) == 0) && ((uVar1 & 0x8000) == 0)) {
-      if ((iVar4 - 3U < 0x11) && (iVar2 = _mtinitlocknum(iVar4 + 0x10), iVar2 == 0))
+      if ((i_00 - 3U < 0x11) && (iVar2 = _mtinitlocknum(i_00 + 0x10), iVar2 == 0))
       goto LAB_00c20671;
-      _lock_file2(iVar4,__piob[iVar4]);
-      p_Var6 = __piob[iVar4];
-      if ((p_Var6->_flag & 0x83) == 0) goto LAB_00c20671;
-      _unlock_file2(iVar4,p_Var6);
+      _lock_file2(i_00,__piob[i_00]);
+      s = __piob[i_00];
+      if ((s->_flag & 0x83) == 0) goto LAB_00c20671;
+      _unlock_file2(i_00,s);
     }
-    iVar4 = iVar4 + 1;
+    i_00 = i_00 + 1;
   } while( true );
 }
 

@@ -213,16 +213,16 @@ void __cdecl CG_DisplayRankUp(int param_1)
   char *pcVar8;
   char *unaff_ESI;
   char *unaff_EDI;
-  char *pcVar9;
+  char *nptr;
   
   pcVar3 = UI_SafeTranslateString(unaff_EDI);
   pcVar4 = UI_SafeTranslateString(unaff_EDI);
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 3) {
-    pcVar9 = "";
+    nptr = "";
   }
   else {
-    pcVar9 = *(char **)(piVar1[*piVar1 + 0x29] + 8);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 8);
   }
   if (piVar1[*piVar1 + 0x21] < 4) {
     pcVar7 = "";
@@ -254,16 +254,16 @@ void __cdecl CG_DisplayRankUp(int param_1)
   }
   *(undefined4 *)(cgArray + 0x717d0) = *(undefined4 *)(cgArray + 0x40688);
   *(undefined4 *)(pcVar2 + 0x717d4) = 0x40e00000;
-  iVar6 = atoi(pcVar9);
+  iVar6 = atoi(nptr);
   pcVar7 = CL_GetRankIconName(iVar6 + -1,iVar5);
   if (pcVar7 != (char *)0x0) {
     UI_SetFakeLocalDvarStringByName(pcVar7,unaff_EDI,(int)unaff_ESI);
     pcVar8 = CL_GetRankData(iVar6 + -1,0x11);
     if (pcVar8 != (char *)0x0) {
       pcVar4 = UI_ReplaceConversionString(pcVar4,pcVar8);
-      iVar5 = atoi(pcVar9);
-      if ((iVar5 < 999) && (iVar5 = atoi(pcVar9), -1 < iVar5)) {
-        UI_ReplaceConversionString(pcVar3,pcVar9);
+      iVar5 = atoi(nptr);
+      if ((iVar5 < 999) && (iVar5 = atoi(nptr), -1 < iVar5)) {
+        UI_ReplaceConversionString(pcVar3,nptr);
       }
       CG_DisplayCenterPopup(0xa28674,pcVar4,(char *)0x0,pcVar7,(char *)0x0,unaff_EDI,unaff_ESI);
       CG_PlayPopUpSound((int)unaff_EDI,unaff_ESI);
@@ -287,14 +287,14 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
   char *pcVar5;
   int iVar6;
   char *pcVar7;
+  char *nptr;
   char *pcVar8;
-  char *pcVar9;
-  statsMilestoneTypes_t sVar10;
+  statsMilestoneTypes_t sVar9;
   char *unaff_EBX;
   char *unaff_EBP;
   char *unaff_ESI;
   char *unaff_EDI;
-  double dVar11;
+  double dVar10;
   char *local_438;
   char *local_434;
   char local_420 [32];
@@ -324,7 +324,7 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
   else {
     pcVar5 = *(char **)(piVar1[*piVar1 + 0x29] + 0x10);
   }
-  dVar11 = atof(pcVar5);
+  dVar10 = atof(pcVar5);
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 6) {
     pcVar5 = "";
@@ -370,27 +370,27 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
   if (((((pcVar7 != (char *)0x0) &&
         (pcVar7 = CL_GetMilestoneData(&DAT_00000004,(milestoneTableColumns_t)unaff_EDI),
         pcVar7 != (char *)0x0)) &&
-       (pcVar8 = CL_GetMilestoneData((char *)0x2,(milestoneTableColumns_t)unaff_EDI),
-       pcVar8 != (char *)0x0)) &&
-      ((pcVar9 = CL_GetMilestoneData(&DAT_00000003,(milestoneTableColumns_t)unaff_EDI),
-       pcVar9 != (char *)0x0 &&
-       (pcVar9 = CL_GetMilestoneData(&DAT_0000000a,(milestoneTableColumns_t)unaff_EDI),
-       pcVar9 != (char *)0x0)))) &&
+       (nptr = CL_GetMilestoneData((char *)0x2,(milestoneTableColumns_t)unaff_EDI),
+       nptr != (char *)0x0)) &&
+      ((pcVar8 = CL_GetMilestoneData(&DAT_00000003,(milestoneTableColumns_t)unaff_EDI),
+       pcVar8 != (char *)0x0 &&
+       (pcVar8 = CL_GetMilestoneData(&DAT_0000000a,(milestoneTableColumns_t)unaff_EDI),
+       pcVar8 != (char *)0x0)))) &&
      ((local_438 != (char *)0x0 &&
-      ((local_434 != (char *)0x0 && (sVar10 = getMilestoneType(unaff_EDI), sVar10 != 0xffffffff)))))
-     ) {
+      ((local_434 != (char *)0x0 && (sVar9 = getMilestoneType(unaff_EDI), sVar9 != 0xffffffff))))))
+  {
     CL_GetMilestoneLocalizedXP
-              ((char *)(float)dVar11,(int)unaff_EDI,(float)unaff_ESI,(int)unaff_EBP,unaff_EBX);
+              ((char *)(float)dVar10,(int)unaff_EDI,(float)unaff_ESI,(int)unaff_EBP,unaff_EBX);
     bVar2 = CL_GetInGameMilestoneLocalizedName
-                      ((int)local_100,pcVar7,sVar10,pcVar5,sVar4,(int)unaff_EDI,(int)unaff_ESI,
+                      ((int)local_100,pcVar7,sVar9,pcVar5,sVar4,(int)unaff_EDI,(int)unaff_ESI,
                        unaff_EBP);
-    sVar4 = atoi(pcVar8);
+    sVar4 = atoi(nptr);
     bVar3 = CL_GetInGameMilestoneLocalizedDesc
-                      ((int)local_300,pcVar7,sVar10,pcVar5,sVar4,(int)unaff_EDI,(int)unaff_ESI,
+                      ((int)local_300,pcVar7,sVar9,pcVar5,sVar4,(int)unaff_EDI,(int)unaff_ESI,
                        unaff_EBP,(int)unaff_EBX);
     if ((bVar2) && (bVar3)) {
-      CL_GetMilestoneMaterial(local_200,(int)pcVar7,pcVar9,unaff_EDI);
-      CL_GetMilestoneBackingMaterial(local_400,(int)pcVar7,pcVar9,unaff_EDI);
+      CL_GetMilestoneMaterial(local_200,(int)pcVar7,pcVar8,unaff_EDI);
+      CL_GetMilestoneBackingMaterial(local_400,(int)pcVar7,pcVar8,unaff_EDI);
       CG_DisplayCenterPopup(0xa28680,local_300,local_420,local_200,local_400,unaff_EDI,unaff_ESI);
       CG_PlayPopUpSound((int)unaff_EDI,unaff_ESI);
     }
@@ -479,10 +479,10 @@ void __cdecl CG_SetupMilestoneEndGame(int param_1)
   statsMilestoneTypes_t sVar5;
   char *pcVar6;
   char *pcVar7;
+  char *nptr;
   char *pcVar8;
-  char *pcVar9;
-  statsMilestoneTypes_t sVar10;
-  UILocalVar *pUVar11;
+  statsMilestoneTypes_t sVar9;
+  UILocalVar *pUVar10;
   int in_ECX;
   int unaff_EBX;
   char *unaff_EBP;
@@ -543,27 +543,27 @@ void __cdecl CG_SetupMilestoneEndGame(int param_1)
   if (((((piVar3[*piVar3 + 0x21] == 7) &&
         (pcVar7 = CL_GetMilestoneData(&DAT_00000004,(milestoneTableColumns_t)unaff_EDI),
         pcVar7 != (char *)0x0)) &&
-       (pcVar8 = CL_GetMilestoneData((char *)0x2,(milestoneTableColumns_t)unaff_EDI),
-       pcVar8 != (char *)0x0)) &&
-      ((pcVar9 = CL_GetMilestoneData(&DAT_00000003,(milestoneTableColumns_t)unaff_EDI),
-       pcVar9 != (char *)0x0 && (local_418 != (char *)0x0)))) && (uVar4 < 4)) {
-    pcVar9 = "milestoneEndGameNameString%i";
+       (nptr = CL_GetMilestoneData((char *)0x2,(milestoneTableColumns_t)unaff_EDI),
+       nptr != (char *)0x0)) &&
+      ((pcVar8 = CL_GetMilestoneData(&DAT_00000003,(milestoneTableColumns_t)unaff_EDI),
+       pcVar8 != (char *)0x0 && (local_418 != (char *)0x0)))) && (uVar4 < 4)) {
+    pcVar8 = "milestoneEndGameNameString%i";
     Com_sprintf("milestoneEndGameNameString%i",uVar4,(char *)unaff_EDI);
-    Com_sprintf("milestoneEndGameDescString%i",uVar4,pcVar9);
-    sVar10 = getMilestoneType((char *)unaff_EDI);
-    if (sVar10 != 0xffffffff) {
+    Com_sprintf("milestoneEndGameDescString%i",uVar4,pcVar8);
+    sVar9 = getMilestoneType((char *)unaff_EDI);
+    if (sVar9 != 0xffffffff) {
       bVar1 = CL_GetInGameMilestoneLocalizedName
-                        ((int)&local_204,pcVar7,sVar10,pcVar6,sVar5,(int)unaff_EDI,(int)unaff_ESI,
+                        ((int)&local_204,pcVar7,sVar9,pcVar6,sVar5,(int)unaff_EDI,(int)unaff_ESI,
                          unaff_EBP);
-      sVar5 = atoi(pcVar8);
+      sVar5 = atoi(nptr);
       bVar2 = CL_GetInGameMilestoneLocalizedDesc
-                        ((int)&local_104,pcVar7,sVar10,pcVar6,sVar5,(int)unaff_EDI,(int)unaff_ESI,
+                        ((int)&local_104,pcVar7,sVar9,pcVar6,sVar5,(int)unaff_EDI,(int)unaff_ESI,
                          unaff_EBP,unaff_EBX);
       if (((bVar1) && (bVar2)) &&
-         (pUVar11 = UILocalVar_FindOrCreate(unaff_EDI,unaff_ESI), pUVar11 != (UILocalVar *)0x0)) {
+         (pUVar10 = UILocalVar_FindOrCreate(unaff_EDI,unaff_ESI), pUVar10 != (UILocalVar *)0x0)) {
         UILocalVar_SetString(&local_204,(char *)unaff_EDI);
-        pUVar11 = UILocalVar_FindOrCreate(unaff_EDI,unaff_ESI);
-        if (pUVar11 != (UILocalVar *)0x0) {
+        pUVar10 = UILocalVar_FindOrCreate(unaff_EDI,unaff_ESI);
+        if (pUVar10 != (UILocalVar *)0x0) {
           UILocalVar_SetString(&local_104,(char *)unaff_EDI);
         }
       }

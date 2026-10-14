@@ -137,13 +137,13 @@ uchar * _HTRule_translate(undefined4 *param_1,int param_2,int param_3)
 undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
 
 {
-  char *pcVar1;
-  undefined4 uVar2;
+  char *string;
+  undefined4 uVar1;
   undefined1 *extraout_EAX;
+  int iVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  undefined4 uVar6;
+  undefined4 uVar5;
   int local_b4;
   int local_b0;
   undefined8 local_a8;
@@ -167,7 +167,7 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
   
   local_8 = (char *)0x0;
   if (param_2 == (uchar *)0x0) {
-    uVar2 = 0;
+    uVar1 = 0;
   }
   else {
     strchr(param_2,'#');
@@ -175,28 +175,28 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
       *extraout_EAX = 0;
     }
     _HTSACopy(&local_8);
-    pcVar1 = local_8;
-    iVar3 = _HTNextField();
-    if (iVar3 == 0) {
+    string = local_8;
+    iVar2 = _HTNextField();
+    if (iVar2 == 0) {
       _HTMemory_free();
-      uVar2 = 1;
+      uVar1 = 1;
     }
     else {
-      iVar4 = _HTNextField();
-      if (iVar4 == 0) {
+      iVar3 = _HTNextField();
+      if (iVar3 == 0) {
         _HTMemory_free();
-        uVar2 = 0;
+        uVar1 = 0;
       }
       else {
-        uVar2 = _HTNextField();
-        iVar5 = strcasecomp(iVar3);
-        if (iVar5 == 0) {
+        uVar1 = _HTNextField();
+        iVar4 = strcasecomp(iVar2);
+        if (iVar4 == 0) {
           local_74 = (char *)_HTNextField();
-          if (pcVar1 == (char *)0x0) {
+          if (string == (char *)0x0) {
             local_68 = 0;
           }
           else {
-            local_68 = sscanf(pcVar1,"%lf");
+            local_68 = sscanf(string,"%lf");
           }
           if (local_68 < 1) {
             local_70 = 0x3ff0000000000000;
@@ -207,16 +207,16 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
           if (local_74 == (char *)0x0) {
             local_74 = "binary";
           }
-          _HTBind_add(iVar4,uVar2,local_74,0,0,local_70);
+          _HTBind_add(iVar3,uVar1,local_74,0,0,local_70);
         }
         else {
-          iVar5 = strcasecomp(iVar3);
-          if (iVar5 == 0) {
-            if (pcVar1 == (char *)0x0) {
+          iVar4 = strcasecomp(iVar2);
+          if (iVar4 == 0) {
+            if (string == (char *)0x0) {
               local_78 = 0;
             }
             else {
-              local_78 = sscanf(pcVar1,"%lf");
+              local_78 = sscanf(string,"%lf");
             }
             if (local_78 < 1) {
               local_80 = 0x3ff0000000000000;
@@ -224,16 +224,16 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
             else {
               local_80 = local_3c;
             }
-            _HTBind_addEncoding(iVar4,uVar2,local_80);
+            _HTBind_addEncoding(iVar3,uVar1,local_80);
           }
           else {
-            iVar5 = strcasecomp(iVar3);
-            if (iVar5 == 0) {
-              if (pcVar1 == (char *)0x0) {
+            iVar4 = strcasecomp(iVar2);
+            if (iVar4 == 0) {
+              if (string == (char *)0x0) {
                 local_84 = 0;
               }
               else {
-                local_84 = sscanf(pcVar1,"%lf");
+                local_84 = sscanf(string,"%lf");
               }
               if (local_84 < 1) {
                 local_8c = 0x3ff0000000000000;
@@ -241,17 +241,17 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
               else {
                 local_8c = local_44;
               }
-              _HTBind_addLanguage(iVar4,uVar2,local_8c);
+              _HTBind_addLanguage(iVar3,uVar1,local_8c);
             }
             else {
-              iVar5 = strcasecomp(iVar3);
-              if (iVar5 == 0) {
-                uVar6 = _HTFormat_conversion();
-                if (pcVar1 == (char *)0x0) {
+              iVar4 = strcasecomp(iVar2);
+              if (iVar4 == 0) {
+                uVar5 = _HTFormat_conversion();
+                if (string == (char *)0x0) {
                   local_90 = 0;
                 }
                 else {
-                  local_90 = sscanf(pcVar1,"%lf%lf%lf");
+                  local_90 = sscanf(string,"%lf%lf%lf");
                 }
                 if (local_90 < 3) {
                   local_98 = 0;
@@ -271,44 +271,44 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
                 else {
                   local_a8 = local_5c;
                 }
-                _HTPresentation_add(uVar6,iVar4,uVar2,0,local_a8,local_a0,local_98);
+                _HTPresentation_add(uVar5,iVar3,uVar1,0,local_a8,local_a0,local_98);
               }
               else {
-                iVar5 = strcasecomp(iVar3);
-                if (iVar5 == 0) {
-                  _HTProxy_add(iVar4,uVar2);
+                iVar4 = strcasecomp(iVar2);
+                if (iVar4 == 0) {
+                  _HTProxy_add(iVar3,uVar1);
                 }
                 else {
-                  iVar5 = strcasecomp(iVar3);
-                  if (iVar5 == 0) {
-                    if (pcVar1 != (char *)0x0) {
-                      sscanf(pcVar1,"%d");
+                  iVar4 = strcasecomp(iVar2);
+                  if (iVar4 == 0) {
+                    if (string != (char *)0x0) {
+                      sscanf(string,"%d");
                     }
                     _HTNoProxy_add();
                   }
                   else {
-                    iVar5 = strcasecomp(iVar3,"gateway");
-                    if (iVar5 == 0) {
-                      _HTGateway_add(iVar4,uVar2);
+                    iVar4 = strcasecomp(iVar2,"gateway");
+                    if (iVar4 == 0) {
+                      _HTGateway_add(iVar3,uVar1);
                     }
                     else {
-                      iVar5 = strcasecomp(iVar3,"map");
-                      if (iVar5 == 0) {
+                      iVar4 = strcasecomp(iVar2,"map");
+                      if (iVar4 == 0) {
                         local_b0 = 1;
                       }
                       else {
-                        iVar5 = strcasecomp(iVar3,"pass");
-                        if (iVar5 == 0) {
+                        iVar4 = strcasecomp(iVar2,"pass");
+                        if (iVar4 == 0) {
                           local_b4 = 2;
                         }
                         else {
-                          iVar3 = strcasecomp(iVar3,"fail");
-                          local_b4 = (-(uint)(iVar3 != 0) & 0xfffffffd) + 3;
+                          iVar2 = strcasecomp(iVar2,"fail");
+                          local_b4 = (-(uint)(iVar2 != 0) & 0xfffffffd) + 3;
                         }
                         local_b0 = local_b4;
                       }
                       if (local_b0 != 0) {
-                        _HTRule_add(param_1,local_b0,iVar4,uVar2);
+                        _HTRule_add(param_1,local_b0,iVar3,uVar1);
                       }
                     }
                   }
@@ -318,11 +318,11 @@ undefined4 _HTRule_parseLine(undefined4 param_1,uchar *param_2)
           }
         }
         _HTMemory_free();
-        uVar2 = 1;
+        uVar1 = 1;
       }
     }
   }
-  return uVar2;
+  return uVar1;
 }
 
 

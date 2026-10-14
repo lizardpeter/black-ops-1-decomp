@@ -2,7 +2,7 @@
 
 // 00990F50  ValidateScopeTableHandlers  (line unknown)
 
-int __cdecl ValidateScopeTableHandlers(uchar *param_1,_SCOPETABLE_ENTRY *param_2,ulong param_3)
+int __cdecl ValidateScopeTableHandlers(uchar *pScopeTable,_SCOPETABLE_ENTRY *param_2,ulong param_3)
 
 {
   int *piVar1;
@@ -18,7 +18,7 @@ int __cdecl ValidateScopeTableHandlers(uchar *param_1,_SCOPETABLE_ENTRY *param_2
     if (in_ECX == -1) {
       return 1;
     }
-    piVar1 = (int *)(param_1 + in_ECX * 0xc);
+    piVar1 = (int *)(pScopeTable + in_ECX * 0xc);
     uVar4 = piVar1[2] - (int)unaff_EDI & 0xfffff000;
     if (((uVar4 != uVar3) &&
         ((((uVar3 = uVar4, p_Var2 == (_IMAGE_SECTION_HEADER *)0x0 ||
@@ -40,30 +40,30 @@ int __cdecl ValidateScopeTableHandlers(uchar *param_1,_SCOPETABLE_ENTRY *param_2
 
 // 00991010  _ValidateEH3RN  (line unknown)
 
-int __cdecl _ValidateEH3RN(_EH3_EXCEPTION_REGISTRATION *param_1)
+int __cdecl _ValidateEH3RN(_EH3_EXCEPTION_REGISTRATION *pRN)
 
 {
   uchar *puVar1;
   uchar *puVar2;
-  PVOID pvVar3;
-  undefined1 *puVar4;
-  _SCOPETABLE_ENTRY *p_Var5;
-  uint uVar6;
-  int iVar7;
-  _IMAGE_SECTION_HEADER *p_Var8;
-  SIZE_T SVar9;
-  _VALID_PAGE_CACHE *p_Var10;
-  _SCOPETABLE_ENTRY *p_Var11;
-  int *piVar12;
-  uchar *puVar13;
-  int iVar14;
+  PVOID pImageBase;
+  undefined1 *puVar3;
+  _SCOPETABLE_ENTRY *p_Var4;
+  uint uVar5;
+  int iVar6;
+  _IMAGE_SECTION_HEADER *p_Var7;
+  SIZE_T SVar8;
+  _VALID_PAGE_CACHE *p_Var9;
+  _SCOPETABLE_ENTRY *p_Var10;
+  int *piVar11;
+  uchar *puVar12;
+  int iVar13;
   ulong unaff_EDI;
-  uchar *puVar15;
-  bool bVar16;
-  _MEMORY_BASIC_INFORMATION local_44;
-  uint local_28;
-  uchar *local_24;
-  _SCOPETABLE_ENTRY *local_20;
+  uchar *puVar14;
+  bool bVar15;
+  _MEMORY_BASIC_INFORMATION mbi;
+  ulong dwTryLevel;
+  uchar *pScopePage;
+  _SCOPETABLE_ENTRY *pScopeTable;
   undefined1 *local_1c;
   void *local_14;
   code *pcStack_10;
@@ -73,52 +73,53 @@ int __cdecl _ValidateEH3RN(_EH3_EXCEPTION_REGISTRATION *param_1)
   pcStack_10 = _except_handler4;
   local_14 = ExceptionList;
   local_c = __security_cookie ^ 0xab9ab0;
-  p_Var5 = (_SCOPETABLE_ENTRY *)(__security_cookie ^ (uint)&stack0xfffffffc);
+  p_Var4 = (_SCOPETABLE_ENTRY *)(__security_cookie ^ (uint)&stack0xfffffffc);
   local_1c = &stack0xffffffac;
-  local_20 = param_1->ScopeTable;
-  if ((((uint)local_20 & 3) != 0) || ((StackLimit <= local_20 && (local_20 < StackBase)))) {
+  pScopeTable = pRN->ScopeTable;
+  if ((((uint)pScopeTable & 3) != 0) || ((StackLimit <= pScopeTable && (pScopeTable < StackBase))))
+  {
     return 0;
   }
-  local_28 = param_1->TryLevel;
-  if (local_28 == 0xffffffff) {
+  dwTryLevel = pRN->TryLevel;
+  if (dwTryLevel == 0xffffffff) {
     return 1;
   }
-  bVar16 = false;
-  uVar6 = 0;
-  p_Var11 = local_20;
+  bVar15 = false;
+  uVar5 = 0;
+  p_Var10 = pScopeTable;
   do {
-    if ((p_Var11->EnclosingLevel != 0xffffffff) && (uVar6 <= p_Var11->EnclosingLevel)) {
+    if ((p_Var10->EnclosingLevel != 0xffffffff) && (uVar5 <= p_Var10->EnclosingLevel)) {
       return 0;
     }
-    if (p_Var11->FilterFunc != (uchar *)0x0) {
-      bVar16 = true;
+    if (p_Var10->FilterFunc != (uchar *)0x0) {
+      bVar15 = true;
     }
-    uVar6 = uVar6 + 1;
-    p_Var11 = p_Var11 + 1;
-  } while (uVar6 <= local_28);
-  if (bVar16) {
-    if ((_EH3_EXCEPTION_REGISTRATION *)param_1[-1].ScopeTable < StackLimit) {
+    uVar5 = uVar5 + 1;
+    p_Var10 = p_Var10 + 1;
+  } while (uVar5 <= dwTryLevel);
+  if (bVar15) {
+    if ((_EH3_EXCEPTION_REGISTRATION *)pRN[-1].ScopeTable < StackLimit) {
       return 0;
     }
-    if (param_1 <= (_EH3_EXCEPTION_REGISTRATION *)param_1[-1].ScopeTable) {
+    if (pRN <= (_EH3_EXCEPTION_REGISTRATION *)pRN[-1].ScopeTable) {
       return 0;
     }
   }
-  local_24 = (uchar *)((uint)local_20 & 0xfffff000);
-  for (iVar14 = 0; ExceptionList = &local_14, puVar4 = &stack0xffffffac, iVar14 < nValidPages;
-      iVar14 = iVar14 + 1) {
-    puVar13 = rgValidPages[iVar14].pPage;
-    puVar15 = rgValidPages[iVar14].pImageBase;
-    if (puVar13 == local_24) {
+  pScopePage = (uchar *)((uint)pScopeTable & 0xfffff000);
+  for (iVar13 = 0; ExceptionList = &local_14, puVar3 = &stack0xffffffac, iVar13 < nValidPages;
+      iVar13 = iVar13 + 1) {
+    puVar12 = rgValidPages[iVar13].pPage;
+    puVar14 = rgValidPages[iVar13].pImageBase;
+    if (puVar12 == pScopePage) {
       local_8 = 0;
-      iVar7 = _ValidateImageBase(puVar15);
-      puVar4 = local_1c;
-      if (((iVar7 != 0) &&
-          (iVar7 = ValidateScopeTableHandlers((uchar *)local_20,p_Var5,unaff_EDI), puVar4 = local_1c
-          , iVar7 != 0)) &&
-         (p_Var8 = _FindPESection(puVar15,(int)param_1->ExceptionHandler - (int)puVar15),
-         puVar4 = local_1c, p_Var8 != (_IMAGE_SECTION_HEADER *)0x0)) {
-        if (iVar14 < 1) {
+      iVar6 = _ValidateImageBase(puVar14);
+      puVar3 = local_1c;
+      if (((iVar6 != 0) &&
+          (iVar6 = ValidateScopeTableHandlers((uchar *)pScopeTable,p_Var4,unaff_EDI),
+          puVar3 = local_1c, iVar6 != 0)) &&
+         (p_Var7 = _FindPESection(puVar14,(int)pRN->ExceptionHandler - (int)puVar14),
+         puVar3 = local_1c, p_Var7 != (_IMAGE_SECTION_HEADER *)0x0)) {
+        if (iVar13 < 1) {
           ExceptionList = local_14;
           return 1;
         }
@@ -129,45 +130,44 @@ int __cdecl _ValidateEH3RN(_EH3_EXCEPTION_REGISTRATION *param_1)
           ExceptionList = local_14;
           return 1;
         }
-        if (rgValidPages[iVar14].pPage == local_24) goto LAB_009911a8;
-        iVar14 = nValidPages + -1;
-        if (-1 < iVar14) goto LAB_00991177;
+        if (rgValidPages[iVar13].pPage == pScopePage) goto LAB_009911a8;
+        iVar13 = nValidPages + -1;
+        if (-1 < iVar13) goto LAB_00991177;
         goto LAB_00991199;
       }
       break;
     }
   }
-  local_1c = puVar4;
+  local_1c = puVar3;
   local_8 = 0xfffffffe;
-  SVar9 = VirtualQuery(local_20,&local_44,0x1c);
-  pvVar3 = local_44.AllocationBase;
-  if (SVar9 == 0) {
+  SVar8 = VirtualQuery(pScopeTable,&mbi,0x1c);
+  pImageBase = mbi.AllocationBase;
+  if (SVar8 == 0) {
     ExceptionList = local_14;
     return 1;
   }
-  if ((local_44.Type != 0x1000000) ||
-     (iVar14 = _ValidateImageBase(local_44.AllocationBase), iVar14 == 0)) {
+  if ((mbi.Type != 0x1000000) || (iVar13 = _ValidateImageBase(mbi.AllocationBase), iVar13 == 0)) {
     ExceptionList = local_14;
     return -1;
   }
-  if (((byte)local_44.Protect & 0xcc) != 0) {
-    p_Var8 = _FindPESection(pvVar3,(int)local_20 - (int)pvVar3);
-    if (p_Var8 == (_IMAGE_SECTION_HEADER *)0x0) {
+  if (((byte)mbi.Protect & 0xcc) != 0) {
+    p_Var7 = _FindPESection(pImageBase,(int)pScopeTable - (int)pImageBase);
+    if (p_Var7 == (_IMAGE_SECTION_HEADER *)0x0) {
       ExceptionList = local_14;
       return 0;
     }
-    if ((p_Var8->Characteristics & 0x80000000) != 0) {
+    if ((p_Var7->Characteristics & 0x80000000) != 0) {
       ExceptionList = local_14;
       return 0;
     }
   }
-  iVar14 = ValidateScopeTableHandlers((uchar *)local_20,p_Var5,unaff_EDI);
-  if (iVar14 == 0) {
+  iVar13 = ValidateScopeTableHandlers((uchar *)pScopeTable,p_Var4,unaff_EDI);
+  if (iVar13 == 0) {
     ExceptionList = local_14;
     return 0;
   }
-  p_Var8 = _FindPESection(pvVar3,(int)param_1->ExceptionHandler - (int)pvVar3);
-  if (p_Var8 == (_IMAGE_SECTION_HEADER *)0x0) {
+  p_Var7 = _FindPESection(pImageBase,(int)pRN->ExceptionHandler - (int)pImageBase);
+  if (p_Var7 == (_IMAGE_SECTION_HEADER *)0x0) {
     ExceptionList = local_14;
     return 0;
   }
@@ -178,40 +178,40 @@ int __cdecl _ValidateEH3RN(_EH3_EXCEPTION_REGISTRATION *param_1)
     ExceptionList = local_14;
     return 1;
   }
-  iVar14 = nValidPages;
+  iVar13 = nValidPages;
   if (0 < nValidPages) {
-    piVar12 = &nValidPages + nValidPages * 2;
+    piVar11 = &nValidPages + nValidPages * 2;
     do {
-      if ((uchar *)*piVar12 == local_24) break;
-      iVar14 = iVar14 + -1;
-      piVar12 = piVar12 + -2;
-    } while (0 < iVar14);
+      if ((uchar *)*piVar11 == pScopePage) break;
+      iVar13 = iVar13 + -1;
+      piVar11 = piVar11 + -2;
+    } while (0 < iVar13);
   }
-  if (iVar14 == 0) {
-    iVar14 = 0xf;
+  if (iVar13 == 0) {
+    iVar13 = 0xf;
     if (nValidPages < 0x10) {
-      iVar14 = nValidPages;
+      iVar13 = nValidPages;
     }
-    if (-1 < iVar14) {
-      p_Var10 = rgValidPages;
-      iVar14 = iVar14 + 1;
+    if (-1 < iVar13) {
+      p_Var9 = rgValidPages;
+      iVar13 = iVar13 + 1;
       do {
-        puVar13 = p_Var10->pPage;
-        puVar15 = p_Var10->pImageBase;
-        p_Var10->pPage = local_24;
-        p_Var10->pImageBase = local_44.AllocationBase;
-        p_Var10 = p_Var10 + 1;
-        iVar14 = iVar14 + -1;
-        local_24 = puVar13;
-        local_44.AllocationBase = puVar15;
-      } while (iVar14 != 0);
+        puVar12 = p_Var9->pPage;
+        puVar14 = p_Var9->pImageBase;
+        p_Var9->pPage = pScopePage;
+        p_Var9->pImageBase = mbi.AllocationBase;
+        p_Var9 = p_Var9 + 1;
+        iVar13 = iVar13 + -1;
+        pScopePage = puVar12;
+        mbi.AllocationBase = puVar14;
+      } while (iVar13 != 0);
     }
     if (nValidPages < 0x10) {
       nValidPages = nValidPages + 1;
     }
   }
   else {
-    (&lModifying)[iVar14 * 2] = (long)local_44.AllocationBase;
+    (&lModifying)[iVar13 * 2] = (long)mbi.AllocationBase;
   }
 LAB_00991339:
   LOCK();
@@ -219,34 +219,34 @@ LAB_00991339:
   lModifying = 0;
   ExceptionList = local_14;
   return 1;
-  while (iVar14 = iVar14 + -1, -1 < iVar14) {
+  while (iVar13 = iVar13 + -1, -1 < iVar13) {
 LAB_00991177:
-    if (rgValidPages[iVar14].pPage == local_24) {
-      puVar13 = rgValidPages[iVar14].pPage;
-      puVar15 = rgValidPages[iVar14].pImageBase;
+    if (rgValidPages[iVar13].pPage == pScopePage) {
+      puVar12 = rgValidPages[iVar13].pPage;
+      puVar14 = rgValidPages[iVar13].pImageBase;
       break;
     }
   }
-  bVar16 = false;
-  if (iVar14 < 0) {
+  bVar15 = false;
+  if (iVar13 < 0) {
 LAB_00991199:
     if (nValidPages < 0x10) {
       nValidPages = nValidPages + 1;
     }
-    iVar14 = nValidPages + -1;
+    iVar13 = nValidPages + -1;
 LAB_009911a8:
-    bVar16 = iVar14 < 0;
+    bVar15 = iVar13 < 0;
   }
-  if ((iVar14 != 0 && !bVar16) && (iVar7 = 0, -1 < iVar14)) {
+  if ((iVar13 != 0 && !bVar15) && (iVar6 = 0, -1 < iVar13)) {
     do {
-      puVar1 = rgValidPages[iVar7].pPage;
-      puVar2 = rgValidPages[iVar7].pImageBase;
-      rgValidPages[iVar7].pPage = puVar13;
-      rgValidPages[iVar7].pImageBase = puVar15;
-      iVar7 = iVar7 + 1;
-      puVar13 = puVar1;
-      puVar15 = puVar2;
-    } while (iVar7 <= iVar14);
+      puVar1 = rgValidPages[iVar6].pPage;
+      puVar2 = rgValidPages[iVar6].pImageBase;
+      rgValidPages[iVar6].pPage = puVar12;
+      rgValidPages[iVar6].pImageBase = puVar14;
+      iVar6 = iVar6 + 1;
+      puVar12 = puVar1;
+      puVar14 = puVar2;
+    } while (iVar6 <= iVar13);
   }
   goto LAB_00991339;
 }

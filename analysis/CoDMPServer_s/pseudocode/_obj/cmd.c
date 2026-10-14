@@ -150,7 +150,7 @@ void __cdecl Cbuf_InsertText(int param_1,char *param_2)
   uchar uVar2;
   int iVar3;
   uchar *puVar4;
-  ulong uVar5;
+  ulong count;
   uchar *unaff_EDI;
   
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6cb0);
@@ -159,8 +159,8 @@ void __cdecl Cbuf_InsertText(int param_1,char *param_2)
     uVar2 = *puVar4;
     puVar4 = puVar4 + 1;
   } while (uVar2 != '\0');
-  uVar5 = (int)puVar4 - (int)(unaff_EDI + 1);
-  iVar1 = uVar5 + 1;
+  count = (int)puVar4 - (int)(unaff_EDI + 1);
+  iVar1 = count + 1;
   iVar3 = _DAT_01c898f4;
   if (_DAT_01c898f0 < _DAT_01c898f4 + iVar1) {
     Com_PrintError(1,"Cbuf_InsertText overflowed\n");
@@ -170,8 +170,8 @@ void __cdecl Cbuf_InsertText(int param_1,char *param_2)
   while (iVar3 = iVar3 + -1, -1 < iVar3) {
     (_DAT_01c898ec + iVar3)[iVar1] = _DAT_01c898ec[iVar3];
   }
-  memcpy(_DAT_01c898ec,unaff_EDI,uVar5);
-  _DAT_01c898ec[uVar5] = '\n';
+  memcpy(_DAT_01c898ec,unaff_EDI,count);
+  _DAT_01c898ec[count] = '\n';
   _DAT_01c898f4 = _DAT_01c898f4 + iVar1;
   LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_020c6cb0);
   return;
@@ -267,48 +267,48 @@ void __cdecl Cbuf_SV_Execute(void)
 {
   uchar uVar1;
   ulong uVar2;
-  uchar *puVar3;
-  bool bVar4;
-  ulong uVar5;
+  uchar *src;
+  bool bVar3;
+  ulong count;
   char *unaff_EDI;
   uchar auStack_1004 [4096];
   undefined4 uStack_4;
   
   uStack_4 = 0x5e619a;
   uVar2 = _DAT_01c7da54;
-  puVar3 = _DAT_01c7da4c;
+  src = _DAT_01c7da4c;
   while (uVar2 != 0) {
-    bVar4 = false;
-    uVar5 = 0;
+    bVar3 = false;
+    count = 0;
     if (0 < (int)uVar2) {
       do {
-        uVar1 = puVar3[uVar5];
+        uVar1 = src[count];
         if (uVar1 == '\"') {
-          bVar4 = (bool)(bVar4 ^ 1);
+          bVar3 = (bool)(bVar3 ^ 1);
         }
-      } while ((((bVar4) || (uVar1 != ';')) && (uVar1 != '\n')) &&
-              ((uVar1 != '\r' && (uVar5 = uVar5 + 1, (int)uVar5 < (int)uVar2))));
-      if (0xffe < (int)uVar5) {
-        uVar5 = 0xfff;
+      } while ((((bVar3) || (uVar1 != ';')) && (uVar1 != '\n')) &&
+              ((uVar1 != '\r' && (count = count + 1, (int)count < (int)uVar2))));
+      if (0xffe < (int)count) {
+        count = 0xfff;
       }
     }
-    _DAT_01c7da4c = puVar3;
+    _DAT_01c7da4c = src;
     _DAT_01c7da54 = uVar2;
-    memcpy(auStack_1004,puVar3,uVar5);
-    auStack_1004[uVar5] = '\0';
-    if (uVar5 == uVar2) {
+    memcpy(auStack_1004,src,count);
+    auStack_1004[count] = '\0';
+    if (count == uVar2) {
       _DAT_01c7da54 = 0;
     }
     else {
-      _DAT_01c7da54 = uVar2 - (uVar5 + 1);
-      memmove(puVar3,puVar3 + uVar5 + 1,_DAT_01c7da54);
+      _DAT_01c7da54 = uVar2 - (count + 1);
+      memmove(src,src + count + 1,_DAT_01c7da54);
     }
     SV_WaitServer();
     Cmd_ExecuteServerString(unaff_EDI);
     uVar2 = _DAT_01c7da54;
-    puVar3 = _DAT_01c7da4c;
+    src = _DAT_01c7da4c;
   }
-  _DAT_01c7da4c = puVar3;
+  _DAT_01c7da4c = src;
   _DAT_01c7da54 = uVar2;
   return;
 }

@@ -138,9 +138,9 @@ void __cdecl GenerateRecordedMatchData(int param_1,char *param_2,char **param_3,
 
 {
   int iVar1;
-  uchar *puVar2;
-  ulong uVar3;
-  DWORD DVar4;
+  uchar *src;
+  ulong count;
+  DWORD DVar2;
   LargeLocal *in_ECX;
   int unaff_ESI;
   uchar *unaff_EDI;
@@ -151,31 +151,31 @@ void __cdecl GenerateRecordedMatchData(int param_1,char *param_2,char **param_3,
     *param_3 = (char *)0x0;
     *param_4 = 0;
     LargeLocal::LargeLocal(in_ECX,0xffd8);
-    puVar2 = LargeLocalGetBuf(iStack_c,(int)unaff_EDI);
+    src = LargeLocalGetBuf(iStack_c,(int)unaff_EDI);
     Com_Printf(0x10,"Generating COD7 match data.\n");
     dwGetLobby(param_1);
     FUN_00523ea0(param_2);
     FUN_00523fe0();
     SaveTeamScores();
-    uVar3 = MSG_CompressWithZLib(puVar2,0xffd8,unaff_EDI,unaff_ESI);
-    if (uVar3 == 0) {
+    count = MSG_CompressWithZLib(src,0xffd8,unaff_EDI,unaff_ESI);
+    if (count == 0) {
       Com_Printf(0x10,"Compression of COD7 xml match data failed.\n");
     }
     *param_3 = &DAT_02560b58;
-    if ((int)uVar3 < 0xffd9) {
-      memcpy(&DAT_02560b58,puVar2,uVar3);
-      *param_4 = uVar3;
+    if ((int)count < 0xffd9) {
+      memcpy(&DAT_02560b58,src,count);
+      *param_4 = count;
     }
     else {
-      Com_PrintError(0x10,"Compressed Match Data is %d and buffer is %d - not enough space\n",uVar3,
+      Com_PrintError(0x10,"Compressed Match Data is %d and buffer is %d - not enough space\n",count,
                      0xffd8);
     }
     FUN_005227a0("alliesScore");
     FUN_005227a0("axisScore");
     iVar1 = *(int *)ThreadLocalStoragePointer;
     if (*(int *)(iVar1 + 0x54) == 0) {
-      DVar4 = GetCurrentThreadId();
-      *(DWORD *)(iVar1 + 0x54) = DVar4;
+      DVar2 = GetCurrentThreadId();
+      *(DWORD *)(iVar1 + 0x54) = DVar2;
     }
     if (*(int *)(iVar1 + 0x54) == DAT_01da49a4) {
       DAT_03508c40 = uStack_10;
@@ -199,18 +199,18 @@ MatchRecord_GenerateHeatMapData(uchar *param_1,int param_2,int param_3,int param
   byte bVar1;
   byte bVar2;
   short sVar3;
-  uchar *puVar4;
-  int iVar5;
-  DWORD DVar6;
+  uchar *dst;
+  int iVar4;
+  DWORD DVar5;
   LargeLocal *in_ECX;
+  int iVar6;
   int iVar7;
-  int iVar8;
   int unaff_EDI;
+  float fVar8;
   float fVar9;
   float fVar10;
   float fVar11;
-  float fVar12;
-  __uint64 _Var13;
+  __uint64 _Var12;
   uint uStack_34;
   float fStack_30;
   int iStack_2c;
@@ -219,14 +219,14 @@ MatchRecord_GenerateHeatMapData(uchar *param_1,int param_2,int param_3,int param
   
   if (g_matchRecorderDDL != (ddlDef_t *)0x0) {
     LargeLocal::LargeLocal(in_ECX,0x10000);
-    puVar4 = LargeLocalGetBuf(iStack_14,unaff_EDI);
-    memset(puVar4,'\0',0x10000);
+    dst = LargeLocalGetBuf(iStack_14,unaff_EDI);
+    memset(dst,'\0',0x10000);
     memset(param_1,'\0',0x10000);
     fStack_30 = 0.0;
     sVar3 = FUN_005234a0();
     if (0 < sVar3) {
-      fVar11 = 256.0 / (float)param_2;
-      fVar9 = 256.0 / (float)param_3;
+      fVar10 = 256.0 / (float)param_2;
+      fVar8 = 256.0 / (float)param_3;
       uStack_34 = 0;
       sVar3 = FUN_005234a0();
       if (0 < sVar3) {
@@ -237,31 +237,31 @@ MatchRecord_GenerateHeatMapData(uchar *param_1,int param_2,int param_3,int param
             FUN_00522850("player");
             if ((bVar2 != 0xff) && (bVar1 != 0xff)) {
               if (param_4 == 0 && (int)param_5 == 0) {
-                iVar8 = (int)((float)bVar2 / fVar9) * param_2 + (int)((float)bVar1 / fVar11);
-                puVar4[iVar8] = puVar4[iVar8] + '\x01';
-                if (fStack_30 - (float)puVar4[iVar8] < 0.0) {
-                  fStack_30 = (float)puVar4[iVar8];
+                iVar7 = (int)((float)bVar2 / fVar8) * param_2 + (int)((float)bVar1 / fVar10);
+                dst[iVar7] = dst[iVar7] + '\x01';
+                if (fStack_30 - (float)dst[iVar7] < 0.0) {
+                  fStack_30 = (float)dst[iVar7];
                 }
               }
               else {
-                _Var13 = MatchRecord_GetXUIDForPlayerSlot(unaff_EDI);
-                if ((param_4 == (int)_Var13) && ((int)param_5 == (int)(_Var13 >> 0x20))) {
-                  fVar12 = DAT_00af36d8 / fVar11;
-                  fVar10 = DAT_00af36d8 / fVar9;
-                  iVar8 = bVar1 - 1;
-                  iVar7 = bVar2 - 1;
+                _Var12 = MatchRecord_GetXUIDForPlayerSlot(unaff_EDI);
+                if ((param_4 == (int)_Var12) && ((int)param_5 == (int)(_Var12 >> 0x20))) {
+                  fVar11 = DAT_00af36d8 / fVar10;
+                  fVar9 = DAT_00af36d8 / fVar8;
+                  iVar7 = bVar1 - 1;
+                  iVar6 = bVar2 - 1;
                   iStack_2c = 3;
                   do {
-                    iVar5 = (int)((float)bVar1 / fVar11) - (int)((float)iVar7 * fVar10) * param_2;
-                    if ((-1 < iVar5) || (iVar5 <= param_2 * param_3)) {
-                      param_1[iVar5] = 0xff;
+                    iVar4 = (int)((float)bVar1 / fVar10) - (int)((float)iVar6 * fVar9) * param_2;
+                    if ((-1 < iVar4) || (iVar4 <= param_2 * param_3)) {
+                      param_1[iVar4] = 0xff;
                     }
-                    iVar5 = (int)((float)bVar2 / fVar9) * param_2 - (int)((float)iVar8 * fVar12);
-                    if ((-1 < iVar5) || (iVar5 <= param_2 * param_3)) {
-                      param_1[iVar5] = 0xff;
+                    iVar4 = (int)((float)bVar2 / fVar8) * param_2 - (int)((float)iVar7 * fVar11);
+                    if ((-1 < iVar4) || (iVar4 <= param_2 * param_3)) {
+                      param_1[iVar4] = 0xff;
                     }
+                    iVar6 = iVar6 + 1;
                     iVar7 = iVar7 + 1;
-                    iVar8 = iVar8 + 1;
                     iStack_2c = iStack_2c + -1;
                   } while (iStack_2c != 0);
                 }
@@ -273,22 +273,22 @@ MatchRecord_GenerateHeatMapData(uchar *param_1,int param_2,int param_3,int param
         } while ((int)uStack_34 < (int)sVar3);
       }
       if (param_4 == 0 && (int)param_5 == 0) {
-        FUN_005241f0(param_2,puVar4,param_1);
-        iVar8 = 3;
+        FUN_005241f0(param_2,dst,param_1);
+        iVar7 = 3;
         do {
           FUN_00524260(param_2,param_3,param_1);
           FUN_005241f0(param_2,param_1,param_1);
-          iVar8 = iVar8 + -1;
-        } while (iVar8 != 0);
+          iVar7 = iVar7 + -1;
+        } while (iVar7 != 0);
       }
     }
     FUN_005227a0("heatMapDataGenerated");
-    iVar8 = *(int *)ThreadLocalStoragePointer;
-    if (*(int *)(iVar8 + 0x54) == 0) {
-      DVar6 = GetCurrentThreadId();
-      *(DWORD *)(iVar8 + 0x54) = DVar6;
+    iVar7 = *(int *)ThreadLocalStoragePointer;
+    if (*(int *)(iVar7 + 0x54) == 0) {
+      DVar5 = GetCurrentThreadId();
+      *(DWORD *)(iVar7 + 0x54) = DVar5;
     }
-    if (*(int *)(iVar8 + 0x54) == DAT_01da49a4) {
+    if (*(int *)(iVar7 + 0x54) == DAT_01da49a4) {
       DAT_03508c40 = uStack_18;
       return;
     }

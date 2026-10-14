@@ -155,17 +155,17 @@ void __cdecl SV_FreeFileOp(void)
 
 {
   int *piVar1;
-  char *pcVar2;
+  char *nptr;
   dwFileOperationInfo *unaff_ESI;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  atoi(pcVar2);
+  atoi(nptr);
   LiveStorage_ResetFileInfo(unaff_ESI);
   return;
 }
@@ -1498,10 +1498,10 @@ void __cdecl SV_DWWriteClientStats(client_t *param_1)
   bool bVar1;
   char cVar2;
   dwFileOperationInfo *pdVar3;
-  uint *puVar4;
-  uint uVar5;
-  dwFileOperationInfo *pdVar6;
-  char *pcVar7;
+  uint *dst;
+  uint uVar4;
+  dwFileOperationInfo *pdVar5;
+  char *pcVar6;
   uint unaff_ESI;
   dwFileOperationInfo *unaff_EDI;
   int iStack_18;
@@ -1535,16 +1535,16 @@ void __cdecl SV_DWWriteClientStats(client_t *param_1)
           pdVar3[0xf2] = (dwFileOperationInfo)0x1;
           pdVar3[0xf3] = (dwFileOperationInfo)0x1;
           *(char **)pdVar3 = "globalstatsCompressed";
-          puVar4 = (uint *)FUN_0079bf40();
-          memcpy((uchar *)puVar4,(uchar *)(param_1 + 0x66e69),0xa000);
-          *(uint **)(pdVar3 + 0xf8) = puVar4;
+          dst = (uint *)FUN_0079bf40();
+          memcpy((uchar *)dst,(uchar *)(param_1 + 0x66e69),0xa000);
+          *(uint **)(pdVar3 + 0xf8) = dst;
           *(undefined4 *)(pdVar3 + 0xfc) = 0xa000;
           *(code **)(pdVar3 + 0x100) = FUN_0079bfa0;
           *(code **)(pdVar3 + 0x108) = FUN_0079c0c0;
           *(undefined4 *)(pdVar3 + 0x110) = *(undefined4 *)(param_1 + 0x7c2d0);
           *(undefined4 *)(pdVar3 + 0x114) = *(undefined4 *)(param_1 + 0x7c2d4);
-          uVar5 = Com_BlockChecksumKey32((void *)0x9ffc,(uint)unaff_EDI,unaff_ESI);
-          *puVar4 = uVar5;
+          uVar4 = Com_BlockChecksumKey32((void *)0x9ffc,(uint)unaff_EDI,unaff_ESI);
+          *dst = uVar4;
           iStack_18 = 0;
           puStack_14 = (uint *)0x0;
           cVar2 = FUN_0079a330(iStack_10,&iStack_18);
@@ -1555,47 +1555,47 @@ void __cdecl SV_DWWriteClientStats(client_t *param_1)
               if ((int)puStack_14 <= iStack_18) {
                 cVar2 = FUN_0079c790();
                 if (cVar2 != '\0') {
-                  pdVar6 = SV_GetFreeFileOp();
-                  if (pdVar6 != (dwFileOperationInfo *)0x0) {
-                    pdVar6[0xf2] = (dwFileOperationInfo)0x1;
-                    pdVar6[0xf3] = (dwFileOperationInfo)0x1;
-                    *(char **)pdVar6 = "mpdatabk0000";
-                    pcVar7 = (char *)LiveStorage_GetUTC();
-                    SV_CACValidate_SetIntStat((uchar *)(param_1 + 0x66e69),pcVar7,(uint)unaff_EDI);
+                  pdVar5 = SV_GetFreeFileOp();
+                  if (pdVar5 != (dwFileOperationInfo *)0x0) {
+                    pdVar5[0xf2] = (dwFileOperationInfo)0x1;
+                    pdVar5[0xf3] = (dwFileOperationInfo)0x1;
+                    *(char **)pdVar5 = "mpdatabk0000";
+                    pcVar6 = (char *)LiveStorage_GetUTC();
+                    SV_CACValidate_SetIntStat((uchar *)(param_1 + 0x66e69),pcVar6,(uint)unaff_EDI);
                     puStack_14 = (uint *)FUN_0079bf40();
                     memcpy((uchar *)puStack_14,(uchar *)(param_1 + 0x66e69),0xa000);
-                    *(uint **)(pdVar6 + 0xf8) = puStack_14;
-                    *(undefined4 *)(pdVar6 + 0xfc) = 0xa000;
-                    *(code **)(pdVar6 + 0x100) = FUN_0079c820;
-                    *(code **)(pdVar6 + 0x108) = FUN_0079c820;
-                    *(undefined4 *)(pdVar6 + 0x110) = *(undefined4 *)(param_1 + 0x7c2d0);
-                    *(undefined4 *)(pdVar6 + 0x114) = *(undefined4 *)(param_1 + 0x7c2d4);
-                    uVar5 = Com_BlockChecksumKey32((void *)0x9ffc,(uint)unaff_EDI,unaff_ESI);
-                    *puStack_14 = uVar5;
-                    SV_WriteClientFileDeferred(param_1,pdVar6);
+                    *(uint **)(pdVar5 + 0xf8) = puStack_14;
+                    *(undefined4 *)(pdVar5 + 0xfc) = 0xa000;
+                    *(code **)(pdVar5 + 0x100) = FUN_0079c820;
+                    *(code **)(pdVar5 + 0x108) = FUN_0079c820;
+                    *(undefined4 *)(pdVar5 + 0x110) = *(undefined4 *)(param_1 + 0x7c2d0);
+                    *(undefined4 *)(pdVar5 + 0x114) = *(undefined4 *)(param_1 + 0x7c2d4);
+                    uVar4 = Com_BlockChecksumKey32((void *)0x9ffc,(uint)unaff_EDI,unaff_ESI);
+                    *puStack_14 = uVar4;
+                    SV_WriteClientFileDeferred(param_1,pdVar5);
                   }
                 }
                 Com_Printf(0,"Client we\'re writing stats for has xp of %i\n",iStack_18);
                 SV_WriteClientFileDeferred(param_1,pdVar3);
                 return;
               }
-              pcVar7 = va("Client %llu has stableXP of %i, but new XP of %i, aborting write!!\n",
+              pcVar6 = va("Client %llu has stableXP of %i, but new XP of %i, aborting write!!\n",
                           *(undefined4 *)(param_1 + 0x7c2d0),*(undefined4 *)(param_1 + 0x7c2d4),
                           puStack_14,iStack_18);
-              Com_DPrintf((int)pcVar7,(char *)unaff_EDI);
+              Com_DPrintf((int)pcVar6,(char *)unaff_EDI);
               if ((sv_cacvalidate_recordevent != (dvar_s *)0x0) &&
                  ((sv_cacvalidate_recordevent->current).enabled != false)) {
-                pcVar7 = va("Client %llu has stableXP of %i, but new XP of %i, aborting write!!\n",
+                pcVar6 = va("Client %llu has stableXP of %i, but new XP of %i, aborting write!!\n",
                             *(undefined4 *)(param_1 + 0x7c2d0),*(undefined4 *)(param_1 + 0x7c2d4),
                             puStack_14,iStack_18);
-                dwRecordEventFormat((overlappedTask *)0x9,0xa0fa64,pcVar7);
+                dwRecordEventFormat((overlappedTask *)0x9,0xa0fa64,pcVar6);
               }
               if ((sv_cacvalidate_log != (dvar_s *)0x0) &&
                  ((sv_cacvalidate_log->current).enabled != false)) {
-                pcVar7 = va("Client %llu has stableXP of %i, but new XP of %i, aborting write!!\n",
+                pcVar6 = va("Client %llu has stableXP of %i, but new XP of %i, aborting write!!\n",
                             *(undefined4 *)(param_1 + 0x7c2d0),*(undefined4 *)(param_1 + 0x7c2d4),
                             puStack_14,iStack_18);
-                SV_CACValidate_LogMessage(pcVar7);
+                SV_CACValidate_LogMessage(pcVar6);
               }
               VirtualFree(*(LPVOID *)(pdVar3 + 0xf8),0,0x8000);
               goto LAB_0079cbe0;
@@ -1613,12 +1613,12 @@ LAB_0079cbe0:
   }
   else {
     if (param_1 == (client_t *)0x0) {
-      pcVar7 = "unknown";
+      pcVar6 = "unknown";
     }
     else {
-      pcVar7 = (char *)(param_1 + 0x5570);
+      pcVar6 = (char *)(param_1 + 0x5570);
     }
-    Com_DPrintf(0xa86524,pcVar7);
+    Com_DPrintf(0xa86524,pcVar6);
   }
   return;
 }

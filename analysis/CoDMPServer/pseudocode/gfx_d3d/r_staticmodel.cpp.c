@@ -2,7 +2,7 @@
 
 // 00B2E0B0  R_StaticModelGetMemoryUsageInst  (gfx_d3d/r_staticmodel.cpp:29)
 
-int __cdecl R_StaticModelGetMemoryUsageInst(GfxStaticModelDrawInst *param_1)
+int __cdecl R_StaticModelGetMemoryUsageInst(GfxStaticModelDrawInst *smodelDrawInst)
 
 {
   return 0x4c;
@@ -11,34 +11,39 @@ int __cdecl R_StaticModelGetMemoryUsageInst(GfxStaticModelDrawInst *param_1)
 
 // 00B2DFD0  R_StaticModelGetMemoryUsage  (gfx_d3d/r_staticmodel.cpp:34)
 
-int __cdecl R_StaticModelGetMemoryUsage(XModel *param_1,int *param_2)
+int __cdecl R_StaticModelGetMemoryUsage(XModel *model,int *modelCount)
 
 {
   GfxAabbTree *pGVar1;
   int iVar2;
-  GfxStaticModelDrawInst *pGVar3;
-  int local_18;
-  int local_c;
-  int local_8;
+  GfxStaticModelDrawInst *smodelDrawInst_00;
+  int cellIndex;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  GfxAabbTree *tree;
+  int smodelIndexIter;
+  int usage;
   
-  local_8 = 0;
-  *param_2 = 0;
+  usage = 0;
+  *modelCount = 0;
   if (rgp.world == (GfxWorld *)0x0) {
-    local_8 = 0;
+    usage = 0;
   }
   else {
-    for (local_18 = 0; local_18 < ((rgp.world)->dpvsPlanes).cellCount; local_18 = local_18 + 1) {
-      pGVar1 = (rgp.world)->cells[local_18].aabbTree;
-      for (local_c = 0; local_c < (int)(uint)pGVar1->smodelIndexCount; local_c = local_c + 1) {
-        pGVar3 = ((rgp.world)->dpvs).smodelDrawInsts + pGVar1->smodelIndexes[local_c];
-        if (pGVar3->model == param_1) {
-          iVar2 = R_StaticModelGetMemoryUsageInst(pGVar3);
-          local_8 = iVar2 + local_8;
-          *param_2 = *param_2 + 1;
+    for (cellIndex = 0; cellIndex < ((rgp.world)->dpvsPlanes).cellCount; cellIndex = cellIndex + 1)
+    {
+      pGVar1 = (rgp.world)->cells[cellIndex].aabbTree;
+      for (smodelIndexIter = 0; smodelIndexIter < (int)(uint)pGVar1->smodelIndexCount;
+          smodelIndexIter = smodelIndexIter + 1) {
+        smodelDrawInst_00 =
+             ((rgp.world)->dpvs).smodelDrawInsts + pGVar1->smodelIndexes[smodelIndexIter];
+        if (smodelDrawInst_00->model == model) {
+          iVar2 = R_StaticModelGetMemoryUsageInst(smodelDrawInst_00);
+          usage = iVar2 + usage;
+          *modelCount = *modelCount + 1;
         }
       }
     }
   }
-  return local_8;
+  return usage;
 }
 

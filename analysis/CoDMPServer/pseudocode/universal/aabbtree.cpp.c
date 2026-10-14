@@ -2,13 +2,14 @@
 
 // 00786F40  compare_floats  (universal/aabbtree.cpp:32)
 
-int __cdecl compare_floats(void *param_1,void *param_2)
+int __cdecl compare_floats(void *e0,void *e1)
 
 {
   uint local_c;
+  float diff;
   
-  if (0.0 <= *(float *)param_1 - *(float *)param_2) {
-    local_c = (uint)(0.0 < *(float *)param_1 - *(float *)param_2);
+  if (0.0 <= *(float *)e0 - *(float *)e1) {
+    local_c = (uint)(0.0 < *(float *)e0 - *(float *)e1);
   }
   else {
     local_c = 0xffffffff;
@@ -20,329 +21,325 @@ int __cdecl compare_floats(void *param_1,void *param_2)
 // 00786880  PickAabbSplitPlane  (universal/aabbtree.cpp:41)
 
 int __cdecl
-PickAabbSplitPlane(float (*param_1) [3],float (*param_2) [3],int *param_3,int param_4,int *param_5,
-                  float *param_6)
+PickAabbSplitPlane(float (*mins) [3],float (*maxs) [3],int *remap,int count,int *chosenAxis,
+                  float *chosenDist)
 
 {
   code *pcVar1;
   float fVar2;
   bool bVar3;
   int iVar4;
-  uint uVar5;
+  int iVar5;
+  uint uVar6;
   float local_a4;
-  int local_70;
-  float local_6c;
-  int local_68;
-  int local_64;
-  uint local_5c;
-  uint local_58;
-  int local_54;
-  int local_50;
-  uint local_4c;
-  int local_48;
-  float local_44 [3];
-  int local_38;
-  int local_34;
-  int local_30;
-  float local_2c [3];
-  int aiStack_20 [6];
-  int local_8;
+  int sideSplitCount;
+  float nextDist;
+  int prevMinCount;
+  int prevOnCount;
+  float dist;
+  int minMaxCount;
+  int coplanarCount;
+  int axisIndex;
+  int bestHeuristic;
+  int smallestAxis;
+  int maxIndex;
+  float globalMaxs [3];
+  int sideFrontCount;
+  int i;
+  int sideOnCount;
+  float globalMins [3];
+  int aiStack_20 [3];
+  int minIndex;
+  int onIndex;
+  int heuristic;
+  int sideBackCount;
   
-  ClearBounds(local_2c,local_44);
-  for (local_34 = 0; local_34 < param_4; local_34 = local_34 + 1) {
-    ExpandBounds(param_1[param_3[local_34]],param_2[param_3[local_34]],local_2c,local_44);
+  ClearBounds(globalMins,globalMaxs);
+  for (i = 0; i < count; i = i + 1) {
+    ExpandBounds(mins[remap[i]],maxs[remap[i]],globalMins,globalMaxs);
   }
-  local_4c = (uint)(local_44[1] - local_2c[1] < local_44[0] - local_2c[0]);
-  if (local_44[2] - local_2c[2] < local_44[local_4c] - local_2c[local_4c]) {
-    local_4c = 2;
+  smallestAxis = (int)(globalMaxs[1] - globalMins[1] < globalMaxs[0] - globalMins[0]);
+  if (globalMaxs[2] - globalMins[2] < globalMaxs[smallestAxis] - globalMins[smallestAxis]) {
+    smallestAxis = 2;
   }
-  for (local_34 = 0; local_34 < 3; local_34 = local_34 + 1) {
-    aiStack_20[local_34] =
-         (int)ROUND((((local_44[local_34] - local_2c[local_34]) + 1.0) * 10.0) /
-                    ((local_44[local_4c] - local_2c[local_4c]) + 1.0) + 0.5);
+  for (i = 0; i < 3; i = i + 1) {
+    aiStack_20[i] =
+         (int)ROUND((((globalMaxs[i] - globalMins[i]) + 1.0) * 10.0) /
+                    ((globalMaxs[smallestAxis] - globalMins[smallestAxis]) + 1.0) + 0.5);
   }
-  local_50 = -0x80000000;
-  local_54 = 0;
+  bestHeuristic = -0x80000000;
+  axisIndex = 0;
   do {
-    if (2 < local_54) {
-      return (uint)(local_50 != -0x80000000);
+    if (2 < axisIndex) {
+      return (uint)(bestHeuristic != -0x80000000);
     }
-    local_5c = 0;
-    local_58 = 0;
-    for (local_34 = 0; local_34 < param_4; local_34 = local_34 + 1) {
-      if (param_1[param_3[local_34]][local_54] == param_2[param_3[local_34]][local_54]) {
-        sortedCoplanar[local_58] = param_1[param_3[local_34]][local_54];
-        local_58 = local_58 + 1;
+    minMaxCount = 0;
+    coplanarCount = 0;
+    for (i = 0; i < count; i = i + 1) {
+      if (mins[remap[i]][axisIndex] == maxs[remap[i]][axisIndex]) {
+        sortedCoplanar[coplanarCount] = mins[remap[i]][axisIndex];
+        coplanarCount = coplanarCount + 1;
       }
       else {
-        sortedMins[local_5c] = param_1[param_3[local_34]][local_54];
-        sortedMaxs[local_5c] = param_2[param_3[local_34]][local_54];
-        local_5c = local_5c + 1;
+        sortedMins[minMaxCount] = mins[remap[i]][axisIndex];
+        sortedMaxs[minMaxCount] = maxs[remap[i]][axisIndex];
+        minMaxCount = minMaxCount + 1;
       }
     }
-    qsort(sortedMins,local_5c,4,compare_floats);
-    qsort(sortedMaxs,local_5c,4,compare_floats);
-    qsort(sortedCoplanar,local_58,4,compare_floats);
-    local_38 = 0;
-    local_8 = param_4;
-    local_70 = 0;
-    local_30 = 0;
-    aiStack_20[3] = 0;
-    local_48 = 0;
-    aiStack_20[4] = 0;
-    local_68 = 0;
-    local_64 = 0;
+    qsort(sortedMins,minMaxCount,4,compare_floats);
+    qsort(sortedMaxs,minMaxCount,4,compare_floats);
+    qsort(sortedCoplanar,coplanarCount,4,compare_floats);
+    sideFrontCount = 0;
+    sideBackCount = count;
+    sideSplitCount = 0;
+    sideOnCount = 0;
+    minIndex = 0;
+    maxIndex = 0;
+    onIndex = 0;
+    prevMinCount = 0;
+    prevOnCount = 0;
     local_a4 = *sortedCoplanar;
     if (0.0 <= local_a4 - *sortedMins) {
       local_a4 = *sortedMins;
     }
-    local_6c = local_a4;
-    while (fVar2 = local_6c, local_6c < 3.4028235e+38) {
-      local_6c = 3.4028235e+38;
-      local_70 = local_70 + local_68;
-      local_8 = local_8 - local_68;
-      local_68 = 0;
-      for (; (aiStack_20[3] < (int)local_5c && (sortedMins[aiStack_20[3]] == fVar2));
-          aiStack_20[3] = aiStack_20[3] + 1) {
-        local_68 = local_68 + 1;
+    nextDist = local_a4;
+    while (fVar2 = nextDist, nextDist < 3.4028235e+38) {
+      nextDist = 3.4028235e+38;
+      sideSplitCount = sideSplitCount + prevMinCount;
+      iVar4 = sideBackCount - prevMinCount;
+      prevMinCount = 0;
+      for (; (minIndex < minMaxCount && (sortedMins[minIndex] == fVar2)); minIndex = minIndex + 1) {
+        prevMinCount = prevMinCount + 1;
       }
-      if ((aiStack_20[3] < (int)local_5c) &&
-         (sortedMins[aiStack_20[3]] <= 3.4028235e+38 && sortedMins[aiStack_20[3]] != 3.4028235e+38))
+      if ((minIndex < minMaxCount) &&
+         (sortedMins[minIndex] <= 3.4028235e+38 && sortedMins[minIndex] != 3.4028235e+38)) {
+        nextDist = sortedMins[minIndex];
+      }
+      for (; (maxIndex < minMaxCount && (sortedMaxs[maxIndex] == fVar2)); maxIndex = maxIndex + 1) {
+        sideFrontCount = sideFrontCount + 1;
+        sideSplitCount = sideSplitCount + -1;
+      }
+      if ((maxIndex < minMaxCount) &&
+         (sortedMaxs[maxIndex] <= nextDist && nextDist != sortedMaxs[maxIndex])) {
+        nextDist = sortedMaxs[maxIndex];
+      }
+      sideFrontCount = sideFrontCount + prevOnCount;
+      iVar5 = sideOnCount - prevOnCount;
+      prevOnCount = 0;
+      for (; (onIndex < coplanarCount && (sortedCoplanar[onIndex] == fVar2)); onIndex = onIndex + 1)
       {
-        local_6c = sortedMins[aiStack_20[3]];
+        prevOnCount = prevOnCount + 1;
       }
-      for (; (local_48 < (int)local_5c && (sortedMaxs[local_48] == fVar2)); local_48 = local_48 + 1)
-      {
-        local_38 = local_38 + 1;
-        local_70 = local_70 + -1;
+      sideOnCount = iVar5 + prevOnCount;
+      sideBackCount = iVar4 - prevOnCount;
+      if ((onIndex < coplanarCount) &&
+         (sortedCoplanar[onIndex] <= nextDist && nextDist != sortedCoplanar[onIndex])) {
+        nextDist = sortedCoplanar[onIndex];
       }
-      if ((local_48 < (int)local_5c) &&
-         (sortedMaxs[local_48] <= local_6c && local_6c != sortedMaxs[local_48])) {
-        local_6c = sortedMaxs[local_48];
-      }
-      local_38 = local_38 + local_64;
-      local_30 = local_30 - local_64;
-      local_64 = 0;
-      for (; (aiStack_20[4] < (int)local_58 && (sortedCoplanar[aiStack_20[4]] == fVar2));
-          aiStack_20[4] = aiStack_20[4] + 1) {
-        local_64 = local_64 + 1;
-      }
-      local_30 = local_30 + local_64;
-      local_8 = local_8 - local_64;
-      if ((aiStack_20[4] < (int)local_58) &&
-         (sortedCoplanar[aiStack_20[4]] <= local_6c && local_6c != sortedCoplanar[aiStack_20[4]])) {
-        local_6c = sortedCoplanar[aiStack_20[4]];
-      }
-      if ((local_38 + local_8 + local_70 + local_30 != param_4) &&
+      if ((sideFrontCount + sideBackCount + sideSplitCount + sideOnCount != count) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",0xa3
                                    ,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      if ((local_38 < 0) &&
+      if ((sideFrontCount < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",0xa4
                                    ,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      if ((local_8 < 0) &&
+      if ((sideBackCount < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",0xa5
                                    ,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      if ((local_70 < 0) &&
+      if ((sideSplitCount < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",0xa6
                                    ,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      if ((local_30 < 0) &&
+      if ((sideOnCount < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",0xa7
                                    ,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      if ((1 < local_38) && (1 < local_8)) {
-        uVar5 = local_38 - local_8 >> 0x1f;
-        aiStack_20[5] =
-             ((param_4 - ((local_38 - local_8 ^ uVar5) - uVar5)) - local_30) + local_70 * -4 +
-             aiStack_20[local_54];
-        if ((local_30 == 0) && ((local_70 == 0 && (local_68 == 0)))) {
-          aiStack_20[5] = aiStack_20[5] + (int)ROUND((local_6c - fVar2) + 9.313226e-10);
+      if ((1 < sideFrontCount) && (1 < sideBackCount)) {
+        uVar6 = sideFrontCount - sideBackCount >> 0x1f;
+        heuristic = ((count - ((sideFrontCount - sideBackCount ^ uVar6) - uVar6)) - sideOnCount) +
+                    sideSplitCount * -4 + aiStack_20[axisIndex];
+        if ((sideOnCount == 0) && ((sideSplitCount == 0 && (prevMinCount == 0)))) {
+          heuristic = heuristic + (int)ROUND((nextDist - fVar2) + 9.313226e-10);
         }
-        if (local_50 < aiStack_20[5]) {
-          local_50 = aiStack_20[5];
-          *param_5 = local_54;
-          if (((local_30 == 0) && (local_70 == 0)) && (local_68 == 0)) {
-            *param_6 = (fVar2 + local_6c) * 0.5;
+        if (bestHeuristic < heuristic) {
+          bestHeuristic = heuristic;
+          *chosenAxis = axisIndex;
+          if (((sideOnCount == 0) && (sideSplitCount == 0)) && (prevMinCount == 0)) {
+            *chosenDist = (fVar2 + nextDist) * 0.5;
           }
           else {
-            *param_6 = fVar2;
+            *chosenDist = fVar2;
           }
         }
       }
     }
-    local_54 = local_54 + 1;
+    axisIndex = axisIndex + 1;
   } while( true );
 }
 
 
 // 00786FA0  AddedVolume  (universal/aabbtree.cpp:193)
 
-float __cdecl AddedVolume(float *param_1,float *param_2,float *param_3,float *param_4)
+float __cdecl AddedVolume(float *addedmins,float *addedmaxs,float *mins,float *maxs)
 
 {
-  float local_24;
+  float expandedMins;
   float local_20;
   float local_1c;
-  float local_10;
+  float expandedVolume;
+  float baseVolume;
+  float expandedMaxs;
   float local_c;
   float local_8;
   
-  local_24 = *param_3;
-  local_20 = param_3[1];
-  local_1c = param_3[2];
-  local_10 = *param_4;
-  local_c = param_4[1];
-  local_8 = param_4[2];
-  ExpandBounds(param_1,param_2,&local_24,&local_10);
-  return (local_10 - local_24) * (local_c - local_20) * (local_8 - local_1c) -
-         (*param_4 - *param_3) * (param_4[1] - param_3[1]) * (param_4[2] - param_3[2]);
+  expandedMins = *mins;
+  local_20 = mins[1];
+  local_1c = mins[2];
+  expandedMaxs = *maxs;
+  local_c = maxs[1];
+  local_8 = maxs[2];
+  ExpandBounds(addedmins,addedmaxs,&expandedMins,&expandedMaxs);
+  return (expandedMaxs - expandedMins) * (local_c - local_20) * (local_8 - local_1c) -
+         (*maxs - *mins) * (maxs[1] - mins[1]) * (maxs[2] - mins[2]);
 }
 
 
 // 007862F0  SplitAabbTree  (universal/aabbtree.cpp:209)
 
 int __cdecl
-SplitAabbTree(int param_1,GenericAabbTreeOptions *param_2,int *param_3,int *param_4,int *param_5)
+SplitAabbTree(int count,GenericAabbTreeOptions *options,int *remap,int *midStart,int *lastStart)
 
 {
-  float (*pafVar1) [3];
-  int iVar2;
+  float (*mins) [3];
+  int iVar1;
+  float fVar2;
   float fVar3;
-  float fVar4;
-  int local_54;
-  int local_4c;
-  int local_48;
-  float local_44 [3];
+  int top;
+  int splitAxis;
+  int bot;
+  float bounds [3];
   float local_38 [3];
   float local_2c [3];
   float local_20 [3];
-  float (*local_14) [3];
-  float local_10;
-  int local_c;
-  int local_8;
+  float (*maxs) [3];
+  float splitDist;
+  int swapCache;
+  int mid;
   
-  pafVar1 = param_2->mins;
-  local_14 = param_2->maxs;
-  iVar2 = PickAabbSplitPlane(pafVar1,local_14,param_3,param_1,&local_4c,&local_10);
-  if (iVar2 == 0) {
-    iVar2 = 0;
+  mins = options->mins;
+  maxs = options->maxs;
+  iVar1 = PickAabbSplitPlane(mins,maxs,remap,count,&splitAxis,&splitDist);
+  if (iVar1 == 0) {
+    iVar1 = 0;
   }
   else {
-    ClearBounds(local_44,local_38);
+    ClearBounds(bounds,local_38);
     ClearBounds(local_2c,local_20);
-    local_48 = 0;
-    local_54 = param_1 + -1;
+    bot = 0;
+    top = count + -1;
     do {
       while( true ) {
-        if (local_54 < local_48) goto LAB_00786619;
-        while (((local_48 <= local_54 && (local_14[param_3[local_48]][local_4c] <= local_10)) &&
-               (pafVar1[param_3[local_48]][local_4c] <= local_10 &&
-                local_10 != pafVar1[param_3[local_48]][local_4c]))) {
-          ExpandBounds(pafVar1[param_3[local_48]],local_14[param_3[local_48]],local_44,local_38);
-          local_48 = local_48 + 1;
+        if (top < bot) goto LAB_00786619;
+        while (((bot <= top && (maxs[remap[bot]][splitAxis] <= splitDist)) &&
+               (mins[remap[bot]][splitAxis] <= splitDist && splitDist != mins[remap[bot]][splitAxis]
+               ))) {
+          ExpandBounds(mins[remap[bot]],maxs[remap[bot]],bounds,local_38);
+          bot = bot + 1;
         }
-        while (((local_48 <= local_54 && (local_10 <= pafVar1[param_3[local_54]][local_4c])) &&
-               (local_10 < local_14[param_3[local_54]][local_4c]))) {
-          ExpandBounds(pafVar1[param_3[local_54]],local_14[param_3[local_54]],local_2c,local_20);
-          local_54 = local_54 + -1;
+        while (((bot <= top && (splitDist <= mins[remap[top]][splitAxis])) &&
+               (splitDist < maxs[remap[top]][splitAxis]))) {
+          ExpandBounds(mins[remap[top]],maxs[remap[top]],local_2c,local_20);
+          top = top + -1;
         }
-        if (local_54 < local_48) goto LAB_00786619;
-        if (((pafVar1[param_3[local_48]][local_4c] < local_10) ||
-            (local_14[param_3[local_48]][local_4c] <= local_10)) &&
-           ((local_10 < local_14[param_3[local_54]][local_4c] ||
-            (local_10 < pafVar1[param_3[local_54]][local_4c] ||
-             local_10 == pafVar1[param_3[local_54]][local_4c])))) break;
-        local_c = param_3[local_48];
-        param_3[local_48] = param_3[local_54];
-        param_3[local_54] = local_c;
+        if (top < bot) goto LAB_00786619;
+        if (((mins[remap[bot]][splitAxis] < splitDist) || (maxs[remap[bot]][splitAxis] <= splitDist)
+            ) && ((splitDist < maxs[remap[top]][splitAxis] ||
+                  (splitDist < mins[remap[top]][splitAxis] ||
+                   splitDist == mins[remap[top]][splitAxis])))) break;
+        swapCache = remap[bot];
+        remap[bot] = remap[top];
+        remap[top] = swapCache;
       }
-      for (local_8 = local_48; local_8 < local_54; local_8 = local_8 + 1) {
-        if ((local_10 <= pafVar1[param_3[local_8]][local_4c]) &&
-           (local_10 < local_14[param_3[local_8]][local_4c])) {
-          local_c = param_3[local_8];
-          param_3[local_8] = param_3[local_54];
-          param_3[local_54] = local_c;
+      for (mid = bot; mid < top; mid = mid + 1) {
+        if ((splitDist <= mins[remap[mid]][splitAxis]) && (splitDist < maxs[remap[mid]][splitAxis]))
+        {
+          swapCache = remap[mid];
+          remap[mid] = remap[top];
+          remap[top] = swapCache;
           break;
         }
-        if ((local_14[param_3[local_8]][local_4c] <= local_10) &&
-           (pafVar1[param_3[local_8]][local_4c] <= local_10 &&
-            local_10 != pafVar1[param_3[local_8]][local_4c])) {
-          local_c = param_3[local_8];
-          param_3[local_8] = param_3[local_48];
-          param_3[local_48] = local_c;
+        if ((maxs[remap[mid]][splitAxis] <= splitDist) &&
+           (mins[remap[mid]][splitAxis] <= splitDist && splitDist != mins[remap[mid]][splitAxis])) {
+          swapCache = remap[mid];
+          remap[mid] = remap[bot];
+          remap[bot] = swapCache;
           break;
         }
       }
-    } while (local_8 != local_54);
+    } while (mid != top);
 LAB_00786619:
-    if ((local_48 <= local_54) &&
-       (((local_48 < param_2->minItemsPerLeaf ||
-         ((local_54 - local_48) + 1 < param_2->minItemsPerLeaf)) ||
-        ((param_1 - local_54) + -1 < param_2->minItemsPerLeaf)))) {
+    if ((bot <= top) &&
+       (((bot < options->minItemsPerLeaf || ((top - bot) + 1 < options->minItemsPerLeaf)) ||
+        ((count - top) + -1 < options->minItemsPerLeaf)))) {
 LAB_00786656:
-      if (local_48 <= local_54) {
-        for (; local_48 <= local_54; local_48 = local_48 + 1) {
-          fVar3 = AddedVolume(pafVar1[param_3[local_48]],local_14[param_3[local_48]],local_44,
-                              local_38);
-          fVar4 = AddedVolume(pafVar1[param_3[local_48]],local_14[param_3[local_48]],local_2c,
-                              local_20);
-          if (fVar4 < fVar3) break;
-          ExpandBounds(pafVar1[param_3[local_48]],local_14[param_3[local_48]],local_44,local_38);
+      if (bot <= top) {
+        for (; bot <= top; bot = bot + 1) {
+          fVar2 = AddedVolume(mins[remap[bot]],maxs[remap[bot]],bounds,local_38);
+          fVar3 = AddedVolume(mins[remap[bot]],maxs[remap[bot]],local_2c,local_20);
+          if (fVar3 < fVar2) break;
+          ExpandBounds(mins[remap[bot]],maxs[remap[bot]],bounds,local_38);
         }
         do {
-          if (local_54 < local_48) goto LAB_007867d2;
-          fVar3 = AddedVolume(pafVar1[param_3[local_54]],local_14[param_3[local_54]],local_2c,
-                              local_20);
-          fVar4 = AddedVolume(pafVar1[param_3[local_54]],local_14[param_3[local_54]],local_44,
-                              local_38);
-          if (fVar4 < fVar3) goto LAB_007867d2;
-          ExpandBounds(pafVar1[param_3[local_54]],local_14[param_3[local_54]],local_2c,local_20);
-          local_54 = local_54 + -1;
+          if (top < bot) goto LAB_007867d2;
+          fVar2 = AddedVolume(mins[remap[top]],maxs[remap[top]],local_2c,local_20);
+          fVar3 = AddedVolume(mins[remap[top]],maxs[remap[top]],bounds,local_38);
+          if (fVar3 < fVar2) goto LAB_007867d2;
+          ExpandBounds(mins[remap[top]],maxs[remap[top]],local_2c,local_20);
+          top = top + -1;
         } while( true );
       }
     }
-    if ((local_48 == 0) || (local_48 == param_1)) {
-      iVar2 = 0;
+    if ((bot == 0) || (bot == count)) {
+      iVar1 = 0;
     }
     else {
-      *param_4 = local_48;
-      *param_5 = local_54 + 1;
-      iVar2 = 1;
+      *midStart = bot;
+      *lastStart = top + 1;
+      iVar1 = 1;
     }
   }
-  return iVar2;
+  return iVar1;
 LAB_007867d2:
-  if (local_48 < local_54) {
-    local_c = param_3[local_48];
-    param_3[local_48] = param_3[local_54];
-    param_3[local_54] = local_c;
-    local_48 = local_48 + 1;
-    local_54 = local_54 + -1;
+  if (bot < top) {
+    swapCache = remap[bot];
+    remap[bot] = remap[top];
+    remap[top] = swapCache;
+    bot = bot + 1;
+    top = top + -1;
   }
-  else if (local_48 == local_54) {
-    if (local_48 * 2 < param_1) {
-      local_48 = local_48 + 1;
+  else if (bot == top) {
+    if (bot * 2 < count) {
+      bot = bot + 1;
     }
     else {
-      local_54 = local_54 + -1;
+      top = top + -1;
     }
   }
   goto LAB_00786656;
@@ -351,96 +348,96 @@ LAB_007867d2:
 
 // 00787170  AllocAabbTreeNode  (universal/aabbtree.cpp:333)
 
-GenericAabbTree * __cdecl AllocAabbTreeNode(GenericAabbTreeOptions *param_1)
+GenericAabbTree * __cdecl AllocAabbTreeNode(GenericAabbTreeOptions *options)
 
 {
   int iVar1;
   
-  if (aabbTreeCount == param_1->treeNodeLimit) {
+  if (aabbTreeCount == options->treeNodeLimit) {
     Com_Error(ERR_DROP,"More than %i AABB nodes needed\n");
   }
   iVar1 = aabbTreeCount;
   aabbTreeCount = aabbTreeCount + 1;
-  return param_1->treeNodePool + iVar1;
+  return options->treeNodePool + iVar1;
 }
 
 
 // 00787080  CreateAabbSubTrees  (universal/aabbtree.cpp:347)
 
 void __cdecl
-CreateAabbSubTrees(GenericAabbTree *param_1,GenericAabbTreeOptions *param_2,int *param_3,int param_4
-                  ,int param_5)
+CreateAabbSubTrees(GenericAabbTree *tree,GenericAabbTreeOptions *options,int *remap,int firstIndex,
+                  int count)
 
 {
   int iVar1;
   GenericAabbTree *pGVar2;
-  int local_10;
-  int local_c;
-  GenericAabbTree *local_8;
+  int midStart;
+  int lastStart;
+  GenericAabbTree *subtree;
   
-  if ((param_2->maxItemsPerLeaf < param_5) &&
-     (iVar1 = SplitAabbTree(param_5,param_2,param_3 + param_4,&local_10,&local_c), iVar1 != 0)) {
-    local_8 = AllocAabbTreeNode(param_2);
-    local_8->firstItem = param_1->firstItem + param_4;
-    local_8->itemCount = local_10;
-    if (local_10 < local_c) {
-      local_8 = AllocAabbTreeNode(param_2);
-      local_8->firstItem = param_1->firstItem + param_4 + local_10;
-      local_8->itemCount = local_c - local_10;
+  if ((options->maxItemsPerLeaf < count) &&
+     (iVar1 = SplitAabbTree(count,options,remap + firstIndex,&midStart,&lastStart), iVar1 != 0)) {
+    subtree = AllocAabbTreeNode(options);
+    subtree->firstItem = tree->firstItem + firstIndex;
+    subtree->itemCount = midStart;
+    if (midStart < lastStart) {
+      subtree = AllocAabbTreeNode(options);
+      subtree->firstItem = tree->firstItem + firstIndex + midStart;
+      subtree->itemCount = lastStart - midStart;
     }
-    pGVar2 = AllocAabbTreeNode(param_2);
-    pGVar2->firstItem = param_1->firstItem + param_4 + local_c;
-    pGVar2->itemCount = param_5 - local_c;
+    pGVar2 = AllocAabbTreeNode(options);
+    pGVar2->firstItem = tree->firstItem + firstIndex + lastStart;
+    pGVar2->itemCount = count - lastStart;
     return;
   }
-  pGVar2 = AllocAabbTreeNode(param_2);
-  pGVar2->firstItem = param_1->firstItem + param_4;
-  pGVar2->itemCount = param_5;
+  pGVar2 = AllocAabbTreeNode(options);
+  pGVar2->firstItem = tree->firstItem + firstIndex;
+  pGVar2->itemCount = count;
   return;
 }
 
 
 // 00786150  BuildAabbTree_r  (universal/aabbtree.cpp:382)
 
-void __cdecl BuildAabbTree_r(GenericAabbTree *param_1,GenericAabbTreeOptions *param_2,int *param_3)
+void __cdecl BuildAabbTree_r(GenericAabbTree *tree,GenericAabbTreeOptions *options,int *remap)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_14;
-  int local_10;
-  int local_c;
-  GenericAabbTree *local_8;
+  int midStart;
+  int childIndex;
+  int lastStart;
+  GenericAabbTree *subtree;
   
-  if ((param_1->itemCount == 0) &&
+  if ((tree->itemCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",0x184,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->firstChild = aabbTreeCount;
-  param_1->childCount = 0;
-  if ((param_2->maxItemsPerLeaf < param_1->itemCount) &&
-     (iVar3 = SplitAabbTree(param_1->itemCount,param_2,param_3,&local_14,&local_c), iVar3 != 0)) {
-    local_8 = param_2->treeNodePool + aabbTreeCount;
-    if ((param_1->firstChild != aabbTreeCount) &&
+  tree->firstChild = aabbTreeCount;
+  tree->childCount = 0;
+  if ((options->maxItemsPerLeaf < tree->itemCount) &&
+     (iVar3 = SplitAabbTree(tree->itemCount,options,remap,&midStart,&lastStart), iVar3 != 0)) {
+    subtree = options->treeNodePool + aabbTreeCount;
+    if ((tree->firstChild != aabbTreeCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\aabbtree.cpp",400,1,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    CreateAabbSubTrees(param_1,param_2,param_3,0,local_14);
-    if (local_14 < local_c) {
-      CreateAabbSubTrees(param_1,param_2,param_3,local_14,local_c - local_14);
+    CreateAabbSubTrees(tree,options,remap,0,midStart);
+    if (midStart < lastStart) {
+      CreateAabbSubTrees(tree,options,remap,midStart,lastStart - midStart);
     }
-    CreateAabbSubTrees(param_1,param_2,param_3,local_c,param_1->itemCount - local_c);
-    param_1->childCount = aabbTreeCount - param_1->firstChild;
-    for (local_10 = 0; local_10 < param_1->childCount; local_10 = local_10 + 1) {
-      BuildAabbTree_r(local_8 + local_10,param_2,
-                      param_3 + (local_8[local_10].firstItem - param_1->firstItem));
+    CreateAabbSubTrees(tree,options,remap,lastStart,tree->itemCount - lastStart);
+    tree->childCount = aabbTreeCount - tree->firstChild;
+    for (childIndex = 0; childIndex < tree->childCount; childIndex = childIndex + 1) {
+      BuildAabbTree_r(subtree + childIndex,options,
+                      remap + (subtree[childIndex].firstItem - tree->firstItem));
     }
   }
   return;
@@ -449,75 +446,75 @@ void __cdecl BuildAabbTree_r(GenericAabbTree *param_1,GenericAabbTreeOptions *pa
 
 // 00785CA0  BuildAabbTree  (universal/aabbtree.cpp:423)
 
-int __cdecl BuildAabbTree(GenericAabbTreeOptions *param_1)
+int __cdecl BuildAabbTree(GenericAabbTreeOptions *options)
 
 {
   longlong lVar1;
-  uchar *puVar2;
-  float *pfVar3;
-  float (*pafVar4) [3];
-  int *local_414;
-  int local_410;
-  int local_40c [64];
-  float local_30c [64];
+  uchar *dst;
+  float *pfVar2;
+  float (*pafVar3) [3];
+  int *remap;
+  int itemIndex;
+  int remapBuffer [64];
+  float sortedBounds [64];
   float local_20c [64];
   float local_10c [65];
-  uchar *local_8;
+  uchar *itemCopies;
   
-  if ((uint)param_1->itemCount < 0x41) {
-    local_414 = local_40c;
-    sortedMins = local_30c;
+  if ((uint)options->itemCount < 0x41) {
+    remap = remapBuffer;
+    sortedMins = sortedBounds;
     sortedMaxs = local_20c;
     sortedCoplanar = local_10c;
   }
   else {
-    lVar1 = (ulonglong)(uint)param_1->itemCount * 4;
-    local_414 = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
-    lVar1 = (ulonglong)(uint)param_1->itemCount * 4;
+    lVar1 = (ulonglong)(uint)options->itemCount * 4;
+    remap = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
+    lVar1 = (ulonglong)(uint)options->itemCount * 4;
     sortedMins = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
-    lVar1 = (ulonglong)(uint)param_1->itemCount * 4;
+    lVar1 = (ulonglong)(uint)options->itemCount * 4;
     sortedMaxs = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
-    lVar1 = (ulonglong)(uint)param_1->itemCount * 4;
+    lVar1 = (ulonglong)(uint)options->itemCount * 4;
     sortedCoplanar = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
   }
-  for (local_410 = 0; local_410 < param_1->itemCount; local_410 = local_410 + 1) {
-    local_414[local_410] = local_410;
+  for (itemIndex = 0; itemIndex < options->itemCount; itemIndex = itemIndex + 1) {
+    remap[itemIndex] = itemIndex;
   }
-  param_1->treeNodePool->firstItem = 0;
-  param_1->treeNodePool->itemCount = param_1->itemCount;
+  options->treeNodePool->firstItem = 0;
+  options->treeNodePool->itemCount = options->itemCount;
   aabbTreeCount = 1;
-  BuildAabbTree_r(param_1->treeNodePool,param_1,local_414);
-  local_8 = operator_new(param_1->itemCount * param_1->itemSize);
-  memcpy(local_8,param_1->items,param_1->itemCount * param_1->itemSize);
-  for (local_410 = 0; local_410 < param_1->itemCount; local_410 = local_410 + 1) {
-    memcpy((uchar *)(local_410 * param_1->itemSize + (int)param_1->items),
-           local_8 + local_414[local_410] * param_1->itemSize,param_1->itemSize);
+  BuildAabbTree_r(options->treeNodePool,options,remap);
+  itemCopies = operator_new(options->itemCount * options->itemSize);
+  memcpy(itemCopies,options->items,options->itemCount * options->itemSize);
+  for (itemIndex = 0; itemIndex < options->itemCount; itemIndex = itemIndex + 1) {
+    memcpy((uchar *)(itemIndex * options->itemSize + (int)options->items),
+           itemCopies + remap[itemIndex] * options->itemSize,options->itemSize);
   }
-  operator_delete(local_8);
-  if (param_1->maintainValidBounds != 0) {
-    lVar1 = (ulonglong)(uint)param_1->itemCount * 3;
+  operator_delete(itemCopies);
+  if (options->maintainValidBounds != 0) {
+    lVar1 = (ulonglong)(uint)options->itemCount * 3;
     lVar1 = (ulonglong)(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1) * 4;
-    puVar2 = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
-    memcpy(puVar2,(uchar *)param_1->mins,param_1->itemCount * 0xc);
-    for (local_410 = 0; local_410 < param_1->itemCount; local_410 = local_410 + 1) {
-      pafVar4 = param_1->mins + local_410;
-      pfVar3 = (float *)(puVar2 + local_414[local_410] * 0xc);
-      (*pafVar4)[0] = *pfVar3;
-      (*pafVar4)[1] = pfVar3[1];
-      (*pafVar4)[2] = pfVar3[2];
+    dst = operator_new(-(uint)((int)((ulonglong)lVar1 >> 0x20) != 0) | (uint)lVar1);
+    memcpy(dst,(uchar *)options->mins,options->itemCount * 0xc);
+    for (itemIndex = 0; itemIndex < options->itemCount; itemIndex = itemIndex + 1) {
+      pafVar3 = options->mins + itemIndex;
+      pfVar2 = (float *)(dst + remap[itemIndex] * 0xc);
+      (*pafVar3)[0] = *pfVar2;
+      (*pafVar3)[1] = pfVar2[1];
+      (*pafVar3)[2] = pfVar2[2];
     }
-    memcpy(puVar2,(uchar *)param_1->maxs,param_1->itemCount * 0xc);
-    for (local_410 = 0; local_410 < param_1->itemCount; local_410 = local_410 + 1) {
-      pafVar4 = param_1->maxs + local_410;
-      pfVar3 = (float *)(puVar2 + local_414[local_410] * 0xc);
-      (*pafVar4)[0] = *pfVar3;
-      (*pafVar4)[1] = pfVar3[1];
-      (*pafVar4)[2] = pfVar3[2];
+    memcpy(dst,(uchar *)options->maxs,options->itemCount * 0xc);
+    for (itemIndex = 0; itemIndex < options->itemCount; itemIndex = itemIndex + 1) {
+      pafVar3 = options->maxs + itemIndex;
+      pfVar2 = (float *)(dst + remap[itemIndex] * 0xc);
+      (*pafVar3)[0] = *pfVar2;
+      (*pafVar3)[1] = pfVar2[1];
+      (*pafVar3)[2] = pfVar2[2];
     }
-    operator_delete(puVar2);
+    operator_delete(dst);
   }
-  if (local_414 != local_40c) {
-    operator_delete(local_414);
+  if (remap != remapBuffer) {
+    operator_delete(remap);
     operator_delete(sortedMins);
     operator_delete(sortedMaxs);
     operator_delete(sortedCoplanar);

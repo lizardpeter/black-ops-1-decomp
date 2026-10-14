@@ -2,31 +2,31 @@
 
 // 0095BDFD  sprintf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sprintf.c:99)
 
-int __cdecl sprintf(char *param_1,char *param_2)
+int __cdecl sprintf(char *string,char *format)
 
 {
   int *piVar1;
   int iVar2;
-  _iobuf local_24;
+  _iobuf str;
   
-  if ((param_2 == (char *)0x0) || (param_1 == (char *)0x0)) {
+  if ((format == (char *)0x0) || (string == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
   else {
-    local_24._base = param_1;
-    local_24._ptr = param_1;
-    local_24._cnt = 0x7fffffff;
-    local_24._flag = 0x42;
-    iVar2 = _output_l(&local_24,param_2,(localeinfo_struct *)0x0,&stack0x0000000c);
-    local_24._cnt = local_24._cnt + -1;
-    if (local_24._cnt < 0) {
-      _flsbuf(0,&local_24);
+    str._base = string;
+    str._ptr = string;
+    str._cnt = 0x7fffffff;
+    str._flag = 0x42;
+    iVar2 = _output_l(&str,format,(localeinfo_struct *)0x0,&stack0x0000000c);
+    str._cnt = str._cnt + -1;
+    if (str._cnt < 0) {
+      _flsbuf(0,&str);
     }
     else {
-      *local_24._ptr = '\0';
+      *str._ptr = '\0';
     }
   }
   return iVar2;
@@ -35,12 +35,12 @@ int __cdecl sprintf(char *param_1,char *param_2)
 
 // 0095BE7A  sprintf_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/sprintf.c:212)
 
-int __cdecl sprintf_s(char *param_1,uint param_2,char *param_3)
+int __cdecl sprintf_s(char *string,uint sizeInBytes,char *format)
 
 {
   int iVar1;
   
-  iVar1 = _vsprintf_s_l(param_1,param_2,param_3,(localeinfo_struct *)0x0,&stack0x00000010);
+  iVar1 = _vsprintf_s_l(string,sizeInBytes,format,(localeinfo_struct *)0x0,&stack0x00000010);
   return iVar1;
 }
 

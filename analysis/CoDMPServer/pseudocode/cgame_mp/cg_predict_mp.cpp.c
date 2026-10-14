@@ -61,15 +61,17 @@ void __cdecl CG_ClearItemList(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_BuildItemList(int param_1,snapshot_s *param_2)
+void __cdecl CG_BuildItemList(int localClientNum,snapshot_s *nextSnap)
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
-  int local_c;
+  centity_s *cent;
+  int entIndex;
+  entityState_s *ent;
   
-  if ((param_2 == (snapshot_s *)0x0) &&
+  if ((nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",0x4c
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -85,9 +87,9 @@ void __cdecl CG_BuildItemList(int param_1,snapshot_s *param_2)
     return;
   }
   CG_ClearItemList();
-  cg_itemLocalClientNum = param_1;
-  for (local_c = 0; local_c < param_2->numEntities; local_c = local_c + 1) {
-    pcVar3 = CG_GetEntity(param_1,param_2->entities[local_c].number);
+  cg_itemLocalClientNum = localClientNum;
+  for (entIndex = 0; entIndex < nextSnap->numEntities; entIndex = entIndex + 1) {
+    pcVar3 = CG_GetEntity(localClientNum,nextSnap->entities[entIndex].number);
     if ((pcVar3->nextState).eType == 3) {
       cg_itemEntities[cg_itemEntityCount] = pcVar3;
       cg_itemEntityCount = cg_itemEntityCount + 1;
@@ -104,7 +106,7 @@ void __cdecl CG_BuildItemList(int param_1,snapshot_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_TouchItem(cg_s *param_1,centity_s *param_2)
+void __cdecl CG_TouchItem(cg_s *cgameGlob,centity_s *cent)
 
 {
   code *pcVar1;
@@ -112,14 +114,14 @@ void __cdecl CG_TouchItem(cg_s *param_1,centity_s *param_2)
   int iVar3;
   uint uVar4;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",0x66
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (centity_s *)0x0) &&
+  if ((cent == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",0x67
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -128,25 +130,25 @@ void __cdecl CG_TouchItem(cg_s *param_1,centity_s *param_2)
   }
   if ((((cg_predictItems->current).enabled != false) &&
       (iVar3 = BG_PlayerTouchesItem
-                         (&param_1->predictedPlayerState,&param_2->nextState,param_1->time),
-      iVar3 != 0)) && (param_2->miscTime != param_1->time)) {
-    uVar4 = (param_2->nextState).un3.secondBcAlias & 0x800007ff;
+                         (&cgameGlob->predictedPlayerState,&cent->nextState,cgameGlob->time),
+      iVar3 != 0)) && (cent->miscTime != cgameGlob->time)) {
+    uVar4 = (cent->nextState).un3.secondBcAlias & 0x800007ff;
     if ((int)uVar4 < 0) {
       uVar4 = (uVar4 - 1 | 0xfffff800) + 1;
     }
-    iVar3 = BG_PlayerHasWeapon(&param_1->predictedPlayerState,uVar4);
+    iVar3 = BG_PlayerHasWeapon(&cgameGlob->predictedPlayerState,uVar4);
     if (((iVar3 != 0) &&
-        (iVar3 = BG_CanItemBeGrabbed(&param_2->nextState,&param_1->predictedPlayerState,1),
+        (iVar3 = BG_CanItemBeGrabbed(&cent->nextState,&cgameGlob->predictedPlayerState,1),
         iVar3 != 0)) &&
        (iVar3 = BG_PlayerHasRoomForEntAllAmmoTypes
-                          (&param_2->nextState,&param_1->predictedPlayerState), iVar3 != 0)) {
-      (param_2->nextState).lerp.eFlags = (param_2->nextState).lerp.eFlags | 0x20;
-      param_2->miscTime = param_1->time;
-      uVar4 = (param_2->nextState).un3.secondBcAlias & 0x800007ff;
+                          (&cent->nextState,&cgameGlob->predictedPlayerState), iVar3 != 0)) {
+      (cent->nextState).lerp.eFlags = (cent->nextState).lerp.eFlags | 0x20;
+      cent->miscTime = cgameGlob->time;
+      uVar4 = (cent->nextState).un3.secondBcAlias & 0x800007ff;
       if ((int)uVar4 < 0) {
         uVar4 = (uVar4 - 1 | 0xfffff800) + 1;
       }
-      BG_AddPredictableEventToPlayerstate(0xc,uVar4,&param_1->predictedPlayerState);
+      BG_AddPredictableEventToPlayerstate(0xc,uVar4,&cgameGlob->predictedPlayerState);
     }
   }
   return;
@@ -156,8 +158,7 @@ void __cdecl CG_TouchItem(cg_s *param_1,centity_s *param_2)
 // 004E2230  visit  (physics/phys_visitor.h:130)
 
 void __thiscall
-colgeom_visitor_inlined_t<200>::visit
-          (colgeom_visitor_inlined_t<200> *this,CollisionAabbTree *param_1)
+colgeom_visitor_inlined_t<200>::visit(colgeom_visitor_inlined_t<200> *this,CollisionAabbTree *tree)
 
 {
   int iVar1;
@@ -166,7 +167,7 @@ colgeom_visitor_inlined_t<200>::visit
     iVar1 = this->nprims;
     this->nprims = this->nprims + 1;
     this->prims[iVar1].type = 0;
-    this->prims[iVar1].field1_0x4.tree = param_1;
+    this->prims[iVar1].field1_0x4.tree = tree;
   }
   return;
 }
@@ -179,28 +180,30 @@ colgeom_visitor_inlined_t<200>::visit
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_TouchItemPrediction(int param_1)
+void __cdecl CG_TouchItemPrediction(int localClientNum)
 
 {
-  centity_s *pcVar1;
-  code *pcVar2;
-  bool bVar3;
-  cg_s *pcVar4;
-  int local_8;
+  centity_s *cent_00;
+  code *pcVar1;
+  bool bVar2;
+  cg_s *cgameGlob_00;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  int entIndex;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  if (((pcVar4->predictedPlayerState).pm_type == 0) || ((pcVar4->predictedPlayerState).pm_type == 1)
-     ) {
-    for (local_8 = 0; local_8 < cg_itemEntityCount; local_8 = local_8 + 1) {
-      pcVar1 = cg_itemEntities[local_8];
-      if (((pcVar1->nextState).eType != 3) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",
-                                   0x97,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if (((cgameGlob_00->predictedPlayerState).pm_type == 0) ||
+     ((cgameGlob_00->predictedPlayerState).pm_type == 1)) {
+    for (entIndex = 0; entIndex < cg_itemEntityCount; entIndex = entIndex + 1) {
+      cent_00 = cg_itemEntities[entIndex];
+      if (((cent_00->nextState).eType != 3) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",
+                                   0x97,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      CG_TouchItem(pcVar4,pcVar1);
+      CG_TouchItem(cgameGlob_00,cent_00);
     }
   }
   return;
@@ -210,7 +213,7 @@ void __cdecl CG_TouchItemPrediction(int param_1)
 // 004E2280  visit  (physics/phys_visitor.h:140)
 
 void __thiscall
-colgeom_visitor_inlined_t<200>::visit(colgeom_visitor_inlined_t<200> *this,cbrush_t *param_1)
+colgeom_visitor_inlined_t<200>::visit(colgeom_visitor_inlined_t<200> *this,cbrush_t *brush)
 
 {
   int iVar1;
@@ -219,7 +222,7 @@ colgeom_visitor_inlined_t<200>::visit(colgeom_visitor_inlined_t<200> *this,cbrus
     iVar1 = this->nprims;
     this->nprims = this->nprims + 1;
     this->prims[iVar1].type = 1;
-    this->prims[iVar1].field1_0x4.brush = param_1;
+    this->prims[iVar1].field1_0x4.brush = brush;
   }
   return;
 }
@@ -232,7 +235,7 @@ colgeom_visitor_inlined_t<200>::visit(colgeom_visitor_inlined_t<200> *this,cbrus
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_ShouldInterpolatePlayerStateViewClamp(int param_1,snapshot_s *param_2)
+bool __cdecl CG_ShouldInterpolatePlayerStateViewClamp(int localClientNum,snapshot_s *prevSnap)
 
 {
   code *pcVar1;
@@ -240,13 +243,15 @@ bool __cdecl CG_ShouldInterpolatePlayerStateViewClamp(int param_1,snapshot_s *pa
   undefined1 uVar3;
   centity_s *pcVar4;
   vehicle_info_t *pvVar5;
+  vehicle_info_t *vehInfo;
+  centity_s *cent;
   
-  if ((param_2->ps).pm_type == 1) {
+  if ((prevSnap->ps).pm_type == 1) {
     bVar2 = true;
   }
-  else if (((param_2->ps).eFlags & 0x300U) == 0) {
-    if (((((param_2->ps).eFlags & 0x4000U) != 0) &&
-        (pcVar4 = CG_GetEntity(param_1,(int)(param_2->ps).viewlocked_entNum),
+  else if (((prevSnap->ps).eFlags & 0x300U) == 0) {
+    if (((((prevSnap->ps).eFlags & 0x4000U) != 0) &&
+        (pcVar4 = CG_GetEntity(localClientNum,(int)(prevSnap->ps).viewlocked_entNum),
         pcVar4 != (centity_s *)0x0)) && (pcVar4->nextValid != 0)) {
       pvVar5 = CG_GetVehicleInfo((uint)(pcVar4->nextState).un2.vehicleState.vehicleInfoIndex);
       if ((pvVar5 == (vehicle_info_t *)0x0) &&
@@ -277,7 +282,7 @@ bool __cdecl CG_ShouldInterpolatePlayerStateViewClamp(int param_1,snapshot_s *pa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_InterpolatePlayerStateViewAngles(int param_1,playerState_s *param_2,usercmd_s *param_3)
+CG_InterpolatePlayerStateViewAngles(int localClientNum,playerState_s *out,usercmd_s *cmd)
 
 {
   float fVar1;
@@ -285,127 +290,127 @@ CG_InterpolatePlayerStateViewAngles(int param_1,playerState_s *param_2,usercmd_s
   code *pcVar3;
   float10 fVar4;
   bool bVar5;
-  char *pcVar6;
-  int iVar7;
-  float10 fVar8;
-  float fVar9;
-  float local_d4 [9];
-  float local_b0 [3];
-  float local_a4;
+  char *s1;
+  int iVar6;
+  float10 fVar7;
+  float fVar8;
+  float resultMat [9];
+  float centerAngles [3];
+  float viewYawAngles;
   float local_a0;
   undefined4 local_9c;
-  float local_98 [9];
-  float local_74 [10];
-  float local_4c;
-  int local_48;
-  float local_44;
-  float local_40;
-  float (*local_3c) [2];
-  centity_s *local_38;
-  float local_34;
+  float viewMat [9];
+  float vehMat [9];
+  float fs;
+  float fc;
+  int clampCount;
+  float yawOffset;
+  float pitchClamp;
+  float (*gunnerClamps) [2];
+  centity_s *vehCent;
+  float vehAngles;
   float local_30;
   float local_2c;
-  float local_28;
-  int local_24;
-  ushort local_20;
-  char *local_1c [2];
-  cg_s *local_14;
-  snapshot_s *local_10;
-  snapshot_s *local_c;
-  int local_8;
+  float yawFrac;
+  int vehicleType;
+  ushort vehType;
+  char *vehicleTypeStr [2];
+  cg_s *cgameGlob;
+  snapshot_s *prevSnap;
+  snapshot_s *nextSnap;
+  int i;
   
-  local_14 = CG_GetLocalClientGlobals(param_1);
-  local_10 = local_14->snap;
-  local_c = local_14->nextSnap;
-  if ((local_10 == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  prevSnap = cgameGlob->snap;
+  nextSnap = cgameGlob->nextSnap;
+  if ((prevSnap == (snapshot_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",0xbe
                                ,0,"%s"), !bVar5)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((local_c == (snapshot_s *)0x0) &&
+  if ((nextSnap == (snapshot_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",0xbf
                                ,0,"%s"), !bVar5)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  bVar5 = CG_ShouldInterpolatePlayerStateViewClamp(param_1,local_10);
+  bVar5 = CG_ShouldInterpolatePlayerStateViewClamp(localClientNum,prevSnap);
   if (bVar5) {
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      fVar1 = (local_10->ps).viewAngleClampBase[local_8];
-      fVar2 = local_14->frameInterpolation;
-      fVar9 = AngleNormalize180((local_c->ps).viewAngleClampBase[local_8] - fVar1);
-      param_2->viewAngleClampBase[local_8] = fVar9 * fVar2 + fVar1;
-      param_2->viewAngleClampRange[local_8] =
-           ((local_c->ps).viewAngleClampRange[local_8] - (local_10->ps).viewAngleClampRange[local_8]
-           ) * local_14->frameInterpolation + (local_10->ps).viewAngleClampRange[local_8];
+    for (i = 0; i < 2; i = i + 1) {
+      fVar1 = (prevSnap->ps).viewAngleClampBase[i];
+      fVar2 = cgameGlob->frameInterpolation;
+      fVar8 = AngleNormalize180((nextSnap->ps).viewAngleClampBase[i] - fVar1);
+      out->viewAngleClampBase[i] = fVar8 * fVar2 + fVar1;
+      out->viewAngleClampRange[i] =
+           ((nextSnap->ps).viewAngleClampRange[i] - (prevSnap->ps).viewAngleClampRange[i]) *
+           cgameGlob->frameInterpolation + (prevSnap->ps).viewAngleClampRange[i];
     }
   }
-  if ((((param_3 != (usercmd_s *)0x0) && (((local_10->ps).eFlags & 0x4000U) != 0)) &&
-      ((local_10->ps).vehiclePos == (local_c->ps).vehiclePos)) &&
-     ((0 < (local_10->ps).vehiclePos && ((local_10->ps).vehiclePos < 5)))) {
-    local_38 = CG_GetEntity(param_1,(int)param_2->viewlocked_entNum);
-    local_1c[0] = "t34";
-    local_1c[1] = "panzer";
-    local_20 = CG_GetVehicleTypeString(local_14->clientNum,(int)param_2->viewlocked_entNum);
-    if (local_20 != 0) {
-      for (local_24 = 0; local_24 < 2; local_24 = local_24 + 1) {
-        pcVar6 = SL_ConvertToString((uint)local_20,SCRIPTINSTANCE_SERVER);
-        iVar7 = I_stricmp(local_1c[local_24],pcVar6);
-        if (iVar7 == 0) break;
+  if ((((cmd != (usercmd_s *)0x0) && (((prevSnap->ps).eFlags & 0x4000U) != 0)) &&
+      ((prevSnap->ps).vehiclePos == (nextSnap->ps).vehiclePos)) &&
+     ((0 < (prevSnap->ps).vehiclePos && ((prevSnap->ps).vehiclePos < 5)))) {
+    vehCent = CG_GetEntity(localClientNum,(int)out->viewlocked_entNum);
+    vehicleTypeStr[0] = "t34";
+    vehicleTypeStr[1] = "panzer";
+    vehType = CG_GetVehicleTypeString(cgameGlob->clientNum,(int)out->viewlocked_entNum);
+    if (vehType != 0) {
+      for (vehicleType = 0; vehicleType < 2; vehicleType = vehicleType + 1) {
+        s1 = SL_ConvertToString((uint)vehType,SCRIPTINSTANCE_SERVER);
+        iVar6 = I_stricmp(vehicleTypeStr[vehicleType],s1);
+        if (iVar6 == 0) break;
       }
-      if (local_24 < 2) {
-        local_40 = 360.0;
-        local_34 = (local_38->pose).angles[0];
-        local_30 = (local_38->pose).angles[1];
-        local_2c = (local_38->pose).angles[2];
-        if ((local_10->ps).vehiclePos == 0) {
-          local_3c = driverClampArrays[local_24];
+      if (vehicleType < 2) {
+        pitchClamp = 360.0;
+        vehAngles = (vehCent->pose).angles[0];
+        local_30 = (vehCent->pose).angles[1];
+        local_2c = (vehCent->pose).angles[2];
+        if ((prevSnap->ps).vehiclePos == 0) {
+          gunnerClamps = driverClampArrays[vehicleType];
         }
         else {
-          local_3c = gunnerClampArrays[local_24];
-          local_30 = (float)(int)(local_38->pose).field19_0x6c.vehicle.yaw * 0.005493164 + local_30;
+          gunnerClamps = gunnerClampArrays[vehicleType];
+          local_30 = (float)(int)(vehCent->pose).field19_0x6c.vehicle.yaw * 0.005493164 + local_30;
         }
-        local_44 = AngleNormalize360(((float)param_3->angles[1] * 0.005493164 +
-                                     param_2->delta_angles[1]) - local_30);
-        if ((local_10->ps).vehiclePos == 0) {
-          local_48 = driverClampCounts[local_24];
+        yawOffset = AngleNormalize360(((float)cmd->angles[1] * 0.005493164 + out->delta_angles[1]) -
+                                      local_30);
+        if ((prevSnap->ps).vehiclePos == 0) {
+          clampCount = driverClampCounts[vehicleType];
         }
         else {
-          local_48 = gunnerClampCounts[local_24];
+          clampCount = gunnerClampCounts[vehicleType];
         }
-        local_8 = 0;
-        while ((local_8 < local_48 && (local_3c[local_8][1] <= local_44))) {
-          local_8 = local_8 + 1;
+        i = 0;
+        while ((i < clampCount && (gunnerClamps[i][1] <= yawOffset))) {
+          i = i + 1;
         }
-        fVar8 = (float10)(((local_44 - local_3c[local_8 + -1][1]) /
-                          (local_3c[local_8][1] - local_3c[local_8 + -1][1])) * 3.1415927 -
-                         1.5707964);
-        fVar4 = (float10)fcos(fVar8);
-        fVar8 = (float10)fsin(fVar8);
-        local_4c = (float)fVar4;
-        local_28 = ((float)fVar8 + 1.0) / 2.0;
-        local_40 = (local_3c[local_8][0] - local_3c[local_8 + -1][0]) * local_28 +
-                   local_3c[local_8 + -1][0];
-        if ((local_10->ps).vehiclePos == 0) {
-          AnglesToAxis(&local_34,(float (*) [3])local_74);
-          local_a4 = 0.0;
-          local_a0 = local_44;
+        fVar7 = (float10)(((yawOffset - gunnerClamps[i + -1][1]) /
+                          (gunnerClamps[i][1] - gunnerClamps[i + -1][1])) * 3.1415927 - 1.5707964);
+        fVar4 = (float10)fcos(fVar7);
+        fVar7 = (float10)fsin(fVar7);
+        fc = (float)fVar4;
+        yawFrac = ((float)fVar7 + 1.0) / 2.0;
+        pitchClamp = (gunnerClamps[i][0] - gunnerClamps[i + -1][0]) * yawFrac +
+                     gunnerClamps[i + -1][0];
+        if ((prevSnap->ps).vehiclePos == 0) {
+          AnglesToAxis(&vehAngles,(float (*) [3])vehMat);
+          viewYawAngles = 0.0;
+          local_a0 = yawOffset;
           local_9c = 0;
-          AnglesToAxis(&local_a4,(float (*) [3])local_98);
-          MatrixMultiply((float (*) [3])local_98,(float (*) [3])local_74,(float (*) [3])local_d4);
-          AxisToAngles((float (*) [3])local_d4,local_b0);
-          param_2->viewAngleClampBase[0] =
-               (local_40 - param_2->viewAngleClampRange[0]) / 2.0 + local_b0[0];
-          param_2->viewAngleClampRange[0] = (local_40 + param_2->viewAngleClampRange[0]) / 2.0;
+          AnglesToAxis(&viewYawAngles,(float (*) [3])viewMat);
+          MatrixMultiply((float (*) [3])viewMat,(float (*) [3])vehMat,(float (*) [3])resultMat);
+          AxisToAngles((float (*) [3])resultMat,centerAngles);
+          out->viewAngleClampBase[0] =
+               (pitchClamp - out->viewAngleClampRange[0]) / 2.0 + centerAngles[0];
+          out->viewAngleClampRange[0] = (pitchClamp + out->viewAngleClampRange[0]) / 2.0;
         }
         else {
-          param_2->viewAngleClampBase[0] = (local_40 - param_2->viewAngleClampRange[0]) / 2.0;
-          param_2->viewAngleClampRange[0] = (local_40 + param_2->viewAngleClampRange[0]) / 2.0;
-          param_2->viewAngleClampBase[0] =
-               param_2->viewAngleClampBase[0] + (float)local_14->genericMaterialMap[0x13];
+          out->viewAngleClampBase[0] = (pitchClamp - out->viewAngleClampRange[0]) / 2.0;
+          out->viewAngleClampRange[0] = (pitchClamp + out->viewAngleClampRange[0]) / 2.0;
+          out->viewAngleClampBase[0] =
+               out->viewAngleClampBase[0] + (float)cgameGlob->genericMaterialMap[0x13];
         }
       }
     }
@@ -418,11 +423,10 @@ CG_InterpolatePlayerStateViewAngles(int param_1,playerState_s *param_2,usercmd_s
 
 void __thiscall
 colgeom_visitor_inlined_t<200>::update
-          (colgeom_visitor_inlined_t<200> *this,float *param_1,float *param_2,int param_3,
-          float *param_4)
+          (colgeom_visitor_inlined_t<200> *this,float *_mn,float *_mx,int mask,float *expand_vec)
 
 {
-  char local_5c;
+  bool local_5c;
   float local_44;
   float local_40;
   float local_3c;
@@ -432,37 +436,37 @@ colgeom_visitor_inlined_t<200>::update
   float local_2c;
   float local_28;
   float local_24;
-  char local_1d;
-  float local_1c;
+  bool inside;
+  float mx;
   float local_18;
   float local_14;
-  float local_10;
+  float mn;
   float local_c;
   float local_8;
   
-  local_2c = (float)this->_padding_ - *param_1;
-  local_28 = (float)this->_padding_ - param_1[1];
-  local_24 = (float)this->_padding_ - param_1[2];
-  local_38 = *param_2 - (float)this->_padding_;
-  local_34 = param_2[1] - (float)this->_padding_;
-  local_30 = param_2[2] - (float)this->_padding_;
+  local_2c = (float)this->_padding_ - *_mn;
+  local_28 = (float)this->_padding_ - _mn[1];
+  local_24 = (float)this->_padding_ - _mn[2];
+  local_38 = *_mx - (float)this->_padding_;
+  local_34 = _mx[1] - (float)this->_padding_;
+  local_30 = _mx[2] - (float)this->_padding_;
   Vec3Max(&local_2c,&local_38,&local_44);
   if (((0.0 <= local_44) || (0.0 <= local_40)) || (0.0 <= local_3c)) {
-    local_5c = '\0';
+    local_5c = false;
   }
   else {
-    local_5c = '\x01';
+    local_5c = true;
   }
-  local_1d = local_5c;
-  if ((this->_padding_ != param_3) || (local_5c == '\0')) {
-    local_10 = *param_1 - *param_4;
-    local_c = param_1[1] - param_4[1];
-    local_8 = param_1[2] - param_4[2];
-    local_1c = *param_2 + *param_4;
-    local_18 = param_2[1] + param_4[1];
-    local_14 = param_2[2] + param_4[2];
+  inside = local_5c;
+  if ((this->_padding_ != mask) || (local_5c == false)) {
+    mn = *_mn - *expand_vec;
+    local_c = _mn[1] - expand_vec[1];
+    local_8 = _mn[2] - expand_vec[2];
+    mx = *_mx + *expand_vec;
+    local_18 = _mx[1] + expand_vec[1];
+    local_14 = _mx[2] + expand_vec[2];
     colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)this);
-    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&local_10,&local_1c,param_3);
+    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&mn,&mx,mask);
     if (this->nprims == 200) {
       StatMon_Warning(8,3000,"code_warning_collision");
       this->nprims = 0;
@@ -554,105 +558,104 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_InterpolatePlayerState(int param_1,int param_2)
+void __cdecl CG_InterpolatePlayerState(int localClientNum,int grabAngles)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  int iVar4;
-  float fVar5;
+  int cmdNumber;
+  float fVar4;
   int local_5c;
-  usercmd_s local_54;
+  int cmdNum;
+  usercmd_s cmd;
   uint local_20;
-  playerState_s *local_1c;
-  cg_s *local_18;
-  snapshot_s *local_14;
-  snapshot_s *local_10;
-  float local_c;
-  int local_8;
+  playerState_s *out;
+  cg_s *cgameGlob;
+  snapshot_s *prevSnap;
+  snapshot_s *nextSnap;
+  float f;
+  int i;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = CG_GetLocalClientGlobals(param_1);
-  local_1c = &local_18->predictedPlayerState;
-  local_14 = local_18->snap;
-  local_10 = local_18->nextSnap;
-  if ((local_14 == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  out = &cgameGlob->predictedPlayerState;
+  prevSnap = cgameGlob->snap;
+  nextSnap = cgameGlob->nextSnap;
+  if ((prevSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",
                                0x186,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_10 == (snapshot_s *)0x0) &&
+  if ((nextSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",
                                0x187,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  memcpy((uchar *)local_1c,(uchar *)&local_10->ps,0x26a4);
-  if (param_2 != 0) {
+  memcpy((uchar *)out,(uchar *)&nextSnap->ps,0x26a4);
+  if (grabAngles != 0) {
     for (local_5c = 0; local_5c < 2; local_5c = local_5c + 1) {
-      local_54.button_bits.array[local_5c] = 0;
+      cmd.button_bits.array[local_5c] = 0;
     }
-    iVar4 = CL_GetCurrentCmdNumber(param_1);
-    CL_GetUserCmd(param_1,iVar4,&local_54);
-    PM_UpdateViewAngles(param_1,local_1c,0.0,&local_54,'\0');
+    cmdNumber = CL_GetCurrentCmdNumber(localClientNum);
+    CL_GetUserCmd(localClientNum,cmdNumber,&cmd);
+    PM_UpdateViewAngles(localClientNum,out,0.0,&cmd,'\0');
   }
-  if ((local_14->serverTime < local_10->serverTime) &&
-     (((bVar3 = Demo_IsPlaying(), !bVar3 || ((local_14->ps).pm_type < 9)) ||
-      (5 < (local_10->ps).pm_type)))) {
-    local_c = local_18->frameInterpolation;
-    local_8 = (local_10->ps).bobCycle;
-    if (local_8 < (local_14->ps).bobCycle) {
-      local_8 = local_8 + 0x100;
+  if ((prevSnap->serverTime < nextSnap->serverTime) &&
+     (((bVar3 = Demo_IsPlaying(), !bVar3 || ((prevSnap->ps).pm_type < 9)) ||
+      (5 < (nextSnap->ps).pm_type)))) {
+    f = cgameGlob->frameInterpolation;
+    i = (nextSnap->ps).bobCycle;
+    if (i < (prevSnap->ps).bobCycle) {
+      i = i + 0x100;
     }
-    local_1c->bobCycle =
-         (int)((float)(local_8 - (local_14->ps).bobCycle) * local_c) + (local_14->ps).bobCycle;
-    local_1c->aimSpreadScale =
-         ((local_10->ps).aimSpreadScale - (local_14->ps).aimSpreadScale) * local_c +
-         (local_14->ps).aimSpreadScale;
-    Vec3Lerp((local_14->ps).origin,(local_10->ps).origin,local_c,local_1c->origin);
-    Vec3Lerp((local_14->ps).velocity,(local_10->ps).velocity,local_c,local_1c->velocity);
-    if (param_2 == 0) {
-      for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-        fVar1 = (local_14->ps).viewangles[local_8];
-        fVar5 = AngleNormalize180((local_10->ps).viewangles[local_8] - fVar1);
-        local_1c->viewangles[local_8] = fVar5 * local_c + fVar1;
-        fVar1 = (local_14->ps).delta_angles[local_8];
-        fVar5 = AngleNormalize180((local_10->ps).delta_angles[local_8] - fVar1);
-        local_1c->delta_angles[local_8] = fVar5 * local_c + fVar1;
-        if ((local_14->ps).pm_type == 1) {
-          fVar1 = (local_14->ps).linkAngles[local_8];
-          fVar5 = AngleNormalize180((local_10->ps).linkAngles[local_8] - fVar1);
-          local_1c->linkAngles[local_8] = fVar5 * local_c + fVar1;
+    out->bobCycle = (int)((float)(i - (prevSnap->ps).bobCycle) * f) + (prevSnap->ps).bobCycle;
+    out->aimSpreadScale =
+         ((nextSnap->ps).aimSpreadScale - (prevSnap->ps).aimSpreadScale) * f +
+         (prevSnap->ps).aimSpreadScale;
+    Vec3Lerp((prevSnap->ps).origin,(nextSnap->ps).origin,f,out->origin);
+    Vec3Lerp((prevSnap->ps).velocity,(nextSnap->ps).velocity,f,out->velocity);
+    if (grabAngles == 0) {
+      for (i = 0; i < 3; i = i + 1) {
+        fVar1 = (prevSnap->ps).viewangles[i];
+        fVar4 = AngleNormalize180((nextSnap->ps).viewangles[i] - fVar1);
+        out->viewangles[i] = fVar4 * f + fVar1;
+        fVar1 = (prevSnap->ps).delta_angles[i];
+        fVar4 = AngleNormalize180((nextSnap->ps).delta_angles[i] - fVar1);
+        out->delta_angles[i] = fVar4 * f + fVar1;
+        if ((prevSnap->ps).pm_type == 1) {
+          fVar1 = (prevSnap->ps).linkAngles[i];
+          fVar4 = AngleNormalize180((nextSnap->ps).linkAngles[i] - fVar1);
+          out->linkAngles[i] = fVar4 * f + fVar1;
         }
         else {
-          local_1c->linkAngles[local_8] = (local_10->ps).linkAngles[local_8];
+          out->linkAngles[i] = (nextSnap->ps).linkAngles[i];
         }
       }
     }
-    if ((local_10->ps).viewHeightLerpTime == 0) {
-      local_1c->viewHeightCurrent = (local_10->ps).viewHeightCurrent;
+    if ((nextSnap->ps).viewHeightLerpTime == 0) {
+      out->viewHeightCurrent = (nextSnap->ps).viewHeightCurrent;
     }
     else {
-      local_1c->viewHeightCurrent =
-           ((local_10->ps).viewHeightCurrent - (local_14->ps).viewHeightCurrent) * local_c +
-           (local_14->ps).viewHeightCurrent;
+      out->viewHeightCurrent =
+           ((nextSnap->ps).viewHeightCurrent - (prevSnap->ps).viewHeightCurrent) * f +
+           (prevSnap->ps).viewHeightCurrent;
     }
-    local_1c->leanf = ((local_10->ps).leanf - (local_14->ps).leanf) * local_c + (local_14->ps).leanf
-    ;
-    if (((local_14->ps).eFlags & 0x4000U) == ((local_10->ps).eFlags & 0x4000U)) {
-      local_1c->fWeaponPosFrac =
-           ((local_10->ps).fWeaponPosFrac - (local_14->ps).fWeaponPosFrac) * local_c +
-           (local_14->ps).fWeaponPosFrac;
+    out->leanf = ((nextSnap->ps).leanf - (prevSnap->ps).leanf) * f + (prevSnap->ps).leanf;
+    if (((prevSnap->ps).eFlags & 0x4000U) == ((nextSnap->ps).eFlags & 0x4000U)) {
+      out->fWeaponPosFrac =
+           ((nextSnap->ps).fWeaponPosFrac - (prevSnap->ps).fWeaponPosFrac) * f +
+           (prevSnap->ps).fWeaponPosFrac;
     }
-    if ((local_10->ps).cursorHint == 0) {
-      local_1c->cursorHintString = -1;
-      local_1c->cursorHintEntIndex = 0x3ff;
+    if ((nextSnap->ps).cursorHint == 0) {
+      out->cursorHintString = -1;
+      out->cursorHintEntIndex = 0x3ff;
     }
-    CG_InterpolatePlayerStateViewAngles(param_1,local_1c,(usercmd_s *)0x0);
+    CG_InterpolatePlayerStateViewAngles(localClientNum,out,(usercmd_s *)0x0);
   }
   return;
 }
@@ -685,134 +688,137 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl MovieCameraMove(int param_1,usercmd_s *param_2)
+void __cdecl MovieCameraMove(int localClientNum,usercmd_s *cmd)
 
 {
   bool bVar1;
-  float (*pafVar2) [3];
+  float (*breachPos) [3];
+  float fVar2;
   float fVar3;
-  float fVar4;
   float local_c8;
   float local_c4;
-  float local_8c;
+  float fmove;
+  float wishdir;
   float local_88;
   float local_84;
-  float local_80;
-  float local_7c;
-  float local_78 [3];
-  cg_s *local_6c;
-  float local_68;
+  float max;
+  float control;
+  float wishvel [3];
+  cg_s *cgameGlob;
+  float oldpos;
   float local_64;
   float local_60;
-  float local_5c;
-  float local_58 [4];
-  float local_48;
-  float local_44;
-  float local_40 [4];
-  float local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20 [4];
-  int local_10;
-  float local_c;
-  float local_8;
+  float wishspeed;
+  float right [3];
+  float addspeed;
+  float currentspeed;
+  float total;
+  float forward [3];
+  float curFriction;
+  float newspeed;
+  float drop;
+  float speed;
+  float smove;
+  float up [3];
+  float accelspeed;
+  int i;
+  float scale;
+  float umove;
   
-  local_6c = CG_GetLocalClientGlobals(param_1);
-  local_68 = local_6c->movieCameraOrigin[0];
-  local_64 = local_6c->movieCameraOrigin[1];
-  local_60 = local_6c->movieCameraOrigin[2];
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  oldpos = cgameGlob->movieCameraOrigin[0];
+  local_64 = cgameGlob->movieCameraOrigin[1];
+  local_60 = cgameGlob->movieCameraOrigin[2];
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    bVar1 = Demo_ShouldUpdateMovieCamera(param_1);
+    bVar1 = Demo_ShouldUpdateMovieCamera(localClientNum);
     if (!bVar1) {
       return;
     }
     bVar1 = Demo_IsClipPlaying();
     if ((bVar1) || (bVar1 = Demo_IsClipPreviewRunning(), bVar1)) {
-      Demo_LerpClipCameraValues(param_1);
+      Demo_LerpClipCameraValues(localClientNum);
       return;
     }
   }
-  local_28 = Abs((phys_vec3 *)local_6c->movieCameraVelocity);
-  if (1.0 <= local_28) {
-    local_40[3] = (friction->current).value * 1.5;
-    local_c4 = local_28;
-    if (local_28 < (stopspeed->current).value) {
+  speed = Abs((phys_vec3 *)cgameGlob->movieCameraVelocity);
+  if (1.0 <= speed) {
+    curFriction = (friction->current).value * 1.5;
+    local_c4 = speed;
+    if (speed < (stopspeed->current).value) {
       local_c4 = (stopspeed->current).value;
     }
-    local_7c = local_c4;
-    local_2c = local_c4 * local_40[3] * 0.016667 + 0.0;
-    local_30 = local_28 - local_2c;
-    if (local_30 < 0.0) {
-      local_30 = 0.0;
+    control = local_c4;
+    drop = local_c4 * curFriction * 0.016667 + 0.0;
+    newspeed = speed - drop;
+    if (newspeed < 0.0) {
+      newspeed = 0.0;
     }
-    local_30 = local_30 / local_28;
-    local_6c->movieCameraVelocity[0] = local_30 * local_6c->movieCameraVelocity[0];
-    local_6c->movieCameraVelocity[1] = local_30 * local_6c->movieCameraVelocity[1];
-    local_6c->movieCameraVelocity[2] = local_30 * local_6c->movieCameraVelocity[2];
+    newspeed = newspeed / speed;
+    cgameGlob->movieCameraVelocity[0] = newspeed * cgameGlob->movieCameraVelocity[0];
+    cgameGlob->movieCameraVelocity[1] = newspeed * cgameGlob->movieCameraVelocity[1];
+    cgameGlob->movieCameraVelocity[2] = newspeed * cgameGlob->movieCameraVelocity[2];
   }
   else {
-    local_6c->movieCameraVelocity[0] = 0.0;
-    local_6c->movieCameraVelocity[1] = 0.0;
-    local_6c->movieCameraVelocity[2] = 0.0;
+    cgameGlob->movieCameraVelocity[0] = 0.0;
+    cgameGlob->movieCameraVelocity[1] = 0.0;
+    cgameGlob->movieCameraVelocity[2] = 0.0;
   }
-  fVar3 = (float)(int)param_2->forwardmove;
-  local_24 = (float)(int)param_2->rightmove;
-  local_8 = 0.0;
-  bVar1 = bitarray<51>::testBit(&param_2->button_bits,7);
+  fVar2 = (float)(int)cmd->forwardmove;
+  smove = (float)(int)cmd->rightmove;
+  umove = 0.0;
+  bVar1 = bitarray<51>::testBit(&cmd->button_bits,7);
   if (bVar1) {
-    local_8 = local_8 + 127.0;
+    umove = umove + 127.0;
   }
-  bVar1 = bitarray<51>::testBit(&param_2->button_bits,6);
+  bVar1 = bitarray<51>::testBit(&cmd->button_bits,6);
   if (bVar1) {
-    local_8 = local_8 - 127.0;
+    umove = umove - 127.0;
   }
-  local_80 = ABS(fVar3);
-  if (local_80 < ABS(local_24)) {
-    local_80 = ABS(local_24);
+  max = ABS(fVar2);
+  if (max < ABS(smove)) {
+    max = ABS(smove);
   }
-  if (local_80 < ABS(local_8)) {
-    local_80 = ABS(local_8);
+  if (max < ABS(umove)) {
+    max = ABS(umove);
   }
-  local_44 = SQRT(fVar3 * fVar3 + local_24 * local_24 + local_8 * local_8);
-  local_c = ((local_80 * 190.0) / (local_44 * 127.0)) * 3.0;
-  for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-    fVar4 = AngleNormalize180((float)param_2->angles[local_10] * 0.005493164);
-    local_6c->movieCameraAngles[local_10] = fVar4;
+  total = SQRT(fVar2 * fVar2 + smove * smove + umove * umove);
+  scale = ((max * 190.0) / (total * 127.0)) * 3.0;
+  for (i = 0; i < 3; i = i + 1) {
+    fVar3 = AngleNormalize180((float)cmd->angles[i] * 0.005493164);
+    cgameGlob->movieCameraAngles[i] = fVar3;
   }
-  AngleVectors(local_6c->movieCameraAngles,local_40,local_58,local_20);
-  for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-    local_78[local_10] =
-         local_40[local_10] * fVar3 + local_58[local_10] * local_24 + local_20[local_10] * local_8;
+  AngleVectors(cgameGlob->movieCameraAngles,forward,right,up);
+  for (i = 0; i < 3; i = i + 1) {
+    wishvel[i] = forward[i] * fVar2 + right[i] * smove + up[i] * umove;
   }
-  local_8c = local_78[0];
-  local_88 = local_78[1];
-  local_84 = local_78[2];
-  local_5c = Vec3Normalize(&local_8c);
-  local_5c = local_5c * local_c;
-  local_48 = local_6c->movieCameraVelocity[0] * local_8c +
-             local_6c->movieCameraVelocity[1] * local_88 +
-             local_6c->movieCameraVelocity[2] * local_84;
-  local_58[3] = local_5c - local_48;
-  if (0.0 < local_58[3]) {
-    local_c8 = local_5c;
-    if (local_5c < (stopspeed->current).value) {
+  wishdir = wishvel[0];
+  local_88 = wishvel[1];
+  local_84 = wishvel[2];
+  fVar2 = Vec3Normalize(&wishdir);
+  wishspeed = fVar2 * scale;
+  currentspeed = cgameGlob->movieCameraVelocity[0] * wishdir +
+                 cgameGlob->movieCameraVelocity[1] * local_88 +
+                 cgameGlob->movieCameraVelocity[2] * local_84;
+  addspeed = wishspeed - currentspeed;
+  if (0.0 < addspeed) {
+    local_c8 = wishspeed;
+    if (wishspeed < (stopspeed->current).value) {
       local_c8 = (stopspeed->current).value;
     }
-    local_7c = local_c8;
-    local_20[3] = local_c8 * 0.15000299;
-    if (local_58[3] < local_20[3]) {
-      local_20[3] = local_58[3];
+    control = local_c8;
+    accelspeed = local_c8 * 0.15000299;
+    if (addspeed < accelspeed) {
+      accelspeed = addspeed;
     }
-    local_6c->movieCameraVelocity[0] = local_20[3] * local_8c + local_6c->movieCameraVelocity[0];
-    local_6c->movieCameraVelocity[1] = local_20[3] * local_88 + local_6c->movieCameraVelocity[1];
-    local_6c->movieCameraVelocity[2] = local_20[3] * local_84 + local_6c->movieCameraVelocity[2];
+    cgameGlob->movieCameraVelocity[0] = accelspeed * wishdir + cgameGlob->movieCameraVelocity[0];
+    cgameGlob->movieCameraVelocity[1] = accelspeed * local_88 + cgameGlob->movieCameraVelocity[1];
+    cgameGlob->movieCameraVelocity[2] = accelspeed * local_84 + cgameGlob->movieCameraVelocity[2];
   }
-  MovieCameraViewTrace(param_1,0x800811);
-  pafVar2 = CL_GetMapCenter();
+  MovieCameraViewTrace(localClientNum,0x800811);
+  breachPos = CL_GetMapCenter();
   BG_ClipCameraToHeliPatch
-            (local_6c->movieCameraOrigin,&local_68,local_6c->movieCameraVelocity,pafVar2);
+            (cgameGlob->movieCameraOrigin,&oldpos,cgameGlob->movieCameraVelocity,breachPos);
   return;
 }
 
@@ -824,33 +830,33 @@ void __cdecl MovieCameraMove(int param_1,usercmd_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl FollowCameraMove(cg_s *param_1,centity_s *param_2,usercmd_s *param_3)
+void __cdecl FollowCameraMove(cg_s *cgameGlob,centity_s *cent,usercmd_s *cmd)
 
 {
   float fVar1;
-  float local_2c [3];
-  float local_20;
+  float right [3];
+  float forward;
   float local_1c;
   float local_18;
-  float local_14 [3];
-  int local_8;
+  float up [3];
+  int i;
   
-  param_1->movieCameraVelocity[0] = 0.0;
-  param_1->movieCameraVelocity[1] = 0.0;
-  param_1->movieCameraVelocity[2] = 0.0;
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    fVar1 = AngleNormalize180((float)param_3->angles[local_8] * 0.005493164);
-    param_1->movieCameraAngles[local_8] = fVar1;
+  cgameGlob->movieCameraVelocity[0] = 0.0;
+  cgameGlob->movieCameraVelocity[1] = 0.0;
+  cgameGlob->movieCameraVelocity[2] = 0.0;
+  for (i = 0; i < 3; i = i + 1) {
+    fVar1 = AngleNormalize180((float)cmd->angles[i] * 0.005493164);
+    cgameGlob->movieCameraAngles[i] = fVar1;
   }
-  param_1->movieCameraOrigin[0] = (param_2->pose).origin[0];
-  param_1->movieCameraOrigin[1] = (param_2->pose).origin[1];
-  param_1->movieCameraOrigin[2] = (param_2->pose).origin[2];
-  param_1->movieCameraOrigin[2] = param_1->movieCameraOrigin[2] + 35.0;
-  AngleVectors(param_1->movieCameraAngles,&local_20,local_2c,local_14);
-  Vec3Normalize(&local_20);
-  param_1->movieCameraOrigin[0] = local_20 * -70.0 + param_1->movieCameraOrigin[0];
-  param_1->movieCameraOrigin[1] = local_1c * -70.0 + param_1->movieCameraOrigin[1];
-  param_1->movieCameraOrigin[2] = local_18 * -70.0 + param_1->movieCameraOrigin[2];
+  cgameGlob->movieCameraOrigin[0] = (cent->pose).origin[0];
+  cgameGlob->movieCameraOrigin[1] = (cent->pose).origin[1];
+  cgameGlob->movieCameraOrigin[2] = (cent->pose).origin[2];
+  cgameGlob->movieCameraOrigin[2] = cgameGlob->movieCameraOrigin[2] + 35.0;
+  AngleVectors(cgameGlob->movieCameraAngles,&forward,right,up);
+  Vec3Normalize(&forward);
+  cgameGlob->movieCameraOrigin[0] = forward * -70.0 + cgameGlob->movieCameraOrigin[0];
+  cgameGlob->movieCameraOrigin[1] = local_1c * -70.0 + cgameGlob->movieCameraOrigin[1];
+  cgameGlob->movieCameraOrigin[2] = local_18 * -70.0 + cgameGlob->movieCameraOrigin[2];
   return;
 }
 
@@ -862,14 +868,15 @@ void __cdecl FollowCameraMove(cg_s *param_1,centity_s *param_2,usercmd_s *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ClearSavedPlayerState(int param_1)
+void __cdecl CG_ClearSavedPlayerState(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
+  cg_s *cgameGlob;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar3 == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",0x26a,
                              1,"%s");
@@ -898,12 +905,14 @@ void __cdecl CG_ClearSavedPlayerState(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SavePlayerState(int param_1)
+void __cdecl CG_SavePlayerState(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
+  playerState_s *oldPlayerState;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   pcVar1->impactEffects[0xb] = (pcVar1->predictedPlayerState).commandTime;
   pcVar1->impactEffects[0xc] = (uint)(pcVar1->predictedPlayerState).origin[0];
   pcVar1->impactEffects[0xd] = (uint)(pcVar1->predictedPlayerState).origin[1];
@@ -925,7 +934,7 @@ void __cdecl CG_SavePlayerState(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PredictPlayerState_Internal(int param_1)
+void __cdecl CG_PredictPlayerState_Internal(int localClientNum)
 
 {
   playerState_s *ppVar1;
@@ -937,142 +946,152 @@ void __cdecl CG_PredictPlayerState_Internal(int param_1)
   float local_164;
   int local_104;
   int local_fc;
-  float local_e8;
-  int local_e0;
-  float local_dc;
+  int timeSinceStart;
+  int smoothingDuration;
+  float lerp;
+  float diff;
+  float stepRemaining;
+  float absdiff;
+  int j;
+  float delta_diff;
   float local_d8;
   float local_d4;
-  int local_d0;
-  float local_cc;
-  float local_c8;
+  int t;
+  float f;
+  float adjusted;
   float local_c4;
   float local_c0;
-  phys_vec3 local_bc;
-  float local_ac [3];
-  cg_s *local_a0;
-  int local_9c;
-  usercmd_s local_98;
-  float local_64;
+  float delta;
+  float local_b8;
+  float local_b4;
+  float len;
+  float newAngles [3];
+  cg_s *cgameGlob;
+  int bPredictionRun;
+  usercmd_s latestCmd;
+  float oldDeltaAngles;
   float local_60;
   float local_5c;
-  float local_58;
+  float deltaAngles;
   float local_54;
-  int local_4c;
-  usercmd_s local_48;
+  int cmdNum;
+  usercmd_s oldestCmd;
   uint local_14;
-  playerState_s *local_10;
-  int local_c;
-  centity_s *local_8;
+  playerState_s *ps;
+  int current;
+  centity_s *centTarget;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_fc = 0; local_fc < 2; local_fc = local_fc + 1) {
-    local_48.button_bits.array[local_fc] = 0;
+    oldestCmd.button_bits.array[local_fc] = 0;
   }
   for (local_104 = 0; local_104 < 2; local_104 = local_104 + 1) {
-    local_98.button_bits.array[local_104] = 0;
+    latestCmd.button_bits.array[local_104] = 0;
   }
-  local_a0 = CG_GetLocalClientGlobals(param_1);
-  if ((local_a0->nextSnap == (snapshot_s *)0x0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_predict_mp.cpp",
                                0x2ad,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_10 = &local_a0->nextSnap->ps;
-  local_c = CL_GetCurrentCmdNumber(param_1);
-  if (local_a0->cameraMode == 1) {
-    CG_InterpolatePlayerState(param_1,0);
-    CL_GetUserCmd(param_1,local_c,&local_98);
-    MovieCameraMove(param_1,&local_98);
+  ps = &cgameGlob->nextSnap->ps;
+  current = CL_GetCurrentCmdNumber(localClientNum);
+  if (cgameGlob->cameraMode == 1) {
+    CG_InterpolatePlayerState(localClientNum,0);
+    CL_GetUserCmd(localClientNum,current,&latestCmd);
+    MovieCameraMove(localClientNum,&latestCmd);
   }
-  else if (local_a0->cameraMode == 2) {
-    CG_InterpolatePlayerState(param_1,0);
-    local_8 = CG_GetEntity(param_1,local_a0->followCameraClient);
-    if (local_8->nextValid != 0) {
-      CL_GetUserCmd(param_1,local_c,&local_98);
-      FollowCameraMove(local_a0,local_8,&local_98);
+  else if (cgameGlob->cameraMode == 2) {
+    CG_InterpolatePlayerState(localClientNum,0);
+    centTarget = CG_GetEntity(localClientNum,cgameGlob->followCameraClient);
+    if (centTarget->nextValid != 0) {
+      CL_GetUserCmd(localClientNum,current,&latestCmd);
+      FollowCameraMove(cgameGlob,centTarget,&latestCmd);
     }
   }
-  else if ((local_a0->demoType == DEMO_TYPE_NONE) && ((local_10->otherFlags & 2U) == 0)) {
+  else if ((cgameGlob->demoType == DEMO_TYPE_NONE) && ((ps->otherFlags & 2U) == 0)) {
     if (((cg_nopredict->current).enabled == false) &&
        ((cg_synchronousClients->current).enabled == false)) {
-      cg_pmove[param_1].localClientNum = param_1;
-      cg_pmove[param_1].ps = &local_a0->predictedPlayerState;
-      cg_pmove[param_1].handler = '\0';
-      if ((cg_pmove[param_1].ps)->pm_type < 9) {
-        cg_pmove[param_1].tracemask = 0x2818011;
+      cg_pmove[localClientNum].localClientNum = localClientNum;
+      cg_pmove[localClientNum].ps = &cgameGlob->predictedPlayerState;
+      cg_pmove[localClientNum].handler = '\0';
+      if ((cg_pmove[localClientNum].ps)->pm_type < 9) {
+        cg_pmove[localClientNum].tracemask = 0x2818011;
       }
       else {
-        cg_pmove[param_1].tracemask = 0x810011;
+        cg_pmove[localClientNum].tracemask = 0x810011;
       }
-      if (local_10->pm_type == 4) {
-        cg_pmove[param_1].tracemask = cg_pmove[param_1].tracemask & 0xfdfe7fff;
-        cg_pmove[param_1].tracemask = cg_pmove[param_1].tracemask | 0x800;
+      if (ps->pm_type == 4) {
+        cg_pmove[localClientNum].tracemask = cg_pmove[localClientNum].tracemask & 0xfdfe7fff;
+        cg_pmove[localClientNum].tracemask = cg_pmove[localClientNum].tracemask | 0x800;
       }
-      cg_pmove[param_1].viewChange = 0.0;
-      cg_pmove[param_1].viewChangeTime = local_a0->impactEffects[8];
-      local_4c = local_c + -0x7f;
-      iVar4 = CL_GetUserCmd(param_1,local_4c,&local_48);
+      cg_pmove[localClientNum].viewChange = 0.0;
+      cg_pmove[localClientNum].viewChangeTime = cgameGlob->impactEffects[8];
+      cmdNum = current + -0x7f;
+      iVar4 = CL_GetUserCmd(localClientNum,cmdNum,&oldestCmd);
       if (iVar4 == 0) {
         if ((cg_showmiss->current).integer != 0) {
           Com_Printf(0x11,"exceeded PACKET_BACKUP on commands\n");
         }
       }
       else {
-        CL_GetUserCmd(param_1,local_c,&local_98);
+        CL_GetUserCmd(localClientNum,current,&latestCmd);
         if (opti == 0) {
-          memcpy((uchar *)&local_a0->predictedPlayerState,(uchar *)local_10,0x26a4);
+          memcpy((uchar *)&cgameGlob->predictedPlayerState,(uchar *)ps,0x26a4);
         }
-        else if ((local_a0->nextSnap->serverTime != local_a0->lastPlayerStateOverride) ||
-                (((local_a0->predictedPlayerState).groundEntityNum != 0x3ff &&
-                 ((local_a0->predictedPlayerState).groundEntityNum != 0x3fe)))) {
-          memcpy((uchar *)&local_a0->predictedPlayerState,(uchar *)local_10,0x26a4);
-          local_a0->lastPlayerStateOverride = local_a0->nextSnap->serverTime;
+        else if ((cgameGlob->nextSnap->serverTime != cgameGlob->lastPlayerStateOverride) ||
+                (((cgameGlob->predictedPlayerState).groundEntityNum != 0x3ff &&
+                 ((cgameGlob->predictedPlayerState).groundEntityNum != 0x3fe)))) {
+          memcpy((uchar *)&cgameGlob->predictedPlayerState,(uchar *)ps,0x26a4);
+          cgameGlob->lastPlayerStateOverride = cgameGlob->nextSnap->serverTime;
         }
-        if (((((local_10->eFlags & 0x4000U) != 0) && (0 < local_10->vehiclePos)) &&
-            (local_10->vehiclePos < 5)) && (0.0 < local_10->leanf)) {
-          (local_a0->predictedPlayerState).viewangles[0] = (float)local_a0->impactEffects[0xf];
-          (local_a0->predictedPlayerState).viewangles[1] = (float)local_a0->impactEffects[0x10];
-          (local_a0->predictedPlayerState).viewangles[2] = (float)local_a0->impactEffects[0x11];
+        if (((((ps->eFlags & 0x4000U) != 0) && (0 < ps->vehiclePos)) && (ps->vehiclePos < 5)) &&
+           (0.0 < ps->leanf)) {
+          (cgameGlob->predictedPlayerState).viewangles[0] = (float)cgameGlob->impactEffects[0xf];
+          (cgameGlob->predictedPlayerState).viewangles[1] = (float)cgameGlob->impactEffects[0x10];
+          (cgameGlob->predictedPlayerState).viewangles[2] = (float)cgameGlob->impactEffects[0x11];
         }
-        bVar3 = CG_VehEntityUsingVehicle(param_1,(uint)local_10->clientNum);
+        bVar3 = CG_VehEntityUsingVehicle(localClientNum,(uint)ps->clientNum);
         if ((bVar3) &&
-           (bVar3 = CG_VehEntityUsingRemoteControlVehicle(param_1,(uint)local_10->clientNum), !bVar3
-           )) {
+           (bVar3 = CG_VehEntityUsingRemoteControlVehicle(localClientNum,(uint)ps->clientNum),
+           !bVar3)) {
           CG_VehSeatTransformForPlayer
-                    (param_1,(uint)local_10->clientNum,(local_a0->predictedPlayerState).origin,
-                     local_ac);
+                    (localClientNum,(uint)ps->clientNum,(cgameGlob->predictedPlayerState).origin,
+                     newAngles);
         }
-        if ((((local_a0->predictedPlayerState).pm_type == 1) ||
-            ((local_a0->predictedPlayerState).pm_type == 10)) &&
-           (((local_a0->predictedPlayerState).eFlags & 0x4000U) == 0)) {
-          CG_InterpolatePlayerState(param_1,0);
+        if ((((cgameGlob->predictedPlayerState).pm_type == 1) ||
+            ((cgameGlob->predictedPlayerState).pm_type == 10)) &&
+           (((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0)) {
+          CG_InterpolatePlayerState(localClientNum,0);
         }
         CG_AdjustPositionForMover
-                  (param_1,(local_a0->predictedPlayerState).origin,
-                   (local_a0->predictedPlayerState).groundEntityNum,local_a0->nextSnap->serverTime,
-                   local_a0->time,(local_a0->predictedPlayerState).origin,&local_58);
-        (local_a0->predictedPlayerState).delta_angles[1] =
-             (local_a0->predictedPlayerState).delta_angles[1] + local_54;
-        CG_InterpolatePlayerStateViewAngles(param_1,&local_a0->predictedPlayerState,&local_98);
-        local_9c = 0;
-        if (local_10->commandTime < local_98.serverTime) {
-          for (local_4c = local_c + -0x7f; local_4c <= local_c; local_4c = local_4c + 1) {
-            CL_GetUserCmd(param_1,local_4c,&cg_pmove[param_1].cmd);
-            if ((((local_a0->predictedPlayerState).commandTime < cg_pmove[param_1].cmd.serverTime)
-                && (cg_pmove[param_1].cmd.serverTime <= local_98.serverTime)) &&
-               (iVar4 = CL_GetUserCmd(param_1,local_4c + -1,&cg_pmove[param_1].oldcmd), iVar4 != 0))
-            {
-              if ((local_a0->predictedPlayerState).commandTime == local_a0->impactEffects[0xb]) {
+                  (localClientNum,(cgameGlob->predictedPlayerState).origin,
+                   (cgameGlob->predictedPlayerState).groundEntityNum,cgameGlob->nextSnap->serverTime
+                   ,cgameGlob->time,(cgameGlob->predictedPlayerState).origin,&deltaAngles);
+        (cgameGlob->predictedPlayerState).delta_angles[1] =
+             (cgameGlob->predictedPlayerState).delta_angles[1] + local_54;
+        CG_InterpolatePlayerStateViewAngles
+                  (localClientNum,&cgameGlob->predictedPlayerState,&latestCmd);
+        bPredictionRun = 0;
+        if (ps->commandTime < latestCmd.serverTime) {
+          for (cmdNum = current + -0x7f; cmdNum <= current; cmdNum = cmdNum + 1) {
+            CL_GetUserCmd(localClientNum,cmdNum,&cg_pmove[localClientNum].cmd);
+            if ((((cgameGlob->predictedPlayerState).commandTime <
+                  cg_pmove[localClientNum].cmd.serverTime) &&
+                (cg_pmove[localClientNum].cmd.serverTime <= latestCmd.serverTime)) &&
+               (iVar4 = CL_GetUserCmd(localClientNum,cmdNum + -1,&cg_pmove[localClientNum].oldcmd),
+               iVar4 != 0)) {
+              if ((cgameGlob->predictedPlayerState).commandTime == cgameGlob->impactEffects[0xb]) {
                 CG_AdjustPositionForMover
-                          (param_1,(local_a0->predictedPlayerState).origin,
-                           (local_a0->predictedPlayerState).groundEntityNum,local_a0->time,
-                           local_a0->oldTime,&local_c8,&local_58);
+                          (localClientNum,(cgameGlob->predictedPlayerState).origin,
+                           (cgameGlob->predictedPlayerState).groundEntityNum,cgameGlob->time,
+                           cgameGlob->oldTime,&adjusted,&deltaAngles);
                 if ((cg_showmiss->current).integer != 0) {
-                  if ((((float)local_a0->impactEffects[0xc] == local_c8) &&
-                      ((float)local_a0->impactEffects[0xd] == local_c4)) &&
-                     ((float)local_a0->impactEffects[0xe] == local_c0)) {
+                  if ((((float)cgameGlob->impactEffects[0xc] == adjusted) &&
+                      ((float)cgameGlob->impactEffects[0xd] == local_c4)) &&
+                     ((float)cgameGlob->impactEffects[0xe] == local_c0)) {
                     bVar3 = true;
                   }
                   else {
@@ -1082,136 +1101,137 @@ void __cdecl CG_PredictPlayerState_Internal(int param_1)
                     Com_PrintError(0x11,"prediction error\n");
                   }
                 }
-                local_bc.x = (float)local_a0->impactEffects[0xc] - local_c8;
-                local_bc.y = (float)local_a0->impactEffects[0xd] - local_c4;
-                local_bc.z = (float)local_a0->impactEffects[0xe] - local_c0;
-                local_bc.w = Abs(&local_bc);
-                if (0.1 < local_bc.w) {
+                delta = (float)cgameGlob->impactEffects[0xc] - adjusted;
+                local_b8 = (float)cgameGlob->impactEffects[0xd] - local_c4;
+                local_b4 = (float)cgameGlob->impactEffects[0xe] - local_c0;
+                len = Abs((phys_vec3 *)&stack0xffffff44);
+                if (0.1 < len) {
                   if ((cg_showmiss->current).integer != 0) {
                     Com_Printf(0x11,"Prediction miss: %f\n");
                   }
                   if ((cg_errorDecay->current).value == 0.0) {
-                    local_a0->predictedError[0] = 0.0;
-                    local_a0->predictedError[1] = 0.0;
-                    local_a0->predictedError[2] = 0.0;
+                    cgameGlob->predictedError[0] = 0.0;
+                    cgameGlob->predictedError[1] = 0.0;
+                    cgameGlob->predictedError[2] = 0.0;
                   }
                   else {
-                    local_d0 = local_a0->time - local_a0->predictedErrorTime;
-                    local_cc = ((cg_errorDecay->current).value - (float)local_d0) /
-                               (cg_errorDecay->current).value;
-                    if (local_cc < 0.0) {
-                      local_cc = 0.0;
+                    t = cgameGlob->time - cgameGlob->predictedErrorTime;
+                    f = ((cg_errorDecay->current).value - (float)t) / (cg_errorDecay->current).value
+                    ;
+                    if (f < 0.0) {
+                      f = 0.0;
                     }
-                    if ((0.0 < local_cc) && ((cg_showmiss->current).integer != 0)) {
+                    if ((0.0 < f) && ((cg_showmiss->current).integer != 0)) {
                       Com_Printf(0x11,"Double prediction decay: %f\n");
                     }
-                    local_a0->predictedError[0] = local_cc * local_a0->predictedError[0];
-                    local_a0->predictedError[1] = local_cc * local_a0->predictedError[1];
-                    local_a0->predictedError[2] = local_cc * local_a0->predictedError[2];
+                    cgameGlob->predictedError[0] = f * cgameGlob->predictedError[0];
+                    cgameGlob->predictedError[1] = f * cgameGlob->predictedError[1];
+                    cgameGlob->predictedError[2] = f * cgameGlob->predictedError[2];
                   }
-                  local_a0->predictedError[0] = local_bc.x + local_a0->predictedError[0];
-                  local_a0->predictedError[1] = local_bc.y + local_a0->predictedError[1];
-                  local_a0->predictedError[2] = local_bc.z + local_a0->predictedError[2];
-                  local_a0->predictedErrorTime = local_a0->oldTime;
+                  cgameGlob->predictedError[0] = delta + cgameGlob->predictedError[0];
+                  cgameGlob->predictedError[1] = local_b8 + cgameGlob->predictedError[1];
+                  cgameGlob->predictedError[2] = local_b4 + cgameGlob->predictedError[2];
+                  cgameGlob->predictedErrorTime = cgameGlob->oldTime;
                 }
               }
-              ppVar1 = cg_pmove[param_1].ps;
-              local_64 = ppVar1->delta_angles[0];
+              ppVar1 = cg_pmove[localClientNum].ps;
+              oldDeltaAngles = ppVar1->delta_angles[0];
               local_60 = ppVar1->delta_angles[1];
               local_5c = ppVar1->delta_angles[2];
-              Pmove(cg_pmove + param_1);
-              if ((0 < (cg_pmove[param_1].ps)->vehiclePos) &&
-                 ((cg_pmove[param_1].ps)->vehiclePos < 5)) {
-                ppVar1 = cg_pmove[param_1].ps;
-                local_dc = ppVar1->delta_angles[0] - local_64;
+              Pmove(cg_pmove + localClientNum);
+              if ((0 < (cg_pmove[localClientNum].ps)->vehiclePos) &&
+                 ((cg_pmove[localClientNum].ps)->vehiclePos < 5)) {
+                ppVar1 = cg_pmove[localClientNum].ps;
+                delta_diff = ppVar1->delta_angles[0] - oldDeltaAngles;
                 local_d8 = ppVar1->delta_angles[1] - local_60;
                 local_d4 = ppVar1->delta_angles[2] - local_5c;
-                CL_AdjustViewAngles(param_1,&local_dc);
-                for (local_e0 = local_4c; local_e0 <= local_c; local_e0 = local_e0 + 1) {
-                  CL_AdjustUserCmdAngles(param_1,local_e0,&local_dc);
+                CL_AdjustViewAngles(localClientNum,&delta_diff);
+                for (j = cmdNum; j <= current; j = j + 1) {
+                  CL_AdjustUserCmdAngles(localClientNum,j,&delta_diff);
                 }
-                ppVar1 = cg_pmove[param_1].ps;
-                ppVar1->delta_angles[0] = local_64;
+                ppVar1 = cg_pmove[localClientNum].ps;
+                ppVar1->delta_angles[0] = oldDeltaAngles;
                 ppVar1->delta_angles[1] = local_60;
                 ppVar1->delta_angles[2] = local_5c;
               }
-              CG_TouchItemPrediction(param_1);
-              local_9c = 1;
+              CG_TouchItemPrediction(localClientNum);
+              bPredictionRun = 1;
             }
           }
-          render_gjkcc_collision(cg_pmove + param_1);
+          render_gjkcc_collision(cg_pmove + localClientNum);
         }
-        else if ((char)local_a0->impactEffects[6] == '\0') {
-          (local_a0->predictedPlayerState).viewangles[0] = (float)local_a0->impactEffects[0xf];
-          (local_a0->predictedPlayerState).viewangles[1] = (float)local_a0->impactEffects[0x10];
-          (local_a0->predictedPlayerState).viewangles[2] = (float)local_a0->impactEffects[0x11];
+        else if ((char)cgameGlob->impactEffects[6] == '\0') {
+          (cgameGlob->predictedPlayerState).viewangles[0] = (float)cgameGlob->impactEffects[0xf];
+          (cgameGlob->predictedPlayerState).viewangles[1] = (float)cgameGlob->impactEffects[0x10];
+          (cgameGlob->predictedPlayerState).viewangles[2] = (float)cgameGlob->impactEffects[0x11];
         }
         if (1 < (cg_showmiss->current).integer) {
           Com_Printf(0x11,"[%i : %i] ");
         }
-        if ((local_9c == 0) && ((cg_showmiss->current).integer != 0)) {
+        if ((bPredictionRun == 0) && ((cg_showmiss->current).integer != 0)) {
           Com_Printf(0x11,"no prediction run\n");
         }
-        if (((local_a0->predictedPlayerState).pm_flags & 0x400U) != 0) {
-          CL_SetStance(param_1,CL_STANCE_STAND);
+        if (((cgameGlob->predictedPlayerState).pm_flags & 0x400U) != 0) {
+          CL_SetStance(localClientNum,CL_STANCE_STAND);
         }
-        if ((local_a0->predictedPlayerState).cursorHint == 0) {
-          (local_a0->predictedPlayerState).cursorHintString = -1;
-          (local_a0->predictedPlayerState).cursorHintEntIndex = 0x3ff;
+        if ((cgameGlob->predictedPlayerState).cursorHint == 0) {
+          (cgameGlob->predictedPlayerState).cursorHintString = -1;
+          (cgameGlob->predictedPlayerState).cursorHintEntIndex = 0x3ff;
         }
-        if ((((cg_pmove[param_1].viewChange == 0.0) ||
-             (cg_pmove[param_1].viewChangeTime == local_a0->impactEffects[8])) ||
-            ((char)local_a0->impactEffects[6] != '\0')) ||
-           (((local_10->pm_type != 0 && (local_10->pm_type != 2)) && (local_10->pm_type != 3)))) {
+        if ((((cg_pmove[localClientNum].viewChange == 0.0) ||
+             (cg_pmove[localClientNum].viewChangeTime == cgameGlob->impactEffects[8])) ||
+            ((char)cgameGlob->impactEffects[6] != '\0')) ||
+           (((ps->pm_type != 0 && (ps->pm_type != 2)) && (ps->pm_type != 3)))) {
           if ((cg_viewZSmoothingTime->current).value * 1000.0 <
-              (float)(int)(local_a0->time - local_a0->impactEffects[8])) {
-            local_a0->impactEffects[9] = 0;
+              (float)(int)(cgameGlob->time - cgameGlob->impactEffects[8])) {
+            cgameGlob->impactEffects[9] = 0;
           }
         }
         else {
-          local_164 = cg_pmove[param_1].viewChange;
+          local_164 = cg_pmove[localClientNum].viewChange;
           if (ABS(local_164) < (cg_viewZSmoothingMin->current).value) {
             if ((cg_viewZSmoothingTime->current).value * 1000.0 <
-                (float)(int)(local_a0->time - local_a0->impactEffects[8])) {
-              local_a0->impactEffects[9] = 0;
+                (float)(int)(cgameGlob->time - cgameGlob->impactEffects[8])) {
+              cgameGlob->impactEffects[9] = 0;
             }
           }
           else {
-            local_e8 = 0.0;
-            if ((float)(int)(local_a0->time - local_a0->impactEffects[8]) <
+            stepRemaining = 0.0;
+            if ((float)(int)(cgameGlob->time - cgameGlob->impactEffects[8]) <
                 (cg_viewZSmoothingTime->current).value * 1000.0) {
-              iVar5 = cg_pmove[param_1].viewChangeTime - local_a0->impactEffects[8];
+              iVar5 = cg_pmove[localClientNum].viewChangeTime - cgameGlob->impactEffects[8];
               iVar4 = (int)((cg_viewZSmoothingTime->current).value * 1000.0);
               if ((-1 < iVar5) && (iVar5 < iVar4)) {
-                local_e8 = (1.0 - ((float)iVar5 * 1.0) / (float)iVar4) *
-                           (float)local_a0->impactEffects[9];
+                stepRemaining =
+                     (1.0 - ((float)iVar5 * 1.0) / (float)iVar4) *
+                     (float)cgameGlob->impactEffects[9];
               }
             }
-            if (local_e8 + local_164 <= 0.0) {
-              local_168 = local_e8 + local_164;
+            if (stepRemaining + local_164 <= 0.0) {
+              local_168 = stepRemaining + local_164;
               if (0.0 <= -(cg_viewZSmoothingMax->current).value - local_168) {
                 local_168 = -(cg_viewZSmoothingMax->current).value;
               }
-              local_a0->impactEffects[9] = (uint)local_168;
+              cgameGlob->impactEffects[9] = (uint)local_168;
             }
             else {
-              local_164 = local_e8 + local_164;
+              local_164 = stepRemaining + local_164;
               if (0.0 <= local_164 - (cg_viewZSmoothingMax->current).value) {
                 local_164 = (cg_viewZSmoothingMax->current).value;
               }
-              local_a0->impactEffects[9] = (uint)local_164;
+              cgameGlob->impactEffects[9] = (uint)local_164;
             }
-            local_a0->impactEffects[8] = cg_pmove[param_1].viewChangeTime;
+            cgameGlob->impactEffects[8] = cg_pmove[localClientNum].viewChangeTime;
           }
         }
       }
     }
     else {
-      CG_InterpolatePlayerState(param_1,1);
+      CG_InterpolatePlayerState(localClientNum,1);
     }
   }
   else {
-    CG_InterpolatePlayerState(param_1,0);
+    CG_InterpolatePlayerState(localClientNum,0);
   }
   return;
 }
@@ -1224,14 +1244,16 @@ void __cdecl CG_PredictPlayerState_Internal(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CopyFlagsFromSnapshotEntity(int param_1)
+void __cdecl CG_CopyFlagsFromSnapshotEntity(int localClientNum)
 
 {
   cg_s *pcVar1;
   centity_s *pcVar2;
+  cg_s *cgameGlob;
+  centity_s *snapshotEnt;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  pcVar2 = CG_GetEntity(param_1,pcVar1->clientNum);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar2 = CG_GetEntity(localClientNum,pcVar1->clientNum);
   (pcVar1->predictedPlayerEntity).flagIndex = pcVar2->flagIndex;
   (pcVar1->predictedPlayerEntity).flagState = pcVar2->flagState;
   return;
@@ -1246,7 +1268,7 @@ void __cdecl CG_CopyFlagsFromSnapshotEntity(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PredictPlayerState(int param_1)
+void __cdecl CG_PredictPlayerState(int localClientNum)
 
 {
   float10 fVar1;
@@ -1256,101 +1278,102 @@ void __cdecl CG_PredictPlayerState(int param_1)
   LerpEntityState *pLVar5;
   float10 fVar6;
   float fVar7;
-  float local_90 [9];
-  centity_s *local_6c;
-  float local_68;
+  float absAxis [9];
+  centity_s *vehicle;
+  float original_angles;
   float local_64;
   float local_60;
-  float local_5c [9];
-  cg_s *local_38;
-  float local_34;
-  centity_s *local_30;
-  float local_2c;
-  float local_28 [4];
-  WeaponDef *local_18;
-  float local_14;
-  playerState_s *local_10;
-  bool local_5;
+  float aVelocity [9];
+  cg_s *cgameGlob;
+  float angle;
+  centity_s *playerEnt;
+  float size;
+  float angles [4];
+  WeaponDef *weapDef;
+  float fCos;
+  playerState_s *ps;
+  float fSin;
+  bool inVehicle;
   
-  local_38 = CG_GetLocalClientGlobals(param_1);
-  local_10 = &local_38->predictedPlayerState;
-  local_38->impactEffects[10] = (uint)(local_38->predictedPlayerState).aimSpreadScale;
-  CG_PredictPlayerState_Internal(param_1);
-  local_30 = CG_GetEntity(param_1,(uint)local_10->clientNum);
-  (local_30->pose).origin[0] = local_10->origin[0];
-  (local_30->pose).origin[1] = local_10->origin[1];
-  (local_30->pose).origin[2] = local_10->origin[2];
-  BG_EvaluateTrajectory(&(local_30->currentState).apos,local_38->time,(local_30->pose).angles);
-  local_18 = BG_GetWeaponDef((uint)local_10->weapon);
-  if ((((local_38->nextSnap->ps).otherFlags & 4U) == 0) ||
-     (bVar2 = CG_GetWeapReticleZoom(local_38,local_28 + 3), !bVar2)) {
-    local_38->adsViewErrorDone = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  cgameGlob->impactEffects[10] = (uint)(cgameGlob->predictedPlayerState).aimSpreadScale;
+  CG_PredictPlayerState_Internal(localClientNum);
+  playerEnt = CG_GetEntity(localClientNum,(uint)ps->clientNum);
+  (playerEnt->pose).origin[0] = ps->origin[0];
+  (playerEnt->pose).origin[1] = ps->origin[1];
+  (playerEnt->pose).origin[2] = ps->origin[2];
+  BG_EvaluateTrajectory(&(playerEnt->currentState).apos,cgameGlob->time,(playerEnt->pose).angles);
+  weapDef = BG_GetWeaponDef((uint)ps->weapon);
+  if ((((cgameGlob->nextSnap->ps).otherFlags & 4U) == 0) ||
+     (bVar2 = CG_GetWeapReticleZoom(cgameGlob,angles + 3), !bVar2)) {
+    cgameGlob->adsViewErrorDone = 0;
   }
-  else if ((local_18->adsViewErrorMax != 0.0) && (local_38->adsViewErrorDone == 0)) {
-    local_38->adsViewErrorDone = 1;
-    local_2c = flrand(local_18->adsViewErrorMin,local_18->adsViewErrorMax);
+  else if ((weapDef->adsViewErrorMax != 0.0) && (cgameGlob->adsViewErrorDone == 0)) {
+    cgameGlob->adsViewErrorDone = 1;
+    size = flrand(weapDef->adsViewErrorMin,weapDef->adsViewErrorMax);
     fVar7 = random();
-    local_34 = (fVar7 + fVar7) * 3.1415927;
-    fVar1 = (float10)fcos((float10)local_34);
-    fVar6 = (float10)fsin((float10)local_34);
-    local_14 = (float)fVar1;
-    fVar7 = AngleNormalize360((float)fVar6 * local_2c + local_38->offsetAngles[0]);
-    local_38->offsetAngles[0] = fVar7;
-    fVar7 = AngleNormalize360(local_14 * local_2c + local_38->offsetAngles[1]);
-    local_38->offsetAngles[1] = fVar7;
+    angle = (fVar7 + fVar7) * 3.1415927;
+    fVar1 = (float10)fcos((float10)angle);
+    fVar6 = (float10)fsin((float10)angle);
+    fCos = (float)fVar1;
+    fVar7 = AngleNormalize360((float)fVar6 * size + cgameGlob->offsetAngles[0]);
+    cgameGlob->offsetAngles[0] = fVar7;
+    fVar7 = AngleNormalize360(fCos * size + cgameGlob->offsetAngles[1]);
+    cgameGlob->offsetAngles[1] = fVar7;
   }
-  (local_38->predictedPlayerEntity).nextState.number = (uint)local_10->clientNum;
-  BG_PlayerStateToEntityState(local_10,&(local_38->predictedPlayerEntity).nextState,0,'\0');
-  (local_38->predictedPlayerEntity).nextValid = 1;
-  peVar4 = &(local_38->predictedPlayerEntity).nextState;
-  pLVar5 = &(local_38->predictedPlayerEntity).currentState;
+  (cgameGlob->predictedPlayerEntity).nextState.number = (uint)ps->clientNum;
+  BG_PlayerStateToEntityState(ps,&(cgameGlob->predictedPlayerEntity).nextState,0,'\0');
+  (cgameGlob->predictedPlayerEntity).nextValid = 1;
+  peVar4 = &(cgameGlob->predictedPlayerEntity).nextState;
+  pLVar5 = &(cgameGlob->predictedPlayerEntity).currentState;
   for (iVar3 = 0x1d; peVar4 = (entityState_s *)&peVar4->lerp, iVar3 != 0; iVar3 = iVar3 + -1) {
     pLVar5->eFlags = ((LerpEntityState *)peVar4)->eFlags;
     pLVar5 = (LerpEntityState *)&pLVar5->eFlags2;
   }
-  CG_CopyFlagsFromSnapshotEntity(param_1);
-  if ((local_10->eFlags2 & 0x10000000U) != 0) {
-    local_68 = local_10->linkAngles[0];
-    local_64 = local_10->linkAngles[1];
-    local_60 = local_10->linkAngles[2];
-    (local_38->predictedPlayerEntity).nextState.lerp.apos.trBase[0] = local_68;
-    (local_38->predictedPlayerEntity).nextState.lerp.apos.trBase[1] = local_64;
-    (local_38->predictedPlayerEntity).nextState.lerp.apos.trBase[2] = local_60;
-    (local_38->predictedPlayerEntity).currentState.apos.trBase[0] = local_68;
-    (local_38->predictedPlayerEntity).currentState.apos.trBase[1] = local_64;
-    (local_38->predictedPlayerEntity).currentState.apos.trBase[2] = local_60;
+  CG_CopyFlagsFromSnapshotEntity(localClientNum);
+  if ((ps->eFlags2 & 0x10000000U) != 0) {
+    original_angles = ps->linkAngles[0];
+    local_64 = ps->linkAngles[1];
+    local_60 = ps->linkAngles[2];
+    (cgameGlob->predictedPlayerEntity).nextState.lerp.apos.trBase[0] = original_angles;
+    (cgameGlob->predictedPlayerEntity).nextState.lerp.apos.trBase[1] = local_64;
+    (cgameGlob->predictedPlayerEntity).nextState.lerp.apos.trBase[2] = local_60;
+    (cgameGlob->predictedPlayerEntity).currentState.apos.trBase[0] = original_angles;
+    (cgameGlob->predictedPlayerEntity).currentState.apos.trBase[1] = local_64;
+    (cgameGlob->predictedPlayerEntity).currentState.apos.trBase[2] = local_60;
   }
-  AimAssist_BackupPlayerState(param_1,local_10);
-  CL_SetUserCmdOrigin(param_1,local_10->origin,local_10->velocity,local_10->viewangles,
-                      local_10->bobCycle,local_10->movementDir);
-  local_5 = false;
-  local_5c[3] = 0.0;
-  local_5c[4] = 0.0;
-  local_5c[5] = 0.0;
-  local_28[0] = 0.0;
-  local_28[1] = 0.0;
-  local_28[2] = 0.0;
-  local_5c[6] = 0.0;
-  local_5c[7] = 0.0;
-  local_5c[8] = 0.0;
-  local_5c[0] = 0.0;
-  local_5c[1] = 0.0;
-  local_5c[2] = 0.0;
-  if (((((com_sv_running->current).enabled == false) && ((local_10->eFlags & 0x4000U) != 0)) &&
-      (local_6c = CG_GetEntity(param_1,(int)local_10->viewlocked_entNum),
-      local_6c->nitrousVeh != (NitrousVehicle *)0x0)) &&
-     (local_6c->nitrousVeh->m_phys_user_data != (PhysObjUserData *)0x0)) {
+  AimAssist_BackupPlayerState(localClientNum,ps);
+  CL_SetUserCmdOrigin(localClientNum,ps->origin,ps->velocity,ps->viewangles,ps->bobCycle,
+                      ps->movementDir);
+  inVehicle = false;
+  aVelocity[3] = 0.0;
+  aVelocity[4] = 0.0;
+  aVelocity[5] = 0.0;
+  angles[0] = 0.0;
+  angles[1] = 0.0;
+  angles[2] = 0.0;
+  aVelocity[6] = 0.0;
+  aVelocity[7] = 0.0;
+  aVelocity[8] = 0.0;
+  aVelocity[0] = 0.0;
+  aVelocity[1] = 0.0;
+  aVelocity[2] = 0.0;
+  if (((((com_sv_running->current).enabled == false) && ((ps->eFlags & 0x4000U) != 0)) &&
+      (vehicle = CG_GetEntity(localClientNum,(int)ps->viewlocked_entNum),
+      vehicle->nitrousVeh != (NitrousVehicle *)0x0)) &&
+     (vehicle->nitrousVeh->m_phys_user_data != (PhysObjUserData *)0x0)) {
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    Phys_ObjGetPosition((int)local_6c->nitrousVeh->m_phys_user_data,local_5c + 3,
-                        (float (*) [3])local_90);
-    Phys_ObjGetVelocities((int)local_6c->nitrousVeh->m_phys_user_data,local_5c + 6,local_5c);
-    Phys_ObjGetCenterOfMass((int)local_6c->nitrousVeh->m_phys_user_data,local_5c + 3);
+    Phys_ObjGetPosition((int)vehicle->nitrousVeh->m_phys_user_data,aVelocity + 3,
+                        (float (*) [3])absAxis);
+    Phys_ObjGetVelocities((int)vehicle->nitrousVeh->m_phys_user_data,aVelocity + 6,aVelocity);
+    Phys_ObjGetCenterOfMass((int)vehicle->nitrousVeh->m_phys_user_data,aVelocity + 3);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
-    AxisToAngles((float (*) [3])local_90,local_28);
-    local_5 = true;
+    AxisToAngles((float (*) [3])absAxis,angles);
+    inVehicle = true;
   }
-  CL_SetUserCmdVehicle(param_1,local_5,local_5c + 3,local_28,local_5c + 6,local_5c);
-  CL_SendCmd(param_1);
+  CL_SetUserCmdVehicle(localClientNum,inVehicle,aVelocity + 3,angles,aVelocity + 6,aVelocity);
+  CL_SendCmd(localClientNum);
   return;
 }
 
@@ -1367,14 +1390,13 @@ void __thiscall GlassRenderer::BeginUpdate(GlassRenderer *this)
 // 004DF2C0  `vector_destructor_iterator'  (line unknown)
 
 void __cdecl
-_vector_destructor_iterator_
-          (void *param_1,uint param_2,int param_3,_func___thiscall_void_void_ptr *param_4)
+_vector_destructor_iterator_(void *__t,uint __s,int __n,_func___thiscall_void_void_ptr *__f)
 
 {
-  param_1 = (void *)(param_2 * param_3 + (int)param_1);
-  while (param_3 = param_3 + -1, -1 < param_3) {
-    param_1 = (void *)((int)param_1 - param_2);
-    (*param_4)(param_1);
+  __t = (void *)(__s * __n + (int)__t);
+  while (__n = __n + -1, -1 < __n) {
+    __t = (void *)((int)__t - __s);
+    (*__f)(__t);
   }
   return;
 }

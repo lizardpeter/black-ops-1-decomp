@@ -4,18 +4,18 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PIXBeginNamedEvent(int param_1,char *param_2)
+void __cdecl PIXBeginNamedEvent(int Color,char *Name)
 
 {
   DWORD DVar1;
-  WCHAR local_20c [258];
+  WCHAR w [258];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
-    MultiByteToWideChar(0,0,param_2,-1,local_20c,0x100);
-    _D3DPERF_BeginEvent_8(param_1,local_20c);
+    MultiByteToWideChar(0,0,Name,-1,w,0x100);
+    _D3DPERF_BeginEvent_8(Color,w);
   }
   return;
 }
@@ -23,10 +23,10 @@ void __cdecl PIXBeginNamedEvent(int param_1,char *param_2)
 
 // 004068E0  AimTarget_GetGlobArray  (aim_assist/aim_target.cpp:159)
 
-AimTargetGlob * __cdecl AimTarget_GetGlobArray(int param_1)
+AimTargetGlob * __cdecl AimTarget_GetGlobArray(int localClientNum)
 
 {
-  return atGlobArray + param_1;
+  return atGlobArray + localClientNum;
 }
 
 
@@ -78,17 +78,17 @@ void __cdecl AimTarget_RegisterDvars(void)
 
 // 00406920  AimTarget_Init  (aim_assist/aim_target.cpp:195)
 
-void __cdecl AimTarget_Init(int param_1)
+void __cdecl AimTarget_Init(int localClientNum)
 
 {
-  AimTargetGlob *pAVar1;
-  uchar uVar2;
-  ulong uVar3;
+  AimTargetGlob *dst;
+  uchar value;
+  ulong count;
   
-  uVar3 = 0xc04;
-  uVar2 = '\0';
-  pAVar1 = AimTarget_GetGlobArray(param_1);
-  memset((uchar *)pAVar1,uVar2,uVar3);
+  count = 0xc04;
+  value = '\0';
+  dst = AimTarget_GetGlobArray(localClientNum);
+  memset((uchar *)dst,value,count);
   AimTarget_RegisterDvars();
   Cbuf_InsertText(0,"exec devgui_aimassist\n");
   return;
@@ -97,12 +97,13 @@ void __cdecl AimTarget_Init(int param_1)
 
 // 00408650  AimTarget_ClearTargetList  (aim_assist/aim_target.cpp:207)
 
-void __cdecl AimTarget_ClearTargetList(int param_1)
+void __cdecl AimTarget_ClearTargetList(int localClientNum)
 
 {
   AimTargetGlob *pAVar1;
+  AimTargetGlob *atGlob;
   
-  pAVar1 = AimTarget_GetGlobArray(param_1);
+  pAVar1 = AimTarget_GetGlobArray(localClientNum);
   pAVar1->targetCount = 0;
   return;
 }
@@ -110,14 +111,14 @@ void __cdecl AimTarget_ClearTargetList(int param_1)
 
 // 00408330  AimTarget_CompareTargets  (aim_assist/aim_target.cpp:215)
 
-int __cdecl AimTarget_CompareTargets(AimTarget *param_1,AimTarget *param_2)
+int __cdecl AimTarget_CompareTargets(AimTarget *targetA,AimTarget *targetB)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (AimTarget *)0x0) {
+  if (targetA == (AimTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0xd8,0,
                              "%s");
     if (!bVar2) {
@@ -126,7 +127,7 @@ int __cdecl AimTarget_CompareTargets(AimTarget *param_1,AimTarget *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (AimTarget *)0x0) {
+  if (targetB == (AimTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0xd9,0,
                              "%s");
     if (!bVar2) {
@@ -135,10 +136,10 @@ int __cdecl AimTarget_CompareTargets(AimTarget *param_1,AimTarget *param_2)
       return iVar3;
     }
   }
-  if (param_2->worldDistSqr < param_1->worldDistSqr ||
-      param_2->worldDistSqr == param_1->worldDistSqr) {
-    if (param_1->worldDistSqr < param_2->worldDistSqr ||
-        param_1->worldDistSqr == param_2->worldDistSqr) {
+  if (targetB->worldDistSqr < targetA->worldDistSqr ||
+      targetB->worldDistSqr == targetA->worldDistSqr) {
+    if (targetA->worldDistSqr < targetB->worldDistSqr ||
+        targetA->worldDistSqr == targetB->worldDistSqr) {
       iVar3 = 0;
     }
     else {
@@ -154,7 +155,7 @@ int __cdecl AimTarget_CompareTargets(AimTarget *param_1,AimTarget *param_2)
 
 // 004081B0  AimTarget_AddTargetToList  (aim_assist/aim_target.cpp:233)
 
-void __cdecl AimTarget_AddTargetToList(int param_1,AimTarget *param_2)
+void __cdecl AimTarget_AddTargetToList(int localClientNum,AimTarget *target)
 
 {
   code *pcVar1;
@@ -163,51 +164,53 @@ void __cdecl AimTarget_AddTargetToList(int param_1,AimTarget *param_2)
   int iVar4;
   int iVar5;
   AimTarget *pAVar6;
-  int local_18;
-  int local_14;
-  int local_8;
+  int targetIndex;
+  int low;
+  int middle;
+  AimTargetGlob *atGlob;
+  int high;
   
-  if ((param_2 == (AimTarget *)0x0) &&
+  if ((target == (AimTarget *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0xef,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pAVar3 = AimTarget_GetGlobArray(param_1);
-  local_18 = 0;
+  pAVar3 = AimTarget_GetGlobArray(localClientNum);
+  targetIndex = 0;
   while( true ) {
-    if (pAVar3->targetCount <= local_18) {
-      local_14 = 0;
+    if (pAVar3->targetCount <= targetIndex) {
+      low = 0;
       iVar4 = pAVar3->targetCount;
-      while (local_8 = iVar4, local_14 < local_8) {
-        iVar4 = (local_14 + local_8) / 2;
-        iVar5 = AimTarget_CompareTargets(param_2,pAVar3->targets + iVar4);
+      while (high = iVar4, low < high) {
+        iVar4 = (low + high) / 2;
+        iVar5 = AimTarget_CompareTargets(target,pAVar3->targets + iVar4);
         if (iVar5 < 1) {
-          local_14 = iVar4 + 1;
-          iVar4 = local_8;
+          low = iVar4 + 1;
+          iVar4 = high;
         }
       }
-      if (local_14 < 0x40) {
+      if (low < 0x40) {
         if (pAVar3->targetCount == 0x40) {
           pAVar3->targetCount = pAVar3->targetCount + -1;
         }
-        memmove((uchar *)(pAVar3->targets + local_14 + 1),(uchar *)(pAVar3->targets + local_14),
-                (pAVar3->targetCount - local_14) * 0x30);
-        pAVar6 = pAVar3->targets + local_14;
+        memmove((uchar *)(pAVar3->targets + low + 1),(uchar *)(pAVar3->targets + low),
+                (pAVar3->targetCount - low) * 0x30);
+        pAVar6 = pAVar3->targets + low;
         for (iVar4 = 0xc; iVar4 != 0; iVar4 = iVar4 + -1) {
-          pAVar6->entIndex = param_2->entIndex;
-          param_2 = (AimTarget *)&param_2->worldDistSqr;
+          pAVar6->entIndex = target->entIndex;
+          target = (AimTarget *)&target->worldDistSqr;
           pAVar6 = (AimTarget *)&pAVar6->worldDistSqr;
         }
         pAVar3->targetCount = pAVar3->targetCount + 1;
       }
       return;
     }
-    if ((param_2->entIndex == pAVar3->targets[local_18].entIndex) &&
+    if ((target->entIndex == pAVar3->targets[targetIndex].entIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0xfb,0,"%s"), !bVar2)) break;
-    local_18 = local_18 + 1;
+    targetIndex = targetIndex + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -222,23 +225,24 @@ void __cdecl AimTarget_AddTargetToList(int param_1,AimTarget *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl AimTarget_GetTagUpdateInterval(centity_s *param_1)
+int __cdecl AimTarget_GetTagUpdateInterval(centity_s *ent)
 
 {
   cg_s *pcVar1;
   int iVar2;
   float fVar3;
-  float local_10;
+  cg_s *cgameGlob;
+  float center;
   float local_c;
   float local_8;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)(param_1->pose).localClientNum);
-  local_10 = (param_1->pose).origin[0];
-  local_c = (param_1->pose).origin[1];
-  local_8 = (param_1->pose).origin[2] + (aim_target_sentient_half_height->current).value;
-  fVar3 = Vec3DistanceSq((pcVar1->predictedPlayerState).origin,(param_1->pose).origin);
+  pcVar1 = CG_GetLocalClientGlobals((uint)(ent->pose).localClientNum);
+  center = (ent->pose).origin[0];
+  local_c = (ent->pose).origin[1];
+  local_8 = (ent->pose).origin[2] + (aim_target_sentient_half_height->current).value;
+  fVar3 = Vec3DistanceSq((pcVar1->predictedPlayerState).origin,(ent->pose).origin);
   if ((aim_target_frustum_min_distance->current).value <= fVar3) {
-    iVar2 = R_CullPoint((uint)(param_1->pose).localClientNum,&local_10,
+    iVar2 = R_CullPoint((uint)(ent->pose).localClientNum,&center,
                         (aim_target_frustum_expand_fast_updates->current).value);
     if (iVar2 == 0) {
       iVar2 = (aim_target_aim_tag_fast_update_interval->current).integer;
@@ -261,50 +265,52 @@ int __cdecl AimTarget_GetTagUpdateInterval(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_GetTagPos(centity_s *param_1,uint param_2,float *param_3)
+void __cdecl AimTarget_GetTagPos(centity_s *ent,uint tagName,float *pos)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  DObj *pDVar4;
+  DObj *obj;
+  DObj *dobj;
+  bool target_last_frame;
+  int update_interval;
   
-  if ((param_1 == (centity_s *)0x0) &&
+  if ((ent == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x13a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((pos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x13b
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->nextState).eType == 1) {
-    bVar2 = AimAssist_IsPrevTargetEntity
-                      ((uint)(param_1->pose).localClientNum,(param_1->nextState).number);
-    iVar3 = AimTarget_GetTagUpdateInterval(param_1);
-    iVar3 = CachedTag_GetTagPos(param_1,param_2,param_3,iVar3,bVar2);
+  if ((ent->nextState).eType == 1) {
+    bVar2 = AimAssist_IsPrevTargetEntity((uint)(ent->pose).localClientNum,(ent->nextState).number);
+    iVar3 = AimTarget_GetTagUpdateInterval(ent);
+    iVar3 = CachedTag_GetTagPos(ent,tagName,pos,iVar3,bVar2);
     if (iVar3 == 0) {
-      SL_ConvertToString(param_2,SCRIPTINSTANCE_SERVER);
+      SL_ConvertToString(tagName,SCRIPTINSTANCE_SERVER);
       Com_Error(ERR_DROP,"AimTarget_GetTagPos: Cannot find tag [%s] on entity\n");
     }
   }
   else {
-    pDVar4 = Com_GetClientDObj((param_1->nextState).number,(uint)(param_1->pose).localClientNum);
-    if ((pDVar4 == (DObj *)0x0) &&
+    obj = Com_GetClientDObj((ent->nextState).number,(uint)(ent->pose).localClientNum);
+    if ((obj == (DObj *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0x14d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar3 = CG_DObjGetWorldTagPos(&param_1->pose,pDVar4,param_2,param_3);
+    iVar3 = CG_DObjGetWorldTagPos(&ent->pose,obj,tagName,pos);
     if (iVar3 == 0) {
-      SL_ConvertToString(param_2,SCRIPTINSTANCE_SERVER);
+      SL_ConvertToString(tagName,SCRIPTINSTANCE_SERVER);
       Com_Error(ERR_DROP,"AimTarget_GetTagPos: Cannot find tag [%s] on entity\n");
     }
   }
@@ -314,17 +320,17 @@ void __cdecl AimTarget_GetTagPos(centity_s *param_1,uint param_2,float *param_3)
 
 // 00406AD0  expandMins  (aim_assist/aim_target.cpp:401)
 
-void __cdecl expandMins(float *param_1,float *param_2)
+void __cdecl expandMins(float *mins,float *point)
 
 {
-  if (*param_2 <= *param_1 && *param_1 != *param_2) {
-    *param_1 = *param_2;
+  if (*point <= *mins && *mins != *point) {
+    *mins = *point;
   }
-  if (param_2[1] <= param_1[1] && param_1[1] != param_2[1]) {
-    param_1[1] = param_2[1];
+  if (point[1] <= mins[1] && mins[1] != point[1]) {
+    mins[1] = point[1];
   }
-  if (param_2[2] <= param_1[2] && param_1[2] != param_2[2]) {
-    param_1[2] = param_2[2];
+  if (point[2] <= mins[2] && mins[2] != point[2]) {
+    mins[2] = point[2];
   }
   return;
 }
@@ -332,17 +338,17 @@ void __cdecl expandMins(float *param_1,float *param_2)
 
 // 00406B30  expandMaxs  (aim_assist/aim_target.cpp:411)
 
-void __cdecl expandMaxs(float *param_1,float *param_2)
+void __cdecl expandMaxs(float *maxs,float *point)
 
 {
-  if (*param_1 <= *param_2 && *param_2 != *param_1) {
-    *param_1 = *param_2;
+  if (*maxs <= *point && *point != *maxs) {
+    *maxs = *point;
   }
-  if (param_1[1] <= param_2[1] && param_2[1] != param_1[1]) {
-    param_1[1] = param_2[1];
+  if (maxs[1] <= point[1] && point[1] != maxs[1]) {
+    maxs[1] = point[1];
   }
-  if (param_1[2] <= param_2[2] && param_2[2] != param_1[2]) {
-    param_1[2] = param_2[2];
+  if (maxs[2] <= point[2] && point[2] != maxs[2]) {
+    maxs[2] = point[2];
   }
   return;
 }
@@ -355,29 +361,31 @@ void __cdecl expandMaxs(float *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_GetTargetBounds(centity_s *param_1,float *param_2,float *param_3)
+void __cdecl AimTarget_GetTargetBounds(centity_s *targetEnt,float *mins,float *maxs)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  DObj *pDVar4;
-  float local_40;
+  DObj *obj;
+  DObj *dobj;
+  DObj *remote_dobj;
+  float right;
   float local_3c;
   float local_38;
-  float local_34;
+  float forward;
   float local_30;
   float local_2c;
-  float local_28;
+  float left;
   float local_24;
   float local_20;
-  float local_1c;
+  float tail;
   float local_18;
   float local_14;
-  float local_10 [2];
+  float highBonePos [2];
   float local_8;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (targetEnt == (centity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x1ab,0
                              ,"%s");
     if (!bVar3) {
@@ -386,7 +394,7 @@ void __cdecl AimTarget_GetTargetBounds(centity_s *param_1,float *param_2,float *
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x1ac,0
                              ,"%s");
     if (!bVar3) {
@@ -395,7 +403,7 @@ void __cdecl AimTarget_GetTargetBounds(centity_s *param_1,float *param_2,float *
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x1ad,0
                              ,"%s");
     if (!bVar3) {
@@ -404,59 +412,59 @@ void __cdecl AimTarget_GetTargetBounds(centity_s *param_1,float *param_2,float *
       return;
     }
   }
-  if ((param_1->nextState).eType == 0x11) {
-    AimTarget_GetTagPos(param_1,(uint)scr_const.aim_highest_bone,local_10);
-    AngleVectors((param_1->pose).angles,&local_34,&local_40,(float *)0x0);
+  if ((targetEnt->nextState).eType == 0x11) {
+    AimTarget_GetTagPos(targetEnt,(uint)scr_const.aim_highest_bone,highBonePos);
+    AngleVectors((targetEnt->pose).angles,&forward,&right,(float *)0x0);
     fVar1 = (aim_target_sentient_radius->current).value;
-    local_40 = fVar1 * local_40;
+    right = fVar1 * right;
     local_3c = fVar1 * local_3c;
     local_38 = fVar1 * local_38;
-    local_28 = local_40 * -1.0;
+    left = right * -1.0;
     local_24 = local_3c * -1.0;
     local_20 = local_38 * -1.0;
     fVar1 = (aim_target_sentient_radius->current).value;
     local_14 = ((aim_target_sentient_radius->current).value + dog_length) * -1.0;
-    local_1c = local_14 * local_34;
+    tail = local_14 * forward;
     local_18 = local_14 * local_30;
     local_14 = local_14 * local_2c;
-    *param_2 = fVar1 * local_34;
-    param_2[1] = fVar1 * local_30;
-    param_2[2] = fVar1 * local_2c;
-    expandMins(param_2,&local_1c);
-    expandMins(param_2,&local_40);
-    expandMins(param_2,&local_28);
-    *param_3 = fVar1 * local_34;
-    param_3[1] = fVar1 * local_30;
-    param_3[2] = fVar1 * local_2c;
-    expandMaxs(param_3,&local_1c);
-    expandMaxs(param_3,&local_40);
-    expandMaxs(param_3,&local_28);
-    param_3[2] = (local_8 - (param_1->pose).origin[2]) + param_3[2];
+    *mins = fVar1 * forward;
+    mins[1] = fVar1 * local_30;
+    mins[2] = fVar1 * local_2c;
+    expandMins(mins,&tail);
+    expandMins(mins,&right);
+    expandMins(mins,&left);
+    *maxs = fVar1 * forward;
+    maxs[1] = fVar1 * local_30;
+    maxs[2] = fVar1 * local_2c;
+    expandMaxs(maxs,&tail);
+    expandMaxs(maxs,&right);
+    expandMaxs(maxs,&left);
+    maxs[2] = (local_8 - (targetEnt->pose).origin[2]) + maxs[2];
   }
-  else if (((param_1->nextState).eType == 1) || ((param_1->nextState).eType == 0x11)) {
-    AimTarget_GetTagPos(param_1,(uint)scr_const.aim_highest_bone,local_10);
-    *param_2 = -(float)(aim_target_sentient_radius->current).unsignedInt;
-    param_2[1] = -(float)(aim_target_sentient_radius->current).unsignedInt;
-    param_2[2] = 0.0;
-    *param_3 = (float)(aim_target_sentient_radius->current).integer;
-    param_3[1] = (float)(aim_target_sentient_radius->current).integer;
-    param_3[2] = local_8 - (param_1->pose).origin[2];
+  else if (((targetEnt->nextState).eType == 1) || ((targetEnt->nextState).eType == 0x11)) {
+    AimTarget_GetTagPos(targetEnt,(uint)scr_const.aim_highest_bone,highBonePos);
+    *mins = -(float)(aim_target_sentient_radius->current).unsignedInt;
+    mins[1] = -(float)(aim_target_sentient_radius->current).unsignedInt;
+    mins[2] = 0.0;
+    *maxs = (float)(aim_target_sentient_radius->current).integer;
+    maxs[1] = (float)(aim_target_sentient_radius->current).integer;
+    maxs[2] = local_8 - (targetEnt->pose).origin[2];
   }
-  else if ((param_1->nextState).solid == 0xffffff) {
-    CM_ModelBounds((int)(param_1->nextState).index.brushmodel,param_2,param_3);
+  else if ((targetEnt->nextState).solid == 0xffffff) {
+    CM_ModelBounds((int)(targetEnt->nextState).index.brushmodel,mins,maxs);
   }
   else {
-    pDVar4 = Com_GetClientDObj((param_1->nextState).number,(uint)(param_1->pose).localClientNum);
-    if (pDVar4 == (DObj *)0x0) {
-      *param_2 = -1.0;
-      param_2[1] = -1.0;
-      param_2[2] = -1.0;
-      *param_3 = 1.0;
-      param_3[1] = 1.0;
-      param_3[2] = 1.0;
+    obj = Com_GetClientDObj((targetEnt->nextState).number,(uint)(targetEnt->pose).localClientNum);
+    if (obj == (DObj *)0x0) {
+      *mins = -1.0;
+      mins[1] = -1.0;
+      mins[2] = -1.0;
+      *maxs = 1.0;
+      maxs[1] = 1.0;
+      maxs[2] = 1.0;
     }
     else {
-      DObjGetBounds(pDVar4,param_2,param_3);
+      DObjGetBounds(obj,mins,maxs);
     }
   }
   return;
@@ -465,12 +473,11 @@ void __cdecl AimTarget_GetTargetBounds(centity_s *param_1,float *param_2,float *
 
 // 004073B0  Vec3DistanceSq  (universal/com_vector.h:440)
 
-float __cdecl Vec3DistanceSq(float *param_1,float *param_2)
+float __cdecl Vec3DistanceSq(float *p1,float *p2)
 
 {
-  return (*param_2 - *param_1) * (*param_2 - *param_1) +
-         (param_2[1] - param_1[1]) * (param_2[1] - param_1[1]) +
-         (param_2[2] - param_1[2]) * (param_2[2] - param_1[2]);
+  return (*p2 - *p1) * (*p2 - *p1) + (p2[1] - p1[1]) * (p2[1] - p1[1]) +
+         (p2[2] - p1[2]) * (p2[2] - p1[2]);
 }
 
 
@@ -481,17 +488,18 @@ float __cdecl Vec3DistanceSq(float *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl AimTarget_GetTargetRadius(centity_s *param_1)
+float __cdecl AimTarget_GetTargetRadius(centity_s *targetEnt)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  float local_20 [4];
-  float local_10 [3];
+  float mins [3];
+  float radius;
+  float maxs [3];
   
-  if (param_1 == (centity_s *)0x0) {
+  if (targetEnt == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x207,0
                              ,"%s");
     if (!bVar2) {
@@ -500,12 +508,12 @@ float __cdecl AimTarget_GetTargetRadius(centity_s *param_1)
       return (float)fVar3;
     }
   }
-  if (((param_1->nextState).eType == 1) || ((param_1->nextState).eType == 0x11)) {
+  if (((targetEnt->nextState).eType == 1) || ((targetEnt->nextState).eType == 0x11)) {
     fVar4 = (aim_target_sentient_radius->current).value;
   }
   else {
-    AimTarget_GetTargetBounds(param_1,local_20,local_10);
-    fVar4 = RadiusFromBounds(local_20,local_10);
+    AimTarget_GetTargetBounds(targetEnt,mins,maxs);
+    fVar4 = RadiusFromBounds(mins,maxs);
   }
   return fVar4;
 }
@@ -518,19 +526,19 @@ float __cdecl AimTarget_GetTargetRadius(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_GetTargetCenter(centity_s *param_1,float *param_2)
+void __cdecl AimTarget_GetTargetCenter(centity_s *targetEnt,float *center)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_1c;
+  float mins;
   float local_18;
   float local_14;
-  float local_10;
+  float maxs;
   float local_c;
   float local_8;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (targetEnt == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x21b,0
                              ,"%s");
     if (!bVar2) {
@@ -539,7 +547,7 @@ void __cdecl AimTarget_GetTargetCenter(centity_s *param_1,float *param_2)
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (center == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x21c,0
                              ,"%s");
     if (!bVar2) {
@@ -548,16 +556,16 @@ void __cdecl AimTarget_GetTargetCenter(centity_s *param_1,float *param_2)
       return;
     }
   }
-  AimTarget_GetTargetBounds(param_1,&local_1c,&local_10);
-  *param_2 = local_1c + local_10;
-  param_2[1] = local_18 + local_c;
-  param_2[2] = local_14 + local_8;
-  *param_2 = *param_2 * 0.5;
-  param_2[1] = param_2[1] * 0.5;
-  param_2[2] = param_2[2] * 0.5;
-  *param_2 = (param_1->pose).origin[0] + *param_2;
-  param_2[1] = (param_1->pose).origin[1] + param_2[1];
-  param_2[2] = (param_1->pose).origin[2] + param_2[2];
+  AimTarget_GetTargetBounds(targetEnt,&mins,&maxs);
+  *center = mins + maxs;
+  center[1] = local_18 + local_c;
+  center[2] = local_14 + local_8;
+  *center = *center * 0.5;
+  center[1] = center[1] * 0.5;
+  center[2] = center[2] * 0.5;
+  *center = (targetEnt->pose).origin[0] + *center;
+  center[1] = (targetEnt->pose).origin[1] + center[1];
+  center[2] = (targetEnt->pose).origin[2] + center[2];
   return;
 }
 
@@ -569,19 +577,19 @@ void __cdecl AimTarget_GetTargetCenter(centity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_GetTargetTop(centity_s *param_1,float *param_2)
+void __cdecl AimTarget_GetTargetTop(centity_s *targetEnt,float *top)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_1c;
+  float mins;
   float local_18;
   float local_14;
-  float local_10;
+  float maxs;
   float local_c;
   float local_8;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (targetEnt == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x22e,0
                              ,"%s");
     if (!bVar2) {
@@ -590,7 +598,7 @@ void __cdecl AimTarget_GetTargetTop(centity_s *param_1,float *param_2)
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (top == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x22f,0
                              ,"%s");
     if (!bVar2) {
@@ -599,17 +607,17 @@ void __cdecl AimTarget_GetTargetTop(centity_s *param_1,float *param_2)
       return;
     }
   }
-  AimTarget_GetTargetBounds(param_1,&local_1c,&local_10);
-  *param_2 = local_1c + local_10;
-  param_2[1] = local_18 + local_c;
-  param_2[2] = local_14 + local_8;
-  *param_2 = *param_2 * 0.5;
-  param_2[1] = param_2[1] * 0.5;
-  param_2[2] = param_2[2] * 0.5;
-  param_2[2] = local_8;
-  *param_2 = (param_1->pose).origin[0] + *param_2;
-  param_2[1] = (param_1->pose).origin[1] + param_2[1];
-  param_2[2] = (param_1->pose).origin[2] + param_2[2];
+  AimTarget_GetTargetBounds(targetEnt,&mins,&maxs);
+  *top = mins + maxs;
+  top[1] = local_18 + local_c;
+  top[2] = local_14 + local_8;
+  *top = *top * 0.5;
+  top[1] = top[1] * 0.5;
+  top[2] = top[2] * 0.5;
+  top[2] = local_8;
+  *top = (targetEnt->pose).origin[0] + *top;
+  top[1] = (targetEnt->pose).origin[1] + top[1];
+  top[2] = (targetEnt->pose).origin[2] + top[2];
   return;
 }
 
@@ -621,7 +629,7 @@ void __cdecl AimTarget_GetTargetTop(centity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
+bool __cdecl AimTarget_IsTargetValid(cg_s *cgameGlob,centity_s *targetEnt)
 
 {
   int *piVar1;
@@ -637,52 +645,56 @@ bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
   DObj *pDVar11;
   int iVar12;
   float fVar13;
-  float local_28 [3];
-  float local_1c;
-  playerState_s *local_18;
-  float local_14;
+  clientInfo_t *playerInfo_2;
+  clientInfo_t *playerInfo;
+  clientInfo_t *targetInfo;
+  clientInfo_t *localTargetInfo;
+  float top [3];
+  float radius;
+  playerState_s *predictedPlayerState;
+  float playerDir;
   float local_10;
   float local_c;
-  float local_8;
+  float dot;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x246
                                ,0,"%s"), !bVar9)) {
     pcVar8 = (code *)swi(3);
     uVar10 = (*pcVar8)();
     return (bool)uVar10;
   }
-  if ((param_2 == (centity_s *)0x0) &&
+  if ((targetEnt == (centity_s *)0x0) &&
      (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x247
                                ,0,"%s"), !bVar9)) {
     pcVar8 = (code *)swi(3);
     uVar10 = (*pcVar8)();
     return (bool)uVar10;
   }
-  if ((param_2->nextValid == 0) &&
+  if ((targetEnt->nextValid == 0) &&
      (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x248
                                ,0,"%s"), !bVar9)) {
     pcVar8 = (code *)swi(3);
     uVar10 = (*pcVar8)();
     return (bool)uVar10;
   }
-  if (((param_2->nextState).number == (uint)(param_1->predictedPlayerState).clientNum) &&
+  if (((targetEnt->nextState).number == (uint)(cgameGlob->predictedPlayerState).clientNum) &&
      (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x24a
                                ,0,"%s"), !bVar9)) {
     pcVar8 = (code *)swi(3);
     uVar10 = (*pcVar8)();
     return (bool)uVar10;
   }
-  local_18 = &param_1->predictedPlayerState;
-  if ((param_2->nextState).eType == 1) {
-    if ((((param_2->nextState).lerp.eFlags & 0x40000U) != 0) &&
+  predictedPlayerState = &cgameGlob->predictedPlayerState;
+  if ((targetEnt->nextState).eType == 1) {
+    if ((((targetEnt->nextState).lerp.eFlags & 0x40000U) != 0) &&
        (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0x254,0,"%s"), !bVar9)) {
       pcVar8 = (code *)swi(3);
       uVar10 = (*pcVar8)();
       return (bool)uVar10;
     }
-    if ((0x1f < (param_2->nextState).clientNum) &&
+    if ((0x1f < (targetEnt->nextState).clientNum) &&
        (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0x256,0,
                                  "targetEnt->nextState.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -691,8 +703,9 @@ bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
       uVar10 = (*pcVar8)();
       return (bool)uVar10;
     }
-    piVar1 = (int *)((int)(param_1->bgs).clientinfo + (uint)(param_2->nextState).clientNum * 0x5c8);
-    if ((0x1f < local_18->clientNum) &&
+    piVar1 = (int *)((int)(cgameGlob->bgs).clientinfo +
+                    (uint)(targetEnt->nextState).clientNum * 0x5c8);
+    if ((0x1f < predictedPlayerState->clientNum) &&
        (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0x25c,0,
                                  "predictedPlayerState->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -701,11 +714,12 @@ bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
       uVar10 = (*pcVar8)();
       return (bool)uVar10;
     }
-    bVar7 = local_18->clientNum;
+    bVar7 = predictedPlayerState->clientNum;
     if ((*piVar1 == 0) || ((char)piVar1[0x27] == '\0')) {
       return false;
     }
-    pDVar11 = Com_GetClientDObj((param_2->nextState).number,(uint)(param_2->pose).localClientNum);
+    pDVar11 = Com_GetClientDObj((targetEnt->nextState).number,(uint)(targetEnt->pose).localClientNum
+                               );
     if ((pDVar11 == (DObj *)0x0) &&
        (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0x265,0,"%s"), !bVar9)) {
@@ -713,13 +727,13 @@ bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
       uVar10 = (*pcVar8)();
       return (bool)uVar10;
     }
-    iVar12 = *(int *)((int)(param_1->bgs).clientinfo + (uint)bVar7 * 0x5c8 + 0x2c);
+    iVar12 = *(int *)((int)(cgameGlob->bgs).clientinfo + (uint)bVar7 * 0x5c8 + 0x2c);
     if ((piVar1[0xb] == iVar12) && (iVar12 != 0)) {
       return false;
     }
   }
-  else if ((param_2->nextState).eType == 0x11) {
-    if ((0x1f < (param_1->predictedPlayerState).clientNum) &&
+  else if ((targetEnt->nextState).eType == 0x11) {
+    if ((0x1f < (cgameGlob->predictedPlayerState).clientNum) &&
        (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",
                                  0x273,0,
                                  "predictedPlayerState->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -728,34 +742,35 @@ bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
       uVar10 = (*pcVar8)();
       return (bool)uVar10;
     }
-    if ((param_2->nextState).lerp.u.actor.team ==
-        *(int *)((int)(param_1->bgs).clientinfo + (uint)local_18->clientNum * 0x5c8 + 0x2c)) {
+    if ((targetEnt->nextState).lerp.u.actor.team ==
+        *(int *)((int)(cgameGlob->bgs).clientinfo +
+                (uint)predictedPlayerState->clientNum * 0x5c8 + 0x2c)) {
       return false;
     }
   }
-  else if (((param_2->nextState).lerp.eFlags & 0x800U) == 0) {
+  else if (((targetEnt->nextState).lerp.eFlags & 0x800U) == 0) {
     return false;
   }
-  fVar13 = (param_2->pose).origin[0];
-  fVar2 = local_18->origin[0];
-  fVar3 = (param_2->pose).origin[1];
-  fVar4 = local_18->origin[1];
-  fVar5 = (param_2->pose).origin[2];
-  fVar6 = local_18->origin[2];
+  fVar13 = (targetEnt->pose).origin[0];
+  fVar2 = predictedPlayerState->origin[0];
+  fVar3 = (targetEnt->pose).origin[1];
+  fVar4 = predictedPlayerState->origin[1];
+  fVar5 = (targetEnt->pose).origin[2];
+  fVar6 = predictedPlayerState->origin[2];
   if ((player_topDownCamMode->current).integer < 1) {
-    local_14 = (param_1->refdef).viewaxis[0][0];
-    local_10 = (param_1->refdef).viewaxis[0][1];
-    local_c = (param_1->refdef).viewaxis[0][2];
-    local_1c = AimTarget_GetTargetRadius(param_2);
-    local_8 = local_14 * (fVar13 - fVar2) + local_10 * (fVar3 - fVar4) + local_c * (fVar5 - fVar6) +
-              local_1c;
-    if (0.0 <= local_8) {
-      fVar13 = Vec3DistanceSq(local_18->origin,(param_2->pose).origin);
+    playerDir = (cgameGlob->refdef).viewaxis[0][0];
+    local_10 = (cgameGlob->refdef).viewaxis[0][1];
+    local_c = (cgameGlob->refdef).viewaxis[0][2];
+    radius = AimTarget_GetTargetRadius(targetEnt);
+    dot = playerDir * (fVar13 - fVar2) + local_10 * (fVar3 - fVar4) + local_c * (fVar5 - fVar6) +
+          radius;
+    if (0.0 <= dot) {
+      fVar13 = Vec3DistanceSq(predictedPlayerState->origin,(targetEnt->pose).origin);
       if ((aim_target_frustum_min_distance->current).value <= fVar13) {
-        bVar9 = CG_PlayerInViewFrustum((uint)(param_2->pose).localClientNum,param_2);
+        bVar9 = CG_PlayerInViewFrustum((uint)(targetEnt->pose).localClientNum,targetEnt);
         if (bVar9) {
-          AimTarget_GetTargetTop(param_2,local_28);
-          iVar12 = R_CullPoint(param_1->localClientNum,local_28,
+          AimTarget_GetTargetTop(targetEnt,top);
+          iVar12 = R_CullPoint(cgameGlob->localClientNum,top,
                                (aim_target_frustum_expand_on_screen->current).value);
           if (iVar12 == 0) {
             bVar9 = true;
@@ -791,7 +806,7 @@ bool __cdecl AimTarget_IsTargetValid(cg_s *param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl AimTarget_IsTargetVisible(int param_1,centity_s *param_2,uint param_3)
+bool __cdecl AimTarget_IsTargetVisible(int localClientNum,centity_s *targetEnt,uint visBone)
 
 {
   code *pcVar1;
@@ -799,61 +814,62 @@ bool __cdecl AimTarget_IsTargetVisible(int param_1,centity_s *param_2,uint param
   undefined1 uVar3;
   ushort uVar4;
   int iVar5;
-  col_context_t local_9c;
-  float local_74 [3];
-  cg_s *local_68;
-  float *local_64;
-  playerState_s *local_60;
-  float4 local_58;
+  col_context_t context;
+  float endPos [3];
+  cg_s *cgameGlob;
+  float *localViewOrg;
+  playerState_s *predictedPlayerState;
+  bool success;
+  float4 trace;
   float local_48;
   uint local_20;
-  float local_1c;
+  float playerEyePos;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float targetEyePos [3];
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58.v[0] = 0.0;
-  local_58.v[1] = 0.0;
-  local_58.v[2] = 0.0;
-  local_58.v[3] = 0.0;
-  if ((param_2 == (centity_s *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((targetEnt == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x2e0
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_3 == 0) {
-    AimTarget_GetTargetCenter(param_2,local_10);
+  if (visBone == 0) {
+    AimTarget_GetTargetCenter(targetEnt,targetEyePos);
   }
   else {
-    AimTarget_GetTagPos(param_2,param_3,local_10);
+    AimTarget_GetTagPos(targetEnt,visBone,targetEyePos);
   }
-  local_68 = CG_GetLocalClientGlobals(param_1);
-  local_64 = (local_68->refdef).vieworg;
-  local_1c = *local_64;
-  local_18 = (local_68->refdef).vieworg[1];
-  local_14 = (local_68->refdef).vieworg[2];
-  local_60 = &local_68->predictedPlayerState;
-  col_context_t::col_context_t(&local_9c);
-  CG_TraceCapsule((trace_t *)&local_58,&local_1c,vec3_origin,vec3_origin,local_10,
-                  (uint)local_60->clientNum,0x803003,&local_9c);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  localViewOrg = (cgameGlob->refdef).vieworg;
+  playerEyePos = *localViewOrg;
+  local_18 = (cgameGlob->refdef).vieworg[1];
+  local_14 = (cgameGlob->refdef).vieworg[2];
+  predictedPlayerState = &cgameGlob->predictedPlayerState;
+  col_context_t::col_context_t(&context);
+  CG_TraceCapsule((trace_t *)&trace,&playerEyePos,vec3_origin,vec3_origin,targetEyePos,
+                  (uint)predictedPlayerState->clientNum,0x803003,&context);
   if ((local_48 != 1.0) &&
-     (uVar4 = Trace_GetEntityHitId((trace_t *)&local_58), (uint)uVar4 != (param_2->nextState).number
-     )) {
-    if ((param_2->nextState).solid != 0xffffff) {
+     (uVar4 = Trace_GetEntityHitId((trace_t *)&trace), (uint)uVar4 != (targetEnt->nextState).number)
+     ) {
+    if ((targetEnt->nextState).solid != 0xffffff) {
       return false;
     }
-    Vec3Lerp(&local_1c,local_10,local_48,local_74);
+    Vec3Lerp(&playerEyePos,targetEyePos,local_48,endPos);
     iVar5 = CM_TransformedPointContents
-                      (local_74,(int)(param_2->nextState).index.brushmodel,(param_2->pose).origin,
-                       (param_2->pose).angles);
+                      (endPos,(int)(targetEnt->nextState).index.brushmodel,(targetEnt->pose).origin,
+                       (targetEnt->pose).angles);
     if (iVar5 == 0) {
       return false;
     }
   }
-  bVar2 = FX_ClientVisibilityTest(param_1,&local_1c,local_10);
+  bVar2 = FX_ClientVisibilityTest(localClientNum,&playerEyePos,targetEyePos);
   return bVar2;
 }
 
@@ -865,89 +881,95 @@ bool __cdecl AimTarget_IsTargetVisible(int param_1,centity_s *param_2,uint param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_CreateTarget(int param_1,centity_s *param_2,AimTarget *param_3)
+void __cdecl AimTarget_CreateTarget(int localClientNum,centity_s *targetEnt,AimTarget *target)
 
 {
-  int iVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  cg_s *pcVar5;
-  float fVar6;
-  float local_20;
+  int atTime;
+  int atTime_00;
+  code *pcVar1;
+  bool bVar2;
+  cg_s *pcVar3;
+  float fVar4;
+  int snapServerTime;
+  cg_s *cgameGlob;
+  snapshot_s *nextSnap;
+  playerState_s *predictedPlayerState;
+  int nextSnapServerTime;
+  snapshot_s *snap;
+  float currentPos;
   float local_1c;
   float local_18;
-  float local_14;
+  float nextPos;
   float local_10;
   float local_c;
-  float local_8;
+  float deltaTime;
   
-  if (param_2 == (centity_s *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x325,0
+  if (targetEnt == (centity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x325,0
                              ,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_3 == (AimTarget *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x326,0
+  if (target == (AimTarget *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x326,0
                              ,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  param_3->entIndex = (param_2->nextState).number;
-  fVar6 = Vec3DistanceSq((pcVar5->predictedPlayerState).origin,(param_2->pose).origin);
-  param_3->worldDistSqr = fVar6;
-  AimTarget_GetTargetBounds(param_2,param_3->mins,param_3->maxs);
-  iVar1 = pcVar5->snap->serverTime;
-  iVar2 = pcVar5->nextSnap->serverTime;
-  local_8 = (float)(iVar2 - iVar1) * 0.001;
-  if (local_8 <= 0.0) {
-    param_3->velocity[0] = 0.0;
-    param_3->velocity[1] = 0.0;
-    param_3->velocity[2] = 0.0;
-    param_3->heightChange = 0.0;
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  target->entIndex = (targetEnt->nextState).number;
+  fVar4 = Vec3DistanceSq((pcVar3->predictedPlayerState).origin,(targetEnt->pose).origin);
+  target->worldDistSqr = fVar4;
+  AimTarget_GetTargetBounds(targetEnt,target->mins,target->maxs);
+  atTime = pcVar3->snap->serverTime;
+  atTime_00 = pcVar3->nextSnap->serverTime;
+  deltaTime = (float)(atTime_00 - atTime) * 0.001;
+  if (deltaTime <= 0.0) {
+    target->velocity[0] = 0.0;
+    target->velocity[1] = 0.0;
+    target->velocity[2] = 0.0;
+    target->heightChange = 0.0;
   }
   else {
-    BG_EvaluateTrajectory(&(param_2->currentState).pos,iVar1,&local_20);
-    BG_EvaluateTrajectory(&(param_2->nextState).lerp.pos,iVar2,&local_14);
-    param_3->velocity[0] = local_14 - local_20;
-    param_3->velocity[1] = local_10 - local_1c;
-    param_3->velocity[2] = local_c - local_18;
-    fVar6 = 1.0 / local_8;
-    param_3->velocity[0] = fVar6 * param_3->velocity[0];
-    param_3->velocity[1] = fVar6 * param_3->velocity[1];
-    param_3->velocity[2] = fVar6 * param_3->velocity[2];
+    BG_EvaluateTrajectory(&(targetEnt->currentState).pos,atTime,&currentPos);
+    BG_EvaluateTrajectory(&(targetEnt->nextState).lerp.pos,atTime_00,&nextPos);
+    target->velocity[0] = nextPos - currentPos;
+    target->velocity[1] = local_10 - local_1c;
+    target->velocity[2] = local_c - local_18;
+    fVar4 = 1.0 / deltaTime;
+    target->velocity[0] = fVar4 * target->velocity[0];
+    target->velocity[1] = fVar4 * target->velocity[1];
+    target->velocity[2] = fVar4 * target->velocity[2];
   }
-  AimTarget_AddTargetToList(param_1,param_3);
+  AimTarget_AddTargetToList(localClientNum,target);
   return;
 }
 
 
 // 004083C0  AimTarget_PlayerInValidState  (aim_assist/aim_target.cpp:864)
 
-bool __cdecl AimTarget_PlayerInValidState(playerState_s *param_1)
+bool __cdecl AimTarget_PlayerInValidState(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x361
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1->otherFlags & 2U) == 0) {
-    switch(param_1->pm_type) {
+  if ((ps->otherFlags & 2U) == 0) {
+    switch(ps->pm_type) {
     case 2:
     case 3:
     case 4:
@@ -974,33 +996,35 @@ bool __cdecl AimTarget_PlayerInValidState(playerState_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_ProcessEntityInternal(int param_1,centity_s *param_2)
+void __cdecl AimTarget_ProcessEntityInternal(int localClientNum,centity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  DWORD DVar4;
-  AimTarget local_38;
-  uint local_8;
+  cg_s *cgameGlob_00;
+  DWORD DVar3;
+  PIXProfile pixProfile;
+  cg_s *cgameGlob;
+  AimTarget target;
+  uint visBone;
   
   PIXBeginNamedEvent(-1,"AimTarget_ProcessEntity");
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 == (centity_s *)0x0) &&
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if ((ent == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x386
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->nextValid == 0) &&
+  if ((ent->nextValid == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x387
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->nextState).number == (uint)(pcVar3->predictedPlayerState).clientNum) &&
+  if (((ent->nextState).number == (uint)(cgameGlob_00->predictedPlayerState).clientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x389
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1009,69 +1033,68 @@ void __cdecl AimTarget_ProcessEntityInternal(int param_1,centity_s *param_2)
   }
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar3 = GetCurrentThreadId();
+    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    bVar2 = AimTarget_PlayerInValidState(&pcVar3->predictedPlayerState);
+    bVar2 = AimTarget_PlayerInValidState(&cgameGlob_00->predictedPlayerState);
     if (bVar2) {
-      if (((param_2->nextState).eType == 1) || ((param_2->nextState).eType == 0x11)) {
-        local_8 = (uint)scr_const.aim_vis_bone;
+      if (((ent->nextState).eType == 1) || ((ent->nextState).eType == 0x11)) {
+        visBone = (uint)scr_const.aim_vis_bone;
       }
       else {
-        if ((((param_2->nextState).lerp.eFlags & 0x800U) == 0) &&
+        if ((((ent->nextState).lerp.eFlags & 0x800U) == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp"
                                      ,0x39a,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_8 = 0;
+        visBone = 0;
       }
-      bVar2 = AimTarget_IsTargetValid(pcVar3,param_2);
+      bVar2 = AimTarget_IsTargetValid(cgameGlob_00,ent);
       if (bVar2) {
-        if (((param_2->nextState).lerp.eFlags2 & 0x1000000U) == 0) {
-          if (((param_2->pose).eType == '\x11') &&
-             (((param_2->nextState).lerp.eFlags & 0x40000U) != 0)) {
-            DVar4 = GetCurrentThreadId();
-            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        if (((ent->nextState).lerp.eFlags2 & 0x1000000U) == 0) {
+          if (((ent->pose).eType == '\x11') && (((ent->nextState).lerp.eFlags & 0x40000U) != 0)) {
+            DVar3 = GetCurrentThreadId();
+            if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
           else if (((player_topDownCamMode->current).integer != 0) ||
-                  (bVar2 = AimTarget_IsTargetVisible(param_1,param_2,local_8), bVar2)) {
-            AimTarget_CreateTarget(param_1,param_2,&local_38);
-            DVar4 = GetCurrentThreadId();
-            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                  (bVar2 = AimTarget_IsTargetVisible(localClientNum,ent,visBone), bVar2)) {
+            AimTarget_CreateTarget(localClientNum,ent,&target);
+            DVar3 = GetCurrentThreadId();
+            if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
           else {
-            DVar4 = GetCurrentThreadId();
-            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+            DVar3 = GetCurrentThreadId();
+            if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
         }
         else {
-          DVar4 = GetCurrentThreadId();
-          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          DVar3 = GetCurrentThreadId();
+          if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
       }
       else {
-        DVar4 = GetCurrentThreadId();
-        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        DVar3 = GetCurrentThreadId();
+        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
     }
     else {
-      DVar4 = GetCurrentThreadId();
-      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar3 = GetCurrentThreadId();
+      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
@@ -1087,10 +1110,10 @@ void __cdecl AimTarget_ProcessEntityInternal(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_ProcessEntity(int param_1,centity_s *param_2)
+void __cdecl AimTarget_ProcessEntity(int localClientNum,centity_s *ent)
 
 {
-  AimTarget_ProcessEntityInternal(param_1,param_2);
+  AimTarget_ProcessEntityInternal(localClientNum,ent);
   return;
 }
 
@@ -1102,7 +1125,7 @@ void __cdecl AimTarget_ProcessEntity(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimTarget_UpdateClientTargets(int param_1)
+void __cdecl AimTarget_UpdateClientTargets(int localClientNum)
 
 {
   short sVar1;
@@ -1110,11 +1133,17 @@ void __cdecl AimTarget_UpdateClientTargets(int param_1)
   code *pcVar3;
   bool bVar4;
   cg_s *pcVar5;
-  centity_s *pcVar6;
-  DWORD DVar7;
-  int local_8;
+  centity_s *ent;
+  DWORD DVar6;
+  PIXProfile prof;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  AimTargetGlob *atGlob;
+  entityState_s *es;
+  int entIndex;
+  int snapEntIndex;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x436
                                ,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -1123,7 +1152,7 @@ void __cdecl AimTarget_UpdateClientTargets(int param_1)
     (*pcVar3)();
     return;
   }
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar5->nextSnap == (snapshot_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x43a
                                ,0,"%s"), !bVar4)) {
@@ -1131,55 +1160,57 @@ void __cdecl AimTarget_UpdateClientTargets(int param_1)
     (*pcVar3)();
     return;
   }
-  AimTarget_ClearTargetList(param_1);
-  GamerProfile_WriteSettings(param_1);
-  local_8 = 0;
+  AimTarget_ClearTargetList(localClientNum);
+  GamerProfile_WriteSettings(localClientNum);
+  snapEntIndex = 0;
   do {
-    if (pcVar5->nextSnap->numEntities <= local_8) {
+    if (pcVar5->nextSnap->numEntities <= snapEntIndex) {
       PIXBeginNamedEvent(-1,"aim assist epilog");
-      GamerProfile_WriteSettings(param_1);
-      DVar7 = GetCurrentThreadId();
-      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      GamerProfile_WriteSettings(localClientNum);
+      DVar6 = GetCurrentThreadId();
+      if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    pcVar6 = CG_GetEntity(param_1,pcVar5->nextSnap->entities[local_8].number);
-    if (((((pcVar6->nextState).lerp.eFlags & 0x20U) != 0) || (pcVar6->nextValid == 0)) ||
-       ((uint)(pcVar5->predictedPlayerState).clientNum == (pcVar6->nextState).number))
+    ent = CG_GetEntity(localClientNum,pcVar5->nextSnap->entities[snapEntIndex].number);
+    if (((((ent->nextState).lerp.eFlags & 0x20U) != 0) || (ent->nextValid == 0)) ||
+       ((uint)(pcVar5->predictedPlayerState).clientNum == (ent->nextState).number))
     goto LAB_004084f3;
-    sVar1 = (pcVar6->nextState).eType;
+    sVar1 = (ent->nextState).eType;
     if (sVar1 == 1) {
-      uVar2 = (pcVar6->nextState).lerp.eFlags;
+      uVar2 = (ent->nextState).lerp.eFlags;
 joined_r0x004085bf:
       if ((uVar2 & 0x40000) == 0) {
 LAB_004085e2:
-        AimTarget_ProcessEntity(param_1,pcVar6);
+        AimTarget_ProcessEntity(localClientNum,ent);
       }
     }
     else if (sVar1 == 6) {
-      if (((pcVar6->nextState).lerp.eFlags & 0x800U) != 0) goto LAB_004085e2;
+      if (((ent->nextState).lerp.eFlags & 0x800U) != 0) goto LAB_004085e2;
     }
     else if (sVar1 == 0x11) {
-      uVar2 = (pcVar6->nextState).lerp.eFlags;
+      uVar2 = (ent->nextState).lerp.eFlags;
       goto joined_r0x004085bf;
     }
 LAB_004084f3:
-    local_8 = local_8 + 1;
+    snapEntIndex = snapEntIndex + 1;
   } while( true );
 }
 
 
 // 004086A0  AimTarget_GetClientTargetList  (aim_assist/aim_target.cpp:1142)
 
-void __cdecl AimTarget_GetClientTargetList(int param_1,AimTarget **param_2,int *param_3)
+void __cdecl
+AimTarget_GetClientTargetList(int localClientNum,AimTarget **targetList,int *targetCount)
 
 {
   code *pcVar1;
   bool bVar2;
   AimTargetGlob *pAVar3;
+  AimTargetGlob *atGlob;
   
-  if (param_2 == (AimTarget **)0x0) {
+  if (targetList == (AimTarget **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x479,0
                              ,"%s");
     if (!bVar2) {
@@ -1188,7 +1219,7 @@ void __cdecl AimTarget_GetClientTargetList(int param_1,AimTarget **param_2,int *
       return;
     }
   }
-  if (param_3 == (int *)0x0) {
+  if (targetCount == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_target.cpp",0x47a,0
                              ,"%s");
     if (!bVar2) {
@@ -1197,9 +1228,9 @@ void __cdecl AimTarget_GetClientTargetList(int param_1,AimTarget **param_2,int *
       return;
     }
   }
-  pAVar3 = AimTarget_GetGlobArray(param_1);
-  *param_2 = pAVar3->targets;
-  *param_3 = pAVar3->targetCount;
+  pAVar3 = AimTarget_GetGlobArray(localClientNum);
+  *targetList = pAVar3->targets;
+  *targetCount = pAVar3->targetCount;
   return;
 }
 

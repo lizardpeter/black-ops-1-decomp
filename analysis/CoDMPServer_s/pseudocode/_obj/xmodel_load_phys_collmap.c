@@ -225,7 +225,7 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
-  uchar *puVar3;
+  uchar *string;
   int extraout_EAX_02;
   int extraout_EAX_03;
   int extraout_EAX_04;
@@ -251,25 +251,25 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
         ;
         return false;
       }
-      puVar3 = (uchar *)Com_ParseOnLine(unaff_ESI);
-      puVar2 = puVar3;
+      string = (uchar *)Com_ParseOnLine(unaff_ESI);
+      puVar2 = string;
       do {
         uVar1 = *puVar2;
         puVar2 = puVar2 + 1;
       } while (uVar1 != '\0');
-      if (puVar3[(int)(puVar2 + (-2 - (int)(puVar3 + 1)))] == '\\') {
-        Com_PrintError(0x13,"SkipEpair: value \'%s\' ends with a \'\\\'\n",puVar3);
+      if (string[(int)(puVar2 + (-2 - (int)(string + 1)))] == '\\') {
+        Com_PrintError(0x13,"SkipEpair: value \'%s\' ends with a \'\\\'\n",string);
         return false;
       }
-      strchr(puVar3,'\n');
+      strchr(string,'\n');
       if (extraout_EAX_02 == 0) {
-        strchr(puVar3,'\r');
+        strchr(string,'\r');
         if (extraout_EAX_03 == 0) {
-          strchr(puVar3,'\"');
+          strchr(string,'\"');
           if (extraout_EAX_04 != 0) {
             Com_PrintError(0x13,
                            "SkipEpair: value \'%s\' contains a \" character, will cause parsing errors\n"
-                           ,puVar3);
+                           ,string);
             return false;
           }
           return true;
@@ -277,7 +277,7 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
       }
       Com_PrintError(0x13,
                      "SkipEpair: value \'%s\' contains a newline character (use of \'\\\' at end of value?)\n"
-                     ,puVar3);
+                     ,string);
       return false;
     }
   }
@@ -295,16 +295,16 @@ void __cdecl
 XModel_LoadCollMap(char *param_1,_func_void_ptr_int *param_2,XModel *param_3,char *param_4)
 
 {
-  ulong uVar1;
-  int iVar2;
-  Collmap *pCVar3;
+  ulong count;
+  int iVar1;
+  Collmap *dst;
+  uint uVar2;
+  uint uVar3;
   uint uVar4;
-  uint uVar5;
+  scrMemTreePub_t *psVar5;
   uint uVar6;
-  scrMemTreePub_t *psVar7;
-  uint uVar8;
-  PhysGeomList *pPVar9;
-  DObjAnimMat *pDVar10;
+  PhysGeomList *pPVar7;
+  DObjAnimMat *pDVar8;
   char *unaff_EDI;
   LPVOID local_69c;
   LPVOID local_698;
@@ -315,82 +315,82 @@ XModel_LoadCollMap(char *param_1,_func_void_ptr_int *param_2,XModel *param_3,cha
   undefined1 local_684 [1024];
   uint local_284 [161];
   
-  iVar2 = Com_sprintf("collmaps/%s",(int)param_1,unaff_EDI);
-  if (iVar2 < 0) {
+  iVar1 = Com_sprintf("collmaps/%s",(int)param_1,unaff_EDI);
+  if (iVar1 < 0) {
     Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n",local_684);
     return;
   }
-  iVar2 = _FS_ReadFile(&local_698);
-  if (-1 < iVar2) {
-    if (iVar2 == 0) {
+  iVar1 = _FS_ReadFile(&local_698);
+  if (-1 < iVar1) {
+    if (iVar1 == 0) {
       Com_PrintError(0x13,"ERROR: physics collmap \'%s\' has 0 length\n",param_1);
     }
     else {
       memset((uchar *)local_284,0xff,0x280);
       local_69c = local_698;
       local_68c = FUN_006ca600(&local_69c,local_684,local_284);
-      uVar1 = local_68c * 4;
+      count = local_68c * 4;
       param_3->numCollmaps = (uchar)local_68c;
-      pCVar3 = (*param_2)(uVar1);
-      param_3->collmaps = pCVar3;
-      memset((uchar *)pCVar3,'\0',uVar1);
-      uVar4 = 0;
+      dst = (*param_2)(count);
+      param_3->collmaps = dst;
+      memset((uchar *)dst,'\0',count);
+      uVar2 = 0;
       if (param_3->numBones != '\0') {
-        iVar2 = 0;
+        iVar1 = 0;
         do {
-          *(undefined1 *)((int)((param_3->field18_0xb8).localBoneInfo)->offset + iVar2 + 0x10) =
+          *(undefined1 *)((int)((param_3->field18_0xb8).localBoneInfo)->offset + iVar1 + 0x10) =
                0xff;
-          uVar4 = uVar4 + 1;
-          iVar2 = iVar2 + 0x2c;
-        } while (uVar4 < param_3->numBones);
+          uVar2 = uVar2 + 1;
+          iVar1 = iVar1 + 0x2c;
+        } while (uVar2 < param_3->numBones);
       }
       uStack_694 = 0;
       if (local_68c != 0) {
         do {
-          uVar8 = uStack_694;
-          uVar4 = local_284[uStack_694];
-          uVar5 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-          if (uVar4 == uVar5) {
+          uVar6 = uStack_694;
+          uVar2 = local_284[uStack_694];
+          uVar3 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
+          if (uVar2 == uVar3) {
             pCStack_690 = param_3->collmaps;
           }
           else {
-            pCStack_690 = param_3->collmaps + uVar8;
+            pCStack_690 = param_3->collmaps + uVar6;
           }
-          uVar5 = 0;
-          uVar6 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
+          uVar3 = 0;
+          uVar4 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
           while( true ) {
-            if ((uVar4 == uVar6) || (param_3->numBones <= uVar5)) goto LAB_006cb578;
-            if (uVar4 == (param_3->field5_0x8).localBoneNames[uVar5]) break;
-            uVar5 = uVar5 + 1;
-            uVar6 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
+            if ((uVar2 == uVar4) || (param_3->numBones <= uVar3)) goto LAB_006cb578;
+            if (uVar2 == (param_3->field5_0x8).localBoneNames[uVar3]) break;
+            uVar3 = uVar3 + 1;
+            uVar4 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
           }
-          (param_3->field18_0xb8).localBoneInfo[uVar5].collmap = (uchar)uVar8;
+          (param_3->field18_0xb8).localBoneInfo[uVar3].collmap = (uchar)uVar6;
 LAB_006cb578:
-          if (uVar5 == param_3->numBones) {
-            if (uVar4 == 0) {
-              psVar7 = (scrMemTreePub_t *)0x0;
+          if (uVar3 == param_3->numBones) {
+            if (uVar2 == 0) {
+              psVar5 = (scrMemTreePub_t *)0x0;
             }
             else {
-              psVar7 = gScrMemTreePub + uVar4 * 0x10 + 4;
+              psVar5 = gScrMemTreePub + uVar2 * 0x10 + 4;
             }
             Com_PrintError(0x13,"ERROR: collmap %s has bone %s that doesn\'t exist in model %s\n",
-                           local_684,psVar7,param_4);
+                           local_684,psVar5,param_4);
           }
           local_69c = local_698;
-          iStack_688 = FUN_006ca8a0(uVar4);
+          iStack_688 = FUN_006ca8a0(uVar2);
           if (iStack_688 != 0) {
-            pDVar10 = (DObjAnimMat *)0x0;
-            uVar8 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-            if ((uVar4 != uVar8) && (uVar5 < param_3->numBones)) {
-              pDVar10 = param_3->baseMat + uVar5;
+            pDVar8 = (DObjAnimMat *)0x0;
+            uVar6 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
+            if ((uVar2 != uVar6) && (uVar3 < param_3->numBones)) {
+              pDVar8 = param_3->baseMat + uVar3;
             }
             local_69c = local_698;
-            pPVar9 = (PhysGeomList *)
-                     FUN_006cad40(&local_69c,local_684,iStack_688,uVar4,pDVar10,param_2);
-            pCStack_690->geomList = pPVar9;
-            uVar8 = uStack_694;
+            pPVar7 = (PhysGeomList *)
+                     FUN_006cad40(&local_69c,local_684,iStack_688,uVar2,pDVar8,param_2);
+            pCStack_690->geomList = pPVar7;
+            uVar6 = uStack_694;
           }
-          uStack_694 = uVar8 + 1;
+          uStack_694 = uVar6 + 1;
         } while (uStack_694 < local_68c);
       }
     }

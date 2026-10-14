@@ -2208,95 +2208,95 @@ LAB_006d9e8a:
 void __thiscall NitrousVehicle::_update_fakey_stuff(NitrousVehicle *this,float param_1)
 
 {
-  rigid_body *prVar1;
+  rigid_body *b2;
+  bool bVar1;
   bool bVar2;
-  bool bVar3;
-  int iVar4;
-  rigid_body *prVar5;
-  rigid_body_constraint_custom_orientation *prVar6;
-  NitrousVehicle *pNVar7;
+  int iVar3;
+  rigid_body *no_error;
+  rigid_body_constraint_custom_orientation *prVar4;
+  NitrousVehicle *pNVar5;
   int extraout_EDX;
   int extraout_EDX_00;
   NitrousVehicle *unaff_ESI;
   rigid_body_constraint_wheel *unaff_EDI;
-  int iVar8;
-  float fVar9;
-  undefined1 *puVar10;
-  undefined1 *puVar11;
-  float fVar12;
+  int iVar6;
+  float fVar7;
+  undefined1 *puVar8;
+  undefined1 *puVar9;
+  float fVar10;
   
-  prVar1 = (rigid_body *)**(undefined4 **)(unaff_ESI + 0x230);
-  fVar12 = 0.0;
-  iVar8 = 0;
+  b2 = (rigid_body *)**(undefined4 **)(unaff_ESI + 0x230);
+  fVar10 = 0.0;
+  iVar6 = 0;
   if (*(float *)(unaff_ESI + 500) <= 0.5) {
     if (*(float *)(unaff_ESI + 500) < -0.5) {
-      iVar4 = *(int *)(unaff_ESI + 0x1f0);
-      fVar12 = -(*(float *)(iVar4 + 0x50) * *(float *)(iVar4 + 0x3c) * *(float *)(iVar4 + 0x18));
+      iVar3 = *(int *)(unaff_ESI + 0x1f0);
+      fVar10 = -(*(float *)(iVar3 + 0x50) * *(float *)(iVar3 + 0x3c) * *(float *)(iVar3 + 0x18));
     }
   }
   else {
-    iVar4 = *(int *)(unaff_ESI + 0x1f0);
-    fVar12 = *(float *)(iVar4 + 0x50) * *(float *)(iVar4 + 0x3c) * *(float *)(iVar4 + 0x18);
+    iVar3 = *(int *)(unaff_ESI + 0x1f0);
+    fVar10 = *(float *)(iVar3 + 0x50) * *(float *)(iVar3 + 0x3c) * *(float *)(iVar3 + 0x18);
   }
-  fVar9 = 30.0;
+  fVar7 = 30.0;
   if (*(int *)(unaff_ESI + 0x3dc) != 0) {
     _calc_initial_susp_spring_k(unaff_ESI,unaff_EDI);
-    *(float *)(extraout_EDX + 0x70) = fVar9 + fVar12;
+    *(float *)(extraout_EDX + 0x70) = fVar7 + fVar10;
     if ((*(byte *)(extraout_EDX + 0xb0) & 1) != 0) {
-      iVar8 = 1;
+      iVar6 = 1;
     }
   }
-  iVar4 = *(int *)(unaff_ESI + 0x3d8);
-  if ((iVar4 != 0) &&
-     (*(float *)(iVar4 + 0x70) = fVar9 + fVar12, (*(byte *)(iVar4 + 0xb0) & 1) != 0)) {
-    iVar8 = iVar8 + 1;
+  iVar3 = *(int *)(unaff_ESI + 0x3d8);
+  if ((iVar3 != 0) &&
+     (*(float *)(iVar3 + 0x70) = fVar7 + fVar10, (*(byte *)(iVar3 + 0xb0) & 1) != 0)) {
+    iVar6 = iVar6 + 1;
   }
   if (*(int *)(unaff_ESI + 0x3e4) != 0) {
     _calc_initial_susp_spring_k(unaff_ESI,unaff_EDI);
     if ((*(byte *)(extraout_EDX_00 + 0xb0) & 1) != 0) {
-      iVar8 = iVar8 + 1;
+      iVar6 = iVar6 + 1;
     }
-    *(float *)(extraout_EDX_00 + 0x70) = fVar9 - fVar12;
+    *(float *)(extraout_EDX_00 + 0x70) = fVar7 - fVar10;
   }
-  iVar4 = *(int *)(unaff_ESI + 0x3e0);
-  if ((iVar4 != 0) &&
-     (*(float *)(iVar4 + 0x70) = fVar9 - fVar12, (*(byte *)(iVar4 + 0xb0) & 1) != 0)) {
-    iVar8 = iVar8 + 1;
+  iVar3 = *(int *)(unaff_ESI + 0x3e0);
+  if ((iVar3 != 0) &&
+     (*(float *)(iVar3 + 0x70) = fVar7 - fVar10, (*(byte *)(iVar3 + 0xb0) & 1) != 0)) {
+    iVar6 = iVar6 + 1;
   }
   if (*(int *)(unaff_ESI + 0x374) == 0) {
 LAB_006d9fed:
-    if (iVar8 != 0) {
+    if (iVar6 != 0) {
       *(uint *)(unaff_ESI + 0x25c) = *(uint *)(unaff_ESI + 0x25c) | 4;
       *(uint *)(unaff_ESI + 0x260) = *(uint *)(unaff_ESI + 0x260) | 4;
     }
   }
-  else if (iVar8 == 0) {
+  else if (iVar6 == 0) {
     *(uint *)(unaff_ESI + 0x25c) = *(uint *)(unaff_ESI + 0x25c) | 2;
     *(uint *)(unaff_ESI + 0x260) = *(uint *)(unaff_ESI + 0x260) | 2;
   }
   else if (*(int *)(unaff_ESI + 0x374) == 0) goto LAB_006d9fed;
-  iVar4 = 0;
-  pNVar7 = unaff_ESI + 0x3d8;
+  iVar3 = 0;
+  pNVar5 = unaff_ESI + 0x3d8;
   do {
-    if ((*(int *)pNVar7 != 0) && ((*(byte *)(*(int *)pNVar7 + 0xb0) & 2) != 0)) {
+    if ((*(int *)pNVar5 != 0) && ((*(byte *)(*(int *)pNVar5 + 0xb0) & 2) != 0)) {
       *(uint *)(unaff_ESI + 0x25c) = *(uint *)(unaff_ESI + 0x25c) | 8;
       *(uint *)(unaff_ESI + 0x260) = *(uint *)(unaff_ESI + 0x260) | 8;
       break;
     }
-    iVar4 = iVar4 + 1;
-    pNVar7 = pNVar7 + 4;
-  } while (iVar4 < 6);
-  *(int *)(unaff_ESI + 0x374) = iVar8;
+    iVar3 = iVar3 + 1;
+    pNVar5 = pNVar5 + 4;
+  } while (iVar3 < 6);
+  *(int *)(unaff_ESI + 0x374) = iVar6;
   if (unaff_ESI[0x34c] != (NitrousVehicle)0x0) {
     *(uint *)(unaff_ESI + 0x25c) = *(uint *)(unaff_ESI + 0x25c) | 0x10;
     *(uint *)(unaff_ESI + 0x260) = *(uint *)(unaff_ESI + 0x260) | 0x10;
   }
   if (*(int *)(unaff_ESI + 0x250) == 0) {
-    iVar8 = 1;
-    prVar5 = (rigid_body *)phys_sys::get_environment_rigid_body();
-    prVar6 = phys_sys::create_rbc_custom_orientation(prVar1,prVar5,iVar8);
-    *(rigid_body_constraint_custom_orientation **)(unaff_ESI + 0x250) = prVar6;
-    prVar6->m_torque_resistance_pitch_roll =
+    iVar6 = 1;
+    no_error = (rigid_body *)phys_sys::get_environment_rigid_body();
+    prVar4 = phys_sys::create_rbc_custom_orientation(b2,no_error,iVar6);
+    *(rigid_body_constraint_custom_orientation **)(unaff_ESI + 0x250) = prVar4;
+    prVar4->m_torque_resistance_pitch_roll =
          *(float *)(*(int *)(unaff_ESI + 0x1f0) + 0x44) *
          *(float *)(*(int *)(unaff_ESI + 0x1f0) + 0x3c);
     *(float *)(*(int *)(unaff_ESI + 0x250) + 0x28) =
@@ -2306,91 +2306,91 @@ LAB_006d9fed:
          *(float *)(*(int *)(unaff_ESI + 0x1f0) + 0x4c) *
          *(float *)(*(int *)(unaff_ESI + 0x1f0) + 0x3c);
   }
-  fVar12 = DAT_00af3e60;
+  fVar10 = DAT_00af3e60;
   if ((*(float *)(unaff_ESI + 500) <= 0.9) ||
      (*(float *)(*(int *)(unaff_ESI + 0x1f0) + 0x54) < *(float *)(unaff_ESI + 0x208) ||
       *(float *)(*(int *)(unaff_ESI + 0x1f0) + 0x54) == *(float *)(unaff_ESI + 0x208))) {
-    bVar2 = false;
+    bVar1 = false;
   }
   else {
-    bVar2 = true;
+    bVar1 = true;
   }
-  bVar3 = false;
+  bVar2 = false;
   if ((*(short *)(*(int *)(unaff_ESI + 0x22c) + 0x40) != 2) &&
      (*(short *)(*(int *)(unaff_ESI + 0x22c) + 0x40) != 4)) {
-    iVar8 = *(int *)(unaff_ESI + 0x3d8);
-    if (((iVar8 != 0) && (*(int *)(iVar8 + 0xac) == 0)) &&
-       ((bVar2 || ((DAT_00af3e60 < *(float *)(unaff_ESI + 500) &&
-                   ((*(byte *)(iVar8 + 0xb0) & 1) == 0)))))) {
-      bVar3 = true;
-      *(float *)(iVar8 + 0xa0) = param_1 * 40.0 + *(float *)(iVar8 + 0xa0);
+    iVar6 = *(int *)(unaff_ESI + 0x3d8);
+    if (((iVar6 != 0) && (*(int *)(iVar6 + 0xac) == 0)) &&
+       ((bVar1 || ((DAT_00af3e60 < *(float *)(unaff_ESI + 500) &&
+                   ((*(byte *)(iVar6 + 0xb0) & 1) == 0)))))) {
+      bVar2 = true;
+      *(float *)(iVar6 + 0xa0) = param_1 * 40.0 + *(float *)(iVar6 + 0xa0);
     }
-    iVar8 = *(int *)(unaff_ESI + 0x3dc);
-    if (((iVar8 != 0) && (*(int *)(iVar8 + 0xac) == 0)) &&
-       ((bVar2 || ((fVar12 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar8 + 0xb0) & 1) == 0)))))
+    iVar6 = *(int *)(unaff_ESI + 0x3dc);
+    if (((iVar6 != 0) && (*(int *)(iVar6 + 0xac) == 0)) &&
+       ((bVar1 || ((fVar10 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar6 + 0xb0) & 1) == 0)))))
        ) {
-      bVar3 = true;
-      *(float *)(iVar8 + 0xa0) = param_1 * 40.0 + *(float *)(iVar8 + 0xa0);
+      bVar2 = true;
+      *(float *)(iVar6 + 0xa0) = param_1 * 40.0 + *(float *)(iVar6 + 0xa0);
     }
-    iVar8 = *(int *)(unaff_ESI + 0x3e0);
-    if (((iVar8 != 0) && (*(int *)(iVar8 + 0xac) == 0)) &&
-       ((bVar2 || ((fVar12 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar8 + 0xb0) & 1) == 0)))))
+    iVar6 = *(int *)(unaff_ESI + 0x3e0);
+    if (((iVar6 != 0) && (*(int *)(iVar6 + 0xac) == 0)) &&
+       ((bVar1 || ((fVar10 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar6 + 0xb0) & 1) == 0)))))
        ) {
-      bVar3 = true;
-      *(float *)(iVar8 + 0xa0) = param_1 * 40.0 + *(float *)(iVar8 + 0xa0);
+      bVar2 = true;
+      *(float *)(iVar6 + 0xa0) = param_1 * 40.0 + *(float *)(iVar6 + 0xa0);
     }
-    iVar8 = *(int *)(unaff_ESI + 0x3e4);
-    if (((iVar8 != 0) && (*(int *)(iVar8 + 0xac) == 0)) &&
-       ((bVar2 || ((fVar12 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar8 + 0xb0) & 1) == 0)))))
+    iVar6 = *(int *)(unaff_ESI + 0x3e4);
+    if (((iVar6 != 0) && (*(int *)(iVar6 + 0xac) == 0)) &&
+       ((bVar1 || ((fVar10 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar6 + 0xb0) & 1) == 0)))))
        ) {
-      bVar3 = true;
-      *(float *)(iVar8 + 0xa0) = param_1 * 40.0 + *(float *)(iVar8 + 0xa0);
+      bVar2 = true;
+      *(float *)(iVar6 + 0xa0) = param_1 * 40.0 + *(float *)(iVar6 + 0xa0);
     }
-    iVar8 = *(int *)(unaff_ESI + 1000);
-    if (((iVar8 != 0) && (*(int *)(iVar8 + 0xac) == 0)) &&
-       ((bVar2 || ((fVar12 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar8 + 0xb0) & 1) == 0)))))
+    iVar6 = *(int *)(unaff_ESI + 1000);
+    if (((iVar6 != 0) && (*(int *)(iVar6 + 0xac) == 0)) &&
+       ((bVar1 || ((fVar10 < *(float *)(unaff_ESI + 500) && ((*(byte *)(iVar6 + 0xb0) & 1) == 0)))))
        ) {
-      bVar3 = true;
-      *(float *)(iVar8 + 0xa0) = param_1 * 40.0 + *(float *)(iVar8 + 0xa0);
+      bVar2 = true;
+      *(float *)(iVar6 + 0xa0) = param_1 * 40.0 + *(float *)(iVar6 + 0xa0);
     }
-    iVar8 = *(int *)(unaff_ESI + 0x3ec);
-    if ((iVar8 != 0) && (*(int *)(iVar8 + 0xac) == 0)) {
-      if ((!bVar2) &&
-         ((*(float *)(unaff_ESI + 500) <= fVar12 || ((*(byte *)(iVar8 + 0xb0) & 1) != 0))))
+    iVar6 = *(int *)(unaff_ESI + 0x3ec);
+    if ((iVar6 != 0) && (*(int *)(iVar6 + 0xac) == 0)) {
+      if ((!bVar1) &&
+         ((*(float *)(unaff_ESI + 500) <= fVar10 || ((*(byte *)(iVar6 + 0xb0) & 1) != 0))))
       goto LAB_006da2df;
-      bVar3 = true;
-      *(float *)(iVar8 + 0xa0) = param_1 * 40.0 + *(float *)(iVar8 + 0xa0);
+      bVar2 = true;
+      *(float *)(iVar6 + 0xa0) = param_1 * 40.0 + *(float *)(iVar6 + 0xa0);
     }
   }
-  if ((bVar2) && (fVar12 < *(float *)(unaff_ESI + 500))) {
-    bVar3 = true;
+  if ((bVar1) && (fVar10 < *(float *)(unaff_ESI + 500))) {
+    bVar2 = true;
   }
 LAB_006da2df:
-  fVar12 = **(float **)(unaff_ESI + 0x1f0);
+  fVar10 = **(float **)(unaff_ESI + 0x1f0);
   if ((*(uint *)(unaff_ESI + 600) >> 0xb & 1) != 0) {
-    fVar12 = *(float *)(*(int *)(unaff_ESI + 0x22c) + 0x164) * fVar12;
+    fVar10 = *(float *)(*(int *)(unaff_ESI + 0x22c) + 0x164) * fVar10;
   }
-  puVar10 = (undefined1 *)
-            (ABS(*(float *)(unaff_ESI + 0x208) / fVar12) * ABS(*(float *)(unaff_ESI + 500)));
+  puVar8 = (undefined1 *)
+           (ABS(*(float *)(unaff_ESI + 0x208) / fVar10) * ABS(*(float *)(unaff_ESI + 500)));
   if (*(short *)(*(int *)(unaff_ESI + 0x22c) + 0x40) == 4) {
-    puVar11 = (undefined1 *)(*(float *)(unaff_ESI + 500) * 0.8);
-    if ((float)puVar10 < (float)puVar11) {
-      puVar10 = puVar11;
+    puVar9 = (undefined1 *)(*(float *)(unaff_ESI + 500) * 0.8);
+    if ((float)puVar8 < (float)puVar9) {
+      puVar8 = puVar9;
     }
     if ((*(uint *)(unaff_ESI + 600) >> 10 & 1) == 0) {
-      puVar10 = (undefined1 *)1.0;
+      puVar8 = (undefined1 *)1.0;
     }
   }
-  if ((bVar3) && ((float)puVar10 < 0.8)) {
-    puVar10 = &DAT_3f4ccccd;
+  if ((bVar2) && ((float)puVar8 < 0.8)) {
+    puVar8 = &DAT_3f4ccccd;
   }
-  fVar12 = DAT_00af3e58;
+  fVar10 = DAT_00af3e58;
   if ((snd_boat_using_lerp_rpm != (dvar_s *)0x0) &&
      ((snd_boat_using_lerp_rpm->current).enabled != false)) {
-    fVar12 = (snd_boat_lerp_rpm->current).value;
+    fVar10 = (snd_boat_lerp_rpm->current).value;
   }
   *(float *)(unaff_ESI + 0x370) =
-       ((float)puVar10 - *(float *)(unaff_ESI + 0x370)) * fVar12 * param_1 +
+       ((float)puVar8 - *(float *)(unaff_ESI + 0x370)) * fVar10 * param_1 +
        *(float *)(unaff_ESI + 0x370);
   return;
 }

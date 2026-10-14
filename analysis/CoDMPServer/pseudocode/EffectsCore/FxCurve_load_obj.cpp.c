@@ -2,7 +2,7 @@
 
 // 005F29F0  FxCurve_AllocAndCreateWithKeys  (EffectsCore/FxCurve_load_obj.cpp:10)
 
-FxCurve * __cdecl FxCurve_AllocAndCreateWithKeys(float *param_1,int param_2,int param_3)
+FxCurve * __cdecl FxCurve_AllocAndCreateWithKeys(float *keyArray,int dimensionCount,int keyCount)
 
 {
   float fVar1;
@@ -12,34 +12,39 @@ FxCurve * __cdecl FxCurve_AllocAndCreateWithKeys(float *param_1,int param_2,int 
   FxCurve *pFVar5;
   int iVar6;
   int iVar7;
-  int local_14;
-  int local_8;
+  int createdKeyCount;
+  int keySize;
+  bool addKeyAtStart;
+  int keyIndex;
+  bool addKeyAtEnd;
+  FxCurve *newCurve;
+  int elementIndex;
   
-  if ((param_1 == (float *)0x0) &&
+  if ((keyArray == (float *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve_load_obj.cpp"
                                ,0x13,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     pFVar5 = (FxCurve *)(*pcVar3)();
     return pFVar5;
   }
-  if ((param_3 < 1) &&
+  if ((keyCount < 1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve_load_obj.cpp"
                                ,0x14,0,"%s\n\t(keyCount) = %i"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     pFVar5 = (FxCurve *)(*pcVar3)();
     return pFVar5;
   }
-  if ((param_2 < 1) &&
+  if ((dimensionCount < 1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve_load_obj.cpp"
                                ,0x15,0,"%s\n\t(dimensionCount) = %i"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     pFVar5 = (FxCurve *)(*pcVar3)();
     return pFVar5;
   }
-  iVar7 = param_2 + 1;
-  fVar1 = *param_1;
-  fVar2 = param_1[(param_3 + -1) * iVar7];
-  iVar6 = (uint)(fVar1 != 0.0) + param_3 + (uint)(fVar2 != 1.0);
+  iVar7 = dimensionCount + 1;
+  fVar1 = *keyArray;
+  fVar2 = keyArray[(keyCount + -1) * iVar7];
+  iVar6 = (uint)(fVar1 != 0.0) + keyCount + (uint)(fVar2 != 1.0);
   if ((iVar6 < 2) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve_load_obj.cpp"
                                ,0x1d,1,"%s\n\t(createdKeyCount) = %i"), !bVar4)) {
@@ -55,25 +60,25 @@ FxCurve * __cdecl FxCurve_AllocAndCreateWithKeys(float *param_1,int param_2,int 
     pFVar5 = (FxCurve *)(*pcVar3)();
     return pFVar5;
   }
-  pFVar5->dimensionCount = param_2;
-  local_14 = 0;
+  pFVar5->dimensionCount = dimensionCount;
+  keyIndex = 0;
   if (fVar1 != 0.0) {
     pFVar5->keys[0] = 0.0;
-    for (local_8 = 0; local_8 != param_2; local_8 = local_8 + 1) {
-      pFVar5[1].keys[local_8 + -2] = param_1[local_8 + 1];
+    for (elementIndex = 0; elementIndex != dimensionCount; elementIndex = elementIndex + 1) {
+      pFVar5[1].keys[elementIndex + -2] = keyArray[elementIndex + 1];
     }
-    local_14 = 1;
+    keyIndex = 1;
   }
-  memcpy((uchar *)(pFVar5->keys + local_14 * iVar7),(uchar *)param_1,param_3 * iVar7 * 4);
-  local_14 = local_14 + param_3;
+  memcpy((uchar *)(pFVar5->keys + keyIndex * iVar7),(uchar *)keyArray,keyCount * iVar7 * 4);
+  keyIndex = keyIndex + keyCount;
   if (fVar2 != 1.0) {
-    pFVar5->keys[local_14 * iVar7] = 1.0;
-    for (local_8 = 0; local_8 != param_2; local_8 = local_8 + 1) {
-      pFVar5[1].keys[local_8 + local_14 * iVar7 + -2] = param_1[local_8 + 1];
+    pFVar5->keys[keyIndex * iVar7] = 1.0;
+    for (elementIndex = 0; elementIndex != dimensionCount; elementIndex = elementIndex + 1) {
+      pFVar5[1].keys[elementIndex + keyIndex * iVar7 + -2] = keyArray[elementIndex + 1];
     }
-    local_14 = local_14 + 1;
+    keyIndex = keyIndex + 1;
   }
-  if ((local_14 != iVar6) &&
+  if ((keyIndex != iVar6) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\FxCurve_load_obj.cpp"
                                ,0x3d,1,"keyIndex == createdKeyCount\n\t%i, %i"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -96,7 +101,7 @@ FxCurve * __cdecl FxCurve_AllocAndCreateWithKeys(float *param_1,int param_2,int 
     pFVar5 = (FxCurve *)(*pcVar3)();
     return pFVar5;
   }
-  pFVar5->keyCount = param_3;
+  pFVar5->keyCount = keyCount;
   return pFVar5;
 }
 

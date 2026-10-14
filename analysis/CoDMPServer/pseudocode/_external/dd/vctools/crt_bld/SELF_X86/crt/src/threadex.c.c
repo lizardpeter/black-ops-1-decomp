@@ -3,47 +3,47 @@
 // 00C14FEE  _beginthreadex  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c:154)
 
 uint __cdecl
-_beginthreadex(void *param_1,uint param_2,_func___cdecl_uint_void_ptr *param_3,void *param_4,
-              uint param_5,uint *param_6)
+_beginthreadex(void *security,uint stacksize,_func___cdecl_uint_void_ptr *initialcode,void *argument
+              ,uint createflag,uint *thrdaddr)
 
 {
   _func___cdecl_uint_void_ptr *p_Var1;
   int *piVar2;
-  _tiddata *lpParameter;
+  _tiddata *ptd;
   _tiddata *p_Var3;
   _func___cdecl_uint_void_ptr **lpThreadId;
   HANDLE pvVar4;
-  ulong local_8;
+  ulong err;
   
-  p_Var1 = param_3;
-  local_8 = 0;
-  if (param_3 == (_func___cdecl_uint_void_ptr *)0x0) {
+  p_Var1 = initialcode;
+  err = 0;
+  if (initialcode == (_func___cdecl_uint_void_ptr *)0x0) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
     __set_flsgetvalue();
-    lpParameter = _calloc_crt(1,0x214);
-    if (lpParameter != (_tiddata *)0x0) {
+    ptd = _calloc_crt(1,0x214);
+    if (ptd != (_tiddata *)0x0) {
       p_Var3 = _getptd();
-      _initptd(lpParameter,p_Var3->ptlocinfo);
-      lpParameter->_thandle = 0xffffffff;
-      lpParameter->_initarg = param_4;
-      lpParameter->_initaddr = p_Var1;
-      lpThreadId = (_func___cdecl_uint_void_ptr **)param_6;
-      if (param_6 == (uint *)0x0) {
-        lpThreadId = &param_3;
+      _initptd(ptd,p_Var3->ptlocinfo);
+      ptd->_thandle = 0xffffffff;
+      ptd->_initarg = argument;
+      ptd->_initaddr = p_Var1;
+      lpThreadId = (_func___cdecl_uint_void_ptr **)thrdaddr;
+      if (thrdaddr == (uint *)0x0) {
+        lpThreadId = &initialcode;
       }
-      pvVar4 = CreateThread(param_1,param_2,_threadstartex,lpParameter,param_5,(LPDWORD)lpThreadId);
+      pvVar4 = CreateThread(security,stacksize,_threadstartex,ptd,createflag,(LPDWORD)lpThreadId);
       if (pvVar4 != (HANDLE)0x0) {
         return (uint)pvVar4;
       }
-      local_8 = GetLastError();
+      err = GetLastError();
     }
-    free(lpParameter);
-    if (local_8 != 0) {
-      _dosmaperr(local_8);
+    free(ptd);
+    if (err != 0) {
+      _dosmaperr(err);
     }
   }
   return 0;
@@ -52,7 +52,7 @@ _beginthreadex(void *param_1,uint param_2,_func___cdecl_uint_void_ptr *param_3,v
 
 // 00C14F6B  _threadstartex  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c:260)
 
-ulong __cdecl _threadstartex(void *param_1)
+ulong __cdecl _threadstartex(void *ptd)
 
 {
   ulong uVar1;
@@ -64,7 +64,7 @@ ulong __cdecl _threadstartex(void *param_1)
   uVar1 = __get_flsindex();
   pvVar2 = __fls_getvalue(uVar1);
   if (pvVar2 == (void *)0x0) {
-    pvVar2 = param_1;
+    pvVar2 = ptd;
     uVar1 = __get_flsindex();
     iVar3 = __fls_setvalue(uVar1,pvVar2);
     if (iVar3 == 0) {
@@ -73,13 +73,13 @@ ulong __cdecl _threadstartex(void *param_1)
       ExitThread(DVar4);
     }
     DVar4 = GetCurrentThreadId();
-    *(DWORD *)param_1 = DVar4;
+    *(DWORD *)ptd = DVar4;
   }
   else {
-    *(undefined4 *)((int)pvVar2 + 0x54) = *(undefined4 *)((int)param_1 + 0x54);
-    *(undefined4 *)((int)pvVar2 + 0x58) = *(undefined4 *)((int)param_1 + 0x58);
-    *(undefined4 *)((int)pvVar2 + 4) = *(undefined4 *)((int)param_1 + 4);
-    _freefls(param_1);
+    *(undefined4 *)((int)pvVar2 + 0x54) = *(undefined4 *)((int)ptd + 0x54);
+    *(undefined4 *)((int)pvVar2 + 0x58) = *(undefined4 *)((int)ptd + 0x58);
+    *(undefined4 *)((int)pvVar2 + 4) = *(undefined4 *)((int)ptd + 4);
+    _freefls(ptd);
   }
   iVar3 = _IsNonwritableInCurrentImage((uchar *)&_FPmtinit);
   if (iVar3 != 0) {
@@ -98,32 +98,32 @@ void __cdecl _callthreadstartex(void)
 
 {
   _tiddata *p_Var1;
-  uint uVar2;
+  uint retcode;
   
   p_Var1 = _getptd();
-  uVar2 = (*p_Var1->_initaddr)(p_Var1->_initarg);
+  retcode = (*p_Var1->_initaddr)(p_Var1->_initarg);
                     /* WARNING: Subroutine does not return */
-  _endthreadex(uVar2);
+  _endthreadex(retcode);
 }
 
 
 // 00C14EED  _endthreadex  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/threadex.c:382)
 
-void __cdecl _endthreadex(uint param_1)
+void __cdecl _endthreadex(uint retcode)
 
 {
   int iVar1;
-  _tiddata *p_Var2;
+  _tiddata *ptd;
   
   iVar1 = _IsNonwritableInCurrentImage((uchar *)&_FPmtterm);
   if (iVar1 != 0) {
     SND_DspInit();
   }
-  p_Var2 = _getptd_noexit();
-  if (p_Var2 != (_tiddata *)0x0) {
-    _freeptd(p_Var2);
+  ptd = _getptd_noexit();
+  if (ptd != (_tiddata *)0x0) {
+    _freeptd(ptd);
   }
                     /* WARNING: Subroutine does not return */
-  ExitThread(param_1);
+  ExitThread(retcode);
 }
 

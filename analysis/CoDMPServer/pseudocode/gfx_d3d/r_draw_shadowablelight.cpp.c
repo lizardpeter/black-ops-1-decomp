@@ -2,8 +2,7 @@
 
 // 00B3F330  R_GetShadowableLightIndex  (gfx_d3d/r_draw_shadowablelight.cpp:28)
 
-uint __cdecl
-R_GetShadowableLightIndex(GfxBackEndData *param_1,GfxViewInfo *param_2,GfxLight *param_3)
+uint __cdecl R_GetShadowableLightIndex(GfxBackEndData *data,GfxViewInfo *viewInfo,GfxLight *light)
 
 {
   code *pcVar1;
@@ -11,20 +10,20 @@ R_GetShadowableLightIndex(GfxBackEndData *param_1,GfxViewInfo *param_2,GfxLight 
   uint uVar3;
   int iVar4;
   
-  if ((param_3 == (GfxLight *)0x0) &&
+  if ((light == (GfxLight *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                ,0x1d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (param_3->canUseShadowMap != '\0') {
+  if (light->canUseShadowMap != '\0') {
     iVar4 = 0x20;
     uVar3 = Com_GetPrimaryLightCount();
-    iVar4 = Com_BitCheckAssert(param_1->shadowableLightHasShadowMap,uVar3,iVar4);
+    iVar4 = Com_BitCheckAssert(data->shadowableLightHasShadowMap,uVar3,iVar4);
     if (iVar4 != 0) {
       uVar3 = Com_GetPrimaryLightCount();
-      if ((param_1->shadowableLightCount != uVar3 + 1) &&
+      if ((data->shadowableLightCount != uVar3 + 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                    ,0x27,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -70,8 +69,8 @@ R_GetShadowableLightIndex(GfxBackEndData *param_1,GfxViewInfo *param_2,GfxLight 
 
 void __cdecl
 R_SetLightProperties
-          (GfxCmdBufSourceState *param_1,GfxLight *param_2,GfxLightDef *param_3,
-          LightHasShadowMap param_4,float param_5)
+          (GfxCmdBufSourceState *source,GfxLight *light,GfxLightDef *def,
+          LightHasShadowMap hasShadowMap,float spotShadowFade)
 
 {
   float fVar1;
@@ -151,55 +150,55 @@ R_SetLightProperties
   float *local_18;
   float *local_14;
   
-  if (((param_1->scissorViewport).width != 1) &&
+  if (((source->scissorViewport).width != 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                ,0x35,0,"%s\n\t(source->viewMode) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (GfxLight *)0x0) &&
+  if ((light == (GfxLight *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                ,0x36,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_2->type != '\x03') && (param_2->type != '\x02')) &&
+  if (((light->type != '\x03') && (light->type != '\x02')) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                ,0x37,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2->radius <= 0.0) &&
+  if ((light->radius <= 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                ,0x38,0,"%s\n\t(light->radius) = %g"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  R_SetCodeImageTexture(param_1,0x10,(param_3->attenuation).image);
-  R_SetCodeImageSamplerState(param_1,0x10,'\x14');
-  local_14 = (param_1->skinnedPlacement).base.origin;
-  local_18 = param_2->origin;
+  R_SetCodeImageTexture(source,0x10,(def->attenuation).image);
+  R_SetCodeImageSamplerState(source,0x10,'\x14');
+  local_14 = (source->skinnedPlacement).base.origin;
+  local_18 = light->origin;
   local_24 = *local_18 - *local_14;
-  local_20 = param_2->origin[1] - (param_1->skinnedPlacement).base.origin[1];
-  local_1c = param_2->origin[2] - (param_1->skinnedPlacement).base.origin[2];
-  local_28 = param_2->attenuation[0] + 1.5287891e-05;
-  local_2c = param_2->attenuation[1];
-  local_30 = param_2->attenuation[2];
-  local_34 = param_2->attenuation[3];
-  local_38 = (param_1->input).consts + 5;
+  local_20 = light->origin[1] - (source->skinnedPlacement).base.origin[1];
+  local_1c = light->origin[2] - (source->skinnedPlacement).base.origin[2];
+  local_28 = light->attenuation[0] + 1.5287891e-05;
+  local_2c = light->attenuation[1];
+  local_30 = light->attenuation[2];
+  local_34 = light->attenuation[3];
+  local_38 = (source->input).consts + 5;
   (*local_38)[0] = local_28;
-  (param_1->input).consts[5][1] = local_2c;
-  (param_1->input).consts[5][2] = local_30;
-  (param_1->input).consts[5][3] = local_34;
-  R_DirtyCodeConstant(param_1,5);
-  local_3c = param_2->falloff[0];
-  local_40 = param_2->falloff[1];
-  local_44 = param_2->falloff[2];
-  local_48 = param_2->falloff[3];
+  (source->input).consts[5][1] = local_2c;
+  (source->input).consts[5][2] = local_30;
+  (source->input).consts[5][3] = local_34;
+  R_DirtyCodeConstant(source,5);
+  local_3c = light->falloff[0];
+  local_40 = light->falloff[1];
+  local_44 = light->falloff[2];
+  local_48 = light->falloff[3];
   if (local_3c == local_44) {
     local_4c = 1.0;
   }
@@ -226,148 +225,146 @@ R_SetLightProperties
     local_64 = -local_40 * (1.0 / (local_48 - local_40));
   }
   local_68 = local_64;
-  if (param_2->type == '\x03') {
-    R_UpdateCodeConstant(param_1,6,local_4c,local_5c,local_54,local_64);
+  if (light->type == '\x03') {
+    R_UpdateCodeConstant(source,6,local_4c,local_5c,local_54,local_64);
   }
-  else if (param_2->type == '\x02') {
-    local_6c = param_2->cookieControl2[3] * param_1->materialTime + param_2->cookieControl2[2];
+  else if (light->type == '\x02') {
+    local_6c = light->cookieControl2[3] * source->materialTime + light->cookieControl2[2];
     dVar4 = (double)local_6c;
     __libm_sse2_sin((double)CONCAT44(in_stack_fffffe34,in_stack_fffffe30));
     local_70 = (float)dVar4;
-    local_74 = param_2->cookieControl2[3] * param_1->materialTime + param_2->cookieControl2[2];
+    local_74 = light->cookieControl2[3] * source->materialTime + light->cookieControl2[2];
     dVar4 = (double)local_74;
     __libm_sse2_cos((double)CONCAT44(in_stack_fffffe34,in_stack_fffffe30));
     local_78 = (float)dVar4;
-    local_7c = (param_2->cookieControl2[0] - local_78 * param_2->cookieControl2[0]) +
-               local_70 * param_2->cookieControl2[1];
-    local_80 = (param_2->cookieControl2[1] - local_70 * param_2->cookieControl2[0]) -
-               local_78 * param_2->cookieControl2[1];
-    local_84 = param_2->cookieControl1[2] * param_1->materialTime + param_2->cookieControl1[0];
-    local_88 = param_2->cookieControl1[3] * param_1->materialTime + param_2->cookieControl1[0];
-    local_8c = local_78 * param_2->cookieControl0[2];
-    local_90 = -local_70 * param_2->cookieControl0[2];
-    local_94 = local_7c * param_2->cookieControl0[2] + local_84;
-    local_98 = local_8c * param_2->cookieControl0[1] + local_70 * param_2->cookieControl0[3];
-    local_9c = local_90 * param_2->cookieControl0[1] + local_78 * param_2->cookieControl0[3];
-    local_a0 = local_94 * param_2->cookieControl0[1] +
-               local_80 * param_2->cookieControl0[3] + local_88;
-    local_8c = local_98 * param_2->cookieControl0[0] + local_8c;
-    local_90 = local_9c * param_2->cookieControl0[0] + local_90;
-    local_94 = local_a0 * param_2->cookieControl0[0] + local_94;
-    local_a4 = (param_1->input).consts + 4;
+    local_7c = (light->cookieControl2[0] - local_78 * light->cookieControl2[0]) +
+               local_70 * light->cookieControl2[1];
+    local_80 = (light->cookieControl2[1] - local_70 * light->cookieControl2[0]) -
+               local_78 * light->cookieControl2[1];
+    local_84 = light->cookieControl1[2] * source->materialTime + light->cookieControl1[0];
+    local_88 = light->cookieControl1[3] * source->materialTime + light->cookieControl1[0];
+    local_8c = local_78 * light->cookieControl0[2];
+    local_90 = -local_70 * light->cookieControl0[2];
+    local_94 = local_7c * light->cookieControl0[2] + local_84;
+    local_98 = local_8c * light->cookieControl0[1] + local_70 * light->cookieControl0[3];
+    local_9c = local_90 * light->cookieControl0[1] + local_78 * light->cookieControl0[3];
+    local_a0 = local_94 * light->cookieControl0[1] + local_80 * light->cookieControl0[3] + local_88;
+    local_8c = local_98 * light->cookieControl0[0] + local_8c;
+    local_90 = local_9c * light->cookieControl0[0] + local_90;
+    local_94 = local_a0 * light->cookieControl0[0] + local_94;
+    local_a4 = (source->input).consts + 4;
     (*local_a4)[0] = local_94 + 0.5;
-    (param_1->input).consts[4][1] = 0.0;
-    (param_1->input).consts[4][2] = local_a0 + 0.5;
-    (param_1->input).consts[4][3] = param_5;
-    R_DirtyCodeConstant(param_1,4);
-    local_a8 = (param_1->input).consts + 0xf;
+    (source->input).consts[4][1] = 0.0;
+    (source->input).consts[4][2] = local_a0 + 0.5;
+    (source->input).consts[4][3] = spotShadowFade;
+    R_DirtyCodeConstant(source,4);
+    local_a8 = (source->input).consts + 0xf;
     (*local_a8)[0] = local_8c * 0.5;
-    (param_1->input).consts[0xf][1] = local_90 * 0.5;
-    (param_1->input).consts[0xf][2] = local_98 * 0.5;
-    (param_1->input).consts[0xf][3] = local_9c * 0.5;
-    R_DirtyCodeConstant(param_1,0xf);
-    local_ac = 1.0 / (param_2->aAbB[0] - param_2->aAbB[1]);
-    local_b0 = -param_2->aAbB[1] * (1.0 / (param_2->aAbB[0] - param_2->aAbB[1]));
-    local_b4 = 1.0 / (param_2->aAbB[2] - param_2->aAbB[3]);
-    local_b8 = -param_2->aAbB[3] * (1.0 / (param_2->aAbB[2] - param_2->aAbB[3]));
-    R_UpdateCodeConstant(param_1,6,local_50,local_b4,local_ac,local_60);
-    R_UpdateCodeConstant(param_1,7,local_58,local_b8,local_b0,local_68);
-    if (param_2->attenuation[3] == 0.0) {
+    (source->input).consts[0xf][1] = local_90 * 0.5;
+    (source->input).consts[0xf][2] = local_98 * 0.5;
+    (source->input).consts[0xf][3] = local_9c * 0.5;
+    R_DirtyCodeConstant(source,0xf);
+    local_ac = 1.0 / (light->aAbB[0] - light->aAbB[1]);
+    local_b0 = -light->aAbB[1] * (1.0 / (light->aAbB[0] - light->aAbB[1]));
+    local_b4 = 1.0 / (light->aAbB[2] - light->aAbB[3]);
+    local_b8 = -light->aAbB[3] * (1.0 / (light->aAbB[2] - light->aAbB[3]));
+    R_UpdateCodeConstant(source,6,local_50,local_b4,local_ac,local_60);
+    R_UpdateCodeConstant(source,7,local_58,local_b8,local_b0,local_68);
+    if (light->attenuation[3] == 0.0) {
       local_bc = 1.0;
     }
     else {
-      local_bc = 2.0 / param_2->attenuation[3];
+      local_bc = 2.0 / light->attenuation[3];
     }
     local_c0 = local_bc;
-    R_UpdateCodeConstant(param_1,0xd,local_bc,-1.0 / local_bc,1.0,param_2->attenuation[3]);
+    R_UpdateCodeConstant(source,0xd,local_bc,-1.0 / local_bc,1.0,light->attenuation[3]);
     R_UpdateCodeConstant
-              (param_1,0xe,param_2->aAbB[0] * param_2->aAbB[2],param_2->aAbB[1] * param_2->aAbB[3],
-               -2.0,3.0);
-    local_c4 = param_2->aAbB[0];
-    local_c8 = param_2->aAbB[1];
-    local_cc = param_2->aAbB[2];
-    local_d0 = param_2->aAbB[3];
-    local_d4 = (param_1->input).consts + 0xc;
+              (source,0xe,light->aAbB[0] * light->aAbB[2],light->aAbB[1] * light->aAbB[3],-2.0,3.0);
+    local_c4 = light->aAbB[0];
+    local_c8 = light->aAbB[1];
+    local_cc = light->aAbB[2];
+    local_d0 = light->aAbB[3];
+    local_d4 = (source->input).consts + 0xc;
     (*local_d4)[0] = local_c4;
-    (param_1->input).consts[0xc][1] = local_c8;
-    (param_1->input).consts[0xc][2] = local_cc;
-    (param_1->input).consts[0xc][3] = local_d0;
-    R_DirtyCodeConstant(param_1,0xc);
-    local_d8 = param_2;
+    (source->input).consts[0xc][1] = local_c8;
+    (source->input).consts[0xc][2] = local_cc;
+    (source->input).consts[0xc][3] = local_d0;
+    R_DirtyCodeConstant(source,0xc);
+    local_d8 = light;
     local_dc = local_24;
     local_e0 = local_20;
     local_e4 = local_1c;
-    (param_2->viewMatrix).field0_0x0.m[3][0] =
-         -(local_24 * (param_2->viewMatrix).field0_0x0.m[0][0] +
-           local_20 * (param_2->viewMatrix).field0_0x0.m[1][0] +
-          local_1c * (param_2->viewMatrix).field0_0x0.m[2][0]);
-    (param_2->viewMatrix).field0_0x0.m[3][1] =
-         -(local_24 * (param_2->viewMatrix).field0_0x0.m[0][1] +
-           local_20 * (param_2->viewMatrix).field0_0x0.m[1][1] +
-          local_1c * (param_2->viewMatrix).field0_0x0.m[2][1]);
-    (param_2->viewMatrix).field0_0x0.m[3][2] =
-         -(local_24 * (param_2->viewMatrix).field0_0x0.m[0][2] +
-           local_20 * (param_2->viewMatrix).field0_0x0.m[1][2] +
-          local_1c * (param_2->viewMatrix).field0_0x0.m[2][2]);
-    MatrixMultiply44((float (*) [4])&param_2->viewMatrix,(float (*) [4])&param_2->projMatrix,
+    (light->viewMatrix).field0_0x0.m[3][0] =
+         -(local_24 * (light->viewMatrix).field0_0x0.m[0][0] +
+           local_20 * (light->viewMatrix).field0_0x0.m[1][0] +
+          local_1c * (light->viewMatrix).field0_0x0.m[2][0]);
+    (light->viewMatrix).field0_0x0.m[3][1] =
+         -(local_24 * (light->viewMatrix).field0_0x0.m[0][1] +
+           local_20 * (light->viewMatrix).field0_0x0.m[1][1] +
+          local_1c * (light->viewMatrix).field0_0x0.m[2][1]);
+    (light->viewMatrix).field0_0x0.m[3][2] =
+         -(local_24 * (light->viewMatrix).field0_0x0.m[0][2] +
+           local_20 * (light->viewMatrix).field0_0x0.m[1][2] +
+          local_1c * (light->viewMatrix).field0_0x0.m[2][2]);
+    MatrixMultiply44((float (*) [4])&light->viewMatrix,(float (*) [4])&light->projMatrix,
                      (float (*) [4])&local_130);
-    (param_1->input).consts[8][0] = local_130;
-    (param_1->input).consts[8][1] = local_120;
-    (param_1->input).consts[8][2] = local_110;
-    (param_1->input).consts[8][3] = local_100;
-    R_DirtyCodeConstant(param_1,8);
-    (param_1->input).consts[9][0] = local_12c;
-    (param_1->input).consts[9][1] = local_11c;
-    (param_1->input).consts[9][2] = local_10c;
-    (param_1->input).consts[9][3] = local_fc;
-    R_DirtyCodeConstant(param_1,9);
-    (param_1->input).consts[10][0] = local_128;
-    (param_1->input).consts[10][1] = local_118;
-    (param_1->input).consts[10][2] = local_108;
-    (param_1->input).consts[10][3] = local_f8;
-    R_DirtyCodeConstant(param_1,10);
-    (param_1->input).consts[0xb][0] = local_124;
-    (param_1->input).consts[0xb][1] = local_114;
-    (param_1->input).consts[0xb][2] = local_104;
-    (param_1->input).consts[0xb][3] = local_f4;
-    R_DirtyCodeConstant(param_1,0xb);
+    (source->input).consts[8][0] = local_130;
+    (source->input).consts[8][1] = local_120;
+    (source->input).consts[8][2] = local_110;
+    (source->input).consts[8][3] = local_100;
+    R_DirtyCodeConstant(source,8);
+    (source->input).consts[9][0] = local_12c;
+    (source->input).consts[9][1] = local_11c;
+    (source->input).consts[9][2] = local_10c;
+    (source->input).consts[9][3] = local_fc;
+    R_DirtyCodeConstant(source,9);
+    (source->input).consts[10][0] = local_128;
+    (source->input).consts[10][1] = local_118;
+    (source->input).consts[10][2] = local_108;
+    (source->input).consts[10][3] = local_f8;
+    R_DirtyCodeConstant(source,10);
+    (source->input).consts[0xb][0] = local_124;
+    (source->input).consts[0xb][1] = local_114;
+    (source->input).consts[0xb][2] = local_104;
+    (source->input).consts[0xb][3] = local_f4;
+    R_DirtyCodeConstant(source,0xb);
   }
-  fVar1 = param_2->radius;
-  fVar5 = param_2->radius;
-  (param_1->input).consts[0][0] = local_24;
-  (param_1->input).consts[0][1] = local_20;
-  (param_1->input).consts[0][2] = local_1c;
-  (param_1->input).consts[0][3] = 1.0 / (fVar1 * fVar5);
-  R_DirtyCodeConstant(param_1,0);
-  fVar1 = param_2->diffuseColor[1];
-  fVar5 = param_2->diffuseColor[2];
-  (param_1->input).consts[1][0] = param_2->diffuseColor[0];
-  (param_1->input).consts[1][1] = fVar1;
-  (param_1->input).consts[1][2] = fVar5;
-  (param_1->input).consts[1][3] = 1.0;
-  R_DirtyCodeConstant(param_1,1);
-  fVar1 = param_2->specularColor[1];
-  fVar5 = param_2->specularColor[2];
-  (param_1->input).consts[2][0] = param_2->specularColor[0];
-  (param_1->input).consts[2][1] = fVar1;
-  (param_1->input).consts[2][2] = fVar5;
-  (param_1->input).consts[2][3] = 1.0;
-  R_DirtyCodeConstant(param_1,2);
-  fVar1 = param_2->dir[1];
-  fVar5 = param_2->dir[2];
-  (param_1->input).consts[3][0] = param_2->dir[0];
-  (param_1->input).consts[3][1] = fVar1;
-  (param_1->input).consts[3][2] = fVar5;
-  (param_1->input).consts[3][3] = 0.0;
-  R_DirtyCodeConstant(param_1,3);
-  if ((param_2->type == '\x03') && (param_4 == LIGHT_HAS_SHADOWMAP)) {
-    fVar5 = 1.0 / (param_2->cosHalfFovInner - param_2->cosHalfFovOuter);
-    fVar1 = param_2->cosHalfFovOuter;
-    (param_1->input).consts[4][0] = fVar5;
-    (param_1->input).consts[4][1] = -fVar5 * fVar1;
-    (param_1->input).consts[4][2] = 0.0;
-    (param_1->input).consts[4][3] = param_5;
-    R_DirtyCodeConstant(param_1,4);
+  fVar1 = light->radius;
+  fVar5 = light->radius;
+  (source->input).consts[0][0] = local_24;
+  (source->input).consts[0][1] = local_20;
+  (source->input).consts[0][2] = local_1c;
+  (source->input).consts[0][3] = 1.0 / (fVar1 * fVar5);
+  R_DirtyCodeConstant(source,0);
+  fVar1 = light->diffuseColor[1];
+  fVar5 = light->diffuseColor[2];
+  (source->input).consts[1][0] = light->diffuseColor[0];
+  (source->input).consts[1][1] = fVar1;
+  (source->input).consts[1][2] = fVar5;
+  (source->input).consts[1][3] = 1.0;
+  R_DirtyCodeConstant(source,1);
+  fVar1 = light->specularColor[1];
+  fVar5 = light->specularColor[2];
+  (source->input).consts[2][0] = light->specularColor[0];
+  (source->input).consts[2][1] = fVar1;
+  (source->input).consts[2][2] = fVar5;
+  (source->input).consts[2][3] = 1.0;
+  R_DirtyCodeConstant(source,2);
+  fVar1 = light->dir[1];
+  fVar5 = light->dir[2];
+  (source->input).consts[3][0] = light->dir[0];
+  (source->input).consts[3][1] = fVar1;
+  (source->input).consts[3][2] = fVar5;
+  (source->input).consts[3][3] = 0.0;
+  R_DirtyCodeConstant(source,3);
+  if ((light->type == '\x03') && (hasShadowMap == LIGHT_HAS_SHADOWMAP)) {
+    fVar5 = 1.0 / (light->cosHalfFovInner - light->cosHalfFovOuter);
+    fVar1 = light->cosHalfFovOuter;
+    (source->input).consts[4][0] = fVar5;
+    (source->input).consts[4][1] = -fVar5 * fVar1;
+    (source->input).consts[4][2] = 0.0;
+    (source->input).consts[4][3] = spotShadowFade;
+    R_DirtyCodeConstant(source,4);
   }
   return;
 }
@@ -375,76 +372,86 @@ R_SetLightProperties
 
 // 00B3EFF0  R_SetShadowableLight  (gfx_d3d/r_draw_shadowablelight.cpp:216)
 
-void __cdecl R_SetShadowableLight(GfxCmdBufSourceState *param_1,uint param_2,GfxViewInfo *param_3)
+void __cdecl
+R_SetShadowableLight(GfxCmdBufSourceState *source,uint shadowableLightIndex,GfxViewInfo *viewInfo)
 
 {
-  GfxLight *pGVar1;
-  float fVar2;
-  GfxLightDef *pGVar3;
-  code *pcVar4;
-  bool bVar5;
-  int iVar6;
-  float local_24;
-  LightHasShadowMap local_c;
+  GfxLight *light_00;
+  float fVar1;
+  GfxLightDef *def_00;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  float falloffScale;
+  GfxImage *image;
+  float spotShadowFade;
+  GfxLightDef *def;
+  GfxBackEndData *data;
+  float falloffShift;
+  GfxLight *light;
+  GfxSpotShadow *spotShadow;
+  LightHasShadowMap hasShadowMap;
+  GfxSunShadow *sunShadow;
   
-  if ((0xfe < param_2) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
+  if ((0xfe < shadowableLightIndex) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                ,0xe4,0,
                                "shadowableLightIndex doesn\'t index GFX_MAX_PRIMARY_LIGHTS\n\t%i not in [0, %i)"
-                              ), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+                              ), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  if ((param_1[1].matrices.matrix[0].m[2][3] != (float)param_2) &&
-     (param_1[1].matrices.matrix[0].m[2][3] = (float)param_2, param_2 != 0)) {
-    fVar2 = (param_1->viewParms).viewMatrix.m[2][0];
-    if ((*(uint *)((int)fVar2 + 0x183db0) <= param_2) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
+  if ((source[1].matrices.matrix[0].m[2][3] != (float)shadowableLightIndex) &&
+     (source[1].matrices.matrix[0].m[2][3] = (float)shadowableLightIndex, shadowableLightIndex != 0)
+     ) {
+    fVar1 = (source->viewParms).viewMatrix.m[2][0];
+    if ((*(uint *)((int)fVar1 + 0x183db0) <= shadowableLightIndex) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                  ,0xf1,0,
                                  "shadowableLightIndex doesn\'t index data->shadowableLightCount\n\t%i not in [0, %i)"
-                                ), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+                                ), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    pGVar1 = (GfxLight *)((int)fVar2 + 0x16cf20 + param_2 * 0x170);
-    if (pGVar1->type == '\x01') {
-      if (param_1->cameraView != param_2) {
-        param_1->cameraView = param_2;
-        R_SetShadowLookupMatrix(param_1,(GfxMatrix *)((int)fVar2 + 0x183f40));
+    light_00 = (GfxLight *)((int)fVar1 + 0x16cf20 + shadowableLightIndex * 0x170);
+    if (light_00->type == '\x01') {
+      if (source->cameraView != shadowableLightIndex) {
+        source->cameraView = shadowableLightIndex;
+        R_SetShadowLookupMatrix(source,(GfxMatrix *)((int)fVar1 + 0x183f40));
       }
     }
     else {
-      pGVar3 = pGVar1->def;
+      def_00 = light_00->def;
       R_UpdateCodeConstant
-                (param_1,0x19,(float)((pGVar3->attenuation).image)->width * 0.001953125,0.0,
-                 (float)pGVar3->lmapLookupStart * 0.001953125,0.0);
-      local_c = LIGHT_HAS_NO_SHADOWMAP;
-      local_24 = 0.0;
-      iVar6 = Com_BitCheckAssert((uint *)((int)(param_1->viewParms).viewMatrix.m[2][0] + 0x15d780),
-                                 param_2,0x20);
-      if (iVar6 != 0) {
-        if ((3 < pGVar1->spotShadowIndex) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
+                (source,0x19,(float)((def_00->attenuation).image)->width * 0.001953125,0.0,
+                 (float)def_00->lmapLookupStart * 0.001953125,0.0);
+      hasShadowMap = LIGHT_HAS_NO_SHADOWMAP;
+      spotShadowFade = 0.0;
+      iVar4 = Com_BitCheckAssert((uint *)((int)(source->viewParms).viewMatrix.m[2][0] + 0x15d780),
+                                 shadowableLightIndex,0x20);
+      if (iVar4 != 0) {
+        if ((3 < light_00->spotShadowIndex) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_shadowablelight.cpp"
                                      ,0x10f,0,
                                      "light->spotShadowIndex doesn\'t index R_SPOTSHADOW_TILE_COUNT\n\t%i not in [0, %i)"
-                                    ), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+                                    ), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        iVar6 = (int)fVar2 + 0x1843a0 + pGVar1->spotShadowIndex * 0x1d0;
-        if (param_1->cameraView != param_2) {
-          param_1->cameraView = param_2;
-          R_SetShadowLookupMatrix(param_1,(GfxMatrix *)(iVar6 + 0x140));
+        iVar4 = (int)fVar1 + 0x1843a0 + light_00->spotShadowIndex * 0x1d0;
+        if (source->cameraView != shadowableLightIndex) {
+          source->cameraView = shadowableLightIndex;
+          R_SetShadowLookupMatrix(source,(GfxMatrix *)(iVar4 + 0x140));
         }
-        local_c = LIGHT_HAS_SHADOWMAP;
-        local_24 = *(float *)(iVar6 + 0x188);
-        R_SetCodeImageTexture(param_1,7,*(GfxImage **)(iVar6 + 0x1ac));
-        R_UpdateCodeConstantFromVec4(param_1,0x46,(float *)(iVar6 + 0x1b0));
+        hasShadowMap = LIGHT_HAS_SHADOWMAP;
+        spotShadowFade = *(float *)(iVar4 + 0x188);
+        R_SetCodeImageTexture(source,7,*(GfxImage **)(iVar4 + 0x1ac));
+        R_UpdateCodeConstantFromVec4(source,0x46,(float *)(iVar4 + 0x1b0));
       }
-      R_SetLightProperties(param_1,pGVar1,pGVar3,local_c,local_24);
+      R_SetLightProperties(source,light_00,def_00,hasShadowMap,spotShadowFade);
     }
   }
   return;
@@ -453,23 +460,28 @@ void __cdecl R_SetShadowableLight(GfxCmdBufSourceState *param_1,uint param_2,Gfx
 
 // 00B3F290  R_SetDrawSurfsShadowableLight  (gfx_d3d/r_draw_shadowablelight.cpp:313)
 
-void __cdecl
-R_SetDrawSurfsShadowableLight(GfxCmdBufSourceState *param_1,GfxDrawSurfListInfo *param_2)
+void __cdecl R_SetDrawSurfsShadowableLight(GfxCmdBufSourceState *source,GfxDrawSurfListInfo *info)
 
 {
-  GfxLight *pGVar1;
-  uint uVar2;
+  GfxLight *light_00;
+  uint shadowableLightIndex_00;
+  uint shadowableLightIndex;
+  GfxLightDef *def;
+  GfxBackEndData *data;
+  GfxViewInfo *viewInfo;
+  GfxLight *light;
   
-  if (param_2->light != (GfxLight *)0x0) {
-    pGVar1 = param_2->light;
-    uVar2 = R_GetShadowableLightIndex
-                      ((GfxBackEndData *)(param_1->viewParms).viewMatrix.m[2][0],param_2->viewInfo,
-                       pGVar1);
-    if (uVar2 == 0) {
-      R_SetLightProperties(param_1,pGVar1,pGVar1->def,LIGHT_HAS_NO_SHADOWMAP,0.0);
+  if (info->light != (GfxLight *)0x0) {
+    light_00 = info->light;
+    shadowableLightIndex_00 =
+         R_GetShadowableLightIndex
+                   ((GfxBackEndData *)(source->viewParms).viewMatrix.m[2][0],info->viewInfo,light_00
+                   );
+    if (shadowableLightIndex_00 == 0) {
+      R_SetLightProperties(source,light_00,light_00->def,LIGHT_HAS_NO_SHADOWMAP,0.0);
     }
     else {
-      R_SetShadowableLight(param_1,uVar2,param_2->viewInfo);
+      R_SetShadowableLight(source,shadowableLightIndex_00,info->viewInfo);
     }
   }
   return;

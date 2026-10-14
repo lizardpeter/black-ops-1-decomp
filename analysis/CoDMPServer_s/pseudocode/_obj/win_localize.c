@@ -10,45 +10,45 @@ language_t __cdecl Win_InitLocalization(void)
 {
   char *pcVar1;
   int *piVar2;
-  _iobuf *p_Var3;
-  long lVar4;
-  uint uVar5;
-  language_t lVar6;
-  char cVar7;
+  _iobuf *stream;
+  long offset;
+  uint uVar3;
+  language_t lVar4;
+  char cVar5;
   language_t lStack_4;
   
   DAT_020c6f68 = (char *)0x0;
   _DAT_020c6f6c = (char *)0x0;
   piVar2 = _errno();
   *piVar2 = 0;
-  p_Var3 = fopen("localization.txt","rt");
-  if ((p_Var3 != (_iobuf *)0xffffffff) && (p_Var3 != (_iobuf *)0x0)) {
-    lVar4 = ftell(p_Var3);
-    fseek(p_Var3,0,2);
-    uVar5 = ftell(p_Var3);
-    fseek(p_Var3,lVar4,0);
+  stream = fopen("localization.txt","rt");
+  if ((stream != (_iobuf *)0xffffffff) && (stream != (_iobuf *)0x0)) {
+    offset = ftell(stream);
+    fseek(stream,0,2);
+    uVar3 = ftell(stream);
+    fseek(stream,offset,0);
     DAT_020c6f68 = &DAT_020c6f70;
-    uVar5 = fread(&DAT_020c6f70,1,uVar5,p_Var3);
-    fclose(p_Var3);
+    uVar3 = fread(&DAT_020c6f70,1,uVar3,stream);
+    fclose(stream);
     pcVar1 = DAT_020c6f68;
-    lVar6 = 0;
-    if (uVar5 == 0) {
+    lVar4 = 0;
+    if (uVar3 == 0) {
       DAT_020c6f68 = (char *)0x0;
-      return lVar6;
+      return lVar4;
     }
-    DAT_020c6f68[uVar5] = '\0';
-    cVar7 = *pcVar1;
+    DAT_020c6f68[uVar3] = '\0';
+    cVar5 = *pcVar1;
     lStack_4 = 0;
-    if (cVar7 != '\0') {
-      while (cVar7 != '\n') {
-        cVar7 = pcVar1[lVar6 + 1];
-        lVar6 = lVar6 + 1;
-        if (cVar7 == '\0') {
+    if (cVar5 != '\0') {
+      while (cVar5 != '\n') {
+        cVar5 = pcVar1[lVar4 + 1];
+        lVar4 = lVar4 + 1;
+        if (cVar5 == '\0') {
           return 0;
         }
       }
-      pcVar1[lVar6] = '\0';
-      _DAT_020c6f6c = pcVar1 + lVar6 + 1;
+      pcVar1[lVar4] = '\0';
+      _DAT_020c6f6c = pcVar1 + lVar4 + 1;
       SEH_GetLanguageIndexForName(pcVar1,(int *)&lStack_4);
     }
     return lStack_4;

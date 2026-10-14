@@ -7,24 +7,24 @@ uchar * FUN_00bcd2c0(uchar *param_1)
 {
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar1;
+  uchar *dst;
   
   if (param_1 == (uchar *)0x0) {
-    puVar1 = (uchar *)0x0;
+    dst = (uchar *)0x0;
   }
   else {
     strlen(param_1);
     strlen((uchar *)".index");
-    puVar1 = (uchar *)_HTMemory_malloc(extraout_EAX + 1 + extraout_EAX_00);
-    if (puVar1 == (uchar *)0x0) {
+    dst = (uchar *)_HTMemory_malloc(extraout_EAX + 1 + extraout_EAX_00);
+    if (dst == (uchar *)0x0) {
       _HTMemory_outofmem("cache_index_name",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTCache.c",0x102
                         );
     }
-    strcpy(puVar1,param_1);
-    strcat(puVar1,(uchar *)".index");
+    strcpy(dst,param_1);
+    strcat(dst,(uchar *)".index");
   }
-  return puVar1;
+  return dst;
 }
 
 
@@ -33,18 +33,18 @@ uchar * FUN_00bcd2c0(uchar *param_1)
 undefined4 _HTCacheIndex_write(int param_1)
 
 {
-  char *pcVar1;
-  _iobuf *p_Var2;
-  int iVar3;
+  char *file;
+  _iobuf *stream;
+  int iVar1;
   int local_1c;
   int local_14;
   int *local_10;
   
   if (((param_1 != 0) && (DAT_0b548a64 != 0)) &&
-     (pcVar1 = (char *)FUN_00bcd2c0(param_1), pcVar1 != (char *)0x0)) {
-    p_Var2 = fopen(pcVar1,"wb");
-    if (p_Var2 == (_iobuf *)0x0) {
-      _HTMemory_free(pcVar1);
+     (file = (char *)FUN_00bcd2c0(param_1), file != (char *)0x0)) {
+    stream = fopen(file,"wb");
+    if (stream == (_iobuf *)0x0) {
+      _HTMemory_free(file);
     }
     else {
       for (local_14 = 0; local_14 < 599; local_14 = local_14 + 1) {
@@ -59,15 +59,15 @@ undefined4 _HTCacheIndex_write(int param_1)
               local_1c = *local_10;
             }
             if (local_1c == 0) break;
-            iVar3 = fprintf(p_Var2,"%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n");
-            if (iVar3 < 0) {
+            iVar1 = fprintf(stream,"%s %s %s %ld %ld %ld %c %d %d %ld %ld %ld %c\r\n");
+            if (iVar1 < 0) {
               return 0;
             }
           }
         }
       }
-      fclose(p_Var2);
-      _HTMemory_free(pcVar1);
+      fclose(stream);
+      _HTMemory_free(file);
     }
   }
   return 0;
@@ -149,9 +149,9 @@ undefined4 FUN_00bcd6c0(char *param_1)
   int *piVar1;
   undefined4 uVar2;
   undefined4 uVar3;
-  uchar *puVar4;
+  uchar *str1;
   int extraout_EAX;
-  int iVar5;
+  int iVar4;
   char local_a;
   char local_9;
   
@@ -167,15 +167,15 @@ undefined4 FUN_00bcd6c0(char *param_1)
     }
     uVar2 = _HTNextField(&param_1);
     uVar3 = _HTNextField(&param_1);
-    puVar4 = (uchar *)_HTNextField(&param_1);
+    str1 = (uchar *)_HTNextField(&param_1);
     _HTSACopy(piVar1 + 1,uVar2);
     _HTSACopy(piVar1 + 2,uVar3);
-    strcmp(puVar4,(uchar *)"@w3c@");
+    strcmp(str1,(uchar *)"@w3c@");
     if (extraout_EAX != 0) {
-      _HTSACopy(piVar1 + 3,puVar4);
+      _HTSACopy(piVar1 + 3,str1);
     }
-    iVar5 = sscanf(param_1,"%ld %ld %ld %c %d %d %ld %ld %ld %c");
-    if (iVar5 < 0) {
+    iVar4 = sscanf(param_1,"%ld %ld %ld %c %d %d %ld %ld %ld %c");
+    if (iVar4 < 0) {
       uVar2 = 0;
     }
     else {
@@ -199,12 +199,12 @@ undefined4 FUN_00bcd6c0(char *param_1)
         }
       }
       if ((-1 < *piVar1) && (*piVar1 < 599)) {
-        iVar5 = *piVar1;
-        if (*(int *)(DAT_0b548a64 + iVar5 * 4) == 0) {
+        iVar4 = *piVar1;
+        if (*(int *)(DAT_0b548a64 + iVar4 * 4) == 0) {
           uVar2 = _HTList_new();
-          *(undefined4 *)(DAT_0b548a64 + iVar5 * 4) = uVar2;
+          *(undefined4 *)(DAT_0b548a64 + iVar4 * 4) = uVar2;
         }
-        _HTList_addObject(*(undefined4 *)(DAT_0b548a64 + iVar5 * 4),piVar1);
+        _HTList_addObject(*(undefined4 *)(DAT_0b548a64 + iVar4 * 4),piVar1);
       }
       DAT_0b548a68 = DAT_0b548a68 + piVar1[7];
       uVar2 = 1;
@@ -501,47 +501,47 @@ bool FUN_00bcdfa0(uchar *param_1)
 {
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar1;
-  _iobuf *p_Var2;
-  code *pcVar3;
-  int iVar4;
+  uchar *dst;
+  _iobuf *p_Var1;
+  code *pcVar2;
+  int iVar3;
   
   if ((param_1 == (uchar *)0x0) || (DAT_0b548a70 != (_iobuf *)0x0)) {
     return false;
   }
   strlen(param_1);
   strlen((uchar *)".lock");
-  puVar1 = (uchar *)_HTMemory_malloc(extraout_EAX + 1 + extraout_EAX_00);
-  if (puVar1 == (uchar *)0x0) {
+  dst = (uchar *)_HTMemory_malloc(extraout_EAX + 1 + extraout_EAX_00);
+  if (dst == (uchar *)0x0) {
     _HTMemory_outofmem("HTCache_getLock",
                        "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTCache.c",0x2a5);
   }
-  strcpy(puVar1,param_1);
-  strcat(puVar1,(uchar *)".lock");
-  p_Var2 = fopen((char *)puVar1,"r");
-  if (p_Var2 != (_iobuf *)0x0) {
-    pcVar3 = (code *)_HTAlert_find(0x20000);
-    fclose(p_Var2);
-    if (pcVar3 == (code *)0x0) {
-      _HTMemory_free(puVar1);
+  strcpy(dst,param_1);
+  strcat(dst,(uchar *)".lock");
+  p_Var1 = fopen((char *)dst,"r");
+  if (p_Var1 != (_iobuf *)0x0) {
+    pcVar2 = (code *)_HTAlert_find(0x20000);
+    fclose(p_Var1);
+    if (pcVar2 == (code *)0x0) {
+      _HTMemory_free(dst);
       return false;
     }
-    iVar4 = (*pcVar3)(0,0x20000,0x12,0,puVar1,0);
-    if (iVar4 != 1) {
-      _HTMemory_free(puVar1);
+    iVar3 = (*pcVar2)(0,0x20000,0x12,0,dst,0);
+    if (iVar3 != 1) {
+      _HTMemory_free(dst);
       return false;
     }
-    remove((char *)puVar1);
+    remove((char *)dst);
   }
-  p_Var2 = fopen((char *)puVar1,"w");
-  if (p_Var2 != (_iobuf *)0x0) {
-    DAT_0b548a70 = p_Var2;
-    _HTMemory_free(puVar1);
+  p_Var1 = fopen((char *)dst,"w");
+  if (p_Var1 != (_iobuf *)0x0) {
+    DAT_0b548a70 = p_Var1;
+    _HTMemory_free(dst);
   }
   else {
-    _HTMemory_free(puVar1);
+    _HTMemory_free(dst);
   }
-  return p_Var2 != (_iobuf *)0x0;
+  return p_Var1 != (_iobuf *)0x0;
 }
 
 
@@ -575,32 +575,32 @@ undefined4 FUN_00bce1c0(uchar *param_1)
 {
   int extraout_EAX;
   int extraout_EAX_00;
-  uchar *puVar1;
-  undefined4 uVar2;
+  uchar *dst;
+  undefined4 uVar1;
   
   if (param_1 == (uchar *)0x0) {
-    uVar2 = 0;
+    uVar1 = 0;
   }
   else {
     strlen(param_1);
     strlen((uchar *)".lock");
-    puVar1 = (uchar *)_HTMemory_malloc(extraout_EAX + 1 + extraout_EAX_00);
-    if (puVar1 == (uchar *)0x0) {
+    dst = (uchar *)_HTMemory_malloc(extraout_EAX + 1 + extraout_EAX_00);
+    if (dst == (uchar *)0x0) {
       _HTMemory_outofmem("HTCache_deleteLock",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTCache.c",0x2cf
                         );
     }
-    strcpy(puVar1,param_1);
-    strcat(puVar1,(uchar *)".lock");
+    strcpy(dst,param_1);
+    strcat(dst,(uchar *)".lock");
     if (DAT_0b548a70 != (_iobuf *)0x0) {
       fclose(DAT_0b548a70);
       DAT_0b548a70 = (_iobuf *)0x0;
     }
-    remove((char *)puVar1);
-    _HTMemory_free(puVar1);
-    uVar2 = 1;
+    remove((char *)dst);
+    _HTMemory_free(dst);
+    uVar1 = 1;
   }
-  return uVar2;
+  return uVar1;
 }
 
 
@@ -791,11 +791,11 @@ int * FUN_00bce620(int param_1,int param_2,int param_3)
 
 {
   int *piVar1;
-  byte *pbVar2;
-  undefined4 uVar3;
+  byte *str2;
+  undefined4 uVar2;
   int extraout_EAX;
-  int iVar4;
-  undefined8 uVar5;
+  int iVar3;
+  undefined8 uVar4;
   int *local_24;
   int *local_1c;
   byte *local_18;
@@ -807,9 +807,9 @@ int * FUN_00bce620(int param_1,int param_2,int param_3)
     local_8 = (int *)0x0;
   }
   else {
-    pbVar2 = (byte *)_HTAnchor_address(param_3);
-    local_18 = pbVar2;
-    if (pbVar2 == (byte *)0x0) {
+    str2 = (byte *)_HTAnchor_address(param_3);
+    local_18 = str2;
+    if (str2 == (byte *)0x0) {
       local_8 = (int *)0x0;
     }
     else {
@@ -822,8 +822,8 @@ int * FUN_00bce620(int param_1,int param_2,int param_3)
                            0x459);
       }
       if (*(int *)(DAT_0b548a64 + local_10 * 4) == 0) {
-        uVar3 = _HTList_new();
-        *(undefined4 *)(DAT_0b548a64 + local_10 * 4) = uVar3;
+        uVar2 = _HTList_new();
+        *(undefined4 *)(DAT_0b548a64 + local_10 * 4) = uVar2;
       }
       piVar1 = *(int **)(DAT_0b548a64 + local_10 * 4);
       local_1c = piVar1;
@@ -835,8 +835,7 @@ int * FUN_00bce620(int param_1,int param_2,int param_3)
           local_24 = (int *)*local_1c;
         }
         local_8 = local_24;
-      } while ((local_24 != (int *)0x0) && (strcmp((uchar *)local_24[1],pbVar2), extraout_EAX != 0))
-      ;
+      } while ((local_24 != (int *)0x0) && (strcmp((uchar *)local_24[1],str2), extraout_EAX != 0));
       if (local_24 == (int *)0x0) {
         local_8 = (int *)_HTMemory_calloc(1,0x50);
         if (local_8 == (int *)0x0) {
@@ -845,27 +844,27 @@ int * FUN_00bce620(int param_1,int param_2,int param_3)
                              0x46b);
         }
         *local_8 = local_10;
-        local_8[1] = (int)pbVar2;
+        local_8[1] = (int)str2;
         local_8[4] = 0;
         FUN_00bce8b0(local_8);
         _HTList_addObject(piVar1,local_8);
         DAT_0b548a6c = DAT_0b548a6c + 1;
       }
       else {
-        _HTMemory_free(pbVar2);
+        _HTMemory_free(str2);
       }
-      iVar4 = _HTCache_hasLock(local_8);
-      if ((iVar4 == 0) || (iVar4 = _HTCache_breakLock(local_8,param_1), iVar4 != 0)) {
+      iVar3 = _HTCache_hasLock(local_8);
+      if ((iVar3 == 0) || (iVar3 = _HTCache_breakLock(local_8,param_1), iVar3 != 0)) {
         _HTCache_getLock(local_8,param_1);
         FUN_00bce990(local_8,param_1,param_2);
-        iVar4 = _HTAnchor_etag(param_3);
-        if (iVar4 != 0) {
-          _HTSACopy(local_8 + 3,iVar4);
+        iVar3 = _HTAnchor_etag(param_3);
+        if (iVar3 != 0) {
+          _HTSACopy(local_8 + 3,iVar3);
         }
-        uVar5 = _HTAnchor_lastModified(param_3);
-        *(undefined8 *)(local_8 + 8) = uVar5;
-        iVar4 = _HTResponse_mustRevalidate(param_2);
-        local_8[5] = iVar4;
+        uVar4 = _HTAnchor_lastModified(param_3);
+        *(undefined8 *)(local_8 + 8) = uVar4;
+        iVar3 = _HTResponse_mustRevalidate(param_2);
+        local_8[5] = iVar3;
       }
     }
   }
@@ -879,9 +878,9 @@ undefined4 FUN_00bce8b0(int param_1)
 
 {
   int extraout_EAX;
-  char *pcVar1;
-  int iVar2;
-  undefined4 uVar3;
+  char *string;
+  int iVar1;
+  undefined4 uVar2;
   _stat64i32 local_3c;
   undefined4 local_8;
   
@@ -890,25 +889,25 @@ undefined4 FUN_00bce8b0(int param_1)
   }
   else {
     local_8 = 1;
-    uVar3 = 0;
+    uVar2 = 0;
     strlen(DAT_0b548a58);
-    pcVar1 = (char *)_HTMemory_malloc(extraout_EAX + 10,uVar3);
-    if (pcVar1 == (char *)0x0) {
+    string = (char *)_HTMemory_malloc(extraout_EAX + 10,uVar2);
+    if (string == (char *)0x0) {
       _HTMemory_outofmem("HTCache_createLocation",
                          "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTCache.c",0x3e0
                         );
     }
-    sprintf(pcVar1,"%s%d");
-    iVar2 = _stat64i32(pcVar1,&local_3c);
-    if (iVar2 == -1) {
-      iVar2 = _mkdir(pcVar1);
-      if (iVar2 < 0) {
+    sprintf(string,"%s%d");
+    iVar1 = _stat64i32(string,&local_3c);
+    if (iVar1 == -1) {
+      iVar1 = _mkdir(string);
+      if (iVar1 < 0) {
         local_8 = 0;
       }
     }
-    uVar3 = _HTGetTmpFileName(pcVar1);
-    *(undefined4 *)(param_1 + 8) = uVar3;
-    _HTMemory_free(pcVar1);
+    uVar2 = _HTGetTmpFileName(string);
+    *(undefined4 *)(param_1 + 8) = uVar2;
+    _HTMemory_free(string);
   }
   return local_8;
 }
@@ -1287,34 +1286,34 @@ undefined4 FUN_00bcf2e0(int param_1)
 undefined4 _HTCache_writeMeta(int param_1,int param_2,int param_3)
 
 {
-  char *pcVar1;
-  undefined4 uVar2;
-  _iobuf *p_Var3;
+  char *file;
+  undefined4 uVar1;
+  _iobuf *stream;
   
   if (((param_1 == 0) || (param_2 == 0)) || (param_3 == 0)) {
-    uVar2 = 0;
+    uVar1 = 0;
   }
   else {
-    pcVar1 = (char *)FUN_00bcf420(param_1);
-    if (pcVar1 == (char *)0x0) {
+    file = (char *)FUN_00bcf420(param_1);
+    if (file == (char *)0x0) {
       _HTCache_remove(param_1);
-      uVar2 = 0;
+      uVar1 = 0;
     }
     else {
-      p_Var3 = fopen(pcVar1,"wb");
-      if (p_Var3 == (_iobuf *)0x0) {
+      stream = fopen(file,"wb");
+      if (stream == (_iobuf *)0x0) {
         _HTCache_remove(param_1);
-        _HTMemory_free(pcVar1);
-        uVar2 = 0;
+        _HTMemory_free(file);
+        uVar1 = 0;
       }
       else {
-        uVar2 = FUN_00bcf4c0(p_Var3,param_2,param_3);
-        fclose(p_Var3);
-        _HTMemory_free(pcVar1);
+        uVar1 = FUN_00bcf4c0(stream,param_2,param_3);
+        fclose(stream);
+        _HTMemory_free(file);
       }
     }
   }
-  return uVar2;
+  return uVar1;
 }
 
 
@@ -1470,12 +1469,12 @@ undefined4 FUN_00bcf810(int param_1)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *path;
   
   if ((param_1 != 0) && (iVar1 = _HTCache_hasLock(param_1), iVar1 == 0)) {
-    pcVar2 = (char *)FUN_00bcf420(param_1);
-    remove(pcVar2);
-    _HTMemory_free(pcVar2);
+    path = (char *)FUN_00bcf420(param_1);
+    remove(path);
+    _HTMemory_free(path);
     remove(*(char **)(param_1 + 8));
     return 1;
   }
@@ -1614,35 +1613,35 @@ undefined4 FUN_00bcfb40(int param_1,int param_2)
 
 {
   int iVar1;
-  char *pcVar2;
-  _iobuf *p_Var3;
-  undefined4 uVar4;
-  int *piVar5;
+  char *file;
+  _iobuf *stream;
+  undefined4 uVar2;
+  int *piVar3;
   
   iVar1 = _HTRequest_anchor(param_2);
   if (((param_1 != 0) && (param_2 != 0)) && (iVar1 != 0)) {
-    pcVar2 = (char *)FUN_00bcf420(param_1);
-    if (pcVar2 == (char *)0x0) {
+    file = (char *)FUN_00bcf420(param_1);
+    if (file == (char *)0x0) {
       _HTCache_remove(param_1);
       return 0;
     }
-    p_Var3 = fopen(pcVar2,"rb");
-    if (p_Var3 != (_iobuf *)0x0) {
-      uVar4 = _HTBlackHole(param_2,0);
-      uVar4 = _HTAtom_for("www/debug",uVar4);
-      uVar4 = _HTAtom_for("message/x-rfc822-head",uVar4);
-      piVar5 = (int *)_HTStreamStack(uVar4);
-      uVar4 = _HTRequest_response(param_2,1);
-      _HTResponse_setCachable(uVar4);
-      uVar4 = FUN_00bcfc90(p_Var3,param_2,piVar5);
-      (**(code **)(*piVar5 + 8))(piVar5);
+    stream = fopen(file,"rb");
+    if (stream != (_iobuf *)0x0) {
+      uVar2 = _HTBlackHole(param_2,0);
+      uVar2 = _HTAtom_for("www/debug",uVar2);
+      uVar2 = _HTAtom_for("message/x-rfc822-head",uVar2);
+      piVar3 = (int *)_HTStreamStack(uVar2);
+      uVar2 = _HTRequest_response(param_2,1);
+      _HTResponse_setCachable(uVar2);
+      uVar2 = FUN_00bcfc90(stream,param_2,piVar3);
+      (**(code **)(*piVar3 + 8))(piVar3);
       _HTRequest_setResponse(param_2,0);
-      fclose(p_Var3);
-      _HTMemory_free(pcVar2);
-      return uVar4;
+      fclose(stream);
+      _HTMemory_free(file);
+      return uVar2;
     }
     _HTCache_remove(param_1);
-    _HTMemory_free(pcVar2);
+    _HTMemory_free(file);
   }
   return 0;
 }
@@ -1965,7 +1964,7 @@ undefined4 * FUN_00bd0190(undefined4 param_1,int param_2)
   int iVar4;
   int iVar5;
   _iobuf *p_Var6;
-  char *pcVar7;
+  char *mode;
   
   uVar1 = _HTRequest_response(param_1);
   uVar2 = _HTRequest_anchor(param_1);
@@ -1991,18 +1990,18 @@ undefined4 * FUN_00bd0190(undefined4 param_1,int param_2)
           }
           _HTCache_getLock(iVar4,param_1);
           if (param_2 == 0) {
-            pcVar7 = "wb";
+            mode = "wb";
           }
           else {
-            pcVar7 = "ab";
+            mode = "ab";
           }
-          p_Var6 = fopen(*(char **)(iVar4 + 8),pcVar7);
+          p_Var6 = fopen(*(char **)(iVar4 + 8),mode);
           if (p_Var6 == (_iobuf *)0x0) {
             FUN_00bcfe90(iVar4);
             puVar3 = (undefined4 *)0x0;
           }
           else {
-            puVar3 = (undefined4 *)_HTMemory_calloc(1,0x24,pcVar7,0);
+            puVar3 = (undefined4 *)_HTMemory_calloc(1,0x24,mode,0);
             if (puVar3 == (undefined4 *)0x0) {
               _HTMemory_outofmem("Cache",
                                  "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTCache.c"
@@ -2244,14 +2243,14 @@ void FUN_00bd0980(undefined4 param_1)
 
 {
   undefined4 uVar1;
-  char *pcVar2;
-  int iVar3;
+  char *first;
+  int iVar2;
   
   uVar1 = _HTRequest_anchor(param_1);
-  pcVar2 = (char *)_HTAnchor_physical(uVar1);
-  if (pcVar2 != (char *)0x0) {
-    iVar3 = strncmp(pcVar2,"cache:",6);
-    if (iVar3 == 0) {
+  first = (char *)_HTAnchor_physical(uVar1);
+  if (first != (char *)0x0) {
+    iVar2 = strncmp(first,"cache:",6);
+    if (iVar2 == 0) {
       uVar1 = _HTBlackHole(param_1,0);
       uVar1 = _HTAtom_for("www/debug",uVar1);
       uVar1 = _HTAtom_for("www/x-rfc822-headers",uVar1);

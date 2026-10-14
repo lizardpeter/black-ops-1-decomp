@@ -462,22 +462,22 @@ bool _HTResponse_isCached(int param_1,undefined4 param_2)
 undefined8 _HTResponse_maxAge(int param_1)
 
 {
-  char *pcVar1;
-  long lVar2;
-  int iVar3;
+  char *nptr;
+  long lVar1;
+  int iVar2;
   
   if ((param_1 != 0) && (*(int *)(param_1 + 0x34) != 0)) {
-    pcVar1 = (char *)_HTAssocList_findObject(*(undefined4 *)(param_1 + 0x34),"max-age");
-    if (pcVar1 != (char *)0x0) {
-      lVar2 = atol(pcVar1);
-      iVar3 = lVar2 >> 0x1f;
+    nptr = (char *)_HTAssocList_findObject(*(undefined4 *)(param_1 + 0x34),"max-age");
+    if (nptr != (char *)0x0) {
+      lVar1 = atol(nptr);
+      iVar2 = lVar1 >> 0x1f;
       goto LAB_00bcbc25;
     }
   }
-  lVar2 = -1;
-  iVar3 = -1;
+  lVar1 = -1;
+  iVar2 = -1;
 LAB_00bcbc25:
-  return CONCAT44(iVar3,lVar2);
+  return CONCAT44(iVar2,lVar1);
 }
 
 

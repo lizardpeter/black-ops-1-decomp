@@ -2,52 +2,52 @@
 
 // 00C29F15  _mbctolower_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtolwr.c:50)
 
-uint __cdecl _mbctolower_l(uint param_1,localeinfo_struct *param_2)
+uint __cdecl _mbctolower_l(uint c,localeinfo_struct *plocinfo)
 
 {
   int iVar1;
-  _LocaleUpdate local_1c;
-  char local_c;
+  _LocaleUpdate _loc_update;
+  char ret;
   undefined1 local_b;
-  char local_8;
+  char val;
   undefined1 local_7;
   
-  _LocaleUpdate::_LocaleUpdate(&local_1c,param_2);
-  if (param_1 < 0x100) {
-    if (((local_1c.localeinfo.mbcinfo)->mbctype[param_1 + 1] & 0x10) != 0) {
-      param_1 = (uint)(local_1c.localeinfo.mbcinfo)->mbcasemap[param_1];
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (c < 0x100) {
+    if (((_loc_update.localeinfo.mbcinfo)->mbctype[c + 1] & 0x10) != 0) {
+      c = (uint)(_loc_update.localeinfo.mbcinfo)->mbcasemap[c];
     }
   }
   else {
-    local_8 = (char)(param_1 >> 8);
-    local_7 = (undefined1)param_1;
-    if ((((local_1c.localeinfo.mbcinfo)->mbctype[(param_1 >> 8 & 0xff) + 1] & 4) == 0) ||
-       (iVar1 = __crtLCMapStringA(&local_1c.localeinfo,(local_1c.localeinfo.mbcinfo)->mblcid,0x100,
-                                  &local_8,2,&local_c,2,(local_1c.localeinfo.mbcinfo)->mbcodepage,1)
-       , iVar1 == 0)) {
-      if (local_1c.updated == false) {
-        return param_1;
+    val = (char)(c >> 8);
+    local_7 = (undefined1)c;
+    if ((((_loc_update.localeinfo.mbcinfo)->mbctype[(c >> 8 & 0xff) + 1] & 4) == 0) ||
+       (iVar1 = __crtLCMapStringA(&_loc_update.localeinfo,(_loc_update.localeinfo.mbcinfo)->mblcid,
+                                  0x100,&val,2,&ret,2,(_loc_update.localeinfo.mbcinfo)->mbcodepage,1
+                                 ), iVar1 == 0)) {
+      if (_loc_update.updated == false) {
+        return c;
       }
-      (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
-      return param_1;
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
+      return c;
     }
-    param_1 = (uint)CONCAT11(local_c,local_b);
+    c = (uint)CONCAT11(ret,local_b);
   }
-  if (local_1c.updated != false) {
-    (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
-  return param_1;
+  return c;
 }
 
 
 // 00C29FBB  _mbctolower  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtolwr.c:90)
 
-uint __cdecl _mbctolower(uint param_1)
+uint __cdecl _mbctolower(uint c)
 
 {
   uint uVar1;
   
-  uVar1 = _mbctolower_l(param_1,(localeinfo_struct *)0x0);
+  uVar1 = _mbctolower_l(c,(localeinfo_struct *)0x0);
   return uVar1;
 }
 

@@ -2,45 +2,47 @@
 
 // 00480F30  CG_UpdateClouds  (cgame/cg_clouds.cpp:200)
 
-void __cdecl CG_UpdateClouds(int param_1)
+void __cdecl CG_UpdateClouds(int msec)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
-  int local_34;
-  cgCloud_t *local_24;
-  float local_14;
+  float radius;
+  int n;
+  cgCloud_t *cloud;
+  float windDir;
   float local_10;
   float local_c;
+  float time;
   
-  BG_GetGlobalWind(&local_14);
+  BG_GetGlobalWind(&windDir);
   local_c = 0.0;
-  Vec3Normalize(&local_14);
+  Vec3Normalize(&windDir);
   fVar1 = cg_cloudWorldMax[0] - cg_cloudWorldMin[0];
   fVar2 = cg_cloudWorldMax[1] - cg_cloudWorldMin[1];
-  local_24 = cg_clouds;
-  for (local_34 = 0; local_34 < cg_numClouds; local_34 = local_34 + 1) {
-    fVar3 = local_24->speed * ((float)param_1 / 1000.0);
-    local_24->pos[0] = fVar3 * local_14 + local_24->pos[0];
-    local_24->pos[1] = fVar3 * local_10 + local_24->pos[1];
-    local_24->pos[2] = fVar3 * local_c + local_24->pos[2];
-    fVar3 = local_24->layer->radius;
-    if (local_24->pos[0] <= cg_cloudWorldMin[0] - fVar3 &&
-        cg_cloudWorldMin[0] - fVar3 != local_24->pos[0]) {
-      local_24->pos[0] = fVar3 * 2.0 + fVar1 + local_24->pos[0];
+  cloud = cg_clouds;
+  for (n = 0; n < cg_numClouds; n = n + 1) {
+    fVar3 = cloud->speed * ((float)msec / 1000.0);
+    cloud->pos[0] = fVar3 * windDir + cloud->pos[0];
+    cloud->pos[1] = fVar3 * local_10 + cloud->pos[1];
+    cloud->pos[2] = fVar3 * local_c + cloud->pos[2];
+    fVar3 = cloud->layer->radius;
+    if (cloud->pos[0] <= cg_cloudWorldMin[0] - fVar3 && cg_cloudWorldMin[0] - fVar3 != cloud->pos[0]
+       ) {
+      cloud->pos[0] = fVar3 * 2.0 + fVar1 + cloud->pos[0];
     }
-    if (local_24->pos[1] <= cg_cloudWorldMin[1] - fVar3 &&
-        cg_cloudWorldMin[1] - fVar3 != local_24->pos[1]) {
-      local_24->pos[1] = fVar3 * 2.0 + fVar2 + local_24->pos[1];
+    if (cloud->pos[1] <= cg_cloudWorldMin[1] - fVar3 && cg_cloudWorldMin[1] - fVar3 != cloud->pos[1]
+       ) {
+      cloud->pos[1] = fVar3 * 2.0 + fVar2 + cloud->pos[1];
     }
-    if (cg_cloudWorldMax[0] + fVar3 < local_24->pos[0]) {
-      local_24->pos[0] = local_24->pos[0] - (fVar3 * 2.0 + fVar1);
+    if (cg_cloudWorldMax[0] + fVar3 < cloud->pos[0]) {
+      cloud->pos[0] = cloud->pos[0] - (fVar3 * 2.0 + fVar1);
     }
-    if (cg_cloudWorldMax[1] + fVar3 < local_24->pos[1]) {
-      local_24->pos[1] = local_24->pos[1] - (fVar3 * 2.0 + fVar2);
+    if (cg_cloudWorldMax[1] + fVar3 < cloud->pos[1]) {
+      cloud->pos[1] = cloud->pos[1] - (fVar3 * 2.0 + fVar2);
     }
-    local_24 = local_24 + 1;
+    cloud = cloud + 1;
   }
   return;
 }

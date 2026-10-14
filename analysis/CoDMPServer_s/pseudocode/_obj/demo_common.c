@@ -1455,159 +1455,8 @@ void __cdecl Demo_Forward_f(void)
 
 {
   int *piVar1;
-  int iVar2;
-  cg_s *pcVar3;
-  cg_s *pcVar4;
-  int iVar5;
-  clientActive_t *pcVar6;
-  bool bVar7;
-  int iVar8;
-  char *pcVar9;
-  int iVar10;
-  int iVar11;
-  int iVar12;
-  msg_bookmark_t *unaff_ESI;
-  msg_t *unaff_EDI;
-  int iVar13;
-  undefined1 *puVar14;
-  
-  puVar14 = &stack0xfffffffc;
-  if ((DAT_0268df84 != 2) || (DAT_00c78f44 < 4)) {
-    Com_PrintError(0xe,"We are not playing a demo.\n");
-    return;
-  }
-  piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar9 = "";
-  }
-  else {
-    pcVar9 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
-  }
-  iVar8 = atoi(pcVar9);
-  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar8)) {
-    bVar7 = Demo_IsCompleted();
-    if (bVar7) {
-      Com_PrintError(0xe,"We cannot forward a demo that is completed\n");
-      return;
-    }
-    bVar7 = Demo_IsClipPreviewRunning();
-    if (bVar7) {
-      Com_PrintError(0xe,"We cannot forward a demo that is being previewed\n");
-      return;
-    }
-    Demo_SetCmdInProgess();
-    pcVar6 = clients;
-    pcVar3 = cgArray;
-    piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-    if (piVar1[*piVar1 + 0x21] == 3) {
-      pcVar9 = Cmd_Argv((int)unaff_EDI);
-      iVar8 = atoi(pcVar9);
-    }
-    else {
-      iVar8 = -1;
-    }
-    iVar8 = Demo_GetKeyFrameForJumpForward(0,iVar8);
-    if (-1 < iVar8) {
-      iVar10 = Sys_Milliseconds();
-      iVar5 = DAT_0268df80;
-      iVar13 = iVar8 * 0x30;
-      DAT_026a5fbc = *(undefined4 *)(DAT_0273f2dc + iVar13 + 0x364);
-      iVar2 = *(int *)(DAT_0273f2dc + iVar13 + 0x364);
-      if ((demo_usefilesystem->current).enabled != false) {
-        iVar12 = DAT_0268df80 * 0x11c;
-        if (*(int *)(&DAT_01f4158c + iVar12) == 0) {
-          fseek((_iobuf *)(&fsh)[DAT_0268df80 * 0x47],iVar2,0);
-          iVar2 = _DAT_02741bec;
-        }
-        else if (iVar2 == 0) {
-          unzSetCurrentFileInfoPosition(*(undefined4 *)(&DAT_01f41588 + iVar12));
-          unzOpenCurrentFile((&fsh)[iVar5 * 0x47]);
-          iVar2 = _DAT_02741bec;
-        }
-        else {
-          if ((&fsh)[DAT_0268df80 * 0x47] == (fileHandleData_t *)0x0) {
-            iVar11 = -0x66;
-          }
-          else {
-            iVar11 = *(int *)((&fsh)[DAT_0268df80 * 0x47] + 0x7c);
-            if (iVar11 == 0) {
-              iVar11 = -0x66;
-            }
-            else {
-              iVar11 = *(int *)(iVar11 + 0x18);
-            }
-          }
-          if (iVar2 < iVar11) {
-            unzSetCurrentFileInfoPosition(*(undefined4 *)(&DAT_01f41588 + iVar12));
-            unzOpenCurrentFile((&fsh)[iVar5 * 0x47]);
-          }
-          unzReadCurrentFile(0);
-          iVar2 = _DAT_02741bec;
-        }
-      }
-      _DAT_02741bec = iVar2;
-      Demo_Load();
-      MSG_GotoBookmark(unaff_EDI,unaff_ESI);
-      *(int *)(DAT_0273f2dc + 0x358) = iVar8;
-      MSG_Init((msg_t *)&DAT_02699fb8,(uchar *)0xc000,(int)unaff_EDI);
-      memcpy(&DAT_02699fb8,g_keyframeBuf + *(int *)(DAT_0273f2dc + (iVar8 * 3 + 0x36) * 0x10),
-             *(ulong *)(DAT_0273f2dc + iVar13 + 0x374));
-      DAT_0273f2dc[0x3244] = 0;
-      if ((DAT_0268df84 == 2) && (DAT_026a5fd4 != '\0')) {
-        *(undefined4 *)(DAT_0273f2dc + 0x1165c8) = *(undefined4 *)(DAT_0273f2dc + iVar13 + 0x368);
-        *(int *)(DAT_0273f2dc + 0x1165cc) = *(int *)(DAT_0273f2dc + iVar13 + 0x36c) + -100;
-      }
-      MSG_UnEmbed(unaff_EDI);
-      iVar8 = MSG_ReadBits((msg_t *)0x2,(int)unaff_EDI);
-      Demo_ResetSnapshotData();
-      for (; iVar8 == 2; iVar8 = MSG_ReadBits((msg_t *)0x2,iVar8)) {
-        iVar8 = 0;
-        Demo_ParseClipCommand(0,(msg_t *)&DAT_00000001,SUB41(unaff_EDI,0));
-      }
-      MSG_ReadLong(unaff_EDI);
-      Demo_ParseServerMessage(0,unaff_EDI,(int)unaff_ESI,(int)puVar14);
-      Demo_ResetTimeValues((int)unaff_EDI,(int)unaff_ESI);
-      pcVar4 = cgArray;
-      iVar8 = *(int *)(pcVar6 + 0x18);
-      *(int *)(cgsArray + 0x18) = iVar8 + -1;
-      *(int *)(pcVar4 + 0x20) = iVar8 + -1;
-      Demo_ResetWorldInformation(0,*(int *)(pcVar6 + 0x10));
-      *(undefined4 *)(pcVar3 + 0x20) = *(undefined4 *)(pcVar6 + 0x18);
-      iVar8 = Sys_Milliseconds();
-      *(int *)(pcVar6 + 0x2738) = (((*(int *)(pcVar6 + 0x10) - DAT_0354aa44) + iVar10) - iVar8) + -5
-      ;
-      if (DAT_0273f2e0 != '\0') {
-        DAT_0273f2dc[0xc] = 1;
-      }
-      Con_Close((int)unaff_EDI);
-      SND_StopSounds(0);
-      *DAT_0273f2dc = 1;
-      CL_SetCGameTime(0);
-      *DAT_0273f2dc = 0;
-      *(int *)(DAT_0273f2dc + 0x35c) = *(int *)(DAT_0273f2dc + 0x35c) + 1;
-      bVar7 = Demo_IsCameraEditMode();
-      if ((bVar7) || (bVar7 = Demo_IsDollyCamera(), bVar7)) {
-        Demo_RefreshAllDollyCamFX((int)unaff_EDI);
-      }
-    }
-    Demo_SetCmdCompleted();
-    return;
-  }
-  Com_PrintError(0xe,"A command is in progress. We cant process this command.\n");
-  return;
-}
-
-
-// 007B9AC0  Demo_Back_f  (line unknown)
-
-/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
-/* void __cdecl Demo_Back_f(void) */
-
-void __cdecl Demo_Back_f(void)
-
-{
-  int *piVar1;
-  int iVar2;
+  int offset;
+  cg_s *pcVar2;
   cg_s *pcVar3;
   int iVar4;
   clientActive_t *pcVar5;
@@ -1636,13 +1485,19 @@ void __cdecl Demo_Back_f(void)
   }
   iVar7 = atoi(pcVar8);
   if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar7)) {
+    bVar6 = Demo_IsCompleted();
+    if (bVar6) {
+      Com_PrintError(0xe,"We cannot forward a demo that is completed\n");
+      return;
+    }
     bVar6 = Demo_IsClipPreviewRunning();
     if (bVar6) {
-      Com_PrintError(0xe,"We cannot rewind a demo that is being previewed\n");
+      Com_PrintError(0xe,"We cannot forward a demo that is being previewed\n");
       return;
     }
     Demo_SetCmdInProgess();
     pcVar5 = clients;
+    pcVar2 = cgArray;
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] == 3) {
       pcVar8 = Cmd_Argv((int)unaff_EDI);
@@ -1651,23 +1506,23 @@ void __cdecl Demo_Back_f(void)
     else {
       iVar7 = -1;
     }
-    iVar7 = Demo_GetKeyFrameForJumpBack(0,iVar7);
+    iVar7 = Demo_GetKeyFrameForJumpForward(0,iVar7);
     if (-1 < iVar7) {
       iVar9 = Sys_Milliseconds();
       iVar4 = DAT_0268df80;
       iVar12 = iVar7 * 0x30;
       DAT_026a5fbc = *(undefined4 *)(DAT_0273f2dc + iVar12 + 0x364);
-      iVar2 = *(int *)(DAT_0273f2dc + iVar12 + 0x364);
+      offset = *(int *)(DAT_0273f2dc + iVar12 + 0x364);
       if ((demo_usefilesystem->current).enabled != false) {
         iVar11 = DAT_0268df80 * 0x11c;
         if (*(int *)(&DAT_01f4158c + iVar11) == 0) {
-          fseek((_iobuf *)(&fsh)[DAT_0268df80 * 0x47],iVar2,0);
-          iVar2 = _DAT_02741bec;
+          fseek((_iobuf *)(&fsh)[DAT_0268df80 * 0x47],offset,0);
+          offset = _DAT_02741bec;
         }
-        else if (iVar2 == 0) {
+        else if (offset == 0) {
           unzSetCurrentFileInfoPosition(*(undefined4 *)(&DAT_01f41588 + iVar11));
           unzOpenCurrentFile((&fsh)[iVar4 * 0x47]);
-          iVar2 = _DAT_02741bec;
+          offset = _DAT_02741bec;
         }
         else {
           if ((&fsh)[DAT_0268df80 * 0x47] == (fileHandleData_t *)0x0) {
@@ -1682,15 +1537,15 @@ void __cdecl Demo_Back_f(void)
               iVar10 = *(int *)(iVar10 + 0x18);
             }
           }
-          if (iVar2 < iVar10) {
+          if (offset < iVar10) {
             unzSetCurrentFileInfoPosition(*(undefined4 *)(&DAT_01f41588 + iVar11));
             unzOpenCurrentFile((&fsh)[iVar4 * 0x47]);
           }
           unzReadCurrentFile(0);
-          iVar2 = _DAT_02741bec;
+          offset = _DAT_02741bec;
         }
       }
-      _DAT_02741bec = iVar2;
+      _DAT_02741bec = offset;
       Demo_Load();
       MSG_GotoBookmark(unaff_EDI,unaff_ESI);
       *(int *)(DAT_0273f2dc + 0x358) = iVar7;
@@ -1717,8 +1572,152 @@ void __cdecl Demo_Back_f(void)
       *(int *)(cgsArray + 0x18) = iVar7 + -1;
       *(int *)(pcVar3 + 0x20) = iVar7 + -1;
       Demo_ResetWorldInformation(0,*(int *)(pcVar5 + 0x10));
+      *(undefined4 *)(pcVar2 + 0x20) = *(undefined4 *)(pcVar5 + 0x18);
       iVar7 = Sys_Milliseconds();
       *(int *)(pcVar5 + 0x2738) = (((*(int *)(pcVar5 + 0x10) - DAT_0354aa44) + iVar9) - iVar7) + -5;
+      if (DAT_0273f2e0 != '\0') {
+        DAT_0273f2dc[0xc] = 1;
+      }
+      Con_Close((int)unaff_EDI);
+      SND_StopSounds(0);
+      *DAT_0273f2dc = 1;
+      CL_SetCGameTime(0);
+      *DAT_0273f2dc = 0;
+      *(int *)(DAT_0273f2dc + 0x35c) = *(int *)(DAT_0273f2dc + 0x35c) + 1;
+      bVar6 = Demo_IsCameraEditMode();
+      if ((bVar6) || (bVar6 = Demo_IsDollyCamera(), bVar6)) {
+        Demo_RefreshAllDollyCamFX((int)unaff_EDI);
+      }
+    }
+    Demo_SetCmdCompleted();
+    return;
+  }
+  Com_PrintError(0xe,"A command is in progress. We cant process this command.\n");
+  return;
+}
+
+
+// 007B9AC0  Demo_Back_f  (line unknown)
+
+/* WARNING: Globals starting with '_' overlap smaller symbols at the same address */
+/* void __cdecl Demo_Back_f(void) */
+
+void __cdecl Demo_Back_f(void)
+
+{
+  int *piVar1;
+  int offset;
+  cg_s *pcVar2;
+  int iVar3;
+  clientActive_t *pcVar4;
+  bool bVar5;
+  int iVar6;
+  char *pcVar7;
+  int iVar8;
+  int iVar9;
+  int iVar10;
+  msg_bookmark_t *unaff_ESI;
+  msg_t *unaff_EDI;
+  int iVar11;
+  undefined1 *puVar12;
+  
+  puVar12 = &stack0xfffffffc;
+  if ((DAT_0268df84 != 2) || (DAT_00c78f44 < 4)) {
+    Com_PrintError(0xe,"We are not playing a demo.\n");
+    return;
+  }
+  piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+  if (piVar1[*piVar1 + 0x21] < 2) {
+    pcVar7 = "";
+  }
+  else {
+    pcVar7 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+  }
+  iVar6 = atoi(pcVar7);
+  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar6)) {
+    bVar5 = Demo_IsClipPreviewRunning();
+    if (bVar5) {
+      Com_PrintError(0xe,"We cannot rewind a demo that is being previewed\n");
+      return;
+    }
+    Demo_SetCmdInProgess();
+    pcVar4 = clients;
+    piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+    if (piVar1[*piVar1 + 0x21] == 3) {
+      pcVar7 = Cmd_Argv((int)unaff_EDI);
+      iVar6 = atoi(pcVar7);
+    }
+    else {
+      iVar6 = -1;
+    }
+    iVar6 = Demo_GetKeyFrameForJumpBack(0,iVar6);
+    if (-1 < iVar6) {
+      iVar8 = Sys_Milliseconds();
+      iVar3 = DAT_0268df80;
+      iVar11 = iVar6 * 0x30;
+      DAT_026a5fbc = *(undefined4 *)(DAT_0273f2dc + iVar11 + 0x364);
+      offset = *(int *)(DAT_0273f2dc + iVar11 + 0x364);
+      if ((demo_usefilesystem->current).enabled != false) {
+        iVar10 = DAT_0268df80 * 0x11c;
+        if (*(int *)(&DAT_01f4158c + iVar10) == 0) {
+          fseek((_iobuf *)(&fsh)[DAT_0268df80 * 0x47],offset,0);
+          offset = _DAT_02741bec;
+        }
+        else if (offset == 0) {
+          unzSetCurrentFileInfoPosition(*(undefined4 *)(&DAT_01f41588 + iVar10));
+          unzOpenCurrentFile((&fsh)[iVar3 * 0x47]);
+          offset = _DAT_02741bec;
+        }
+        else {
+          if ((&fsh)[DAT_0268df80 * 0x47] == (fileHandleData_t *)0x0) {
+            iVar9 = -0x66;
+          }
+          else {
+            iVar9 = *(int *)((&fsh)[DAT_0268df80 * 0x47] + 0x7c);
+            if (iVar9 == 0) {
+              iVar9 = -0x66;
+            }
+            else {
+              iVar9 = *(int *)(iVar9 + 0x18);
+            }
+          }
+          if (offset < iVar9) {
+            unzSetCurrentFileInfoPosition(*(undefined4 *)(&DAT_01f41588 + iVar10));
+            unzOpenCurrentFile((&fsh)[iVar3 * 0x47]);
+          }
+          unzReadCurrentFile(0);
+          offset = _DAT_02741bec;
+        }
+      }
+      _DAT_02741bec = offset;
+      Demo_Load();
+      MSG_GotoBookmark(unaff_EDI,unaff_ESI);
+      *(int *)(DAT_0273f2dc + 0x358) = iVar6;
+      MSG_Init((msg_t *)&DAT_02699fb8,(uchar *)0xc000,(int)unaff_EDI);
+      memcpy(&DAT_02699fb8,g_keyframeBuf + *(int *)(DAT_0273f2dc + (iVar6 * 3 + 0x36) * 0x10),
+             *(ulong *)(DAT_0273f2dc + iVar11 + 0x374));
+      DAT_0273f2dc[0x3244] = 0;
+      if ((DAT_0268df84 == 2) && (DAT_026a5fd4 != '\0')) {
+        *(undefined4 *)(DAT_0273f2dc + 0x1165c8) = *(undefined4 *)(DAT_0273f2dc + iVar11 + 0x368);
+        *(int *)(DAT_0273f2dc + 0x1165cc) = *(int *)(DAT_0273f2dc + iVar11 + 0x36c) + -100;
+      }
+      MSG_UnEmbed(unaff_EDI);
+      iVar6 = MSG_ReadBits((msg_t *)0x2,(int)unaff_EDI);
+      Demo_ResetSnapshotData();
+      for (; iVar6 == 2; iVar6 = MSG_ReadBits((msg_t *)0x2,iVar6)) {
+        iVar6 = 0;
+        Demo_ParseClipCommand(0,(msg_t *)&DAT_00000001,SUB41(unaff_EDI,0));
+      }
+      MSG_ReadLong(unaff_EDI);
+      Demo_ParseServerMessage(0,unaff_EDI,(int)unaff_ESI,(int)puVar12);
+      Demo_ResetTimeValues((int)unaff_EDI,(int)unaff_ESI);
+      pcVar2 = cgArray;
+      iVar6 = *(int *)(pcVar4 + 0x18);
+      *(int *)(cgsArray + 0x18) = iVar6 + -1;
+      *(int *)(pcVar2 + 0x20) = iVar6 + -1;
+      Demo_ResetWorldInformation(0,*(int *)(pcVar4 + 0x10));
+      iVar6 = Sys_Milliseconds();
+      *(int *)(pcVar4 + 0x2738) = (((*(int *)(pcVar4 + 0x10) - DAT_0354aa44) + iVar8) - iVar6) + -5;
       if (DAT_0273f2e0 != '\0') {
         DAT_0273f2dc[0xc] = 1;
       }
@@ -1727,8 +1726,8 @@ void __cdecl Demo_Back_f(void)
       CL_SetCGameTime(0);
       *DAT_0273f2dc = 0;
       *(int *)(DAT_0273f2dc + 0x35c) = *(int *)(DAT_0273f2dc + 0x35c) + 1;
-      bVar6 = Demo_IsCameraEditMode();
-      if ((bVar6) || (bVar6 = Demo_IsDollyCamera(), bVar6)) {
+      bVar5 = Demo_IsCameraEditMode();
+      if ((bVar5) || (bVar5 = Demo_IsDollyCamera(), bVar5)) {
         Demo_RefreshAllDollyCamFX((int)unaff_EDI);
       }
     }
@@ -1789,8 +1788,8 @@ void __cdecl Demo_Pause_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   undefined1 unaff_retaddr;
   DvarSetSource in_stack_00000004;
   
@@ -1800,13 +1799,13 @@ void __cdecl Demo_Pause_f(void)
   }
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar3)) {
+  iVar2 = atoi(nptr);
+  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar2)) {
     *(int *)(DAT_0273f2dc + 0x3240) = (demo_cmdNum->current).integer;
     Dvar_SetBoolFromSource((dvar_s *)0x0,(bool)unaff_retaddr,in_stack_00000004);
     Demo_SetCmdCompleted();
@@ -1886,8 +1885,8 @@ void __cdecl Demo_ToggleGameHud_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   if (sv_cmd_args.argc[sv_cmd_args.nesting] != 2) {
     Com_Printf(0,"Usage: demo_togglegamehud <cmdNum>.");
@@ -1896,13 +1895,13 @@ void __cdecl Demo_ToggleGameHud_f(void)
   if (DAT_0268df84 == 2) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar2 = "";
+      nptr = "";
     }
     else {
-      pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    iVar3 = atoi(pcVar2);
-    if ((DAT_0273f2e0 == '\0') || (iVar3 <= *(int *)(DAT_0273f2dc + 0x3240))) {
+    iVar2 = atoi(nptr);
+    if ((DAT_0273f2e0 == '\0') || (iVar2 <= *(int *)(DAT_0273f2dc + 0x3240))) {
       Com_PrintError(0xe,"A command is in progress. We cant process this command.\n");
       return;
     }
@@ -1928,8 +1927,8 @@ void __cdecl Demo_ToggleDemoHud_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   
   if (sv_cmd_args.argc[sv_cmd_args.nesting] != 2) {
     Com_Printf(0,"Usage: demo_toggledemohud <cmdNum>.");
@@ -1941,13 +1940,13 @@ void __cdecl Demo_ToggleDemoHud_f(void)
   }
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar3)) {
+  iVar2 = atoi(nptr);
+  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar2)) {
     *(int *)(DAT_0273f2dc + 0x3240) = (demo_cmdNum->current).integer;
     *(bool *)(DAT_0273f2dc + 0x3246) = *(char *)(DAT_0273f2dc + 0x3246) == '\0';
     Demo_SetCmdCompleted();
@@ -2042,8 +2041,8 @@ void __cdecl Demo_SwitchCamera_f(void)
 {
   int *piVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *nptr;
+  int iVar3;
   
   if (sv_cmd_args.argc[sv_cmd_args.nesting] != 2) {
     Com_Printf(0,"Usage: demo_switchcamera <cmdNum>.");
@@ -2052,13 +2051,13 @@ void __cdecl Demo_SwitchCamera_f(void)
   if (DAT_0268df84 == 2) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar3 = "";
+      nptr = "";
     }
     else {
-      pcVar3 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    iVar4 = atoi(pcVar3);
-    if ((DAT_0273f2e0 == '\0') || (iVar4 <= *(int *)(DAT_0273f2dc + 0x3240))) {
+    iVar3 = atoi(nptr);
+    if ((DAT_0273f2e0 == '\0') || (iVar3 <= *(int *)(DAT_0273f2dc + 0x3240))) {
       Com_PrintError(0xe,"A command is in progress. We cant process this command.\n");
       return;
     }
@@ -2195,18 +2194,18 @@ void __cdecl Demo_AddDollyCamMarker_f(void)
   float10 fVar2;
   cg_s *pcVar3;
   bool bVar4;
-  char *pcVar5;
+  char *nptr;
+  int iVar5;
   int iVar6;
   int iVar7;
-  int iVar8;
   int extraout_ECX;
-  int iVar9;
+  int iVar8;
   char *unaff_ESI;
   char *unaff_EDI;
-  int *piVar10;
-  int iVar11;
+  int *piVar9;
+  int iVar10;
+  float10 fVar11;
   float10 fVar12;
-  float10 fVar13;
   int in_stack_00000004;
   undefined1 local_24 [12];
   undefined1 local_18 [4];
@@ -2219,16 +2218,16 @@ void __cdecl Demo_AddDollyCamMarker_f(void)
     return;
   }
   if (DAT_0268df84 == 2) {
-    piVar10 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-    if (piVar10[*piVar10 + 0x21] < 2) {
-      pcVar5 = "";
+    piVar9 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+    if (piVar9[*piVar9 + 0x21] < 2) {
+      nptr = "";
     }
     else {
-      pcVar5 = *(char **)(piVar10[*piVar10 + 0x29] + 4);
+      nptr = *(char **)(piVar9[*piVar9 + 0x29] + 4);
     }
-    iVar6 = atoi(pcVar5);
-    iVar11 = DAT_0273f2dc;
-    if ((DAT_0273f2e0 == '\0') || (iVar6 <= *(int *)(DAT_0273f2dc + 0x3240))) {
+    iVar5 = atoi(nptr);
+    iVar10 = DAT_0273f2dc;
+    if ((DAT_0273f2e0 == '\0') || (iVar5 <= *(int *)(DAT_0273f2dc + 0x3240))) {
       Com_PrintError(0xe,"A command is in progress. We cant process this command.\n");
       return;
     }
@@ -2250,46 +2249,46 @@ void __cdecl Demo_AddDollyCamMarker_f(void)
       bVar4 = Demo_IsCompleted();
       pcVar3 = cgArray;
       if ((!bVar4) && (((uint)clientUIActives >> 5 & 1) != 0)) {
-        iVar6 = *(int *)(iVar11 + 0x4518);
-        if (iVar6 == 0x32) {
+        iVar5 = *(int *)(iVar10 + 0x4518);
+        if (iVar5 == 0x32) {
           Demo_Error(0xa8ac60,unaff_EDI,unaff_ESI);
           return;
         }
-        iVar9 = 0;
-        iVar7 = Demo_GetDollyCamMarkerCount();
-        if (0 < iVar7) {
-          iVar7 = *(int *)(pcVar3 + 0x40688) / 100;
-          piVar10 = (int *)(iVar11 + 0x3250);
+        iVar8 = 0;
+        iVar6 = Demo_GetDollyCamMarkerCount();
+        if (0 < iVar6) {
+          iVar6 = *(int *)(pcVar3 + 0x40688) / 100;
+          piVar9 = (int *)(iVar10 + 0x3250);
           do {
-            if (iVar7 == *piVar10 / 100) {
+            if (iVar6 == *piVar9 / 100) {
               Demo_Error(0xa8ac90,unaff_EDI,unaff_ESI);
               return;
             }
-            iVar9 = iVar9 + 1;
-            piVar10 = piVar10 + 0x18;
-            iVar8 = Demo_GetDollyCamMarkerCount();
-            iVar7 = extraout_ECX;
-            iVar11 = DAT_0273f2dc;
-          } while (iVar9 < iVar8);
+            iVar8 = iVar8 + 1;
+            piVar9 = piVar9 + 0x18;
+            iVar7 = Demo_GetDollyCamMarkerCount();
+            iVar6 = extraout_ECX;
+            iVar10 = DAT_0273f2dc;
+          } while (iVar8 < iVar7);
         }
-        iVar6 = iVar6 * 0x60;
-        *(undefined4 *)(iVar6 + 0x3250 + iVar11) = *(undefined4 *)(pcVar3 + 0x40688);
-        iVar11 = iVar6 + 0x3250 + iVar11;
-        *(undefined4 *)(iVar11 + 8) = *(undefined4 *)(pcVar3 + 0x5b724);
-        *(undefined4 *)(iVar11 + 0xc) = *(undefined4 *)(pcVar3 + 0x5b728);
-        *(undefined4 *)(iVar11 + 0x10) = *(undefined4 *)(pcVar3 + 0x5b72c);
+        iVar5 = iVar5 * 0x60;
+        *(undefined4 *)(iVar5 + 0x3250 + iVar10) = *(undefined4 *)(pcVar3 + 0x40688);
+        iVar10 = iVar5 + 0x3250 + iVar10;
+        *(undefined4 *)(iVar10 + 8) = *(undefined4 *)(pcVar3 + 0x5b724);
+        *(undefined4 *)(iVar10 + 0xc) = *(undefined4 *)(pcVar3 + 0x5b728);
+        *(undefined4 *)(iVar10 + 0x10) = *(undefined4 *)(pcVar3 + 0x5b72c);
         fVar1 = (float10)fcos((float10)(*(float *)(pcVar3 + 0x5b734) * 0.017453292));
-        fVar12 = (float10)fsin((float10)(*(float *)(pcVar3 + 0x5b734) * 0.017453292));
+        fVar11 = (float10)fsin((float10)(*(float *)(pcVar3 + 0x5b734) * 0.017453292));
         local_8 = local_24;
         local_4 = local_18;
         local_14 = *(float *)(pcVar3 + 0x5b730) * 0.017453292;
         fVar2 = (float10)fcos((float10)local_14);
-        fVar13 = (float10)fsin((float10)local_14);
-        *(float *)(iVar11 + 0x14) = (float)fVar2 * (float)fVar1 * 10.0 + *(float *)(iVar11 + 8);
-        *(float *)(iVar11 + 0x18) = (float)fVar2 * (float)fVar12 * 10.0 + *(float *)(iVar11 + 0xc);
-        *(float *)(iVar11 + 0x1c) = -(float)fVar13 * 10.0 + *(float *)(iVar11 + 0x10);
-        *(undefined1 *)(iVar11 + 0x20) = 0;
-        *(float *)(iVar11 + 0x24) = 1.0;
+        fVar12 = (float10)fsin((float10)local_14);
+        *(float *)(iVar10 + 0x14) = (float)fVar2 * (float)fVar1 * 10.0 + *(float *)(iVar10 + 8);
+        *(float *)(iVar10 + 0x18) = (float)fVar2 * (float)fVar11 * 10.0 + *(float *)(iVar10 + 0xc);
+        *(float *)(iVar10 + 0x1c) = -(float)fVar12 * 10.0 + *(float *)(iVar10 + 0x10);
+        *(undefined1 *)(iVar10 + 0x20) = 0;
+        *(float *)(iVar10 + 0x24) = 1.0;
         Demo_WriteDollyCamKeyFrameInformation(0,(int)unaff_EDI);
         *(int *)(DAT_0273f2dc + 0x4518) = *(int *)(DAT_0273f2dc + 0x4518) + 1;
         qsort((void *)(DAT_0273f2dc + 0x3250),*(uint *)(DAT_0273f2dc + 0x4518),0x60,FUN_007ba760);
@@ -3012,8 +3011,8 @@ void __cdecl Demo_PauseClipRecord_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   int unaff_EDI;
   char *local_10;
   undefined4 uStack_c;
@@ -3034,22 +3033,22 @@ void __cdecl Demo_PauseClipRecord_f(void)
   }
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar1[*piVar1 + 0x21] < 2) {
-    pcVar2 = "";
+    nptr = "";
   }
   else {
-    pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+    nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
   }
-  iVar3 = atoi(pcVar2);
-  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar3)) {
+  iVar2 = atoi(nptr);
+  if ((DAT_0273f2e0 != '\0') && (*(int *)(DAT_0273f2dc + 0x3240) < iVar2)) {
     Demo_SetCmdInProgess();
     if (DAT_0273f2e0 != '\0') {
       *(undefined4 *)(DAT_0273f2dc + 0x1165c4) = 3;
     }
     MSG_WriteBits((msg_t *)0x0,2,unaff_EDI);
-    iVar3 = 0;
+    iVar2 = 0;
     Demo_SaveClipRecordMessageToMainMemory
               (0,*(uchar **)(DAT_0273f2dc + 0x4584),*(int *)(DAT_0273f2dc + 0x4590),false);
-    Demo_WriteDemoPreviewPoint(0,iVar3);
+    Demo_WriteDemoPreviewPoint(0,iVar2);
     if ((demo_pause != (dvar_s *)0x0) && (demo_pause->name != (char *)0x0)) {
       if (demo_pause->type == DVAR_TYPE_BOOL) {
         local_10 = (char *)CONCAT31(local_10._1_3_,1);
@@ -3401,14 +3400,14 @@ void __cdecl Demo_DeleteSegment_f(void)
   char *pcVar5;
   int iVar6;
   int iVar7;
-  ulong uVar8;
+  ulong count;
+  int iVar8;
   int iVar9;
-  int iVar10;
   int unaff_EBX;
-  int iVar11;
-  undefined4 *puVar12;
+  int iVar10;
+  undefined4 *puVar11;
   DvarSetSource unaff_EDI;
-  undefined4 *puVar13;
+  undefined4 *puVar12;
   
   if (sv_cmd_args.argc[sv_cmd_args.nesting] != 3) {
     Com_Printf(0,"Usage: demo_movesegment <cmdNum> <segmentIndex>.\n");
@@ -3428,49 +3427,49 @@ void __cdecl Demo_DeleteSegment_f(void)
       iVar4 = atoi(pcVar5);
       if ((-1 < iVar4) && (iVar4 <= *(int *)(DAT_0273f2dc + 0x116c48) + -1)) {
         Demo_SetCmdInProgess();
-        iVar11 = iVar4 * 0xa4;
-        iVar2 = *(int *)(DAT_0273f2dc + 0x1165f8 + iVar11);
-        iVar3 = *(int *)(DAT_0273f2dc + 0x1165fc + iVar11);
-        iVar10 = 0;
-        iVar9 = iVar3 + iVar2;
+        iVar10 = iVar4 * 0xa4;
+        iVar2 = *(int *)(DAT_0273f2dc + 0x1165f8 + iVar10);
+        iVar3 = *(int *)(DAT_0273f2dc + 0x1165fc + iVar10);
+        iVar9 = 0;
+        iVar8 = iVar3 + iVar2;
         iVar6 = DAT_0273f2dc;
         if (0 < *(int *)(DAT_0273f2dc + 0x116c48)) {
           iVar7 = 0;
           do {
-            if ((iVar10 != iVar4) && (iVar9 <= *(int *)(iVar7 + 0x1165f8 + iVar6))) {
+            if ((iVar9 != iVar4) && (iVar8 <= *(int *)(iVar7 + 0x1165f8 + iVar6))) {
               piVar1 = (int *)(iVar7 + 0x1165f8 + iVar6);
               *piVar1 = *piVar1 - iVar3;
               iVar6 = DAT_0273f2dc;
             }
-            iVar10 = iVar10 + 1;
+            iVar9 = iVar9 + 1;
             iVar7 = iVar7 + 0xa4;
-          } while (iVar10 < *(int *)(iVar6 + 0x116c48));
+          } while (iVar9 < *(int *)(iVar6 + 0x116c48));
         }
-        uVar8 = *(int *)(iVar6 + 0x45b0) - iVar9;
-        if (0 < (int)uVar8) {
-          memmove((uchar *)(iVar6 + 0x45b4 + iVar2),(uchar *)(iVar6 + 0x45b4 + iVar9),uVar8);
+        count = *(int *)(iVar6 + 0x45b0) - iVar8;
+        if (0 < (int)count) {
+          memmove((uchar *)(iVar6 + 0x45b4 + iVar2),(uchar *)(iVar6 + 0x45b4 + iVar8),count);
           iVar6 = DAT_0273f2dc;
         }
-        iVar9 = *(int *)(iVar6 + 0x116c48);
-        if (iVar4 < iVar9) {
+        iVar8 = *(int *)(iVar6 + 0x116c48);
+        if (iVar4 < iVar8) {
           do {
             iVar4 = iVar4 + 1;
-            if (iVar4 < iVar9) {
-              puVar12 = (undefined4 *)(iVar6 + 0x116684 + iVar11);
-              puVar13 = (undefined4 *)(iVar6 + 0x1165e0 + iVar11);
-              for (iVar9 = 0x29; iVar9 != 0; iVar9 = iVar9 + -1) {
-                *puVar13 = *puVar12;
+            if (iVar4 < iVar8) {
+              puVar11 = (undefined4 *)(iVar6 + 0x116684 + iVar10);
+              puVar12 = (undefined4 *)(iVar6 + 0x1165e0 + iVar10);
+              for (iVar8 = 0x29; iVar8 != 0; iVar8 = iVar8 + -1) {
+                *puVar12 = *puVar11;
+                puVar11 = puVar11 + 1;
                 puVar12 = puVar12 + 1;
-                puVar13 = puVar13 + 1;
               }
             }
             else {
-              memset((uchar *)(iVar6 + 0x1165e0 + iVar11),'\0',0xa4);
+              memset((uchar *)(iVar6 + 0x1165e0 + iVar10),'\0',0xa4);
             }
-            iVar9 = *(int *)(DAT_0273f2dc + 0x116c48);
-            iVar11 = iVar11 + 0xa4;
+            iVar8 = *(int *)(DAT_0273f2dc + 0x116c48);
+            iVar10 = iVar10 + 0xa4;
             iVar6 = DAT_0273f2dc;
-          } while (iVar4 < iVar9);
+          } while (iVar4 < iVar8);
         }
         *(int *)(iVar6 + 0x116c48) = *(int *)(iVar6 + 0x116c48) + -1;
         *(int *)(DAT_0273f2dc + 0x45b0) = *(int *)(DAT_0273f2dc + 0x45b0) - iVar3;
@@ -3772,14 +3771,14 @@ void __cdecl Demo_Screenshot_f(void)
   char cVar1;
   int *piVar2;
   bool bVar3;
-  char *pcVar4;
-  undefined *puVar5;
+  char *nptr;
+  undefined *puVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
   undefined1 unaff_BL;
   qtime_s *unaff_EDI;
+  int iVar7;
   int iVar8;
-  int iVar9;
   undefined4 uStack_20;
   undefined4 uStack_1c;
   undefined4 uStack_18;
@@ -3793,12 +3792,12 @@ void __cdecl Demo_Screenshot_f(void)
   }
   piVar2 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   if (piVar2[*piVar2 + 0x21] < 2) {
-    pcVar4 = "";
+    nptr = "";
   }
   else {
-    pcVar4 = *(char **)(piVar2[*piVar2 + 0x29] + 4);
+    nptr = *(char **)(piVar2[*piVar2 + 0x29] + 4);
   }
-  atoi(pcVar4);
+  atoi(nptr);
   if (DAT_0268df84 != 2) {
     Com_PrintError(0xe,"The demo system not playing a demo. So, cannot take a screenshot\n");
     return;
@@ -3809,81 +3808,81 @@ void __cdecl Demo_Screenshot_f(void)
     return;
   }
   bVar3 = Demo_IsDollyCamera();
-  iVar6 = DAT_0273f2dc;
+  iVar5 = DAT_0273f2dc;
   if (bVar3) {
     Com_PrintError(0xe,"Screenshots cannot be taken when in dolly mode.\n");
     return;
   }
   if (DAT_0273f2dc != -0x2c8) {
-    puVar5 = &DAT_0272fbe3;
-    iVar8 = 0x16;
-    iVar7 = DAT_0273f2dc + -0x272f91c;
+    puVar4 = &DAT_0272fbe3;
+    iVar7 = 0x16;
+    iVar6 = DAT_0273f2dc + -0x272f91c;
     do {
-      cVar1 = puVar5[1];
-      puVar5 = puVar5 + 1;
-      puVar5[iVar7] = cVar1;
+      cVar1 = puVar4[1];
+      puVar4 = puVar4 + 1;
+      puVar4[iVar6] = cVar1;
+      if (cVar1 == '\0') break;
+      iVar7 = iVar7 + -1;
+    } while (iVar7 != 0);
+    *(undefined1 *)(iVar5 + 0x2dd) = 0;
+  }
+  *(undefined1 *)(DAT_0273f2dc + 0x2f4) = 0;
+  iVar5 = DAT_0273f2dc;
+  if (DAT_0273f2dc != -0x2de) {
+    puVar4 = &DAT_0272fbf9;
+    iVar7 = DAT_0273f2dc + -0x272f91c;
+    iVar6 = 0x16;
+    do {
+      cVar1 = puVar4[1];
+      puVar4 = puVar4 + 1;
+      puVar4[iVar7] = cVar1;
+      if (cVar1 == '\0') break;
+      iVar6 = iVar6 + -1;
+    } while (iVar6 != 0);
+    *(undefined1 *)(iVar5 + 0x2f3) = 0;
+  }
+  *(undefined1 *)(DAT_0273f2dc + 0x2f5) = 0;
+  iVar5 = DAT_0273f2dc;
+  if (DAT_0273f2dc != -200) {
+    iVar7 = 0x272f9c3;
+    iVar8 = 0x100;
+    iVar6 = DAT_0273f2dc + -0x272f8fc;
+    do {
+      cVar1 = *(char *)(iVar7 + 1);
+      iVar7 = iVar7 + 1;
+      *(char *)(iVar6 + iVar7) = cVar1;
       if (cVar1 == '\0') break;
       iVar8 = iVar8 + -1;
     } while (iVar8 != 0);
-    *(undefined1 *)(iVar6 + 0x2dd) = 0;
+    *(undefined1 *)(iVar5 + 0x1c7) = 0;
   }
-  *(undefined1 *)(DAT_0273f2dc + 0x2f4) = 0;
-  iVar6 = DAT_0273f2dc;
-  if (DAT_0273f2dc != -0x2de) {
-    puVar5 = &DAT_0272fbf9;
-    iVar8 = DAT_0273f2dc + -0x272f91c;
-    iVar7 = 0x16;
-    do {
-      cVar1 = puVar5[1];
-      puVar5 = puVar5 + 1;
-      puVar5[iVar8] = cVar1;
-      if (cVar1 == '\0') break;
-      iVar7 = iVar7 + -1;
-    } while (iVar7 != 0);
-    *(undefined1 *)(iVar6 + 0x2f3) = 0;
-  }
-  *(undefined1 *)(DAT_0273f2dc + 0x2f5) = 0;
-  iVar6 = DAT_0273f2dc;
-  if (DAT_0273f2dc != -200) {
-    iVar8 = 0x272f9c3;
-    iVar9 = 0x100;
+  iVar5 = DAT_0273f2dc;
+  if (DAT_0273f2dc != -0x1c8) {
+    puVar4 = &DAT_0272fac3;
+    iVar6 = 0x100;
     iVar7 = DAT_0273f2dc + -0x272f8fc;
     do {
-      cVar1 = *(char *)(iVar8 + 1);
-      iVar8 = iVar8 + 1;
-      *(char *)(iVar7 + iVar8) = cVar1;
+      cVar1 = puVar4[1];
+      puVar4 = puVar4 + 1;
+      puVar4[iVar7] = cVar1;
       if (cVar1 == '\0') break;
-      iVar9 = iVar9 + -1;
-    } while (iVar9 != 0);
-    *(undefined1 *)(iVar6 + 0x1c7) = 0;
-  }
-  iVar6 = DAT_0273f2dc;
-  if (DAT_0273f2dc != -0x1c8) {
-    puVar5 = &DAT_0272fac3;
-    iVar7 = 0x100;
-    iVar8 = DAT_0273f2dc + -0x272f8fc;
-    do {
-      cVar1 = puVar5[1];
-      puVar5 = puVar5 + 1;
-      puVar5[iVar8] = cVar1;
-      if (cVar1 == '\0') break;
-      iVar7 = iVar7 + -1;
-    } while (iVar7 != 0);
-    *(undefined1 *)(iVar6 + 0x2c7) = 0;
+      iVar6 = iVar6 + -1;
+    } while (iVar6 != 0);
+    *(undefined1 *)(iVar5 + 0x2c7) = 0;
   }
   Dvar_SetIntFromSource(fsSelectedFileTagIndex,0,(DvarSetSource)unaff_EDI);
-  iVar8 = 1;
+  iVar7 = 1;
   LiveStorage_GetUTC();
-  Com_GetQTime(iVar8,unaff_EDI,(bool)unaff_BL);
+  Com_GetQTime(iVar7,unaff_EDI,(bool)unaff_BL);
   *(int *)(DAT_0273f2dc + 0x2fc) = iStack_8 / 7;
   *(int *)(DAT_0273f2dc + 0x300) = iStack_14 + 1;
   *(int *)(DAT_0273f2dc + 0x304) = iStack_10 + 0x76c;
   *(undefined4 *)(DAT_0273f2dc + 0x308) = uStack_18;
   *(undefined4 *)(DAT_0273f2dc + 0x30c) = uStack_1c;
   *(undefined4 *)(DAT_0273f2dc + 0x310) = uStack_20;
-  iVar6 = LiveStorage_GetUTC();
-  *(int *)(DAT_0273f2dc + 0x2f8) = iVar6;
-  Demo_HiResScreenshot(0,iVar8);
+  iVar5 = LiveStorage_GetUTC();
+  *(int *)(DAT_0273f2dc + 0x2f8) = iVar5;
+  Demo_HiResScreenshot(0,iVar7);
   return;
 }
 
@@ -3984,7 +3983,7 @@ void __cdecl Demo_SwitchControls_f(void)
 
 {
   int *piVar1;
-  char *pcVar2;
+  char *nptr;
   DvarSetSource unaff_retaddr;
   
   if (DAT_0268df84 != 2) {
@@ -3994,13 +3993,13 @@ void __cdecl Demo_SwitchControls_f(void)
   if (sv_cmd_args.argc[sv_cmd_args.nesting] == 2) {
     piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
     if (piVar1[*piVar1 + 0x21] < 2) {
-      pcVar2 = "";
+      nptr = "";
     }
     else {
-      pcVar2 = *(char **)(piVar1[*piVar1 + 0x29] + 4);
+      nptr = *(char **)(piVar1[*piVar1 + 0x29] + 4);
     }
-    atoi(pcVar2);
-    Dvar_SetIntFromSource(demo_controllerConfig,0,(DvarSetSource)pcVar2);
+    atoi(nptr);
+    Dvar_SetIntFromSource(demo_controllerConfig,0,(DvarSetSource)nptr);
     return;
   }
   if ((demo_controllerConfig->current).integer == 2) {

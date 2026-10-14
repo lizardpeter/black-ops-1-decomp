@@ -5,44 +5,45 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-long64 __cdecl _lseeki64(int param_1,long64 param_2,int param_3)
+long64 __cdecl _lseeki64(int fh,long64 param_2,int param_3)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
   int in_stack_ffffffc8;
-  undefined8 uStack_28;
+  __int64 r;
+  int _Expr_val;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar3 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+    if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+      iVar3 = (fh & 0x1fU) * 0x40;
+      if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
         puVar1 = __doserrno();
         *puVar1 = 0;
         piVar2 = _errno();
         *piVar2 = 9;
         _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-        uStack_28._4_4_ = 0xffffffff;
-        uStack_28._0_4_ = 0xffffffff;
+        r._4_4_ = 0xffffffff;
+        r._0_4_ = 0xffffffff;
       }
       else {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
           puVar1 = __doserrno();
           *puVar1 = 0;
-          uStack_28 = -1;
+          r = -1;
         }
         else {
-          uStack_28 = _lseeki64_nolock(param_1,param_2,in_stack_ffffffc8);
+          r = _lseeki64_nolock(fh,param_2,in_stack_ffffffc8);
         }
         FUN_00975c51();
       }
@@ -54,47 +55,48 @@ long64 __cdecl _lseeki64(int param_1,long64 param_2,int param_3)
     *piVar2 = 9;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  uStack_28._0_4_ = 0xffffffff;
-  uStack_28._4_4_ = 0xffffffff;
+  r._0_4_ = 0xffffffff;
+  r._4_4_ = 0xffffffff;
 LAB_00975c4b:
-  return CONCAT44(uStack_28._4_4_,(undefined4)uStack_28);
+  return CONCAT44(r._4_4_,(undefined4)r);
 }
 
 
 // 00975ABD  _lseeki64_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseeki64.c:120)
 
-long64 __cdecl _lseeki64_nolock(int param_1,long64 param_2,int param_3)
+long64 __cdecl _lseeki64_nolock(int fh,long64 param_2,int param_3)
 
 {
   byte *pbVar1;
   HANDLE hFile;
   int *piVar2;
-  DWORD DVar3;
-  DWORD DVar4;
-  LONG in_stack_00000008;
-  LONG LStack_8;
+  DWORD oserrno;
+  ulong in_stack_00000008;
+  doubleint newpos;
   
-  LStack_8 = (LONG)param_2;
-  hFile = (HANDLE)_get_osfhandle(param_1);
+  newpos.twoints.lowerhalf = in_stack_00000008;
+  newpos.twoints.upperhalf = (long)param_2;
+  hFile = (HANDLE)_get_osfhandle(fh);
   if (hFile == (HANDLE)0xffffffff) {
     piVar2 = _errno();
     *piVar2 = 9;
 LAB_00975aee:
-    DVar3 = 0xffffffff;
-    LStack_8 = -1;
+    newpos.twoints.lowerhalf = 0xffffffff;
+    newpos.twoints.upperhalf = -1;
   }
   else {
-    DVar3 = SetFilePointer(hFile,in_stack_00000008,&LStack_8,param_2._4_4_);
-    if (DVar3 == 0xffffffff) {
-      DVar4 = GetLastError();
-      if (DVar4 != 0) {
-        _dosmaperr(DVar4);
+    newpos.twoints.lowerhalf =
+         SetFilePointer(hFile,newpos.twoints.lowerhalf,&newpos.twoints.upperhalf,param_2._4_4_);
+    if (newpos.twoints.lowerhalf == 0xffffffff) {
+      oserrno = GetLastError();
+      if (oserrno != 0) {
+        _dosmaperr(oserrno);
         goto LAB_00975aee;
       }
     }
-    pbVar1 = (byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + (param_1 & 0x1fU) * 0x40);
+    pbVar1 = (byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + (fh & 0x1fU) * 0x40);
     *pbVar1 = *pbVar1 & 0xfd;
   }
-  return CONCAT44(LStack_8,DVar3);
+  return CONCAT44(newpos.twoints.upperhalf,newpos.twoints.lowerhalf);
 }
 

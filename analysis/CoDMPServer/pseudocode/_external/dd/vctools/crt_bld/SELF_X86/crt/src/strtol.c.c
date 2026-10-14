@@ -2,8 +2,7 @@
 
 // 00C11152  strtoxl  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtol.c:80)
 
-ulong __cdecl
-strtoxl(localeinfo_struct *param_1,char *param_2,char **param_3,int param_4,int param_5)
+ulong __cdecl strtoxl(localeinfo_struct *plocinfo,char *nptr,char **endptr,int ibase,int flags)
 
 {
   byte *pbVar1;
@@ -14,108 +13,108 @@ strtoxl(localeinfo_struct *param_1,char *param_2,char **param_3,int param_4,int 
   int iVar6;
   byte bVar7;
   byte *pbVar8;
-  _LocaleUpdate local_18;
-  uint local_8;
+  _LocaleUpdate _loc_update;
+  ulong number;
   
-  _LocaleUpdate::_LocaleUpdate(&local_18,param_1);
-  if (param_3 != (char **)0x0) {
-    *param_3 = param_2;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (endptr != (char **)0x0) {
+    *endptr = nptr;
   }
-  if ((param_2 == (char *)0x0) || ((param_4 != 0 && ((param_4 < 2 || (0x24 < param_4)))))) {
+  if ((nptr == (char *)0x0) || ((ibase != 0 && ((ibase < 2 || (0x24 < ibase)))))) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_18.updated != false) {
-      (local_18.ptd)->_ownlocale = (local_18.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     return 0;
   }
-  bVar7 = *param_2;
-  local_8 = 0;
-  ptVar4 = local_18.localeinfo.locinfo;
-  pbVar1 = (byte *)param_2;
+  bVar7 = *nptr;
+  number = 0;
+  ptVar4 = _loc_update.localeinfo.locinfo;
+  pbVar1 = (byte *)nptr;
   while( true ) {
     pbVar8 = pbVar1 + 1;
     if (ptVar4->mb_cur_max < 2) {
       uVar3 = ptVar4->pctype[bVar7] & 8;
     }
     else {
-      uVar3 = _isctype_l((uint)bVar7,8,&local_18.localeinfo);
-      ptVar4 = local_18.localeinfo.locinfo;
+      uVar3 = _isctype_l((uint)bVar7,8,&_loc_update.localeinfo);
+      ptVar4 = _loc_update.localeinfo.locinfo;
     }
     if (uVar3 == 0) break;
     bVar7 = *pbVar8;
     pbVar1 = pbVar8;
   }
   if (bVar7 == 0x2d) {
-    param_5 = param_5 | 2;
+    flags = flags | 2;
 LAB_00c1120b:
     bVar7 = *pbVar8;
     pbVar8 = pbVar1 + 2;
   }
   else if (bVar7 == 0x2b) goto LAB_00c1120b;
-  if (((param_4 < 0) || (param_4 == 1)) || (0x24 < param_4)) {
-    if (param_3 != (char **)0x0) {
-      *param_3 = param_2;
+  if (((ibase < 0) || (ibase == 1)) || (0x24 < ibase)) {
+    if (endptr != (char **)0x0) {
+      *endptr = nptr;
     }
-    if (local_18.updated != false) {
-      (local_18.ptd)->_ownlocale = (local_18.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     return 0;
   }
-  if (param_4 == 0) {
+  if (ibase == 0) {
     if (bVar7 != 0x30) {
-      param_4 = 10;
+      ibase = 10;
       goto LAB_00c11271;
     }
     if ((*pbVar8 != 0x78) && (*pbVar8 != 0x58)) {
-      param_4 = 8;
+      ibase = 8;
       goto LAB_00c11271;
     }
-    param_4 = 0x10;
+    ibase = 0x10;
   }
-  else if ((param_4 != 0x10) || (bVar7 != 0x30)) goto LAB_00c11271;
+  else if ((ibase != 0x10) || (bVar7 != 0x30)) goto LAB_00c11271;
   if ((*pbVar8 == 0x78) || (*pbVar8 == 0x58)) {
     bVar7 = pbVar8[1];
     pbVar8 = pbVar8 + 2;
   }
 LAB_00c11271:
-  uVar3 = (uint)(0xffffffff / (ulonglong)(uint)param_4);
+  uVar3 = (uint)(0xffffffff / (ulonglong)(uint)ibase);
   do {
     if ((ptVar4->pctype[bVar7] & 4) == 0) {
       if ((ptVar4->pctype[bVar7] & 0x103) == 0) {
 LAB_00c112ce:
         pbVar8 = pbVar8 + -1;
-        if ((param_5 & 8U) == 0) {
-          if (param_3 != (char **)0x0) {
-            pbVar8 = (byte *)param_2;
+        if ((flags & 8U) == 0) {
+          if (endptr != (char **)0x0) {
+            pbVar8 = (byte *)nptr;
           }
-          local_8 = 0;
+          number = 0;
         }
-        else if (((param_5 & 4U) != 0) ||
-                (((param_5 & 1U) == 0 &&
-                 ((((param_5 & 2U) != 0 && (0x80000000 < local_8)) ||
-                  (((param_5 & 2U) == 0 && (0x7fffffff < local_8)))))))) {
+        else if (((flags & 4U) != 0) ||
+                (((flags & 1U) == 0 &&
+                 ((((flags & 2U) != 0 && (0x80000000 < number)) ||
+                  (((flags & 2U) == 0 && (0x7fffffff < number)))))))) {
           piVar2 = _errno();
           *piVar2 = 0x22;
-          if ((param_5 & 1U) == 0) {
-            local_8 = ((param_5 & 2U) != 0) + 0x7fffffff;
+          if ((flags & 1U) == 0) {
+            number = ((flags & 2U) != 0) + 0x7fffffff;
           }
           else {
-            local_8 = 0xffffffff;
+            number = 0xffffffff;
           }
         }
-        if (param_3 != (char **)0x0) {
-          *param_3 = (char *)pbVar8;
+        if (endptr != (char **)0x0) {
+          *endptr = (char *)pbVar8;
         }
-        if ((param_5 & 2U) != 0) {
-          local_8 = -local_8;
+        if ((flags & 2U) != 0) {
+          number = -number;
         }
-        if (local_18.updated == false) {
-          return local_8;
+        if (_loc_update.updated == false) {
+          return number;
         }
-        (local_18.ptd)->_ownlocale = (local_18.ptd)->_ownlocale & 0xfffffffd;
-        return local_8;
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
+        return number;
       }
       iVar6 = (int)(char)bVar7;
       if ((byte)(bVar7 + 0x9f) < 0x1a) {
@@ -126,15 +125,15 @@ LAB_00c112ce:
     else {
       uVar5 = (int)(char)bVar7 - 0x30;
     }
-    if ((uint)param_4 <= uVar5) goto LAB_00c112ce;
-    if ((local_8 < uVar3) ||
-       ((local_8 == uVar3 && (uVar5 <= (uint)(0xffffffff % (ulonglong)(uint)param_4))))) {
-      local_8 = local_8 * param_4 + uVar5;
-      param_5 = param_5 | 8;
+    if ((uint)ibase <= uVar5) goto LAB_00c112ce;
+    if ((number < uVar3) ||
+       ((number == uVar3 && (uVar5 <= (uint)(0xffffffff % (ulonglong)(uint)ibase))))) {
+      number = number * ibase + uVar5;
+      flags = flags | 8;
     }
     else {
-      param_5 = param_5 | 0xc;
-      if (param_3 == (char **)0x0) goto LAB_00c112ce;
+      flags = flags | 0xc;
+      if (endptr == (char **)0x0) goto LAB_00c112ce;
     }
     bVar7 = *pbVar8;
     pbVar8 = pbVar8 + 1;
@@ -144,38 +143,38 @@ LAB_00c112ce:
 
 // 00C11381  strtol  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtol.c:229)
 
-long __cdecl strtol(char *param_1,char **param_2,int param_3)
+long __cdecl strtol(char *nptr,char **endptr,int ibase)
 
 {
   ulong uVar1;
-  localeinfo_struct *plVar2;
+  localeinfo_struct *plocinfo;
   
   if (__locale_changed == 0) {
-    plVar2 = &__initiallocalestructinfo;
+    plocinfo = &__initiallocalestructinfo;
   }
   else {
-    plVar2 = (localeinfo_struct *)0x0;
+    plocinfo = (localeinfo_struct *)0x0;
   }
-  uVar1 = strtoxl(plVar2,param_1,param_2,param_3,0);
+  uVar1 = strtoxl(plocinfo,nptr,endptr,ibase,0);
   return uVar1;
 }
 
 
 // 00C113AC  strtoul  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strtol.c:255)
 
-ulong __cdecl strtoul(char *param_1,char **param_2,int param_3)
+ulong __cdecl strtoul(char *nptr,char **endptr,int ibase)
 
 {
   ulong uVar1;
-  localeinfo_struct *plVar2;
+  localeinfo_struct *plocinfo;
   
   if (__locale_changed == 0) {
-    plVar2 = &__initiallocalestructinfo;
+    plocinfo = &__initiallocalestructinfo;
   }
   else {
-    plVar2 = (localeinfo_struct *)0x0;
+    plocinfo = (localeinfo_struct *)0x0;
   }
-  uVar1 = strtoxl(plVar2,param_1,param_2,param_3,1);
+  uVar1 = strtoxl(plocinfo,nptr,endptr,ibase,1);
   return uVar1;
 }
 

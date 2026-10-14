@@ -2,29 +2,29 @@
 
 // 0095F8B2  _strdup  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strdup.c:66)
 
-char * __cdecl _strdup(char *param_1)
+char * __cdecl _strdup(char *string)
 
 {
-  char *pcVar1;
+  char *_Dst;
   int extraout_EAX;
-  int iVar2;
+  int iVar1;
   
-  if (param_1 == (char *)0x0) {
-    pcVar1 = (char *)0x0;
+  if (string == (char *)0x0) {
+    _Dst = (char *)0x0;
   }
   else {
-    strlen((uchar *)param_1);
-    pcVar1 = malloc(extraout_EAX + 1U);
-    if (pcVar1 == (char *)0x0) {
-      pcVar1 = (char *)0x0;
+    strlen((uchar *)string);
+    _Dst = malloc(extraout_EAX + 1U);
+    if (_Dst == (char *)0x0) {
+      _Dst = (char *)0x0;
     }
     else {
-      iVar2 = strcpy_s(pcVar1,extraout_EAX + 1U,param_1);
-      if (iVar2 != 0) {
+      iVar1 = strcpy_s(_Dst,extraout_EAX + 1U,string);
+      if (iVar1 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
     }
   }
-  return pcVar1;
+  return _Dst;
 }
 

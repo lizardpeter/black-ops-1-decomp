@@ -2,12 +2,12 @@
 
 // 005D2CF0  Vec3Scale  (universal/com_vector.h:307)
 
-void __cdecl Vec3Scale(float *param_1,float param_2,float *param_3)
+void __cdecl Vec3Scale(float *v,float scale,float *result)
 
 {
-  *param_3 = param_2 * *param_1;
-  param_3[1] = param_2 * param_1[1];
-  param_3[2] = param_2 * param_1[2];
+  *result = scale * *v;
+  result[1] = scale * v[1];
+  result[2] = scale * v[2];
   return;
 }
 

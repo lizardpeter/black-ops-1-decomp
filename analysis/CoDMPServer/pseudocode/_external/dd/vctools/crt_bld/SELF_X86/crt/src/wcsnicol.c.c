@@ -2,64 +2,65 @@
 
 // 00C2DAFF  _wcsnicoll_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcsnicol.c:58)
 
-int __cdecl _wcsnicoll_l(wchar_t *param_1,wchar_t *param_2,uint param_3,localeinfo_struct *param_4)
+int __cdecl _wcsnicoll_l(wchar_t *_string1,wchar_t *_string2,uint count,localeinfo_struct *plocinfo)
 
 {
   wchar_t wVar1;
   wchar_t wVar2;
   int *piVar3;
   int iVar4;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  if (param_3 == 0) {
+  if (count == 0) {
     return 0;
   }
-  if (param_1 == (wchar_t *)0x0) {
+  if (_string1 == (wchar_t *)0x0) {
     piVar3 = _errno();
     *piVar3 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return 0x7fffffff;
   }
-  if (param_2 == (wchar_t *)0x0) {
+  if (_string2 == (wchar_t *)0x0) {
     piVar3 = _errno();
     *piVar3 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return 0x7fffffff;
   }
-  if (param_3 < 0x80000000) {
-    _LocaleUpdate::_LocaleUpdate(&local_14,param_4);
-    if ((local_14.localeinfo.locinfo)->lc_handle[1] == 0) {
+  if (count < 0x80000000) {
+    _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+    if ((_loc_update.localeinfo.locinfo)->lc_handle[1] == 0) {
       do {
-        wVar1 = *param_1;
+        wVar1 = *_string1;
         if ((0x40 < (ushort)wVar1) && ((ushort)wVar1 < 0x5b)) {
           wVar1 = wVar1 + L' ';
         }
-        wVar2 = *param_2;
+        wVar2 = *_string2;
         if ((0x40 < (ushort)wVar2) && ((ushort)wVar2 < 0x5b)) {
           wVar2 = wVar2 + L' ';
         }
-        param_1 = param_1 + 1;
-        param_2 = param_2 + 1;
-        param_3 = param_3 - 1;
-      } while (((param_3 != 0) && (wVar1 != L'\0')) && (wVar1 == wVar2));
+        _string1 = _string1 + 1;
+        _string2 = _string2 + 1;
+        count = count - 1;
+      } while (((count != 0) && (wVar1 != L'\0')) && (wVar1 == wVar2));
       iVar4 = (uint)(ushort)wVar1 - (uint)(ushort)wVar2;
     }
     else {
-      iVar4 = __crtCompareStringW(&local_14.localeinfo,(local_14.localeinfo.locinfo)->lc_handle[1],
-                                  0x1001,param_1,param_3,param_2,param_3,
-                                  (local_14.localeinfo.locinfo)->lc_collate_cp);
+      iVar4 = __crtCompareStringW(&_loc_update.localeinfo,
+                                  (_loc_update.localeinfo.locinfo)->lc_handle[1],0x1001,_string1,
+                                  count,_string2,count,
+                                  (_loc_update.localeinfo.locinfo)->lc_collate_cp);
       if (iVar4 == 0) {
         piVar3 = _errno();
         *piVar3 = 0x16;
-        if (local_14.updated != false) {
-          (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+        if (_loc_update.updated != false) {
+          (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
         }
         goto LAB_00c2dc2a;
       }
       iVar4 = iVar4 + -2;
     }
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   else {
@@ -75,7 +76,7 @@ LAB_00c2dc2a:
 
 // 00C2DC42  _wcsnicoll  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcsnicol.c:111)
 
-int __cdecl _wcsnicoll(wchar_t *param_1,wchar_t *param_2,uint param_3)
+int __cdecl _wcsnicoll(wchar_t *_string1,wchar_t *_string2,uint count)
 
 {
   wchar_t wVar1;
@@ -84,7 +85,7 @@ int __cdecl _wcsnicoll(wchar_t *param_1,wchar_t *param_2,uint param_3)
   int iVar4;
   
   if (__locale_changed == 0) {
-    if (((param_1 == (wchar_t *)0x0) || (param_2 == (wchar_t *)0x0)) || (0x7fffffff < param_3)) {
+    if (((_string1 == (wchar_t *)0x0) || (_string2 == (wchar_t *)0x0)) || (0x7fffffff < count)) {
       piVar3 = _errno();
       *piVar3 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
@@ -92,23 +93,23 @@ int __cdecl _wcsnicoll(wchar_t *param_1,wchar_t *param_2,uint param_3)
     }
     else {
       do {
-        wVar1 = *param_1;
+        wVar1 = *_string1;
         if ((0x40 < (ushort)wVar1) && ((ushort)wVar1 < 0x5b)) {
           wVar1 = wVar1 + L' ';
         }
-        wVar2 = *param_2;
+        wVar2 = *_string2;
         if ((0x40 < (ushort)wVar2) && ((ushort)wVar2 < 0x5b)) {
           wVar2 = wVar2 + L' ';
         }
-        param_1 = param_1 + 1;
-        param_2 = param_2 + 1;
-        param_3 = param_3 - 1;
-      } while (((param_3 != 0) && (wVar1 != L'\0')) && (wVar1 == wVar2));
+        _string1 = _string1 + 1;
+        _string2 = _string2 + 1;
+        count = count - 1;
+      } while (((count != 0) && (wVar1 != L'\0')) && (wVar1 == wVar2));
       iVar4 = (uint)(ushort)wVar1 - (uint)(ushort)wVar2;
     }
   }
   else {
-    iVar4 = _wcsnicoll_l(param_1,param_2,param_3,(localeinfo_struct *)0x0);
+    iVar4 = _wcsnicoll_l(_string1,_string2,count,(localeinfo_struct *)0x0);
   }
   return iVar4;
 }

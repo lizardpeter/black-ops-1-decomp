@@ -3,7 +3,7 @@
 // 00A23BF0  set  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_ragdoll.cpp:6)
 
 void __thiscall
-ragdoll_joint_limit_info::set(ragdoll_joint_limit_info *this,phys_vec3 *param_1,float param_2)
+ragdoll_joint_limit_info::set(ragdoll_joint_limit_info *this,phys_vec3 *b1_ud_loc,float theta_limit)
 
 {
   code *pcVar1;
@@ -15,7 +15,7 @@ ragdoll_joint_limit_info::set(ragdoll_joint_limit_info *this,phys_vec3 *param_1,
   phys_vec3 local_30;
   float local_14;
   
-  if (param_2 <= 0.0) {
+  if (theta_limit <= 0.0) {
     bVar2 = _tlAssert("source/rbc_def_ragdoll.cpp",7,"theta_limit > 0.0f","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -23,7 +23,7 @@ ragdoll_joint_limit_info::set(ragdoll_joint_limit_info *this,phys_vec3 *param_1,
       return;
     }
   }
-  ppVar3 = phys_Unitize(&local_30,param_1);
+  ppVar3 = phys_Unitize(&local_30,b1_ud_loc);
   (this->m_b1_ud_loc).x = ppVar3->x;
   (this->m_b1_ud_loc).y = ppVar3->y;
   (this->m_b1_ud_loc).z = ppVar3->z;
@@ -32,7 +32,7 @@ ragdoll_joint_limit_info::set(ragdoll_joint_limit_info *this,phys_vec3 *param_1,
   this->m_b1_ud_limit_co_ = local_14;
   _CIsin();
   this->m_b1_ud_limit_si_ = (float)extraout_ST0_00;
-  local_14 = param_2 - 0.04363323;
+  local_14 = theta_limit - 0.04363323;
   if (0.0 < local_14) {
     local_14 = 0.0;
   }
@@ -47,13 +47,13 @@ ragdoll_joint_limit_info::set(ragdoll_joint_limit_info *this,phys_vec3 *param_1,
 // 00A23A20  set_b1_ud_loc  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_ragdoll.cpp:16)
 
 void __thiscall
-ragdoll_joint_limit_info::set_b1_ud_loc(ragdoll_joint_limit_info *this,phys_vec3 *param_1)
+ragdoll_joint_limit_info::set_b1_ud_loc(ragdoll_joint_limit_info *this,phys_vec3 *b1_ud_loc)
 
 {
   phys_vec3 *ppVar1;
   phys_vec3 local_20;
   
-  ppVar1 = phys_Unitize(&local_20,param_1);
+  ppVar1 = phys_Unitize(&local_20,b1_ud_loc);
   (this->m_b1_ud_loc).x = ppVar1->x;
   (this->m_b1_ud_loc).y = ppVar1->y;
   (this->m_b1_ud_loc).z = ppVar1->z;
@@ -65,7 +65,7 @@ ragdoll_joint_limit_info::set_b1_ud_loc(ragdoll_joint_limit_info *this,phys_vec3
 // 00A23CC0  set_theta_limit  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_ragdoll.cpp:22)
 
 void __thiscall
-ragdoll_joint_limit_info::set_theta_limit(ragdoll_joint_limit_info *this,float param_1)
+ragdoll_joint_limit_info::set_theta_limit(ragdoll_joint_limit_info *this,float theta_limit)
 
 {
   code *pcVar1;
@@ -75,7 +75,7 @@ ragdoll_joint_limit_info::set_theta_limit(ragdoll_joint_limit_info *this,float p
   float10 extraout_ST0_01;
   ragdoll_joint_limit_info *prVar3;
   
-  if ((param_1 <= 0.0) &&
+  if ((theta_limit <= 0.0) &&
      (prVar3 = this, bVar2 = _tlAssert("source/rbc_def_ragdoll.cpp",0x17,"theta_limit > 0.0f",""),
      bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -96,15 +96,15 @@ ragdoll_joint_limit_info::set_theta_limit(ragdoll_joint_limit_info *this,float p
 
 void __thiscall
 rigid_body_constraint_ragdoll::set
-          (rigid_body_constraint_ragdoll *this,phys_vec3 *param_1,phys_vec3 *param_2)
+          (rigid_body_constraint_ragdoll *this,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc)
 
 {
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
-  (this->m_b2_r_loc).x = param_2->x;
-  (this->m_b2_r_loc).y = param_2->y;
-  (this->m_b2_r_loc).z = param_2->z;
+  (this->m_b1_r_loc).x = b1_r_loc->x;
+  (this->m_b1_r_loc).y = b1_r_loc->y;
+  (this->m_b1_r_loc).z = b1_r_loc->z;
+  (this->m_b2_r_loc).x = b2_r_loc->x;
+  (this->m_b2_r_loc).y = b2_r_loc->y;
+  (this->m_b2_r_loc).z = b2_r_loc->z;
   return;
 }
 
@@ -113,40 +113,38 @@ rigid_body_constraint_ragdoll::set
 
 void __thiscall
 rigid_body_constraint_ragdoll::set_snider_style
-          (rigid_body_constraint_ragdoll *this,phys_vec3 *param_1,phys_vec3 *param_2)
+          (rigid_body_constraint_ragdoll *this,phys_vec3 *b1_axis_loc,phys_vec3 *b1_ref_loc)
 
 {
+  phys_vec3 *ud;
   phys_vec3 *ppVar1;
-  phys_vec3 *ppVar2;
   phys_vec3 local_30;
   phys_vec3 *local_14;
   
-  ppVar2 = phys_Unitize(&local_30,param_1);
-  (this->m_b1_axis_loc).x = ppVar2->x;
-  ppVar1 = &this->m_b1_axis_loc;
-  (this->m_b1_axis_loc).y = ppVar2->y;
-  (this->m_b1_axis_loc).z = ppVar2->z;
-  ppVar2 = phys_Unitize(&local_30,param_2);
+  ppVar1 = phys_Unitize(&local_30,b1_axis_loc);
+  (this->m_b1_axis_loc).x = ppVar1->x;
+  ud = &this->m_b1_axis_loc;
+  (this->m_b1_axis_loc).y = ppVar1->y;
+  (this->m_b1_axis_loc).z = ppVar1->z;
+  ppVar1 = phys_Unitize(&local_30,b1_ref_loc);
   local_14 = &this->m_b1_ref_loc;
-  local_14->x = ppVar2->x;
-  (this->m_b1_ref_loc).y = ppVar2->y;
-  (this->m_b1_ref_loc).z = ppVar2->z;
+  local_14->x = ppVar1->x;
+  (this->m_b1_ref_loc).y = ppVar1->y;
+  (this->m_b1_ref_loc).z = ppVar1->z;
   if ((this->m_flags & 4) != 0) {
-    ppVar2 = construct_orth_ud(&local_30,ppVar1);
-    (this->m_b1_a1_loc).x = ppVar2->x;
-    (this->m_b1_a1_loc).y = ppVar2->y;
-    (this->m_b1_a1_loc).z = ppVar2->z;
+    ppVar1 = construct_orth_ud(&local_30,ud);
+    (this->m_b1_a1_loc).x = ppVar1->x;
+    (this->m_b1_a1_loc).y = ppVar1->y;
+    (this->m_b1_a1_loc).z = ppVar1->z;
     local_30.x = (this->m_b1_axis_loc).y * (this->m_b1_a1_loc).z -
                  (this->m_b1_axis_loc).z * (this->m_b1_a1_loc).y;
-    local_30.y = (this->m_b1_a1_loc).x * (this->m_b1_axis_loc).z - ppVar1->x * (this->m_b1_a1_loc).z
-    ;
-    local_30.z = ppVar1->x * (this->m_b1_a1_loc).y - (this->m_b1_axis_loc).y * (this->m_b1_a1_loc).x
-    ;
+    local_30.y = (this->m_b1_a1_loc).x * (this->m_b1_axis_loc).z - ud->x * (this->m_b1_a1_loc).z;
+    local_30.z = ud->x * (this->m_b1_a1_loc).y - (this->m_b1_axis_loc).y * (this->m_b1_a1_loc).x;
     (this->m_b1_a2_loc).x = local_30.x;
     (this->m_b1_a2_loc).y = local_30.y;
     (this->m_b1_a2_loc).z = local_30.z;
   }
-  PHYS_ASSERT_UNIT(ppVar1);
+  PHYS_ASSERT_UNIT(ud);
   PHYS_ASSERT_UNIT(local_14);
   return;
 }
@@ -156,7 +154,8 @@ rigid_body_constraint_ragdoll::set_snider_style
 
 void __thiscall
 rigid_body_constraint_ragdoll::set_theta_min_max
-          (rigid_body_constraint_ragdoll *this,phys_vec3 *param_1,float param_2,float param_3)
+          (rigid_body_constraint_ragdoll *this,phys_vec3 *b2_ref_loc,float theta_min,float theta_max
+          )
 
 {
   phys_vec3 *ppVar1;
@@ -165,14 +164,14 @@ rigid_body_constraint_ragdoll::set_theta_min_max
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  make_rotate(&local_80,&this->m_b2_axis_loc,param_2,1000.0);
-  ppVar1 = phys_multiply33(&local_20,&local_80,param_1);
+  make_rotate(&local_80,&this->m_b2_axis_loc,theta_min,1000.0);
+  ppVar1 = phys_multiply33(&local_20,&local_80,b2_ref_loc);
   ppVar1 = phys_Unitize(&local_30,ppVar1);
   (this->m_b2_ref_min_loc).x = ppVar1->x;
   (this->m_b2_ref_min_loc).y = ppVar1->y;
   (this->m_b2_ref_min_loc).z = ppVar1->z;
-  make_rotate(&local_80,&this->m_b2_axis_loc,param_3,1000.0);
-  ppVar1 = phys_multiply33(&local_30,&local_80,param_1);
+  make_rotate(&local_80,&this->m_b2_axis_loc,theta_max,1000.0);
+  ppVar1 = phys_multiply33(&local_30,&local_80,b2_ref_loc);
   ppVar1 = phys_Unitize(&local_40,ppVar1);
   (this->m_b2_ref_max_loc).x = ppVar1->x;
   (this->m_b2_ref_max_loc).y = ppVar1->y;
@@ -185,8 +184,8 @@ rigid_body_constraint_ragdoll::set_theta_min_max
 
 void __thiscall
 rigid_body_constraint_ragdoll::set_hinge
-          (rigid_body_constraint_ragdoll *this,phys_vec3 *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3,phys_vec3 *param_4,float param_5,float param_6)
+          (rigid_body_constraint_ragdoll *this,phys_vec3 *b1_axis_loc,phys_vec3 *b2_axis_loc,
+          phys_vec3 *b1_ref_loc,phys_vec3 *b2_ref_loc,float theta_min,float theta_max)
 
 {
   phys_vec3 *ppVar1;
@@ -196,16 +195,16 @@ rigid_body_constraint_ragdoll::set_hinge
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  ppVar1 = phys_Unitize(&local_20,param_1);
+  ppVar1 = phys_Unitize(&local_20,b1_axis_loc);
   (this->m_b1_axis_loc).x = ppVar1->x;
   ppVar2 = &this->m_b1_axis_loc;
   (this->m_b1_axis_loc).y = ppVar1->y;
   (this->m_b1_axis_loc).z = ppVar1->z;
-  ppVar1 = phys_Unitize(&local_20,param_2);
+  ppVar1 = phys_Unitize(&local_20,b2_axis_loc);
   (this->m_b2_axis_loc).x = ppVar1->x;
   (this->m_b2_axis_loc).y = ppVar1->y;
   (this->m_b2_axis_loc).z = ppVar1->z;
-  ppVar1 = phys_Unitize(&local_20,param_3);
+  ppVar1 = phys_Unitize(&local_20,b1_ref_loc);
   (this->m_b1_ref_loc).x = ppVar1->x;
   (this->m_b1_ref_loc).y = ppVar1->y;
   (this->m_b1_ref_loc).z = ppVar1->z;
@@ -221,14 +220,14 @@ rigid_body_constraint_ragdoll::set_hinge
   (this->m_b1_a2_loc).x = local_20.x;
   (this->m_b1_a2_loc).y = local_20.y;
   (this->m_b1_a2_loc).z = local_20.z;
-  make_rotate(&local_80,&this->m_b2_axis_loc,param_5,1000.0);
-  ppVar2 = phys_multiply33(&local_20,&local_80,param_4);
+  make_rotate(&local_80,&this->m_b2_axis_loc,theta_min,1000.0);
+  ppVar2 = phys_multiply33(&local_20,&local_80,b2_ref_loc);
   ppVar2 = phys_Unitize(&local_30,ppVar2);
   (this->m_b2_ref_min_loc).x = ppVar2->x;
   (this->m_b2_ref_min_loc).y = ppVar2->y;
   (this->m_b2_ref_min_loc).z = ppVar2->z;
-  make_rotate(&local_80,&this->m_b2_axis_loc,param_6,1000.0);
-  ppVar2 = phys_multiply33(&local_30,&local_80,param_4);
+  make_rotate(&local_80,&this->m_b2_axis_loc,theta_max,1000.0);
+  ppVar2 = phys_multiply33(&local_30,&local_80,b2_ref_loc);
   ppVar2 = phys_Unitize(&local_40,ppVar2);
   (this->m_b2_ref_max_loc).x = ppVar2->x;
   (this->m_b2_ref_max_loc).y = ppVar2->y;
@@ -241,8 +240,8 @@ rigid_body_constraint_ragdoll::set_hinge
 
 void __thiscall
 rigid_body_constraint_ragdoll::set_swivel
-          (rigid_body_constraint_ragdoll *this,phys_vec3 *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3,phys_vec3 *param_4,float param_5,float param_6)
+          (rigid_body_constraint_ragdoll *this,phys_vec3 *b1_axis_loc,phys_vec3 *b2_axis_loc,
+          phys_vec3 *b1_ref_loc,phys_vec3 *b2_ref_loc,float theta_min,float theta_max)
 
 {
   phys_vec3 *ppVar1;
@@ -251,27 +250,27 @@ rigid_body_constraint_ragdoll::set_swivel
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  ppVar1 = phys_Unitize(&local_20,param_1);
+  ppVar1 = phys_Unitize(&local_20,b1_axis_loc);
   (this->m_b1_axis_loc).x = ppVar1->x;
   (this->m_b1_axis_loc).y = ppVar1->y;
   (this->m_b1_axis_loc).z = ppVar1->z;
-  ppVar1 = phys_Unitize(&local_20,param_2);
+  ppVar1 = phys_Unitize(&local_20,b2_axis_loc);
   (this->m_b2_axis_loc).x = ppVar1->x;
   (this->m_b2_axis_loc).y = ppVar1->y;
   (this->m_b2_axis_loc).z = ppVar1->z;
-  ppVar1 = phys_Unitize(&local_20,param_3);
+  ppVar1 = phys_Unitize(&local_20,b1_ref_loc);
   (this->m_b1_ref_loc).x = ppVar1->x;
   (this->m_b1_ref_loc).y = ppVar1->y;
   (this->m_b1_ref_loc).z = ppVar1->z;
   this->m_flags = this->m_flags | 8;
-  make_rotate(&local_80,&this->m_b2_axis_loc,param_5,1000.0);
-  ppVar1 = phys_multiply33(&local_20,&local_80,param_4);
+  make_rotate(&local_80,&this->m_b2_axis_loc,theta_min,1000.0);
+  ppVar1 = phys_multiply33(&local_20,&local_80,b2_ref_loc);
   ppVar1 = phys_Unitize(&local_30,ppVar1);
   (this->m_b2_ref_min_loc).x = ppVar1->x;
   (this->m_b2_ref_min_loc).y = ppVar1->y;
   (this->m_b2_ref_min_loc).z = ppVar1->z;
-  make_rotate(&local_80,&this->m_b2_axis_loc,param_6,1000.0);
-  ppVar1 = phys_multiply33(&local_30,&local_80,param_4);
+  make_rotate(&local_80,&this->m_b2_axis_loc,theta_max,1000.0);
+  ppVar1 = phys_multiply33(&local_30,&local_80,b2_ref_loc);
   ppVar1 = phys_Unitize(&local_40,ppVar1);
   (this->m_b2_ref_max_loc).x = ppVar1->x;
   (this->m_b2_ref_max_loc).y = ppVar1->y;
@@ -284,7 +283,7 @@ rigid_body_constraint_ragdoll::set_swivel
 
 void __thiscall
 rigid_body_constraint_ragdoll::add_joint_limit
-          (rigid_body_constraint_ragdoll *this,phys_vec3 *param_1,float param_2)
+          (rigid_body_constraint_ragdoll *this,phys_vec3 *b1_ud_loc,float theta_limit)
 
 {
   code *pcVar1;
@@ -299,7 +298,8 @@ rigid_body_constraint_ragdoll::add_joint_limit
       return;
     }
   }
-  ragdoll_joint_limit_info::set(this->m_joint_limits + this->m_joint_limits_count,param_1,param_2);
+  ragdoll_joint_limit_info::set
+            (this->m_joint_limits + this->m_joint_limits_count,b1_ud_loc,theta_limit);
   this->m_joint_limits_count = this->m_joint_limits_count + 1;
   return;
 }
@@ -308,11 +308,11 @@ rigid_body_constraint_ragdoll::add_joint_limit
 // 00A23BC0  set_damp_k  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_ragdoll.cpp:108)
 
 void __thiscall
-rigid_body_constraint_ragdoll::set_damp_k(rigid_body_constraint_ragdoll *this,float param_1)
+rigid_body_constraint_ragdoll::set_damp_k(rigid_body_constraint_ragdoll *this,float damp_k)
 
 {
-  this->m_damp_k = param_1;
-  if (0.0 < param_1) {
+  this->m_damp_k = damp_k;
+  if (0.0 < damp_k) {
     this->m_flags = this->m_flags | 0x40;
     return;
   }
@@ -326,29 +326,30 @@ rigid_body_constraint_ragdoll::set_damp_k(rigid_body_constraint_ragdoll *this,fl
 float __thiscall rigid_body_constraint_ragdoll::pull_together(rigid_body_constraint_ragdoll *this)
 
 {
-  void *pvVar1;
+  void *data;
+  phys_vec3 *ppVar1;
   phys_vec3 *ppVar2;
   phys_vec3 local_50;
   phys_vec3 local_40;
   float local_30;
   float local_2c;
   float local_28;
-  phys_vec3 *local_14;
+  phys_vec3 dump;
   
-  pvVar1 = *(void **)&this->field_0x4;
-  local_14 = phys_full_multiply(&local_40,(phys_mat44 *)((int)pvVar1 + 0x30),&this->m_b2_r_loc);
+  data = *(void **)&this->field_0x4;
+  ppVar1 = phys_full_multiply(&local_40,(phys_mat44 *)((int)data + 0x30),&this->m_b2_r_loc);
   ppVar2 = phys_full_multiply(&local_50,(phys_mat44 *)(*(int *)this + 0x30),&this->m_b1_r_loc);
-  local_30 = ppVar2->x - local_14->x;
-  local_2c = ppVar2->y - local_14->y;
-  local_28 = ppVar2->z - local_14->z;
-  *(float *)((int)pvVar1 + 0x60) = *(float *)((int)pvVar1 + 0x60) + local_30;
-  *(float *)((int)pvVar1 + 100) = *(float *)((int)pvVar1 + 100) + local_2c;
-  *(float *)((int)pvVar1 + 0x68) = *(float *)((int)pvVar1 + 0x68) + local_28;
-  if ((((*(float *)((int)pvVar1 + 0x60) != *(float *)((int)pvVar1 + 0x60)) ||
-       (local_14 = (phys_vec3 *)ABS(*(float *)((int)pvVar1 + 0x60)), 100000.0 < (float)local_14)) ||
-      (local_14 = (phys_vec3 *)ABS(*(float *)((int)pvVar1 + 100)), 100000.0 < (float)local_14)) ||
-     (local_14 = (phys_vec3 *)ABS(*(float *)((int)pvVar1 + 0x68)), 100000.0 < (float)local_14)) {
-    phys_exec_debug_callback(pvVar1);
+  local_30 = ppVar2->x - ppVar1->x;
+  local_2c = ppVar2->y - ppVar1->y;
+  local_28 = ppVar2->z - ppVar1->z;
+  *(float *)((int)data + 0x60) = *(float *)((int)data + 0x60) + local_30;
+  *(float *)((int)data + 100) = *(float *)((int)data + 100) + local_2c;
+  *(float *)((int)data + 0x68) = *(float *)((int)data + 0x68) + local_28;
+  if ((((*(float *)((int)data + 0x60) != *(float *)((int)data + 0x60)) ||
+       (100000.0 < ABS(*(float *)((int)data + 0x60)))) ||
+      (100000.0 < ABS(*(float *)((int)data + 100)))) ||
+     (100000.0 < ABS(*(float *)((int)data + 0x68)))) {
+    phys_exec_debug_callback(data);
   }
   return local_2c * local_2c + local_30 * local_30 + local_28 * local_28;
 }
@@ -358,8 +359,8 @@ float __thiscall rigid_body_constraint_ragdoll::pull_together(rigid_body_constra
 
 void __thiscall
 rigid_body_constraint_ragdoll::setup_hinge
-          (rigid_body_constraint_ragdoll *this,pulse_sum_constraint_solver *param_1,
-          phys_vec3 *param_2,phys_vec3 *param_3,float param_4)
+          (rigid_body_constraint_ragdoll *this,pulse_sum_constraint_solver *psys,phys_vec3 *b1_ref,
+          phys_vec3 *b2_axis,float delta_t)
 
 {
   pulse_sum_angular *ppVar1;
@@ -372,36 +373,34 @@ rigid_body_constraint_ragdoll::setup_hinge
   local_14 = this;
   phys_multiply33(&local_40,(phys_mat44 *)(*(int *)&this->field_0x4 + 0x30),&this->m_b2_ref_min_loc)
   ;
-  local_30.x = local_40.z * param_2->y - local_40.y * param_2->z;
-  local_30.y = local_40.x * param_2->z - param_2->x * local_40.z;
-  local_30.z = param_2->x * local_40.y - local_40.x * param_2->y;
-  local_18 = param_3->z * local_30.z + param_3->x * local_30.x + param_3->y * local_30.y;
+  local_30.x = local_40.z * b1_ref->y - local_40.y * b1_ref->z;
+  local_30.y = local_40.x * b1_ref->z - b1_ref->x * local_40.z;
+  local_30.z = b1_ref->x * local_40.y - local_40.x * b1_ref->y;
+  local_18 = b2_axis->z * local_30.z + b2_axis->x * local_30.x + b2_axis->y * local_30.y;
   if (-0.043619 <= local_18) {
-    local_30.x = -param_3->x;
-    local_30.y = -param_3->y;
-    local_30.z = -param_3->z;
+    local_30.x = -b2_axis->x;
+    local_30.y = -b2_axis->y;
+    local_30.z = -b2_axis->z;
     ppVar1 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)local_14,param_2,
-                        *(rigid_body **)&local_14->field_0x4,&local_40,&local_30,
-                        local_14->m_ps_cache_list + 6);
+                       (psys,*(rigid_body **)local_14,b1_ref,*(rigid_body **)&local_14->field_0x4,
+                        &local_40,&local_30,local_14->m_ps_cache_list + 6);
     ppVar1->m_pulse_sum_min = -1e+07;
     ppVar1->m_pulse_sum_max = 0.0;
-    pulse_sum_angular::setup_vel_uni_standard(ppVar1,param_4,5.0);
+    pulse_sum_angular::setup_vel_uni_standard(ppVar1,delta_t,5.0);
   }
   phys_multiply33(&local_50,(phys_mat44 *)(*(int *)&local_14->field_0x4 + 0x30),
                   &local_14->m_b2_ref_max_loc);
-  local_30.x = local_50.z * param_2->y - local_50.y * param_2->z;
-  local_30.y = local_50.x * param_2->z - param_2->x * local_50.z;
-  local_30.z = param_2->x * local_50.y - local_50.x * param_2->y;
-  local_18 = param_3->z * local_30.z + param_3->y * local_30.y + param_3->x * local_30.x;
+  local_30.x = local_50.z * b1_ref->y - local_50.y * b1_ref->z;
+  local_30.y = local_50.x * b1_ref->z - b1_ref->x * local_50.z;
+  local_30.z = b1_ref->x * local_50.y - local_50.x * b1_ref->y;
+  local_18 = b2_axis->z * local_30.z + b2_axis->y * local_30.y + b2_axis->x * local_30.x;
   if (local_18 < 0.043619 != (local_18 == 0.043619)) {
     ppVar1 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)local_14,param_2,
-                        *(rigid_body **)&local_14->field_0x4,&local_50,param_3,
-                        local_14->m_ps_cache_list + 7);
+                       (psys,*(rigid_body **)local_14,b1_ref,*(rigid_body **)&local_14->field_0x4,
+                        &local_50,b2_axis,local_14->m_ps_cache_list + 7);
     ppVar1->m_pulse_sum_min = -1e+07;
     ppVar1->m_pulse_sum_max = 0.0;
-    pulse_sum_angular::setup_vel_uni_standard(ppVar1,param_4,5.0);
+    pulse_sum_angular::setup_vel_uni_standard(ppVar1,delta_t,5.0);
   }
   return;
 }
@@ -411,18 +410,18 @@ rigid_body_constraint_ragdoll::setup_hinge
 
 void __thiscall
 rigid_body_constraint_ragdoll::setup_constraint
-          (rigid_body_constraint_ragdoll *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_ragdoll *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   rigid_body *prVar1;
   int iVar2;
   float fVar3;
   pulse_sum_angular *ppVar4;
-  phys_vec3 *ppVar5;
-  float *pfVar6;
+  phys_vec3 *b1_ref;
+  float *pfVar5;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  phys_vec3 *ppVar7;
+  phys_vec3 *b2_axis;
   phys_mat44 local_100;
   phys_vec3 local_c0;
   float local_b0;
@@ -448,7 +447,7 @@ rigid_body_constraint_ragdoll::setup_constraint
   phys_multiply33(&local_40,&prVar1->m_mat,&this->m_b2_r_loc);
   phys_multiply33(&local_60,(phys_mat44 *)(*(int *)this + 0x30),&this->m_b1_r_loc);
   pulse_sum_constraint_solver::create_point
-            (param_1,*(rigid_body **)this,&local_60,prVar1,&local_40,this->m_ps_cache_list,param_2,
+            (psys,*(rigid_body **)this,&local_60,prVar1,&local_40,this->m_ps_cache_list,delta_t,
              false,0.0,0.0);
   prVar1 = *(rigid_body **)this;
   phys_multiply33(&local_c0,&prVar1->m_mat,&this->m_b1_axis_loc);
@@ -473,18 +472,18 @@ rigid_body_constraint_ragdoll::setup_constraint
       local_30.z = local_14 * local_1c;
     }
     ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,prVar1,&::PHYS_ZERO_VEC,*(rigid_body **)&this->field_0x4,
+                       (psys,prVar1,&::PHYS_ZERO_VEC,*(rigid_body **)&this->field_0x4,
                         &::PHYS_ZERO_VEC,&local_30,this->m_ps_cache_list + 3);
     if ((this->m_flags & 0x200) == 0) {
       ppVar4->m_right_side = 0.0;
       ppVar4->m_big_dirt = 0.0;
       ppVar4->m_cfm = 0.0;
-      fVar3 = this->m_damp_k * param_2;
+      fVar3 = this->m_damp_k * delta_t;
       ppVar4->m_pulse_sum_min = -fVar3;
       local_14 = fVar3;
     }
     else {
-      local_14 = 1.0 / (this->m_damp_k * param_2);
+      local_14 = 1.0 / (this->m_damp_k * delta_t);
       ppVar4->m_right_side = 0.0;
       ppVar4->m_big_dirt = 0.0;
       ppVar4->m_cfm = local_14;
@@ -499,19 +498,19 @@ rigid_body_constraint_ragdoll::setup_constraint
     phys_multiply33(&local_40,&prVar1->m_mat,&this->m_b1_a2_loc);
     phys_multiply33(&local_60,&prVar1->m_mat,&this->m_b1_a1_loc);
     pulse_sum_constraint_solver::create_hinge
-              (param_1,prVar1,&local_c0,*(rigid_body **)&this->field_0x4,&local_50,&local_60,
-               &local_40,this->m_ps_cache_list + 4,param_2);
+              (psys,prVar1,&local_c0,*(rigid_body **)&this->field_0x4,&local_50,&local_60,&local_40,
+               this->m_ps_cache_list + 4,delta_t);
     phys_multiply33(&local_40,(phys_mat44 *)(*(int *)this + 0x30),&this->m_b1_ref_loc);
-    setup_hinge(this,param_1,&local_40,&local_50,param_2);
+    setup_hinge(this,psys,&local_40,&local_50,delta_t);
   }
   if ((this->m_flags & 8) != 0) {
     if (((this->m_flags & 0x100) == 0) && (local_1c = 0.0, 0 < this->m_joint_limits_count)) {
       local_18 = this->m_ps_cache_list + 8;
-      pfVar6 = &this->m_joint_limits[0].m_b1_ud_limit_si_;
+      pfVar5 = &this->m_joint_limits[0].m_b1_ud_limit_si_;
       do {
-        phys_multiply33(&local_70,(phys_mat44 *)(*(int *)this + 0x30),(phys_vec3 *)(pfVar6 + -5));
+        phys_multiply33(&local_70,(phys_mat44 *)(*(int *)this + 0x30),(phys_vec3 *)(pfVar5 + -5));
         local_14 = local_50.y * local_70.y + local_50.x * local_70.x + local_50.z * local_70.z;
-        if (local_14 <= pfVar6[1]) {
+        if (local_14 <= pfVar5[1]) {
           local_b0 = local_14 * local_70.x;
           local_ac = local_14 * local_70.y;
           local_a8 = local_14 * local_70.z;
@@ -522,11 +521,11 @@ rigid_body_constraint_ragdoll::setup_constraint
           _CIsqrt();
           local_14 = (float)extraout_ST0_00;
           if (0.0001 <= local_14) {
-            local_98 = pfVar6[-1];
+            local_98 = pfVar5[-1];
             local_a0 = local_70.x * local_98;
             local_9c = local_70.y * local_98;
             local_98 = local_70.z * local_98;
-            local_14 = *pfVar6 / local_14;
+            local_14 = *pfVar5 / local_14;
             local_90 = local_14 * local_30.x;
             local_8c = local_30.y * local_14;
             local_88 = local_14 * local_30.z;
@@ -536,29 +535,29 @@ rigid_body_constraint_ragdoll::setup_constraint
             local_60.x = local_80.y * local_70.z - local_80.z * local_70.y;
             local_60.y = local_80.z * local_70.x - local_80.x * local_70.z;
             local_60.z = local_70.y * local_80.x - local_70.x * local_80.y;
-            local_14 = 1.0 / *pfVar6;
+            local_14 = 1.0 / *pfVar5;
             local_40.x = local_14 * local_60.x;
             local_40.y = local_60.y * local_14;
             local_40.z = local_14 * local_60.z;
             PHYS_ASSERT_UNIT(&local_40);
             ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                               (param_1,*(rigid_body **)this,&local_80,
-                                *(rigid_body **)&this->field_0x4,&local_50,&local_40,local_18);
+                               (psys,*(rigid_body **)this,&local_80,*(rigid_body **)&this->field_0x4
+                                ,&local_50,&local_40,local_18);
             ppVar4->m_pulse_sum_min = -1e+07;
             ppVar4->m_pulse_sum_max = 0.0;
-            pulse_sum_angular::setup_vel_uni_standard(ppVar4,param_2,5.0);
+            pulse_sum_angular::setup_vel_uni_standard(ppVar4,delta_t,5.0);
           }
         }
         local_18 = local_18 + 1;
         local_1c = (float)((int)local_1c + 1);
-        pfVar6 = pfVar6 + 8;
+        pfVar5 = pfVar5 + 8;
       } while ((int)local_1c < this->m_joint_limits_count);
     }
     make_rotate(&local_100,&local_c0,&local_50);
     phys_multiply33(&local_40,(phys_mat44 *)(*(int *)this + 0x30),&this->m_b1_ref_loc);
-    ppVar7 = &local_50;
-    ppVar5 = phys_multiply33(&local_60,&local_100,&local_40);
-    setup_hinge(this,param_1,ppVar5,ppVar7,param_2);
+    b2_axis = &local_50;
+    b1_ref = phys_multiply33(&local_60,&local_100,&local_40);
+    setup_hinge(this,psys,b1_ref,b2_axis,delta_t);
   }
   return;
 }

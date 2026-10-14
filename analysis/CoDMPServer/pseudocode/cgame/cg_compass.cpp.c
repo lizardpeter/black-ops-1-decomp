@@ -257,16 +257,17 @@ void __cdecl CG_CompassRegisterDvars(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_IsSelectingLocation(int param_1)
+bool __cdecl CG_IsSelectingLocation(int localClientNum)
 
 {
   cg_s *pcVar1;
-  bool local_9;
+  bool result;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_9 = (forceFullScreenMap->current).enabled != false ||
-            (pcVar1->predictedPlayerState).locationSelectionInfo != 0;
-  return local_9;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  result = (forceFullScreenMap->current).enabled != false ||
+           (pcVar1->predictedPlayerState).locationSelectionInfo != 0;
+  return result;
 }
 
 
@@ -279,8 +280,8 @@ bool __cdecl CG_IsSelectingLocation(int param_1)
 
 bool __cdecl
 CG_WorldPosToCompass
-          (CompassType param_1,cg_s *param_2,rectDef_s *param_3,float *param_4,float *param_5,
-          float *param_6,float *param_7,float *param_8)
+          (CompassType compassType,cg_s *cgameGlob,rectDef_s *mapRect,float *north,
+          float *playerWorldPos,float *in,float *out,float *outClipped)
 
 {
   code *pcVar1;
@@ -288,11 +289,13 @@ CG_WorldPosToCompass
   undefined1 uVar3;
   float fVar4;
   float fVar5;
-  bool local_1d;
-  float local_10;
+  bool clipped;
+  float pixPerInch;
+  float outTemp;
   float local_c;
+  float scale;
   
-  if (param_2 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x169,0,"%s"
                             );
     if (!bVar2) {
@@ -301,7 +304,7 @@ CG_WorldPosToCompass
       return (bool)uVar3;
     }
   }
-  if (param_3 == (rectDef_s *)0x0) {
+  if (mapRect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x16a,0,"%s"
                             );
     if (!bVar2) {
@@ -310,7 +313,7 @@ CG_WorldPosToCompass
       return (bool)uVar3;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (playerWorldPos == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x16b,0,"%s"
                             );
     if (!bVar2) {
@@ -319,7 +322,7 @@ CG_WorldPosToCompass
       return (bool)uVar3;
     }
   }
-  if (param_6 == (float *)0x0) {
+  if (in == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x16c,0,"%s"
                             );
     if (!bVar2) {
@@ -328,8 +331,8 @@ CG_WorldPosToCompass
       return (bool)uVar3;
     }
   }
-  if (param_1 == COMPASS_TYPE_PARTIAL) {
-    if (param_4 == (float *)0x0) {
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    if (north == (float *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x170,0,
                                "%s");
       if (!bVar2) {
@@ -347,14 +350,14 @@ CG_WorldPosToCompass
         return (bool)uVar3;
       }
     }
-    fVar4 = param_3->h / (compassMaxRange->current).value;
-    fVar5 = fVar4 * (*param_6 - *param_5);
-    fVar4 = fVar4 * (param_6[1] - param_5[1]);
-    local_10 = param_4[1] * fVar5 - *param_4 * fVar4;
-    local_c = -param_4[1] * fVar4 - *param_4 * fVar5;
+    fVar4 = mapRect->h / (compassMaxRange->current).value;
+    fVar5 = fVar4 * (*in - *playerWorldPos);
+    fVar4 = fVar4 * (in[1] - playerWorldPos[1]);
+    outTemp = north[1] * fVar5 - *north * fVar4;
+    local_c = -north[1] * fVar4 - *north * fVar5;
   }
   else {
-    if (param_1 != COMPASS_TYPE_FULL) {
+    if (compassType != COMPASS_TYPE_FULL) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x17e,0,
                                "%s");
       if (!bVar2) {
@@ -363,53 +366,53 @@ CG_WorldPosToCompass
         return (bool)uVar3;
       }
     }
-    fVar5 = *param_6 - param_2->compassMapUpperLeft[0];
-    fVar4 = param_6[1] - param_2->compassMapUpperLeft[1];
-    local_10 = ((param_2->compassNorth[1] * fVar5 - param_2->compassNorth[0] * fVar4) /
-                param_2->compassMapWorldSize[0] - 0.5) * param_3->w;
-    local_c = ((-param_2->compassNorth[1] * fVar4 - param_2->compassNorth[0] * fVar5) /
-               param_2->compassMapWorldSize[1] - 0.5) * param_3->h;
+    fVar5 = *in - cgameGlob->compassMapUpperLeft[0];
+    fVar4 = in[1] - cgameGlob->compassMapUpperLeft[1];
+    outTemp = ((cgameGlob->compassNorth[1] * fVar5 - cgameGlob->compassNorth[0] * fVar4) /
+               cgameGlob->compassMapWorldSize[0] - 0.5) * mapRect->w;
+    local_c = ((-cgameGlob->compassNorth[1] * fVar4 - cgameGlob->compassNorth[0] * fVar5) /
+               cgameGlob->compassMapWorldSize[1] - 0.5) * mapRect->h;
   }
-  local_1d = false;
-  if (((param_8 != (float *)0x0) && (0.0 <= param_3->w)) && (0.0 <= param_3->h)) {
-    *param_8 = local_10;
-    param_8[1] = local_c;
-    if (*param_8 <= param_3->w * 0.5) {
-      fVar5 = -param_3->w * 0.5;
-      if (*param_8 <= fVar5 && fVar5 != *param_8) {
-        fVar5 = -(param_3->w * 0.5) / *param_8;
-        *param_8 = fVar5 * *param_8;
-        param_8[1] = fVar5 * param_8[1];
-        local_1d = true;
+  clipped = false;
+  if (((outClipped != (float *)0x0) && (0.0 <= mapRect->w)) && (0.0 <= mapRect->h)) {
+    *outClipped = outTemp;
+    outClipped[1] = local_c;
+    if (*outClipped <= mapRect->w * 0.5) {
+      fVar5 = -mapRect->w * 0.5;
+      if (*outClipped <= fVar5 && fVar5 != *outClipped) {
+        fVar5 = -(mapRect->w * 0.5) / *outClipped;
+        *outClipped = fVar5 * *outClipped;
+        outClipped[1] = fVar5 * outClipped[1];
+        clipped = true;
       }
     }
     else {
-      fVar5 = (param_3->w * 0.5) / *param_8;
-      *param_8 = fVar5 * *param_8;
-      param_8[1] = fVar5 * param_8[1];
-      local_1d = true;
+      fVar5 = (mapRect->w * 0.5) / *outClipped;
+      *outClipped = fVar5 * *outClipped;
+      outClipped[1] = fVar5 * outClipped[1];
+      clipped = true;
     }
-    if (param_8[1] <= param_3->h * 0.5) {
-      fVar5 = -param_3->h * 0.5;
-      if (param_8[1] <= fVar5 && fVar5 != param_8[1]) {
-        fVar5 = -(param_3->h * 0.5) / param_8[1];
-        *param_8 = fVar5 * *param_8;
-        param_8[1] = fVar5 * param_8[1];
-        local_1d = true;
+    if (outClipped[1] <= mapRect->h * 0.5) {
+      fVar5 = -mapRect->h * 0.5;
+      if (outClipped[1] <= fVar5 && fVar5 != outClipped[1]) {
+        fVar5 = -(mapRect->h * 0.5) / outClipped[1];
+        *outClipped = fVar5 * *outClipped;
+        outClipped[1] = fVar5 * outClipped[1];
+        clipped = true;
       }
     }
     else {
-      fVar5 = (param_3->h * 0.5) / param_8[1];
-      *param_8 = fVar5 * *param_8;
-      param_8[1] = fVar5 * param_8[1];
-      local_1d = true;
+      fVar5 = (mapRect->h * 0.5) / outClipped[1];
+      *outClipped = fVar5 * *outClipped;
+      outClipped[1] = fVar5 * outClipped[1];
+      clipped = true;
     }
   }
-  if (param_7 != (float *)0x0) {
-    *param_7 = local_10;
-    param_7[1] = local_c;
+  if (out != (float *)0x0) {
+    *out = outTemp;
+    out[1] = local_c;
   }
-  return local_1d;
+  return clipped;
 }
 
 
@@ -422,8 +425,8 @@ CG_WorldPosToCompass
 
 bool __cdecl
 CG_TextClippedToCompass
-          (CompassType param_1,cg_s *param_2,rectDef_s *param_3,float *param_4,float *param_5,
-          float *param_6,float param_7,float param_8)
+          (CompassType compassType,cg_s *cgameGlob,rectDef_s *mapRect,float *north,
+          float *playerWorldPos,float *in,float w,float h)
 
 {
   code *pcVar1;
@@ -431,11 +434,12 @@ CG_TextClippedToCompass
   undefined1 uVar3;
   float fVar4;
   float fVar5;
-  bool local_29;
-  float local_20;
+  bool clipped;
+  float inTemp;
   float local_1c;
+  float pixPerInch;
   
-  if (param_2 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x1bd,0,"%s"
                             );
     if (!bVar2) {
@@ -444,7 +448,7 @@ CG_TextClippedToCompass
       return (bool)uVar3;
     }
   }
-  if (param_3 == (rectDef_s *)0x0) {
+  if (mapRect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x1be,0,"%s"
                             );
     if (!bVar2) {
@@ -453,7 +457,7 @@ CG_TextClippedToCompass
       return (bool)uVar3;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (playerWorldPos == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x1bf,0,"%s"
                             );
     if (!bVar2) {
@@ -462,7 +466,7 @@ CG_TextClippedToCompass
       return (bool)uVar3;
     }
   }
-  if (param_6 == (float *)0x0) {
+  if (in == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x1c0,0,"%s"
                             );
     if (!bVar2) {
@@ -471,8 +475,8 @@ CG_TextClippedToCompass
       return (bool)uVar3;
     }
   }
-  if (param_1 == COMPASS_TYPE_PARTIAL) {
-    if (param_4 == (float *)0x0) {
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    if (north == (float *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x1c4,0,
                                "%s");
       if (!bVar2) {
@@ -490,14 +494,14 @@ CG_TextClippedToCompass
         return (bool)uVar3;
       }
     }
-    fVar4 = param_3->h / (compassMaxRange->current).value;
-    fVar5 = fVar4 * (*param_6 - *param_5);
-    fVar4 = fVar4 * (param_6[1] - param_5[1]);
-    local_20 = param_4[1] * fVar5 - *param_4 * fVar4;
-    local_1c = -param_4[1] * fVar4 - *param_4 * fVar5;
+    fVar4 = mapRect->h / (compassMaxRange->current).value;
+    fVar5 = fVar4 * (*in - *playerWorldPos);
+    fVar4 = fVar4 * (in[1] - playerWorldPos[1]);
+    inTemp = north[1] * fVar5 - *north * fVar4;
+    local_1c = -north[1] * fVar4 - *north * fVar5;
   }
   else {
-    if (param_1 != COMPASS_TYPE_FULL) {
+    if (compassType != COMPASS_TYPE_FULL) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x1d1,0,
                                "%s");
       if (!bVar2) {
@@ -506,33 +510,33 @@ CG_TextClippedToCompass
         return (bool)uVar3;
       }
     }
-    fVar5 = *param_6 - param_2->compassMapUpperLeft[0];
-    fVar4 = param_6[1] - param_2->compassMapUpperLeft[1];
-    local_20 = ((param_2->compassNorth[1] * fVar5 - param_2->compassNorth[0] * fVar4) /
-                param_2->compassMapWorldSize[0] - 0.5) * param_3->w;
-    local_1c = ((-param_2->compassNorth[1] * fVar4 - param_2->compassNorth[0] * fVar5) /
-                param_2->compassMapWorldSize[1] - 0.5) * param_3->h;
+    fVar5 = *in - cgameGlob->compassMapUpperLeft[0];
+    fVar4 = in[1] - cgameGlob->compassMapUpperLeft[1];
+    inTemp = ((cgameGlob->compassNorth[1] * fVar5 - cgameGlob->compassNorth[0] * fVar4) /
+              cgameGlob->compassMapWorldSize[0] - 0.5) * mapRect->w;
+    local_1c = ((-cgameGlob->compassNorth[1] * fVar4 - cgameGlob->compassNorth[0] * fVar5) /
+                cgameGlob->compassMapWorldSize[1] - 0.5) * mapRect->h;
   }
-  local_29 = false;
-  if ((((param_7 != 0.0) && (param_8 != 0.0)) && (0.0 <= param_3->w)) && (0.0 <= param_3->h)) {
-    if (local_20 - param_7 * 0.5 <= param_3->w * 0.5) {
-      if (param_7 * 0.5 + local_20 < -param_3->w * 0.5) {
-        local_29 = true;
+  clipped = false;
+  if ((((w != 0.0) && (h != 0.0)) && (0.0 <= mapRect->w)) && (0.0 <= mapRect->h)) {
+    if (inTemp - w * 0.5 <= mapRect->w * 0.5) {
+      if (w * 0.5 + inTemp < -mapRect->w * 0.5) {
+        clipped = true;
       }
     }
     else {
-      local_29 = true;
+      clipped = true;
     }
-    if (local_1c - param_8 * 0.5 <= param_3->h * 0.5) {
-      if (param_8 * 0.5 + local_1c < -param_3->h * 0.5) {
-        local_29 = true;
+    if (local_1c - h * 0.5 <= mapRect->h * 0.5) {
+      if (h * 0.5 + local_1c < -mapRect->h * 0.5) {
+        clipped = true;
       }
     }
     else {
-      local_29 = true;
+      clipped = true;
     }
   }
-  return local_29;
+  return clipped;
 }
 
 
@@ -545,8 +549,8 @@ CG_TextClippedToCompass
 
 void __cdecl
 CG_CompassCalcDimensions
-          (CompassType param_1,cg_s *param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5,
-          float *param_6,float *param_7,float *param_8)
+          (CompassType compassType,cg_s *cgameGlob,rectDef_s *parentRect,rectDef_s *rect,float *x,
+          float *y,float *w,float *h)
 
 {
   float fVar1;
@@ -556,129 +560,135 @@ CG_CompassCalcDimensions
   float fVar5;
   float fVar6;
   float fVar7;
-  float local_14;
+  float mapAspectRatio;
+  float basex;
+  float fraction;
+  float border;
+  float rectAspectRatio;
+  float basey;
+  float center;
   
-  if ((param_2 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x200,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (rectDef_s *)0x0) &&
+  if ((parentRect == (rectDef_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x201,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_4 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x202,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((x == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x203,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_6 == (float *)0x0) &&
+  if ((y == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x204,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_7 == (float *)0x0) &&
+  if ((w == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x205,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_8 == (float *)0x0) &&
+  if ((h == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x206,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_1 == COMPASS_TYPE_PARTIAL) {
-    *param_5 = param_4->x;
-    *param_6 = param_4->y;
-    *param_7 = param_4->w * (compassSize->current).value;
-    *param_8 = param_4->h * (compassSize->current).value;
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    *x = rect->x;
+    *y = rect->y;
+    *w = rect->w * (compassSize->current).value;
+    *h = rect->h * (compassSize->current).value;
     GamerProfile_WriteSettings(0);
-    if ((*param_7 <= 0.0) || (*param_8 <= 0.0)) {
+    if ((*w <= 0.0) || (*h <= 0.0)) {
       Com_Error(ERR_FATAL,"Compass ownerdraw had width or height of 0");
     }
   }
   else {
-    if ((param_4->w <= 0.0) || (param_4->h <= 0.0)) {
+    if ((rect->w <= 0.0) || (rect->h <= 0.0)) {
       Com_Error(ERR_FATAL,"Compass ownerdraw had width or height of 0");
     }
-    if ((param_4->w == 0.0) &&
+    if ((rect->w == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x225,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_4->h == 0.0) &&
+    if ((rect->h == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x226,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_2->compassMapWorldSize[0] == 0.0) &&
+    if ((cgameGlob->compassMapWorldSize[0] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x227,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((param_2->compassMapWorldSize[1] == 0.0) &&
+    if ((cgameGlob->compassMapWorldSize[1] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x228,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    fVar4 = param_4->w / param_4->h;
-    fVar5 = param_2->compassMapWorldSize[0] / param_2->compassMapWorldSize[1];
-    fVar6 = param_3->x + param_4->x;
-    fVar7 = param_3->y + param_4->y;
+    fVar4 = rect->w / rect->h;
+    fVar5 = cgameGlob->compassMapWorldSize[0] / cgameGlob->compassMapWorldSize[1];
+    fVar6 = parentRect->x + rect->x;
+    fVar7 = parentRect->y + rect->y;
     if (fVar5 <= fVar4) {
-      fVar4 = (fVar5 / fVar4) * param_4->w;
-      *param_5 = (param_4->w * 0.5 + fVar6) - fVar4 * 0.5;
-      *param_6 = fVar7;
-      *param_7 = fVar4;
-      *param_8 = param_4->h;
+      fVar4 = (fVar5 / fVar4) * rect->w;
+      *x = (rect->w * 0.5 + fVar6) - fVar4 * 0.5;
+      *y = fVar7;
+      *w = fVar4;
+      *h = rect->h;
     }
     else {
-      fVar1 = param_4->h;
-      fVar4 = (fVar4 / fVar5) * param_4->h;
-      *param_5 = fVar6;
-      *param_6 = (fVar1 * 0.5 + fVar7) - fVar4 * 0.5;
-      *param_7 = param_4->w;
-      *param_8 = fVar4;
+      fVar1 = rect->h;
+      fVar4 = (fVar4 / fVar5) * rect->h;
+      *x = fVar6;
+      *y = (fVar1 * 0.5 + fVar7) - fVar4 * 0.5;
+      *w = rect->w;
+      *h = fVar4;
     }
-    local_14 = (cg_hudMapBorderWidth->current).value;
-    if (*param_7 * 0.25 < local_14) {
-      local_14 = *param_7 * 0.25;
+    border = (cg_hudMapBorderWidth->current).value;
+    if (*w * 0.25 < border) {
+      border = *w * 0.25;
     }
-    if (*param_8 * 0.25 < local_14) {
-      local_14 = *param_8 * 0.25;
+    if (*h * 0.25 < border) {
+      border = *h * 0.25;
     }
-    *param_5 = *param_5 + local_14;
-    *param_6 = *param_6 + local_14;
-    *param_7 = *param_7 - local_14 * 2.0;
-    *param_8 = *param_8 - local_14 * 2.0;
+    *x = *x + border;
+    *y = *y + border;
+    *w = *w - border * 2.0;
+    *h = *h - border * 2.0;
   }
   return;
 }
@@ -686,13 +696,13 @@ CG_CompassCalcDimensions
 
 // 00484050  CG_FadeCompass  (cgame/cg_compass.cpp:598)
 
-float __cdecl CG_FadeCompass(int param_1,int param_2,CompassType param_3)
+float __cdecl CG_FadeCompass(int localClientNum,int displayStartTime,CompassType compassType)
 
 {
   float fVar1;
   
-  if (param_3 == COMPASS_TYPE_PARTIAL) {
-    fVar1 = CG_FadeHudMenu(param_1,hud_fade_compass,param_2,
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    fVar1 = CG_FadeHudMenu(localClientNum,hud_fade_compass,displayStartTime,
                            (int)ROUND((hud_fade_compass->current).value * 1000.0 + 9.313226e-10));
   }
   else {
@@ -709,22 +719,24 @@ float __cdecl CG_FadeCompass(int param_1,int param_2,CompassType param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_FadeCompassIcons(int param_1,bool param_2)
+float __cdecl CG_FadeCompassIcons(int localClientNum,bool ignoreGlobalScrambler)
 
 {
   cg_s *pcVar1;
-  float local_c;
+  float fVar2;
+  float fade;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_c = CG_GetScramblerEnemyAlpha(param_1);
-  local_c = 1.0 - local_c;
-  if ((!param_2) && (pcVar1->compassScrambler[0xe].startTime != 0)) {
-    local_c = 0.0;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  fVar2 = CG_GetScramblerEnemyAlpha(localClientNum);
+  fade = 1.0 - fVar2;
+  if ((!ignoreGlobalScrambler) && (pcVar1->compassScrambler[0xe].startTime != 0)) {
+    fade = 0.0;
   }
-  if (local_c < 0.0) {
-    local_c = 0.0;
+  if (fade < 0.0) {
+    fade = 0.0;
   }
-  return local_c;
+  return fade;
 }
 
 
@@ -737,25 +749,25 @@ float __cdecl CG_FadeCompassIcons(int param_1,bool param_2)
 
 void __cdecl
 CG_CompassDrawPlayerBack
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
-  cg_s *pcVar1;
-  float fVar2;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  cg_s *cgameGlob_00;
+  float fVar1;
+  cg_s *cgameGlob;
+  float x;
+  float y;
+  float h;
+  float w;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  fVar2 = CG_FadeCompass(param_1,pcVar1->compassFadeTime,param_2);
-  param_6[3] = fVar2;
-  if ((param_6[3] != 0.0) && ((compassPartialType->current).integer == 0)) {
-    CG_CompassCalcDimensions(param_2,pcVar1,param_3,param_4,&local_14,&local_10,&local_8,&local_c);
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_14,local_10,local_8,
-                      local_c,param_4->horzAlign,param_4->vertAlign,0.0,0.0,1.0,1.0,param_6,param_5)
-    ;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  fVar1 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+  color[3] = fVar1;
+  if ((color[3] != 0.0) && ((compassPartialType->current).integer == 0)) {
+    CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                      rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,color,material);
   }
   return;
 }
@@ -769,8 +781,8 @@ CG_CompassDrawPlayerBack
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DrawPlayerPopUps(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-                   Material *param_6,int param_7,itemDef_s *param_8,char *param_9,bool param_10)
+CG_DrawPlayerPopUps(int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+                   Material *material,int textStyle,itemDef_s *item,char *text,bool doSwing)
 
 {
   int *piVar1;
@@ -783,25 +795,25 @@ CG_DrawPlayerPopUps(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4
   float fVar8;
   double dVar9;
   double dVar10;
-  float fVar11;
+  float xScale;
   double in_stack_ffffff80;
   float local_54;
   float local_50;
   float local_2c;
   
-  fVar2 = (param_8->window).outlineColor[3];
+  fVar2 = (item->window).outlineColor[3];
   local_2c = 0.0;
-  if ((param_9 != (char *)0x0) && (param_5[3] != 0.0)) {
-    pcVar5 = CG_GetLocalClientGlobals(param_1);
+  if ((text != (char *)0x0) && (color[3] != 0.0)) {
+    pcVar5 = CG_GetLocalClientGlobals(localClientNum);
     fVar3 = pcVar5->compassScrambler[0xf].pos[1];
     iVar4 = pcVar5->time;
-    if ((fVar3 != 0.0) || (!param_10)) {
+    if ((fVar3 != 0.0) || (!doSwing)) {
       if ((fVar3 != 0.0) && ((float)(int)fVar3 + 2500.0 < (float)iVar4)) {
         pcVar5->compassScrambler[0xf].startTime = 0;
         pcVar5->compassScrambler[0xf].handle = 0;
       }
-      fVar11 = R_NormalizedTextScale(param_3,param_4);
-      if (param_10) {
+      xScale = R_NormalizedTextScale(font,scale);
+      if (doSwing) {
         fVar7 = (((float)(int)fVar3 + 2500.0) - (float)iVar4) / 2500.0;
         if (fVar7 * fVar7 * 7.0 < (float)pcVar5->compassScrambler[0xf].startTime) {
           pcVar5->compassScrambler[0xf].handle = (int)(fVar7 * fVar7 * -0.5);
@@ -815,36 +827,36 @@ CG_DrawPlayerPopUps(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4
              (int)((float)pcVar5->compassScrambler[0xf].startTime +
                   (float)pcVar5->compassScrambler[0xf].handle);
       }
-      iVar6 = R_TextWidth(param_9,0,param_3);
-      fVar7 = param_2->y + 100.0;
-      local_50 = param_2->x;
-      local_54 = param_2->y;
-      if (((param_10) && (fVar3 != 0.0)) && ((float)iVar4 < (float)(int)fVar3 + 2500.0)) {
+      iVar6 = R_TextWidth(text,0,font);
+      fVar7 = rect->y + 100.0;
+      local_50 = rect->x;
+      local_54 = rect->y;
+      if (((doSwing) && (fVar3 != 0.0)) && ((float)iVar4 < (float)(int)fVar3 + 2500.0)) {
         dVar9 = (double)((float)pcVar5->compassScrambler[0xf].startTime * 0.017453292);
         __libm_sse2_cos(in_stack_ffffff80);
         dVar10 = (double)(-(float)pcVar5->compassScrambler[0xf].startTime * 0.017453292);
         __libm_sse2_sin(in_stack_ffffff80);
-        local_50 = ((1.0 - (float)dVar9) * (float)iVar6 * fVar11) / 2.0 + param_2->x +
+        local_50 = ((1.0 - (float)dVar9) * (float)iVar6 * xScale) / 2.0 + rect->x +
                    (float)dVar10 * fVar7;
         dVar9 = (double)((float)pcVar5->compassScrambler[0xf].startTime * 0.017453292);
         __libm_sse2_sin(in_stack_ffffff80);
         dVar10 = (double)(-(float)pcVar5->compassScrambler[0xf].startTime * 0.017453292);
         __libm_sse2_cos(in_stack_ffffff80);
-        local_54 = (param_2->y - ((float)dVar9 * (float)iVar6 * fVar11) / 2.0) +
+        local_54 = (rect->y - ((float)dVar9 * (float)iVar6 * xScale) / 2.0) +
                    ((float)dVar10 * fVar7 - fVar7);
         local_2c = (float)pcVar5->compassScrambler[0xf].startTime;
       }
       if (fVar2 == 0.0) {
-        CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_9,0x100,param_3,
-                          local_50,local_54,local_2c,param_2->horzAlign,param_2->vertAlign,fVar11,
-                          fVar11,param_5,param_7);
+        CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x100,font
+                          ,local_50,local_54,local_2c,rect->horzAlign,rect->vertAlign,xScale,xScale,
+                          color,textStyle);
       }
       else {
         CL_DrawTextWithEffects
-                  ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_9,0x100,param_3,
-                   local_50,local_54,local_2c,param_2->horzAlign,param_2->vertAlign,fVar11,fVar11,
-                   param_5,(uint)(param_8->window).style,(param_8->window).outlineColor,
-                   (Material *)0x0,(Material *)0x0,0,0,0,0);
+                  ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x100,font,
+                   local_50,local_54,local_2c,rect->horzAlign,rect->vertAlign,xScale,xScale,color,
+                   (uint)(item->window).style,(item->window).outlineColor,(Material *)0x0,
+                   (Material *)0x0,0,0,0,0);
       }
     }
   }
@@ -861,22 +873,27 @@ CG_DrawPlayerPopUps(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4
 
 void __cdecl
 CG_DrawPlayerCOD7TypeWriter
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7,itemDef_s *param_8,char *param_9)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle,itemDef_s *item,char *text)
 
 {
   cg_s *pcVar1;
-  float fVar2;
+  float xScale_00;
+  float xScale;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float rotation;
+  float yScale;
   
-  if ((param_9 != (char *)0x0) && (param_5[3] != 0.0)) {
-    pcVar1 = CG_GetLocalClientGlobals(param_1);
-    fVar2 = R_NormalizedTextScale(param_3,param_4);
+  if ((text != (char *)0x0) && (color[3] != 0.0)) {
+    pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+    xScale_00 = R_NormalizedTextScale(font,scale);
     CL_DrawTextWithCOD7TypeWriterEffects
-              ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_9,0x40,param_3,param_2->x,
-               param_2->y,0.0,param_2->horzAlign,param_2->vertAlign,fVar2,fVar2,param_5,
-               (uint)(param_8->window).style,(param_8->window).outlineColor,
-               cgMedia.textDecodeCharacters,cgMedia.textDecodeCharactersGlow,
-               pcVar1->typewriterStartTime,(typeWriterCod7LetterFXTime->current).integer,4000,1000);
+              ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x40,font,rect->x,
+               rect->y,0.0,rect->horzAlign,rect->vertAlign,xScale_00,xScale_00,color,
+               (uint)(item->window).style,(item->window).outlineColor,cgMedia.textDecodeCharacters,
+               cgMedia.textDecodeCharactersGlow,pcVar1->typewriterStartTime,
+               (typeWriterCod7LetterFXTime->current).integer,4000,1000);
   }
   return;
 }
@@ -891,24 +908,28 @@ CG_DrawPlayerCOD7TypeWriter
 
 void __cdecl
 CG_DrawPlayerRedationText
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7,itemDef_s *param_8,char *param_9)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle,itemDef_s *item,char *text)
 
 {
   cg_s *pcVar1;
-  float fVar2;
+  float xScale_00;
+  float xScale;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float yScale;
   
-  if ((param_9 != (char *)0x0) && (param_5[3] != 0.0)) {
-    pcVar1 = CG_GetLocalClientGlobals(param_1);
-    fVar2 = R_NormalizedTextScale(param_3,param_4);
+  if ((text != (char *)0x0) && (color[3] != 0.0)) {
+    pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+    xScale_00 = R_NormalizedTextScale(font,scale);
     CL_DrawTextWithRedactEffects
-              ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_9,0x7fffffff,param_3,
-               param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,fVar2,fVar2,param_5,
-               (uint)(param_8->window).style,(param_8->window).outlineColor,
-               cgMedia.textDecodeCharacters,cgMedia.textDecodeCharactersGlow,
-               pcVar1->typewriterStartTime,(typeWriterCod7LetterFXTime->current).integer,
-               (redactionDisplayTime->current).integer,(redactionFadeDuration->current).integer,
-               (redactionStartStrokeTime->current).integer,(redactionStrokeTime->current).integer);
+              ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x7fffffff,font,
+               rect->x,rect->y,rect->horzAlign,rect->vertAlign,xScale_00,xScale_00,color,
+               (uint)(item->window).style,(item->window).outlineColor,cgMedia.textDecodeCharacters,
+               cgMedia.textDecodeCharactersGlow,pcVar1->typewriterStartTime,
+               (typeWriterCod7LetterFXTime->current).integer,(redactionDisplayTime->current).integer
+               ,(redactionFadeDuration->current).integer,(redactionStartStrokeTime->current).integer
+               ,(redactionStrokeTime->current).integer);
   }
   return;
 }
@@ -923,20 +944,25 @@ CG_DrawPlayerRedationText
 
 void __cdecl
 CG_DrawPlayerPopInText
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7,itemDef_s *param_8,char *param_9)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle,itemDef_s *item,char *text)
 
 {
   cg_s *pcVar1;
-  float fVar2;
+  float xScale_00;
+  float xScale;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float rotation;
+  float yScale;
   
-  if ((param_9 != (char *)0x0) && (param_5[3] != 0.0)) {
-    pcVar1 = CG_GetLocalClientGlobals(param_1);
-    fVar2 = R_NormalizedTextScale(param_3,param_4);
+  if ((text != (char *)0x0) && (color[3] != 0.0)) {
+    pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+    xScale_00 = R_NormalizedTextScale(font,scale);
     CL_DrawTextWithPopInEffects
-              ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_9,0x40,param_3,param_2->x,
-               param_2->y,0.0,param_2->horzAlign,param_2->vertAlign,fVar2,fVar2,param_5,param_7,
-               (param_8->window).outlineColor,cgMedia.textDecodeCharacters,
+              ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x40,font,rect->x,
+               rect->y,0.0,rect->horzAlign,rect->vertAlign,xScale_00,xScale_00,color,textStyle,
+               (item->window).outlineColor,cgMedia.textDecodeCharacters,
                cgMedia.textDecodeCharactersGlow,(int)pcVar1->compassScrambler[0xf].pos[1],
                (popInLetterFXTime->current).integer,4000,1000);
   }
@@ -953,55 +979,61 @@ CG_DrawPlayerPopInText
 
 void __cdecl
 CG_CompassDrawPlayerNorthCoord
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Font_s *param_5,
-          Material *param_6,float *param_7,int param_8)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Font_s *font,Material *material,float *color,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  int iVar4;
-  float fVar5;
-  float fVar6;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  char *local_c;
-  float local_8;
+  cg_s *cgameGlob_00;
+  int iVar3;
+  float xScale;
+  float fVar4;
+  float textW;
+  int integerPortion;
+  cg_s *cgameGlob;
+  float coord;
+  float SMALL_FRAC;
+  float scale;
+  float x;
+  float y;
+  float h;
+  float smallscale;
+  char *text;
+  float w;
   
-  if ((param_2 != COMPASS_TYPE_PARTIAL) &&
+  if ((compassType != COMPASS_TYPE_PARTIAL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x34a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  fVar6 = CG_FadeCompass(param_1,pcVar3->compassFadeTime,param_2);
-  param_7[3] = fVar6;
-  if (param_7[3] != 0.0) {
-    CG_CompassCalcDimensions(param_2,pcVar3,param_3,param_4,&local_1c,&local_18,&local_8,&local_14);
-    iVar4 = R_TextHeight(param_5);
-    fVar5 = local_8 / (float)iVar4;
-    local_10 = fVar5 * 0.8;
-    local_c = va("%i ");
-    iVar4 = R_TextWidth(local_c,10,param_5);
-    fVar6 = (float)iVar4 * local_10;
-    CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x28,param_5,
-                      local_8 * 0.8 + local_1c,local_18 + local_14,-90.0,param_4->horzAlign,
-                      param_4->vertAlign,local_10,local_10,param_7,param_8);
-    local_18 = local_18 - fVar6;
-    local_c = va("%i ");
-    iVar4 = R_TextWidth(local_c,10,param_5);
-    CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x28,param_5,
-                      local_1c + local_8,local_18 + local_14,-90.0,param_4->horzAlign,
-                      param_4->vertAlign,fVar5,fVar5,param_7,param_8);
-    local_18 = local_18 - (float)iVar4 * fVar5;
-    local_c = va("%.4f");
-    CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c + 2,0x28,param_5,
-                      local_1c + local_8,local_18 + local_14,-90.0,param_4->horzAlign,
-                      param_4->vertAlign,local_10,local_10,param_7,param_8);
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  fVar4 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+  color[3] = fVar4;
+  if (color[3] != 0.0) {
+    CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+    iVar3 = R_TextHeight(font);
+    xScale = w / (float)iVar3;
+    smallscale = xScale * 0.8;
+    text = va("%i ");
+    iVar3 = R_TextWidth(text,10,font);
+    fVar4 = (float)iVar3 * smallscale;
+    CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x28,font,
+                      w * 0.8 + x,y + h,-90.0,rect->horzAlign,rect->vertAlign,smallscale,smallscale,
+                      color,textStyle);
+    y = y - fVar4;
+    text = va("%i ");
+    iVar3 = R_TextWidth(text,10,font);
+    CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x28,font,
+                      x + w,y + h,-90.0,rect->horzAlign,rect->vertAlign,xScale,xScale,color,
+                      textStyle);
+    y = y - (float)iVar3 * xScale;
+    text = va("%.4f");
+    CL_DrawTextRotate((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text + 2,0x28,font,
+                      x + w,y + h,-90.0,rect->horzAlign,rect->vertAlign,smallscale,smallscale,color,
+                      textStyle);
   }
   return;
 }
@@ -1016,59 +1048,62 @@ CG_CompassDrawPlayerNorthCoord
 
 void __cdecl
 CG_CompassDrawPlayerEastCoord
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Font_s *param_5,
-          Material *param_6,float *param_7,int param_8)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Font_s *font,Material *material,float *color,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  int iVar4;
-  float fVar5;
-  float fVar6;
-  float local_24;
-  float local_20;
-  float local_1c;
+  cg_s *cgameGlob_00;
+  int iVar3;
+  float xScale;
+  float fVar4;
+  float textW;
+  int integerPortion;
+  cg_s *cgameGlob;
+  float coord;
+  float SMALL_FRAC;
+  float scale;
+  float x;
+  float y;
+  float east;
   float local_18;
-  float local_14;
-  float local_10;
-  char *local_c;
-  float local_8;
+  float h;
+  float smallscale;
+  char *text;
+  float w;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2 != COMPASS_TYPE_PARTIAL) &&
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if ((compassType != COMPASS_TYPE_PARTIAL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x37f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar6 = CG_FadeCompass(param_1,pcVar3->compassFadeTime,param_2);
-  param_7[3] = fVar6;
-  if (param_7[3] != 0.0) {
-    CG_CompassCalcDimensions(param_2,pcVar3,param_3,param_4,&local_24,&local_20,&local_8,&local_14);
-    local_1c = pcVar3->compassNorth[1];
-    local_18 = -pcVar3->compassNorth[0];
-    iVar4 = R_TextHeight(param_5);
-    fVar5 = local_14 / (float)iVar4;
-    local_10 = fVar5 * 0.85;
-    local_c = va("%i ");
-    iVar4 = R_TextWidth(local_c,10,param_5);
-    fVar6 = (float)iVar4 * local_10;
-    CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x28,param_5,local_24,
-                local_14 * 0.85 + local_20,param_4->horzAlign,param_4->vertAlign,local_10,local_10,
-                param_7,param_8);
-    local_24 = local_24 + fVar6;
-    local_c = va("%i ");
-    iVar4 = R_TextWidth(local_c,10,param_5);
-    CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x28,param_5,local_24,
-                local_20 + local_14,param_4->horzAlign,param_4->vertAlign,fVar5,fVar5,param_7,
-                param_8);
-    local_24 = local_24 + (float)iVar4 * fVar5;
-    local_c = va("%.4f");
-    CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c + 2,0x28,param_5,
-                local_24,local_20 + local_14,param_4->horzAlign,param_4->vertAlign,local_10,local_10
-                ,param_7,param_8);
+  fVar4 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+  color[3] = fVar4;
+  if (color[3] != 0.0) {
+    CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+    east = cgameGlob_00->compassNorth[1];
+    local_18 = -cgameGlob_00->compassNorth[0];
+    iVar3 = R_TextHeight(font);
+    xScale = h / (float)iVar3;
+    smallscale = xScale * 0.85;
+    text = va("%i ");
+    iVar3 = R_TextWidth(text,10,font);
+    fVar4 = (float)iVar3 * smallscale;
+    CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x28,font,x,
+                h * 0.85 + y,rect->horzAlign,rect->vertAlign,smallscale,smallscale,color,textStyle);
+    x = x + fVar4;
+    text = va("%i ");
+    iVar3 = R_TextWidth(text,10,font);
+    CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x28,font,x,y + h,
+                rect->horzAlign,rect->vertAlign,xScale,xScale,color,textStyle);
+    x = x + (float)iVar3 * xScale;
+    text = va("%.4f");
+    CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text + 2,0x28,font,x,
+                y + h,rect->horzAlign,rect->vertAlign,smallscale,smallscale,color,textStyle);
   }
   return;
 }
@@ -1083,52 +1118,60 @@ CG_CompassDrawPlayerEastCoord
 
 void __cdecl
 CG_CompassDrawPlayerNCoordScroll
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Font_s *param_5,
-          Material *param_6,float *param_7,int param_8)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Font_s *font,Material *material,float *color,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  int iVar4;
+  cg_s *cgameGlob_00;
+  int iVar3;
+  float fVar4;
   float fVar5;
-  float fVar6;
-  float local_28;
-  float local_18;
-  float local_14;
-  float local_10;
-  char *local_c;
-  float local_8;
+  int integerPortion;
+  int textW;
+  cg_s *cgameGlob;
+  float coord;
+  float fracPortion;
+  float pixelY;
+  float pixelPerCoord;
+  float textHeight;
+  float scale;
+  float x;
+  float y;
+  float h;
+  char *text;
+  float w;
   
-  if ((param_2 != COMPASS_TYPE_PARTIAL) &&
+  if ((compassType != COMPASS_TYPE_PARTIAL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x3b4,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  fVar6 = CG_FadeCompass(param_1,pcVar3->compassFadeTime,param_2);
-  param_7[3] = fVar6;
-  if (param_7[3] != 0.0) {
-    CG_CompassCalcDimensions(param_2,pcVar3,param_3,param_4,&local_18,&local_14,&local_8,&local_10);
-    fVar6 = ((compassMaxRange->current).value * 0.5) / (compassCoords->current).vector[2] +
-            (pcVar3->compassNorth[0] * (pcVar3->refdef).vieworg[0] +
-            pcVar3->compassNorth[1] * (pcVar3->refdef).vieworg[1]) /
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  fVar5 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+  color[3] = fVar5;
+  if (color[3] != 0.0) {
+    CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+    fVar5 = ((compassMaxRange->current).value * 0.5) / (compassCoords->current).vector[2] +
+            (cgameGlob_00->compassNorth[0] * (cgameGlob_00->refdef).vieworg[0] +
+            cgameGlob_00->compassNorth[1] * (cgameGlob_00->refdef).vieworg[1]) /
             (compassCoords->current).vector[2] + (compassCoords->current).vector[1];
-    fVar5 = ((compassCoords->current).vector[2] * local_10) / (compassMaxRange->current).value;
-    local_28 = local_14 - (1.0 - (fVar6 - (float)(int)fVar6)) * fVar5;
-    iVar4 = R_TextWidth("99",2,param_5);
-    fVar6 = local_8 / (float)iVar4;
-    iVar4 = R_TextHeight(param_5);
-    for (; local_28 < local_14 + (float)iVar4 * fVar6; local_28 = local_28 + fVar5) {
+    fVar4 = ((compassCoords->current).vector[2] * h) / (compassMaxRange->current).value;
+    pixelY = y - (1.0 - (fVar5 - (float)(int)fVar5)) * fVar4;
+    iVar3 = R_TextWidth("99",2,font);
+    fVar5 = w / (float)iVar3;
+    iVar3 = R_TextHeight(font);
+    for (; pixelY < y + (float)iVar3 * fVar5; pixelY = pixelY + fVar4) {
     }
-    for (; local_28 < local_14 + local_10; local_28 = local_28 + fVar5) {
-      local_c = va("%2i");
-      iVar4 = R_TextWidth(local_c,10,param_5);
-      CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x28,param_5,local_18,
-                  local_28,param_4->horzAlign,param_4->vertAlign,local_8 / (float)iVar4,
-                  local_8 / (float)iVar4,param_7,param_8);
+    for (; pixelY < y + h; pixelY = pixelY + fVar4) {
+      text = va("%2i");
+      iVar3 = R_TextWidth(text,10,font);
+      CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x28,font,x,pixelY
+                  ,rect->horzAlign,rect->vertAlign,w / (float)iVar3,w / (float)iVar3,color,textStyle
+                 );
     }
   }
   return;
@@ -1144,55 +1187,63 @@ CG_CompassDrawPlayerNCoordScroll
 
 void __cdecl
 CG_CompassDrawPlayerECoordScroll
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Font_s *param_5,
-          Material *param_6,float *param_7,int param_8)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Font_s *font,Material *material,float *color,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  int iVar4;
+  cg_s *cgameGlob_00;
+  int iVar3;
+  float fVar4;
   float fVar5;
-  float fVar6;
-  float local_28;
-  float local_20;
-  float local_1c;
-  float local_18;
+  int integerPortion;
+  float leftCutoff;
+  cg_s *cgameGlob;
+  float coord;
+  float textWidth;
+  float fracPortion;
+  float pixelPerCoord;
+  float pixelX;
+  float scale;
+  float x;
+  float y;
+  float east;
   float local_14;
-  float local_10;
-  char *local_c;
-  float local_8;
+  float h;
+  char *text;
+  float w;
   
-  if ((param_2 != COMPASS_TYPE_PARTIAL) &&
+  if ((compassType != COMPASS_TYPE_PARTIAL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x3f2,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  fVar6 = CG_FadeCompass(param_1,pcVar3->compassFadeTime,param_2);
-  param_7[3] = fVar6;
-  if (param_7[3] != 0.0) {
-    CG_CompassCalcDimensions(param_2,pcVar3,param_3,param_4,&local_20,&local_1c,&local_8,&local_10);
-    local_18 = pcVar3->compassNorth[1];
-    local_14 = -pcVar3->compassNorth[0];
-    fVar5 = ((local_18 * (pcVar3->refdef).vieworg[0] + local_14 * (pcVar3->refdef).vieworg[1]) /
-             (compassCoords->current).vector[2] + (compassCoords->current).value) -
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  fVar5 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+  color[3] = fVar5;
+  if (color[3] != 0.0) {
+    CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+    east = cgameGlob_00->compassNorth[1];
+    local_14 = -cgameGlob_00->compassNorth[0];
+    fVar4 = ((east * (cgameGlob_00->refdef).vieworg[0] +
+             local_14 * (cgameGlob_00->refdef).vieworg[1]) / (compassCoords->current).vector[2] +
+            (compassCoords->current).value) -
             ((compassMaxRange->current).value * 0.5) / (compassCoords->current).vector[2];
-    fVar6 = ((compassCoords->current).vector[2] * local_8) / (compassMaxRange->current).value;
-    local_28 = local_20 - (fVar5 - (float)(int)fVar5) * fVar6;
-    iVar4 = R_TextHeight(param_5);
-    fVar5 = local_10 / (float)iVar4;
-    iVar4 = R_TextWidth("99",2,param_5);
-    for (; local_28 < (compassECoordCutoff->current).value * (compassSize->current).value + local_20
-        ; local_28 = local_28 + fVar6) {
+    fVar5 = ((compassCoords->current).vector[2] * w) / (compassMaxRange->current).value;
+    pixelX = x - (fVar4 - (float)(int)fVar4) * fVar5;
+    iVar3 = R_TextHeight(font);
+    fVar4 = h / (float)iVar3;
+    iVar3 = R_TextWidth("99",2,font);
+    for (; pixelX < (compassECoordCutoff->current).value * (compassSize->current).value + x;
+        pixelX = pixelX + fVar5) {
     }
-    for (; local_28 < (local_20 + local_8) - (float)iVar4 * fVar5; local_28 = local_28 + fVar6) {
-      local_c = va("%2i");
-      CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x28,param_5,local_28,
-                  local_1c + local_10,param_4->horzAlign,param_4->vertAlign,fVar5,fVar5,param_7,
-                  param_8);
+    for (; pixelX < (x + w) - (float)iVar3 * fVar4; pixelX = pixelX + fVar5) {
+      text = va("%2i");
+      CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x28,font,pixelX,
+                  y + h,rect->horzAlign,rect->vertAlign,fVar4,fVar4,color,textStyle);
     }
   }
   return;
@@ -1208,93 +1259,93 @@ CG_CompassDrawPlayerECoordScroll
 
 void __cdecl
 CG_CompassDrawStatic
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
   float fVar1;
   float fVar2;
   code *pcVar3;
   bool bVar4;
-  cg_s *pcVar5;
+  cg_s *cgameGlob_00;
+  float fVar5;
   float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
-  float local_38;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
+  float deltaEast;
+  cg_s *cgameGlob;
+  float texRadius;
+  float rotation;
+  float deltaSouth;
+  float scaleFinalT;
+  float x;
+  float y;
+  float south;
   float local_1c;
-  float local_18;
+  float east;
   float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float h;
+  float scaleFinalS;
+  float w;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  if (pcVar5->compassScrambler[0xe].startTime != 0) {
-    if ((pcVar5->compassMapWorldSize[0] == 0.0) &&
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if (cgameGlob_00->compassScrambler[0xe].startTime != 0) {
+    if ((cgameGlob_00->compassMapWorldSize[0] == 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x43c,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((pcVar5->compassMapWorldSize[1] == 0.0) &&
+    if ((cgameGlob_00->compassMapWorldSize[1] == 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x43d,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (param_2 == COMPASS_TYPE_PARTIAL) {
+    if (compassType == COMPASS_TYPE_PARTIAL) {
       CG_ScaleCompass();
-      local_18 = pcVar5->compassNorth[1];
-      local_14 = -pcVar5->compassNorth[0];
-      local_20 = -pcVar5->compassNorth[0];
-      local_1c = -pcVar5->compassNorth[1];
-      fVar6 = (pcVar5->refdef).vieworg[0] - pcVar5->compassMapUpperLeft[0];
-      fVar7 = (pcVar5->refdef).vieworg[1] - pcVar5->compassMapUpperLeft[1];
-      fVar8 = fVar7 * local_14;
-      fVar9 = fVar6 * local_18;
-      fVar7 = fVar7 * local_1c;
-      fVar6 = fVar6 * local_20;
-      fVar1 = pcVar5->compassMapWorldSize[0];
-      fVar2 = pcVar5->compassMapWorldSize[1];
-      if (pcVar5->compassMapWorldSize[0] < pcVar5->compassMapWorldSize[1] ||
-          pcVar5->compassMapWorldSize[0] == pcVar5->compassMapWorldSize[1]) {
-        local_38 = ((compassMaxRange->current).value * 0.5) / pcVar5->compassMapWorldSize[1];
-        local_c = pcVar5->compassMapWorldSize[1] / pcVar5->compassMapWorldSize[0];
-        local_2c = 1.0;
+      east = cgameGlob_00->compassNorth[1];
+      local_14 = -cgameGlob_00->compassNorth[0];
+      south = -cgameGlob_00->compassNorth[0];
+      local_1c = -cgameGlob_00->compassNorth[1];
+      fVar5 = (cgameGlob_00->refdef).vieworg[0] - cgameGlob_00->compassMapUpperLeft[0];
+      fVar6 = (cgameGlob_00->refdef).vieworg[1] - cgameGlob_00->compassMapUpperLeft[1];
+      fVar7 = fVar6 * local_14;
+      fVar8 = fVar5 * east;
+      fVar6 = fVar6 * local_1c;
+      fVar5 = fVar5 * south;
+      fVar1 = cgameGlob_00->compassMapWorldSize[0];
+      fVar2 = cgameGlob_00->compassMapWorldSize[1];
+      if (cgameGlob_00->compassMapWorldSize[0] < cgameGlob_00->compassMapWorldSize[1] ||
+          cgameGlob_00->compassMapWorldSize[0] == cgameGlob_00->compassMapWorldSize[1]) {
+        texRadius = ((compassMaxRange->current).value * 0.5) / cgameGlob_00->compassMapWorldSize[1];
+        scaleFinalS = cgameGlob_00->compassMapWorldSize[1] / cgameGlob_00->compassMapWorldSize[0];
+        scaleFinalT = 1.0;
       }
       else {
-        local_38 = ((compassMaxRange->current).value * 0.5) / pcVar5->compassMapWorldSize[0];
-        local_c = 1.0;
-        local_2c = pcVar5->compassMapWorldSize[0] / pcVar5->compassMapWorldSize[1];
+        texRadius = ((compassMaxRange->current).value * 0.5) / cgameGlob_00->compassMapWorldSize[0];
+        scaleFinalS = 1.0;
+        scaleFinalT = cgameGlob_00->compassMapWorldSize[0] / cgameGlob_00->compassMapWorldSize[1];
       }
-      CG_CompassCalcDimensions
-                (COMPASS_TYPE_PARTIAL,pcVar5,param_3,param_4,&local_28,&local_24,&local_8,&local_10)
-      ;
+      CG_CompassCalcDimensions(COMPASS_TYPE_PARTIAL,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
       CL_DrawStretchPicRotatedST
-                ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_28,local_24,local_8,
-                 local_10,param_4->horzAlign,param_4->vertAlign,(fVar9 + fVar8) / fVar1,
-                 (fVar6 + fVar7) / fVar2,local_38,local_c,local_2c,0.0,param_6,param_5);
+                ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,rect->horzAlign,
+                 rect->vertAlign,(fVar8 + fVar7) / fVar1,(fVar5 + fVar6) / fVar2,texRadius,
+                 scaleFinalS,scaleFinalT,0.0,color,material);
     }
     else {
-      if ((param_2 != COMPASS_TYPE_FULL) &&
+      if ((compassType != COMPASS_TYPE_FULL) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x45f,
                                    0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      CG_CompassCalcDimensions
-                (param_2,pcVar5,param_3,param_4,&local_28,&local_24,&local_8,&local_10);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_28,local_24,
-                        local_8,local_10,param_4->horzAlign,param_4->vertAlign,0.0,0.0,1.0,1.0,
-                        param_6,param_5);
+      CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                        rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,color,material);
     }
   }
   return;
@@ -1308,7 +1359,7 @@ CG_CompassDrawStatic
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateEnemyScramblerAlpha(int param_1)
+void __cdecl CG_UpdateEnemyScramblerAlpha(int localClientNum)
 
 {
   byte bVar1;
@@ -1316,11 +1367,17 @@ void __cdecl CG_UpdateEnemyScramblerAlpha(int param_1)
   cg_s *pcVar3;
   int iVar4;
   float fVar5;
-  float local_18;
+  int scramblerOwnerIndex;
+  float enemyScramblerAlpha;
+  clientInfo_t *localClientInfo;
+  cg_s *cgameGlob;
+  bool enemy;
+  bool friendly;
+  float enemyScramblerDistance;
   
-  local_18 = 0.0;
+  enemyScramblerAlpha = 0.0;
   bVar2 = false;
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar3[1].activeSnapshots[0].physicsTime != 0) &&
      ((*(uint *)(pcVar3[1].activeSnapshots[0].physicsTime + 0x324) >> 1 & 1) != 0)) {
     bVar1 = *(byte *)(pcVar3[1].activeSnapshots[0].physicsTime + 0x2bf);
@@ -1335,13 +1392,13 @@ void __cdecl CG_UpdateEnemyScramblerAlpha(int param_1)
        (fVar5 = Vec3DistanceSq((pcVar3->predictedPlayerEntity).pose.origin,
                                (float *)(pcVar3[1].activeSnapshots[0].physicsTime + 0x30)),
        fVar5 <= 1e+06)) {
-      local_18 = 1.0 - (fVar5 - 250000.0) / 750000.0;
+      enemyScramblerAlpha = 1.0 - (fVar5 - 250000.0) / 750000.0;
     }
   }
-  if (1.0 < local_18) {
-    local_18 = 1.0;
+  if (1.0 < enemyScramblerAlpha) {
+    enemyScramblerAlpha = 1.0;
   }
-  pcVar3->compassScrambler[0xe].handle = (int)local_18;
+  pcVar3->compassScrambler[0xe].handle = (int)enemyScramblerAlpha;
   return;
 }
 
@@ -1353,12 +1410,13 @@ void __cdecl CG_UpdateEnemyScramblerAlpha(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_GetScramblerEnemyAlpha(int param_1)
+float __cdecl CG_GetScramblerEnemyAlpha(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   return (float)pcVar1->compassScrambler[0xe].handle;
 }
 
@@ -1372,95 +1430,95 @@ float __cdecl CG_GetScramblerEnemyAlpha(int param_1)
 
 void __cdecl
 CG_CompassDrawScrambler
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6,bool param_7)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color,bool grid)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  cg_s *pcVar4;
+  cg_s *cgameGlob_00;
+  float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
-  float local_38;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
+  float deltaEast;
+  cg_s *cgameGlob;
+  float texRadius;
+  float rotation;
+  float deltaSouth;
+  float scaleFinalT;
+  float x;
+  float y;
+  float south;
   float local_1c;
-  float local_18;
+  float east;
   float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float h;
+  float scaleFinalS;
+  float w;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  fVar9 = CG_GetScramblerEnemyAlpha(param_1);
-  param_6[3] = fVar9;
-  if (param_6[3] != 0.0) {
-    if ((pcVar4->compassMapWorldSize[0] == 0.0) &&
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  fVar8 = CG_GetScramblerEnemyAlpha(localClientNum);
+  color[3] = fVar8;
+  if (color[3] != 0.0) {
+    if ((cgameGlob_00->compassMapWorldSize[0] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x4b4,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((pcVar4->compassMapWorldSize[1] == 0.0) &&
+    if ((cgameGlob_00->compassMapWorldSize[1] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x4b5,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (param_2 == COMPASS_TYPE_PARTIAL) {
+    if (compassType == COMPASS_TYPE_PARTIAL) {
       CG_ScaleCompass();
-      local_18 = pcVar4->compassNorth[1];
-      local_14 = -pcVar4->compassNorth[0];
-      local_20 = -pcVar4->compassNorth[0];
-      local_1c = -pcVar4->compassNorth[1];
-      fVar5 = (pcVar4->refdef).vieworg[0] - pcVar4->compassMapUpperLeft[0];
-      fVar6 = (pcVar4->refdef).vieworg[1] - pcVar4->compassMapUpperLeft[1];
-      fVar7 = fVar6 * local_14;
-      fVar8 = fVar5 * local_18;
-      fVar6 = fVar6 * local_1c;
-      fVar5 = fVar5 * local_20;
-      fVar9 = pcVar4->compassMapWorldSize[0];
-      fVar1 = pcVar4->compassMapWorldSize[1];
-      if (pcVar4->compassMapWorldSize[0] < pcVar4->compassMapWorldSize[1] ||
-          pcVar4->compassMapWorldSize[0] == pcVar4->compassMapWorldSize[1]) {
-        local_38 = ((compassMaxRange->current).value * 0.5) / pcVar4->compassMapWorldSize[1];
-        local_c = pcVar4->compassMapWorldSize[1] / pcVar4->compassMapWorldSize[0];
-        local_2c = 1.0;
+      east = cgameGlob_00->compassNorth[1];
+      local_14 = -cgameGlob_00->compassNorth[0];
+      south = -cgameGlob_00->compassNorth[0];
+      local_1c = -cgameGlob_00->compassNorth[1];
+      fVar4 = (cgameGlob_00->refdef).vieworg[0] - cgameGlob_00->compassMapUpperLeft[0];
+      fVar5 = (cgameGlob_00->refdef).vieworg[1] - cgameGlob_00->compassMapUpperLeft[1];
+      fVar6 = fVar5 * local_14;
+      fVar7 = fVar4 * east;
+      fVar5 = fVar5 * local_1c;
+      fVar4 = fVar4 * south;
+      fVar8 = cgameGlob_00->compassMapWorldSize[0];
+      fVar1 = cgameGlob_00->compassMapWorldSize[1];
+      if (cgameGlob_00->compassMapWorldSize[0] < cgameGlob_00->compassMapWorldSize[1] ||
+          cgameGlob_00->compassMapWorldSize[0] == cgameGlob_00->compassMapWorldSize[1]) {
+        texRadius = ((compassMaxRange->current).value * 0.5) / cgameGlob_00->compassMapWorldSize[1];
+        scaleFinalS = cgameGlob_00->compassMapWorldSize[1] / cgameGlob_00->compassMapWorldSize[0];
+        scaleFinalT = 1.0;
       }
       else {
-        local_38 = ((compassMaxRange->current).value * 0.5) / pcVar4->compassMapWorldSize[0];
-        local_c = 1.0;
-        local_2c = pcVar4->compassMapWorldSize[0] / pcVar4->compassMapWorldSize[1];
+        texRadius = ((compassMaxRange->current).value * 0.5) / cgameGlob_00->compassMapWorldSize[0];
+        scaleFinalS = 1.0;
+        scaleFinalT = cgameGlob_00->compassMapWorldSize[0] / cgameGlob_00->compassMapWorldSize[1];
       }
-      CG_CompassCalcDimensions
-                (COMPASS_TYPE_PARTIAL,pcVar4,param_3,param_4,&local_28,&local_24,&local_8,&local_10)
-      ;
+      CG_CompassCalcDimensions(COMPASS_TYPE_PARTIAL,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
       CL_DrawStretchPicRotatedST
-                ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_28,local_24,local_8,
-                 local_10,param_4->horzAlign,param_4->vertAlign,(fVar8 + fVar7) / fVar9,
-                 (fVar5 + fVar6) / fVar1,local_38,local_c,local_2c,0.0,param_6,param_5);
+                ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,rect->horzAlign,
+                 rect->vertAlign,(fVar7 + fVar6) / fVar8,(fVar4 + fVar5) / fVar1,texRadius,
+                 scaleFinalS,scaleFinalT,0.0,color,material);
     }
     else {
-      if ((param_2 != COMPASS_TYPE_FULL) &&
+      if ((compassType != COMPASS_TYPE_FULL) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x4d7,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      CG_CompassCalcDimensions
-                (param_2,pcVar4,param_3,param_4,&local_28,&local_24,&local_8,&local_10);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_28,local_24,
-                        local_8,local_10,param_4->horzAlign,param_4->vertAlign,0.0,0.0,1.0,1.0,
-                        param_6,param_5);
+      CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                        rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,color,material);
     }
   }
   return;
@@ -1474,55 +1532,56 @@ CG_CompassDrawScrambler
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassDrawRound(int param_1,rectDef_s *param_2,Material *param_3,float *param_4)
+void __cdecl CG_CompassDrawRound(int localClientNum,rectDef_s *rect,Material *material,float *color)
 
 {
   ushort uVar1;
   cg_s *pcVar2;
   float fVar3;
-  float *pfVar4;
-  float local_40;
+  float *vec;
+  cg_s *cgameGlob;
+  float scissorRect;
   float local_3c;
   float local_38;
   float local_34;
   int local_30;
   int local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
+  float rotation;
+  float x;
+  float y;
+  float h;
+  float c0;
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float w;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  fVar3 = CG_FadeCompass(param_1,pcVar2->compassFadeTime,COMPASS_TYPE_PARTIAL);
-  param_4[3] = fVar3 * param_4[3];
-  if (param_4[3] != 0.0) {
-    local_28 = pcVar2->refdefViewAngles[1] - pcVar2->compassNorthYaw;
-    local_24 = param_2->x;
-    local_20 = param_2->y;
-    local_8 = param_2->w;
-    local_1c = param_2->h;
-    local_40 = param_2->x;
-    local_3c = param_2->y;
-    local_38 = param_2->w;
-    local_34 = param_2->h;
-    local_30 = param_2->horzAlign;
-    local_2c = param_2->vertAlign;
-    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_40,&local_3c,
-                       &local_38,&local_34,local_30,local_2c);
-    local_18 = local_40;
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  fVar3 = CG_FadeCompass(localClientNum,pcVar2->compassFadeTime,COMPASS_TYPE_PARTIAL);
+  color[3] = fVar3 * color[3];
+  if (color[3] != 0.0) {
+    rotation = pcVar2->refdefViewAngles[1] - pcVar2->compassNorthYaw;
+    x = rect->x;
+    y = rect->y;
+    w = rect->w;
+    h = rect->h;
+    scissorRect = rect->x;
+    local_3c = rect->y;
+    local_38 = rect->w;
+    local_34 = rect->h;
+    local_30 = rect->horzAlign;
+    local_2c = rect->vertAlign;
+    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&scissorRect,
+                       &local_3c,&local_38,&local_34,local_30,local_2c);
+    c0 = scissorRect;
     local_14 = local_3c;
     local_10 = local_38;
     local_c = local_34;
-    pfVar4 = &local_18;
+    vec = &c0;
     uVar1 = GetCodeConst_GenericParam0();
-    CL_SetCustomConstant((uint)uVar1,pfVar4);
-    CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_24,local_20,local_8,
-                      local_1c,param_2->horzAlign,param_2->vertAlign,local_28,param_4,param_3);
+    CL_SetCustomConstant((uint)uVar1,vec);
+    CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                      rect->horzAlign,rect->vertAlign,rotation,color,material);
   }
   return;
 }
@@ -1537,128 +1596,126 @@ void __cdecl CG_CompassDrawRound(int param_1,rectDef_s *param_2,Material *param_
 
 void __cdecl
 CG_CompassDrawPlayerMap
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6,bool param_7)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color,bool grid)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  cg_s *pcVar4;
+  cg_s *cgameGlob_00;
+  float fVar4;
+  float centerS;
   float fVar5;
-  float fVar6;
-  float fVar7;
-  float local_48;
-  float local_44;
-  float local_3c;
-  float local_34;
-  float local_30;
-  float local_2c;
+  float deltaEast;
+  cg_s *cgameGlob;
+  float texRadius;
+  float rotation;
+  float deltaSouth;
+  float scaleFinalT;
+  int rows;
+  float x;
+  float y;
+  float south;
   float local_28;
-  float local_24;
+  float east;
   float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
+  float h;
+  float scaleFinalS;
+  float w;
+  float mapCenter;
   float local_c;
-  int local_8;
+  int cols;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  fVar7 = CG_FadeCompass(param_1,pcVar4->compassFadeTime,param_2);
-  param_6[3] = fVar7 * param_6[3];
-  if (param_7) {
-    fVar7 = CG_FadeCompassIcons(param_1,false);
-    param_6[3] = fVar7 * param_6[3];
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  fVar5 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+  color[3] = fVar5 * color[3];
+  if (grid) {
+    fVar5 = CG_FadeCompassIcons(localClientNum,false);
+    color[3] = fVar5 * color[3];
   }
-  if (param_6[3] != 0.0) {
-    local_10 = (pcVar4->refdef).vieworg[0];
-    local_c = (pcVar4->refdef).vieworg[1];
-    if ((pcVar4->compassMapWorldSize[0] == 0.0) &&
+  if (color[3] != 0.0) {
+    mapCenter = (cgameGlob_00->refdef).vieworg[0];
+    local_c = (cgameGlob_00->refdef).vieworg[1];
+    if ((cgameGlob_00->compassMapWorldSize[0] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x521,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((pcVar4->compassMapWorldSize[1] == 0.0) &&
+    if ((cgameGlob_00->compassMapWorldSize[1] == 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x522,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8 = (compassGridCols->current).integer;
+    cols = (compassGridCols->current).integer;
     iVar1 = (compassGridRows->current).integer;
-    if (param_2 == COMPASS_TYPE_PARTIAL) {
+    if (compassType == COMPASS_TYPE_PARTIAL) {
       CG_ScaleCompass();
-      local_24 = pcVar4->compassNorth[1];
-      local_20 = -pcVar4->compassNorth[0];
-      local_2c = -pcVar4->compassNorth[0];
-      local_28 = -pcVar4->compassNorth[1];
-      fVar7 = local_10 - pcVar4->compassMapUpperLeft[0];
-      fVar5 = local_c - pcVar4->compassMapUpperLeft[1];
-      fVar6 = (fVar7 * local_24 + fVar5 * local_20) / pcVar4->compassMapWorldSize[0];
-      fVar7 = (fVar7 * local_2c + fVar5 * local_28) / pcVar4->compassMapWorldSize[1];
-      if (pcVar4->compassMapWorldSize[0] < pcVar4->compassMapWorldSize[1] ||
-          pcVar4->compassMapWorldSize[0] == pcVar4->compassMapWorldSize[1]) {
-        local_48 = ((compassMaxRange->current).value * 0.5) / pcVar4->compassMapWorldSize[1];
-        local_18 = pcVar4->compassMapWorldSize[1] / pcVar4->compassMapWorldSize[0];
-        local_3c = 1.0;
+      east = cgameGlob_00->compassNorth[1];
+      local_20 = -cgameGlob_00->compassNorth[0];
+      south = -cgameGlob_00->compassNorth[0];
+      local_28 = -cgameGlob_00->compassNorth[1];
+      fVar5 = mapCenter - cgameGlob_00->compassMapUpperLeft[0];
+      fVar4 = local_c - cgameGlob_00->compassMapUpperLeft[1];
+      centerS = (fVar5 * east + fVar4 * local_20) / cgameGlob_00->compassMapWorldSize[0];
+      fVar5 = (fVar5 * south + fVar4 * local_28) / cgameGlob_00->compassMapWorldSize[1];
+      if (cgameGlob_00->compassMapWorldSize[0] < cgameGlob_00->compassMapWorldSize[1] ||
+          cgameGlob_00->compassMapWorldSize[0] == cgameGlob_00->compassMapWorldSize[1]) {
+        texRadius = ((compassMaxRange->current).value * 0.5) / cgameGlob_00->compassMapWorldSize[1];
+        scaleFinalS = cgameGlob_00->compassMapWorldSize[1] / cgameGlob_00->compassMapWorldSize[0];
+        scaleFinalT = 1.0;
       }
       else {
-        local_48 = ((compassMaxRange->current).value * 0.5) / pcVar4->compassMapWorldSize[0];
-        local_18 = 1.0;
-        local_3c = pcVar4->compassMapWorldSize[0] / pcVar4->compassMapWorldSize[1];
+        texRadius = ((compassMaxRange->current).value * 0.5) / cgameGlob_00->compassMapWorldSize[0];
+        scaleFinalS = 1.0;
+        scaleFinalT = cgameGlob_00->compassMapWorldSize[0] / cgameGlob_00->compassMapWorldSize[1];
       }
       if ((compassRotation->current).enabled == false) {
-        local_44 = 0.0;
+        rotation = 0.0;
       }
       else {
-        local_44 = -(pcVar4->refdefViewAngles[1] - pcVar4->compassNorthYaw);
+        rotation = -(cgameGlob_00->refdefViewAngles[1] - cgameGlob_00->compassNorthYaw);
       }
-      CG_CompassCalcDimensions
-                (COMPASS_TYPE_PARTIAL,pcVar4,param_3,param_4,&local_34,&local_30,&local_14,&local_1c
-                );
-      if (param_7) {
+      CG_CompassCalcDimensions(COMPASS_TYPE_PARTIAL,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+      if (grid) {
         CL_DrawStretchPicRotatedST
-                  ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_34,local_30,local_14,
-                   local_1c,param_4->horzAlign,param_4->vertAlign,(float)local_8 * fVar6,
-                   (float)iVar1 * fVar7,local_48,(float)local_8 * local_18,(float)iVar1 * local_3c,
-                   local_44,param_6,param_5);
+                  ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                   rect->horzAlign,rect->vertAlign,(float)cols * centerS,(float)iVar1 * fVar5,
+                   texRadius,(float)cols * scaleFinalS,(float)iVar1 * scaleFinalT,rotation,color,
+                   material);
       }
       else {
         CL_DrawStretchPicRotatedST
-                  ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_34,local_30,local_14,
-                   local_1c,param_4->horzAlign,param_4->vertAlign,fVar6,fVar7,local_48,local_18,
-                   local_3c,local_44,param_6,pcVar4->compassMapMaterial);
+                  ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                   rect->horzAlign,rect->vertAlign,centerS,fVar5,texRadius,scaleFinalS,scaleFinalT,
+                   rotation,color,cgameGlob_00->compassMapMaterial);
       }
     }
     else {
-      if ((param_2 != COMPASS_TYPE_FULL) &&
+      if ((compassType != COMPASS_TYPE_FULL) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x550,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      CG_CompassCalcDimensions
-                (param_2,pcVar4,param_3,param_4,&local_34,&local_30,&local_14,&local_1c);
-      if (param_7) {
-        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_34,&local_30,
-                           &local_14,&local_1c,param_4->horzAlign,param_4->vertAlign);
-        R_AddCmdSetScissorValues
-                  (true,(int)(local_34 + 3.0),(int)(local_30 + 3.0),(int)(local_14 - 3.0),
-                   (int)(local_1c - 3.0));
+      CG_CompassCalcDimensions(compassType,cgameGlob_00,parentRect,rect,&x,&y,&w,&h);
+      if (grid) {
+        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&x,&y,&w,&h,
+                           rect->horzAlign,rect->vertAlign);
+        R_AddCmdSetScissorValues(true,(int)(x + 3.0),(int)(y + 3.0),(int)(w - 3.0),(int)(h - 3.0));
         CL_DrawStretchPicPhysical
-                  (local_34,local_30,local_14,local_1c,0.0,0.0,(float)local_8 * 1.0,
-                   (float)iVar1 * 1.0,param_6,param_5);
+                  (x,y,w,h,0.0,0.0,(float)cols * 1.0,(float)iVar1 * 1.0,color,material);
         R_AddCmdSetScissorValues(false,0,0,0,0);
       }
       else {
-        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_34,local_30,
-                          local_14,local_1c,param_4->horzAlign,param_4->vertAlign,0.0,0.0,1.0,1.0,
-                          param_6,pcVar4->compassMapMaterial);
+        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                          rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,color,
+                          cgameGlob_00->compassMapMaterial);
       }
     }
   }
@@ -1675,77 +1732,80 @@ CG_CompassDrawPlayerMap
 
 void __cdecl
 CG_CompassDrawPlayerMapLocationSelector
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
+  char *name;
+  uint uVar3;
+  float fVar4;
   float fVar5;
   float fVar6;
-  float local_5c;
+  char *mtlName;
+  int mtlIndex;
+  float diffAngles;
   float local_58;
-  cg_s *local_50;
-  float local_4c;
-  Material *local_48;
-  float local_44;
+  cg_s *cgameGlob;
+  float radius;
+  Material *selectorMaterial;
+  float posScreen;
   float local_40;
-  float local_3c;
-  float local_38;
-  float local_34;
+  float yawTo;
+  float quadRad;
+  float quadMax;
   float local_30;
-  float local_2c;
+  float quadMin;
   float local_28;
-  float local_24;
+  float scaledRect;
   float local_20;
   float local_1c;
   float local_18 [3];
-  float local_c;
+  float texMin;
   float local_8;
   
-  if ((param_3 == (rectDef_s *)0x0) &&
+  if ((parentRect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x578,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x579,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 != COMPASS_TYPE_FULL) &&
+  if ((compassType != COMPASS_TYPE_FULL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x57b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_50 = CG_GetLocalClientGlobals(param_1);
-  if ((local_50->compassMapWorldSize[0] == 0.0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->compassMapWorldSize[0] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x57f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_50->compassMapWorldSize[1] == 0.0) &&
+  if ((cgameGlob->compassMapWorldSize[1] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x580,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_50->predictedPlayerState).locationSelectionInfo != 0) {
+  if ((cgameGlob->predictedPlayerState).locationSelectionInfo != 0) {
     CG_CompassCalcDimensions
-              (param_2,local_50,param_3,param_4,&local_24,&local_20,&local_1c,local_18);
-    uVar4 = (local_50->predictedPlayerState).locationSelectionInfo & 0xf;
-    if ((0xe < uVar4 - 1) &&
+              (compassType,cgameGlob,parentRect,rect,&scaledRect,&local_20,&local_1c,local_18);
+    uVar3 = (cgameGlob->predictedPlayerState).locationSelectionInfo & 0xf;
+    if ((0xe < uVar3 - 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x588,0,
                                  "mtlIndex doesn\'t index MAX_LOC_SEL_MTLS\n\t%i not in [0, %i)"),
        !bVar2)) {
@@ -1753,51 +1813,51 @@ CG_CompassDrawPlayerMapLocationSelector
       (*pcVar1)();
       return;
     }
-    pcVar3 = CL_GetConfigString(uVar4 + 0x610);
-    local_48 = Material_RegisterHandle(pcVar3,7);
-    local_4c = (float)((local_50->predictedPlayerState).locationSelectionInfo >> 4) / 15.0;
-    if (0.0 < local_4c) {
-      local_38 = local_4c * local_18[0];
-      local_44 = local_1c * local_50->selectedLocation[0] + local_24;
-      local_40 = local_18[0] * local_50->selectedLocation[1] + local_20;
-      local_c = (local_24 - local_44) / local_38 + 0.5;
-      local_8 = (local_20 - local_40) / local_38 + 0.5;
-      fVar5 = ((local_24 + local_1c) - local_44) / local_38 + 0.5;
-      fVar6 = ((local_20 + local_18[0]) - local_40) / local_38 + 0.5;
-      local_2c = local_24;
+    name = CL_GetConfigString(uVar3 + 0x610);
+    selectorMaterial = Material_RegisterHandle(name,7);
+    fVar4 = (float)((cgameGlob->predictedPlayerState).locationSelectionInfo >> 4) / 15.0;
+    if (0.0 < fVar4) {
+      quadRad = fVar4 * local_18[0];
+      posScreen = local_1c * cgameGlob->selectedLocation[0] + scaledRect;
+      local_40 = local_18[0] * cgameGlob->selectedLocation[1] + local_20;
+      texMin = (scaledRect - posScreen) / quadRad + 0.5;
+      local_8 = (local_20 - local_40) / quadRad + 0.5;
+      fVar5 = ((scaledRect + local_1c) - posScreen) / quadRad + 0.5;
+      fVar6 = ((local_20 + local_18[0]) - local_40) / quadRad + 0.5;
+      quadMin = scaledRect;
       local_28 = local_20;
-      local_34 = local_24 + local_1c;
+      quadMax = scaledRect + local_1c;
       local_30 = local_20 + local_18[0];
-      if (local_c < 0.0) {
-        local_2c = ((0.0 - local_c) / (fVar5 - local_c)) * (local_34 - local_24) + local_24;
-        local_c = 0.0;
+      if (texMin < 0.0) {
+        quadMin = ((0.0 - texMin) / (fVar5 - texMin)) * (quadMax - scaledRect) + scaledRect;
+        texMin = 0.0;
       }
       if (local_8 < 0.0) {
         local_28 = ((0.0 - local_8) / (fVar6 - local_8)) * (local_30 - local_20) + local_20;
         local_8 = 0.0;
       }
       if (1.0 < fVar5) {
-        local_34 = ((1.0 - local_c) / (fVar5 - local_c)) * (local_34 - local_2c) + local_2c;
+        quadMax = ((1.0 - texMin) / (fVar5 - texMin)) * (quadMax - quadMin) + quadMin;
       }
       if (1.0 < fVar6) {
         local_30 = ((1.0 - local_8) / (fVar6 - local_8)) * (local_30 - local_28) + local_28;
       }
-      local_3c = 0.0;
-      if ((local_50->compassMapWorldSize[1] <= 0.0) || (local_4c <= 0.0)) {
-        local_4c = local_4c * 250.0;
+      yawTo = 0.0;
+      if ((cgameGlob->compassMapWorldSize[1] <= 0.0) || (fVar4 <= 0.0)) {
+        radius = fVar4 * 250.0;
       }
       else {
-        local_4c = (local_50->compassMapWorldSize[1] / 25.0) * local_4c;
+        radius = (cgameGlob->compassMapWorldSize[1] / 25.0) * fVar4;
       }
-      yawVector[0] = local_50->selectedYaw[0];
-      yawVector[1] = local_50->selectedYaw[1];
-      vectoangles(yawVector,&local_5c);
-      local_3c = local_58;
-      local_44 = local_44 - local_4c * 0.5;
-      local_40 = local_40 - local_4c * 0.5;
-      CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_44,local_40,
-                        local_4c,local_4c,param_4->horzAlign,param_4->vertAlign,local_58,param_6,
-                        local_48);
+      yawVector[0] = cgameGlob->selectedYaw[0];
+      yawVector[1] = cgameGlob->selectedYaw[1];
+      vectoangles(yawVector,&diffAngles);
+      yawTo = local_58;
+      posScreen = posScreen - radius * 0.5;
+      local_40 = local_40 - radius * 0.5;
+      CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),posScreen,
+                        local_40,radius,radius,rect->horzAlign,rect->vertAlign,local_58,color,
+                        selectorMaterial);
     }
   }
   return;
@@ -1813,82 +1873,82 @@ CG_CompassDrawPlayerMapLocationSelector
 
 void __cdecl
 CG_CompassDrawPlayerSelectedLocations
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_78;
+  float diffAngles;
   float local_74;
-  float local_6c;
-  int local_68;
-  float local_64;
+  float yawTo;
+  int i;
+  float texMax;
   float local_60;
-  char *local_5c;
-  uint local_58;
-  int local_54;
-  cg_s *local_50;
-  float local_4c;
-  Material *local_48;
-  float local_44;
+  char *mtlName;
+  int mtlIndex;
+  int locationsSelected;
+  cg_s *cgameGlob;
+  float radius;
+  Material *selectorMaterial;
+  float posScreen;
   float local_40;
-  float local_3c;
-  float local_38;
+  float quadRad;
+  float quadMax;
   float local_34;
-  float local_30;
+  float quadMin;
   float local_2c;
-  float local_28;
+  float scaledRect;
   float local_24;
   float local_20;
   float local_1c [3];
-  float local_10;
+  float texMin;
   float local_c;
-  char local_5;
+  bool lastSelected;
   
-  local_54 = 0;
-  if ((param_3 == (rectDef_s *)0x0) &&
+  locationsSelected = 0;
+  if ((parentRect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x5e7,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x5e8,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 != COMPASS_TYPE_FULL) &&
+  if ((compassType != COMPASS_TYPE_FULL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x5ea,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_50 = CG_GetLocalClientGlobals(param_1);
-  if ((local_50->compassMapWorldSize[0] == 0.0) &&
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->compassMapWorldSize[0] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x5ee,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_50->compassMapWorldSize[1] == 0.0) &&
+  if ((cgameGlob->compassMapWorldSize[1] == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x5ef,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_50->predictedPlayerState).locationSelectionInfo != 0) &&
-     ((local_50->predictedPlayerState).locationSelectionType == LOC_SEL_MORTAR)) {
+  if (((cgameGlob->predictedPlayerState).locationSelectionInfo != 0) &&
+     ((cgameGlob->predictedPlayerState).locationSelectionType == LOC_SEL_MORTAR)) {
     CG_CompassCalcDimensions
-              (param_2,local_50,param_3,param_4,&local_28,&local_24,&local_20,local_1c);
-    local_58 = ((local_50->predictedPlayerState).locationSelectionInfo & 0xfU) - 1;
-    if ((0xe < local_58) &&
+              (compassType,cgameGlob,parentRect,rect,&scaledRect,&local_24,&local_20,local_1c);
+    mtlIndex = ((cgameGlob->predictedPlayerState).locationSelectionInfo & 0xfU) - 1;
+    if ((0xe < (uint)mtlIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x5fa,0,
                                  "mtlIndex doesn\'t index MAX_LOC_SEL_MTLS\n\t%i not in [0, %i)"),
        !bVar2)) {
@@ -1896,69 +1956,70 @@ CG_CompassDrawPlayerSelectedLocations
       (*pcVar1)();
       return;
     }
-    local_5c = CL_GetConfigString(local_58 + 0x611);
-    local_48 = Material_RegisterHandle(local_5c,7);
-    local_5 = '\x01';
-    for (local_68 = 2; -1 < local_68; local_68 = local_68 + -1) {
-      local_4c = (float)((local_50->predictedPlayerState).locationSelectionInfo >> 4) / 15.0;
-      if (((0.0 < local_4c) &&
-          ((local_50->selectedLocations[local_68][0] != -1.0 ||
-           (local_50->selectedLocations[local_68][1] != -1.0)))) &&
-         ((local_5 != '\x01' || (local_5 = '\0', local_50->lastTimeSelected <= local_50->time)))) {
-        local_54 = local_54 + 1;
-        local_3c = local_4c * local_1c[0];
-        local_44 = local_20 * local_50->selectedLocations[local_68][0] + local_28;
-        local_40 = local_1c[0] * local_50->selectedLocations[local_68][1] + local_24;
-        local_10 = (local_28 - local_44) / local_3c + 0.5;
-        local_c = (local_24 - local_40) / local_3c + 0.5;
-        local_64 = ((local_28 + local_20) - local_44) / local_3c + 0.5;
-        local_60 = ((local_24 + local_1c[0]) - local_40) / local_3c + 0.5;
-        local_30 = local_28;
+    mtlName = CL_GetConfigString(mtlIndex + 0x611);
+    selectorMaterial = Material_RegisterHandle(mtlName,7);
+    lastSelected = true;
+    for (i = 2; -1 < i; i = i + -1) {
+      radius = (float)((cgameGlob->predictedPlayerState).locationSelectionInfo >> 4) / 15.0;
+      if (((0.0 < radius) &&
+          ((cgameGlob->selectedLocations[i][0] != -1.0 ||
+           (cgameGlob->selectedLocations[i][1] != -1.0)))) &&
+         ((lastSelected != true ||
+          (lastSelected = false, cgameGlob->lastTimeSelected <= cgameGlob->time)))) {
+        locationsSelected = locationsSelected + 1;
+        quadRad = radius * local_1c[0];
+        posScreen = local_20 * cgameGlob->selectedLocations[i][0] + scaledRect;
+        local_40 = local_1c[0] * cgameGlob->selectedLocations[i][1] + local_24;
+        texMin = (scaledRect - posScreen) / quadRad + 0.5;
+        local_c = (local_24 - local_40) / quadRad + 0.5;
+        texMax = ((scaledRect + local_20) - posScreen) / quadRad + 0.5;
+        local_60 = ((local_24 + local_1c[0]) - local_40) / quadRad + 0.5;
+        quadMin = scaledRect;
         local_2c = local_24;
-        local_38 = local_28 + local_20;
+        quadMax = scaledRect + local_20;
         local_34 = local_24 + local_1c[0];
-        if (local_10 < 0.0) {
-          local_30 = ((0.0 - local_10) / (local_64 - local_10)) * (local_38 - local_28) + local_28;
-          local_10 = 0.0;
+        if (texMin < 0.0) {
+          quadMin = ((0.0 - texMin) / (texMax - texMin)) * (quadMax - scaledRect) + scaledRect;
+          texMin = 0.0;
         }
         if (local_c < 0.0) {
           local_2c = ((0.0 - local_c) / (local_60 - local_c)) * (local_34 - local_24) + local_24;
           local_c = 0.0;
         }
-        if (1.0 < local_64) {
-          local_38 = ((1.0 - local_10) / (local_64 - local_10)) * (local_38 - local_30) + local_30;
-          local_64 = 1.0;
+        if (1.0 < texMax) {
+          quadMax = ((1.0 - texMin) / (texMax - texMin)) * (quadMax - quadMin) + quadMin;
+          texMax = 1.0;
         }
         if (1.0 < local_60) {
           local_34 = ((1.0 - local_c) / (local_60 - local_c)) * (local_34 - local_2c) + local_2c;
           local_60 = 1.0;
         }
-        local_6c = 0.0;
-        if ((local_50->compassMapWorldSize[1] <= 0.0) || (local_4c <= 0.0)) {
-          local_4c = local_4c * 250.0;
+        yawTo = 0.0;
+        if ((cgameGlob->compassMapWorldSize[1] <= 0.0) || (radius <= 0.0)) {
+          radius = radius * 250.0;
         }
         else {
-          local_4c = (local_50->compassMapWorldSize[1] / 25.0) * local_4c;
+          radius = (cgameGlob->compassMapWorldSize[1] / 25.0) * radius;
         }
-        yawVector[0] = local_50->selectedYaw[0];
-        yawVector[1] = local_50->selectedYaw[1];
-        vectoangles(yawVector,&local_78);
-        local_6c = local_74;
-        local_44 = local_44 - local_4c * 0.5;
-        local_40 = local_40 - local_4c * 0.5;
-        CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_44,local_40,
-                          local_4c,local_4c,param_4->horzAlign,param_4->vertAlign,local_74,param_6,
+        yawVector[0] = cgameGlob->selectedYaw[0];
+        yawVector[1] = cgameGlob->selectedYaw[1];
+        vectoangles(yawVector,&diffAngles);
+        yawTo = local_74;
+        posScreen = posScreen - radius * 0.5;
+        local_40 = local_40 - radius * 0.5;
+        CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),posScreen,
+                          local_40,radius,radius,rect->horzAlign,rect->vertAlign,local_74,color,
                           cgMedia.compass_mortar_selector);
       }
     }
-    if ((3 < local_54) &&
+    if ((3 < locationsSelected) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x64e,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Dvar_SetInt(mortarStrikesLeft,3 - local_54);
+    Dvar_SetInt(mortarStrikesLeft,3 - locationsSelected);
   }
   return;
 }
@@ -1966,34 +2027,34 @@ CG_CompassDrawPlayerSelectedLocations
 
 // 00489F40  GetObjectiveFade  (cgame/cg_compass.cpp:1620)
 
-float __cdecl
-GetObjectiveFade(rectDef_s *param_1,float param_2,float param_3,float param_4,float param_5)
+float __cdecl GetObjectiveFade(rectDef_s *clipRect,float x,float y,float width,float height)
 
 {
   float fVar1;
-  float local_8;
+  float clip;
+  float maxclip;
   
-  local_8 = 0.0;
-  fVar1 = (param_1->x - param_2) / param_4;
+  maxclip = 0.0;
+  fVar1 = (clipRect->x - x) / width;
   if (0.0 < fVar1) {
-    local_8 = fVar1;
+    maxclip = fVar1;
   }
-  fVar1 = (param_1->y - param_3) / param_5;
-  if (local_8 < fVar1) {
-    local_8 = fVar1;
+  fVar1 = (clipRect->y - y) / height;
+  if (maxclip < fVar1) {
+    maxclip = fVar1;
   }
-  fVar1 = ((param_2 + param_4) - (param_1->x + param_1->w)) / param_4;
-  if (local_8 < fVar1) {
-    local_8 = fVar1;
+  fVar1 = ((x + width) - (clipRect->x + clipRect->w)) / width;
+  if (maxclip < fVar1) {
+    maxclip = fVar1;
   }
-  fVar1 = ((param_3 + param_5) - (param_1->y + param_1->h)) / param_5;
-  if (local_8 < fVar1) {
-    local_8 = fVar1;
+  fVar1 = ((y + height) - (clipRect->y + clipRect->h)) / height;
+  if (maxclip < fVar1) {
+    maxclip = fVar1;
   }
-  if (1.0 < local_8) {
-    local_8 = 1.0;
+  if (1.0 < maxclip) {
+    maxclip = 1.0;
   }
-  return 1.0 - local_8;
+  return 1.0 - maxclip;
 }
 
 
@@ -2007,117 +2068,119 @@ GetObjectiveFade(rectDef_s *param_1,float param_2,float param_3,float param_4,fl
 
 void __cdecl
 CG_CompassDrawPlayer
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_5c [2];
-  undefined1 local_51;
-  float local_50;
+  float yawVector [2];
+  bool clipped;
+  float xy_2;
   float local_4c;
-  float local_48;
+  float xy;
   float local_44;
-  cg_s *local_40;
-  float local_3c;
-  float local_38;
-  rectDef_s local_34;
-  float local_1c;
-  float local_18;
-  playerState_s *local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  cg_s *cgameGlob;
+  float angle;
+  float centerY;
+  rectDef_s scaledRect;
+  float x;
+  float y;
+  playerState_s *ps;
+  float centerX;
+  float h;
+  float w;
   
-  local_40 = CG_GetLocalClientGlobals(param_1);
-  local_14 = &local_40->predictedPlayerState;
-  if ((((local_40->predictedPlayerState).eFlags & 0x4000U) == 0) ||
-     (((local_40->predictedPlayerState).eFlags2 & 0x10000000U) != 0)) {
-    fVar3 = CG_FadeCompass(param_1,local_40->compassFadeTime,param_2);
-    param_6[3] = fVar3 * param_6[3];
-    fVar3 = CG_FadeCompassIcons(param_1,false);
-    param_6[3] = fVar3 * param_6[3];
-    if (param_6[3] != 0.0) {
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) ||
+     (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) != 0)) {
+    fVar3 = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+    color[3] = fVar3 * color[3];
+    fVar3 = CG_FadeCompassIcons(localClientNum,false);
+    color[3] = fVar3 * color[3];
+    if (color[3] != 0.0) {
       CG_CompassCalcDimensions
-                (param_2,local_40,param_3,param_4,&local_34.x,&local_34.y,&local_34.w,&local_34.h);
-      local_10 = local_34.w * 0.5 + local_34.x;
-      local_38 = local_34.h * 0.5 + local_34.y;
-      if (param_2 == COMPASS_TYPE_FULL) {
-        local_8 = (cg_hudMapPlayerWidth->current).value;
-        local_c = (cg_hudMapPlayerHeight->current).value;
-        local_48 = 0.0;
+                (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                 &scaledRect.h);
+      centerX = scaledRect.w * 0.5 + scaledRect.x;
+      centerY = scaledRect.h * 0.5 + scaledRect.y;
+      if (compassType == COMPASS_TYPE_FULL) {
+        w = (cg_hudMapPlayerWidth->current).value;
+        h = (cg_hudMapPlayerHeight->current).value;
+        xy = 0.0;
         local_44 = 0.0;
-        if (((local_40->predictedPlayerState).otherFlags & 2U) == 0) {
+        if (((cgameGlob->predictedPlayerState).otherFlags & 2U) == 0) {
           CG_WorldPosToCompass
-                    (COMPASS_TYPE_FULL,local_40,&local_34,(float *)0x0,(local_40->refdef).vieworg,
-                     (local_40->refdef).vieworg,(float *)0x0,&local_48);
+                    (COMPASS_TYPE_FULL,cgameGlob,&scaledRect,(float *)0x0,
+                     (cgameGlob->refdef).vieworg,(cgameGlob->refdef).vieworg,(float *)0x0,&xy);
         }
         else {
           CG_WorldPosToCompass
-                    (COMPASS_TYPE_FULL,local_40,&local_34,(float *)0x0,
-                     (local_40->predictedPlayerState).origin,(local_40->predictedPlayerState).origin
-                     ,(float *)0x0,&local_48);
+                    (COMPASS_TYPE_FULL,cgameGlob,&scaledRect,(float *)0x0,
+                     (cgameGlob->predictedPlayerState).origin,
+                     (cgameGlob->predictedPlayerState).origin,(float *)0x0,&xy);
         }
-        local_1c = local_48;
-        local_18 = local_44;
+        x = xy;
+        y = local_44;
       }
       else {
-        if ((param_2 != COMPASS_TYPE_PARTIAL) &&
+        if ((compassType != COMPASS_TYPE_PARTIAL) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",
                                      0x6a8,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        fVar3 = CG_FadeCompass(param_1,local_40->compassFadeTime,param_2);
-        param_6[3] = fVar3;
-        if (param_6[3] == 0.0) {
+        fVar3 = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+        color[3] = fVar3;
+        if (color[3] == 0.0) {
           return;
         }
-        local_8 = (compassPlayerWidth->current).value * (compassSize->current).value;
-        local_c = (compassPlayerHeight->current).value * (compassSize->current).value;
-        GamerProfile_WriteSettings(param_2);
-        local_1c = 0.0;
-        local_18 = 0.0;
+        w = (compassPlayerWidth->current).value * (compassSize->current).value;
+        h = (compassPlayerHeight->current).value * (compassSize->current).value;
+        GamerProfile_WriteSettings(compassType);
+        x = 0.0;
+        y = 0.0;
       }
-      if (((local_40->predictedPlayerState).eFlags2 & 0x10000000U) == 0) {
-        if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)) {
-          local_3c = 0.0;
+      if (((cgameGlob->predictedPlayerState).eFlags2 & 0x10000000U) == 0) {
+        if ((compassType == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false))
+        {
+          angle = 0.0;
         }
         else {
-          local_3c = AngleNormalize180(local_40->compassNorthYaw - local_40->refdefViewAngles[1]);
+          angle = AngleNormalize180(cgameGlob->compassNorthYaw - cgameGlob->refdefViewAngles[1]);
         }
       }
       else {
-        local_50 = 0.0;
+        xy_2 = 0.0;
         local_4c = 0.0;
-        CG_CompassUpYawVector(local_40,local_5c);
-        local_51 = CG_WorldPosToCompass
-                             (param_2,local_40,&local_34,local_5c,(local_40->refdef).vieworg,
-                              (local_40->predictedPlayerState).origin,(float *)0x0,&local_50);
-        if (((bool)local_51) && ((compassClampIcons->current).enabled == false)) {
+        CG_CompassUpYawVector(cgameGlob,yawVector);
+        clipped = CG_WorldPosToCompass
+                            (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg
+                             ,(cgameGlob->predictedPlayerState).origin,(float *)0x0,&xy_2);
+        if ((clipped) && ((compassClampIcons->current).enabled == false)) {
           return;
         }
-        local_1c = local_50;
-        local_18 = local_4c;
-        if ((param_2 == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false)) {
-          local_3c = AngleNormalize360(local_40->refdefViewAngles[1] -
-                                       (local_40->predictedPlayerEntity).nextState.lerp.apos.trBase
-                                       [1]);
+        x = xy_2;
+        y = local_4c;
+        if ((compassType == COMPASS_TYPE_PARTIAL) && ((compassRotation->current).enabled != false))
+        {
+          angle = AngleNormalize360(cgameGlob->refdefViewAngles[1] -
+                                    (cgameGlob->predictedPlayerEntity).nextState.lerp.apos.trBase[1]
+                                   );
         }
         else {
-          local_3c = AngleNormalize360(local_40->compassNorthYaw -
-                                       (local_40->predictedPlayerEntity).nextState.lerp.apos.trBase
-                                       [1]);
+          angle = AngleNormalize360(cgameGlob->compassNorthYaw -
+                                    (cgameGlob->predictedPlayerEntity).nextState.lerp.apos.trBase[1]
+                                   );
         }
       }
-      local_1c = (local_10 - local_8 * 0.5) + local_1c;
-      local_18 = (local_38 - local_c * 0.5) + local_18;
-      CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c,local_18,
-                        local_8,local_c,param_4->horzAlign,param_4->vertAlign,local_3c,param_6,
-                        param_5);
+      x = (centerX - w * 0.5) + x;
+      y = (centerY - h * 0.5) + y;
+      CG_DrawRotatedPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                        rect->horzAlign,rect->vertAlign,angle,color,material);
     }
   }
   return;
@@ -2133,68 +2196,70 @@ CG_CompassDrawPlayer
 
 void __cdecl
 CG_CompassDrawBorder
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  float fVar4;
-  float local_20;
-  float local_1c;
+  cg_s *cgameGlob_00;
+  float fVar3;
+  cg_s *cgameGlob;
+  float borderWidth;
+  float border;
+  float scaledRect;
   float local_18;
   float local_14;
   float local_10 [3];
   
-  if ((param_2 != COMPASS_TYPE_FULL) &&
+  if ((compassType != COMPASS_TYPE_FULL) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x6e9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_20 = (cg_hudMapBorderWidth->current).value;
-  if (0.0 < local_20) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    fVar4 = CG_FadeCompass(param_1,pcVar3->compassFadeTime,param_2);
-    param_6[3] = fVar4;
-    if (param_6[3] != 0.0) {
+  border = (cg_hudMapBorderWidth->current).value;
+  if (0.0 < border) {
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    fVar3 = CG_FadeCompass(localClientNum,cgameGlob_00->compassFadeTime,compassType);
+    color[3] = fVar3;
+    if (color[3] != 0.0) {
       CG_CompassCalcDimensions
-                (param_2,pcVar3,param_3,param_4,&local_1c,&local_18,&local_14,local_10);
-      if (local_14 * 0.5 < local_20) {
-        local_20 = local_14 * 0.5;
+                (compassType,cgameGlob_00,parentRect,rect,&scaledRect,&local_18,&local_14,local_10);
+      if (local_14 * 0.5 < border) {
+        border = local_14 * 0.5;
       }
-      if (local_10[0] * 0.5 < local_20) {
-        local_20 = local_10[0] * 0.5;
+      if (local_10[0] * 0.5 < border) {
+        border = local_10[0] * 0.5;
       }
-      fVar4 = local_20 * 2.0;
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c - local_20,
-                        (local_18 + local_10[0]) - local_20,fVar4,fVar4,param_4->horzAlign,
-                        param_4->vertAlign,0.0,0.5,0.5,1.0,param_6,param_5);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c - local_20,
-                        local_18 - local_20,fVar4,fVar4,param_4->horzAlign,param_4->vertAlign,0.0,
-                        0.0,0.5,0.5,param_6,param_5);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                        (local_1c + local_14) - local_20,(local_18 + local_10[0]) - local_20,fVar4,
-                        fVar4,param_4->horzAlign,param_4->vertAlign,0.5,0.5,1.0,1.0,param_6,param_5)
-      ;
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                        (local_1c + local_14) - local_20,local_18 - local_20,fVar4,fVar4,
-                        param_4->horzAlign,param_4->vertAlign,0.5,0.0,1.0,0.5,param_6,param_5);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c - local_20,
-                        local_18 + local_20,fVar4,local_10[0] - local_20 * 2.0,param_4->horzAlign,
-                        param_4->vertAlign,0.0,0.5,0.5,0.5,param_6,param_5);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                        (local_1c + local_14) - local_20,local_18 + local_20,fVar4,
-                        local_10[0] - local_20 * 2.0,param_4->horzAlign,param_4->vertAlign,0.5,0.5,
-                        1.0,0.5,param_6,param_5);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c + local_20,
-                        local_18 - local_20,local_14 - local_20 * 2.0,fVar4,param_4->horzAlign,
-                        param_4->vertAlign,0.5,0.0,0.5,0.5,param_6,param_5);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_1c + local_20,
-                        (local_18 + local_10[0]) - local_20,local_14 - local_20 * 2.0,fVar4,
-                        param_4->horzAlign,param_4->vertAlign,0.5,0.5,0.5,1.0,param_6,param_5);
+      fVar3 = border * 2.0;
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        scaledRect - border,(local_18 + local_10[0]) - border,fVar3,fVar3,
+                        rect->horzAlign,rect->vertAlign,0.0,0.5,0.5,1.0,color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        scaledRect - border,local_18 - border,fVar3,fVar3,rect->horzAlign,
+                        rect->vertAlign,0.0,0.0,0.5,0.5,color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        (scaledRect + local_14) - border,(local_18 + local_10[0]) - border,fVar3,
+                        fVar3,rect->horzAlign,rect->vertAlign,0.5,0.5,1.0,1.0,color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        (scaledRect + local_14) - border,local_18 - border,fVar3,fVar3,
+                        rect->horzAlign,rect->vertAlign,0.5,0.0,1.0,0.5,color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        scaledRect - border,local_18 + border,fVar3,local_10[0] - border * 2.0,
+                        rect->horzAlign,rect->vertAlign,0.0,0.5,0.5,0.5,color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        (scaledRect + local_14) - border,local_18 + border,fVar3,
+                        local_10[0] - border * 2.0,rect->horzAlign,rect->vertAlign,0.5,0.5,1.0,0.5,
+                        color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        scaledRect + border,local_18 - border,local_14 - border * 2.0,fVar3,
+                        rect->horzAlign,rect->vertAlign,0.5,0.0,0.5,0.5,color,material);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        scaledRect + border,(local_18 + local_10[0]) - border,
+                        local_14 - border * 2.0,fVar3,rect->horzAlign,rect->vertAlign,0.5,0.5,0.5,
+                        1.0,color,material);
     }
   }
   return;
@@ -2208,15 +2273,15 @@ CG_CompassDrawBorder
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CompassUpYawVector(cg_s *param_1,float *param_2)
+void __cdecl CG_CompassUpYawVector(cg_s *cgameGlob,float *result)
 
 {
   if ((compassRotation->current).enabled == false) {
-    *param_2 = param_1->compassNorth[0];
-    param_2[1] = param_1->compassNorth[1];
+    *result = cgameGlob->compassNorth[0];
+    result[1] = cgameGlob->compassNorth[1];
   }
   else {
-    YawVectors2D(param_1->refdefViewAngles[1],param_2,(float *)0x0);
+    YawVectors2D(cgameGlob->refdefViewAngles[1],result,(float *)0x0);
   }
   return;
 }
@@ -2224,13 +2289,13 @@ void __cdecl CG_CompassUpYawVector(cg_s *param_1,float *param_2)
 
 // 00488320  CalcCompassPointerSize  (cgame/cg_compass.cpp:1824)
 
-void __cdecl CalcCompassPointerSize(CompassType param_1,float *param_2,float *param_3)
+void __cdecl CalcCompassPointerSize(CompassType compassType,float *w,float *h)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (float *)0x0) {
+  if (w == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x721,0,"%s"
                             );
     if (!bVar2) {
@@ -2239,7 +2304,7 @@ void __cdecl CalcCompassPointerSize(CompassType param_1,float *param_2,float *pa
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (h == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x722,0,"%s"
                             );
     if (!bVar2) {
@@ -2248,17 +2313,17 @@ void __cdecl CalcCompassPointerSize(CompassType param_1,float *param_2,float *pa
       return;
     }
   }
-  if (param_1 == COMPASS_TYPE_PARTIAL) {
-    *param_2 = (compassObjectiveWidth->current).value * (compassSize->current).value;
-    *param_3 = (compassObjectiveHeight->current).value * (compassSize->current).value;
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    *w = (compassObjectiveWidth->current).value * (compassSize->current).value;
+    *h = (compassObjectiveHeight->current).value * (compassSize->current).value;
   }
   else if ((zombiemode->current).enabled == false) {
-    *param_2 = (float)(compassObjectiveIconWidth->current).integer;
-    *param_3 = (float)(compassObjectiveIconHeight->current).integer;
+    *w = (float)(compassObjectiveIconWidth->current).integer;
+    *h = (float)(compassObjectiveIconHeight->current).integer;
   }
   else {
-    *param_2 = (float)(compassObjectiveIconWidthZombie->current).integer;
-    *param_3 = (float)(compassObjectiveIconHeightZombie->current).integer;
+    *w = (float)(compassObjectiveIconWidthZombie->current).integer;
+    *h = (float)(compassObjectiveIconHeightZombie->current).integer;
   }
   return;
 }
@@ -2268,36 +2333,36 @@ void __cdecl CalcCompassPointerSize(CompassType param_1,float *param_2,float *pa
 
 bool __cdecl
 CalcCompassPointerSizeObjective
-          (CompassType param_1,float *param_2,float *param_3,objective_t *param_4,rectDef_s *param_5
-          )
+          (CompassType compassType,float *w,float *h,objective_t *objective,rectDef_s *mapRect)
 
 {
   float fVar1;
-  bool local_5;
+  float pixPerInch;
+  bool shouldRotateWithView;
   
-  CalcCompassPointerSize(param_1,param_2,param_3);
-  local_5 = false;
-  if (param_1 == COMPASS_TYPE_PARTIAL) {
-    fVar1 = param_5->h / (compassMaxRange->current).value;
-    local_5 = param_4->size[0] != 0.0;
-    if (local_5) {
-      *param_2 = param_4->size[0] * fVar1;
+  CalcCompassPointerSize(compassType,w,h);
+  shouldRotateWithView = false;
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    fVar1 = mapRect->h / (compassMaxRange->current).value;
+    shouldRotateWithView = objective->size[0] != 0.0;
+    if (shouldRotateWithView) {
+      *w = objective->size[0] * fVar1;
     }
-    if (param_4->size[1] != 0.0) {
-      *param_3 = param_4->size[1] * fVar1;
-      local_5 = true;
+    if (objective->size[1] != 0.0) {
+      *h = objective->size[1] * fVar1;
+      shouldRotateWithView = true;
     }
   }
-  return local_5;
+  return shouldRotateWithView;
 }
 
 
 // 004885A0  CutFloat  (cgame/cg_compass.cpp:1984)
 
-float __cdecl CutFloat(float param_1)
+float __cdecl CutFloat(float original)
 
 {
-  return (float)(int)(param_1 * 10.0) * 0.1;
+  return (float)(int)(original * 10.0) * 0.1;
 }
 
 
@@ -2307,26 +2372,26 @@ float __cdecl CutFloat(float param_1)
 
 void __cdecl
 DrawIconDistanceText
-          (int param_1,float param_2,float param_3,float param_4,float param_5,rectDef_s *param_6,
-          float *param_7,Font_s *param_8,float param_9,int param_10)
+          (int localClientNum,float distance,float iconX,float iconY,float iconH,rectDef_s *rect,
+          float *color,Font_s *textFont,float textScale,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_6c [68];
+  char str [68];
   uint local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
+  float textY;
+  float textX;
+  float textWidth;
+  float textHeight;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_6 == (rectDef_s *)0x0) {
+  if (rect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",1999,0,"%s")
     ;
     if (!bVar2) {
@@ -2335,26 +2400,26 @@ DrawIconDistanceText
       return;
     }
   }
-  local_14 = 0.9;
+  colorMod = 0.9;
   local_10 = 1.0;
   local_c = 0.1;
-  local_8 = param_7[3];
-  if ((compassObjectiveDetailDist->current).value <= param_2) {
-    Com_sprintf(local_6c,0x40,"%im");
+  local_8 = color[3];
+  if ((compassObjectiveDetailDist->current).value <= distance) {
+    Com_sprintf(str,0x40,"%im");
   }
   else {
-    CutFloat(param_2);
-    Com_sprintf(local_6c,0x40,"%.1fm");
+    CutFloat(distance);
+    Com_sprintf(str,0x40,"%.1fm");
   }
-  iVar3 = UI_TextWidth(local_6c,0x14,param_8,param_9);
-  local_1c = (float)iVar3;
-  iVar3 = UI_TextHeight(param_8,param_9);
-  local_18 = (float)iVar3;
-  local_20 = param_3 - local_1c * 0.5;
-  local_24 = param_4 + param_5 + 2.0;
-  UI_DrawTextNoSnap((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_6c,0x7fffffff,param_8,
-                    local_20,local_24,param_6->horzAlign,param_6->vertAlign,param_9,&local_14,
-                    param_10);
+  iVar3 = UI_TextWidth(str,0x14,textFont,textScale);
+  textWidth = (float)iVar3;
+  iVar3 = UI_TextHeight(textFont,textScale);
+  textHeight = (float)iVar3;
+  textX = iconX - textWidth * 0.5;
+  textY = iconY + iconH + 2.0;
+  UI_DrawTextNoSnap((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,0x7fffffff,
+                    textFont,textX,textY,rect->horzAlign,rect->vertAlign,textScale,&colorMod,
+                    textStyle);
   return;
 }
 
@@ -2368,17 +2433,18 @@ DrawIconDistanceText
 
 void __cdecl
 CG_CompassDrawTickertape
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6,Font_s *param_7,float param_8,int param_9,bool param_10)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color,Font_s *textFont,float textScale,int textStyle,
+          bool drawObjectives)
 
 {
   code *pcVar1;
   float fVar2;
   bool bVar3;
-  Material *pMVar4;
-  double dVar5;
+  Material *material_00;
+  double dVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
   double in_stack_ffffff40;
   undefined4 in_stack_ffffff48;
   float in_stack_ffffff4c;
@@ -2414,22 +2480,22 @@ CG_CompassDrawTickertape
   float local_18;
   cg_s *local_14;
   
-  if ((param_2 != COMPASS_TYPE_PARTIAL) &&
+  if ((compassType != COMPASS_TYPE_PARTIAL) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x823,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = CG_GetLocalClientGlobals(param_1);
-  local_18 = CG_FadeCompass(param_1,local_14->compassFadeTime,param_2);
+  local_14 = CG_GetLocalClientGlobals(localClientNum);
+  local_18 = CG_FadeCompass(localClientNum,local_14->compassFadeTime,compassType);
   if (local_18 != 0.0) {
-    if (param_6[3] <= local_18 && local_18 != param_6[3]) {
-      local_18 = param_6[3];
+    if (color[3] <= local_18 && local_18 != color[3]) {
+      local_18 = color[3];
     }
-    local_28 = *param_6;
-    local_24 = param_6[1];
-    local_20 = param_6[2];
+    local_28 = *color;
+    local_24 = color[1];
+    local_20 = color[2];
     local_1c = local_18;
     local_2c = (compassPartialType->current).integer;
     if (local_2c == 0) {
@@ -2438,12 +2504,12 @@ CG_CompassDrawTickertape
       local_38 = local_34 - (compassTickertapeStretch->current).value * 0.5;
       local_3c = (compassTickertapeStretch->current).value * 0.5 + local_34;
       CG_CompassCalcDimensions
-                (param_2,local_14,param_3,param_4,&local_4c,&local_48,&local_44,&local_40);
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_4c,local_48,
-                        local_44,local_40,param_4->horzAlign,param_4->vertAlign,local_38,0.0,
-                        local_3c,1.0,&local_28,param_5);
-      if (param_10) {
-        CalcCompassPointerSize(param_2,&local_54,&local_50);
+                (compassType,local_14,parentRect,rect,&local_4c,&local_48,&local_44,&local_40);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),local_4c,local_48
+                        ,local_44,local_40,rect->horzAlign,rect->vertAlign,local_38,0.0,local_3c,1.0
+                        ,&local_28,material);
+      if (drawObjectives) {
+        CalcCompassPointerSize(compassType,&local_54,&local_50);
         local_58 = local_40 * 0.5 + local_48;
         local_5c = local_58 - local_50 * 0.5;
         local_60 = (compassTickertapeStretch->current).value * 360.0 * 0.5;
@@ -2457,7 +2523,7 @@ CG_CompassDrawTickertape
               local_7c = local_74->origin;
             }
             else {
-              local_78 = CG_GetEntity(param_1,local_74->entNum);
+              local_78 = CG_GetEntity(localClientNum,local_74->entNum);
               local_7c = (local_78->pose).origin;
             }
             local_1c = local_18;
@@ -2465,23 +2531,23 @@ CG_CompassDrawTickertape
               local_80 = (local_14->refdef).vieworg;
               local_88 = *local_7c - *local_80;
               local_84 = local_7c[1] - (local_14->refdef).vieworg[1];
-              fVar6 = Vec2Length(&local_88);
-              fVar6 = fVar6 * 0.0254;
-              if (fVar6 < local_68) {
+              fVar5 = Vec2Length(&local_88);
+              fVar5 = fVar5 * 0.0254;
+              if (fVar5 < local_68) {
                 local_6c = (local_14->refdef).vieworg[2] - local_7c[2];
-                local_68 = fVar6;
+                local_68 = fVar5;
               }
-              dVar5 = (double)local_84;
+              dVar4 = (double)local_84;
               __libm_sse2_atan2(in_stack_ffffff40,
                                 (double)CONCAT44(in_stack_ffffff4c,in_stack_ffffff48));
-              fVar7 = AngleNormalize360(((float)dVar5 * 180.0) / 3.1415927 -
+              fVar6 = AngleNormalize360(((float)dVar4 * 180.0) / 3.1415927 -
                                         local_14->compassNorthYaw);
-              fVar7 = AngleDelta(fVar7,local_64);
+              fVar6 = AngleDelta(fVar6,local_64);
               fVar2 = local_18;
-              fVar7 = -fVar7;
-              if (-local_60 <= fVar7) {
-                if (fVar7 <= local_60) {
-                  local_a0 = (fVar7 + local_60) / (local_60 * 2.0);
+              fVar6 = -fVar6;
+              if (-local_60 <= fVar6) {
+                if (fVar6 <= local_60) {
+                  local_a0 = (fVar6 + local_60) / (local_60 * 2.0);
                 }
                 else {
                   local_a0 = 1.0;
@@ -2490,16 +2556,16 @@ CG_CompassDrawTickertape
               else {
                 local_a0 = 0.0;
               }
-              pMVar4 = CG_ObjectiveIcon(param_1,local_74->icon,0);
-              fVar7 = local_44 * local_a0 + local_4c;
-              in_stack_ffffff4c = fVar7 - local_54 * 0.5;
-              CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                                in_stack_ffffff4c,local_5c,local_54,local_50,param_4->horzAlign,
-                                param_4->vertAlign,0.0,0.0,1.0,1.0,&local_28,pMVar4);
+              material_00 = CG_ObjectiveIcon(localClientNum,local_74->icon,0);
+              fVar6 = local_44 * local_a0 + local_4c;
+              in_stack_ffffff4c = fVar6 - local_54 * 0.5;
+              CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                                in_stack_ffffff4c,local_5c,local_54,local_50,rect->horzAlign,
+                                rect->vertAlign,0.0,0.0,1.0,1.0,&local_28,material_00);
               local_1c = fVar2;
               DrawIconDistanceText
-                        (param_1,fVar6,fVar7,local_58,local_50,param_4,&local_28,param_7,param_8,
-                         param_9);
+                        (localClientNum,fVar5,fVar6,local_58,local_50,rect,&local_28,textFont,
+                         textScale,textStyle);
             }
           }
         }
@@ -2516,49 +2582,53 @@ void __cdecl CG_SetGridTable(void)
 
 {
   byte bVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  int iVar5;
+  char cVar2;
+  code *pcVar3;
+  bool bVar4;
+  char *value;
+  int row_00;
   int local_30;
   byte *local_28;
   byte *local_24;
-  byte *local_20;
-  StringTable *local_10;
-  int local_c;
-  int local_8;
+  char *gridPoint;
+  int tableRow;
+  int row;
+  char *mapname;
+  StringTable *gridStringTable;
+  int tableCol;
+  int col;
   
-  bVar3 = G_ExitAfterToolComplete();
-  if (!bVar3) {
+  bVar4 = G_ExitAfterToolComplete();
+  if (!bVar4) {
     memset(gridPointStatus[0],'\0',0x51);
-    StringTable_GetAsset("mp/gridPointsTable.csv",&local_10);
-    if ((local_10 == (StringTable *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x8d4,0,
-                                 "%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    StringTable_GetAsset("mp/gridPointsTable.csv",&gridStringTable);
+    if ((gridStringTable == (StringTable *)0x0) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x8d4,0,
+                                 "%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    pcVar4 = Dvar_GetString("ui_mapname");
-    iVar5 = StringTable_LookupRowNumForValue(local_10,0,pcVar4);
-    if (-1 < iVar5) {
-      local_c = 1;
-      local_8 = 0;
-      local_20 = (byte *)StringTable_GetColumnValueForRow(local_10,iVar5,1);
+    value = Dvar_GetString("ui_mapname");
+    row_00 = StringTable_LookupRowNumForValue(gridStringTable,0,value);
+    if (-1 < row_00) {
+      tableCol = 1;
+      col = 0;
+      gridPoint = StringTable_GetColumnValueForRow(gridStringTable,row_00,1);
       do {
         local_24 = (byte *)0xc60bf9;
-        local_28 = local_20;
+        local_28 = (byte *)gridPoint;
         do {
           bVar1 = *local_28;
-          bVar3 = bVar1 < *local_24;
+          bVar4 = bVar1 < *local_24;
           if (bVar1 != *local_24) {
 LAB_004886db:
-            local_30 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+            local_30 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
             goto LAB_004886e3;
           }
           if (bVar1 == 0) break;
           bVar1 = local_28[1];
-          bVar3 = bVar1 < local_24[1];
+          bVar4 = bVar1 < local_24[1];
           if (bVar1 != local_24[1]) goto LAB_004886db;
           local_28 = local_28 + 2;
           local_24 = local_24 + 2;
@@ -2568,25 +2638,25 @@ LAB_004886e3:
         if (local_30 == 0) {
           return;
         }
-        bVar1 = *local_20;
-        local_8 = (char)local_20[1] + -0x31;
-        if ((8 < (char)bVar1 + -0x41) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",
-                                     0x8e9,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        cVar2 = *gridPoint;
+        col = gridPoint[1] + -0x31;
+        if ((8 < cVar2 + -0x41) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",
+                                     0x8e9,0,"%s"), !bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        if ((8 < local_8) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",
-                                     0x8ea,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if ((8 < col) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",
+                                     0x8ea,0,"%s"), !bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        gridPointStatus[(char)bVar1 + -0x41][local_8] = true;
-        local_c = local_c + 1;
-        local_20 = (byte *)StringTable_GetColumnValueForRow(local_10,iVar5,local_c);
+        gridPointStatus[cVar2 + -0x41][col] = true;
+        tableCol = tableCol + 1;
+        gridPoint = StringTable_GetColumnValueForRow(gridStringTable,row_00,tableCol);
       } while( true );
     }
   }
@@ -2602,6 +2672,8 @@ void __cdecl CG_ScaleCompass(void)
   int iVar1;
   int iVar2;
   int iVar3;
+  int deltaDistance;
+  int deltaTime;
   
   if (0 < (compassScaleDuration->current).integer) {
     if ((compassScaleReset->current).enabled != false) {
@@ -2637,71 +2709,71 @@ void __cdecl CG_ScaleCompass(void)
 // 00488900  CG_SetGridOffsets  (cgame/cg_compass.cpp:2333)
 
 void __cdecl
-CG_SetGridOffsets(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-                 float *param_6)
+CG_SetGridOffsets(float *east,float *south,float *eastOffsetLetter,float *southOffsetLetter,
+                 float *eastOffsetNumber,float *southOffsetNumber)
 
 {
   switch((compassGridAlign->current).integer) {
   case 0:
-    *param_3 = *param_1 / 4.0;
-    param_3[1] = param_1[1] / 4.0;
-    *param_4 = *param_2 / 4.0;
-    param_4[1] = param_2[1] / 4.0;
+    *eastOffsetLetter = *east / 4.0;
+    eastOffsetLetter[1] = east[1] / 4.0;
+    *southOffsetLetter = *south / 4.0;
+    southOffsetLetter[1] = south[1] / 4.0;
     break;
   case 1:
-    *param_3 = *param_1 / 2.0;
-    param_3[1] = param_1[1] / 2.0;
-    *param_4 = *param_2 / 4.0;
-    param_4[1] = param_2[1] / 4.0;
+    *eastOffsetLetter = *east / 2.0;
+    eastOffsetLetter[1] = east[1] / 2.0;
+    *southOffsetLetter = *south / 4.0;
+    southOffsetLetter[1] = south[1] / 4.0;
     break;
   case 2:
-    *param_3 = *param_1 * 0.75;
-    param_3[1] = param_1[1] * 0.75;
-    *param_4 = *param_2 / 4.0;
-    param_4[1] = param_2[1] / 4.0;
+    *eastOffsetLetter = *east * 0.75;
+    eastOffsetLetter[1] = east[1] * 0.75;
+    *southOffsetLetter = *south / 4.0;
+    southOffsetLetter[1] = south[1] / 4.0;
     break;
   case 3:
-    *param_3 = *param_1 / 4.0;
-    param_3[1] = param_1[1] / 4.0;
-    *param_4 = *param_2 / 2.0;
-    param_4[1] = param_2[1] / 2.0;
+    *eastOffsetLetter = *east / 4.0;
+    eastOffsetLetter[1] = east[1] / 4.0;
+    *southOffsetLetter = *south / 2.0;
+    southOffsetLetter[1] = south[1] / 2.0;
     break;
   case 4:
-    *param_3 = *param_1 / 2.0;
-    param_3[1] = param_1[1] / 2.0;
-    *param_4 = *param_2 / 2.0;
-    param_4[1] = param_2[1] / 2.0;
+    *eastOffsetLetter = *east / 2.0;
+    eastOffsetLetter[1] = east[1] / 2.0;
+    *southOffsetLetter = *south / 2.0;
+    southOffsetLetter[1] = south[1] / 2.0;
     break;
   case 5:
-    *param_3 = *param_1 * 0.75;
-    param_3[1] = param_1[1] * 0.75;
-    *param_4 = *param_2 / 2.0;
-    param_4[1] = param_2[1] / 2.0;
+    *eastOffsetLetter = *east * 0.75;
+    eastOffsetLetter[1] = east[1] * 0.75;
+    *southOffsetLetter = *south / 2.0;
+    southOffsetLetter[1] = south[1] / 2.0;
     break;
   case 6:
-    *param_3 = *param_1 / 4.0;
-    param_3[1] = param_1[1] / 4.0;
-    *param_4 = *param_2 * 0.75;
-    param_4[1] = param_2[1] * 0.75;
+    *eastOffsetLetter = *east / 4.0;
+    eastOffsetLetter[1] = east[1] / 4.0;
+    *southOffsetLetter = *south * 0.75;
+    southOffsetLetter[1] = south[1] * 0.75;
     break;
   case 7:
-    *param_3 = *param_1 / 2.0;
-    param_3[1] = param_1[1] / 2.0;
-    *param_4 = *param_2 * 0.75;
-    param_4[1] = param_2[1] * 0.75;
+    *eastOffsetLetter = *east / 2.0;
+    eastOffsetLetter[1] = east[1] / 2.0;
+    *southOffsetLetter = *south * 0.75;
+    southOffsetLetter[1] = south[1] * 0.75;
     break;
   case 8:
-    *param_3 = *param_1 * 0.75;
-    param_3[1] = param_1[1] * 0.75;
-    *param_4 = *param_2 * 0.75;
-    param_4[1] = param_2[1] * 0.75;
+    *eastOffsetLetter = *east * 0.75;
+    eastOffsetLetter[1] = east[1] * 0.75;
+    *southOffsetLetter = *south * 0.75;
+    southOffsetLetter[1] = south[1] * 0.75;
     break;
   default:
     Com_Printf(0x10,"compassGridAlign set to unknown value. Defaulting to center.\n");
-    *param_3 = *param_1 / 2.0;
-    param_3[1] = param_1[1] / 2.0;
-    *param_4 = *param_2 / 2.0;
-    param_4[1] = param_2[1] / 2.0;
+    *eastOffsetLetter = *east / 2.0;
+    eastOffsetLetter[1] = east[1] / 2.0;
+    *southOffsetLetter = *south / 2.0;
+    southOffsetLetter[1] = south[1] / 2.0;
   }
   return;
 }
@@ -2716,165 +2788,167 @@ CG_SetGridOffsets(float *param_1,float *param_2,float *param_3,float *param_4,fl
 
 void __cdecl
 CG_CompassDrawGridPoints
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5,
-          Font_s *param_6,float param_7,int param_8)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          float *color,Font_s *textFont,float textScale,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_f4 [2];
-  undefined1 local_ea;
-  char local_e9;
-  undefined4 local_e8;
-  float local_e4;
+  float yawVector [2];
+  bool clipped;
+  char numeral;
+  int number;
+  float gridStartNumber;
   float local_e0;
-  float local_dc;
+  float gridPosNumber;
   float local_d8;
-  float local_d4;
+  float eastOffsetNumber;
   float local_d0;
-  float local_cc;
+  float southOffsetNumber;
   float local_c8;
-  float local_c4 [2];
-  float local_bc;
-  float local_b8;
+  float xy [2];
+  float gridWidth;
+  float gridPosLetter;
   float local_b4;
-  cg_s *local_b0;
-  float local_ac;
+  cg_s *cgameGlob;
+  float unplayableSpaceColor;
   float local_a8;
   float local_a4;
   float local_a0;
-  float local_9c;
+  float scissorRect;
   float local_98;
   float local_94;
   float local_90;
   int local_8c;
   int local_88;
-  float local_84;
-  char local_7d;
-  float local_7c;
+  float compassFadeOutAlpha;
+  char letter;
+  float xyNoClip;
   float local_78;
-  char local_74;
+  char gridName;
   char local_73;
   undefined1 local_72;
-  int local_70;
-  float local_6c;
-  rectDef_s local_68;
-  float local_50;
+  int row;
+  float centerY;
+  rectDef_s scaledRect;
+  float east;
   float local_4c;
-  float local_48;
+  float south;
   float local_44;
-  float local_40;
+  float eastOffsetLetter;
   float local_3c;
-  float local_38;
-  float local_34;
+  float centerX;
+  float fadedColor;
   float local_30;
   float local_2c;
   float local_28;
-  float local_24;
+  float gridStartLetter;
   float local_20;
-  float local_1c;
-  float local_18;
+  float h;
+  float southOffsetLetter;
   float local_14;
-  int local_10;
-  float local_c;
-  float local_8;
+  int col;
+  float gridHeight;
+  float w;
   
-  local_8 = 0.0;
-  local_b0 = CG_GetLocalClientGlobals(param_1);
-  if ((local_b0->nextSnap == (snapshot_s *)0x0) &&
+  w = 0.0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->nextSnap == (snapshot_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0x988,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_84 = CG_FadeCompass(param_1,local_b0->compassFadeTime,param_2);
-  fVar4 = CG_FadeCompassIcons(param_1,false);
-  local_84 = fVar4 * local_84;
-  if (local_84 != 0.0) {
+  compassFadeOutAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+  fVar4 = CG_FadeCompassIcons(localClientNum,false);
+  compassFadeOutAlpha = fVar4 * compassFadeOutAlpha;
+  if (compassFadeOutAlpha != 0.0) {
     CG_CompassCalcDimensions
-              (param_2,local_b0,param_3,param_4,&local_68.x,&local_68.y,&local_68.w,&local_68.h);
-    local_38 = local_68.w * 0.5 + local_68.x;
-    local_6c = local_68.h * 0.5 + local_68.y;
-    local_34 = *param_5;
-    local_30 = param_5[1];
-    local_2c = param_5[2];
-    local_a0 = param_5[3] * local_84;
-    local_ac = local_34 * 0.5;
+              (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+               &scaledRect.h);
+    centerX = scaledRect.w * 0.5 + scaledRect.x;
+    centerY = scaledRect.h * 0.5 + scaledRect.y;
+    fadedColor = *color;
+    local_30 = color[1];
+    local_2c = color[2];
+    local_a0 = color[3] * compassFadeOutAlpha;
+    unplayableSpaceColor = fadedColor * 0.5;
     local_a8 = local_30 * 0.5;
     local_a4 = local_2c * 0.5;
     local_28 = local_a0;
-    CG_CompassUpYawVector(local_b0,local_f4);
-    local_bc = local_b0->compassMapWorldSize[0] / (float)(compassGridCols->current).integer;
-    local_c = local_b0->compassMapWorldSize[1] / (float)(compassGridRows->current).integer;
-    local_48 = -local_b0->compassNorth[0] * local_c;
-    local_44 = -local_b0->compassNorth[1] * local_c;
-    local_50 = local_b0->compassNorth[1] * local_bc;
-    local_4c = -local_b0->compassNorth[0] * local_bc;
-    CG_SetGridOffsets(&local_50,&local_48,&local_40,&local_18,&local_d4,&local_cc);
-    local_24 = local_b0->compassMapUpperLeft[0] + local_18 + local_40;
-    local_20 = local_b0->compassMapUpperLeft[1] + local_14 + local_3c;
-    local_e4 = local_b0->compassMapUpperLeft[0] + local_cc + local_d4;
-    local_e0 = local_b0->compassMapUpperLeft[1] + local_c8 + local_d0;
-    if (param_2 == COMPASS_TYPE_PARTIAL) {
-      param_7 = param_7 * (compassSize->current).value;
-      local_9c = local_68.x;
-      local_98 = local_68.y;
-      local_94 = local_68.w;
-      local_90 = local_68.h;
-      local_8c = param_4->horzAlign;
-      local_88 = param_4->vertAlign;
-      ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_9c,&local_98,
-                         &local_94,&local_90,local_8c,local_88);
-      R_AddCmdSetScissorValues(true,(int)local_9c,(int)local_98,(int)local_94,(int)local_90);
+    CG_CompassUpYawVector(cgameGlob,yawVector);
+    gridWidth = cgameGlob->compassMapWorldSize[0] / (float)(compassGridCols->current).integer;
+    gridHeight = cgameGlob->compassMapWorldSize[1] / (float)(compassGridRows->current).integer;
+    south = -cgameGlob->compassNorth[0] * gridHeight;
+    local_44 = -cgameGlob->compassNorth[1] * gridHeight;
+    east = cgameGlob->compassNorth[1] * gridWidth;
+    local_4c = -cgameGlob->compassNorth[0] * gridWidth;
+    CG_SetGridOffsets(&east,&south,&eastOffsetLetter,&southOffsetLetter,&eastOffsetNumber,
+                      &southOffsetNumber);
+    gridStartLetter = cgameGlob->compassMapUpperLeft[0] + southOffsetLetter + eastOffsetLetter;
+    local_20 = cgameGlob->compassMapUpperLeft[1] + local_14 + local_3c;
+    gridStartNumber = cgameGlob->compassMapUpperLeft[0] + southOffsetNumber + eastOffsetNumber;
+    local_e0 = cgameGlob->compassMapUpperLeft[1] + local_c8 + local_d0;
+    if (compassType == COMPASS_TYPE_PARTIAL) {
+      textScale = textScale * (compassSize->current).value;
+      scissorRect = scaledRect.x;
+      local_98 = scaledRect.y;
+      local_94 = scaledRect.w;
+      local_90 = scaledRect.h;
+      local_8c = rect->horzAlign;
+      local_88 = rect->vertAlign;
+      ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&scissorRect,
+                         &local_98,&local_94,&local_90,local_8c,local_88);
+      R_AddCmdSetScissorValues(true,(int)scissorRect,(int)local_98,(int)local_94,(int)local_90);
     }
-    local_7d = 'A';
-    local_e8 = 1;
-    for (local_70 = 0; local_70 < (compassGridRows->current).integer; local_70 = local_70 + 1) {
-      local_b8 = (float)local_70 * 1.0 * local_48 + local_24;
-      local_b4 = (float)local_70 * 1.0 * local_44 + local_20;
-      local_dc = (float)local_70 * 1.0 * local_48 + local_e4;
-      local_d8 = (float)local_70 * 1.0 * local_44 + local_e0;
-      local_e9 = '1';
-      for (local_10 = 0; local_10 < (compassGridCols->current).integer; local_10 = local_10 + 1) {
-        local_74 = local_7d;
-        local_73 = local_e9;
+    letter = 'A';
+    number = 1;
+    for (row = 0; row < (compassGridRows->current).integer; row = row + 1) {
+      gridPosLetter = (float)row * 1.0 * south + gridStartLetter;
+      local_b4 = (float)row * 1.0 * local_44 + local_20;
+      gridPosNumber = (float)row * 1.0 * south + gridStartNumber;
+      local_d8 = (float)row * 1.0 * local_44 + local_e0;
+      numeral = '1';
+      for (col = 0; col < (compassGridCols->current).integer; col = col + 1) {
+        gridName = letter;
+        local_73 = numeral;
         local_72 = 0;
-        iVar3 = UI_TextWidth(&local_74,3,param_6,param_7);
-        local_8 = (float)iVar3 * 1.0;
-        local_e9 = local_e9 + '\x01';
-        iVar3 = UI_TextHeight(param_6,param_7);
-        local_1c = (float)iVar3 * 1.0;
+        iVar3 = UI_TextWidth(&gridName,3,textFont,textScale);
+        w = (float)iVar3 * 1.0;
+        numeral = numeral + '\x01';
+        iVar3 = UI_TextHeight(textFont,textScale);
+        h = (float)iVar3 * 1.0;
         CG_WorldPosToCompass
-                  (param_2,local_b0,&local_68,local_f4,(local_b0->refdef).vieworg,&local_b8,
-                   &local_7c,local_c4);
-        local_ea = CG_TextClippedToCompass
-                             (param_2,local_b0,&local_68,local_f4,(local_b0->refdef).vieworg,
-                              &local_b8,local_8,local_1c);
-        if (!(bool)local_ea) {
-          local_7c = (local_38 - local_8 * 0.5) + local_7c;
-          local_78 = local_1c * 0.5 + local_6c + local_78;
-          if (gridPointStatus[local_70][local_10] == false) {
-            UI_DrawTextNoSnap((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_74,3,
-                              param_6,local_7c,local_78,param_4->horzAlign,param_4->vertAlign,
-                              param_7,&local_34,param_8);
+                  (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg,
+                   &gridPosLetter,&xyNoClip,xy);
+        clipped = CG_TextClippedToCompass
+                            (compassType,cgameGlob,&scaledRect,yawVector,(cgameGlob->refdef).vieworg
+                             ,&gridPosLetter,w,h);
+        if (!clipped) {
+          xyNoClip = (centerX - w * 0.5) + xyNoClip;
+          local_78 = h * 0.5 + centerY + local_78;
+          if (gridPointStatus[row][col] == false) {
+            UI_DrawTextNoSnap((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&gridName,3
+                              ,textFont,xyNoClip,local_78,rect->horzAlign,rect->vertAlign,textScale,
+                              &fadedColor,textStyle);
           }
           else {
-            UI_DrawTextNoSnap((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_74,3,
-                              param_6,local_7c,local_78,param_4->horzAlign,param_4->vertAlign,
-                              param_7,&local_ac,param_8);
+            UI_DrawTextNoSnap((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&gridName,3
+                              ,textFont,xyNoClip,local_78,rect->horzAlign,rect->vertAlign,textScale,
+                              &unplayableSpaceColor,textStyle);
           }
         }
-        local_b8 = local_b8 + local_50;
+        gridPosLetter = gridPosLetter + east;
         local_b4 = local_b4 + local_4c;
-        local_dc = local_dc + local_50;
+        gridPosNumber = gridPosNumber + east;
         local_d8 = local_d8 + local_4c;
       }
-      local_7d = local_7d + '\x01';
+      letter = letter + '\x01';
     }
-    if (param_2 == COMPASS_TYPE_PARTIAL) {
+    if (compassType == COMPASS_TYPE_PARTIAL) {
       R_AddCmdSetScissorValues(false,0,0,0,0);
     }
   }
@@ -2889,73 +2963,74 @@ CG_CompassDrawGridPoints
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_GetGridFromPos(int param_1,float *param_2,char *param_3)
+void __cdecl CG_GetGridFromPos(int localClientNum,float *pos,char *gridName)
 
 {
-  float local_84;
+  float compassUpperLeft;
   float local_80;
-  char local_7a;
-  char local_79;
-  float local_78;
-  cg_s *local_74;
-  rectDef_s local_70;
-  int local_58;
-  char local_51;
-  int local_50;
-  float local_4c;
+  char number;
+  bool clipped;
+  float gridWidth;
+  cg_s *cgameGlob;
+  rectDef_s parentRect;
+  int southOffset;
+  char letter;
+  int eastOffset;
+  float compassPos;
   float local_48;
-  int local_44;
-  rectDef_s local_40;
-  rectDef_s local_28;
-  float local_10;
-  float local_c;
+  int i;
+  rectDef_s scaledRect;
+  rectDef_s rect;
+  float gridHeight;
+  float center;
   float local_8;
   
-  local_74 = CG_GetLocalClientGlobals(param_1);
-  local_70.w = local_74->compassMapWorldSize[0];
-  local_70.h = local_74->compassMapWorldSize[1];
-  local_70.x = 0.0;
-  local_70.y = 0.0;
-  local_70.horzAlign = 1;
-  local_70.vertAlign = 1;
-  local_28.x = 0.0;
-  local_28.y = 0.0;
-  local_28.horzAlign = 1;
-  local_28.vertAlign = 1;
-  local_28.w = local_70.w;
-  local_28.h = local_70.h;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  parentRect.w = cgameGlob->compassMapWorldSize[0];
+  parentRect.h = cgameGlob->compassMapWorldSize[1];
+  parentRect.x = 0.0;
+  parentRect.y = 0.0;
+  parentRect.horzAlign = 1;
+  parentRect.vertAlign = 1;
+  rect.x = 0.0;
+  rect.y = 0.0;
+  rect.horzAlign = 1;
+  rect.vertAlign = 1;
+  rect.w = parentRect.w;
+  rect.h = parentRect.h;
   CG_CompassCalcDimensions
-            (COMPASS_TYPE_FULL,local_74,&local_70,&local_28,&local_40.x,&local_40.y,&local_40.w,
-             &local_40.h);
-  local_c = local_40.w * 0.5 + local_40.x;
-  local_8 = local_40.h * 0.5 + local_40.y;
-  local_78 = local_40.w / (float)(compassGridCols->current).integer;
-  local_10 = local_40.h / (float)(compassGridRows->current).integer;
-  local_79 = CG_WorldPosToCompass
-                       (COMPASS_TYPE_FULL,local_74,&local_40,local_74->compassNorth,
-                        (local_74->refdef).vieworg,param_2,(float *)0x0,&local_4c);
+            (COMPASS_TYPE_FULL,cgameGlob,&parentRect,&rect,&scaledRect.x,&scaledRect.y,&scaledRect.w
+             ,&scaledRect.h);
+  center = scaledRect.w * 0.5 + scaledRect.x;
+  local_8 = scaledRect.h * 0.5 + scaledRect.y;
+  gridWidth = scaledRect.w / (float)(compassGridCols->current).integer;
+  gridHeight = scaledRect.h / (float)(compassGridRows->current).integer;
+  clipped = CG_WorldPosToCompass
+                      (COMPASS_TYPE_FULL,cgameGlob,&scaledRect,cgameGlob->compassNorth,
+                       (cgameGlob->refdef).vieworg,pos,(float *)0x0,&compassPos);
   CG_WorldPosToCompass
-            (COMPASS_TYPE_FULL,local_74,&local_40,local_74->compassNorth,(local_74->refdef).vieworg,
-             local_74->compassMapUpperLeft,(float *)0x0,&local_84);
-  local_84 = local_84 + local_c;
+            (COMPASS_TYPE_FULL,cgameGlob,&scaledRect,cgameGlob->compassNorth,
+             (cgameGlob->refdef).vieworg,cgameGlob->compassMapUpperLeft,(float *)0x0,
+             &compassUpperLeft);
+  compassUpperLeft = compassUpperLeft + center;
   local_80 = local_80 + local_8;
-  local_4c = local_4c + local_c;
+  compassPos = compassPos + center;
   local_48 = local_48 + local_8;
-  local_51 = '!';
-  local_7a = '@';
-  if (local_79 == '\0') {
-    local_51 = 'A';
-    local_7a = '1';
-    local_50 = (int)((local_84 + local_4c) / local_78);
-    for (local_44 = 0; local_44 < local_50; local_44 = local_44 + 1) {
-      local_7a = local_7a + '\x01';
+  letter = '!';
+  number = '@';
+  if (clipped == false) {
+    letter = 'A';
+    number = '1';
+    eastOffset = (int)((compassUpperLeft + compassPos) / gridWidth);
+    for (i = 0; i < eastOffset; i = i + 1) {
+      number = number + '\x01';
     }
-    local_58 = (int)((local_80 + local_48) / local_10);
-    for (local_44 = 0; local_44 < local_58; local_44 = local_44 + 1) {
-      local_51 = local_51 + '\x01';
+    southOffset = (int)((local_80 + local_48) / gridHeight);
+    for (i = 0; i < southOffset; i = i + 1) {
+      letter = letter + '\x01';
     }
   }
-  Com_sprintf(param_3,4,"%c%c");
+  Com_sprintf(gridName,4,"%c%c");
   return;
 }
 
@@ -2967,29 +3042,29 @@ void __cdecl CG_GetGridFromPos(int param_1,float *param_2,char *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_GetHudAlphaCompass(int param_1)
+float __cdecl CG_GetHudAlphaCompass(int localClientNum)
 
 {
   cg_s *pcVar1;
   float fVar2;
-  CompassType CVar3;
+  CompassType compassType;
   
-  CVar3 = COMPASS_TYPE_PARTIAL;
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  fVar2 = CG_FadeCompass(param_1,pcVar1->compassFadeTime,CVar3);
+  compassType = COMPASS_TYPE_PARTIAL;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  fVar2 = CG_FadeCompass(localClientNum,pcVar1->compassFadeTime,compassType);
   return fVar2;
 }
 
 
 // 00489780  CalcCompassFriendlySize  (cgame/cg_compass.cpp:2731)
 
-void __cdecl CalcCompassFriendlySize(CompassType param_1,float *param_2,float *param_3)
+void __cdecl CalcCompassFriendlySize(CompassType compassType,float *w,float *h)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (float *)0x0) {
+  if (w == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0xaac,0,"%s"
                             );
     if (!bVar2) {
@@ -2998,7 +3073,7 @@ void __cdecl CalcCompassFriendlySize(CompassType param_1,float *param_2,float *p
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (h == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0xaad,0,"%s"
                             );
     if (!bVar2) {
@@ -3007,13 +3082,13 @@ void __cdecl CalcCompassFriendlySize(CompassType param_1,float *param_2,float *p
       return;
     }
   }
-  if (param_1 == COMPASS_TYPE_PARTIAL) {
-    *param_2 = (compassFriendlyWidth->current).value * (compassSize->current).value;
-    *param_3 = (compassFriendlyHeight->current).value * (compassSize->current).value;
+  if (compassType == COMPASS_TYPE_PARTIAL) {
+    *w = (compassFriendlyWidth->current).value * (compassSize->current).value;
+    *h = (compassFriendlyHeight->current).value * (compassSize->current).value;
   }
   else {
-    *param_2 = (float)(cg_hudMapFriendlyWidth->current).integer;
-    *param_3 = (float)(cg_hudMapFriendlyHeight->current).integer;
+    *w = (float)(cg_hudMapFriendlyWidth->current).integer;
+    *h = (float)(cg_hudMapFriendlyHeight->current).integer;
   }
   return;
 }
@@ -3028,60 +3103,65 @@ void __cdecl CalcCompassFriendlySize(CompassType param_1,float *param_2,float *p
 
 void __cdecl
 CG_CompassDrawPlayerPointers_MiniMap
-          (int param_1,CompassType param_2,rectDef_s *param_3,rectDef_s *param_4,Material *param_5,
-          float *param_6)
+          (int localClientNum,CompassType compassType,rectDef_s *parentRect,rectDef_s *rect,
+          Material *material,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  Material *pMVar3;
-  float fVar4;
-  float local_ac;
-  float local_a0;
-  float local_98 [2];
-  undefined1 local_8d;
-  objective_t *local_8c;
-  float local_88;
+  Material *material_00;
+  float fVar3;
+  float tempcolor;
+  float lerp;
+  float LINE_WIDTH;
+  bool shouldRotateWithView;
+  float iconAngle;
+  Material *icon;
+  float yawVector [2];
+  bool clipped;
+  objective_t *obj;
+  float delta;
   float local_84;
   float local_80;
-  float local_7c;
+  float xy;
   float local_78;
-  float local_74;
+  float origin;
   float local_70;
   float local_6c;
-  cg_s *local_68;
-  centity_s *local_64;
-  float local_60;
-  float local_5c;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  float objDist;
+  float xyClipped;
   float local_58;
-  float local_54;
-  rectDef_s local_50;
-  float local_38;
-  float local_34;
-  playerState_s *local_30;
-  int local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
+  float centerY;
+  rectDef_s scaledRect;
+  float x;
+  float y;
+  playerState_s *ps;
+  int objNum;
+  float clipfade;
+  float centerX;
+  float h;
+  float fadeAlpha;
+  float w;
+  float newColor;
   float local_10;
   float local_c;
   float local_8;
   
-  local_68 = CG_GetLocalClientGlobals(param_1);
-  if (local_68->nextSnap != (snapshot_s *)0x0) {
-    local_1c = CG_FadeCompass(param_1,local_68->compassFadeTime,param_2);
-    fVar4 = CG_FadeCompassIcons(param_1,false);
-    local_1c = fVar4 * local_1c;
-    if (local_1c != 0.0) {
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (cgameGlob->nextSnap != (snapshot_s *)0x0) {
+    fadeAlpha = CG_FadeCompass(localClientNum,cgameGlob->compassFadeTime,compassType);
+    fVar3 = CG_FadeCompassIcons(localClientNum,false);
+    fadeAlpha = fVar3 * fadeAlpha;
+    if (fadeAlpha != 0.0) {
       CG_CompassCalcDimensions
-                (param_2,local_68,param_3,param_4,&local_50.x,&local_50.y,&local_50.w,&local_50.h);
-      local_24 = local_50.w * 0.5 + local_50.x;
-      local_54 = local_50.h * 0.5 + local_50.y;
-      local_30 = &local_68->nextSnap->ps;
-      if ((0x1f < (local_68->nextSnap->ps).clientNum) &&
+                (compassType,cgameGlob,parentRect,rect,&scaledRect.x,&scaledRect.y,&scaledRect.w,
+                 &scaledRect.h);
+      centerX = scaledRect.w * 0.5 + scaledRect.x;
+      centerY = scaledRect.h * 0.5 + scaledRect.y;
+      ps = &cgameGlob->nextSnap->ps;
+      if ((0x1f < (cgameGlob->nextSnap->ps).clientNum) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_compass.cpp",0xaf6,
                                    0,"ps->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
                                   ), !bVar2)) {
@@ -3089,43 +3169,43 @@ CG_CompassDrawPlayerPointers_MiniMap
         (*pcVar1)();
         return;
       }
-      if (*(int *)((int)(local_68->bgs).clientinfo + (uint)local_30->clientNum * 0x5c8) != 0) {
-        CG_CompassUpYawVector(local_68,local_98);
-        for (local_2c = 0; local_2c < 0x20; local_2c = local_2c + 1) {
-          local_8c = local_30->objective + local_2c;
-          if ((local_8c->state == OBJST_CURRENT) || (local_8c->state == OBJST_ACTIVE)) {
-            if (local_8c->entNum == 0x3ff) {
-              local_74 = local_8c->origin[0];
-              local_70 = local_8c->origin[1];
-              local_6c = local_8c->origin[2];
+      if (*(int *)((int)(cgameGlob->bgs).clientinfo + (uint)ps->clientNum * 0x5c8) != 0) {
+        CG_CompassUpYawVector(cgameGlob,yawVector);
+        for (objNum = 0; objNum < 0x20; objNum = objNum + 1) {
+          obj = ps->objective + objNum;
+          if ((obj->state == OBJST_CURRENT) || (obj->state == OBJST_ACTIVE)) {
+            if (obj->entNum == 0x3ff) {
+              origin = obj->origin[0];
+              local_70 = obj->origin[1];
+              local_6c = obj->origin[2];
             }
             else {
-              local_64 = CG_GetEntity(param_1,local_8c->entNum);
-              local_74 = (local_64->pose).origin[0];
-              local_70 = (local_64->pose).origin[1];
-              local_6c = (local_64->pose).origin[2];
+              cent = CG_GetEntity(localClientNum,obj->entNum);
+              origin = (cent->pose).origin[0];
+              local_70 = (cent->pose).origin[1];
+              local_6c = (cent->pose).origin[2];
             }
-            local_88 = local_74 - (local_68->refdef).vieworg[0];
-            local_84 = local_70 - (local_68->refdef).vieworg[1];
-            local_80 = local_6c - (local_68->refdef).vieworg[2];
-            local_60 = Vec2Length(&local_88);
-            local_14 = *param_6;
-            local_10 = param_6[1];
-            local_c = param_6[2];
-            local_8 = param_6[3];
-            if (local_8c->color != 0) {
-              Byte4UnpackRgba((uchar *)&local_8c->color,&local_14);
+            delta = origin - (cgameGlob->refdef).vieworg[0];
+            local_84 = local_70 - (cgameGlob->refdef).vieworg[1];
+            local_80 = local_6c - (cgameGlob->refdef).vieworg[2];
+            objDist = Vec2Length(&delta);
+            newColor = *color;
+            local_10 = color[1];
+            local_c = color[2];
+            local_8 = color[3];
+            if (obj->color != 0) {
+              Byte4UnpackRgba((uchar *)&obj->color,&newColor);
             }
-            if ((compassMaxRange->current).value < local_60) {
-              if (local_60 < (compassObjectiveMaxRange->current).value) {
-                local_ac = 0.0;
+            if ((compassMaxRange->current).value < objDist) {
+              if (objDist < (compassObjectiveMaxRange->current).value) {
+                lerp = 0.0;
                 if ((compassObjectiveMaxRange->current).value - (compassMaxRange->current).value !=
                     0.0) {
-                  local_ac = (local_60 - (compassMaxRange->current).value) /
-                             ((compassObjectiveMaxRange->current).value -
-                             (compassMaxRange->current).value);
+                  lerp = (objDist - (compassMaxRange->current).value) /
+                         ((compassObjectiveMaxRange->current).value -
+                         (compassMaxRange->current).value);
                 }
-                local_8 = 1.0 - (1.0 - (compassObjectiveMinAlpha->current).value) * local_ac;
+                local_8 = 1.0 - (1.0 - (compassObjectiveMinAlpha->current).value) * lerp;
               }
               else {
                 local_8 = (compassObjectiveMinAlpha->current).value;
@@ -3134,48 +3214,47 @@ CG_CompassDrawPlayerPointers_MiniMap
             else {
               local_8 = 1.0;
             }
-            local_5c = 0.0;
+            xyClipped = 0.0;
             local_58 = 0.0;
-            local_8d = CG_WorldPosToCompass
-                                 (param_2,local_68,&local_50,local_98,(local_68->refdef).vieworg,
-                                  &local_74,&local_7c,&local_5c);
-            local_7c = local_7c + local_24;
-            local_78 = local_78 + local_54;
-            local_5c = local_5c + local_24;
-            local_58 = local_58 + local_54;
-            bVar2 = CalcCompassPointerSizeObjective(param_2,&local_18,&local_20,local_8c,&local_50);
-            pMVar3 = CG_ObjectiveIcon(param_1,local_8c->icon,0);
-            if (local_1c < local_8) {
-              local_8 = local_1c;
+            clipped = CG_WorldPosToCompass
+                                (compassType,cgameGlob,&scaledRect,yawVector,
+                                 (cgameGlob->refdef).vieworg,&origin,&xy,&xyClipped);
+            xy = xy + centerX;
+            local_78 = local_78 + centerY;
+            xyClipped = xyClipped + centerX;
+            local_58 = local_58 + centerY;
+            bVar2 = CalcCompassPointerSizeObjective(compassType,&w,&h,obj,&scaledRect);
+            material_00 = CG_ObjectiveIcon(localClientNum,obj->icon,0);
+            if (fadeAlpha < local_8) {
+              local_8 = fadeAlpha;
             }
-            local_38 = local_7c - local_18 * 0.5;
-            local_34 = local_78 - local_20 * 0.5;
-            local_28 = GetObjectiveFade(&local_50,local_38,local_34,local_18,local_20);
-            fVar4 = local_8;
-            if ((0.0 < local_28) && (local_8c->state == OBJST_CURRENT)) {
-              local_8 = local_8 * local_28;
-              if ((local_50.y <= local_78) && (local_78 <= local_50.y + local_50.h)) {
-                UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_50.x,
-                                 local_78 - 1.0,local_50.w,2.0,param_4->horzAlign,param_4->vertAlign
-                                 ,&local_14,param_5);
+            x = xy - w * 0.5;
+            y = local_78 - h * 0.5;
+            clipfade = GetObjectiveFade(&scaledRect,x,y,w,h);
+            fVar3 = local_8;
+            if ((0.0 < clipfade) && (obj->state == OBJST_CURRENT)) {
+              local_8 = local_8 * clipfade;
+              if ((scaledRect.y <= local_78) && (local_78 <= scaledRect.y + scaledRect.h)) {
+                UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                                 scaledRect.x,local_78 - 1.0,scaledRect.w,2.0,rect->horzAlign,
+                                 rect->vertAlign,&newColor,material);
               }
-              if ((local_50.x <= local_7c) && (local_7c <= local_50.x + local_50.w)) {
-                CG_DrawVLine((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_7c,local_50.y
-                             ,2.0,local_50.h,param_4->horzAlign,param_4->vertAlign,&local_14,param_5
-                            );
+              if ((scaledRect.x <= xy) && (xy <= scaledRect.x + scaledRect.w)) {
+                CG_DrawVLine((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),xy,
+                             scaledRect.y,2.0,scaledRect.h,rect->horzAlign,rect->vertAlign,&newColor
+                             ,material);
               }
             }
-            local_38 = local_5c - local_18 * 0.5;
-            local_34 = local_58 - local_20 * 0.5;
-            local_a0 = 0.0;
+            x = xyClipped - w * 0.5;
+            y = local_58 - h * 0.5;
+            iconAngle = 0.0;
             if (bVar2) {
-              local_a0 = local_68->refdefViewAngles[1];
+              iconAngle = cgameGlob->refdefViewAngles[1];
             }
-            local_8 = fVar4;
+            local_8 = fVar3;
             UI_DrawHandlePicRotated
-                      ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_38,local_34,
-                       local_18,local_20,param_4->horzAlign,param_4->vertAlign,&local_14,local_a0,
-                       pMVar3);
+                      ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                       rect->horzAlign,rect->vertAlign,&newColor,iconAngle,material_00);
           }
         }
       }

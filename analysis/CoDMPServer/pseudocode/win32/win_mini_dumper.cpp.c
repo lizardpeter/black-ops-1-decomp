@@ -2,12 +2,12 @@
 
 // 007DBAB0  Sys_StartMiniDump  (win32/win_mini_dumper.cpp:56)
 
-void __cdecl Sys_StartMiniDump(bool param_1)
+void __cdecl Sys_StartMiniDump(bool prompt)
 
 {
   if ((_S1 & 1) == 0) {
     _S1 = _S1 | 1;
-    miniDumper::miniDumper(&g_miniDumper,param_1);
+    miniDumper::miniDumper(&g_miniDumper,prompt);
     atexit(`Sys_StartMiniDump'::__l2::_dynamic_atexit_destructor_for__g_miniDumper__);
   }
   g_miniDumperStarted = true;
@@ -26,11 +26,11 @@ bool __cdecl Sys_IsMiniDumpStarted(void)
 
 // 007DBB10  miniDumper  (win32/win_mini_dumper.cpp:86)
 
-miniDumper * __thiscall miniDumper::miniDumper(miniDumper *this,bool param_1)
+miniDumper * __thiscall miniDumper::miniDumper(miniDumper *this,bool bPromptUserForMiniDump)
 
 {
   s_pMiniDumper = this;
-  this->m_bPromptUserForMiniDump = param_1;
+  this->m_bPromptUserForMiniDump = bPromptUserForMiniDump;
   SetUnhandledExceptionFilter(unhandledExceptionHandler);
   s_pCriticalSection = operator_new(0x18);
   if (s_pCriticalSection != (_RTL_CRITICAL_SECTION *)0x0) {
@@ -55,7 +55,7 @@ void __thiscall miniDumper::~miniDumper(miniDumper *this)
 
 // 007DBBB0  unhandledExceptionHandler  (win32/win_mini_dumper.cpp:131)
 
-long __cdecl miniDumper::unhandledExceptionHandler(_EXCEPTION_POINTERS *param_1)
+long __cdecl miniDumper::unhandledExceptionHandler(_EXCEPTION_POINTERS *pExceptionInfo)
 
 {
   long lVar1;
@@ -64,7 +64,7 @@ long __cdecl miniDumper::unhandledExceptionHandler(_EXCEPTION_POINTERS *param_1)
     lVar1 = 0;
   }
   else {
-    lVar1 = writeMiniDump(s_pMiniDumper,param_1);
+    lVar1 = writeMiniDump(s_pMiniDumper,pExceptionInfo);
   }
   return lVar1;
 }
@@ -75,9 +75,9 @@ long __cdecl miniDumper::unhandledExceptionHandler(_EXCEPTION_POINTERS *param_1)
 void __thiscall miniDumper::setMiniDumpFileName(miniDumper *this)
 
 {
-  long64 local_c;
+  long64 currentTime;
   
-  _time64(&local_c);
+  _time64(&currentTime);
   sprintf(this->m_szMiniDumpPath,"%s%s.%s.#%d.CL#%d.%ld.dmp");
   return;
 }
@@ -85,7 +85,7 @@ void __thiscall miniDumper::setMiniDumpFileName(miniDumper *this)
 
 // 007DBC40  getImpersonationToken  (win32/win_mini_dumper.cpp:164)
 
-bool __thiscall miniDumper::getImpersonationToken(miniDumper *this,void **param_1)
+bool __thiscall miniDumper::getImpersonationToken(miniDumper *this,void **phToken)
 
 {
   HANDLE pvVar1;
@@ -93,10 +93,10 @@ bool __thiscall miniDumper::getImpersonationToken(miniDumper *this,void **param_
   BOOL BVar3;
   void **TokenHandle;
   
-  *param_1 = (void *)0x0;
+  *phToken = (void *)0x0;
   BVar3 = 1;
   DVar2 = 0x28;
-  TokenHandle = param_1;
+  TokenHandle = phToken;
   pvVar1 = GetCurrentThread();
   BVar3 = OpenThreadToken(pvVar1,DVar2,BVar3,TokenHandle);
   if (BVar3 == 0) {
@@ -106,7 +106,7 @@ bool __thiscall miniDumper::getImpersonationToken(miniDumper *this,void **param_
     }
     DVar2 = 0x28;
     pvVar1 = GetCurrentProcess();
-    BVar3 = OpenProcessToken(pvVar1,DVar2,param_1);
+    BVar3 = OpenProcessToken(pvVar1,DVar2,phToken);
     if (BVar3 == 0) {
       return false;
     }
@@ -118,23 +118,23 @@ bool __thiscall miniDumper::getImpersonationToken(miniDumper *this,void **param_
 // 007DBCA0  enablePrivilege  (win32/win_mini_dumper.cpp:196)
 
 int __thiscall
-miniDumper::enablePrivilege(miniDumper *this,char *param_1,void *param_2,_TOKEN_PRIVILEGES *param_3)
+miniDumper::enablePrivilege(miniDumper *this,char *pszPriv,void *hToken,_TOKEN_PRIVILEGES *ptpOld)
 
 {
   DWORD DVar1;
-  DWORD local_1c;
-  _TOKEN_PRIVILEGES local_18;
-  BOOL local_8;
+  ulong cbOld;
+  _TOKEN_PRIVILEGES tp;
+  int bOk;
   
-  local_8 = 0;
-  local_18.PrivilegeCount = 1;
-  local_18.Privileges[0].Attributes = 2;
-  local_8 = LookupPrivilegeValueA((LPCSTR)0x0,param_1,&local_18.Privileges[0].Luid);
-  if (local_8 != 0) {
-    local_1c = 0x10;
-    local_8 = AdjustTokenPrivileges(param_2,0,&local_18,0x10,(PTOKEN_PRIVILEGES)param_3,&local_1c);
+  bOk = 0;
+  tp.PrivilegeCount = 1;
+  tp.Privileges[0].Attributes = 2;
+  bOk = LookupPrivilegeValueA((LPCSTR)0x0,pszPriv,&tp.Privileges[0].Luid);
+  if (bOk != 0) {
+    cbOld = 0x10;
+    bOk = AdjustTokenPrivileges(hToken,0,&tp,0x10,(PTOKEN_PRIVILEGES)ptpOld,&cbOld);
   }
-  if ((local_8 != 0) && (DVar1 = GetLastError(), DVar1 != 0x514)) {
+  if ((bOk != 0) && (DVar1 = GetLastError(), DVar1 != 0x514)) {
     return 1;
   }
   return 0;
@@ -143,15 +143,15 @@ miniDumper::enablePrivilege(miniDumper *this,char *param_1,void *param_2,_TOKEN_
 
 // 007DBD30  restorePrivilege  (win32/win_mini_dumper.cpp:218)
 
-int __thiscall
-miniDumper::restorePrivilege(miniDumper *this,void *param_1,_TOKEN_PRIVILEGES *param_2)
+int __thiscall miniDumper::restorePrivilege(miniDumper *this,void *hToken,_TOKEN_PRIVILEGES *ptpOld)
 
 {
   BOOL BVar1;
   DWORD DVar2;
+  int bOk;
   
   BVar1 = AdjustTokenPrivileges
-                    (param_1,0,(PTOKEN_PRIVILEGES)param_2,0,(PTOKEN_PRIVILEGES)0x0,(PDWORD)0x0);
+                    (hToken,0,(PTOKEN_PRIVILEGES)ptpOld,0,(PTOKEN_PRIVILEGES)0x0,(PDWORD)0x0);
   if ((BVar1 != 0) && (DVar2 = GetLastError(), DVar2 != 0x514)) {
     return 1;
   }
@@ -164,7 +164,7 @@ miniDumper::restorePrivilege(miniDumper *this,void *param_1,_TOKEN_PRIVILEGES *p
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *param_1)
+long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *pExceptionInfo)
 
 {
   char cVar1;
@@ -174,7 +174,7 @@ long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *
   char *extraout_EAX;
   int iVar5;
   HANDLE pvVar6;
-  HANDLE pvVar7;
+  void *pvVar7;
   undefined4 uVar8;
   DWORD *pDVar9;
   undefined4 uVar10;
@@ -185,29 +185,30 @@ long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *
   char *local_116c;
   char *local_1160;
   char *local_115c;
-  _TOKEN_PRIVILEGES local_1154;
-  int local_1144;
-  DWORD local_1140;
+  _TOKEN_PRIVILEGES tp;
+  int bOk;
+  DWORD ExInfo;
   _EXCEPTION_POINTERS *local_113c;
   undefined4 local_1138;
-  int local_1134;
-  HANDLE local_1130;
-  char local_112c [4100];
-  FARPROC local_128;
-  undefined4 local_120;
-  char local_11c [264];
+  int bPrivilegeEnabled;
+  void *hFile;
+  char szScratch [4100];
+  FARPROC MiniDumpWriteDump;
+  char *pSlash;
+  void *hImpersonationToken;
+  char szDbgHelpPath [264];
   uint local_14;
-  LPCSTR local_10;
-  HMODULE local_c;
-  long local_8;
+  char *szResult;
+  HINSTANCE__ *hDll;
+  long retval;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0;
-  this->m_pExceptionInfo = param_1;
-  local_120 = (void *)0x0;
-  bVar3 = getImpersonationToken(this,(void **)&local_120);
+  retval = 0;
+  this->m_pExceptionInfo = pExceptionInfo;
+  hImpersonationToken = (void *)0x0;
+  bVar3 = getImpersonationToken(this,&hImpersonationToken);
   if (bVar3) {
-    local_c = (HMODULE)0x0;
+    hDll = (HINSTANCE__ *)0x0;
     DVar4 = GetModuleFileNameA((HMODULE)0x0,this->m_szAppPath,0x104);
     if (DVar4 != 0) {
       strrchr((uchar *)this->m_szAppPath,'\\');
@@ -223,92 +224,92 @@ long __thiscall miniDumper::writeMiniDump(miniDumper *this,_EXCEPTION_POINTERS *
         extraout_EAX[1] = '\0';
       }
       local_116c = this->m_szAppPath;
-      local_1170 = local_11c;
+      local_1170 = szDbgHelpPath;
       do {
         cVar1 = *local_116c;
         *local_1170 = cVar1;
         local_116c = local_116c + 1;
         local_1170 = local_1170 + 1;
       } while (cVar1 != '\0');
-      pcVar2 = (char *)((int)&local_120 + 3);
+      pcVar2 = (char *)((int)&hImpersonationToken + 3);
       do {
         local_117c = pcVar2;
         pcVar2 = local_117c + 1;
       } while (local_117c[1] != '\0');
       builtin_strncpy(local_117c + 1,"DBGHELP.DLL",0xc);
-      local_c = LoadLibraryA(local_11c);
+      hDll = (HINSTANCE__ *)LoadLibraryA(szDbgHelpPath);
     }
-    if (local_c == (HMODULE)0x0) {
-      local_c = LoadLibraryA("DBGHELP.DLL");
+    if (hDll == (HINSTANCE__ *)0x0) {
+      hDll = (HINSTANCE__ *)LoadLibraryA("DBGHELP.DLL");
     }
-    local_10 = (LPCSTR)0x0;
-    if (local_c == (HMODULE)0x0) {
-      local_10 = "Call to LoadLibrary failed to find DBGHELP.DLL.";
+    szResult = (char *)0x0;
+    if (hDll == (HINSTANCE__ *)0x0) {
+      szResult = "Call to LoadLibrary failed to find DBGHELP.DLL.";
     }
     else {
-      local_128 = GetProcAddress(local_c,"MiniDumpWriteDump");
-      if (local_128 == (FARPROC)0x0) {
-        local_10 = 
+      MiniDumpWriteDump = GetProcAddress((HMODULE)hDll,"MiniDumpWriteDump");
+      if (MiniDumpWriteDump == (FARPROC)0x0) {
+        szResult = 
         "Call to GetProcAddress failed to find MiniDumpWriteDump. The DBGHELP.DLL is possibly outdated."
         ;
       }
       else {
         setMiniDumpFileName(this);
-        sprintf(local_112c,
+        sprintf(szScratch,
                 "There was an unexpected error:\n\nWould you like to create a mini-dump file?\n\n%s "
                );
         if ((this->m_bPromptUserForMiniDump == false) ||
-           (iVar5 = MessageBoxA((HWND)0x0,local_112c,(LPCSTR)0x0,4), iVar5 == 6)) {
-          local_1130 = CreateFileA(this->m_szMiniDumpPath,0x40000000,2,(LPSECURITY_ATTRIBUTES)0x0,2,
-                                   0x80,(HANDLE)0x0);
-          if (local_1130 == (HANDLE)0xffffffff) {
+           (iVar5 = MessageBoxA((HWND)0x0,szScratch,(LPCSTR)0x0,4), iVar5 == 6)) {
+          hFile = CreateFileA(this->m_szMiniDumpPath,0x40000000,2,(LPSECURITY_ATTRIBUTES)0x0,2,0x80,
+                              (HANDLE)0x0);
+          if (hFile == (HANDLE)0xffffffff) {
             GetLastError();
-            sprintf(local_112c,"Failed to create the mini-dump file \'%s\' (error %d)");
-            local_10 = local_112c;
+            sprintf(szScratch,"Failed to create the mini-dump file \'%s\' (error %d)");
+            szResult = szScratch;
           }
           else {
-            local_1140 = GetCurrentThreadId();
-            local_113c = param_1;
+            ExInfo = GetCurrentThreadId();
+            local_113c = pExceptionInfo;
             local_1138 = 0;
-            local_1134 = enablePrivilege(this,"SeDebugPrivilege",local_120,&local_1154);
+            bPrivilegeEnabled = enablePrivilege(this,"SeDebugPrivilege",hImpersonationToken,&tp);
             EnterCriticalSection((LPCRITICAL_SECTION)s_pCriticalSection);
             uVar11 = 0;
             uVar10 = 0;
-            pDVar9 = &local_1140;
+            pDVar9 = &ExInfo;
             uVar8 = 0;
-            pvVar7 = local_1130;
+            pvVar7 = hFile;
             DVar4 = GetCurrentProcessId();
             pvVar6 = GetCurrentProcess();
-            local_1144 = (*local_128)(pvVar6,DVar4,pvVar7,uVar8,pDVar9,uVar10,uVar11);
+            bOk = (*MiniDumpWriteDump)(pvVar6,DVar4,pvVar7,uVar8,pDVar9,uVar10,uVar11);
             LeaveCriticalSection((LPCRITICAL_SECTION)s_pCriticalSection);
-            if (local_1134 != 0) {
-              restorePrivilege(this,local_120,&local_1154);
+            if (bPrivilegeEnabled != 0) {
+              restorePrivilege(this,hImpersonationToken,&tp);
             }
-            if (local_1144 == 0) {
+            if (bOk == 0) {
               GetLastError();
-              sprintf(local_112c,"Failed to save the mini-dump file to \'%s\' (error %d)");
-              local_10 = local_112c;
+              sprintf(szScratch,"Failed to save the mini-dump file to \'%s\' (error %d)");
+              szResult = szScratch;
             }
             else {
-              local_10 = (char *)0x0;
-              local_8 = 1;
+              szResult = (char *)0x0;
+              retval = 1;
             }
-            CloseHandle(local_1130);
+            CloseHandle(hFile);
           }
         }
       }
     }
-    if ((local_10 != (LPCSTR)0x0) && (this->m_bPromptUserForMiniDump != false)) {
-      MessageBoxA((HWND)0x0,local_10,(LPCSTR)0x0,0);
+    if ((szResult != (char *)0x0) && (this->m_bPromptUserForMiniDump != false)) {
+      MessageBoxA((HWND)0x0,szResult,(LPCSTR)0x0,0);
     }
     uExitCode = 0;
-    pvVar7 = GetCurrentProcess();
-    TerminateProcess(pvVar7,uExitCode);
+    pvVar6 = GetCurrentProcess();
+    TerminateProcess(pvVar6,uExitCode);
   }
   else {
-    local_8 = 0;
+    retval = 0;
   }
-  return local_8;
+  return retval;
 }
 
 

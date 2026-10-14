@@ -15,7 +15,7 @@ void __cdecl R_AssignSModelCacheResources(GfxWorld *param_1)
   GfxWorld *in_ECX;
   uint *puVar6;
   uint unaff_ESI;
-  uint local_2014;
+  uint smcUseCount;
   uint local_2010 [4];
   GfxSModelSurfStats local_2000 [511];
   undefined4 uStack_4;
@@ -25,11 +25,11 @@ void __cdecl R_AssignSModelCacheResources(GfxWorld *param_1)
   local_2010[1] = 0;
   local_2010[2] = 0;
   local_2010[3] = 0;
-  local_2014 = R_OptimalSModelResourceStats(in_ECX,local_2000,unaff_ESI);
+  smcUseCount = R_OptimalSModelResourceStats(in_ECX,local_2000,unaff_ESI);
   std::_Sort<GfxSModelSurfStats_*,int,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-            (local_2000,local_2000 + local_2014,
-             (int)(local_2000 + local_2014) - (int)local_2000 >> 4,R_CompareSModelStats_Score);
-  if (local_2014 != 0) {
+            (local_2000,local_2000 + smcUseCount,
+             (int)(local_2000 + smcUseCount) - (int)local_2000 >> 4,R_CompareSModelStats_Score);
+  if (smcUseCount != 0) {
     puVar6 = &local_2000[0].useCount;
     do {
       pXVar1 = ((GfxSModelSurfStats *)(puVar6 + -3))->model;
@@ -48,10 +48,10 @@ void __cdecl R_AssignSModelCacheResources(GfxWorld *param_1)
       }
       local_2010[uVar5] = local_2010[uVar5] + (uVar4 << ((byte)uVar3 & 0x1f));
       puVar6 = puVar6 + 4;
-      local_2014 = local_2014 - 1;
+      smcUseCount = smcUseCount - 1;
       pXVar1->lodInfo[uVar2].smcIndexPlusOne = (char)uVar5 + '\x01';
       pXVar1->lodInfo[uVar2].smcAllocBits = (byte)uVar3;
-    } while (local_2014 != 0);
+    } while (smcUseCount != 0);
   }
   return;
 }
@@ -61,22 +61,23 @@ void __cdecl R_AssignSModelCacheResources(GfxWorld *param_1)
 
 void __cdecl
 std::_Push_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-          (GfxSurface **param_1,int param_2,int param_3,GfxSurface *param_4,
+          (GfxSurface **_Top_3,int _Val_3,int _Pred_3,GfxSurface *param_4,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_5)
 
 {
   char cVar1;
   int in_EAX;
   int iVar2;
+  Material **_First_3;
   
-  while (param_2 < in_EAX) {
+  while (_Val_3 < in_EAX) {
     iVar2 = (in_EAX + -1) / 2;
-    cVar1 = (*(code *)param_4)(param_1[iVar2],param_3);
+    cVar1 = (*(code *)param_4)(_Top_3[iVar2],_Pred_3);
     if (cVar1 == '\0') break;
-    param_1[in_EAX] = param_1[iVar2];
+    _Top_3[in_EAX] = _Top_3[iVar2];
     in_EAX = iVar2;
   }
-  param_1[in_EAX] = (GfxSurface *)param_3;
+  _Top_3[in_EAX] = (GfxSurface *)_Pred_3;
   return;
 }
 
@@ -86,7 +87,7 @@ std::_Push_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,Gfx
 void __cdecl
 std::
 _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,int param_2,int param_3,GfxSModelSurfStats param_4,
+          (GfxSModelSurfStats *_Top,int _Val,int param_3,GfxSModelSurfStats param_4,
           _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_5)
 
 {
@@ -96,14 +97,15 @@ _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModel
   GfxSModelSurfStats *pGVar3;
   int iVar4;
   GfxSModelSurfStats *pGVar5;
+  GfxSModelSurfStats *_First;
   
-  while (param_2 < in_EAX) {
+  while (_Val < in_EAX) {
     iVar4 = (in_EAX + -1) / 2;
-    pGVar5 = param_1 + iVar4;
+    pGVar5 = _Top + iVar4;
     cVar2 = (*(code *)param_4.useCount)(pGVar5,&param_3);
     if (cVar2 == '\0') break;
     uVar1 = pGVar5->lod;
-    pGVar3 = param_1 + in_EAX;
+    pGVar3 = _Top + in_EAX;
     pGVar3->model = pGVar5->model;
     pGVar3->lod = uVar1;
     uVar1 = pGVar5->useCount;
@@ -111,7 +113,7 @@ _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModel
     pGVar3->useCount = uVar1;
     in_EAX = iVar4;
   }
-  pGVar5 = param_1 + in_EAX;
+  pGVar5 = _Top + in_EAX;
   pGVar5->model = (XModel *)param_3;
   pGVar5->lod = (uint)param_4.model;
   pGVar5->smcAllocBits = param_4.lod;
@@ -124,7 +126,7 @@ _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModel
 
 void __cdecl
 std::_Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-          (GfxSurface **param_1,int param_2,int param_3,GfxSurface *param_4,
+          (GfxSurface **_Bottom_3,int _Val_3,int _Pred_3,GfxSurface *param_4,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_5)
 
 {
@@ -134,12 +136,13 @@ std::_Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,G
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_ESI;
   GfxSurface **ppGVar4;
   GfxSurface **unaff_EDI;
+  int _Hole_3;
   
-  ppGVar1 = param_1;
+  ppGVar1 = _Bottom_3;
   while( true ) {
     iVar2 = (int)ppGVar1 * 2;
     ppGVar4 = (GfxSurface **)(iVar2 + 2);
-    if (param_2 <= (int)ppGVar4) break;
+    if (_Val_3 <= (int)ppGVar4) break;
     cVar3 = (*(code *)param_4)(unaff_EDI[(int)ppGVar4],unaff_EDI[iVar2 + 1]);
     if (cVar3 != '\0') {
       ppGVar4 = (GfxSurface **)(iVar2 + 1);
@@ -147,11 +150,11 @@ std::_Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,G
     unaff_EDI[(int)ppGVar1] = unaff_EDI[(int)ppGVar4];
     ppGVar1 = ppGVar4;
   }
-  if (ppGVar4 == (GfxSurface **)param_2) {
-    unaff_EDI[(int)ppGVar1] = unaff_EDI[param_2 + -1];
+  if (ppGVar4 == (GfxSurface **)_Val_3) {
+    unaff_EDI[(int)ppGVar1] = unaff_EDI[_Val_3 + -1];
   }
   _Push_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-            (unaff_EDI,(int)param_1,param_3,param_4,unaff_ESI);
+            (unaff_EDI,(int)_Bottom_3,_Pred_3,param_4,unaff_ESI);
   return;
 }
 
@@ -161,7 +164,7 @@ std::_Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,G
 void __cdecl
 std::
 _Adjust_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,int param_2,int param_3,GfxSModelSurfStats param_4,
+          (GfxSModelSurfStats *_Bottom,int _Val,int param_3,GfxSModelSurfStats param_4,
           _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_5)
 
 {
@@ -172,40 +175,43 @@ _Adjust_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSMod
   GfxSModelSurfStats *pGVar4;
   int iVar5;
   _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *unaff_EDI;
+  GfxSModelSurfStats *_First;
   
   iVar1 = in_EAX;
   while( true ) {
     iVar5 = iVar1 * 2 + 2;
-    if (param_2 <= iVar5) break;
-    cVar3 = (*(code *)param_4.useCount)(param_1 + iVar5,param_1 + iVar5 + -1);
+    if (_Val <= iVar5) break;
+    cVar3 = (*(code *)param_4.useCount)(_Bottom + iVar5,_Bottom + iVar5 + -1);
     if (cVar3 != '\0') {
       iVar5 = iVar1 * 2 + 1;
     }
-    uVar2 = param_1[iVar5].lod;
-    pGVar4 = param_1 + iVar1;
-    pGVar4->model = param_1[iVar5].model;
+    uVar2 = _Bottom[iVar5].lod;
+    pGVar4 = _Bottom + iVar1;
+    pGVar4->model = _Bottom[iVar5].model;
     pGVar4->lod = uVar2;
-    uVar2 = param_1[iVar5].useCount;
-    pGVar4->smcAllocBits = param_1[iVar5].smcAllocBits;
+    uVar2 = _Bottom[iVar5].useCount;
+    pGVar4->smcAllocBits = _Bottom[iVar5].smcAllocBits;
     pGVar4->useCount = uVar2;
     iVar1 = iVar5;
   }
-  if (iVar5 == param_2) {
-    uVar2 = param_1[param_2 + -1].lod;
-    pGVar4 = param_1 + iVar1;
-    pGVar4->model = param_1[param_2 + -1].model;
+  if (iVar5 == _Val) {
+    uVar2 = _Bottom[_Val + -1].lod;
+    pGVar4 = _Bottom + iVar1;
+    pGVar4->model = _Bottom[_Val + -1].model;
     pGVar4->lod = uVar2;
-    uVar2 = param_1[param_2 + -1].useCount;
-    pGVar4->smcAllocBits = param_1[param_2 + -1].smcAllocBits;
+    uVar2 = _Bottom[_Val + -1].useCount;
+    pGVar4->smcAllocBits = _Bottom[_Val + -1].smcAllocBits;
     pGVar4->useCount = uVar2;
   }
   _Push_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-            (param_1,in_EAX,param_3,param_4,unaff_EDI);
+            (_Bottom,in_EAX,param_3,param_4,unaff_EDI);
   return;
 }
 
 
 // 008670E0  _Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
+
+/* WARNING: Variable defined which should be unmapped: __formal_3 */
 
 void __cdecl
 std::_Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
@@ -216,18 +222,19 @@ std::_Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,Gfx
 {
   int iVar1;
   int in_EAX;
-  int iVar2;
+  int _Val_3;
   int in_ECX;
-  GfxSurface **ppGVar3;
+  GfxSurface **_Bottom_3;
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_EDI;
+  int *__formal_3;
   
-  iVar2 = in_EAX - in_ECX >> 2;
-  ppGVar3 = (GfxSurface **)(iVar2 - (in_EAX - in_ECX >> 0x1f) >> 1);
-  while (0 < (int)ppGVar3) {
-    iVar1 = (int)ppGVar3 * 4;
-    ppGVar3 = (GfxSurface **)((int)ppGVar3 + -1);
+  _Val_3 = in_EAX - in_ECX >> 2;
+  _Bottom_3 = (GfxSurface **)(_Val_3 - (in_EAX - in_ECX >> 0x1f) >> 1);
+  while (0 < (int)_Bottom_3) {
+    iVar1 = (int)_Bottom_3 * 4;
+    _Bottom_3 = (GfxSurface **)((int)_Bottom_3 + -1);
     _Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              (ppGVar3,iVar2,*(int *)(in_ECX + -4 + iVar1),(GfxSurface *)param_1,unaff_EDI);
+              (_Bottom_3,_Val_3,*(int *)(in_ECX + -4 + iVar1),(GfxSurface *)param_1,unaff_EDI);
   }
   return;
 }
@@ -235,10 +242,12 @@ std::_Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,Gfx
 
 // 008671C0  _Make_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
 
+/* WARNING: Variable defined which should be unmapped: __formal */
+
 void __cdecl
 std::
 _Make_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2,
+          (GfxSModelSurfStats *_Last,GfxSModelSurfStats *_Pred,
           _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_3,int *param_4,
           GfxSModelSurfStats *param_5)
 
@@ -248,29 +257,31 @@ _Make_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModel
   undefined4 uVar3;
   undefined4 uVar4;
   GfxSModelSurfStats GVar5;
+  int _Val;
   int iVar6;
-  int iVar7;
   _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *unaff_EDI;
-  GfxSModelSurfStats *pGVar8;
+  GfxSModelSurfStats *pGVar7;
+  GfxSModelSurfStats *_First;
+  int *__formal;
   
-  iVar6 = (int)param_2 - (int)param_1 >> 4;
-  iVar7 = iVar6 - ((int)param_2 - (int)param_1 >> 0x1f) >> 1;
-  if (0 < iVar7) {
-    pGVar8 = param_1 + iVar7;
+  _Val = (int)_Pred - (int)_Last >> 4;
+  iVar6 = _Val - ((int)_Pred - (int)_Last >> 0x1f) >> 1;
+  if (0 < iVar6) {
+    pGVar7 = _Last + iVar6;
     do {
-      uVar1 = pGVar8[-0xffffffff00000001].model;
-      uVar3 = pGVar8[-0xffffffff00000001].lod;
-      uVar2 = pGVar8[-0xffffffff00000001].smcAllocBits;
-      uVar4 = pGVar8[-0xffffffff00000001].useCount;
+      uVar1 = pGVar7[-0xffffffff00000001].model;
+      uVar3 = pGVar7[-0xffffffff00000001].lod;
+      uVar2 = pGVar7[-0xffffffff00000001].smcAllocBits;
+      uVar4 = pGVar7[-0xffffffff00000001].useCount;
       GVar5.smcAllocBits = uVar4;
       GVar5.lod = uVar2;
-      iVar7 = iVar7 + -1;
+      iVar6 = iVar6 + -1;
       GVar5.model = (XModel *)uVar3;
       GVar5.useCount = (uint)param_3;
       _Adjust_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-                (param_1,iVar6,uVar1,GVar5,unaff_EDI);
-      pGVar8 = pGVar8 + -1;
-    } while (0 < iVar7);
+                (_Last,_Val,uVar1,GVar5,unaff_EDI);
+      pGVar7 = pGVar7 + -1;
+    } while (0 < iVar6);
   }
   return;
 }
@@ -284,17 +295,17 @@ std::_Sort_heap<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3)
 
 {
-  int iVar1;
+  int _Pred_3;
   undefined4 *in_EAX;
   int in_ECX;
-  int iVar2;
+  int iVar1;
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_EDI;
   
-  for (iVar2 = in_ECX - (int)in_EAX; 1 < iVar2 >> 2; iVar2 = iVar2 + -4) {
-    iVar1 = *(int *)((int)in_EAX + iVar2 + -4);
-    *(undefined4 *)((int)in_EAX + iVar2 + -4) = *in_EAX;
+  for (iVar1 = in_ECX - (int)in_EAX; 1 < iVar1 >> 2; iVar1 = iVar1 + -4) {
+    _Pred_3 = *(int *)((int)in_EAX + iVar1 + -4);
+    *(undefined4 *)((int)in_EAX + iVar1 + -4) = *in_EAX;
     _Adjust_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              ((GfxSurface **)0x0,iVar2 + -4 >> 2,iVar1,(GfxSurface *)param_1,unaff_EDI);
+              ((GfxSurface **)0x0,iVar1 + -4 >> 2,_Pred_3,(GfxSurface *)param_1,unaff_EDI);
   }
   return;
 }
@@ -335,7 +346,7 @@ std::_Sort_heap<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSMo
 
 void __cdecl
 std::_Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),GfxSurface_*>
-          (GfxSurface **param_1,GfxSurface **param_2,
+          (GfxSurface **_Last_3,GfxSurface **_Pred_3,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3,GfxSurface **param_4)
 
 {
@@ -345,18 +356,19 @@ std::_Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),
   GfxSurface **ppGVar4;
   GfxSurface **ppGVar5;
   GfxSurface **ppGVar6;
+  Material **_First_3;
   
-  ppGVar6 = param_1 + 1;
-  if (ppGVar6 != param_2) {
+  ppGVar6 = _Last_3 + 1;
+  if (ppGVar6 != _Pred_3) {
     do {
       pGVar1 = *ppGVar6;
-      bVar2 = (*param_3)(pGVar1,*param_1);
+      bVar2 = (*param_3)(pGVar1,*_Last_3);
       if (bVar2) {
-        iVar3 = (int)ppGVar6 - (int)param_1 >> 2;
+        iVar3 = (int)ppGVar6 - (int)_Last_3 >> 2;
         if (0 < iVar3) {
-          memmove_s(ppGVar6 + (1 - iVar3),iVar3 * 4,param_1,iVar3 * 4);
+          memmove_s(ppGVar6 + (1 - iVar3),iVar3 * 4,_Last_3,iVar3 * 4);
         }
-        *param_1 = pGVar1;
+        *_Last_3 = pGVar1;
       }
       else {
         bVar2 = (*param_3)(pGVar1,ppGVar6[-1]);
@@ -373,7 +385,7 @@ std::_Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),
         *ppGVar5 = pGVar1;
       }
       ppGVar6 = ppGVar6 + 1;
-    } while (ppGVar6 != param_2);
+    } while (ppGVar6 != _Pred_3);
   }
   return;
 }
@@ -381,10 +393,12 @@ std::_Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),
 
 // 00867290  _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&),GfxSModelSurfStats>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
 
+/* WARNING: Variable defined which should be unmapped: _Val */
+
 void __cdecl
 std::
 _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&),GfxSModelSurfStats>
-          (GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2,
+          (GfxSModelSurfStats *_Last,GfxSModelSurfStats *_Pred,
           _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_3,
           GfxSModelSurfStats *param_4)
 
@@ -396,19 +410,21 @@ _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSM
   GfxSModelSurfStats *pGVar5;
   GfxSModelSurfStats *pGVar6;
   GfxSModelSurfStats *pGVar7;
-  GfxSModelSurfStats local_10;
+  GfxSModelSurfStats *_First;
+  GfxSModelSurfStats _Val;
+  undefined4 uStack_4;
   
-  pGVar5 = param_1;
-  pGVar1 = param_1;
-  while (pGVar1 = pGVar1 + 1, pGVar1 != param_2) {
-    local_10.model = pGVar1->model;
-    local_10.lod = pGVar1->lod;
-    local_10.smcAllocBits = pGVar1->smcAllocBits;
-    local_10.useCount = pGVar1->useCount;
-    bVar4 = (*param_3)(&local_10,param_1);
+  pGVar5 = _Last;
+  pGVar1 = _Last;
+  while (pGVar1 = pGVar1 + 1, pGVar1 != _Pred) {
+    _Val.lod = (uint)pGVar1->model;
+    _Val.smcAllocBits = pGVar1->lod;
+    _Val.useCount = pGVar1->smcAllocBits;
+    uStack_4 = pGVar1->useCount;
+    bVar4 = (*param_3)((GfxSModelSurfStats *)&_Val.lod,_Last);
     pGVar3 = pGVar1;
     if (bVar4) {
-      for (; param_1 != pGVar3; pGVar3 = pGVar3 + -1) {
+      for (; _Last != pGVar3; pGVar3 = pGVar3 + -1) {
         uVar2 = pGVar3[-0xffffffff00000001].lod;
         pGVar3->model = pGVar3[-0xffffffff00000001].model;
         pGVar3->lod = uVar2;
@@ -416,13 +432,13 @@ _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSM
         pGVar3->smcAllocBits = pGVar3[-0xffffffff00000001].smcAllocBits;
         pGVar3->useCount = uVar2;
       }
-      param_1->model = local_10.model;
-      param_1->lod = local_10.lod;
-      param_1->smcAllocBits = local_10.smcAllocBits;
-      param_1->useCount = local_10.useCount;
+      _Last->model = (XModel *)_Val.lod;
+      _Last->lod = _Val.smcAllocBits;
+      _Last->smcAllocBits = _Val.useCount;
+      _Last->useCount = uStack_4;
     }
     else {
-      bVar4 = (*param_3)(&local_10,pGVar5);
+      bVar4 = (*param_3)((GfxSModelSurfStats *)&_Val.lod,pGVar5);
       pGVar3 = pGVar5;
       pGVar7 = pGVar1;
       pGVar6 = pGVar1;
@@ -435,15 +451,15 @@ _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSM
           uVar2 = pGVar7->useCount;
           pGVar6->smcAllocBits = pGVar7->smcAllocBits;
           pGVar6->useCount = uVar2;
-          bVar4 = (*param_3)(&local_10,pGVar7 + -1);
+          bVar4 = (*param_3)((GfxSModelSurfStats *)&_Val.lod,pGVar7 + -1);
           pGVar3 = pGVar7 + -1;
           pGVar6 = pGVar7;
         } while (bVar4);
       }
-      pGVar7->model = local_10.model;
-      pGVar7->lod = local_10.lod;
-      pGVar7->smcAllocBits = local_10.smcAllocBits;
-      pGVar7->useCount = local_10.useCount;
+      pGVar7->model = (XModel *)_Val.lod;
+      pGVar7->lod = _Val.smcAllocBits;
+      pGVar7->smcAllocBits = _Val.useCount;
+      pGVar7->useCount = uStack_4;
     }
     pGVar5 = pGVar5 + 1;
   }
@@ -455,7 +471,7 @@ _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSM
 
 void __cdecl
 std::_Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-          (GfxSurface **param_1,GfxSurface **param_2,GfxSurface **param_3,
+          (GfxSurface **_Pred_3,GfxSurface **param_2,GfxSurface **param_3,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_4)
 
 {
@@ -463,6 +479,7 @@ std::_Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
   char cVar2;
   GfxSurface **unaff_ESI;
   GfxSurface **unaff_EDI;
+  Material **_Last_3;
   
   cVar2 = (*(code *)param_2)(*unaff_ESI,*unaff_EDI);
   if ((cVar2 != '\0') && (unaff_ESI != unaff_EDI)) {
@@ -470,10 +487,10 @@ std::_Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
     *unaff_ESI = *unaff_EDI;
     *unaff_EDI = pGVar1;
   }
-  cVar2 = (*(code *)param_2)(*param_1,*unaff_ESI);
-  if ((cVar2 != '\0') && (param_1 != unaff_ESI)) {
-    pGVar1 = *param_1;
-    *param_1 = *unaff_ESI;
+  cVar2 = (*(code *)param_2)(*_Pred_3,*unaff_ESI);
+  if ((cVar2 != '\0') && (_Pred_3 != unaff_ESI)) {
+    pGVar1 = *_Pred_3;
+    *_Pred_3 = *unaff_ESI;
     *unaff_ESI = pGVar1;
   }
   cVar2 = (*(code *)param_2)(*unaff_ESI,*unaff_EDI);
@@ -490,7 +507,7 @@ std::_Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
 
 void __cdecl
 std::_Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2,GfxSModelSurfStats *param_3,
+          (GfxSModelSurfStats *_Pred,GfxSModelSurfStats *param_2,GfxSModelSurfStats *param_3,
           _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_4)
 
 {
@@ -502,6 +519,7 @@ std::_Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSu
   char cVar6;
   GfxSModelSurfStats *unaff_ESI;
   GfxSModelSurfStats *unaff_EDI;
+  GfxSModelSurfStats *_Last;
   
   cVar6 = (*(code *)param_2)();
   if ((cVar6 != '\0') && (unaff_ESI != unaff_EDI)) {
@@ -520,18 +538,18 @@ std::_Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSu
     unaff_EDI->smcAllocBits = uVar4;
     unaff_EDI->useCount = uVar5;
   }
-  cVar6 = (*(code *)param_2)(param_1);
-  if ((cVar6 != '\0') && (param_1 != unaff_ESI)) {
+  cVar6 = (*(code *)param_2)(_Pred);
+  if ((cVar6 != '\0') && (_Pred != unaff_ESI)) {
     uVar1 = unaff_ESI->lod;
-    pXVar2 = param_1->model;
-    uVar3 = param_1->lod;
-    uVar4 = param_1->smcAllocBits;
-    uVar5 = param_1->useCount;
-    param_1->model = unaff_ESI->model;
-    param_1->lod = uVar1;
+    pXVar2 = _Pred->model;
+    uVar3 = _Pred->lod;
+    uVar4 = _Pred->smcAllocBits;
+    uVar5 = _Pred->useCount;
+    _Pred->model = unaff_ESI->model;
+    _Pred->lod = uVar1;
     uVar1 = unaff_ESI->useCount;
-    param_1->smcAllocBits = unaff_ESI->smcAllocBits;
-    param_1->useCount = uVar1;
+    _Pred->smcAllocBits = unaff_ESI->smcAllocBits;
+    _Pred->useCount = uVar1;
     unaff_ESI->model = pXVar2;
     unaff_ESI->lod = uVar3;
     unaff_ESI->smcAllocBits = uVar4;
@@ -562,7 +580,7 @@ std::_Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSu
 
 void __cdecl
 std::_Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-          (GfxSurface **param_1,GfxSurface **param_2,GfxSurface **param_3,
+          (GfxSurface **_Last_3,GfxSurface **_Pred_3,GfxSurface **param_3,
           _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_4)
 
 {
@@ -572,11 +590,12 @@ std::_Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
   GfxSurface **unaff_EBX;
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_ESI;
   GfxSurface **unaff_EDI;
+  Material **_Mid_3;
   GfxSurface **ppGVar3;
+  GfxSurface **_Pred_3_00;
   GfxSurface **ppGVar4;
-  GfxSurface **ppGVar5;
   
-  iVar1 = (int)param_2 - in_EAX >> 2;
+  iVar1 = (int)_Pred_3 - in_EAX >> 2;
   if (0x28 < iVar1) {
     iVar1 = iVar1 + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
@@ -585,20 +604,22 @@ std::_Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
     _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
               (ppGVar2,param_3,unaff_EBX,
                (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)unaff_EDI);
-    ppGVar4 = param_1 + iVar1;
-    ppGVar5 = param_3;
+    _Pred_3_00 = _Last_3 + iVar1;
+    ppGVar4 = param_3;
     _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              (ppGVar4,param_3,ppGVar2,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)ppGVar3);
-    ppGVar2 = param_2 + -iVar1;
+              (_Pred_3_00,param_3,ppGVar2,
+               (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)ppGVar3);
+    ppGVar2 = _Pred_3 + -iVar1;
     ppGVar3 = param_3;
     _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              (param_2,param_3,ppGVar4,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)ppGVar5);
+              (_Pred_3,param_3,_Pred_3_00,
+               (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)ppGVar4);
     _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              (ppGVar2,param_3,param_2,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)ppGVar3);
+              (ppGVar2,param_3,_Pred_3,(_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)ppGVar3);
     return;
   }
   _Med3<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-            (param_2,param_3,unaff_EDI,unaff_ESI);
+            (_Pred_3,param_3,unaff_EDI,unaff_ESI);
   return;
 }
 
@@ -607,7 +628,7 @@ std::_Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
 
 void __cdecl
 std::_Median<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2,GfxSModelSurfStats *param_3,
+          (GfxSModelSurfStats *_Last,GfxSModelSurfStats *_Pred,GfxSModelSurfStats *param_3,
           _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_4)
 
 {
@@ -617,48 +638,50 @@ std::_Median<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModel
   GfxSModelSurfStats *unaff_EBP;
   _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *unaff_ESI;
   GfxSModelSurfStats *unaff_EDI;
+  GfxSModelSurfStats *_Mid;
   GfxSModelSurfStats *pGVar2;
+  GfxSModelSurfStats *_Pred_00;
   GfxSModelSurfStats *pGVar3;
   GfxSModelSurfStats *pGVar4;
-  GfxSModelSurfStats *pGVar5;
   
-  iVar1 = (int)param_2 - in_EAX >> 4;
+  iVar1 = (int)_Pred - in_EAX >> 4;
   if (0x28 < iVar1) {
     iVar1 = iVar1 + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     pGVar2 = (GfxSModelSurfStats *)(iVar1 * 0x20 + in_EAX);
-    pGVar5 = param_3;
-    _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-              (pGVar2,param_3,unaff_EBP,unaff_EBX);
-    pGVar3 = param_1 + iVar1;
     pGVar4 = param_3;
     _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-              (pGVar3,param_3,pGVar2,
-               (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)pGVar5);
-    pGVar5 = param_2 + -iVar1;
+              (pGVar2,param_3,unaff_EBP,unaff_EBX);
+    _Pred_00 = _Last + iVar1;
+    pGVar3 = param_3;
+    _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
+              (_Pred_00,param_3,pGVar2,
+               (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)pGVar4);
+    pGVar4 = _Pred + -iVar1;
     pGVar2 = param_3;
     _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-              (param_2,param_3,pGVar3,
-               (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)pGVar4);
+              (_Pred,param_3,_Pred_00,
+               (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)pGVar3);
     _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-              (pGVar5,param_3,param_2,
+              (pGVar4,param_3,_Pred,
                (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)pGVar2);
     return;
   }
   _Med3<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-            (param_2,param_3,unaff_EDI,unaff_ESI);
+            (_Pred,param_3,unaff_EDI,unaff_ESI);
   return;
 }
 
 
 // 00866BE0  _Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
 
+/* WARNING: Variable defined which should be unmapped: _Glast_3 */
 /* WARNING: Type propagation algorithm not settling */
 
 pair<GfxSurface_*_*,GfxSurface_*_*> __cdecl
 std::_Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-          (GfxSurface **param_1,GfxSurface **param_2,
-          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *param_3)
+          (GfxSurface **_First_3,GfxSurface **_Last_3,
+          _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *_Pred_3)
 
 {
   GfxSurface *pGVar1;
@@ -676,21 +699,22 @@ std::_Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface
   GfxSurface *pGVar4;
   GfxSurface *pGVar5;
   GfxSurface *pGVar6;
+  GfxSurface *_Last_3_00;
   GfxSurface *pGVar7;
-  GfxSurface *pGVar8;
   _func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *unaff_EDI;
-  pair<GfxSurface_*_*,GfxSurface_*_*> pVar9;
+  pair<GfxSurface_*_*,GfxSurface_*_*> pVar8;
   GfxSurface **in_stack_00000010;
+  Material **_Glast_3;
   undefined4 uStack_4;
   
-  pGVar7 = (GfxSurface *)
-           (param_2 +
-           (((int)param_3 - (int)param_2 >> 2) - ((int)param_3 - (int)param_2 >> 0x1f) >> 1));
+  _Last_3_00 = (GfxSurface *)
+               (_Last_3 +
+               (((int)_Pred_3 - (int)_Last_3 >> 2) - ((int)_Pred_3 - (int)_Last_3 >> 0x1f) >> 1));
   _Median<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-            ((GfxSurface **)pGVar7,(GfxSurface **)(param_3 + -4),in_stack_00000010,unaff_EDI);
-  uStack_4 = pGVar7;
+            ((GfxSurface **)_Last_3_00,(GfxSurface **)(_Pred_3 + -4),in_stack_00000010,unaff_EDI);
+  uStack_4 = _Last_3_00;
   pGVar3 = extraout_EDX;
-  while (((param_2 < uStack_4 &&
+  while (((_Last_3 < uStack_4 &&
           (cVar2 = (*(code *)in_stack_00000010)
                              (uStack_4[-1].bounds[1][2],(GfxSurface *)(uStack_4->tris).mins[0]),
           pGVar3 = extraout_EDX_00, cVar2 == '\0')) &&
@@ -700,69 +724,70 @@ std::_Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface
     uStack_4 = (GfxSurface *)(uStack_4[-1].bounds[1] + 2);
   }
   do {
-    pGVar7 = (GfxSurface *)((pGVar7->tris).mins + 1);
-    pGVar4 = pGVar7;
+    _Last_3_00 = (GfxSurface *)((_Last_3_00->tris).mins + 1);
+    pGVar4 = _Last_3_00;
     pGVar6 = uStack_4;
     pGVar5 = uStack_4;
-    if ((param_3 <= pGVar7) ||
+    if ((_Pred_3 <= _Last_3_00) ||
        (cVar2 = (*(code *)in_stack_00000010)
-                          ((GfxSurface *)(pGVar7->tris).mins[0],
+                          ((GfxSurface *)(_Last_3_00->tris).mins[0],
                            (GfxSurface *)(uStack_4->tris).mins[0]), pGVar3 = extraout_EDX_02,
        cVar2 != '\0')) break;
     cVar2 = (*(code *)in_stack_00000010)
-                      ((GfxSurface *)(uStack_4->tris).mins[0],(GfxSurface *)(pGVar7->tris).mins[0]);
+                      ((GfxSurface *)(uStack_4->tris).mins[0],
+                       (GfxSurface *)(_Last_3_00->tris).mins[0]);
     pGVar3 = extraout_EDX_03;
   } while (cVar2 == '\0');
 joined_r0x00866c79:
   do {
-    pGVar8 = pGVar6;
+    pGVar7 = pGVar6;
     pGVar1 = pGVar4;
     pGVar4 = pGVar5;
-    if (param_3 <= pGVar1) {
+    if (_Pred_3 <= pGVar1) {
 joined_r0x00866cc0:
-      while (param_2 < pGVar5) {
+      while (_Last_3 < pGVar5) {
         pGVar4 = (GfxSurface *)(pGVar4[-1].bounds[1] + 2);
         cVar2 = (*(code *)in_stack_00000010)
-                          ((GfxSurface *)(pGVar4->tris).mins[0],(GfxSurface *)(pGVar8->tris).mins[0]
+                          ((GfxSurface *)(pGVar4->tris).mins[0],(GfxSurface *)(pGVar7->tris).mins[0]
                           );
         pGVar3 = extraout_EDX_06;
         if (cVar2 == '\0') {
           cVar2 = (*(code *)in_stack_00000010)
-                            ((GfxSurface *)(pGVar8->tris).mins[0],
+                            ((GfxSurface *)(pGVar7->tris).mins[0],
                              (GfxSurface *)(pGVar4->tris).mins[0]);
           pGVar3 = extraout_EDX_07;
           pGVar5 = uStack_4;
           if (cVar2 != '\0') break;
-          pGVar8 = (GfxSurface *)(pGVar8[-1].bounds[1] + 2);
-          if (pGVar8 != pGVar4) {
-            pGVar5 = (GfxSurface *)(pGVar8->tris).mins[0];
-            (pGVar8->tris).mins[0] = (float)(pGVar4->tris).mins[0];
+          pGVar7 = (GfxSurface *)(pGVar7[-1].bounds[1] + 2);
+          if (pGVar7 != pGVar4) {
+            pGVar5 = (GfxSurface *)(pGVar7->tris).mins[0];
+            (pGVar7->tris).mins[0] = (float)(pGVar4->tris).mins[0];
             (pGVar4->tris).mins[0] = (float)pGVar5;
           }
         }
         pGVar5 = (GfxSurface *)(uStack_4[-1].bounds[1] + 2);
         uStack_4 = pGVar5;
       }
-      if (pGVar5 == (GfxSurface *)param_2) {
-        if (pGVar1 == (GfxSurface *)param_3) {
-          *param_1 = pGVar8;
-          param_1[1] = pGVar7;
-          pVar9.second = (GfxSurface **)pGVar3;
-          pVar9.first = param_1;
-          return pVar9;
+      if (pGVar5 == (GfxSurface *)_Last_3) {
+        if (pGVar1 == (GfxSurface *)_Pred_3) {
+          *_First_3 = pGVar7;
+          _First_3[1] = _Last_3_00;
+          pVar8.second = (GfxSurface **)pGVar3;
+          pVar8.first = _First_3;
+          return pVar8;
         }
-        if ((pGVar7 != pGVar1) && (pGVar8 != pGVar7)) {
-          pGVar3 = (GfxSurface *)(pGVar7->tris).mins[0];
-          pGVar4 = (GfxSurface *)(pGVar8->tris).mins[0];
-          (pGVar8->tris).mins[0] = (float)pGVar3;
-          (pGVar7->tris).mins[0] = (float)pGVar4;
+        if ((_Last_3_00 != pGVar1) && (pGVar7 != _Last_3_00)) {
+          pGVar3 = (GfxSurface *)(_Last_3_00->tris).mins[0];
+          pGVar4 = (GfxSurface *)(pGVar7->tris).mins[0];
+          (pGVar7->tris).mins[0] = (float)pGVar3;
+          (_Last_3_00->tris).mins[0] = (float)pGVar4;
         }
-        pGVar7 = (GfxSurface *)((pGVar7->tris).mins + 1);
-        pGVar6 = (GfxSurface *)((pGVar8->tris).mins + 1);
+        _Last_3_00 = (GfxSurface *)((_Last_3_00->tris).mins + 1);
+        pGVar6 = (GfxSurface *)((pGVar7->tris).mins + 1);
         pGVar4 = (GfxSurface *)((pGVar1->tris).mins + 1);
-        if (pGVar8 != pGVar1) {
-          pGVar3 = (GfxSurface *)(pGVar8->tris).mins[0];
-          (pGVar8->tris).mins[0] = (float)(pGVar1->tris).mins[0];
+        if (pGVar7 != pGVar1) {
+          pGVar3 = (GfxSurface *)(pGVar7->tris).mins[0];
+          (pGVar7->tris).mins[0] = (float)(pGVar1->tris).mins[0];
           (pGVar1->tris).mins[0] = (float)pGVar3;
           pGVar5 = uStack_4;
         }
@@ -770,20 +795,20 @@ joined_r0x00866cc0:
       else {
         uStack_4 = (GfxSurface *)(pGVar5[-1].bounds[1] + 2);
         pGVar5 = uStack_4;
-        if (pGVar1 == (GfxSurface *)param_3) {
-          pGVar6 = (GfxSurface *)(pGVar8[-1].bounds[1] + 2);
+        if (pGVar1 == (GfxSurface *)_Pred_3) {
+          pGVar6 = (GfxSurface *)(pGVar7[-1].bounds[1] + 2);
           if (uStack_4 != pGVar6) {
             pGVar4 = (GfxSurface *)(uStack_4->tris).mins[0];
             (uStack_4->tris).mins[0] = (float)(pGVar6->tris).mins[0];
             (pGVar6->tris).mins[0] = (float)pGVar4;
           }
-          pGVar7 = (GfxSurface *)(pGVar7[-1].bounds[1] + 2);
+          _Last_3_00 = (GfxSurface *)(_Last_3_00[-1].bounds[1] + 2);
           pGVar4 = pGVar1;
-          if (pGVar6 != pGVar7) {
-            pGVar3 = (GfxSurface *)(pGVar7->tris).mins[0];
+          if (pGVar6 != _Last_3_00) {
+            pGVar3 = (GfxSurface *)(_Last_3_00->tris).mins[0];
             pGVar1 = (GfxSurface *)(pGVar6->tris).mins[0];
             (pGVar6->tris).mins[0] = (float)pGVar3;
-            (pGVar7->tris).mins[0] = (float)pGVar1;
+            (_Last_3_00->tris).mins[0] = (float)pGVar1;
           }
         }
         else {
@@ -793,42 +818,44 @@ joined_r0x00866cc0:
             (uStack_4->tris).mins[0] = (float)pGVar4;
           }
           pGVar4 = (GfxSurface *)((pGVar1->tris).mins + 1);
-          pGVar6 = pGVar8;
+          pGVar6 = pGVar7;
         }
       }
       goto joined_r0x00866c79;
     }
     cVar2 = (*(code *)in_stack_00000010)
-                      (*(GfxSurface **)pGVar8,(GfxSurface *)(pGVar1->tris).mins[0]);
+                      (*(GfxSurface **)pGVar7,(GfxSurface *)(pGVar1->tris).mins[0]);
     pGVar3 = extraout_EDX_04;
-    pGVar6 = pGVar7;
+    pGVar6 = _Last_3_00;
     if (cVar2 == '\0') {
       cVar2 = (*(code *)in_stack_00000010)
-                        ((GfxSurface *)(pGVar1->tris).mins[0],*(GfxSurface **)pGVar8);
+                        ((GfxSurface *)(pGVar1->tris).mins[0],*(GfxSurface **)pGVar7);
       pGVar3 = extraout_EDX_05;
       if (cVar2 != '\0') goto joined_r0x00866cc0;
-      pGVar6 = (GfxSurface *)((pGVar7->tris).mins + 1);
-      if (pGVar7 != pGVar1) {
+      pGVar6 = (GfxSurface *)((_Last_3_00->tris).mins + 1);
+      if (_Last_3_00 != pGVar1) {
         pGVar3 = (GfxSurface *)(pGVar1->tris).mins[0];
-        pGVar4 = (GfxSurface *)(pGVar7->tris).mins[0];
-        (pGVar7->tris).mins[0] = (float)pGVar3;
+        pGVar4 = (GfxSurface *)(_Last_3_00->tris).mins[0];
+        (_Last_3_00->tris).mins[0] = (float)pGVar3;
         (pGVar1->tris).mins[0] = (float)pGVar4;
       }
     }
-    pGVar7 = pGVar6;
+    _Last_3_00 = pGVar6;
     pGVar4 = (GfxSurface *)((pGVar1->tris).mins + 1);
-    pGVar6 = pGVar8;
+    pGVar6 = pGVar7;
   } while( true );
 }
 
 
 // 00866DB0  _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
 
+/* WARNING: Variable defined which should be unmapped: _Glast */
+
 pair<GfxSModelSurfStats_*,GfxSModelSurfStats_*> __cdecl
 std::
 _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2,
-          _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_3)
+          (GfxSModelSurfStats *_First,GfxSModelSurfStats *_Last,
+          _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *_Pred)
 
 {
   XModel *pXVar1;
@@ -874,17 +901,17 @@ _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,G
   _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *unaff_EDI;
   pair<GfxSModelSurfStats_*,GfxSModelSurfStats_*> pVar32;
   GfxSModelSurfStats *in_stack_00000010;
+  GfxSModelSurfStats *_Glast;
   XModel *pXStack_4;
   
   pXVar29 = (XModel *)
-            (param_2 +
-            (((int)param_3 - (int)param_2 >> 4) - ((int)param_3 - (int)param_2 >> 0x1f) >> 1));
+            (_Last + (((int)_Pred - (int)_Last >> 4) - ((int)_Pred - (int)_Last >> 0x1f) >> 1));
   _Median<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-            ((GfxSModelSurfStats *)pXVar29,(GfxSModelSurfStats *)(param_3 + -0x10),in_stack_00000010
-             ,unaff_EDI);
+            ((GfxSModelSurfStats *)pXVar29,(GfxSModelSurfStats *)(_Pred + -0x10),in_stack_00000010,
+             unaff_EDI);
   pXVar28 = pXVar29;
   pGVar26 = extraout_EDX;
-  while (pXStack_4 = pXVar28, param_2 < pXStack_4) {
+  while (pXStack_4 = pXVar28, _Last < pXStack_4) {
     pXVar28 = (XModel *)&pXStack_4[-1].physPreset;
     cVar25 = (*(code *)in_stack_00000010)(pXVar28,pXStack_4);
     pGVar26 = extraout_EDX_00;
@@ -897,7 +924,7 @@ _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,G
     pXVar24 = pXVar29;
     pXVar31 = pXStack_4;
     pXVar28 = pXStack_4;
-    if (param_3 <= pXVar29) break;
+    if (_Pred <= pXVar29) break;
     cVar25 = (*(code *)in_stack_00000010)(pXVar29,pXStack_4);
     pGVar26 = extraout_EDX_02;
     if ((cVar25 != '\0') ||
@@ -910,9 +937,9 @@ joined_r0x00866e49:
   pXVar1 = pXVar29;
   pXVar24 = pXVar28;
   pXVar29 = pXVar1;
-  if (param_3 <= pXVar2) {
+  if (_Pred <= pXVar2) {
 joined_r0x00866ea4:
-    while (param_2 < pXVar28) {
+    while (_Last < pXVar28) {
       ppPVar27 = &pXVar24[-1].physPreset;
       cVar25 = (*(code *)in_stack_00000010)(ppPVar27,pXVar30);
       pGVar26 = extraout_EDX_06;
@@ -949,12 +976,12 @@ joined_r0x00866ea4:
       pXVar30 = pXVar31;
       pXStack_4 = pXVar28;
     }
-    if (pXVar28 == (XModel *)param_2) {
-      if (pXVar2 == (XModel *)param_3) {
-        param_1->model = pXVar30;
-        param_1->lod = (uint)pXVar1;
+    if (pXVar28 == (XModel *)_Last) {
+      if (pXVar2 == (XModel *)_Pred) {
+        _First->model = pXVar30;
+        _First->lod = (uint)pXVar1;
         pVar32.second = pGVar26;
-        pVar32.first = param_1;
+        pVar32.first = _First;
         return pVar32;
       }
       if ((pXVar1 != pXVar2) && (pXVar30 != pXVar1)) {
@@ -1019,7 +1046,7 @@ joined_r0x00866ea4:
     }
     else {
       pXStack_4 = (XModel *)&pXVar28[-1].physPreset;
-      if (pXVar2 == (XModel *)param_3) {
+      if (pXVar2 == (XModel *)_Pred) {
         pXVar31 = (XModel *)&pXVar30[-1].physPreset;
         if (pXStack_4 != pXVar31) {
           uVar3 = pXVar30[-0xffffffff00000001].numCollmaps;
@@ -1148,8 +1175,8 @@ joined_r0x00866ea4:
 void __cdecl
 std::
 _Sort<GfxStaticModelDrawInst_const_*_*,int,bool_(__cdecl*)(GfxStaticModelDrawInst_const_*,GfxStaticModelDrawInst_const_*)>
-          (GfxStaticModelDrawInst **param_1,GfxStaticModelDrawInst **param_2,int param_3,
-          _func___cdecl_bool_GfxStaticModelDrawInst_ptr_GfxStaticModelDrawInst_ptr *param_4)
+          (GfxStaticModelDrawInst **_First_2,GfxStaticModelDrawInst **_Last_2,int _Ideal_2,
+          _func___cdecl_bool_GfxStaticModelDrawInst_ptr_GfxStaticModelDrawInst_ptr *_Pred_2)
 
 {
   int iVar1;
@@ -1158,48 +1185,48 @@ _Sort<GfxStaticModelDrawInst_const_*_*,int,bool_(__cdecl*)(GfxStaticModelDrawIns
   GfxSurface **unaff_EDI;
   GfxSurface **in_stack_ffffffec;
   GfxSurface *local_10;
-  GfxSurface *local_c;
+  GfxSurface *_Mid_2;
   
-  iVar1 = (int)param_2 - (int)param_1;
+  iVar1 = (int)_Last_2 - (int)_First_2;
   do {
     iVar1 = iVar1 >> 2;
     if (iVar1 < 0x21) {
 LAB_00866a99:
-      if ((1 < iVar1) && (param_1 != param_2)) {
+      if ((1 < iVar1) && (_First_2 != _Last_2)) {
         _Insertion_sort1<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*),GfxSurface_*>
-                  ((GfxSurface **)param_1,(GfxSurface **)param_2,
-                   (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_4,unaff_EDI);
+                  ((GfxSurface **)_First_2,(GfxSurface **)_Last_2,
+                   (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)_Pred_2,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Ideal_2 < 1) {
       if (0x20 < iVar1) {
-        if (4 < (int)((int)param_2 - (int)param_1 & 0xfffffffcU)) {
+        if (4 < (int)((int)_Last_2 - (int)_First_2 & 0xfffffffcU)) {
           _Make_heap<GfxSurface_*_*,int,GfxSurface_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-                    ((GfxSurface **)param_4,unaff_EDI,unaff_ESI,unaff_EBX,in_stack_ffffffec);
+                    ((GfxSurface **)_Pred_2,unaff_EDI,unaff_ESI,unaff_EBX,in_stack_ffffffec);
         }
         _Sort_heap<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-                  ((GfxSurface **)param_4,unaff_EDI,unaff_ESI);
+                  ((GfxSurface **)_Pred_2,unaff_EDI,unaff_ESI);
         return;
       }
       goto LAB_00866a99;
     }
     _Unguarded_partition<GfxSurface_*_*,bool_(__cdecl*)(GfxSurface_*,GfxSurface_*)>
-              (&local_10,(GfxSurface **)param_1,
-               (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)param_2);
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if ((int)((int)local_10 - (int)param_1 & 0xfffffffcU) <
-        (int)((int)param_2 - (int)local_c & 0xfffffffcU)) {
+              (&local_10,(GfxSurface **)_First_2,
+               (_func___cdecl_bool_GfxSurface_ptr_GfxSurface_ptr *)_Last_2);
+    _Ideal_2 = _Ideal_2 / 2 + (_Ideal_2 / 2) / 2;
+    if ((int)((int)local_10 - (int)_First_2 & 0xfffffffcU) <
+        (int)((int)_Last_2 - (int)_Mid_2 & 0xfffffffcU)) {
       _Sort<GfxStaticModelDrawInst_const_*_*,int,bool_(__cdecl*)(GfxStaticModelDrawInst_const_*,GfxStaticModelDrawInst_const_*)>
-                (param_1,(GfxStaticModelDrawInst **)local_10,param_3,param_4);
-      param_1 = (GfxStaticModelDrawInst **)local_c;
+                (_First_2,(GfxStaticModelDrawInst **)local_10,_Ideal_2,_Pred_2);
+      _First_2 = (GfxStaticModelDrawInst **)_Mid_2;
     }
     else {
       _Sort<GfxStaticModelDrawInst_const_*_*,int,bool_(__cdecl*)(GfxStaticModelDrawInst_const_*,GfxStaticModelDrawInst_const_*)>
-                ((GfxStaticModelDrawInst **)local_c,param_2,param_3,param_4);
-      param_2 = (GfxStaticModelDrawInst **)local_10;
+                ((GfxStaticModelDrawInst **)_Mid_2,_Last_2,_Ideal_2,_Pred_2);
+      _Last_2 = (GfxStaticModelDrawInst **)local_10;
     }
-    iVar1 = (int)param_2 - (int)param_1;
+    iVar1 = (int)_Last_2 - (int)_First_2;
   } while( true );
 }
 
@@ -1208,56 +1235,56 @@ LAB_00866a99:
 
 void __cdecl
 std::_Sort<GfxSModelSurfStats_*,int,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-          (GfxSModelSurfStats *param_1,GfxSModelSurfStats *param_2,int param_3,
-          _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *param_4)
+          (GfxSModelSurfStats *_First,GfxSModelSurfStats *_Last,int _Ideal,
+          _func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *_Pred)
 
 {
   int iVar1;
   GfxSModelSurfStats *unaff_ESI;
   GfxSModelSurfStats *unaff_EDI;
   XModel *local_10;
-  XModel *local_c;
+  XModel *_Mid;
   
-  iVar1 = (int)param_2 - (int)param_1;
+  iVar1 = (int)_Last - (int)_First;
   do {
     iVar1 = iVar1 >> 4;
     if (iVar1 < 0x21) {
 LAB_00866b89:
-      if ((1 < iVar1) && (param_1 != param_2)) {
+      if ((1 < iVar1) && (_First != _Last)) {
         _Insertion_sort1<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&),GfxSModelSurfStats>
-                  (param_1,param_2,param_4,unaff_EDI);
+                  (_First,_Last,_Pred,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Ideal < 1) {
       if (0x20 < iVar1) {
-        if (0x10 < (int)((int)param_2 - (int)param_1 & 0xfffffff0U)) {
+        if (0x10 < (int)((int)_Last - (int)_First & 0xfffffff0U)) {
           _Make_heap<GfxSModelSurfStats_*,int,GfxSModelSurfStats,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-                    (param_1,param_2,param_4,(int *)unaff_EDI,unaff_ESI);
+                    (_First,_Last,_Pred,(int *)unaff_EDI,unaff_ESI);
         }
         _Sort_heap<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-                  ((GfxSModelSurfStats *)param_4,unaff_EDI,
+                  ((GfxSModelSurfStats *)_Pred,unaff_EDI,
                    (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)unaff_ESI);
         return;
       }
       goto LAB_00866b89;
     }
     _Unguarded_partition<GfxSModelSurfStats_*,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-              ((GfxSModelSurfStats *)&local_10,param_1,
-               (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)param_2);
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if ((int)((int)local_10 - (int)param_1 & 0xfffffff0U) <
-        (int)((int)param_2 - (int)local_c & 0xfffffff0U)) {
+              ((GfxSModelSurfStats *)&local_10,_First,
+               (_func___cdecl_bool_GfxSModelSurfStats_ptr_GfxSModelSurfStats_ptr *)_Last);
+    _Ideal = _Ideal / 2 + (_Ideal / 2) / 2;
+    if ((int)((int)local_10 - (int)_First & 0xfffffff0U) <
+        (int)((int)_Last - (int)_Mid & 0xfffffff0U)) {
       _Sort<GfxSModelSurfStats_*,int,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-                (param_1,(GfxSModelSurfStats *)local_10,param_3,param_4);
-      param_1 = (GfxSModelSurfStats *)local_c;
+                (_First,(GfxSModelSurfStats *)local_10,_Ideal,_Pred);
+      _First = (GfxSModelSurfStats *)_Mid;
     }
     else {
       _Sort<GfxSModelSurfStats_*,int,bool_(__cdecl*)(GfxSModelSurfStats_&,GfxSModelSurfStats_&)>
-                ((GfxSModelSurfStats *)local_c,param_2,param_3,param_4);
-      param_2 = (GfxSModelSurfStats *)local_10;
+                ((GfxSModelSurfStats *)_Mid,_Last,_Ideal,_Pred);
+      _Last = (GfxSModelSurfStats *)local_10;
     }
-    iVar1 = (int)param_2 - (int)param_1;
+    iVar1 = (int)_Last - (int)_First;
   } while( true );
 }
 

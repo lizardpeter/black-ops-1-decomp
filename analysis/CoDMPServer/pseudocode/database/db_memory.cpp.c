@@ -2,59 +2,62 @@
 
 // 0058C750  DB_MemAlloc  (database/db_memory.cpp:57)
 
-uchar * __cdecl DB_MemAlloc(uint param_1,uint param_2,uint param_3,char *param_4,int param_5)
+uchar * __cdecl DB_MemAlloc(uint size,uint type,uint allocType,char *filename,int flags)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
-  uchar *local_8;
+  uchar *ptr;
   
-  if (param_2 < 2) {
-    if ((param_5 & 0x40000000U) == 0) {
-      local_8 = _PMem_AllocNamed(param_1 + 0xf,0x1000,4,param_3,param_4,TRACK_FASTFILE,
-                                 "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_memory.cpp",0x4d);
+  if (type < 2) {
+    if ((flags & 0x40000000U) == 0) {
+      ptr = _PMem_AllocNamed(size + 0xf,0x1000,4,allocType,filename,TRACK_FASTFILE,
+                             "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_memory.cpp",0x4d);
     }
     else {
-      local_8 = Z_Malloc(param_1,"ZONE LOAD",0xc);
+      ptr = Z_Malloc(size,"ZONE LOAD",0xc);
     }
   }
   else {
-    if ((param_2 != 2) &&
+    if ((type != 2) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_memory.cpp",0x51,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       puVar3 = (uchar *)(*pcVar1)();
       return puVar3;
     }
-    local_8 = _PMem_AllocNamed(param_1,0x1000,0x80000404,param_3,param_4,TRACK_FASTFILE,
-                               "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_memory.cpp",0x5b);
+    ptr = _PMem_AllocNamed(size,0x1000,0x80000404,allocType,filename,TRACK_FASTFILE,
+                           "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_memory.cpp",0x5b);
   }
-  return local_8;
+  return ptr;
 }
 
 
 // 0058C620  DB_AllocXBlocks  (database/db_memory.cpp:102)
 
-void __cdecl DB_AllocXBlocks(uint *param_1,char *param_2,XBlock *param_3,uint param_4,int param_5)
+void __cdecl DB_AllocXBlocks(uint *blockSize,char *filename,XBlock *blocks,uint allocType,int flags)
 
 {
-  uint uVar1;
-  uchar *puVar2;
-  uint local_14;
+  uint size_00;
+  uchar *puVar1;
+  uint blockIndex;
+  uchar *buf;
+  uint size;
+  float total_size;
   
-  for (local_14 = 0; local_14 < 7; local_14 = local_14 + 1) {
-    uVar1 = param_1[local_14];
-    if (uVar1 != 0) {
-      puVar2 = DB_MemAlloc(uVar1,g_block_mem_type[local_14],param_4,param_2,param_5);
-      if (puVar2 == (uchar *)0x0) {
+  for (blockIndex = 0; blockIndex < 7; blockIndex = blockIndex + 1) {
+    size_00 = blockSize[blockIndex];
+    if (size_00 != 0) {
+      puVar1 = DB_MemAlloc(size_00,g_block_mem_type[blockIndex],allocType,filename,flags);
+      if (puVar1 == (uchar *)0x0) {
         PMem_GetOverAllocatedSize();
         Com_Error(ERR_DROP,
                   "Could not allocate %.2f MB of type \'%s\' for zone \'%s\' needed an additional %.2f MB"
                  );
       }
-      param_3[local_14].size = uVar1;
-      param_3[local_14].data = puVar2;
+      blocks[blockIndex].size = size_00;
+      blocks[blockIndex].data = puVar1;
     }
   }
   Com_Printf(0x10,"used %0.2f MB memory in DB alloc\n");
@@ -64,17 +67,17 @@ void __cdecl DB_AllocXBlocks(uint *param_1,char *param_2,XBlock *param_3,uint pa
 
 // 0058C820  DB_FreeXBlocks  (database/db_memory.cpp:125)
 
-void __cdecl DB_FreeXBlocks(XBlock *param_1,int param_2)
+void __cdecl DB_FreeXBlocks(XBlock *blocks,int flags)
 
 {
-  uint local_8;
+  uint blockIndex;
   
-  for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-    if (((param_2 & 0x40000000U) != 0) && (param_1[local_8].data != (uchar *)0x0)) {
-      Z_Free(param_1[local_8].data,0xc);
+  for (blockIndex = 0; blockIndex < 7; blockIndex = blockIndex + 1) {
+    if (((flags & 0x40000000U) != 0) && (blocks[blockIndex].data != (uchar *)0x0)) {
+      Z_Free(blocks[blockIndex].data,0xc);
     }
-    param_1[local_8].data = (uchar *)0x0;
-    param_1[local_8].size = 0;
+    blocks[blockIndex].data = (uchar *)0x0;
+    blocks[blockIndex].size = 0;
   }
   return;
 }

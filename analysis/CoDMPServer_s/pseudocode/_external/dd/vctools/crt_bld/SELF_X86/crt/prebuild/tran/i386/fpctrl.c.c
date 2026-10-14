@@ -6,6 +6,7 @@ uint __cdecl _statfp(void)
 
 {
   short in_FPUStatusWord;
+  short status;
   
   return (int)in_FPUStatusWord;
 }
@@ -17,6 +18,7 @@ uint __cdecl _clrfp(void)
 
 {
   short in_FPUStatusWord;
+  short status;
   
   return (int)in_FPUStatusWord;
 }
@@ -24,10 +26,11 @@ uint __cdecl _clrfp(void)
 
 // 009777B5  _ctrlfp  (line unknown)
 
-uint __cdecl _ctrlfp(uint param_1,uint param_2)
+uint __cdecl _ctrlfp(uint newctrl,uint _mask)
 
 {
   short in_FPUControlWord;
+  short oldCw;
   
   return (int)in_FPUControlWord;
 }
@@ -35,9 +38,11 @@ uint __cdecl _ctrlfp(uint param_1,uint param_2)
 
 // 009777DE  _set_statfp  (line unknown)
 
-void __cdecl _set_statfp(uint param_1)
+void __cdecl _set_statfp(uint sw)
 
 {
+  double tmp;
+  
   return;
 }
 
@@ -47,15 +52,15 @@ void __cdecl _set_statfp(uint param_1)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl __set_fpsr_sse2(uint param_1)
+void __cdecl __set_fpsr_sse2(uint newMXCSR)
 
 {
   if (__sse2_available != 0) {
-    if (((param_1 & 0x40) == 0) || (__DAZ_ENABLED == 0)) {
-      MXCSR = param_1 & 0xffffffbf;
+    if (((newMXCSR & 0x40) == 0) || (__DAZ_ENABLED == 0)) {
+      MXCSR = newMXCSR & 0xffffffbf;
     }
     else {
-      MXCSR = param_1;
+      MXCSR = newMXCSR;
     }
   }
   return;

@@ -6,16 +6,17 @@
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl G_InitTargets(void)
 
 {
-  int local_8;
+  int i;
   
   targGlob.targetCount = 0;
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    targGlob.targets[local_8].ent = (gentity_s *)0x0;
-    SV_SetConfigstring(local_8 + 0x183,(char *)0x0);
+  for (i = 0; i < 0x20; i = i + 1) {
+    targGlob.targets[i].ent = (gentity_s *)0x0;
+    SV_SetConfigstring(i + 0x183,(char *)0x0);
   }
   return;
 }
@@ -28,32 +29,34 @@ void __cdecl G_InitTargets(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Scr_Target_SetShader(void)
 
 {
   uint uVar1;
   char *pcVar2;
-  bool bVar3;
+  bool force_terminal;
   int local_418;
-  uint local_414;
-  char local_40c [1024];
+  uint targetIndex;
+  char *materialName;
+  char configString [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
     Scr_Error("Too few arguments\n",false);
   }
-  local_8 = Scr_GetEntity(0);
-  for (local_414 = 0; (local_414 < 0x20 && (targGlob.targets[local_414].ent != local_8));
-      local_414 = local_414 + 1) {
+  ent = Scr_GetEntity(0);
+  for (targetIndex = 0; (targetIndex < 0x20 && (targGlob.targets[targetIndex].ent != ent));
+      targetIndex = targetIndex + 1) {
   }
-  if (local_414 == 0x20) {
-    bVar3 = false;
+  if (targetIndex == 0x20) {
+    force_terminal = false;
     pcVar2 = va("Entity %i is not a target");
-    Scr_Error(pcVar2,bVar3);
+    Scr_Error(pcVar2,force_terminal);
   }
   pcVar2 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
   if (*pcVar2 == '\0') {
@@ -63,11 +66,11 @@ void __cdecl Scr_Target_SetShader(void)
     pcVar2 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
     local_418 = G_MaterialIndex(pcVar2);
   }
-  targGlob.targets[local_414].materialIndex = local_418;
-  SV_GetConfigstring(local_414 + 0x183,local_40c,0x400);
+  targGlob.targets[targetIndex].materialIndex = local_418;
+  SV_GetConfigstring(targetIndex + 0x183,configString,0x400);
   pcVar2 = va("%i");
-  Info_SetValueForKey(local_40c,"mat",pcVar2);
-  SV_SetConfigstring(local_414 + 0x183,local_40c);
+  Info_SetValueForKey(configString,"mat",pcVar2);
+  SV_SetConfigstring(targetIndex + 0x183,configString);
   return;
 }
 
@@ -79,32 +82,34 @@ void __cdecl Scr_Target_SetShader(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Scr_Target_SetOffscreenShader(void)
 
 {
   uint uVar1;
   char *pcVar2;
-  bool bVar3;
+  bool force_terminal;
   int local_418;
-  uint local_414;
-  char local_40c [1024];
+  uint targetIndex;
+  char *materialName;
+  char configString [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
     Scr_Error("Too few arguments\n",false);
   }
-  local_8 = Scr_GetEntity(0);
-  for (local_414 = 0; (local_414 < 0x20 && (targGlob.targets[local_414].ent != local_8));
-      local_414 = local_414 + 1) {
+  ent = Scr_GetEntity(0);
+  for (targetIndex = 0; (targetIndex < 0x20 && (targGlob.targets[targetIndex].ent != ent));
+      targetIndex = targetIndex + 1) {
   }
-  if (local_414 == 0x20) {
-    bVar3 = false;
+  if (targetIndex == 0x20) {
+    force_terminal = false;
     pcVar2 = va("Entity %i is not a target");
-    Scr_Error(pcVar2,bVar3);
+    Scr_Error(pcVar2,force_terminal);
   }
   pcVar2 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
   if (*pcVar2 == '\0') {
@@ -114,11 +119,11 @@ void __cdecl Scr_Target_SetOffscreenShader(void)
     pcVar2 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
     local_418 = G_MaterialIndex(pcVar2);
   }
-  targGlob.targets[local_414].offscreenMaterialIndex = local_418;
-  SV_GetConfigstring(local_414 + 0x183,local_40c,0x400);
+  targGlob.targets[targetIndex].offscreenMaterialIndex = local_418;
+  SV_GetConfigstring(targetIndex + 0x183,configString,0x400);
   pcVar2 = va("%i");
-  Info_SetValueForKey(local_40c,"offmat",pcVar2);
-  SV_SetConfigstring(local_414 + 0x183,local_40c);
+  Info_SetValueForKey(configString,"offmat",pcVar2);
+  SV_SetConfigstring(targetIndex + 0x183,configString);
   return;
 }
 
@@ -133,13 +138,13 @@ void __cdecl Scr_Target_SetOffscreenShader(void)
 void __cdecl Scr_Target_GetArray(void)
 
 {
-  uint local_8;
+  uint targIdx;
   
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if ((targGlob.targets[local_8].ent != (gentity_s *)0x0) &&
-       (((targGlob.targets[local_8].ent)->r).inuse != '\0')) {
-      Scr_AddEntity(targGlob.targets[local_8].ent,SCRIPTINSTANCE_SERVER);
+  for (targIdx = 0; targIdx < 0x20; targIdx = targIdx + 1) {
+    if ((targGlob.targets[targIdx].ent != (gentity_s *)0x0) &&
+       (((targGlob.targets[targIdx].ent)->r).inuse != '\0')) {
+      Scr_AddEntity(targGlob.targets[targIdx].ent,SCRIPTINSTANCE_SERVER);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -154,20 +159,20 @@ void __cdecl Scr_Target_GetArray(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Target_GetTargetIndex(gentity_s *param_1)
+int __cdecl Target_GetTargetIndex(gentity_s *ent)
 
 {
-  uint local_8;
+  uint targIdx;
   
-  local_8 = 0;
+  targIdx = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < targIdx) {
       return 0x20;
     }
-    if (targGlob.targets[local_8].ent == param_1) break;
-    local_8 = local_8 + 1;
+    if (targGlob.targets[targIdx].ent == ent) break;
+    targIdx = targIdx + 1;
   }
-  return local_8;
+  return targIdx;
 }
 
 
@@ -182,16 +187,18 @@ void __cdecl Scr_Target_IsTarget(void)
 
 {
   uint uVar1;
-  gentity_s *pgVar2;
-  int iVar3;
+  gentity_s *ent_00;
+  int iVar2;
+  uint targIdx;
+  gentity_s *ent;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 0) {
     Scr_Error("Too few arguments\n",false);
   }
-  pgVar2 = Scr_GetEntity(0);
-  iVar3 = Target_GetTargetIndex(pgVar2);
-  if (iVar3 == 0x20) {
+  ent_00 = Scr_GetEntity(0);
+  iVar2 = Target_GetTargetIndex(ent_00);
+  if (iVar2 == 0x20) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -211,26 +218,29 @@ void __cdecl Scr_Target_IsTarget(void)
 void __cdecl Scr_Target_SetTurretAquire(void)
 
 {
-  gentity_s *pgVar1;
-  int iVar2;
-  uint uVar3;
-  int iVar4;
-  bool bVar5;
+  gentity_s *ent_00;
+  int iVar1;
+  uint uVar2;
+  int iVar3;
+  bool bVar4;
+  uint targIdx;
+  int ignoreTarg;
+  gentity_s *ent;
   
-  bVar5 = true;
-  pgVar1 = Scr_GetEntity(0);
-  iVar2 = Target_GetTargetIndex(pgVar1);
-  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (1 < uVar3) {
-    iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    bVar5 = iVar4 != 0;
+  bVar4 = true;
+  ent_00 = Scr_GetEntity(0);
+  iVar1 = Target_GetTargetIndex(ent_00);
+  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (1 < uVar2) {
+    iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    bVar4 = iVar3 != 0;
   }
-  if (iVar2 != 0x20) {
-    if (bVar5) {
-      targGlob.targets[iVar2].flags = targGlob.targets[iVar2].flags & 0xfffffffb;
+  if (iVar1 != 0x20) {
+    if (bVar4) {
+      targGlob.targets[iVar1].flags = targGlob.targets[iVar1].flags & 0xfffffffb;
     }
     else {
-      targGlob.targets[iVar2].flags = targGlob.targets[iVar2].flags | 4;
+      targGlob.targets[iVar1].flags = targGlob.targets[iVar1].flags | 4;
     }
   }
   return;
@@ -244,6 +254,7 @@ void __cdecl Scr_Target_SetTurretAquire(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Scr_Target_Set(void)
 
@@ -252,28 +263,29 @@ void __cdecl Scr_Target_Set(void)
   bool bVar2;
   uint uVar3;
   char *pcVar4;
-  uint local_410;
-  char local_40c [1024];
+  uint targetIndex;
+  char configString [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 0) {
     Scr_Error("Too few arguments\n",false);
   }
-  local_8 = Scr_GetEntity(0);
-  for (local_410 = 0; (local_410 < 0x20 && (targGlob.targets[local_410].ent != local_8));
-      local_410 = local_410 + 1) {
+  ent = Scr_GetEntity(0);
+  for (targetIndex = 0; (targetIndex < 0x20 && (targGlob.targets[targetIndex].ent != ent));
+      targetIndex = targetIndex + 1) {
   }
-  if (local_410 == 0x20) {
+  if (targetIndex == 0x20) {
     if (0x1f < targGlob.targetCount) {
       Scr_Error("Maximum number of targets exceeded",false);
     }
-    for (local_410 = 0; (local_410 < 0x20 && (targGlob.targets[local_410].ent != (gentity_s *)0x0));
-        local_410 = local_410 + 1) {
+    for (targetIndex = 0;
+        (targetIndex < 0x20 && (targGlob.targets[targetIndex].ent != (gentity_s *)0x0));
+        targetIndex = targetIndex + 1) {
     }
-    if ((0x1f < local_410) &&
+    if ((0x1f < targetIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_targets.cpp",0x12d,0,
                                  "targetIndex doesn\'t index MAX_TARGETS\n\t%i not in [0, %i)"),
        !bVar2)) {
@@ -281,37 +293,37 @@ void __cdecl Scr_Target_Set(void)
       (*pcVar1)();
       return;
     }
-    targGlob.targets[local_410].ent = local_8;
-    local_8->flags = local_8->flags | 0x1000000;
-    targGlob.targets[local_410].materialIndex = -1;
-    targGlob.targets[local_410].offscreenMaterialIndex = -1;
-    targGlob.targets[local_410].offset[0] = 0.0;
-    targGlob.targets[local_410].offset[1] = 0.0;
-    targGlob.targets[local_410].offset[2] = 0.0;
+    targGlob.targets[targetIndex].ent = ent;
+    ent->flags = ent->flags | 0x1000000;
+    targGlob.targets[targetIndex].materialIndex = -1;
+    targGlob.targets[targetIndex].offscreenMaterialIndex = -1;
+    targGlob.targets[targetIndex].offset[0] = 0.0;
+    targGlob.targets[targetIndex].offset[1] = 0.0;
+    targGlob.targets[targetIndex].offset[2] = 0.0;
     targGlob.targetCount = targGlob.targetCount + 1;
   }
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 < 2) {
-    targGlob.targets[local_410].offset[0] = 0.0;
-    targGlob.targets[local_410].offset[1] = 0.0;
-    targGlob.targets[local_410].offset[2] = 0.0;
+    targGlob.targets[targetIndex].offset[0] = 0.0;
+    targGlob.targets[targetIndex].offset[1] = 0.0;
+    targGlob.targets[targetIndex].offset[2] = 0.0;
   }
   else {
-    Scr_GetVector(1,targGlob.targets[local_410].offset,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,targGlob.targets[targetIndex].offset,SCRIPTINSTANCE_SERVER);
   }
-  targGlob.targets[local_410].flags = targGlob.targets[local_410].flags & 0xfffffffb;
-  local_40c[0] = '\0';
+  targGlob.targets[targetIndex].flags = targGlob.targets[targetIndex].flags & 0xfffffffb;
+  configString[0] = '\0';
   pcVar4 = va("%i");
-  Info_SetValueForKey(local_40c,"ent",pcVar4);
+  Info_SetValueForKey(configString,"ent",pcVar4);
   pcVar4 = va("%i %i %i");
-  Info_SetValueForKey(local_40c,"offs",pcVar4);
+  Info_SetValueForKey(configString,"offs",pcVar4);
   pcVar4 = va("%i");
-  Info_SetValueForKey(local_40c,"mat",pcVar4);
+  Info_SetValueForKey(configString,"mat",pcVar4);
   pcVar4 = va("%i");
-  Info_SetValueForKey(local_40c,"offmat",pcVar4);
+  Info_SetValueForKey(configString,"offmat",pcVar4);
   pcVar4 = va("%i");
-  Info_SetValueForKey(local_40c,"flags",pcVar4);
-  SV_SetConfigstring(local_410 + 0x183,local_40c);
+  Info_SetValueForKey(configString,"flags",pcVar4);
+  SV_SetConfigstring(targetIndex + 0x183,configString);
   return;
 }
 
@@ -322,24 +334,25 @@ void __cdecl Scr_Target_Set(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Targ_Remove(gentity_s *param_1)
+bool __cdecl Targ_Remove(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uint local_8;
+  uint targetIndex;
   
-  local_8 = 0;
+  targetIndex = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < targetIndex) {
       return false;
     }
-    if (targGlob.targets[local_8].ent == param_1) break;
-    local_8 = local_8 + 1;
+    if (targGlob.targets[targetIndex].ent == ent) break;
+    targetIndex = targetIndex + 1;
   }
-  targGlob.targets[local_8].ent = (gentity_s *)0x0;
+  targGlob.targets[targetIndex].ent = (gentity_s *)0x0;
   targGlob.targetCount = targGlob.targetCount - 1;
   if ((0x1f < targGlob.targetCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_targets.cpp",0x154,0,
@@ -349,7 +362,7 @@ bool __cdecl Targ_Remove(gentity_s *param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  SV_SetConfigstring(local_8 + 0x183,"");
+  SV_SetConfigstring(targetIndex + 0x183,"");
   return true;
 }
 
@@ -360,21 +373,22 @@ bool __cdecl Targ_Remove(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Targ_RemoveAll(void)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint targetIndex;
   
-  local_8 = 0;
+  targetIndex = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < targetIndex) {
       return;
     }
-    if (targGlob.targets[local_8].ent != (gentity_s *)0x0) {
-      targGlob.targets[local_8].ent = (gentity_s *)0x0;
+    if (targGlob.targets[targetIndex].ent != (gentity_s *)0x0) {
+      targGlob.targets[targetIndex].ent = (gentity_s *)0x0;
       targGlob.targetCount = targGlob.targetCount - 1;
       if (0x1f < targGlob.targetCount) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_targets.cpp",0x169,0,
@@ -386,9 +400,9 @@ void __cdecl Targ_RemoveAll(void)
           return;
         }
       }
-      SV_SetConfigstring(local_8 + 0x183,"");
+      SV_SetConfigstring(targetIndex + 0x183,"");
     }
-    local_8 = local_8 + 1;
+    targetIndex = targetIndex + 1;
   } while( true );
 }
 
@@ -405,19 +419,20 @@ void __cdecl Scr_Target_Remove(void)
 {
   bool bVar1;
   uint uVar2;
-  gentity_s *pgVar3;
-  char *pcVar4;
+  gentity_s *ent_00;
+  char *error;
+  gentity_s *ent;
   
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 0) {
     Scr_Error("Too few arguments\n",false);
   }
-  pgVar3 = Scr_GetEntity(0);
-  bVar1 = Targ_Remove(pgVar3);
+  ent_00 = Scr_GetEntity(0);
+  bVar1 = Targ_Remove(ent_00);
   if (!bVar1) {
     bVar1 = false;
-    pcVar4 = va("Entity %i is not a target");
-    Scr_Error(pcVar4,bVar1);
+    error = va("Entity %i is not a target");
+    Scr_Error(error,bVar1);
   }
   return;
 }
@@ -430,7 +445,8 @@ void __cdecl Scr_Target_Remove(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl G_WorldDirToScreenPos(gentity_s *param_1,float param_2,float *param_3,float *param_4)
+bool __cdecl
+G_WorldDirToScreenPos(gentity_s *player,float fov_x,float *worldDir,float *outScreenPos)
 
 {
   code *pcVar1;
@@ -441,12 +457,15 @@ bool __cdecl G_WorldDirToScreenPos(gentity_s *param_1,float param_2,float *param
   float in_stack_ffffffbc;
   float in_stack_ffffffc0;
   float local_3c;
-  float local_2c [3];
+  float vertTan;
+  float tanHalfFovX;
+  float tanHalfFovY;
+  float cameraMtx [3];
   float local_20 [3];
   float local_14 [3];
-  float local_8;
+  float horzTan;
   
-  if (param_2 <= 0.0) {
+  if (fov_x <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_targets.cpp",0x191,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -454,11 +473,11 @@ bool __cdecl G_WorldDirToScreenPos(gentity_s *param_1,float param_2,float *param
       return (bool)uVar3;
     }
   }
-  G_GetPlayerViewDirection(param_1,local_2c,local_20,local_14);
-  MatrixTransposeTransformVector(param_3,&local_2c,(float *)&stack0xffffffbc);
+  G_GetPlayerViewDirection(player,cameraMtx,local_20,local_14);
+  MatrixTransposeTransformVector(worldDir,&cameraMtx,(float *)&stack0xffffffbc);
   if (0.0 < in_stack_ffffffbc) {
-    local_8 = in_stack_ffffffc0 / in_stack_ffffffbc;
-    dVar5 = (double)(param_2 * 0.017453292 * 0.5);
+    horzTan = in_stack_ffffffc0 / in_stack_ffffffbc;
+    dVar5 = (double)(fov_x * 0.017453292 * 0.5);
     __libm_sse2_tan((double)CONCAT44(in_stack_ffffffc0,in_stack_ffffffbc));
     fVar4 = (float)dVar5;
     if (fVar4 <= 0.0) {
@@ -479,8 +498,8 @@ bool __cdecl G_WorldDirToScreenPos(gentity_s *param_1,float param_2,float *param
         return (bool)uVar3;
       }
     }
-    *param_4 = (local_8 * -320.0) / fVar4;
-    param_4[1] = ((local_3c / in_stack_ffffffbc) * -240.0) / (fVar4 * 0.75);
+    *outScreenPos = (horzTan * -320.0) / fVar4;
+    outScreenPos[1] = ((local_3c / in_stack_ffffffbc) * -240.0) / (fVar4 * 0.75);
     bVar2 = true;
   }
   else {
@@ -497,77 +516,83 @@ bool __cdecl G_WorldDirToScreenPos(gentity_s *param_1,float param_2,float *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ScrGetTargetScreenPos(float *param_1)
+bool __cdecl ScrGetTargetScreenPos(float *screenPos)
 
 {
   gentity_s *pgVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  float local_2c;
+  char *error;
+  scriptInstance_t inst;
+  float pos;
   float local_28;
   float local_24;
-  float local_20;
+  float viewPos;
   float local_1c;
   float local_18;
-  uint local_14;
-  gentity_s *local_10;
-  float local_c;
-  gentity_s *local_8;
+  uint targetIndex;
+  gentity_s *ent;
+  float fov;
+  gentity_s *player;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 < 2) {
     Scr_Error("Too few arguments\n",false);
   }
-  local_10 = Scr_GetEntity(0);
-  local_8 = Scr_GetEntity(1);
-  if (local_8->client == (gclient_s *)0x0) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    pcVar4 = va("entity %i is not a player");
-    Scr_ObjectError(pcVar4,sVar5);
+  ent = Scr_GetEntity(0);
+  player = Scr_GetEntity(1);
+  if (player->client == (gclient_s *)0x0) {
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("entity %i is not a player");
+    Scr_ObjectError(error,inst);
   }
-  local_c = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  if (local_c <= 0.0) {
+  fov = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  if (fov <= 0.0) {
     Scr_ParamError(2,"FOV must be positive",SCRIPTINSTANCE_SERVER);
   }
-  for (local_14 = 0; (local_14 < 0x20 && (targGlob.targets[local_14].ent != local_10));
-      local_14 = local_14 + 1) {
+  for (targetIndex = 0; (targetIndex < 0x20 && (targGlob.targets[targetIndex].ent != ent));
+      targetIndex = targetIndex + 1) {
   }
-  if (local_14 == 0x20) {
-    local_2c = (local_10->r).currentOrigin[0];
-    local_28 = (local_10->r).currentOrigin[1];
-    local_24 = (local_10->r).currentOrigin[2] + 30.0;
+  if (targetIndex == 0x20) {
+    pos = (ent->r).currentOrigin[0];
+    local_28 = (ent->r).currentOrigin[1];
+    local_24 = (ent->r).currentOrigin[2] + 30.0;
   }
   else {
-    pgVar1 = targGlob.targets[local_14].ent;
-    local_2c = (pgVar1->r).currentOrigin[0] + targGlob.targets[local_14].offset[0];
-    local_28 = (pgVar1->r).currentOrigin[1] + targGlob.targets[local_14].offset[1];
-    local_24 = (pgVar1->r).currentOrigin[2] + targGlob.targets[local_14].offset[2];
+    pgVar1 = targGlob.targets[targetIndex].ent;
+    pos = (pgVar1->r).currentOrigin[0] + targGlob.targets[targetIndex].offset[0];
+    local_28 = (pgVar1->r).currentOrigin[1] + targGlob.targets[targetIndex].offset[1];
+    local_24 = (pgVar1->r).currentOrigin[2] + targGlob.targets[targetIndex].offset[2];
   }
-  G_GetPlayerViewOrigin(&local_8->client->ps,&local_20);
-  local_2c = local_2c - local_20;
+  G_GetPlayerViewOrigin(&player->client->ps,&viewPos);
+  pos = pos - viewPos;
   local_28 = local_28 - local_1c;
   local_24 = local_24 - local_18;
-  bVar2 = G_WorldDirToScreenPos(local_8,local_c,&local_2c,param_1);
+  bVar2 = G_WorldDirToScreenPos(player,fov,&pos,screenPos);
   return bVar2;
 }
 
 
 // 0068DF10  Scr_Target_IsInCircle  (game/g_targets.cpp:482)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Scr_Target_IsInCircle(void)
 
 {
   bool bVar1;
   float fVar2;
-  float local_c;
+  float radius;
+  float screenPos;
   float local_8;
   
   fVar2 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  bVar1 = ScrGetTargetScreenPos(&local_c);
+  bVar1 = ScrGetTargetScreenPos(&screenPos);
   if (bVar1) {
-    if (fVar2 * fVar2 <= local_c * local_c + local_8 * local_8) {
+    if (fVar2 * fVar2 <= screenPos * screenPos + local_8 * local_8) {
       Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -583,20 +608,26 @@ void __cdecl Scr_Target_IsInCircle(void)
 
 // 0068E2E0  Scr_Target_IsInRect  (game/g_targets.cpp:516)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Scr_Target_IsInRect(void)
 
 {
   bool bVar1;
   float fVar2;
-  float local_10;
+  float halfWidth;
+  float screenPos;
   float local_c;
-  float local_8;
+  float halfHeight;
   
   fVar2 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
-  bVar1 = ScrGetTargetScreenPos(&local_10);
+  halfHeight = Scr_GetFloat(4,SCRIPTINSTANCE_SERVER);
+  bVar1 = ScrGetTargetScreenPos(&screenPos);
   if (bVar1) {
-    if ((fVar2 <= ABS(local_10)) || (local_8 <= ABS(local_c))) {
+    if ((fVar2 <= ABS(screenPos)) || (halfHeight <= ABS(local_c))) {
       Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -620,12 +651,15 @@ void __cdecl Scr_Target_IsInRect(void)
 void __cdecl Scr_Target_StartLockOn(void)
 
 {
-  char *pcVar1;
+  char *text;
+  float duration;
+  int msec;
+  gentity_s *ent;
   
   Scr_GetEntity(0);
   Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  pcVar1 = va("%c %i %i");
-  SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,pcVar1);
+  text = va("%c %i %i");
+  SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -635,10 +669,10 @@ void __cdecl Scr_Target_StartLockOn(void)
 void __cdecl Scr_Target_ClearLockOn(void)
 
 {
-  char *pcVar1;
+  char *text;
   
-  pcVar1 = va("%c %i %i");
-  SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,pcVar1);
+  text = va("%c %i %i");
+  SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,text);
   return;
 }
 
@@ -650,15 +684,15 @@ void __cdecl Scr_Target_ClearLockOn(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl GetTargetIdx(gentity_s *param_1)
+uint __cdecl GetTargetIdx(gentity_s *ent)
 
 {
-  uint local_8;
+  uint targetIdx;
   
-  if (param_1 != (gentity_s *)0x0) {
-    for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-      if (targGlob.targets[local_8].ent == param_1) {
-        return local_8;
+  if (ent != (gentity_s *)0x0) {
+    for (targetIdx = 0; targetIdx < 0x20; targetIdx = targetIdx + 1) {
+      if (targGlob.targets[targetIdx].ent == ent) {
+        return targetIdx;
       }
     }
   }
@@ -673,21 +707,22 @@ uint __cdecl GetTargetIdx(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl G_TargetGetOffset(gentity_s *param_1,float *param_2)
+bool __cdecl G_TargetGetOffset(gentity_s *targ,float *result)
 
 {
   uint uVar1;
+  uint targetIndex;
   
-  uVar1 = GetTargetIdx(param_1);
+  uVar1 = GetTargetIdx(targ);
   if (uVar1 != 0x20) {
-    *param_2 = targGlob.targets[uVar1].offset[0];
-    param_2[1] = targGlob.targets[uVar1].offset[1];
-    param_2[2] = targGlob.targets[uVar1].offset[2];
+    *result = targGlob.targets[uVar1].offset[0];
+    result[1] = targGlob.targets[uVar1].offset[1];
+    result[2] = targGlob.targets[uVar1].offset[2];
   }
   else {
-    *param_2 = 0.0;
-    param_2[1] = 0.0;
-    param_2[2] = 0.0;
+    *result = 0.0;
+    result[1] = 0.0;
+    result[2] = 0.0;
   }
   return uVar1 != 0x20;
 }
@@ -700,13 +735,14 @@ bool __cdecl G_TargetGetOffset(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl G_TargetAttackProfileTop(gentity_s *param_1)
+bool __cdecl G_TargetAttackProfileTop(gentity_s *ent)
 
 {
   bool bVar1;
   uint uVar2;
+  uint targIdx;
   
-  uVar2 = GetTargetIdx(param_1);
+  uVar2 = GetTargetIdx(ent);
   if (uVar2 == 0x20) {
     bVar1 = false;
   }
@@ -727,6 +763,7 @@ bool __cdecl G_TargetAttackProfileTop(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Scr_Target_SetAttackMode(void)
 
@@ -734,22 +771,24 @@ void __cdecl Scr_Target_SetAttackMode(void)
   uint uVar1;
   char *pcVar2;
   uint uVar3;
-  bool bVar4;
-  char local_40c [1024];
+  bool force_terminal;
+  uint targIdx;
+  uint modeName;
+  char configString [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
     Scr_Error("Too few arguments\n",false);
   }
-  local_8 = Scr_GetEntity(0);
-  uVar1 = GetTargetIdx(local_8);
+  ent = Scr_GetEntity(0);
+  uVar1 = GetTargetIdx(ent);
   if (uVar1 == 0x20) {
-    bVar4 = false;
+    force_terminal = false;
     pcVar2 = va("Entity %i is not a target");
-    Scr_Error(pcVar2,bVar4);
+    Scr_Error(pcVar2,force_terminal);
   }
   uVar3 = Scr_GetConstString(1,SCRIPTINSTANCE_SERVER);
   if (uVar3 == scr_const.top) {
@@ -761,10 +800,10 @@ void __cdecl Scr_Target_SetAttackMode(void)
   else {
     Scr_Error("Incorrect mode name passed to target_setAttackMode().\n",false);
   }
-  SV_GetConfigstring(uVar1 + 0x183,local_40c,0x400);
+  SV_GetConfigstring(uVar1 + 0x183,configString,0x400);
   pcVar2 = va("%i");
-  Info_SetValueForKey(local_40c,"flags",pcVar2);
-  SV_SetConfigstring(uVar1 + 0x183,local_40c);
+  Info_SetValueForKey(configString,"flags",pcVar2);
+  SV_SetConfigstring(uVar1 + 0x183,configString);
   return;
 }
 
@@ -776,6 +815,7 @@ void __cdecl Scr_Target_SetAttackMode(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Scr_Target_SetJavelinOnly(void)
 
@@ -783,22 +823,24 @@ void __cdecl Scr_Target_SetJavelinOnly(void)
   uint uVar1;
   char *pcVar2;
   int iVar3;
-  bool bVar4;
-  char local_40c [1024];
+  bool force_terminal;
+  uint targIdx;
+  int javelinOnly;
+  char configString [1024];
   uint local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
     Scr_Error("Too few arguments\n",false);
   }
-  local_8 = Scr_GetEntity(0);
-  uVar1 = GetTargetIdx(local_8);
+  ent = Scr_GetEntity(0);
+  uVar1 = GetTargetIdx(ent);
   if (uVar1 == 0x20) {
-    bVar4 = false;
+    force_terminal = false;
     pcVar2 = va("Entity %i is not a target");
-    Scr_Error(pcVar2,bVar4);
+    Scr_Error(pcVar2,force_terminal);
   }
   iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   if (iVar3 == 0) {
@@ -807,10 +849,10 @@ void __cdecl Scr_Target_SetJavelinOnly(void)
   else {
     targGlob.targets[uVar1].flags = targGlob.targets[uVar1].flags | 2;
   }
-  SV_GetConfigstring(uVar1 + 0x183,local_40c,0x400);
+  SV_GetConfigstring(uVar1 + 0x183,configString,0x400);
   pcVar2 = va("%i");
-  Info_SetValueForKey(local_40c,"flags",pcVar2);
-  SV_SetConfigstring(uVar1 + 0x183,local_40c);
+  Info_SetValueForKey(configString,"flags",pcVar2);
+  SV_SetConfigstring(uVar1 + 0x183,configString);
   return;
 }
 

@@ -2,24 +2,24 @@
 
 // 009B3A20  mem_put_le16  (mjpeg/vpx.cpp:34)
 
-void __cdecl mem_put_le16(char *param_1,uint param_2)
+void __cdecl mem_put_le16(char *mem,uint val)
 
 {
-  *param_1 = (char)param_2;
-  param_1[1] = (char)(param_2 >> 8);
+  *mem = (char)val;
+  mem[1] = (char)(val >> 8);
   return;
 }
 
 
 // 009B3A50  mem_put_le32  (mjpeg/vpx.cpp:40)
 
-void __cdecl mem_put_le32(char *param_1,uint param_2)
+void __cdecl mem_put_le32(char *mem,uint val)
 
 {
-  *param_1 = (char)param_2;
-  param_1[1] = (char)(param_2 >> 8);
-  param_1[2] = (char)(param_2 >> 0x10);
-  param_1[3] = (char)(param_2 >> 0x18);
+  *mem = (char)val;
+  mem[1] = (char)(val >> 8);
+  mem[2] = (char)(val >> 0x10);
+  mem[3] = (char)(val >> 0x18);
   return;
 }
 
@@ -29,10 +29,10 @@ void __cdecl mem_put_le32(char *param_1,uint param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "vpx_kf_mode": Some values do not have unique names */
 
-void __cdecl write_ivf_file_header(_iobuf *param_1,vpx_codec_enc_cfg *param_2,int param_3)
+void __cdecl write_ivf_file_header(_iobuf *outfile,vpx_codec_enc_cfg *cfg,int frame_cnt)
 
 {
-  undefined1 local_28;
+  undefined1 header;
   undefined1 local_27;
   undefined1 local_26;
   undefined1 local_25;
@@ -48,21 +48,21 @@ void __cdecl write_ivf_file_header(_iobuf *param_1,vpx_codec_enc_cfg *param_2,in
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2->g_pass == VPX_RC_ONE_PASS) || (param_2->g_pass == VPX_RC_LAST_PASS)) {
-    local_28 = 0x44;
+  if ((cfg->g_pass == VPX_RC_ONE_PASS) || (cfg->g_pass == VPX_RC_LAST_PASS)) {
+    header = 0x44;
     local_27 = 0x4b;
     local_26 = 0x49;
     local_25 = 0x46;
     mem_put_le16(local_24,0);
     mem_put_le16(local_22,0x20);
     mem_put_le32(local_20,0x30385056);
-    mem_put_le16(local_1c,param_2->g_w);
-    mem_put_le16(local_1a,param_2->g_h);
-    mem_put_le32(local_18,(param_2->g_timebase).den);
-    mem_put_le32(local_14,(param_2->g_timebase).num);
-    mem_put_le32(local_10,param_3);
+    mem_put_le16(local_1c,cfg->g_w);
+    mem_put_le16(local_1a,cfg->g_h);
+    mem_put_le32(local_18,(cfg->g_timebase).den);
+    mem_put_le32(local_14,(cfg->g_timebase).num);
+    mem_put_le32(local_10,frame_cnt);
     mem_put_le32(local_c,0);
-    fwrite(&local_28,1,0x20,param_1);
+    fwrite(&header,1,0x20,outfile);
   }
   return;
 }
@@ -72,26 +72,26 @@ void __cdecl write_ivf_file_header(_iobuf *param_1,vpx_codec_enc_cfg *param_2,in
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl write_ivf_frame_header(_iobuf *param_1,vpx_codec_cx_pkt *param_2)
+void __cdecl write_ivf_frame_header(_iobuf *outfile,vpx_codec_cx_pkt *pkt)
 
 {
-  uint extraout_EAX;
-  char local_1c [4];
+  uint val;
+  char header [4];
   char local_18 [4];
   char local_14 [4];
   uint local_10;
-  uint local_c;
+  uint pts;
   uint local_8;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->kind == VPX_CODEC_CX_FRAME_PKT) {
-    local_c = (param_2->data).psnr.samples[2];
-    local_8 = (param_2->data).psnr.samples[3];
-    mem_put_le32(local_1c,(param_2->data).frame.sz);
-    mem_put_le32(local_18,local_c);
+  if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
+    pts = (pkt->data).psnr.samples[2];
+    local_8 = (pkt->data).psnr.samples[3];
+    mem_put_le32(header,(pkt->data).frame.sz);
+    mem_put_le32(local_18,pts);
     _allshr();
-    mem_put_le32(local_14,extraout_EAX);
-    fwrite(local_1c,1,0xc,param_1);
+    mem_put_le32(local_14,val);
+    fwrite(header,1,0xc,outfile);
   }
   return;
 }
@@ -101,26 +101,27 @@ void __cdecl write_ivf_frame_header(_iobuf *param_1,vpx_codec_cx_pkt *param_2)
 
 /* WARNING: Enum "vpx_kf_mode": Some values do not have unique names */
 
-void __cdecl vpx_init(char *param_1,int param_2,int param_3)
+void __cdecl vpx_init(char *filename,int width,int height)
 
 {
   int iVar1;
+  vpx_codec_err_t res;
   
   if (!vpx_globals.init) {
-    vpx_globals.width = param_2;
-    vpx_globals.height = param_3;
+    vpx_globals.width = width;
+    vpx_globals.height = height;
     vpx_globals.frame_cnt = 0;
     vpx_globals.flags = 0;
-    iVar1 = vpx_img_alloc(0xa727278,0x102,param_2,param_3,1);
+    iVar1 = vpx_img_alloc(0xa727278,0x102,width,height,1);
     if (((iVar1 != 0) &&
-        (vpx_globals.outfile = fopen(param_1,"wb"), vpx_globals.outfile != (_iobuf *)0x0)) &&
+        (vpx_globals.outfile = fopen(filename,"wb"), vpx_globals.outfile != (_iobuf *)0x0)) &&
        (iVar1 = vpx_codec_enc_config_default(&vpx_codec_vp8_cx_algo,0xa7271cc,0), iVar1 == 0)) {
       vpx_globals.cfg.rc_target_bitrate =
            (uint)((((longlong)(vpx_globals.width * vpx_globals.height) *
                     (longlong)(int)vpx_globals.cfg.rc_target_bitrate & 0xffffffffU) /
                   (ulonglong)vpx_globals.cfg.g_w) / (ulonglong)vpx_globals.cfg.g_h);
-      vpx_globals.cfg.g_w = param_2;
-      vpx_globals.cfg.g_h = param_3;
+      vpx_globals.cfg.g_w = width;
+      vpx_globals.cfg.g_h = height;
       write_ivf_file_header(vpx_globals.outfile,&vpx_globals.cfg,0);
       iVar1 = vpx_codec_enc_init_ver(0xa7271b0,&vpx_codec_vp8_cx_algo,0xa7271cc,0,5);
       if (iVar1 == 0) {
@@ -136,42 +137,42 @@ void __cdecl vpx_init(char *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "vpx_kf_mode": Some values do not have unique names */
 
-void __cdecl vpx_encode_frame(uchar *param_1,uchar *param_2,uchar *param_3,bool param_4)
+void __cdecl vpx_encode_frame(uchar *y,uchar *u,uchar *v,bool eof)
 
 {
   int iVar1;
-  undefined4 local_10;
-  vpx_codec_cx_pkt *local_c;
-  int local_8;
+  void *iter;
+  vpx_codec_cx_pkt *pkt;
+  int got_data;
   
   while( true ) {
-    local_10 = 0;
-    if (!param_4) {
-      memcpy(vpx_globals.raw.planes[0],param_1,vpx_globals.width * vpx_globals.height);
-      memcpy(vpx_globals.raw.planes[1],param_2,
+    iter = (void *)0x0;
+    if (!eof) {
+      memcpy(vpx_globals.raw.planes[0],y,vpx_globals.width * vpx_globals.height);
+      memcpy(vpx_globals.raw.planes[1],u,
              (int)(vpx_globals.width * vpx_globals.height +
                   (vpx_globals.width * vpx_globals.height >> 0x1f & 3U)) >> 2);
-      memcpy(vpx_globals.raw.planes[2],param_3,
+      memcpy(vpx_globals.raw.planes[2],v,
              (int)(vpx_globals.width * vpx_globals.height +
                   (vpx_globals.width * vpx_globals.height >> 0x1f & 3U)) >> 2);
     }
-    iVar1 = vpx_codec_encode(0xa7271b0,~-(uint)param_4 & 0xa727278,vpx_globals.frame_cnt,
+    iVar1 = vpx_codec_encode(0xa7271b0,~-(uint)eof & 0xa727278,vpx_globals.frame_cnt,
                              vpx_globals.frame_cnt >> 0x1f,1,vpx_globals.flags,1);
     if (iVar1 != 0) {
       return;
     }
-    local_8 = 0;
-    while (local_c = (vpx_codec_cx_pkt *)vpx_codec_get_cx_data(0xa7271b0,&local_10),
-          local_c != (vpx_codec_cx_pkt *)0x0) {
-      local_8 = 1;
-      if (local_c->kind == VPX_CODEC_CX_FRAME_PKT) {
-        write_ivf_frame_header(vpx_globals.outfile,local_c);
-        fwrite((local_c->data).frame.buf,1,(local_c->data).frame.sz,vpx_globals.outfile);
+    got_data = 0;
+    while (pkt = (vpx_codec_cx_pkt *)vpx_codec_get_cx_data(0xa7271b0,&iter),
+          pkt != (vpx_codec_cx_pkt *)0x0) {
+      got_data = 1;
+      if (pkt->kind == VPX_CODEC_CX_FRAME_PKT) {
+        write_ivf_frame_header(vpx_globals.outfile,pkt);
+        fwrite((pkt->data).frame.buf,1,(pkt->data).frame.sz,vpx_globals.outfile);
       }
     }
     vpx_globals.frame_cnt = vpx_globals.frame_cnt + 1;
-    if (local_8 == 0) break;
-    if (!param_4) {
+    if (got_data == 0) break;
+    if (!eof) {
       return;
     }
   }

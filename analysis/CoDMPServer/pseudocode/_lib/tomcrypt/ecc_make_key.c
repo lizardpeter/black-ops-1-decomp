@@ -11,9 +11,9 @@ int __cdecl ecc_make_key_ex(undefined4 param_1,int param_2,undefined4 *param_3,i
   undefined4 *puVar2;
   int *piVar3;
   int iVar4;
-  void *pvVar5;
-  int iVar6;
-  undefined4 *puVar7;
+  void *ptr;
+  int iVar5;
+  undefined4 *puVar6;
   undefined4 uStack_14;
   void *local_10;
   int local_c;
@@ -45,14 +45,14 @@ int __cdecl ecc_make_key_ex(undefined4 param_1,int param_2,undefined4 *param_3,i
   puVar2[2] = piVar3;
   iVar4 = *piVar3;
   local_c = iVar4;
-  pvVar5 = tom_game_malloc(0x42);
-  if (pvVar5 == (void *)0x0) {
+  ptr = tom_game_malloc(0x42);
+  if (ptr == (void *)0x0) {
     return 0xd;
   }
-  local_10 = pvVar5;
-  iVar6 = (**(code **)(&DAT_0b54a58c + param_2 * 0x28))(pvVar5,iVar4,param_1);
-  if (iVar6 != iVar4) {
-    tom_game_free(pvVar5);
+  local_10 = ptr;
+  iVar5 = (**(code **)(&DAT_0b54a58c + param_2 * 0x28))(ptr,iVar4,param_1);
+  if (iVar5 != iVar4) {
+    tom_game_free(ptr);
     return 9;
   }
   puVar1 = puVar2 + 6;
@@ -61,8 +61,8 @@ int __cdecl ecc_make_key_ex(undefined4 param_1,int param_2,undefined4 *param_3,i
   param_4 = puVar2 + 3;
   iVar4 = ltc_init_multi(param_4,puStack_4,puStack_8,puVar1,&uStack_14,&param_3,0);
   if (iVar4 != 0) goto LAB_00bf3ee6;
-  puVar7 = (undefined4 *)ltc_ecc_new_point();
-  if (puVar7 == (undefined4 *)0x0) {
+  puVar6 = (undefined4 *)ltc_ecc_new_point();
+  if (puVar6 == (undefined4 *)0x0) {
     iVar4 = 0xd;
 LAB_00bf3e9c:
     ltc_deinit_multi(*param_4,*puStack_4,*puStack_8,*puVar1,0);
@@ -71,21 +71,21 @@ LAB_00bf3e9c:
     iVar4 = (*DAT_0b5638e0)(uStack_14,*(undefined4 *)(puVar2[2] + 8),0x10);
     if ((((((iVar4 != 0) ||
            (iVar4 = (*DAT_0b5638e0)(param_3,*(undefined4 *)(puVar2[2] + 0x10),0x10), iVar4 != 0)) ||
-          (iVar4 = (*DAT_0b5638e0)(*puVar7,*(undefined4 *)(puVar2[2] + 0x14),0x10), iVar4 != 0)) ||
-         ((iVar4 = (*DAT_0b5638e0)(puVar7[1],*(undefined4 *)(puVar2[2] + 0x18),0x10), iVar4 != 0 ||
-          (iVar4 = (*DAT_0b5638bc)(puVar7[2],1), iVar4 != 0)))) ||
+          (iVar4 = (*DAT_0b5638e0)(*puVar6,*(undefined4 *)(puVar2[2] + 0x14),0x10), iVar4 != 0)) ||
+         ((iVar4 = (*DAT_0b5638e0)(puVar6[1],*(undefined4 *)(puVar2[2] + 0x18),0x10), iVar4 != 0 ||
+          (iVar4 = (*DAT_0b5638bc)(puVar6[2],1), iVar4 != 0)))) ||
         ((iVar4 = (*DAT_0b5638f0)(*puVar1,local_10,local_c), iVar4 != 0 ||
          ((iVar4 = (*DAT_0b5638cc)(*puVar1,param_3), iVar4 != -1 &&
           (iVar4 = (*DAT_0b563910)(*puVar1,param_3,0,*puVar1), iVar4 != 0)))))) ||
-       (iVar4 = (*DAT_0b563948)(*puVar1,puVar7,param_4,uStack_14,1), iVar4 != 0)) goto LAB_00bf3e9c;
+       (iVar4 = (*DAT_0b563948)(*puVar1,puVar6,param_4,uStack_14,1), iVar4 != 0)) goto LAB_00bf3e9c;
     *puVar2 = 1;
     iVar4 = 0;
   }
-  ltc_ecc_del_point(puVar7);
+  ltc_ecc_del_point(puVar6);
   ltc_deinit_multi(uStack_14,param_3,0);
-  pvVar5 = local_10;
+  ptr = local_10;
 LAB_00bf3ee6:
-  tom_game_free(pvVar5);
+  tom_game_free(ptr);
   return iVar4;
 }
 

@@ -2,21 +2,21 @@
 
 // 0061D0D0  GetField  (game/g_hudelem.cpp:179)
 
-int __cdecl GetField(void *param_1,int param_2)
+int __cdecl GetField(void *i,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2 == 1) {
-    iVar3 = (int)*(char *)param_1;
+  if (size == 1) {
+    iVar3 = (int)*(char *)i;
   }
-  else if (param_2 == 2) {
-    iVar3 = (int)*(short *)param_1;
+  else if (size == 2) {
+    iVar3 = (int)*(short *)i;
   }
-  else if (param_2 == 4) {
-    iVar3 = *(int *)param_1;
+  else if (size == 4) {
+    iVar3 = *(int *)i;
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0xbb,0,
@@ -44,37 +44,37 @@ void __cdecl TRACK_g_hudelem(void)
 
 // 0061CCD0  HudElem_ClearTypeSettings  (game/g_hudelem.cpp:220)
 
-void __cdecl HudElem_ClearTypeSettings(game_hudelem_s *param_1)
+void __cdecl HudElem_ClearTypeSettings(game_hudelem_s *hud)
 
 {
-  (param_1->elem).width = 0;
-  (param_1->elem).height = 0;
-  (param_1->elem).materialIndex = '\0';
-  (param_1->elem).fromX = 0.0;
-  (param_1->elem).fromY = 0.0;
-  (param_1->elem).fromAlignOrg = '\0';
-  (param_1->elem).fromAlignScreen = '\0';
-  (param_1->elem).fromWidth = 0;
-  (param_1->elem).fromHeight = 0;
-  (param_1->elem).scaleStartTime = 0;
-  (param_1->elem).scaleTime = 0;
-  (param_1->elem).time = 0;
-  (param_1->elem).duration = 0;
-  (param_1->elem).value = 0.0;
-  (param_1->elem).text = 0;
+  (hud->elem).width = 0;
+  (hud->elem).height = 0;
+  (hud->elem).materialIndex = '\0';
+  (hud->elem).fromX = 0.0;
+  (hud->elem).fromY = 0.0;
+  (hud->elem).fromAlignOrg = '\0';
+  (hud->elem).fromAlignScreen = '\0';
+  (hud->elem).fromWidth = 0;
+  (hud->elem).fromHeight = 0;
+  (hud->elem).scaleStartTime = 0;
+  (hud->elem).scaleTime = 0;
+  (hud->elem).time = 0;
+  (hud->elem).duration = 0;
+  (hud->elem).value = 0.0;
+  (hud->elem).text = 0;
   return;
 }
 
 
 // 0061CB30  HudElem_SetDefaults  (game/g_hudelem.cpp:240)
 
-void __cdecl HudElem_SetDefaults(game_hudelem_s *param_1)
+void __cdecl HudElem_SetDefaults(game_hudelem_s *hud)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (game_hudelem_s *)0x0) {
+  if (hud == (game_hudelem_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0xf1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -82,7 +82,7 @@ void __cdecl HudElem_SetDefaults(game_hudelem_s *param_1)
       return;
     }
   }
-  if (0x3ff < (uint)((int)&param_1[-0x7d8f6].elem.color / 0x7c)) {
+  if (0x3ff < (uint)((int)&hud[-0x7d8f6].elem.color / 0x7c)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0xf2,0,
                              "hud - g_hudelems doesn\'t index ARRAY_COUNT( g_hudelems )\n\t%i not in [0, %i)"
                             );
@@ -92,67 +92,68 @@ void __cdecl HudElem_SetDefaults(game_hudelem_s *param_1)
       return;
     }
   }
-  (param_1->elem).type = '\x01';
-  (param_1->elem).x = 0.0;
-  (param_1->elem).y = 0.0;
-  (param_1->elem).z = 0.0;
-  (param_1->elem).targetEntNum = 0x3ff;
-  (param_1->elem).font = '\0';
-  (param_1->elem).alignOrg = '\0';
-  (param_1->elem).alignScreen = '\0';
-  (param_1->elem).color.rgba = -1;
-  (param_1->elem).glowColor.rgba = 0;
-  (param_1->elem).fromColor.rgba = 0;
-  (param_1->elem).fadeStartTime = 0;
-  (param_1->elem).fadeTime = 0;
-  (param_1->elem).label = 0;
-  (param_1->elem).sort = 0.0;
-  (param_1->elem).flags = 0;
-  (param_1->elem).fxBirthTime = 0;
-  (param_1->elem).fxLetterTime = 0;
-  (param_1->elem).fxDecayStartTime = 0;
-  (param_1->elem).fxDecayDuration = 0;
-  (param_1->elem).soundID = '\0';
-  (param_1->elem).moveStartTime = 0;
-  (param_1->elem).moveTime = 0;
-  (param_1->elem).fontScale = 1.0;
-  param_1->archived = 1;
-  (param_1->elem).ui3dWindow = -1;
-  HudElem_ClearTypeSettings(param_1);
+  (hud->elem).type = '\x01';
+  (hud->elem).x = 0.0;
+  (hud->elem).y = 0.0;
+  (hud->elem).z = 0.0;
+  (hud->elem).targetEntNum = 0x3ff;
+  (hud->elem).font = '\0';
+  (hud->elem).alignOrg = '\0';
+  (hud->elem).alignScreen = '\0';
+  (hud->elem).color.rgba = -1;
+  (hud->elem).glowColor.rgba = 0;
+  (hud->elem).fromColor.rgba = 0;
+  (hud->elem).fadeStartTime = 0;
+  (hud->elem).fadeTime = 0;
+  (hud->elem).label = 0;
+  (hud->elem).sort = 0.0;
+  (hud->elem).flags = 0;
+  (hud->elem).fxBirthTime = 0;
+  (hud->elem).fxLetterTime = 0;
+  (hud->elem).fxDecayStartTime = 0;
+  (hud->elem).fxDecayDuration = 0;
+  (hud->elem).soundID = '\0';
+  (hud->elem).moveStartTime = 0;
+  (hud->elem).moveTime = 0;
+  (hud->elem).fontScale = 1.0;
+  hud->archived = 1;
+  (hud->elem).ui3dWindow = -1;
+  HudElem_ClearTypeSettings(hud);
   return;
 }
 
 
 // 0061CAB0  HudElem_Alloc  (game/g_hudelem.cpp:284)
 
-game_hudelem_s * __cdecl HudElem_Alloc(int param_1,int param_2)
+game_hudelem_s * __cdecl HudElem_Alloc(int clientNum,int teamNum)
 
 {
-  uint local_8;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x3ff < local_8) {
+    if (0x3ff < i) {
       return (game_hudelem_s *)0x0;
     }
-    if (g_hudelems[local_8].elem.type == '\0') break;
-    local_8 = local_8 + 1;
+    if (g_hudelems[i].elem.type == '\0') break;
+    i = i + 1;
   }
-  HudElem_SetDefaults(g_hudelems + local_8);
-  g_hudelems[local_8].clientNum = param_1;
-  g_hudelems[local_8].team = param_2;
-  return g_hudelems + local_8;
+  HudElem_SetDefaults(g_hudelems + i);
+  g_hudelems[i].clientNum = clientNum;
+  g_hudelems[i].team = teamNum;
+  return g_hudelems + i;
 }
 
 
 // 0061CD70  HudElem_DebugAlloc  (game/g_hudelem.cpp:327)
 
-game_hudelem_s * __cdecl HudElem_DebugAlloc(int param_1)
+game_hudelem_s * __cdecl HudElem_DebugAlloc(int clientNum)
 
 {
   game_hudelem_s *pgVar1;
+  game_hudelem_s *elem;
   
-  pgVar1 = HudElem_Alloc(param_1,0);
+  pgVar1 = HudElem_Alloc(clientNum,0);
   if (pgVar1 != (game_hudelem_s *)0x0) {
     (pgVar1->elem).flags = (pgVar1->elem).flags | 0x2000;
   }
@@ -162,13 +163,13 @@ game_hudelem_s * __cdecl HudElem_DebugAlloc(int param_1)
 
 // 0061CDB0  HudElem_Free  (game/g_hudelem.cpp:347)
 
-void __cdecl HudElem_Free(game_hudelem_s *param_1)
+void __cdecl HudElem_Free(game_hudelem_s *hud)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (game_hudelem_s *)0x0) {
+  if (hud == (game_hudelem_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x15c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -176,7 +177,7 @@ void __cdecl HudElem_Free(game_hudelem_s *param_1)
       return;
     }
   }
-  if (0x3ff < (uint)((int)&param_1[-0x7d8f6].elem.color / 0x7c)) {
+  if (0x3ff < (uint)((int)&hud[-0x7d8f6].elem.color / 0x7c)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x15d,0,
                              "hud - g_hudelems doesn\'t index ARRAY_COUNT( g_hudelems )\n\t%i not in [0, %i)"
                             );
@@ -186,7 +187,7 @@ void __cdecl HudElem_Free(game_hudelem_s *param_1)
       return;
     }
   }
-  if (((param_1->elem).type == '\0') || (0xf < (param_1->elem).type)) {
+  if (((hud->elem).type == '\0') || (0xf < (hud->elem).type)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x15e,0,
                              "%s\n\t(hud->elem.type) = %i");
     if (!bVar2) {
@@ -195,8 +196,8 @@ void __cdecl HudElem_Free(game_hudelem_s *param_1)
       return;
     }
   }
-  Scr_FreeHudElem(param_1);
-  (param_1->elem).type = '\0';
+  Scr_FreeHudElem(hud);
+  (hud->elem).type = '\0';
   return;
 }
 
@@ -208,15 +209,14 @@ void __cdecl HudElem_Free(game_hudelem_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HudElem_ClientDisconnect(gentity_s *param_1)
+void __cdecl HudElem_ClientDisconnect(gentity_s *ent)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-    if ((g_hudelems[local_8].elem.type != '\0') &&
-       (g_hudelems[local_8].clientNum == (param_1->s).number)) {
-      HudElem_Free(g_hudelems + local_8);
+  for (i = 0; i < 0x400; i = i + 1) {
+    if ((g_hudelems[i].elem.type != '\0') && (g_hudelems[i].clientNum == (ent->s).number)) {
+      HudElem_Free(g_hudelems + i);
     }
   }
   return;
@@ -228,11 +228,11 @@ void __cdecl HudElem_ClientDisconnect(gentity_s *param_1)
 void __cdecl HudElem_DestroyAll(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-    if (g_hudelems[local_8].elem.type != '\0') {
-      HudElem_Free(g_hudelems + local_8);
+  for (i = 0; i < 0x400; i = i + 1) {
+    if (g_hudelems[i].elem.type != '\0') {
+      HudElem_Free(g_hudelems + i);
     }
   }
   memset((uchar *)g_hudelems,'\0',0x1f000);
@@ -245,87 +245,86 @@ void __cdecl HudElem_DestroyAll(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-HudElem_SetEnumString
-          (game_hudelem_s *param_1,game_hudelem_field_t *param_2,char **param_3,int param_4)
+HudElem_SetEnumString(game_hudelem_s *hud,game_hudelem_field_t *f,char **names,int nameCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  uint *puVar5;
-  uint uVar6;
-  char local_814 [2047];
+  char *s0;
+  int iVar3;
+  uint *puVar4;
+  uint uVar5;
+  char *selectedName;
+  char errormsg [2047];
   undefined1 local_15;
   uint local_10;
-  int local_c;
-  uint local_8;
+  int nameIndex;
+  int value;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (game_hudelem_s *)0x0) &&
+  if ((hud == (game_hudelem_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x191,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (game_hudelem_field_t *)0x0) &&
+  if ((f == (game_hudelem_field_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x192,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (char **)0x0) &&
+  if ((names == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x193,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 < 1) &&
+  if ((nameCount < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x194,0,
                                "%s\n\t(nameCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = GetField((void *)((int)&(param_1->elem).x + param_2->ofs),param_2->size);
-  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_c = 0;
+  value = GetField((void *)((int)&(hud->elem).x + f->ofs),f->size);
+  s0 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  nameIndex = 0;
   while( true ) {
-    if (param_4 <= local_c) {
-      sprintf(local_814,"\"%s\" is not a valid value for hudelem field \"%s\"\nShould be one of:");
-      for (local_c = 0; local_c < param_4; local_c = local_c + 1) {
+    if (nameCount <= nameIndex) {
+      sprintf(errormsg,"\"%s\" is not a valid value for hudelem field \"%s\"\nShould be one of:");
+      for (nameIndex = 0; nameIndex < nameCount; nameIndex = nameIndex + 1) {
         va(" %s");
         strncat();
         local_15 = 0;
       }
-      Scr_Error(local_814,false);
+      Scr_Error(errormsg,false);
       return;
     }
-    iVar4 = I_stricmp(pcVar3,param_3[local_c]);
-    if (iVar4 == 0) break;
-    local_c = local_c + 1;
+    iVar3 = I_stricmp(s0,names[nameIndex]);
+    if (iVar3 == 0) break;
+    nameIndex = nameIndex + 1;
   }
-  uVar6 = local_c << ((byte)param_2->shift & 0x1f) |
-          ~(param_2->mask << ((byte)param_2->shift & 0x1f)) & local_8;
-  iVar4 = param_2->size;
-  puVar5 = (uint *)((int)&(param_1->elem).x + param_2->ofs);
-  if (iVar4 == 1) {
-    local_8._0_1_ = (undefined1)uVar6;
-    *(undefined1 *)puVar5 = (undefined1)local_8;
+  uVar5 = nameIndex << ((byte)f->shift & 0x1f) | ~(f->mask << ((byte)f->shift & 0x1f)) & value;
+  iVar3 = f->size;
+  puVar4 = (uint *)((int)&(hud->elem).x + f->ofs);
+  if (iVar3 == 1) {
+    value._0_1_ = (undefined1)uVar5;
+    *(undefined1 *)puVar4 = (undefined1)value;
     return;
   }
-  if (iVar4 == 2) {
-    local_8._0_2_ = (undefined2)uVar6;
-    *(undefined2 *)puVar5 = (undefined2)local_8;
+  if (iVar3 == 2) {
+    value._0_2_ = (undefined2)uVar5;
+    *(undefined2 *)puVar4 = (undefined2)value;
     return;
   }
-  if (iVar4 != 4) {
+  if (iVar3 != 4) {
     return;
   }
-  *puVar5 = uVar6;
+  *puVar4 = uVar5;
   return;
 }
 
@@ -333,16 +332,17 @@ HudElem_SetEnumString
 // 0061EBC0  HudElem_GetEnumString  (game/g_hudelem.cpp:430)
 
 void __cdecl
-HudElem_GetEnumString
-          (game_hudelem_s *param_1,game_hudelem_field_t *param_2,char **param_3,int param_4)
+HudElem_GetEnumString(game_hudelem_s *hud,game_hudelem_field_t *f,char **names,int nameCount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  int index;
+  int value;
   
-  if (param_1 == (game_hudelem_s *)0x0) {
+  if (hud == (game_hudelem_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x1b2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -350,7 +350,7 @@ HudElem_GetEnumString
       return;
     }
   }
-  if (param_2 == (game_hudelem_field_t *)0x0) {
+  if (f == (game_hudelem_field_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x1b3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -358,7 +358,7 @@ HudElem_GetEnumString
       return;
     }
   }
-  if (param_3 == (char **)0x0) {
+  if (names == (char **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x1b4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -366,7 +366,7 @@ HudElem_GetEnumString
       return;
     }
   }
-  if (param_4 < 1) {
+  if (nameCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x1b5,0,
                              "%s\n\t(nameCount) = %i");
     if (!bVar2) {
@@ -375,9 +375,9 @@ HudElem_GetEnumString
       return;
     }
   }
-  iVar3 = GetField((void *)((int)&(param_1->elem).x + param_2->ofs),param_2->size);
-  uVar4 = iVar3 >> ((byte)param_2->shift & 0x1f) & param_2->mask;
-  if (((int)uVar4 < 0) || (param_4 <= (int)uVar4)) {
+  iVar3 = GetField((void *)((int)&(hud->elem).x + f->ofs),f->size);
+  uVar4 = iVar3 >> ((byte)f->shift & 0x1f) & f->mask;
+  if (((int)uVar4 < 0) || (nameCount <= (int)uVar4)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x1b9,0,
                              "%s\n\t(index) = %i");
     if (!bVar2) {
@@ -386,36 +386,38 @@ HudElem_GetEnumString
       return;
     }
   }
-  Scr_AddString(param_3[uVar4],SCRIPTINSTANCE_SERVER);
+  Scr_AddString(names[uVar4],SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 0061CF50  HudElem_SetLocalizedString  (game/g_hudelem.cpp:449)
 
-void __cdecl HudElem_SetLocalizedString(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetLocalizedString(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
-  char *pcVar2;
-  int iVar3;
-  int *piVar4;
+  char *string_00;
+  int iVar2;
+  int *piVar3;
   undefined2 local_18;
+  char *string;
+  game_hudelem_field_t *f;
   
-  pcVar2 = Scr_GetIString(0,SCRIPTINSTANCE_SERVER);
-  iVar3 = G_LocalizedStringIndex(pcVar2);
-  iVar1 = fields[param_2].size;
-  piVar4 = (int *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  string_00 = Scr_GetIString(0,SCRIPTINSTANCE_SERVER);
+  iVar2 = G_LocalizedStringIndex(string_00);
+  iVar1 = fields[offset].size;
+  piVar3 = (int *)((int)&(hud->elem).x + fields[offset].ofs);
   if (iVar1 == 1) {
-    local_18._0_1_ = (undefined1)iVar3;
-    *(undefined1 *)piVar4 = (undefined1)local_18;
+    local_18._0_1_ = (undefined1)iVar2;
+    *(undefined1 *)piVar3 = (undefined1)local_18;
   }
   else if (iVar1 == 2) {
-    local_18 = (undefined2)iVar3;
-    *(undefined2 *)piVar4 = local_18;
+    local_18 = (undefined2)iVar2;
+    *(undefined2 *)piVar3 = local_18;
   }
   else if (iVar1 == 4) {
-    *piVar4 = iVar3;
+    *piVar3 = iVar2;
   }
   return;
 }
@@ -423,47 +425,50 @@ void __cdecl HudElem_SetLocalizedString(game_hudelem_s *param_1,int param_2)
 
 // 0061CFE0  HudElem_SetFlagForeground  (game/g_hudelem.cpp:477)
 
-void __cdecl HudElem_SetFlagForeground(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagForeground(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffffffe;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 | 1;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   return;
@@ -472,13 +477,13 @@ void __cdecl HudElem_SetFlagForeground(game_hudelem_s *param_1,int param_2)
 
 // 0061D130  HudElem_GetFlagForeground  (game/g_hudelem.cpp:494)
 
-void __cdecl HudElem_GetFlagForeground(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagForeground(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x1ef,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -486,7 +491,7 @@ void __cdecl HudElem_GetFlagForeground(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  if (((param_1->elem).flags & 1) == 0) {
+  if (((hud->elem).flags & 1) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -498,122 +503,125 @@ void __cdecl HudElem_GetFlagForeground(game_hudelem_s *param_1,int param_2)
 
 // 0061D190  HudElem_SetFontStyle3d  (game/g_hudelem.cpp:515)
 
-void __cdecl HudElem_SetFontStyle3d(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFontStyle3d(game_hudelem_s *hud,int offset)
 
 {
   char *pcVar1;
   int iVar2;
   uint uVar3;
-  uint *puVar4;
-  scriptInstance_t sVar5;
+  uint *i;
+  scriptInstance_t inst;
   undefined2 local_40;
   undefined2 local_38;
   undefined2 local_30;
   undefined2 local_28;
   undefined2 local_20;
   undefined2 local_18;
+  char *pszStyle;
+  game_hudelem_field_t *f;
+  int *flags;
   
-  puVar4 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   pcVar1 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   iVar2 = I_stricmp(pcVar1,"normal");
   if (iVar2 == 0) {
-    uVar3 = GetField(puVar4,fields[param_2].size);
+    uVar3 = GetField(i,fields[offset].size);
     uVar3 = uVar3 & 0xfffffff7;
-    iVar2 = fields[param_2].size;
+    iVar2 = fields[offset].size;
     if (iVar2 == 1) {
       local_18._0_1_ = (undefined1)uVar3;
-      *(undefined1 *)puVar4 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar2 == 2) {
       local_18 = (undefined2)uVar3;
-      *(undefined2 *)puVar4 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar2 == 4) {
-      *puVar4 = uVar3;
+      *i = uVar3;
     }
-    uVar3 = GetField(puVar4,fields[param_2].size);
+    uVar3 = GetField(i,fields[offset].size);
     uVar3 = uVar3 & 0xffffffef;
-    iVar2 = fields[param_2].size;
+    iVar2 = fields[offset].size;
     if (iVar2 == 1) {
       local_20._0_1_ = (undefined1)uVar3;
-      *(undefined1 *)puVar4 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar2 == 2) {
       local_20 = (undefined2)uVar3;
-      *(undefined2 *)puVar4 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar2 == 4) {
-      *puVar4 = uVar3;
+      *i = uVar3;
     }
   }
   else {
     iVar2 = I_stricmp(pcVar1,"shadowed");
     if (iVar2 == 0) {
-      uVar3 = GetField(puVar4,fields[param_2].size);
+      uVar3 = GetField(i,fields[offset].size);
       uVar3 = uVar3 | 8;
-      iVar2 = fields[param_2].size;
+      iVar2 = fields[offset].size;
       if (iVar2 == 1) {
         local_28._0_1_ = (undefined1)uVar3;
-        *(undefined1 *)puVar4 = (undefined1)local_28;
+        *(undefined1 *)i = (undefined1)local_28;
       }
       else if (iVar2 == 2) {
         local_28 = (undefined2)uVar3;
-        *(undefined2 *)puVar4 = local_28;
+        *(undefined2 *)i = local_28;
       }
       else if (iVar2 == 4) {
-        *puVar4 = uVar3;
+        *i = uVar3;
       }
-      uVar3 = GetField(puVar4,fields[param_2].size);
+      uVar3 = GetField(i,fields[offset].size);
       uVar3 = uVar3 & 0xffffffef;
-      iVar2 = fields[param_2].size;
+      iVar2 = fields[offset].size;
       if (iVar2 == 1) {
         local_30._0_1_ = (undefined1)uVar3;
-        *(undefined1 *)puVar4 = (undefined1)local_30;
+        *(undefined1 *)i = (undefined1)local_30;
       }
       else if (iVar2 == 2) {
         local_30 = (undefined2)uVar3;
-        *(undefined2 *)puVar4 = local_30;
+        *(undefined2 *)i = local_30;
       }
       else if (iVar2 == 4) {
-        *puVar4 = uVar3;
+        *i = uVar3;
       }
     }
     else {
       iVar2 = I_stricmp(pcVar1,"shadowedmore");
       if (iVar2 == 0) {
-        uVar3 = GetField(puVar4,fields[param_2].size);
+        uVar3 = GetField(i,fields[offset].size);
         uVar3 = uVar3 | 0x10;
-        iVar2 = fields[param_2].size;
+        iVar2 = fields[offset].size;
         if (iVar2 == 1) {
           local_38._0_1_ = (undefined1)uVar3;
-          *(undefined1 *)puVar4 = (undefined1)local_38;
+          *(undefined1 *)i = (undefined1)local_38;
         }
         else if (iVar2 == 2) {
           local_38 = (undefined2)uVar3;
-          *(undefined2 *)puVar4 = local_38;
+          *(undefined2 *)i = local_38;
         }
         else if (iVar2 == 4) {
-          *puVar4 = uVar3;
+          *i = uVar3;
         }
-        uVar3 = GetField(puVar4,fields[param_2].size);
+        uVar3 = GetField(i,fields[offset].size);
         uVar3 = uVar3 & 0xfffffff7;
-        iVar2 = fields[param_2].size;
+        iVar2 = fields[offset].size;
         if (iVar2 == 1) {
           local_40._0_1_ = (undefined1)uVar3;
-          *(undefined1 *)puVar4 = (undefined1)local_40;
+          *(undefined1 *)i = (undefined1)local_40;
         }
         else if (iVar2 == 2) {
           local_40 = (undefined2)uVar3;
-          *(undefined2 *)puVar4 = local_40;
+          *(undefined2 *)i = local_40;
         }
         else if (iVar2 == 4) {
-          *puVar4 = uVar3;
+          *i = uVar3;
         }
       }
       else {
-        sVar5 = SCRIPTINSTANCE_SERVER;
+        inst = SCRIPTINSTANCE_SERVER;
         pcVar1 = va("unknown text style \'%s\', should be normal, shadowed, or shadowedmore");
-        Scr_ParamError(0,pcVar1,sVar5);
+        Scr_ParamError(0,pcVar1,inst);
       }
     }
   }
@@ -623,13 +631,13 @@ void __cdecl HudElem_SetFontStyle3d(game_hudelem_s *param_1,int param_2)
 
 // 0061D460  HudElem_GetFontStyle3d  (game/g_hudelem.cpp:545)
 
-void __cdecl HudElem_GetFontStyle3d(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFontStyle3d(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x222,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -637,8 +645,8 @@ void __cdecl HudElem_GetFontStyle3d(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  if (((param_1->elem).flags & 8) == 0) {
-    if (((param_1->elem).flags & 0x10) == 0) {
+  if (((hud->elem).flags & 8) == 0) {
+    if (((hud->elem).flags & 0x10) == 0) {
       Scr_AddString(g_he_textstyle[0],SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -654,47 +662,50 @@ void __cdecl HudElem_GetFontStyle3d(game_hudelem_s *param_1,int param_2)
 
 // 0061D4F0  HudElem_SetFont3dUseGlowColor  (game/g_hudelem.cpp:564)
 
-void __cdecl HudElem_SetFont3dUseGlowColor(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFont3dUseGlowColor(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xffffffdf;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 | 0x20;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   return;
@@ -703,13 +714,13 @@ void __cdecl HudElem_SetFont3dUseGlowColor(game_hudelem_s *param_1,int param_2)
 
 // 0061D5E0  HudElem_GetFont3dUseGlowColor  (game/g_hudelem.cpp:581)
 
-void __cdecl HudElem_GetFont3dUseGlowColor(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFont3dUseGlowColor(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x246,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -717,7 +728,7 @@ void __cdecl HudElem_GetFont3dUseGlowColor(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  if (((param_1->elem).flags & 0x20) == 0) {
+  if (((hud->elem).flags & 0x20) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -729,47 +740,50 @@ void __cdecl HudElem_GetFont3dUseGlowColor(game_hudelem_s *param_1,int param_2)
 
 // 0061D640  HudElem_SetFlagHideWhenDead  (game/g_hudelem.cpp:592)
 
-void __cdecl HudElem_SetFlagHideWhenDead(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagHideWhenDead(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffffffd;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 | 2;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   return;
@@ -778,13 +792,13 @@ void __cdecl HudElem_SetFlagHideWhenDead(game_hudelem_s *param_1,int param_2)
 
 // 0061D730  HudElem_GetFlagHideWhenDead  (game/g_hudelem.cpp:609)
 
-void __cdecl HudElem_GetFlagHideWhenDead(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagHideWhenDead(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x262,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -792,7 +806,7 @@ void __cdecl HudElem_GetFlagHideWhenDead(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  if (((param_1->elem).flags & 2) == 0) {
+  if (((hud->elem).flags & 2) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -804,47 +818,50 @@ void __cdecl HudElem_GetFlagHideWhenDead(game_hudelem_s *param_1,int param_2)
 
 // 0061D790  HudElem_SetFlagHideWhenInKillCam  (game/g_hudelem.cpp:619)
 
-void __cdecl HudElem_SetFlagHideWhenInKillCam(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagHideWhenInKillCam(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xffffffbf;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 | 0x40;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   return;
@@ -853,13 +870,13 @@ void __cdecl HudElem_SetFlagHideWhenInKillCam(game_hudelem_s *param_1,int param_
 
 // 0061D880  HudElem_GetFlagHideWhenInKillCam  (game/g_hudelem.cpp:636)
 
-void __cdecl HudElem_GetFlagHideWhenInKillCam(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagHideWhenInKillCam(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x27d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -867,7 +884,7 @@ void __cdecl HudElem_GetFlagHideWhenInKillCam(game_hudelem_s *param_1,int param_
       return;
     }
   }
-  if (((param_1->elem).flags & 0x40) == 0) {
+  if (((hud->elem).flags & 0x40) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -879,46 +896,49 @@ void __cdecl HudElem_GetFlagHideWhenInKillCam(game_hudelem_s *param_1,int param_
 
 // 0061D8E0  HudElem_SetFlagHideWhenInDemo  (game/g_hudelem.cpp:646)
 
-void __cdecl HudElem_SetFlagHideWhenInDemo(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagHideWhenInDemo(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffffdff;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
-    iVar1 = fields[param_2].size;
+    uVar2 = GetField(i,fields[offset].size);
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)(uVar2 | 0x200);
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2 | 0x200;
+      *i = uVar2 | 0x200;
     }
   }
   return;
@@ -927,13 +947,13 @@ void __cdecl HudElem_SetFlagHideWhenInDemo(game_hudelem_s *param_1,int param_2)
 
 // 0061D9E0  HudElem_GetFlagHideWhenInDemo  (game/g_hudelem.cpp:663)
 
-void __cdecl HudElem_GetFlagHideWhenInDemo(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagHideWhenInDemo(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x298,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -941,7 +961,7 @@ void __cdecl HudElem_GetFlagHideWhenInDemo(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  if (((param_1->elem).flags & 0x200) == 0) {
+  if (((hud->elem).flags & 0x200) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -953,46 +973,49 @@ void __cdecl HudElem_GetFlagHideWhenInDemo(game_hudelem_s *param_1,int param_2)
 
 // 0061DA50  HudElem_SetFlagOverrideWhenInDemo  (game/g_hudelem.cpp:673)
 
-void __cdecl HudElem_SetFlagOverrideWhenInDemo(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagOverrideWhenInDemo(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffffbff;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
-    iVar1 = fields[param_2].size;
+    uVar2 = GetField(i,fields[offset].size);
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)(uVar2 | 0x400);
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2 | 0x400;
+      *i = uVar2 | 0x400;
     }
   }
   return;
@@ -1001,13 +1024,13 @@ void __cdecl HudElem_SetFlagOverrideWhenInDemo(game_hudelem_s *param_1,int param
 
 // 0061DB50  HudElem_GetFlagOverrideWhenInDemo  (game/g_hudelem.cpp:690)
 
-void __cdecl HudElem_GetFlagOverrideWhenInDemo(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagOverrideWhenInDemo(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x2b3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1015,7 +1038,7 @@ void __cdecl HudElem_GetFlagOverrideWhenInDemo(game_hudelem_s *param_1,int param
       return;
     }
   }
-  if (((param_1->elem).flags & 0x400) == 0) {
+  if (((hud->elem).flags & 0x400) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1027,46 +1050,49 @@ void __cdecl HudElem_GetFlagOverrideWhenInDemo(game_hudelem_s *param_1,int param
 
 // 0061DBC0  HudElem_SetFlagHideWhileRemoteControlling  (game/g_hudelem.cpp:700)
 
-void __cdecl HudElem_SetFlagHideWhileRemoteControlling(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagHideWhileRemoteControlling(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffff7ff;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
-    iVar1 = fields[param_2].size;
+    uVar2 = GetField(i,fields[offset].size);
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)(uVar2 | 0x800);
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2 | 0x800;
+      *i = uVar2 | 0x800;
     }
   }
   return;
@@ -1075,13 +1101,13 @@ void __cdecl HudElem_SetFlagHideWhileRemoteControlling(game_hudelem_s *param_1,i
 
 // 0061DCC0  HudElem_GetFlagHideWhileRemoteControlling  (game/g_hudelem.cpp:717)
 
-void __cdecl HudElem_GetFlagHideWhileRemoteControlling(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagHideWhileRemoteControlling(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x2ce,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1089,7 +1115,7 @@ void __cdecl HudElem_GetFlagHideWhileRemoteControlling(game_hudelem_s *param_1,i
       return;
     }
   }
-  if (((param_1->elem).flags & 0x800) == 0) {
+  if (((hud->elem).flags & 0x800) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1101,47 +1127,50 @@ void __cdecl HudElem_GetFlagHideWhileRemoteControlling(game_hudelem_s *param_1,i
 
 // 0061DD30  HudElem_SetFlagHideWhenInMenu  (game/g_hudelem.cpp:727)
 
-void __cdecl HudElem_SetFlagHideWhenInMenu(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagHideWhenInMenu(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffffffb;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 | 4;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   return;
@@ -1150,13 +1179,13 @@ void __cdecl HudElem_SetFlagHideWhenInMenu(game_hudelem_s *param_1,int param_2)
 
 // 0061DE20  HudElem_GetFlagHideWhenInMenu  (game/g_hudelem.cpp:744)
 
-void __cdecl HudElem_GetFlagHideWhenInMenu(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagHideWhenInMenu(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x2e9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1164,7 +1193,7 @@ void __cdecl HudElem_GetFlagHideWhenInMenu(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  if (((param_1->elem).flags & 4) == 0) {
+  if (((hud->elem).flags & 4) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1176,46 +1205,49 @@ void __cdecl HudElem_GetFlagHideWhenInMenu(game_hudelem_s *param_1,int param_2)
 
 // 0061DE80  HudElem_SetFlagFadeWhenTargeted  (game/g_hudelem.cpp:754)
 
-void __cdecl HudElem_SetFlagFadeWhenTargeted(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFlagFadeWhenTargeted(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   uint uVar2;
-  uint *puVar3;
+  uint *i;
   undefined2 local_20;
   undefined2 local_18;
+  game_hudelem_field_t *f;
+  int *flags;
+  int value;
   
-  puVar3 = (uint *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  i = (uint *)((int)&(hud->elem).x + fields[offset].ofs);
   iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar1 == 0) {
-    uVar2 = GetField(puVar3,fields[param_2].size);
+    uVar2 = GetField(i,fields[offset].size);
     uVar2 = uVar2 & 0xfffffeff;
-    iVar1 = fields[param_2].size;
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_20._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_20;
+      *(undefined1 *)i = (undefined1)local_20;
     }
     else if (iVar1 == 2) {
       local_20 = (undefined2)uVar2;
-      *(undefined2 *)puVar3 = local_20;
+      *(undefined2 *)i = local_20;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2;
+      *i = uVar2;
     }
   }
   else {
-    uVar2 = GetField(puVar3,fields[param_2].size);
-    iVar1 = fields[param_2].size;
+    uVar2 = GetField(i,fields[offset].size);
+    iVar1 = fields[offset].size;
     if (iVar1 == 1) {
       local_18._0_1_ = (undefined1)uVar2;
-      *(undefined1 *)puVar3 = (undefined1)local_18;
+      *(undefined1 *)i = (undefined1)local_18;
     }
     else if (iVar1 == 2) {
       local_18 = (undefined2)(uVar2 | 0x100);
-      *(undefined2 *)puVar3 = local_18;
+      *(undefined2 *)i = local_18;
     }
     else if (iVar1 == 4) {
-      *puVar3 = uVar2 | 0x100;
+      *i = uVar2 | 0x100;
     }
   }
   return;
@@ -1224,13 +1256,13 @@ void __cdecl HudElem_SetFlagFadeWhenTargeted(game_hudelem_s *param_1,int param_2
 
 // 0061DF80  HudElem_GetFlagFadeWhenTargeted  (game/g_hudelem.cpp:770)
 
-void __cdecl HudElem_GetFlagFadeWhenTargeted(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFlagFadeWhenTargeted(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x62) {
+  if (fields[offset].ofs != 0x62) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x303,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1238,7 +1270,7 @@ void __cdecl HudElem_GetFlagFadeWhenTargeted(game_hudelem_s *param_1,int param_2
       return;
     }
   }
-  if (((param_1->elem).flags & 0x100) == 0) {
+  if (((hud->elem).flags & 0x100) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1250,24 +1282,25 @@ void __cdecl HudElem_GetFlagFadeWhenTargeted(game_hudelem_s *param_1,int param_2
 
 // 0061DFF0  HudElem_SetBoolean  (game/g_hudelem.cpp:782)
 
-void __cdecl HudElem_SetBoolean(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetBoolean(game_hudelem_s *hud,int offset)
 
 {
   int iVar1;
   int iVar2;
   int *piVar3;
-  undefined2 local_8;
+  game_hudelem_field_t *f;
+  int value;
   
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  iVar1 = fields[param_2].size;
-  piVar3 = (int *)((int)&(param_1->elem).x + fields[param_2].ofs);
+  iVar1 = fields[offset].size;
+  piVar3 = (int *)((int)&(hud->elem).x + fields[offset].ofs);
   if (iVar1 == 1) {
-    local_8._0_1_ = (undefined1)iVar2;
-    *(undefined1 *)piVar3 = (undefined1)local_8;
+    value._0_1_ = (undefined1)iVar2;
+    *(undefined1 *)piVar3 = (undefined1)value;
   }
   else if (iVar1 == 2) {
-    local_8 = (undefined2)iVar2;
-    *(undefined2 *)piVar3 = local_8;
+    value._0_2_ = (undefined2)iVar2;
+    *(undefined2 *)piVar3 = (undefined2)value;
   }
   else if (iVar1 == 4) {
     *piVar3 = iVar2;
@@ -1278,7 +1311,7 @@ void __cdecl HudElem_SetBoolean(game_hudelem_s *param_1,int param_2)
 
 // 0061E070  HudElem_SetColor  (game/g_hudelem.cpp:795)
 
-void __cdecl HudElem_SetColor(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetColor(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
@@ -1292,11 +1325,11 @@ void __cdecl HudElem_SetColor(game_hudelem_s *param_1,int param_2)
   float local_2c;
   uchar local_28;
   float local_14;
-  float local_10;
+  float color;
   float local_c;
   float local_8;
   
-  if (fields[param_2].ofs != 0x10) {
+  if (fields[offset].ofs != 0x10) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x31e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1304,9 +1337,9 @@ void __cdecl HudElem_SetColor(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  if (local_10 - 1.0 < 0.0) {
-    local_14 = local_10;
+  Scr_GetVector(0,&color,SCRIPTINSTANCE_SERVER);
+  if (color - 1.0 < 0.0) {
+    local_14 = color;
   }
   else {
     local_14 = 1.0;
@@ -1318,7 +1351,7 @@ void __cdecl HudElem_SetColor(game_hudelem_s *param_1,int param_2)
     local_5c = 0.0;
   }
   local_28 = (uchar)(int)ROUND(local_5c * 255.0 + 9.313226e-10);
-  (param_1->elem).color._s_0.r = local_28;
+  (hud->elem).color._s_0.r = local_28;
   if (local_c - 1.0 < 0.0) {
     local_2c = local_c;
   }
@@ -1332,7 +1365,7 @@ void __cdecl HudElem_SetColor(game_hudelem_s *param_1,int param_2)
     local_60 = 0.0;
   }
   local_40 = (uchar)(int)ROUND(local_60 * 255.0 + 9.313226e-10);
-  (param_1->elem).color._s_0.g = local_40;
+  (hud->elem).color._s_0.g = local_40;
   if (local_8 - 1.0 < 0.0) {
     local_44 = local_8;
   }
@@ -1346,23 +1379,23 @@ void __cdecl HudElem_SetColor(game_hudelem_s *param_1,int param_2)
     local_64 = 0.0;
   }
   local_58 = (uchar)(int)ROUND(local_64 * 255.0 + 9.313226e-10);
-  (param_1->elem).color._s_0.b = local_58;
+  (hud->elem).color._s_0.b = local_58;
   return;
 }
 
 
 // 0061E280  HudElem_GetColor  (game/g_hudelem.cpp:808)
 
-void __cdecl HudElem_GetColor(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetColor(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_10;
+  float color;
   float local_c;
   float local_8;
   
-  if (fields[param_2].ofs != 0x10) {
+  if (fields[offset].ofs != 0x10) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x32b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1370,17 +1403,17 @@ void __cdecl HudElem_GetColor(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  local_10 = (float)(param_1->elem).color._s_0.r * 0.003921569;
-  local_c = (float)(param_1->elem).color._s_0.g * 0.003921569;
-  local_8 = (float)(param_1->elem).color._s_0.b * 0.003921569;
-  Scr_AddVector(&local_10,SCRIPTINSTANCE_SERVER);
+  color = (float)(hud->elem).color._s_0.r * 0.003921569;
+  local_c = (float)(hud->elem).color._s_0.g * 0.003921569;
+  local_8 = (float)(hud->elem).color._s_0.b * 0.003921569;
+  Scr_AddVector(&color,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 0061E320  HudElem_SetAlpha  (game/g_hudelem.cpp:820)
 
-void __cdecl HudElem_SetAlpha(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetAlpha(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
@@ -1388,8 +1421,9 @@ void __cdecl HudElem_SetAlpha(game_hudelem_s *param_1,int param_2)
   float local_24;
   uchar local_20;
   float local_c;
+  float alpha;
   
-  if ((fields[param_2].ofs != 0x10) &&
+  if ((fields[offset].ofs != 0x10) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x337,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1407,20 +1441,20 @@ void __cdecl HudElem_SetAlpha(game_hudelem_s *param_1,int param_2)
     local_24 = 0.0;
   }
   local_20 = (uchar)(int)ROUND(local_24 * 255.0 + 9.313226e-10);
-  (param_1->elem).color._s_0.a = local_20;
+  (hud->elem).color._s_0.a = local_20;
   return;
 }
 
 
 // 0061E410  HudElem_GetAlpha  (game/g_hudelem.cpp:831)
 
-void __cdecl HudElem_GetAlpha(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetAlpha(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x10) {
+  if (fields[offset].ofs != 0x10) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x340,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1428,14 +1462,14 @@ void __cdecl HudElem_GetAlpha(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  Scr_AddFloat((float)(param_1->elem).color._s_0.a * 0.003921569,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat((float)(hud->elem).color._s_0.a * 0.003921569,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 0061E470  HudElem_SetGlowColor  (game/g_hudelem.cpp:839)
 
-void __cdecl HudElem_SetGlowColor(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetGlowColor(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
@@ -1449,11 +1483,11 @@ void __cdecl HudElem_SetGlowColor(game_hudelem_s *param_1,int param_2)
   float local_2c;
   uchar local_28;
   float local_14;
-  float local_10;
+  float glowColor;
   float local_c;
   float local_8;
   
-  if (fields[param_2].ofs != 0x3c) {
+  if (fields[offset].ofs != 0x3c) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x34a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1461,9 +1495,9 @@ void __cdecl HudElem_SetGlowColor(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  if (local_10 - 1.0 < 0.0) {
-    local_14 = local_10;
+  Scr_GetVector(0,&glowColor,SCRIPTINSTANCE_SERVER);
+  if (glowColor - 1.0 < 0.0) {
+    local_14 = glowColor;
   }
   else {
     local_14 = 1.0;
@@ -1475,7 +1509,7 @@ void __cdecl HudElem_SetGlowColor(game_hudelem_s *param_1,int param_2)
     local_5c = 0.0;
   }
   local_28 = (uchar)(int)ROUND(local_5c * 255.0 + 9.313226e-10);
-  (param_1->elem).glowColor._s_0.r = local_28;
+  (hud->elem).glowColor._s_0.r = local_28;
   if (local_c - 1.0 < 0.0) {
     local_2c = local_c;
   }
@@ -1489,7 +1523,7 @@ void __cdecl HudElem_SetGlowColor(game_hudelem_s *param_1,int param_2)
     local_60 = 0.0;
   }
   local_40 = (uchar)(int)ROUND(local_60 * 255.0 + 9.313226e-10);
-  (param_1->elem).glowColor._s_0.g = local_40;
+  (hud->elem).glowColor._s_0.g = local_40;
   if (local_8 - 1.0 < 0.0) {
     local_44 = local_8;
   }
@@ -1503,23 +1537,23 @@ void __cdecl HudElem_SetGlowColor(game_hudelem_s *param_1,int param_2)
     local_64 = 0.0;
   }
   local_58 = (uchar)(int)ROUND(local_64 * 255.0 + 9.313226e-10);
-  (param_1->elem).glowColor._s_0.b = local_58;
+  (hud->elem).glowColor._s_0.b = local_58;
   return;
 }
 
 
 // 0061E680  HudElem_GetGlowColor  (game/g_hudelem.cpp:852)
 
-void __cdecl HudElem_GetGlowColor(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetGlowColor(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_10;
+  float glowColor;
   float local_c;
   float local_8;
   
-  if (fields[param_2].ofs != 0x3c) {
+  if (fields[offset].ofs != 0x3c) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x357,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1527,17 +1561,17 @@ void __cdecl HudElem_GetGlowColor(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  local_10 = (float)(param_1->elem).glowColor._s_0.r * 0.003921569;
-  local_c = (float)(param_1->elem).glowColor._s_0.g * 0.003921569;
-  local_8 = (float)(param_1->elem).glowColor._s_0.b * 0.003921569;
-  Scr_AddVector(&local_10,SCRIPTINSTANCE_SERVER);
+  glowColor = (float)(hud->elem).glowColor._s_0.r * 0.003921569;
+  local_c = (float)(hud->elem).glowColor._s_0.g * 0.003921569;
+  local_8 = (float)(hud->elem).glowColor._s_0.b * 0.003921569;
+  Scr_AddVector(&glowColor,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 0061E720  HudElem_SetGlowAlpha  (game/g_hudelem.cpp:865)
 
-void __cdecl HudElem_SetGlowAlpha(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetGlowAlpha(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
@@ -1545,8 +1579,9 @@ void __cdecl HudElem_SetGlowAlpha(game_hudelem_s *param_1,int param_2)
   float local_24;
   uchar local_20;
   float local_c;
+  float glowAlpha;
   
-  if ((fields[param_2].ofs != 0x3c) &&
+  if ((fields[offset].ofs != 0x3c) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x364,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1564,20 +1599,20 @@ void __cdecl HudElem_SetGlowAlpha(game_hudelem_s *param_1,int param_2)
     local_24 = 0.0;
   }
   local_20 = (uchar)(int)ROUND(local_24 * 255.0 + 9.313226e-10);
-  (param_1->elem).glowColor._s_0.a = local_20;
+  (hud->elem).glowColor._s_0.a = local_20;
   return;
 }
 
 
 // 0061E810  HudElem_GetGlowAlpha  (game/g_hudelem.cpp:876)
 
-void __cdecl HudElem_GetGlowAlpha(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetGlowAlpha(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x3c) {
+  if (fields[offset].ofs != 0x3c) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x36d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1585,22 +1620,23 @@ void __cdecl HudElem_GetGlowAlpha(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  Scr_AddFloat((float)(param_1->elem).glowColor._s_0.a * 0.003921569,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat((float)(hud->elem).glowColor._s_0.a * 0.003921569,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 0061E870  HudElem_SetFontScale  (game/g_hudelem.cpp:884)
 
-void __cdecl HudElem_SetFontScale(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFontScale(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  float fVar4;
+  char *error;
+  float fVar3;
+  float scale;
   
-  if (fields[param_2].ofs != 0xc) {
+  if (fields[offset].ofs != 0xc) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x377,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1608,128 +1644,128 @@ void __cdecl HudElem_SetFontScale(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (fVar4 <= 0.0) {
+  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (fVar3 <= 0.0) {
     bVar2 = false;
-    pcVar3 = va("font scale was %g; should be > 0");
-    Scr_Error(pcVar3,bVar2);
+    error = va("font scale was %g; should be > 0");
+    Scr_Error(error,bVar2);
   }
-  (param_1->elem).fontScale = fVar4;
+  (hud->elem).fontScale = fVar3;
   return;
 }
 
 
 // 0061E900  HudElem_SetFont  (game/g_hudelem.cpp:897)
 
-void __cdecl HudElem_SetFont(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetFont(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_SetEnumString(param_1,fields + param_2,g_he_font,7);
+  HudElem_SetEnumString(hud,fields + offset,g_he_font,7);
   return;
 }
 
 
 // 0061EB90  HudElem_GetFont  (game/g_hudelem.cpp:903)
 
-void __cdecl HudElem_GetFont(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetFont(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_GetEnumString(param_1,fields + param_2,g_he_font,7);
+  HudElem_GetEnumString(hud,fields + offset,g_he_font,7);
   return;
 }
 
 
 // 0061ED00  HudElem_SetAlignX  (game/g_hudelem.cpp:909)
 
-void __cdecl HudElem_SetAlignX(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetAlignX(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_SetEnumString(param_1,fields + param_2,g_he_alignx,3);
+  HudElem_SetEnumString(hud,fields + offset,g_he_alignx,3);
   return;
 }
 
 
 // 0061ED30  HudElem_GetAlignX  (game/g_hudelem.cpp:915)
 
-void __cdecl HudElem_GetAlignX(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetAlignX(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_GetEnumString(param_1,fields + param_2,g_he_alignx,3);
+  HudElem_GetEnumString(hud,fields + offset,g_he_alignx,3);
   return;
 }
 
 
 // 0061ED60  HudElem_SetAlignY  (game/g_hudelem.cpp:921)
 
-void __cdecl HudElem_SetAlignY(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetAlignY(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_SetEnumString(param_1,fields + param_2,g_he_aligny,3);
+  HudElem_SetEnumString(hud,fields + offset,g_he_aligny,3);
   return;
 }
 
 
 // 0061ED90  HudElem_GetAlignY  (game/g_hudelem.cpp:927)
 
-void __cdecl HudElem_GetAlignY(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetAlignY(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_GetEnumString(param_1,fields + param_2,g_he_aligny,3);
+  HudElem_GetEnumString(hud,fields + offset,g_he_aligny,3);
   return;
 }
 
 
 // 0061EDC0  HudElem_SetHorzAlign  (game/g_hudelem.cpp:933)
 
-void __cdecl HudElem_SetHorzAlign(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetHorzAlign(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_SetEnumString(param_1,fields + param_2,g_he_horzalign,0xb);
+  HudElem_SetEnumString(hud,fields + offset,g_he_horzalign,0xb);
   return;
 }
 
 
 // 0061EDF0  HudElem_GetHorzAlign  (game/g_hudelem.cpp:939)
 
-void __cdecl HudElem_GetHorzAlign(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetHorzAlign(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_GetEnumString(param_1,fields + param_2,g_he_horzalign,0xb);
+  HudElem_GetEnumString(hud,fields + offset,g_he_horzalign,0xb);
   return;
 }
 
 
 // 0061EE20  HudElem_SetVertAlign  (game/g_hudelem.cpp:945)
 
-void __cdecl HudElem_SetVertAlign(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetVertAlign(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_SetEnumString(param_1,fields + param_2,g_he_vertalign,0xb);
+  HudElem_SetEnumString(hud,fields + offset,g_he_vertalign,0xb);
   return;
 }
 
 
 // 0061EE50  HudElem_GetVertAlign  (game/g_hudelem.cpp:951)
 
-void __cdecl HudElem_GetVertAlign(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetVertAlign(game_hudelem_s *hud,int offset)
 
 {
-  HudElem_GetEnumString(param_1,fields + param_2,g_he_vertalign,0xb);
+  HudElem_GetEnumString(hud,fields + offset,g_he_vertalign,0xb);
   return;
 }
 
 
 // 0061EE80  HudElem_SetUI3DWindow  (game/g_hudelem.cpp:956)
 
-void __cdecl HudElem_SetUI3DWindow(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_SetUI3DWindow(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_8;
+  int ui3d;
   
-  if (fields[param_2].ofs != 0x6d) {
+  if (fields[offset].ofs != 0x6d) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3bd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1738,21 +1774,21 @@ void __cdecl HudElem_SetUI3DWindow(game_hudelem_s *param_1,int param_2)
     }
   }
   iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  local_8 = (char)iVar3;
-  (param_1->elem).ui3dWindow = local_8;
+  ui3d._0_1_ = (char)iVar3;
+  (hud->elem).ui3dWindow = (char)ui3d;
   return;
 }
 
 
 // 0061EEE0  HudElem_GetUI3DWindow  (game/g_hudelem.cpp:964)
 
-void __cdecl HudElem_GetUI3DWindow(game_hudelem_s *param_1,int param_2)
+void __cdecl HudElem_GetUI3DWindow(game_hudelem_s *hud,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (fields[param_2].ofs != 0x6d) {
+  if (fields[offset].ofs != 0x6d) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3c5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1760,21 +1796,23 @@ void __cdecl HudElem_GetUI3DWindow(game_hudelem_s *param_1,int param_2)
       return;
     }
   }
-  Scr_AddInt((int)(param_1->elem).ui3dWindow,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((int)(hud->elem).ui3dWindow,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 0061EF30  Scr_GetHudElemField  (game/g_hudelem.cpp:971)
 
-void __cdecl Scr_GetHudElemField(int param_1,int param_2)
+void __cdecl Scr_GetHudElemField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
-  game_hudelem_s *pgVar3;
+  game_hudelem_s *b;
+  game_hudelem_s *hud;
+  game_hudelem_field_t *f;
   
-  if (0x1a < (uint)param_2) {
+  if (0x1a < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3cf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1782,7 +1820,7 @@ void __cdecl Scr_GetHudElemField(int param_1,int param_2)
       return;
     }
   }
-  if (0x3ff < (uint)param_1) {
+  if (0x3ff < (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3d0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1790,16 +1828,16 @@ void __cdecl Scr_GetHudElemField(int param_1,int param_2)
       return;
     }
   }
-  pgVar3 = g_hudelems + param_1;
-  if (fields[param_2].getter == (_func___cdecl_void_game_hudelem_s_ptr_int *)0x0) {
-    if (fields[param_2].size == 1) {
-      GScr_GetGenericField((uchar *)pgVar3,F_BYTE,fields[param_2].ofs,0);
+  b = g_hudelems + entnum;
+  if (fields[offset].getter == (_func___cdecl_void_game_hudelem_s_ptr_int *)0x0) {
+    if (fields[offset].size == 1) {
+      GScr_GetGenericField((uchar *)b,F_BYTE,fields[offset].ofs,0);
     }
-    else if (fields[param_2].size == 2) {
-      GScr_GetGenericField((uchar *)pgVar3,F_SHORT,fields[param_2].ofs,0);
+    else if (fields[offset].size == 2) {
+      GScr_GetGenericField((uchar *)b,F_SHORT,fields[offset].ofs,0);
     }
     else {
-      if (fields[param_2].size != 4) {
+      if (fields[offset].size != 4) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3e4,0,
                                  "%s\n\t(f->size) = %i");
         if (!bVar2) {
@@ -1808,11 +1846,11 @@ void __cdecl Scr_GetHudElemField(int param_1,int param_2)
           return;
         }
       }
-      GScr_GetGenericField((uchar *)pgVar3,fields[param_2].type,fields[param_2].ofs,0);
+      GScr_GetGenericField((uchar *)b,fields[offset].type,fields[offset].ofs,0);
     }
   }
   else {
-    (*fields[param_2].getter)(pgVar3,param_2);
+    (*fields[offset].getter)(b,offset);
   }
   return;
 }
@@ -1820,13 +1858,20 @@ void __cdecl Scr_GetHudElemField(int param_1,int param_2)
 
 // 0061F070  Scr_SetHudElemField  (game/g_hudelem.cpp:1003)
 
-void __cdecl Scr_SetHudElemField(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Scr_SetHudElemField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  game_hudelem_s *hud;
+  game_hudelem_field_t *f;
   
-  if (0x1a < (uint)param_2) {
+  if (0x1a < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3ef,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1834,7 +1879,7 @@ void __cdecl Scr_SetHudElemField(int param_1,int param_2)
       return;
     }
   }
-  if (0x3ff < (uint)param_1) {
+  if (0x3ff < (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3f0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1842,8 +1887,8 @@ void __cdecl Scr_SetHudElemField(int param_1,int param_2)
       return;
     }
   }
-  if (fields[param_2].setter == (_func___cdecl_void_game_hudelem_s_ptr_int *)0x0) {
-    if (fields[param_2].size != 4) {
+  if (fields[offset].setter == (_func___cdecl_void_game_hudelem_s_ptr_int *)0x0) {
+    if (fields[offset].size != 4) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x3fb,0,"%s"
                               );
       if (!bVar2) {
@@ -1852,11 +1897,10 @@ void __cdecl Scr_SetHudElemField(int param_1,int param_2)
         return;
       }
     }
-    GScr_SetGenericField((uchar *)(g_hudelems + param_1),fields[param_2].type,fields[param_2].ofs,0)
-    ;
+    GScr_SetGenericField((uchar *)(g_hudelems + entnum),fields[offset].type,fields[offset].ofs,0);
   }
   else {
-    (*fields[param_2].setter)(g_hudelems + param_1,param_2);
+    (*fields[offset].setter)(g_hudelems + entnum,offset);
   }
   return;
 }
@@ -1864,14 +1908,14 @@ void __cdecl Scr_SetHudElemField(int param_1,int param_2)
 
 // 0061F160  Scr_FreeHudElemConstStrings  (game/g_hudelem.cpp:1026)
 
-void __cdecl Scr_FreeHudElemConstStrings(game_hudelem_s *param_1)
+void __cdecl Scr_FreeHudElemConstStrings(game_hudelem_s *hud)
 
 {
-  game_hudelem_field_t *local_8;
+  game_hudelem_field_t *f;
   
-  for (local_8 = fields; local_8->name != (char *)0x0; local_8 = local_8 + 1) {
-    if (local_8->type == F_STRING) {
-      Scr_SetString((ushort *)((int)&(param_1->elem).x + local_8->ofs),0,SCRIPTINSTANCE_SERVER);
+  for (f = fields; f->name != (char *)0x0; f = f + 1) {
+    if (f->type == F_STRING) {
+      Scr_SetString((ushort *)((int)&(hud->elem).x + f->ofs),0,SCRIPTINSTANCE_SERVER);
     }
   }
   return;
@@ -1883,13 +1927,14 @@ void __cdecl Scr_FreeHudElemConstStrings(game_hudelem_s *param_1)
 void __cdecl GScr_NewHudElem(void)
 
 {
-  game_hudelem_s *pgVar1;
+  game_hudelem_s *hud_00;
+  game_hudelem_s *hud;
   
-  pgVar1 = HudElem_Alloc(0x3ff,0);
-  if (pgVar1 == (game_hudelem_s *)0x0) {
+  hud_00 = HudElem_Alloc(0x3ff,0);
+  if (hud_00 == (game_hudelem_s *)0x0) {
     Scr_Error("out of hudelems",false);
   }
-  Scr_AddHudElem(pgVar1);
+  Scr_AddHudElem(hud_00);
   return;
 }
 
@@ -1899,13 +1944,14 @@ void __cdecl GScr_NewHudElem(void)
 void __cdecl GScr_NewDebugHudElem(void)
 
 {
-  game_hudelem_s *pgVar1;
+  game_hudelem_s *hud_00;
+  game_hudelem_s *hud;
   
-  pgVar1 = HudElem_DebugAlloc(0x3ff);
-  if (pgVar1 == (game_hudelem_s *)0x0) {
+  hud_00 = HudElem_DebugAlloc(0x3ff);
+  if (hud_00 == (game_hudelem_s *)0x0) {
     Scr_Error("out of hudelems",false);
   }
-  Scr_AddHudElem(pgVar1);
+  Scr_AddHudElem(hud_00);
   return;
 }
 
@@ -1923,7 +1969,9 @@ void __cdecl GScr_NewClientHudElem(void)
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  game_hudelem_s *pgVar4;
+  game_hudelem_s *hud_00;
+  game_hudelem_s *hud;
+  gentity_s *ent;
   
   pgVar3 = Scr_GetEntity(0);
   if (pgVar3 == (gentity_s *)0x0) {
@@ -1945,11 +1993,11 @@ void __cdecl GScr_NewClientHudElem(void)
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_ParamError(0,"not a client",SCRIPTINSTANCE_SERVER);
   }
-  pgVar4 = HudElem_Alloc((pgVar3->s).number,0);
-  if (pgVar4 == (game_hudelem_s *)0x0) {
+  hud_00 = HudElem_Alloc((pgVar3->s).number,0);
+  if (hud_00 == (game_hudelem_s *)0x0) {
     Scr_Error("out of hudelems",false);
   }
-  Scr_AddHudElem(pgVar4);
+  Scr_AddHudElem(hud_00);
   return;
 }
 
@@ -1967,7 +2015,9 @@ void __cdecl GScr_NewScoreHudElem(void)
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
-  game_hudelem_s *pgVar4;
+  game_hudelem_s *hud_00;
+  game_hudelem_s *hud;
+  gentity_s *ent;
   
   pgVar3 = Scr_GetEntity(0);
   if (pgVar3 == (gentity_s *)0x0) {
@@ -1989,12 +2039,12 @@ void __cdecl GScr_NewScoreHudElem(void)
   if (pgVar3->client == (gclient_s *)0x0) {
     Scr_ParamError(0,"not a client",SCRIPTINSTANCE_SERVER);
   }
-  pgVar4 = HudElem_Alloc((pgVar3->s).number,0);
-  (pgVar4->elem).type = '\a';
-  if (pgVar4 == (game_hudelem_s *)0x0) {
+  hud_00 = HudElem_Alloc((pgVar3->s).number,0);
+  (hud_00->elem).type = '\a';
+  if (hud_00 == (game_hudelem_s *)0x0) {
     Scr_Error("out of hudelems",false);
   }
-  Scr_AddHudElem(pgVar4);
+  Scr_AddHudElem(hud_00);
   return;
 }
 
@@ -2005,33 +2055,35 @@ void __cdecl GScr_NewTeamHudElem(void)
 
 {
   uint uVar1;
-  char *pcVar2;
-  game_hudelem_s *pgVar3;
-  scriptInstance_t sVar4;
-  int local_c;
+  char *error;
+  game_hudelem_s *hud_00;
+  scriptInstance_t inst;
+  ushort teamName;
+  int team;
+  game_hudelem_s *hud;
   
   uVar1 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if ((uVar1 & 0xffff) == (uint)scr_const.allies) {
-    local_c = 2;
+    team = 2;
   }
   else if ((uVar1 & 0xffff) == (uint)scr_const.axis) {
-    local_c = 1;
+    team = 1;
   }
   else if ((uVar1 & 0xffff) == (uint)scr_const.spectator) {
-    local_c = 3;
+    team = 3;
   }
   else {
-    sVar4 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    pcVar2 = va("team \"%s\" should be \"allies\", \"axis\", or \"spectator\"");
-    Scr_ParamError(0,pcVar2,sVar4);
-    local_c = 0;
+    error = va("team \"%s\" should be \"allies\", \"axis\", or \"spectator\"");
+    Scr_ParamError(0,error,inst);
+    team = 0;
   }
-  pgVar3 = HudElem_Alloc(0x3ff,local_c);
-  if (pgVar3 == (game_hudelem_s *)0x0) {
+  hud_00 = HudElem_Alloc(0x3ff,team);
+  if (hud_00 == (game_hudelem_s *)0x0) {
     Scr_Error("out of hudelems",false);
   }
-  Scr_AddHudElem(pgVar3);
+  Scr_AddHudElem(hud_00);
   return;
 }
 
@@ -2043,14 +2095,14 @@ void __cdecl GScr_AddFieldsForHudElems(void)
 {
   code *pcVar1;
   bool bVar2;
-  game_hudelem_field_t *local_8;
+  game_hudelem_field_t *f;
   
-  local_8 = fields;
+  f = fields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       return;
     }
-    if (((int)(local_8 + -0x65c08) >> 5 & 0xc000U) != 0) {
+    if (((int)(f + -0x65c08) >> 5 & 0xc000U) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x4aa,0,"%s"
                               );
       if (!bVar2) {
@@ -2059,7 +2111,7 @@ void __cdecl GScr_AddFieldsForHudElems(void)
         return;
       }
     }
-    if ((int)(local_8 + -0x65c08) >> 5 != ((int)(local_8 + -0x65c08) >> 5 & 0xffffU)) {
+    if ((int)(f + -0x65c08) >> 5 != ((int)(f + -0x65c08) >> 5 & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x4ab,0,"%s"
                               );
       if (!bVar2) {
@@ -2068,24 +2120,23 @@ void __cdecl GScr_AddFieldsForHudElems(void)
         return;
       }
     }
-    Scr_AddClassField(1,local_8->name,(int)(local_8 + -0x65c08) >> 5 & 0xffff,SCRIPTINSTANCE_SERVER)
-    ;
-    local_8 = local_8 + 1;
+    Scr_AddClassField(1,f->name,(int)(f + -0x65c08) >> 5 & 0xffff,SCRIPTINSTANCE_SERVER);
+    f = f + 1;
   } while( true );
 }
 
 
 // 0061F610  HECmd_GetHudElem  (game/g_hudelem.cpp:1202)
 
-game_hudelem_s * __cdecl HECmd_GetHudElem(scr_entref_t param_1)
+game_hudelem_s * __cdecl HECmd_GetHudElem(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   game_hudelem_s *pgVar3;
   
-  if (param_1.classnum == 1) {
-    if (0x3ff < param_1.entnum) {
+  if (entref.classnum == 1) {
+    if (0x3ff < entref.entnum) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x4b5,0,"%s"
                               );
       if (!bVar2) {
@@ -2094,7 +2145,7 @@ game_hudelem_s * __cdecl HECmd_GetHudElem(scr_entref_t param_1)
         return pgVar3;
       }
     }
-    pgVar3 = g_hudelems + param_1.entnum;
+    pgVar3 = g_hudelems + entref.entnum;
   }
   else {
     Scr_ObjectError("not a hud element",SCRIPTINSTANCE_SERVER);
@@ -2107,54 +2158,65 @@ game_hudelem_s * __cdecl HECmd_GetHudElem(scr_entref_t param_1)
 // 0061F570  HECmd_SetText  (game/g_hudelem.cpp:1226)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetText(scr_entref_t param_1)
+void __cdecl HECmd_SetText(scr_entref_t entref)
 
 {
   uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  char *pcVar4;
-  undefined2 uVar5;
-  undefined2 uVar6;
-  char local_40c [1024];
+  int src;
+  char *errorContext;
+  char *string_00;
+  undefined2 uVar2;
+  undefined2 uVar3;
+  char string [1024];
   uint local_c;
-  game_hudelem_s *local_8;
+  game_hudelem_s *hud;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = HECmd_GetHudElem(param_1);
-  HudElem_ClearTypeSettings(local_8);
-  uVar5 = 0x400;
-  uVar6 = 0;
-  pcVar4 = local_40c;
-  pcVar3 = "Hud Elem String";
+  hud = HECmd_GetHudElem(entref);
+  HudElem_ClearTypeSettings(hud);
+  uVar2 = 0x400;
+  uVar3 = 0;
+  string_00 = string;
+  errorContext = "Hud Elem String";
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(0,uVar1 - 1,pcVar3,pcVar4,CONCAT22(uVar6,uVar5));
-  (local_8->elem).type = '\x01';
-  iVar2 = G_LocalizedStringIndex(local_40c);
-  AssignToSmallerType<short>(&(local_8->elem).text,iVar2);
+  Scr_ConstructMessageString(0,uVar1 - 1,errorContext,string_00,CONCAT22(uVar3,uVar2));
+  (hud->elem).type = '\x01';
+  src = G_LocalizedStringIndex(string);
+  AssignToSmallerType<short>(&(hud->elem).text,src);
   return;
 }
 
 
 // 0061F670  HECmd_ClearAllTextAfterHudElem  (game/g_hudelem.cpp:1252)
 
-void __cdecl HECmd_ClearAllTextAfterHudElem(scr_entref_t param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl HECmd_ClearAllTextAfterHudElem(scr_entref_t entref)
 
 {
   int iVar1;
   game_hudelem_s *pgVar2;
-  int local_c;
+  int configStringIndex;
+  game_hudelem_s *hud;
   
-  pgVar2 = HECmd_GetHudElem(param_1);
+  pgVar2 = HECmd_GetHudElem(entref);
   if ((pgVar2->elem).text == 0) {
     Scr_Error("Hud elem doesn\'t reference any text.  Make sure to call setText before using clearAllTextAfterHudElem."
               ,false);
   }
   iVar1 = (int)(pgVar2->elem).text;
-  while (local_c = iVar1 + 1, local_c < 0x3ff) {
+  while (configStringIndex = iVar1 + 1, configStringIndex < 0x3ff) {
     SV_SetConfigstring(iVar1 + 0x204,"");
-    iVar1 = local_c;
+    iVar1 = configStringIndex;
   }
   return;
 }
@@ -2162,73 +2224,78 @@ void __cdecl HECmd_ClearAllTextAfterHudElem(scr_entref_t param_1)
 
 // 0061F6F0  HECmd_SetMaterial  (game/g_hudelem.cpp:1281)
 
-void __cdecl HECmd_SetMaterial(scr_entref_t param_1)
+void __cdecl HECmd_SetMaterial(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  uint uVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  int local_18;
-  int local_14;
+  game_hudelem_s *hud_00;
+  uint uVar1;
+  char *pcVar2;
+  int src;
+  scriptInstance_t sVar3;
+  int width;
+  int height;
+  int materialIndex;
+  int numParam;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((uVar2 != 1) && (uVar2 != 3)) {
+  hud_00 = HECmd_GetHudElem(entref);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((uVar1 != 1) && (uVar1 != 3)) {
     Scr_Error("USAGE: <hudelem> setShader(\"materialname\"[, optional_width, optional_height]);",
               false);
   }
-  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar4 = G_MaterialIndex(pcVar3);
-  if (uVar2 == 1) {
-    local_18 = 0;
-    local_14 = 0;
+  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  src = G_MaterialIndex(pcVar2);
+  if (uVar1 == 1) {
+    width = 0;
+    height = 0;
   }
   else {
-    local_18 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    if (local_18 < 0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("width %i < 0");
-      Scr_ParamError(1,pcVar3,sVar5);
+    width = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    if (width < 0) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      pcVar2 = va("width %i < 0");
+      Scr_ParamError(1,pcVar2,sVar3);
     }
-    local_14 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-    if (local_14 < 0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("height %i < 0");
-      Scr_ParamError(2,pcVar3,sVar5);
+    height = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+    if (height < 0) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      pcVar2 = va("height %i < 0");
+      Scr_ParamError(2,pcVar2,sVar3);
     }
   }
-  HudElem_ClearTypeSettings(pgVar1);
-  (pgVar1->elem).type = '\b';
-  AssignToSmallerType<unsigned_char>(&(pgVar1->elem).materialIndex,iVar4);
-  AssignToSmallerType<short>(&(pgVar1->elem).width,local_18);
-  AssignToSmallerType<short>(&(pgVar1->elem).height,local_14);
+  HudElem_ClearTypeSettings(hud_00);
+  (hud_00->elem).type = '\b';
+  AssignToSmallerType<unsigned_char>(&(hud_00->elem).materialIndex,src);
+  AssignToSmallerType<short>(&(hud_00->elem).width,width);
+  AssignToSmallerType<short>(&(hud_00->elem).height,height);
   return;
 }
 
 
 // 0061F820  HECmd_SetWarGameData  (game/g_hudelem.cpp:1333)
 
-void __cdecl HECmd_SetWarGameData(scr_entref_t param_1)
+void __cdecl HECmd_SetWarGameData(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  uint uVar2;
-  int iVar3;
-  float fVar4;
+  game_hudelem_s *hud_00;
+  uint uVar1;
+  int iVar2;
+  float fVar3;
+  int numParam;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 == 3) {
-    HudElem_ClearTypeSettings(pgVar1);
-    (pgVar1->elem).type = '\x06';
-    fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    (pgVar1->elem).value = fVar4;
-    iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    AssignToSmallerType<unsigned_char>(&(pgVar1->elem).materialIndex,iVar3);
-    iVar3 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-    (pgVar1->elem).time = iVar3;
+  hud_00 = HECmd_GetHudElem(entref);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 == 3) {
+    HudElem_ClearTypeSettings(hud_00);
+    (hud_00->elem).type = '\x06';
+    fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+    (hud_00->elem).value = fVar3;
+    iVar2 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    AssignToSmallerType<unsigned_char>(&(hud_00->elem).materialIndex,iVar2);
+    iVar2 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+    (hud_00->elem).time = iVar2;
   }
   else {
     Scr_Error("USAGE: <hudelem> setWarGameData( momentumProgress, momentumMultiplier, momentumBlitzkriegTime );"
@@ -2245,14 +2312,17 @@ void __cdecl HECmd_SetWarGameData(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetTargetEnt(scr_entref_t param_1)
+void __cdecl HECmd_SetTargetEnt(scr_entref_t entref)
 
 {
   game_hudelem_s *pgVar1;
   gentity_s *pgVar2;
   WeaponDef *pWVar3;
+  game_hudelem_s *hud;
+  gentity_s *ent;
+  WeaponDef *weapDef;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
+  pgVar1 = HECmd_GetHudElem(entref);
   pgVar2 = Scr_GetEntity(0);
   AssignToSmallerType<short>(&(pgVar1->elem).targetEntNum,(pgVar2->s).number);
   pWVar3 = BG_GetWeaponDef((uint)(pgVar2->s).weapon);
@@ -2268,12 +2338,13 @@ void __cdecl HECmd_SetTargetEnt(scr_entref_t param_1)
 
 // 0061F970  HECmd_ClearTargetEnt  (game/g_hudelem.cpp:1396)
 
-void __cdecl HECmd_ClearTargetEnt(scr_entref_t param_1)
+void __cdecl HECmd_ClearTargetEnt(scr_entref_t entref)
 
 {
   game_hudelem_s *pgVar1;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
+  pgVar1 = HECmd_GetHudElem(entref);
   (pgVar1->elem).targetEntNum = 0x3ff;
   return;
 }
@@ -2286,21 +2357,23 @@ void __cdecl HECmd_ClearTargetEnt(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetTimer_Internal(scr_entref_t param_1,he_type_t param_2,char *param_3)
+void __cdecl HECmd_SetTimer_Internal(scr_entref_t entref,he_type_t type,char *cmdName)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  game_hudelem_s *pgVar4;
-  uint uVar5;
-  char *pcVar6;
-  float fVar7;
-  scriptInstance_t sVar8;
+  game_hudelem_s *hud_00;
+  uint uVar4;
+  char *pcVar5;
+  float fVar6;
+  scriptInstance_t inst;
+  game_hudelem_s *hud;
+  int time;
   
-  pgVar4 = HECmd_GetHudElem(param_1);
-  if ((((param_2 != HE_TYPE_TIMER_DOWN) && (param_2 != HE_TYPE_TIMER_UP)) &&
-      (param_2 != HE_TYPE_TENTHS_TIMER_DOWN)) && (param_2 != HE_TYPE_TENTHS_TIMER_UP)) {
+  hud_00 = HECmd_GetHudElem(entref);
+  if ((((type != HE_TYPE_TIMER_DOWN) && (type != HE_TYPE_TIMER_UP)) &&
+      (type != HE_TYPE_TENTHS_TIMER_DOWN)) && (type != HE_TYPE_TENTHS_TIMER_UP)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x582,0,
                              "%s\n\t(type) = %i");
     if (!bVar3) {
@@ -2309,22 +2382,22 @@ void __cdecl HECmd_SetTimer_Internal(scr_entref_t param_1,he_type_t param_2,char
       return;
     }
   }
-  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar5 != 1) {
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar4 != 1) {
     bVar3 = false;
-    pcVar6 = va("USAGE: <hudelem> %s(time_in_seconds);\n");
-    Scr_Error(pcVar6,bVar3);
+    pcVar5 = va("USAGE: <hudelem> %s(time_in_seconds);\n");
+    Scr_Error(pcVar5,bVar3);
   }
-  fVar7 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  iVar1 = (int)ROUND(fVar7 * 1000.0 + 0.5);
-  if ((iVar1 < 1) && (param_2 != HE_TYPE_TIMER_UP)) {
-    sVar8 = SCRIPTINSTANCE_SERVER;
-    pcVar6 = va("time %g should be > 0");
-    Scr_ParamError(0,pcVar6,sVar8);
+  fVar6 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = (int)ROUND(fVar6 * 1000.0 + 0.5);
+  if ((iVar1 < 1) && (type != HE_TYPE_TIMER_UP)) {
+    inst = SCRIPTINSTANCE_SERVER;
+    pcVar5 = va("time %g should be > 0");
+    Scr_ParamError(0,pcVar5,inst);
   }
-  HudElem_ClearTypeSettings(pgVar4);
-  AssignToSmallerType<unsigned_char>(&(pgVar4->elem).type,param_2);
-  (pgVar4->elem).time = level.time + iVar1;
+  HudElem_ClearTypeSettings(hud_00);
+  AssignToSmallerType<unsigned_char>(&(hud_00->elem).type,type);
+  (hud_00->elem).time = level.time + iVar1;
   return;
 }
 
@@ -2336,24 +2409,29 @@ void __cdecl HECmd_SetTimer_Internal(scr_entref_t param_1,he_type_t param_2,char
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetClock_Internal(scr_entref_t param_1,he_type_t param_2,char *param_3)
+void __cdecl HECmd_SetClock_Internal(scr_entref_t entref,he_type_t type,char *cmdName)
 
 {
   int iVar1;
   int iVar2;
   code *pcVar3;
   bool bVar4;
-  game_hudelem_s *pgVar5;
-  uint uVar6;
-  char *pcVar7;
-  int iVar8;
-  float fVar9;
-  scriptInstance_t sVar10;
-  int local_18;
-  int local_14;
+  game_hudelem_s *hud_00;
+  uint uVar5;
+  char *pcVar6;
+  int src;
+  float fVar7;
+  scriptInstance_t sVar8;
+  int duration;
+  int materialIndex;
+  int width;
+  int height;
+  int numParam;
+  game_hudelem_s *hud;
+  int time;
   
-  pgVar5 = HECmd_GetHudElem(param_1);
-  if ((param_2 != HE_TYPE_CLOCK_DOWN) && (param_2 != HE_TYPE_CLOCK_UP)) {
+  hud_00 = HECmd_GetHudElem(entref);
+  if ((type != HE_TYPE_CLOCK_DOWN) && (type != HE_TYPE_CLOCK_UP)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x59c,0,
                              "%s\n\t(type) = %i");
     if (!bVar4) {
@@ -2362,149 +2440,155 @@ void __cdecl HECmd_SetClock_Internal(scr_entref_t param_1,he_type_t param_2,char
       return;
     }
   }
-  uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((uVar6 != 3) && (uVar6 != 5)) {
+  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((uVar5 != 3) && (uVar5 != 5)) {
     bVar4 = false;
-    pcVar7 = va(
+    pcVar6 = va(
                "USAGE: <hudelem> %s(time_in_seconds, total_clock_time_in_seconds, shadername[, width, height]);\n"
                );
-    Scr_Error(pcVar7,bVar4);
+    Scr_Error(pcVar6,bVar4);
   }
-  fVar9 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  iVar1 = (int)ROUND(fVar9 * 1000.0 + 0.5);
-  if ((iVar1 < 1) && (param_2 != HE_TYPE_CLOCK_UP)) {
-    sVar10 = SCRIPTINSTANCE_SERVER;
-    pcVar7 = va("time %g should be > 0");
-    Scr_ParamError(0,pcVar7,sVar10);
+  fVar7 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  iVar1 = (int)ROUND(fVar7 * 1000.0 + 0.5);
+  if ((iVar1 < 1) && (type != HE_TYPE_CLOCK_UP)) {
+    sVar8 = SCRIPTINSTANCE_SERVER;
+    pcVar6 = va("time %g should be > 0");
+    Scr_ParamError(0,pcVar6,sVar8);
   }
-  fVar9 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  iVar2 = (int)ROUND(fVar9 * 1000.0 + 0.5);
+  fVar7 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  iVar2 = (int)ROUND(fVar7 * 1000.0 + 0.5);
   if (iVar2 < 1) {
-    sVar10 = SCRIPTINSTANCE_SERVER;
-    pcVar7 = va("duration %g should be > 0");
-    Scr_ParamError(1,pcVar7,sVar10);
+    sVar8 = SCRIPTINSTANCE_SERVER;
+    pcVar6 = va("duration %g should be > 0");
+    Scr_ParamError(1,pcVar6,sVar8);
   }
-  pcVar7 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
-  iVar8 = G_MaterialIndex(pcVar7);
-  if (uVar6 == 3) {
-    local_18 = 0;
-    local_14 = 0;
+  pcVar6 = Scr_GetString(2,SCRIPTINSTANCE_SERVER);
+  src = G_MaterialIndex(pcVar6);
+  if (uVar5 == 3) {
+    width = 0;
+    height = 0;
   }
   else {
-    local_18 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-    if (local_18 < 0) {
-      sVar10 = SCRIPTINSTANCE_SERVER;
-      pcVar7 = va("width %i < 0");
-      Scr_ParamError(3,pcVar7,sVar10);
+    width = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    if (width < 0) {
+      sVar8 = SCRIPTINSTANCE_SERVER;
+      pcVar6 = va("width %i < 0");
+      Scr_ParamError(3,pcVar6,sVar8);
     }
-    local_14 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
-    if (local_14 < 0) {
-      sVar10 = SCRIPTINSTANCE_SERVER;
-      pcVar7 = va("height %i < 0");
-      Scr_ParamError(4,pcVar7,sVar10);
+    height = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
+    if (height < 0) {
+      sVar8 = SCRIPTINSTANCE_SERVER;
+      pcVar6 = va("height %i < 0");
+      Scr_ParamError(4,pcVar6,sVar8);
     }
   }
-  HudElem_ClearTypeSettings(pgVar5);
-  AssignToSmallerType<unsigned_char>(&(pgVar5->elem).type,param_2);
-  (pgVar5->elem).time = level.time + iVar1;
-  (pgVar5->elem).duration = iVar2;
-  AssignToSmallerType<unsigned_char>(&(pgVar5->elem).materialIndex,iVar8);
-  AssignToSmallerType<short>(&(pgVar5->elem).width,local_18);
-  AssignToSmallerType<short>(&(pgVar5->elem).height,local_14);
+  HudElem_ClearTypeSettings(hud_00);
+  AssignToSmallerType<unsigned_char>(&(hud_00->elem).type,type);
+  (hud_00->elem).time = level.time + iVar1;
+  (hud_00->elem).duration = iVar2;
+  AssignToSmallerType<unsigned_char>(&(hud_00->elem).materialIndex,src);
+  AssignToSmallerType<short>(&(hud_00->elem).width,width);
+  AssignToSmallerType<short>(&(hud_00->elem).height,height);
   return;
 }
 
 
 // 0061F9B0  HECmd_SetTimer  (game/g_hudelem.cpp:1488)
 
-void __cdecl HECmd_SetTimer(scr_entref_t param_1)
+void __cdecl HECmd_SetTimer(scr_entref_t entref)
 
 {
-  HECmd_SetTimer_Internal(param_1,HE_TYPE_TIMER_DOWN,"setTimer");
+  HECmd_SetTimer_Internal(entref,HE_TYPE_TIMER_DOWN,"setTimer");
   return;
 }
 
 
 // 0061FB20  HECmd_SetTimerUp  (game/g_hudelem.cpp:1505)
 
-void __cdecl HECmd_SetTimerUp(scr_entref_t param_1)
+void __cdecl HECmd_SetTimerUp(scr_entref_t entref)
 
 {
-  HECmd_SetTimer_Internal(param_1,HE_TYPE_TIMER_UP,"setTimerUp");
+  HECmd_SetTimer_Internal(entref,HE_TYPE_TIMER_UP,"setTimerUp");
   return;
 }
 
 
 // 0061FB50  HECmd_SetTenthsTimer  (game/g_hudelem.cpp:1522)
 
-void __cdecl HECmd_SetTenthsTimer(scr_entref_t param_1)
+void __cdecl HECmd_SetTenthsTimer(scr_entref_t entref)
 
 {
-  HECmd_SetTimer_Internal(param_1,HE_TYPE_TENTHS_TIMER_DOWN,"setTenthsTimer");
+  HECmd_SetTimer_Internal(entref,HE_TYPE_TENTHS_TIMER_DOWN,"setTenthsTimer");
   return;
 }
 
 
 // 0061FB80  HECmd_SetTenthsTimerUp  (game/g_hudelem.cpp:1539)
 
-void __cdecl HECmd_SetTenthsTimerUp(scr_entref_t param_1)
+void __cdecl HECmd_SetTenthsTimerUp(scr_entref_t entref)
 
 {
-  HECmd_SetTimer_Internal(param_1,HE_TYPE_TENTHS_TIMER_UP,"setTenthsTimerUp");
+  HECmd_SetTimer_Internal(entref,HE_TYPE_TENTHS_TIMER_UP,"setTenthsTimerUp");
   return;
 }
 
 
 // 0061FBB0  HECmd_SetClock  (game/g_hudelem.cpp:1560)
 
-void __cdecl HECmd_SetClock(scr_entref_t param_1)
+void __cdecl HECmd_SetClock(scr_entref_t entref)
 
 {
-  HECmd_SetClock_Internal(param_1,HE_TYPE_CLOCK_DOWN,"setClock");
+  HECmd_SetClock_Internal(entref,HE_TYPE_CLOCK_DOWN,"setClock");
   return;
 }
 
 
 // 0061FE50  HECmd_SetClockUp  (game/g_hudelem.cpp:1581)
 
-void __cdecl HECmd_SetClockUp(scr_entref_t param_1)
+void __cdecl HECmd_SetClockUp(scr_entref_t entref)
 
 {
-  HECmd_SetClock_Internal(param_1,HE_TYPE_CLOCK_UP,"setClockUp");
+  HECmd_SetClock_Internal(entref,HE_TYPE_CLOCK_UP,"setClockUp");
   return;
 }
 
 
 // 0061FE80  HECmd_SetValue  (game/g_hudelem.cpp:1598)
 
-void __cdecl HECmd_SetValue(scr_entref_t param_1)
+void __cdecl HECmd_SetValue(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  float fVar2;
+  game_hudelem_s *hud_00;
+  float fVar1;
+  game_hudelem_s *hud;
+  float value;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  HudElem_ClearTypeSettings(pgVar1);
-  if ((pgVar1->elem).type != '\a') {
-    (pgVar1->elem).type = '\x02';
+  hud_00 = HECmd_GetHudElem(entref);
+  fVar1 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  HudElem_ClearTypeSettings(hud_00);
+  if ((hud_00->elem).type != '\a') {
+    (hud_00->elem).type = '\x02';
   }
-  (pgVar1->elem).value = fVar2;
+  (hud_00->elem).value = fVar1;
   return;
 }
 
 
 // 0061FEF0  HECmd_SetWaypoint  (game/g_hudelem.cpp:1629)
 
-void __cdecl HECmd_SetWaypoint(scr_entref_t param_1)
+void __cdecl HECmd_SetWaypoint(scr_entref_t entref)
 
 {
   game_hudelem_s *pgVar1;
   uint uVar2;
   int iVar3;
-  char *pcVar4;
+  char *name;
+  int constantSize;
+  int numParam;
+  game_hudelem_s *hud;
+  char *materialName;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
+  pgVar1 = HECmd_GetHudElem(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   (pgVar1->elem).type = '\x0f';
@@ -2513,9 +2597,9 @@ void __cdecl HECmd_SetWaypoint(scr_entref_t param_1)
     (pgVar1->elem).offscreenMaterialIdx = '\0';
   }
   else {
-    pcVar4 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
-      iVar3 = G_MaterialIndex(pcVar4);
+    name = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    if ((name != (char *)0x0) && (*name != '\0')) {
+      iVar3 = G_MaterialIndex(name);
       AssignToSmallerType<unsigned_char>(&(pgVar1->elem).offscreenMaterialIdx,iVar3);
     }
     if (uVar2 == 3) {
@@ -2534,31 +2618,33 @@ void __cdecl HECmd_SetWaypoint(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_FadeOverTime(scr_entref_t param_1)
+void __cdecl HECmd_FadeOverTime(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  char *pcVar2;
-  float fVar3;
-  scriptInstance_t sVar4;
+  game_hudelem_s *elem;
+  char *pcVar1;
+  float fVar2;
+  scriptInstance_t sVar3;
+  float fadeTime;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (0.0 < fVar3) {
-    if (60.0 < fVar3) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar2 = va("fade time %g > 60");
-      Scr_ParamError(0,pcVar2,sVar4);
+  elem = HECmd_GetHudElem(entref);
+  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (0.0 < fVar2) {
+    if (60.0 < fVar2) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      pcVar1 = va("fade time %g > 60");
+      Scr_ParamError(0,pcVar1,sVar3);
     }
   }
   else {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("fade time %g <= 0");
-    Scr_ParamError(0,pcVar2,sVar4);
+    sVar3 = SCRIPTINSTANCE_SERVER;
+    pcVar1 = va("fade time %g <= 0");
+    Scr_ParamError(0,pcVar1,sVar3);
   }
-  BG_LerpHudColors(&pgVar1->elem,level.time,&(pgVar1->elem).fromColor);
-  (pgVar1->elem).fadeStartTime = level.time;
-  AssignToSmallerType<short>(&(pgVar1->elem).fadeTime,(int)ROUND(fVar3 * 1000.0 + 9.313226e-10));
+  BG_LerpHudColors(&elem->elem,level.time,&(elem->elem).fromColor);
+  (elem->elem).fadeStartTime = level.time;
+  AssignToSmallerType<short>(&(elem->elem).fadeTime,(int)ROUND(fVar2 * 1000.0 + 9.313226e-10));
   return;
 }
 
@@ -2570,43 +2656,47 @@ void __cdecl HECmd_FadeOverTime(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_ScaleOverTime(scr_entref_t param_1)
+void __cdecl HECmd_ScaleOverTime(scr_entref_t entref)
 
 {
   game_hudelem_s *pgVar1;
   uint uVar2;
   char *pcVar3;
-  int iVar4;
-  int iVar5;
-  float fVar6;
-  scriptInstance_t sVar7;
+  int src;
+  int src_00;
+  float fVar4;
+  scriptInstance_t sVar5;
+  int width;
+  int height;
+  game_hudelem_s *hud;
+  float scaleTime;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
+  pgVar1 = HECmd_GetHudElem(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 != 3) {
     Scr_Error("hudelem scaleOverTime(time_in_seconds, new_width, new_height)",false);
   }
-  fVar6 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (0.0 < fVar6) {
-    if (60.0 < fVar6) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+  fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (0.0 < fVar4) {
+    if (60.0 < fVar4) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("scale time %g > 60");
-      Scr_ParamError(0,pcVar3,sVar7);
+      Scr_ParamError(0,pcVar3,sVar5);
     }
   }
   else {
-    sVar7 = SCRIPTINSTANCE_SERVER;
+    sVar5 = SCRIPTINSTANCE_SERVER;
     pcVar3 = va("scale time %g <= 0");
-    Scr_ParamError(0,pcVar3,sVar7);
+    Scr_ParamError(0,pcVar3,sVar5);
   }
-  iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  iVar5 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  src = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  src_00 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
   (pgVar1->elem).scaleStartTime = level.time;
-  AssignToSmallerType<short>(&(pgVar1->elem).scaleTime,(int)ROUND(fVar6 * 1000.0 + 9.313226e-10));
+  AssignToSmallerType<short>(&(pgVar1->elem).scaleTime,(int)ROUND(fVar4 * 1000.0 + 9.313226e-10));
   (pgVar1->elem).fromWidth = (pgVar1->elem).width;
   (pgVar1->elem).fromHeight = (pgVar1->elem).height;
-  AssignToSmallerType<short>(&(pgVar1->elem).width,iVar4);
-  AssignToSmallerType<short>(&(pgVar1->elem).height,iVar5);
+  AssignToSmallerType<short>(&(pgVar1->elem).width,src);
+  AssignToSmallerType<short>(&(pgVar1->elem).height,src_00);
   return;
 }
 
@@ -2618,15 +2708,17 @@ void __cdecl HECmd_ScaleOverTime(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_MoveOverTime(scr_entref_t param_1)
+void __cdecl HECmd_MoveOverTime(scr_entref_t entref)
 
 {
   game_hudelem_s *pgVar1;
   char *pcVar2;
   float fVar3;
   scriptInstance_t sVar4;
+  game_hudelem_s *hud;
+  float moveTime;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
+  pgVar1 = HECmd_GetHudElem(entref);
   fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   if (0.0 < fVar3) {
     if (60.0 < fVar3) {
@@ -2652,26 +2744,28 @@ void __cdecl HECmd_MoveOverTime(scr_entref_t param_1)
 
 // 00620350  HECmd_Reset  (game/g_hudelem.cpp:1813)
 
-void __cdecl HECmd_Reset(scr_entref_t param_1)
+void __cdecl HECmd_Reset(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
+  game_hudelem_s *hud_00;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  HudElem_SetDefaults(pgVar1);
+  hud_00 = HECmd_GetHudElem(entref);
+  HudElem_SetDefaults(hud_00);
   return;
 }
 
 
 // 00620390  HECmd_Destroy  (game/g_hudelem.cpp:1832)
 
-void __cdecl HECmd_Destroy(scr_entref_t param_1)
+void __cdecl HECmd_Destroy(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
+  game_hudelem_s *hud_00;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  HudElem_Free(pgVar1);
+  hud_00 = HECmd_GetHudElem(entref);
+  HudElem_Free(hud_00);
   return;
 }
 
@@ -2683,25 +2777,27 @@ void __cdecl HECmd_Destroy(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetPlayerNameString(scr_entref_t param_1)
+void __cdecl HECmd_SetPlayerNameString(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  gentity_s *pgVar2;
+  game_hudelem_s *hud_00;
+  gentity_s *pgVar1;
+  game_hudelem_s *hud;
+  gentity_s *player;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  pgVar2 = Scr_GetEntity(0);
-  if (pgVar2 == (gentity_s *)0x0) {
+  hud_00 = HECmd_GetHudElem(entref);
+  pgVar1 = Scr_GetEntity(0);
+  if (pgVar1 == (gentity_s *)0x0) {
     Com_Printf(0x18,"Invalid entity passed to hudelem setplayernamestring()\n");
   }
-  else if (pgVar2->client == (gclient_s *)0x0) {
+  else if (pgVar1->client == (gclient_s *)0x0) {
     Com_Printf(0x18,
                "Invalid entity passed to hudelem setplayernamestring(), entity is not a client\n");
   }
   else {
-    HudElem_ClearTypeSettings(pgVar1);
-    (pgVar1->elem).type = '\x03';
-    (pgVar1->elem).value = (float)(pgVar2->s).number;
+    HudElem_ClearTypeSettings(hud_00);
+    (hud_00->elem).type = '\x03';
+    (hud_00->elem).value = (float)(pgVar1->s).number;
   }
   return;
 }
@@ -2709,28 +2805,36 @@ void __cdecl HECmd_SetPlayerNameString(scr_entref_t param_1)
 
 // 00620460  HECmd_SetGameTypeString  (game/g_hudelem.cpp:1889)
 
-void __cdecl HECmd_SetGameTypeString(scr_entref_t param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl HECmd_SetGameTypeString(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  char *pcVar2;
-  char *pcVar3;
+  game_hudelem_s *hud_00;
+  char *pszGameTypeScript;
+  char *pcVar1;
+  char *gametype;
+  game_hudelem_s *hud;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  if (pcVar2 == (char *)0x0) {
+  hud_00 = HECmd_GetHudElem(entref);
+  pszGameTypeScript = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  if (pszGameTypeScript == (char *)0x0) {
     Com_Printf(0x18,"Invalid entity passed to hudelem setgametypestring()\n");
   }
   else {
-    pcVar3 = Scr_GetGameTypeNameForScript(pcVar2);
-    if (pcVar3 == (char *)0x0) {
+    pcVar1 = Scr_GetGameTypeNameForScript(pszGameTypeScript);
+    if (pcVar1 == (char *)0x0) {
       Com_Printf(0x18,"Invalid gametype \'%s\'\n");
     }
     else {
-      SV_SetConfigstring(0x14,pcVar2);
-      HudElem_ClearTypeSettings(pgVar1);
-      (pgVar1->elem).type = '\x05';
-      (pgVar1->elem).value = 20.0;
+      SV_SetConfigstring(0x14,pszGameTypeScript);
+      HudElem_ClearTypeSettings(hud_00);
+      (hud_00->elem).type = '\x05';
+      (hud_00->elem).value = 20.0;
     }
   }
   return;
@@ -2739,27 +2843,35 @@ void __cdecl HECmd_SetGameTypeString(scr_entref_t param_1)
 
 // 00620510  HECmd_SetMapNameString  (game/g_hudelem.cpp:1926)
 
-void __cdecl HECmd_SetMapNameString(scr_entref_t param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl HECmd_SetMapNameString(scr_entref_t entref)
 
 {
-  game_hudelem_s *pgVar1;
-  char *pcVar2;
-  int iVar3;
+  game_hudelem_s *hud_00;
+  char *name;
+  int iVar1;
+  game_hudelem_s *hud;
+  char *mapname;
   
-  pgVar1 = HECmd_GetHudElem(param_1);
-  pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  if (pcVar2 == (char *)0x0) {
+  hud_00 = HECmd_GetHudElem(entref);
+  name = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  if (name == (char *)0x0) {
     Com_Printf(0x18,"Invalid mapname passed to hudelem setmapnamestring()\n");
   }
   else {
-    iVar3 = SV_MapExists(pcVar2);
-    if (iVar3 == 0) {
+    iVar1 = SV_MapExists(name);
+    if (iVar1 == 0) {
       Com_Printf(0x18,"Invalid map name passed to hudelem setmapnamestring(), map not found\n");
     }
     else {
-      SV_SetConfigstring(0x13,pcVar2);
-      HudElem_ClearTypeSettings(pgVar1);
-      (pgVar1->elem).type = '\x04';
+      SV_SetConfigstring(0x13,name);
+      HudElem_ClearTypeSettings(hud_00);
+      (hud_00->elem).type = '\x04';
     }
   }
   return;
@@ -2768,18 +2880,19 @@ void __cdecl HECmd_SetMapNameString(scr_entref_t param_1)
 
 // 00620730  GetIntGTZero  (game/g_hudelem.cpp:1955)
 
-int __cdecl GetIntGTZero(uint param_1)
+int __cdecl GetIntGTZero(uint index)
 
 {
   int iVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *error;
+  scriptInstance_t inst;
+  int number;
   
-  iVar1 = Scr_GetInt(param_1,SCRIPTINSTANCE_SERVER);
+  iVar1 = Scr_GetInt(index,SCRIPTINSTANCE_SERVER);
   if (iVar1 < 0) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    pcVar2 = va("Time (%i) must be greater than zero.");
-    Scr_ParamError(param_1,pcVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    error = va("Time (%i) must be greater than zero.");
+    Scr_ParamError(index,error,inst);
   }
   return iVar1;
 }
@@ -2792,7 +2905,7 @@ int __cdecl GetIntGTZero(uint param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetPulseFX(scr_entref_t param_1)
+void __cdecl HECmd_SetPulseFX(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -2801,12 +2914,15 @@ void __cdecl HECmd_SetPulseFX(scr_entref_t param_1)
   uint uVar4;
   game_hudelem_s *pgVar5;
   int iVar6;
+  int numParam;
+  game_hudelem_s *hud;
+  playerState_s *ps;
   
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 != 3) {
     Scr_Error("USAGE: <hudelem> SetPulseFX( <speed>, <decayStart>, <decayDuration> );\n",false);
   }
-  pgVar5 = HECmd_GetHudElem(param_1);
+  pgVar5 = HECmd_GetHudElem(entref);
   (pgVar5->elem).fxBirthTime = level.time;
   iVar6 = GetIntGTZero(0);
   AssignToSmallerType<unsigned_short>(&(pgVar5->elem).fxLetterTime,iVar6);
@@ -2854,19 +2970,21 @@ void __cdecl HECmd_SetPulseFX(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetCOD7DecodeFX(scr_entref_t param_1)
+void __cdecl HECmd_SetCOD7DecodeFX(scr_entref_t entref)
 
 {
   uint uVar1;
   game_hudelem_s *pgVar2;
   int iVar3;
+  int numParam;
+  game_hudelem_s *hud;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 3) {
     Scr_Error("USAGE: <hudelem> SetCOD7DecodeFX( <decodeTime>, <decayStart>, <decayDuration> );\n",
               false);
   }
-  pgVar2 = HECmd_GetHudElem(param_1);
+  pgVar2 = HECmd_GetHudElem(entref);
   (pgVar2->elem).flags = (pgVar2->elem).flags | 0x1000;
   (pgVar2->elem).fxBirthTime = level.time;
   iVar3 = GetIntGTZero(0);
@@ -2886,19 +3004,21 @@ void __cdecl HECmd_SetCOD7DecodeFX(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HECmd_SetRedactFX(scr_entref_t param_1)
+void __cdecl HECmd_SetRedactFX(scr_entref_t entref)
 
 {
   uint uVar1;
   game_hudelem_s *pgVar2;
   int iVar3;
+  int numParam;
+  game_hudelem_s *hud;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 4) {
     Scr_Error("USAGE: <hudelem> SetRedactFX( <decayStart>, <decayDuration>, <redactDecayStart>, <redactDecayDuration>);\n"
               ,false);
   }
-  pgVar2 = HECmd_GetHudElem(param_1);
+  pgVar2 = HECmd_GetHudElem(entref);
   (pgVar2->elem).flags = (pgVar2->elem).flags | 0x80;
   (pgVar2->elem).fxBirthTime = level.time;
   iVar3 = GetIntGTZero(0);
@@ -2917,36 +3037,39 @@ void __cdecl HECmd_SetRedactFX(scr_entref_t param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl HECmd_GetTextWidth(scr_entref_t param_1)
+void __cdecl HECmd_GetTextWidth(scr_entref_t entref)
 
 {
   game_hudelem_s *pgVar1;
-  Font_s *pFVar2;
-  int iVar3;
-  char *local_9c;
-  char local_8c [132];
+  Font_s *font_00;
+  int iVar2;
+  char *translation;
+  Font_s *font;
+  int width;
+  game_hudelem_s *hud;
+  char text [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pgVar1 = HECmd_GetHudElem(param_1);
+  pgVar1 = HECmd_GetHudElem(entref);
   if ((pgVar1->elem).type != '\x01') {
     Scr_Error("GetTextWidth called on a non text type hud elem",false);
   }
-  SV_GetConfigstring((pgVar1->elem).text + 0x203,local_8c,0x80);
-  local_9c = SEH_LocalizeTextMessage(local_8c,local_8c,LOCMSG_SAFE);
-  if (local_9c == (char *)0x0) {
-    local_9c = local_8c;
+  SV_GetConfigstring((pgVar1->elem).text + 0x203,text,0x80);
+  translation = SEH_LocalizeTextMessage(text,text,LOCMSG_SAFE);
+  if (translation == (char *)0x0) {
+    translation = text;
   }
-  pFVar2 = UI_GetFontHandleDefault((pgVar1->elem).fontScale);
-  iVar3 = UI_TextWidth(local_9c,0,pFVar2,1.0);
-  Scr_AddInt(iVar3 / 2,SCRIPTINSTANCE_SERVER);
+  font_00 = UI_GetFontHandleDefault((pgVar1->elem).fontScale);
+  iVar2 = UI_TextWidth(translation,0,font_00,1.0);
+  Scr_AddInt(iVar2 / 2,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00620A30  HudElem_GetMethod  (game/g_hudelem.cpp:2157)
 
-_func___cdecl_void_scr_entref_t * __cdecl HudElem_GetMethod(char **param_1)
+_func___cdecl_void_scr_entref_t * __cdecl HudElem_GetMethod(char **pName)
 
 {
   byte bVar1;
@@ -2954,15 +3077,16 @@ _func___cdecl_void_scr_entref_t * __cdecl HudElem_GetMethod(char **param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x19 < local_8) {
+    if (0x19 < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -2981,10 +3105,10 @@ LAB_00620aac:
     local_1c = 0;
 LAB_00620ab4:
     if (local_1c == 0) {
-      *param_1 = methods[local_8].actionString;
-      return methods[local_8].actionFunc;
+      *pName = methods[i].actionString;
+      return methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2996,7 +3120,7 @@ LAB_00620ab4:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl HudElem_UpdateClient(gclient_s *param_1,int param_2,hudelem_update_t param_3)
+void __cdecl HudElem_UpdateClient(gclient_s *client,int clientNum,hudelem_update_t which)
 
 {
   code *pcVar1;
@@ -3005,44 +3129,44 @@ void __cdecl HudElem_UpdateClient(gclient_s *param_1,int param_2,hudelem_update_
   game_hudelem_s *pgVar4;
   hudelem_s *phVar5;
   hudelem_s *phVar6;
-  int local_18;
-  int local_14;
-  game_hudelem_s *local_10;
-  uint local_c;
-  hudelem_s *local_8;
+  int archivalCount;
+  int currentCount;
+  game_hudelem_s *hud;
+  uint i;
+  hudelem_s *elem;
   
-  if (((param_2 < 0) || (level.maxclients <= param_2)) &&
+  if (((clientNum < 0) || (level.maxclients <= clientNum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x890,0,
                                "%s\n\t(clientNum) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((level.gentities[param_2].r.inuse == '\0') &&
+  if ((level.gentities[clientNum].r.inuse == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x891,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (gclient_s *)0x0) &&
+  if ((client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x892,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_18 = 0;
-  local_14 = 0;
-  local_10 = g_hudelems;
-  local_c = 0;
+  archivalCount = 0;
+  currentCount = 0;
+  hud = g_hudelems;
+  i = 0;
   do {
-    if (0x3ff < local_c) {
-      if ((param_3 & HUDELEM_UPDATE_ARCHIVAL) != 0) {
-        for (; (local_18 < 0x1f && ((param_1->ps).hud.archival[local_18].type != '\0'));
-            local_18 = local_18 + 1) {
-          memset((uchar *)((param_1->ps).hud.archival + local_18),'\0',0x70);
-          if (((param_1->ps).hud.archival[local_18].type != '\0') &&
+    if (0x3ff < i) {
+      if ((which & HUDELEM_UPDATE_ARCHIVAL) != 0) {
+        for (; (archivalCount < 0x1f && ((client->ps).hud.archival[archivalCount].type != '\0'));
+            archivalCount = archivalCount + 1) {
+          memset((uchar *)((client->ps).hud.archival + archivalCount),'\0',0x70);
+          if (((client->ps).hud.archival[archivalCount].type != '\0') &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",
                                        0x8c8,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -3050,10 +3174,10 @@ void __cdecl HudElem_UpdateClient(gclient_s *param_1,int param_2,hudelem_update_
             return;
           }
         }
-        for (; local_18 < 0x1f; local_18 = local_18 + 1) {
+        for (; archivalCount < 0x1f; archivalCount = archivalCount + 1) {
           iVar3 = 0x1c;
           bVar2 = true;
-          phVar5 = (param_1->ps).hud.archival + local_18;
+          phVar5 = (client->ps).hud.archival + archivalCount;
           phVar6 = &g_dummyHudCurrent;
           do {
             if (iVar3 == 0) break;
@@ -3071,23 +3195,23 @@ void __cdecl HudElem_UpdateClient(gclient_s *param_1,int param_2,hudelem_update_
           }
         }
       }
-      if ((param_3 & HUDELEM_UPDATE_CURRENT) != 0) {
-        while ((local_14 < 0x1f &&
-               (*(char *)((int)(param_1->ps).objective + local_14 * 0x70 + 0x670) != '\0'))) {
-          memset((uchar *)((param_1->ps).hud.current + local_14),'\0',0x70);
-          if ((*(char *)((int)(param_1->ps).objective + local_14 * 0x70 + 0x670) != '\0') &&
+      if ((which & HUDELEM_UPDATE_CURRENT) != 0) {
+        while ((currentCount < 0x1f &&
+               (*(char *)((int)(client->ps).objective + currentCount * 0x70 + 0x670) != '\0'))) {
+          memset((uchar *)((client->ps).hud.current + currentCount),'\0',0x70);
+          if ((*(char *)((int)(client->ps).objective + currentCount * 0x70 + 0x670) != '\0') &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",
                                        0x8db,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          local_14 = local_14 + 1;
+          currentCount = currentCount + 1;
         }
-        for (; local_14 < 0x1f; local_14 = local_14 + 1) {
+        for (; currentCount < 0x1f; currentCount = currentCount + 1) {
           iVar3 = 0x1c;
           bVar2 = true;
-          phVar5 = (param_1->ps).hud.current + local_14;
+          phVar5 = (client->ps).hud.current + currentCount;
           phVar6 = &g_dummyHudCurrent;
           do {
             if (iVar3 == 0) break;
@@ -3107,37 +3231,37 @@ void __cdecl HudElem_UpdateClient(gclient_s *param_1,int param_2,hudelem_update_
       }
       return;
     }
-    if (((((local_10->elem).type != '\0') && (((local_10->elem).flags & 0x2000) == 0)) &&
-        ((local_10->team == 0 || (local_10->team == (param_1->sess).cs.team)))) &&
-       ((local_10->clientNum == 0x3ff || (local_10->clientNum == param_2)))) {
-      if (local_10->archived == 0) {
-        if (((param_3 & HUDELEM_UPDATE_CURRENT) != 0) &&
-           (local_8 = (param_1->ps).hud.current + local_14, local_14 < 0x1f)) {
-          local_14 = local_14 + 1;
+    if (((((hud->elem).type != '\0') && (((hud->elem).flags & 0x2000) == 0)) &&
+        ((hud->team == 0 || (hud->team == (client->sess).cs.team)))) &&
+       ((hud->clientNum == 0x3ff || (hud->clientNum == clientNum)))) {
+      if (hud->archived == 0) {
+        if (((which & HUDELEM_UPDATE_CURRENT) != 0) &&
+           (elem = (client->ps).hud.current + currentCount, currentCount < 0x1f)) {
+          currentCount = currentCount + 1;
           goto LAB_00620ca3;
         }
       }
-      else if (((param_3 & HUDELEM_UPDATE_ARCHIVAL) != 0) &&
-              (local_8 = (param_1->ps).hud.archival + local_18, local_18 < 0x1f)) {
-        local_18 = local_18 + 1;
+      else if (((which & HUDELEM_UPDATE_ARCHIVAL) != 0) &&
+              (elem = (client->ps).hud.archival + archivalCount, archivalCount < 0x1f)) {
+        archivalCount = archivalCount + 1;
 LAB_00620ca3:
-        pgVar4 = local_10;
+        pgVar4 = hud;
         for (iVar3 = 0x1c; iVar3 != 0; iVar3 = iVar3 + -1) {
-          local_8->x = (pgVar4->elem).x;
+          elem->x = (pgVar4->elem).x;
           pgVar4 = (game_hudelem_s *)&(pgVar4->elem).y;
-          local_8 = (hudelem_s *)&local_8->y;
+          elem = (hudelem_s *)&elem->y;
         }
       }
     }
-    local_c = local_c + 1;
-    local_10 = local_10 + 1;
+    i = i + 1;
+    hud = hud + 1;
   } while( true );
 }
 
 
 // 00620EC0  HudElem_ClearClientSingle  (game/g_hudelem.cpp:2282)
 
-void __cdecl HudElem_ClearClientSingle(hudelem_s *param_1,int param_2)
+void __cdecl HudElem_ClearClientSingle(hudelem_s *elems,int max)
 
 {
   code *pcVar1;
@@ -3145,11 +3269,12 @@ void __cdecl HudElem_ClearClientSingle(hudelem_s *param_1,int param_2)
   int iVar3;
   hudelem_s *phVar4;
   hudelem_s *phVar5;
-  int local_8;
+  int elemCount;
   
-  for (local_8 = 0; (local_8 < param_2 && (param_1[local_8].type != '\0')); local_8 = local_8 + 1) {
-    memset((uchar *)(param_1 + local_8),'\0',0x70);
-    if (param_1[local_8].type != '\0') {
+  for (elemCount = 0; (elemCount < max && (elems[elemCount].type != '\0'));
+      elemCount = elemCount + 1) {
+    memset((uchar *)(elems + elemCount),'\0',0x70);
+    if (elems[elemCount].type != '\0') {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_hudelem.cpp",0x8f0,0,"%s"
                               );
       if (!bVar2) {
@@ -3160,12 +3285,12 @@ void __cdecl HudElem_ClearClientSingle(hudelem_s *param_1,int param_2)
     }
   }
   do {
-    if (param_2 <= local_8) {
+    if (max <= elemCount) {
       return;
     }
     iVar3 = 0x1c;
     bVar2 = true;
-    phVar4 = param_1 + local_8;
+    phVar4 = elems + elemCount;
     phVar5 = &g_dummyHudCurrent;
     do {
       if (iVar3 == 0) break;
@@ -3183,7 +3308,7 @@ void __cdecl HudElem_ClearClientSingle(hudelem_s *param_1,int param_2)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    elemCount = elemCount + 1;
   } while( true );
 }
 
@@ -3192,14 +3317,14 @@ void __cdecl HudElem_ClearClientSingle(hudelem_s *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl HudElem_ClearClient(gclient_s *param_1,hudelem_update_t param_2)
+void __cdecl HudElem_ClearClient(gclient_s *client,hudelem_update_t which)
 
 {
-  if ((param_2 & HUDELEM_UPDATE_CURRENT) != 0) {
-    HudElem_ClearClientSingle((param_1->ps).hud.current,0x1f);
+  if ((which & HUDELEM_UPDATE_CURRENT) != 0) {
+    HudElem_ClearClientSingle((client->ps).hud.current,0x1f);
   }
-  if ((param_2 & HUDELEM_UPDATE_ARCHIVAL) != 0) {
-    HudElem_ClearClientSingle((param_1->ps).hud.archival,0x1f);
+  if ((which & HUDELEM_UPDATE_ARCHIVAL) != 0) {
+    HudElem_ClearClientSingle((client->ps).hud.archival,0x1f);
   }
   return;
 }

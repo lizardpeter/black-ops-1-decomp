@@ -2,6 +2,8 @@
 
 // 00863780  R_LoadFont  (gfx_d3d/r_font_load_obj.cpp:11)
 
+/* WARNING: Variable defined which should be unmapped: file */
+
 Font_s * __cdecl R_LoadFont(char *param_1,int param_2)
 
 {
@@ -12,9 +14,11 @@ Font_s * __cdecl R_LoadFont(char *param_1,int param_2)
   Material *pMVar5;
   int unaff_ESI;
   char *unaff_EDI;
-  int local_4c;
-  int local_48;
-  int local_44;
+  int imageTrack;
+  int file;
+  int fontNameOffset;
+  int materialNameOffset;
+  int glowMaterialName;
   char local_40 [64];
   
   iVar2 = FUN_0068e520();
@@ -31,17 +35,17 @@ Font_s * __cdecl R_LoadFont(char *param_1,int param_2)
       }
       pFVar3 = Hunk_AllocAlignInternal(iVar2 + 8,(int)unaff_EDI);
       pGVar1 = (Glyph *)(pFVar3 + 1);
-      FS_Read(&local_48,4,local_4c);
-      FS_Read(&pFVar3->pixelHeight,4,local_4c);
-      FS_Read(&pFVar3->glyphCount,4,local_4c);
-      FS_Read(&local_44,4,local_4c);
-      FS_Read(pGVar1,iVar2 + -0x10,local_4c);
+      FS_Read(&materialNameOffset,4,fontNameOffset);
+      FS_Read(&pFVar3->pixelHeight,4,fontNameOffset);
+      FS_Read(&pFVar3->glyphCount,4,fontNameOffset);
+      FS_Read(&glowMaterialName,4,fontNameOffset);
+      FS_Read(pGVar1,iVar2 + -0x10,fontNameOffset);
       FS_FCloseFile((int)unaff_EDI);
       pFVar3->glyphs = pGVar1;
-      pFVar3->fontName = (char *)(local_48 + -0x10 + (int)pGVar1);
-      iVar2 = local_44 + -0x10 + (int)pGVar1;
+      pFVar3->fontName = (char *)(materialNameOffset + -0x10 + (int)pGVar1);
+      iVar2 = glowMaterialName + -0x10 + (int)pGVar1;
       pMVar5 = rgp.defaultMaterial;
-      if (*(char *)(local_44 + -0x10 + (int)pGVar1) != '\0') {
+      if (*(char *)(glowMaterialName + -0x10 + (int)pGVar1) != '\0') {
         pcVar4 = Material_Register_FastFile;
         if ((useFastFile->current).enabled == false) {
           pcVar4 = Material_Register_LoadObj;

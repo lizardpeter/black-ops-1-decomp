@@ -2,7 +2,7 @@
 
 // 0095B814  _tolower_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tolower.c:70)
 
-int __cdecl _tolower_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _tolower_l(int c,localeinfo_struct *plocinfo)
 
 {
   int iVar1;
@@ -10,60 +10,60 @@ int __cdecl _tolower_l(int param_1,localeinfo_struct *param_2)
   int iVar3;
   int *piVar4;
   char cVar5;
-  _LocaleUpdate local_1c;
-  byte local_c;
+  _LocaleUpdate _loc_update;
+  byte outbuffer;
   undefined1 local_b;
-  char local_8;
+  char inbuffer;
   char local_7;
   undefined1 local_6;
   
-  iVar1 = param_1;
-  _LocaleUpdate::_LocaleUpdate(&local_1c,param_2);
-  if ((uint)param_1 < 0x100) {
-    if ((local_1c.localeinfo.locinfo)->mb_cur_max < 2) {
-      uVar2 = (local_1c.localeinfo.locinfo)->pctype[param_1] & 1;
+  iVar1 = c;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((uint)c < 0x100) {
+    if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+      uVar2 = (_loc_update.localeinfo.locinfo)->pctype[c] & 1;
     }
     else {
-      uVar2 = _isctype_l(param_1,1,&local_1c.localeinfo);
+      uVar2 = _isctype_l(c,1,&_loc_update.localeinfo);
     }
     if (uVar2 == 0) {
 LAB_0095b875:
-      if (local_1c.updated == false) {
+      if (_loc_update.updated == false) {
         return iVar1;
       }
-      (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       return iVar1;
     }
-    uVar2 = (uint)(local_1c.localeinfo.locinfo)->pclmap[param_1];
+    uVar2 = (uint)(_loc_update.localeinfo.locinfo)->pclmap[c];
   }
   else {
-    cVar5 = (char)param_1;
-    if (((local_1c.localeinfo.locinfo)->mb_cur_max < 2) ||
-       (iVar3 = _isleadbyte_l(param_1 >> 8 & 0xff,&local_1c.localeinfo), iVar3 == 0)) {
+    cVar5 = (char)c;
+    if (((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) ||
+       (iVar3 = _isleadbyte_l(c >> 8 & 0xff,&_loc_update.localeinfo), iVar3 == 0)) {
       piVar4 = _errno();
       *piVar4 = 0x2a;
       local_7 = '\0';
       iVar3 = 1;
-      local_8 = cVar5;
+      inbuffer = cVar5;
     }
     else {
-      param_1._0_1_ = (char)((uint)param_1 >> 8);
-      local_8 = (char)param_1;
+      c._0_1_ = (char)((uint)c >> 8);
+      inbuffer = (char)c;
       local_6 = 0;
       iVar3 = 2;
       local_7 = cVar5;
     }
-    iVar3 = __crtLCMapStringA(&local_1c.localeinfo,(local_1c.localeinfo.locinfo)->lc_handle[2],0x100
-                              ,&local_8,iVar3,(char *)&local_c,3,
-                              (local_1c.localeinfo.locinfo)->lc_codepage,1);
+    iVar3 = __crtLCMapStringA(&_loc_update.localeinfo,(_loc_update.localeinfo.locinfo)->lc_handle[2]
+                              ,0x100,&inbuffer,iVar3,(char *)&outbuffer,3,
+                              (_loc_update.localeinfo.locinfo)->lc_codepage,1);
     if (iVar3 == 0) goto LAB_0095b875;
-    uVar2 = (uint)local_c;
+    uVar2 = (uint)outbuffer;
     if (iVar3 != 1) {
-      uVar2 = (uint)CONCAT11(local_c,local_b);
+      uVar2 = (uint)CONCAT11(outbuffer,local_b);
     }
   }
-  if (local_1c.updated != false) {
-    (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar2;
 }
@@ -71,25 +71,25 @@ LAB_0095b875:
 
 // 0095B929  tolower  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tolower.c:143)
 
-int __cdecl tolower(int param_1)
+int __cdecl tolower(int c)
 
 {
   if (__locale_changed == 0) {
-    if (param_1 - 0x41U < 0x1a) {
-      return param_1 + 0x20;
+    if (c - 0x41U < 0x1a) {
+      return c + 0x20;
     }
   }
   else {
-    param_1 = _tolower_l(param_1,(localeinfo_struct *)0x0);
+    c = _tolower_l(c,(localeinfo_struct *)0x0);
   }
-  return param_1;
+  return c;
 }
 
 
 // 0095B78D  _LocaleUpdate  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setlocal.h:261)
 
 _LocaleUpdate * __thiscall
-_LocaleUpdate::_LocaleUpdate(_LocaleUpdate *this,localeinfo_struct *param_1)
+_LocaleUpdate::_LocaleUpdate(_LocaleUpdate *this,localeinfo_struct *plocinfo)
 
 {
   int *piVar1;
@@ -98,7 +98,7 @@ _LocaleUpdate::_LocaleUpdate(_LocaleUpdate *this,localeinfo_struct *param_1)
   threadmbcinfostruct *ptVar4;
   
   this->updated = false;
-  if (param_1 == (localeinfo_struct *)0x0) {
+  if (plocinfo == (localeinfo_struct *)0x0) {
     p_Var2 = _getptd();
     this->ptd = p_Var2;
     (this->localeinfo).locinfo = p_Var2->ptlocinfo;
@@ -120,8 +120,8 @@ _LocaleUpdate::_LocaleUpdate(_LocaleUpdate *this,localeinfo_struct *param_1)
     }
   }
   else {
-    (this->localeinfo).locinfo = param_1->locinfo;
-    (this->localeinfo).mbcinfo = param_1->mbcinfo;
+    (this->localeinfo).locinfo = plocinfo->locinfo;
+    (this->localeinfo).mbcinfo = plocinfo->mbcinfo;
   }
   return this;
 }

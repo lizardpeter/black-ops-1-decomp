@@ -2,7 +2,7 @@
 
 // 00969731  _stbuf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_sftbuf.c:59)
 
-int __cdecl _stbuf(_iobuf *param_1)
+int __cdecl _stbuf(_iobuf *str)
 
 {
   void **ppvVar1;
@@ -11,24 +11,24 @@ int __cdecl _stbuf(_iobuf *param_1)
   _iobuf *p_Var4;
   void *pvVar5;
   
-  iVar3 = _fileno(param_1);
+  iVar3 = _fileno(str);
   iVar3 = _isatty(iVar3);
   if (iVar3 == 0) {
     return 0;
   }
   p_Var4 = __iob_func();
-  if (param_1 == p_Var4 + 1) {
+  if (str == p_Var4 + 1) {
     iVar3 = 0;
   }
   else {
     p_Var4 = __iob_func();
-    if (param_1 != p_Var4 + 2) {
+    if (str != p_Var4 + 2) {
       return 0;
     }
     iVar3 = 1;
   }
   _cflush = _cflush + 1;
-  if ((param_1->_flag & 0x10cU) != 0) {
+  if ((str->_flag & 0x10cU) != 0) {
     return 0;
   }
   ppvVar1 = _stdbuf + iVar3;
@@ -36,35 +36,35 @@ int __cdecl _stbuf(_iobuf *param_1)
     pvVar5 = _malloc_crt(0x1000);
     *ppvVar1 = pvVar5;
     if (pvVar5 == (void *)0x0) {
-      param_1->_base = (char *)&param_1->_charbuf;
-      param_1->_ptr = (char *)&param_1->_charbuf;
-      param_1->_bufsiz = 2;
-      param_1->_cnt = 2;
+      str->_base = (char *)&str->_charbuf;
+      str->_ptr = (char *)&str->_charbuf;
+      str->_bufsiz = 2;
+      str->_cnt = 2;
       goto LAB_009697ba;
     }
   }
   pcVar2 = *ppvVar1;
-  param_1->_base = pcVar2;
-  param_1->_ptr = pcVar2;
-  param_1->_bufsiz = 0x1000;
-  param_1->_cnt = 0x1000;
+  str->_base = pcVar2;
+  str->_ptr = pcVar2;
+  str->_bufsiz = 0x1000;
+  str->_cnt = 0x1000;
 LAB_009697ba:
-  param_1->_flag = param_1->_flag | 0x1102;
+  str->_flag = str->_flag | 0x1102;
   return 1;
 }
 
 
 // 009697CD  _ftbuf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_sftbuf.c:138)
 
-void __cdecl _ftbuf(int param_1,_iobuf *param_2)
+void __cdecl _ftbuf(int flag,_iobuf *str)
 
 {
-  if ((param_1 != 0) && ((param_2->_flag & 0x1000U) != 0)) {
-    _flush(param_2);
-    param_2->_flag = param_2->_flag & 0xffffeeff;
-    param_2->_bufsiz = 0;
-    param_2->_ptr = (char *)0x0;
-    param_2->_base = (char *)0x0;
+  if ((flag != 0) && ((str->_flag & 0x1000U) != 0)) {
+    _flush(str);
+    str->_flag = str->_flag & 0xffffeeff;
+    str->_bufsiz = 0;
+    str->_ptr = (char *)0x0;
+    str->_base = (char *)0x0;
   }
   return;
 }

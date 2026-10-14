@@ -360,7 +360,7 @@ int __cdecl LiveCounter_CounterStringToID(char *param_1)
   code *pcVar2;
   int iVar3;
   char *pcVar4;
-  char *pcVar5;
+  char *nptr;
   char *unaff_ESI;
   int unaff_EDI;
   int aiStack_8 [2];
@@ -380,17 +380,17 @@ int __cdecl LiveCounter_CounterStringToID(char *param_1)
       iVar3 = StringTable_LookupRowNumForValue((StringTable *)&DAT_00000001,unaff_EDI,unaff_ESI);
       if ((((*(int *)(aiStack_8[0] + 4) < 1) || (*(int *)(aiStack_8[0] + 8) <= iVar3)) ||
           (iVar3 < 0)) ||
-         (pcVar5 = *(char **)(*(int *)(aiStack_8[0] + 0xc) + *(int *)(aiStack_8[0] + 4) * iVar3 * 8)
-         , pcVar5 == (char *)0x0)) {
-        pcVar5 = "";
+         (nptr = *(char **)(*(int *)(aiStack_8[0] + 0xc) + *(int *)(aiStack_8[0] + 4) * iVar3 * 8),
+         nptr == (char *)0x0)) {
+        nptr = "";
       }
-      pcVar4 = pcVar5;
+      pcVar4 = nptr;
       do {
         cVar1 = *pcVar4;
         pcVar4 = pcVar4 + 1;
       } while (cVar1 != '\0');
-      if (pcVar4 != pcVar5 + 1) {
-        iVar3 = atoi(pcVar5);
+      if (pcVar4 != nptr + 1) {
+        iVar3 = atoi(nptr);
         return iVar3;
       }
     }
@@ -410,7 +410,7 @@ void __cdecl LiveCounter_SetupCounters(void)
   int iVar2;
   int iVar3;
   int iVar4;
-  char *pcVar5;
+  char *nptr;
   int iStack_8;
   int iStack_4;
   
@@ -437,14 +437,14 @@ void __cdecl LiveCounter_SetupCounters(void)
     iVar4 = 0;
     do {
       if ((((*(int *)(iStack_8 + 4) < 1) || (*(int *)(iStack_8 + 8) <= iVar3)) || (iVar3 < 0)) ||
-         (pcVar5 = *(char **)(*(int *)(iStack_8 + 0xc) + *(int *)(iStack_8 + 4) * iVar3 * 8),
-         pcVar5 == (char *)0x0)) {
-        pcVar5 = "";
+         (nptr = *(char **)(*(int *)(iStack_8 + 0xc) + *(int *)(iStack_8 + 4) * iVar3 * 8),
+         nptr == (char *)0x0)) {
+        nptr = "";
       }
-      iVar2 = atoi(pcVar5);
+      iVar2 = atoi(nptr);
       if (iVar2 == 0) {
         Com_PrintError(0x10,"Global counter string table \'%s\' has an invalid value: %s.\n",
-                       "mp/globalcounters.csv",pcVar5);
+                       "mp/globalcounters.csv",nptr);
       }
       else {
         *(int *)((int)&DAT_04e49944 + iVar4) = iVar2;

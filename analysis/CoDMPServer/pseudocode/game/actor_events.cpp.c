@@ -10,6 +10,8 @@ float __cdecl Actor_EventDefaultRadiusSqrd(ai_event_t param_1)
   bool bVar3;
   int in_ECX;
   float10 fVar4;
+  ai_event_t eType;
+  dvar_s *dvar;
   
   if (g_ai_event_info[in_ECX].defaultDistDvar == (dvar_s **)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x4e,0,"%s"
@@ -40,6 +42,7 @@ float __cdecl Actor_EventDefaultHeightDiff(ai_event_t param_1)
 
 {
   int in_ECX;
+  ai_event_t eType;
   
   return g_ai_event_info[in_ECX].defaultHeight;
 }
@@ -52,20 +55,21 @@ float __cdecl Actor_EventDefaultHeightDiff(ai_event_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_DumpEvents(actor_s *param_1,ai_event_t param_2,gentity_s *param_3)
+void __cdecl Actor_DumpEvents(actor_s *self,ai_event_t event,gentity_s *originator)
 
 {
   code *pcVar1;
   bool bVar2;
+  int originatorNumber;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x67,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((g_dumpAIEvents->current).integer == (param_1->ent->s).number) {
+  if ((g_dumpAIEvents->current).integer == (self->ent->s).number) {
     Com_Printf(0x12,"%d ^3 %s^7:  from entity^5 %d ^7at time^5 %d\n");
   }
   return;
@@ -74,16 +78,20 @@ void __cdecl Actor_DumpEvents(actor_s *param_1,ai_event_t param_2,gentity_s *par
 
 // 008F01F0  Actor_GetPerfectInfo  (game/actor_events.cpp:144)
 
+/* WARNING: Variable defined which should be unmapped: pOther */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Actor_GetPerfectInfo(actor_s *param_1,sentient_s *param_2)
 
 {
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *pOther;
+  actor_s *self;
   
   Actor_UpdateLastKnownPos(in_EDX,in_ECX);
   return;
@@ -104,6 +112,9 @@ void __cdecl Actor_WasAttackedBy(actor_s *param_1,sentient_s *param_2)
   bool bVar2;
   int in_ECX;
   sentient_s *in_EDX;
+  sentient_s *pOther;
+  actor_s *self;
+  sentient_info_t *pInfo;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0xa2,0,"%s"
@@ -148,6 +159,8 @@ void __cdecl Actor_WasAttackedBy(actor_s *param_1,sentient_s *param_2)
 
 // 008F0330  Actor_BroadcastTeamEvent  (game/actor_events.cpp:178)
 
+/* WARNING: Variable defined which should be unmapped: eType */
+/* WARNING: Variable defined which should be unmapped: sentient */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -160,6 +173,8 @@ void __cdecl Actor_BroadcastTeamEvent(sentient_s *param_1,ai_event_t param_2)
   bool bVar2;
   int *in_ECX;
   float *in_EDX;
+  ai_event_t eType;
+  sentient_s *sentient;
   
   if (in_ECX == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0xb5,0,"%s"
@@ -192,7 +207,7 @@ void __cdecl Actor_BroadcastTeamEvent(sentient_s *param_1,ai_event_t param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_IsOnSameTeam(gentity_s *param_1,actor_s *param_2,int param_3)
+bool __cdecl Actor_IsOnSameTeam(gentity_s *originator,actor_s *pActor,int teamFlags)
 
 {
   bool bVar1;
@@ -200,20 +215,20 @@ bool __cdecl Actor_IsOnSameTeam(gentity_s *param_1,actor_s *param_2,int param_3)
   gentity_s *pgVar3;
   gentity_s *pgVar4;
   
-  if (param_2 == param_1->actor) {
+  if (pActor == originator->actor) {
     bVar1 = true;
   }
   else {
-    iVar2 = EntHandle::isDefined(&param_2->sentient->scriptOwner);
+    iVar2 = EntHandle::isDefined(&pActor->sentient->scriptOwner);
     if (iVar2 != 0) {
-      pgVar3 = EntHandle::ent(&param_2->sentient->scriptOwner);
-      if (pgVar3 == param_1) {
+      pgVar3 = EntHandle::ent(&pActor->sentient->scriptOwner);
+      if (pgVar3 == originator) {
         return true;
       }
-      if (((param_3 == 0) && (param_1->sentient != (sentient_s *)0x0)) &&
-         (iVar2 = EntHandle::isDefined(&param_1->sentient->scriptOwner), iVar2 != 0)) {
-        pgVar3 = EntHandle::ent(&param_2->sentient->scriptOwner);
-        pgVar4 = EntHandle::ent(&param_1->sentient->scriptOwner);
+      if (((teamFlags == 0) && (originator->sentient != (sentient_s *)0x0)) &&
+         (iVar2 = EntHandle::isDefined(&originator->sentient->scriptOwner), iVar2 != 0)) {
+        pgVar3 = EntHandle::ent(&pActor->sentient->scriptOwner);
+        pgVar4 = EntHandle::ent(&originator->sentient->scriptOwner);
         if (pgVar3 == pgVar4) {
           return true;
         }
@@ -227,6 +242,8 @@ bool __cdecl Actor_IsOnSameTeam(gentity_s *param_1,actor_s *param_2,int param_3)
 
 // 008F03D0  Actor_BroadcastPointEvent  (game/actor_events.cpp:218)
 
+/* WARNING: Variable defined which should be unmapped: eType */
+/* WARNING: Variable defined which should be unmapped: originator */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -234,20 +251,24 @@ bool __cdecl Actor_IsOnSameTeam(gentity_s *param_1,actor_s *param_2,int param_3)
 
 void __cdecl
 Actor_BroadcastPointEvent
-          (gentity_s *param_1,ai_event_t param_2,int param_3,float *param_4,float param_5)
+          (gentity_s *teamFlags,ai_event_t vOrigin,int fRadiusSqrd,float *param_4,float param_5)
 
 {
   code *pcVar1;
   bool bVar2;
   team_t tVar3;
-  gentity_s *pgVar4;
+  gentity_s *listener;
   gentity_s *in_ECX;
   actor_s *in_EDX;
-  float fVar5;
-  actor_s *local_10;
-  int local_c;
+  float fVar4;
+  ai_event_t eType;
+  gentity_s *originator;
+  gentity_s *ent;
+  actor_s *pActor;
+  int listenerIndex;
+  float fDistSqrd;
   
-  if ((0xf < (int)param_1) &&
+  if ((0xf < (int)teamFlags) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0xdf,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -261,7 +282,7 @@ Actor_BroadcastPointEvent
     (*pcVar1)();
     return;
   }
-  if (param_1 == (gentity_s *)0x0) {
+  if (teamFlags == (gentity_s *)0x0) {
     if ((in_ECX == (gentity_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0xe7,0,
                                  "%s"), !bVar2)) {
@@ -276,33 +297,34 @@ Actor_BroadcastPointEvent
     if (tVar3 == TEAM_BAD) {
       return;
     }
-    param_1 = (gentity_s *)(1 << ((byte)tVar3 & 0x1f));
+    teamFlags = (gentity_s *)(1 << ((byte)tVar3 & 0x1f));
   }
-  if ((float)param_3 == 0.0) {
-    param_3 = (int)Actor_EventDefaultRadiusSqrd((ai_event_t)in_EDX);
+  if ((float)fRadiusSqrd == 0.0) {
+    fRadiusSqrd = (int)Actor_EventDefaultRadiusSqrd((ai_event_t)in_EDX);
   }
-  local_10 = Actor_FirstActor((int)in_EDX);
-  while (local_10 != (actor_s *)0x0) {
-    bVar2 = Actor_IsOnSameTeam(in_ECX,local_10,(int)param_1);
+  pActor = Actor_FirstActor((int)in_EDX);
+  while (pActor != (actor_s *)0x0) {
+    bVar2 = Actor_IsOnSameTeam(in_ECX,pActor,(int)teamFlags);
     if (bVar2) {
-      local_10 = Actor_NextActor(in_EDX,(int)in_ECX);
+      pActor = Actor_NextActor(in_EDX,(int)in_ECX);
     }
     else {
-      fVar5 = Vec3DistanceSq((local_10->ent->r).currentOrigin,(float *)param_2);
-      if (fVar5 <= (float)param_3) {
+      fVar4 = Vec3DistanceSq((pActor->ent->r).currentOrigin,(float *)vOrigin);
+      if (fVar4 <= (float)fRadiusSqrd) {
         Actor_ReceivePointEvent
-                  (in_EDX,(gentity_s *)param_2,(ai_event_t)fVar5,(float *)param_3,(float)in_EDX,
+                  (in_EDX,(gentity_s *)vOrigin,(ai_event_t)fVar4,(float *)fRadiusSqrd,(float)in_EDX,
                    (float)in_ECX);
       }
-      local_10 = Actor_NextActor(in_EDX,(int)in_ECX);
+      pActor = Actor_NextActor(in_EDX,(int)in_ECX);
     }
   }
-  for (local_c = Actor_EventListener_First((ai_event_t)in_EDX,(int)param_1); -1 < local_c;
-      local_c = Actor_EventListener_Next(local_c,(ai_event_t)in_EDX,(int)param_1)) {
-    pgVar4 = Actor_EventListener_GetEntity(local_c);
-    fVar5 = Vec3DistanceSq((pgVar4->r).currentOrigin,(float *)param_2);
-    if (fVar5 <= (float)param_3) {
-      Actor_EventListener_NotifyToListener(pgVar4,in_ECX,(ai_event_t)in_EDX,(float *)param_2);
+  for (listenerIndex = Actor_EventListener_First((ai_event_t)in_EDX,(int)teamFlags);
+      -1 < listenerIndex;
+      listenerIndex = Actor_EventListener_Next(listenerIndex,(ai_event_t)in_EDX,(int)teamFlags)) {
+    listener = Actor_EventListener_GetEntity(listenerIndex);
+    fVar4 = Vec3DistanceSq((listener->r).currentOrigin,(float *)vOrigin);
+    if (fVar4 <= (float)fRadiusSqrd) {
+      Actor_EventListener_NotifyToListener(listener,in_ECX,(ai_event_t)in_EDX,(float *)vOrigin);
     }
   }
   return;
@@ -311,6 +333,8 @@ Actor_BroadcastPointEvent
 
 // 008F0690  Actor_BroadcastLineEvent  (game/actor_events.cpp:291)
 
+/* WARNING: Variable defined which should be unmapped: hitEnt */
+/* WARNING: Variable defined which should be unmapped: originator */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -318,7 +342,7 @@ Actor_BroadcastPointEvent
 
 void __cdecl
 Actor_BroadcastLineEvent
-          (gentity_s *param_1,gentity_s *param_2,ai_event_t param_3,int param_4,float *param_5,
+          (gentity_s *eType,gentity_s *teamFlags,ai_event_t vStart,int vEnd,float *fRadiusSqrd,
           float *param_6,float param_7)
 
 {
@@ -328,37 +352,44 @@ Actor_BroadcastLineEvent
   gentity_s *pgVar4;
   gentity_s *in_ECX;
   actor_s *in_EDX;
-  float *pfVar5;
+  float *fDistSqrd_00;
+  float fVar5;
   float fVar6;
   float fVar7;
-  float fVar8;
-  actor_s *local_40;
-  int local_34;
-  float local_28;
+  gentity_s *hitEnt;
+  gentity_s *originator;
+  gentity_s *ent;
+  actor_s *pActor;
+  float fScaledDist;
+  float fMaxHeightDiff;
+  int listenerIndex;
+  float fDistSqrd;
+  float fLineLenSqrd;
+  float vClosest;
   float local_24;
   float local_20;
-  float local_1c;
+  float vLine;
   float local_18;
   float local_14;
-  float local_10;
+  float vDelta;
   float local_c;
   float local_8;
   
-  if ((0xf < (int)param_2) &&
+  if ((0xf < (int)teamFlags) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x128,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((int)param_1 < 0xf) || (0x12 < (int)param_1)) &&
+  if ((((int)eType < 0xf) || (0x12 < (int)eType)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x129,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (teamFlags == (gentity_s *)0x0) {
     if (in_ECX->sentient == (sentient_s *)0x0) {
       return;
     }
@@ -366,117 +397,121 @@ Actor_BroadcastLineEvent
     if (tVar3 == TEAM_BAD) {
       return;
     }
-    param_2 = (gentity_s *)(1 << ((byte)tVar3 & 0x1f));
+    teamFlags = (gentity_s *)(1 << ((byte)tVar3 & 0x1f));
   }
-  if ((float)param_5 == 0.0) {
-    param_5 = (float *)Actor_EventDefaultRadiusSqrd((ai_event_t)in_EDX);
+  if ((float)fRadiusSqrd == 0.0) {
+    fRadiusSqrd = (float *)Actor_EventDefaultRadiusSqrd((ai_event_t)in_EDX);
   }
-  fVar8 = Actor_EventDefaultHeightDiff((ai_event_t)in_EDX);
-  local_1c = *(float *)param_4 - *(float *)param_3;
-  local_18 = *(float *)(param_4 + 4) - *(float *)(param_3 + AI_EV_NEW_ENEMY);
-  local_14 = *(float *)(param_4 + 8) - *(float *)(param_3 + AI_EV_EXPLOSION);
-  fVar6 = local_1c * local_1c + local_18 * local_18 + local_14 * local_14;
-  local_40 = Actor_FirstActor((int)in_EDX);
-  while (local_40 != (actor_s *)0x0) {
-    bVar2 = Actor_IsOnSameTeam(in_ECX,local_40,(int)param_2);
+  fVar7 = Actor_EventDefaultHeightDiff((ai_event_t)in_EDX);
+  vLine = *(float *)vEnd - *(float *)vStart;
+  local_18 = *(float *)(vEnd + 4) - *(float *)(vStart + AI_EV_NEW_ENEMY);
+  local_14 = *(float *)(vEnd + 8) - *(float *)(vStart + AI_EV_EXPLOSION);
+  fVar5 = vLine * vLine + local_18 * local_18 + local_14 * local_14;
+  pActor = Actor_FirstActor((int)in_EDX);
+  while (pActor != (actor_s *)0x0) {
+    bVar2 = Actor_IsOnSameTeam(in_ECX,pActor,(int)teamFlags);
     if (bVar2) {
-      local_40 = Actor_NextActor(in_EDX,(int)in_ECX);
+      pActor = Actor_NextActor(in_EDX,(int)in_ECX);
     }
     else {
-      pgVar4 = local_40->ent;
-      local_10 = (pgVar4->r).currentOrigin[0] - *(float *)param_3;
-      local_c = (pgVar4->r).currentOrigin[1] - *(float *)(param_3 + AI_EV_NEW_ENEMY);
-      local_8 = (pgVar4->r).currentOrigin[2] - *(float *)(param_3 + AI_EV_EXPLOSION);
-      fVar7 = local_10 * local_1c + local_c * local_18 + local_8 * local_14;
-      if (0.0 <= fVar7) {
-        if (fVar7 < fVar6) {
-          if ((fVar6 == 0.0) &&
+      pgVar4 = pActor->ent;
+      vDelta = (pgVar4->r).currentOrigin[0] - *(float *)vStart;
+      local_c = (pgVar4->r).currentOrigin[1] - *(float *)(vStart + AI_EV_NEW_ENEMY);
+      local_8 = (pgVar4->r).currentOrigin[2] - *(float *)(vStart + AI_EV_EXPLOSION);
+      fVar6 = vDelta * vLine + local_c * local_18 + local_8 * local_14;
+      if (0.0 <= fVar6) {
+        if (fVar6 < fVar5) {
+          if ((fVar5 == 0.0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",
                                        0x16d,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          fVar7 = fVar7 / fVar6;
-          local_28 = fVar7 * local_1c + *(float *)param_3;
-          local_24 = fVar7 * local_18 + *(float *)(param_3 + AI_EV_NEW_ENEMY);
-          local_20 = fVar7 * local_14 + *(float *)(param_3 + AI_EV_EXPLOSION);
+          fVar6 = fVar6 / fVar5;
+          vClosest = fVar6 * vLine + *(float *)vStart;
+          local_24 = fVar6 * local_18 + *(float *)(vStart + AI_EV_NEW_ENEMY);
+          local_20 = fVar6 * local_14 + *(float *)(vStart + AI_EV_EXPLOSION);
         }
         else {
-          local_28 = *(float *)param_4;
-          local_24 = *(float *)(param_4 + 4);
-          local_20 = *(float *)(param_4 + 8);
+          vClosest = *(float *)vEnd;
+          local_24 = *(float *)(vEnd + 4);
+          local_20 = *(float *)(vEnd + 8);
         }
-        pgVar4 = local_40->ent;
-        local_10 = (pgVar4->r).currentOrigin[0] - local_28;
+        pgVar4 = pActor->ent;
+        vDelta = (pgVar4->r).currentOrigin[0] - vClosest;
         local_c = (pgVar4->r).currentOrigin[1] - local_24;
         local_8 = ((pgVar4->r).currentOrigin[2] - local_20) + 24.0;
-        pfVar5 = (float *)(local_10 * local_10 + local_c * local_c);
-        if (((float)pfVar5 <= (float)param_5) && (ABS(local_8) < ABS(fVar8))) {
+        fDistSqrd_00 = (float *)(vDelta * vDelta + local_c * local_c);
+        if (((float)fDistSqrd_00 <= (float)fRadiusSqrd) && (ABS(local_8) < ABS(fVar7))) {
           Actor_ReceiveLineEvent
-                    (in_EDX,param_1,(gentity_s *)param_3,param_4,&local_28,pfVar5,param_5,
+                    (in_EDX,eType,(gentity_s *)vStart,vEnd,&vClosest,fDistSqrd_00,fRadiusSqrd,
                      (float)in_EDX,(float)in_ECX);
         }
       }
-      local_40 = Actor_NextActor(in_EDX,(int)in_ECX);
+      pActor = Actor_NextActor(in_EDX,(int)in_ECX);
     }
   }
-  local_34 = Actor_EventListener_First((ai_event_t)param_1,(int)param_2);
+  listenerIndex = Actor_EventListener_First((ai_event_t)eType,(int)teamFlags);
   do {
-    if (local_34 < 0) {
+    if (listenerIndex < 0) {
       return;
     }
-    pgVar4 = Actor_EventListener_GetEntity(local_34);
-    local_10 = (pgVar4->r).currentOrigin[0] - *(float *)param_3;
-    local_c = (pgVar4->r).currentOrigin[1] - *(float *)(param_3 + AI_EV_NEW_ENEMY);
-    local_8 = (pgVar4->r).currentOrigin[2] - *(float *)(param_3 + AI_EV_EXPLOSION);
-    fVar7 = local_10 * local_1c + local_c * local_18 + local_8 * local_14;
-    if (0.0 <= fVar7) {
-      if (fVar7 < fVar6) {
-        if ((fVar6 == 0.0) &&
+    pgVar4 = Actor_EventListener_GetEntity(listenerIndex);
+    vDelta = (pgVar4->r).currentOrigin[0] - *(float *)vStart;
+    local_c = (pgVar4->r).currentOrigin[1] - *(float *)(vStart + AI_EV_NEW_ENEMY);
+    local_8 = (pgVar4->r).currentOrigin[2] - *(float *)(vStart + AI_EV_EXPLOSION);
+    fVar6 = vDelta * vLine + local_c * local_18 + local_8 * local_14;
+    if (0.0 <= fVar6) {
+      if (fVar6 < fVar5) {
+        if ((fVar5 == 0.0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",
                                      0x19a,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        fVar7 = fVar7 / fVar6;
-        local_28 = fVar7 * local_1c + *(float *)param_3;
-        local_24 = fVar7 * local_18 + *(float *)(param_3 + AI_EV_NEW_ENEMY);
-        local_20 = fVar7 * local_14 + *(float *)(param_3 + AI_EV_EXPLOSION);
+        fVar6 = fVar6 / fVar5;
+        vClosest = fVar6 * vLine + *(float *)vStart;
+        local_24 = fVar6 * local_18 + *(float *)(vStart + AI_EV_NEW_ENEMY);
+        local_20 = fVar6 * local_14 + *(float *)(vStart + AI_EV_EXPLOSION);
       }
       else {
-        local_28 = *(float *)param_4;
-        local_24 = *(float *)(param_4 + 4);
-        local_20 = *(float *)(param_4 + 8);
+        vClosest = *(float *)vEnd;
+        local_24 = *(float *)(vEnd + 4);
+        local_20 = *(float *)(vEnd + 8);
       }
-      local_10 = (pgVar4->r).currentOrigin[0] - local_28;
+      vDelta = (pgVar4->r).currentOrigin[0] - vClosest;
       local_c = (pgVar4->r).currentOrigin[1] - local_24;
       local_8 = (pgVar4->r).currentOrigin[2] - local_20;
-      if ((local_10 * local_10 + local_c * local_c <= (float)param_5) && (ABS(local_8) < ABS(fVar8))
+      if ((vDelta * vDelta + local_c * local_c <= (float)fRadiusSqrd) && (ABS(local_8) < ABS(fVar7))
          ) {
-        Actor_EventListener_NotifyToListener(pgVar4,in_ECX,(ai_event_t)param_1,&local_28);
+        Actor_EventListener_NotifyToListener(pgVar4,in_ECX,(ai_event_t)eType,&vClosest);
       }
     }
-    local_34 = Actor_EventListener_Next(local_34,(ai_event_t)param_1,(int)param_2);
+    listenerIndex = Actor_EventListener_Next(listenerIndex,(ai_event_t)eType,(int)teamFlags);
   } while( true );
 }
 
 
 // 008F12D0  Actor_EventFootstep  (game/actor_events.cpp:582)
 
+/* WARNING: Variable defined which should be unmapped: originator */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Actor_EventFootstep(actor_s *param_1,sentient_s *param_2,float *param_3)
+void __cdecl Actor_EventFootstep(actor_s *vOrigin,sentient_s *param_2,float *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *originator;
+  actor_s *self;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x24a,0,
@@ -496,7 +531,7 @@ void __cdecl Actor_EventFootstep(actor_s *param_1,sentient_s *param_2,float *par
       return;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (vOrigin == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x24c,0,
                              "%s");
     if (!bVar2) {
@@ -512,6 +547,8 @@ void __cdecl Actor_EventFootstep(actor_s *param_1,sentient_s *param_2,float *par
 
 // 008F1380  Actor_EventNewEnemy  (game/actor_events.cpp:600)
 
+/* WARNING: Variable defined which should be unmapped: originator */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -526,6 +563,9 @@ void __cdecl Actor_EventNewEnemy(actor_s *param_1,sentient_s *param_2)
   gentity_s *pgVar4;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *originator;
+  actor_s *self;
+  sentient_s *enemy;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x25c,0,
@@ -588,18 +628,22 @@ void __cdecl Actor_EventNewEnemy(actor_s *param_1,sentient_s *param_2)
 
 // 008F14E0  Actor_EventPain  (game/actor_events.cpp:630)
 
+/* WARNING: Variable defined which should be unmapped: pCasualty */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_EventPain(actor_s *param_1,sentient_s *param_2,sentient_s *param_3)
+void __cdecl Actor_EventPain(actor_s *pAttacker,sentient_s *param_2,sentient_s *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *pCasualty;
+  actor_s *self;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x27a,0,
@@ -619,7 +663,7 @@ void __cdecl Actor_EventPain(actor_s *param_1,sentient_s *param_2,sentient_s *pa
       return;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (pAttacker == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x27c,0,
                              "%s");
     if (!bVar2) {
@@ -636,18 +680,22 @@ void __cdecl Actor_EventPain(actor_s *param_1,sentient_s *param_2,sentient_s *pa
 
 // 008F1590  Actor_EventDeath  (game/actor_events.cpp:671)
 
+/* WARNING: Variable defined which should be unmapped: pCasualty */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Actor_EventDeath(actor_s *param_1,sentient_s *param_2,sentient_s *param_3)
+void __cdecl Actor_EventDeath(actor_s *pAttacker,sentient_s *param_2,sentient_s *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *pCasualty;
+  actor_s *self;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2a3,0,
@@ -667,7 +715,7 @@ void __cdecl Actor_EventDeath(actor_s *param_1,sentient_s *param_2,sentient_s *p
       return;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (pAttacker == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2a5,0,
                              "%s");
     if (!bVar2) {
@@ -688,13 +736,13 @@ void __cdecl Actor_EventDeath(actor_s *param_1,sentient_s *param_2,sentient_s *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_EventExplosion(actor_s *param_1,gentity_s *param_2,float *param_3)
+void __cdecl Actor_EventExplosion(actor_s *self,gentity_s *originator,float *vOrigin)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2b4,0,
                              "%s");
     if (!bVar2) {
@@ -703,7 +751,7 @@ void __cdecl Actor_EventExplosion(actor_s *param_1,gentity_s *param_2,float *par
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (vOrigin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2b5,0,
                              "%s");
     if (!bVar2) {
@@ -712,15 +760,15 @@ void __cdecl Actor_EventExplosion(actor_s *param_1,gentity_s *param_2,float *par
       return;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (originator == (gentity_s *)0x0) {
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddEntity(param_2,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(originator,SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddVector(param_3,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(param_1->ent,scr_const.explode,2);
-  ScrNotify_FaceEvent(param_1->ent,scr_const.explode);
+  Scr_AddVector(vOrigin,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(self->ent,scr_const.explode,2);
+  ScrNotify_FaceEvent(self->ent,scr_const.explode);
   return;
 }
 
@@ -732,13 +780,13 @@ void __cdecl Actor_EventExplosion(actor_s *param_1,gentity_s *param_2,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_EventGrenadePing(actor_s *param_1,gentity_s *param_2,float *param_3)
+void __cdecl Actor_EventGrenadePing(actor_s *self,gentity_s *originator,float *vOrigin)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2cd,0,
                              "%s");
     if (!bVar2) {
@@ -747,7 +795,7 @@ void __cdecl Actor_EventGrenadePing(actor_s *param_1,gentity_s *param_2,float *p
       return;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (originator == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2ce,0,
                              "%s");
     if (!bVar2) {
@@ -756,7 +804,7 @@ void __cdecl Actor_EventGrenadePing(actor_s *param_1,gentity_s *param_2,float *p
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (vOrigin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2cf,0,
                              "%s");
     if (!bVar2) {
@@ -771,18 +819,22 @@ void __cdecl Actor_EventGrenadePing(actor_s *param_1,gentity_s *param_2,float *p
 
 // 008F1790  Actor_EventGunshot  (game/actor_events.cpp:733)
 
+/* WARNING: Variable defined which should be unmapped: originator */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_EventGunshot(actor_s *param_1,sentient_s *param_2,float *param_3)
+void __cdecl Actor_EventGunshot(actor_s *vOrigin,sentient_s *param_2,float *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  sentient_s *originator;
+  actor_s *self;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2e1,0,
@@ -802,7 +854,7 @@ void __cdecl Actor_EventGunshot(actor_s *param_1,sentient_s *param_2,float *para
       return;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (vOrigin == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2e3,0,
                              "%s");
     if (!bVar2) {
@@ -818,20 +870,24 @@ void __cdecl Actor_EventGunshot(actor_s *param_1,sentient_s *param_2,float *para
 
 // 008F1A60  Actor_EventBullet  (game/actor_events.cpp:751)
 
+/* WARNING: Variable defined which should be unmapped: originator */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *param_4,float *param_5,
-                 float param_6,float param_7,PARM_SUPPRESSION param_8)
+Actor_EventBullet(actor_s *vStart,gentity_s *vEnd,float *vClosest,float *fDistSqrd,
+                 float *fRadiusSqrd,float suppression,float param_7,PARM_SUPPRESSION param_8)
 
 {
   code *pcVar1;
   bool bVar2;
   sentient_s *in_ECX;
   actor_s *in_EDX;
+  gentity_s *originator;
+  actor_s *self;
   
   if (in_ECX == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2f3,0,
@@ -851,7 +907,7 @@ Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *para
       return;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (vStart == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2f5,0,
                              "%s");
     if (!bVar2) {
@@ -860,7 +916,7 @@ Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *para
       return;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (vEnd == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2f6,0,
                              "%s");
     if (!bVar2) {
@@ -869,7 +925,7 @@ Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *para
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (vClosest == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2f7,0,
                              "%s");
     if (!bVar2) {
@@ -878,7 +934,7 @@ Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *para
       return;
     }
   }
-  if (((float)param_4 < 0.0) || ((float)param_5 < (float)param_4)) {
+  if (((float)fDistSqrd < 0.0) || ((float)fRadiusSqrd < (float)fDistSqrd)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x2f8,0,
                              "%s");
     if (!bVar2) {
@@ -897,6 +953,7 @@ Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *para
 
 // 008F0CA0  Actor_ReceivePointEvent  (game/actor_events.cpp:781)
 
+/* WARNING: Variable defined which should be unmapped: originator */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -904,7 +961,7 @@ Actor_EventBullet(actor_s *param_1,gentity_s *param_2,float *param_3,float *para
 
 void __cdecl
 Actor_ReceivePointEvent
-          (actor_s *param_1,gentity_s *param_2,ai_event_t param_3,float *param_4,float param_5,
+          (actor_s *eType,gentity_s *vOrigin,ai_event_t fDistSqrd,float *fRadiusSqrd,float param_5,
           float param_6)
 
 {
@@ -915,6 +972,8 @@ Actor_ReceivePointEvent
   actor_s *in_ECX;
   gentity_s *in_EDX;
   actor_s *paVar5;
+  gentity_s *originator;
+  actor_s *self;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x310,0,
@@ -923,28 +982,28 @@ Actor_ReceivePointEvent
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((vOrigin == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x311,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((float)param_3 < 0.0) || ((float)param_4 < (float)param_3)) &&
+  if ((((float)fDistSqrd < 0.0) || ((float)fRadiusSqrd < (float)fDistSqrd)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x312,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((int)param_1 < 2) || (0xc < (int)param_1)) &&
+  if ((((int)eType < 2) || (0xc < (int)eType)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x313,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  paVar5 = (actor_s *)((int)&param_1[-1].ikPriority + 2);
+  paVar5 = (actor_s *)((int)&eType[-1].ikPriority + 2);
   switch(paVar5) {
   case (actor_s *)0x0:
   case (actor_s *)0x1:
@@ -966,7 +1025,7 @@ Actor_ReceivePointEvent
     if (iVar4 == 0) {
       return;
     }
-    Actor_EventFootstep((actor_s *)param_2,(sentient_s *)paVar5,(float *)in_EDX);
+    Actor_EventFootstep((actor_s *)vOrigin,(sentient_s *)paVar5,(float *)in_EDX);
     break;
   case (actor_s *)0x2:
     if ((in_EDX == (gentity_s *)0x0) &&
@@ -1054,10 +1113,10 @@ Actor_ReceivePointEvent
     Actor_EventDeath((actor_s *)pgVar3->sentient,(sentient_s *)paVar5,(sentient_s *)in_EDX);
     break;
   case (actor_s *)0x6:
-    Actor_EventExplosion(in_ECX,in_EDX,(float *)param_2);
+    Actor_EventExplosion(in_ECX,in_EDX,(float *)vOrigin);
     break;
   case (actor_s *)0x7:
-    Actor_EventGrenadePing(in_ECX,in_EDX,(float *)param_2);
+    Actor_EventGrenadePing(in_ECX,in_EDX,(float *)vOrigin);
     break;
   case (actor_s *)0x8:
     if ((in_EDX == (gentity_s *)0x0) &&
@@ -1071,7 +1130,7 @@ Actor_ReceivePointEvent
     if ((iVar4 != 0) && (pgVar3 = EntHandle::ent(&in_EDX->parent), pgVar3 == in_ECX->ent)) {
       return;
     }
-    Actor_EventGrenadePing(in_ECX,in_EDX,(float *)param_2);
+    Actor_EventGrenadePing(in_ECX,in_EDX,(float *)vOrigin);
     break;
   case (actor_s *)0x9:
   case (actor_s *)0xa:
@@ -1096,7 +1155,7 @@ Actor_ReceivePointEvent
     if (iVar4 == 0) {
       return;
     }
-    Actor_EventGunshot((actor_s *)param_2,(sentient_s *)paVar5,(float *)in_EDX);
+    Actor_EventGunshot((actor_s *)vOrigin,(sentient_s *)paVar5,(float *)in_EDX);
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x377,0,
@@ -1108,13 +1167,14 @@ Actor_ReceivePointEvent
     (*pcVar1)();
     return;
   }
-  Actor_DumpEvents(in_ECX,(ai_event_t)param_1,in_EDX);
+  Actor_DumpEvents(in_ECX,(ai_event_t)eType,in_EDX);
   return;
 }
 
 
 // 008F1840  Actor_ReceiveLineEvent  (game/actor_events.cpp:901)
 
+/* WARNING: Variable defined which should be unmapped: originator */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1122,8 +1182,8 @@ Actor_ReceivePointEvent
 
 void __cdecl
 Actor_ReceiveLineEvent
-          (actor_s *param_1,gentity_s *param_2,gentity_s *param_3,ai_event_t param_4,float *param_5,
-          float *param_6,float *param_7,float param_8,float param_9)
+          (actor_s *hitEnt,gentity_s *eType,gentity_s *vStart,ai_event_t vEnd,float *vClosest,
+          float *fDistSqrd,float *fRadiusSqrd,float param_8,float param_9)
 
 {
   code *pcVar1;
@@ -1131,6 +1191,8 @@ Actor_ReceiveLineEvent
   actor_s *in_ECX;
   gentity_s *in_EDX;
   gentity_s *pgVar3;
+  gentity_s *originator;
+  actor_s *self;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x388,0,
@@ -1139,42 +1201,42 @@ Actor_ReceiveLineEvent
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (gentity_s *)0x0) &&
+  if ((vStart == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x389,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == AI_EV_BAD) &&
+  if ((vEnd == AI_EV_BAD) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x38a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((vClosest == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x38b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((float)param_6 < 0.0) || ((float)param_7 < (float)param_6)) &&
+  if ((((float)fDistSqrd < 0.0) || ((float)fRadiusSqrd < (float)fDistSqrd)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x38c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((int)param_2 < 0xf) || (0x12 < (int)param_2)) &&
+  if ((((int)eType < 0xf) || (0x12 < (int)eType)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x38d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((int)param_2 < 0xf) {
+  if ((int)eType < 0xf) {
 LAB_008f1a1b:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x3bf,0,
                              "Actor_ReceiveLineEvent: unhandled case\n");
@@ -1185,8 +1247,8 @@ LAB_008f1a1b:
     }
   }
   else {
-    if ((int)param_2 < 0x11) {
-      pgVar3 = param_2;
+    if ((int)eType < 0x11) {
+      pgVar3 = eType;
       if ((in_EDX == (gentity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_events.cpp",0x393
                                    ,0,"%s"), !bVar2)) {
@@ -1197,15 +1259,15 @@ LAB_008f1a1b:
       if (in_EDX == in_ECX->ent) {
         return;
       }
-      Actor_EventBullet((actor_s *)param_3,(gentity_s *)param_4,param_5,param_6,param_7,0.0,
+      Actor_EventBullet((actor_s *)vStart,(gentity_s *)vEnd,vClosest,fDistSqrd,fRadiusSqrd,0.0,
                         (float)pgVar3,(PARM_SUPPRESSION)in_EDX);
     }
     else {
-      if (param_2 != (gentity_s *)0x12) goto LAB_008f1a1b;
-      Actor_EventBullet((actor_s *)param_3,(gentity_s *)param_4,param_5,param_6,param_7,1.4013e-45,
-                        2.52234e-44,(PARM_SUPPRESSION)in_EDX);
+      if (eType != (gentity_s *)0x12) goto LAB_008f1a1b;
+      Actor_EventBullet((actor_s *)vStart,(gentity_s *)vEnd,vClosest,fDistSqrd,fRadiusSqrd,
+                        1.4013e-45,2.52234e-44,(PARM_SUPPRESSION)in_EDX);
     }
-    Actor_DumpEvents(in_ECX,(ai_event_t)param_2,in_EDX);
+    Actor_DumpEvents(in_ECX,(ai_event_t)eType,in_EDX);
   }
   return;
 }

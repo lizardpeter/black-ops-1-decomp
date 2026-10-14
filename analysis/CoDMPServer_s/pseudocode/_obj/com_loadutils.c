@@ -7,21 +7,21 @@
 char * __cdecl Com_LoadInfoString(char *param_1,char *param_2,char *param_3,char *param_4)
 
 {
-  uchar *puVar1;
+  uchar *string;
   int extraout_EAX;
   int extraout_EAX_00;
   
   if ((useFastFile->current).enabled == false) {
-    puVar1 = (uchar *)FUN_005e8b30(param_1);
+    string = (uchar *)FUN_005e8b30(param_1);
   }
   else {
-    puVar1 = (uchar *)FUN_005e8c30(param_1);
+    string = (uchar *)FUN_005e8c30(param_1);
   }
-  strchr(puVar1,'\"');
-  if ((extraout_EAX == 0) && (strchr(puVar1,';'), extraout_EAX_00 == 0)) {
-    return (char *)puVar1;
+  strchr(string,'\"');
+  if ((extraout_EAX == 0) && (strchr(string,';'), extraout_EAX_00 == 0)) {
+    return (char *)string;
   }
   Com_Error(ERR_DROP,"\x15File [%s] is not a valid %s\n",param_1);
-  return (char *)puVar1;
+  return (char *)string;
 }
 

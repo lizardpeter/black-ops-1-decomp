@@ -15,10 +15,10 @@ void __cdecl _dynamic_initializer_for__g_ui3dStatus__(void)
 
 // 00A8B390  R_InitUI3DStack  (gfx_d3d/r_ui3d.cpp:55)
 
-void __cdecl R_InitUI3DStack(GfxUI3DStack *param_1)
+void __cdecl R_InitUI3DStack(GfxUI3DStack *stack)
 
 {
-  param_1->size = 0;
+  stack->size = 0;
   return;
 }
 
@@ -34,12 +34,12 @@ GfxUI3DStack * __cdecl R_GetUI3DStack(void)
 
 // 00A8AF60  R_UI3DStack_Push  (gfx_d3d/r_ui3d.cpp:65)
 
-void __cdecl R_UI3DStack_Push(GfxUI3DStack *param_1,int param_2)
+void __cdecl R_UI3DStack_Push(GfxUI3DStack *stack,int val)
 
 {
-  if (param_1->size != 2) {
-    param_1->stack[param_1->size] = param_2;
-    param_1->size = param_1->size + 1;
+  if (stack->size != 2) {
+    stack->stack[stack->size] = val;
+    stack->size = stack->size + 1;
   }
   return;
 }
@@ -47,13 +47,13 @@ void __cdecl R_UI3DStack_Push(GfxUI3DStack *param_1,int param_2)
 
 // 00A8AF90  R_UI3DStack_Pop  (gfx_d3d/r_ui3d.cpp:72)
 
-void __cdecl R_UI3DStack_Pop(GfxUI3DStack *param_1)
+void __cdecl R_UI3DStack_Pop(GfxUI3DStack *stack)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->size < 1) {
+  if (stack->size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_ui3d.cpp",0x49,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -61,21 +61,22 @@ void __cdecl R_UI3DStack_Pop(GfxUI3DStack *param_1)
       return;
     }
   }
-  param_1->size = param_1->size + -1;
+  stack->size = stack->size + -1;
   return;
 }
 
 
 // 00A8AFD0  R_UI3DStack_Top  (gfx_d3d/r_ui3d.cpp:78)
 
-int __cdecl R_UI3DStack_Top(GfxUI3DStack *param_1)
+int __cdecl R_UI3DStack_Top(GfxUI3DStack *stack)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int size;
   
-  iVar3 = param_1->size;
+  iVar3 = stack->size;
   if (iVar3 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_ui3d.cpp",0x50,0,"%s");
     if (!bVar2) {
@@ -88,7 +89,7 @@ int __cdecl R_UI3DStack_Top(GfxUI3DStack *param_1)
     iVar3 = -1;
   }
   else {
-    iVar3 = param_1->stack[iVar3 + -1];
+    iVar3 = stack->stack[iVar3 + -1];
   }
   return iVar3;
 }
@@ -96,14 +97,14 @@ int __cdecl R_UI3DStack_Top(GfxUI3DStack *param_1)
 
 // 00A8B030  R_UI3D_ScrPlaceFromTextureWindow  (gfx_d3d/r_ui3d.cpp:92)
 
-ScreenPlacement * __cdecl R_UI3D_ScrPlaceFromTextureWindow(int param_1)
+ScreenPlacement * __cdecl R_UI3D_ScrPlaceFromTextureWindow(int windowIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   ScreenPlacement *pSVar3;
   
-  if (5 < (uint)param_1) {
+  if (5 < (uint)windowIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_ui3d.cpp",0x5d,0,
                              "windowIndex doesn\'t index UI3D_MAX_NUM_TEXTURE_WINDOWS\n\t%i not in [0, %i)"
                             );
@@ -113,13 +114,13 @@ ScreenPlacement * __cdecl R_UI3D_ScrPlaceFromTextureWindow(int param_1)
       return pSVar3;
     }
   }
-  return &g_ui3d_windows[param_1].scrPlace;
+  return &g_ui3d_windows[windowIndex].scrPlace;
 }
 
 
 // 00A8B3E0  R_UI3D_GetUVSetup  (gfx_d3d/r_ui3d.cpp:99)
 
-void __cdecl R_UI3D_GetUVSetup(int param_1,float *param_2)
+void __cdecl R_UI3D_GetUVSetup(int windowIndex,float *out)
 
 {
   float fVar1;
@@ -127,8 +128,9 @@ void __cdecl R_UI3D_GetUVSetup(int param_1,float *param_2)
   float fVar3;
   code *pcVar4;
   bool bVar5;
+  Ui3dTextureWindow *w;
   
-  if (5 < (uint)param_1) {
+  if (5 < (uint)windowIndex) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_ui3d.cpp",100,0,
                              "windowIndex doesn\'t index UI3D_MAX_NUM_TEXTURE_WINDOWS\n\t%i not in [0, %i)"
                             );
@@ -138,23 +140,23 @@ void __cdecl R_UI3D_GetUVSetup(int param_1,float *param_2)
       return;
     }
   }
-  fVar1 = g_ui3d_windows[param_1].normH;
-  fVar2 = g_ui3d_windows[param_1].normX;
-  fVar3 = g_ui3d_windows[param_1].normY;
-  *param_2 = g_ui3d_windows[param_1].normW;
-  param_2[1] = fVar1;
-  param_2[2] = fVar2;
-  param_2[3] = fVar3;
+  fVar1 = g_ui3d_windows[windowIndex].normH;
+  fVar2 = g_ui3d_windows[windowIndex].normX;
+  fVar3 = g_ui3d_windows[windowIndex].normY;
+  *out = g_ui3d_windows[windowIndex].normW;
+  out[1] = fVar1;
+  out[2] = fVar2;
+  out[3] = fVar3;
   return;
 }
 
 
 // 00A8B070  R_UI3D_SetBlurRadius  (gfx_d3d/r_ui3d.cpp:107)
 
-void __cdecl R_UI3D_SetBlurRadius(float param_1)
+void __cdecl R_UI3D_SetBlurRadius(float blurRadius)
 
 {
-  g_ui3dStatus.blurRadius = param_1;
+  g_ui3dStatus.blurRadius = blurRadius;
   return;
 }
 
@@ -164,8 +166,10 @@ void __cdecl R_UI3D_SetBlurRadius(float param_1)
 void __cdecl R_UI3D_CheckRenderTarget(void)
 
 {
-  ScreenPlacement *pSVar1;
-  int local_8;
+  ScreenPlacement *ui3DScrPlace;
+  ScreenPlacement *scrPlace;
+  Ui3dTextureWindow *uiWnd;
+  int i;
   
   if (g_ui3dStatus.useDisplaySize) {
     g_ui3dStatus.width = (ushort)vidConfig.displayWidth;
@@ -175,14 +179,14 @@ void __cdecl R_UI3D_CheckRenderTarget(void)
     R_InitUI3DRenderTarget
               (g_ui3dStatus.width,g_ui3dStatus.height,g_ui3dStatus.pmemLocation,
                g_ui3dStatus.hasPingPongBuffer);
-    for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
+    for (i = 0; i < 6; i = i + 1) {
       R_UI3D_SetupTextureWindow
-                (local_8,g_ui3d_windows[local_8].normX,g_ui3d_windows[local_8].normY,
-                 g_ui3d_windows[local_8].normW,g_ui3d_windows[local_8].normH);
+                (i,g_ui3d_windows[i].normX,g_ui3d_windows[i].normY,g_ui3d_windows[i].normW,
+                 g_ui3d_windows[i].normH);
     }
     if (r_glob.isMultiplayer != false) {
-      pSVar1 = R_UI3D_ScrPlaceFromTextureWindow(0);
-      ScrPlace_SetupUI3DForFullscreen(pSVar1,&scrPlaceFull);
+      ui3DScrPlace = R_UI3D_ScrPlaceFromTextureWindow(0);
+      ScrPlace_SetupUI3DForFullscreen(ui3DScrPlace,&scrPlaceFull);
     }
   }
   return;
@@ -191,12 +195,14 @@ void __cdecl R_UI3D_CheckRenderTarget(void)
 
 // 00A8B1A0  R_UI3D_OnetimeInit  (gfx_d3d/r_ui3d.cpp:151)
 
-void __cdecl R_UI3D_OnetimeInit(ushort param_1,ushort param_2,bool param_3,int param_4,bool param_5)
+void __cdecl
+R_UI3D_OnetimeInit(ushort width,ushort height,bool useDisplaySize,int pmemLocation,
+                  bool allocatePingPongBuffer)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
   if (g_ui3dStatus.initialized) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_ui3d.cpp",0x9b,0,"%s");
@@ -206,16 +212,16 @@ void __cdecl R_UI3D_OnetimeInit(ushort param_1,ushort param_2,bool param_3,int p
       return;
     }
   }
-  g_ui3dStatus.width = param_1;
-  g_ui3dStatus.height = param_2;
-  g_ui3dStatus.useDisplaySize = param_3;
-  g_ui3dStatus.pmemLocation = param_4;
-  R_InitUI3DRenderTarget(param_1,param_2,param_4,param_5);
-  g_ui3dStatus.hasPingPongBuffer = param_5;
+  g_ui3dStatus.width = width;
+  g_ui3dStatus.height = height;
+  g_ui3dStatus.useDisplaySize = useDisplaySize;
+  g_ui3dStatus.pmemLocation = pmemLocation;
+  R_InitUI3DRenderTarget(width,height,pmemLocation,allocatePingPongBuffer);
+  g_ui3dStatus.hasPingPongBuffer = allocatePingPongBuffer;
   g_ui3dStatus.blurRadius = 0.0;
   g_ui3dStatus.initialized = true;
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    R_UI3D_SetupTextureWindow(local_8,0.0,0.0,0.0,0.0);
+  for (i = 0; i < 6; i = i + 1) {
+    R_UI3D_SetupTextureWindow(i,0.0,0.0,0.0,0.0);
   }
   return;
 }
@@ -245,11 +251,11 @@ void __cdecl R_UI3D_Shutdown(void)
 void __cdecl R_UI3D_PerframeInit(void)
 
 {
-  int local_8;
+  int i;
   
   R_InitUI3DStack(&g_ui3dStack);
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    g_ui3d_windows[local_8].numRenderCmds = 0;
+  for (i = 0; i < 6; i = i + 1) {
+    g_ui3d_windows[i].numRenderCmds = 0;
   }
   if (-1 < (r_ui3d_use_debug_values->current).integer) {
     R_UI3D_SetupTextureWindow
@@ -262,13 +268,13 @@ void __cdecl R_UI3D_PerframeInit(void)
 
 // 00A8B3A0  R_UI3D_SetupBackendData_UVConstants  (gfx_d3d/r_ui3d.cpp:240)
 
-void __cdecl R_UI3D_SetupBackendData_UVConstants(GfxUI3DBackend *param_1)
+void __cdecl R_UI3D_SetupBackendData_UVConstants(GfxUI3DBackend *ui3dBackend)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    R_UI3D_GetUVSetup(local_8,param_1->uvSetup[local_8]);
+  for (i = 0; i < 6; i = i + 1) {
+    R_UI3D_GetUVSetup(i,ui3dBackend->uvSetup[i]);
   }
   return;
 }
@@ -276,72 +282,74 @@ void __cdecl R_UI3D_SetupBackendData_UVConstants(GfxUI3DBackend *param_1)
 
 // 00A8B4A0  R_UI3D_SetupBackendData  (gfx_d3d/r_ui3d.cpp:248)
 
-void __cdecl R_UI3D_SetupBackendData(GfxUI3DBackend *param_1)
+void __cdecl R_UI3D_SetupBackendData(GfxUI3DBackend *ui3dBackend)
 
 {
   GfxViewport *pGVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int cmdCount;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    local_8 = local_8 + g_ui3d_windows[local_c].numRenderCmds;
-    param_1->renderCmdCount[local_c] = g_ui3d_windows[local_c].numRenderCmds;
-    pGVar1 = param_1->viewport + local_c;
-    pGVar1->x = g_ui3d_windows[local_c].vp.x;
-    pGVar1->y = g_ui3d_windows[local_c].vp.y;
-    pGVar1->width = g_ui3d_windows[local_c].vp.width;
-    pGVar1->height = g_ui3d_windows[local_c].vp.height;
+  cmdCount = 0;
+  for (i = 0; i < 6; i = i + 1) {
+    cmdCount = cmdCount + g_ui3d_windows[i].numRenderCmds;
+    ui3dBackend->renderCmdCount[i] = g_ui3d_windows[i].numRenderCmds;
+    pGVar1 = ui3dBackend->viewport + i;
+    pGVar1->x = g_ui3d_windows[i].vp.x;
+    pGVar1->y = g_ui3d_windows[i].vp.y;
+    pGVar1->width = g_ui3d_windows[i].vp.width;
+    pGVar1->height = g_ui3d_windows[i].vp.height;
   }
-  param_1->totalRenderCmds = local_8;
-  param_1->blurRadius = g_ui3dStatus.blurRadius;
-  R_UI3D_SetupBackendData_UVConstants(param_1);
+  ui3dBackend->totalRenderCmds = cmdCount;
+  ui3dBackend->blurRadius = g_ui3dStatus.blurRadius;
+  R_UI3D_SetupBackendData_UVConstants(ui3dBackend);
   return;
 }
 
 
 // 00A8B890  ScrPlace_SetupUI3D  (gfx_d3d/r_ui3d.cpp:265)
 
-void __cdecl ScrPlace_SetupUI3D(ScreenPlacement *param_1,int param_2,int param_3)
+void __cdecl ScrPlace_SetupUI3D(ScreenPlacement *scrPlace,int viewportWidth,int viewportHeight)
 
 {
   float fVar1;
   float fVar2;
+  float vpHeight;
+  float vpWidth;
   
-  memset((uchar *)param_1,0xb0,0x78);
-  fVar1 = (float)param_2;
-  fVar2 = (float)param_3;
-  param_1->realViewportBase[0] = 0.0;
-  param_1->realViewportBase[1] = 0.0;
-  param_1->virtualViewableMin[0] = 0.0;
-  param_1->virtualViewableMin[1] = 0.0;
-  param_1->virtualViewableMax[0] = fVar1;
-  param_1->virtualViewableMax[1] = fVar2;
-  param_1->realViewportSize[0] = fVar1;
-  param_1->realViewportSize[1] = fVar2;
-  param_1->realViewableMin[0] = 0.0;
-  param_1->realViewableMin[1] = 0.0;
-  param_1->realViewableMax[0] = fVar1;
-  param_1->realViewableMax[1] = fVar2;
-  param_1->subScreen[0] = 0.0;
-  param_1->subScreen[1] = 0.0;
-  param_1->scaleVirtualToReal[0] = fVar1 / 640.0;
-  param_1->scaleVirtualToReal[1] = fVar2 / 480.0;
-  param_1->scaleVirtualToFull[0] = fVar1 / 640.0;
-  param_1->scaleVirtualToFull[1] = fVar2 / 480.0;
-  param_1->scaleRealToVirtual[0] = 640.0 / fVar1;
-  param_1->scaleRealToVirtual[1] = 480.0 / fVar2;
+  memset((uchar *)scrPlace,0xb0,0x78);
+  fVar1 = (float)viewportWidth;
+  fVar2 = (float)viewportHeight;
+  scrPlace->realViewportBase[0] = 0.0;
+  scrPlace->realViewportBase[1] = 0.0;
+  scrPlace->virtualViewableMin[0] = 0.0;
+  scrPlace->virtualViewableMin[1] = 0.0;
+  scrPlace->virtualViewableMax[0] = fVar1;
+  scrPlace->virtualViewableMax[1] = fVar2;
+  scrPlace->realViewportSize[0] = fVar1;
+  scrPlace->realViewportSize[1] = fVar2;
+  scrPlace->realViewableMin[0] = 0.0;
+  scrPlace->realViewableMin[1] = 0.0;
+  scrPlace->realViewableMax[0] = fVar1;
+  scrPlace->realViewableMax[1] = fVar2;
+  scrPlace->subScreen[0] = 0.0;
+  scrPlace->subScreen[1] = 0.0;
+  scrPlace->scaleVirtualToReal[0] = fVar1 / 640.0;
+  scrPlace->scaleVirtualToReal[1] = fVar2 / 480.0;
+  scrPlace->scaleVirtualToFull[0] = fVar1 / 640.0;
+  scrPlace->scaleVirtualToFull[1] = fVar2 / 480.0;
+  scrPlace->scaleRealToVirtual[0] = 640.0 / fVar1;
+  scrPlace->scaleRealToVirtual[1] = 480.0 / fVar2;
   return;
 }
 
 
 // 00A8B560  R_UI3D_IncrementRenderCmdCount  (gfx_d3d/r_ui3d.cpp:290)
 
-void __cdecl R_UI3D_IncrementRenderCmdCount(int param_1)
+void __cdecl R_UI3D_IncrementRenderCmdCount(int wndIndex)
 
 {
-  if ((-1 < param_1) && (param_1 < 6)) {
-    g_ui3d_windows[param_1].numRenderCmds = g_ui3d_windows[param_1].numRenderCmds + 1;
+  if ((-1 < wndIndex) && (wndIndex < 6)) {
+    g_ui3d_windows[wndIndex].numRenderCmds = g_ui3d_windows[wndIndex].numRenderCmds + 1;
   }
   return;
 }
@@ -350,7 +358,7 @@ void __cdecl R_UI3D_IncrementRenderCmdCount(int param_1)
 // 00A8B5A0  R_UI3D_SetupTextureWindow  (gfx_d3d/r_ui3d.cpp:297)
 
 void __cdecl
-R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,float param_5)
+R_UI3D_SetupTextureWindow(int windowIndex,float normX,float normY,float normWidth,float normHeight)
 
 {
   code *pcVar1;
@@ -365,6 +373,10 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
   float local_24;
   float local_1c;
   float local_18;
+  int windowPixelWidth;
+  GfxViewport *vp;
+  Ui3dTextureWindow *uiWnd;
+  int windowPixelHeight;
   
   if ((!g_ui3dStatus.initialized) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_ui3d.cpp",0x12a,0,"%s"
@@ -373,34 +385,34 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
     (*pcVar1)();
     return;
   }
-  if ((-1 < param_1) && (param_1 < 6)) {
-    if (param_2 - 1.0 < 0.0) {
-      local_18 = param_2;
+  if ((-1 < windowIndex) && (windowIndex < 6)) {
+    if (normX - 1.0 < 0.0) {
+      local_18 = normX;
     }
     else {
       local_18 = 1.0;
     }
-    if (0.0 - param_2 < 0.0) {
+    if (0.0 - normX < 0.0) {
       local_30 = local_18;
     }
     else {
       local_30 = 0.0;
     }
-    if (param_3 - 1.0 < 0.0) {
-      local_1c = param_3;
+    if (normY - 1.0 < 0.0) {
+      local_1c = normY;
     }
     else {
       local_1c = 1.0;
     }
-    if (0.0 - param_3 < 0.0) {
+    if (0.0 - normY < 0.0) {
       local_34 = local_1c;
     }
     else {
       local_34 = 0.0;
     }
     local_24 = 1.0 - local_30;
-    if (0.0 <= local_24 - param_4) {
-      local_24 = param_4;
+    if (0.0 <= local_24 - normWidth) {
+      local_24 = normWidth;
     }
     if (local_24 - 0.0 < 0.0) {
       local_38 = 0.0;
@@ -409,8 +421,8 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
       local_38 = local_24;
     }
     local_2c = 1.0 - local_34;
-    if (0.0 <= local_2c - param_5) {
-      local_2c = param_5;
+    if (0.0 <= local_2c - normHeight) {
+      local_2c = normHeight;
     }
     if (local_2c - 0.0 < 0.0) {
       local_3c = 0.0;
@@ -420,16 +432,16 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
     }
     uVar3 = (uint)g_ui3dStatus.width;
     uVar4 = (uint)g_ui3dStatus.height;
-    ScrPlace_SetupUI3D(&g_ui3d_windows[param_1].scrPlace,(int)((float)uVar3 * local_38),
+    ScrPlace_SetupUI3D(&g_ui3d_windows[windowIndex].scrPlace,(int)((float)uVar3 * local_38),
                        (int)((float)uVar4 * local_3c));
-    g_ui3d_windows[param_1].vp.x = (int)((float)g_ui3dStatus.width * local_30);
-    g_ui3d_windows[param_1].vp.y = (int)((float)g_ui3dStatus.height * local_34);
-    g_ui3d_windows[param_1].vp.width = (int)((float)uVar3 * local_38);
-    g_ui3d_windows[param_1].vp.height = (int)((float)uVar4 * local_3c);
-    g_ui3d_windows[param_1].normX = local_30;
-    g_ui3d_windows[param_1].normY = local_34;
-    g_ui3d_windows[param_1].normW = local_38;
-    g_ui3d_windows[param_1].normH = local_3c;
+    g_ui3d_windows[windowIndex].vp.x = (int)((float)g_ui3dStatus.width * local_30);
+    g_ui3d_windows[windowIndex].vp.y = (int)((float)g_ui3dStatus.height * local_34);
+    g_ui3d_windows[windowIndex].vp.width = (int)((float)uVar3 * local_38);
+    g_ui3d_windows[windowIndex].vp.height = (int)((float)uVar4 * local_3c);
+    g_ui3d_windows[windowIndex].normX = local_30;
+    g_ui3d_windows[windowIndex].normY = local_34;
+    g_ui3d_windows[windowIndex].normW = local_38;
+    g_ui3d_windows[windowIndex].normH = local_3c;
   }
   return;
 }
@@ -437,25 +449,25 @@ R_UI3D_SetupTextureWindow(int param_1,float param_2,float param_3,float param_4,
 
 // 00A8BA60  RB_UI3D_SetShaderConstants  (gfx_d3d/r_ui3d.cpp:333)
 
-void __cdecl RB_UI3D_SetShaderConstants(GfxCmdBufSourceState *param_1,GfxUI3DBackend *param_2)
+void __cdecl RB_UI3D_SetShaderConstants(GfxCmdBufSourceState *source,GfxUI3DBackend *rbUI3D)
 
 {
-  int local_1c;
-  float local_18 [4];
-  int local_8;
+  int i_2;
+  float uvsetup [4];
+  int i;
   
-  if (param_2 == (GfxUI3DBackend *)0x0) {
-    local_18[0] = 0.0;
-    local_18[1] = 0.0;
-    local_18[2] = 0.01;
-    local_18[3] = 0.01;
-    for (local_1c = 0; local_1c < 6; local_1c = local_1c + 1) {
-      R_SetCodeConstantFromVec4(param_1,local_1c + 0xad,local_18);
+  if (rbUI3D == (GfxUI3DBackend *)0x0) {
+    uvsetup[0] = 0.0;
+    uvsetup[1] = 0.0;
+    uvsetup[2] = 0.01;
+    uvsetup[3] = 0.01;
+    for (i_2 = 0; i_2 < 6; i_2 = i_2 + 1) {
+      R_SetCodeConstantFromVec4(source,i_2 + 0xad,uvsetup);
     }
   }
   else {
-    for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-      R_SetCodeConstantFromVec4(param_1,local_8 + 0xad,param_2->uvSetup[local_8]);
+    for (i = 0; i < 6; i = i + 1) {
+      R_SetCodeConstantFromVec4(source,i + 0xad,rbUI3D->uvSetup[i]);
     }
   }
   return;
@@ -464,14 +476,15 @@ void __cdecl RB_UI3D_SetShaderConstants(GfxCmdBufSourceState *param_1,GfxUI3DBac
 
 // 00A8BB20  RB_SetUI3DSamplerAndConstants  (gfx_d3d/r_ui3d.cpp:355)
 
-void __cdecl RB_SetUI3DSamplerAndConstants(GfxCmdBufSourceState *param_1,GfxUI3DBackend *param_2)
+void __cdecl
+RB_SetUI3DSamplerAndConstants(GfxCmdBufSourceState *cmdBufSrcState,GfxUI3DBackend *rbUI3D)
 
 {
   if (gfxRenderTargets[0x14].image != (GfxImage *)0x0) {
-    R_SetCodeImageTexture(param_1,0x27,gfxRenderTargets[0x14].image);
+    R_SetCodeImageTexture(cmdBufSrcState,0x27,gfxRenderTargets[0x14].image);
   }
-  if (param_2 != (GfxUI3DBackend *)0x0) {
-    RB_UI3D_SetShaderConstants(param_1,param_2);
+  if (rbUI3D != (GfxUI3DBackend *)0x0) {
+    RB_UI3D_SetShaderConstants(cmdBufSrcState,rbUI3D);
   }
   return;
 }
@@ -479,12 +492,12 @@ void __cdecl RB_SetUI3DSamplerAndConstants(GfxCmdBufSourceState *param_1,GfxUI3D
 
 // 00A8C050  RB_UI3D_ViewportIsValid  (gfx_d3d/r_ui3d.cpp:373)
 
-bool __cdecl RB_UI3D_ViewportIsValid(GfxViewport *param_1)
+bool __cdecl RB_UI3D_ViewportIsValid(GfxViewport *vp)
 
 {
   bool local_8;
   
-  if ((param_1->height < 1) || (param_1->width < 1)) {
+  if ((vp->height < 1) || (vp->width < 1)) {
     local_8 = false;
   }
   else {
@@ -496,28 +509,28 @@ bool __cdecl RB_UI3D_ViewportIsValid(GfxViewport *param_1)
 
 // 00A8BFE0  RB_UI3D_GetValidWindows  (gfx_d3d/r_ui3d.cpp:378)
 
-int __cdecl RB_UI3D_GetValidWindows(GfxUI3DBackend *param_1,int *param_2)
+int __cdecl RB_UI3D_GetValidWindows(GfxUI3DBackend *rbUI3D,int *validWindowsArray)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    if ((0 < param_1->renderCmdCount[local_c]) &&
-       (bVar1 = RB_UI3D_ViewportIsValid(param_1->viewport + local_c), bVar1)) {
-      param_2[local_8] = local_c;
-      local_8 = local_8 + 1;
+  count = 0;
+  for (i = 0; i < 6; i = i + 1) {
+    if ((0 < rbUI3D->renderCmdCount[i]) &&
+       (bVar1 = RB_UI3D_ViewportIsValid(rbUI3D->viewport + i), bVar1)) {
+      validWindowsArray[count] = i;
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 00A8BB60  RB_UI3D_RenderToTexture  (gfx_d3d/r_ui3d.cpp:396)
 
-void __cdecl RB_UI3D_RenderToTexture(void *param_1,GfxUI3DBackend *param_2,GfxCmdBufInput *param_3)
+void __cdecl RB_UI3D_RenderToTexture(void *cmds,GfxUI3DBackend *rbUI3D,GfxCmdBufInput *input)
 
 {
   DWORD DVar1;
@@ -529,99 +542,99 @@ void __cdecl RB_UI3D_RenderToTexture(void *param_1,GfxUI3DBackend *param_2,GfxCm
   int local_bc;
   int local_b8;
   int local_b4;
-  int local_70;
-  GfxViewport *local_6c;
-  int local_68;
-  int local_64;
-  GfxViewport *local_60;
-  int local_5c;
-  int local_54;
-  int local_50;
-  undefined1 local_49;
-  GfxViewport local_48;
-  float local_38 [4];
-  int local_28 [6];
-  int local_10;
-  int local_c;
-  int local_8;
+  int wIdx_2;
+  GfxViewport *vp_2;
+  int vindex_2;
+  int wIdx;
+  GfxViewport *vp;
+  int vindex;
+  PIXProfile pixProfile;
+  int scissor_min_y;
+  int scissor_max_y;
+  uchar rt;
+  GfxViewport vpBounds;
+  float clearColor [4];
+  int validWindows [6];
+  int scissor_min_x;
+  int validWindowsCount;
+  int scissor_max_x;
   
-  local_49 = 0x14;
-  if (((0 < param_2->totalRenderCmds) && (param_1 != (void *)0x0)) &&
-     (local_c = RB_UI3D_GetValidWindows(param_2,local_28), local_c != 0)) {
+  if (((0 < rbUI3D->totalRenderCmds) && (cmds != (void *)0x0)) &&
+     (validWindowsCount = RB_UI3D_GetValidWindows(rbUI3D,validWindows), validWindowsCount != 0)) {
     g_ui3dStatus.rendering = true;
     if (g_ui3dStatus.initialized == false) {
       g_ui3dStatus.rendering = false;
     }
     else {
       PIXBeginNamedEvent(-1,"RB_UI3D_RenderToTexture");
-      R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,param_3,0);
+      R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,input,0);
       gfxCmdBufSourceState._padding_ = (int)backEndData;
       R_InitLocalCmdBufState(&gfxCmdBufState);
       R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x14');
       R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x14');
-      local_10 = 0xfff;
-      local_8 = 0;
-      local_54 = 0xfff;
-      local_50 = 0;
-      for (local_5c = 0; local_5c < local_c; local_5c = local_5c + 1) {
-        local_64 = local_28[local_5c];
-        local_60 = param_2->viewport + local_64;
-        local_b4 = local_60->x;
-        if (local_10 <= local_b4) {
-          local_b4 = local_10;
+      scissor_min_x = 0xfff;
+      scissor_max_x = 0;
+      scissor_min_y = 0xfff;
+      scissor_max_y = 0;
+      for (vindex = 0; vindex < validWindowsCount; vindex = vindex + 1) {
+        wIdx = validWindows[vindex];
+        vp = rbUI3D->viewport + wIdx;
+        local_b4 = vp->x;
+        if (scissor_min_x <= local_b4) {
+          local_b4 = scissor_min_x;
         }
-        local_10 = local_b4;
-        local_b8 = local_60->x + local_60->width;
-        if (local_b8 <= local_8) {
-          local_b8 = local_8;
+        scissor_min_x = local_b4;
+        local_b8 = vp->x + vp->width;
+        if (local_b8 <= scissor_max_x) {
+          local_b8 = scissor_max_x;
         }
-        local_8 = local_b8;
-        local_bc = local_60->y;
-        if (local_54 <= local_bc) {
-          local_bc = local_54;
+        scissor_max_x = local_b8;
+        local_bc = vp->y;
+        if (scissor_min_y <= local_bc) {
+          local_bc = scissor_min_y;
         }
-        local_54 = local_bc;
-        local_c0 = local_60->y + local_60->height;
-        if (local_c0 <= local_50) {
-          local_c0 = local_50;
+        scissor_min_y = local_bc;
+        local_c0 = vp->y + vp->height;
+        if (local_c0 <= scissor_max_y) {
+          local_c0 = scissor_max_y;
         }
-        local_50 = local_c0;
+        scissor_max_y = local_c0;
       }
-      if (local_8 < local_10) {
-        local_c4 = local_8;
+      if (scissor_max_x < scissor_min_x) {
+        local_c4 = scissor_max_x;
       }
       else {
-        local_c4 = local_10;
+        local_c4 = scissor_min_x;
       }
-      local_48.x = local_c4;
-      if (local_10 < local_8) {
-        local_c8 = local_8;
-      }
-      else {
-        local_c8 = local_10;
-      }
-      local_48.width = local_c8 - local_c4;
-      if (local_50 < local_54) {
-        local_cc = local_50;
+      vpBounds.x = local_c4;
+      if (scissor_min_x < scissor_max_x) {
+        local_c8 = scissor_max_x;
       }
       else {
-        local_cc = local_54;
+        local_c8 = scissor_min_x;
       }
-      local_48.y = local_cc;
-      if (local_54 < local_50) {
-        local_d0 = local_50;
+      vpBounds.width = local_c8 - local_c4;
+      if (scissor_max_y < scissor_min_y) {
+        local_cc = scissor_max_y;
       }
       else {
-        local_d0 = local_54;
+        local_cc = scissor_min_y;
       }
-      local_48.height = local_d0 - local_cc;
-      local_38[0] = 0.0;
-      local_38[1] = 0.0;
-      local_38[2] = 0.0;
-      local_38[3] = 0.0;
-      R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,'\x01',local_38,1.0,'\0',&local_48);
-      for (local_68 = 0; local_68 < local_c; local_68 = local_68 + 1) {
-        local_70 = local_28[local_68];
+      vpBounds.y = local_cc;
+      if (scissor_min_y < scissor_max_y) {
+        local_d0 = scissor_max_y;
+      }
+      else {
+        local_d0 = scissor_min_y;
+      }
+      vpBounds.height = local_d0 - local_cc;
+      clearColor[0] = 0.0;
+      clearColor[1] = 0.0;
+      clearColor[2] = 0.0;
+      clearColor[3] = 0.0;
+      R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,'\x01',clearColor,1.0,'\0',&vpBounds);
+      for (vindex_2 = 0; vindex_2 < validWindowsCount; vindex_2 = vindex_2 + 1) {
+        wIdx_2 = validWindows[vindex_2];
         if (rgp.heatMapImage == (GfxImage *)0x0) {
           R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2a,rgp.whiteImage);
         }
@@ -629,20 +642,20 @@ void __cdecl RB_UI3D_RenderToTexture(void *param_1,GfxUI3DBackend *param_2,GfxCm
           R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2a,rgp.heatMapImage)
           ;
         }
-        local_6c = param_2->viewport + local_70;
-        R_HW_EnableScissor(gfxCmdBufState.prim.field0_0x0.device,local_6c->x,local_6c->y,
-                           local_6c->width,local_6c->height);
-        R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,local_6c);
+        vp_2 = rbUI3D->viewport + wIdx_2;
+        R_HW_EnableScissor(gfxCmdBufState.prim.field0_0x0.device,vp_2->x,vp_2->y,vp_2->width,
+                           vp_2->height);
+        R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,vp_2);
         R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
-        RB_ExecuteRenderCommandsLoop(param_1,&local_70);
+        RB_ExecuteRenderCommandsLoop(cmds,&wIdx_2);
       }
       R_HW_DisableScissor(gfxCmdBufState.prim.field0_0x0.device);
       memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-      if (((0.0 < param_2->blurRadius) && (gfxRenderTargets[0x15].image != (GfxImage *)0x0)) &&
+      if (((0.0 < rbUI3D->blurRadius) && (gfxRenderTargets[0x15].image != (GfxImage *)0x0)) &&
          ((gfxRenderTargets[0x15].width == gfxRenderTargets[0x14].width &&
           (gfxRenderTargets[0x15].height == gfxRenderTargets[0x14].height)))) {
-        RB_GaussianFilterImage(param_2->blurRadius,'\x14','\x15',0);
-        RB_GaussianFilterImage(param_2->blurRadius,'\x15','\x14',0);
+        RB_GaussianFilterImage(rbUI3D->blurRadius,'\x14','\x15',0);
+        RB_GaussianFilterImage(rbUI3D->blurRadius,'\x15','\x14',0);
       }
       g_ui3dStatus.rendering = false;
       DVar1 = GetCurrentThreadId();

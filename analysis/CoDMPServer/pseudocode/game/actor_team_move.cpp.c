@@ -11,6 +11,7 @@ void __cdecl Actor_TeamMoveBlocked(actor_s *param_1)
 
 {
   int in_ECX;
+  actor_s *self;
   
   *(int *)(in_ECX + 0xe00) = level.time + 500;
   return;
@@ -28,6 +29,7 @@ void __cdecl Actor_TeamMoveBlockedClear(actor_s *param_1)
 
 {
   int in_ECX;
+  actor_s *self;
   
   *(undefined4 *)(in_ECX + 0xe00) = 0;
   return;
@@ -41,7 +43,7 @@ void __cdecl Actor_TeamMoveBlockedClear(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_TeamMoveCheckWaitTimer(actor_s *param_1,ai_teammove_t *param_2)
+bool __cdecl Actor_TeamMoveCheckWaitTimer(actor_s *self,ai_teammove_t *result)
 
 {
   code *pcVar1;
@@ -49,7 +51,7 @@ bool __cdecl Actor_TeamMoveCheckWaitTimer(actor_s *param_1,ai_teammove_t *param_
   undefined1 uVar3;
   int iVar4;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x53,0,
                              "%s");
     if (!bVar2) {
@@ -58,7 +60,7 @@ bool __cdecl Actor_TeamMoveCheckWaitTimer(actor_s *param_1,ai_teammove_t *param_
       return (bool)uVar3;
     }
   }
-  if (param_2 == (ai_teammove_t *)0x0) {
+  if (result == (ai_teammove_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x54,0,
                              "%s");
     if (!bVar2) {
@@ -67,18 +69,18 @@ bool __cdecl Actor_TeamMoveCheckWaitTimer(actor_s *param_1,ai_teammove_t *param_
       return (bool)uVar3;
     }
   }
-  if (level.time < param_1->iTeamMoveWaitTime) {
-    *param_2 = AI_TEAMMOVE_WAIT;
+  if (level.time < self->iTeamMoveWaitTime) {
+    *result = AI_TEAMMOVE_WAIT;
     bVar2 = true;
   }
   else {
-    iVar4 = EntHandle::isDefined(&param_1->pCloseEnt);
+    iVar4 = EntHandle::isDefined(&self->pCloseEnt);
     if (iVar4 == 0) {
       bVar2 = false;
     }
     else {
-      param_1->iTeamMoveWaitTime = level.time + 0x32;
-      *param_2 = AI_TEAMMOVE_WAIT;
+      self->iTeamMoveWaitTime = level.time + 0x32;
+      *result = AI_TEAMMOVE_WAIT;
       bVar2 = true;
     }
   }
@@ -90,21 +92,21 @@ bool __cdecl Actor_TeamMoveCheckWaitTimer(actor_s *param_1,ai_teammove_t *param_
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Actor_TeamMoveNeedToCheckWait(uchar param_1,path_t *param_2)
+bool __cdecl Actor_TeamMoveNeedToCheckWait(uchar moveMode,path_t *pPath)
 
 {
   int iVar1;
   path_t *unaff_EBP;
   
-  if (param_1 == '\0') {
-    if (((param_2->flags & 2U) == 0) ||
-       ((param_2->fLookaheadDist <= 60.0 && param_2->fLookaheadDist != 60.0 &&
+  if (moveMode == '\0') {
+    if (((pPath->flags & 2U) == 0) ||
+       ((pPath->fLookaheadDist <= 60.0 && pPath->fLookaheadDist != 60.0 &&
         (iVar1 = Path_CompleteLookahead(unaff_EBP), iVar1 == 0)))) {
       return true;
     }
   }
-  else if ((((param_2->flags & 2U) == 0) &&
-           (param_2->fLookaheadDist <= 60.0 && param_2->fLookaheadDist != 60.0)) &&
+  else if ((((pPath->flags & 2U) == 0) &&
+           (pPath->fLookaheadDist <= 60.0 && pPath->fLookaheadDist != 60.0)) &&
           (iVar1 = Path_CompleteLookahead(unaff_EBP), iVar1 == 0)) {
     return true;
   }
@@ -119,14 +121,14 @@ bool __cdecl Actor_TeamMoveNeedToCheckWait(uchar param_1,path_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_IsEnemy(actor_s *param_1,sentient_s *param_2)
+bool __cdecl Actor_IsEnemy(actor_s *self,sentient_s *other)
 
 {
   team_t tVar1;
+  int iTeamFlags;
   
-  tVar1 = Sentient_EnemyTeam(param_1->sentient->eTeam);
-  return (bool)('\x01' - ((1 << ((byte)param_2->eTeam & 0x1f) & ~(1 << ((byte)tVar1 & 0x1f))) != 0U)
-               );
+  tVar1 = Sentient_EnemyTeam(self->sentient->eTeam);
+  return (bool)('\x01' - ((1 << ((byte)other->eTeam & 0x1f) & ~(1 << ((byte)tVar1 & 0x1f))) != 0U));
 }
 
 
@@ -137,24 +139,26 @@ bool __cdecl Actor_IsEnemy(actor_s *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_CalcInterval(actor_s *param_1,bool param_2,float *param_3,float *param_4)
+void __cdecl
+Actor_CalcInterval(actor_s *self,bool bUseInterval,float *fIntervalSqrdOut,
+                  float *fWalkIntervalSqrdOut)
 
 {
-  float local_c;
-  float local_8;
+  float fWalkInterval;
+  float fInterval;
   
-  if (param_2) {
-    local_8 = param_1->fInterval;
-    local_c = local_8 * 0.5;
-    if ((local_c < 37.5) && (local_c = 37.5, local_8 < 30.0)) {
-      local_8 = 30.0;
+  if (bUseInterval) {
+    fInterval = self->fInterval;
+    fWalkInterval = fInterval * 0.5;
+    if ((fWalkInterval < 37.5) && (fWalkInterval = 37.5, fInterval < 30.0)) {
+      fInterval = 30.0;
     }
-    *param_3 = local_8 * local_8;
-    *param_4 = local_c * local_c;
+    *fIntervalSqrdOut = fInterval * fInterval;
+    *fWalkIntervalSqrdOut = fWalkInterval * fWalkInterval;
   }
   else {
-    *param_3 = 900.0;
-    *param_4 = 1406.25;
+    *fIntervalSqrdOut = 900.0;
+    *fWalkIntervalSqrdOut = 1406.25;
   }
   return;
 }
@@ -167,40 +171,41 @@ void __cdecl Actor_CalcInterval(actor_s *param_1,bool param_2,float *param_3,flo
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_TeamMoveCalcMovementDir(team_move_context_t *param_1,ai_teammove_t *param_2)
+bool __cdecl Actor_TeamMoveCalcMovementDir(team_move_context_t *context,ai_teammove_t *result)
 
 {
   float fVar1;
   actor_s *paVar2;
   int iVar3;
   actor_s *in_stack_ffffffc4;
-  float local_c;
+  float fVelSelf;
+  actor_s *self;
   
-  paVar2 = param_1->self;
-  param_1->vVelSelf[0] = (paVar2->Physics).vVelocity[0];
-  param_1->vVelSelf[1] = (paVar2->Physics).vVelocity[1];
-  param_1->vVelDirSelf[0] = param_1->vVelSelf[0];
-  param_1->vVelDirSelf[1] = param_1->vVelSelf[1];
-  local_c = Vec2Normalize(param_1->vVelDirSelf);
-  if (local_c < 1.0) {
-    param_1->vVelDirSelf[0] = (paVar2->Path).lookaheadDir[0];
-    param_1->vVelDirSelf[1] = (paVar2->Path).lookaheadDir[1];
-    if ((param_1->vVelDirSelf[0] == 0.0) && (param_1->vVelDirSelf[1] == 0.0)) {
+  paVar2 = context->self;
+  context->vVelSelf[0] = (paVar2->Physics).vVelocity[0];
+  context->vVelSelf[1] = (paVar2->Physics).vVelocity[1];
+  context->vVelDirSelf[0] = context->vVelSelf[0];
+  context->vVelDirSelf[1] = context->vVelSelf[1];
+  fVelSelf = Vec2Normalize(context->vVelDirSelf);
+  if (fVelSelf < 1.0) {
+    context->vVelDirSelf[0] = (paVar2->Path).lookaheadDir[0];
+    context->vVelDirSelf[1] = (paVar2->Path).lookaheadDir[1];
+    if ((context->vVelDirSelf[0] == 0.0) && (context->vVelDirSelf[1] == 0.0)) {
       iVar3 = Path_UsesObstacleNegotiation((path_t *)in_stack_ffffffc4);
       if (iVar3 == 0) {
         Actor_ClearPath(in_stack_ffffffc4);
-        *param_2 = AI_TEAMMOVE_WAIT;
+        *result = AI_TEAMMOVE_WAIT;
         return true;
       }
-      *param_2 = AI_TEAMMOVE_TRAVEL;
+      *result = AI_TEAMMOVE_TRAVEL;
       return true;
     }
     fVar1 = g_actorAssumedSpeed[paVar2->species];
-    param_1->vVelSelf[0] = fVar1 * param_1->vVelDirSelf[0];
-    param_1->vVelSelf[1] = fVar1 * param_1->vVelDirSelf[1];
-    local_c = g_actorAssumedSpeed[paVar2->species];
+    context->vVelSelf[0] = fVar1 * context->vVelDirSelf[0];
+    context->vVelSelf[1] = fVar1 * context->vVelDirSelf[1];
+    fVelSelf = g_actorAssumedSpeed[paVar2->species];
   }
-  param_1->fVelSelfSqrd = local_c * local_c;
+  context->fVelSelfSqrd = fVelSelf * fVelSelf;
   return false;
 }
 
@@ -212,16 +217,16 @@ bool __cdecl Actor_TeamMoveCalcMovementDir(team_move_context_t *param_1,ai_teamm
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl Actor_TeamMoveDeltaCorrection(actor_s *param_1,float param_2)
+float __cdecl Actor_TeamMoveDeltaCorrection(actor_s *self,float fVelSelfSqrd)
 
 {
   float local_8;
   
-  if (param_1->moveMode == '\0') {
+  if (self->moveMode == '\0') {
     local_8 = 0.0;
   }
   else {
-    local_8 = param_2 * 0.1 * 0.1;
+    local_8 = fVelSelfSqrd * 0.1 * 0.1;
   }
   return local_8;
 }
@@ -234,13 +239,14 @@ float __cdecl Actor_TeamMoveDeltaCorrection(actor_s *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_AddToList(int *param_1,int *param_2,int param_3,actor_s *param_4)
+void __cdecl
+Actor_AddToList(int *dodgeEntities,int *dodgeEntityCount,int arraysz,actor_s *pOtherActor)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_4->ent == (gentity_s *)0x0) {
+  if (pOtherActor->ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xce,0,
                              "%s");
     if (!bVar2) {
@@ -249,7 +255,7 @@ void __cdecl Actor_AddToList(int *param_1,int *param_2,int param_3,actor_s *para
       return;
     }
   }
-  if (param_3 <= *param_2) {
+  if (arraysz <= *dodgeEntityCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xcf,0,
                              "%s");
     if (!bVar2) {
@@ -258,8 +264,8 @@ void __cdecl Actor_AddToList(int *param_1,int *param_2,int param_3,actor_s *para
       return;
     }
   }
-  param_1[*param_2] = (param_4->ent->s).number;
-  *param_2 = *param_2 + 1;
+  dodgeEntities[*dodgeEntityCount] = (pOtherActor->ent->s).number;
+  *dodgeEntityCount = *dodgeEntityCount + 1;
   return;
 }
 
@@ -271,11 +277,12 @@ void __cdecl Actor_AddToList(int *param_1,int *param_2,int param_3,actor_s *para
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Actor_TeamMoveSetDodge(team_move_context_t *param_1,team_move_other_context_t *param_2)
+void __cdecl
+Actor_TeamMoveSetDodge(team_move_context_t *context,team_move_other_context_t *context_other)
 
 {
-  param_1->fDodgePosDeltaLengthSqrd = param_2->fPosDeltaLengthSqrd;
-  param_1->pDodgeOther = param_2->other;
+  context->fDodgePosDeltaLengthSqrd = context_other->fPosDeltaLengthSqrd;
+  context->pDodgeOther = context_other->other;
   return;
 }
 
@@ -290,195 +297,210 @@ void __cdecl Actor_TeamMoveSetDodge(team_move_context_t *param_1,team_move_other
 
 bool __cdecl
 Actor_TeamMoveShouldTryDodgeSentient
-          (team_move_context_t *param_1,team_move_other_context_t *param_2)
+          (team_move_context_t *context,team_move_other_context_t *context_other)
 
 {
-  actor_s *paVar1;
-  sentient_s *psVar2;
-  actor_s *paVar3;
-  gentity_s *pgVar4;
-  gclient_s *pgVar5;
+  actor_s *self_00;
+  sentient_s *other_00;
+  actor_s *pOtherActor_00;
+  gentity_s *pgVar1;
+  gclient_s *pgVar2;
+  bool bVar3;
+  code *pcVar4;
+  bool bVar5;
   bool bVar6;
-  code *pcVar7;
+  undefined1 uVar7;
   bool bVar8;
-  bool bVar9;
-  undefined1 uVar10;
+  int iVar9;
+  float *pfVar10;
   bool bVar11;
-  int iVar12;
-  float *pfVar13;
-  bool bVar14;
-  float fVar15;
-  float fVar16;
+  float fVar12;
+  float fVar13;
+  actor_s *pOtherActor;
+  float MAX_SPEED_MULTIPLE_SQ;
+  bool otherIsMoving;
+  float mySpeedSq;
+  bool bOtherClose;
+  bool bPileUpSelf;
+  bool bMoving;
+  float otherSpeedSq;
+  actor_s *self;
+  sentient_s *other;
+  bool slowDown;
   
-  paVar1 = param_1->self;
-  psVar2 = param_2->other;
-  if ((param_1 == (team_move_context_t *)0x0) &&
-     (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xed,0
-                               ,"%s"), !bVar9)) {
-    pcVar7 = (code *)swi(3);
-    uVar10 = (*pcVar7)();
-    return (bool)uVar10;
+  self_00 = context->self;
+  other_00 = context_other->other;
+  if ((context == (team_move_context_t *)0x0) &&
+     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xed,0
+                               ,"%s"), !bVar6)) {
+    pcVar4 = (code *)swi(3);
+    uVar7 = (*pcVar4)();
+    return (bool)uVar7;
   }
-  if ((param_2 == (team_move_other_context_t *)0x0) &&
-     (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xee,0
-                               ,"%s"), !bVar9)) {
-    pcVar7 = (code *)swi(3);
-    uVar10 = (*pcVar7)();
-    return (bool)uVar10;
+  if ((context_other == (team_move_other_context_t *)0x0) &&
+     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xee,0
+                               ,"%s"), !bVar6)) {
+    pcVar4 = (code *)swi(3);
+    uVar7 = (*pcVar4)();
+    return (bool)uVar7;
   }
-  if ((paVar1 == (actor_s *)0x0) &&
-     (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xef,0
-                               ,"%s"), !bVar9)) {
-    pcVar7 = (code *)swi(3);
-    uVar10 = (*pcVar7)();
-    return (bool)uVar10;
+  if ((self_00 == (actor_s *)0x0) &&
+     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xef,0
+                               ,"%s"), !bVar6)) {
+    pcVar4 = (code *)swi(3);
+    uVar7 = (*pcVar4)();
+    return (bool)uVar7;
   }
-  if ((psVar2 == (sentient_s *)0x0) &&
-     (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xf0,0
-                               ,"%s"), !bVar9)) {
-    pcVar7 = (code *)swi(3);
-    uVar10 = (*pcVar7)();
-    return (bool)uVar10;
+  if ((other_00 == (sentient_s *)0x0) &&
+     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0xf0,0
+                               ,"%s"), !bVar6)) {
+    pcVar4 = (code *)swi(3);
+    uVar7 = (*pcVar4)();
+    return (bool)uVar7;
   }
-  paVar3 = psVar2->ent->actor;
-  if (paVar3 != (actor_s *)0x0) {
-    bVar9 = Actor_IsEnemy(paVar1,psVar2);
-    if (bVar9) {
+  pOtherActor_00 = other_00->ent->actor;
+  if (pOtherActor_00 != (actor_s *)0x0) {
+    bVar6 = Actor_IsEnemy(self_00,other_00);
+    if (bVar6) {
       return false;
     }
-    if (psVar2 == paVar1->sentient) {
+    if (other_00 == self_00->sentient) {
       return false;
     }
-    if (paVar3->pPileUpEnt == paVar1->ent) {
+    if (pOtherActor_00->pPileUpEnt == self_00->ent) {
       return false;
     }
   }
-  pgVar4 = psVar2->ent;
-  param_2->vOrgOther[0] = (pgVar4->s).lerp.pos.trBase[0];
-  param_2->vOrgOther[1] = (pgVar4->s).lerp.pos.trBase[1];
-  param_2->vOrgOther[2] = (pgVar4->s).lerp.pos.trBase[2];
-  bVar9 = Actor_AtDifferentElevation(param_1->vOrgSelf,param_2->vOrgOther);
-  if (bVar9) {
-    bVar9 = false;
+  pgVar1 = other_00->ent;
+  context_other->vOrgOther[0] = (pgVar1->s).lerp.pos.trBase[0];
+  context_other->vOrgOther[1] = (pgVar1->s).lerp.pos.trBase[1];
+  context_other->vOrgOther[2] = (pgVar1->s).lerp.pos.trBase[2];
+  bVar6 = Actor_AtDifferentElevation(context->vOrgSelf,context_other->vOrgOther);
+  if (bVar6) {
+    bVar6 = false;
   }
   else {
-    param_2->vDelta[0] = param_2->vOrgOther[0] - param_1->vOrgSelf[0];
-    param_2->vDelta[1] = param_2->vOrgOther[1] - param_1->vOrgSelf[1];
-    param_2->fPosDeltaLengthSqrd =
-         param_2->vDelta[0] * param_2->vDelta[0] + param_2->vDelta[1] * param_2->vDelta[1];
-    if (param_1->fMaxIntervalSqrd <= param_2->fPosDeltaLengthSqrd) {
-      bVar9 = false;
+    context_other->vDelta[0] = context_other->vOrgOther[0] - context->vOrgSelf[0];
+    context_other->vDelta[1] = context_other->vOrgOther[1] - context->vOrgSelf[1];
+    context_other->fPosDeltaLengthSqrd =
+         context_other->vDelta[0] * context_other->vDelta[0] +
+         context_other->vDelta[1] * context_other->vDelta[1];
+    if (context->fMaxIntervalSqrd <= context_other->fPosDeltaLengthSqrd) {
+      bVar6 = false;
     }
     else {
-      param_2->fScale =
-           (param_1->vVelSelf[0] * param_2->vDelta[0] + param_1->vVelSelf[1] * param_2->vDelta[1]) -
-           param_1->fDeltaCorrection;
-      if (((0.0 < param_2->fScale) ||
-          (0.0 < (paVar1->Path).forwardLookaheadDir2D[0] * param_2->vDelta[0] +
-                 (paVar1->Path).forwardLookaheadDir2D[1] * param_2->vDelta[1])) ||
-         (param_1->bFailedLookahead != 0)) {
-        bVar9 = param_2->fPosDeltaLengthSqrd != 900.0;
-        bVar6 = param_2->fPosDeltaLengthSqrd <= 900.0;
-        pfVar13 = (paVar1->Physics).vVelocity;
-        fVar15 = *pfVar13 * *pfVar13 +
-                 (paVar1->Physics).vVelocity[1] * (paVar1->Physics).vVelocity[1];
-        if (paVar3 == (actor_s *)0x0) {
-          if (param_1->fDodgePosDeltaLengthSqrd <= param_2->fPosDeltaLengthSqrd) {
+      context_other->fScale =
+           (context->vVelSelf[0] * context_other->vDelta[0] +
+           context->vVelSelf[1] * context_other->vDelta[1]) - context->fDeltaCorrection;
+      if (((0.0 < context_other->fScale) ||
+          (0.0 < (self_00->Path).forwardLookaheadDir2D[0] * context_other->vDelta[0] +
+                 (self_00->Path).forwardLookaheadDir2D[1] * context_other->vDelta[1])) ||
+         (context->bFailedLookahead != 0)) {
+        bVar6 = context_other->fPosDeltaLengthSqrd != 900.0;
+        bVar3 = context_other->fPosDeltaLengthSqrd <= 900.0;
+        pfVar10 = (self_00->Physics).vVelocity;
+        fVar12 = *pfVar10 * *pfVar10 +
+                 (self_00->Physics).vVelocity[1] * (self_00->Physics).vVelocity[1];
+        if (pOtherActor_00 == (actor_s *)0x0) {
+          if (context->fDodgePosDeltaLengthSqrd <= context_other->fPosDeltaLengthSqrd) {
             return false;
           }
-          if (((paVar1->Physics).iTraceMask & 0x2000000U) == 0) {
+          if (((self_00->Physics).iTraceMask & 0x2000000U) == 0) {
             return false;
           }
-          bVar11 = Actor_IsEnemy(paVar1,psVar2);
-          if (bVar11) {
+          bVar8 = Actor_IsEnemy(self_00,other_00);
+          if (bVar8) {
             return true;
           }
-          if ((psVar2->ent->client == (gclient_s *)0x0) &&
-             (bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp"
-                                        ,0x130,0,"%s"), !bVar11)) {
-            pcVar7 = (code *)swi(3);
-            uVar10 = (*pcVar7)();
-            return (bool)uVar10;
+          if ((other_00->ent->client == (gclient_s *)0x0) &&
+             (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp"
+                                       ,0x130,0,"%s"), !bVar8)) {
+            pcVar4 = (code *)swi(3);
+            uVar7 = (*pcVar4)();
+            return (bool)uVar7;
           }
-          pgVar5 = psVar2->ent->client;
-          param_2->vVelOther[0] = (pgVar5->ps).velocity[0];
-          param_2->vVelOther[1] = (pgVar5->ps).velocity[1];
+          pgVar2 = other_00->ent->client;
+          context_other->vVelOther[0] = (pgVar2->ps).velocity[0];
+          context_other->vVelOther[1] = (pgVar2->ps).velocity[1];
         }
         else {
-          if ((paVar3->pPileUpActor == (actor_s *)0x0) &&
-             (iVar12 = EntHandle::isDefined(&paVar3->pCloseEnt), iVar12 == 0)) {
-            param_2->vVelOther[0] = (paVar3->Physics).vWishDelta[0] * 20.0;
-            param_2->vVelOther[1] = (paVar3->Physics).vWishDelta[1] * 20.0;
+          if ((pOtherActor_00->pPileUpActor == (actor_s *)0x0) &&
+             (iVar9 = EntHandle::isDefined(&pOtherActor_00->pCloseEnt), iVar9 == 0)) {
+            context_other->vVelOther[0] = (pOtherActor_00->Physics).vWishDelta[0] * 20.0;
+            context_other->vVelOther[1] = (pOtherActor_00->Physics).vWishDelta[1] * 20.0;
           }
           else {
-            param_2->vVelOther[0] = 0.0;
-            param_2->vVelOther[1] = 0.0;
+            context_other->vVelOther[0] = 0.0;
+            context_other->vVelOther[1] = 0.0;
           }
-          if (((bVar6 && bVar9) && (iVar12 = EntHandle::isDefined(&paVar1->pCloseEnt), iVar12 == 0))
-             && (level.gentities[(paVar3->Physics).iHitEntnum].sentient != (sentient_s *)0x0)) {
-            EntHandle::setEnt(&paVar1->pCloseEnt,paVar3->ent);
+          if (((bVar3 && bVar6) && (iVar9 = EntHandle::isDefined(&self_00->pCloseEnt), iVar9 == 0))
+             && (level.gentities[(pOtherActor_00->Physics).iHitEntnum].sentient != (sentient_s *)0x0
+                )) {
+            EntHandle::setEnt(&self_00->pCloseEnt,pOtherActor_00->ent);
           }
         }
-        fVar16 = param_2->vVelOther[0] * param_2->vVelOther[0] +
-                 param_2->vVelOther[1] * param_2->vVelOther[1];
-        if ((fVar16 < 1.0) || (fVar16 * 25.0 <= fVar15)) {
-          bVar11 = false;
+        fVar13 = context_other->vVelOther[0] * context_other->vVelOther[0] +
+                 context_other->vVelOther[1] * context_other->vVelOther[1];
+        if ((fVar13 < 1.0) || (fVar13 * 25.0 <= fVar12)) {
+          bVar8 = false;
         }
         else {
-          bVar11 = true;
+          bVar8 = true;
         }
-        bVar14 = paVar1->pPileUpActor != paVar1;
-        bVar8 = true;
-        if ((bVar14) && (bVar11)) {
-          if (param_1->fIntervalSqrd <= param_2->fPosDeltaLengthSqrd) {
+        bVar11 = self_00->pPileUpActor != self_00;
+        bVar5 = true;
+        if ((bVar11) && (bVar8)) {
+          if (context->fIntervalSqrd <= context_other->fPosDeltaLengthSqrd) {
             return false;
           }
-          if (0.0 <= param_1->vVelSelf[0] * param_2->vVelOther[0] +
-                     param_1->vVelSelf[1] * param_2->vVelOther[1]) {
-            if (param_2->fScale + param_1->fDeltaCorrection <= 0.0) {
+          if (0.0 <= context->vVelSelf[0] * context_other->vVelOther[0] +
+                     context->vVelSelf[1] * context_other->vVelOther[1]) {
+            if (context_other->fScale + context->fDeltaCorrection <= 0.0) {
               return false;
             }
-            if (((paVar3 != (actor_s *)0x0) && ((psVar2->ent->s).number < (paVar1->ent->s).number))
-               && (param_2->vVelOther[0] * param_2->vDelta[0] +
-                   param_2->vVelOther[1] * param_2->vDelta[1] < param_1->fDeltaCorrection)) {
+            if (((pOtherActor_00 != (actor_s *)0x0) &&
+                ((other_00->ent->s).number < (self_00->ent->s).number)) &&
+               (context_other->vVelOther[0] * context_other->vDelta[0] +
+                context_other->vVelOther[1] * context_other->vDelta[1] < context->fDeltaCorrection))
+            {
               return false;
             }
           }
-          else if ((param_1->bPileUp == false) && ((1.0 <= fVar15 || (!bVar6 || !bVar9)))) {
-            if ((paVar1->ent->s).number <= (psVar2->ent->s).number) {
+          else if ((context->bPileUp == false) && ((1.0 <= fVar12 || (!bVar3 || !bVar6)))) {
+            if ((self_00->ent->s).number <= (other_00->ent->s).number) {
               return false;
             }
-            bVar8 = false;
+            bVar5 = false;
           }
         }
-        if (paVar3 != (actor_s *)0x0) {
-          Actor_AddToList(param_1->dodgeEntities,&param_1->dodgeEntityCount,0x30,paVar3);
+        if (pOtherActor_00 != (actor_s *)0x0) {
+          Actor_AddToList(context->dodgeEntities,&context->dodgeEntityCount,0x30,pOtherActor_00);
         }
-        if (param_1->fDodgePosDeltaLengthSqrd <= param_2->fPosDeltaLengthSqrd) {
-          bVar9 = false;
+        if (context->fDodgePosDeltaLengthSqrd <= context_other->fPosDeltaLengthSqrd) {
+          bVar6 = false;
         }
         else {
-          if ((bVar14) && (bVar11)) {
-            if (param_1->fSlowDownPosDeltaLengthSqrd <= param_2->fPosDeltaLengthSqrd) {
+          if ((bVar11) && (bVar8)) {
+            if (context->fSlowDownPosDeltaLengthSqrd <= context_other->fPosDeltaLengthSqrd) {
               return false;
             }
-            if (bVar8) {
-              param_1->fSlowDownPosDeltaLengthSqrd = param_2->fPosDeltaLengthSqrd;
-              param_1->pSlowDownOther = psVar2;
-              param_1->vVelSlowDownOther[0] = param_2->vVelOther[0];
-              param_1->vVelSlowDownOther[1] = param_2->vVelOther[1];
+            if (bVar5) {
+              context->fSlowDownPosDeltaLengthSqrd = context_other->fPosDeltaLengthSqrd;
+              context->pSlowDownOther = other_00;
+              context->vVelSlowDownOther[0] = context_other->vVelOther[0];
+              context->vVelSlowDownOther[1] = context_other->vVelOther[1];
               return false;
             }
           }
-          bVar9 = true;
+          bVar6 = true;
         }
       }
       else {
-        bVar9 = false;
+        bVar6 = false;
       }
     }
   }
-  return bVar9;
+  return bVar6;
 }
 
 
@@ -489,7 +511,8 @@ Actor_TeamMoveShouldTryDodgeSentient
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl Actor_TeamMoveTryDodge(team_move_context_t *param_1,team_move_other_context_t *param_2)
+bool __cdecl
+Actor_TeamMoveTryDodge(team_move_context_t *context,team_move_other_context_t *context_other)
 
 {
   float *pfVar1;
@@ -499,99 +522,107 @@ bool __cdecl Actor_TeamMoveTryDodge(team_move_context_t *param_1,team_move_other
   float fVar5;
   path_t *in_stack_ffffff74;
   float *in_stack_ffffff78;
-  float local_24;
+  path_t *pPath;
+  float vForwardStartPos;
   float local_20;
-  float local_1c;
-  actor_s *local_18;
-  sentient_s *local_14;
-  char local_d;
-  float local_c;
-  float local_8;
+  float dist;
+  actor_s *self;
+  sentient_s *other;
+  bool maintainMotion;
+  float perpDist;
+  float minDistSq;
   
-  paVar2 = param_1->self;
-  local_14 = param_2->other;
-  local_c = param_1->vVelDirSelf[0] * param_2->vDelta[1] -
-            param_1->vVelDirSelf[1] * param_2->vDelta[0];
-  local_8 = 900.0 - local_c * local_c;
-  if (0.0 < local_8) {
-    local_1c = (param_1->vVelDirSelf[0] * param_2->vDelta[0] +
-               param_1->vVelDirSelf[1] * param_2->vDelta[1]) - (paVar2->Path).fLookaheadDist;
-    if ((local_1c <= 0.0) || (local_1c * local_1c < (local_8 + 1406.25) - 900.0)) {
-      if (param_1->bFailedLookahead == 0) {
-        param_2->fScale = param_2->fScale / param_1->fVelSelfSqrd;
-        param_2->vPerp[0] = -param_2->fScale * param_1->vVelSelf[0] + param_2->vDelta[0];
-        param_2->vPerp[1] = -param_2->fScale * param_1->vVelSelf[1] + param_2->vDelta[1];
-        local_d = '\0';
-        local_18 = paVar2;
-        if ((local_14->ent->s).number == (int)(paVar2->Path).wDodgeEntity) {
-          if (param_1->bPileUp == false) {
+  paVar2 = context->self;
+  other = context_other->other;
+  perpDist = context->vVelDirSelf[0] * context_other->vDelta[1] -
+             context->vVelDirSelf[1] * context_other->vDelta[0];
+  minDistSq = 900.0 - perpDist * perpDist;
+  if (0.0 < minDistSq) {
+    dist = (context->vVelDirSelf[0] * context_other->vDelta[0] +
+           context->vVelDirSelf[1] * context_other->vDelta[1]) - (paVar2->Path).fLookaheadDist;
+    if ((dist <= 0.0) || (dist * dist < (minDistSq + 1406.25) - 900.0)) {
+      if (context->bFailedLookahead == 0) {
+        context_other->fScale = context_other->fScale / context->fVelSelfSqrd;
+        context_other->vPerp[0] =
+             -context_other->fScale * context->vVelSelf[0] + context_other->vDelta[0];
+        context_other->vPerp[1] =
+             -context_other->fScale * context->vVelSelf[1] + context_other->vDelta[1];
+        maintainMotion = false;
+        self = paVar2;
+        if ((other->ent->s).number == (int)(paVar2->Path).wDodgeEntity) {
+          if (context->bPileUp == false) {
             if ((paVar2->moveMode != '\0') && (level.time < paVar2->iTeamMoveDodgeTime)) {
-              if ((param_2->fScale <= 0.0) ||
-                 (900.0 <= param_2->vPerp[0] * param_2->vPerp[0] +
-                           param_2->vPerp[1] * param_2->vPerp[1])) {
+              if ((context_other->fScale <= 0.0) ||
+                 (900.0 <= context_other->vPerp[0] * context_other->vPerp[0] +
+                           context_other->vPerp[1] * context_other->vPerp[1])) {
                 return false;
               }
-              local_d = '\x01';
+              maintainMotion = true;
             }
           }
           else if (((((paVar2->Path).wDodgeCount != 0) || (((paVar2->Path).flags & 2U) != 0)) &&
                    (iVar4 = Path_CompleteLookahead(in_stack_ffffff74), iVar4 == 0)) &&
-                  (fVar5 = SQRT(param_2->fPosDeltaLengthSqrd) + 37.5,
+                  (fVar5 = SQRT(context_other->fPosDeltaLengthSqrd) + 37.5,
                   pfVar1 = &(paVar2->Path).fLookaheadDist, *pfVar1 <= fVar5 && fVar5 != *pfVar1)) {
             return true;
           }
         }
-        if ((local_d != '\0') ||
-           (param_2->vPerp[0] * param_2->vPerp[0] + param_2->vPerp[1] * param_2->vPerp[1] < 1406.25)
-           ) {
-          if ((local_d != '\0') || (0.0 < param_2->fScale)) {
+        if ((maintainMotion != false) ||
+           (context_other->vPerp[0] * context_other->vPerp[0] +
+            context_other->vPerp[1] * context_other->vPerp[1] < 1406.25)) {
+          if ((maintainMotion != false) || (0.0 < context_other->fScale)) {
             iVar4 = Path_GetForwardStartPos
-                              ((path_t *)&local_24,(float *)in_stack_ffffff74,in_stack_ffffff78);
+                              ((path_t *)&vForwardStartPos,(float *)in_stack_ffffff74,
+                               in_stack_ffffff78);
             if (iVar4 == 0) {
               return true;
             }
-            param_2->vDelta[0] = param_2->vOrgOther[0] - local_24;
-            param_2->vDelta[1] = param_2->vOrgOther[1] - local_20;
-            if (param_1->vVelSelf[0] * param_2->vDelta[0] +
-                param_1->vVelSelf[1] * param_2->vDelta[1] <= 0.0) {
+            context_other->vDelta[0] = context_other->vOrgOther[0] - vForwardStartPos;
+            context_other->vDelta[1] = context_other->vOrgOther[1] - local_20;
+            if (context->vVelSelf[0] * context_other->vDelta[0] +
+                context->vVelSelf[1] * context_other->vDelta[1] <= 0.0) {
               return true;
             }
           }
           else {
-            if (3600.0 <= param_2->fPosDeltaLengthSqrd) {
+            if (3600.0 <= context_other->fPosDeltaLengthSqrd) {
               return false;
             }
             iVar4 = Path_GetForwardStartPos
-                              ((path_t *)&local_24,(float *)in_stack_ffffff74,in_stack_ffffff78);
+                              ((path_t *)&vForwardStartPos,(float *)in_stack_ffffff74,
+                               in_stack_ffffff78);
             if (iVar4 == 0) {
               return true;
             }
-            param_2->vDelta[0] = param_2->vOrgOther[0] - local_24;
-            param_2->vDelta[1] = param_2->vOrgOther[1] - local_20;
+            context_other->vDelta[0] = context_other->vOrgOther[0] - vForwardStartPos;
+            context_other->vDelta[1] = context_other->vOrgOther[1] - local_20;
           }
         }
         else {
-          if (3600.0 <= param_2->fPosDeltaLengthSqrd) {
+          if (3600.0 <= context_other->fPosDeltaLengthSqrd) {
             return false;
           }
           iVar4 = Path_GetForwardStartPos
-                            ((path_t *)&local_24,(float *)in_stack_ffffff74,in_stack_ffffff78);
+                            ((path_t *)&vForwardStartPos,(float *)in_stack_ffffff74,
+                             in_stack_ffffff78);
           if (iVar4 == 0) {
             return false;
           }
-          param_2->vDelta[0] = param_2->vOrgOther[0] - local_24;
-          param_2->vDelta[1] = param_2->vOrgOther[1] - local_20;
+          context_other->vDelta[0] = context_other->vOrgOther[0] - vForwardStartPos;
+          context_other->vDelta[1] = context_other->vOrgOther[1] - local_20;
         }
-        param_2->fScale =
-             (paVar2->Path).forwardLookaheadDir2D[0] * param_2->vDelta[0] +
-             (paVar2->Path).forwardLookaheadDir2D[1] * param_2->vDelta[1];
-        if (0.0 < param_2->fScale) {
-          param_2->vPerp[0] =
-               -param_2->fScale * (paVar2->Path).forwardLookaheadDir2D[0] + param_2->vDelta[0];
-          param_2->vPerp[1] =
-               -param_2->fScale * (paVar2->Path).forwardLookaheadDir2D[1] + param_2->vDelta[1];
-          if (param_2->vPerp[0] * param_2->vPerp[0] + param_2->vPerp[1] * param_2->vPerp[1] < 900.0)
-          {
+        context_other->fScale =
+             (paVar2->Path).forwardLookaheadDir2D[0] * context_other->vDelta[0] +
+             (paVar2->Path).forwardLookaheadDir2D[1] * context_other->vDelta[1];
+        if (0.0 < context_other->fScale) {
+          context_other->vPerp[0] =
+               -context_other->fScale * (paVar2->Path).forwardLookaheadDir2D[0] +
+               context_other->vDelta[0];
+          context_other->vPerp[1] =
+               -context_other->fScale * (paVar2->Path).forwardLookaheadDir2D[1] +
+               context_other->vDelta[1];
+          if (context_other->vPerp[0] * context_other->vPerp[0] +
+              context_other->vPerp[1] * context_other->vPerp[1] < 900.0) {
             bVar3 = true;
           }
           else {
@@ -624,36 +655,39 @@ bool __cdecl Actor_TeamMoveTryDodge(team_move_context_t *param_1,team_move_other
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_TeamMoveConsiderSlowDown(team_move_context_t *param_1,ai_teammove_t *param_2)
+bool __cdecl Actor_TeamMoveConsiderSlowDown(team_move_context_t *context,ai_teammove_t *eResult)
 
 {
   actor_s *paVar1;
   bool bVar2;
   actor_s *in_stack_ffffffe8;
+  actor_s *pSlowDownOtherActor;
+  bool runOk;
+  bool walkOk;
   
-  if (param_1->fDodgePosDeltaLengthSqrd < param_1->fSlowDownPosDeltaLengthSqrd ||
-      param_1->fDodgePosDeltaLengthSqrd == param_1->fSlowDownPosDeltaLengthSqrd) {
+  if (context->fDodgePosDeltaLengthSqrd < context->fSlowDownPosDeltaLengthSqrd ||
+      context->fDodgePosDeltaLengthSqrd == context->fSlowDownPosDeltaLengthSqrd) {
 LAB_0091f2e2:
     bVar2 = true;
   }
   else {
-    paVar1 = param_1->pSlowDownOther->ent->actor;
+    paVar1 = context->pSlowDownOther->ent->actor;
     if (paVar1 != (actor_s *)0x0) {
-      if (0.0 <= param_1->vVelSelf[0] * param_1->vVelSlowDownOther[0] +
-                 param_1->vVelSelf[1] * param_1->vVelSlowDownOther[1]) {
+      if (0.0 <= context->vVelSelf[0] * context->vVelSlowDownOther[0] +
+                 context->vVelSelf[1] * context->vVelSlowDownOther[1]) {
         if ((paVar1->moveMode != '\x02') ||
-           (param_1->fSlowDownPosDeltaLengthSqrd < param_1->fWalkIntervalSqrd)) {
+           (context->fSlowDownPosDeltaLengthSqrd < context->fWalkIntervalSqrd)) {
           bVar2 = false;
         }
         else {
           bVar2 = true;
         }
         if ((paVar1->eAnimMode == AI_ANIM_MOVE_CODE) && ((paVar1->moveMode == '\x03' || (bVar2)))) {
-          *param_2 = AI_TEAMMOVE_SLOW_DOWN;
+          *eResult = AI_TEAMMOVE_SLOW_DOWN;
         }
         else {
-          param_1->fDodgePosDeltaLengthSqrd = param_1->fSlowDownPosDeltaLengthSqrd;
-          param_1->pDodgeOther = param_1->pSlowDownOther;
+          context->fDodgePosDeltaLengthSqrd = context->fSlowDownPosDeltaLengthSqrd;
+          context->pDodgeOther = context->pSlowDownOther;
         }
         goto LAB_0091f2e2;
       }
@@ -672,7 +706,7 @@ LAB_0091f2e2:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-ai_teammove_t __cdecl Actor_TeamMoveNoDodge(team_move_context_t *param_1,ai_teammove_t param_2)
+ai_teammove_t __cdecl Actor_TeamMoveNoDodge(team_move_context_t *context,ai_teammove_t eResult)
 
 {
   float *pfVar1;
@@ -680,12 +714,15 @@ ai_teammove_t __cdecl Actor_TeamMoveNoDodge(team_move_context_t *param_1,ai_team
   bool bVar3;
   float fVar4;
   float fVar5;
+  bool dodgeTooClose;
+  path_t *pPath;
+  actor_s *self;
   
-  paVar2 = param_1->self;
-  if (((param_1->bFailedLookahead != 0) || (param_1->pSlowDownOther == (sentient_s *)0x0)) ||
-     (param_1->fVelSelfSqrd <=
-      param_1->vVelSlowDownOther[0] * param_1->vVelSlowDownOther[0] +
-      param_1->vVelSlowDownOther[1] * param_1->vVelSlowDownOther[1])) {
+  paVar2 = context->self;
+  if (((context->bFailedLookahead != 0) || (context->pSlowDownOther == (sentient_s *)0x0)) ||
+     (context->fVelSelfSqrd <=
+      context->vVelSlowDownOther[0] * context->vVelSlowDownOther[0] +
+      context->vVelSlowDownOther[1] * context->vVelSlowDownOther[1])) {
     if (((paVar2->Path).wDodgeCount != 0) && ((paVar2->Path).wDodgeEntity != 0x3ff)) {
       if ((-1 < (paVar2->Path).wDodgeCount) ||
          (pfVar1 = &(paVar2->Path).fLookaheadDist, 37.5 < *pfVar1 || *pfVar1 == 37.5)) {
@@ -696,9 +733,9 @@ ai_teammove_t __cdecl Actor_TeamMoveNoDodge(team_move_context_t *param_1,ai_team
       }
       if ((!bVar3) &&
          (pfVar1 = level.gentities[(paVar2->Path).wDodgeEntity].r.currentOrigin,
-         fVar4 = param_1->vOrgSelf[0] - *pfVar1, fVar5 = param_1->vOrgSelf[1] - pfVar1[1],
+         fVar4 = context->vOrgSelf[0] - *pfVar1, fVar5 = context->vOrgSelf[1] - pfVar1[1],
          fVar4 * fVar4 + fVar5 * fVar5 < 3600.0)) {
-        return param_2;
+        return eResult;
       }
     }
     if ((paVar2->Path).wDodgeCount < 0) {
@@ -710,17 +747,17 @@ ai_teammove_t __cdecl Actor_TeamMoveNoDodge(team_move_context_t *param_1,ai_team
       paVar2->iTeamMoveDodgeTime = 0;
     }
     else {
-      param_2 = AI_TEAMMOVE_WAIT;
+      eResult = AI_TEAMMOVE_WAIT;
     }
   }
   else {
     if ((paVar2->Path).wDodgeCount == 0) {
       (paVar2->Path).wDodgeCount = -1;
     }
-    (paVar2->Path).wDodgeEntity = (short)(param_1->pSlowDownOther->ent->s).number;
-    param_2 = AI_TEAMMOVE_TRAVEL;
+    (paVar2->Path).wDodgeEntity = (short)(context->pSlowDownOther->ent->s).number;
+    eResult = AI_TEAMMOVE_TRAVEL;
   }
-  return param_2;
+  return eResult;
 }
 
 
@@ -733,7 +770,7 @@ ai_teammove_t __cdecl Actor_TeamMoveNoDodge(team_move_context_t *param_1,ai_team
 
 void __cdecl
 Actor_TeamMoveInitializeContext
-          (actor_s *param_1,bool param_2,bool param_3,team_move_context_t *param_4)
+          (actor_s *self,bool bUseInterval,bool bAllowGoalPileUp,team_move_context_t *context)
 
 {
   bool bVar1;
@@ -743,29 +780,29 @@ Actor_TeamMoveInitializeContext
   path_t *ppVar4;
   float local_10;
   
-  Actor_CalcInterval(param_1,param_2,&param_4->fIntervalSqrd,&param_4->fWalkIntervalSqrd);
-  local_10 = param_4->fVelSelfSqrd;
-  if (0.0 <= param_4->fIntervalSqrd - local_10) {
-    local_10 = param_4->fIntervalSqrd;
+  Actor_CalcInterval(self,bUseInterval,&context->fIntervalSqrd,&context->fWalkIntervalSqrd);
+  local_10 = context->fVelSelfSqrd;
+  if (0.0 <= context->fIntervalSqrd - local_10) {
+    local_10 = context->fIntervalSqrd;
   }
-  param_4->fMaxIntervalSqrd = local_10;
-  if ((param_1->pPileUpActor != (actor_s *)0x0) ||
-     ((param_3 && (bVar1 = Actor_IsAtGoal(in_stack_ffffffec), bVar1)))) {
+  context->fMaxIntervalSqrd = local_10;
+  if ((self->pPileUpActor != (actor_s *)0x0) ||
+     ((bAllowGoalPileUp && (bVar1 = Actor_IsAtGoal(in_stack_ffffffec), bVar1)))) {
     ppVar4 = (path_t *)&DAT_00000001;
   }
   else {
     ppVar4 = (path_t *)0x0;
   }
-  param_4->bPileUp = SUB41(ppVar4,0);
-  param_4->fDodgePosDeltaLengthSqrd = param_4->fMaxIntervalSqrd;
-  param_4->dodgeEntityCount = 0;
-  param_4->pDodgeOther = (sentient_s *)0x0;
-  param_4->fSlowDownPosDeltaLengthSqrd = param_4->fIntervalSqrd;
-  param_4->pSlowDownOther = (sentient_s *)0x0;
+  context->bPileUp = SUB41(ppVar4,0);
+  context->fDodgePosDeltaLengthSqrd = context->fMaxIntervalSqrd;
+  context->dodgeEntityCount = 0;
+  context->pDodgeOther = (sentient_s *)0x0;
+  context->fSlowDownPosDeltaLengthSqrd = context->fIntervalSqrd;
+  context->pSlowDownOther = (sentient_s *)0x0;
   iVar2 = Path_FailedLookahead(ppVar4);
-  param_4->bFailedLookahead = iVar2;
-  fVar3 = Actor_TeamMoveDeltaCorrection(param_1,param_4->fVelSelfSqrd);
-  param_4->fDeltaCorrection = fVar3;
+  context->bFailedLookahead = iVar2;
+  fVar3 = Actor_TeamMoveDeltaCorrection(self,context->fVelSelfSqrd);
+  context->fDeltaCorrection = fVar3;
   return;
 }
 
@@ -777,7 +814,7 @@ Actor_TeamMoveInitializeContext
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_TeamMoveTrimPath(path_t *param_1,team_move_context_t *param_2)
+int __cdecl Actor_TeamMoveTrimPath(path_t *pPath,team_move_context_t *context)
 
 {
   code *pcVar1;
@@ -785,51 +822,51 @@ int __cdecl Actor_TeamMoveTrimPath(path_t *param_1,team_move_context_t *param_2)
   int iVar3;
   float fVar4;
   float fVar5;
-  int local_8;
+  int startIndex;
   
-  if ((param_1->wPathLen < 1) &&
+  if ((pPath->wPathLen < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x23b,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1->wPathLen <= param_1->lookaheadNextNode) &&
+  if ((pPath->wPathLen <= pPath->lookaheadNextNode) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x23c,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = param_1->wPathLen + -1;
-  if (0 < param_1->wDodgeCount) {
-    local_8 = local_8 - param_1->wDodgeCount;
+  startIndex = pPath->wPathLen + -1;
+  if (0 < pPath->wDodgeCount) {
+    startIndex = startIndex - pPath->wDodgeCount;
   }
-  if (param_1->lookaheadNextNode < local_8) {
-    local_8 = (int)param_1->lookaheadNextNode;
+  if (pPath->lookaheadNextNode < startIndex) {
+    startIndex = (int)pPath->lookaheadNextNode;
   }
-  if ((param_1->wPathLen <= local_8) &&
+  if ((pPath->wPathLen <= startIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x245,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (local_8 == param_1->wPathLen + -1) {
-    fVar4 = param_2->vOrgSelf[0] - param_1->vCurrPoint[0];
-    fVar5 = param_2->vOrgSelf[1] - param_1->vCurrPoint[1];
-    if (param_2->fDodgePosDeltaLengthSqrd <= fVar4 * fVar4 + fVar5 * fVar5) {
-      return local_8;
+  if (startIndex == pPath->wPathLen + -1) {
+    fVar4 = context->vOrgSelf[0] - pPath->vCurrPoint[0];
+    fVar5 = context->vOrgSelf[1] - pPath->vCurrPoint[1];
+    if (context->fDodgePosDeltaLengthSqrd <= fVar4 * fVar4 + fVar5 * fVar5) {
+      return startIndex;
     }
-    local_8 = local_8 + -1;
+    startIndex = startIndex + -1;
   }
-  while ((param_1->wNegotiationStartNode <= local_8 &&
-         (fVar4 = param_2->vOrgSelf[0] - param_1->pts[local_8].vOrigPoint[0],
-         fVar5 = param_2->vOrgSelf[1] - param_1->pts[local_8].vOrigPoint[1],
-         fVar4 * fVar4 + fVar5 * fVar5 < param_2->fDodgePosDeltaLengthSqrd))) {
-    local_8 = local_8 + -1;
+  while ((pPath->wNegotiationStartNode <= startIndex &&
+         (fVar4 = context->vOrgSelf[0] - pPath->pts[startIndex].vOrigPoint[0],
+         fVar5 = context->vOrgSelf[1] - pPath->pts[startIndex].vOrigPoint[1],
+         fVar4 * fVar4 + fVar5 * fVar5 < context->fDodgePosDeltaLengthSqrd))) {
+    startIndex = startIndex + -1;
   }
-  return local_8;
+  return startIndex;
 }
 
 
@@ -840,8 +877,7 @@ int __cdecl Actor_TeamMoveTrimPath(path_t *param_1,team_move_context_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-Actor_TeamMoveTooCloseMoveAway(actor_s *param_1,int param_2,team_move_context_t *param_3)
+void __cdecl Actor_TeamMoveTooCloseMoveAway(actor_s *self,int mask,team_move_context_t *context)
 
 {
   gentity_s *pgVar1;
@@ -850,15 +886,15 @@ Actor_TeamMoveTooCloseMoveAway(actor_s *param_1,int param_2,team_move_context_t 
   float fVar4;
   int in_stack_ffffffc8;
   float *in_stack_ffffffcc;
-  float local_18;
+  float vDodgeDelta;
   float local_14;
-  float local_10;
+  float vOrgDodge;
   float local_c;
   float local_8;
   
-  if (param_3->fDodgePosDeltaLengthSqrd <= 1406.25 && param_3->fDodgePosDeltaLengthSqrd != 1406.25)
+  if (context->fDodgePosDeltaLengthSqrd <= 1406.25 && context->fDodgePosDeltaLengthSqrd != 1406.25)
   {
-    if (param_3->pDodgeOther == (sentient_s *)0x0) {
+    if (context->pDodgeOther == (sentient_s *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x263,
                                0,"%s");
       if (!bVar3) {
@@ -867,17 +903,17 @@ Actor_TeamMoveTooCloseMoveAway(actor_s *param_1,int param_2,team_move_context_t 
         return;
       }
     }
-    pgVar1 = param_3->pDodgeOther->ent;
-    local_10 = (pgVar1->r).currentOrigin[0];
+    pgVar1 = context->pDodgeOther->ent;
+    vOrgDodge = (pgVar1->r).currentOrigin[0];
     local_c = (pgVar1->r).currentOrigin[1];
     local_8 = (pgVar1->r).currentOrigin[2];
-    local_18 = local_10 - param_3->vOrgSelf[0];
-    local_14 = local_c - param_3->vOrgSelf[1];
-    fVar4 = Vec2Normalize(&local_18);
+    vDodgeDelta = vOrgDodge - context->vOrgSelf[0];
+    local_14 = local_c - context->vOrgSelf[1];
+    fVar4 = Vec2Normalize(&vDodgeDelta);
     if (fVar4 < 37.5) {
       Path_PredictionTraceCheckForEntities
-                ((float *)param_3->dodgeEntities,(float *)param_3->dodgeEntityCount,
-                 (int *)(param_1->ent->s).number,param_2,(int)param_3->vOrgSelf,in_stack_ffffffc8,
+                ((float *)context->dodgeEntities,(float *)context->dodgeEntityCount,
+                 (int *)(self->ent->s).number,mask,(int)context->vOrgSelf,in_stack_ffffffc8,
                  in_stack_ffffffcc);
     }
   }
@@ -892,23 +928,23 @@ Actor_TeamMoveTooCloseMoveAway(actor_s *param_1,int param_2,team_move_context_t 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_TeamMoveCheckPileup(actor_s *param_1,actor_s *param_2)
+bool __cdecl Actor_TeamMoveCheckPileup(actor_s *self,actor_s *pOtherActor)
 
 {
   actor_s *unaff_EBP;
   
-  if ((((param_2 != (actor_s *)0x0) &&
-       (Actor_UpdatePileUp(unaff_EBP), param_2->pPileUpActor != (actor_s *)0x0)) &&
-      (param_2->pPileUpActor != param_1)) &&
-     ((param_2->pPileUpEnt != param_1->ent &&
-      (param_1->eState[param_1->stateLevel] != AIS_GRENADE_RESPONSE)))) {
-    if ((param_1->Path).wDodgeCount < 0) {
-      (param_1->Path).wDodgeCount = 0;
+  if ((((pOtherActor != (actor_s *)0x0) &&
+       (Actor_UpdatePileUp(unaff_EBP), pOtherActor->pPileUpActor != (actor_s *)0x0)) &&
+      (pOtherActor->pPileUpActor != self)) &&
+     ((pOtherActor->pPileUpEnt != self->ent &&
+      (self->eState[self->stateLevel] != AIS_GRENADE_RESPONSE)))) {
+    if ((self->Path).wDodgeCount < 0) {
+      (self->Path).wDodgeCount = 0;
     }
-    param_1->pPileUpActor = param_2->pPileUpActor;
-    param_1->pPileUpEnt = param_2->pPileUpEnt;
+    self->pPileUpActor = pOtherActor->pPileUpActor;
+    self->pPileUpEnt = pOtherActor->pPileUpEnt;
     Actor_TeamMoveBlocked(unaff_EBP);
-    param_1->iTeamMoveDodgeTime = 0;
+    self->iTeamMoveDodgeTime = 0;
     return true;
   }
   return false;
@@ -922,7 +958,7 @@ bool __cdecl Actor_TeamMoveCheckPileup(actor_s *param_1,actor_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-ai_teammove_t __cdecl Actor_GetTeamMoveStatus(actor_s *param_1,bool param_2,bool param_3)
+ai_teammove_t __cdecl Actor_GetTeamMoveStatus(actor_s *bAllowGoalPileUp,bool param_2,bool param_3)
 
 {
   gentity_s *pgVar1;
@@ -934,31 +970,33 @@ ai_teammove_t __cdecl Actor_GetTeamMoveStatus(actor_s *param_1,bool param_2,bool
   actor_s *in_ECX;
   bool in_DL;
   actor_s *unaff_ESI;
-  path_t *ppVar7;
-  float *pfVar8;
+  path_t *vDodgeStart;
+  float *vDodgeEnd;
   int in_stack_fffffe28;
-  float local_1b4;
-  team_move_other_context_t local_198;
-  sentient_s *local_168;
-  actor_s *local_164;
-  path_t *local_160;
-  team_move_context_t local_15c;
-  float local_44;
+  int local_1b4;
+  bool bUseInterval;
+  actor_s *self;
+  team_move_other_context_t context_other;
+  sentient_s *other;
+  actor_s *pOtherActor;
+  path_t *pPath;
+  team_move_context_t context;
+  float vOrgDodgeStart;
   float local_40;
   float local_3c;
-  float local_38;
+  float vVelPerp;
   float local_34;
-  float local_30;
-  float *local_2c;
-  float local_28;
+  ai_teammove_t eResult;
+  int startIndex;
+  float vOrgDodge;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
+  int mask;
+  float vOrgDodgeEnd;
   float local_14;
   float local_10;
-  float local_c;
-  char local_5;
+  int bCheckLookahead;
+  bool bCheckWait;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x2a9,
@@ -989,112 +1027,109 @@ ai_teammove_t __cdecl Actor_GetTeamMoveStatus(actor_s *param_1,bool param_2,bool
     aVar4 = (*pcVar2)();
     return aVar4;
   }
-  local_30 = 0.0;
-  local_160 = &in_ECX->Path;
+  eResult = AI_TEAMMOVE_TRAVEL;
+  pPath = &in_ECX->Path;
   pgVar1 = in_ECX->ent;
-  local_15c.vOrgSelf[0] = (pgVar1->r).currentOrigin[0];
-  local_15c.vOrgSelf[1] = (pgVar1->r).currentOrigin[1];
-  local_15c.vOrgSelf[2] = (pgVar1->r).currentOrigin[2];
-  bVar3 = Actor_TeamMoveCheckWaitTimer(in_ECX,(ai_teammove_t *)&local_30);
-  if ((!bVar3) &&
-     (bVar3 = Actor_TeamMoveCalcMovementDir(&local_15c,(ai_teammove_t *)&local_30), !bVar3)) {
-    Actor_TeamMoveInitializeContext(in_ECX,in_DL,SUB41(param_1,0),&local_15c);
-    for (local_168 = level.sentients; local_168 < level.sentients + 0x30; local_168 = local_168 + 1)
-    {
-      if (local_168->inuse != false) {
-        local_198.other = local_168;
-        bVar3 = Actor_TeamMoveShouldTryDodgeSentient(&local_15c,&local_198);
-        if ((bVar3) && (bVar3 = Actor_TeamMoveTryDodge(&local_15c,&local_198), bVar3)) {
-          Actor_TeamMoveSetDodge(&local_15c,&local_198);
+  context.vOrgSelf[0] = (pgVar1->r).currentOrigin[0];
+  context.vOrgSelf[1] = (pgVar1->r).currentOrigin[1];
+  context.vOrgSelf[2] = (pgVar1->r).currentOrigin[2];
+  bVar3 = Actor_TeamMoveCheckWaitTimer(in_ECX,&eResult);
+  if ((!bVar3) && (bVar3 = Actor_TeamMoveCalcMovementDir(&context,&eResult), !bVar3)) {
+    Actor_TeamMoveInitializeContext(in_ECX,in_DL,SUB41(bAllowGoalPileUp,0),&context);
+    for (other = level.sentients; other < level.sentients + 0x30; other = other + 1) {
+      if (other->inuse != false) {
+        context_other.other = other;
+        bVar3 = Actor_TeamMoveShouldTryDodgeSentient(&context,&context_other);
+        if ((bVar3) && (bVar3 = Actor_TeamMoveTryDodge(&context,&context_other), bVar3)) {
+          Actor_TeamMoveSetDodge(&context,&context_other);
         }
       }
     }
-    if ((local_15c.pSlowDownOther == (sentient_s *)0x0) ||
-       (bVar3 = Actor_TeamMoveConsiderSlowDown(&local_15c,(ai_teammove_t *)&local_30), bVar3)) {
+    if ((context.pSlowDownOther == (sentient_s *)0x0) ||
+       (bVar3 = Actor_TeamMoveConsiderSlowDown(&context,&eResult), bVar3)) {
       Actor_ClearPileUp(unaff_ESI);
-      if ((local_15c.pDodgeOther == (sentient_s *)0x0) ||
+      if ((context.pDodgeOther == (sentient_s *)0x0) ||
          ((in_ECX->noDodgeMove != false || ((ai_noDodge->current).enabled != false)))) {
-        local_30 = (float)Actor_TeamMoveNoDodge(&local_15c,(ai_teammove_t)local_30);
+        eResult = Actor_TeamMoveNoDodge(&context,eResult);
       }
       else {
-        if ((int)local_160->wDodgeEntity != ((local_15c.pDodgeOther)->ent->s).number) {
+        if ((int)pPath->wDodgeEntity != ((context.pDodgeOther)->ent->s).number) {
           in_ECX->iTeamMoveDodgeTime = 0;
-          if (local_160->wDodgeCount < 0) {
-            local_160->wDodgeCount = 0;
+          if (pPath->wDodgeCount < 0) {
+            pPath->wDodgeCount = 0;
           }
-          local_160->wDodgeEntity = (short)((local_15c.pDodgeOther)->ent->s).number;
+          pPath->wDodgeEntity = (short)((context.pDodgeOther)->ent->s).number;
         }
-        bVar3 = Actor_IsEnemy(in_ECX,local_15c.pDodgeOther);
+        bVar3 = Actor_IsEnemy(in_ECX,context.pDodgeOther);
         if (bVar3) {
-          if (local_15c.fDodgePosDeltaLengthSqrd < 1406.25) {
+          if (context.fDodgePosDeltaLengthSqrd < 1406.25) {
             psVar5 = Actor_GetTargetSentient(unaff_ESI);
-            if (psVar5 == local_15c.pDodgeOther) {
+            if (psVar5 == context.pDodgeOther) {
               Actor_ClearPath(unaff_ESI);
             }
             Actor_TeamMoveBlocked(unaff_ESI);
-            local_30 = 1.4013e-45;
+            eResult = AI_TEAMMOVE_WAIT;
           }
         }
         else {
-          local_164 = (local_15c.pDodgeOther)->ent->actor;
-          local_5 = Actor_TeamMoveNeedToCheckWait(in_ECX->moveMode,local_160);
-          if (!(bool)local_5) goto LAB_0091d8e9;
-          while (bVar3 = Actor_TeamMoveCheckPileup(in_ECX,local_164), !bVar3) {
+          pOtherActor = (context.pDodgeOther)->ent->actor;
+          bCheckWait = Actor_TeamMoveNeedToCheckWait(in_ECX->moveMode,pPath);
+          if (!bCheckWait) goto LAB_0091d8e9;
+          while (bVar3 = Actor_TeamMoveCheckPileup(in_ECX,pOtherActor), !bVar3) {
 LAB_0091d8e9:
             if (level.time < in_ECX->iTeamMoveDodgeTime) {
-              return (ai_teammove_t)local_30;
+              return eResult;
             }
-            local_2c = (float *)Actor_TeamMoveTrimPath(local_160,&local_15c);
-            if ((local_160->fLookaheadDistToNextNode == 0.0) ||
-               (local_160->fLookaheadDist < SQRT(local_15c.fDodgePosDeltaLengthSqrd) + 37.5)) {
-              local_1b4 = 0.0;
+            startIndex = Actor_TeamMoveTrimPath(pPath,&context);
+            if ((pPath->fLookaheadDistToNextNode == 0.0) ||
+               (pPath->fLookaheadDist < SQRT(context.fDodgePosDeltaLengthSqrd) + 37.5)) {
+              local_1b4 = 0;
             }
             else {
-              local_1b4 = 1.4013e-45;
+              local_1b4 = 1;
             }
-            local_c = local_1b4;
-            if (((local_1b4 != 0.0) &&
-                (local_160->wPathLen + -1 <= (int)local_160->lookaheadNextNode)) &&
+            bCheckLookahead = local_1b4;
+            if (((local_1b4 != 0) && (pPath->wPathLen + -1 <= (int)pPath->lookaheadNextNode)) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp"
                                          ,0x2ff,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               aVar4 = (*pcVar2)();
               return aVar4;
             }
-            if ((local_c != 0.0) || ((int)local_160->wNegotiationStartNode <= (int)local_2c)) {
-              if ((local_15c.vVelDirSelf[0] == 0.0) &&
-                 ((local_15c.vVelDirSelf[1] == 0.0 &&
+            if ((bCheckLookahead != 0) || (pPath->wNegotiationStartNode <= startIndex)) {
+              if ((context.vVelDirSelf[0] == 0.0) &&
+                 ((context.vVelDirSelf[1] == 0.0 &&
                   (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp"
                                             ,0x304,0,"%s"), !bVar3)))) {
                 pcVar2 = (code *)swi(3);
                 aVar4 = (*pcVar2)();
                 return aVar4;
               }
-              if (local_164 == (actor_s *)0x0) {
-                local_1c = (float)((in_ECX->Physics).iTraceMask | 0x8004);
+              if (pOtherActor == (actor_s *)0x0) {
+                mask = (in_ECX->Physics).iTraceMask | 0x8004;
               }
               else {
-                local_1c = (float)((in_ECX->Physics).iTraceMask | 4);
+                mask = (in_ECX->Physics).iTraceMask | 4;
               }
-              Actor_TeamMoveTooCloseMoveAway(in_ECX,(int)local_1c,&local_15c);
-              local_38 = local_15c.vVelDirSelf[1] * 37.5;
-              local_34 = local_15c.vVelDirSelf[0] * -37.5;
-              pgVar1 = (local_15c.pDodgeOther)->ent;
-              local_28 = (pgVar1->r).currentOrigin[0];
+              Actor_TeamMoveTooCloseMoveAway(in_ECX,mask,&context);
+              vVelPerp = context.vVelDirSelf[1] * 37.5;
+              local_34 = context.vVelDirSelf[0] * -37.5;
+              pgVar1 = (context.pDodgeOther)->ent;
+              vOrgDodge = (pgVar1->r).currentOrigin[0];
               local_24 = (pgVar1->r).currentOrigin[1];
               local_3c = (pgVar1->r).currentOrigin[2];
-              local_44 = local_15c.vVelDirSelf[0] * -37.5 + local_28 + local_38;
-              local_40 = local_15c.vVelDirSelf[1] * -37.5 + local_24 + local_34;
-              local_18 = local_15c.vVelDirSelf[0] * 75.0 + local_44;
-              local_14 = local_15c.vVelDirSelf[1] * 75.0 + local_40;
-              pfVar8 = &local_18;
-              ppVar7 = (path_t *)&local_44;
+              vOrgDodgeStart = context.vVelDirSelf[0] * -37.5 + vOrgDodge + vVelPerp;
+              local_40 = context.vVelDirSelf[1] * -37.5 + local_24 + local_34;
+              vOrgDodgeEnd = context.vVelDirSelf[0] * 75.0 + vOrgDodgeStart;
+              local_14 = context.vVelDirSelf[1] * 75.0 + local_40;
+              vDodgeEnd = &vOrgDodgeEnd;
+              vDodgeStart = (path_t *)&vOrgDodgeStart;
               local_20 = local_3c;
               local_10 = local_3c;
-              bVar3 = Path_AttemptDodge(ppVar7,pfVar8,local_2c,(float *)local_15c.dodgeEntities,
-                                        local_15c.dodgeEntityCount,(int *)(in_ECX->ent->s).number,
-                                        (int)local_1c,(int)local_c,(int)unaff_ESI,in_stack_fffffe28)
-              ;
+              bVar3 = Path_AttemptDodge(vDodgeStart,vDodgeEnd,(float *)startIndex,
+                                        (float *)context.dodgeEntities,context.dodgeEntityCount,
+                                        (int *)(in_ECX->ent->s).number,mask,bCheckLookahead,
+                                        (int)unaff_ESI,in_stack_fffffe28);
               if (bVar3) {
                 if ((ai_showDodge->current).enabled != false) {
                   Com_Printf(0x12,"AI %d right dodge succeed AI %d\n");
@@ -1102,23 +1137,23 @@ LAB_0091d8e9:
 LAB_0091e21c:
                 in_ECX->iTeamMoveDodgeTime = level.time + 1000;
                 if (in_ECX->moveMode != '\0') {
-                  return (ai_teammove_t)local_30;
+                  return eResult;
                 }
                 return AI_TEAMMOVE_WAIT;
               }
               if ((ai_showDodge->current).enabled != false) {
                 Com_Printf(0x12,"AI %d failed right dodge pathing AI %d\n");
               }
-              local_38 = local_38 * 2.0;
+              vVelPerp = vVelPerp * 2.0;
               local_34 = local_34 * 2.0;
-              local_44 = local_44 - local_38;
+              vOrgDodgeStart = vOrgDodgeStart - vVelPerp;
               local_40 = local_40 - local_34;
-              local_18 = local_18 - local_38;
+              vOrgDodgeEnd = vOrgDodgeEnd - vVelPerp;
               local_14 = local_14 - local_34;
-              bVar3 = Path_AttemptDodge((path_t *)&local_44,&local_18,local_2c,
-                                        (float *)local_15c.dodgeEntities,local_15c.dodgeEntityCount,
-                                        (int *)(in_ECX->ent->s).number,(int)local_1c,(int)local_c,
-                                        (int)ppVar7,(int)pfVar8);
+              bVar3 = Path_AttemptDodge((path_t *)&vOrgDodgeStart,&vOrgDodgeEnd,(float *)startIndex,
+                                        (float *)context.dodgeEntities,context.dodgeEntityCount,
+                                        (int *)(in_ECX->ent->s).number,mask,bCheckLookahead,
+                                        (int)vDodgeStart,(int)vDodgeEnd);
               if (bVar3) {
                 if ((ai_showDodge->current).enabled != false) {
                   Com_Printf(0x12,"AI %d left dodge succeed AI %d\n");
@@ -1129,27 +1164,27 @@ LAB_0091e21c:
                 Com_Printf(0x12,"AI %d failed left dodge pathing AI %d\n");
               }
             }
-            if (((local_164 != (actor_s *)0x0) &&
+            if (((pOtherActor != (actor_s *)0x0) &&
                 (in_ECX->eSubState[in_ECX->stateLevel] == STATE_EXPOSED_COMBAT)) &&
-               ((local_164->eSubState[in_ECX->stateLevel] != STATE_EXPOSED_COMBAT ||
+               ((pOtherActor->eSubState[in_ECX->stateLevel] != STATE_EXPOSED_COMBAT ||
                 (bVar3 = Actor_HasPath(unaff_ESI), !bVar3)))) goto LAB_0091e262;
-            if (1406.25 <= local_15c.fDodgePosDeltaLengthSqrd) {
+            if (1406.25 <= context.fDodgePosDeltaLengthSqrd) {
               if (in_ECX->moveMode != '\0') {
-                return (ai_teammove_t)local_30;
+                return eResult;
               }
-              if ((3600.0 <= local_15c.fDodgePosDeltaLengthSqrd) &&
-                 ((60.0 <= local_160->fLookaheadDist ||
+              if ((3600.0 <= context.fDodgePosDeltaLengthSqrd) &&
+                 ((60.0 <= pPath->fLookaheadDist ||
                   (iVar6 = Path_CompleteLookahead((path_t *)unaff_ESI), iVar6 != 0))))
               goto LAB_0091e262;
             }
-            if (local_160->wDodgeCount < 0) {
-              if ((60.0 < local_160->fLookaheadDist || local_160->fLookaheadDist == 60.0) ||
+            if (pPath->wDodgeCount < 0) {
+              if ((60.0 < pPath->fLookaheadDist || pPath->fLookaheadDist == 60.0) ||
                  (iVar6 = Path_CompleteLookahead((path_t *)unaff_ESI), iVar6 != 0)) {
 LAB_0091df8f:
                 if ((level.time / 500) % 4 != 0) goto LAB_0091e119;
-                if (-1 < local_160->wDodgeCount) {
-                  if ((local_160->wDodgeCount == 0) && (local_15c.bFailedLookahead == 0)) {
-                    local_160->wDodgeCount = -1;
+                if (-1 < pPath->wDodgeCount) {
+                  if ((pPath->wDodgeCount == 0) && (context.bFailedLookahead == 0)) {
+                    pPath->wDodgeCount = -1;
                   }
                   else {
                     Actor_ClearPath(unaff_ESI);
@@ -1157,42 +1192,44 @@ LAB_0091df8f:
                   goto LAB_0091e119;
                 }
               }
-              if (local_164 == (actor_s *)0x0) {
+              if (pOtherActor == (actor_s *)0x0) {
 LAB_0091e0d1:
-                local_160->wDodgeCount = 0;
+                pPath->wDodgeCount = 0;
 LAB_0091e119:
-                if ((local_164 == (actor_s *)0x0) || (local_164->pPileUpEnt != in_ECX->ent)) {
+                if ((pOtherActor == (actor_s *)0x0) || (pOtherActor->pPileUpEnt != in_ECX->ent)) {
                   in_ECX->pPileUpActor = in_ECX;
-                  in_ECX->pPileUpEnt = (local_15c.pDodgeOther)->ent;
+                  in_ECX->pPileUpEnt = (context.pDodgeOther)->ent;
                 }
                 Actor_TeamMoveBlocked(unaff_ESI);
                 return AI_TEAMMOVE_WAIT;
               }
-              if (local_164->eAnimMode == AI_ANIM_MOVE_CODE) {
+              if (pOtherActor->eAnimMode == AI_ANIM_MOVE_CODE) {
                 if ((ai_showDodge->current).enabled != false) {
                   Com_Printf(0x12,"AI %d failed to dodge pathing AI %d\n");
                 }
               }
               else {
-                if ((local_164->eState[local_164->stateLevel] != AIS_SCRIPTEDANIM) &&
-                   (local_164->eState[local_164->stateLevel] != AIS_CUSTOMANIM)) goto LAB_0091e0d1;
+                if ((pOtherActor->eState[pOtherActor->stateLevel] != AIS_SCRIPTEDANIM) &&
+                   (pOtherActor->eState[pOtherActor->stateLevel] != AIS_CUSTOMANIM))
+                goto LAB_0091e0d1;
                 if ((ai_showDodge->current).enabled != false) {
                   Com_Printf(0x12,"AI %d failed to dodge scripted AI %d\n");
                 }
               }
             }
             else {
-              if ((local_160->wDodgeCount != 0) || (local_164 == (actor_s *)0x0)) goto LAB_0091df8f;
-              if (((local_164->eAnimMode == AI_ANIM_MOVE_CODE) ||
-                  (local_164->eAnimMode == AI_ANIM_USE_BOTH_DELTAS_ZONLY_PHYSICS)) &&
-                 ((local_164->moveMode == '\0' && (bVar3 = Actor_IsAtGoal(unaff_ESI), bVar3)))) {
+              if ((pPath->wDodgeCount != 0) || (pOtherActor == (actor_s *)0x0)) goto LAB_0091df8f;
+              if (((pOtherActor->eAnimMode == AI_ANIM_MOVE_CODE) ||
+                  (pOtherActor->eAnimMode == AI_ANIM_USE_BOTH_DELTAS_ZONLY_PHYSICS)) &&
+                 ((pOtherActor->moveMode == '\0' && (bVar3 = Actor_IsAtGoal(unaff_ESI), bVar3)))) {
                 if ((ai_showDodge->current).enabled != false) {
                   Com_Printf(0x12,"AI %d failed to dodge stationary AI %d\n");
                 }
               }
               else {
-                if ((local_164->eState[local_164->stateLevel] != AIS_SCRIPTEDANIM) &&
-                   (local_164->eState[local_164->stateLevel] != AIS_CUSTOMANIM)) goto LAB_0091df8f;
+                if ((pOtherActor->eState[pOtherActor->stateLevel] != AIS_SCRIPTEDANIM) &&
+                   (pOtherActor->eState[pOtherActor->stateLevel] != AIS_CUSTOMANIM))
+                goto LAB_0091df8f;
                 if ((ai_showDodge->current).enabled != false) {
                   Com_Printf(0x12,"AI %d failed to dodge scripted AI %d\n");
                 }
@@ -1201,22 +1238,22 @@ LAB_0091e119:
 LAB_0091e262:
             in_ECX->iTeamMoveDodgeTime = level.time + 1000;
             if (in_ECX->moveMode != '\0') {
-              return (ai_teammove_t)local_30;
+              return eResult;
             }
-            if (local_5 != '\0') {
+            if (bCheckWait != false) {
               return AI_TEAMMOVE_WAIT;
             }
-            local_30 = 1.4013e-45;
+            eResult = AI_TEAMMOVE_WAIT;
           }
-          local_30 = 1.4013e-45;
+          eResult = AI_TEAMMOVE_WAIT;
         }
       }
     }
     else {
-      local_30 = 1.4013e-45;
+      eResult = AI_TEAMMOVE_WAIT;
     }
   }
-  return (ai_teammove_t)local_30;
+  return eResult;
 }
 
 
@@ -1227,7 +1264,8 @@ LAB_0091e262:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_MoveAlongPathWithTeam(actor_s *param_1,bool param_2,bool param_3,bool param_4)
+void __cdecl
+Actor_MoveAlongPathWithTeam(actor_s *self,bool bRun,bool bUseInterval,bool bAllowGoalPileUp)
 
 {
   code *pcVar1;
@@ -1236,8 +1274,9 @@ void __cdecl Actor_MoveAlongPathWithTeam(actor_s *param_1,bool param_2,bool para
   char *pcVar4;
   actor_s *in_stack_ffffffc8;
   undefined1 in_stack_ffffffcc;
-  ai_teammove_t local_c;
-  bool local_5;
+  PIXProfile pixProfile;
+  ai_teammove_t eTeamMove;
+  bool wasMoving;
   
   PIXBeginNamedEvent(-1,"movealongpath");
   pcVar4 = (char *)0x91d24d;
@@ -1252,29 +1291,28 @@ void __cdecl Actor_MoveAlongPathWithTeam(actor_s *param_1,bool param_2,bool para
       return;
     }
   }
-  if (param_1->eAnimMode == AI_ANIM_USE_BOTH_DELTAS_ZONLY_PHYSICS) {
-    local_5 = false;
-    local_c = AI_TEAMMOVE_TRAVEL;
+  if (self->eAnimMode == AI_ANIM_USE_BOTH_DELTAS_ZONLY_PHYSICS) {
+    wasMoving = false;
+    eTeamMove = AI_TEAMMOVE_TRAVEL;
   }
   else {
-    local_5 = Actor_IsMoving(in_stack_ffffffc8);
-    if (!local_5) {
-      param_1->eAnimMode = AI_ANIM_MOVE_CODE;
-      param_1->moveMode = '\0';
-      if ((param_1->stateLevel < 6) && (param_1->eState[param_1->stateLevel + 1] != AIS_NEGOTIATION)
-         ) {
-        param_1->prevMoveDir[0] = 0.0;
-        param_1->prevMoveDir[1] = 0.0;
+    wasMoving = Actor_IsMoving(in_stack_ffffffc8);
+    if (!wasMoving) {
+      self->eAnimMode = AI_ANIM_MOVE_CODE;
+      self->moveMode = '\0';
+      if ((self->stateLevel < 6) && (self->eState[self->stateLevel + 1] != AIS_NEGOTIATION)) {
+        self->prevMoveDir[0] = 0.0;
+        self->prevMoveDir[1] = 0.0;
       }
     }
-    pcVar4 = (char *)(uint)param_4;
-    local_c = Actor_GetTeamMoveStatus
-                        ((actor_s *)pcVar4,SUB41(in_stack_ffffffc8,0),(bool)in_stack_ffffffcc);
+    pcVar4 = (char *)(uint)bAllowGoalPileUp;
+    eTeamMove = Actor_GetTeamMoveStatus
+                          ((actor_s *)pcVar4,SUB41(in_stack_ffffffc8,0),(bool)in_stack_ffffffcc);
   }
-  if (local_c != AI_TEAMMOVE_TRAVEL) {
-    if (local_c == AI_TEAMMOVE_WAIT) {
+  if (eTeamMove != AI_TEAMMOVE_TRAVEL) {
+    if (eTeamMove == AI_TEAMMOVE_WAIT) {
       Actor_AnimStop((actor_s *)pcVar4,(scr_animscript_t *)&DAT_00000001);
-      (param_1->arrivalInfo).animscriptOverrideRunTo = 0;
+      (self->arrivalInfo).animscriptOverrideRunTo = 0;
       DVar3 = GetCurrentThreadId();
       if (DVar3 != (DWORD)g_DXDeviceThread) {
         return;
@@ -1285,7 +1323,7 @@ void __cdecl Actor_MoveAlongPathWithTeam(actor_s *param_1,bool param_2,bool para
       _D3DPERF_EndEvent_0();
       return;
     }
-    if (local_c != AI_TEAMMOVE_SLOW_DOWN) {
+    if (eTeamMove != AI_TEAMMOVE_SLOW_DOWN) {
       pcVar4 = va("unhandled case %i for Actor_MoveAlongPathWithTeam");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_team_move.cpp",0x3f7,
                                0,pcVar4);
@@ -1304,23 +1342,23 @@ void __cdecl Actor_MoveAlongPathWithTeam(actor_s *param_1,bool param_2,bool para
       _D3DPERF_EndEvent_0();
       return;
     }
-    param_2 = false;
+    bRun = false;
   }
-  if (param_2 == false) {
+  if (bRun == false) {
     Actor_AnimTryWalk((actor_s *)pcVar4);
   }
   else {
     Actor_AnimTryRun((actor_s *)pcVar4);
   }
-  if (((param_1->goalPosChanged != false) && (local_5 != false)) ||
-     ((param_1->arrivalInfo).arrivalNotifyRequested != 0)) {
-    (param_1->arrivalInfo).arrivalNotifyRequested = 0;
+  if (((self->goalPosChanged != false) && (wasMoving != false)) ||
+     ((self->arrivalInfo).arrivalNotifyRequested != 0)) {
+    (self->arrivalInfo).arrivalNotifyRequested = 0;
   }
-  if ((local_5 == false) && (bVar2 = Actor_IsMoving((actor_s *)pcVar4), bVar2)) {
+  if ((wasMoving == false) && (bVar2 = Actor_IsMoving((actor_s *)pcVar4), bVar2)) {
     Actor_ClearMoveHistory((actor_s *)pcVar4);
-    param_1->yawVeloc = 0.0;
-    param_1->ent->flags = param_1->ent->flags & 0xe7ffffff;
-    (param_1->Path).iPathEndTime = 0;
+    self->yawVeloc = 0.0;
+    self->ent->flags = self->ent->flags & 0xe7ffffff;
+    (self->Path).iPathEndTime = 0;
   }
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {

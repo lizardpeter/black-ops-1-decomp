@@ -228,13 +228,13 @@ void _HTIconInit(void)
 
 {
   char cVar1;
-  void *pvVar2;
-  void *pvVar3;
+  void *pBlock;
+  void *pBlock_00;
+  char *pBlock_01;
+  char *pcVar2;
+  void *pBlock_02;
+  int iVar3;
   char *pcVar4;
-  char *pcVar5;
-  void *pvVar6;
-  int iVar7;
-  char *pcVar8;
   void *local_4;
   
   _HTIcon_addBlank("/icons/");
@@ -257,11 +257,11 @@ void _HTIconInit(void)
   _HTIcon_add("/icons/","TEL","application/x-gopher-telnet");
   _HTIcon_add("/icons/","DUP","application/x-gopher-duplicate");
   _HTIcon_add("/icons/","TN","application/x-gopher-tn3270");
-  pvVar3 = (void *)_HTGetCurrentDirectoryURL();
-  local_4 = (void *)_HTParse(pvVar3,0x1d);
+  pBlock_00 = (void *)_HTGetCurrentDirectoryURL();
+  local_4 = (void *)_HTParse(pBlock_00,0x1d);
   _HTSACat(&local_4,"*");
-  pcVar4 = (char *)_HTMemory_malloc();
-  if (pcVar4 == (char *)0x0) {
+  pBlock_01 = (char *)_HTMemory_malloc();
+  if (pBlock_01 == (char *)0x0) {
     if (DAT_03547718 != (code *)0x0) {
       (*DAT_03547718)("HTIconInit",
                       "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTInit.c",0x17c);
@@ -269,51 +269,51 @@ void _HTIconInit(void)
                     /* WARNING: Subroutine does not return */
     abort();
   }
-  pcVar5 = "/usr/local/share/w3c-icons";
-  pcVar8 = pcVar4;
-  for (iVar7 = 6; iVar7 != 0; iVar7 = iVar7 + -1) {
-    *(undefined4 *)pcVar8 = *(undefined4 *)pcVar5;
-    pcVar5 = pcVar5 + 4;
-    pcVar8 = pcVar8 + 4;
+  pcVar2 = "/usr/local/share/w3c-icons";
+  pcVar4 = pBlock_01;
+  for (iVar3 = 6; iVar3 != 0; iVar3 = iVar3 + -1) {
+    *(undefined4 *)pcVar4 = *(undefined4 *)pcVar2;
+    pcVar2 = pcVar2 + 4;
+    pcVar4 = pcVar4 + 4;
   }
-  *(undefined2 *)pcVar8 = *(undefined2 *)pcVar5;
-  pcVar8[2] = pcVar5[2];
-  pcVar5 = pcVar4;
+  *(undefined2 *)pcVar4 = *(undefined2 *)pcVar2;
+  pcVar4[2] = pcVar2[2];
+  pcVar2 = pBlock_01;
   do {
-    cVar1 = *pcVar5;
-    pcVar5 = pcVar5 + 1;
+    cVar1 = *pcVar2;
+    pcVar2 = pcVar2 + 1;
   } while (cVar1 != '\0');
-  if (pcVar4[(int)(pcVar5 + (-1 - (int)(pcVar4 + 1)))] != '/') {
-    pcVar5 = pcVar4 + -1;
+  if (pBlock_01[(int)(pcVar2 + (-1 - (int)(pBlock_01 + 1)))] != '/') {
+    pcVar2 = pBlock_01 + -1;
     do {
-      pcVar8 = pcVar5 + 1;
-      pcVar5 = pcVar5 + 1;
-    } while (*pcVar8 != '\0');
-    pcVar5[0] = '/';
-    pcVar5[1] = '\0';
+      pcVar4 = pcVar2 + 1;
+      pcVar2 = pcVar2 + 1;
+    } while (*pcVar4 != '\0');
+    pcVar2[0] = '/';
+    pcVar2[1] = '\0';
   }
-  pcVar5 = pcVar4 + -1;
+  pcVar2 = pBlock_01 + -1;
   do {
-    pcVar8 = pcVar5 + 1;
-    pcVar5 = pcVar5 + 1;
-  } while (*pcVar8 != '\0');
-  pcVar5[0] = '*';
-  pcVar5[1] = '\0';
-  pvVar6 = (void *)_HTParse(pvVar3,0x1d);
-  free(pcVar4);
+    pcVar4 = pcVar2 + 1;
+    pcVar2 = pcVar2 + 1;
+  } while (*pcVar4 != '\0');
+  pcVar2[0] = '*';
+  pcVar2[1] = '\0';
+  pBlock_02 = (void *)_HTParse(pBlock_00,0x1d);
+  free(pBlock_01);
   if (DAT_0354779c == 0) {
     DAT_0354779c = _HTList_new();
   }
-  pvVar2 = local_4;
-  _HTRule_add(DAT_0354779c,2,pvVar6);
-  if (pvVar2 != (void *)0x0) {
-    free(pvVar2);
+  pBlock = local_4;
+  _HTRule_add(DAT_0354779c,2,pBlock_02);
+  if (pBlock != (void *)0x0) {
+    free(pBlock);
   }
-  if (pvVar6 != (void *)0x0) {
-    free(pvVar6);
+  if (pBlock_02 != (void *)0x0) {
+    free(pBlock_02);
   }
-  if (pvVar3 != (void *)0x0) {
-    free(pvVar3);
+  if (pBlock_00 != (void *)0x0) {
+    free(pBlock_00);
   }
   return;
 }

@@ -7,12 +7,12 @@
 int __cdecl pkcs_1_mgf1(int param_1,int param_2,undefined4 param_3,undefined1 *param_4,int param_5)
 
 {
-  uint uVar1;
+  uint size;
+  int iVar1;
+  undefined1 *ptr;
+  undefined1 *ptr_00;
   int iVar2;
-  undefined1 *puVar3;
-  undefined1 *puVar4;
-  int iVar5;
-  uint uVar6;
+  uint uVar3;
   
   if (param_2 == 0) {
     crypt_argchk("seed != NULL",
@@ -24,53 +24,53 @@ int __cdecl pkcs_1_mgf1(int param_1,int param_2,undefined4 param_3,undefined1 *p
                  "C:\\projects_pc\\cod\\codsrc\\libs\\libtomcrypt-1.17\\src\\pk\\pkcs1\\pkcs_1_mgf1.c"
                  ,0x28);
   }
-  iVar2 = hash_is_valid(param_1);
-  if (iVar2 != 0) {
-    return iVar2;
+  iVar1 = hash_is_valid(param_1);
+  if (iVar1 != 0) {
+    return iVar1;
   }
   param_1 = param_1 * 0x68;
-  uVar1 = *(uint *)(&DAT_0b548c80 + param_1);
-  puVar3 = tom_game_malloc(0x70);
-  puVar4 = tom_game_malloc(uVar1);
-  if (puVar3 == (undefined1 *)0x0) {
-    puVar3 = puVar4;
-    if (puVar4 == (undefined1 *)0x0) {
+  size = *(uint *)(&DAT_0b548c80 + param_1);
+  ptr = tom_game_malloc(0x70);
+  ptr_00 = tom_game_malloc(size);
+  if (ptr == (undefined1 *)0x0) {
+    ptr = ptr_00;
+    if (ptr_00 == (undefined1 *)0x0) {
       return 0xd;
     }
   }
-  else if (puVar4 != (undefined1 *)0x0) {
-    iVar2 = 0;
+  else if (ptr_00 != (undefined1 *)0x0) {
+    iVar1 = 0;
     while (param_5 != 0) {
-      *puVar4 = (char)((uint)iVar2 >> 0x18);
-      puVar4[3] = (char)iVar2;
-      puVar4[1] = (char)((uint)iVar2 >> 0x10);
-      puVar4[2] = (char)((uint)iVar2 >> 8);
-      iVar2 = iVar2 + 1;
-      iVar5 = (**(code **)(&DAT_0b548ccc + param_1))(puVar3);
-      if ((((iVar5 != 0) ||
-           (iVar5 = (**(code **)(&DAT_0b548cd0 + param_1))(puVar3,param_2,param_3), iVar5 != 0)) ||
-          (iVar5 = (**(code **)(&DAT_0b548cd0 + param_1))(puVar3,puVar4,4), iVar5 != 0)) ||
-         (iVar5 = (**(code **)(&DAT_0b548cd4 + param_1))(puVar3,puVar4), iVar5 != 0))
+      *ptr_00 = (char)((uint)iVar1 >> 0x18);
+      ptr_00[3] = (char)iVar1;
+      ptr_00[1] = (char)((uint)iVar1 >> 0x10);
+      ptr_00[2] = (char)((uint)iVar1 >> 8);
+      iVar1 = iVar1 + 1;
+      iVar2 = (**(code **)(&DAT_0b548ccc + param_1))(ptr);
+      if ((((iVar2 != 0) ||
+           (iVar2 = (**(code **)(&DAT_0b548cd0 + param_1))(ptr,param_2,param_3), iVar2 != 0)) ||
+          (iVar2 = (**(code **)(&DAT_0b548cd0 + param_1))(ptr,ptr_00,4), iVar2 != 0)) ||
+         (iVar2 = (**(code **)(&DAT_0b548cd4 + param_1))(ptr,ptr_00), iVar2 != 0))
       goto LAB_00c42d0d;
-      uVar6 = 0;
-      if (uVar1 != 0) {
+      uVar3 = 0;
+      if (size != 0) {
         do {
           if (param_5 == 0) goto LAB_00c42d0b;
           param_5 = param_5 + -1;
-          *param_4 = puVar4[uVar6];
+          *param_4 = ptr_00[uVar3];
           param_4 = param_4 + 1;
-          uVar6 = uVar6 + 1;
-        } while (uVar6 < uVar1);
+          uVar3 = uVar3 + 1;
+        } while (uVar3 < size);
       }
     }
 LAB_00c42d0b:
-    iVar5 = 0;
+    iVar2 = 0;
 LAB_00c42d0d:
-    tom_game_free(puVar4);
-    tom_game_free(puVar3);
-    return iVar5;
+    tom_game_free(ptr_00);
+    tom_game_free(ptr);
+    return iVar2;
   }
-  tom_game_free(puVar3);
+  tom_game_free(ptr);
   return 0xd;
 }
 

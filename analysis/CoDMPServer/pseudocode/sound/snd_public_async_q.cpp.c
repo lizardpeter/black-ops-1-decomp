@@ -2,19 +2,19 @@
 
 // 0094DEA0  SND_NextCommandIndex  (sound/snd_public_async_q.cpp:60)
 
-uint __cdecl SND_NextCommandIndex(uint param_1)
+uint __cdecl SND_NextCommandIndex(uint i)
 
 {
-  return param_1 + 1 & 0x3ff;
+  return i + 1 & 0x3ff;
 }
 
 
 // 0094F080  SND_NextNotifyIndex  (sound/snd_public_async_q.cpp:66)
 
-uint __cdecl SND_NextNotifyIndex(uint param_1)
+uint __cdecl SND_NextNotifyIndex(uint i)
 
 {
-  return param_1 + 1 & 0x1ff;
+  return i + 1 & 0x1ff;
 }
 
 
@@ -45,7 +45,7 @@ snd_command * __cdecl SND_GetNewCommand(void)
   code *pcVar1;
   bool bVar2;
   snd_command *psVar3;
-  snd_command *local_8;
+  snd_command *cmd;
   
   if (g_snd.command_init == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",0x54
@@ -56,7 +56,7 @@ snd_command * __cdecl SND_GetNewCommand(void)
       return psVar3;
     }
   }
-  local_8 = (snd_command *)0x0;
+  cmd = (snd_command *)0x0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_COMMAND_ALLOC);
   if (0x3ff < g_snd.command_q_tail) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",0x5a
@@ -77,7 +77,7 @@ snd_command * __cdecl SND_GetNewCommand(void)
     }
   }
   if (g_snd.commands[g_snd.command_free].type == SND_COMMAND_NOP) {
-    local_8 = g_snd.commands + g_snd.command_free;
+    cmd = g_snd.commands + g_snd.command_free;
     g_snd.command_free = SND_NextCommandIndex(g_snd.command_free);
   }
   else {
@@ -86,7 +86,7 @@ snd_command * __cdecl SND_GetNewCommand(void)
                   );
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_COMMAND_ALLOC);
-  return local_8;
+  return cmd;
 }
 
 
@@ -94,7 +94,7 @@ snd_command * __cdecl SND_GetNewCommand(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-uint __cdecl SND_CommandPush(snd_command *param_1)
+uint __cdecl SND_CommandPush(snd_command *cmd)
 
 {
   code *pcVar1;
@@ -102,8 +102,8 @@ uint __cdecl SND_CommandPush(snd_command *param_1)
   uint uVar3;
   uint uVar4;
   int iVar5;
-  uint local_c;
-  uint local_8;
+  uint mark;
+  uint id;
   
   if (g_snd.command_init == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",0x6f
@@ -133,8 +133,8 @@ uint __cdecl SND_CommandPush(snd_command *param_1)
       return uVar3;
     }
   }
-  if ((param_1 < g_snd.commands) ||
-     ((snd_command *)((int)&g_snd.commands[0x3ff].timestamp + 3) < param_1)) {
+  if ((cmd < g_snd.commands) || ((snd_command *)((int)&g_snd.commands[0x3ff].timestamp + 3) < cmd))
+  {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",0x7e
                              ,0,"%s");
     if (!bVar2) {
@@ -143,7 +143,7 @@ uint __cdecl SND_CommandPush(snd_command *param_1)
       return uVar3;
     }
   }
-  if (param_1->type == SND_COMMAND_NOP) {
+  if (cmd->type == SND_COMMAND_NOP) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",0x7f
                              ,0,"%s");
     if (!bVar2) {
@@ -153,16 +153,16 @@ uint __cdecl SND_CommandPush(snd_command *param_1)
     }
   }
   uVar3 = g_snd.command_id;
-  local_8 = g_snd.command_id;
+  id = g_snd.command_id;
   g_snd.command_id = g_snd.command_id + 1;
   uVar4 = SND_NextCommandIndex(g_snd.command_q_head);
   if (uVar4 == g_snd.command_q_tail) {
     Com_PrintError(9,"Failed to push sound command: queue is full\n");
-    memset((uchar *)param_1,'\0',0x4c);
-    local_8 = 0;
+    memset((uchar *)cmd,'\0',0x4c);
+    id = 0;
   }
   else {
-    param_1->id = uVar3;
+    cmd->id = uVar3;
     if (g_snd.command_q[g_snd.command_q_head] != (snd_command *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
                                0x86,0,"%s");
@@ -173,8 +173,8 @@ uint __cdecl SND_CommandPush(snd_command *param_1)
       }
     }
     iVar5 = Sys_Milliseconds();
-    param_1->timestamp = iVar5;
-    g_snd.command_q[g_snd.command_q_head] = param_1;
+    cmd->timestamp = iVar5;
+    g_snd.command_q[g_snd.command_q_head] = cmd;
     g_snd.command_q_head = SND_NextCommandIndex(g_snd.command_q_head);
     if (g_snd.command_q_head < g_snd.command_q_tail) {
       iVar5 = 0x400 - g_snd.command_q_tail;
@@ -182,11 +182,11 @@ uint __cdecl SND_CommandPush(snd_command *param_1)
     else {
       iVar5 = -g_snd.command_q_tail;
     }
-    local_c = g_snd.command_q_head + iVar5;
-    SND_LogCommandQHWM(local_c);
+    mark = g_snd.command_q_head + iVar5;
+    SND_LogCommandQHWM(mark);
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_COMMAND_PUSH);
-  return local_8;
+  return id;
 }
 
 
@@ -305,7 +305,7 @@ void __cdecl SND_CommandPop(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_CommandProcess(snd_command *param_1)
+void __cdecl SND_CommandProcess(snd_command *cmd)
 
 {
   code *pcVar1;
@@ -319,10 +319,10 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     (*pcVar1)();
     return;
   }
-  switch(param_1->type) {
+  switch(cmd->type) {
   case SND_COMMAND_ALIAS_NAME:
     PIXBeginNamedEvent(-1,"SNDL_AliasName");
-    SNDL_AliasName((char *)&param_1->context,(param_1->context).alias_name.id);
+    SNDL_AliasName((char *)&cmd->context,(cmd->context).alias_name.id);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -330,10 +330,10 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_PLAY:
     PIXBeginNamedEvent(-1,"SNDL_Play");
-    SNDL_Play((param_1->context).play.alias,(param_1->context).play.fadeTimeMs,
-              (param_1->context).play.attenuation,(param_1->context).play.entHandle,
-              (param_1->context).play.position,(param_1->context).play.direction,
-              (param_1->context).play.notify != 0,(param_1->context).play.playback);
+    SNDL_Play((cmd->context).play.alias,(cmd->context).play.fadeTimeMs,
+              (cmd->context).play.attenuation,(cmd->context).play.entHandle,
+              (cmd->context).play.position,(cmd->context).play.direction,
+              (cmd->context).play.notify != 0,(cmd->context).play.playback);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -341,8 +341,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_STOP_ALIAS:
     PIXBeginNamedEvent(-1,"SNDL_StopSoundAliasOnEnt");
-    SNDL_StopSoundAliasOnEnt
-              ((param_1->context).stop_alias.ent,(param_1->context).stop_alias.alias_name);
+    SNDL_StopSoundAliasOnEnt((cmd->context).stop_alias.ent,(cmd->context).stop_alias.alias_name);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -350,7 +349,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_STOP_ENT:
     PIXBeginNamedEvent(-1,"SNDL_StopSoundsOnEnt");
-    SNDL_StopSoundsOnEnt((param_1->context).stop_alias.ent);
+    SNDL_StopSoundsOnEnt((cmd->context).stop_alias.ent);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -358,7 +357,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_CINEMATIC_START:
     PIXBeginNamedEvent(-1,"SNDL_NotifyCinematicStart");
-    SNDL_NotifyCinematicStart((float)(param_1->context).play.alias);
+    SNDL_NotifyCinematicStart((float)(cmd->context).play.alias);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -374,7 +373,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_DISCONNECT_LISTENER:
     PIXBeginNamedEvent(-1,"SNDL_DisconnectListener");
-    SNDL_DisconnectListener((param_1->context).set_listener.listener);
+    SNDL_DisconnectListener((cmd->context).set_listener.listener);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -382,9 +381,9 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_SET_LISTENER:
     PIXBeginNamedEvent(-1,"SNDL_SetListener");
-    SNDL_SetListener((param_1->context).set_listener.listener,(param_1->context).play.fadeTimeMs,
-                     (param_1->context).set_listener.team,(param_1->context).set_listener.origin,
-                     (param_1->context).set_listener.axis);
+    SNDL_SetListener((cmd->context).set_listener.listener,(cmd->context).play.fadeTimeMs,
+                     (cmd->context).set_listener.team,(cmd->context).set_listener.origin,
+                     (cmd->context).set_listener.axis);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -392,7 +391,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_STOP_SOUNDS:
     PIXBeginNamedEvent(-1,"SNDL_StopSounds");
-    SNDL_StopSounds((param_1->context).play.alias);
+    SNDL_StopSounds((cmd->context).play.alias);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -417,9 +416,9 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
   case SND_COMMAND_SET_ENVIRONMENT_EFFECTS:
     PIXBeginNamedEvent(-1,"SNDL_SetEnvironmentEffects");
     SNDL_SetEnvironmentEffects
-              ((param_1->context).set_listener.listener,(param_1->context).stop_alias.alias_name,
-               (param_1->context).play.attenuation,(param_1->context).set_listener.origin[0],
-               (param_1->context).play.notify);
+              ((cmd->context).set_listener.listener,(cmd->context).stop_alias.alias_name,
+               (cmd->context).play.attenuation,(cmd->context).set_listener.origin[0],
+               (cmd->context).play.notify);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -428,7 +427,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
   case SND_COMMAND_DEACTIVATE_ENVIRONMENT_EFFECTS:
     PIXBeginNamedEvent(-1,"SNDL_DeactivateEnvironmentEffects");
     SNDL_DeactivateEnvironmentEffects
-              ((param_1->context).set_listener.listener,(param_1->context).play.fadeTimeMs);
+              ((cmd->context).set_listener.listener,(cmd->context).play.fadeTimeMs);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -437,8 +436,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
   case SND_COMMAND_SET_PLAYBACK_ATTENUATION:
     PIXBeginNamedEvent(-1,"SNDL_SetPlaybackAttenuation");
     SNDL_SetPlaybackAttenuation
-              ((param_1->context).set_listener.listener,
-               (param_1->context).set_playback_attenuation.attenuation);
+              ((cmd->context).set_listener.listener,
+               (cmd->context).set_playback_attenuation.attenuation);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -447,8 +446,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
   case SND_COMMAND_SET_PLAYBACK_ATTENUATION_RATE:
     PIXBeginNamedEvent(-1,"SNDL_SetPlaybackAttenuationRate");
     SNDL_SetPlaybackAttenuationRate
-              ((param_1->context).set_listener.listener,
-               (param_1->context).set_playback_attenuation.attenuation);
+              ((cmd->context).set_listener.listener,
+               (cmd->context).set_playback_attenuation.attenuation);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -457,8 +456,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
   case SND_COMMAND_SET_PLAYBACK_PITCH:
     PIXBeginNamedEvent(-1,"SNDL_SetPlaybackPitch");
     SNDL_SetPlaybackPitch
-              ((param_1->context).set_listener.listener,
-               (param_1->context).set_playback_attenuation.attenuation);
+              ((cmd->context).set_listener.listener,
+               (cmd->context).set_playback_attenuation.attenuation);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -467,8 +466,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
   case SND_COMMAND_SET_PLAYBACK_PITCH_RATE:
     PIXBeginNamedEvent(-1,"SNDL_SetPlaybackPitchRate");
     SNDL_SetPlaybackPitchRate
-              ((param_1->context).set_listener.listener,
-               (param_1->context).set_playback_attenuation.attenuation);
+              ((cmd->context).set_listener.listener,
+               (cmd->context).set_playback_attenuation.attenuation);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -476,7 +475,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_STOP_PLAYBACK:
     PIXBeginNamedEvent(-1,"SNDL_StopPlayback");
-    SNDL_StopPlayback((param_1->context).set_listener.listener);
+    SNDL_StopPlayback((cmd->context).set_listener.listener);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -484,8 +483,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_SNAPSHOT:
     PIXBeginNamedEvent(-1,"SNDL_SetSnapshot");
-    SNDL_SetSnapshot((param_1->context).snapshot.type,(param_1->context).stop_alias.alias_name,
-                     (param_1->context).play.attenuation,(param_1->context).set_listener.origin[0]);
+    SNDL_SetSnapshot((cmd->context).snapshot.type,(cmd->context).stop_alias.alias_name,
+                     (cmd->context).play.attenuation,(cmd->context).set_listener.origin[0]);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -493,10 +492,10 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_SET_ENT_STATE:
     PIXBeginNamedEvent(-1,"SNDL_SetEntState");
-    SNDL_SetEntState((param_1->context).stop_alias.ent,
-                     &(param_1->context).set_playback_attenuation.attenuation,
-                     (param_1->context).set_listener.origin + 1,
-                     (float (*) [3])((param_1->context).set_listener.axis[0] + 1));
+    SNDL_SetEntState((cmd->context).stop_alias.ent,
+                     &(cmd->context).set_playback_attenuation.attenuation,
+                     (cmd->context).set_listener.origin + 1,
+                     (float (*) [3])((cmd->context).set_listener.axis[0] + 1));
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -504,11 +503,10 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_SET_GAME_STATE:
     PIXBeginNamedEvent(-1,"SNDL_SetGameState");
-    SNDL_SetGameState((param_1->context).set_game_state.is_mature,
-                      (param_1->context).set_game_state.is_paused,
-                      (param_1->context).set_playback_attenuation.attenuation,
-                      (param_1->context).set_game_state.cg_time,
-                      (param_1->context).set_game_state.seed);
+    SNDL_SetGameState((cmd->context).set_game_state.is_mature,
+                      (cmd->context).set_game_state.is_paused,
+                      (cmd->context).set_playback_attenuation.attenuation,
+                      (cmd->context).set_game_state.cg_time,(cmd->context).set_game_state.seed);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -516,8 +514,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_PLAY_LOOP_AT:
     PIXBeginNamedEvent(-1,"SNDL_PlayLoopAt");
-    SNDL_PlayLoopAt((param_1->context).play.alias,
-                    &(param_1->context).set_playback_attenuation.attenuation);
+    SNDL_PlayLoopAt((cmd->context).play.alias,&(cmd->context).set_playback_attenuation.attenuation);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -525,8 +522,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_STOP_LOOP_AT:
     PIXBeginNamedEvent(-1,"SNDL_StopLoopAt");
-    SNDL_StopLoopAt((param_1->context).play.alias,
-                    &(param_1->context).set_playback_attenuation.attenuation);
+    SNDL_StopLoopAt((cmd->context).play.alias,&(cmd->context).set_playback_attenuation.attenuation);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -534,9 +530,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_PLAY_LINE_AT:
     PIXBeginNamedEvent(-1,"SNDL_PlayLineAt");
-    SNDL_PlayLineAt((param_1->context).play.alias,
-                    &(param_1->context).set_playback_attenuation.attenuation,
-                    (param_1->context).set_listener.origin + 1);
+    SNDL_PlayLineAt((cmd->context).play.alias,&(cmd->context).set_playback_attenuation.attenuation,
+                    (cmd->context).set_listener.origin + 1);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -544,9 +539,8 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_STOP_LINE_AT:
     PIXBeginNamedEvent(-1,"SNDL_StopLineAt");
-    SNDL_StopLineAt((param_1->context).play.alias,
-                    &(param_1->context).set_playback_attenuation.attenuation,
-                    (param_1->context).set_listener.origin + 1);
+    SNDL_StopLineAt((cmd->context).play.alias,&(cmd->context).set_playback_attenuation.attenuation,
+                    (cmd->context).set_listener.origin + 1);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -562,7 +556,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_SET_CONTEXT:
     PIXBeginNamedEvent(-1,"SNDL_SetContext");
-    SNDL_SetContext((param_1->context).play.alias,(param_1->context).stop_alias.alias_name);
+    SNDL_SetContext((cmd->context).play.alias,(cmd->context).stop_alias.alias_name);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -570,7 +564,7 @@ void __cdecl SND_CommandProcess(snd_command *param_1)
     break;
   case SND_COMMAND_SCRIPT_TIMESCALE:
     PIXBeginNamedEvent(-1,"SNDL_SetContext");
-    SNDL_SetScriptTimescale((float)(param_1->context).play.alias);
+    SNDL_SetScriptTimescale((float)(cmd->context).play.alias);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -610,8 +604,8 @@ uint __cdecl SND_CommandPump(void)
   bool bVar2;
   uint uVar3;
   DWORD DVar4;
-  uint local_c;
-  snd_command *local_8;
+  uint count;
+  snd_command *cmd;
   
   PIXBeginNamedEvent(0xffffff,"SND_CommandPump");
   if ((g_snd.command_init == 0) &&
@@ -621,23 +615,23 @@ uint __cdecl SND_CommandPump(void)
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_c = 0;
-  local_8 = SND_CommandPeek();
-  while (local_8 != (snd_command *)0x0) {
-    local_c = local_c + 1;
+  count = 0;
+  cmd = SND_CommandPeek();
+  while (cmd != (snd_command *)0x0) {
+    count = count + 1;
     bVar2 = SND_GetProcessCommandFlag();
     if (bVar2) {
-      SND_CommandProcess(local_8);
-      g_snd.command_id_commit = local_8->id;
+      SND_CommandProcess(cmd);
+      g_snd.command_id_commit = cmd->id;
     }
     SND_CommandPop();
-    local_8 = SND_CommandPeek();
+    cmd = SND_CommandPeek();
   }
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return local_c;
+  return count;
 }
 
 
@@ -651,7 +645,7 @@ snd_notify * __cdecl SND_GetNewNotify(void)
   code *pcVar1;
   bool bVar2;
   snd_notify *psVar3;
-  snd_notify *local_8;
+  snd_notify *cmd;
   
   if (g_snd.command_init == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
@@ -662,7 +656,7 @@ snd_notify * __cdecl SND_GetNewNotify(void)
       return psVar3;
     }
   }
-  local_8 = (snd_notify *)0x0;
+  cmd = (snd_notify *)0x0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_NOTIFY_ALLOC);
   if (0x1ff < g_snd.notify_q_tail) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
@@ -683,31 +677,34 @@ snd_notify * __cdecl SND_GetNewNotify(void)
     }
   }
   if (g_snd.notifies[g_snd.notify_free].type == SND_NOTIFY_NOP) {
-    local_8 = g_snd.notifies + g_snd.notify_free;
+    cmd = g_snd.notifies + g_snd.notify_free;
     g_snd.notify_free = SND_NextNotifyIndex(g_snd.notify_free);
   }
   else {
     Com_PrintError(9,"No notify space in sound queue.\n");
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_NOTIFY_ALLOC);
-  return local_8;
+  return cmd;
 }
 
 
 // 0094F620  SND_NotifyProcess  (sound/snd_public_async_q.cpp:518)
 
-void __cdecl SND_NotifyProcess(snd_notify *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl SND_NotifyProcess(snd_notify *cmd)
 
 {
   snd_playback *psVar1;
   code *pcVar2;
   bool bVar3;
   DWORD DVar4;
+  snd_playback *playback;
   
-  switch(param_1->type) {
+  switch(cmd->type) {
   case SND_NOTIFY_ENT_UPDATE:
     PIXBeginNamedEvent(-1,"SND_SetEntState");
-    SND_SetEntState((param_1->context).ent_update.handle);
+    SND_SetEntState((cmd->context).ent_update.handle);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -715,8 +712,7 @@ void __cdecl SND_NotifyProcess(snd_notify *param_1)
     break;
   case SND_NOTIFY_SUBTITLE:
     PIXBeginNamedEvent(-1,"CG_SubtitleSndLengthNotify");
-    CG_SubtitleSndLengthNotify
-              ((param_1->context).subtitle.lengthMs,(param_1->context).subtitle.subtitle);
+    CG_SubtitleSndLengthNotify((cmd->context).subtitle.lengthMs,(cmd->context).subtitle.subtitle);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -724,7 +720,7 @@ void __cdecl SND_NotifyProcess(snd_notify *param_1)
     break;
   case SND_NOTIFY_LENGTH:
     PIXBeginNamedEvent(-1,"CG_ScriptSndLengthNotify");
-    GamerProfile_WriteSettings((param_1->context).subtitle.lengthMs);
+    GamerProfile_WriteSettings((cmd->context).subtitle.lengthMs);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -732,24 +728,24 @@ void __cdecl SND_NotifyProcess(snd_notify *param_1)
     break;
   case SND_NOTIFY_PLAYBACK_UPDATE:
     PIXBeginNamedEvent(-1,"update playback");
-    if (((param_1->context).subtitle.lengthMs == 0) &&
+    if (((cmd->context).subtitle.lengthMs == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
                                  0x228,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((param_1->context).playback_update.playback)->id == -1) &&
+    if ((((cmd->context).playback_update.playback)->id == -1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
                                  0x229,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    psVar1 = (param_1->context).playback_update.playback;
-    psVar1->attenuation = (float)(param_1->context).subtitle.subtitle;
-    psVar1->lengthMs = (param_1->context).playback_update.lengthMs;
-    psVar1->playedMs = (param_1->context).playback_update.playedMs;
+    psVar1 = (cmd->context).playback_update.playback;
+    psVar1->attenuation = (float)(cmd->context).subtitle.subtitle;
+    psVar1->lengthMs = (cmd->context).playback_update.lengthMs;
+    psVar1->playedMs = (cmd->context).playback_update.playedMs;
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -757,7 +753,7 @@ void __cdecl SND_NotifyProcess(snd_notify *param_1)
     break;
   case SND_NOTIFY_PLAYBACK_FREE:
     PIXBeginNamedEvent(-1,"SND_FreePlayback");
-    SND_FreePlayback((param_1->context).playback_update.playback);
+    SND_FreePlayback((cmd->context).playback_update.playback);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -782,7 +778,7 @@ void __cdecl SND_NotifyProcess(snd_notify *param_1)
 /* WARNING: Removing unreachable block (ram,0x0094f0c4) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_NotifyPush(snd_notify *param_1)
+void __cdecl SND_NotifyPush(snd_notify *cmd)
 
 {
   code *pcVar1;
@@ -790,7 +786,7 @@ void __cdecl SND_NotifyPush(snd_notify *param_1)
   uint uVar3;
   DWORD DVar4;
   int iVar5;
-  uint local_8;
+  uint mark;
   
   PIXBeginNamedEvent(-1,"SND_NotifyPush");
   if ((g_snd.command_init == 0) &&
@@ -815,10 +811,9 @@ void __cdecl SND_NotifyPush(snd_notify *param_1)
     (*pcVar1)();
     return;
   }
-  if (((param_1 < g_snd.notifies) ||
-      ((snd_notify *)((int)&g_snd.notifies[0x1ff].context + 0xf) < param_1)) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
-                               0x247,0,"%s"), !bVar2)) {
+  if (((cmd < g_snd.notifies) || ((snd_notify *)((int)&g_snd.notifies[0x1ff].context + 0xf) < cmd))
+     && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp"
+                                  ,0x247,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
@@ -831,7 +826,7 @@ void __cdecl SND_NotifyPush(snd_notify *param_1)
     (*pcVar1)();
     return;
   }
-  if ((param_1->type == SND_NOTIFY_NOP) &&
+  if ((cmd->type == SND_NOTIFY_NOP) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async_q.cpp",
                                0x249,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -847,7 +842,7 @@ void __cdecl SND_NotifyPush(snd_notify *param_1)
       (*pcVar1)();
       return;
     }
-    g_snd.notify_q[g_snd.notify_q_head] = param_1;
+    g_snd.notify_q[g_snd.notify_q_head] = cmd;
     g_snd.notify_q_head = SND_NextNotifyIndex(g_snd.notify_q_head);
     if (g_snd.notify_q_head < g_snd.notify_q_tail) {
       iVar5 = 0x200 - g_snd.notify_q_tail;
@@ -855,8 +850,8 @@ void __cdecl SND_NotifyPush(snd_notify *param_1)
     else {
       iVar5 = -g_snd.notify_q_tail;
     }
-    local_8 = g_snd.notify_q_head + iVar5;
-    SND_LogNotifyQHWM(local_8);
+    mark = g_snd.notify_q_head + iVar5;
+    SND_LogNotifyQHWM(mark);
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_NOTIFY_PUSH);
   DVar4 = GetCurrentThreadId();
@@ -971,7 +966,7 @@ void __cdecl SND_NotifyPump(void)
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  snd_notify *local_8;
+  snd_notify *cmd;
   
   PIXBeginNamedEvent(-1,"SND_NotifyPump");
   if ((g_snd.command_init == 0) &&
@@ -981,11 +976,11 @@ void __cdecl SND_NotifyPump(void)
     (*pcVar1)();
     return;
   }
-  local_8 = SND_NotifyPeek();
-  while (local_8 != (snd_notify *)0x0) {
-    SND_NotifyProcess(local_8);
+  cmd = SND_NotifyPeek();
+  while (cmd != (snd_notify *)0x0) {
+    SND_NotifyProcess(cmd);
     SND_NotifyPop();
-    local_8 = SND_NotifyPeek();
+    cmd = SND_NotifyPeek();
   }
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {

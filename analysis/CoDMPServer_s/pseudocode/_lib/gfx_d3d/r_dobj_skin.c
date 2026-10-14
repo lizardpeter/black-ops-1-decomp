@@ -2,15 +2,18 @@
 
 // 00846900  R_SkinSceneDObj  (gfx_d3d/r_dobj_skin.cpp:1004)
 
+/* WARNING: Variable defined which should be unmapped: waitForCullState */
+
 void __cdecl
-R_SkinSceneDObj(GfxSceneEntity *param_1,GfxSceneEntity *param_2,DObj *param_3,DObjAnimMat *param_4,
-               int param_5)
+R_SkinSceneDObj(GfxSceneEntity *boneMatrix,GfxSceneEntity *param_2,DObj *param_3,
+               DObjAnimMat *param_4,int param_5)
 
 {
   int iVar1;
   uint uVar2;
   int in_EDX;
   GfxSceneEntity *unaff_ESI;
+  int waitForCullState;
   
   if ((unaff_ESI->cull).state < 4) {
     LOCK();
@@ -21,7 +24,7 @@ R_SkinSceneDObj(GfxSceneEntity *param_1,GfxSceneEntity *param_2,DObj *param_3,DO
     }
     UNLOCK();
     if (iVar1 == 2) {
-      uVar2 = R_SkinSceneDObjModels(unaff_ESI,(DObj *)param_1,(DObjAnimMat *)param_2);
+      uVar2 = R_SkinSceneDObjModels(unaff_ESI,(DObj *)boneMatrix,(DObjAnimMat *)param_2);
       (unaff_ESI->cull).state = uVar2 + 4;
     }
   }
@@ -31,32 +34,37 @@ R_SkinSceneDObj(GfxSceneEntity *param_1,GfxSceneEntity *param_2,DObj *param_3,DO
 
 // 00846940  R_SkinGfxEntityCmd  (gfx_d3d/r_dobj_skin.cpp:1085)
 
+/* WARNING: Variable defined which should be unmapped: localSceneEnt */
+
 void __cdecl R_SkinGfxEntityCmd(void *param_1)
 
 {
-  GfxSceneEntity *pGVar1;
+  GfxSceneEntity *sceneEnt;
   undefined4 *in_EAX;
-  DObjAnimMat *pDVar2;
-  uint uVar3;
+  DObjAnimMat *boneMatrix;
+  uint uVar1;
   int unaff_ESI;
-  GfxSceneEntityCull *pGVar4;
-  GfxSceneEntity *local_8;
+  GfxSceneEntityCull *pGVar2;
+  int *piVar3;
+  GfxSceneEntity *localSceneEnt;
+  DObj *obj;
   GfxSceneEntity *local_4;
   
-  pGVar1 = (GfxSceneEntity *)*in_EAX;
-  pDVar2 = R_UpdateSceneEntBounds(pGVar1,&local_4,(DObj **)0x0,unaff_ESI);
-  if ((pDVar2 != (DObjAnimMat *)0x0) && ((local_8->cull).state < 4)) {
-    pGVar4 = &pGVar1->cull;
+  sceneEnt = (GfxSceneEntity *)*in_EAX;
+  boneMatrix = R_UpdateSceneEntBounds(sceneEnt,&local_4,(DObj **)0x0,unaff_ESI);
+  if ((boneMatrix != (DObjAnimMat *)0x0) &&
+     (piVar3 = (obj->skel).partBits.control + 1, (uint)*piVar3 < 4)) {
+    pGVar2 = &sceneEnt->cull;
     LOCK();
-    uVar3 = pGVar4->state;
-    if (uVar3 == 2) {
-      pGVar4->state = 3;
-      uVar3 = 2;
+    uVar1 = pGVar2->state;
+    if (uVar1 == 2) {
+      pGVar2->state = 3;
+      uVar1 = 2;
     }
     UNLOCK();
-    if (uVar3 == 2) {
-      uVar3 = R_SkinSceneDObjModels(local_8,(DObj *)local_4,pDVar2);
-      (local_8->cull).state = uVar3 + 4;
+    if (uVar1 == 2) {
+      uVar1 = R_SkinSceneDObjModels((GfxSceneEntity *)obj,(DObj *)local_4,boneMatrix);
+      *piVar3 = uVar1 + 4;
     }
   }
   return;

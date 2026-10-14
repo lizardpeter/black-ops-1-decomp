@@ -6,13 +6,19 @@
 
 void __cdecl
 FX_BuildQuadStampCodeMeshVerts
-          (Material *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-          uchar *param_6,float param_7,float param_8,float param_9,float param_10)
+          (Material *material,float *viewAxis,float *origin,float *left,float *up,uchar *rgbaColor,
+          float s0,float t0,float s1,float t1)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  GfxPackedVertex *pGVar3;
+  float fVar1;
+  float fVar2;
+  float fVar3;
+  float fVar4;
+  float fVar5;
+  float fVar6;
+  code *pcVar7;
+  bool bVar8;
+  GfxPackedVertex *pGVar9;
   uint local_1a8;
   uint local_1a4;
   uint local_1a0;
@@ -31,60 +37,67 @@ FX_BuildQuadStampCodeMeshVerts
   uint local_c8;
   PackedUnitVec local_ac;
   PackedUnitVec local_8c;
-  float local_40;
+  PackedUnitVec packedNormal;
+  PackedUnitVec packedTangent;
+  float testBinormal;
   float local_3c;
   float local_38;
-  r_double_index_t *local_30;
-  GfxColor local_2c;
-  undefined4 local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  ushort local_18 [2];
-  float local_14;
+  GfxPackedVertex *verts;
+  r_double_index_t *indices;
+  GfxColor nativeColor;
+  r_double_index_t index;
+  ushort baseVertex;
+  float leftUp;
   float local_10;
   float local_c;
+  GfxPackedVertex *baseVerts;
   
-  bVar2 = R_ReserveCodeMeshVerts(4,local_18);
-  if ((bVar2) && (bVar2 = R_ReserveCodeMeshIndices(6,&local_30), bVar2)) {
-    Vec3Cross(param_2,param_4,&local_40);
-    if ((*param_5 * local_40 + param_5[1] * local_3c + param_5[2] * local_38 <= 0.0) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",
-                                 0x38,0,"Vec3Dot( up, testBinormal ) > 0.0f\n\t%g, %g"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+  bVar8 = R_ReserveCodeMeshVerts(4,&baseVertex);
+  if ((bVar8) && (bVar8 = R_ReserveCodeMeshIndices(6,&indices), bVar8)) {
+    Vec3Cross(viewAxis,left,&testBinormal);
+    if ((*up * testBinormal + up[1] * local_3c + up[2] * local_38 <= 0.0) &&
+       (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",
+                                 0x38,0,"Vec3Dot( up, testBinormal ) > 0.0f\n\t%g, %g"), !bVar8)) {
+      pcVar7 = (code *)swi(3);
+      (*pcVar7)();
       return;
     }
-    local_28 = CONCAT22(local_18[0] + 1,local_18[0]);
-    *(undefined4 *)local_30->value = local_28;
-    local_28 = CONCAT22(local_18[0] + 3,local_18[0] + 3);
-    *(undefined4 *)local_30[1].value = local_28;
-    local_28 = CONCAT22(local_18[0] + 2,local_18[0] + 1);
-    *(undefined4 *)local_30[2].value = local_28;
-    R_AddCodeMeshDrawSurf(param_1,local_30,6,0,0,"",0xd);
-    local_14 = *param_4 + *param_5;
-    local_10 = param_4[1] + param_5[1];
-    local_c = param_4[2] + param_5[2];
-    local_24 = *param_4 - *param_5;
-    local_20 = param_4[1] - param_5[1];
-    local_1c = param_4[2] - param_5[2];
-    Byte4CopyRgbaToVertexColor(param_6,local_2c.array);
-    local_8c.array[1] = (char)(int)(-param_2[1] * 127.0 + 127.5);
-    local_8c.array[0] = (char)(int)(-*param_2 * 127.0 + 127.5);
-    local_8c.array[2] = (char)(int)(-param_2[2] * 127.0 + 127.5);
+    index.value[1] = baseVertex + 1;
+    index.value[0] = baseVertex;
+    *(r_double_index_t *)indices->value = index;
+    index.value[1] = baseVertex + 3;
+    index.value[0] = baseVertex + 3;
+    *&indices[1].value = index.value;
+    index.value[1] = baseVertex + 2;
+    index.value[0] = baseVertex + 1;
+    *&indices[2].value = index.value;
+    R_AddCodeMeshDrawSurf(material,indices,6,0,0,"",0xd);
+    leftUp = *left + *up;
+    local_10 = left[1] + up[1];
+    local_c = left[2] + up[2];
+    fVar1 = *left;
+    fVar2 = *up;
+    fVar3 = left[1];
+    fVar4 = up[1];
+    fVar5 = left[2];
+    fVar6 = up[2];
+    Byte4CopyRgbaToVertexColor(rgbaColor,nativeColor.array);
+    local_8c.array[1] = (char)(int)(-viewAxis[1] * 127.0 + 127.5);
+    local_8c.array[0] = (char)(int)(-*viewAxis * 127.0 + 127.5);
+    local_8c.array[2] = (char)(int)(-viewAxis[2] * 127.0 + 127.5);
     local_8c.array[3] = 0x3f;
-    local_ac.array[1] = (char)(int)(-param_4[1] * 127.0 + 127.5);
-    local_ac.array[0] = (char)(int)(-*param_4 * 127.0 + 127.5);
-    local_ac.array[2] = (char)(int)(-param_4[2] * 127.0 + 127.5);
+    local_ac.array[1] = (char)(int)(-left[1] * 127.0 + 127.5);
+    local_ac.array[0] = (char)(int)(-*left * 127.0 + 127.5);
+    local_ac.array[2] = (char)(int)(-left[2] * 127.0 + 127.5);
     local_ac.array[3] = 0x3f;
-    pGVar3 = R_GetCodeMeshVerts(local_18[0]);
-    pGVar3->xyz[0] = *param_3 + local_14;
-    pGVar3->xyz[1] = param_3[1] + local_10;
-    pGVar3->xyz[2] = param_3[2] + local_c;
-    pGVar3->binormalSign = 1.0;
-    pGVar3->normal = local_8c;
-    pGVar3->color = local_2c;
-    local_c8 = (int)((int)param_7 << 1 ^ 0x80000000U) >> 0xe;
+    pGVar9 = R_GetCodeMeshVerts(baseVertex);
+    pGVar9->xyz[0] = *origin + leftUp;
+    pGVar9->xyz[1] = origin[1] + local_10;
+    pGVar9->xyz[2] = origin[2] + local_c;
+    pGVar9->binormalSign = 1.0;
+    pGVar9->normal = local_8c;
+    pGVar9->color = nativeColor;
+    local_c8 = (int)((int)s0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_c8) {
       local_c8 = 0x3fff;
     }
@@ -94,7 +107,7 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_18c = local_c8;
     }
-    local_dc = (int)((int)param_8 << 1 ^ 0x80000000U) >> 0xe;
+    local_dc = (int)((int)t0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_dc) {
       local_dc = 0x3fff;
     }
@@ -104,17 +117,17 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_190 = local_dc;
     }
-    (pGVar3->texCoord).packed =
-         ((int)param_7 >> 0x10 & 0xc000U | local_18c & 0x3fff) * 0x10000 +
-         ((int)param_8 >> 0x10 & 0xc000U | local_190 & 0x3fff);
-    pGVar3->tangent = local_ac;
-    pGVar3[1].xyz[0] = *param_3 - local_24;
-    pGVar3[1].xyz[1] = param_3[1] - local_20;
-    pGVar3[1].xyz[2] = param_3[2] - local_1c;
-    pGVar3[1].binormalSign = 1.0;
-    pGVar3[1].normal = local_8c;
-    pGVar3[1].color = local_2c;
-    local_100 = (int)((int)param_9 << 1 ^ 0x80000000U) >> 0xe;
+    (pGVar9->texCoord).packed =
+         ((int)s0 >> 0x10 & 0xc000U | local_18c & 0x3fff) * 0x10000 +
+         ((int)t0 >> 0x10 & 0xc000U | local_190 & 0x3fff);
+    pGVar9->tangent = local_ac;
+    pGVar9[1].xyz[0] = *origin - (fVar1 - fVar2);
+    pGVar9[1].xyz[1] = origin[1] - (fVar3 - fVar4);
+    pGVar9[1].xyz[2] = origin[2] - (fVar5 - fVar6);
+    pGVar9[1].binormalSign = 1.0;
+    pGVar9[1].normal = local_8c;
+    pGVar9[1].color = nativeColor;
+    local_100 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_100) {
       local_100 = 0x3fff;
     }
@@ -124,7 +137,7 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_194 = local_100;
     }
-    local_114 = (int)((int)param_8 << 1 ^ 0x80000000U) >> 0xe;
+    local_114 = (int)((int)t0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_114) {
       local_114 = 0x3fff;
     }
@@ -134,17 +147,17 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_198 = local_114;
     }
-    pGVar3[1].texCoord.packed =
-         ((int)param_9 >> 0x10 & 0xc000U | local_194 & 0x3fff) * 0x10000 +
-         ((int)param_8 >> 0x10 & 0xc000U | local_198 & 0x3fff);
-    pGVar3[1].tangent = local_ac;
-    pGVar3[2].xyz[0] = *param_3 - local_14;
-    pGVar3[2].xyz[1] = param_3[1] - local_10;
-    pGVar3[2].xyz[2] = param_3[2] - local_c;
-    pGVar3[2].binormalSign = 1.0;
-    pGVar3[2].normal = local_8c;
-    pGVar3[2].color = local_2c;
-    local_138 = (int)((int)param_9 << 1 ^ 0x80000000U) >> 0xe;
+    pGVar9[1].texCoord.packed =
+         ((int)s1 >> 0x10 & 0xc000U | local_194 & 0x3fff) * 0x10000 +
+         ((int)t0 >> 0x10 & 0xc000U | local_198 & 0x3fff);
+    pGVar9[1].tangent = local_ac;
+    pGVar9[2].xyz[0] = *origin - leftUp;
+    pGVar9[2].xyz[1] = origin[1] - local_10;
+    pGVar9[2].xyz[2] = origin[2] - local_c;
+    pGVar9[2].binormalSign = 1.0;
+    pGVar9[2].normal = local_8c;
+    pGVar9[2].color = nativeColor;
+    local_138 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_138) {
       local_138 = 0x3fff;
     }
@@ -154,7 +167,7 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_19c = local_138;
     }
-    local_14c = (int)((int)param_10 << 1 ^ 0x80000000U) >> 0xe;
+    local_14c = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_14c) {
       local_14c = 0x3fff;
     }
@@ -164,17 +177,17 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_1a0 = local_14c;
     }
-    pGVar3[2].texCoord.packed =
-         ((int)param_9 >> 0x10 & 0xc000U | local_19c & 0x3fff) * 0x10000 +
-         ((int)param_10 >> 0x10 & 0xc000U | local_1a0 & 0x3fff);
-    pGVar3[2].tangent = local_ac;
-    pGVar3[3].xyz[0] = *param_3 + local_24;
-    pGVar3[3].xyz[1] = param_3[1] + local_20;
-    pGVar3[3].xyz[2] = param_3[2] + local_1c;
-    pGVar3[3].binormalSign = 1.0;
-    pGVar3[3].normal = local_8c;
-    pGVar3[3].color = local_2c;
-    local_170 = (int)((int)param_7 << 1 ^ 0x80000000U) >> 0xe;
+    pGVar9[2].texCoord.packed =
+         ((int)s1 >> 0x10 & 0xc000U | local_19c & 0x3fff) * 0x10000 +
+         ((int)t1 >> 0x10 & 0xc000U | local_1a0 & 0x3fff);
+    pGVar9[2].tangent = local_ac;
+    pGVar9[3].xyz[0] = *origin + (fVar1 - fVar2);
+    pGVar9[3].xyz[1] = origin[1] + (fVar3 - fVar4);
+    pGVar9[3].xyz[2] = origin[2] + (fVar5 - fVar6);
+    pGVar9[3].binormalSign = 1.0;
+    pGVar9[3].normal = local_8c;
+    pGVar9[3].color = nativeColor;
+    local_170 = (int)((int)s0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_170) {
       local_170 = 0x3fff;
     }
@@ -184,7 +197,7 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_1a4 = local_170;
     }
-    local_184 = (int)((int)param_10 << 1 ^ 0x80000000U) >> 0xe;
+    local_184 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_184) {
       local_184 = 0x3fff;
     }
@@ -194,10 +207,10 @@ FX_BuildQuadStampCodeMeshVerts
     else {
       local_1a8 = local_184;
     }
-    pGVar3[3].texCoord.packed =
-         ((int)param_7 >> 0x10 & 0xc000U | local_1a4 & 0x3fff) * 0x10000 +
-         ((int)param_10 >> 0x10 & 0xc000U | local_1a8 & 0x3fff);
-    pGVar3[3].tangent = local_ac;
+    pGVar9[3].texCoord.packed =
+         ((int)s0 >> 0x10 & 0xc000U | local_1a4 & 0x3fff) * 0x10000 +
+         ((int)t1 >> 0x10 & 0xc000U | local_1a8 & 0x3fff);
+    pGVar9[3].tangent = local_ac;
   }
   return;
 }
@@ -212,67 +225,66 @@ FX_BuildQuadStampCodeMeshVerts
 
 void __cdecl
 FX_BuildSpriteCodeMeshVerts
-          (Material *param_1,float *param_2,float param_3,uchar *param_4,int param_5)
+          (Material *material,float *pos,float worldRadius,uchar *rgbaColor,int spriteFlags)
 
 {
   int iVar1;
   cg_s *pcVar2;
-  float *pfVar3;
-  float *pfVar4;
-  float *pfVar5;
-  float fVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
-  float local_28;
+  float *origin;
+  float *left_00;
+  float *up_00;
+  float s0;
+  float t0;
+  float s1;
+  float t1;
+  float left;
   float local_24;
   float local_20;
-  float local_1c;
+  float worldOrigin;
   float local_18;
   float local_14;
-  float local_10;
+  float up;
   float local_c;
   float local_8;
   
-  local_1c = *param_2;
-  local_18 = param_2[1];
-  local_14 = param_2[2];
-  if ((param_5 & 1U) != 0) {
-    local_14 = local_14 + param_3;
+  worldOrigin = *pos;
+  local_18 = pos[1];
+  local_14 = pos[2];
+  if ((spriteFlags & 1U) != 0) {
+    local_14 = local_14 + worldRadius;
   }
   iVar1 = R_GetLocalClientNum();
   pcVar2 = CG_GetLocalClientGlobals(iVar1);
-  local_28 = param_3 * (pcVar2->refdef).viewaxis[1][0];
-  local_24 = param_3 * (pcVar2->refdef).viewaxis[1][1];
-  local_20 = param_3 * (pcVar2->refdef).viewaxis[1][2];
+  left = worldRadius * (pcVar2->refdef).viewaxis[1][0];
+  local_24 = worldRadius * (pcVar2->refdef).viewaxis[1][1];
+  local_20 = worldRadius * (pcVar2->refdef).viewaxis[1][2];
   iVar1 = R_GetLocalClientNum();
   pcVar2 = CG_GetLocalClientGlobals(iVar1);
-  local_10 = param_3 * (pcVar2->refdef).viewaxis[2][0];
-  local_c = param_3 * (pcVar2->refdef).viewaxis[2][1];
-  local_8 = param_3 * (pcVar2->refdef).viewaxis[2][2];
-  fVar9 = 1.0;
-  fVar8 = 1.0;
-  fVar7 = 0.0;
-  fVar6 = 0.0;
-  pfVar5 = &local_10;
-  pfVar4 = &local_28;
-  pfVar3 = &local_1c;
+  up = worldRadius * (pcVar2->refdef).viewaxis[2][0];
+  local_c = worldRadius * (pcVar2->refdef).viewaxis[2][1];
+  local_8 = worldRadius * (pcVar2->refdef).viewaxis[2][2];
+  t1 = 1.0;
+  s1 = 1.0;
+  t0 = 0.0;
+  s0 = 0.0;
+  up_00 = &up;
+  left_00 = &left;
+  origin = &worldOrigin;
   iVar1 = R_GetLocalClientNum();
   pcVar2 = CG_GetLocalClientGlobals(iVar1);
   FX_BuildQuadStampCodeMeshVerts
-            (param_1,(pcVar2->refdef).viewaxis[0],pfVar3,pfVar4,pfVar5,param_4,fVar6,fVar7,fVar8,
-             fVar9);
+            (material,(pcVar2->refdef).viewaxis[0],origin,left_00,up_00,rgbaColor,s0,t0,s1,t1);
   return;
 }
 
 
 // 005E1920  FX_GetClipSpaceW  (EffectsCore/fx_sprite.cpp:132)
 
-float __cdecl FX_GetClipSpaceW(float *param_1,float *param_2,float (*param_3) [3])
+float __cdecl FX_GetClipSpaceW(float *worldPoint,float *vieworg,float (*viewaxis) [3])
 
 {
-  return (*param_1 - *param_2) * (*param_3)[0] + (param_1[1] - param_2[1]) * (*param_3)[1] +
-         (param_1[2] - param_2[2]) * (*param_3)[2];
+  return (*worldPoint - *vieworg) * (*viewaxis)[0] + (worldPoint[1] - vieworg[1]) * (*viewaxis)[1] +
+         (worldPoint[2] - vieworg[2]) * (*viewaxis)[2];
 }
 
 
@@ -284,17 +296,20 @@ float __cdecl FX_GetClipSpaceW(float *param_1,float *param_2,float (*param_3) [3
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-FX_HeightScreenToWorld(float *param_1,float param_2,float *param_3,FxGenerateVertsCmd *param_4)
+FX_HeightScreenToWorld
+          (float *worldOrigin,float screenHeight,float *worldHeight,FxGenerateVertsCmd *cmd)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int iVar4;
-  cg_s *pcVar5;
-  float fVar6;
+  int localClientNum;
+  cg_s *pcVar4;
+  float fVar5;
+  float clipSpaceW;
+  float clipSpaceHeight;
   
-  if (param_2 <= 0.0) {
+  if (screenHeight <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0x99,0,
                              "%s\n\t(screenHeight) = %g");
     if (!bVar2) {
@@ -303,7 +318,7 @@ FX_HeightScreenToWorld(float *param_1,float param_2,float *param_3,FxGenerateVer
       return (bool)uVar3;
     }
   }
-  if (param_4 == (FxGenerateVertsCmd *)0x0) {
+  if (cmd == (FxGenerateVertsCmd *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0x9a,0,
                              "%s");
     if (!bVar2) {
@@ -312,12 +327,12 @@ FX_HeightScreenToWorld(float *param_1,float param_2,float *param_3,FxGenerateVer
       return (bool)uVar3;
     }
   }
-  fVar6 = FX_GetClipSpaceW(param_1,param_4->vieworg,param_4->viewaxis);
-  if (1e-06 <= fVar6) {
-    iVar4 = R_GetLocalClientNum();
-    pcVar5 = CG_GetLocalClientGlobals(iVar4);
-    *param_3 = param_2 * fVar6 * 2.0 * (pcVar5->refdef).tanHalfFovY;
-    if (*param_3 <= 0.0) {
+  fVar5 = FX_GetClipSpaceW(worldOrigin,cmd->vieworg,cmd->viewaxis);
+  if (1e-06 <= fVar5) {
+    localClientNum = R_GetLocalClientNum();
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    *worldHeight = screenHeight * fVar5 * 2.0 * (pcVar4->refdef).tanHalfFovY;
+    if (*worldHeight <= 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0xa3,
                                1,"%s\n\t(*worldHeight) = %g");
       if (!bVar2) {
@@ -343,17 +358,20 @@ FX_HeightScreenToWorld(float *param_1,float param_2,float *param_3,FxGenerateVer
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-FX_HeightWorldToScreen(float *param_1,float param_2,float *param_3,FxGenerateVertsCmd *param_4)
+FX_HeightWorldToScreen
+          (float *worldOrigin,float worldHeight,float *screenHeight,FxGenerateVertsCmd *cmd)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int iVar4;
-  cg_s *pcVar5;
-  float fVar6;
+  int localClientNum;
+  cg_s *pcVar4;
+  float fVar5;
+  float clipSpaceW;
+  float clipSpaceHeight;
   
-  if (param_2 <= 0.0) {
+  if (worldHeight <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0xae,0,
                              "%s\n\t(worldHeight) = %g");
     if (!bVar2) {
@@ -362,7 +380,7 @@ FX_HeightWorldToScreen(float *param_1,float param_2,float *param_3,FxGenerateVer
       return (bool)uVar3;
     }
   }
-  if (param_4 == (FxGenerateVertsCmd *)0x0) {
+  if (cmd == (FxGenerateVertsCmd *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0xaf,0,
                              "%s");
     if (!bVar2) {
@@ -371,12 +389,12 @@ FX_HeightWorldToScreen(float *param_1,float param_2,float *param_3,FxGenerateVer
       return (bool)uVar3;
     }
   }
-  fVar6 = FX_GetClipSpaceW(param_1,param_4->vieworg,param_4->viewaxis);
-  if (1e-06 <= fVar6) {
-    iVar4 = R_GetLocalClientNum();
-    pcVar5 = CG_GetLocalClientGlobals(iVar4);
-    *param_3 = (param_2 / (pcVar5->refdef).tanHalfFovY) / (fVar6 + fVar6);
-    if (*param_3 <= 0.0) {
+  fVar5 = FX_GetClipSpaceW(worldOrigin,cmd->vieworg,cmd->viewaxis);
+  if (1e-06 <= fVar5) {
+    localClientNum = R_GetLocalClientNum();
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    *screenHeight = (worldHeight / (pcVar4->refdef).tanHalfFovY) / (fVar5 + fVar5);
+    if (*screenHeight <= 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0xb8,
                                1,"%s\n\t(*screenHeight) = %g");
       if (!bVar2) {
@@ -398,17 +416,17 @@ FX_HeightWorldToScreen(float *param_1,float param_2,float *param_3,FxGenerateVer
 
 void __cdecl
 FX_GenerateSpriteCodeMeshVertsFixedScreenSize
-          (Material *param_1,float *param_2,float param_3,uchar *param_4,int param_5,
-          FxGenerateVertsCmd *param_6)
+          (Material *material,float *pos,float radius,uchar *rgbaColor,int spriteFlags,
+          FxGenerateVertsCmd *cmd)
 
 {
-  float local_c;
-  undefined1 local_5;
+  float worldRadius;
+  bool originVisible;
   
-  local_c = 0.0;
-  local_5 = FX_HeightScreenToWorld(param_2,param_3,&local_c,param_6);
-  if ((bool)local_5) {
-    FX_BuildSpriteCodeMeshVerts(param_1,param_2,local_c,param_4,param_5);
+  worldRadius = 0.0;
+  originVisible = FX_HeightScreenToWorld(pos,radius,&worldRadius,cmd);
+  if (originVisible) {
+    FX_BuildSpriteCodeMeshVerts(material,pos,worldRadius,rgbaColor,spriteFlags);
   }
   return;
 }
@@ -418,54 +436,54 @@ FX_GenerateSpriteCodeMeshVertsFixedScreenSize
 
 void __cdecl
 FX_GenerateSpriteCodeMeshVertsFixedWorldSize
-          (Material *param_1,float *param_2,float param_3,float param_4,uchar *param_5,int param_6,
-          FxGenerateVertsCmd *param_7)
+          (Material *material,float *pos,float radius,float minScreenRadius,uchar *rgbaColor,
+          int spriteFlags,FxGenerateVertsCmd *cmd)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_14;
-  float local_c;
-  float local_8;
+  float worldRadius;
+  bool originVisible;
+  float screenRadius;
+  float screenScale;
   
-  local_c = 0.0;
-  local_14 = param_3;
-  if (0.0 < param_4) {
-    bVar2 = FX_HeightWorldToScreen(param_2,param_3,&local_c,param_7);
+  screenRadius = 0.0;
+  worldRadius = radius;
+  if (0.0 < minScreenRadius) {
+    bVar2 = FX_HeightWorldToScreen(pos,radius,&screenRadius,cmd);
     if (!bVar2) {
       return;
     }
-    if ((local_c <= 0.0) &&
+    if ((screenRadius <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",
                                  0xd9,0,"%s\n\t(screenRadius) = %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_c < param_4) {
-      local_8 = param_4 / local_c;
-      local_14 = param_3 * local_8;
+    if (screenRadius < minScreenRadius) {
+      screenScale = minScreenRadius / screenRadius;
+      worldRadius = radius * screenScale;
     }
   }
-  FX_BuildSpriteCodeMeshVerts(param_1,param_2,local_14,param_5,param_6);
+  FX_BuildSpriteCodeMeshVerts(material,pos,worldRadius,rgbaColor,spriteFlags);
   return;
 }
 
 
 // 005E0800  FX_GenerateSpriteCodeMeshVerts  (EffectsCore/fx_sprite.cpp:230)
 
-void __cdecl FX_GenerateSpriteCodeMeshVerts(FxSprite *param_1,FxGenerateVertsCmd *param_2)
+void __cdecl FX_GenerateSpriteCodeMeshVerts(FxSprite *sprite,FxGenerateVertsCmd *cmd)
 
 {
-  if ((param_1->flags & 2U) == 0) {
+  if ((sprite->flags & 2U) == 0) {
     FX_GenerateSpriteCodeMeshVertsFixedWorldSize
-              (param_1->material,param_1->pos,param_1->radius,param_1->minScreenRadius,
-               param_1->rgbaColor,param_1->flags,param_2);
+              (sprite->material,sprite->pos,sprite->radius,sprite->minScreenRadius,sprite->rgbaColor
+               ,sprite->flags,cmd);
   }
   else {
     FX_GenerateSpriteCodeMeshVertsFixedScreenSize
-              (param_1->material,param_1->pos,param_1->radius,param_1->rgbaColor,param_1->flags,
-               param_2);
+              (sprite->material,sprite->pos,sprite->radius,sprite->rgbaColor,sprite->flags,cmd);
   }
   return;
 }
@@ -473,15 +491,16 @@ void __cdecl FX_GenerateSpriteCodeMeshVerts(FxSprite *param_1,FxGenerateVertsCmd
 
 // 005E0750  FX_SpriteGenerateVerts  (EffectsCore/fx_sprite.cpp:239)
 
-void __cdecl FX_SpriteGenerateVerts(FxGenerateVertsCmd *param_1)
+void __cdecl FX_SpriteGenerateVerts(FxGenerateVertsCmd *cmd)
 
 {
   FxSpriteInfo *pFVar1;
   code *pcVar2;
   bool bVar3;
-  int local_c;
+  int i;
+  FxSpriteInfo *spriteInfo;
   
-  if (param_1 == (FxGenerateVertsCmd *)0x0) {
+  if (cmd == (FxGenerateVertsCmd *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0xf3,0,
                              "%s");
     if (!bVar3) {
@@ -490,7 +509,7 @@ void __cdecl FX_SpriteGenerateVerts(FxGenerateVertsCmd *param_1)
       return;
     }
   }
-  pFVar1 = param_1->spriteInfo;
+  pFVar1 = cmd->spriteInfo;
   if (pFVar1 == (FxSpriteInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sprite.cpp",0xf8,0,
                              "%s");
@@ -500,8 +519,8 @@ void __cdecl FX_SpriteGenerateVerts(FxGenerateVertsCmd *param_1)
       return;
     }
   }
-  for (local_c = 0; local_c < (int)pFVar1->indices; local_c = local_c + 1) {
-    FX_GenerateSpriteCodeMeshVerts((FxSprite *)(pFVar1 + local_c * 2 + 1),param_1);
+  for (i = 0; i < (int)pFVar1->indices; i = i + 1) {
+    FX_GenerateSpriteCodeMeshVerts((FxSprite *)(pFVar1 + i * 2 + 1),cmd);
   }
   return;
 }
@@ -519,7 +538,7 @@ void __cdecl FX_SpriteBegin(void)
 
 // 005E1BC0  FX_SpriteAdd  (EffectsCore/fx_sprite.cpp:271)
 
-void __cdecl FX_SpriteAdd(FxSprite *param_1)
+void __cdecl FX_SpriteAdd(FxSprite *sprite)
 
 {
   int iVar1;
@@ -528,8 +547,8 @@ void __cdecl FX_SpriteAdd(FxSprite *param_1)
   if (g_spriteInfo.spriteCount != 0x680) {
     pFVar2 = g_spriteInfo.sprites + g_spriteInfo.spriteCount;
     for (iVar1 = 8; iVar1 != 0; iVar1 = iVar1 + -1) {
-      pFVar2->material = param_1->material;
-      param_1 = (FxSprite *)param_1->pos;
+      pFVar2->material = sprite->material;
+      sprite = (FxSprite *)sprite->pos;
       pFVar2 = (FxSprite *)pFVar2->pos;
     }
     g_spriteInfo.spriteCount = g_spriteInfo.spriteCount + 1;
@@ -549,11 +568,12 @@ FxSpriteInfo * __cdecl FX_SpriteGetInfo(void)
 
 // 005E1790  Byte4CopyRgbaToVertexColor  (universal/com_color.h:453)
 
-void __cdecl Byte4CopyRgbaToVertexColor(uchar *param_1,uchar *param_2)
+void __cdecl Byte4CopyRgbaToVertexColor(uchar *rgbaFrom,uchar *nativeTo)
 
 {
-  *(uint *)param_2 =
-       (uint)*param_1 << 0x10 | (uint)param_1[1] << 8 | (uint)param_1[2] | (uint)param_1[3] << 0x18;
+  *(uint *)nativeTo =
+       (uint)*rgbaFrom << 0x10 | (uint)rgbaFrom[1] << 8 | (uint)rgbaFrom[2] |
+       (uint)rgbaFrom[3] << 0x18;
   return;
 }
 

@@ -167,28 +167,28 @@ void __cdecl SV_BotThink(client_t *param_1,usercmd_s *param_2)
   int iVar2;
   int iVar3;
   int iVar4;
-  path_t *ppVar5;
-  client_t *pcVar6;
-  usercmd_s *puVar7;
+  path_t *dst;
+  client_t *pcVar5;
+  usercmd_s *puVar6;
+  float10 fVar7;
   float10 fVar8;
-  float10 fVar9;
   
   iVar2 = ((int)param_1 - DAT_01e5d49c) / 0x7c2e8;
   iVar4 = iVar2 * 0x460;
-  pcVar6 = param_1 + 0x5134;
-  puVar7 = param_2;
+  pcVar5 = param_1 + 0x5134;
+  puVar6 = param_2;
   for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-    *(int *)puVar7 = *(int *)pcVar6;
-    pcVar6 = pcVar6 + 4;
-    puVar7 = puVar7 + 4;
+    *(int *)puVar6 = *(int *)pcVar5;
+    pcVar5 = pcVar5 + 4;
+    puVar6 = puVar6 + 4;
   }
-  ppVar5 = (path_t *)(&DAT_01da4ad8 + iVar4);
+  dst = (path_t *)(&DAT_01da4ad8 + iVar4);
   *(undefined4 *)(param_2 + 4) = 0;
   *(undefined4 *)(param_2 + 8) = 0;
   if ((*(int *)(param_1 + 0x556c) != 0) && (*(int *)(iVar2 * 0x2a28 + 0x26f8 + _level) == 0)) {
     if (*(int *)(param_1 + 0x5134) < 1) {
-      memset((uchar *)ppVar5,'\0',0x460);
-      Path_Clear(ppVar5);
+      memset((uchar *)dst,'\0',0x460);
+      Path_Clear(dst);
       iVar2 = Com_HashString((char *)(param_1 + 0x5570),0);
       if (iVar2 == 0x306eb8ff) {
         *(undefined4 *)(*(int *)(*(int *)(param_1 + 0x556c) + 0x144) + 0x2868) = 1;
@@ -196,17 +196,17 @@ void __cdecl SV_BotThink(client_t *param_1,usercmd_s *param_2)
     }
     if ((*(uint *)(**(int **)(param_1 + 0x556c) * 0x2a28 + 0xe4 + _level) >> 0x1c & 1) == 0) {
       if ((*(int **)(param_1 + 0x556c))[0x65] < 1) {
-        memset((uchar *)ppVar5,'\0',0x460);
-        Path_Clear(ppVar5);
+        memset((uchar *)dst,'\0',0x460);
+        Path_Clear(dst);
         return;
       }
       fVar1 = (sv_botFov->current).value;
-      fVar8 = (float10)fabsf(DAT_00af3bd4 - fVar1);
-      if ((float10)1e-06 < fVar8) {
-        fVar9 = (float10)(fVar1 * 0.5 * 0.017453292);
-        fVar8 = (float10)fcos(fVar9);
-        fsin(fVar9);
-        DAT_01dad6dc = (float)fVar8;
+      fVar7 = (float10)fabsf(DAT_00af3bd4 - fVar1);
+      if ((float10)1e-06 < fVar7) {
+        fVar8 = (float10)(fVar1 * 0.5 * 0.017453292);
+        fVar7 = (float10)fcos(fVar8);
+        fsin(fVar8);
+        DAT_01dad6dc = (float)fVar7;
         DAT_00af3bd4 = fVar1;
       }
       *(int *)param_2 = DAT_01e5d48c;
@@ -225,11 +225,11 @@ void __cdecl SV_BotThink(client_t *param_1,usercmd_s *param_2)
       }
       if ((*(byte *)(*(int *)(*(int *)(param_1 + 0x556c) + 0x144) + 0x28e4) & 0x14) == 0) {
         FUN_00604790(param_2);
-        FUN_006043f0(ppVar5,param_1);
-        FUN_00603d50(ppVar5,param_1);
+        FUN_006043f0(dst,param_1);
+        FUN_00603d50(dst,param_1);
         FUN_006061e0(param_2);
-        FUN_00606e80(ppVar5,param_2);
-        FUN_006062b0(ppVar5,param_2);
+        FUN_00606e80(dst,param_2);
+        FUN_006062b0(dst,param_2);
         FUN_00606390(param_1);
         if (*(int *)(&DAT_01da4f10 + iVar4) != 0) {
           *(undefined4 *)(param_2 + 4) = 0;
@@ -259,7 +259,7 @@ void __cdecl SV_BotThink(client_t *param_1,usercmd_s *param_2)
       *(int *)param_2 = DAT_01e5d48c;
       param_2[0x1e] = (usercmd_s)0x0;
       param_2[0x1f] = (usercmd_s)0x0;
-      FUN_006073c0(ppVar5,param_1,param_2);
+      FUN_006073c0(dst,param_1,param_2);
       if ((*(ushort *)(&DAT_01da4f34 + iVar4) & 0x1000) != 0) {
         *(uint *)(param_2 + 4) = *(uint *)(param_2 + 4) & 0xbfffffff;
         *(uint *)(param_2 + 4) = *(uint *)(param_2 + 4) | 0x80000000;

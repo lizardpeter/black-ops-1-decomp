@@ -2,7 +2,7 @@
 
 // 0096B810  _openfile  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_open.c:58)
 
-_iobuf * __cdecl _openfile(char *param_1,char *param_2,int param_3,_iobuf *param_4)
+_iobuf * __cdecl _openfile(char *filename,char *mode,int shflag,_iobuf *str)
 
 {
   char cVar1;
@@ -13,22 +13,22 @@ _iobuf * __cdecl _openfile(char *param_1,char *param_2,int param_3,_iobuf *param
   char *pcVar6;
   uchar *puVar7;
   uchar *puVar8;
-  int local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  int encodingFlag;
+  int commodeset;
+  int scanset;
+  int streamflag;
   
-  local_8 = _commode;
-  local_10 = 0;
-  local_c = 0;
-  local_14 = 0;
-  for (pcVar6 = param_2; *pcVar6 == ' '; pcVar6 = pcVar6 + 1) {
+  streamflag = _commode;
+  commodeset = 0;
+  scanset = 0;
+  encodingFlag = 0;
+  for (pcVar6 = mode; *pcVar6 == ' '; pcVar6 = pcVar6 + 1) {
   }
   cVar1 = *pcVar6;
   if (cVar1 == 'a') {
-    param_2 = (char *)0x109;
+    mode = (char *)0x109;
 LAB_0096b87e:
-    local_8 = _commode | 2;
+    streamflag = _commode | 2;
   }
   else {
     if (cVar1 != 'r') {
@@ -38,11 +38,11 @@ LAB_0096b87e:
         _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
         return (_iobuf *)0x0;
       }
-      param_2 = (char *)0x301;
+      mode = (char *)0x301;
       goto LAB_0096b87e;
     }
-    local_8 = _commode | 1;
-    param_2 = (char *)0x0;
+    streamflag = _commode | 1;
+    mode = (char *)0x0;
   }
   bVar2 = true;
   puVar7 = (uchar *)(pcVar6 + 1);
@@ -52,63 +52,63 @@ LAB_0096b87e:
       if (!bVar2) break;
       if ((char)uVar3 < 'T') {
         if (uVar3 == 'S') {
-          if (local_c != 0) goto LAB_0096b9b9;
-          param_2 = (char *)((uint)param_2 | 0x20);
-          local_c = 1;
+          if (scanset != 0) goto LAB_0096b9b9;
+          mode = (char *)((uint)mode | 0x20);
+          scanset = 1;
         }
         else if (uVar3 != ' ') {
           if (uVar3 == '+') {
-            if (((uint)param_2 & 2) != 0) goto LAB_0096b9b9;
-            param_2 = (char *)((uint)param_2 & 0xfffffffe | 2);
-            local_8 = local_8 & 0xfffffffc | 0x80;
+            if (((uint)mode & 2) != 0) goto LAB_0096b9b9;
+            mode = (char *)((uint)mode & 0xfffffffe | 2);
+            streamflag = streamflag & 0xfffffffcU | 0x80;
           }
           else if (uVar3 == ',') {
-            local_14 = 1;
+            encodingFlag = 1;
 LAB_0096b9b9:
             bVar2 = false;
           }
           else if (uVar3 == 'D') {
-            if (((uint)param_2 & 0x40) != 0) goto LAB_0096b9b9;
-            param_2 = (char *)((uint)param_2 | 0x40);
+            if (((uint)mode & 0x40) != 0) goto LAB_0096b9b9;
+            mode = (char *)((uint)mode | 0x40);
           }
           else if (uVar3 == 'N') {
-            param_2 = (char *)((uint)param_2 | 0x80);
+            mode = (char *)((uint)mode | 0x80);
           }
           else {
             if (uVar3 != 'R') goto LAB_0096ba78;
-            if (local_c != 0) goto LAB_0096b9b9;
-            param_2 = (char *)((uint)param_2 | 0x10);
-            local_c = 1;
+            if (scanset != 0) goto LAB_0096b9b9;
+            mode = (char *)((uint)mode | 0x10);
+            scanset = 1;
           }
         }
       }
       else if (uVar3 == 'T') {
-        if (((uint)param_2 & 0x1000) != 0) goto LAB_0096b9b9;
-        param_2 = (char *)((uint)param_2 | 0x1000);
+        if (((uint)mode & 0x1000) != 0) goto LAB_0096b9b9;
+        mode = (char *)((uint)mode | 0x1000);
       }
       else if (uVar3 == 'b') {
-        if (((uint)param_2 & 0xc000) != 0) goto LAB_0096b9b9;
-        param_2 = (char *)((uint)param_2 | 0x8000);
+        if (((uint)mode & 0xc000) != 0) goto LAB_0096b9b9;
+        mode = (char *)((uint)mode | 0x8000);
       }
       else if (uVar3 == 'c') {
-        if (local_10 != 0) goto LAB_0096b9b9;
-        local_8 = local_8 | 0x4000;
-        local_10 = 1;
+        if (commodeset != 0) goto LAB_0096b9b9;
+        streamflag = streamflag | 0x4000;
+        commodeset = 1;
       }
       else if (uVar3 == 'n') {
-        if (local_10 != 0) goto LAB_0096b9b9;
-        local_8 = local_8 & 0xffffbfff;
-        local_10 = 1;
+        if (commodeset != 0) goto LAB_0096b9b9;
+        streamflag = streamflag & 0xffffbfff;
+        commodeset = 1;
       }
       else {
         if (uVar3 != 't') goto LAB_0096ba78;
-        if (((uint)param_2 & 0xc000) != 0) goto LAB_0096b9b9;
-        param_2 = (char *)((uint)param_2 | 0x4000);
+        if (((uint)mode & 0xc000) != 0) goto LAB_0096b9b9;
+        mode = (char *)((uint)mode | 0x4000);
       }
       puVar7 = puVar7 + 1;
       uVar3 = *puVar7;
     } while (uVar3 != '\0');
-    if (local_14 != 0) {
+    if (encodingFlag != 0) {
       for (; *puVar7 == ' '; puVar7 = puVar7 + 1) {
       }
       iVar5 = _mbsnbcmp((uchar *)"ccs",puVar7,3);
@@ -123,19 +123,19 @@ LAB_0096b9b9:
       iVar5 = _mbsnbicmp(puVar7,(uchar *)"UTF-8",5);
       if (iVar5 == 0) {
         puVar7 = puVar8 + 6;
-        param_2 = (char *)((uint)param_2 | 0x40000);
+        mode = (char *)((uint)mode | 0x40000);
       }
       else {
         iVar5 = _mbsnbicmp(puVar7,(uchar *)"UTF-16LE",8);
         if (iVar5 == 0) {
           puVar7 = puVar8 + 9;
-          param_2 = (char *)((uint)param_2 | 0x20000);
+          mode = (char *)((uint)mode | 0x20000);
         }
         else {
           iVar5 = _mbsnbicmp(puVar7,(uchar *)"UNICODE",7);
           if (iVar5 != 0) goto LAB_0096ba78;
           puVar7 = puVar8 + 8;
-          param_2 = (char *)((uint)param_2 | 0x10000);
+          mode = (char *)((uint)mode | 0x10000);
         }
       }
     }
@@ -143,18 +143,18 @@ LAB_0096b9b9:
   for (; *puVar7 == ' '; puVar7 = puVar7 + 1) {
   }
   if (*puVar7 == '\0') {
-    iVar5 = _sopen_s(&local_14,param_1,(int)param_2,param_3,0x180);
+    iVar5 = _sopen_s(&encodingFlag,filename,(int)mode,shflag,0x180);
     if (iVar5 != 0) {
       return (_iobuf *)0x0;
     }
     _cflush = _cflush + 1;
-    param_4->_flag = local_8;
-    param_4->_cnt = 0;
-    param_4->_ptr = (char *)0x0;
-    param_4->_base = (char *)0x0;
-    param_4->_tmpfname = (char *)0x0;
-    param_4->_file = local_14;
-    return param_4;
+    str->_flag = streamflag;
+    str->_cnt = 0;
+    str->_ptr = (char *)0x0;
+    str->_base = (char *)0x0;
+    str->_tmpfname = (char *)0x0;
+    str->_file = encodingFlag;
+    return str;
   }
 LAB_0096ba78:
   piVar4 = _errno();

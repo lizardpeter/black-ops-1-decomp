@@ -12,10 +12,10 @@ void __cdecl TRACK_win_common(void)
 
 // 007D5C00  Sys_Mkdir  (universal/win_common.cpp:48)
 
-void __cdecl Sys_Mkdir(char *param_1)
+void __cdecl Sys_Mkdir(char *path)
 
 {
-  _mkdir(param_1);
+  _mkdir(path);
   return;
 }
 
@@ -46,28 +46,29 @@ char * __cdecl Sys_DefaultInstallPath(void)
 
 {
   BOOL BVar1;
-  char *pcVar2;
+  char *src;
   HMODULE hModule;
-  int iVar3;
-  DWORD local_c;
+  int destsize;
+  int len;
+  HINSTANCE__ *hinst;
   
   if (exePath[0] == '\0') {
     BVar1 = IsDebuggerPresent();
     if (BVar1 == 0) {
       hModule = GetModuleHandleA((LPCSTR)0x0);
-      local_c = GetModuleFileNameA(hModule,exePath,0x100);
-      if (local_c == 0x100) {
-        local_c = 0xff;
+      len = GetModuleFileNameA(hModule,exePath,0x100);
+      if (len == 0x100) {
+        len = 0xff;
       }
-      for (; (((local_c != 0 && (exePath[local_c] != '\\')) && (exePath[local_c] != '/')) &&
-             (exePath[local_c] != ':')); local_c = local_c - 1) {
+      for (; (((len != 0 && (exePath[len] != '\\')) && (exePath[len] != '/')) &&
+             (exePath[len] != ':')); len = len + -1) {
       }
-      exePath[local_c] = '\0';
+      exePath[len] = '\0';
     }
     else {
-      iVar3 = 0x100;
-      pcVar2 = Sys_Cwd();
-      I_strncpyz(exePath,pcVar2,iVar3);
+      destsize = 0x100;
+      src = Sys_Cwd();
+      I_strncpyz(exePath,src,destsize);
     }
   }
   return exePath;
@@ -80,7 +81,7 @@ char * __cdecl Sys_DefaultInstallPath(void)
 
 void __cdecl
 Sys_ListFilteredFiles
-          (HunkUser *param_1,char *param_2,char *param_3,char *param_4,char **param_5,int *param_6)
+          (HunkUser *user,char *basedir,char *subdirs,char *filter,char **list,int *numfiles)
 
 {
   char cVar1;
@@ -88,49 +89,49 @@ Sys_ListFilteredFiles
   int iVar3;
   char *pcVar4;
   char *local_340;
-  char local_33c [256];
-  _finddata64i32_t local_23c;
-  int local_110;
-  char local_10c [260];
+  char filename [256];
+  _finddata64i32_t findinfo;
+  int findhandle;
+  char search [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (*param_6 < 0x3fff) {
-    local_340 = param_3;
+  if (*numfiles < 0x3fff) {
+    local_340 = subdirs;
     do {
       cVar1 = *local_340;
       local_340 = local_340 + 1;
     } while (cVar1 != '\0');
-    if (local_340 == param_3 + 1) {
-      Com_sprintf(local_10c,0x100,"%s\\*");
+    if (local_340 == subdirs + 1) {
+      Com_sprintf(search,0x100,"%s\\*");
     }
     else {
-      Com_sprintf(local_10c,0x100,"%s\\%s\\*");
+      Com_sprintf(search,0x100,"%s\\%s\\*");
     }
-    local_110 = _findfirst64i32(local_10c,&local_23c);
-    if (local_110 != -1) {
+    findhandle = _findfirst64i32(search,&findinfo);
+    if (findhandle != -1) {
       do {
-        if (((local_23c.attrib & 0x10) == 0) ||
-           (((iVar3 = I_stricmp(local_23c.name,"."), iVar3 != 0 &&
-             (iVar3 = I_stricmp(local_23c.name,".."), iVar3 != 0)) &&
-            (iVar3 = I_stricmp(local_23c.name,"CVS"), iVar3 != 0)))) {
-          if (0x3ffe < *param_6) break;
-          if (param_3 == (char *)0x0) {
-            Com_sprintf(local_33c,0x100,"%s");
+        if (((findinfo.attrib & 0x10) == 0) ||
+           (((iVar3 = I_stricmp(findinfo.name,"."), iVar3 != 0 &&
+             (iVar3 = I_stricmp(findinfo.name,".."), iVar3 != 0)) &&
+            (iVar3 = I_stricmp(findinfo.name,"CVS"), iVar3 != 0)))) {
+          if (0x3ffe < *numfiles) break;
+          if (subdirs == (char *)0x0) {
+            Com_sprintf(filename,0x100,"%s");
           }
           else {
-            Com_sprintf(local_33c,0x100,"%s\\%s");
+            Com_sprintf(filename,0x100,"%s\\%s");
           }
-          bVar2 = Com_FilterPath(param_4,local_33c,0);
+          bVar2 = Com_FilterPath(filter,filename,0);
           if (bVar2) {
-            pcVar4 = Hunk_CopyString(param_1,local_33c);
-            param_5[*param_6] = pcVar4;
-            *param_6 = *param_6 + 1;
+            pcVar4 = Hunk_CopyString(user,filename);
+            list[*numfiles] = pcVar4;
+            *numfiles = *numfiles + 1;
           }
         }
-        iVar3 = _findnext64i32(local_110,&local_23c);
+        iVar3 = _findnext64i32(findhandle,&findinfo);
       } while (iVar3 != -1);
-      _findclose(local_110);
+      _findclose(findhandle);
     }
   }
   return;
@@ -141,16 +142,16 @@ Sys_ListFilteredFiles
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl HasFileExtension(char *param_1,char *param_2)
+bool __cdecl HasFileExtension(char *name,char *extension)
 
 {
   int iVar1;
-  char local_10c [260];
+  char search [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_10c,0x100,"*.%s");
-  iVar1 = I_stricmpwild(local_10c,param_1);
+  Com_sprintf(search,0x100,"*.%s");
+  iVar1 = I_stricmpwild(search,name);
   return (bool)('\x01' - (iVar1 != 0));
 }
 
@@ -160,102 +161,105 @@ bool __cdecl HasFileExtension(char *param_1,char *param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char ** __cdecl Sys_ListFiles(char *param_1,char *param_2,char *param_3,int *param_4,int param_5)
+char ** __cdecl
+Sys_ListFiles(char *directory,char *extension,char *filter,int *numfiles,int wantsubs)
 
 {
   bool bVar1;
   char **ppcVar2;
   undefined4 *puVar3;
+  int hFile;
   int iVar4;
   char *pcVar5;
-  _finddata64i32_t _Stack_1024c;
-  uint uStack_10120;
-  int iStack_10118;
+  _finddata64i32_t findinfo;
+  int flag;
+  char **listCopy;
+  int findhandle;
   char *apcStack_10114 [16384];
-  int local_114;
-  HunkUser *local_110;
-  char local_10c [256];
+  int nfiles;
+  HunkUser *user;
+  char search [256];
   uint local_c;
-  int local_8;
+  int i;
   
-  local_8 = 0x7d5d2d;
+  i = 0x7d5d2d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_3 == (char *)0x0) {
-    if (param_2 == (char *)0x0) {
-      param_2 = "";
+  if (filter == (char *)0x0) {
+    if (extension == (char *)0x0) {
+      extension = "";
     }
-    if ((*param_2 == '/') && (param_2[1] == '\0')) {
-      param_2 = "";
-      uStack_10120 = 0;
-    }
-    else {
-      uStack_10120 = 0x10;
-    }
-    if (*param_2 == '\0') {
-      Com_sprintf(local_10c,0x100,"%s\\*");
+    if ((*extension == '/') && (extension[1] == '\0')) {
+      extension = "";
+      flag = 0;
     }
     else {
-      Com_sprintf(local_10c,0x100,"%s\\*.%s");
+      flag = 0x10;
     }
-    local_114 = 0;
-    iStack_10118 = _findfirst64i32(local_10c,&_Stack_1024c);
-    if (iStack_10118 == -1) {
-      *param_4 = 0;
+    if (*extension == '\0') {
+      Com_sprintf(search,0x100,"%s\\*");
+    }
+    else {
+      Com_sprintf(search,0x100,"%s\\*.%s");
+    }
+    nfiles = 0;
+    hFile = _findfirst64i32(search,&findinfo);
+    if (hFile == -1) {
+      *numfiles = 0;
       ppcVar2 = (char **)0x0;
     }
     else {
-      local_110 = Hunk_UserCreate(0x20000,HU_SCHEME_DEFAULT,0,(void *)0x0,"Sys_ListFiles",3);
+      user = Hunk_UserCreate(0x20000,HU_SCHEME_DEFAULT,0,(void *)0x0,"Sys_ListFiles",3);
       do {
-        if (((((param_5 == 0) && ((_Stack_1024c.attrib & 0x10) != uStack_10120)) ||
-             ((param_5 != 0 && ((_Stack_1024c.attrib & 0x10) != 0)))) &&
-            (((_Stack_1024c.attrib & 0x10) == 0 ||
-             (((iVar4 = I_stricmp(_Stack_1024c.name,"."), iVar4 != 0 &&
-               (iVar4 = I_stricmp(_Stack_1024c.name,".."), iVar4 != 0)) &&
-              (iVar4 = I_stricmp(_Stack_1024c.name,"CVS"), iVar4 != 0)))))) &&
-           ((*param_2 == '\0' || (bVar1 = HasFileExtension(_Stack_1024c.name,param_2), bVar1)))) {
-          pcVar5 = Hunk_CopyString(local_110,_Stack_1024c.name);
-          apcStack_10114[local_114] = pcVar5;
-          local_114 = local_114 + 1;
-          if (local_114 == 0x3fff) break;
+        if (((((wantsubs == 0) && ((findinfo.attrib & 0x10) != flag)) ||
+             ((wantsubs != 0 && ((findinfo.attrib & 0x10) != 0)))) &&
+            (((findinfo.attrib & 0x10) == 0 ||
+             (((iVar4 = I_stricmp(findinfo.name,"."), iVar4 != 0 &&
+               (iVar4 = I_stricmp(findinfo.name,".."), iVar4 != 0)) &&
+              (iVar4 = I_stricmp(findinfo.name,"CVS"), iVar4 != 0)))))) &&
+           ((*extension == '\0' || (bVar1 = HasFileExtension(findinfo.name,extension), bVar1)))) {
+          pcVar5 = Hunk_CopyString(user,findinfo.name);
+          apcStack_10114[nfiles] = pcVar5;
+          nfiles = nfiles + 1;
+          if (nfiles == 0x3fff) break;
         }
-        iVar4 = _findnext64i32(iStack_10118,&_Stack_1024c);
+        iVar4 = _findnext64i32(hFile,&findinfo);
       } while (iVar4 != -1);
-      apcStack_10114[local_114] = (char *)0x0;
-      _findclose(iStack_10118);
-      *param_4 = local_114;
-      if (local_114 == 0) {
-        Hunk_UserDestroy(local_110);
+      apcStack_10114[nfiles] = (char *)0x0;
+      _findclose(hFile);
+      *numfiles = nfiles;
+      if (nfiles == 0) {
+        Hunk_UserDestroy(user);
         ppcVar2 = (char **)0x0;
       }
       else {
-        puVar3 = Hunk_UserAlloc(local_110,local_114 * 4 + 8,4,(char *)0x0);
-        *puVar3 = local_110;
+        puVar3 = Hunk_UserAlloc(user,nfiles * 4 + 8,4,(char *)0x0);
+        *puVar3 = user;
         ppcVar2 = (char **)(puVar3 + 1);
-        for (local_8 = 0; local_8 < local_114; local_8 = local_8 + 1) {
-          ppcVar2[local_8] = apcStack_10114[local_8];
+        for (i = 0; i < nfiles; i = i + 1) {
+          ppcVar2[i] = apcStack_10114[i];
         }
-        ppcVar2[local_8] = (char *)0x0;
+        ppcVar2[i] = (char *)0x0;
       }
     }
   }
   else {
-    local_110 = Hunk_UserCreate(0x20000,HU_SCHEME_DEFAULT,0,(void *)0x0,"Sys_ListFiles",3);
-    local_114 = 0;
-    Sys_ListFilteredFiles(local_110,param_1,"",param_3,apcStack_10114,&local_114);
-    apcStack_10114[local_114] = (char *)0x0;
-    *param_4 = local_114;
-    if (local_114 == 0) {
-      Hunk_UserDestroy(local_110);
+    user = Hunk_UserCreate(0x20000,HU_SCHEME_DEFAULT,0,(void *)0x0,"Sys_ListFiles",3);
+    nfiles = 0;
+    Sys_ListFilteredFiles(user,directory,"",filter,apcStack_10114,&nfiles);
+    apcStack_10114[nfiles] = (char *)0x0;
+    *numfiles = nfiles;
+    if (nfiles == 0) {
+      Hunk_UserDestroy(user);
       ppcVar2 = (char **)0x0;
     }
     else {
-      puVar3 = Hunk_UserAlloc(local_110,local_114 * 4 + 8,4,(char *)0x0);
-      *puVar3 = local_110;
+      puVar3 = Hunk_UserAlloc(user,nfiles * 4 + 8,4,(char *)0x0);
+      *puVar3 = user;
       ppcVar2 = (char **)(puVar3 + 1);
-      for (local_8 = 0; local_8 < local_114; local_8 = local_8 + 1) {
-        ppcVar2[local_8] = apcStack_10114[local_8];
+      for (i = 0; i < nfiles; i = i + 1) {
+        ppcVar2[i] = apcStack_10114[i];
       }
-      ppcVar2[local_8] = (char *)0x0;
+      ppcVar2[i] = (char *)0x0;
     }
   }
   return ppcVar2;
@@ -264,11 +268,11 @@ char ** __cdecl Sys_ListFiles(char *param_1,char *param_2,char *param_3,int *par
 
 // 007A53D0  Sys_FreeFileList  (universal/win_common.cpp:424)
 
-void __cdecl Sys_FreeFileList(char **param_1)
+void __cdecl Sys_FreeFileList(char **list_2)
 
 {
-  if (param_1 != (char **)0x0) {
-    Hunk_UserDestroy((HunkUser *)param_1[-1]);
+  if (list_2 != (char **)0x0) {
+    Hunk_UserDestroy((HunkUser *)list_2[-1]);
   }
   return;
 }
@@ -278,30 +282,30 @@ void __cdecl Sys_FreeFileList(char **param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Sys_DirectoryHasContents(char *param_1)
+int __cdecl Sys_DirectoryHasContents(char *directory)
 
 {
   int iVar1;
-  _finddata64i32_t local_23c;
-  int local_110;
-  char local_10c [260];
+  _finddata64i32_t findinfo;
+  int findhandle;
+  char search [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_10c,0x100,"%s\\*");
-  local_110 = _findfirst64i32(local_10c,&local_23c);
-  if (local_110 != -1) {
+  Com_sprintf(search,0x100,"%s\\*");
+  findhandle = _findfirst64i32(search,&findinfo);
+  if (findhandle != -1) {
     do {
-      if (((local_23c.attrib & 0x10) == 0) ||
-         (((iVar1 = I_stricmp(local_23c.name,"."), iVar1 != 0 &&
-           (iVar1 = I_stricmp(local_23c.name,".."), iVar1 != 0)) &&
-          (iVar1 = I_stricmp(local_23c.name,"CVS"), iVar1 != 0)))) {
-        _findclose(local_110);
+      if (((findinfo.attrib & 0x10) == 0) ||
+         (((iVar1 = I_stricmp(findinfo.name,"."), iVar1 != 0 &&
+           (iVar1 = I_stricmp(findinfo.name,".."), iVar1 != 0)) &&
+          (iVar1 = I_stricmp(findinfo.name,"CVS"), iVar1 != 0)))) {
+        _findclose(findhandle);
         return 1;
       }
-      iVar1 = _findnext64i32(local_110,&local_23c);
+      iVar1 = _findnext64i32(findhandle,&findinfo);
     } while (iVar1 != -1);
-    _findclose(local_110);
+    _findclose(findhandle);
   }
   return 0;
 }
@@ -312,12 +316,12 @@ int __cdecl Sys_DirectoryHasContents(char *param_1)
 void __cdecl Sys_InitializeCriticalSections(void)
 
 {
-  int local_8;
+  int critSect;
   
   if (!inited) {
     inited = true;
-    for (local_8 = 0; local_8 < 0x4b; local_8 = local_8 + 1) {
-      InitializeCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + local_8));
+    for (critSect = 0; critSect < 0x4b; critSect = critSect + 1) {
+      InitializeCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + critSect));
     }
   }
   return;
@@ -326,13 +330,13 @@ void __cdecl Sys_InitializeCriticalSections(void)
 
 // 007D6510  Sys_EnterCriticalSection  (universal/win_common.cpp:522)
 
-void __cdecl Sys_EnterCriticalSection(CriticalSection param_1)
+void __cdecl Sys_EnterCriticalSection(CriticalSection critSect)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (CRITSECT_DBHASH < param_1) {
+  if (CRITSECT_DBHASH < critSect) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\win_common.cpp",0x20b,0,
                              "critSect doesn\'t index CRITSECT_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -341,14 +345,14 @@ void __cdecl Sys_EnterCriticalSection(CriticalSection param_1)
       return;
     }
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + param_1));
+  EnterCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + critSect));
   return;
 }
 
 
 // 007D6560  Sys_TryEnterCriticalSection  (universal/win_common.cpp:528)
 
-bool __cdecl Sys_TryEnterCriticalSection(CriticalSection param_1)
+bool __cdecl Sys_TryEnterCriticalSection(CriticalSection critSect)
 
 {
   code *pcVar1;
@@ -356,7 +360,7 @@ bool __cdecl Sys_TryEnterCriticalSection(CriticalSection param_1)
   undefined1 uVar3;
   BOOL BVar4;
   
-  if (CRITSECT_DBHASH < param_1) {
+  if (CRITSECT_DBHASH < critSect) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\win_common.cpp",0x211,0,
                              "critSect doesn\'t index CRITSECT_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -365,20 +369,20 @@ bool __cdecl Sys_TryEnterCriticalSection(CriticalSection param_1)
       return (bool)uVar3;
     }
   }
-  BVar4 = TryEnterCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + param_1));
+  BVar4 = TryEnterCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + critSect));
   return BVar4 != 0;
 }
 
 
 // 007D65B0  Sys_LeaveCriticalSection  (universal/win_common.cpp:534)
 
-void __cdecl Sys_LeaveCriticalSection(CriticalSection param_1)
+void __cdecl Sys_LeaveCriticalSection(CriticalSection critSect)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (CRITSECT_DBHASH < param_1) {
+  if (CRITSECT_DBHASH < critSect) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\win_common.cpp",0x217,0,
                              "critSect doesn\'t index CRITSECT_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -387,7 +391,7 @@ void __cdecl Sys_LeaveCriticalSection(CriticalSection param_1)
       return;
     }
   }
-  LeaveCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + param_1));
+  LeaveCriticalSection((LPCRITICAL_SECTION)(s_criticalSection + critSect));
   return;
 }
 

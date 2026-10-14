@@ -4,22 +4,23 @@
 
 void __cdecl
 RB_Resource_CreateTexture
-          (GfxImage *param_1,void *param_2,int param_3,int param_4,_D3DFORMAT param_5)
+          (GfxImage *imageBuffer,void *mipCount,int flags,int imageFormat,_D3DFORMAT param_5)
 
 {
   int iVar1;
   FastCriticalSection *unaff_ESI;
+  GfxImage *image;
   
   Sys_LockWrite(unaff_ESI);
   SetEvent(DAT_01da4820);
   iVar1 = numResourceActions;
   numResourceActions = numResourceActions + 1;
-  resourceActions[iVar1].resource = param_1;
-  resourceActions[iVar1].data = param_2;
-  resourceActions[iVar1].p1 = param_3;
+  resourceActions[iVar1].resource = imageBuffer;
+  resourceActions[iVar1].data = mipCount;
+  resourceActions[iVar1].p1 = flags;
   resourceActions[iVar1].p2 = param_5;
   resourceActions[iVar1].action = 1;
-  resourceActions[iVar1].p3 = param_4;
+  resourceActions[iVar1].p3 = imageFormat;
   LOCK();
   resourceLock.writeCount = resourceLock.writeCount + -1;
   UNLOCK();
@@ -34,6 +35,7 @@ void __cdecl RB_Resource_Release(IUnknown *param_1)
 {
   int iVar1;
   FastCriticalSection *unaff_ESI;
+  IUnknown *resource;
   
   Sys_LockWrite(unaff_ESI);
   SetEvent(DAT_01da4820);
@@ -50,17 +52,18 @@ void __cdecl RB_Resource_Release(IUnknown *param_1)
 
 // 0082A530  RB_Resource_ReloadTexture  (gfx_d3d/rb_resource.cpp:116)
 
-void __cdecl RB_Resource_ReloadTexture(GfxImage *param_1,void *param_2)
+void __cdecl RB_Resource_ReloadTexture(GfxImage *data,void *param_2)
 
 {
   int iVar1;
   FastCriticalSection *unaff_ESI;
+  GfxImage *image;
   
   Sys_LockWrite(unaff_ESI);
   SetEvent(DAT_01da4820);
   iVar1 = numResourceActions;
   numResourceActions = numResourceActions + 1;
-  resourceActions[iVar1].resource = param_1;
+  resourceActions[iVar1].resource = data;
   resourceActions[iVar1].action = 4;
   resourceActions[iVar1].data = param_2;
   LOCK();
@@ -93,7 +96,7 @@ void __cdecl RB_Resource_Callback(_func___cdecl_void *param_1)
 
 // 0082A5D0  RB_Resource_CallbackParam  (gfx_d3d/rb_resource.cpp:151)
 
-void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *param_1,void *param_2)
+void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *data,void *param_2)
 
 {
   int iVar1;
@@ -103,7 +106,7 @@ void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *param_1,void
   SetEvent(DAT_01da4820);
   iVar1 = numResourceActions;
   numResourceActions = numResourceActions + 1;
-  resourceActions[iVar1].resource = param_1;
+  resourceActions[iVar1].resource = data;
   resourceActions[iVar1].action = 6;
   resourceActions[iVar1].data = param_2;
   LOCK();
@@ -115,11 +118,12 @@ void __cdecl RB_Resource_CallbackParam(_func___cdecl_void_void_ptr *param_1,void
 
 // 0082A620  RB_Resource_CreateVertexShader  (gfx_d3d/rb_resource.cpp:187)
 
-void __cdecl RB_Resource_CreateVertexShader(ulong *param_1,IDirect3DVertexShader9 **param_2)
+void __cdecl RB_Resource_CreateVertexShader(ulong *shader,IDirect3DVertexShader9 **param_2)
 
 {
   int iVar1;
   FastCriticalSection *unaff_ESI;
+  ulong *function;
   
   Sys_LockWrite(unaff_ESI);
   SetEvent(DAT_01da4820);
@@ -127,7 +131,7 @@ void __cdecl RB_Resource_CreateVertexShader(ulong *param_1,IDirect3DVertexShader
   numResourceActions = numResourceActions + 1;
   resourceActions[iVar1].resource = param_2;
   resourceActions[iVar1].action = 8;
-  resourceActions[iVar1].data = param_1;
+  resourceActions[iVar1].data = shader;
   LOCK();
   resourceLock.writeCount = resourceLock.writeCount + -1;
   UNLOCK();
@@ -137,11 +141,12 @@ void __cdecl RB_Resource_CreateVertexShader(ulong *param_1,IDirect3DVertexShader
 
 // 0082A670  RB_Resource_CreatePixelShader  (gfx_d3d/rb_resource.cpp:205)
 
-void __cdecl RB_Resource_CreatePixelShader(ulong *param_1,IDirect3DPixelShader9 **param_2)
+void __cdecl RB_Resource_CreatePixelShader(ulong *shader,IDirect3DPixelShader9 **param_2)
 
 {
   int iVar1;
   FastCriticalSection *unaff_ESI;
+  ulong *function;
   
   Sys_LockWrite(unaff_ESI);
   SetEvent(DAT_01da4820);
@@ -149,7 +154,7 @@ void __cdecl RB_Resource_CreatePixelShader(ulong *param_1,IDirect3DPixelShader9 
   numResourceActions = numResourceActions + 1;
   resourceActions[iVar1].resource = param_2;
   resourceActions[iVar1].action = 9;
-  resourceActions[iVar1].data = param_1;
+  resourceActions[iVar1].data = shader;
   LOCK();
   resourceLock.writeCount = resourceLock.writeCount + -1;
   UNLOCK();
@@ -160,18 +165,19 @@ void __cdecl RB_Resource_CreatePixelShader(ulong *param_1,IDirect3DPixelShader9 
 // 0082A6C0  RB_Resource_LoadVertexBuffer  (gfx_d3d/rb_resource.cpp:223)
 
 void __cdecl
-RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,int param_3)
+RB_Resource_LoadVertexBuffer(IDirect3DVertexBuffer9 **bufferData,void *sizeInBytes,int param_3)
 
 {
   int iVar1;
   FastCriticalSection *unaff_ESI;
+  IDirect3DVertexBuffer9 **vb;
   
   Sys_LockWrite(unaff_ESI);
   SetEvent(DAT_01da4820);
   iVar1 = numResourceActions;
   numResourceActions = numResourceActions + 1;
-  resourceActions[iVar1].resource = param_1;
-  resourceActions[iVar1].data = param_2;
+  resourceActions[iVar1].resource = bufferData;
+  resourceActions[iVar1].data = sizeInBytes;
   resourceActions[iVar1].action = 10;
   resourceActions[iVar1].p1 = param_3;
   LOCK();
@@ -209,7 +215,7 @@ void __cdecl RB_Resouce_ErrorCleanup(void)
 
 // 0082AB00  RB_Resource_Update  (gfx_d3d/rb_resource.cpp:462)
 
-void __cdecl RB_Resource_Update(int param_1)
+void __cdecl RB_Resource_Update(int msec)
 
 {
   DWORD DVar1;

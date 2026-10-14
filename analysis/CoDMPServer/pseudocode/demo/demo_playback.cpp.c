@@ -5,27 +5,27 @@
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_AllocatePlaybackMemory(int param_1)
+void __cdecl Demo_AllocatePlaybackMemory(int location)
 
 {
   bool bVar1;
   
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    PMem_BeginAlloc("SnapshotDemoPlaybackBuffer",param_1,TRACK_MISC);
+    PMem_BeginAlloc("SnapshotDemoPlaybackBuffer",location,TRACK_MISC);
     demo.playback =
-         _PMem_AllocNamed(0x12dee0,4,4,param_1,"SnapshotDemoPlaybackBuffer",TRACK_MISC,
+         _PMem_AllocNamed(0x12dee0,4,4,location,"SnapshotDemoPlaybackBuffer",TRACK_MISC,
                           "C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x84);
-    PMem_EndAlloc("SnapshotDemoPlaybackBuffer",param_1);
-    PMem_BeginAlloc("SnapshotDemoKeyframeBuffer",param_1,TRACK_MISC);
+    PMem_EndAlloc("SnapshotDemoPlaybackBuffer",location);
+    PMem_BeginAlloc("SnapshotDemoKeyframeBuffer",location,TRACK_MISC);
     g_keyframeBuf =
-         _PMem_AllocNamed(0x500000,4,4,param_1,"SnapshotDemoKeyframeBuffer",TRACK_MISC,
+         _PMem_AllocNamed(0x500000,4,4,location,"SnapshotDemoKeyframeBuffer",TRACK_MISC,
                           "C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x88);
-    PMem_EndAlloc("SnapshotDemoKeyframeBuffer",param_1);
-    PMem_BeginAlloc("SnapshotDemoJpegSaveBuffer",param_1,TRACK_MISC);
-    g_JpegBuf = _PMem_AllocNamed(0x500000,0x10,4,param_1,"SnapshotDemoJpegSaveBuffer",TRACK_MISC,
+    PMem_EndAlloc("SnapshotDemoKeyframeBuffer",location);
+    PMem_BeginAlloc("SnapshotDemoJpegSaveBuffer",location,TRACK_MISC);
+    g_JpegBuf = _PMem_AllocNamed(0x500000,0x10,4,location,"SnapshotDemoJpegSaveBuffer",TRACK_MISC,
                                  "C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x97);
-    PMem_EndAlloc("SnapshotDemoJpegSaveBuffer",param_1);
+    PMem_EndAlloc("SnapshotDemoJpegSaveBuffer",location);
   }
   return;
 }
@@ -66,7 +66,8 @@ void __cdecl Demo_Load(void)
   int iVar1;
   int iVar2;
   int iVar3;
-  char *pcVar4;
+  char *string;
+  ulong bytesRead;
   
   memset(demo.memBlock.compressedMsgBuf,'\0',0xc000);
   MSG_Init(&demo.msg,demo.msgBuf0,0xc000);
@@ -96,30 +97,30 @@ void __cdecl Demo_Load(void)
                  (demo.memBlock.compressedMsgBuf,demo.memBlock.compressedSize,demo.msgBuf0,
                   demo.memBlock.uncompressedSize);
   demo.msg.data = demo.msgBuf0;
-  pcVar4 = va("DEMO: CurSize: %d CompressedSize: %d. Read %d bytes to demo file %s\n");
-  Demo_Printf(2,pcVar4);
+  string = va("DEMO: CurSize: %d CompressedSize: %d. Read %d bytes to demo file %s\n");
+  Demo_Printf(2,string);
   return;
 }
 
 
 // 009BCED0  Demo_TagPlayer  (demo/demo_playback.cpp:245)
 
-void __cdecl Demo_TagPlayer(demoTagPlayers *param_1,ulong64 param_2)
+void __cdecl Demo_TagPlayer(demoTagPlayers *players,ulong64 param_2)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *string;
   int in_stack_00000008;
   
   if (((int)param_2 != 0) || (in_stack_00000008 != 0)) {
-    iVar1 = param_1->count;
-    *(int *)(param_1->playerXuids + iVar1) = in_stack_00000008;
-    *(int *)((int)param_1->playerXuids + iVar1 * 8 + 4) = (int)param_2;
-    param_1->count = param_1->count + 1;
-    pcVar2 = va(
+    iVar1 = players->count;
+    *(int *)(players->playerXuids + iVar1) = in_stack_00000008;
+    *(int *)((int)players->playerXuids + iVar1 * 8 + 4) = (int)param_2;
+    players->count = players->count + 1;
+    string = va(
                "DEMO Player Tag: Adding player %lld to the tagged players list. Tag players count is now %d\n"
                );
-    Demo_Printf(3,pcVar2);
+    Demo_Printf(3,string);
   }
   return;
 }
@@ -127,19 +128,19 @@ void __cdecl Demo_TagPlayer(demoTagPlayers *param_1,ulong64 param_2)
 
 // 009BCF30  Demo_IsPlayerTagged  (demo/demo_playback.cpp:263)
 
-bool __cdecl Demo_IsPlayerTagged(int param_1,demoTagPlayers *param_2,ulong64 param_3)
+bool __cdecl Demo_IsPlayerTagged(int localClientNum,demoTagPlayers *players,ulong64 playerXuid)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_2->count <= local_8) {
+    if (players->count <= i) {
       return false;
     }
-    if (((int)param_2->playerXuids[local_8] == (int)param_3) &&
-       (*(int *)((int)param_2->playerXuids + local_8 * 8 + 4) == param_3._4_4_)) break;
-    local_8 = local_8 + 1;
+    if (((int)players->playerXuids[i] == (int)playerXuid) &&
+       (*(int *)((int)players->playerXuids + i * 8 + 4) == playerXuid._4_4_)) break;
+    i = i + 1;
   }
   return true;
 }
@@ -226,41 +227,44 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_TagPlayers(int param_1,demoTagPlayers *param_2)
+void __cdecl Demo_TagPlayers(int localClientNum,demoTagPlayers *players)
 
 {
   bool bVar1;
   cg_s *pcVar2;
   int iVar3;
-  centity_s *pcVar4;
-  DWORD DVar5;
+  centity_s *cent_00;
+  DWORD DVar4;
   undefined4 in_stack_ffffffdc;
-  int local_14;
+  int i;
+  int playerIndex;
+  cg_s *cgameGlob;
+  centity_s *cent;
   
-  if (param_2->count < 0x1d) {
+  if (players->count < 0x1d) {
     PIXBeginNamedEvent(-0xff0001,"Demo_TagPlayers - Tagging Players");
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
     iVar3 = Demo_GetPlayerIndexForClientNum(pcVar2->clientNum,pcVar2->time);
-    bVar1 = Demo_IsPlayerTagged(param_1,param_2,demo.info.connectedPlayers[iVar3].xuid);
+    bVar1 = Demo_IsPlayerTagged(localClientNum,players,demo.info.connectedPlayers[iVar3].xuid);
     if (!bVar1) {
-      Demo_TagPlayer(param_2,CONCAT44(in_stack_ffffffdc,
+      Demo_TagPlayer(players,CONCAT44(in_stack_ffffffdc,
                                       *(undefined4 *)
                                        ((int)&demo.info.connectedPlayers[iVar3].xuid + 4)));
     }
-    for (local_14 = 0; local_14 < demo.header.maxClients; local_14 = local_14 + 1) {
-      pcVar4 = CG_GetEntity(param_1,local_14);
-      if ((((pcVar4->nextValid != 0) && (local_14 != pcVar2->clientNum)) &&
-          (bVar1 = CG_CanSeeFriendlyHead(param_1,pcVar4), bVar1)) &&
-         ((iVar3 = Demo_GetPlayerIndexForClientNum(local_14,pcVar2->time), -1 < iVar3 &&
-          (bVar1 = Demo_IsPlayerTagged(param_1,param_2,demo.info.connectedPlayers[iVar3].xuid),
-          !bVar1)))) {
-        Demo_TagPlayer(param_2,CONCAT44(in_stack_ffffffdc,
+    for (i = 0; i < demo.header.maxClients; i = i + 1) {
+      cent_00 = CG_GetEntity(localClientNum,i);
+      if ((((cent_00->nextValid != 0) && (i != pcVar2->clientNum)) &&
+          (bVar1 = CG_CanSeeFriendlyHead(localClientNum,cent_00), bVar1)) &&
+         ((iVar3 = Demo_GetPlayerIndexForClientNum(i,pcVar2->time), -1 < iVar3 &&
+          (bVar1 = Demo_IsPlayerTagged(localClientNum,players,demo.info.connectedPlayers[iVar3].xuid
+                                      ), !bVar1)))) {
+        Demo_TagPlayer(players,CONCAT44(in_stack_ffffffdc,
                                         *(undefined4 *)
                                          ((int)&demo.info.connectedPlayers[iVar3].xuid + 4)));
       }
     }
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -277,67 +281,68 @@ void __cdecl Demo_TagPlayers(int param_1,demoTagPlayers *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_HiResScreenshot(int param_1,int param_2)
+void __cdecl Demo_HiResScreenshot(int localClientNum,int tiles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int local_254;
-  int local_250;
-  int local_248;
-  int local_244;
-  jpeg_exif local_240;
-  int local_230;
-  int local_22c;
-  int local_228;
-  clientActive_t *local_224;
-  bool local_21d;
-  int local_21c;
-  uchar *local_218;
-  int local_214;
-  float local_210;
-  cg_s *local_20c;
-  uint local_208;
-  uint local_204;
-  float local_200;
-  uchar *local_1fc;
-  int local_1f8;
-  uchar *local_1f4;
-  int local_1f0;
-  uchar *local_1ec;
-  bool local_1e5;
-  jpeg_encode local_1e4;
+  char *string;
+  int y_2;
+  int row;
+  float column;
+  int y;
+  int i;
+  jpeg_exif exif;
+  int total;
+  int now;
+  int iterations;
+  clientActive_t *cl;
+  bool streamFreezeState;
+  int worstImageQuality;
+  uchar *out;
+  int curlod;
+  float yAspect;
+  cg_s *cgameGlob;
+  int width;
+  int height;
+  float fraction;
+  uchar *tempV;
+  int bestImageQuality;
+  uchar *tempU;
+  int maxIterations;
+  uchar *tempY;
+  bool hideDemoHud;
+  jpeg_encode encode;
   uint local_10;
-  char local_9;
-  int local_8;
+  bool screenshotSuccessful;
+  int imageQuality;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_1f0 = 3;
-  local_21c = 0x800;
-  local_1f8 = 0x100;
-  local_9 = '\0';
-  if ((param_2 == 0) &&
+  maxIterations = 3;
+  worstImageQuality = 0x800;
+  bestImageQuality = 0x100;
+  screenshotSuccessful = false;
+  if ((tiles == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x167,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != 0) {
-    local_20c = CG_GetLocalClientGlobals(param_1);
-    local_224 = CL_GetLocalClientGlobals(param_1);
-    local_214 = (r_forceLod->current).integer;
+  if (tiles != 0) {
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    cl = CL_GetLocalClientGlobals(localClientNum);
+    curlod = (r_forceLod->current).integer;
     Dvar_SetInt(r_forceLod,4);
-    local_21d = (r_streamFreezeState->current).enabled;
+    streamFreezeState = (r_streamFreezeState->current).enabled;
     Dvar_SetBool(r_streamFreezeState,true);
-    local_1e5 = (demo.playback)->hideDemoHud;
+    hideDemoHud = (demo.playback)->hideDemoHud;
     (demo.playback)->hideDemoHud = true;
-    CL_UpdateUIVisibilityBits(param_1);
-    local_208 = cls.vidConfig.displayWidth;
-    local_204 = cls.vidConfig.displayHeight;
-    local_210 = 1.0;
+    CL_UpdateUIVisibilityBits(localClientNum);
+    width = cls.vidConfig.displayWidth;
+    height = cls.vidConfig.displayHeight;
+    yAspect = 1.0;
     if (((cls.vidConfig.displayHeight == 0) || (cls.vidConfig.displayWidth == 0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x17c,
                                  0,"%s"), !bVar2)) {
@@ -345,40 +350,38 @@ void __cdecl Demo_HiResScreenshot(int param_1,int param_2)
       (*pcVar1)();
       return;
     }
-    if ((local_204 != 0) && (local_208 != 0)) {
-      if ((0xffff < (int)(local_208 * param_2)) &&
+    if ((height != 0) && (width != 0)) {
+      if ((0xffff < width * tiles) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                    0x18a,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_8 = local_1f8;
-      local_1ec = Z_VirtualAlloc((local_208 + 0x10) * (local_204 + 0x10) * param_2 * param_2,
-                                 "YUV temp",0x17);
-      iVar3 = (local_208 + 0x10) * (local_204 + 0x10) * param_2 * param_2;
-      local_1f4 = Z_VirtualAlloc((int)(iVar3 + (iVar3 >> 0x1f & 3U)) >> 2,"YUV temp",0x17);
-      iVar3 = (local_208 + 0x10) * (local_204 + 0x10) * param_2 * param_2;
-      local_1fc = Z_VirtualAlloc((int)(iVar3 + (iVar3 >> 0x1f & 3U)) >> 2,"YUV temp",0x17);
-      yuv_init(local_208,local_204,false);
-      for (local_228 = 0; local_228 < local_1f0; local_228 = local_228 + 1) {
+      imageQuality = bestImageQuality;
+      tempY = Z_VirtualAlloc((width + 0x10) * (height + 0x10) * tiles * tiles,"YUV temp",0x17);
+      iVar3 = (width + 0x10) * (height + 0x10) * tiles * tiles;
+      tempU = Z_VirtualAlloc((int)(iVar3 + (iVar3 >> 0x1f & 3U)) >> 2,"YUV temp",0x17);
+      iVar3 = (width + 0x10) * (height + 0x10) * tiles * tiles;
+      tempV = Z_VirtualAlloc((int)(iVar3 + (iVar3 >> 0x1f & 3U)) >> 2,"YUV temp",0x17);
+      yuv_init(width,height,false);
+      for (iterations = 0; iterations < maxIterations; iterations = iterations + 1) {
         (demo.playback)->screenshotSize = 0;
-        for (local_244 = 0; local_244 < 2; local_244 = local_244 + 1) {
+        for (i = 0; i < 2; i = i + 1) {
           SCR_UpdateScreen();
         }
         NET_Sleep(200);
-        R_BeginHiResShot(param_2);
-        local_240.gpsLat = 34.02154;
-        local_240.gpsLon = -118.44875;
-        local_240.gpsOffsetLon = (local_20c->refdef).vieworg[0] * 0.0254;
-        local_240.gpsOffsetLat = (local_20c->refdef).vieworg[1] * 0.0254;
-        local_218 = jpeg_encode::begin(&local_1e4,g_JpegBuf + (demo.playback)->screenshotSize,
-                                       (int)((float)(int)(local_208 * param_2) * local_210),
-                                       local_204 * param_2,local_8,true,&local_240);
+        R_BeginHiResShot(tiles);
+        exif.gpsLat = 34.02154;
+        exif.gpsLon = -118.44875;
+        exif.gpsOffsetLon = (cgameGlob->refdef).vieworg[0] * 0.0254;
+        exif.gpsOffsetLat = (cgameGlob->refdef).vieworg[1] * 0.0254;
+        out = jpeg_encode::begin(&encode,g_JpegBuf + (demo.playback)->screenshotSize,
+                                 (int)((float)(width * tiles) * yAspect),height * tiles,imageQuality
+                                 ,true,&exif);
         (demo.playback)->screenshotSize =
-             (int)(local_218 +
-                  ((demo.playback)->screenshotSize -
-                  (int)(g_JpegBuf + (demo.playback)->screenshotSize)));
+             (int)(out + ((demo.playback)->screenshotSize -
+                         (int)(g_JpegBuf + (demo.playback)->screenshotSize)));
         if ((0x4fffff < (demo.playback)->screenshotSize) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                      0x1ab,0,"%s"), !bVar2)) {
@@ -386,16 +389,16 @@ void __cdecl Demo_HiResScreenshot(int param_1,int param_2)
           (*pcVar1)();
           return;
         }
-        local_218 = g_JpegBuf + (demo.playback)->screenshotSize;
-        local_230 = ((int)(local_204 + ((int)local_204 >> 0x1f & 0xfU)) >> 4) * param_2 * param_2;
-        local_22c = 0;
-        for (local_248 = 0; local_248 < param_2; local_248 = local_248 + 1) {
-          for (local_250 = 0; local_250 < param_2; local_250 = local_250 + 1) {
+        out = g_JpegBuf + (demo.playback)->screenshotSize;
+        total = ((int)(height + (height >> 0x1f & 0xfU)) >> 4) * tiles * tiles;
+        now = 0;
+        for (y = 0; y < tiles; y = y + 1) {
+          for (row = 0; row < tiles; row = row + 1) {
             jpeg_screenshot_set_frame_info
-                      (local_208,local_204,local_250,local_248,param_2,(float)local_250,
-                       (float)local_248,0,local_210,(float)local_22c / (float)local_230);
-            local_22c = local_22c + 1;
-            R_UpdateHiResShot((float)local_250,(float)local_248);
+                      (width,height,row,y,tiles,(float)row,(float)y,0,yAspect,
+                       (float)now / (float)total);
+            now = now + 1;
+            R_UpdateHiResShot((float)row,(float)y);
             do {
               iVar3 = Sys_RendererReady();
             } while (iVar3 != 0);
@@ -403,17 +406,15 @@ void __cdecl Demo_HiResScreenshot(int param_1,int param_2)
             do {
               iVar3 = Sys_RendererReady();
             } while (iVar3 != 0);
-            jpeg_screenshot_tile(local_1ec,local_1f4,local_1fc);
+            jpeg_screenshot_tile(tempY,tempU,tempV);
           }
         }
-        for (local_254 = 0; local_254 < (int)(local_204 * param_2); local_254 = local_254 + 0x10) {
-          local_218 = jpeg_screenshot_row(local_218,local_1ec,local_1f4,local_1fc,local_254,
-                                          &local_1e4);
-          if (local_218 != (uchar *)(uint)g_JpegBuf[(demo.playback)->screenshotSize]) {
+        for (y_2 = 0; y_2 < height * tiles; y_2 = y_2 + 0x10) {
+          out = jpeg_screenshot_row(out,tempY,tempU,tempV,y_2,&encode);
+          if (out != (uchar *)(uint)g_JpegBuf[(demo.playback)->screenshotSize]) {
             (demo.playback)->screenshotSize =
-                 (int)(local_218 +
-                      ((demo.playback)->screenshotSize -
-                      (int)(g_JpegBuf + (demo.playback)->screenshotSize)));
+                 (int)(out + ((demo.playback)->screenshotSize -
+                             (int)(g_JpegBuf + (demo.playback)->screenshotSize)));
             if ((0x4fffff < (demo.playback)->screenshotSize) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp"
                                          ,0x1c8,0,"%s"), !bVar2)) {
@@ -421,15 +422,14 @@ void __cdecl Demo_HiResScreenshot(int param_1,int param_2)
               (*pcVar1)();
               return;
             }
-            local_218 = g_JpegBuf + (demo.playback)->screenshotSize;
+            out = g_JpegBuf + (demo.playback)->screenshotSize;
           }
         }
-        local_218 = jpeg_encode::end(&local_1e4,local_218);
-        if (((local_218 != (uchar *)(uint)g_JpegBuf[(demo.playback)->screenshotSize]) &&
+        out = jpeg_encode::end(&encode,out);
+        if (((out != (uchar *)(uint)g_JpegBuf[(demo.playback)->screenshotSize]) &&
             ((demo.playback)->screenshotSize =
-                  (int)(local_218 +
-                       ((demo.playback)->screenshotSize -
-                       (int)(g_JpegBuf + (demo.playback)->screenshotSize))),
+                  (int)(out + ((demo.playback)->screenshotSize -
+                              (int)(g_JpegBuf + (demo.playback)->screenshotSize))),
             0x4fffff < (demo.playback)->screenshotSize)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                      0x1ea,0,"%s"), !bVar2)) {
@@ -438,32 +438,32 @@ void __cdecl Demo_HiResScreenshot(int param_1,int param_2)
           return;
         }
         R_EndHiResShot();
-        pcVar4 = va("Image Quality: %d Screenshot Size: %d\n");
-        Demo_Printf(3,pcVar4);
-        local_200 = (float)((demo.playback)->screenshotSize + -0x100000) / 1048576.0;
-        if (local_200 <= 0.0) {
-          local_9 = '\x01';
+        string = va("Image Quality: %d Screenshot Size: %d\n");
+        Demo_Printf(3,string);
+        fraction = (float)((demo.playback)->screenshotSize + -0x100000) / 1048576.0;
+        if (fraction <= 0.0) {
+          screenshotSuccessful = true;
           break;
         }
-        if (local_21c <= local_8) break;
-        local_8 = (int)((float)(local_21c - local_8) * local_200) + local_8;
+        if (worstImageQuality <= imageQuality) break;
+        imageQuality = (int)((float)(worstImageQuality - imageQuality) * fraction) + imageQuality;
       }
-      Z_VirtualFree(local_1ec,0x17);
-      Z_VirtualFree(local_1f4,0x17);
-      Z_VirtualFree(local_1fc,0x17);
+      Z_VirtualFree(tempY,0x17);
+      Z_VirtualFree(tempU,0x17);
+      Z_VirtualFree(tempV,0x17);
       yuv_shutdown();
-      if ((local_9 == '\0') || (0xfffff < (demo.playback)->screenshotSize)) {
-        Demo_Error(param_1,"MPUI_ERROR_CAPS","MENU_DEMO_SCREENSHOT_CAPTURE_FAILED");
+      if ((screenshotSuccessful == false) || (0xfffff < (demo.playback)->screenshotSize)) {
+        Demo_Error(localClientNum,"MPUI_ERROR_CAPS","MENU_DEMO_SCREENSHOT_CAPTURE_FAILED");
       }
       else {
-        Demo_OpenSavePopUp(param_1,1);
+        Demo_OpenSavePopUp(localClientNum,1);
       }
-      local_20c->hiResShotMode = 0;
-      Dvar_SetInt(r_forceLod,local_214);
-      Dvar_SetBool(r_streamFreezeState,local_21d);
-      (demo.playback)->hideDemoHud = local_1e5;
-      CL_UpdateUIVisibilityBits(param_1);
-      Demo_TagPlayers(param_1,&((demo.playback)->screenshotInfo).screenshotPlayers);
+      cgameGlob->hiResShotMode = 0;
+      Dvar_SetInt(r_forceLod,curlod);
+      Dvar_SetBool(r_streamFreezeState,streamFreezeState);
+      (demo.playback)->hideDemoHud = hideDemoHud;
+      CL_UpdateUIVisibilityBits(localClientNum);
+      Demo_TagPlayers(localClientNum,&((demo.playback)->screenshotInfo).screenshotPlayers);
     }
   }
   return;
@@ -498,13 +498,13 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "fileShareSearchFileType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Demo_SaveScreenshotSuccessful(int param_1,ulong64 param_2)
+void __cdecl Demo_SaveScreenshotSuccessful(int controllerIndex,ulong64 param_2)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char *pcVar4;
+  char *errorMessage;
   char *local_500;
   int local_4fc;
   bdTag *local_4f8;
@@ -512,50 +512,46 @@ void __cdecl Demo_SaveScreenshotSuccessful(int param_1,ulong64 param_2)
   bdTag *local_4f0;
   int local_4ec;
   bdTag *local_4e8;
-  int local_4e4;
-  bdTag *local_4e0;
-  uchar local_4dc [260];
+  int i;
+  int numTags;
+  uchar metaData [260];
   uint local_3d8;
-  undefined4 local_3d4;
+  undefined4 playerXuid;
   int local_3d0;
-  void *local_3c8;
-  bdTag local_3c4 [40];
+  int metaDataSize;
+  bdTag tags [40];
   
   local_3d8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4e0 = (bdTag *)0x0;
+  numTags = 0;
   local_4ec = 0x28;
-  local_4e8 = local_3c4;
+  local_4e8 = tags;
   while (local_4ec = local_4ec + -1, -1 < local_4ec) {
     bdTag::bdTag(local_4e8);
     local_4e8 = local_4e8 + 1;
   }
-  local_3c8 = (void *)0x0;
-  pcVar4 = "MENU_DEMO_SCREENSHOT_UPLOAD_SUCCESS";
+  metaDataSize = 0;
+  errorMessage = "MENU_DEMO_SCREENSHOT_UPLOAD_SUCCESS";
   pcVar3 = "";
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  Demo_Error(iVar2,pcVar3,pcVar4);
+  iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  Demo_Error(iVar2,pcVar3,errorMessage);
   pcVar3 = "fileshare_slotselection_scr";
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
+  iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
   UI_CloseMenu(iVar2,pcVar3);
   iVar2 = 0x20;
-  pcVar3 = Live_ControllerIndex_GetClientName(param_1);
+  pcVar3 = Live_ControllerIndex_GetClientName(controllerIndex);
   I_strncpyz(gamerTag,pcVar3,iVar2);
-  memset(local_4dc,'\0',0xff);
-  Demo_SetTags(param_1,(int *)&local_4e0,local_3c4,&(demo.playback)->screenshotInfo,
+  memset(metaData,'\0',0xff);
+  Demo_SetTags(controllerIndex,&numTags,tags,&(demo.playback)->screenshotInfo,
                FILESHARE_FILETYPE_SCREENSHOT);
-  bVar1 = Demo_SetMetaData(param_1,(char *)local_4dc,(int *)&local_3c8,(demoMetaInfo *)0x0,
+  bVar1 = Demo_SetMetaData(controllerIndex,(char *)metaData,&metaDataSize,(demoMetaInfo *)0x0,
                            &(demo.playback)->screenshotInfo,FILESHARE_FILETYPE_SCREENSHOT);
   if (bVar1) {
-    for (local_4e4 = 0; local_4e4 < ((demo.playback)->screenshotInfo).screenshotPlayers.count;
-        local_4e4 = local_4e4 + 1) {
-      local_3d4 = (undefined4)
-                  ((demo.playback)->screenshotInfo).screenshotPlayers.playerXuids[local_4e4];
-      local_3d0 = (demo.playback)->buttonPressTime[local_4e4 * 2 + 0xf];
-      Live_FileShare_AddTag(4,CONCAT44(local_3d0,local_3d4),(int *)&local_4e0,local_3c4,0x28);
+    for (i = 0; i < ((demo.playback)->screenshotInfo).screenshotPlayers.count; i = i + 1) {
+      playerXuid = (undefined4)((demo.playback)->screenshotInfo).screenshotPlayers.playerXuids[i];
+      local_3d0 = (demo.playback)->buttonPressTime[i * 2 + 0xf];
+      Live_FileShare_AddTag(4,CONCAT44(local_3d0,playerXuid),&numTags,tags,0x28);
     }
-    Live_FileShare_AddTag
-              (5,(longlong)(fsSelectedFileTagIndex->current).integer,(int *)&local_4e0,local_3c4,
-               0x28);
+    Live_FileShare_AddTag(5,(longlong)(fsSelectedFileTagIndex->current).integer,&numTags,tags,0x28);
     local_500 = gamerTag;
     pcVar3 = local_500;
     do {
@@ -563,12 +559,12 @@ void __cdecl Demo_SaveScreenshotSuccessful(int param_1,ulong64 param_2)
       pcVar3 = local_500 + 1;
     } while (*local_500 != '\0');
     LiveStorage_FileShare_WriteSummary
-              (param_1,CONCAT44(2,(undefined4)param_2),0xa7db3f0,local_500 + -0xa7db3f0,
-               (uint)local_4dc,local_3c8,(uint)local_3c4,local_4e0,0,SUB41(local_500 + -0xa7db3f0,0)
-              );
+              (controllerIndex,CONCAT44(2,(undefined4)param_2),0xa7db3f0,local_500 + -0xa7db3f0,
+               (uint)metaData,(void *)metaDataSize,(uint)tags,(bdTag *)numTags,0,
+               SUB41(local_500 + -0xa7db3f0,0));
     pcVar3 = va("userPublishNews TICKER_SCREENSHOTUPLOADED\n");
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar2,param_1,pcVar3);
+    iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    Cmd_ExecuteSingleCommand(iVar2,controllerIndex,pcVar3);
     dwRecordEventFormat((overlappedTask *)0x0,2,"JPG{id:%lld location:%d}");
     local_4fc = 0x28;
     local_4f8 = (bdTag *)&stack0xfffffffc;
@@ -599,20 +595,21 @@ void __cdecl Demo_SaveScreenshotSuccessful(int param_1,ulong64 param_2)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Demo_SaveScreenshot(int param_1,uint param_2)
+void __cdecl Demo_SaveScreenshot(int localClientNum,uint fileSlot)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  uchar *puVar4;
-  fileShareWriteFileInfo *pfVar5;
-  uchar local_13c [256];
+  char *filename;
+  int iVar2;
+  uchar *dir;
+  fileShareWriteFileInfo *writeFileInfo_00;
+  int handle;
+  uchar ospath [256];
   uint local_3c;
-  fileShareWriteFileInfo local_38;
+  fileShareWriteFileInfo writeFileInfo;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_13c,'\0',0x100);
+  memset(ospath,'\0',0x100);
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
     if ((demo.playback)->screenshotSize == 0) {
@@ -620,34 +617,34 @@ void __cdecl Demo_SaveScreenshot(int param_1,uint param_2)
     }
     else {
       if ((demo_usefilesystem->current).enabled != false) {
-        Demo_GetDemoPath((char *)local_13c);
+        Demo_GetDemoPath((char *)ospath);
         bVar1 = false;
-        puVar4 = local_13c;
-        pcVar2 = va("%s.jpeg");
-        iVar3 = Demo_OpenFileWrite(pcVar2,(char *)puVar4,bVar1);
-        if (iVar3 == 0) {
+        dir = ospath;
+        filename = va("%s.jpeg");
+        iVar2 = Demo_OpenFileWrite(filename,(char *)dir,bVar1);
+        if (iVar2 == 0) {
           Com_PrintError(0,"ERROR: couldn\'t open jpg file for write.\n");
           return;
         }
-        Demo_Write(g_JpegBuf,(demo.playback)->screenshotSize,iVar3);
-        Demo_CloseFile(iVar3);
+        Demo_Write(g_JpegBuf,(demo.playback)->screenshotSize,iVar2);
+        Demo_CloseFile(iVar2);
       }
-      local_38.category = 3;
-      local_38.fileData = g_JpegBuf;
-      local_38.fileSize = (demo.playback)->screenshotSize;
-      local_38.location = FILESHARE_LOCATION_USERSTORAGE;
-      local_38.fileSlot = (ushort)param_2;
-      local_38.numTags = 0;
-      local_38.tags = (bdTag *)0x0;
-      local_38.fileName = va("Screenshot_%d.jpg");
-      local_38.thumbData = (void *)0x0;
-      local_38.thumbDataSize = 0;
-      local_38.dataCallback = (_func___cdecl_uint_void_ptr_uint_uint *)0x0;
-      local_38.successCallback = Demo_SaveScreenshotSuccessful;
-      local_38.failureCallback = (_func___cdecl_void_int *)0x0;
-      pfVar5 = &local_38;
-      iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-      LiveStorage_FileShare_WriteFile(iVar3,pfVar5);
+      writeFileInfo.category = 3;
+      writeFileInfo.fileData = g_JpegBuf;
+      writeFileInfo.fileSize = (demo.playback)->screenshotSize;
+      writeFileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
+      writeFileInfo.fileSlot = (ushort)fileSlot;
+      writeFileInfo.numTags = 0;
+      writeFileInfo.tags = (bdTag *)0x0;
+      writeFileInfo.fileName = va("Screenshot_%d.jpg");
+      writeFileInfo.thumbData = (void *)0x0;
+      writeFileInfo.thumbDataSize = 0;
+      writeFileInfo.dataCallback = (_func___cdecl_uint_void_ptr_uint_uint *)0x0;
+      writeFileInfo.successCallback = Demo_SaveScreenshotSuccessful;
+      writeFileInfo.failureCallback = (_func___cdecl_void_int *)0x0;
+      writeFileInfo_00 = &writeFileInfo;
+      iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
+      LiveStorage_FileShare_WriteFile(iVar2,writeFileInfo_00);
     }
   }
   else {
@@ -684,6 +681,7 @@ void __cdecl Demo_SetCmdCompleted(void)
 
 {
   bool bVar1;
+  int cmd;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
@@ -699,14 +697,14 @@ void __cdecl Demo_SetCmdCompleted(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_ShouldProcessCmd(int param_1)
+bool __cdecl Demo_ShouldProcessCmd(int cmd)
 
 {
   bool bVar1;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    if ((demo.playback)->demoCmdInProgress < param_1) {
+    if ((demo.playback)->demoCmdInProgress < cmd) {
       bVar1 = true;
     }
     else {
@@ -742,6 +740,7 @@ bool __cdecl Demo_IsPaused(void)
 {
   bool bVar1;
   undefined1 local_c;
+  bool result;
   
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
@@ -790,10 +789,10 @@ bool __cdecl Demo_KeyframeGenerated(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetCompleted(bool param_1)
+void __cdecl Demo_SetCompleted(bool flag)
 
 {
-  (demo.playback)->completed = param_1;
+  (demo.playback)->completed = flag;
   return;
 }
 
@@ -844,6 +843,7 @@ bool __cdecl Demo_IsClipRecording(void)
 
 {
   int iVar1;
+  bool result;
   
   iVar1 = Demo_GetClipState();
   if ((iVar1 != 2) && (iVar1 = Demo_GetClipState(), iVar1 != 1)) {
@@ -904,14 +904,14 @@ bool __cdecl Demo_GetClipPausedState(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetJumpTimeFlag(bool param_1)
+void __cdecl Demo_SetJumpTimeFlag(bool flag)
 
 {
   bool bVar1;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    (demo.playback)->jumpTimeFlag = param_1;
+    (demo.playback)->jumpTimeFlag = flag;
   }
   return;
 }
@@ -944,14 +944,14 @@ bool __cdecl Demo_GetJumpTimeFlag(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetSwitchedPlayersFlag(bool param_1)
+void __cdecl Demo_SetSwitchedPlayersFlag(bool flag)
 
 {
   bool bVar1;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    (demo.playback)->switchedPlayers = param_1;
+    (demo.playback)->switchedPlayers = flag;
   }
   return;
 }
@@ -984,12 +984,14 @@ bool __cdecl Demo_GetSwitchedPlayersFlag(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_ShouldEntityBeVisibleToClient(int param_1)
+bool __cdecl Demo_ShouldEntityBeVisibleToClient(int entNum)
 
 {
+  int clientNum;
+  
   return (bool)('\x01' - ((1 << ((byte)(demo_client->current).integer & 0x1f) &
                           *(uint *)(((demo_client->current).integer >> 5) * 4 + 0xa7c7100 +
-                                   param_1 * 8)) != 0));
+                                   entNum * 8)) != 0));
 }
 
 
@@ -998,10 +1000,10 @@ bool __cdecl Demo_ShouldEntityBeVisibleToClient(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_HasClientSpawnedIn(int param_1)
+bool __cdecl Demo_HasClientSpawnedIn(int clientNum)
 
 {
-  return (bool)('\x01' - (demo.ent[param_1].eType != 1));
+  return (bool)('\x01' - (demo.ent[clientNum].eType != 1));
 }
 
 
@@ -1012,24 +1014,25 @@ bool __cdecl Demo_HasClientSpawnedIn(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_SetupForPlayerSwitch(int param_1)
+void __cdecl Demo_SetupForPlayerSwitch(int localClientNum)
 
 {
-  cg_s *pcVar1;
+  cg_s *cgameGlob_00;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  CG_ClearPopUpUI(param_1);
-  EndShellShock(param_1);
-  pcVar1->newPlayerViewmodel = 1;
-  CG_ResetLowHealthOverlay(pcVar1);
-  (pcVar1->refdef).poisonFx.curAmountTarget = 0.0;
-  (pcVar1->refdef).poisonFx.curAmount = 0.0;
-  (pcVar1->refdef).waterSheetingFx.enabled = false;
-  (pcVar1->refdef).waterSheetingFx.duration = 0;
-  (pcVar1->refdef).electrifiedFx.enabled = false;
-  (pcVar1->refdef).electrifiedFx.duration = 0;
-  (pcVar1->refdef).flameFx.enabled = false;
-  (pcVar1->refdef).flameFx.duration = 0;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  CG_ClearPopUpUI(localClientNum);
+  EndShellShock(localClientNum);
+  cgameGlob_00->newPlayerViewmodel = 1;
+  CG_ResetLowHealthOverlay(cgameGlob_00);
+  (cgameGlob_00->refdef).poisonFx.curAmountTarget = 0.0;
+  (cgameGlob_00->refdef).poisonFx.curAmount = 0.0;
+  (cgameGlob_00->refdef).waterSheetingFx.enabled = false;
+  (cgameGlob_00->refdef).waterSheetingFx.duration = 0;
+  (cgameGlob_00->refdef).electrifiedFx.enabled = false;
+  (cgameGlob_00->refdef).electrifiedFx.duration = 0;
+  (cgameGlob_00->refdef).flameFx.enabled = false;
+  (cgameGlob_00->refdef).flameFx.duration = 0;
   Demo_SetSwitchedPlayersFlag(true);
   return;
 }
@@ -1037,70 +1040,74 @@ void __cdecl Demo_SetupForPlayerSwitch(int param_1)
 
 // 009BD8B0  Demo_SwitchPlayer  (demo/demo_playback.cpp:1011)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Demo_SwitchPlayer(int param_1,bool param_2,int param_3,bool param_4)
+bool __cdecl
+Demo_SwitchPlayer(int localClientNum,bool reverse,int forceClientNum,bool forceToLivePlayer)
 
 {
-  uint uVar1;
+  int iVar1;
   bool bVar2;
   centity_s *pcVar3;
-  int local_c;
-  uint local_8;
+  centity_s *cent;
+  int oldClientNum;
+  int i;
+  int clientNum;
   
-  local_c = 0;
-  if (param_3 < 0) {
-    uVar1 = (demo_client->current).integer;
-    local_8 = uVar1;
-    while (local_c < demo.header.maxClients) {
-      if (param_2) {
-        local_8 = local_8 - 1;
+  i = 0;
+  if (forceClientNum < 0) {
+    iVar1 = (demo_client->current).integer;
+    clientNum = iVar1;
+    while (i < demo.header.maxClients) {
+      if (reverse) {
+        clientNum = clientNum + -1;
       }
       else {
-        local_8 = local_8 + 1;
+        clientNum = clientNum + 1;
       }
-      if ((int)local_8 < demo.header.maxClients) {
-        if ((int)local_8 < 0) {
-          local_8 = demo.header.maxClients - 1;
+      if (clientNum < demo.header.maxClients) {
+        if (clientNum < 0) {
+          clientNum = demo.header.maxClients + -1;
         }
       }
       else {
-        local_8 = 0;
+        clientNum = 0;
       }
-      if (demo.client[local_8].clientIndex == 0) {
-        local_c = local_c + 1;
+      if (demo.client[clientNum].clientIndex == 0) {
+        i = i + 1;
       }
       else {
-        if (param_4) {
-          pcVar3 = CG_GetEntity(param_1,local_8);
-          if (((pcVar3->nextValid != 0) && (bVar2 = Demo_HasClientSpawnedIn(local_8), bVar2)) &&
-             (uVar1 != local_8)) {
-            Demo_SetupForPlayerSwitch(param_1);
-            Dvar_SetInt(demo_client,local_8);
+        if (forceToLivePlayer) {
+          pcVar3 = CG_GetEntity(localClientNum,clientNum);
+          if (((pcVar3->nextValid != 0) && (bVar2 = Demo_HasClientSpawnedIn(clientNum), bVar2)) &&
+             (iVar1 != clientNum)) {
+            Demo_SetupForPlayerSwitch(localClientNum);
+            Dvar_SetInt(demo_client,clientNum);
             break;
           }
         }
-        else if ((((-1 < demo.client[local_8].clientIndex) && (demo.ps[local_8].commandTime != 0))
-                 && (demo.ps[local_8].clientNum == local_8)) && (uVar1 != local_8)) {
-          Demo_SetupForPlayerSwitch(param_1);
-          Dvar_SetInt(demo_client,local_8);
+        else if ((((-1 < demo.client[clientNum].clientIndex) &&
+                  (demo.ps[clientNum].commandTime != 0)) &&
+                 ((uint)demo.ps[clientNum].clientNum == clientNum)) && (iVar1 != clientNum)) {
+          Demo_SetupForPlayerSwitch(localClientNum);
+          Dvar_SetInt(demo_client,clientNum);
           break;
         }
-        local_c = local_c + 1;
+        i = i + 1;
       }
     }
-    bVar2 = uVar1 != local_8;
+    bVar2 = iVar1 != clientNum;
   }
-  else if ((demo_client->current).integer == param_3) {
+  else if ((demo_client->current).integer == forceClientNum) {
     bVar2 = false;
   }
   else {
-    Demo_SetupForPlayerSwitch(param_1);
-    Dvar_SetInt(demo_client,param_3);
+    Demo_SetupForPlayerSwitch(localClientNum);
+    Dvar_SetInt(demo_client,forceClientNum);
     bVar2 = true;
   }
   return bVar2;
@@ -1109,25 +1116,30 @@ bool __cdecl Demo_SwitchPlayer(int param_1,bool param_2,int param_3,bool param_4
 
 // 009BDA70  Demo_ShouldUpdateViewAngles  (demo/demo_playback.cpp:1140)
 
-bool __cdecl Demo_ShouldUpdateViewAngles(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+bool __cdecl Demo_ShouldUpdateViewAngles(int localClientNum)
 
 {
   bool bVar1;
   uiMenuCommand_t uVar2;
   
-  bVar1 = Demo_IsRenderingScreenshot(param_1);
+  bVar1 = Demo_IsRenderingScreenshot(localClientNum);
   if (bVar1) {
     bVar1 = false;
   }
   else {
-    bVar1 = Demo_IsErrorDialogOpen(param_1);
+    bVar1 = Demo_IsErrorDialogOpen(localClientNum);
     if (bVar1) {
       bVar1 = false;
     }
     else {
-      bVar1 = Key_IsCatcherActive(param_1,-1);
+      bVar1 = Key_IsCatcherActive(localClientNum,-1);
       if (bVar1) {
-        uVar2 = UI_GetActiveMenu(param_1);
+        uVar2 = UI_GetActiveMenu(localClientNum);
         if (uVar2 == UIMENU_SCOREBOARD) {
           bVar1 = true;
         }
@@ -1149,7 +1161,7 @@ bool __cdecl Demo_ShouldUpdateViewAngles(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Demo_GetKeyFrameTime(int param_1)
+int __cdecl Demo_GetKeyFrameTime(int index)
 
 {
   bool bVar1;
@@ -1157,7 +1169,7 @@ int __cdecl Demo_GetKeyFrameTime(int param_1)
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    iVar2 = (demo.playback)->keyFrame[param_1].keyframeSnapshotTime;
+    iVar2 = (demo.playback)->keyFrame[index].keyframeSnapshotTime;
   }
   else {
     iVar2 = -1;
@@ -1284,8 +1296,11 @@ bool __cdecl Demo_IsCustomGameMode(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Demo_GetKeyFrameForJumpBack(int param_1,int param_2)
+int __cdecl Demo_GetKeyFrameForJumpBack(int localClientNum,int newServerTime)
 
 {
   int iVar1;
@@ -1295,104 +1310,110 @@ int __cdecl Demo_GetKeyFrameForJumpBack(int param_1,int param_2)
   int iVar5;
   bool bVar6;
   float fVar7;
-  int local_34;
-  int local_28;
-  int local_20;
-  int local_1c;
-  int local_14;
-  int local_10;
-  int local_c;
-  char local_5;
+  int i;
+  clientActive_t *cl;
+  bool checkForFirstKeyframe;
+  int jumpBackTimeBiasFraction;
+  bool checkForPlayerConnectTime;
+  int curKeyframeIndex;
+  int numAttempts;
+  int keyframeIndex;
+  int disconnectTime;
+  int newKeyframeIndex;
+  int connectTime;
+  bool foundOldKeyframeForRewinding;
   
-  local_10 = -1;
-  local_1c = -1;
-  local_c = -1;
-  local_14 = -1;
-  local_5 = '\0';
+  newKeyframeIndex = -1;
+  numAttempts = -1;
+  connectTime = -1;
+  disconnectTime = -1;
+  foundOldKeyframeForRewinding = false;
   bVar2 = false;
   bVar6 = false;
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
   iVar1 = (demo.playback)->keyframeIndex;
   bVar3 = Demo_IsClipPlaying();
   if (bVar3) {
-    if (param_2 < 0) {
+    if (newServerTime < 0) {
       iVar5 = Demo_GetClipTime();
-      param_2 = iVar5 + -800;
+      newServerTime = iVar5 + -800;
     }
-    else if (param_2 == 0) {
+    else if (newServerTime == 0) {
       bVar6 = true;
     }
   }
   else {
     bVar2 = true;
-    Demo_GetConnectionTimeInfoForPlayer(param_1,&local_c,&local_14);
+    Demo_GetConnectionTimeInfoForPlayer(localClientNum,&connectTime,&disconnectTime);
     bVar3 = Demo_IsPaused();
     if ((bVar3) || (fVar7 = Com_GetTimeScale(), fVar7 <= 2.0)) {
-      local_28 = 1;
+      jumpBackTimeBiasFraction = 1;
     }
     else {
-      local_28 = 3;
+      jumpBackTimeBiasFraction = 3;
     }
-    if (param_2 < 0) {
-      param_2 = (pcVar4->snap).serverTime + local_28 * -800;
+    if (newServerTime < 0) {
+      newServerTime = (pcVar4->snap).serverTime + jumpBackTimeBiasFraction * -800;
     }
-    else if (param_2 <= local_c) {
-      bVar6 = param_2 == 0;
+    else if (newServerTime <= connectTime) {
+      bVar6 = newServerTime == 0;
       bVar3 = true;
       iVar5 = Demo_GetDemoClientIndex();
-      Demo_SwitchPlayer(param_1,false,iVar5,bVar3);
+      Demo_SwitchPlayer(localClientNum,false,iVar5,bVar3);
     }
   }
-  if (param_2 < (demo.playback)->keyFrame[iVar1].keyframeSnapshotTime) {
-    local_20 = iVar1;
+  if (newServerTime < (demo.playback)->keyFrame[iVar1].keyframeSnapshotTime) {
+    curKeyframeIndex = iVar1;
     if (bVar6) {
-      local_10 = -1;
-      for (local_34 = 0; local_34 < 0xfa; local_34 = local_34 + 1) {
-        if (-1 < (demo.playback)->keyFrame[local_34].keyframeSnapshotTime) {
-          if (local_10 < 0) {
-            local_10 = local_34;
+      newKeyframeIndex = -1;
+      for (i = 0; i < 0xfa; i = i + 1) {
+        if (-1 < (demo.playback)->keyFrame[i].keyframeSnapshotTime) {
+          if (newKeyframeIndex < 0) {
+            newKeyframeIndex = i;
           }
-          else if ((demo.playback)->keyFrame[local_34].keyframeSnapshotTime <
-                   (demo.playback)->keyFrame[local_10].keyframeSnapshotTime) {
-            local_10 = local_34;
+          else if ((demo.playback)->keyFrame[i].keyframeSnapshotTime <
+                   (demo.playback)->keyFrame[newKeyframeIndex].keyframeSnapshotTime) {
+            newKeyframeIndex = i;
           }
         }
       }
     }
     else {
-      while ((local_5 == '\0' && (local_1c < 0xfa))) {
-        local_1c = local_1c + 1;
-        if (local_20 == 0) {
-          local_10 = 0xf9;
+      while ((foundOldKeyframeForRewinding == false && (numAttempts < 0xfa))) {
+        numAttempts = numAttempts + 1;
+        if (curKeyframeIndex == 0) {
+          newKeyframeIndex = 0xf9;
         }
         else {
-          local_10 = (local_20 + -1) % 0xfa;
+          newKeyframeIndex = (curKeyframeIndex + -1) % 0xfa;
         }
-        local_20 = local_10;
-        if (((((demo.playback)->keyFrame[local_10].keyframeSnapshotTime / 1000 < param_2 / 1000) &&
-             (-1 < (demo.playback)->keyFrame[local_10].keyframeSnapshotTime)) &&
-            (((demo.playback)->keyFrame[local_10].keyframeSnapshotTime <
+        curKeyframeIndex = newKeyframeIndex;
+        if (((((demo.playback)->keyFrame[newKeyframeIndex].keyframeSnapshotTime / 1000 <
+               newServerTime / 1000) &&
+             (-1 < (demo.playback)->keyFrame[newKeyframeIndex].keyframeSnapshotTime)) &&
+            (((demo.playback)->keyFrame[newKeyframeIndex].keyframeSnapshotTime <
               (demo.playback)->keyFrame[iVar1].keyframeSnapshotTime ||
              ((demo.playback)->keyFrame[iVar1].keyframeSnapshotTime < 1)))) &&
            (((!bVar2 ||
-             (local_c / 1000 <= (demo.playback)->keyFrame[local_10].keyframeSnapshotTime / 1000)) ||
-            ((local_10 == 0 &&
+             (connectTime / 1000 <=
+              (demo.playback)->keyFrame[newKeyframeIndex].keyframeSnapshotTime / 1000)) ||
+            ((newKeyframeIndex == 0 &&
              (iVar5 = Demo_GetDemoClientIndex(), (demo_client->current).integer == iVar5)))))) {
-          local_5 = '\x01';
+          foundOldKeyframeForRewinding = true;
         }
       }
-      if (local_5 == '\0') {
-        local_10 = -1;
+      if (foundOldKeyframeForRewinding == false) {
+        newKeyframeIndex = -1;
       }
     }
   }
   else {
-    local_10 = iVar1;
-    if ((bVar2) && ((demo.playback)->keyFrame[iVar1].keyframeSnapshotTime <= local_c)) {
-      local_10 = -1;
+    newKeyframeIndex = iVar1;
+    if ((bVar2) && ((demo.playback)->keyFrame[iVar1].keyframeSnapshotTime <= connectTime)) {
+      newKeyframeIndex = -1;
     }
   }
-  return local_10;
+  return newKeyframeIndex;
 }
 
 
@@ -1400,66 +1421,72 @@ int __cdecl Demo_GetKeyFrameForJumpBack(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Demo_GetKeyFrameForJumpForward(int param_1,int param_2)
+int __cdecl Demo_GetKeyFrameForJumpForward(int localClientNum,int currentTime)
 
 {
   int iVar1;
   bool bVar2;
   bool bVar3;
   clientActive_t *pcVar4;
-  int iVar5;
-  int local_24;
-  int local_1c;
-  int local_10;
-  int local_c;
-  int local_8;
+  int forceClientNum;
+  int i;
+  clientActive_t *cl;
+  int newKeyframeTime;
+  bool checkForPlayerConnectTime;
+  int keyframeIndex;
+  int disconnectTime;
+  int newKeyframeIndex;
+  int connectTime;
   
-  local_8 = -1;
-  local_10 = -1;
+  connectTime = -1;
+  disconnectTime = -1;
   bVar2 = false;
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
   iVar1 = (demo.playback)->keyframeIndex;
   bVar3 = Demo_IsClipPlaying();
   if (bVar3) {
-    if (param_2 < 0) {
-      param_2 = Demo_GetClipTime();
+    if (currentTime < 0) {
+      currentTime = Demo_GetClipTime();
     }
   }
   else {
     bVar2 = true;
-    Demo_GetConnectionTimeInfoForPlayer(param_1,&local_8,&local_10);
-    if (param_2 < 0) {
-      param_2 = (pcVar4->snap).serverTime;
+    Demo_GetConnectionTimeInfoForPlayer(localClientNum,&connectTime,&disconnectTime);
+    if (currentTime < 0) {
+      currentTime = (pcVar4->snap).serverTime;
     }
-    else if (local_10 <= param_2) {
+    else if (disconnectTime <= currentTime) {
       bVar3 = true;
-      iVar5 = Demo_GetDemoClientIndex();
-      Demo_SwitchPlayer(param_1,false,iVar5,bVar3);
+      forceClientNum = Demo_GetDemoClientIndex();
+      Demo_SwitchPlayer(localClientNum,false,forceClientNum,bVar3);
     }
   }
-  if ((demo.playback)->keyFrame[iVar1].keyframeSnapshotTime < param_2) {
-    local_c = -1;
+  if ((demo.playback)->keyFrame[iVar1].keyframeSnapshotTime < currentTime) {
+    newKeyframeIndex = -1;
   }
   else {
     bVar3 = Demo_IsPaused();
     if (bVar3) {
-      param_2 = param_2 + pausedBuffer;
+      currentTime = currentTime + pausedBuffer;
     }
-    local_1c = -1;
-    local_c = -1;
-    for (local_24 = 0; local_24 < 0xfa; local_24 = local_24 + 1) {
-      if ((((-1 < (demo.playback)->keyFrame[local_24].keyframeSnapshotTime) &&
-           (param_2 < (demo.playback)->keyFrame[local_24].keyframeSnapshotTime)) &&
-          ((!bVar2 || ((demo.playback)->keyFrame[local_24].keyframeSnapshotTime < local_10)))) &&
-         ((local_1c < 0 || ((demo.playback)->keyFrame[local_24].keyframeSnapshotTime < local_1c))))
-      {
-        local_1c = (demo.playback)->keyFrame[local_24].keyframeSnapshotTime;
-        local_c = local_24;
+    newKeyframeTime = -1;
+    newKeyframeIndex = -1;
+    for (i = 0; i < 0xfa; i = i + 1) {
+      if ((((-1 < (demo.playback)->keyFrame[i].keyframeSnapshotTime) &&
+           (currentTime < (demo.playback)->keyFrame[i].keyframeSnapshotTime)) &&
+          ((!bVar2 || ((demo.playback)->keyFrame[i].keyframeSnapshotTime < disconnectTime)))) &&
+         ((newKeyframeTime < 0 ||
+          ((demo.playback)->keyFrame[i].keyframeSnapshotTime < newKeyframeTime)))) {
+        newKeyframeTime = (demo.playback)->keyFrame[i].keyframeSnapshotTime;
+        newKeyframeIndex = i;
       }
     }
   }
-  return local_c;
+  return newKeyframeIndex;
 }
 
 
@@ -1468,26 +1495,27 @@ int __cdecl Demo_GetKeyFrameForJumpForward(int param_1,int param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_DrawTransitionScreen(int param_1)
+void __cdecl Demo_DrawTransitionScreen(int localClientNum)
 
 {
   bool bVar1;
-  float local_18;
+  int iVar2;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int deltaTime;
   
   bVar1 = Demo_IsTransitionScreenActive();
   if (bVar1) {
-    local_8 = Sys_Milliseconds();
-    local_8 = local_8 - (demo.playback)->transitionScreenTime;
-    local_18 = 0.0;
+    iVar2 = Sys_Milliseconds();
+    deltaTime = iVar2 - (demo.playback)->transitionScreenTime;
+    color = 0.0;
     local_14 = 0.0;
     local_10 = 0.0;
-    local_c = 1.0 - (float)local_8 / 1000.0;
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0.0,0.0,640.0,480.0,4,4,
-                      0.0,0.0,1.0,1.0,&local_18,cgMedia.whiteMaterial);
+    local_c = 1.0 - (float)deltaTime / 1000.0;
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0.0,0.0,640.0,480.0
+                      ,4,4,0.0,0.0,1.0,1.0,&color,cgMedia.whiteMaterial);
   }
   return;
 }
@@ -1498,13 +1526,13 @@ void __cdecl Demo_DrawTransitionScreen(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ActivateTransitionScreen(int param_1)
+void __cdecl Demo_ActivateTransitionScreen(int transition)
 
 {
   int iVar1;
   
-  (demo.playback)->transition = param_1;
-  if (param_1 != 0) {
+  (demo.playback)->transition = transition;
+  if (transition != 0) {
     iVar1 = Sys_Milliseconds();
     (demo.playback)->transitionScreenTime = iVar1;
   }
@@ -1522,6 +1550,7 @@ bool __cdecl Demo_IsTransitionScreenActive(void)
 {
   bool bVar1;
   int iVar2;
+  int deltaTime;
   
   bVar1 = Demo_IsPlaying();
   if ((!bVar1) || (bVar1 = Demo_IsPlaybackInited(), !bVar1)) {
@@ -1544,78 +1573,79 @@ bool __cdecl Demo_IsTransitionScreenActive(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_DrawMetaInformationScreen(int param_1)
+void __cdecl Demo_DrawMetaInformationScreen(int localClientNum)
 
 {
   bool bVar1;
   int iVar2;
   float fVar3;
-  float local_44;
+  float bgColor;
   float local_40;
   float local_3c;
   float local_38;
-  Font_s *local_34;
-  int local_30;
-  float local_2c;
-  float local_28;
+  Font_s *font;
+  int textStyle;
+  float width;
+  float textColor;
   float local_24;
   float local_20;
   float local_1c;
-  char *local_18;
-  float local_14;
-  float local_10;
-  int local_c;
-  undefined1 local_5;
+  char *s;
+  float x;
+  float y;
+  int deltaTime;
+  bool showMetaInfo;
   
-  local_5 = 0;
+  showMetaInfo = false;
   bVar1 = Demo_IsMetaInformationScreenActive();
   if (bVar1) {
-    local_c = Sys_Milliseconds();
-    local_c = local_c - (demo.playback)->metaInformationScreenTime;
-    local_44 = 0.0;
+    iVar2 = Sys_Milliseconds();
+    deltaTime = iVar2 - (demo.playback)->metaInformationScreenTime;
+    bgColor = 0.0;
     local_40 = 0.0;
     local_3c = 0.0;
     local_38 = 1.0;
-    local_28 = 1.0;
+    textColor = 1.0;
     local_24 = 1.0;
     local_20 = 1.0;
     local_1c = 1.0;
-    local_30 = 0;
-    local_34 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),3,0.33333334);
-    if (local_c < 5000) {
-      local_5 = 1;
+    textStyle = 0;
+    font = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),3,0.33333334)
+    ;
+    if (deltaTime < 5000) {
+      showMetaInfo = true;
       fVar3 = Com_GetTimeScale();
       if (fVar3 != 2.0) {
         Com_SetTimeScale(2.0);
       }
     }
     else {
-      if (7000 < local_c) {
+      if (7000 < deltaTime) {
         (demo.playback)->metaInformationScreenTime = -1;
         return;
       }
-      local_38 = 1.0 - (float)(local_c + -5000) / 2000.0;
-      local_1c = 1.0 - (float)((local_c + -5000) * 3) / 2000.0;
+      local_38 = 1.0 - (float)(deltaTime + -5000) / 2000.0;
+      local_1c = 1.0 - (float)((deltaTime + -5000) * 3) / 2000.0;
       fVar3 = Com_GetTimeScale();
       if (fVar3 != 1.0) {
         Com_SetTimeScale(1.0);
-        Demo_SetDefaultClient(param_1,-1);
+        Demo_SetDefaultClient(localClientNum,-1);
       }
     }
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0.0,0.0,640.0,480.0,4,4,
-                      0.0,0.0,1.0,1.0,&local_44,cgMedia.whiteMaterial);
-    local_18 = UI_SafeTranslateString("MENU_PREPARING");
-    iVar2 = UI_TextWidth(local_18,0,local_34,0.33333334);
-    local_2c = (float)iVar2;
-    local_14 = (640.0 - local_2c) * 0.5;
-    local_10 = 0.0;
-    CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_18,0x7fffffff,local_34,
-                local_14,0.0,0,2,0.7,0.7,&local_28,local_30);
-    local_2c = 32.0;
-    local_14 = 304.0;
-    local_10 = 10.0;
-    CL_DrawSpinner((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),304.0,10.0,32.0,32.0,0,2,
-                   &local_28);
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0.0,0.0,640.0,480.0
+                      ,4,4,0.0,0.0,1.0,1.0,&bgColor,cgMedia.whiteMaterial);
+    s = UI_SafeTranslateString("MENU_PREPARING");
+    iVar2 = UI_TextWidth(s,0,font,0.33333334);
+    width = (float)iVar2;
+    x = (640.0 - width) * 0.5;
+    y = 0.0;
+    CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),s,0x7fffffff,font,x,0.0,0
+                ,2,0.7,0.7,&textColor,textStyle);
+    width = 32.0;
+    x = 304.0;
+    y = 10.0;
+    CL_DrawSpinner((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),304.0,10.0,32.0,32.0,0
+                   ,2,&textColor);
   }
   return;
 }
@@ -1664,30 +1694,33 @@ void __cdecl Demo_ResetSnapshotData(void)
 // 009BE600  Demo_ResetTimeValues  (demo/demo_playback.cpp:1697)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_ResetTimeValues(int param_1,int param_2)
+void __cdecl Demo_ResetTimeValues(int localClientNum,int time)
 
 {
   clientActive_t *pcVar1;
   clientConnection_t *pcVar2;
   cg_s *pcVar3;
+  clientActive_t *cl;
+  cg_s *cgameGlob;
+  clientConnection_t *clc;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar2 = CL_GetLocalClientConnection(param_1);
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  pcVar1->serverTime = param_2;
-  cls.realtime = param_2;
-  pcVar1->oldFrameServerTime = param_2;
-  pcVar1->oldServerTime = param_2;
-  pcVar2->lastPacketTime = param_2;
-  pcVar3->time = param_2;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar2 = CL_GetLocalClientConnection(localClientNum);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar1->serverTime = time;
+  cls.realtime = time;
+  pcVar1->oldFrameServerTime = time;
+  pcVar1->oldServerTime = time;
+  pcVar2->lastPacketTime = time;
+  pcVar3->time = time;
   pcVar3->landTime = 0;
   pcVar3->damageTime = 0;
-  pcVar3->healthOverlayPulseTime = param_2;
+  pcVar3->healthOverlayPulseTime = time;
   pcVar3->v_dmg_time = 0;
   pcVar3->crosshairClientLastTime = 0;
   pcVar3[1].activeSnapshots[0].ps.bobCycle = 1;
@@ -1703,16 +1736,18 @@ void __cdecl Demo_ResetTimeValues(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_ResetSequenceNumbers(int param_1,int param_2)
+void __cdecl Demo_ResetSequenceNumbers(int localClientNum,int sequence)
 
 {
   cgs_t *pcVar1;
   cg_s *pcVar2;
+  cg_s *cgameGlob;
+  cgs_t *cgs;
   
-  pcVar1 = CG_GetLocalClientStaticGlobals(param_1);
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  pcVar1->processedSnapshotNum = param_2;
-  pcVar2->latestSnapshotNum = param_2;
+  pcVar1 = CG_GetLocalClientStaticGlobals(localClientNum);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar1->processedSnapshotNum = sequence;
+  pcVar2->latestSnapshotNum = sequence;
   return;
 }
 
@@ -1723,54 +1758,59 @@ void __cdecl Demo_ResetSequenceNumbers(int param_1,int param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl Demo_ResetWorldInformation(int param_1,int param_2)
+void __cdecl Demo_ResetWorldInformation(int localClientNum,int time)
 
 {
-  ushort uVar1;
-  clientActive_t *pcVar2;
-  cg_s *pcVar3;
-  DWORD DVar4;
-  centity_s *pcVar5;
-  int local_1c;
-  int local_14;
+  ushort handle;
+  clientActive_t *pcVar1;
+  cg_s *cgameGlob_00;
+  DWORD DVar2;
+  centity_s *pcVar3;
+  int j;
+  centity_s *cent;
+  int i;
+  clientActive_t *cl;
+  ushort t;
+  cg_s *cgameGlob;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  memset((uchar *)pcVar3->viewDamage,'\0',0x60);
-  CG_ClearCameraShakes(param_1);
-  R_InitSceneData(param_1);
-  pcVar3->cursorHintFade = 0;
-  pcVar3->cursorHintIcon = 0;
-  pcVar3->cursorHintString = -1;
-  pcVar3->prevViewmodelWeapon = 0;
-  Con_Close(param_1);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  memset((uchar *)cgameGlob_00->viewDamage,'\0',0x60);
+  CG_ClearCameraShakes(localClientNum);
+  R_InitSceneData(localClientNum);
+  cgameGlob_00->cursorHintFade = 0;
+  cgameGlob_00->cursorHintIcon = 0;
+  cgameGlob_00->cursorHintString = -1;
+  cgameGlob_00->prevViewmodelWeapon = 0;
+  Con_Close(localClientNum);
   PIXBeginNamedEvent(-0xff0001,"Resetting World - FX Rewind");
-  CG_RestartSmokeGrenades(param_1);
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  CG_RestartSmokeGrenades(localClientNum);
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  pcVar3->newPlayerViewmodel = 1;
-  pcVar3->clearMarks = 1;
+  cgameGlob_00->newPlayerViewmodel = 1;
+  cgameGlob_00->clearMarks = 1;
   PIXBeginNamedEvent(-0xff0001,"Resetting World - Reset Destructibles & Compass Data");
-  CG_RestartDestructibles(param_1);
-  CG_ResetCompassData(param_1,param_2);
-  CG_ClearPopUpUI(param_1);
-  CG_ResetDirectionalDamageIndicators(param_1,param_2);
-  CG_ResetLowHealthOverlay(pcVar3);
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  CG_RestartDestructibles(localClientNum);
+  CG_ResetCompassData(localClientNum,time);
+  CG_ClearPopUpUI(localClientNum);
+  CG_ResetDirectionalDamageIndicators(localClientNum,time);
+  CG_ResetLowHealthOverlay(cgameGlob_00);
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  (pcVar3->refdef).poisonFx.curAmountTarget = 0.0;
-  (pcVar3->refdef).poisonFx.curAmount = 0.0;
-  (pcVar3->refdef).waterSheetingFx.enabled = false;
-  (pcVar3->refdef).waterSheetingFx.duration = 0;
-  (pcVar3->refdef).electrifiedFx.enabled = false;
-  (pcVar3->refdef).electrifiedFx.duration = 0;
-  (pcVar3->refdef).flameFx.enabled = false;
-  (pcVar3->refdef).flameFx.duration = 0;
+  (cgameGlob_00->refdef).poisonFx.curAmountTarget = 0.0;
+  (cgameGlob_00->refdef).poisonFx.curAmount = 0.0;
+  (cgameGlob_00->refdef).waterSheetingFx.enabled = false;
+  (cgameGlob_00->refdef).waterSheetingFx.duration = 0;
+  (cgameGlob_00->refdef).electrifiedFx.enabled = false;
+  (cgameGlob_00->refdef).electrifiedFx.duration = 0;
+  (cgameGlob_00->refdef).flameFx.enabled = false;
+  (cgameGlob_00->refdef).flameFx.duration = 0;
   CG_ClearOverheadFade();
   CG_ClearPlayerDetails();
   Flame_Reset();
@@ -1778,33 +1818,33 @@ void __cdecl Demo_ResetWorldInformation(int param_1,int param_2)
   NitrousVehicle::reset_vehicle_physics();
   PIXBeginNamedEvent(-0xff0001,"Resetting World - Client Script Notify");
   if (cg_scr_mp_data.demo_jump != 0) {
-    Scr_AddInt((pcVar2->snap).serverTime,SCRIPTINSTANCE_CLIENT);
-    Scr_AddInt(param_1,SCRIPTINSTANCE_CLIENT);
-    uVar1 = Scr_ExecThread(SCRIPTINSTANCE_CLIENT,cg_scr_mp_data.demo_jump,2);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_CLIENT);
+    Scr_AddInt((pcVar1->snap).serverTime,SCRIPTINSTANCE_CLIENT);
+    Scr_AddInt(localClientNum,SCRIPTINSTANCE_CLIENT);
+    handle = Scr_ExecThread(SCRIPTINSTANCE_CLIENT,cg_scr_mp_data.demo_jump,2);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_CLIENT);
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-0xff0001,"Resetting World - Centity Resets");
-  for (local_14 = 0; local_14 < 0x400; local_14 = local_14 + 1) {
-    pcVar5 = CG_GetEntity(param_1,local_14);
-    if (pcVar5->vehicle != (cgVehicle_s *)0x0) {
-      for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {
-        pcVar5->vehicle->lastGunnerFire[local_1c] = 0;
+  for (i = 0; i < 0x400; i = i + 1) {
+    pcVar3 = CG_GetEntity(localClientNum,i);
+    if (pcVar3->vehicle != (cgVehicle_s *)0x0) {
+      for (j = 0; j < 4; j = j + 1) {
+        pcVar3->vehicle->lastGunnerFire[j] = 0;
       }
     }
-    if (pcVar5->nitrousVeh != (NitrousVehicle *)0x0) {
-      NitrousVehicle::remove_vehicle(pcVar5->nitrousVeh);
-      pcVar5->nitrousVeh = (NitrousVehicle *)0x0;
+    if (pcVar3->nitrousVeh != (NitrousVehicle *)0x0) {
+      NitrousVehicle::remove_vehicle(pcVar3->nitrousVeh);
+      pcVar3->nitrousVeh = (NitrousVehicle *)0x0;
     }
-    if (pcVar5->clientTagCache != (ClientTagCache *)0x0) {
-      pcVar5->clientTagCache = (ClientTagCache *)0x0;
+    if (pcVar3->clientTagCache != (ClientTagCache *)0x0) {
+      pcVar3->clientTagCache = (ClientTagCache *)0x0;
     }
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1882,16 +1922,16 @@ int __cdecl Demo_GetCurrentCameraMode(void)
 
 // 009BEB40  Demo_GetNextCameraMode  (demo/demo_playback.cpp:1926)
 
-int __cdecl Demo_GetNextCameraMode(int param_1)
+int __cdecl Demo_GetNextCameraMode(int cameraMode)
 
 {
-  if (param_1 == 2) {
-    param_1 = 0;
+  if (cameraMode == 2) {
+    cameraMode = 0;
   }
   else {
-    param_1 = param_1 + 1;
+    cameraMode = cameraMode + 1;
   }
-  return param_1;
+  return cameraMode;
 }
 
 
@@ -1902,8 +1942,9 @@ int __cdecl Demo_GetNextCameraMode(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
+void __cdecl Demo_SwitchCameraMode(int localClientNum,int newCamMode)
 
 {
   int iVar1;
@@ -1913,10 +1954,13 @@ void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
   cg_s *pcVar5;
   clientActive_t *pcVar6;
   char *pcVar7;
+  clientActive_t *cl;
+  cg_s *cgameGlob;
+  int oldCamMode;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  pcVar6 = CL_GetLocalClientGlobals(param_1);
-  bVar4 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar6 = CL_GetLocalClientGlobals(localClientNum);
+  bVar4 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if ((!bVar4) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x7a0,0,
                                "%s"), !bVar4)) {
@@ -1925,7 +1969,7 @@ void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
     return;
   }
   iVar1 = (demo.playback)->cameraMode;
-  if (iVar1 != param_2) {
+  if (iVar1 != newCamMode) {
     if ((iVar1 != 0) && (iVar1 != 1)) {
       if (iVar1 == 2) {
         pcVar5->cameraMode = 0;
@@ -1941,8 +1985,8 @@ void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
         }
       }
     }
-    if ((param_2 != 0) && (param_2 != 1)) {
-      if (param_2 == 2) {
+    if ((newCamMode != 0) && (newCamMode != 1)) {
+      if (newCamMode == 2) {
         pcVar5->movieCameraOrigin[0] = (pcVar5->refdef).vieworg[0];
         pcVar5->movieCameraOrigin[1] = (pcVar5->refdef).vieworg[1];
         pcVar5->movieCameraOrigin[2] = (pcVar5->refdef).vieworg[2];
@@ -1959,7 +2003,7 @@ void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
           pdVar3->clipCameraAngles[2] = pcVar6->viewangles[2];
         }
         pcVar5->cameraMode = 1;
-        EndShellShock(param_1);
+        EndShellShock(localClientNum);
       }
       else {
         pcVar7 = va("We are in an unsupported camera mode %d\n");
@@ -1972,7 +2016,7 @@ void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
         }
       }
     }
-    (demo.playback)->cameraMode = param_2;
+    (demo.playback)->cameraMode = newCamMode;
     bVar4 = Demo_IsPaused();
     if (bVar4) {
       IK_ResetTime();
@@ -1990,33 +2034,37 @@ void __cdecl Demo_SwitchCameraMode(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_UpdateVisibilityBitsForCameraMode(int param_1,int param_2)
+void __cdecl Demo_UpdateVisibilityBitsForCameraMode(int localClientNum,int cameraMode)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  char *pcVar4;
+  char *fmt;
   
   bVar2 = Demo_IsPlaying();
   if (((bVar2) && (bVar2 = Demo_IsPlaybackInited(), bVar2)) &&
-     (pcVar3 = CG_GetLocalClientGlobals(param_1), pcVar3->nextSnap != (snapshot_s *)0x0)) {
-    if (param_2 < 0) {
-      param_2 = Demo_GetCurrentCameraMode();
+     (pcVar3 = CG_GetLocalClientGlobals(localClientNum), pcVar3->nextSnap != (snapshot_s *)0x0)) {
+    if (cameraMode < 0) {
+      cameraMode = Demo_GetCurrentCameraMode();
     }
-    if (param_2 != 0) {
-      if (param_2 == 1) {
-        *(uint *)(&DAT_098dada8 + param_1 * 8) = *(uint *)(&DAT_098dada8 + param_1 * 8) | 0x20000;
-        *(undefined4 *)(&DAT_098dadac + param_1 * 8) = *(undefined4 *)(&DAT_098dadac + param_1 * 8);
+    if (cameraMode != 0) {
+      if (cameraMode == 1) {
+        *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+             *(uint *)(&DAT_098dada8 + localClientNum * 8) | 0x20000;
+        *(undefined4 *)(&DAT_098dadac + localClientNum * 8) =
+             *(undefined4 *)(&DAT_098dadac + localClientNum * 8);
       }
-      else if (param_2 == 2) {
-        *(uint *)(&DAT_098dada8 + param_1 * 8) = *(uint *)(&DAT_098dada8 + param_1 * 8) | 0x40000;
-        *(undefined4 *)(&DAT_098dadac + param_1 * 8) = *(undefined4 *)(&DAT_098dadac + param_1 * 8);
+      else if (cameraMode == 2) {
+        *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+             *(uint *)(&DAT_098dada8 + localClientNum * 8) | 0x40000;
+        *(undefined4 *)(&DAT_098dadac + localClientNum * 8) =
+             *(undefined4 *)(&DAT_098dadac + localClientNum * 8);
       }
       else {
-        pcVar4 = va("We are in an unsupported camera mode %d\n");
+        fmt = va("We are in an unsupported camera mode %d\n");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x80c,
-                                 0,pcVar4);
+                                 0,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
@@ -2072,27 +2120,32 @@ bool __cdecl Demo_IsMovieCamera(void)
 
 // 009BEF20  Demo_ShouldUpdateMovieCamera  (demo/demo_playback.cpp:2102)
 
-bool __cdecl Demo_ShouldUpdateMovieCamera(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+bool __cdecl Demo_ShouldUpdateMovieCamera(int localClientNum)
 
 {
   bool bVar1;
   
-  bVar1 = Demo_IsPauseMenuOpen(param_1);
+  bVar1 = Demo_IsPauseMenuOpen(localClientNum);
   if (bVar1) {
     bVar1 = false;
   }
   else {
-    bVar1 = Demo_IsSaveDialogOpen(param_1);
+    bVar1 = Demo_IsSaveDialogOpen(localClientNum);
     if (bVar1) {
       bVar1 = false;
     }
     else {
-      bVar1 = Demo_IsErrorDialogOpen(param_1);
+      bVar1 = Demo_IsErrorDialogOpen(localClientNum);
       if (bVar1) {
         bVar1 = false;
       }
       else {
-        bVar1 = Demo_IsRenderingScreenshot(param_1);
+        bVar1 = Demo_IsRenderingScreenshot(localClientNum);
         if (bVar1) {
           bVar1 = false;
         }
@@ -2113,12 +2166,14 @@ bool __cdecl Demo_ShouldUpdateMovieCamera(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Demo_IsRenderingScreenshot(int param_1)
+bool __cdecl Demo_IsRenderingScreenshot(int localClientNum)
 
 {
   cg_s *pcVar1;
+  bool result;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   return pcVar1->hiResShotMode != 0;
 }
 
@@ -2148,14 +2203,14 @@ bool __cdecl Demo_IsRenderingMovie(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetClipState(int param_1)
+void __cdecl Demo_SetClipState(int state)
 
 {
   bool bVar1;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    (demo.playback)->clipState = param_1;
+    (demo.playback)->clipState = state;
   }
   return;
 }
@@ -2217,66 +2272,70 @@ bool __cdecl Demo_IsClipPreviewRunning(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_LerpClipCameraValues(int param_1)
+void __cdecl Demo_LerpClipCameraValues(int localClientNum)
 
 {
+  float fraction;
   float fVar1;
-  float fVar2;
-  code *pcVar3;
-  demoPlayback *pdVar4;
-  bool bVar5;
-  cg_s *pcVar6;
-  clientActive_t *pcVar7;
-  int iVar8;
-  char *pcVar9;
-  float fVar10;
-  int local_1c;
-  int local_18;
+  code *pcVar2;
+  demoPlayback *pdVar3;
+  bool bVar4;
+  cg_s *pcVar5;
+  clientActive_t *pcVar6;
+  int iVar7;
+  char *fmt;
+  float fVar8;
+  int i_2;
+  int i;
+  clientActive_t *cl;
+  int cameraMode;
+  cg_s *cgameGlob;
+  float f;
   
-  pcVar6 = CG_GetLocalClientGlobals(param_1);
-  pcVar7 = CL_GetLocalClientGlobals(param_1);
-  iVar8 = Demo_GetCurrentCameraMode();
-  pdVar4 = demo.playback;
-  fVar1 = pcVar6->frameInterpolation;
-  if (iVar8 == 1) {
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar6 = CL_GetLocalClientGlobals(localClientNum);
+  iVar7 = Demo_GetCurrentCameraMode();
+  pdVar3 = demo.playback;
+  fraction = pcVar5->frameInterpolation;
+  if (iVar7 == 1) {
     if ((demo.playback)->forceTeleportClipCamera != false) {
       (demo.playback)->prevClipCameraAngles[0] = (demo.playback)->clipCameraAngles[0];
-      pdVar4->prevClipCameraAngles[1] = pdVar4->clipCameraAngles[1];
-      pdVar4->prevClipCameraAngles[2] = pdVar4->clipCameraAngles[2];
+      pdVar3->prevClipCameraAngles[1] = pdVar3->clipCameraAngles[1];
+      pdVar3->prevClipCameraAngles[2] = pdVar3->clipCameraAngles[2];
       (demo.playback)->forceTeleportClipCamera = false;
     }
-    for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
-      fVar2 = (demo.playback)->prevClipCameraAngles[local_18];
-      fVar10 = AngleNormalize180((demo.playback)->clipCameraAngles[local_18] - fVar2);
-      pcVar7->viewangles[local_18] = fVar10 * fVar1 + fVar2;
+    for (i = 0; i < 3; i = i + 1) {
+      fVar1 = (demo.playback)->prevClipCameraAngles[i];
+      fVar8 = AngleNormalize180((demo.playback)->clipCameraAngles[i] - fVar1);
+      pcVar6->viewangles[i] = fVar8 * fraction + fVar1;
     }
   }
-  else if (iVar8 == 2) {
+  else if (iVar7 == 2) {
     if ((demo.playback)->forceTeleportClipCamera != false) {
       (demo.playback)->prevClipCameraOrigin[0] = (demo.playback)->clipCameraOrigin[0];
-      pdVar4->prevClipCameraOrigin[1] = pdVar4->clipCameraOrigin[1];
-      pdVar4->prevClipCameraOrigin[2] = pdVar4->clipCameraOrigin[2];
-      pdVar4 = demo.playback;
+      pdVar3->prevClipCameraOrigin[1] = pdVar3->clipCameraOrigin[1];
+      pdVar3->prevClipCameraOrigin[2] = pdVar3->clipCameraOrigin[2];
+      pdVar3 = demo.playback;
       (demo.playback)->prevClipCameraAngles[0] = (demo.playback)->clipCameraAngles[0];
-      pdVar4->prevClipCameraAngles[1] = pdVar4->clipCameraAngles[1];
-      pdVar4->prevClipCameraAngles[2] = pdVar4->clipCameraAngles[2];
+      pdVar3->prevClipCameraAngles[1] = pdVar3->clipCameraAngles[1];
+      pdVar3->prevClipCameraAngles[2] = pdVar3->clipCameraAngles[2];
       (demo.playback)->forceTeleportClipCamera = false;
     }
-    Vec3Lerp((demo.playback)->prevClipCameraOrigin,(demo.playback)->clipCameraOrigin,fVar1,
-             pcVar6->movieCameraOrigin);
-    for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-      fVar2 = (demo.playback)->prevClipCameraAngles[local_1c];
-      fVar10 = AngleNormalize180((demo.playback)->clipCameraAngles[local_1c] - fVar2);
-      pcVar6->movieCameraAngles[local_1c] = fVar10 * fVar1 + fVar2;
+    Vec3Lerp((demo.playback)->prevClipCameraOrigin,(demo.playback)->clipCameraOrigin,fraction,
+             pcVar5->movieCameraOrigin);
+    for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+      fVar1 = (demo.playback)->prevClipCameraAngles[i_2];
+      fVar8 = AngleNormalize180((demo.playback)->clipCameraAngles[i_2] - fVar1);
+      pcVar5->movieCameraAngles[i_2] = fVar8 * fraction + fVar1;
     }
   }
-  else if ((((pcVar6->predictedPlayerState).otherFlags & 2U) == 0) || (iVar8 != 0)) {
-    pcVar9 = va("Unsupported camera mode %d for lerping\n");
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x8e1,0,
-                             pcVar9);
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  else if ((((pcVar5->predictedPlayerState).otherFlags & 2U) == 0) || (iVar7 != 0)) {
+    fmt = va("Unsupported camera mode %d for lerping\n");
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x8e1,0,
+                             fmt);
+    if (!bVar4) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
@@ -2289,7 +2348,7 @@ void __cdecl Demo_LerpClipCameraValues(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_UpdateClipTime(int param_1)
+void __cdecl Demo_UpdateClipTime(int msec)
 
 {
   bool bVar1;
@@ -2298,7 +2357,7 @@ void __cdecl Demo_UpdateClipTime(int param_1)
   if (((bVar1) && ((bVar1 = Demo_IsClipRecording(), bVar1 || (bVar1 = Demo_IsClipPlaying(), bVar1)))
       ) && ((bVar1 = Demo_IsClipPlaying(), !bVar1 ||
             ((bVar1 = Demo_IsPaused(), !bVar1 && (bVar1 = Demo_IsCompleted(), !bVar1)))))) {
-    (demo.playback)->clipTime = (demo.playback)->clipTime + param_1;
+    (demo.playback)->clipTime = (demo.playback)->clipTime + msec;
   }
   return;
 }
@@ -2335,20 +2394,20 @@ int __cdecl Demo_GetTotalClipDuration(void)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int i;
+  int totalDuration;
   
-  local_8 = 0;
+  totalDuration = 0;
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    for (local_c = 0; local_c < (demo.playback)->segmentCount; local_c = local_c + 1) {
-      local_8 = local_8 + (demo.playback)->segments[local_c].duration;
+    for (i = 0; i < (demo.playback)->segmentCount; i = i + 1) {
+      totalDuration = totalDuration + (demo.playback)->segments[i].duration;
     }
   }
   else {
-    local_8 = 0;
+    totalDuration = 0;
   }
-  return local_8;
+  return totalDuration;
 }
 
 
@@ -2357,24 +2416,22 @@ int __cdecl Demo_GetTotalClipDuration(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SwitchTransition(int param_1,bool param_2)
+void __cdecl Demo_SwitchTransition(int index,bool direction)
 
 {
-  if (param_2) {
-    if ((demo.playback)->segments[param_1].transition == 1) {
-      (demo.playback)->segments[param_1].transition = 0;
+  if (direction) {
+    if ((demo.playback)->segments[index].transition == 1) {
+      (demo.playback)->segments[index].transition = 0;
     }
     else {
-      (demo.playback)->segments[param_1].transition =
-           (demo.playback)->segments[param_1].transition + 1;
+      (demo.playback)->segments[index].transition = (demo.playback)->segments[index].transition + 1;
     }
   }
-  else if ((demo.playback)->segments[param_1].transition == 0) {
-    (demo.playback)->segments[param_1].transition = 1;
+  else if ((demo.playback)->segments[index].transition == 0) {
+    (demo.playback)->segments[index].transition = 1;
   }
   else {
-    (demo.playback)->segments[param_1].transition =
-         (demo.playback)->segments[param_1].transition + -1;
+    (demo.playback)->segments[index].transition = (demo.playback)->segments[index].transition + -1;
   }
   return;
 }
@@ -2385,14 +2442,14 @@ void __cdecl Demo_SwitchTransition(int param_1,bool param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetClipModified(bool param_1)
+void __cdecl Demo_SetClipModified(bool flag)
 
 {
   bool bVar1;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    (demo.playback)->clipModified = param_1;
+    (demo.playback)->clipModified = flag;
   }
   return;
 }
@@ -2429,36 +2486,41 @@ void __cdecl Demo_ProcessPlayback(void)
 
 {
   bool bVar1;
+  int localClientNum_00;
+  char *src;
   int iVar2;
-  char *pcVar3;
-  int iVar4;
-  msg_bookmark_t local_1c;
+  int bookmarkOffset;
+  connstate_t connstate;
+  int localClientNum;
+  clientConnection_t *clc;
+  bool infoReadResult;
+  msg_bookmark_t bookmark;
   
   CL_SetupClientsForIngame((char *)0x0);
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(0);
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(0);
   Com_UnloadFrontEnd();
   CL_AllocatePerLocalClientMemory((char *)0x0,1);
-  CL_GetLocalClientConnectionState(iVar2);
-  CL_GetLocalClientConnection(iVar2);
-  Con_Close(iVar2);
+  CL_GetLocalClientConnectionState(localClientNum_00);
+  CL_GetLocalClientConnection(localClientNum_00);
+  Con_Close(localClientNum_00);
   Demo_SeekFile(demo.demoFileHandle,0,2);
   Demo_Load();
   Demo_ReadHeader();
-  MSG_SetBookmark(&demo.msg,&local_1c);
-  iVar4 = demo.totalSize;
+  MSG_SetBookmark(&demo.msg,&bookmark);
+  iVar2 = demo.totalSize;
   bVar1 = Demo_ReadInfoData(demo.demoName,demo.demoFileHandle);
   if (bVar1) {
-    MSG_GotoBookmark(&demo.msg,&local_1c);
-    Demo_SeekFile(demo.demoFileHandle,iVar4,2);
-    GamerProfile_WriteSettings(iVar2);
-    clientUIActives[iVar2].connectionState = CA_CONNECTED;
-    iVar4 = 0x100;
-    pcVar3 = Cmd_Argv(1);
-    I_strncpyz(cls.servername,pcVar3,iVar4);
-    Demo_ReadGamestate(iVar2);
-    iVar4 = Demo_GetDemoClientIndex();
-    Demo_SetDefaultClient(iVar2,iVar4);
-    Demo_SetDefaultVisionSet(iVar2);
+    MSG_GotoBookmark(&demo.msg,&bookmark);
+    Demo_SeekFile(demo.demoFileHandle,iVar2,2);
+    GamerProfile_WriteSettings(localClientNum_00);
+    clientUIActives[localClientNum_00].connectionState = CA_CONNECTED;
+    iVar2 = 0x100;
+    src = Cmd_Argv(1);
+    I_strncpyz(cls.servername,src,iVar2);
+    Demo_ReadGamestate(localClientNum_00);
+    iVar2 = Demo_GetDemoClientIndex();
+    Demo_SetDefaultClient(localClientNum_00,iVar2);
+    Demo_SetDefaultVisionSet(localClientNum_00);
     demo.playbackInited = false;
   }
   else {
@@ -2473,12 +2535,12 @@ void __cdecl Demo_ProcessPlayback(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_InitPlaybackData(int param_1)
+void __cdecl Demo_InitPlaybackData(int localClientNum)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
+  char *achievementName;
   
   memset(&(demo.playback)->overridePause,'\0',0x12dee0);
   (demo.playback)->keyframeIndex = -1;
@@ -2489,16 +2551,16 @@ void __cdecl Demo_InitPlaybackData(int param_1)
   demo.playbackInited = true;
   bVar1 = Demo_IsClipPlaying();
   if (bVar1) {
-    FX_BeginMarks(param_1);
+    FX_BeginMarks(localClientNum);
   }
   bVar1 = Demo_IsClipPlaying();
   if (!bVar1) {
     iVar2 = Sys_Milliseconds();
     (demo.playback)->metaInformationScreenTime = iVar2;
   }
-  pcVar3 = "MP_FILM_CREATED";
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  Live_GiveAchievement(iVar2,pcVar3);
+  achievementName = "MP_FILM_CREATED";
+  iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
+  Live_GiveAchievement(iVar2,achievementName);
   return;
 }
 
@@ -2508,23 +2570,31 @@ void __cdecl Demo_InitPlaybackData(int param_1)
 void __cdecl Demo_RestorePreDemoSettings(void)
 
 {
-  char *pcVar1;
-  int local_8;
+  char *string;
+  int localClientNum;
   
-  pcVar1 = va("DEMO: Restoring the pre-demo settings\n");
-  Demo_Printf(3,pcVar1);
+  string = va("DEMO: Restoring the pre-demo settings\n");
+  Demo_Printf(3,string);
   Dvar_SetInt(demo_client,0);
   Dvar_SetInt(demo_cmdNum,0);
   Dvar_SetFloat(demo_timescale,1.0);
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    *(uint *)(&DAT_098dada8 + local_8 * 8) = *(uint *)(&DAT_098dada8 + local_8 * 8) & 0xfff7ffff;
-    *(undefined4 *)(&DAT_098dadac + local_8 * 8) = *(undefined4 *)(&DAT_098dadac + local_8 * 8);
-    *(uint *)(&DAT_098dada8 + local_8 * 8) = *(uint *)(&DAT_098dada8 + local_8 * 8) & 0xffefffff;
-    *(undefined4 *)(&DAT_098dadac + local_8 * 8) = *(undefined4 *)(&DAT_098dadac + local_8 * 8);
-    *(uint *)(&DAT_098dada8 + local_8 * 8) = *(uint *)(&DAT_098dada8 + local_8 * 8) & 0xfffdffff;
-    *(undefined4 *)(&DAT_098dadac + local_8 * 8) = *(undefined4 *)(&DAT_098dadac + local_8 * 8);
-    *(uint *)(&DAT_098dada8 + local_8 * 8) = *(uint *)(&DAT_098dada8 + local_8 * 8) & 0xfffbffff;
-    *(undefined4 *)(&DAT_098dadac + local_8 * 8) = *(undefined4 *)(&DAT_098dadac + local_8 * 8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+         *(uint *)(&DAT_098dada8 + localClientNum * 8) & 0xfff7ffff;
+    *(undefined4 *)(&DAT_098dadac + localClientNum * 8) =
+         *(undefined4 *)(&DAT_098dadac + localClientNum * 8);
+    *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+         *(uint *)(&DAT_098dada8 + localClientNum * 8) & 0xffefffff;
+    *(undefined4 *)(&DAT_098dadac + localClientNum * 8) =
+         *(undefined4 *)(&DAT_098dadac + localClientNum * 8);
+    *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+         *(uint *)(&DAT_098dada8 + localClientNum * 8) & 0xfffdffff;
+    *(undefined4 *)(&DAT_098dadac + localClientNum * 8) =
+         *(undefined4 *)(&DAT_098dadac + localClientNum * 8);
+    *(uint *)(&DAT_098dada8 + localClientNum * 8) =
+         *(uint *)(&DAT_098dada8 + localClientNum * 8) & 0xfffbffff;
+    *(undefined4 *)(&DAT_098dadac + localClientNum * 8) =
+         *(undefined4 *)(&DAT_098dadac + localClientNum * 8);
   }
   Dvar_SetBool(demo_pause,false);
   Com_SetTimeScale(1.0);
@@ -2541,7 +2611,7 @@ void __cdecl Demo_ReadHeader(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *string;
   
   demo.header.version = MSG_ReadByte(&demo.msg);
   demo.header.maxClients = MSG_ReadByte(&demo.msg);
@@ -2559,8 +2629,8 @@ void __cdecl Demo_ReadHeader(void)
   demo.header.settings.systemlink = iVar1 != 0;
   iVar1 = MSG_ReadBit(&demo.msg);
   demo.header.settings.customGameMode = iVar1 != 0;
-  pcVar2 = va("DEMO Header: Version: %d\n");
-  Demo_Printf(3,pcVar2);
+  string = va("DEMO Header: Version: %d\n");
+  Demo_Printf(3,string);
   return;
 }
 
@@ -2570,16 +2640,18 @@ void __cdecl Demo_ReadHeader(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ReadGamestate(int param_1)
+void __cdecl Demo_ReadGamestate(int localClientNum)
 
 {
   int iVar1;
-  int iVar2;
+  int msgSequence_00;
+  int msgSequence;
+  int msgType;
   
   iVar1 = MSG_ReadBits(&demo.msg,2);
-  iVar2 = MSG_ReadLong(&demo.msg);
+  msgSequence_00 = MSG_ReadLong(&demo.msg);
   MSG_UnEmbed(&demo.msg);
-  Demo_ParseServerMessage(param_1,&demo.msg,iVar1,iVar2);
+  Demo_ParseServerMessage(localClientNum,&demo.msg,iVar1,msgSequence_00);
   iVar1 = MSG_GetNumBitsRead(&demo.msg);
   Demo_RecordProfileData(0,(int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3);
   return;
@@ -2592,12 +2664,12 @@ void __cdecl Demo_ReadGamestate(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_RunFirstFrameEvents(int param_1)
+void __cdecl Demo_RunFirstFrameEvents(int localClientNum)
 
 {
   bool bVar1;
-  char *pcVar2;
-  char local_10c [260];
+  char *text;
+  char ospath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -2605,14 +2677,14 @@ void __cdecl Demo_RunFirstFrameEvents(int param_1)
     GlassCl_BeginUpdate();
     bVar1 = Demo_IsRenderingMovie();
     if (bVar1) {
-      Demo_GetDemoPath(local_10c);
+      Demo_GetDemoPath(ospath);
       Dvar_SetInt(r_clipSize,0);
       Dvar_SetInt(r_clipCodec,0);
       Dvar_SetInt(r_clipFPS,0x18);
-      FS_BuildOSPath((fs_homepath->current).string,"movies","",local_10c);
-      FS_CreatePath(local_10c);
-      pcVar2 = va("movie_start \"%s%s.avi\"\n");
-      Cbuf_AddText(param_1,pcVar2);
+      FS_BuildOSPath((fs_homepath->current).string,"movies","",ospath);
+      FS_CreatePath(ospath);
+      text = va("movie_start \"%s%s.avi\"\n");
+      Cbuf_AddText(localClientNum,text);
     }
   }
   return;
@@ -2623,8 +2695,11 @@ void __cdecl Demo_RunFirstFrameEvents(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Demo_ReadDemoMessage(int param_1)
+bool __cdecl Demo_ReadDemoMessage(int localClientNum)
 
 {
   float fVar1;
@@ -2642,7 +2717,10 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
   int iVar13;
   char *pcVar14;
   int iVar15;
-  int local_8;
+  clientActive_t *cl;
+  uchar cmdType;
+  int msgSequence;
+  int msgType;
   
   bVar9 = Demo_IsCompleted();
   if ((bVar9) &&
@@ -2652,11 +2730,11 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
     uVar10 = (*pcVar7)();
     return (bool)uVar10;
   }
-  pcVar12 = CL_GetLocalClientGlobals(param_1);
-  Demo_RunFirstFrameEvents(param_1);
+  pcVar12 = CL_GetLocalClientGlobals(localClientNum);
+  Demo_RunFirstFrameEvents(localClientNum);
   bVar9 = Demo_IsClipPlaying();
   if (bVar9) {
-    bVar9 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+    bVar9 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
     if ((bVar9) && ((uint)(demo.playback)->clipCameraMode != (demo.playback)->cameraMode)) {
       fVar1 = (demo.playback)->clipCameraOrigin[0];
       fVar2 = (demo.playback)->clipCameraOrigin[1];
@@ -2664,7 +2742,7 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
       fVar4 = (demo.playback)->clipCameraAngles[0];
       fVar5 = (demo.playback)->clipCameraAngles[1];
       fVar6 = (demo.playback)->clipCameraAngles[2];
-      Demo_SwitchCameraMode(param_1,(uint)(demo.playback)->clipCameraMode);
+      Demo_SwitchCameraMode(localClientNum,(uint)(demo.playback)->clipCameraMode);
       if (((uint)(demo.playback)->clipCameraMode != (demo.playback)->cameraMode) &&
          (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                    0xa7b,0,"%s"), !bVar9)) {
@@ -2684,21 +2762,21 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
       }
     }
     iVar13 = Demo_GetClipTime();
-    bVar9 = Demo_ShouldGenerateKeyFrameSnapshot(param_1,iVar13);
+    bVar9 = Demo_ShouldGenerateKeyFrameSnapshot(localClientNum,iVar13);
     if (bVar9) {
       Demo_GenerateKeyFrameSnapshot
-                (param_1,(pcVar12->snap).messageNum,(pcVar12->snap).serverCommandNum,
+                (localClientNum,(pcVar12->snap).messageNum,(pcVar12->snap).serverCommandNum,
                  (demo.playback)->originalFilmTime,(demo.playback)->originalFilmTime,
                  (pcVar12->snap).snapFlags);
       bVar9 = Demo_KeyframeGenerated();
       if (bVar9) {
-        Demo_WriteKeyFrameInformation(param_1);
+        Demo_WriteKeyFrameInformation(localClientNum);
       }
     }
   }
   bVar9 = Demo_IsClipPreviewRunning();
   if ((bVar9) && ((demo.playback)->cancelPreview != false)) {
-    Demo_RestoreUIStateAfterPreview(param_1);
+    Demo_RestoreUIStateAfterPreview(localClientNum);
     (demo.playback)->cancelPreview = false;
     bVar9 = false;
   }
@@ -2706,12 +2784,12 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
     bVar9 = Demo_IsClipRecording();
     if ((bVar9) && (0xf3fff < (demo.playback)->clipRecordBufIndex)) {
       pcVar14 = va("demo_pausecliprecord %d\n");
-      Cbuf_AddText(param_1,pcVar14);
+      Cbuf_AddText(localClientNum,pcVar14);
       bVar9 = false;
     }
     else {
-      local_8 = MSG_ReadBits(&demo.msg,2);
-      if (local_8 == 0) {
+      msgType = MSG_ReadBits(&demo.msg,2);
+      if (msgType == 0) {
         iVar13 = Demo_GetClipState();
         if (iVar13 == 4) {
           if ((demo.playback)->pendingSegmentSave == false) {
@@ -2727,7 +2805,7 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
                   (demo.playback)->segments[(demo.playback)->clipPreviewSegmentNumber].
                   clipBufferIndex +
                   (demo.playback)->segments[(demo.playback)->clipPreviewSegmentNumber].size) {
-                Demo_RestoreUIStateAfterPreview(param_1);
+                Demo_RestoreUIStateAfterPreview(localClientNum);
                 return false;
               }
               Demo_Load();
@@ -2739,7 +2817,7 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
               (demo.playback)->clipPreviewSegmentNumber =
                    (demo.playback)->clipPreviewSegmentNumber + 1;
               if ((demo.playback)->clipPreviewSegmentNumber == (demo.playback)->segmentCount) {
-                Demo_RestoreUIStateAfterPreview(param_1);
+                Demo_RestoreUIStateAfterPreview(localClientNum);
                 return false;
               }
               Demo_ActivateTransitionScreen
@@ -2747,8 +2825,8 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
                                   [(demo.playback)->clipPreviewSegmentNumber * 0xc + 0x16].
                                   targetname);
               pcVar14 = va("demo_previewsegment %d %d");
-              iVar13 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar13,pcVar14);
+              iVar13 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar13,pcVar14);
             }
             else {
               Demo_Load();
@@ -2763,49 +2841,49 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
               return (bool)uVar10;
             }
             if ((demo.playback)->clipRecordBufIndex == (demo.playback)->clipPreviewBufferIndex) {
-              Demo_RestoreUIStateAfterPreview(param_1);
+              Demo_RestoreUIStateAfterPreview(localClientNum);
               return false;
             }
             Demo_Load();
           }
-          local_8 = MSG_ReadBits(&demo.msg,2);
+          msgType = MSG_ReadBits(&demo.msg,2);
         }
         else {
           Demo_Load();
-          local_8 = MSG_ReadBits(&demo.msg,2);
+          msgType = MSG_ReadBits(&demo.msg,2);
         }
       }
-      if (local_8 == 1) {
+      if (msgType == 1) {
         bVar9 = Demo_IsClipRecording();
         if (bVar9) {
           pcVar14 = va("demo_pausecliprecord %d\n");
-          Cbuf_AddText(param_1,pcVar14);
+          Cbuf_AddText(localClientNum,pcVar14);
         }
         bVar9 = Demo_IsRenderingMovie();
         if (bVar9) {
           pcVar14 = va("demo_stop\n");
-          Cbuf_AddText(param_1,pcVar14);
+          Cbuf_AddText(localClientNum,pcVar14);
         }
         Demo_SetCompleted(true);
         Com_SetTimeScale(1.0);
         bVar9 = false;
       }
       else {
-        while (local_8 == 2) {
-          uVar11 = Demo_ParseClipCommand(param_1,&demo.msg,true);
+        while (msgType == 2) {
+          uVar11 = Demo_ParseClipCommand(localClientNum,&demo.msg,true);
           if (uVar11 == '\t') {
             return false;
           }
-          local_8 = MSG_ReadBits(&demo.msg,2);
+          msgType = MSG_ReadBits(&demo.msg,2);
         }
         iVar13 = MSG_ReadLong(&demo.msg);
         iVar15 = Demo_GetClipState();
         if (iVar15 == 2) {
-          Demo_WriteClipCommands(param_1,&(demo.playback)->clipRecordingMsg,true);
-          MSG_WriteBits(&(demo.playback)->clipRecordingMsg,local_8,2);
+          Demo_WriteClipCommands(localClientNum,&(demo.playback)->clipRecordingMsg,true);
+          MSG_WriteBits(&(demo.playback)->clipRecordingMsg,msgType,2);
           MSG_WriteLong(&(demo.playback)->clipRecordingMsg,iVar13);
         }
-        Demo_ParseServerMessage(param_1,&demo.msg,local_8,iVar13);
+        Demo_ParseServerMessage(localClientNum,&demo.msg,msgType,iVar13);
         bVar9 = true;
         demo.lastProcessedMsgNum = iVar13;
       }
@@ -2820,7 +2898,7 @@ bool __cdecl Demo_ReadDemoMessage(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ParseServerMessage(int param_1,msg_t *param_2,int param_3,int param_4)
+void __cdecl Demo_ParseServerMessage(int localClientNum,msg_t *msg,int msgType,int msgSequence)
 
 {
   code *pcVar1;
@@ -2828,13 +2906,15 @@ void __cdecl Demo_ParseServerMessage(int param_1,msg_t *param_2,int param_3,int 
   clientConnection_t *pcVar3;
   char *pcVar4;
   int iVar5;
+  clientConnection_t *clc;
+  int cmd;
   
-  pcVar3 = CL_GetLocalClientConnection(param_1);
-  pcVar3->serverMessageSequence = param_4;
+  pcVar3 = CL_GetLocalClientConnection(localClientNum);
+  pcVar3->serverMessageSequence = msgSequence;
   pcVar3->lastPacketTime = cls.realtime;
   pcVar4 = va("Demo_ParseServerMessage() - msgType: %d msgSeq: %d ClientCmd: %d\n");
   Demo_Printf(1,pcVar4);
-  iVar5 = MSG_ReadLong(param_2);
+  iVar5 = MSG_ReadLong(msg);
   pcVar3->reliableAcknowledge = iVar5;
   iVar5 = Demo_GetClipState();
   if (iVar5 == 2) {
@@ -2844,8 +2924,8 @@ void __cdecl Demo_ParseServerMessage(int param_1,msg_t *param_2,int param_3,int 
     pcVar3->reliableAcknowledge = pcVar3->reliableSequence;
   }
   else {
-    while ((param_2->overflowed == 0 && (iVar5 = MSG_ReadByte(param_2), iVar5 != 0xe))) {
-      if ((param_2->overflowed != 0) &&
+    while ((msg->overflowed == 0 && (iVar5 = MSG_ReadByte(msg), iVar5 != 0xe))) {
+      if ((msg->overflowed != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                    0xb36,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2856,11 +2936,11 @@ void __cdecl Demo_ParseServerMessage(int param_1,msg_t *param_2,int param_3,int 
       case 0:
         break;
       case 1:
-        CL_ParseGamestate(param_1,param_2);
+        CL_ParseGamestate(localClientNum,msg);
         break;
       case 2:
-        Demo_ReadConfigStrings(param_1,param_2);
-        Demo_UpdateConfigStrings(param_1);
+        Demo_ReadConfigStrings(localClientNum,msg);
+        Demo_UpdateConfigStrings(localClientNum);
         break;
       default:
         pcVar4 = va("CL_ParseDemoServerMessage: Illegible server message %d\n");
@@ -2873,17 +2953,17 @@ void __cdecl Demo_ParseServerMessage(int param_1,msg_t *param_2,int param_3,int 
         (*pcVar1)();
         return;
       case 10:
-        Demo_ParseServerCommands(param_1,param_2);
+        Demo_ParseServerCommands(localClientNum,msg);
         break;
       case 0xc:
-        Demo_ParseSnapshot(param_1,param_2);
+        Demo_ParseSnapshot(localClientNum,msg);
       }
     }
     bVar2 = Demo_IsClipPlaying();
     if ((!bVar2) && (bVar2 = Demo_KeyframeGenerated(), bVar2)) {
-      Demo_WriteKeyFrameInformation(param_1);
+      Demo_WriteKeyFrameInformation(localClientNum);
     }
-    if ((param_2->overflowed != 0) &&
+    if ((msg->overflowed != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0xb59,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -2897,17 +2977,18 @@ void __cdecl Demo_ParseServerMessage(int param_1,msg_t *param_2,int param_3,int 
 
 // 009C05E0  Demo_ShouldFilterServerCommandForMovieCamera  (demo/demo_playback.cpp:2916)
 
-bool __cdecl Demo_ShouldFilterServerCommandForMovieCamera(char *param_1)
+bool __cdecl Demo_ShouldFilterServerCommandForMovieCamera(char *cmd)
 
 {
   bool bVar1;
   char *pcVar2;
-  char *local_8;
+  char *cmdToken;
+  char *s;
   
   bVar1 = Demo_IsMovieCamera();
   if (bVar1) {
-    local_8 = va("%s");
-    pcVar2 = Com_Parse(&local_8);
+    s = va("%s");
+    pcVar2 = Com_Parse(&s);
     if (*pcVar2 == 's') {
       bVar1 = true;
     }
@@ -2928,42 +3009,42 @@ bool __cdecl Demo_ShouldFilterServerCommandForMovieCamera(char *param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ParseServerCommands(int param_1,msg_t *param_2)
+void __cdecl Demo_ParseServerCommands(int localClientNum,msg_t *msg)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  uint local_424 [2];
-  char local_41c [1028];
+  char *string;
+  int iVar2;
+  uint cmdMask [2];
+  char strBuf [1028];
   uint local_18;
-  clientConnection_t *local_14;
-  uint local_10;
-  char *local_c;
-  int local_8;
+  clientConnection_t *clc;
+  int index;
+  char *s;
+  int clientNum;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (demo_client->current).integer;
-  local_424[0] = 0;
-  local_424[1] = 0;
-  local_424[0] = MSG_ReadLong(param_2);
-  local_c = MSG_ReadString(param_2,local_41c,0x400);
-  pcVar2 = va("DEMO: r ServerCommands MaskCmdNum: %i %i CmdString: %s\n");
-  Demo_Printf(4,pcVar2);
-  iVar3 = Demo_GetClipState();
-  if (iVar3 == 2) {
+  clientNum = (demo_client->current).integer;
+  cmdMask[0] = 0;
+  cmdMask[1] = 0;
+  cmdMask[0] = MSG_ReadLong(msg);
+  s = MSG_ReadString(msg,strBuf,0x400);
+  string = va("DEMO: r ServerCommands MaskCmdNum: %i %i CmdString: %s\n");
+  Demo_Printf(4,string);
+  iVar2 = Demo_GetClipState();
+  if (iVar2 == 2) {
     MSG_WriteByte(&(demo.playback)->clipRecordingMsg,10);
-    MSG_WriteLong(&(demo.playback)->clipRecordingMsg,local_424[0]);
-    MSG_WriteString(&(demo.playback)->clipRecordingMsg,local_c);
+    MSG_WriteLong(&(demo.playback)->clipRecordingMsg,cmdMask[0]);
+    MSG_WriteString(&(demo.playback)->clipRecordingMsg,s);
   }
-  if (((1 << ((byte)local_8 & 0x1f) & local_424[local_8 >> 5]) != 0) &&
-     ((1 << ((byte)local_8 & 0x1f) != local_424[local_8 >> 5] ||
-      (bVar1 = Demo_ShouldFilterServerCommandForMovieCamera(local_c), !bVar1)))) {
-    local_14 = CL_GetLocalClientConnection(param_1);
-    local_14->serverCommandSequence = local_14->serverCommandSequence + 1;
-    local_10 = local_14->serverCommandSequence & 0x7f;
-    local_c = Demo_AdjustTimeForReliableCommand(local_c);
-    I_strncpyz(local_14->serverCommands[local_10],local_c,0x400);
+  if (((1 << ((byte)clientNum & 0x1f) & cmdMask[clientNum >> 5]) != 0) &&
+     ((1 << ((byte)clientNum & 0x1f) != cmdMask[clientNum >> 5] ||
+      (bVar1 = Demo_ShouldFilterServerCommandForMovieCamera(s), !bVar1)))) {
+    clc = CL_GetLocalClientConnection(localClientNum);
+    clc->serverCommandSequence = clc->serverCommandSequence + 1;
+    index = clc->serverCommandSequence & 0x7f;
+    s = Demo_AdjustTimeForReliableCommand(s);
+    I_strncpyz(clc->serverCommands[index],s,0x400);
   }
   return;
 }
@@ -2978,42 +3059,42 @@ void __cdecl Demo_ParseServerCommands(int param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_ParseSnapshot(int param_1,msg_t *param_2)
+void __cdecl Demo_ParseSnapshot(int localClientNum,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  playerState_s *ppVar5;
+  playerState_s *src;
   playerState_s local_4d6c;
   uchar local_26c0 [9892];
-  clientActive_t *local_1c;
-  int local_18;
-  clientConnection_t *local_14;
-  int local_10;
-  char local_9;
-  uint local_8;
+  clientActive_t *cl;
+  int initBitsRead;
+  clientConnection_t *clc;
+  int deltaNum;
+  bool snapshotHasCustomInformation;
+  int oldMessageNum;
   
-  local_8 = 0x9c064d;
-  local_1c = CL_GetLocalClientGlobals(param_1);
-  local_14 = CL_GetLocalClientConnection(param_1);
+  oldMessageNum = 0x9c064d;
+  cl = CL_GetLocalClientGlobals(localClientNum);
+  clc = CL_GetLocalClientConnection(localClientNum);
   pcVar3 = va("Begin Demo Snapshot Read\n");
   Demo_Printf(0x200,pcVar3);
   Demo_EnableSnapshotProcessing();
   memset((uchar *)&newSnap,'\0',0x26dc);
-  newSnap.serverCommandNum = local_14->serverCommandSequence;
-  newSnap.serverTime = MSG_ReadLong(param_2);
-  newSnap.physicsTime = MSG_ReadLong(param_2);
-  newSnap.messageNum = local_14->serverMessageSequence;
-  local_10 = MSG_ReadByte(param_2);
-  if (local_10 == 0) {
+  newSnap.serverCommandNum = clc->serverCommandSequence;
+  newSnap.serverTime = MSG_ReadLong(msg);
+  newSnap.physicsTime = MSG_ReadLong(msg);
+  newSnap.messageNum = clc->serverMessageSequence;
+  deltaNum = MSG_ReadByte(msg);
+  if (deltaNum == 0) {
     newSnap.deltaNum = -1;
   }
   else {
-    newSnap.deltaNum = newSnap.messageNum - local_10;
+    newSnap.deltaNum = newSnap.messageNum - deltaNum;
   }
-  newSnap.snapFlags = MSG_ReadByte(param_2);
+  newSnap.snapFlags = MSG_ReadByte(msg);
   bVar2 = Demo_IsClipPlaying();
   if (bVar2) {
     (demo.playback)->originalFilmTime = newSnap.serverTime;
@@ -3024,13 +3105,13 @@ void __cdecl Demo_ParseSnapshot(int param_1,msg_t *param_2)
     MSG_WriteByte(&(demo.playback)->clipRecordingMsg,0xc);
     MSG_WriteLong(&(demo.playback)->clipRecordingMsg,newSnap.serverTime);
     MSG_WriteLong(&(demo.playback)->clipRecordingMsg,newSnap.physicsTime);
-    MSG_WriteByte(&(demo.playback)->clipRecordingMsg,local_10);
+    MSG_WriteByte(&(demo.playback)->clipRecordingMsg,deltaNum);
     MSG_WriteByte(&(demo.playback)->clipRecordingMsg,newSnap.snapFlags);
   }
   newSnap.valid = 1;
-  local_18 = MSG_GetNumBitsRead(param_2);
-  Demo_ReadMatchState(param_1,param_2,newSnap.serverTime);
-  newSnap.parseMatchStateNum = local_1c->parseMatchStateNum + -1;
+  initBitsRead = MSG_GetNumBitsRead(msg);
+  Demo_ReadMatchState(localClientNum,msg,newSnap.serverTime);
+  newSnap.parseMatchStateNum = cl->parseMatchStateNum + -1;
   CL_UpdateMapCenterFromMatchState(demo.matchState.unarchivedState.mapCenter);
   svs.mapCenter[0] = cls.mapCenter[0];
   svs.mapCenter[1] = cls.mapCenter[1];
@@ -3038,52 +3119,57 @@ void __cdecl Demo_ParseSnapshot(int param_1,msg_t *param_2)
   svsHeader.mapCenter[0] = cls.mapCenter[0];
   svsHeader.mapCenter[1] = cls.mapCenter[1];
   svsHeader.mapCenter[2] = cls.mapCenter[2];
-  iVar4 = MSG_GetNumBitsRead(param_2);
-  Demo_RecordProfileData(2,(int)((iVar4 - local_18) + (iVar4 - local_18 >> 0x1f & 7U)) >> 3);
-  local_18 = MSG_GetNumBitsRead(param_2);
-  ppVar5 = Demo_ReadPlayerStates(&local_4d6c,param_1,param_2,newSnap.serverTime);
-  memcpy(local_26c0,(uchar *)ppVar5,0x26a4);
-  memcpy((uchar *)&newSnap.ps,local_26c0,0x26a4);
-  iVar4 = MSG_GetNumBitsRead(param_2);
-  Demo_RecordProfileData(3,(int)((iVar4 - local_18) + (iVar4 - local_18 >> 0x1f & 7U)) >> 3);
-  local_18 = MSG_GetNumBitsRead(param_2);
-  newSnap.numEntities = Demo_ReadPacketEntities(param_1,param_2,newSnap.serverTime,newSnap.deltaNum)
+  iVar4 = MSG_GetNumBitsRead(msg);
+  Demo_RecordProfileData(2,(int)((iVar4 - initBitsRead) + (iVar4 - initBitsRead >> 0x1f & 7U)) >> 3)
   ;
-  newSnap.parseEntitiesNum = local_1c->parseEntitiesNum - newSnap.numEntities;
-  iVar4 = MSG_GetNumBitsRead(param_2);
-  Demo_RecordProfileData(4,(int)((iVar4 - local_18) + (iVar4 - local_18 >> 0x1f & 7U)) >> 3);
-  local_18 = MSG_GetNumBitsRead(param_2);
-  newSnap.numClients = Demo_ReadPacketClients(param_1,param_2,newSnap.serverTime,newSnap.deltaNum);
-  newSnap.parseClientsNum = local_1c->parseClientsNum - newSnap.numClients;
-  iVar4 = MSG_GetNumBitsRead(param_2);
-  Demo_RecordProfileData(5,(int)((iVar4 - local_18) + (iVar4 - local_18 >> 0x1f & 7U)) >> 3);
-  GlassCl_ParseSnapshot(param_1,param_2);
-  iVar4 = MSG_ReadBit(param_2);
-  local_9 = iVar4 != 0;
-  if ((bool)local_9) {
-    if ((param_2->overflowed != 0) &&
+  initBitsRead = MSG_GetNumBitsRead(msg);
+  src = Demo_ReadPlayerStates(&local_4d6c,localClientNum,msg,newSnap.serverTime);
+  memcpy(local_26c0,(uchar *)src,0x26a4);
+  memcpy((uchar *)&newSnap.ps,local_26c0,0x26a4);
+  iVar4 = MSG_GetNumBitsRead(msg);
+  Demo_RecordProfileData(3,(int)((iVar4 - initBitsRead) + (iVar4 - initBitsRead >> 0x1f & 7U)) >> 3)
+  ;
+  initBitsRead = MSG_GetNumBitsRead(msg);
+  newSnap.numEntities =
+       Demo_ReadPacketEntities(localClientNum,msg,newSnap.serverTime,newSnap.deltaNum);
+  newSnap.parseEntitiesNum = cl->parseEntitiesNum - newSnap.numEntities;
+  iVar4 = MSG_GetNumBitsRead(msg);
+  Demo_RecordProfileData(4,(int)((iVar4 - initBitsRead) + (iVar4 - initBitsRead >> 0x1f & 7U)) >> 3)
+  ;
+  initBitsRead = MSG_GetNumBitsRead(msg);
+  newSnap.numClients =
+       Demo_ReadPacketClients(localClientNum,msg,newSnap.serverTime,newSnap.deltaNum);
+  newSnap.parseClientsNum = cl->parseClientsNum - newSnap.numClients;
+  iVar4 = MSG_GetNumBitsRead(msg);
+  Demo_RecordProfileData(5,(int)((iVar4 - initBitsRead) + (iVar4 - initBitsRead >> 0x1f & 7U)) >> 3)
+  ;
+  GlassCl_ParseSnapshot(localClientNum,msg);
+  iVar4 = MSG_ReadBit(msg);
+  snapshotHasCustomInformation = iVar4 != 0;
+  if (snapshotHasCustomInformation) {
+    if ((msg->overflowed != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0xc3a,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Demo_ReadCustomSnaphotInformation(param_1,param_2);
+    Demo_ReadCustomSnaphotInformation(localClientNum,msg);
   }
   iVar4 = Demo_GetClipState();
   if (iVar4 == 2) {
     GlassCl_WriteDemoSnapshot(&(demo.playback)->clipRecordingMsg);
-    if (local_9 == '\0') {
+    if (snapshotHasCustomInformation == false) {
       MSG_WriteBit0(&(demo.playback)->clipRecordingMsg);
     }
     else {
       MSG_WriteBit1(&(demo.playback)->clipRecordingMsg);
-      Demo_WriteCustomSnapshotInformation(param_1,&(demo.playback)->clipRecordingMsg);
+      Demo_WriteCustomSnapshotInformation(localClientNum,&(demo.playback)->clipRecordingMsg);
     }
     MSG_WriteByte(&(demo.playback)->clipRecordingMsg,0xe);
   }
   Demo_DisableSnapshotProcessing();
-  if ((param_2->overflowed != 0) &&
+  if ((msg->overflowed != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0xc57,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -3096,70 +3182,71 @@ void __cdecl Demo_ParseSnapshot(int param_1,msg_t *param_2)
     newSnap.physicsTime = (demo.playback)->clipServerTime;
   }
   bVar2 = Demo_IsClipPlaying();
-  if ((!bVar2) && (bVar2 = Demo_ShouldGenerateKeyFrameSnapshot(param_1,newSnap.serverTime), bVar2))
-  {
+  if ((!bVar2) &&
+     (bVar2 = Demo_ShouldGenerateKeyFrameSnapshot(localClientNum,newSnap.serverTime), bVar2)) {
     Demo_GenerateKeyFrameSnapshot
-              (param_1,newSnap.messageNum,newSnap.serverCommandNum,newSnap.serverTime,
+              (localClientNum,newSnap.messageNum,newSnap.serverCommandNum,newSnap.serverTime,
                newSnap.physicsTime,newSnap.snapFlags);
   }
-  Demo_SetupPlaybackForClient(param_1,&newSnap.ps);
+  Demo_SetupPlaybackForClient(localClientNum,&newSnap.ps);
   pcVar3 = va("End Demo Snapshot Read\n");
   Demo_Printf(0x200,pcVar3);
-  local_8 = (local_1c->snap).messageNum + 1;
-  if (0x1f < (int)(newSnap.messageNum - local_8)) {
-    local_8 = newSnap.messageNum - 0x1f;
+  oldMessageNum = (cl->snap).messageNum + 1;
+  if (0x1f < newSnap.messageNum - oldMessageNum) {
+    oldMessageNum = newSnap.messageNum + -0x1f;
   }
-  for (; (int)local_8 < newSnap.messageNum; local_8 = local_8 + 1) {
-    local_1c->snapshots[local_8 & 0x1f].valid = 0;
+  for (; oldMessageNum < newSnap.messageNum; oldMessageNum = oldMessageNum + 1) {
+    cl->snapshots[oldMessageNum & 0x1f].valid = 0;
   }
-  local_1c->oldSnapServerTime = (local_1c->snap).serverTime;
-  memcpy((uchar *)&local_1c->snap,(uchar *)&newSnap,0x26dc);
-  (local_1c->snap).ping = 999;
-  memcpy((uchar *)(local_1c->snapshots + ((local_1c->snap).messageNum & 0x1f)),
-         (uchar *)&local_1c->snap,0x26dc);
-  local_1c->newSnapshots = 1;
+  cl->oldSnapServerTime = (cl->snap).serverTime;
+  memcpy((uchar *)&cl->snap,(uchar *)&newSnap,0x26dc);
+  (cl->snap).ping = 999;
+  memcpy((uchar *)(cl->snapshots + ((cl->snap).messageNum & 0x1f)),(uchar *)&cl->snap,0x26dc);
+  cl->newSnapshots = 1;
   return;
 }
 
 
 // 009C0CA0  Demo_ReadMatchState  (demo/demo_playback.cpp:3220)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_ReadMatchState(int param_1,msg_t *param_2,int param_3)
+void __cdecl Demo_ReadMatchState(int localClientNum,msg_t *msg,int time)
 
 {
-  MatchState *pMVar1;
-  bool bVar2;
-  clientActive_t *pcVar3;
-  int iVar4;
+  MatchState *to;
+  bool bVar1;
+  clientActive_t *pcVar2;
+  int iVar3;
+  MatchState *pMVar4;
   MatchState *pMVar5;
-  MatchState *pMVar6;
+  clientActive_t *cl;
+  MatchState *matchState;
   
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
-  pMVar1 = pcVar3->parseMatchStates + (pcVar3->parseMatchStateNum & 0x1f);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
+  to = pcVar2->parseMatchStates + (pcVar2->parseMatchStateNum & 0x1f);
   Demo_Printf(9,"DEMO: r Type: MatchState\n");
-  MSG_ClearLastReferencedEntity(param_2);
-  MSG_ReadDeltaMatchState(param_2,param_3,&demo.matchState,pMVar1);
-  iVar4 = Demo_GetClipState();
-  if (iVar4 == 2) {
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_ReadDeltaMatchState(msg,time,&demo.matchState,to);
+  iVar3 = Demo_GetClipState();
+  if (iVar3 == 2) {
     MSG_ClearLastReferencedEntity(&(demo.playback)->clipRecordingMsg);
     MSG_WriteDeltaMatchState
-              (&g_snapInfo,&(demo.playback)->clipRecordingMsg,param_3,&demo.matchState,pMVar1);
+              (&g_snapInfo,&(demo.playback)->clipRecordingMsg,time,&demo.matchState,to);
   }
-  pMVar5 = pMVar1;
-  pMVar6 = &demo.matchState;
-  for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
-    pMVar6->index = pMVar5->index;
+  pMVar4 = to;
+  pMVar5 = &demo.matchState;
+  for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
+    pMVar5->index = pMVar4->index;
+    pMVar4 = (MatchState *)&pMVar4->archivedState;
     pMVar5 = (MatchState *)&pMVar5->archivedState;
-    pMVar6 = (MatchState *)&pMVar6->archivedState;
   }
-  bVar2 = Demo_IsClipPlaying();
-  if (bVar2) {
-    Demo_AdjustTimeForMatchState(param_3,(demo.playback)->clipServerTime,pMVar1);
+  bVar1 = Demo_IsClipPlaying();
+  if (bVar1) {
+    Demo_AdjustTimeForMatchState(time,(demo.playback)->clipServerTime,to);
   }
-  pcVar3->parseMatchStateNum = pcVar3->parseMatchStateNum + 1;
+  pcVar2->parseMatchStateNum = pcVar2->parseMatchStateNum + 1;
   return;
 }
 
@@ -3171,46 +3258,46 @@ void __cdecl Demo_ReadMatchState(int param_1,msg_t *param_2,int param_3)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 playerState_s * __cdecl
-Demo_ReadPlayerStates(playerState_s *__return_storage_ptr__,int param_1,msg_t *param_2,int param_3)
+Demo_ReadPlayerStates(playerState_s *__return_storage_ptr__,int localClientNum,msg_t *msg,int time)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  int local_26b8;
-  playerState_s local_26b4;
-  int local_8;
+  int i;
+  playerState_s ps;
+  int bitsStart;
   
-  local_8 = 0x9c0dad;
-  for (local_26b8 = 0; local_26b8 < demo.header.maxClients; local_26b8 = local_26b8 + 1) {
-    iVar2 = MSG_ReadBit(param_2);
+  bitsStart = 0x9c0dad;
+  for (i = 0; i < demo.header.maxClients; i = i + 1) {
+    iVar2 = MSG_ReadBit(msg);
     if (iVar2 != 0) {
       pcVar3 = va("Begin Reading PlayerState\n");
       Demo_Printf(0x200,pcVar3);
-      local_8 = MSG_GetNumBitsRead(param_2);
-      MSG_ReadDeltaPlayerstate(param_1,param_2,param_3,demo.ps + local_26b8,&local_26b4,false);
-      MSG_GetNumBitsRead(param_2);
+      bitsStart = MSG_GetNumBitsRead(msg);
+      MSG_ReadDeltaPlayerstate(localClientNum,msg,time,demo.ps + i,&ps,false);
+      MSG_GetNumBitsRead(msg);
       pcVar3 = va("DEMO: r Type: PlayerState Client: %d Size: %d bytes\n");
       Demo_Printf(0x11,pcVar3);
       bVar1 = Demo_IsClipPlaying();
       if (bVar1) {
-        local_26b4.commandTime = (demo.playback)->clipServerTime;
+        ps.commandTime = (demo.playback)->clipServerTime;
       }
       else {
-        local_26b4.commandTime = param_3;
+        ps.commandTime = time;
       }
-      memcpy((uchar *)(demo.ps + local_26b8),(uchar *)&local_26b4,0x26a4);
+      memcpy((uchar *)(demo.ps + i),(uchar *)&ps,0x26a4);
     }
     iVar2 = Demo_GetClipState();
     if (iVar2 == 2) {
-      if (local_26b8 == (demo_client->current).integer) {
+      if (i == (demo_client->current).integer) {
         pcVar3 = va("DEMO clip: Writing playerstate for client %d\n");
         Demo_Printf(0x400,pcVar3);
         MSG_WriteBit1(&(demo.playback)->clipRecordingMsg);
         MSG_WriteDeltaPlayerstate
-                  (&g_snapInfo,&(demo.playback)->clipRecordingMsg,param_3,
-                   &(demo.playback)->clipRecordPS,demo.ps + local_26b8);
-        memcpy((uchar *)&(demo.playback)->clipRecordPS,(uchar *)(demo.ps + local_26b8),0x26a4);
+                  (&g_snapInfo,&(demo.playback)->clipRecordingMsg,time,
+                   &(demo.playback)->clipRecordPS,demo.ps + i);
+        memcpy((uchar *)&(demo.playback)->clipRecordPS,(uchar *)(demo.ps + i),0x26a4);
       }
       else {
         MSG_WriteBit0(&(demo.playback)->clipRecordingMsg);
@@ -3219,23 +3306,23 @@ Demo_ReadPlayerStates(playerState_s *__return_storage_ptr__,int param_1,msg_t *p
   }
   bVar1 = Demo_IsClipPlaying();
   if (bVar1) {
-    memcpy((uchar *)&local_26b4,(uchar *)(demo.ps + (demo_client->current).integer),0x26a4);
-    Demo_AdjustTimeForPlayerState(param_3,(demo.playback)->clipServerTime,&local_26b4);
+    memcpy((uchar *)&ps,(uchar *)(demo.ps + (demo_client->current).integer),0x26a4);
+    Demo_AdjustTimeForPlayerState(time,(demo.playback)->clipServerTime,&ps);
   }
   else {
-    memcpy((uchar *)&local_26b4,(uchar *)(demo.ps + (demo_client->current).integer),0x26a4);
+    memcpy((uchar *)&ps,(uchar *)(demo.ps + (demo_client->current).integer),0x26a4);
   }
-  memcpy((uchar *)__return_storage_ptr__,(uchar *)&local_26b4,0x26a4);
+  memcpy((uchar *)__return_storage_ptr__,(uchar *)&ps,0x26a4);
   return __return_storage_ptr__;
 }
 
 
 // 009C1050  Demo_ReadPacketEntities  (demo/demo_playback.cpp:3316)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int param_4)
+int __cdecl Demo_ReadPacketEntities(int localClientNum,msg_t *msg,int time,int deltaNum)
 
 {
   code *pcVar1;
@@ -3254,35 +3341,45 @@ int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int p
   int local_4c;
   int local_48;
   int local_44;
-  int local_3c;
-  entityState_s *local_2c;
-  int local_20;
-  int local_1c;
+  clientActive_t *cl;
+  int numVisibleEntities;
+  entityState_s *newState;
+  int newnum;
+  int entityClientMaskBit;
+  entityState_s *oldState;
+  int oldframeEntityCount;
+  bool isEntityVisible;
+  int oldnum;
+  int oldindex;
+  int numEntities;
+  int entityReadResult;
+  int clientNum;
+  int oldframeEntityBase;
   
-  local_1c = 0;
-  local_3c = 0;
-  iVar3 = MSG_ReadBits(param_2,0xb);
+  oldindex = 0;
+  numVisibleEntities = 0;
+  iVar3 = MSG_ReadBits(msg,0xb);
   pcVar4 = va("DEMO: r Type: PacketEntities NumEntities: %d FirstEntity: 0\n");
   Demo_Printf(0x21,pcVar4);
-  pcVar5 = CL_GetLocalClientGlobals(param_1);
+  pcVar5 = CL_GetLocalClientGlobals(localClientNum);
   iVar7 = demo.prevNumParsedEntities;
   uVar10 = pcVar5->parseEntitiesNum - demo.prevNumParsedEntities & 0x7ff;
-  if (param_4 < 0) {
-    local_20 = 9999;
+  if (deltaNum < 0) {
+    oldnum = 9999;
   }
   else {
-    local_20 = pcVar5->parseEntities[demo.prevNumParsedEntities & 0x7ff].number;
+    oldnum = pcVar5->parseEntities[demo.prevNumParsedEntities & 0x7ff].number;
   }
   demo.prevNumEntities = iVar3;
   demo.prevNumParsedEntities = pcVar5->parseEntitiesNum;
-  MSG_ClearLastReferencedEntity(param_2);
+  MSG_ClearLastReferencedEntity(msg);
   iVar6 = Demo_GetClipState();
   if (iVar6 == 2) {
     MSG_WriteBits(&(demo.playback)->clipRecordingMsg,iVar3,0xb);
     MSG_ClearLastReferencedEntity(&(demo.playback)->clipRecordingMsg);
   }
-  while (param_2->overflowed == 0) {
-    iVar3 = MSG_ReadEntityIndex(param_2,10);
+  while (msg->overflowed == 0) {
+    iVar3 = MSG_ReadEntityIndex(msg,10);
     if (((iVar3 < 0) || (0x3ff < iVar3)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0xd38,
                                  0,"%s\n\t(newnum) = %i"), !bVar2)) {
@@ -3291,58 +3388,58 @@ int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int p
       return iVar7;
     }
     if (iVar3 == 0x3ff) break;
-    while (local_20 < iVar3) {
+    while (oldnum < iVar3) {
       pcVar4 = va("EntityState: NewNum (%d) > OldNum (%d) - Copying old data\n");
       Demo_Printf(0x20,pcVar4);
-      peVar12 = pcVar5->parseEntities + (iVar7 + local_1c & 0x7ff);
+      peVar12 = pcVar5->parseEntities + (iVar7 + oldindex & 0x7ff);
       peVar11 = pcVar5->parseEntities + (pcVar5->parseEntitiesNum & 0x7ff);
       for (iVar6 = 0x38; iVar6 != 0; iVar6 = iVar6 + -1) {
         peVar11->number = peVar12->number;
         peVar12 = (entityState_s *)&peVar12->lerp;
         peVar11 = (entityState_s *)&peVar11->lerp;
       }
-      local_3c = local_3c + 1;
+      numVisibleEntities = numVisibleEntities + 1;
       pcVar5->parseEntitiesNum = pcVar5->parseEntitiesNum + 1;
-      local_1c = local_1c + 1;
-      if (local_1c < (int)uVar10) {
-        local_44 = pcVar5->parseEntities[iVar7 + local_1c & 0x7ff].number;
+      oldindex = oldindex + 1;
+      if (oldindex < (int)uVar10) {
+        local_44 = pcVar5->parseEntities[iVar7 + oldindex & 0x7ff].number;
       }
       else {
         local_44 = 9999;
       }
-      local_20 = local_44;
+      oldnum = local_44;
     }
-    if (local_20 == iVar3) {
+    if (oldnum == iVar3) {
       pcVar4 = va("EntityState: NewNum (%d) == OldNum (%d) - Reading delta\n");
       Demo_Printf(0x20,pcVar4);
       bVar2 = Demo_IsClipPlaying();
       if (bVar2) {
-        local_2c = demo.ent + iVar3;
+        oldState = demo.ent + iVar3;
       }
       else {
-        local_2c = pcVar5->parseEntities + (iVar7 + local_1c & 0x7ff);
+        oldState = pcVar5->parseEntities + (iVar7 + oldindex & 0x7ff);
       }
     }
     else {
       pcVar4 = va("EntityState: NewNum (%d) < OldNum (%d) - Reading from baselines\n");
       Demo_Printf(0x20,pcVar4);
-      local_2c = pcVar5->entityBaselines + iVar3;
+      oldState = pcVar5->entityBaselines + iVar3;
       iVar6 = Demo_GetClipState();
       if (iVar6 == 2) {
         g_snapInfo.fromBaseline = true;
       }
     }
     peVar12 = pcVar5->parseEntities + (pcVar5->parseEntitiesNum & 0x7ff);
-    iVar6 = MSG_ReadDeltaEntity(param_2,param_3,local_2c,peVar12,iVar3);
-    iVar8 = MSG_ReadBit(param_2);
+    iVar6 = MSG_ReadDeltaEntity(msg,time,oldState,peVar12,iVar3);
+    iVar8 = MSG_ReadBit(msg);
     iVar9 = Demo_GetClipState();
     if (iVar9 == 2) {
       if (iVar6 == 0) {
-        MSG_WriteEntity(&g_snapInfo,&(demo.playback)->clipRecordingMsg,param_3,local_2c,peVar12,
+        MSG_WriteEntity(&g_snapInfo,&(demo.playback)->clipRecordingMsg,time,oldState,peVar12,
                         DELTA_FLAGS_FORCE);
       }
       else {
-        MSG_WriteEntity(&g_snapInfo,&(demo.playback)->clipRecordingMsg,param_3,local_2c,
+        MSG_WriteEntity(&g_snapInfo,&(demo.playback)->clipRecordingMsg,time,oldState,
                         (entityState_s *)0x0,DELTA_FLAGS_FORCE);
       }
       g_snapInfo.fromBaseline = false;
@@ -3357,7 +3454,7 @@ int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int p
       }
       bVar2 = Demo_IsClipPlaying();
       if (bVar2) {
-        Demo_AdjustTimeForEntityState(param_3,(demo.playback)->clipServerTime,peVar12);
+        Demo_AdjustTimeForEntityState(time,(demo.playback)->clipServerTime,peVar12);
       }
     }
     else {
@@ -3377,7 +3474,7 @@ int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int p
       }
     }
     else {
-      iVar9 = MSG_ReadBits(param_2,0x20);
+      iVar9 = MSG_ReadBits(msg,0x20);
       demo.entClientMask[iVar3][0] = iVar9;
       pcVar4 = va("ClientMask for EntNum: %d is %d.\n");
       Demo_Printf(0x20,pcVar4);
@@ -3393,46 +3490,46 @@ int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int p
       }
     }
     if (iVar6 == 0) {
-      local_3c = local_3c + 1;
+      numVisibleEntities = numVisibleEntities + 1;
       pcVar5->parseEntitiesNum = pcVar5->parseEntitiesNum + 1;
     }
-    if (local_20 == iVar3) {
-      local_1c = local_1c + 1;
-      if (local_1c < (int)uVar10) {
-        local_48 = pcVar5->parseEntities[iVar7 + local_1c & 0x7ff].number;
+    if (oldnum == iVar3) {
+      oldindex = oldindex + 1;
+      if (oldindex < (int)uVar10) {
+        local_48 = pcVar5->parseEntities[iVar7 + oldindex & 0x7ff].number;
       }
       else {
         local_48 = 9999;
       }
-      local_20 = local_48;
+      oldnum = local_48;
     }
   }
   iVar3 = Demo_GetClipState();
   if (iVar3 == 2) {
     MSG_WriteEntityIndex(&g_snapInfo,&(demo.playback)->clipRecordingMsg,0x3ff,10);
   }
-  while (local_20 != 9999) {
+  while (oldnum != 9999) {
     pcVar4 = va("EntityState: OldNum (%d) != DEMO_LARGE_INVALID_STATE_NUMBER - Copying old data\n");
     Demo_Printf(0x20,pcVar4);
-    peVar12 = pcVar5->parseEntities + (iVar7 + local_1c & 0x7ff);
+    peVar12 = pcVar5->parseEntities + (iVar7 + oldindex & 0x7ff);
     peVar11 = pcVar5->parseEntities + (pcVar5->parseEntitiesNum & 0x7ff);
     for (iVar3 = 0x38; iVar3 != 0; iVar3 = iVar3 + -1) {
       peVar11->number = peVar12->number;
       peVar12 = (entityState_s *)&peVar12->lerp;
       peVar11 = (entityState_s *)&peVar11->lerp;
     }
-    local_3c = local_3c + 1;
+    numVisibleEntities = numVisibleEntities + 1;
     pcVar5->parseEntitiesNum = pcVar5->parseEntitiesNum + 1;
-    local_1c = local_1c + 1;
-    if (local_1c < (int)uVar10) {
-      local_4c = pcVar5->parseEntities[iVar7 + local_1c & 0x7ff].number;
+    oldindex = oldindex + 1;
+    if (oldindex < (int)uVar10) {
+      local_4c = pcVar5->parseEntities[iVar7 + oldindex & 0x7ff].number;
     }
     else {
       local_4c = 9999;
     }
-    local_20 = local_4c;
+    oldnum = local_4c;
   }
-  return local_3c;
+  return numVisibleEntities;
 }
 
 
@@ -3440,154 +3537,164 @@ int __cdecl Demo_ReadPacketEntities(int param_1,msg_t *param_2,int param_3,int p
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Demo_ReadPacketClients(int param_1,msg_t *param_2,int param_3,int param_4)
+int __cdecl Demo_ReadPacketClients(int localClientNum,msg_t *msg,int time,int deltaNum)
 
 {
   int iVar1;
   bool bVar2;
-  int iVar3;
-  char *pcVar4;
-  clientActive_t *pcVar5;
+  int value;
+  char *pcVar3;
+  clientActive_t *pcVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  uint uVar8;
-  int iVar9;
+  uint uVar7;
+  int iVar8;
+  clientState_s *pcVar9;
   clientState_s *pcVar10;
-  clientState_s *pcVar11;
   int local_3c;
   int local_38;
   int local_34;
-  clientState_s *local_20;
-  int local_1c;
-  int local_18;
+  clientActive_t *cl;
+  int clientReadResult;
+  clientState_s *newState;
+  int newnum;
+  clientState_s *oldState;
+  int oldnum;
+  int oldindex;
+  int clientNum;
+  int numClients;
+  int oldframeClientCount;
+  int oldframeClientBase;
   
-  local_18 = 0;
-  iVar3 = MSG_ReadBits(param_2,5);
-  pcVar4 = va("DEMO: r Type: PacketClients NumClients: %d FirstClient: 0\n");
-  Demo_Printf(0x41,pcVar4);
-  pcVar5 = CL_GetLocalClientGlobals(param_1);
+  oldindex = 0;
+  value = MSG_ReadBits(msg,5);
+  pcVar3 = va("DEMO: r Type: PacketClients NumClients: %d FirstClient: 0\n");
+  Demo_Printf(0x41,pcVar3);
+  pcVar4 = CL_GetLocalClientGlobals(localClientNum);
   iVar1 = demo.prevNumParsedClients;
-  uVar8 = pcVar5->parseClientsNum - demo.prevNumParsedClients & 0x7ff;
-  if (param_4 < 0) {
-    local_1c = 9999;
+  uVar7 = pcVar4->parseClientsNum - demo.prevNumParsedClients & 0x7ff;
+  if (deltaNum < 0) {
+    oldnum = 9999;
   }
   else {
-    local_1c = pcVar5->parseClients[demo.prevNumParsedClients & 0x7ff].clientIndex;
+    oldnum = pcVar4->parseClients[demo.prevNumParsedClients & 0x7ff].clientIndex;
   }
-  demo.prevNumClients = iVar3;
-  demo.prevNumParsedClients = pcVar5->parseClientsNum;
-  iVar6 = Demo_GetClipState();
-  if (iVar6 == 2) {
-    MSG_WriteBits(&(demo.playback)->clipRecordingMsg,iVar3,5);
+  demo.prevNumClients = value;
+  demo.prevNumParsedClients = pcVar4->parseClientsNum;
+  iVar5 = Demo_GetClipState();
+  if (iVar5 == 2) {
+    MSG_WriteBits(&(demo.playback)->clipRecordingMsg,value,5);
     MSG_ClearLastReferencedEntity(&(demo.playback)->clipRecordingMsg);
   }
-  MSG_ClearLastReferencedEntity(param_2);
-  while ((param_2->overflowed == 0 && (iVar6 = MSG_ReadBit(param_2), iVar6 != 0))) {
-    iVar6 = MSG_ReadEntityIndex(param_2,5);
-    while (local_1c < iVar6) {
-      pcVar4 = va("ClientState: NewNum (%d) > OldNum (%d) - Copying old data\n");
-      Demo_Printf(0x40,pcVar4);
-      pcVar10 = pcVar5->parseClients + (iVar1 + local_18 & 0x7ff);
-      pcVar11 = pcVar5->parseClients + (pcVar5->parseClientsNum & 0x7ff);
-      for (iVar9 = 0x34; iVar9 != 0; iVar9 = iVar9 + -1) {
-        pcVar11->clientIndex = pcVar10->clientIndex;
+  MSG_ClearLastReferencedEntity(msg);
+  while ((msg->overflowed == 0 && (iVar5 = MSG_ReadBit(msg), iVar5 != 0))) {
+    iVar5 = MSG_ReadEntityIndex(msg,5);
+    while (oldnum < iVar5) {
+      pcVar3 = va("ClientState: NewNum (%d) > OldNum (%d) - Copying old data\n");
+      Demo_Printf(0x40,pcVar3);
+      pcVar9 = pcVar4->parseClients + (iVar1 + oldindex & 0x7ff);
+      pcVar10 = pcVar4->parseClients + (pcVar4->parseClientsNum & 0x7ff);
+      for (iVar8 = 0x34; iVar8 != 0; iVar8 = iVar8 + -1) {
+        pcVar10->clientIndex = pcVar9->clientIndex;
+        pcVar9 = (clientState_s *)&pcVar9->team;
         pcVar10 = (clientState_s *)&pcVar10->team;
-        pcVar11 = (clientState_s *)&pcVar11->team;
       }
-      pcVar5->parseClientsNum = pcVar5->parseClientsNum + 1;
-      local_18 = local_18 + 1;
-      if (local_18 < (int)uVar8) {
-        local_34 = pcVar5->parseClients[iVar1 + local_18 & 0x7ff].clientIndex;
+      pcVar4->parseClientsNum = pcVar4->parseClientsNum + 1;
+      oldindex = oldindex + 1;
+      if (oldindex < (int)uVar7) {
+        local_34 = pcVar4->parseClients[iVar1 + oldindex & 0x7ff].clientIndex;
       }
       else {
         local_34 = 9999;
       }
-      local_1c = local_34;
+      oldnum = local_34;
     }
-    if (local_1c == iVar6) {
-      pcVar4 = va("ClientState: NewNum (%d) == OldNum (%d) - Reading delta\n");
-      Demo_Printf(0x40,pcVar4);
-      local_20 = pcVar5->parseClients + (iVar1 + local_18 & 0x7ff);
+    if (oldnum == iVar5) {
+      pcVar3 = va("ClientState: NewNum (%d) == OldNum (%d) - Reading delta\n");
+      Demo_Printf(0x40,pcVar3);
+      oldState = pcVar4->parseClients + (iVar1 + oldindex & 0x7ff);
     }
     else {
-      pcVar4 = va("ClientState: NewNum (%d) < OldNum (%d) - Reading from baselines\n");
-      Demo_Printf(0x40,pcVar4);
-      local_20 = (clientState_s *)0x0;
+      pcVar3 = va("ClientState: NewNum (%d) < OldNum (%d) - Reading from baselines\n");
+      Demo_Printf(0x40,pcVar3);
+      oldState = (clientState_s *)0x0;
     }
-    pcVar10 = pcVar5->parseClients + (pcVar5->parseClientsNum & 0x7ff);
-    iVar9 = MSG_ReadDeltaClient(param_2,param_3,local_20,pcVar10,iVar6);
-    iVar7 = Demo_GetClipState();
-    if (iVar7 == 2) {
-      if (iVar9 == 0) {
-        MSG_WriteDeltaClient
-                  (&g_snapInfo,&(demo.playback)->clipRecordingMsg,param_3,local_20,pcVar10,1);
+    pcVar9 = pcVar4->parseClients + (pcVar4->parseClientsNum & 0x7ff);
+    iVar8 = MSG_ReadDeltaClient(msg,time,oldState,pcVar9,iVar5);
+    iVar6 = Demo_GetClipState();
+    if (iVar6 == 2) {
+      if (iVar8 == 0) {
+        MSG_WriteDeltaClient(&g_snapInfo,&(demo.playback)->clipRecordingMsg,time,oldState,pcVar9,1);
       }
       else {
         MSG_WriteDeltaClient
-                  (&g_snapInfo,&(demo.playback)->clipRecordingMsg,param_3,local_20,
-                   (clientState_s *)0x0,1);
+                  (&g_snapInfo,&(demo.playback)->clipRecordingMsg,time,oldState,(clientState_s *)0x0
+                   ,1);
       }
     }
-    if (iVar9 == 0) {
-      pcVar11 = demo.client + iVar6;
-      for (iVar9 = 0x34; iVar9 != 0; iVar9 = iVar9 + -1) {
-        pcVar11->clientIndex = pcVar10->clientIndex;
+    if (iVar8 == 0) {
+      pcVar10 = demo.client + iVar5;
+      for (iVar8 = 0x34; iVar8 != 0; iVar8 = iVar8 + -1) {
+        pcVar10->clientIndex = pcVar9->clientIndex;
+        pcVar9 = (clientState_s *)&pcVar9->team;
         pcVar10 = (clientState_s *)&pcVar10->team;
-        pcVar11 = (clientState_s *)&pcVar11->team;
       }
-      pcVar5->parseClientsNum = pcVar5->parseClientsNum + 1;
+      pcVar4->parseClientsNum = pcVar4->parseClientsNum + 1;
     }
     else {
       bVar2 = Demo_IsClipPlaying();
       if (((!bVar2) && (bVar2 = Demo_IsClipPreviewRunning(), !bVar2)) &&
-         ((demo_client->current).integer == demo.client[iVar6].clientIndex)) {
-        Demo_SwitchPlayer(param_1,false,-1,true);
+         ((demo_client->current).integer == demo.client[iVar5].clientIndex)) {
+        Demo_SwitchPlayer(localClientNum,false,-1,true);
       }
-      pcVar10 = &g_defaultClientState;
-      pcVar11 = demo.client + iVar6;
-      for (iVar9 = 0x34; iVar9 != 0; iVar9 = iVar9 + -1) {
-        pcVar11->clientIndex = pcVar10->clientIndex;
+      pcVar9 = &g_defaultClientState;
+      pcVar10 = demo.client + iVar5;
+      for (iVar8 = 0x34; iVar8 != 0; iVar8 = iVar8 + -1) {
+        pcVar10->clientIndex = pcVar9->clientIndex;
+        pcVar9 = (clientState_s *)&pcVar9->team;
         pcVar10 = (clientState_s *)&pcVar10->team;
-        pcVar11 = (clientState_s *)&pcVar11->team;
       }
     }
-    if (local_1c == iVar6) {
-      local_18 = local_18 + 1;
-      if (local_18 < (int)uVar8) {
-        local_38 = pcVar5->parseClients[iVar1 + local_18 & 0x7ff].clientIndex;
+    if (oldnum == iVar5) {
+      oldindex = oldindex + 1;
+      if (oldindex < (int)uVar7) {
+        local_38 = pcVar4->parseClients[iVar1 + oldindex & 0x7ff].clientIndex;
       }
       else {
         local_38 = 9999;
       }
-      local_1c = local_38;
+      oldnum = local_38;
     }
   }
-  iVar6 = Demo_GetClipState();
-  if (iVar6 == 2) {
+  iVar5 = Demo_GetClipState();
+  if (iVar5 == 2) {
     MSG_WriteBit0(&(demo.playback)->clipRecordingMsg);
   }
-  while (local_1c != 9999) {
-    pcVar4 = va("ClientState: OldNum (%d) != DEMO_LARGE_INVALID_STATE_NUMBER - Copying old data\n");
-    Demo_Printf(0x40,pcVar4);
-    pcVar10 = pcVar5->parseClients + (iVar1 + local_18 & 0x7ff);
-    pcVar11 = pcVar5->parseClients + (pcVar5->parseClientsNum & 0x7ff);
-    for (iVar6 = 0x34; iVar6 != 0; iVar6 = iVar6 + -1) {
-      pcVar11->clientIndex = pcVar10->clientIndex;
+  while (oldnum != 9999) {
+    pcVar3 = va("ClientState: OldNum (%d) != DEMO_LARGE_INVALID_STATE_NUMBER - Copying old data\n");
+    Demo_Printf(0x40,pcVar3);
+    pcVar9 = pcVar4->parseClients + (iVar1 + oldindex & 0x7ff);
+    pcVar10 = pcVar4->parseClients + (pcVar4->parseClientsNum & 0x7ff);
+    for (iVar5 = 0x34; iVar5 != 0; iVar5 = iVar5 + -1) {
+      pcVar10->clientIndex = pcVar9->clientIndex;
+      pcVar9 = (clientState_s *)&pcVar9->team;
       pcVar10 = (clientState_s *)&pcVar10->team;
-      pcVar11 = (clientState_s *)&pcVar11->team;
     }
-    pcVar5->parseClientsNum = pcVar5->parseClientsNum + 1;
-    local_18 = local_18 + 1;
-    if (local_18 < (int)uVar8) {
-      local_3c = pcVar5->parseClients[iVar1 + local_18 & 0x7ff].clientIndex;
+    pcVar4->parseClientsNum = pcVar4->parseClientsNum + 1;
+    oldindex = oldindex + 1;
+    if (oldindex < (int)uVar7) {
+      local_3c = pcVar4->parseClients[iVar1 + oldindex & 0x7ff].clientIndex;
     }
     else {
       local_3c = 9999;
     }
-    local_1c = local_3c;
+    oldnum = local_3c;
   }
-  return iVar3;
+  return value;
 }
 
 
@@ -3599,28 +3706,31 @@ int __cdecl Demo_ReadPacketClients(int param_1,msg_t *param_2,int param_3,int pa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_SetupPlaybackForClient(int param_1,playerState_s *param_2)
+void __cdecl Demo_SetupPlaybackForClient(int localClientNum,playerState_s *ps)
 
 {
   cg_s *pcVar1;
   clientActive_t *pcVar2;
   int iVar3;
+  clientActive_t *cl;
+  cg_s *cgameGlob;
+  WeaponDef *weapDef;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  BG_GetWeaponDef((uint)param_2->weapon);
-  param_2->pm_flags = param_2->pm_flags & 0xfffff7ff;
-  pcVar1->clientNum = (uint)param_2->clientNum;
-  pcVar1->weaponSelect = (uint)param_2->weapon;
-  if ((param_2->weapon != 0) && ((pcVar2->snap).ps.weapon != param_2->weapon)) {
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
+  BG_GetWeaponDef((uint)ps->weapon);
+  ps->pm_flags = ps->pm_flags & 0xfffff7ff;
+  pcVar1->clientNum = (uint)ps->clientNum;
+  pcVar1->weaponSelect = (uint)ps->weapon;
+  if ((ps->weapon != 0) && ((pcVar2->snap).ps.weapon != ps->weapon)) {
     pcVar1->weaponSelectTime = pcVar1->time;
-    CG_MenuShowNotify(param_1,1);
+    CG_MenuShowNotify(localClientNum,1);
   }
   CG_SetThirdPerson(0);
   iVar3 = Demo_GetClipState();
   if (iVar3 == 2) {
-    Demo_TagPlayers(param_1,&(demo.playback)->segments[(demo.playback)->segmentCount].taggedPlayers)
-    ;
+    Demo_TagPlayers(localClientNum,
+                    &(demo.playback)->segments[(demo.playback)->segmentCount].taggedPlayers);
   }
   return;
 }
@@ -3636,19 +3746,19 @@ void __cdecl Demo_RegisterHeliPatches(void)
 {
   demoHeliPatchesInfo *pdVar1;
   undefined2 uVar2;
-  int local_8;
+  int i;
   
   num_heli_height_lock_patches = demo.info.numHeliPatchesCount;
-  for (local_8 = 0; local_8 < demo.info.numHeliPatchesCount; local_8 = local_8 + 1) {
-    heli_height_lock_patches[local_8].brushmodel = demo.info.heliPatches[local_8].brushmodel;
-    heli_height_lock_patches[local_8].origin[0] = demo.info.heliPatches[local_8].origin[0];
-    heli_height_lock_patches[local_8].origin[1] = demo.info.heliPatches[local_8].origin[1];
-    heli_height_lock_patches[local_8].origin[2] = demo.info.heliPatches[local_8].origin[2];
-    pdVar1 = demo.info.heliPatches + local_8;
+  for (i = 0; i < demo.info.numHeliPatchesCount; i = i + 1) {
+    heli_height_lock_patches[i].brushmodel = demo.info.heliPatches[i].brushmodel;
+    heli_height_lock_patches[i].origin[0] = demo.info.heliPatches[i].origin[0];
+    heli_height_lock_patches[i].origin[1] = demo.info.heliPatches[i].origin[1];
+    heli_height_lock_patches[i].origin[2] = demo.info.heliPatches[i].origin[2];
+    pdVar1 = demo.info.heliPatches + i;
     uVar2 = *(undefined2 *)&pdVar1->field_0x12;
-    heli_height_lock_patches[local_8].targetname = pdVar1->targetname;
-    *(undefined2 *)&heli_height_lock_patches[local_8].field_0x12 = uVar2;
-    heli_height_lock_patches[local_8].enabled = demo.info.heliPatches[local_8].enabled;
+    heli_height_lock_patches[i].targetname = pdVar1->targetname;
+    *(undefined2 *)&heli_height_lock_patches[i].field_0x12 = uVar2;
+    heli_height_lock_patches[i].enabled = demo.info.heliPatches[i].enabled;
   }
   return;
 }
@@ -3660,84 +3770,84 @@ void __cdecl Demo_RegisterHeliPatches(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_ReadInfoData(char *param_1,int param_2)
+bool __cdecl Demo_ReadInfoData(char *name,int handle)
 
 {
   bool bVar1;
+  char *filename;
   char *pcVar2;
-  char *pcVar3;
-  int local_130;
-  int local_12c;
-  int local_128;
-  int local_11c;
-  int local_118;
-  char local_114 [256];
+  int i_3;
+  int i_2;
+  int i;
+  ulong bytesRead;
+  int totalBytesRead;
+  int infoDataHandle;
+  int version_start;
+  char ospath [256];
   uint local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int offset;
+  int version_end;
+  int infoDataSize;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == 0) {
-    Demo_GetDemoPath(local_114);
+  if (handle == 0) {
+    Demo_GetDemoPath(ospath);
     bVar1 = true;
-    pcVar3 = local_114;
-    pcVar2 = va("%s.demo");
-    local_11c = Demo_OpenFileRead(pcVar2,pcVar3,bVar1);
-    if (local_11c == 0) {
+    pcVar2 = ospath;
+    filename = va("%s.demo");
+    infoDataHandle = Demo_OpenFileRead(filename,pcVar2,bVar1);
+    if (infoDataHandle == 0) {
       return false;
     }
   }
   else {
-    local_11c = param_2;
+    infoDataHandle = handle;
   }
-  local_10 = -8;
-  Demo_SeekFile(local_11c,-8,1);
-  Demo_Read(&local_8,4,local_11c);
-  Demo_Read(&local_c,4,local_11c);
-  if (local_c == demo.header.version) {
-    local_10 = local_10 - local_8;
-    Demo_SeekFile(local_11c,local_10,1);
-    Demo_Read(&local_118,4,local_11c);
-    if (local_118 == demo.header.version) {
-      Demo_Read(&demo.info.startTime,4,local_11c);
-      Demo_Read(&demo.info.endTime,4,local_11c);
-      Demo_Read(&demo.info.numConnectedPlayersInfoCount,4,local_11c);
-      Demo_Read(&demo.info.numDefaultBookmarksCount,4,local_11c);
-      Demo_Read(&demo.info.numHeliPatchesCount,4,local_11c);
-      Demo_Read(demo.info.author,0x20,local_11c);
-      Demo_Read(demo.info.gameType,0x100,local_11c);
-      Demo_Read(demo.info.mapName,0x100,local_11c);
-      Demo_Read(demo.info.name,0x16,local_11c);
-      Demo_Read(demo.info.description,0x16,local_11c);
-      Demo_Read(&demo.info.week,4,local_11c);
-      Demo_Read(&demo.info.month,4,local_11c);
-      Demo_Read(&demo.info.year,4,local_11c);
-      Demo_Read(&demo.info.day,4,local_11c);
-      Demo_Read(&demo.info.hour,4,local_11c);
-      Demo_Read(&demo.info.min,4,local_11c);
-      for (local_128 = 0; local_128 < demo.info.numConnectedPlayersInfoCount;
-          local_128 = local_128 + 1) {
-        Demo_Read(demo.info.connectedPlayers + local_128,0x18,local_11c);
+  offset = -8;
+  Demo_SeekFile(infoDataHandle,-8,1);
+  Demo_Read(&infoDataSize,4,infoDataHandle);
+  Demo_Read(&version_end,4,infoDataHandle);
+  if (version_end == demo.header.version) {
+    offset = offset - infoDataSize;
+    Demo_SeekFile(infoDataHandle,offset,1);
+    Demo_Read(&version_start,4,infoDataHandle);
+    if (version_start == demo.header.version) {
+      Demo_Read(&demo.info.startTime,4,infoDataHandle);
+      Demo_Read(&demo.info.endTime,4,infoDataHandle);
+      Demo_Read(&demo.info.numConnectedPlayersInfoCount,4,infoDataHandle);
+      Demo_Read(&demo.info.numDefaultBookmarksCount,4,infoDataHandle);
+      Demo_Read(&demo.info.numHeliPatchesCount,4,infoDataHandle);
+      Demo_Read(demo.info.author,0x20,infoDataHandle);
+      Demo_Read(demo.info.gameType,0x100,infoDataHandle);
+      Demo_Read(demo.info.mapName,0x100,infoDataHandle);
+      Demo_Read(demo.info.name,0x16,infoDataHandle);
+      Demo_Read(demo.info.description,0x16,infoDataHandle);
+      Demo_Read(&demo.info.week,4,infoDataHandle);
+      Demo_Read(&demo.info.month,4,infoDataHandle);
+      Demo_Read(&demo.info.year,4,infoDataHandle);
+      Demo_Read(&demo.info.day,4,infoDataHandle);
+      Demo_Read(&demo.info.hour,4,infoDataHandle);
+      Demo_Read(&demo.info.min,4,infoDataHandle);
+      for (i = 0; i < demo.info.numConnectedPlayersInfoCount; i = i + 1) {
+        Demo_Read(demo.info.connectedPlayers + i,0x18,infoDataHandle);
       }
-      for (local_12c = 0; local_12c < demo.info.numDefaultBookmarksCount; local_12c = local_12c + 1)
-      {
-        Demo_Read(demo.info.defaultBookmarks + local_12c,0xc,local_11c);
+      for (i_2 = 0; i_2 < demo.info.numDefaultBookmarksCount; i_2 = i_2 + 1) {
+        Demo_Read(demo.info.defaultBookmarks + i_2,0xc,infoDataHandle);
       }
-      for (local_130 = 0; local_130 < demo.info.numHeliPatchesCount; local_130 = local_130 + 1) {
-        Demo_Read(demo.info.heliPatches + local_130,0x18,local_11c);
+      for (i_3 = 0; i_3 < demo.info.numHeliPatchesCount; i_3 = i_3 + 1) {
+        Demo_Read(demo.info.heliPatches + i_3,0x18,infoDataHandle);
       }
       Demo_RegisterHeliPatches();
-      pcVar3 = va("DEMO Info: Read %d bytes to demo file %s.info\n");
-      Demo_Printf(0x102,pcVar3);
-      if (param_2 == 0) {
-        Demo_CloseFile(local_11c);
+      pcVar2 = va("DEMO Info: Read %d bytes to demo file %s.info\n");
+      Demo_Printf(0x102,pcVar2);
+      if (handle == 0) {
+        Demo_CloseFile(infoDataHandle);
       }
       bVar1 = true;
     }
     else {
-      if (param_2 == 0) {
-        Demo_CloseFile(local_11c);
+      if (handle == 0) {
+        Demo_CloseFile(infoDataHandle);
       }
       else {
         Com_Error(ERR_DROP,"EXE_ERR_INVALID_DEMO_FILE");
@@ -3746,8 +3856,8 @@ bool __cdecl Demo_ReadInfoData(char *param_1,int param_2)
     }
   }
   else {
-    if (param_2 == 0) {
-      Demo_CloseFile(local_11c);
+    if (handle == 0) {
+      Demo_CloseFile(infoDataHandle);
     }
     else {
       Com_Error(ERR_DROP,"EXE_ERR_INVALID_DEMO_FILE");
@@ -3763,7 +3873,7 @@ bool __cdecl Demo_ReadInfoData(char *param_1,int param_2)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_SetDefaultClient(int param_1,int param_2)
+void __cdecl Demo_SetDefaultClient(int localClientNum,int defaultClient)
 
 {
   bool bVar1;
@@ -3771,48 +3881,51 @@ void __cdecl Demo_SetDefaultClient(int param_1,int param_2)
   clientActive_t *pcVar3;
   int iVar4;
   ulong64 uVar5;
-  uint local_28;
-  int local_24;
+  int i;
+  int xuid;
   int local_20;
-  uint local_c;
-  uint local_8;
+  clientActive_t *cl;
+  int playerIndex;
+  int controllerIndex;
+  bool foundDefaultClient;
+  int clientNum;
+  int firstclient;
   
   bVar1 = false;
-  local_c = 0xffffffff;
-  local_8 = 0;
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
-  iVar4 = Com_LocalClient_GetControllerIndex(param_1);
+  clientNum = -1;
+  firstclient = 0;
+  pcVar3 = CL_GetLocalClientGlobals(localClientNum);
+  iVar4 = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar2 = Demo_IsClipPlaying();
   if (!bVar2) {
     bVar2 = Live_IsSignedIn(iVar4);
     if (bVar2) {
       uVar5 = Live_GetXuid(iVar4);
-      for (local_28 = 0; (int)local_28 < demo.info.numConnectedPlayersInfoCount;
-          local_28 = local_28 + 1) {
-        local_24 = (int)uVar5;
+      for (i = 0; i < demo.info.numConnectedPlayersInfoCount; i = i + 1) {
+        xuid = (int)uVar5;
         local_20 = (int)(uVar5 >> 0x20);
-        if ((local_8 == 0) && (local_24 != 0 || local_20 != 0)) {
-          local_8 = local_28;
+        if ((firstclient == 0) && (xuid != 0 || local_20 != 0)) {
+          firstclient = i;
         }
-        if (((int)demo.info.connectedPlayers[local_28].xuid == local_24) &&
-           (*(int *)((int)&demo.info.connectedPlayers[local_28].xuid + 4) == local_20)) {
-          local_c = (uint)demo.info.connectedPlayers[local_28].clientNum;
+        if (((int)demo.info.connectedPlayers[i].xuid == xuid) &&
+           (*(int *)((int)&demo.info.connectedPlayers[i].xuid + 4) == local_20)) {
+          clientNum = (int)demo.info.connectedPlayers[i].clientNum;
           bVar1 = true;
           break;
         }
       }
     }
     if (!bVar1) {
-      local_c = local_8;
+      clientNum = firstclient;
     }
-    if (-1 < param_2) {
-      local_c = param_2;
+    if (-1 < defaultClient) {
+      clientNum = defaultClient;
     }
-    iVar4 = Demo_GetPlayerIndexForClientNum(local_c,-1);
+    iVar4 = Demo_GetPlayerIndexForClientNum(clientNum,-1);
     if ((pcVar3->snap).serverTime < demo.info.connectedPlayers[iVar4].connectTime) {
-      local_c = Demo_GetDemoClientIndex();
+      clientNum = Demo_GetDemoClientIndex();
     }
-    Dvar_SetInt(demo_client,local_c);
+    Dvar_SetInt(demo_client,clientNum);
   }
   return;
 }
@@ -3822,21 +3935,23 @@ void __cdecl Demo_SetDefaultClient(int param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_SetDefaultVisionSet(int param_1)
+void __cdecl Demo_SetDefaultVisionSet(int localClientNum)
 
 {
   uint uVar1;
   clientConnection_t *pcVar2;
-  char *pcVar3;
-  int iVar4;
+  char *src;
+  int destsize;
+  clientConnection_t *clc;
+  int index;
   
-  pcVar2 = CL_GetLocalClientConnection(param_1);
+  pcVar2 = CL_GetLocalClientConnection(localClientNum);
   pcVar2->serverCommandSequence = pcVar2->serverCommandSequence + 1;
   uVar1 = pcVar2->serverCommandSequence;
-  iVar4 = 0x400;
+  destsize = 0x400;
   Dvar_GetString("mapname");
-  pcVar3 = va("%c %i \"%s\" 0");
-  I_strncpyz(pcVar2->serverCommands[uVar1 & 0x7f],pcVar3,iVar4);
+  src = va("%c %i \"%s\" 0");
+  I_strncpyz(pcVar2->serverCommands[uVar1 & 0x7f],src,destsize);
   return;
 }
 
@@ -3848,30 +3963,34 @@ void __cdecl Demo_SetDefaultVisionSet(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_UpdateCurrentSnapshot(int param_1,playerState_s *param_2)
+void __cdecl Demo_UpdateCurrentSnapshot(int localClientNum,playerState_s *ps)
 
 {
   clientActive_t *pcVar1;
   cg_s *pcVar2;
   cgs_t *pcVar3;
+  clientActive_t *cl;
+  cg_s *cgameGlob;
+  cgs_t *cgs;
+  int clientNum;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  pcVar3 = CG_GetLocalClientStaticGlobals(param_1);
-  if (param_2->weapon != 0) {
-    pcVar2->weaponSelect = (uint)param_2->weapon;
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar3 = CG_GetLocalClientStaticGlobals(localClientNum);
+  if (ps->weapon != 0) {
+    pcVar2->weaponSelect = (uint)ps->weapon;
   }
-  if ((pcVar1->snap).ps.weapon != param_2->weapon) {
+  if ((pcVar1->snap).ps.weapon != ps->weapon) {
     pcVar2->weaponSelectTime = pcVar2->time;
-    CG_MenuShowNotify(param_1,1);
+    CG_MenuShowNotify(localClientNum,1);
   }
-  memcpy((uchar *)&(pcVar1->snap).ps,(uchar *)param_2,0x26a4);
-  memcpy((uchar *)&pcVar2->predictedPlayerState,(uchar *)param_2,0x26a4);
+  memcpy((uchar *)&(pcVar1->snap).ps,(uchar *)ps,0x26a4);
+  memcpy((uchar *)&pcVar2->predictedPlayerState,(uchar *)ps,0x26a4);
   memcpy((uchar *)(pcVar1->snapshots + ((pcVar1->snap).messageNum & 0x1f)),(uchar *)&pcVar1->snap,
          0x26dc);
-  CG_TransitionSnapshot(param_1);
+  CG_TransitionSnapshot(localClientNum);
   pcVar3->processedSnapshotNum = pcVar3->processedSnapshotNum + -1;
-  Demo_SetupPlaybackForClient(param_1,&(pcVar1->snap).ps);
+  Demo_SetupPlaybackForClient(localClientNum,&(pcVar1->snap).ps);
   return;
 }
 
@@ -3917,8 +4036,8 @@ void __cdecl Demo_DisableSnapshotProcessing(void)
 
 void __cdecl
 Demo_GenerateUncompressedSnapshot
-          (int param_1,msg_t *param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-          bool param_8)
+          (int localClientNum,msg_t *msg,int msgSequence,int cmdSequence,int serverTime,
+          int physicsTime,int snapFlags,bool writeAllPlayerStates)
 
 {
   code *pcVar1;
@@ -3943,54 +4062,54 @@ Demo_GenerateUncompressedSnapshot
   memcpy((uchar *)&local_2828,(uchar *)&g_defaultPlayerState,0x26a4);
   memset((uchar *)&local_28f8,'\0',0xd0);
   Demo_EnableSnapshotProcessing();
-  MSG_GetUsedBitCount(param_2);
+  MSG_GetUsedBitCount(msg);
   pcVar4 = va(
              "CL_GenerateUncompressedSnapshot() - msgType: %d msgSeq: %d clientCmd: %d ServerTime: %d PhysTime: %d snapFlags: %d\n"
              );
   Demo_Printf(0x83,pcVar4);
-  MSG_WriteBits(param_2,3,2);
-  MSG_ClearLastReferencedEntity(param_2);
-  MSG_WriteLong(param_2,param_3);
-  MSG_WriteLong(param_2,param_4);
-  MSG_WriteByte(param_2,0xc);
-  MSG_WriteLong(param_2,param_5);
-  MSG_WriteLong(param_2,param_6);
-  MSG_WriteByte(param_2,0);
-  MSG_WriteByte(param_2,param_7);
-  MSG_GetUsedBitCount(param_2);
-  MSG_ClearLastReferencedEntity(param_2);
-  MSG_WriteDeltaMatchState(&g_snapInfo,param_2,svsHeader.time,&local_180,&demo.matchState);
-  MSG_GetUsedBitCount(param_2);
+  MSG_WriteBits(msg,3,2);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteLong(msg,msgSequence);
+  MSG_WriteLong(msg,cmdSequence);
+  MSG_WriteByte(msg,0xc);
+  MSG_WriteLong(msg,serverTime);
+  MSG_WriteLong(msg,physicsTime);
+  MSG_WriteByte(msg,0);
+  MSG_WriteByte(msg,snapFlags);
+  MSG_GetUsedBitCount(msg);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteDeltaMatchState(&g_snapInfo,msg,svsHeader.time,&local_180,&demo.matchState);
+  MSG_GetUsedBitCount(msg);
   pcVar4 = va("DEMO: UncompressedSnapshot Type: MatchState Size: %d bytes\n");
   Demo_Printf(9,pcVar4);
   for (local_2908 = 0; local_2908 < demo.header.maxClients; local_2908 = local_2908 + 1) {
     g_snapInfo.clientNum = local_2908;
     if (demo.ps[local_2908].commandTime == 0) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_GetUsedBitCount(param_2);
-      if (param_8) {
-        MSG_WriteBit1(param_2);
-        MSG_WriteDeltaPlayerstate(&g_snapInfo,param_2,param_5,&local_2828,demo.ps + local_2908);
+      MSG_GetUsedBitCount(msg);
+      if (writeAllPlayerStates) {
+        MSG_WriteBit1(msg);
+        MSG_WriteDeltaPlayerstate(&g_snapInfo,msg,serverTime,&local_2828,demo.ps + local_2908);
       }
       else if ((uint)demo.ps[local_2908].clientNum == (demo_client->current).integer) {
-        MSG_WriteBit1(param_2);
-        MSG_WriteDeltaPlayerstate(&g_snapInfo,param_2,param_5,&local_2828,demo.ps + local_2908);
+        MSG_WriteBit1(msg);
+        MSG_WriteDeltaPlayerstate(&g_snapInfo,msg,serverTime,&local_2828,demo.ps + local_2908);
       }
       else {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
       }
-      MSG_GetUsedBitCount(param_2);
+      MSG_GetUsedBitCount(msg);
       pcVar4 = va("DEMO: UncompressedSnapshot Type: PlayerState Client: %d Size: %d bytes\n");
       Demo_Printf(0x11,pcVar4);
     }
   }
-  pcVar5 = CL_GetLocalClientGlobals(param_1);
+  pcVar5 = CL_GetLocalClientGlobals(localClientNum);
   g_snapInfo.clientNum = g_democlientindex;
   g_snapInfo.fromBaseline = true;
-  MSG_ClearLastReferencedEntity(param_2);
-  MSG_WriteBits(param_2,demo.prevNumEntities,0xb);
+  MSG_ClearLastReferencedEntity(msg);
+  MSG_WriteBits(msg,demo.prevNumEntities,0xb);
   local_2914 = 0;
   local_2918 = -1;
   iVar2 = local_2918;
@@ -3999,14 +4118,14 @@ Demo_GenerateUncompressedSnapshot
       local_2918 = iVar2;
       if (demo.prevNumEntities <= local_2914) {
         g_snapInfo.fromBaseline = false;
-        MSG_WriteEntityIndex(&g_snapInfo,param_2,0x3ff,10);
+        MSG_WriteEntityIndex(&g_snapInfo,msg,0x3ff,10);
         pcVar4 = va(
                    "DEMO: UncompressedSnapshot Type: PacketEntities NumEntities: %d FirstEntity: 0\n"
                    );
         Demo_Printf(0x21,pcVar4);
-        MSG_ClearLastReferencedEntity(param_2);
-        MSG_WriteBits(param_2,demo.prevNumClients,5);
-        MSG_GetUsedBitCount(param_2);
+        MSG_ClearLastReferencedEntity(msg);
+        MSG_WriteBits(msg,demo.prevNumClients,5);
+        MSG_GetUsedBitCount(msg);
         local_291c = 0;
         local_2920 = -1;
         iVar2 = local_2920;
@@ -4014,43 +4133,43 @@ Demo_GenerateUncompressedSnapshot
           iVar2 = local_2920 + 1;
           if (-1 < demo.client[local_2920 + 1].clientIndex) {
             MSG_WriteDeltaClient
-                      (&g_snapInfo,param_2,param_5,&local_28f8,demo.client + local_2920 + 1,1);
+                      (&g_snapInfo,msg,serverTime,&local_28f8,demo.client + local_2920 + 1,1);
             local_291c = local_291c + 1;
           }
         }
-        MSG_WriteBit0(param_2);
-        MSG_GetUsedBitCount(param_2);
+        MSG_WriteBit0(msg);
+        MSG_GetUsedBitCount(msg);
         pcVar4 = va(
                    "DEMO: UncompressedSnapshot Type: PacketClients NumClients: %d FirstClient: 0 Size: %d bytes\n"
                    );
         Demo_Printf(0x41,pcVar4);
-        GlassCl_WriteDemoSnapshot(param_2);
-        MSG_WriteBit1(param_2);
-        Demo_WriteCustomSnapshotInformation(param_1,param_2);
-        Demo_WriteConfigStrings(param_1,param_2);
-        MSG_WriteByte(param_2,0xe);
+        GlassCl_WriteDemoSnapshot(msg);
+        MSG_WriteBit1(msg);
+        Demo_WriteCustomSnapshotInformation(localClientNum,msg);
+        Demo_WriteConfigStrings(localClientNum,msg);
+        MSG_WriteByte(msg,0xe);
         Demo_DisableSnapshotProcessing();
         return;
       }
       iVar2 = local_2918 + 1;
     } while (demo.ent[local_2918 + 1].eType == -1);
     local_2914 = local_2914 + 1;
-    iVar6 = MSG_GetUsedBitCount(param_2);
-    MSG_WriteEntity(&g_snapInfo,param_2,param_5,pcVar5->entityBaselines + local_2918 + 1,
+    iVar6 = MSG_GetUsedBitCount(msg);
+    MSG_WriteEntity(&g_snapInfo,msg,serverTime,pcVar5->entityBaselines + local_2918 + 1,
                     demo.ent + local_2918 + 1,DELTA_FLAGS_FORCE);
-    iVar7 = MSG_GetUsedBitCount(param_2);
+    iVar7 = MSG_GetUsedBitCount(msg);
     if ((iVar7 == iVar6) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x1121
                                  ,0,"%s"), !bVar3)) break;
     if ((demo.entClientMask[local_2918 + 1][0] == 0) && (demo.entClientMask[local_2918 + 1][1] == 0)
        ) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_2);
-      MSG_WriteBits(param_2,demo.entClientMask[local_2918 + 1][0],0x20);
+      MSG_WriteBit1(msg);
+      MSG_WriteBits(msg,demo.entClientMask[local_2918 + 1][0],0x20);
     }
-    MSG_GetUsedBitCount(param_2);
+    MSG_GetUsedBitCount(msg);
     pcVar4 = va("DEMO: UncompressedSnapshot Type: PacketEntities Entity: %d Size: %d bits\n");
     Demo_Printf(0x20,pcVar4);
   }
@@ -4068,150 +4187,164 @@ Demo_GenerateUncompressedSnapshot
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteCustomSnapshotInformation(int param_1,msg_t *param_2)
+void __cdecl Demo_WriteCustomSnapshotInformation(int localClientNum,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  centity_s *pcVar3;
-  DObj *pDVar4;
-  XAnimTree_s *pXVar5;
-  XAnim_s *pXVar6;
-  char *pcVar7;
-  uint uVar8;
+  centity_s *ent;
+  DObj *pDVar3;
+  XAnimTree_s *tree_00;
+  XAnim_s *pXVar4;
+  char *pcVar5;
+  uint uVar6;
+  float fVar7;
+  float fVar8;
   float fVar9;
-  float fVar10;
-  float fVar11;
-  uint uVar12;
-  int iVar13;
-  int local_20;
-  int local_10;
+  uint uVar10;
+  int iVar11;
+  int i;
+  XAnimTree_s *tree;
+  DObj *obj;
+  centity_s *cent;
+  int rangedFloatBits;
+  uint root;
+  uint anim;
   
-  local_10 = 0x10;
-  local_20 = 0;
+  rangedFloatBits = 0x10;
+  i = 0;
   do {
-    if (demo.header.maxClients <= local_20) {
-      Demo_Destructible_WriteGameState(param_2,param_1);
+    if (demo.header.maxClients <= i) {
+      Demo_Destructible_WriteGameState(msg,localClientNum);
       return;
     }
-    if (demo.ps[local_20].commandTime < 1) {
-      MSG_WriteBit0(param_2);
+    if (demo.ps[i].commandTime < 1) {
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_2);
-      pcVar3 = CG_GetEntity(param_1,local_20);
-      pDVar4 = Com_GetClientDObj(local_20,param_1);
-      if (pDVar4 == (DObj *)0x0) {
-        MSG_WriteBit0(param_2);
+      MSG_WriteBit1(msg);
+      ent = CG_GetEntity(localClientNum,i);
+      pDVar3 = Com_GetClientDObj(i,localClientNum);
+      if (pDVar3 == (DObj *)0x0) {
+        MSG_WriteBit0(msg);
       }
       else {
-        MSG_WriteBit1(param_2);
-        pXVar5 = CScr_GetEntAnimTree(pcVar3);
-        uVar8 = (int)demo.ps[local_20].torsoAnim & 0xfffffbff;
-        if (uVar8 == 0) {
-          MSG_WriteRangedFloatBits(param_2,0.0,0.0,1.0,0x10);
+        MSG_WriteBit1(msg);
+        tree_00 = CScr_GetEntAnimTree(ent);
+        uVar6 = (int)demo.ps[i].torsoAnim & 0xfffffbff;
+        if (uVar6 == 0) {
+          MSG_WriteRangedFloatBits(msg,0.0,0.0,1.0,0x10);
         }
         else {
-          uVar12 = uVar8;
-          pXVar6 = XAnimGetAnims(pXVar5);
-          bVar2 = XAnimHasTime(pXVar6,uVar12);
+          uVar10 = uVar6;
+          pXVar4 = XAnimGetAnims(tree_00);
+          bVar2 = XAnimHasTime(pXVar4,uVar10);
           if (!bVar2) {
-            pcVar7 = va("XAnimHasTime() failed for the torso anim %d\n");
+            pcVar5 = va("XAnimHasTime() failed for the torso anim %d\n");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
-                                     0x11c9,0,pcVar7);
+                                     0x11c9,0,pcVar5);
             if (!bVar2) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
           }
-          fVar11 = 1.0;
-          fVar10 = 0.0;
-          iVar13 = local_10;
-          fVar9 = XAnimGetTime(pXVar5,uVar8);
-          MSG_WriteRangedFloatBits(param_2,fVar9,fVar10,fVar11,iVar13);
+          fVar9 = 1.0;
+          fVar8 = 0.0;
+          iVar11 = rangedFloatBits;
+          fVar7 = XAnimGetTime(tree_00,uVar6);
+          MSG_WriteRangedFloatBits(msg,fVar7,fVar8,fVar9,iVar11);
         }
-        uVar8 = (int)demo.ps[local_20].legsAnim & 0xfffffbff;
-        if (uVar8 == 0) {
-          MSG_WriteRangedFloatBits(param_2,0.0,0.0,1.0,0x10);
+        uVar6 = (int)demo.ps[i].legsAnim & 0xfffffbff;
+        if (uVar6 == 0) {
+          MSG_WriteRangedFloatBits(msg,0.0,0.0,1.0,0x10);
         }
         else {
-          uVar12 = uVar8;
-          pXVar6 = XAnimGetAnims(pXVar5);
-          bVar2 = XAnimHasTime(pXVar6,uVar12);
+          uVar10 = uVar6;
+          pXVar4 = XAnimGetAnims(tree_00);
+          bVar2 = XAnimHasTime(pXVar4,uVar10);
           if (!bVar2) {
-            pcVar7 = va("XAnimHasTime() failed for the legs anim %d\n");
+            pcVar5 = va("XAnimHasTime() failed for the legs anim %d\n");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
-                                     0x11da,0,pcVar7);
+                                     0x11da,0,pcVar5);
             if (!bVar2) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
           }
-          fVar11 = 1.0;
-          fVar10 = 0.0;
-          iVar13 = local_10;
-          fVar9 = XAnimGetTime(pXVar5,uVar8);
-          MSG_WriteRangedFloatBits(param_2,fVar9,fVar10,fVar11,iVar13);
+          fVar9 = 1.0;
+          fVar8 = 0.0;
+          iVar11 = rangedFloatBits;
+          fVar7 = XAnimGetTime(tree_00,uVar6);
+          MSG_WriteRangedFloatBits(msg,fVar7,fVar8,fVar9,iVar11);
         }
       }
     }
-    local_20 = local_20 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 009C2EA0  Demo_ReadCustomSnaphotInformation  (demo/demo_playback.cpp:4593)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_ReadCustomSnaphotInformation(int param_1,msg_t *param_2)
+void __cdecl Demo_ReadCustomSnaphotInformation(int localClientNum,msg_t *msg)
 
 {
   int iVar1;
-  centity_s *pcVar2;
-  DObj *pDVar3;
-  XAnimTree_s *pXVar4;
-  uint uVar5;
-  float fVar6;
-  int local_30;
-  float local_c;
+  centity_s *ent;
+  DObj *obj_00;
+  XAnimTree_s *tree_00;
+  uint uVar2;
+  float fVar3;
+  int i;
+  XAnimTree_s *tree;
+  DObj *obj;
+  float animTime;
+  centity_s *cent;
+  int rangedFloatBits;
+  uint root;
+  uint anim;
+  bool isPlayerStateValid;
+  float legsWeight;
+  bool isDobjValid;
   
-  for (local_30 = 0; local_30 < demo.header.maxClients; local_30 = local_30 + 1) {
-    iVar1 = MSG_ReadBit(param_2);
-    if ((iVar1 != 0) && (iVar1 = MSG_ReadBit(param_2), iVar1 != 0)) {
-      pcVar2 = CG_GetEntity(param_1,local_30);
-      pDVar3 = Com_GetClientDObj(local_30,param_1);
-      if (pDVar3 == (DObj *)0x0) {
-        MSG_ReadRangedFloatBits(param_2,0.0,1.0,0x10);
-        MSG_ReadRangedFloatBits(param_2,0.0,1.0,0x10);
+  for (i = 0; i < demo.header.maxClients; i = i + 1) {
+    iVar1 = MSG_ReadBit(msg);
+    if ((iVar1 != 0) && (iVar1 = MSG_ReadBit(msg), iVar1 != 0)) {
+      ent = CG_GetEntity(localClientNum,i);
+      obj_00 = Com_GetClientDObj(i,localClientNum);
+      if (obj_00 == (DObj *)0x0) {
+        MSG_ReadRangedFloatBits(msg,0.0,1.0,0x10);
+        MSG_ReadRangedFloatBits(msg,0.0,1.0,0x10);
       }
       else {
-        pXVar4 = CScr_GetEntAnimTree(pcVar2);
-        XAnimClearTreeGoalWeights(pXVar4,0,0.0,-1);
-        uVar5 = (int)demo.ps[local_30].torsoAnim & 0xfffffbff;
-        local_c = 1.0;
-        fVar6 = MSG_ReadRangedFloatBits(param_2,0.0,1.0,0x10);
-        if (uVar5 != 0) {
-          XAnimSetCompleteGoalWeight(pDVar3,uVar5,1.0,0.0,1.0,0,0,0,-1);
-          XAnimSetTime(pXVar4,uVar5,fVar6,-1);
-          local_c = 0.01;
+        tree_00 = CScr_GetEntAnimTree(ent);
+        XAnimClearTreeGoalWeights(tree_00,0,0.0,-1);
+        uVar2 = (int)demo.ps[i].torsoAnim & 0xfffffbff;
+        legsWeight = 1.0;
+        fVar3 = MSG_ReadRangedFloatBits(msg,0.0,1.0,0x10);
+        if (uVar2 != 0) {
+          XAnimSetCompleteGoalWeight(obj_00,uVar2,1.0,0.0,1.0,0,0,0,-1);
+          XAnimSetTime(tree_00,uVar2,fVar3,-1);
+          legsWeight = 0.01;
         }
-        uVar5 = (int)demo.ps[local_30].legsAnim & 0xfffffbff;
-        fVar6 = MSG_ReadRangedFloatBits(param_2,0.0,1.0,0x10);
-        if (uVar5 != 0) {
-          XAnimSetCompleteGoalWeight(pDVar3,uVar5,local_c,0.0,1.0,0,0,0,-1);
-          XAnimSetTime(pXVar4,uVar5,fVar6,-1);
+        uVar2 = (int)demo.ps[i].legsAnim & 0xfffffbff;
+        fVar3 = MSG_ReadRangedFloatBits(msg,0.0,1.0,0x10);
+        if (uVar2 != 0) {
+          XAnimSetCompleteGoalWeight(obj_00,uVar2,legsWeight,0.0,1.0,0,0,0,-1);
+          XAnimSetTime(tree_00,uVar2,fVar3,-1);
         }
       }
     }
   }
-  Demo_Destructible_ReadGameState(param_2,param_1);
+  Demo_Destructible_ReadGameState(msg,localClientNum);
   return;
 }
 
@@ -4220,36 +4353,40 @@ void __cdecl Demo_ReadCustomSnaphotInformation(int param_1,msg_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_UpdateDesiredTime(int param_1)
+void __cdecl Demo_UpdateDesiredTime(int localClientNum)
 
 {
   bool bVar1;
   clientActive_t *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  int iVar5;
+  int controllerIndex_00;
+  char *pcVar3;
+  int iVar4;
+  clientActive_t *cl;
+  int client;
+  int controllerIndex;
+  int serverTime;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-    iVar5 = (demo_desiredTime->current).integer;
-    if ((-1 < (demo_desiredClient->current).integer) && (-1 < iVar5)) {
+    controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+    iVar4 = (demo_desiredTime->current).integer;
+    if ((-1 < (demo_desiredClient->current).integer) && (-1 < iVar4)) {
       if ((demo_client->current).integer != (demo_desiredClient->current).integer) {
-        pcVar4 = va("demo_switchplayer %d 1 %d");
-        Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+        pcVar3 = va("demo_switchplayer %d 1 %d");
+        Cmd_ExecuteSingleCommand(localClientNum,controllerIndex_00,pcVar3);
       }
-      if ((iVar5 < (pcVar2->snap).serverTime + -5000) || ((pcVar2->snap).serverTime + 5000 < iVar5))
+      if ((iVar4 < (pcVar2->snap).serverTime + -5000) || ((pcVar2->snap).serverTime + 5000 < iVar4))
       {
-        if (iVar5 < (pcVar2->snap).serverTime) {
-          pcVar4 = va("demo_back %d %d");
-          iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-          Cmd_ExecuteSingleCommand(param_1,iVar5,pcVar4);
+        if (iVar4 < (pcVar2->snap).serverTime) {
+          pcVar3 = va("demo_back %d %d");
+          iVar4 = Com_LocalClient_GetControllerIndex(localClientNum);
+          Cmd_ExecuteSingleCommand(localClientNum,iVar4,pcVar3);
         }
-        else if ((pcVar2->snap).serverTime < iVar5) {
-          pcVar4 = va("demo_forward %d %d");
-          iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-          Cmd_ExecuteSingleCommand(param_1,iVar5,pcVar4);
+        else if ((pcVar2->snap).serverTime < iVar4) {
+          pcVar3 = va("demo_forward %d %d");
+          iVar4 = Com_LocalClient_GetControllerIndex(localClientNum);
+          Cmd_ExecuteSingleCommand(localClientNum,iVar4,pcVar3);
         }
       }
       Dvar_SetBool(demo_pause,true);
@@ -4266,7 +4403,7 @@ void __cdecl Demo_UpdateDesiredTime(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteConfigStrings(int param_1,msg_t *param_2)
+void __cdecl Demo_WriteConfigStrings(int localClientNum,msg_t *msg)
 
 {
   byte bVar1;
@@ -4283,20 +4420,27 @@ void __cdecl Demo_WriteConfigStrings(int param_1,msg_t *param_2)
   int local_4c;
   byte *local_44;
   char *local_40;
-  int local_30;
-  int local_2c;
-  int local_20;
-  int local_1c;
-  int local_10;
-  int local_c;
+  clientActive_t *cl;
+  int configStringCount;
+  int numConfigStringsWritten;
+  int bitsUsed;
+  bool writeConfigString;
+  PIXProfile pixProfile;
+  int nextConstConfigStringIndex;
+  int lastStringIndex;
+  char *constValue;
+  char *s;
+  int nextConstConfigStringNumber;
+  int i;
+  int bitsStart;
   
   PIXBeginNamedEvent(-1,"Demo - Write Config Strings");
-  CL_GetLocalClientGlobals(param_1);
-  MSG_WriteByte(param_2,2);
-  local_30 = 0;
-  local_20 = 0;
-  local_10 = CCS_GetConfigStringNum(0);
-  if (local_10 == 0) {
+  CL_GetLocalClientGlobals(localClientNum);
+  MSG_WriteByte(msg,2);
+  configStringCount = 0;
+  nextConstConfigStringIndex = 0;
+  nextConstConfigStringNumber = CCS_GetConfigStringNum(0);
+  if (nextConstConfigStringNumber == 0) {
     pcVar4 = va(
                "ERROR: Could not load the configstring table for the current map and gametype. Make sure that the configstring table is built for this map and game type."
                );
@@ -4308,19 +4452,19 @@ void __cdecl Demo_WriteConfigStrings(int param_1,msg_t *param_2)
       return;
     }
   }
-  for (local_c = 0; local_c < 0xcbc; local_c = local_c + 1) {
-    if (local_c == 1) {
-      local_30 = local_30 + 1;
+  for (i = 0; i < 0xcbc; i = i + 1) {
+    if (i == 1) {
+      configStringCount = configStringCount + 1;
     }
-    else if (local_c == 0) {
-      local_30 = local_30 + 1;
+    else if (i == 0) {
+      configStringCount = configStringCount + 1;
     }
     else {
-      local_40 = cls.gameState.stringData + cls.gameState.stringOffsets[local_c] + 0x80;
-      if (local_10 == local_c) {
-        local_44 = (byte *)CCS_GetConfigStringValue(local_20);
-        if ((local_c < 0x60b) || (iVar5 = I_stricmp((char *)local_44,local_40), iVar5 == 0)) {
-          if (local_c < 0x60b) {
+      local_40 = cls.gameState.stringData + cls.gameState.stringOffsets[i] + 0x80;
+      if (nextConstConfigStringNumber == i) {
+        local_44 = (byte *)CCS_GetConfigStringValue(nextConstConfigStringIndex);
+        if ((i < 0x60b) || (iVar5 = I_stricmp((char *)local_44,local_40), iVar5 == 0)) {
+          if (i < 0x60b) {
             do {
               bVar1 = *local_44;
               bVar3 = bVar1 < (byte)*local_40;
@@ -4339,38 +4483,38 @@ LAB_009c33cb:
             local_4c = 0;
 LAB_009c33d3:
             if (local_4c != 0) {
-              local_30 = local_30 + 1;
+              configStringCount = configStringCount + 1;
             }
           }
         }
         else {
-          local_30 = local_30 + 1;
+          configStringCount = configStringCount + 1;
         }
-        local_20 = local_20 + 1;
-        local_10 = CCS_GetConfigStringNum(local_20);
+        nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+        nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
       }
-      else if (cls.gameState.stringOffsets[local_c] != 0) {
-        local_30 = local_30 + 1;
+      else if (cls.gameState.stringOffsets[i] != 0) {
+        configStringCount = configStringCount + 1;
       }
     }
   }
-  MSG_GetUsedBitCount(param_2);
-  MSG_WriteShort(param_2,local_30);
-  local_20 = 0;
-  local_10 = CCS_GetConfigStringNum(0);
-  local_2c = 0;
-  local_1c = -1;
-  local_c = 0;
+  MSG_GetUsedBitCount(msg);
+  MSG_WriteShort(msg,configStringCount);
+  nextConstConfigStringIndex = 0;
+  nextConstConfigStringNumber = CCS_GetConfigStringNum(0);
+  numConfigStringsWritten = 0;
+  lastStringIndex = -1;
+  i = 0;
   do {
-    if (0xcbb < local_c) {
-      if ((local_2c != local_30) &&
+    if (0xcbb < i) {
+      if ((numConfigStringsWritten != configStringCount) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                    0x1323,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      MSG_GetUsedBitCount(param_2);
+      MSG_GetUsedBitCount(msg);
       pcVar4 = va("Demo_WriteConfigStrings() - NumConfigStrings: %d Size: %d bytes\n");
       Demo_Printf(0x83,pcVar4);
       DVar7 = GetCurrentThreadId();
@@ -4379,23 +4523,23 @@ LAB_009c33d3:
       }
       return;
     }
-    if (local_c == 1) {
+    if (i == 1) {
       pcVar4 = Dvar_InfoString_Big(8);
-      MSG_WriteBit1(param_2);
-      MSG_WriteBigString(param_2,pcVar4);
-      local_1c = local_c;
-      local_2c = local_2c + 1;
+      MSG_WriteBit1(msg);
+      MSG_WriteBigString(msg,pcVar4);
+      lastStringIndex = i;
+      numConfigStringsWritten = numConfigStringsWritten + 1;
     }
     else {
-      pcVar4 = cls.gameState.stringData + cls.gameState.stringOffsets[local_c] + 0x80;
-      if (local_c == 0) {
-        MSG_WriteBit1(param_2);
-        MSG_WriteBigString(param_2,pcVar4);
-        local_1c = local_c;
-        local_2c = local_2c + 1;
+      pcVar4 = cls.gameState.stringData + cls.gameState.stringOffsets[i] + 0x80;
+      if (i == 0) {
+        MSG_WriteBit1(msg);
+        MSG_WriteBigString(msg,pcVar4);
+        lastStringIndex = i;
+        numConfigStringsWritten = numConfigStringsWritten + 1;
       }
       else {
-        if ((local_10 != 0) && (local_10 < local_c)) {
+        if ((nextConstConfigStringNumber != 0) && (nextConstConfigStringNumber < i)) {
           pcVar6 = va(
                      "Invalid line in the config string csv - config string indexes must only go up, but it went down and is now %i (line %i) - check the bottom of the file to see if it\'s corrupt"
                      );
@@ -4407,12 +4551,12 @@ LAB_009c33d3:
             return;
           }
         }
-        if (local_10 == local_c) {
+        if (nextConstConfigStringNumber == i) {
           bVar3 = false;
-          local_58 = (byte *)CCS_GetConfigStringValue(local_20);
-          if ((local_c < 0x60b) || (iVar5 = I_stricmp((char *)local_58,pcVar4), iVar5 == 0)) {
+          local_58 = (byte *)CCS_GetConfigStringValue(nextConstConfigStringIndex);
+          if ((i < 0x60b) || (iVar5 = I_stricmp((char *)local_58,pcVar4), iVar5 == 0)) {
             local_54 = pcVar4;
-            if (local_c < 0x60b) {
+            if (i < 0x60b) {
               do {
                 bVar1 = *local_58;
                 bVar8 = bVar1 < (byte)*local_54;
@@ -4435,7 +4579,7 @@ LAB_009c35ea:
                 goto LAB_009c3629;
               }
             }
-            if (cls.gameState.stringOffsets[local_c] == 0) {
+            if (cls.gameState.stringOffsets[i] == 0) {
               pcVar6 = va(
                          "PROCESSING: (<INSENSITIVE) nextConstConfigStringNumber == i -- ConfigString: %d\n"
                          );
@@ -4448,43 +4592,43 @@ LAB_009c35ea:
           }
 LAB_009c3629:
           if (bVar3) {
-            if (cls.gameState.stringOffsets[local_c] == 0) {
-              MSG_WriteBit0(param_2);
-              MSG_WriteBits(param_2,local_c,0xc);
-              MSG_WriteBigString(param_2,"");
-              local_1c = local_c;
-              local_2c = local_2c + 1;
+            if (cls.gameState.stringOffsets[i] == 0) {
+              MSG_WriteBit0(msg);
+              MSG_WriteBits(msg,i,0xc);
+              MSG_WriteBigString(msg,"");
+              lastStringIndex = i;
+              numConfigStringsWritten = numConfigStringsWritten + 1;
             }
             else {
-              if (local_c == local_1c + 1) {
-                MSG_WriteBit1(param_2);
+              if (i == lastStringIndex + 1) {
+                MSG_WriteBit1(msg);
               }
               else {
-                MSG_WriteBit0(param_2);
-                MSG_WriteBits(param_2,local_c,0xc);
+                MSG_WriteBit0(msg);
+                MSG_WriteBits(msg,i,0xc);
               }
-              MSG_WriteBigString(param_2,pcVar4);
-              local_1c = local_c;
-              local_2c = local_2c + 1;
+              MSG_WriteBigString(msg,pcVar4);
+              lastStringIndex = i;
+              numConfigStringsWritten = numConfigStringsWritten + 1;
             }
           }
-          local_20 = local_20 + 1;
-          local_10 = CCS_GetConfigStringNum(local_20);
+          nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+          nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
         }
-        else if (cls.gameState.stringOffsets[local_c] != 0) {
-          if (local_c == local_1c + 1) {
-            MSG_WriteBit1(param_2);
+        else if (cls.gameState.stringOffsets[i] != 0) {
+          if (i == lastStringIndex + 1) {
+            MSG_WriteBit1(msg);
           }
           else {
-            MSG_WriteBit0(param_2);
-            MSG_WriteBits(param_2,local_c,0xc);
+            MSG_WriteBit0(msg);
+            MSG_WriteBits(msg,i,0xc);
           }
-          MSG_WriteBigString(param_2,pcVar4);
-          local_2c = local_2c + 1;
+          MSG_WriteBigString(msg,pcVar4);
+          numConfigStringsWritten = numConfigStringsWritten + 1;
         }
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -4494,7 +4638,7 @@ LAB_009c3629:
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ReadConfigStrings(int param_1,msg_t *param_2)
+void __cdecl Demo_ReadConfigStrings(int localClientNum,msg_t *msg)
 
 {
   uchar uVar1;
@@ -4510,42 +4654,49 @@ void __cdecl Demo_ReadConfigStrings(int param_1,msg_t *param_2)
   uchar *local_60;
   char *local_50;
   uchar *local_40;
-  int local_30;
-  int local_24;
-  int local_20;
-  int local_18;
-  int local_c;
+  clientActive_t *cl;
+  int configStringIndex;
+  int bitsUsed;
+  PIXProfile pixProfile;
+  int newConfigStringsCount;
+  int nextConstConfigStringIndex;
+  int len;
+  int lastStringIndex;
+  int numConfigStrings;
+  char *s;
+  int nextConstConfigStringNumber;
+  int bitsStart;
   
   PIXBeginNamedEvent(-1,"Demo - Read Config Strings");
-  CL_GetLocalClientGlobals(param_1);
-  MSG_GetNumBitsRead(param_2);
-  iVar5 = MSG_ReadShort(param_2);
-  local_20 = 0;
-  local_c = CCS_GetConfigStringNum(0);
-  local_24 = 0;
-  while ((local_c == 0 && (local_20 < 0xcbc))) {
-    local_20 = local_20 + 1;
-    local_c = CCS_GetConfigStringNum(local_20);
+  CL_GetLocalClientGlobals(localClientNum);
+  MSG_GetNumBitsRead(msg);
+  iVar5 = MSG_ReadShort(msg);
+  nextConstConfigStringIndex = 0;
+  nextConstConfigStringNumber = CCS_GetConfigStringNum(0);
+  newConfigStringsCount = 0;
+  while ((nextConstConfigStringNumber == 0 && (nextConstConfigStringIndex < 0xcbc))) {
+    nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+    nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
   }
   cls._30353396_4_ = 1;
-  local_18 = -1;
+  lastStringIndex = -1;
   while( true ) {
-    if (iVar5 <= local_24) {
-      while (local_c != 0) {
-        puVar7 = (uchar *)CCS_GetConfigStringValue(local_20);
+    if (iVar5 <= newConfigStringsCount) {
+      while (nextConstConfigStringNumber != 0) {
+        puVar7 = (uchar *)CCS_GetConfigStringValue(nextConstConfigStringIndex);
         local_60 = puVar7;
         do {
           uVar1 = *local_60;
           local_60 = local_60 + 1;
         } while (uVar1 != '\0');
-        cls.gameState.stringOffsets[local_c] = cls._30353396_4_;
+        cls.gameState.stringOffsets[nextConstConfigStringNumber] = cls._30353396_4_;
         memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),puVar7,
                (ulong)(local_60 + (1 - (int)(puVar7 + 1))));
         cls._30353396_4_ = local_60 + ((cls._30353396_4_ + 1) - (int)(puVar7 + 1));
-        local_20 = local_20 + 1;
-        local_c = CCS_GetConfigStringNum(local_20);
+        nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+        nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
       }
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar8 = va("Demo_ReadConfigStrings() - NumConfigStrings: %d Size: %d bytes\n");
       Demo_Printf(0x83,pcVar8);
       DVar9 = GetCurrentThreadId();
@@ -4554,42 +4705,43 @@ void __cdecl Demo_ReadConfigStrings(int param_1,msg_t *param_2)
       }
       return;
     }
-    iVar6 = MSG_ReadBit(param_2);
+    iVar6 = MSG_ReadBit(msg);
     if (iVar6 == 0) {
-      local_30 = MSG_ReadBits(param_2,0xc);
+      configStringIndex = MSG_ReadBits(msg,0xc);
     }
     else {
-      local_30 = local_18 + 1;
+      configStringIndex = lastStringIndex + 1;
     }
-    if (((local_30 < 0) || (0xcbb < local_30)) &&
+    if (((configStringIndex < 0) || (0xcbb < configStringIndex)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x135a
                                  ,0,"%s"), !bVar4)) break;
-    while ((local_c != 0 && (local_c < local_30))) {
-      puVar7 = (uchar *)CCS_GetConfigStringValue(local_20);
+    while ((nextConstConfigStringNumber != 0 && (nextConstConfigStringNumber < configStringIndex)))
+    {
+      puVar7 = (uchar *)CCS_GetConfigStringValue(nextConstConfigStringIndex);
       local_40 = puVar7;
       do {
         uVar1 = *local_40;
         local_40 = local_40 + 1;
       } while (uVar1 != '\0');
-      cls.gameState.stringOffsets[local_c] = cls._30353396_4_;
+      cls.gameState.stringOffsets[nextConstConfigStringNumber] = cls._30353396_4_;
       memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),puVar7,
              (ulong)(local_40 + (1 - (int)(puVar7 + 1))));
       cls._30353396_4_ = local_40 + ((cls._30353396_4_ + 1) - (int)(puVar7 + 1));
-      local_20 = local_20 + 1;
-      local_c = CCS_GetConfigStringNum(local_20);
+      nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+      nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
     }
-    if ((local_c != 0) && (local_c == local_30)) {
-      local_20 = local_20 + 1;
-      local_c = CCS_GetConfigStringNum(local_20);
+    if ((nextConstConfigStringNumber != 0) && (nextConstConfigStringNumber == configStringIndex)) {
+      nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+      nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
     }
-    pcVar8 = MSG_ReadBigString(param_2);
+    pcVar8 = MSG_ReadBigString(msg);
     pcVar10 = pcVar8 + 1;
     local_50 = pcVar8;
     do {
       cVar2 = *local_50;
       local_50 = local_50 + 1;
     } while (cVar2 != '\0');
-    puVar7 = (uchar *)Demo_AdjustTimeForConfigString(local_30,pcVar8);
+    puVar7 = (uchar *)Demo_AdjustTimeForConfigString(configStringIndex,pcVar8);
     if ((0xffff < (int)(local_50 + cls._30353396_4_ + (1 - (int)pcVar10))) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x1377
                                  ,0,"%s"), !bVar4)) {
@@ -4597,12 +4749,12 @@ void __cdecl Demo_ReadConfigStrings(int param_1,msg_t *param_2)
       (*pcVar3)();
       return;
     }
-    cls.gameState.stringOffsets[local_30] = cls._30353396_4_;
+    cls.gameState.stringOffsets[configStringIndex] = cls._30353396_4_;
     memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),puVar7,
            (ulong)(local_50 + (1 - (int)pcVar10)));
     cls._30353396_4_ = local_50 + ((cls._30353396_4_ + 1) - (int)pcVar10);
-    local_18 = local_30;
-    local_24 = local_24 + 1;
+    lastStringIndex = configStringIndex;
+    newConfigStringsCount = newConfigStringsCount + 1;
   }
   pcVar3 = (code *)swi(3);
   (*pcVar3)();
@@ -4612,17 +4764,22 @@ void __cdecl Demo_ReadConfigStrings(int param_1,msg_t *param_2)
 
 // 009C3BE0  Demo_UpdateConfigStrings  (demo/demo_playback.cpp:5022)
 
-void __cdecl Demo_UpdateConfigStrings(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Demo_UpdateConfigStrings(int localClientNum)
 
 {
-  CG_ParseCullDist(param_1);
-  CG_ParseServerInfo(param_1);
-  CG_ParseCodInfo(param_1);
+  CG_ParseCullDist(localClientNum);
+  CG_ParseServerInfo(localClientNum);
+  CG_ParseCodInfo(localClientNum);
   CL_ParseMapCenter();
-  CG_ParseGameEndTime(param_1);
-  CG_ParseFog(param_1);
-  CG_NorthDirectionChanged(param_1);
-  CG_MiniMapChanged(param_1);
+  CG_ParseGameEndTime(localClientNum);
+  CG_ParseFog(localClientNum);
+  CG_NorthDirectionChanged(localClientNum);
+  CG_MiniMapChanged(localClientNum);
   return;
 }
 
@@ -4635,7 +4792,7 @@ void __cdecl Demo_UpdateConfigStrings(int param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Demo_ShouldGenerateKeyFrameSnapshot(int param_1,int param_2)
+bool __cdecl Demo_ShouldGenerateKeyFrameSnapshot(int localClientNum,int serverTime)
 
 {
   bool bVar1;
@@ -4645,14 +4802,15 @@ bool __cdecl Demo_ShouldGenerateKeyFrameSnapshot(int param_1,int param_2)
   if (bVar1) {
     bVar1 = Demo_IsPlaybackInited();
     if (bVar1) {
-      pcVar2 = CG_GetLocalClientGlobals(param_1);
+      pcVar2 = CG_GetLocalClientGlobals(localClientNum);
       if (pcVar2->nextSnap == (snapshot_s *)0x0) {
         bVar1 = false;
       }
       else if (demo.lastProcessedTime == -1) {
         bVar1 = true;
       }
-      else if ((param_2 - demo.lastProcessedTime) / 1000 < (demo_keyframerate->current).integer) {
+      else if ((serverTime - demo.lastProcessedTime) / 1000 < (demo_keyframerate->current).integer)
+      {
         bVar1 = false;
       }
       else {
@@ -4674,26 +4832,32 @@ bool __cdecl Demo_ShouldGenerateKeyFrameSnapshot(int param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
 Demo_GenerateKeyFrameSnapshot
-          (int param_1,int param_2,int param_3,int param_4,int param_5,int param_6)
+          (int localClientNum,int msgSequence,int cmdSequence,int serverTime,int physicsTime,
+          int snapFlags)
 
 {
   bool bVar1;
   DWORD DVar2;
-  msg_t local_34;
+  PIXProfile pixProfile;
+  msg_t msg;
   
   PIXBeginNamedEvent(-1,"Keyframe - Generation");
-  MSG_Init(&local_34,demo.msgBuf1,0xc000);
+  MSG_Init(&msg,demo.msgBuf1,0xc000);
   bVar1 = Demo_IsClipPlaying();
   if (bVar1) {
     (demo.playback)->forceWriteClipCommands = true;
-    Demo_WriteClipCommandsInternal(param_1,&local_34,false);
+    Demo_WriteClipCommandsInternal(localClientNum,&msg,false);
   }
-  Demo_GenerateUncompressedSnapshot(param_1,&local_34,param_2,param_3,param_4,param_5,param_6,true);
+  Demo_GenerateUncompressedSnapshot
+            (localClientNum,&msg,msgSequence,cmdSequence,serverTime,physicsTime,snapFlags,true);
   MSG_Init(&(demo.playback)->keyframeMsg,demo.memBlock.compressedMsgBuf,0xc000);
-  MSG_Embed(&(demo.playback)->keyframeMsg,&local_34);
+  MSG_Embed(&(demo.playback)->keyframeMsg,&msg);
   (demo.playback)->keyframeGenerated = true;
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -4705,10 +4869,10 @@ Demo_GenerateKeyFrameSnapshot
 
 // 009C3DB0  Demo_WriteKeyFrameInformation  (demo/demo_playback.cpp:5126)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteKeyFrameInformation(int param_1)
+void __cdecl Demo_WriteKeyFrameInformation(int localClientNum)
 
 {
   bool bVar1;
@@ -4717,29 +4881,29 @@ void __cdecl Demo_WriteKeyFrameInformation(int param_1)
   char *pcVar4;
   int iVar5;
   DWORD DVar6;
-  int local_14;
+  int i;
+  clientActive_t *cl;
+  PIXProfile pixProfile;
+  clientConnection_t *clc;
   
   PIXBeginNamedEvent(-1,"Keyframe - Writing");
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  pcVar3 = CL_GetLocalClientConnection(param_1);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar3 = CL_GetLocalClientConnection(localClientNum);
   if (0x500000 < (demo.playback)->keyframeBufferIndex + ((demo.playback)->keyframeMsg).cursize) {
     pcVar4 = va("Resetting demo.playback->keyframeBufferIndex since we ran out of keyframe memory\n"
                );
     Demo_Printf(0x80,pcVar4);
     (demo.playback)->keyframeBufferIndex = 0;
   }
-  for (local_14 = 0; local_14 < 0xfa; local_14 = local_14 + 1) {
-    if ((((demo.playback)->keyFrame[local_14].keyframeBufferStart <
+  for (i = 0; i < 0xfa; i = i + 1) {
+    if ((((demo.playback)->keyFrame[i].keyframeBufferStart <
           (demo.playback)->keyframeBufferIndex + ((demo.playback)->keyframeMsg).cursize) &&
-        ((demo.playback)->keyframeBufferIndex <=
-         (demo.playback)->keyFrame[local_14].keyframeBufferStart)) ||
-       (((demo.playback)->keyframeBufferIndex <
-         (demo.playback)->keyFrame[local_14].keyframeBufferStart +
-         (demo.playback)->keyFrame[local_14].size &&
-        ((demo.playback)->keyFrame[local_14].keyframeBufferStart +
-         (demo.playback)->keyFrame[local_14].size <=
-         (demo.playback)->keyframeBufferIndex + ((demo.playback)->keyframeMsg).cursize)))) {
-      (demo.playback)->keyFrame[local_14].keyframeSnapshotTime = -1;
+        ((demo.playback)->keyframeBufferIndex <= (demo.playback)->keyFrame[i].keyframeBufferStart))
+       || (((demo.playback)->keyframeBufferIndex <
+            (demo.playback)->keyFrame[i].keyframeBufferStart + (demo.playback)->keyFrame[i].size &&
+           ((demo.playback)->keyFrame[i].keyframeBufferStart + (demo.playback)->keyFrame[i].size <=
+            (demo.playback)->keyframeBufferIndex + ((demo.playback)->keyframeMsg).cursize)))) {
+      (demo.playback)->keyFrame[i].keyframeSnapshotTime = -1;
       pcVar4 = va(
                  "Keyframe %d is now invalidated since  demo.playback->keyFrame[i].keyframeBufferStart(%d) < demo.playback->keyframeBufferIndex(%d) + demo.playback->keyframeMsg.cursize(%d) \n"
                  );
@@ -4802,33 +4966,34 @@ void __cdecl Demo_WriteKeyFrameInformation(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_InitClipRecord(int param_1,bool param_2)
+void __cdecl Demo_InitClipRecord(int localClientNum,bool newClip)
 
 {
-  int iVar1;
-  char *pcVar2;
-  int iVar3;
+  int controllerIndex;
+  char *pcVar1;
+  int destsize;
+  char *s;
   
   MSG_Init(&(demo.playback)->clipRecordingMsg,(demo.playback)->subClipRecordingBuf,0xc000);
-  if (param_2) {
+  if (newClip) {
     Demo_WriteHeader(&(demo.playback)->clipRecordingMsg,true);
     MSG_WriteBits(&(demo.playback)->clipRecordingMsg,3,2);
     MSG_WriteLong(&(demo.playback)->clipRecordingMsg,0);
-    Demo_WriteClipGameState(param_1);
+    Demo_WriteClipGameState(localClientNum);
     MSG_WriteBits(&(demo.playback)->clipRecordingMsg,0,2);
     Demo_SaveClipRecordMessageToMainMemory
-              (param_1,((demo.playback)->clipRecordingMsg).data,
+              (localClientNum,((demo.playback)->clipRecordingMsg).data,
                ((demo.playback)->clipRecordingMsg).cursize,false);
     (demo.playback)->segmentGameStateSize = (demo.playback)->clipRecordBufIndex;
     ((demo.playback)->clipRecordInfo).startTime = 0;
-    iVar3 = 0x20;
-    iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-    pcVar2 = Live_ControllerIndex_GetClientName(iVar1);
-    I_strncpyz(((demo.playback)->clipRecordInfo).author,pcVar2,iVar3);
+    destsize = 0x20;
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    pcVar1 = Live_ControllerIndex_GetClientName(controllerIndex);
+    I_strncpyz(((demo.playback)->clipRecordInfo).author,pcVar1,destsize);
     Demo_PopulateStaticInfoData(&(demo.playback)->clipRecordInfo);
     UI_GetMapName(((demo.playback)->clipRecordInfo).mapName,true);
-    pcVar2 = va("%s_CAPS");
-    UI_SafeTranslateString(pcVar2);
+    pcVar1 = va("%s_CAPS");
+    UI_SafeTranslateString(pcVar1);
     sprintf(((demo.playback)->clipRecordInfo).name,"%s");
     ((demo.playback)->clipRecordInfo).isModifiedName = false;
     UI_GetGameTypeName(((demo.playback)->clipRecordInfo).gameType,false);
@@ -4844,15 +5009,16 @@ void __cdecl Demo_InitClipRecord(int param_1,bool param_2)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteUncompressedClipSnapshot(int param_1)
+void __cdecl Demo_WriteUncompressedClipSnapshot(int localClientNum)
 
 {
   clientActive_t *pcVar1;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  Demo_WriteClipCommands(param_1,&(demo.playback)->clipRecordingMsg,true);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  Demo_WriteClipCommands(localClientNum,&(demo.playback)->clipRecordingMsg,true);
   Demo_GenerateUncompressedSnapshot
-            (param_1,&(demo.playback)->clipRecordingMsg,(pcVar1->snap).messageNum,
+            (localClientNum,&(demo.playback)->clipRecordingMsg,(pcVar1->snap).messageNum,
              (pcVar1->snap).serverCommandNum,(pcVar1->snap).serverTime,(pcVar1->snap).physicsTime,
              (pcVar1->snap).snapFlags,false);
   memcpy((uchar *)&(demo.playback)->clipRecordPS,(uchar *)(demo.ps + (demo_client->current).integer)
@@ -4864,31 +5030,35 @@ void __cdecl Demo_WriteUncompressedClipSnapshot(int param_1)
 // 009C45E0  Demo_WriteClipCommands  (demo/demo_playback.cpp:5260)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteClipCommands(int param_1,msg_t *param_2,bool param_3)
+void __cdecl Demo_WriteClipCommands(int localClientNum,msg_t *msg,bool setClipRecordParams)
 
 {
   bool bVar1;
   
   bVar1 = Demo_ShouldFlushClipRecordMessage();
   if (bVar1) {
-    MSG_WriteBits(param_2,0,2);
-    Demo_SaveClipRecordMessageToMainMemory(param_1,param_2->data,param_2->cursize,false);
+    MSG_WriteBits(msg,0,2);
+    Demo_SaveClipRecordMessageToMainMemory(localClientNum,msg->data,msg->cursize,false);
   }
-  Demo_WriteClipCommandsInternal(param_1,param_2,param_3);
+  Demo_WriteClipCommandsInternal(localClientNum,msg,setClipRecordParams);
   return;
 }
 
 
 // 009C4640  Demo_WriteClipCommandsInternal  (demo/demo_playback.cpp:5278)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool param_3)
+void __cdecl Demo_WriteClipCommandsInternal(int localClientNum,msg_t *msg,bool setClipRecordParams)
 
 {
   bool bVar1;
@@ -4898,29 +5068,32 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
   cg_s *pcVar5;
   clientActive_t *pcVar6;
   char *pcVar7;
-  uint local_8;
+  clientActive_t *cl;
+  bool forceWrite;
+  cg_s *cgameGlob;
+  int cameraModeToCheck;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  pcVar6 = CL_GetLocalClientGlobals(param_1);
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar6 = CL_GetLocalClientGlobals(localClientNum);
   bVar1 = (demo.playback)->forceWriteClipCommands;
   if (((uint)(demo.playback)->clipRecordClient != (demo_client->current).integer) ||
      (bVar1 != false)) {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,0);
-    MSG_WriteByte(param_2,(demo_client->current).integer);
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,0);
+    MSG_WriteByte(msg,(demo_client->current).integer);
     bVar4 = Demo_IsClipRecording();
     if ((bVar4) && (bVar4 = Demo_IsPaused(), bVar4)) {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
       Demo_EnableSnapshotProcessing();
       MSG_WriteDeltaPlayerstate
-                (&g_snapInfo,param_2,0,&(demo.playback)->clipRecordPS,
+                (&g_snapInfo,msg,0,&(demo.playback)->clipRecordPS,
                  demo.ps + (demo_client->current).integer);
       Demo_DisableSnapshotProcessing();
     }
     else {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
     }
-    if (param_3) {
+    if (setClipRecordParams) {
       (demo.playback)->clipRecordClient = (demo_client->current).enabled;
     }
     pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_CLIENT client: %d\n");
@@ -4928,20 +5101,20 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
   }
   if (((demo.playback)->clipRecordTimescale != (demo_timescale->current).value) || (bVar1 != false))
   {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,1);
-    MSG_WriteRangedFloatBits(param_2,(demo_timescale->current).value,0.0,4.0,0x10);
-    if (param_3) {
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,1);
+    MSG_WriteRangedFloatBits(msg,(demo_timescale->current).value,0.0,4.0,0x10);
+    if (setClipRecordParams) {
       (demo.playback)->clipRecordTimescale = (float)(demo_timescale->current).integer;
     }
     pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_TIMESCALE Value: %f\n");
     Demo_Printf(0x400,pcVar7);
   }
   if (((uint)(demo.playback)->clipCameraMode != (demo.playback)->cameraMode) || (bVar1 != false)) {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,2);
-    if (param_3) {
-      MSG_WriteByte(param_2,(demo.playback)->cameraMode);
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,2);
+    if (setClipRecordParams) {
+      MSG_WriteByte(msg,(demo.playback)->cameraMode);
       (demo.playback)->clipCameraMode = (uchar)(demo.playback)->cameraMode;
       if (((uint)(demo.playback)->clipCameraMode != (demo.playback)->cameraMode) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
@@ -4954,22 +5127,22 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
       Demo_Printf(0x400,pcVar7);
     }
     else {
-      MSG_WriteByte(param_2,(demo.playback)->cameraMode);
+      MSG_WriteByte(msg,(demo.playback)->cameraMode);
       pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_MODE Mode: %d\n");
       Demo_Printf(0x400,pcVar7);
     }
   }
-  if (param_3) {
-    local_8 = (uint)(demo.playback)->clipCameraMode;
+  if (setClipRecordParams) {
+    cameraModeToCheck = (int)(demo.playback)->clipCameraMode;
   }
   else {
-    local_8 = (demo.playback)->cameraMode;
+    cameraModeToCheck = (demo.playback)->cameraMode;
   }
-  if ((local_8 != 0) || (bVar1 != false)) {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,3);
-    if (-1 < (int)local_8) {
-      if ((int)local_8 < 2) {
+  if ((cameraModeToCheck != 0) || (bVar1 != false)) {
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,3);
+    if (-1 < cameraModeToCheck) {
+      if (cameraModeToCheck < 2) {
         if ((((pcVar5->refdef).vieworg[0] == (demo.playback)->clipCameraOrigin[0]) &&
             ((pcVar5->refdef).vieworg[1] == (demo.playback)->clipCameraOrigin[1])) &&
            ((pcVar5->refdef).vieworg[2] == (demo.playback)->clipCameraOrigin[2])) {
@@ -4979,13 +5152,13 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
           bVar4 = false;
         }
         if ((bVar4) && (bVar1 == false)) {
-          MSG_WriteBit0(param_2);
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
-          MSG_WriteData(param_2,(pcVar5->refdef).vieworg,0xc);
+          MSG_WriteBit1(msg);
+          MSG_WriteData(msg,(pcVar5->refdef).vieworg,0xc);
           pdVar3 = demo.playback;
-          if (param_3) {
+          if (setClipRecordParams) {
             (demo.playback)->clipCameraOrigin[0] = (pcVar5->refdef).vieworg[0];
             pdVar3->clipCameraOrigin[1] = (pcVar5->refdef).vieworg[1];
             pdVar3->clipCameraOrigin[2] = (pcVar5->refdef).vieworg[2];
@@ -4994,7 +5167,7 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
           Demo_Printf(0x400,pcVar7);
         }
       }
-      else if (local_8 == 2) {
+      else if (cameraModeToCheck == 2) {
         if (((pcVar5->movieCameraOrigin[0] == (demo.playback)->clipCameraOrigin[0]) &&
             (pcVar5->movieCameraOrigin[1] == (demo.playback)->clipCameraOrigin[1])) &&
            (pcVar5->movieCameraOrigin[2] == (demo.playback)->clipCameraOrigin[2])) {
@@ -5004,12 +5177,12 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
           bVar4 = false;
         }
         if ((bVar4) && (bVar1 == false)) {
-          MSG_WriteBit0(param_2);
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
-          if (param_3) {
-            MSG_WriteData(param_2,pcVar5->movieCameraOrigin,0xc);
+          MSG_WriteBit1(msg);
+          if (setClipRecordParams) {
+            MSG_WriteData(msg,pcVar5->movieCameraOrigin,0xc);
             pdVar3 = demo.playback;
             (demo.playback)->clipCameraOrigin[0] = pcVar5->movieCameraOrigin[0];
             pdVar3->clipCameraOrigin[1] = pcVar5->movieCameraOrigin[1];
@@ -5019,7 +5192,7 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
             Demo_Printf(0x400,pcVar7);
           }
           else {
-            MSG_WriteData(param_2,pcVar5->movieCameraOrigin,0xc);
+            MSG_WriteData(msg,pcVar5->movieCameraOrigin,0xc);
             pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ORIGIN Value: %d (%f, %f, %f)\n"
                        );
             Demo_Printf(0x400,pcVar7);
@@ -5027,10 +5200,10 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
         }
       }
     }
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,4);
-    if (-1 < (int)local_8) {
-      if ((int)local_8 < 2) {
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,4);
+    if (-1 < cameraModeToCheck) {
+      if (cameraModeToCheck < 2) {
         if (((pcVar5->refdefViewAngles[0] == (demo.playback)->clipCameraAngles[0]) &&
             (pcVar5->refdefViewAngles[1] == (demo.playback)->clipCameraAngles[1])) &&
            (pcVar5->refdefViewAngles[2] == (demo.playback)->clipCameraAngles[2])) {
@@ -5040,12 +5213,12 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
           bVar4 = false;
         }
         if ((bVar4) && (bVar1 == false)) {
-          MSG_WriteBit0(param_2);
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
-          if (param_3) {
-            MSG_WriteData(param_2,pcVar6->viewangles,0xc);
+          MSG_WriteBit1(msg);
+          if (setClipRecordParams) {
+            MSG_WriteData(msg,pcVar6->viewangles,0xc);
             pdVar3 = demo.playback;
             (demo.playback)->clipCameraAngles[0] = pcVar6->viewangles[0];
             pdVar3->clipCameraAngles[1] = pcVar6->viewangles[1];
@@ -5055,14 +5228,14 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
             Demo_Printf(0x400,pcVar7);
           }
           else {
-            MSG_WriteData(param_2,pcVar6->viewangles,0xc);
+            MSG_WriteData(msg,pcVar6->viewangles,0xc);
             pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ANGLES Value: %d (%f, %f, %f)\n"
                        );
             Demo_Printf(0x400,pcVar7);
           }
         }
       }
-      else if (local_8 == 2) {
+      else if (cameraModeToCheck == 2) {
         if (((pcVar5->movieCameraAngles[0] == (demo.playback)->clipCameraAngles[0]) &&
             (pcVar5->movieCameraAngles[1] == (demo.playback)->clipCameraAngles[1])) &&
            (pcVar5->movieCameraAngles[2] == (demo.playback)->clipCameraAngles[2])) {
@@ -5072,12 +5245,12 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
           bVar4 = false;
         }
         if ((bVar4) && (bVar1 == false)) {
-          MSG_WriteBit0(param_2);
+          MSG_WriteBit0(msg);
         }
         else {
-          MSG_WriteBit1(param_2);
-          if (param_3) {
-            MSG_WriteData(param_2,pcVar5->movieCameraAngles,0xc);
+          MSG_WriteBit1(msg);
+          if (setClipRecordParams) {
+            MSG_WriteData(msg,pcVar5->movieCameraAngles,0xc);
             pdVar3 = demo.playback;
             (demo.playback)->clipCameraAngles[0] = pcVar5->movieCameraAngles[0];
             pdVar3->clipCameraAngles[1] = pcVar5->movieCameraAngles[1];
@@ -5087,7 +5260,7 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
             Demo_Printf(0x400,pcVar7);
           }
           else {
-            MSG_WriteData(param_2,pcVar5->movieCameraAngles,0xc);
+            MSG_WriteData(msg,pcVar5->movieCameraAngles,0xc);
             pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ANGLES Value: %d (%f, %f, %f)\n"
                        );
             Demo_Printf(0x400,pcVar7);
@@ -5097,50 +5270,50 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
     }
   }
   if (((demo.playback)->clipHudHidden != (demo.playback)->hideGameHud) || (bVar1 != false)) {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,5);
-    if (param_3) {
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,5);
+    if (setClipRecordParams) {
       if ((demo.playback)->hideGameHud == false) {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
       }
       else {
-        MSG_WriteBit1(param_2);
+        MSG_WriteBit1(msg);
       }
       (demo.playback)->clipHudHidden = (demo.playback)->hideGameHud;
     }
     else if ((demo.playback)->hideGameHud == false) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
     }
     pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_HIDE_GAME_HUD value: %d\n");
     Demo_Printf(0x400,pcVar7);
   }
   if (bVar1 != false) {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,6);
-    MSG_WriteLong(param_2,(pcVar6->snap).messageNum);
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,6);
+    MSG_WriteLong(msg,(pcVar6->snap).messageNum);
     pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_RESET_SNAPSHOT_DATA\n");
     Demo_Printf(0x400,pcVar7);
   }
   if (((demo.playback)->clipPausedState != (demo_pause->current).enabled) || (bVar1 != false)) {
-    MSG_WriteBits(param_2,2,2);
-    MSG_WriteByte(param_2,7);
-    if (param_3) {
+    MSG_WriteBits(msg,2,2);
+    MSG_WriteByte(msg,7);
+    if (setClipRecordParams) {
       if ((demo_pause->current).enabled == false) {
-        MSG_WriteBit0(param_2);
+        MSG_WriteBit0(msg);
       }
       else {
-        MSG_WriteBit1(param_2);
+        MSG_WriteBit1(msg);
       }
       (demo.playback)->clipPausedState = (demo_pause->current).enabled;
     }
     else if ((demo.playback)->clipPausedState == false) {
-      MSG_WriteBit0(param_2);
+      MSG_WriteBit0(msg);
     }
     else {
-      MSG_WriteBit1(param_2);
+      MSG_WriteBit1(msg);
     }
     pcVar7 = va("DEMO: w Clip Cmd: DEMO_CLIP_CMD_SET_PAUSED_STATE value: %d\n");
     Demo_Printf(0x400,pcVar7);
@@ -5154,11 +5327,11 @@ void __cdecl Demo_WriteClipCommandsInternal(int param_1,msg_t *param_2,bool para
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteEndOfFrameClipCommand(msg_t *param_1)
+void __cdecl Demo_WriteEndOfFrameClipCommand(msg_t *msg)
 
 {
-  MSG_WriteBits(param_1,2,2);
-  MSG_WriteByte(param_1,9);
+  MSG_WriteBits(msg,2,2);
+  MSG_WriteByte(msg,9);
   return;
 }
 
@@ -5168,16 +5341,16 @@ void __cdecl Demo_WriteEndOfFrameClipCommand(msg_t *param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteClipCommandsWhenPaused(int param_1)
+void __cdecl Demo_WriteClipCommandsWhenPaused(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *text;
+  int controllerIndex;
   
   if ((demo.playback)->clipRecordBufIndex < 0xf4000) {
-    Demo_WriteClipCommands(param_1,&(demo.playback)->clipRecordingMsg,true);
+    Demo_WriteClipCommands(localClientNum,&(demo.playback)->clipRecordingMsg,true);
     Demo_WriteEndOfFrameClipCommand(&(demo.playback)->clipRecordingMsg);
   }
   else {
@@ -5191,9 +5364,9 @@ void __cdecl Demo_WriteClipCommandsWhenPaused(int param_1)
         return;
       }
     }
-    pcVar3 = va("demo_pausecliprecord %d");
-    iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-    Cmd_ExecuteSingleCommand(param_1,iVar4,pcVar3);
+    text = va("demo_pausecliprecord %d");
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,text);
   }
   return;
 }
@@ -5204,36 +5377,38 @@ void __cdecl Demo_WriteClipCommandsWhenPaused(int param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Demo_WriteTransitionClipCommandBlockToBuffer(int param_1,uchar *param_2,int param_3)
+int __cdecl
+Demo_WriteTransitionClipCommandBlockToBuffer(int transition,uchar *buffer,int maxBufferSize)
 
 {
-  ulong uVar1;
-  int iVar2;
-  uchar local_23c [256];
-  uchar local_13c [260];
+  ulong count;
+  int iVar1;
+  int compressedSize;
+  uchar msgBuf [256];
+  uchar tempMsgBuf [260];
   uint local_38;
-  msg_t local_34;
+  msg_t msg;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_23c,'\0',0x100);
-  memset(local_13c,'\0',0x100);
-  MSG_Init(&local_34,local_23c,0x100);
-  MSG_WriteBits(&local_34,2,2);
-  MSG_WriteByte(&local_34,8);
-  MSG_WriteByte(&local_34,param_1);
-  Demo_WriteEndOfFrameClipCommand(&local_34);
-  MSG_WriteBits(&local_34,0,2);
-  uVar1 = MSG_CompressWithZLib(local_34.data,local_34.cursize,local_13c,0x100);
-  if ((int)(uVar1 + 8) < param_3) {
-    *(ulong *)param_2 = uVar1;
-    *(int *)(param_2 + 4) = local_34.cursize;
-    memcpy(param_2 + 8,local_13c,uVar1);
-    iVar2 = uVar1 + 8;
+  memset(msgBuf,'\0',0x100);
+  memset(tempMsgBuf,'\0',0x100);
+  MSG_Init(&msg,msgBuf,0x100);
+  MSG_WriteBits(&msg,2,2);
+  MSG_WriteByte(&msg,8);
+  MSG_WriteByte(&msg,transition);
+  Demo_WriteEndOfFrameClipCommand(&msg);
+  MSG_WriteBits(&msg,0,2);
+  count = MSG_CompressWithZLib(msg.data,msg.cursize,tempMsgBuf,0x100);
+  if ((int)(count + 8) < maxBufferSize) {
+    *(ulong *)buffer = count;
+    *(int *)(buffer + 4) = msg.cursize;
+    memcpy(buffer + 8,tempMsgBuf,count);
+    iVar1 = count + 8;
   }
   else {
-    iVar2 = 0;
+    iVar1 = 0;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
@@ -5245,7 +5420,7 @@ int __cdecl Demo_WriteTransitionClipCommandBlockToBuffer(int param_1,uchar *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
+uchar __cdecl Demo_ParseClipCommand(int localClientNum,msg_t *msg,bool setClipPlaybackParams)
 
 {
   code *pcVar1;
@@ -5258,22 +5433,30 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
   int iVar8;
   int iVar9;
   char *pcVar10;
-  float fVar11;
+  float timescale;
+  clientActive_t *cl;
+  uchar cmdType;
+  cg_s *cgameGlob;
+  float timeScale;
+  int msgNum;
+  int transition;
+  int newClient;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  pcVar6 = CL_GetLocalClientGlobals(param_1);
-  uVar7 = MSG_ReadByte(param_2);
+  pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+  pcVar6 = CL_GetLocalClientGlobals(localClientNum);
+  uVar7 = MSG_ReadByte(msg);
   switch(uVar7 & 0xff) {
   case 0:
-    iVar9 = MSG_ReadByte(param_2);
+    iVar9 = MSG_ReadByte(msg);
     memcpy((uchar *)(demo.ps + iVar9),(uchar *)(demo.ps + (demo_client->current).integer),0x26a4);
     memcpy((uchar *)(demo.ps + (demo_client->current).integer),(uchar *)&g_defaultPlayerState,0x26a4
           );
-    iVar8 = MSG_ReadBit(param_2);
+    iVar8 = MSG_ReadBit(msg);
     if (iVar8 != 0) {
       Demo_EnableSnapshotProcessing();
       MSG_ReadDeltaPlayerstate
-                (param_1,param_2,0,demo.ps + iVar9,demo.ps + (demo_client->current).integer,false);
+                (localClientNum,msg,0,demo.ps + iVar9,demo.ps + (demo_client->current).integer,false
+                );
       Demo_DisableSnapshotProcessing();
       bVar3 = Demo_IsClipPlaying();
       if (bVar3) {
@@ -5281,7 +5464,7 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
                   ((pcVar6->snap).serverTime,(demo.playback)->clipServerTime,
                    demo.ps + (demo_client->current).integer);
       }
-      Demo_UpdateCurrentSnapshot(param_1,demo.ps + (demo_client->current).integer);
+      Demo_UpdateCurrentSnapshot(localClientNum,demo.ps + (demo_client->current).integer);
       memcpy((uchar *)(demo.ps + (demo_client->current).integer),(uchar *)&g_defaultPlayerState,
              0x26a4);
     }
@@ -5290,25 +5473,25 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
     Demo_Printf(0x400,pcVar10);
     break;
   case 1:
-    fVar11 = MSG_ReadRangedFloatBits(param_2,0.0,4.0,0x10);
-    Com_SetTimeScale(fVar11);
-    Dvar_SetFloat(demo_timescale,fVar11);
+    timescale = MSG_ReadRangedFloatBits(msg,0.0,4.0,0x10);
+    Com_SetTimeScale(timescale);
+    Dvar_SetFloat(demo_timescale,timescale);
     Com_GetTimeScale();
     pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_TIMESCALE Value: %f\n");
     Demo_Printf(0x400,pcVar10);
     break;
   case 2:
-    iVar9 = MSG_ReadByte(param_2);
+    iVar9 = MSG_ReadByte(msg);
     (demo.playback)->clipCameraMode = (uchar)iVar9;
     pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_MODE Mode: %d\n");
     Demo_Printf(0x400,pcVar10);
-    bVar3 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+    bVar3 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
     if (bVar3) {
-      Demo_SwitchCameraMode(param_1,(uint)(demo.playback)->clipCameraMode);
+      Demo_SwitchCameraMode(localClientNum,(uint)(demo.playback)->clipCameraMode);
     }
     break;
   case 3:
-    iVar9 = MSG_ReadBit(param_2);
+    iVar9 = MSG_ReadBit(msg);
     pdVar2 = demo.playback;
     if (iVar9 == 0) {
       (demo.playback)->prevClipCameraOrigin[0] = (demo.playback)->clipCameraOrigin[0];
@@ -5317,16 +5500,16 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
       pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ORIGIN Value: %d (%f, %f, %f)\n");
       Demo_Printf(0x400,pcVar10);
     }
-    else if (param_3) {
+    else if (setClipPlaybackParams) {
       (demo.playback)->prevClipCameraOrigin[0] = (demo.playback)->clipCameraOrigin[0];
       pdVar2->prevClipCameraOrigin[1] = pdVar2->clipCameraOrigin[1];
       pdVar2->prevClipCameraOrigin[2] = pdVar2->clipCameraOrigin[2];
-      MSG_ReadData(param_2,(demo.playback)->clipCameraOrigin,0xc);
+      MSG_ReadData(msg,(demo.playback)->clipCameraOrigin,0xc);
       pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ORIGIN Value: %d (%f, %f, %f)\n");
       Demo_Printf(0x400,pcVar10);
     }
     else {
-      MSG_ReadData(param_2,(pcVar5->refdef).vieworg,0xc);
+      MSG_ReadData(msg,(pcVar5->refdef).vieworg,0xc);
       if ((demo.playback)->clipCameraMode == '\x02') {
         pcVar5->movieCameraOrigin[0] = (pcVar5->refdef).vieworg[0];
         pcVar5->movieCameraOrigin[1] = (pcVar5->refdef).vieworg[1];
@@ -5337,7 +5520,7 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
     }
     break;
   case 4:
-    iVar9 = MSG_ReadBit(param_2);
+    iVar9 = MSG_ReadBit(msg);
     pdVar2 = demo.playback;
     if (iVar9 == 0) {
       (demo.playback)->prevClipCameraAngles[0] = (demo.playback)->clipCameraAngles[0];
@@ -5346,16 +5529,16 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
       pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ANGLES Value: %d (%f, %f, %f)\n");
       Demo_Printf(0x400,pcVar10);
     }
-    else if (param_3) {
+    else if (setClipPlaybackParams) {
       (demo.playback)->prevClipCameraAngles[0] = (demo.playback)->clipCameraAngles[0];
       pdVar2->prevClipCameraAngles[1] = pdVar2->clipCameraAngles[1];
       pdVar2->prevClipCameraAngles[2] = pdVar2->clipCameraAngles[2];
-      MSG_ReadData(param_2,(demo.playback)->clipCameraAngles,0xc);
+      MSG_ReadData(msg,(demo.playback)->clipCameraAngles,0xc);
       pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_CAMERA_ANGLES Value: %d (%f, %f, %f)\n");
       Demo_Printf(0x400,pcVar10);
     }
     else {
-      MSG_ReadData(param_2,pcVar6->viewangles,0xc);
+      MSG_ReadData(msg,pcVar6->viewangles,0xc);
       if ((demo.playback)->clipCameraMode == '\x02') {
         pcVar5->movieCameraAngles[0] = pcVar6->viewangles[0];
         pcVar5->movieCameraAngles[1] = pcVar6->viewangles[1];
@@ -5366,16 +5549,16 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
     }
     break;
   case 5:
-    iVar9 = MSG_ReadBit(param_2);
+    iVar9 = MSG_ReadBit(msg);
     (demo.playback)->hideGameHud = iVar9 != 0;
     pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_HIDE_GAME_HUD value: %d\n");
     Demo_Printf(0x400,pcVar10);
     break;
   case 6:
-    iVar9 = MSG_ReadLong(param_2);
+    iVar9 = MSG_ReadLong(msg);
     Demo_ResetSnapshotData();
-    Demo_ResetSequenceNumbers(param_1,iVar9 + -1);
-    Demo_ResetWorldInformation(param_1,0);
+    Demo_ResetSequenceNumbers(localClientNum,iVar9 + -1);
+    Demo_ResetWorldInformation(localClientNum,0);
     Demo_SetJumpTimeFlag(true);
     bVar3 = Demo_IsClipPlaying();
     if ((bVar3) || (bVar3 = Demo_IsClipPreviewRunning(), bVar3)) {
@@ -5385,13 +5568,13 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
     Demo_Printf(0x400,pcVar10);
     break;
   case 7:
-    iVar9 = MSG_ReadBit(param_2);
+    iVar9 = MSG_ReadBit(msg);
     (demo.playback)->clipPausedState = iVar9 != 0;
     pcVar10 = va("DEMO: r Clip Cmd: DEMO_CLIP_CMD_SET_PAUSED_STATE value: %d\n");
     Demo_Printf(0x400,pcVar10);
     break;
   case 8:
-    iVar9 = MSG_ReadByte(param_2);
+    iVar9 = MSG_ReadByte(msg);
     Demo_ActivateTransitionScreen(iVar9);
     break;
   case 9:
@@ -5420,76 +5603,78 @@ uchar __cdecl Demo_ParseClipCommand(int param_1,msg_t *param_2,bool param_3)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl Demo_WriteClipGameState(int param_1)
+void __cdecl Demo_WriteClipGameState(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  clientActive_t *pcVar4;
-  char *pcVar5;
-  entityState_s local_12c;
+  int c;
+  clientActive_t *pcVar3;
+  char *string;
+  clientActive_t *cl;
+  entityState_s nullstate;
   uint local_48;
-  msg_t local_44;
-  clientConnection_t *local_14;
-  int local_10;
-  entityState_s *local_c;
-  int local_8;
+  msg_t msg;
+  clientConnection_t *clc;
+  int oldSvsHeaderValid;
+  entityState_s *ent;
+  int i;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = 0;
-  local_14 = CL_GetLocalClientConnection(param_1);
+  oldSvsHeaderValid = 0;
+  clc = CL_GetLocalClientConnection(localClientNum);
   memset(demo.msgBuf1,'\0',0xc000);
-  MSG_Init(&local_44,demo.msgBuf1,0xc000);
-  MSG_WriteLong(&local_44,local_14->reliableSequence);
-  MSG_WriteByte(&local_44,1);
-  MSG_WriteLong(&local_44,local_14->serverCommandSequence);
-  MSG_WriteString(&local_44,demo.info.mapName);
-  MSG_WriteString(&local_44,demo.info.gameType);
-  iVar3 = CCS_GetChecksum();
-  MSG_WriteLong(&local_44,iVar3);
-  pcVar4 = CL_GetLocalClientGlobals(param_1);
-  Demo_WriteConfigStrings(param_1,&local_44);
-  local_10 = svsHeaderValid;
+  MSG_Init(&msg,demo.msgBuf1,0xc000);
+  MSG_WriteLong(&msg,clc->reliableSequence);
+  MSG_WriteByte(&msg,1);
+  MSG_WriteLong(&msg,clc->serverCommandSequence);
+  MSG_WriteString(&msg,demo.info.mapName);
+  MSG_WriteString(&msg,demo.info.gameType);
+  c = CCS_GetChecksum();
+  MSG_WriteLong(&msg,c);
+  pcVar3 = CL_GetLocalClientGlobals(localClientNum);
+  Demo_WriteConfigStrings(localClientNum,&msg);
+  oldSvsHeaderValid = svsHeaderValid;
   svsHeaderValid = 1;
   svsHeader.mapCenter[0] = cls.mapCenter[0];
   svsHeader.mapCenter[1] = cls.mapCenter[1];
   svsHeader.mapCenter[2] = cls.mapCenter[2];
-  memset((uchar *)&local_12c,'\0',0xe0);
-  for (local_8 = 0; local_8 < 0x400; local_8 = local_8 + 1) {
-    local_c = pcVar4->entityBaselines + local_8;
-    if (local_c->number != 0) {
-      MSG_WriteByte(&local_44,4);
-      MSG_WriteEntity(&g_snapInfo,&local_44,-90000,&local_12c,local_c,DELTA_FLAGS_FORCE);
+  memset((uchar *)&nullstate,'\0',0xe0);
+  for (i = 0; i < 0x400; i = i + 1) {
+    ent = pcVar3->entityBaselines + i;
+    if (ent->number != 0) {
+      MSG_WriteByte(&msg,4);
+      MSG_WriteEntity(&g_snapInfo,&msg,-90000,&nullstate,ent,DELTA_FLAGS_FORCE);
     }
   }
-  MSG_WriteByte(&local_44,3);
-  MSG_WriteLong(&local_44,cls._30353400_4_);
-  svsHeaderValid = local_10;
-  MSG_WriteByte(&local_44,0xe);
-  MSG_WriteLong(&local_44,local_14->clientNum);
-  MSG_WriteLong(&local_44,local_14->checksumFeed);
-  MSG_WriteByte(&local_44,6);
-  DynEnt_WriteGameState(&local_44);
-  MSG_WriteByte(&local_44,7);
-  MSG_WriteShort(&local_44,0x3ff);
-  MSG_WriteByte(&local_44,8);
-  Rope_WriteGameState(&local_44);
-  MSG_WriteByte(&local_44,9);
-  GlassCl_WriteDemoSnapshot(&local_44);
-  UI_Gametype_Custom_WriteClientData(&local_44);
-  MSG_WriteByte(&local_44,0xe);
-  if ((local_44.cursize < 4) &&
+  MSG_WriteByte(&msg,3);
+  MSG_WriteLong(&msg,cls._30353400_4_);
+  svsHeaderValid = oldSvsHeaderValid;
+  MSG_WriteByte(&msg,0xe);
+  MSG_WriteLong(&msg,clc->clientNum);
+  MSG_WriteLong(&msg,clc->checksumFeed);
+  MSG_WriteByte(&msg,6);
+  DynEnt_WriteGameState(&msg);
+  MSG_WriteByte(&msg,7);
+  MSG_WriteShort(&msg,0x3ff);
+  MSG_WriteByte(&msg,8);
+  Rope_WriteGameState(&msg);
+  MSG_WriteByte(&msg,9);
+  GlassCl_WriteDemoSnapshot(&msg);
+  UI_Gametype_Custom_WriteClientData(&msg);
+  MSG_WriteByte(&msg,0xe);
+  if ((msg.cursize < 4) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x16fc,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  MSG_Embed(&(demo.playback)->clipRecordingMsg,&local_44);
-  pcVar5 = va("DEMO: Clip Gamestate Type: %d Client: %d Size: %d msgSeq: 0\n");
-  Demo_Printf(0x400,pcVar5);
+  MSG_Embed(&(demo.playback)->clipRecordingMsg,&msg);
+  string = va("DEMO: Clip Gamestate Type: %d Client: %d Size: %d msgSeq: 0\n");
+  Demo_Printf(0x400,string);
   return;
 }
 
@@ -5512,18 +5697,19 @@ bool __cdecl Demo_ShouldFlushClipRecordMessage(void)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-Demo_SaveClipRecordMessageToMainMemory(int param_1,uchar *param_2,int param_3,bool param_4)
+Demo_SaveClipRecordMessageToMainMemory(int localClientNum,uchar *data,int size,bool forceWrite)
 
 {
   code *pcVar1;
   bool bVar2;
-  ulong uVar3;
-  msg_t local_34;
+  ulong count;
+  int compressedSize;
+  msg_t compressedMsg;
   
   memset(demo.msgBuf1,'\0',0xc000);
-  MSG_Init(&local_34,demo.msgBuf1,0xc000);
-  uVar3 = MSG_CompressWithZLib(param_2,param_3,demo.msgBuf1,0xc000);
-  if ((uVar3 == 0) || (param_3 == 0)) {
+  MSG_Init(&compressedMsg,demo.msgBuf1,0xc000);
+  count = MSG_CompressWithZLib(data,size,demo.msgBuf1,0xc000);
+  if ((count == 0) || (size == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x1727,0,
                              "%s");
     if (!bVar2) {
@@ -5532,15 +5718,15 @@ Demo_SaveClipRecordMessageToMainMemory(int param_1,uchar *param_2,int param_3,bo
       return;
     }
   }
-  *(ulong *)((demo.playback)->mainClipRecordingBuf + (demo.playback)->clipRecordBufIndex) = uVar3;
+  *(ulong *)((demo.playback)->mainClipRecordingBuf + (demo.playback)->clipRecordBufIndex) = count;
   (demo.playback)->clipRecordBufIndex = (demo.playback)->clipRecordBufIndex + 4;
-  *(int *)((demo.playback)->mainClipRecordingBuf + (demo.playback)->clipRecordBufIndex) = param_3;
+  *(int *)((demo.playback)->mainClipRecordingBuf + (demo.playback)->clipRecordBufIndex) = size;
   (demo.playback)->clipRecordBufIndex = (demo.playback)->clipRecordBufIndex + 4;
   memcpy((demo.playback)->mainClipRecordingBuf + (demo.playback)->clipRecordBufIndex,demo.msgBuf1,
-         uVar3);
-  (demo.playback)->clipRecordBufIndex = (demo.playback)->clipRecordBufIndex + uVar3;
-  if (param_4) {
-    Demo_WriteRecordedClip(param_1,1,false);
+         count);
+  (demo.playback)->clipRecordBufIndex = (demo.playback)->clipRecordBufIndex + count;
+  if (forceWrite) {
+    Demo_WriteRecordedClip(localClientNum,1,false);
   }
   MSG_Init(&(demo.playback)->clipRecordingMsg,(demo.playback)->subClipRecordingBuf,0xc000);
   return;
@@ -5552,44 +5738,45 @@ Demo_SaveClipRecordMessageToMainMemory(int param_1,uchar *param_2,int param_3,bo
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_PopulateClipPlayerTags(demoMetaInfo *param_1)
+void __cdecl Demo_PopulateClipPlayerTags(demoMetaInfo *info)
 
 {
   int iVar1;
   bool bVar2;
   demoPlayback *pdVar3;
-  int local_10;
-  int local_c;
-  int local_8;
+  bool foundPlayerTag;
+  int playerIndex;
+  int i;
+  int segmentIndex;
   
-  local_8 = 0;
+  segmentIndex = 0;
   do {
-    if ((demo.playback)->segmentCount <= local_8) {
+    if ((demo.playback)->segmentCount <= segmentIndex) {
       return;
     }
-    for (local_10 = 0; pdVar3 = demo.playback,
-        local_10 < (demo.playback)->segments[local_8].taggedPlayers.count; local_10 = local_10 + 1)
-    {
+    for (playerIndex = 0; pdVar3 = demo.playback,
+        playerIndex < (demo.playback)->segments[segmentIndex].taggedPlayers.count;
+        playerIndex = playerIndex + 1) {
       bVar2 = false;
-      for (local_c = 0; local_c < param_1->numConnectedPlayersInfoCount; local_c = local_c + 1) {
-        if (((int)param_1->connectedPlayers[local_c].xuid ==
-             (int)(demo.playback)->segments[local_8].taggedPlayers.playerXuids[local_10]) &&
-           (*(int *)((int)&param_1->connectedPlayers[local_c].xuid + 4) ==
-            *(int *)((demo.playback)->segments[local_8].name + local_10 * 8 + 0x34))) {
+      for (i = 0; i < info->numConnectedPlayersInfoCount; i = i + 1) {
+        if (((int)info->connectedPlayers[i].xuid ==
+             (int)(demo.playback)->segments[segmentIndex].taggedPlayers.playerXuids[playerIndex]) &&
+           (*(int *)((int)&info->connectedPlayers[i].xuid + 4) ==
+            *(int *)((demo.playback)->segments[segmentIndex].name + playerIndex * 8 + 0x34))) {
           bVar2 = true;
           break;
         }
       }
       if (!bVar2) {
-        iVar1 = param_1->numConnectedPlayersInfoCount;
-        *(int *)&param_1->connectedPlayers[iVar1].xuid =
-             (int)(demo.playback)->segments[local_8].taggedPlayers.playerXuids[local_10];
-        *(undefined4 *)((int)&param_1->connectedPlayers[iVar1].xuid + 4) =
-             *(undefined4 *)(pdVar3->segments[local_8].name + local_10 * 8 + 0x34);
-        param_1->numConnectedPlayersInfoCount = param_1->numConnectedPlayersInfoCount + 1;
+        iVar1 = info->numConnectedPlayersInfoCount;
+        *(int *)&info->connectedPlayers[iVar1].xuid =
+             (int)(demo.playback)->segments[segmentIndex].taggedPlayers.playerXuids[playerIndex];
+        *(undefined4 *)((int)&info->connectedPlayers[iVar1].xuid + 4) =
+             *(undefined4 *)(pdVar3->segments[segmentIndex].name + playerIndex * 8 + 0x34);
+        info->numConnectedPlayersInfoCount = info->numConnectedPlayersInfoCount + 1;
       }
     }
-    local_8 = local_8 + 1;
+    segmentIndex = segmentIndex + 1;
   } while( true );
 }
 
@@ -5638,6 +5825,7 @@ void __cdecl Demo_SetupClipStreamingState(void)
 
 {
   int iVar1;
+  int indexBefore;
   
   switch(streamingState.phase) {
   case 0:
@@ -5687,10 +5875,12 @@ void __cdecl Demo_SetupClipStreamingState(void)
 
 // 009C6740  Demo_SendClipToStreamingBuffer  (demo/demo_playback.cpp:6086)
 
-uint __cdecl Demo_SendClipToStreamingBuffer(void *param_1,uint param_2,uint param_3)
+uint __cdecl Demo_SendClipToStreamingBuffer(void *data,uint dataSize,uint bytesUploaded)
 
 {
-  if (param_3 == 0) {
+  int size;
+  
+  if (bytesUploaded == 0) {
     streamingState.buffer = (uchar *)0x0;
     streamingState.bufferSize = 0;
     streamingState.phase = 0;
@@ -5700,24 +5890,24 @@ uint __cdecl Demo_SendClipToStreamingBuffer(void *param_1,uint param_2,uint para
     streamingState.totalDuration = 0;
   }
   if ((streamingState.phase == 5) && (streamingState.byteOffset == streamingState.bufferSize)) {
-    param_2 = 0;
+    dataSize = 0;
   }
   else {
     if (streamingState.isEnteringState != false) {
       Demo_SetupClipStreamingState();
     }
-    if ((int)param_2 < streamingState.bufferSize - streamingState.byteOffset) {
-      memcpy(param_1,streamingState.buffer + streamingState.byteOffset,param_2);
-      streamingState.byteOffset = streamingState.byteOffset + param_2;
+    if ((int)dataSize < streamingState.bufferSize - streamingState.byteOffset) {
+      memcpy(data,streamingState.buffer + streamingState.byteOffset,dataSize);
+      streamingState.byteOffset = streamingState.byteOffset + dataSize;
     }
     else {
-      param_2 = streamingState.bufferSize - streamingState.byteOffset;
-      memcpy(param_1,streamingState.buffer + streamingState.byteOffset,param_2);
-      streamingState.byteOffset = streamingState.byteOffset + param_2;
+      dataSize = streamingState.bufferSize - streamingState.byteOffset;
+      memcpy(data,streamingState.buffer + streamingState.byteOffset,dataSize);
+      streamingState.byteOffset = streamingState.byteOffset + dataSize;
       Demo_MoveToNextPhase();
     }
   }
-  return param_2;
+  return dataSize;
 }
 
 
@@ -5729,13 +5919,13 @@ uint __cdecl Demo_SendClipToStreamingBuffer(void *param_1,uint param_2,uint para
 /* WARNING: Enum "fileShareSearchFileType": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Demo_UploadClipSuccess(int param_1,ulong64 param_2)
+void __cdecl Demo_UploadClipSuccess(int controllerIndex,ulong64 param_2)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char *pcVar4;
+  char *errorMessage;
   char *local_4ec;
   int local_4e8;
   bdTag *local_4e4;
@@ -5743,46 +5933,44 @@ void __cdecl Demo_UploadClipSuccess(int param_1,ulong64 param_2)
   bdTag *local_4dc;
   int local_4d8;
   bdTag *local_4d4;
-  bdTag *local_4d0;
-  uchar local_4cc [256];
+  int numTags;
+  uchar metaData [256];
   uint local_3cc;
-  void *local_3c8;
-  bdTag local_3c4 [40];
+  int metaDataSize;
+  bdTag tags [40];
   
   local_3cc = __security_cookie ^ (uint)&stack0xfffffffc;
   Demo_SetClipState(3);
   Demo_SetClipModified(false);
-  pcVar4 = "MENU_DEMO_CLIP_UPLOAD_SUCCESS";
+  errorMessage = "MENU_DEMO_CLIP_UPLOAD_SUCCESS";
   pcVar3 = "";
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  Demo_Error(iVar2,pcVar3,pcVar4);
+  iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  Demo_Error(iVar2,pcVar3,errorMessage);
   pcVar3 = "fileshare_slotselection_clip";
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
+  iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
   UI_CloseMenu(iVar2,pcVar3);
   pcVar3 = va("Clip: Clip upload success.\n");
   Demo_Printf(0x400,pcVar3);
   Demo_SetCmdCompleted();
   local_4d8 = 0x28;
-  local_4d4 = local_3c4;
+  local_4d4 = tags;
   while (local_4d8 = local_4d8 + -1, -1 < local_4d8) {
     bdTag::bdTag(local_4d4);
     local_4d4 = local_4d4 + 1;
   }
-  local_4d0 = (bdTag *)0x0;
-  local_3c8 = (void *)0x0;
+  numTags = 0;
+  metaDataSize = 0;
   iVar2 = 0x20;
-  pcVar3 = Live_ControllerIndex_GetClientName(param_1);
+  pcVar3 = Live_ControllerIndex_GetClientName(controllerIndex);
   I_strncpyz(gamerTag,pcVar3,iVar2);
-  memset(local_4cc,'\0',0xff);
-  Demo_SetTags(param_1,(int *)&local_4d0,local_3c4,&(demo.playback)->clipRecordInfo,
+  memset(metaData,'\0',0xff);
+  Demo_SetTags(controllerIndex,&numTags,tags,&(demo.playback)->clipRecordInfo,
                FILESHARE_FILETYPE_CLIP);
-  bVar1 = Demo_SetMetaData(param_1,(char *)local_4cc,(int *)&local_3c8,
+  bVar1 = Demo_SetMetaData(controllerIndex,(char *)metaData,&metaDataSize,
                            &(demo.playback)->clipRecordInfo,(screenshotMetaInfo *)0x0,
                            FILESHARE_FILETYPE_CLIP);
   if (bVar1) {
-    Live_FileShare_AddTag
-              (5,(longlong)(fsSelectedFileTagIndex->current).integer,(int *)&local_4d0,local_3c4,
-               0x28);
+    Live_FileShare_AddTag(5,(longlong)(fsSelectedFileTagIndex->current).integer,&numTags,tags,0x28);
     local_4ec = gamerTag;
     pcVar3 = local_4ec;
     do {
@@ -5791,12 +5979,12 @@ void __cdecl Demo_UploadClipSuccess(int param_1,ulong64 param_2)
     } while (*local_4ec != '\0');
     local_4ec = local_4ec + -0xa7ddaec;
     LiveStorage_FileShare_WriteSummary
-              (param_1,CONCAT44(2,(undefined4)param_2),0xa7ddaec,local_4ec,(uint)local_4cc,local_3c8
-               ,(uint)local_3c4,local_4d0,0,SUB41(local_4ec,0));
+              (controllerIndex,CONCAT44(2,(undefined4)param_2),0xa7ddaec,local_4ec,(uint)metaData,
+               (void *)metaDataSize,(uint)tags,(bdTag *)numTags,0,SUB41(local_4ec,0));
     LiveCounter_IncrementCounterValueByName("global_fileshare_shared",ZEXT48(local_4ec) << 0x20);
     pcVar3 = va("userPublishNews TICKER_CLIPUPLOADED\n");
-    iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar2,param_1,pcVar3);
+    iVar2 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    Cmd_ExecuteSingleCommand(iVar2,controllerIndex,pcVar3);
     local_4e8 = 0x28;
     local_4e4 = (bdTag *)&stack0xfffffffc;
     while (local_4e8 = local_4e8 + -1, -1 < local_4e8) {
@@ -5821,20 +6009,20 @@ void __cdecl Demo_UploadClipSuccess(int param_1,ulong64 param_2)
 
 // 009C6B90  Demo_UploadClipFailure  (demo/demo_playback.cpp:6188)
 
-void __cdecl Demo_UploadClipFailure(int param_1)
+void __cdecl Demo_UploadClipFailure(int controllerIndex)
 
 {
-  int iVar1;
-  char *pcVar2;
-  char *pcVar3;
+  int localClientNum;
+  char *pcVar1;
+  char *errorMessage;
   
   Demo_SetClipState(3);
-  pcVar3 = "MENU_DEMO_CLIP_UPLOAD_FAILURE";
-  pcVar2 = "";
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  Demo_Error(iVar1,pcVar2,pcVar3);
-  pcVar2 = va("Clip: Clip upload failed.\n");
-  Demo_Printf(0x400,pcVar2);
+  errorMessage = "MENU_DEMO_CLIP_UPLOAD_FAILURE";
+  pcVar1 = "";
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  Demo_Error(localClientNum,pcVar1,errorMessage);
+  pcVar1 = va("Clip: Clip upload failed.\n");
+  Demo_Printf(0x400,pcVar1);
   Demo_SetCmdCompleted();
   return;
 }
@@ -5842,12 +6030,12 @@ void __cdecl Demo_UploadClipFailure(int param_1)
 
 // 009C6BE0  Demo_PopulateHeliPatches  (demo/demo_playback.cpp:6206)
 
-void __cdecl Demo_PopulateHeliPatches(demoMetaInfo *param_1)
+void __cdecl Demo_PopulateHeliPatches(demoMetaInfo *info)
 
 {
-  param_1->numHeliPatchesCount = num_heli_height_lock_patches;
-  memcpy((uchar *)param_1->heliPatches,(uchar *)heli_height_lock_patches,
-         param_1->numHeliPatchesCount * 0x18);
+  info->numHeliPatchesCount = num_heli_height_lock_patches;
+  memcpy((uchar *)info->heliPatches,(uchar *)heli_height_lock_patches,
+         info->numHeliPatchesCount * 0x18);
   return;
 }
 
@@ -5858,34 +6046,34 @@ void __cdecl Demo_PopulateHeliPatches(demoMetaInfo *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Demo_WriteRecordedClip(int param_1,int param_2,bool param_3)
+void __cdecl Demo_WriteRecordedClip(int localClientNum,int slot,bool useSegmentInformation)
 
 {
   int iVar1;
   TaskRecord *pTVar2;
-  fileShareWriteFileInfo *pfVar3;
-  fileShareWriteFileInfo local_38;
+  fileShareWriteFileInfo *writeFileInfo_00;
+  fileShareWriteFileInfo writeFileInfo;
   
   Demo_SetClipState(5);
-  local_38.fileSlot = (ushort)param_2;
-  local_38.category = 2;
+  writeFileInfo.fileSlot = (ushort)slot;
+  writeFileInfo.category = 2;
   Demo_GetDemoName();
-  local_38.fileName = va("%s_c.demo");
-  local_38.fileData = (void *)0x0;
-  local_38.fileSize = (demo.playback)->clipRecordBufIndex;
-  local_38.numTags = 0;
-  local_38.tags = (bdTag *)0x0;
-  local_38.thumbDataSize = 0;
-  local_38.thumbData = (void *)0x0;
-  local_38.location = FILESHARE_LOCATION_USERSTORAGE;
-  local_38.dataCallback = Demo_SendClipToStreamingBuffer;
-  local_38.successCallback = Demo_UploadClipSuccess;
-  local_38.failureCallback = Demo_UploadClipFailure;
-  pfVar3 = &local_38;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  pTVar2 = LiveStorage_FileShare_WriteFile(iVar1,pfVar3);
+  writeFileInfo.fileName = va("%s_c.demo");
+  writeFileInfo.fileData = (void *)0x0;
+  writeFileInfo.fileSize = (demo.playback)->clipRecordBufIndex;
+  writeFileInfo.numTags = 0;
+  writeFileInfo.tags = (bdTag *)0x0;
+  writeFileInfo.thumbDataSize = 0;
+  writeFileInfo.thumbData = (void *)0x0;
+  writeFileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
+  writeFileInfo.dataCallback = Demo_SendClipToStreamingBuffer;
+  writeFileInfo.successCallback = Demo_UploadClipSuccess;
+  writeFileInfo.failureCallback = Demo_UploadClipFailure;
+  writeFileInfo_00 = &writeFileInfo;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  pTVar2 = LiveStorage_FileShare_WriteFile(iVar1,writeFileInfo_00);
   if (pTVar2 != (TaskRecord *)0x0) {
-    iVar1 = Com_LocalClient_GetControllerIndex(param_1);
+    iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
     Demo_StartStreaming(iVar1);
   }
   return;
@@ -5897,30 +6085,34 @@ void __cdecl Demo_WriteRecordedClip(int param_1,int param_2,bool param_3)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_AdjustTimeForConfigString(int param_1,char *param_2)
+char * __cdecl Demo_AdjustTimeForConfigString(int configStringIndex,char *string)
 
 {
   int iVar1;
   int iVar2;
   bool bVar3;
   int iVar4;
+  int modifiedTime;
+  int clipTime;
+  int currentTime;
+  char *s;
   
   bVar3 = Demo_IsClipPlaying();
   if ((bVar3) && (bVar3 = Demo_IsPlaybackInited(), bVar3)) {
     iVar1 = (demo.playback)->originalFilmTime;
     iVar2 = (demo.playback)->clipServerTime;
-    if (param_1 == 0xc) {
-      iVar4 = atoi(param_2);
+    if (configStringIndex == 0xc) {
+      iVar4 = atoi(string);
       if ((iVar4 - iVar1) + iVar2 < 0) {
-        atoi(param_2);
-        param_2 = va("%d");
+        atoi(string);
+        string = va("%d");
       }
       else {
-        param_2 = va("%d");
+        string = va("%d");
       }
     }
   }
-  return param_2;
+  return string;
 }
 
 
@@ -5929,7 +6121,7 @@ char * __cdecl Demo_AdjustTimeForConfigString(int param_1,char *param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_AdjustTimeForReliableCommand(char *param_1)
+char * __cdecl Demo_AdjustTimeForReliableCommand(char *cmd)
 
 {
   int iVar1;
@@ -5938,55 +6130,62 @@ char * __cdecl Demo_AdjustTimeForReliableCommand(char *param_1)
   bool bVar4;
   char *pcVar5;
   int iVar6;
-  int local_20;
-  char *local_8;
+  int modifiedTime;
+  int clipTime;
+  char *cmdToken;
+  int configStringType;
+  int currentTime;
+  int cmdValue;
+  char *s;
   
   bVar4 = Demo_IsClipPlaying();
   if ((bVar4) && (bVar4 = Demo_IsPlaybackInited(), bVar4)) {
-    local_8 = va("%s");
+    s = va("%s");
     iVar1 = (demo.playback)->originalFilmTime;
     iVar2 = (demo.playback)->clipServerTime;
-    pcVar5 = Com_Parse(&local_8);
+    pcVar5 = Com_Parse(&s);
     if (*pcVar5 == 'd') {
-      pcVar5 = Com_Parse(&local_8);
+      pcVar5 = Com_Parse(&s);
       iVar6 = atoi(pcVar5);
       if (iVar6 == 0xc) {
-        pcVar5 = Com_Parse(&local_8);
-        local_20 = atoi(pcVar5);
-        if (local_20 < 1) {
-          local_20 = 0;
+        pcVar5 = Com_Parse(&s);
+        iVar6 = atoi(pcVar5);
+        if (iVar6 < 1) {
+          modifiedTime = 0;
         }
         else {
-          local_20 = local_20 - (iVar1 + 100);
+          modifiedTime = iVar6 - (iVar1 + 100);
         }
-        if ((local_20 + iVar2 + 100 < 0) &&
+        if ((modifiedTime + iVar2 + 100 < 0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",
                                      0x18c5,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           pcVar5 = (char *)(*pcVar3)();
           return pcVar5;
         }
-        param_1 = va("%c %d %d");
+        cmd = va("%c %d %d");
       }
     }
   }
-  return param_1;
+  return cmd;
 }
 
 
 // 009C6EE0  Demo_AdjustTimeForMatchState  (demo/demo_playback.cpp:6359)
 
-void __cdecl Demo_AdjustTimeForMatchState(int param_1,int param_2,MatchState *param_3)
+void __cdecl Demo_AdjustTimeForMatchState(int currentTime,int clipTime,MatchState *matchstate)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int modifiedTime;
+  int bombTimer;
   
-  iVar3 = (param_3->archivedState).bombTimer[0];
+  iVar3 = (matchstate->archivedState).bombTimer[0];
   if (iVar3 != 0) {
-    iVar3 = iVar3 - param_1;
-    if (iVar3 + param_2 < 0) {
+    iVar3 = iVar3 - currentTime;
+    if (iVar3 + clipTime < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x18e1,0
                                ,"%s");
       if (!bVar2) {
@@ -5995,12 +6194,12 @@ void __cdecl Demo_AdjustTimeForMatchState(int param_1,int param_2,MatchState *pa
         return;
       }
     }
-    (param_3->archivedState).bombTimer[0] = iVar3 + param_2;
+    (matchstate->archivedState).bombTimer[0] = iVar3 + clipTime;
   }
-  iVar3 = (param_3->archivedState).bombTimer[1];
+  iVar3 = (matchstate->archivedState).bombTimer[1];
   if (iVar3 != 0) {
-    iVar3 = iVar3 - param_1;
-    if (iVar3 + param_2 < 0) {
+    iVar3 = iVar3 - currentTime;
+    if (iVar3 + clipTime < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x18ea,0
                                ,"%s");
       if (!bVar2) {
@@ -6009,7 +6208,7 @@ void __cdecl Demo_AdjustTimeForMatchState(int param_1,int param_2,MatchState *pa
         return;
       }
     }
-    (param_3->archivedState).bombTimer[1] = iVar3 + param_2;
+    (matchstate->archivedState).bombTimer[1] = iVar3 + clipTime;
   }
   return;
 }
@@ -6018,7 +6217,7 @@ void __cdecl Demo_AdjustTimeForMatchState(int param_1,int param_2,MatchState *pa
 // 009C7080  Demo_AdjustTimeForPlayerStateHudElement  (demo/demo_playback.cpp:6392)
 
 void __cdecl
-Demo_AdjustTimeForPlayerStateHudElement(int param_1,int param_2,int param_3,hudelem_s *param_4)
+Demo_AdjustTimeForPlayerStateHudElement(int currentTime,int clipTime,int index,hudelem_s *hudElem)
 
 {
   ushort uVar1;
@@ -6027,296 +6226,303 @@ Demo_AdjustTimeForPlayerStateHudElement(int param_1,int param_2,int param_3,hude
   short sVar4;
   bool bVar5;
   char *pcVar6;
-  ushort local_8;
+  bool printHudDetails;
+  int deltaTime;
   
   bVar5 = false;
-  sVar3 = (short)param_2;
-  sVar4 = (short)param_1;
-  switch(param_4->type) {
+  sVar3 = (short)clipTime;
+  sVar4 = (short)currentTime;
+  switch(hudElem->type) {
   case '\0':
     return;
   case '\x01':
-    if (param_4->fxBirthTime != 0) {
-      if (param_2 + (param_4->fxBirthTime - param_1) < 0) {
-        if (param_1 < param_4->fxBirthTime) {
-          param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
+    if (hudElem->fxBirthTime != 0) {
+      if (clipTime + (hudElem->fxBirthTime - currentTime) < 0) {
+        if (currentTime < hudElem->fxBirthTime) {
+          hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
         }
-        else if (param_1 < (int)((uint)param_4->fxDecayStartTime + param_4->fxBirthTime)) {
-          iVar2 = param_4->fxBirthTime;
-          param_4->fxBirthTime = param_2;
-          param_4->fxDecayStartTime = sVar3 - (((short)iVar2 + param_4->fxDecayStartTime) - sVar4);
+        else if (currentTime < (int)((uint)hudElem->fxDecayStartTime + hudElem->fxBirthTime)) {
+          iVar2 = hudElem->fxBirthTime;
+          hudElem->fxBirthTime = clipTime;
+          hudElem->fxDecayStartTime = sVar3 - (((short)iVar2 + hudElem->fxDecayStartTime) - sVar4);
         }
-        else if (param_1 < (int)(param_4->fxBirthTime + (uint)param_4->fxDecayStartTime +
-                                (uint)param_4->fxDecayDuration)) {
-          uVar1 = param_4->fxDecayStartTime;
-          iVar2 = param_4->fxBirthTime;
-          param_4->fxDecayStartTime = 0;
-          param_4->fxBirthTime = param_2;
-          param_4->fxDecayDuration =
-               sVar3 - (((short)iVar2 + uVar1 + param_4->fxDecayDuration) - sVar4);
+        else if (currentTime <
+                 (int)(hudElem->fxBirthTime + (uint)hudElem->fxDecayStartTime +
+                      (uint)hudElem->fxDecayDuration)) {
+          uVar1 = hudElem->fxDecayStartTime;
+          iVar2 = hudElem->fxBirthTime;
+          hudElem->fxDecayStartTime = 0;
+          hudElem->fxBirthTime = clipTime;
+          hudElem->fxDecayDuration =
+               sVar3 - (((short)iVar2 + uVar1 + hudElem->fxDecayDuration) - sVar4);
         }
         else {
-          param_4->fxBirthTime = 0;
-          param_4->fxDecayStartTime = 0;
-          param_4->flags = param_4->flags | 0x200;
+          hudElem->fxBirthTime = 0;
+          hudElem->fxDecayStartTime = 0;
+          hudElem->flags = hudElem->flags | 0x200;
         }
       }
-      else if (param_1 < param_4->fxBirthTime) {
-        param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
+      else if (currentTime < hudElem->fxBirthTime) {
+        hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
       }
-      else if (param_1 < (int)((uint)param_4->fxDecayStartTime + param_4->fxBirthTime)) {
-        param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
-        param_4->fxDecayStartTime =
-             sVar3 + (((short)param_4->fxBirthTime + param_4->fxDecayStartTime) - sVar4);
+      else if (currentTime < (int)((uint)hudElem->fxDecayStartTime + hudElem->fxBirthTime)) {
+        hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
+        hudElem->fxDecayStartTime =
+             sVar3 + (((short)hudElem->fxBirthTime + hudElem->fxDecayStartTime) - sVar4);
       }
-      else if (param_1 < (int)(param_4->fxBirthTime + (uint)param_4->fxDecayStartTime +
-                              (uint)param_4->fxDecayDuration)) {
-        param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
-        param_4->fxDecayStartTime =
-             sVar3 + (((short)param_4->fxBirthTime + param_4->fxDecayStartTime) - sVar4);
-        local_8 = ((short)param_4->fxBirthTime + param_4->fxDecayStartTime +
-                  param_4->fxDecayDuration) - sVar4;
-        param_4->fxDecayDuration = local_8;
-      }
-      else {
-        param_4->fxBirthTime = 0;
-        param_4->fxDecayStartTime = 0;
-        param_4->flags = param_4->flags | 0x200;
-      }
-    }
-    if (param_4->fadeStartTime != 0) {
-      if (param_1 < param_4->fadeStartTime) {
-        param_4->fadeStartTime = (param_4->fadeStartTime - param_1) + param_2;
-      }
-      else if (param_1 < (int)param_4->fadeTime + param_4->fadeStartTime) {
-        param_4->fadeStartTime = (param_4->fadeStartTime - param_1) + param_2;
+      else if (currentTime <
+               (int)(hudElem->fxBirthTime + (uint)hudElem->fxDecayStartTime +
+                    (uint)hudElem->fxDecayDuration)) {
+        hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
+        hudElem->fxDecayStartTime =
+             sVar3 + (((short)hudElem->fxBirthTime + hudElem->fxDecayStartTime) - sVar4);
+        deltaTime._0_2_ =
+             ((short)hudElem->fxBirthTime + hudElem->fxDecayStartTime + hudElem->fxDecayDuration) -
+             sVar4;
+        hudElem->fxDecayDuration = (ushort)deltaTime;
       }
       else {
-        param_4->fadeStartTime = 0;
-        param_4->fadeTime = 0;
+        hudElem->fxBirthTime = 0;
+        hudElem->fxDecayStartTime = 0;
+        hudElem->flags = hudElem->flags | 0x200;
       }
     }
-    if (param_4->moveStartTime != 0) {
-      if (param_1 < param_4->moveStartTime) {
-        param_4->moveStartTime = (param_4->moveStartTime - param_1) + param_2;
+    if (hudElem->fadeStartTime != 0) {
+      if (currentTime < hudElem->fadeStartTime) {
+        hudElem->fadeStartTime = (hudElem->fadeStartTime - currentTime) + clipTime;
       }
-      else if (param_1 < (int)param_4->moveTime + param_4->moveStartTime) {
-        param_4->moveStartTime = (param_4->moveStartTime - param_1) + param_2;
+      else if (currentTime < (int)hudElem->fadeTime + hudElem->fadeStartTime) {
+        hudElem->fadeStartTime = (hudElem->fadeStartTime - currentTime) + clipTime;
       }
       else {
-        param_4->moveStartTime = 0;
-        param_4->moveTime = 0;
+        hudElem->fadeStartTime = 0;
+        hudElem->fadeTime = 0;
       }
     }
-    if ((param_4->time != 0) || (param_4->scaleStartTime != 0)) {
+    if (hudElem->moveStartTime != 0) {
+      if (currentTime < hudElem->moveStartTime) {
+        hudElem->moveStartTime = (hudElem->moveStartTime - currentTime) + clipTime;
+      }
+      else if (currentTime < (int)hudElem->moveTime + hudElem->moveStartTime) {
+        hudElem->moveStartTime = (hudElem->moveStartTime - currentTime) + clipTime;
+      }
+      else {
+        hudElem->moveStartTime = 0;
+        hudElem->moveTime = 0;
+      }
+    }
+    if ((hudElem->time != 0) || (hudElem->scaleStartTime != 0)) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_TEXT\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\x02':
-    if (param_4->fxBirthTime != 0) {
-      if (param_2 + (param_4->fxBirthTime - param_1) < 0) {
-        if (param_1 < param_4->fxBirthTime) {
-          param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
+    if (hudElem->fxBirthTime != 0) {
+      if (clipTime + (hudElem->fxBirthTime - currentTime) < 0) {
+        if (currentTime < hudElem->fxBirthTime) {
+          hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
         }
-        else if (param_1 < (int)((uint)param_4->fxDecayStartTime + param_4->fxBirthTime)) {
-          iVar2 = param_4->fxBirthTime;
-          param_4->fxBirthTime = param_2;
-          param_4->fxDecayStartTime = sVar3 - (((short)iVar2 + param_4->fxDecayStartTime) - sVar4);
+        else if (currentTime < (int)((uint)hudElem->fxDecayStartTime + hudElem->fxBirthTime)) {
+          iVar2 = hudElem->fxBirthTime;
+          hudElem->fxBirthTime = clipTime;
+          hudElem->fxDecayStartTime = sVar3 - (((short)iVar2 + hudElem->fxDecayStartTime) - sVar4);
         }
-        else if (param_1 < (int)(param_4->fxBirthTime + (uint)param_4->fxDecayStartTime +
-                                (uint)param_4->fxDecayDuration)) {
-          uVar1 = param_4->fxDecayStartTime;
-          iVar2 = param_4->fxBirthTime;
-          param_4->fxDecayStartTime = 0;
-          param_4->fxBirthTime = param_2;
-          param_4->fxDecayDuration =
-               sVar3 - (((short)iVar2 + uVar1 + param_4->fxDecayDuration) - sVar4);
+        else if (currentTime <
+                 (int)(hudElem->fxBirthTime + (uint)hudElem->fxDecayStartTime +
+                      (uint)hudElem->fxDecayDuration)) {
+          uVar1 = hudElem->fxDecayStartTime;
+          iVar2 = hudElem->fxBirthTime;
+          hudElem->fxDecayStartTime = 0;
+          hudElem->fxBirthTime = clipTime;
+          hudElem->fxDecayDuration =
+               sVar3 - (((short)iVar2 + uVar1 + hudElem->fxDecayDuration) - sVar4);
         }
         else {
-          param_4->fxBirthTime = 0;
-          param_4->fxDecayStartTime = 0;
-          param_4->flags = param_4->flags | 0x200;
+          hudElem->fxBirthTime = 0;
+          hudElem->fxDecayStartTime = 0;
+          hudElem->flags = hudElem->flags | 0x200;
         }
       }
-      else if (param_1 < param_4->fxBirthTime) {
-        param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
+      else if (currentTime < hudElem->fxBirthTime) {
+        hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
       }
-      else if (param_1 < (int)((uint)param_4->fxDecayStartTime + param_4->fxBirthTime)) {
-        param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
-        param_4->fxDecayStartTime =
-             sVar3 + (((short)param_4->fxBirthTime + param_4->fxDecayStartTime) - sVar4);
+      else if (currentTime < (int)((uint)hudElem->fxDecayStartTime + hudElem->fxBirthTime)) {
+        hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
+        hudElem->fxDecayStartTime =
+             sVar3 + (((short)hudElem->fxBirthTime + hudElem->fxDecayStartTime) - sVar4);
       }
-      else if (param_1 < (int)(param_4->fxBirthTime + (uint)param_4->fxDecayStartTime +
-                              (uint)param_4->fxDecayDuration)) {
-        param_4->fxBirthTime = param_2 + (param_4->fxBirthTime - param_1);
-        param_4->fxDecayStartTime =
-             sVar3 + (((short)param_4->fxBirthTime + param_4->fxDecayStartTime) - sVar4);
-        local_8 = ((short)param_4->fxBirthTime + param_4->fxDecayStartTime +
-                  param_4->fxDecayDuration) - sVar4;
-        param_4->fxDecayDuration = local_8;
+      else if (currentTime <
+               (int)(hudElem->fxBirthTime + (uint)hudElem->fxDecayStartTime +
+                    (uint)hudElem->fxDecayDuration)) {
+        hudElem->fxBirthTime = clipTime + (hudElem->fxBirthTime - currentTime);
+        hudElem->fxDecayStartTime =
+             sVar3 + (((short)hudElem->fxBirthTime + hudElem->fxDecayStartTime) - sVar4);
+        deltaTime._0_2_ =
+             ((short)hudElem->fxBirthTime + hudElem->fxDecayStartTime + hudElem->fxDecayDuration) -
+             sVar4;
+        hudElem->fxDecayDuration = (ushort)deltaTime;
       }
       else {
-        param_4->fxBirthTime = 0;
-        param_4->fxDecayStartTime = 0;
-        param_4->flags = param_4->flags | 0x200;
+        hudElem->fxBirthTime = 0;
+        hudElem->fxDecayStartTime = 0;
+        hudElem->flags = hudElem->flags | 0x200;
       }
     }
-    if (((param_4->time != 0) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if (((hudElem->time != 0) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_VALUE\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\x03':
-    if ((((param_4->time != 0) || (param_4->fxBirthTime != 0)) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if ((((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_PLAYERNAME\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\x04':
-    if (((param_4->time != 0) || (param_4->fxBirthTime != 0)) ||
-       ((param_4->fadeStartTime != 0 ||
-        ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))))) {
+    if (((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) ||
+       ((hudElem->fadeStartTime != 0 ||
+        ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_MAPNAME\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\x05':
-    if ((((param_4->time != 0) || (param_4->fxBirthTime != 0)) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if ((((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_GAMETYPE\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\x06':
-    if (((param_4->time != 0) || (param_4->fxBirthTime != 0)) ||
-       ((param_4->fadeStartTime != 0 ||
-        ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))))) {
+    if (((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) ||
+       ((hudElem->fadeStartTime != 0 ||
+        ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_WAR_GAME_DATA\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\a':
-    if (param_4->fadeStartTime != 0) {
-      if (param_1 < param_4->fadeStartTime) {
-        param_4->fadeStartTime = (param_4->fadeStartTime - param_1) + param_2;
+    if (hudElem->fadeStartTime != 0) {
+      if (currentTime < hudElem->fadeStartTime) {
+        hudElem->fadeStartTime = (hudElem->fadeStartTime - currentTime) + clipTime;
       }
-      else if (param_1 < (int)param_4->fadeTime + param_4->fadeStartTime) {
-        param_4->fadeStartTime = (param_4->fadeStartTime - param_1) + param_2;
+      else if (currentTime < (int)hudElem->fadeTime + hudElem->fadeStartTime) {
+        hudElem->fadeStartTime = (hudElem->fadeStartTime - currentTime) + clipTime;
       }
       else {
-        param_4->fadeStartTime = 0;
-        param_4->fadeTime = 0;
+        hudElem->fadeStartTime = 0;
+        hudElem->fadeTime = 0;
       }
     }
-    if ((((param_4->time != 0) || (param_4->fxBirthTime != 0)) || (param_4->moveStartTime != 0)) ||
-       (param_4->scaleStartTime != 0)) {
+    if ((((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) || (hudElem->moveStartTime != 0)) ||
+       (hudElem->scaleStartTime != 0)) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_SCORE\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\b':
-    if (param_4->fadeStartTime != 0) {
-      if (param_1 < param_4->fadeStartTime) {
-        param_4->fadeStartTime = (param_4->fadeStartTime - param_1) + param_2;
+    if (hudElem->fadeStartTime != 0) {
+      if (currentTime < hudElem->fadeStartTime) {
+        hudElem->fadeStartTime = (hudElem->fadeStartTime - currentTime) + clipTime;
       }
-      else if (param_1 < (int)param_4->fadeTime + param_4->fadeStartTime) {
-        param_4->fadeStartTime = (param_4->fadeStartTime - param_1) + param_2;
-      }
-      else {
-        param_4->fadeStartTime = 0;
-        param_4->fadeTime = 0;
-      }
-    }
-    if (param_4->moveStartTime != 0) {
-      if (param_1 < param_4->moveStartTime) {
-        param_4->moveStartTime = (param_4->moveStartTime - param_1) + param_2;
-      }
-      else if (param_1 < (int)param_4->moveTime + param_4->moveStartTime) {
-        param_4->moveStartTime = (param_4->moveStartTime - param_1) + param_2;
+      else if (currentTime < (int)hudElem->fadeTime + hudElem->fadeStartTime) {
+        hudElem->fadeStartTime = (hudElem->fadeStartTime - currentTime) + clipTime;
       }
       else {
-        param_4->moveStartTime = 0;
-        param_4->moveTime = 0;
+        hudElem->fadeStartTime = 0;
+        hudElem->fadeTime = 0;
       }
     }
-    if (param_4->scaleStartTime != 0) {
-      if (param_1 < (int)param_4->scaleTime + param_4->scaleStartTime) {
-        param_4->scaleStartTime = (param_4->scaleStartTime - param_1) + param_2;
+    if (hudElem->moveStartTime != 0) {
+      if (currentTime < hudElem->moveStartTime) {
+        hudElem->moveStartTime = (hudElem->moveStartTime - currentTime) + clipTime;
+      }
+      else if (currentTime < (int)hudElem->moveTime + hudElem->moveStartTime) {
+        hudElem->moveStartTime = (hudElem->moveStartTime - currentTime) + clipTime;
       }
       else {
-        param_4->scaleStartTime = 0;
-        param_4->scaleTime = 0;
+        hudElem->moveStartTime = 0;
+        hudElem->moveTime = 0;
       }
     }
-    if ((param_4->time != 0) || (param_4->fxBirthTime != 0)) {
+    if (hudElem->scaleStartTime != 0) {
+      if (currentTime < (int)hudElem->scaleTime + hudElem->scaleStartTime) {
+        hudElem->scaleStartTime = (hudElem->scaleStartTime - currentTime) + clipTime;
+      }
+      else {
+        hudElem->scaleStartTime = 0;
+        hudElem->scaleTime = 0;
+      }
+    }
+    if ((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_MATERIAL\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\t':
-    if (param_4->time != 0) {
-      if (param_1 < param_4->time) {
-        param_4->time = (param_4->time - param_1) + param_2;
+    if (hudElem->time != 0) {
+      if (currentTime < hudElem->time) {
+        hudElem->time = (hudElem->time - currentTime) + clipTime;
       }
       else {
-        param_4->time = 0;
+        hudElem->time = 0;
       }
     }
-    if (((param_4->fxBirthTime != 0) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if (((hudElem->fxBirthTime != 0) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_TIMER_DOWN\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\n':
-    if ((((param_4->time != 0) || (param_4->fxBirthTime != 0)) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if ((((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_TIMER_UP\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\v':
-    if (((param_4->time != 0) || (param_4->fxBirthTime != 0)) ||
-       ((param_4->fadeStartTime != 0 ||
-        ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))))) {
+    if (((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) ||
+       ((hudElem->fadeStartTime != 0 ||
+        ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_TENTHS_TIMER_DOWN\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\f':
-    if ((((param_4->time != 0) || (param_4->fxBirthTime != 0)) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if ((((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_TENTHS_TIMER_UP\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\r':
-    if (((param_4->time != 0) || (param_4->fxBirthTime != 0)) ||
-       ((param_4->fadeStartTime != 0 ||
-        ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))))) {
+    if (((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) ||
+       ((hudElem->fadeStartTime != 0 ||
+        ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_CLOCK_DOWN\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
     }
     break;
   case '\x0e':
-    if ((((param_4->time != 0) || (param_4->fxBirthTime != 0)) || (param_4->fadeStartTime != 0)) ||
-       ((param_4->moveStartTime != 0 || (param_4->scaleStartTime != 0)))) {
+    if ((((hudElem->time != 0) || (hudElem->fxBirthTime != 0)) || (hudElem->fadeStartTime != 0)) ||
+       ((hudElem->moveStartTime != 0 || (hudElem->scaleStartTime != 0)))) {
       pcVar6 = va("ERROR: Need to process Time value for HE_TYPE_CLOCK_UP\n");
       Demo_Printf(0x4000,pcVar6);
       bVar5 = true;
@@ -6351,26 +6557,24 @@ Demo_AdjustTimeForPlayerStateHudElement(int param_1,int param_2,int param_3,hude
 
 // 009C6F90  Demo_AdjustTimeForPlayerState  (demo/demo_playback.cpp:6852)
 
-void __cdecl Demo_AdjustTimeForPlayerState(int param_1,int param_2,playerState_s *param_3)
+void __cdecl Demo_AdjustTimeForPlayerState(int currentTime,int clipTime,playerState_s *ps)
 
 {
   char *pcVar1;
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
   
   pcVar1 = va("Playerstate Time Adjustment - currentTime: %d clipTime: %d\n");
   Demo_Printf(0x4000,pcVar1);
   pcVar1 = va("Archival HUD Elements\n");
   Demo_Printf(0x4000,pcVar1);
-  for (local_8 = 0; local_8 < 0x1f; local_8 = local_8 + 1) {
-    Demo_AdjustTimeForPlayerStateHudElement
-              (param_1,param_2,local_8,(param_3->hud).archival + local_8);
+  for (i = 0; i < 0x1f; i = i + 1) {
+    Demo_AdjustTimeForPlayerStateHudElement(currentTime,clipTime,i,(ps->hud).archival + i);
   }
   pcVar1 = va("Current HUD Elements\n");
   Demo_Printf(0x4000,pcVar1);
-  for (local_c = 0; local_c < 0x1f; local_c = local_c + 1) {
-    Demo_AdjustTimeForPlayerStateHudElement
-              (param_1,param_2,local_c,(param_3->hud).current + local_c);
+  for (i_2 = 0; i_2 < 0x1f; i_2 = i_2 + 1) {
+    Demo_AdjustTimeForPlayerStateHudElement(currentTime,clipTime,i_2,(ps->hud).current + i_2);
   }
   return;
 }
@@ -6378,64 +6582,65 @@ void __cdecl Demo_AdjustTimeForPlayerState(int param_1,int param_2,playerState_s
 
 // 009C7D30  Demo_AdjustTimeForEntityState  (demo/demo_playback.cpp:6880)
 
-void __cdecl Demo_AdjustTimeForEntityState(int param_1,int param_2,entityState_s *param_3)
+void __cdecl Demo_AdjustTimeForEntityState(int currentTime,int clipTime,entityState_s *state)
 
 {
   int iVar1;
+  int delta;
   
-  if (param_3->time2 != 0) {
-    iVar1 = (param_3->time2 - param_1) + param_2;
+  if (state->time2 != 0) {
+    iVar1 = (state->time2 - currentTime) + clipTime;
     if (iVar1 < 1) {
-      param_3->time2 = 0;
+      state->time2 = 0;
     }
     else {
-      param_3->time2 = iVar1;
+      state->time2 = iVar1;
     }
   }
-  if ((param_3->lerp).pos.trTime != 0) {
-    iVar1 = ((param_3->lerp).pos.trTime - param_1) + param_2;
+  if ((state->lerp).pos.trTime != 0) {
+    iVar1 = ((state->lerp).pos.trTime - currentTime) + clipTime;
     if (iVar1 < 1) {
-      (param_3->lerp).pos.trTime = 0;
+      (state->lerp).pos.trTime = 0;
     }
     else {
-      (param_3->lerp).pos.trTime = iVar1;
+      (state->lerp).pos.trTime = iVar1;
     }
   }
-  if ((param_3->lerp).apos.trTime != 0) {
-    iVar1 = ((param_3->lerp).apos.trTime - param_1) + param_2;
+  if ((state->lerp).apos.trTime != 0) {
+    iVar1 = ((state->lerp).apos.trTime - currentTime) + clipTime;
     if (iVar1 < 1) {
-      (param_3->lerp).apos.trTime = 0;
+      (state->lerp).apos.trTime = 0;
     }
     else {
-      (param_3->lerp).apos.trTime = iVar1;
+      (state->lerp).apos.trTime = iVar1;
     }
   }
-  if ((param_3->eType == 0) && ((param_3->lerp).u.missile.launchTime != 0)) {
-    iVar1 = ((param_3->lerp).u.missile.launchTime - param_1) + param_2;
+  if ((state->eType == 0) && ((state->lerp).u.missile.launchTime != 0)) {
+    iVar1 = ((state->lerp).u.missile.launchTime - currentTime) + clipTime;
     if (iVar1 < 1) {
-      (param_3->lerp).u.turret.gunAngles[0] = 0.0;
+      (state->lerp).u.turret.gunAngles[0] = 0.0;
     }
     else {
-      (param_3->lerp).u.missile.launchTime = iVar1;
+      (state->lerp).u.missile.launchTime = iVar1;
     }
   }
-  if (param_3->eType == 4) {
-    if ((param_3->lerp).u.actor.team != 0) {
-      iVar1 = ((param_3->lerp).u.actor.team - param_1) + param_2;
+  if (state->eType == 4) {
+    if ((state->lerp).u.actor.team != 0) {
+      iVar1 = ((state->lerp).u.actor.team - currentTime) + clipTime;
       if (iVar1 < 1) {
-        (param_3->lerp).u.turret.gunAngles[2] = 0.0;
+        (state->lerp).u.turret.gunAngles[2] = 0.0;
       }
       else {
-        (param_3->lerp).u.actor.team = iVar1;
+        (state->lerp).u.actor.team = iVar1;
       }
     }
-    if ((param_3->lerp).u.missile.launchTime != 0) {
-      iVar1 = ((param_3->lerp).u.missile.launchTime - param_1) + param_2;
+    if ((state->lerp).u.missile.launchTime != 0) {
+      iVar1 = ((state->lerp).u.missile.launchTime - currentTime) + clipTime;
       if (iVar1 < 1) {
-        (param_3->lerp).u.turret.gunAngles[0] = 0.0;
+        (state->lerp).u.turret.gunAngles[0] = 0.0;
       }
       else {
-        (param_3->lerp).u.missile.launchTime = iVar1;
+        (state->lerp).u.missile.launchTime = iVar1;
       }
     }
   }
@@ -6447,39 +6652,44 @@ void __cdecl Demo_AdjustTimeForEntityState(int param_1,int param_2,entityState_s
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_WriteDemoPreviewPoint(int param_1,int param_2)
+void __cdecl Demo_WriteDemoPreviewPoint(int localClientNum,int restorePoint)
 
 {
   code *pcVar1;
   bool bVar2;
   clientActive_t *pcVar3;
   DWORD DVar4;
-  msg_t local_68;
-  clientConnection_t *local_38;
-  msg_t local_34;
+  clientActive_t *cl;
+  PIXProfile pixProfile;
+  msg_t msg;
+  clientConnection_t *clc;
+  msg_t previewMsg;
   
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
-  local_38 = CL_GetLocalClientConnection(param_1);
+  pcVar3 = CL_GetLocalClientGlobals(localClientNum);
+  clc = CL_GetLocalClientConnection(localClientNum);
   bVar2 = Demo_IsCompleted();
-  (demo.playback)->demoCompleteStateForRestorationPoint[param_2] = bVar2;
+  (demo.playback)->demoCompleteStateForRestorationPoint[restorePoint] = bVar2;
   PIXBeginNamedEvent(-1,"Preview Keyframe - Generation");
-  MSG_Init(&local_68,demo.msgBuf1,0xc000);
+  MSG_Init(&msg,demo.msgBuf1,0xc000);
   (demo.playback)->forceWriteClipCommands = true;
-  Demo_WriteClipCommandsInternal(param_1,&local_68,false);
+  Demo_WriteClipCommandsInternal(localClientNum,&msg,false);
   Demo_GenerateUncompressedSnapshot
-            (param_1,&local_68,local_38->serverMessageSequence,local_38->serverCommandSequence,
+            (localClientNum,&msg,clc->serverMessageSequence,clc->serverCommandSequence,
              pcVar3->serverTime,pcVar3->serverTime,2,true);
-  MSG_Init(&local_34,(demo.playback)->demoPreviewBuf[param_2],0xc000);
-  MSG_Embed(&local_34,&local_68);
-  (demo.playback)->demoPreview[param_2].demoFileMemoryBlockStart =
+  MSG_Init(&previewMsg,(demo.playback)->demoPreviewBuf[restorePoint],0xc000);
+  MSG_Embed(&previewMsg,&msg);
+  (demo.playback)->demoPreview[restorePoint].demoFileMemoryBlockStart =
        (demo.totalSize - demo.memBlock.compressedSize) + -8;
-  (demo.playback)->demoPreview[param_2].keyframeBufferStart = 0;
-  (demo.playback)->demoPreview[param_2].keyframeSnapshotTime = pcVar3->serverTime;
-  (demo.playback)->demoPreview[param_2].firstCmdSequence = (demo.playback)->lastProcessedCmd;
-  (demo.playback)->demoPreview[param_2].size = local_34.cursize;
-  MSG_SetBookmark(&demo.msg,&(demo.playback)->demoPreview[param_2].msgBookmark);
-  if ((0xc000 < (uint)(demo.playback)->demoPreview[param_2].size) &&
+  (demo.playback)->demoPreview[restorePoint].keyframeBufferStart = 0;
+  (demo.playback)->demoPreview[restorePoint].keyframeSnapshotTime = pcVar3->serverTime;
+  (demo.playback)->demoPreview[restorePoint].firstCmdSequence = (demo.playback)->lastProcessedCmd;
+  (demo.playback)->demoPreview[restorePoint].size = previewMsg.cursize;
+  MSG_SetBookmark(&demo.msg,&(demo.playback)->demoPreview[restorePoint].msgBookmark);
+  if ((0xc000 < (uint)(demo.playback)->demoPreview[restorePoint].size) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x1b6c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -6497,52 +6707,57 @@ void __cdecl Demo_WriteDemoPreviewPoint(int param_1,int param_2)
 // 009C80A0  Demo_RestoreDemoPreviewPoint  (demo/demo_playback.cpp:7031)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_RestoreDemoPreviewPoint(int param_1,int param_2)
+void __cdecl Demo_RestoreDemoPreviewPoint(int localClientNum,int restorePoint)
 
 {
   clientActive_t *pcVar1;
   cg_s *pcVar2;
-  int iVar3;
-  int local_38;
-  msg_t local_34;
+  int msgSequence_00;
+  clientActive_t *cl;
+  cg_s *cgameGlob;
+  clientConnection_t *clc;
+  cgs_t *cgs;
+  int msgSequence;
+  int msgType;
+  msg_t previewMsg;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  CL_GetLocalClientConnection(param_1);
-  CG_GetLocalClientStaticGlobals(param_1);
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  if ((demo.playback)->demoCompleteStateForRestorationPoint[param_2] == false) {
-    demo.totalSize = (demo.playback)->demoPreview[param_2].demoFileMemoryBlockStart;
-    Demo_SeekFile(demo.demoFileHandle,(demo.playback)->demoPreview[param_2].demoFileMemoryBlockStart
-                  ,2);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  CL_GetLocalClientConnection(localClientNum);
+  CG_GetLocalClientStaticGlobals(localClientNum);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  if ((demo.playback)->demoCompleteStateForRestorationPoint[restorePoint] == false) {
+    demo.totalSize = (demo.playback)->demoPreview[restorePoint].demoFileMemoryBlockStart;
+    Demo_SeekFile(demo.demoFileHandle,
+                  (demo.playback)->demoPreview[restorePoint].demoFileMemoryBlockStart,2);
     Demo_Load();
-    MSG_GotoBookmark(&demo.msg,&(demo.playback)->demoPreview[param_2].msgBookmark);
-    MSG_Init(&local_34,demo.msgBuf1,0xc000);
-    memcpy(demo.msgBuf1,(demo.playback)->demoPreviewBuf[param_2],
-           (demo.playback)->demoPreview[param_2].size);
-    local_34.cursize = (demo.playback)->demoPreview[param_2].size;
+    MSG_GotoBookmark(&demo.msg,&(demo.playback)->demoPreview[restorePoint].msgBookmark);
+    MSG_Init(&previewMsg,demo.msgBuf1,0xc000);
+    memcpy(demo.msgBuf1,(demo.playback)->demoPreviewBuf[restorePoint],
+           (demo.playback)->demoPreview[restorePoint].size);
+    previewMsg.cursize = (demo.playback)->demoPreview[restorePoint].size;
     Demo_SetCompleted(false);
-    MSG_UnEmbed(&local_34);
+    MSG_UnEmbed(&previewMsg);
     Demo_ResetSnapshotData();
-    local_38 = MSG_ReadBits(&local_34,2);
-    while (local_38 == 2) {
-      Demo_ParseClipCommand(param_1,&local_34,false);
-      local_38 = MSG_ReadBits(&local_34,2);
+    msgType = MSG_ReadBits(&previewMsg,2);
+    while (msgType == 2) {
+      Demo_ParseClipCommand(localClientNum,&previewMsg,false);
+      msgType = MSG_ReadBits(&previewMsg,2);
     }
-    iVar3 = MSG_ReadLong(&local_34);
-    Demo_ParseServerMessage(param_1,&local_34,local_38,iVar3);
-    Demo_ResetTimeValues(param_1,(pcVar1->snap).serverTime);
-    Demo_ResetSequenceNumbers(param_1,(pcVar1->snap).messageNum + -1);
-    Demo_ResetWorldInformation(param_1,(pcVar1->snap).serverTime);
+    msgSequence_00 = MSG_ReadLong(&previewMsg);
+    Demo_ParseServerMessage(localClientNum,&previewMsg,msgType,msgSequence_00);
+    Demo_ResetTimeValues(localClientNum,(pcVar1->snap).serverTime);
+    Demo_ResetSequenceNumbers(localClientNum,(pcVar1->snap).messageNum + -1);
+    Demo_ResetWorldInformation(localClientNum,(pcVar1->snap).serverTime);
     pcVar2->latestSnapshotNum = (pcVar1->snap).messageNum;
     pcVar1->serverTimeDelta = (pcVar1->snap).serverTime - cls.realtime;
     SND_StopSounds(SND_STOP_ALL);
     (demo.playback)->overridePause = true;
-    CL_SetCGameTime(param_1);
+    CL_SetCGameTime(localClientNum);
     (demo.playback)->overridePause = false;
   }
   else {
@@ -6556,28 +6771,31 @@ void __cdecl Demo_RestoreDemoPreviewPoint(int param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_RestoreUIStateAfterPreview(int param_1)
+void __cdecl Demo_RestoreUIStateAfterPreview(int localClientNum)
 
 {
   Demo_SetClipState(3);
   Dvar_SetBool(demo_pause,true);
   if ((demo.playback)->pendingSegmentSave == false) {
     if ((demo.playback)->previewAllSegments == false) {
-      Demo_RestoreDemoPreviewPoint(param_1,0);
-      Key_SetCatcher(param_1,0x10);
-      UI_OpenMenu(param_1,"demo_manage_segments");
+      Demo_RestoreDemoPreviewPoint(localClientNum,0);
+      Key_SetCatcher(localClientNum,0x10);
+      UI_OpenMenu(localClientNum,"demo_manage_segments");
     }
     else {
-      Demo_RestoreDemoPreviewPoint(param_1,0);
-      Key_SetCatcher(param_1,0x10);
-      UI_OpenMenu(param_1,"demo_manage_segments");
+      Demo_RestoreDemoPreviewPoint(localClientNum,0);
+      Key_SetCatcher(localClientNum,0x10);
+      UI_OpenMenu(localClientNum,"demo_manage_segments");
       (demo.playback)->previewAllSegments = false;
     }
   }
   else {
-    Demo_RestoreDemoPreviewPoint(param_1,1);
-    Demo_OpenSavePopUp(param_1,0);
+    Demo_RestoreDemoPreviewPoint(localClientNum,1);
+    Demo_OpenSavePopUp(localClientNum,0);
   }
   return;
 }
@@ -6586,10 +6804,13 @@ void __cdecl Demo_RestoreUIStateAfterPreview(int param_1)
 // 009C83A0  Demo_HandleInput  (demo/demo_playback.cpp:7148)
 
 /* WARNING: Removing unreachable block (ram,0x009c8753) */
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_HandleInput(int param_1,int param_2,int param_3,int param_4)
+void __cdecl Demo_HandleInput(int localClientNum,int controllerIndex,int key,int pressed)
 
 {
   bool bVar1;
@@ -6599,134 +6820,148 @@ void __cdecl Demo_HandleInput(int param_1,int param_2,int param_3,int param_4)
   char *pcVar5;
   int iVar6;
   connstate_t cVar7;
+  bool isClipRecording;
+  bool isClipPlaying;
+  bool isPauseMenuOpen;
+  int isScoreboardDisplayed;
+  bool enableHostControls;
+  float timeScale;
+  bool isErrorDialogOpen;
+  bool isSaveDialogOpen;
+  bool enableClipAndScreenshot;
+  bool isMetaInformationScreenActive;
   
   bVar1 = Demo_IsPlaying();
-  if ((bVar1) && (bVar1 = Demo_IsRenderingScreenshot(param_1), !bVar1)) {
+  if ((bVar1) && (bVar1 = Demo_IsRenderingScreenshot(localClientNum), !bVar1)) {
     bVar1 = Demo_IsRenderingMovie();
     if (bVar1) {
-      if (param_3 == 2) {
+      if (key == 2) {
         pcVar5 = va("demo_stop 1\n");
-        Cbuf_AddText(param_1,pcVar5);
+        Cbuf_AddText(localClientNum,pcVar5);
       }
     }
     else {
       bVar1 = Demo_IsClipPreviewRunning();
       if (bVar1) {
-        if (param_3 == 2) {
+        if (key == 2) {
           (demo.playback)->cancelPreview = true;
         }
       }
       else if (((demo.playback == (demoPlayback *)0x0) ||
                (((demo.playback)->holdCmd).active == false)) ||
-              (((demo.playback)->holdCmd).key != param_3)) {
-        bVar1 = Demo_IsPauseMenuOpen(param_1);
-        iVar6 = CG_IsScoreboardDisplayed(param_1);
-        bVar2 = Demo_IsSaveDialogOpen(param_1);
-        bVar3 = Demo_IsErrorDialogOpen(param_1);
+              (((demo.playback)->holdCmd).key != key)) {
+        bVar1 = Demo_IsPauseMenuOpen(localClientNum);
+        iVar6 = CG_IsScoreboardDisplayed(localClientNum);
+        bVar2 = Demo_IsSaveDialogOpen(localClientNum);
+        bVar3 = Demo_IsErrorDialogOpen(localClientNum);
         bVar4 = Demo_IsMetaInformationScreenActive();
-        cVar7 = CL_GetLocalClientConnectionState(param_1);
+        cVar7 = CL_GetLocalClientConnectionState(localClientNum);
         if ((((cVar7 == CA_ACTIVE) && (!bVar1)) && ((iVar6 == 0 && ((!bVar2 && (!bVar3)))))) &&
            (!bVar4)) {
           bVar1 = Demo_IsClipRecording();
           bVar2 = Demo_IsClipPlaying();
-          switch(param_3) {
+          switch(key) {
           case 1:
           case 0x20:
-            if (param_4 != 0) {
+            if (pressed != 0) {
               pcVar5 = va("demo_pause %i\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(0);
             }
             break;
           case 2:
           case 0xaa:
-            if ((!bVar2) && (param_4 != 0)) {
+            if ((!bVar2) && (pressed != 0)) {
               pcVar5 = va("demo_togglegamehud %i\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(4);
             }
             break;
           case 3:
           case 0x72:
-            if (param_4 != 0) {
+            if (pressed != 0) {
               if (bVar1) {
                 pcVar5 = va("demo_pausecliprecord %i\n");
-                Cbuf_AddText(param_1,pcVar5);
+                Cbuf_AddText(localClientNum,pcVar5);
                 Demo_SetButtonPressTime(1);
               }
               else {
-                Demo_ActivateHoldInput(param_1,param_3,4);
+                Demo_ActivateHoldInput(localClientNum,key,4);
               }
             }
             break;
           case 4:
           case 0xa8:
-            if ((!bVar2) && (param_4 != 0)) {
+            if ((!bVar2) && (pressed != 0)) {
               pcVar5 = va("demo_switchcamera %i\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(3);
             }
             break;
           case 5:
           case 200:
-            if (param_4 != 0) {
+            if (pressed != 0) {
               pcVar5 = va("demo_switchplayer %i 1\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(2);
-              UI_AnimateItem(param_1,cgDC + param_1,"demoPlayers","CycleNext","Flash",1);
-              UI_AnimateItem(param_1,cgDC + param_1,"demoPlayers","SpectatorName","Flash",1);
+              UI_AnimateItem(localClientNum,cgDC + localClientNum,"demoPlayers","CycleNext","Flash",
+                             1);
+              UI_AnimateItem(localClientNum,cgDC + localClientNum,"demoPlayers","SpectatorName",
+                             "Flash",1);
             }
             break;
           case 6:
           case 0xc9:
-            if (param_4 != 0) {
+            if (pressed != 0) {
               pcVar5 = va("demo_switchplayer %i 0\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(2);
-              UI_AnimateItem(param_1,cgDC + param_1,"demoPlayers","CyclePrev","Flash",1);
-              UI_AnimateItem(param_1,cgDC + param_1,"demoPlayers","SpectatorName","Flash",1);
+              UI_AnimateItem(localClientNum,cgDC + localClientNum,"demoPlayers","CyclePrev","Flash",
+                             1);
+              UI_AnimateItem(localClientNum,cgDC + localClientNum,"demoPlayers","SpectatorName",
+                             "Flash",1);
             }
             break;
           default:
-            Demo_HandleInputForControllerConfig(param_1,param_2,param_3,param_4);
+            Demo_HandleInputForControllerConfig(localClientNum,controllerIndex,key,pressed);
             break;
           case 0x10:
           case 0xa7:
-            if (param_4 != 0) {
+            if (pressed != 0) {
               pcVar5 = va("demo_toggledemohud %i\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(5);
             }
             break;
           case 0x9a:
-            if ((!bVar2) && (param_4 != 0)) {
+            if ((!bVar2) && (pressed != 0)) {
               Com_GetTimeScale();
               pcVar5 = va("demo_timescale %i %f\n");
-              iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar6,pcVar5);
+              iVar6 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar6,pcVar5);
               Demo_SetButtonPressTime(9);
             }
             break;
           case 0x9b:
-            if ((!bVar2) && (param_4 != 0)) {
+            if ((!bVar2) && (pressed != 0)) {
               Com_GetTimeScale();
               pcVar5 = va("demo_timescale %i %f\n");
-              iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar6,pcVar5);
+              iVar6 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar6,pcVar5);
               Demo_SetButtonPressTime(8);
             }
             break;
           case 0x9c:
-            if ((param_4 != 0) && (!bVar1)) {
+            if ((pressed != 0) && (!bVar1)) {
               pcVar5 = va("demo_back %i\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(6);
             }
             break;
           case 0x9d:
-            if ((!bVar1) && (param_4 != 0)) {
+            if ((!bVar1) && (pressed != 0)) {
               pcVar5 = va("demo_forward %i\n");
-              Cbuf_AddText(param_1,pcVar5);
+              Cbuf_AddText(localClientNum,pcVar5);
               Demo_SetButtonPressTime(7);
             }
           }
@@ -6735,7 +6970,7 @@ void __cdecl Demo_HandleInput(int param_1,int param_2,int param_3,int param_4)
       else {
         iVar6 = Sys_Milliseconds();
         Demo_HandleHoldInput
-                  (param_1,((demo.playback)->holdCmd).key,
+                  (localClientNum,((demo.playback)->holdCmd).key,
                    0xf9 < iVar6 - ((demo.playback)->holdCmd).activatedTime);
       }
     }
@@ -6746,7 +6981,8 @@ void __cdecl Demo_HandleInput(int param_1,int param_2,int param_3,int param_4)
 
 // 009C8B60  Demo_HandleInputForControllerConfig  (demo/demo_playback.cpp:7345)
 
-void __cdecl Demo_HandleInputForControllerConfig(int param_1,int param_2,int param_3,int param_4)
+void __cdecl
+Demo_HandleInputForControllerConfig(int localClientNum,int controllerIndex,int key,int pressed)
 
 {
   bool bVar1;
@@ -6755,37 +6991,43 @@ void __cdecl Demo_HandleInputForControllerConfig(int param_1,int param_2,int par
   char *pcVar4;
   float fVar5;
   float local_34;
+  float timeScale;
+  bool enableHostControls;
+  bool isClipRecording;
+  bool isClipPlaying;
+  float trigValue;
+  int controllerConfig;
   
   bVar1 = Demo_IsClipRecording();
   bVar2 = Demo_IsClipPlaying();
   iVar3 = Demo_GetCurrentControllerConfig();
   if (iVar3 == 0) {
-    switch(param_3) {
+    switch(key) {
     case 0x12:
     case 0xa3:
-      if ((param_4 != 0) && (!bVar1)) {
+      if ((pressed != 0) && (!bVar1)) {
         pcVar4 = va("demo_back %i\n");
-        Cbuf_AddText(param_1,pcVar4);
+        Cbuf_AddText(localClientNum,pcVar4);
         Demo_SetButtonPressTime(6);
       }
       break;
     case 0x13:
       if (!bVar2) {
-        local_34 = GPad_GetButton(param_2,GPAD_R_TRIG);
+        local_34 = GPad_GetButton(controllerIndex,GPAD_R_TRIG);
         if (local_34 <= 0.0) {
           bVar1 = Demo_IsPaused();
           if (!bVar1) {
             pcVar4 = va("demo_pause %i\n");
-            iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-            Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+            iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+            Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
           }
         }
         else {
           bVar1 = Demo_IsPaused();
           if (bVar1) {
             pcVar4 = va("demo_pause %i\n");
-            iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-            Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+            iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+            Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
           }
           local_34 = local_34 * (demo_timeScaleRate->current).value;
           if (local_34 - 0.1 < 0.0) {
@@ -6799,91 +7041,91 @@ void __cdecl Demo_HandleInputForControllerConfig(int param_1,int param_2,int par
           }
         }
         pcVar4 = va("demo_timescale %i %f\n");
-        iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+        iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
       }
       break;
     case 0x17:
     case 0xa4:
-      if ((!bVar1) && (param_4 != 0)) {
+      if ((!bVar1) && (pressed != 0)) {
         pcVar4 = va("demo_forward %i\n");
-        Cbuf_AddText(param_1,pcVar4);
+        Cbuf_AddText(localClientNum,pcVar4);
         Demo_SetButtonPressTime(7);
       }
       break;
     case 0x9c:
       if (!bVar2) {
-        if (param_4 == 0) {
+        if (pressed == 0) {
           bVar1 = Demo_IsPaused();
           if (!bVar1) {
             pcVar4 = va("demo_pause %i\n");
-            iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-            Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+            iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+            Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
           }
         }
         else {
           bVar1 = Demo_IsPaused();
           if (bVar1) {
             pcVar4 = va("demo_pause %i\n");
-            iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-            Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+            iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+            Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
           }
           Demo_SetButtonPressTime(8);
         }
         pcVar4 = va("demo_timescale %i %f\n");
-        iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+        iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
       }
       break;
     case 0x9d:
       if (!bVar2) {
-        if (param_4 == 0) {
+        if (pressed == 0) {
           pcVar4 = va("demo_pause %i\n");
-          iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-          Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+          iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+          Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
         }
         else {
           bVar1 = Demo_IsPaused();
           if (bVar1) {
             pcVar4 = va("demo_pause %i\n");
-            iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-            Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+            iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+            Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
           }
           Demo_SetButtonPressTime(9);
         }
         pcVar4 = va("demo_timescale %i %f\n");
-        iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+        iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
       }
     }
   }
   else if (iVar3 == 1) {
-    switch(param_3) {
+    switch(key) {
     case 0x12:
       if (!bVar2) {
-        fVar5 = GPad_GetButton(param_2,GPAD_L_TRIG);
-        bVar1 = GPad_IsButtonPressed(param_2,GPAD_R_TRIG);
+        fVar5 = GPad_GetButton(controllerIndex,GPAD_L_TRIG);
+        bVar1 = GPad_IsButtonPressed(controllerIndex,GPAD_R_TRIG);
         if (!bVar1) {
           if (fVar5 <= 0.8) {
             fVar5 = Com_GetTimeScale();
             if (fVar5 != 1.0) {
               pcVar4 = va("demo_timescale %i %f\n");
-              iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+              iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
             }
           }
           else {
             bVar1 = Demo_IsPaused();
             if (bVar1) {
               pcVar4 = va("demo_pause %i\n");
-              iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+              iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
             }
             fVar5 = Com_GetTimeScale();
             if (fVar5 != 0.3) {
               pcVar4 = va("demo_timescale %i %f\n");
-              iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+              iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
             }
             Demo_SetButtonPressTime(8);
           }
@@ -6892,29 +7134,29 @@ void __cdecl Demo_HandleInputForControllerConfig(int param_1,int param_2,int par
       break;
     case 0x13:
       if (!bVar2) {
-        fVar5 = GPad_GetButton(param_2,GPAD_R_TRIG);
-        bVar1 = GPad_IsButtonPressed(param_2,GPAD_L_TRIG);
+        fVar5 = GPad_GetButton(controllerIndex,GPAD_R_TRIG);
+        bVar1 = GPad_IsButtonPressed(controllerIndex,GPAD_L_TRIG);
         if (!bVar1) {
           if (fVar5 <= 0.8) {
             fVar5 = Com_GetTimeScale();
             if (fVar5 != 1.0) {
               pcVar4 = va("demo_timescale %i %f\n");
-              iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+              iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
             }
           }
           else {
             bVar1 = Demo_IsPaused();
             if (bVar1) {
               pcVar4 = va("demo_pause %i\n");
-              iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+              iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
             }
             fVar5 = Com_GetTimeScale();
             if (fVar5 != 3.0) {
               pcVar4 = va("demo_timescale %i %f\n");
-              iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-              Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+              iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+              Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
             }
             Demo_SetButtonPressTime(9);
           }
@@ -6922,51 +7164,51 @@ void __cdecl Demo_HandleInputForControllerConfig(int param_1,int param_2,int par
       }
       break;
     case 0x16:
-      if ((!bVar1) && (param_4 != 0)) {
+      if ((!bVar1) && (pressed != 0)) {
         pcVar4 = va("demo_back %i\n");
-        Cbuf_AddText(param_1,pcVar4);
+        Cbuf_AddText(localClientNum,pcVar4);
         Demo_SetButtonPressTime(6);
       }
       break;
     case 0x17:
-      if ((!bVar1) && (param_4 != 0)) {
+      if ((!bVar1) && (pressed != 0)) {
         pcVar4 = va("demo_forward %i\n");
-        Cbuf_AddText(param_1,pcVar4);
+        Cbuf_AddText(localClientNum,pcVar4);
         Demo_SetButtonPressTime(7);
       }
     }
   }
   else if (iVar3 == 2) {
-    switch(param_3) {
+    switch(key) {
     case 0x12:
-      if ((!bVar1) && (param_4 != 0)) {
+      if ((!bVar1) && (pressed != 0)) {
         pcVar4 = va("demo_back %i\n");
-        Cbuf_AddText(param_1,pcVar4);
+        Cbuf_AddText(localClientNum,pcVar4);
         Demo_SetButtonPressTime(6);
       }
       break;
     case 0x13:
-      if ((!bVar1) && (param_4 != 0)) {
+      if ((!bVar1) && (pressed != 0)) {
         pcVar4 = va("demo_forward %i\n");
-        Cbuf_AddText(param_1,pcVar4);
+        Cbuf_AddText(localClientNum,pcVar4);
         Demo_SetButtonPressTime(7);
       }
       break;
     case 0x14:
-      if ((!bVar2) && (param_4 != 0)) {
+      if ((!bVar2) && (pressed != 0)) {
         Com_GetTimeScale();
         pcVar4 = va("demo_timescale %i %f\n");
-        iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+        iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
         Demo_SetButtonPressTime(9);
       }
       break;
     case 0x15:
-      if ((!bVar2) && (param_4 != 0)) {
+      if ((!bVar2) && (pressed != 0)) {
         Com_GetTimeScale();
         pcVar4 = va("demo_timescale %i %f\n");
-        iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar4);
+        iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar4);
         Demo_SetButtonPressTime(8);
       }
     }
@@ -6980,14 +7222,14 @@ void __cdecl Demo_HandleInputForControllerConfig(int param_1,int param_2,int par
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_SetButtonPressTime(int param_1)
+void __cdecl Demo_SetButtonPressTime(int demoControlButtonType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (9 < param_1)) {
+  if ((demoControlButtonType < 0) || (9 < demoControlButtonType)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_playback.cpp",0x1db4,0,
                              "%s");
     if (!bVar2) {
@@ -6997,7 +7239,7 @@ void __cdecl Demo_SetButtonPressTime(int param_1)
     }
   }
   iVar3 = Sys_Milliseconds();
-  (demo.playback)->buttonPressTime[param_1] = iVar3;
+  (demo.playback)->buttonPressTime[demoControlButtonType] = iVar3;
   return;
 }
 
@@ -7007,7 +7249,7 @@ void __cdecl Demo_SetButtonPressTime(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_ActivateHoldInput(int param_1,int param_2,int param_3)
+void __cdecl Demo_ActivateHoldInput(int localClientNum,int key,int keyBits)
 
 {
   int iVar1;
@@ -7015,7 +7257,7 @@ void __cdecl Demo_ActivateHoldInput(int param_1,int param_2,int param_3)
   if ((demo.playback == (demoPlayback *)0x0) || (((demo.playback)->holdCmd).active == false)) {
     iVar1 = Sys_Milliseconds();
     ((demo.playback)->holdCmd).activatedTime = iVar1;
-    ((demo.playback)->holdCmd).key = param_2;
+    ((demo.playback)->holdCmd).key = key;
     ((demo.playback)->holdCmd).active = true;
   }
   else {
@@ -7027,13 +7269,13 @@ void __cdecl Demo_ActivateHoldInput(int param_1,int param_2,int param_3)
 
 // 009C9750  Demo_HandleHoldInput  (demo/demo_playback.cpp:7652)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_HandleHoldInput(int param_1,int param_2,bool param_3)
+void __cdecl Demo_HandleHoldInput(int localClientNum,int key,bool holdResult)
 
 {
   code *pcVar1;
@@ -7044,32 +7286,38 @@ void __cdecl Demo_HandleHoldInput(int param_1,int param_2,bool param_3)
   int iVar6;
   cg_s *pcVar7;
   char *pcVar8;
+  bool isPauseMenuOpen;
+  cg_s *cgameGlob;
+  int isScoreboardDisplayed;
+  bool isErrorDialogOpen;
+  bool isSaveDialogOpen;
+  bool isMetaInformationScreenActive;
   
-  bVar2 = Demo_IsPauseMenuOpen(param_1);
-  iVar6 = CG_IsScoreboardDisplayed(param_1);
-  bVar3 = Demo_IsSaveDialogOpen(param_1);
-  bVar4 = Demo_IsErrorDialogOpen(param_1);
+  bVar2 = Demo_IsPauseMenuOpen(localClientNum);
+  iVar6 = CG_IsScoreboardDisplayed(localClientNum);
+  bVar3 = Demo_IsSaveDialogOpen(localClientNum);
+  bVar4 = Demo_IsErrorDialogOpen(localClientNum);
   bVar5 = Demo_IsMetaInformationScreenActive();
   if ((((bVar2) || (iVar6 != 0)) || (bVar3)) || ((bVar4 || (bVar5)))) {
     ((demo.playback)->holdCmd).active = false;
   }
   else {
-    if ((param_2 == 3) || (param_2 == 0x72)) {
-      if (param_3) {
+    if ((key == 3) || (key == 0x72)) {
+      if (holdResult) {
         bVar2 = Demo_IsPaused();
         if (!bVar2) {
           pcVar8 = va("demo_pause %i\n");
-          iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-          Cmd_ExecuteSingleCommand(param_1,iVar6,pcVar8);
+          iVar6 = Com_LocalClient_GetControllerIndex(localClientNum);
+          Cmd_ExecuteSingleCommand(localClientNum,iVar6,pcVar8);
         }
-        pcVar7 = CG_GetLocalClientGlobals(param_1);
+        pcVar7 = CG_GetLocalClientGlobals(localClientNum);
         pcVar7->hiResShotMode = 1;
         pcVar8 = va("demo_screenshot 2\n");
-        Cbuf_AddText(param_1,pcVar8);
+        Cbuf_AddText(localClientNum,pcVar8);
       }
       else {
         pcVar8 = va("demo_startcliprecord %i\n");
-        Cbuf_AddText(param_1,pcVar8);
+        Cbuf_AddText(localClientNum,pcVar8);
         Demo_SetButtonPressTime(1);
       }
     }

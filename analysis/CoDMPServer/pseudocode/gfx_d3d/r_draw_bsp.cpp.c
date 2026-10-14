@@ -2,72 +2,75 @@
 
 // 00B56350  R_SetStreamsForBspSurface  (gfx_d3d/r_draw_bsp.cpp:290)
 
-void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2)
+void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *state,srfTriangles_t *tris)
 
 {
   uint uVar1;
   uint uVar2;
   IDirect3DVertexBuffer9 *pIVar3;
   IDirect3DVertexBuffer9 *pIVar4;
-  uint uVar5;
-  IDirect3DVertexBuffer9 *pIVar6;
-  IDirect3DVertexBuffer9 **ppIVar7;
-  uint uVar8;
-  uint uVar9;
-  bool bVar10;
+  uint vertexOffset;
+  IDirect3DVertexBuffer9 *vb;
+  IDirect3DVertexBuffer9 **ppIVar5;
+  uint uVar6;
+  uint vertexOffset_00;
+  bool bVar7;
+  int layerDataStride;
+  int stream2Stride;
+  bool usesStream2;
   
-  bVar10 = param_2->stream2ByteOffset < 0;
-  uVar1 = g_layerDataStride[param_1->vertDeclType];
+  bVar7 = tris->stream2ByteOffset < 0;
+  uVar1 = g_layerDataStride[state->vertDeclType];
   if (uVar1 == 0) {
-    if (bVar10) {
-      R_SetStreamSource(param_1,(g_worldDraw->vd).worldVb,param_2->firstVertex * 0x2c,0x2c);
+    if (bVar7) {
+      R_SetStreamSource(state,(g_worldDraw->vd).worldVb,tris->firstVertex * 0x2c,0x2c);
     }
     else {
-      uVar1 = g_stream2Stride[param_1->vertDeclType];
-      uVar2 = param_2->stream2ByteOffset;
-      ppIVar7 = R_VertexStream2_GetVB();
-      pIVar3 = *ppIVar7;
-      uVar8 = param_2->firstVertex * 0x2c;
+      uVar1 = g_stream2Stride[state->vertDeclType];
+      uVar2 = tris->stream2ByteOffset;
+      ppIVar5 = R_VertexStream2_GetVB();
+      pIVar3 = *ppIVar5;
+      uVar6 = tris->firstVertex * 0x2c;
       pIVar4 = (g_worldDraw->vd).worldVb;
-      if (((param_1->streams[0].vb != pIVar4) || (param_1->streams[0].offset != uVar8)) ||
-         (param_1->streams[0].stride != 0x2c)) {
-        R_ChangeStreamSource(param_1,0,pIVar4,uVar8,0x2c);
+      if (((state->streams[0].vb != pIVar4) || (state->streams[0].offset != uVar6)) ||
+         (state->streams[0].stride != 0x2c)) {
+        R_ChangeStreamSource(state,0,pIVar4,uVar6,0x2c);
       }
-      if (((param_1->streams[1].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-          (param_1->streams[1].offset != 0)) || (param_1->streams[1].stride != 0)) {
-        R_ChangeStreamSource(param_1,1,(IDirect3DVertexBuffer9 *)0x0,0,0);
+      if (((state->streams[1].vb != (IDirect3DVertexBuffer9 *)0x0) ||
+          (state->streams[1].offset != 0)) || (state->streams[1].stride != 0)) {
+        R_ChangeStreamSource(state,1,(IDirect3DVertexBuffer9 *)0x0,0,0);
       }
-      if (((param_1->streams[2].vb != pIVar3) || (param_1->streams[2].offset != uVar2)) ||
-         (param_1->streams[2].stride != uVar1)) {
-        R_ChangeStreamSource(param_1,2,pIVar3,uVar2,uVar1);
+      if (((state->streams[2].vb != pIVar3) || (state->streams[2].offset != uVar2)) ||
+         (state->streams[2].stride != uVar1)) {
+        R_ChangeStreamSource(state,2,pIVar3,uVar2,uVar1);
       }
     }
   }
-  else if (bVar10) {
+  else if (bVar7) {
     R_SetDoubleStreamSource
-              (param_1,(g_worldDraw->vd).worldVb,param_2->firstVertex * 0x2c,0x2c,
-               (g_worldDraw->vld).layerVb,param_2->vertexLayerData,uVar1);
+              (state,(g_worldDraw->vd).worldVb,tris->firstVertex * 0x2c,0x2c,
+               (g_worldDraw->vld).layerVb,tris->vertexLayerData,uVar1);
   }
   else {
-    uVar2 = g_stream2Stride[param_1->vertDeclType];
-    uVar8 = param_2->stream2ByteOffset;
-    ppIVar7 = R_VertexStream2_GetVB();
-    pIVar3 = *ppIVar7;
-    uVar5 = param_2->vertexLayerData;
+    uVar2 = g_stream2Stride[state->vertDeclType];
+    uVar6 = tris->stream2ByteOffset;
+    ppIVar5 = R_VertexStream2_GetVB();
+    pIVar3 = *ppIVar5;
+    vertexOffset = tris->vertexLayerData;
     pIVar4 = (g_worldDraw->vld).layerVb;
-    uVar9 = param_2->firstVertex * 0x2c;
-    pIVar6 = (g_worldDraw->vd).worldVb;
-    if (((param_1->streams[0].vb != pIVar6) || (param_1->streams[0].offset != uVar9)) ||
-       (param_1->streams[0].stride != 0x2c)) {
-      R_ChangeStreamSource(param_1,0,pIVar6,uVar9,0x2c);
+    vertexOffset_00 = tris->firstVertex * 0x2c;
+    vb = (g_worldDraw->vd).worldVb;
+    if (((state->streams[0].vb != vb) || (state->streams[0].offset != vertexOffset_00)) ||
+       (state->streams[0].stride != 0x2c)) {
+      R_ChangeStreamSource(state,0,vb,vertexOffset_00,0x2c);
     }
-    if (((param_1->streams[1].vb != pIVar4) || (param_1->streams[1].offset != uVar5)) ||
-       (param_1->streams[1].stride != uVar1)) {
-      R_ChangeStreamSource(param_1,1,pIVar4,uVar5,uVar1);
+    if (((state->streams[1].vb != pIVar4) || (state->streams[1].offset != vertexOffset)) ||
+       (state->streams[1].stride != uVar1)) {
+      R_ChangeStreamSource(state,1,pIVar4,vertexOffset,uVar1);
     }
-    if (((param_1->streams[2].vb != pIVar3) || (param_1->streams[2].offset != uVar8)) ||
-       (param_1->streams[2].stride != uVar2)) {
-      R_ChangeStreamSource(param_1,2,pIVar3,uVar8,uVar2);
+    if (((state->streams[2].vb != pIVar3) || (state->streams[2].offset != uVar6)) ||
+       (state->streams[2].stride != uVar2)) {
+      R_ChangeStreamSource(state,2,pIVar3,uVar6,uVar2);
     }
   }
   return;
@@ -76,19 +79,19 @@ void __cdecl R_SetStreamsForBspSurface(GfxCmdBufPrimState *param_1,srfTriangles_
 
 // 00B56D10  R_DrawBspTris  (gfx_d3d/r_draw_bsp.cpp:349)
 
-void __cdecl R_DrawBspTris(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2,uint param_3)
+void __cdecl R_DrawBspTris(GfxCmdBufPrimState *state,srfTriangles_t *tris,uint triCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  GfxDrawPrimArgs local_10;
+  GfxDrawPrimArgs args;
   
-  local_10.vertexCount = (int)param_2->vertexCount;
-  local_10.triCount = param_3;
-  local_10.baseIndex = R_SetIndexData(param_1,g_worldDraw->indices + param_2->baseIndex,param_3);
-  R_DrawIndexedPrimitive(param_1,&local_10);
-  if (param_1->primStats != (GfxPrimStats *)0x0) {
-    if (param_1->primStats == (GfxPrimStats *)0x0) {
+  args.vertexCount = (int)tris->vertexCount;
+  args.triCount = triCount;
+  args.baseIndex = R_SetIndexData(state,g_worldDraw->indices + tris->baseIndex,triCount);
+  R_DrawIndexedPrimitive(state,&args);
+  if (state->primStats != (GfxPrimStats *)0x0) {
+    if (state->primStats == (GfxPrimStats *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",0x16f,0,
                                "%s");
       if (!bVar2) {
@@ -97,8 +100,8 @@ void __cdecl R_DrawBspTris(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2,u
         return;
       }
     }
-    (param_1->frameStats).geoIndexCount = param_3 * 3 + (param_1->frameStats).geoIndexCount;
-    param_1->primStats->dynamicIndexCount = param_3 * 3 + param_1->primStats->dynamicIndexCount;
+    (state->frameStats).geoIndexCount = triCount * 3 + (state->frameStats).geoIndexCount;
+    state->primStats->dynamicIndexCount = triCount * 3 + state->primStats->dynamicIndexCount;
   }
   return;
 }
@@ -107,20 +110,20 @@ void __cdecl R_DrawBspTris(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2,u
 // 00B56FB0  R_DrawPreTessTris  (gfx_d3d/r_draw_bsp.cpp:380)
 
 void __cdecl
-R_DrawPreTessTris(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2,uint param_3,uint param_4)
+R_DrawPreTessTris(GfxCmdBufPrimState *state,srfTriangles_t *tris,uint baseIndex,uint triCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  GfxDrawPrimArgs local_10;
+  GfxDrawPrimArgs args;
   
-  R_SetStreamsForBspSurface(param_1,param_2);
-  local_10.vertexCount = (int)param_2->vertexCount;
-  local_10.triCount = param_4;
-  local_10.baseIndex = param_3;
-  R_DrawIndexedPrimitive(param_1,&local_10);
-  (param_1->frameStats).geoIndexCount = param_4 * 3 + (param_1->frameStats).geoIndexCount;
-  if (param_1->primStats == (GfxPrimStats *)0x0) {
+  R_SetStreamsForBspSurface(state,tris);
+  args.vertexCount = (int)tris->vertexCount;
+  args.triCount = triCount;
+  args.baseIndex = baseIndex;
+  R_DrawIndexedPrimitive(state,&args);
+  (state->frameStats).geoIndexCount = triCount * 3 + (state->frameStats).geoIndexCount;
+  if (state->primStats == (GfxPrimStats *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",0x189,0,
                              "%s");
     if (!bVar2) {
@@ -129,24 +132,24 @@ R_DrawPreTessTris(GfxCmdBufPrimState *param_1,srfTriangles_t *param_2,uint param
       return;
     }
   }
-  param_1->primStats->dynamicIndexCount = param_4 * 3 + param_1->primStats->dynamicIndexCount;
+  state->primStats->dynamicIndexCount = triCount * 3 + state->primStats->dynamicIndexCount;
   return;
 }
 
 
 // 00B56DE0  R_ReadBspDrawSurfs  (gfx_d3d/r_draw_bsp.cpp:403)
 
-int __cdecl R_ReadBspDrawSurfs(uint **param_1,ushort **param_2,uint *param_3)
+int __cdecl R_ReadBspDrawSurfs(uint **primDrawSurfPos,ushort **list,uint *count)
 
 {
   uint uVar1;
   
-  *param_3 = **param_1;
-  *param_1 = *param_1 + 1;
-  uVar1 = *param_3;
+  *count = **primDrawSurfPos;
+  *primDrawSurfPos = *primDrawSurfPos + 1;
+  uVar1 = *count;
   if (uVar1 != 0) {
-    *param_2 = (ushort *)*param_1;
-    *param_1 = *param_1 + (*param_3 + 1 >> 1);
+    *list = (ushort *)*primDrawSurfPos;
+    *primDrawSurfPos = *primDrawSurfPos + (*count + 1 >> 1);
   }
   return (uint)(uVar1 != 0);
 }
@@ -156,21 +159,21 @@ int __cdecl R_ReadBspDrawSurfs(uint **param_1,ushort **param_2,uint *param_3)
 
 int __cdecl
 R_ReadBspPreTessDrawSurfs
-          (GfxReadCmdBuf *param_1,GfxBspPreTessDrawSurf **param_2,uint *param_3,uint *param_4)
+          (GfxReadCmdBuf *cmdBuf,GfxBspPreTessDrawSurf **list,uint *count,uint *baseIndex)
 
 {
   uint uVar1;
   uint uVar2;
   GfxBspPreTessDrawSurf *pGVar3;
   
-  uVar1 = Scr_ReadInt((char **)param_1);
-  *param_3 = uVar1;
-  uVar1 = *param_3;
+  uVar1 = Scr_ReadInt((char **)cmdBuf);
+  *count = uVar1;
+  uVar1 = *count;
   if (uVar1 != 0) {
-    uVar2 = Scr_ReadInt((char **)param_1);
-    *param_4 = uVar2;
-    pGVar3 = (GfxBspPreTessDrawSurf *)Scr_ReadIntArray((char **)param_1,*param_3);
-    *param_2 = pGVar3;
+    uVar2 = Scr_ReadInt((char **)cmdBuf);
+    *baseIndex = uVar2;
+    pGVar3 = (GfxBspPreTessDrawSurf *)Scr_ReadIntArray((char **)cmdBuf,*count);
+    *list = pGVar3;
   }
   return (uint)(uVar1 != 0);
 }
@@ -179,8 +182,8 @@ R_ReadBspPreTessDrawSurfs
 // 00B56730  R_DrawTrianglesLit  (gfx_d3d/r_draw_bsp.cpp:437)
 
 void __cdecl
-R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
-                  GfxCmdBufPrimState *param_3)
+R_DrawTrianglesLit(GfxTrianglesDrawStream *drawStream,GfxCmdBufPrimState *primState,
+                  GfxCmdBufPrimState *prepassPrimState)
 
 {
   ushort uVar1;
@@ -189,56 +192,63 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
   bool bVar4;
   int iVar5;
   uint uVar6;
-  GfxSurface *pGVar7;
+  GfxSurface *tris_00;
   GfxTexture *local_b0;
-  uchar *puVar8;
+  uchar *puVar7;
   GfxTexture *local_a8;
-  int local_78;
-  GfxSurface *local_68;
-  GfxTexture *local_60;
-  GfxTexture *local_58;
-  ushort *local_54;
-  uint local_50;
-  uint local_4c;
-  GfxTexture *local_48;
-  GfxTexture *local_44;
-  GfxTexture *local_40;
-  GfxTexture *local_3c;
-  uint local_38;
-  uint local_34;
-  GfxTexture *local_30;
-  GfxTexture *local_2c;
-  GfxTexture *local_28;
-  GfxCmdBufPrimState_u_0 local_24;
-  uint local_20;
-  GfxTexture *local_1c;
-  uint local_18;
-  int local_14;
-  GfxTexture *local_10;
-  int local_c;
-  char local_5;
+  int lightingChanged;
+  GfxSurface *bspSurf;
+  int baseIndex;
+  uint surfIndex;
+  uint lightmapSecondaryFlagB;
+  srfTriangles_t *tris;
+  srfTriangles_t *prevTris;
+  uint lightmapSecondaryFlag;
+  GfxTexture *newLightmapSecondaryTextureB;
+  uint reflectionProbeFlag;
+  GfxTexture *lightmapPrimaryTexture;
+  ushort *list;
+  int triCount;
+  uint reflectionProbeIndex;
+  GfxTexture *reflectionProbeTexture;
+  GfxTexture *newLightmapPrimaryTexture;
+  GfxTexture *reflectionProbeTextures;
+  GfxTexture *conflictTex;
+  uint index;
+  uint lightmapIndex;
+  GfxTexture *lightmapSecondaryTexture;
+  GfxTexture *newLightmapSecondaryTexture;
+  GfxTexture *lightmapSecondaryTextureB;
+  IDirect3DDevice9 *device;
+  uint lightmapPrimaryFlag;
+  GfxImage *overrideImage;
+  uint count;
+  int baseVertex;
+  GfxTexture *newReflectionProbeTexture;
+  int hasSunDirChanged;
+  bool override;
   
-  local_4c = 0xff;
-  local_34 = 0x1f;
-  local_68 = (GfxSurface *)0x0;
-  local_50 = 0;
-  local_14 = -1;
-  local_78 = 0;
-  local_48 = param_1->reflectionProbeTexture;
-  local_58 = param_1->lightmapPrimaryTexture;
-  local_30 = param_1->lightmapSecondaryTexture;
-  local_28 = param_1->lightmapSecondaryTextureB;
-  uVar2 = param_1->customSamplerFlags;
-  local_20 = param_1->customSamplerFlags & 2;
-  uVar6 = param_1->customSamplerFlags & 4;
-  local_40 = g_worldDraw->reflectionProbeTextures;
-  local_c = param_1->hasSunDirChanged;
-  local_1c = (GfxTexture *)0x0;
-  local_5 = (r_lightMap->current).integer != 1;
-  if ((bool)local_5) {
-    local_1c = &R_OverrideGrayscaleImage(r_lightMap)->texture;
+  reflectionProbeIndex = 0xff;
+  lightmapIndex = 0x1f;
+  prevTris = (srfTriangles_t *)0x0;
+  triCount = 0;
+  baseVertex = -1;
+  baseIndex = 0;
+  reflectionProbeTexture = drawStream->reflectionProbeTexture;
+  lightmapPrimaryTexture = drawStream->lightmapPrimaryTexture;
+  lightmapSecondaryTexture = drawStream->lightmapSecondaryTexture;
+  lightmapSecondaryTextureB = drawStream->lightmapSecondaryTextureB;
+  uVar2 = drawStream->customSamplerFlags;
+  lightmapPrimaryFlag = drawStream->customSamplerFlags & 2;
+  uVar6 = drawStream->customSamplerFlags & 4;
+  reflectionProbeTextures = g_worldDraw->reflectionProbeTextures;
+  hasSunDirChanged = drawStream->hasSunDirChanged;
+  overrideImage = (GfxImage *)0x0;
+  override = (r_lightMap->current).integer != 1;
+  if (override) {
+    overrideImage = R_OverrideGrayscaleImage(r_lightMap);
   }
-  local_3c = (GfxTexture *)0x0;
+  conflictTex = (GfxTexture *)0x0;
   if ((r_lightConflicts->current).enabled != false) {
     if ((rg.frontEndFrameCount & 4) == 0) {
       local_a8 = &(rgp.whiteImage)->texture;
@@ -246,23 +256,23 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
     else {
       local_a8 = &(rgp.blackImage)->texture;
     }
-    local_3c = local_a8;
+    conflictTex = local_a8;
   }
-  local_24 = param_2->field0_0x0;
+  device = (primState->field0_0x0).device;
   do {
-    iVar5 = R_ReadBspDrawSurfs(&param_1->primDrawSurfPos,&local_54,&local_18);
+    iVar5 = R_ReadBspDrawSurfs(&drawStream->primDrawSurfPos,&list,&count);
     if (iVar5 == 0) {
-      if (local_68 != (GfxSurface *)0x0) {
-        R_DrawBspTris(param_2,&local_68->tris,local_50);
+      if (prevTris != (srfTriangles_t *)0x0) {
+        R_DrawBspTris(primState,prevTris,triCount);
       }
-      param_1->reflectionProbeTexture = local_48;
-      param_1->lightmapPrimaryTexture = local_58;
-      param_1->lightmapSecondaryTexture = local_30;
-      param_1->lightmapSecondaryTextureB = local_28;
+      drawStream->reflectionProbeTexture = reflectionProbeTexture;
+      drawStream->lightmapPrimaryTexture = lightmapPrimaryTexture;
+      drawStream->lightmapSecondaryTexture = lightmapSecondaryTexture;
+      drawStream->lightmapSecondaryTextureB = lightmapSecondaryTextureB;
       return;
     }
-    for (local_38 = 0; local_38 < local_18; local_38 = local_38 + 1) {
-      uVar1 = local_54[local_38];
+    for (index = 0; index < count; index = index + 1) {
+      uVar1 = list[index];
       if (((uint)(rgp.world)->surfaceCount <= (uint)uVar1) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                    0x21b,0,
@@ -272,39 +282,39 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
         (*pcVar3)();
         return;
       }
-      pGVar7 = ((rgp.world)->dpvs).surfaces + uVar1;
-      puVar8 = &((rgp.world)->dpvs).surfaces[local_54[local_38 + 1]].lightmapIndex;
-      if (local_34 == pGVar7->lightmapIndex &&
-          (local_4c == pGVar7->reflectionProbeIndex && (r_lightConflicts->current).enabled == false)
-         ) {
-        if ((local_14 != (pGVar7->tris).firstVertex) ||
-           (local_50 * 3 + local_78 != (pGVar7->tris).baseIndex)) {
-          if (local_68 != (GfxSurface *)0x0) {
-            R_DrawBspTris(param_2,&local_68->tris,local_50);
+      tris_00 = ((rgp.world)->dpvs).surfaces + uVar1;
+      puVar7 = &((rgp.world)->dpvs).surfaces[list[index + 1]].lightmapIndex;
+      if (lightmapIndex == tris_00->lightmapIndex &&
+          (reflectionProbeIndex == tris_00->reflectionProbeIndex &&
+          (r_lightConflicts->current).enabled == false)) {
+        if ((baseVertex != (tris_00->tris).firstVertex) ||
+           (triCount * 3 + baseIndex != (tris_00->tris).baseIndex)) {
+          if (prevTris != (srfTriangles_t *)0x0) {
+            R_DrawBspTris(primState,prevTris,triCount);
           }
-          local_50 = 0;
-          local_78 = (pGVar7->tris).baseIndex;
-          local_68 = pGVar7;
-          if (local_14 != (pGVar7->tris).firstVertex) {
-            local_14 = (pGVar7->tris).firstVertex;
-            R_SetStreamsForBspSurface(param_2,&pGVar7->tris);
+          triCount = 0;
+          baseIndex = (tris_00->tris).baseIndex;
+          prevTris = &tris_00->tris;
+          if (baseVertex != (tris_00->tris).firstVertex) {
+            baseVertex = (tris_00->tris).firstVertex;
+            R_SetStreamsForBspSurface(primState,&tris_00->tris);
           }
         }
       }
       else {
-        if (local_68 != (GfxSurface *)0x0) {
-          R_DrawBspTris(param_2,&local_68->tris,local_50);
+        if (prevTris != (srfTriangles_t *)0x0) {
+          R_DrawBspTris(primState,prevTris,triCount);
         }
-        local_50 = 0;
-        local_78 = (pGVar7->tris).baseIndex;
-        if (local_14 != (pGVar7->tris).firstVertex) {
-          local_14 = (pGVar7->tris).firstVertex;
-          R_SetStreamsForBspSurface(param_2,&pGVar7->tris);
+        triCount = 0;
+        baseIndex = (tris_00->tris).baseIndex;
+        if (baseVertex != (tris_00->tris).firstVertex) {
+          baseVertex = (tris_00->tris).firstVertex;
+          R_SetStreamsForBspSurface(primState,&tris_00->tris);
         }
-        local_4c = (uint)pGVar7->reflectionProbeIndex;
-        local_34 = (uint)pGVar7->lightmapIndex;
+        reflectionProbeIndex = (uint)tris_00->reflectionProbeIndex;
+        lightmapIndex = (uint)tris_00->lightmapIndex;
         if ((uVar2 & 1) != 0) {
-          if ((g_worldDraw->reflectionProbeCount <= local_4c) &&
+          if ((g_worldDraw->reflectionProbeCount <= reflectionProbeIndex) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                        0x246,0,
                                        "reflectionProbeIndex doesn\'t index g_worldDraw->reflectionProbeCount\n\t%i not in [0, %i)"
@@ -313,22 +323,22 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
             (*pcVar3)();
             return;
           }
-          local_10 = local_40 + local_4c;
-          if (local_48 != local_10) {
-            local_48 = local_10;
-            R_HW_SetSamplerTexture(local_24.device,0xf,local_10);
+          newReflectionProbeTexture = reflectionProbeTextures + reflectionProbeIndex;
+          if (reflectionProbeTexture != newReflectionProbeTexture) {
+            reflectionProbeTexture = newReflectionProbeTexture;
+            R_HW_SetSamplerTexture(device,0xf,newReflectionProbeTexture);
           }
         }
-        if (local_34 == 0x1f) {
-          if ((local_20 != 0) &&
+        if (lightmapIndex == 0x1f) {
+          if ((lightmapPrimaryFlag != 0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                        0x2a1,0,"%s\n\t(bspSurf->material->info.name) = %s"), !bVar4)
              ) {
             pcVar3 = (code *)swi(3);
-            (*pcVar3)(puVar8);
+            (*pcVar3)(puVar7);
             return;
           }
-          local_68 = pGVar7;
+          prevTris = &tris_00->tris;
           if ((uVar6 != 0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                        0x2a3,0,"%s\n\t(bspSurf->material->info.name) = %s"), !bVar4)
@@ -339,7 +349,7 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
           }
         }
         else {
-          if (((uint)g_worldDraw->lightmapCount <= local_34) &&
+          if (((uint)g_worldDraw->lightmapCount <= lightmapIndex) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                        0x251,0,
                                        "lightmapIndex doesn\'t index g_worldDraw->lightmapCount\n\t%i not in [0, %i)"
@@ -348,56 +358,57 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
             (*pcVar3)();
             return;
           }
-          if (local_20 != 0) {
-            if (local_5 == '\0') {
-              if (local_c == 0) {
-                local_b0 = g_worldDraw->lightmapPrimaryTextures + local_34;
+          if (lightmapPrimaryFlag != 0) {
+            if (override == false) {
+              if (hasSunDirChanged == 0) {
+                local_b0 = g_worldDraw->lightmapPrimaryTextures + lightmapIndex;
               }
               else {
-                local_b0 = param_1->whiteTexture;
+                local_b0 = drawStream->whiteTexture;
               }
-              local_44 = local_b0;
+              newLightmapPrimaryTexture = local_b0;
             }
             else {
-              local_44 = local_1c;
+              newLightmapPrimaryTexture = &overrideImage->texture;
             }
-            if ((local_3c != (GfxTexture *)0x0) && ((pGVar7->flags & 2) != 0)) {
-              local_44 = local_3c;
+            if ((conflictTex != (GfxTexture *)0x0) && ((tris_00->flags & 2) != 0)) {
+              newLightmapPrimaryTexture = conflictTex;
             }
-            if (local_58 != local_44) {
-              local_58 = local_44;
-              R_HW_SetSamplerTexture(local_24.device,0xc,local_44);
+            if (lightmapPrimaryTexture != newLightmapPrimaryTexture) {
+              lightmapPrimaryTexture = newLightmapPrimaryTexture;
+              R_HW_SetSamplerTexture(device,0xc,newLightmapPrimaryTexture);
             }
           }
-          local_68 = pGVar7;
+          prevTris = &tris_00->tris;
           if (uVar6 != 0) {
-            if (local_5 == '\0') {
-              local_2c = g_worldDraw->lightmapSecondaryTextures + local_34;
-              local_60 = g_worldDraw->lightmapSecondaryTexturesB + local_34;
+            if (override == false) {
+              newLightmapSecondaryTexture = g_worldDraw->lightmapSecondaryTextures + lightmapIndex;
+              newLightmapSecondaryTextureB = g_worldDraw->lightmapSecondaryTexturesB + lightmapIndex
+              ;
             }
             else {
               R_OverrideGrayscaleImage(r_lightMap);
-              local_2c = &(rgp.r5g6b5Image)->texture;
-              local_1c = &(rgp.g16r16Image)->texture;
-              local_60 = &(rgp.g16r16Image)->texture;
+              newLightmapSecondaryTexture = &(rgp.r5g6b5Image)->texture;
+              overrideImage = rgp.g16r16Image;
+              newLightmapSecondaryTextureB = &(rgp.g16r16Image)->texture;
             }
-            if ((local_3c != (GfxTexture *)0x0) && ((pGVar7->flags & 2) != 0)) {
-              local_2c = local_3c;
-              local_60 = local_3c;
+            if ((conflictTex != (GfxTexture *)0x0) && ((tris_00->flags & 2) != 0)) {
+              newLightmapSecondaryTexture = conflictTex;
+              newLightmapSecondaryTextureB = conflictTex;
             }
-            if (local_30 != local_2c) {
-              local_30 = local_2c;
-              R_HW_SetSamplerTexture(local_24.device,0xd,local_2c);
+            if (lightmapSecondaryTexture != newLightmapSecondaryTexture) {
+              lightmapSecondaryTexture = newLightmapSecondaryTexture;
+              R_HW_SetSamplerTexture(device,0xd,newLightmapSecondaryTexture);
             }
-            if (local_28 != local_60) {
-              local_28 = local_60;
-              R_HW_SetSamplerTexture(local_24.device,0xe,local_60);
+            if (lightmapSecondaryTextureB != newLightmapSecondaryTextureB) {
+              lightmapSecondaryTextureB = newLightmapSecondaryTextureB;
+              R_HW_SetSamplerTexture(device,0xe,newLightmapSecondaryTextureB);
             }
           }
         }
       }
-      local_50 = (pGVar7->tris).triCount + local_50;
-      if ((param_3 != (GfxCmdBufPrimState *)0x0) &&
+      triCount = (uint)(tris_00->tris).triCount + triCount;
+      if ((prepassPrimState != (GfxCmdBufPrimState *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                    0x2dd,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
@@ -411,46 +422,48 @@ R_DrawTrianglesLit(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2,
 
 // 00B57260  R_DrawTriangles  (gfx_d3d/r_draw_bsp.cpp:765)
 
-void __cdecl R_DrawTriangles(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState *param_2)
+void __cdecl R_DrawTriangles(GfxTrianglesDrawStream *drawStream,GfxCmdBufPrimState *state)
 
 {
   int iVar1;
-  GfxSurface *pGVar2;
-  int local_2c;
-  GfxSurface *local_20;
-  ushort *local_1c;
-  uint local_18;
-  GfxSurface *local_14;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  GfxSurface *tris_00;
+  int baseIndex;
+  uint surfIndex;
+  srfTriangles_t *tris;
+  srfTriangles_t *prevTris;
+  ushort *list;
+  int triCount;
+  GfxSurface *bspSurf;
+  uint index;
+  uint count;
+  int baseVertex;
   
-  local_20 = (GfxSurface *)0x0;
-  local_18 = 0;
-  local_8 = -1;
-  local_2c = 0;
-  while (iVar1 = R_ReadBspDrawSurfs(&param_1->primDrawSurfPos,&local_1c,&local_c), iVar1 != 0) {
-    for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-      pGVar2 = ((rgp.world)->dpvs).surfaces + local_1c[local_10];
-      local_14 = pGVar2;
-      if ((local_8 != (pGVar2->tris).firstVertex) ||
-         (local_18 * 3 + local_2c != (pGVar2->tris).baseIndex)) {
-        if (local_20 != (GfxSurface *)0x0) {
-          R_DrawBspTris(param_2,&local_20->tris,local_18);
+  prevTris = (srfTriangles_t *)0x0;
+  triCount = 0;
+  baseVertex = -1;
+  baseIndex = 0;
+  while (iVar1 = R_ReadBspDrawSurfs(&drawStream->primDrawSurfPos,&list,&count), iVar1 != 0) {
+    for (index = 0; index < count; index = index + 1) {
+      tris_00 = ((rgp.world)->dpvs).surfaces + list[index];
+      bspSurf = tris_00;
+      if ((baseVertex != (tris_00->tris).firstVertex) ||
+         (triCount * 3 + baseIndex != (tris_00->tris).baseIndex)) {
+        if (prevTris != (srfTriangles_t *)0x0) {
+          R_DrawBspTris(state,prevTris,triCount);
         }
-        local_18 = 0;
-        local_2c = (pGVar2->tris).baseIndex;
-        local_20 = pGVar2;
-        if (local_8 != (pGVar2->tris).firstVertex) {
-          local_8 = (pGVar2->tris).firstVertex;
-          R_SetStreamsForBspSurface(param_2,&pGVar2->tris);
+        triCount = 0;
+        baseIndex = (tris_00->tris).baseIndex;
+        prevTris = &tris_00->tris;
+        if (baseVertex != (tris_00->tris).firstVertex) {
+          baseVertex = (tris_00->tris).firstVertex;
+          R_SetStreamsForBspSurface(state,&tris_00->tris);
         }
       }
-      local_18 = (pGVar2->tris).triCount + local_18;
+      triCount = (uint)(tris_00->tris).triCount + triCount;
     }
   }
-  if (local_20 != (GfxSurface *)0x0) {
-    R_DrawBspTris(param_2,&local_20->tris,local_18);
+  if (prevTris != (srfTriangles_t *)0x0) {
+    R_DrawBspTris(state,prevTris,triCount);
   }
   return;
 }
@@ -460,83 +473,84 @@ void __cdecl R_DrawTriangles(GfxTrianglesDrawStream *param_1,GfxCmdBufPrimState 
 
 void __cdecl
 R_DrawBspDrawSurfsLit
-          (uint *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3,
-          GfxDrawSurfListInfo *param_4)
+          (uint *primDrawSurfPos,GfxCmdBufContext context,GfxCmdBufContext prepassContext,
+          GfxDrawSurfListInfo *info)
 
 {
   GfxCmdBufPrimState *local_30;
-  GfxTrianglesDrawStream local_2c;
-  MaterialPass *local_c;
-  uint local_8;
+  GfxTrianglesDrawStream drawStream;
+  MaterialPass *pass;
+  uint customSamplerFlags;
   
-  local_c = (param_2.field0_0x0._s_0.state)->pass;
-  local_8 = (uint)local_c->customSamplerFlags;
-  if ((local_c->customSamplerFlags & 1) != 0) {
-    R_SetSamplerState(param_2.field0_0x0._s_0.state,0xf,'r');
+  pass = (context.field0_0x0._s_0.state)->pass;
+  customSamplerFlags = (uint)pass->customSamplerFlags;
+  if ((pass->customSamplerFlags & 1) != 0) {
+    R_SetSamplerState(context.field0_0x0._s_0.state,0xf,'r');
   }
-  if ((local_8 & 2) != 0) {
-    R_SetSamplerState(param_2.field0_0x0._s_0.state,0xc,'b');
+  if ((customSamplerFlags & 2) != 0) {
+    R_SetSamplerState(context.field0_0x0._s_0.state,0xc,'b');
   }
-  if ((local_8 & 4) != 0) {
-    R_SetSamplerState(param_2.field0_0x0._s_0.state,0xd,'b');
+  if ((customSamplerFlags & 4) != 0) {
+    R_SetSamplerState(context.field0_0x0._s_0.state,0xd,'b');
   }
-  if ((local_8 & 8) != 0) {
-    R_SetSamplerState(param_2.field0_0x0._s_0.state,0xe,'b');
+  if ((customSamplerFlags & 8) != 0) {
+    R_SetSamplerState(context.field0_0x0._s_0.state,0xe,'b');
   }
-  local_2c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  local_2c.lightmapPrimaryTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xc];
-  local_2c.lightmapSecondaryTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xd];
-  local_2c.lightmapSecondaryTextureB = (param_2.field0_0x0._s_0.state)->samplerTexture[0xe];
-  local_2c.whiteTexture = &(rgp.whiteImage)->texture;
-  local_2c.primDrawSurfPos = param_1;
-  local_2c.customSamplerFlags = (uint)local_c->customSamplerFlags;
-  local_2c.hasSunDirChanged =
-       *(int *)((int)((param_2.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] + 0x15d77c);
-  if (param_3.field0_0x0._s_0.state == (GfxCmdBufState *)0x0) {
+  drawStream.reflectionProbeTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.lightmapPrimaryTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xc];
+  drawStream.lightmapSecondaryTexture = (context.field0_0x0._s_0.state)->samplerTexture[0xd];
+  drawStream.lightmapSecondaryTextureB = (context.field0_0x0._s_0.state)->samplerTexture[0xe];
+  drawStream.whiteTexture = &(rgp.whiteImage)->texture;
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  drawStream.customSamplerFlags = (uint)pass->customSamplerFlags;
+  drawStream.hasSunDirChanged =
+       *(int *)((int)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0] + 0x15d77c);
+  if (prepassContext.field0_0x0._s_0.state == (GfxCmdBufState *)0x0) {
     local_30 = (GfxCmdBufPrimState *)0x0;
   }
   else {
-    local_30 = &(param_3.field0_0x0._s_0.state)->prim;
+    local_30 = &(prepassContext.field0_0x0._s_0.state)->prim;
   }
-  R_DrawTrianglesLit(&local_2c,&(param_2.field0_0x0._s_0.state)->prim,local_30);
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = local_2c.reflectionProbeTexture;
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xc] = local_2c.lightmapPrimaryTexture;
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xd] = local_2c.lightmapSecondaryTexture;
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xe] = local_2c.lightmapSecondaryTextureB;
+  R_DrawTrianglesLit(&drawStream,&(context.field0_0x0._s_0.state)->prim,local_30);
+  (context.field0_0x0._s_0.state)->samplerTexture[0xf] = drawStream.reflectionProbeTexture;
+  (context.field0_0x0._s_0.state)->samplerTexture[0xc] = drawStream.lightmapPrimaryTexture;
+  (context.field0_0x0._s_0.state)->samplerTexture[0xd] = drawStream.lightmapSecondaryTexture;
+  (context.field0_0x0._s_0.state)->samplerTexture[0xe] = drawStream.lightmapSecondaryTextureB;
   return;
 }
 
 
 // 00B56E30  R_DrawBspDrawSurfsLitPreTess  (gfx_d3d/r_draw_bsp.cpp:901)
 
-void __cdecl R_DrawBspDrawSurfsLitPreTess(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawBspDrawSurfsLitPreTess(uint *primDrawSurfPos,GfxCmdBufContext context)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_2c;
-  uint local_28;
-  GfxReadCmdBuf local_24;
-  GfxSurface *local_20;
-  GfxBspPreTessDrawSurf *local_1c;
-  uint local_18;
-  GfxSurface *local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  GfxSurface *tris_00;
+  uint baseIndex;
+  uint surfIndex;
+  GfxReadCmdBuf cmdBuf;
+  srfTriangles_t *tris;
+  GfxBspPreTessDrawSurf *list;
+  uint reflectionProbeIndex;
+  GfxSurface *bspSurf;
+  uint index;
+  uint lightmapIndex;
+  uint count;
   
-  local_24.primDrawSurfPos = param_1;
+  cmdBuf.primDrawSurfPos = primDrawSurfPos;
   do {
-    iVar3 = R_ReadBspPreTessDrawSurfs(&local_24,&local_1c,&local_8,&local_2c);
+    iVar3 = R_ReadBspPreTessDrawSurfs(&cmdBuf,&list,&count,&baseIndex);
     if (iVar3 == 0) {
       return;
     }
-    local_18 = 0xff;
-    local_c = 0x1f;
-    for (local_10 = 0; local_10 < local_8; local_10 = local_10 + 1) {
-      local_28 = (uint)local_1c[local_10].baseSurfIndex;
-      if (((uint)(rgp.world)->surfaceCount <= local_28) &&
+    reflectionProbeIndex = 0xff;
+    lightmapIndex = 0x1f;
+    for (index = 0; index < count; index = index + 1) {
+      surfIndex = (uint)list[index].baseSurfIndex;
+      if (((uint)(rgp.world)->surfaceCount <= surfIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",
                                    0x3a0,0,
                                    "surfIndex doesn\'t index rgp.world->surfaceCount\n\t%i not in [0, %i)"
@@ -545,19 +559,20 @@ void __cdecl R_DrawBspDrawSurfsLitPreTess(uint *param_1,GfxCmdBufContext param_2
         (*pcVar1)();
         return;
       }
-      local_20 = ((rgp.world)->dpvs).surfaces + local_28;
-      local_14 = local_20;
-      if ((local_18 != local_20->reflectionProbeIndex) || (local_c != local_20->lightmapIndex)) {
-        local_18 = (uint)local_20->reflectionProbeIndex;
-        local_c = (uint)local_20->lightmapIndex;
-        R_SetReflectionProbe(param_2,local_18);
-        R_SetLightmap(param_2,local_c);
-        R_SetupPassPerObjectArgs(param_2);
-        R_SetupPassPerPrimArgs(param_2);
+      tris_00 = ((rgp.world)->dpvs).surfaces + surfIndex;
+      bspSurf = tris_00;
+      if ((reflectionProbeIndex != tris_00->reflectionProbeIndex) ||
+         (lightmapIndex != tris_00->lightmapIndex)) {
+        reflectionProbeIndex = (uint)tris_00->reflectionProbeIndex;
+        lightmapIndex = (uint)tris_00->lightmapIndex;
+        R_SetReflectionProbe(context,reflectionProbeIndex);
+        R_SetLightmap(context,lightmapIndex);
+        R_SetupPassPerObjectArgs(context);
+        R_SetupPassPerPrimArgs(context);
       }
-      R_DrawPreTessTris(&(param_2.field0_0x0._s_0.state)->prim,&local_20->tris,local_2c,
-                        (uint)local_1c[local_10].totalTriCount);
-      local_2c = (uint)local_1c[local_10].totalTriCount * 3 + local_2c;
+      R_DrawPreTessTris(&(context.field0_0x0._s_0.state)->prim,&tris_00->tris,baseIndex,
+                        (uint)list[index].totalTriCount);
+      baseIndex = (uint)list[index].totalTriCount * 3 + baseIndex;
     }
   } while( true );
 }
@@ -565,38 +580,39 @@ void __cdecl R_DrawBspDrawSurfsLitPreTess(uint *param_1,GfxCmdBufContext param_2
 
 // 00B570B0  R_DrawBspDrawSurfsPreTess  (gfx_d3d/r_draw_bsp.cpp:955)
 
-void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawBspDrawSurfsPreTess(uint *primDrawSurfPos,GfxCmdBufContext context)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_30;
-  uint local_2c;
-  GfxReadCmdBuf local_28;
-  GfxSurface *local_24;
-  GfxSurface *local_20;
-  GfxBspPreTessDrawSurf *local_1c;
-  uint local_18;
-  GfxSurface *local_14;
-  uint local_10;
-  uint local_c;
-  int local_8;
+  GfxSurface *pGVar4;
+  uint baseIndex;
+  uint surfIndex;
+  GfxReadCmdBuf cmdBuf;
+  srfTriangles_t *tris;
+  srfTriangles_t *prevTris;
+  GfxBspPreTessDrawSurf *list;
+  uint triCount;
+  GfxSurface *bspSurf;
+  uint index;
+  uint count;
+  int baseVertex;
   
-  R_SetupPassPerObjectArgs(param_2);
-  R_SetupPassPerPrimArgs(param_2);
-  local_28.primDrawSurfPos = param_1;
+  R_SetupPassPerObjectArgs(context);
+  R_SetupPassPerPrimArgs(context);
+  cmdBuf.primDrawSurfPos = primDrawSurfPos;
   do {
-    iVar3 = R_ReadBspPreTessDrawSurfs(&local_28,&local_1c,&local_c,&local_30);
+    iVar3 = R_ReadBspPreTessDrawSurfs(&cmdBuf,&list,&count,&baseIndex);
     if (iVar3 == 0) {
       return;
     }
-    local_20 = (GfxSurface *)0x0;
-    local_18 = 0;
-    local_8 = -1;
-    for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-      local_2c = (uint)local_1c[local_10].baseSurfIndex;
-      if ((uint)(rgp.world)->surfaceCount <= local_2c) {
+    prevTris = (srfTriangles_t *)0x0;
+    triCount = 0;
+    baseVertex = -1;
+    for (index = 0; index < count; index = index + 1) {
+      surfIndex = (uint)list[index].baseSurfIndex;
+      if ((uint)(rgp.world)->surfaceCount <= surfIndex) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_bsp.cpp",0x3d5,
                                  0,
                                  "surfIndex doesn\'t index rgp.world->surfaceCount\n\t%i not in [0, %i)"
@@ -607,34 +623,34 @@ void __cdecl R_DrawBspDrawSurfsPreTess(uint *param_1,GfxCmdBufContext param_2)
           return;
         }
       }
-      local_24 = ((rgp.world)->dpvs).surfaces + local_2c;
-      local_14 = local_24;
-      if (local_8 != (local_24->tris).firstVertex) {
-        if (local_18 != 0) {
-          R_DrawPreTessTris(&(param_2.field0_0x0._s_0.state)->prim,&local_20->tris,local_30,local_18
-                           );
-          local_30 = local_18 * 3 + local_30;
-          local_18 = 0;
+      pGVar4 = ((rgp.world)->dpvs).surfaces + surfIndex;
+      bspSurf = pGVar4;
+      if (baseVertex != (pGVar4->tris).firstVertex) {
+        if (triCount != 0) {
+          R_DrawPreTessTris(&(context.field0_0x0._s_0.state)->prim,prevTris,baseIndex,triCount);
+          baseIndex = triCount * 3 + baseIndex;
+          triCount = 0;
         }
-        local_20 = local_24;
-        local_8 = (local_24->tris).firstVertex;
+        baseVertex = (pGVar4->tris).firstVertex;
+        prevTris = &pGVar4->tris;
       }
-      local_18 = local_1c[local_10].totalTriCount + local_18;
+      triCount = list[index].totalTriCount + triCount;
     }
-    R_DrawPreTessTris(&(param_2.field0_0x0._s_0.state)->prim,&local_20->tris,local_30,local_18);
+    R_DrawPreTessTris(&(context.field0_0x0._s_0.state)->prim,prevTris,baseIndex,triCount);
   } while( true );
 }
 
 
 // 00B57230  R_DrawBspDrawSurfs  (gfx_d3d/r_draw_bsp.cpp:1005)
 
-void __cdecl R_DrawBspDrawSurfs(uint *param_1,GfxCmdBufState *param_2,GfxDrawSurfListInfo *param_3)
+void __cdecl
+R_DrawBspDrawSurfs(uint *primDrawSurfPos,GfxCmdBufState *state,GfxDrawSurfListInfo *info)
 
 {
-  GfxTrianglesDrawStream local_24;
+  GfxTrianglesDrawStream drawStream;
   
-  local_24.primDrawSurfPos = param_1;
-  R_DrawTriangles(&local_24,&param_2->prim);
+  drawStream.primDrawSurfPos = primDrawSurfPos;
+  R_DrawTriangles(&drawStream,&state->prim);
   return;
 }
 

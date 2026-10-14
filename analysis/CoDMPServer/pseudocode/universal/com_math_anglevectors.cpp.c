@@ -2,7 +2,7 @@
 
 // 007B1B70  AngleVectors  (universal/com_math_anglevectors.cpp:9)
 
-void __cdecl AngleVectors(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl AngleVectors(float *angles,float *forward,float *right,float *up)
 
 {
   float fVar1;
@@ -13,34 +13,41 @@ void __cdecl AngleVectors(float *param_1,float *param_2,float *param_3,float *pa
   float fVar6;
   float10 fVar7;
   float10 fVar8;
+  float cy;
+  float angle;
+  float sr;
+  float sp;
+  float cr;
+  float cp;
+  float sy;
   
-  fVar7 = (float10)fcos((float10)(param_1[1] * 0.017453292));
-  fVar8 = (float10)fsin((float10)(param_1[1] * 0.017453292));
+  fVar7 = (float10)fcos((float10)(angles[1] * 0.017453292));
+  fVar8 = (float10)fsin((float10)(angles[1] * 0.017453292));
   fVar1 = (float)fVar7;
   fVar2 = (float)fVar8;
-  fVar7 = (float10)fcos((float10)(*param_1 * 0.017453292));
-  fVar8 = (float10)fsin((float10)(*param_1 * 0.017453292));
+  fVar7 = (float10)fcos((float10)(*angles * 0.017453292));
+  fVar8 = (float10)fsin((float10)(*angles * 0.017453292));
   fVar3 = (float)fVar7;
   fVar4 = (float)fVar8;
-  if (param_2 != (float *)0x0) {
-    *param_2 = fVar3 * fVar1;
-    param_2[1] = fVar3 * fVar2;
-    param_2[2] = -fVar4;
+  if (forward != (float *)0x0) {
+    *forward = fVar3 * fVar1;
+    forward[1] = fVar3 * fVar2;
+    forward[2] = -fVar4;
   }
-  if ((param_3 != (float *)0x0) || (param_4 != (float *)0x0)) {
-    fVar7 = (float10)fcos((float10)(param_1[2] * 0.017453292));
-    fVar8 = (float10)fsin((float10)(param_1[2] * 0.017453292));
+  if ((right != (float *)0x0) || (up != (float *)0x0)) {
+    fVar7 = (float10)fcos((float10)(angles[2] * 0.017453292));
+    fVar8 = (float10)fsin((float10)(angles[2] * 0.017453292));
     fVar5 = (float)fVar7;
     fVar6 = (float)fVar8;
-    if (param_3 != (float *)0x0) {
-      *param_3 = fVar6 * -1.0 * fVar4 * fVar1 + fVar5 * -1.0 * -fVar2;
-      param_3[1] = fVar6 * -1.0 * fVar4 * fVar2 + fVar5 * -1.0 * fVar1;
-      param_3[2] = fVar6 * -1.0 * fVar3;
+    if (right != (float *)0x0) {
+      *right = fVar6 * -1.0 * fVar4 * fVar1 + fVar5 * -1.0 * -fVar2;
+      right[1] = fVar6 * -1.0 * fVar4 * fVar2 + fVar5 * -1.0 * fVar1;
+      right[2] = fVar6 * -1.0 * fVar3;
     }
-    if (param_4 != (float *)0x0) {
-      *param_4 = fVar5 * fVar4 * fVar1 + -fVar6 * -fVar2;
-      param_4[1] = fVar5 * fVar4 * fVar2 + -fVar6 * fVar1;
-      param_4[2] = fVar5 * fVar3;
+    if (up != (float *)0x0) {
+      *up = fVar5 * fVar4 * fVar1 + -fVar6 * -fVar2;
+      up[1] = fVar5 * fVar4 * fVar2 + -fVar6 * fVar1;
+      up[2] = fVar5 * fVar3;
     }
   }
   return;
@@ -49,7 +56,7 @@ void __cdecl AngleVectors(float *param_1,float *param_2,float *param_3,float *pa
 
 // 007B1D80  AnglesToAxis  (universal/com_math_anglevectors.cpp:50)
 
-void __cdecl AnglesToAxis(float *param_1,float (*param_2) [3])
+void __cdecl AnglesToAxis(float *angles,float (*axis) [3])
 
 {
   float fVar1;
@@ -60,48 +67,55 @@ void __cdecl AnglesToAxis(float *param_1,float (*param_2) [3])
   float fVar6;
   float10 fVar7;
   float10 fVar8;
+  float cy;
+  float angle;
+  float sr;
+  float sp;
+  float cr;
+  float cp;
+  float sy;
   
-  fVar7 = (float10)fcos((float10)(param_1[1] * 0.017453292));
-  fVar8 = (float10)fsin((float10)(param_1[1] * 0.017453292));
+  fVar7 = (float10)fcos((float10)(angles[1] * 0.017453292));
+  fVar8 = (float10)fsin((float10)(angles[1] * 0.017453292));
   fVar1 = (float)fVar7;
   fVar2 = (float)fVar8;
-  fVar7 = (float10)fcos((float10)(*param_1 * 0.017453292));
-  fVar8 = (float10)fsin((float10)(*param_1 * 0.017453292));
+  fVar7 = (float10)fcos((float10)(*angles * 0.017453292));
+  fVar8 = (float10)fsin((float10)(*angles * 0.017453292));
   fVar3 = (float)fVar7;
   fVar4 = (float)fVar8;
-  (*param_2)[0] = fVar3 * fVar1;
-  (*param_2)[1] = fVar3 * fVar2;
-  (*param_2)[2] = -fVar4;
-  fVar7 = (float10)fcos((float10)(param_1[2] * 0.017453292));
-  fVar8 = (float10)fsin((float10)(param_1[2] * 0.017453292));
+  (*axis)[0] = fVar3 * fVar1;
+  (*axis)[1] = fVar3 * fVar2;
+  (*axis)[2] = -fVar4;
+  fVar7 = (float10)fcos((float10)(angles[2] * 0.017453292));
+  fVar8 = (float10)fsin((float10)(angles[2] * 0.017453292));
   fVar5 = (float)fVar7;
   fVar6 = (float)fVar8;
-  param_2[1][0] = fVar6 * fVar4 * fVar1 + -fVar2 * fVar5;
-  param_2[1][1] = fVar6 * fVar4 * fVar2 + fVar5 * fVar1;
-  param_2[1][2] = fVar6 * fVar3;
-  param_2[2][0] = fVar5 * fVar4 * fVar1 + -fVar6 * -fVar2;
-  param_2[2][1] = fVar5 * fVar4 * fVar2 + -fVar6 * fVar1;
-  param_2[2][2] = fVar5 * fVar3;
+  axis[1][0] = fVar6 * fVar4 * fVar1 + -fVar2 * fVar5;
+  axis[1][1] = fVar6 * fVar4 * fVar2 + fVar5 * fVar1;
+  axis[1][2] = fVar6 * fVar3;
+  axis[2][0] = fVar5 * fVar4 * fVar1 + -fVar6 * -fVar2;
+  axis[2][1] = fVar5 * fVar4 * fVar2 + -fVar6 * fVar1;
+  axis[2][2] = fVar5 * fVar3;
   return;
 }
 
 
 // 007B1F40  AnglesToQuat  (universal/com_math_anglevectors.cpp:97)
 
-void __cdecl AnglesToQuat(float *param_1,float *param_2)
+void __cdecl AnglesToQuat(float *angles,float *quat)
 
 {
-  float local_28 [9];
+  float axis [9];
   
-  AnglesToAxis(param_1,(float (*) [3])local_28);
-  AxisToQuat((float (*) [3])local_28,param_2);
+  AnglesToAxis(angles,(float (*) [3])axis);
+  AxisToQuat((float (*) [3])axis,quat);
   return;
 }
 
 
 // 007B1F70  QuatToAxis  (universal/com_math_anglevectors.cpp:128)
 
-void __cdecl QuatToAxis(float *param_1,float (*param_2) [3])
+void __cdecl QuatToAxis(float *quat,float (*axis) [3])
 
 {
   float fVar1;
@@ -116,14 +130,28 @@ void __cdecl QuatToAxis(float *param_1,float (*param_2) [3])
   float fVar10;
   float fVar11;
   float fVar12;
+  float yy;
+  float ww;
+  float xy;
+  float zz;
+  float zw;
+  float scaledX;
+  float scaledY;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
+  float scale;
+  float magSqr;
   
-  fVar1 = *param_1;
-  fVar2 = *param_1;
-  fVar3 = param_1[1];
-  fVar8 = param_1[1];
-  fVar9 = param_1[2];
-  fVar10 = param_1[2];
-  fVar6 = fVar1 * fVar2 + fVar3 * fVar8 + fVar9 * fVar10 + param_1[3] * param_1[3];
+  fVar1 = *quat;
+  fVar2 = *quat;
+  fVar3 = quat[1];
+  fVar8 = quat[1];
+  fVar9 = quat[2];
+  fVar10 = quat[2];
+  fVar6 = fVar1 * fVar2 + fVar3 * fVar8 + fVar9 * fVar10 + quat[3] * quat[3];
   if (fVar6 <= 0.0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math_anglevectors.cpp"
                              ,0x8b,0,"%s");
@@ -137,52 +165,56 @@ void __cdecl QuatToAxis(float *param_1,float (*param_2) [3])
   fVar7 = fVar1 * fVar2 * fVar6;
   fVar8 = fVar3 * fVar8 * fVar6;
   fVar9 = fVar9 * fVar10 * fVar6;
-  fVar10 = fVar6 * *param_1;
-  fVar1 = param_1[1];
-  fVar2 = param_1[2];
-  fVar3 = param_1[3];
-  fVar11 = fVar6 * param_1[1] * param_1[2];
-  fVar12 = fVar6 * param_1[1] * param_1[3];
-  fVar6 = fVar6 * param_1[2] * param_1[3];
-  (*param_2)[0] = 1.0 - (fVar8 + fVar9);
-  (*param_2)[1] = fVar10 * fVar1 + fVar6;
-  (*param_2)[2] = fVar10 * fVar2 - fVar12;
-  param_2[1][0] = fVar10 * fVar1 - fVar6;
-  param_2[1][1] = 1.0 - (fVar7 + fVar9);
-  param_2[1][2] = fVar11 + fVar10 * fVar3;
-  param_2[2][0] = fVar10 * fVar2 + fVar12;
-  param_2[2][1] = fVar11 - fVar10 * fVar3;
-  param_2[2][2] = 1.0 - (fVar7 + fVar8);
+  fVar10 = fVar6 * *quat;
+  fVar1 = quat[1];
+  fVar2 = quat[2];
+  fVar3 = quat[3];
+  fVar11 = fVar6 * quat[1] * quat[2];
+  fVar12 = fVar6 * quat[1] * quat[3];
+  fVar6 = fVar6 * quat[2] * quat[3];
+  (*axis)[0] = 1.0 - (fVar8 + fVar9);
+  (*axis)[1] = fVar10 * fVar1 + fVar6;
+  (*axis)[2] = fVar10 * fVar2 - fVar12;
+  axis[1][0] = fVar10 * fVar1 - fVar6;
+  axis[1][1] = 1.0 - (fVar7 + fVar9);
+  axis[1][2] = fVar11 + fVar10 * fVar3;
+  axis[2][0] = fVar10 * fVar2 + fVar12;
+  axis[2][1] = fVar11 - fVar10 * fVar3;
+  axis[2][2] = 1.0 - (fVar7 + fVar8);
   return;
 }
 
 
 // 007B21C0  AxisToSignedAngles  (universal/com_math_anglevectors.cpp:179)
 
-void __cdecl AxisToSignedAngles(float (*param_1) [3],float *param_2)
+void __cdecl AxisToSignedAngles(float (*axis) [3],float *angles)
 
 {
   float10 fVar1;
   float10 fVar2;
   float fVar3;
   float local_3c;
-  float local_20;
+  float rad;
+  float right;
   float local_1c;
   float local_18;
-  float local_14;
+  float temp;
+  float pitch;
+  float fCos;
+  float fSin;
   
-  vectosignedangles(*param_1,param_2);
-  fVar1 = (float10)fcos((float10)(-param_2[1] * 0.017453292));
-  fVar2 = (float10)fsin((float10)(-param_2[1] * 0.017453292));
-  local_14 = (float)fVar1 * param_1[1][0] - (float)fVar2 * param_1[1][1];
-  local_1c = (float)fVar2 * param_1[1][0] + (float)fVar1 * param_1[1][1];
-  fVar1 = (float10)fcos((float10)(-*param_2 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(-*param_2 * 0.017453292));
-  local_20 = (float)fVar2 * param_1[1][2] + (float)fVar1 * local_14;
-  local_18 = (float)fVar1 * param_1[1][2] - (float)fVar2 * local_14;
-  fVar3 = vectosignedpitch(&local_20);
+  vectosignedangles(*axis,angles);
+  fVar1 = (float10)fcos((float10)(-angles[1] * 0.017453292));
+  fVar2 = (float10)fsin((float10)(-angles[1] * 0.017453292));
+  temp = (float)fVar1 * axis[1][0] - (float)fVar2 * axis[1][1];
+  local_1c = (float)fVar2 * axis[1][0] + (float)fVar1 * axis[1][1];
+  fVar1 = (float10)fcos((float10)(-*angles * 0.017453292));
+  fVar2 = (float10)fsin((float10)(-*angles * 0.017453292));
+  right = (float)fVar2 * axis[1][2] + (float)fVar1 * temp;
+  local_18 = (float)fVar1 * axis[1][2] - (float)fVar2 * temp;
+  fVar3 = vectosignedpitch(&right);
   if (0.0 <= local_1c) {
-    param_2[2] = -fVar3;
+    angles[2] = -fVar3;
   }
   else {
     if (0.0 <= fVar3) {
@@ -191,7 +223,7 @@ void __cdecl AxisToSignedAngles(float (*param_1) [3],float *param_2)
     else {
       local_3c = 180.0;
     }
-    param_2[2] = fVar3 + local_3c;
+    angles[2] = fVar3 + local_3c;
   }
   return;
 }
@@ -199,7 +231,7 @@ void __cdecl AxisToSignedAngles(float (*param_1) [3],float *param_2)
 
 // 007B2370  vectosignedangles  (universal/com_math_anglevectors.cpp:224)
 
-void __cdecl vectosignedangles(float *param_1,float *param_2)
+void __cdecl vectosignedangles(float *vec,float *angles)
 
 {
   double dVar1;
@@ -212,9 +244,9 @@ void __cdecl vectosignedangles(float *param_1,float *param_2)
   float local_18;
   float local_14;
   
-  if ((param_1[1] == 0.0) && (*param_1 == 0.0)) {
+  if ((vec[1] == 0.0) && (*vec == 0.0)) {
     local_14 = 0.0;
-    if (-param_1[2] < 0.0) {
+    if (-vec[2] < 0.0) {
       local_18 = -90.0;
     }
     else {
@@ -223,26 +255,26 @@ void __cdecl vectosignedangles(float *param_1,float *param_2)
     local_1c = local_18;
   }
   else {
-    fVar3 = *param_1;
-    dVar1 = (double)param_1[1];
+    fVar3 = *vec;
+    dVar1 = (double)vec[1];
     __libm_sse2_atan2((double)CONCAT44(in_stack_ffffffd4,in_stack_ffffffd0),
                       (double)CONCAT44(fVar3,in_stack_ffffffd8));
     local_14 = ((float)dVar1 * 180.0) / 3.1415927;
-    fVar2 = *param_1 * *param_1 + param_1[1] * param_1[1];
-    dVar1 = (double)param_1[2];
-    __libm_sse2_atan2((double)CONCAT44(SQRT(fVar2),param_1[2]),(double)CONCAT44(fVar3,fVar2));
+    fVar2 = *vec * *vec + vec[1] * vec[1];
+    dVar1 = (double)vec[2];
+    __libm_sse2_atan2((double)CONCAT44(SQRT(fVar2),vec[2]),(double)CONCAT44(fVar3,fVar2));
     local_1c = ((float)dVar1 * -180.0) / 3.1415927;
   }
-  *param_2 = local_1c;
-  param_2[1] = local_14;
-  param_2[2] = 0.0;
+  *angles = local_1c;
+  angles[1] = local_14;
+  angles[2] = 0.0;
   return;
 }
 
 
 // 007B24E0  vectosignedpitch  (universal/com_math_anglevectors.cpp:251)
 
-float __cdecl vectosignedpitch(float *param_1)
+float __cdecl vectosignedpitch(float *vec)
 
 {
   double dVar1;
@@ -251,8 +283,8 @@ float __cdecl vectosignedpitch(float *param_1)
   float local_18;
   float local_14;
   
-  if ((param_1[1] == 0.0) && (*param_1 == 0.0)) {
-    if (-param_1[2] < 0.0) {
+  if ((vec[1] == 0.0) && (*vec == 0.0)) {
+    if (-vec[2] < 0.0) {
       local_14 = -90.0;
     }
     else {
@@ -261,8 +293,8 @@ float __cdecl vectosignedpitch(float *param_1)
     local_18 = local_14;
   }
   else {
-    dVar1 = (double)param_1[2];
-    __libm_sse2_atan2(in_stack_ffffffd0,(double)CONCAT44(param_1[2],in_stack_ffffffd8));
+    dVar1 = (double)vec[2];
+    __libm_sse2_atan2(in_stack_ffffffd0,(double)CONCAT44(vec[2],in_stack_ffffffd8));
     local_18 = ((float)dVar1 * -180.0) / 3.1415927;
   }
   return local_18;

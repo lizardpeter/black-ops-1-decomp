@@ -2,12 +2,15 @@
 
 // 0086F9A0  jpeg_start_compress  (jpeg-6/jcapistd.c:39)
 
+/* WARNING: Variable defined which should be unmapped: write_all_tables */
+
 void __cdecl jpeg_start_compress(jpeg_compress_struct *param_1,uchar param_2)
 
 {
   jpeg_compress_struct *unaff_ESI;
   jpeg_compress_struct *unaff_retaddr;
   jpeg_compress_struct *pjVar1;
+  uchar write_all_tables;
   
   if (unaff_ESI->global_state != 100) {
     unaff_ESI->err->msg_code = 0x14;
@@ -28,10 +31,14 @@ void __cdecl jpeg_start_compress(jpeg_compress_struct *param_1,uchar param_2)
 
 // 0086FA10  jpeg_write_scanlines  (jpeg-6/jcapistd.c:79)
 
+/* WARNING: Variable defined which should be unmapped: row_ctr */
+
 uint __cdecl jpeg_write_scanlines(jpeg_compress_struct *param_1,uchar **param_2,uint param_3)
 
 {
   int *unaff_ESI;
+  uchar **scanlines;
+  uint row_ctr;
   
   if (unaff_ESI[5] != 0x65) {
     *(undefined4 *)(*unaff_ESI + 0x14) = 0x14;

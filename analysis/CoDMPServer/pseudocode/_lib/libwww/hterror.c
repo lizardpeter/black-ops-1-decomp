@@ -54,7 +54,7 @@ _HTError_addSystem(int param_1,undefined4 param_2,undefined4 param_3,undefined4 
                   char *param_5)
 
 {
-  uchar *puVar1;
+  uchar *buf;
   undefined4 extraout_EAX;
   undefined4 local_14;
   char *local_10;
@@ -62,22 +62,22 @@ _HTError_addSystem(int param_1,undefined4 param_2,undefined4 param_3,undefined4 
   
   local_8 = 0;
   if (param_1 != 0) {
-    puVar1 = (uchar *)_HTErrnoString(param_3);
+    buf = (uchar *)_HTErrnoString(param_3);
     if (param_5 == (char *)0x0) {
       local_10 = "unknown";
     }
     else {
       local_10 = param_5;
     }
-    if (puVar1 == (uchar *)0x0) {
+    if (buf == (uchar *)0x0) {
       local_14 = 0;
     }
     else {
-      strlen(puVar1);
+      strlen(buf);
       local_14 = extraout_EAX;
     }
-    local_8 = _HTError_add(param_1,param_2,param_4,0x49,puVar1,local_14,local_10);
-    _HTMemory_free(puVar1);
+    local_8 = _HTError_add(param_1,param_2,param_4,0x49,buf,local_14,local_10);
+    _HTMemory_free(buf);
   }
   return local_8;
 }

@@ -4,7 +4,7 @@
 
 void __cdecl
 R_SetLightProperties
-          (GfxCmdBufSourceState *param_1,GfxLight *param_2,GfxLightDef *param_3,
+          (GfxCmdBufSourceState *hasShadowMap,GfxLight *spotShadowFade,GfxLightDef *param_3,
           LightHasShadowMap param_4,float param_5)
 
 {
@@ -120,7 +120,7 @@ R_SetLightProperties
     *(float *)(unaff_ESI + 0x840) = fVar3 * fVar8 + fVar12 + 0.5;
     *(float *)(unaff_ESI + 0x848) = fVar8 + 0.5;
     *(undefined4 *)(unaff_ESI + 0x844) = 0;
-    *(GfxLight **)(unaff_ESI + 0x84c) = param_2;
+    *(GfxLight **)(unaff_ESI + 0x84c) = spotShadowFade;
     *(short *)(unaff_ESI + 0x1818) = *(short *)(unaff_ESI + 0x1818) + 1;
     *(float *)(unaff_ESI + 0x8f4) = (fVar3 * fVar18 + -(fVar15 * fVar7)) * 0.5;
     *(float *)(unaff_ESI + 0x8fc) = fVar18 * 0.5;
@@ -246,12 +246,12 @@ R_SetLightProperties
   *(undefined4 *)(unaff_ESI + 0x834) = uVar2;
   *(undefined4 *)(unaff_ESI + 0x83c) = 0;
   *(short *)(unaff_ESI + 0x1816) = *(short *)(unaff_ESI + 0x1816) + 1;
-  if ((*unaff_EDI == '\x03') && (param_1 == (GfxCmdBufSourceState *)0x0)) {
+  if ((*unaff_EDI == '\x03') && (hasShadowMap == (GfxCmdBufSourceState *)0x0)) {
     fVar15 = fVar15 / (*(float *)(unaff_EDI + 0x30) - *(float *)(unaff_EDI + 0x2c));
     *(uint *)(unaff_ESI + 0x844) = (uint)(*(float *)(unaff_EDI + 0x2c) * fVar15) ^ uVar20;
     *(float *)(unaff_ESI + 0x840) = fVar15;
     *(undefined4 *)(unaff_ESI + 0x848) = 0;
-    *(GfxLight **)(unaff_ESI + 0x84c) = param_2;
+    *(GfxLight **)(unaff_ESI + 0x84c) = spotShadowFade;
     *(short *)(unaff_ESI + 0x1818) = *(short *)(unaff_ESI + 0x1818) + 1;
   }
   return;
@@ -259,6 +259,8 @@ R_SetLightProperties
 
 
 // 0086DD20  R_SetShadowableLight  (gfx_d3d/r_draw_shadowablelight.cpp:216)
+
+/* WARNING: Variable defined which should be unmapped: hasShadowMap */
 
 void __cdecl R_SetShadowableLight(GfxCmdBufSourceState *param_1,uint param_2,GfxViewInfo *param_3)
 
@@ -278,7 +280,9 @@ void __cdecl R_SetShadowableLight(GfxCmdBufSourceState *param_1,uint param_2,Gfx
   bool bVar9;
   float fVar10;
   float fVar11;
-  GfxCmdBufSourceState *pGStack_8;
+  GfxCmdBufSourceState *source;
+  LightHasShadowMap hasShadowMap;
+  GfxLightDef *def;
   
   pGVar4 = param_1;
   param_1->shadowableLightIndex = in_EDX;
@@ -326,10 +330,10 @@ void __cdecl R_SetShadowableLight(GfxCmdBufSourceState *param_1,uint param_2,Gfx
         (pGVar4->input).codeImageRenderTargetControl[7].packed = 0;
         R_UpdateCodeConstantFromVec4(unaff_EDI,(uint)unaff_ESI,unaff_EBP);
       }
-      pGStack_8 = (GfxCmdBufSourceState *)(uint)!bVar9;
+      def = (GfxLightDef *)(uint)!bVar9;
       R_SetLightProperties
-                (pGStack_8,(GfxLight *)param_1,(GfxLightDef *)unaff_EDI,(LightHasShadowMap)unaff_ESI
-                 ,(float)unaff_EBP);
+                ((GfxCmdBufSourceState *)def,(GfxLight *)param_1,(GfxLightDef *)unaff_EDI,
+                 (LightHasShadowMap)unaff_ESI,(float)unaff_EBP);
     }
   }
   return;
@@ -377,6 +381,7 @@ R_UpdateShadowLookupMatrix(GfxCmdBufSourceState *param_1,uint param_2,GfxMatrix 
   int in_ECX;
   int iVar1;
   float *pfVar2;
+  GfxMatrix *lookupMatrix;
   
   if (*(int *)(in_EAX + 0x1a00) != in_ECX) {
     *(short *)(in_EAX + 0x19e6) = *(short *)(in_EAX + 0x19e6) + 1;

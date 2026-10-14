@@ -262,14 +262,14 @@ void __cdecl DynEntCl_LinkBrush(ushort param_1)
 {
   ushort uVar1;
   GfxBrushModel *pGVar2;
-  uint uVar3;
-  DynEntityDef *pDVar4;
-  DynEntityPose *pDVar5;
+  uint drawType;
+  DynEntityDef *pDVar3;
+  DynEntityPose *pDVar4;
   float *unaff_ESI;
   float *unaff_EDI;
-  float10 fVar6;
+  float10 fVar5;
   undefined2 in_stack_00000006;
-  uint uVar7;
+  uint uVar6;
   float local_18;
   float local_14;
   float local_10;
@@ -277,12 +277,12 @@ void __cdecl DynEntCl_LinkBrush(ushort param_1)
   float local_8;
   float local_4;
   
-  pDVar5 = cm.dynEntPoseList[1];
-  pDVar4 = cm.dynEntDefList[1];
-  uVar3 = (uint)param_1;
-  fVar6 = (float10)FUN_00525eb0();
-  pDVar5[uVar3].radius = (float)fVar6;
-  uVar1 = pDVar4[uVar3].brushModel;
+  pDVar4 = cm.dynEntPoseList[1];
+  pDVar3 = cm.dynEntDefList[1];
+  drawType = (uint)param_1;
+  fVar5 = (float10)FUN_00525eb0();
+  pDVar4[drawType].radius = (float)fVar5;
+  uVar1 = pDVar3[drawType].brushModel;
   pGVar2 = (rgp.world)->models;
   local_c = pGVar2[uVar1].writable.mins[0];
   local_8 = pGVar2[uVar1].writable.mins[1];
@@ -290,12 +290,13 @@ void __cdecl DynEntCl_LinkBrush(ushort param_1)
   local_18 = pGVar2[uVar1].writable.maxs[0];
   local_14 = pGVar2[uVar1].writable.maxs[1];
   local_10 = pGVar2[uVar1].writable.maxs[2];
-  uVar7 = 1;
+  uVar6 = 1;
   DynEnt_LinkEntity(DYNENT_COLL_CLIENT_BRUSH,param_1,&local_c,&local_18);
-  R_UnfilterDynEntFromCells(uVar7,_param_1);
+  R_UnfilterDynEntFromCells(uVar6,_param_1);
   R_FilterDynEntIntoCells_r
-            ((mnode_t *)((rgp.world)->dpvsPlanes).nodes,uVar3,DYNENT_DRAW_BRUSH,&local_c,&local_18);
-  R_LinkDynEntToPrimaryLights(uVar3,DYNENT_DRAW_BRUSH,unaff_EDI,unaff_ESI);
+            ((mnode_t *)((rgp.world)->dpvsPlanes).nodes,drawType,DYNENT_DRAW_BRUSH,&local_c,
+             &local_18);
+  R_LinkDynEntToPrimaryLights(drawType,DYNENT_DRAW_BRUSH,unaff_EDI,unaff_ESI);
   return;
 }
 
@@ -1142,58 +1143,58 @@ DynEntCl_CreateEntityModel
   int iVar5;
   PhysPreset *unaff_EBP;
   DynEntityDef *unaff_ESI;
-  DynEntityDef *pDVar6;
+  DynEntityDef *dst;
   float *unaff_EDI;
-  DynEntityPose *pDVar7;
+  DynEntityPose *pDVar6;
   
   uVar4 = FUN_00527170();
   if (uVar4 == 0xffff) {
     return 0xffff;
   }
-  pDVar6 = cm.dynEntDefList[0] + uVar4;
-  memset((uchar *)pDVar6,'\0',0x54);
-  pDVar6->type = DYNENT_TYPE_CLUTTER;
-  (pDVar6->pose).origin[0] = *param_3;
-  (pDVar6->pose).origin[1] = param_3[1];
-  (pDVar6->pose).origin[2] = param_3[2];
-  (pDVar6->pose).quat[0] = *param_2;
-  (pDVar6->pose).quat[1] = param_2[1];
-  (pDVar6->pose).quat[2] = param_2[2];
-  (pDVar6->pose).quat[3] = param_2[3];
-  pDVar6->xModel = param_1;
-  pDVar6->physPreset = param_1->physPreset;
-  pDVar6->health = 0;
+  dst = cm.dynEntDefList[0] + uVar4;
+  memset((uchar *)dst,'\0',0x54);
+  dst->type = DYNENT_TYPE_CLUTTER;
+  (dst->pose).origin[0] = *param_3;
+  (dst->pose).origin[1] = param_3[1];
+  (dst->pose).origin[2] = param_3[2];
+  (dst->pose).quat[0] = *param_2;
+  (dst->pose).quat[1] = param_2[1];
+  (dst->pose).quat[2] = param_2[2];
+  (dst->pose).quat[3] = param_2[3];
+  dst->xModel = param_1;
+  dst->physPreset = param_1->physPreset;
+  dst->health = 0;
   iVar5 = param_1->contents;
-  pDVar6->flags = pDVar6->flags | 2;
-  pDVar6->contents = iVar5;
-  *(undefined **)pDVar6->physConstraints = &DAT_01ff01ff;
-  *(undefined **)(pDVar6->physConstraints + 2) = &DAT_01ff01ff;
+  dst->flags = dst->flags | 2;
+  dst->contents = iVar5;
+  *(undefined **)dst->physConstraints = &DAT_01ff01ff;
+  *(undefined **)(dst->physConstraints + 2) = &DAT_01ff01ff;
   pDVar3 = cm.dynEntCollList[0];
-  pDVar7 = cm.dynEntPoseList[0];
+  pDVar6 = cm.dynEntPoseList[0];
   pDVar1 = cm.dynEntClientList[0] + uVar4;
-  *(undefined8 *)cm.dynEntPoseList[0][uVar4].pose.quat = *(undefined8 *)(pDVar6->pose).quat;
-  pDVar7 = pDVar7 + uVar4;
-  *(undefined8 *)((pDVar7->pose).quat + 2) = *(undefined8 *)((pDVar6->pose).quat + 2);
-  *(undefined8 *)(pDVar7->pose).origin = *(undefined8 *)(pDVar6->pose).origin;
-  (pDVar7->pose).origin[2] = (pDVar6->pose).origin[2];
+  *(undefined8 *)cm.dynEntPoseList[0][uVar4].pose.quat = *(undefined8 *)(dst->pose).quat;
+  pDVar6 = pDVar6 + uVar4;
+  *(undefined8 *)((pDVar6->pose).quat + 2) = *(undefined8 *)((dst->pose).quat + 2);
+  *(undefined8 *)(pDVar6->pose).origin = *(undefined8 *)(dst->pose).origin;
+  (pDVar6->pose).origin[2] = (dst->pose).origin[2];
   if (pDVar1->physObjId != 0) {
     DynEnt_DestroyPhysics((PhysWorld)unaff_EDI,unaff_ESI,(DynEntityClient *)unaff_EBP);
   }
   pDVar1->flags = 2;
-  pDVar1->health = pDVar6->health;
+  pDVar1->health = dst->health;
   pDVar1->fadeTime = 0;
-  DVar2 = pDVar6->type;
+  DVar2 = dst->type;
   pDVar1->flags = 3;
   pDVar3[uVar4].nextEntInSector = 0;
   pDVar3[uVar4].sector = 0;
   DynEntCl_LinkModel(uVar4);
   if ((&DAT_00a01b2e)[DVar2 * 8] != '\0') {
     if (pDVar1->physObjId == 0) {
-      iVar5 = DynEntCl_CreatePhysObj(pDVar6,pDVar1,&pDVar7->pose);
+      iVar5 = DynEntCl_CreatePhysObj(dst,pDVar1,&pDVar6->pose);
       pDVar1->physObjId = iVar5;
     }
     Phys_ObjAddCustomForce
-              (pDVar1->physObjId,(float *)pDVar6->physPreset,unaff_EDI,(int)unaff_ESI,unaff_EBP);
+              (pDVar1->physObjId,(float *)dst->physPreset,unaff_EDI,(int)unaff_ESI,unaff_EBP);
   }
   return uVar4;
 }

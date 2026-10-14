@@ -2,21 +2,21 @@
 
 // 00414540  BG_Actor_GetAnimStateIndex  (bgame/bg_dog.cpp:95)
 
-int __cdecl BG_Actor_GetAnimStateIndex(ushort param_1)
+int __cdecl BG_Actor_GetAnimStateIndex(ushort animStateName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x2f; local_8 = local_8 + 1) {
-    if (*s_animStateNames[local_8].name == param_1) {
-      return local_8;
+  for (i = 0; i < 0x2f; i = i + 1) {
+    if (*s_animStateNames[i].name == animStateName) {
+      return i;
     }
   }
-  if (local_8 != 0x2f) {
-    SL_ConvertToString((uint)param_1,SCRIPTINSTANCE_SERVER);
+  if (i != 0x2f) {
+    SL_ConvertToString((uint)animStateName,SCRIPTINSTANCE_SERVER);
     va("Actor_GetAnimStateIndex: Could not find anim state %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dog.cpp",0x68,0,
                              "%s\n\t%s");
@@ -32,14 +32,14 @@ int __cdecl BG_Actor_GetAnimStateIndex(ushort param_1)
 
 // 004145D0  BG_Actor_GetAnimStateName  (bgame/bg_dog.cpp:124)
 
-char * __cdecl BG_Actor_GetAnimStateName(int param_1)
+char * __cdecl BG_Actor_GetAnimStateName(int animStateIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0x2e < (param_1 & 0xffffffbfU)) {
+  if (0x2e < (animStateIndex & 0xffffffbfU)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dog.cpp",0x7d,0,
                              "animStateIndex & ~ANIM_STATE_TOGGLEBIT doesn\'t index ARRAY_COUNT( s_animStateNames )\n\t%i not in [0, %i)"
                             );
@@ -49,7 +49,7 @@ char * __cdecl BG_Actor_GetAnimStateName(int param_1)
       return pcVar3;
     }
   }
-  pcVar3 = SL_ConvertToString((uint)*s_animStateNames[param_1 & 0xffffffbf].name,
+  pcVar3 = SL_ConvertToString((uint)*s_animStateNames[animStateIndex & 0xffffffbf].name,
                               SCRIPTINSTANCE_SERVER);
   return pcVar3;
 }
@@ -57,14 +57,14 @@ char * __cdecl BG_Actor_GetAnimStateName(int param_1)
 
 // 00414630  BG_Actor_GetAnimStateCategoryName  (bgame/bg_dog.cpp:131)
 
-char * __cdecl BG_Actor_GetAnimStateCategoryName(int param_1)
+char * __cdecl BG_Actor_GetAnimStateCategoryName(int animStateIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0x2e < (param_1 & 0xffffffbfU)) {
+  if (0x2e < (animStateIndex & 0xffffffbfU)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dog.cpp",0x84,0,
                              "animStateIndex & ~ANIM_STATE_TOGGLEBIT doesn\'t index ARRAY_COUNT( s_animStateNames )\n\t%i not in [0, %i)"
                             );
@@ -75,7 +75,7 @@ char * __cdecl BG_Actor_GetAnimStateCategoryName(int param_1)
     }
   }
   pcVar3 = SL_ConvertToString((uint)*s_animStateCategories
-                                     [s_animStateNames[param_1 & 0xffffffbf].category],
+                                     [s_animStateNames[animStateIndex & 0xffffffbf].category],
                               SCRIPTINSTANCE_SERVER);
   return pcVar3;
 }
@@ -86,6 +86,8 @@ char * __cdecl BG_Actor_GetAnimStateCategoryName(int param_1)
 void __cdecl Dog_RegisterDvars(void)
 
 {
+  ushort demoFlag;
+  
   dog_debug = _Dvar_RegisterBool("dog_debug",true,0x180,"MP dog debugging");
   dog_turn90_angle =
        _Dvar_RegisterFloat("dog_turn90_angle",70.0,0.0,360.0,0x80,
@@ -107,12 +109,13 @@ void __cdecl Dog_RegisterDvars(void)
 
 void __cdecl
 BG_Dog_SetNewAnimationState
-          (int param_1,animInfo_t *param_2,actorLerpFrame_t *param_3,int param_4,
-          entityState_s *param_5)
+          (int localClientNum,animInfo_t *animInfo,actorLerpFrame_t *lf,int newAnimationState,
+          entityState_s *es)
 
 {
   code *pcVar1;
   bool bVar2;
+  int animationState;
   
   BG_CheckThread();
   if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) {
@@ -123,12 +126,12 @@ BG_Dog_SetNewAnimationState
       return;
     }
   }
-  if (AIAnimationFuncTable[param_4 & 0xffffffbfU].pfnStart !=
+  if (AIAnimationFuncTable[newAnimationState & 0xffffffbfU].pfnStart !=
       (_func___cdecl_void_int_entityState_s_ptr_ActorAnimStates *)0x0) {
-    (*AIAnimationFuncTable[param_4 & 0xffffffbfU].pfnStart)
-              (param_1,param_5,param_3->animationState & 0xffffffbf);
-    param_3->bAnimating = 1;
-    param_3->animationState = param_4;
+    (*AIAnimationFuncTable[newAnimationState & 0xffffffbfU].pfnStart)
+              (localClientNum,es,lf->animationState & 0xffffffbf);
+    lf->bAnimating = 1;
+    lf->animationState = newAnimationState;
   }
   return;
 }
@@ -136,17 +139,17 @@ BG_Dog_SetNewAnimationState
 
 // 004148F0  ApplyNewAnimState  (bgame/bg_dog.cpp:185)
 
-bool __cdecl ApplyNewAnimState(XAnimTree_s *param_1,actorLerpFrame_t *param_2,int param_3)
+bool __cdecl ApplyNewAnimState(XAnimTree_s *pAnimTree,actorLerpFrame_t *lf,int newAnimationState)
 
 {
   bool bVar1;
   
-  if (param_3 == param_2->animationState) {
-    if ((param_3 & 0xffffffbfU) != 0) {
-      if (param_2->bAnimating == 0) {
+  if (newAnimationState == lf->animationState) {
+    if ((newAnimationState & 0xffffffbfU) != 0) {
+      if (lf->bAnimating == 0) {
         return true;
       }
-      if ((param_1 != (XAnimTree_s *)0x0) && (bVar1 = XAnimTreeHasInfo(param_1), !bVar1)) {
+      if ((pAnimTree != (XAnimTree_s *)0x0) && (bVar1 = XAnimTreeHasInfo(pAnimTree), !bVar1)) {
         return true;
       }
     }
@@ -161,26 +164,33 @@ bool __cdecl ApplyNewAnimState(XAnimTree_s *param_1,actorLerpFrame_t *param_2,in
 
 // 00414770  BG_Dog_UpdateAnimationState  (bgame/bg_dog.cpp:205)
 
-void __cdecl BG_Dog_UpdateAnimationState(int param_1,entityState_s *param_2,actorInfo_t *param_3)
+void __cdecl
+BG_Dog_UpdateAnimationState(int localClientNum,entityState_s *es,actorInfo_t *actorInfo)
 
 {
-  uint uVar1;
-  bool bVar2;
-  int iVar3;
-  animInfo_t *paVar4;
+  uint newAnimationState_00;
+  bool bVar1;
+  int iVar2;
+  animInfo_t *lf_00;
+  int animationState;
+  DObj *obj;
+  actorLerpFrame_t *lf;
+  XAnimTree_s *pAnimTree;
+  int newAnimationState;
   
-  paVar4 = &param_3->animInfo;
-  uVar1 = (param_2->un2).animState.state;
-  bVar2 = ApplyNewAnimState(param_3->pXAnimTree,&paVar4->lerp,uVar1);
-  if (bVar2) {
-    BG_Dog_SetNewAnimationState(param_1,&param_3->animInfo,&paVar4->lerp,uVar1,param_2);
+  lf_00 = &actorInfo->animInfo;
+  newAnimationState_00 = (es->un2).animState.state;
+  bVar1 = ApplyNewAnimState(actorInfo->pXAnimTree,&lf_00->lerp,newAnimationState_00);
+  if (bVar1) {
+    BG_Dog_SetNewAnimationState
+              (localClientNum,&actorInfo->animInfo,&lf_00->lerp,newAnimationState_00,es);
   }
-  else if ((((paVar4->lerp).bAnimating != 0) &&
-           (iVar3 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
-                                         + 8) + 0xa0))(param_2->number,param_1), iVar3 != 0)) &&
-          (AIAnimationFuncTable[uVar1 & 0xffffffbf].pfnThink !=
+  else if ((((lf_00->lerp).bAnimating != 0) &&
+           (iVar2 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
+                                         + 8) + 0xa0))(es->number,localClientNum), iVar2 != 0)) &&
+          (AIAnimationFuncTable[newAnimationState_00 & 0xffffffbf].pfnThink !=
            (_func___cdecl_void_int_entityState_s_ptr *)0x0)) {
-    (*AIAnimationFuncTable[uVar1 & 0xffffffbf].pfnThink)(param_1,param_2);
+    (*AIAnimationFuncTable[newAnimationState_00 & 0xffffffbf].pfnThink)(localClientNum,es);
   }
   return;
 }
@@ -188,10 +198,10 @@ void __cdecl BG_Dog_UpdateAnimationState(int param_1,entityState_s *param_2,acto
 
 // 00414940  BG_Dog_SetAnimState  (bgame/bg_dog.cpp:244)
 
-void __cdecl BG_Dog_SetAnimState(entityState_s *param_1,int param_2)
+void __cdecl BG_Dog_SetAnimState(entityState_s *es,int animState)
 
 {
-  (param_1->un2).animState.state = (param_1->un2).animState.state & 0x40U ^ 0x40 | param_2;
+  (es->un2).animState.state = (es->un2).animState.state & 0x40U ^ 0x40 | animState;
   return;
 }
 

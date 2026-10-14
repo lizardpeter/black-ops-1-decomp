@@ -2,19 +2,19 @@
 
 // 00976C50  _set_error_mode  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/errmode.c:43)
 
-int __cdecl _set_error_mode(int param_1)
+int __cdecl _set_error_mode(int em)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (-1 < param_1) {
-    if (param_1 < 3) {
+  if (-1 < em) {
+    if (em < 3) {
       iVar2 = __error_mode;
-      __error_mode = param_1;
+      __error_mode = em;
       return iVar2;
     }
-    if (param_1 == 3) {
+    if (em == 3) {
       return __error_mode;
     }
   }

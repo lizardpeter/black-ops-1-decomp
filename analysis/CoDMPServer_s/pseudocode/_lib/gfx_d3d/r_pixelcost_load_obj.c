@@ -2,6 +2,8 @@
 
 // 0086C8D0  RB_PixelCost_BuildColorCodeMap  (gfx_d3d/r_pixelcost_load_obj.cpp:32)
 
+/* WARNING: Variable defined which should be unmapped: pixelCount */
+
 void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*param_1) [4],int param_2)
 
 {
@@ -14,6 +16,7 @@ void __cdecl RB_PixelCost_BuildColorCodeMap(uchar (*param_1) [4],int param_2)
   undefined1 uStack_38;
   undefined1 uStack_34;
   undefined1 uStack_30;
+  int pixelCount;
   
   iVar4 = -1;
   uVar3 = 0;

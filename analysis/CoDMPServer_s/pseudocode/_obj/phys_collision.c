@@ -1898,13 +1898,13 @@ void __cdecl collide_vehicle_wheels(PhysObjUserData *param_1)
 
 {
   rigid_body_constraint_wheel *prVar1;
-  rigid_body *prVar2;
-  int iVar3;
-  undefined4 *puVar4;
+  rigid_body *hitp_loc;
+  int iVar2;
+  undefined4 *puVar3;
   trace_t *unaff_EDI;
+  float fVar4;
   float fVar5;
   float fVar6;
-  float fVar7;
   int local_250;
   float local_24c;
   uint *local_248;
@@ -1926,20 +1926,20 @@ void __cdecl collide_vehicle_wheels(PhysObjUserData *param_1)
   int local_184;
   undefined4 local_158 [85];
   
-  iVar3 = 5;
-  puVar4 = local_158;
+  iVar2 = 5;
+  puVar3 = local_158;
   do {
-    puVar4[-2] = 0;
-    puVar4[-1] = 0;
-    *puVar4 = 0;
-    puVar4[1] = 0;
-    puVar4 = puVar4 + 0xe;
-    iVar3 = iVar3 + -1;
-  } while (-1 < iVar3);
+    puVar3[-2] = 0;
+    puVar3[-1] = 0;
+    *puVar3 = 0;
+    puVar3[1] = 0;
+    puVar3 = puVar3 + 0xe;
+    iVar2 = iVar2 + -1;
+  } while (-1 < iVar2);
   local_244 = *(float *)param_1;
   if (((local_244 != 0.0) && ((*(byte *)((int)local_244 + 0xfc) & 0x20) == 0)) &&
-     (iVar3 = *(int *)(param_1 + 4), iVar3 != 0)) {
-    local_248 = (uint *)(iVar3 + 0x1d8);
+     (iVar2 = *(int *)(param_1 + 4), iVar2 != 0)) {
+    local_248 = (uint *)(iVar2 + 0x1d8);
     local_250 = 0;
     local_24c = 0.0;
     do {
@@ -1972,7 +1972,7 @@ void __cdecl collide_vehicle_wheels(PhysObjUserData *param_1)
         local_1d8.collide_entity_func = (_func___cdecl_int_int_col_context_t_ptr *)0x0;
         local_1f0.z = local_20c;
         CG_TraceCapsule((trace_t *)&local_198,&local_214,local_1fc,local_1fc,&local_208,
-                        *(int *)(iVar3 + 0x228),0x211,&local_1d8);
+                        *(int *)(iVar2 + 0x228),0x211,&local_1d8);
         if ((local_188 == 1.0) || (local_188 == 0.0)) {
           rigid_body_constraint_wheel::set_no_collision(prVar1);
           *local_248 = 0;
@@ -1985,41 +1985,41 @@ void __cdecl collide_vehicle_wheels(PhysObjUserData *param_1)
           local_240.y = local_198.v[1];
           local_230.z = (local_200 - local_20c) * local_188 + local_20c;
           local_240.z = local_198.v[2];
-          prVar2 = GetTraceResultsRigidBody(unaff_EDI);
-          *(float *)(iVar3 + 0x210) = (prVar2->m_t_vel).x;
-          *(float *)(iVar3 + 0x214) = (prVar2->m_t_vel).y;
-          *(float *)(iVar3 + 0x218) = (prVar2->m_t_vel).z;
-          fVar6 = local_230.y - (prVar2->m_mat).w.y;
-          local_230.z = local_230.z - (prVar2->m_mat).w.z;
-          fVar5 = local_230.x - (prVar2->m_mat).w.x;
-          local_230.x = (prVar2->m_mat).x.z * local_230.z + (prVar2->m_mat).x.y * fVar6 +
-                        fVar5 * (prVar2->m_mat).x.x;
-          local_230.y = (prVar2->m_mat).y.z * local_230.z + (prVar2->m_mat).y.y * fVar6 +
-                        fVar5 * (prVar2->m_mat).y.x;
-          local_230.z = (prVar2->m_mat).z.z * local_230.z + (prVar2->m_mat).z.y * fVar6 +
-                        (prVar2->m_mat).z.x * fVar5;
-          fVar5 = (prVar2->m_mat).x.y * local_240.y + (prVar2->m_mat).x.z * local_240.z +
-                  (prVar2->m_mat).x.x * local_240.x;
-          fVar6 = (prVar2->m_mat).y.z * local_240.z;
-          fVar7 = local_240.x * (prVar2->m_mat).y.x;
-          local_240.z = (prVar2->m_mat).z.y * local_240.y + (prVar2->m_mat).z.z * local_240.z +
-                        local_240.x * (prVar2->m_mat).z.x;
-          local_240.x = fVar5;
-          local_240.y = (prVar2->m_mat).y.y * local_240.y + fVar6 + fVar7;
-          rigid_body_constraint_wheel::set_collision(prVar1,prVar2,&local_230,&local_240);
+          hitp_loc = GetTraceResultsRigidBody(unaff_EDI);
+          *(float *)(iVar2 + 0x210) = (hitp_loc->m_t_vel).x;
+          *(float *)(iVar2 + 0x214) = (hitp_loc->m_t_vel).y;
+          *(float *)(iVar2 + 0x218) = (hitp_loc->m_t_vel).z;
+          fVar5 = local_230.y - (hitp_loc->m_mat).w.y;
+          local_230.z = local_230.z - (hitp_loc->m_mat).w.z;
+          fVar4 = local_230.x - (hitp_loc->m_mat).w.x;
+          local_230.x = (hitp_loc->m_mat).x.z * local_230.z + (hitp_loc->m_mat).x.y * fVar5 +
+                        fVar4 * (hitp_loc->m_mat).x.x;
+          local_230.y = (hitp_loc->m_mat).y.z * local_230.z + (hitp_loc->m_mat).y.y * fVar5 +
+                        fVar4 * (hitp_loc->m_mat).y.x;
+          local_230.z = (hitp_loc->m_mat).z.z * local_230.z + (hitp_loc->m_mat).z.y * fVar5 +
+                        (hitp_loc->m_mat).z.x * fVar4;
+          fVar4 = (hitp_loc->m_mat).x.y * local_240.y + (hitp_loc->m_mat).x.z * local_240.z +
+                  (hitp_loc->m_mat).x.x * local_240.x;
+          fVar5 = (hitp_loc->m_mat).y.z * local_240.z;
+          fVar6 = local_240.x * (hitp_loc->m_mat).y.x;
+          local_240.z = (hitp_loc->m_mat).z.y * local_240.y + (hitp_loc->m_mat).z.z * local_240.z +
+                        local_240.x * (hitp_loc->m_mat).z.x;
+          local_240.x = fVar4;
+          local_240.y = (hitp_loc->m_mat).y.y * local_240.y + fVar5 + fVar6;
+          rigid_body_constraint_wheel::set_collision(prVar1,hitp_loc,&local_230,&local_240);
           *local_248 = local_184 >> 0x14 & 0x3f;
           Com_SurfaceFrictionScale((int)unaff_EDI);
           if ((local_24c == 4.2039e-45) || (local_24c == 2.8026e-45)) {
-            fVar6 = *(float *)(iVar3 + 900);
-            fVar7 = *(float *)(iVar3 + 0x37c);
+            fVar5 = *(float *)(iVar2 + 900);
+            fVar6 = *(float *)(iVar2 + 0x37c);
           }
           else {
-            fVar6 = *(float *)(iVar3 + 0x380);
-            fVar7 = *(float *)(iVar3 + 0x378);
+            fVar5 = *(float *)(iVar2 + 0x380);
+            fVar6 = *(float *)(iVar2 + 0x378);
           }
-          if ((*(uint *)(iVar3 + 600) >> 7 & 1) == 0) {
-            prVar1->m_fwd_fric_k = fVar6 * fVar5;
-            prVar1->m_side_fric_k = fVar7 * fVar5;
+          if ((*(uint *)(iVar2 + 600) >> 7 & 1) == 0) {
+            prVar1->m_fwd_fric_k = fVar5 * fVar4;
+            prVar1->m_side_fric_k = fVar6 * fVar4;
           }
         }
       }
@@ -2028,16 +2028,16 @@ void __cdecl collide_vehicle_wheels(PhysObjUserData *param_1)
     } while ((int)local_24c < 6);
     if (((local_250 < 3) && (0 < *(int *)(param_1 + 0xe4))) &&
        (*(float *)(*(int *)(*(int *)(param_1 + 4) + 0x1f0) + 0xd0) != 0.0)) {
-      puVar4 = (undefined4 *)(iVar3 + 0x3d8);
+      puVar3 = (undefined4 *)(iVar2 + 0x3d8);
       local_250 = 6;
       do {
-        prVar1 = (rigid_body_constraint_wheel *)*puVar4;
+        prVar1 = (rigid_body_constraint_wheel *)*puVar3;
         if ((prVar1 != (rigid_body_constraint_wheel *)0x0) && (prVar1->m_wheel_state == 0)) {
           rigid_body_constraint_wheel::get_wheel_state_accelerating(prVar1,&local_24c,&local_244);
           rigid_body_constraint_wheel::set_wheel_state_accelerating
                     (prVar1,local_24c,local_244 * 0.1);
         }
-        puVar4 = puVar4 + 1;
+        puVar3 = puVar3 + 1;
         local_250 = local_250 + -1;
       } while (local_250 != 0);
     }
@@ -2058,35 +2058,35 @@ generic_avl_map_destroy
            *param_1,uint param_2)
 
 {
-  undefined4 *puVar1;
-  void *pvVar2;
+  undefined4 *size;
+  void *pvVar1;
   uint *unaff_EDI;
   
-  puVar1 = _g_gjkcc_info_client_database;
+  size = _g_gjkcc_info_client_database;
   while( true ) {
-    if (puVar1 == (undefined4 *)0x0) {
+    if (size == (undefined4 *)0x0) {
       return (void *)0x0;
     }
     if (param_1 ==
-        (phys_inplace_avl_tree<unsigned_int,generic_avl_map_node_t,generic_avl_map_node_t> *)
-        puVar1[1]) break;
+        (phys_inplace_avl_tree<unsigned_int,generic_avl_map_node_t,generic_avl_map_node_t> *)size[1]
+       ) break;
     if (param_1 < (phys_inplace_avl_tree<unsigned_int,generic_avl_map_node_t,generic_avl_map_node_t>
-                   *)puVar1[1]) {
-      puVar1 = (undefined4 *)puVar1[2];
+                   *)size[1]) {
+      size = (undefined4 *)size[2];
     }
     else {
-      puVar1 = (undefined4 *)puVar1[3];
+      size = (undefined4 *)size[3];
     }
   }
-  if (puVar1 == (undefined4 *)0x0) {
+  if (size == (undefined4 *)0x0) {
     return (void *)0x0;
   }
-  pvVar2 = (void *)*puVar1;
+  pvVar1 = (void *)*size;
   phys_inplace_avl_tree<unsigned_int,generic_avl_map_node_t,generic_avl_map_node_t>::remove
             (param_1,unaff_EDI);
   _g_generic_avl_map_node_allocator = _g_generic_avl_map_node_allocator + -1;
-  PMM_FREE(puVar1,0x14,4);
-  return pvVar2;
+  PMM_FREE(size,0x14,4);
+  return pvVar1;
 }
 
 

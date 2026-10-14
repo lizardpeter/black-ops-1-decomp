@@ -2,7 +2,7 @@
 
 // 008BEC30  FindVariableIndexInternal2  (clientscript/scr_variable.h:493)
 
-uint __cdecl FindVariableIndexInternal2(scriptInstance_t param_1,uint param_2,uint param_3)
+uint __cdecl FindVariableIndexInternal2(scriptInstance_t inst,uint name,uint index)
 
 {
   VariableValueInternal *pVVar1;
@@ -11,18 +11,22 @@ uint __cdecl FindVariableIndexInternal2(scriptInstance_t param_1,uint param_2,ui
   uint uVar4;
   VariableValueInternal *pVVar5;
   undefined3 in_stack_00000005;
-  uint local_18;
-  VariableValueInternal *local_8;
+  Variable *entry;
+  uint newIndex;
+  VariableValueInternal *list;
+  VariableValueInternal *entryValue;
+  VariableValueInternal *newEntryValue;
+  Variable *newEntry;
   
-  pVVar1 = gScrVarGlob[_param_1].variableList;
-  if (((param_2 & 0xff000000) != 0) &&
+  pVVar1 = gScrVarGlob[_inst].variableList;
+  if (((name & 0xff000000) != 0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",
                                0x1f5,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((0x3fffd < param_3) &&
+  if ((0x3fffd < index) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",
                                0x1f6,0,
                                "index doesn\'t index VARIABLELIST_CHILD_SIZE(inst)\n\t%i not in [0, %i)"
@@ -31,7 +35,7 @@ uint __cdecl FindVariableIndexInternal2(scriptInstance_t param_1,uint param_2,ui
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  pVVar5 = pVVar1 + param_3 + 0x8000;
+  pVVar5 = pVVar1 + index + 0x8000;
   if ((0x3fffd < (pVVar5->hash).id) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",
                                0x1fa,0,
@@ -57,12 +61,13 @@ uint __cdecl FindVariableIndexInternal2(scriptInstance_t param_1,uint param_2,ui
       uVar4 = (*pcVar2)();
       return uVar4;
     }
-    if (pVVar1[uVar4 + 0x8000].w.status >> 8 == param_2) {
-      return param_3;
+    if (pVVar1[uVar4 + 0x8000].w.status >> 8 == name) {
+      return index;
     }
-    local_18 = pVVar1[uVar4 + 0x8000].v.next;
-    while (local_8 = pVVar1 + local_18 + 0x8000, local_8 != pVVar5) {
-      uVar4 = (local_8->hash).id;
+    newIndex = pVVar1[uVar4 + 0x8000].v.next;
+    while (newEntry = &pVVar1[newIndex + 0x8000].hash, (VariableValueInternal *)newEntry != pVVar5)
+    {
+      uVar4 = newEntry->id;
       if (((pVVar1[uVar4 + 0x8000].w.status & 0x60) != 0x20) &&
          (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h"
                                    ,0x20b,0,"%s"), !bVar3)) {
@@ -84,10 +89,10 @@ uint __cdecl FindVariableIndexInternal2(scriptInstance_t param_1,uint param_2,ui
         uVar4 = (*pcVar2)();
         return uVar4;
       }
-      if (pVVar1[uVar4 + 0x8000].w.status >> 8 == param_2) {
-        return local_18;
+      if (pVVar1[uVar4 + 0x8000].w.status >> 8 == name) {
+        return newIndex;
       }
-      local_18 = pVVar1[uVar4 + 0x8000].v.next;
+      newIndex = pVVar1[uVar4 + 0x8000].v.next;
     }
   }
   return 0;
@@ -96,7 +101,7 @@ uint __cdecl FindVariableIndexInternal2(scriptInstance_t param_1,uint param_2,ui
 
 // 008BEAF0  FindVariableIndexInternal  (clientscript/scr_variable.h:544)
 
-uint __cdecl FindVariableIndexInternal(scriptInstance_t param_1,uint param_2,uint param_3)
+uint __cdecl FindVariableIndexInternal(scriptInstance_t inst,uint parentId,uint name)
 
 {
   VariableValueInternal *pVVar1;
@@ -105,8 +110,10 @@ uint __cdecl FindVariableIndexInternal(scriptInstance_t param_1,uint param_2,uin
   uint uVar4;
   int iVar5;
   undefined3 in_stack_00000005;
+  VariableValueInternal *parentValue;
+  uint index;
   
-  if (param_2 == 0) {
+  if (parentId == 0) {
     bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",0x226
                              ,0,"%s");
     if (!bVar3) {
@@ -115,8 +122,8 @@ uint __cdecl FindVariableIndexInternal(scriptInstance_t param_1,uint param_2,uin
       return uVar4;
     }
   }
-  iVar5 = param_2 + 1;
-  pVVar1 = gScrVarGlob[_param_1].variableList;
+  iVar5 = parentId + 1;
+  pVVar1 = gScrVarGlob[_inst].variableList;
   if ((pVVar1[iVar5].w.status & 0x60) != 0x60) {
     bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",0x228
                              ,0,"%s");
@@ -144,14 +151,14 @@ uint __cdecl FindVariableIndexInternal(scriptInstance_t param_1,uint param_2,uin
       return uVar4;
     }
   }
-  uVar4 = FindVariableIndexInternal2(param_1,param_3,(param_3 + param_2) % 0x3fffd + 1);
+  uVar4 = FindVariableIndexInternal2(inst,name,(name + parentId) % 0x3fffd + 1);
   return uVar4;
 }
 
 
 // 008BE930  FindLastSibling  (clientscript/scr_variable.h:659)
 
-uint __cdecl FindLastSibling(scriptInstance_t param_1,uint param_2)
+uint __cdecl FindLastSibling(scriptInstance_t inst,uint parentId)
 
 {
   VariableValueInternal *pVVar1;
@@ -160,16 +167,20 @@ uint __cdecl FindLastSibling(scriptInstance_t param_1,uint param_2)
   uint uVar4;
   int iVar5;
   undefined3 in_stack_00000005;
+  VariableValueInternal *parentValue;
+  Variable *parent;
+  uint index;
+  uint id;
   
-  if ((param_2 == 0) &&
+  if ((parentId == 0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",
                                0x299,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  iVar5 = param_2 + 1;
-  pVVar1 = gScrVarGlob[_param_1].variableList;
+  iVar5 = parentId + 1;
+  pVVar1 = gScrVarGlob[_inst].variableList;
   if (((pVVar1[iVar5].w.status & 0x60) == 0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",
                                0x143,0,"%s"), !bVar3)) {
@@ -192,14 +203,13 @@ uint __cdecl FindLastSibling(scriptInstance_t param_1,uint param_2)
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  uVar4 = gScrVarGlob[_param_1].variableList[pVVar1[iVar5].v.next + 1].hash.u.prev;
+  uVar4 = gScrVarGlob[_inst].variableList[pVVar1[iVar5].v.next + 1].hash.u.prev;
   if (uVar4 == 0) {
     uVar4 = 0;
   }
   else {
     uVar4 = FindVariableIndexInternal
-                      (param_1,param_2,
-                       gScrVarGlob[_param_1].variableList[uVar4 + 0x8000].w.status >> 8);
+                      (inst,parentId,gScrVarGlob[_inst].variableList[uVar4 + 0x8000].w.status >> 8);
     if ((uVar4 == 0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\clientscript\\scr_variable.h",
                                  0x2a4,0,"%s"), !bVar3)) {

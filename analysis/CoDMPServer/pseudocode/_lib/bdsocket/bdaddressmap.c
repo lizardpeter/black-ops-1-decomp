@@ -168,9 +168,9 @@ bdAddressMap::addrToCommonAddr
 {
   int iVar1;
   uint uVar2;
-  bdReference<bdCommonAddr> bVar3;
-  bdSequenceNumber *pbVar4;
-  bdReference<bdCommonAddr> bVar5;
+  bdReference<bdCommonAddr> other_3;
+  bdSequenceNumber *pbVar3;
+  bdReference<bdCommonAddr> bVar4;
   bdReference<bdByteBuffer> local_18;
   undefined1 local_11;
   void *local_10;
@@ -190,24 +190,24 @@ bdAddressMap::addrToCommonAddr
                  uVar2);
   }
   else {
-    bVar3 = bdEndpoint::getCommonAddr(&param_1->m_ptr->m_endpoint);
+    other_3 = bdEndpoint::getCommonAddr(&param_1->m_ptr->m_endpoint);
     local_8 = 0;
-    bVar5 = bVar3;
+    bVar4 = other_3;
     bdReference<bdAddrHandle>::operator=
-              ((bdReference<bdAddrHandle> *)param_2,(bdReference<bdAddrHandle> *)bVar3.m_ptr);
+              ((bdReference<bdAddrHandle> *)param_2,(bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
-    pbVar4 = bdSequenceNumberStore::getLastSequenceNumber
+    pbVar3 = bdSequenceNumberStore::getLastSequenceNumber
                        ((bdSequenceNumberStore *)&param_1->m_ptr->m_endpoint);
-    iVar1 = pbVar4[1].m_seqNum;
-    *(int *)param_3->ab = pbVar4->m_seqNum;
+    iVar1 = pbVar3[1].m_seqNum;
+    *(int *)param_3->ab = pbVar3->m_seqNum;
     *(int *)(param_3->ab + 4) = iVar1;
     local_11 = 1;
     if (param_2->m_ptr == (bdCommonAddr *)0x0) {
       bdLogMessage(BD_LOG_WARNING,"warn/","bdSocket/addrmap",
                    "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdAddressMap.cpp",
                    "bdAddressMap::addrToCommonAddr",99,"Addr handle ref has invalid common addr.",
-                   uVar2,bVar3.m_ptr,bVar5.m_ptr,this);
+                   uVar2,other_3.m_ptr,bVar4.m_ptr,this);
     }
   }
   ExceptionList = local_10;

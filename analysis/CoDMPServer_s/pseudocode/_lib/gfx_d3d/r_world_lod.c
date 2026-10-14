@@ -10,6 +10,7 @@ void __thiscall LodChainState::Init(LodChainState *this,GfxWorldLodChain *param_
   undefined4 *unaff_ESI;
   int unaff_EDI;
   int iVar1;
+  int localClientNum;
   
   iVar1 = 1;
   unaff_ESI[2] = in_EAX;
@@ -28,7 +29,7 @@ void __thiscall LodChainState::Init(LodChainState *this,GfxWorldLodChain *param_
 
 // 008544D0  UpdateLevel  (gfx_d3d/r_world_lod.cpp:99)
 
-void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int param_2)
+void __thiscall LodChainState::UpdateLevel(LodChainState *this,int localClientNum,int param_2)
 
 {
   byte bVar1;
@@ -38,9 +39,10 @@ void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int p
   byte bVar4;
   int unaff_EBP;
   int unaff_EDI;
+  int newLevel;
   
   bVar1 = *(byte *)((int)in_EAX + 5);
-  if ((LodChainState *)param_1 == (LodChainState *)(uint)bVar1) {
+  if ((LodChainState *)localClientNum == (LodChainState *)(uint)bVar1) {
     return;
   }
   if (*(byte *)(in_EAX + 1) != bVar1) {
@@ -48,9 +50,9 @@ void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int p
   }
   bVar1 = *(byte *)((int)in_EAX + 5);
   *(byte *)(in_EAX + 1) = bVar1;
-  uVar2 = (param_1 & 0xffU) - (uint)bVar1;
+  uVar2 = (localClientNum & 0xffU) - (uint)bVar1;
   uVar3 = (int)uVar2 >> 0x1f;
-  bVar4 = (byte)param_1;
+  bVar4 = (byte)localClientNum;
   *(byte *)((int)in_EAX + 5) = bVar4;
   if ((int)((uVar2 ^ uVar3) - uVar3) < 2) {
     if (bVar1 < bVar4) {
@@ -86,7 +88,7 @@ void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int p
 
 // 008545F0  UpdateFade  (gfx_d3d/r_world_lod.cpp:159)
 
-void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int param_2)
+void __thiscall LodChainState::UpdateFade(LodChainState *this,float localClientNum,int param_2)
 
 {
   uint uVar1;
@@ -96,6 +98,7 @@ void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int 
   float *unaff_ESI;
   int unaff_EDI;
   float fVar4;
+  float dt;
   
   bVar2 = *(byte *)((int)unaff_ESI + 5);
   bVar3 = *(byte *)(unaff_ESI + 1);
@@ -103,7 +106,7 @@ void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int 
     if ((bVar3 != 0) && (uVar1 = *(ushort *)((int)unaff_ESI[2] + 0x14) + 1, bVar3 != uVar1)) {
       if ((bVar2 != 0) && (bVar2 != uVar1)) {
         if (bVar3 < bVar2) {
-          fVar4 = *unaff_ESI + param_1;
+          fVar4 = *unaff_ESI + localClientNum;
           *unaff_ESI = fVar4;
           if (1.0 <= fVar4) {
             *unaff_ESI = 1.0;
@@ -113,7 +116,7 @@ void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int 
           SetFadeForSortedSurfaces((float)param_2,unaff_EDI,unaff_EBP);
           return;
         }
-        fVar4 = *unaff_ESI - param_1;
+        fVar4 = *unaff_ESI - localClientNum;
         *unaff_ESI = fVar4;
         if (fVar4 <= 0.0) {
           *unaff_ESI = 0.0;
@@ -123,8 +126,8 @@ void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int 
         return;
       }
       fVar4 = *unaff_ESI;
-      *unaff_ESI = fVar4 - param_1;
-      if (fVar4 - param_1 <= 0.0) {
+      *unaff_ESI = fVar4 - localClientNum;
+      if (fVar4 - localClientNum <= 0.0) {
         *unaff_ESI = 0.0;
         *(byte *)(unaff_ESI + 1) = bVar2;
       }
@@ -132,8 +135,8 @@ void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int 
       return;
     }
     fVar4 = *unaff_ESI;
-    *unaff_ESI = fVar4 + param_1;
-    if (1.0 <= fVar4 + param_1) {
+    *unaff_ESI = fVar4 + localClientNum;
+    if (1.0 <= fVar4 + localClientNum) {
       *unaff_ESI = 1.0;
       *(byte *)(unaff_ESI + 1) = bVar2;
     }
@@ -170,7 +173,7 @@ void __cdecl R_WorldLod_Init(void)
 
 // 00854990  R_WorldLod_FrameUpdate  (gfx_d3d/r_world_lod.cpp:278)
 
-void __cdecl R_WorldLod_FrameUpdate(float param_1,float *param_2,int param_3)
+void __cdecl R_WorldLod_FrameUpdate(float camPos,float *param_2,int param_3)
 
 {
   int unaff_EBX;
@@ -180,6 +183,7 @@ void __cdecl R_WorldLod_FrameUpdate(float param_1,float *param_2,int param_3)
   float fVar2;
   float in_XMM1_Da;
   float fStack_c;
+  float dt;
   
   fVar2 = in_XMM1_Da - s_lastTime;
   fStack_c = 1.0;

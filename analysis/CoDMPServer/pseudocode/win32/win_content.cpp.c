@@ -5,6 +5,8 @@
 int __cdecl Content_GetAvailableContentPacks(void)
 
 {
+  int flags;
+  
   return 2;
 }
 

@@ -2,7 +2,7 @@
 
 // 0095C8E0  strrchr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strrchr.asm:60)
 
-void __cdecl strrchr(uchar *param_1,uchar param_2)
+void __cdecl strrchr(uchar *string,uchar chr)
 
 {
   uchar uVar1;
@@ -11,12 +11,12 @@ void __cdecl strrchr(uchar *param_1,uchar param_2)
   
   iVar2 = -1;
   do {
-    puVar3 = param_1;
+    puVar3 = string;
     if (iVar2 == 0) break;
     iVar2 = iVar2 + -1;
-    puVar3 = param_1 + 1;
-    uVar1 = *param_1;
-    param_1 = puVar3;
+    puVar3 = string + 1;
+    uVar1 = *string;
+    string = puVar3;
   } while (uVar1 != '\0');
   iVar2 = -(iVar2 + 1);
   do {
@@ -25,7 +25,7 @@ void __cdecl strrchr(uchar *param_1,uchar param_2)
       return;
     }
     iVar2 = iVar2 + -1;
-  } while (param_2 != *puVar3);
+  } while (chr != *puVar3);
   return;
 }
 

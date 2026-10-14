@@ -109,17 +109,17 @@ void __cdecl Session_ClearDWOverlappedTasks(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FindSessionsStart(bool param_1,int param_2)
+void __cdecl Live_FindSessionsStart(bool reset,int servertype)
 
 {
-  dwFindSessionsPaged(0x414,param_2,false,true);
+  dwFindSessionsPaged(0x414,servertype,false,true);
   return;
 }
 
 
 // 00972930  Live_FindSessionsPump  (live/live_sessions_win.cpp:174)
 
-void __cdecl Live_FindSessionsPump(int param_1)
+void __cdecl Live_FindSessionsPump(int msec)
 
 {
   CL_QuickMatch_Frame();
@@ -129,7 +129,7 @@ void __cdecl Live_FindSessionsPump(int param_1)
 
 // 00972940  Session_QoSListenStart  (live/live_sessions_win.cpp:200)
 
-void __cdecl Session_QoSListenStart(SessionData_s *param_1)
+void __cdecl Session_QoSListenStart(SessionData_s *session)
 
 {
   code *pcVar1;
@@ -138,7 +138,7 @@ void __cdecl Session_QoSListenStart(SessionData_s *param_1)
   uint uVar3;
   uchar *puVar4;
   
-  if (param_1->qosListenEnabled != false) {
+  if (session->qosListenEnabled != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0xc9,0
                              ,"%s");
     if (!bVar2) {
@@ -148,14 +148,14 @@ void __cdecl Session_QoSListenStart(SessionData_s *param_1)
     }
   }
   Com_Printf(0x10,"calling XNetQosListen( ENABLE ) for session \'%s\'\n");
-  Session_BuildQoSPayload(param_1);
+  Session_BuildQoSPayload(session);
   this = dwGetQoSProbe();
   if (this != (bdQoSProbe *)0x0) {
     uVar3 = Session_GetQosPayloadBufferSize();
     puVar4 = Session_GetQosPayloadBuffer();
-    bVar2 = bdQoSProbe::listen(this,&(param_1->sessionInfo).sessionID,puVar4,uVar3);
+    bVar2 = bdQoSProbe::listen(this,&(session->sessionInfo).sessionID,puVar4,uVar3);
     if (bVar2) {
-      param_1->qosListenEnabled = true;
+      session->qosListenEnabled = true;
       goto LAB_009729e4;
     }
   }
@@ -168,14 +168,14 @@ LAB_009729e4:
 
 // 00972A00  Session_QoSListenStop  (live/live_sessions_win.cpp:220)
 
-void __cdecl Session_QoSListenStop(SessionData_s *param_1)
+void __cdecl Session_QoSListenStop(SessionData_s *session)
 
 {
   code *pcVar1;
   bool bVar2;
   bdQoSProbe *this;
   
-  if (param_1->qosListenEnabled == false) {
+  if (session->qosListenEnabled == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0xdd,0
                              ,"%s");
     if (!bVar2) {
@@ -192,46 +192,46 @@ void __cdecl Session_QoSListenStop(SessionData_s *param_1)
   else {
     bdQoSProbe::disableListener(this);
   }
-  param_1->qosListenEnabled = false;
+  session->qosListenEnabled = false;
   return;
 }
 
 
 // 00972A80  Session_FindRegisteredUser  (live/live_sessions_win.cpp:243)
 
-int __cdecl Session_FindRegisteredUser(SessionData_s *param_1,ulong64 param_2)
+int __cdecl Session_FindRegisteredUser(SessionData_s *session,ulong64 param_2)
 
 {
   int in_stack_00000008;
-  int local_8;
+  int slot;
   
-  local_8 = 0;
+  slot = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < slot) {
       return -1;
     }
-    if (((param_1->registeredUsers[local_8].active != false) &&
-        ((int)param_1->registeredUsers[local_8].xuid == in_stack_00000008)) &&
-       (*(int *)((int)&param_1->registeredUsers[local_8].xuid + 4) == (int)param_2)) break;
-    local_8 = local_8 + 1;
+    if (((session->registeredUsers[slot].active != false) &&
+        ((int)session->registeredUsers[slot].xuid == in_stack_00000008)) &&
+       (*(int *)((int)&session->registeredUsers[slot].xuid + 4) == (int)param_2)) break;
+    slot = slot + 1;
   }
-  return local_8;
+  return slot;
 }
 
 
 // 00972AF0  Session_EndGameSession  (live/live_sessions_win.cpp:282)
 
-void __cdecl Session_EndGameSession(SessionData_s *param_1)
+void __cdecl Session_EndGameSession(SessionData_s *session)
 
 {
-  if (param_1->sessionStartCalled != false) {
-    if (param_1->sessionHandle != false) {
+  if (session->sessionStartCalled != false) {
+    if (session->sessionHandle != false) {
       R_BeginRemoteScreenUpdate();
-      Session_EndOngoingSessionTasks(param_1);
+      Session_EndOngoingSessionTasks(session);
       LiveStorage_UploadStats();
       R_EndRemoteScreenUpdate((_func___cdecl_void *)0x0);
     }
-    param_1->sessionStartCalled = false;
+    session->sessionStartCalled = false;
   }
   return;
 }
@@ -242,18 +242,19 @@ void __cdecl Session_EndGameSession(SessionData_s *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Session_DeleteHandle(bool *param_1)
+void __cdecl Session_DeleteHandle(bool *sessionHandle)
 
 {
   code *pcVar1;
   bool bVar2;
-  overlappedTask *poVar3;
-  bdSecurityID local_14;
+  overlappedTask *task;
+  overlappedTask *sessionDeleteOverlappedIO;
+  bdSecurityID secID;
   uint local_c;
-  undefined4 local_8;
+  int localControllerIndex;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (bool *)0x0) || (*param_1 == false)) {
+  if ((sessionHandle == (bool *)0x0) || (*sessionHandle == false)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x13f,
                              0,"%s");
     if (!bVar2) {
@@ -262,14 +263,14 @@ void __cdecl Session_DeleteHandle(bool *param_1)
       return;
     }
   }
-  *param_1 = false;
+  *sessionHandle = false;
   if (g_matchmakingInfo->m_active != 0) {
-    local_8 = 0;
-    poVar3 = TaskManager_GetOpenTaskSlot(overlappedTasks,0,3);
+    localControllerIndex = 0;
+    task = TaskManager_GetOpenTaskSlot(overlappedTasks,0,3);
     g_matchmakingInfo->m_active = 0;
-    bdSecurityID::bdSecurityID(&local_14,(bdSecurityID *)&g_matchmakingInfo->_padding_);
-    dwDeleteSession(poVar3->controllerIndex,poVar3);
-    TaskManager_ClearTask(poVar3);
+    bdSecurityID::bdSecurityID(&secID,(bdSecurityID *)&g_matchmakingInfo->_padding_);
+    dwDeleteSession(task->controllerIndex,task);
+    TaskManager_ClearTask(task);
   }
   LiveStorage_UploadStats();
   return;
@@ -278,13 +279,13 @@ void __cdecl Session_DeleteHandle(bool *param_1)
 
 // 00972D80  Session_UnregisterAllUsersFromVoice  (live/live_sessions_win.cpp:342)
 
-void __cdecl Session_UnregisterAllUsersFromVoice(SessionData_s *param_1)
+void __cdecl Session_UnregisterAllUsersFromVoice(SessionData_s *session)
 
 {
-  int local_8;
+  int slot;
   
-  if (param_1->registerUsersWithVoice != false) {
-    for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
+  if (session->registerUsersWithVoice != false) {
+    for (slot = 0; slot < 0x20; slot = slot + 1) {
     }
   }
   return;
@@ -299,11 +300,11 @@ int __cdecl Session_GetFreeSessionGraveYardSlot(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int slot;
   
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    if (sessionGraveYard[local_8].active == false) {
-      return local_8;
+  for (slot = 0; slot < 6; slot = slot + 1) {
+    if (sessionGraveYard[slot].active == false) {
+      return slot;
     }
   }
   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x16c,0,
@@ -319,49 +320,54 @@ int __cdecl Session_GetFreeSessionGraveYardSlot(void)
 
 // 00972B40  Session_DeleteSession  (live/live_sessions_win.cpp:370)
 
-void __cdecl Session_DeleteSession(SessionData_s *param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl Session_DeleteSession(SessionData_s *session)
 
 {
   int iVar1;
   int iVar2;
   SessionData_s *pSVar3;
   SessionData_s *pSVar4;
+  bool deletedHandle;
+  int graveyardSlot;
+  int localControllerIndex;
   
-  Session_EndOngoingSessionTasks(param_1);
-  if (param_1->qosListenEnabled != false) {
-    Session_QoSListenStop(param_1);
+  Session_EndOngoingSessionTasks(session);
+  if (session->qosListenEnabled != false) {
+    Session_QoSListenStop(session);
   }
-  if (param_1->sessionHandle != false) {
+  if (session->sessionHandle != false) {
     if ((session_nonblocking->current).enabled == false) {
       Com_Printf(0x10,"Deleting \'%s\' session\n");
-      Session_EndGameSession(param_1);
-      Session_EveryoneLeaveSessionAsync(0,param_1);
-      Session_EndOngoingSessionTasks(param_1);
-      Session_DeleteHandle(&param_1->sessionHandle);
-      param_1->sessionHandle = false;
+      Session_EndGameSession(session);
+      Session_EveryoneLeaveSessionAsync(0,session);
+      Session_EndOngoingSessionTasks(session);
+      Session_DeleteHandle(&session->sessionHandle);
+      session->sessionHandle = false;
     }
     else {
-      Session_UnregisterAllUsersFromVoice(param_1);
+      Session_UnregisterAllUsersFromVoice(session);
       iVar1 = Session_GetFreeSessionGraveYardSlot();
       sessionGraveYard[iVar1].active = true;
-      pSVar3 = param_1;
+      pSVar3 = session;
       pSVar4 = &sessionGraveYard[iVar1].sessionData;
       for (iVar2 = 0x25e; iVar2 != 0; iVar2 = iVar2 + -1) {
         pSVar4->sessionName = pSVar3->sessionName;
         pSVar3 = (SessionData_s *)&pSVar3->sessionHandle;
         pSVar4 = (SessionData_s *)&pSVar4->sessionHandle;
       }
-      param_1->sessionHandle = false;
-      memset(&param_1->registeredUsers[0].active,'\0',0x500);
+      session->sessionHandle = false;
+      memset(&session->registeredUsers[0].active,'\0',0x500);
     }
   }
-  GamerProfile_WriteSettings((int)param_1);
-  memset(&param_1->registeredUsers[0].active,'\0',0x500);
-  param_1->flags = 0;
-  param_1->privateSlots = 0;
-  param_1->publicSlots = 0;
-  param_1->keysGenerated = false;
-  GamerProfile_WriteSettings((int)&param_1->sessionInfo);
+  GamerProfile_WriteSettings((int)session);
+  memset(&session->registeredUsers[0].active,'\0',0x500);
+  session->flags = 0;
+  session->privateSlots = 0;
+  session->publicSlots = 0;
+  session->keysGenerated = false;
+  GamerProfile_WriteSettings((int)&session->sessionInfo);
   return;
 }
 
@@ -370,139 +376,151 @@ void __cdecl Session_DeleteSession(SessionData_s *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Session_StartHostComplete(int param_1)
+taskCompleteResults __cdecl Session_StartHostComplete(int slot)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  taskCompleteResults tVar3;
-  bdSecurityID *pbVar4;
+  void *pvVar1;
+  code *pcVar2;
+  bool bVar3;
+  taskCompleteResults tVar4;
+  overlappedTask *task;
+  bdSecurityID *pbVar5;
   bdTrulyRandomImpl *this;
-  int iVar5;
-  uchar *puVar6;
-  XNADDR *pXVar7;
-  bdSecurityKey *pbVar8;
-  uint uVar9;
-  bdReference<bdByteBuffer> local_24;
-  void *local_20;
-  bdReference<bdByteBuffer> local_1c;
-  taskCompleteResults local_18;
-  int local_14;
-  void *local_10;
-  overlappedTask *local_c;
-  SessionData_s *local_8;
+  int iVar6;
+  uchar *puVar7;
+  XNADDR *pXVar8;
+  bdSecurityKey *pbVar9;
+  uint uVar10;
+  bdReference<bdCommonAddr> localAddr_2;
+  XSESSION_INFO *sessionInfo;
+  bdReference<bdCommonAddr> localAddr;
+  taskCompleteResults result;
+  int sessionCreateControllerIndex;
+  SessionCreateData *createData;
+  SessionData_s *session;
   
-  local_8 = (SessionData_s *)0x0;
-  if ((0x1f < param_1) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
-                               0x272,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    tVar3 = (*pcVar1)();
-    return tVar3;
+  if ((0x1f < slot) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
+                               0x272,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    tVar4 = (*pcVar2)();
+    return tVar4;
   }
-  if ((overlappedTasks[param_1].active == false) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
-                               0x273,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    tVar3 = (*pcVar1)();
-    return tVar3;
+  if ((overlappedTasks[slot].active == false) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
+                               0x273,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    tVar4 = (*pcVar2)();
+    return tVar4;
   }
-  if ((overlappedTasks[param_1].type != 2) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
-                               0x274,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    tVar3 = (*pcVar1)();
-    return tVar3;
+  if ((overlappedTasks[slot].type != 2) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
+                               0x274,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    tVar4 = (*pcVar2)();
+    return tVar4;
   }
-  local_c = overlappedTasks + param_1;
-  if ((local_c->overlappedIO).m_ptr == (bdRemoteTask *)0x0) {
+  task = overlappedTasks + slot;
+  if ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0) {
     if ((g_dwNetStatus != DW_NET_STARTED_LAN) && (g_dwNetStatus != DW_NET_STARTED_ONLINE)) {
       dwNetPump();
       NET_Sleep(10);
-      iVar5 = Sys_Milliseconds();
-      if (5000.0 < (float)iVar5 - local_c->startMS) {
+      iVar6 = Sys_Milliseconds();
+      if (5000.0 < (float)iVar6 - overlappedTasks[slot].startMS) {
         return TASK_ERROR;
       }
       return TASK_NOTCOMPLETE;
     }
-    local_18 = TASK_COMPLETE;
-    local_10 = overlappedTasks[param_1].data;
-    local_8 = *(SessionData_s **)((int)local_10 + 4);
+    result = TASK_COMPLETE;
+    pvVar1 = overlappedTasks[slot].data;
+    session = *(SessionData_s **)((int)pvVar1 + 4);
     dwGetLocalCommonAddr();
-    if ((bdCommonAddr *)local_1c.m_ptr != (bdCommonAddr *)0x0) {
-      bdCommonAddr::serialize
-                ((bdCommonAddr *)local_1c.m_ptr,(uchar *)(*(int *)((int)local_10 + 4) + 0xd));
+    if (localAddr.m_ptr != (bdCommonAddr *)0x0) {
+      bdCommonAddr::serialize(localAddr.m_ptr,(uchar *)(*(int *)((int)pvVar1 + 4) + 0xd));
     }
-    uVar9 = 0x10;
-    pbVar8 = &g_securityKey;
+    uVar10 = 0x10;
+    pbVar9 = &g_securityKey;
     this = bdSingleton<bdTrulyRandomImpl>::getInstance();
-    bdTrulyRandomImpl::getRandomUByte8(this,pbVar8->ab,uVar9);
-    iVar5 = *(int *)((int)local_10 + 4);
-    *(undefined4 *)(iVar5 + 0x26) = g_securityKey.ab._0_4_;
-    *(undefined4 *)(iVar5 + 0x2a) = g_securityKey.ab._4_4_;
-    *(undefined4 *)(iVar5 + 0x2e) = g_securityKey.ab._8_4_;
-    *(undefined4 *)(iVar5 + 0x32) = g_securityKey.ab._12_4_;
-    pbVar4 = dwGetSessionSecID();
-    iVar5 = *(int *)((int)local_10 + 4);
-    *(undefined4 *)(iVar5 + 5) = *(undefined4 *)pbVar4->ab;
-    *(undefined4 *)(iVar5 + 9) = *(undefined4 *)(pbVar4->ab + 4);
-    dwCreateSecIDAndKey((bdSecurityID *)(*(int *)((int)local_10 + 4) + 5),
-                        (bdSecurityKey *)(*(int *)((int)local_10 + 4) + 0x26));
-    bVar2 = dwRegisterSecIDAndKey
-                      ((bdSecurityID *)(*(int *)((int)local_10 + 4) + 5),
-                       (bdSecurityKey *)(*(int *)((int)local_10 + 4) + 0x26));
-    if (!bVar2) {
-      local_18 = TASK_ERROR;
+    bdTrulyRandomImpl::getRandomUByte8(this,pbVar9->ab,uVar10);
+    iVar6 = *(int *)((int)pvVar1 + 4);
+    *(undefined4 *)(iVar6 + 0x26) = g_securityKey.ab._0_4_;
+    *(undefined4 *)(iVar6 + 0x2a) = g_securityKey.ab._4_4_;
+    *(undefined4 *)(iVar6 + 0x2e) = g_securityKey.ab._8_4_;
+    *(undefined4 *)(iVar6 + 0x32) = g_securityKey.ab._12_4_;
+    pbVar5 = dwGetSessionSecID();
+    iVar6 = *(int *)((int)pvVar1 + 4);
+    *(undefined4 *)(iVar6 + 5) = *(undefined4 *)pbVar5->ab;
+    *(undefined4 *)(iVar6 + 9) = *(undefined4 *)(pbVar5->ab + 4);
+    dwCreateSecIDAndKey((bdSecurityID *)(*(int *)((int)pvVar1 + 4) + 5),
+                        (bdSecurityKey *)(*(int *)((int)pvVar1 + 4) + 0x26));
+    bVar3 = dwRegisterSecIDAndKey
+                      ((bdSecurityID *)(*(int *)((int)pvVar1 + 4) + 5),
+                       (bdSecurityKey *)(*(int *)((int)pvVar1 + 4) + 0x26));
+    if (!bVar3) {
+      result = TASK_ERROR;
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&localAddr);
   }
   else {
-    local_8 = &g_serverSession;
-    local_18 = dwCreateSessionComplete(local_c);
-    if (local_18 == TASK_COMPLETE) {
-      pbVar4 = dwGetSessionSecID();
-      *(undefined4 *)(local_8->sessionInfo).sessionID.ab = *(undefined4 *)pbVar4->ab;
-      *(undefined4 *)((local_8->sessionInfo).sessionID.ab + 4) = *(undefined4 *)(pbVar4->ab + 4);
-      *(undefined4 *)(local_8->sessionInfo).keyExchangeKey.ab = g_securityKey.ab._0_4_;
-      *(undefined4 *)((local_8->sessionInfo).keyExchangeKey.ab + 4) = g_securityKey.ab._4_4_;
-      *(undefined4 *)((local_8->sessionInfo).keyExchangeKey.ab + 8) = g_securityKey.ab._8_4_;
-      *(undefined4 *)((local_8->sessionInfo).keyExchangeKey.ab + 0xc) = g_securityKey.ab._12_4_;
+    session = &g_serverSession;
+    result = dwCreateSessionComplete(task);
+    if (result == TASK_COMPLETE) {
+      pbVar5 = dwGetSessionSecID();
+      g_serverSession.sessionInfo.sessionID.ab._0_4_ = *(undefined4 *)pbVar5->ab;
+      g_serverSession.sessionInfo.sessionID.ab._4_4_ = *(undefined4 *)(pbVar5->ab + 4);
+      g_serverSession.sessionInfo.keyExchangeKey.ab[0] = g_securityKey.ab[0];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[1] = g_securityKey.ab[1];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[2] = g_securityKey.ab[2];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[3] = g_securityKey.ab[3];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[4] = g_securityKey.ab[4];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[5] = g_securityKey.ab[5];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[6] = g_securityKey.ab[6];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[7] = g_securityKey.ab[7];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[8] = g_securityKey.ab[8];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[9] = g_securityKey.ab[9];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[10] = g_securityKey.ab[10];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[0xb] = g_securityKey.ab[0xb];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[0xc] = g_securityKey.ab[0xc];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[0xd] = g_securityKey.ab[0xd];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[0xe] = g_securityKey.ab[0xe];
+      g_serverSession.sessionInfo.keyExchangeKey.ab[0xf] = g_securityKey.ab[0xf];
       dwRegisterSecIDAndKey
-                (&(local_8->sessionInfo).sessionID,&(local_8->sessionInfo).keyExchangeKey);
+                (&g_serverSession.sessionInfo.sessionID,&g_serverSession.sessionInfo.keyExchangeKey)
+      ;
     }
   }
-  if (local_18 == TASK_COMPLETE) {
-    local_20 = local_c->data;
-    local_14 = overlappedTasks[param_1].controllerIndex;
+  if (result == TASK_COMPLETE) {
+    pvVar1 = overlappedTasks[slot].data;
     dwGetLocalCommonAddr();
-    if ((bdCommonAddr *)local_24.m_ptr != (bdCommonAddr *)0x0) {
-      bdCommonAddr::serialize((bdCommonAddr *)local_24.m_ptr,(uchar *)((int)local_20 + 8));
-      puVar6 = (uchar *)((int)local_20 + 8);
-      pXVar7 = &(local_8->sessionInfo).hostAddress;
-      for (iVar5 = 6; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *(undefined4 *)pXVar7->addrBuff = *(undefined4 *)puVar6;
-        puVar6 = puVar6 + 4;
-        pXVar7 = (XNADDR *)(pXVar7->addrBuff + 4);
+    if (localAddr_2.m_ptr != (bdCommonAddr *)0x0) {
+      bdCommonAddr::serialize(localAddr_2.m_ptr,(uchar *)((int)pvVar1 + 8));
+      puVar7 = (uchar *)((int)pvVar1 + 8);
+      pXVar8 = &(session->sessionInfo).hostAddress;
+      for (iVar6 = 6; iVar6 != 0; iVar6 = iVar6 + -1) {
+        *(undefined4 *)pXVar8->addrBuff = *(undefined4 *)puVar7;
+        puVar7 = puVar7 + 4;
+        pXVar8 = (XNADDR *)(pXVar8->addrBuff + 4);
       }
-      pXVar7->addrBuff[0] = *puVar6;
+      pXVar8->addrBuff[0] = *puVar7;
     }
     g_matchmakingInfo->m_active = 1;
-    TaskManager_ClearTask(local_c);
+    TaskManager_ClearTask(task);
     LiveStorage_UploadStats();
-    local_8->keysGenerated = true;
-    local_8->sessionStartCalled = false;
+    session->keysGenerated = true;
+    session->sessionStartCalled = false;
     if ((xblive_basictraining->current).enabled == false) {
-      Session_QoSListenStart(local_8);
+      Session_QoSListenStart(session);
     }
-    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_24);
+    bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&localAddr_2)
+    ;
   }
-  else if (local_18 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(local_c);
+  else if (result != TASK_NOTCOMPLETE) {
+    TaskManager_ClearTask(task);
   }
-  if (local_18 == TASK_ERROR) {
+  if (result == TASK_ERROR) {
     Com_Error(ERR_DROP,"EXE_ERROR_CREATING_SESSION");
   }
-  return local_18;
+  return result;
 }
 
 
@@ -514,11 +532,11 @@ int __cdecl Session_GetFreeCreateSessionSlot(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int slot;
   
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if (sessionCreateData[local_8].active == false) {
-      return local_8;
+  for (slot = 0; slot < 0x20; slot = slot + 1) {
+    if (sessionCreateData[slot].active == false) {
+      return slot;
     }
   }
   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x2e6,0,
@@ -539,7 +557,8 @@ int __cdecl Session_GetFreeCreateSessionSlot(void)
 /* WARNING: Removing unreachable block (ram,0x00972ed0) */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Session_StartHost(SessionData_s *param_1,int param_2,int param_3,int param_4)
+void __cdecl
+Session_StartHost(SessionData_s *session,int sessionFlags,int numPrivateSlots,int numPublicSlots)
 
 {
   code *pcVar1;
@@ -549,65 +568,66 @@ void __cdecl Session_StartHost(SessionData_s *param_1,int param_2,int param_3,in
   uint uVar5;
   bdTrulyRandomImpl *this;
   bdSecurityKey *pbVar6;
-  bdSecurityKey local_28;
+  bdSecurityKey secKey;
   uint local_18;
-  int local_14;
-  int local_10;
-  overlappedTask *local_c;
-  int local_8;
+  int requiredSigninState;
+  ulong sessionCreateControllerIndex;
+  overlappedTask *sessionCreateOverlappedIO;
+  int sessionCreateSlot;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (SessionData_s *)0x0) &&
+  if ((session == (SessionData_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
                                0x2f3,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->sessionName == (char *)0x0) &&
+  if ((session->sessionName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
                                0x2f4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->sessionHandle != false) &&
+  if ((session->sessionHandle != false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
                                0x2f5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = 2;
-  local_10 = 0;
+  requiredSigninState = 2;
+  sessionCreateControllerIndex = 0;
   iVar3 = CL_ControllerIndex_GetSignInState(0);
-  if (iVar3 < local_14) {
+  if (iVar3 < requiredSigninState) {
     Com_Error(ERR_DROP,"XBOXLIVE_SIGNEDOUTOFLIVE");
   }
-  iVar3 = CL_ControllerIndex_GetSignInState(local_10);
-  if ((iVar3 < local_14) &&
+  iVar3 = CL_ControllerIndex_GetSignInState(sessionCreateControllerIndex);
+  if ((iVar3 < requiredSigninState) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
                                0x307,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = TaskManager_GetOpenTaskSlot(overlappedTasks,local_10,2);
-  local_8 = Session_GetFreeCreateSessionSlot();
-  sessionCreateData[local_8].active = true;
-  sessionCreateData[local_8].session = param_1;
-  local_c->data = sessionCreateData + local_8;
-  GamerProfile_WriteSettings((int)param_1);
-  if ((local_10 != 0) &&
+  sessionCreateOverlappedIO =
+       TaskManager_GetOpenTaskSlot(overlappedTasks,sessionCreateControllerIndex,2);
+  sessionCreateSlot = Session_GetFreeCreateSessionSlot();
+  sessionCreateData[sessionCreateSlot].active = true;
+  sessionCreateData[sessionCreateSlot].session = session;
+  sessionCreateOverlappedIO->data = sessionCreateData + sessionCreateSlot;
+  GamerProfile_WriteSettings((int)session);
+  if ((sessionCreateControllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
                                0x319,0,"%s\n\t(sessionCreateControllerIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = CL_ControllerIndex_GetSignInState(local_10);
+  iVar3 = CL_ControllerIndex_GetSignInState(sessionCreateControllerIndex);
   if (iVar3 < 1) {
-    CL_ControllerIndex_GetSignInState(local_10);
+    CL_ControllerIndex_GetSignInState(sessionCreateControllerIndex);
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x31a,
                              0,
                              "%s\n\t(CL_ControllerIndex_GetSignInState( sessionCreateControllerIndex )) = %i"
@@ -618,7 +638,7 @@ void __cdecl Session_StartHost(SessionData_s *param_1,int param_2,int param_3,in
       return;
     }
   }
-  if (((param_3 < 1) && (param_4 < 1)) &&
+  if (((numPrivateSlots < 1) && (numPublicSlots < 1)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",799,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -630,7 +650,7 @@ void __cdecl Session_StartHost(SessionData_s *param_1,int param_2,int param_3,in
             );
   g_matchmakingInfo->m_memberGAME_TYPE = (uint)((xblive_privatematch->current).enabled == true);
   g_matchmakingInfo->m_memberNETCODE_VERSION = 0x414;
-  g_matchmakingInfo->_padding_ = param_4;
+  g_matchmakingInfo->_padding_ = numPublicSlots;
   pdVar4 = LiveStats_GetStatsDDL();
   g_matchmakingInfo->m_memberDDL_VERSION = pdVar4->version;
   g_matchmakingInfo->m_memberLICENSE = 5;
@@ -642,22 +662,22 @@ void __cdecl Session_StartHost(SessionData_s *param_1,int param_2,int param_3,in
   I_strncpyz(g_matchmakingInfo->m_memberservername,(sv_hostname->current).string,0x40);
   g_matchmakingInfo->m_memberserverType = 0;
   dwGetOnlineUserID(0,&g_matchmakingInfo->m_memberdemonwareID);
-  g_matchmakingInfo->m_memberTEAM_SIZE_MAX = param_4;
-  local_c->data = sessionCreateData + local_8;
-  bdSecurityKey::bdSecurityKey(&local_28);
+  g_matchmakingInfo->m_memberTEAM_SIZE_MAX = numPublicSlots;
+  sessionCreateOverlappedIO->data = sessionCreateData + sessionCreateSlot;
+  bdSecurityKey::bdSecurityKey(&secKey);
   uVar5 = 0x10;
-  pbVar6 = &local_28;
+  pbVar6 = &secKey;
   this = bdSingleton<bdTrulyRandomImpl>::getInstance();
   bdTrulyRandomImpl::getRandomUByte8(this,pbVar6->ab,uVar5);
-  MatchMakingInfo::setSessionKey(g_matchmakingInfo,&local_28);
-  dwCreateSession(local_c,g_matchmakingInfo);
-  param_1->flags = param_2 | 8;
-  param_1->publicSlots = param_4;
-  param_1->privateSlots = param_3;
-  param_1->sessionHandle = true;
-  param_1->sessionCreateController = local_10;
+  MatchMakingInfo::setSessionKey(g_matchmakingInfo,&secKey);
+  dwCreateSession(sessionCreateOverlappedIO,g_matchmakingInfo);
+  session->flags = sessionFlags | 8;
+  session->publicSlots = numPublicSlots;
+  session->privateSlots = numPrivateSlots;
+  session->sessionHandle = true;
+  session->sessionCreateController = sessionCreateControllerIndex;
   if ((session_nonblocking->current).enabled == false) {
-    Session_EndOngoingSessionTasks(param_1);
+    Session_EndOngoingSessionTasks(session);
   }
   dwCreateLanSession();
   return;
@@ -668,22 +688,26 @@ void __cdecl Session_StartHost(SessionData_s *param_1,int param_2,int param_3,in
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Session_Modify(int param_1,SessionData_s *param_2,int param_3,int param_4,int param_5)
+void __cdecl
+Session_Modify(int localControllerIndex,SessionData_s *session,int flags,int publicSlots,
+              int privateSlots)
 
 {
-  overlappedTask *poVar1;
-  taskCompleteResults tVar2;
+  overlappedTask *task;
+  taskCompleteResults tVar1;
+  overlappedTask *sessionModifyOverlappedIO;
+  taskCompleteResults res;
   
-  if ((param_2->sessionHandle != false) && (g_matchmakingInfo->m_active != 0)) {
-    poVar1 = TaskManager_GetOpenTaskSlot(overlappedTasks,param_1,6);
+  if ((session->sessionHandle != false) && (g_matchmakingInfo->m_active != 0)) {
+    task = TaskManager_GetOpenTaskSlot(overlappedTasks,localControllerIndex,6);
     Com_Printf(0x10,"Modifying session\n");
-    poVar1->data = param_2;
-    dwUpdateSession(poVar1,g_matchmakingInfo);
-    tVar2 = dwUpdateSessionComplete(poVar1);
-    if ((tVar2 == TASK_COMPLETE) || (tVar2 == TASK_NOTCOMPLETE)) {
-      param_2->privateSlots = param_5;
-      param_2->publicSlots = param_4;
-      param_2->flags = param_3;
+    task->data = session;
+    dwUpdateSession(task,g_matchmakingInfo);
+    tVar1 = dwUpdateSessionComplete(task);
+    if ((tVar1 == TASK_COMPLETE) || (tVar1 == TASK_NOTCOMPLETE)) {
+      session->privateSlots = privateSlots;
+      session->publicSlots = publicSlots;
+      session->flags = flags;
     }
   }
   return;
@@ -694,14 +718,16 @@ void __cdecl Session_Modify(int param_1,SessionData_s *param_2,int param_3,int p
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Session_ModifyComplete(int param_1)
+taskCompleteResults __cdecl Session_ModifyComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  taskCompleteResults res;
+  overlappedTask *sessionModifyOverlappedIO;
   
-  if (0x1f < param_1) {
+  if (0x1f < slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x3f2,
                              0,"%s");
     if (!bVar2) {
@@ -710,7 +736,7 @@ taskCompleteResults __cdecl Session_ModifyComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x3f6,
                              0,"%s");
     if (!bVar2) {
@@ -719,7 +745,7 @@ taskCompleteResults __cdecl Session_ModifyComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 6) {
+  if (overlappedTasks[slot].type != 6) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x3f7,
                              0,"%s");
     if (!bVar2) {
@@ -728,12 +754,12 @@ taskCompleteResults __cdecl Session_ModifyComplete(int param_1)
       return tVar3;
     }
   }
-  tVar3 = dwUpdateSessionComplete(overlappedTasks + param_1);
+  tVar3 = dwUpdateSessionComplete(overlappedTasks + slot);
   if (tVar3 == TASK_COMPLETE) {
     Com_Printf(0x10,"Session modify complete\n");
   }
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(overlappedTasks + param_1);
+    TaskManager_ClearTask(overlappedTasks + slot);
   }
   if (tVar3 == TASK_ERROR) {
     Com_PrintError(0x10,"EXE_ERROR_MODIFYING_SESSION");
@@ -746,14 +772,15 @@ taskCompleteResults __cdecl Session_ModifyComplete(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Session_StartSessionComplete(int param_1)
+taskCompleteResults __cdecl Session_StartSessionComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  overlappedTask *sessionStartOverlappedIO;
   
-  if (0x1f < param_1) {
+  if (0x1f < slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x44e,
                              0,"%s");
     if (!bVar2) {
@@ -762,7 +789,7 @@ taskCompleteResults __cdecl Session_StartSessionComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x452,
                              0,"%s");
     if (!bVar2) {
@@ -771,7 +798,7 @@ taskCompleteResults __cdecl Session_StartSessionComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 5) {
+  if (overlappedTasks[slot].type != 5) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x453,
                              0,"%s");
     if (!bVar2) {
@@ -780,7 +807,7 @@ taskCompleteResults __cdecl Session_StartSessionComplete(int param_1)
       return tVar3;
     }
   }
-  TaskManager_ClearTask(overlappedTasks + param_1);
+  TaskManager_ClearTask(overlappedTasks + slot);
   return TASK_COMPLETE;
 }
 
@@ -789,14 +816,15 @@ taskCompleteResults __cdecl Session_StartSessionComplete(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Session_JoinSessionComplete(int param_1)
+taskCompleteResults __cdecl Session_JoinSessionComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  overlappedTask *sessionJoinOverlappedIO;
   
-  if (0x1f < param_1) {
+  if (0x1f < slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x476,
                              0,"%s");
     if (!bVar2) {
@@ -805,7 +833,7 @@ taskCompleteResults __cdecl Session_JoinSessionComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x47a,
                              0,"%s");
     if (!bVar2) {
@@ -814,7 +842,7 @@ taskCompleteResults __cdecl Session_JoinSessionComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 1) {
+  if (overlappedTasks[slot].type != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x47b,
                              0,"%s");
     if (!bVar2) {
@@ -823,7 +851,7 @@ taskCompleteResults __cdecl Session_JoinSessionComplete(int param_1)
       return tVar3;
     }
   }
-  TaskManager_ClearTask(overlappedTasks + param_1);
+  TaskManager_ClearTask(overlappedTasks + slot);
   return TASK_COMPLETE;
 }
 
@@ -846,14 +874,15 @@ bool __cdecl Session_JoinInProgress(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Session_EveryoneLeaveSessionComplete(int param_1)
+taskCompleteResults __cdecl Session_EveryoneLeaveSessionComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  overlappedTask *sessionLeaveOverlappedIO;
   
-  if (0x1f < param_1) {
+  if (0x1f < slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x48c,
                              0,"%s");
     if (!bVar2) {
@@ -862,7 +891,7 @@ taskCompleteResults __cdecl Session_EveryoneLeaveSessionComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x490,
                              0,"%s");
     if (!bVar2) {
@@ -871,7 +900,7 @@ taskCompleteResults __cdecl Session_EveryoneLeaveSessionComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 7) {
+  if (overlappedTasks[slot].type != 7) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",0x491,
                              0,"%s");
     if (!bVar2) {
@@ -880,52 +909,54 @@ taskCompleteResults __cdecl Session_EveryoneLeaveSessionComplete(int param_1)
       return tVar3;
     }
   }
-  TaskManager_ClearTask(overlappedTasks + param_1);
+  TaskManager_ClearTask(overlappedTasks + slot);
   return TASK_COMPLETE;
 }
 
 
 // 00973420  Session_EveryoneLeaveSessionAsync  (live/live_sessions_win.cpp:1177)
 
-void __cdecl Session_EveryoneLeaveSessionAsync(int param_1,SessionData_s *param_2)
+void __cdecl Session_EveryoneLeaveSessionAsync(int localControllerIndex,SessionData_s *session)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
-  int local_118;
+  int registeredUserSlot;
   undefined4 auStack_114 [65];
-  int local_10;
-  undefined4 local_c;
+  int numPlayers;
+  undefined4 player;
   undefined4 local_8;
   
-  if (param_2->sessionHandle != false) {
-    Session_EndOngoingSessionTasks(param_2);
-    local_10 = 0;
-    for (local_118 = 0; local_118 < 0x20; local_118 = local_118 + 1) {
-      if (((local_118 < 0) || (0x1f < local_118)) &&
+  if (session->sessionHandle != false) {
+    Session_EndOngoingSessionTasks(session);
+    numPlayers = 0;
+    for (registeredUserSlot = 0; registeredUserSlot < 0x20;
+        registeredUserSlot = registeredUserSlot + 1) {
+      if (((registeredUserSlot < 0) || (0x1f < registeredUserSlot)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
                                    0x4ae,0,"%s\n\t(registeredUserSlot) = %i"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_2->registeredUsers[local_118].active != false) {
-        if (((int)param_2->remoteTalkers[local_118].xuid != 0 ||
-             *(int *)((int)&param_2->remoteTalkers[local_118].xuid + 4) != 0) &&
+      if (session->registeredUsers[registeredUserSlot].active != false) {
+        if (((int)session->remoteTalkers[registeredUserSlot].xuid != 0 ||
+             *(int *)((int)&session->remoteTalkers[registeredUserSlot].xuid + 4) != 0) &&
            (bVar3 = Session_JoinInProgress(), bVar3)) {
           Live_FinishOngoingSessionJoinTasksForXUID
-                    (CONCAT44(*(undefined4 *)((int)&param_2->remoteTalkers[local_118].xuid + 4),
-                              (int)param_2->remoteTalkers[local_118].xuid));
+                    (CONCAT44(*(undefined4 *)
+                               ((int)&session->remoteTalkers[registeredUserSlot].xuid + 4),
+                              (int)session->remoteTalkers[registeredUserSlot].xuid));
         }
-        iVar2 = local_10;
-        local_c = (undefined4)param_2->registeredUsers[local_118].xuid;
-        local_8 = *(undefined4 *)((int)&param_2->registeredUsers[local_118].xuid + 4);
-        auStack_114[local_10 * 2] = local_c;
+        iVar2 = numPlayers;
+        player = (undefined4)session->registeredUsers[registeredUserSlot].xuid;
+        local_8 = *(undefined4 *)((int)&session->registeredUsers[registeredUserSlot].xuid + 4);
+        auStack_114[numPlayers * 2] = player;
         auStack_114[iVar2 * 2 + 1] = local_8;
-        local_10 = local_10 + 1;
+        numPlayers = numPlayers + 1;
         Com_Printf(0x10,"Calling XSessionLeaveRemote for slot %i in session \'%s\'\n");
-        param_2->registeredUsers[local_118].active = false;
+        session->registeredUsers[registeredUserSlot].active = false;
       }
     }
   }
@@ -935,26 +966,30 @@ void __cdecl Session_EveryoneLeaveSessionAsync(int param_1,SessionData_s *param_
 
 // 009742C0  Session_ManageGraveYard  (live/live_sessions_win.cpp:1676)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl Session_ManageGraveYard(void)
 
 {
   bool bVar1;
-  SessionData_s *pSVar2;
-  int local_10;
+  SessionData_s *session_00;
+  int slot;
+  int numUnregistered;
+  SessionData_s *session;
   
   bVar1 = CL_IsRenderingSplitScreen();
   if (!bVar1) {
-    for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
-      if (sessionGraveYard[local_10].active != false) {
-        pSVar2 = &sessionGraveYard[local_10].sessionData;
-        bVar1 = Session_SessionTasksInProgress(pSVar2);
+    for (slot = 0; slot < 6; slot = slot + 1) {
+      if (sessionGraveYard[slot].active != false) {
+        session_00 = &sessionGraveYard[slot].sessionData;
+        bVar1 = Session_SessionTasksInProgress(session_00);
         if (!bVar1) {
-          Session_EndGameSession(pSVar2);
-          bVar1 = Session_SessionTasksInProgress(pSVar2);
-          if ((!bVar1) && (bVar1 = Session_SessionTasksInProgress(pSVar2), !bVar1)) {
-            Session_DeleteHandle(&sessionGraveYard[local_10].sessionData.sessionHandle);
-            sessionGraveYard[local_10].sessionData.sessionHandle = false;
-            sessionGraveYard[local_10].active = false;
+          Session_EndGameSession(session_00);
+          bVar1 = Session_SessionTasksInProgress(session_00);
+          if ((!bVar1) && (bVar1 = Session_SessionTasksInProgress(session_00), !bVar1)) {
+            Session_DeleteHandle(&sessionGraveYard[slot].sessionData.sessionHandle);
+            sessionGraveYard[slot].sessionData.sessionHandle = false;
+            sessionGraveYard[slot].active = false;
           }
         }
       }
@@ -968,7 +1003,7 @@ void __cdecl Session_ManageGraveYard(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl Session_SessionTasksInProgress(SessionData_s *param_1)
+bool __cdecl Session_SessionTasksInProgress(SessionData_s *session)
 
 {
   code *pcVar1;
@@ -976,32 +1011,34 @@ bool __cdecl Session_SessionTasksInProgress(SessionData_s *param_1)
   undefined1 uVar3;
   void *pvVar4;
   SessionData_s *pSVar5;
-  char *pcVar6;
-  int local_8;
+  char *fmt;
+  SessionCreateData *createData;
+  SessionJoinData *joinData;
+  int tasknum;
   
-  local_8 = 0;
+  tasknum = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < tasknum) {
       return false;
     }
-    if (overlappedTasks[local_8].active != false) {
-      switch(overlappedTasks[local_8].type) {
+    if (overlappedTasks[tasknum].active != false) {
+      switch(overlappedTasks[tasknum].type) {
       case 1:
-        pvVar4 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (*(SessionData_s **)((int)pvVar4 + 0x18) == param_1) {
+        pvVar4 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (*(SessionData_s **)((int)pvVar4 + 0x18) == session) {
           return true;
         }
         break;
       case 2:
-        pvVar4 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (*(SessionData_s **)((int)pvVar4 + 4) == param_1) {
+        pvVar4 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (*(SessionData_s **)((int)pvVar4 + 4) == session) {
           return true;
         }
         break;
       default:
-        pcVar6 = va("Unknown session task type %i\n");
+        fmt = va("Unknown session task type %i\n");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
-                                 0x6f6,0,pcVar6);
+                                 0x6f6,0,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
@@ -1009,29 +1046,29 @@ bool __cdecl Session_SessionTasksInProgress(SessionData_s *param_1)
         }
         break;
       case 4:
-        if (param_1 == &g_serverSession) {
+        if (session == &g_serverSession) {
           return true;
         }
         break;
       case 5:
-        if (param_1 == &g_serverSession) {
+        if (session == &g_serverSession) {
           return true;
         }
         break;
       case 6:
-        pSVar5 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (param_1 == pSVar5) {
+        pSVar5 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (session == pSVar5) {
           return true;
         }
         break;
       case 7:
-        pSVar5 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (param_1 == pSVar5) {
+        pSVar5 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (session == pSVar5) {
           return true;
         }
       }
     }
-    local_8 = local_8 + 1;
+    tasknum = tasknum + 1;
   } while( true );
 }
 
@@ -1040,7 +1077,7 @@ bool __cdecl Session_SessionTasksInProgress(SessionData_s *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
+void __cdecl Session_EndOngoingSessionTasks(SessionData_s *session)
 
 {
   code *pcVar1;
@@ -1048,22 +1085,25 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
   void *pvVar3;
   SessionData_s *pSVar4;
   taskCompleteResults tVar5;
-  char *pcVar6;
-  int local_8;
+  char *fmt;
+  bool done;
+  SessionCreateData *createData;
+  SessionJoinData *joinData;
+  int tasknum;
   
-  local_8 = 0;
+  tasknum = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < tasknum) {
       LB_EndOngoingTasks();
       return;
     }
-    if (overlappedTasks[local_8].active != false) {
-      switch(overlappedTasks[local_8].type) {
+    if (overlappedTasks[tasknum].active != false) {
+      switch(overlappedTasks[tasknum].type) {
       case 1:
-        pvVar3 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (*(SessionData_s **)((int)pvVar3 + 0x18) == param_1) {
-          while (overlappedTasks[local_8].active != false) {
-            tVar5 = Session_JoinSessionComplete(local_8);
+        pvVar3 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (*(SessionData_s **)((int)pvVar3 + 0x18) == session) {
+          while (overlappedTasks[tasknum].active != false) {
+            tVar5 = Session_JoinSessionComplete(tasknum);
             if ((tVar5 != TASK_NOTCOMPLETE) && (tVar5 != TASK_COMPLETE)) {
               Com_PrintError(0x10,"EXE_ERROR_JOINING_SESSION");
             }
@@ -1071,11 +1111,11 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
         }
         break;
       case 2:
-        pvVar3 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (*(SessionData_s **)((int)pvVar3 + 4) == param_1) {
+        pvVar3 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (*(SessionData_s **)((int)pvVar3 + 4) == session) {
           bVar2 = false;
-          while ((!bVar2 && (overlappedTasks[local_8].active != false))) {
-            tVar5 = Session_StartHostComplete(local_8);
+          while ((!bVar2 && (overlappedTasks[tasknum].active != false))) {
+            tVar5 = Session_StartHostComplete(tasknum);
             if (tVar5 != TASK_NOTCOMPLETE) {
               if (tVar5 == TASK_COMPLETE) {
                 bVar2 = true;
@@ -1089,9 +1129,9 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
         }
         break;
       default:
-        pcVar6 = va("Unknown session task type %i\n");
+        fmt = va("Unknown session task type %i\n");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
-                                 0x7b8,0,pcVar6);
+                                 0x7b8,0,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
@@ -1099,9 +1139,9 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
         }
         break;
       case 5:
-        if (param_1 == &g_serverSession) {
-          while (overlappedTasks[local_8].active != false) {
-            tVar5 = Session_StartSessionComplete(local_8);
+        if (session == &g_serverSession) {
+          while (overlappedTasks[tasknum].active != false) {
+            tVar5 = Session_StartSessionComplete(tasknum);
             if ((tVar5 != TASK_NOTCOMPLETE) && (tVar5 != TASK_COMPLETE)) {
               Com_PrintError(0x10,"EXE_ERROR_STARTING_SESSION");
             }
@@ -1109,10 +1149,10 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
         }
         break;
       case 6:
-        pSVar4 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if (param_1 == pSVar4) {
-          while (overlappedTasks[local_8].active != false) {
-            tVar5 = Session_ModifyComplete(local_8);
+        pSVar4 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if (session == pSVar4) {
+          while (overlappedTasks[tasknum].active != false) {
+            tVar5 = Session_ModifyComplete(tasknum);
             if ((tVar5 != TASK_NOTCOMPLETE) && (tVar5 != TASK_COMPLETE)) {
               Com_PrintError(0x10,"EXE_ERROR_MODIFYING_SESSION");
             }
@@ -1120,15 +1160,15 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
         }
         break;
       case 7:
-        while (overlappedTasks[local_8].active != false) {
-          tVar5 = Session_EveryoneLeaveSessionComplete(local_8);
+        while (overlappedTasks[tasknum].active != false) {
+          tVar5 = Session_EveryoneLeaveSessionComplete(tasknum);
           if (((int)tVar5 < 0) || (1 < (int)tVar5)) {
             Com_PrintError(0x10,"EXE_ERROR_LEAVING_SESSION");
           }
         }
       }
     }
-    local_8 = local_8 + 1;
+    tasknum = tasknum + 1;
   } while( true );
 }
 
@@ -1137,7 +1177,7 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FinishOngoingSessionJoinTasksForXUID(ulong64 param_1)
+void __cdecl Live_FinishOngoingSessionJoinTasksForXUID(ulong64 player)
 
 {
   taskCompleteResults tVar1;
@@ -1145,31 +1185,33 @@ void __cdecl Live_FinishOngoingSessionJoinTasksForXUID(ulong64 param_1)
   ulong64 uVar3;
   int local_1c;
   int local_18;
-  int local_8;
+  taskCompleteResults result;
+  SessionJoinData *joinData;
+  int tasknum;
   
-  local_8 = 0;
+  tasknum = 0;
   while( true ) {
-    if (0x1f < local_8) break;
-    if (overlappedTasks[local_8].active != false) {
-      if (overlappedTasks[local_8].type == 1) {
-        pvVar2 = TaskManager_GetTaskData(overlappedTasks + local_8);
-        if ((*(int *)((int)pvVar2 + 0x10) == (int)param_1) &&
-           (*(int *)((int)pvVar2 + 0x14) == param_1._4_4_)) {
+    if (0x1f < tasknum) break;
+    if (overlappedTasks[tasknum].active != false) {
+      if (overlappedTasks[tasknum].type == 1) {
+        pvVar2 = TaskManager_GetTaskData(overlappedTasks + tasknum);
+        if ((*(int *)((int)pvVar2 + 0x10) == (int)player) &&
+           (*(int *)((int)pvVar2 + 0x14) == player._4_4_)) {
           do {
-            tVar1 = Session_JoinSessionComplete(local_8);
+            tVar1 = Session_JoinSessionComplete(tasknum);
             if ((tVar1 != TASK_NOTCOMPLETE) && (tVar1 != TASK_COMPLETE)) {
               Com_PrintError(0x10,"EXE_ERROR_JOINING_SESSION");
             }
           } while (tVar1 == TASK_NOTCOMPLETE);
         }
       }
-      else if (overlappedTasks[local_8].type == 2) {
-        uVar3 = Live_GetXuid(overlappedTasks[local_8].controllerIndex);
+      else if (overlappedTasks[tasknum].type == 2) {
+        uVar3 = Live_GetXuid(overlappedTasks[tasknum].controllerIndex);
         local_1c = (int)uVar3;
-        if ((local_1c == (int)param_1) &&
-           (local_18 = (int)(uVar3 >> 0x20), local_18 == param_1._4_4_)) {
-          while (overlappedTasks[local_8].active != false) {
-            tVar1 = Session_StartHostComplete(local_8);
+        if ((local_1c == (int)player) && (local_18 = (int)(uVar3 >> 0x20), local_18 == player._4_4_)
+           ) {
+          while (overlappedTasks[tasknum].active != false) {
+            tVar1 = Session_StartHostComplete(tasknum);
             if ((tVar1 != TASK_NOTCOMPLETE) && (tVar1 != TASK_COMPLETE)) {
               Com_PrintError(0x10,"EXE_ERROR_CREATING_SESSION");
             }
@@ -1177,7 +1219,7 @@ void __cdecl Live_FinishOngoingSessionJoinTasksForXUID(ulong64 param_1)
         }
       }
     }
-    local_8 = local_8 + 1;
+    tasknum = tasknum + 1;
   }
   return;
 }
@@ -1193,33 +1235,33 @@ void __cdecl Live_CheckOngoingSessionTasks(void)
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
-  char *pcVar4;
-  int local_8;
+  char *fmt;
+  int tasknum;
   
-  local_8 = 0;
+  tasknum = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < tasknum) {
       Session_ManageGraveYard();
       return;
     }
-    if (overlappedTasks[local_8].active != false) {
-      switch(overlappedTasks[local_8].type) {
+    if (overlappedTasks[tasknum].active != false) {
+      switch(overlappedTasks[tasknum].type) {
       case 1:
-        tVar3 = Session_JoinSessionComplete(local_8);
+        tVar3 = Session_JoinSessionComplete(tasknum);
         if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_PrintError(0x10,"EXE_ERROR_JOINING_SESSION");
         }
         break;
       case 2:
-        tVar3 = Session_StartHostComplete(local_8);
+        tVar3 = Session_StartHostComplete(tasknum);
         if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_PrintError(0x10,"EXE_ERROR_CREATING_SESSION");
         }
         break;
       default:
-        pcVar4 = va("Unknown session task type %i\n");
+        fmt = va("Unknown session task type %i\n");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_sessions_win.cpp",
-                                 0x86b,0,pcVar4);
+                                 0x86b,0,fmt);
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
@@ -1229,25 +1271,25 @@ void __cdecl Live_CheckOngoingSessionTasks(void)
       case 4:
         break;
       case 5:
-        tVar3 = Session_StartSessionComplete(local_8);
+        tVar3 = Session_StartSessionComplete(tasknum);
         if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_PrintError(0x10,"EXE_ERROR_STARTING_SESSION");
         }
         break;
       case 6:
-        tVar3 = Session_ModifyComplete(local_8);
+        tVar3 = Session_ModifyComplete(tasknum);
         if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_PrintError(0x10,"EXE_ERROR_MODIFYING_SESSION");
         }
         break;
       case 7:
-        tVar3 = Session_EveryoneLeaveSessionComplete(local_8);
+        tVar3 = Session_EveryoneLeaveSessionComplete(tasknum);
         if (((int)tVar3 < 0) || (1 < (int)tVar3)) {
           Com_PrintError(0x10,"EXE_ERROR_LEAVING_SESSION");
         }
       }
     }
-    local_8 = local_8 + 1;
+    tasknum = tasknum + 1;
   } while( true );
 }
 

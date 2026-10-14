@@ -85,7 +85,7 @@ bool __cdecl Live_ContentRatingAllowed(void)
 
 // 0098F480  Live_IsUserSignedInToLive  (live/live_win.cpp:635)
 
-bool __cdecl Live_IsUserSignedInToLive(int param_1)
+bool __cdecl Live_IsUserSignedInToLive(int controllerIndex)
 
 {
   bool bVar1;
@@ -97,19 +97,19 @@ bool __cdecl Live_IsUserSignedInToLive(int param_1)
 
 // 0098F490  Live_IsUserSignedInToDemonware  (live/live_win.cpp:644)
 
-bool __cdecl Live_IsUserSignedInToDemonware(int param_1)
+bool __cdecl Live_IsUserSignedInToDemonware(int controllerIndex)
 
 {
   DWOnlineStatus DVar1;
   
-  DVar1 = dwGetLogOnStatus(param_1);
+  DVar1 = dwGetLogOnStatus(controllerIndex);
   return DVar1 == DW_LIVE_CONNECTED;
 }
 
 
 // 0098F4B0  Live_RequireUserToPlayOnline  (live/live_win.cpp:710)
 
-bool __cdecl Live_RequireUserToPlayOnline(int param_1)
+bool __cdecl Live_RequireUserToPlayOnline(int controllerIndex)
 
 {
   code *pcVar1;
@@ -118,7 +118,7 @@ bool __cdecl Live_RequireUserToPlayOnline(int param_1)
   
   bVar2 = LiveSteam_IsClientSignedInOnline();
   if (bVar2) {
-    bVar2 = Live_IsUserSignedInToLive(param_1);
+    bVar2 = Live_IsUserSignedInToLive(controllerIndex);
     if (!bVar2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x2ce,0,"%s")
       ;
@@ -140,14 +140,14 @@ bool __cdecl Live_RequireUserToPlayOnline(int param_1)
 
 // 0098F510  Live_ControllerIndex_GetClientName  (live/live_win.cpp:808)
 
-char * __cdecl Live_ControllerIndex_GetClientName(int param_1)
+char * __cdecl Live_ControllerIndex_GetClientName(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 < 0) {
+  if (controllerIndex < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x329,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -155,7 +155,7 @@ char * __cdecl Live_ControllerIndex_GetClientName(int param_1)
       return pcVar3;
     }
   }
-  if (0 < param_1) {
+  if (0 < controllerIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x32a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -163,20 +163,20 @@ char * __cdecl Live_ControllerIndex_GetClientName(int param_1)
       return pcVar3;
     }
   }
-  return xenonUserData[param_1].gamertag;
+  return xenonUserData[controllerIndex].gamertag;
 }
 
 
 // 0098F580  CL_ControllerIndex_GetSignInState  (live/live_win.cpp:822)
 
-int __cdecl CL_ControllerIndex_GetSignInState(int param_1)
+int __cdecl CL_ControllerIndex_GetSignInState(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x33a,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -185,7 +185,7 @@ int __cdecl CL_ControllerIndex_GetSignInState(int param_1)
       return iVar3;
     }
   }
-  return xenonUserData[param_1].signinState;
+  return xenonUserData[controllerIndex].signinState;
 }
 
 
@@ -195,6 +195,7 @@ void __cdecl Live_InitiateDemonWareConnect_f(void)
 
 {
   DWOnlineStatus DVar1;
+  bool initiate;
   
   DVar1 = dwGetLogOnStatus(0);
   if (DVar1 == DW_LIVE_DISCONNECTED) {
@@ -212,15 +213,16 @@ void __cdecl Live_SendInvite_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *friendName_00;
+  char *friendName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_PrintError(0,"USAGE: sendinvite <friendname>\n");
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    Live_SendInvite(pcVar2);
+    friendName_00 = Cmd_Argv(1);
+    Live_SendInvite(friendName_00);
   }
   return;
 }
@@ -228,23 +230,25 @@ void __cdecl Live_SendInvite_f(void)
 
 // 0098F650  Live_AcceptInvite_f  (live/live_win.cpp:1179)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl Live_AcceptInvite_f(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  ulong64 *puVar4;
-  undefined4 local_c;
+  char *friendName;
+  ulong64 *uid;
+  undefined4 friendid;
   undefined4 local_8;
   
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    puVar4 = (ulong64 *)&local_c;
-    pcVar3 = Cmd_Argv(1);
-    bVar1 = Friend_GetByName(0,pcVar3,puVar4);
+    uid = (ulong64 *)&friendid;
+    friendName = Cmd_Argv(1);
+    bVar1 = Friend_GetByName(0,friendName,uid);
     if (bVar1) {
-      Live_AcceptInvite(CONCAT44(local_8,local_c));
+      Live_AcceptInvite(CONCAT44(local_8,friendid));
     }
     else {
       Cmd_Argv(1);
@@ -260,6 +264,8 @@ void __cdecl Live_AcceptInvite_f(void)
 
 // 0098F6D0  Live_AcceptLastInvite_f  (live/live_win.cpp:1200)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl Live_AcceptLastInvite_f(void)
 
 {
@@ -272,23 +278,25 @@ void __cdecl Live_AcceptLastInvite_f(void)
 
 // 0098F700  Live_RevokeInvite_f  (live/live_win.cpp:1208)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl Live_RevokeInvite_f(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  ulong64 *puVar4;
-  undefined4 local_c;
+  char *friendName;
+  ulong64 *uid;
+  undefined4 friendid;
   undefined4 local_8;
   
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    puVar4 = (ulong64 *)&local_c;
-    pcVar3 = Cmd_Argv(1);
-    bVar1 = Friend_GetByName(0,pcVar3,puVar4);
+    uid = (ulong64 *)&friendid;
+    friendName = Cmd_Argv(1);
+    bVar1 = Friend_GetByName(0,friendName,uid);
     if (bVar1) {
-      Live_RevokeInvite(CONCAT44(local_8,local_c));
+      Live_RevokeInvite(CONCAT44(local_8,friendid));
     }
     else {
       Cmd_Argv(1);
@@ -311,21 +319,21 @@ void __cdecl Live_JoinSessionInProgress_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  ulong64 uVar4;
-  ulong64 *puVar5;
-  int local_14;
+  char *friendName;
+  ulong64 uid;
+  ulong64 *uid_00;
+  int serverId;
   int local_10;
-  undefined4 local_c;
+  undefined4 friendid;
   undefined4 local_8;
   
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    puVar5 = (ulong64 *)&local_c;
-    pcVar3 = Cmd_Argv(1);
-    bVar1 = Friend_GetByName(0,pcVar3,puVar5);
+    uid_00 = (ulong64 *)&friendid;
+    friendName = Cmd_Argv(1);
+    bVar1 = Friend_GetByName(0,friendName,uid_00);
     if (bVar1) {
-      Live_JoinSessionInProgress(CONCAT44(local_8,local_c),false);
+      Live_JoinSessionInProgress(CONCAT44(local_8,friendid),false);
     }
     else if (((int)s_selectedPlayerXUID == 0) && (s_selectedPlayerXUID._4_4_ == 0)) {
       if (((int)s_selectedMetPlayerXUID == 0) && (s_selectedMetPlayerXUID._4_4_ == 0)) {
@@ -333,12 +341,12 @@ void __cdecl Live_JoinSessionInProgress_f(void)
         Com_PrintError(0x17,"Couldn\'t get id for friend %s\n");
       }
       else {
-        uVar4 = LiveMeetPlayer_GetPlayerSessionByID
-                          (CONCAT44(s_selectedMetPlayerXUID._4_4_,(int)s_selectedMetPlayerXUID));
-        local_14 = (int)uVar4;
-        local_10 = (int)(uVar4 >> 0x20);
-        if (local_14 != 0 || local_10 != 0) {
-          Live_JoinSessionInProgress(uVar4,true);
+        uid = LiveMeetPlayer_GetPlayerSessionByID
+                        (CONCAT44(s_selectedMetPlayerXUID._4_4_,(int)s_selectedMetPlayerXUID));
+        serverId = (int)uid;
+        local_10 = (int)(uid >> 0x20);
+        if (serverId != 0 || local_10 != 0) {
+          Live_JoinSessionInProgress(uid,true);
         }
       }
     }
@@ -363,38 +371,41 @@ void __cdecl Live_ToggleMute_f(void)
 {
   clientState_s *pcVar1;
   int iVar2;
-  char *pcVar3;
-  clientActive_t *pcVar4;
-  long64 lVar5;
-  int local_1c;
-  uint local_14;
+  char *str;
+  clientActive_t *pcVar3;
+  long64 lVar4;
+  clientActive_t *cl;
+  int playerIndex;
+  clientState_s *pState;
+  uint playerXuid;
   uint local_10;
-  int local_c;
+  int i;
+  int localControllerIndex;
   
   iVar2 = Cmd_Argc();
   if (iVar2 == 2) {
-    pcVar3 = Cmd_Argv(1);
-    lVar5 = I_atoi64(pcVar3);
-    local_1c = -1;
+    str = Cmd_Argv(1);
+    lVar4 = I_atoi64(str);
+    playerIndex = -1;
     iVar2 = Com_ControllerIndex_GetLocalClientNum(0);
-    pcVar4 = CL_GetLocalClientGlobals(iVar2);
-    local_14 = (uint)lVar5;
-    local_10 = (uint)((ulonglong)lVar5 >> 0x20);
-    if ((pcVar4->snap).valid != 0) {
-      for (local_c = 0; local_c < (pcVar4->snap).numClients; local_c = local_c + 1) {
-        pcVar1 = pcVar4->parseClients + ((pcVar4->snap).parseClientsNum + local_c & 0x7ff);
-        if (((pcVar1->field12_0x78).xuid32[0] == local_14) &&
+    pcVar3 = CL_GetLocalClientGlobals(iVar2);
+    playerXuid = (uint)lVar4;
+    local_10 = (uint)((ulonglong)lVar4 >> 0x20);
+    if ((pcVar3->snap).valid != 0) {
+      for (i = 0; i < (pcVar3->snap).numClients; i = i + 1) {
+        pcVar1 = pcVar3->parseClients + ((pcVar3->snap).parseClientsNum + i & 0x7ff);
+        if (((pcVar1->field12_0x78).xuid32[0] == playerXuid) &&
            ((pcVar1->field12_0x78).xuid32[1] == local_10)) {
-          local_1c = pcVar1->clientIndex;
+          playerIndex = pcVar1->clientIndex;
           break;
         }
       }
     }
-    if (local_14 == 0 && local_10 == 0) {
+    if (playerXuid == 0 && local_10 == 0) {
       Com_Printf(0x1e,"party_mutePlayer: Invalid player xuid sent.\n");
     }
     else {
-      CL_MutePlayer(0,local_1c);
+      CL_MutePlayer(0,playerIndex);
     }
   }
   else {
@@ -406,14 +417,17 @@ void __cdecl Live_ToggleMute_f(void)
 
 // 0098F980  Live_InitPlatform  (live/live_win.cpp:1323)
 
+/* WARNING: Variable defined which should be unmapped: i */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl Live_InitPlatform(void)
 
 {
   bool bVar1;
   dvar_s *pdVar2;
   int iVar3;
-  int iVar4;
-  int local_8;
+  int i;
+  int controllerIndex;
   
   memset((uchar *)xenonUserData,'\0',0x50);
   s_signInRequirement[0] = 0;
@@ -435,18 +449,18 @@ void __cdecl Live_InitPlatform(void)
     dw_numaccounts =
          _Dvar_RegisterInt("dw_numaccounts",-1,-1,5,0,
                            "Number of online accounts registered for the license");
-    iVar4 = 5;
-    while (iVar3 = iVar4 + -1, iVar4 != 0) {
+    i = 5;
+    while (iVar3 = i + -1, i != 0) {
       pdVar2 = _Dvar_RegisterString
                          ("dw_user0" + iVar3 * 9,"",0,"Online user name registered for the license")
       ;
       dw_usernames[iVar3] = pdVar2;
-      iVar4 = iVar3;
+      i = iVar3;
     }
     dw_popup = _Dvar_RegisterString("dw_popup","",0,"Online services popup");
     Live_InitFavourites();
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      GamerProfile_WriteSettings(local_8);
+    for (controllerIndex = 0; controllerIndex < 1; controllerIndex = controllerIndex + 1) {
+      GamerProfile_WriteSettings(controllerIndex);
     }
     LiveGroups_Init();
     PCache_Init();
@@ -479,7 +493,7 @@ void __cdecl Live_InitPlatform(void)
     LB_Init();
     LiveStorage_Init();
     Friends_Init();
-    GamerProfile_WriteSettings(iVar3);
+    GamerProfile_WriteSettings(-1);
     LiveCounter_Init();
     xblive_loggedin =
          _Dvar_RegisterBool("xblive_loggedin",false,0,"User is logged into online service");
@@ -570,62 +584,61 @@ void __cdecl Live_InitPlatform(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Live_HandleDWChallengeResponse(ulong64 param_1,void *param_2,uint param_3)
+bool __cdecl Live_HandleDWChallengeResponse(ulong64 senderID,void *message,uint messageSize)
 
 {
   int iVar1;
-  uint local_48;
-  msg_t local_44;
-  uint local_14;
-  undefined1 local_d;
-  uint local_c;
-  char local_5;
+  uint nonce;
+  msg_t in_msg;
+  uint serverchallenge;
+  bool retval;
+  uint clientchallenge;
+  uchar messagetype;
   
-  local_d = 0;
-  local_c = 0;
-  local_14 = 0;
-  local_48 = 0;
-  MSG_InitReadOnly(&local_44,param_2,param_3);
-  MSG_BeginReading(&local_44);
-  iVar1 = MSG_ReadByte(&local_44);
-  local_5 = (char)iVar1;
-  if (local_5 == '\x01') {
-    MSG_ReadData(&local_44,&local_48,4);
-    MSG_ReadData(&local_44,&local_c,4);
-    MSG_ReadData(&local_44,&local_14,4);
+  retval = false;
+  clientchallenge = 0;
+  serverchallenge = 0;
+  nonce = 0;
+  MSG_InitReadOnly(&in_msg,message,messageSize);
+  MSG_BeginReading(&in_msg);
+  iVar1 = MSG_ReadByte(&in_msg);
+  messagetype = (uchar)iVar1;
+  if (messagetype == '\x01') {
+    MSG_ReadData(&in_msg,&nonce,4);
+    MSG_ReadData(&in_msg,&clientchallenge,4);
+    MSG_ReadData(&in_msg,&serverchallenge,4);
     Com_DPrintf(0xe,"CHALLENGERESPONSE: Read out nonce %u, clientchallenge %u, serverchallenge %u\n"
                );
-    CL_HandleSVDWChallenge(local_48,local_14,local_c);
-    local_d = 1;
+    CL_HandleSVDWChallenge(nonce,serverchallenge,clientchallenge);
+    retval = true;
   }
-  return (bool)local_d;
+  return retval;
 }
 
 
 // 009900D0  Live_GetControllerFromXUID  (live/live_win.cpp:1600)
 
-int __cdecl Live_GetControllerFromXUID(ulong64 param_1)
+int __cdecl Live_GetControllerFromXUID(ulong64 player)
 
 {
-  int local_8;
+  int index;
   
-  local_8 = 0;
+  index = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < index) {
       return -1;
     }
-    if (((xenonUserData[local_8].signinState != 0) &&
-        ((int)xenonUserData[local_8].xuid == (int)param_1)) &&
-       (*(int *)((int)&xenonUserData[local_8].xuid + 4) == param_1._4_4_)) break;
-    local_8 = local_8 + 1;
+    if (((xenonUserData[index].signinState != 0) && ((int)xenonUserData[index].xuid == (int)player))
+       && (*(int *)((int)&xenonUserData[index].xuid + 4) == player._4_4_)) break;
+    index = index + 1;
   }
-  return local_8;
+  return index;
 }
 
 
 // 00990140  Live_GiveAchievement  (live/live_win.cpp:1693)
 
-void __cdecl Live_GiveAchievement(int param_1,char *param_2)
+void __cdecl Live_GiveAchievement(int localControllerIndex,char *achievementName)
 
 {
   bool bVar1;
@@ -637,7 +650,7 @@ void __cdecl Live_GiveAchievement(int param_1,char *param_2)
     bVar1 = true;
   }
   if (!bVar1) {
-    LiveSteam_GiveAchievement(param_2);
+    LiveSteam_GiveAchievement(achievementName);
   }
   return;
 }
@@ -664,14 +677,16 @@ bool __cdecl Live_IsInLiveGame(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Live_SetPlayerTeamRanksComplete(int param_1)
+taskCompleteResults __cdecl Live_SetPlayerTeamRanksComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
+  overlappedTask *statsWriteOverlapped;
+  taskCompleteResults res;
   
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x713,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -679,7 +694,7 @@ taskCompleteResults __cdecl Live_SetPlayerTeamRanksComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 2) {
+  if (overlappedTasks[slot].type != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x714,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -688,12 +703,12 @@ taskCompleteResults __cdecl Live_SetPlayerTeamRanksComplete(int param_1)
     }
   }
   tVar3 = dwWritePerformanceStatsComplete
-                    (overlappedTasks[param_1].controllerIndex,overlappedTasks + param_1);
+                    (overlappedTasks[slot].controllerIndex,overlappedTasks + slot);
   if (tVar3 == TASK_COMPLETE) {
     Com_Printf(0x10,"Performance stats write complete\n");
   }
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(overlappedTasks + param_1);
+    TaskManager_ClearTask(overlappedTasks + slot);
   }
   if (tVar3 == TASK_ERROR) {
     Com_PrintError(0x10,"Error writing performance stats.\n");
@@ -704,12 +719,14 @@ taskCompleteResults __cdecl Live_SetPlayerTeamRanksComplete(int param_1)
 
 // 00990250  Live_SetPlayerTeamRankComplete  (live/live_win.cpp:1841)
 
-taskCompleteResults __cdecl Live_SetPlayerTeamRankComplete(int param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+taskCompleteResults __cdecl Live_SetPlayerTeamRankComplete(int slot)
 
 {
   taskCompleteResults tVar1;
   
-  tVar1 = Live_SetPlayerTeamRanksComplete(param_1);
+  tVar1 = Live_SetPlayerTeamRanksComplete(slot);
   return tVar1;
 }
 
@@ -722,12 +739,12 @@ void __cdecl Session_CleanUpStatsWrites(void)
 
 {
   taskCompleteResults tVar1;
-  int local_8;
+  int tasknum;
   
   R_BeginRemoteScreenUpdate();
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    if ((overlappedTasks[local_8].active != false) && (overlappedTasks[local_8].type == 2)) {
-      while (tVar1 = Live_SetPlayerTeamRankComplete(local_8), tVar1 == TASK_NOTCOMPLETE) {
+  for (tasknum = 0; tasknum < 0x20; tasknum = tasknum + 1) {
+    if ((overlappedTasks[tasknum].active != false) && (overlappedTasks[tasknum].type == 2)) {
+      while (tVar1 = Live_SetPlayerTeamRankComplete(tasknum), tVar1 == TASK_NOTCOMPLETE) {
         NET_Sleep(1);
       }
     }
@@ -739,35 +756,38 @@ void __cdecl Session_CleanUpStatsWrites(void)
 
 // 00991310  Live_UserSignedOut  (live/live_win.cpp:2573)
 
-bool __cdecl Live_UserSignedOut(int param_1,char **param_2)
+bool __cdecl Live_UserSignedOut(int controllerIndex,char **disconnectMessage)
 
 {
   bool bVar1;
-  int iVar2;
-  fileSharePrivateData *pfVar3;
+  int localClientNum_00;
+  fileSharePrivateData *pfVar2;
+  int localClientNum;
+  bool shouldDisconnect;
+  bool wasConnected;
   
-  GamerProfile_LogOutProfile(param_1);
-  xenonUserData[param_1].gamertag[0] = '\0';
-  xenonUserData[param_1].signinState = 0;
-  xenonUserData[param_1].xuidString[0] = '\0';
-  *(undefined4 *)&xenonUserData[param_1].xuid = 0;
-  *(undefined4 *)((int)&xenonUserData[param_1].xuid + 4) = 0;
-  Dvar_SetString(name,xenonUserData[param_1].gamertag);
-  xenonUserData[param_1].isGuestUser = false;
-  xenonUserData[param_1].tier = USER_TIER_NONE;
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  LiveStorage_NewUser(param_1);
-  pfVar3 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-  pfVar3->valid = false;
-  pfVar3 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
-  pfVar3->valid = false;
-  bVar1 = Com_LocalClient_IsBeingUsed(iVar2);
+  GamerProfile_LogOutProfile(controllerIndex);
+  xenonUserData[controllerIndex].gamertag[0] = '\0';
+  xenonUserData[controllerIndex].signinState = 0;
+  xenonUserData[controllerIndex].xuidString[0] = '\0';
+  *(undefined4 *)&xenonUserData[controllerIndex].xuid = 0;
+  *(undefined4 *)((int)&xenonUserData[controllerIndex].xuid + 4) = 0;
+  Dvar_SetString(name,xenonUserData[controllerIndex].gamertag);
+  xenonUserData[controllerIndex].isGuestUser = false;
+  xenonUserData[controllerIndex].tier = USER_TIER_NONE;
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  LiveStorage_NewUser(controllerIndex);
+  pfVar2 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
+  pfVar2->valid = false;
+  pfVar2 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
+  pfVar2->valid = false;
+  bVar1 = Com_LocalClient_IsBeingUsed(localClientNum_00);
   if (bVar1) {
-    CL_IsLastActiveLocalClient(param_1);
-    CL_GetLocalClientConnectionState(iVar2);
-    GamerProfile_WriteSettings(iVar2);
-    Com_LocalClient_SetBeingUsed(iVar2,false);
-    if ((s_signInRequirement[param_1] & 7U) == 0) {
+    CL_IsLastActiveLocalClient(controllerIndex);
+    CL_GetLocalClientConnectionState(localClientNum_00);
+    GamerProfile_WriteSettings(localClientNum_00);
+    Com_LocalClient_SetBeingUsed(localClientNum_00,false);
+    if ((s_signInRequirement[controllerIndex] & 7U) == 0) {
       Com_Printf(0x10,"Controller #%i signed out\n");
     }
   }
@@ -777,7 +797,7 @@ bool __cdecl Live_UserSignedOut(int param_1,char **param_2)
 
 // 00990350  XUserGetXUID  (live/live_win.cpp:2658)
 
-bool __cdecl XUserGetXUID(int param_1,ulong64 *param_2)
+bool __cdecl XUserGetXUID(int controllerIndex,ulong64 *xuid)
 
 {
   bool bVar1;
@@ -787,12 +807,12 @@ bool __cdecl XUserGetXUID(int param_1,ulong64 *param_2)
   
   DVar2 = dwGetLogOnStatus(0);
   if (DVar2 == DW_LIVE_CONNECTED) {
-    bVar1 = dwGetOnlineUserID(param_1,param_2);
+    bVar1 = dwGetOnlineUserID(controllerIndex,xuid);
   }
   else {
     _allshl();
-    *(undefined4 *)param_2 = extraout_EAX;
-    *(undefined4 *)((int)param_2 + 4) = extraout_EDX;
+    *(undefined4 *)xuid = extraout_EAX;
+    *(undefined4 *)((int)xuid + 4) = extraout_EDX;
     bVar1 = true;
   }
   return bVar1;
@@ -801,23 +821,23 @@ bool __cdecl XUserGetXUID(int param_1,ulong64 *param_2)
 
 // 009903A0  Live_UserGetName  (live/live_win.cpp:2671)
 
-bool __cdecl Live_UserGetName(int param_1,char *param_2,int param_3)
+bool __cdecl Live_UserGetName(int controllerIndex,char *buf,int bufsize)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   DWOnlineStatus DVar4;
-  char *pcVar5;
-  bool local_5;
+  char *format;
+  bool ok;
   
-  local_5 = dwGetOnlineUserName(param_1,param_2,param_3);
-  if (!local_5) {
+  ok = dwGetOnlineUserName(controllerIndex,buf,bufsize);
+  if (!ok) {
     DVar4 = dwGetLogOnStatus(0);
     if (DVar4 != DW_LIVE_CONNECTED) {
-      if (param_1 == 0) {
-        pcVar5 = UI_SafeTranslateString("EXE_DEFAULT_PLAYER");
-        _snprintf(param_2,param_3,pcVar5);
+      if (controllerIndex == 0) {
+        format = UI_SafeTranslateString("EXE_DEFAULT_PLAYER");
+        _snprintf(buf,bufsize,format);
       }
       else {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xa79,0,
@@ -828,12 +848,12 @@ bool __cdecl Live_UserGetName(int param_1,char *param_2,int param_3)
           return (bool)uVar3;
         }
         UI_SafeTranslateString("EXE_DEFAULT_PLAYER");
-        _snprintf(param_2,param_3,"%s %d");
+        _snprintf(buf,bufsize,"%s %d");
       }
-      local_5 = true;
+      ok = true;
     }
   }
-  return local_5;
+  return ok;
 }
 
 
@@ -841,7 +861,7 @@ bool __cdecl Live_UserGetName(int param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_UserSignedIn(int param_1,char **param_2)
+void __cdecl Live_UserSignedIn(int controllerIndex,char **disconnectMessage)
 
 {
   code *pcVar1;
@@ -849,19 +869,19 @@ void __cdecl Live_UserSignedIn(int param_1,char **param_2)
   int iVar3;
   ulong64 *puVar4;
   ulong64 *puVar5;
-  undefined4 local_5c;
+  undefined4 newXuid;
   undefined4 local_58;
-  char local_50 [20];
-  char local_3c [32];
+  char xuidStr [20];
+  char newGamertag [32];
   uint local_1c;
-  int local_18;
-  ulong64 local_14;
-  undefined1 local_9;
-  undefined4 local_8;
+  int startTime;
+  ulong64 xuidCopy;
+  bool res;
+  int netCodeVersion;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_9 = XUserGetXUID(param_1,(ulong64 *)&local_5c);
-  if (!(bool)local_9) {
+  res = XUserGetXUID(controllerIndex,(ulong64 *)&newXuid);
+  if (!res) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xa91,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -869,23 +889,23 @@ void __cdecl Live_UserSignedIn(int param_1,char **param_2)
       return;
     }
   }
-  local_9 = Live_UserGetName(param_1,local_3c,0x20);
-  if (!(bool)local_9) {
+  res = Live_UserGetName(controllerIndex,newGamertag,0x20);
+  if (!res) {
     Com_Error(ERR_DROP,"XBOXLIVE_SIGNEDOUTOFLIVE");
   }
   Dvar_SetBool(xblive_loggedin,true);
-  LiveStorage_NewUser(param_1);
-  I_strncpyz(xenonUserData[param_1].gamertag,local_3c,0x20);
-  *(undefined4 *)&xenonUserData[param_1].xuid = local_5c;
-  *(undefined4 *)((int)&xenonUserData[param_1].xuid + 4) = local_58;
-  XUIDToString((ulong64 *)&local_5c,xenonUserData[param_1].xuidString);
-  xenonUserData[param_1].tier = USER_TIER_NONE;
-  XUIDToString(&xenonUserData[param_1].xuid,local_50);
-  StringToXUID(local_50,&local_14);
+  LiveStorage_NewUser(controllerIndex);
+  I_strncpyz(xenonUserData[controllerIndex].gamertag,newGamertag,0x20);
+  *(undefined4 *)&xenonUserData[controllerIndex].xuid = newXuid;
+  *(undefined4 *)((int)&xenonUserData[controllerIndex].xuid + 4) = local_58;
+  XUIDToString((ulong64 *)&newXuid,xenonUserData[controllerIndex].xuidString);
+  xenonUserData[controllerIndex].tier = USER_TIER_NONE;
+  XUIDToString(&xenonUserData[controllerIndex].xuid,xuidStr);
+  StringToXUID(xuidStr,&xuidCopy);
   iVar3 = 2;
   bVar2 = true;
-  puVar4 = &local_14;
-  puVar5 = &xenonUserData[param_1].xuid;
+  puVar4 = &xuidCopy;
+  puVar5 = &xenonUserData[controllerIndex].xuid;
   do {
     if (iVar3 == 0) break;
     iVar3 = iVar3 + -1;
@@ -901,36 +921,40 @@ void __cdecl Live_UserSignedIn(int param_1,char **param_2)
       return;
     }
   }
-  Dvar_SetString(name,xenonUserData[param_1].gamertag);
-  if (xenonUserData[param_1].signinState == 0) {
-    local_18 = Sys_Milliseconds();
-    GamerProfile_LogInProfile(param_1);
+  Dvar_SetString(name,xenonUserData[controllerIndex].gamertag);
+  if (xenonUserData[controllerIndex].signinState == 0) {
+    startTime = Sys_Milliseconds();
+    GamerProfile_LogInProfile(controllerIndex);
     Sys_Milliseconds();
     Com_Printf(0x10,"GamerProfile_LogInProfile took %ims\n");
   }
-  local_8 = 0x414;
-  LiveGroups_RegisterPlayer(param_1);
+  netCodeVersion = 0x414;
+  LiveGroups_RegisterPlayer(controllerIndex);
   return;
 }
 
 
 // 00990460  Live_UserSignedInLocally  (live/live_win.cpp:2760)
 
-bool __cdecl Live_UserSignedInLocally(int param_1,char **param_2)
+bool __cdecl Live_UserSignedInLocally(int controllerIndex,char **disconnectMessage)
 
 {
   char cVar1;
   int iVar2;
   char *pcVar3;
   char *local_18;
+  int startTime;
+  int oldState;
+  bool shouldDisconnect;
+  int signInFunctionStartTime;
   
   Com_Printf(0x10,"Controller #%i signed in locally\n");
-  iVar2 = xenonUserData[param_1].signinState;
+  iVar2 = xenonUserData[controllerIndex].signinState;
   Sys_Milliseconds();
-  Live_UserSignedIn(param_1,param_2);
+  Live_UserSignedIn(controllerIndex,disconnectMessage);
   Sys_Milliseconds();
   Com_Printf(0x10,"Live_UserSignedIn took %ims\n");
-  xenonUserData[param_1].signinState = 1;
+  xenonUserData[controllerIndex].signinState = 1;
   Sys_Milliseconds();
   if (((iVar2 != 0) && (iVar2 != 1)) && ((iVar2 != 2 || ((onlinegame->current).enabled != false))))
   {
@@ -941,7 +965,7 @@ bool __cdecl Live_UserSignedInLocally(int param_1,char **param_2)
       local_18 = local_18 + 1;
     } while (cVar1 != '\0');
     if (local_18 == pcVar3) {
-      *param_2 = "XBOXLIVE_SIGNINCHANGED";
+      *disconnectMessage = "XBOXLIVE_SIGNINCHANGED";
       return true;
     }
   }
@@ -953,58 +977,60 @@ bool __cdecl Live_UserSignedInLocally(int param_1,char **param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl Live_UserSignedInToLive(int param_1,char **param_2)
+bool __cdecl Live_UserSignedInToLive(int controllerIndex,char **disconnectMessage)
 
 {
   char cVar1;
   int iVar2;
   bool bVar3;
-  int iVar4;
-  char *pcVar5;
+  int localClientNum;
+  char *pcVar4;
   int in_stack_ffffffe4;
   char *local_10;
+  int oldState;
+  bool shouldDisconnect;
   
   Com_Printf(0x10,"Controller #%i signed in to live\n");
-  iVar2 = xenonUserData[param_1].signinState;
-  Live_UserSignedIn(param_1,param_2);
-  xenonUserData[param_1].signinState = 2;
-  xenonUserData[param_1].isGuestUser = false;
-  Live_GetOurUploadBandwidth(param_1);
-  LiveStorage_FetchRequiredFiles(param_1);
+  iVar2 = xenonUserData[controllerIndex].signinState;
+  Live_UserSignedIn(controllerIndex,disconnectMessage);
+  xenonUserData[controllerIndex].signinState = 2;
+  xenonUserData[controllerIndex].isGuestUser = false;
+  Live_GetOurUploadBandwidth(controllerIndex);
+  LiveStorage_FetchRequiredFiles(controllerIndex);
   LiveMeetPlayer_DownloadMetPlayersList(0);
   LiveCounter_Init();
   LiveCounter_SetupCounters();
   Live_GetPrivateProfile();
   Live_ReadRecentServers();
   Live_RequestSessionsFromFriends();
-  LiveStorage_SetAllStatsNotFetched(param_1);
-  LiveStorage_ReadStats(param_1,false,false);
-  GamerProfile_WriteSettings(param_1);
-  if ((s_signInRequirement[param_1] & 4U) != 0) {
+  LiveStorage_SetAllStatsNotFetched(controllerIndex);
+  LiveStorage_ReadStats(controllerIndex,false,false);
+  GamerProfile_WriteSettings(controllerIndex);
+  if ((s_signInRequirement[controllerIndex] & 4U) != 0) {
     GamerProfile_WriteSettings(in_stack_ffffffe4);
     bVar3 = Live_ContentRatingAllowed();
     if (bVar3) {
-      pcVar5 = "xstartprivateparty";
-      iVar4 = Com_ControllerIndex_GetLocalClientNum(param_1);
-      Cbuf_ExecuteBuffer(iVar4,param_1,pcVar5);
+      pcVar4 = "xstartprivateparty";
+      localClientNum = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+      Cbuf_ExecuteBuffer(localClientNum,controllerIndex,pcVar4);
     }
     else {
       Com_Printf(0x10,
                  "Since the active profile doesn\'t have permission to play MP, so we are going to send them back to the main menu\n"
                 );
-      *param_2 = "XBOXLIVE_MPNOTALLOWED";
+      *disconnectMessage = "XBOXLIVE_MPNOTALLOWED";
     }
   }
   if (((iVar2 != 0) && (iVar2 != 2)) && ((iVar2 != 1 || ((onlinegame->current).enabled != false))))
   {
     local_10 = Dvar_GetString("com_errorMessage");
-    pcVar5 = local_10 + 1;
+    pcVar4 = local_10 + 1;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    if (local_10 == pcVar5) {
-      *param_2 = "XBOXLIVE_SIGNINCHANGED";
+    if (local_10 == pcVar4) {
+      *disconnectMessage = "XBOXLIVE_SIGNINCHANGED";
       return true;
     }
   }
@@ -1014,7 +1040,7 @@ bool __cdecl Live_UserSignedInToLive(int param_1,char **param_2)
 
 // 009908C0  Live_IsSignedIn  (live/live_win.cpp:2907)
 
-bool __cdecl Live_IsSignedIn(int param_1)
+bool __cdecl Live_IsSignedIn(int controllerIndex)
 
 {
   code *pcVar1;
@@ -1034,13 +1060,13 @@ bool __cdecl Live_IsSignedIn(int param_1)
       }
     }
   }
-  return 0 < xenonUserData[param_1].signinState;
+  return 0 < xenonUserData[controllerIndex].signinState;
 }
 
 
 // 00990920  Live_IsSignedInToLive  (live/live_win.cpp:2915)
 
-bool __cdecl Live_IsSignedInToLive(int param_1)
+bool __cdecl Live_IsSignedInToLive(int controllerIndex)
 
 {
   bool bVar1;
@@ -1064,14 +1090,14 @@ bool __cdecl Live_IsSignedInToLive(int param_1)
 
 // 00990980  Live_GetXuid  (live/live_win.cpp:2969)
 
-ulong64 __cdecl Live_GetXuid(int param_1)
+ulong64 __cdecl Live_GetXuid(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   ulong64 uVar3;
   
-  bVar2 = Live_IsSignedIn(param_1);
+  bVar2 = Live_IsSignedIn(controllerIndex);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xb9c,0,"%s");
     if (!bVar2) {
@@ -1080,20 +1106,20 @@ ulong64 __cdecl Live_GetXuid(int param_1)
       return uVar3;
     }
   }
-  return xenonUserData[param_1].xuid;
+  return xenonUserData[controllerIndex].xuid;
 }
 
 
 // 009909D0  Live_GetTier  (live/live_win.cpp:2988)
 
-EUserTier __cdecl Live_GetTier(int param_1)
+EUserTier __cdecl Live_GetTier(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   EUserTier EVar3;
   
-  bVar2 = Live_IsSignedIn(param_1);
+  bVar2 = Live_IsSignedIn(controllerIndex);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xbad,0,"%s");
     if (!bVar2) {
@@ -1102,13 +1128,13 @@ EUserTier __cdecl Live_GetTier(int param_1)
       return EVar3;
     }
   }
-  return xenonUserData[param_1].tier;
+  return xenonUserData[controllerIndex].tier;
 }
 
 
 // 00990A20  Live_ShowMarketplaceUI  (live/live_win.cpp:3070)
 
-bool __cdecl Live_ShowMarketplaceUI(int param_1)
+bool __cdecl Live_ShowMarketplaceUI(int localControllerIndex)
 
 {
   LiveSteam_ShowStore();
@@ -1129,7 +1155,7 @@ int __cdecl Live_GetUploadSpeed(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int param_1)
+taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int slot)
 
 {
   code *pcVar1;
@@ -1140,8 +1166,11 @@ taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int param_1)
   bdBandwidthTestStatus bVar5;
   bdBandwidthTestResults *pbVar6;
   int extraout_EAX;
+  bdBandwidthTestStatus status;
+  bdLobbyErrorCode error;
+  overlappedTask *bandwidthTestOverlappedIO;
   
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xc2a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1149,7 +1178,7 @@ taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int param_1)
       return tVar4;
     }
   }
-  if (overlappedTasks[param_1].type != 3) {
+  if (overlappedTasks[slot].type != 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xc2b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1174,7 +1203,7 @@ taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int param_1)
       Com_Printf(0x10,"Download Bandwidth: %.2f Kbits/s\n");
       bdBandwidthTestClient::stop(g_bandwidthTestClient);
       bdBandwidthTestClient::quit(g_bandwidthTestClient);
-      TaskManager_ClearTask(overlappedTasks + param_1);
+      TaskManager_ClearTask(overlappedTasks + slot);
       tVar4 = TASK_COMPLETE;
     }
     else {
@@ -1187,7 +1216,7 @@ taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int param_1)
     bdBandwidthTestClient::stop(g_bandwidthTestClient);
     bdBandwidthTestClient::quit(g_bandwidthTestClient);
     s_uploadBitsPerSec = -1;
-    TaskManager_ClearTask(overlappedTasks + param_1);
+    TaskManager_ClearTask(overlappedTasks + slot);
     tVar4 = TASK_COMPLETE;
   }
   return tVar4;
@@ -1198,22 +1227,24 @@ taskCompleteResults __cdecl Live_GetBandwidthTestComplete(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_GetOurUploadBandwidth(int param_1)
+void __cdecl Live_GetOurUploadBandwidth(int localControllerIndex)
 
 {
   bool bVar1;
   bdLobbyErrorCode bVar2;
   bdLobbyService *pbVar3;
   undefined3 extraout_var;
+  bool ok;
+  overlappedTask *bandwidthTestOverlappedIO;
   
   if (s_uploadBitsPerSec < 1) {
-    pbVar3 = dwGetLobby(param_1);
+    pbVar3 = dwGetLobby(localControllerIndex);
     bVar1 = bdBandwidthTestClient::init(g_bandwidthTestClient,pbVar3);
     if (bVar1) {
       bdBandwidthTestClient::start(g_bandwidthTestClient,BD_UPLOAD_TEST);
       bVar2 = bdBandwidthTestClient::getErrorCode(g_bandwidthTestClient);
       if (CONCAT31(extraout_var,bVar2) != 5) {
-        TaskManager_GetOpenTaskSlot(overlappedTasks,param_1,3);
+        TaskManager_GetOpenTaskSlot(overlappedTasks,localControllerIndex,3);
       }
     }
   }
@@ -1223,31 +1254,32 @@ void __cdecl Live_GetOurUploadBandwidth(int param_1)
 
 // 00990FD0  Live_QoSProbeEarlyComplete  (live/live_win.cpp:3195)
 
-bool __cdecl Live_QoSProbeEarlyComplete(dwQoSMultiProbeListener *param_1)
+bool __cdecl Live_QoSProbeEarlyComplete(dwQoSMultiProbeListener *listener)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
+  int time;
   
-  if (param_1->m_numSuccesses == 0) {
+  if (listener->m_numSuccesses == 0) {
     bVar2 = false;
   }
   else {
     iVar4 = Sys_Milliseconds();
-    if (g_qosStatus.prevNumSuccesses != param_1->m_numSuccesses) {
+    if (g_qosStatus.prevNumSuccesses != listener->m_numSuccesses) {
       if (g_qosStatus.firstMS == 0) {
         g_qosStatus.firstMS = iVar4;
       }
-      g_qosStatus.prevNumSuccesses = param_1->m_numSuccesses;
+      g_qosStatus.prevNumSuccesses = listener->m_numSuccesses;
       g_qosStatus.updateMS = iVar4;
     }
-    if (param_1->m_numSuccesses == 0) {
+    if (listener->m_numSuccesses == 0) {
       bVar2 = false;
     }
     else {
-      if (param_1->m_numProbes < param_1->m_numSuccesses) {
+      if (listener->m_numProbes < listener->m_numSuccesses) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xc8e,0,
                                  "%s");
         if (!bVar2) {
@@ -1256,7 +1288,7 @@ bool __cdecl Live_QoSProbeEarlyComplete(dwQoSMultiProbeListener *param_1)
           return (bool)uVar3;
         }
       }
-      if (param_1->m_numSuccesses * 100 < param_1->m_numProbes * 0x19) {
+      if (listener->m_numSuccesses * 100 < listener->m_numProbes * 0x19) {
         bVar2 = false;
       }
       else if (iVar4 - g_qosStatus.firstMS < 1000) {
@@ -1278,45 +1310,46 @@ bool __cdecl Live_QoSProbeEarlyComplete(dwQoSMultiProbeListener *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Live_QoSProbeComplete(int param_1)
+taskCompleteResults __cdecl Live_QoSProbeComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
-  overlappedTask *poVar3;
-  taskCompleteResults tVar4;
+  overlappedTask *overlappedTask;
+  taskCompleteResults tVar3;
   dwQoSMultiProbeListener *this;
-  taskCompleteResults local_8;
+  dwQoSMultiProbeListener *listener;
+  taskCompleteResults res;
   
-  poVar3 = overlappedTasks + param_1;
-  if ((overlappedTasks[param_1].active == false) &&
+  overlappedTask = overlappedTasks + slot;
+  if ((overlappedTasks[slot].active == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xca0,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar4 = (*pcVar1)();
-    return tVar4;
+    tVar3 = (*pcVar1)();
+    return tVar3;
   }
-  if ((overlappedTasks[param_1].type != 1) &&
+  if ((overlappedTasks[slot].type != 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xca1,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
-    tVar4 = (*pcVar1)();
-    return tVar4;
+    tVar3 = (*pcVar1)();
+    return tVar3;
   }
-  this = TaskManager_GetTaskData(poVar3);
-  local_8 = dwQoSMultiProbeListener::complete(this);
+  this = TaskManager_GetTaskData(overlappedTask);
+  res = dwQoSMultiProbeListener::complete(this);
   bVar2 = Live_QoSProbeEarlyComplete(this);
   if (bVar2) {
-    local_8 = TASK_COMPLETE;
+    res = TASK_COMPLETE;
   }
-  if (local_8 == TASK_COMPLETE) {
+  if (res == TASK_COMPLETE) {
     if ((party_simulateLongQoS->current).enabled != false) {
       R_BeginRemoteScreenUpdate();
       NET_Sleep(30000);
       R_EndRemoteScreenUpdate((_func___cdecl_void *)0x0);
     }
     dwQoSMultiProbeListener::clean(this);
-    TaskManager_ClearTask(poVar3);
+    TaskManager_ClearTask(overlappedTask);
     bVar2 = Live_BandwidthTestInProgress();
     if (bVar2) {
       Com_Printf(0x10,
@@ -1327,11 +1360,11 @@ taskCompleteResults __cdecl Live_QoSProbeComplete(int param_1)
       Com_Printf(0x10,"QoS test complete - Not doing anything now because lobby isn\'t active\n");
     }
   }
-  else if (local_8 != TASK_NOTCOMPLETE) {
+  else if (res != TASK_NOTCOMPLETE) {
     dwQoSMultiProbeListener::clean(this);
-    TaskManager_ClearTask(poVar3);
+    TaskManager_ClearTask(overlappedTask);
   }
-  return local_8;
+  return res;
 }
 
 
@@ -1360,40 +1393,40 @@ void __cdecl Live_CheckOngoingTasks(void)
   bool bVar2;
   taskCompleteResults tVar3;
   int iVar4;
-  char *pcVar5;
-  int local_8;
+  char *fmt;
+  int tasknum;
   
   Sys_EnterCriticalSection(CRITSECT_LIVE);
-  local_8 = 0;
+  tasknum = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < tasknum) {
       Sys_LeaveCriticalSection(CRITSECT_LIVE);
       return;
     }
-    if (overlappedTasks[local_8].active != false) {
-      switch(overlappedTasks[local_8].type) {
+    if (overlappedTasks[tasknum].active != false) {
+      switch(overlappedTasks[tasknum].type) {
       case 1:
-        tVar3 = Live_QoSProbeComplete(local_8);
+        tVar3 = Live_QoSProbeComplete(tasknum);
         if (((int)tVar3 < 0) || (1 < (int)tVar3)) {
           Com_PrintError(0x10,"Error getting player QoS results\n");
         }
         break;
       case 2:
-        tVar3 = Live_SetPlayerTeamRankComplete(local_8);
+        tVar3 = Live_SetPlayerTeamRankComplete(tasknum);
         if (((int)tVar3 < 0) || (1 < (int)tVar3)) {
           Com_PrintError(0x10,"Error writing stats\n");
         }
         break;
       case 3:
-        tVar3 = Live_GetBandwidthTestComplete(local_8);
+        tVar3 = Live_GetBandwidthTestComplete(tasknum);
         if ((tVar3 != TASK_NOTCOMPLETE) && (tVar3 != TASK_COMPLETE)) {
           Com_PrintError(0x10,"Error getting player bandwidth test results\n");
         }
         break;
       default:
-        pcVar5 = va("Unknown live task type %i\n");
-        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xdcd,0,
-                                 pcVar5);
+        fmt = va("Unknown live task type %i\n");
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xdcd,0,fmt
+                                );
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
@@ -1401,13 +1434,13 @@ void __cdecl Live_CheckOngoingTasks(void)
         }
         break;
       case 5:
-        tVar3 = Live_FetchPartyPerformanceValuesComplete(local_8);
+        tVar3 = Live_FetchPartyPerformanceValuesComplete(tasknum);
         if (((int)tVar3 < 0) || (1 < (int)tVar3)) {
           Com_PrintError(0x10,"Error fetching party performance values\n");
         }
         break;
       case 6:
-        tVar3 = Live_UpdatePerformanceValuesComplete(local_8);
+        tVar3 = Live_UpdatePerformanceValuesComplete(tasknum);
         if (((int)tVar3 < 0) || (1 < (int)tVar3)) {
           Com_PrintError(0x10,"Error fetching performance values\n");
         }
@@ -1421,7 +1454,7 @@ void __cdecl Live_CheckOngoingTasks(void)
         }
       }
     }
-    local_8 = local_8 + 1;
+    tasknum = tasknum + 1;
   } while( true );
 }
 
@@ -1452,9 +1485,12 @@ void __cdecl PC_InitSigninState(void)
   bool bVar2;
   bdLogSubscriber *this;
   MatchMakingInfo *this_00;
-  int iVar3;
+  int value;
   MatchMakingInfo *local_28;
   bdLogSubscriber *local_24;
+  int controllerIndex;
+  int signInState;
+  int signInFunctionStartTime;
   
   if ((live_service == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0xddf,0,"%s")
@@ -1484,19 +1520,19 @@ void __cdecl PC_InitSigninState(void)
   g_matchmakingInfo = local_28;
   dwNetStart(true);
   DWDedicatedLogon();
-  iVar3 = SV_GetLicenseType();
-  Dvar_SetIntByName("sv_ranked",iVar3);
+  value = SV_GetLicenseType();
+  Dvar_SetIntByName("sv_ranked",value);
   return;
 }
 
 
 // 00991460  Live_DelayedComError  (live/live_win.cpp:4059)
 
-void __cdecl Live_DelayedComError(char *param_1)
+void __cdecl Live_DelayedComError(char *comErrorString)
 
 {
   g_shouldComError = true;
-  g_comErrorString = param_1;
+  g_comErrorString = comErrorString;
   return;
 }
 
@@ -1518,16 +1554,18 @@ void __cdecl Live_DelayedComError(char *param_1)
 /* WARNING: Removing unreachable block (ram,0x009914b1) */
 /* WARNING: Removing unreachable block (ram,0x009914a0) */
 
-void __cdecl Live_Frame(int param_1,int param_2)
+void __cdecl Live_Frame(int localControllerIndex,int msec)
 
 {
+  bool isUserInGame;
+  
   return;
 }
 
 
 // 00991580  Live_FetchPartyPerformanceValuesComplete  (live/live_win.cpp:4877)
 
-taskCompleteResults __cdecl Live_FetchPartyPerformanceValuesComplete(int param_1)
+taskCompleteResults __cdecl Live_FetchPartyPerformanceValuesComplete(int slot)
 
 {
   code *pcVar1;
@@ -1547,6 +1585,7 @@ taskCompleteResults __cdecl Live_FetchPartyPerformanceValuesComplete(int param_1
 
 // 009917C0  Live_GetAveragePerformance  (live/live_win.cpp:4930)
 
+/* WARNING: Variable defined which should be unmapped: avgPerformance */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -1557,35 +1596,38 @@ int __cdecl Live_GetAveragePerformance(void)
 
 {
   int iVar1;
-  int iVar2;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_c;
-  int local_8;
+  int avgPerformance;
+  int sessionSlot;
+  int numMembers;
+  int totalPerformance;
+  int i;
+  SessionData_s *session;
+  int xuid;
+  uint local_8;
   
-  local_18 = 0;
-  iVar2 = 0;
-  local_1c = 0;
-  for (local_14 = 0; local_14 < (com_maxclients->current).integer; local_14 = local_14 + 1) {
-    local_c = 0;
+  totalPerformance = 0;
+  avgPerformance = 0;
+  numMembers = 0;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    xuid = 0;
     local_8 = 0;
-    if ((svs.clients != (client_t *)0x0) && (2 < *(int *)((int)svs.clients + local_14 * 0x84d00))) {
-      local_c = (int)svs.xuids[local_14];
-      local_8 = *(int *)((int)svs.xuids + local_14 * 8 + 4);
+    if ((svs.clients != (client_t *)0x0) && (2 < *(int *)((int)svs.clients + i * 0x84d00))) {
+      xuid = (int)svs.xuids[i];
+      local_8 = *(uint *)((int)svs.xuids + i * 8 + 4);
     }
-    if (local_c != 0 || local_8 != 0) {
-      iVar1 = Session_FindRegisteredUser(&g_serverSession,CONCAT44(iVar2,local_8));
+    if (xuid != 0 || local_8 != 0) {
+      iVar1 = Session_FindRegisteredUser(&g_serverSession,(ulonglong)local_8);
       if (-1 < iVar1) {
-        local_18 = local_18 + g_serverSession.registeredUsers[iVar1].performanceValue;
-        local_1c = local_1c + 1;
+        totalPerformance =
+             totalPerformance + g_serverSession.registeredUsers[iVar1].performanceValue;
+        numMembers = numMembers + 1;
       }
     }
   }
-  if (0 < local_1c) {
-    iVar2 = local_18 / local_1c;
+  if (0 < numMembers) {
+    avgPerformance = totalPerformance / numMembers;
   }
-  return iVar2;
+  return avgPerformance;
 }
 
 
@@ -1595,6 +1637,7 @@ void __cdecl Live_UpdateAveragePerformance(void)
 
 {
   int iVar1;
+  int avgPerformance;
   
   if (g_matchmakingInfo->m_active != 0) {
     iVar1 = Live_GetAveragePerformance();
@@ -1610,20 +1653,23 @@ void __cdecl Live_UpdateAveragePerformance(void)
 
 // 009915B0  Live_UpdatePerformanceValuesComplete  (live/live_win.cpp:5077)
 
+/* WARNING: Variable defined which should be unmapped: slot_2 */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl Live_UpdatePerformanceValuesComplete(int param_1)
+taskCompleteResults __cdecl Live_UpdatePerformanceValuesComplete(int slot)
 
 {
   code *pcVar1;
   bool bVar2;
   taskCompleteResults tVar3;
-  int in_stack_fffffde0;
-  int local_21c;
-  PlayerRank local_20c [32];
-  int local_8;
+  int slot_2;
+  int i;
+  SessionData_s *session;
+  taskCompleteResults result;
+  PlayerRank playerRanks [32];
+  int numPlayerRanks;
   
-  if (overlappedTasks[param_1].active == false) {
+  if (overlappedTasks[slot].active == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x13d8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1631,7 +1677,7 @@ taskCompleteResults __cdecl Live_UpdatePerformanceValuesComplete(int param_1)
       return tVar3;
     }
   }
-  if (overlappedTasks[param_1].type != 6) {
+  if (overlappedTasks[slot].type != 6) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x13d9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1639,23 +1685,20 @@ taskCompleteResults __cdecl Live_UpdatePerformanceValuesComplete(int param_1)
       return tVar3;
     }
   }
-  local_8 = 0x20;
-  tVar3 = dwFetchPerformanceValuesComplete(overlappedTasks + param_1,local_20c,&local_8);
+  numPlayerRanks = 0x20;
+  tVar3 = dwFetchPerformanceValuesComplete(overlappedTasks + slot,playerRanks,&numPlayerRanks);
   if (tVar3 == TASK_COMPLETE) {
-    for (local_21c = 0; local_21c < local_8; local_21c = local_21c + 1) {
-      in_stack_fffffde0 =
-           Session_FindRegisteredUser
-                     (&g_serverSession,
-                      CONCAT44(in_stack_fffffde0,
-                               *(undefined4 *)((int)&local_20c[local_21c].xuid + 4)));
-      if (-1 < in_stack_fffffde0) {
-        g_serverSession.registeredUsers[in_stack_fffffde0].performanceValue =
-             local_20c[local_21c].rank;
+    for (i = 0; i < numPlayerRanks; i = i + 1) {
+      slot_2 = Session_FindRegisteredUser
+                         (&g_serverSession,
+                          CONCAT44(slot_2,*(undefined4 *)((int)&playerRanks[i].xuid + 4)));
+      if (-1 < slot_2) {
+        g_serverSession.registeredUsers[slot_2].performanceValue = playerRanks[i].rank;
       }
     }
   }
   if (tVar3 != TASK_NOTCOMPLETE) {
-    TaskManager_ClearTask(overlappedTasks + param_1);
+    TaskManager_ClearTask(overlappedTasks + slot);
     bVar2 = TaskManager_TaskIsInProgress(overlappedTasks,6);
     if (!bVar2) {
       Live_UpdateAveragePerformance();
@@ -1670,20 +1713,20 @@ taskCompleteResults __cdecl Live_UpdatePerformanceValuesComplete(int param_1)
 
 // 009918B0  Live_IsUserBlocked  (live/live_win.cpp:5421)
 
-bool __cdecl Live_IsUserBlocked(int param_1,ulong64 param_2)
+bool __cdecl Live_IsUserBlocked(int controllerIndex,ulong64 param_2)
 
 {
   int in_stack_00000008;
-  uint local_8;
+  uint idx;
   
-  local_8 = 0;
+  idx = 0;
   while( true ) {
-    if (s_blockedListCount <= local_8) {
+    if (s_blockedListCount <= idx) {
       return false;
     }
-    if (((int)s_blockedList[local_8] == in_stack_00000008) &&
-       (*(int *)((int)s_blockedList + local_8 * 8 + 4) == (int)param_2)) break;
-    local_8 = local_8 + 1;
+    if (((int)s_blockedList[idx] == in_stack_00000008) &&
+       (*(int *)((int)s_blockedList + idx * 8 + 4) == (int)param_2)) break;
+    idx = idx + 1;
   }
   return true;
 }
@@ -1691,37 +1734,39 @@ bool __cdecl Live_IsUserBlocked(int param_1,ulong64 param_2)
 
 // 00991970  Live_CanViewContentFromUser  (live/live_win.cpp:5434)
 
-bool __cdecl Live_CanViewContentFromUser(int param_1,ulong64 param_2)
+bool __cdecl Live_CanViewContentFromUser(int controllerIndex,ulong64 param_2)
 
 {
   bool bVar1;
   undefined4 unaff_EBP;
   
-  bVar1 = Live_IsUserBlocked(param_1,CONCAT44(unaff_EBP,(undefined4)param_2));
+  bVar1 = Live_IsUserBlocked(controllerIndex,CONCAT44(unaff_EBP,(undefined4)param_2));
   return (bool)('\x01' - bVar1);
 }
 
 
 // 00991910  Live_CanConsoleViewContentFromUser  (live/live_win.cpp:5441)
 
-bool __cdecl Live_CanConsoleViewContentFromUser(ulong64 param_1)
+/* WARNING: Variable defined which should be unmapped: i */
+
+bool __cdecl Live_CanConsoleViewContentFromUser(ulong64 xuid)
 
 {
   bool bVar1;
-  int iVar2;
-  undefined1 local_5;
+  int i;
+  bool canView;
   
-  local_5 = true;
-  for (iVar2 = 0; iVar2 < 1; iVar2 = iVar2 + 1) {
-    bVar1 = Live_IsUserSignedInToLive(iVar2);
+  canView = true;
+  for (i = 0; i < 1; i = i + 1) {
+    bVar1 = Live_IsUserSignedInToLive(i);
     if (bVar1) {
-      bVar1 = Live_CanViewContentFromUser(iVar2,CONCAT44(iVar2,param_1._4_4_));
+      bVar1 = Live_CanViewContentFromUser(i,CONCAT44(i,xuid._4_4_));
       if (!bVar1) {
-        local_5 = false;
+        canView = false;
       }
     }
   }
-  return local_5;
+  return canView;
 }
 
 
@@ -1748,98 +1793,98 @@ void __cdecl _dynamic_initializer_for__s_invites__(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_SendInvite(char *param_1)
+void __cdecl Live_SendInvite(char *friendName)
 
 {
-  bdSessionID bVar1;
-  bdSessionID bVar2;
-  bdSessionID bVar3;
-  bool bVar4;
-  bdSessionID *pbVar5;
+  bdSessionID sessionID;
+  bdSessionID sessionID_00;
+  bdSessionID sessionID_01;
+  bool bVar1;
+  bdSessionID *pbVar2;
+  char *pcVar3;
+  char *pcVar4;
+  int iVar5;
   char *pcVar6;
-  char *pcVar7;
+  undefined4 uVar7;
   int iVar8;
-  char *pcVar9;
+  undefined4 uVar9;
   undefined4 uVar10;
-  int iVar11;
-  undefined4 uVar12;
-  undefined4 uVar13;
-  undefined4 local_c;
+  undefined4 friendID;
   undefined4 local_8;
   
-  local_c = 0;
+  friendID = 0;
   local_8 = 0;
-  iVar8 = 0;
-  bVar4 = Friend_GetByName(0,param_1,(ulong64 *)&local_c);
-  if (bVar4) {
-    uVar10._0_1_ = 0xd2;
-    uVar10._1_1_ = '\x19';
-    uVar10._2_1_ = 0x99;
-    uVar10._3_1_ = '\0';
-    pbVar5 = dwGetSessionID();
-    bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,pbVar5);
-    bVar1.m_sessionID.ab._0_4_ = param_1;
-    bVar1._padding_ = iVar8;
-    bVar1.m_sessionID.ab[4] = (uchar)uVar10;
-    bVar1.m_sessionID.ab[5] = SUB41(uVar10,1);
-    bVar1.m_sessionID.ab[6] = SUB41(uVar10,2);
-    bVar1.m_sessionID.ab[7] = SUB41(uVar10,3);
-    dwMatchMaking_InviteDWUserToSession(CONCAT44(local_8,local_c),bVar1);
-    iVar11 = 0xa8c;
-    pcVar6 = UI_SafeTranslateString("MENU_SENT_CAPS");
-    pcVar9 = "";
-    pcVar7 = "menu_mp_killstreak_select";
-    iVar8 = Com_ControllerIndex_GetLocalClientNum(0);
-    UI_OpenToastPopup(iVar8,pcVar7,pcVar9,pcVar6,iVar11);
+  iVar5 = 0;
+  bVar1 = Friend_GetByName(0,friendName,(ulong64 *)&friendID);
+  if (bVar1) {
+    uVar7._0_1_ = 0xd2;
+    uVar7._1_1_ = '\x19';
+    uVar7._2_1_ = 0x99;
+    uVar7._3_1_ = '\0';
+    pbVar2 = dwGetSessionID();
+    bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,pbVar2);
+    sessionID.m_sessionID.ab._0_4_ = friendName;
+    sessionID._padding_ = iVar5;
+    sessionID.m_sessionID.ab[4] = (uchar)uVar7;
+    sessionID.m_sessionID.ab[5] = SUB41(uVar7,1);
+    sessionID.m_sessionID.ab[6] = SUB41(uVar7,2);
+    sessionID.m_sessionID.ab[7] = SUB41(uVar7,3);
+    dwMatchMaking_InviteDWUserToSession(CONCAT44(local_8,friendID),sessionID);
+    iVar8 = 0xa8c;
+    pcVar3 = UI_SafeTranslateString("MENU_SENT_CAPS");
+    pcVar6 = "";
+    pcVar4 = "menu_mp_killstreak_select";
+    iVar5 = Com_ControllerIndex_GetLocalClientNum(0);
+    UI_OpenToastPopup(iVar5,pcVar4,pcVar6,pcVar3,iVar8);
   }
   else if (((int)s_selectedPlayerXUID == 0) && (s_selectedPlayerXUID._4_4_ == 0)) {
     if (((int)s_selectedMetPlayerXUID == 0) && (s_selectedMetPlayerXUID._4_4_ == 0)) {
       Com_PrintWarning(0,"Couldn\'t find friend %s\n");
     }
     else {
-      uVar13._0_1_ = 0xa2;
-      uVar13._1_1_ = '\x1a';
-      uVar13._2_1_ = 0x99;
-      uVar13._3_1_ = '\0';
-      pbVar5 = dwGetSessionID();
-      bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,pbVar5);
-      bVar3.m_sessionID.ab._0_4_ = param_1;
-      bVar3._padding_ = iVar8;
-      bVar3.m_sessionID.ab[4] = (uchar)uVar13;
-      bVar3.m_sessionID.ab[5] = SUB41(uVar13,1);
-      bVar3.m_sessionID.ab[6] = SUB41(uVar13,2);
-      bVar3.m_sessionID.ab[7] = SUB41(uVar13,3);
+      uVar10._0_1_ = 0xa2;
+      uVar10._1_1_ = '\x1a';
+      uVar10._2_1_ = 0x99;
+      uVar10._3_1_ = '\0';
+      pbVar2 = dwGetSessionID();
+      bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,pbVar2);
+      sessionID_01.m_sessionID.ab._0_4_ = friendName;
+      sessionID_01._padding_ = iVar5;
+      sessionID_01.m_sessionID.ab[4] = (uchar)uVar10;
+      sessionID_01.m_sessionID.ab[5] = SUB41(uVar10,1);
+      sessionID_01.m_sessionID.ab[6] = SUB41(uVar10,2);
+      sessionID_01.m_sessionID.ab[7] = SUB41(uVar10,3);
       dwMatchMaking_InviteDWUserToSession
-                (CONCAT44(s_selectedMetPlayerXUID._4_4_,(int)s_selectedMetPlayerXUID),bVar3);
-      iVar11 = 0xa8c;
-      pcVar6 = UI_SafeTranslateString("MENU_SENT_CAPS");
-      pcVar9 = "";
-      pcVar7 = "menu_mp_killstreak_select";
-      iVar8 = Com_ControllerIndex_GetLocalClientNum(0);
-      UI_OpenToastPopup(iVar8,pcVar7,pcVar9,pcVar6,iVar11);
+                (CONCAT44(s_selectedMetPlayerXUID._4_4_,(int)s_selectedMetPlayerXUID),sessionID_01);
+      iVar8 = 0xa8c;
+      pcVar3 = UI_SafeTranslateString("MENU_SENT_CAPS");
+      pcVar6 = "";
+      pcVar4 = "menu_mp_killstreak_select";
+      iVar5 = Com_ControllerIndex_GetLocalClientNum(0);
+      UI_OpenToastPopup(iVar5,pcVar4,pcVar6,pcVar3,iVar8);
     }
   }
   else {
-    uVar12._0_1_ = '9';
-    uVar12._1_1_ = '\x1a';
-    uVar12._2_1_ = 0x99;
-    uVar12._3_1_ = '\0';
-    pbVar5 = dwGetSessionID();
-    bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,pbVar5);
-    bVar2.m_sessionID.ab._0_4_ = param_1;
-    bVar2._padding_ = iVar8;
-    bVar2.m_sessionID.ab[4] = (uchar)uVar12;
-    bVar2.m_sessionID.ab[5] = SUB41(uVar12,1);
-    bVar2.m_sessionID.ab[6] = SUB41(uVar12,2);
-    bVar2.m_sessionID.ab[7] = SUB41(uVar12,3);
+    uVar9._0_1_ = '9';
+    uVar9._1_1_ = '\x1a';
+    uVar9._2_1_ = 0x99;
+    uVar9._3_1_ = '\0';
+    pbVar2 = dwGetSessionID();
+    bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffdc,pbVar2);
+    sessionID_00.m_sessionID.ab._0_4_ = friendName;
+    sessionID_00._padding_ = iVar5;
+    sessionID_00.m_sessionID.ab[4] = (uchar)uVar9;
+    sessionID_00.m_sessionID.ab[5] = SUB41(uVar9,1);
+    sessionID_00.m_sessionID.ab[6] = SUB41(uVar9,2);
+    sessionID_00.m_sessionID.ab[7] = SUB41(uVar9,3);
     dwMatchMaking_InviteDWUserToSession
-              (CONCAT44(s_selectedPlayerXUID._4_4_,(int)s_selectedPlayerXUID),bVar2);
-    iVar11 = 0xa8c;
-    pcVar6 = UI_SafeTranslateString("MENU_SENT_CAPS");
-    pcVar9 = "";
-    pcVar7 = "menu_mp_killstreak_select";
-    iVar8 = Com_ControllerIndex_GetLocalClientNum(0);
-    UI_OpenToastPopup(iVar8,pcVar7,pcVar9,pcVar6,iVar11);
+              (CONCAT44(s_selectedPlayerXUID._4_4_,(int)s_selectedPlayerXUID),sessionID_00);
+    iVar8 = 0xa8c;
+    pcVar3 = UI_SafeTranslateString("MENU_SENT_CAPS");
+    pcVar6 = "";
+    pcVar4 = "menu_mp_killstreak_select";
+    iVar5 = Com_ControllerIndex_GetLocalClientNum(0);
+    UI_OpenToastPopup(iVar5,pcVar4,pcVar6,pcVar3,iVar8);
   }
   return;
 }
@@ -1918,11 +1963,10 @@ void __cdecl _dynamic_initializer_for__s_recentServersInfo__(void)
 void __cdecl Live_DumpFavourites(void)
 
 {
-  uint local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x2a; local_8 = local_8 + 1) {
-    if (((int)s_favourites[local_8].uid != 0) ||
-       (*(int *)((int)&s_favourites[local_8].uid + 4) != 0)) {
+  for (i = 0; (uint)i < 0x2a; i = i + 1) {
+    if (((int)s_favourites[i].uid != 0) || (*(int *)((int)&s_favourites[i].uid + 4) != 0)) {
       Com_DPrintf(0,"%llu\n");
     }
   }
@@ -1934,19 +1978,19 @@ void __cdecl Live_DumpFavourites(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FindFavouriteServersSuccess(TaskRecord *param_1)
+void __cdecl Live_FindFavouriteServersSuccess(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  bdReference<bdByteBuffer> local_8;
+  bdReference<bdRemoteTask> dwtask;
   
-  local_8.m_ptr = (bdByteBuffer *)(param_1->nestedTask->remoteTask).m_ptr;
-  if ((bdRemoteTask *)local_8.m_ptr != (bdRemoteTask *)0x0) {
-    InterlockedIncrement((LONG *)&((bdRemoteTask *)local_8.m_ptr)->field_0x4);
+  dwtask.m_ptr = (task->nestedTask->remoteTask).m_ptr;
+  if (dwtask.m_ptr != (bdRemoteTask *)0x0) {
+    InterlockedIncrement((LONG *)&(dwtask.m_ptr)->field_0x4);
   }
-  if ((bdRemoteTask *)local_8.m_ptr == (bdRemoteTask *)0x0) {
+  if (dwtask.m_ptr == (bdRemoteTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x15b8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1954,13 +1998,13 @@ void __cdecl Live_FindFavouriteServersSuccess(TaskRecord *param_1)
       return;
     }
   }
-  uVar3 = bdRemoteTask::getNumResults((bdRemoteTask *)local_8.m_ptr);
+  uVar3 = bdRemoteTask::getNumResults(dwtask.m_ptr);
   if (uVar3 != 0) {
     bVar2 = true;
-    uVar3 = bdRemoteTask::getNumResults((bdRemoteTask *)local_8.m_ptr);
+    uVar3 = bdRemoteTask::getNumResults(dwtask.m_ptr);
     CL_ServersResponsePacket(s_favouritesInfo,uVar3,bVar2);
   }
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_8);
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&dwtask);
   return;
 }
 
@@ -1987,29 +2031,29 @@ void __cdecl Live_FindFavouriteServers(void)
 
 {
   TaskRecord *pTVar1;
-  uint local_15c;
-  int local_158;
-  undefined8 local_154;
+  TaskRecord *task;
+  TaskRecord *nestedTask;
+  int i;
+  int j;
+  undefined8 entityIDs;
   uchar local_14c [328];
   
-  local_154._0_4_ = 0;
-  local_154._4_4_ = 0;
+  entityIDs._0_4_ = 0;
+  entityIDs._4_4_ = 0;
   memset(local_14c,'\0',0x148);
-  local_158 = 0;
-  for (local_15c = 0; local_15c < 0x2a; local_15c = local_15c + 1) {
-    if (((int)s_favourites[local_15c].uid != 0) ||
-       (*(int *)((int)&s_favourites[local_15c].uid + 4) != 0)) {
-      *(int *)(&local_154 + local_158) = (int)s_favourites[local_15c].uid;
-      *(undefined4 *)(local_14c + local_158 * 8 + -4) =
-           *(undefined4 *)((int)&s_favourites[local_15c].uid + 4);
-      local_158 = local_158 + 1;
+  j = 0;
+  for (i = 0; (uint)i < 0x2a; i = i + 1) {
+    if (((int)s_favourites[i].uid != 0) || (*(int *)((int)&s_favourites[i].uid + 4) != 0)) {
+      *(int *)(&entityIDs + j) = (int)s_favourites[i].uid;
+      *(undefined4 *)(local_14c + j * 8 + -4) = *(undefined4 *)((int)&s_favourites[i].uid + 4);
+      j = j + 1;
     }
   }
-  if (local_158 < 1) {
+  if (j < 1) {
     Com_DPrintf(0x17,"No favourites to get details for!\n");
   }
   else {
-    pTVar1 = dwFindSessionsByEntityIDs(&local_154,local_158,s_favouritesInfo);
+    pTVar1 = dwFindSessionsByEntityIDs(&entityIDs,j,s_favouritesInfo);
     if (pTVar1 != (TaskRecord *)0x0) {
       pTVar1 = TaskManager2_CreateTask(task_LiveFavouriteServers,0,pTVar1,0);
       if (pTVar1 == (TaskRecord *)0x0) {
@@ -2028,14 +2072,14 @@ void __cdecl Live_FindFavouriteServers(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FindFriendServersSuccess(TaskRecord *param_1)
+void __cdecl Live_FindFriendServersSuccess(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if ((param_1->nestedTask->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
+  if ((task->nestedTask->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x15ef,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2043,10 +2087,10 @@ void __cdecl Live_FindFriendServersSuccess(TaskRecord *param_1)
       return;
     }
   }
-  uVar3 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  uVar3 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
   if (uVar3 != 0) {
     bVar2 = true;
-    uVar3 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+    uVar3 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
     CL_ServersResponsePacket(s_friendServersInfo,uVar3,bVar2);
   }
   return;
@@ -2061,39 +2105,41 @@ void __cdecl Live_FindFriendServers(void)
 
 {
   TaskRecord *pTVar1;
-  int local_810;
-  int local_80c;
-  int local_808;
-  undefined8 local_804;
+  TaskRecord *task;
+  TaskRecord *nestedTask;
+  int k;
+  int i;
+  int j;
+  undefined8 entityIDs;
   uchar local_7fc [2040];
   
-  local_804._0_4_ = 0;
-  local_804._4_4_ = 0;
+  entityIDs._0_4_ = 0;
+  entityIDs._4_4_ = 0;
   memset(local_7fc,'\0',0x7f8);
-  local_808 = 0;
-  for (local_80c = 0; local_80c < 0x100; local_80c = local_80c + 1) {
-    if (((int)s_friendsServers[local_80c].serverID != 0) ||
-       (*(int *)((int)&s_friendsServers[local_80c].serverID + 4) != 0)) {
-      local_810 = local_808;
-      while ((-1 < local_810 &&
-             ((*(int *)(&local_804 + local_810) != (int)s_friendsServers[local_80c].serverID ||
-              (*(int *)(local_7fc + local_810 * 8 + -4) !=
-               *(int *)((int)&s_friendsServers[local_80c].serverID + 4)))))) {
-        local_810 = local_810 + -1;
+  j = 0;
+  for (i = 0; i < 0x100; i = i + 1) {
+    if (((int)s_friendsServers[i].serverID != 0) ||
+       (*(int *)((int)&s_friendsServers[i].serverID + 4) != 0)) {
+      k = j;
+      while ((-1 < k &&
+             ((*(int *)(&entityIDs + k) != (int)s_friendsServers[i].serverID ||
+              (*(int *)(local_7fc + k * 8 + -4) != *(int *)((int)&s_friendsServers[i].serverID + 4))
+              )))) {
+        k = k + -1;
       }
-      if (local_810 == -1) {
-        *(int *)(&local_804 + local_808) = (int)s_friendsServers[local_80c].serverID;
-        *(undefined4 *)(local_7fc + local_808 * 8 + -4) =
-             *(undefined4 *)((int)&s_friendsServers[local_80c].serverID + 4);
-        local_808 = local_808 + 1;
+      if (k == -1) {
+        *(int *)(&entityIDs + j) = (int)s_friendsServers[i].serverID;
+        *(undefined4 *)(local_7fc + j * 8 + -4) =
+             *(undefined4 *)((int)&s_friendsServers[i].serverID + 4);
+        j = j + 1;
       }
     }
   }
-  if (local_808 < 1) {
+  if (j < 1) {
     Com_DPrintf(0x17,"No friends to get details for!\n");
   }
   else {
-    pTVar1 = dwFindSessionsByEntityIDs(&local_804,local_808,s_friendServersInfo);
+    pTVar1 = dwFindSessionsByEntityIDs(&entityIDs,j,s_friendServersInfo);
     if ((pTVar1 != (TaskRecord *)0x0) &&
        (pTVar1 = TaskManager2_CreateTask(task_LiveFriendServers,0,pTVar1,0),
        pTVar1 != (TaskRecord *)0x0)) {
@@ -2108,14 +2154,14 @@ void __cdecl Live_FindFriendServers(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FindRecentServersSuccess(TaskRecord *param_1)
+void __cdecl Live_FindRecentServersSuccess(TaskRecord *task)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if ((param_1->nestedTask->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
+  if ((task->nestedTask->remoteTask).m_ptr == (bdRemoteTask *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x162b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2123,10 +2169,10 @@ void __cdecl Live_FindRecentServersSuccess(TaskRecord *param_1)
       return;
     }
   }
-  uVar3 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+  uVar3 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
   if (uVar3 != 0) {
     bVar2 = true;
-    uVar3 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
+    uVar3 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
     CL_ServersResponsePacket(s_recentServersInfo,uVar3,bVar2);
   }
   return;
@@ -2141,27 +2187,27 @@ void __cdecl Live_FindRecentServers(void)
 
 {
   TaskRecord *pTVar1;
-  int local_fc;
-  int local_f8;
-  undefined8 local_f4;
+  TaskRecord *task;
+  TaskRecord *nestedTask;
+  int i;
+  int j;
+  undefined8 entityIDs;
   uchar local_ec [232];
   
-  local_f4._0_4_ = 0;
-  local_f4._4_4_ = 0;
+  entityIDs._0_4_ = 0;
+  entityIDs._4_4_ = 0;
   memset(local_ec,'\0',0xe8);
-  local_f8 = 0;
-  for (local_fc = 0; (local_fc < 0x1e && (s_recentServers[local_fc].joinTime != 0));
-      local_fc = local_fc + 1) {
-    *(int *)(&local_f4 + local_f8) = (int)s_recentServers[local_fc].serverID;
-    *(undefined4 *)(local_ec + local_f8 * 8 + -4) =
-         *(undefined4 *)((int)&s_recentServers[local_fc].serverID + 4);
-    local_f8 = local_f8 + 1;
+  j = 0;
+  for (i = 0; (i < 0x1e && (s_recentServers[i].joinTime != 0)); i = i + 1) {
+    *(int *)(&entityIDs + j) = (int)s_recentServers[i].serverID;
+    *(undefined4 *)(local_ec + j * 8 + -4) = *(undefined4 *)((int)&s_recentServers[i].serverID + 4);
+    j = j + 1;
   }
-  if (local_f8 < 1) {
+  if (j < 1) {
     Com_DPrintf(0x17,"No friends to get details for!\n");
   }
   else {
-    pTVar1 = dwFindSessionsByEntityIDs(&local_f4,local_f8,s_recentServersInfo);
+    pTVar1 = dwFindSessionsByEntityIDs(&entityIDs,j,s_recentServersInfo);
     if ((pTVar1 != (TaskRecord *)0x0) &&
        (pTVar1 = TaskManager2_CreateTask(task_LiveRecentServers,0,pTVar1,0),
        pTVar1 != (TaskRecord *)0x0)) {
@@ -2174,10 +2220,13 @@ void __cdecl Live_FindRecentServers(void)
 
 // 009923F0  compareRecentServers  (live/live_win.cpp:5723)
 
-int __cdecl compareRecentServers(void *param_1,void *param_2)
+int __cdecl compareRecentServers(void *server1,void *server2)
 
 {
-  return *(int *)((int)param_2 + 8) - *(int *)((int)param_1 + 8);
+  recentServer_t *rs1;
+  recentServer_t *rs2;
+  
+  return *(int *)((int)server2 + 8) - *(int *)((int)server1 + 8);
 }
 
 
@@ -2188,22 +2237,23 @@ int __cdecl compareRecentServers(void *param_1,void *param_2)
 void __cdecl Live_SaveRecentServers(void)
 
 {
-  uchar *local_c;
-  int local_8;
+  int byteswritten;
+  uchar *ptr;
+  int i;
   
-  local_c = s_recentServersBuf;
-  local_8 = 0;
-  while ((local_8 < 0x1e &&
-         (((int)s_recentServers[local_8].serverID != 0 ||
-          (*(int *)((int)&s_recentServers[local_8].serverID + 4) != 0))))) {
-    *(int *)local_c = (int)s_recentServers[local_8].serverID;
-    *(undefined4 *)(local_c + 4) = *(undefined4 *)((int)&s_recentServers[local_8].serverID + 4);
-    *(int *)(local_c + 8) = s_recentServers[local_8].joinTime;
-    local_c = local_c + 0xc;
-    local_8 = local_8 + 1;
+  ptr = s_recentServersBuf;
+  i = 0;
+  while ((i < 0x1e &&
+         (((int)s_recentServers[i].serverID != 0 ||
+          (*(int *)((int)&s_recentServers[i].serverID + 4) != 0))))) {
+    *(int *)ptr = (int)s_recentServers[i].serverID;
+    *(undefined4 *)(ptr + 4) = *(undefined4 *)((int)&s_recentServers[i].serverID + 4);
+    *(int *)(ptr + 8) = s_recentServers[i].joinTime;
+    ptr = ptr + 0xc;
+    i = i + 1;
   }
   Com_DPrintf(0x17,"Serialized %i (%i bytes) recent servers\n");
-  LiveStorage_SaveRecentServers(s_recentServersBuf,(int)(local_c + -0xa63d458));
+  LiveStorage_SaveRecentServers(s_recentServersBuf,(int)(ptr + -0xa63d458));
   return;
 }
 
@@ -2222,19 +2272,19 @@ void __cdecl Live_ReadRecentServers(void)
 
 // 009922B0  Live_PopulateRecentServers  (live/live_win.cpp:5765)
 
-void __cdecl Live_PopulateRecentServers(uchar *param_1,int param_2)
+void __cdecl Live_PopulateRecentServers(uchar *buf,int bufsize)
 
 {
-  int local_10;
-  uchar *local_8;
+  int i;
+  uchar *theEnd;
+  uchar *ptr;
   
-  local_10 = 0;
-  for (local_8 = param_1; (local_10 < 0x1e && (local_8 != param_1 + param_2));
-      local_8 = local_8 + 0xc) {
-    *(undefined4 *)&s_recentServers[local_10].serverID = *(undefined4 *)local_8;
-    *(undefined4 *)((int)&s_recentServers[local_10].serverID + 4) = *(undefined4 *)(local_8 + 4);
-    s_recentServers[local_10].joinTime = *(int *)(local_8 + 8);
-    local_10 = local_10 + 1;
+  i = 0;
+  for (ptr = buf; (i < 0x1e && (ptr != buf + bufsize)); ptr = ptr + 0xc) {
+    *(undefined4 *)&s_recentServers[i].serverID = *(undefined4 *)ptr;
+    *(undefined4 *)((int)&s_recentServers[i].serverID + 4) = *(undefined4 *)(ptr + 4);
+    s_recentServers[i].joinTime = *(int *)(ptr + 8);
+    i = i + 1;
   }
   return;
 }
@@ -2242,64 +2292,67 @@ void __cdecl Live_PopulateRecentServers(uchar *param_1,int param_2)
 
 // 00992330  Live_AddRecentServer  (live/live_win.cpp:5779)
 
-void __cdecl Live_AddRecentServer(ulong64 param_1)
+void __cdecl Live_AddRecentServer(ulong64 serveruid)
 
 {
   int iVar1;
-  int local_8;
+  recentServer_t *serverent;
+  int currentTime;
+  int i;
   
   iVar1 = LiveStorage_GetUTC();
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x1d < local_8) {
+    if (0x1d < i) {
 LAB_009923b1:
       s_recentServers[0x1d].serverID =
            CONCAT44(s_recentServers[0x1d].serverID._4_4_,(undefined4)s_recentServers[0x1d].serverID)
       ;
-      if (local_8 == 0x1e) {
+      if (i == 0x1e) {
         s_recentServers[0x1d].joinTime = iVar1;
-        s_recentServers[0x1d].serverID = param_1;
+        s_recentServers[0x1d].serverID = serveruid;
       }
       qsort(s_recentServers,0x1e,0x10,compareRecentServers);
       Live_SaveRecentServers();
       return;
     }
-    if (((int)param_1 == (int)s_recentServers[local_8].serverID) &&
-       (param_1._4_4_ == *(int *)((int)&s_recentServers[local_8].serverID + 4))) {
-      s_recentServers[local_8].joinTime = iVar1;
+    if (((int)serveruid == (int)s_recentServers[i].serverID) &&
+       (serveruid._4_4_ == *(int *)((int)&s_recentServers[i].serverID + 4))) {
+      s_recentServers[i].joinTime = iVar1;
       goto LAB_009923b1;
     }
-    if (s_recentServers[local_8].joinTime == 0) {
-      s_recentServers[local_8].serverID = param_1;
-      s_recentServers[local_8].joinTime = iVar1;
+    if (s_recentServers[i].joinTime == 0) {
+      s_recentServers[i].serverID = serveruid;
+      s_recentServers[i].joinTime = iVar1;
       goto LAB_009923b1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00992420  Live_GetFriendsOnServer  (live/live_win.cpp:5810)
 
-void __cdecl Live_GetFriendsOnServer(ulong64 param_1,ulong64 *param_2,int *param_3)
+void __cdecl Live_GetFriendsOnServer(ulong64 serverId,ulong64 *friendIDs,int *numfriends)
 
 {
   int iVar1;
   int iVar2;
-  int local_c;
+  int i;
+  int numsteamfriends;
   
   iVar2 = LiveSteam_GetNumFriends();
-  *param_3 = 0;
-  for (local_c = 0; local_c < iVar2; local_c = local_c + 1) {
-    if (((((int)s_friendsServers[local_c].friendID != 0) ||
-         (*(int *)((int)&s_friendsServers[local_c].friendID + 4) != 0)) &&
-        ((int)param_1 == (int)s_friendsServers[local_c].serverID)) &&
-       (param_1._4_4_ == *(int *)((int)&s_friendsServers[local_c].serverID + 4))) {
-      iVar1 = *param_3;
-      *(int *)(param_2 + iVar1) = (int)s_friendsServers[local_c].friendID;
-      *(undefined4 *)((int)param_2 + iVar1 * 8 + 4) =
-           *(undefined4 *)((int)&s_friendsServers[local_c].friendID + 4);
-      *param_3 = *param_3 + 1;
+  *numfriends = 0;
+  for (i = 0; i < iVar2; i = i + 1) {
+    if (((((int)s_friendsServers[i].friendID != 0) ||
+         (*(int *)((int)&s_friendsServers[i].friendID + 4) != 0)) &&
+        ((int)serverId == (int)s_friendsServers[i].serverID)) &&
+       (serverId._4_4_ == *(int *)((int)&s_friendsServers[i].serverID + 4))) {
+      iVar1 = *numfriends;
+      *(int *)(friendIDs + iVar1) = (int)s_friendsServers[i].friendID;
+      *(undefined4 *)((int)friendIDs + iVar1 * 8 + 4) =
+           *(undefined4 *)((int)&s_friendsServers[i].friendID + 4);
+      *numfriends = *numfriends + 1;
     }
   }
   return;
@@ -2308,37 +2361,36 @@ void __cdecl Live_GetFriendsOnServer(ulong64 param_1,ulong64 *param_2,int *param
 
 // 009924D0  Live_AddFavourite_Ingame  (live/live_win.cpp:5823)
 
-bool __cdecl Live_AddFavourite_Ingame(ulong64 param_1,ulong64 param_2)
+bool __cdecl Live_AddFavourite_Ingame(ulong64 serverid,ulong64 serveruid)
 
 {
-  char *pcVar1;
-  uint local_8;
+  char *fmt;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if ((0x29 < local_8) ||
-       (((int)s_favourites[local_8].uid == 0 && (*(int *)((int)&s_favourites[local_8].uid + 4) == 0)
-        ))) {
-      if (0x29 < local_8) {
+    if ((0x29 < (uint)i) ||
+       (((int)s_favourites[i].uid == 0 && (*(int *)((int)&s_favourites[i].uid + 4) == 0)))) {
+      if (0x29U < (uint)i) {
         UI_SafeTranslateString("EXE_FAVORITELISTFULL");
         Com_Printf(0xd,"%s\n");
         Dvar_SetStringByName("ui_favorite_message","@EXE_FAVORITELISTFULL");
       }
       else {
-        *(undefined4 *)s_favourites[local_8].addressblob = (undefined4)param_1;
-        *(undefined2 *)(s_favourites[local_8].addressblob + 4) = param_1._4_2_;
-        s_favourites[local_8].uid = param_2;
+        *(undefined4 *)s_favourites[i].addressblob = (undefined4)serverid;
+        *(undefined2 *)(s_favourites[i].addressblob + 4) = serverid._4_2_;
+        s_favourites[i].uid = serveruid;
         CL_SetFavourites_f();
         UI_SafeTranslateString("EXE_FAVORITEADDED");
-        pcVar1 = va("%s\n");
-        Com_Printf(0xd,pcVar1);
+        fmt = va("%s\n");
+        Com_Printf(0xd,fmt);
         Dvar_SetStringByName("ui_favorite_message","@EXE_FAVORITEADDED");
       }
-      return 0x29 >= local_8;
+      return 0x29U >= (uint)i;
     }
-    if (((int)param_2 == (int)s_favourites[local_8].uid) &&
-       (param_2._4_4_ == *(int *)((int)&s_favourites[local_8].uid + 4))) break;
-    local_8 = local_8 + 1;
+    if (((int)serveruid == (int)s_favourites[i].uid) &&
+       (serveruid._4_4_ == *(int *)((int)&s_favourites[i].uid + 4))) break;
+    i = i + 1;
   }
   UI_SafeTranslateString("EXE_FAVORITEINLIST");
   Com_Printf(0xd,"%s\n");
@@ -2349,21 +2401,20 @@ bool __cdecl Live_AddFavourite_Ingame(ulong64 param_1,ulong64 param_2)
 
 // 00992630  Live_AddFavourite  (live/live_win.cpp:5862)
 
-void __cdecl Live_AddFavourite(ulong64 param_1,ulong64 param_2)
+void __cdecl Live_AddFavourite(ulong64 serverid,ulong64 serveruid)
 
 {
-  uint local_8;
+  int i;
   
-  local_8 = 0;
-  while ((local_8 < 0x2a &&
-         (((int)s_favourites[local_8].uid != 0 ||
-          (*(int *)((int)&s_favourites[local_8].uid + 4) != 0))))) {
-    local_8 = local_8 + 1;
+  i = 0;
+  while (((uint)i < 0x2a &&
+         (((int)s_favourites[i].uid != 0 || (*(int *)((int)&s_favourites[i].uid + 4) != 0))))) {
+    i = i + 1;
   }
-  if (local_8 < 0x2a) {
-    *(undefined4 *)s_favourites[local_8].addressblob = (undefined4)param_1;
-    *(undefined2 *)(s_favourites[local_8].addressblob + 4) = param_1._4_2_;
-    s_favourites[local_8].uid = param_2;
+  if ((uint)i < 0x2a) {
+    *(undefined4 *)s_favourites[i].addressblob = (undefined4)serverid;
+    *(undefined2 *)(s_favourites[i].addressblob + 4) = serverid._4_2_;
+    s_favourites[i].uid = serveruid;
   }
   CL_SetFavourites_f();
   return;
@@ -2372,20 +2423,20 @@ void __cdecl Live_AddFavourite(ulong64 param_1,ulong64 param_2)
 
 // 009926C0  Live_DeleteFavourite  (live/live_win.cpp:5885)
 
-void __cdecl Live_DeleteFavourite(ulong64 param_1)
+void __cdecl Live_DeleteFavourite(ulong64 serverid)
 
 {
-  uint local_8;
+  int i;
   
-  local_8 = 0;
-  while ((local_8 < 0x2a &&
-         (((int)param_1 != (int)s_favourites[local_8].uid ||
-          (param_1._4_4_ != *(int *)((int)&s_favourites[local_8].uid + 4)))))) {
-    local_8 = local_8 + 1;
+  i = 0;
+  while (((uint)i < 0x2a &&
+         (((int)serverid != (int)s_favourites[i].uid ||
+          (serverid._4_4_ != *(int *)((int)&s_favourites[i].uid + 4)))))) {
+    i = i + 1;
   }
-  if (local_8 < 0x2a) {
-    *(undefined4 *)&s_favourites[local_8].uid = 0;
-    *(undefined4 *)((int)&s_favourites[local_8].uid + 4) = 0;
+  if ((uint)i < 0x2a) {
+    *(undefined4 *)&s_favourites[i].uid = 0;
+    *(undefined4 *)((int)&s_favourites[i].uid + 4) = 0;
     CL_SetFavourites_f();
   }
   return;
@@ -2394,19 +2445,19 @@ void __cdecl Live_DeleteFavourite(ulong64 param_1)
 
 // 00992730  Live_ParseFavsBlobs  (live/live_win.cpp:5906)
 
-void __cdecl Live_ParseFavsBlobs(uchar *param_1,uchar *param_2)
+void __cdecl Live_ParseFavsBlobs(uchar *addrblob,uchar *uidblob)
 
 {
-  uint local_8;
+  int i;
   
-  local_8 = 0;
-  for (; (local_8 < 0x2a && (*param_2 != '\0')); param_2 = param_2 + 8) {
-    *(undefined4 *)s_favourites[local_8].addressblob = *(undefined4 *)param_1;
-    *(undefined2 *)(s_favourites[local_8].addressblob + 4) = *(undefined2 *)(param_1 + 4);
-    *(undefined4 *)&s_favourites[local_8].uid = *(undefined4 *)param_2;
-    *(undefined4 *)((int)&s_favourites[local_8].uid + 4) = *(undefined4 *)(param_2 + 4);
-    param_1 = param_1 + 6;
-    local_8 = local_8 + 1;
+  i = 0;
+  for (; ((uint)i < 0x2a && (*uidblob != '\0')); uidblob = uidblob + 8) {
+    *(undefined4 *)s_favourites[i].addressblob = *(undefined4 *)addrblob;
+    *(undefined2 *)(s_favourites[i].addressblob + 4) = *(undefined2 *)(addrblob + 4);
+    *(undefined4 *)&s_favourites[i].uid = *(undefined4 *)uidblob;
+    *(undefined4 *)((int)&s_favourites[i].uid + 4) = *(undefined4 *)(uidblob + 4);
+    addrblob = addrblob + 6;
+    i = i + 1;
   }
   return;
 }
@@ -2414,22 +2465,21 @@ void __cdecl Live_ParseFavsBlobs(uchar *param_1,uchar *param_2)
 
 // 009927B0  Live_SetFavsBlobs  (live/live_win.cpp:5924)
 
-void __cdecl Live_SetFavsBlobs(uchar *param_1,uchar *param_2)
+void __cdecl Live_SetFavsBlobs(uchar *addrblob,uchar *uidblob)
 
 {
-  uint local_8;
+  int i;
   
-  memset(param_1,'\0',0xfd);
-  memset(param_2,'\0',0x151);
-  for (local_8 = 0; local_8 < 0x2a; local_8 = local_8 + 1) {
-    if (((int)s_favourites[local_8].uid != 0) ||
-       (*(int *)((int)&s_favourites[local_8].uid + 4) != 0)) {
-      *(undefined4 *)param_1 = *(undefined4 *)s_favourites[local_8].addressblob;
-      *(undefined2 *)(param_1 + 4) = *(undefined2 *)(s_favourites[local_8].addressblob + 4);
-      param_1 = param_1 + 6;
-      *(int *)param_2 = (int)s_favourites[local_8].uid;
-      *(undefined4 *)(param_2 + 4) = *(undefined4 *)((int)&s_favourites[local_8].uid + 4);
-      param_2 = param_2 + 8;
+  memset(addrblob,'\0',0xfd);
+  memset(uidblob,'\0',0x151);
+  for (i = 0; (uint)i < 0x2a; i = i + 1) {
+    if (((int)s_favourites[i].uid != 0) || (*(int *)((int)&s_favourites[i].uid + 4) != 0)) {
+      *(undefined4 *)addrblob = *(undefined4 *)s_favourites[i].addressblob;
+      *(undefined2 *)(addrblob + 4) = *(undefined2 *)(s_favourites[i].addressblob + 4);
+      addrblob = addrblob + 6;
+      *(int *)uidblob = (int)s_favourites[i].uid;
+      *(undefined4 *)(uidblob + 4) = *(undefined4 *)((int)&s_favourites[i].uid + 4);
+      uidblob = uidblob + 8;
     }
   }
   return;
@@ -2440,7 +2490,7 @@ void __cdecl Live_SetFavsBlobs(uchar *param_1,uchar *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_GetPrivateProfileComplete(TaskRecord *param_1)
+void __cdecl Live_GetPrivateProfileComplete(TaskRecord *task)
 
 {
   Live_ParseFavsBlobs(s_profileInfo.m_memberfavsblob,s_profileInfo.m_memberuids);
@@ -2452,19 +2502,19 @@ void __cdecl Live_GetPrivateProfileComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_GetPrivateProfileFailure(TaskRecord *param_1)
+void __cdecl Live_GetPrivateProfileFailure(TaskRecord *task)
 
 {
   bool bVar1;
-  serverInfo_t *local_c;
-  int *local_8;
+  serverInfo_t *favservers;
+  int *count;
   
   Com_PrintWarning(0x17,"Couldn\'t get favourites :(\n");
-  local_c = (serverInfo_t *)0x0;
-  local_8 = (int *)0x0;
-  bVar1 = CL_GetServerList(3,&local_c,&local_8);
+  favservers = (serverInfo_t *)0x0;
+  count = (int *)0x0;
+  bVar1 = CL_GetServerList(3,&favservers,&count);
   if (bVar1) {
-    *local_8 = 0;
+    *count = 0;
   }
   return;
 }
@@ -2474,7 +2524,7 @@ void __cdecl Live_GetPrivateProfileFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_SetPrivateProfileComplete(TaskRecord *param_1)
+void __cdecl Live_SetPrivateProfileComplete(TaskRecord *task)
 
 {
   Com_DPrintf(0x17,"Successfully saved favourites to DemonWare\n");
@@ -2486,7 +2536,7 @@ void __cdecl Live_SetPrivateProfileComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_SetPrivateProfileFailure(TaskRecord *param_1)
+void __cdecl Live_SetPrivateProfileFailure(TaskRecord *task)
 
 {
   Com_PrintWarning(0x17,"Couldn\'t save favourites to DemonWare :(\n");
@@ -2501,29 +2551,30 @@ void __cdecl Live_SetPrivateProfileFailure(TaskRecord *param_1)
 TaskRecord * __cdecl Live_GetPrivateProfile(void)
 
 {
-  bdReference<bdRemoteTask> bVar1;
-  undefined1 local_14 [8];
-  bdLobbyService *local_c;
-  TaskRecord *local_8;
+  bdReference<bdRemoteTask> other_3;
+  undefined1 local_14 [4];
+  bdProfiles *profileService;
+  bdLobbyService *lobbyService;
+  TaskRecord *task;
   
-  local_8 = (TaskRecord *)0x0;
-  local_c = dwGetLobby(0);
-  if (local_c != (bdLobbyService *)0x0) {
-    local_14._4_4_ = bdLobbyService::getProfiles(local_c);
-    if ((bdProfiles *)local_14._4_4_ != (bdProfiles *)0x0) {
-      local_8 = TaskManager2_CreateTask(task_dwgetprivateprofile,0,(TaskRecord *)0x0,0);
-      if (local_8 != (TaskRecord *)0x0) {
-        bVar1 = bdProfiles::getPrivateInfo((bdProfiles *)local_14._4_4_,(bdProfileInfo *)local_14);
+  task = (TaskRecord *)0x0;
+  lobbyService = dwGetLobby(0);
+  if (lobbyService != (bdLobbyService *)0x0) {
+    profileService = bdLobbyService::getProfiles(lobbyService);
+    if (profileService != (bdProfiles *)0x0) {
+      task = TaskManager2_CreateTask(task_dwgetprivateprofile,0,(TaskRecord *)0x0,0);
+      if (task != (TaskRecord *)0x0) {
+        other_3 = bdProfiles::getPrivateInfo(profileService,(bdProfileInfo *)local_14);
         bdReference<bdAddrHandle>::operator=
-                  ((bdReference<bdAddrHandle> *)&local_8->remoteTask,
-                   (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+                  ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                   (bdReference<bdAddrHandle> *)other_3.m_ptr);
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_14)
         ;
-        TaskManager2_StartTask(local_8);
+        TaskManager2_StartTask(task);
       }
     }
   }
-  return local_8;
+  return task;
 }
 
 
@@ -2534,31 +2585,32 @@ TaskRecord * __cdecl Live_GetPrivateProfile(void)
 TaskRecord * __cdecl Live_SetPrivateProfile(void)
 
 {
-  bdReference<bdRemoteTask> bVar1;
-  undefined1 local_14 [8];
-  bdLobbyService *local_c;
-  TaskRecord *local_8;
+  bdReference<bdRemoteTask> other_3;
+  undefined1 local_14 [4];
+  bdProfiles *profileService;
+  bdLobbyService *lobbyService;
+  TaskRecord *task;
   
-  local_8 = (TaskRecord *)0x0;
-  local_c = dwGetLobby(0);
-  if (local_c != (bdLobbyService *)0x0) {
-    local_14._4_4_ = bdLobbyService::getProfiles(local_c);
-    if ((bdProfiles *)local_14._4_4_ != (bdProfiles *)0x0) {
-      local_8 = TaskManager2_CreateTask(task_dwsetprivateprofile,0,(TaskRecord *)0x0,0);
-      if (local_8 != (TaskRecord *)0x0) {
+  task = (TaskRecord *)0x0;
+  lobbyService = dwGetLobby(0);
+  if (lobbyService != (bdLobbyService *)0x0) {
+    profileService = bdLobbyService::getProfiles(lobbyService);
+    if (profileService != (bdProfiles *)0x0) {
+      task = TaskManager2_CreateTask(task_dwsetprivateprofile,0,(TaskRecord *)0x0,0);
+      if (task != (TaskRecord *)0x0) {
         s_profileInfo._padding_ = (int)g_bdUserID;
         s_profileInfo._padding_ = g_bdUserID._4_4_;
-        bVar1 = bdProfiles::setPrivateInfo((bdProfiles *)local_14._4_4_,(bdProfileInfo *)local_14);
+        other_3 = bdProfiles::setPrivateInfo(profileService,(bdProfileInfo *)local_14);
         bdReference<bdAddrHandle>::operator=
-                  ((bdReference<bdAddrHandle> *)&local_8->remoteTask,
-                   (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+                  ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                   (bdReference<bdAddrHandle> *)other_3.m_ptr);
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)local_14)
         ;
-        TaskManager2_StartTask(local_8);
+        TaskManager2_StartTask(task);
       }
     }
   }
-  return local_8;
+  return task;
 }
 
 
@@ -2613,19 +2665,20 @@ void __cdecl CL_DeleteFavourite_f(void)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  int *local_c;
-  serverInfo_t *local_8;
+  char *nptr;
+  int iVar2;
+  int servernum;
+  int *count;
+  serverInfo_t *servers;
   
-  pcVar2 = Cmd_Argv(1);
-  iVar3 = atoi(pcVar2);
-  local_8 = (serverInfo_t *)0x0;
-  bVar1 = CL_GetServerList(3,&local_8,&local_c);
+  nptr = Cmd_Argv(1);
+  iVar2 = atoi(nptr);
+  servers = (serverInfo_t *)0x0;
+  bVar1 = CL_GetServerList(3,&servers,&count);
   if (bVar1) {
     Live_DeleteFavourite
-              (CONCAT44(*(undefined4 *)((int)local_8 + iVar3 * 0x178 + 0x114),
-                        *(undefined4 *)((int)local_8 + iVar3 * 0x178 + 0x110)));
+              (CONCAT44(*(undefined4 *)((int)servers + iVar2 * 0x178 + 0x114),
+                        *(undefined4 *)((int)servers + iVar2 * 0x178 + 0x110)));
   }
   return;
 }
@@ -2660,11 +2713,11 @@ void __cdecl CL_NukeFavourites_f(void)
 void __cdecl Live_InitFavourites(void)
 
 {
-  uint local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x29; local_8 = local_8 + 1) {
-    *(undefined4 *)&s_favourites[local_8].uid = 0;
-    *(undefined4 *)((int)&s_favourites[local_8].uid + 4) = 0;
+  for (i = 0; (uint)i < 0x29; i = i + 1) {
+    *(undefined4 *)&s_favourites[i].uid = 0;
+    *(undefined4 *)((int)&s_favourites[i].uid + 4) = 0;
   }
   memset(s_profileInfo.m_memberfavsblob,'\0',0xfd);
   Cmd_AddCommandInternal
@@ -2686,99 +2739,94 @@ void __cdecl Live_InitFavourites(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_AddRecentPlayers(ulong64 *param_1,char **param_2,int param_3)
+void __cdecl Live_AddRecentPlayers(ulong64 *uids,char **names,int numIDs)
 
 {
   char *pcVar1;
-  char *local_34;
-  char local_30 [32];
+  int i;
+  char namebuf [32];
   uint local_10;
-  undefined8 local_c;
+  undefined8 myXuid;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_30[0] = '\0';
-  local_30[1] = '\0';
-  local_30[2] = '\0';
-  local_30[3] = '\0';
-  local_30[4] = '\0';
-  local_30[5] = '\0';
-  local_30[6] = '\0';
-  local_30[7] = '\0';
-  local_30[8] = '\0';
-  local_30[9] = '\0';
-  local_30[10] = '\0';
-  local_30[0xb] = '\0';
-  local_30[0xc] = '\0';
-  local_30[0xd] = '\0';
-  local_30[0xe] = '\0';
-  local_30[0xf] = '\0';
-  local_30[0x10] = '\0';
-  local_30[0x11] = '\0';
-  local_30[0x12] = '\0';
-  local_30[0x13] = '\0';
-  local_30[0x14] = '\0';
-  local_30[0x15] = '\0';
-  local_30[0x16] = '\0';
-  local_30[0x17] = '\0';
-  local_30[0x18] = '\0';
-  local_30[0x19] = '\0';
-  local_30[0x1a] = '\0';
-  local_30[0x1b] = '\0';
-  local_30[0x1c] = 0;
-  local_30[0x1d] = '\0';
-  local_30[0x1e] = '\0';
-  local_30[0x1f] = 0;
-  local_c = Live_GetXuid(0);
-  for (local_34 = (char *)0x0; (int)local_34 < param_3; local_34 = local_34 + 1) {
-    if (((int)local_c != (int)param_1[(int)local_34]) ||
-       (local_c._4_4_ != *(int *)((int)param_1 + (int)local_34 * 8 + 4))) {
-      if (((int)param_1[(int)local_34] != 0) ||
-         (*(int *)((int)param_1 + (int)local_34 * 8 + 4) != 0)) {
-        pcVar1 = local_34;
+  namebuf[0] = '\0';
+  namebuf[1] = '\0';
+  namebuf[2] = '\0';
+  namebuf[3] = '\0';
+  namebuf[4] = '\0';
+  namebuf[5] = '\0';
+  namebuf[6] = '\0';
+  namebuf[7] = '\0';
+  namebuf[8] = '\0';
+  namebuf[9] = '\0';
+  namebuf[10] = '\0';
+  namebuf[0xb] = '\0';
+  namebuf[0xc] = '\0';
+  namebuf[0xd] = '\0';
+  namebuf[0xe] = '\0';
+  namebuf[0xf] = '\0';
+  namebuf[0x10] = '\0';
+  namebuf[0x11] = '\0';
+  namebuf[0x12] = '\0';
+  namebuf[0x13] = '\0';
+  namebuf[0x14] = '\0';
+  namebuf[0x15] = '\0';
+  namebuf[0x16] = '\0';
+  namebuf[0x17] = '\0';
+  namebuf[0x18] = '\0';
+  namebuf[0x19] = '\0';
+  namebuf[0x1a] = '\0';
+  namebuf[0x1b] = '\0';
+  namebuf[0x1c] = 0;
+  namebuf[0x1d] = '\0';
+  namebuf[0x1e] = '\0';
+  namebuf[0x1f] = 0;
+  myXuid = Live_GetXuid(0);
+  for (i = 0; i < numIDs; i = i + 1) {
+    if (((int)myXuid != (int)uids[i]) || (myXuid._4_4_ != *(int *)((int)uids + i * 8 + 4))) {
+      if (((int)uids[i] != 0) || (*(int *)((int)uids + i * 8 + 4) != 0)) {
+        pcVar1 = (char *)i;
         Live_GetRecentPlayerName
-                  (CONCAT44(*(undefined4 *)((int)param_1 + (int)local_34 * 8 + 4),
-                            (int)param_1[(int)local_34]),local_30,0x20);
-        if (local_30[0] == '\0') {
+                  (CONCAT44(*(undefined4 *)((int)uids + i * 8 + 4),(int)uids[i]),namebuf,0x20);
+        if (namebuf[0] == '\0') {
           LiveMeetPlayer_UpdateMeetPlayerList
-                    (0,CONCAT44(param_2[(int)local_34],
-                                *(undefined4 *)((int)param_1 + (int)local_34 * 8 + 4)),pcVar1);
+                    (0,CONCAT44(names[i],*(undefined4 *)((int)uids + i * 8 + 4)),pcVar1);
         }
         else {
           LiveMeetPlayer_UpdateMeetPlayerList
-                    (0,CONCAT44(local_30,*(undefined4 *)((int)param_1 + (int)local_34 * 8 + 4)),
-                     pcVar1);
-          local_30[0] = '\0';
-          local_30[1] = '\0';
-          local_30[2] = '\0';
-          local_30[3] = '\0';
-          local_30[4] = '\0';
-          local_30[5] = '\0';
-          local_30[6] = '\0';
-          local_30[7] = '\0';
-          local_30[8] = '\0';
-          local_30[9] = '\0';
-          local_30[10] = '\0';
-          local_30[0xb] = '\0';
-          local_30[0xc] = '\0';
-          local_30[0xd] = '\0';
-          local_30[0xe] = '\0';
-          local_30[0xf] = '\0';
-          local_30[0x10] = '\0';
-          local_30[0x11] = '\0';
-          local_30[0x12] = '\0';
-          local_30[0x13] = '\0';
-          local_30[0x14] = '\0';
-          local_30[0x15] = '\0';
-          local_30[0x16] = '\0';
-          local_30[0x17] = '\0';
-          local_30[0x18] = '\0';
-          local_30[0x19] = '\0';
-          local_30[0x1a] = '\0';
-          local_30[0x1b] = '\0';
-          local_30[0x1c] = 0;
-          local_30[0x1d] = '\0';
-          local_30[0x1e] = '\0';
-          local_30[0x1f] = 0;
+                    (0,CONCAT44(namebuf,*(undefined4 *)((int)uids + i * 8 + 4)),pcVar1);
+          namebuf[0] = '\0';
+          namebuf[1] = '\0';
+          namebuf[2] = '\0';
+          namebuf[3] = '\0';
+          namebuf[4] = '\0';
+          namebuf[5] = '\0';
+          namebuf[6] = '\0';
+          namebuf[7] = '\0';
+          namebuf[8] = '\0';
+          namebuf[9] = '\0';
+          namebuf[10] = '\0';
+          namebuf[0xb] = '\0';
+          namebuf[0xc] = '\0';
+          namebuf[0xd] = '\0';
+          namebuf[0xe] = '\0';
+          namebuf[0xf] = '\0';
+          namebuf[0x10] = '\0';
+          namebuf[0x11] = '\0';
+          namebuf[0x12] = '\0';
+          namebuf[0x13] = '\0';
+          namebuf[0x14] = '\0';
+          namebuf[0x15] = '\0';
+          namebuf[0x16] = '\0';
+          namebuf[0x17] = '\0';
+          namebuf[0x18] = '\0';
+          namebuf[0x19] = '\0';
+          namebuf[0x1a] = '\0';
+          namebuf[0x1b] = '\0';
+          namebuf[0x1c] = 0;
+          namebuf[0x1d] = '\0';
+          namebuf[0x1e] = '\0';
+          namebuf[0x1f] = 0;
         }
       }
     }
@@ -2800,32 +2848,34 @@ void __cdecl _dynamic_initializer_for__s_joininprogressinfo__(void)
 
 // 00992DB0  Live_GetServerForFriend  (live/live_win.cpp:6104)
 
-ulong64 __cdecl Live_GetServerForFriend(ulong64 param_1)
+ulong64 __cdecl Live_GetServerForFriend(ulong64 friendId)
 
 {
   int iVar1;
   undefined4 uVar2;
   undefined4 uVar3;
-  int local_c;
+  friendonserver_t *friendserver;
+  int i;
+  int numsteamfriends;
   
   iVar1 = LiveSteam_GetNumFriends();
-  local_c = 0;
+  i = 0;
   do {
-    if (iVar1 <= local_c) {
+    if (iVar1 <= i) {
       uVar2 = 0;
       uVar3 = 0;
 LAB_00992e2a:
       return CONCAT44(uVar3,uVar2);
     }
-    if (((((int)s_friendsServers[local_c].friendID != 0) ||
-         (*(int *)((int)&s_friendsServers[local_c].friendID + 4) != 0)) &&
-        ((int)param_1 == (int)s_friendsServers[local_c].friendID)) &&
-       (param_1._4_4_ == *(int *)((int)&s_friendsServers[local_c].friendID + 4))) {
-      uVar2 = (undefined4)s_friendsServers[local_c].serverID;
-      uVar3 = *(undefined4 *)((int)&s_friendsServers[local_c].serverID + 4);
+    if (((((int)s_friendsServers[i].friendID != 0) ||
+         (*(int *)((int)&s_friendsServers[i].friendID + 4) != 0)) &&
+        ((int)friendId == (int)s_friendsServers[i].friendID)) &&
+       (friendId._4_4_ == *(int *)((int)&s_friendsServers[i].friendID + 4))) {
+      uVar2 = (undefined4)s_friendsServers[i].serverID;
+      uVar3 = *(undefined4 *)((int)&s_friendsServers[i].serverID + 4);
       goto LAB_00992e2a;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2834,50 +2884,52 @@ LAB_00992e2a:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *param_1)
+void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *task)
 
 {
-  netadr_t nVar1;
-  uint uVar2;
-  bdSessionID *pbVar3;
-  connstate_t cVar4;
-  int iVar5;
-  bdSecurityID *pbVar6;
-  int *piVar7;
-  serverInfo_t_conflict2 *psVar8;
-  char *pcVar9;
+  netadr_t adr;
+  uint uVar1;
+  bdSessionID *pbVar2;
+  connstate_t cVar3;
+  int iVar4;
+  bdSecurityID *pbVar5;
+  int *piVar6;
+  serverInfo_t_conflict2 *psVar7;
+  char *pcVar8;
+  bool bVar9;
   bool bVar10;
-  bool bVar11;
-  char *pcVar12;
+  char *pcVar11;
   int local_30;
   uint local_24;
-  int local_14;
-  bool local_d;
-  int local_c;
-  connstate_t local_8;
+  int codpoints;
+  bool wasbasictraining;
+  int playlistRes;
+  connstate_t connectionState;
   
-  uVar2 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
-  if (uVar2 != 0) {
-    local_8 = CL_GetLocalClientConnectionState(0);
-    if (0 < (int)local_8) {
-      pbVar3 = dwGetSessionID();
-      iVar5 = 8;
-      bVar10 = false;
-      bVar11 = true;
+  uVar1 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
+  if (uVar1 != 0) {
+    connectionState = CL_GetLocalClientConnectionState(0);
+    if (0 < (int)connectionState) {
+      pbVar2 = dwGetSessionID();
+      iVar4 = 8;
+      bVar9 = false;
+      bVar10 = true;
       local_30 = 0;
-      pbVar6 = &pbVar3->m_sessionID;
-      piVar7 = &s_joininprogressinfo._padding_;
+      pbVar5 = &pbVar2->m_sessionID;
+      piVar6 = &s_joininprogressinfo._padding_;
       do {
-        if (iVar5 == 0) break;
-        iVar5 = iVar5 + -1;
-        bVar10 = pbVar6->ab[0] < (byte)*piVar7;
-        bVar11 = pbVar6->ab[0] == (byte)*piVar7;
-        pbVar6 = (bdSecurityID *)(pbVar6->ab + 1);
-        piVar7 = (int *)((int)piVar7 + 1);
-      } while (bVar11);
-      if (!bVar11) {
-        local_30 = (1 - (uint)bVar10) - (uint)(bVar10 != 0);
+        if (iVar4 == 0) break;
+        iVar4 = iVar4 + -1;
+        bVar9 = pbVar5->ab[0] < (byte)*piVar6;
+        bVar10 = pbVar5->ab[0] == (byte)*piVar6;
+        pbVar5 = (bdSecurityID *)(pbVar5->ab + 1);
+        piVar6 = (int *)((int)piVar6 + 1);
+      } while (bVar10);
+      if (!bVar10) {
+        local_30 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
       }
       if (local_30 == 0) {
         Com_DPrintf(0x17,"Not joining in progress, already in session!\n");
@@ -2885,14 +2937,14 @@ void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *param_1)
       }
     }
     local_24 = local_24 & 0xffff0000;
-    nVar1._8_4_ = local_24;
-    nVar1.type = NA_IP;
-    nVar1.ip[0] = '\0';
-    nVar1.ip[1] = '\0';
-    nVar1.ip[2] = '\0';
-    nVar1.ip[3] = '\0';
-    nVar1.addrHandleIndex = -1;
-    CL_InitServerInfo((serverInfo_t *)&s_inviteServerinfo,nVar1);
+    adr._8_4_ = local_24;
+    adr.type = NA_IP;
+    adr.ip[0] = '\0';
+    adr.ip[1] = '\0';
+    adr.ip[2] = '\0';
+    adr.ip[3] = '\0';
+    adr.addrHandleIndex = -1;
+    CL_InitServerInfo((serverInfo_t *)&s_inviteServerinfo,adr);
     s_inviteServerinfo.xnkey.ab[0] = s_joininprogressinfo.m_membersecKey[0];
     s_inviteServerinfo.xnkey.ab[1] = s_joininprogressinfo.m_membersecKey[1];
     s_inviteServerinfo.xnkey.ab[2] = s_joininprogressinfo.m_membersecKey[2];
@@ -2917,20 +2969,20 @@ void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *param_1)
     s_inviteServerinfo.xnkid.ab[5] = s_joininprogressinfo._padding_._1_1_;
     s_inviteServerinfo.xnkid.ab[6] = s_joininprogressinfo._padding_._2_1_;
     s_inviteServerinfo.xnkid.ab[7] = s_joininprogressinfo._padding_._3_1_;
-    piVar7 = &s_joininprogressinfo._padding_;
-    psVar8 = &s_inviteServerinfo;
-    for (iVar5 = 6; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *(int *)(psVar8->xnaddr).addrBuff = *piVar7;
-      piVar7 = piVar7 + 1;
-      psVar8 = (serverInfo_t_conflict2 *)((psVar8->xnaddr).addrBuff + 4);
+    piVar6 = &s_joininprogressinfo._padding_;
+    psVar7 = &s_inviteServerinfo;
+    for (iVar4 = 6; iVar4 != 0; iVar4 = iVar4 + -1) {
+      *(int *)(psVar7->xnaddr).addrBuff = *piVar6;
+      piVar6 = piVar6 + 1;
+      psVar7 = (serverInfo_t_conflict2 *)((psVar7->xnaddr).addrBuff + 4);
     }
-    (psVar8->xnaddr).addrBuff[0] = (uchar)*piVar7;
-    pcVar12 = s_joininprogressinfo.m_memberservername;
-    pcVar9 = s_inviteServerinfo.hostName;
-    for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *(undefined4 *)pcVar9 = *(undefined4 *)pcVar12;
-      pcVar12 = pcVar12 + 4;
-      pcVar9 = pcVar9 + 4;
+    (psVar7->xnaddr).addrBuff[0] = (uchar)*piVar6;
+    pcVar11 = s_joininprogressinfo.m_memberservername;
+    pcVar8 = s_inviteServerinfo.hostName;
+    for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
+      *(undefined4 *)pcVar8 = *(undefined4 *)pcVar11;
+      pcVar11 = pcVar11 + 4;
+      pcVar8 = pcVar8 + 4;
     }
     Com_DPrintf(0x17,"GetSessionByID successful, joining session..\n");
     if ((s_joininprogressinfo.m_memberserverType == 5) ||
@@ -2938,32 +2990,32 @@ void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *param_1)
       CL_Connect((serverInfo_t *)&s_inviteServerinfo);
     }
     else {
-      local_c = Playlist_GetWagerAmount
-                          (s_joininprogressinfo.m_memberPLAYLIST_VERSION,
-                           s_joininprogressinfo.m_memberPLAYLIST,&s_inviteServerinfo.wagerBet);
-      if (local_c < 0) {
+      playlistRes = Playlist_GetWagerAmount
+                              (s_joininprogressinfo.m_memberPLAYLIST_VERSION,
+                               s_joininprogressinfo.m_memberPLAYLIST,&s_inviteServerinfo.wagerBet);
+      if (playlistRes < 0) {
         Cmd_ExecuteSingleCommand(0,0,"openmenu WagerPlaylistIsOld");
       }
-      else if (local_c < 1) {
+      else if (playlistRes < 1) {
         if (s_inviteServerinfo.wagerBet < 1) {
           CL_Connect((serverInfo_t *)&s_inviteServerinfo);
         }
         else {
-          local_14 = 0;
-          local_d = (xblive_basictraining->current).enabled;
+          codpoints = 0;
+          wasbasictraining = (xblive_basictraining->current).enabled;
           Dvar_SetBool(xblive_basictraining,false);
-          pcVar12 = "CODPOINTS";
-          piVar7 = &local_14;
-          iVar5 = Com_LocalClient_GetControllerIndex(0);
-          LiveStats_GetIntPlayerStat(iVar5,piVar7,pcVar12);
+          pcVar11 = "CODPOINTS";
+          piVar6 = &codpoints;
+          iVar4 = Com_LocalClient_GetControllerIndex(0);
+          LiveStats_GetIntPlayerStat(iVar4,piVar6,pcVar11);
           Dvar_SetIntByName("ui_wagerbet",s_inviteServerinfo.wagerBet);
-          if (local_14 < s_inviteServerinfo.wagerBet) {
+          if (codpoints < s_inviteServerinfo.wagerBet) {
             Cmd_ExecuteSingleCommand(0,0,"openmenu WagerDeadBeat");
           }
           else {
             Dvar_SetIntByName("ui_joiningwagerfrominvite",1);
-            cVar4 = CL_GetLocalClientConnectionState(0);
-            if (cVar4 == CA_ACTIVE) {
+            cVar3 = CL_GetLocalClientConnectionState(0);
+            if (cVar3 == CA_ACTIVE) {
               Cmd_ExecuteSingleCommand(0,0,"openmenu WagerConfirmationingame");
             }
             else {
@@ -2971,7 +3023,7 @@ void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *param_1)
             }
             Cmd_ExecuteSingleCommand(0,0,"openmenu WagerConfirmation");
           }
-          Dvar_SetBool(xblive_basictraining,local_d);
+          Dvar_SetBool(xblive_basictraining,wasbasictraining);
         }
       }
       else {
@@ -2987,67 +3039,71 @@ void __cdecl Live_JoinSessionInProgressComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl Live_JoinSessionInProgress(ulong64 param_1,bool param_2)
+TaskRecord * __cdecl Live_JoinSessionInProgress(ulong64 uid,bool recent)
 
 {
-  TaskRecord *pTVar1;
+  TaskRecord *nestTask;
   undefined8 local_20;
-  int local_14;
+  TaskRecord *nestedTask;
+  int serverid;
   int local_10;
-  TaskRecord *local_8;
+  TaskRecord *task;
   
-  local_8 = (TaskRecord *)0x0;
-  if (param_2) {
-    local_20 = param_1;
+  task = (TaskRecord *)0x0;
+  if (recent) {
+    local_20 = uid;
   }
   else {
-    local_20 = Live_GetServerForFriend(param_1);
+    local_20 = Live_GetServerForFriend(uid);
   }
-  local_14 = (int)local_20;
+  serverid = (int)local_20;
   local_10 = local_20._4_4_;
   if (((int)local_20 != 0) || (local_20._4_4_ != 0)) {
-    pTVar1 = dwFindSessionsByEntityIDs((ulong64 *)&local_14,1,&s_joininprogressinfo);
-    if (pTVar1 != (TaskRecord *)0x0) {
-      local_8 = TaskManager2_CreateTask(task_joinSessionInProgress,0,pTVar1,0);
-      if (local_8 == (TaskRecord *)0x0) {
+    nestTask = dwFindSessionsByEntityIDs((ulong64 *)&serverid,1,&s_joininprogressinfo);
+    if (nestTask != (TaskRecord *)0x0) {
+      task = TaskManager2_CreateTask(task_joinSessionInProgress,0,nestTask,0);
+      if (task == (TaskRecord *)0x0) {
         Com_PrintError(0x17,"Join session in progress systemic failure, not connected?\n");
       }
       else {
-        TaskManager2_StartTask(local_8);
+        TaskManager2_StartTask(task);
       }
     }
   }
-  return local_8;
+  return task;
 }
 
 
 // 009931B0  Live_AddFriendServer  (live/live_win.cpp:6253)
 
-void __cdecl Live_AddFriendServer(ulong64 param_1,ulong64 param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl Live_AddFriendServer(ulong64 serverID,ulong64 friendID)
 
 {
   int iVar1;
-  int local_c;
+  int i;
+  int numfriends;
   
   iVar1 = LiveSteam_GetNumFriends();
-  local_c = 0;
+  i = 0;
   do {
-    if (iVar1 <= local_c) {
+    if (iVar1 <= i) {
 LAB_00993219:
-      if (local_c == iVar1) {
-        s_friendsServers[s_numfriendsonservers].friendID = param_2;
-        s_friendsServers[s_numfriendsonservers].serverID = param_1;
+      if (i == iVar1) {
+        s_friendsServers[s_numfriendsonservers].friendID = friendID;
+        s_friendsServers[s_numfriendsonservers].serverID = serverID;
         s_numfriendsonservers = s_numfriendsonservers + 1;
       }
       Live_FindFriendServers();
       return;
     }
-    if (((int)s_friendsServers[local_c].friendID == (int)param_2) &&
-       (*(int *)((int)&s_friendsServers[local_c].friendID + 4) == param_2._4_4_)) {
-      s_friendsServers[local_c].serverID = param_1;
+    if (((int)s_friendsServers[i].friendID == (int)friendID) &&
+       (*(int *)((int)&s_friendsServers[i].friendID + 4) == friendID._4_4_)) {
+      s_friendsServers[i].serverID = serverID;
       goto LAB_00993219;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -3056,7 +3112,7 @@ LAB_00993219:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_OnInvite(ulong64 param_1,bdSessionID param_2,char *param_3)
+void __cdecl Live_OnInvite(ulong64 uid,bdSessionID sessionID,char *password)
 
 {
   ulong64 uVar1;
@@ -3074,16 +3130,18 @@ void __cdecl Live_OnInvite(ulong64 param_1,bdSessionID param_2,char *param_3)
   char *pcVar12;
   int iVar13;
   int local_110;
-  undefined1 local_fc [8];
+  char *toastMessage_2;
+  char *toastMessage;
+  undefined1 xinfo [8];
   char local_f4 [40];
-  undefined1 local_cc [24];
+  undefined1 info [24];
   char local_b4 [164];
-  int local_10;
-  int local_c;
+  int firstfree;
+  int i;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar2 = Friends_GetByID(0,CONCAT44(local_cc,param_1._4_4_),unaff_EDI);
+  bVar2 = Friends_GetByID(0,CONCAT44(info,uid._4_4_),unaff_EDI);
   if (bVar2) {
     pcVar4 = local_b4;
     pcVar3 = UI_SafeTranslateString("MENU_INVITE_RECEIVED_FROM");
@@ -3096,7 +3154,7 @@ void __cdecl Live_OnInvite(ulong64 param_1,bdSessionID param_2,char *param_3)
   }
   else {
     bVar2 = LiveMeetPlayer_GetRecentPlayerInfoByID
-                      (0,CONCAT44(local_fc,param_1._4_4_),(XuidInfo *)unaff_EDI);
+                      (0,CONCAT44(xinfo,uid._4_4_),(XuidInfo *)unaff_EDI);
     if (bVar2) {
       pcVar4 = local_f4;
       pcVar3 = UI_SafeTranslateString("MENU_INVITE_RECEIVED_FROM");
@@ -3108,7 +3166,7 @@ void __cdecl Live_OnInvite(ulong64 param_1,bdSessionID param_2,char *param_3)
       UI_OpenToastPopup(iVar5,pcVar12,pcVar3,pcVar4,iVar13);
     }
   }
-  local_10 = -1;
+  firstfree = -1;
   cVar6 = CL_GetLocalClientConnectionState(0);
   if (cVar6 == CA_ACTIVE) {
     pbVar7 = dwGetSessionID();
@@ -3116,7 +3174,7 @@ void __cdecl Live_OnInvite(ulong64 param_1,bdSessionID param_2,char *param_3)
     bVar2 = false;
     bVar11 = true;
     local_110 = 0;
-    pbVar8 = &param_2.m_sessionID;
+    pbVar8 = &sessionID.m_sessionID;
     pbVar9 = &pbVar7->m_sessionID;
     do {
       if (iVar5 == 0) break;
@@ -3131,7 +3189,7 @@ void __cdecl Live_OnInvite(ulong64 param_1,bdSessionID param_2,char *param_3)
     }
     if (local_110 == 0) {
       Com_DPrintf(0x17,"Ignoring invite from %llu, already in session!\n");
-      bdTaskResult::~bdTaskResult((bdTaskResult *)&param_2);
+      bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
       uVar1 = CONCAT44(s_lastInvite._4_4_,(undefined4)s_lastInvite);
 LAB_0099353b:
       s_lastInvite._4_4_ = (undefined4)(uVar1 >> 0x20);
@@ -3139,41 +3197,41 @@ LAB_0099353b:
       return;
     }
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xff < local_c) goto LAB_009934c1;
-    if (((int)param_1 == *(int *)(s_invites + local_c * 0x38)) &&
-       (param_1._4_4_ == *(int *)(s_invites + local_c * 0x38 + 4))) break;
-    if (((local_10 == -1) && (*(int *)(s_invites + local_c * 0x38) == 0)) &&
-       (*(int *)(s_invites + local_c * 0x38 + 4) == 0)) {
-      local_10 = local_c;
+    if (0xff < i) goto LAB_009934c1;
+    if (((int)uid == *(int *)(s_invites + i * 0x38)) &&
+       (uid._4_4_ == *(int *)(s_invites + i * 0x38 + 4))) break;
+    if (((firstfree == -1) && (*(int *)(s_invites + i * 0x38) == 0)) &&
+       (*(int *)(s_invites + i * 0x38 + 4) == 0)) {
+      firstfree = i;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  *(undefined4 *)(s_invites + local_c * 0x38 + 0xc) = param_2.m_sessionID.ab._0_4_;
-  *(undefined4 *)(s_invites + local_c * 0x38 + 0x10) = param_2.m_sessionID.ab._4_4_;
-  *(ulong64 *)(s_invites + local_c * 0x38) = param_1;
-  pcVar4 = param_3;
-  puVar10 = (undefined4 *)(s_invites + local_c * 0x38 + 0x14);
+  *(undefined4 *)(s_invites + i * 0x38 + 0xc) = sessionID.m_sessionID.ab._0_4_;
+  *(undefined4 *)(s_invites + i * 0x38 + 0x10) = sessionID.m_sessionID.ab._4_4_;
+  *(ulong64 *)(s_invites + i * 0x38) = uid;
+  pcVar4 = password;
+  puVar10 = (undefined4 *)(s_invites + i * 0x38 + 0x14);
   for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
     *puVar10 = *(undefined4 *)pcVar4;
     pcVar4 = pcVar4 + 4;
     puVar10 = puVar10 + 1;
   }
 LAB_009934c1:
-  if ((local_c == 0x100) && (local_10 != -1)) {
-    *(ulong64 *)(s_invites + local_10 * 0x38) = param_1;
-    *(undefined4 *)(s_invites + local_10 * 0x38 + 0xc) = param_2.m_sessionID.ab._0_4_;
-    *(undefined4 *)(s_invites + local_10 * 0x38 + 0x10) = param_2.m_sessionID.ab._4_4_;
-    puVar10 = (undefined4 *)(s_invites + local_10 * 0x38 + 0x14);
+  if ((i == 0x100) && (firstfree != -1)) {
+    *(ulong64 *)(s_invites + firstfree * 0x38) = uid;
+    *(undefined4 *)(s_invites + firstfree * 0x38 + 0xc) = sessionID.m_sessionID.ab._0_4_;
+    *(undefined4 *)(s_invites + firstfree * 0x38 + 0x10) = sessionID.m_sessionID.ab._4_4_;
+    puVar10 = (undefined4 *)(s_invites + firstfree * 0x38 + 0x14);
     for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *puVar10 = *(undefined4 *)param_3;
-      param_3 = param_3 + 4;
+      *puVar10 = *(undefined4 *)password;
+      password = password + 4;
       puVar10 = puVar10 + 1;
     }
   }
-  s_lastInvite = param_1;
-  bdTaskResult::~bdTaskResult((bdTaskResult *)&param_2);
+  s_lastInvite = uid;
+  bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
   uVar1 = s_lastInvite;
   goto LAB_0099353b;
 }
@@ -3181,29 +3239,29 @@ LAB_009934c1:
 
 // 00993550  Live_OnRevokeInvite  (live/live_win.cpp:6327)
 
-void __cdecl Live_OnRevokeInvite(ulong64 param_1)
+void __cdecl Live_OnRevokeInvite(ulong64 uid)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0xff < local_8) {
+    if (0xff < i) {
 LAB_009935cb:
-      if (param_1 == CONCAT44(s_lastInvite._4_4_,(undefined4)s_lastInvite)) {
+      if (uid == CONCAT44(s_lastInvite._4_4_,(undefined4)s_lastInvite)) {
         s_lastInvite._0_4_ = 0;
         s_lastInvite._4_4_ = 0;
       }
       return;
     }
-    if (((int)param_1 == *(int *)(s_invites + local_8 * 0x38)) &&
-       (param_1._4_4_ == *(int *)(s_invites + local_8 * 0x38 + 4))) {
+    if (((int)uid == *(int *)(s_invites + i * 0x38)) &&
+       (uid._4_4_ == *(int *)(s_invites + i * 0x38 + 4))) {
       Com_DPrintf(0x17,"Removing invite from %llu\n");
-      *(undefined4 *)(s_invites + local_8 * 0x38) = 0;
-      *(undefined4 *)(s_invites + local_8 * 0x38 + 4) = 0;
+      *(undefined4 *)(s_invites + i * 0x38) = 0;
+      *(undefined4 *)(s_invites + i * 0x38 + 4) = 0;
       goto LAB_009935cb;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -3212,53 +3270,57 @@ LAB_009935cb:
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl Live_RevokeInvite(ulong64 param_1)
+bool __cdecl Live_RevokeInvite(ulong64 friendID)
 
 {
   TaskRecord *pTVar1;
-  char local_5;
+  TaskRecord *task;
+  char msg;
   
-  local_5 = '\t';
-  pTVar1 = dwMessaging_SendInstantMessage(param_1,&local_5,1);
+  msg = '\t';
+  pTVar1 = dwMessaging_SendInstantMessage(friendID,&msg,1);
   return pTVar1 != (TaskRecord *)0x0;
 }
 
 
 // 00993630  Live_FindInviteFromFriend  (live/live_win.cpp:6355)
 
-bool __cdecl Live_FindInviteFromFriend(ulong64 param_1,bdSessionID *param_2,char **param_3)
+bool __cdecl Live_FindInviteFromFriend(ulong64 friendID,bdSessionID *sessionID,char **password)
 
 {
   undefined4 uVar1;
-  int local_c;
+  int i;
+  bool retval;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xff < local_c) {
+    if (0xff < i) {
       return false;
     }
-    if (((int)param_1 == *(int *)(s_invites + local_c * 0x38)) &&
-       (param_1._4_4_ == *(int *)(s_invites + local_c * 0x38 + 4))) break;
-    local_c = local_c + 1;
+    if (((int)friendID == *(int *)(s_invites + i * 0x38)) &&
+       (friendID._4_4_ == *(int *)(s_invites + i * 0x38 + 4))) break;
+    i = i + 1;
   }
-  uVar1 = *(undefined4 *)(s_invites + local_c * 0x38 + 0x10);
-  *(undefined4 *)(param_2->m_sessionID).ab = *(undefined4 *)(s_invites + local_c * 0x38 + 0xc);
-  *(undefined4 *)((param_2->m_sessionID).ab + 4) = uVar1;
-  *param_3 = s_invites + local_c * 0x38 + 0x14;
+  uVar1 = *(undefined4 *)(s_invites + i * 0x38 + 0x10);
+  *(undefined4 *)(sessionID->m_sessionID).ab = *(undefined4 *)(s_invites + i * 0x38 + 0xc);
+  *(undefined4 *)((sessionID->m_sessionID).ab + 4) = uVar1;
+  *password = s_invites + i * 0x38 + 0x14;
   return true;
 }
 
 
 // 009936C0  Live_HandleInviteMessage  (live/live_win.cpp:6375)
 
-bool __cdecl Live_HandleInviteMessage(ulong64 param_1,void *param_2,int param_3)
+bool __cdecl Live_HandleInviteMessage(ulong64 senderID,void *message,int messageSize)
 
 {
   char cVar1;
+  bool handled;
+  char *ptr;
   
-  cVar1 = *(char *)param_2;
+  cVar1 = *(char *)message;
   if (cVar1 == '\t') {
-    Live_OnRevokeInvite(param_1);
+    Live_OnRevokeInvite(senderID);
   }
   else {
     Com_PrintWarning(0x17,"Unknown live message %u\n");
@@ -3271,7 +3333,7 @@ bool __cdecl Live_HandleInviteMessage(ulong64 param_1,void *param_2,int param_3)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_AcceptInviteAsyncFailure(TaskRecord *param_1)
+void __cdecl Live_AcceptInviteAsyncFailure(TaskRecord *task)
 
 {
   Com_PrintError(0x17,"couldn\'t accept invite :(\n");
@@ -3280,6 +3342,9 @@ void __cdecl Live_AcceptInviteAsyncFailure(TaskRecord *param_1)
 
 
 // 00993740  Live_JoinWagerFromInvite  (live/live_win.cpp:6402)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl Live_JoinWagerFromInvite(void)
 
@@ -3293,109 +3358,110 @@ void __cdecl Live_JoinWagerFromInvite(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Live_AcceptInviteAsyncComplete(TaskRecord *param_1)
+void __cdecl Live_AcceptInviteAsyncComplete(TaskRecord *task)
 
 {
   code *pcVar1;
-  netadr_t nVar2;
-  bool bVar3;
-  uint uVar4;
-  connstate_t cVar5;
-  int iVar6;
-  uchar *puVar7;
-  undefined4 *puVar8;
-  serverInfo_t_conflict2 *psVar9;
-  int *piVar10;
-  char *pcVar11;
+  netadr_t adr;
+  bool bVar2;
+  uint uVar3;
+  connstate_t cVar4;
+  int iVar5;
+  int *piVar6;
+  serverInfo_t_conflict2 *psVar7;
+  char *pcVar8;
+  char *pcVar9;
   uint local_24;
-  int local_14;
-  bool local_d;
-  int local_c;
-  void *local_8;
+  int codpoints;
+  bool wasbasictraining;
+  int playlistRes;
+  MatchMakingInfo *mminfo;
   
-  if (((param_1->nestedTask == (TaskRecord *)0x0) || (param_1->nestedTask->payload == (void *)0x0))
-     && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x190d,0,
-                                  "%s"), !bVar3)) {
+  if (((task->nestedTask == (TaskRecord *)0x0) || (task->nestedTask->payload == (void *)0x0)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win.cpp",0x190d,0,"%s"
+                              ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar4 = bdRemoteTask::getNumResults((param_1->nestedTask->remoteTask).m_ptr);
-  if (uVar4 == 0) {
-    Live_AcceptInviteAsyncFailure(param_1);
+  uVar3 = bdRemoteTask::getNumResults((task->nestedTask->remoteTask).m_ptr);
+  if (uVar3 == 0) {
+    Live_AcceptInviteAsyncFailure(task);
   }
   else {
     local_24 = local_24 & 0xffff0000;
-    nVar2._8_4_ = local_24;
-    nVar2.type = NA_IP;
-    nVar2.ip[0] = '\0';
-    nVar2.ip[1] = '\0';
-    nVar2.ip[2] = '\0';
-    nVar2.ip[3] = '\0';
-    nVar2.addrHandleIndex = -1;
-    CL_InitServerInfo((serverInfo_t *)&s_inviteServerinfo,nVar2);
-    local_8 = param_1->nestedTask->payload;
-    s_inviteServerinfo.xnkey.ab._0_4_ = *(undefined4 *)((int)local_8 + 0x120);
-    s_inviteServerinfo.xnkey.ab._4_4_ = *(undefined4 *)((int)local_8 + 0x124);
-    s_inviteServerinfo.xnkey.ab._8_4_ = *(undefined4 *)((int)local_8 + 0x128);
-    s_inviteServerinfo.xnkey.ab._12_4_ = *(undefined4 *)((int)local_8 + 300);
-    s_inviteServerinfo.xnkid.ab._0_4_ = *(undefined4 *)((int)local_8 + 4);
-    s_inviteServerinfo.xnkid.ab._4_4_ = *(undefined4 *)((int)local_8 + 8);
-    puVar7 = (uchar *)((int)local_8 + 0xc);
-    psVar9 = &s_inviteServerinfo;
-    for (iVar6 = 6; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *(undefined4 *)(psVar9->xnaddr).addrBuff = *(undefined4 *)puVar7;
-      puVar7 = puVar7 + 4;
-      psVar9 = (serverInfo_t_conflict2 *)((psVar9->xnaddr).addrBuff + 4);
+    adr._8_4_ = local_24;
+    adr.type = NA_IP;
+    adr.ip[0] = '\0';
+    adr.ip[1] = '\0';
+    adr.ip[2] = '\0';
+    adr.ip[3] = '\0';
+    adr.addrHandleIndex = -1;
+    CL_InitServerInfo((serverInfo_t *)&s_inviteServerinfo,adr);
+    mminfo = task->nestedTask->payload;
+    s_inviteServerinfo.xnkey.ab._0_4_ = *(undefined4 *)mminfo->m_membersecKey;
+    s_inviteServerinfo.xnkey.ab._4_4_ = *(undefined4 *)(mminfo->m_membersecKey + 4);
+    s_inviteServerinfo.xnkey.ab._8_4_ = *(undefined4 *)(mminfo->m_membersecKey + 8);
+    s_inviteServerinfo.xnkey.ab._12_4_ = *(undefined4 *)(mminfo->m_membersecKey + 0xc);
+    s_inviteServerinfo.xnkid.ab._0_4_ = mminfo->_padding_;
+    s_inviteServerinfo.xnkid.ab._4_4_ = mminfo->_padding_;
+    piVar6 = &mminfo->_padding_;
+    psVar7 = &s_inviteServerinfo;
+    for (iVar5 = 6; iVar5 != 0; iVar5 = iVar5 + -1) {
+      *(int *)(psVar7->xnaddr).addrBuff = *piVar6;
+      piVar6 = piVar6 + 1;
+      psVar7 = (serverInfo_t_conflict2 *)((psVar7->xnaddr).addrBuff + 4);
     }
-    (psVar9->xnaddr).addrBuff[0] = *puVar7;
-    puVar8 = (undefined4 *)((int)local_8 + 0x131);
-    pcVar11 = s_inviteServerinfo.hostName;
-    for (iVar6 = 8; iVar6 != 0; iVar6 = iVar6 + -1) {
-      *(undefined4 *)pcVar11 = *puVar8;
-      puVar8 = puVar8 + 1;
-      pcVar11 = pcVar11 + 4;
+    (psVar7->xnaddr).addrBuff[0] = (uchar)*piVar6;
+    pcVar9 = mminfo->m_memberservername;
+    pcVar8 = s_inviteServerinfo.hostName;
+    for (iVar5 = 8; iVar5 != 0; iVar5 = iVar5 + -1) {
+      *(undefined4 *)pcVar8 = *(undefined4 *)pcVar9;
+      pcVar9 = pcVar9 + 4;
+      pcVar8 = pcVar8 + 4;
     }
-    if ((*(int *)((int)local_8 + 0x1d8) == 5) || (*(int *)((int)local_8 + 0x1d8) == 0)) {
+    if ((mminfo->m_memberserverType == 5) || (mminfo->m_memberserverType == 0)) {
       Com_DPrintf(0x17,"Acceptinvite async successful, joining session..\n");
       CL_Connect((serverInfo_t *)&s_inviteServerinfo);
     }
     else {
-      local_c = Playlist_GetWagerAmount
-                          (*(int *)((int)local_8 + 0x1ac),*(int *)((int)local_8 + 0x1a8),
-                           &s_inviteServerinfo.wagerBet);
-      if (local_c < 0) {
+      playlistRes = Playlist_GetWagerAmount
+                              (mminfo->m_memberPLAYLIST_VERSION,mminfo->m_memberPLAYLIST,
+                               &s_inviteServerinfo.wagerBet);
+      if (playlistRes < 0) {
         Cmd_ExecuteSingleCommand(0,0,"openmenu WagerPlaylistIsOld");
       }
-      else if (local_c < 1) {
+      else if (playlistRes < 1) {
         if (s_inviteServerinfo.wagerBet < 1) {
           Com_DPrintf(0x17,"Acceptinvite async successful, joining session..\n");
           CL_Connect((serverInfo_t *)&s_inviteServerinfo);
         }
         else {
-          local_14 = 0;
-          local_d = (xblive_basictraining->current).enabled;
+          codpoints = 0;
+          wasbasictraining = (xblive_basictraining->current).enabled;
           Dvar_SetBool(xblive_basictraining,false);
-          pcVar11 = "CODPOINTS";
-          piVar10 = &local_14;
-          iVar6 = Com_LocalClient_GetControllerIndex(0);
-          LiveStats_GetIntPlayerStat(iVar6,piVar10,pcVar11);
+          pcVar9 = "CODPOINTS";
+          piVar6 = &codpoints;
+          iVar5 = Com_LocalClient_GetControllerIndex(0);
+          LiveStats_GetIntPlayerStat(iVar5,piVar6,pcVar9);
           Dvar_SetIntByName("ui_wagerbet",s_inviteServerinfo.wagerBet);
-          if (local_14 < s_inviteServerinfo.wagerBet) {
+          if (codpoints < s_inviteServerinfo.wagerBet) {
             Cmd_ExecuteSingleCommand(0,0,"openmenu WagerDeadBeat");
           }
           else {
             Dvar_SetIntByName("ui_joiningwagerfrominvite",1);
-            cVar5 = CL_GetLocalClientConnectionState(0);
-            if (cVar5 == CA_ACTIVE) {
+            cVar4 = CL_GetLocalClientConnectionState(0);
+            if (cVar4 == CA_ACTIVE) {
               Cmd_ExecuteSingleCommand(0,0,"openmenu WagerConfirmationingame");
             }
             else {
               Cmd_ExecuteSingleCommand(0,0,"openmenu WagerConfirmation");
             }
           }
-          Dvar_SetBool(xblive_basictraining,local_d);
+          Dvar_SetBool(xblive_basictraining,wasbasictraining);
         }
       }
       else {
@@ -3411,22 +3477,23 @@ void __cdecl Live_AcceptInviteAsyncComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl Live_AcceptInviteAsync(bdSessionID param_1)
+TaskRecord * __cdecl Live_AcceptInviteAsync(bdSessionID sessionID)
 
 {
-  TaskRecord *pTVar1;
-  TaskRecord *local_c;
+  TaskRecord *nestTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  pTVar1 = dwMatchMaking_FindSessionByID(&param_1);
-  local_c = (TaskRecord *)0x0;
-  if (pTVar1 != (TaskRecord *)0x0) {
-    local_c = TaskManager2_CreateTask(task_acceptInvite,0,pTVar1,0);
-    if (local_c != (TaskRecord *)0x0) {
-      TaskManager2_StartTask(local_c);
+  nestTask = dwMatchMaking_FindSessionByID(&sessionID);
+  task = (TaskRecord *)0x0;
+  if (nestTask != (TaskRecord *)0x0) {
+    task = TaskManager2_CreateTask(task_acceptInvite,0,nestTask,0);
+    if (task != (TaskRecord *)0x0) {
+      TaskManager2_StartTask(task);
     }
   }
-  bdTaskResult::~bdTaskResult((bdTaskResult *)&param_1);
-  return local_c;
+  bdTaskResult::~bdTaskResult((bdTaskResult *)&sessionID);
+  return task;
 }
 
 
@@ -3435,86 +3502,87 @@ TaskRecord * __cdecl Live_AcceptInviteAsync(bdSessionID param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_AcceptInvite(ulong64 param_1)
+void __cdecl Live_AcceptInvite(ulong64 frienduid)
 
 {
-  bdSessionID bVar1;
-  bool bVar2;
-  connstate_t cVar3;
-  bdSessionID *pbVar4;
-  TaskRecord *pTVar5;
-  int iVar6;
+  bdSessionID sessionID;
+  bool bVar1;
+  connstate_t cVar2;
+  bdSessionID *pbVar3;
+  TaskRecord *pTVar4;
+  int iVar5;
+  bdSecurityID *pbVar6;
   bdSecurityID *pbVar7;
-  bdSecurityID *pbVar8;
-  bool bVar9;
-  int iVar10;
+  bool bVar8;
+  int iVar9;
+  undefined4 uVar10;
   undefined4 uVar11;
-  undefined4 uVar12;
   int local_24;
-  bdSessionID local_18;
+  TaskRecord *task;
+  bdSessionID friendSession;
   uint local_c;
-  char *local_8;
+  char *password;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  bdSessionID::bdSessionID(&local_18);
-  bVar2 = Live_FindInviteFromFriend(param_1,&local_18,&local_8);
-  if (bVar2) {
-    Dvar_SetStringByName("password",local_8);
-    iVar10 = 0x993afc;
-    Live_OnRevokeInvite(param_1);
-    uVar12._0_1_ = '\0';
-    uVar12._1_1_ = '\0';
-    uVar12._2_1_ = '\0';
-    uVar12._3_1_ = '\0';
-    uVar11._0_1_ = '\x06';
-    uVar11._1_1_ = ';';
-    uVar11._2_1_ = 0x99;
+  bdSessionID::bdSessionID(&friendSession);
+  bVar1 = Live_FindInviteFromFriend(frienduid,&friendSession,&password);
+  if (bVar1) {
+    Dvar_SetStringByName("password",password);
+    iVar9 = 0x993afc;
+    Live_OnRevokeInvite(frienduid);
+    uVar11._0_1_ = '\0';
+    uVar11._1_1_ = '\0';
+    uVar11._2_1_ = '\0';
     uVar11._3_1_ = '\0';
-    cVar3 = CL_GetLocalClientConnectionState(0);
-    if (3 < (int)cVar3) {
-      uVar12._0_1_ = '\x1b';
-      uVar12._1_1_ = ';';
-      uVar12._2_1_ = 0x99;
-      uVar12._3_1_ = '\0';
-      pbVar4 = dwGetSessionID();
-      iVar6 = 8;
-      bVar2 = false;
-      bVar9 = true;
+    uVar10._0_1_ = '\x06';
+    uVar10._1_1_ = ';';
+    uVar10._2_1_ = 0x99;
+    uVar10._3_1_ = '\0';
+    cVar2 = CL_GetLocalClientConnectionState(0);
+    if (3 < (int)cVar2) {
+      uVar11._0_1_ = '\x1b';
+      uVar11._1_1_ = ';';
+      uVar11._2_1_ = 0x99;
+      uVar11._3_1_ = '\0';
+      pbVar3 = dwGetSessionID();
+      iVar5 = 8;
+      bVar1 = false;
+      bVar8 = true;
       local_24 = 0;
-      pbVar7 = &pbVar4->m_sessionID;
-      pbVar8 = &local_18.m_sessionID;
+      pbVar6 = &pbVar3->m_sessionID;
+      pbVar7 = &friendSession.m_sessionID;
       do {
-        if (iVar6 == 0) break;
-        iVar6 = iVar6 + -1;
-        bVar2 = pbVar7->ab[0] < pbVar8->ab[0];
-        bVar9 = pbVar7->ab[0] == pbVar8->ab[0];
+        if (iVar5 == 0) break;
+        iVar5 = iVar5 + -1;
+        bVar1 = pbVar6->ab[0] < pbVar7->ab[0];
+        bVar8 = pbVar6->ab[0] == pbVar7->ab[0];
+        pbVar6 = (bdSecurityID *)(pbVar6->ab + 1);
         pbVar7 = (bdSecurityID *)(pbVar7->ab + 1);
-        pbVar8 = (bdSecurityID *)(pbVar8->ab + 1);
-      } while (bVar9);
-      if (!bVar9) {
-        local_24 = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
+      } while (bVar8);
+      if (!bVar8) {
+        local_24 = (1 - (uint)bVar1) - (uint)(bVar1 != 0);
       }
       if (local_24 == 0) {
-        bdTaskResult::~bdTaskResult((bdTaskResult *)&local_18);
+        bdTaskResult::~bdTaskResult((bdTaskResult *)&friendSession);
         return;
       }
     }
-    bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffc0,&local_18);
-    bVar1.m_sessionID.ab[0] = (uchar)uVar11;
-    bVar1.m_sessionID.ab[1] = SUB41(uVar11,1);
-    bVar1.m_sessionID.ab[2] = SUB41(uVar11,2);
-    bVar1.m_sessionID.ab[3] = SUB41(uVar11,3);
-    bVar1._padding_ = iVar10;
-    bVar1.m_sessionID.ab[4] = (uchar)uVar12;
-    bVar1.m_sessionID.ab[5] = SUB41(uVar12,1);
-    bVar1.m_sessionID.ab[6] = SUB41(uVar12,2);
-    bVar1.m_sessionID.ab[7] = SUB41(uVar12,3);
-    pTVar5 = Live_AcceptInviteAsync(bVar1);
-    if (pTVar5 == (TaskRecord *)0x0) {
+    bdSessionID::bdSessionID((bdSessionID *)&stack0xffffffc0,&friendSession);
+    sessionID.m_sessionID.ab[0] = (uchar)uVar10;
+    sessionID.m_sessionID.ab[1] = SUB41(uVar10,1);
+    sessionID.m_sessionID.ab[2] = SUB41(uVar10,2);
+    sessionID.m_sessionID.ab[3] = SUB41(uVar10,3);
+    sessionID._padding_ = iVar9;
+    sessionID.m_sessionID.ab[4] = (uchar)uVar11;
+    sessionID.m_sessionID.ab[5] = SUB41(uVar11,1);
+    sessionID.m_sessionID.ab[6] = SUB41(uVar11,2);
+    sessionID.m_sessionID.ab[7] = SUB41(uVar11,3);
+    pTVar4 = Live_AcceptInviteAsync(sessionID);
+    if (pTVar4 == (TaskRecord *)0x0) {
       Com_PrintError(0x17,"Accept invite systemic failure, not connected?\n");
     }
   }
-  bdTaskResult::~bdTaskResult((bdTaskResult *)&local_18);
+  bdTaskResult::~bdTaskResult((bdTaskResult *)&friendSession);
   return;
 }
 
@@ -3524,49 +3592,47 @@ void __cdecl Live_AcceptInvite(ulong64 param_1)
 int __cdecl Live_GetInvitesCount(void)
 
 {
-  int local_c;
-  int local_8;
+  int i;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-    if ((*(int *)(s_invites + local_c * 0x38) != 0) ||
-       (*(int *)(s_invites + local_c * 0x38 + 4) != 0)) {
-      local_8 = local_8 + 1;
+  count = 0;
+  for (i = 0; i < 0x100; i = i + 1) {
+    if ((*(int *)(s_invites + i * 0x38) != 0) || (*(int *)(s_invites + i * 0x38 + 4) != 0)) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 00993BF0  Live_GetInviteFriend  (live/live_win.cpp:6558)
 
-ulong64 __cdecl Live_GetInviteFriend(int param_1)
+ulong64 __cdecl Live_GetInviteFriend(int index)
 
 {
   undefined4 uVar1;
   undefined4 uVar2;
-  int local_c;
-  int local_8;
+  int i;
+  int inviteIndex;
   
-  local_8 = 0;
-  local_c = 0;
+  inviteIndex = 0;
+  i = 0;
   do {
-    if (0xff < local_c) {
+    if (0xff < i) {
       uVar1 = 0;
       uVar2 = 0;
 LAB_00993c64:
       return CONCAT44(uVar2,uVar1);
     }
-    if ((*(int *)(s_invites + local_c * 0x38) != 0) ||
-       (*(int *)(s_invites + local_c * 0x38 + 4) != 0)) {
-      if (param_1 == local_8) {
-        uVar1 = *(undefined4 *)(s_invites + local_c * 0x38);
-        uVar2 = *(undefined4 *)(s_invites + local_c * 0x38 + 4);
+    if ((*(int *)(s_invites + i * 0x38) != 0) || (*(int *)(s_invites + i * 0x38 + 4) != 0)) {
+      if (index == inviteIndex) {
+        uVar1 = *(undefined4 *)(s_invites + i * 0x38);
+        uVar2 = *(undefined4 *)(s_invites + i * 0x38 + 4);
         goto LAB_00993c64;
       }
-      local_8 = local_8 + 1;
+      inviteIndex = inviteIndex + 1;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -3579,17 +3645,17 @@ void __cdecl Live_ListInvites_f(void)
 
 {
   FriendInfo *pFVar1;
-  undefined1 local_c4 [184];
+  undefined1 finfo [184];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   Com_Printf(0x17,"\n*********************\nFriend Name\t\tSessionId\n*********************\n");
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    pFVar1 = (FriendInfo *)(local_8 * 0x38);
+  for (i = 0; i < 0x100; i = i + 1) {
+    pFVar1 = (FriendInfo *)(i * 0x38);
     if ((*(int *)(pFVar1[0xe7879].presence + 0x48) != 0) ||
        (*(int *)(pFVar1[0xe7879].presence + 0x4c) != 0)) {
-      Friends_GetByID(0,CONCAT44(local_c4,*(undefined4 *)(s_invites + local_8 * 0x38 + 4)),pFVar1);
+      Friends_GetByID(0,CONCAT44(finfo,*(undefined4 *)(s_invites + i * 0x38 + 4)),pFVar1);
       Com_Printf(0x17,"%s\t\t%llu\n");
     }
   }
@@ -3604,14 +3670,14 @@ void __cdecl Live_AddPlayerAsFriend_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  ulong64 uVar3;
+  char *str;
+  ulong64 steamID;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    uVar3 = I_atoi64(pcVar2);
-    LiveSteam_PopOverlayForSteamID(uVar3);
+    str = Cmd_Argv(1);
+    steamID = I_atoi64(str);
+    LiveSteam_PopOverlayForSteamID(steamID);
   }
   else {
     Com_Printf(0xe,"usage: xaddfriend <xuid>\n");
@@ -3636,49 +3702,49 @@ bool __cdecl Live_ShouldBroadcastNewServer(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_RespondToSessionRequest(ulong64 param_1,uchar param_2)
+void __cdecl Live_RespondToSessionRequest(ulong64 from,uchar flags)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  byte local_24;
+  byte message;
   undefined4 local_23;
   undefined4 local_1f;
   uint local_18;
-  undefined4 local_14;
+  undefined4 sessionUid;
   undefined4 local_10;
-  byte local_5;
+  uchar messageflags;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = 0;
+  sessionUid = 0;
   local_10 = 0;
   bVar1 = Live_ShouldBroadcastNewServer();
   if (bVar1) {
-    local_5 = 0;
+    messageflags = '\0';
     cVar2 = CL_GetLocalClientConnectionState(0);
     if ((int)cVar2 < 6) {
       cls.serveruid._0_4_ = 0;
       cls.serveruid._4_4_ = 0;
     }
     else {
-      local_5 = local_5 | 0x10;
+      messageflags = messageflags | 0x10;
     }
-    local_14 = (undefined4)cls.serveruid;
+    sessionUid = (undefined4)cls.serveruid;
     local_10 = cls.serveruid._4_4_;
-    if ((param_2 & 4) == 0) {
-      if ((param_2 & 8) == 0) {
+    if ((flags & 4) == 0) {
+      if ((flags & 8) == 0) {
         Com_PrintWarning(0x17,"invalid message type from %llu!\n");
         return;
       }
-      local_5 = local_5 | 8;
+      messageflags = messageflags | 8;
     }
     else {
-      local_5 = local_5 | 4;
+      messageflags = messageflags | 4;
     }
-    local_24 = local_5 | 2;
+    message = messageflags | 2;
     local_23 = (undefined4)cls.serveruid;
     local_1f = cls.serveruid._4_4_;
-    LiveSteam_SendP2PMessage(param_1,&local_24,9);
+    LiveSteam_SendP2PMessage(from,&message,9);
   }
   return;
 }
@@ -3690,22 +3756,22 @@ void __cdecl Live_RequestSessionsFromFriends(void)
 
 {
   int iVar1;
-  ulong64 uVar2;
-  uchar *puVar3;
-  uint uVar4;
-  int local_c;
-  uchar local_5;
+  ulong64 uid;
+  uchar *payload;
+  uint payloadsize;
+  int i;
+  uchar message;
   
-  local_5 = '\x05';
-  local_c = 0;
+  message = '\x05';
+  i = 0;
   while( true ) {
     iVar1 = LiveSteam_GetNumFriends();
-    if (iVar1 <= local_c) break;
-    uVar4 = 1;
-    puVar3 = &local_5;
-    uVar2 = LiveSteam_GetFriendXuid(local_c);
-    LiveSteam_SendP2PMessage(uVar2,puVar3,uVar4);
-    local_c = local_c + 1;
+    if (iVar1 <= i) break;
+    payloadsize = 1;
+    payload = &message;
+    uid = LiveSteam_GetFriendXuid(i);
+    LiveSteam_SendP2PMessage(uid,payload,payloadsize);
+    i = i + 1;
   }
   return;
 }
@@ -3721,27 +3787,27 @@ void __cdecl Live_RequestSessionsFromRecentPlayers(void)
   undefined4 *puVar3;
   XuidInfo local_74;
   undefined4 local_44 [12];
-  undefined4 local_14;
+  undefined4 recentUid;
   undefined4 local_10;
-  int local_c;
-  uchar local_5;
+  int i;
+  uchar message;
   
-  local_5 = '\t';
-  local_c = 0;
+  message = '\t';
+  i = 0;
   while( true ) {
     iVar1 = LiveMeetPlayer_GetNoOfMetPlayers(0);
-    if (iVar1 <= local_c) break;
-    pXVar2 = LiveMeetPlayer_GetMetFriendInfo(&local_74,0,local_c);
+    if (iVar1 <= i) break;
+    pXVar2 = LiveMeetPlayer_GetMetFriendInfo(&local_74,0,i);
     puVar3 = local_44;
     for (iVar1 = 0xc; iVar1 != 0; iVar1 = iVar1 + -1) {
       *puVar3 = (int)pXVar2->playerXuids;
       pXVar2 = (XuidInfo *)((int)&pXVar2->playerXuids + 4);
       puVar3 = puVar3 + 1;
     }
-    local_14 = local_44[0];
+    recentUid = local_44[0];
     local_10 = local_44[1];
-    LiveSteam_SendP2PMessage(CONCAT44(local_44[1],local_44[0]),&local_5,1);
-    local_c = local_c + 1;
+    LiveSteam_SendP2PMessage(CONCAT44(local_44[1],local_44[0]),&message,1);
+    i = i + 1;
   }
   return;
 }
@@ -3749,52 +3815,54 @@ void __cdecl Live_RequestSessionsFromRecentPlayers(void)
 
 // 00993FA0  Live_DispatchP2PMessage  (live/live_win.cpp:6736)
 
-void __cdecl Live_DispatchP2PMessage(uchar *param_1,uint param_2,ulong64 param_3)
+void __cdecl Live_DispatchP2PMessage(uchar *message,uint messagesize,ulong64 from)
 
 {
-  byte bVar1;
-  DWOnlineStatus DVar2;
-  undefined4 local_14;
+  byte flags_00;
+  DWOnlineStatus DVar1;
+  undefined4 uid;
   undefined4 local_10;
+  uchar *msgptr;
+  uchar flags;
   
-  DVar2 = dwGetLogOnStatus(0);
-  if (DVar2 == DW_LIVE_CONNECTED) {
-    bVar1 = *param_1;
-    if ((bVar1 & 1) == 0) {
-      if ((bVar1 & 2) != 0) {
-        if (param_2 < 9) {
+  DVar1 = dwGetLogOnStatus(0);
+  if (DVar1 == DW_LIVE_CONNECTED) {
+    flags_00 = *message;
+    if ((flags_00 & 1) == 0) {
+      if ((flags_00 & 2) != 0) {
+        if (messagesize < 9) {
           Com_PrintWarning(0xe,"Dropped runt p2p message on the floor from %llu\n");
         }
         else {
-          local_14 = *(undefined4 *)(param_1 + 1);
-          local_10 = *(undefined4 *)(param_1 + 5);
-          if (bVar1 < 0x10) {
-            local_14 = 0;
+          uid = *(undefined4 *)(message + 1);
+          local_10 = *(undefined4 *)(message + 5);
+          if (flags_00 < 0x10) {
+            uid = 0;
             local_10 = 0;
-            Live_OnRevokeInvite(param_3);
+            Live_OnRevokeInvite(from);
           }
-          else if ((bVar1 & 0x40) != 0) {
-            local_14 = 0;
+          else if ((flags_00 & 0x40) != 0) {
+            uid = 0;
             local_10 = 0;
           }
-          if ((bVar1 & 4) == 0) {
-            if ((bVar1 & 8) != 0) {
-              if ((bVar1 & 0x20) != 0) {
-                local_14 = 0;
+          if ((flags_00 & 4) == 0) {
+            if ((flags_00 & 8) != 0) {
+              if ((flags_00 & 0x20) != 0) {
+                uid = 0;
                 local_10 = 0;
-                Live_OnRevokeInvite(param_3);
+                Live_OnRevokeInvite(from);
               }
-              LiveMeetPlayer_UpdatePlayerSession(param_3,CONCAT44(local_10,local_14));
+              LiveMeetPlayer_UpdatePlayerSession(from,CONCAT44(local_10,uid));
             }
           }
           else {
-            Live_AddFriendServer(CONCAT44(local_10,local_14),param_3);
+            Live_AddFriendServer(CONCAT44(local_10,uid),from);
           }
         }
       }
     }
     else {
-      Live_RespondToSessionRequest(param_3,bVar1);
+      Live_RespondToSessionRequest(from,flags_00);
     }
   }
   return;
@@ -3805,31 +3873,31 @@ void __cdecl Live_DispatchP2PMessage(uchar *param_1,uint param_2,ulong64 param_3
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_BroadcastSessionToFriends(ulong64 param_1,uchar param_2)
+void __cdecl Live_BroadcastSessionToFriends(ulong64 sessionUID,uchar flags)
 
 {
   int iVar1;
-  ulong64 uVar2;
-  byte *pbVar3;
-  uint uVar4;
-  int local_18;
-  byte local_14;
+  ulong64 uid;
+  byte *payload;
+  uint payloadsize;
+  int i;
+  byte message;
   ulong64 local_13;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = param_2 | 6;
-  local_18 = 0;
+  message = flags | 6;
+  i = 0;
   while( true ) {
-    local_13 = param_1;
+    local_13 = sessionUID;
     iVar1 = Friends_GetCount(0,0,0);
-    if (iVar1 <= local_18) break;
-    uVar4 = 9;
-    pbVar3 = &local_14;
-    uVar2 = LiveSteam_GetFriendXuid(local_18);
-    LiveSteam_SendP2PMessage(uVar2,pbVar3,uVar4);
-    local_18 = local_18 + 1;
-    param_1 = local_13;
+    if (iVar1 <= i) break;
+    payloadsize = 9;
+    payload = &message;
+    uid = LiveSteam_GetFriendXuid(i);
+    LiveSteam_SendP2PMessage(uid,payload,payloadsize);
+    i = i + 1;
+    sessionUID = local_13;
   }
   return;
 }
@@ -3839,7 +3907,7 @@ void __cdecl Live_BroadcastSessionToFriends(ulong64 param_1,uchar param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_BroadcastSessionToRecentPlayers(ulong64 param_1,uchar param_2)
+void __cdecl Live_BroadcastSessionToRecentPlayers(ulong64 sessionUID,uchar flags)
 
 {
   XuidInfo *pXVar1;
@@ -3848,19 +3916,19 @@ void __cdecl Live_BroadcastSessionToRecentPlayers(ulong64 param_1,uchar param_2)
   undefined4 *puVar4;
   XuidInfo local_ac;
   undefined4 local_7c [12];
-  undefined4 local_4c [12];
-  int local_1c;
-  byte local_18;
+  undefined4 recentinfo [12];
+  int i;
+  byte message;
   ulong64 local_17;
   uint local_c;
-  int local_8;
+  int numplayers;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = param_2 | 10;
-  local_17 = param_1;
-  local_8 = LiveMeetPlayer_GetNoOfMetPlayers(0);
-  for (local_1c = 0; local_1c < local_8; local_1c = local_1c + 1) {
-    pXVar1 = LiveMeetPlayer_GetMetFriendInfo(&local_ac,0,local_1c);
+  message = flags | 10;
+  local_17 = sessionUID;
+  numplayers = LiveMeetPlayer_GetNoOfMetPlayers(0);
+  for (i = 0; i < numplayers; i = i + 1) {
+    pXVar1 = LiveMeetPlayer_GetMetFriendInfo(&local_ac,0,i);
     puVar3 = local_7c;
     for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
       *puVar3 = (int)pXVar1->playerXuids;
@@ -3868,13 +3936,13 @@ void __cdecl Live_BroadcastSessionToRecentPlayers(ulong64 param_1,uchar param_2)
       puVar3 = puVar3 + 1;
     }
     puVar3 = local_7c;
-    puVar4 = local_4c;
+    puVar4 = recentinfo;
     for (iVar2 = 0xc; iVar2 != 0; iVar2 = iVar2 + -1) {
       *puVar4 = *puVar3;
       puVar3 = puVar3 + 1;
       puVar4 = puVar4 + 1;
     }
-    LiveSteam_SendP2PMessage(CONCAT44(local_4c[1],local_4c[0]),&local_18,9);
+    LiveSteam_SendP2PMessage(CONCAT44(recentinfo[1],recentinfo[0]),&message,9);
   }
   return;
 }
@@ -3888,7 +3956,8 @@ void __cdecl Live_BroadcastSessionIfNeeded(void)
   bool bVar1;
   bool bVar2;
   connstate_t cVar3;
-  uchar local_6;
+  uchar flags;
+  bool needtobroadcast;
   
   if ((_S1 & 1) == 0) {
     _S1 = _S1 | 1;
@@ -3917,13 +3986,12 @@ void __cdecl Live_BroadcastSessionIfNeeded(void)
       }
     }
     if (bVar1) {
-      local_6 = '\0';
+      flags = '\0';
       if (((int)cls.serveruid != 0) || (cls.serveruid._4_4_ != 0)) {
-        local_6 = '\x10';
+        flags = '\x10';
       }
-      Live_BroadcastSessionToFriends(CONCAT44(cls.serveruid._4_4_,(int)cls.serveruid),local_6);
-      Live_BroadcastSessionToRecentPlayers(CONCAT44(cls.serveruid._4_4_,(int)cls.serveruid),local_6)
-      ;
+      Live_BroadcastSessionToFriends(CONCAT44(cls.serveruid._4_4_,(int)cls.serveruid),flags);
+      Live_BroadcastSessionToRecentPlayers(CONCAT44(cls.serveruid._4_4_,(int)cls.serveruid),flags);
     }
     cachedState = CL_GetLocalClientConnectionState(0);
   }

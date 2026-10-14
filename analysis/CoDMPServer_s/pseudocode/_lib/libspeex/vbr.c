@@ -35,7 +35,9 @@ void __cdecl vbr_init(VBRState *param_1)
 
 // 007D85E0  vbr_analysis  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/vbr.c:124)
 
-float __cdecl vbr_analysis(VBRState *param_1,float *param_2,int param_3,int param_4,float param_5)
+/* WARNING: Variable defined which should be unmapped: ener */
+
+float __cdecl vbr_analysis(VBRState *len,float *pitch_coef,int param_3,int param_4,float param_5)
 
 {
   float fVar1;
@@ -61,63 +63,67 @@ float __cdecl vbr_analysis(VBRState *param_1,float *param_2,int param_3,int para
   float10 extraout_ST0_07;
   float10 extraout_ST0_08;
   float10 extraout_ST0_09;
-  float local_28;
-  float local_24;
-  float local_20;
+  float *sig;
+  float ener;
+  float non_st;
+  float ener2;
+  float ener1;
+  float pow_ener;
   float local_1c;
+  float log_energy;
+  float voicing;
+  int pitch;
   
-  pfVar7 = param_2;
-  local_20 = 0.0;
-  local_24 = 0.0;
-  param_2 = (float *)0x40e00000;
+  pfVar7 = pitch_coef;
+  pow_ener = 0.0;
+  ener1 = 0.0;
+  pitch_coef = (float *)0x40e00000;
   iVar9 = (int)pfVar7 >> 1;
   iVar11 = 0;
   if (3 < iVar9) {
     iVar10 = (iVar9 - 4U >> 2) + 1;
     iVar11 = iVar10 * 4;
-    pfVar8 = &param_1->last_energy;
+    pfVar8 = &len->last_energy;
     do {
       iVar10 = iVar10 + -1;
-      local_20 = pfVar8[1] * pfVar8[1] +
+      pow_ener = pfVar8[1] * pfVar8[1] +
                  *pfVar8 * *pfVar8 +
-                 local_20 +
+                 pow_ener +
                  ((VBRState *)(pfVar8 + -2))->energy_alpha *
                  ((VBRState *)(pfVar8 + -2))->energy_alpha + pfVar8[-1] * pfVar8[-1];
       pfVar8 = pfVar8 + 4;
     } while (iVar10 != 0);
   }
   for (; iVar11 < iVar9; iVar11 = iVar11 + 1) {
-    local_20 = param_1->last_log_energy[iVar11 + -3] * param_1->last_log_energy[iVar11 + -3] +
-               local_20;
+    pow_ener = len->last_log_energy[iVar11 + -3] * len->last_log_energy[iVar11 + -3] + pow_ener;
   }
   if (iVar9 < (int)pfVar7) {
     if (3 < (int)pfVar7 - iVar9) {
       iVar10 = ((uint)((int)pfVar7 + (-4 - iVar9)) >> 2) + 1;
       iVar11 = iVar9 + -1;
       iVar9 = iVar9 + iVar10 * 4;
-      pfVar8 = param_1->last_log_energy + iVar11;
+      pfVar8 = len->last_log_energy + iVar11;
       do {
         iVar10 = iVar10 + -1;
-        local_24 = pfVar8[1] * pfVar8[1] +
-                   *pfVar8 * *pfVar8 + local_24 + pfVar8[-2] * pfVar8[-2] + pfVar8[-1] * pfVar8[-1];
+        ener1 = pfVar8[1] * pfVar8[1] +
+                *pfVar8 * *pfVar8 + ener1 + pfVar8[-2] * pfVar8[-2] + pfVar8[-1] * pfVar8[-1];
         pfVar8 = pfVar8 + 4;
       } while (iVar10 != 0);
     }
     for (; iVar9 < (int)pfVar7; iVar9 = iVar9 + 1) {
-      local_24 = param_1->last_log_energy[iVar9 + -3] * param_1->last_log_energy[iVar9 + -3] +
-                 local_24;
+      ener1 = len->last_log_energy[iVar9 + -3] * len->last_log_energy[iVar9 + -3] + ener1;
     }
   }
-  fVar4 = local_24 + local_20;
+  fVar4 = ener1 + pow_ener;
   _CIlog();
   fVar1 = (float)extraout_ST0;
-  local_28 = ((fVar1 - unaff_EDI[7]) * (fVar1 - unaff_EDI[7]) +
-             (fVar1 - unaff_EDI[6]) * (fVar1 - unaff_EDI[6]) +
-             (fVar1 - unaff_EDI[5]) * (fVar1 - unaff_EDI[5]) +
-             (fVar1 - unaff_EDI[3]) * (fVar1 - unaff_EDI[3]) + 0.0 +
-             (fVar1 - unaff_EDI[4]) * (fVar1 - unaff_EDI[4])) / 150.0;
-  if (1.0 < local_28) {
-    local_28 = 1.0;
+  ener2 = ((fVar1 - unaff_EDI[7]) * (fVar1 - unaff_EDI[7]) +
+          (fVar1 - unaff_EDI[6]) * (fVar1 - unaff_EDI[6]) +
+          (fVar1 - unaff_EDI[5]) * (fVar1 - unaff_EDI[5]) +
+          (fVar1 - unaff_EDI[3]) * (fVar1 - unaff_EDI[3]) + 0.0 +
+          (fVar1 - unaff_EDI[4]) * (fVar1 - unaff_EDI[4])) / 150.0;
+  if (1.0 < ener2) {
+    ener2 = 1.0;
   }
   fVar5 = (float)param_3 - 0.4;
   fVar3 = fVar5 * 3.0 * ABS(fVar5);
@@ -128,10 +134,10 @@ float __cdecl vbr_analysis(VBRState *param_1,float *param_2,int param_3,int para
   if ((unaff_EDI[0xe] < 0.06) && (6000.0 < fVar4)) {
     unaff_EDI[0xd] = fVar2 * 0.05;
   }
-  if ((((((fVar3 < 0.3) && (local_28 < 0.2)) && (fVar2 < unaff_EDI[0xc] * 1.2)) ||
-       (((fVar3 < 0.3 && (local_28 < 0.05)) && (fVar2 < unaff_EDI[0xc] * 1.5)))) ||
-      (((fVar3 < 0.4 && (local_28 < 0.05)) && (fVar2 < unaff_EDI[0xc] * 1.2)))) ||
-     ((fVar3 < 0.0 && (local_28 < 0.05)))) {
+  if ((((((fVar3 < 0.3) && (ener2 < 0.2)) && (fVar2 < unaff_EDI[0xc] * 1.2)) ||
+       (((fVar3 < 0.3 && (ener2 < 0.05)) && (fVar2 < unaff_EDI[0xc] * 1.5)))) ||
+      (((fVar3 < 0.4 && (ener2 < 0.05)) && (fVar2 < unaff_EDI[0xc] * 1.2)))) ||
+     ((fVar3 < 0.0 && (ener2 < 0.05)))) {
     unaff_EDI[0xf] = (float)((int)unaff_EDI[0xf] + 1);
     local_1c = fVar2;
     if (unaff_EDI[0xc] * 3.0 < fVar2) {
@@ -150,12 +156,12 @@ float __cdecl vbr_analysis(VBRState *param_1,float *param_2,int param_3,int para
     unaff_EDI[0xe] = unaff_EDI[0xe] * 0.95 + 0.05;
   }
   if (fVar4 < 30000.0) {
-    param_2 = (float *)0x40c9999a;
+    pitch_coef = (float *)0x40c9999a;
     if (fVar4 < 10000.0) {
-      param_2 = (float *)0x40b33334;
+      pitch_coef = (float *)0x40b33334;
     }
     if (fVar4 < 3000.0) {
-      param_2 = (float *)((float)param_2 - 0.7);
+      pitch_coef = (float *)((float)pitch_coef - 0.7);
     }
     goto LAB_007d8b27;
   }
@@ -171,84 +177,86 @@ float __cdecl vbr_analysis(VBRState *param_1,float *param_2,int param_3,int para
     else {
       fVar3 = 2.0;
 LAB_007d8a7f:
-      param_2 = (float *)(fVar3 * 0.6 + 7.0);
+      pitch_coef = (float *)(fVar3 * 0.6 + 7.0);
     }
     fVar6 = fVar3;
     if (fVar3 < 0.0) goto LAB_007d8a9c;
   }
   else {
 LAB_007d8a9c:
-    param_2 = (float *)((float)param_2 + fVar6 * 0.5);
+    pitch_coef = (float *)((float)pitch_coef + fVar6 * 0.5);
   }
   if (0.0 < fVar2) {
     if (fVar2 <= 5.0) {
-      param_2 = (float *)(fVar2 * 0.5 + (float)param_2);
+      pitch_coef = (float *)(fVar2 * 0.5 + (float)pitch_coef);
     }
     else {
-      param_2 = (float *)((float)param_2 + 2.5);
+      pitch_coef = (float *)((float)pitch_coef + 2.5);
     }
   }
-  if (local_20 * 1.6 < local_24) {
-    param_2 = (float *)((float)param_2 + 0.5);
+  if (pow_ener * 1.6 < ener1) {
+    pitch_coef = (float *)((float)pitch_coef + 0.5);
   }
 LAB_007d8b27:
   unaff_EDI[2] = fVar4;
   fVar2 = unaff_EDI[10] * 0.6 + (float)param_3 * 0.4;
   unaff_EDI[10] = fVar2;
-  param_2 = (float *)(((fVar2 - 0.4) + fVar5) * 2.2 + (float)param_2);
-  if ((float)param_2 < unaff_EDI[0xb]) {
-    param_2 = (float *)(unaff_EDI[0xb] * 0.5 + (float)param_2 * 0.5);
+  pitch_coef = (float *)(((fVar2 - 0.4) + fVar5) * 2.2 + (float)pitch_coef);
+  if ((float)pitch_coef < unaff_EDI[0xb]) {
+    pitch_coef = (float *)(unaff_EDI[0xb] * 0.5 + (float)pitch_coef * 0.5);
   }
-  if (4.0 <= (float)param_2) {
-    if (10.0 < (float)param_2) {
-      param_2 = (float *)0x41200000;
+  if (4.0 <= (float)pitch_coef) {
+    if (10.0 < (float)pitch_coef) {
+      pitch_coef = (float *)0x41200000;
     }
   }
   else {
-    param_2 = (float *)0x40800000;
+    pitch_coef = (float *)0x40800000;
   }
   fVar2 = unaff_EDI[0xf];
   if (2 < (int)fVar2) {
-    param_2 = (float *)0x40800000;
+    pitch_coef = (float *)0x40800000;
   }
   if (fVar2 != 0.0) {
     _CIlog();
     _CIlog();
-    param_2 = (float *)(float)((float10)(float)param_2 -
-                              ((float10)(float)extraout_ST0_03 - extraout_ST0_04));
+    pitch_coef = (float *)(float)((float10)(float)pitch_coef -
+                                 ((float10)(float)extraout_ST0_03 - extraout_ST0_04));
   }
-  if ((float)param_2 < 0.0) {
-    param_2 = (float *)0x0;
+  if ((float)pitch_coef < 0.0) {
+    pitch_coef = (float *)0x0;
   }
   if (fVar4 < 60000.0) {
     if (2 < (int)fVar2) {
       _CIlog();
       _CIlog();
-      param_2 = (float *)(float)((float10)(float)param_2 -
-                                ((float10)(float)extraout_ST0_05 - extraout_ST0_06) * (float10)0.5);
+      pitch_coef = (float *)(float)((float10)(float)pitch_coef -
+                                   ((float10)(float)extraout_ST0_05 - extraout_ST0_06) *
+                                   (float10)0.5);
     }
     if ((fVar4 < 10000.0) && (2 < (int)fVar2)) {
       _CIlog();
       _CIlog();
-      param_2 = (float *)(float)((float10)(float)param_2 -
-                                ((float10)(float)extraout_ST0_07 - extraout_ST0_08) * (float10)0.5);
+      pitch_coef = (float *)(float)((float10)(float)pitch_coef -
+                                   ((float10)(float)extraout_ST0_07 - extraout_ST0_08) *
+                                   (float10)0.5);
     }
-    if ((float)param_2 < 0.0) {
-      param_2 = (float *)0x0;
+    if ((float)pitch_coef < 0.0) {
+      pitch_coef = (float *)0x0;
     }
     _CIlog();
-    param_2 = (float *)(float)(extraout_ST0_09 * (float10)0.3 + (float10)(float)param_2);
+    pitch_coef = (float *)(float)(extraout_ST0_09 * (float10)0.3 + (float10)(float)pitch_coef);
   }
-  if ((float)param_2 < (float)DAT_00af36d8) {
-    param_2 = DAT_00af36d8;
+  if ((float)pitch_coef < (float)DAT_00af36d8) {
+    pitch_coef = DAT_00af36d8;
   }
   unaff_EDI[9] = (float)param_3;
-  unaff_EDI[0xb] = (float)param_2;
+  unaff_EDI[0xb] = (float)pitch_coef;
   unaff_EDI[7] = unaff_EDI[6];
   unaff_EDI[6] = unaff_EDI[5];
   unaff_EDI[5] = unaff_EDI[4];
   unaff_EDI[4] = unaff_EDI[3];
   unaff_EDI[3] = fVar1;
-  return (float)param_2;
+  return (float)pitch_coef;
 }
 

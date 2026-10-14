@@ -835,70 +835,69 @@ SND_DspDynamo(uint param_1,float param_2,float param_3,float param_4,float param
              snd_dsp_dynamo_state *param_7,float *param_8,float *param_9)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   int in_EAX;
   float *in_ECX;
-  uint uVar2;
-  float *pfVar3;
+  uint uVar1;
+  float *pfVar2;
   int unaff_ESI;
   snd_dsp_dynamo_state *unaff_EDI;
-  float *pfVar4;
-  float10 fVar5;
+  float *pfVar3;
+  float10 fVar4;
+  float fVar5;
   float fVar6;
   float fVar7;
   float fVar8;
   float fVar9;
   float fVar10;
   float fVar11;
-  float fVar12;
   
-  puVar1 = (uchar *)(unaff_ESI + *(int *)(unaff_ESI + 0xf00) * 4);
-  memcpy(puVar1,(uchar *)in_ECX,in_EAX * 4);
-  uVar2 = (uint)(*(int *)(unaff_ESI + 0xf00) + in_EAX) % 0x3c0;
-  fVar6 = 1.0 / param_3;
-  *(uint *)(unaff_ESI + 0xf00) = uVar2;
-  pfVar4 = (float *)(unaff_ESI + uVar2 * 4);
-  fVar7 = fVar6;
+  dst = (uchar *)(unaff_ESI + *(int *)(unaff_ESI + 0xf00) * 4);
+  memcpy(dst,(uchar *)in_ECX,in_EAX * 4);
+  uVar1 = (uint)(*(int *)(unaff_ESI + 0xf00) + in_EAX) % 0x3c0;
+  fVar5 = 1.0 / param_3;
+  *(uint *)(unaff_ESI + 0xf00) = uVar1;
+  pfVar3 = (float *)(unaff_ESI + uVar1 * 4);
+  fVar6 = fVar5;
   SND_DspDecayConstant(param_5,1.0 / (float)param_1,(float)unaff_EDI);
-  fVar8 = fVar7;
+  fVar7 = fVar6;
   SND_DspDecayConstant(param_4,1.0 / (float)param_1,(float)unaff_EDI);
-  fVar9 = fVar6 - 1.0;
-  SND_DspPow(fVar9,(float)unaff_EDI);
-  pfVar3 = pfVar4 + in_EAX;
-  *(float *)param_6 = fVar9;
-  for (; pfVar4 != pfVar3; pfVar4 = pfVar4 + 2) {
-    fVar5 = (float10)fabsf(*(undefined4 *)puVar1);
-    fVar10 = (float)fVar5 * 0.00999999;
-    fVar12 = *(float *)(unaff_ESI + 0xf04) * 0.99 + fVar10;
-    *(float *)(unaff_ESI + 0xf04) = fVar12;
-    fVar11 = fVar9;
-    if (param_2 < fVar12) {
-      SND_DspPow(fVar6,(float)unaff_EDI);
-      fVar11 = fVar10 * (fVar9 / fVar12) * param_2;
+  fVar8 = fVar5 - 1.0;
+  SND_DspPow(fVar8,(float)unaff_EDI);
+  pfVar2 = pfVar3 + in_EAX;
+  *(float *)param_6 = fVar8;
+  for (; pfVar3 != pfVar2; pfVar3 = pfVar3 + 2) {
+    fVar4 = (float10)fabsf(*(undefined4 *)dst);
+    fVar9 = (float)fVar4 * 0.00999999;
+    fVar11 = *(float *)(unaff_ESI + 0xf04) * 0.99 + fVar9;
+    *(float *)(unaff_ESI + 0xf04) = fVar11;
+    fVar10 = fVar8;
+    if (param_2 < fVar11) {
+      SND_DspPow(fVar5,(float)unaff_EDI);
+      fVar10 = fVar9 * (fVar8 / fVar11) * param_2;
     }
-    *(float *)(unaff_ESI + 0xf0c) = fVar11;
-    *in_ECX = *pfVar4 * *(float *)(unaff_ESI + 0xf08);
-    fVar11 = *(float *)param_6;
+    *(float *)(unaff_ESI + 0xf0c) = fVar10;
+    *in_ECX = *pfVar3 * *(float *)(unaff_ESI + 0xf08);
+    fVar10 = *(float *)param_6;
     if (*(float *)(unaff_ESI + 0xf08) - *(float *)param_6 < 0.0) {
-      fVar11 = *(float *)(unaff_ESI + 0xf08);
+      fVar10 = *(float *)(unaff_ESI + 0xf08);
     }
-    *(float *)param_6 = fVar11;
-    fVar11 = fVar7;
+    *(float *)param_6 = fVar10;
+    fVar10 = fVar6;
     if (*(float *)(unaff_ESI + 0xf0c) < *(float *)(unaff_ESI + 0xf08)) {
-      fVar11 = fVar8;
+      fVar10 = fVar7;
     }
-    fVar10 = *(float *)(unaff_ESI + 0xf0c) * fVar11 + (1.0 - fVar11) * *(float *)(unaff_ESI + 0xf08)
-    ;
-    *(float *)(unaff_ESI + 0xf08) = fVar10;
-    fVar5 = (float10)fabsf(*(undefined4 *)(puVar1 + 4));
-    puVar1 = puVar1 + 8;
+    fVar9 = *(float *)(unaff_ESI + 0xf0c) * fVar10 + (1.0 - fVar10) * *(float *)(unaff_ESI + 0xf08);
+    *(float *)(unaff_ESI + 0xf08) = fVar9;
+    fVar4 = (float10)fabsf(*(undefined4 *)(dst + 4));
+    dst = dst + 8;
     *(float *)(unaff_ESI + 0xf04) =
-         (float)(fVar5 * (float10)0.00999999 +
+         (float)(fVar4 * (float10)0.00999999 +
                 (float10)*(float *)(unaff_ESI + 0xf04) * (float10)0.99);
-    in_ECX[1] = fVar10 * pfVar4[1];
+    in_ECX[1] = fVar9 * pfVar3[1];
     in_ECX = in_ECX + 2;
     *(float *)(unaff_ESI + 0xf08) =
-         *(float *)(unaff_ESI + 0xf0c) * fVar11 + (1.0 - fVar11) * *(float *)(unaff_ESI + 0xf08);
+         *(float *)(unaff_ESI + 0xf0c) * fVar10 + (1.0 - fVar10) * *(float *)(unaff_ESI + 0xf08);
   }
   SND_DspDynamoDenormal(unaff_EDI);
   return;

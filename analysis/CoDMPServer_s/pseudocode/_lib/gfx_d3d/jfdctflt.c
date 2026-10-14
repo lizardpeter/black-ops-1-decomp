@@ -15,6 +15,15 @@ void __cdecl jpeg_fdct_float(float *param_1)
   float fVar8;
   float fVar9;
   float fVar10;
+  float *data;
+  float tmp2;
+  float tmp5;
+  float tmp4;
+  float z2;
+  float z4;
+  float tmp3;
+  float tmp11;
+  float tmp7;
   
   fVar6 = param_1[4];
   fVar9 = *param_1 - param_1[7];

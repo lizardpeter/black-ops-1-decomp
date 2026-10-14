@@ -13,12 +13,12 @@ PublicProfileInfo * __thiscall PublicProfileInfo::PublicProfileInfo(PublicProfil
 
 // 005ADC60  serialize  (DW/UserInfo.cpp:23)
 
-void __thiscall PublicProfileInfo::serialize(PublicProfileInfo *this,bdByteBuffer *param_1)
+void __thiscall PublicProfileInfo::serialize(PublicProfileInfo *this,bdByteBuffer *buffer)
 
 {
-  bdProfileInfo::serialize((bdProfileInfo *)this,param_1);
-  bdByteBuffer::writeInt32(param_1,this->m_memberVERSION);
-  bdByteBuffer::writeBlob(param_1,this->m_memberddl,0x100);
+  bdProfileInfo::serialize((bdProfileInfo *)this,buffer);
+  bdByteBuffer::writeInt32(buffer,this->m_memberVERSION);
+  bdByteBuffer::writeBlob(buffer,this->m_memberddl,0x100);
   return;
 }
 
@@ -28,34 +28,34 @@ void __thiscall PublicProfileInfo::serialize(PublicProfileInfo *this,bdByteBuffe
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 bool __thiscall
-PublicProfileInfo::deserialize(PublicProfileInfo *this,bdReference<bdByteBuffer> param_1)
+PublicProfileInfo::deserialize(PublicProfileInfo *this,bdReference<bdByteBuffer> buffer)
 
 {
   bool bVar1;
   bdReference<bdByteBuffer> bVar2;
   bool local_44;
-  char local_40;
-  uint local_c;
-  bool local_5;
+  bool local_40;
+  uint tempBlobLength_ddl;
+  bool ok;
   
-  bVar2.m_ptr = param_1.m_ptr;
-  if (param_1.m_ptr != (bdByteBuffer *)0x0) {
-    InterlockedIncrement(&(param_1.m_ptr)->_padding_);
+  bVar2.m_ptr = buffer.m_ptr;
+  if (buffer.m_ptr != (bdByteBuffer *)0x0) {
+    InterlockedIncrement(&(buffer.m_ptr)->_padding_);
   }
-  local_5 = bdProfileInfo::deserialize((bdProfileInfo *)this,bVar2);
-  if (local_5) {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberVERSION);
+  ok = bdProfileInfo::deserialize((bdProfileInfo *)this,bVar2);
+  if (ok) {
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberVERSION);
     if (!bVar1) goto LAB_005add19;
-    local_40 = '\x01';
+    local_40 = true;
   }
   else {
 LAB_005add19:
-    local_40 = '\0';
+    local_40 = false;
   }
-  local_5 = (bool)local_40;
-  local_c = 0x100;
-  if (local_40 != '\0') {
-    bVar1 = bdByteBuffer::readBlob(param_1.m_ptr,this->m_memberddl,&local_c);
+  ok = local_40;
+  tempBlobLength_ddl = 0x100;
+  if (local_40 != false) {
+    bVar1 = bdByteBuffer::readBlob(buffer.m_ptr,this->m_memberddl,&tempBlobLength_ddl);
     if (bVar1) {
       local_44 = true;
       goto LAB_005add65;
@@ -63,8 +63,8 @@ LAB_005add19:
   }
   local_44 = false;
 LAB_005add65:
-  local_5 = local_44;
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&param_1);
+  ok = local_44;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&buffer);
   return local_44;
 }
 
@@ -91,12 +91,12 @@ PrivateProfileInfo * __thiscall PrivateProfileInfo::PrivateProfileInfo(PrivatePr
 
 // 005ADDC0  serialize  (DW/UserInfo.cpp:50)
 
-void __thiscall PrivateProfileInfo::serialize(PrivateProfileInfo *this,bdByteBuffer *param_1)
+void __thiscall PrivateProfileInfo::serialize(PrivateProfileInfo *this,bdByteBuffer *buffer)
 
 {
-  bdProfileInfo::serialize((bdProfileInfo *)this,param_1);
-  bdByteBuffer::writeBlob(param_1,this->m_memberfavsblob,0xfc);
-  bdByteBuffer::writeBlob(param_1,this->m_memberuids,0x150);
+  bdProfileInfo::serialize((bdProfileInfo *)this,buffer);
+  bdByteBuffer::writeBlob(buffer,this->m_memberfavsblob,0xfc);
+  bdByteBuffer::writeBlob(buffer,this->m_memberuids,0x150);
   return;
 }
 
@@ -106,35 +106,36 @@ void __thiscall PrivateProfileInfo::serialize(PrivateProfileInfo *this,bdByteBuf
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 bool __thiscall
-PrivateProfileInfo::deserialize(PrivateProfileInfo *this,bdReference<bdByteBuffer> param_1)
+PrivateProfileInfo::deserialize(PrivateProfileInfo *this,bdReference<bdByteBuffer> buffer)
 
 {
   bool bVar1;
   bdReference<bdByteBuffer> bVar2;
   bool local_48;
-  char local_44;
-  uint local_10 [2];
-  bool local_5;
+  bool local_44;
+  uint tempBlobLength_uids;
+  uint tempBlobLength_favsblob;
+  bool ok;
   
-  bVar2.m_ptr = param_1.m_ptr;
-  if (param_1.m_ptr != (bdByteBuffer *)0x0) {
-    InterlockedIncrement(&(param_1.m_ptr)->_padding_);
+  bVar2.m_ptr = buffer.m_ptr;
+  if (buffer.m_ptr != (bdByteBuffer *)0x0) {
+    InterlockedIncrement(&(buffer.m_ptr)->_padding_);
   }
-  local_5 = bdProfileInfo::deserialize((bdProfileInfo *)this,bVar2);
-  local_10[1] = 0xfc;
-  if (local_5) {
-    bVar1 = bdByteBuffer::readBlob(param_1.m_ptr,this->m_memberfavsblob,local_10 + 1);
+  ok = bdProfileInfo::deserialize((bdProfileInfo *)this,bVar2);
+  tempBlobLength_favsblob = 0xfc;
+  if (ok) {
+    bVar1 = bdByteBuffer::readBlob(buffer.m_ptr,this->m_memberfavsblob,&tempBlobLength_favsblob);
     if (!bVar1) goto LAB_005ade94;
-    local_44 = '\x01';
+    local_44 = true;
   }
   else {
 LAB_005ade94:
-    local_44 = '\0';
+    local_44 = false;
   }
-  local_5 = (bool)local_44;
-  local_10[0] = 0x150;
-  if (local_44 != '\0') {
-    bVar1 = bdByteBuffer::readBlob(param_1.m_ptr,this->m_memberuids,local_10);
+  ok = local_44;
+  tempBlobLength_uids = 0x150;
+  if (local_44 != false) {
+    bVar1 = bdByteBuffer::readBlob(buffer.m_ptr,this->m_memberuids,&tempBlobLength_uids);
     if (bVar1) {
       local_48 = true;
       goto LAB_005adee2;
@@ -142,8 +143,8 @@ LAB_005ade94:
   }
   local_48 = false;
 LAB_005adee2:
-  local_5 = local_48;
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&param_1);
+  ok = local_48;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&buffer);
   return local_48;
 }
 

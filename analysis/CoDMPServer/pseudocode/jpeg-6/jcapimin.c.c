@@ -2,73 +2,77 @@
 
 // 00B41CD0  jpeg_CreateCompress  (jpeg-6/jcapimin.c:34)
 
-void __cdecl jpeg_CreateCompress(jpeg_compress_struct *param_1,int param_2,uint param_3)
+void __cdecl jpeg_CreateCompress(jpeg_compress_struct *cinfo,int version,uint structsize)
 
 {
   jpeg_error_mgr *pjVar1;
   void *pvVar2;
   jpeg_alloc *pjVar3;
-  int local_8;
+  void *client_data;
+  jpeg_error_mgr *err;
+  int i;
   
-  param_1->mem = (jpeg_memory_mgr *)0x0;
-  if (param_2 != 0x3e) {
-    param_1->err->msg_code = 0xc;
-    (param_1->err->msg_parm).i[0] = 0x3e;
-    (param_1->err->msg_parm).i[1] = param_2;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  cinfo->mem = (jpeg_memory_mgr *)0x0;
+  if (version != 0x3e) {
+    cinfo->err->msg_code = 0xc;
+    (cinfo->err->msg_parm).i[0] = 0x3e;
+    (cinfo->err->msg_parm).i[1] = version;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_3 != 0x170) {
-    param_1->err->msg_code = 0x15;
-    (param_1->err->msg_parm).i[0] = 0x170;
-    (param_1->err->msg_parm).i[1] = param_3;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (structsize != 0x170) {
+    cinfo->err->msg_code = 0x15;
+    (cinfo->err->msg_parm).i[0] = 0x170;
+    (cinfo->err->msg_parm).i[1] = structsize;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  pjVar1 = param_1->err;
-  pvVar2 = param_1->client_data;
-  memset((uchar *)param_1,'\0',0x170);
-  param_1->err = pjVar1;
-  param_1->client_data = pvVar2;
-  param_1->is_decompressor = '\0';
-  jinit_memory_mgr((jpeg_common_struct *)param_1);
+  pjVar1 = cinfo->err;
+  pvVar2 = cinfo->client_data;
+  memset((uchar *)cinfo,'\0',0x170);
+  cinfo->err = pjVar1;
+  cinfo->client_data = pvVar2;
+  cinfo->is_decompressor = '\0';
+  jinit_memory_mgr((jpeg_common_struct *)cinfo);
   pjVar3 = jpeg_get_jpeg_alloc();
-  (param_1->mem->alloc).malloc = pjVar3->malloc;
+  (cinfo->mem->alloc).malloc = pjVar3->malloc;
   pjVar3 = jpeg_get_jpeg_alloc();
-  (param_1->mem->alloc).free = pjVar3->free;
-  param_1->progress = (jpeg_progress_mgr *)0x0;
-  param_1->dest = (jpeg_destination_mgr *)0x0;
-  param_1->comp_info = (jpeg_component_info *)0x0;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    param_1->quant_tbl_ptrs[local_8] = (JQUANT_TBL *)0x0;
+  (cinfo->mem->alloc).free = pjVar3->free;
+  cinfo->progress = (jpeg_progress_mgr *)0x0;
+  cinfo->dest = (jpeg_destination_mgr *)0x0;
+  cinfo->comp_info = (jpeg_component_info *)0x0;
+  for (i = 0; i < 4; i = i + 1) {
+    cinfo->quant_tbl_ptrs[i] = (JQUANT_TBL *)0x0;
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    param_1->dc_huff_tbl_ptrs[local_8] = (JHUFF_TBL *)0x0;
-    param_1->ac_huff_tbl_ptrs[local_8] = (JHUFF_TBL *)0x0;
+  for (i = 0; i < 4; i = i + 1) {
+    cinfo->dc_huff_tbl_ptrs[i] = (JHUFF_TBL *)0x0;
+    cinfo->ac_huff_tbl_ptrs[i] = (JHUFF_TBL *)0x0;
   }
-  param_1->script_space = (jpeg_scan_info *)0x0;
-  param_1->input_gamma = 1.0;
-  param_1->global_state = 100;
+  cinfo->script_space = (jpeg_scan_info *)0x0;
+  cinfo->input_gamma = 1.0;
+  cinfo->global_state = 100;
   return;
 }
 
 
 // 00B41E70  jpeg_suppress_tables  (jpeg-6/jcapimin.c:136)
 
-void __cdecl jpeg_suppress_tables(jpeg_compress_struct *param_1,uchar param_2)
+void __cdecl jpeg_suppress_tables(jpeg_compress_struct *cinfo,uchar suppress)
 
 {
-  int local_8;
+  JHUFF_TBL *htbl;
+  JQUANT_TBL *qtbl;
+  int i;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if (param_1->quant_tbl_ptrs[local_8] != (JQUANT_TBL *)0x0) {
-      param_1->quant_tbl_ptrs[local_8]->sent_table = param_2;
+  for (i = 0; i < 4; i = i + 1) {
+    if (cinfo->quant_tbl_ptrs[i] != (JQUANT_TBL *)0x0) {
+      cinfo->quant_tbl_ptrs[i]->sent_table = suppress;
     }
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if (param_1->dc_huff_tbl_ptrs[local_8] != (JHUFF_TBL *)0x0) {
-      param_1->dc_huff_tbl_ptrs[local_8]->sent_table = param_2;
+  for (i = 0; i < 4; i = i + 1) {
+    if (cinfo->dc_huff_tbl_ptrs[i] != (JHUFF_TBL *)0x0) {
+      cinfo->dc_huff_tbl_ptrs[i]->sent_table = suppress;
     }
-    if (param_1->ac_huff_tbl_ptrs[local_8] != (JHUFF_TBL *)0x0) {
-      param_1->ac_huff_tbl_ptrs[local_8]->sent_table = param_2;
+    if (cinfo->ac_huff_tbl_ptrs[i] != (JHUFF_TBL *)0x0) {
+      cinfo->ac_huff_tbl_ptrs[i]->sent_table = suppress;
     }
   }
   return;
@@ -77,43 +81,43 @@ void __cdecl jpeg_suppress_tables(jpeg_compress_struct *param_1,uchar param_2)
 
 // 00B41F10  jpeg_finish_compress  (jpeg-6/jcapimin.c:164)
 
-void __cdecl jpeg_finish_compress(jpeg_compress_struct *param_1)
+void __cdecl jpeg_finish_compress(jpeg_compress_struct *cinfo)
 
 {
   uchar uVar1;
-  uint local_8;
+  uint iMCU_row;
   
-  if ((param_1->global_state == 0x65) || (param_1->global_state == 0x66)) {
-    if (param_1->next_scanline < param_1->image_height) {
-      param_1->err->msg_code = 0x43;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if ((cinfo->global_state == 0x65) || (cinfo->global_state == 0x66)) {
+    if (cinfo->next_scanline < cinfo->image_height) {
+      cinfo->err->msg_code = 0x43;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    (*param_1->master->finish_pass)(param_1);
+    (*cinfo->master->finish_pass)(cinfo);
   }
-  else if (param_1->global_state != 0x67) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  else if (cinfo->global_state != 0x67) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  while (param_1->master->is_last_pass == '\0') {
-    (*param_1->master->prepare_for_pass)(param_1);
-    for (local_8 = 0; local_8 < param_1->total_iMCU_rows; local_8 = local_8 + 1) {
-      if (param_1->progress != (jpeg_progress_mgr *)0x0) {
-        param_1->progress->pass_counter = local_8;
-        param_1->progress->pass_limit = param_1->total_iMCU_rows;
-        (*param_1->progress->progress_monitor)((jpeg_common_struct *)param_1);
+  while (cinfo->master->is_last_pass == '\0') {
+    (*cinfo->master->prepare_for_pass)(cinfo);
+    for (iMCU_row = 0; iMCU_row < cinfo->total_iMCU_rows; iMCU_row = iMCU_row + 1) {
+      if (cinfo->progress != (jpeg_progress_mgr *)0x0) {
+        cinfo->progress->pass_counter = iMCU_row;
+        cinfo->progress->pass_limit = cinfo->total_iMCU_rows;
+        (*cinfo->progress->progress_monitor)((jpeg_common_struct *)cinfo);
       }
-      uVar1 = (*param_1->coef->compress_data)(param_1,(uchar ***)0x0);
+      uVar1 = (*cinfo->coef->compress_data)(cinfo,(uchar ***)0x0);
       if (uVar1 == '\0') {
-        param_1->err->msg_code = 0x18;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+        cinfo->err->msg_code = 0x18;
+        (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
       }
     }
-    (*param_1->master->finish_pass)(param_1);
+    (*cinfo->master->finish_pass)(cinfo);
   }
-  (*param_1->marker->write_file_trailer)(param_1);
-  (*param_1->dest->term_destination)(param_1);
-  jpeg_abort((jpeg_common_struct *)param_1);
+  (*cinfo->marker->write_file_trailer)(cinfo);
+  (*cinfo->dest->term_destination)(cinfo);
+  jpeg_abort((jpeg_common_struct *)cinfo);
   return;
 }
 

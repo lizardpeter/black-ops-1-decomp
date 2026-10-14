@@ -34,15 +34,16 @@ void __cdecl _dynamic_initializer_for__s_bdGroupCounts__(void)
 
 // 006F7E20  operator++  (server_mp/sv_autoplaylist.cpp:57)
 
-sv_apstate_t * __cdecl operator++(sv_apstate_t *param_1)
+sv_apstate_t * __cdecl operator++(sv_apstate_t *in)
 
 {
   code *pcVar1;
   bool bVar2;
   sv_apstate_t *psVar3;
+  int temp;
   
-  if ((*param_1 == AP_GETTINGDATA) || (*param_1 == AP_GETONE)) {
-    *param_1 = *param_1 + AP_GETTINGDATA;
+  if ((*in == AP_GETTINGDATA) || (*in == AP_GETONE)) {
+    *in = *in + AP_GETTINGDATA;
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_autoplaylist.cpp",
@@ -52,9 +53,9 @@ sv_apstate_t * __cdecl operator++(sv_apstate_t *param_1)
       psVar3 = (sv_apstate_t *)(*pcVar1)();
       return psVar3;
     }
-    *param_1 = AP_ERROR;
+    *in = AP_ERROR;
   }
-  return param_1;
+  return in;
 }
 
 
@@ -85,12 +86,12 @@ void __cdecl SV_AP_DumpTable(void)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
   bVar1 = Dvar_GetBool("sv_ap_debug");
   if (bVar1) {
     Com_Printf(0xf,"\n**************************************\nPlaylist\t\tProbability\n");
-    for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
+    for (i = 0; i < 0x40; i = i + 1) {
       Com_Printf(0xf,"%i\t\t%u\n");
     }
     Com_Printf(0xf,"\n**************************************\n");
@@ -101,10 +102,13 @@ void __cdecl SV_AP_DumpTable(void)
 
 // 006F86E0  comparePlaylists  (server_mp/sv_autoplaylist.cpp:96)
 
-int __cdecl comparePlaylists(void *param_1,void *param_2)
+int __cdecl comparePlaylists(void *p1,void *p2)
 
 {
-  return *(int *)param_2 - *(int *)param_1;
+  goaldiff_t *playlist1;
+  goaldiff_t *playlist2;
+  
+  return *(int *)p2 - *(int *)p1;
 }
 
 
@@ -121,116 +125,117 @@ int __cdecl SV_AP_PlaylistFromDistribution(void)
   int iVar5;
   int *piVar6;
   int *piVar7;
-  int local_4c4;
-  int local_4c0;
-  int local_4bc;
-  int local_4b4;
-  int local_4b0;
-  int local_4ac;
+  int i_5;
+  int i_4;
+  int i_3;
+  int goal;
+  int i_2;
+  int i;
+  int probdists;
   uchar local_4a8 [252];
-  uint local_3ac;
-  int local_3a8;
-  uint local_3a4;
-  int local_3a0;
-  int local_39c;
+  int choice;
+  int activeplaylists;
+  int numchoices;
+  int totalservers;
+  int retvals;
   uchar local_398 [400];
-  int local_208;
-  int local_204 [128];
+  int count;
+  int playlists [128];
   
-  local_3a0 = 0;
-  local_4ac = 0;
+  totalservers = 0;
+  probdists = 0;
   memset(local_4a8,'\0',0xfc);
-  local_3a8 = 0;
-  local_3a4 = 0;
-  for (local_4b0 = 0; local_4b0 < 0x40; local_4b0 = local_4b0 + 1) {
-    local_3a0 = local_3a0 + s_bdGroupCounts[local_4b0].m_groupCount;
-    if (0 < s_probabilities[local_4b0]) {
-      local_3a8 = local_3a8 + 1;
+  activeplaylists = 0;
+  numchoices = 0;
+  for (i = 0; i < 0x40; i = i + 1) {
+    totalservers = totalservers + s_bdGroupCounts[i].m_groupCount;
+    if (0 < s_probabilities[i]) {
+      activeplaylists = activeplaylists + 1;
     }
   }
   if (firstTimeRunning != false) {
-    local_3a0 = local_3a0 + 1;
+    totalservers = totalservers + 1;
   }
   bVar3 = Dvar_GetBool("sv_ap_debug");
   if (bVar3) {
     va("%i total servers in geogroup\n");
     Com_Printf(0xf,"AP: %s\n");
   }
-  if (local_3a8 < local_3a0) {
-    for (local_4b4 = 0; local_4b4 < 0x40; local_4b4 = local_4b4 + 1) {
-      local_204[local_4b4 * 2] =
-           (int)((double)local_3a0 * ((double)s_probabilities[local_4b4] / 100.0)) -
-           s_bdGroupCounts[local_4b4].m_groupCount;
-      local_204[local_4b4 * 2 + 1] = local_4b4;
+  if (activeplaylists < totalservers) {
+    for (i_2 = 0; i_2 < 0x40; i_2 = i_2 + 1) {
+      playlists[i_2 * 2] =
+           (int)((double)totalservers * ((double)s_probabilities[i_2] / 100.0)) -
+           s_bdGroupCounts[i_2].m_groupCount;
+      playlists[i_2 * 2 + 1] = i_2;
     }
-    qsort(local_204,0x40,8,comparePlaylists);
-    for (local_4bc = 0; local_4bc < 0x40; local_4bc = local_4bc + 1) {
-      if (0 < local_204[local_4bc * 2]) {
-        *(int *)(local_4a8 + local_204[local_4bc * 2 + 1] * 4 + -4) =
-             (int)(((double)local_204[local_4bc * 2] / (double)local_3a0) * 100.0);
-        local_3a4 = local_3a4 + *(int *)(local_4a8 + local_204[local_4bc * 2 + 1] * 4 + -4);
+    qsort(playlists,0x40,8,comparePlaylists);
+    for (i_3 = 0; i_3 < 0x40; i_3 = i_3 + 1) {
+      if (0 < playlists[i_3 * 2]) {
+        *(int *)(local_4a8 + playlists[i_3 * 2 + 1] * 4 + -4) =
+             (int)(((double)playlists[i_3 * 2] / (double)totalservers) * 100.0);
+        numchoices = numchoices + *(int *)(local_4a8 + playlists[i_3 * 2 + 1] * 4 + -4);
       }
     }
   }
   else {
     piVar6 = s_probabilities;
-    piVar7 = &local_4ac;
+    piVar7 = &probdists;
     for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
       *piVar7 = *piVar6;
       piVar6 = piVar6 + 1;
       piVar7 = piVar7 + 1;
     }
-    local_3a4 = 100;
+    numchoices = 100;
   }
-  if ((local_3a4 == 0) && (firstTimeRunning == false)) {
+  if ((numchoices == 0) && (firstTimeRunning == false)) {
     firstTimeRunning = false;
     iVar5 = (playlist->current).integer;
   }
   else {
-    if ((local_3a4 == 0) && (firstTimeRunning != false)) {
+    if ((numchoices == 0) && (firstTimeRunning != false)) {
       piVar6 = s_probabilities;
-      piVar7 = &local_4ac;
+      piVar7 = &probdists;
       for (iVar5 = 0x40; iVar5 != 0; iVar5 = iVar5 + -1) {
         *piVar7 = *piVar6;
         piVar6 = piVar6 + 1;
         piVar7 = piVar7 + 1;
       }
-      for (local_4c0 = 0; local_4c0 < 0x40; local_4c0 = local_4c0 + 1) {
-        if (local_204[local_4c0 * 2] < 0) {
-          puVar1 = local_4a8 + local_4c0 * 4 + -4;
+      for (i_4 = 0; i_4 < 0x40; i_4 = i_4 + 1) {
+        if (playlists[i_4 * 2] < 0) {
+          puVar1 = local_4a8 + i_4 * 4 + -4;
           puVar1[0] = '\0';
           puVar1[1] = '\0';
           puVar1[2] = '\0';
           puVar1[3] = '\0';
         }
-        local_3a4 = local_3a4 + *(int *)(local_4a8 + local_204[local_4c0 * 2 + 1] * 4 + -4);
+        numchoices = numchoices + *(int *)(local_4a8 + playlists[i_4 * 2 + 1] * 4 + -4);
       }
-      if (local_3a4 == 0) {
-        local_3a4 = 100;
+      if (numchoices == 0) {
+        numchoices = 100;
       }
     }
-    local_208 = 0;
-    local_39c = 0;
+    count = 0;
+    retvals = 0;
     memset(local_398,'\0',0x18c);
-    for (local_4c4 = 0; local_4c4 < 0x40; local_4c4 = local_4c4 + 1) {
-      if (((int)local_3a4 < local_208) &&
+    for (i_5 = 0; i_5 < 0x40; i_5 = i_5 + 1) {
+      if ((numchoices < count) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_autoplaylist.cpp"
                                    ,0xb8,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         iVar5 = (*pcVar2)();
         return iVar5;
       }
-      while (0 < *(int *)(local_4a8 + local_4c4 * 4 + -4)) {
-        *(int *)(local_398 + local_208 * 4 + -4) = local_4c4;
-        local_208 = local_208 + 1;
-        *(int *)(local_4a8 + local_4c4 * 4 + -4) = *(int *)(local_4a8 + local_4c4 * 4 + -4) + -1;
+      while (0 < *(int *)(local_4a8 + i_5 * 4 + -4)) {
+        *(int *)(local_398 + count * 4 + -4) = i_5;
+        count = count + 1;
+        *(int *)(local_4a8 + i_5 * 4 + -4) = *(int *)(local_4a8 + i_5 * 4 + -4) + -1;
       }
     }
     firstTimeRunning = false;
     this = bdSingleton<bdTrulyRandomImpl>::getInstance();
     uVar4 = bdTrulyRandomImpl::getRandomUInt(this);
-    local_3ac = uVar4 % local_3a4;
-    iVar5 = *(int *)(local_398 + (uVar4 % local_3a4) * 4 + -4);
+    choice = uVar4 % (uint)numchoices;
+    iVar5 = *(int *)(local_398 + (uVar4 % (uint)numchoices) * 4 + -4);
   }
   return iVar5;
 }
@@ -238,34 +243,38 @@ int __cdecl SV_AP_PlaylistFromDistribution(void)
 
 // 006F7F00  SV_AP_ParseControlFile  (server_mp/sv_autoplaylist.cpp:198)
 
-bool __cdecl SV_AP_ParseControlFile(uchar *param_1)
+bool __cdecl SV_AP_ParseControlFile(uchar *controlFile)
 
 {
   bool bVar1;
   char *pcVar2;
   uint uVar3;
   int iVar4;
-  int local_18;
-  int local_14;
-  uchar *local_10;
-  undefined1 local_9;
-  int local_8;
+  int playlist_2;
+  int probability;
+  int playlist;
+  char *token;
+  int totalProb;
+  int numPlaylists;
+  char *cFile;
+  bool retval;
+  int line;
   
-  local_10 = param_1;
-  local_14 = 0;
-  local_18 = 0;
-  local_8 = 0;
-  local_9 = 0;
+  cFile = (char *)controlFile;
+  numPlaylists = 0;
+  totalProb = 0;
+  line = 0;
+  retval = false;
   Com_BeginParseSession("AutoPlaylist");
   Com_SetSpaceDelimited(0);
   Com_SetCSV(1);
   do {
     while( true ) {
-      local_8 = local_8 + 1;
-      pcVar2 = Com_Parse((char **)&local_10);
+      line = line + 1;
+      pcVar2 = Com_Parse(&cFile);
       if ((pcVar2 == (char *)0x0) || (*pcVar2 == '\0')) goto LAB_006f817e;
       if (*pcVar2 != '#') break;
-      Com_SkipRestOfLine((char **)&local_10);
+      Com_SkipRestOfLine(&cFile);
     }
     iVar4 = atoi(pcVar2);
     if ((iVar4 < 1) || (0x3f < iVar4)) {
@@ -280,7 +289,7 @@ bool __cdecl SV_AP_ParseControlFile(uchar *param_1)
       }
       goto LAB_006f817e;
     }
-    pcVar2 = Com_Parse((char **)&local_10);
+    pcVar2 = Com_Parse(&cFile);
     uVar3 = atoi(pcVar2);
     if (((int)uVar3 < 0) || (100 < (int)uVar3)) {
       bVar1 = Dvar_GetBool("sv_ap_fatal");
@@ -295,9 +304,9 @@ bool __cdecl SV_AP_ParseControlFile(uchar *param_1)
       goto LAB_006f817e;
     }
     s_probabilities[iVar4] = uVar3 & 0xff;
-    local_18 = local_18 + uVar3;
-    local_14 = local_14 + 1;
-    if (local_14 == 0x40) {
+    totalProb = totalProb + uVar3;
+    numPlaylists = numPlaylists + 1;
+    if (numPlaylists == 0x40) {
       bVar1 = Dvar_GetBool("sv_ap_fatal");
       if (bVar1) {
         Com_Error(ERR_DROP,"AP error: %s\n");
@@ -307,7 +316,7 @@ bool __cdecl SV_AP_ParseControlFile(uchar *param_1)
       }
       goto LAB_006f817e;
     }
-  } while (local_18 < 0x65);
+  } while (totalProb < 0x65);
   bVar1 = Dvar_GetBool("sv_ap_fatal");
   if (bVar1) {
     va("We\'ve exceeded 100%% total probability on line %i\n");
@@ -319,13 +328,13 @@ bool __cdecl SV_AP_ParseControlFile(uchar *param_1)
   }
 LAB_006f817e:
   Com_EndParseSession();
-  if (local_18 == 100) {
+  if (totalProb == 100) {
     bVar1 = Dvar_GetBool("sv_ap_debug");
     if (bVar1) {
       va("Successfully parsed %i playlist probabilities, %i lines\n");
       Com_Printf(0xf,"AP: %s\n");
     }
-    local_9 = 1;
+    retval = true;
     SV_AP_DumpTable();
     iVar4 = SV_AP_PlaylistFromDistribution();
     bVar1 = Dvar_GetBool("sv_ap_debug");
@@ -347,13 +356,13 @@ LAB_006f817e:
       Com_PrintError(0xf,"AP Error: %s\n");
     }
   }
-  return (bool)local_9;
+  return retval;
 }
 
 
 // 006F8710  SV_AP_GetControlFileComplete  (server_mp/sv_autoplaylist.cpp:284)
 
-void __cdecl SV_AP_GetControlFileComplete(int param_1,void *param_2)
+void __cdecl SV_AP_GetControlFileComplete(int __formal,void *payload)
 
 {
   bool bVar1;
@@ -369,7 +378,7 @@ void __cdecl SV_AP_GetControlFileComplete(int param_1,void *param_2)
 
 // 006F8750  SV_AP_GetControlFileFailure  (server_mp/sv_autoplaylist.cpp:290)
 
-taskCompleteResults __cdecl SV_AP_GetControlFileFailure(int param_1,void *param_2)
+taskCompleteResults __cdecl SV_AP_GetControlFileFailure(int __formal,void *payload)
 
 {
   bool bVar1;
@@ -387,12 +396,13 @@ taskCompleteResults __cdecl SV_AP_GetControlFileFailure(int param_1,void *param_
 
 // 006F88D0  SV_AP_GetControlFileName  (server_mp/sv_autoplaylist.cpp:298)
 
-void __cdecl SV_AP_GetControlFileName(char *param_1,int param_2)
+void __cdecl SV_AP_GetControlFileName(char *buf,int buflen)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *src;
+  char *filename;
   
   if ((sv_geolocation == (dvar_s *)0x0) || (*(sv_geolocation->current).string == '\0')) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_autoplaylist.cpp",299
@@ -413,8 +423,8 @@ void __cdecl SV_AP_GetControlFileName(char *param_1,int param_2)
     }
   }
   else {
-    pcVar3 = va("%s%s");
-    I_strncpyz(param_1,pcVar3,param_2);
+    src = va("%s%s");
+    I_strncpyz(buf,src,buflen);
   }
   return;
 }
@@ -428,10 +438,11 @@ TaskRecord * __cdecl SV_AP_GetControlFile(void)
 
 {
   bool bVar1;
-  TaskRecord *pTVar2;
-  TaskRecord *local_8;
+  TaskRecord *nestTask;
+  TaskRecord *nestedTask;
+  TaskRecord *task;
   
-  local_8 = (TaskRecord *)0x0;
+  task = (TaskRecord *)0x0;
   SV_AP_GetControlFileName(s_controlFileName,0x20);
   s_finfo.isUserFile = false;
   s_finfo.isCompressedFile = false;
@@ -440,8 +451,8 @@ TaskRecord * __cdecl SV_AP_GetControlFile(void)
   s_finfo.bufferSize = 0x400;
   s_finfo.fileOperationSucessFunction = SV_AP_GetControlFileComplete;
   s_finfo.fileNotFoundFunction = SV_AP_GetControlFileFailure;
-  pTVar2 = LiveStorage_ReadDWFile(0,&s_finfo);
-  if (pTVar2 == (TaskRecord *)0x0) {
+  nestTask = LiveStorage_ReadDWFile(0,&s_finfo);
+  if (nestTask == (TaskRecord *)0x0) {
     bVar1 = Dvar_GetBool("sv_ap_fatal");
     if (bVar1) {
       Com_Error(ERR_DROP,"AP error: %s\n");
@@ -451,8 +462,8 @@ TaskRecord * __cdecl SV_AP_GetControlFile(void)
     }
   }
   else {
-    local_8 = TaskManager2_CreateTask(task_SVFetchControlFile,0,pTVar2,0);
-    if (local_8 == (TaskRecord *)0x0) {
+    task = TaskManager2_CreateTask(task_SVFetchControlFile,0,nestTask,0);
+    if (task == (TaskRecord *)0x0) {
       bVar1 = Dvar_GetBool("sv_ap_fatal");
       if (bVar1) {
         Com_Error(ERR_DROP,"AP error: %s\n");
@@ -462,10 +473,10 @@ TaskRecord * __cdecl SV_AP_GetControlFile(void)
       }
     }
     else {
-      TaskManager2_StartTask(local_8);
+      TaskManager2_StartTask(task);
     }
   }
-  return local_8;
+  return task;
 }
 
 
@@ -473,14 +484,15 @@ TaskRecord * __cdecl SV_AP_GetControlFile(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SV_GroupError(char *param_1)
+void __cdecl SV_GroupError(char *fmt)
 
 {
-  char local_8c [132];
+  char *argptr;
+  char msg [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_8c,0x80,param_1,&stack0x00000008);
+  _vsnprintf(msg,0x80,fmt,&stack0x00000008);
   Com_PrintError(0xf,"GROUPS: %s\n");
   return;
 }
@@ -490,7 +502,7 @@ void __cdecl SV_GroupError(char *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_SetGroupCountsComplete(TaskRecord *param_1)
+void __cdecl SV_SetGroupCountsComplete(TaskRecord *task)
 
 {
   bool bVar1;
@@ -514,7 +526,7 @@ void __cdecl SV_SetGroupCountsComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_GetGroupCountsComplete(TaskRecord *param_1)
+void __cdecl SV_GetGroupCountsComplete(TaskRecord *task)
 
 {
   code *pcVar1;
@@ -541,11 +553,13 @@ void __cdecl SV_GetGroupCountsComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_GroupsFailure(TaskRecord *param_1)
+void __cdecl SV_GroupsFailure(TaskRecord *task)
 
 {
-  if ((param_1->remoteTask).m_ptr != (bdRemoteTask *)0x0) {
-    bdRemoteTask::getErrorCode((param_1->remoteTask).m_ptr);
+  bdLobbyErrorCode errcode;
+  
+  if ((task->remoteTask).m_ptr != (bdRemoteTask *)0x0) {
+    bdRemoteTask::getErrorCode((task->remoteTask).m_ptr);
   }
   SV_GroupError("Remote async task failed: %i");
   return;
@@ -559,32 +573,32 @@ void __cdecl SV_GroupsFailure(TaskRecord *param_1)
 TaskRecord * __cdecl SV_GetGroupCounts(void)
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_21c;
-  int local_218;
-  int local_214;
-  TaskRecord *local_210;
-  int local_20c;
+  int j;
+  int i;
+  TaskRecord *task;
+  int groupids;
   uchar local_208 [512];
-  bdGroup *local_8;
+  bdGroup *group;
   
-  local_210 = TaskManager2_CreateTask(task_getGroupCounts,0,(TaskRecord *)0x0,0);
-  local_8 = dwGetGroup(0);
-  local_20c = 0;
+  task = TaskManager2_CreateTask(task_getGroupCounts,0,(TaskRecord *)0x0,0);
+  group = dwGetGroup(0);
+  groupids = 0;
   memset(local_208,'\0',0x1fc);
-  local_214 = s_geogroupid;
-  for (local_218 = 0; local_218 < 0x80; local_218 = local_218 + 1) {
-    *(int *)(local_208 + local_218 * 4 + -4) = local_214;
-    local_214 = local_214 + 1;
+  i = s_geogroupid;
+  for (j = 0; j < 0x80; j = j + 1) {
+    *(int *)(local_208 + j * 4 + -4) = i;
+    i = i + 1;
   }
-  bVar1 = bdGroup::getGroupCounts
-                    (local_8,(uint *)&local_21c,(uint)&local_20c,(bdGroupCount *)0x80,0x979cf88);
+  other_3 = bdGroup::getGroupCounts
+                      (group,(uint *)&local_21c,(uint)&groupids,(bdGroupCount *)0x80,0x979cf88);
   bdReference<bdAddrHandle>::operator=
-            ((bdReference<bdAddrHandle> *)&local_210->remoteTask,
-             (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+            ((bdReference<bdAddrHandle> *)&task->remoteTask,
+             (bdReference<bdAddrHandle> *)other_3.m_ptr);
   bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_21c);
-  TaskManager2_StartTask(local_210);
-  return local_210;
+  TaskManager2_StartTask(task);
+  return task;
 }
 
 
@@ -592,18 +606,18 @@ TaskRecord * __cdecl SV_GetGroupCounts(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl SV_Groups_SetGroupMembership(bool param_1)
+void __cdecl SV_Groups_SetGroupMembership(bool full)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  bdReference<bdRemoteTask> bVar4;
+  int licensetype;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_20;
-  TaskRecord *local_1c;
-  int local_18;
-  char *local_14 [3];
-  bdGroup *local_8;
+  TaskRecord *task;
+  int numgroups;
+  char *groupIDs [3];
+  bdGroup *group;
   
   if ((playlist == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_autoplaylist.cpp",
@@ -612,47 +626,47 @@ void __cdecl SV_Groups_SetGroupMembership(bool param_1)
     (*pcVar1)();
     return;
   }
-  if ((cachedFull == false) || (!param_1)) {
-    cachedFull = param_1;
+  if ((cachedFull == false) || (!full)) {
+    cachedFull = full;
     if (s_geogroupid == -1) {
       SV_GroupError("No group to join");
     }
     else {
-      local_8 = dwGetGroup(0);
-      if (local_8 == (bdGroup *)0x0) {
+      group = dwGetGroup(0);
+      if (group == (bdGroup *)0x0) {
         SV_GroupError("Couldn\'t get group access, probable connectivity problem");
       }
       else {
-        local_14[0] = (playlist->current).string + s_geogroupid;
-        local_18 = 1;
+        groupIDs[0] = (playlist->current).string + s_geogroupid;
+        numgroups = 1;
         bVar2 = SV_IsWagerServer();
         if (bVar2) {
-          local_14[local_18] = (char *)0x1ec;
-          local_18 = local_18 + 1;
+          groupIDs[numgroups] = (char *)0x1ec;
+          numgroups = numgroups + 1;
         }
         else {
-          iVar3 = SV_GetLicenseType();
-          bVar2 = SV_IsServerRanked(iVar3);
+          licensetype = SV_GetLicenseType();
+          bVar2 = SV_IsServerRanked(licensetype);
           if (bVar2) {
-            local_14[local_18] = (char *)0x1ea;
-            local_18 = local_18 + 1;
+            groupIDs[numgroups] = (char *)0x1ea;
+            numgroups = numgroups + 1;
           }
           else {
-            local_14[local_18] = (char *)0x1eb;
-            local_18 = local_18 + 1;
+            groupIDs[numgroups] = (char *)0x1eb;
+            numgroups = numgroups + 1;
           }
         }
-        if (param_1) {
-          local_14[local_18] = (playlist->current).string + s_geogroupid + 0x40;
-          local_18 = local_18 + 1;
+        if (full) {
+          groupIDs[numgroups] = (playlist->current).string + s_geogroupid + 0x40;
+          numgroups = numgroups + 1;
         }
-        local_1c = TaskManager2_CreateTask(task_SVSetGroups,0,(TaskRecord *)0x0,0);
-        bVar4 = bdGroup::setGroups(local_8,(uint *)&local_20,(uint)local_14);
+        task = TaskManager2_CreateTask(task_SVSetGroups,0,(TaskRecord *)0x0,0);
+        other_3 = bdGroup::setGroups(group,(uint *)&local_20,(uint)groupIDs);
         bdReference<bdAddrHandle>::operator=
-                  ((bdReference<bdAddrHandle> *)&local_1c->remoteTask,
-                   (bdReference<bdAddrHandle> *)bVar4.m_ptr);
+                  ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                   (bdReference<bdAddrHandle> *)other_3.m_ptr);
         bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_20);
-        TaskManager2_StartTask(local_1c);
+        TaskManager2_StartTask(task);
       }
     }
   }
@@ -662,17 +676,22 @@ void __cdecl SV_Groups_SetGroupMembership(bool param_1)
 
 // 006F8DE0  SV_Groups_ParseGeos  (server_mp/sv_autoplaylist.cpp:473)
 
-void __cdecl SV_Groups_ParseGeos(char *param_1)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl SV_Groups_ParseGeos(char *geoblob)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  char *pcVar5;
-  int local_8;
+  char *s0;
+  int iVar3;
+  char *pcVar4;
+  char *country;
+  char *geoID;
+  char *myloc;
+  int loc_count;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((geoblob == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_autoplaylist.cpp",
                                0x1da,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -687,25 +706,25 @@ void __cdecl SV_Groups_ParseGeos(char *param_1)
   else {
     Com_Printf(0xf,"Setting location to %s\n");
   }
-  pcVar5 = (sv_geolocation->current).string;
-  local_8 = 0;
+  pcVar4 = (sv_geolocation->current).string;
+  loc_count = 0;
   Com_BeginParseSession("geogroups");
   Com_SetSpaceDelimited(1);
   while( true ) {
-    while ((pcVar3 = Com_Parse(&param_1), pcVar3 != (char *)0x0 && (*pcVar3 == '#'))) {
-      Com_SkipRestOfLine(&param_1);
+    while ((s0 = Com_Parse(&geoblob), s0 != (char *)0x0 && (*s0 == '#'))) {
+      Com_SkipRestOfLine(&geoblob);
     }
-    if ((pcVar3 == (char *)0x0) || (*pcVar3 == '\0')) goto LAB_006f8f52;
-    iVar4 = I_stricmp(pcVar3,pcVar5);
-    if (iVar4 == 0) break;
-    Com_SkipRestOfLine(&param_1);
-    local_8 = local_8 + 1;
+    if ((s0 == (char *)0x0) || (*s0 == '\0')) goto LAB_006f8f52;
+    iVar3 = I_stricmp(s0,pcVar4);
+    if (iVar3 == 0) break;
+    Com_SkipRestOfLine(&geoblob);
+    loc_count = loc_count + 1;
   }
-  s_geogroupid = local_8 * 0x80 + 500;
+  s_geogroupid = loc_count * 0x80 + 500;
   Com_DPrintf(0xf,"GEOGROUPS: Set groupid to %i from geo %s\n");
-  pcVar5 = Com_ParseOnLine(&param_1);
-  iVar4 = atoi(pcVar5);
-  SV_SetRegion(iVar4);
+  pcVar4 = Com_ParseOnLine(&geoblob);
+  iVar3 = atoi(pcVar4);
+  SV_SetRegion(iVar3);
 LAB_006f8f52:
   Com_EndParseSession();
   if (s_geogroupid == -1) {
@@ -732,11 +751,12 @@ LAB_006f8f52:
 bool __cdecl SV_AP_ServerIsFull(void)
 
 {
-  int local_c;
+  int i;
+  bool retval;
   
   if ((com_sv_running != (dvar_s *)0x0) && ((com_sv_running->current).enabled != false)) {
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if (*(int *)((int)svs.clients + local_c * 0x84d00) == 0) {
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if (*(int *)((int)svs.clients + i * 0x84d00) == 0) {
         return false;
       }
     }

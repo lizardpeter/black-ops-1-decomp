@@ -11,14 +11,14 @@ uint __cdecl BG_GetNumWeapons(void)
 
 // 0045E790  BG_GetWeaponVariantDef  (bgame/bg_weapons_def.cpp:62)
 
-WeaponVariantDef * __cdecl BG_GetWeaponVariantDef(uint param_1)
+WeaponVariantDef * __cdecl BG_GetWeaponVariantDef(uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponVariantDef *pWVar3;
   
-  if ((bg_lastParsedWeaponIndex < param_1) &&
+  if ((bg_lastParsedWeaponIndex < weaponIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x3f,0
                                ,
                                "weaponIndex not in [0, bg_lastParsedWeaponIndex]\n\t%i not in [%i, %i]"
@@ -27,20 +27,20 @@ WeaponVariantDef * __cdecl BG_GetWeaponVariantDef(uint param_1)
     pWVar3 = (WeaponVariantDef *)(*pcVar1)();
     return pWVar3;
   }
-  return bg_weaponVariantDefs[param_1];
+  return bg_weaponVariantDefs[weaponIndex];
 }
 
 
 // 0045E7E0  BG_GetWeaponDef  (bgame/bg_weapons_def.cpp:70)
 
-WeaponDef * __cdecl BG_GetWeaponDef(uint param_1)
+WeaponDef * __cdecl BG_GetWeaponDef(uint weaponIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
   
-  if ((bg_lastParsedWeaponIndex < param_1) &&
+  if ((bg_lastParsedWeaponIndex < weaponIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x4b,0
                                ,
                                "weaponIndex not in [0, bg_lastParsedWeaponIndex]\n\t%i not in [%i, %i]"
@@ -49,36 +49,36 @@ WeaponDef * __cdecl BG_GetWeaponDef(uint param_1)
     pWVar3 = (WeaponDef *)(*pcVar1)();
     return pWVar3;
   }
-  return bg_weaponVariantDefs[param_1]->weapDef;
+  return bg_weaponVariantDefs[weaponIndex]->weapDef;
 }
 
 
 // 0045E830  BG_GetWeaponIndex  (bgame/bg_weapons_def.cpp:83)
 
-uint __cdecl BG_GetWeaponIndex(WeaponVariantDef *param_1)
+uint __cdecl BG_GetWeaponIndex(WeaponVariantDef *weapVariantDef)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_8;
+  uint weapIndex;
   
-  if ((param_1 == (WeaponVariantDef *)0x0) &&
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x57,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_8 = 0;
+  weapIndex = 0;
   while( true ) {
-    if (bg_lastParsedWeaponIndex < local_8) {
+    if (bg_lastParsedWeaponIndex < weapIndex) {
       return 0;
     }
-    if (param_1 == bg_weaponVariantDefs[local_8]) break;
-    local_8 = local_8 + 1;
+    if (weapVariantDef == bg_weaponVariantDefs[weapIndex]) break;
+    weapIndex = weapIndex + 1;
   }
-  return local_8;
+  return weapIndex;
 }
 
 
@@ -91,15 +91,17 @@ void __cdecl BG_FreeWeaponDefStrings(void)
   WeaponDef *pWVar2;
   code *pcVar3;
   bool bVar4;
-  uint local_14;
-  uint local_c;
+  uint j;
+  WeaponVariantDef *weapVariantDef;
+  uint i;
+  WeaponDef *weapDef;
   
-  local_c = 1;
+  i = 1;
   do {
-    if (bg_lastParsedWeaponIndex < local_c) {
+    if (bg_lastParsedWeaponIndex < i) {
       return;
     }
-    pWVar1 = bg_weaponVariantDefs[local_c];
+    pWVar1 = bg_weaponVariantDefs[i];
     pWVar2 = pWVar1->weapDef;
     if ((pWVar1 == (WeaponVariantDef *)0x0) || (pWVar2 == (WeaponDef *)0x0)) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x6e,0
@@ -110,20 +112,20 @@ void __cdecl BG_FreeWeaponDefStrings(void)
         return;
       }
     }
-    for (local_14 = 0; local_14 < 0x20; local_14 = local_14 + 1) {
-      if (pWVar1->hideTags[local_14] != 0) {
-        SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)pWVar1->hideTags[local_14]);
+    for (j = 0; j < 0x20; j = j + 1) {
+      if (pWVar1->hideTags[j] != 0) {
+        SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)pWVar1->hideTags[j]);
       }
     }
-    for (local_14 = 0; local_14 < 0x14; local_14 = local_14 + 1) {
-      if (pWVar2->notetrackSoundMapKeys[local_14] != 0) {
-        SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)pWVar2->notetrackSoundMapKeys[local_14]);
+    for (j = 0; j < 0x14; j = j + 1) {
+      if (pWVar2->notetrackSoundMapKeys[j] != 0) {
+        SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)pWVar2->notetrackSoundMapKeys[j]);
       }
-      if (pWVar2->notetrackSoundMapValues[local_14] != 0) {
-        SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)pWVar2->notetrackSoundMapValues[local_14]);
+      if (pWVar2->notetrackSoundMapValues[j] != 0) {
+        SL_RemoveRefToString(SCRIPTINSTANCE_SERVER,(uint)pWVar2->notetrackSoundMapValues[j]);
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -154,25 +156,29 @@ void __cdecl BG_ShutdownWeaponDefFiles(void)
 
 // 0045EB60  BG_FillInWeaponItems  (bgame/bg_weapons_def.cpp:159)
 
-void __cdecl BG_FillInWeaponItems(uint param_1)
+void __cdecl BG_FillInWeaponItems(uint weapIndex)
 
 {
-  *(undefined4 *)(&bg_itemlist + param_1 * 4) = 1;
+  gitem_s *pItem;
+  
+  *(undefined4 *)(&bg_itemlist + weapIndex * 4) = 1;
   return;
 }
 
 
 // 0045EE90  BG_SetupWeaponAlts  (bgame/bg_weapons_def.cpp:179)
 
-void __cdecl BG_SetupWeaponAlts(uint param_1,_func___cdecl_void_uint *param_2)
+void __cdecl BG_SetupWeaponAlts(uint weapIndex,_func___cdecl_void_uint *regWeap)
 
 {
   WeaponVariantDef *pWVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
+  int altWeaponIndex;
+  WeaponVariantDef *weapVariantDef;
   
-  if ((bg_lastParsedWeaponIndex < param_1) &&
+  if ((bg_lastParsedWeaponIndex < weapIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0xb7,0
                                ,
                                "weapIndex not in [0, bg_lastParsedWeaponIndex]\n\t%i not in [%i, %i]"
@@ -181,12 +187,12 @@ void __cdecl BG_SetupWeaponAlts(uint param_1,_func___cdecl_void_uint *param_2)
     (*pcVar2)();
     return;
   }
-  pWVar1 = bg_weaponVariantDefs[param_1];
+  pWVar1 = bg_weaponVariantDefs[weapIndex];
   pWVar1->altWeaponIndex = 0;
   if (*pWVar1->szAltWeaponName != '\0') {
-    uVar4 = BG_GetWeaponIndexForName(pWVar1->szAltWeaponName,param_2);
+    uVar4 = BG_GetWeaponIndexForName(pWVar1->szAltWeaponName,regWeap);
     if (uVar4 == 0) {
-      BG_WeaponName(param_1);
+      BG_WeaponName(weapIndex);
       Com_Error(ERR_DROP,"\x15could not find altWeapon \'%s\' for weapon \'%s\'");
     }
     pWVar1->altWeaponIndex = uVar4;
@@ -197,18 +203,20 @@ void __cdecl BG_SetupWeaponAlts(uint param_1,_func___cdecl_void_uint *param_2)
 
 // 0045EF50  BG_SetupDualWieldAlts  (bgame/bg_weapons_def.cpp:208)
 
-void __cdecl BG_SetupDualWieldAlts(uint param_1,_func___cdecl_void_uint *param_2)
+void __cdecl BG_SetupDualWieldAlts(uint weapIndex,_func___cdecl_void_uint *regWeap)
 
 {
   WeaponDef *pWVar1;
   uint uVar2;
+  int altWeaponIndex;
+  WeaponDef *weapDef;
   
-  pWVar1 = bg_weaponVariantDefs[param_1]->weapDef;
+  pWVar1 = bg_weaponVariantDefs[weapIndex]->weapDef;
   if ((pWVar1->bDualWield != false) &&
      (pWVar1->dualWieldWeaponIndex = 0, *pWVar1->szDualWieldWeaponName != '\0')) {
-    uVar2 = BG_GetWeaponIndexForName(pWVar1->szDualWieldWeaponName,param_2);
+    uVar2 = BG_GetWeaponIndexForName(pWVar1->szDualWieldWeaponName,regWeap);
     if (uVar2 == 0) {
-      BG_WeaponName(param_1);
+      BG_WeaponName(weapIndex);
       Com_Error(ERR_DROP,"\x15could not find alt Dual Wield Weapon \'%s\' for weapon \'%s\'");
     }
     pWVar1->dualWieldWeaponIndex = uVar2;
@@ -219,20 +227,22 @@ void __cdecl BG_SetupDualWieldAlts(uint param_1,_func___cdecl_void_uint *param_2
 
 // 0045EFF0  BG_SetupWeaponMountedVersions  (bgame/bg_weapons_def.cpp:231)
 
-void __cdecl BG_SetupWeaponMountedVersions(uint param_1,_func___cdecl_void_uint *param_2)
+void __cdecl BG_SetupWeaponMountedVersions(uint weaponIndex,_func___cdecl_void_uint *regWeap)
 
 {
   WeaponDef *pWVar1;
   uint uVar2;
+  int mountedWeaponIndex;
+  WeaponDef *weapDef;
   
-  pWVar1 = bg_weaponVariantDefs[param_1]->weapDef;
+  pWVar1 = bg_weaponVariantDefs[weaponIndex]->weapDef;
   pWVar1->standMountedIndex = 0;
   pWVar1->crouchMountedIndex = 0;
   pWVar1->proneMountedIndex = 0;
   if (*pWVar1->standMountedWeapdef != '\0') {
-    uVar2 = BG_GetWeaponIndexForName(pWVar1->standMountedWeapdef,param_2);
+    uVar2 = BG_GetWeaponIndexForName(pWVar1->standMountedWeapdef,regWeap);
     if (uVar2 == 0) {
-      BG_WeaponName(param_1);
+      BG_WeaponName(weaponIndex);
       Com_Error(ERR_DROP,
                 "\x15could not find standingWeapdef \'%s\' for weapon \'%s\' Please add the line \'weapon,sp/%s\' to your level csv"
                );
@@ -240,9 +250,9 @@ void __cdecl BG_SetupWeaponMountedVersions(uint param_1,_func___cdecl_void_uint 
     pWVar1->standMountedIndex = uVar2;
   }
   if (*pWVar1->crouchMountedWeapdef != '\0') {
-    uVar2 = BG_GetWeaponIndexForName(pWVar1->crouchMountedWeapdef,param_2);
+    uVar2 = BG_GetWeaponIndexForName(pWVar1->crouchMountedWeapdef,regWeap);
     if (uVar2 == 0) {
-      BG_WeaponName(param_1);
+      BG_WeaponName(weaponIndex);
       Com_Error(ERR_DROP,
                 "\x15could not find crouchingWeapdef \'%s\' for weapon \'%s\' Please add the line \'weapon,sp/%s\' to your level csv"
                );
@@ -250,9 +260,9 @@ void __cdecl BG_SetupWeaponMountedVersions(uint param_1,_func___cdecl_void_uint 
     pWVar1->crouchMountedIndex = uVar2;
   }
   if (*pWVar1->proneMountedWeapdef != '\0') {
-    uVar2 = BG_GetWeaponIndexForName(pWVar1->proneMountedWeapdef,param_2);
+    uVar2 = BG_GetWeaponIndexForName(pWVar1->proneMountedWeapdef,regWeap);
     if (uVar2 == 0) {
-      BG_WeaponName(param_1);
+      BG_WeaponName(weaponIndex);
       Com_Error(ERR_DROP,
                 "\x15could not find proneWeapdef \'%s\' for weapon \'%s\' Please add the line \'weapon,sp/%s\' to your level csv"
                );
@@ -294,11 +304,11 @@ void __cdecl BG_InitDefaultWeaponDef(void)
 void __cdecl BG_ClearWeaponDef(void)
 
 {
-  int local_8;
+  int itemIdx;
   
   BG_InitDefaultWeaponDef();
-  for (local_8 = 1; local_8 < 0x800; local_8 = local_8 + 1) {
-    *(undefined4 *)(&bg_itemlist + local_8 * 4) = 0;
+  for (itemIdx = 1; itemIdx < 0x800; itemIdx = itemIdx + 1) {
+    *(undefined4 *)(&bg_itemlist + itemIdx * 4) = 0;
   }
   BG_ClearWeaponDefAmmo();
   BG_LoadPlayerAnimTypes();
@@ -311,66 +321,70 @@ void __cdecl BG_ClearWeaponDef(void)
 
 // 0045EB40  BG_SetupWeaponIndex  (bgame/bg_weapons_def.cpp:298)
 
-void __cdecl BG_SetupWeaponIndex(uint param_1)
+void __cdecl BG_SetupWeaponIndex(uint weapIndex)
 
 {
-  BG_SetUpAmmoForWeapon(param_1);
-  BG_FillInWeaponItems(param_1);
+  BG_SetUpAmmoForWeapon(weapIndex);
+  BG_FillInWeaponItems(weapIndex);
   return;
 }
 
 
 // 0045EDA0  BG_SetupWeaponVariantDef  (bgame/bg_weapons_def.cpp:305)
 
-int __cdecl BG_SetupWeaponVariantDef(WeaponVariantDef *param_1,_func___cdecl_void_uint *param_2)
+int __cdecl
+BG_SetupWeaponVariantDef(WeaponVariantDef *weapVariantDef,_func___cdecl_void_uint *regWeap)
 
 {
   code *pcVar1;
-  uint uVar2;
-  bool bVar3;
-  int iVar4;
+  uint weapIndex_00;
+  bool bVar2;
+  int iVar3;
+  int weapIndex;
   
   bg_lastParsedWeaponIndex = bg_lastParsedWeaponIndex + 1;
   if (0x7ff < bg_lastParsedWeaponIndex) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x135,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x135,0,
                              "bg_lastParsedWeaponIndex doesn\'t index ARRAY_COUNT( bg_weaponVariantDefs )\n\t%i not in [0, %i)"
                             );
-    if (!bVar3) {
+    if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar4 = (*pcVar1)();
-      return iVar4;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  uVar2 = bg_lastParsedWeaponIndex;
-  bg_weaponVariantDefs[bg_lastParsedWeaponIndex] = param_1;
-  bg_weaponVariantNameHashTable[uVar2].weaponIndex = uVar2;
-  iVar4 = StringTable_HashString(bg_weaponVariantDefs[uVar2]->szInternalName);
-  bg_weaponVariantNameHashTable[uVar2].hash = iVar4;
+  weapIndex_00 = bg_lastParsedWeaponIndex;
+  bg_weaponVariantDefs[bg_lastParsedWeaponIndex] = weapVariantDef;
+  bg_weaponVariantNameHashTable[weapIndex_00].weaponIndex = weapIndex_00;
+  iVar3 = StringTable_HashString(bg_weaponVariantDefs[weapIndex_00]->szInternalName);
+  bg_weaponVariantNameHashTable[weapIndex_00].hash = iVar3;
   bg_weaponVariantNameHashTableSorted = false;
-  BG_SetupWeaponIndex(uVar2);
-  BG_SetupWeaponAlts(uVar2,param_2);
-  BG_SetupDualWieldAlts(uVar2,param_2);
-  BG_SetupWeaponMountedVersions(uVar2,param_2);
-  if (param_2 != (_func___cdecl_void_uint *)0x0) {
-    (*param_2)(uVar2);
+  BG_SetupWeaponIndex(weapIndex_00);
+  BG_SetupWeaponAlts(weapIndex_00,regWeap);
+  BG_SetupDualWieldAlts(weapIndex_00,regWeap);
+  BG_SetupWeaponMountedVersions(weapIndex_00,regWeap);
+  if (regWeap != (_func___cdecl_void_uint *)0x0) {
+    (*regWeap)(weapIndex_00);
   }
-  return uVar2;
+  return weapIndex_00;
 }
 
 
 // 0045EB00  BG_FillInAllWeaponItems  (bgame/bg_weapons_def.cpp:335)
 
+/* WARNING: Variable defined which should be unmapped: weaponIndex */
+
 void __cdecl BG_FillInAllWeaponItems(void)
 
 {
   uint uVar1;
-  int in_stack_fffffff4;
-  uint uVar2;
+  uint weaponIndex;
+  uint weaponCount;
   
-  GamerProfile_WriteSettings(in_stack_fffffff4);
+  GamerProfile_WriteSettings(weaponIndex);
   uVar1 = BG_GetNumWeapons();
-  for (uVar2 = 1; uVar2 < uVar1; uVar2 = uVar2 + 1) {
-    BG_SetupWeaponIndex(uVar2);
+  for (weaponIndex = 1; weaponIndex < uVar1; weaponIndex = weaponIndex + 1) {
+    BG_SetupWeaponIndex(weaponIndex);
   }
   return;
 }
@@ -378,59 +392,61 @@ void __cdecl BG_FillInAllWeaponItems(void)
 
 // 0045EBB0  BG_SetupAmmoIndexes  (bgame/bg_weapons_def.cpp:348)
 
-void __cdecl BG_SetupAmmoIndexes(uint param_1)
+void __cdecl BG_SetupAmmoIndexes(uint weapIndex)
 
 {
   BG_SetupWeaponDefAmmoIndexes
-            (param_1,bg_weaponVariantDefs[param_1]->weapDef,bg_weaponVariantDefs[param_1]);
+            (weapIndex,bg_weaponVariantDefs[weapIndex]->weapDef,bg_weaponVariantDefs[weapIndex]);
   return;
 }
 
 
 // 0045EBE0  BG_SetupSharedAmmoIndexes  (bgame/bg_weapons_def.cpp:353)
 
-void __cdecl BG_SetupSharedAmmoIndexes(uint param_1)
+void __cdecl BG_SetupSharedAmmoIndexes(uint weapIndex)
 
 {
-  BG_SetupWeaponDefSharedAmmoIndexes(param_1,bg_weaponVariantDefs[param_1]->weapDef);
+  BG_SetupWeaponDefSharedAmmoIndexes(weapIndex,bg_weaponVariantDefs[weapIndex]->weapDef);
   return;
 }
 
 
 // 0045EC00  BG_SetupClipIndexes  (bgame/bg_weapons_def.cpp:358)
 
-void __cdecl BG_SetupClipIndexes(uint param_1)
+void __cdecl BG_SetupClipIndexes(uint weapIndex)
 
 {
-  BG_SetupWeaponDefClipIndexes(bg_weaponVariantDefs[param_1]->weapDef,bg_weaponVariantDefs[param_1])
-  ;
+  BG_SetupWeaponDefClipIndexes
+            (bg_weaponVariantDefs[weapIndex]->weapDef,bg_weaponVariantDefs[weapIndex]);
   return;
 }
 
 
 // 0045EB80  BG_SetUpAmmoForWeapon  (bgame/bg_weapons_def.cpp:363)
 
-void __cdecl BG_SetUpAmmoForWeapon(uint param_1)
+void __cdecl BG_SetUpAmmoForWeapon(uint weapIndex)
 
 {
-  BG_SetupAmmoIndexes(param_1);
-  BG_SetupSharedAmmoIndexes(param_1);
-  BG_SetupClipIndexes(param_1);
+  BG_SetupAmmoIndexes(weapIndex);
+  BG_SetupSharedAmmoIndexes(weapIndex);
+  BG_SetupClipIndexes(weapIndex);
   return;
 }
 
 
 // 0045ECC0  BG_WeaponVariantNameHashCompare  (bgame/bg_weapons_def.cpp:371)
 
-int __cdecl BG_WeaponVariantNameHashCompare(void *param_1,void *param_2)
+int __cdecl BG_WeaponVariantNameHashCompare(void *a,void *b)
 
 {
   int iVar1;
+  WeaponVariantDefHash *wb;
+  WeaponVariantDefHash *wa;
   
-  if (*(int *)param_2 < *(int *)param_1) {
+  if (*(int *)b < *(int *)a) {
     iVar1 = 1;
   }
-  else if (*(int *)param_1 < *(int *)param_2) {
+  else if (*(int *)a < *(int *)b) {
     iVar1 = -1;
   }
   else {
@@ -442,24 +458,26 @@ int __cdecl BG_WeaponVariantNameHashCompare(void *param_1,void *param_2)
 
 // 0045EC30  BG_FindWeaponIndexForName  (bgame/bg_weapons_def.cpp:385)
 
-int __cdecl BG_FindWeaponIndexForName(char *param_1)
+int __cdecl BG_FindWeaponIndexForName(char *name)
 
 {
   int iVar1;
   void *pvVar2;
-  int local_c [2];
+  WeaponVariantDefHash *ret;
+  int nameHash;
+  int key [2];
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     iVar1 = 0;
   }
   else {
-    local_c[0] = StringTable_HashString(param_1);
+    key[0] = StringTable_HashString(name);
     if (bg_weaponVariantNameHashTableSorted == false) {
       qsort(bg_weaponVariantNameHashTable,bg_lastParsedWeaponIndex + 1,8,
             BG_WeaponVariantNameHashCompare);
       bg_weaponVariantNameHashTableSorted = true;
     }
-    pvVar2 = bsearch(local_c,bg_weaponVariantNameHashTable,bg_lastParsedWeaponIndex + 1,8,
+    pvVar2 = bsearch(key,bg_weaponVariantNameHashTable,bg_lastParsedWeaponIndex + 1,8,
                      BG_WeaponVariantNameHashCompare);
     if (pvVar2 == (void *)0x0) {
       iVar1 = 0;
@@ -475,8 +493,9 @@ int __cdecl BG_FindWeaponIndexForName(char *param_1)
 // 0045F180  BG_IsDefaultWeapon  (bgame/bg_weapons_def.cpp:420)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl BG_IsDefaultWeapon(char *param_1)
+bool __cdecl BG_IsDefaultWeapon(char *name)
 
 {
   bool bVar1;
@@ -491,7 +510,7 @@ bool __cdecl BG_IsDefaultWeapon(char *param_1)
     bVar1 = false;
   }
   else {
-    bVar1 = DB_IsXAssetDefault(ASSET_TYPE_WEAPON,param_1);
+    bVar1 = DB_IsXAssetDefault(ASSET_TYPE_WEAPON,name);
   }
   return bVar1;
 }
@@ -499,32 +518,34 @@ bool __cdecl BG_IsDefaultWeapon(char *param_1)
 
 // 0045ED00  BG_GetWeaponIndexForName  (bgame/bg_weapons_def.cpp:429)
 
-uint __cdecl BG_GetWeaponIndexForName(char *param_1,_func___cdecl_void_uint *param_2)
+uint __cdecl BG_GetWeaponIndexForName(char *name,_func___cdecl_void_uint *regWeap)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
-  WeaponVariantDef *pWVar4;
+  WeaponVariantDef *weapVariantDef_00;
+  WeaponVariantDef *weapVariantDef;
+  uint weapIndex;
   
-  if ((*param_1 == '\0') || (iVar2 = I_stricmp(param_1,"none"), iVar2 == 0)) {
+  if ((*name == '\0') || (iVar2 = I_stricmp(name,"none"), iVar2 == 0)) {
     uVar3 = 0;
   }
   else {
-    uVar3 = BG_FindWeaponIndexForName(param_1);
+    uVar3 = BG_FindWeaponIndexForName(name);
     if (uVar3 == 0) {
-      pWVar4 = BG_LoadWeaponVariantDef(param_1);
-      if (pWVar4 == (WeaponVariantDef *)0x0) {
+      weapVariantDef_00 = BG_LoadWeaponVariantDef(name);
+      if (weapVariantDef_00 == (WeaponVariantDef *)0x0) {
         Com_DPrintf(0x11,"Couldn\'t find weapon \"%s\"\n");
         uVar3 = 0;
       }
       else {
-        bVar1 = BG_IsDefaultWeapon(param_1);
+        bVar1 = BG_IsDefaultWeapon(name);
         if (bVar1) {
           uVar3 = 0;
         }
         else {
-          uVar3 = BG_SetupWeaponVariantDef(pWVar4,param_2);
+          uVar3 = BG_SetupWeaponVariantDef(weapVariantDef_00,regWeap);
         }
       }
     }
@@ -535,12 +556,12 @@ uint __cdecl BG_GetWeaponIndexForName(char *param_1,_func___cdecl_void_uint *par
 
 // 0045F1F0  BG_GetWeaponIndexForName  (bgame/bg_weapons_def.cpp:456)
 
-uint __cdecl BG_GetWeaponIndexForName(char *param_1)
+uint __cdecl BG_GetWeaponIndexForName(char *name)
 
 {
   uint uVar1;
   
-  uVar1 = BG_GetWeaponIndexForName(param_1,(_func___cdecl_void_uint *)0x0);
+  uVar1 = BG_GetWeaponIndexForName(name,(_func___cdecl_void_uint *)0x0);
   return uVar1;
 }
 
@@ -548,47 +569,55 @@ uint __cdecl BG_GetWeaponIndexForName(char *param_1)
 // 0045F6F0  BG_WeaponVariantPrecache  (bgame/bg_weapons_def.cpp:462)
 
 void __cdecl
-BG_WeaponVariantPrecache(int param_1,_func___cdecl_void_uint *param_2,char *param_3,char *param_4)
+BG_WeaponVariantPrecache
+          (int baseWeaponIndex,_func___cdecl_void_uint *regWeap,char *namePrefix,char *namePostfix)
 
 {
   WeaponVariantDef *pWVar1;
   WeaponDef *pWVar2;
-  char *pcVar3;
-  uint uVar4;
-  _func___cdecl_void_uint *p_Var5;
+  char *name;
+  uint uVar3;
+  _func___cdecl_void_uint *regWeap_00;
+  WeaponVariantDef *dualWeapVariantDef;
+  uint dualWeaponIndex;
+  WeaponVariantDef *altWeapVariantDef;
+  uint altWeaponIndex;
+  WeaponDef *weapDef;
+  WeaponVariantDef *weapVariantDef;
+  uint weaponIndex;
   
-  p_Var5 = param_2;
-  pcVar3 = va("%s%s");
-  uVar4 = BG_GetWeaponIndexForName(pcVar3,p_Var5);
-  if (uVar4 == 0) {
+  regWeap_00 = regWeap;
+  name = va("%s%s");
+  uVar3 = BG_GetWeaponIndexForName(name,regWeap_00);
+  if (uVar3 == 0) {
     Com_PrintWarning(0x11,"WARNING: Could not load weapon variant file \'%s%s\'\n");
   }
   else {
-    pWVar1 = bg_weaponVariantDefs[uVar4];
+    pWVar1 = bg_weaponVariantDefs[uVar3];
     if ((pWVar1 != (WeaponVariantDef *)0x0) && (pWVar1->weapDef != (WeaponDef *)0x0)) {
-      pWVar1->iVariantCount = -param_1;
+      pWVar1->iVariantCount = -baseWeaponIndex;
       pWVar2 = pWVar1->weapDef;
       if (*pWVar1->szAltWeaponName != '\0') {
-        uVar4 = BG_GetWeaponIndexForName(pWVar1->szAltWeaponName,param_2);
-        if (uVar4 == 0) {
+        uVar3 = BG_GetWeaponIndexForName(pWVar1->szAltWeaponName,regWeap);
+        if (uVar3 == 0) {
           Com_PrintWarning(0x11,"WARNING: Could not load alt weapon file \'%s\'\n");
         }
         else {
-          pWVar1 = bg_weaponVariantDefs[uVar4];
+          pWVar1 = bg_weaponVariantDefs[uVar3];
           if ((pWVar1 != (WeaponVariantDef *)0x0) &&
-             (pWVar1->iVariantCount = -param_1,
+             (pWVar1->iVariantCount = -baseWeaponIndex,
              pWVar1->weapDef->inventoryType == WEAPINVENTORY_ALTMODE)) {
             pWVar1->altWeaponIndex = 0;
           }
         }
       }
       if (*pWVar2->szDualWieldWeaponName != '\0') {
-        uVar4 = BG_GetWeaponIndexForName(pWVar2->szDualWieldWeaponName,param_2);
-        if (uVar4 == 0) {
+        uVar3 = BG_GetWeaponIndexForName(pWVar2->szDualWieldWeaponName,regWeap);
+        if (uVar3 == 0) {
           Com_PrintWarning(0x11,"WARNING: Could not load dual wield weapon file \'%s\'\n");
         }
-        else if (bg_weaponVariantDefs[uVar4] != (WeaponVariantDef *)0x0) {
-          bg_weaponVariantDefs[uVar4]->iVariantCount = -param_1;
+        else if (bg_weaponVariantDefs[uVar3] != (WeaponVariantDef *)0x0) {
+          bg_weaponVariantDefs[uVar3]->iVariantCount = -baseWeaponIndex;
         }
       }
     }
@@ -600,56 +629,62 @@ BG_WeaponVariantPrecache(int param_1,_func___cdecl_void_uint *param_2,char *para
 // 0045F580  BG_WeaponVariantPrecache_r  (bgame/bg_weapons_def.cpp:525)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
 BG_WeaponVariantPrecache_r
-          (int param_1,int param_2,_func___cdecl_void_uint *param_3,char *param_4,char *param_5,
-          eAttachmentPoint param_6,int param_7,bool param_8)
+          (int weaponTableItemIndex,int baseWeaponIndex,_func___cdecl_void_uint *regWeap,
+          char *namePrefix,char *namePostfix,eAttachmentPoint point,int index,bool alreadyRegistered
+          )
 
 {
   bool bVar1;
   int iVar2;
-  char local_5c;
-  char local_54 [68];
+  undefined1 local_5c;
+  int maxAttachments;
+  char weaponName [68];
   uint local_10;
-  eAttachment local_c;
-  bool local_5;
+  eAttachment attachment;
+  bool success;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (!param_8) {
-    param_8 = true;
-    BG_WeaponVariantPrecache(param_2,param_3,param_4,param_5);
+  if (!alreadyRegistered) {
+    alreadyRegistered = true;
+    BG_WeaponVariantPrecache(baseWeaponIndex,regWeap,namePrefix,namePostfix);
   }
-  if (param_6 == ATTACHMENT_POINT_COUNT) {
-    local_5c = '\x01';
+  if (point == ATTACHMENT_POINT_COUNT) {
+    local_5c = 1;
   }
   else {
-    local_5 = true;
-    if (param_7 == 0) {
-      local_5 = BG_WeaponVariantPrecache_r
-                          (param_1,param_2,param_3,param_4,param_5,param_6 + ATTACHMENT_POINT_FIRST,
-                           0,param_8);
+    success = true;
+    if (index == 0) {
+      success = BG_WeaponVariantPrecache_r
+                          (weaponTableItemIndex,baseWeaponIndex,regWeap,namePrefix,namePostfix,
+                           point + ATTACHMENT_POINT_FIRST,0,alreadyRegistered);
     }
-    iVar2 = BG_UnlockablesGetNumItemAttachmentsAtPoint(param_1,param_6);
-    local_5c = local_5;
-    if (param_7 != iVar2) {
+    iVar2 = BG_UnlockablesGetNumItemAttachmentsAtPoint(weaponTableItemIndex,point);
+    local_5c = success;
+    if (index != iVar2) {
       BG_WeaponVariantPrecache_r
-                (param_1,param_2,param_3,param_4,param_5,param_6,param_7 + 1,param_8);
-      local_c = BG_UnlockablesGetItemAttachmentAtPointByIndex(param_1,param_6,param_7);
-      local_5c = local_5;
-      if ((local_c != ATTACHMENT_NONE) && ((int)local_c < 0x17)) {
-        BG_GetAttachmentName(local_c);
-        Com_sprintf(local_54,0x40,"%s_%s");
+                (weaponTableItemIndex,baseWeaponIndex,regWeap,namePrefix,namePostfix,point,index + 1
+                 ,alreadyRegistered);
+      attachment = BG_UnlockablesGetItemAttachmentAtPointByIndex(weaponTableItemIndex,point,index);
+      local_5c = success;
+      if ((attachment != ATTACHMENT_NONE) && ((int)attachment < 0x17)) {
+        BG_GetAttachmentName(attachment);
+        Com_sprintf(weaponName,0x40,"%s_%s");
         bVar1 = BG_WeaponVariantPrecache_r
-                          (param_1,param_2,param_3,local_54,param_5,param_6 + ATTACHMENT_POINT_FIRST
-                           ,0,false);
-        if ((bVar1) && (local_5 != false)) {
-          local_5c = '\x01';
+                          (weaponTableItemIndex,baseWeaponIndex,regWeap,weaponName,namePostfix,
+                           point + ATTACHMENT_POINT_FIRST,0,false);
+        if ((bVar1) && (success != false)) {
+          local_5c = 1;
         }
         else {
-          local_5c = '\0';
+          local_5c = 0;
         }
       }
     }
@@ -660,10 +695,15 @@ BG_WeaponVariantPrecache_r
 
 // 0045F450  BG_LoadWeaponTableBaseAndVariants  (bgame/bg_weapons_def.cpp:563)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 bool __cdecl
-BG_LoadWeaponTableBaseAndVariants(int param_1,char *param_2,_func___cdecl_void_uint *param_3)
+BG_LoadWeaponTableBaseAndVariants
+          (int weaponTableItemIndex,char *weaponNamePostfix,_func___cdecl_void_uint *regWeap)
 
 {
   WeaponVariantDef *pWVar1;
@@ -672,31 +712,37 @@ BG_LoadWeaponTableBaseAndVariants(int param_1,char *param_2,_func___cdecl_void_u
   bool bVar4;
   bool bVar5;
   undefined1 uVar6;
-  char *pcVar7;
-  char *pcVar8;
-  uint uVar9;
-  _func___cdecl_void_uint *p_Var10;
+  char *namePrefix;
+  char *name;
+  uint baseWeaponIndex_00;
+  _func___cdecl_void_uint *regWeap_00;
+  int currentWeaponIndex;
+  WeaponVariantDef *baseWeaponVariantDef;
+  char *weaponReference;
+  bool success;
+  uint baseWeaponIndex;
   
-  pcVar7 = BG_UnlockablesGetItemRef(param_1);
+  namePrefix = BG_UnlockablesGetItemRef(weaponTableItemIndex);
   uVar3 = bg_lastParsedWeaponIndex;
-  if (*pcVar7 == '\0') {
+  if (*namePrefix == '\0') {
     bVar4 = false;
   }
   else {
-    p_Var10 = param_3;
-    pcVar8 = va("%s%s");
-    uVar9 = BG_GetWeaponIndexForName(pcVar8,p_Var10);
-    if (uVar9 == 0) {
+    regWeap_00 = regWeap;
+    name = va("%s%s");
+    baseWeaponIndex_00 = BG_GetWeaponIndexForName(name,regWeap_00);
+    if (baseWeaponIndex_00 == 0) {
       Com_Error(ERR_DROP,"Could not load base weapon \'%s%s\' defined in the weapon table");
       bVar4 = false;
     }
     else {
       bVar4 = BG_WeaponVariantPrecache_r
-                        (param_1,uVar9,param_3,pcVar7,param_2,ATTACHMENT_POINT_FIRST,0,false);
+                        (weaponTableItemIndex,baseWeaponIndex_00,regWeap,namePrefix,
+                         weaponNamePostfix,ATTACHMENT_POINT_FIRST,0,false);
       if (!bVar4) {
         Com_PrintWarning(0x11,"WARNING: Could not load all weapon variants for \'%s%s\'\n");
       }
-      pWVar1 = bg_weaponVariantDefs[uVar9];
+      pWVar1 = bg_weaponVariantDefs[baseWeaponIndex_00];
       if ((pWVar1 == (WeaponVariantDef *)0x0) || (pWVar1->weapDef == (WeaponDef *)0x0)) {
         bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",
                                  0x24a,0,"%s");
@@ -707,7 +753,7 @@ BG_LoadWeaponTableBaseAndVariants(int param_1,char *param_2,_func___cdecl_void_u
         }
       }
       pWVar1->iVariantCount = (bg_lastParsedWeaponIndex - uVar3) + -1;
-      pWVar1->weapDef->itemIndex = param_1;
+      pWVar1->weapDef->itemIndex = weaponTableItemIndex;
     }
   }
   return bVar4;
@@ -716,7 +762,7 @@ BG_LoadWeaponTableBaseAndVariants(int param_1,char *param_2,_func___cdecl_void_u
 
 // 0045F210  BG_GetWeaponTableItemIndex  (bgame/bg_weapons_def.cpp:597)
 
-int __cdecl BG_GetWeaponTableItemIndex(int param_1)
+int __cdecl BG_GetWeaponTableItemIndex(int weaponIndex)
 
 {
   code *pcVar1;
@@ -724,8 +770,9 @@ int __cdecl BG_GetWeaponTableItemIndex(int param_1)
   int iVar3;
   WeaponVariantDef *pWVar4;
   int local_10;
+  WeaponVariantDef *baseWeaponVariantDef;
   
-  if (0x7ff < param_1) {
+  if (0x7ff < weaponIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_weapons_def.cpp",0x256,0,
                              "%s");
     if (!bVar2) {
@@ -734,12 +781,12 @@ int __cdecl BG_GetWeaponTableItemIndex(int param_1)
       return iVar3;
     }
   }
-  pWVar4 = BG_GetWeaponVariantDef(param_1);
+  pWVar4 = BG_GetWeaponVariantDef(weaponIndex);
   if (pWVar4->iVariantCount < 0) {
     local_10 = -pWVar4->iVariantCount;
   }
   else {
-    local_10 = param_1;
+    local_10 = weaponIndex;
   }
   pWVar4 = bg_weaponVariantDefs[local_10];
   if ((pWVar4 == (WeaponVariantDef *)0x0) || (pWVar4->weapDef == (WeaponDef *)0x0)) {
@@ -765,7 +812,7 @@ int __cdecl BG_GetWeaponTableItemIndex(int param_1)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-bool __cdecl BG_LoadWeaponTable(char *param_1,_func___cdecl_void_uint *param_2)
+bool __cdecl BG_LoadWeaponTable(char *weaponNamePostfix,_func___cdecl_void_uint *regWeap)
 
 {
   code *pcVar1;
@@ -773,9 +820,13 @@ bool __cdecl BG_LoadWeaponTable(char *param_1,_func___cdecl_void_uint *param_2)
   undefined1 uVar3;
   int iVar4;
   int iVar5;
-  int iVar6;
-  int local_18;
-  itemGroup_t local_c;
+  int weaponTableItemIndex;
+  int itemIndex;
+  int item;
+  int itemsInGroup;
+  itemGroup_t itemGroup;
+  int itemGroupIndex;
+  int nullTableWeapon;
   
   bVar2 = G_ExitAfterToolComplete();
   if ((!bVar2) && (bg_firstWeaponTableIndex == 0)) {
@@ -788,20 +839,18 @@ bool __cdecl BG_LoadWeaponTable(char *param_1,_func___cdecl_void_uint *param_2)
     }
     bg_firstWeaponTableIndex = bg_lastParsedWeaponIndex + 1;
     iVar4 = BG_UnlockablesGetDefaultWeaponItem();
-    for (local_c = ITEMGROUP_FIRST; (int)local_c < 0x18; local_c = local_c + ITEMGROUP_ASSAULT) {
-      if (((((local_c == ITEMGROUP_PISTOL) || (local_c == ITEMGROUP_FIRST)) ||
-           (local_c == ITEMGROUP_ASSAULT)) ||
-          (((local_c == ITEMGROUP_CQB || (local_c == ITEMGROUP_LAUNCHER)) ||
-           ((local_c == ITEMGROUP_SPECIAL ||
-            ((local_c == ITEMGROUP_SNIPER || (local_c == ITEMGROUP_SHOTGUN)))))))) ||
-         ((local_c == ITEMGROUP_EXPLOSIVE ||
-          ((((local_c == ITEMGROUP_GRENADE || (local_c == ITEMGROUP_SPECIALGRENADE)) ||
-            (local_c == ITEMGROUP_INVENTORY)) || (local_c == ITEMGROUP_LMG)))))) {
-        iVar5 = BG_UnlockablesBuildItemListForGroupForWeaponTable(local_c);
-        for (local_18 = 0; local_18 < iVar5; local_18 = local_18 + 1) {
-          iVar6 = BG_UnlockablesGetItemIndexInSlot(local_18);
-          if (iVar6 != iVar4) {
-            BG_LoadWeaponTableBaseAndVariants(iVar6,param_1,param_2);
+    for (itemGroupIndex = 0; itemGroupIndex < 0x18; itemGroupIndex = itemGroupIndex + 1) {
+      if (((((itemGroupIndex == 5) || (itemGroupIndex == 0)) || (itemGroupIndex == 1)) ||
+          (((itemGroupIndex == 2 || (itemGroupIndex == 6)) ||
+           ((itemGroupIndex == 7 || ((itemGroupIndex == 4 || (itemGroupIndex == 8)))))))) ||
+         ((itemGroupIndex == 9 ||
+          ((((itemGroupIndex == 10 || (itemGroupIndex == 0xf)) || (itemGroupIndex == 0x10)) ||
+           (itemGroupIndex == 3)))))) {
+        iVar5 = BG_UnlockablesBuildItemListForGroupForWeaponTable(itemGroupIndex);
+        for (item = 0; item < iVar5; item = item + 1) {
+          weaponTableItemIndex = BG_UnlockablesGetItemIndexInSlot(item);
+          if (weaponTableItemIndex != iVar4) {
+            BG_LoadWeaponTableBaseAndVariants(weaponTableItemIndex,weaponNamePostfix,regWeap);
           }
         }
       }

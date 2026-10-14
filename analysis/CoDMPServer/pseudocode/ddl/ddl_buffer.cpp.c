@@ -2,15 +2,16 @@
 
 // 008E7A30  DDL_Buffer_WriteHeader  (ddl/ddl_buffer.cpp:17)
 
-void __cdecl DDL_Buffer_WriteHeader(char *param_1,ddlBufferHeader_t *param_2)
+void __cdecl DDL_Buffer_WriteHeader(char *buffer,ddlBufferHeader_t *header)
 
 {
   int iVar1;
+  ddlBufferHeader_t *destHeader;
   
   for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *(uint *)param_1 = param_2->checksum;
-    param_2 = (ddlBufferHeader_t *)&param_2->version;
-    param_1 = (char *)((int)param_1 + 4);
+    *(uint *)buffer = header->checksum;
+    header = (ddlBufferHeader_t *)&header->version;
+    buffer = (char *)((int)buffer + 4);
   }
   return;
 }
@@ -18,15 +19,15 @@ void __cdecl DDL_Buffer_WriteHeader(char *param_1,ddlBufferHeader_t *param_2)
 
 // 008E7A50  DDL_Buffer_ReadHeader  (ddl/ddl_buffer.cpp:31)
 
-void __cdecl DDL_Buffer_ReadHeader(char *param_1,ddlBufferHeader_t *param_2)
+void __cdecl DDL_Buffer_ReadHeader(char *buffer,ddlBufferHeader_t *header)
 
 {
   int iVar1;
   
   for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
-    param_2->checksum = *(uint *)param_1;
-    param_1 = (char *)((int)param_1 + 4);
-    param_2 = (ddlBufferHeader_t *)&param_2->version;
+    header->checksum = *(uint *)buffer;
+    buffer = (char *)((int)buffer + 4);
+    header = (ddlBufferHeader_t *)&header->version;
   }
   return;
 }
@@ -34,50 +35,56 @@ void __cdecl DDL_Buffer_ReadHeader(char *param_1,ddlBufferHeader_t *param_2)
 
 // 008E7A70  DDL_Buffer_ReadBits  (ddl/ddl_buffer.cpp:45)
 
-int __cdecl DDL_Buffer_ReadBits(char *param_1,int param_2,int param_3,uint *param_4)
+int __cdecl DDL_Buffer_ReadBits(char *buffer,int offset,int size,uint *value)
 
 {
   uint uVar1;
   int iVar2;
   int local_2c;
-  int local_18;
-  int local_c;
+  int mask_2;
+  int fragSize_2;
+  int mask;
+  int bit;
+  uchar *data;
+  int fragSize;
+  int byteOffset;
+  int bitOffset;
   
-  uVar1 = param_2 + 0x140;
+  uVar1 = offset + 0x140;
   if ((int)uVar1 < 0) {
     DDL_PrintError("DDL: Negative offset.\n");
     iVar2 = 0;
   }
   else {
-    local_c = (int)(uVar1 + ((int)uVar1 >> 0x1f & 7U)) >> 3;
+    byteOffset = (int)(uVar1 + ((int)uVar1 >> 0x1f & 7U)) >> 3;
     uVar1 = uVar1 & 0x80000007;
     if ((int)uVar1 < 0) {
       uVar1 = (uVar1 - 1 | 0xfffffff8) + 1;
     }
-    local_18 = 0;
-    *param_4 = 0;
+    bit = 0;
+    *value = 0;
     if (uVar1 != 0) {
       local_2c = 8 - uVar1;
-      if (param_3 < local_2c) {
-        local_2c = param_3;
+      if (size < local_2c) {
+        local_2c = size;
       }
-      *param_4 = (int)(uint)(byte)param_1[local_c] >> ((byte)uVar1 & 0x1f) &
-                 (1 << ((byte)local_2c & 0x1f)) - 1U | *param_4;
-      param_3 = param_3 - local_2c;
-      local_18 = local_2c;
-      local_c = local_c + 1;
+      *value = (int)(uint)(byte)buffer[byteOffset] >> ((byte)uVar1 & 0x1f) &
+               (1 << ((byte)local_2c & 0x1f)) - 1U | *value;
+      size = size - local_2c;
+      bit = local_2c;
+      byteOffset = byteOffset + 1;
     }
-    uVar1 = param_3 & 0x80000007;
+    uVar1 = size & 0x80000007;
     if ((int)uVar1 < 0) {
       uVar1 = (uVar1 - 1 | 0xfffffff8) + 1;
     }
-    for (; local_18 < (int)(param_3 - uVar1); local_18 = local_18 + 8) {
-      *param_4 = (uint)(byte)param_1[local_c] << ((byte)local_18 & 0x1f) | *param_4;
-      local_c = local_c + 1;
+    for (; bit < (int)(size - uVar1); bit = bit + 8) {
+      *value = (uint)(byte)buffer[byteOffset] << ((byte)bit & 0x1f) | *value;
+      byteOffset = byteOffset + 1;
     }
     if (uVar1 != 0) {
-      *param_4 = ((uint)(byte)param_1[local_c] & (1 << ((byte)uVar1 & 0x1f)) - 1U) <<
-                 ((byte)local_18 & 0x1f) | *param_4;
+      *value = ((uint)(byte)buffer[byteOffset] & (1 << ((byte)uVar1 & 0x1f)) - 1U) <<
+               ((byte)bit & 0x1f) | *value;
     }
     iVar2 = 1;
   }
@@ -87,52 +94,54 @@ int __cdecl DDL_Buffer_ReadBits(char *param_1,int param_2,int param_3,uint *para
 
 // 008E7BD0  DDL_Buffer_WriteBits  (ddl/ddl_buffer.cpp:101)
 
-int __cdecl DDL_Buffer_WriteBits(char *param_1,int param_2,int param_3,uint param_4)
+int __cdecl DDL_Buffer_WriteBits(char *buffer,int offset,int size,uint value)
 
 {
-  int iVar1;
-  int local_14;
-  int local_c;
-  uint local_8;
+  uint uVar1;
+  int iVar2;
+  int bit;
+  uchar *data;
+  int byteOffset;
+  int bitOffset;
   
-  local_8 = param_2 + 0x140;
-  if ((int)local_8 < 0) {
+  uVar1 = offset + 0x140;
+  if ((int)uVar1 < 0) {
     DDL_PrintError("DDL: Negative offset.\n");
-    iVar1 = 0;
+    iVar2 = 0;
   }
   else {
-    local_c = (int)(local_8 + ((int)local_8 >> 0x1f & 7U)) >> 3;
-    local_8 = local_8 & 0x80000007;
-    if ((int)local_8 < 0) {
-      local_8 = (local_8 - 1 | 0xfffffff8) + 1;
+    byteOffset = (int)(uVar1 + ((int)uVar1 >> 0x1f & 7U)) >> 3;
+    bitOffset = uVar1 & 0x80000007;
+    if (bitOffset < 0) {
+      bitOffset = (bitOffset - 1U | 0xfffffff8) + 1;
     }
-    for (local_14 = 0; local_14 < param_3; local_14 = local_14 + 1) {
-      if ((1 << ((byte)local_14 & 0x1f) & param_4) == 0) {
-        param_1[local_c] = param_1[local_c] & ~(byte)(1 << ((byte)local_8 & 0x1f));
+    for (bit = 0; bit < size; bit = bit + 1) {
+      if ((1 << ((byte)bit & 0x1f) & value) == 0) {
+        buffer[byteOffset] = buffer[byteOffset] & ~(byte)(1 << ((byte)bitOffset & 0x1f));
       }
       else {
-        param_1[local_c] = param_1[local_c] | (byte)(1 << ((byte)local_8 & 0x1f));
+        buffer[byteOffset] = buffer[byteOffset] | (byte)(1 << ((byte)bitOffset & 0x1f));
       }
-      local_8 = local_8 + 1;
-      if (local_8 == 8) {
-        local_8 = 0;
-        local_c = local_c + 1;
+      bitOffset = bitOffset + 1;
+      if (bitOffset == 8) {
+        bitOffset = 0;
+        byteOffset = byteOffset + 1;
       }
     }
-    iVar1 = 1;
+    iVar2 = 1;
   }
-  return iVar1;
+  return iVar2;
 }
 
 
 // 008E7CC0  DDL_Buffer_ClearBits  (ddl/ddl_buffer.cpp:145)
 
-int __cdecl DDL_Buffer_ClearBits(char *param_1,int param_2,int param_3)
+int __cdecl DDL_Buffer_ClearBits(char *buffer,int offset,int size)
 
 {
   int iVar1;
   
-  iVar1 = DDL_Buffer_WriteBits(param_1,param_2,param_3,0);
+  iVar1 = DDL_Buffer_WriteBits(buffer,offset,size,0);
   return iVar1;
 }
 

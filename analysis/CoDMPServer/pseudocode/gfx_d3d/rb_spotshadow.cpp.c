@@ -3,23 +3,25 @@
 // 00B2D200  R_DrawSpotShadowMapCallback  (gfx_d3d/rb_spotshadow.cpp:155)
 
 void __cdecl
-R_DrawSpotShadowMapCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawSpotShadowMapCallback(void *userData,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
   int iVar1;
-  GfxDrawSurfListInfo *pGVar2;
+  GfxDrawSurfListInfo *info;
+  GfxDrawSurfListInfo *drawList;
+  GfxSpotShadow *spotShadow;
   
-  iVar1 = *(int *)param_1;
-  pGVar2 = *(GfxDrawSurfListInfo **)((int)param_1 + 4);
-  R_SetRenderTarget(param_2,*(uchar *)(iVar1 + 0x198));
+  iVar1 = *(int *)userData;
+  info = *(GfxDrawSurfListInfo **)((int)userData + 4);
+  R_SetRenderTarget(context,*(uchar *)(iVar1 + 0x198));
   if (*(int *)(iVar1 + 0x1c0) != 0) {
-    R_ClearScreen(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x03',
+    R_ClearScreen(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x03',
                   shadowmapClearColor,1.0,'\0',(GfxViewport *)0x0);
   }
   if (gfxMetrics.hasHardwareShadowmap == false) {
-    R_DrawQuadMesh(param_2,rgp.shadowClearMaterial,*(GfxMeshData **)(iVar1 + 0x1c4));
+    R_DrawQuadMesh(context,rgp.shadowClearMaterial,*(GfxMeshData **)(iVar1 + 0x1c4));
   }
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,pGVar2);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,info);
   return;
 }
 
@@ -29,7 +31,7 @@ R_DrawSpotShadowMapCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufCont
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_DrawSpotShadowMapArray(GfxViewInfo *param_1,GfxCmdBuf *param_2)
+void __cdecl R_DrawSpotShadowMapArray(GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
   GfxViewParms *local_1ac8;
@@ -42,13 +44,13 @@ void __cdecl R_DrawSpotShadowMapArray(GfxViewInfo *param_1,GfxCmdBuf *param_2)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  R_InitCmdBufSourceState(&local_1ab0,&param_1->input,0);
+  R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,0);
   R_SetWindShaderConstants(&local_1ab0);
-  local_1ab4 = (param_1->exposureValue).whitePoint[2];
+  local_1ab4 = (viewInfo->exposureValue).whitePoint[2];
   for (local_1ab8 = 0; local_1ab8 < *(uint *)((int)local_1ab4 + 0x184390);
       local_1ab8 = local_1ab8 + 1) {
     local_1abc = (GfxViewParms *)((int)local_1ab4 + 0x1843a0 + local_1ab8 * 0x1d0);
-    local_1ac0 = param_1->drawList + local_1ab8 + 10;
+    local_1ac0 = viewInfo->drawList + local_1ab8 + 10;
     R_SetRenderTargetSize(&local_1ab0,*(uchar *)(local_1abc[1].projectionMatrix.m[1] + 2));
     R_UpdateCodeConstant
               (&local_1ab0,0x14,(sm_polygonOffsetBias->current).value * 0.25,
@@ -59,8 +61,8 @@ void __cdecl R_DrawSpotShadowMapArray(GfxViewInfo *param_1,GfxCmdBuf *param_2)
                         (int)local_1abc[1].projectionMatrix.m[2][2]);
     local_1ac8 = local_1abc;
     local_1ac4 = local_1ac0;
-    R_DrawCall(R_DrawSpotShadowMapCallback,&local_1ac8,&local_1ab0,param_1,local_1ac0,local_1abc,
-               param_2,(GfxCmdBuf *)0x0);
+    R_DrawCall(R_DrawSpotShadowMapCallback,&local_1ac8,&local_1ab0,viewInfo,local_1ac0,local_1abc,
+               cmdBuf,(GfxCmdBuf *)0x0);
   }
   return;
 }
@@ -68,26 +70,27 @@ void __cdecl R_DrawSpotShadowMapArray(GfxViewInfo *param_1,GfxCmdBuf *param_2)
 
 // 00B2D2B0  RB_SpotShadowMaps  (gfx_d3d/rb_spotshadow.cpp:293)
 
-void __cdecl RB_SpotShadowMaps(GfxBackEndData *param_1,GfxViewInfo *param_2)
+void __cdecl RB_SpotShadowMaps(GfxBackEndData *data,GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  GfxCmdBuf local_8;
+  PIXProfile pixProfile;
+  GfxCmdBuf cmdBuf;
   
   PIXBeginNamedEvent(-1,"RB_SpotShadowMaps");
   if (pixelCostMode == GFX_PIXEL_COST_MODE_OFF) {
-    if ((param_1 == (GfxBackEndData *)0x0) &&
+    if ((data == (GfxBackEndData *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_spotshadow.cpp",
                                  0x12e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    R_InitContext(param_1,&local_8);
+    R_InitContext(data,&cmdBuf);
     PIXBeginNamedEvent(-1,"Spot Shadow Maps");
-    R_DrawSpotShadowMapArray(param_2,&local_8);
+    R_DrawSpotShadowMapArray(viewInfo,&cmdBuf);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -109,34 +112,31 @@ void __cdecl RB_SpotShadowMaps(GfxBackEndData *param_1,GfxViewInfo *param_2)
 
 // 00B2D770  RB_SetSpotShadowOverlayScaleAndBias  (gfx_d3d/rb_spotshadow.cpp:319)
 
-void __cdecl RB_SetSpotShadowOverlayScaleAndBias(GfxSpotShadow *param_1)
+void __cdecl RB_SetSpotShadowOverlayScaleAndBias(GfxSpotShadow *spotShadow)
 
 {
-  float local_20;
-  uchar local_19;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float nearDepth;
+  uchar shadowmapBuildTechType;
+  float zNear;
+  float bias;
+  float zFar;
+  float scale;
+  float farDepth;
   
-  RB_GetShadowOverlayDepthBounds(&local_20,&local_8);
-  local_18 = -(param_1->shadowViewParms).projectionMatrix.m[3][2] /
-             (param_1->shadowViewParms).projectionMatrix.m[2][2];
-  local_10 = param_1->light->radius;
-  local_19 = gfxMetrics.shadowmapBuildTechType;
+  RB_GetShadowOverlayDepthBounds(&nearDepth,&farDepth);
+  zNear = -(spotShadow->shadowViewParms).projectionMatrix.m[3][2] /
+          (spotShadow->shadowViewParms).projectionMatrix.m[2][2];
+  zFar = spotShadow->light->radius;
+  shadowmapBuildTechType = gfxMetrics.shadowmapBuildTechType;
   if (gfxMetrics.shadowmapBuildTechType == '\x03') {
-    local_c = 1.0 / ((local_10 - local_18) * (local_8 - local_20));
-    local_14 = -local_c * ((local_10 - local_18) * local_20 + local_18);
-    R_UpdateCodeConstant
-              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,local_c,local_14,1.0,1.0);
+    scale = 1.0 / ((zFar - zNear) * (farDepth - nearDepth));
+    bias = -scale * ((zFar - zNear) * nearDepth + zNear);
+    R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,scale,bias,1.0,1.0);
   }
   else {
-    local_c = 1.0 / (local_8 - local_20);
-    local_14 = -local_c * local_20;
-    R_UpdateCodeConstant
-              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,local_c,local_14,local_18,local_10
-              );
+    scale = 1.0 / (farDepth - nearDepth);
+    bias = -scale * nearDepth;
+    R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,scale,bias,zNear,zFar);
   }
   return;
 }
@@ -148,27 +148,38 @@ void __cdecl RB_DrawSpotShadowOverlay(void)
 
 {
   code *pcVar1;
-  float fVar2;
-  bool bVar3;
-  uint local_10;
+  float w_00;
+  bool bVar2;
+  float t0;
+  GfxImage *image;
+  float x0;
+  float t1;
+  float s1;
+  GfxViewInfo *viewInfo;
+  float s0;
+  float y0;
+  uint spotShadowIndex;
+  float h;
+  float w;
   
   if ((backEndData->viewInfoCount == 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_spotshadow.cpp",0x177
-                               ,0,"%s"), !bVar3)) {
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_spotshadow.cpp",0x177
+                               ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
   if (backEndData->spotShadowCount != 0) {
-    fVar2 = (float)vidConfig.displayHeight * 0.25;
+    w_00 = (float)vidConfig.displayHeight * 0.25;
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[1]._4_1_ = 0x61;
     R_SetCodeImageTexture
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[0xf].image);
-    for (local_10 = 0; local_10 < backEndData->spotShadowCount; local_10 = local_10 + 1) {
-      RB_SetSpotShadowOverlayScaleAndBias(backEndData->spotShadows + local_10);
-      RB_DrawStretchPic(rgp.shadowOverlayMaterial,(fVar2 + 2.0) * (float)local_10 + 4.0,4.0,fVar2,
-                        fVar2,0.0,(float)local_10 * 0.25,1.0,(float)local_10 * 0.25 + 0.25,
-                        0xffffffff,GFX_PRIM_STATS_HUD);
+    for (spotShadowIndex = 0; spotShadowIndex < backEndData->spotShadowCount;
+        spotShadowIndex = spotShadowIndex + 1) {
+      RB_SetSpotShadowOverlayScaleAndBias(backEndData->spotShadows + spotShadowIndex);
+      RB_DrawStretchPic(rgp.shadowOverlayMaterial,(w_00 + 2.0) * (float)spotShadowIndex + 4.0,4.0,
+                        w_00,w_00,0.0,(float)spotShadowIndex * 0.25,1.0,
+                        (float)spotShadowIndex * 0.25 + 0.25,0xffffffff,GFX_PRIM_STATS_HUD);
       RB_EndTessSurface();
     }
     gfxCmdBufSourceState.input.codeImageRenderTargetControl[1]._4_1_ = 0x62;

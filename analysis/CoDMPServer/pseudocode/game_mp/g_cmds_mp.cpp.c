@@ -7,23 +7,24 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CheatsOk(gentity_s *param_1)
+int __cdecl CheatsOk(gentity_s *ent)
 
 {
   char *pcVar1;
   int iVar2;
   dvar_s *pdVar3;
+  bool bCreateFX;
   
   if ((g_cheats->current).enabled == false) {
     pcVar1 = va("%c \"GAME_CHEATSNOTENABLED\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
     iVar2 = 0;
   }
   else {
     pdVar3 = Dvar_FindVar("createfx");
-    if ((param_1->health < 1) && (pdVar3 == (dvar_s *)0x0)) {
+    if ((ent->health < 1) && (pdVar3 == (dvar_s *)0x0)) {
       pcVar1 = va("%c \"GAME_MUSTBEALIVECOMMAND\"");
-      SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+      SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
       iVar2 = 0;
     }
     else {
@@ -38,63 +39,66 @@ int __cdecl CheatsOk(gentity_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl ConcatArgs(int param_1)
+char * __cdecl ConcatArgs(int start)
 
 {
   uchar uVar1;
   int iVar2;
-  ulong uVar3;
+  ulong count;
   uchar *local_420;
-  int local_418;
-  int local_414;
-  uchar local_40c [1028];
+  int c;
+  int len;
+  int i;
+  int tlen;
+  uchar arg [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_418 = 0;
+  len = 0;
   iVar2 = SV_Cmd_Argc();
-  for (local_414 = param_1; local_414 < iVar2; local_414 = local_414 + 1) {
-    SV_Cmd_ArgvBuffer(local_414,(char *)local_40c,0x400);
-    local_420 = local_40c;
+  for (i = start; i < iVar2; i = i + 1) {
+    SV_Cmd_ArgvBuffer(i,(char *)arg,0x400);
+    local_420 = arg;
     do {
       uVar1 = *local_420;
       local_420 = local_420 + 1;
     } while (uVar1 != '\0');
-    uVar3 = (int)local_420 - (int)(local_40c + 1);
-    if (0x3fe < (int)(local_418 + uVar3)) break;
-    memcpy((uchar *)(line + local_418),local_40c,uVar3);
-    local_418 = local_418 + uVar3;
-    if (local_414 != iVar2 + -1) {
-      line[local_418] = ' ';
-      local_418 = local_418 + 1;
+    count = (int)local_420 - (int)(arg + 1);
+    if (0x3fe < (int)(len + count)) break;
+    memcpy((uchar *)(line + len),arg,count);
+    len = len + count;
+    if (i != iVar2 + -1) {
+      line[len] = ' ';
+      len = len + 1;
     }
   }
-  line[local_418] = '\0';
+  line[len] = '\0';
   return line;
 }
 
 
 // 0060FCD0  G_setfog  (game_mp/g_cmds_mp.cpp:182)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_setfog(char *param_1)
+void __cdecl G_setfog(char *fogstring)
 
 {
   int iVar1;
-  float local_44;
-  float local_28;
-  float local_18;
+  float fDensity;
+  float fFar;
+  float fNear;
   
-  SV_SetConfigstring(10,param_1);
+  SV_SetConfigstring(10,fogstring);
   level.fFogOpaqueDist = 3.4028235e+38;
   level.fFogOpaqueDistSqrd = 3.4028235e+38;
-  iVar1 = sscanf(param_1,"%f %f %f %f %f %f %i %f %f %f %f %f %f %f %f %f");
-  if ((iVar1 == 0x10) && (1.0 <= local_44)) {
-    level.fFogOpaqueDist = (local_28 - local_18) * 1.0 + local_18;
+  iVar1 = sscanf(fogstring,"%f %f %f %f %f %f %i %f %f %f %f %f %f %f %f %f");
+  if ((iVar1 == 0x10) && (1.0 <= fDensity)) {
+    level.fFogOpaqueDist = (fFar - fNear) * 1.0 + fNear;
     level.fFogOpaqueDistSqrd = level.fFogOpaqueDist * level.fFogOpaqueDist;
   }
   return;
@@ -126,7 +130,7 @@ int __cdecl SV_Cmd_Argc(void)
 
 // 00613180  SV_Cmd_Argv  (qcommon/cmd.h:237)
 
-char * __cdecl SV_Cmd_Argv(int param_1)
+char * __cdecl SV_Cmd_Argv(int argIndex)
 
 {
   code *pcVar1;
@@ -144,7 +148,7 @@ char * __cdecl SV_Cmd_Argv(int param_1)
       return pcVar3;
     }
   }
-  if (param_1 < 0) {
+  if (argIndex < 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\game_mp\\../qcommon/cmd.h",0xef,0,
                              "%s\n\t(argIndex) = %i");
     if (!bVar2) {
@@ -153,8 +157,8 @@ char * __cdecl SV_Cmd_Argv(int param_1)
       return pcVar3;
     }
   }
-  if (param_1 < sv_cmd_args.argc[sv_cmd_args.nesting]) {
-    local_8 = sv_cmd_args.argv[sv_cmd_args.nesting][param_1];
+  if (argIndex < sv_cmd_args.argc[sv_cmd_args.nesting]) {
+    local_8 = sv_cmd_args.argv[sv_cmd_args.nesting][argIndex];
   }
   else {
     local_8 = "";
@@ -170,134 +174,140 @@ char * __cdecl SV_Cmd_Argv(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Give_f(gentity_s *param_1)
+void __cdecl Cmd_Give_f(gentity_s *ent)
 
 {
   char cVar1;
   bool bVar2;
-  uchar uVar3;
-  int iVar4;
-  char *pcVar5;
-  int iVar6;
-  uint uVar7;
-  gitem_s *pgVar8;
-  gentity_s *pgVar9;
-  WeaponDef *pWVar10;
-  bool bVar11;
-  int iVar12;
+  uchar weaponModel;
+  int iVar3;
+  char *pcVar4;
+  int iVar5;
+  uint uVar6;
+  gitem_s *item;
+  gentity_s *ent_00;
+  WeaponDef *pWVar7;
+  bool bVar8;
+  int fillClip;
   char *local_6c;
-  int local_30;
-  int local_2c;
-  WeaponVariantDef *local_18;
-  uint local_10;
+  int slot_2;
+  int slot;
+  gentity_s *it_ent;
+  char *name;
+  int give_all;
+  char *amt;
+  WeaponVariantDef *weapVariantDef;
+  int amount;
+  uint weapIndex;
+  WeaponDef *weapDef;
+  gitem_s *it;
   
-  iVar4 = CheatsOk(param_1);
-  if (iVar4 != 0) {
-    pcVar5 = ConcatArgs(2);
-    iVar4 = atoi(pcVar5);
-    pcVar5 = ConcatArgs(1);
-    if (pcVar5 != (char *)0x0) {
-      local_6c = pcVar5;
+  iVar3 = CheatsOk(ent);
+  if (iVar3 != 0) {
+    pcVar4 = ConcatArgs(2);
+    iVar3 = atoi(pcVar4);
+    pcVar4 = ConcatArgs(1);
+    if (pcVar4 != (char *)0x0) {
+      local_6c = pcVar4;
       do {
         cVar1 = *local_6c;
         local_6c = local_6c + 1;
       } while (cVar1 != '\0');
-      if (local_6c != pcVar5 + 1) {
-        iVar6 = I_stricmp(pcVar5,"all");
-        bVar11 = iVar6 == 0;
-        if ((bVar11) || (iVar6 = I_strnicmp(pcVar5,"health",6), iVar6 == 0)) {
-          if (iVar4 == 0) {
-            param_1->health = (param_1->client->ps).stats[2];
+      if (local_6c != pcVar4 + 1) {
+        iVar5 = I_stricmp(pcVar4,"all");
+        bVar8 = iVar5 == 0;
+        if ((bVar8) || (iVar5 = I_strnicmp(pcVar4,"health",6), iVar5 == 0)) {
+          if (iVar3 == 0) {
+            ent->health = (ent->client->ps).stats[2];
           }
           else {
-            param_1->health = param_1->health + iVar4;
+            ent->health = ent->health + iVar3;
           }
-          if (!bVar11) {
+          if (!bVar8) {
             return;
           }
         }
-        if ((bVar11) || (iVar6 = I_stricmp(pcVar5,"weapons"), iVar6 == 0)) {
-          for (local_10 = 1; uVar7 = BG_GetNumWeapons(), local_10 < uVar7; local_10 = local_10 + 1)
-          {
-            bVar2 = BG_CanPlayerHaveWeapon(local_10);
+        if ((bVar8) || (iVar5 = I_stricmp(pcVar4,"weapons"), iVar5 == 0)) {
+          for (weapIndex = 1; uVar6 = BG_GetNumWeapons(), weapIndex < uVar6;
+              weapIndex = weapIndex + 1) {
+            bVar2 = BG_CanPlayerHaveWeapon(weapIndex);
             if (bVar2) {
-              BG_TakePlayerWeapon(&param_1->client->ps,local_10);
-              G_GivePlayerWeapon(&param_1->client->ps,local_10,'\0',(renderOptions_s)0x0);
+              BG_TakePlayerWeapon(&ent->client->ps,weapIndex);
+              G_GivePlayerWeapon(&ent->client->ps,weapIndex,'\0',(renderOptions_s)0x0);
             }
           }
-          if (!bVar11) {
+          if (!bVar8) {
             return;
           }
         }
-        if ((bVar11) || (iVar6 = I_strnicmp(pcVar5,"ammo",4), iVar6 == 0)) {
-          if (iVar4 == 0) {
-            for (local_2c = 0; local_2c < 0xf; local_2c = local_2c + 1) {
-              Add_Ammo(param_1,(param_1->client->ps).heldWeapons[local_2c].weapon,'\0',0x3e6,1);
+        if ((bVar8) || (iVar5 = I_strnicmp(pcVar4,"ammo",4), iVar5 == 0)) {
+          if (iVar3 == 0) {
+            for (slot = 0; slot < 0xf; slot = slot + 1) {
+              Add_Ammo(ent,(ent->client->ps).heldWeapons[slot].weapon,'\0',0x3e6,1);
             }
           }
-          else if ((param_1->client->ps).weapon != 0) {
-            iVar12 = 1;
-            iVar6 = iVar4;
-            uVar3 = BG_GetPlayerWeaponModel(&param_1->client->ps,(uint)(param_1->client->ps).weapon)
-            ;
-            Add_Ammo(param_1,(uint)(param_1->client->ps).weapon,uVar3,iVar6,iVar12);
+          else if ((ent->client->ps).weapon != 0) {
+            fillClip = 1;
+            iVar5 = iVar3;
+            weaponModel = BG_GetPlayerWeaponModel(&ent->client->ps,(uint)(ent->client->ps).weapon);
+            Add_Ammo(ent,(uint)(ent->client->ps).weapon,weaponModel,iVar5,fillClip);
           }
-          if (!bVar11) {
+          if (!bVar8) {
             return;
           }
         }
-        iVar6 = I_strnicmp(pcVar5,"allammo",7);
-        if ((iVar6 == 0) && (iVar4 != 0)) {
-          for (local_30 = 0; local_30 < 0xf; local_30 = local_30 + 1) {
-            Add_Ammo(param_1,(param_1->client->ps).heldWeapons[local_30].weapon,'\0',iVar4,1);
+        iVar5 = I_strnicmp(pcVar4,"allammo",7);
+        if ((iVar5 == 0) && (iVar3 != 0)) {
+          for (slot_2 = 0; slot_2 < 0xf; slot_2 = slot_2 + 1) {
+            Add_Ammo(ent,(ent->client->ps).heldWeapons[slot_2].weapon,'\0',iVar3,1);
           }
-          if (!bVar11) {
+          if (!bVar8) {
             return;
           }
         }
-        if (!bVar11) {
+        if (!bVar8) {
           level.initializing = 1;
-          local_18 = (WeaponVariantDef *)0x0;
-          local_10 = 0;
-          pgVar8 = G_FindItem(pcVar5,0);
-          if (pgVar8 == (gitem_s *)0x0) {
+          weapVariantDef = (WeaponVariantDef *)0x0;
+          weapIndex = 0;
+          item = G_FindItem(pcVar4,0);
+          if (item == (gitem_s *)0x0) {
             level.initializing = 0;
           }
           else {
-            pgVar9 = G_Spawn();
-            (pgVar9->r).currentOrigin[0] = (param_1->r).currentOrigin[0];
-            (pgVar9->r).currentOrigin[1] = (param_1->r).currentOrigin[1];
-            (pgVar9->r).currentOrigin[2] = (param_1->r).currentOrigin[2];
-            G_GetItemClassname(pgVar8,&pgVar9->classname);
-            G_SpawnItem(pgVar9,pgVar8);
-            pgVar9->active = '\x01';
-            if (pgVar8->giType == IT_WEAPON) {
-              local_10 = (pgVar9->field36_0x21c).item[0].index & 0x800007ff;
-              if ((int)local_10 < 0) {
-                local_10 = (local_10 - 1 | 0xfffff800) + 1;
+            ent_00 = G_Spawn();
+            (ent_00->r).currentOrigin[0] = (ent->r).currentOrigin[0];
+            (ent_00->r).currentOrigin[1] = (ent->r).currentOrigin[1];
+            (ent_00->r).currentOrigin[2] = (ent->r).currentOrigin[2];
+            G_GetItemClassname(item,&ent_00->classname);
+            G_SpawnItem(ent_00,item);
+            ent_00->active = '\x01';
+            if (item->giType == IT_WEAPON) {
+              weapIndex = (ent_00->field36_0x21c).item[0].index & 0x800007ff;
+              if ((int)weapIndex < 0) {
+                weapIndex = (weapIndex - 1 | 0xfffff800) + 1;
               }
-              local_18 = BG_GetWeaponVariantDef(local_10);
-              pWVar10 = BG_GetWeaponDef(local_10);
-              if (pWVar10->offhandClass == OFFHAND_CLASS_FLASH_GRENADE) {
-                (param_1->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_FLASH;
+              weapVariantDef = BG_GetWeaponVariantDef(weapIndex);
+              pWVar7 = BG_GetWeaponDef(weapIndex);
+              if (pWVar7->offhandClass == OFFHAND_CLASS_FLASH_GRENADE) {
+                (ent->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_FLASH;
               }
-              else if (pWVar10->offhandClass == OFFHAND_CLASS_SMOKE_GRENADE) {
-                (param_1->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_SMOKE;
+              else if (pWVar7->offhandClass == OFFHAND_CLASS_SMOKE_GRENADE) {
+                (ent->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_SMOKE;
               }
             }
-            Touch_Item(pgVar9,param_1,0);
-            pgVar9->active = '\0';
-            if ((pgVar9->r).inuse != '\0') {
-              G_FreeEntity(pgVar9);
+            Touch_Item(ent_00,ent,0);
+            ent_00->active = '\0';
+            if ((ent_00->r).inuse != '\0') {
+              G_FreeEntity(ent_00);
             }
-            if (pgVar8->giType == IT_WEAPON) {
-              iVar4 = local_18->iClipSize;
-              iVar6 = BG_ClipForWeapon(local_10);
-              BG_SetAmmoInClip(&param_1->client->ps,iVar6,iVar4);
-              iVar4 = BG_GetStartAmmo(local_10);
-              iVar4 = iVar4 - local_18->iClipSize;
-              uVar7 = BG_AmmoForWeapon(local_10);
-              BG_SetAmmoInPool(&param_1->client->ps,uVar7,iVar4);
+            if (item->giType == IT_WEAPON) {
+              iVar3 = weapVariantDef->iClipSize;
+              iVar5 = BG_ClipForWeapon(weapIndex);
+              BG_SetAmmoInClip(&ent->client->ps,iVar5,iVar3);
+              iVar3 = BG_GetStartAmmo(weapIndex);
+              iVar3 = iVar3 - weapVariantDef->iClipSize;
+              uVar6 = BG_AmmoForWeapon(weapIndex);
+              BG_SetAmmoInPool(&ent->client->ps,uVar6,iVar3);
             }
             level.initializing = 0;
           }
@@ -316,7 +326,7 @@ void __cdecl Cmd_Give_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Take_f(gentity_s *param_1)
+void __cdecl Cmd_Take_f(gentity_s *ent)
 
 {
   char cVar1;
@@ -326,13 +336,18 @@ void __cdecl Cmd_Take_f(gentity_s *param_1)
   WeaponVariantDef *pWVar5;
   uint uVar6;
   bool bVar7;
-  int iVar8;
+  int amount_00;
   char *local_38;
-  int local_24;
-  int local_20;
-  int local_1c;
+  int slot_3;
+  int slot_2;
+  int slot;
+  char *name;
+  char *amt;
+  int amount;
+  uint weapIndex;
+  int take_all;
   
-  iVar2 = CheatsOk(param_1);
+  iVar2 = CheatsOk(ent);
   if (iVar2 != 0) {
     pcVar3 = ConcatArgs(2);
     iVar2 = atoi(pcVar3);
@@ -348,12 +363,12 @@ void __cdecl Cmd_Take_f(gentity_s *param_1)
         bVar7 = iVar4 == 0;
         if ((bVar7) || (iVar4 = I_strnicmp(pcVar3,"health",6), iVar4 == 0)) {
           if (iVar2 == 0) {
-            param_1->health = 1;
+            ent->health = 1;
           }
           else {
-            param_1->health = param_1->health - iVar2;
-            if (param_1->health < 1) {
-              param_1->health = 1;
+            ent->health = ent->health - iVar2;
+            if (ent->health < 1) {
+              ent->health = 1;
             }
           }
           if (!bVar7) {
@@ -361,15 +376,14 @@ void __cdecl Cmd_Take_f(gentity_s *param_1)
           }
         }
         if ((bVar7) || (iVar4 = I_stricmp(pcVar3,"weapons"), iVar4 == 0)) {
-          for (local_1c = 0; local_1c < 0xf; local_1c = local_1c + 1) {
-            if ((param_1->client->ps).heldWeapons[local_1c].weapon != 0) {
-              BG_TakePlayerWeapon(&param_1->client->ps,
-                                  (param_1->client->ps).heldWeapons[local_1c].weapon);
+          for (slot = 0; slot < 0xf; slot = slot + 1) {
+            if ((ent->client->ps).heldWeapons[slot].weapon != 0) {
+              BG_TakePlayerWeapon(&ent->client->ps,(ent->client->ps).heldWeapons[slot].weapon);
             }
           }
-          if ((param_1->client->ps).weapon != 0) {
-            (param_1->client->ps).weapon = 0;
-            G_SelectWeaponIndex((int)param_1[-0x1487a].r.mins / 0x2f8,0);
+          if ((ent->client->ps).weapon != 0) {
+            (ent->client->ps).weapon = 0;
+            G_SelectWeaponIndex((int)ent[-0x1487a].r.mins / 0x2f8,0);
           }
           if (!bVar7) {
             return;
@@ -377,25 +391,25 @@ void __cdecl Cmd_Take_f(gentity_s *param_1)
         }
         if ((bVar7) || (iVar4 = I_strnicmp(pcVar3,"ammo",4), iVar4 == 0)) {
           if (iVar2 == 0) {
-            for (local_20 = 0; local_20 < 0xf; local_20 = local_20 + 1) {
-              uVar6 = (param_1->client->ps).heldWeapons[local_20].weapon;
+            for (slot_2 = 0; slot_2 < 0xf; slot_2 = slot_2 + 1) {
+              uVar6 = (ent->client->ps).heldWeapons[slot_2].weapon;
               if (uVar6 != 0) {
-                BG_SetAmmoInPool(&param_1->client->ps,uVar6,0);
-                iVar8 = 0;
+                BG_SetAmmoInPool(&ent->client->ps,uVar6,0);
+                amount_00 = 0;
                 iVar4 = BG_ClipForWeapon(uVar6);
-                BG_SetAmmoInClip(&param_1->client->ps,iVar4,iVar8);
+                BG_SetAmmoInClip(&ent->client->ps,iVar4,amount_00);
               }
             }
           }
-          else if ((param_1->client->ps).weapon != 0) {
-            uVar6 = (uint)(param_1->client->ps).weapon;
-            BG_AddAmmoToPool(&param_1->client->ps,uVar6,-iVar2);
-            iVar4 = BG_GetAmmoNotInClip(&param_1->client->ps,uVar6);
+          else if ((ent->client->ps).weapon != 0) {
+            uVar6 = (uint)(ent->client->ps).weapon;
+            BG_AddAmmoToPool(&ent->client->ps,uVar6,-iVar2);
+            iVar4 = BG_GetAmmoNotInClip(&ent->client->ps,uVar6);
             if (iVar4 < 0) {
-              iVar4 = BG_GetAmmoNotInClip(&param_1->client->ps,uVar6);
+              iVar4 = BG_GetAmmoNotInClip(&ent->client->ps,uVar6);
               pWVar5 = BG_GetWeaponVariantDef(uVar6);
-              BG_AddAmmoToClip(&param_1->client->ps,pWVar5->iClipIndex,iVar4);
-              BG_SetAmmoInPool(&param_1->client->ps,uVar6,0);
+              BG_AddAmmoToClip(&ent->client->ps,pWVar5->iClipIndex,iVar4);
+              BG_SetAmmoInPool(&ent->client->ps,uVar6,0);
             }
           }
           if (!bVar7) {
@@ -404,16 +418,16 @@ void __cdecl Cmd_Take_f(gentity_s *param_1)
         }
         iVar4 = I_strnicmp(pcVar3,"allammo",7);
         if ((iVar4 == 0) && (iVar2 != 0)) {
-          for (local_24 = 0; local_24 < 0xf; local_24 = local_24 + 1) {
-            uVar6 = (param_1->client->ps).heldWeapons[local_24].weapon;
+          for (slot_3 = 0; slot_3 < 0xf; slot_3 = slot_3 + 1) {
+            uVar6 = (ent->client->ps).heldWeapons[slot_3].weapon;
             if (uVar6 != 0) {
-              BG_AddAmmoToPool(&param_1->client->ps,uVar6,-iVar2);
-              iVar4 = BG_GetAmmoNotInClip(&param_1->client->ps,uVar6);
+              BG_AddAmmoToPool(&ent->client->ps,uVar6,-iVar2);
+              iVar4 = BG_GetAmmoNotInClip(&ent->client->ps,uVar6);
               if (iVar4 < 0) {
-                iVar4 = BG_GetAmmoNotInClip(&param_1->client->ps,uVar6);
+                iVar4 = BG_GetAmmoNotInClip(&ent->client->ps,uVar6);
                 pWVar5 = BG_GetWeaponVariantDef(uVar6);
-                BG_AddAmmoToClip(&param_1->client->ps,pWVar5->iClipIndex,iVar4);
-                BG_SetAmmoInPool(&param_1->client->ps,uVar6,0);
+                BG_AddAmmoToClip(&ent->client->ps,pWVar5->iClipIndex,iVar4);
+                BG_SetAmmoInPool(&ent->client->ps,uVar6,0);
               }
             }
           }
@@ -432,17 +446,18 @@ void __cdecl Cmd_Take_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_God_f(gentity_s *param_1)
+void __cdecl Cmd_God_f(gentity_s *ent)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *text;
+  char *msg;
   
-  iVar1 = CheatsOk(param_1);
+  iVar1 = CheatsOk(ent);
   if (iVar1 != 0) {
-    param_1->flags = param_1->flags ^ 1;
-    pcVar2 = va("%c \"%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar2);
+    ent->flags = ent->flags ^ 1;
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -455,17 +470,18 @@ void __cdecl Cmd_God_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_DemiGod_f(gentity_s *param_1)
+void __cdecl Cmd_DemiGod_f(gentity_s *ent)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *text;
+  char *msg;
   
-  iVar1 = CheatsOk(param_1);
+  iVar1 = CheatsOk(ent);
   if (iVar1 != 0) {
-    param_1->flags = param_1->flags ^ 2;
-    pcVar2 = va("%c \"%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar2);
+    ent->flags = ent->flags ^ 2;
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -478,17 +494,18 @@ void __cdecl Cmd_DemiGod_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Notarget_f(gentity_s *param_1)
+void __cdecl Cmd_Notarget_f(gentity_s *ent)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *text;
+  char *msg;
   
-  iVar1 = CheatsOk(param_1);
+  iVar1 = CheatsOk(ent);
   if (iVar1 != 0) {
-    param_1->flags = param_1->flags ^ 4;
-    pcVar2 = va("%c \"%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar2);
+    ent->flags = ent->flags ^ 4;
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -501,22 +518,23 @@ void __cdecl Cmd_Notarget_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Noclip_f(gentity_s *param_1)
+void __cdecl Cmd_Noclip_f(gentity_s *ent)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *text;
+  char *msg;
   
-  iVar1 = CheatsOk(param_1);
+  iVar1 = CheatsOk(ent);
   if (iVar1 != 0) {
-    if ((param_1->client->flags & 1U) == 0) {
-      param_1->client->flags = param_1->client->flags | 1;
+    if ((ent->client->flags & 1U) == 0) {
+      ent->client->flags = ent->client->flags | 1;
     }
     else {
-      param_1->client->flags = param_1->client->flags & 0xfffffffe;
+      ent->client->flags = ent->client->flags & 0xfffffffe;
     }
-    pcVar2 = va("%c \"%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar2);
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -529,22 +547,23 @@ void __cdecl Cmd_Noclip_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_UFO_f(gentity_s *param_1)
+void __cdecl Cmd_UFO_f(gentity_s *ent)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *text;
+  char *msg;
   
-  iVar1 = CheatsOk(param_1);
+  iVar1 = CheatsOk(ent);
   if (iVar1 != 0) {
-    if ((param_1->client->flags & 2U) == 0) {
-      param_1->client->flags = param_1->client->flags | 2;
+    if ((ent->client->flags & 2U) == 0) {
+      ent->client->flags = ent->client->flags | 2;
     }
     else {
-      param_1->client->flags = param_1->client->flags & 0xfffffffd;
+      ent->client->flags = ent->client->flags & 0xfffffffd;
     }
-    pcVar2 = va("%c \"%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar2);
+    text = va("%c \"%s\"");
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -557,29 +576,29 @@ void __cdecl Cmd_UFO_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Kill_f(gentity_s *param_1)
+void __cdecl Cmd_Kill_f(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x29a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->client->sess).connected == CON_DISCONNECTED) &&
+  if (((ent->client->sess).connected == CON_DISCONNECTED) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x29b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->client->sess).sessionState == SESS_STATE_PLAYING) &&
-     (iVar3 = CheatsOk(param_1), iVar3 != 0)) {
+  if (((ent->client->sess).sessionState == SESS_STATE_PLAYING) &&
+     (iVar3 = CheatsOk(ent), iVar3 != 0)) {
     if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x2a3,0
                                  ,"%s\n\t(bgs) = %p"), !bVar2)) {
@@ -589,10 +608,10 @@ void __cdecl Cmd_Kill_f(gentity_s *param_1)
     }
     *(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) = &level_bgs
     ;
-    param_1->flags = param_1->flags & 0xfffffffc;
-    param_1->health = 0;
-    (param_1->client->ps).stats[0] = 0;
-    player_die(param_1,param_1,param_1,100000,0xd,0,(float *)0x0,HITLOC_NONE,0);
+    ent->flags = ent->flags & 0xfffffffc;
+    ent->health = 0;
+    (ent->client->ps).stats[0] = 0;
+    player_die(ent,ent,ent,100000,0xd,0,(float *)0x0,HITLOC_NONE,0);
     if ((*(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) !=
          &level_bgs) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x2aa,0
@@ -615,104 +634,103 @@ void __cdecl Cmd_Kill_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl StopFollowing(gentity_s *param_1)
+void __cdecl StopFollowing(gentity_s *ent)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  float local_bc;
+  gclient_s *ps;
+  code *pcVar1;
+  bool bVar2;
+  gclient_s *client;
+  float vAngles;
   float local_b8;
   float local_b4;
-  col_context_t local_b0;
-  float local_88;
+  col_context_t context;
+  float vEnd;
   float local_84;
   float local_80;
-  float local_7c [3];
-  float4 local_70;
+  float vMins [3];
+  float4 trace;
   float local_60;
   uint local_38;
-  float local_34;
+  float vForward;
   float local_30;
   float local_2c;
-  float local_28;
+  float vPos;
   float local_24;
   float local_20;
-  float local_1c;
+  float vUp;
   float local_18;
   float local_14;
-  float local_10;
+  float vMaxs;
   float local_c;
   float local_8;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_70.v[0] = 0.0;
-  local_70.v[1] = 0.0;
-  local_70.v[2] = 0.0;
-  local_70.v[3] = 0.0;
-  col_context_t::col_context_t(&local_b0);
-  pgVar1 = param_1->client;
-  if ((pgVar1 == (gclient_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x2c5,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  ps = ent->client;
+  if ((ps == (gclient_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x2c5,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  (pgVar1->sess).forceSpectatorClient = -1;
-  (pgVar1->sess).killCamEntity = -1;
-  (pgVar1->sess).killCamTargetEntity = (param_1->s).number;
-  pgVar1->spectatorClient = -1;
-  if (((pgVar1->ps).otherFlags & 2U) != 0) {
-    (pgVar1->ps).eFlags = (pgVar1->ps).eFlags & 0xffffbcff;
-    (pgVar1->ps).viewlocked = PLAYERVIEWLOCK_NONE;
-    (pgVar1->ps).viewlocked_entNum = 0x3ff;
-    G_GetPlayerViewOrigin(&pgVar1->ps,&local_28);
-    BG_GetPlayerViewDirection(&pgVar1->ps,&local_34,(float *)0x0,&local_1c);
-    local_b8 = (pgVar1->ps).viewangles[1];
-    local_b4 = (pgVar1->ps).viewangles[2];
-    local_bc = (pgVar1->ps).viewangles[0] + 15.0;
-    local_88 = local_1c * 10.0 + local_34 * -40.0 + local_28;
+  (ps->sess).forceSpectatorClient = -1;
+  (ps->sess).killCamEntity = -1;
+  (ps->sess).killCamTargetEntity = (ent->s).number;
+  ps->spectatorClient = -1;
+  if (((ps->ps).otherFlags & 2U) != 0) {
+    (ps->ps).eFlags = (ps->ps).eFlags & 0xffffbcff;
+    (ps->ps).viewlocked = PLAYERVIEWLOCK_NONE;
+    (ps->ps).viewlocked_entNum = 0x3ff;
+    G_GetPlayerViewOrigin(&ps->ps,&vPos);
+    BG_GetPlayerViewDirection(&ps->ps,&vForward,(float *)0x0,&vUp);
+    local_b8 = (ps->ps).viewangles[1];
+    local_b4 = (ps->ps).viewangles[2];
+    vAngles = (ps->ps).viewangles[0] + 15.0;
+    vEnd = vUp * 10.0 + vForward * -40.0 + vPos;
     local_84 = local_18 * 10.0 + local_30 * -40.0 + local_24;
     local_80 = local_14 * 10.0 + local_2c * -40.0 + local_20;
-    local_7c[0] = -8.0;
-    local_7c[1] = -8.0;
-    local_7c[2] = -8.0;
-    local_10 = 8.0;
+    vMins[0] = -8.0;
+    vMins[1] = -8.0;
+    vMins[2] = -8.0;
+    vMaxs = 8.0;
     local_c = 8.0;
     local_8 = 8.0;
-    G_TraceCapsule((trace_t *)&local_70,&local_28,local_7c,&local_10,&local_88,0x3ff,0x810011,
-                   &local_b0);
-    Vec3Lerp(&local_28,&local_88,local_60,&local_28);
-    AssignToSmallerType<unsigned_char>
-              (&(pgVar1->ps).clientNum,(int)param_1[-0x1487a].r.mins / 0x2f8);
-    (pgVar1->ps).pm_flags = (pgVar1->ps).pm_flags & 0xfffeffef;
-    (pgVar1->ps).weapFlags = (pgVar1->ps).weapFlags & 0xffffffbf;
-    (pgVar1->ps).otherFlags = (pgVar1->ps).otherFlags & 0xfffffffd;
-    (pgVar1->ps).fWeaponPosFrac = 0.0;
-    G_SetOrigin(param_1,&local_28);
-    (pgVar1->ps).origin[0] = local_28;
-    (pgVar1->ps).origin[1] = local_24;
-    (pgVar1->ps).origin[2] = local_20;
-    SetClientViewAngle(param_1,&local_bc);
-    if (param_1->tagInfo == (tagInfo_s *)0x0) {
-      (param_1->r).currentAngles[0] = 0.0;
+    G_TraceCapsule((trace_t *)&trace,&vPos,vMins,&vMaxs,&vEnd,0x3ff,0x810011,&context);
+    Vec3Lerp(&vPos,&vEnd,local_60,&vPos);
+    AssignToSmallerType<unsigned_char>(&(ps->ps).clientNum,(int)ent[-0x1487a].r.mins / 0x2f8);
+    (ps->ps).pm_flags = (ps->ps).pm_flags & 0xfffeffef;
+    (ps->ps).weapFlags = (ps->ps).weapFlags & 0xffffffbf;
+    (ps->ps).otherFlags = (ps->ps).otherFlags & 0xfffffffd;
+    (ps->ps).fWeaponPosFrac = 0.0;
+    G_SetOrigin(ent,&vPos);
+    (ps->ps).origin[0] = vPos;
+    (ps->ps).origin[1] = local_24;
+    (ps->ps).origin[2] = local_20;
+    SetClientViewAngle(ent,&vAngles);
+    if (ent->tagInfo == (tagInfo_s *)0x0) {
+      (ent->r).currentAngles[0] = 0.0;
     }
-    (pgVar1->ps).shellshockIndex = 0;
-    (pgVar1->ps).shellshockTime = 0;
-    (pgVar1->ps).shellshockDuration = 0;
-    (pgVar1->ps).predictableEventSequence = 0;
-    (pgVar1->ps).predictableEventSequenceOld = 0;
-    (pgVar1->ps).unpredictableEventSequence = 0;
-    (pgVar1->ps).unpredictableEventSequenceOld = 0;
-    (pgVar1->ps).predictableEvents[0] = 0;
-    (pgVar1->ps).predictableEvents[1] = 0;
-    (pgVar1->ps).predictableEvents[2] = 0;
-    (pgVar1->ps).predictableEvents[3] = 0;
-    (pgVar1->ps).unpredictableEvents[0] = 0;
-    (pgVar1->ps).unpredictableEvents[1] = 0;
-    (pgVar1->ps).unpredictableEvents[2] = 0;
-    (pgVar1->ps).unpredictableEvents[3] = 0;
+    (ps->ps).shellshockIndex = 0;
+    (ps->ps).shellshockTime = 0;
+    (ps->ps).shellshockDuration = 0;
+    (ps->ps).predictableEventSequence = 0;
+    (ps->ps).predictableEventSequenceOld = 0;
+    (ps->ps).unpredictableEventSequence = 0;
+    (ps->ps).unpredictableEventSequenceOld = 0;
+    (ps->ps).predictableEvents[0] = 0;
+    (ps->ps).predictableEvents[1] = 0;
+    (ps->ps).predictableEvents[2] = 0;
+    (ps->ps).predictableEvents[3] = 0;
+    (ps->ps).unpredictableEvents[0] = 0;
+    (ps->ps).unpredictableEvents[1] = 0;
+    (ps->ps).unpredictableEvents[2] = 0;
+    (ps->ps).unpredictableEvents[3] = 0;
   }
   return;
 }
@@ -727,78 +745,78 @@ void __cdecl StopFollowing(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Cmd_FollowCycle_f(gentity_s *param_1,int param_2)
+int __cdecl Cmd_FollowCycle_f(gentity_s *ent,int dir)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  playerState_s local_2814;
-  int local_e8;
-  int local_e4;
-  uint local_e0;
-  clientState_s local_dc;
+  int original;
+  playerState_s bufForps;
+  int health;
+  int clientnum;
+  int otherFlags;
+  clientState_s cs;
   uint local_c;
-  playerState_s *local_8;
+  playerState_s *ps;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (playerState_s *)
-            ((int)local_2814.origin + ((0x80 - ((uint)&local_2814 & 0x7f) & 0x7f) - 0x24));
-  if ((((uint)local_8 & 0x7f) != 0) &&
+  ps = (playerState_s *)((int)bufForps.origin + ((0x80 - ((uint)&bufForps & 0x7f) & 0x7f) - 0x24));
+  if ((((uint)ps & 0x7f) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x310,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 != 1) && (param_2 != -1)) {
+  if ((dir != 1) && (dir != -1)) {
     Com_Error(ERR_DROP,"\x15Cmd_FollowCycle_f: bad dir %i");
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x318,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_1->client->sess).sessionState == SESS_STATE_SPECTATOR) &&
-     ((param_1->client->sess).forceSpectatorClient < 0)) {
-    local_e4 = param_1->client->spectatorClient;
-    iVar3 = local_e4;
-    if (local_e4 < 0) {
-      local_e4 = 0;
-      iVar3 = local_e4;
+  if (((ent->client->sess).sessionState == SESS_STATE_SPECTATOR) &&
+     ((ent->client->sess).forceSpectatorClient < 0)) {
+    clientnum = ent->client->spectatorClient;
+    iVar3 = clientnum;
+    if (clientnum < 0) {
+      clientnum = 0;
+      iVar3 = clientnum;
     }
     do {
-      local_e4 = local_e4 + param_2;
-      if (level.maxclients <= local_e4) {
-        local_e4 = 0;
+      clientnum = clientnum + dir;
+      if (level.maxclients <= clientnum) {
+        clientnum = 0;
       }
-      if (local_e4 < 0) {
-        local_e4 = level.maxclients + -1;
+      if (clientnum < 0) {
+        clientnum = level.maxclients + -1;
       }
       iVar4 = SV_GetArchivedClientInfo
-                        (local_e4,&(param_1->client->sess).archiveTime,local_8,&local_dc,
-                         (float *)0x0,&local_e8,(int *)&local_e0);
+                        (clientnum,&(ent->client->sess).archiveTime,ps,&cs,(float *)0x0,&health,
+                         &otherFlags);
       if (iVar4 != 0) {
-        if (((local_e0 & 4) == 0) &&
+        if (((otherFlags & 4U) == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",
                                      0x336,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        iVar4 = G_ClientCanSpectateTeamOrLocalPlayer(param_1->client,&local_dc);
+        iVar4 = G_ClientCanSpectateTeamOrLocalPlayer(ent->client,&cs);
         if (iVar4 != 0) {
-          param_1->client->spectatorClient = local_e4;
-          (param_1->client->sess).sessionState = SESS_STATE_SPECTATOR;
-          Scr_AddEntity(g_entities + local_e4,SCRIPTINSTANCE_SERVER);
-          Scr_Notify(param_1,scr_const.spectator_cycle,1);
+          ent->client->spectatorClient = clientnum;
+          (ent->client->sess).sessionState = SESS_STATE_SPECTATOR;
+          Scr_AddEntity(g_entities + clientnum,SCRIPTINSTANCE_SERVER);
+          Scr_Notify(ent,scr_const.spectator_cycle,1);
           return 1;
         }
       }
-    } while (local_e4 != iVar3);
+    } while (clientnum != iVar3);
   }
   return 0;
 }
@@ -811,14 +829,14 @@ int __cdecl Cmd_FollowCycle_f(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_IsPlaying(gentity_s *param_1)
+int __cdecl G_IsPlaying(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x350,0,
                              "%s");
     if (!bVar2) {
@@ -827,7 +845,7 @@ int __cdecl G_IsPlaying(gentity_s *param_1)
       return iVar3;
     }
   }
-  if ((param_1->client->sess).connected == CON_DISCONNECTED) {
+  if ((ent->client->sess).connected == CON_DISCONNECTED) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x351,0,
                              "%s");
     if (!bVar2) {
@@ -836,7 +854,7 @@ int __cdecl G_IsPlaying(gentity_s *param_1)
       return iVar3;
     }
   }
-  return (uint)((param_1->client->sess).sessionState == SESS_STATE_PLAYING);
+  return (uint)((ent->client->sess).sessionState == SESS_STATE_PLAYING);
 }
 
 
@@ -849,56 +867,55 @@ int __cdecl G_IsPlaying(gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-G_SayTo(gentity_s *param_1,gentity_s *param_2,int param_3,int param_4,char *param_5,char *param_6,
-       char *param_7)
+G_SayTo(gentity_s *ent,gentity_s *other,int mode,int color,char *teamString,char *cleanname,
+       char *message)
 
 {
   team_t tVar1;
   int iVar2;
-  char *pcVar3;
-  char local_d4 [68];
-  char *local_90;
-  char local_8c [132];
+  char *text;
+  char szStateString [68];
+  char *team_color;
+  char name [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((((param_2 != (gentity_s *)0x0) && ((param_2->r).inuse != '\0')) &&
-       (param_2->client != (gclient_s *)0x0)) &&
-      ((param_2->client->sess).connected == CON_CONNECTED)) &&
-     (((param_3 != 1 || (iVar2 = OnSameTeam(param_1,param_2), iVar2 != 0)) &&
-      (((g_deadChat->current).enabled != false ||
-       ((iVar2 = G_IsPlaying(param_1), iVar2 != 0 || (iVar2 = G_IsPlaying(param_2), iVar2 == 0))))))
-     )) {
-    tVar1 = (param_1->client->sess).cs.team;
+  if (((((other != (gentity_s *)0x0) && ((other->r).inuse != '\0')) &&
+       (other->client != (gclient_s *)0x0)) && ((other->client->sess).connected == CON_CONNECTED))
+     && (((mode != 1 || (iVar2 = OnSameTeam(ent,other), iVar2 != 0)) &&
+         (((g_deadChat->current).enabled != false ||
+          ((iVar2 = G_IsPlaying(ent), iVar2 != 0 || (iVar2 = G_IsPlaying(other), iVar2 == 0))))))))
+  {
+    tVar1 = (ent->client->sess).cs.team;
     if (((int)tVar1 < 1) || (2 < (int)tVar1)) {
-      local_90 = "";
+      team_color = "";
     }
-    else if ((param_1->client->sess).cs.team == (param_2->client->sess).cs.team) {
-      local_90 = "^8";
-    }
-    else {
-      local_90 = "^9";
-    }
-    if ((param_1->client->sess).cs.team == TEAM_SPECTATOR) {
-      Com_sprintf(local_d4,0x40,"\x15(\x14GAME_SPECTATOR\x15)");
-    }
-    else if ((param_1->client->sess).sessionState == SESS_STATE_PLAYING) {
-      Com_sprintf(local_d4,0x40,"\x15%s");
+    else if ((ent->client->sess).cs.team == (other->client->sess).cs.team) {
+      team_color = "^8";
     }
     else {
-      Com_sprintf(local_d4,0x40,"\x15%s(\x14GAME_DEAD\x15)");
+      team_color = "^9";
     }
-    if (param_3 == 1) {
-      Com_sprintf(local_8c,0x80,"%s(\x14%s\x15)%s%s: ");
+    if ((ent->client->sess).cs.team == TEAM_SPECTATOR) {
+      Com_sprintf(szStateString,0x40,"\x15(\x14GAME_SPECTATOR\x15)");
     }
-    else if (param_3 == 2) {
-      Com_sprintf(local_8c,0x80,"%s[%s]%s: ");
+    else if ((ent->client->sess).sessionState == SESS_STATE_PLAYING) {
+      Com_sprintf(szStateString,0x40,"\x15%s");
     }
     else {
-      Com_sprintf(local_8c,0x80,"%s%s%s: ");
+      Com_sprintf(szStateString,0x40,"\x15%s(\x14GAME_DEAD\x15)");
     }
-    pcVar3 = va("%c \"\x15%s%c%c%s\"");
-    SV_GameSendServerCommand((int)param_2[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar3);
+    if (mode == 1) {
+      Com_sprintf(name,0x80,"%s(\x14%s\x15)%s%s: ");
+    }
+    else if (mode == 2) {
+      Com_sprintf(name,0x80,"%s[%s]%s: ");
+    }
+    else {
+      Com_sprintf(name,0x80,"%s%s%s: ");
+    }
+    text = va("%c \"\x15%s%c%c%s\"");
+    SV_GameSendServerCommand((int)other[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   }
   return;
 }
@@ -914,68 +931,67 @@ G_SayTo(gentity_s *param_1,gentity_s *param_2,int param_3,int param_4,char *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_Say(gentity_s *param_1,gentity_s *param_2,int param_3,char *param_4)
+void __cdecl G_Say(gentity_s *ent,gentity_s *target,int mode,char *chatText)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  int local_f8;
-  char local_f4 [68];
-  gentity_s *local_b0;
-  char *local_ac;
-  int local_a8;
-  char local_a4 [156];
+  char *src;
+  int destsize;
+  int j;
+  char cleanname [68];
+  gentity_s *other;
+  char *pszTeamString;
+  int color;
+  char text [156];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_ac = "";
-  if (((param_3 == 1) && ((param_1->client->sess).cs.team != TEAM_AXIS)) &&
-     ((param_1->client->sess).cs.team != TEAM_ALLIES)) {
-    param_3 = 0;
+  pszTeamString = "";
+  if (((mode == 1) && ((ent->client->sess).cs.team != TEAM_AXIS)) &&
+     ((ent->client->sess).cs.team != TEAM_ALLIES)) {
+    mode = 0;
   }
-  iVar4 = 0x40;
-  pcVar3 = CS_DisplayName(&(param_1->client->sess).cs,3);
-  I_strncpyz(local_f4,pcVar3,iVar4);
-  I_CleanStr(local_f4);
-  if (param_3 == 1) {
-    if ((((param_1->client->sess).cs.team != TEAM_AXIS) &&
-        ((param_1->client->sess).cs.team != TEAM_ALLIES)) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x3c8,0
-                                 ,"%s"), !bVar2)) {
+  destsize = 0x40;
+  src = CS_DisplayName(&(ent->client->sess).cs,3);
+  I_strncpyz(cleanname,src,destsize);
+  I_CleanStr(cleanname);
+  if (mode == 1) {
+    if ((((ent->client->sess).cs.team != TEAM_AXIS) && ((ent->client->sess).cs.team != TEAM_ALLIES))
+       && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",
+                                    0x3c8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    SV_GetGuid((param_1->s).number);
+    SV_GetGuid((ent->s).number);
     G_LogPrintf("sayteam;%d;%d;%s;%s\n");
-    if ((param_1->client->sess).cs.team == TEAM_AXIS) {
-      local_ac = "GAME_AXIS";
+    if ((ent->client->sess).cs.team == TEAM_AXIS) {
+      pszTeamString = "GAME_AXIS";
     }
     else {
-      local_ac = "GAME_ALLIES";
+      pszTeamString = "GAME_ALLIES";
     }
-    local_a8 = 0x35;
+    color = 0x35;
   }
-  else if (param_3 == 2) {
-    local_a8 = 0x33;
+  else if (mode == 2) {
+    color = 0x33;
   }
   else {
-    SV_GetGuid((param_1->s).number);
+    SV_GetGuid((ent->s).number);
     G_LogPrintf("say;%d;%d;%s;%s\n");
-    local_a8 = 0x37;
+    color = 0x37;
   }
-  I_strncpyz(local_a4,param_4,0x96);
-  if (param_2 == (gentity_s *)0x0) {
+  I_strncpyz(text,chatText,0x96);
+  if (target == (gentity_s *)0x0) {
     Com_Printf(0xf,"%s%s\n");
-    for (local_f8 = 0; local_f8 < level.maxclients; local_f8 = local_f8 + 1) {
-      local_b0 = g_entities + local_f8;
-      G_SayTo(param_1,local_b0,param_3,local_a8,local_ac,local_f4,local_a4);
+    for (j = 0; j < level.maxclients; j = j + 1) {
+      other = g_entities + j;
+      G_SayTo(ent,other,mode,color,pszTeamString,cleanname,text);
     }
   }
   else {
-    G_SayTo(param_1,param_2,param_3,local_a8,local_ac,local_f4,local_a4);
+    G_SayTo(ent,target,mode,color,pszTeamString,cleanname,text);
   }
   return;
 }
@@ -988,21 +1004,21 @@ void __cdecl G_Say(gentity_s *param_1,gentity_s *param_2,int param_3,char *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Say_f(gentity_s *param_1,int param_2,int param_3)
+void __cdecl Cmd_Say_f(gentity_s *ent,int mode,int arg0)
 
 {
   int iVar1;
-  undefined4 local_8;
+  char *p;
   
   iVar1 = SV_Cmd_Argc();
-  if ((1 < iVar1) || (param_3 != 0)) {
-    if (param_3 == 0) {
-      local_8 = ConcatArgs(1);
+  if ((1 < iVar1) || (arg0 != 0)) {
+    if (arg0 == 0) {
+      p = ConcatArgs(1);
     }
     else {
-      local_8 = ConcatArgs(0);
+      p = ConcatArgs(0);
     }
-    G_Say(param_1,(gentity_s *)0x0,param_2,local_8);
+    G_Say(ent,(gentity_s *)0x0,mode,p);
   }
   return;
 }
@@ -1015,14 +1031,14 @@ void __cdecl Cmd_Say_f(gentity_s *param_1,int param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_Where_f(gentity_s *param_1)
+void __cdecl Cmd_Where_f(gentity_s *ent)
 
 {
-  char *pcVar1;
+  char *text;
   
-  vtos((param_1->r).currentOrigin);
-  pcVar1 = va("%c \"\x15%s\n\"");
-  SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+  vtos((ent->r).currentOrigin);
+  text = va("%c \"\x15%s\n\"");
+  SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
   return;
 }
 
@@ -1034,8 +1050,9 @@ void __cdecl Cmd_Where_f(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Cmd_CallVote_f(gentity_s *param_1)
+void __cdecl Cmd_CallVote_f(gentity_s *ent)
 
 {
   code *pcVar1;
@@ -1046,13 +1063,16 @@ void __cdecl Cmd_CallVote_f(gentity_s *param_1)
   int extraout_EAX_00;
   int extraout_EAX_01;
   dvar_s *pdVar5;
-  int local_364;
-  int local_360;
-  uchar local_354 [256];
-  uchar local_254 [256];
-  char local_154 [68];
-  int local_110;
-  uchar local_10c [260];
+  char *playerName_2;
+  int i_2;
+  int kicknum;
+  dvar_s *mapname;
+  char *playerName;
+  uchar arg1 [256];
+  uchar arg2 [256];
+  char cleanName [68];
+  int i;
+  uchar arg3 [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1062,55 +1082,55 @@ void __cdecl Cmd_CallVote_f(gentity_s *param_1)
     if (!bVar2) {
       if (level.numConnectedClients < 2) {
         pcVar4 = va("%c \"GAME_VOTINGNOTENOUGHPLAYERS\"");
-        SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+        SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
         return;
       }
       if ((g_oldVoting->current).enabled != false) {
         if (level.voteTime != 0) {
           pcVar4 = va("%c \"GAME_VOTEALREADYINPROGRESS\"");
-          SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+          SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
           return;
         }
-        if (2 < (param_1->client->sess).voteCount) {
+        if (2 < (ent->client->sess).voteCount) {
           pcVar4 = va("%c \"GAME_MAXVOTESCALLED\"");
-          SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+          SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
           return;
         }
-        if ((param_1->client->sess).cs.team == TEAM_SPECTATOR) {
+        if ((ent->client->sess).cs.team == TEAM_SPECTATOR) {
           pcVar4 = va("%c \"GAME_NOSPECTATORCALLVOTE\"");
-          SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+          SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
           return;
         }
       }
-      SV_Cmd_ArgvBuffer(1,(char *)local_354,0x100);
-      SV_Cmd_ArgvBuffer(2,(char *)local_254,0x100);
-      SV_Cmd_ArgvBuffer(3,(char *)local_10c,0x100);
-      strchr(local_354,';');
-      if (((extraout_EAX != 0) || (strchr(local_254,';'), extraout_EAX_00 != 0)) ||
-         (strchr(local_10c,';'), extraout_EAX_01 != 0)) {
+      SV_Cmd_ArgvBuffer(1,(char *)arg1,0x100);
+      SV_Cmd_ArgvBuffer(2,(char *)arg2,0x100);
+      SV_Cmd_ArgvBuffer(3,(char *)arg3,0x100);
+      strchr(arg1,';');
+      if (((extraout_EAX != 0) || (strchr(arg2,';'), extraout_EAX_00 != 0)) ||
+         (strchr(arg3,';'), extraout_EAX_01 != 0)) {
         pcVar4 = va("%c \"GAME_INVALIDVOTESTRING\"");
-        SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+        SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
         return;
       }
       if ((g_oldVoting->current).enabled == false) {
-        Scr_VoteCalled(param_1,(char *)local_354,(char *)local_254,(char *)local_10c);
+        Scr_VoteCalled(ent,(char *)arg1,(char *)arg2,(char *)arg3);
         return;
       }
-      iVar3 = I_stricmp((char *)local_354,"map_restart");
-      if (((((iVar3 != 0) && (iVar3 = I_stricmp((char *)local_354,"map_rotate"), iVar3 != 0)) &&
-           ((iVar3 = I_stricmp((char *)local_354,"typemap"), iVar3 != 0 &&
-            ((iVar3 = I_stricmp((char *)local_354,"map"), iVar3 != 0 &&
-             (iVar3 = I_stricmp((char *)local_354,"g_gametype"), iVar3 != 0)))))) &&
-          (iVar3 = I_stricmp((char *)local_354,"kick"), iVar3 != 0)) &&
-         (((iVar3 = I_stricmp((char *)local_354,"clientkick"), iVar3 != 0 &&
-           (iVar3 = I_stricmp((char *)local_354,"tempBanUser"), iVar3 != 0)) &&
-          (iVar3 = I_stricmp((char *)local_354,"tempBanClient"), iVar3 != 0)))) {
+      iVar3 = I_stricmp((char *)arg1,"map_restart");
+      if (((((iVar3 != 0) && (iVar3 = I_stricmp((char *)arg1,"map_rotate"), iVar3 != 0)) &&
+           ((iVar3 = I_stricmp((char *)arg1,"typemap"), iVar3 != 0 &&
+            ((iVar3 = I_stricmp((char *)arg1,"map"), iVar3 != 0 &&
+             (iVar3 = I_stricmp((char *)arg1,"g_gametype"), iVar3 != 0)))))) &&
+          (iVar3 = I_stricmp((char *)arg1,"kick"), iVar3 != 0)) &&
+         (((iVar3 = I_stricmp((char *)arg1,"clientkick"), iVar3 != 0 &&
+           (iVar3 = I_stricmp((char *)arg1,"tempBanUser"), iVar3 != 0)) &&
+          (iVar3 = I_stricmp((char *)arg1,"tempBanClient"), iVar3 != 0)))) {
         pcVar4 = va("%c \"GAME_INVALIDVOTESTRING\"");
-        SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+        SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
         pcVar4 = va(
                    "%c \"GAME_VOTECOMMANDSARE\x15 map_restart, map_rotate, map <mapname>, g_gametype <typename>, typemap <typename> <mapname>, kick <player>, clientkick <clientnum>, tempBanUser <player>, tempBanClient <clientNum>\""
                    );
-        SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+        SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
         return;
       }
       if (level.voteExecuteTime != 0) {
@@ -1118,101 +1138,100 @@ void __cdecl Cmd_CallVote_f(gentity_s *param_1)
         pcVar4 = va("%s\n");
         Cbuf_AddText(0,pcVar4);
       }
-      iVar3 = I_stricmp((char *)local_354,"typemap");
+      iVar3 = I_stricmp((char *)arg1,"typemap");
       if (iVar3 == 0) {
-        iVar3 = Scr_IsValidGameType((char *)local_254);
+        iVar3 = Scr_IsValidGameType((char *)arg2);
         if (iVar3 == 0) {
           pcVar4 = va("%c \"GAME_INVALIDGAMETYPE\"");
-          SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+          SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
           return;
         }
-        iVar3 = I_stricmp((char *)local_254,(g_gametype->current).string);
+        iVar3 = I_stricmp((char *)arg2,(g_gametype->current).string);
         if (iVar3 == 0) {
-          local_254[0] = '\0';
+          arg2[0] = '\0';
         }
-        SV_Cmd_ArgvBuffer(3,(char *)local_10c,0x100);
+        SV_Cmd_ArgvBuffer(3,(char *)arg3,0x100);
         if (((useFastFile->current).enabled == false) &&
-           (iVar3 = SV_MapExists((char *)local_10c), iVar3 == 0)) {
+           (iVar3 = SV_MapExists((char *)arg3), iVar3 == 0)) {
           pcVar4 = va("%c \"\x15the server doesn\'t have that map\"");
-          SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+          SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
           return;
         }
         pdVar5 = _Dvar_RegisterString("mapname","",0x44,"Current map name");
-        iVar3 = I_stricmp((char *)local_10c,(pdVar5->current).string);
+        iVar3 = I_stricmp((char *)arg3,(pdVar5->current).string);
         if (iVar3 == 0) {
-          local_10c[0] = '\0';
+          arg3[0] = '\0';
         }
-        if ((local_254[0] == '\0') && (local_10c[0] == '\0')) {
+        if ((arg2[0] == '\0') && (arg3[0] == '\0')) {
           pcVar4 = va("%c \"GAME_TYPEMAP_NOCHANGE\"");
-          SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+          SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
           return;
         }
-        if (local_10c[0] == '\0') {
+        if (arg3[0] == '\0') {
           Com_sprintf(level.voteString,0x400,"g_gametype %s; map_restart");
-          Scr_GetGameTypeNameForScript((char *)local_254);
+          Scr_GetGameTypeNameForScript((char *)arg2);
           Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_GAMETYPE\x14%s");
         }
         else {
-          if (local_254[0] == '\0') {
+          if (arg2[0] == '\0') {
             Com_sprintf(level.voteString,0x400,"map %s");
           }
           else {
             Com_sprintf(level.voteString,0x400,"g_gametype %s; map %s");
           }
-          if (local_254[0] == '\0') {
+          if (arg2[0] == '\0') {
             Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_MAP\x15%s");
           }
           else {
-            Scr_GetGameTypeNameForScript((char *)local_254);
+            Scr_GetGameTypeNameForScript((char *)arg2);
             Com_sprintf(level.voteDisplayString,0x400,
                         "GAME_VOTE_GAMETYPE\x14%s\x15 - \x14GAME_VOTE_MAP\x15%s");
           }
         }
       }
       else {
-        iVar3 = I_stricmp((char *)local_354,"g_gametype");
+        iVar3 = I_stricmp((char *)arg1,"g_gametype");
         if (iVar3 == 0) {
-          iVar3 = Scr_IsValidGameType((char *)local_254);
+          iVar3 = Scr_IsValidGameType((char *)arg2);
           if (iVar3 == 0) {
             pcVar4 = va("%c \"GAME_INVALIDGAMETYPE\"");
-            SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4)
-            ;
+            SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
             return;
           }
           Com_sprintf(level.voteString,0x400,"%s %s; map_restart");
-          Scr_GetGameTypeNameForScript((char *)local_254);
+          Scr_GetGameTypeNameForScript((char *)arg2);
           Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_GAMETYPE\x14%s");
         }
         else {
-          iVar3 = I_stricmp((char *)local_354,"map_restart");
+          iVar3 = I_stricmp((char *)arg1,"map_restart");
           if (iVar3 == 0) {
             Com_sprintf(level.voteString,0x400,"fast_restart");
             Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_MAPRESTART");
           }
           else {
-            iVar3 = I_stricmp((char *)local_354,"map_rotate");
+            iVar3 = I_stricmp((char *)arg1,"map_rotate");
             if (iVar3 == 0) {
               Com_sprintf(level.voteString,0x400,"%s");
               Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_NEXTMAP");
             }
             else {
-              iVar3 = I_stricmp((char *)local_354,"map");
+              iVar3 = I_stricmp((char *)arg1,"map");
               if (iVar3 == 0) {
                 if (((useFastFile->current).enabled == false) &&
-                   (iVar3 = SV_MapExists((char *)local_254), iVar3 == 0)) {
+                   (iVar3 = SV_MapExists((char *)arg2), iVar3 == 0)) {
                   pcVar4 = va("%c \"\x15the server doesn\'t have that map\"");
                   SV_GameSendServerCommand
-                            ((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+                            ((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
                   return;
                 }
                 Com_sprintf(level.voteString,0x400,"%s %s");
                 Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_MAP\x15%s");
               }
               else {
-                iVar3 = I_stricmp((char *)local_354,"kick");
-                if (((iVar3 != 0) && (iVar3 = I_stricmp((char *)local_354,"clientkick"), iVar3 != 0)
-                    ) && ((iVar3 = I_stricmp((char *)local_354,"tempBanUser"), iVar3 != 0 &&
-                          (iVar3 = I_stricmp((char *)local_354,"tempBanClient"), iVar3 != 0)))) {
+                iVar3 = I_stricmp((char *)arg1,"kick");
+                if (((iVar3 != 0) && (iVar3 = I_stricmp((char *)arg1,"clientkick"), iVar3 != 0)) &&
+                   ((iVar3 = I_stricmp((char *)arg1,"tempBanUser"), iVar3 != 0 &&
+                    (iVar3 = I_stricmp((char *)arg1,"tempBanClient"), iVar3 != 0)))) {
                   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp"
                                            ,0x503,0,"unhandled callvote");
                   if (bVar2) {
@@ -1222,67 +1241,66 @@ void __cdecl Cmd_CallVote_f(gentity_s *param_1)
                   (*pcVar1)();
                   return;
                 }
-                local_360 = level.maxclients;
-                iVar3 = I_stricmp((char *)local_354,"kick");
-                if ((iVar3 == 0) || (iVar3 = I_stricmp((char *)local_354,"tempBanUser"), iVar3 == 0)
-                   ) {
-                  for (local_364 = 0; local_364 < level.maxclients; local_364 = local_364 + 1) {
-                    if (level.clients[local_364].sess.connected == CON_CONNECTED) {
+                kicknum = level.maxclients;
+                iVar3 = I_stricmp((char *)arg1,"kick");
+                if ((iVar3 == 0) || (iVar3 = I_stricmp((char *)arg1,"tempBanUser"), iVar3 == 0)) {
+                  for (i_2 = 0; i_2 < level.maxclients; i_2 = i_2 + 1) {
+                    if (level.clients[i_2].sess.connected == CON_CONNECTED) {
                       iVar3 = 0x40;
-                      pcVar4 = CS_DisplayName(&level.clients[local_364].sess.cs,3);
-                      I_strncpyz(local_154,pcVar4,iVar3);
-                      I_CleanStr(local_154);
-                      iVar3 = I_stricmp(local_154,(char *)local_254);
+                      pcVar4 = CS_DisplayName(&level.clients[i_2].sess.cs,3);
+                      I_strncpyz(cleanName,pcVar4,iVar3);
+                      I_CleanStr(cleanName);
+                      iVar3 = I_stricmp(cleanName,(char *)arg2);
                       if (iVar3 == 0) {
-                        local_360 = local_364;
+                        kicknum = i_2;
                       }
                     }
                   }
                 }
                 else {
-                  local_360 = atoi((char *)local_254);
-                  if ((((local_360 == 0) && (iVar3 = I_stricmp((char *)local_254,"0"), iVar3 != 0))
-                      || (local_360 < 0)) ||
-                     ((level.maxclients <= local_360 ||
-                      (level.clients[local_360].sess.connected != CON_CONNECTED)))) {
-                    local_360 = level.maxclients;
+                  kicknum = atoi((char *)arg2);
+                  if ((((kicknum == 0) && (iVar3 = I_stricmp((char *)arg2,"0"), iVar3 != 0)) ||
+                      (kicknum < 0)) ||
+                     ((level.maxclients <= kicknum ||
+                      (level.clients[kicknum].sess.connected != CON_CONNECTED)))) {
+                    kicknum = level.maxclients;
                   }
                   else {
-                    I_strncpyz(local_154,level.clients[local_360].sess.cs.name,0x40);
-                    I_CleanStr(local_154);
+                    I_strncpyz(cleanName,level.clients[kicknum].sess.cs.name,0x40);
+                    I_CleanStr(cleanName);
                   }
                 }
                 bVar2 = Demo_IsEnabled();
-                if ((bVar2) && (local_360 == 0)) {
+                if ((bVar2) && (kicknum == 0)) {
                   pcVar4 = va("%c \"GAME_INVALIDVOTESTRING\"");
                   SV_GameSendServerCommand
-                            ((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+                            ((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
                   return;
                 }
-                if (local_360 == level.maxclients) {
+                if (kicknum == level.maxclients) {
                   pcVar4 = va("%c \"GAME_CLIENTNOTONSERVER\"");
                   SV_GameSendServerCommand
-                            ((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+                            ((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
                   return;
                 }
                 Com_sprintf(level.voteString,0x400,"%s \"%d\"");
-                CS_DisplayName(&level.clients[local_360].sess.cs,3);
+                CS_DisplayName(&level.clients[kicknum].sess.cs,3);
                 Com_sprintf(level.voteDisplayString,0x400,"GAME_VOTE_KICK\x15(%i)%s");
               }
             }
           }
         }
       }
-      CS_DisplayName(&(param_1->client->sess).cs,3);
+      CS_DisplayName(&(ent->client->sess).cs,3);
       pcVar4 = va("%c \"GAME_CALLEDAVOTE\x15%s\"");
       SV_GameSendServerCommand(-1,SV_CMD_CAN_IGNORE,pcVar4);
       level.voteTime = level.time + 30000;
       level.voteYes = 1;
       level.voteNo = 0;
-      for (local_110 = 0; local_110 < level.maxclients; local_110 = local_110 + 1) {
-        level.clients[local_110].ps.eFlags = level.clients[local_110].ps.eFlags & 0xffefffff;
+      for (i = 0; i < level.maxclients; i = i + 1) {
+        level.clients[i].ps.eFlags = level.clients[i].ps.eFlags & 0xffefffff;
       }
-      (param_1->client->ps).eFlags = (param_1->client->ps).eFlags | 0x100000;
+      (ent->client->ps).eFlags = (ent->client->ps).eFlags | 0x100000;
       pcVar4 = va("%i %i");
       SV_SetConfigstring(0xf,pcVar4);
       SV_SetConfigstring(0x10,level.voteDisplayString);
@@ -1294,7 +1312,7 @@ void __cdecl Cmd_CallVote_f(gentity_s *param_1)
     }
   }
   pcVar4 = va("%c \"GAME_VOTINGNOTENABLED\"");
-  SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+  SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
   return;
 }
 
@@ -1306,12 +1324,13 @@ void __cdecl Cmd_CallVote_f(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Cmd_Vote_f(gentity_s *param_1)
+void __cdecl Cmd_Vote_f(gentity_s *ent)
 
 {
   char *pcVar1;
-  char local_4c;
+  char msg;
   char local_4b;
   uint local_8;
   
@@ -1319,27 +1338,27 @@ void __cdecl Cmd_Vote_f(gentity_s *param_1)
   if ((g_oldVoting->current).enabled != false) {
     if (level.voteTime == 0) {
       pcVar1 = va("%c \"GAME_NOVOTEINPROGRESS\"");
-      SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+      SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
       return;
     }
-    if (((param_1->client->ps).eFlags & 0x100000U) != 0) {
+    if (((ent->client->ps).eFlags & 0x100000U) != 0) {
       pcVar1 = va("%c \"GAME_VOTEALREADYCAST\"");
-      SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+      SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
       return;
     }
-    if ((param_1->client->sess).cs.team == TEAM_SPECTATOR) {
+    if ((ent->client->sess).cs.team == TEAM_SPECTATOR) {
       pcVar1 = va("%c \"GAME_NOSPECTATORVOTE\"");
-      SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+      SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
       return;
     }
     pcVar1 = va("%c \"GAME_VOTECAST\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
-    (param_1->client->ps).eFlags = (param_1->client->ps).eFlags | 0x100000;
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar1);
+    (ent->client->ps).eFlags = (ent->client->ps).eFlags | 0x100000;
   }
-  SV_Cmd_ArgvBuffer(1,&local_4c,0x40);
-  if (((local_4c == 'y') || (local_4b == 'Y')) || (local_4b == '1')) {
+  SV_Cmd_ArgvBuffer(1,&msg,0x40);
+  if (((msg == 'y') || (local_4b == 'Y')) || (local_4b == '1')) {
     if ((g_oldVoting->current).enabled == false) {
-      Scr_PlayerVote(param_1,"yes");
+      Scr_PlayerVote(ent,"yes");
     }
     else {
       level.voteYes = level.voteYes + 1;
@@ -1348,7 +1367,7 @@ void __cdecl Cmd_Vote_f(gentity_s *param_1)
     }
   }
   else if ((g_oldVoting->current).enabled == false) {
-    Scr_PlayerVote(param_1,"no");
+    Scr_PlayerVote(ent,"no");
   }
   else {
     level.voteNo = level.voteNo + 1;
@@ -1367,7 +1386,7 @@ void __cdecl Cmd_Vote_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_SetViewpos_f(gentity_s *param_1)
+void __cdecl Cmd_SetViewpos_f(gentity_s *ent)
 
 {
   code *pcVar1;
@@ -1375,20 +1394,20 @@ void __cdecl Cmd_SetViewpos_f(gentity_s *param_1)
   char *pcVar3;
   int iVar4;
   double dVar5;
-  char local_424 [1024];
+  char buffer [1024];
   uint local_24;
-  float local_20 [6];
-  int local_8;
+  float origin [6];
+  int i;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x56b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((ent->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_cmds_mp.cpp",0x56c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1397,36 +1416,36 @@ void __cdecl Cmd_SetViewpos_f(gentity_s *param_1)
   }
   if ((g_cheats->current).enabled == false) {
     pcVar3 = va("%c \"GAME_CHEATSNOTENABLED\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar3);
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar3);
     return;
   }
   iVar4 = SV_Cmd_Argc();
   if ((iVar4 < 4) || (iVar4 = SV_Cmd_Argc(), 6 < iVar4)) {
     pcVar3 = va("%c \"GAME_USAGE\x15: setviewpos x y z yaw\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar3);
+    SV_GameSendServerCommand((int)ent[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar3);
     return;
   }
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    SV_Cmd_ArgvBuffer(local_8 + 1,local_424,0x400);
-    dVar5 = atof(local_424);
-    local_20[local_8] = (float)dVar5;
+  for (i = 0; i < 3; i = i + 1) {
+    SV_Cmd_ArgvBuffer(i + 1,buffer,0x400);
+    dVar5 = atof(buffer);
+    origin[i] = (float)dVar5;
   }
-  local_20[2] = local_20[2] - (param_1->client->ps).viewHeightCurrent;
-  local_20[3] = 0.0;
-  local_20[4] = 0.0;
-  local_20[5] = 0.0;
+  origin[2] = origin[2] - (ent->client->ps).viewHeightCurrent;
+  origin[3] = 0.0;
+  origin[4] = 0.0;
+  origin[5] = 0.0;
   iVar4 = SV_Cmd_Argc();
   if (iVar4 != 5) {
     if (iVar4 != 6) goto LAB_00612a2f;
-    SV_Cmd_ArgvBuffer(5,local_424,0x400);
-    dVar5 = atof(local_424);
-    local_20[3] = (float)dVar5;
+    SV_Cmd_ArgvBuffer(5,buffer,0x400);
+    dVar5 = atof(buffer);
+    origin[3] = (float)dVar5;
   }
-  SV_Cmd_ArgvBuffer(4,local_424,0x400);
-  dVar5 = atof(local_424);
-  local_20[4] = (float)dVar5;
+  SV_Cmd_ArgvBuffer(4,buffer,0x400);
+  dVar5 = atof(buffer);
+  origin[4] = (float)dVar5;
 LAB_00612a2f:
-  TeleportPlayer(param_1,local_20,local_20 + 3);
+  TeleportPlayer(ent,origin,origin + 3);
   return;
 }
 
@@ -1438,7 +1457,7 @@ LAB_00612a2f:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_EntityCount_f(gentity_s *param_1)
+void __cdecl Cmd_EntityCount_f(gentity_s *ent)
 
 {
   if ((g_cheats->current).enabled != false) {
@@ -1456,39 +1475,39 @@ void __cdecl Cmd_EntityCount_f(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_MenuResponse_f(gentity_s *param_1)
+void __cdecl Cmd_MenuResponse_f(gentity_s *pEnt)
 
 {
   int iVar1;
-  char local_c14 [1024];
-  char local_814 [1028];
-  int local_410;
-  char local_40c [257] [4];
+  char szServerId [1024];
+  char szMenuName [1028];
+  int iMenuIndex;
+  char szResponse [257] [4];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_410 = -1;
+  iMenuIndex = -1;
   iVar1 = SV_Cmd_Argc();
   if (iVar1 == 4) {
-    SV_Cmd_ArgvBuffer(1,local_c14,0x400);
-    iVar1 = atoi(local_c14);
+    SV_Cmd_ArgvBuffer(1,szServerId,0x400);
+    iVar1 = atoi(szServerId);
     if (iVar1 != sv_serverId_value) {
       return;
     }
-    SV_Cmd_ArgvBuffer(2,local_814,0x400);
-    local_410 = atoi(local_814);
-    if ((-1 < local_410) && (local_410 < 0x20)) {
-      SV_GetConfigstring(local_410 + 0x9f4,local_814,0x400);
+    SV_Cmd_ArgvBuffer(2,szMenuName,0x400);
+    iMenuIndex = atoi(szMenuName);
+    if ((-1 < iMenuIndex) && (iMenuIndex < 0x20)) {
+      SV_GetConfigstring(iMenuIndex + 0x9f4,szMenuName,0x400);
     }
-    SV_Cmd_ArgvBuffer(3,local_40c[0],0x400);
+    SV_Cmd_ArgvBuffer(3,szResponse[0],0x400);
   }
   else {
-    local_814[0] = '\0';
-    builtin_strncpy(local_40c[0],"bad",4);
+    szMenuName[0] = '\0';
+    builtin_strncpy(szResponse[0],"bad",4);
   }
-  Scr_AddString(local_40c[0],SCRIPTINSTANCE_SERVER);
-  Scr_AddString(local_814,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(param_1,scr_const.menuresponse,2);
+  Scr_AddString(szResponse[0],SCRIPTINSTANCE_SERVER);
+  Scr_AddString(szMenuName,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(pEnt,scr_const.menuresponse,2);
   return;
 }
 
@@ -1505,11 +1524,18 @@ void __cdecl Cmd_PrintEntities_f(void)
 
 // 006130E0  Cmd_VisionSetNaked_f  (game_mp/g_cmds_mp.cpp:1500)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Cmd_VisionSetNaked_f(void)
 
 {
   int iVar1;
   char *pcVar2;
+  int duration;
   
   iVar1 = SV_Cmd_Argc();
   if (iVar1 != 2) {
@@ -1529,11 +1555,18 @@ void __cdecl Cmd_VisionSetNaked_f(void)
 
 // 00613220  Cmd_VisionSetNight_f  (game_mp/g_cmds_mp.cpp:1519)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl Cmd_VisionSetNight_f(void)
 
 {
   int iVar1;
   char *pcVar2;
+  int duration;
   
   iVar1 = SV_Cmd_Argc();
   if (iVar1 != 2) {
@@ -1559,138 +1592,138 @@ void __cdecl Cmd_VisionSetNight_f(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ClientCommand(int param_1)
+void __cdecl ClientCommand(int clientNum)
 
 {
   int iVar1;
-  char local_454;
+  int n;
+  char errMsg;
   uchar local_453 [59];
   undefined1 local_418;
   undefined1 local_417;
   undefined1 local_416;
   undefined1 local_415;
-  gentity_s *local_410;
-  char local_40c [1028];
+  gentity_s *ent;
+  char cmd [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_410 = g_entities + param_1;
-  if (g_entities[param_1].client != (gclient_s *)0x0) {
-    SV_Cmd_ArgvBuffer(0,local_40c,0x400);
-    iVar1 = I_stricmp(local_40c,"say");
+  ent = g_entities + clientNum;
+  if (g_entities[clientNum].client != (gclient_s *)0x0) {
+    SV_Cmd_ArgvBuffer(0,cmd,0x400);
+    iVar1 = I_stricmp(cmd,"say");
     if (iVar1 == 0) {
-      Cmd_Say_f(local_410,0,0);
+      Cmd_Say_f(ent,0,0);
     }
     else {
-      iVar1 = I_stricmp(local_40c,"say_team");
+      iVar1 = I_stricmp(cmd,"say_team");
       if (iVar1 == 0) {
-        Cmd_Say_f(local_410,1,0);
+        Cmd_Say_f(ent,1,0);
       }
-      else if ((local_410->client->ps).pm_type != 5) {
-        iVar1 = I_stricmp(local_40c,"mr");
+      else if ((ent->client->ps).pm_type != 5) {
+        iVar1 = I_stricmp(cmd,"mr");
         if (iVar1 == 0) {
-          Cmd_MenuResponse_f(local_410);
+          Cmd_MenuResponse_f(ent);
         }
         else {
-          iVar1 = I_stricmp(local_40c,"give");
+          iVar1 = I_stricmp(cmd,"give");
           if (iVar1 == 0) {
-            Cmd_Give_f(local_410);
+            Cmd_Give_f(ent);
           }
           else {
-            iVar1 = I_stricmp(local_40c,"take");
+            iVar1 = I_stricmp(cmd,"take");
             if (iVar1 == 0) {
-              Cmd_Take_f(local_410);
+              Cmd_Take_f(ent);
             }
             else {
-              iVar1 = I_stricmp(local_40c,"god");
+              iVar1 = I_stricmp(cmd,"god");
               if (iVar1 == 0) {
-                Cmd_God_f(local_410);
+                Cmd_God_f(ent);
               }
               else {
-                iVar1 = I_stricmp(local_40c,"demigod");
+                iVar1 = I_stricmp(cmd,"demigod");
                 if (iVar1 == 0) {
-                  Cmd_DemiGod_f(local_410);
+                  Cmd_DemiGod_f(ent);
                 }
                 else {
-                  iVar1 = I_stricmp(local_40c,"notarget");
+                  iVar1 = I_stricmp(cmd,"notarget");
                   if (iVar1 == 0) {
-                    Cmd_Notarget_f(local_410);
+                    Cmd_Notarget_f(ent);
                   }
                   else {
-                    iVar1 = I_stricmp(local_40c,"noclip");
+                    iVar1 = I_stricmp(cmd,"noclip");
                     if (iVar1 == 0) {
-                      Cmd_Noclip_f(local_410);
+                      Cmd_Noclip_f(ent);
                     }
                     else {
-                      iVar1 = I_stricmp(local_40c,"ufo");
+                      iVar1 = I_stricmp(cmd,"ufo");
                       if (iVar1 == 0) {
-                        Cmd_UFO_f(local_410);
+                        Cmd_UFO_f(ent);
                       }
                       else {
-                        iVar1 = I_stricmp(local_40c,"kill");
+                        iVar1 = I_stricmp(cmd,"kill");
                         if (iVar1 == 0) {
-                          Cmd_Kill_f(local_410);
+                          Cmd_Kill_f(ent);
                         }
                         else {
-                          iVar1 = I_stricmp(local_40c,"follownext");
+                          iVar1 = I_stricmp(cmd,"follownext");
                           if (iVar1 == 0) {
-                            Cmd_FollowCycle_f(local_410,1);
+                            Cmd_FollowCycle_f(ent,1);
                           }
                           else {
-                            iVar1 = I_stricmp(local_40c,"followprev");
+                            iVar1 = I_stricmp(cmd,"followprev");
                             if (iVar1 == 0) {
-                              Cmd_FollowCycle_f(local_410,-1);
+                              Cmd_FollowCycle_f(ent,-1);
                             }
                             else {
-                              iVar1 = I_stricmp(local_40c,"where");
+                              iVar1 = I_stricmp(cmd,"where");
                               if (iVar1 == 0) {
-                                Cmd_Where_f(local_410);
+                                Cmd_Where_f(ent);
                               }
                               else {
-                                iVar1 = I_stricmp(local_40c,"callvote");
+                                iVar1 = I_stricmp(cmd,"callvote");
                                 if (iVar1 == 0) {
-                                  Cmd_CallVote_f(local_410);
+                                  Cmd_CallVote_f(ent);
                                 }
                                 else {
-                                  iVar1 = I_stricmp(local_40c,"vote");
+                                  iVar1 = I_stricmp(cmd,"vote");
                                   if (iVar1 == 0) {
-                                    Cmd_Vote_f(local_410);
+                                    Cmd_Vote_f(ent);
                                   }
                                   else {
-                                    iVar1 = I_stricmp(local_40c,"setviewpos");
+                                    iVar1 = I_stricmp(cmd,"setviewpos");
                                     if (iVar1 == 0) {
-                                      Cmd_SetViewpos_f(local_410);
+                                      Cmd_SetViewpos_f(ent);
                                     }
                                     else {
-                                      iVar1 = I_stricmp(local_40c,"entitycount");
+                                      iVar1 = I_stricmp(cmd,"entitycount");
                                       if (iVar1 == 0) {
-                                        Cmd_EntityCount_f(local_410);
+                                        Cmd_EntityCount_f(ent);
                                       }
                                       else {
-                                        iVar1 = I_stricmp(local_40c,"printentities");
+                                        iVar1 = I_stricmp(cmd,"printentities");
                                         if (iVar1 == 0) {
                                           Cmd_PrintEntities_f();
                                         }
                                         else {
-                                          iVar1 = I_stricmp(local_40c,"ai");
-                                          if ((iVar1 == 0) &&
-                                             (iVar1 = CheatsOk(local_410), iVar1 != 0)) {
+                                          iVar1 = I_stricmp(cmd,"ai");
+                                          if ((iVar1 == 0) && (iVar1 = CheatsOk(ent), iVar1 != 0)) {
                                             Cmd_AI_f();
                                           }
                                           else {
-                                            iVar1 = I_stricmp(local_40c,"visionsetnaked");
+                                            iVar1 = I_stricmp(cmd,"visionsetnaked");
                                             if (iVar1 == 0) {
                                               Cmd_VisionSetNaked_f();
                                             }
                                             else {
-                                              iVar1 = I_stricmp(local_40c,"visionsetnight");
+                                              iVar1 = I_stricmp(cmd,"visionsetnight");
                                               if (iVar1 == 0) {
                                                 Cmd_VisionSetNight_f();
                                               }
                                               else {
-                                                local_454 = '\0';
+                                                errMsg = '\0';
                                                 memset(local_453,'\0',0x3f);
-                                                iVar1 = Com_sprintf(&local_454,0x40,
+                                                iVar1 = Com_sprintf(&errMsg,0x40,
                                                                                                                                         
                                                   "%c \"GAME_UNKNOWNCLIENTCOMMAND\x15%s\"");
                                                 if (iVar1 < 0) {
@@ -1700,7 +1733,7 @@ void __cdecl ClientCommand(int param_1)
                                                 }
                                                 local_415 = 0;
                                                 SV_GameSendServerCommand
-                                                          (param_1,SV_CMD_CAN_IGNORE,&local_454);
+                                                          (clientNum,SV_CMD_CAN_IGNORE,&errMsg);
                                               }
                                             }
                                           }

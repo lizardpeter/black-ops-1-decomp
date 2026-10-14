@@ -15,7 +15,7 @@
 
 void __thiscall
 NitrousVehicleController::UpdateScriptVehicleControl
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float delta_t)
 
 {
   float fVar1;
@@ -48,7 +48,7 @@ NitrousVehicleController::UpdateScriptVehicleControl
   PhysObjUserData *local_18;
   NitrousVehicleController *local_14;
   
-  local_18 = param_1->m_phys_user_data;
+  local_18 = rbveh->m_phys_user_data;
   prVar2 = local_18->body;
   local_1c = &prVar2->m_mat;
   local_30.x = (prVar2->m_mat).w.x;
@@ -81,7 +81,7 @@ NitrousVehicleController::UpdateScriptVehicleControl
     }
   }
   local_68 = local_14->m_script_goal_speed + 10.0;
-  if ((param_1->m_flags & 0x100U) != 0) {
+  if ((rbveh->m_flags & 0x100U) != 0) {
     local_68 = local_14->m_drive_path_speed;
   }
   if ((phys_drawNitrousVehicle->current).enabled != false) {
@@ -96,7 +96,7 @@ NitrousVehicleController::UpdateScriptVehicleControl
   prVar2 = local_18->body;
   fVar8 = (prVar2->m_mat).x.x * local_50.x + (prVar2->m_mat).x.y * local_50.y +
           (prVar2->m_mat).x.z * local_50.z;
-  if (((param_1->m_script_brake != 0.0) || (local_68 <= 0.0)) ||
+  if (((rbveh->m_script_brake != 0.0) || (local_68 <= 0.0)) ||
      ((fVar3 = local_30.x - (local_14->m_stuck_position).x,
       fVar4 = local_30.y - (local_14->m_stuck_position).y,
       fVar5 = local_30.z - (local_14->m_stuck_position).z,
@@ -108,78 +108,78 @@ NitrousVehicleController::UpdateScriptVehicleControl
     local_14->m_stuck_time = 0.0;
   }
   else {
-    local_14->m_stuck_time = local_14->m_stuck_time + param_2;
+    local_14->m_stuck_time = local_14->m_stuck_time + delta_t;
   }
   local_c8 = 1.0;
-  if (param_1->m_vehicle_info->type == 2) {
+  if (rbveh->m_vehicle_info->type == 2) {
     local_c8 = 4.0;
   }
   if (local_c8 < local_14->m_stuck_time) {
     local_14->m_stuck_time = local_c8 * -0.75;
   }
-  fVar3 = ABS(param_1->m_forward_vel);
-  if (((param_1->m_vehicle_info->type == 2) ||
+  fVar3 = ABS(rbveh->m_forward_vel);
+  if (((rbveh->m_vehicle_info->type == 2) ||
       (ABS(fVar6 * local_50.x + fVar9 * local_50.y + fVar1 * local_50.z) <= 0.8)) ||
      (400.0 <= local_54)) {
     if ((0.0 < local_14->m_stuck_time || local_14->m_stuck_time == 0.0) || (-0.5 <= fVar8)) {
       if (0.0 < local_14->m_stuck_time || local_14->m_stuck_time == 0.0) {
         if (((600.0 < local_54) || ((200.0 < fVar3 && (fVar8 < -0.8)))) ||
-           ((param_1->m_flags & 0x100U) != 0)) {
-          UpdateVehicleInputs(local_14,param_1,local_64,1.0,4.0);
+           ((rbveh->m_flags & 0x100U) != 0)) {
+          UpdateVehicleInputs(local_14,rbveh,local_64,1.0,4.0);
         }
         else {
-          UpdateVehicleInputs(local_14,param_1,local_64,1.0,0.0);
+          UpdateVehicleInputs(local_14,rbveh,local_64,1.0,0.0);
         }
       }
       else {
-        UpdateVehicleInputs(local_14,param_1,local_64 + 180.0,1.0,-1.6);
+        UpdateVehicleInputs(local_14,rbveh,local_64 + 180.0,1.0,-1.6);
       }
     }
     else if (local_54 <= 600.0) {
-      UpdateVehicleInputs(local_14,param_1,local_64,1.0,1.0);
+      UpdateVehicleInputs(local_14,rbveh,local_64,1.0,1.0);
     }
     else {
-      UpdateVehicleInputs(local_14,param_1,local_64,1.0,-1.6);
+      UpdateVehicleInputs(local_14,rbveh,local_64,1.0,-1.6);
     }
   }
   else {
-    UpdateVehicleInputs(local_14,param_1,local_64 + 180.0,1.0,-1.6);
+    UpdateVehicleInputs(local_14,rbveh,local_64 + 180.0,1.0,-1.6);
   }
-  if ((param_1->m_flags & 0x100U) == 0) {
+  if ((rbveh->m_flags & 0x100U) == 0) {
     if (local_14->m_script_goal_radius - 10.0 <= local_54) {
       if ((1000.0 <= local_54) || (fVar3 <= local_68)) {
         if (local_68 < fVar3) {
-          NitrousVehicle::set_throttle(param_1,0.0);
+          NitrousVehicle::set_throttle(rbveh,0.0);
         }
       }
       else {
         fVar6 = local_54 / 1000.0;
-        fVar9 = NitrousVehicle::get_max_speed(param_1,true);
+        fVar9 = NitrousVehicle::get_max_speed(rbveh,true);
         if (fVar3 <= (fVar9 - local_68) * fVar6 + local_68) {
           if ((local_68 < fVar3) && (300.0 < fVar3)) {
-            NitrousVehicle::set_throttle(param_1,0.0);
+            NitrousVehicle::set_throttle(rbveh,0.0);
           }
         }
         else {
-          NitrousVehicle::set_throttle(param_1,0.0);
-          NitrousVehicle::set_hand_brake(param_1,1.0);
+          NitrousVehicle::set_throttle(rbveh,0.0);
+          NitrousVehicle::set_hand_brake(rbveh,1.0);
         }
       }
     }
     else if (local_14->m_stop_at_goal == false) {
-      param_1->m_flags = param_1->m_flags & 0xfffffffb;
+      rbveh->m_flags = rbveh->m_flags & 0xfffffffb;
     }
     else {
-      NitrousVehicle::set_throttle(param_1,0.0);
-      NitrousVehicle::set_hand_brake(param_1,1.0);
+      NitrousVehicle::set_throttle(rbveh,0.0);
+      NitrousVehicle::set_hand_brake(rbveh,1.0);
       if (fVar3 <= 1.0) {
-        param_1->m_flags = param_1->m_flags & 0xfffffffb;
+        rbveh->m_flags = rbveh->m_flags & 0xfffffffb;
       }
     }
   }
   else if (local_68 < fVar3) {
-    NitrousVehicle::set_throttle(param_1,0.0);
-    NitrousVehicle::set_hand_brake(param_1,1.0);
+    NitrousVehicle::set_throttle(rbveh,0.0);
+    NitrousVehicle::set_hand_brake(rbveh,1.0);
   }
   return;
 }
@@ -206,13 +206,13 @@ NitrousVehicleController::UpdateScriptVehicleControl
 /* WARNING: Removing unreachable block (ram,0x0082d74a) */
 /* WARNING: Removing unreachable block (ram,0x0082d76a) */
 
-void __thiscall rigid_body::add_force(rigid_body *this,phys_vec3 *param_1)
+void __thiscall rigid_body::add_force(rigid_body *this,phys_vec3 *force)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->x != param_1->x) || (param_1->y != param_1->y)) || (param_1->z != param_1->z)) &&
+  if ((((force->x != force->x) || (force->y != force->y)) || (force->z != force->z)) &&
      (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rigid_body.h",0x77,
                         "(force.GetX() == force.GetX() && force.GetY() == force.GetY() && force.GetZ() == force.GetZ())"
                         ,"invalid vector"), bVar2)) {
@@ -220,9 +220,9 @@ void __thiscall rigid_body::add_force(rigid_body *this,phys_vec3 *param_1)
     (*pcVar1)();
     return;
   }
-  (this->m_force_sum).x = (this->m_force_sum).x + param_1->x;
-  (this->m_force_sum).y = (this->m_force_sum).y + param_1->y;
-  (this->m_force_sum).z = (this->m_force_sum).z + param_1->z;
+  (this->m_force_sum).x = (this->m_force_sum).x + force->x;
+  (this->m_force_sum).y = (this->m_force_sum).y + force->y;
+  (this->m_force_sum).z = (this->m_force_sum).z + force->z;
   if (((((this->m_force_sum).x != (this->m_force_sum).x) || (100000.0 < ABS((this->m_force_sum).x)))
       || (((this->m_force_sum).y != (this->m_force_sum).y ||
           ((100000.0 < ABS((this->m_force_sum).y) ||
@@ -243,7 +243,7 @@ void __thiscall rigid_body::add_force(rigid_body *this,phys_vec3 *param_1)
 
 void __thiscall
 NitrousVehicleController::UpdateControlsStrafeMode
-          (NitrousVehicleController *this,NitrousVehicle *param_1)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh)
 
 {
   float fVar1;
@@ -251,51 +251,52 @@ NitrousVehicleController::UpdateControlsStrafeMode
   float local_78;
   float local_74;
   float local_70;
-  float local_40;
+  PhysObjUserData *userData;
+  float rb_angles;
   float local_3c;
-  cg_s *local_34;
-  gentity_s *local_30;
-  int local_2c;
-  float local_28;
-  float local_24;
+  cg_s *cgameGlob;
+  gentity_s *driver;
+  int driver_occupant;
+  float camera_yaw;
+  float move;
   float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
+  float forwardPreference;
+  float vehicleDeadZone;
+  float input_yaw;
+  float input;
+  float vec;
   float local_8;
   
-  local_28 = 0.0;
-  if (param_1->m_owner == (gentity_s *)0x0) {
-    local_34 = CG_GetLocalClientGlobals(this->m_cmd_local_client_num);
-    local_28 = (local_34->predictedPlayerState).viewangles[1];
+  camera_yaw = 0.0;
+  if (rbveh->m_owner == (gentity_s *)0x0) {
+    cgameGlob = CG_GetLocalClientGlobals(this->m_cmd_local_client_num);
+    camera_yaw = (cgameGlob->predictedPlayerState).viewangles[1];
   }
   else {
-    if (param_1->m_owner->scr_vehicle == (scr_vehicle_s *)0x0) {
+    if (rbveh->m_owner->scr_vehicle == (scr_vehicle_s *)0x0) {
       return;
     }
-    if ((param_1->m_owner->r).inuse == '\0') {
+    if ((rbveh->m_owner->r).inuse == '\0') {
       return;
     }
-    local_30 = (gentity_s *)0x0;
-    local_2c = VEH_GetSeatOccupantEntNum(param_1->m_owner,0);
-    if (local_2c != 0x3ff) {
-      local_30 = g_entities + local_2c;
+    driver = (gentity_s *)0x0;
+    driver_occupant = VEH_GetSeatOccupantEntNum(rbveh->m_owner,0);
+    if (driver_occupant != 0x3ff) {
+      driver = g_entities + driver_occupant;
     }
-    if ((local_30 != (gentity_s *)0x0) && (local_30->client != (gclient_s *)0x0)) {
-      local_28 = (local_30->client->ps).viewangles[1];
+    if ((driver != (gentity_s *)0x0) && (driver->client != (gclient_s *)0x0)) {
+      camera_yaw = (driver->client->ps).viewangles[1];
     }
   }
   if ((player_topDownCamMode->current).integer != 0) {
-    local_28 = (player_topDownCamAngles->current).vector[1];
+    camera_yaw = (player_topDownCamAngles->current).vector[1];
   }
-  local_24 = (float)(int)(this->m_cmd).rightmove;
+  move = (float)(int)(this->m_cmd).rightmove;
   local_20 = (float)(int)(this->m_cmd).forwardmove * -1.0;
-  if ((param_1->m_vehicle_info->cameraMode == 2) && (param_1->m_vehicle_info->type != 2)) {
-    local_24 = 0.0;
+  if ((rbveh->m_vehicle_info->cameraMode == 2) && (rbveh->m_vehicle_info->type != 2)) {
+    move = 0.0;
   }
-  local_18 = 40.0;
+  vehicleDeadZone = 40.0;
   if (40.0 <= ABS(local_20)) {
     if (local_20 < 0.0) {
       local_70 = -1.0;
@@ -303,59 +304,59 @@ NitrousVehicleController::UpdateControlsStrafeMode
     else {
       local_70 = 1.0;
     }
-    local_c = ((ABS(local_20) - 40.0) / 88.0) * local_70;
+    vec = ((ABS(local_20) - 40.0) / 88.0) * local_70;
   }
   else {
-    local_c = 0.0;
+    vec = 0.0;
   }
-  if (40.0 <= ABS(local_24)) {
-    if (local_24 < 0.0) {
+  if (40.0 <= ABS(move)) {
+    if (move < 0.0) {
       local_74 = -1.0;
     }
     else {
       local_74 = 1.0;
     }
-    local_8 = ((ABS(local_24) - 40.0) / 88.0) * local_74;
+    local_8 = ((ABS(move) - 40.0) / 88.0) * local_74;
   }
   else {
     local_8 = 0.0;
   }
-  local_78 = Vec2Length(&local_c);
+  local_78 = Vec2Length(&vec);
   if (1.0 < local_78) {
     local_78 = 1.0;
   }
-  local_10 = local_78;
-  fVar1 = vectoyaw(&local_c);
-  local_14 = fVar1 + local_28 + 180.0;
-  local_14 = AngleNormalize180(local_14);
-  if (local_10 == 0.0) {
-    if (param_1->m_vehicle_info->cameraMode == 2) {
-      local_14 = AngleNormalize180(local_28);
+  input = local_78;
+  fVar1 = vectoyaw(&vec);
+  input_yaw = fVar1 + camera_yaw + 180.0;
+  input_yaw = AngleNormalize180(input_yaw);
+  if (input == 0.0) {
+    if (rbveh->m_vehicle_info->cameraMode == 2) {
+      input_yaw = AngleNormalize180(camera_yaw);
     }
     else {
-      Axis4ToAngles((float (*) [4])&param_1->m_phys_user_data->body->m_mat,&local_40);
-      local_14 = local_3c;
+      Axis4ToAngles((float (*) [4])&rbveh->m_phys_user_data->body->m_mat,&rb_angles);
+      input_yaw = local_3c;
     }
   }
-  local_1c = 0.0;
+  forwardPreference = 0.0;
   if ((player_topDownCamMode->current).integer == 0) {
-    if (param_1->m_vehicle_info->cameraMode == 2) {
-      if ((this->m_cmd).forwardmove < (char)(int)-local_18) {
+    if (rbveh->m_vehicle_info->cameraMode == 2) {
+      if ((this->m_cmd).forwardmove < (char)(int)-vehicleDeadZone) {
         local_7c = -1.0;
       }
       else {
         local_7c = 1.0;
       }
-      local_1c = local_7c;
+      forwardPreference = local_7c;
     }
     else {
-      local_1c = -local_c;
+      forwardPreference = -vec;
     }
   }
-  if (param_1->m_vehicle_info->type != 2) {
-    local_1c = local_1c * 4.0;
+  if (rbveh->m_vehicle_info->type != 2) {
+    forwardPreference = forwardPreference * 4.0;
   }
-  UpdateVehicleInputs(this,param_1,local_14,local_10,local_1c);
+  UpdateVehicleInputs(this,rbveh,input_yaw,input,forwardPreference);
   return;
 }
 
@@ -369,8 +370,8 @@ NitrousVehicleController::UpdateControlsStrafeMode
 
 void __thiscall
 NitrousVehicleController::UpdateVehicleInputs
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2,float param_3,
-          float param_4)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float target_yaw,float target_accel,
+          float forward_preference)
 
 {
   rigid_body *prVar1;
@@ -421,11 +422,11 @@ NitrousVehicleController::UpdateVehicleInputs
   
   local_18 = 0.0;
   local_14 = this;
-  if (((param_3 != 0.0) || (param_1->m_vehicle_info->type != 2)) && ((param_1->m_flags & 1U) == 0))
+  if (((target_accel != 0.0) || (rbveh->m_vehicle_info->type != 2)) && ((rbveh->m_flags & 1U) == 0))
   {
-    local_1c = param_1->m_phys_user_data;
+    local_1c = rbveh->m_phys_user_data;
     if ((phys_drawNitrousVehicle->current).enabled != false) {
-      YawVectors(param_2,&local_28,(float *)0x0);
+      YawVectors(target_yaw,&local_28,(float *)0x0);
       prVar1 = local_1c->body;
       local_2c = &prVar1->m_mat;
       local_40.x = (prVar1->m_mat).w.x;
@@ -440,24 +441,24 @@ NitrousVehicleController::UpdateVehicleInputs
       CL_AddDebugLine(&local_50,&local_28,colorGreen,0,1);
     }
     Axis4ToAngles((float (*) [4])&local_1c->body->m_mat,&local_5c);
-    local_18 = AngleDelta(param_2,local_58);
+    local_18 = AngleDelta(target_yaw,local_58);
   }
-  if (param_1->m_vehicle_info->type != 2) {
-    local_60 = param_1->m_parameter;
+  if (rbveh->m_vehicle_info->type != 2) {
+    local_60 = rbveh->m_parameter;
     local_64 = local_60->m_tire_damp_coast * 3.0;
-    param_1->m_coasting_factor = local_64 * param_1->m_parameter->m_body_mass;
+    rbveh->m_coasting_factor = local_64 * rbveh->m_parameter->m_body_mass;
   }
   local_65 = '\0';
   local_6c = base_forward_pref;
   local_70 = input_pref;
-  if (param_1->m_vehicle_info->type != 2) {
+  if (rbveh->m_vehicle_info->type != 2) {
     local_70 = input_pref + 20.0;
-    local_74 = param_1->m_forward_vel;
+    local_74 = rbveh->m_forward_vel;
     if (speed_pref < local_74) {
       local_6c = base_forward_pref + 30.0;
     }
   }
-  local_78 = local_70 * param_4 + local_6c;
+  local_78 = local_70 * forward_preference + local_6c;
   if (local_78 < ABS(local_18)) {
     if (local_18 < 0.0) {
       local_7c = -1.0;
@@ -474,40 +475,40 @@ NitrousVehicleController::UpdateVehicleInputs
   else {
     local_80 = -1.0;
   }
-  local_84 = local_80 * param_3;
-  NitrousVehicle::set_throttle(param_1,local_84);
-  if (param_1->m_vehicle_info->cameraMode == 2) {
-    local_88 = param_1->m_forward_vel;
-    if ((param_3 != 0.0) &&
+  local_84 = local_80 * target_accel;
+  NitrousVehicle::set_throttle(rbveh,local_84);
+  if (rbveh->m_vehicle_info->cameraMode == 2) {
+    local_88 = rbveh->m_forward_vel;
+    if ((target_accel != 0.0) &&
        (((25.0 < local_88 && (local_65 != '\0')) || ((local_88 < -25.0 && (local_65 == '\0')))))) {
       local_18 = local_18 * -1.0;
     }
-    local_8c = param_1->m_hand_brake;
+    local_8c = rbveh->m_hand_brake;
     if (((local_8c <= 0.1) ||
         (((local_88 <= 25.0 || (local_65 == '\0')) && ((-25.0 <= local_88 || (local_65 != '\0'))))))
-       || ((local_90 = param_1->m_steer_factor, 0.5 <= local_90 &&
-           (local_94 = param_1->m_steer_factor, local_94 <= -0.5)))) {
-      NitrousVehicle::set_brake(param_1,0.0);
+       || ((local_90 = rbveh->m_steer_factor, 0.5 <= local_90 &&
+           (local_94 = rbveh->m_steer_factor, local_94 <= -0.5)))) {
+      NitrousVehicle::set_brake(rbveh,0.0);
     }
     else {
-      NitrousVehicle::set_brake(param_1,1.0);
+      NitrousVehicle::set_brake(rbveh,1.0);
     }
   }
   else {
-    local_98 = param_1->m_forward_vel;
-    if ((param_3 == 0.0) ||
+    local_98 = rbveh->m_forward_vel;
+    if ((target_accel == 0.0) ||
        ((((local_98 <= 25.0 || (local_65 == '\0')) && ((-25.0 <= local_98 || (local_65 != '\0'))))
-        || (param_1->m_vehicle_info->type == 4)))) {
-      NitrousVehicle::set_brake(param_1,0.0);
+        || (rbveh->m_vehicle_info->type == 4)))) {
+      NitrousVehicle::set_brake(rbveh,0.0);
     }
     else {
-      local_b4 = NitrousVehicle::get_velocity(param_1,&local_b0);
+      local_b4 = NitrousVehicle::get_velocity(rbveh,&local_b0);
       if (steer_velocity * steer_velocity <
           local_b4->x * local_b4->x + local_b4->y * local_b4->y + local_b4->z * local_b4->z) {
         local_18 = 0.0;
       }
       local_18 = local_18 * -1.0;
-      NitrousVehicle::set_brake(param_1,1.0);
+      NitrousVehicle::set_brake(rbveh,1.0);
     }
   }
   local_b8 = 0.0;
@@ -526,9 +527,9 @@ NitrousVehicleController::UpdateVehicleInputs
     local_bc = -1.0;
   }
   local_b8 = local_b8 * local_bc;
-  local_c0 = param_1->m_parameter;
+  local_c0 = rbveh->m_parameter;
   local_c4 = local_c0->m_steer_angle_max * 57.295776;
-  if ((local_65 != '\0') && (param_1->m_vehicle_info->type != 2)) {
+  if ((local_65 != '\0') && (rbveh->m_vehicle_info->type != 2)) {
     local_c4 = local_c4 * 2.0;
   }
   if (ABS(local_18) < local_c4) {
@@ -546,12 +547,12 @@ NitrousVehicleController::UpdateVehicleInputs
   else {
     local_cc = -1.0;
   }
-  param_1->m_steer_factor = local_cc;
+  rbveh->m_steer_factor = local_cc;
   local_cd = 0;
-  local_d4 = param_1->m_parameter->m_auto_hand_brake_min_speed;
+  local_d4 = rbveh->m_parameter->m_auto_hand_brake_min_speed;
   local_d8 = ABS(local_18);
   if ((local_d8 <= hand_brake_apply_delta) ||
-     (ppVar3 = NitrousVehicle::get_velocity(param_1,&local_f0),
+     (ppVar3 = NitrousVehicle::get_velocity(rbveh,&local_f0),
      ppVar3->x * ppVar3->x + ppVar3->y * ppVar3->y + ppVar3->z * ppVar3->z <= local_d4 * local_d4))
   {
     local_f8 = '\0';
@@ -561,8 +562,8 @@ NitrousVehicleController::UpdateVehicleInputs
   }
   local_cd = local_f8;
   if (local_f8 != '\0') {
-    if ((0.0 <= local_18) || ((param_1->m_phys_user_data->body->m_a_vel).z <= 0.0)) {
-      if ((0.0 < local_18) && ((param_1->m_phys_user_data->body->m_a_vel).z < 0.0)) {
+    if ((0.0 <= local_18) || ((rbveh->m_phys_user_data->body->m_a_vel).z <= 0.0)) {
+      if ((0.0 < local_18) && ((rbveh->m_phys_user_data->body->m_a_vel).z < 0.0)) {
         local_cd = '\0';
       }
     }
@@ -575,10 +576,10 @@ NitrousVehicleController::UpdateVehicleInputs
     local_cd = '\x01';
   }
   if (local_cd == '\0') {
-    NitrousVehicle::set_hand_brake(param_1,0.0);
+    NitrousVehicle::set_hand_brake(rbveh,0.0);
   }
   else {
-    NitrousVehicle::set_hand_brake(param_1,1.0);
+    NitrousVehicle::set_hand_brake(rbveh,1.0);
   }
   return;
 }
@@ -679,15 +680,15 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 0082C110  StunRandomBrake  (vehicle/nitrous_vehicle_controller.cpp:407)
 
-float __cdecl StunRandomBrake(usercmd_s *param_1,float param_2,float param_3)
+float __cdecl StunRandomBrake(usercmd_s *cmd,float desired_brake,float last_brake)
 
 {
   bool bVar1;
   float fVar2;
   
-  bVar1 = bitarray<51>::testBit(&param_1->button_bits,0x16);
-  if ((!bVar1) || (param_2 <= 0.5)) {
-    if (0.001 < param_3) {
+  bVar1 = bitarray<51>::testBit(&cmd->button_bits,0x16);
+  if ((!bVar1) || (desired_brake <= 0.5)) {
+    if (0.001 < last_brake) {
       return 0.0;
     }
     fVar2 = CG_flrand(0.0,1.0);
@@ -703,11 +704,11 @@ float __cdecl StunRandomBrake(usercmd_s *param_1,float param_2,float param_3)
     }
     fVar2 = CG_flrand(0.0,1.0);
     if (fVar2 < brake_soft_chance) {
-      fVar2 = CG_flrand(0.0,param_2 * brake_soft_percent);
+      fVar2 = CG_flrand(0.0,desired_brake * brake_soft_percent);
       return fVar2;
     }
   }
-  fVar2 = CG_flrand(0.0,param_2);
+  fVar2 = CG_flrand(0.0,desired_brake);
   return fVar2;
 }
 
@@ -719,13 +720,13 @@ float __cdecl StunRandomBrake(usercmd_s *param_1,float param_2,float param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::set_brake(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::set_brake(NitrousVehicle *this,float braking)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0.0) || (1.0 < param_1)) {
+  if ((braking < 0.0) || (1.0 < braking)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.h",0x1b9,0
                              ,"%s\n\t%s");
     if (!bVar2) {
@@ -734,7 +735,7 @@ void __thiscall NitrousVehicle::set_brake(NitrousVehicle *this,float param_1)
       return;
     }
   }
-  this->m_brake = param_1;
+  this->m_brake = braking;
   return;
 }
 
@@ -748,22 +749,24 @@ void __thiscall NitrousVehicle::set_brake(NitrousVehicle *this,float param_1)
 
 void __thiscall
 NitrousVehicleController::UpdateStun
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float delta_t)
 
 {
   float fVar1;
   float fVar2;
   float local_18;
+  float desired_throttle;
+  float desired_brake;
   
-  if ((param_1->m_flags & 0x2000U) == 0) {
+  if ((rbveh->m_flags & 0x2000U) == 0) {
     (this->m_stun).m_stun_time = 0.0;
     (this->m_stun).m_last_throttle = 0.0;
     (this->m_stun).m_last_brake = 0.0;
     (this->m_stun).m_changed_this_frame = false;
   }
   else {
-    fVar2 = param_1->m_brake;
-    local_18 = param_1->m_throttle;
+    fVar2 = rbveh->m_brake;
+    local_18 = rbveh->m_throttle;
     if (0.0 < (this->m_stun).m_stun_time) {
       (this->m_stun).m_changed_this_frame = false;
     }
@@ -783,9 +786,9 @@ NitrousVehicleController::UpdateStun
       (this->m_stun).m_last_throttle = local_18;
       (this->m_stun).m_changed_this_frame = true;
     }
-    NitrousVehicle::set_brake(param_1,(this->m_stun).m_last_brake);
-    NitrousVehicle::set_throttle(param_1,(this->m_stun).m_last_throttle);
-    (this->m_stun).m_stun_time = (this->m_stun).m_stun_time - param_2;
+    NitrousVehicle::set_brake(rbveh,(this->m_stun).m_last_brake);
+    NitrousVehicle::set_throttle(rbveh,(this->m_stun).m_last_throttle);
+    (this->m_stun).m_stun_time = (this->m_stun).m_stun_time - delta_t;
   }
   return;
 }
@@ -798,13 +801,13 @@ NitrousVehicleController::UpdateStun
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::set_hand_brake(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::set_hand_brake(NitrousVehicle *this,float braking)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0.0) || (1.0 < param_1)) {
+  if ((braking < 0.0) || (1.0 < braking)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.h",0x1bf,0
                              ,"%s\n\t%s");
     if (!bVar2) {
@@ -813,7 +816,7 @@ void __thiscall NitrousVehicle::set_hand_brake(NitrousVehicle *this,float param_
       return;
     }
   }
-  this->m_hand_brake = param_1;
+  this->m_hand_brake = braking;
   return;
 }
 
@@ -827,7 +830,7 @@ void __thiscall NitrousVehicle::set_hand_brake(NitrousVehicle *this,float param_
 
 void __thiscall
 NitrousVehicleController::UpdateControls
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float delta_t)
 
 {
   scr_vehicle_s *psVar1;
@@ -838,54 +841,54 @@ NitrousVehicleController::UpdateControls
   float local_24;
   float local_20;
   
-  if ((param_1->m_flags & 4U) == 0) {
+  if ((rbveh->m_flags & 4U) == 0) {
     if (this->m_cmd_valid != false) {
-      if ((param_1->m_flags & 0x80U) == 0) {
-        if (((param_1->m_flags & 0x100U) == 0) || ((param_1->m_flags & 1U) != 0)) {
-          if (param_1->m_vehicle_info->type == 2) {
-            if (param_1->m_vehicle_info->cameraMode == 5) {
-              UpdateControlsTank(this,param_1);
+      if ((rbveh->m_flags & 0x80U) == 0) {
+        if (((rbveh->m_flags & 0x100U) == 0) || ((rbveh->m_flags & 1U) != 0)) {
+          if (rbveh->m_vehicle_info->type == 2) {
+            if (rbveh->m_vehicle_info->cameraMode == 5) {
+              UpdateControlsTank(this,rbveh);
             }
             else {
-              UpdateControlsStrafeMode(this,param_1);
+              UpdateControlsStrafeMode(this,rbveh);
             }
-            fVar4 = param_1->m_forward_vel;
-            fVar5 = NitrousVehicle::get_max_speed(param_1,true);
-            if ((fVar4 <= fVar5) || (param_1->m_throttle <= 0.0)) {
-              fVar4 = param_1->m_forward_vel;
-              fVar5 = NitrousVehicle::get_max_speed(param_1,true);
-              if ((fVar4 < -fVar5) && (param_1->m_throttle < 0.0)) {
-                NitrousVehicle::set_throttle(param_1,0.0);
+            fVar4 = rbveh->m_forward_vel;
+            fVar5 = NitrousVehicle::get_max_speed(rbveh,true);
+            if ((fVar4 <= fVar5) || (rbveh->m_throttle <= 0.0)) {
+              fVar4 = rbveh->m_forward_vel;
+              fVar5 = NitrousVehicle::get_max_speed(rbveh,true);
+              if ((fVar4 < -fVar5) && (rbveh->m_throttle < 0.0)) {
+                NitrousVehicle::set_throttle(rbveh,0.0);
               }
             }
             else {
-              NitrousVehicle::set_throttle(param_1,0.0);
+              NitrousVehicle::set_throttle(rbveh,0.0);
             }
           }
-          else if ((param_1->m_vehicle_info->cameraMode == 2) ||
-                  (param_1->m_vehicle_info->cameraMode == 3)) {
-            UpdateControlsStrafeMode(this,param_1);
+          else if ((rbveh->m_vehicle_info->cameraMode == 2) ||
+                  (rbveh->m_vehicle_info->cameraMode == 3)) {
+            UpdateControlsStrafeMode(this,rbveh);
           }
-          else if (param_1->m_vehicle_info->cameraMode == 5) {
-            UpdateControlsTank(this,param_1);
+          else if (rbveh->m_vehicle_info->cameraMode == 5) {
+            UpdateControlsTank(this,rbveh);
           }
-          else if (param_1->m_vehicle_info->cameraMode == 4) {
+          else if (rbveh->m_vehicle_info->cameraMode == 4) {
             if ((vehControlMode == (dvar_s *)0x0) || ((vehControlMode->current).integer == 0)) {
-              UpdateControlsTank(this,param_1);
+              UpdateControlsTank(this,rbveh);
             }
             else {
-              UpdateControlsStrafeMode(this,param_1);
+              UpdateControlsStrafeMode(this,rbveh);
             }
           }
           else {
-            UpdateControlsDefault(this,param_1,param_2);
+            UpdateControlsDefault(this,rbveh,delta_t);
           }
-          UpdateJump(this,param_1,param_2);
+          UpdateJump(this,rbveh,delta_t);
         }
         else {
-          if (((param_1->m_owner != (gentity_s *)0x0) && ((param_1->m_owner->r).inuse != '\0')) &&
-             (param_1->m_owner->scr_vehicle != (scr_vehicle_s *)0x0)) {
-            psVar1 = param_1->m_owner->scr_vehicle;
+          if (((rbveh->m_owner != (gentity_s *)0x0) && ((rbveh->m_owner->r).inuse != '\0')) &&
+             (rbveh->m_owner->scr_vehicle != (scr_vehicle_s *)0x0)) {
+            psVar1 = rbveh->m_owner->scr_vehicle;
             if ((((((uint)(psVar1->pathPos).origin[0] & 0x7f800000) == 0x7f800000) ||
                  (((uint)(psVar1->pathPos).origin[1] & 0x7f800000) == 0x7f800000)) ||
                 (((uint)(psVar1->pathPos).origin[2] & 0x7f800000) == 0x7f800000)) &&
@@ -910,7 +913,7 @@ NitrousVehicleController::UpdateControls
             (this->m_script_goal_position).y = fVar4;
             (this->m_script_goal_position).z = fVar5;
             this->m_script_goal_radius = 5.0;
-            if (param_1->m_owner->scr_vehicle->manualMode == 1) {
+            if (rbveh->m_owner->scr_vehicle->manualMode == 1) {
               this->m_drive_path_speed = this->m_script_goal_speed;
             }
             else {
@@ -921,11 +924,11 @@ NitrousVehicleController::UpdateControls
               G_DebugSphere((psVar1->pathPos).lookPos,15.0,colorGreen,10,0,1);
             }
           }
-          UpdateScriptVehicleControl(this,param_1,param_2);
+          UpdateScriptVehicleControl(this,rbveh,delta_t);
         }
       }
-      else if ((param_1->m_flags & 1U) == 0) {
-        fVar4 = (param_1->m_owner->s).lerp.u.turret.gunAngles[0] * 0.017453292 * tweaker;
+      else if ((rbveh->m_flags & 1U) == 0) {
+        fVar4 = (rbveh->m_owner->s).lerp.u.turret.gunAngles[0] * 0.017453292 * tweaker;
         local_20 = fVar4;
         if (0.0 <= fVar4 - 1.0) {
           local_20 = 1.0;
@@ -936,23 +939,23 @@ NitrousVehicleController::UpdateControls
         else {
           local_24 = -1.0;
         }
-        param_1->m_steer_factor = local_24;
-        NitrousVehicle::set_throttle(param_1,0.0);
-        NitrousVehicle::set_hand_brake(param_1,0.0);
+        rbveh->m_steer_factor = local_24;
+        NitrousVehicle::set_throttle(rbveh,0.0);
+        NitrousVehicle::set_hand_brake(rbveh,0.0);
       }
       else {
-        NitrousVehicle::start_path(param_1,0);
+        NitrousVehicle::start_path(rbveh,0);
       }
-      if (param_1->m_vehicle_info->type == 4) {
-        UpdateApplyBoatAccel(this,param_1,param_2);
+      if (rbveh->m_vehicle_info->type == 4) {
+        UpdateApplyBoatAccel(this,rbveh,delta_t);
       }
-      UpdateStun(this,param_1,param_2);
+      UpdateStun(this,rbveh,delta_t);
     }
   }
   else {
-    UpdateScriptVehicleControl(this,param_1,param_2);
-    if (param_1->m_vehicle_info->type == 4) {
-      UpdateApplyBoatAccel(this,param_1,param_2);
+    UpdateScriptVehicleControl(this,rbveh,delta_t);
+    if (rbveh->m_vehicle_info->type == 4) {
+      UpdateApplyBoatAccel(this,rbveh,delta_t);
     }
   }
   return;
@@ -961,24 +964,25 @@ NitrousVehicleController::UpdateControls
 
 // 0082C880  RecalibrateInputCustom  (vehicle/nitrous_vehicle_controller.cpp:586)
 
-float __cdecl RecalibrateInputCustom(float param_1,float param_2)
+float __cdecl RecalibrateInputCustom(float val,float threshold)
 
 {
   undefined4 local_c;
+  float pct;
   
-  if (param_2 <= ABS(param_1)) {
-    if (param_1 <= 0.0) {
+  if (threshold <= ABS(val)) {
+    if (val <= 0.0) {
       local_c = -1.0;
     }
     else {
       local_c = 1.0;
     }
-    param_1 = ((ABS(param_1) - param_2) / (128.0 - param_2)) * 128.0 * local_c;
+    val = ((ABS(val) - threshold) / (128.0 - threshold)) * 128.0 * local_c;
   }
   else {
-    param_1 = 0.0;
+    val = 0.0;
   }
-  return param_1;
+  return val;
 }
 
 
@@ -991,7 +995,7 @@ float __cdecl RecalibrateInputCustom(float param_1,float param_2)
 
 void __thiscall
 NitrousVehicleController::UpdateControlsDefault
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float delta_t)
 
 {
   bool bVar1;
@@ -1012,10 +1016,10 @@ NitrousVehicleController::UpdateControlsDefault
   vehicle_info_t *local_18;
   NitrousVehicleController *local_14;
   
-  local_18 = param_1->m_vehicle_info;
-  local_1c = param_1->m_parameter;
+  local_18 = rbveh->m_vehicle_info;
+  local_1c = rbveh->m_parameter;
   local_20 = local_1c->m_tire_damp_coast;
-  param_1->m_coasting_factor = local_20 * param_1->m_parameter->m_body_mass;
+  rbveh->m_coasting_factor = local_20 * rbveh->m_parameter->m_body_mass;
   local_24 = (float)-(int)(this->m_cmd).rightmove / 128.0;
   local_14 = this;
   if (local_18->steerGraph != (GraphFloat *)0x0) {
@@ -1041,34 +1045,34 @@ NitrousVehicleController::UpdateControlsDefault
   else {
     local_34 = -1.0;
   }
-  param_1->m_steer_factor = local_34;
-  if (param_1->m_vehicle_info->cameraMode == 4) {
+  rbveh->m_steer_factor = local_34;
+  if (rbveh->m_vehicle_info->cameraMode == 4) {
     local_38 = (float)(int)(local_14->m_cmd).forwardmove / 127.0;
   }
   else {
     local_38 = CMD_GetAnalogButtonValue(&local_14->m_cmd,0x13);
   }
-  local_39 = '\x01' - (param_1->m_vehicle_info->type == 4);
-  NitrousVehicle::set_hand_brake(param_1,0.0);
-  NitrousVehicle::set_throttle(param_1,0.0);
-  NitrousVehicle::set_brake(param_1,0.0);
+  local_39 = '\x01' - (rbveh->m_vehicle_info->type == 4);
+  NitrousVehicle::set_hand_brake(rbveh,0.0);
+  NitrousVehicle::set_throttle(rbveh,0.0);
+  NitrousVehicle::set_brake(rbveh,0.0);
   if (0.0 < local_38) {
-    NitrousVehicle::set_throttle(param_1,local_38);
+    NitrousVehicle::set_throttle(rbveh,local_38);
     local_14->m_stopped_time = 0.0;
   }
   bVar1 = bitarray<51>::testBit(&(local_14->m_cmd).button_bits,0x16);
-  if ((bVar1) && (param_1->m_vehicle_info->cameraMode != 4)) {
+  if ((bVar1) && (rbveh->m_vehicle_info->cameraMode != 4)) {
     if (local_39 == '\0') {
-      NitrousVehicle::set_throttle(param_1,-1.0);
+      NitrousVehicle::set_throttle(rbveh,-1.0);
     }
     else {
-      local_40 = param_1->m_phys_user_data;
+      local_40 = rbveh->m_phys_user_data;
       local_44 = &local_40->body->m_mat;
       local_48 = &(local_40->body->m_mat).y;
-      ppVar2 = NitrousVehicle::get_velocity(param_1,&local_60);
-      if (((1.0 < param_1->m_forward_vel) ||
+      ppVar2 = NitrousVehicle::get_velocity(rbveh,&local_60);
+      if (((1.0 < rbveh->m_forward_vel) ||
           (ABS(ppVar2->x * local_48->x + ppVar2->y * local_48->y + ppVar2->z * local_48->z) - 2.0 <=
-           ABS(param_1->m_forward_vel))) ||
+           ABS(rbveh->m_forward_vel))) ||
          (required_stop_time < local_14->m_stopped_time ||
           required_stop_time == local_14->m_stopped_time)) {
         bVar1 = false;
@@ -1076,40 +1080,40 @@ NitrousVehicleController::UpdateControlsDefault
       else {
         bVar1 = true;
       }
-      if ((1.0 < param_1->m_forward_vel) || (bVar1)) {
+      if ((1.0 < rbveh->m_forward_vel) || (bVar1)) {
         local_14->m_stopped_time = 0.0;
         if (bVar1) {
           local_14->m_stopped_time = -0.2;
         }
-        if ((breakHandbrakeThreshold < ABS(param_1->m_steer_factor)) || (0.0 < local_38)) {
-          NitrousVehicle::set_hand_brake(param_1,1.0);
+        if ((breakHandbrakeThreshold < ABS(rbveh->m_steer_factor)) || (0.0 < local_38)) {
+          NitrousVehicle::set_hand_brake(rbveh,1.0);
         }
         else {
-          NitrousVehicle::set_brake(param_1,1.0);
+          NitrousVehicle::set_brake(rbveh,1.0);
         }
       }
       else {
-        local_14->m_stopped_time = local_14->m_stopped_time + param_2;
+        local_14->m_stopped_time = local_14->m_stopped_time + delta_t;
         if (local_14->m_stopped_time <= required_stop_time) {
           if (local_38 <= 0.0) {
-            NitrousVehicle::set_brake(param_1,1.0);
+            NitrousVehicle::set_brake(rbveh,1.0);
           }
           else {
-            NitrousVehicle::set_hand_brake(param_1,1.0);
+            NitrousVehicle::set_hand_brake(rbveh,1.0);
           }
         }
         else {
-          NitrousVehicle::set_throttle(param_1,-1.0);
+          NitrousVehicle::set_throttle(rbveh,-1.0);
         }
       }
     }
   }
-  else if ((local_38 < 0.0) && (param_1->m_vehicle_info->cameraMode == 4)) {
-    NitrousVehicle::set_throttle(param_1,local_38);
+  else if ((local_38 < 0.0) && (rbveh->m_vehicle_info->cameraMode == 4)) {
+    NitrousVehicle::set_throttle(rbveh,local_38);
   }
   if ((local_39 == '\0') &&
      (bVar1 = bitarray<51>::testBit(&(local_14->m_cmd).button_bits,0x17), bVar1)) {
-    NitrousVehicle::set_hand_brake(param_1,1.0);
+    NitrousVehicle::set_hand_brake(rbveh,1.0);
   }
   return;
 }
@@ -1123,7 +1127,7 @@ NitrousVehicleController::UpdateControlsDefault
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicleController::UpdateControlsTank(NitrousVehicleController *this,NitrousVehicle *param_1)
+NitrousVehicleController::UpdateControlsTank(NitrousVehicleController *this,NitrousVehicle *rbveh)
 
 {
   char cVar1;
@@ -1136,83 +1140,89 @@ NitrousVehicleController::UpdateControlsTank(NitrousVehicleController *this,Nitr
   float local_48;
   float local_40;
   float local_3c;
-  float local_28;
-  float local_20;
-  float local_8;
+  float steering;
+  float steer_min;
+  float normalized_x;
+  float input_dist;
+  float normalized_y;
+  float steering_throttle_frac;
+  float x;
+  float y;
+  float throttle;
   
-  param_1->m_coasting_factor =
-       param_1->m_parameter->m_tire_damp_coast * param_1->m_parameter->m_body_mass;
+  rbveh->m_coasting_factor = rbveh->m_parameter->m_tire_damp_coast * rbveh->m_parameter->m_body_mass
+  ;
   cVar1 = (this->m_cmd).rightmove;
   fVar3 = RecalibrateInputCustom((float)(int)(this->m_cmd).forwardmove * -1.0,40.0);
   fVar4 = RecalibrateInputCustom((float)(int)cVar1,40.0);
-  local_20 = 0.0;
+  normalized_x = 0.0;
   fVar2 = SQRT(fVar4 * fVar4 + fVar3 * fVar3);
   if (fVar2 != 0.0) {
-    local_20 = fVar4 / fVar2;
+    normalized_x = fVar4 / fVar2;
   }
-  if (local_20 < 0.0) {
+  if (normalized_x < 0.0) {
     local_48 = -1.0;
   }
   else {
     local_48 = 1.0;
   }
-  local_28 = -(local_20 * local_20) * local_48;
-  if (ABS(local_28) < 0.98) {
-    local_28 = local_28 * steer_reduce_frac;
+  steering = -(normalized_x * normalized_x) * local_48;
+  if (ABS(steering) < 0.98) {
+    steering = steering * steer_reduce_frac;
   }
-  if ((param_1->m_vehicle_info->cameraMode == 4) || (param_1->m_vehicle_info->type != 2)) {
+  if ((rbveh->m_vehicle_info->cameraMode == 4) || (rbveh->m_vehicle_info->type != 2)) {
     local_4c = 1.0;
   }
   else {
     local_4c = 0.25;
   }
-  local_8 = ((local_20 * fVar4) / 129.0) * local_4c * ((local_20 * fVar4) / 129.0) * local_4c +
-            (fVar3 / 129.0) * (fVar3 / 129.0);
-  if (local_8 == 0.0) {
-    local_8 = 0.0;
+  fVar2 = ((normalized_x * fVar4) / 129.0) * local_4c * ((normalized_x * fVar4) / 129.0) * local_4c
+          + (fVar3 / 129.0) * (fVar3 / 129.0);
+  if (fVar2 == 0.0) {
+    throttle = 0.0;
   }
   else {
-    local_8 = local_8 / SQRT(local_8);
+    throttle = fVar2 / SQRT(fVar2);
   }
   if (0.0 < fVar3) {
-    local_8 = local_8 * -1.0;
+    throttle = throttle * -1.0;
   }
-  if ((0.0 <= param_1->m_forward_vel) || (local_8 <= 0.0)) {
-    if ((0.0 < param_1->m_forward_vel) && (local_8 < 0.0)) {
-      local_28 = -local_28;
+  if ((0.0 <= rbveh->m_forward_vel) || (throttle <= 0.0)) {
+    if ((0.0 < rbveh->m_forward_vel) && (throttle < 0.0)) {
+      steering = -steering;
     }
   }
   else {
-    local_28 = -local_28;
+    steering = -steering;
   }
-  if (local_28 - 1.0 < 0.0) {
-    local_3c = local_28;
+  if (steering - 1.0 < 0.0) {
+    local_3c = steering;
   }
   else {
     local_3c = 1.0;
   }
-  if (-1.0 - local_28 < 0.0) {
+  if (-1.0 - steering < 0.0) {
     local_50 = local_3c;
   }
   else {
     local_50 = -1.0;
   }
-  param_1->m_steer_factor = local_50;
-  if (local_8 - 1.0 < 0.0) {
-    local_40 = local_8;
+  rbveh->m_steer_factor = local_50;
+  if (throttle - 1.0 < 0.0) {
+    local_40 = throttle;
   }
   else {
     local_40 = 1.0;
   }
-  if (-1.0 - local_8 < 0.0) {
+  if (-1.0 - throttle < 0.0) {
     local_54 = local_40;
   }
   else {
     local_54 = -1.0;
   }
-  NitrousVehicle::set_throttle(param_1,local_54);
-  NitrousVehicle::set_hand_brake(param_1,0.0);
-  NitrousVehicle::set_brake(param_1,0.0);
+  NitrousVehicle::set_throttle(rbveh,local_54);
+  NitrousVehicle::set_hand_brake(rbveh,0.0);
+  NitrousVehicle::set_brake(rbveh,0.0);
   return;
 }
 
@@ -1227,32 +1237,32 @@ NitrousVehicleController::UpdateControlsTank(NitrousVehicleController *this,Nitr
 
 void __thiscall
 NitrousVehicleController::SetScriptTarget
-          (NitrousVehicleController *this,NitrousVehicle *param_1,phys_vec3 *param_2,float param_3,
-          float param_4,bool param_5)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,phys_vec3 *goal_position,
+          float goal_radius,float goal_speed,bool stopAtGoal)
 
 {
   float local_10;
   float local_8;
   
-  (this->m_script_goal_position).x = param_2->x;
-  (this->m_script_goal_position).y = param_2->y;
-  (this->m_script_goal_position).z = param_2->z;
-  if (param_3 - 5000.0 < 0.0) {
-    local_8 = param_3;
+  (this->m_script_goal_position).x = goal_position->x;
+  (this->m_script_goal_position).y = goal_position->y;
+  (this->m_script_goal_position).z = goal_position->z;
+  if (goal_radius - 5000.0 < 0.0) {
+    local_8 = goal_radius;
   }
   else {
     local_8 = 5000.0;
   }
-  if (5.0 - param_3 < 0.0) {
+  if (5.0 - goal_radius < 0.0) {
     local_10 = local_8;
   }
   else {
     local_10 = 5.0;
   }
   this->m_script_goal_radius = local_10;
-  this->m_script_goal_speed = param_4;
-  this->m_stop_at_goal = param_5;
-  param_1->m_flags = param_1->m_flags | 4;
+  this->m_script_goal_speed = goal_speed;
+  this->m_stop_at_goal = stopAtGoal;
+  rbveh->m_flags = rbveh->m_flags | 4;
   return;
 }
 
@@ -1266,7 +1276,7 @@ NitrousVehicleController::SetScriptTarget
 
 void __thiscall
 NitrousVehicleController::UpdateJump
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float delta_t)
 
 {
   bool bVar1;
@@ -1280,10 +1290,10 @@ NitrousVehicleController::UpdateJump
   local_14 = this;
   bVar1 = bitarray<51>::testBit(&(this->m_cmd).button_bits,0x24);
   if (bVar1) {
-    local_18 = param_1->m_num_colliding_wheels;
+    local_18 = rbveh->m_num_colliding_wheels;
     if ((1 < local_18) && (local_14->m_jump_button_pressed == false)) {
-      local_1c = param_1->m_phys_user_data->body;
-      local_20 = param_1->m_parameter;
+      local_1c = rbveh->m_phys_user_data->body;
+      local_20 = rbveh->m_parameter;
       local_40.z = local_20->m_jump_force;
       local_40.x = 0.0;
       local_40.y = 0.0;
@@ -1308,7 +1318,7 @@ NitrousVehicleController::UpdateJump
 
 void __thiscall
 NitrousVehicleController::UpdateApplyBoatAccel
-          (NitrousVehicleController *this,NitrousVehicle *param_1,float param_2)
+          (NitrousVehicleController *this,NitrousVehicle *rbveh,float delta_t)
 
 {
   float fVar1;
@@ -1436,10 +1446,10 @@ NitrousVehicleController::UpdateApplyBoatAccel
   rigid_body *local_18;
   NitrousVehicleController *local_14;
   
-  if ((param_1->m_flags & 0x400U) != 0) {
-    local_18 = param_1->m_phys_user_data->body;
-    local_1c = param_1->m_parameter;
-    local_20 = param_1->m_vehicle_info;
+  if ((rbveh->m_flags & 0x400U) != 0) {
+    local_18 = rbveh->m_phys_user_data->body;
+    local_1c = rbveh->m_parameter;
+    local_20 = rbveh->m_vehicle_info;
     local_30.x = (local_18->m_mat).w.x;
     local_30.y = (local_18->m_mat).w.y;
     local_30.z = (local_18->m_mat).w.z;
@@ -1450,9 +1460,9 @@ NitrousVehicleController::UpdateApplyBoatAccel
     local_50.y = (local_18->m_mat).x.y;
     local_50.z = (local_18->m_mat).x.z;
     local_50.w = (local_18->m_mat).x.w;
-    local_54 = param_1->m_forward_vel;
+    local_54 = rbveh->m_forward_vel;
     local_58 = ABS(local_54);
-    local_5c = local_58 / (local_1c->m_water_speed_max * param_1->m_speed_scale);
+    local_5c = local_58 / (local_1c->m_water_speed_max * rbveh->m_speed_scale);
     if (1.0 < local_5c) {
       local_5c = 1.0;
     }
@@ -1467,11 +1477,10 @@ NitrousVehicleController::UpdateApplyBoatAccel
       local_6c = ABS(local_5c);
       local_64 = GraphFloat_GetValue(local_20->accelGraph,local_6c);
     }
-    local_64 = param_2 * 60.0 * local_1c->m_water_accel_max * param_1->m_speed_scale * local_64;
-    local_68 = param_2 * 60.0 * local_1c->m_water_turn_accel * param_1->m_drivepath_scale * local_68
-    ;
-    local_70 = param_1->m_throttle;
-    if ((local_70 < 0.0) && (local_74 = param_1->m_forward_vel, local_74 < 1.0)) {
+    local_64 = delta_t * 60.0 * local_1c->m_water_accel_max * rbveh->m_speed_scale * local_64;
+    local_68 = delta_t * 60.0 * local_1c->m_water_turn_accel * rbveh->m_drivepath_scale * local_68;
+    local_70 = rbveh->m_throttle;
+    if ((local_70 < 0.0) && (local_74 = rbveh->m_forward_vel, local_74 < 1.0)) {
       local_64 = local_64 * local_1c->m_reverse_scale;
     }
     if (dothisoldstuff == false) {
@@ -1495,7 +1504,7 @@ NitrousVehicleController::UpdateApplyBoatAccel
       local_270.y = (local_18->m_mat).x.y;
       local_270.z = (local_18->m_mat).x.z;
       local_270.w = (local_18->m_mat).x.w;
-      local_274 = param_1->m_steer_factor;
+      local_274 = rbveh->m_steer_factor;
       local_278 = -local_274 * local_1c->m_steer_angle_max;
       local_24c = local_260.z;
       local_248 = local_260.y;
@@ -1532,23 +1541,22 @@ NitrousVehicleController::UpdateApplyBoatAccel
         CL_AddDebugLine(local_2e0,local_32c,colorWhite,0,1);
       }
       local_330 = local_70;
-      if (param_1->m_vehicle_info->cameraMode == 1) {
+      if (rbveh->m_vehicle_info->cameraMode == 1) {
         if ((1.0 <= local_70) || (local_70 <= 0.0)) {
           if (local_70 == 0.0) {
             local_330 = local_5c * coast_steer_scaler;
-            local_334 = param_1->m_forward_vel;
+            local_334 = rbveh->m_forward_vel;
             if (local_334 < 0.0) {
               local_330 = local_330 * -1.0;
             }
           }
           else if (local_70 < 0.0) {
-            local_338 = param_1->m_forward_vel;
+            local_338 = rbveh->m_forward_vel;
             if (0.0 < local_338) {
               local_330 = local_70 * -1.0;
             }
-            local_33c = param_1->m_steer_factor;
-            if ((ABS(local_33c) <= 0.6) || (local_340 = param_1->m_forward_vel, local_340 <= 100.0))
-            {
+            local_33c = rbveh->m_steer_factor;
+            if ((ABS(local_33c) <= 0.6) || (local_340 = rbveh->m_forward_vel, local_340 <= 100.0)) {
               local_344 = 0;
             }
             else {
@@ -1566,7 +1574,7 @@ NitrousVehicleController::UpdateApplyBoatAccel
               local_64 = local_64 * forward_accel_scale;
               local_14->m_stopped_time = -0.6;
             }
-            local_14->m_stopped_time = local_14->m_stopped_time + param_2;
+            local_14->m_stopped_time = local_14->m_stopped_time + delta_t;
           }
         }
         else {
@@ -1621,8 +1629,8 @@ NitrousVehicleController::UpdateApplyBoatAccel
       local_50.z = local_a8;
       rigid_body::add_force(local_18,&local_50);
       local_c0.w = (local_18->m_mat).x.w;
-      local_c4 = param_1->m_throttle;
-      local_c8 = param_1->m_steer_factor;
+      local_c4 = rbveh->m_throttle;
+      local_c8 = rbveh->m_steer_factor;
       local_f0 = local_c8 * (local_18->m_mat).x.x;
       local_ec = local_c8 * (local_18->m_mat).x.y;
       local_e8 = local_c8 * (local_18->m_mat).x.z;

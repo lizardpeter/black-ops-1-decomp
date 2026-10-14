@@ -23,19 +23,19 @@ int __cdecl __tmainCRTStartup(void)
 
 {
   int iVar1;
-  uchar *puVar2;
-  uint uVar3;
-  _STARTUPINFOA local_6c;
-  int local_24;
-  int local_20;
+  uchar *lpCmdLine;
+  uint nCmdShow;
+  _STARTUPINFOA StartupInfo;
+  int mainret;
+  int managedapp;
   undefined4 uStack_c;
   undefined4 local_8;
   
   uStack_c = 0xc15855;
   local_8 = 0;
-  GetStartupInfoA(&local_6c);
+  GetStartupInfoA(&StartupInfo);
   local_8 = 0xfffffffe;
-  local_20 = 0;
+  managedapp = 0;
   iVar1 = _heap_init(1);
   if (iVar1 == 0) {
     fast_error_exit(0x1c);
@@ -64,33 +64,33 @@ int __cdecl __tmainCRTStartup(void)
   if (iVar1 != 0) {
     _amsg_exit(iVar1);
   }
-  puVar2 = _wincmdln();
-  if (((byte)local_6c.dwFlags & 1) == 0) {
-    uVar3 = 10;
+  lpCmdLine = _wincmdln();
+  if (((byte)StartupInfo.dwFlags & 1) == 0) {
+    nCmdShow = 10;
   }
   else {
-    uVar3 = (uint)local_6c.wShowWindow;
+    nCmdShow = (uint)StartupInfo.wShowWindow;
   }
-  local_24 = WinMain((HINSTANCE__ *)&IMAGE_DOS_HEADER_00400000,(HINSTANCE__ *)0x0,(char *)puVar2,
-                     uVar3);
-  if (local_20 == 0) {
+  mainret = WinMain((HINSTANCE__ *)&IMAGE_DOS_HEADER_00400000,(HINSTANCE__ *)0x0,(char *)lpCmdLine,
+                    nCmdShow);
+  if (managedapp == 0) {
                     /* WARNING: Subroutine does not return */
-    exit(local_24);
+    exit(mainret);
   }
   _cexit();
-  return local_24;
+  return mainret;
 }
 
 
 // 00C15820  fast_error_exit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crt0.c:314)
 
-void __cdecl fast_error_exit(int param_1)
+void __cdecl fast_error_exit(int rterrnum)
 
 {
   if (__error_mode == 1) {
     _FF_MSGBANNER();
   }
-  _NMSG_WRITE(param_1);
+  _NMSG_WRITE(rterrnum);
                     /* WARNING: Subroutine does not return */
   __crtExitProcess(0xff);
 }

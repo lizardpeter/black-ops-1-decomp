@@ -21,48 +21,50 @@ void __cdecl CG_PerfInit(void)
 
 // 004D6F20  UpdateData  (cgame/cg_perf.cpp:43)
 
-void __cdecl UpdateData(CG_PerfData *param_1,int param_2)
+void __cdecl UpdateData(CG_PerfData *data,int value)
 
 {
   uint uVar1;
-  int local_8;
+  int idx_2;
+  int idx;
+  int i;
   
-  uVar1 = param_1->index & 0x8000001f;
+  uVar1 = data->index & 0x8000001f;
   if ((int)uVar1 < 0) {
     uVar1 = (uVar1 - 1 | 0xffffffe0) + 1;
   }
-  param_1->history[uVar1] = param_2;
-  param_1->instant = param_2;
-  param_1->min = 0x7fffffff;
-  param_1->max = 0;
-  param_1->average = 0.0;
-  param_1->variance = 0.0;
-  param_1->total = 0;
-  for (local_8 = 0; local_8 < param_1->count; local_8 = local_8 + 1) {
-    uVar1 = param_1->index - local_8 & 0x8000001f;
+  data->history[uVar1] = value;
+  data->instant = value;
+  data->min = 0x7fffffff;
+  data->max = 0;
+  data->average = 0.0;
+  data->variance = 0.0;
+  data->total = 0;
+  for (i = 0; i < data->count; i = i + 1) {
+    uVar1 = data->index - i & 0x8000001f;
     if ((int)uVar1 < 0) {
       uVar1 = (uVar1 - 1 | 0xffffffe0) + 1;
     }
     if ((int)uVar1 < 0) break;
-    param_1->total = param_1->total + param_1->history[uVar1];
-    if (param_1->history[uVar1] < param_1->min) {
-      param_1->min = param_1->history[uVar1];
+    data->total = data->total + data->history[uVar1];
+    if (data->history[uVar1] < data->min) {
+      data->min = data->history[uVar1];
     }
-    if (param_1->max < param_1->history[uVar1]) {
-      param_1->max = param_1->history[uVar1];
+    if (data->max < data->history[uVar1]) {
+      data->max = data->history[uVar1];
     }
   }
-  param_1->average = (float)param_1->total / (float)param_1->count;
-  for (local_8 = 0; local_8 < param_1->count; local_8 = local_8 + 1) {
-    uVar1 = param_1->index - local_8 & 0x8000001f;
+  data->average = (float)data->total / (float)data->count;
+  for (i = 0; i < data->count; i = i + 1) {
+    uVar1 = data->index - i & 0x8000001f;
     if ((int)uVar1 < 0) {
       uVar1 = (uVar1 - 1 | 0xffffffe0) + 1;
     }
     if ((int)uVar1 < 0) break;
-    param_1->variance = param_1->variance + ABS((float)param_1->history[uVar1] - param_1->average);
+    data->variance = data->variance + ABS((float)data->history[uVar1] - data->average);
   }
-  param_1->variance = param_1->variance / (float)param_1->count;
-  param_1->index = param_1->index + 1;
+  data->variance = data->variance / (float)data->count;
+  data->index = data->index + 1;
   return;
 }
 
@@ -73,16 +75,18 @@ void __cdecl CG_PerfUpdate(void)
 
 {
   int iVar1;
-  int iVar2;
-  int extraout_EAX;
+  int value;
+  int value_00;
+  int frameMS;
+  int currentMS;
   
   CG_PerfInit();
   iVar1 = Sys_Milliseconds();
-  iVar2 = iVar1 - previousMS;
+  value = iVar1 - previousMS;
   previousMS = iVar1;
-  UpdateData(&cg_perfInfo.frame,iVar2);
+  UpdateData(&cg_perfInfo.frame,value);
   _ftol2_sse();
-  UpdateData(&cg_perfInfo.server,extraout_EAX);
+  UpdateData(&cg_perfInfo.server,value_00);
   UpdateData(&cg_perfInfo.script,gScrExecuteTime[0]);
   UpdateData(&cg_perfInfo.cscript,gScrExecuteTime[1]);
   UpdateData(&cg_perfInfo.renderExec,rb_execCmdsMS);

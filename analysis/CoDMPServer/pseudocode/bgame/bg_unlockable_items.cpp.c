@@ -9,6 +9,7 @@ int __cdecl Cmd_Argc(void)
   bool bVar2;
   CmdArgs *pCVar3;
   int iVar4;
+  CmdArgs *cmd_args;
   
   pCVar3 = Cmd_Args();
   if (7 < (uint)pCVar3->nesting) {
@@ -44,14 +45,14 @@ void __cdecl _dynamic_initializer_for__TRACKINST_s_unlockableItems__(void)
 
 /* WARNING: Enum "customClass_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetCustomClassName(customClass_t param_1)
+char * __cdecl BG_UnlockablesGetCustomClassName(customClass_t customClassNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (9 < (int)param_1)) {
+  if (((int)customClassNum < 0) || (9 < (int)customClassNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x10f,0,"%s");
     if (!bVar2) {
@@ -60,7 +61,7 @@ char * __cdecl BG_UnlockablesGetCustomClassName(customClass_t param_1)
       return pcVar3;
     }
   }
-  if (PRESTIGE_CLASS_5 < param_1) {
+  if (PRESTIGE_CLASS_5 < customClassNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x110,0,"%s");
     if (!bVar2) {
@@ -69,11 +70,12 @@ char * __cdecl BG_UnlockablesGetCustomClassName(customClass_t param_1)
       return pcVar3;
     }
   }
-  if ((((int)param_1 < 0) || (9 < (int)param_1)) || (PRESTIGE_CLASS_5 < param_1)) {
+  if ((((int)customClassNum < 0) || (9 < (int)customClassNum)) ||
+     (PRESTIGE_CLASS_5 < customClassNum)) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = s_customClassNames[param_1];
+    pcVar3 = s_customClassNames[customClassNum];
   }
   return pcVar3;
 }
@@ -83,12 +85,12 @@ char * __cdecl BG_UnlockablesGetCustomClassName(customClass_t param_1)
 
 /* WARNING: Enum "customClass_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetCustomClassNameForInt(int param_1)
+char * __cdecl BG_UnlockablesGetCustomClassNameForInt(int customClassNum)
 
 {
   char *pcVar1;
   
-  pcVar1 = BG_UnlockablesGetCustomClassName(param_1);
+  pcVar1 = BG_UnlockablesGetCustomClassName(customClassNum);
   return pcVar1;
 }
 
@@ -97,14 +99,14 @@ char * __cdecl BG_UnlockablesGetCustomClassNameForInt(int param_1)
 
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetLoadoutName(loadoutSlot_t param_1)
+char * __cdecl BG_UnlockablesGetLoadoutName(loadoutSlot_t loadoutSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (0x26 < (int)param_1)) {
+  if (((int)loadoutSlot < 0) || (0x26 < (int)loadoutSlot)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x123,0,"%s");
     if (!bVar2) {
@@ -113,7 +115,7 @@ char * __cdecl BG_UnlockablesGetLoadoutName(loadoutSlot_t param_1)
       return pcVar3;
     }
   }
-  if (LOADOUTSLOT_COUNT < param_1) {
+  if (LOADOUTSLOT_COUNT < loadoutSlot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x124,0,"%s");
     if (!bVar2) {
@@ -122,11 +124,11 @@ char * __cdecl BG_UnlockablesGetLoadoutName(loadoutSlot_t param_1)
       return pcVar3;
     }
   }
-  if ((((int)param_1 < 0) || (0x26 < (int)param_1)) || (LOADOUTSLOT_COUNT < param_1)) {
+  if ((((int)loadoutSlot < 0) || (0x26 < (int)loadoutSlot)) || (LOADOUTSLOT_COUNT < loadoutSlot)) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = s_loadoutNames[param_1];
+    pcVar3 = s_loadoutNames[loadoutSlot];
   }
   return pcVar3;
 }
@@ -134,40 +136,40 @@ char * __cdecl BG_UnlockablesGetLoadoutName(loadoutSlot_t param_1)
 
 // 004457F0  FindEntryInList  (bgame/bg_unlockable_items.cpp:305)
 
-int __cdecl FindEntryInList(char *param_1,char **param_2,int param_3)
+int __cdecl FindEntryInList(char *stringEntry,char **textArray,int numEntries)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int entryNum;
   
-  if ((param_2 == (char **)0x0) &&
+  if ((textArray == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x132,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == 0) &&
+  if ((numEntries == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x133,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((stringEntry == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x134,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 != (char **)0x0) && (param_1 != (char *)0x0)) {
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      if ((param_2[local_8] != (char *)0x0) &&
-         (iVar3 = I_stricmp(param_1,param_2[local_8]), iVar3 == 0)) {
-        return local_8;
+  if ((textArray != (char **)0x0) && (stringEntry != (char *)0x0)) {
+    for (entryNum = 0; entryNum < numEntries; entryNum = entryNum + 1) {
+      if ((textArray[entryNum] != (char *)0x0) &&
+         (iVar3 = I_stricmp(stringEntry,textArray[entryNum]), iVar3 == 0)) {
+        return entryNum;
       }
     }
   }
@@ -177,25 +179,32 @@ int __cdecl FindEntryInList(char *param_1,char **param_2,int param_3)
 
 // 00446490  BG_UnlockablesCompareItemsBySortKey  (bgame/bg_unlockable_items.cpp:333)
 
-int __cdecl BG_UnlockablesCompareItemsBySortKey(void *param_1,void *param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+int __cdecl BG_UnlockablesCompareItemsBySortKey(void *arg0,void *arg1)
 
 {
-  undefined4 local_10;
+  int returnValue;
+  itemInfo_t **item0;
+  itemInfo_t **item1;
   
-  local_10 = *(int *)(*(int *)param_1 + 0x108) - *(int *)(*(int *)param_2 + 0x108);
-  if (local_10 == 0) {
-    local_10 = **(int **)param_1 - **(int **)param_2;
+  returnValue = *(int *)(*(int *)arg0 + 0x108) - *(int *)(*(int *)arg1 + 0x108);
+  if (returnValue == 0) {
+    returnValue = **(int **)arg0 - **(int **)arg1;
   }
-  return local_10;
+  return returnValue;
 }
 
 
 // 004461A0  BG_UnlockablesBuildDefaultClasses  (bgame/bg_unlockable_items.cpp:350)
 
-/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesBuildDefaultClasses(void)
 
@@ -205,42 +214,49 @@ void __cdecl BG_UnlockablesBuildDefaultClasses(void)
   code *pcVar3;
   bool bVar4;
   char *pcVar5;
-  int local_3c;
-  int local_2c;
-  int local_24;
-  int local_20;
-  int local_1c;
-  uint local_18;
-  undefined4 local_14 [4];
+  int killStreakCount;
+  int currentEntry;
+  char *loadoutName;
+  defaultClass_t defaultClass;
+  int defaultClassNum_2;
+  itemInfo_t *itemInfo;
+  int itemNumber;
+  int loadoutSlot;
+  int defaultClassNum;
+  int defaultGlobalItemNum;
+  undefined4 killStreakItems [4];
   
-  for (local_1c = 0; local_1c < 0x14; local_1c = local_1c + 1) {
-    for (local_20 = 0; local_20 < 0x23; local_20 = local_20 + 1) {
-      *(undefined4 *)(local_1c * 0x8c + 0xe74a28 + local_20 * 4) = 0xffffffff;
+  for (defaultClassNum = 0; defaultClassNum < 0x14; defaultClassNum = defaultClassNum + 1) {
+    for (loadoutSlot = 0; loadoutSlot < 0x23; loadoutSlot = loadoutSlot + 1) {
+      *(undefined4 *)(defaultClassNum * 0x8c + 0xe74a28 + loadoutSlot * 4) = 0xffffffff;
     }
   }
-  local_18 = 0;
-  local_24 = 0;
+  defaultGlobalItemNum = 0;
+  itemNumber = 0;
   do {
-    if (0xff < local_24) {
-      if (local_18 != 0) {
-        qsort(local_14,local_18,4,BG_UnlockablesCompareItemsBySortKey);
-        for (local_3c = 0; local_3c < (int)local_18; local_3c = local_3c + 1) {
-          s_unlockableItems.defaultGlobalItems[local_3c] = *(int *)local_14[local_3c];
+    if (0xff < itemNumber) {
+      if (defaultGlobalItemNum != 0) {
+        qsort(killStreakItems,defaultGlobalItemNum,4,BG_UnlockablesCompareItemsBySortKey);
+        for (killStreakCount = 0; killStreakCount < defaultGlobalItemNum;
+            killStreakCount = killStreakCount + 1) {
+          s_unlockableItems.defaultGlobalItems[killStreakCount] =
+               *(int *)killStreakItems[killStreakCount];
         }
       }
       return;
     }
-    if (s_unlockableItems.itemTable[local_24].isValid != false) {
-      if ((int)s_unlockableItems.itemTable[local_24].group < 0x17) {
-        for (local_2c = 0; local_2c < 0x14; local_2c = local_2c + 1) {
-          iVar1 = *(int *)(local_24 * 0x128 + 0xe622cc + local_2c * 4);
+    if (s_unlockableItems.itemTable[itemNumber].isValid != false) {
+      if ((int)s_unlockableItems.itemTable[itemNumber].group < 0x17) {
+        for (defaultClassNum_2 = 0; defaultClassNum_2 < 0x14;
+            defaultClassNum_2 = defaultClassNum_2 + 1) {
+          iVar1 = *(int *)(itemNumber * 0x128 + 0xe622cc + defaultClassNum_2 * 4);
           if (((iVar1 != -1) &&
-              (s_unlockableItems.itemTable[local_24].loadoutSlot != LOADOUTSLOT_INVALID)) &&
+              (s_unlockableItems.itemTable[itemNumber].loadoutSlot != LOADOUTSLOT_INVALID)) &&
              (pcVar5 = BG_UnlockablesGetLoadoutName
-                                 (s_unlockableItems.itemTable[local_24].loadoutSlot),
+                                 (s_unlockableItems.itemTable[itemNumber].loadoutSlot),
              pcVar5 != (char *)0x0)) {
             iVar2 = *(int *)(iVar1 * 0x8c + 0xe74a28 +
-                            s_unlockableItems.itemTable[local_24].loadoutSlot * 4);
+                            s_unlockableItems.itemTable[itemNumber].loadoutSlot * 4);
             if (iVar2 != -1) {
               va("Default Class %s already has equipment in slot %s has no room for %s");
               bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
@@ -253,14 +269,14 @@ void __cdecl BG_UnlockablesBuildDefaultClasses(void)
             }
             if (iVar2 == -1) {
               *(int *)(iVar1 * 0x8c + 0xe74a28 +
-                      s_unlockableItems.itemTable[local_24].loadoutSlot * 4) =
-                   s_unlockableItems.itemTable[local_24].index;
+                      s_unlockableItems.itemTable[itemNumber].loadoutSlot * 4) =
+                   s_unlockableItems.itemTable[itemNumber].index;
             }
           }
         }
       }
-      else if (s_unlockableItems.itemTable[local_24].isDefaultGlobalItem != false) {
-        if (3 < (int)local_18) {
+      else if (s_unlockableItems.itemTable[itemNumber].isDefaultGlobalItem != false) {
+        if (3 < defaultGlobalItemNum) {
           va("Too many default global items at %s");
           bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0x178,0,"%s\n\t%s");
@@ -270,13 +286,13 @@ void __cdecl BG_UnlockablesBuildDefaultClasses(void)
             return;
           }
         }
-        if ((int)local_18 < 4) {
-          local_14[local_18] = s_unlockableItems.itemTable + local_24;
-          local_18 = local_18 + 1;
+        if (defaultGlobalItemNum < 4) {
+          killStreakItems[defaultGlobalItemNum] = s_unlockableItems.itemTable + itemNumber;
+          defaultGlobalItemNum = defaultGlobalItemNum + 1;
         }
       }
     }
-    local_24 = local_24 + 1;
+    itemNumber = itemNumber + 1;
   } while( true );
 }
 
@@ -288,44 +304,46 @@ void __cdecl BG_UnlockablesBuildDefaultClasses(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesParseDefaultClassesForItem(itemInfo_t *param_1,char *param_2)
+int __cdecl BG_UnlockablesParseDefaultClassesForItem(itemInfo_t *itemInfo,char *defaultClassList)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  defaultClass_t dVar5;
-  int local_10;
-  char *local_c;
-  int local_8;
+  char *stringEntry;
+  defaultClass_t dVar4;
+  int defaultClassNum_2;
+  char *defaultClassName;
+  int defaultClassCount;
+  char *parseLocation;
+  int defaultClassNum;
   
-  if ((param_1 == (itemInfo_t *)0x0) &&
+  if ((itemInfo == (itemInfo_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x1b1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((defaultClassList == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x1b2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  for (local_8 = 0; local_8 < 0x14; local_8 = local_8 + 1) {
-    param_1->defaultClass[local_8] = CLASS_NONE;
+  for (defaultClassNum = 0; defaultClassNum < 0x14; defaultClassNum = defaultClassNum + 1) {
+    itemInfo->defaultClass[defaultClassNum] = CLASS_NONE;
   }
-  if ((param_1 != (itemInfo_t *)0x0) && (param_2 != (char *)0x0)) {
-    local_10 = 0;
+  if ((itemInfo != (itemInfo_t *)0x0) && (defaultClassList != (char *)0x0)) {
+    defaultClassCount = 0;
     Com_BeginParseSession("defaultClasses");
     Com_SetSpaceDelimited(0);
-    local_c = param_2;
-    while ((pcVar4 = Com_ParseOnLine(&local_c), local_c != (char *)0x0 && (pcVar4 != (char *)0x0)))
-    {
-      dVar5 = FindEntryInList(pcVar4,s_classNames,0x14);
-      if (dVar5 == CLASS_NONE) {
+    parseLocation = defaultClassList;
+    while ((stringEntry = Com_ParseOnLine(&parseLocation), parseLocation != (char *)0x0 &&
+           (stringEntry != (char *)0x0))) {
+      dVar4 = FindEntryInList(stringEntry,s_classNames,0x14);
+      if (dVar4 == CLASS_NONE) {
         va("Default Class %s not found");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x1cf,0,"%s\n\t%s");
@@ -335,9 +353,9 @@ int __cdecl BG_UnlockablesParseDefaultClassesForItem(itemInfo_t *param_1,char *p
           return iVar3;
         }
       }
-      if (dVar5 != CLASS_NONE) {
-        param_1->defaultClass[local_10] = dVar5;
-        local_10 = local_10 + 1;
+      if (dVar4 != CLASS_NONE) {
+        itemInfo->defaultClass[defaultClassCount] = dVar4;
+        defaultClassCount = defaultClassCount + 1;
       }
     }
     Com_EndParseSession();
@@ -348,56 +366,59 @@ int __cdecl BG_UnlockablesParseDefaultClassesForItem(itemInfo_t *param_1,char *p
 
 // 00446B10  BG_UnlockablesParseAttachmentsForItem  (bgame/bg_unlockable_items.cpp:480)
 
-/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesParseAttachmentsForItem(itemInfo_t *param_1,char *param_2)
+void __cdecl BG_UnlockablesParseAttachmentsForItem(itemInfo_t *itemInfo,char *attachmentList)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  char **ppcVar4;
-  eAttachment eVar5;
-  eAttachmentPoint eVar6;
-  int iVar7;
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *stringEntry;
+  char **textArray;
+  eAttachment attachment_00;
+  eAttachmentPoint eVar3;
+  int numEntries;
+  eAttachment attachment;
+  int attachmentNum_2;
+  char *attachmentName;
+  char *parseLocation;
+  int attachPoint;
+  int attachmentNum;
   
-  if ((param_1 == (itemInfo_t *)0x0) &&
+  if ((itemInfo == (itemInfo_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x1e1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((attachmentList == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x1e2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  for (local_8 = 0; local_8 < 0x18; local_8 = local_8 + 1) {
-    param_1->attachments[local_8] = ATTACHMENT_NONE;
+  for (attachmentNum = 0; attachmentNum < 0x18; attachmentNum = attachmentNum + 1) {
+    itemInfo->attachments[attachmentNum] = ATTACHMENT_NONE;
   }
-  for (local_c = 0; local_c < 5; local_c = local_c + 1) {
-    param_1->numAttachments[local_c] = 1;
+  for (attachPoint = 0; attachPoint < 5; attachPoint = attachPoint + 1) {
+    itemInfo->numAttachments[attachPoint] = 1;
   }
-  if ((param_1 != (itemInfo_t *)0x0) && (param_2 != (char *)0x0)) {
+  if ((itemInfo != (itemInfo_t *)0x0) && (attachmentList != (char *)0x0)) {
     Com_BeginParseSession("attachments");
     Com_SetSpaceDelimited(0);
-    local_10 = param_2;
-    while ((pcVar3 = Com_ParseOnLine(&local_10), local_10 != (char *)0x0 && (pcVar3 != (char *)0x0))
-          ) {
-      iVar7 = 0x18;
-      ppcVar4 = BG_GetAttachmentNames();
-      eVar5 = FindEntryInList(pcVar3,ppcVar4,iVar7);
-      if (eVar5 == ~ATTACHMENT_NONE) {
+    parseLocation = attachmentList;
+    while ((stringEntry = Com_ParseOnLine(&parseLocation), parseLocation != (char *)0x0 &&
+           (stringEntry != (char *)0x0))) {
+      numEntries = 0x18;
+      textArray = BG_GetAttachmentNames();
+      attachment_00 = FindEntryInList(stringEntry,textArray,numEntries);
+      if (attachment_00 == ~ATTACHMENT_NONE) {
         va("Attachment %s not found");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x204,0,"%s\n\t%s");
@@ -407,7 +428,7 @@ void __cdecl BG_UnlockablesParseAttachmentsForItem(itemInfo_t *param_1,char *par
           return;
         }
       }
-      if ((ATTACHMENT_DW < eVar5) &&
+      if ((ATTACHMENT_DW < attachment_00) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0x205,0,
                                    "attachmentNum doesn\'t index ATTACHMENT_COUNT\n\t%i not in [0, %i)"
@@ -416,11 +437,11 @@ void __cdecl BG_UnlockablesParseAttachmentsForItem(itemInfo_t *param_1,char *par
         (*pcVar1)();
         return;
       }
-      if (eVar5 != ~ATTACHMENT_NONE) {
-        param_1->attachments[param_1->numAttachments[0]] = eVar5;
-        param_1->numAttachments[0] = param_1->numAttachments[0] + 1;
-        eVar6 = BG_GetAttachmentPointIndexFromAttachment(eVar5);
-        param_1->numAttachments[eVar6] = param_1->numAttachments[eVar6] + 1;
+      if (attachment_00 != ~ATTACHMENT_NONE) {
+        itemInfo->attachments[itemInfo->numAttachments[0]] = attachment_00;
+        itemInfo->numAttachments[0] = itemInfo->numAttachments[0] + 1;
+        eVar3 = BG_GetAttachmentPointIndexFromAttachment(attachment_00);
+        itemInfo->numAttachments[eVar3] = itemInfo->numAttachments[eVar3] + 1;
       }
     }
     Com_EndParseSession();
@@ -436,14 +457,14 @@ void __cdecl BG_UnlockablesParseAttachmentsForItem(itemInfo_t *param_1,char *par
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-itemInfo_t * __cdecl BG_UnlockablesGetItemInfo(int param_1)
+itemInfo_t * __cdecl BG_UnlockablesGetItemInfo(int itemIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   itemInfo_t *piVar3;
   
-  if (0xff < param_1) {
+  if (0xff < itemIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x215,0,"%s");
     if (!bVar2) {
@@ -452,8 +473,8 @@ itemInfo_t * __cdecl BG_UnlockablesGetItemInfo(int param_1)
       return piVar3;
     }
   }
-  if ((param_1 < 0x100) && (param_1 != -1)) {
-    if (s_unlockableItems.itemTable[param_1].isValid == false) {
+  if ((itemIndex < 0x100) && (itemIndex != -1)) {
+    if (s_unlockableItems.itemTable[itemIndex].isValid == false) {
       va("Invalid unlockable item %d\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x21e,0,"%s\n\t%s");
@@ -463,12 +484,12 @@ itemInfo_t * __cdecl BG_UnlockablesGetItemInfo(int param_1)
         return piVar3;
       }
     }
-    if (s_unlockableItems.itemTable[param_1].isValid == false) {
+    if (s_unlockableItems.itemTable[itemIndex].isValid == false) {
       Com_PrintError(0,"Awoogah! returning NULL for itemindex %i!\n");
       piVar3 = (itemInfo_t *)0x0;
     }
     else {
-      piVar3 = s_unlockableItems.itemTable + param_1;
+      piVar3 = s_unlockableItems.itemTable + itemIndex;
     }
   }
   else {
@@ -486,14 +507,14 @@ itemInfo_t * __cdecl BG_UnlockablesGetItemInfo(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetFaceCamoItemIndex(int param_1)
+int __cdecl BG_UnlockablesGetFaceCamoItemIndex(int faceCamoNum)
 
 {
-  if (s_unlockableItems.numFaceCamoPatterns <= param_1) {
+  if (s_unlockableItems.numFaceCamoPatterns <= faceCamoNum) {
     Com_PrintError(0xd,"Only %d face camo patterns loaded - asking for camo %d\n");
-    param_1 = 0;
+    faceCamoNum = 0;
   }
-  return s_unlockableItems.faceCamoPatterns[param_1];
+  return s_unlockableItems.faceCamoPatterns[faceCamoNum];
 }
 
 
@@ -504,30 +525,31 @@ int __cdecl BG_UnlockablesGetFaceCamoItemIndex(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetFaceCamoNumFromItemIndex(int param_1)
+int __cdecl BG_UnlockablesGetFaceCamoNumFromItemIndex(int itemIndex)
 
 {
   itemInfo_t *piVar1;
-  int local_14;
-  int local_c;
-  int local_8;
+  int faceCamoNum;
+  itemInfo_t *itemInfo;
+  int numCamos;
+  int *itemIndices;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
-  local_8 = 0;
-  local_c = 0;
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
+  itemIndices = (int *)0x0;
+  numCamos = 0;
   if (piVar1 != (itemInfo_t *)0x0) {
     if (piVar1->loadoutSlot == LOADOUTSLOT_FACEPAINT_PATTERN) {
-      local_8 = 0xe75e68;
-      local_c = s_unlockableItems.numFaceCamoPatterns;
+      itemIndices = s_unlockableItems.faceCamoPatterns;
+      numCamos = s_unlockableItems.numFaceCamoPatterns;
     }
     else if (piVar1->loadoutSlot == LOADOUTSLOT_FACEPAINT_COLOR) {
-      local_8 = 0xe75f68;
-      local_c = s_unlockableItems.numFaceCamoColors;
+      itemIndices = s_unlockableItems.faceCamoColors;
+      numCamos = s_unlockableItems.numFaceCamoColors;
     }
-    if ((local_8 != 0) && (local_c != 0)) {
-      for (local_14 = 0; local_14 < local_c; local_14 = local_14 + 1) {
-        if (*(int *)(local_8 + local_14 * 4) == param_1) {
-          return local_14;
+    if ((itemIndices != (int *)0x0) && (numCamos != 0)) {
+      for (faceCamoNum = 0; faceCamoNum < numCamos; faceCamoNum = faceCamoNum + 1) {
+        if (itemIndices[faceCamoNum] == itemIndex) {
+          return faceCamoNum;
         }
       }
     }
@@ -545,7 +567,7 @@ int __cdecl BG_UnlockablesGetFaceCamoNumFromItemIndex(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesParseDualWieldInfo(itemInfo_t *param_1)
+void __cdecl BG_UnlockablesParseDualWieldInfo(itemInfo_t *itemInfo)
 
 {
   char cVar1;
@@ -555,12 +577,14 @@ void __cdecl BG_UnlockablesParseDualWieldInfo(itemInfo_t *param_1)
   itemInfo_t *piVar5;
   char *pcVar6;
   char *local_3c;
-  char local_2c [32];
+  itemInfo_t *originalItem;
+  int originalItemIndex;
+  char originalItemName [32];
   uint local_c;
-  int local_8;
+  int nameLength;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (itemInfo_t *)0x0) {
+  if (itemInfo == (itemInfo_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x25a,0,"%s");
     if (!bVar3) {
@@ -569,38 +593,38 @@ void __cdecl BG_UnlockablesParseDualWieldInfo(itemInfo_t *param_1)
       return;
     }
   }
-  if (param_1 != (itemInfo_t *)0x0) {
-    iVar4 = I_stricmpwild("*_DW",param_1->name);
+  if (itemInfo != (itemInfo_t *)0x0) {
+    iVar4 = I_stricmpwild("*_DW",itemInfo->name);
     if (iVar4 == 0) {
-      local_3c = param_1->name;
+      local_3c = itemInfo->name;
       pcVar6 = local_3c + 1;
       do {
         cVar1 = *local_3c;
         local_3c = local_3c + 1;
       } while (cVar1 != '\0');
-      local_8 = (int)local_3c - (int)pcVar6;
-      I_strncpyz(local_2c,param_1->name,local_8 + -2);
-      iVar4 = BG_UnlockablesGetItemIndexFromName(local_2c);
+      nameLength = (int)local_3c - (int)pcVar6;
+      I_strncpyz(originalItemName,itemInfo->name,nameLength + -2);
+      iVar4 = BG_UnlockablesGetItemIndexFromName(originalItemName);
       piVar5 = BG_UnlockablesGetItemInfo(iVar4);
-      param_1->dwIndex = -1;
-      param_1->dwBaseIndex = -1;
-      param_1->dwCost = -1;
+      itemInfo->dwIndex = -1;
+      itemInfo->dwBaseIndex = -1;
+      itemInfo->dwCost = -1;
       if (piVar5 == (itemInfo_t *)0x0) {
         Com_PrintWarning(1,
                          "WARNING: Dual Wield ONLY weapon: %s was added to the unlockable items.\n")
         ;
       }
       else {
-        piVar5->dwIndex = param_1->index;
-        piVar5->dwCost = param_1->cost;
-        param_1->dwBaseIndex = piVar5->index;
+        piVar5->dwIndex = itemInfo->index;
+        piVar5->dwCost = itemInfo->cost;
+        itemInfo->dwBaseIndex = piVar5->index;
       }
-      param_1->cost = -1;
+      itemInfo->cost = -1;
     }
     else {
-      param_1->dwIndex = -1;
-      param_1->dwBaseIndex = -1;
-      param_1->dwCost = -1;
+      itemInfo->dwIndex = -1;
+      itemInfo->dwBaseIndex = -1;
+      itemInfo->dwCost = -1;
     }
   }
   return;
@@ -623,23 +647,23 @@ int __cdecl DB_SizeofXAsset<DestructibleDef>(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesParseFaceCamoInfo(itemInfo_t *param_1)
+void __cdecl BG_UnlockablesParseFaceCamoInfo(itemInfo_t *itemInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (itemInfo_t *)0x0) &&
+  if ((itemInfo == (itemInfo_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x285,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (itemInfo_t *)0x0) || (param_1->loadoutSlot != LOADOUTSLOT_FACEPAINT_PATTERN)) {
-    if ((param_1 != (itemInfo_t *)0x0) && (param_1->loadoutSlot == LOADOUTSLOT_FACEPAINT_COLOR)) {
+  if ((itemInfo == (itemInfo_t *)0x0) || (itemInfo->loadoutSlot != LOADOUTSLOT_FACEPAINT_PATTERN)) {
+    if ((itemInfo != (itemInfo_t *)0x0) && (itemInfo->loadoutSlot == LOADOUTSLOT_FACEPAINT_COLOR)) {
       if (s_unlockableItems.numFaceCamoColors < 0x40) {
-        s_unlockableItems.faceCamoColors[s_unlockableItems.numFaceCamoColors] = param_1->index;
+        s_unlockableItems.faceCamoColors[s_unlockableItems.numFaceCamoColors] = itemInfo->index;
         s_unlockableItems.numFaceCamoColors = s_unlockableItems.numFaceCamoColors + 1;
       }
       else {
@@ -648,7 +672,7 @@ void __cdecl BG_UnlockablesParseFaceCamoInfo(itemInfo_t *param_1)
     }
   }
   else if (s_unlockableItems.numFaceCamoPatterns < 0x40) {
-    s_unlockableItems.faceCamoPatterns[s_unlockableItems.numFaceCamoPatterns] = param_1->index;
+    s_unlockableItems.faceCamoPatterns[s_unlockableItems.numFaceCamoPatterns] = itemInfo->index;
     s_unlockableItems.numFaceCamoPatterns = s_unlockableItems.numFaceCamoPatterns + 1;
   }
   else {
@@ -662,12 +686,12 @@ void __cdecl BG_UnlockablesParseFaceCamoInfo(itemInfo_t *param_1)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-itemGroup_t __cdecl BG_UnlockablesGetItemGroupFromName(char *param_1)
+itemGroup_t __cdecl BG_UnlockablesGetItemGroupFromName(char *groupName)
 
 {
   itemGroup_t iVar1;
   
-  iVar1 = FindEntryInList(param_1,s_itemGroupNames,0x18);
+  iVar1 = FindEntryInList(groupName,s_itemGroupNames,0x18);
   return iVar1;
 }
 
@@ -676,14 +700,14 @@ itemGroup_t __cdecl BG_UnlockablesGetItemGroupFromName(char *param_1)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemGroupName(itemGroup_t param_1)
+char * __cdecl BG_UnlockablesGetItemGroupName(itemGroup_t groupIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (0x17 < (int)param_1)) {
+  if (((int)groupIndex < 0) || (0x17 < (int)groupIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x2a7,0,"%s");
     if (!bVar2) {
@@ -692,11 +716,11 @@ char * __cdecl BG_UnlockablesGetItemGroupName(itemGroup_t param_1)
       return pcVar3;
     }
   }
-  if (((int)param_1 < 0) || (0x17 < (int)param_1)) {
+  if (((int)groupIndex < 0) || (0x17 < (int)groupIndex)) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = s_itemGroupNames[param_1];
+    pcVar3 = s_itemGroupNames[groupIndex];
   }
   return pcVar3;
 }
@@ -706,14 +730,14 @@ char * __cdecl BG_UnlockablesGetItemGroupName(itemGroup_t param_1)
 
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetLoadoutSlotName(loadoutSlot_t param_1)
+char * __cdecl BG_UnlockablesGetLoadoutSlotName(loadoutSlot_t loadoutSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (0x26 < (int)param_1)) {
+  if (((int)loadoutSlot < 0) || (0x26 < (int)loadoutSlot)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x2b1,0,"%s");
     if (!bVar2) {
@@ -722,11 +746,11 @@ char * __cdecl BG_UnlockablesGetLoadoutSlotName(loadoutSlot_t param_1)
       return pcVar3;
     }
   }
-  if (((int)param_1 < 0) || (0x26 < (int)param_1)) {
+  if (((int)loadoutSlot < 0) || (0x26 < (int)loadoutSlot)) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = s_loadoutNames[param_1];
+    pcVar3 = s_loadoutNames[loadoutSlot];
   }
   return pcVar3;
 }
@@ -739,7 +763,7 @@ char * __cdecl BG_UnlockablesGetLoadoutSlotName(loadoutSlot_t param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesParsePerkProChallenges(itemInfo_t *param_1)
+void __cdecl BG_UnlockablesParsePerkProChallenges(itemInfo_t *itemInfo)
 
 {
   char cVar1;
@@ -747,45 +771,48 @@ void __cdecl BG_UnlockablesParsePerkProChallenges(itemInfo_t *param_1)
   bool bVar3;
   char *pcVar4;
   int iVar5;
-  char *pcVar6;
-  int iVar7;
-  char *pcVar8;
+  char *value2;
+  int comparisonColumn3;
+  char *value3;
   char *local_1c;
-  int local_10;
-  StringTable *local_c;
-  int local_8;
+  char *perkName;
+  int row;
+  int milestone;
+  StringTable *statsMilestoneTable;
+  int currentProChallenge;
   
-  if ((param_1 == (itemInfo_t *)0x0) &&
+  if ((itemInfo == (itemInfo_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x2bd,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((((param_1 != (itemInfo_t *)0x0) && (param_1->group == ITEMGROUP_SPECIALTY)) &&
-       (param_1->name != (char *)0x0)) &&
-      ((*param_1->name != '\0' && (bVar3 = BG_UnlockablesIsProItem(param_1->index), !bVar3)))) &&
-     (bVar3 = BG_UnlockablesIsItemValidNotNull(param_1->index), bVar3)) {
-    local_c = (StringTable *)0x0;
-    local_8 = 0;
-    for (local_10 = 0; local_10 < 1000; local_10 = local_10 + 1) {
-      pcVar8 = (char *)0x0;
-      iVar7 = -1;
-      pcVar6 = (char *)0x0;
+  if (((((itemInfo != (itemInfo_t *)0x0) && (itemInfo->group == ITEMGROUP_SPECIALTY)) &&
+       (itemInfo->name != (char *)0x0)) &&
+      ((*itemInfo->name != '\0' && (bVar3 = BG_UnlockablesIsProItem(itemInfo->index), !bVar3)))) &&
+     (bVar3 = BG_UnlockablesIsItemValidNotNull(itemInfo->index), bVar3)) {
+    statsMilestoneTable = (StringTable *)0x0;
+    currentProChallenge = 0;
+    for (milestone = 0; milestone < 1000; milestone = milestone + 1) {
+      value3 = (char *)0x0;
+      comparisonColumn3 = -1;
+      value2 = (char *)0x0;
       iVar5 = -1;
       pcVar4 = va("%d");
-      iVar5 = CL_GetMilestoneRowNum(&local_c,0,pcVar4,iVar5,pcVar6,iVar7,pcVar8);
-      if ((local_c != (StringTable *)0x0) && (iVar5 != -1)) {
-        pcVar4 = StringTable_GetColumnValueForRow(local_c,iVar5,10);
+      iVar5 = CL_GetMilestoneRowNum
+                        (&statsMilestoneTable,0,pcVar4,iVar5,value2,comparisonColumn3,value3);
+      if ((statsMilestoneTable != (StringTable *)0x0) && (iVar5 != -1)) {
+        pcVar4 = StringTable_GetColumnValueForRow(statsMilestoneTable,iVar5,10);
         local_1c = pcVar4;
         do {
           cVar1 = *local_1c;
           local_1c = local_1c + 1;
         } while (cVar1 != '\0');
-        if ((local_1c != pcVar4 + 1) && (iVar5 = I_stricmp(param_1->name,pcVar4), iVar5 == 0)) {
-          param_1->challengeIndices[local_8] = local_10;
-          local_8 = local_8 + 1;
-          if (local_8 == 3) {
+        if ((local_1c != pcVar4 + 1) && (iVar5 = I_stricmp(itemInfo->name,pcVar4), iVar5 == 0)) {
+          itemInfo->challengeIndices[currentProChallenge] = milestone;
+          currentProChallenge = currentProChallenge + 1;
+          if (currentProChallenge == 3) {
             return;
           }
         }
@@ -811,13 +838,14 @@ void __cdecl BG_UnlockablesParsePerkProChallenges(itemInfo_t *param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemInDefaultClass(int param_1)
+bool __cdecl BG_UnlockablesIsItemInDefaultClass(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if ((piVar2 == (itemInfo_t *)0x0) || (piVar2->defaultClass[0] == CLASS_NONE)) {
     bVar1 = false;
   }
@@ -835,7 +863,7 @@ bool __cdecl BG_UnlockablesIsItemInDefaultClass(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesBuildItemInfo(int param_1,itemInfo_t *param_2)
+bool __cdecl BG_UnlockablesBuildItemInfo(int itemIndex,itemInfo_t *itemInfo)
 
 {
   char cVar1;
@@ -849,11 +877,12 @@ bool __cdecl BG_UnlockablesBuildItemInfo(int param_1,itemInfo_t *param_2)
   char *pcVar9;
   char *local_2c;
   char *local_1c;
-  StringTable *local_10;
-  int local_c;
-  char *local_8;
+  char *name;
+  StringTable *statsTable;
+  int row;
+  char *reference;
   
-  if (param_2 == (itemInfo_t *)0x0) {
+  if (itemInfo == (itemInfo_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x2f5,0,"%s");
     if (!bVar3) {
@@ -865,11 +894,11 @@ bool __cdecl BG_UnlockablesBuildItemInfo(int param_1,itemInfo_t *param_2)
   if ((useFastFile->current).enabled == false) {
     bVar3 = false;
   }
-  else if (param_2 == (itemInfo_t *)0x0) {
+  else if (itemInfo == (itemInfo_t *)0x0) {
     bVar3 = false;
   }
   else {
-    if (param_2->isValid != false) {
+    if (itemInfo->isValid != false) {
       va("Item number %d already contains an item %s\n");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x301,0,"%s\n\t%s");
@@ -879,9 +908,9 @@ bool __cdecl BG_UnlockablesBuildItemInfo(int param_1,itemInfo_t *param_2)
         return (bool)uVar4;
       }
     }
-    if (param_2->isValid == false) {
-      StringTable_GetAsset("mp/statstable.csv",&local_10);
-      if (local_10 == (StringTable *)0x0) {
+    if (itemInfo->isValid == false) {
+      StringTable_GetAsset("mp/statstable.csv",&statsTable);
+      if (statsTable == (StringTable *)0x0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x30a,0,"%s");
         if (!bVar3) {
@@ -890,11 +919,11 @@ bool __cdecl BG_UnlockablesBuildItemInfo(int param_1,itemInfo_t *param_2)
           return (bool)uVar4;
         }
       }
-      if (local_10 == (StringTable *)0x0) {
+      if (statsTable == (StringTable *)0x0) {
         bVar3 = false;
       }
       else {
-        if (0xff < param_1) {
+        if (0xff < itemIndex) {
           bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0x311,0,"%s");
           if (!bVar3) {
@@ -903,89 +932,89 @@ bool __cdecl BG_UnlockablesBuildItemInfo(int param_1,itemInfo_t *param_2)
             return (bool)uVar4;
           }
         }
-        if (param_1 < 0x100) {
+        if (itemIndex < 0x100) {
           pcVar5 = va("%d");
-          local_c = StringTable_LookupRowNumForValue(local_10,0,pcVar5);
-          if (local_c == -1) {
+          row = StringTable_LookupRowNumForValue(statsTable,0,pcVar5);
+          if (row == -1) {
             bVar3 = false;
           }
           else {
-            memset((uchar *)param_2,'\0',0x128);
-            pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,3);
-            local_8 = StringTable_GetColumnValueForRow(local_10,local_c,4);
-            if ((pcVar5 != (char *)0x0) && (local_8 != (char *)0x0)) {
+            memset((uchar *)itemInfo,'\0',0x128);
+            pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,3);
+            reference = StringTable_GetColumnValueForRow(statsTable,row,4);
+            if ((pcVar5 != (char *)0x0) && (reference != (char *)0x0)) {
               local_1c = pcVar5;
               do {
                 cVar1 = *local_1c;
                 local_1c = local_1c + 1;
               } while (cVar1 != '\0');
               if (local_1c != pcVar5 + 1) {
-                local_2c = local_8;
+                local_2c = reference;
                 do {
                   cVar1 = *local_2c;
                   local_2c = local_2c + 1;
                 } while (cVar1 != '\0');
-                if (local_2c != local_8 + 1) {
-                  param_2->name = pcVar5;
-                  param_2->reference = local_8;
-                  pcVar5 = I_stristr(local_8,"null");
+                if (local_2c != reference + 1) {
+                  itemInfo->name = pcVar5;
+                  itemInfo->reference = reference;
+                  pcVar5 = I_stristr(reference,"null");
                   if (pcVar5 != (char *)0x0) {
-                    param_2->isNullItem = true;
+                    itemInfo->isNullItem = true;
                   }
-                  param_2->index = param_1;
+                  itemInfo->index = itemIndex;
                   pcVar9 = "passive";
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,1);
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,1);
                   iVar6 = I_stricmp(pcVar5,pcVar9);
-                  param_2->isPassive = (bool)('\x01' - (iVar6 != 0));
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,2);
+                  itemInfo->isPassive = (bool)('\x01' - (iVar6 != 0));
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,2);
                   iVar7 = BG_UnlockablesGetItemGroupFromName(pcVar5);
-                  param_2->group = iVar7;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,5);
+                  itemInfo->group = iVar7;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,5);
                   iVar6 = atoi(pcVar5);
-                  param_2->count = iVar6;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,6);
-                  param_2->imageRef = pcVar5;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,7);
-                  param_2->desc = pcVar5;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,9);
+                  itemInfo->count = iVar6;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,6);
+                  itemInfo->imageRef = pcVar5;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,7);
+                  itemInfo->desc = pcVar5;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,9);
                   iVar6 = atoi(pcVar5);
-                  param_2->sortKey = iVar6;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,10);
+                  itemInfo->sortKey = iVar6;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,10);
                   iVar6 = atoi(pcVar5);
-                  param_2->unlockLevel = iVar6;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,0xe);
+                  itemInfo->unlockLevel = iVar6;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,0xe);
                   iVar6 = atoi(pcVar5);
-                  param_2->unlockPLevel = iVar6;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,8);
-                  BG_UnlockablesParseAttachmentsForItem(param_2,pcVar5);
-                  if ((int)param_2->group < 0x17) {
-                    pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,0xb);
-                    BG_UnlockablesParseDefaultClassesForItem(param_2,pcVar5);
-                    param_2->isDefaultGlobalItem = false;
+                  itemInfo->unlockPLevel = iVar6;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,8);
+                  BG_UnlockablesParseAttachmentsForItem(itemInfo,pcVar5);
+                  if ((int)itemInfo->group < 0x17) {
+                    pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,0xb);
+                    BG_UnlockablesParseDefaultClassesForItem(itemInfo,pcVar5);
+                    itemInfo->isDefaultGlobalItem = false;
                   }
                   else {
                     pcVar9 = "all";
-                    pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,0xb);
+                    pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,0xb);
                     iVar6 = I_stricmp(pcVar5,pcVar9);
-                    param_2->isDefaultGlobalItem = (bool)('\x01' - (iVar6 != 0));
+                    itemInfo->isDefaultGlobalItem = (bool)('\x01' - (iVar6 != 0));
                   }
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,0xc);
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,0xc);
                   iVar6 = atoi(pcVar5);
-                  param_2->cost = iVar6;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,0xd);
+                  itemInfo->cost = iVar6;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,0xd);
                   lVar8 = BG_UnlockablesGetLoadoutSlotFromString(pcVar5);
-                  param_2->loadoutSlot = lVar8;
-                  pcVar5 = StringTable_GetColumnValueForRow(local_10,local_c,0xf);
+                  itemInfo->loadoutSlot = lVar8;
+                  pcVar5 = StringTable_GetColumnValueForRow(statsTable,row,0xf);
                   iVar6 = atoi(pcVar5);
-                  param_2->unclassifyAt = iVar6;
-                  iVar6 = StringTable_HashString(param_2->name);
-                  param_2->nameHash = iVar6;
-                  iVar6 = StringTable_HashString(param_2->reference);
-                  param_2->refHash = iVar6;
-                  param_2->isValid = true;
-                  BG_UnlockablesParseDualWieldInfo(param_2);
-                  BG_UnlockablesParseFaceCamoInfo(param_2);
-                  BG_UnlockablesParsePerkProChallenges(param_2);
+                  itemInfo->unclassifyAt = iVar6;
+                  iVar6 = StringTable_HashString(itemInfo->name);
+                  itemInfo->nameHash = iVar6;
+                  iVar6 = StringTable_HashString(itemInfo->reference);
+                  itemInfo->refHash = iVar6;
+                  itemInfo->isValid = true;
+                  BG_UnlockablesParseDualWieldInfo(itemInfo);
+                  BG_UnlockablesParseFaceCamoInfo(itemInfo);
+                  BG_UnlockablesParsePerkProChallenges(itemInfo);
                 }
               }
             }
@@ -1016,51 +1045,52 @@ void __cdecl BG_UnlockablesBuildActualDefaultItems(void)
 
 {
   char *pcVar1;
-  int local_10;
-  loadoutSlot_t local_c;
+  char *loadoutName;
+  int defaultEquipment;
+  int loadoutSlot;
+  char *defaultItemName;
   
-  for (local_c = LOADOUTSLOT_FIRST; (int)local_c < 0x27;
-      local_c = local_c + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-    local_10 = BG_UnlockablesGetItemIndexFromName("weapon_null");
-    pcVar1 = BG_UnlockablesGetLoadoutName(local_c);
+  for (loadoutSlot = 0; loadoutSlot < 0x27; loadoutSlot = loadoutSlot + 1) {
+    defaultEquipment = BG_UnlockablesGetItemIndexFromName("weapon_null");
+    pcVar1 = BG_UnlockablesGetLoadoutName(loadoutSlot);
     if (pcVar1 != (char *)0x0) {
-      switch(local_c) {
-      case LOADOUTSLOT_FIRST:
-      case LOADOUTSLOT_PRIMARY_ATTACHMENT:
-      case LOADOUTSLOT_PRIMARY_CAMO:
-      case LOADOUTSLOT_SECONDARY_WEAPON:
-      case LOADOUTSLOT_SECONDARY_ATTACHMENT:
-      case LOADOUTSLOT_SECONDARY_CAMO:
-      case LOADOUTSLOT_PRIMARY_GRENADE:
-      case LOADOUTSLOT_SPECIAL_GRENADE:
-        local_10 = s_unlockableItems.defaultClassLoadouts[0][local_c];
+      switch(loadoutSlot) {
+      case 0:
+      case 1:
+      case 6:
+      case 0xc:
+      case 0xd:
+      case 0x12:
+      case 0x1e:
+      case 0x1f:
+        defaultEquipment = s_unlockableItems.defaultClassLoadouts[0][loadoutSlot];
         break;
       default:
         Com_Printf(0xd,
                    "No default item defined for loadout slot \'%s\'. Returning default item: \'%s\'\n"
                   );
         break;
-      case LOADOUTSLOT_FIRST_SPECIALTY:
-      case LOADOUTSLOT_SPECIALTY2:
-      case LOADOUTSLOT_LAST_SPECIALTY:
-      case LOADOUTSLOT_CLASSBONUS:
-      case LOADOUTSLOT_DEATHSTREAK:
-        local_10 = BG_UnlockablesGetItemIndexFromName("perks_none");
+      case 0x18:
+      case 0x19:
+      case 0x1a:
+      case 0x1b:
+      case 0x26:
+        defaultEquipment = BG_UnlockablesGetItemIndexFromName("perks_none");
         break;
-      case LOADOUTSLOT_HEAD:
-        local_10 = BG_UnlockablesGetItemIndexFromName("armor_null");
+      case 0x1c:
+        defaultEquipment = BG_UnlockablesGetItemIndexFromName("armor_null");
         break;
-      case LOADOUTSLOT_BODY:
-        local_10 = s_unlockableItems.defaultClassLoadouts[0][local_c];
+      case 0x1d:
+        defaultEquipment = s_unlockableItems.defaultClassLoadouts[0][loadoutSlot];
         break;
-      case LOADOUTSLOT_EQUIPMENT:
+      case 0x20:
         break;
-      case LOADOUTSLOT_GLOBAL_ITEMS_START:
-      case LOADOUTSLOT_KILLSTREAK2:
-      case LOADOUTSLOT_KILLSTREAK3:
-        local_10 = BG_UnlockablesGetItemIndexFromName("killstreak_null");
+      case 0x23:
+      case 0x24:
+      case 0x25:
+        defaultEquipment = BG_UnlockablesGetItemIndexFromName("killstreak_null");
       }
-      s_unlockableItems.actualDefaultItems[local_c] = local_10;
+      s_unlockableItems.actualDefaultItems[loadoutSlot] = defaultEquipment;
     }
   }
   return;
@@ -1078,47 +1108,48 @@ void __cdecl BG_UnlockablesBuildDefaultItems(void)
 
 {
   char *pcVar1;
-  int local_10;
-  loadoutSlot_t local_c;
+  char *loadoutName;
+  int defaultEquipment;
+  int loadoutSlot;
+  char *defaultItemName;
   
-  for (local_c = LOADOUTSLOT_FIRST; (int)local_c < 0x27;
-      local_c = local_c + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-    local_10 = BG_UnlockablesGetItemIndexFromName("weapon_null");
-    pcVar1 = BG_UnlockablesGetLoadoutName(local_c);
+  for (loadoutSlot = 0; loadoutSlot < 0x27; loadoutSlot = loadoutSlot + 1) {
+    defaultEquipment = BG_UnlockablesGetItemIndexFromName("weapon_null");
+    pcVar1 = BG_UnlockablesGetLoadoutName(loadoutSlot);
     if (pcVar1 != (char *)0x0) {
-      switch(local_c) {
-      case LOADOUTSLOT_FIRST:
-      case LOADOUTSLOT_PRIMARY_ATTACHMENT:
-      case LOADOUTSLOT_PRIMARY_CAMO:
-      case LOADOUTSLOT_SECONDARY_WEAPON:
-      case LOADOUTSLOT_SECONDARY_ATTACHMENT:
-      case LOADOUTSLOT_SECONDARY_CAMO:
-      case LOADOUTSLOT_PRIMARY_GRENADE:
-      case LOADOUTSLOT_SPECIAL_GRENADE:
-      case LOADOUTSLOT_EQUIPMENT:
+      switch(loadoutSlot) {
+      case 0:
+      case 1:
+      case 6:
+      case 0xc:
+      case 0xd:
+      case 0x12:
+      case 0x1e:
+      case 0x1f:
+      case 0x20:
         break;
       default:
         Com_Printf(0xd,
                    "No default item defined for loadout slot \'%s\'. Returning default item: \'%s\'\n"
                   );
         break;
-      case LOADOUTSLOT_FIRST_SPECIALTY:
-      case LOADOUTSLOT_SPECIALTY2:
-      case LOADOUTSLOT_LAST_SPECIALTY:
-      case LOADOUTSLOT_CLASSBONUS:
-      case LOADOUTSLOT_DEATHSTREAK:
-        local_10 = BG_UnlockablesGetItemIndexFromName("perks_none");
+      case 0x18:
+      case 0x19:
+      case 0x1a:
+      case 0x1b:
+      case 0x26:
+        defaultEquipment = BG_UnlockablesGetItemIndexFromName("perks_none");
         break;
-      case LOADOUTSLOT_HEAD:
-      case LOADOUTSLOT_BODY:
-        local_10 = BG_UnlockablesGetItemIndexFromName("armor_null");
+      case 0x1c:
+      case 0x1d:
+        defaultEquipment = BG_UnlockablesGetItemIndexFromName("armor_null");
         break;
-      case LOADOUTSLOT_GLOBAL_ITEMS_START:
-      case LOADOUTSLOT_KILLSTREAK2:
-      case LOADOUTSLOT_KILLSTREAK3:
-        local_10 = BG_UnlockablesGetItemIndexFromName("killstreak_null");
+      case 0x23:
+      case 0x24:
+      case 0x25:
+        defaultEquipment = BG_UnlockablesGetItemIndexFromName("killstreak_null");
       }
-      s_unlockableItems.defaultItems[local_c] = local_10;
+      s_unlockableItems.defaultItems[loadoutSlot] = defaultEquipment;
     }
   }
   return;
@@ -1193,27 +1224,27 @@ void __cdecl BG_UnlockablesBuildClanTagFeatureRows(void)
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  int local_c;
-  StringTable *local_8;
+  char *value;
+  int iVar3;
+  int numFeatures;
+  StringTable *clanTagFeatures;
   
   if ((useFastFile->current).enabled != false) {
-    StringTable_GetAsset("mp/clantagfeatures.csv",&local_8);
-    if ((local_8 == (StringTable *)0x0) &&
+    StringTable_GetAsset("mp/clantagfeatures.csv",&clanTagFeatures);
+    if ((clanTagFeatures == (StringTable *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x404,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_8 != (StringTable *)0x0) {
-      for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-        pcVar3 = va("%d");
-        iVar4 = StringTable_LookupRowNumForValue(local_8,0,pcVar3);
-        s_unlockableItems.clanTagFeatureRows[local_c] = iVar4;
-        if (s_unlockableItems.clanTagFeatureRows[local_c] != -1) {
-          s_unlockableItems.numClanTagFeatures = local_c;
+    if (clanTagFeatures != (StringTable *)0x0) {
+      for (numFeatures = 0; numFeatures < 0x100; numFeatures = numFeatures + 1) {
+        value = va("%d");
+        iVar3 = StringTable_LookupRowNumForValue(clanTagFeatures,0,value);
+        s_unlockableItems.clanTagFeatureRows[numFeatures] = iVar3;
+        if (s_unlockableItems.clanTagFeatureRows[numFeatures] != -1) {
+          s_unlockableItems.numClanTagFeatures = numFeatures;
         }
       }
     }
@@ -1224,30 +1255,31 @@ void __cdecl BG_UnlockablesBuildClanTagFeatureRows(void)
 
 // 00445B50  BG_UnlockablesGetEquippedClanTagFeatureIndex  (bgame/bg_unlockable_items.cpp:1046)
 
-int __cdecl BG_UnlockablesGetEquippedClanTagFeatureIndex(int param_1)
+int __cdecl BG_UnlockablesGetEquippedClanTagFeatureIndex(int controllerIndex)
 
 {
   bool bVar1;
   uint uVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar3;
+  char *buffer;
+  ddlState_t searchState;
   
-  bVar1 = LiveStorage_DoWeHaveAllStats(param_1);
+  bVar1 = LiveStorage_DoWeHaveAllStats(controllerIndex);
   if (bVar1) {
-    iVar6 = 2;
-    pdVar5 = &local_14;
-    pdVar3 = LiveStats_GetRootDDLState();
-    iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-    if (iVar6 == 0) {
+    iVar3 = 2;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+    if (iVar3 == 0) {
       DDL_PrintError("DDL: Error could not find clantag feature index\n");
       uVar2 = 0xffffffff;
     }
     else {
-      puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      uVar2 = DDL_GetInt(&local_14,(char *)puVar4);
+      buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      uVar2 = DDL_GetInt(&searchState,(char *)buffer_00);
     }
   }
   else {
@@ -1278,21 +1310,21 @@ int __cdecl BG_UnlockablesGetClanTagFeatureCount(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetClanTagFeature(uint param_1,clanTagFeatureColumn_t param_2)
+char * __cdecl BG_UnlockablesGetClanTagFeature(uint index,clanTagFeatureColumn_t column)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_8;
+  StringTable *clanTagFeatures;
   
-  if ((param_1 < 0x100) && (s_unlockableItems.clanTagFeatureRows[param_1] != -1)) {
+  if ((index < 0x100) && (s_unlockableItems.clanTagFeatureRows[index] != -1)) {
     if ((useFastFile->current).enabled == false) {
       pcVar3 = "";
     }
     else {
-      StringTable_GetAsset("mp/clantagfeatures.csv",&local_8);
-      if (local_8 == (StringTable *)0x0) {
+      StringTable_GetAsset("mp/clantagfeatures.csv",&clanTagFeatures);
+      if (clanTagFeatures == (StringTable *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x43c,0,"%s");
         if (!bVar2) {
@@ -1301,12 +1333,12 @@ char * __cdecl BG_UnlockablesGetClanTagFeature(uint param_1,clanTagFeatureColumn
           return pcVar3;
         }
       }
-      if (local_8 == (StringTable *)0x0) {
+      if (clanTagFeatures == (StringTable *)0x0) {
         pcVar3 = "";
       }
       else {
         pcVar3 = StringTable_GetColumnValueForRow
-                           (local_8,s_unlockableItems.clanTagFeatureRows[param_1],param_2);
+                           (clanTagFeatures,s_unlockableItems.clanTagFeatureRows[index],column);
       }
     }
   }
@@ -1319,50 +1351,52 @@ char * __cdecl BG_UnlockablesGetClanTagFeature(uint param_1,clanTagFeatureColumn
 
 // 00445C90  BG_UnlockablesGetClanTagFeaturePLvlUnlock  (bgame/bg_unlockable_items.cpp:1095)
 
-int __cdecl BG_UnlockablesGetClanTagFeaturePLvlUnlock(uint param_1)
+int __cdecl BG_UnlockablesGetClanTagFeaturePLvlUnlock(uint index)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
-  pcVar1 = BG_UnlockablesGetClanTagFeature(param_1,CLANTAG_COL_UNLOCKPLVL);
-  iVar2 = atoi(pcVar1);
-  return iVar2;
+  nptr = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_UNLOCKPLVL);
+  iVar1 = atoi(nptr);
+  return iVar1;
 }
 
 
 // 00445CB0  BG_UnlockablesGetClanTagFeatureLvlUnlock  (bgame/bg_unlockable_items.cpp:1100)
 
-int __cdecl BG_UnlockablesGetClanTagFeatureLvlUnlock(uint param_1)
+int __cdecl BG_UnlockablesGetClanTagFeatureLvlUnlock(uint index)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
-  pcVar1 = BG_UnlockablesGetClanTagFeature(param_1,CLANTAG_COL_UNLOCKLVL);
-  iVar2 = atoi(pcVar1);
-  return iVar2;
+  nptr = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_UNLOCKLVL);
+  iVar1 = atoi(nptr);
+  return iVar1;
 }
 
 
 // 00445CD0  BG_UnlockablesIsClanTagFeatureLockedForRank  (bgame/bg_unlockable_items.cpp:1106)
 
-bool __cdecl BG_UnlockablesIsClanTagFeatureLockedForRank(int param_1,int param_2,uint param_3)
+bool __cdecl BG_UnlockablesIsClanTagFeatureLockedForRank(int PLevel,int rank,uint index)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
   undefined1 local_10;
+  int featureRank;
+  int featurePLevel;
   
   bVar1 = BG_UnlockablesAllItemsUnlocked();
   if (bVar1) {
     local_10 = false;
   }
   else {
-    iVar2 = BG_UnlockablesGetClanTagFeatureLvlUnlock(param_3);
-    iVar3 = BG_UnlockablesGetClanTagFeaturePLvlUnlock(param_3);
-    if ((param_2 < iVar2) || (param_1 < iVar3)) {
+    iVar2 = BG_UnlockablesGetClanTagFeatureLvlUnlock(index);
+    iVar3 = BG_UnlockablesGetClanTagFeaturePLvlUnlock(index);
+    if ((rank < iVar2) || (PLevel < iVar3)) {
       local_10 = true;
     }
     else {
@@ -1375,69 +1409,70 @@ bool __cdecl BG_UnlockablesIsClanTagFeatureLockedForRank(int param_1,int param_2
 
 // 00445D30  BG_UnlockablesIsClanTagFeatureLocked  (bgame/bg_unlockable_items.cpp:1119)
 
-bool __cdecl BG_UnlockablesIsClanTagFeatureLocked(int param_1,uint param_2)
+bool __cdecl BG_UnlockablesIsClanTagFeatureLocked(int controllerIndex,uint index)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
+  int rank;
+  int PLevel;
   
-  iVar2 = LiveStats_GetRank(param_1);
-  iVar3 = LiveStats_GetPrestige(param_1);
-  bVar1 = BG_UnlockablesIsClanTagFeatureLockedForRank(iVar3,iVar2,param_2);
+  rank = LiveStats_GetRank(controllerIndex);
+  PLevel = LiveStats_GetPrestige(controllerIndex);
+  bVar1 = BG_UnlockablesIsClanTagFeatureLockedForRank(PLevel,rank,index);
   return bVar1;
 }
 
 
 // 00445D60  BG_UnlockablesIsClanTagFeaturePurchased  (bgame/bg_unlockable_items.cpp:1124)
 
-bool __cdecl BG_UnlockablesIsClanTagFeaturePurchased(int param_1,uint param_2)
+bool __cdecl BG_UnlockablesIsClanTagFeaturePurchased(int controllerIndex,uint index)
 
 {
   bool bVar1;
-  char *pcVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  uint uVar5;
-  ddlState_t *pdVar6;
-  int iVar7;
-  ddlState_t local_1c;
-  char *local_c;
-  int local_8;
+  char *nptr;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar2;
+  ddlState_t *resultState;
+  int iVar3;
+  char *buffer;
+  ddlState_t searchState;
+  char *featureName;
+  int cost;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = BG_UnlockablesIsClanTagFeatureLocked(param_1,param_2);
+    bVar1 = BG_UnlockablesIsClanTagFeatureLocked(controllerIndex,index);
     if (bVar1) {
       bVar1 = false;
     }
     else {
-      pcVar2 = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_COST);
-      local_8 = atoi(pcVar2);
-      if (local_8 == 0) {
+      nptr = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_COST);
+      cost = atoi(nptr);
+      if (cost == 0) {
         bVar1 = true;
       }
       else {
-        local_c = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_NAME);
-        if ((local_c == (char *)0x0) || (*local_c == '\0')) {
+        featureName = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_NAME);
+        if ((featureName == (char *)0x0) || (*featureName == '\0')) {
           bVar1 = false;
         }
         else {
-          iVar7 = 4;
-          pdVar6 = &local_1c;
-          pdVar3 = LiveStats_GetRootDDLState();
-          iVar7 = DDL_MoveTo(pdVar3,pdVar6,iVar7);
-          if (iVar7 == 0) {
+          iVar3 = 4;
+          resultState = &searchState;
+          searchState_00 = LiveStats_GetRootDDLState();
+          iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+          if (iVar3 == 0) {
             DDL_PrintError("DDL: Error could not find clan tag feature %s\n");
             bVar1 = false;
           }
           else {
-            puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-            uVar5 = DDL_GetInt(&local_1c,(char *)puVar4);
-            bVar1 = uVar5 != 0;
+            buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+            uVar2 = DDL_GetInt(&searchState,(char *)buffer_00);
+            bVar1 = uVar2 != 0;
           }
         }
       }
@@ -1449,32 +1484,33 @@ bool __cdecl BG_UnlockablesIsClanTagFeaturePurchased(int param_1,uint param_2)
 
 // 00445EF0  BG_UnlockablesSetClanTagFeatureNew  (bgame/bg_unlockable_items.cpp:1191)
 
-void __cdecl BG_UnlockablesSetClanTagFeatureNew(int param_1,uint param_2,int param_3)
+void __cdecl BG_UnlockablesSetClanTagFeatureNew(int controllerIndex,uint index,int newValue)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  uchar *puVar3;
-  ddlState_t *pdVar4;
-  int iVar5;
-  ddlState_t local_18;
-  char *local_8;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar2;
+  char *buffer;
+  ddlState_t searchState;
+  char *featureName;
   
-  bVar1 = BG_UnlockablesIsClanTagFeatureLocked(param_1,param_2);
+  bVar1 = BG_UnlockablesIsClanTagFeatureLocked(controllerIndex,index);
   if (((!bVar1) &&
-      (local_8 = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_NAME), local_8 != (char *)0x0))
-     && (*local_8 != '\0')) {
-    iVar5 = 4;
-    pdVar4 = &local_18;
-    pdVar2 = LiveStats_GetRootDDLState();
-    iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
-    if (iVar5 == 0) {
+      (featureName = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_NAME),
+      featureName != (char *)0x0)) && (*featureName != '\0')) {
+    iVar2 = 4;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not find clan tag feature %s\n");
     }
     else {
-      puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      iVar5 = DDL_SetInt(&local_18,1,(char *)puVar3);
-      if (iVar5 != 0) {
+      buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      iVar2 = DDL_SetInt(&searchState,1,(char *)buffer_00);
+      if (iVar2 != 0) {
         DDL_PrintError("DDL: Error could not set new flag for clan tag feature %s\n");
       }
     }
@@ -1485,46 +1521,47 @@ void __cdecl BG_UnlockablesSetClanTagFeatureNew(int param_1,uint param_2,int par
 
 // 00445FC0  BG_UnlockablesPurchaseClanTagFeature  (bgame/bg_unlockable_items.cpp:1220)
 
-void __cdecl BG_UnlockablesPurchaseClanTagFeature(int param_1,uint param_2)
+void __cdecl BG_UnlockablesPurchaseClanTagFeature(int controllerIndex,uint index)
 
 {
   bool bVar1;
-  char *pcVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_20;
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *nptr;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar2;
+  char *buffer;
+  ddlState_t searchState;
+  char *featureName;
+  int cost;
+  int currentCodPoints;
   
-  bVar1 = BG_UnlockablesIsClanTagFeaturePurchased(param_1,param_2);
+  bVar1 = BG_UnlockablesIsClanTagFeaturePurchased(controllerIndex,index);
   if (!bVar1) {
-    pcVar2 = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_COST);
-    local_c = atoi(pcVar2);
-    local_8 = LiveStats_GetCurrency(param_1);
-    local_10 = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_NAME);
-    if (local_8 < local_c) {
+    nptr = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_COST);
+    cost = atoi(nptr);
+    currentCodPoints = LiveStats_GetCurrency(controllerIndex);
+    featureName = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_NAME);
+    if (currentCodPoints < cost) {
       Com_PrintError(0xf,"Item %s costs %d and you only have %d\n");
     }
-    else if ((local_10 != (char *)0x0) && (*local_10 != '\0')) {
-      iVar6 = 4;
-      pdVar5 = &local_20;
-      pdVar3 = LiveStats_GetRootDDLState();
-      iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-      if (iVar6 == 0) {
+    else if ((featureName != (char *)0x0) && (*featureName != '\0')) {
+      iVar2 = 4;
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+      if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find clan tag feature %s\n");
       }
       else {
-        puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-        iVar6 = DDL_SetInt(&local_20,1,(char *)puVar4);
-        if (iVar6 == 0) {
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+        iVar2 = DDL_SetInt(&searchState,1,(char *)buffer_00);
+        if (iVar2 == 0) {
           DDL_PrintError("DDL: Error could not set purchased flag for clan tag feature %s\n");
         }
         else {
-          local_8 = local_8 - local_c;
-          LiveStats_SpendCurrency(param_1,local_c,POINTSSPENT_UNLOCKABLE_CLANTAG,param_2);
+          currentCodPoints = currentCodPoints - cost;
+          LiveStats_SpendCurrency(controllerIndex,cost,POINTSSPENT_UNLOCKABLE_CLANTAG,index);
         }
       }
     }
@@ -1584,14 +1621,15 @@ void __cdecl BG_InitUnlockables(void)
 
 {
   bool bVar1;
-  int local_8;
+  int numUnlockables;
   
   memset((uchar *)&s_unlockableItems,'\0',0x13e58);
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    bVar1 = BG_UnlockablesBuildItemInfo(local_8,s_unlockableItems.itemTable + local_8);
+  for (numUnlockables = 0; numUnlockables < 0x100; numUnlockables = numUnlockables + 1) {
+    bVar1 = BG_UnlockablesBuildItemInfo(numUnlockables,s_unlockableItems.itemTable + numUnlockables)
+    ;
     if (bVar1) {
       s_unlockableItems.numItems = s_unlockableItems.numItems + 1;
-      s_unlockableItems.maxItem = local_8;
+      s_unlockableItems.maxItem = numUnlockables;
     }
   }
   BG_UnlockablesBuildDefaultClasses();
@@ -1611,49 +1649,54 @@ void __cdecl BG_InitUnlockables(void)
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemAttachmentNumWithAttachPoint(int param_1,int param_2,int param_3)
+int __cdecl
+BG_UnlockablesGetItemAttachmentNumWithAttachPoint
+          (int itemIndex,int attachmentNum,int attachmentPoint)
 
 {
   itemInfo_t *piVar1;
   eAttachmentPoint eVar2;
-  int local_c;
+  int currentAttachment;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
-  if ((piVar1 == (itemInfo_t *)0x0) || (param_2 == 0)) {
-    param_2 = 0;
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
+  if ((piVar1 == (itemInfo_t *)0x0) || (attachmentNum == 0)) {
+    attachmentNum = 0;
   }
-  else if ((param_3 != 0) || (piVar1->numAttachments[0] <= param_2)) {
-    for (local_c = 1; local_c < piVar1->numAttachments[0]; local_c = local_c + 1) {
-      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[local_c]);
-      if ((eVar2 == param_3) && (param_2 = param_2 + -1, param_2 < 1)) {
-        return local_c;
+  else if ((attachmentPoint != 0) || (piVar1->numAttachments[0] <= attachmentNum)) {
+    for (currentAttachment = 1; currentAttachment < piVar1->numAttachments[0];
+        currentAttachment = currentAttachment + 1) {
+      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[currentAttachment]);
+      if ((eVar2 == attachmentPoint) && (attachmentNum = attachmentNum + -1, attachmentNum < 1)) {
+        return currentAttachment;
       }
     }
-    param_2 = 0;
+    attachmentNum = 0;
   }
-  return param_2;
+  return attachmentNum;
 }
 
 
 // 004474E0  BG_UnlockablesGetItemAttachment  (bgame/bg_unlockable_items.cpp:1331)
 
-/* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-eAttachment __cdecl BG_UnlockablesGetItemAttachment(int param_1,int param_2)
+eAttachment __cdecl BG_UnlockablesGetItemAttachment(int itemIndex,int attachmentNum)
 
 {
   itemInfo_t *piVar1;
   eAttachment eVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
-  if ((piVar1 == (itemInfo_t *)0x0) || (param_2 == 0)) {
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
+  if ((piVar1 == (itemInfo_t *)0x0) || (attachmentNum == 0)) {
     eVar2 = ATTACHMENT_NONE;
   }
-  else if (param_2 < piVar1->numAttachments[0]) {
-    eVar2 = piVar1->attachments[param_2];
+  else if (attachmentNum < piVar1->numAttachments[0]) {
+    eVar2 = piVar1->attachments[attachmentNum];
   }
   else {
     Com_PrintWarning(0x11,"Item %s does not have attachment number %d it only has %d attachments\n")
@@ -1667,31 +1710,32 @@ eAttachment __cdecl BG_UnlockablesGetItemAttachment(int param_1,int param_2)
 // 00447550  BG_UnlockablesGetItemAttachmentIndexForAttachmentPoint  (bgame/bg_unlockable_items.cpp:1351)
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
-/* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 int __cdecl
 BG_UnlockablesGetItemAttachmentIndexForAttachmentPoint
-          (int param_1,eAttachment param_2,eAttachmentPoint param_3)
+          (int itemIndex,eAttachment attachment,eAttachmentPoint point)
 
 {
   itemInfo_t *piVar1;
   eAttachmentPoint eVar2;
-  int local_10;
-  int local_8;
+  int index;
+  itemInfo_t *itemInfo;
+  int count;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
-  if ((piVar1 != (itemInfo_t *)0x0) && (param_2 != ATTACHMENT_NONE)) {
-    local_8 = 0;
-    for (local_10 = 0; local_10 < piVar1->numAttachments[0]; local_10 = local_10 + 1) {
-      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[local_10]);
-      if (param_3 == eVar2) {
-        local_8 = local_8 + 1;
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
+  if ((piVar1 != (itemInfo_t *)0x0) && (attachment != ATTACHMENT_NONE)) {
+    count = 0;
+    for (index = 0; index < piVar1->numAttachments[0]; index = index + 1) {
+      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[index]);
+      if (point == eVar2) {
+        count = count + 1;
       }
-      if (piVar1->attachments[local_10] == param_2) {
-        return local_8;
+      if (piVar1->attachments[index] == attachment) {
+        return count;
       }
     }
   }
@@ -1706,13 +1750,14 @@ BG_UnlockablesGetItemAttachmentIndexForAttachmentPoint
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemName(int param_1)
+char * __cdecl BG_UnlockablesGetItemName(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   char *pcVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     pcVar2 = (char *)0x0;
   }
@@ -1730,13 +1775,14 @@ char * __cdecl BG_UnlockablesGetItemName(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemRef(int param_1)
+char * __cdecl BG_UnlockablesGetItemRef(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   char *pcVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     pcVar2 = (char *)0x0;
   }
@@ -1754,13 +1800,14 @@ char * __cdecl BG_UnlockablesGetItemRef(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemCount(int param_1)
+int __cdecl BG_UnlockablesGetItemCount(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = -1;
   }
@@ -1778,13 +1825,14 @@ int __cdecl BG_UnlockablesGetItemCount(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemImage(int param_1)
+char * __cdecl BG_UnlockablesGetItemImage(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   char *pcVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     pcVar2 = (char *)0x0;
   }
@@ -1802,13 +1850,14 @@ char * __cdecl BG_UnlockablesGetItemImage(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemUnlockLevel(int param_1)
+int __cdecl BG_UnlockablesGetItemUnlockLevel(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = 0;
   }
@@ -1826,13 +1875,14 @@ int __cdecl BG_UnlockablesGetItemUnlockLevel(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemUnlockPLevel(int param_1)
+int __cdecl BG_UnlockablesGetItemUnlockPLevel(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = 0;
   }
@@ -1850,13 +1900,14 @@ int __cdecl BG_UnlockablesGetItemUnlockPLevel(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemCost(int param_1)
+int __cdecl BG_UnlockablesGetItemCost(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if ((piVar2 != (itemInfo_t *)0x0) && (bVar1 = BG_UnlockablesAllItemsFree(), !bVar1)) {
     return piVar2->cost;
   }
@@ -1871,13 +1922,14 @@ int __cdecl BG_UnlockablesGetItemCost(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemDualWieldCost(int param_1)
+int __cdecl BG_UnlockablesGetItemDualWieldCost(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if ((piVar2 != (itemInfo_t *)0x0) && (bVar1 = BG_UnlockablesAllItemsFree(), !bVar1)) {
     return piVar2->dwCost;
   }
@@ -1892,13 +1944,14 @@ int __cdecl BG_UnlockablesGetItemDualWieldCost(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemDualWieldIndex(int param_1)
+int __cdecl BG_UnlockablesGetItemDualWieldIndex(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = -1;
   }
@@ -1916,13 +1969,14 @@ int __cdecl BG_UnlockablesGetItemDualWieldIndex(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemDualWieldBaseIndex(int param_1)
+int __cdecl BG_UnlockablesGetItemDualWieldBaseIndex(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = -1;
   }
@@ -1940,13 +1994,14 @@ int __cdecl BG_UnlockablesGetItemDualWieldBaseIndex(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemSellPrice(int param_1)
+int __cdecl BG_UnlockablesGetItemSellPrice(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = 0;
   }
@@ -1967,13 +2022,14 @@ int __cdecl BG_UnlockablesGetItemSellPrice(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemDesc(int param_1)
+char * __cdecl BG_UnlockablesGetItemDesc(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   char *pcVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     pcVar2 = (char *)0x0;
   }
@@ -1991,18 +2047,19 @@ char * __cdecl BG_UnlockablesGetItemDesc(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(int param_1,int param_2)
+int __cdecl BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(int itemIndex,int attachPoint)
 
 {
   itemInfo_t *piVar1;
   int iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = 0;
   }
   else {
-    iVar2 = piVar1->numAttachments[param_2];
+    iVar2 = piVar1->numAttachments[attachPoint];
   }
   return iVar2;
 }
@@ -2010,76 +2067,84 @@ int __cdecl BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(int param_1,int p
 
 // 004478A0  BG_UnlockablesGetNumItemAttachments  (bgame/bg_unlockable_items.cpp:1544)
 
-int __cdecl BG_UnlockablesGetNumItemAttachments(int param_1)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+int __cdecl BG_UnlockablesGetNumItemAttachments(int itemIndex)
 
 {
   int iVar1;
   
-  iVar1 = BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(param_1,0);
+  iVar1 = BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(itemIndex,0);
   return iVar1;
 }
 
 
 // 004478C0  BG_UnlockablesGetNumItemAttachmentsAtPoint  (bgame/bg_unlockable_items.cpp:1549)
 
-/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetNumItemAttachmentsAtPoint(int param_1,eAttachmentPoint param_2)
+int __cdecl BG_UnlockablesGetNumItemAttachmentsAtPoint(int itemIndex,eAttachmentPoint point)
 
 {
   itemInfo_t *piVar1;
   eAttachmentPoint eVar2;
-  int local_10;
-  int local_c;
+  int attachment;
+  int count;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
-    local_c = 0;
+    count = 0;
   }
   else {
-    local_c = 0;
-    for (local_10 = 0; local_10 < piVar1->numAttachments[0]; local_10 = local_10 + 1) {
-      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[local_10]);
-      if (eVar2 == param_2) {
-        local_c = local_c + 1;
+    count = 0;
+    for (attachment = 0; attachment < piVar1->numAttachments[0]; attachment = attachment + 1) {
+      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[attachment]);
+      if (eVar2 == point) {
+        count = count + 1;
       }
     }
   }
-  return local_c;
+  return count;
 }
 
 
 // 00447930  BG_UnlockablesGetItemAttachmentAtPointByIndex  (bgame/bg_unlockable_items.cpp:1567)
 
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
-/* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 eAttachment __cdecl
-BG_UnlockablesGetItemAttachmentAtPointByIndex(int param_1,eAttachmentPoint param_2,int param_3)
+BG_UnlockablesGetItemAttachmentAtPointByIndex
+          (int itemIndex,eAttachmentPoint point,int attachmentIndex)
 
 {
   itemInfo_t *piVar1;
   eAttachmentPoint eVar2;
-  int local_10;
-  int local_c;
+  int attachment;
+  int count;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 != (itemInfo_t *)0x0) {
-    local_c = -1;
-    for (local_10 = 0; local_10 < piVar1->numAttachments[0]; local_10 = local_10 + 1) {
-      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[local_10]);
-      if (eVar2 == param_2) {
-        local_c = local_c + 1;
+    count = -1;
+    for (attachment = 0; attachment < piVar1->numAttachments[0]; attachment = attachment + 1) {
+      eVar2 = BG_GetAttachmentPointIndexFromAttachment(piVar1->attachments[attachment]);
+      if (eVar2 == point) {
+        count = count + 1;
       }
-      if (local_c == param_3) {
-        return piVar1->attachments[local_10];
+      if (count == attachmentIndex) {
+        return piVar1->attachments[attachment];
       }
     }
   }
@@ -2094,13 +2159,14 @@ BG_UnlockablesGetItemAttachmentAtPointByIndex(int param_1,eAttachmentPoint param
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemGroup(int param_1)
+char * __cdecl BG_UnlockablesGetItemGroup(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   char *pcVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     pcVar2 = (char *)0x0;
   }
@@ -2118,13 +2184,14 @@ char * __cdecl BG_UnlockablesGetItemGroup(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-itemGroup_t __cdecl BG_UnlockablesGetItemGroupEnum(int param_1)
+itemGroup_t __cdecl BG_UnlockablesGetItemGroupEnum(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   itemGroup_t iVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     iVar2 = ITEMGROUP_INVALID;
   }
@@ -2137,14 +2204,15 @@ itemGroup_t __cdecl BG_UnlockablesGetItemGroupEnum(int param_1)
 
 // 00447A10  BG_UnlockablesGetLoadoutSlotFromString  (bgame/bg_unlockable_items.cpp:1614)
 
-int __cdecl BG_UnlockablesGetLoadoutSlotFromString(char *param_1)
+int __cdecl BG_UnlockablesGetLoadoutSlotFromString(char *slotName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int loadoutSlot;
   
-  if (param_1 == (char *)0x0) {
+  if (slotName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x64f,0,"%s");
     if (!bVar2) {
@@ -2153,11 +2221,11 @@ int __cdecl BG_UnlockablesGetLoadoutSlotFromString(char *param_1)
       return iVar3;
     }
   }
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((slotName == (char *)0x0) || (*slotName == '\0')) {
     iVar3 = -1;
   }
   else {
-    iVar3 = FindEntryInList(param_1,s_loadoutNames,0x27);
+    iVar3 = FindEntryInList(slotName,s_loadoutNames,0x27);
   }
   return iVar3;
 }
@@ -2165,18 +2233,19 @@ int __cdecl BG_UnlockablesGetLoadoutSlotFromString(char *param_1)
 
 // 00447A80  BG_UnlockablesGetItemLoadoutSlot  (bgame/bg_unlockable_items.cpp:1630)
 
-/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-loadoutSlot_t __cdecl BG_UnlockablesGetItemLoadoutSlot(int param_1)
+loadoutSlot_t __cdecl BG_UnlockablesGetItemLoadoutSlot(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   loadoutSlot_t lVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     lVar2 = LOADOUTSLOT_INVALID;
   }
@@ -2194,23 +2263,24 @@ loadoutSlot_t __cdecl BG_UnlockablesGetItemLoadoutSlot(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemLockedForRank(int param_1,int param_2,int param_3)
+bool __cdecl BG_UnlockablesIsItemLockedForRank(int pLevel,int rank,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
   bool local_c;
+  itemInfo_t *itemInfo;
   
   bVar1 = BG_UnlockablesAllItemsUnlocked();
   if (bVar1) {
     local_c = false;
   }
   else {
-    piVar2 = BG_UnlockablesGetItemInfo(param_3);
+    piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
     if (piVar2 == (itemInfo_t *)0x0) {
       local_c = true;
     }
-    else if ((param_2 < piVar2->unlockLevel) || (param_1 < piVar2->unlockPLevel)) {
+    else if ((rank < piVar2->unlockLevel) || (pLevel < piVar2->unlockPLevel)) {
       local_c = true;
     }
     else {
@@ -2223,16 +2293,21 @@ bool __cdecl BG_UnlockablesIsItemLockedForRank(int param_1,int param_2,int param
 
 // 00447B20  BG_UnlockablesIsItemLocked  (bgame/bg_unlockable_items.cpp:1659)
 
-bool __cdecl BG_UnlockablesIsItemLocked(int param_1,int param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+bool __cdecl BG_UnlockablesIsItemLocked(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
+  int rank;
+  int pLevel;
   
-  iVar2 = LiveStats_GetRank(param_1);
-  iVar3 = LiveStats_GetPrestige(param_1);
-  bVar1 = BG_UnlockablesIsItemLockedForRank(iVar3,iVar2,param_2);
+  rank = LiveStats_GetRank(controllerIndex);
+  pLevel = LiveStats_GetPrestige(controllerIndex);
+  bVar1 = BG_UnlockablesIsItemLockedForRank(pLevel,rank,itemIndex);
   return bVar1;
 }
 
@@ -2244,16 +2319,17 @@ bool __cdecl BG_UnlockablesIsItemLocked(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemDualWieldLocked(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsItemDualWieldLocked(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
+  int rank;
+  int pLevel;
+  int itemIndex_00;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar2 == (itemInfo_t *)0x0) {
     bVar1 = true;
   }
@@ -2261,10 +2337,10 @@ bool __cdecl BG_UnlockablesIsItemDualWieldLocked(int param_1,int param_2)
     bVar1 = true;
   }
   else {
-    iVar5 = piVar2->dwIndex;
-    iVar3 = LiveStats_GetRank(param_1);
-    iVar4 = LiveStats_GetPrestige(param_1);
-    bVar1 = BG_UnlockablesIsItemLockedForRank(iVar4,iVar3,iVar5);
+    itemIndex_00 = piVar2->dwIndex;
+    rank = LiveStats_GetRank(controllerIndex);
+    pLevel = LiveStats_GetPrestige(controllerIndex);
+    bVar1 = BG_UnlockablesIsItemLockedForRank(pLevel,rank,itemIndex_00);
   }
   return bVar1;
 }
@@ -2277,13 +2353,14 @@ bool __cdecl BG_UnlockablesIsItemDualWieldLocked(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemPassive(int param_1)
+bool __cdecl BG_UnlockablesIsItemPassive(int itemIndex)
 
 {
   undefined1 uVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar2 == (itemInfo_t *)0x0) {
     uVar1 = 0;
   }
@@ -2301,13 +2378,14 @@ bool __cdecl BG_UnlockablesIsItemPassive(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesItemHasDualWield(int param_1)
+bool __cdecl BG_UnlockablesItemHasDualWield(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   bool bVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     bVar2 = false;
   }
@@ -2325,13 +2403,14 @@ bool __cdecl BG_UnlockablesItemHasDualWield(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesItemIsDualWield(int param_1)
+bool __cdecl BG_UnlockablesItemIsDualWield(int itemIndex)
 
 {
   itemInfo_t *piVar1;
   bool bVar2;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     bVar2 = false;
   }
@@ -2349,13 +2428,13 @@ bool __cdecl BG_UnlockablesItemIsDualWield(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemValidNotNull(int param_1)
+bool __cdecl BG_UnlockablesIsItemValidNotNull(int itemIndex)
 
 {
   bool bVar1;
   
-  if ((s_unlockableItems.itemTable[param_1].isValid == false) ||
-     (s_unlockableItems.itemTable[param_1].isNullItem != false)) {
+  if ((s_unlockableItems.itemTable[itemIndex].isValid == false) ||
+     (s_unlockableItems.itemTable[itemIndex].isNullItem != false)) {
     bVar1 = false;
   }
   else {
@@ -2372,30 +2451,32 @@ bool __cdecl BG_UnlockablesIsItemValidNotNull(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesSetItemNew(int param_1,int param_2)
+void __cdecl BG_UnlockablesSetItemNew(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar3;
+  char *buffer;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
-  bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
-  if ((!bVar1) && (piVar2 = BG_UnlockablesGetItemInfo(param_2), piVar2 != (itemInfo_t *)0x0)) {
+  bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+  if ((!bVar1) && (piVar2 = BG_UnlockablesGetItemInfo(itemIndex), piVar2 != (itemInfo_t *)0x0)) {
     va("%d");
-    iVar6 = 3;
-    pdVar5 = &local_14;
-    pdVar3 = LiveStats_GetRootDDLState();
-    iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-    if (iVar6 == 0) {
+    iVar3 = 3;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+    if (iVar3 == 0) {
       DDL_PrintError("DDL: Error could not find item %d\n");
     }
     else {
-      puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      DDL_SetInt(&local_14,1,(char *)puVar4);
+      buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      DDL_SetInt(&searchState,1,(char *)buffer_00);
     }
   }
   return;
@@ -2409,36 +2490,38 @@ void __cdecl BG_UnlockablesSetItemNew(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl SV_SetItemNewForClient(char *param_1,int param_2,int param_3,int param_4)
+void __cdecl
+SV_SetItemNewForClient(char *clientBuffer,int itemIndex,int clientRank,int clientPLevel)
 
 {
   code *pcVar1;
   bool bVar2;
   itemInfo_t *piVar3;
-  ddlState_t *pdVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar4;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((clientBuffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x6df,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = BG_UnlockablesIsItemLockedForRank(param_4,param_3,param_2);
-  if ((!bVar2) && (piVar3 = BG_UnlockablesGetItemInfo(param_2), piVar3 != (itemInfo_t *)0x0)) {
+  bVar2 = BG_UnlockablesIsItemLockedForRank(clientPLevel,clientRank,itemIndex);
+  if ((!bVar2) && (piVar3 = BG_UnlockablesGetItemInfo(itemIndex), piVar3 != (itemInfo_t *)0x0)) {
     va("%d");
-    iVar6 = 3;
-    pdVar5 = &local_14;
-    pdVar4 = LiveStats_GetRootDDLState();
-    iVar6 = DDL_MoveTo(pdVar4,pdVar5,iVar6);
-    if (iVar6 == 0) {
+    iVar4 = 3;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+    if (iVar4 == 0) {
       DDL_PrintError("DDL: Error could not find item %d\n");
     }
     else {
-      DDL_SetInt(&local_14,1,param_1);
+      DDL_SetInt(&searchState,1,clientBuffer);
     }
   }
   return;
@@ -2452,46 +2535,48 @@ void __cdecl SV_SetItemNewForClient(char *param_1,int param_2,int param_3,int pa
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemNew(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsItemNew(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  uint uVar5;
-  ddlState_t *pdVar6;
-  int iVar7;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  int iVar4;
+  char *buffer;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
   bVar1 = BG_UnlockablesAllItemsUnlocked();
   if (bVar1) {
     bVar1 = false;
   }
   else {
-    bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
+    bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
     if (bVar1) {
       bVar1 = false;
     }
     else {
-      piVar2 = BG_UnlockablesGetItemInfo(param_2);
+      piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
       if (piVar2 == (itemInfo_t *)0x0) {
         bVar1 = false;
       }
       else {
         va("%d");
-        iVar7 = 3;
-        pdVar6 = &local_14;
-        pdVar3 = LiveStats_GetRootDDLState();
-        iVar7 = DDL_MoveTo(pdVar3,pdVar6,iVar7);
-        if (iVar7 == 0) {
+        iVar4 = 3;
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+        if (iVar4 == 0) {
           DDL_PrintError("DDL: Error could not find item %d\n");
           bVar1 = false;
         }
         else {
-          puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-          uVar5 = DDL_GetInt(&local_14,(char *)puVar4);
-          bVar1 = uVar5 != 0;
+          buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+          uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+          bVar1 = uVar3 != 0;
         }
       }
     }
@@ -2507,23 +2592,25 @@ bool __cdecl BG_UnlockablesIsItemNew(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemGroupNew(int param_1,char *param_2)
+bool __cdecl BG_UnlockablesIsItemGroupNew(int controllerIndex,char *groupName)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   itemGroup_t iVar4;
-  int local_c;
+  itemInfo_t *itemInfo;
+  int itemIndex;
+  int group;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((groupName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x721,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((*param_2 == '\0') &&
+  if ((*groupName == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x722,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2531,16 +2618,16 @@ bool __cdecl BG_UnlockablesIsItemGroupNew(int param_1,char *param_2)
     return (bool)uVar3;
   }
   bVar2 = BG_UnlockablesAllItemsUnlocked();
-  if (((!bVar2) && (param_2 != (char *)0x0)) && (*param_2 != '\0')) {
-    iVar4 = FindEntryInList(param_2,s_itemGroupNames,0x18);
+  if (((!bVar2) && (groupName != (char *)0x0)) && (*groupName != '\0')) {
+    iVar4 = FindEntryInList(groupName,s_itemGroupNames,0x18);
     if (iVar4 == ITEMGROUP_INVALID) {
       Com_PrintError(0xf,"Item Group %s not found\n");
       return false;
     }
-    for (local_c = 0; local_c <= s_unlockableItems.maxItem; local_c = local_c + 1) {
-      if (((s_unlockableItems.itemTable[local_c].isValid != false) &&
-          (s_unlockableItems.itemTable[local_c].group == iVar4)) &&
-         (bVar2 = BG_UnlockablesIsItemNew(param_1,local_c), bVar2)) {
+    for (itemIndex = 0; itemIndex <= s_unlockableItems.maxItem; itemIndex = itemIndex + 1) {
+      if (((s_unlockableItems.itemTable[itemIndex].isValid != false) &&
+          (s_unlockableItems.itemTable[itemIndex].group == iVar4)) &&
+         (bVar2 = BG_UnlockablesIsItemNew(controllerIndex,itemIndex), bVar2)) {
         return true;
       }
     }
@@ -2551,29 +2638,31 @@ bool __cdecl BG_UnlockablesIsItemGroupNew(int param_1,char *param_2)
 
 // 00448120  BG_UnlockablesSetItemPurchased  (bgame/bg_unlockable_items.cpp:1861)
 
-bool __cdecl BG_UnlockablesSetItemPurchased(int param_1,int param_2,bool param_3)
+bool __cdecl BG_UnlockablesSetItemPurchased(int controllerIndex,int itemIndex,bool isPurchased)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  uchar *puVar3;
-  ddlState_t *pdVar4;
-  int iVar5;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar2;
+  char *buffer;
+  int purchasedFlag;
+  ddlState_t searchState;
   
   va("%d");
-  iVar5 = 3;
-  pdVar4 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
-  if (iVar5 == 0) {
+  iVar2 = 3;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
     DDL_PrintError("DDL: Error could not find item %d\n");
     bVar1 = false;
   }
   else {
-    puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    iVar5 = DDL_SetInt(&local_14,(uint)param_3,(char *)puVar3);
-    if (iVar5 == 0) {
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    iVar2 = DDL_SetInt(&searchState,(uint)isPurchased,(char *)buffer_00);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not set purchased flag for item %d\n");
       bVar1 = false;
     }
@@ -2587,31 +2676,34 @@ bool __cdecl BG_UnlockablesSetItemPurchased(int param_1,int param_2,bool param_3
 
 // 00448000  BG_UnlockablesPurchaseItem  (bgame/bg_unlockable_items.cpp:1884)
 
+/* WARNING: Variable defined which should be unmapped: itemInfo */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesPurchaseItem(int param_1,int param_2,int param_3)
+void __cdecl BG_UnlockablesPurchaseItem(int controllerIndex,int itemIndex,int cost)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
   int iVar3;
+  itemInfo_t *itemInfo;
+  int currentCodPoints;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
   if (bVar1) {
     Com_PrintError(0xf,"Item %s is already purchased.\n");
   }
   else if (piVar2 != (itemInfo_t *)0x0) {
-    bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
+    bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
     if (bVar1) {
       Com_PrintError(0xf,"Item %s is locked for the current level\n");
     }
     else {
-      iVar3 = LiveStats_GetCurrency(param_1);
-      if (iVar3 < param_3) {
+      iVar3 = LiveStats_GetCurrency(controllerIndex);
+      if (iVar3 < cost) {
         Com_PrintError(0xf,"Item %s costs %d and you only have %d\n");
       }
       else {
@@ -2619,9 +2711,9 @@ void __cdecl BG_UnlockablesPurchaseItem(int param_1,int param_2,int param_3)
           LiveCounter_IncrementCounterValueByName
                     ("global_purchasedfacepaint",ZEXT48(piVar2) << 0x20);
         }
-        bVar1 = BG_UnlockablesSetItemPurchased(param_1,param_2,true);
+        bVar1 = BG_UnlockablesSetItemPurchased(controllerIndex,itemIndex,true);
         if (bVar1) {
-          LiveStats_SpendCurrency(param_1,param_3,POINTSSPENT_UNLOCKABLE_ITEM,param_2);
+          LiveStats_SpendCurrency(controllerIndex,cost,POINTSSPENT_UNLOCKABLE_ITEM,itemIndex);
         }
       }
     }
@@ -2638,62 +2730,66 @@ void __cdecl BG_UnlockablesPurchaseItem(int param_1,int param_2,int param_3)
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "customClass_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesSellItem(int param_1,int param_2)
+void __cdecl BG_UnlockablesSellItem(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  uchar *puVar3;
-  ddlState_t *pdVar4;
-  char *pcVar5;
-  char *pcVar6;
-  ddlState_t *pdVar7;
-  int iVar8;
-  loadoutSlot_t local_28;
-  customClass_t local_24;
-  int local_20;
-  ddlState_t local_14;
+  uchar *buffer_00;
+  ddlState_t *searchState_00;
+  char *customClassName_00;
+  char *slotName;
+  ddlState_t *resultState;
+  int iVar3;
+  char *customClassName;
+  char *loadoutName;
+  int loadoutSlot;
+  int classIndex;
+  int sellBackAmount;
+  char *buffer;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
   if (bVar1) {
     if (piVar2 != (itemInfo_t *)0x0) {
-      bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
+      bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
       if (bVar1) {
         Com_PrintError(0xf,"Item %s is locked for the current level\n");
       }
       else {
-        puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
         va("%d");
-        iVar8 = 3;
-        pdVar7 = &local_14;
-        pdVar4 = LiveStats_GetRootDDLState();
-        iVar8 = DDL_MoveTo(pdVar4,pdVar7,iVar8);
-        if (iVar8 == 0) {
+        iVar3 = 3;
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+        if (iVar3 == 0) {
           DDL_PrintError("DDL: Error could not find item %d\n");
         }
         else {
-          iVar8 = DDL_SetInt(&local_14,0,(char *)puVar3);
-          if (iVar8 == 0) {
+          iVar3 = DDL_SetInt(&searchState,0,(char *)buffer_00);
+          if (iVar3 == 0) {
             DDL_PrintError("DDL: Error could not clear purchased flag for item %d\n");
           }
           else {
-            local_20 = 0;
+            sellBackAmount = 0;
             if ((itemSellFactor != (dvar_s *)0x0) && ((itemSellFactor->current).enabled != false)) {
-              local_20 = (int)((float)piVar2->cost * (itemSellFactor->current).value);
+              sellBackAmount = (int)((float)piVar2->cost * (itemSellFactor->current).value);
             }
-            LiveStats_SpendCurrency(param_1,-local_20,POINTSSPENT_UNLOCKABLE_SELL,param_2);
-            for (local_24 = CUSTOM_CLASS_1; (int)local_24 < 10; local_24 = local_24 + CUSTOM_CLASS_2
-                ) {
-              for (local_28 = LOADOUTSLOT_FIRST; (int)local_28 < 0x23;
-                  local_28 = local_28 + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-                pcVar5 = BG_UnlockablesGetCustomClassName(local_24);
-                if (((pcVar5 != (char *)0x0) &&
-                    (pcVar6 = BG_UnlockablesGetLoadoutName(local_28), pcVar6 != (char *)0x0)) &&
-                   (iVar8 = BG_UnlockablesGetEquippedItemInSlot(param_1,pcVar5,pcVar6),
-                   param_2 == iVar8)) {
-                  iVar8 = BG_UnlockablesGetActualDefaultItem(local_28);
-                  BG_UnlockablesEquipClassToSlot(param_1,pcVar5,iVar8,pcVar6);
+            LiveStats_SpendCurrency
+                      (controllerIndex,-sellBackAmount,POINTSSPENT_UNLOCKABLE_SELL,itemIndex);
+            for (classIndex = 0; classIndex < 10; classIndex = classIndex + 1) {
+              for (loadoutSlot = 0; loadoutSlot < 0x23; loadoutSlot = loadoutSlot + 1) {
+                customClassName_00 = BG_UnlockablesGetCustomClassName(classIndex);
+                if (((customClassName_00 != (char *)0x0) &&
+                    (slotName = BG_UnlockablesGetLoadoutName(loadoutSlot), slotName != (char *)0x0))
+                   && (iVar3 = BG_UnlockablesGetEquippedItemInSlot
+                                         (controllerIndex,customClassName_00,slotName),
+                      itemIndex == iVar3)) {
+                  iVar3 = BG_UnlockablesGetActualDefaultItem(loadoutSlot);
+                  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName_00,iVar3,slotName);
                 }
               }
             }
@@ -2716,23 +2812,25 @@ void __cdecl BG_UnlockablesSellItem(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemPurchasedFromBuffer(uchar *param_1,int param_2)
+bool __cdecl BG_UnlockablesIsItemPurchasedFromBuffer(uchar *statsBuffer,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  ddlState_t *pdVar3;
-  uint uVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  int iVar4;
+  char *buffer;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    piVar2 = BG_UnlockablesGetItemInfo(param_2);
+    piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
     if (piVar2 == (itemInfo_t *)0x0) {
       bVar1 = false;
     }
@@ -2741,17 +2839,17 @@ bool __cdecl BG_UnlockablesIsItemPurchasedFromBuffer(uchar *param_1,int param_2)
     }
     else {
       va("%d");
-      iVar6 = 3;
-      pdVar5 = &local_14;
-      pdVar3 = LiveStats_GetRootDDLState();
-      iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-      if (iVar6 == 0) {
+      iVar4 = 3;
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Error could not find item %d\n");
         bVar1 = false;
       }
       else {
-        uVar4 = DDL_GetInt(&local_14,(char *)param_1);
-        bVar1 = uVar4 != 0;
+        uVar3 = DDL_GetInt(&searchState,(char *)statsBuffer);
+        bVar1 = uVar3 != 0;
       }
     }
   }
@@ -2761,18 +2859,26 @@ bool __cdecl BG_UnlockablesIsItemPurchasedFromBuffer(uchar *param_1,int param_2)
 
 // 004483E0  BG_UnlockablesSetPurchasedBits  (bgame/bg_unlockable_items.cpp:2031)
 
-void __cdecl BG_UnlockablesSetPurchasedBits(uchar *param_1,uchar *param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl BG_UnlockablesSetPurchasedBits(uchar *statsBuffer,uchar *purchasedItems)
 
 {
   bool bVar1;
-  int local_8;
+  int byteOffset;
+  int bitOffset;
+  int itemIndex;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    bVar1 = BG_UnlockablesIsItemValidNotNull(local_8);
+  for (itemIndex = 0; itemIndex < 0x100; itemIndex = itemIndex + 1) {
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemIndex);
     if (bVar1) {
-      bVar1 = BG_UnlockablesIsItemPurchasedFromBuffer(param_1,local_8);
+      bVar1 = BG_UnlockablesIsItemPurchasedFromBuffer(statsBuffer,itemIndex);
       if (bVar1) {
-        param_2[local_8 >> 3] = param_2[local_8 >> 3] | (byte)(1 << ((byte)local_8 & 7));
+        purchasedItems[itemIndex >> 3] =
+             purchasedItems[itemIndex >> 3] | (byte)(1 << ((byte)itemIndex & 7));
       }
     }
   }
@@ -2782,24 +2888,29 @@ void __cdecl BG_UnlockablesSetPurchasedBits(uchar *param_1,uchar *param_2)
 
 // 00448510  BG_UnlockablesIsItemPurchased  (bgame/bg_unlockable_items.cpp:2044)
 
-bool __cdecl BG_UnlockablesIsItemPurchased(int param_1,int param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+bool __cdecl BG_UnlockablesIsItemPurchased(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *statsBuffer;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
+    bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
     if (bVar1) {
       bVar1 = false;
     }
     else {
-      puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      bVar1 = BG_UnlockablesIsItemPurchasedFromBuffer(puVar2,param_2);
+      statsBuffer = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      bVar1 = BG_UnlockablesIsItemPurchasedFromBuffer(statsBuffer,itemIndex);
     }
   }
   return bVar1;
@@ -2813,24 +2924,26 @@ bool __cdecl BG_UnlockablesIsItemPurchased(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemDualWieldPurchased(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsItemDualWieldPurchased(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  uint uVar5;
-  ddlState_t *pdVar6;
-  int iVar7;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  int iVar4;
+  char *buffer;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    piVar2 = BG_UnlockablesGetItemInfo(param_2);
+    piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
     if (piVar2 == (itemInfo_t *)0x0) {
       bVar1 = false;
     }
@@ -2838,7 +2951,7 @@ bool __cdecl BG_UnlockablesIsItemDualWieldPurchased(int param_1,int param_2)
       bVar1 = false;
     }
     else {
-      bVar1 = BG_UnlockablesIsItemLocked(param_1,piVar2->dwIndex);
+      bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,piVar2->dwIndex);
       if (bVar1) {
         bVar1 = false;
       }
@@ -2847,18 +2960,18 @@ bool __cdecl BG_UnlockablesIsItemDualWieldPurchased(int param_1,int param_2)
       }
       else {
         va("%d");
-        iVar7 = 3;
-        pdVar6 = &local_14;
-        pdVar3 = LiveStats_GetRootDDLState();
-        iVar7 = DDL_MoveTo(pdVar3,pdVar6,iVar7);
-        if (iVar7 == 0) {
+        iVar4 = 3;
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+        if (iVar4 == 0) {
           DDL_PrintError("DDL: Error could not find item %d\n");
           bVar1 = false;
         }
         else {
-          puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-          uVar5 = DDL_GetInt(&local_14,(char *)puVar4);
-          bVar1 = uVar5 != 0;
+          buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+          uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+          bVar1 = uVar3 != 0;
         }
       }
     }
@@ -2869,26 +2982,28 @@ bool __cdecl BG_UnlockablesIsItemDualWieldPurchased(int param_1,int param_2)
 
 // 004489E0  BG_UnlockablesIsItemAttachmentValid  (bgame/bg_unlockable_items.cpp:2102)
 
-/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesIsItemAttachmentValid(itemInfo_t *param_1,char *param_2)
+int __cdecl BG_UnlockablesIsItemAttachmentValid(itemInfo_t *itemInfo,char *attachmentString)
 
 {
-  char **ppcVar1;
-  eAttachment eVar2;
-  int iVar3;
-  int local_c;
+  char **textArray;
+  eAttachment eVar1;
+  int numEntries;
+  int numAttachments;
+  eAttachment attachment;
   
-  iVar3 = 0x18;
-  ppcVar1 = BG_GetAttachmentNames();
-  eVar2 = FindEntryInList(param_2,ppcVar1,iVar3);
-  if (eVar2 != ~ATTACHMENT_NONE) {
-    for (local_c = 0; local_c < param_1->numAttachments[0]; local_c = local_c + 1) {
-      if (param_1->attachments[local_c] == eVar2) {
-        return local_c;
+  numEntries = 0x18;
+  textArray = BG_GetAttachmentNames();
+  eVar1 = FindEntryInList(attachmentString,textArray,numEntries);
+  if (eVar1 != ~ATTACHMENT_NONE) {
+    for (numAttachments = 0; numAttachments < itemInfo->numAttachments[0];
+        numAttachments = numAttachments + 1) {
+      if (itemInfo->attachments[numAttachments] == eVar1) {
+        return numAttachments;
       }
     }
   }
@@ -2899,94 +3014,113 @@ int __cdecl BG_UnlockablesIsItemAttachmentValid(itemInfo_t *param_1,char *param_
 // 00448660  BG_UnlockablesGetItemAttachmentDisplayName  (bgame/bg_unlockable_items.cpp:2119)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemAttachmentDisplayName(int param_1,int param_2)
+char * __cdecl BG_UnlockablesGetItemAttachmentDisplayName(int itemIndex,int attachmentNum)
 
 {
-  eAttachment eVar1;
-  char *pcVar2;
+  eAttachment attachment_00;
+  char *pcVar1;
+  eAttachment attachment;
   
-  eVar1 = BG_UnlockablesGetItemAttachment(param_1,param_2);
-  pcVar2 = BG_GetAttachmentDisplayName(eVar1);
-  return pcVar2;
+  attachment_00 = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+  pcVar1 = BG_GetAttachmentDisplayName(attachment_00);
+  return pcVar1;
 }
 
 
 // 00448690  BG_UnlockablesGetItemAttachmentDesc  (bgame/bg_unlockable_items.cpp:2133)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemAttachmentDesc(int param_1,int param_2)
+char * __cdecl BG_UnlockablesGetItemAttachmentDesc(int itemIndex,int attachmentNum)
 
 {
-  eAttachment eVar1;
-  char *pcVar2;
+  eAttachment attachment_00;
+  char *pcVar1;
+  eAttachment attachment;
   
-  eVar1 = BG_UnlockablesGetItemAttachment(param_1,param_2);
-  pcVar2 = BG_GetAttachmentDesc(eVar1);
-  return pcVar2;
+  attachment_00 = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+  pcVar1 = BG_GetAttachmentDesc(attachment_00);
+  return pcVar1;
 }
 
 
 // 004486C0  BG_UnlockablesGetItemAttachmentCost  (bgame/bg_unlockable_items.cpp:2140)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemAttachmentCost(int param_1,int param_2)
+int __cdecl BG_UnlockablesGetItemAttachmentCost(int itemIndex,int attachmentNum)
 
 {
-  eAttachment eVar1;
-  int iVar2;
+  eAttachment attachment_00;
+  int iVar1;
+  eAttachment attachment;
   
-  eVar1 = BG_UnlockablesGetItemAttachment(param_1,param_2);
-  iVar2 = BG_GetAttachmentCost(eVar1);
-  return iVar2;
+  attachment_00 = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+  iVar1 = BG_GetAttachmentCost(attachment_00);
+  return iVar1;
 }
 
 
 // 004486F0  BG_UnlockablesGetItemAttachmentRef  (bgame/bg_unlockable_items.cpp:2147)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl BG_UnlockablesGetItemAttachmentRef(int param_1,int param_2)
+char * __cdecl BG_UnlockablesGetItemAttachmentRef(int itemIndex,int attachmentNum)
 
 {
-  eAttachment eVar1;
-  char *pcVar2;
+  eAttachment attachment_00;
+  char *pcVar1;
+  eAttachment attachment;
   
-  eVar1 = BG_UnlockablesGetItemAttachment(param_1,param_2);
-  pcVar2 = BG_GetAttachmentReference(eVar1);
-  return pcVar2;
+  attachment_00 = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+  pcVar1 = BG_GetAttachmentReference(attachment_00);
+  return pcVar1;
 }
 
 
 // 00448BD0  BG_UnlockablesSetItemAttachmentPurchased  (bgame/bg_unlockable_items.cpp:2154)
 
 bool __cdecl
-BG_UnlockablesSetItemAttachmentPurchased(int param_1,int param_2,int param_3,bool param_4)
+BG_UnlockablesSetItemAttachmentPurchased
+          (int controllerIndex,int itemIndex,int attachmentNum,bool isPurchased)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  uchar *puVar3;
-  ddlState_t *pdVar4;
-  int iVar5;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar2;
+  char *buffer;
+  int purchaseFlag;
+  ddlState_t searchState;
   
   va("%d");
   va("%d");
-  iVar5 = 4;
-  pdVar4 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
-  if (iVar5 == 0) {
+  iVar2 = 4;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
     DDL_PrintError("DDL: Error could not find item %d attachment %d\n");
     bVar1 = false;
   }
   else {
-    puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    iVar5 = DDL_SetInt(&local_14,(uint)param_4,(char *)puVar3);
-    if (iVar5 == 0) {
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    iVar2 = DDL_SetInt(&searchState,(uint)isPurchased,(char *)buffer_00);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not set purchased flag for item %d attachment %d\n");
       bVar1 = false;
     }
@@ -3000,45 +3134,48 @@ BG_UnlockablesSetItemAttachmentPurchased(int param_1,int param_2,int param_3,boo
 
 // 00448C90  BG_UnlockablesSetAttachmentPurchased  (bgame/bg_unlockable_items.cpp:2177)
 
-bool __cdecl BG_UnlockablesSetAttachmentPurchased(int param_1,char *param_2,bool param_3)
+bool __cdecl
+BG_UnlockablesSetAttachmentPurchased(int controllerIndex,char *attachmentRef,bool isPurchased)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  ddlState_t *pdVar6;
-  int iVar7;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar4;
+  int purchaseFlag;
+  char *buffer;
+  ddlState_t searchState;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((attachmentRef == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x882,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 != (char *)0x0) {
-    iVar7 = 2;
-    pdVar6 = &local_14;
-    pdVar4 = LiveStats_GetRootDDLState();
-    iVar7 = DDL_MoveTo(pdVar4,pdVar6,iVar7);
-    if (iVar7 == 0) {
+  if (attachmentRef != (char *)0x0) {
+    iVar4 = 2;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+    if (iVar4 == 0) {
       DDL_PrintError("DDL: Error could not find attachment %s\n");
       return false;
     }
-    puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    if ((puVar5 == (uchar *)0x0) &&
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    if ((buffer_00 == (uchar *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x890,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (puVar5 != (uchar *)0x0) {
-      iVar7 = DDL_SetInt(&local_14,(uint)param_3,(char *)puVar5);
-      if (iVar7 == 0) {
+    if (buffer_00 != (uchar *)0x0) {
+      iVar4 = DDL_SetInt(&searchState,(uint)isPurchased,(char *)buffer_00);
+      if (iVar4 == 0) {
         DDL_PrintError("DDL: Error could not set purchased flag for attachment %s\n");
         return false;
       }
@@ -3051,46 +3188,47 @@ bool __cdecl BG_UnlockablesSetAttachmentPurchased(int param_1,char *param_2,bool
 
 // 00448720  BG_UnlockablesGetAttachmentPurchased  (bgame/bg_unlockable_items.cpp:2212)
 
-bool __cdecl BG_UnlockablesGetAttachmentPurchased(int param_1,char *param_2)
+bool __cdecl BG_UnlockablesGetAttachmentPurchased(int controllerIndex,char *attachmentRef)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  uint uVar6;
-  ddlState_t *pdVar7;
-  int iVar8;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar4;
+  ddlState_t *resultState;
+  int iVar5;
+  char *buffer;
+  ddlState_t searchState;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((attachmentRef == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x8a5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 != (char *)0x0) {
-    iVar8 = 2;
-    pdVar7 = &local_14;
-    pdVar4 = LiveStats_GetRootDDLState();
-    iVar8 = DDL_MoveTo(pdVar4,pdVar7,iVar8);
-    if (iVar8 == 0) {
+  if (attachmentRef != (char *)0x0) {
+    iVar5 = 2;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar5 = DDL_MoveTo(searchState_00,resultState,iVar5);
+    if (iVar5 == 0) {
       DDL_PrintError("DDL: Error could not find attachment %s\n");
       return false;
     }
-    puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    if ((puVar5 == (uchar *)0x0) &&
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    if ((buffer_00 == (uchar *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x8b3,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (puVar5 != (uchar *)0x0) {
-      uVar6 = DDL_GetInt(&local_14,(char *)puVar5);
-      return (bool)('\x01' - (uVar6 != 1));
+    if (buffer_00 != (uchar *)0x0) {
+      uVar4 = DDL_GetInt(&searchState,(char *)buffer_00);
+      return (bool)('\x01' - (uVar4 != 1));
     }
   }
   return false;
@@ -3099,51 +3237,59 @@ bool __cdecl BG_UnlockablesGetAttachmentPurchased(int param_1,char *param_2)
 
 // 00448A40  BG_UnlockablesPurchaseItemAttachment  (bgame/bg_unlockable_items.cpp:2239)
 
-/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
-/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesPurchaseItemAttachment(int param_1,int param_2,int param_3)
+void __cdecl
+BG_UnlockablesPurchaseItemAttachment(int controllerIndex,int itemIndex,int attachmentNum)
 
 {
   code *pcVar1;
   bool bVar2;
   itemInfo_t *piVar3;
   int iVar4;
-  eAttachment eVar5;
-  AttachmentTableEntry *pAVar6;
+  eAttachment index;
+  AttachmentTableEntry *pAVar5;
+  AttachmentTableEntry *attachmentInfo;
+  eAttachment attachment;
+  itemInfo_t *itemInfo;
+  int currentCodPoints;
   
-  bVar2 = BG_UnlockablesIsItemLocked(param_1,param_2);
-  if (((!bVar2) && (bVar2 = BG_UnlockablesIsItemPurchased(param_1,param_2), bVar2)) &&
-     (piVar3 = BG_UnlockablesGetItemInfo(param_2), piVar3 != (itemInfo_t *)0x0)) {
-    bVar2 = BG_UnlockablesIsItemAttachmentPurchased(param_1,param_2,param_3);
+  bVar2 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+  if (((!bVar2) && (bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex), bVar2)) &&
+     (piVar3 = BG_UnlockablesGetItemInfo(itemIndex), piVar3 != (itemInfo_t *)0x0)) {
+    bVar2 = BG_UnlockablesIsItemAttachmentPurchased(controllerIndex,itemIndex,attachmentNum);
     if (bVar2) {
       Com_PrintError(0xf,"Attachment num %d is already purchased for item %s\n");
     }
     else {
-      iVar4 = LiveStats_GetCurrency(param_1);
-      eVar5 = BG_UnlockablesGetItemAttachment(param_2,param_3);
-      pAVar6 = BG_GetAttachmentTableEntry(eVar5);
-      if ((pAVar6 == (AttachmentTableEntry *)0x0) &&
+      iVar4 = LiveStats_GetCurrency(controllerIndex);
+      index = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+      pAVar5 = BG_GetAttachmentTableEntry(index);
+      if ((pAVar5 == (AttachmentTableEntry *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0x8d6,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (pAVar6 != (AttachmentTableEntry *)0x0) {
-        if (iVar4 < (pAVar6->values).cost) {
-          BG_GetAttachmentName(param_3);
+      if (pAVar5 != (AttachmentTableEntry *)0x0) {
+        if (iVar4 < (pAVar5->values).cost) {
+          BG_GetAttachmentName(attachmentNum);
           Com_PrintError(0xf,"Item attachment %s costs %d and you only have %d\n");
         }
         else {
-          bVar2 = BG_UnlockablesSetItemAttachmentPurchased(param_1,param_2,param_3,true);
+          bVar2 = BG_UnlockablesSetItemAttachmentPurchased
+                            (controllerIndex,itemIndex,attachmentNum,true);
           if (bVar2) {
             LiveStats_SpendCurrency
-                      (param_1,(pAVar6->values).cost,POINTSSPENT_UNLOCKABLE_ATTACHMENT,param_3);
-            BG_UnlockablesSetAttachmentPurchased(param_1,(pAVar6->values).referenceName,true);
+                      (controllerIndex,(pAVar5->values).cost,POINTSSPENT_UNLOCKABLE_ATTACHMENT,
+                       attachmentNum);
+            BG_UnlockablesSetAttachmentPurchased
+                      (controllerIndex,(pAVar5->values).referenceName,true);
           }
         }
       }
@@ -3155,71 +3301,73 @@ void __cdecl BG_UnlockablesPurchaseItemAttachment(int param_1,int param_2,int pa
 
 // 00448800  BG_UnlockablesPurchaseItemAttachmentPoint  (bgame/bg_unlockable_items.cpp:2283)
 
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
-/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesPurchaseItemAttachmentPoint(int param_1,int param_2,char *param_3)
+void __cdecl
+BG_UnlockablesPurchaseItemAttachmentPoint(int controllerIndex,int itemIndex,char *attachmentPoint)
 
 {
   code *pcVar1;
   bool bVar2;
-  ddlState_t *pdVar3;
-  uchar *puVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_24;
-  AttachmentPointTableEntry *local_14;
-  itemInfo_t *local_10;
-  eAttachmentPoint local_c;
-  int local_8;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar3;
+  char *buffer;
+  ddlState_t searchState;
+  AttachmentPointTableEntry *attachmentPointInfo;
+  itemInfo_t *itemInfo;
+  eAttachmentPoint attachmentPoinNum;
+  int currentCodPoints;
   
-  bVar2 = BG_UnlockablesIsItemLocked(param_1,param_2);
-  if (((!bVar2) && (bVar2 = BG_UnlockablesIsItemPurchased(param_1,param_2), bVar2)) &&
-     (local_10 = BG_UnlockablesGetItemInfo(param_2), local_10 != (itemInfo_t *)0x0)) {
-    bVar2 = BG_UnlockablesIsItemAttachmentPointPurchased(param_1,param_2,param_3);
+  bVar2 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+  if (((!bVar2) && (bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex), bVar2)) &&
+     (itemInfo = BG_UnlockablesGetItemInfo(itemIndex), itemInfo != (itemInfo_t *)0x0)) {
+    bVar2 = BG_UnlockablesIsItemAttachmentPointPurchased(controllerIndex,itemIndex,attachmentPoint);
     if (bVar2) {
       Com_PrintError(0xf,"Attachment point %s is already purchased for item %s\n");
     }
     else {
-      local_8 = LiveStats_GetCurrency(param_1);
-      local_c = BG_GetAttachmentPointIndex(param_3);
-      local_14 = BG_GetAttachmentPointTableEntry(local_c);
-      if ((local_14 == (AttachmentPointTableEntry *)0x0) &&
+      currentCodPoints = LiveStats_GetCurrency(controllerIndex);
+      attachmentPoinNum = BG_GetAttachmentPointIndex(attachmentPoint);
+      attachmentPointInfo = BG_GetAttachmentPointTableEntry(attachmentPoinNum);
+      if ((attachmentPointInfo == (AttachmentPointTableEntry *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0x902,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_14 != (AttachmentPointTableEntry *)0x0) {
-        if (local_8 < (local_14->values).cost) {
+      if (attachmentPointInfo != (AttachmentPointTableEntry *)0x0) {
+        if (currentCodPoints < (attachmentPointInfo->values).cost) {
           Com_PrintError(0xf,"Item attachment point %s costs %d and you only have %d\n");
         }
         else {
-          local_8 = local_8 - (local_14->values).cost;
+          currentCodPoints = currentCodPoints - (attachmentPointInfo->values).cost;
           va("%d");
-          iVar6 = 4;
-          pdVar5 = &local_24;
-          pdVar3 = LiveStats_GetRootDDLState();
-          iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-          if (iVar6 == 0) {
+          iVar3 = 4;
+          resultState = &searchState;
+          searchState_00 = LiveStats_GetRootDDLState();
+          iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+          if (iVar3 == 0) {
             DDL_PrintError("DDL: Error could not find item %d attachment point %s\n");
           }
           else {
-            puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-            iVar6 = DDL_SetInt(&local_24,1,(char *)puVar4);
-            if (iVar6 == 0) {
+            buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+            iVar3 = DDL_SetInt(&searchState,1,(char *)buffer_00);
+            if (iVar3 == 0) {
               DDL_PrintError(
                             "DDL: Error could not set purchased flag for item %d attachment point %s\n"
                             );
             }
             else {
               LiveStats_SpendCurrency
-                        (param_1,(local_14->values).cost,POINTSSPENT_UNLOCKABLE_ATTACHMENT_POINT,
-                         param_2);
+                        (controllerIndex,(attachmentPointInfo->values).cost,
+                         POINTSSPENT_UNLOCKABLE_ATTACHMENT_POINT,itemIndex);
             }
           }
         }
@@ -3231,6 +3379,12 @@ void __cdecl BG_UnlockablesPurchaseItemAttachmentPoint(int param_1,int param_2,c
 
 
 // 0044BCE0  BG_UnlockablesPurchaseCurrentItemAttachmentCmd  (bgame/bg_unlockable_items.cpp:2339)
+
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesPurchaseCurrentItemAttachmentCmd(void)
 
@@ -3257,6 +3411,11 @@ void __cdecl BG_UnlockablesPurchaseItemAttachmentPointCmd(void)
   char *pcVar2;
   itemInfo_t *piVar3;
   eAttachmentPoint eVar4;
+  int controllerIndex;
+  itemInfo_t *itemInfo;
+  char *attachmentPoint;
+  int attachmentPointNum;
+  int itemIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -3283,44 +3442,55 @@ void __cdecl BG_UnlockablesPurchaseItemAttachmentPointCmd(void)
 
 // 0044BE50  BG_UnlockablesPurchaseCurrentItemCmd  (bgame/bg_unlockable_items.cpp:2376)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl BG_UnlockablesPurchaseCurrentItemCmd(void)
 
 {
-  int iVar1;
+  int cost;
   
-  iVar1 = BG_UnlockablesGetItemCost(DAT_098c38f8);
-  BG_UnlockablesPurchaseItem(0,DAT_098c38f8,iVar1);
+  cost = BG_UnlockablesGetItemCost(DAT_098c38f8);
+  BG_UnlockablesPurchaseItem(0,DAT_098c38f8,cost);
   return;
 }
 
 
 // 0044BE80  BG_UnlockablesPurchaseItemCmd  (bgame/bg_unlockable_items.cpp:2381)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl BG_UnlockablesPurchaseItemCmd(void)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  int iVar4;
+  char *nptr;
+  int iVar3;
+  int itemIndex;
   
   iVar2 = Cmd_Argc();
   if (iVar2 < 2) {
     Com_PrintError(0xf,"purchaseitem usage: purchaseitem <itemindex>\n");
   }
   else {
-    pcVar3 = Cmd_Argv(1);
-    iVar2 = atoi(pcVar3);
+    nptr = Cmd_Argv(1);
+    iVar2 = atoi(nptr);
     if (iVar2 != -1) {
       bVar1 = BG_UnlockablesItemIsDualWield(iVar2);
       if (bVar1) {
-        iVar4 = BG_UnlockablesGetItemDualWieldBaseIndex(iVar2);
-        iVar4 = BG_UnlockablesGetItemDualWieldCost(iVar4);
-        BG_UnlockablesPurchaseItem(0,iVar2,iVar4);
+        iVar3 = BG_UnlockablesGetItemDualWieldBaseIndex(iVar2);
+        iVar3 = BG_UnlockablesGetItemDualWieldCost(iVar3);
+        BG_UnlockablesPurchaseItem(0,iVar2,iVar3);
       }
       else {
-        iVar4 = BG_UnlockablesGetItemCost(iVar2);
-        BG_UnlockablesPurchaseItem(0,iVar2,iVar4);
+        iVar3 = BG_UnlockablesGetItemCost(iVar2);
+        BG_UnlockablesPurchaseItem(0,iVar2,iVar3);
       }
     }
   }
@@ -3329,6 +3499,11 @@ void __cdecl BG_UnlockablesPurchaseItemCmd(void)
 
 
 // 0044BF20  BG_UnlockablesSellCurrentItemCmd  (bgame/bg_unlockable_items.cpp:2401)
+
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesSellCurrentItemCmd(void)
 
@@ -3346,51 +3521,54 @@ void __cdecl BG_UnlockablesSellCurrentItemCmd(void)
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemAttachmentPointPurchased(int param_1,int param_2,char *param_3)
+bool __cdecl
+BG_UnlockablesIsItemAttachmentPointPurchased
+          (int controllerIndex,int itemIndex,char *attachmentPoint)
 
 {
   bool bVar1;
   int iVar2;
-  eAttachmentPoint eVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  uint uVar6;
-  ddlState_t *pdVar7;
-  ddlState_t local_18;
-  itemInfo_t *local_8;
+  eAttachmentPoint attachmentPoint_00;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
+  itemInfo_t *itemInfo;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
-    if ((!bVar1) && (bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2), bVar1)) {
-      local_8 = BG_UnlockablesGetItemInfo(param_2);
-      if (local_8 == (itemInfo_t *)0x0) {
+    bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+    if ((!bVar1) && (bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex), bVar1)) {
+      itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
+      if (itemInfo == (itemInfo_t *)0x0) {
         return false;
       }
-      iVar2 = I_stricmp(param_3,"");
+      iVar2 = I_stricmp(attachmentPoint,"");
       if (iVar2 == 0) {
         return false;
       }
-      eVar3 = BG_GetAttachmentPointIndex(param_3);
-      iVar2 = BG_GetAttachmentPointCost(eVar3);
+      attachmentPoint_00 = BG_GetAttachmentPointIndex(attachmentPoint);
+      iVar2 = BG_GetAttachmentPointCost(attachmentPoint_00);
       if (iVar2 == 0) {
         return true;
       }
       va("%d");
       iVar2 = 4;
-      pdVar7 = &local_18;
-      pdVar4 = LiveStats_GetRootDDLState();
-      iVar2 = DDL_MoveTo(pdVar4,pdVar7,iVar2);
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find item %d attachment point %s\n");
         return false;
       }
-      puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      uVar6 = DDL_GetInt(&local_18,(char *)puVar5);
-      return uVar6 != 0;
+      buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+      return uVar3 != 0;
     }
     bVar1 = false;
   }
@@ -3405,51 +3583,53 @@ bool __cdecl BG_UnlockablesIsItemAttachmentPointPurchased(int param_1,int param_
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemAttachmentPurchased(int param_1,int param_2,int param_3)
+bool __cdecl
+BG_UnlockablesIsItemAttachmentPurchased(int controllerIndex,int itemIndex,int attachmentNum)
 
 {
   bool bVar1;
-  eAttachment eVar2;
-  int iVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  uint uVar6;
-  ddlState_t *pdVar7;
-  ddlState_t local_18;
-  itemInfo_t *local_8;
+  eAttachment attachment;
+  int iVar2;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
+  itemInfo_t *itemInfo;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
-    if ((!bVar1) && (bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2), bVar1)) {
-      local_8 = BG_UnlockablesGetItemInfo(param_2);
-      if (local_8 == (itemInfo_t *)0x0) {
+    bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+    if ((!bVar1) && (bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex), bVar1)) {
+      itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
+      if (itemInfo == (itemInfo_t *)0x0) {
         return false;
       }
-      if (local_8->numAttachments[0] <= param_3) {
+      if (itemInfo->numAttachments[0] <= attachmentNum) {
         return false;
       }
-      eVar2 = BG_UnlockablesGetItemAttachment(param_2,param_3);
-      iVar3 = BG_GetAttachmentCost(eVar2);
-      if (iVar3 == 0) {
+      attachment = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+      iVar2 = BG_GetAttachmentCost(attachment);
+      if (iVar2 == 0) {
         return true;
       }
       va("%d");
       va("%d");
-      iVar3 = 4;
-      pdVar7 = &local_18;
-      pdVar4 = LiveStats_GetRootDDLState();
-      iVar3 = DDL_MoveTo(pdVar4,pdVar7,iVar3);
-      if (iVar3 == 0) {
+      iVar2 = 4;
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+      if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find item %d attachment %d\n");
         return false;
       }
-      puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-      uVar6 = DDL_GetInt(&local_18,(char *)puVar5);
-      return uVar6 != 0;
+      buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+      uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+      return uVar3 != 0;
     }
     bVar1 = false;
   }
@@ -3459,30 +3639,34 @@ bool __cdecl BG_UnlockablesIsItemAttachmentPurchased(int param_1,int param_2,int
 
 // 0044A900  BG_UnlockablesSetItemOptionPurchased  (bgame/bg_unlockable_items.cpp:2540)
 
-bool __cdecl BG_UnlockablesSetItemOptionPurchased(int param_1,int param_2,int param_3,bool param_4)
+bool __cdecl
+BG_UnlockablesSetItemOptionPurchased
+          (int controllerIndex,int itemIndex,int optionIndex,bool isPurchased)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  uchar *puVar3;
-  ddlState_t *pdVar4;
-  int iVar5;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar2;
+  char *buffer;
+  int purchasedFlag;
+  ddlState_t searchState;
   
   va("%d");
   va("%d");
-  iVar5 = 4;
-  pdVar4 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
-  if (iVar5 == 0) {
+  iVar2 = 4;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
     DDL_PrintError("DDL: Error could not find item %d option %d\n");
     bVar1 = false;
   }
   else {
-    puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    iVar5 = DDL_SetInt(&local_14,(uint)param_4,(char *)puVar3);
-    if (iVar5 == 0) {
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    iVar2 = DDL_SetInt(&searchState,(uint)isPurchased,(char *)buffer_00);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not set purchased flag for item %d option %d\n");
       bVar1 = false;
     }
@@ -3502,90 +3686,102 @@ bool __cdecl BG_UnlockablesSetItemOptionPurchased(int param_1,int param_2,int pa
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesPurchaseItemOption(int param_1,int param_2,int param_3)
+void __cdecl BG_UnlockablesPurchaseItemOption(int controllerIndex,int itemIndex,int optionIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
   int iVar3;
-  int iVar4;
-  eWeaponOptionGroup eVar5;
+  int currencyAmount;
+  eWeaponOptionGroup eVar4;
+  eWeaponOptionGroup weaponOptionGroup;
+  int cost;
+  int currentCodPoints;
+  itemInfo_t *itemInfo;
   
-  if (param_3 == 0) {
+  if (optionIndex == 0) {
     return;
   }
-  bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
+  bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
   if (bVar1) {
     return;
   }
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2);
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
   if (!bVar1) {
     return;
   }
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar2 == (itemInfo_t *)0x0) {
     return;
   }
-  bVar1 = BG_UnlockablesIsItemOptionPurchased(param_1,param_2,param_3);
+  bVar1 = BG_UnlockablesIsItemOptionPurchased(controllerIndex,itemIndex,optionIndex);
   if (bVar1) {
     Com_PrintError(0xf,"Option Index %d is arleady purchased for item %s\n");
     return;
   }
   iVar3 = BG_GetWeaponOptionCount();
-  if (iVar3 <= param_3) {
+  if (iVar3 <= optionIndex) {
     return;
   }
-  iVar3 = LiveStats_GetCurrency(param_1);
-  iVar4 = BG_GetWeaponOptionCost(param_3);
-  if (iVar3 < iVar4) {
-    BG_GetWeaponOptionReference(param_3);
+  iVar3 = LiveStats_GetCurrency(controllerIndex);
+  currencyAmount = BG_GetWeaponOptionCost(optionIndex);
+  if (iVar3 < currencyAmount) {
+    BG_GetWeaponOptionReference(optionIndex);
     Com_PrintError(0xf,"Item camo %s costs %d and you only have %d\n");
     return;
   }
-  bVar1 = BG_UnlockablesSetItemOptionPurchased(param_1,param_2,param_3,true);
+  bVar1 = BG_UnlockablesSetItemOptionPurchased(controllerIndex,itemIndex,optionIndex,true);
   if (!bVar1) {
     return;
   }
-  eVar5 = BG_GetWeaponOptionGroup(param_3);
-  if (eVar5 == WEAPONOPTION_GROUP_CAMO) {
+  eVar4 = BG_GetWeaponOptionGroup(optionIndex);
+  if (eVar4 == WEAPONOPTION_GROUP_CAMO) {
     LiveCounter_IncrementCounterValueByName("global_camopurchased",0);
   }
-  else if (((int)eVar5 < 1) || (5 < (int)eVar5)) goto LAB_0044c126;
+  else if (((int)eVar4 < 1) || (5 < (int)eVar4)) goto LAB_0044c126;
   LiveCounter_IncrementCounterValueByName
-            ("global_purchasedguncustomization",(ulonglong)eVar5 << 0x20);
+            ("global_purchasedguncustomization",(ulonglong)eVar4 << 0x20);
 LAB_0044c126:
-  LiveStats_SpendCurrency(param_1,iVar4,POINTSSPENT_UNLOCKABLE_ATTACHMENT_OPTION,param_2);
+  LiveStats_SpendCurrency
+            (controllerIndex,currencyAmount,POINTSSPENT_UNLOCKABLE_ATTACHMENT_OPTION,itemIndex);
   return;
 }
 
 
 // 00449000  BG_UnlockablesGetWeaponOptionFromName  (bgame/bg_unlockable_items.cpp:2626)
 
-int __cdecl BG_UnlockablesGetWeaponOptionFromName(char *param_1)
+int __cdecl BG_UnlockablesGetWeaponOptionFromName(char *optionName)
 
 {
   int iVar1;
   
-  iVar1 = BG_GetWeaponOptionFromName(param_1);
+  iVar1 = BG_GetWeaponOptionFromName(optionName);
   return iVar1;
 }
 
 
 // 0044BF40  BG_UnlockablesPurchaseWeaponOptionCmd  (bgame/bg_unlockable_items.cpp:2631)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+
 void __cdecl BG_UnlockablesPurchaseWeaponOptionCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *optionName;
+  int optionNum;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_PrintError(0xf,"purchaseWeaponOption usage: purchaseWeaponOption <option>\n");
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = BG_UnlockablesGetWeaponOptionFromName(pcVar2);
+    optionName = Cmd_Argv(1);
+    iVar1 = BG_UnlockablesGetWeaponOptionFromName(optionName);
     if (iVar1 == -1) {
       Cmd_Argv(1);
       Com_PrintError(0xf,"weapon option %s not found\n");
@@ -3601,15 +3797,20 @@ void __cdecl BG_UnlockablesPurchaseWeaponOptionCmd(void)
 // 0044C140  BG_UnlockablesPurchaseCurrentItemOptionCmd  (bgame/bg_unlockable_items.cpp:2651)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesPurchaseCurrentItemOptionCmd(void)
 
 {
-  int iVar1;
+  int optionIndex;
+  int optionNum;
   
-  iVar1 = BG_GetWeaponOptionNumFromIndexAndGroup
-                    (DAT_098c391c,(ui_currentWeaponOptionGroup->current).unsignedInt);
-  BG_UnlockablesPurchaseItemOption(0,DAT_098c38f8,iVar1);
+  optionIndex = BG_GetWeaponOptionNumFromIndexAndGroup
+                          (DAT_098c391c,(ui_currentWeaponOptionGroup->current).unsignedInt);
+  BG_UnlockablesPurchaseItemOption(0,DAT_098c38f8,optionIndex);
   return;
 }
 
@@ -3621,30 +3822,31 @@ void __cdecl BG_UnlockablesPurchaseCurrentItemOptionCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemOptionPurchased(int param_1,int param_2,int param_3)
+bool __cdecl BG_UnlockablesIsItemOptionPurchased(int controllerIndex,int itemIndex,int optionIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  ddlState_t *pdVar5;
-  uchar *puVar6;
-  uint uVar7;
-  ddlState_t *pdVar8;
-  ddlState_t local_18;
-  itemInfo_t *local_8;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  uint uVar5;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
+  itemInfo_t *itemInfo;
   
   bVar2 = BG_UnlockablesAllItemsFree();
   if (bVar2) {
     bVar2 = true;
   }
-  else if (param_3 == 0) {
+  else if (optionIndex == 0) {
     bVar2 = true;
   }
   else {
     iVar4 = BG_GetWeaponOptionCount();
-    if ((iVar4 <= param_3) &&
+    if ((iVar4 <= optionIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xa6d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -3652,30 +3854,30 @@ bool __cdecl BG_UnlockablesIsItemOptionPurchased(int param_1,int param_2,int par
       return (bool)uVar3;
     }
     iVar4 = BG_GetWeaponOptionCount();
-    if (param_3 < iVar4) {
-      bVar2 = BG_UnlockablesIsItemLocked(param_1,param_2);
-      if ((!bVar2) && (bVar2 = BG_UnlockablesIsItemPurchased(param_1,param_2), bVar2)) {
-        local_8 = BG_UnlockablesGetItemInfo(param_2);
-        if (local_8 == (itemInfo_t *)0x0) {
+    if (optionIndex < iVar4) {
+      bVar2 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+      if ((!bVar2) && (bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex), bVar2)) {
+        itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
+        if (itemInfo == (itemInfo_t *)0x0) {
           return false;
         }
-        iVar4 = BG_GetWeaponOptionCost(param_3);
+        iVar4 = BG_GetWeaponOptionCost(optionIndex);
         if (iVar4 == 0) {
           return true;
         }
         va("%d");
         va("%d");
         iVar4 = 4;
-        pdVar8 = &local_18;
-        pdVar5 = LiveStats_GetRootDDLState();
-        iVar4 = DDL_MoveTo(pdVar5,pdVar8,iVar4);
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
         if (iVar4 == 0) {
           DDL_PrintError("DDL: Error could not find item %d camo %d\n");
           return false;
         }
-        puVar6 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-        uVar7 = DDL_GetInt(&local_18,(char *)puVar6);
-        return uVar7 != 0;
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+        uVar5 = DDL_GetInt(&searchState,(char *)buffer_00);
+        return uVar5 != 0;
       }
       bVar2 = false;
     }
@@ -3694,7 +3896,7 @@ bool __cdecl BG_UnlockablesIsItemOptionPurchased(int param_1,int param_2,int par
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemIndexFromName(char *param_1)
+int __cdecl BG_UnlockablesGetItemIndexFromName(char *itemName)
 
 {
   code *pcVar1;
@@ -3703,7 +3905,9 @@ int __cdecl BG_UnlockablesGetItemIndexFromName(char *param_1)
   int iVar4;
   DWORD DVar5;
   int iVar6;
-  int local_10;
+  int itemIndex;
+  int searchHash;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"BG_UnlockablesGetItemIndexFromName");
   if ((s_unlockableItems.maxItem == 0) &&
@@ -3713,19 +3917,19 @@ int __cdecl BG_UnlockablesGetItemIndexFromName(char *param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((itemName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0xa98,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    iVar3 = StringTable_HashString(param_1);
+  if ((itemName != (char *)0x0) && (*itemName != '\0')) {
+    iVar3 = StringTable_HashString(itemName);
     if ((lastItem != -1) &&
        (((iVar3 == s_unlockableItems.itemTable[lastItem].nameHash &&
          (s_unlockableItems.itemTable[lastItem].name != (char *)0x0)) &&
-        (iVar4 = I_stricmp(s_unlockableItems.itemTable[lastItem].name,param_1), iVar6 = lastItem,
+        (iVar4 = I_stricmp(s_unlockableItems.itemTable[lastItem].name,itemName), iVar6 = lastItem,
         iVar4 == 0)))) {
       DVar5 = GetCurrentThreadId();
       if (DVar5 != (DWORD)g_DXDeviceThread) {
@@ -3737,28 +3941,28 @@ int __cdecl BG_UnlockablesGetItemIndexFromName(char *param_1)
       _D3DPERF_EndEvent_0();
       return iVar6;
     }
-    for (local_10 = 0; local_10 <= s_unlockableItems.maxItem; local_10 = local_10 + 1) {
-      if (s_unlockableItems.itemTable[local_10].isValid != false) {
-        if ((s_unlockableItems.itemTable[local_10].name == (char *)0x0) &&
+    for (itemIndex = 0; itemIndex <= s_unlockableItems.maxItem; itemIndex = itemIndex + 1) {
+      if (s_unlockableItems.itemTable[itemIndex].isValid != false) {
+        if ((s_unlockableItems.itemTable[itemIndex].name == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                      ,0xaab,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        if (((s_unlockableItems.itemTable[local_10].name != (char *)0x0) &&
-            (iVar3 == s_unlockableItems.itemTable[local_10].nameHash)) &&
-           (iVar6 = I_stricmp(s_unlockableItems.itemTable[local_10].name,param_1), iVar6 == 0)) {
-          lastItem = local_10;
+        if (((s_unlockableItems.itemTable[itemIndex].name != (char *)0x0) &&
+            (iVar3 == s_unlockableItems.itemTable[itemIndex].nameHash)) &&
+           (iVar6 = I_stricmp(s_unlockableItems.itemTable[itemIndex].name,itemName), iVar6 == 0)) {
+          lastItem = itemIndex;
           DVar5 = GetCurrentThreadId();
           if (DVar5 != (DWORD)g_DXDeviceThread) {
-            return local_10;
+            return itemIndex;
           }
           if (g_DXDeviceThread._4_4_ != 0) {
-            return local_10;
+            return itemIndex;
           }
           _D3DPERF_EndEvent_0();
-          return local_10;
+          return itemIndex;
         }
       }
     }
@@ -3778,14 +3982,15 @@ int __cdecl BG_UnlockablesGetItemIndexFromName(char *param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemIndexFromRef(char *param_1)
+int __cdecl BG_UnlockablesGetItemIndexFromRef(char *itemName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_c;
+  int itemIndex;
+  int searchHash;
   
   if ((s_unlockableItems.maxItem == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -3794,29 +3999,29 @@ int __cdecl BG_UnlockablesGetItemIndexFromRef(char *param_1)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((itemName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0xabe,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    iVar3 = StringTable_HashString(param_1);
-    for (local_c = 0; local_c <= s_unlockableItems.maxItem; local_c = local_c + 1) {
-      if (s_unlockableItems.itemTable[local_c].isValid != false) {
-        if ((s_unlockableItems.itemTable[local_c].reference == (char *)0x0) &&
+  if ((itemName != (char *)0x0) && (*itemName != '\0')) {
+    iVar3 = StringTable_HashString(itemName);
+    for (itemIndex = 0; itemIndex <= s_unlockableItems.maxItem; itemIndex = itemIndex + 1) {
+      if (s_unlockableItems.itemTable[itemIndex].isValid != false) {
+        if ((s_unlockableItems.itemTable[itemIndex].reference == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                      ,0xac7,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           iVar3 = (*pcVar1)();
           return iVar3;
         }
-        if (((s_unlockableItems.itemTable[local_c].reference != (char *)0x0) &&
-            (iVar3 == s_unlockableItems.itemTable[local_c].refHash)) &&
-           (iVar4 = I_stricmp(s_unlockableItems.itemTable[local_c].reference,param_1), iVar4 == 0))
-        {
-          return local_c;
+        if (((s_unlockableItems.itemTable[itemIndex].reference != (char *)0x0) &&
+            (iVar3 == s_unlockableItems.itemTable[itemIndex].refHash)) &&
+           (iVar4 = I_stricmp(s_unlockableItems.itemTable[itemIndex].reference,itemName), iVar4 == 0
+           )) {
+          return itemIndex;
         }
       }
     }
@@ -3832,50 +4037,52 @@ int __cdecl BG_UnlockablesGetItemIndexFromRef(char *param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemIndexforWeapon(uint param_1)
+int __cdecl BG_UnlockablesGetItemIndexforWeapon(uint weaponIndex)
 
 {
   char cVar1;
-  char *pcVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  WeaponVariantDef *pWVar6;
-  char *pcVar7;
+  char *s1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  WeaponVariantDef *pWVar5;
+  char *pcVar6;
   char *local_18;
-  int local_10;
+  int itemIndex;
+  char *weaponReference;
+  WeaponVariantDef *weaponVariantDef;
   
   if ((s_unlockableItems.maxItem == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
-                               0xad8,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar5 = (*pcVar3)();
-    return iVar5;
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
+                               0xad8,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((param_1 != 0) &&
-     (pWVar6 = BG_GetWeaponVariantDef(param_1), pWVar6 != (WeaponVariantDef *)0x0)) {
-    pcVar2 = pWVar6->szInternalName;
-    for (local_10 = 0; local_10 <= s_unlockableItems.maxItem; local_10 = local_10 + 1) {
-      if (s_unlockableItems.itemTable[local_10].isValid != false) {
-        if ((s_unlockableItems.itemTable[local_10].reference == (char *)0x0) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
-                                     ,0xae7,0,"%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          iVar5 = (*pcVar3)();
-          return iVar5;
+  if ((weaponIndex != 0) &&
+     (pWVar5 = BG_GetWeaponVariantDef(weaponIndex), pWVar5 != (WeaponVariantDef *)0x0)) {
+    s1 = pWVar5->szInternalName;
+    for (itemIndex = 0; itemIndex <= s_unlockableItems.maxItem; itemIndex = itemIndex + 1) {
+      if (s_unlockableItems.itemTable[itemIndex].isValid != false) {
+        if ((s_unlockableItems.itemTable[itemIndex].reference == (char *)0x0) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
+                                     ,0xae7,0,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          iVar4 = (*pcVar2)();
+          return iVar4;
         }
-        if ((s_unlockableItems.itemTable[local_10].reference != (char *)0x0) &&
-           (*s_unlockableItems.itemTable[local_10].reference != '\0')) {
-          local_18 = s_unlockableItems.itemTable[local_10].reference;
-          pcVar7 = local_18 + 1;
+        if ((s_unlockableItems.itemTable[itemIndex].reference != (char *)0x0) &&
+           (*s_unlockableItems.itemTable[itemIndex].reference != '\0')) {
+          local_18 = s_unlockableItems.itemTable[itemIndex].reference;
+          pcVar6 = local_18 + 1;
           do {
             cVar1 = *local_18;
             local_18 = local_18 + 1;
           } while (cVar1 != '\0');
-          iVar5 = I_strnicmp(s_unlockableItems.itemTable[local_10].reference,pcVar2,
-                             (int)local_18 - (int)pcVar7);
-          if (iVar5 == 0) {
-            return local_10;
+          iVar4 = I_strnicmp(s_unlockableItems.itemTable[itemIndex].reference,s1,
+                             (int)local_18 - (int)pcVar6);
+          if (iVar4 == 0) {
+            return itemIndex;
           }
         }
       }
@@ -3892,33 +4099,34 @@ int __cdecl BG_UnlockablesGetItemIndexforWeapon(uint param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesClearItemNew(int param_1,int param_2)
+void __cdecl BG_UnlockablesClearItemNew(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  uchar *puVar3;
-  ddlState_t *pdVar4;
-  int iVar5;
-  ddlState_t local_18;
-  itemInfo_t *local_8;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
+  ddlState_t *resultState;
+  int iVar2;
+  char *buffer;
+  ddlState_t searchState;
+  itemInfo_t *itemInfo;
   
-  bVar1 = BG_UnlockablesIsItemNew(param_1,param_2);
+  bVar1 = BG_UnlockablesIsItemNew(controllerIndex,itemIndex);
   if (bVar1) {
-    local_8 = BG_UnlockablesGetItemInfo(param_2);
-    if (local_8 != (itemInfo_t *)0x0) {
+    itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
+    if (itemInfo != (itemInfo_t *)0x0) {
       va("%d");
-      iVar5 = 3;
-      pdVar4 = &local_18;
-      pdVar2 = LiveStats_GetRootDDLState();
-      iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
-      if (iVar5 == 0) {
+      iVar2 = 3;
+      resultState = &searchState;
+      searchState_00 = LiveStats_GetRootDDLState();
+      iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+      if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find item %d\n");
       }
       else {
-        puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-        iVar5 = DDL_SetInt(&local_18,0,(char *)puVar3);
-        if (iVar5 == 0) {
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+        iVar2 = DDL_SetInt(&searchState,0,(char *)buffer_00);
+        if (iVar2 == 0) {
           DDL_PrintError("DDL: Error could not set purchased flag for item %d\n");
         }
       }
@@ -3930,16 +4138,21 @@ void __cdecl BG_UnlockablesClearItemNew(int param_1,int param_2)
 
 // 00449780  BG_UnlockablesClearAllItemsNew  (bgame/bg_unlockable_items.cpp:2835)
 
-void __cdecl BG_UnlockablesClearAllItemsNew(int param_1)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl BG_UnlockablesClearAllItemsNew(int controllerIndex)
 
 {
   bool bVar1;
-  undefined4 local_8;
+  int index;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    bVar1 = BG_UnlockablesIsItemValidNotNull(local_8);
+  for (index = 0; index < 0x100; index = index + 1) {
+    bVar1 = BG_UnlockablesIsItemValidNotNull(index);
     if (bVar1) {
-      BG_UnlockablesClearItemNew(param_1,local_8);
+      BG_UnlockablesClearItemNew(controllerIndex,index);
     }
   }
   return;
@@ -3953,26 +4166,28 @@ void __cdecl BG_UnlockablesClearAllItemsNew(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetAssociatedBodyWithPrimary(int param_1)
+int __cdecl BG_UnlockablesGetAssociatedBodyWithPrimary(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  char *pcVar3;
-  int iVar4;
-  int local_10;
+  char *s1;
+  int iVar3;
+  itemInfo_t *itemInfo2;
+  int itemNum;
+  char *groupName;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if ((((piVar2 != (itemInfo_t *)0x0) && (piVar2->loadoutSlot == LOADOUTSLOT_FIRST)) &&
-      (pcVar3 = BG_UnlockablesGetItemGroupName(piVar2->group), pcVar3 != (char *)0x0)) &&
-     (*pcVar3 != '\0')) {
-    for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-      bVar1 = BG_UnlockablesIsItemValidNotNull(local_10);
+      (s1 = BG_UnlockablesGetItemGroupName(piVar2->group), s1 != (char *)0x0)) && (*s1 != '\0')) {
+    for (itemNum = 0; itemNum < 0x100; itemNum = itemNum + 1) {
+      bVar1 = BG_UnlockablesIsItemValidNotNull(itemNum);
       if (((bVar1) &&
-          (piVar2 = BG_UnlockablesGetItemInfo(local_10), piVar2->loadoutSlot == LOADOUTSLOT_BODY))
-         && ((piVar2->desc != (char *)0x0 &&
-             ((*piVar2->desc != '\0' && (iVar4 = I_stricmp(piVar2->desc,pcVar3), iVar4 == 0)))))) {
-        return local_10;
+          (piVar2 = BG_UnlockablesGetItemInfo(itemNum), piVar2->loadoutSlot == LOADOUTSLOT_BODY)) &&
+         ((piVar2->desc != (char *)0x0 &&
+          ((*piVar2->desc != '\0' && (iVar3 = I_stricmp(piVar2->desc,s1), iVar3 == 0)))))) {
+        return itemNum;
       }
     }
   }
@@ -3987,7 +4202,7 @@ int __cdecl BG_UnlockablesGetAssociatedBodyWithPrimary(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetAssociatedBodyWithPerk(int param_1)
+int __cdecl BG_UnlockablesGetAssociatedBodyWithPerk(int itemIndex)
 
 {
   char cVar1;
@@ -3997,15 +4212,17 @@ int __cdecl BG_UnlockablesGetAssociatedBodyWithPerk(int param_1)
   int iVar5;
   char *pcVar6;
   char *local_14;
-  int local_c;
+  itemInfo_t *itemInfo2;
+  int itemNum;
+  itemInfo_t *itemInfo;
   
-  piVar3 = BG_UnlockablesGetItemInfo(param_1);
+  piVar3 = BG_UnlockablesGetItemInfo(itemIndex);
   if ((((piVar3 != (itemInfo_t *)0x0) && (piVar3->loadoutSlot == LOADOUTSLOT_FIRST_SPECIALTY)) &&
       (piVar3->name != (char *)0x0)) && (*piVar3->name != '\0')) {
-    for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-      bVar2 = BG_UnlockablesIsItemValidNotNull(local_c);
+    for (itemNum = 0; itemNum < 0x100; itemNum = itemNum + 1) {
+      bVar2 = BG_UnlockablesIsItemValidNotNull(itemNum);
       if (((bVar2) &&
-          (piVar4 = BG_UnlockablesGetItemInfo(local_c), piVar4->loadoutSlot == LOADOUTSLOT_BODY)) &&
+          (piVar4 = BG_UnlockablesGetItemInfo(itemNum), piVar4->loadoutSlot == LOADOUTSLOT_BODY)) &&
          ((piVar4->imageRef != (char *)0x0 && (*piVar4->imageRef != '\0')))) {
         local_14 = piVar4->imageRef;
         pcVar6 = local_14 + 1;
@@ -4015,7 +4232,7 @@ int __cdecl BG_UnlockablesGetAssociatedBodyWithPerk(int param_1)
         } while (cVar1 != '\0');
         iVar5 = I_strnicmp(piVar4->imageRef,piVar3->name,(int)local_14 - (int)pcVar6);
         if (iVar5 == 0) {
-          return local_c;
+          return itemNum;
         }
       }
     }
@@ -4026,16 +4243,21 @@ int __cdecl BG_UnlockablesGetAssociatedBodyWithPerk(int param_1)
 
 // 004497D0  BG_UnlockablesGetAssociatedBody  (bgame/bg_unlockable_items.cpp:2904)
 
-int __cdecl BG_UnlockablesGetAssociatedBody(int param_1)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+int __cdecl BG_UnlockablesGetAssociatedBody(int itemIndex)
 
 {
   int iVar1;
   
   if ((bodyTypeFromGun == (dvar_s *)0x0) || ((bodyTypeFromGun->current).enabled == false)) {
-    iVar1 = BG_UnlockablesGetAssociatedBodyWithPerk(param_1);
+    iVar1 = BG_UnlockablesGetAssociatedBodyWithPerk(itemIndex);
   }
   else {
-    iVar1 = BG_UnlockablesGetAssociatedBodyWithPrimary(param_1);
+    iVar1 = BG_UnlockablesGetAssociatedBodyWithPrimary(itemIndex);
   }
   return iVar1;
 }
@@ -4043,14 +4265,16 @@ int __cdecl BG_UnlockablesGetAssociatedBody(int param_1)
 
 // 00449D10  BG_UnlockablesEquipAssociatedBody  (bgame/bg_unlockable_items.cpp:2916)
 
-void __cdecl BG_UnlockablesEquipAssociatedBody(int param_1,char *param_2,int param_3)
+void __cdecl
+BG_UnlockablesEquipAssociatedBody(int controllerIndex,char *customClassName,int itemIndex)
 
 {
-  int iVar1;
+  int itemIndex_00;
+  int bodyIndex;
   
-  iVar1 = BG_UnlockablesGetAssociatedBody(param_3);
-  if (iVar1 != -1) {
-    BG_UnlockablesEquipClassToSlot(param_1,param_2,iVar1,"body");
+  itemIndex_00 = BG_UnlockablesGetAssociatedBody(itemIndex);
+  if (itemIndex_00 != -1) {
+    BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,itemIndex_00,"body");
   }
   return;
 }
@@ -4061,41 +4285,41 @@ void __cdecl BG_UnlockablesEquipAssociatedBody(int param_1,char *param_2,int par
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 void __cdecl
-BG_UnlockablesEquipClassSpecialPropertiesToSlot(int param_1,char *param_2,int param_3,char *param_4)
+BG_UnlockablesEquipClassSpecialPropertiesToSlot
+          (int controllerIndex,char *customClassName,int itemIndex,char *loadoutName)
 
 {
   int iVar1;
   char *pcVar2;
-  eAttachmentPoint local_8;
+  int attachPoint;
   
-  iVar1 = I_stricmp(param_4,"primary");
-  if ((iVar1 != 0) && (iVar1 = I_stricmp(param_4,"secondary"), iVar1 != 0)) {
-    iVar1 = I_strnicmp(param_4,"specialty",9);
+  iVar1 = I_stricmp(loadoutName,"primary");
+  if ((iVar1 != 0) && (iVar1 = I_stricmp(loadoutName,"secondary"), iVar1 != 0)) {
+    iVar1 = I_strnicmp(loadoutName,"specialty",9);
     if (iVar1 != 0) {
       return;
     }
-    BG_UnlockablesEquipAssociatedBody(param_1,param_2,param_3);
+    BG_UnlockablesEquipAssociatedBody(controllerIndex,customClassName,itemIndex);
     return;
   }
-  BG_UnlockablesEquipAssociatedBody(param_1,param_2,param_3);
-  for (local_8 = ATTACHMENT_POINT_FIRST; (int)local_8 < 5;
-      local_8 = local_8 + ATTACHMENT_POINT_FIRST) {
-    BG_GetAttachmentPointName(local_8);
+  BG_UnlockablesEquipAssociatedBody(controllerIndex,customClassName,itemIndex);
+  for (attachPoint = 1; attachPoint < 5; attachPoint = attachPoint + 1) {
+    BG_GetAttachmentPointName(attachPoint);
     pcVar2 = va("%sattachment%s");
-    BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+    BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   }
   pcVar2 = va("%scamo");
-  BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   pcVar2 = va("%sreticle");
-  BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   pcVar2 = va("%sreticlecolor");
-  BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   pcVar2 = va("%slens");
-  BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   pcVar2 = va("%stag");
-  BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   pcVar2 = va("%semblem");
-  BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar2);
+  BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar2);
   return;
 }
 
@@ -4107,24 +4331,27 @@ BG_UnlockablesEquipClassSpecialPropertiesToSlot(int param_1,char *param_2,int pa
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesEquipClassToSlot(int param_1,char *param_2,int param_3,char *param_4)
+void __cdecl
+BG_UnlockablesEquipClassToSlot
+          (int controllerIndex,char *customClassName,int itemIndex,char *loadoutName)
 
 {
   byte bVar1;
   int iVar2;
   ddlState_t *pdVar3;
-  uchar *puVar4;
-  ddlState_t *pdVar5;
-  ddlState_t local_18;
-  uint local_8;
+  uchar *buffer_00;
+  ddlState_t *pdVar4;
+  char *buffer;
+  ddlState_t searchState;
+  uint statValue;
   
   iVar2 = Dvar_GetInt(ui_useCustomClassInfo);
   if (iVar2 == 0) {
-    if (param_2 == (char *)0x0) {
+    if (customClassName == (char *)0x0) {
       iVar2 = 1;
-      pdVar5 = &local_18;
+      pdVar4 = &searchState;
       pdVar3 = LiveStats_GetCacDDLState();
-      iVar2 = DDL_MoveTo(pdVar3,pdVar5,iVar2);
+      iVar2 = DDL_MoveTo(pdVar3,pdVar4,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find global slot %s\n");
         return;
@@ -4132,30 +4359,33 @@ void __cdecl BG_UnlockablesEquipClassToSlot(int param_1,char *param_2,int param_
     }
     else {
       iVar2 = 2;
-      pdVar5 = &local_18;
+      pdVar4 = &searchState;
       pdVar3 = LiveStats_GetCacDDLState();
-      iVar2 = DDL_MoveTo(pdVar3,pdVar5,iVar2);
+      iVar2 = DDL_MoveTo(pdVar3,pdVar4,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find loadout slot %s\n");
         return;
       }
     }
-    puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    local_8 = DDL_GetInt(&local_18,(char *)puVar4);
-    if (local_8 != param_3) {
-      BG_UnlockablesEquipClassSpecialPropertiesToSlot(param_1,param_2,param_3,param_4);
-      iVar2 = DDL_SetInt(&local_18,param_3,(char *)puVar4);
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    statValue = DDL_GetInt(&searchState,(char *)buffer_00);
+    if (statValue != itemIndex) {
+      BG_UnlockablesEquipClassSpecialPropertiesToSlot
+                (controllerIndex,customClassName,itemIndex,loadoutName);
+      iVar2 = DDL_SetInt(&searchState,itemIndex,(char *)buffer_00);
       if (iVar2 == 0) {
-        BG_UnlockablesGetItemInfo(param_3);
+        BG_UnlockablesGetItemInfo(itemIndex);
         DDL_PrintError("DDL: Error equipping class %s with item %s\n");
       }
     }
   }
   else {
-    bVar1 = GetCustomClassLoadoutItemForClassName(param_1,param_2,param_4);
-    if ((uint)bVar1 != param_3) {
-      UI_Gametype_EquipCustomClassLoadoutItem(param_1,param_2,param_3,param_4);
-      BG_UnlockablesEquipClassSpecialPropertiesToSlot(param_1,param_2,param_3,param_4);
+    bVar1 = GetCustomClassLoadoutItemForClassName(controllerIndex,customClassName,loadoutName);
+    if ((uint)bVar1 != itemIndex) {
+      UI_Gametype_EquipCustomClassLoadoutItem(controllerIndex,customClassName,itemIndex,loadoutName)
+      ;
+      BG_UnlockablesEquipClassSpecialPropertiesToSlot
+                (controllerIndex,customClassName,itemIndex,loadoutName);
     }
   }
   return;
@@ -4169,13 +4399,15 @@ void __cdecl BG_UnlockablesEquipClassToSlot(int param_1,char *param_2,int param_
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesEquipClass(int param_1,char *param_2,int param_3)
+void __cdecl BG_UnlockablesEquipClass(int controllerIndex,char *customClassName,int itemIndex)
 
 {
   itemInfo_t *piVar1;
-  char *pcVar2;
+  char *loadoutName_00;
+  char *loadoutName;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_3);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
     Com_Printf(1,"Item %d is invalid\n");
   }
@@ -4183,9 +4415,9 @@ void __cdecl BG_UnlockablesEquipClass(int param_1,char *param_2,int param_3)
     Com_Printf(1,"Item %s has an invalid loadout slot\n");
   }
   else {
-    pcVar2 = BG_UnlockablesGetLoadoutName(piVar1->loadoutSlot);
-    if (pcVar2 != (char *)0x0) {
-      BG_UnlockablesEquipClassToSlot(param_1,param_2,param_3,pcVar2);
+    loadoutName_00 = BG_UnlockablesGetLoadoutName(piVar1->loadoutSlot);
+    if (loadoutName_00 != (char *)0x0) {
+      BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,itemIndex,loadoutName_00);
     }
   }
   return;
@@ -4194,24 +4426,26 @@ void __cdecl BG_UnlockablesEquipClass(int param_1,char *param_2,int param_3)
 
 // 00449D50  BG_UnlockablesGetEquippedItemInSlot  (bgame/bg_unlockable_items.cpp:3048)
 
-int __cdecl BG_UnlockablesGetEquippedItemInSlot(int param_1,char *param_2,char *param_3)
+int __cdecl
+BG_UnlockablesGetEquippedItemInSlot(int controllerIndex,char *customClassName,char *slotName)
 
 {
   byte bVar1;
   int iVar2;
   uint uVar3;
   ddlState_t *pdVar4;
-  uchar *puVar5;
-  ddlState_t *pdVar6;
-  ddlState_t local_14;
+  uchar *buffer_00;
+  ddlState_t *pdVar5;
+  char *buffer;
+  ddlState_t searchState;
   
   iVar2 = Dvar_GetInt(ui_useCustomClassInfo);
   if (iVar2 == 0) {
-    if (param_2 == (char *)0x0) {
+    if (customClassName == (char *)0x0) {
       iVar2 = 1;
-      pdVar6 = &local_14;
+      pdVar5 = &searchState;
       pdVar4 = LiveStats_GetCacDDLState();
-      iVar2 = DDL_MoveTo(pdVar4,pdVar6,iVar2);
+      iVar2 = DDL_MoveTo(pdVar4,pdVar5,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find loadout slot %s\n");
         return -1;
@@ -4219,19 +4453,19 @@ int __cdecl BG_UnlockablesGetEquippedItemInSlot(int param_1,char *param_2,char *
     }
     else {
       iVar2 = 2;
-      pdVar6 = &local_14;
+      pdVar5 = &searchState;
       pdVar4 = LiveStats_GetCacDDLState();
-      iVar2 = DDL_MoveTo(pdVar4,pdVar6,iVar2);
+      iVar2 = DDL_MoveTo(pdVar4,pdVar5,iVar2);
       if (iVar2 == 0) {
         DDL_PrintError("DDL: Error could not find loadout slot %s\n");
         return -1;
       }
     }
-    puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    uVar3 = DDL_GetInt(&local_14,(char *)puVar5);
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
   }
   else {
-    bVar1 = GetCustomClassLoadoutItemForClassName(param_1,param_2,param_3);
+    bVar1 = GetCustomClassLoadoutItemForClassName(controllerIndex,customClassName,slotName);
     uVar3 = (uint)bVar1;
   }
   return uVar3;
@@ -4245,17 +4479,19 @@ int __cdecl BG_UnlockablesGetEquippedItemInSlot(int param_1,char *param_2,char *
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemEquipped(int param_1,char *param_2,int param_3)
+bool __cdecl BG_UnlockablesIsItemEquipped(int controllerIndex,char *customClassName,int itemIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   itemInfo_t *piVar4;
-  char *pcVar5;
-  int iVar6;
+  char *slotName;
+  int iVar5;
+  char *loadoutName;
+  itemInfo_t *itemInfo;
   
-  piVar4 = BG_UnlockablesGetItemInfo(param_3);
+  piVar4 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar4->loadoutSlot == LOADOUTSLOT_INVALID) {
     va("Item %s has an invalid loadout slot\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -4267,9 +4503,9 @@ bool __cdecl BG_UnlockablesIsItemEquipped(int param_1,char *param_2,int param_3)
     }
   }
   if ((piVar4->loadoutSlot != LOADOUTSLOT_INVALID) &&
-     (pcVar5 = BG_UnlockablesGetLoadoutName(piVar4->loadoutSlot), pcVar5 != (char *)0x0)) {
-    iVar6 = BG_UnlockablesGetEquippedItemInSlot(param_1,param_2,pcVar5);
-    return param_3 == iVar6;
+     (slotName = BG_UnlockablesGetLoadoutName(piVar4->loadoutSlot), slotName != (char *)0x0)) {
+    iVar5 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,customClassName,slotName);
+    return itemIndex == iVar5;
   }
   return false;
 }
@@ -4279,65 +4515,72 @@ bool __cdecl BG_UnlockablesIsItemEquipped(int param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "customClass_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemEquippedInAnyCustomClass(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsItemEquippedInAnyCustomClass(int controllerIndex,int itemIndex)
 
 {
-  char cVar1;
-  bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  char *pcVar5;
-  char *local_438;
-  char *local_430;
+  bool *pbVar1;
+  char cVar2;
+  bool bVar3;
+  char *pcVar4;
+  uint uVar5;
+  char *pcVar6;
+  bool *local_438;
+  bool *local_430;
   char *local_41c;
-  customClass_t local_414;
-  char local_40d [1029];
+  char *customClassName;
+  int classIndex;
+  bool isEquipped;
+  bool tempString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40d[1] = 0;
-  local_40d[0] = '\0';
-  for (local_414 = CUSTOM_CLASS_1; (int)local_414 < 10; local_414 = local_414 + CUSTOM_CLASS_2) {
-    pcVar3 = BG_UnlockablesGetCustomClassName(local_414);
-    if (pcVar3 != (char *)0x0) {
-      bVar2 = BG_UnlockablesIsItemEquipped(param_1,pcVar3,param_2);
-      if (bVar2) {
-        pcVar3 = Dvar_GetString(pcVar3);
-        local_41c = pcVar3;
+  tempString[0] = false;
+  isEquipped = false;
+  for (classIndex = 0; classIndex < 10; classIndex = classIndex + 1) {
+    pcVar4 = BG_UnlockablesGetCustomClassName(classIndex);
+    if (pcVar4 != (char *)0x0) {
+      bVar3 = BG_UnlockablesIsItemEquipped(controllerIndex,pcVar4,itemIndex);
+      if (bVar3) {
+        pcVar4 = Dvar_GetString(pcVar4);
+        local_41c = pcVar4;
         do {
-          cVar1 = *local_41c;
+          cVar2 = *local_41c;
           local_41c = local_41c + 1;
-        } while (cVar1 != '\0');
-        local_430 = local_40d;
+        } while (cVar2 != '\0');
+        local_430 = &isEquipped;
         do {
-          pcVar5 = local_430 + 1;
+          pbVar1 = local_430 + 1;
           local_430 = local_430 + 1;
-        } while (*pcVar5 != '\0');
-        pcVar5 = pcVar3;
-        for (uVar4 = (uint)((int)local_41c - (int)pcVar3) >> 2; uVar4 != 0; uVar4 = uVar4 - 1) {
-          *(undefined4 *)local_430 = *(undefined4 *)pcVar5;
-          pcVar5 = pcVar5 + 4;
+        } while (*pbVar1 != false);
+        pcVar6 = pcVar4;
+        for (uVar5 = (uint)((int)local_41c - (int)pcVar4) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+          *(undefined4 *)local_430 = *(undefined4 *)pcVar6;
+          pcVar6 = pcVar6 + 4;
           local_430 = local_430 + 4;
         }
-        for (uVar4 = (int)local_41c - (int)pcVar3 & 3; uVar4 != 0; uVar4 = uVar4 - 1) {
-          *local_430 = *pcVar5;
-          pcVar5 = pcVar5 + 1;
+        for (uVar5 = (int)local_41c - (int)pcVar4 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
+          *local_430 = (bool)*pcVar6;
+          pcVar6 = pcVar6 + 1;
           local_430 = local_430 + 1;
         }
-        local_438 = local_40d;
+        local_438 = &isEquipped;
         do {
-          pcVar3 = local_438 + 1;
+          pbVar1 = local_438 + 1;
           local_438 = local_438 + 1;
-        } while (*pcVar3 != '\0');
-        local_438[0] = '\n';
-        local_438[1] = '\0';
-        local_40d[0] = '\x01';
+        } while (*pbVar1 != false);
+        local_438[0] = true;
+        local_438[1] = false;
+        isEquipped = true;
       }
     }
   }
-  Dvar_SetStringByName("ui_classesCurrentItemEquippedIn",local_40d + 1);
-  return (bool)local_40d[0];
+  Dvar_SetStringByName("ui_classesCurrentItemEquippedIn",tempString);
+  return isEquipped;
 }
 
 
@@ -4345,6 +4588,10 @@ bool __cdecl BG_UnlockablesIsItemEquippedInAnyCustomClass(int param_1,int param_
 
 /* WARNING: Removing unreachable block (ram,0x0044c199) */
 /* WARNING: Removing unreachable block (ram,0x0044c1c2) */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesEquipClassCmd(void)
 
@@ -4352,17 +4599,21 @@ void __cdecl BG_UnlockablesEquipClassCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  char *pcVar5;
+  char *customClassName_00;
+  char *itemName_00;
+  char *customClassName;
+  int controllerIndex;
+  char *itemName;
+  int itemIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
     Com_PrintError(0xf,"equipclass usage: equipclass <customclassname> <item>\n");
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    pcVar5 = Cmd_Argv(2);
-    iVar3 = BG_UnlockablesGetItemIndexFromName(pcVar5);
+    customClassName_00 = Cmd_Argv(1);
+    itemName_00 = Cmd_Argv(2);
+    iVar3 = BG_UnlockablesGetItemIndexFromName(itemName_00);
     if (iVar3 == -1) {
       va("Item %s not found");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -4374,7 +4625,7 @@ void __cdecl BG_UnlockablesEquipClassCmd(void)
       }
     }
     if ((iVar3 != -1) && (bVar2 = BG_UnlockablesIsItemPurchased(0,iVar3), bVar2)) {
-      BG_UnlockablesEquipClass(0,pcVar4,iVar3);
+      BG_UnlockablesEquipClass(0,customClassName_00,iVar3);
     }
   }
   return;
@@ -4385,6 +4636,7 @@ void __cdecl BG_UnlockablesEquipClassCmd(void)
 
 /* WARNING: Removing unreachable block (ram,0x0044c329) */
 /* WARNING: Removing unreachable block (ram,0x0044c352) */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesEquipDefaultItemToSlotCmd(void)
 
@@ -4392,8 +4644,12 @@ void __cdecl BG_UnlockablesEquipDefaultItemToSlotCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  char *pcVar5;
+  char *customClassName_00;
+  char *slotName;
+  char *customClassName;
+  int controllerIndex;
+  char *loadoutName;
+  loadoutSlot_t loadoutSlot;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
@@ -4402,9 +4658,9 @@ void __cdecl BG_UnlockablesEquipDefaultItemToSlotCmd(void)
                   );
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    pcVar5 = Cmd_Argv(2);
-    iVar3 = BG_UnlockablesGetLoadoutSlotFromString(pcVar5);
+    customClassName_00 = Cmd_Argv(1);
+    slotName = Cmd_Argv(2);
+    iVar3 = BG_UnlockablesGetLoadoutSlotFromString(slotName);
     if (iVar3 == -1) {
       va("Loadout slot %s not found\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -4417,7 +4673,7 @@ void __cdecl BG_UnlockablesEquipDefaultItemToSlotCmd(void)
     }
     if (iVar3 != -1) {
       iVar3 = BG_UnlockablesGetDefaultItem(iVar3);
-      BG_UnlockablesEquipClassToSlot(0,pcVar4,iVar3,pcVar5);
+      BG_UnlockablesEquipClassToSlot(0,customClassName_00,iVar3,slotName);
     }
   }
   return;
@@ -4428,6 +4684,7 @@ void __cdecl BG_UnlockablesEquipDefaultItemToSlotCmd(void)
 
 /* WARNING: Removing unreachable block (ram,0x0044c429) */
 /* WARNING: Removing unreachable block (ram,0x0044c452) */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesEquipDefaultGlobalItemToSlotCmd(void)
 
@@ -4435,7 +4692,10 @@ void __cdecl BG_UnlockablesEquipDefaultGlobalItemToSlotCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *slotName;
+  int controllerIndex;
+  char *loadoutName;
+  loadoutSlot_t loadoutSlot;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 2) {
@@ -4443,8 +4703,8 @@ void __cdecl BG_UnlockablesEquipDefaultGlobalItemToSlotCmd(void)
                    "equipdefaultglobalitemtoslot usage: equipdefaultglobalitemtoslot <slotname>\n");
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    iVar3 = BG_UnlockablesGetLoadoutSlotFromString(pcVar4);
+    slotName = Cmd_Argv(1);
+    iVar3 = BG_UnlockablesGetLoadoutSlotFromString(slotName);
     if (iVar3 == -1) {
       va("Loadout slot %s not found\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -4457,7 +4717,7 @@ void __cdecl BG_UnlockablesEquipDefaultGlobalItemToSlotCmd(void)
     }
     if (iVar3 != -1) {
       iVar3 = BG_UnlockablesGetDefaultItem(iVar3);
-      BG_UnlockablesEquipClassToSlot(0,(char *)0x0,iVar3,pcVar4);
+      BG_UnlockablesEquipClassToSlot(0,(char *)0x0,iVar3,slotName);
     }
   }
   return;
@@ -4466,92 +4726,102 @@ void __cdecl BG_UnlockablesEquipDefaultGlobalItemToSlotCmd(void)
 
 // 0044C5C0  BG_UnlockablesEquipClassAttachment  (bgame/bg_unlockable_items.cpp:3199)
 
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
-/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 void __cdecl
 BG_UnlockablesEquipClassAttachment
-          (int param_1,char *param_2,char *param_3,char *param_4,char *param_5)
+          (int controllerIndex,char *customClassName,char *itemName,char *attachmentName,
+          char *attachmentPoint)
 
 {
-  eAttachment eVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  itemInfo_t *piVar5;
-  int iVar6;
-  char *pcVar7;
-  eAttachmentPoint eVar8;
-  eAttachmentPoint local_2c;
-  int local_28;
+  eAttachment attachment;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  itemInfo_t *itemInfo_00;
+  int attachmentNum_00;
+  char *pcVar4;
+  eAttachmentPoint eVar5;
+  int currAttachPoint;
+  int numAttachmentsEquipped;
+  char *loadoutName;
+  int equippedAttachmentNum;
+  eAttachmentPoint attachPoint;
+  int equippedAttachmentIndex;
+  int attachmentIndex;
+  int attachmentNum;
+  itemInfo_t *itemInfo;
+  int itemIndex;
   
-  iVar4 = BG_UnlockablesGetItemIndexFromName(param_3);
-  if ((iVar4 == -1) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
-                               0xc81,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  iVar3 = BG_UnlockablesGetItemIndexFromName(itemName);
+  if ((iVar3 == -1) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
+                               0xc81,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((iVar4 != -1) && (bVar3 = BG_UnlockablesIsItemPurchased(param_1,iVar4), bVar3)) {
-    piVar5 = BG_UnlockablesGetItemInfo(iVar4);
-    if ((piVar5->loadoutSlot == LOADOUTSLOT_INVALID) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
-                                 ,0xc86,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if ((iVar3 != -1) && (bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,iVar3), bVar2)) {
+    itemInfo_00 = BG_UnlockablesGetItemInfo(iVar3);
+    if ((itemInfo_00->loadoutSlot == LOADOUTSLOT_INVALID) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
+                                 ,0xc86,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if (piVar5->loadoutSlot != LOADOUTSLOT_INVALID) {
-      iVar6 = BG_UnlockablesIsItemAttachmentValid(piVar5,param_4);
-      if (iVar6 == -1) {
+    if (itemInfo_00->loadoutSlot != LOADOUTSLOT_INVALID) {
+      attachmentNum_00 = BG_UnlockablesIsItemAttachmentValid(itemInfo_00,attachmentName);
+      if (attachmentNum_00 == -1) {
         va("attachment %s is not valid for item %s\n");
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xc8b,0,"%s\n\t%s");
-        if (!bVar3) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if (!bVar2) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
       }
-      if (((iVar6 != -1) &&
-          (bVar3 = BG_UnlockablesIsItemAttachmentPurchased(param_1,iVar4,iVar6), bVar3)) &&
-         (pcVar7 = BG_UnlockablesGetLoadoutName(piVar5->loadoutSlot), pcVar7 != (char *)0x0)) {
-        BG_UnlockablesEquipClassToSlot(param_1,param_2,iVar4,pcVar7);
-        local_28 = 0;
-        eVar1 = piVar5->attachments[iVar6];
-        eVar8 = BG_GetAttachmentPointIndexFromAttachment(eVar1);
-        for (local_2c = ATTACHMENT_POINT_FIRST; (int)local_2c < 5;
-            local_2c = local_2c + ATTACHMENT_POINT_FIRST) {
-          BG_GetAttachmentPointName(local_2c);
-          pcVar7 = va("%sattachment%s");
-          iVar4 = BG_UnlockablesGetEquippedItemInSlot(param_1,param_2,pcVar7);
-          if (iVar4 == iVar6) {
-            BG_GetAttachmentPointName(local_2c);
-            pcVar7 = va("%sattachment%s");
-            BG_UnlockablesEquipClassToSlot(param_1,param_2,0,pcVar7);
+      if (((attachmentNum_00 != -1) &&
+          (bVar2 = BG_UnlockablesIsItemAttachmentPurchased(controllerIndex,iVar3,attachmentNum_00),
+          bVar2)) &&
+         (pcVar4 = BG_UnlockablesGetLoadoutName(itemInfo_00->loadoutSlot), pcVar4 != (char *)0x0)) {
+        BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,iVar3,pcVar4);
+        numAttachmentsEquipped = 0;
+        attachment = itemInfo_00->attachments[attachmentNum_00];
+        eVar5 = BG_GetAttachmentPointIndexFromAttachment(attachment);
+        for (currAttachPoint = 1; currAttachPoint < 5; currAttachPoint = currAttachPoint + 1) {
+          BG_GetAttachmentPointName(currAttachPoint);
+          pcVar4 = va("%sattachment%s");
+          iVar3 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,customClassName,pcVar4);
+          if (iVar3 == attachmentNum_00) {
+            BG_GetAttachmentPointName(currAttachPoint);
+            pcVar4 = va("%sattachment%s");
+            BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,0,pcVar4);
             return;
           }
-          if ((piVar5->attachments[iVar4] != ATTACHMENT_NONE) &&
-             (local_28 = local_28 + 1, local_2c == eVar8)) {
+          if ((itemInfo_00->attachments[iVar3] != ATTACHMENT_NONE) &&
+             (numAttachmentsEquipped = numAttachmentsEquipped + 1, currAttachPoint == eVar5)) {
             return;
           }
-          bVar3 = BG_AreAttachmentsCompatible(eVar1,piVar5->attachments[iVar4]);
-          if (!bVar3) {
+          bVar2 = BG_AreAttachmentsCompatible(attachment,itemInfo_00->attachments[iVar3]);
+          if (!bVar2) {
             return;
           }
         }
-        if ((iVar6 == 0) || ((maxAttachmentsPerWeapon->current).integer <= local_28)) {
+        if ((attachmentNum_00 == 0) ||
+           ((maxAttachmentsPerWeapon->current).integer <= numAttachmentsEquipped)) {
           BG_GetAttachmentPointName((attachmentFilter->current).unsignedInt);
-          pcVar7 = va("%sattachment%s");
-          BG_UnlockablesEquipClassToSlot(param_1,param_2,iVar6,pcVar7);
+          pcVar4 = va("%sattachment%s");
+          BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,attachmentNum_00,pcVar4);
         }
         else {
-          pcVar7 = va("%sattachment%s");
-          BG_UnlockablesEquipClassToSlot(param_1,param_2,iVar6,pcVar7);
+          pcVar4 = va("%sattachment%s");
+          BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,attachmentNum_00,pcVar4);
         }
       }
     }
@@ -4564,15 +4834,25 @@ BG_UnlockablesEquipClassAttachment
 
 /* WARNING: Removing unreachable block (ram,0x0044c519) */
 /* WARNING: Removing unreachable block (ram,0x0044c542) */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesEquipClassAttachmentCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char *pcVar3;
-  char *pcVar4;
-  char *pcVar5;
+  char *customClassName_00;
+  char *itemName_00;
+  char *attachmentName_00;
+  char *attachmentPoint;
+  char *customClassName;
+  int controllerIndex;
+  char *itemName;
+  char *attachmentName;
+  char *attachPointName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 4) {
@@ -4581,11 +4861,12 @@ void __cdecl BG_UnlockablesEquipClassAttachmentCmd(void)
                   );
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    pcVar4 = Cmd_Argv(3);
-    pcVar5 = Cmd_Argv(4);
-    BG_UnlockablesEquipClassAttachment(0,pcVar2,pcVar3,pcVar4,pcVar5);
+    customClassName_00 = Cmd_Argv(1);
+    itemName_00 = Cmd_Argv(2);
+    attachmentName_00 = Cmd_Argv(3);
+    attachmentPoint = Cmd_Argv(4);
+    BG_UnlockablesEquipClassAttachment
+              (0,customClassName_00,itemName_00,attachmentName_00,attachmentPoint);
   }
   return;
 }
@@ -4607,12 +4888,16 @@ void __cdecl BG_UnlockablesEquipClassCurrentAttachmentCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  itemInfo_t *piVar5;
-  char *pcVar6;
-  eAttachment eVar7;
-  eAttachmentPoint eVar8;
-  char *pcVar9;
+  char *customClassName_00;
+  itemInfo_t *piVar4;
+  char *attachmentName;
+  eAttachment attachment;
+  eAttachmentPoint index;
+  char *attachmentPoint;
+  char *attachmentRef;
+  char *customClassName;
+  int controllerIndex;
+  itemInfo_t *itemInfo;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 2) {
@@ -4621,37 +4906,38 @@ void __cdecl BG_UnlockablesEquipClassCurrentAttachmentCmd(void)
                   );
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    piVar5 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
-    if ((piVar5 == (itemInfo_t *)0x0) &&
+    customClassName_00 = Cmd_Argv(1);
+    piVar4 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
+    if ((piVar4 == (itemInfo_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xcf1,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((piVar5 != (itemInfo_t *)0x0) && (DAT_098c3910 < piVar5->numAttachments[0])) {
-      pcVar6 = BG_UnlockablesGetItemAttachmentRef(DAT_098c38f8,DAT_098c3910);
-      if (((pcVar6 == (char *)0x0) || (*pcVar6 == '\0')) &&
+    if ((piVar4 != (itemInfo_t *)0x0) && (DAT_098c3910 < piVar4->numAttachments[0])) {
+      attachmentName = BG_UnlockablesGetItemAttachmentRef(DAT_098c38f8,DAT_098c3910);
+      if (((attachmentName == (char *)0x0) || (*attachmentName == '\0')) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0xcf6,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((piVar5->name == (char *)0x0) || (*piVar5->name == '\0')) &&
+      if (((piVar4->name == (char *)0x0) || (*piVar4->name == '\0')) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0xcf7,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((pcVar6 != (char *)0x0) && (*pcVar6 != '\0')) &&
-         ((piVar5->name != (char *)0x0 && (*piVar5->name != '\0')))) {
-        eVar7 = BG_UnlockablesGetItemAttachment(DAT_098c38f8,DAT_098c3910);
-        eVar8 = BG_GetAttachmentPointIndexFromAttachment(eVar7);
-        pcVar9 = BG_GetAttachmentPointName(eVar8);
-        BG_UnlockablesEquipClassAttachment(0,pcVar4,piVar5->name,pcVar6,pcVar9);
+      if (((attachmentName != (char *)0x0) && (*attachmentName != '\0')) &&
+         ((piVar4->name != (char *)0x0 && (*piVar4->name != '\0')))) {
+        attachment = BG_UnlockablesGetItemAttachment(DAT_098c38f8,DAT_098c3910);
+        index = BG_GetAttachmentPointIndexFromAttachment(attachment);
+        attachmentPoint = BG_GetAttachmentPointName(index);
+        BG_UnlockablesEquipClassAttachment
+                  (0,customClassName_00,piVar4->name,attachmentName,attachmentPoint);
       }
     }
   }
@@ -4675,9 +4961,15 @@ void __cdecl BG_UnlockablesEquipClassCurrentOptionCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  itemInfo_t *piVar5;
-  char *pcVar6;
+  char *customClassName_00;
+  itemInfo_t *piVar4;
+  char *pcVar5;
+  char *loadoutName;
+  char *customClassName;
+  int controllerIndex;
+  itemInfo_t *itemInfo;
+  int optionNum;
+  char *optionName;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
@@ -4686,10 +4978,10 @@ void __cdecl BG_UnlockablesEquipClassCurrentOptionCmd(void)
                   );
   }
   else {
-    pcVar4 = Cmd_Argv(1);
+    customClassName_00 = Cmd_Argv(1);
     Cmd_Argv(2);
-    piVar5 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
-    if ((piVar5 == (itemInfo_t *)0x0) &&
+    piVar4 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
+    if ((piVar4 == (itemInfo_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xd11,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -4698,13 +4990,13 @@ void __cdecl BG_UnlockablesEquipClassCurrentOptionCmd(void)
     }
     iVar3 = BG_GetWeaponOptionNumFromIndexAndGroup
                       (DAT_098c391c,(ui_currentWeaponOptionGroup->current).unsignedInt);
-    if ((((piVar5 != (itemInfo_t *)0x0) &&
+    if ((((piVar4 != (itemInfo_t *)0x0) &&
          (bVar2 = BG_UnlockablesIsItemPurchased(0,DAT_098c38f8), bVar2)) &&
         (bVar2 = BG_UnlockablesIsItemOptionPurchased(0,DAT_098c38f8,iVar3), bVar2)) &&
-       (pcVar6 = BG_UnlockablesGetLoadoutName(piVar5->loadoutSlot), pcVar6 != (char *)0x0)) {
-      BG_UnlockablesEquipClassToSlot(0,pcVar4,DAT_098c38f8,pcVar6);
-      pcVar6 = va("%s%s");
-      BG_UnlockablesEquipClassToSlot(0,pcVar4,DAT_098c391c,pcVar6);
+       (pcVar5 = BG_UnlockablesGetLoadoutName(piVar4->loadoutSlot), pcVar5 != (char *)0x0)) {
+      BG_UnlockablesEquipClassToSlot(0,customClassName_00,DAT_098c38f8,pcVar5);
+      pcVar5 = va("%s%s");
+      BG_UnlockablesEquipClassToSlot(0,customClassName_00,DAT_098c391c,pcVar5);
     }
   }
   return;
@@ -4727,10 +5019,17 @@ void __cdecl BG_UnlockablesToggleWeaponOptionCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  itemInfo_t *piVar5;
-  char *pcVar6;
-  uint uVar7;
+  char *customClassName_00;
+  itemInfo_t *piVar4;
+  char *pcVar5;
+  uint uVar6;
+  int isEquipped;
+  char *loadoutName;
+  char *customClassName;
+  int controllerIndex;
+  itemInfo_t *itemInfo;
+  int optionNum;
+  char *optionName;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
@@ -4738,10 +5037,10 @@ void __cdecl BG_UnlockablesToggleWeaponOptionCmd(void)
                    "toggleWeaponOption usage: toggleWeaponOption <customclassname> <optionName>\n");
   }
   else {
-    pcVar4 = Cmd_Argv(1);
+    customClassName_00 = Cmd_Argv(1);
     Cmd_Argv(2);
-    piVar5 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
-    if ((piVar5 == (itemInfo_t *)0x0) &&
+    piVar4 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
+    if ((piVar4 == (itemInfo_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xd33,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -4750,15 +5049,15 @@ void __cdecl BG_UnlockablesToggleWeaponOptionCmd(void)
     }
     iVar3 = BG_GetWeaponOptionNumFromIndexAndGroup
                       (0,(ui_currentWeaponOptionGroup->current).unsignedInt);
-    if ((((piVar5 != (itemInfo_t *)0x0) &&
+    if ((((piVar4 != (itemInfo_t *)0x0) &&
          (bVar2 = BG_UnlockablesIsItemPurchased(0,DAT_098c38f8), bVar2)) &&
         (bVar2 = BG_UnlockablesIsItemOptionPurchased(0,DAT_098c38f8,iVar3), bVar2)) &&
-       (pcVar6 = BG_UnlockablesGetLoadoutName(piVar5->loadoutSlot), pcVar6 != (char *)0x0)) {
-      BG_UnlockablesEquipClassToSlot(0,pcVar4,DAT_098c38f8,pcVar6);
-      pcVar6 = va("%s%s");
-      uVar7 = BG_UnlockablesGetEquippedItemInSlot(0,pcVar4,pcVar6);
-      pcVar6 = va("%s%s");
-      BG_UnlockablesEquipClassToSlot(0,pcVar4,uVar7 ^ 1,pcVar6);
+       (pcVar5 = BG_UnlockablesGetLoadoutName(piVar4->loadoutSlot), pcVar5 != (char *)0x0)) {
+      BG_UnlockablesEquipClassToSlot(0,customClassName_00,DAT_098c38f8,pcVar5);
+      pcVar5 = va("%s%s");
+      uVar6 = BG_UnlockablesGetEquippedItemInSlot(0,customClassName_00,pcVar5);
+      pcVar5 = va("%s%s");
+      BG_UnlockablesEquipClassToSlot(0,customClassName_00,uVar6 ^ 1,pcVar5);
     }
   }
   return;
@@ -4769,59 +5068,67 @@ void __cdecl BG_UnlockablesToggleWeaponOptionCmd(void)
 
 /* WARNING: Removing unreachable block (ram,0x0044cdc9) */
 /* WARNING: Removing unreachable block (ram,0x0044cdf2) */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
-/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesEquipClassCurrentItemCmdInternal(bool param_1)
+void __cdecl BG_UnlockablesEquipClassCurrentItemCmdInternal(bool isGlobal)
 
 {
-  loadoutSlot_t lVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  itemInfo_t *piVar5;
-  char *pcVar6;
-  char *local_10;
+  loadoutSlot_t loadoutSlot_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  itemInfo_t *piVar4;
+  char *loadoutName_00;
+  char *loadoutName;
+  loadoutSlot_t loadoutSlot;
+  itemInfo_t *itemInfo;
+  char *customClassName;
+  int controllerIndex;
+  int itemIndex;
   
-  if ((param_1) || (iVar4 = Cmd_Argc(), 1 < iVar4)) {
-    local_10 = (char *)0x0;
-    if (!param_1) {
-      local_10 = Cmd_Argv(1);
+  if ((isGlobal) || (iVar3 = Cmd_Argc(), 1 < iVar3)) {
+    customClassName = (char *)0x0;
+    if (!isGlobal) {
+      customClassName = Cmd_Argv(1);
     }
-    iVar4 = DAT_098c38f8;
+    iVar3 = DAT_098c38f8;
     if ((DAT_098c38f8 == -1) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
-                                 ,0xd5c,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
+                                 ,0xd5c,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((iVar4 != -1) && (bVar3 = BG_UnlockablesIsItemPurchased(0,iVar4), bVar3)) {
-      piVar5 = BG_UnlockablesGetItemInfo(iVar4);
-      if ((piVar5 == (itemInfo_t *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
-                                   ,0xd63,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    if ((iVar3 != -1) && (bVar2 = BG_UnlockablesIsItemPurchased(0,iVar3), bVar2)) {
+      piVar4 = BG_UnlockablesGetItemInfo(iVar3);
+      if ((piVar4 == (itemInfo_t *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
+                                   ,0xd63,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      if (piVar5 != (itemInfo_t *)0x0) {
-        lVar1 = piVar5->loadoutSlot;
-        if ((lVar1 == LOADOUTSLOT_FACEPAINT_PATTERN) || (lVar1 == LOADOUTSLOT_FACEPAINT_COLOR)) {
-          pcVar6 = BG_UnlockablesGetLoadoutName(lVar1);
-          if (pcVar6 != (char *)0x0) {
-            iVar4 = BG_UnlockablesGetFaceCamoNumFromItemIndex(iVar4);
-            BG_UnlockablesEquipClassToSlot(0,local_10,iVar4,pcVar6);
+      if (piVar4 != (itemInfo_t *)0x0) {
+        loadoutSlot_00 = piVar4->loadoutSlot;
+        if ((loadoutSlot_00 == LOADOUTSLOT_FACEPAINT_PATTERN) ||
+           (loadoutSlot_00 == LOADOUTSLOT_FACEPAINT_COLOR)) {
+          loadoutName_00 = BG_UnlockablesGetLoadoutName(loadoutSlot_00);
+          if (loadoutName_00 != (char *)0x0) {
+            iVar3 = BG_UnlockablesGetFaceCamoNumFromItemIndex(iVar3);
+            BG_UnlockablesEquipClassToSlot(0,customClassName,iVar3,loadoutName_00);
           }
         }
-        else if (((lVar1 == LOADOUTSLOT_FIRST) || (lVar1 == LOADOUTSLOT_SECONDARY_WEAPON)) &&
-                (piVar5->numAttachments[0] == 1)) {
-          BG_UnlockablesEquipClassAttachment(0,local_10,piVar5->name,"none","");
+        else if (((loadoutSlot_00 == LOADOUTSLOT_FIRST) ||
+                 (loadoutSlot_00 == LOADOUTSLOT_SECONDARY_WEAPON)) &&
+                (piVar4->numAttachments[0] == 1)) {
+          BG_UnlockablesEquipClassAttachment(0,customClassName,piVar4->name,"none","");
         }
         else {
-          BG_UnlockablesEquipClass(0,local_10,iVar4);
+          BG_UnlockablesEquipClass(0,customClassName,iVar3);
         }
       }
     }
@@ -4835,6 +5142,11 @@ void __cdecl BG_UnlockablesEquipClassCurrentItemCmdInternal(bool param_1)
 
 // 0044CDA0  BG_UnlockablesEquipClassCurrentItemCmd  (bgame/bg_unlockable_items.cpp:3459)
 
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+
 void __cdecl BG_UnlockablesEquipClassCurrentItemCmd(void)
 
 {
@@ -4844,6 +5156,11 @@ void __cdecl BG_UnlockablesEquipClassCurrentItemCmd(void)
 
 
 // 0044D040  BG_UnlockablesEquipClassCurrentGlobalItemCmd  (bgame/bg_unlockable_items.cpp:3464)
+
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesEquipClassCurrentGlobalItemCmd(void)
 
@@ -4861,6 +5178,7 @@ void __cdecl BG_UnlockablesEquipClassCurrentGlobalItemCmd(void)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesEquipClassItemCmd(void)
 
@@ -4868,18 +5186,22 @@ void __cdecl BG_UnlockablesEquipClassItemCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  char *pcVar5;
-  itemInfo_t *piVar6;
+  char *customClassName_00;
+  char *nptr;
+  itemInfo_t *piVar4;
+  itemInfo_t *itemInfo;
+  char *customClassName;
+  int controllerIndex;
+  int itemIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
     Com_PrintError(0xf,"equipclassitem usage: equipclassitem <customclassname> <itemindex>\n");
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    pcVar5 = Cmd_Argv(2);
-    iVar3 = atoi(pcVar5);
+    customClassName_00 = Cmd_Argv(1);
+    nptr = Cmd_Argv(2);
+    iVar3 = atoi(nptr);
     if ((iVar3 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xda0,0,"%s"), !bVar2)) {
@@ -4888,22 +5210,22 @@ void __cdecl BG_UnlockablesEquipClassItemCmd(void)
       return;
     }
     if ((iVar3 != -1) && (bVar2 = BG_UnlockablesIsItemPurchased(0,iVar3), bVar2)) {
-      piVar6 = BG_UnlockablesGetItemInfo(iVar3);
-      if ((piVar6 == (itemInfo_t *)0x0) &&
+      piVar4 = BG_UnlockablesGetItemInfo(iVar3);
+      if ((piVar4 == (itemInfo_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0xda7,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (piVar6 != (itemInfo_t *)0x0) {
-        if (((piVar6->loadoutSlot == LOADOUTSLOT_FIRST) ||
-            (piVar6->loadoutSlot == LOADOUTSLOT_SECONDARY_WEAPON)) &&
-           (piVar6->numAttachments[0] == 1)) {
-          BG_UnlockablesEquipClassAttachment(0,pcVar4,piVar6->name,"none","");
+      if (piVar4 != (itemInfo_t *)0x0) {
+        if (((piVar4->loadoutSlot == LOADOUTSLOT_FIRST) ||
+            (piVar4->loadoutSlot == LOADOUTSLOT_SECONDARY_WEAPON)) &&
+           (piVar4->numAttachments[0] == 1)) {
+          BG_UnlockablesEquipClassAttachment(0,customClassName_00,piVar4->name,"none","");
         }
         else {
-          BG_UnlockablesEquipClass(0,pcVar4,iVar3);
+          BG_UnlockablesEquipClass(0,customClassName_00,iVar3);
         }
       }
     }
@@ -4919,14 +5241,14 @@ void __cdecl BG_UnlockablesEquipClassItemCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetActualDefaultItem(int param_1)
+int __cdecl BG_UnlockablesGetActualDefaultItem(int loadoutSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (0x26 < param_1)) {
+  if ((loadoutSlot < 0) || (0x26 < loadoutSlot)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0xdbc,0,"%s\n\t(loadoutSlot) = %i");
     if (!bVar2) {
@@ -4935,11 +5257,11 @@ int __cdecl BG_UnlockablesGetActualDefaultItem(int param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (0x26 < param_1)) {
+  if ((loadoutSlot < 0) || (0x26 < loadoutSlot)) {
     iVar3 = 0;
   }
   else {
-    iVar3 = s_unlockableItems.actualDefaultItems[param_1];
+    iVar3 = s_unlockableItems.actualDefaultItems[loadoutSlot];
   }
   return iVar3;
 }
@@ -4952,14 +5274,14 @@ int __cdecl BG_UnlockablesGetActualDefaultItem(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetDefaultItem(int param_1)
+int __cdecl BG_UnlockablesGetDefaultItem(int loadoutSlot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (0x26 < param_1)) {
+  if ((loadoutSlot < 0) || (0x26 < loadoutSlot)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0xdc8,0,"%s\n\t(loadoutSlot) = %i");
     if (!bVar2) {
@@ -4968,11 +5290,11 @@ int __cdecl BG_UnlockablesGetDefaultItem(int param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (0x26 < param_1)) {
+  if ((loadoutSlot < 0) || (0x26 < loadoutSlot)) {
     iVar3 = 0;
   }
   else {
-    iVar3 = s_unlockableItems.defaultItems[param_1];
+    iVar3 = s_unlockableItems.defaultItems[loadoutSlot];
   }
   return iVar3;
 }
@@ -4997,25 +5319,27 @@ int __cdecl BG_UnlockablesGetDefaultWeaponItem(void)
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesEquipDefaultClass(int param_1,char *param_2,defaultClass_t param_3)
+void __cdecl
+BG_UnlockablesEquipDefaultClass
+          (int controllerIndex,char *customClassName,defaultClass_t defaultClass)
 
 {
-  char *pcVar1;
-  undefined4 local_c;
-  undefined4 local_8;
+  char *loadoutName_00;
+  char *loadoutName;
+  int itemIndex;
+  int loadoutSlot;
   
-  for (local_8 = LOADOUTSLOT_FIRST; (int)local_8 < 0x23;
-      local_8 = local_8 + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-    local_c = *(int *)(param_3 * 0x8c + 0xe74a28 + local_8 * 4);
-    if (local_c == -1) {
-      local_c = BG_UnlockablesGetDefaultItem(local_8);
+  for (loadoutSlot = 0; loadoutSlot < 0x23; loadoutSlot = loadoutSlot + 1) {
+    itemIndex = *(int *)(defaultClass * 0x8c + 0xe74a28 + loadoutSlot * 4);
+    if (itemIndex == -1) {
+      itemIndex = BG_UnlockablesGetDefaultItem(loadoutSlot);
     }
-    pcVar1 = BG_UnlockablesGetLoadoutName(local_8);
-    if (pcVar1 != (char *)0x0) {
-      BG_UnlockablesEquipClassToSlot(param_1,param_2,local_c,pcVar1);
+    loadoutName_00 = BG_UnlockablesGetLoadoutName(loadoutSlot);
+    if (loadoutName_00 != (char *)0x0) {
+      BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,itemIndex,loadoutName_00);
     }
   }
-  BG_ReplaceItemsWithPurchasedProItem(param_1);
+  BG_ReplaceItemsWithPurchasedProItem(controllerIndex);
   return;
 }
 
@@ -5032,9 +5356,13 @@ void __cdecl BG_UnlockablesEquipDefaultClassCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  char *pcVar5;
-  defaultClass_t dVar6;
+  char *customClassName_00;
+  char *stringEntry;
+  defaultClass_t defaultClass;
+  char *customClassName;
+  int controllerIndex;
+  char *defaultClassName;
+  int defaultClassNum;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
@@ -5042,10 +5370,10 @@ void __cdecl BG_UnlockablesEquipDefaultClassCmd(void)
                    "equipdefaultclass usage: equipdefaultclass <customclassname> <defaultClass>\n");
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    pcVar5 = Cmd_Argv(2);
-    dVar6 = FindEntryInList(pcVar5,s_classNames,0x14);
-    if (dVar6 == CLASS_NONE) {
+    customClassName_00 = Cmd_Argv(1);
+    stringEntry = Cmd_Argv(2);
+    defaultClass = FindEntryInList(stringEntry,s_classNames,0x14);
+    if (defaultClass == CLASS_NONE) {
       va("Default class %s not found\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0xdff,0,"%s\n\t%s");
@@ -5055,8 +5383,8 @@ void __cdecl BG_UnlockablesEquipDefaultClassCmd(void)
         return;
       }
     }
-    if (dVar6 != CLASS_NONE) {
-      BG_UnlockablesEquipDefaultClass(0,pcVar4,dVar6);
+    if (defaultClass != CLASS_NONE) {
+      BG_UnlockablesEquipDefaultClass(0,customClassName_00,defaultClass);
     }
   }
   return;
@@ -5075,19 +5403,20 @@ void __cdecl BG_UnlockablesEquipDefaultClassCmd(void)
 void __cdecl BG_UnlockablesEquipDefaultGlobalItemsCmd(void)
 
 {
-  char *pcVar1;
-  int local_10;
-  loadoutSlot_t local_c;
+  char *loadoutName_00;
+  char *loadoutName;
+  int itemIndex;
+  int loadoutSlot;
+  int controllerIndex;
   
-  for (local_c = LOADOUTSLOT_GLOBAL_ITEMS_START; (int)local_c < 0x27;
-      local_c = local_c + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-    local_10 = s_unlockableItems.defaultClassLoadouts[0x13][local_c];
-    if (local_10 == -1) {
-      local_10 = BG_UnlockablesGetDefaultItem(local_c);
+  for (loadoutSlot = 0x23; loadoutSlot < 0x27; loadoutSlot = loadoutSlot + 1) {
+    itemIndex = s_unlockableItems.defaultClassLoadouts[0x13][loadoutSlot];
+    if (itemIndex == -1) {
+      itemIndex = BG_UnlockablesGetDefaultItem(loadoutSlot);
     }
-    pcVar1 = BG_UnlockablesGetLoadoutName(local_c);
-    if (pcVar1 != (char *)0x0) {
-      BG_UnlockablesEquipClassToSlot(0,(char *)0x0,local_10,pcVar1);
+    loadoutName_00 = BG_UnlockablesGetLoadoutName(loadoutSlot);
+    if (loadoutName_00 != (char *)0x0) {
+      BG_UnlockablesEquipClassToSlot(0,(char *)0x0,itemIndex,loadoutName_00);
     }
   }
   return;
@@ -5101,16 +5430,18 @@ void __cdecl BG_UnlockablesEquipDefaultGlobalItemsCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetDefaultClassSlotIndexFromName(char *param_1,char *param_2)
+int __cdecl BG_UnlockablesGetDefaultClassSlotIndexFromName(char *className,char *slotName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
-  int local_10;
+  int loadoutSlot_00;
+  int itemIndex;
+  int loadoutSlot;
+  int defaultClassNum;
   
-  iVar3 = FindEntryInList(param_1,s_classNames,0x14);
+  iVar3 = FindEntryInList(className,s_classNames,0x14);
   if (iVar3 == -1) {
     va("Default class %s not found\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -5121,8 +5452,8 @@ int __cdecl BG_UnlockablesGetDefaultClassSlotIndexFromName(char *param_1,char *p
       return iVar3;
     }
   }
-  iVar4 = BG_UnlockablesGetLoadoutSlotFromString(param_2);
-  if (iVar4 == -1) {
+  loadoutSlot_00 = BG_UnlockablesGetLoadoutSlotFromString(slotName);
+  if (loadoutSlot_00 == -1) {
     va("Loadout slot %s not found\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0xe29,0,"%s\n\t%s");
@@ -5132,35 +5463,40 @@ int __cdecl BG_UnlockablesGetDefaultClassSlotIndexFromName(char *param_1,char *p
       return iVar3;
     }
   }
-  if ((iVar3 == -1) || (iVar4 == -1)) {
-    local_10 = 0;
+  if ((iVar3 == -1) || (loadoutSlot_00 == -1)) {
+    itemIndex = 0;
   }
   else {
-    if (iVar4 < 0x23) {
-      local_10 = *(int *)(iVar3 * 0x8c + 0xe74a28 + iVar4 * 4);
+    if (loadoutSlot_00 < 0x23) {
+      itemIndex = *(int *)(iVar3 * 0x8c + 0xe74a28 + loadoutSlot_00 * 4);
     }
     else {
-      local_10 = s_unlockableItems.defaultClassLoadouts[0x13][iVar4];
+      itemIndex = s_unlockableItems.defaultClassLoadouts[0x13][loadoutSlot_00];
     }
-    if (local_10 == -1) {
-      local_10 = BG_UnlockablesGetDefaultItem(iVar4);
+    if (itemIndex == -1) {
+      itemIndex = BG_UnlockablesGetDefaultItem(loadoutSlot_00);
     }
   }
-  return local_10;
+  return itemIndex;
 }
 
 
 // 0044A260  BG_UnlockablesGetDefaultClassSlotFromName  (bgame/bg_unlockable_items.cpp:3653)
 
-char * __cdecl BG_UnlockablesGetDefaultClassSlotFromName(char *param_1,char *param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+char * __cdecl BG_UnlockablesGetDefaultClassSlotFromName(char *className,char *slotName)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int itemIndex;
+  char *pcVar1;
   
-  iVar1 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,param_2);
-  pcVar2 = BG_UnlockablesGetItemRef(iVar1);
-  return pcVar2;
+  itemIndex = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,slotName);
+  pcVar1 = BG_UnlockablesGetItemRef(itemIndex);
+  return pcVar1;
 }
 
 
@@ -5168,6 +5504,10 @@ char * __cdecl BG_UnlockablesGetDefaultClassSlotFromName(char *param_1,char *par
 
 /* WARNING: Removing unreachable block (ram,0x0044d419) */
 /* WARNING: Removing unreachable block (ram,0x0044d442) */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesClearItemNewCmd(void)
 
@@ -5175,15 +5515,18 @@ void __cdecl BG_UnlockablesClearItemNewCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *itemName_00;
+  int controllerIndex;
+  char *itemName;
+  int itemIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 2) {
     Com_PrintError(0xf,"clearitemnew usage: clearitemnew <itemname>\n");
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    iVar3 = BG_UnlockablesGetItemIndexFromName(pcVar4);
+    itemName_00 = Cmd_Argv(1);
+    iVar3 = BG_UnlockablesGetItemIndexFromName(itemName_00);
     if ((iVar3 == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0xe59,0,"%s"), !bVar2)) {
@@ -5207,6 +5550,8 @@ void __cdecl BG_UnlockablesClearItemNewCmd(void)
 void __cdecl BG_UnlockablesClearAllItemsNewCmd(void)
 
 {
+  int controllerIndex;
+  
   BG_UnlockablesClearAllItemsNew(0);
   return;
 }
@@ -5219,25 +5564,26 @@ void __cdecl BG_UnlockablesClearAllItemsNewCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetNumPurchasedItemsInCurrentList(int param_1)
+int __cdecl BG_UnlockablesGetNumPurchasedItemsInCurrentList(int controllerIndex)
 
 {
   itemInfo_t *piVar1;
   bool bVar2;
-  int local_c;
-  int local_8;
+  itemInfo_t *itemInfo;
+  int itemNum;
+  int numPurchasedItems;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < s_unlockableItems.numItemsInSlot; local_c = local_c + 1) {
-    piVar1 = s_unlockableItems.itemsInSlot[local_c];
+  numPurchasedItems = 0;
+  for (itemNum = 0; itemNum < s_unlockableItems.numItemsInSlot; itemNum = itemNum + 1) {
+    piVar1 = s_unlockableItems.itemsInSlot[itemNum];
     if ((piVar1 != (itemInfo_t *)0x0) && (piVar1->isValid != false)) {
-      bVar2 = BG_UnlockablesIsItemPurchased(param_1,piVar1->index);
+      bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,piVar1->index);
       if (bVar2) {
-        local_8 = local_8 + 1;
+        numPurchasedItems = numPurchasedItems + 1;
       }
     }
   }
-  return local_8;
+  return numPurchasedItems;
 }
 
 
@@ -5257,15 +5603,16 @@ int __cdecl BG_UnlockablesGetSlotItemCount(void)
 
 // 0044A280  BG_UnlockablesIsProItemUnlocked  (bgame/bg_unlockable_items.cpp:3713)
 
-bool __cdecl BG_UnlockablesIsProItemUnlocked(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsProItemUnlocked(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   int iVar2;
-  uchar *puVar3;
-  uint uVar4;
-  int local_1c;
-  ddlState_t local_14;
+  uchar *buffer_00;
+  uint uVar3;
+  int proChallenges;
+  char *buffer;
+  ddlState_t searchState;
   
   iVar2 = Dvar_GetInt(ui_items_no_cost);
   if (iVar2 == 0) {
@@ -5274,16 +5621,16 @@ bool __cdecl BG_UnlockablesIsProItemUnlocked(int param_1,int param_2)
       bVar1 = true;
     }
     else {
-      bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2);
+      bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
       if (bVar1) {
-        puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-        for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-          bVar1 = LiveStats_MoveToProItemVersion(&local_14,param_2,local_1c);
+        buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+        for (proChallenges = 0; proChallenges < 3; proChallenges = proChallenges + 1) {
+          bVar1 = LiveStats_MoveToProItemVersion(&searchState,itemIndex,proChallenges);
           if (!bVar1) {
             return false;
           }
-          uVar4 = DDL_GetInt(&local_14,(char *)puVar3);
-          if (uVar4 == 0) {
+          uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+          if (uVar3 == 0) {
             return false;
           }
         }
@@ -5303,28 +5650,30 @@ bool __cdecl BG_UnlockablesIsProItemUnlocked(int param_1,int param_2)
 
 // 0044A9C0  BG_UnlockablesSetProItemUnlocked  (bgame/bg_unlockable_items.cpp:3751)
 
-bool __cdecl BG_UnlockablesSetProItemUnlocked(int param_1,int param_2,bool param_3)
+bool __cdecl BG_UnlockablesSetProItemUnlocked(int controllerIndex,int itemIndex,bool isUnlocked)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  int iVar3;
-  int local_20;
-  ddlState_t local_14;
+  uchar *buffer_00;
+  int iVar2;
+  int proChallenges;
+  char *buffer;
+  int unlockedFlag;
+  ddlState_t searchState;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-  local_20 = 0;
+  buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+  proChallenges = 0;
   while( true ) {
-    if (2 < local_20) {
+    if (2 < proChallenges) {
       return true;
     }
-    bVar1 = LiveStats_MoveToProItemVersion(&local_14,param_2,local_20);
+    bVar1 = LiveStats_MoveToProItemVersion(&searchState,itemIndex,proChallenges);
     if (!bVar1) break;
-    iVar3 = DDL_SetInt(&local_14,(uint)param_3,(char *)puVar2);
-    if (iVar3 == 0) {
+    iVar2 = DDL_SetInt(&searchState,(uint)isUnlocked,(char *)buffer_00);
+    if (iVar2 == 0) {
       return false;
     }
-    local_20 = local_20 + 1;
+    proChallenges = proChallenges + 1;
   }
   return false;
 }
@@ -5337,13 +5686,14 @@ bool __cdecl BG_UnlockablesSetProItemUnlocked(int param_1,int param_2,bool param
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsProItem(int param_1)
+bool __cdecl BG_UnlockablesIsProItem(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if (((piVar2 == (itemInfo_t *)0x0) || (piVar2->group != ITEMGROUP_SPECIALTY)) ||
      (piVar2->count == 0)) {
     bVar1 = false;
@@ -5362,41 +5712,49 @@ bool __cdecl BG_UnlockablesIsProItem(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetProItem(int param_1)
+int __cdecl BG_UnlockablesGetProItem(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  int proItemIndex;
+  itemInfo_t *itemInfo;
   
-  bVar1 = BG_UnlockablesIsProItem(param_1);
+  bVar1 = BG_UnlockablesIsProItem(itemIndex);
   if (!bVar1) {
-    piVar2 = BG_UnlockablesGetItemInfo(param_1);
+    piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
     if ((piVar2 != (itemInfo_t *)0x0) && (piVar2->group == ITEMGROUP_SPECIALTY)) {
-      bVar1 = BG_UnlockablesIsProItem(param_1 + 1);
+      bVar1 = BG_UnlockablesIsProItem(itemIndex + 1);
       if (bVar1) {
-        return param_1 + 1;
+        return itemIndex + 1;
       }
     }
-    param_1 = -1;
+    itemIndex = -1;
   }
-  return param_1;
+  return itemIndex;
 }
 
 
 // 0044D620  BG_UnlockablesGetProItemIfPurchased  (bgame/bg_unlockable_items.cpp:3826)
 
-int __cdecl BG_UnlockablesGetProItemIfPurchased(int param_1,int param_2)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+int __cdecl BG_UnlockablesGetProItemIfPurchased(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
-  int iVar2;
+  int itemIndex_00;
+  int proItemIndex;
   
-  bVar1 = BG_UnlockablesIsProItemUnlocked(param_1,param_2);
-  if (((bVar1) && (iVar2 = BG_UnlockablesGetProItem(param_2), iVar2 != -1)) &&
-     (bVar1 = BG_UnlockablesIsItemPurchased(param_1,iVar2), bVar1)) {
-    param_2 = iVar2;
+  bVar1 = BG_UnlockablesIsProItemUnlocked(controllerIndex,itemIndex);
+  if (((bVar1) && (itemIndex_00 = BG_UnlockablesGetProItem(itemIndex), itemIndex_00 != -1)) &&
+     (bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex_00), bVar1)) {
+    itemIndex = itemIndex_00;
   }
-  return param_2;
+  return itemIndex;
 }
 
 
@@ -5405,34 +5763,36 @@ int __cdecl BG_UnlockablesGetProItemIfPurchased(int param_1,int param_2)
 /* WARNING: Enum "customClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_ReplaceItemsWithPurchasedProItem(int param_1)
+void __cdecl BG_ReplaceItemsWithPurchasedProItem(int controllerIndex)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  int iVar4;
-  loadoutSlot_t local_10;
-  char *local_c;
-  customClass_t local_8;
+  char *slotName;
+  int itemIndex_00;
+  int proItemIndex;
+  int itemIndex;
+  char *loadoutName;
+  int loadoutSlot;
+  char *customClassName;
+  int classIndex;
   
-  for (local_8 = CUSTOM_CLASS_1; (int)local_8 < 10; local_8 = local_8 + CUSTOM_CLASS_2) {
-    local_c = BG_UnlockablesGetCustomClassName(local_8);
+  for (classIndex = 0; classIndex < 10; classIndex = classIndex + 1) {
+    customClassName = BG_UnlockablesGetCustomClassName(classIndex);
     iVar2 = Dvar_GetInt(custom_class_mode);
     if (iVar2 != 0) {
-      local_c = va("%d");
+      customClassName = va("%d");
     }
-    if (local_c != (char *)0x0) {
-      for (local_10 = LOADOUTSLOT_FIRST_SPECIALTY; (int)local_10 < 0x1b;
-          local_10 = local_10 + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-        pcVar3 = BG_UnlockablesGetLoadoutName(local_10);
-        if (pcVar3 != (char *)0x0) {
-          iVar2 = BG_UnlockablesGetEquippedItemInSlot(param_1,local_c,pcVar3);
+    if (customClassName != (char *)0x0) {
+      for (loadoutSlot = 0x18; loadoutSlot < 0x1b; loadoutSlot = loadoutSlot + 1) {
+        slotName = BG_UnlockablesGetLoadoutName(loadoutSlot);
+        if (slotName != (char *)0x0) {
+          iVar2 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,customClassName,slotName);
           bVar1 = BG_UnlockablesIsItemValidNotNull(iVar2);
           if (bVar1) {
-            iVar4 = BG_UnlockablesGetProItemIfPurchased(param_1,iVar2);
-            if (iVar2 != iVar4) {
-              BG_UnlockablesEquipClassToSlot(param_1,local_c,iVar4,pcVar3);
+            itemIndex_00 = BG_UnlockablesGetProItemIfPurchased(controllerIndex,iVar2);
+            if (iVar2 != itemIndex_00) {
+              BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,itemIndex_00,slotName);
             }
           }
         }
@@ -5445,16 +5805,22 @@ void __cdecl BG_ReplaceItemsWithPurchasedProItem(int param_1)
 
 // 0044D680  BG_UnlockablesPurchaseCurrentProItemCmd  (bgame/bg_unlockable_items.cpp:3874)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl BG_UnlockablesPurchaseCurrentProItemCmd(void)
 
 {
-  int iVar1;
-  int iVar2;
+  int itemIndex;
+  int cost;
+  int proItemIndex;
   
-  iVar1 = BG_UnlockablesGetProItem(DAT_098c38f8);
-  if (iVar1 != -1) {
-    iVar2 = BG_UnlockablesGetItemCost(iVar1);
-    BG_UnlockablesPurchaseItem(0,iVar1,iVar2);
+  itemIndex = BG_UnlockablesGetProItem(DAT_098c38f8);
+  if (itemIndex != -1) {
+    cost = BG_UnlockablesGetItemCost(itemIndex);
+    BG_UnlockablesPurchaseItem(0,itemIndex,cost);
     BG_ReplaceItemsWithPurchasedProItem(0);
   }
   return;
@@ -5468,17 +5834,19 @@ void __cdecl BG_UnlockablesPurchaseCurrentProItemCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesBuildItemListForSlotName(int param_1,char *param_2)
+int __cdecl BG_UnlockablesBuildItemListForSlotName(int controllerIndex,char *slotName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   loadoutSlot_t lVar4;
-  int local_14;
-  int local_c;
+  int proItem;
+  itemInfo_t *itemInfo;
+  int itemNum;
+  int loadoutSlot;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((slotName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0xf2e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -5486,8 +5854,8 @@ int __cdecl BG_UnlockablesBuildItemListForSlotName(int param_1,char *param_2)
     return iVar3;
   }
   s_unlockableItems.numItemsInSlot = 0;
-  if (param_2 != (char *)0x0) {
-    lVar4 = BG_UnlockablesGetLoadoutSlotFromString(param_2);
+  if (slotName != (char *)0x0) {
+    lVar4 = BG_UnlockablesGetLoadoutSlotFromString(slotName);
     if (lVar4 == LOADOUTSLOT_INVALID) {
       va("Loadout Slot %s not found");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -5499,18 +5867,18 @@ int __cdecl BG_UnlockablesBuildItemListForSlotName(int param_1,char *param_2)
       }
     }
     if (lVar4 != LOADOUTSLOT_INVALID) {
-      for (local_c = 0; local_c < 0x101; local_c = local_c + 1) {
-        if (((s_unlockableItems.itemTable[local_c].isValid != false) &&
-            (s_unlockableItems.itemTable[local_c].loadoutSlot == lVar4)) &&
-           (-1 < s_unlockableItems.itemTable[local_c].cost)) {
-          local_14 = local_c;
-          if (s_unlockableItems.itemTable[local_c].group == ITEMGROUP_SPECIALTY) {
-            bVar2 = BG_UnlockablesIsProItem(local_c);
+      for (itemNum = 0; itemNum < 0x101; itemNum = itemNum + 1) {
+        if (((s_unlockableItems.itemTable[itemNum].isValid != false) &&
+            (s_unlockableItems.itemTable[itemNum].loadoutSlot == lVar4)) &&
+           (-1 < s_unlockableItems.itemTable[itemNum].cost)) {
+          proItem = itemNum;
+          if (s_unlockableItems.itemTable[itemNum].group == ITEMGROUP_SPECIALTY) {
+            bVar2 = BG_UnlockablesIsProItem(itemNum);
             if (bVar2) goto LAB_0044d7f6;
-            local_14 = BG_UnlockablesGetProItemIfPurchased(param_1,local_c);
+            proItem = BG_UnlockablesGetProItemIfPurchased(controllerIndex,itemNum);
           }
           s_unlockableItems.itemsInSlot[s_unlockableItems.numItemsInSlot] =
-               (itemInfo_t *)(local_14 * 0x128 + 0xe62228);
+               (itemInfo_t *)(proItem * 0x128 + 0xe62228);
           s_unlockableItems.numItemsInSlot = s_unlockableItems.numItemsInSlot + 1;
         }
 LAB_0044d7f6:
@@ -5518,7 +5886,7 @@ LAB_0044d7f6:
     }
   }
   s_unlockableItems.numPurchasedItemsInSlot =
-       BG_UnlockablesGetNumPurchasedItemsInCurrentList(param_1);
+       BG_UnlockablesGetNumPurchasedItemsInCurrentList(controllerIndex);
   qsort(s_unlockableItems.itemsInSlot,s_unlockableItems.numItemsInSlot,4,
         BG_UnlockablesCompareItemsBySortKey);
   return s_unlockableItems.numItemsInSlot;
@@ -5532,16 +5900,18 @@ LAB_0044d7f6:
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesBuildItemListForChallengesPerks(int param_1,char *param_2)
+int __cdecl BG_UnlockablesBuildItemListForChallengesPerks(int controllerIndex,char *slotName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   loadoutSlot_t lVar4;
-  int local_c;
+  itemInfo_t *itemInfo;
+  int itemNum;
+  int loadoutSlot;
   
-  if (param_2 == (char *)0x0) {
+  if (slotName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0xf5b,0,"%s");
     if (!bVar2) {
@@ -5551,8 +5921,8 @@ int __cdecl BG_UnlockablesBuildItemListForChallengesPerks(int param_1,char *para
     }
   }
   s_unlockableItems.numItemsInSlot = 0;
-  if (param_2 != (char *)0x0) {
-    lVar4 = BG_UnlockablesGetLoadoutSlotFromString(param_2);
+  if (slotName != (char *)0x0) {
+    lVar4 = BG_UnlockablesGetLoadoutSlotFromString(slotName);
     if (lVar4 == LOADOUTSLOT_INVALID) {
       va("Loadout Slot %s not found");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -5564,15 +5934,15 @@ int __cdecl BG_UnlockablesBuildItemListForChallengesPerks(int param_1,char *para
       }
     }
     if (lVar4 != LOADOUTSLOT_INVALID) {
-      for (local_c = 0; local_c < 0x101; local_c = local_c + 1) {
-        if ((((s_unlockableItems.itemTable[local_c].isValid != false) &&
-             (s_unlockableItems.itemTable[local_c].loadoutSlot == lVar4)) &&
-            (-1 < s_unlockableItems.itemTable[local_c].cost)) &&
-           (s_unlockableItems.itemTable[local_c].group == ITEMGROUP_SPECIALTY)) {
-          bVar2 = BG_UnlockablesIsProItem(local_c);
+      for (itemNum = 0; itemNum < 0x101; itemNum = itemNum + 1) {
+        if ((((s_unlockableItems.itemTable[itemNum].isValid != false) &&
+             (s_unlockableItems.itemTable[itemNum].loadoutSlot == lVar4)) &&
+            (-1 < s_unlockableItems.itemTable[itemNum].cost)) &&
+           (s_unlockableItems.itemTable[itemNum].group == ITEMGROUP_SPECIALTY)) {
+          bVar2 = BG_UnlockablesIsProItem(itemNum);
           if (!bVar2) {
             s_unlockableItems.itemsInSlot[s_unlockableItems.numItemsInSlot] =
-                 (itemInfo_t *)(local_c * 0x128 + 0xe62228);
+                 (itemInfo_t *)(itemNum * 0x128 + 0xe62228);
             s_unlockableItems.numItemsInSlot = s_unlockableItems.numItemsInSlot + 1;
           }
         }
@@ -5580,7 +5950,7 @@ int __cdecl BG_UnlockablesBuildItemListForChallengesPerks(int param_1,char *para
     }
   }
   s_unlockableItems.numPurchasedItemsInSlot =
-       BG_UnlockablesGetNumPurchasedItemsInCurrentList(param_1);
+       BG_UnlockablesGetNumPurchasedItemsInCurrentList(controllerIndex);
   qsort(s_unlockableItems.itemsInSlot,s_unlockableItems.numItemsInSlot,4,
         BG_UnlockablesCompareItemsBySortKey);
   return s_unlockableItems.numItemsInSlot;
@@ -5591,12 +5961,18 @@ int __cdecl BG_UnlockablesBuildItemListForChallengesPerks(int param_1,char *para
 
 /* WARNING: Removing unreachable block (ram,0x0044d6e9) */
 /* WARNING: Removing unreachable block (ram,0x0044d712) */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesBuildItemListForSlotNameCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *slotName_00;
+  int controllerIndex;
+  char *slotName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -5604,8 +5980,8 @@ void __cdecl BG_UnlockablesBuildItemListForSlotNameCmd(void)
     ;
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    BG_UnlockablesBuildItemListForSlotName(0,pcVar2);
+    slotName_00 = Cmd_Argv(1);
+    BG_UnlockablesBuildItemListForSlotName(0,slotName_00);
   }
   return;
 }
@@ -5615,12 +5991,18 @@ void __cdecl BG_UnlockablesBuildItemListForSlotNameCmd(void)
 
 /* WARNING: Removing unreachable block (ram,0x0044d979) */
 /* WARNING: Removing unreachable block (ram,0x0044d9a2) */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl BG_UnlockablesBuildItemListForChallengesPerksCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *slotName_00;
+  int controllerIndex;
+  char *slotName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -5629,8 +6011,8 @@ void __cdecl BG_UnlockablesBuildItemListForChallengesPerksCmd(void)
                   );
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    BG_UnlockablesBuildItemListForChallengesPerks(0,pcVar2);
+    slotName_00 = Cmd_Argv(1);
+    BG_UnlockablesBuildItemListForChallengesPerks(0,slotName_00);
   }
   return;
 }
@@ -5643,19 +6025,19 @@ void __cdecl BG_UnlockablesBuildItemListForChallengesPerksCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesBuildItemListForGroup(itemGroup_t param_1)
+int __cdecl BG_UnlockablesBuildItemListForGroup(itemGroup_t group)
 
 {
-  int local_8;
+  int itemNum;
   
   s_unlockableItems.numItemsInSlot = 0;
-  if (param_1 != ITEMGROUP_COUNT) {
-    for (local_8 = 0; local_8 < 0x101; local_8 = local_8 + 1) {
-      if (((s_unlockableItems.itemTable[local_8].isValid != false) &&
-          (s_unlockableItems.itemTable[local_8].group == param_1)) &&
-         (-1 < s_unlockableItems.itemTable[local_8].cost)) {
+  if (group != ITEMGROUP_COUNT) {
+    for (itemNum = 0; itemNum < 0x101; itemNum = itemNum + 1) {
+      if (((s_unlockableItems.itemTable[itemNum].isValid != false) &&
+          (s_unlockableItems.itemTable[itemNum].group == group)) &&
+         (-1 < s_unlockableItems.itemTable[itemNum].cost)) {
         s_unlockableItems.itemsInSlot[s_unlockableItems.numItemsInSlot] =
-             (itemInfo_t *)(local_8 * 0x128 + 0xe62228);
+             (itemInfo_t *)(itemNum * 0x128 + 0xe62228);
         s_unlockableItems.numItemsInSlot = s_unlockableItems.numItemsInSlot + 1;
       }
     }
@@ -5674,17 +6056,18 @@ void __cdecl BG_UnlockablesBuildItemListForGroupCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  itemGroup_t iVar3;
+  char *nptr;
+  itemGroup_t group_00;
+  itemGroup_t group;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_PrintError(0xf,"buildItemListForGroup usage: buildItemListForGroup <group> \n");
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    iVar3 = atoi(pcVar2);
-    BG_UnlockablesBuildItemListForGroup(iVar3);
+    nptr = Cmd_Argv(1);
+    group_00 = atoi(nptr);
+    BG_UnlockablesBuildItemListForGroup(group_00);
   }
   return;
 }
@@ -5697,30 +6080,30 @@ void __cdecl BG_UnlockablesBuildItemListForGroupCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesBuildItemListForGroupForWeaponTable(itemGroup_t param_1)
+int __cdecl BG_UnlockablesBuildItemListForGroupForWeaponTable(itemGroup_t group)
 
 {
   bool bVar1;
   int iVar2;
-  int local_8;
+  int itemNum;
   
   s_unlockableItems.numItemsInSlot = 0;
-  if (param_1 != ITEMGROUP_COUNT) {
-    for (local_8 = 0; local_8 < 0x101; local_8 = local_8 + 1) {
-      if ((s_unlockableItems.itemTable[local_8].isValid != false) &&
-         (s_unlockableItems.itemTable[local_8].group == param_1)) {
-        bVar1 = BG_UnlockablesItemIsDualWield(s_unlockableItems.itemTable[local_8].index);
+  if (group != ITEMGROUP_COUNT) {
+    for (itemNum = 0; itemNum < 0x101; itemNum = itemNum + 1) {
+      if ((s_unlockableItems.itemTable[itemNum].isValid != false) &&
+         (s_unlockableItems.itemTable[itemNum].group == group)) {
+        bVar1 = BG_UnlockablesItemIsDualWield(s_unlockableItems.itemTable[itemNum].index);
         if (bVar1) {
           iVar2 = BG_UnlockablesGetItemDualWieldBaseIndex
-                            (s_unlockableItems.itemTable[local_8].index);
+                            (s_unlockableItems.itemTable[itemNum].index);
           iVar2 = BG_UnlockablesGetItemDualWieldCost(iVar2);
         }
         else {
-          iVar2 = s_unlockableItems.itemTable[local_8].cost;
+          iVar2 = s_unlockableItems.itemTable[itemNum].cost;
         }
         if (iVar2 < 0) break;
         s_unlockableItems.itemsInSlot[s_unlockableItems.numItemsInSlot] =
-             (itemInfo_t *)(local_8 * 0x128 + 0xe62228);
+             (itemInfo_t *)(itemNum * 0x128 + 0xe62228);
         s_unlockableItems.numItemsInSlot = s_unlockableItems.numItemsInSlot + 1;
       }
     }
@@ -5739,8 +6122,9 @@ void __cdecl BG_UnlockablesBuildItemListForGroupForWeaponTableCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  itemGroup_t iVar3;
+  char *nptr;
+  itemGroup_t group_00;
+  itemGroup_t group;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -5749,9 +6133,9 @@ void __cdecl BG_UnlockablesBuildItemListForGroupForWeaponTableCmd(void)
                   );
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    iVar3 = atoi(pcVar2);
-    BG_UnlockablesBuildItemListForGroupForWeaponTable(iVar3);
+    nptr = Cmd_Argv(1);
+    group_00 = atoi(nptr);
+    BG_UnlockablesBuildItemListForGroupForWeaponTable(group_00);
   }
   return;
 }
@@ -5764,15 +6148,16 @@ void __cdecl BG_UnlockablesBuildItemListForGroupForWeaponTableCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesBuildItemListForGroupName(int param_1,char *param_2)
+int __cdecl BG_UnlockablesBuildItemListForGroupName(int controllerIndex,char *groupName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  itemGroup_t iVar4;
+  itemGroup_t group_00;
+  int group;
   
-  if (param_2 == (char *)0x0) {
+  if (groupName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0xff8,0,"%s");
     if (!bVar2) {
@@ -5782,9 +6167,9 @@ int __cdecl BG_UnlockablesBuildItemListForGroupName(int param_1,char *param_2)
     }
   }
   s_unlockableItems.numItemsInSlot = 0;
-  if (param_2 != (char *)0x0) {
-    iVar4 = FindEntryInList(param_2,s_itemGroupNames,0x18);
-    if (iVar4 == ITEMGROUP_INVALID) {
+  if (groupName != (char *)0x0) {
+    group_00 = FindEntryInList(groupName,s_itemGroupNames,0x18);
+    if (group_00 == ITEMGROUP_INVALID) {
       va("Item Group %s not found");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0xfff,0,"%s\n\t%s");
@@ -5794,12 +6179,12 @@ int __cdecl BG_UnlockablesBuildItemListForGroupName(int param_1,char *param_2)
         return iVar3;
       }
     }
-    if (iVar4 != ITEMGROUP_INVALID) {
-      s_unlockableItems.numItemsInSlot = BG_UnlockablesBuildItemListForGroup(iVar4);
+    if (group_00 != ITEMGROUP_INVALID) {
+      s_unlockableItems.numItemsInSlot = BG_UnlockablesBuildItemListForGroup(group_00);
     }
   }
   s_unlockableItems.numPurchasedItemsInSlot =
-       BG_UnlockablesGetNumPurchasedItemsInCurrentList(param_1);
+       BG_UnlockablesGetNumPurchasedItemsInCurrentList(controllerIndex);
   qsort(s_unlockableItems.itemsInSlot,s_unlockableItems.numItemsInSlot,4,
         BG_UnlockablesCompareItemsBySortKey);
   return s_unlockableItems.numItemsInSlot;
@@ -5815,7 +6200,9 @@ void __cdecl BG_UnlockablesBuildItemListForGroupNameCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *groupName_00;
+  int controllerIndex;
+  char *groupName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -5823,8 +6210,8 @@ void __cdecl BG_UnlockablesBuildItemListForGroupNameCmd(void)
     ;
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    BG_UnlockablesBuildItemListForGroupName(0,pcVar2);
+    groupName_00 = Cmd_Argv(1);
+    BG_UnlockablesBuildItemListForGroupName(0,groupName_00);
   }
   return;
 }
@@ -5837,7 +6224,8 @@ void __cdecl BG_UnlockablesBuildItemListForGroupNameCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroup(int param_1,char *param_2,char *param_3)
+int __cdecl
+BG_UnlockablesBuildItemListForSlotNameAndGroup(int controllerIndex,char *slotName,char *groupName)
 
 {
   code *pcVar1;
@@ -5845,9 +6233,11 @@ int __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroup(int param_1,char *par
   int iVar3;
   loadoutSlot_t lVar4;
   itemGroup_t iVar5;
-  int local_10;
+  int itemNum;
+  int loadoutSlot;
+  int group;
   
-  if (param_2 == (char *)0x0) {
+  if (slotName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x1027,0,"%s");
     if (!bVar2) {
@@ -5856,7 +6246,7 @@ int __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroup(int param_1,char *par
       return iVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (groupName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x1028,0,"%s");
     if (!bVar2) {
@@ -5866,8 +6256,8 @@ int __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroup(int param_1,char *par
     }
   }
   s_unlockableItems.numItemsInSlot = 0;
-  if ((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) {
-    lVar4 = BG_UnlockablesGetLoadoutSlotFromString(param_2);
+  if ((slotName != (char *)0x0) && (groupName != (char *)0x0)) {
+    lVar4 = BG_UnlockablesGetLoadoutSlotFromString(slotName);
     if (lVar4 == LOADOUTSLOT_INVALID) {
       va("Loadout Slot %s not found");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -5878,7 +6268,7 @@ int __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroup(int param_1,char *par
         return iVar3;
       }
     }
-    iVar5 = FindEntryInList(param_3,s_itemGroupNames,0x18);
+    iVar5 = FindEntryInList(groupName,s_itemGroupNames,0x18);
     if (iVar5 == ITEMGROUP_INVALID) {
       va("Item Group %s not found");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -5890,20 +6280,20 @@ int __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroup(int param_1,char *par
       }
     }
     if ((lVar4 != LOADOUTSLOT_INVALID) && (iVar5 != ITEMGROUP_INVALID)) {
-      for (local_10 = 0; local_10 < 0x101; local_10 = local_10 + 1) {
-        if ((((s_unlockableItems.itemTable[local_10].isValid != false) &&
-             (s_unlockableItems.itemTable[local_10].loadoutSlot == lVar4)) &&
-            (s_unlockableItems.itemTable[local_10].group == iVar5)) &&
-           (-1 < s_unlockableItems.itemTable[local_10].cost)) {
+      for (itemNum = 0; itemNum < 0x101; itemNum = itemNum + 1) {
+        if ((((s_unlockableItems.itemTable[itemNum].isValid != false) &&
+             (s_unlockableItems.itemTable[itemNum].loadoutSlot == lVar4)) &&
+            (s_unlockableItems.itemTable[itemNum].group == iVar5)) &&
+           (-1 < s_unlockableItems.itemTable[itemNum].cost)) {
           s_unlockableItems.itemsInSlot[s_unlockableItems.numItemsInSlot] =
-               (itemInfo_t *)(local_10 * 0x128 + 0xe62228);
+               (itemInfo_t *)(itemNum * 0x128 + 0xe62228);
           s_unlockableItems.numItemsInSlot = s_unlockableItems.numItemsInSlot + 1;
         }
       }
     }
   }
   s_unlockableItems.numPurchasedItemsInSlot =
-       BG_UnlockablesGetNumPurchasedItemsInCurrentList(param_1);
+       BG_UnlockablesGetNumPurchasedItemsInCurrentList(controllerIndex);
   qsort(s_unlockableItems.itemsInSlot,s_unlockableItems.numItemsInSlot,4,
         BG_UnlockablesCompareItemsBySortKey);
   return s_unlockableItems.numItemsInSlot;
@@ -5919,8 +6309,11 @@ void __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroupCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char *pcVar3;
+  char *slotName_00;
+  char *groupName_00;
+  int controllerIndex;
+  char *groupName;
+  char *slotName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
@@ -5929,9 +6322,9 @@ void __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroupCmd(void)
                   );
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    BG_UnlockablesBuildItemListForSlotNameAndGroup(0,pcVar2,pcVar3);
+    slotName_00 = Cmd_Argv(1);
+    groupName_00 = Cmd_Argv(2);
+    BG_UnlockablesBuildItemListForSlotNameAndGroup(0,slotName_00,groupName_00);
   }
   return;
 }
@@ -5944,13 +6337,14 @@ void __cdecl BG_UnlockablesBuildItemListForSlotNameAndGroupCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemClassified(int param_1)
+bool __cdecl BG_UnlockablesIsItemClassified(int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_1);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if ((piVar2 == (itemInfo_t *)0x0) ||
      (piVar2->unclassifyAt <= s_unlockableItems.numPurchasedItemsInSlot)) {
     bVar1 = false;
@@ -5969,36 +6363,38 @@ bool __cdecl BG_UnlockablesIsItemClassified(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl BG_UnlockablesIsItemClassifiedGeneric(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsItemClassifiedGeneric(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
   itemInfo_t *piVar3;
-  int local_14;
-  int local_10;
+  int currItem;
+  int numPurchasedItemsInItemGroup;
+  itemInfo_t *itemInfo;
+  itemInfo_t *currItemInfo;
   
-  bVar1 = BG_UnlockablesIsItemValidNotNull(param_2);
+  bVar1 = BG_UnlockablesIsItemValidNotNull(itemIndex);
   if (!bVar1) {
     return false;
   }
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
-  local_10 = 0;
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
+  numPurchasedItemsInItemGroup = 0;
   if ((piVar2 != (itemInfo_t *)0x0) && (piVar2->cost != -1)) {
     if (piVar2->unclassifyAt == 0) {
       return false;
     }
-    for (local_14 = 0; local_14 < 0x100; local_14 = local_14 + 1) {
-      bVar1 = BG_UnlockablesIsItemValidNotNull(local_14);
-      if (((((bVar1) && (piVar3 = BG_UnlockablesGetItemInfo(local_14), piVar3 != (itemInfo_t *)0x0))
+    for (currItem = 0; currItem < 0x100; currItem = currItem + 1) {
+      bVar1 = BG_UnlockablesIsItemValidNotNull(currItem);
+      if (((((bVar1) && (piVar3 = BG_UnlockablesGetItemInfo(currItem), piVar3 != (itemInfo_t *)0x0))
            && (piVar3->isValid != false)) && ((piVar3->isNullItem == false && (piVar3->cost != -1)))
           ) && ((piVar2->loadoutSlot == piVar3->loadoutSlot &&
                 ((piVar2->group == piVar3->group &&
-                 (bVar1 = BG_UnlockablesIsItemPurchased(param_1,local_14), bVar1)))))) {
-        local_10 = local_10 + 1;
+                 (bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,currItem), bVar1)))))) {
+        numPurchasedItemsInItemGroup = numPurchasedItemsInItemGroup + 1;
       }
     }
-    if (local_10 < piVar2->unclassifyAt) {
+    if (numPurchasedItemsInItemGroup < piVar2->unclassifyAt) {
       return true;
     }
   }
@@ -6013,23 +6409,25 @@ bool __cdecl BG_UnlockablesIsItemClassifiedGeneric(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetNumPurchasesBeforeDeclassified(int param_1)
+int __cdecl BG_UnlockablesGetNumPurchasesBeforeDeclassified(int itemIndex)
 
 {
   itemInfo_t *piVar1;
-  int local_c;
+  int numPurchasesBeforeDeclassified;
+  itemInfo_t *itemInfo;
   
-  piVar1 = BG_UnlockablesGetItemInfo(param_1);
+  piVar1 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar1 == (itemInfo_t *)0x0) {
-    local_c = 0;
+    numPurchasesBeforeDeclassified = 0;
   }
   else {
-    local_c = piVar1->unclassifyAt - s_unlockableItems.numPurchasedItemsInSlot;
-    if (local_c < 0) {
-      local_c = 0;
+    numPurchasesBeforeDeclassified =
+         piVar1->unclassifyAt - s_unlockableItems.numPurchasedItemsInSlot;
+    if (numPurchasesBeforeDeclassified < 0) {
+      numPurchasesBeforeDeclassified = 0;
     }
   }
-  return local_c;
+  return numPurchasesBeforeDeclassified;
 }
 
 
@@ -6040,14 +6438,14 @@ int __cdecl BG_UnlockablesGetNumPurchasesBeforeDeclassified(int param_1)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-int __cdecl BG_UnlockablesGetItemIndexInSlot(int param_1)
+int __cdecl BG_UnlockablesGetItemIndexInSlot(int itemNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (s_unlockableItems.numItemsInSlot <= param_1) {
+  if (s_unlockableItems.numItemsInSlot <= itemNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x10a2,0,"%s");
     if (!bVar2) {
@@ -6056,7 +6454,7 @@ int __cdecl BG_UnlockablesGetItemIndexInSlot(int param_1)
       return iVar3;
     }
   }
-  if (s_unlockableItems.itemsInSlot[param_1] == (itemInfo_t *)0x0) {
+  if (s_unlockableItems.itemsInSlot[itemNum] == (itemInfo_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                              0x10a3,0,"%s");
     if (!bVar2) {
@@ -6065,9 +6463,9 @@ int __cdecl BG_UnlockablesGetItemIndexInSlot(int param_1)
       return iVar3;
     }
   }
-  if ((param_1 < s_unlockableItems.numItemsInSlot) &&
-     (s_unlockableItems.itemsInSlot[param_1] != (itemInfo_t *)0x0)) {
-    iVar3 = s_unlockableItems.itemsInSlot[param_1]->index;
+  if ((itemNum < s_unlockableItems.numItemsInSlot) &&
+     (s_unlockableItems.itemsInSlot[itemNum] != (itemInfo_t *)0x0)) {
+    iVar3 = s_unlockableItems.itemsInSlot[itemNum]->index;
   }
   else {
     iVar3 = -1;
@@ -6078,6 +6476,11 @@ int __cdecl BG_UnlockablesGetItemIndexInSlot(int param_1)
 
 // 0044DFF0  OpenAttachmentMenuForCurrentItemCmd  (bgame/bg_unlockable_items.cpp:4270)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl OpenAttachmentMenuForCurrentItemCmd(void)
 
 {
@@ -6086,9 +6489,14 @@ void __cdecl OpenAttachmentMenuForCurrentItemCmd(void)
   bool bVar3;
   int iVar4;
   char *pcVar5;
-  char *pcVar6;
-  uiInfo_s *puVar7;
-  char *pcVar8;
+  char *s0;
+  uiInfo_s *dc;
+  char *s1;
+  int numAttachments;
+  uiInfo_s *uiInfo;
+  int controllerIndex;
+  char *menuName;
+  bool equipIfNone;
   
   iVar4 = Cmd_Argc();
   if (iVar4 < 2) {
@@ -6101,9 +6509,9 @@ void __cdecl OpenAttachmentMenuForCurrentItemCmd(void)
     bVar2 = false;
     iVar4 = Cmd_Argc();
     if (iVar4 == 3) {
-      pcVar8 = "equipifnone";
-      pcVar6 = Cmd_Argv(2);
-      iVar4 = I_stricmp(pcVar6,pcVar8);
+      s1 = "equipifnone";
+      s0 = Cmd_Argv(2);
+      iVar4 = I_stricmp(s0,s1);
       if (iVar4 == 0) {
         bVar2 = true;
       }
@@ -6124,8 +6532,8 @@ void __cdecl OpenAttachmentMenuForCurrentItemCmd(void)
     }
     if (((pcVar5 != (char *)0x0) && (DAT_098c38f8 != -1)) &&
        (bVar3 = BG_UnlockablesIsItemPurchased(0,DAT_098c38f8), bVar3)) {
-      puVar7 = UI_GetInfo(0);
-      if ((puVar7 == (uiInfo_s *)0x0) &&
+      dc = UI_GetInfo(0);
+      if ((dc == (uiInfo_s *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                    ,0x10cb,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -6151,9 +6559,9 @@ void __cdecl OpenAttachmentMenuForCurrentItemCmd(void)
           Com_PrintWarning(0xd,"No attachments on item \'%s\'\n");
         }
       }
-      else if (puVar7 != (uiInfo_s *)0x0) {
+      else if (dc != (uiInfo_s *)0x0) {
         pcVar5 = Cmd_Argv(1);
-        iVar4 = Menus_OpenByName(0,&puVar7->uiDC,pcVar5);
+        iVar4 = Menus_OpenByName(0,&dc->uiDC,pcVar5);
         if (iVar4 == 0) {
           Cmd_Argv(1);
           Com_PrintWarning(0xd,"Could not find menu \'%s\'\n");
@@ -6172,7 +6580,7 @@ void __cdecl OpenAttachmentMenuForCurrentItemCmd(void)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl BG_UnlockablesEquipItemInSlotSortedCmdInternal(bool param_1)
+void __cdecl BG_UnlockablesEquipItemInSlotSortedCmdInternal(bool isGlobalItem)
 
 {
   code *pcVar1;
@@ -6180,25 +6588,25 @@ void __cdecl BG_UnlockablesEquipItemInSlotSortedCmdInternal(bool param_1)
   int iVar3;
   char *pcVar4;
   itemInfo_t *piVar5;
-  char *pcVar6;
+  char *slotName;
   int aiStack_2bc [41];
-  int local_218;
+  int selectedItemAttribute;
   int aiStack_214 [40];
-  int local_174;
-  char *local_170;
-  int local_16c;
-  int local_168;
-  char *local_164;
-  int local_160;
-  int local_15c;
-  int local_158;
+  int shiftIndex;
+  char *customClassName;
+  int numItemsOfSameAttributeAllowed;
+  int controllerIndex;
+  char *groupName;
+  int totalItemsEquipped;
+  int currSlot;
+  int currentArg;
   int aiStack_154 [41];
-  int local_b0;
+  int groupItemCount;
   int aiStack_ac [41];
-  int local_8;
+  int itemsOfSameAttributeEquipped;
   
-  local_168 = 0;
-  if (param_1) {
+  controllerIndex = 0;
+  if (isGlobalItem) {
     iVar3 = Cmd_Argc();
     if (iVar3 < 4) {
       Com_PrintError(0xf,
@@ -6216,37 +6624,37 @@ void __cdecl BG_UnlockablesEquipItemInSlotSortedCmdInternal(bool param_1)
       return;
     }
   }
-  local_158 = 1;
-  local_170 = (char *)0x0;
-  if (!param_1) {
-    local_170 = Cmd_Argv(1);
-    local_158 = local_158 + 1;
+  currentArg = 1;
+  customClassName = (char *)0x0;
+  if (!isGlobalItem) {
+    customClassName = Cmd_Argv(1);
+    currentArg = currentArg + 1;
   }
-  pcVar4 = Cmd_Argv(local_158);
-  local_b0 = atoi(pcVar4);
-  local_158 = local_158 + 1;
-  local_164 = Cmd_Argv(local_158);
-  local_158 = local_158 + 1;
-  pcVar4 = Cmd_Argv(local_158);
-  local_16c = atoi(pcVar4);
-  local_158 = local_158 + 1;
-  local_160 = 0;
-  local_8 = 0;
-  if ((0x27 < local_b0) &&
+  pcVar4 = Cmd_Argv(currentArg);
+  groupItemCount = atoi(pcVar4);
+  currentArg = currentArg + 1;
+  groupName = Cmd_Argv(currentArg);
+  currentArg = currentArg + 1;
+  pcVar4 = Cmd_Argv(currentArg);
+  numItemsOfSameAttributeAllowed = atoi(pcVar4);
+  currentArg = currentArg + 1;
+  totalItemsEquipped = 0;
+  itemsOfSameAttributeEquipped = 0;
+  if ((0x27 < groupItemCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x1109,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_b0 < 0x28) {
+  if (groupItemCount < 0x28) {
     piVar5 = BG_UnlockablesGetItemInfo(DAT_098c38f8);
-    local_218 = piVar5->count;
-    for (local_15c = 0; local_15c < local_b0; local_15c = local_15c + 1) {
+    selectedItemAttribute = piVar5->count;
+    for (currSlot = 0; currSlot < groupItemCount; currSlot = currSlot + 1) {
       pcVar4 = va("%s%d");
       iVar3 = BG_UnlockablesGetLoadoutSlotFromString(pcVar4);
-      aiStack_2bc[local_15c] = iVar3;
-      if (aiStack_2bc[local_15c] == -1) {
+      aiStack_2bc[currSlot] = iVar3;
+      if (aiStack_2bc[currSlot] == -1) {
         va("%s%d");
         va("Loadout Slot %s not found");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
@@ -6257,67 +6665,74 @@ void __cdecl BG_UnlockablesEquipItemInSlotSortedCmdInternal(bool param_1)
           return;
         }
       }
-      if (aiStack_2bc[local_15c] == -1) {
+      if (aiStack_2bc[currSlot] == -1) {
         return;
       }
-      iVar3 = BG_UnlockablesGetDefaultItem(aiStack_2bc[local_15c]);
-      aiStack_ac[local_15c] = iVar3;
+      iVar3 = BG_UnlockablesGetDefaultItem(aiStack_2bc[currSlot]);
+      aiStack_ac[currSlot] = iVar3;
       pcVar4 = va("%s%d");
-      iVar3 = BG_UnlockablesGetEquippedItemInSlot(local_168,local_170,pcVar4);
-      aiStack_154[local_15c] = iVar3;
-      piVar5 = BG_UnlockablesGetItemInfo(aiStack_154[local_15c]);
-      aiStack_214[local_15c] = piVar5->count;
-      if ((aiStack_154[local_15c] != aiStack_ac[local_15c]) &&
-         (local_160 = local_160 + 1, aiStack_214[local_15c] == local_218)) {
-        local_8 = local_8 + 1;
+      iVar3 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,customClassName,pcVar4);
+      aiStack_154[currSlot] = iVar3;
+      piVar5 = BG_UnlockablesGetItemInfo(aiStack_154[currSlot]);
+      aiStack_214[currSlot] = piVar5->count;
+      if ((aiStack_154[currSlot] != aiStack_ac[currSlot]) &&
+         (totalItemsEquipped = totalItemsEquipped + 1,
+         aiStack_214[currSlot] == selectedItemAttribute)) {
+        itemsOfSameAttributeEquipped = itemsOfSameAttributeEquipped + 1;
       }
     }
-    for (local_15c = 0; local_15c < local_b0; local_15c = local_15c + 1) {
-      if (DAT_098c38f8 == aiStack_154[local_15c]) {
-        for (local_174 = local_15c; local_174 <= local_160 + -2; local_174 = local_174 + 1) {
+    for (currSlot = 0; currSlot < groupItemCount; currSlot = currSlot + 1) {
+      if (DAT_098c38f8 == aiStack_154[currSlot]) {
+        for (shiftIndex = currSlot; shiftIndex <= totalItemsEquipped + -2;
+            shiftIndex = shiftIndex + 1) {
           pcVar4 = va("%s%d");
-          BG_UnlockablesEquipClassToSlot(local_168,local_170,aiStack_154[local_174 + 1],pcVar4);
+          BG_UnlockablesEquipClassToSlot
+                    (controllerIndex,customClassName,aiStack_154[shiftIndex + 1],pcVar4);
         }
         pcVar4 = va("%s%d");
-        BG_UnlockablesEquipClassToSlot(local_168,local_170,aiStack_ac[local_174],pcVar4);
+        BG_UnlockablesEquipClassToSlot
+                  (controllerIndex,customClassName,aiStack_ac[shiftIndex],pcVar4);
         return;
       }
     }
-    bVar2 = BG_UnlockablesIsItemPurchased(local_168,DAT_098c38f8);
-    if ((bVar2) && (local_160 < local_b0)) {
-      if (local_160 == 0) {
+    bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,DAT_098c38f8);
+    if ((bVar2) && (totalItemsEquipped < groupItemCount)) {
+      if (totalItemsEquipped == 0) {
         pcVar4 = va("%s1");
-        BG_UnlockablesEquipClassToSlot(local_168,local_170,DAT_098c38f8,pcVar4);
+        BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,DAT_098c38f8,pcVar4);
       }
       else {
-        for (local_15c = 0; local_15c < local_160; local_15c = local_15c + 1) {
-          if ((local_218 <= aiStack_214[local_15c]) && (local_8 < local_16c)) {
-            for (local_174 = local_160 + -1; local_15c <= local_174; local_174 = local_174 + -1) {
+        for (currSlot = 0; currSlot < totalItemsEquipped; currSlot = currSlot + 1) {
+          if ((selectedItemAttribute <= aiStack_214[currSlot]) &&
+             (itemsOfSameAttributeEquipped < numItemsOfSameAttributeAllowed)) {
+            for (shiftIndex = totalItemsEquipped + -1; currSlot <= shiftIndex;
+                shiftIndex = shiftIndex + -1) {
               pcVar4 = va("%s%d");
-              BG_UnlockablesEquipClassToSlot(local_168,local_170,aiStack_154[local_174],pcVar4);
+              BG_UnlockablesEquipClassToSlot
+                        (controllerIndex,customClassName,aiStack_154[shiftIndex],pcVar4);
             }
-            if (local_218 == aiStack_214[local_15c]) {
-              if (DAT_098c38f8 < aiStack_154[local_15c]) {
+            if (selectedItemAttribute == aiStack_214[currSlot]) {
+              if (DAT_098c38f8 < aiStack_154[currSlot]) {
                 pcVar4 = va("%s%d");
-                BG_UnlockablesEquipClassToSlot(local_168,local_170,DAT_098c38f8,pcVar4);
+                BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,DAT_098c38f8,pcVar4);
                 return;
               }
               pcVar4 = va("%s%d");
-              pcVar6 = va("%s%d");
-              iVar3 = BG_UnlockablesGetEquippedItemInSlot(local_168,local_170,pcVar6);
-              BG_UnlockablesEquipClassToSlot(local_168,local_170,iVar3,pcVar4);
+              slotName = va("%s%d");
+              iVar3 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,customClassName,slotName);
+              BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,iVar3,pcVar4);
               pcVar4 = va("%s%d");
-              BG_UnlockablesEquipClassToSlot(local_168,local_170,DAT_098c38f8,pcVar4);
+              BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,DAT_098c38f8,pcVar4);
               return;
             }
             pcVar4 = va("%s%d");
-            BG_UnlockablesEquipClassToSlot(local_168,local_170,DAT_098c38f8,pcVar4);
+            BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,DAT_098c38f8,pcVar4);
             return;
           }
         }
-        if (local_8 < local_16c) {
+        if (itemsOfSameAttributeEquipped < numItemsOfSameAttributeAllowed) {
           pcVar4 = va("%s%d");
-          BG_UnlockablesEquipClassToSlot(local_168,local_170,DAT_098c38f8,pcVar4);
+          BG_UnlockablesEquipClassToSlot(controllerIndex,customClassName,DAT_098c38f8,pcVar4);
         }
       }
     }
@@ -6360,10 +6775,15 @@ void __cdecl BG_ClearAllAttachmentsForItemCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  char *customClassName_00;
   char *pcVar4;
-  char *pcVar5;
-  itemInfo_t *piVar6;
-  eAttachmentPoint local_1c;
+  itemInfo_t *piVar5;
+  int attachPoint;
+  char *customClassName;
+  int controllerIndex;
+  char *loadoutName;
+  itemInfo_t *itemInfo;
+  int itemIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
@@ -6372,24 +6792,23 @@ void __cdecl BG_ClearAllAttachmentsForItemCmd(void)
                   );
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    pcVar5 = Cmd_Argv(2);
-    iVar3 = atoi(pcVar5);
-    piVar6 = BG_UnlockablesGetItemInfo(iVar3);
-    if ((piVar6->loadoutSlot == LOADOUTSLOT_INVALID) &&
+    customClassName_00 = Cmd_Argv(1);
+    pcVar4 = Cmd_Argv(2);
+    iVar3 = atoi(pcVar4);
+    piVar5 = BG_UnlockablesGetItemInfo(iVar3);
+    if ((piVar5->loadoutSlot == LOADOUTSLOT_INVALID) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x1181,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((piVar6 != (itemInfo_t *)0x0) &&
-       (pcVar5 = BG_UnlockablesGetLoadoutName(piVar6->loadoutSlot), pcVar5 != (char *)0x0)) {
-      for (local_1c = ATTACHMENT_POINT_FIRST; (int)local_1c < 5;
-          local_1c = local_1c + ATTACHMENT_POINT_FIRST) {
-        BG_GetAttachmentPointName(local_1c);
-        pcVar5 = va("%sattachment%s");
-        BG_UnlockablesEquipClassToSlot(0,pcVar4,0,pcVar5);
+    if ((piVar5 != (itemInfo_t *)0x0) &&
+       (pcVar4 = BG_UnlockablesGetLoadoutName(piVar5->loadoutSlot), pcVar4 != (char *)0x0)) {
+      for (attachPoint = 1; attachPoint < 5; attachPoint = attachPoint + 1) {
+        BG_GetAttachmentPointName(attachPoint);
+        pcVar4 = va("%sattachment%s");
+        BG_UnlockablesEquipClassToSlot(0,customClassName_00,0,pcVar4);
       }
     }
   }
@@ -6411,10 +6830,16 @@ void __cdecl BG_ClearAttachmentForItemAtPointCmd(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  char *customClassName_00;
   char *pcVar4;
-  char *pcVar5;
-  eAttachmentPoint eVar6;
-  itemInfo_t *piVar7;
+  eAttachmentPoint index;
+  itemInfo_t *piVar5;
+  char *customClassName;
+  int controllerIndex;
+  char *loadoutName;
+  itemInfo_t *itemInfo;
+  int attachPoint;
+  int itemIndex;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 4) {
@@ -6423,25 +6848,25 @@ void __cdecl BG_ClearAttachmentForItemAtPointCmd(void)
                   );
   }
   else {
-    pcVar4 = Cmd_Argv(1);
-    pcVar5 = Cmd_Argv(2);
-    iVar3 = atoi(pcVar5);
-    pcVar5 = Cmd_Argv(3);
-    eVar6 = atoi(pcVar5);
-    piVar7 = BG_UnlockablesGetItemInfo(iVar3);
-    if ((piVar7->loadoutSlot == LOADOUTSLOT_INVALID) &&
+    customClassName_00 = Cmd_Argv(1);
+    pcVar4 = Cmd_Argv(2);
+    iVar3 = atoi(pcVar4);
+    pcVar4 = Cmd_Argv(3);
+    index = atoi(pcVar4);
+    piVar5 = BG_UnlockablesGetItemInfo(iVar3);
+    if ((piVar5->loadoutSlot == LOADOUTSLOT_INVALID) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp"
                                  ,0x11a4,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((piVar7 != (itemInfo_t *)0x0) &&
-        (pcVar5 = BG_UnlockablesGetLoadoutName(piVar7->loadoutSlot), pcVar5 != (char *)0x0)) &&
-       (*pcVar5 != '\0')) {
-      BG_GetAttachmentPointName(eVar6);
-      pcVar5 = va("%sattachment%s");
-      BG_UnlockablesEquipClassToSlot(0,pcVar4,0,pcVar5);
+    if (((piVar5 != (itemInfo_t *)0x0) &&
+        (pcVar4 = BG_UnlockablesGetLoadoutName(piVar5->loadoutSlot), pcVar4 != (char *)0x0)) &&
+       (*pcVar4 != '\0')) {
+      BG_GetAttachmentPointName(index);
+      pcVar4 = va("%sattachment%s");
+      BG_UnlockablesEquipClassToSlot(0,customClassName_00,0,pcVar4);
     }
   }
   return;
@@ -6454,15 +6879,15 @@ void __cdecl BG_UnlockablesSetCurrentItemIndexCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_PrintError(0xf,"SetCurrentItemIndex usage: SetCurrentItemIndex <itemIndex>\n");
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    DAT_098c38f8 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    DAT_098c38f8 = atoi(nptr);
   }
   return;
 }
@@ -6477,10 +6902,17 @@ void __cdecl BG_UnlockablesCopyClassCmd(void)
 {
   int iVar1;
   char *pcVar2;
+  char *slotName;
   char *pcVar3;
-  char *pcVar4;
-  loadoutSlot_t local_24;
-  int local_1c;
+  char *loadoutName;
+  int currLoadout;
+  char *classToReplace;
+  int classIndex;
+  int controllerIndex;
+  int classIndexToCopy;
+  int classIndexToReplace;
+  int itemIndex;
+  char *classToCopy;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
@@ -6490,26 +6922,25 @@ void __cdecl BG_UnlockablesCopyClassCmd(void)
     pcVar2 = Cmd_Argv(1);
     iVar1 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(2);
-    local_1c = atoi(pcVar2);
-    if (iVar1 <= local_1c) {
-      local_1c = local_1c + 1;
+    classIndex = atoi(pcVar2);
+    if (iVar1 <= classIndex) {
+      classIndex = classIndex + 1;
     }
-    pcVar2 = *(char **)(&customClassDvars + local_1c * 4);
-    pcVar4 = *(char **)(&customClassDvars + iVar1 * 4);
-    if ((((pcVar4 != (char *)0x0) && (pcVar2 != (char *)0x0)) && (*pcVar4 != '\0')) &&
+    pcVar2 = *(char **)(&customClassDvars + classIndex * 4);
+    pcVar3 = *(char **)(&customClassDvars + iVar1 * 4);
+    if ((((pcVar3 != (char *)0x0) && (pcVar2 != (char *)0x0)) && (*pcVar3 != '\0')) &&
        (*pcVar2 != '\0')) {
-      for (local_24 = LOADOUTSLOT_FIRST; (int)local_24 < 0x27;
-          local_24 = local_24 + LOADOUTSLOT_PRIMARY_ATTACHMENT) {
-        pcVar3 = BG_UnlockablesGetLoadoutName(local_24);
-        if (pcVar3 != (char *)0x0) {
-          iVar1 = BG_UnlockablesGetEquippedItemInSlot(0,pcVar4,pcVar3);
-          BG_UnlockablesEquipClassToSlot(0,pcVar2,iVar1,pcVar3);
+      for (currLoadout = 0; currLoadout < 0x27; currLoadout = currLoadout + 1) {
+        slotName = BG_UnlockablesGetLoadoutName(currLoadout);
+        if (slotName != (char *)0x0) {
+          iVar1 = BG_UnlockablesGetEquippedItemInSlot(0,pcVar3,slotName);
+          BG_UnlockablesEquipClassToSlot(0,pcVar2,iVar1,slotName);
         }
       }
       BG_ReplaceItemsWithPurchasedProItem(0);
     }
-    pcVar4 = Dvar_GetString(pcVar4);
-    Dvar_SetStringByName(pcVar2,pcVar4);
+    pcVar3 = Dvar_GetString(pcVar3);
+    Dvar_SetStringByName(pcVar2,pcVar3);
   }
   return;
 }
@@ -6521,32 +6952,36 @@ void __cdecl BG_UnlockablesSetClanTagCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
+  uint uVar2;
+  ddlState_t *searchState_00;
+  uchar *buffer_00;
   uint uVar3;
-  ddlState_t *pdVar4;
-  uchar *puVar5;
-  uint uVar6;
-  ddlState_t *pdVar7;
-  ddlState_t local_14;
+  ddlState_t *resultState;
+  char *buffer;
+  int currentClanTagFeature;
+  int controllerIndex;
+  int clanTagFeatureIndex;
+  ddlState_t searchState;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_PrintError(0xf,"setClanTag usage: setClanTag <clantagFeatureIndex> \n");
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    uVar3 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    uVar2 = atoi(nptr);
     iVar1 = 2;
-    pdVar7 = &local_14;
-    pdVar4 = LiveStats_GetRootDDLState();
-    iVar1 = DDL_MoveTo(pdVar4,pdVar7,iVar1);
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar1 = DDL_MoveTo(searchState_00,resultState,iVar1);
     if (iVar1 == 0) {
       DDL_PrintError("DDL: Error could not find clantag feature index\n");
     }
     else {
-      puVar5 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-      uVar6 = DDL_GetInt(&local_14,(char *)puVar5);
-      DDL_SetInt(&local_14,-(uint)(uVar3 != uVar6) & uVar3,(char *)puVar5);
+      buffer_00 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+      uVar3 = DDL_GetInt(&searchState,(char *)buffer_00);
+      DDL_SetInt(&searchState,-(uint)(uVar2 != uVar3) & uVar2,(char *)buffer_00);
     }
   }
   return;
@@ -6555,29 +6990,29 @@ void __cdecl BG_UnlockablesSetClanTagCmd(void)
 
 // 0044A860  BG_UnlockablesClearWeaponInfo  (bgame/bg_unlockable_items.cpp:4615)
 
-void __cdecl BG_UnlockablesClearWeaponInfo(int param_1,int param_2)
+void __cdecl BG_UnlockablesClearWeaponInfo(int controllerIndex,int itemIndex)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  int optionNum;
+  int attachmentNum;
   
-  if (param_2 < 0x40) {
-    for (local_8 = 0; local_8 < 0x18; local_8 = local_8 + 1) {
-      BG_UnlockablesSetItemAttachmentPurchased(param_1,param_2,local_8,false);
+  if (itemIndex < 0x40) {
+    for (attachmentNum = 0; attachmentNum < 0x18; attachmentNum = attachmentNum + 1) {
+      BG_UnlockablesSetItemAttachmentPurchased(controllerIndex,itemIndex,attachmentNum,false);
     }
-    for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-      BG_UnlockablesSetItemOptionPurchased(param_1,param_2,local_c,false);
+    for (optionNum = 0; optionNum < 0x20; optionNum = optionNum + 1) {
+      BG_UnlockablesSetItemOptionPurchased(controllerIndex,itemIndex,optionNum,false);
     }
   }
-  BG_UnlockablesSetItemPurchased(param_1,param_2,false);
-  BG_UnlockablesSetProItemUnlocked(param_1,param_2,false);
+  BG_UnlockablesSetItemPurchased(controllerIndex,itemIndex,false);
+  BG_UnlockablesSetProItemUnlocked(controllerIndex,itemIndex,false);
   return;
 }
 
 
 // 0044AA50  BG_UnlockablesIsWeaponOptionLocked  (bgame/bg_unlockable_items.cpp:4634)
 
-bool __cdecl BG_UnlockablesIsWeaponOptionLocked(int param_1,int param_2)
+bool __cdecl BG_UnlockablesIsWeaponOptionLocked(int controllerIndex,int weaponOptionIndex)
 
 {
   bool bVar1;
@@ -6589,11 +7024,11 @@ bool __cdecl BG_UnlockablesIsWeaponOptionLocked(int param_1,int param_2)
     bVar1 = false;
   }
   else {
-    iVar2 = LiveStats_GetRank(param_1);
-    iVar3 = BG_GetWeaponOptionUnlockLvl(param_2);
+    iVar2 = LiveStats_GetRank(controllerIndex);
+    iVar3 = BG_GetWeaponOptionUnlockLvl(weaponOptionIndex);
     if (iVar3 <= iVar2) {
-      iVar2 = LiveStats_GetPrestige(param_1);
-      iVar3 = BG_GetWeaponOptionUnlockPLevel(param_2);
+      iVar2 = LiveStats_GetPrestige(controllerIndex);
+      iVar3 = BG_GetWeaponOptionUnlockPLevel(weaponOptionIndex);
       if (iVar3 <= iVar2) {
         return false;
       }
@@ -6611,43 +7046,45 @@ bool __cdecl BG_UnlockablesIsWeaponOptionLocked(int param_1,int param_2)
 /* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-bool __cdecl SV_CacValidate_IsItemPurchased(uchar *param_1,int param_2,int param_3,int param_4)
+bool __cdecl SV_CacValidate_IsItemPurchased(uchar *cacBuffer,int itemIndex,int pLevel,int rank)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
-  ddlState_t *pdVar3;
-  uint uVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  int iVar4;
+  char *buffer;
+  itemInfo_t *itemInfo;
+  ddlState_t searchState;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar2 == (itemInfo_t *)0x0) {
     bVar1 = false;
   }
   else {
-    if (param_4 < 0) {
+    if (rank < 0) {
       if (piVar2->cost < 1) {
         return true;
       }
     }
     else if ((piVar2->cost < 1) &&
-            (bVar1 = BG_UnlockablesIsItemLockedForRank(param_3,param_4,param_2), !bVar1)) {
+            (bVar1 = BG_UnlockablesIsItemLockedForRank(pLevel,rank,itemIndex), !bVar1)) {
       return true;
     }
     va("%d");
-    iVar6 = 3;
-    pdVar5 = &local_14;
-    pdVar3 = LiveStats_GetRootDDLState();
-    iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-    if (iVar6 == 0) {
+    iVar4 = 3;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
+    if (iVar4 == 0) {
       DDL_PrintError("DDL: Error could not find item %d\n");
       bVar1 = false;
     }
     else {
-      uVar4 = DDL_GetInt(&local_14,(char *)param_1);
-      bVar1 = uVar4 != 0;
+      uVar3 = DDL_GetInt(&searchState,(char *)cacBuffer);
+      bVar1 = uVar3 != 0;
     }
   }
   return bVar1;
@@ -6663,49 +7100,50 @@ bool __cdecl SV_CacValidate_IsItemPurchased(uchar *param_1,int param_2,int param
 
 bool __cdecl
 SV_CACValidate_IsItemAttachmentPurchased
-          (uchar *param_1,int param_2,int param_3,int param_4,int param_5)
+          (uchar *cacbuffer,int itemIndex,int attachmentNum,int pLevel,int rank)
 
 {
   bool bVar1;
-  eAttachment eVar2;
-  int iVar3;
-  ddlState_t *pdVar4;
-  uint uVar5;
-  ddlState_t *pdVar6;
-  ddlState_t local_18;
-  itemInfo_t *local_8;
+  eAttachment attachment;
+  int iVar2;
+  ddlState_t *searchState_00;
+  uint uVar3;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
+  itemInfo_t *itemInfo;
   
   bVar1 = BG_UnlockablesAllItemsFree();
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = SV_CacValidate_IsItemPurchased(param_1,param_2,param_4,param_5);
+    bVar1 = SV_CacValidate_IsItemPurchased(cacbuffer,itemIndex,pLevel,rank);
     if (bVar1) {
-      local_8 = BG_UnlockablesGetItemInfo(param_2);
-      if (local_8 == (itemInfo_t *)0x0) {
+      itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
+      if (itemInfo == (itemInfo_t *)0x0) {
         bVar1 = false;
       }
-      else if (param_3 < local_8->numAttachments[0]) {
-        eVar2 = BG_UnlockablesGetItemAttachment(param_2,param_3);
-        iVar3 = BG_GetAttachmentCost(eVar2);
-        if (iVar3 == 0) {
+      else if (attachmentNum < itemInfo->numAttachments[0]) {
+        attachment = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
+        iVar2 = BG_GetAttachmentCost(attachment);
+        if (iVar2 == 0) {
           bVar1 = true;
         }
         else {
           va("%d");
           va("%d");
-          iVar3 = 4;
-          pdVar6 = &local_18;
-          pdVar4 = LiveStats_GetRootDDLState();
-          iVar3 = DDL_MoveTo(pdVar4,pdVar6,iVar3);
-          if (iVar3 == 0) {
+          iVar2 = 4;
+          resultState = &searchState;
+          searchState_00 = LiveStats_GetRootDDLState();
+          iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+          if (iVar2 == 0) {
             DDL_PrintError("DDL: Error could not find item %d attachment %d\n");
             bVar1 = false;
           }
           else {
-            uVar5 = DDL_GetInt(&local_18,(char *)param_1);
-            bVar1 = uVar5 != 0;
+            uVar3 = DDL_GetInt(&searchState,(char *)cacbuffer);
+            bVar1 = uVar3 != 0;
           }
         }
       }
@@ -6729,29 +7167,31 @@ SV_CACValidate_IsItemAttachmentPurchased
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
-SV_CACValidate_IsItemOptionPurchased(uchar *param_1,int param_2,int param_3,int param_4,int param_5)
+SV_CACValidate_IsItemOptionPurchased
+          (uchar *cacbuffer,int itemIndex,int optionIndex,int pLevel,int rank)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  ddlState_t *pdVar5;
-  uint uVar6;
-  ddlState_t *pdVar7;
-  ddlState_t local_18;
-  itemInfo_t *local_8;
+  ddlState_t *searchState_00;
+  uint uVar5;
+  ddlState_t *resultState;
+  char *buffer;
+  ddlState_t searchState;
+  itemInfo_t *itemInfo;
   
   bVar2 = BG_UnlockablesAllItemsFree();
   if (bVar2) {
     bVar2 = true;
   }
-  else if (param_3 == 0) {
+  else if (optionIndex == 0) {
     bVar2 = true;
   }
   else {
     iVar4 = BG_GetWeaponOptionCount();
-    if (iVar4 <= param_3) {
+    if (iVar4 <= optionIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                0x128d,0,"%s");
       if (!bVar2) {
@@ -6761,15 +7201,15 @@ SV_CACValidate_IsItemOptionPurchased(uchar *param_1,int param_2,int param_3,int 
       }
     }
     iVar4 = BG_GetWeaponOptionCount();
-    if (param_3 < iVar4) {
-      bVar2 = SV_CacValidate_IsItemPurchased(param_1,param_2,param_4,param_5);
+    if (optionIndex < iVar4) {
+      bVar2 = SV_CacValidate_IsItemPurchased(cacbuffer,itemIndex,pLevel,rank);
       if (bVar2) {
-        local_8 = BG_UnlockablesGetItemInfo(param_2);
-        if (local_8 == (itemInfo_t *)0x0) {
+        itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
+        if (itemInfo == (itemInfo_t *)0x0) {
           bVar2 = false;
         }
         else {
-          iVar4 = BG_GetWeaponOptionCost(param_3);
+          iVar4 = BG_GetWeaponOptionCost(optionIndex);
           if (iVar4 == 0) {
             bVar2 = true;
           }
@@ -6777,16 +7217,16 @@ SV_CACValidate_IsItemOptionPurchased(uchar *param_1,int param_2,int param_3,int 
             va("%d");
             va("%d");
             iVar4 = 4;
-            pdVar7 = &local_18;
-            pdVar5 = LiveStats_GetRootDDLState();
-            iVar4 = DDL_MoveTo(pdVar5,pdVar7,iVar4);
+            resultState = &searchState;
+            searchState_00 = LiveStats_GetRootDDLState();
+            iVar4 = DDL_MoveTo(searchState_00,resultState,iVar4);
             if (iVar4 == 0) {
               DDL_PrintError("DDL: Error could not find item %d camo %d\n");
               bVar2 = false;
             }
             else {
-              uVar6 = DDL_GetInt(&local_18,(char *)param_1);
-              bVar2 = uVar6 != 0;
+              uVar5 = DDL_GetInt(&searchState,(char *)cacbuffer);
+              bVar2 = uVar5 != 0;
             }
           }
         }
@@ -6805,12 +7245,12 @@ SV_CACValidate_IsItemOptionPurchased(uchar *param_1,int param_2,int param_3,int 
 
 // 0044AEC0  SV_CACValidate_IsClanTagFeatureLocked  (bgame/bg_unlockable_items.cpp:4789)
 
-bool __cdecl SV_CACValidate_IsClanTagFeatureLocked(int param_1,int param_2,uint param_3)
+bool __cdecl SV_CACValidate_IsClanTagFeatureLocked(int rank,int plevel,uint index)
 
 {
   bool bVar1;
   
-  bVar1 = BG_UnlockablesIsClanTagFeatureLockedForRank(param_2,param_1,param_3);
+  bVar1 = BG_UnlockablesIsClanTagFeatureLockedForRank(plevel,rank,index);
   return bVar1;
 }
 
@@ -6818,46 +7258,47 @@ bool __cdecl SV_CACValidate_IsClanTagFeatureLocked(int param_1,int param_2,uint 
 // 0044ADE0  SV_CACValidate_IsClanTagFeaturePurchased  (bgame/bg_unlockable_items.cpp:4794)
 
 bool __cdecl
-SV_CACValidate_IsClanTagFeaturePurchased(uchar *param_1,uint param_2,int param_3,int param_4)
+SV_CACValidate_IsClanTagFeaturePurchased(uchar *cacbuffer,uint index,int plevel,int rank)
 
 {
   bool bVar1;
-  char *pcVar2;
-  ddlState_t *pdVar3;
-  uint uVar4;
-  ddlState_t *pdVar5;
-  int iVar6;
-  ddlState_t local_1c;
-  char *local_c;
-  int local_8;
+  char *nptr;
+  ddlState_t *searchState_00;
+  uint uVar2;
+  ddlState_t *resultState;
+  int iVar3;
+  char *buffer;
+  ddlState_t searchState;
+  char *featureName;
+  int cost;
   
-  bVar1 = SV_CACValidate_IsClanTagFeatureLocked(param_4,param_3,param_2);
+  bVar1 = SV_CACValidate_IsClanTagFeatureLocked(rank,plevel,index);
   if (bVar1) {
     bVar1 = false;
   }
   else {
-    pcVar2 = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_COST);
-    local_8 = atoi(pcVar2);
-    if (local_8 == 0) {
+    nptr = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_COST);
+    cost = atoi(nptr);
+    if (cost == 0) {
       bVar1 = true;
     }
     else {
-      local_c = BG_UnlockablesGetClanTagFeature(param_2,CLANTAG_COL_NAME);
-      if ((local_c == (char *)0x0) || (*local_c == '\0')) {
+      featureName = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_NAME);
+      if ((featureName == (char *)0x0) || (*featureName == '\0')) {
         bVar1 = false;
       }
       else {
-        iVar6 = 4;
-        pdVar5 = &local_1c;
-        pdVar3 = LiveStats_GetRootDDLState();
-        iVar6 = DDL_MoveTo(pdVar3,pdVar5,iVar6);
-        if (iVar6 == 0) {
+        iVar3 = 4;
+        resultState = &searchState;
+        searchState_00 = LiveStats_GetRootDDLState();
+        iVar3 = DDL_MoveTo(searchState_00,resultState,iVar3);
+        if (iVar3 == 0) {
           DDL_PrintError("DDL: Error could not find clan tag feature %s\n");
           bVar1 = false;
         }
         else {
-          uVar4 = DDL_GetInt(&local_1c,(char *)param_1);
-          bVar1 = uVar4 != 0;
+          uVar2 = DDL_GetInt(&searchState,(char *)cacbuffer);
+          bVar1 = uVar2 != 0;
         }
       }
     }
@@ -6868,26 +7309,27 @@ SV_CACValidate_IsClanTagFeaturePurchased(uchar *param_1,uint param_2,int param_3
 
 // 0044AF80  SV_CACValidate_SetProItemUnlocked  (bgame/bg_unlockable_items.cpp:4829)
 
-bool __cdecl SV_CACValidate_SetProItemUnlocked(char *param_1,int param_2,bool param_3)
+bool __cdecl SV_CACValidate_SetProItemUnlocked(char *buffer,int itemIndex,bool isUnlocked)
 
 {
   bool bVar1;
   int iVar2;
-  int local_1c;
-  ddlState_t local_14;
+  int proChallenges;
+  int unlockedFlag;
+  ddlState_t searchState;
   
-  local_1c = 0;
+  proChallenges = 0;
   while( true ) {
-    if (2 < local_1c) {
+    if (2 < proChallenges) {
       return true;
     }
-    bVar1 = LiveStats_MoveToProItemVersion(&local_14,param_2,local_1c);
+    bVar1 = LiveStats_MoveToProItemVersion(&searchState,itemIndex,proChallenges);
     if (!bVar1) break;
-    iVar2 = DDL_SetInt(&local_14,(uint)param_3,param_1);
+    iVar2 = DDL_SetInt(&searchState,(uint)isUnlocked,buffer);
     if (iVar2 == 0) {
       return false;
     }
-    local_1c = local_1c + 1;
+    proChallenges = proChallenges + 1;
   }
   return false;
 }
@@ -6895,27 +7337,28 @@ bool __cdecl SV_CACValidate_SetProItemUnlocked(char *param_1,int param_2,bool pa
 
 // 0044AFF0  SV_CACValidate_SetItemPurchased  (bgame/bg_unlockable_items.cpp:4850)
 
-bool __cdecl SV_CACValidate_SetItemPurchased(char *param_1,int param_2,bool param_3)
+bool __cdecl SV_CACValidate_SetItemPurchased(char *buffer,int itemIndex,bool isPurchased)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar2;
+  int purchasedFlag;
+  ddlState_t searchState;
   
   va("%d");
-  iVar4 = 3;
-  pdVar3 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
-  if (iVar4 == 0) {
+  iVar2 = 3;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
     DDL_PrintError("DDL: Error could not find item %d\n");
     bVar1 = false;
   }
   else {
-    iVar4 = DDL_SetInt(&local_14,(uint)param_3,param_1);
-    if (iVar4 == 0) {
+    iVar2 = DDL_SetInt(&searchState,(uint)isPurchased,buffer);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not set purchased flag for item %d\n");
       bVar1 = false;
     }
@@ -6930,28 +7373,30 @@ bool __cdecl SV_CACValidate_SetItemPurchased(char *param_1,int param_2,bool para
 // 0044B080  SV_CACValidate_SetItemAttachmentPurchased  (bgame/bg_unlockable_items.cpp:4871)
 
 bool __cdecl
-SV_CACValidate_SetItemAttachmentPurchased(char *param_1,int param_2,int param_3,bool param_4)
+SV_CACValidate_SetItemAttachmentPurchased
+          (char *buffer,int itemIndex,int attachmentNum,bool isPurchased)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar2;
+  int purchaseFlag;
+  ddlState_t searchState;
   
   va("%d");
   va("%d");
-  iVar4 = 4;
-  pdVar3 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
-  if (iVar4 == 0) {
+  iVar2 = 4;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
     DDL_PrintError("DDL: Error could not find item %d attachment %d\n");
     bVar1 = false;
   }
   else {
-    iVar4 = DDL_SetInt(&local_14,(uint)param_4,param_1);
-    if (iVar4 == 0) {
+    iVar2 = DDL_SetInt(&searchState,(uint)isPurchased,buffer);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not set purchased flag for item %d attachment %d\n");
       bVar1 = false;
     }
@@ -6966,28 +7411,29 @@ SV_CACValidate_SetItemAttachmentPurchased(char *param_1,int param_2,int param_3,
 // 0044B130  SV_CACValidate_SetItemOptionPurchased  (bgame/bg_unlockable_items.cpp:4893)
 
 bool __cdecl
-SV_CACValidate_SetItemOptionPurchased(char *param_1,int param_2,int param_3,bool param_4)
+SV_CACValidate_SetItemOptionPurchased(char *buffer,int itemIndex,int optionIndex,bool isPurchased)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_14;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar2;
+  int purchaseFlag;
+  ddlState_t searchState;
   
   va("%d");
   va("%d");
-  iVar4 = 4;
-  pdVar3 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
-  if (iVar4 == 0) {
+  iVar2 = 4;
+  resultState = &searchState;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+  if (iVar2 == 0) {
     DDL_PrintError("DDL: Error could not find item %d option %d\n");
     bVar1 = false;
   }
   else {
-    iVar4 = DDL_SetInt(&local_14,(uint)param_4,param_1);
-    if (iVar4 == 0) {
+    iVar2 = DDL_SetInt(&searchState,(uint)isPurchased,buffer);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not set purchased flag for item %d option %d\n");
       bVar1 = false;
     }
@@ -7001,22 +7447,22 @@ SV_CACValidate_SetItemOptionPurchased(char *param_1,int param_2,int param_3,bool
 
 // 0044AEE0  SV_CACValidate_ClearWeaponInfo  (bgame/bg_unlockable_items.cpp:4916)
 
-void __cdecl SV_CACValidate_ClearWeaponInfo(char *param_1,int param_2)
+void __cdecl SV_CACValidate_ClearWeaponInfo(char *buffer,int itemIndex)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  int optionNum;
+  int attachmentNum;
   
-  if (param_2 < 0x40) {
-    for (local_8 = 0; local_8 < 0x18; local_8 = local_8 + 1) {
-      SV_CACValidate_SetItemAttachmentPurchased(param_1,param_2,local_8,false);
+  if (itemIndex < 0x40) {
+    for (attachmentNum = 0; attachmentNum < 0x18; attachmentNum = attachmentNum + 1) {
+      SV_CACValidate_SetItemAttachmentPurchased(buffer,itemIndex,attachmentNum,false);
     }
-    for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-      SV_CACValidate_SetItemOptionPurchased(param_1,param_2,local_c,false);
+    for (optionNum = 0; optionNum < 0x20; optionNum = optionNum + 1) {
+      SV_CACValidate_SetItemOptionPurchased(buffer,itemIndex,optionNum,false);
     }
   }
-  SV_CACValidate_SetItemPurchased(param_1,param_2,false);
-  SV_CACValidate_SetProItemUnlocked(param_1,param_2,false);
+  SV_CACValidate_SetItemPurchased(buffer,itemIndex,false);
+  SV_CACValidate_SetProItemUnlocked(buffer,itemIndex,false);
   return;
 }
 
@@ -7029,13 +7475,14 @@ void __cdecl SV_CACValidate_ClearWeaponInfo(char *param_1,int param_2)
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
-SV_CACValidate_IsItemDualWieldPurchased(uchar *param_1,int param_2,int param_3,int param_4)
+SV_CACValidate_IsItemDualWieldPurchased(uchar *cacbuffer,int itemIndex,int pLevel,int rank)
 
 {
   bool bVar1;
   itemInfo_t *piVar2;
+  itemInfo_t *itemInfo;
   
-  piVar2 = BG_UnlockablesGetItemInfo(param_2);
+  piVar2 = BG_UnlockablesGetItemInfo(itemIndex);
   if (piVar2 == (itemInfo_t *)0x0) {
     bVar1 = false;
   }
@@ -7043,7 +7490,7 @@ SV_CACValidate_IsItemDualWieldPurchased(uchar *param_1,int param_2,int param_3,i
     bVar1 = false;
   }
   else {
-    bVar1 = SV_CacValidate_IsItemPurchased(param_1,piVar2->dwIndex,param_3,param_4);
+    bVar1 = SV_CacValidate_IsItemPurchased(cacbuffer,piVar2->dwIndex,pLevel,rank);
   }
   return bVar1;
 }
@@ -7057,57 +7504,66 @@ SV_CACValidate_IsItemDualWieldPurchased(uchar *param_1,int param_2,int param_3,i
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *param_1,int param_2,int param_3)
+bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *cacBuffer,int pLevel,int rank)
 
 {
   bool bVar1;
   ddlState_t *pdVar2;
   itemInfo_t *piVar3;
-  eAttachment eVar4;
-  ddlDef_t *pdVar5;
-  ddlState_t *pdVar6;
-  int iVar7;
-  itemInfo_t *local_34;
-  int local_28;
-  ddlState_t local_20;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  eAttachment index;
+  ddlDef_t *ddl;
+  ddlState_t *pdVar4;
+  int iVar5;
+  char *loadoutName_2;
+  int actualoptionidx_4;
+  int actualoptionidx_3;
+  int actualoptionidx_2;
+  int actualoptionidx;
+  eAttachment attachment;
+  itemInfo_t *itemInfo;
+  char *loadoutName;
+  char *customclassname;
+  int j;
+  char *buffer;
+  ddlState_t searchState;
+  int itemIndex;
+  int currentItemIndex;
+  int i;
   
-  local_c = 0;
-  local_10 = 0;
-  local_8 = 0;
+  currentItemIndex = 0;
+  itemIndex = 0;
+  i = 0;
   do {
-    if (9 < local_8) {
-      local_8 = 0x23;
+    if (9 < (uint)i) {
+      i = 0x23;
       while( true ) {
-        if (0x26 < (int)local_8) {
+        if (0x26 < i) {
           return true;
         }
-        pdVar5 = LiveStats_GetStatsDDL();
-        DDL_Reset(&local_20,pdVar5);
-        iVar7 = 1;
-        pdVar6 = &local_20;
+        ddl = LiveStats_GetStatsDDL();
+        DDL_Reset(&searchState,ddl);
+        iVar5 = 1;
+        pdVar4 = &searchState;
         pdVar2 = LiveStats_GetCacDDLState();
-        iVar7 = DDL_MoveTo(pdVar2,pdVar6,iVar7);
-        if (((iVar7 != 0) && (local_10 = DDL_GetInt(&local_20,(char *)param_1), 0 < (int)local_10))
-           && (bVar1 = SV_CacValidate_IsItemPurchased(param_1,local_10,param_2,param_3), !bVar1))
+        iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
+        if (((iVar5 != 0) && (itemIndex = DDL_GetInt(&searchState,(char *)cacBuffer), 0 < itemIndex)
+            ) && (bVar1 = SV_CacValidate_IsItemPurchased(cacBuffer,itemIndex,pLevel,rank), !bVar1))
         break;
-        local_8 = local_8 + 1;
+        i = i + 1;
       }
       return false;
     }
-    for (local_28 = 0; local_28 < 0x23; local_28 = local_28 + 1) {
-      iVar7 = 2;
-      pdVar6 = &local_20;
+    for (j = 0; j < 0x23; j = j + 1) {
+      iVar5 = 2;
+      pdVar4 = &searchState;
       pdVar2 = LiveStats_GetCacDDLState();
-      iVar7 = DDL_MoveTo(pdVar2,pdVar6,iVar7);
-      if ((iVar7 != 0) && (local_10 = DDL_GetInt(&local_20,(char *)param_1), 0 < (int)local_10)) {
-        if ((local_28 == 0) || (local_28 == 0xc)) {
-          local_c = local_10;
-          bVar1 = SV_CacValidate_IsItemPurchased(param_1,local_10,param_2,param_3);
+      iVar5 = DDL_MoveTo(pdVar2,pdVar4,iVar5);
+      if ((iVar5 != 0) && (itemIndex = DDL_GetInt(&searchState,(char *)cacBuffer), 0 < itemIndex)) {
+        if ((j == 0) || (j == 0xc)) {
+          currentItemIndex = itemIndex;
+          bVar1 = SV_CacValidate_IsItemPurchased(cacBuffer,itemIndex,pLevel,rank);
           if (!bVar1) {
-            piVar3 = BG_UnlockablesGetItemInfo(local_c);
+            piVar3 = BG_UnlockablesGetItemInfo(currentItemIndex);
             if (piVar3 == (itemInfo_t *)0x0) {
               Com_PrintError(0,
                              "SV_CACValidate_CheckIfEquippedItemsArePurchased(): iteminfo is NULL!\n"
@@ -7119,63 +7575,68 @@ bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *param_1,int 
             return false;
           }
         }
-        else if (((local_28 < 1) || (5 < local_28)) && ((local_28 < 0xd || (0x11 < local_28)))) {
-          if ((local_28 == 7) || (local_28 == 0x13)) {
-            iVar7 = BG_GetWeaponOptionNumFromIndexAndGroup(local_10,WEAPONOPTION_GROUP_RETICLE);
-            bVar1 = SV_CACValidate_IsItemOptionPurchased(param_1,local_c,iVar7,param_2,param_3);
+        else if (((j < 1) || (5 < j)) && ((j < 0xd || (0x11 < j)))) {
+          if ((j == 7) || (j == 0x13)) {
+            iVar5 = BG_GetWeaponOptionNumFromIndexAndGroup(itemIndex,WEAPONOPTION_GROUP_RETICLE);
+            bVar1 = SV_CACValidate_IsItemOptionPurchased
+                              (cacBuffer,currentItemIndex,iVar5,pLevel,rank);
             if (!bVar1) {
-              BG_GetWeaponOptionReference(iVar7);
+              BG_GetWeaponOptionReference(iVar5);
               Com_DPrintf(0xf,"TREASON UNCLOAKED: User claims %s option, but not purchased!\n");
               return false;
             }
           }
-          else if ((local_28 == 9) || (local_28 == 0x15)) {
-            iVar7 = BG_GetWeaponOptionNumFromIndexAndGroup(local_10,WEAPONOPTION_GROUP_LENS);
-            bVar1 = SV_CACValidate_IsItemOptionPurchased(param_1,local_c,iVar7,param_2,param_3);
+          else if ((j == 9) || (j == 0x15)) {
+            iVar5 = BG_GetWeaponOptionNumFromIndexAndGroup(itemIndex,WEAPONOPTION_GROUP_LENS);
+            bVar1 = SV_CACValidate_IsItemOptionPurchased
+                              (cacBuffer,currentItemIndex,iVar5,pLevel,rank);
             if (!bVar1) {
-              BG_GetWeaponOptionReference(iVar7);
+              BG_GetWeaponOptionReference(iVar5);
               Com_DPrintf(0xf,"TREASON UNCLOAKED: User claims %s option, but not purchased!\n");
               return false;
             }
           }
-          else if ((local_28 == 6) || (local_28 == 0x12)) {
-            bVar1 = SV_CACValidate_IsItemOptionPurchased(param_1,local_c,local_10,param_2,param_3);
+          else if ((j == 6) || (j == 0x12)) {
+            bVar1 = SV_CACValidate_IsItemOptionPurchased
+                              (cacBuffer,currentItemIndex,itemIndex,pLevel,rank);
             if (!bVar1) {
-              BG_GetWeaponOptionReference(local_10);
+              BG_GetWeaponOptionReference(itemIndex);
               Com_DPrintf(0xf,"TREASON UNCLOAKED: User claims %s option, but not purchased!\n");
               return false;
             }
           }
-          else if ((local_28 == 8) || (local_28 == 0x14)) {
-            iVar7 = BG_GetWeaponOptionNumFromIndexAndGroup
-                              (local_10,WEAPONOPTION_GROUP_RETICLE_COLOR);
-            bVar1 = SV_CACValidate_IsItemOptionPurchased(param_1,local_c,iVar7,param_2,param_3);
+          else if ((j == 8) || (j == 0x14)) {
+            iVar5 = BG_GetWeaponOptionNumFromIndexAndGroup
+                              (itemIndex,WEAPONOPTION_GROUP_RETICLE_COLOR);
+            bVar1 = SV_CACValidate_IsItemOptionPurchased
+                              (cacBuffer,currentItemIndex,iVar5,pLevel,rank);
             if (!bVar1) {
-              BG_GetWeaponOptionReference(iVar7);
+              BG_GetWeaponOptionReference(iVar5);
               Com_DPrintf(0xf,"TREASON UNCLOAKED: User claims %s option, but not purchased!\n");
               return false;
             }
           }
-          else if ((local_28 == 10) || (local_28 == 0x16)) {
-            iVar7 = BG_GetWeaponOptionNumFromIndexAndGroup(local_10,WEAPONOPTION_GROUP_EMBLEM);
-            bVar1 = SV_CACValidate_IsItemOptionPurchased(param_1,local_c,iVar7,param_2,param_3);
+          else if ((j == 10) || (j == 0x16)) {
+            iVar5 = BG_GetWeaponOptionNumFromIndexAndGroup(itemIndex,WEAPONOPTION_GROUP_EMBLEM);
+            bVar1 = SV_CACValidate_IsItemOptionPurchased
+                              (cacBuffer,currentItemIndex,iVar5,pLevel,rank);
             if (!bVar1) {
-              BG_GetWeaponOptionReference(iVar7);
+              BG_GetWeaponOptionReference(iVar5);
               Com_DPrintf(0xf,"TREASON UNCLOAKED: User claims %s option, but not purchased!\n");
               return false;
             }
           }
           else {
-            if (local_28 == 0x21) {
-              local_10 = BG_UnlockablesGetFaceCamoItemIndex(local_10);
-              local_34 = BG_UnlockablesGetItemInfo(local_10);
+            if (j == 0x21) {
+              itemIndex = BG_UnlockablesGetFaceCamoItemIndex(itemIndex);
+              itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
             }
             else {
-              local_34 = BG_UnlockablesGetItemInfo(local_10);
+              itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
             }
-            if ((local_34->loadoutSlot != LOADOUTSLOT_INVALID) &&
-               (bVar1 = SV_CacValidate_IsItemPurchased(param_1,local_10,param_2,param_3), !bVar1)) {
-              if (local_34 == (itemInfo_t *)0x0) {
+            if ((itemInfo->loadoutSlot != LOADOUTSLOT_INVALID) &&
+               (bVar1 = SV_CacValidate_IsItemPurchased(cacBuffer,itemIndex,pLevel,rank), !bVar1)) {
+              if (itemInfo == (itemInfo_t *)0x0) {
                 Com_PrintError(0,
                                "SV_CACValidate_CheckIfEquippedItemsArePurchased(): iteminfo is NULL!\n"
                               );
@@ -7188,10 +7649,11 @@ bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *param_1,int 
           }
         }
         else {
-          eVar4 = BG_UnlockablesGetItemAttachment(local_c,local_10);
-          if (eVar4 != ATTACHMENT_NONE) {
-            if (eVar4 == ATTACHMENT_DW) {
-              bVar1 = SV_CACValidate_IsItemDualWieldPurchased(param_1,local_c,param_2,param_3);
+          index = BG_UnlockablesGetItemAttachment(currentItemIndex,itemIndex);
+          if (index != ATTACHMENT_NONE) {
+            if (index == ATTACHMENT_DW) {
+              bVar1 = SV_CACValidate_IsItemDualWieldPurchased
+                                (cacBuffer,currentItemIndex,pLevel,rank);
               if (!bVar1) {
                 BG_GetAttachmentName(ATTACHMENT_DW);
                 Com_DPrintf(0xf,
@@ -7202,9 +7664,9 @@ bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *param_1,int 
             }
             else {
               bVar1 = SV_CACValidate_IsItemAttachmentPurchased
-                                (param_1,local_c,local_10,param_2,param_3);
+                                (cacBuffer,currentItemIndex,itemIndex,pLevel,rank);
               if (!bVar1) {
-                BG_GetAttachmentName(eVar4);
+                BG_GetAttachmentName(index);
                 Com_DPrintf(0xf,
                             "TREASON UNCLOAKED! User claims to have attachment %s equipped, but it\'s not purchased!\n"
                            );
@@ -7215,7 +7677,7 @@ bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *param_1,int 
         }
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -7223,30 +7685,31 @@ bool __cdecl SV_CACValidate_CheckIfEquippedItemsArePurchased(uchar *param_1,int 
 // 0044B760  SV_SetClanTagFeatureNewForClient  (bgame/bg_unlockable_items.cpp:5156)
 
 void __cdecl
-SV_SetClanTagFeatureNewForClient(char *param_1,int param_2,int param_3,uint param_4,int param_5)
+SV_SetClanTagFeatureNewForClient
+          (char *buffer,int clientRank,int clientPrestige,uint index,int newValue)
 
 {
   bool bVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_18;
-  char *local_8;
+  ddlState_t *searchState_00;
+  ddlState_t *resultState;
+  int iVar2;
+  ddlState_t searchState;
+  char *featureName;
   
-  bVar1 = BG_UnlockablesIsClanTagFeatureLockedForRank(param_3,param_2,param_4);
+  bVar1 = BG_UnlockablesIsClanTagFeatureLockedForRank(clientPrestige,clientRank,index);
   if (((!bVar1) &&
-      (local_8 = BG_UnlockablesGetClanTagFeature(param_4,CLANTAG_COL_NAME), local_8 != (char *)0x0))
-     && (*local_8 != '\0')) {
-    iVar4 = 4;
-    pdVar3 = &local_18;
-    pdVar2 = LiveStats_GetRootDDLState();
-    iVar4 = DDL_MoveTo(pdVar2,pdVar3,iVar4);
-    if (iVar4 == 0) {
+      (featureName = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_NAME),
+      featureName != (char *)0x0)) && (*featureName != '\0')) {
+    iVar2 = 4;
+    resultState = &searchState;
+    searchState_00 = LiveStats_GetRootDDLState();
+    iVar2 = DDL_MoveTo(searchState_00,resultState,iVar2);
+    if (iVar2 == 0) {
       DDL_PrintError("DDL: Error could not find clan tag feature %s\n");
     }
     else {
-      iVar4 = DDL_SetInt(&local_18,1,param_1);
-      if (iVar4 != 0) {
+      iVar2 = DDL_SetInt(&searchState,1,buffer);
+      if (iVar2 != 0) {
         DDL_PrintError("DDL: Error could not set new flag for clan tag feature %s\n");
       }
     }
@@ -7269,8 +7732,9 @@ void __cdecl BG_UnlockableItemsInit(void)
   int iVar2;
   itemInfo_t **ppiVar3;
   undefined4 *puVar4;
-  undefined4 local_40c [257];
-  int local_8;
+  int numPurchasedItemsInSlot;
+  undefined4 itemsInSlot [257];
+  int numItemsInSlot;
   
   Cmd_AddCommandInternal
             ("equipClass",BG_UnlockablesEquipClassCmd,
@@ -7406,22 +7870,22 @@ void __cdecl BG_UnlockableItemsInit(void)
   BG_LoadWeaponAttachmentTable();
   iVar1 = s_unlockableItems.numPurchasedItemsInSlot;
   ppiVar3 = s_unlockableItems.itemsInSlot;
-  puVar4 = local_40c;
+  puVar4 = itemsInSlot;
   for (iVar2 = 0x100; iVar2 != 0; iVar2 = iVar2 + -1) {
     *puVar4 = *ppiVar3;
     ppiVar3 = ppiVar3 + 1;
     puVar4 = puVar4 + 1;
   }
-  local_8 = s_unlockableItems.numItemsInSlot;
+  numItemsInSlot = s_unlockableItems.numItemsInSlot;
   BG_InitUnlockables();
-  puVar4 = local_40c;
+  puVar4 = itemsInSlot;
   ppiVar3 = s_unlockableItems.itemsInSlot;
   for (iVar2 = 0x100; iVar2 != 0; iVar2 = iVar2 + -1) {
     *ppiVar3 = (itemInfo_t *)*puVar4;
     puVar4 = puVar4 + 1;
     ppiVar3 = ppiVar3 + 1;
   }
-  s_unlockableItems.numItemsInSlot = local_8;
+  s_unlockableItems.numItemsInSlot = numItemsInSlot;
   s_unlockableItems.numPurchasedItemsInSlot = iVar1;
   return;
 }

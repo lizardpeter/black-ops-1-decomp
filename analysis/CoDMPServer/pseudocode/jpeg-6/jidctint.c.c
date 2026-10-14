@@ -3,8 +3,8 @@
 // 00B6F000  jpeg_idct_islow  (jpeg-6/jidctint.c:151)
 
 void __cdecl
-jpeg_idct_islow(jpeg_decompress_struct *param_1,jpeg_component_info *param_2,short *param_3,
-               uchar **param_4,uint param_5)
+jpeg_idct_islow(jpeg_decompress_struct *cinfo,jpeg_component_info *compptr,short *coef_block,
+               uchar **output_buf,uint output_col)
 
 {
   uchar uVar1;
@@ -23,11 +23,28 @@ jpeg_idct_islow(jpeg_decompress_struct *param_1,jpeg_component_info *param_2,sho
   int iVar14;
   int iVar15;
   int iVar16;
-  int *local_140;
-  int *local_134;
-  short *local_128;
-  int local_11c;
-  int local_104 [16];
+  uchar dcval_2;
+  int dcval;
+  long tmp0;
+  long z1;
+  long z5;
+  long z4;
+  int *quantptr;
+  uchar *outptr;
+  long tmp1;
+  int *wsptr;
+  uchar *range_limit;
+  long z2;
+  short *inptr;
+  long tmp2;
+  long tmp13;
+  int ctr;
+  long tmp12;
+  long z3;
+  long tmp10;
+  long tmp11;
+  long tmp3;
+  int workspace [16];
   int local_c4 [8];
   int local_a4 [8];
   int local_84 [8];
@@ -35,40 +52,38 @@ jpeg_idct_islow(jpeg_decompress_struct *param_1,jpeg_component_info *param_2,sho
   int local_44 [8];
   int local_24 [8];
   
-  puVar2 = param_1->sample_range_limit;
-  local_128 = param_3;
-  local_140 = param_2->dct_table;
-  local_134 = local_104;
-  for (local_11c = 8; 0 < local_11c; local_11c = local_11c + -1) {
-    if ((((local_128[8] == 0) && (local_128[0x10] == 0)) &&
-        ((local_128[0x18] == 0 &&
-         (((local_128[0x20] == 0 && (local_128[0x28] == 0)) && (local_128[0x30] == 0)))))) &&
-       (local_128[0x38] == 0)) {
-      iVar5 = (int)*local_128 * *local_140 * 4;
-      *local_134 = iVar5;
-      local_134[8] = iVar5;
-      local_134[0x10] = iVar5;
-      local_134[0x18] = iVar5;
-      local_134[0x20] = iVar5;
-      local_134[0x28] = iVar5;
-      local_134[0x30] = iVar5;
-      local_134[0x38] = iVar5;
+  puVar2 = cinfo->sample_range_limit;
+  inptr = coef_block;
+  quantptr = compptr->dct_table;
+  wsptr = workspace;
+  for (ctr = 8; 0 < ctr; ctr = ctr + -1) {
+    if ((((inptr[8] == 0) && (inptr[0x10] == 0)) &&
+        ((inptr[0x18] == 0 && (((inptr[0x20] == 0 && (inptr[0x28] == 0)) && (inptr[0x30] == 0))))))
+       && (inptr[0x38] == 0)) {
+      iVar5 = (int)*inptr * *quantptr * 4;
+      *wsptr = iVar5;
+      wsptr[8] = iVar5;
+      wsptr[0x10] = iVar5;
+      wsptr[0x18] = iVar5;
+      wsptr[0x20] = iVar5;
+      wsptr[0x28] = iVar5;
+      wsptr[0x30] = iVar5;
+      wsptr[0x38] = iVar5;
     }
     else {
-      iVar5 = ((int)local_128[0x10] * local_140[0x10] + (int)local_128[0x30] * local_140[0x30]) *
-              0x1151;
-      iVar9 = (int)local_128[0x30] * local_140[0x30] * -0x3b21 + iVar5;
-      iVar5 = (int)local_128[0x10] * local_140[0x10] * 0x187e + iVar5;
-      iVar6 = ((int)*local_128 * *local_140 + (int)local_128[0x20] * local_140[0x20]) * 0x2000;
-      iVar10 = ((int)*local_128 * *local_140 - (int)local_128[0x20] * local_140[0x20]) * 0x2000;
+      iVar5 = ((int)inptr[0x10] * quantptr[0x10] + (int)inptr[0x30] * quantptr[0x30]) * 0x1151;
+      iVar9 = (int)inptr[0x30] * quantptr[0x30] * -0x3b21 + iVar5;
+      iVar5 = (int)inptr[0x10] * quantptr[0x10] * 0x187e + iVar5;
+      iVar6 = ((int)*inptr * *quantptr + (int)inptr[0x20] * quantptr[0x20]) * 0x2000;
+      iVar10 = ((int)*inptr * *quantptr - (int)inptr[0x20] * quantptr[0x20]) * 0x2000;
       iVar3 = iVar6 + iVar5;
       iVar6 = iVar6 - iVar5;
       iVar11 = iVar10 + iVar9;
       iVar10 = iVar10 - iVar9;
-      iVar9 = (int)local_128[0x38] * local_140[0x38];
-      iVar12 = (int)local_128[0x28] * local_140[0x28];
-      iVar13 = (int)local_128[0x18] * local_140[0x18];
-      iVar14 = (int)local_128[8] * local_140[8];
+      iVar9 = (int)inptr[0x38] * quantptr[0x38];
+      iVar12 = (int)inptr[0x28] * quantptr[0x28];
+      iVar13 = (int)inptr[0x18] * quantptr[0x18];
+      iVar14 = (int)inptr[8] * quantptr[8];
       iVar5 = (iVar9 + iVar13 + iVar12 + iVar14) * 0x25a1;
       iVar7 = (iVar9 + iVar14) * -0x1ccd;
       iVar15 = (iVar12 + iVar13) * -0x5203;
@@ -78,26 +93,25 @@ jpeg_idct_islow(jpeg_decompress_struct *param_1,jpeg_component_info *param_2,sho
       iVar12 = iVar15 + iVar5 + iVar12 * 0x41b3;
       iVar9 = iVar15 + iVar16 + iVar13 * 0x6254;
       iVar5 = iVar7 + iVar5 + iVar14 * 0x300b;
-      *local_134 = iVar3 + 0x400 + iVar5 >> 0xb;
-      local_134[0x38] = (iVar3 - iVar5) + 0x400 >> 0xb;
-      local_134[8] = iVar11 + 0x400 + iVar9 >> 0xb;
-      local_134[0x30] = (iVar11 - iVar9) + 0x400 >> 0xb;
-      local_134[0x10] = iVar10 + 0x400 + iVar12 >> 0xb;
-      local_134[0x28] = (iVar10 - iVar12) + 0x400 >> 0xb;
-      local_134[0x18] = iVar6 + 0x400 + iVar8 >> 0xb;
-      local_134[0x20] = (iVar6 - iVar8) + 0x400 >> 0xb;
+      *wsptr = iVar3 + 0x400 + iVar5 >> 0xb;
+      wsptr[0x38] = (iVar3 - iVar5) + 0x400 >> 0xb;
+      wsptr[8] = iVar11 + 0x400 + iVar9 >> 0xb;
+      wsptr[0x30] = (iVar11 - iVar9) + 0x400 >> 0xb;
+      wsptr[0x10] = iVar10 + 0x400 + iVar12 >> 0xb;
+      wsptr[0x28] = (iVar10 - iVar12) + 0x400 >> 0xb;
+      wsptr[0x18] = iVar6 + 0x400 + iVar8 >> 0xb;
+      wsptr[0x20] = (iVar6 - iVar8) + 0x400 >> 0xb;
     }
-    local_128 = local_128 + 1;
-    local_134 = local_134 + 1;
-    local_140 = local_140 + 1;
+    inptr = inptr + 1;
+    wsptr = wsptr + 1;
+    quantptr = quantptr + 1;
   }
-  local_134 = local_104;
-  for (local_11c = 0; local_11c < 8; local_11c = local_11c + 1) {
-    puVar4 = param_4[local_11c] + param_5;
-    if ((((local_134[1] == 0) && (local_134[2] == 0)) && (local_134[3] == 0)) &&
-       (((local_134[4] == 0 && (local_134[5] == 0)) && ((local_134[6] == 0 && (local_134[7] == 0))))
-       )) {
-      uVar1 = puVar2[(*local_134 + 0x10 >> 5 & 0x3ffU) + 0x80];
+  wsptr = workspace;
+  for (ctr = 0; ctr < 8; ctr = ctr + 1) {
+    puVar4 = output_buf[ctr] + output_col;
+    if ((((wsptr[1] == 0) && (wsptr[2] == 0)) && (wsptr[3] == 0)) &&
+       (((wsptr[4] == 0 && (wsptr[5] == 0)) && ((wsptr[6] == 0 && (wsptr[7] == 0)))))) {
+      uVar1 = puVar2[(*wsptr + 0x10 >> 5 & 0x3ffU) + 0x80];
       *puVar4 = uVar1;
       puVar4[1] = uVar1;
       puVar4[2] = uVar1;
@@ -108,19 +122,19 @@ jpeg_idct_islow(jpeg_decompress_struct *param_1,jpeg_component_info *param_2,sho
       puVar4[7] = uVar1;
     }
     else {
-      iVar5 = (local_134[2] + local_134[6]) * 0x1151;
-      iVar3 = local_134[6] * -0x3b21 + iVar5;
-      iVar5 = local_134[2] * 0x187e + iVar5;
-      iVar11 = (*local_134 + local_134[4]) * 0x2000;
-      iVar7 = (*local_134 - local_134[4]) * 0x2000;
+      iVar5 = (wsptr[2] + wsptr[6]) * 0x1151;
+      iVar3 = wsptr[6] * -0x3b21 + iVar5;
+      iVar5 = wsptr[2] * 0x187e + iVar5;
+      iVar11 = (*wsptr + wsptr[4]) * 0x2000;
+      iVar7 = (*wsptr - wsptr[4]) * 0x2000;
       iVar6 = iVar11 + iVar5;
       iVar11 = iVar11 - iVar5;
       iVar16 = iVar7 + iVar3;
       iVar7 = iVar7 - iVar3;
-      iVar5 = local_134[7];
-      iVar3 = local_134[5];
-      iVar10 = local_134[3];
-      iVar9 = local_134[1];
+      iVar5 = wsptr[7];
+      iVar3 = wsptr[5];
+      iVar10 = wsptr[3];
+      iVar9 = wsptr[1];
       iVar12 = (iVar5 + iVar10 + iVar3 + iVar9) * 0x25a1;
       iVar8 = (iVar5 + iVar9) * -0x1ccd;
       iVar13 = (iVar3 + iVar10) * -0x5203;
@@ -139,7 +153,7 @@ jpeg_idct_islow(jpeg_decompress_struct *param_1,jpeg_component_info *param_2,sho
       puVar4[3] = puVar2[(iVar11 + 0x20000 + iVar5 >> 0x12 & 0x3ffU) + 0x80];
       puVar4[4] = puVar2[((iVar11 - iVar5) + 0x20000 >> 0x12 & 0x3ffU) + 0x80];
     }
-    local_134 = local_134 + 8;
+    wsptr = wsptr + 8;
   }
   return;
 }

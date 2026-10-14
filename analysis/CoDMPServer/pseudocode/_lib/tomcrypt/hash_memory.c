@@ -8,7 +8,7 @@ int __cdecl hash_memory(int param_1,int param_2,undefined4 param_3,int param_4,u
 
 {
   int iVar1;
-  void *pvVar2;
+  void *ptr;
   
   if (param_2 == 0) {
     crypt_argchk("in != NULL",
@@ -32,19 +32,19 @@ int __cdecl hash_memory(int param_1,int param_2,undefined4 param_3,int param_4,u
       *param_5 = *(uint *)(&DAT_0b548c80 + param_1);
       return 6;
     }
-    pvVar2 = tom_game_malloc(0x70);
-    if (pvVar2 == (void *)0x0) {
+    ptr = tom_game_malloc(0x70);
+    if (ptr == (void *)0x0) {
       return 0xd;
     }
-    iVar1 = (**(code **)(&DAT_0b548ccc + param_1))(pvVar2);
+    iVar1 = (**(code **)(&DAT_0b548ccc + param_1))(ptr);
     if (iVar1 == 0) {
-      iVar1 = (**(code **)(&DAT_0b548cd0 + param_1))(pvVar2,param_2,param_3);
+      iVar1 = (**(code **)(&DAT_0b548cd0 + param_1))(ptr,param_2,param_3);
       if (iVar1 == 0) {
-        iVar1 = (**(code **)(&DAT_0b548cd4 + param_1))(pvVar2,param_4);
+        iVar1 = (**(code **)(&DAT_0b548cd4 + param_1))(ptr,param_4);
         *param_5 = *(uint *)(&DAT_0b548c80 + param_1);
       }
     }
-    tom_game_free(pvVar2);
+    tom_game_free(ptr);
   }
   return iVar1;
 }

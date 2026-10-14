@@ -2,6 +2,8 @@
 
 // 0081C380  R_MapShaderConstantSet  (gfx_d3d/r_shader_constant_set.cpp:70)
 
+/* WARNING: Variable defined which should be unmapped: source */
+
 bool __cdecl R_MapShaderConstantSet(ShaderConstantSet *param_1,int param_2,char *param_3)
 
 {
@@ -9,6 +11,8 @@ bool __cdecl R_MapShaderConstantSet(ShaderConstantSet *param_1,int param_2,char 
   uint unaff_EBX;
   uchar *unaff_ESI;
   int unaff_EDI;
+  ShaderConstantSet *scs;
+  uchar source;
   uchar uStack_1;
   
   if (unaff_EDI < 7) {
@@ -26,6 +30,8 @@ bool __cdecl R_MapShaderConstantSet(ShaderConstantSet *param_1,int param_2,char 
 
 // 0081C3C0  R_GetConstantIndex  (gfx_d3d/r_shader_constant_set.cpp:99)
 
+/* WARNING: Variable defined which should be unmapped: source */
+
 int __cdecl R_GetConstantIndex(ShaderConstantSet *param_1,char *param_2)
 
 {
@@ -35,6 +41,8 @@ int __cdecl R_GetConstantIndex(ShaderConstantSet *param_1,char *param_2)
   uint unaff_ESI;
   uchar *unaff_EDI;
   int iVar4;
+  ShaderConstantSet *scs;
+  uchar source;
   uchar uStack_1;
   
   iVar4 = -1;
@@ -68,21 +76,22 @@ int __cdecl RB_ApplyShaderConstantSet(GfxCmdBufSourceState *param_1,ShaderConsta
   uint unaff_EBP;
   int iVar2;
   GfxCmdBufSourceState *unaff_ESI;
-  uint uStack_8;
+  ShaderConstantSet *scs;
+  int updatedConstants;
   uint uStack_4;
   
   if ((param_1 != (GfxCmdBufSourceState *)0x0) &&
      (*(char *)((int)(param_1->matrices).matrix[1].m[3] + 7) != '\0')) {
     uStack_4 = 0;
     iVar2 = 0;
-    uStack_8 = 1;
+    updatedConstants = 1;
     do {
-      if ((*(byte *)((int)(param_1->matrices).matrix[1].m[3] + 7) & (byte)uStack_8) != 0) {
+      if ((*(byte *)((int)(param_1->matrices).matrix[1].m[3] + 7) & (byte)updatedConstants) != 0) {
         uVar1 = R_UpdateCodeConstantFromVec4(unaff_ESI,unaff_EBP,unaff_EBX);
         uStack_4 = uStack_4 | uVar1;
       }
       iVar2 = iVar2 + 1;
-      uStack_8 = uStack_8 << 1 | (uint)((int)uStack_8 < 0);
+      updatedConstants = updatedConstants << 1 | (uint)(updatedConstants < 0);
     } while (iVar2 < 7);
     return uStack_4;
   }
@@ -98,6 +107,7 @@ RB_ShaderConstantSetFromDrawSurf(GfxBackEndData *param_1,GfxDrawSurf *param_2)
 {
   uint *in_EAX;
   uint uVar1;
+  GfxBackEndData *backEndData;
   
   if ((in_EAX[1] >> 0x13 & 0xf) - 7 < 4) {
     uVar1 = (*in_EAX >> 0x14 & 0x1c) * 4 | *in_EAX >> 0x10 & 0xf;

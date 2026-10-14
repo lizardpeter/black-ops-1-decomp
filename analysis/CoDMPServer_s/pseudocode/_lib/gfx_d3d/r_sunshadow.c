@@ -4,7 +4,7 @@
 
 void __cdecl
 R_SunShadowMapBoundingPoly
-          (GfxSunShadowBoundingPoly *param_1,float param_2,float (*param_3) [2],int *param_4,
+          (GfxSunShadowBoundingPoly *pointIsNear,float param_2,float (*param_3) [2],int *param_4,
           uint param_5)
 
 {
@@ -17,13 +17,14 @@ R_SunShadowMapBoundingPoly
   float *in_EDX;
   float *pfVar6;
   int unaff_EDI;
+  float sampleSize;
   
   fVar1 = (float)in_EAX;
   if (in_EAX < 0) {
     fVar1 = fVar1 + 4.2949673e+09;
   }
   iVar4 = 0;
-  fVar3 = 2.0 / (fVar1 * (float)param_1);
+  fVar3 = 2.0 / (fVar1 * (float)pointIsNear);
   fVar1 = *in_EDX;
   fVar2 = in_EDX[1];
   if (0 < (int)in_EDX[2]) {
@@ -44,7 +45,9 @@ R_SunShadowMapBoundingPoly
 
 // 00856BB0  R_SetupSunShadowMaps  (gfx_d3d/r_sunshadow.cpp:685)
 
-void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
+/* WARNING: Variable defined which should be unmapped: sampleSizeNear */
+
+void __cdecl R_SetupSunShadowMaps(GfxViewParms *sunShadow,GfxSunShadow *param_2)
 
 {
   float fVar1;
@@ -52,21 +55,23 @@ void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
   int iVar3;
   float *pfVar4;
   GfxMatrix *unaff_EBP;
-  GfxSunShadowBoundingPoly *pGVar5;
+  GfxSunShadowBoundingPoly *sampleSize;
   float *unaff_ESI;
-  GfxSunShadowProjection *pGVar6;
+  GfxSunShadowProjection *pGVar5;
   GfxSunShadowProjection *unaff_EDI;
-  float *pfVar7;
-  uint uVar8;
-  GfxSunShadowBoundingPoly *pGVar9;
+  float *pfVar6;
+  uint uVar7;
+  GfxViewParms *viewParms;
+  GfxSunShadowBoundingPoly *pGVar8;
+  float sampleSizeNear;
   float local_104;
-  float *local_100;
-  float local_fc;
+  float farClip;
+  float nearClip;
   float local_f8;
-  uint local_f4;
+  uint sunShadowPartitionRes;
   GfxViewParms *local_f0;
   uint local_ec;
-  uint local_e8;
+  uint sunAxis;
   uint local_e4;
   uint local_e0;
   uint local_dc;
@@ -75,10 +80,10 @@ void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
   float local_d0;
   undefined4 local_cc;
   undefined4 local_c8;
-  undefined4 local_c4;
+  undefined4 sunOrigin;
   float local_c0;
   float local_bc;
-  float local_b8;
+  float snappedViewOrgInClipSpace;
   float local_b4 [8];
   float local_94 [37];
   
@@ -87,24 +92,24 @@ void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
   local_f0 = (GfxViewParms *)dx.sunShadowPartitionRes;
   R_GetSunAxes((float (*) [3])unaff_EDI);
   R_SetupSunShadowMapProjection
-            (param_1,(float (*) [3])local_b4,(GfxSunShadow *)(local_b4 + 4),(float (*) [2])iVar3,
+            (sunShadow,(float (*) [3])local_b4,(GfxSunShadow *)(local_b4 + 4),(float (*) [2])iVar3,
              (float *)unaff_EDI,(uint)unaff_ESI);
-  uVar8 = 0x80000000;
+  uVar7 = 0x80000000;
   local_c0 = -(param_2->sunProj).viewMatrix[3][0];
   local_bc = -(param_2->sunProj).viewMatrix[3][1];
-  local_b8 = -(param_2->sunProj).viewMatrix[3][2];
-  R_GetSceneExtentsAlongDir(&local_c0,&local_f8,&local_fc,(float *)param_1);
-  local_100 = local_b4;
-  local_ec = local_e4 ^ uVar8;
-  local_e8 = local_e0 ^ uVar8;
-  local_f4 = local_dc ^ uVar8;
-  pGVar5 = (GfxSunShadowBoundingPoly *)0x0;
+  snappedViewOrgInClipSpace = -(param_2->sunProj).viewMatrix[3][2];
+  R_GetSceneExtentsAlongDir(&local_c0,&local_f8,&nearClip,(float *)sunShadow);
+  farClip = (float)local_b4;
+  local_ec = local_e4 ^ uVar7;
+  sunAxis = local_e0 ^ uVar7;
+  sunShadowPartitionRes = local_dc ^ uVar7;
+  sampleSize = (GfxSunShadowBoundingPoly *)0x0;
   pfVar4 = param_2->partition[0].shadowViewParms.axis[1] + 2;
   do {
     pGVar2 = local_f0;
     pfVar4[-9] = (float)local_ec;
-    pfVar4[-8] = (float)local_e8;
-    pfVar4[-7] = (float)local_f4;
+    pfVar4[-8] = (float)sunAxis;
+    pfVar4[-7] = (float)sunShadowPartitionRes;
     pfVar4[-6] = 0.0;
     pfVar4[-5] = (float)local_e4;
     pfVar4[-4] = (float)local_e0;
@@ -114,27 +119,29 @@ void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
     *pfVar4 = local_d0;
     pfVar4[1] = (float)local_cc;
     pfVar4[2] = (float)local_c8;
-    pfVar4[3] = (float)local_c4;
-    pGVar6 = &param_2->sunProj;
-    pfVar7 = pfVar4 + -0x49;
+    pfVar4[3] = (float)sunOrigin;
+    pGVar5 = &param_2->sunProj;
+    pfVar6 = pfVar4 + -0x49;
     for (iVar3 = 0x10; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *pfVar7 = pGVar6->viewMatrix[0][0];
-      pGVar6 = (GfxSunShadowProjection *)(pGVar6->viewMatrix[0] + 1);
-      pfVar7 = pfVar7 + 1;
+      *pfVar6 = pGVar5->viewMatrix[0][0];
+      pGVar5 = (GfxSunShadowProjection *)(pGVar5->viewMatrix[0] + 1);
+      pfVar6 = pfVar6 + 1;
     }
-    R_SunShadowMapProjectionMatrix(local_100,local_104,local_f8,local_fc,local_f0,(uint)unaff_EDI);
-    pGVar9 = pGVar5;
+    R_SunShadowMapProjectionMatrix
+              ((float *)farClip,local_104,local_f8,nearClip,local_f0,(uint)unaff_EDI);
+    pGVar8 = sampleSize;
     R_SunShadowMapClipSpaceClipPlanes
-              (pGVar5,(int)local_104,(float)local_94,(float (*) [4])pGVar2,(uint)unaff_EDI);
+              (sampleSize,(int)local_104,(float)local_94,(float (*) [4])pGVar2,(uint)unaff_EDI);
     R_SetupShadowSurfacesDpvs
-              ((GfxViewParms *)(pfVar4 + -0x49),(float (*) [4])local_94,(uint)pGVar5,(int)pGVar9);
+              ((GfxViewParms *)(pfVar4 + -0x49),(float (*) [4])local_94,(uint)sampleSize,(int)pGVar8
+              );
     fVar1 = rg.sunShadowPartitionRatio;
     param_2->sunShadowCount = param_2->sunShadowCount + 1;
-    local_100 = local_100 + 2;
+    farClip = (float)((int)farClip + 8);
     local_104 = fVar1 * local_104;
-    pGVar5 = (GfxSunShadowBoundingPoly *)((int)pGVar5->snapDelta + 1);
+    sampleSize = (GfxSunShadowBoundingPoly *)((int)sampleSize->snapDelta + 1);
     pfVar4 = pfVar4 + 0x74;
-  } while ((int)pGVar5 < 2);
+  } while ((int)sampleSize < 2);
   R_GetSunShadowLookupMatrix(&param_2->partition[0].shadowViewParms,unaff_EDI,unaff_ESI,unaff_EBP);
   return;
 }
@@ -142,11 +149,14 @@ void __cdecl R_SetupSunShadowMaps(GfxViewParms *param_1,GfxSunShadow *param_2)
 
 // 00856DF0  R_SunShadowMaps  (gfx_d3d/r_sunshadow.cpp:771)
 
+/* WARNING: Variable defined which should be unmapped: sunShadow */
+
 void __cdecl R_SunShadowMaps(GfxSunShadow *param_1)
 
 {
   int iVar1;
   uint unaff_ESI;
+  GfxSunShadow *sunShadow;
   
   shadowGlob.defaultShadowCasterTechnique =
        (((rgp.depthPrepassMaterial)->field8_0xb0).localTechniqueSet)->techniques
@@ -171,11 +181,13 @@ void __cdecl R_MergeAndEmitSunShadowMapsSurfs(GfxViewInfo *param_1)
   float *pfVar4;
   GfxBackEndData *unaff_EDI;
   GfxBackEndData *pGVar5;
+  GfxViewInfo *viewInfo;
   GfxBackEndData *pGVar6;
+  uint partitionIndex;
   int iStack_c;
-  int *piStack_8;
+  int firstDrawSurf;
   
-  piStack_8 = &(frontEndDataOut->sunShadow).partition[0].partitionIndex;
+  firstDrawSurf = (int)&(frontEndDataOut->sunShadow).partition[0].partitionIndex;
   iStack_c = 0;
   uVar3 = 0x14;
   pfVar4 = param_1->drawList[8].viewOrigin + 2;
@@ -196,9 +208,9 @@ void __cdecl R_MergeAndEmitSunShadowMapsSurfs(GfxViewInfo *param_1)
     pGVar5 = frontEndDataOut;
     ((GfxDrawSurfListInfo *)(pfVar4 + -7))->drawSurfs = frontEndDataOut->drawSurfs + iVar1;
     pfVar4[-6] = (float)(pGVar5->drawSurfCount - iVar1);
-    *piStack_8 = iStack_c;
+    *(int *)firstDrawSurf = iStack_c;
     iStack_c = iStack_c + 1;
-    piStack_8 = piStack_8 + 0x74;
+    firstDrawSurf = firstDrawSurf + 0x1d0;
     uVar3 = uVar3 + 4;
     pfVar4 = pfVar4 + 0x14;
   } while (uVar3 < 0x1c);

@@ -2,13 +2,13 @@
 
 // 00C0D8AB  srand  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/rand.c:37)
 
-void __cdecl srand(uint param_1)
+void __cdecl srand(uint seed)
 
 {
   _tiddata *p_Var1;
   
   p_Var1 = _getptd();
-  p_Var1->_holdrand = param_1;
+  p_Var1->_holdrand = seed;
   return;
 }
 

@@ -13,14 +13,14 @@ void __cdecl TRACK_actor_event_listener(void)
 
 // 008EFE60  RemoveSwapWithLast  (game/actor_event_listeners.cpp:173)
 
-void __cdecl RemoveSwapWithLast(int param_1)
+void __cdecl RemoveSwapWithLast(int listenerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int removeIndex;
   
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)listenerIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_event_listeners.cpp",
                              0xb0,0,
                              "listenerIndex doesn\'t index MAX_AI_EV_LISTENERS\n\t%i not in [0, %i)"
@@ -31,47 +31,52 @@ void __cdecl RemoveSwapWithLast(int param_1)
       return;
     }
   }
-  local_8 = param_1;
+  removeIndex = listenerIndex;
   g_listenerCount = g_listenerCount + -1;
-  if (param_1 < g_listenerCount) {
-    g_AIEVlisteners[param_1].entIndex = g_AIEVlisteners[g_listenerCount].entIndex;
-    g_AIEVlisteners[param_1].events = g_AIEVlisteners[g_listenerCount].events;
-    local_8 = g_listenerCount;
+  if (listenerIndex < g_listenerCount) {
+    g_AIEVlisteners[listenerIndex].entIndex = g_AIEVlisteners[g_listenerCount].entIndex;
+    g_AIEVlisteners[listenerIndex].events = g_AIEVlisteners[g_listenerCount].events;
+    removeIndex = g_listenerCount;
   }
-  g_AIEVlisteners[local_8].entIndex = 0x3ff;
-  g_AIEVlisteners[local_8].events = 0;
+  g_AIEVlisteners[removeIndex].entIndex = 0x3ff;
+  g_AIEVlisteners[removeIndex].events = 0;
   return;
 }
 
 
 // 008EFF10  Actor_EventListener_RemoveEntity  (game/actor_event_listeners.cpp:228)
 
-void __cdecl Actor_EventListener_RemoveEntity(int param_1)
+void __cdecl Actor_EventListener_RemoveEntity(int entIndex)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_listenerCount <= local_8) {
+    if (g_listenerCount <= i) {
       return;
     }
-    if (g_AIEVlisteners[local_8].entIndex == param_1) break;
-    local_8 = local_8 + 1;
+    if (g_AIEVlisteners[i].entIndex == entIndex) break;
+    i = i + 1;
   }
-  RemoveSwapWithLast(local_8);
+  RemoveSwapWithLast(i);
   return;
 }
 
 
 // 008EFF60  Actor_EventListener_First  (game/actor_event_listeners.cpp:248)
 
-int __cdecl Actor_EventListener_First(ai_event_t param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+int __cdecl Actor_EventListener_First(ai_event_t event,int teamFlags)
 
 {
   int iVar1;
   
-  iVar1 = Actor_EventListener_Next(-1,param_1,param_2);
+  iVar1 = Actor_EventListener_Next(-1,event,teamFlags);
   return iVar1;
 }
 
@@ -79,32 +84,33 @@ int __cdecl Actor_EventListener_First(ai_event_t param_1,int param_2)
 // 008EFF80  Actor_EventListener_Next  (game/actor_event_listeners.cpp:261)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Actor_EventListener_Next(int param_1,ai_event_t param_2,int param_3)
+int __cdecl Actor_EventListener_Next(int index,ai_event_t event,int teamFlags)
 
 {
   int iVar1;
-  int local_c;
+  int i;
+  sentient_s *sentient;
   
   while( true ) {
     do {
-      local_c = param_1 + 1;
-      if (g_listenerCount <= local_c) {
+      i = index + 1;
+      if (g_listenerCount <= i) {
         return -1;
       }
-      iVar1 = Com_BitCheckAssert(&g_AIEVlisteners[local_c].events,param_2,0xfffffff);
-      param_1 = local_c;
+      iVar1 = Com_BitCheckAssert(&g_AIEVlisteners[i].events,event,0xfffffff);
+      index = i;
     } while (iVar1 == 0);
-    if (g_entities[g_AIEVlisteners[local_c].entIndex].sentient == (sentient_s *)0x0) break;
-    if ((1 << ((byte)(g_entities[g_AIEVlisteners[local_c].entIndex].sentient)->eTeam & 0x1f) &
-        param_3) != 0) {
-      return local_c;
+    if (g_entities[g_AIEVlisteners[i].entIndex].sentient == (sentient_s *)0x0) break;
+    if ((1 << ((byte)(g_entities[g_AIEVlisteners[i].entIndex].sentient)->eTeam & 0x1f) & teamFlags)
+        != 0) {
+      return i;
     }
   }
-  return local_c;
+  return i;
 }
 
 
@@ -115,14 +121,14 @@ int __cdecl Actor_EventListener_Next(int param_1,ai_event_t param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl Actor_EventListener_GetEntity(int param_1)
+gentity_s * __cdecl Actor_EventListener_GetEntity(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_event_listeners.cpp",
                              0x11f,0,"index doesn\'t index MAX_AI_EV_LISTENERS\n\t%i not in [0, %i)"
                             );
@@ -132,7 +138,7 @@ gentity_s * __cdecl Actor_EventListener_GetEntity(int param_1)
       return pgVar3;
     }
   }
-  return g_entities + g_AIEVlisteners[param_1].entIndex;
+  return g_entities + g_AIEVlisteners[index].entIndex;
 }
 
 
@@ -145,36 +151,36 @@ gentity_s * __cdecl Actor_EventListener_GetEntity(int param_1)
 
 void __cdecl
 Actor_EventListener_NotifyToListener
-          (gentity_s *param_1,gentity_s *param_2,ai_event_t param_3,float *param_4)
+          (gentity_s *listener,gentity_s *originator,ai_event_t event,float *position)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((listener == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_event_listeners.cpp",
                                0x12e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->r).inuse != '\0') {
-    Scr_AddVector(param_4,SCRIPTINSTANCE_SERVER);
-    if (param_2 == (gentity_s *)0x0) {
+  if ((listener->r).inuse != '\0') {
+    Scr_AddVector(position,SCRIPTINSTANCE_SERVER);
+    if (originator == (gentity_s *)0x0) {
       Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
     }
     else {
-      Scr_AddEntity(param_2,SCRIPTINSTANCE_SERVER);
+      Scr_AddEntity(originator,SCRIPTINSTANCE_SERVER);
     }
-    if ((g_AIEV_scrConst_table[param_3] == (ushort *)0x0) &&
+    if ((g_AIEV_scrConst_table[event] == (ushort *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_event_listeners.cpp"
                                  ,0x13a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Scr_Notify(param_1,*g_AIEV_scrConst_table[param_3],2);
-    ScrNotify_FaceEvent(param_1,*g_AIEV_scrConst_table[param_3]);
+    Scr_Notify(listener,*g_AIEV_scrConst_table[event],2);
+    ScrNotify_FaceEvent(listener,*g_AIEV_scrConst_table[event]);
   }
   return;
 }

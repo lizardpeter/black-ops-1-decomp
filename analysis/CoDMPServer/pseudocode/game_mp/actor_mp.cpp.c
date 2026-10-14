@@ -2,11 +2,11 @@
 
 // 008F9600  Vec2Sub  (universal/com_vector.h:57)
 
-void __cdecl Vec2Sub(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec2Sub(float *a,float *b,float *diff)
 
 {
-  *param_3 = *param_1 - *param_2;
-  param_3[1] = param_1[1] - param_2[1];
+  *diff = *a - *b;
+  diff[1] = a[1] - b[1];
   return;
 }
 
@@ -38,6 +38,8 @@ void __cdecl VisCache_Update(vis_cache_t *param_1,bool param_2)
   bool bVar2;
   char *in_ECX;
   char in_DL;
+  bool bVisible;
+  vis_cache_t *pCache;
   
   if (in_ECX == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x8c,0,"%s")
@@ -67,6 +69,7 @@ void __cdecl SentientInfo_Clear(sentient_info_t *param_1)
   code *pcVar1;
   bool bVar2;
   undefined4 *in_ECX;
+  sentient_info_t *pInfo;
   
   if (in_ECX == (undefined4 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x98,0,"%s")
@@ -93,12 +96,13 @@ void __cdecl SentientInfo_Clear(sentient_info_t *param_1)
 
 // 008F5CF0  SentientInfo_Copy  (game_mp/actor_mp.cpp:158)
 
+/* WARNING: Variable defined which should be unmapped: pFrom */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SentientInfo_Copy(actor_s *param_1,actor_s *param_2,int param_3)
+void __cdecl SentientInfo_Copy(actor_s *index,actor_s *param_2,int param_3)
 
 {
   code *pcVar1;
@@ -106,6 +110,8 @@ void __cdecl SentientInfo_Copy(actor_s *param_1,actor_s *param_2,int param_3)
   int in_ECX;
   sentient_info_t *in_EDX;
   sentient_info_t *unaff_ESI;
+  actor_s *pFrom;
+  actor_s *pTo;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x9f,0,"%s")
@@ -126,8 +132,8 @@ void __cdecl SentientInfo_Copy(actor_s *param_1,actor_s *param_2,int param_3)
     }
   }
   if (((1 << ((byte)*(undefined4 *)(in_ECX + 8) & 0x1f) & (uint)in_EDX[0x90].pLastKnownNode) != 0)
-     && (*(int *)(in_ECX + 0xf30 + (int)param_1 * 0x28) <
-         in_EDX[(int)((int)&param_1->StateTransitions[1].eState + 1)].VisCache.iLastVisTime)) {
+     && (*(int *)(in_ECX + 0xf30 + (int)index * 0x28) <
+         in_EDX[(int)((int)&index->StateTransitions[1].eState + 1)].VisCache.iLastVisTime)) {
     SentientInfo_ForceCopy(unaff_ESI,in_EDX);
   }
   return;
@@ -143,6 +149,8 @@ void __cdecl SentientInfo_ForceCopy(sentient_info_t *param_1,sentient_info_t *pa
 {
   int in_ECX;
   int in_EDX;
+  sentient_info_t *pFrom;
+  sentient_info_t *pTo;
   
   *(undefined4 *)(in_ECX + 0xc) = 0;
   *(undefined4 *)(in_ECX + 0x14) = 0;
@@ -163,45 +171,45 @@ void __cdecl SentientInfo_ForceCopy(sentient_info_t *param_1,sentient_info_t *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_droptofloor(gentity_s *param_1)
+int __cdecl Actor_droptofloor(gentity_s *ent)
 
 {
-  col_context_t local_8c;
-  float local_64;
+  col_context_t context;
+  float dropMins;
   float local_60;
   float local_5c;
-  float local_58;
+  float vEnd;
   float local_54;
   float local_50;
-  float4 local_4c;
+  float4 trace;
   float local_3c;
   char local_21;
   uint local_14;
-  float local_10;
+  float dropMaxs;
   float local_c;
   undefined4 local_8;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c.v[0] = 0.0;
-  local_4c.v[1] = 0.0;
-  local_4c.v[2] = 0.0;
-  local_4c.v[3] = 0.0;
-  col_context_t::col_context_t(&local_8c);
-  local_58 = (param_1->r).currentOrigin[0];
-  local_54 = (param_1->r).currentOrigin[1];
-  local_50 = (param_1->r).currentOrigin[2];
-  (param_1->r).currentOrigin[2] = (param_1->r).currentOrigin[2] + 1.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  vEnd = (ent->r).currentOrigin[0];
+  local_54 = (ent->r).currentOrigin[1];
+  local_50 = (ent->r).currentOrigin[2];
+  (ent->r).currentOrigin[2] = (ent->r).currentOrigin[2] + 1.0;
   local_50 = local_50 - 128.0;
-  local_64 = -15.0;
+  dropMins = -15.0;
   local_60 = -15.0;
   local_5c = 0.0;
-  local_10 = 15.0;
+  dropMaxs = 15.0;
   local_c = 15.0;
   local_8 = 0x41f00000;
-  G_TraceCapsule((trace_t *)&local_4c,(param_1->r).currentOrigin,&local_64,&local_10,&local_58,0x3ff
-                 ,0x2820011,&local_8c);
+  G_TraceCapsule((trace_t *)&trace,(ent->r).currentOrigin,&dropMins,&dropMaxs,&vEnd,0x3ff,0x2820011,
+                 &context);
   if (local_21 == '\0') {
-    Vec3Lerp((param_1->r).currentOrigin,&local_58,local_3c,(param_1->r).currentOrigin);
+    Vec3Lerp((ent->r).currentOrigin,&vEnd,local_3c,(ent->r).currentOrigin);
   }
   return (uint)(local_21 != '\0');
 }
@@ -209,20 +217,19 @@ int __cdecl Actor_droptofloor(gentity_s *param_1)
 
 // 008F9640  Vec2DistanceSq  (universal/com_vector.h:187)
 
-float __cdecl Vec2DistanceSq(float *param_1,float *param_2)
+float __cdecl Vec2DistanceSq(float *v0,float *v1)
 
 {
-  return (param_2[1] - param_1[1]) * (param_2[1] - param_1[1]) +
-         (*param_2 - *param_1) * (*param_2 - *param_1);
+  return (v1[1] - v0[1]) * (v1[1] - v0[1]) + (*v1 - *v0) * (*v1 - *v0);
 }
 
 
 // 008FE760  Actor_AtDifferentElevation  (game/actor_team_move.cpp:193)
 
-bool __cdecl Actor_AtDifferentElevation(float *param_1,float *param_2)
+bool __cdecl Actor_AtDifferentElevation(float *vOrgSelf_2,float *vOrgOther_2)
 
 {
-  return 80.0 <= ABS(param_1[2] - param_2[2]);
+  return 80.0 <= ABS(vOrgSelf_2[2] - vOrgOther_2[2]);
 }
 
 
@@ -233,53 +240,55 @@ bool __cdecl Actor_AtDifferentElevation(float *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_InitActorState(gentity_s *param_1)
+void __cdecl Actor_InitActorState(gentity_s *ent)
 
 {
-  actor_s *paVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
+  actor_s *actor_00;
+  code *pcVar1;
+  bool bVar2;
+  uint uVar3;
+  actor_s *actor;
+  int actorNum;
   
-  if (param_1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd6,0,"%s")
+  if (ent == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd6,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  paVar1 = param_1->actor;
-  if (paVar1 == (actor_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd9,0,"%s")
+  actor_00 = ent->actor;
+  if (actor_00 == (actor_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd9,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (paVar1->inuse == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xda,0,"%s")
+  if (actor_00->inuse == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xda,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  uVar4 = G_GetActorIndex(paVar1);
-  if (0xf < uVar4) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xdd,0,
+  uVar3 = G_GetActorIndex(actor_00);
+  if (0xf < uVar3) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xdd,0,
                              "actorNum doesn\'t index MAX_ACTORS\n\t%i not in [0, %i)");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  (param_1->s).lerp.u.missile.launchTime = uVar4;
+  (ent->s).lerp.u.missile.launchTime = uVar3;
   return;
 }
 
@@ -287,40 +296,42 @@ void __cdecl Actor_InitActorState(gentity_s *param_1)
 // 008F5FD0  SP_actor  (game_mp/actor_mp.cpp:234)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl SP_actor(gentity_s *param_1,SpawnVar *param_2)
+int __cdecl SP_actor(gentity_s *ent,SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   sentient_s *psVar4;
-  XAnim_s *pXVar5;
-  XAnimTree_s *pXVar6;
-  actor_goal_s *paVar7;
+  XAnim_s *anims_00;
+  XAnimTree_s *pXVar5;
+  actor_goal_s *paVar6;
   actor_s *unaff_EDI;
-  actor_goal_s *paVar8;
-  actor_s *paVar9;
-  float fVar10;
-  ai_orient_t *paVar11;
+  actor_goal_s *paVar7;
+  actor_s *paVar8;
+  float fVar9;
+  ai_orient_t *fPitch;
   uint local_38;
-  actor_s *local_c;
+  sentient_s *sentient;
+  actor_s *actor;
+  XAnim_s *anims;
   
-  param_1->model = 0;
+  ent->model = 0;
   if ((g_spawnai->current).enabled == false) {
-    G_FreeEntity(param_1);
+    G_FreeEntity(ent);
     iVar3 = 0;
   }
-  else if (((param_1->spawnflags & 1U) == 0) || (param_2 == (SpawnVar *)0x0)) {
-    Actor_droptofloor(param_1);
-    local_c = Actor_Alloc();
-    if ((local_c == (actor_s *)0x0) && ((param_1->spawnflags & 2U) != 0)) {
+  else if (((ent->spawnflags & 1U) == 0) || (spawnVar == (SpawnVar *)0x0)) {
+    Actor_droptofloor(ent);
+    actor = Actor_Alloc();
+    if ((actor == (actor_s *)0x0) && ((ent->spawnflags & 2U) != 0)) {
       Actor_FreeExpendable();
-      local_c = Actor_Alloc();
-      if (local_c == (actor_s *)0x0) {
+      actor = Actor_Alloc();
+      if (actor == (actor_s *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x109,0,
                                  "%s");
         if (!bVar2) {
@@ -330,68 +341,68 @@ int __cdecl SP_actor(gentity_s *param_1,SpawnVar *param_2)
         }
       }
     }
-    if (local_c == (actor_s *)0x0) {
-      G_FreeEntity(param_1);
+    if (actor == (actor_s *)0x0) {
+      G_FreeEntity(ent);
       iVar3 = 0;
     }
     else {
       psVar4 = Sentient_Alloc();
       if (psVar4 == (sentient_s *)0x0) {
-        local_c->inuse = 0;
-        G_FreeEntity(param_1);
+        actor->inuse = 0;
+        G_FreeEntity(ent);
         iVar3 = 0;
       }
       else {
-        param_1->actor = local_c;
-        param_1->sentient = psVar4;
-        param_1->nextthink = level.time + 0x32;
-        param_1->handler = '\x02';
-        (param_1->r).svFlags = (param_1->r).svFlags | 2;
-        param_1->takedamage = '\x01';
-        param_1->maxHealth = 100;
-        param_1->health = 100;
-        param_1->flags = param_1->flags | 0x1000;
-        (param_1->r).mins[0] = -15.0;
-        (param_1->r).mins[1] = -15.0;
-        (param_1->r).mins[2] = 0.0;
-        (param_1->r).maxs[0] = 15.0;
-        (param_1->r).maxs[1] = 15.0;
-        (param_1->r).maxs[2] = 48.0;
-        param_1->clipmask = 0x2820011;
-        (param_1->r).contents = 0x8000;
-        (param_1->s).eType = 0x11;
-        AssignToSmallerType<int>(&(param_1->s).lerp.useCount,param_1->useCount + 1);
-        (param_1->s).lerp.u.turret.ownerNum = 0x3ff;
-        G_SetOrigin(param_1,(param_1->r).currentOrigin);
-        local_c->ent = param_1;
-        local_c->sentient = psVar4;
+        ent->actor = actor;
+        ent->sentient = psVar4;
+        ent->nextthink = level.time + 0x32;
+        ent->handler = '\x02';
+        (ent->r).svFlags = (ent->r).svFlags | 2;
+        ent->takedamage = '\x01';
+        ent->maxHealth = 100;
+        ent->health = 100;
+        ent->flags = ent->flags | 0x1000;
+        (ent->r).mins[0] = -15.0;
+        (ent->r).mins[1] = -15.0;
+        (ent->r).mins[2] = 0.0;
+        (ent->r).maxs[0] = 15.0;
+        (ent->r).maxs[1] = 15.0;
+        (ent->r).maxs[2] = 48.0;
+        ent->clipmask = 0x2820011;
+        (ent->r).contents = 0x8000;
+        (ent->s).eType = 0x11;
+        AssignToSmallerType<int>(&(ent->s).lerp.useCount,ent->useCount + 1);
+        (ent->s).lerp.u.turret.ownerNum = 0x3ff;
+        G_SetOrigin(ent,(ent->r).currentOrigin);
+        actor->ent = ent;
+        actor->sentient = psVar4;
         Actor_InitMove(unaff_EDI);
         Actor_InitAnim(unaff_EDI);
         Actor_InitPath(unaff_EDI);
-        local_c->accuracy = 0.2;
-        local_c->playerSightAccuracy = 1.0;
-        local_c->debugLastAccuracy = -6969.0;
-        local_c->sideMove = 0.0;
-        local_38 = (uint)(longlong)ROUND(1.0 / local_c->accuracy);
-        local_c->missCount = local_38;
-        local_c->safeToChangeScript = true;
-        local_c->ignoreTriggers = false;
-        local_c->pushable = true;
-        local_c->bDropWeapon = 1;
-        local_c->bDrawOnCompass = 1;
-        local_c->bActivateCrosshair = 1;
-        local_c->allowPain = true;
-        local_c->allowDeath = false;
-        paVar11 = (ai_orient_t *)(param_1->r).currentAngles[0];
-        Actor_SetDesiredAngles(paVar11,(param_1->r).currentAngles[1],(float)unaff_EDI);
-        G_SetAngle(param_1,(param_1->r).currentAngles);
-        paVar9 = (actor_s *)(param_1->r).currentAngles[0];
-        Actor_SetLookAngles(paVar9,(param_1->r).currentAngles[1],(float)paVar11);
-        Actor_ClearMoveHistory(paVar9);
-        (local_c->scriptGoal).pos[0] = (param_1->r).currentOrigin[0];
-        (local_c->scriptGoal).pos[1] = (param_1->r).currentOrigin[1];
-        (local_c->scriptGoal).pos[2] = (param_1->r).currentOrigin[2];
-        if ((local_c->scriptGoal).node != (pathnode_t *)0x0) {
+        actor->accuracy = 0.2;
+        actor->playerSightAccuracy = 1.0;
+        actor->debugLastAccuracy = -6969.0;
+        actor->sideMove = 0.0;
+        local_38 = (uint)(longlong)ROUND(1.0 / actor->accuracy);
+        actor->missCount = local_38;
+        actor->safeToChangeScript = true;
+        actor->ignoreTriggers = false;
+        actor->pushable = true;
+        actor->bDropWeapon = 1;
+        actor->bDrawOnCompass = 1;
+        actor->bActivateCrosshair = 1;
+        actor->allowPain = true;
+        actor->allowDeath = false;
+        fPitch = (ai_orient_t *)(ent->r).currentAngles[0];
+        Actor_SetDesiredAngles(fPitch,(ent->r).currentAngles[1],(float)unaff_EDI);
+        G_SetAngle(ent,(ent->r).currentAngles);
+        paVar8 = (actor_s *)(ent->r).currentAngles[0];
+        Actor_SetLookAngles(paVar8,(ent->r).currentAngles[1],(float)fPitch);
+        Actor_ClearMoveHistory(paVar8);
+        (actor->scriptGoal).pos[0] = (ent->r).currentOrigin[0];
+        (actor->scriptGoal).pos[1] = (ent->r).currentOrigin[1];
+        (actor->scriptGoal).pos[2] = (ent->r).currentOrigin[2];
+        if ((actor->scriptGoal).node != (pathnode_t *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x156,
                                    0,"%s");
           if (!bVar2) {
@@ -400,7 +411,7 @@ int __cdecl SP_actor(gentity_s *param_1,SpawnVar *param_2)
             return iVar3;
           }
         }
-        if ((local_c->scriptGoal).volume != (gentity_s *)0x0) {
+        if ((actor->scriptGoal).volume != (gentity_s *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x157,
                                    0,"%s");
           if (!bVar2) {
@@ -409,47 +420,47 @@ int __cdecl SP_actor(gentity_s *param_1,SpawnVar *param_2)
             return iVar3;
           }
         }
-        fVar10 = 0.0;
-        Actor_SetGoalRadius((actor_goal_s *)0x0,(float)paVar9);
-        paVar9 = (actor_s *)0x0;
-        Actor_SetGoalHeight((actor_goal_s *)0x0,fVar10);
-        paVar7 = &local_c->scriptGoal;
-        paVar8 = &local_c->codeGoal;
+        fVar9 = 0.0;
+        Actor_SetGoalRadius((actor_goal_s *)0x0,(float)paVar8);
+        paVar8 = (actor_s *)0x0;
+        Actor_SetGoalHeight((actor_goal_s *)0x0,fVar9);
+        paVar6 = &actor->scriptGoal;
+        paVar7 = &actor->codeGoal;
         for (iVar3 = 10; iVar3 != 0; iVar3 = iVar3 + -1) {
-          paVar8->pos[0] = paVar7->pos[0];
+          paVar7->pos[0] = paVar6->pos[0];
+          paVar6 = (actor_goal_s *)(paVar6->pos + 1);
           paVar7 = (actor_goal_s *)(paVar7->pos + 1);
-          paVar8 = (actor_goal_s *)(paVar8->pos + 1);
         }
-        local_c->keepClaimedNode = '\0';
-        local_c->keepClaimedNodeInGoal = '\0';
-        local_c->noDodgeMove = false;
-        local_c->goalPosChanged = false;
-        local_c->fixedNode = false;
-        local_c->fixedNodeSafeRadius = 64.0;
-        local_c->isFacingMotion = false;
-        (local_c->arrivalInfo).animscriptOverrideRunTo = 0;
-        (local_c->arrivalInfo).arrivalNotifyRequested = 0;
-        local_c->exposedStartTime = -0x80000000;
-        local_c->exposedDuration = 5000;
-        Actor_InitThreatUpdateInterval(paVar9);
-        psVar4->ent = param_1;
+        actor->keepClaimedNode = '\0';
+        actor->keepClaimedNodeInGoal = '\0';
+        actor->noDodgeMove = false;
+        actor->goalPosChanged = false;
+        actor->fixedNode = false;
+        actor->fixedNodeSafeRadius = 64.0;
+        actor->isFacingMotion = false;
+        (actor->arrivalInfo).animscriptOverrideRunTo = 0;
+        (actor->arrivalInfo).arrivalNotifyRequested = 0;
+        actor->exposedStartTime = -0x80000000;
+        actor->exposedDuration = 5000;
+        Actor_InitThreatUpdateInterval(paVar8);
+        psVar4->ent = ent;
         psVar4->eTeam = TEAM_SPECTATOR;
         psVar4->iThreatBias = 0;
         psVar4->iThreatBiasGroupIndex = 0;
         psVar4->pPrevClaimedNode = (pathnode_t *)0x0;
         psVar4->maxVisibleDist = 8192.0;
         psVar4->attackerAccuracy = 1.0;
-        psVar4->oldOrigin[0] = (param_1->r).currentOrigin[0];
-        psVar4->oldOrigin[1] = (param_1->r).currentOrigin[1];
-        psVar4->oldOrigin[2] = (param_1->r).currentOrigin[2];
-        G_InitActorProneInfo(local_c);
-        local_c->fInvProneAnimLowPitch = 0.0;
-        local_c->fInvProneAnimHighPitch = 0.0;
-        local_c->fProneLastDiff = 0.0;
-        Actor_InitLookAt(local_c);
-        Actor_InitActorState(param_1);
-        pXVar5 = Dog_GetAnims();
-        if (pXVar5 == (XAnim_s *)0x0) {
+        psVar4->oldOrigin[0] = (ent->r).currentOrigin[0];
+        psVar4->oldOrigin[1] = (ent->r).currentOrigin[1];
+        psVar4->oldOrigin[2] = (ent->r).currentOrigin[2];
+        G_InitActorProneInfo(actor);
+        actor->fInvProneAnimLowPitch = 0.0;
+        actor->fInvProneAnimHighPitch = 0.0;
+        actor->fProneLastDiff = 0.0;
+        Actor_InitLookAt(actor);
+        Actor_InitActorState(ent);
+        anims_00 = Dog_GetAnims();
+        if (anims_00 == (XAnim_s *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x193,
                                    0,"%s");
           if (!bVar2) {
@@ -458,9 +469,9 @@ int __cdecl SP_actor(gentity_s *param_1,SpawnVar *param_2)
             return iVar3;
           }
         }
-        pXVar6 = Com_XAnimCreateSmallTree(pXVar5);
-        param_1->pAnimTree = pXVar6;
-        if (param_1->pAnimTree == (XAnimTree_s *)0x0) {
+        pXVar5 = Com_XAnimCreateSmallTree(anims_00);
+        ent->pAnimTree = pXVar5;
+        if (ent->pAnimTree == (XAnimTree_s *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x195,
                                    0,"%s");
           if (!bVar2) {
@@ -469,15 +480,15 @@ int __cdecl SP_actor(gentity_s *param_1,SpawnVar *param_2)
             return iVar3;
           }
         }
-        G_DObjUpdate(param_1);
-        SV_LinkEntity(param_1);
-        Sentient_NearestNode((sentient_s *)paVar9);
+        G_DObjUpdate(ent);
+        SV_LinkEntity(ent);
+        Sentient_NearestNode((sentient_s *)paVar8);
         iVar3 = 1;
       }
     }
   }
   else {
-    iVar3 = SP_actor_spawner(param_1,param_2);
+    iVar3 = SP_actor_spawner(ent,spawnVar);
   }
   return iVar3;
 }
@@ -589,7 +600,8 @@ actor_s * __cdecl Actor_Alloc(void)
   code *pcVar1;
   bool bVar2;
   actor_s *paVar3;
-  int local_8;
+  actor_s *actor;
+  int i;
   
   if ((level.actors == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1a6,0,
@@ -598,15 +610,15 @@ actor_s * __cdecl Actor_Alloc(void)
     paVar3 = (actor_s *)(*pcVar1)();
     return paVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xf < local_8) {
+    if (0xf < i) {
       Com_DPrintf(0x12,"Actor allocation failed\n");
       return (actor_s *)0x0;
     }
-    paVar3 = level.actors + local_8;
+    paVar3 = level.actors + i;
     if (paVar3->inuse == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   memset((uchar *)paVar3,'\0',0x2780);
   paVar3->inuse = 1;
@@ -617,14 +629,14 @@ actor_s * __cdecl Actor_Alloc(void)
 
 // 008F6840  Scr_FreeFields  (game_mp/actor_mp.cpp:477)
 
-void __cdecl Scr_FreeFields(actor_field_t *param_1,uchar *param_2)
+void __cdecl Scr_FreeFields(actor_field_t *fields,uchar *base)
 
 {
-  actor_field_t *local_8;
+  actor_field_t *field;
   
-  for (local_8 = param_1; local_8->type != AF_NONE; local_8 = local_8 + 1) {
-    if (local_8->type == AF_STRING) {
-      Scr_SetString((ushort *)(param_2 + local_8->ofs),0,SCRIPTINSTANCE_SERVER);
+  for (field = fields; field->type != AF_NONE; field = field + 1) {
+    if (field->type == AF_STRING) {
+      Scr_SetString((ushort *)(base + field->ofs),0,SCRIPTINSTANCE_SERVER);
     }
   }
   return;
@@ -638,112 +650,116 @@ void __cdecl Scr_FreeFields(actor_field_t *param_1,uchar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_FreeActorFields(actor_s *param_1)
+void __cdecl Scr_FreeActorFields(actor_s *pActor)
 
 {
-  Scr_FreeFields(actorFields,(uchar *)param_1);
+  Scr_FreeFields(actorFields,(uchar *)pActor);
   return;
 }
 
 
 // 008F68B0  Actor_Free  (game_mp/actor_mp.cpp:512)
 
+/* WARNING: Variable defined which should be unmapped: dobj */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_Free(actor_s *param_1)
+void __cdecl Actor_Free(actor_s *actor)
 
 {
-  gentity_s *pgVar1;
-  code *pcVar2;
-  actor_s *paVar3;
-  bool bVar4;
-  int iVar5;
-  actor_s *in_stack_ffffffe8;
-  int local_c;
+  gentity_s *ent_00;
+  code *pcVar1;
+  actor_s *paVar2;
+  bool bVar3;
+  int iVar4;
+  DObj *dobj;
+  actor_s *other;
+  gentity_s *ent;
+  int i;
+  int entnum;
   
-  if ((param_1 == (actor_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x207,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((actor == (actor_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x207,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   if ((level.actors == (actor_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x208,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x208,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if (((param_1 < level.actors) || (level.actors + 0x10 <= param_1)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x209,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if (((actor < level.actors) || (level.actors + 0x10 <= actor)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x209,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((level.actors + ((int)param_1 - (int)level.actors) / 0x2780 != param_1) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x20a,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((level.actors + ((int)actor - (int)level.actors) / 0x2780 != actor) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x20a,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((param_1->sentient == (sentient_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x20b,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((actor->sentient == (sentient_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x20b,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  if ((param_1->inuse == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x20c,0,
-                               "%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((actor->inuse == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x20c,0,
+                               "%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  pgVar1 = param_1->ent;
-  if (pgVar1->pAnimTree != (XAnimTree_s *)0x0) {
-    XAnimClearTree(pgVar1->pAnimTree);
-    Com_XAnimFreeSmallTree(pgVar1->pAnimTree);
-    pgVar1->pAnimTree = (XAnimTree_s *)0x0;
-    in_stack_ffffffe8 = (actor_s *)Com_GetServerDObj((pgVar1->s).number);
-    if (in_stack_ffffffe8 != (actor_s *)0x0) {
-      DObjSetTree((DObj *)in_stack_ffffffe8,(XAnimTree_s *)0x0);
+  ent_00 = actor->ent;
+  if (ent_00->pAnimTree != (XAnimTree_s *)0x0) {
+    XAnimClearTree(ent_00->pAnimTree);
+    Com_XAnimFreeSmallTree(ent_00->pAnimTree);
+    ent_00->pAnimTree = (XAnimTree_s *)0x0;
+    dobj = Com_GetServerDObj((ent_00->s).number);
+    if (dobj != (DObj *)0x0) {
+      DObjSetTree(dobj,(XAnimTree_s *)0x0);
     }
-    G_DObjUpdate(pgVar1);
+    G_DObjUpdate(ent_00);
   }
-  Actor_ClearPath(in_stack_ffffffe8);
-  iVar5 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
-  if (iVar5 != 0) {
-    Actor_KillAnimScript(in_stack_ffffffe8);
+  Actor_ClearPath((actor_s *)dobj);
+  iVar4 = Scr_IsSystemActive('\x01',SCRIPTINSTANCE_SERVER);
+  if (iVar4 != 0) {
+    Actor_KillAnimScript((actor_s *)dobj);
   }
-  Sentient_Dissociate(param_1->sentient);
-  iVar5 = (pgVar1->s).number;
-  for (local_c = 0; paVar3 = level.actors, local_c < 0x10; local_c = local_c + 1) {
-    if (level.actors[local_c].inuse != 0) {
-      if (level.actors[local_c].Path.wDodgeEntity == iVar5) {
-        level.actors[local_c].Path.wDodgeEntity = 0x3ff;
+  Sentient_Dissociate(actor->sentient);
+  iVar4 = (ent_00->s).number;
+  for (i = 0; paVar2 = level.actors, i < 0x10; i = i + 1) {
+    if (level.actors[i].inuse != 0) {
+      if (level.actors[i].Path.wDodgeEntity == iVar4) {
+        level.actors[i].Path.wDodgeEntity = 0x3ff;
       }
-      if (paVar3[local_c].Physics.iHitEntnum == iVar5) {
-        paVar3[local_c].Physics.iHitEntnum = 0x3ff;
+      if (paVar2[i].Physics.iHitEntnum == iVar4) {
+        paVar2[i].Physics.iHitEntnum = 0x3ff;
       }
-      if (paVar3[local_c].pPileUpActor == param_1) {
-        Actor_ClearPileUp(in_stack_ffffffe8);
+      if (paVar2[i].pPileUpActor == actor) {
+        Actor_ClearPileUp((actor_s *)dobj);
       }
     }
   }
-  pgVar1->actor = (actor_s *)0x0;
-  Sentient_Free(param_1->sentient);
-  param_1->sentient = (sentient_s *)0x0;
-  Scr_FreeActorFields(param_1);
-  (pgVar1->s).lerp.u.turret.gunAngles[0] = 2.24208e-44;
-  memset((uchar *)param_1,0xf0,0x2780);
-  param_1->inuse = 0;
+  ent_00->actor = (actor_s *)0x0;
+  Sentient_Free(actor->sentient);
+  actor->sentient = (sentient_s *)0x0;
+  Scr_FreeActorFields(actor);
+  (ent_00->s).lerp.u.turret.gunAngles[0] = 2.24208e-44;
+  memset((uchar *)actor,0xf0,0x2780);
+  actor->inuse = 0;
   return;
 }
 
@@ -755,13 +771,14 @@ void __cdecl Actor_Free(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_IsDeletable(actor_s *param_1)
+int __cdecl Actor_IsDeletable(actor_s *actor)
 
 {
   int local_c;
+  gentity_s *ent;
   
-  if (((param_1->ent->spawnflags & 4U) == 0) &&
-     ((param_1->ent->s).number != level.currentEntityThink)) {
+  if (((actor->ent->spawnflags & 4U) == 0) && ((actor->ent->s).number != level.currentEntityThink))
+  {
     local_c = 1;
   }
   else {
@@ -788,38 +805,39 @@ void __cdecl Actor_FreeExpendable(void)
   float fVar5;
   actor_s *in_stack_ffffffb0;
   float *in_stack_ffffffb4;
-  float local_3c;
-  float local_38;
+  float fDot;
+  float fMaxDistSqrd;
+  float vRefDir;
   float local_34;
   float local_30;
-  float local_2c;
+  float vRefPos;
   float local_28;
   float local_24;
-  float local_20;
-  actor_s *local_1c;
-  actor_s *local_18;
-  gentity_s *local_14;
-  float local_10;
+  float fDistSqrd;
+  actor_s *pExpendable;
+  actor_s *actor;
+  gentity_s *player;
+  float vDelta;
   float local_c;
   float local_8;
   
   Com_Printf(0x12,"^3trying to delete somebody to make room for spawned AI (time %d)\n");
-  local_14 = G_Find((gentity_s *)0x0,0x164,scr_const.player);
-  if ((local_14 == (gentity_s *)0x0) &&
+  player = G_Find((gentity_s *)0x0,0x164,scr_const.player);
+  if ((player == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x27a,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_14->client == (gclient_s *)0x0) &&
+  if ((player->client == (gclient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x27b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_14->sentient == (sentient_s *)0x0) &&
+  if ((player->sentient == (sentient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x27c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -827,137 +845,137 @@ void __cdecl Actor_FreeExpendable(void)
     return;
   }
   Sentient_GetEyePosition((sentient_s *)in_stack_ffffffb0,in_stack_ffffffb4);
-  local_3c = 0.0;
-  local_1c = (actor_s *)0x0;
-  local_18 = Actor_FirstActor((int)in_stack_ffffffb0);
-  while (local_18 != (actor_s *)0x0) {
-    iVar4 = Actor_IsDeletable(local_18);
+  fMaxDistSqrd = 0.0;
+  pExpendable = (actor_s *)0x0;
+  actor = Actor_FirstActor((int)in_stack_ffffffb0);
+  while (actor != (actor_s *)0x0) {
+    iVar4 = Actor_IsDeletable(actor);
     if (iVar4 != 0) {
-      pgVar1 = local_18->ent;
-      local_10 = (pgVar1->r).currentOrigin[0] - local_2c;
+      pgVar1 = actor->ent;
+      vDelta = (pgVar1->r).currentOrigin[0] - vRefPos;
       local_c = (pgVar1->r).currentOrigin[1] - local_28;
       local_8 = (pgVar1->r).currentOrigin[2] - local_24;
-      local_20 = local_10 * local_10 + local_c * local_c + local_8 * local_8;
-      if (local_3c < local_20) {
-        local_1c = local_18;
-        local_3c = local_20;
+      fDistSqrd = vDelta * vDelta + local_c * local_c + local_8 * local_8;
+      if (fMaxDistSqrd < fDistSqrd) {
+        pExpendable = actor;
+        fMaxDistSqrd = fDistSqrd;
       }
     }
-    local_18 = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
+    actor = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
   }
-  if (local_1c == (actor_s *)0x0) {
-    if ((local_3c != 0.0) &&
+  if (pExpendable == (actor_s *)0x0) {
+    if ((fMaxDistSqrd != 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x298,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    G_GetPlayerViewDirection(local_14,&local_38,(float *)0x0,(float *)0x0);
-    local_18 = Actor_FirstActor((int)in_stack_ffffffb0);
-    while (local_18 != (actor_s *)0x0) {
-      iVar4 = Actor_IsDeletable(local_18);
+    G_GetPlayerViewDirection(player,&vRefDir,(float *)0x0,(float *)0x0);
+    actor = Actor_FirstActor((int)in_stack_ffffffb0);
+    while (actor != (actor_s *)0x0) {
+      iVar4 = Actor_IsDeletable(actor);
       if (iVar4 != 0) {
-        pgVar1 = local_18->ent;
-        local_10 = (pgVar1->r).currentOrigin[0] - local_2c;
+        pgVar1 = actor->ent;
+        vDelta = (pgVar1->r).currentOrigin[0] - vRefPos;
         local_c = (pgVar1->r).currentOrigin[1] - local_28;
         local_8 = (pgVar1->r).currentOrigin[2] - local_24;
-        if ((local_10 * local_38 + local_c * local_34 + local_8 * local_30 < 0.0) &&
-           (local_20 = local_10 * local_10 + local_c * local_c + local_8 * local_8,
-           local_3c < local_20)) {
-          local_1c = local_18;
-          local_3c = local_20;
+        if ((vDelta * vRefDir + local_c * local_34 + local_8 * local_30 < 0.0) &&
+           (fDistSqrd = vDelta * vDelta + local_c * local_c + local_8 * local_8,
+           fMaxDistSqrd < fDistSqrd)) {
+          pExpendable = actor;
+          fMaxDistSqrd = fDistSqrd;
         }
       }
-      local_18 = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
+      actor = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
     }
   }
-  if (local_1c == (actor_s *)0x0) {
-    if ((local_3c != 0.0) &&
+  if (pExpendable == (actor_s *)0x0) {
+    if ((fMaxDistSqrd != 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x2b2,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_18 = Actor_FirstActor((int)in_stack_ffffffb0);
-    while (local_18 != (actor_s *)0x0) {
-      iVar4 = Actor_IsDeletable(local_18);
+    actor = Actor_FirstActor((int)in_stack_ffffffb0);
+    while (actor != (actor_s *)0x0) {
+      iVar4 = Actor_IsDeletable(actor);
       if (iVar4 != 0) {
-        pgVar1 = local_18->ent;
+        pgVar1 = actor->ent;
         in_stack_ffffffb4 = (pgVar1->r).currentOrigin;
-        local_10 = *in_stack_ffffffb4 - local_2c;
+        vDelta = *in_stack_ffffffb4 - vRefPos;
         local_c = (pgVar1->r).currentOrigin[1] - local_28;
         local_8 = (pgVar1->r).currentOrigin[2] - local_24;
-        local_20 = local_10 * local_10 + local_c * local_c + local_8 * local_8;
-        if ((local_3c < local_20) &&
-           (fVar5 = local_10 * local_38 + local_c * local_34 + local_8 * local_30,
-           fVar5 * fVar5 < local_20 * 0.5)) {
-          local_1c = local_18;
-          local_3c = local_20;
+        fDistSqrd = vDelta * vDelta + local_c * local_c + local_8 * local_8;
+        if ((fMaxDistSqrd < fDistSqrd) &&
+           (fVar5 = vDelta * vRefDir + local_c * local_34 + local_8 * local_30,
+           fVar5 * fVar5 < fDistSqrd * 0.5)) {
+          pExpendable = actor;
+          fMaxDistSqrd = fDistSqrd;
         }
       }
-      local_18 = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
+      actor = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
     }
   }
-  if (local_1c == (actor_s *)0x0) {
-    if ((local_3c != 0.0) &&
+  if (pExpendable == (actor_s *)0x0) {
+    if ((fMaxDistSqrd != 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x2cd,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    G_GetPlayerViewDirection(local_14,&local_38,(float *)0x0,(float *)0x0);
-    local_18 = Actor_FirstActor((int)in_stack_ffffffb0);
-    while (local_18 != (actor_s *)0x0) {
-      iVar4 = Actor_IsDeletable(local_18);
+    G_GetPlayerViewDirection(player,&vRefDir,(float *)0x0,(float *)0x0);
+    actor = Actor_FirstActor((int)in_stack_ffffffb0);
+    while (actor != (actor_s *)0x0) {
+      iVar4 = Actor_IsDeletable(actor);
       if (iVar4 != 0) {
-        pgVar1 = local_18->ent;
+        pgVar1 = actor->ent;
         in_stack_ffffffb0 = (actor_s *)(pgVar1->r).currentOrigin;
-        local_10 = *(float *)in_stack_ffffffb0 - local_2c;
+        vDelta = *(float *)in_stack_ffffffb0 - vRefPos;
         local_c = (pgVar1->r).currentOrigin[1] - local_28;
         local_8 = (pgVar1->r).currentOrigin[2] - local_24;
-        local_20 = local_10 * local_10 + local_c * local_c + local_8 * local_8;
-        if (local_3c <= local_20) {
-          local_1c = local_18;
-          local_3c = local_20;
+        fDistSqrd = vDelta * vDelta + local_c * local_c + local_8 * local_8;
+        if (fMaxDistSqrd <= fDistSqrd) {
+          pExpendable = actor;
+          fMaxDistSqrd = fDistSqrd;
         }
       }
-      local_18 = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
+      actor = Actor_NextActor(in_stack_ffffffb0,(int)in_stack_ffffffb4);
     }
   }
-  if (local_1c == (actor_s *)0x0) {
+  if (pExpendable == (actor_s *)0x0) {
     Com_Error(ERR_DROP,
               "\x15Tried to force spawning of an AI when all AI slots are used by undeletable AI\n")
     ;
   }
   Com_Printf(0x12,"^3deleting entity %i\n");
   Actor_ClearPath(in_stack_ffffffb0);
-  Scr_Notify(local_1c->ent,scr_const.death,0);
-  G_FreeEntity(local_1c->ent);
-  if ((local_1c->ent->actor != (actor_s *)0x0) &&
+  Scr_Notify(pExpendable->ent,scr_const.death,0);
+  G_FreeEntity(pExpendable->ent);
+  if ((pExpendable->ent->actor != (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x2f1,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_1c->ent->sentient != (sentient_s *)0x0) &&
+  if ((pExpendable->ent->sentient != (sentient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x2f2,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_1c->inuse != 0) &&
+  if ((pExpendable->inuse != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x2f4,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((local_1c->sentient->inuse != false) &&
+  if ((pExpendable->sentient->inuse != false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x2f5,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -978,10 +996,11 @@ void __cdecl Actor_FreeExpendable(void)
 void __cdecl G_InitActors(void)
 
 {
-  int local_8;
+  actor_s *actor;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    level.actors[local_8].inuse = 0;
+  for (i = 0; i < 0x10; i = i + 1) {
+    level.actors[i].inuse = 0;
   }
   return;
 }
@@ -994,14 +1013,14 @@ void __cdecl G_InitActors(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetActorIndex(actor_s *param_1)
+int __cdecl G_GetActorIndex(actor_s *actor)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (actor == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x30c,0,"%s"
                             );
     if (!bVar2) {
@@ -1010,7 +1029,7 @@ int __cdecl G_GetActorIndex(actor_s *param_1)
       return iVar3;
     }
   }
-  if (((int)param_1 - (int)level.actors) / 0x2780 < 0) {
+  if (((int)actor - (int)level.actors) / 0x2780 < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x30d,0,"%s"
                             );
     if (!bVar2) {
@@ -1019,7 +1038,7 @@ int __cdecl G_GetActorIndex(actor_s *param_1)
       return iVar3;
     }
   }
-  if (0xf < ((int)param_1 - (int)level.actors) / 0x2780) {
+  if (0xf < ((int)actor - (int)level.actors) / 0x2780) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x30e,0,"%s"
                             );
     if (!bVar2) {
@@ -1028,7 +1047,7 @@ int __cdecl G_GetActorIndex(actor_s *param_1)
       return iVar3;
     }
   }
-  return ((int)param_1 - (int)level.actors) / 0x2780;
+  return ((int)actor - (int)level.actors) / 0x2780;
 }
 
 
@@ -1039,12 +1058,12 @@ int __cdecl G_GetActorIndex(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-XAnimTree_s * __cdecl G_GetActorAnimTree(actor_s *param_1)
+XAnimTree_s * __cdecl G_GetActorAnimTree(actor_s *actor)
 
 {
   int iVar1;
   
-  iVar1 = G_GetActorIndex(param_1);
+  iVar1 = G_GetActorIndex(actor);
   return g_scr_data.actorXAnimTrees[iVar1];
 }
 
@@ -1056,25 +1075,25 @@ XAnimTree_s * __cdecl G_GetActorAnimTree(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetDefaults(actor_s *param_1)
+void __cdecl Actor_SetDefaults(actor_s *actor)
 
 {
-  Actor_SetDefaultState(param_1);
-  param_1->species = AI_SPECIES_DOG;
-  param_1->talkToSpecies = -1;
-  param_1->deathContents = 0x4002000;
-  param_1->fovDot = 0.01;
-  param_1->fMaxSightDistSqrd = 67108864.0;
-  param_1->eTraverseMode = AI_TRAVERSE_NOGRAVITY;
-  (param_1->CodeOrient).eMode = AI_ORIENT_DONT_CHANGE;
-  (param_1->ScriptOrient).eMode = AI_ORIENT_INVALID;
-  param_1->iPacifistWait = 20000;
-  param_1->fWalkDist = 128.0;
-  param_1->fInterval = 96.0;
-  param_1->grenadeAwareness = 0.33;
-  param_1->badPlaceAwareness = 0.75;
-  param_1->bThrowbackGrenades = 1;
-  param_1->goodShootPosValid = 0;
+  Actor_SetDefaultState(actor);
+  actor->species = AI_SPECIES_DOG;
+  actor->talkToSpecies = -1;
+  actor->deathContents = 0x4002000;
+  actor->fovDot = 0.01;
+  actor->fMaxSightDistSqrd = 67108864.0;
+  actor->eTraverseMode = AI_TRAVERSE_NOGRAVITY;
+  (actor->CodeOrient).eMode = AI_ORIENT_DONT_CHANGE;
+  (actor->ScriptOrient).eMode = AI_ORIENT_INVALID;
+  actor->iPacifistWait = 20000;
+  actor->fWalkDist = 128.0;
+  actor->fInterval = 96.0;
+  actor->grenadeAwareness = 0.33;
+  actor->badPlaceAwareness = 0.75;
+  actor->bThrowbackGrenades = 1;
+  actor->goodShootPosValid = 0;
   return;
 }
 
@@ -1086,208 +1105,213 @@ void __cdecl Actor_SetDefaults(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_FinishSpawning(actor_s *param_1)
+void __cdecl Actor_FinishSpawning(actor_s *self)
 
 {
-  gentity_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  ushort uVar4;
-  char *pcVar5;
-  int iVar6;
-  int *piVar7;
+  gentity_s *ent_00;
+  code *pcVar1;
+  bool bVar2;
+  ushort handle;
+  char *first;
+  int iVar3;
+  int *piVar4;
+  ushort hThread;
+  char *classname;
+  AITypeScript *typeScript;
+  gentity_s *ent;
   
-  if (param_1->ent == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x347,0,"%s"
+  if (self->ent == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x347,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->ent->actor != param_1) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x348,0,"%s"
+  if (self->ent->actor != self) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x348,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->sentient == (sentient_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x349,0,"%s"
+  if (self->sentient == (sentient_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x349,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->ent->sentient != param_1->sentient) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x34a,0,"%s"
+  if (self->ent->sentient != self->sentient) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x34a,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->sentient->ent != param_1->ent) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x34b,0,"%s"
+  if (self->sentient->ent != self->ent) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x34b,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = param_1->ent;
-  pcVar5 = SL_ConvertToString((uint)pgVar1->classname,SCRIPTINSTANCE_SERVER);
-  iVar6 = strncmp(pcVar5,"actor_",6);
-  if (iVar6 != 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x352,0,"%s"
+  ent_00 = self->ent;
+  first = SL_ConvertToString((uint)ent_00->classname,SCRIPTINSTANCE_SERVER);
+  iVar3 = strncmp(first,"actor_",6);
+  if (iVar3 != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x352,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  piVar7 = Hunk_FindDataForFile(0,pcVar5 + 6);
-  if (piVar7 == (int *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x355,0,"%s"
+  piVar4 = Hunk_FindDataForFile(0,first + 6);
+  if (piVar4 == (int *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x355,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (*piVar7 == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x356,0,"%s"
+  if (*piVar4 == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x356,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  uVar4 = Scr_ExecEntThread(pgVar1,*piVar7,0);
-  Scr_FreeThread(uVar4,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecEntThread(ent_00,*piVar4,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 008F76C0  Actor_InitAnimScript  (game_mp/actor_mp.cpp:871)
 
+/* WARNING: Variable defined which should be unmapped: hThread */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_InitAnimScript(actor_s *param_1)
+void __cdecl Actor_InitAnimScript(actor_s *self)
 
 {
-  gentity_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  ushort uVar4;
+  gentity_s *ent_00;
+  code *pcVar1;
+  bool bVar2;
+  ushort handle;
   actor_s *unaff_ESI;
-  undefined4 in_stack_fffffff4;
-  undefined2 uVar6;
-  ai_state_t aVar5;
+  ushort hThread;
+  undefined2 uStack_a;
+  gentity_s *ent;
   
-  uVar6 = (undefined2)((uint)in_stack_fffffff4 >> 0x10);
-  if (param_1->ent == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36b,0,"%s"
+  if (self->ent == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36b,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->ent->actor != param_1) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36c,0,"%s"
+  if (self->ent->actor != self) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36c,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->sentient == (sentient_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36d,0,"%s"
+  if (self->sentient == (sentient_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36d,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->ent->sentient != param_1->sentient) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36e,0,"%s"
+  if (self->ent->sentient != self->sentient) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36e,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_1->sentient->ent != param_1->ent) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36f,0,"%s"
+  if (self->sentient->ent != self->ent) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x36f,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = param_1->ent;
-  uVar4 = Scr_ExecEntThread(pgVar1,(g_animScriptTable[param_1->species]->init).func,0);
-  aVar5 = CONCAT22(uVar6,uVar4);
-  Scr_FreeThread(uVar4,SCRIPTINSTANCE_SERVER);
-  if (param_1->stateLevel != 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x378,0,
+  ent_00 = self->ent;
+  handle = Scr_ExecEntThread(ent_00,(g_animScriptTable[self->species]->init).func,0);
+  _hThread = CONCAT22(uStack_a,handle);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
+  if (self->stateLevel != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x378,0,
                              "%s\n\t(self->stateLevel) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (((int)param_1->eState[0] < 1) || (0xb < (int)param_1->eState[0])) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x379,0,
+  if (((int)self->eState[0] < 1) || (0xb < (int)self->eState[0])) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x379,0,
                              "%s\n\t(self->eState[0]) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (AIFuncTable[param_1->species][param_1->eState[0]].pfnStart ==
+  if (AIFuncTable[self->species][self->eState[0]].pfnStart ==
       (_func___cdecl_bool_actor_s_ptr_ai_state_t *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x37a,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x37a,0,
                              "%s\n\t(self->eState[0]) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  (*AIFuncTable[param_1->species][param_1->eState[0]].pfnStart)(unaff_ESI,aVar5);
-  pgVar1->nextthink = level.time;
+  (*AIFuncTable[self->species][self->eState[0]].pfnStart)(unaff_ESI,_hThread);
+  ent_00->nextthink = level.time;
   if (level.time == 0) {
-    pgVar1->nextthink = 0x32;
+    ent_00->nextthink = 0x32;
   }
-  pgVar1->handler = '\x02';
+  ent_00->handler = '\x02';
   return;
 }
 
 
 // 008F7920  Actor_FinishSpawningAll  (game_mp/actor_mp.cpp:910)
 
+/* WARNING: Variable defined which should be unmapped: actor */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1296,13 +1320,13 @@ void __cdecl Actor_InitAnimScript(actor_s *param_1)
 void __cdecl Actor_FinishSpawningAll(void)
 
 {
-  actor_s *paVar1;
   int in_ECX;
   int unaff_EBP;
+  actor_s *actor;
   
-  for (paVar1 = Actor_FirstActor(in_ECX); paVar1 != (actor_s *)0x0;
-      paVar1 = Actor_NextActor(paVar1,unaff_EBP)) {
-    Actor_InitAnimScript(paVar1);
+  for (actor = Actor_FirstActor(in_ECX); actor != (actor_s *)0x0;
+      actor = Actor_NextActor(actor,unaff_EBP)) {
+    Actor_InitAnimScript(actor);
   }
   return;
 }
@@ -1315,7 +1339,7 @@ void __cdecl Actor_FinishSpawningAll(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Actor_DissociateSentient(actor_s *param_1,sentient_s *param_2,team_t param_3)
+void __cdecl Actor_DissociateSentient(actor_s *self,sentient_s *other,team_t eOtherTeam)
 
 {
   code *pcVar1;
@@ -1324,7 +1348,7 @@ void __cdecl Actor_DissociateSentient(actor_s *param_1,sentient_s *param_2,team_
   actor_s *unaff_EBP;
   int unaff_retaddr;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x3c6,0,"%s"
                             );
     if (!bVar2) {
@@ -1333,7 +1357,7 @@ void __cdecl Actor_DissociateSentient(actor_s *param_1,sentient_s *param_2,team_
       return;
     }
   }
-  if (param_1->sentient == (sentient_s *)0x0) {
+  if (self->sentient == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x3c7,0,"%s"
                             );
     if (!bVar2) {
@@ -1342,7 +1366,7 @@ void __cdecl Actor_DissociateSentient(actor_s *param_1,sentient_s *param_2,team_
       return;
     }
   }
-  if (param_1->sentient == param_2) {
+  if (self->sentient == other) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x3c8,0,"%s"
                             );
     if (!bVar2) {
@@ -1353,7 +1377,7 @@ void __cdecl Actor_DissociateSentient(actor_s *param_1,sentient_s *param_2,team_
   }
   SentientInfo_Clear((sentient_info_t *)unaff_EBP);
   psVar3 = Actor_GetTargetSentient(unaff_EBP);
-  if (param_2 == psVar3) {
+  if (other == psVar3) {
     Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)unaff_EBP,unaff_retaddr);
   }
   return;
@@ -1374,7 +1398,8 @@ actor_s * __cdecl Actor_FirstActor(int param_1)
   bool bVar2;
   actor_s *paVar3;
   uint in_ECX;
-  int local_8;
+  int iTeamFlags;
+  int i;
   
   if ((0xf < (int)in_ECX) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x3dd,0,
@@ -1383,24 +1408,24 @@ actor_s * __cdecl Actor_FirstActor(int param_1)
     paVar3 = (actor_s *)(*pcVar1)();
     return paVar3;
   }
-  local_8 = 0;
+  i = 0;
   do {
-    if (0xf < local_8) {
+    if (0xf < i) {
       return (actor_s *)0x0;
     }
-    if (level.actors[local_8].inuse != 0) {
-      if ((level.actors[local_8].sentient == (sentient_s *)0x0) &&
+    if (level.actors[i].inuse != 0) {
+      if ((level.actors[i].sentient == (sentient_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x3e6,
                                    0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         paVar3 = (actor_s *)(*pcVar1)();
         return paVar3;
       }
-      if ((1 << ((byte)(level.actors[local_8].sentient)->eTeam & 0x1f) & in_ECX) != 0) {
-        return level.actors + local_8;
+      if ((1 << ((byte)(level.actors[i].sentient)->eTeam & 0x1f) & in_ECX) != 0) {
+        return level.actors + i;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1420,7 +1445,9 @@ actor_s * __cdecl Actor_NextActor(actor_s *param_1,int param_2)
   actor_s *paVar3;
   actor_s *in_ECX;
   uint in_EDX;
-  int local_8;
+  int iTeamFlags;
+  actor_s *pPrevActor;
+  int i;
   
   if ((0xf < (int)in_EDX) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x3f6,0,
@@ -1450,19 +1477,19 @@ actor_s * __cdecl Actor_NextActor(actor_s *param_1,int param_2)
     paVar3 = (actor_s *)(*pcVar1)();
     return paVar3;
   }
-  local_8 = ((int)in_ECX - (int)level.actors) / 0x2780;
+  i = ((int)in_ECX - (int)level.actors) / 0x2780;
   while( true ) {
     do {
-      local_8 = local_8 + 1;
-      if (0xf < local_8) {
+      i = i + 1;
+      if (0xf < i) {
         return (actor_s *)0x0;
       }
-    } while (level.actors[local_8].inuse == 0);
-    if ((level.actors[local_8].sentient == (sentient_s *)0x0) &&
+    } while (level.actors[i].inuse == 0);
+    if ((level.actors[i].sentient == (sentient_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x403,0,
                                  "%s"), !bVar2)) break;
-    if ((1 << ((byte)(level.actors[local_8].sentient)->eTeam & 0x1f) & in_EDX) != 0) {
-      return level.actors + local_8;
+    if ((1 << ((byte)(level.actors[i].sentient)->eTeam & 0x1f) & in_EDX) != 0) {
+      return level.actors + i;
     }
   }
   pcVar1 = (code *)swi(3);
@@ -1473,6 +1500,8 @@ actor_s * __cdecl Actor_NextActor(actor_s *param_1,int param_2)
 
 // 008F7CE0  Actor_NodeClaimRevoked  (game_mp/actor_mp.cpp:1040)
 
+/* WARNING: Variable defined which should be unmapped: invalidTime */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1481,33 +1510,36 @@ actor_s * __cdecl Actor_NextActor(actor_s *param_1,int param_2)
 void __cdecl Actor_NodeClaimRevoked(actor_s *param_1,int param_2)
 
 {
-  pathnode_t *ppVar1;
-  code *pcVar2;
-  bool bVar3;
+  pathnode_t *node_00;
+  code *pcVar1;
+  bool bVar2;
   float *in_ECX;
   actor_s *in_EDX;
+  int invalidTime;
+  actor_s *self;
+  pathnode_t *node;
   
   if ((in_ECX == (float *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x415,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x415,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   if ((in_ECX[1] == 0.0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x416,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x416,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  ppVar1 = *(pathnode_t **)((int)in_ECX[1] + 0x60);
-  if (ppVar1 != (pathnode_t *)0x0) {
-    bVar3 = Actor_HasPath(in_EDX);
-    if ((bVar3) && (bVar3 = Actor_PointAt((float *)in_EDX,in_ECX), bVar3)) {
+  node_00 = *(pathnode_t **)((int)in_ECX[1] + 0x60);
+  if (node_00 != (pathnode_t *)0x0) {
+    bVar2 = Actor_HasPath(in_EDX);
+    if ((bVar2) && (bVar2 = Actor_PointAt((float *)in_EDX,in_ECX), bVar2)) {
       Actor_ClearPath(in_EDX);
     }
-    Path_MarkNodeInvalid(ppVar1,*(team_t *)((int)in_ECX[1] + 4));
+    Path_MarkNodeInvalid(node_00,*(team_t *)((int)in_ECX[1] + 4));
   }
   return;
 }
@@ -1515,6 +1547,8 @@ void __cdecl Actor_NodeClaimRevoked(actor_s *param_1,int param_2)
 
 // 008F80D0  Actor_CheckClearNodeClaimCloseEnt  (game_mp/actor_mp.cpp:1063)
 
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: pClaimedNode */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1523,18 +1557,20 @@ void __cdecl Actor_NodeClaimRevoked(actor_s *param_1,int param_2)
 void __cdecl Actor_CheckClearNodeClaimCloseEnt(actor_s *param_1)
 
 {
-  bool bVar1;
-  int iVar2;
+  pathnode_t *ppVar1;
+  bool bVar2;
+  int iVar3;
   actor_s *in_ECX;
-  pathnode_t *ppVar3;
+  actor_s *self;
+  pathnode_t *pClaimedNode;
   
-  ppVar3 = in_ECX->sentient->pClaimedNode;
-  if ((ppVar3 != (pathnode_t *)0x0) &&
-     (iVar2 = EntHandle::isDefined(&in_ECX->pCloseEnt), iVar2 != 0)) {
+  ppVar1 = in_ECX->sentient->pClaimedNode;
+  if ((ppVar1 != (pathnode_t *)0x0) &&
+     (iVar3 = EntHandle::isDefined(&in_ECX->pCloseEnt), iVar3 != 0)) {
     EntHandle::ent(&in_ECX->pCloseEnt);
-    bVar1 = Actor_PointNearNode((float *)in_ECX,ppVar3);
-    if (bVar1) {
-      Actor_NodeClaimRevoked(in_ECX,(int)ppVar3);
+    bVar2 = Actor_PointNearNode((float *)in_ECX,ppVar1);
+    if (bVar2) {
+      Actor_NodeClaimRevoked(in_ECX,(int)ppVar1);
     }
   }
   return;
@@ -1543,6 +1579,7 @@ void __cdecl Actor_CheckClearNodeClaimCloseEnt(actor_s *param_1)
 
 // 008F7DB0  Actor_KeepClaimedNode  (game_mp/actor_mp.cpp:1081)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1556,6 +1593,7 @@ bool __cdecl Actor_KeepClaimedNode(actor_s *param_1)
   undefined1 uVar3;
   float *in_ECX;
   actor_goal_s *unaff_EBP;
+  actor_s *self;
   
   if ((in_ECX == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x43a,0,
@@ -1586,6 +1624,7 @@ bool __cdecl Actor_KeepClaimedNode(actor_s *param_1)
 
 // 008F7E50  Actor_ClearKeepClaimedNode  (game_mp/actor_mp.cpp:1111)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1597,6 +1636,7 @@ void __cdecl Actor_ClearKeepClaimedNode(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   actor_s *in_ECX;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x458,0,"%s"
@@ -1627,6 +1667,7 @@ void __cdecl Actor_ClearArrivalPos(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x462,0,"%s"
@@ -1645,8 +1686,9 @@ void __cdecl Actor_ClearArrivalPos(actor_s *param_1)
 
 // 008F8140  Actor_CheckNodeClaim  (game_mp/actor_mp.cpp:1129)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -1654,11 +1696,15 @@ void __cdecl Actor_CheckNodeClaim(actor_s *param_1)
 
 {
   bool bVar1;
-  pathnode_t *ppVar2;
-  int iVar3;
+  pathnode_t *node_00;
+  int iVar2;
   pathnode_t *in_ECX;
-  sentient_s *psVar4;
+  sentient_s *psVar3;
   actor_s *in_stack_ffffffe8;
+  actor_s *self;
+  pathnode_t *node;
+  float *origin;
+  pathnode_t *pClaimedNode;
   
   if ((((in_ECX[4].transient.pPrevOpen != (pathnode_t *)0x0) &&
        (*(char *)((int)in_ECX[0x1d].constant.forward + 5) == '\0')) &&
@@ -1666,31 +1712,31 @@ void __cdecl Actor_CheckNodeClaim(actor_s *param_1)
      (bVar1 = Actor_KeepClaimedNode(in_stack_ffffffe8), !bVar1)) {
     bVar1 = Actor_HasPath(in_stack_ffffffe8);
     if (bVar1) {
-      psVar4 = (sentient_s *)&in_ECX[0x1b].constant.animscriptfunc;
+      psVar3 = (sentient_s *)&in_ECX[0x1b].constant.animscriptfunc;
     }
     else {
-      psVar4 = (sentient_s *)((in_ECX->constant).type + 0x124);
+      psVar3 = (sentient_s *)((in_ECX->constant).type + 0x124);
     }
     if (*(int *)(*(int *)&(in_ECX->constant).spawnflags + 0x60) != 0) {
-      bVar1 = Actor_PointNearNode((float *)psVar4,in_ECX);
+      bVar1 = Actor_PointNearNode((float *)psVar3,in_ECX);
       if (bVar1) {
         return;
       }
       if (level.time < (int)in_ECX[0x1c].constant.type) {
         return;
       }
-      Sentient_ClaimNode(psVar4,in_ECX);
+      Sentient_ClaimNode(psVar3,in_ECX);
     }
-    ppVar2 = Sentient_NearestNode(psVar4);
-    if (((ppVar2 != (pathnode_t *)0x0) && (iVar3 = Path_IsCoverNode(ppVar2), iVar3 != 0)) &&
-       ((iVar3 = Path_IsValidClaimNode(ppVar2), iVar3 != 0 &&
-        (bVar1 = Actor_PointNearNode((float *)psVar4,in_ECX), bVar1)))) {
-      iVar3 = Path_CanClaimNode(ppVar2,*(sentient_s **)&(in_ECX->constant).spawnflags);
-      if (iVar3 == 0) {
+    node_00 = Sentient_NearestNode(psVar3);
+    if (((node_00 != (pathnode_t *)0x0) && (iVar2 = Path_IsCoverNode(node_00), iVar2 != 0)) &&
+       ((iVar2 = Path_IsValidClaimNode(node_00), iVar2 != 0 &&
+        (bVar1 = Actor_PointNearNode((float *)psVar3,in_ECX), bVar1)))) {
+      iVar2 = Path_CanClaimNode(node_00,*(sentient_s **)&(in_ECX->constant).spawnflags);
+      if (iVar2 == 0) {
         *(undefined1 *)(*(int *)&(in_ECX->constant).spawnflags + 0x74) = 0;
       }
       else {
-        Sentient_ClaimNode(psVar4,in_ECX);
+        Sentient_ClaimNode(psVar3,in_ECX);
       }
     }
   }
@@ -1700,6 +1746,7 @@ void __cdecl Actor_CheckNodeClaim(actor_s *param_1)
 
 // 008F7F10  Actor_PreThink  (game_mp/actor_mp.cpp:1176)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1713,6 +1760,7 @@ void __cdecl Actor_PreThink(actor_s *param_1)
   int iVar3;
   actor_s *in_ECX;
   sentient_s *unaff_EBP;
+  actor_s *self;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x49b,0,
@@ -1738,6 +1786,7 @@ void __cdecl Actor_PreThink(actor_s *param_1)
 
 // 008F7FB0  Actor_PostThink  (game_mp/actor_mp.cpp:1200)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1750,8 +1799,9 @@ void __cdecl Actor_PostThink(actor_s *param_1)
   bool bVar2;
   actor_s *in_ECX;
   int unaff_EBP;
-  actor_s *paVar3;
-  actorInfo_t *paVar4;
+  actor_s *es;
+  actorInfo_t *actorInfo;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x4b3,0,"%s"
@@ -1772,29 +1822,31 @@ void __cdecl Actor_PostThink(actor_s *param_1)
     }
   }
   Actor_UpdateOriginAndAngles(in_ECX);
-  paVar4 = level_bgs.actorinfo + ((int)in_ECX - (int)level.actors) / 0x2780;
-  paVar3 = (actor_s *)in_ECX->ent;
-  BG_Dog_UpdateAnimationState(-1,(entityState_s *)paVar3,paVar4);
+  actorInfo = level_bgs.actorinfo + ((int)in_ECX - (int)level.actors) / 0x2780;
+  es = (actor_s *)in_ECX->ent;
+  BG_Dog_UpdateAnimationState(-1,(entityState_s *)es,actorInfo);
   if (in_ECX->eAnimMode != AI_ANIM_MOVE_CODE) {
     if ((ai_showPaths->current).integer != 0) {
-      paVar4 = (actorInfo_t *)0xffffffff;
-      paVar3 = (actor_s *)&DAT_00000001;
+      actorInfo = (actorInfo_t *)0xffffffff;
+      es = (actor_s *)&DAT_00000001;
       Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,(int)in_ECX,unaff_EBP);
     }
-    bVar2 = Actor_HasPath(paVar3);
+    bVar2 = Actor_HasPath(es);
     if (bVar2) {
       Path_UpdateLookahead_NonCodeMove
-                ((path_t *)(in_ECX->ent->r).currentOrigin,(float *)paVar3,(float *)paVar4);
+                ((path_t *)(in_ECX->ent->r).currentOrigin,(float *)es,(float *)actorInfo);
     }
   }
-  Actor_CheckNodeClaim(paVar3);
-  Actor_CheckClearNodeClaimCloseEnt(paVar3);
+  Actor_CheckNodeClaim(es);
+  Actor_CheckClearNodeClaimCloseEnt(es);
   return;
 }
 
 
 // 008F9680  Actor_UpdatePlayerPush  (game_mp/actor_mp.cpp:1225)
 
+/* WARNING: Variable defined which should be unmapped: player */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1811,14 +1863,16 @@ void __cdecl Actor_UpdatePlayerPush(actor_s *param_1,gentity_s *param_2)
   int iVar6;
   sentient_s *in_ECX;
   actor_s *in_EDX;
-  float local_2c;
+  gentity_s *player;
+  actor_s *self;
+  float mins;
   float local_28;
   float local_24;
-  uint local_20;
-  float local_1c;
+  int playerTeamFlags;
+  float offset;
   float local_18;
   float local_14;
-  float local_10;
+  float maxs;
   float local_c;
   float local_8;
   
@@ -1870,19 +1924,20 @@ void __cdecl Actor_UpdatePlayerPush(actor_s *param_1,gentity_s *param_2)
       uVar1._2_2_ = *(undefined2 *)&in_ECX[4].field_0x5e, (uVar1 & 0x2000000) != 0)) &&
      (in_ECX->oldOrigin[in_ECX->meleeAttackerSpot[0]] != 2.8026e-45)) {
     tVar5 = Sentient_EnemyTeam(*(team_t *)(in_EDX->bProneOK + 4));
-    local_20 = ~(1 << ((byte)tVar5 & 0x1f));
-    if ((1 << ((byte)*(undefined4 *)(in_ECX->eTeam + TEAM_NUM_TEAMS) & 0x1f) & local_20) != 0) {
+    playerTeamFlags = ~(1 << ((byte)tVar5 & 0x1f));
+    if ((1 << ((byte)*(undefined4 *)(in_ECX->eTeam + TEAM_NUM_TEAMS) & 0x1f) & playerTeamFlags) != 0
+       ) {
       fVar2 = in_EDX->fInvProneAnimHighPitch;
-      local_1c = *(float *)((int)fVar2 + 0x30) * 0.1 + (in_EDX->CodeOrient).fDesiredLookYaw;
+      offset = *(float *)((int)fVar2 + 0x30) * 0.1 + (in_EDX->CodeOrient).fDesiredLookYaw;
       local_18 = *(float *)((int)fVar2 + 0x34) * 0.1 + (in_EDX->CodeOrient).fDesiredBodyYaw;
       local_14 = *(float *)((int)fVar2 + 0x38) * 0.1 + (float)(in_EDX->ScriptOrient).eMode;
-      local_2c = local_1c + -15.0;
+      mins = offset + -15.0;
       local_28 = local_18 + -15.0;
       local_24 = local_14 + 0.0;
-      local_10 = local_1c + 15.0;
+      maxs = offset + 15.0;
       local_c = local_18 + 15.0;
       local_8 = local_14 + 70.0;
-      iVar6 = SV_EntityContact(&local_2c,&local_10,in_ECX->ent);
+      iVar6 = SV_EntityContact(&mins,&maxs,in_ECX->ent);
       if (iVar6 != 0) {
         iVar6 = Actor_AtClaimNode(in_EDX);
         if (iVar6 != 0) {
@@ -1898,6 +1953,7 @@ void __cdecl Actor_UpdatePlayerPush(actor_s *param_1,gentity_s *param_2)
 
 // 008F9310  Actor_UpdateCloseEnt  (game_mp/actor_mp.cpp:1270)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1914,12 +1970,15 @@ void __cdecl Actor_UpdateCloseEnt(actor_s *param_1)
   actor_s *in_ECX;
   float fVar6;
   float fVar7;
-  float *pfVar8;
+  float *diff;
+  actor_s *self;
   gentity_s *in_stack_ffffffd0;
-  float local_14;
+  float distSqr;
+  actor_s *closeActor;
+  float delta;
   float local_10;
-  int local_c;
-  gentity_s *local_8;
+  int clientNum;
+  gentity_s *player;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x4fd,0,
@@ -1949,11 +2008,11 @@ void __cdecl Actor_UpdateCloseEnt(actor_s *param_1)
       EntHandle::setEnt(&in_ECX->pCloseEnt,(gentity_s *)0x0);
     }
   }
-  for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-    local_8 = G_GetPlayer(local_c);
-    if (((local_8->sentient != (sentient_s *)0x0) &&
+  for (clientNum = 0; clientNum < (com_maxclients->current).integer; clientNum = clientNum + 1) {
+    player = G_GetPlayer(clientNum);
+    if (((player->sentient != (sentient_s *)0x0) &&
         (iVar4 = EntHandle::isDefined(&in_ECX->pCloseEnt), iVar4 != 0)) &&
-       (pgVar5 = EntHandle::ent(&in_ECX->pCloseEnt), pgVar5 != local_8)) {
+       (pgVar5 = EntHandle::ent(&in_ECX->pCloseEnt), pgVar5 != player)) {
       Actor_UpdatePlayerPush(in_ECX,in_stack_ffffffd0);
     }
   }
@@ -1971,11 +2030,11 @@ void __cdecl Actor_UpdateCloseEnt(actor_s *param_1)
     fVar6 = Vec2DistanceSq((in_ECX->ent->r).currentOrigin,(pgVar5->r).currentOrigin);
     if ((((900.0 <= fVar6) && (in_ECX->pPileUpActor == (actor_s *)0x0)) &&
         (in_ECX->eAnimMode == AI_ANIM_MOVE_CODE)) && (bVar3 = Actor_HasPath(in_ECX), bVar3)) {
-      pfVar8 = &local_14;
+      diff = &delta;
       pgVar5 = EntHandle::ent(&in_ECX->pCloseEnt);
-      Vec2Sub((in_ECX->ent->r).currentOrigin,(pgVar5->r).currentOrigin,pfVar8);
-      if (0.0 < (in_ECX->Path).lookaheadDir[0] * local_14 +
-                (in_ECX->Path).lookaheadDir[1] * local_10) {
+      Vec2Sub((in_ECX->ent->r).currentOrigin,(pgVar5->r).currentOrigin,diff);
+      if (0.0 < (in_ECX->Path).lookaheadDir[0] * delta + (in_ECX->Path).lookaheadDir[1] * local_10)
+      {
         EntHandle::setEnt(&in_ECX->pCloseEnt,(gentity_s *)0x0);
       }
     }
@@ -2001,7 +2060,9 @@ actor_think_result_t __cdecl Actor_CallThink(actor_s *param_1)
   actor_think_result_t aVar5;
   int *in_ECX;
   actor_s *in_stack_ffffffbc;
-  gjkcc_input_t local_24;
+  actor_s *self;
+  actor_think_result_t eThinkResult;
+  gjkcc_input_t gjkcc_in;
   
   if (in_ECX == (int *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x545,0,"%s"
@@ -2060,11 +2121,11 @@ actor_think_result_t __cdecl Actor_CallThink(actor_s *param_1)
   in_ECX[0x8d] = *(int *)(iVar2 + 0x124);
   in_ECX[0x8e] = *(int *)(iVar2 + 0x128);
   in_ECX[0x8f] = *(int *)(iVar2 + 300);
-  setup_gjkcc_input((actor_physics_t *)(in_ECX + 0x8d),&local_24);
-  in_ECX[0xd2] = (int)&local_24;
-  gjkcc_prolog(&local_24,(float *)(in_ECX + 0x8d));
+  setup_gjkcc_input((actor_physics_t *)(in_ECX + 0x8d),&gjkcc_in);
+  in_ECX[0xd2] = (int)&gjkcc_in;
+  gjkcc_prolog(&gjkcc_in,(float *)(in_ECX + 0x8d));
   aVar5 = (*AIFuncTable[in_ECX[2]][in_ECX[in_ECX[0x12] + 6]].pfnThink)(in_stack_ffffffbc);
-  gjkcc_epilog(&local_24,(float *)(in_ECX + 0x8d));
+  gjkcc_epilog(&gjkcc_in,(float *)(in_ECX + 0x8d));
   in_ECX[0xd2] = 0;
   if (((aVar5 != ACTOR_THINK_DONE) && (aVar5 != ACTOR_THINK_REPEAT)) &&
      (aVar5 != ACTOR_THINK_MOVE_TO_BODY_QUEUE)) {
@@ -2145,48 +2206,52 @@ actor_think_result_t __cdecl Actor_CallThink(actor_s *param_1)
 
 // 008F9A60  Actor_CheckGoalNotify  (game_mp/actor_mp.cpp:1394)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl Actor_CheckGoalNotify(actor_s *param_1)
 
 {
-  pathnode_t *ppVar1;
-  bool bVar2;
-  int iVar3;
+  pathnode_t *node_00;
+  bool bVar1;
+  int iVar2;
   int *in_ECX;
-  float fVar4;
+  float fVar3;
   actor_s *in_stack_ffffffe0;
+  actor_s *self;
+  pathnode_t *node;
+  float fAngleDelta;
   
-  bVar2 = Actor_IsAtScriptGoal(in_stack_ffffffe0);
-  if (bVar2) {
+  bVar1 = Actor_IsAtScriptGoal(in_stack_ffffffe0);
+  if (bVar1) {
     if ((((in_ECX[0x4b] == 0) && (in_ECX[0x47] == 6)) &&
-        (ppVar1 = *(pathnode_t **)(in_ECX[1] + 0x60), ppVar1 != (pathnode_t *)0x0)) &&
-       ((iVar3 = Path_IsCoverNode(ppVar1), iVar3 == 0 &&
-        (iVar3 = Path_IsValidClaimNode(ppVar1), iVar3 != 0)))) {
-      fVar4 = AngleNormalize180((ppVar1->constant).fAngle - *(float *)(*in_ECX + 0x134));
-      if ((fVar4 < -20.0) || (20.0 < fVar4)) {
-        bVar2 = false;
+        (node_00 = *(pathnode_t **)(in_ECX[1] + 0x60), node_00 != (pathnode_t *)0x0)) &&
+       ((iVar2 = Path_IsCoverNode(node_00), iVar2 == 0 &&
+        (iVar2 = Path_IsValidClaimNode(node_00), iVar2 != 0)))) {
+      fVar3 = AngleNormalize180((node_00->constant).fAngle - *(float *)(*in_ECX + 0x134));
+      if ((fVar3 < -20.0) || (20.0 < fVar3)) {
+        bVar1 = false;
       }
       else {
-        bVar2 = true;
+        bVar1 = true;
       }
     }
     else {
-      bVar2 = true;
+      bVar1 = true;
     }
   }
   else {
-    bVar2 = false;
+    bVar1 = false;
   }
-  return bVar2;
+  return bVar1;
 }
 
 
 // 008F9950  Actor_CheckNotify  (game_mp/actor_mp.cpp:1416)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -2199,6 +2264,7 @@ void __cdecl Actor_CheckNotify(actor_s *param_1)
   bool bVar2;
   actor_s *in_ECX;
   float *unaff_EBP;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x58b,0,"%s"
@@ -2256,6 +2322,7 @@ bool __cdecl Actor_IsDying(actor_s *param_1)
   bool bVar2;
   undefined1 uVar3;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5a1,0,"%s"
@@ -2286,6 +2353,7 @@ gentity_s * __cdecl Actor_GetTargetEntity(actor_s *param_1)
   int iVar4;
   int in_ECX;
   gentity_s *local_c;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5a8,0,"%s"
@@ -2332,6 +2400,7 @@ sentient_s * __cdecl Actor_GetTargetSentient(actor_s *param_1)
   int iVar4;
   gentity_s *pgVar5;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5b1,0,"%s"
@@ -2379,6 +2448,8 @@ void __cdecl Actor_GetTargetPosition(actor_s *param_1,float *param_2)
   gentity_s *pgVar4;
   int in_ECX;
   float *in_EDX;
+  float *position;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5bd,0,"%s"
@@ -2418,6 +2489,8 @@ void __cdecl Actor_GetTargetPosition(actor_s *param_1,float *param_2)
 
 // 008F8500  Actor_GetTargetLookPosition  (game_mp/actor_mp.cpp:1485)
 
+/* WARNING: Variable defined which should be unmapped: position */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -2429,9 +2502,12 @@ void __cdecl Actor_GetTargetLookPosition(actor_s *param_1,float *param_2)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  gentity_s *pgVar4;
+  gentity_s *ent;
   float *in_ECX;
   actor_s *in_EDX;
+  float *position;
+  actor_s *self;
+  gentity_s *targetEnt;
   
   if (in_ECX == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5ce,0,"%s"
@@ -2461,9 +2537,9 @@ void __cdecl Actor_GetTargetLookPosition(actor_s *param_1,float *param_2)
       return;
     }
   }
-  pgVar4 = Actor_GetTargetEntity(in_EDX);
-  if (pgVar4->sentient == (sentient_s *)0x0) {
-    G_EntityCentroid(pgVar4,(float *)in_EDX);
+  ent = Actor_GetTargetEntity(in_EDX);
+  if (ent->sentient == (sentient_s *)0x0) {
+    G_EntityCentroid(ent,(float *)in_EDX);
   }
   else {
     Sentient_GetEyePosition((sentient_s *)in_EDX,in_ECX);
@@ -2488,6 +2564,7 @@ gentity_s * __cdecl Actor_GetScriptTargetEntity(actor_s *param_1)
   int iVar4;
   int in_ECX;
   gentity_s *local_c;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5e0,0,"%s"
@@ -2525,56 +2602,59 @@ gentity_s * __cdecl Actor_GetScriptTargetEntity(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_UpdateActorInfo(gentity_s *param_1)
+int __cdecl Actor_UpdateActorInfo(gentity_s *ent)
 
 {
-  actor_s *paVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
+  actor_s *actor_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uint uVar4;
+  int bChanged;
+  actor_s *actor;
+  int actorNum;
   
-  if (param_1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5ec,0,"%s"
+  if (ent == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5ec,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  paVar1 = param_1->actor;
-  if (paVar1 == (actor_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5ef,0,"%s"
+  actor_00 = ent->actor;
+  if (actor_00 == (actor_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5ef,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  if (paVar1->inuse == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5f0,0,"%s"
+  if (actor_00->inuse == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5f0,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  uVar5 = G_GetActorIndex(paVar1);
-  if (0xf < uVar5) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5f3,0,
+  uVar4 = G_GetActorIndex(actor_00);
+  if (0xf < uVar4) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x5f3,0,
                              "actorNum doesn\'t index MAX_ACTORS\n\t%i not in [0, %i)");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
-  (param_1->s).lerp.u.missile.launchTime = uVar5;
-  if (param_1->sentient->eTeam != TEAM_SPECTATOR) {
-    (param_1->s).lerp.u.turret.gunAngles[2] = (float)param_1->sentient->eTeam;
+  (ent->s).lerp.u.missile.launchTime = uVar4;
+  if (ent->sentient->eTeam != TEAM_SPECTATOR) {
+    (ent->s).lerp.u.turret.gunAngles[2] = (float)ent->sentient->eTeam;
   }
   return 0;
 }
@@ -2586,8 +2666,9 @@ int __cdecl Actor_UpdateActorInfo(gentity_s *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "trType_t": Some values do not have unique names */
 
-void __cdecl Actor_Think(gentity_s *param_1)
+void __cdecl Actor_Think(gentity_s *self)
 
 {
   sentient_s *psVar1;
@@ -2598,57 +2679,57 @@ void __cdecl Actor_Think(gentity_s *param_1)
   actor_s *in_stack_ffffff9c;
   actor_s *paVar6;
   char cVar7;
-  int local_30 [5];
-  undefined1 local_19;
-  actor_think_result_t local_18;
-  char local_12;
-  undefined1 local_11;
-  int local_10;
-  actor_s *local_c;
-  undefined1 local_5;
+  int partBits [5];
+  bool isRagdoll;
+  actor_think_result_t result;
+  bool originChanged;
+  bool updateProne;
+  int callThinkCounter;
+  actor_s *actor;
+  bool anglesChanged;
   
-  local_10 = 0;
+  callThinkCounter = 0;
   if ((g_ai->current).enabled == false) {
-    param_1->nextthink = level.time + 0x32;
+    self->nextthink = level.time + 0x32;
   }
   else {
-    if ((param_1 == (gentity_s *)0x0) &&
+    if ((self == (gentity_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x61a,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_c = param_1->actor;
-    if ((local_c == (actor_s *)0x0) &&
+    actor = self->actor;
+    if ((actor == (actor_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x61d,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((local_c->inuse == 0) &&
+    if ((actor->inuse == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x61e,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pDVar4 = Com_GetServerDObj((param_1->s).number);
+    pDVar4 = Com_GetServerDObj((self->s).number);
     if (pDVar4 == (DObj *)0x0) {
       Com_Printf(0x12,"^3Deleting AI without a model.\n");
-      Scr_Notify(param_1,scr_const.death,0);
-      G_FreeEntity(param_1);
+      Scr_Notify(self,scr_const.death,0);
+      G_FreeEntity(self);
     }
     else {
-      if ((local_c->ent == (gentity_s *)0x0) &&
+      if ((actor->ent == (gentity_s *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x635,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (local_c->ent != param_1) {
+      if (actor->ent != self) {
         va("actor->ent->s.number: %d, self->s.number: %d");
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x636,0,
                                  "%s\n\t%s");
@@ -2658,35 +2739,35 @@ void __cdecl Actor_Think(gentity_s *param_1)
           return;
         }
       }
-      if ((local_c->sentient == (sentient_s *)0x0) &&
+      if ((actor->sentient == (sentient_s *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x637,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((local_c->sentient->ent != param_1) &&
+      if ((actor->sentient->ent != self) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x638,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((param_1->sentient != local_c->sentient) &&
+      if ((self->sentient != actor->sentient) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x639,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((param_1->client != (gclient_s *)0x0) &&
+      if ((self->client != (gclient_s *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x63a,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((5 < local_c->stateLevel) &&
+      if ((5 < actor->stateLevel) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x63b,
                                    0,
                                    "actor->stateLevel doesn\'t index ARRAY_COUNT( actor->eState )\n\t%i not in [0, %i)"
@@ -2695,36 +2776,36 @@ void __cdecl Actor_Think(gentity_s *param_1)
         (*pcVar2)();
         return;
       }
-      if ((((int)local_c->eState[local_c->stateLevel] < 1) ||
-          (0xb < (int)local_c->eState[local_c->stateLevel])) &&
+      if ((((int)actor->eState[actor->stateLevel] < 1) ||
+          (0xb < (int)actor->eState[actor->stateLevel])) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x63c,
                                    0,"%s\n\t(actor->eState[actor->stateLevel]) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (((local_c->Path).iPathEndTime < 0) &&
+      if (((actor->Path).iPathEndTime < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x63e,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((level.time + 500 < (local_c->Path).iPathEndTime) &&
+      if ((level.time + 500 < (actor->Path).iPathEndTime) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x63f,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if ((local_c->Physics).bIsAlive != 0) {
+      if ((actor->Physics).bIsAlive != 0) {
         Actor_UpdatePileUp(in_stack_ffffff9c);
       }
-      local_18 = ACTOR_THINK_REPEAT;
-      while (local_18 == ACTOR_THINK_REPEAT) {
-        local_18 = Actor_CallThink(in_stack_ffffff9c);
-        local_10 = local_10 + 1;
-        if ((9 < local_10) &&
+      result = ACTOR_THINK_REPEAT;
+      while (result == ACTOR_THINK_REPEAT) {
+        result = Actor_CallThink(in_stack_ffffff9c);
+        callThinkCounter = callThinkCounter + 1;
+        if ((9 < callThinkCounter) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",
                                      0x656,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -2732,89 +2813,86 @@ void __cdecl Actor_Think(gentity_s *param_1)
           return;
         }
       }
-      psVar1 = local_c->sentient;
-      if ((((param_1->r).currentOrigin[0] == psVar1->oldOrigin[0]) &&
-          ((param_1->r).currentOrigin[1] == psVar1->oldOrigin[1])) &&
-         ((param_1->r).currentOrigin[2] == psVar1->oldOrigin[2])) {
+      psVar1 = actor->sentient;
+      if ((((self->r).currentOrigin[0] == psVar1->oldOrigin[0]) &&
+          ((self->r).currentOrigin[1] == psVar1->oldOrigin[1])) &&
+         ((self->r).currentOrigin[2] == psVar1->oldOrigin[2])) {
         bVar3 = true;
       }
       else {
         bVar3 = false;
       }
-      local_12 = !bVar3;
-      psVar1 = local_c->sentient;
-      psVar1->oldOrigin[0] = (param_1->r).currentOrigin[0];
-      psVar1->oldOrigin[1] = (param_1->r).currentOrigin[1];
-      psVar1->oldOrigin[2] = (param_1->r).currentOrigin[2];
-      local_19 = Com_IsRagdollTrajectory(&(param_1->s).lerp.pos);
-      AssignToSmallerType<unsigned_char>
-                (&(param_1->s).lerp.pos.trType,(-(uint)(byte)local_19 & 0xd) + 1);
-      (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-      (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-      (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-      if ((((param_1->r).currentAngles[0] == (param_1->s).lerp.apos.trBase[0]) &&
-          ((param_1->r).currentAngles[1] == (param_1->s).lerp.apos.trBase[1])) &&
-         ((param_1->r).currentAngles[2] == (param_1->s).lerp.apos.trBase[2])) {
+      originChanged = !bVar3;
+      psVar1 = actor->sentient;
+      psVar1->oldOrigin[0] = (self->r).currentOrigin[0];
+      psVar1->oldOrigin[1] = (self->r).currentOrigin[1];
+      psVar1->oldOrigin[2] = (self->r).currentOrigin[2];
+      isRagdoll = Com_IsRagdollTrajectory(&(self->s).lerp.pos);
+      AssignToSmallerType<unsigned_char>(&(self->s).lerp.pos.trType,(-(uint)isRagdoll & 0xd) + 1);
+      (self->s).lerp.pos.trBase[0] = (self->r).currentOrigin[0];
+      (self->s).lerp.pos.trBase[1] = (self->r).currentOrigin[1];
+      (self->s).lerp.pos.trBase[2] = (self->r).currentOrigin[2];
+      if ((((self->r).currentAngles[0] == (self->s).lerp.apos.trBase[0]) &&
+          ((self->r).currentAngles[1] == (self->s).lerp.apos.trBase[1])) &&
+         ((self->r).currentAngles[2] == (self->s).lerp.apos.trBase[2])) {
         cVar7 = '\x01';
       }
       else {
         cVar7 = '\0';
       }
-      local_5 = cVar7 == '\0';
-      if ((local_12 != '\0') || ((bool)local_5)) {
+      anglesChanged = cVar7 == '\0';
+      if ((originChanged != false) || (anglesChanged)) {
         paVar6 = (actor_s *)&DAT_00000001;
       }
       else {
         paVar6 = (actor_s *)0x0;
       }
-      local_11 = SUB41(paVar6,0);
-      local_19 = Com_IsRagdollTrajectory(&(param_1->s).lerp.apos);
-      AssignToSmallerType<unsigned_char>
-                (&(param_1->s).lerp.apos.trType,(-(uint)(byte)local_19 & 0xd) + 1);
-      (param_1->s).lerp.apos.trBase[0] = (param_1->r).currentAngles[0];
-      (param_1->s).lerp.apos.trBase[1] = (param_1->r).currentAngles[1];
-      (param_1->s).lerp.apos.trBase[2] = (param_1->r).currentAngles[2];
-      if (local_12 != '\0') {
-        SV_LinkEntity(param_1);
-        Actor_PostPhysics(&local_c->Physics);
+      updateProne = SUB41(paVar6,0);
+      isRagdoll = Com_IsRagdollTrajectory(&(self->s).lerp.apos);
+      AssignToSmallerType<unsigned_char>(&(self->s).lerp.apos.trType,(-(uint)isRagdoll & 0xd) + 1);
+      (self->s).lerp.apos.trBase[0] = (self->r).currentAngles[0];
+      (self->s).lerp.apos.trBase[1] = (self->r).currentAngles[1];
+      (self->s).lerp.apos.trBase[2] = (self->r).currentAngles[2];
+      if (originChanged != false) {
+        SV_LinkEntity(self);
+        Actor_PostPhysics(&actor->Physics);
       }
       bVar3 = Sentient_NearestNodeDirty((sentient_s *)paVar6,(bool)cVar7);
       if (bVar3) {
         Sentient_InvalidateNearestNode((sentient_s *)paVar6);
       }
       Sentient_BanNearNodes((sentient_s *)paVar6);
-      iVar5 = BG_ActorIsProne(&local_c->ProneInfo,level.time);
+      iVar5 = BG_ActorIsProne(&actor->ProneInfo,level.time);
       if (iVar5 == 0) {
-        (local_c->Physics).prone = false;
+        (actor->Physics).prone = false;
       }
-      Actor_UpdateLookAt(local_c);
-      if ((local_c->delayedDeath != false) && (bVar3 = Actor_InScriptedState(local_c), !bVar3)) {
-        G_Damage(param_1,(gentity_s *)0x0,(gentity_s *)0x0,(float *)0x0,(param_1->r).currentOrigin,
-                 param_1->health + 1,0,0,-1,HITLOC_HEAD,0,0,0);
+      Actor_UpdateLookAt(actor);
+      if ((actor->delayedDeath != false) && (bVar3 = Actor_InScriptedState(actor), !bVar3)) {
+        G_Damage(self,(gentity_s *)0x0,(gentity_s *)0x0,(float *)0x0,(self->r).currentOrigin,
+                 self->health + 1,0,0,-1,HITLOC_HEAD,0,0,0);
       }
-      if (((param_1->actor->Physics).bIsAlive != 0) && (param_1->actor->ignoreTriggers == false)) {
-        G_DoTouchTriggers(param_1);
+      if (((self->actor->Physics).bIsAlive != 0) && (self->actor->ignoreTriggers == false)) {
+        G_DoTouchTriggers(self);
       }
-      if (local_18 != ACTOR_THINK_MOVE_TO_BODY_QUEUE) {
+      if (result != ACTOR_THINK_MOVE_TO_BODY_QUEUE) {
         Actor_CheckNotify(paVar6);
       }
-      Actor_UpdateActorInfo(param_1);
-      if (((g_debugLocDamage->current).integer == 1) && (iVar5 = SV_DObjExists(param_1), iVar5 != 0)
-         ) {
-        local_30[0] = -1;
-        local_30[1] = 0xffffffff;
-        local_30[2] = 0xffffffff;
-        local_30[3] = 0xffffffff;
-        local_30[4] = 0xffffffff;
-        G_DObjCalcPose(param_1,local_30);
-        SV_XModelDebugBoxes(param_1,colorWhite,(int *)0x0,0);
+      Actor_UpdateActorInfo(self);
+      if (((g_debugLocDamage->current).integer == 1) && (iVar5 = SV_DObjExists(self), iVar5 != 0)) {
+        partBits[0] = -1;
+        partBits[1] = 0xffffffff;
+        partBits[2] = 0xffffffff;
+        partBits[3] = 0xffffffff;
+        partBits[4] = 0xffffffff;
+        G_DObjCalcPose(self,partBits);
+        SV_XModelDebugBoxes(self,colorWhite,(int *)0x0,0);
       }
-      if ((local_18 == ACTOR_THINK_MOVE_TO_BODY_QUEUE) &&
-         (iVar5 = Actor_BecomeCorpse(param_1), iVar5 == 0)) {
-        G_FreeEntity(param_1);
+      if ((result == ACTOR_THINK_MOVE_TO_BODY_QUEUE) &&
+         (iVar5 = Actor_BecomeCorpse(self), iVar5 == 0)) {
+        G_FreeEntity(self);
       }
       else {
-        param_1->nextthink = level.time + 0x32;
+        self->nextthink = level.time + 0x32;
       }
     }
   }
@@ -2829,7 +2907,7 @@ void __cdecl Actor_Think(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_InScriptedState(actor_s *param_1)
+bool __cdecl Actor_InScriptedState(actor_s *self)
 
 {
   code *pcVar1;
@@ -2839,7 +2917,7 @@ bool __cdecl Actor_InScriptedState(actor_s *param_1)
   actor_s *unaff_EBP;
   ai_state_t unaff_retaddr;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6c1,0,"%s"
                             );
     if (!bVar2) {
@@ -2867,70 +2945,72 @@ bool __cdecl Actor_InScriptedState(actor_s *param_1)
 
 // 008F9CD0  Actor_Touch  (game_mp/actor_mp.cpp:1742)
 
+/* WARNING: Variable defined which should be unmapped: actor */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_Touch(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl Actor_Touch(gentity_s *self,gentity_s *other,int bTouched)
 
 {
-  code *pcVar1;
-  bool bVar2;
+  actor_s *paVar1;
+  code *pcVar2;
+  bool bVar3;
   actor_s *unaff_ESI;
-  actor_s *paVar3;
+  actor_s *actor;
   
-  paVar3 = param_1->actor;
-  if (paVar3 == (actor_s *)0x0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6d2,0,"%s"
+  paVar1 = self->actor;
+  if (paVar1 == (actor_s *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6d2,0,"%s"
                             );
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (paVar3->inuse == 0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6d3,0,"%s"
+  if (paVar1->inuse == 0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6d3,0,"%s"
                             );
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (5 < paVar3->stateLevel) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6dc,0,
+  if (5 < paVar1->stateLevel) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6dc,0,
                              "actor->stateLevel doesn\'t index ARRAY_COUNT( actor->eState )\n\t%i not in [0, %i)"
                             );
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (((int)paVar3->eState[paVar3->stateLevel] < 1) ||
-     (0xb < (int)paVar3->eState[paVar3->stateLevel])) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6dd,0,
+  if (((int)paVar1->eState[paVar1->stateLevel] < 1) ||
+     (0xb < (int)paVar1->eState[paVar1->stateLevel])) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6dd,0,
                              "%s\n\t(actor->eState[actor->stateLevel]) = %i");
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (AIFuncTable[paVar3->species][paVar3->eState[paVar3->stateLevel]].pfnTouch ==
+  if (AIFuncTable[paVar1->species][paVar1->eState[paVar1->stateLevel]].pfnTouch ==
       (_func___cdecl_void_actor_s_ptr_gentity_s_ptr *)0x0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6de,0,
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6de,0,
                              "%s\n\t(actor->eState[actor->stateLevel]) = %i");
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  (*AIFuncTable[paVar3->species][paVar3->eState[paVar3->stateLevel]].pfnTouch)
-            (unaff_ESI,(gentity_s *)paVar3);
+  (*AIFuncTable[paVar1->species][paVar1->eState[paVar1->stateLevel]].pfnTouch)
+            (unaff_ESI,(gentity_s *)paVar1);
   return;
 }
 
@@ -2943,8 +3023,8 @@ void __cdecl Actor_Touch(gentity_s *param_1,gentity_s *param_2,int param_3)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int param_5,
-          float *param_6,hitLocation_t param_7,int param_8)
+Actor_Pain(gentity_s *self,gentity_s *pAttacker,int iDamage,float *vPoint,int iMod,float *vDir,
+          hitLocation_t hitLoc,int weaponIdx)
 
 {
   actor_s *paVar1;
@@ -2958,8 +3038,9 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
   float fVar7;
   scriptInstance_t sVar8;
   float *pfVar9;
+  actor_s *actor;
   
-  paVar1 = param_1->actor;
+  paVar1 = self->actor;
   if (paVar1 == (actor_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6ef,0,"%s"
                             );
@@ -2978,7 +3059,7 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
       return;
     }
   }
-  if (param_6 == (float *)0x0) {
+  if (vDir == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6f1,0,"%s"
                             );
     if (!bVar3) {
@@ -2987,9 +3068,8 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
       return;
     }
   }
-  if (((((uint)*param_6 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_6[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_6[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*vDir & 0x7f800000) == 0x7f800000) || (((uint)vDir[1] & 0x7f800000) == 0x7f800000))
+     || (((uint)vDir[2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x6f2,0,"%s"
                             );
     if (!bVar3) {
@@ -3018,21 +3098,21 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
       return;
     }
   }
-  paVar1->iDamageTaken = param_3;
-  fVar7 = vectoyaw(param_6);
-  AngleNormalize180(fVar7 - (param_1->r).currentAngles[1]);
+  paVar1->iDamageTaken = iDamage;
+  fVar7 = vectoyaw(vDir);
+  AngleNormalize180(fVar7 - (self->r).currentAngles[1]);
   _ftol2_sse();
   paVar1->iDamageYaw = extraout_EAX;
   pfVar9 = paVar1->damageDir;
-  *pfVar9 = *param_6;
-  paVar1->damageDir[1] = param_6[1];
-  paVar1->damageDir[2] = param_6[2];
+  *pfVar9 = *vDir;
+  paVar1->damageDir[1] = vDir[1];
+  paVar1->damageDir[2] = vDir[2];
   sVar8 = SCRIPTINSTANCE_SERVER;
-  uVar4 = G_GetHitLocationString(param_7);
+  uVar4 = G_GetHitLocationString(hitLoc);
   Scr_SetString(&paVar1->damageHitLoc,(uint)uVar4,sVar8);
-  Scr_SetString(&paVar1->damageMod,(uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
-  if (param_2 != (gentity_s *)0x0) {
-    pcVar5 = BG_WeaponName(param_8);
+  Scr_SetString(&paVar1->damageMod,(uint)*modNames[iMod],SCRIPTINSTANCE_SERVER);
+  if (pAttacker != (gentity_s *)0x0) {
+    pcVar5 = BG_WeaponName(weaponIdx);
     if (pcVar5 == (char *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x712,0,
                                "%s");
@@ -3043,7 +3123,7 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
       }
     }
     sVar8 = SCRIPTINSTANCE_SERVER;
-    pcVar5 = BG_WeaponName(param_8);
+    pcVar5 = BG_WeaponName(weaponIdx);
     Scr_SetStringFromCharString(&paVar1->damageWeapon,pcVar5,sVar8);
   }
   if (AIFuncTable[paVar1->species][paVar1->eState[paVar1->stateLevel]].pfnPain ==
@@ -3058,17 +3138,17 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
     }
   }
   (*AIFuncTable[paVar1->species][paVar1->eState[paVar1->stateLevel]].pfnPain)
-            ((actor_s *)param_3,(gentity_s *)param_4,param_5,param_6,param_7,unaff_ESI,
-             (hitLocation_t)pfVar9);
-  EntHandle::setEnt(&param_1->sentient->lastAttacker,param_2);
-  if (param_2->sentient != (sentient_s *)0x0) {
-    Actor_WasAttackedBy((actor_s *)param_3,(sentient_s *)param_4);
+            ((actor_s *)iDamage,(gentity_s *)vPoint,iMod,vDir,hitLoc,unaff_ESI,(hitLocation_t)pfVar9
+            );
+  EntHandle::setEnt(&self->sentient->lastAttacker,pAttacker);
+  if (pAttacker->sentient != (sentient_s *)0x0) {
+    Actor_WasAttackedBy((actor_s *)iDamage,(sentient_s *)vPoint);
   }
   iVar6 = EntHandle::isDefined(&paVar1->sentient->syncedMeleeEnt);
   if ((iVar6 == 0) && (paVar1->allowPain != false)) {
-    iVar6 = Actor_PushState((actor_s *)param_3,(ai_state_t)param_4);
+    iVar6 = Actor_PushState((actor_s *)iDamage,(ai_state_t)vPoint);
     if (iVar6 != 0) {
-      Actor_KillAnimScript((actor_s *)param_3);
+      Actor_KillAnimScript((actor_s *)iDamage);
     }
   }
   return;
@@ -3083,8 +3163,8 @@ Actor_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Actor_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-         int param_6,float *param_7,hitLocation_t param_8,int param_9)
+Actor_Die(gentity_s *self,gentity_s *pInflictor,gentity_s *pAttacker,int iDamage,int iMod,
+         int iWeapon,float *vDir,hitLocation_t hitLoc,int timeOffset)
 
 {
   actor_s *paVar1;
@@ -3097,8 +3177,9 @@ Actor_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,i
   scriptInstance_t sVar7;
   actor_s *in_stack_ffffffe4;
   float *pfVar8;
+  actor_s *actor;
   
-  paVar1 = param_1->actor;
+  paVar1 = self->actor;
   if ((paVar1 == (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x738,0,
                                "%s"), !bVar3)) {
@@ -3113,16 +3194,15 @@ Actor_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,i
     (*pcVar2)();
     return;
   }
-  if ((param_7 == (float *)0x0) &&
+  if ((vDir == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x73a,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_7 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_7[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_7[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*vDir & 0x7f800000) == 0x7f800000) || (((uint)vDir[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)vDir[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x73b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -3160,22 +3240,22 @@ Actor_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,i
     return;
   }
   if (paVar1->eState[paVar1->stateLevel] != AIS_DEATH) {
-    Scr_ActorKilled(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
-    paVar1->iDamageTaken = param_4;
+    Scr_ActorKilled(self,pInflictor,pAttacker,iDamage,iMod,iWeapon,vDir,hitLoc,timeOffset);
+    paVar1->iDamageTaken = iDamage;
     pfVar8 = paVar1->damageDir;
-    *pfVar8 = *param_7;
-    paVar1->damageDir[1] = param_7[1];
-    paVar1->damageDir[2] = param_7[2];
-    fVar6 = vectoyaw(param_7);
-    AngleNormalize180(fVar6 - (param_1->r).currentAngles[1]);
+    *pfVar8 = *vDir;
+    paVar1->damageDir[1] = vDir[1];
+    paVar1->damageDir[2] = vDir[2];
+    fVar6 = vectoyaw(vDir);
+    AngleNormalize180(fVar6 - (self->r).currentAngles[1]);
     _ftol2_sse();
     paVar1->iDamageYaw = extraout_EAX;
     sVar7 = SCRIPTINSTANCE_SERVER;
-    uVar4 = G_GetHitLocationString(param_8);
+    uVar4 = G_GetHitLocationString(hitLoc);
     Scr_SetString(&paVar1->damageHitLoc,(uint)uVar4,sVar7);
-    Scr_SetString(&paVar1->damageMod,(uint)*modNames[param_5],SCRIPTINSTANCE_SERVER);
-    if (param_2 != (gentity_s *)0x0) {
-      pcVar5 = BG_WeaponName((uint)(param_2->s).weapon);
+    Scr_SetString(&paVar1->damageMod,(uint)*modNames[iMod],SCRIPTINSTANCE_SERVER);
+    if (pInflictor != (gentity_s *)0x0) {
+      pcVar5 = BG_WeaponName((uint)(pInflictor->s).weapon);
       if ((pcVar5 == (char *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x75f,
                                    0,"%s"), !bVar3)) {
@@ -3184,13 +3264,13 @@ Actor_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,i
         return;
       }
       sVar7 = SCRIPTINSTANCE_SERVER;
-      pcVar5 = BG_WeaponName((uint)(param_2->s).weapon);
+      pcVar5 = BG_WeaponName((uint)(pInflictor->s).weapon);
       Scr_SetStringFromCharString(&paVar1->damageWeapon,pcVar5,sVar7);
     }
     Actor_ForceState(in_stack_ffffffe4,(ai_state_t)pfVar8);
     (paVar1->Physics).bIsAlive = 0;
-    EntHandle::setEnt(&param_1->sentient->lastAttacker,param_3);
-    Scr_SetString(&param_1->targetname,0,SCRIPTINSTANCE_SERVER);
+    EntHandle::setEnt(&self->sentient->lastAttacker,pAttacker);
+    Scr_SetString(&self->targetname,0,SCRIPTINSTANCE_SERVER);
     Actor_KillAnimScript(in_stack_ffffffe4);
   }
   return;
@@ -3204,30 +3284,29 @@ Actor_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,i
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl usingCodeGoal(actor_s *param_1)
+int __cdecl usingCodeGoal(actor_s *actor)
 
 {
   bool bVar1;
   int iVar2;
   int local_14;
   
-  if (param_1->codeGoalSrc == AI_GOAL_SRC_SCRIPT_GOAL) {
+  if (actor->codeGoalSrc == AI_GOAL_SRC_SCRIPT_GOAL) {
 LAB_008fa69b:
     local_14 = 0;
   }
   else {
-    iVar2 = EntHandle::isDefined(&param_1->scriptGoalEnt);
+    iVar2 = EntHandle::isDefined(&actor->scriptGoalEnt);
     if (iVar2 == 0) {
-      if ((((param_1->scriptGoal).pos[0] == (param_1->codeGoal).pos[0]) &&
-          ((param_1->scriptGoal).pos[1] == (param_1->codeGoal).pos[1])) &&
-         ((param_1->scriptGoal).pos[2] == (param_1->codeGoal).pos[2])) {
+      if ((((actor->scriptGoal).pos[0] == (actor->codeGoal).pos[0]) &&
+          ((actor->scriptGoal).pos[1] == (actor->codeGoal).pos[1])) &&
+         ((actor->scriptGoal).pos[2] == (actor->codeGoal).pos[2])) {
         bVar1 = true;
       }
       else {
         bVar1 = false;
       }
-      if ((bVar1) && ((param_1->scriptGoal).radius == (param_1->codeGoal).radius))
-      goto LAB_008fa69b;
+      if ((bVar1) && ((actor->scriptGoal).radius == (actor->codeGoal).radius)) goto LAB_008fa69b;
     }
     local_14 = 1;
   }
@@ -3242,14 +3321,14 @@ LAB_008fa69b:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl isNodeInRegion(pathnode_t *param_1,gentity_s *param_2)
+int __cdecl isNodeInRegion(pathnode_t *node,gentity_s *volume)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x7b3,0,"%s"
                             );
     if (!bVar2) {
@@ -3258,7 +3337,7 @@ int __cdecl isNodeInRegion(pathnode_t *param_1,gentity_s *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (volume == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x7b4,0,"%s"
                             );
     if (!bVar2) {
@@ -3267,7 +3346,7 @@ int __cdecl isNodeInRegion(pathnode_t *param_1,gentity_s *param_2)
       return iVar3;
     }
   }
-  iVar3 = SV_EntityContact((param_1->constant).vOrigin,(param_1->constant).vOrigin,param_2);
+  iVar3 = SV_EntityContact((node->constant).vOrigin,(node->constant).vOrigin,volume);
   return iVar3;
 }
 
@@ -3283,37 +3362,40 @@ int __cdecl isNodeInRegion(pathnode_t *param_1,gentity_s *param_2)
 void __cdecl Actor_DebugDrawNodesInVolume(actor_s *param_1)
 
 {
-  gentity_s *pgVar1;
-  pathnode_t *ppVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
+  gentity_s *volume_00;
+  pathnode_t *node_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
   int in_ECX;
-  int local_1818;
-  pathsort_t local_1814 [512];
-  float local_14 [3];
-  int local_8;
+  actor_s *self;
+  pathnode_t *node;
+  gentity_s *volume;
+  int nodeIndex;
+  pathsort_t nodes [512];
+  float viewPos [3];
+  int nodeCount;
   
-  local_8 = 0x8fa73d;
-  CL_GetDebugViewPos(local_14);
-  pgVar1 = *(gentity_s **)(in_ECX + 0xe64);
-  if (pgVar1 == (gentity_s *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x7c8,0,"%s"
+  nodeCount = 0x8fa73d;
+  CL_GetDebugViewPos(viewPos);
+  volume_00 = *(gentity_s **)(in_ECX + 0xe64);
+  if (volume_00 == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x7c8,0,"%s"
                             );
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_8 = Path_NodesInCylinder
-                      ((float *)(in_ECX + 0xe40),*(float *)(in_ECX + 0xe58),
-                       *(float *)(in_ECX + 0xe5c),local_1814,0x200,0x83ffc);
-  for (local_1818 = 0; local_1818 < local_8; local_1818 = local_1818 + 1) {
-    ppVar2 = local_1814[local_1818].node;
-    iVar5 = isNodeInRegion(ppVar2,pgVar1);
-    if (iVar5 != 0) {
-      Path_DrawDebugNode(local_14,ppVar2);
+  nodeCount = Path_NodesInCylinder
+                        ((float *)(in_ECX + 0xe40),*(float *)(in_ECX + 0xe58),
+                         *(float *)(in_ECX + 0xe5c),nodes,0x200,0x83ffc);
+  for (nodeIndex = 0; nodeIndex < nodeCount; nodeIndex = nodeIndex + 1) {
+    node_00 = nodes[nodeIndex].node;
+    iVar3 = isNodeInRegion(node_00,volume_00);
+    if (iVar3 != 0) {
+      Path_DrawDebugNode(viewPos,node_00);
     }
   }
   return;
@@ -3324,256 +3406,255 @@ void __cdecl Actor_DebugDrawNodesInVolume(actor_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Actor_EntInfo(gentity_s *param_1,float *param_2)
+void __cdecl Actor_EntInfo(gentity_s *self,float *source)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  gentity_s *pgVar5;
-  char *pcVar6;
-  float fVar7;
-  float *pfVar8;
-  int iVar9;
+  gentity_s *entity;
+  char *pcVar5;
+  float fVar6;
+  float *color_00;
+  int duration;
   char *in_stack_fffff66c;
   float *in_stack_fffff670;
-  float (*local_97c) [4];
+  float *local_97c;
   char *local_964;
-  phys_vec3 local_920;
+  phys_vec3 dist_2;
   float local_910;
   float local_90c;
-  float local_908;
+  float enemyPos;
   float local_904;
   float local_900;
-  float local_8fc;
-  float local_8f8;
+  float range;
+  float pos;
   float local_8f4;
   float local_8f0;
-  float local_8ec;
-  undefined4 local_8e8;
-  float local_8e4;
+  float fact;
+  int cycleTime;
+  float color_2;
   float local_8e0;
   float local_8dc;
   undefined4 local_8d8;
-  float local_8d4;
+  float vAngles;
   float local_8d0;
-  float local_8c8;
-  float local_8c4 [5];
+  float fBaseYaw;
+  float vColor [5];
   float local_8b0;
   float local_8ac;
-  float local_8a8;
+  float vDebugTargetPosition;
   float local_8a4;
   float local_8a0;
-  float local_89c;
+  float goalYaw;
   float local_898;
   float local_894;
-  float local_890;
-  sentient_info_t *local_88c;
-  uint local_888;
-  char local_884 [32];
-  char local_864 [2048];
+  float rawYaw;
+  vis_cache_t *pCached;
+  ulong i;
+  char header [32];
+  char buffer [2048];
   uint local_64;
-  char *local_60;
-  DObj *local_5c;
-  char local_55;
-  phys_vec3 local_54;
+  char *ch;
+  DObj *obj;
+  bool drawLines;
+  phys_vec3 delta;
   float local_44;
   float local_40;
-  float local_3c;
-  gentity_s *local_38;
-  sentient_s *local_34;
-  float local_30 [3];
-  char local_21;
-  float local_20;
+  float dist;
+  gentity_s *target;
+  sentient_s *enemy;
+  float vEnemyEye [3];
+  bool drawGoalLineRadius;
+  float forward;
   float local_1c;
   float local_18;
-  uint local_14;
-  actor_s *local_10;
-  float (*local_c) [4];
-  float local_8;
+  int textMode;
+  actor_s *actor;
+  float *color;
+  float infoScale;
   
   local_64 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_55 = '\x01';
-  local_21 = '\0';
-  if ((param_1 == (gentity_s *)0x0) &&
+  drawLines = true;
+  drawGoalLineRadius = false;
+  if ((self == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x804,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar4 = SV_DObjExists(param_1);
+  iVar4 = SV_DObjExists(self);
   if (iVar4 != 0) {
-    local_10 = param_1->actor;
-    if ((local_10 == (actor_s *)0x0) &&
+    actor = self->actor;
+    if ((actor == (actor_s *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x809,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_54.x = *param_2 - (param_1->r).currentOrigin[0];
-    local_54.y = param_2[1] - (param_1->r).currentOrigin[1];
-    local_54.z = param_2[2] - (param_1->r).currentOrigin[2];
-    local_3c = Abs(&local_54);
+    delta.x = *source - (self->r).currentOrigin[0];
+    delta.y = source[1] - (self->r).currentOrigin[1];
+    delta.z = source[2] - (self->r).currentOrigin[2];
+    dist = Abs(&delta);
     if (((g_entinfo_maxdist->current).value <= 0.0) ||
-       (local_3c < (g_entinfo_maxdist->current).value ||
-        local_3c == (g_entinfo_maxdist->current).value)) {
-      local_8 = G_GetEntInfoScale();
-      local_8 = local_3c * 0.0026041667 * local_8;
+       (dist < (g_entinfo_maxdist->current).value || dist == (g_entinfo_maxdist->current).value)) {
+      fVar6 = G_GetEntInfoScale();
+      infoScale = dist * 0.0026041667 * fVar6;
       Sentient_GetDebugEyePosition((sentient_s *)in_stack_fffff66c,in_stack_fffff670);
       if ((g_entinfo->current).integer == 7) {
-        if (((ai_debugEntIndex->current).integer == (param_1->s).number) &&
-           (local_5c = Com_GetServerDObj((param_1->s).number), local_5c != (DObj *)0x0)) {
-          sprintf(local_884,"Entity %d\n\n");
-          DObjDisplayAnimToBuffer(local_5c,local_884,local_864,0x800);
-          local_60 = strtok(local_864,"\n");
-          while (local_60 != (char *)0x0) {
-            local_888 = 0;
+        if (((ai_debugEntIndex->current).integer == (self->s).number) &&
+           (obj = Com_GetServerDObj((self->s).number), obj != (DObj *)0x0)) {
+          sprintf(header,"Entity %d\n\n");
+          DObjDisplayAnimToBuffer(obj,header,buffer,0x800);
+          ch = strtok(buffer,"\n");
+          while (ch != (char *)0x0) {
+            i = 0;
             while( true ) {
-              local_964 = local_60;
+              local_964 = ch;
               do {
                 cVar1 = *local_964;
                 local_964 = local_964 + 1;
               } while (cVar1 != '\0');
-              if ((uint)((int)local_964 - (int)(local_60 + 1)) <= local_888) break;
-              if (local_60[local_888] == '^') {
-                local_60[local_888] = ' ';
-                local_60[local_888 + 1] = ' ';
-                local_888 = local_888 + 2;
+              if ((uint)((int)local_964 - (int)(ch + 1)) <= i) break;
+              if (ch[i] == '^') {
+                ch[i] = ' ';
+                ch[i + 1] = ' ';
+                i = i + 2;
               }
-              local_888 = local_888 + 1;
+              i = i + 1;
             }
-            local_40 = local_40 - local_8 * 7.0;
-            G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,local_60,0);
-            local_60 = strtok((char *)0x0,"\n");
+            local_40 = local_40 - infoScale * 7.0;
+            G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,ch,0);
+            ch = strtok((char *)0x0,"\n");
           }
         }
       }
       else {
         if ((g_entinfo->current).integer == 3) {
-          local_55 = '\0';
+          drawLines = false;
         }
         if (((g_entinfo->current).integer == 4) || ((g_entinfo->current).integer == 5)) {
-          local_55 = '\0';
-          local_21 = '\x01';
+          drawLines = false;
+          drawGoalLineRadius = true;
         }
-        local_10 = param_1->actor;
-        if ((local_10 == (actor_s *)0x0) &&
+        actor = self->actor;
+        if ((actor == (actor_s *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",
                                      0x844,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_38 = Actor_GetTargetEntity((actor_s *)in_stack_fffff66c);
-        local_34 = Actor_GetTargetSentient((actor_s *)in_stack_fffff66c);
+        target = Actor_GetTargetEntity((actor_s *)in_stack_fffff66c);
+        enemy = Actor_GetTargetSentient((actor_s *)in_stack_fffff66c);
         Sentient_GetDebugEyePosition((sentient_s *)in_stack_fffff66c,in_stack_fffff670);
-        if (local_55 != '\0') {
-          if (local_34 == (sentient_s *)0x0) {
-            if (local_38 != (gentity_s *)0x0) {
-              G_DebugLine(&local_54.w,(local_38->r).currentOrigin,colorBlue,1);
+        if (drawLines != false) {
+          if (enemy == (sentient_s *)0x0) {
+            if (target != (gentity_s *)0x0) {
+              G_DebugLine(&delta.w,(target->r).currentOrigin,colorBlue,1);
             }
           }
           else {
-            local_88c = local_10->sentientInfo + ((int)local_34 - (int)level.sentients) / 0x90;
-            if ((local_88c->VisCache).bVisible == false) {
-              local_c = &colorRed;
+            pCached = &actor->sentientInfo[((int)enemy - (int)level.sentients) / 0x90].VisCache;
+            if (pCached->bVisible == false) {
+              color = colorRed;
             }
-            else if (level.time - (local_88c->VisCache).iLastUpdateTime < 0xfb) {
-              local_c = &colorGreen;
+            else if (level.time - pCached->iLastUpdateTime < 0xfb) {
+              color = colorGreen;
             }
             else {
-              local_c = &colorYellow;
+              color = colorYellow;
             }
             Sentient_GetDebugEyePosition((sentient_s *)in_stack_fffff66c,in_stack_fffff670);
-            G_DebugLine(&local_54.w,local_30,*local_c,1);
+            G_DebugLine(&delta.w,vEnemyEye,color,1);
           }
         }
         if ((g_entinfo->current).integer != 3) {
-          G_DebugBox((param_1->r).currentOrigin,(param_1->r).mins,(param_1->r).maxs,
-                     (param_1->r).currentAngles[1],colorMagenta,1,0);
+          G_DebugBox((self->r).currentOrigin,(self->r).mins,(self->r).maxs,
+                     (self->r).currentAngles[1],colorMagenta,1,0);
         }
-        local_20 = (local_10->eyeInfo).dir[0] * 48.0 + local_54.w;
-        local_1c = (local_10->eyeInfo).dir[1] * 48.0 + local_44;
-        local_18 = (local_10->eyeInfo).dir[2] * 48.0 + local_40;
-        if (local_55 != '\0') {
-          G_DebugLine(&local_54.w,&local_20,colorBlue,1);
+        forward = (actor->eyeInfo).dir[0] * 48.0 + delta.w;
+        local_1c = (actor->eyeInfo).dir[1] * 48.0 + local_44;
+        local_18 = (actor->eyeInfo).dir[2] * 48.0 + local_40;
+        if (drawLines != false) {
+          G_DebugLine(&delta.w,&forward,colorBlue,1);
         }
-        if ((local_10->ScriptOrient).eMode == AI_ORIENT_INVALID) {
-          local_890 = (local_10->CodeOrient).fDesiredBodyYaw;
+        if ((actor->ScriptOrient).eMode == AI_ORIENT_INVALID) {
+          rawYaw = (actor->CodeOrient).fDesiredBodyYaw;
         }
         else {
-          local_890 = (local_10->ScriptOrient).fDesiredBodyYaw;
+          rawYaw = (actor->ScriptOrient).fDesiredBodyYaw;
         }
-        local_89c = (local_10->Path).lookaheadDir[0] * 48.0 + local_54.w;
-        local_898 = (local_10->Path).lookaheadDir[1] * 48.0 + local_44;
+        goalYaw = (actor->Path).lookaheadDir[0] * 48.0 + delta.w;
+        local_898 = (actor->Path).lookaheadDir[1] * 48.0 + local_44;
         local_894 = local_40;
-        G_DebugLine(&local_54.w,&local_89c,colorMagenta,1);
-        local_89c = local_10->prevMoveDir[0] * 48.0 + local_54.w;
-        local_898 = local_10->prevMoveDir[1] * 48.0 + local_44;
+        G_DebugLine(&delta.w,&goalYaw,colorMagenta,1);
+        goalYaw = actor->prevMoveDir[0] * 48.0 + delta.w;
+        local_898 = actor->prevMoveDir[1] * 48.0 + local_44;
         local_894 = local_40;
-        G_DebugLine(&local_54.w,&local_89c,colorOrange,1);
-        if ((local_55 != '\0') &&
-           (((local_10->lookAtInfo).bDoLookAt != false ||
-            ((local_10->lookAtInfo).fLookAtTurnAngle != 0.0)))) {
-          local_8c8 = (param_1->r).currentAngles[1];
-          local_8c4[4] = (local_10->lookAtInfo).vLookAtPos[0] - local_54.w;
-          local_8b0 = (local_10->lookAtInfo).vLookAtPos[1] - local_44;
-          local_8ac = (local_10->lookAtInfo).vLookAtPos[2] - local_40;
-          vectoangles(local_8c4 + 4,&local_8d4);
-          local_8c4[0] = 1.0;
-          local_8c4[1] = 1.0;
-          local_8c4[2] = 0.25;
-          local_8c4[3] = 0.5;
-          local_8a8 = (local_10->lookAtInfo).vLookAtPos[0];
-          local_8a4 = (local_10->lookAtInfo).vLookAtPos[1];
-          local_8a0 = (local_10->lookAtInfo).vLookAtPos[2] - 2.0;
-          G_DebugLine(&local_54.w,&local_8a8,local_8c4,1);
-          local_8c4[3] = 0.75;
-          local_8a4 = AngleNormalize360(local_8c8 - (local_10->lookAtInfo).fLookAtTurnAngle);
-          local_8a8 = 0.0;
+        G_DebugLine(&delta.w,&goalYaw,colorOrange,1);
+        if ((drawLines != false) &&
+           (((actor->lookAtInfo).bDoLookAt != false || ((actor->lookAtInfo).fLookAtTurnAngle != 0.0)
+            ))) {
+          fBaseYaw = (self->r).currentAngles[1];
+          vColor[4] = (actor->lookAtInfo).vLookAtPos[0] - delta.w;
+          local_8b0 = (actor->lookAtInfo).vLookAtPos[1] - local_44;
+          local_8ac = (actor->lookAtInfo).vLookAtPos[2] - local_40;
+          vectoangles(vColor + 4,&vAngles);
+          vColor[0] = 1.0;
+          vColor[1] = 1.0;
+          vColor[2] = 0.25;
+          vColor[3] = 0.5;
+          vDebugTargetPosition = (actor->lookAtInfo).vLookAtPos[0];
+          local_8a4 = (actor->lookAtInfo).vLookAtPos[1];
+          local_8a0 = (actor->lookAtInfo).vLookAtPos[2] - 2.0;
+          G_DebugLine(&delta.w,&vDebugTargetPosition,vColor,1);
+          vColor[3] = 0.75;
+          local_8a4 = AngleNormalize360(fBaseYaw - (actor->lookAtInfo).fLookAtTurnAngle);
+          vDebugTargetPosition = 0.0;
           local_8a0 = 0.0;
-          AngleVectors(&local_8a8,&local_20,(float *)0x0,(float *)0x0);
-          local_8a8 = local_20 * 20.0 + local_54.w;
+          AngleVectors(&vDebugTargetPosition,&forward,(float *)0x0,(float *)0x0);
+          vDebugTargetPosition = forward * 20.0 + delta.w;
           local_8a4 = local_1c * 20.0 + local_44;
           local_8a0 = local_18 * 20.0 + local_40;
-          G_DebugLine(&local_54.w,&local_8a8,local_8c4,1);
-          local_8c4[0] = 0.5;
-          local_8c4[1] = 0.5;
-          local_8c4[2] = 0.0;
-          local_8c4[3] = 0.75;
-          local_8a8 = 0.0;
+          G_DebugLine(&delta.w,&vDebugTargetPosition,vColor,1);
+          vColor[0] = 0.5;
+          vColor[1] = 0.5;
+          vColor[2] = 0.0;
+          vColor[3] = 0.75;
+          vDebugTargetPosition = 0.0;
           local_8a4 = local_8d0;
           local_8a0 = 0.0;
-          AngleVectors(&local_8a8,&local_20,(float *)0x0,(float *)0x0);
-          local_8a8 = local_20 * 20.0 + local_54.w;
+          AngleVectors(&vDebugTargetPosition,&forward,(float *)0x0,(float *)0x0);
+          vDebugTargetPosition = forward * 20.0 + delta.w;
           local_8a4 = local_1c * 20.0 + local_44;
           local_8a0 = local_18 * 20.0 + local_40;
-          G_DebugLine(&local_54.w,&local_8a8,local_8c4,1);
-          local_8a8 = 0.0;
-          local_8a4 = local_8c8;
+          G_DebugLine(&delta.w,&vDebugTargetPosition,vColor,1);
+          vDebugTargetPosition = 0.0;
+          local_8a4 = fBaseYaw;
           local_8a0 = 0.0;
-          AngleVectors(&local_8a8,&local_20,(float *)0x0,(float *)0x0);
-          local_8a8 = local_20 * 20.0 + local_54.w;
+          AngleVectors(&vDebugTargetPosition,&forward,(float *)0x0,(float *)0x0);
+          vDebugTargetPosition = forward * 20.0 + delta.w;
           local_8a4 = local_1c * 20.0 + local_44;
           local_8a0 = local_18 * 20.0 + local_40;
-          G_DebugLine(&local_54.w,&local_8a8,local_8c4,1);
-          fVar7 = AngleNormalize180(local_8c8 - local_8d0);
-          if (fVar7 <= 0.0) {
-            G_DebugArc(&local_54.w,16.0,local_8c8,local_8d0,local_8c4,1,0);
+          G_DebugLine(&delta.w,&vDebugTargetPosition,vColor,1);
+          fVar6 = AngleNormalize180(fBaseYaw - local_8d0);
+          if (fVar6 <= 0.0) {
+            G_DebugArc(&delta.w,16.0,fBaseYaw,local_8d0,vColor,1,0);
           }
           else {
-            G_DebugArc(&local_54.w,16.0,local_8d0,local_8c8,local_8c4,1,0);
+            G_DebugArc(&delta.w,16.0,local_8d0,fBaseYaw,vColor,1,0);
           }
         }
-        if ((local_55 != '\0') || (local_21 != '\0')) {
-          local_8e8 = 1000;
+        if ((drawLines != false) || (drawGoalLineRadius != false)) {
+          cycleTime = 1000;
           local_8d8 = 0x3f800000;
           if (endTime < level.time) {
             endTime = level.time + 1000;
@@ -3582,241 +3663,241 @@ void __cdecl Actor_EntInfo(gentity_s *param_1,float *param_2)
           else if (1000 < endTime - level.time) {
             endTime = 0;
           }
-          local_8ec = (float)(endTime - level.time) / 1000.0;
-          local_8dc = local_8ec;
+          fact = (float)(endTime - level.time) / 1000.0;
+          local_8dc = fact;
           if (direction == 0) {
-            local_8dc = 1.0 - local_8ec;
+            local_8dc = 1.0 - fact;
           }
-          local_8e4 = local_8dc;
+          color_2 = local_8dc;
           local_8e0 = local_8dc;
-          iVar4 = EntHandle::isDefined(&local_10->scriptGoalEnt);
+          iVar4 = EntHandle::isDefined(&actor->scriptGoalEnt);
           if (iVar4 == 0) {
-            local_8f8 = (local_10->scriptGoal).pos[0];
-            local_8f4 = (local_10->scriptGoal).pos[1];
-            local_8f0 = (local_10->scriptGoal).pos[2] + 16.0;
-            G_DebugCircle(&local_8f8,(local_10->scriptGoal).radius,&local_8e4,0,1,0);
+            pos = (actor->scriptGoal).pos[0];
+            local_8f4 = (actor->scriptGoal).pos[1];
+            local_8f0 = (actor->scriptGoal).pos[2] + 16.0;
+            G_DebugCircle(&pos,(actor->scriptGoal).radius,&color_2,0,1,0);
           }
-          if (local_10->fixedNode != false) {
-            local_8f8 = (local_10->scriptGoal).pos[0];
-            local_8f4 = (local_10->scriptGoal).pos[1];
-            local_8f0 = (local_10->scriptGoal).pos[2] + 16.0;
+          if (actor->fixedNode != false) {
+            pos = (actor->scriptGoal).pos[0];
+            local_8f4 = (actor->scriptGoal).pos[1];
+            local_8f0 = (actor->scriptGoal).pos[2] + 16.0;
             local_8dc = 0.0;
-            local_8e4 = 0.0;
-            G_DebugLine(&local_54.w,&local_8f8,&local_8e4,0);
-            G_DebugCircle(&local_8f8,local_10->fixedNodeSafeRadius,&local_8e4,0,1,0);
-            iVar4 = EntHandle::isDefined(&local_10->fixedNodeSafeVolume);
+            color_2 = 0.0;
+            G_DebugLine(&delta.w,&pos,&color_2,0);
+            G_DebugCircle(&pos,actor->fixedNodeSafeRadius,&color_2,0,1,0);
+            iVar4 = EntHandle::isDefined(&actor->fixedNodeSafeVolume);
             if ((iVar4 != 0) &&
-               (((ai_showVolume->current).integer == (param_1->s).number ||
+               (((ai_showVolume->current).integer == (self->s).number ||
                 ((0 < (ai_showVolume->current).integer &&
-                 ((ai_debugEntIndex->current).integer == (param_1->s).number)))))) {
-              iVar9 = 0;
+                 ((ai_debugEntIndex->current).integer == (self->s).number)))))) {
+              duration = 0;
               iVar4 = 0;
-              pfVar8 = colorGreenFaded;
-              pgVar5 = EntHandle::ent(&local_10->fixedNodeSafeVolume);
-              G_DebugDrawBrushModel(pgVar5,pfVar8,iVar4,iVar9);
+              color_00 = colorGreenFaded;
+              entity = EntHandle::ent(&actor->fixedNodeSafeVolume);
+              G_DebugDrawBrushModel(entity,color_00,iVar4,duration);
             }
           }
-          iVar4 = usingCodeGoal(local_10);
+          iVar4 = usingCodeGoal(actor);
           if (iVar4 != 0) {
-            local_8f8 = (local_10->codeGoal).pos[0];
-            local_8f4 = (local_10->codeGoal).pos[1];
-            local_8f0 = (local_10->codeGoal).pos[2] + 16.0;
-            G_DebugLine(&local_54.w,&local_8f8,colorMagenta,0);
-            if (local_10->codeGoalSrc == AI_GOAL_SRC_SCRIPT_ENTITY_GOAL) {
-              local_8e4 = 0.0;
+            pos = (actor->codeGoal).pos[0];
+            local_8f4 = (actor->codeGoal).pos[1];
+            local_8f0 = (actor->codeGoal).pos[2] + 16.0;
+            G_DebugLine(&delta.w,&pos,colorMagenta,0);
+            if (actor->codeGoalSrc == AI_GOAL_SRC_SCRIPT_ENTITY_GOAL) {
+              color_2 = 0.0;
               local_8e0 = 0.0;
               local_8dc = 1.0;
             }
-            else if (local_10->codeGoalSrc == AI_GOAL_SRC_FRIENDLY_CHAIN) {
-              local_8e4 = 0.0;
+            else if (actor->codeGoalSrc == AI_GOAL_SRC_FRIENDLY_CHAIN) {
+              color_2 = 0.0;
               local_8e0 = 1.0;
               local_8dc = 0.0;
             }
-            else if (local_10->codeGoalSrc == AI_GOAL_SRC_ENEMY) {
-              local_8e4 = 1.0;
+            else if (actor->codeGoalSrc == AI_GOAL_SRC_ENEMY) {
+              color_2 = 1.0;
               local_8e0 = 0.0;
               local_8dc = 1.0;
             }
             else {
-              local_8e4 = 0.0;
+              color_2 = 0.0;
               local_8e0 = 0.0;
               local_8dc = 0.0;
             }
             local_8d8 = 0x3f800000;
-            G_DebugCircle(&local_8f8,(local_10->codeGoal).radius,&local_8e4,0,1,0);
+            G_DebugCircle(&pos,(actor->codeGoal).radius,&color_2,0,1,0);
           }
-          if ((local_10->codeGoal).volume != (gentity_s *)0x0) {
-            if (((ai_showVolume->current).integer == (param_1->s).number) ||
+          if ((actor->codeGoal).volume != (gentity_s *)0x0) {
+            if (((ai_showVolume->current).integer == (self->s).number) ||
                ((0 < (ai_showVolume->current).integer &&
-                ((ai_debugEntIndex->current).integer == (param_1->s).number)))) {
-              G_DebugDrawBrushModel((local_10->codeGoal).volume,colorWhiteFaded,1,0);
+                ((ai_debugEntIndex->current).integer == (self->s).number)))) {
+              G_DebugDrawBrushModel((actor->codeGoal).volume,colorWhiteFaded,1,0);
             }
             if ((ai_showRegion->current).enabled != false) {
               Actor_DebugDrawNodesInVolume((actor_s *)in_stack_fffff66c);
             }
           }
         }
-        if (((int)local_10->sentient->eTeam < 0) || (4 < (int)local_10->sentient->eTeam)) {
-          local_c = &colorYellow;
+        if (((int)actor->sentient->eTeam < 0) || (4 < (int)actor->sentient->eTeam)) {
+          color = colorYellow;
         }
         else {
-          local_c = colorTeam + local_10->sentient->eTeam;
+          color = colorTeam[actor->sentient->eTeam];
         }
-        if (local_21 == '\0') {
-          local_40 = local_8 * 7.0 * 10.0 + local_40;
+        if (drawGoalLineRadius == false) {
+          local_40 = infoScale * 7.0 * 10.0 + local_40;
           if (((g_entinfo->current).integer == 2) || ((g_entinfo_AItext->current).integer == 0)) {
-            if (param_1->targetname != 0) {
-              SL_ConvertToString((uint)param_1->targetname,SCRIPTINSTANCE_SERVER);
+            if (self->targetname != 0) {
+              SL_ConvertToString((uint)self->targetname,SCRIPTINSTANCE_SERVER);
             }
             iVar4 = 0;
-            pcVar6 = va("%i : %s");
-            G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
-            local_14 = 0x1e;
+            pcVar5 = va("%i : %s");
+            G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
+            textMode = 0x1e;
           }
           else {
-            if (param_1->targetname != 0) {
-              SL_ConvertToString((uint)param_1->targetname,SCRIPTINSTANCE_SERVER);
+            if (self->targetname != 0) {
+              SL_ConvertToString((uint)self->targetname,SCRIPTINSTANCE_SERVER);
             }
             iVar4 = 0;
-            pcVar6 = va("%i : %s (%s)");
-            G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
-            local_14 = 1 << ((byte)(g_entinfo_AItext->current).unsignedInt & 0x1f);
+            pcVar5 = va("%i : %s (%s)");
+            G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
+            textMode = 1 << ((byte)(g_entinfo_AItext->current).unsignedInt & 0x1f);
           }
-          if ((local_14 & 6) != 0) {
-            local_8fc = 0.0;
-            if ((local_14 & 4) != 0) {
-              local_40 = local_40 - local_8 * 7.0;
+          if ((textMode & 6U) != 0) {
+            range = 0.0;
+            if ((textMode & 4U) != 0) {
+              local_40 = local_40 - infoScale * 7.0;
               iVar4 = 0;
-              pcVar6 = va("health: %i");
-              G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
+              pcVar5 = va("health: %i");
+              G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
             }
-            if (local_38 != (gentity_s *)0x0) {
+            if (target != (gentity_s *)0x0) {
               Sentient_GetOrigin((sentient_s *)in_stack_fffff66c,in_stack_fffff670);
-              local_908 = (local_38->r).currentOrigin[0];
-              local_904 = (local_38->r).currentOrigin[1];
-              local_900 = (local_38->r).currentOrigin[2];
-              local_920.x = local_920.w - local_908;
-              local_920.y = local_910 - local_904;
-              local_920.z = local_90c - local_900;
-              local_8fc = Abs(&local_920);
+              enemyPos = (target->r).currentOrigin[0];
+              local_904 = (target->r).currentOrigin[1];
+              local_900 = (target->r).currentOrigin[2];
+              dist_2.x = dist_2.w - enemyPos;
+              dist_2.y = local_910 - local_904;
+              dist_2.z = local_90c - local_900;
+              range = Abs(&dist_2);
             }
-            if (local_38 == (gentity_s *)0x0) {
-              local_97c = &colorYellow;
+            if (target == (gentity_s *)0x0) {
+              local_97c = colorYellow;
             }
             else {
-              local_97c = &colorRed;
+              local_97c = colorRed;
             }
-            local_c = local_97c;
-            local_40 = local_40 - local_8 * 7.0;
-            if ((local_38 != (gentity_s *)0x0) && (local_38->targetname != 0)) {
-              SL_ConvertToString((uint)local_38->targetname,SCRIPTINSTANCE_SERVER);
+            color = local_97c;
+            local_40 = local_40 - infoScale * 7.0;
+            if ((target != (gentity_s *)0x0) && (target->targetname != 0)) {
+              SL_ConvertToString((uint)target->targetname,SCRIPTINSTANCE_SERVER);
             }
             iVar4 = 0;
-            pcVar6 = va("%i : %s");
-            G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
-            if ((local_14 & 4) != 0) {
-              local_40 = local_40 - local_8 * 7.0;
+            pcVar5 = va("%i : %s");
+            G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
+            if ((textMode & 4U) != 0) {
+              local_40 = local_40 - infoScale * 7.0;
               iVar4 = 0;
-              pcVar6 = va("range: %.2f ac: %.2f %s %u");
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
-              local_40 = local_40 - local_8 * 7.0;
+              pcVar5 = va("range: %.2f ac: %.2f %s %u");
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
+              local_40 = local_40 - infoScale * 7.0;
               iVar4 = 0;
-              pcVar6 = va("talkto: %d");
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+              pcVar5 = va("talkto: %d");
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
             }
           }
-          if ((local_14 & 0x10) != 0) {
-            local_40 = local_40 - local_8 * 7.0;
+          if ((textMode & 0x10U) != 0) {
+            local_40 = local_40 - infoScale * 7.0;
             iVar4 = 0;
-            pcVar6 = va("(%i)%i:%i = %s");
-            G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+            pcVar5 = va("(%i)%i:%i = %s");
+            G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
           }
-          if ((local_14 & 0x12) != 0) {
-            local_40 = local_40 - local_8 * 7.0;
-            if (local_10->pAnimScriptFunc == (scr_animscript_t *)0x0) {
+          if ((textMode & 0x12U) != 0) {
+            local_40 = local_40 - infoScale * 7.0;
+            if (actor->pAnimScriptFunc == (scr_animscript_t *)0x0) {
               in_stack_fffff66c = "<none>";
             }
             else {
               in_stack_fffff66c =
-                   SL_ConvertToString((uint)local_10->pAnimScriptFunc->name,SCRIPTINSTANCE_SERVER);
+                   SL_ConvertToString((uint)actor->pAnimScriptFunc->name,SCRIPTINSTANCE_SERVER);
             }
             iVar4 = 0;
-            SL_ConvertToString((uint)local_10->scriptState,SCRIPTINSTANCE_SERVER);
-            pcVar6 = va("%s [%s]");
-            G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+            SL_ConvertToString((uint)actor->scriptState,SCRIPTINSTANCE_SERVER);
+            pcVar5 = va("%s [%s]");
+            G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
           }
-          if ((local_14 & 0x10) != 0) {
-            local_40 = local_40 - local_8 * 7.0;
+          if ((textMode & 0x10U) != 0) {
+            local_40 = local_40 - infoScale * 7.0;
             iVar4 = 0;
-            SL_ConvertToString((uint)local_10->stateChangeReason,SCRIPTINSTANCE_SERVER);
-            SL_ConvertToString((uint)local_10->lastScriptState,SCRIPTINSTANCE_SERVER);
-            pcVar6 = va("<-  %s [%s]");
-            G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+            SL_ConvertToString((uint)actor->stateChangeReason,SCRIPTINSTANCE_SERVER);
+            SL_ConvertToString((uint)actor->lastScriptState,SCRIPTINSTANCE_SERVER);
+            pcVar5 = va("<-  %s [%s]");
+            G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
           }
-          if ((local_14 & 8) != 0) {
-            local_40 = local_40 - local_8 * 7.0;
-            if (((local_10->ScriptOrient).eMode == AI_ORIENT_INVALID) ||
-               ((local_10->ScriptOrient).eMode == (local_10->CodeOrient).eMode)) {
-              if ((local_10->ScriptOrient).eMode == AI_ORIENT_INVALID) {
-                local_c = &colorGreen;
+          if ((textMode & 8U) != 0) {
+            local_40 = local_40 - infoScale * 7.0;
+            if (((actor->ScriptOrient).eMode == AI_ORIENT_INVALID) ||
+               ((actor->ScriptOrient).eMode == (actor->CodeOrient).eMode)) {
+              if ((actor->ScriptOrient).eMode == AI_ORIENT_INVALID) {
+                color = colorGreen;
               }
               else {
-                local_c = &colorYellow;
+                color = colorYellow;
               }
             }
             else {
-              local_c = &colorRed;
+              color = colorRed;
             }
-            if ((local_10->ScriptOrient).eMode == AI_ORIENT_INVALID) {
+            if ((actor->ScriptOrient).eMode == AI_ORIENT_INVALID) {
               iVar4 = 0;
-              pcVar6 = va("orient: %s");
-              G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
+              pcVar5 = va("orient: %s");
+              G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
             }
             else {
               iVar4 = 0;
-              pcVar6 = va("orient: %s (%s <- script)");
-              G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
+              pcVar5 = va("orient: %s (%s <- script)");
+              G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
             }
             bVar3 = Actor_HasPath((actor_s *)in_stack_fffff66c);
             if (bVar3) {
-              local_40 = local_40 - local_8 * 7.0;
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,"has path",0);
+              local_40 = local_40 - infoScale * 7.0;
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,"has path",0);
             }
-            if ((0 < (local_10->Path).wPathLen) &&
+            if ((0 < (actor->Path).wPathLen) &&
                (iVar4 = Path_DistanceGreaterThan((path_t *)0x43000000,(float)in_stack_fffff66c),
                iVar4 == 0)) {
-              local_40 = local_40 - local_8 * 7.0;
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,"minDistForceFaceEnemy",0);
+              local_40 = local_40 - infoScale * 7.0;
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,"minDistForceFaceEnemy",0);
             }
-            if (local_10->pPileUpActor != (actor_s *)0x0) {
-              local_40 = local_40 - local_8 * 7.0;
+            if (actor->pPileUpActor != (actor_s *)0x0) {
+              local_40 = local_40 - infoScale * 7.0;
               iVar4 = 0;
-              pcVar6 = va("blockee: %d, blocker: %d");
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+              pcVar5 = va("blockee: %d, blocker: %d");
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
             }
-            iVar4 = EntHandle::isDefined(&local_10->pCloseEnt);
+            iVar4 = EntHandle::isDefined(&actor->pCloseEnt);
             if (iVar4 != 0) {
-              local_40 = local_40 - local_8 * 7.0;
+              local_40 = local_40 - infoScale * 7.0;
               iVar4 = 0;
-              EntHandle::ent(&local_10->pCloseEnt);
-              pcVar6 = va("closeEnt: %d");
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+              EntHandle::ent(&actor->pCloseEnt);
+              pcVar5 = va("closeEnt: %d");
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
             }
-            if (local_10->bDontAvoidPlayer != 0) {
-              local_40 = local_40 - local_8 * 7.0;
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,"dontavoidplayer",0);
+            if (actor->bDontAvoidPlayer != 0) {
+              local_40 = local_40 - infoScale * 7.0;
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,"dontavoidplayer",0);
             }
-            if (((local_10->Physics).iTraceMask & 0x2000000U) == 0) {
-              local_40 = local_40 - local_8 * 7.0;
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,"pushPlayer",0);
+            if (((actor->Physics).iTraceMask & 0x2000000U) == 0) {
+              local_40 = local_40 - infoScale * 7.0;
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,"pushPlayer",0);
             }
-            local_40 = local_40 - local_8 * 7.0;
+            local_40 = local_40 - infoScale * 7.0;
             iVar4 = 0;
-            pcVar6 = va("physics %d");
-            G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+            pcVar5 = va("physics %d");
+            G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
           }
-          if ((local_14 & 10) != 0) {
-            if ((AI_ANIM_POINT_RELATIVE < local_10->eAnimMode) &&
+          if ((textMode & 10U) != 0) {
+            if ((AI_ANIM_POINT_RELATIVE < actor->eAnimMode) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",
                                          0x9da,0,
                                          "actor->eAnimMode doesn\'t index ARRAY_COUNT( animModeNames )\n\t%i not in [0, %i)"
@@ -3825,27 +3906,27 @@ void __cdecl Actor_EntInfo(gentity_s *param_1,float *param_2)
               (*pcVar2)();
               return;
             }
-            local_40 = local_40 - local_8 * 7.0;
+            local_40 = local_40 - infoScale * 7.0;
             iVar4 = 0;
-            pcVar6 = va("animmode %s script: %s");
-            G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,pcVar6,iVar4);
+            pcVar5 = va("animmode %s script: %s");
+            G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,pcVar5,iVar4);
           }
-          if ((local_14 & 4) != 0) {
-            if (local_10->ent->takedamage == '\0') {
-              local_40 = local_40 - local_8 * 7.0;
-              G_AddDebugString(&local_54.w,colorRed,local_8 * 0.6,"Invulnerable",0);
+          if ((textMode & 4U) != 0) {
+            if (actor->ent->takedamage == '\0') {
+              local_40 = local_40 - infoScale * 7.0;
+              G_AddDebugString(&delta.w,colorRed,infoScale * 0.6,"Invulnerable",0);
             }
-            if (local_10->provideCoveringFire != false) {
-              local_40 = local_40 - local_8 * 7.0;
-              G_AddDebugString(&local_54.w,colorWhite,local_8 * 0.6,"Covering fire",0);
+            if (actor->provideCoveringFire != false) {
+              local_40 = local_40 - infoScale * 7.0;
+              G_AddDebugString(&delta.w,colorWhite,infoScale * 0.6,"Covering fire",0);
             }
           }
         }
         else {
-          local_40 = local_8 * 7.0 * 0.5 + local_40;
+          local_40 = infoScale * 7.0 * 0.5 + local_40;
           iVar4 = 0;
-          pcVar6 = va("%i");
-          G_AddDebugString(&local_54.w,*local_c,local_8 * 0.6,pcVar6,iVar4);
+          pcVar5 = va("%i");
+          G_AddDebugString(&delta.w,color,infoScale * 0.6,pcVar5,iVar4);
         }
       }
     }
@@ -3868,6 +3949,7 @@ void __cdecl Actor_InitMove(actor_s *param_1)
   code *pcVar2;
   bool bVar3;
   int *in_ECX;
+  actor_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xa08,0,"%s"
@@ -3935,13 +4017,14 @@ void __cdecl Actor_InitMove(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_IsDodgeEntity(actor_s *param_1,int param_2)
+int __cdecl Actor_IsDodgeEntity(actor_s *self,int entnum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  gentity_s *ent;
   
   if ((level.gentities[0x3ff].flags & 0x4000000U) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xa26,0,"%s"
@@ -3952,16 +4035,16 @@ int __cdecl Actor_IsDodgeEntity(actor_s *param_1,int param_2)
       return iVar3;
     }
   }
-  if (level.gentities[param_2].sentient == (sentient_s *)0x0) {
-    if ((level.gentities[param_2].flags & 0x4000000U) == 0) {
-      uVar4 = (uint)(level.gentities[param_2].iDisconnectTime < (param_1->Path).iPathTime);
+  if (level.gentities[entnum].sentient == (sentient_s *)0x0) {
+    if ((level.gentities[entnum].flags & 0x4000000U) == 0) {
+      uVar4 = (uint)(level.gentities[entnum].iDisconnectTime < (self->Path).iPathTime);
     }
     else {
       uVar4 = 0;
     }
   }
   else {
-    uVar4 = (uint)(level.time < param_1->iTeamMoveDodgeTime);
+    uVar4 = (uint)(level.time < self->iTeamMoveDodgeTime);
   }
   return uVar4;
 }
@@ -3974,7 +4057,7 @@ int __cdecl Actor_IsDodgeEntity(actor_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_Physics_GetLeftOrRightDodge(actor_s *param_1,bool param_2,float param_3)
+int __cdecl Actor_Physics_GetLeftOrRightDodge(actor_s *length,bool param_2,float param_3)
 
 {
   code *pcVar1;
@@ -3982,6 +4065,8 @@ int __cdecl Actor_Physics_GetLeftOrRightDodge(actor_s *param_1,bool param_2,floa
   int iVar3;
   int *in_ECX;
   char in_DL;
+  bool dodgeRight;
+  actor_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xa38,0,"%s"
@@ -3994,23 +4079,23 @@ int __cdecl Actor_Physics_GetLeftOrRightDodge(actor_s *param_1,bool param_2,floa
   }
   if (in_DL == '\0') {
     if ((*(uint *)(*in_ECX + 0x174) & 0x10000000) == 0) {
-      in_ECX[0x98] = (int)((float)in_ECX[0xcf] * (float)param_1);
-      in_ECX[0x99] = (int)(-(float)in_ECX[0xce] * (float)param_1);
+      in_ECX[0x98] = (int)((float)in_ECX[0xcf] * (float)length);
+      in_ECX[0x99] = (int)(-(float)in_ECX[0xce] * (float)length);
     }
     else {
-      in_ECX[0x98] = (int)((float)in_ECX[0xcf] * (float)param_1 * 0.33 + (float)in_ECX[0x98]);
-      in_ECX[0x99] = (int)(-(float)in_ECX[0xce] * (float)param_1 * 0.33 + (float)in_ECX[0x99]);
+      in_ECX[0x98] = (int)((float)in_ECX[0xcf] * (float)length * 0.33 + (float)in_ECX[0x98]);
+      in_ECX[0x99] = (int)(-(float)in_ECX[0xce] * (float)length * 0.33 + (float)in_ECX[0x99]);
     }
     iVar3 = 0x8000000;
   }
   else {
     if ((*(uint *)(*in_ECX + 0x174) & 0x8000000) == 0) {
-      in_ECX[0x98] = (int)(-(float)in_ECX[0xcf] * (float)param_1);
-      in_ECX[0x99] = (int)((float)in_ECX[0xce] * (float)param_1);
+      in_ECX[0x98] = (int)(-(float)in_ECX[0xcf] * (float)length);
+      in_ECX[0x99] = (int)((float)in_ECX[0xce] * (float)length);
     }
     else {
-      in_ECX[0x98] = (int)(-(float)in_ECX[0xcf] * (float)param_1 * 0.33 + (float)in_ECX[0x98]);
-      in_ECX[0x99] = (int)((float)in_ECX[0xce] * (float)param_1 * 0.33 + (float)in_ECX[0x99]);
+      in_ECX[0x98] = (int)(-(float)in_ECX[0xcf] * (float)length * 0.33 + (float)in_ECX[0x98]);
+      in_ECX[0x99] = (int)((float)in_ECX[0xce] * (float)length * 0.33 + (float)in_ECX[0x99]);
     }
     iVar3 = 0x10000000;
   }
@@ -4025,16 +4110,16 @@ int __cdecl Actor_Physics_GetLeftOrRightDodge(actor_s *param_1,bool param_2,floa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_PhysicsBackupInputs(actor_s *param_1,PhysicsInputs *param_2)
+void __cdecl Actor_PhysicsBackupInputs(actor_s *self,PhysicsInputs *inputs)
 
 {
-  param_2->vVelocity[0] = (param_1->Physics).vVelocity[0];
-  param_2->vVelocity[1] = (param_1->Physics).vVelocity[1];
-  param_2->vVelocity[2] = (param_1->Physics).vVelocity[2];
-  param_2->groundEntNum = (param_1->Physics).groundEntNum;
-  param_2->bHasGroundPlane = (param_1->Physics).bHasGroundPlane;
-  param_2->groundplaneSlope = (param_1->Physics).groundplaneSlope;
-  param_2->iFootstepTimer = (param_1->Physics).iFootstepTimer;
+  inputs->vVelocity[0] = (self->Physics).vVelocity[0];
+  inputs->vVelocity[1] = (self->Physics).vVelocity[1];
+  inputs->vVelocity[2] = (self->Physics).vVelocity[2];
+  inputs->groundEntNum = (self->Physics).groundEntNum;
+  inputs->bHasGroundPlane = (self->Physics).bHasGroundPlane;
+  inputs->groundplaneSlope = (self->Physics).groundplaneSlope;
+  inputs->iFootstepTimer = (self->Physics).iFootstepTimer;
   return;
 }
 
@@ -4046,16 +4131,16 @@ void __cdecl Actor_PhysicsBackupInputs(actor_s *param_1,PhysicsInputs *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_PhysicsRestoreInputs(actor_s *param_1,PhysicsInputs *param_2)
+void __cdecl Actor_PhysicsRestoreInputs(actor_s *self,PhysicsInputs *inputs)
 
 {
-  (param_1->Physics).vVelocity[0] = param_2->vVelocity[0];
-  (param_1->Physics).vVelocity[1] = param_2->vVelocity[1];
-  (param_1->Physics).vVelocity[2] = param_2->vVelocity[2];
-  (param_1->Physics).groundEntNum = param_2->groundEntNum;
-  (param_1->Physics).bHasGroundPlane = param_2->bHasGroundPlane;
-  (param_1->Physics).groundplaneSlope = param_2->groundplaneSlope;
-  (param_1->Physics).iFootstepTimer = param_2->iFootstepTimer;
+  (self->Physics).vVelocity[0] = inputs->vVelocity[0];
+  (self->Physics).vVelocity[1] = inputs->vVelocity[1];
+  (self->Physics).vVelocity[2] = inputs->vVelocity[2];
+  (self->Physics).groundEntNum = inputs->groundEntNum;
+  (self->Physics).bHasGroundPlane = inputs->bHasGroundPlane;
+  (self->Physics).groundplaneSlope = inputs->groundplaneSlope;
+  (self->Physics).iFootstepTimer = inputs->iFootstepTimer;
   return;
 }
 
@@ -4081,14 +4166,23 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
   float fVar8;
   actor_s *in_stack_ffffff38;
   float in_stack_ffffff3c;
-  uint local_64;
-  uint local_54;
-  int local_4c;
-  actor_s *local_34;
-  float local_30;
+  actor_s *self;
+  int MAX_ATTEMPTS;
+  int newFlags;
+  float wishLen;
+  int bDoFailsafe;
+  bool dodgeRight;
+  int attempts;
+  int oldPathLen;
+  int iHitEntnum;
+  float *pathDir;
+  int oldFlags;
+  float *firstPoint;
+  float length;
+  float wish;
   float local_2c;
-  PhysicsInputs local_24;
-  float local_8;
+  PhysicsInputs physicsInputs;
+  float dot;
   
   if (((in_ECX->eAnimMode != AI_ANIM_MOVE_CODE) ||
       (bVar4 = Actor_HasPath(in_stack_ffffff38), !bVar4)) &&
@@ -4098,7 +4192,7 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  Actor_PhysicsBackupInputs(in_ECX,&local_24);
+  Actor_PhysicsBackupInputs(in_ECX,&physicsInputs);
   pgVar2 = in_ECX->ent;
   (in_ECX->Physics).vOrigin[0] = (pgVar2->r).currentOrigin[0];
   (in_ECX->Physics).vOrigin[1] = (pgVar2->r).currentOrigin[1];
@@ -4114,7 +4208,7 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
   }
   else {
     iVar5 = (in_ECX->Physics).iHitEntnum;
-    local_64 = 0;
+    newFlags = 0;
     if ((((in_ECX->Physics).bStuck == '\0') &&
         (iVar6 = Actor_IsDodgeEntity(in_ECX,(in_ECX->Physics).iHitEntnum), iVar6 != 0)) &&
        (iVar6 = Path_IsTrimmed((path_t *)in_stack_ffffff38), iVar6 != 0)) {
@@ -4132,13 +4226,14 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
         iVar5 = (*pcVar3)();
         return iVar5;
       }
-      local_34 = (actor_s *)Vec2Length((in_ECX->Physics).vWishDelta);
-      for (local_4c = 0; local_4c < 2; local_4c = local_4c + 1) {
+      length = Vec2Length((in_ECX->Physics).vWishDelta);
+      for (attempts = 0; attempts < 2; attempts = attempts + 1) {
         Vec2Normalize((in_ECX->Physics).vHitNormal);
-        local_34 = (actor_s *)((float)local_34 * 0.75);
-        in_stack_ffffff38 = local_34;
-        local_64 = Actor_Physics_GetLeftOrRightDodge(local_34,SUB41(local_34,0),in_stack_ffffff3c);
-        Actor_PhysicsRestoreInputs(in_ECX,&local_24);
+        length = length * 0.75;
+        in_stack_ffffff38 = (actor_s *)length;
+        newFlags = Actor_Physics_GetLeftOrRightDodge
+                             ((actor_s *)length,SUB41(length,0),in_stack_ffffff3c);
+        Actor_PhysicsRestoreInputs(in_ECX,&physicsInputs);
         pgVar2 = in_ECX->ent;
         (in_ECX->Physics).vOrigin[0] = (pgVar2->r).currentOrigin[0];
         (in_ECX->Physics).vOrigin[1] = (pgVar2->r).currentOrigin[1];
@@ -4154,29 +4249,29 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
     }
     uVar7 = in_ECX->ent->flags & 0x18000000;
     if (uVar7 == 0) {
-      local_54 = 0;
+      bDoFailsafe = 0;
     }
     else {
-      if ((local_64 == 0) || (local_64 == uVar7)) {
-        local_54 = 0;
+      if ((newFlags == 0) || (newFlags == uVar7)) {
+        bDoFailsafe = 0;
       }
       else {
-        local_54 = 1;
+        bDoFailsafe = 1;
       }
       in_ECX->ent->flags = in_ECX->ent->flags & 0xe7ffffff;
     }
-    in_ECX->ent->flags = in_ECX->ent->flags | local_64;
+    in_ECX->ent->flags = in_ECX->ent->flags | newFlags;
     if ((in_ECX->Physics).iHitEntnum != 0x3ff) {
-      if ((local_54 == 0) &&
-         (local_54 = Path_FailedLookahead((path_t *)in_stack_ffffff38), local_54 == 0)) {
-        fVar8 = Vec2NormalizeTo((in_ECX->Physics).vWishDelta,&local_30);
-        local_8 = ((in_ECX->Physics).vOrigin[0] - (in_ECX->ent->r).currentOrigin[0]) * local_30 +
-                  ((in_ECX->Physics).vOrigin[1] - (in_ECX->ent->r).currentOrigin[1]) * local_2c;
-        local_54 = (uint)(local_8 < fVar8 * 0.25);
+      if ((bDoFailsafe == 0) &&
+         (bDoFailsafe = Path_FailedLookahead((path_t *)in_stack_ffffff38), bDoFailsafe == 0)) {
+        fVar8 = Vec2NormalizeTo((in_ECX->Physics).vWishDelta,&wish);
+        dot = ((in_ECX->Physics).vOrigin[0] - (in_ECX->ent->r).currentOrigin[0]) * wish +
+              ((in_ECX->Physics).vOrigin[1] - (in_ECX->ent->r).currentOrigin[1]) * local_2c;
+        bDoFailsafe = (int)(dot < fVar8 * 0.25);
       }
       if ((level.gentities[iVar5].sentient == (sentient_s *)0x0) &&
          (level.gentities[(in_ECX->Physics).iHitEntnum].sentient == (sentient_s *)0x0)) {
-        if ((local_54 != 0) &&
+        if ((bDoFailsafe != 0) &&
            (sVar1 = (in_ECX->Path).wPathLen, Actor_RecalcPath(in_stack_ffffff38),
            sVar1 == (in_ECX->Path).wPathLen)) {
           return 0;
@@ -4191,7 +4286,7 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
         if ((in_ECX->Path).wDodgeCount == 0) {
           (in_ECX->Path).wDodgeCount = -1;
         }
-        if (local_54 == 0) {
+        if (bDoFailsafe == 0) {
           (in_ECX->Physics).iHitEntnum = 0x3ff;
           return 1;
         }
@@ -4221,7 +4316,7 @@ int __cdecl Actor_PhysicsAndDodge(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_MoveAwayNoWorse(actor_s *param_1)
+int __cdecl Actor_MoveAwayNoWorse(actor_s *self)
 
 {
   bool bVar1;
@@ -4231,33 +4326,34 @@ int __cdecl Actor_MoveAwayNoWorse(actor_s *param_1)
   float fVar5;
   float fVar6;
   actor_s *paVar7;
-  int local_10;
-  int local_8;
+  int bResult;
+  actor_s *other;
+  int i;
   
-  local_10 = 1;
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    paVar4 = level.actors + local_8;
-    if ((((paVar4->inuse != 0) && (paVar4 != param_1)) &&
-        ((iVar2 = EntHandle::isDefined(&param_1->pCloseEnt), iVar2 == 0 ||
-         (pgVar3 = EntHandle::ent(&param_1->pCloseEnt), paVar4->ent != pgVar3)))) &&
-       (((fVar5 = (paVar4->ent->r).currentOrigin[0] - (param_1->Physics).vOrigin[0],
-         fVar6 = (paVar4->ent->r).currentOrigin[1] - (param_1->Physics).vOrigin[1],
+  bResult = 1;
+  for (i = 0; i < 0x10; i = i + 1) {
+    paVar4 = level.actors + i;
+    if ((((paVar4->inuse != 0) && (paVar4 != self)) &&
+        ((iVar2 = EntHandle::isDefined(&self->pCloseEnt), iVar2 == 0 ||
+         (pgVar3 = EntHandle::ent(&self->pCloseEnt), paVar4->ent != pgVar3)))) &&
+       (((fVar5 = (paVar4->ent->r).currentOrigin[0] - (self->Physics).vOrigin[0],
+         fVar6 = (paVar4->ent->r).currentOrigin[1] - (self->Physics).vOrigin[1],
          fVar5 * fVar5 + fVar6 * fVar6 < 900.0 &&
          (paVar7 = (actor_s *)(paVar4->ent->r).currentOrigin,
-         fVar5 = *(float *)paVar7 - (param_1->ent->r).currentOrigin[0],
-         fVar6 = (paVar4->ent->r).currentOrigin[1] - (param_1->ent->r).currentOrigin[1],
+         fVar5 = *(float *)paVar7 - (self->ent->r).currentOrigin[0],
+         fVar6 = (paVar4->ent->r).currentOrigin[1] - (self->ent->r).currentOrigin[1],
          900.0 <= fVar5 * fVar5 + fVar6 * fVar6)) &&
         (bVar1 = Actor_AtDifferentElevation
-                           ((param_1->ent->r).currentOrigin,(paVar4->ent->r).currentOrigin), !bVar1)
-        ))) {
+                           ((self->ent->r).currentOrigin,(paVar4->ent->r).currentOrigin), !bVar1))))
+    {
       iVar2 = EntHandle::isDefined(&paVar4->pCloseEnt);
       if ((iVar2 == 0) && (iVar2 = Actor_AtClaimNode(paVar7), iVar2 == 0)) {
-        EntHandle::setEnt(&paVar4->pCloseEnt,param_1->ent);
+        EntHandle::setEnt(&paVar4->pCloseEnt,self->ent);
       }
-      local_10 = 0;
+      bResult = 0;
     }
   }
-  return local_10;
+  return bResult;
 }
 
 
@@ -4268,7 +4364,7 @@ int __cdecl Actor_MoveAwayNoWorse(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *param_1,gentity_s *param_2,float *param_3)
+float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *self,gentity_s *pusher,float *pushDir)
 
 {
   float fVar1;
@@ -4278,12 +4374,13 @@ float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *param_1,gentity_s *param_
   code *pcVar5;
   bool bVar6;
   float10 fVar7;
-  float local_1c;
-  float local_18 [3];
-  float local_c;
+  float pushDist;
+  float speed;
+  float viewDir [3];
+  float moveDir;
   float local_8;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xb48,0,"%s"
                             );
     if (!bVar6) {
@@ -4292,7 +4389,7 @@ float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *param_1,gentity_s *param_
       return (float)fVar7;
     }
   }
-  if (param_1->ent == (gentity_s *)0x0) {
+  if (self->ent == (gentity_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xb49,0,"%s"
                             );
     if (!bVar6) {
@@ -4301,7 +4398,7 @@ float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *param_1,gentity_s *param_
       return (float)fVar7;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (pusher == (gentity_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xb4a,0,"%s"
                             );
     if (!bVar6) {
@@ -4310,7 +4407,7 @@ float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *param_1,gentity_s *param_
       return (float)fVar7;
     }
   }
-  if (param_2->client == (gclient_s *)0x0) {
+  if (pusher->client == (gclient_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xb4b,0,"%s"
                             );
     if (!bVar6) {
@@ -4319,25 +4416,25 @@ float __cdecl Actor_CalcultatePlayerPushDelta(actor_s *param_1,gentity_s *param_
       return (float)fVar7;
     }
   }
-  fVar1 = (param_1->ent->r).currentOrigin[0];
-  fVar2 = (param_2->r).currentOrigin[0];
-  fVar3 = (param_1->ent->r).currentOrigin[1];
-  fVar4 = (param_2->r).currentOrigin[1];
-  local_1c = Vec2NormalizeTo((param_2->client->ps).velocity,&local_c);
-  if (local_1c == 0.0) {
-    G_GetPlayerViewDirection(param_2,local_18,(float *)0x0,(float *)0x0);
-    Vec2NormalizeTo(local_18,&local_c);
+  fVar1 = (self->ent->r).currentOrigin[0];
+  fVar2 = (pusher->r).currentOrigin[0];
+  fVar3 = (self->ent->r).currentOrigin[1];
+  fVar4 = (pusher->r).currentOrigin[1];
+  speed = Vec2NormalizeTo((pusher->client->ps).velocity,&moveDir);
+  if (speed == 0.0) {
+    G_GetPlayerViewDirection(pusher,viewDir,(float *)0x0,(float *)0x0);
+    Vec2NormalizeTo(viewDir,&moveDir);
   }
-  *param_3 = local_8;
-  param_3[1] = -local_c;
-  if (*param_3 * (fVar1 - fVar2) + param_3[1] * (fVar3 - fVar4) < 0.0) {
-    *param_3 = -local_8;
-    param_3[1] = local_c;
+  *pushDir = local_8;
+  pushDir[1] = -moveDir;
+  if (*pushDir * (fVar1 - fVar2) + pushDir[1] * (fVar3 - fVar4) < 0.0) {
+    *pushDir = -local_8;
+    pushDir[1] = moveDir;
   }
-  if (local_1c < 60.0) {
-    local_1c = 60.0;
+  if (speed < 60.0) {
+    speed = 60.0;
   }
-  return local_1c * 0.05;
+  return speed * 0.05;
 }
 
 
@@ -4356,6 +4453,7 @@ bool __cdecl Actor_ShouldMoveAwayFromCloseEnt(actor_s *param_1)
   undefined1 uVar3;
   int iVar4;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xb6b,0,"%s"
@@ -4389,7 +4487,7 @@ bool __cdecl Actor_ShouldMoveAwayFromCloseEnt(actor_s *param_1)
 
 int __cdecl
 Actor_PhysicsCheckMoveAwayNoWorse
-          (actor_s *param_1,gentity_s *param_2,int param_3,float param_4,float param_5)
+          (actor_s *flags,gentity_s *distanceSqrd,int lengthSqrd,float param_4,float param_5)
 
 {
   int iVar1;
@@ -4397,16 +4495,18 @@ Actor_PhysicsCheckMoveAwayNoWorse
   int in_EDX;
   float fVar2;
   float fVar3;
+  gentity_s *other;
+  actor_s *self;
   
   fVar2 = *(float *)(in_EDX + 0x124) - (in_ECX->Physics).vOrigin[0];
   fVar3 = *(float *)(in_EDX + 0x128) - (in_ECX->Physics).vOrigin[1];
-  if ((((float)param_2 < fVar2 * fVar2 + fVar3 * fVar3) &&
+  if ((((float)distanceSqrd < fVar2 * fVar2 + fVar3 * fVar3) &&
       (fVar2 = (in_ECX->ent->r).currentOrigin[0] - (in_ECX->Physics).vOrigin[0],
       fVar3 = (in_ECX->ent->r).currentOrigin[1] - (in_ECX->Physics).vOrigin[1],
-      (float)param_3 < fVar2 * fVar2 + fVar3 * fVar3)) &&
+      (float)lengthSqrd < fVar2 * fVar2 + fVar3 * fVar3)) &&
      (iVar1 = Actor_MoveAwayNoWorse(in_ECX), iVar1 != 0)) {
     in_ECX->ent->flags = in_ECX->ent->flags & 0xe7ffffff;
-    in_ECX->ent->flags = in_ECX->ent->flags | (uint)param_1;
+    in_ECX->ent->flags = in_ECX->ent->flags | (uint)flags;
     return 1;
   }
   return 0;
@@ -4415,6 +4515,7 @@ Actor_PhysicsCheckMoveAwayNoWorse
 
 // 008FDC60  Actor_PhysicsMoveAway  (game_mp/actor_mp.cpp:2965)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -4427,30 +4528,30 @@ int __cdecl Actor_PhysicsMoveAway(actor_s *param_1)
   code *pcVar2;
   bool bVar3;
   int iVar4;
+  actor_s *in_ECX;
   float fVar5;
   float fVar6;
   actor_s *paVar7;
   undefined1 uVar8;
-  actor_s *paVar9;
-  gentity_s *pgVar10;
+  actor_s *flags;
   actor_s *in_stack_ffffff34;
-  actor_s *extraout_var;
-  actor_s *paVar11;
-  gentity_s *local_58;
+  actor_s *self;
+  int newFlags;
+  bool dodgeRight;
+  gentity_s *translation;
   sentient_s *local_54;
-  float local_4c;
-  gentity_s *local_40;
-  ai_state_t local_3c;
-  ai_state_t local_38;
-  actor_s *local_34;
-  PhysicsInputs local_30;
-  gentity_s *local_14;
-  gentity_s *local_10;
+  float distance;
+  gentity_s *other;
+  int NUM_ATTEMPTS;
+  int i;
+  float length;
+  PhysicsInputs physicsInputs;
+  float distanceSqrd;
+  gentity_s *vDelta;
   sentient_s *local_c;
-  float local_8;
+  float lengthSqrd;
   
   bVar3 = Actor_ShouldMoveAwayFromCloseEnt(in_stack_ffffff34);
-  paVar11 = extraout_var;
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xba3,0,
                                "%s"), !bVar3)) {
@@ -4458,7 +4559,7 @@ int __cdecl Actor_PhysicsMoveAway(actor_s *param_1)
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  iVar4 = EntHandle::isDefined(&paVar11->pCloseEnt);
+  iVar4 = EntHandle::isDefined(&in_ECX->pCloseEnt);
   if ((iVar4 == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xba4,0,
                                "%s"), !bVar3)) {
@@ -4466,93 +4567,94 @@ int __cdecl Actor_PhysicsMoveAway(actor_s *param_1)
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_40 = EntHandle::ent(&paVar11->pCloseEnt);
-  Actor_PhysicsBackupInputs(paVar11,&local_30);
-  pgVar10 = paVar11->ent;
-  (paVar11->Physics).vOrigin[0] = (pgVar10->r).currentOrigin[0];
-  (paVar11->Physics).vOrigin[1] = (pgVar10->r).currentOrigin[1];
-  (paVar11->Physics).vOrigin[2] = (pgVar10->r).currentOrigin[2];
-  if (local_40->client == (gclient_s *)0x0) {
-    local_10 = (gentity_s *)((paVar11->Physics).vOrigin[0] - (local_40->r).currentOrigin[0]);
-    local_c = (sentient_s *)((paVar11->Physics).vOrigin[1] - (local_40->r).currentOrigin[1]);
-    local_4c = Vec2Normalize((float *)&local_10);
-    if (local_4c == 0.0) {
-      local_10 = (gentity_s *)G_crandom();
+  other = EntHandle::ent(&in_ECX->pCloseEnt);
+  Actor_PhysicsBackupInputs(in_ECX,&physicsInputs);
+  pgVar1 = in_ECX->ent;
+  (in_ECX->Physics).vOrigin[0] = (pgVar1->r).currentOrigin[0];
+  (in_ECX->Physics).vOrigin[1] = (pgVar1->r).currentOrigin[1];
+  (in_ECX->Physics).vOrigin[2] = (pgVar1->r).currentOrigin[2];
+  if (other->client == (gclient_s *)0x0) {
+    vDelta = (gentity_s *)((in_ECX->Physics).vOrigin[0] - (other->r).currentOrigin[0]);
+    local_c = (sentient_s *)((in_ECX->Physics).vOrigin[1] - (other->r).currentOrigin[1]);
+    distance = Vec2Normalize((float *)&vDelta);
+    if (distance == 0.0) {
+      vDelta = (gentity_s *)G_crandom();
       local_c = (sentient_s *)G_crandom();
-      Vec2Normalize((float *)&local_10);
+      Vec2Normalize((float *)&vDelta);
     }
-    local_14 = (gentity_s *)(local_4c * local_4c);
-    paVar7 = (actor_s *)&local_58;
-    Actor_GetAnimDeltas(paVar7,(float *)in_stack_ffffff34,(float *)paVar11);
-    local_8 = (float)local_58 * (float)local_58 + (float)local_54 * (float)local_54;
-    if (local_8 < 2.2500002) {
-      local_8 = 2.2500002;
+    distanceSqrd = distance * distance;
+    paVar7 = (actor_s *)&translation;
+    Actor_GetAnimDeltas(paVar7,(float *)in_stack_ffffff34,(float *)in_ECX);
+    lengthSqrd = (float)translation * (float)translation + (float)local_54 * (float)local_54;
+    if (lengthSqrd < 2.2500002) {
+      lengthSqrd = 2.2500002;
     }
-    local_34 = (actor_s *)SQRT(local_8);
+    length = SQRT(lengthSqrd);
   }
   else {
-    fVar5 = (local_40->r).currentOrigin[0] - (paVar11->Physics).vOrigin[0];
-    fVar6 = (local_40->r).currentOrigin[1] - (paVar11->Physics).vOrigin[1];
-    local_14 = (gentity_s *)(fVar5 * fVar5 + fVar6 * fVar6);
-    paVar7 = (actor_s *)&local_10;
-    local_34 = (actor_s *)Actor_CalcultatePlayerPushDelta(paVar11,local_40,(float *)paVar7);
-    local_8 = (float)local_34 * (float)local_34;
+    fVar5 = (other->r).currentOrigin[0] - (in_ECX->Physics).vOrigin[0];
+    fVar6 = (other->r).currentOrigin[1] - (in_ECX->Physics).vOrigin[1];
+    distanceSqrd = fVar5 * fVar5 + fVar6 * fVar6;
+    paVar7 = (actor_s *)&vDelta;
+    length = Actor_CalcultatePlayerPushDelta(in_ECX,other,(float *)paVar7);
+    lengthSqrd = length * length;
   }
-  local_8 = local_8 * 0.25;
-  (paVar11->Physics).vWishDelta[0] = (float)local_34 * (float)local_10;
-  (paVar11->Physics).vWishDelta[1] = (float)local_34 * (float)local_c;
-  iVar4 = Actor_Physics(&paVar11->Physics);
+  lengthSqrd = lengthSqrd * 0.25;
+  (in_ECX->Physics).vWishDelta[0] = length * (float)vDelta;
+  (in_ECX->Physics).vWishDelta[1] = length * (float)local_c;
+  iVar4 = Actor_Physics(&in_ECX->Physics);
   if (iVar4 == 0) {
-    paVar11->ent->flags = paVar11->ent->flags & 0xe7ffffff;
+    in_ECX->ent->flags = in_ECX->ent->flags & 0xe7ffffff;
     iVar4 = 0;
   }
   else {
-    paVar9 = (actor_s *)0x0;
-    pgVar10 = local_14;
+    flags = (actor_s *)0x0;
+    fVar5 = distanceSqrd;
     iVar4 = Actor_PhysicsCheckMoveAwayNoWorse
-                      ((actor_s *)0x0,local_14,(int)local_8,(float)paVar7,(float)in_stack_ffffff34);
+                      ((actor_s *)0x0,(gentity_s *)distanceSqrd,(int)lengthSqrd,(float)paVar7,
+                       (float)in_stack_ffffff34);
     if (iVar4 == 0) {
-      if ((paVar11->Physics).groundEntNum == 0x3ff) {
+      if ((in_ECX->Physics).groundEntNum == 0x3ff) {
         iVar4 = 1;
       }
       else {
-        local_3c = AIS_TURRET;
-        local_38 = AIS_INVALID;
-        while ((uVar8 = SUB41(paVar9,0), (int)local_38 < 2 &&
-               ((paVar11->Physics).iHitEntnum != 0x3ff))) {
-          Vec2Normalize((paVar11->Physics).vHitNormal);
-          paVar7 = (actor_s *)((float)local_34 * 0.75);
-          local_8 = local_8 * 0.5625;
-          local_34 = paVar7;
-          paVar9 = (actor_s *)Actor_Physics_GetLeftOrRightDodge(paVar7,(bool)uVar8,(float)pgVar10);
-          Actor_PhysicsRestoreInputs(paVar11,&local_30);
-          pgVar1 = paVar11->ent;
-          (paVar11->Physics).vOrigin[0] = (pgVar1->r).currentOrigin[0];
-          (paVar11->Physics).vOrigin[1] = (pgVar1->r).currentOrigin[1];
-          (paVar11->Physics).vOrigin[2] = (pgVar1->r).currentOrigin[2];
-          iVar4 = Actor_Physics(&paVar11->Physics);
+        NUM_ATTEMPTS = 2;
+        i = 0;
+        while ((uVar8 = SUB41(flags,0), i < 2 && ((in_ECX->Physics).iHitEntnum != 0x3ff))) {
+          Vec2Normalize((in_ECX->Physics).vHitNormal);
+          paVar7 = (actor_s *)(length * 0.75);
+          lengthSqrd = lengthSqrd * 0.5625;
+          length = (float)paVar7;
+          flags = (actor_s *)Actor_Physics_GetLeftOrRightDodge(paVar7,(bool)uVar8,fVar5);
+          Actor_PhysicsRestoreInputs(in_ECX,&physicsInputs);
+          pgVar1 = in_ECX->ent;
+          (in_ECX->Physics).vOrigin[0] = (pgVar1->r).currentOrigin[0];
+          (in_ECX->Physics).vOrigin[1] = (pgVar1->r).currentOrigin[1];
+          (in_ECX->Physics).vOrigin[2] = (pgVar1->r).currentOrigin[2];
+          iVar4 = Actor_Physics(&in_ECX->Physics);
           if (iVar4 == 0) {
-            paVar11->ent->flags = paVar11->ent->flags & 0xe7ffffff;
+            in_ECX->ent->flags = in_ECX->ent->flags & 0xe7ffffff;
             return 0;
           }
           iVar4 = Actor_PhysicsCheckMoveAwayNoWorse
-                            (paVar9,local_14,(int)local_8,(float)paVar7,(float)paVar9);
+                            (flags,(gentity_s *)distanceSqrd,(int)lengthSqrd,(float)paVar7,
+                             (float)flags);
           if (iVar4 != 0) {
             return 1;
           }
-          local_38 = local_38 + AIS_DEFAULT;
+          i = i + 1;
         }
-        (paVar11->Physics).iHitEntnum = (local_40->s).number;
-        if ((local_40->actor != (actor_s *)0x0) &&
-           (iVar4 = EntHandle::isDefined(&local_40->actor->pCloseEnt), iVar4 == 0)) {
-          EntHandle::setEnt(&local_40->actor->pCloseEnt,paVar11->ent);
+        (in_ECX->Physics).iHitEntnum = (other->s).number;
+        if ((other->actor != (actor_s *)0x0) &&
+           (iVar4 = EntHandle::isDefined(&other->actor->pCloseEnt), iVar4 == 0)) {
+          EntHandle::setEnt(&other->actor->pCloseEnt,in_ECX->ent);
         }
-        paVar11->ent->flags = paVar11->ent->flags & 0xe7ffffff;
-        Actor_PhysicsRestoreInputs(paVar11,&local_30);
-        pgVar10 = paVar11->ent;
-        (paVar11->Physics).vOrigin[0] = (pgVar10->r).currentOrigin[0];
-        (paVar11->Physics).vOrigin[1] = (pgVar10->r).currentOrigin[1];
-        (paVar11->Physics).vOrigin[2] = (pgVar10->r).currentOrigin[2];
+        in_ECX->ent->flags = in_ECX->ent->flags & 0xe7ffffff;
+        Actor_PhysicsRestoreInputs(in_ECX,&physicsInputs);
+        pgVar1 = in_ECX->ent;
+        (in_ECX->Physics).vOrigin[0] = (pgVar1->r).currentOrigin[0];
+        (in_ECX->Physics).vOrigin[1] = (pgVar1->r).currentOrigin[1];
+        (in_ECX->Physics).vOrigin[2] = (pgVar1->r).currentOrigin[2];
         iVar4 = 1;
       }
     }
@@ -4566,7 +4668,6 @@ int __cdecl Actor_PhysicsMoveAway(actor_s *param_1)
 
 // 008FC7B0  Actor_DoMove  (game_mp/actor_mp.cpp:3075)
 
-/* WARNING: Type propagation algorithm not settling */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -4583,25 +4684,26 @@ void __cdecl Actor_DoMove(actor_s *param_1)
   int *in_ECX;
   float fVar6;
   actor_s *paVar7;
-  float local_350;
+  actor_s *self;
+  float right;
   float local_34c;
   float local_348;
-  float local_344;
+  float forward;
   float local_340;
   float local_33c;
-  pathnode_t *local_338;
-  int local_334;
-  float local_330;
-  float local_32c;
-  short local_328;
-  float local_324;
-  pathnode_t *local_320;
-  pathsort_t local_31c [64];
-  float local_18;
+  pathnode_t *node;
+  int iNodeCount;
+  float bestDist;
+  float dist;
+  ushort oldGroundEntNum;
+  float deltaHeight;
+  pathnode_t *pTestNode;
+  pathsort_t nodes [64];
+  float vOrigin;
   undefined4 local_14;
   undefined4 local_10;
-  int local_c;
-  int local_8;
+  int bSuccess;
+  int i;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xc12,0,
@@ -4663,18 +4765,18 @@ void __cdecl Actor_DoMove(actor_s *param_1)
     (*pcVar3)();
     return;
   }
-  local_328 = (short)in_ECX[0x93];
+  oldGroundEntNum = *(ushort *)(in_ECX + 0x93);
   paVar7 = (actor_s *)in_ECX[0x9d];
   if (paVar7 != (actor_s *)&DAT_00000001) {
-    YawVectors((float)in_ECX[0x4f],&local_344,&local_350);
+    YawVectors((float)in_ECX[0x4f],&forward,&right);
     fVar1 = (float)in_ECX[0x98];
     fVar6 = (float)in_ECX[0x99];
     fVar2 = (float)in_ECX[0x9a];
-    in_ECX[0x98] = (int)(fVar1 * local_344);
+    in_ECX[0x98] = (int)(fVar1 * forward);
     in_ECX[0x99] = (int)(fVar1 * local_340);
     in_ECX[0x9a] = (int)(fVar1 * local_33c);
     fVar6 = -fVar6;
-    in_ECX[0x98] = (int)(fVar6 * local_350 + (float)in_ECX[0x98]);
+    in_ECX[0x98] = (int)(fVar6 * right + (float)in_ECX[0x98]);
     in_ECX[0x99] = (int)(fVar6 * local_34c + (float)in_ECX[0x99]);
     in_ECX[0x9a] = (int)(fVar6 * local_348 + (float)in_ECX[0x9a]);
     in_ECX[0x9a] = (int)((float)in_ECX[0x9a] + fVar2);
@@ -4684,23 +4786,23 @@ void __cdecl Actor_DoMove(actor_s *param_1)
       (bVar4 = Actor_HasPath(paVar7), bVar4)) &&
      (iVar5 = EntHandle::isDefined((EntHandle *)((int)in_ECX + 0x176e)), iVar5 == 0)) {
 LAB_008fcf81:
-    local_c = Actor_PhysicsAndDodge(paVar7);
-    if (local_c != 0) {
+    bSuccess = Actor_PhysicsAndDodge(paVar7);
+    if (bSuccess != 0) {
       if ((((float)in_ECX[0x369] <= 4.0) || ((float)in_ECX[0x9a] <= 0.0)) ||
          (*(float *)(*in_ECX + 300) < (float)in_ECX[0x8f])) {
         if (*(char *)(in_ECX[1] + 0x75) != '\0') {
           Sentient_InvalidateNearestNode((sentient_s *)paVar7);
           Sentient_NearestNode((sentient_s *)paVar7);
           if (*(char *)(in_ECX[1] + 0x75) != '\0') {
-            local_c = 0;
+            bSuccess = 0;
           }
         }
       }
       else {
-        local_c = 0;
+        bSuccess = 0;
       }
     }
-    if (local_c == 0) {
+    if (bSuccess == 0) {
       iVar5 = *in_ECX;
       in_ECX[0x8d] = (int)(*(float *)(iVar5 + 0x124) + (float)in_ECX[0x98]);
       in_ECX[0x8e] = (int)(*(float *)(iVar5 + 0x128) + (float)in_ECX[0x99]);
@@ -4715,8 +4817,8 @@ LAB_008fcf81:
   else {
     bVar4 = Actor_ShouldMoveAwayFromCloseEnt(paVar7);
     if (bVar4) {
-      local_c = Actor_PhysicsMoveAway(paVar7);
-      if (((local_c == 0) && (in_ECX[0x8a] == 1)) && (bVar4 = Actor_HasPath(paVar7), bVar4))
+      bSuccess = Actor_PhysicsMoveAway(paVar7);
+      if (((bSuccess == 0) && (in_ECX[0x8a] == 1)) && (bVar4 = Actor_HasPath(paVar7), bVar4))
       goto LAB_008fcf81;
     }
     else {
@@ -4725,44 +4827,44 @@ LAB_008fcf81:
       in_ECX[0x8d] = *(int *)(iVar5 + 0x124);
       in_ECX[0x8e] = *(int *)(iVar5 + 0x128);
       in_ECX[0x8f] = *(int *)(iVar5 + 300);
-      local_c = Actor_Physics((actor_physics_t *)(in_ECX + 0x8d));
+      bSuccess = Actor_Physics((actor_physics_t *)(in_ECX + 0x8d));
     }
-    if (local_c == 0) {
+    if (bSuccess == 0) {
       iVar5 = *in_ECX;
-      local_18 = *(float *)(iVar5 + 0x124);
+      vOrigin = *(float *)(iVar5 + 0x124);
       local_14 = *(undefined4 *)(iVar5 + 0x128);
       local_10 = *(undefined4 *)(iVar5 + 300);
-      local_334 = Path_NodesInCylinder((float *)(*in_ECX + 0x124),384.0,128.0,local_31c,0x40,-1);
-      local_338 = (pathnode_t *)0x0;
-      local_330 = 3.4028235e+38;
-      for (local_8 = 0; local_8 < local_334; local_8 = local_8 + 1) {
-        local_320 = local_31c[local_8].node;
-        local_32c = Vec3DistanceSq(&local_18,(local_320->constant).vOrigin);
-        if (local_32c <= local_330) {
-          local_338 = local_320;
-          local_330 = local_32c;
+      iNodeCount = Path_NodesInCylinder((float *)(*in_ECX + 0x124),384.0,128.0,nodes,0x40,-1);
+      node = (pathnode_t *)0x0;
+      bestDist = 3.4028235e+38;
+      for (i = 0; i < iNodeCount; i = i + 1) {
+        pTestNode = nodes[i].node;
+        dist = Vec3DistanceSq(&vOrigin,(pTestNode->constant).vOrigin);
+        if (dist <= bestDist) {
+          node = pTestNode;
+          bestDist = dist;
         }
       }
-      if (local_338 != (pathnode_t *)0x0) {
-        local_324 = (local_338->constant).vOrigin[2] - *(float *)(*in_ECX + 300);
-        if (local_324 <= 8.0) {
-          if (local_324 < 0.0) {
-            if (-18.0 <= local_324) {
-              local_324 = 0.0;
+      if (node != (pathnode_t *)0x0) {
+        deltaHeight = (node->constant).vOrigin[2] - *(float *)(*in_ECX + 300);
+        if (deltaHeight <= 8.0) {
+          if (deltaHeight < 0.0) {
+            if (-18.0 <= deltaHeight) {
+              deltaHeight = 0.0;
             }
             else {
-              local_324 = -8.0;
+              deltaHeight = -8.0;
             }
           }
         }
         else {
-          local_324 = 8.0;
+          deltaHeight = 8.0;
         }
         iVar5 = *in_ECX;
         in_ECX[0x8d] = *(int *)(iVar5 + 0x124);
         in_ECX[0x8e] = *(int *)(iVar5 + 0x128);
         in_ECX[0x8f] = *(int *)(iVar5 + 300);
-        in_ECX[0x8f] = (int)((float)in_ECX[0x8f] + local_324);
+        in_ECX[0x8f] = (int)((float)in_ECX[0x8f] + deltaHeight);
         in_ECX[0x92] = 0;
       }
     }
@@ -4773,7 +4875,7 @@ LAB_008fcf81:
   *(int *)(iVar5 + 300) = in_ECX[0x8f];
   in_ECX[0x9d] = 0;
   *(short *)(*in_ECX + 0xc0) = (short)in_ECX[0x93];
-  if (local_328 != (short)in_ECX[0x93]) {
+  if (oldGroundEntNum != *(ushort *)(in_ECX + 0x93)) {
     Scr_Notify((gentity_s *)*in_ECX,scr_const.groundEntChanged,0);
   }
   return;
@@ -4787,7 +4889,7 @@ LAB_008fcf81:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl actor_controller(gentity_s *param_1,int *param_2)
+void __cdecl actor_controller(gentity_s *self,int *partBits)
 
 {
   float fVar1;
@@ -4796,34 +4898,37 @@ void __cdecl actor_controller(gentity_s *param_1,int *param_2)
   float10 fVar4;
   bool bVar5;
   int iVar6;
-  DObjAnimMat *pDVar7;
-  actor_prone_info_s *paVar8;
-  float10 fVar9;
-  float fVar10;
+  DObjAnimMat *rotTrans_00;
+  actor_prone_info_s *pInfo;
+  float10 fVar7;
+  float fVar8;
+  float fFrac;
+  DObjAnimMat *rotTrans;
+  actor_prone_info_s *pProneInfo;
   
-  if ((param_1->actor == (actor_s *)0x0) &&
+  if ((self->actor == (actor_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xca1,0,
                                "%s"), !bVar5)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  paVar2 = param_1->actor;
-  paVar8 = &paVar2->ProneInfo;
-  iVar6 = BG_ActorIsProne(paVar8,level.time);
-  if ((iVar6 != 0) && (iVar6 = SV_DObjSetRotTransIndex(param_1,param_2,0), iVar6 != 0)) {
-    fVar10 = BG_GetActorProneFraction(paVar8,level.time);
-    pDVar7 = SV_DObjGetRotTransArray(param_1);
-    if (pDVar7 != (DObjAnimMat *)0x0) {
+  paVar2 = self->actor;
+  pInfo = &paVar2->ProneInfo;
+  iVar6 = BG_ActorIsProne(pInfo,level.time);
+  if ((iVar6 != 0) && (iVar6 = SV_DObjSetRotTransIndex(self,partBits,0), iVar6 != 0)) {
+    fVar8 = BG_GetActorProneFraction(pInfo,level.time);
+    rotTrans_00 = SV_DObjGetRotTransArray(self);
+    if (rotTrans_00 != (DObjAnimMat *)0x0) {
       fVar1 = (paVar2->ProneInfo).field6_0x10.fTorsoPitch;
-      pDVar7->quat[0] = 0.0;
-      pDVar7->quat[2] = 0.0;
-      fVar9 = (float10)(fVar1 * fVar10 * 0.008726646);
-      fVar4 = (float10)fcos(fVar9);
-      fVar9 = (float10)fsin(fVar9);
-      pDVar7->quat[3] = (float)fVar4;
-      pDVar7->quat[1] = (float)fVar9;
-      DObjSetTrans(pDVar7,vec3_origin);
+      rotTrans_00->quat[0] = 0.0;
+      rotTrans_00->quat[2] = 0.0;
+      fVar7 = (float10)(fVar1 * fVar8 * 0.008726646);
+      fVar4 = (float10)fcos(fVar7);
+      fVar7 = (float10)fsin(fVar7);
+      rotTrans_00->quat[3] = (float)fVar4;
+      rotTrans_00->quat[1] = (float)fVar7;
+      DObjSetTrans(rotTrans_00,vec3_origin);
     }
   }
   return;
@@ -4838,6 +4943,9 @@ bool __cdecl Actor_PointNear(float *param_1,float *param_2)
   bool bVar1;
   float *in_ECX;
   float *in_EDX;
+  float *vGoalPos;
+  float *vPoint;
+  float deltaHeight;
   
   if ((in_ECX[2] - in_EDX[2]) * (in_ECX[2] - in_EDX[2]) <= 6400.0) {
     bVar1 = (*in_EDX - *in_ECX) * (*in_EDX - *in_ECX) +
@@ -4862,6 +4970,9 @@ bool __cdecl Actor_PointNearNode(float *param_1,pathnode_t *param_2)
   int in_EDX;
   float fVar2;
   float fVar3;
+  pathnode_t *node;
+  float *vPoint;
+  float deltaHeight;
   
   fVar2 = in_ECX[2] - *(float *)(in_EDX + 0x1c);
   if (fVar2 * fVar2 <= 6400.0) {
@@ -4878,8 +4989,8 @@ bool __cdecl Actor_PointNearNode(float *param_1,pathnode_t *param_2)
 
 // 008FEA30  Actor_PointAtGoal  (game_mp/actor_mp.cpp:3288)
 
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -4890,6 +5001,10 @@ bool __cdecl Actor_PointAtGoal(float *param_1,actor_goal_s *param_2)
   int iVar2;
   float *in_ECX;
   float *in_EDX;
+  actor_goal_s *goal;
+  float *vPoint;
+  gentity_s *volume;
+  float deltaHeight;
   
   if ((in_ECX[2] - in_EDX[2]) * (in_ECX[2] - in_EDX[2]) <= in_EDX[7] * in_EDX[7]) {
     if ((*in_EDX - *in_ECX) * (*in_EDX - *in_ECX) +
@@ -4913,16 +5028,19 @@ bool __cdecl Actor_PointAtGoal(float *param_1,actor_goal_s *param_2)
 
 // 008FEB10  Actor_PointNearPoint  (game_mp/actor_mp.cpp:3333)
 
-bool __cdecl Actor_PointNearPoint(float *param_1,float *param_2,float param_3)
+bool __cdecl Actor_PointNearPoint(float *buffer,float *param_2,float param_3)
 
 {
   bool bVar1;
   float *in_ECX;
   float *in_EDX;
+  float *vGoalPos;
+  float *vPoint;
+  float deltaHeight;
   
   if ((in_ECX[2] - in_EDX[2]) * (in_ECX[2] - in_EDX[2]) <= 6400.0) {
     bVar1 = (*in_EDX - *in_ECX) * (*in_EDX - *in_ECX) +
-            (in_EDX[1] - in_ECX[1]) * (in_EDX[1] - in_ECX[1]) <= (float)param_1 * (float)param_1;
+            (in_EDX[1] - in_ECX[1]) * (in_EDX[1] - in_ECX[1]) <= (float)buffer * (float)buffer;
   }
   else {
     bVar1 = false;
@@ -4939,6 +5057,9 @@ bool __cdecl Actor_PointAt(float *param_1,float *param_2)
   bool bVar1;
   float *in_ECX;
   float *in_EDX;
+  float *vGoalPos;
+  float *vPoint;
+  float deltaHeight;
   
   if ((in_ECX[2] - in_EDX[2]) * (in_ECX[2] - in_EDX[2]) <= 6400.0) {
     bVar1 = (*in_EDX - *in_ECX) * (*in_EDX - *in_ECX) +
@@ -4953,6 +5074,8 @@ bool __cdecl Actor_PointAt(float *param_1,float *param_2)
 
 // 008FEC50  Actor_IsAtGoal  (game_mp/actor_mp.cpp:3361)
 
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: ent */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -4961,67 +5084,70 @@ bool __cdecl Actor_PointAt(float *param_1,float *param_2)
 bool __cdecl Actor_IsAtGoal(actor_s *param_1)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  undefined1 uVar3;
+  gentity_s *pgVar1;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
   actor_s *in_ECX;
-  gentity_s *pgVar4;
+  actor_s *self;
+  gentity_s *ent;
   
   if ((in_ECX == (actor_s *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd26,0,
-                               "%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    uVar3 = (*pcVar1)();
-    return (bool)uVar3;
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd26,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return (bool)uVar4;
   }
   if ((in_ECX->sentient == (sentient_s *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd27,0,
-                               "%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    uVar3 = (*pcVar1)();
-    return (bool)uVar3;
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd27,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return (bool)uVar4;
   }
-  pgVar4 = in_ECX->ent;
-  if ((pgVar4 == (gentity_s *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd2a,0,
-                               "%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    uVar3 = (*pcVar1)();
-    return (bool)uVar3;
+  pgVar1 = in_ECX->ent;
+  if ((pgVar1 == (gentity_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd2a,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return (bool)uVar4;
   }
-  bVar2 = Actor_PointAtGoal((float *)in_ECX,(actor_goal_s *)pgVar4);
-  if (bVar2) {
-    bVar2 = Actor_HasPath(in_ECX);
-    if (bVar2) {
-      bVar2 = Actor_PointAtGoal((float *)in_ECX,(actor_goal_s *)pgVar4);
-      if (bVar2) {
+  bVar3 = Actor_PointAtGoal((float *)in_ECX,(actor_goal_s *)pgVar1);
+  if (bVar3) {
+    bVar3 = Actor_HasPath(in_ECX);
+    if (bVar3) {
+      bVar3 = Actor_PointAtGoal((float *)in_ECX,(actor_goal_s *)pgVar1);
+      if (bVar3) {
         if ((in_ECX->sentient->pClaimedNode != (pathnode_t *)0x0) &&
-           (bVar2 = Actor_KeepClaimedNode(in_ECX), !bVar2)) {
-          bVar2 = Actor_PointAt((float *)in_ECX,(float *)pgVar4);
-          return bVar2;
+           (bVar3 = Actor_KeepClaimedNode(in_ECX), !bVar3)) {
+          bVar3 = Actor_PointAt((float *)in_ECX,(float *)pgVar1);
+          return bVar3;
         }
-        bVar2 = true;
+        bVar3 = true;
       }
       else {
-        bVar2 = false;
+        bVar3 = false;
       }
     }
     else if (in_ECX->sentient->pClaimedNode == (pathnode_t *)0x0) {
-      bVar2 = true;
+      bVar3 = true;
     }
     else {
-      bVar2 = Actor_IsNearClaimedNode(in_ECX);
+      bVar3 = Actor_IsNearClaimedNode(in_ECX);
     }
   }
   else {
-    bVar2 = false;
+    bVar3 = false;
   }
-  return bVar2;
+  return bVar3;
 }
 
 
 // 008FEDA0  Actor_IsAtScriptGoal  (game_mp/actor_mp.cpp:3395)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5035,6 +5161,7 @@ bool __cdecl Actor_IsAtScriptGoal(actor_s *param_1)
   undefined1 uVar3;
   actor_s *in_ECX;
   actor_goal_s *unaff_EBP;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd46,0,"%s"
@@ -5082,6 +5209,7 @@ bool __cdecl Actor_IsAtScriptGoal(actor_s *param_1)
 
 // 008FEE90  Actor_IsNearClaimedNode  (game_mp/actor_mp.cpp:3415)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5095,6 +5223,7 @@ bool __cdecl Actor_IsNearClaimedNode(actor_s *param_1)
   undefined1 uVar3;
   actor_s *in_ECX;
   pathnode_t *unaff_EBP;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd5a,0,"%s"
@@ -5145,13 +5274,15 @@ bool __cdecl Actor_IsNearClaimedNode(actor_s *param_1)
 
 // 008FEF90  Actor_IsKnownEnemyInRegion  (game_mp/actor_mp.cpp:3435)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: volume */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 gentity_s * __cdecl
-Actor_IsKnownEnemyInRegion(actor_s *param_1,gentity_s *param_2,float *param_3,float param_4)
+Actor_IsKnownEnemyInRegion(actor_s *position,gentity_s *radius,float *param_3,float param_4)
 
 {
   actor_s *paVar1;
@@ -5164,7 +5295,12 @@ Actor_IsKnownEnemyInRegion(actor_s *param_1,gentity_s *param_2,float *param_3,fl
   sentient_s *psVar6;
   float fVar7;
   float fVar8;
-  uint local_8;
+  gentity_s *volume;
+  actor_s *self;
+  sentient_info_t *info;
+  sentient_s *sentient;
+  actor_s *actor;
+  uint i;
   
   if ((in_ECX == 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd6c,0,
@@ -5173,26 +5309,26 @@ Actor_IsKnownEnemyInRegion(actor_s *param_1,gentity_s *param_2,float *param_3,fl
     pgVar4 = (gentity_s *)(*pcVar2)();
     return pgVar4;
   }
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((position == (actor_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xd6d,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pgVar4 = (gentity_s *)(*pcVar2)();
     return pgVar4;
   }
-  if (((float)param_2 != 0.0) || (in_EDX != (actor_s *)0x0)) {
-    for (local_8 = 0; local_8 < 0x30; local_8 = local_8 + 1) {
-      iVar5 = (int)in_ECX + 0xf20 + local_8 * 0x28;
-      if (((((level.sentients[local_8].inuse != false) && (*(int *)(iVar5 + 0x10) != 0)) &&
+  if (((float)radius != 0.0) || (in_EDX != (actor_s *)0x0)) {
+    for (i = 0; i < 0x30; i = i + 1) {
+      iVar5 = (int)in_ECX + 0xf20 + i * 0x28;
+      if (((((level.sentients[i].inuse != false) && (*(int *)(iVar5 + 0x10) != 0)) &&
            (level.time - *(int *)(iVar5 + 0x10) < 0x2711)) &&
-          ((psVar6 = level.sentients + local_8,
+          ((psVar6 = level.sentients + i,
            psVar6->eTeam != *(team_t *)(*(int *)((int)in_ECX + 4) + 4) &&
            ((float)psVar6->ent->health != 0.0)))) &&
          ((paVar1 = psVar6->ent->actor, paVar1 == (actor_s *)0x0 ||
           ((paVar1->ignoreForFixedNodeSafeCheck == false && (bVar3 = Actor_IsDying(in_EDX), !bVar3))
           )))) {
         if (in_EDX == (actor_s *)0x0) {
-          bVar3 = Actor_PointNearPoint((float *)param_2,(float *)0x0,in_ECX);
+          bVar3 = Actor_PointNearPoint((float *)radius,(float *)0x0,in_ECX);
           if (bVar3) goto LAB_008ff1ad;
         }
         else {
@@ -5203,7 +5339,7 @@ Actor_IsKnownEnemyInRegion(actor_s *param_1,gentity_s *param_2,float *param_3,fl
              && (iVar5 = SV_EntityContact((float *)(iVar5 + 0x18),(float *)(iVar5 + 0x18),
                                           (gentity_s *)in_EDX), iVar5 != 0)) {
 LAB_008ff1ad:
-            return level.sentients[local_8].ent;
+            return level.sentients[i].ent;
           }
         }
       }
@@ -5227,33 +5363,34 @@ bool __cdecl Actor_FindPathToGoalDirectInternal(actor_s *param_1)
   bool bVar2;
   undefined1 uVar3;
   int *in_ECX;
-  actor_s *paVar4;
-  float *pfVar5;
-  actor_goal_s *paVar6;
-  float *pfVar7;
-  int iVar8;
-  sentient_s *psVar9;
-  float (*pafVar10) [2];
+  actor_s *vGoalPos_00;
+  float *pfVar4;
+  actor_goal_s *paVar5;
+  float *vGoalPos_01;
+  int iVar6;
+  sentient_s *fDist;
+  int iVar7;
   actor_s *in_stack_fffffc6c;
   actor_goal_s *in_stack_fffffc70;
-  gentity_s *local_378;
+  actor_s *self;
+  gentity_s *vGoalPos;
   sentient_s *local_374;
   float local_370;
-  float local_36c;
+  float perp;
   float local_368;
-  undefined1 local_364 [788];
-  float local_50;
-  actor_s *local_4c;
-  float local_48;
+  undefined1 dist [788];
+  float stepheight;
+  pathnode_t *pNearestNode;
+  float vNewGoalPos;
   float local_44;
   float local_40;
-  float (*local_3c) [2];
-  pathnode_t *local_38;
-  int local_34;
-  gjkcc_input_t *local_30;
-  int local_2c;
-  pathnode_t *local_28;
-  float local_24 [8];
+  int iPlaneCount;
+  pathnode_t *pNodeTo;
+  int nodeCount;
+  float sideMove;
+  int eTeam;
+  pathnode_t *pNodeTo2;
+  float vNormal [8];
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xda2,0,
@@ -5282,97 +5419,98 @@ bool __cdecl Actor_FindPathToGoalDirectInternal(actor_s *param_1)
           (bVar2 = Actor_PointAtGoal((float *)in_stack_fffffc6c,in_stack_fffffc70), bVar2)) {
     return true;
   }
-  local_30 = (gjkcc_input_t *)ABS((float)in_ECX[0x385]);
-  if ((float)in_ECX[0x396] - 15.0 < (float)local_30) {
-    local_30 = (gjkcc_input_t *)((float)in_ECX[0x396] - 15.0);
+  sideMove = ABS((float)in_ECX[0x385]);
+  if ((float)in_ECX[0x396] - 15.0 < sideMove) {
+    sideMove = (float)in_ECX[0x396] - 15.0;
   }
-  if (0.0 < (float)local_30) {
-    local_3c = (float (*) [2])0x0;
+  if (0.0 < sideMove) {
+    iPlaneCount = 0;
     Sentient_InvalidateNearestNode((sentient_s *)in_stack_fffffc6c);
-    if (local_3c == (float (*) [2])0x0) {
-      local_4c = (actor_s *)Sentient_NearestNode((sentient_s *)in_stack_fffffc6c);
-      if (local_4c == (actor_s *)0x0) {
+    if (iPlaneCount == 0) {
+      pNearestNode = Sentient_NearestNode((sentient_s *)in_stack_fffffc6c);
+      if (pNearestNode == (pathnode_t *)0x0) {
         return false;
       }
-      pafVar10 = (float (*) [2])0x0;
-      psVar9 = (sentient_s *)0x40;
-      local_38 = Path_NearestNode((float *)(in_ECX + 0x390),(pathsort_t *)(local_364 + 0x10),-2,
-                                  192.0,&local_34,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
+      iVar7 = 0;
+      fDist = (sentient_s *)0x40;
+      pNodeTo = Path_NearestNode((float *)(in_ECX + 0x390),(pathsort_t *)(dist + 0x10),-2,192.0,
+                                 &nodeCount,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
     }
     else {
-      psVar9 = (sentient_s *)local_364;
-      pafVar10 = local_3c;
-      local_4c = (actor_s *)
-                 Sentient_NearestNodeSuppressed
-                           (psVar9,local_3c,(float *)in_stack_fffffc6c,(int)in_stack_fffffc70);
-      if (local_4c == (actor_s *)0x0) {
+      fDist = (sentient_s *)dist;
+      iVar7 = iPlaneCount;
+      pNearestNode = Sentient_NearestNodeSuppressed
+                               (fDist,(float (*) [2])iPlaneCount,(float *)in_stack_fffffc6c,
+                                (int)in_stack_fffffc70);
+      if (pNearestNode == (pathnode_t *)0x0) {
         return false;
       }
-      local_38 = Path_NearestNodeNotCrossPlanes
-                           ((float *)(in_ECX + 0x390),(pathsort_t *)(local_364 + 0x10),-2,192.0,
-                            (float (*) [2])local_24,(float *)local_364,(int)local_3c,&local_34,0x40,
-                            NEAREST_NODE_DO_HEIGHT_CHECK);
+      pNodeTo = Path_NearestNodeNotCrossPlanes
+                          ((float *)(in_ECX + 0x390),(pathsort_t *)(dist + 0x10),-2,192.0,
+                           (float (*) [2])vNormal,(float *)dist,iPlaneCount,&nodeCount,0x40,
+                           NEAREST_NODE_DO_HEIGHT_CHECK);
     }
-    if (local_38 == (pathnode_t *)0x0) {
+    if (pNodeTo == (pathnode_t *)0x0) {
       bVar2 = false;
     }
     else {
-      local_36c = (float)in_ECX[0x368];
+      perp = (float)in_ECX[0x368];
       local_368 = -(float)in_ECX[0x367];
       if ((float)in_ECX[0x385] <= 0.0 && (float)in_ECX[0x385] != 0.0) {
-        local_30 = (gjkcc_input_t *)((uint)local_30 ^ 0x80000000);
+        sideMove = -sideMove;
       }
-      local_48 = (float)local_30 * local_36c + (float)in_ECX[0x390];
-      local_44 = (float)local_30 * local_368 + (float)in_ECX[0x391];
+      vNewGoalPos = sideMove * perp + (float)in_ECX[0x390];
+      local_44 = sideMove * local_368 + (float)in_ECX[0x391];
       local_40 = (float)in_ECX[0x392];
-      local_2c = *(int *)(in_ECX[1] + 4);
+      eTeam = *(int *)(in_ECX[1] + 4);
       if ((char)in_ECX[0xa6] == '\0') {
-        local_50 = 18.0;
+        stepheight = 18.0;
       }
       else {
-        local_50 = 10.0;
+        stepheight = 10.0;
       }
-      iVar8 = 1;
-      pfVar7 = &local_48;
-      local_28 = Path_FindCloseNode((team_t)pfVar7,(pathnode_t *)&DAT_00000001,(float *)psVar9,
-                                    (int)pafVar10);
-      paVar6 = (actor_goal_s *)0x820011;
-      pfVar5 = (float *)0x3ff;
+      iVar6 = 1;
+      vGoalPos_01 = &vNewGoalPos;
+      pNodeTo2 = Path_FindCloseNode((team_t)vGoalPos_01,(pathnode_t *)&DAT_00000001,(float *)fDist,
+                                    iVar7);
+      paVar5 = (actor_goal_s *)0x820011;
+      pfVar4 = (float *)0x3ff;
       Path_PredictionTrace
-                ((float *)0x3ff,(float *)0x820011,(int)&local_378,(int)local_50,
-                 (float *)&DAT_00000001,(float)pfVar7,iVar8);
-      bVar2 = Actor_PointAtGoal(pfVar5,paVar6);
+                ((float *)0x3ff,(float *)0x820011,(int)&vGoalPos,(int)stepheight,
+                 (float *)&DAT_00000001,(float)vGoalPos_01,iVar6);
+      bVar2 = Actor_PointAtGoal(pfVar4,paVar5);
       if (bVar2) {
-        local_38 = local_28;
+        pNodeTo = pNodeTo2;
       }
       else {
-        bVar2 = Actor_PointAtGoal(pfVar5,paVar6);
+        bVar2 = Actor_PointAtGoal(pfVar4,paVar5);
         if (bVar2) {
-          local_38 = local_28;
-          local_378 = (gentity_s *)(local_28->constant).vOrigin[0];
-          local_374 = (sentient_s *)(local_28->constant).vOrigin[1];
-          local_370 = (local_28->constant).vOrigin[2];
+          pNodeTo = pNodeTo2;
+          vGoalPos = (gentity_s *)(pNodeTo2->constant).vOrigin[0];
+          local_374 = (sentient_s *)(pNodeTo2->constant).vOrigin[1];
+          local_370 = (pNodeTo2->constant).vOrigin[2];
         }
         else {
-          local_378 = (gentity_s *)in_ECX[0x390];
+          vGoalPos = (gentity_s *)in_ECX[0x390];
           local_374 = (sentient_s *)in_ECX[0x391];
           local_370 = (float)in_ECX[0x392];
         }
       }
-      if (local_3c == (float (*) [2])0x0) {
-        paVar4 = local_4c;
-        Path_FindPathFromTo((path_t *)local_4c,*in_ECX + 0x124,local_38,(float *)&local_378,
+      if (iPlaneCount == 0) {
+        vGoalPos_00 = (actor_s *)pNearestNode;
+        Path_FindPathFromTo((path_t *)pNearestNode,*in_ECX + 0x124,pNodeTo,(float *)&vGoalPos,
                             (pathnode_t *)&DAT_00000001,(float *)(uint)((float)in_ECX[0x5d5] == 0.0)
-                            ,(int)pfVar5,(int)paVar6);
+                            ,(int)pfVar4,(int)paVar5);
       }
       else {
-        paVar4 = (actor_s *)&local_378;
+        vGoalPos_00 = (actor_s *)&vGoalPos;
         Path_FindPathFromToNotCrossPlanes
-                  ((path_t *)local_4c,*in_ECX + 0x124,local_38,(float *)paVar4,
-                   (pathnode_t *)local_24,(float *)local_364,local_3c,(float *)&DAT_00000001,
-                   (uint)((float)in_ECX[0x5d5] == 0.0),(int)pfVar5,(int)paVar6);
+                  ((path_t *)pNearestNode,*in_ECX + 0x124,pNodeTo,(float *)vGoalPos_00,
+                   (pathnode_t *)vNormal,(float *)dist,(float (*) [2])iPlaneCount,
+                   (float *)&DAT_00000001,(uint)((float)in_ECX[0x5d5] == 0.0),(int)pfVar4,
+                   (int)paVar5);
       }
-      bVar2 = Actor_HasPath(paVar4);
+      bVar2 = Actor_HasPath(vGoalPos_00);
     }
   }
   else {
@@ -5385,6 +5523,7 @@ bool __cdecl Actor_FindPathToGoalDirectInternal(actor_s *param_1)
 
 // 008FF7E0  Actor_HandleInvalidPath  (game_mp/actor_mp.cpp:3606)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5396,6 +5535,7 @@ void __cdecl Actor_HandleInvalidPath(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   actor_s *in_ECX;
+  actor_s *self;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0xe17,0,
@@ -5424,6 +5564,7 @@ void __cdecl Actor_HandleInvalidPath(actor_s *param_1)
 
 // 008FF1D0  Actor_FindPathToGoalDirect  (game_mp/actor_mp.cpp:3638)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5435,6 +5576,8 @@ void __cdecl Actor_FindPathToGoalDirect(actor_s *param_1)
   bool bVar1;
   bool bVar2;
   actor_s *in_ECX;
+  actor_s *self;
+  bool validPath;
   
   bVar1 = Actor_HasPath(in_ECX);
   if ((bVar1) || (in_ECX->pathWaitTime <= level.time)) {
@@ -5458,23 +5601,26 @@ void __cdecl Actor_FindPathToGoalDirect(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_FindPath(actor_s *param_1,float *param_2,int param_3,bool param_4)
+bool __cdecl
+Actor_FindPath(actor_s *bAllowNegotiationLinks,float *ignoreSuppression,int param_3,bool param_4)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  actor_s *paVar4;
+  actor_s *pNodeFrom;
   int *in_ECX;
   pathnode_t *in_EDX;
-  sentient_s *psVar5;
-  actor_s *paVar6;
+  sentient_s *fDist;
+  int iVar4;
   actor_s *in_stack_ffffffb4;
   float *in_stack_ffffffb8;
-  float local_3c [4];
-  actor_s *local_2c;
-  actor_s *local_28;
-  float local_24 [8];
+  float *vGoalPos;
+  actor_s *self;
+  float dist [4];
+  pathnode_t *pNearestNode;
+  int iPlaneCount;
+  float vNormal [8];
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x10f8,0,
@@ -5506,34 +5652,34 @@ bool __cdecl Actor_FindPath(actor_s *param_1,float *param_2,int param_3,bool par
         return true;
       }
     }
-    local_28 = (actor_s *)0x0;
+    iPlaneCount = 0;
     Sentient_InvalidateNearestNode((sentient_s *)in_stack_ffffffb4);
-    if (local_28 == (actor_s *)0x0) {
-      paVar4 = (actor_s *)Sentient_NearestNode((sentient_s *)in_stack_ffffffb4);
-      if (paVar4 == (actor_s *)0x0) {
+    if (iPlaneCount == 0) {
+      pNodeFrom = (actor_s *)Sentient_NearestNode((sentient_s *)in_stack_ffffffb4);
+      if (pNodeFrom == (actor_s *)0x0) {
         return false;
       }
-      local_2c = paVar4;
-      Path_FindPathFrom((path_t *)paVar4,*in_ECX + 0x124,in_EDX,(float *)param_1,
+      pNearestNode = (pathnode_t *)pNodeFrom;
+      Path_FindPathFrom((path_t *)pNodeFrom,*in_ECX + 0x124,in_EDX,(float *)bAllowNegotiationLinks,
                         (float *)(uint)((float)in_ECX[0x5d5] == 0.0),
                         (int)(uint)((float)in_ECX[0x5d5] == 0.0),(int)in_stack_ffffffb8);
     }
     else {
-      psVar5 = (sentient_s *)local_3c;
-      paVar6 = local_28;
-      local_2c = (actor_s *)
-                 Sentient_NearestNodeSuppressed
-                           (psVar5,(float (*) [2])local_28,(float *)in_stack_ffffffb4,
-                            (int)in_stack_ffffffb8);
-      if (local_2c == (actor_s *)0x0) {
+      fDist = (sentient_s *)dist;
+      iVar4 = iPlaneCount;
+      pNearestNode = Sentient_NearestNodeSuppressed
+                               (fDist,(float (*) [2])iPlaneCount,(float *)in_stack_ffffffb4,
+                                (int)in_stack_ffffffb8);
+      if ((path_t *)pNearestNode == (path_t *)0x0) {
         return false;
       }
-      paVar4 = local_28;
+      pNodeFrom = (actor_s *)iPlaneCount;
       Path_FindPathFromNotCrossPlanes
-                ((path_t *)local_2c,*in_ECX + 0x124,in_EDX,local_24,local_3c,(float (*) [2])local_28
-                 ,(float *)param_1,(uint)((float)in_ECX[0x5d5] == 0.0),(int)psVar5,(int)paVar6);
+                ((path_t *)pNearestNode,*in_ECX + 0x124,in_EDX,vNormal,dist,
+                 (float (*) [2])iPlaneCount,(float *)bAllowNegotiationLinks,
+                 (uint)((float)in_ECX[0x5d5] == 0.0),(int)fDist,iVar4);
     }
-    bVar2 = Actor_HasPath(paVar4);
+    bVar2 = Actor_HasPath(pNodeFrom);
   }
   else {
     Actor_ClearPath(in_stack_ffffffb4);
@@ -5545,6 +5691,7 @@ bool __cdecl Actor_FindPath(actor_s *param_1,float *param_2,int param_3,bool par
 
 // 008FFB20  Actor_RecalcPath  (game_mp/actor_mp.cpp:4407)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5555,10 +5702,13 @@ void __cdecl Actor_RecalcPath(actor_s *param_1)
 {
   code *pcVar1;
   bool bVar2;
-  float *pfVar3;
-  path_t *ppVar4;
+  float *bAllowNegotiationLinks_00;
+  path_t *pNodeFrom;
   int *in_ECX;
   actor_s *in_stack_ffffffec;
+  actor_s *self;
+  int bAllowNegotiationLinks;
+  pathnode_t *pNearestNode;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x113d,0,
@@ -5569,14 +5719,15 @@ void __cdecl Actor_RecalcPath(actor_s *param_1)
   }
   bVar2 = Actor_HasPath(in_stack_ffffffec);
   if (bVar2) {
-    pfVar3 = (float *)Path_AllowsObstacleNegotiation((path_t *)in_stack_ffffffec);
+    bAllowNegotiationLinks_00 = (float *)Path_AllowsObstacleNegotiation((path_t *)in_stack_ffffffec)
+    ;
     Actor_ClearPath(in_stack_ffffffec);
     in_ECX[0x370] = in_ECX[0x370] | 0x80;
     Sentient_InvalidateNearestNode((sentient_s *)in_stack_ffffffec);
-    ppVar4 = (path_t *)Sentient_NearestNode((sentient_s *)in_stack_ffffffec);
-    if (ppVar4 != (path_t *)0x0) {
-      Path_FindPathFrom(ppVar4,*in_ECX + 0x124,(pathnode_t *)(in_ECX + 0x364),pfVar3,
-                        (float *)(uint)((float)in_ECX[0x5d5] == 0.0),
+    pNodeFrom = (path_t *)Sentient_NearestNode((sentient_s *)in_stack_ffffffec);
+    if (pNodeFrom != (path_t *)0x0) {
+      Path_FindPathFrom(pNodeFrom,*in_ECX + 0x124,(pathnode_t *)(in_ECX + 0x364),
+                        bAllowNegotiationLinks_00,(float *)(uint)((float)in_ECX[0x5d5] == 0.0),
                         (int)(uint)((float)in_ECX[0x5d5] == 0.0),(int)in_ECX);
       in_ECX[0x370] = in_ECX[0x370] | 0x80;
     }
@@ -5587,19 +5738,23 @@ void __cdecl Actor_RecalcPath(actor_s *param_1)
 
 // 008FFC40  Actor_FindPathToNode  (game_mp/actor_mp.cpp:4437)
 
+/* WARNING: Variable defined which should be unmapped: pGoalNode */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_FindPathToNode(actor_s *param_1,pathnode_t *param_2,int param_3)
+bool __cdecl Actor_FindPathToNode(actor_s *bSuppressable,pathnode_t *param_2,int param_3)
 
 {
   bool bVar1;
   int in_ECX;
   int in_EDX;
+  pathnode_t *pGoalNode;
+  actor_s *self;
   
-  bVar1 = Actor_FindPathToNode(param_1,(pathnode_t *)0x0,in_EDX,in_ECX);
+  bVar1 = Actor_FindPathToNode(bSuppressable,(pathnode_t *)0x0,in_EDX,in_ECX);
   return bVar1;
 }
 
@@ -5611,7 +5766,8 @@ bool __cdecl Actor_FindPathToNode(actor_s *param_1,pathnode_t *param_2,int param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_FindPathToNode(actor_s *param_1,pathnode_t *param_2,int param_3,int param_4)
+bool __cdecl
+Actor_FindPathToNode(actor_s *bSuppressable,pathnode_t *bIgnoreBadplaces,int param_3,int param_4)
 
 {
   code *pcVar1;
@@ -5619,15 +5775,16 @@ bool __cdecl Actor_FindPathToNode(actor_s *param_1,pathnode_t *param_2,int param
   undefined1 uVar3;
   int *in_ECX;
   pathnode_t *in_EDX;
-  actor_s *paVar4;
+  actor_s *vGoalPos;
   actor_s *in_stack_fffffcac;
   float *in_stack_fffffcb0;
-  pathnode_t *local_34c;
-  float local_344 [4];
-  pathsort_t local_334 [64];
-  actor_s *local_30;
-  float (*local_2c) [2];
-  int local_28 [9];
+  pathnode_t *pGoalNode;
+  actor_s *self;
+  float dist [4];
+  pathsort_t nodes [64];
+  pathnode_t *pNearestNode;
+  int iPlaneCount;
+  int nodeCount [9];
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1162,0,
@@ -5658,33 +5815,33 @@ bool __cdecl Actor_FindPathToNode(actor_s *param_1,pathnode_t *param_2,int param
     }
   }
   Sentient_InvalidateNearestNode((sentient_s *)in_stack_fffffcac);
-  local_2c = (float (*) [2])0x0;
-  local_30 = (actor_s *)Sentient_NearestNode((sentient_s *)in_stack_fffffcac);
-  if (local_30 == (actor_s *)0x0) {
+  iPlaneCount = 0;
+  pNearestNode = Sentient_NearestNode((sentient_s *)in_stack_fffffcac);
+  if (pNearestNode == (pathnode_t *)0x0) {
     bVar2 = false;
   }
   else {
-    local_34c = in_EDX;
+    pGoalNode = in_EDX;
     if ((((in_EDX->constant).spawnflags & 1) == 0) ||
-       (local_34c = Path_NearestNode((in_EDX->constant).vOrigin,local_334,-2,192.0,local_28,0x40,
-                                     NEAREST_NODE_DO_HEIGHT_CHECK), local_34c != (pathnode_t *)0x0))
+       (pGoalNode = Path_NearestNode((in_EDX->constant).vOrigin,nodes,-2,192.0,nodeCount,0x40,
+                                     NEAREST_NODE_DO_HEIGHT_CHECK), pGoalNode != (pathnode_t *)0x0))
     {
-      if (local_2c == (float (*) [2])0x0) {
-        paVar4 = local_30;
-        Path_FindPathFromTo((path_t *)local_30,*in_ECX + 0x124,local_34c,
-                            (local_34c->constant).vOrigin,(pathnode_t *)&DAT_00000001,
+      if (iPlaneCount == 0) {
+        vGoalPos = (actor_s *)pNearestNode;
+        Path_FindPathFromTo((path_t *)pNearestNode,*in_ECX + 0x124,pGoalNode,
+                            (pGoalNode->constant).vOrigin,(pathnode_t *)&DAT_00000001,
                             (float *)(uint)((float)in_ECX[0x5d5] == 0.0),
                             (int)(uint)((float)in_ECX[0x5d5] == 0.0),(int)in_stack_fffffcb0);
       }
       else {
-        paVar4 = (actor_s *)(local_34c->constant).vOrigin;
+        vGoalPos = (actor_s *)(pGoalNode->constant).vOrigin;
         Path_FindPathFromToNotCrossPlanes
-                  ((path_t *)local_30,*in_ECX + 0x124,local_34c,(float *)paVar4,
-                   (pathnode_t *)(local_28 + 1),local_344,local_2c,(float *)&DAT_00000001,
-                   (uint)((float)in_ECX[0x5d5] == 0.0),(int)in_stack_fffffcac,
-                   (uint)((float)in_ECX[0x5d5] == 0.0));
+                  ((path_t *)pNearestNode,*in_ECX + 0x124,pGoalNode,(float *)vGoalPos,
+                   (pathnode_t *)(nodeCount + 1),dist,(float (*) [2])iPlaneCount,
+                   (float *)&DAT_00000001,(uint)((float)in_ECX[0x5d5] == 0.0),(int)in_stack_fffffcac
+                   ,(uint)((float)in_ECX[0x5d5] == 0.0));
       }
-      bVar2 = Actor_HasPath(paVar4);
+      bVar2 = Actor_HasPath(vGoalPos);
     }
     else {
       bVar2 = false;
@@ -5696,12 +5853,13 @@ bool __cdecl Actor_FindPathToNode(actor_s *param_1,pathnode_t *param_2,int param
 
 // 008FFF20  Actor_FindPathToSentient  (game_mp/actor_mp.cpp:4513)
 
+/* WARNING: Variable defined which should be unmapped: pGoalEnt */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl Actor_FindPathToSentient(actor_s *param_1,sentient_s *param_2,int param_3)
+bool __cdecl Actor_FindPathToSentient(actor_s *bSuppressable,sentient_s *param_2,int param_3)
 
 {
   code *pcVar1;
@@ -5711,9 +5869,11 @@ bool __cdecl Actor_FindPathToSentient(actor_s *param_1,sentient_s *param_2,int p
   float *in_EDX;
   actor_s *paVar4;
   actor_s *in_stack_ffffffdc;
-  float local_18 [3];
-  actor_s *local_c;
-  pathnode_t *local_8;
+  sentient_s *pGoalEnt;
+  actor_s *self;
+  float vGoalPos [3];
+  pathnode_t *pNearestNode;
+  pathnode_t *pGoalNode;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x11a4,0,
@@ -5739,18 +5899,18 @@ bool __cdecl Actor_FindPathToSentient(actor_s *param_1,sentient_s *param_2,int p
     Actor_ClearPath(in_stack_ffffffdc);
   }
   Sentient_InvalidateNearestNode((sentient_s *)in_stack_ffffffdc);
-  local_c = (actor_s *)Sentient_NearestNode((sentient_s *)in_stack_ffffffdc);
-  if (local_c == (actor_s *)0x0) {
+  pNearestNode = Sentient_NearestNode((sentient_s *)in_stack_ffffffdc);
+  if (pNearestNode == (pathnode_t *)0x0) {
     bVar2 = false;
   }
   else {
-    local_8 = Sentient_NearestNode((sentient_s *)in_stack_ffffffdc);
-    if (local_8 == (pathnode_t *)0x0) {
+    pGoalNode = Sentient_NearestNode((sentient_s *)in_stack_ffffffdc);
+    if (pGoalNode == (pathnode_t *)0x0) {
       bVar2 = false;
     }
     else {
-      paVar4 = local_c;
-      Path_FindPathFromTo((path_t *)local_c,*in_ECX + 0x124,local_8,local_18,
+      paVar4 = (actor_s *)pNearestNode;
+      Path_FindPathFromTo((path_t *)pNearestNode,*in_ECX + 0x124,pGoalNode,vGoalPos,
                           (pathnode_t *)&DAT_00000001,(float *)(uint)((float)in_ECX[0x5d5] == 0.0),
                           (int)(uint)((float)in_ECX[0x5d5] == 0.0),(int)in_EDX);
       bVar2 = Actor_HasPath(paVar4);
@@ -5762,18 +5922,24 @@ bool __cdecl Actor_FindPathToSentient(actor_s *param_1,sentient_s *param_2,int p
 
 // 00900080  Actor_FindPathInGoalWithLOS  (game_mp/actor_mp.cpp:4574)
 
+/* WARNING: Variable defined which should be unmapped: vGoalPos */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_FindPathInGoalWithLOS(actor_s *param_1,float *param_2,float param_3,bool param_4)
+void __cdecl
+Actor_FindPathInGoalWithLOS
+          (actor_s *fWithinDistSqrd,float *ignoreSuppression,float param_3,bool param_4)
 
 {
   code *pcVar1;
   bool bVar2;
   int *in_ECX;
   actor_s *in_EDX;
+  float *vGoalPos;
+  actor_s *self;
   
   if (in_ECX == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x11e7,0,
@@ -5795,14 +5961,15 @@ void __cdecl Actor_FindPathInGoalWithLOS(actor_s *param_1,float *param_2,float p
   }
   Actor_ClearPath(in_EDX);
   Path_FindPathInCylinderWithLOS
-            ((path_t *)(*in_ECX + 0x124),(team_t)in_EDX,(float *)(in_ECX + 0x390),(float *)param_1,
-             (actor_goal_s *)&DAT_00000001,(float)in_EDX,(int)in_ECX);
+            ((path_t *)(*in_ECX + 0x124),(team_t)in_EDX,(float *)(in_ECX + 0x390),
+             (float *)fWithinDistSqrd,(actor_goal_s *)&DAT_00000001,(float)in_EDX,(int)in_ECX);
   return;
 }
 
 
 // 00900130  Actor_BadPlacesChanged  (game_mp/actor_mp.cpp:4661)
 
+/* WARNING: Variable defined which should be unmapped: actor */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5812,15 +5979,15 @@ void __cdecl Actor_BadPlacesChanged(void)
 
 {
   bool bVar1;
-  actor_s *paVar2;
   int in_ECX;
   team_t unaff_EBP;
+  actor_s *actor;
   
-  for (paVar2 = Actor_FirstActor(in_ECX); paVar2 != (actor_s *)0x0;
-      paVar2 = Actor_NextActor(paVar2,unaff_EBP)) {
-    bVar1 = Actor_HasPath(paVar2);
+  for (actor = Actor_FirstActor(in_ECX); actor != (actor_s *)0x0;
+      actor = Actor_NextActor(actor,unaff_EBP)) {
+    bVar1 = Actor_HasPath(actor);
     if (bVar1) {
-      Path_TrimToBadPlaceLink((path_t *)paVar2,unaff_EBP);
+      Path_TrimToBadPlaceLink((path_t *)actor,unaff_EBP);
     }
   }
   return;
@@ -5829,6 +5996,7 @@ void __cdecl Actor_BadPlacesChanged(void)
 
 // 00900190  Actor_HasPath  (game_mp/actor_mp.cpp:4680)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5841,6 +6009,7 @@ bool __cdecl Actor_HasPath(actor_s *param_1)
   bool bVar2;
   undefined1 uVar3;
   path_t *in_ECX;
+  actor_s *self;
   
   if (in_ECX == (path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x124b,0,
@@ -5858,6 +6027,7 @@ bool __cdecl Actor_HasPath(actor_s *param_1)
 
 // 009001E0  Actor_InitPath  (game_mp/actor_mp.cpp:4694)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5867,6 +6037,7 @@ void __cdecl Actor_InitPath(actor_s *param_1)
 
 {
   path_t *in_ECX;
+  actor_s *self;
   
   Path_Begin(in_ECX);
   in_ECX[3].pts[0x15].vOrigPoint[0] = 0.0;
@@ -5876,6 +6047,7 @@ void __cdecl Actor_InitPath(actor_s *param_1)
 
 // 00900210  Actor_ClearPath  (game_mp/actor_mp.cpp:4706)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -5888,6 +6060,7 @@ void __cdecl Actor_ClearPath(actor_s *param_1)
   bool bVar2;
   path_t *in_ECX;
   float *unaff_EBP;
+  actor_s *self;
   
   if ((in_ECX == (path_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1265,0,
@@ -5912,15 +6085,18 @@ void __cdecl Actor_ClearPath(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_GetAnimDeltas(actor_s *param_1,float *param_2,float *param_3)
+void __cdecl Actor_GetAnimDeltas(actor_s *translation,float *param_2,float *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  XAnimTree_s *pXVar4;
+  DObj *obj_00;
+  XAnimTree_s *pXVar3;
   undefined4 *in_ECX;
   float *in_EDX;
+  float *rotation;
+  actor_s *self;
+  DObj *obj;
   
   if (in_ECX == (undefined4 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1279,0,
@@ -5940,7 +6116,7 @@ void __cdecl Actor_GetAnimDeltas(actor_s *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (translation == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x127b,0,
                              "%s");
     if (!bVar2) {
@@ -5949,8 +6125,8 @@ void __cdecl Actor_GetAnimDeltas(actor_s *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  pDVar3 = Com_GetServerDObj(*(int *)*in_ECX);
-  if (pDVar3 == (DObj *)0x0) {
+  obj_00 = Com_GetServerDObj(*(int *)*in_ECX);
+  if (obj_00 == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x127e,0,
                              "%s");
     if (!bVar2) {
@@ -5959,14 +6135,14 @@ void __cdecl Actor_GetAnimDeltas(actor_s *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  pXVar4 = DObjGetTree(pDVar3);
-  if (pXVar4 == (XAnimTree_s *)0x0) {
-    param_1->ent = (gentity_s *)0x0;
-    param_1->sentient = (sentient_s *)0x0;
-    param_1->species = AI_SPECIES_DOG;
+  pXVar3 = DObjGetTree(obj_00);
+  if (pXVar3 == (XAnimTree_s *)0x0) {
+    translation->ent = (gentity_s *)0x0;
+    translation->sentient = (sentient_s *)0x0;
+    translation->species = AI_SPECIES_DOG;
   }
   else {
-    XAnimCalcDelta(pDVar3,0,in_EDX,(float *)param_1,*(bool *)((int)in_ECX + 0x226));
+    XAnimCalcDelta(obj_00,0,in_EDX,(float *)translation,*(bool *)((int)in_ECX + 0x226));
     if ((ai_debugAnimDeltas->current).integer == *(int *)*in_ECX) {
       Com_Printf(0x12,"%i deltas = %g %g %g\n");
     }
@@ -5987,6 +6163,7 @@ bool __cdecl Actor_IsMovingToMeleeAttack(actor_s *param_1)
 {
   int in_ECX;
   undefined1 local_c;
+  actor_s *self;
   
   if (((*(float *)(in_ECX + 0xea0) == 0.0) || (*(char *)(in_ECX + 0xea4) == '\0')) ||
      (*(char *)(in_ECX + 0xea5) == '\0')) {
@@ -6001,6 +6178,7 @@ bool __cdecl Actor_IsMovingToMeleeAttack(actor_s *param_1)
 
 // 00900ED0  Actor_SkipPathEndActions  (game_mp/actor_mp.cpp:4767)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6021,7 +6199,9 @@ bool __cdecl Actor_SkipPathEndActions(actor_s *param_1)
   actor_s *in_ECX;
   float fVar10;
   float fVar11;
+  actor_s *self;
   scr_animscript_t *in_stack_ffffffdc;
+  float fVelSqrd;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x12a0,0,
@@ -6114,6 +6294,13 @@ void __cdecl Actor_PathEndActions(actor_s *param_1)
   float fVar8;
   float fVar9;
   actor_s *in_stack_ffffffac;
+  actor_s *self;
+  float fInvTimeSteps;
+  float fSlopeScale;
+  float fDeltaScale;
+  float fStopTimeSqrd;
+  float fStartVelSqrd;
+  float distSqrd;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x12d6,0,
@@ -6195,6 +6382,7 @@ void __cdecl Actor_PathEndActions(actor_s *param_1)
 
 // 00900420  Actor_UpdateAnglesAndDelta  (game_mp/actor_mp.cpp:4917)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6206,18 +6394,19 @@ void __cdecl Actor_UpdateAnglesAndDelta(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  actor_s *paVar4;
-  actor_s *paVar5;
+  actor_s *bReduceLookaheadAmount;
+  actor_s *translation_00;
   actor_s *in_ECX;
-  actor_s *paVar6;
-  undefined8 uVar7;
+  actor_s *paVar4;
+  undefined8 uVar5;
   actor_s *in_stack_ffffffb4;
-  gentity_s *local_24;
+  actor_s *self;
+  gentity_s *translation;
   sentient_s *local_20;
-  float local_18;
-  actor_s *local_14;
-  float local_10 [2];
-  gentity_s *local_8;
+  float yawChange;
+  float dist;
+  float rotation [2];
+  gentity_s *ent;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x133e,0,
@@ -6226,8 +6415,8 @@ void __cdecl Actor_UpdateAnglesAndDelta(actor_s *param_1)
     (*pcVar1)();
     return;
   }
-  local_8 = in_ECX->ent;
-  if ((local_8 == (gentity_s *)0x0) &&
+  ent = in_ECX->ent;
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1340,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -6239,36 +6428,37 @@ void __cdecl Actor_UpdateAnglesAndDelta(actor_s *param_1)
     Actor_ClearPath(in_stack_ffffffb4);
     (in_ECX->Path).iPathEndTime = 0;
   }
-  paVar6 = (actor_s *)(in_ECX->eAnimMode - AI_ANIM_MOVE_CODE);
-  switch(paVar6) {
+  paVar4 = (actor_s *)(in_ECX->eAnimMode - AI_ANIM_MOVE_CODE);
+  switch(paVar4) {
   case (actor_s *)0x0:
-    if (((in_ECX->moveMode == '\0') || (bVar2 = Actor_HasPath(paVar6), !bVar2)) ||
+    if (((in_ECX->moveMode == '\0') || (bVar2 = Actor_HasPath(paVar4), !bVar2)) ||
        (iVar3 = EntHandle::isDefined(&in_ECX->pCloseEnt), iVar3 != 0)) {
-      paVar5 = (actor_s *)0x9005e4;
-      bVar2 = Actor_HasPath(paVar6);
+      translation_00 = (actor_s *)0x9005e4;
+      bVar2 = Actor_HasPath(paVar4);
       if (bVar2) {
-        paVar5 = (actor_s *)&DAT_00000001;
-        uVar7 = 0x100000000;
-        paVar4 = (actor_s *)Actor_IsDodgeEntity(in_ECX,(in_ECX->Physics).iHitEntnum);
+        translation_00 = (actor_s *)&DAT_00000001;
+        uVar5 = 0x100000000;
+        bReduceLookaheadAmount = (actor_s *)Actor_IsDodgeEntity(in_ECX,(in_ECX->Physics).iHitEntnum)
+        ;
         Path_UpdateLookahead
-                  ((path_t *)paVar4,(float *)uVar7,(int)((ulonglong)uVar7 >> 0x20),(int)paVar5,
-                   (int)paVar6,(int)in_ECX);
-        Actor_AddStationaryMoveHistory(paVar4);
+                  ((path_t *)bReduceLookaheadAmount,(float *)uVar5,(int)((ulonglong)uVar5 >> 0x20),
+                   (int)translation_00,(int)paVar4,(int)in_ECX);
+        Actor_AddStationaryMoveHistory(bReduceLookaheadAmount);
       }
       (in_ECX->Physics).ePhysicsType = AIPHYS_NORMAL_ABSOLUTE;
       (in_ECX->Physics).vWishDelta[0] = 0.0;
       (in_ECX->Physics).vWishDelta[1] = 0.0;
       (in_ECX->Physics).vWishDelta[2] = 0.0;
-      local_18 = 0.0;
+      yawChange = 0.0;
       if ((ai_showPaths->current).integer == 2) {
-        paVar5 = (actor_s *)&DAT_00000001;
-        Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,1,(int)paVar6);
+        translation_00 = (actor_s *)&DAT_00000001;
+        Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,1,(int)paVar4);
       }
     }
     else {
-      paVar5 = (actor_s *)&local_24;
-      Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
-      bVar2 = Actor_HasPath(paVar5);
+      translation_00 = (actor_s *)&translation;
+      Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
+      bVar2 = Actor_HasPath(translation_00);
       if ((!bVar2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1353
                                    ,0,"%s"), !bVar2)) {
@@ -6277,80 +6467,80 @@ void __cdecl Actor_UpdateAnglesAndDelta(actor_s *param_1)
         return;
       }
       (in_ECX->Physics).ePhysicsType = AIPHYS_NORMAL_ABSOLUTE;
-      local_14 = (actor_s *)Vec2Length((float *)&local_24);
-      paVar6 = local_14;
-      Path_UpdateMovementDelta(local_14,(float)paVar5);
-      Actor_PathEndActions(paVar6);
-      local_18 = 0.0;
+      dist = Vec2Length((float *)&translation);
+      paVar4 = (actor_s *)dist;
+      Path_UpdateMovementDelta((actor_s *)dist,(float)translation_00);
+      Actor_PathEndActions(paVar4);
+      yawChange = 0.0;
       if ((ai_showPaths->current).integer != 0) {
-        Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,(int)paVar6,(int)paVar5);
+        Path_DebugDraw((path_t *)&DAT_00000001,(float *)0xffffffff,(int)paVar4,(int)translation_00);
       }
     }
     break;
   case (actor_s *)0x1:
-    paVar5 = (actor_s *)&local_24;
-    Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
+    translation_00 = (actor_s *)&translation;
+    Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
     (in_ECX->Physics).ePhysicsType = AIPHYS_NORMAL_RELATIVE;
-    (in_ECX->Physics).vWishDelta[0] = (float)local_24;
+    (in_ECX->Physics).vWishDelta[0] = (float)translation;
     (in_ECX->Physics).vWishDelta[1] = (float)local_20;
     (in_ECX->Physics).vWishDelta[2] = 0.0;
-    local_18 = 0.0;
+    yawChange = 0.0;
     break;
   case (actor_s *)0x2:
-    paVar5 = (actor_s *)&local_24;
-    Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
+    translation_00 = (actor_s *)&translation;
+    Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
     (in_ECX->Physics).ePhysicsType = AIPHYS_NORMAL_ABSOLUTE;
     (in_ECX->Physics).vWishDelta[0] = 0.0;
     (in_ECX->Physics).vWishDelta[1] = 0.0;
     (in_ECX->Physics).vWishDelta[2] = 0.0;
-    local_18 = RotationToYaw(local_10);
+    yawChange = RotationToYaw(rotation);
     break;
   case (actor_s *)0x3:
-    paVar5 = (actor_s *)&local_24;
-    Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
+    translation_00 = (actor_s *)&translation;
+    Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
     (in_ECX->Physics).ePhysicsType = AIPHYS_NORMAL_RELATIVE;
-    (in_ECX->Physics).vWishDelta[0] = (float)local_24;
+    (in_ECX->Physics).vWishDelta[0] = (float)translation;
     (in_ECX->Physics).vWishDelta[1] = (float)local_20;
     (in_ECX->Physics).vWishDelta[2] = 0.0;
-    local_18 = RotationToYaw(local_10);
+    yawChange = RotationToYaw(rotation);
     break;
   case (actor_s *)0x4:
-    paVar5 = (actor_s *)(in_ECX->Physics).vWishDelta;
-    Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
+    translation_00 = (actor_s *)(in_ECX->Physics).vWishDelta;
+    Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
     (in_ECX->Physics).ePhysicsType = AIPHYS_NOCLIP;
-    local_18 = RotationToYaw(local_10);
+    yawChange = RotationToYaw(rotation);
     break;
   case (actor_s *)0x5:
-    paVar5 = (actor_s *)(in_ECX->Physics).vWishDelta;
-    Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
+    translation_00 = (actor_s *)(in_ECX->Physics).vWishDelta;
+    Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
     (in_ECX->Physics).ePhysicsType = AIPHYS_NOGRAVITY;
-    local_18 = RotationToYaw(local_10);
+    yawChange = RotationToYaw(rotation);
     break;
   case (actor_s *)0x6:
-    paVar5 = (actor_s *)&local_24;
-    Actor_GetAnimDeltas(paVar5,(float *)paVar6,(float *)in_ECX);
+    translation_00 = (actor_s *)&translation;
+    Actor_GetAnimDeltas(translation_00,(float *)paVar4,(float *)in_ECX);
     (in_ECX->Physics).ePhysicsType = AIPHYS_ZONLY_PHYSICS_RELATIVE;
-    (in_ECX->Physics).vWishDelta[0] = (float)local_24;
+    (in_ECX->Physics).vWishDelta[0] = (float)translation;
     (in_ECX->Physics).vWishDelta[1] = (float)local_20;
     (in_ECX->Physics).vWishDelta[2] = 0.0;
-    local_18 = RotationToYaw(local_10);
+    yawChange = RotationToYaw(rotation);
     break;
   default:
-    paVar5 = (actor_s *)va("bad eAnimMode value: %d");
+    translation_00 = (actor_s *)va("bad eAnimMode value: %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x13b1,0,
-                             (char *)paVar5);
+                             (char *)translation_00);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = 0.0;
+    yawChange = 0.0;
     break;
   case (actor_s *)0x8:
     (in_ECX->Physics).ePhysicsType = AIPHYS_ZONLY_PHYSICS_RELATIVE;
     Actor_SetDesiredAngles
               ((ai_orient_t *)(in_ECX->ent->r).currentAngles[0],(in_ECX->ent->r).currentAngles[1],
-               (float)paVar6);
+               (float)paVar4);
     (in_ECX->Physics).vVelocity[0] = 0.0;
     (in_ECX->Physics).vVelocity[1] = 0.0;
     (in_ECX->Physics).vVelocity[2] = 0.0;
@@ -6359,21 +6549,22 @@ void __cdecl Actor_UpdateAnglesAndDelta(actor_s *param_1)
     (in_ECX->Physics).vWishDelta[2] = 0.0;
     return;
   }
-  if ((ai_debugAnimDeltas->current).integer == (local_8->s).number) {
+  if ((ai_debugAnimDeltas->current).integer == (ent->s).number) {
     Com_Printf(0x12,"%i yawChange = %g\n");
   }
-  if (local_18 != 0.0) {
-    Actor_ChangeAngles((actor_s *)0x0,local_18,(float)paVar5);
+  if (yawChange != 0.0) {
+    Actor_ChangeAngles((actor_s *)0x0,yawChange,(float)translation_00);
   }
-  Actor_DecideOrientation(paVar5);
-  Actor_UpdateBodyAngle(paVar5);
-  Actor_UpdateLookAngles(paVar5);
+  Actor_DecideOrientation(translation_00);
+  Actor_UpdateBodyAngle(translation_00);
+  Actor_UpdateLookAngles(translation_00);
   return;
 }
 
 
 // 009010E0  Actor_UpdateOriginAndAngles  (game_mp/actor_mp.cpp:5082)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6382,32 +6573,34 @@ void __cdecl Actor_UpdateAnglesAndDelta(actor_s *param_1)
 void __cdecl Actor_UpdateOriginAndAngles(actor_s *param_1)
 
 {
-  gentity_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
+  gentity_s *ent_00;
+  code *pcVar1;
+  bool bVar2;
   actor_s *in_ECX;
+  actor_s *self;
+  gentity_s *ent;
   
   if (in_ECX == (actor_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x13df,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x13df,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = in_ECX->ent;
-  if (pgVar1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x13e1,0,
+  ent_00 = in_ECX->ent;
+  if (ent_00 == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x13e1,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   if (in_ECX->eAnimMode != AI_ANIM_NOPHYSICS) {
-    if (pgVar1->tagInfo == (tagInfo_s *)0x0) {
+    if (ent_00->tagInfo == (tagInfo_s *)0x0) {
       Actor_UpdateAnglesAndDelta(in_ECX);
       Actor_DoMove(in_ECX);
       GlassSv_PredictTouch(in_ECX->ent);
@@ -6417,7 +6610,7 @@ void __cdecl Actor_UpdateOriginAndAngles(actor_s *param_1)
       }
     }
     else {
-      G_SetFixedLink(pgVar1,1);
+      G_SetFixedLink(ent_00,1);
       Actor_ClearPath(in_ECX);
       Actor_UpdateAnglesAndDelta(in_ECX);
       (in_ECX->Physics).vVelocity[0] = 0.0;
@@ -6426,7 +6619,7 @@ void __cdecl Actor_UpdateOriginAndAngles(actor_s *param_1)
       (in_ECX->Physics).vWishDelta[0] = 0.0;
       (in_ECX->Physics).vWishDelta[1] = 0.0;
       (in_ECX->Physics).vWishDelta[2] = 0.0;
-      G_CalcTagAxis(pgVar1,1);
+      G_CalcTagAxis(ent_00,1);
     }
   }
   return;
@@ -6435,6 +6628,7 @@ void __cdecl Actor_UpdateOriginAndAngles(actor_s *param_1)
 
 // 00901270  Actor_PredictOriginAndAngles  (game_mp/actor_mp.cpp:5124)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6443,51 +6637,53 @@ void __cdecl Actor_UpdateOriginAndAngles(actor_s *param_1)
 void __cdecl Actor_PredictOriginAndAngles(actor_s *param_1)
 
 {
-  gentity_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
+  gentity_s *ent_00;
+  code *pcVar1;
+  bool bVar2;
   actor_s *in_ECX;
+  actor_s *self;
+  gentity_s *ent;
   
   if (in_ECX == (actor_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1409,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1409,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pgVar1 = in_ECX->ent;
-  if (pgVar1 == (gentity_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x140b,0,
+  ent_00 = in_ECX->ent;
+  if (ent_00 == (gentity_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x140b,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (pgVar1->tagInfo != (tagInfo_s *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x140d,0,
+  if (ent_00->tagInfo != (tagInfo_s *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x140d,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   if (in_ECX->eAnimMode == AI_ANIM_MOVE_CODE) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x140e,0,
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x140e,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
   Actor_UpdateAnglesAndDelta(in_ECX);
   Actor_DoMove(in_ECX);
-  SV_DObjInitServerTime(pgVar1,0.05);
+  SV_DObjInitServerTime(ent_00,0.05);
   return;
 }
 
@@ -6502,34 +6698,36 @@ void __cdecl Actor_PredictOriginAndAngles(actor_s *param_1)
 void __cdecl Actor_PredictAnim(actor_s *param_1)
 
 {
-  gentity_s *pgVar1;
-  bool bVar2;
-  int iVar3;
+  gentity_s *ent_00;
+  bool bVar1;
+  int bNotify;
   undefined4 *in_ECX;
-  code *pcVar4;
+  code *pcVar2;
+  actor_s *self;
+  gentity_s *ent;
   
   if (in_ECX == (undefined4 *)0x0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x141e,0,
+    bVar1 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x141e,0,
                              "%s");
-    if (!bVar2) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar1) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  pgVar1 = (gentity_s *)*in_ECX;
-  if (pgVar1 == (gentity_s *)0x0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1420,0,
+  ent_00 = (gentity_s *)*in_ECX;
+  if (ent_00 == (gentity_s *)0x0) {
+    bVar1 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1420,0,
                              "%s");
-    if (!bVar2) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar1) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  pcVar4 = GamerProfile_WriteSettings;
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  G_DObjUpdateServerTime(pgVar1,iVar3,pcVar4);
+  pcVar2 = GamerProfile_WriteSettings;
+  bNotify = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  G_DObjUpdateServerTime(ent_00,bNotify,pcVar2);
   Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -6537,8 +6735,10 @@ void __cdecl Actor_PredictAnim(actor_s *param_1)
 
 // 00901410  Actor_AtClaimNode  (game_mp/actor_mp.cpp:5161)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: node */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -6548,6 +6748,8 @@ int __cdecl Actor_AtClaimNode(actor_s *param_1)
   bool bVar1;
   uint uVar2;
   float *in_ECX;
+  actor_s *self;
+  pathnode_t *node;
   
   if (*(pathnode_t **)((int)in_ECX[1] + 0x60) == (pathnode_t *)0x0) {
     uVar2 = 0;
@@ -6562,23 +6764,27 @@ int __cdecl Actor_AtClaimNode(actor_s *param_1)
 
 // 00901450  Actor_NearClaimNode  (game_mp/actor_mp.cpp:5173)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: node */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_NearClaimNode(actor_s *param_1,float param_2)
+int __cdecl Actor_NearClaimNode(actor_s *dist,float param_2)
 
 {
   bool bVar1;
   uint uVar2;
   float *in_ECX;
+  actor_s *self;
+  pathnode_t *node;
   
   if (*(float *)((int)in_ECX[1] + 0x60) == 0.0) {
     uVar2 = 0;
   }
   else {
-    bVar1 = Actor_PointNearPoint((float *)param_1,in_ECX,*(float *)((int)in_ECX[1] + 0x60));
+    bVar1 = Actor_PointNearPoint((float *)dist,in_ECX,*(float *)((int)in_ECX[1] + 0x60));
     uVar2 = (uint)bVar1;
   }
   return uVar2;
@@ -6587,6 +6793,7 @@ int __cdecl Actor_NearClaimNode(actor_s *param_1,float param_2)
 
 // 009014A0  Actor_CheckCollisions  (game_mp/actor_mp.cpp:5185)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6603,7 +6810,10 @@ void __cdecl Actor_CheckCollisions(actor_s *param_1)
   actor_s *in_stack_ffffffd8;
   float *pfVar5;
   float *pfVar6;
-  int local_c;
+  actor_s *self;
+  actor_s *other;
+  int i;
+  int bDontDisturb;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1449,0,
@@ -6629,8 +6839,8 @@ void __cdecl Actor_CheckCollisions(actor_s *param_1)
       pfVar5 = (float *)0x0;
     }
     pfVar6 = pfVar5;
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      paVar4 = level.actors + local_c;
+    for (i = 0; i < 0x10; i = i + 1) {
+      paVar4 = level.actors + i;
       if ((((paVar4->inuse != 0) && (paVar4 != in_ECX)) &&
           ((pfVar5 == (float *)0x0 ||
            (level.gentities[(paVar4->Physics).iHitEntnum].sentient != (sentient_s *)0x0)))) &&
@@ -6646,6 +6856,7 @@ void __cdecl Actor_CheckCollisions(actor_s *param_1)
 
 // 00901640  Actor_UpdatePileUp  (game_mp/actor_mp.cpp:5223)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6657,40 +6868,41 @@ void __cdecl Actor_UpdatePileUp(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   actor_s *in_ECX;
-  actor_s *local_c;
-  int local_8;
+  actor_s *self;
+  actor_s *other;
+  int iTeamMoveWaitTime;
   
   if (in_ECX->eAnimMode == AI_ANIM_MOVE_CODE) {
-    local_c = in_ECX;
+    other = in_ECX;
     if (in_ECX->pPileUpActor != in_ECX) {
       do {
-        local_c = local_c->pPileUpActor;
-        if (local_c == (actor_s *)0x0) {
+        other = other->pPileUpActor;
+        if (other == (actor_s *)0x0) {
           Actor_ClearPileUp(in_ECX);
           return;
         }
-      } while (local_c->pPileUpActor != local_c);
-      if ((local_c->pPileUpEnt == (gentity_s *)0x0) &&
+      } while (other->pPileUpActor != other);
+      if ((other->pPileUpEnt == (gentity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x147f
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_c == in_ECX) &&
+      if ((other == in_ECX) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1480
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_8 = local_c->iTeamMoveWaitTime;
-      if (local_c->ent->nextthink <= level.time) {
-        local_8 = local_8 + 0x32;
+      iTeamMoveWaitTime = other->iTeamMoveWaitTime;
+      if (other->ent->nextthink <= level.time) {
+        iTeamMoveWaitTime = iTeamMoveWaitTime + 0x32;
       }
-      if ((level.time < local_8) && (in_ECX->ent != local_c->pPileUpEnt)) {
-        in_ECX->pPileUpActor = local_c;
-        in_ECX->pPileUpEnt = local_c->pPileUpEnt;
+      if ((level.time < iTeamMoveWaitTime) && (in_ECX->ent != other->pPileUpEnt)) {
+        in_ECX->pPileUpActor = other;
+        in_ECX->pPileUpEnt = other->pPileUpEnt;
       }
       else {
         Actor_ClearPileUp(in_ECX);
@@ -6715,6 +6927,7 @@ void __cdecl Actor_ClearPileUp(actor_s *param_1)
 
 {
   int in_ECX;
+  actor_s *self;
   
   *(undefined4 *)(in_ECX + 0xe08) = 0;
   *(undefined4 *)(in_ECX + 0xe0c) = 0;
@@ -6724,6 +6937,7 @@ void __cdecl Actor_ClearPileUp(actor_s *param_1)
 
 // 009017B0  Actor_ClipPathToGoal  (game_mp/actor_mp.cpp:5275)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6737,6 +6951,7 @@ void __cdecl Actor_ClipPathToGoal(actor_s *param_1)
   int iVar3;
   actor_s *in_ECX;
   actor_goal_s *unaff_EBP;
+  actor_s *self;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x149e,0,
@@ -6762,6 +6977,7 @@ void __cdecl Actor_ClipPathToGoal(actor_s *param_1)
 
 // 00901840  Actor_BeginTrimPath  (game_mp/actor_mp.cpp:5288)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6774,6 +6990,7 @@ void __cdecl Actor_BeginTrimPath(actor_s *param_1)
   bool bVar2;
   path_t *in_ECX;
   path_trim_t *unaff_EBP;
+  actor_s *self;
   
   if (in_ECX == (path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x14ab,0,
@@ -6791,6 +7008,8 @@ void __cdecl Actor_BeginTrimPath(actor_s *param_1)
 
 // 00901890  Actor_TrimPathToAttack  (game_mp/actor_mp.cpp:5302)
 
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: targetEnt */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -6804,7 +7023,9 @@ int __cdecl Actor_TrimPathToAttack(actor_s *param_1)
   int iVar3;
   gentity_s *pgVar4;
   actor_s *in_ECX;
-  undefined1 local_10 [12];
+  actor_s *self;
+  gentity_s *targetEnt;
+  undefined1 vEnemyPos [12];
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x14b9,0,
@@ -6836,7 +7057,7 @@ int __cdecl Actor_TrimPathToAttack(actor_s *param_1)
   }
   Actor_GetTargetLookPosition(in_ECX,(float *)pgVar4);
   iVar3 = Path_TrimToSeePoint((path_t *)in_ECX,(path_trim_t *)in_ECX->fMaxSightDistSqrd,
-                              (actor_s *)(pgVar4->s).number,(float)local_10,(int)in_ECX,
+                              (actor_s *)(pgVar4->s).number,(float)vEnemyPos,(int)in_ECX,
                               (float *)pgVar4);
   return iVar3;
 }
@@ -6853,11 +7074,12 @@ void __cdecl Actor_ClearMoveHistory(actor_s *param_1)
 
 {
   int in_ECX;
-  undefined4 local_8;
+  actor_s *self;
+  int i;
   
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    *(undefined4 *)(in_ECX + 0x1778 + local_8 * 8) = 0;
-    *(undefined4 *)(in_ECX + 0x177c + local_8 * 8) = 0;
+  for (i = 0; i < 10; i = i + 1) {
+    *(undefined4 *)(in_ECX + 0x1778 + i * 8) = 0;
+    *(undefined4 *)(in_ECX + 0x177c + i * 8) = 0;
   }
   *(undefined4 *)(in_ECX + 0x1774) = 0;
   return;
@@ -6876,6 +7098,7 @@ bool __cdecl Actor_MayReacquireMove(actor_s *param_1)
 {
   int in_ECX;
   undefined1 local_c;
+  actor_s *self;
   
   if ((*(short *)(in_ECX + 0xd84) < 1) || (*(int *)(in_ECX + 0xdf4) != 0)) {
     local_c = true;
@@ -6899,14 +7122,16 @@ void __cdecl Actor_GetMoveHistoryAverage(actor_s *param_1,float *param_2)
 {
   int in_ECX;
   float *in_EDX;
-  int local_8;
+  float *vDir;
+  actor_s *self;
+  int i;
   
   *in_EDX = 0.0;
   in_EDX[1] = 0.0;
   in_EDX[2] = 0.0;
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    *in_EDX = *in_EDX + *(float *)(in_ECX + 0x1778 + local_8 * 8);
-    in_EDX[1] = in_EDX[1] + *(float *)(in_ECX + 0x177c + local_8 * 8);
+  for (i = 0; i < 10; i = i + 1) {
+    *in_EDX = *in_EDX + *(float *)(in_ECX + 0x1778 + i * 8);
+    in_EDX[1] = in_EDX[1] + *(float *)(in_ECX + 0x177c + i * 8);
   }
   return;
 }
@@ -6932,8 +7157,14 @@ void __cdecl Actor_UpdateMoveHistory(actor_s *param_1)
   float fVar7;
   int local_58;
   int local_54;
-  float local_20;
-  int local_c;
+  actor_s *self;
+  float nextWeight;
+  int index2;
+  int index;
+  float weight;
+  int index3;
+  int i;
+  float ratio;
   
   iVar5 = *(int *)(in_ECX + 0x1774);
   local_54 = iVar5;
@@ -6962,19 +7193,19 @@ void __cdecl Actor_UpdateMoveHistory(actor_s *param_1)
     *puVar3 = *puVar4;
     puVar3[1] = puVar4[1];
   }
-  local_20 = 1.0;
-  local_c = iVar5;
-  while (local_c = local_c + 1, local_c < 10) {
-    fVar7 = local_20 / (local_20 + 1.0);
-    *(float *)(in_ECX + 0x1778 + local_c * 8) = *(float *)(in_ECX + 0x1778 + local_c * 8) * fVar7;
-    *(float *)(in_ECX + 0x177c + local_c * 8) = *(float *)(in_ECX + 0x177c + local_c * 8) * fVar7;
-    local_20 = local_20 + 1.0;
+  nextWeight = 1.0;
+  i = iVar5;
+  while (i = i + 1, i < 10) {
+    fVar7 = nextWeight / (nextWeight + 1.0);
+    *(float *)(in_ECX + 0x1778 + i * 8) = *(float *)(in_ECX + 0x1778 + i * 8) * fVar7;
+    *(float *)(in_ECX + 0x177c + i * 8) = *(float *)(in_ECX + 0x177c + i * 8) * fVar7;
+    nextWeight = nextWeight + 1.0;
   }
-  for (local_c = 0; local_c < iVar5; local_c = local_c + 1) {
-    fVar7 = local_20 / (local_20 + 1.0);
-    *(float *)(in_ECX + 0x1778 + local_c * 8) = *(float *)(in_ECX + 0x1778 + local_c * 8) * fVar7;
-    *(float *)(in_ECX + 0x177c + local_c * 8) = *(float *)(in_ECX + 0x177c + local_c * 8) * fVar7;
-    local_20 = local_20 + 1.0;
+  for (i = 0; i < iVar5; i = i + 1) {
+    fVar7 = nextWeight / (nextWeight + 1.0);
+    *(float *)(in_ECX + 0x1778 + i * 8) = *(float *)(in_ECX + 0x1778 + i * 8) * fVar7;
+    *(float *)(in_ECX + 0x177c + i * 8) = *(float *)(in_ECX + 0x177c + i * 8) * fVar7;
+    nextWeight = nextWeight + 1.0;
   }
   *(int *)(in_ECX + 0x1774) = (iVar5 + 1) % 10;
   return;
@@ -6992,6 +7223,7 @@ void __cdecl Actor_UpdateNetworkLeanAmount(actor_s *param_1)
 
 {
   int *in_ECX;
+  actor_s *self;
   
   *(int *)(*in_ECX + 0x8c) = in_ECX[0x38a];
   return;
@@ -7000,6 +7232,8 @@ void __cdecl Actor_UpdateNetworkLeanAmount(actor_s *param_1)
 
 // 00901E70  Path_UpdateLeanAmount  (game_mp/actor_mp.cpp:5422)
 
+/* WARNING: Variable defined which should be unmapped: vWishDir */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -7013,6 +7247,11 @@ void __cdecl Path_UpdateLeanAmount(actor_s *param_1,float *param_2)
   float in_ECX;
   float *in_EDX;
   char *in_stack_ffffffd4;
+  float *vWishDir;
+  actor_s *self;
+  path_t *path;
+  pathpoint_t *pathPoint;
+  float STRAIGHTEN_TO_NEGOTIAION_DIST;
   
   if (in_ECX == 0.0) {
     in_stack_ffffffd4 = &s_self;
@@ -7059,12 +7298,14 @@ void __cdecl Path_UpdateLeanAmount(actor_s *param_1,float *param_2)
 
 // 00902050  Path_UpdateMomentum  (game_mp/actor_mp.cpp:5463)
 
+/* WARNING: Variable defined which should be unmapped: vWishDir */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl Path_UpdateMomentum(actor_s *param_1,float *param_2,float param_3)
+float __cdecl Path_UpdateMomentum(actor_s *fMoveDist,float *param_2,float param_3)
 
 {
   float fVar1;
@@ -7073,6 +7314,9 @@ float __cdecl Path_UpdateMomentum(actor_s *param_1,float *param_2,float param_3)
   float *in_ECX;
   actor_s *in_EDX;
   float10 fVar4;
+  float *vWishDir;
+  actor_s *self;
+  float MIN_DIST;
   
   if (in_ECX == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x155a,0,
@@ -7092,9 +7336,9 @@ float __cdecl Path_UpdateMomentum(actor_s *param_1,float *param_2,float param_3)
       return (float)fVar4;
     }
   }
-  if (15.0 < (float)param_1) {
+  if (15.0 < (float)fMoveDist) {
     Path_UpdateLeanAmount(in_EDX,in_ECX);
-    param_1 = (actor_s *)(((in_ECX[0x38a] + 1.0) * 0.5 * 0.5 + 0.5) * (float)param_1);
+    fMoveDist = (actor_s *)(((in_ECX[0x38a] + 1.0) * 0.5 * 0.5 + 0.5) * (float)fMoveDist);
     if ((0.0 < in_ECX[0x38a]) &&
        ((float)in_EDX->ent * in_ECX[0x389] - (float)in_EDX->sentient * in_ECX[0x388] < 0.0)) {
       in_ECX[0x38a] = -in_ECX[0x38a];
@@ -7109,7 +7353,7 @@ float __cdecl Path_UpdateMomentum(actor_s *param_1,float *param_2,float param_3)
   }
   in_ECX[0x388] = (float)in_EDX->ent;
   in_ECX[0x389] = (float)in_EDX->sentient;
-  return (float)param_1;
+  return (float)fMoveDist;
 }
 
 
@@ -7120,21 +7364,21 @@ float __cdecl Path_UpdateMomentum(actor_s *param_1,float *param_2,float param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Path_UpdateMovementDelta(actor_s *param_1,float param_2)
+void __cdecl Path_UpdateMovementDelta(actor_s *fMoveDist,float param_2)
 
 {
   gentity_s *pgVar1;
   code *pcVar2;
   bool bVar3;
-  path_t *ppVar4;
+  path_t *bReduceLookaheadAmount;
   actor_s *in_ECX;
+  float fVar4;
   float fVar5;
-  float fVar6;
-  double dVar7;
-  actor_s *paVar8;
-  float *pfVar9;
-  int iVar10;
-  int iVar11;
+  double dVar6;
+  actor_s *vEndPos;
+  float *bTrimAmount;
+  int iVar7;
+  int bAllowRestore;
   int in_stack_ffffff60;
   int in_stack_ffffff64;
   float local_90;
@@ -7189,31 +7433,33 @@ void __cdecl Path_UpdateMovementDelta(actor_s *param_1,float param_2)
   local_28 = *local_1c;
   local_24 = (pgVar1->r).currentOrigin[1];
   local_20 = (pgVar1->r).currentOrigin[2];
-  iVar11 = 1;
-  iVar10 = 1;
-  pfVar9 = (float *)0x0;
-  ppVar4 = (path_t *)Actor_IsDodgeEntity(local_14,(local_14->Physics).iHitEntnum);
-  paVar8 = (actor_s *)0x902302;
-  Path_UpdateLookahead(ppVar4,pfVar9,iVar10,iVar11,in_stack_ffffff60,in_stack_ffffff64);
+  bAllowRestore = 1;
+  iVar7 = 1;
+  bTrimAmount = (float *)0x0;
+  bReduceLookaheadAmount = (path_t *)Actor_IsDodgeEntity(local_14,(local_14->Physics).iHitEntnum);
+  vEndPos = (actor_s *)0x902302;
+  Path_UpdateLookahead
+            (bReduceLookaheadAmount,bTrimAmount,iVar7,bAllowRestore,in_stack_ffffff60,
+             in_stack_ffffff64);
   local_2c = local_18->lookaheadDir;
   local_38 = (gentity_s *)*local_2c;
   local_34 = (sentient_s *)local_18->lookaheadDir[1];
   local_30 = local_18->lookaheadDir[2];
   local_3c = local_14->moveHistoryIndex;
   local_40 = g_actorAssumedSpeed[local_14->species];
-  local_44 = ((float)param_1 * 20.0 - local_40 * 0.5) / (local_40 * 0.5);
+  local_44 = ((float)fMoveDist * 20.0 - local_40 * 0.5) / (local_40 * 0.5);
   local_4c = local_38;
   local_48 = local_34;
   if (0.0 < local_44) {
     if (local_44 < 1.0) {
       local_54 = (local_14->Path).forwardLookaheadDir2D;
-      fVar5 = local_44 * *local_54;
-      fVar6 = local_44 * (local_14->Path).forwardLookaheadDir2D[1];
+      fVar4 = local_44 * *local_54;
+      fVar5 = local_44 * (local_14->Path).forwardLookaheadDir2D[1];
       local_44 = 1.0 - local_44;
-      local_4c = (gentity_s *)(local_44 * (float)local_38 + fVar5);
-      local_48 = (sentient_s *)(local_44 * (float)local_34 + fVar6);
-      paVar8 = (actor_s *)&local_4c;
-      Vec2Normalize((float *)paVar8);
+      local_4c = (gentity_s *)(local_44 * (float)local_38 + fVar4);
+      local_48 = (sentient_s *)(local_44 * (float)local_34 + fVar5);
+      vEndPos = (actor_s *)&local_4c;
+      Vec2Normalize((float *)vEndPos);
     }
     else {
       local_50 = (local_14->Path).forwardLookaheadDir2D;
@@ -7222,9 +7468,9 @@ void __cdecl Path_UpdateMovementDelta(actor_s *param_1,float param_2)
     }
   }
   if (local_14->sideMove != 0.0) {
-    paVar8 = (actor_s *)0x90247e;
-    iVar10 = Path_CompleteLookahead(ppVar4);
-    if (iVar10 == 0) {
+    vEndPos = (actor_s *)0x90247e;
+    iVar7 = Path_CompleteLookahead(bReduceLookaheadAmount);
+    if (iVar7 == 0) {
       local_60 = local_18->fLookaheadDist;
       local_70 = local_18->fLookaheadDist * 0.5;
       local_74 = local_14->sideMove;
@@ -7244,9 +7490,10 @@ void __cdecl Path_UpdateMovementDelta(actor_s *param_1,float param_2)
       local_84 = (gentity_s *)((float)local_6c * 60.0 + local_28);
       local_80 = (sentient_s *)((float)local_68 * 60.0 + local_24);
       local_7c = local_30 * 60.0 + local_20;
-      paVar8 = (actor_s *)&local_84;
-      iVar10 = Path_LookaheadPredictionTrace((path_t *)paVar8,(float *)ppVar4,pfVar9);
-      if (iVar10 != 0) {
+      vEndPos = (actor_s *)&local_84;
+      iVar7 = Path_LookaheadPredictionTrace
+                        ((path_t *)vEndPos,(float *)bReduceLookaheadAmount,bTrimAmount);
+      if (iVar7 != 0) {
         local_38 = local_6c;
         local_34 = local_68;
         local_4c = local_6c;
@@ -7259,27 +7506,29 @@ void __cdecl Path_UpdateMovementDelta(actor_s *param_1,float param_2)
   if (local_90 < 1e-06) {
     local_90 = 1e-06;
   }
-  dVar7 = (double)local_90;
-  __libm_sse2_log((double)CONCAT44(ppVar4,paVar8));
-  dVar7 = (double)((float)dVar7 * 0.333);
-  __libm_sse2_exp((double)CONCAT44(ppVar4,paVar8));
-  local_90 = (float)dVar7;
+  dVar6 = (double)local_90;
+  __libm_sse2_log((double)CONCAT44(bReduceLookaheadAmount,vEndPos));
+  dVar6 = (double)((float)dVar6 * 0.333);
+  __libm_sse2_exp((double)CONCAT44(bReduceLookaheadAmount,vEndPos));
+  local_90 = (float)dVar6;
   if (local_90 < 0.6) {
     local_90 = 0.6;
   }
-  param_1 = (actor_s *)((float)param_1 * local_90);
-  if (local_18->fLookaheadDist <= (float)param_1 && (float)param_1 != local_18->fLookaheadDist) {
-    param_1 = (actor_s *)local_18->fLookaheadDist;
+  fMoveDist = (actor_s *)((float)fMoveDist * local_90);
+  if (local_18->fLookaheadDist <= (float)fMoveDist && (float)fMoveDist != local_18->fLookaheadDist)
+  {
+    fMoveDist = (actor_s *)local_18->fLookaheadDist;
   }
   if ((local_14->species == AI_SPECIES_DOG) && (((local_14->Path).flags & 2U) != 0)) {
-    param_1 = (actor_s *)Path_UpdateMomentum(param_1,(float *)paVar8,(float)ppVar4);
+    fMoveDist = (actor_s *)
+                Path_UpdateMomentum(fMoveDist,(float *)vEndPos,(float)bReduceLookaheadAmount);
   }
-  (local_14->Physics).vWishDelta[0] = (float)param_1 * (float)local_38;
-  (local_14->Physics).vWishDelta[1] = (float)param_1 * (float)local_34;
-  (local_14->Physics).vWishDelta[2] = (float)param_1 * local_30;
+  (local_14->Physics).vWishDelta[0] = (float)fMoveDist * (float)local_38;
+  (local_14->Physics).vWishDelta[1] = (float)fMoveDist * (float)local_34;
+  (local_14->Physics).vWishDelta[2] = (float)fMoveDist * local_30;
   local_14->moveHistory[local_3c][0] = (float)local_4c;
   local_14->moveHistory[local_3c][1] = (float)local_48;
-  Actor_UpdateMoveHistory(paVar8);
+  Actor_UpdateMoveHistory(vEndPos);
   return;
 }
 
@@ -7291,13 +7540,13 @@ void __cdecl Path_UpdateMovementDelta(actor_s *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetFlashed(actor_s *param_1,int param_2,float param_3)
+void __cdecl Actor_SetFlashed(actor_s *self,int flashed,float strength)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x15e8,0,
                              "%s");
     if (!bVar2) {
@@ -7306,16 +7555,16 @@ void __cdecl Actor_SetFlashed(actor_s *param_1,int param_2,float param_3)
       return;
     }
   }
-  if ((param_2 == 0) || (param_1->flashBangImmunity != 0)) {
-    param_1->flashBanged = 0;
-    param_1->flashBangedStrength = 0.0;
+  if ((flashed == 0) || (self->flashBangImmunity != 0)) {
+    self->flashBanged = 0;
+    self->flashBangedStrength = 0.0;
   }
   else {
-    if (param_1->flashBangedStrength <= param_3 && param_3 != param_1->flashBangedStrength) {
-      param_1->flashBangedStrength = param_3;
+    if (self->flashBangedStrength <= strength && strength != self->flashBangedStrength) {
+      self->flashBangedStrength = strength;
     }
-    param_1->flashBanged = 1;
-    param_1->aiBadPlace = AI_BADPLACE_NONE;
+    self->flashBanged = 1;
+    self->aiBadPlace = AI_BADPLACE_NONE;
   }
   return;
 }
@@ -7323,6 +7572,7 @@ void __cdecl Actor_SetFlashed(actor_s *param_1,int param_2,float param_3)
 
 // 00902860  Actor_AddStationaryMoveHistory  (game_mp/actor_mp.cpp:5629)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -7334,6 +7584,7 @@ void __cdecl Actor_AddStationaryMoveHistory(actor_s *param_1)
   int iVar1;
   int iVar2;
   actor_s *in_ECX;
+  actor_s *self;
   
   if ((level.time / 0x32) % 10 == 0) {
     Actor_UpdateMoveHistory(in_ECX);
@@ -7365,6 +7616,7 @@ bool __cdecl Actor_IsMoving(actor_s *param_1)
 {
   int in_ECX;
   undefined1 local_c;
+  actor_s *self;
   
   if ((*(int *)(in_ECX + 0x228) == 1) && (*(char *)(in_ECX + 0x224) != '\0')) {
     local_c = true;
@@ -7383,21 +7635,21 @@ bool __cdecl Actor_IsMoving(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_CheckOverridePos(actor_s *param_1,float *param_2)
+void __cdecl Actor_CheckOverridePos(actor_s *self,float *prevGoalPos)
 
 {
   bool bVar1;
   
-  if ((param_1->arrivalInfo).animscriptOverrideRunTo != 0) {
-    if ((((param_1->codeGoal).pos[0] == *param_2) && ((param_1->codeGoal).pos[1] == param_2[1])) &&
-       ((param_1->codeGoal).pos[2] == param_2[2])) {
+  if ((self->arrivalInfo).animscriptOverrideRunTo != 0) {
+    if ((((self->codeGoal).pos[0] == *prevGoalPos) && ((self->codeGoal).pos[1] == prevGoalPos[1]))
+       && ((self->codeGoal).pos[2] == prevGoalPos[2])) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
     if (!bVar1) {
-      (param_1->arrivalInfo).animscriptOverrideRunTo = 0;
+      (self->arrivalInfo).animscriptOverrideRunTo = 0;
     }
   }
   return;
@@ -7406,6 +7658,7 @@ void __cdecl Actor_CheckOverridePos(actor_s *param_1,float *param_2)
 
 // 009029A0  Actor_UpdateGoalPos  (game_mp/actor_mp.cpp:5665)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -7420,9 +7673,13 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
   int iVar4;
   gentity_s *pgVar5;
   actor_s *in_ECX;
-  actor_goal_s *paVar6;
-  actor_s *paVar7;
-  float local_10;
+  actor_goal_s *radius;
+  actor_s *self;
+  sentient_s *enemy;
+  sentient_s *pGoalSentient;
+  sentient_s *sentient;
+  sentient_info_t *pInfo;
+  float prevGoalPos;
   float local_c;
   float local_8;
   
@@ -7435,7 +7692,7 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
       return;
     }
   }
-  local_10 = (in_ECX->codeGoal).pos[0];
+  prevGoalPos = (in_ECX->codeGoal).pos[0];
   local_c = (in_ECX->codeGoal).pos[1];
   local_8 = (in_ECX->codeGoal).pos[2];
   if (in_ECX->useEnemyGoal == false) {
@@ -7450,18 +7707,16 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
     }
     else {
       pgVar5 = EntHandle::ent(&in_ECX->scriptGoalEnt);
-      paVar7 = in_ECX;
       if ((pgVar5->r).inuse == '\0') {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1644,0
                                  ,"%s");
-        paVar7 = in_ECX;
         if (!bVar2) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
       }
-      if ((paVar7->scriptGoal).node != (pathnode_t *)0x0) {
+      if ((in_ECX->scriptGoal).node != (pathnode_t *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1646,0
                                  ,"%s");
         if (!bVar2) {
@@ -7470,7 +7725,7 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
           return;
         }
       }
-      if ((paVar7->scriptGoal).volume != (gentity_s *)0x0) {
+      if ((in_ECX->scriptGoal).volume != (gentity_s *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1647,0
                                  ,"%s");
         if (!bVar2) {
@@ -7479,23 +7734,22 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
           return;
         }
       }
-      (paVar7->codeGoal).node = (pathnode_t *)0x0;
-      (paVar7->codeGoal).volume = (gentity_s *)0x0;
-      pgVar5 = EntHandle::ent(&paVar7->scriptGoalEnt);
+      (in_ECX->codeGoal).node = (pathnode_t *)0x0;
+      (in_ECX->codeGoal).volume = (gentity_s *)0x0;
+      pgVar5 = EntHandle::ent(&in_ECX->scriptGoalEnt);
       if (pgVar5->sentient != (sentient_s *)0x0) {
-        Sentient_EnemyTeam(paVar7->sentient->eTeam);
+        Sentient_EnemyTeam(in_ECX->sentient->eTeam);
       }
-      in_ECX = paVar7;
-      pgVar5 = EntHandle::ent(&paVar7->scriptGoalEnt);
-      (paVar7->codeGoal).pos[0] = (pgVar5->r).currentOrigin[0];
-      (paVar7->codeGoal).pos[1] = (pgVar5->r).currentOrigin[1];
-      (paVar7->codeGoal).pos[2] = (pgVar5->r).currentOrigin[2];
+      pgVar5 = EntHandle::ent(&in_ECX->scriptGoalEnt);
+      (in_ECX->codeGoal).pos[0] = (pgVar5->r).currentOrigin[0];
+      (in_ECX->codeGoal).pos[1] = (pgVar5->r).currentOrigin[1];
+      (in_ECX->codeGoal).pos[2] = (pgVar5->r).currentOrigin[2];
       in_ECX->codeGoalSrc = AI_GOAL_SRC_SCRIPT_ENTITY_GOAL;
     }
-    paVar6 = (actor_goal_s *)(in_ECX->scriptGoal).radius;
-    Actor_SetGoalRadius(paVar6,(float)in_ECX);
-    Actor_SetGoalHeight((actor_goal_s *)(in_ECX->scriptGoal).height,(float)paVar6);
-    Actor_CheckOverridePos(in_ECX,&local_10);
+    radius = (actor_goal_s *)(in_ECX->scriptGoal).radius;
+    Actor_SetGoalRadius(radius,(float)in_ECX);
+    Actor_SetGoalHeight((actor_goal_s *)(in_ECX->scriptGoal).height,(float)radius);
+    Actor_CheckOverridePos(in_ECX,&prevGoalPos);
   }
   else {
     psVar3 = Actor_GetTargetSentient(in_ECX);
@@ -7516,7 +7770,7 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
     (in_ECX->codeGoal).node = (pathnode_t *)0x0;
     (in_ECX->codeGoal).volume = (gentity_s *)0x0;
     Actor_SetGoalRadius((actor_goal_s *)in_ECX->pathEnemyFightDist,(float)in_ECX);
-    Actor_CheckOverridePos(in_ECX,&local_10);
+    Actor_CheckOverridePos(in_ECX,&prevGoalPos);
   }
   return;
 }
@@ -7529,12 +7783,13 @@ void __cdecl Actor_UpdateGoalPos(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetGoalRadius(actor_goal_s *param_1,float param_2)
+void __cdecl Actor_SetGoalRadius(actor_goal_s *radius,float param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   int in_ECX;
+  actor_goal_s *goal;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x168a,0,
@@ -7545,7 +7800,7 @@ void __cdecl Actor_SetGoalRadius(actor_goal_s *param_1,float param_2)
       return;
     }
   }
-  if ((float)param_1 < 0.0) {
+  if ((float)radius < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x168b,0,
                              "%s");
     if (!bVar2) {
@@ -7554,10 +7809,10 @@ void __cdecl Actor_SetGoalRadius(actor_goal_s *param_1,float param_2)
       return;
     }
   }
-  if ((float)param_1 < 4.0) {
-    param_1 = (actor_goal_s *)4.0;
+  if ((float)radius < 4.0) {
+    radius = (actor_goal_s *)4.0;
   }
-  *(actor_goal_s **)(in_ECX + 0x18) = param_1;
+  *(actor_goal_s **)(in_ECX + 0x18) = radius;
   return;
 }
 
@@ -7569,12 +7824,13 @@ void __cdecl Actor_SetGoalRadius(actor_goal_s *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetGoalHeight(actor_goal_s *param_1,float param_2)
+void __cdecl Actor_SetGoalHeight(actor_goal_s *height,float param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   int in_ECX;
+  actor_goal_s *goal;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1698,0,
@@ -7585,7 +7841,7 @@ void __cdecl Actor_SetGoalHeight(actor_goal_s *param_1,float param_2)
       return;
     }
   }
-  if ((float)param_1 < 0.0) {
+  if ((float)height < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x1699,0,
                              "%s");
     if (!bVar2) {
@@ -7594,10 +7850,10 @@ void __cdecl Actor_SetGoalHeight(actor_goal_s *param_1,float param_2)
       return;
     }
   }
-  if ((float)param_1 < 80.0) {
-    param_1 = (actor_goal_s *)0x42a00000;
+  if ((float)height < 80.0) {
+    height = (actor_goal_s *)0x42a00000;
   }
-  *(actor_goal_s **)(in_ECX + 0x1c) = param_1;
+  *(actor_goal_s **)(in_ECX + 0x1c) = height;
   return;
 }
 
@@ -7610,7 +7866,7 @@ void __cdecl Actor_SetGoalHeight(actor_goal_s *param_1,float param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-Actor_IsInsideArc(actor_s *param_1,float *param_2,float param_3,float param_4,float param_5,
+Actor_IsInsideArc(actor_s *radius,float *angle0,float angle1,float halfHeight,float param_5,
                  float param_6)
 
 {
@@ -7620,6 +7876,8 @@ Actor_IsInsideArc(actor_s *param_1,float *param_2,float param_3,float param_4,fl
   int iVar4;
   int *in_ECX;
   float *in_EDX;
+  float *origin;
+  actor_s *self;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\actor_mp.cpp",0x16a3,0,
@@ -7628,8 +7886,8 @@ Actor_IsInsideArc(actor_s *param_1,float *param_2,float param_3,float param_4,fl
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  iVar4 = IsPosInsideArc((float *)(*in_ECX + 0x124),15.0,in_EDX,(float)param_1,(float)param_2,
-                         param_3,param_4);
+  iVar4 = IsPosInsideArc((float *)(*in_ECX + 0x124),15.0,in_EDX,(float)radius,(float)angle0,angle1,
+                         halfHeight);
   return iVar4 != 0;
 }
 

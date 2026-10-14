@@ -2,41 +2,43 @@
 
 // 006A8A20  DSOUNDRecord_UpdateSample  (groupvoice/record_dsound.cpp:45)
 
-void __cdecl DSOUNDRecord_UpdateSample(dsound_sample_t *param_1)
+void __cdecl DSOUNDRecord_UpdateSample(dsound_sample_t *pRecSample)
 
 {
   int iVar1;
   uint uVar2;
-  uint local_4c;
-  uchar *local_40;
-  undefined1 local_3c [4];
-  audioSample_t local_38;
-  uint local_18;
-  int local_14;
-  uchar *local_10;
-  uint local_c;
-  uint local_8;
+  long lLockSize;
+  HRESULT hr;
+  int iBytesPerSample;
+  void *pLock1;
+  undefined1 dwCapturePos [4];
+  audioSample_t audioSample;
+  ulong dwLockLen2;
+  int iChannels;
+  void *pLock2;
+  ulong dwReadPos;
+  ulong dwLockLen1;
   
   if (g_recording_initialized) {
-    iVar1 = (**(code **)((int)*param_1->DSCB + 0x10))(param_1->DSCB,local_3c,&local_c);
+    iVar1 = (**(code **)((int)*pRecSample->DSCB + 0x10))(pRecSample->DSCB,dwCapturePos,&dwReadPos);
     if (iVar1 < 0) {
       Com_PrintError(9,"Error: Failed to get cursor positions \n");
     }
-    if (local_c < param_1->dwCaptureOffset) {
-      iVar1 = param_1->dwBufferSize - param_1->dwCaptureOffset;
+    if (dwReadPos < pRecSample->dwCaptureOffset) {
+      iVar1 = pRecSample->dwBufferSize - pRecSample->dwCaptureOffset;
     }
     else {
-      iVar1 = -param_1->dwCaptureOffset;
+      iVar1 = -pRecSample->dwCaptureOffset;
     }
-    local_4c = iVar1 + local_c;
-    uVar2 = local_4c & 0x80000003;
+    lLockSize = iVar1 + dwReadPos;
+    uVar2 = lLockSize & 0x80000003;
     if ((int)uVar2 < 0) {
       uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
     }
-    if (local_4c - uVar2 != 0) {
-      iVar1 = (**(code **)((int)*param_1->DSCB + 0x20))
-                        (param_1->DSCB,param_1->dwCaptureOffset,local_4c - uVar2,&local_40,&local_8,
-                         &local_10,&local_18,0);
+    if (lLockSize - uVar2 != 0) {
+      iVar1 = (**(code **)((int)*pRecSample->DSCB + 0x20))
+                        (pRecSample->DSCB,pRecSample->dwCaptureOffset,lLockSize - uVar2,&pLock1,
+                         &dwLockLen1,&pLock2,&dwLockLen2,0);
       if (iVar1 < 0) {
         if (iVar1 == -0x7ff8ffa9) {
           Com_Printf(9,"DSERR_INVALIDPARAM\n");
@@ -48,34 +50,34 @@ void __cdecl DSOUNDRecord_UpdateSample(dsound_sample_t *param_1)
         Com_PrintError(9,"Error trying to lock sample!\n");
       }
       else {
-        local_38.stereo = 1 < g_sound_channels;
-        if (local_38.stereo) {
-          local_14 = 2;
+        audioSample.stereo = 1 < g_sound_channels;
+        if (audioSample.stereo) {
+          iChannels = 2;
         }
         else {
-          local_14 = 1;
+          iChannels = 1;
         }
-        local_38.bytesPerSample = 2;
-        local_38.frequency = g_sound_recordFrequency;
-        local_38.sampleOffset = 0;
-        local_38.channels = g_sound_channels;
-        iVar1 = local_8 + local_18;
-        if (local_40 != (uchar *)0x0) {
-          local_38.lengthInSamples = local_8 / (uint)(local_14 * 2);
-          local_38.lengthInBytes = local_8;
-          local_38.buffer = local_40;
-          (*current_audioCallback)(&local_38);
+        audioSample.bytesPerSample = 2;
+        audioSample.frequency = g_sound_recordFrequency;
+        audioSample.sampleOffset = 0;
+        audioSample.channels = g_sound_channels;
+        iVar1 = dwLockLen1 + dwLockLen2;
+        if (pLock1 != (void *)0x0) {
+          audioSample.lengthInSamples = dwLockLen1 / (uint)(iChannels * 2);
+          audioSample.lengthInBytes = dwLockLen1;
+          audioSample.buffer = pLock1;
+          (*current_audioCallback)(&audioSample);
         }
-        if (local_10 != (uchar *)0x0) {
-          local_38.lengthInSamples = local_18 / (uint)(local_14 * 2);
-          local_38.lengthInBytes = local_18;
-          local_38.buffer = local_10;
-          (*current_audioCallback)(&local_38);
+        if (pLock2 != (void *)0x0) {
+          audioSample.lengthInSamples = dwLockLen2 / (uint)(iChannels * 2);
+          audioSample.lengthInBytes = dwLockLen2;
+          audioSample.buffer = pLock2;
+          (*current_audioCallback)(&audioSample);
         }
-        param_1->dwCaptureOffset = param_1->dwCaptureOffset + iVar1;
-        param_1->dwCaptureOffset = param_1->dwCaptureOffset % param_1->dwBufferSize;
-        iVar1 = (**(code **)((int)*param_1->DSCB + 0x2c))
-                          (param_1->DSCB,local_40,local_8,local_10,local_18);
+        pRecSample->dwCaptureOffset = pRecSample->dwCaptureOffset + iVar1;
+        pRecSample->dwCaptureOffset = pRecSample->dwCaptureOffset % pRecSample->dwBufferSize;
+        iVar1 = (**(code **)((int)*pRecSample->DSCB + 0x2c))
+                          (pRecSample->DSCB,pLock1,dwLockLen1,pLock2,dwLockLen2);
         if (iVar1 < 0) {
           if (iVar1 == -0x7ff8ffa9) {
             Com_Printf(9,"DSERR_INVALIDPARAM\n");
@@ -114,6 +116,7 @@ dsound_sample_t * __cdecl DSOUNDRecord_NewSample(void)
   code *pcVar1;
   bool bVar2;
   dsound_sample_t *pdVar3;
+  dsound_sample_t *pRecSample;
   
   if (0x21 < (int)&s_recordingSamplePtr[-0xe0d67].currentOffset / 0x48) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\groupvoice\\record_dsound.cpp",0xb9
@@ -139,15 +142,15 @@ dsound_sample_t * __cdecl DSOUNDRecord_NewSample(void)
 
 // 006A8DB0  DSOUNDRecord_DestroySample  (groupvoice/record_dsound.cpp:208)
 
-int __cdecl DSOUNDRecord_DestroySample(dsound_sample_t *param_1)
+int __cdecl DSOUNDRecord_DestroySample(dsound_sample_t *pRecSample)
 
 {
   int iVar1;
   
   if (g_recording_initialized) {
-    if (param_1->DSB != (IDirectSoundBuffer *)0x0) {
-      (**(code **)((int)*param_1->DSB + 8))(param_1->DSB);
-      param_1->DSB = (IDirectSoundBuffer *)0x0;
+    if (pRecSample->DSB != (IDirectSoundBuffer *)0x0) {
+      (**(code **)((int)*pRecSample->DSB + 8))(pRecSample->DSB);
+      pRecSample->DSB = (IDirectSoundBuffer *)0x0;
     }
     iVar1 = 1;
   }
@@ -160,18 +163,19 @@ int __cdecl DSOUNDRecord_DestroySample(dsound_sample_t *param_1)
 
 // 006A8DF0  DSOUNDRecord_Start  (groupvoice/record_dsound.cpp:229)
 
-int __cdecl DSOUNDRecord_Start(dsound_sample_t *param_1)
+int __cdecl DSOUNDRecord_Start(dsound_sample_t *pRecSample)
 
 {
   int iVar1;
-  undefined4 local_34;
+  HRESULT hr;
+  undefined4 dscbd;
   undefined4 local_30;
   ulong local_2c;
   undefined4 local_28;
   undefined2 *local_24;
   undefined4 local_20;
   undefined4 local_1c;
-  undefined2 local_18;
+  undefined2 wfx;
   short local_16;
   int local_14;
   int local_10;
@@ -180,27 +184,27 @@ int __cdecl DSOUNDRecord_Start(dsound_sample_t *param_1)
   undefined2 local_8;
   
   if (g_recording_initialized) {
-    if (param_1 == (dsound_sample_t *)0x0) {
+    if (pRecSample == (dsound_sample_t *)0x0) {
       iVar1 = -1;
     }
     else {
-      local_18 = 1;
+      wfx = 1;
       local_16 = (short)g_sound_channels;
       local_a = 0x10;
       local_14 = g_sound_recordFrequency;
       local_10 = g_sound_recordFrequency * g_sound_channels * 2;
       local_c = (short)g_sound_channels * 2;
       local_8 = 0;
-      local_34 = 0x1c;
+      dscbd = 0x1c;
       local_30 = 0;
       local_2c = g_sound_recordBufferSize;
       local_28 = 0;
-      local_24 = &local_18;
+      local_24 = &wfx;
       local_20 = 0;
       local_1c = 0;
-      if ((param_1->DSCB == (IDirectSoundCaptureBuffer *)0x0) &&
+      if ((pRecSample->DSCB == (IDirectSoundCaptureBuffer *)0x0) &&
          (iVar1 = (**(code **)((int)*g_pDSCaptureInstance + 0xc))
-                            (g_pDSCaptureInstance,&local_34,param_1,0), iVar1 < 0)) {
+                            (g_pDSCaptureInstance,&dscbd,pRecSample,0), iVar1 < 0)) {
         if (iVar1 < -0x7787ff9b) {
           if (iVar1 == -0x7787ff9c) {
             Com_Printf(9,"BADFORMAT\n");
@@ -225,15 +229,15 @@ int __cdecl DSOUNDRecord_Start(dsound_sample_t *param_1)
         iVar1 = -1;
       }
       else {
-        param_1->dwCaptureOffset = 0;
-        param_1->dwBufferSize = local_2c;
-        iVar1 = (**(code **)((int)*param_1->DSCB + 0x24))(param_1->DSCB,1);
+        pRecSample->dwCaptureOffset = 0;
+        pRecSample->dwBufferSize = local_2c;
+        iVar1 = (**(code **)((int)*pRecSample->DSCB + 0x24))(pRecSample->DSCB,1);
         if (iVar1 < 0) {
           Com_PrintError(9,"error: Unable to Read to Buffer\n");
           iVar1 = -1;
         }
         else {
-          g_current_sample = param_1;
+          g_current_sample = pRecSample;
           g_currently_recording = true;
         }
       }
@@ -248,17 +252,18 @@ int __cdecl DSOUNDRecord_Start(dsound_sample_t *param_1)
 
 // 006A9010  DSOUNDRecord_Stop  (groupvoice/record_dsound.cpp:319)
 
-int __cdecl DSOUNDRecord_Stop(dsound_sample_t *param_1)
+int __cdecl DSOUNDRecord_Stop(dsound_sample_t *pRecSample)
 
 {
   int iVar1;
+  HRESULT hr;
   
   if (g_recording_initialized) {
-    if (param_1->DSCB == (IDirectSoundCaptureBuffer *)0x0) {
+    if (pRecSample->DSCB == (IDirectSoundCaptureBuffer *)0x0) {
       iVar1 = -1;
     }
     else {
-      iVar1 = (**(code **)((int)*param_1->DSCB + 0x28))(param_1->DSCB);
+      iVar1 = (**(code **)((int)*pRecSample->DSCB + 0x28))(pRecSample->DSCB);
       if (iVar1 < 0) {
         Com_PrintError(9,"Error stopping recording buffer\n");
       }
@@ -266,12 +271,12 @@ int __cdecl DSOUNDRecord_Stop(dsound_sample_t *param_1)
         g_current_sample = (dsound_sample_t *)0x0;
         g_currently_recording = false;
       }
-      iVar1 = (**(code **)((int)*param_1->DSCB + 8))(param_1->DSCB);
+      iVar1 = (**(code **)((int)*pRecSample->DSCB + 8))(pRecSample->DSCB);
       if (iVar1 < 0) {
         Com_PrintError(9,"Error releasing recording buffer\n");
       }
       else {
-        param_1->DSCB = (IDirectSoundCaptureBuffer *)0x0;
+        pRecSample->DSCB = (IDirectSoundCaptureBuffer *)0x0;
       }
     }
   }
@@ -284,14 +289,16 @@ int __cdecl DSOUNDRecord_Stop(dsound_sample_t *param_1)
 
 // 006A90B0  DSOUNDRecord_Init  (groupvoice/record_dsound.cpp:361)
 
-int __cdecl DSOUNDRecord_Init(bool param_1,void *param_2)
+int __cdecl DSOUNDRecord_Init(bool bCallDsoundInit,void *handle)
 
 {
   int iVar1;
+  HRESULT hr;
   
   s_recordingSamplePtr = s_recordingSamples;
   g_recording_initialized = false;
-  if ((param_1) && (iVar1 = _DirectSoundCaptureCreate_12(0,&g_pDSCaptureInstance,0), iVar1 < 0)) {
+  if ((bCallDsoundInit) &&
+     (iVar1 = _DirectSoundCaptureCreate_12(0,&g_pDSCaptureInstance,0), iVar1 < 0)) {
     Com_PrintError(9,"Error initializing direct sound instance!  %d\n");
     return 0;
   }
@@ -305,14 +312,14 @@ int __cdecl DSOUNDRecord_Init(bool param_1,void *param_2)
 void __cdecl DSOUNDRecord_Shutdown(void)
 
 {
-  int local_8;
+  HRESULT hr;
   
-  local_8 = 0;
+  hr = 0;
   if (g_pDSCaptureInstance != (IDirectSoundCapture *)0x0) {
-    local_8 = (**(code **)((int)*g_pDSCaptureInstance + 8))(g_pDSCaptureInstance);
+    hr = (**(code **)((int)*g_pDSCaptureInstance + 8))(g_pDSCaptureInstance);
   }
   g_pDSCaptureInstance = (IDirectSoundCapture *)0x0;
-  if (local_8 < 0) {
+  if (hr < 0) {
     Com_PrintError(9,"Error releasing direct sound instance!  %d\n");
   }
   return;

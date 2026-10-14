@@ -7,15 +7,16 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-clientInfo_t * __cdecl ClientInfoForEntity(int param_1,int param_2)
+clientInfo_t * __cdecl ClientInfoForEntity(int localClientNum,int entNum)
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
   clientInfo_t *pcVar4;
+  centity_s *cent;
   
-  pcVar3 = CG_GetEntity(param_1,param_2);
+  pcVar3 = CG_GetEntity(localClientNum,entNum);
   if ((pcVar3->nextState).eType == 1) {
     if ((pcVar3->nextState).eType < 0x15) {
       if (0x1f < (pcVar3->nextState).clientNum) {
@@ -51,15 +52,18 @@ clientInfo_t * __cdecl ClientInfoForEntity(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DObj * __cdecl GetVehicleEntDObj(int param_1,centity_s *param_2)
+DObj * __cdecl GetVehicleEntDObj(int localClientNum,centity_s *centVeh)
 
 {
   code *pcVar1;
   bool bVar2;
   DObj *pDVar3;
   cgs_t *pcVar4;
+  DObj *result;
+  cgs_t *cgs;
+  entityState_s *ns;
   
-  if (param_2->nextValid == 0) {
+  if (centVeh->nextValid == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0x3c,
                              0,"%s");
     if (!bVar2) {
@@ -68,10 +72,10 @@ DObj * __cdecl GetVehicleEntDObj(int param_1,centity_s *param_2)
       return pDVar3;
     }
   }
-  pcVar4 = CG_GetLocalClientStaticGlobals(param_1);
+  pcVar4 = CG_GetLocalClientStaticGlobals(localClientNum);
   pDVar3 = CG_PreProcess_GetDObj
-                     (param_1,(param_2->nextState).number,(int)(param_2->nextState).eType,
-                      pcVar4->gameModels[(param_2->nextState).un3.item],(XModel *)0x0);
+                     (localClientNum,(centVeh->nextState).number,(int)(centVeh->nextState).eType,
+                      pcVar4->gameModels[(centVeh->nextState).un3.item],(XModel *)0x0);
   return pDVar3;
 }
 
@@ -83,14 +87,17 @@ DObj * __cdecl GetVehicleEntDObj(int param_1,centity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_VehEntityUsingVehicle(int param_1,int param_2)
+bool __cdecl CG_VehEntityUsingVehicle(int localClientNum,int entNum)
 
 {
   bool bVar1;
   clientInfo_t *pcVar2;
   centity_s *pcVar3;
+  centity_s *veh;
+  centity_s *cent;
+  clientInfo_t *ci;
   
-  pcVar2 = ClientInfoForEntity(param_1,param_2);
+  pcVar2 = ClientInfoForEntity(localClientNum,entNum);
   if (pcVar2 == (clientInfo_t *)0x0) {
     bVar1 = false;
   }
@@ -98,12 +105,12 @@ bool __cdecl CG_VehEntityUsingVehicle(int param_1,int param_2)
     bVar1 = false;
   }
   else {
-    pcVar3 = CG_GetEntity(param_1,param_2);
+    pcVar3 = CG_GetEntity(localClientNum,entNum);
     if (((pcVar3->nextState).lerp.eFlags & 0x4000U) == 0) {
       bVar1 = false;
     }
     else {
-      pcVar3 = CG_GetEntity(param_1,pcVar2->attachedVehEntNum);
+      pcVar3 = CG_GetEntity(localClientNum,pcVar2->attachedVehEntNum);
       if ((pcVar3 == (centity_s *)0x0) || ((pcVar3->nextState).eType != 0xe)) {
         bVar1 = false;
       }
@@ -123,14 +130,17 @@ bool __cdecl CG_VehEntityUsingVehicle(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_VehEntityUsingRemoteControlVehicle(int param_1,int param_2)
+bool __cdecl CG_VehEntityUsingRemoteControlVehicle(int localClientNum,int entNum)
 
 {
   bool bVar1;
   clientInfo_t *pcVar2;
   centity_s *pcVar3;
+  centity_s *veh;
+  centity_s *cent;
+  clientInfo_t *ci;
   
-  pcVar2 = ClientInfoForEntity(param_1,param_2);
+  pcVar2 = ClientInfoForEntity(localClientNum,entNum);
   if (pcVar2 == (clientInfo_t *)0x0) {
     bVar1 = false;
   }
@@ -138,12 +148,12 @@ bool __cdecl CG_VehEntityUsingRemoteControlVehicle(int param_1,int param_2)
     bVar1 = false;
   }
   else {
-    pcVar3 = CG_GetEntity(param_1,param_2);
+    pcVar3 = CG_GetEntity(localClientNum,entNum);
     if (((pcVar3->nextState).lerp.eFlags & 0x4000U) == 0) {
       bVar1 = false;
     }
     else {
-      pcVar3 = CG_GetEntity(param_1,pcVar2->attachedVehEntNum);
+      pcVar3 = CG_GetEntity(localClientNum,pcVar2->attachedVehEntNum);
       if ((pcVar3 == (centity_s *)0x0) ||
          ((((pcVar3->nextState).eType != 0xe && ((pcVar3->nextState).eType != 0xc)) &&
           ((pcVar3->nextState).eType != 0xd)))) {
@@ -169,12 +179,12 @@ bool __cdecl CG_VehEntityUsingRemoteControlVehicle(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-vehicle_info_t * __cdecl CG_GetVehicleInfo(int param_1)
+vehicle_info_t * __cdecl CG_GetVehicleInfo(int index)
 
 {
   vehicle_info_t *pvVar1;
   
-  pvVar1 = BG_GetVehicleInfo(param_1);
+  pvVar1 = BG_GetVehicleInfo(index);
   return pvVar1;
 }
 
@@ -182,16 +192,20 @@ vehicle_info_t * __cdecl CG_GetVehicleInfo(int param_1)
 // 00513450  CG_VehPlayerVehicleSeat  (cgame_mp/cg_vehicles_mp.cpp:164)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_VehPlayerVehicleSeat(int param_1,int param_2)
+int __cdecl CG_VehPlayerVehicleSeat(int localClientNum,int entNum)
 
 {
   code *pcVar1;
   bool bVar2;
   clientInfo_t *pcVar3;
   int iVar4;
+  clientInfo_t *ci;
   
-  pcVar3 = ClientInfoForEntity(param_1,param_2);
+  pcVar3 = ClientInfoForEntity(localClientNum,entNum);
   if (pcVar3 == (clientInfo_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xa8,
                              0,"%s");
@@ -222,16 +236,19 @@ int __cdecl CG_VehPlayerVehicleSeat(int param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-GetTagMatrix(int param_1,int param_2,ushort param_3,float (*param_4) [3],float *param_5)
+GetTagMatrix(int localClientNum,int vehEntNum,ushort tagName,float (*resultTagMat) [3],
+            float *resultOrigin)
 
 {
   code *pcVar1;
   bool bVar2;
-  centity_s *pcVar3;
-  DObj *pDVar4;
+  centity_s *centVeh_00;
+  DObj *obj;
+  centity_s *centVeh;
+  DObj *objVeh;
   
-  pcVar3 = CG_GetEntity(param_1,param_2);
-  if ((pcVar3->nextState).eType != 0xe) {
+  centVeh_00 = CG_GetEntity(localClientNum,vehEntNum);
+  if ((centVeh_00->nextState).eType != 0xe) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xb4,
                              0,"%s");
     if (!bVar2) {
@@ -240,34 +257,34 @@ GetTagMatrix(int param_1,int param_2,ushort param_3,float (*param_4) [3],float *
       return;
     }
   }
-  if ((pcVar3->nextState).eType == 0xe) {
-    if (pcVar3->nextValid == 0) {
+  if ((centVeh_00->nextState).eType == 0xe) {
+    if (centVeh_00->nextValid == 0) {
       Com_PrintWarning(0xe,"Vehicle being used by a player was not included in latest snapshot.\n");
-      MatrixIdentity33(param_4);
-      *param_5 = 0.0;
-      param_5[1] = 0.0;
-      param_5[2] = 0.0;
+      MatrixIdentity33(resultTagMat);
+      *resultOrigin = 0.0;
+      resultOrigin[1] = 0.0;
+      resultOrigin[2] = 0.0;
     }
     else {
-      pDVar4 = GetVehicleEntDObj(param_1,pcVar3);
-      if (pDVar4 == (DObj *)0x0) {
+      obj = GetVehicleEntDObj(localClientNum,centVeh_00);
+      if (obj == (DObj *)0x0) {
         Com_PrintWarning(0xe,"GetTagMatrix() unable to get vehicle DObj.\n");
-        MatrixIdentity33(param_4);
-        *param_5 = 0.0;
-        param_5[1] = 0.0;
-        param_5[2] = 0.0;
+        MatrixIdentity33(resultTagMat);
+        *resultOrigin = 0.0;
+        resultOrigin[1] = 0.0;
+        resultOrigin[2] = 0.0;
       }
       else {
-        CG_DObjGetWorldTagMatrix(&pcVar3->pose,pDVar4,(uint)param_3,param_4,param_5);
+        CG_DObjGetWorldTagMatrix(&centVeh_00->pose,obj,(uint)tagName,resultTagMat,resultOrigin);
       }
     }
   }
   else {
     Com_PrintWarning(0xe,"Calling GetTagMarix on an entity that is not a vehicle.\n");
-    MatrixIdentity33(param_4);
-    *param_5 = 0.0;
-    param_5[1] = 0.0;
-    param_5[2] = 0.0;
+    MatrixIdentity33(resultTagMat);
+    *resultOrigin = 0.0;
+    resultOrigin[1] = 0.0;
+    resultOrigin[2] = 0.0;
   }
   return;
 }
@@ -275,24 +292,32 @@ GetTagMatrix(int param_1,int param_2,ushort param_3,float (*param_4) [3],float *
 
 // 00513660  SeatTransformForSlot  (cgame_mp/cg_vehicles_mp.cpp:212)
 
-void __cdecl SeatTransformForSlot(int param_1,int param_2,int param_3,float *param_4,float *param_5)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl
+SeatTransformForSlot
+          (int localClientNum,int vehEntNum,int vehSlotIdx,float *resultOrigin,float *resultAngles)
 
 {
-  ushort uVar1;
-  float local_34;
+  ushort tagName_00;
+  ushort tagName;
+  float tagOrigin;
   float local_30;
   float local_2c;
-  float local_28 [9];
+  float tagMtx [9];
   
-  uVar1 = BG_VehiclesGetSlotTagName(param_3);
-  GetTagMatrix(param_1,param_2,uVar1,(float (*) [3])local_28,&local_34);
-  if (param_5 != (float *)0x0) {
-    AxisToAngles((float (*) [3])local_28,param_5);
+  tagName_00 = BG_VehiclesGetSlotTagName(vehSlotIdx);
+  GetTagMatrix(localClientNum,vehEntNum,tagName_00,(float (*) [3])tagMtx,&tagOrigin);
+  if (resultAngles != (float *)0x0) {
+    AxisToAngles((float (*) [3])tagMtx,resultAngles);
   }
-  if (param_4 != (float *)0x0) {
-    *param_4 = local_34;
-    param_4[1] = local_30;
-    param_4[2] = local_2c;
+  if (resultOrigin != (float *)0x0) {
+    *resultOrigin = tagOrigin;
+    resultOrigin[1] = local_30;
+    resultOrigin[2] = local_2c;
   }
   return;
 }
@@ -303,13 +328,14 @@ void __cdecl SeatTransformForSlot(int param_1,int param_2,int param_3,float *par
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SeatTransformForClientInfo(int param_1,clientInfo_t *param_2,float *param_3,float *param_4)
+SeatTransformForClientInfo
+          (int localClientNum,clientInfo_t *ci,float *resultOrigin,float *resultAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (clientInfo_t *)0x0) {
+  if (ci == (clientInfo_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xe8,
                              0,"%s");
     if (!bVar2) {
@@ -318,7 +344,7 @@ SeatTransformForClientInfo(int param_1,clientInfo_t *param_2,float *param_3,floa
       return;
     }
   }
-  if (param_2->attachedVehEntNum == 0x3ff) {
+  if (ci->attachedVehEntNum == 0x3ff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xe9,
                              0,"%s");
     if (!bVar2) {
@@ -327,7 +353,8 @@ SeatTransformForClientInfo(int param_1,clientInfo_t *param_2,float *param_3,floa
       return;
     }
   }
-  SeatTransformForSlot(param_1,param_2->attachedVehEntNum,param_2->attachedVehSeat,param_3,param_4);
+  SeatTransformForSlot
+            (localClientNum,ci->attachedVehEntNum,ci->attachedVehSeat,resultOrigin,resultAngles);
   return;
 }
 
@@ -339,17 +366,20 @@ SeatTransformForClientInfo(int param_1,clientInfo_t *param_2,float *param_3,floa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_VehSeatTransformForPlayer(int param_1,int param_2,float *param_3,float *param_4)
+void __cdecl
+CG_VehSeatTransformForPlayer(int localClientNum,int entNum,float *resultOrigin,float *resultAngles)
 
 {
   code *pcVar1;
   bool bVar2;
-  clientInfo_t *pcVar3;
-  centity_s *pcVar4;
+  clientInfo_t *ci_00;
+  centity_s *pcVar3;
+  clientInfo_t *ci;
+  centity_s *centPlayer;
   
-  pcVar3 = ClientInfoForEntity(param_1,param_2);
-  pcVar4 = CG_GetEntity(param_1,param_2);
-  if ((pcVar4->nextState).eType != 1) {
+  ci_00 = ClientInfoForEntity(localClientNum,entNum);
+  pcVar3 = CG_GetEntity(localClientNum,entNum);
+  if ((pcVar3->nextState).eType != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xf6,
                              0,"%s");
     if (!bVar2) {
@@ -358,7 +388,7 @@ void __cdecl CG_VehSeatTransformForPlayer(int param_1,int param_2,float *param_3
       return;
     }
   }
-  if (0x14 < (pcVar4->nextState).eType) {
+  if (0x14 < (pcVar3->nextState).eType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xf7,
                              0,"%s");
     if (!bVar2) {
@@ -367,7 +397,7 @@ void __cdecl CG_VehSeatTransformForPlayer(int param_1,int param_2,float *param_3
       return;
     }
   }
-  if (pcVar3->attachedVehEntNum == 0) {
+  if (ci_00->attachedVehEntNum == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0xf8,
                              0,"%s");
     if (!bVar2) {
@@ -376,7 +406,7 @@ void __cdecl CG_VehSeatTransformForPlayer(int param_1,int param_2,float *param_3
       return;
     }
   }
-  SeatTransformForClientInfo(param_1,pcVar3,param_3,param_4);
+  SeatTransformForClientInfo(localClientNum,ci_00,resultOrigin,resultAngles);
   return;
 }
 
@@ -388,10 +418,10 @@ void __cdecl CG_VehSeatTransformForPlayer(int param_1,int param_2,float *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_VehGetHealthPercentageEntity(centity_s *param_1)
+float __cdecl CG_VehGetHealthPercentageEntity(centity_s *cent)
 
 {
-  return (float)((param_1->nextState).time2 & 0x3f) / 63.0;
+  return (float)((cent->nextState).time2 & 0x3f) / 63.0;
 }
 
 
@@ -402,10 +432,10 @@ float __cdecl CG_VehGetHealthPercentageEntity(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_VehGetHealthPercentageLeftTread(centity_s *param_1)
+float __cdecl CG_VehGetHealthPercentageLeftTread(centity_s *cent)
 
 {
-  return (float)((int)((param_1->nextState).time2 & 0xfc0U) >> 6) / 63.0;
+  return (float)((int)((cent->nextState).time2 & 0xfc0U) >> 6) / 63.0;
 }
 
 
@@ -416,10 +446,10 @@ float __cdecl CG_VehGetHealthPercentageLeftTread(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_VehGetHealthPercentageRightTread(centity_s *param_1)
+float __cdecl CG_VehGetHealthPercentageRightTread(centity_s *cent)
 
 {
-  return (float)((int)((param_1->nextState).time2 & 0x3f000U) >> 0xc) / 63.0;
+  return (float)((int)((cent->nextState).time2 & 0x3f000U) >> 0xc) / 63.0;
 }
 
 
@@ -430,10 +460,10 @@ float __cdecl CG_VehGetHealthPercentageRightTread(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_VehGetSeatOccupancyFlags(centity_s *param_1)
+int __cdecl CG_VehGetSeatOccupancyFlags(centity_s *cent)
 
 {
-  return (int)((param_1->nextState).time2 & 0xc0000U) >> 0x12;
+  return (int)((cent->nextState).time2 & 0xc0000U) >> 0x12;
 }
 
 
@@ -444,14 +474,14 @@ int __cdecl CG_VehGetSeatOccupancyFlags(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_VehGetSeatGunTurningYaw(centity_s *param_1,int param_2)
+bool __cdecl CG_VehGetSeatGunTurningYaw(centity_s *cent,int seatIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_2 < 0) || (1 < (uint)param_2)) {
+  if ((seatIndex < 0) || (1 < (uint)seatIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0x13c
                              ,0,"%s");
     if (!bVar2) {
@@ -460,8 +490,8 @@ bool __cdecl CG_VehGetSeatGunTurningYaw(centity_s *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return ((param_1->nextState).time2 & _yawturn_masks[param_2]) >>
-         ((byte)_yawturn_masks[param_2] & 0x1f) != 0;
+  return ((cent->nextState).time2 & _yawturn_masks[seatIndex]) >>
+         ((byte)_yawturn_masks[seatIndex] & 0x1f) != 0;
 }
 
 
@@ -472,14 +502,14 @@ bool __cdecl CG_VehGetSeatGunTurningYaw(centity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_VehGetSeatGunTurningPitch(centity_s *param_1,int param_2)
+bool __cdecl CG_VehGetSeatGunTurningPitch(centity_s *cent,int seatIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_2 < 0) || (1 < (uint)param_2)) {
+  if ((seatIndex < 0) || (1 < (uint)seatIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0x142
                              ,0,"%s");
     if (!bVar2) {
@@ -488,8 +518,8 @@ bool __cdecl CG_VehGetSeatGunTurningPitch(centity_s *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return ((param_1->nextState).time2 & _pitchturn_masks[param_2]) >>
-         ((byte)_pitchturn_masks[param_2] & 0x1f) != 0;
+  return ((cent->nextState).time2 & _pitchturn_masks[seatIndex]) >>
+         ((byte)_pitchturn_masks[seatIndex] & 0x1f) != 0;
 }
 
 
@@ -500,14 +530,14 @@ bool __cdecl CG_VehGetSeatGunTurningPitch(centity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_VehGetSeatGunOverheating(centity_s *param_1,int param_2)
+bool __cdecl CG_VehGetSeatGunOverheating(centity_s *cent,int seatIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_2 < 0) || (1 < (uint)param_2)) {
+  if ((seatIndex < 0) || (1 < (uint)seatIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_vehicles_mp.cpp",0x148
                              ,0,"%s");
     if (!bVar2) {
@@ -516,7 +546,7 @@ bool __cdecl CG_VehGetSeatGunOverheating(centity_s *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  return ((param_1->nextState).time2 & _overheating_masks[param_2]) >>
-         ((byte)_overheating_shifts[param_2] & 0x1f) != 0;
+  return ((cent->nextState).time2 & _overheating_masks[seatIndex]) >>
+         ((byte)_overheating_shifts[seatIndex] & 0x1f) != 0;
 }
 

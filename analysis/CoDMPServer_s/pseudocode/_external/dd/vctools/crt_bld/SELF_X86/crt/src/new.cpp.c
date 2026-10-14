@@ -2,7 +2,7 @@
 
 // 0095D958  operator_new  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/new.cpp:57)
 
-void * __cdecl operator_new(uint param_1)
+void * __cdecl operator_new(uint size)
 
 {
   int iVar1;
@@ -10,11 +10,11 @@ void * __cdecl operator_new(uint param_1)
   bad_alloc bStack_10;
   
   do {
-    pvVar2 = malloc(param_1);
+    pvVar2 = malloc(size);
     if (pvVar2 != (void *)0x0) {
       return pvVar2;
     }
-    iVar1 = _callnewh(param_1);
+    iVar1 = _callnewh(size);
   } while (iVar1 != 0);
   if ((_S1 & 1) == 0) {
     _S1 = _S1 | 1;

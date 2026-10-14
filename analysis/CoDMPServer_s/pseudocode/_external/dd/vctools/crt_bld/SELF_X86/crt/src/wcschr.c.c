@@ -2,19 +2,19 @@
 
 // 009781DC  wcschr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcschr.c:38)
 
-ushort * __cdecl wcschr(wchar_t *param_1,wchar_t param_2)
+ushort * __cdecl wcschr(wchar_t *string,wchar_t ch)
 
 {
   while( true ) {
-    if (*param_1 == L'\0') {
-      if (*param_1 != param_2) {
-        param_1 = (wchar_t *)0x0;
+    if (*string == L'\0') {
+      if (*string != ch) {
+        string = (wchar_t *)0x0;
       }
-      return (ushort *)param_1;
+      return (ushort *)string;
     }
-    if (*param_1 == param_2) break;
-    param_1 = param_1 + 1;
+    if (*string == ch) break;
+    string = string + 1;
   }
-  return (ushort *)param_1;
+  return (ushort *)string;
 }
 

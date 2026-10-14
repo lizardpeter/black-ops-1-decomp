@@ -2,7 +2,7 @@
 
 // 00C2A7D0  _matherr  (line unknown)
 
-int __cdecl _matherr(_exception *param_1)
+int __cdecl _matherr(_exception *pexcept)
 
 {
   return 0;

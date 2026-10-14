@@ -35,13 +35,13 @@ void __cdecl tom_game_realloc(undefined4 param_1,undefined4 param_2)
 uchar * __cdecl tom_game_calloc(int param_1,int param_2)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   
-  puVar1 = (uchar *)_Com_LiveAllocate(param_1 * param_2);
-  if (puVar1 != (uchar *)0x0) {
-    memset(puVar1,'\0',param_1 * param_2);
+  dst = (uchar *)_Com_LiveAllocate(param_1 * param_2);
+  if (dst != (uchar *)0x0) {
+    memset(dst,'\0',param_1 * param_2);
   }
-  return puVar1;
+  return dst;
 }
 
 

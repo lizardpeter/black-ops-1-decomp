@@ -2,7 +2,7 @@
 
 // 00A08C50  tlSetSystemCallbacks  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:19)
 
-void __cdecl tlSetSystemCallbacks(tlSystemCallbacks *param_1)
+void __cdecl tlSetSystemCallbacks(tlSystemCallbacks *Callbacks)
 
 {
   int iVar1;
@@ -10,8 +10,8 @@ void __cdecl tlSetSystemCallbacks(tlSystemCallbacks *param_1)
   
   ptVar2 = &tlCurSystemCallbacks;
   for (iVar1 = 8; iVar1 != 0; iVar1 = iVar1 + -1) {
-    ptVar2->ReadFile = param_1->ReadFile;
-    param_1 = (tlSystemCallbacks *)&param_1->ReleaseFile;
+    ptVar2->ReadFile = Callbacks->ReadFile;
+    Callbacks = (tlSystemCallbacks *)&Callbacks->ReleaseFile;
     ptVar2 = (tlSystemCallbacks *)&ptVar2->ReleaseFile;
   }
   return;
@@ -20,15 +20,15 @@ void __cdecl tlSetSystemCallbacks(tlSystemCallbacks *param_1)
 
 // 00A08D50  tlFatalHandler  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:25)
 
-bool __cdecl tlFatalHandler(char *param_1)
+bool __cdecl tlFatalHandler(char *Msg)
 
 {
   if (tlCurSystemCallbacks.CriticalError != (_func___cdecl_void_char_ptr *)0x0) {
-    (*tlCurSystemCallbacks.CriticalError)(param_1);
+    (*tlCurSystemCallbacks.CriticalError)(Msg);
     return false;
   }
   OutputDebugStringA("TL Fatal Error: ");
-  OutputDebugStringA(param_1);
+  OutputDebugStringA(Msg);
   OutputDebugStringA("\n");
   return true;
 }
@@ -36,16 +36,16 @@ bool __cdecl tlFatalHandler(char *param_1)
 
 // 00A08D90  tlDebugPrint  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:43)
 
-void __cdecl tlDebugPrint(char *param_1)
+void __cdecl tlDebugPrint(char *txt)
 
 {
   if (tlCurSystemCallbacks.DebugPrint != (_func___cdecl_void_char_ptr *)0x0) {
                     /* WARNING: Could not recover jumptable at 0x00a08d9d. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*tlCurSystemCallbacks.DebugPrint)(param_1);
+    (*tlCurSystemCallbacks.DebugPrint)(txt);
     return;
   }
-  OutputDebugStringA(param_1);
+  OutputDebugStringA(txt);
   return;
 }
 
@@ -54,16 +54,16 @@ void __cdecl tlDebugPrint(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl tlWarning(char *param_1)
+void __cdecl tlWarning(char *Format)
 
 {
-  char local_208 [512];
+  char Work [512];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  vsprintf(local_208,param_1,&stack0x00000008);
+  vsprintf(Work,Format,&stack0x00000008);
   if (tlCurSystemCallbacks.Warning != (_func___cdecl_void_char_ptr *)0x0) {
-    (*tlCurSystemCallbacks.Warning)(local_208);
+    (*tlCurSystemCallbacks.Warning)(Work);
     return;
   }
   tlPrintf("%s");
@@ -75,19 +75,19 @@ void __cdecl tlWarning(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl tlVPrintf(char *param_1,char *param_2)
+void __cdecl tlVPrintf(char *Format,char *args)
 
 {
-  char local_208 [512];
+  char Work [512];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  vsprintf(local_208,param_1,param_2);
+  vsprintf(Work,Format,args);
   if (tlCurSystemCallbacks.DebugPrint != (_func___cdecl_void_char_ptr *)0x0) {
-    (*tlCurSystemCallbacks.DebugPrint)(local_208);
+    (*tlCurSystemCallbacks.DebugPrint)(Work);
     return;
   }
-  OutputDebugStringA(local_208);
+  OutputDebugStringA(Work);
   return;
 }
 
@@ -96,19 +96,19 @@ void __cdecl tlVPrintf(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl tlPrintf(char *param_1)
+void __cdecl tlPrintf(char *Format)
 
 {
-  char local_208 [512];
+  char Work [512];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  vsprintf(local_208,param_1,&stack0x00000008);
+  vsprintf(Work,Format,&stack0x00000008);
   if (tlCurSystemCallbacks.DebugPrint != (_func___cdecl_void_char_ptr *)0x0) {
-    (*tlCurSystemCallbacks.DebugPrint)(local_208);
+    (*tlCurSystemCallbacks.DebugPrint)(Work);
     return;
   }
-  OutputDebugStringA(local_208);
+  OutputDebugStringA(Work);
   return;
 }
 
@@ -117,22 +117,22 @@ void __cdecl tlPrintf(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl _tlAssert(char *param_1,int param_2,char *param_3,char *param_4)
+bool __cdecl _tlAssert(char *file,int line,char *expr,char *desc)
 
 {
-  char local_108 [255];
+  char Buf [255];
   undefined1 local_9;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _snprintf(local_108,0x100,"ASSERT in %s(%d):\n\"%s\" - %s");
+  _snprintf(Buf,0x100,"ASSERT in %s(%d):\n\"%s\" - %s");
   local_9 = 0;
   if (tlCurSystemCallbacks.CriticalError != (_func___cdecl_void_char_ptr *)0x0) {
-    (*tlCurSystemCallbacks.CriticalError)(local_108);
+    (*tlCurSystemCallbacks.CriticalError)(Buf);
     return false;
   }
   OutputDebugStringA("TL Fatal Error: ");
-  OutputDebugStringA(local_108);
+  OutputDebugStringA(Buf);
   OutputDebugStringA("\n");
   return true;
 }
@@ -142,21 +142,21 @@ bool __cdecl _tlAssert(char *param_1,int param_2,char *param_3,char *param_4)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl tlFatal(char *param_1)
+void __cdecl tlFatal(char *Format)
 
 {
   code *pcVar1;
-  char local_208 [512];
+  char Work [512];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  vsprintf(local_208,param_1,&stack0x00000008);
+  vsprintf(Work,Format,&stack0x00000008);
   if (tlCurSystemCallbacks.CriticalError != (_func___cdecl_void_char_ptr *)0x0) {
-    (*tlCurSystemCallbacks.CriticalError)(local_208);
+    (*tlCurSystemCallbacks.CriticalError)(Work);
     return;
   }
   OutputDebugStringA("TL Fatal Error: ");
-  OutputDebugStringA(local_208);
+  OutputDebugStringA(Work);
   OutputDebugStringA("\n");
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -166,17 +166,17 @@ void __cdecl tlFatal(char *param_1)
 
 // 00A08C70  tlSetFileServerRootPC  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:385)
 
-void __cdecl tlSetFileServerRootPC(char *param_1)
+void __cdecl tlSetFileServerRootPC(char *Path)
 
 {
   char cVar1;
   int iVar2;
   
-  iVar2 = (int)tlHostPrefix - (int)param_1;
+  iVar2 = (int)tlHostPrefix - (int)Path;
   do {
-    cVar1 = *param_1;
-    param_1[iVar2] = cVar1;
-    param_1 = param_1 + 1;
+    cVar1 = *Path;
+    Path[iVar2] = cVar1;
+    Path = Path + 1;
   } while (cVar1 != '\0');
   return;
 }
@@ -186,7 +186,7 @@ void __cdecl tlSetFileServerRootPC(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param_4)
+bool __cdecl tlReadFile(char *FileName,tlFileBuf *File,uint Align,uint Flags)
 
 {
   char cVar1;
@@ -196,16 +196,16 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
   char *pcVar5;
   uint uVar6;
   HANDLE hFile;
-  DWORD DVar7;
+  DWORD Size;
   uchar *lpBuffer;
-  uint uVar8;
-  undefined4 local_20c;
-  char local_208 [512];
+  uint uVar7;
+  undefined4 bytesRead;
+  char Work [512];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (tlCurSystemCallbacks.ReadFile != (_func___cdecl_bool_char_ptr_tlFileBuf_ptr_uint_uint *)0x0) {
-    bVar2 = (*tlCurSystemCallbacks.ReadFile)(param_1,param_2,param_3,param_4);
+    bVar2 = (*tlCurSystemCallbacks.ReadFile)(FileName,File,Align,Flags);
     return bVar2;
   }
   pcVar5 = tlHostPrefix;
@@ -213,16 +213,16 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
     pcVar3 = pcVar5;
     pcVar5 = pcVar3 + 1;
   } while (*pcVar3 != '\0');
-  iVar4 = strncmp(param_1,tlHostPrefix,(uint)(pcVar3 + -0xa83f6d0));
-  pcVar5 = param_1;
+  iVar4 = strncmp(FileName,tlHostPrefix,(uint)(pcVar3 + -0xa83f6d0));
+  pcVar5 = FileName;
   if (iVar4 == 0) {
-    local_208[0] = '\0';
+    Work[0] = '\0';
   }
   else {
     iVar4 = 0;
     do {
       cVar1 = tlHostPrefix[iVar4];
-      local_208[iVar4] = cVar1;
+      Work[iVar4] = cVar1;
       iVar4 = iVar4 + 1;
     } while (cVar1 != '\0');
   }
@@ -230,24 +230,24 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
     cVar1 = *pcVar5;
     pcVar5 = pcVar5 + 1;
   } while (cVar1 != '\0');
-  uVar6 = (int)pcVar5 - (int)param_1;
-  pcVar5 = (char *)((int)&local_20c + 3);
+  uVar6 = (int)pcVar5 - (int)FileName;
+  pcVar5 = (char *)((int)&bytesRead + 3);
   do {
     pcVar3 = pcVar5 + 1;
     pcVar5 = pcVar5 + 1;
   } while (*pcVar3 != '\0');
-  for (uVar8 = uVar6 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
-    *(undefined4 *)pcVar5 = *(undefined4 *)param_1;
-    param_1 = param_1 + 4;
+  for (uVar7 = uVar6 >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
+    *(undefined4 *)pcVar5 = *(undefined4 *)FileName;
+    FileName = FileName + 4;
     pcVar5 = pcVar5 + 4;
   }
   for (uVar6 = uVar6 & 3; uVar6 != 0; uVar6 = uVar6 - 1) {
-    *pcVar5 = *param_1;
-    param_1 = param_1 + 1;
+    *pcVar5 = *FileName;
+    FileName = FileName + 1;
     pcVar5 = pcVar5 + 1;
   }
-  pcVar5 = local_208;
-  cVar1 = local_208[0];
+  pcVar5 = Work;
+  cVar1 = Work[0];
   while (cVar1 != '\0') {
     if (*pcVar5 == '/') {
       *pcVar5 = '\\';
@@ -255,15 +255,15 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
     pcVar5 = pcVar5 + 1;
     cVar1 = *pcVar5;
   }
-  hFile = CreateFileA(local_208,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x8000080,(HANDLE)0x0);
+  hFile = CreateFileA(Work,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x8000080,(HANDLE)0x0);
   if (hFile == (HANDLE)0xffffffff) {
     return false;
   }
-  DVar7 = GetFileSize(hFile,(LPDWORD)0x0);
-  param_2->Size = DVar7;
-  lpBuffer = tlMemAlloc(DVar7,param_3,param_4);
-  param_2->Buf = lpBuffer;
-  ReadFile(hFile,lpBuffer,param_2->Size,&local_20c,(LPOVERLAPPED)0x0);
+  Size = GetFileSize(hFile,(LPDWORD)0x0);
+  File->Size = Size;
+  lpBuffer = tlMemAlloc(Size,Align,Flags);
+  File->Buf = lpBuffer;
+  ReadFile(hFile,lpBuffer,File->Size,&bytesRead,(LPOVERLAPPED)0x0);
   CloseHandle(hFile);
   return true;
 }
@@ -271,22 +271,22 @@ bool __cdecl tlReadFile(char *param_1,tlFileBuf *param_2,uint param_3,uint param
 
 // 00A08FB0  tlMemAlloc  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:419)
 
-void * __cdecl tlMemAlloc(uint param_1,uint param_2,uint param_3)
+void * __cdecl tlMemAlloc(uint Size,uint Align,uint Flags)
 
 {
   void *pvVar1;
   
-  if ((param_2 == 0) && ((param_1 & 0xf) == 0)) {
-    param_2 = 0;
+  if ((Align == 0) && ((Size & 0xf) == 0)) {
+    Align = 0;
   }
   tlMemAllocCounter = tlMemAllocCounter + 1;
   if (tlCurSystemCallbacks.MemAlloc == (_func___cdecl_void_ptr_uint_uint_uint *)0x0) {
-    pvVar1 = _aligned_malloc(param_1,param_2);
+    pvVar1 = _aligned_malloc(Size,Align);
   }
   else {
-    pvVar1 = (*tlCurSystemCallbacks.MemAlloc)(param_1,param_2,param_3);
+    pvVar1 = (*tlCurSystemCallbacks.MemAlloc)(Size,Align,Flags);
   }
-  if ((((param_3 & 2) == 0) && (pvVar1 == (void *)0x0)) && (param_1 != 0)) {
+  if ((((Flags & 2) == 0) && (pvVar1 == (void *)0x0)) && (Size != 0)) {
     tlFatal("Memory allocation failed. %d bytes, %d align");
   }
   return pvVar1;
@@ -295,21 +295,21 @@ void * __cdecl tlMemAlloc(uint param_1,uint param_2,uint param_3)
 
 // 00A09020  tlMemRealloc  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:447)
 
-void * __cdecl tlMemRealloc(void *param_1,uint param_2,uint param_3,uint param_4)
+void * __cdecl tlMemRealloc(void *Ptr,uint Size,uint Align,uint Flags)
 
 {
   void *pvVar1;
   
-  if ((param_3 == 0) && ((param_2 & 0xf) == 0)) {
-    param_3 = 0;
+  if ((Align == 0) && ((Size & 0xf) == 0)) {
+    Align = 0;
   }
   if (tlCurSystemCallbacks.MemRealloc == (_func___cdecl_void_ptr_void_ptr_uint_uint_uint *)0x0) {
-    pvVar1 = _aligned_realloc(param_1,param_2,param_3);
+    pvVar1 = _aligned_realloc(Ptr,Size,Align);
   }
   else {
-    pvVar1 = (*tlCurSystemCallbacks.MemRealloc)(param_1,param_2,param_3,param_4);
+    pvVar1 = (*tlCurSystemCallbacks.MemRealloc)(Ptr,Size,Align,Flags);
   }
-  if ((((param_4 & 2) == 0) && (pvVar1 == (void *)0x0)) && (param_2 != 0)) {
+  if ((((Flags & 2) == 0) && (pvVar1 == (void *)0x0)) && (Size != 0)) {
     tlFatal("Memory reallocation failed.");
   }
   return pvVar1;
@@ -318,44 +318,44 @@ void * __cdecl tlMemRealloc(void *param_1,uint param_2,uint param_3,uint param_4
 
 // 00A08C90  tlMemFree  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:470)
 
-void __cdecl tlMemFree(void *param_1)
+void __cdecl tlMemFree(void *Ptr)
 
 {
   tlMemAllocCounter = tlMemAllocCounter + -1;
   if (tlCurSystemCallbacks.MemFree != (_func___cdecl_void_void_ptr *)0x0) {
                     /* WARNING: Could not recover jumptable at 0x00a08ca3. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*tlCurSystemCallbacks.MemFree)(param_1);
+    (*tlCurSystemCallbacks.MemFree)(Ptr);
     return;
   }
-  _aligned_free(param_1);
+  _aligned_free(Ptr);
   return;
 }
 
 
 // 00A08CB0  tlReleaseFile  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:630)
 
-void __cdecl tlReleaseFile(tlFileBuf *param_1)
+void __cdecl tlReleaseFile(tlFileBuf *File)
 
 {
   if (tlCurSystemCallbacks.ReleaseFile != (_func___cdecl_void_tlFileBuf_ptr *)0x0) {
                     /* WARNING: Could not recover jumptable at 0x00a08cbd. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-    (*tlCurSystemCallbacks.ReleaseFile)(param_1);
+    (*tlCurSystemCallbacks.ReleaseFile)(File);
     return;
   }
   tlMemAllocCounter = tlMemAllocCounter + -1;
   if (tlCurSystemCallbacks.MemFree != (_func___cdecl_void_void_ptr *)0x0) {
-    (*tlCurSystemCallbacks.MemFree)(param_1->Buf);
-    param_1->Buf = (uchar *)0x0;
-    param_1->Size = 0;
-    param_1->UserData = 0;
+    (*tlCurSystemCallbacks.MemFree)(File->Buf);
+    File->Buf = (uchar *)0x0;
+    File->Size = 0;
+    File->UserData = 0;
     return;
   }
-  _aligned_free(param_1->Buf);
-  param_1->Buf = (uchar *)0x0;
-  param_1->Size = 0;
-  param_1->UserData = 0;
+  _aligned_free(File->Buf);
+  File->Buf = (uchar *)0x0;
+  File->Size = 0;
+  File->UserData = 0;
   return;
 }
 
@@ -378,19 +378,19 @@ void __cdecl _dynamic_initializer_for__qpf__(void)
 ulong64 __cdecl tlPcGetTick(void)
 
 {
-  LARGE_INTEGER local_c;
+  LARGE_INTEGER li;
   
-  QueryPerformanceCounter(&local_c);
-  return (ulong64)local_c;
+  QueryPerformanceCounter(&li);
+  return (ulong64)li;
 }
 
 
 // 00A08D20  tlPrint  (<external>/projects_pc/cod/codsrc/tl/base/source/tl_system.cpp:690)
 
-void __cdecl tlPrint(char *param_1)
+void __cdecl tlPrint(char *txt)
 
 {
-  OutputDebugStringA(param_1);
+  OutputDebugStringA(txt);
   return;
 }
 
@@ -415,17 +415,17 @@ uint __cdecl tlGetFreeMemory(void)
   HANDLE Process;
   BOOL BVar1;
   uint uVar2;
-  PROCESS_MEMORY_COUNTERS local_4c;
-  _MEMORYSTATUS local_24;
+  PROCESS_MEMORY_COUNTERS pmc;
+  _MEMORYSTATUS stat;
   
   uVar2 = 0;
-  GlobalMemoryStatus(&local_24);
+  GlobalMemoryStatus(&stat);
   GetCurrentProcess();
   dwProcessId = GetCurrentProcessId();
   Process = OpenProcess(0x410,0,dwProcessId);
-  BVar1 = _GetProcessMemoryInfo_12(Process,&local_4c,0x28);
+  BVar1 = _GetProcessMemoryInfo_12(Process,&pmc,0x28);
   if (BVar1 != 0) {
-    uVar2 = local_24.dwTotalPhys - local_4c.PeakWorkingSetSize;
+    uVar2 = stat.dwTotalPhys - pmc.PeakWorkingSetSize;
   }
   CloseHandle(Process);
   return uVar2;

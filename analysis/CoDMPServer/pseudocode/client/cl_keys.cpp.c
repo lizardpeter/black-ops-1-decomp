@@ -19,66 +19,70 @@ void __cdecl TRACK_cl_keys(void)
 
 void __cdecl
 Field_DrawTextOverride
-          (int param_1,field_t *param_2,int param_3,int param_4,int param_5,int param_6,
-          char *param_7,int param_8,int param_9)
+          (int localClientNum,field_t *edit,int x,int y,int horzAlign,int vertAlign,char *str,
+          int drawLen,int cursorPos)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ScreenPlacement *pSVar4;
-  float fVar5;
-  Font_s *local_28;
-  float local_24;
-  int local_10;
-  float local_c;
-  char local_5;
+  ScreenPlacement *scrPlace_00;
+  float fVar4;
+  Font_s *font;
+  float xScale;
+  float yAdj;
+  ScreenPlacement *scrPlace;
+  float xAdj;
+  float fontScale;
+  int fontStyle;
+  float yScale;
+  char cursorChar;
   
-  if ((param_8 < 1) &&
+  if ((drawLen < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x19e,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pSVar4 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  if (param_2->fixedSize == 0) {
-    fVar5 = param_2->charHeight / 48.0;
-    local_28 = UI_GetFontHandle(pSVar4,0,fVar5);
-    local_c = R_NormalizedTextScale(local_28,fVar5);
-    local_24 = local_c;
-    if (param_6 == 5) {
-      fVar5 = ScrPlace_HiResGetScale();
-      local_24 = fVar5 * local_c * pSVar4->scaleVirtualToReal[0];
-      fVar5 = ScrPlace_HiResGetScale();
-      local_c = fVar5 * local_c * *(float *)(&DAT_02d9e684 + param_1 * 0x78);
+  scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+  if (edit->fixedSize == 0) {
+    fVar4 = edit->charHeight / 48.0;
+    font = UI_GetFontHandle(scrPlace_00,0,fVar4);
+    yScale = R_NormalizedTextScale(font,fVar4);
+    xScale = yScale;
+    if (vertAlign == 5) {
+      fVar4 = ScrPlace_HiResGetScale();
+      xScale = fVar4 * yScale * scrPlace_00->scaleVirtualToReal[0];
+      fVar4 = ScrPlace_HiResGetScale();
+      yScale = fVar4 * yScale * *(float *)(&DAT_02d9e684 + localClientNum * 0x78);
     }
-    local_10 = 3;
-    iVar3 = Key_GetOverstrikeMode(param_1);
+    fontStyle = 3;
+    iVar3 = Key_GetOverstrikeMode(localClientNum);
     if (iVar3 == 0) {
-      local_5 = '|';
+      cursorChar = '|';
     }
     else {
-      local_5 = '_';
+      cursorChar = '_';
     }
   }
   else {
-    local_28 = cls.consoleFont;
-    local_10 = 0;
-    local_24 = 1.0;
-    local_c = 1.0;
-    iVar3 = Key_GetOverstrikeMode(param_1);
+    font = cls.consoleFont;
+    fontStyle = 0;
+    xScale = 1.0;
+    yScale = 1.0;
+    iVar3 = Key_GetOverstrikeMode(localClientNum);
     if (iVar3 == 0) {
-      local_5 = '|';
+      cursorChar = '|';
     }
     else {
-      local_5 = '_';
+      cursorChar = '_';
     }
   }
-  iVar3 = R_TextHeight(local_28);
+  iVar3 = R_TextHeight(font);
   CL_DrawTextWithCursor
-            (pSVar4,param_7,param_8,local_28,(float)param_3,(float)param_4 + (float)iVar3 * local_c,
-             param_5,param_6,local_24,local_c,colorWhite,local_10,param_9,local_5);
+            (scrPlace_00,str,drawLen,font,(float)x,(float)y + (float)iVar3 * yScale,horzAlign,
+             vertAlign,xScale,yScale,colorWhite,fontStyle,cursorPos,cursorChar);
   return;
 }
 
@@ -87,21 +91,20 @@ Field_DrawTextOverride
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl
-Field_Draw(int param_1,field_t *param_2,int param_3,int param_4,int param_5,int param_6)
+void __cdecl Field_Draw(int localClientNum,field_t *edit,int x,int y,int horzAlign,int vertAlign)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_40c [1024];
+  char str [1024];
   uint local_c;
-  int local_8;
+  int cursorPos;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->drawWidth == 0) {
-    param_2->drawWidth = 0x100;
+  if (edit->drawWidth == 0) {
+    edit->drawWidth = 0x100;
   }
-  if (param_2->scroll < 0) {
+  if (edit->scroll < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x1dc,0,
                              "%s\n\t(edit->scroll) = %i");
     if (!bVar2) {
@@ -110,17 +113,16 @@ Field_Draw(int param_1,field_t *param_2,int param_3,int param_4,int param_5,int 
       return;
     }
   }
-  I_strncpyz(local_40c,param_2->buffer + param_2->scroll,0x100 - param_2->scroll);
-  local_8 = param_2->cursor - param_2->scroll;
-  Field_DrawTextOverride
-            (param_1,param_2,param_3,param_4,param_5,param_6,local_40c,param_2->drawWidth,local_8);
+  I_strncpyz(str,edit->buffer + edit->scroll,0x100 - edit->scroll);
+  cursorPos = edit->cursor - edit->scroll;
+  Field_DrawTextOverride(localClientNum,edit,x,y,horzAlign,vertAlign,str,edit->drawWidth,cursorPos);
   return;
 }
 
 
 // 00558010  Field_AdjustScroll  (client/cl_keys.cpp:489)
 
-void __cdecl Field_AdjustScroll(ScreenPlacement *param_1,field_t *param_2)
+void __cdecl Field_AdjustScroll(ScreenPlacement *scrPlace,field_t *edit)
 
 {
   char cVar1;
@@ -129,69 +131,72 @@ void __cdecl Field_AdjustScroll(ScreenPlacement *param_1,field_t *param_2)
   char *pcVar4;
   float fVar5;
   char *local_2c;
-  Font_s *local_20;
-  float local_1c;
-  float local_10;
-  float local_8;
+  Font_s *font;
+  float len;
+  float actualScale;
+  int textLen;
+  float lineWidth;
+  float fullLen;
+  float fontScale;
   
-  local_8 = param_2->charHeight / 48.0;
-  local_10 = (float)param_2->widthInPixels;
-  if (param_2->fixedSize == 0) {
-    local_20 = UI_GetFontHandle(param_1,0,local_8);
+  fontScale = edit->charHeight / 48.0;
+  lineWidth = (float)edit->widthInPixels;
+  if (edit->fixedSize == 0) {
+    font = UI_GetFontHandle(scrPlace,0,fontScale);
   }
   else {
     fVar5 = ScrPlace_HiResGetScale();
-    local_8 = (local_8 / fVar5) * param_1->scaleRealToVirtual[0];
+    fontScale = (fontScale / fVar5) * scrPlace->scaleRealToVirtual[0];
     fVar5 = ScrPlace_HiResGetScale();
-    local_10 = (local_10 / fVar5) * param_1->scaleRealToVirtual[1];
-    local_20 = cls.consoleFont;
+    lineWidth = (lineWidth / fVar5) * scrPlace->scaleRealToVirtual[1];
+    font = cls.consoleFont;
   }
-  fVar5 = R_NormalizedTextScale(local_20,local_8);
-  iVar2 = R_TextWidth(param_2->buffer,0,local_20);
-  if (local_10 <= (float)iVar2 * fVar5) {
-    local_1c = 0.0;
-    while ((local_1c < local_10 && (0 < param_2->scroll))) {
-      iVar2 = R_TextWidth(param_2->buffer + param_2->scroll + -1,0,local_20);
-      local_1c = (float)iVar2 * fVar5;
-      if (local_10 <= local_1c) break;
-      param_2->scroll = param_2->scroll + -1;
+  fVar5 = R_NormalizedTextScale(font,fontScale);
+  iVar2 = R_TextWidth(edit->buffer,0,font);
+  if (lineWidth <= (float)iVar2 * fVar5) {
+    len = 0.0;
+    while ((len < lineWidth && (0 < edit->scroll))) {
+      iVar2 = R_TextWidth(edit->buffer + edit->scroll + -1,0,font);
+      len = (float)iVar2 * fVar5;
+      if (lineWidth <= len) break;
+      edit->scroll = edit->scroll + -1;
     }
     do {
-      iVar2 = R_TextWidth(param_2->buffer + param_2->scroll,0,local_20);
-      iVar3 = R_TextWidth(param_2->buffer + param_2->cursor,0,local_20);
-      local_1c = (float)iVar2 * fVar5 - (float)iVar3 * fVar5;
-      if ((local_1c < 0.0) || (local_10 <= local_1c)) {
-        if (0.0 <= local_1c) {
-          param_2->scroll = param_2->scroll + 1;
+      iVar2 = R_TextWidth(edit->buffer + edit->scroll,0,font);
+      iVar3 = R_TextWidth(edit->buffer + edit->cursor,0,font);
+      len = (float)iVar2 * fVar5 - (float)iVar3 * fVar5;
+      if ((len < 0.0) || (lineWidth <= len)) {
+        if (0.0 <= len) {
+          edit->scroll = edit->scroll + 1;
         }
-        else if (param_2->scroll == 0) {
-          local_1c = 0.0;
+        else if (edit->scroll == 0) {
+          len = 0.0;
         }
         else {
-          param_2->scroll = param_2->scroll + -1;
+          edit->scroll = edit->scroll + -1;
         }
       }
-    } while ((local_1c < 0.0) || (local_10 <= local_1c));
-    local_2c = param_2->buffer + param_2->scroll;
+    } while ((len < 0.0) || (lineWidth <= len));
+    local_2c = edit->buffer + edit->scroll;
     pcVar4 = local_2c + 1;
     do {
       cVar1 = *local_2c;
       local_2c = local_2c + 1;
     } while (cVar1 != '\0');
-    param_2->drawWidth = param_2->cursor - param_2->scroll;
-    local_1c = 0.0;
-    while ((local_1c < local_10 && (param_2->drawWidth < (int)local_2c - (int)pcVar4))) {
-      iVar2 = R_TextWidth(param_2->buffer + param_2->scroll,param_2->drawWidth + 1,local_20);
-      local_1c = (float)iVar2 * fVar5;
-      if (local_1c < local_10) {
-        param_2->drawWidth = param_2->drawWidth + 1;
+    edit->drawWidth = edit->cursor - edit->scroll;
+    len = 0.0;
+    while ((len < lineWidth && (edit->drawWidth < (int)local_2c - (int)pcVar4))) {
+      iVar2 = R_TextWidth(edit->buffer + edit->scroll,edit->drawWidth + 1,font);
+      len = (float)iVar2 * fVar5;
+      if (len < lineWidth) {
+        edit->drawWidth = edit->drawWidth + 1;
       }
     }
   }
   else {
-    param_2->scroll = 0;
-    iVar2 = SEH_PrintStrlen(param_2->buffer);
-    param_2->drawWidth = iVar2;
+    edit->scroll = 0;
+    iVar2 = SEH_PrintStrlen(edit->buffer);
+    edit->drawWidth = iVar2;
   }
   return;
 }
@@ -199,29 +204,31 @@ void __cdecl Field_AdjustScroll(ScreenPlacement *param_1,field_t *param_2)
 
 // 00558B00  Field_Paste  (client/cl_keys.cpp:566)
 
-bool __cdecl Field_Paste(int param_1,ScreenPlacement *param_2,field_t *param_3)
+bool __cdecl Field_Paste(int localClientNum,ScreenPlacement *scrPlace,field_t *edit)
 
 {
   char cVar1;
   bool bVar2;
-  char *pcVar3;
+  char *ptr_2;
   char *local_14;
-  int local_c;
+  int pasteLen;
+  int i;
+  char *cbd;
   
-  pcVar3 = Sys_GetClipboardData();
-  if (pcVar3 == (char *)0x0) {
+  ptr_2 = Sys_GetClipboardData();
+  if (ptr_2 == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    local_14 = pcVar3;
+    local_14 = ptr_2;
     do {
       cVar1 = *local_14;
       local_14 = local_14 + 1;
     } while (cVar1 != '\0');
-    for (local_c = 0; local_c < (int)local_14 - (int)(pcVar3 + 1); local_c = local_c + 1) {
-      Field_CharEvent(param_1,param_2,param_3,(int)pcVar3[local_c]);
+    for (i = 0; i < (int)local_14 - (int)(ptr_2 + 1); i = i + 1) {
+      Field_CharEvent(localClientNum,scrPlace,edit,(int)ptr_2[i]);
     }
-    Sys_FreeClipboardData(pcVar3);
+    Sys_FreeClipboardData(ptr_2);
     bVar2 = true;
   }
   return bVar2;
@@ -230,7 +237,7 @@ bool __cdecl Field_Paste(int param_1,ScreenPlacement *param_2,field_t *param_3)
 
 // 00558880  Field_KeyDownEvent  (client/cl_keys.cpp:600)
 
-bool __cdecl Field_KeyDownEvent(int param_1,ScreenPlacement *param_2,field_t *param_3,int param_4)
+bool __cdecl Field_KeyDownEvent(int localClientNum,ScreenPlacement *scrPlace,field_t *edit,int key)
 
 {
   char cVar1;
@@ -238,148 +245,152 @@ bool __cdecl Field_KeyDownEvent(int param_1,ScreenPlacement *param_2,field_t *pa
   int iVar3;
   int iVar4;
   char *local_18;
-  bool local_5;
+  int isShiftDown;
+  int len;
+  int isCtrlDown;
+  bool isModified;
   
-  iVar2 = playerKeys[param_1].keys[0x9f].down;
-  local_5 = false;
-  local_18 = param_3->buffer;
+  iVar2 = playerKeys[localClientNum].keys[0x9f].down;
+  isModified = false;
+  local_18 = edit->buffer;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  iVar4 = (int)local_18 - (int)(param_3->buffer + 1);
-  if (((param_4 == 0xa1) || (param_4 == 0xc0)) && (playerKeys[param_1].keys[0xa0].down != 0)) {
-    local_5 = Field_Paste(param_1,param_2,param_3);
+  iVar4 = (int)local_18 - (int)(edit->buffer + 1);
+  if (((key == 0xa1) || (key == 0xc0)) && (playerKeys[localClientNum].keys[0xa0].down != 0)) {
+    isModified = Field_Paste(localClientNum,scrPlace,edit);
   }
-  else if (param_4 == 0xa2) {
-    if (param_3->cursor < iVar4) {
-      memmove((uchar *)(param_3->buffer + param_3->cursor),
-              (uchar *)(param_3->buffer + param_3->cursor + 1),iVar4 - param_3->cursor);
+  else if (key == 0xa2) {
+    if (edit->cursor < iVar4) {
+      memmove((uchar *)(edit->buffer + edit->cursor),(uchar *)(edit->buffer + edit->cursor + 1),
+              iVar4 - edit->cursor);
     }
   }
-  else if (param_4 == 0x9d) {
-    if (param_3->cursor < iVar4) {
-      param_3->cursor = param_3->cursor + 1;
-    }
-    if (iVar2 != 0) {
-      while ((param_3->cursor < iVar4 &&
-             (iVar2 = isalnum((int)param_3->buffer[param_3->cursor]), iVar2 != 0))) {
-        param_3->cursor = param_3->cursor + 1;
-      }
-      while ((param_3->cursor < iVar4 &&
-             (iVar2 = isalnum((int)param_3->buffer[param_3->cursor]), iVar2 == 0))) {
-        param_3->cursor = param_3->cursor + 1;
-      }
-    }
-  }
-  else if (param_4 == 0x9c) {
-    if (0 < param_3->cursor) {
-      param_3->cursor = param_3->cursor + -1;
+  else if (key == 0x9d) {
+    if (edit->cursor < iVar4) {
+      edit->cursor = edit->cursor + 1;
     }
     if (iVar2 != 0) {
-      while ((0 < param_3->cursor &&
-             (iVar2 = isalnum((int)param_3->buffer[param_3->cursor + -1]), iVar2 != 0))) {
-        param_3->cursor = param_3->cursor + -1;
+      while ((edit->cursor < iVar4 && (iVar2 = isalnum((int)edit->buffer[edit->cursor]), iVar2 != 0)
+             )) {
+        edit->cursor = edit->cursor + 1;
+      }
+      while ((edit->cursor < iVar4 && (iVar2 = isalnum((int)edit->buffer[edit->cursor]), iVar2 == 0)
+             )) {
+        edit->cursor = edit->cursor + 1;
       }
     }
-    if (param_3->cursor < param_3->scroll) {
-      param_3->scroll = param_3->cursor;
+  }
+  else if (key == 0x9c) {
+    if (0 < edit->cursor) {
+      edit->cursor = edit->cursor + -1;
+    }
+    if (iVar2 != 0) {
+      while ((0 < edit->cursor &&
+             (iVar2 = isalnum((int)edit->buffer[edit->cursor + -1]), iVar2 != 0))) {
+        edit->cursor = edit->cursor + -1;
+      }
+    }
+    if (edit->cursor < edit->scroll) {
+      edit->scroll = edit->cursor;
     }
   }
-  else if ((param_4 == 0xa5) || ((iVar3 = tolower(param_4), iVar3 == 0x61 && (iVar2 != 0)))) {
-    param_3->cursor = 0;
+  else if ((key == 0xa5) || ((iVar3 = tolower(key), iVar3 == 0x61 && (iVar2 != 0)))) {
+    edit->cursor = 0;
   }
-  else if ((param_4 == 0xa6) || ((iVar3 = tolower(param_4), iVar3 == 0x65 && (iVar2 != 0)))) {
-    param_3->cursor = iVar4;
+  else if ((key == 0xa6) || ((iVar3 = tolower(key), iVar3 == 0x65 && (iVar2 != 0)))) {
+    edit->cursor = iVar4;
   }
-  else if (param_4 == 0xa1) {
-    iVar2 = Key_GetOverstrikeMode(param_1);
-    Key_SetOverstrikeMode(param_1,(uint)(iVar2 == 0));
+  else if (key == 0xa1) {
+    iVar2 = Key_GetOverstrikeMode(localClientNum);
+    Key_SetOverstrikeMode(localClientNum,(uint)(iVar2 == 0));
   }
   if (cls.uiStarted != 0) {
-    Field_AdjustScroll(param_2,param_3);
+    Field_AdjustScroll(scrPlace,edit);
   }
-  return local_5;
+  return isModified;
 }
 
 
 // 00558BA0  Field_CharEvent  (client/cl_keys.cpp:669)
 
-bool __cdecl Field_CharEvent(int param_1,ScreenPlacement *param_2,field_t *param_3,int param_4)
+bool __cdecl Field_CharEvent(int localClientNum,ScreenPlacement *scrPlace,field_t *edit,int ch)
 
 {
   char cVar1;
   int iVar2;
   int iVar3;
   char *local_10;
-  bool local_5;
+  int len;
+  bool isModified;
   
-  local_10 = param_3->buffer;
+  local_10 = edit->buffer;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  iVar3 = (int)local_10 - (int)(param_3->buffer + 1);
-  if (param_4 == 0x16) {
-    local_5 = Field_Paste(param_1,param_2,param_3);
+  iVar3 = (int)local_10 - (int)(edit->buffer + 1);
+  if (ch == 0x16) {
+    isModified = Field_Paste(localClientNum,scrPlace,edit);
   }
-  else if (param_4 == 3) {
-    Field_Clear(param_3);
-    local_5 = true;
+  else if (ch == 3) {
+    Field_Clear(edit);
+    isModified = true;
   }
-  else if (param_4 == 8) {
-    local_5 = 0 < param_3->cursor;
-    if (local_5) {
-      memmove((uchar *)(param_3->buffer + param_3->cursor + -1),
-              (uchar *)(param_3->buffer + param_3->cursor),(iVar3 + 1) - param_3->cursor);
-      param_3->cursor = param_3->cursor + -1;
+  else if (ch == 8) {
+    isModified = 0 < edit->cursor;
+    if (isModified) {
+      memmove((uchar *)(edit->buffer + edit->cursor + -1),(uchar *)(edit->buffer + edit->cursor),
+              (iVar3 + 1) - edit->cursor);
+      edit->cursor = edit->cursor + -1;
     }
   }
   else {
-    if (param_4 == 1) {
-      param_3->cursor = 0;
-      param_3->scroll = 0;
+    if (ch == 1) {
+      edit->cursor = 0;
+      edit->scroll = 0;
       return false;
     }
-    if (param_4 == 5) {
-      param_3->cursor = iVar3;
-      local_5 = false;
+    if (ch == 5) {
+      edit->cursor = iVar3;
+      isModified = false;
     }
     else {
-      if (param_4 < 0x20) {
+      if (ch < 0x20) {
         return false;
       }
-      iVar2 = Key_GetOverstrikeMode(param_1);
+      iVar2 = Key_GetOverstrikeMode(localClientNum);
       if (iVar2 == 0) {
         if (iVar3 == 0xff) {
           return false;
         }
-        memmove((uchar *)(param_3->buffer + param_3->cursor + 1),
-                (uchar *)(param_3->buffer + param_3->cursor),(iVar3 + 1) - param_3->cursor);
-        param_3->buffer[param_3->cursor] = (char)param_4;
-        param_3->cursor = param_3->cursor + 1;
+        memmove((uchar *)(edit->buffer + edit->cursor + 1),(uchar *)(edit->buffer + edit->cursor),
+                (iVar3 + 1) - edit->cursor);
+        edit->buffer[edit->cursor] = (char)ch;
+        edit->cursor = edit->cursor + 1;
       }
       else {
-        if (param_3->cursor == 0xff) {
+        if (edit->cursor == 0xff) {
           return false;
         }
-        param_3->buffer[param_3->cursor] = (char)param_4;
-        param_3->cursor = param_3->cursor + 1;
+        edit->buffer[edit->cursor] = (char)ch;
+        edit->cursor = edit->cursor + 1;
       }
-      if (param_3->cursor == iVar3 + 1) {
-        param_3->buffer[param_3->cursor] = '\0';
+      if (edit->cursor == iVar3 + 1) {
+        edit->buffer[edit->cursor] = '\0';
       }
-      local_5 = true;
+      isModified = true;
     }
   }
-  Field_AdjustScroll(param_2,param_3);
-  return local_5;
+  Field_AdjustScroll(scrPlace,edit);
+  return isModified;
 }
 
 
 // 005598B0  FindMatches  (client/cl_keys.cpp:753)
 
-void __cdecl FindMatches(char *param_1)
+void __cdecl FindMatches(char *s)
 
 {
   char cVar1;
@@ -389,7 +400,9 @@ void __cdecl FindMatches(char *param_1)
   char *pcVar5;
   bool local_2c;
   char *local_18;
-  int local_8;
+  bool isPrefixMatch;
+  int completionLength;
+  int i;
   
   local_18 = s_completionString;
   pcVar5 = s_completionString + 1;
@@ -397,11 +410,10 @@ void __cdecl FindMatches(char *param_1)
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  bVar2 = Con_IsAutoCompleteMatch(param_1,s_completionString,(int)local_18 - (int)pcVar5);
+  bVar2 = Con_IsAutoCompleteMatch(s,s_completionString,(int)local_18 - (int)pcVar5);
   if (bVar2) {
     if (((con_ignoreMatchPrefixOnly == false) && ((con_matchPrefixOnly->current).enabled != false))
-       || (iVar3 = I_strnicmp(param_1,s_completionString,(int)local_18 - (int)pcVar5), iVar3 == 0))
-    {
+       || (iVar3 = I_strnicmp(s,s_completionString,(int)local_18 - (int)pcVar5), iVar3 == 0)) {
       bVar2 = true;
     }
     else {
@@ -412,7 +424,7 @@ void __cdecl FindMatches(char *param_1)
     }
     s_matchCount = s_matchCount + 1;
     if ((s_matchCount == 1) || ((bVar2 && (s_prefixMatchCount == 1)))) {
-      I_strncpyz(s_shortestMatch,param_1,0x400);
+      I_strncpyz(s_shortestMatch,s,0x400);
       s_hasExactMatch = true;
     }
     else if (s_prefixMatchCount == 0) {
@@ -420,20 +432,19 @@ void __cdecl FindMatches(char *param_1)
       s_hasExactMatch = false;
     }
     else if (bVar2) {
-      for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-        iVar3 = tolower((int)s_shortestMatch[local_8]);
-        iVar4 = tolower((int)param_1[local_8]);
+      for (i = 0; s[i] != '\0'; i = i + 1) {
+        iVar3 = tolower((int)s_shortestMatch[i]);
+        iVar4 = tolower((int)s[i]);
         if (iVar3 != iVar4) break;
       }
-      if ((param_1[local_8] == '\0') ||
-         ((s_hasExactMatch != false && (s_shortestMatch[local_8] == '\0')))) {
+      if ((s[i] == '\0') || ((s_hasExactMatch != false && (s_shortestMatch[i] == '\0')))) {
         local_2c = true;
       }
       else {
         local_2c = false;
       }
       s_hasExactMatch = local_2c;
-      s_shortestMatch[local_8] = '\0';
+      s_shortestMatch[i] = '\0';
     }
   }
   return;
@@ -442,7 +453,7 @@ void __cdecl FindMatches(char *param_1)
 
 // 00559290  PrintMatches  (client/cl_keys.cpp:802)
 
-void __cdecl PrintMatches(char *param_1)
+void __cdecl PrintMatches(char *s)
 
 {
   int iVar1;
@@ -456,12 +467,12 @@ void __cdecl PrintMatches(char *param_1)
       local_8 = pcVar2;
       pcVar2 = local_8 + 1;
     } while (*local_8 != '\0');
-    iVar1 = I_strnicmp(param_1,s_shortestMatch,(int)(local_8 + -0xfa94f0));
+    iVar1 = I_strnicmp(s,s_shortestMatch,(int)(local_8 + -0xfa94f0));
     if (iVar1 != 0) {
       return;
     }
   }
-  pcVar2 = I_stristr(param_1,s_shortestMatch);
+  pcVar2 = I_stristr(s,s_shortestMatch);
   if (pcVar2 != (char *)0x0) {
     Com_Printf(0,"    %s\n");
   }
@@ -475,53 +486,54 @@ void __cdecl keyConcatArgs(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  int local_c;
-  char *local_8;
+  char *src;
+  int i;
+  char *arg;
   
-  local_c = 1;
+  i = 1;
   do {
     iVar1 = Cmd_Argc();
-    if (iVar1 <= local_c) {
+    if (iVar1 <= i) {
       return;
     }
     I_strncat(g_consoleField.buffer,0x100," ");
-    for (local_8 = Cmd_Argv(local_c); *local_8 != '\0'; local_8 = local_8 + 1) {
-      if (*local_8 == ' ') {
+    for (arg = Cmd_Argv(i); *arg != '\0'; arg = arg + 1) {
+      if (*arg == ' ') {
         I_strncat(g_consoleField.buffer,0x100,"\"");
         break;
       }
     }
-    pcVar2 = Cmd_Argv(local_c);
-    I_strncat(g_consoleField.buffer,0x100,pcVar2);
-    if (*local_8 == ' ') {
+    src = Cmd_Argv(i);
+    I_strncat(g_consoleField.buffer,0x100,src);
+    if (*arg == ' ') {
       I_strncat(g_consoleField.buffer,0x100,"\"");
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00559330  ConcatRemaining  (client/cl_keys.cpp:841)
 
-void __cdecl ConcatRemaining(char *param_1,char *param_2)
+void __cdecl ConcatRemaining(char *src,char *start)
 
 {
   char cVar1;
   int extraout_EAX;
   char *local_c;
+  char *str;
   
-  strstr((uchar *)param_1,(uchar *)param_2);
+  strstr((uchar *)src,(uchar *)start);
   if (extraout_EAX == 0) {
     keyConcatArgs();
   }
   else {
-    local_c = param_2;
+    local_c = start;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    I_strncat(g_consoleField.buffer,0x100,local_c + (extraout_EAX - (int)(param_2 + 1)));
+    I_strncat(g_consoleField.buffer,0x100,local_c + (extraout_EAX - (int)(start + 1)));
   }
   return;
 }
@@ -529,7 +541,7 @@ void __cdecl ConcatRemaining(char *param_1,char *param_2)
 
 // 005595A0  ReplaceConsoleInputArgument  (client/cl_keys.cpp:857)
 
-void __cdecl ReplaceConsoleInputArgument(int param_1,char *param_2)
+void __cdecl ReplaceConsoleInputArgument(int replaceCount,char *replacement)
 
 {
   code *pcVar1;
@@ -537,27 +549,29 @@ void __cdecl ReplaceConsoleInputArgument(int param_1,char *param_2)
   bool bVar3;
   int iVar4;
   char *local_10;
-  char *local_c;
+  int cmdLineLen;
+  int copyToIndex;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((replacement == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x35d,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (*param_2 != '\0') {
+  if (*replacement != '\0') {
     local_10 = g_consoleField.buffer;
     pcVar2 = local_10;
     do {
       local_10 = pcVar2;
       pcVar2 = local_10 + 1;
     } while (*local_10 != '\0');
-    local_c = local_10 + -0xfa9910;
-    while ((local_c != (char *)0x0 && (iVar4 = isspace((int)local_c[0xfa990f]), iVar4 != 0))) {
-      local_c = local_c + -1;
+    cmdLineLen = (int)(local_10 + -0xfa9910);
+    while ((cmdLineLen != 0 &&
+           (iVar4 = isspace((int)g_consoleField.buffer[cmdLineLen + -1]), iVar4 != 0))) {
+      cmdLineLen = cmdLineLen + -1;
     }
-    if ((int)local_c <= param_1) {
+    if (cmdLineLen <= replaceCount) {
       va("%s: %i, %i");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x364,0,
                                "%s\n\t%s");
@@ -567,8 +581,8 @@ void __cdecl ReplaceConsoleInputArgument(int param_1,char *param_2)
         return;
       }
     }
-    I_strncpyz((char *)((int)&g_consoleField + ((int)local_c - param_1) + 0x18),param_2,
-               0x100 - ((int)local_c - param_1));
+    I_strncpyz((char *)((int)&g_consoleField + (cmdLineLen - replaceCount) + 0x18),replacement,
+               0x100 - (cmdLineLen - replaceCount));
   }
   return;
 }
@@ -584,31 +598,32 @@ void __cdecl CompleteCmdArgument(void)
   char cVar1;
   char *pcVar2;
   char *local_124;
-  char local_114 [256];
+  char *cmdArgPrefix;
+  char arg [256];
   uint local_14;
-  char *local_10;
-  char **local_c;
-  uint local_8;
+  char *cmdName;
+  char **files;
+  int fileCount;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = Con_TokenizeInput();
+  cmdName = Con_TokenizeInput();
   local_124 = Cmd_Argv(1);
   if (*local_124 == '\0') {
     Cmd_EndTokenizedString();
   }
   else {
-    local_c = Cmd_GetAutoCompleteFileList(local_10,(int *)&local_8,0xb);
+    files = Cmd_GetAutoCompleteFileList(cmdName,&fileCount,0xb);
     Cmd_EndTokenizedString();
-    if (local_8 != 0) {
-      Con_AutoCompleteFromList(local_c,local_8,local_124,local_114,0x100);
-      Sys_FreeFileList(local_c);
-      Com_StripExtension(local_114,local_114);
+    if (fileCount != 0) {
+      Con_AutoCompleteFromList(files,fileCount,local_124,arg,0x100);
+      Sys_FreeFileList(files);
+      Com_StripExtension(arg,arg);
       pcVar2 = local_124 + 1;
       do {
         cVar1 = *local_124;
         local_124 = local_124 + 1;
       } while (cVar1 != '\0');
-      ReplaceConsoleInputArgument((int)local_124 - (int)pcVar2,local_114);
+      ReplaceConsoleInputArgument((int)local_124 - (int)pcVar2,arg);
     }
   }
   return;
@@ -628,7 +643,10 @@ void __cdecl CompleteDvarArgument(void)
   char *pcVar4;
   dvar_s *pdVar5;
   char *local_124;
-  char local_10c [260];
+  char *dvarName;
+  dvar_s *dvar;
+  char *dvarValuePrefix;
+  char dvarValue [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -647,13 +665,13 @@ void __cdecl CompleteDvarArgument(void)
     if (*local_124 != '\0') {
       Con_AutoCompleteFromList
                 ((pdVar5->domain).enumeration.strings,(pdVar5->domain).enumeration.stringCount,
-                 local_124,local_10c,0x100);
+                 local_124,dvarValue,0x100);
       pcVar4 = local_124 + 1;
       do {
         cVar1 = *local_124;
         local_124 = local_124 + 1;
       } while (cVar1 != '\0');
-      ReplaceConsoleInputArgument((int)local_124 - (int)pcVar4,local_10c);
+      ReplaceConsoleInputArgument((int)local_124 - (int)pcVar4,dvarValue);
     }
     Cmd_EndTokenizedString();
   }
@@ -666,7 +684,7 @@ void __cdecl CompleteDvarArgument(void)
 
 // 005597F0  UpdateMatches  (client/cl_keys.cpp:932)
 
-void __cdecl UpdateMatches(bool param_1,int *param_2,int *param_3)
+void __cdecl UpdateMatches(bool searchCmds,int *matchLenAfterCmds,int *matchLenAfterDvars)
 
 {
   char *pcVar1;
@@ -676,7 +694,7 @@ void __cdecl UpdateMatches(bool param_1,int *param_2,int *param_3)
   s_matchCount = 0;
   s_prefixMatchCount = 0;
   s_shortestMatch[0] = '\0';
-  if (param_1) {
+  if (searchCmds) {
     Cmd_ForEachConsoleAccessName(FindMatches);
     local_8 = s_shortestMatch;
     pcVar1 = local_8;
@@ -684,10 +702,10 @@ void __cdecl UpdateMatches(bool param_1,int *param_2,int *param_3)
       local_8 = pcVar1;
       pcVar1 = local_8 + 1;
     } while (*local_8 != '\0');
-    *param_2 = (int)(local_8 + -0xfa94f0);
+    *matchLenAfterCmds = (int)(local_8 + -0xfa94f0);
   }
   else {
-    *param_2 = 0;
+    *matchLenAfterCmds = 0;
   }
   Dvar_ForEachConsoleAccessName(FindMatches);
   local_18 = s_shortestMatch;
@@ -696,7 +714,7 @@ void __cdecl UpdateMatches(bool param_1,int *param_2,int *param_3)
     local_18 = pcVar1;
     pcVar1 = local_18 + 1;
   } while (*local_18 != '\0');
-  *param_3 = (int)(local_18 + -0xfa94f0);
+  *matchLenAfterDvars = (int)(local_18 + -0xfa94f0);
   return;
 }
 
@@ -716,22 +734,22 @@ void __cdecl CompleteCommand(void)
   int *piVar6;
   char *local_2a0;
   char *local_290;
-  char local_28c;
-  char local_288;
+  bool local_28c;
+  bool local_288;
   char *local_278;
   int local_274;
-  int local_250;
-  uchar local_24c [255];
+  int matchLenAfterCmds;
+  uchar pbbuf [255];
   undefined1 local_14d;
-  int local_13c [6];
+  int savedField [6];
   char local_124 [260];
   uint local_20;
-  char local_19;
-  int local_18;
-  char *local_14;
-  int local_10;
-  char local_9;
-  field_t *local_8;
+  bool isDvarCommand;
+  int offset;
+  char *originalCommand;
+  int matchLenAfterDvars;
+  bool useExactMatch;
+  field_t *edit;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((g_consoleField.buffer[0] == '/') || (g_consoleField.buffer[0] == '\\')) {
@@ -740,17 +758,17 @@ void __cdecl CompleteCommand(void)
   else {
     local_274 = 0;
   }
-  local_18 = local_274;
+  offset = local_274;
   iVar4 = _strnicmp(g_consoleField.buffer + local_274,"pb_",3);
   if (iVar4 == 0) {
-    strncpy(local_24c,(uchar *)(g_consoleField.buffer + local_18),0xff);
+    strncpy(pbbuf,(uchar *)(g_consoleField.buffer + offset),0xff);
     local_14d = 0;
-    iVar4 = _strnicmp((char *)local_24c,"pb_sv_",6);
+    iVar4 = _strnicmp((char *)pbbuf,"pb_sv_",6);
     if (iVar4 == 0) {
-      PbServerCompleteCommand((char *)local_24c,0xff);
+      PbServerCompleteCommand((char *)pbbuf,0xff);
     }
     else {
-      PbClientCompleteCommand((char *)local_24c,0xff);
+      PbClientCompleteCommand((char *)pbbuf,0xff);
     }
     Com_sprintf(g_consoleField.buffer,0x100,"\\%s");
     local_278 = g_consoleField.buffer;
@@ -771,67 +789,67 @@ void __cdecl CompleteCommand(void)
     Cmd_EndTokenizedString();
     return;
   }
-  local_14 = s_completionString;
+  originalCommand = s_completionString;
   iVar4 = Cmd_Argc();
   if ((iVar4 < 2) || (bVar3 = Con_IsDvarCommand(s_completionString), !bVar3)) {
-    local_288 = '\0';
+    local_288 = false;
   }
   else {
-    local_288 = '\x01';
+    local_288 = true;
   }
-  local_19 = local_288;
-  if (local_288 != '\0') {
+  isDvarCommand = local_288;
+  if (local_288 != false) {
     s_completionString = Cmd_Argv(1);
   }
-  local_250 = 0;
-  local_10 = 0;
+  matchLenAfterCmds = 0;
+  matchLenAfterDvars = 0;
   if ((con_matchPrefixOnly->current).enabled == false) {
     con_ignoreMatchPrefixOnly = false;
-    UpdateMatches(local_19 == '\0',&local_250,&local_10);
+    UpdateMatches(isDvarCommand == false,&matchLenAfterCmds,&matchLenAfterDvars);
   }
   else {
     con_ignoreMatchPrefixOnly = true;
-    UpdateMatches(local_19 == '\0',&local_250,&local_10);
+    UpdateMatches(isDvarCommand == false,&matchLenAfterCmds,&matchLenAfterDvars);
     if (con_inputMaxMatchesShown < s_matchCount) {
       con_ignoreMatchPrefixOnly = false;
-      UpdateMatches(local_19 == '\0',&local_250,&local_10);
+      UpdateMatches(isDvarCommand == false,&matchLenAfterCmds,&matchLenAfterDvars);
       if (s_matchCount == 0) {
         con_ignoreMatchPrefixOnly = true;
-        UpdateMatches(local_19 == '\0',&local_250,&local_10);
+        UpdateMatches(isDvarCommand == false,&matchLenAfterCmds,&matchLenAfterDvars);
       }
     }
   }
   if (s_matchCount != 0) {
-    local_8 = &g_consoleField;
+    edit = &g_consoleField;
     pfVar5 = &g_consoleField;
-    piVar6 = local_13c;
+    piVar6 = savedField;
     for (iVar4 = 0x46; iVar4 != 0; iVar4 = iVar4 + -1) {
       *piVar6 = pfVar5->cursor;
       pfVar5 = (field_t *)&pfVar5->scroll;
       piVar6 = piVar6 + 1;
     }
-    if (((local_19 != '\0') || (s_matchCount == 1)) ||
+    if (((isDvarCommand != false) || (s_matchCount == 1)) ||
        ((s_hasExactMatch != false && (bVar3 = Con_AnySpaceAfterCommand(), bVar3)))) {
-      local_28c = '\x01';
+      local_28c = true;
     }
     else {
-      local_28c = '\0';
+      local_28c = false;
     }
-    local_9 = local_28c;
-    if (local_19 == '\0') {
-      Com_sprintf(local_8->buffer,0x100,"\\%s");
+    useExactMatch = local_28c;
+    if (isDvarCommand == false) {
+      Com_sprintf(edit->buffer,0x100,"\\%s");
     }
     else {
-      Com_sprintf(local_8->buffer,0x100,"\\%s %s");
+      Com_sprintf(edit->buffer,0x100,"\\%s %s");
     }
-    local_290 = local_8->buffer;
+    local_290 = edit->buffer;
     do {
       cVar1 = *local_290;
       local_290 = local_290 + 1;
     } while (cVar1 != '\0');
-    local_8->cursor = (int)local_290 - (int)(local_8->buffer + 1);
+    edit->cursor = (int)local_290 - (int)(edit->buffer + 1);
     ConcatRemaining(local_124,s_completionString);
-    if (local_9 == '\0') {
+    if (useExactMatch == false) {
       bVar3 = Con_HasTooManyMatchesToShow();
       if (bVar3) {
         Com_Printf(0,"]%s\n");
@@ -839,7 +857,7 @@ void __cdecl CompleteCommand(void)
       }
     }
     else {
-      if (local_19 == '\0') {
+      if (isDvarCommand == false) {
         iVar4 = Cmd_Argc();
         if (iVar4 == 1) {
           I_strncat(g_consoleField.buffer,0x100," ");
@@ -847,7 +865,7 @@ void __cdecl CompleteCommand(void)
         else {
           iVar4 = Cmd_Argc();
           if (iVar4 == 2) {
-            if (local_250 == local_10) {
+            if (matchLenAfterCmds == matchLenAfterDvars) {
               CompleteCmdArgument();
             }
             else {
@@ -856,12 +874,12 @@ void __cdecl CompleteCommand(void)
           }
         }
       }
-      local_2a0 = local_8->buffer;
+      local_2a0 = edit->buffer;
       do {
         cVar1 = *local_2a0;
         local_2a0 = local_2a0 + 1;
       } while (cVar1 != '\0');
-      local_8->cursor = (int)local_2a0 - (int)(local_8->buffer + 1);
+      edit->cursor = (int)local_2a0 - (int)(edit->buffer + 1);
     }
     Cmd_EndTokenizedString();
     Field_AdjustScroll(&scrPlaceFull,&g_consoleField);
@@ -874,12 +892,13 @@ void __cdecl CompleteCommand(void)
 
 // 00559A90  Console_IsRconCmd  (client/cl_keys.cpp:1079)
 
-bool __cdecl Console_IsRconCmd(char *param_1)
+bool __cdecl Console_IsRconCmd(char *commandString)
 
 {
   char *pcVar1;
   int iVar2;
   char *local_c;
+  char *rcon;
   
   local_c = "rcon";
   pcVar1 = local_c;
@@ -887,7 +906,7 @@ bool __cdecl Console_IsRconCmd(char *param_1)
     local_c = pcVar1;
     pcVar1 = local_c + 1;
   } while (*local_c != '\0');
-  iVar2 = I_strncmp(param_1,"rcon",(int)(local_c + -0xc9a6fc));
+  iVar2 = I_strncmp(commandString,"rcon",(int)(local_c + -0xc9a6fc));
   return (bool)('\x01' - (iVar2 != 0));
 }
 
@@ -906,7 +925,7 @@ bool __cdecl Console_IsClientDisconnected(void)
 
 // 00558320  Console_Key  (client/cl_keys.cpp:1127)
 
-void __cdecl Console_Key(int param_1,int param_2)
+void __cdecl Console_Key(int localClientNum,int key)
 
 {
   int iVar1;
@@ -917,16 +936,20 @@ void __cdecl Console_Key(int param_1,int param_2)
   field_t *pfVar6;
   uint uVar7;
   field_t *pfVar8;
+  int isShiftDown;
+  int isCtrlDown;
+  int shouldCompleteCmd;
+  int isAltDown;
   
   bVar3 = s_shouldCompleteCmd;
   s_shouldCompleteCmd = true;
-  iVar5 = playerKeys[param_1].keys[0xa0].down;
-  iVar1 = playerKeys[param_1].keys[0x9f].down;
-  iVar2 = playerKeys[param_1].keys[0x9e].down;
-  if ((param_2 == 0x6c) && (iVar1 != 0)) {
-    Cbuf_AddText(param_1,"clear\n");
+  iVar5 = playerKeys[localClientNum].keys[0xa0].down;
+  iVar1 = playerKeys[localClientNum].keys[0x9f].down;
+  iVar2 = playerKeys[localClientNum].keys[0x9e].down;
+  if ((key == 0x6c) && (iVar1 != 0)) {
+    Cbuf_AddText(localClientNum,"clear\n");
   }
-  else if ((param_2 == 0xd) || (param_2 == 0xbf)) {
+  else if ((key == 0xd) || (key == 0xbf)) {
     bVar3 = Con_CommitToAutoComplete();
     if (!bVar3) {
       Com_Printf(0,"]%s\n");
@@ -945,9 +968,9 @@ void __cdecl Console_Key(int param_1,int param_2)
           }
           bVar3 = Console_IsRconCmd(g_consoleField.buffer);
           if (!bVar3) {
-            Cbuf_AddText(param_1,"cmd say ");
-            Cbuf_AddText(param_1,g_consoleField.buffer);
-            Cbuf_AddText(param_1,"\n");
+            Cbuf_AddText(localClientNum,"cmd say ");
+            Cbuf_AddText(localClientNum,g_consoleField.buffer);
+            Cbuf_AddText(localClientNum,"\n");
           }
         }
       }
@@ -976,7 +999,7 @@ void __cdecl Console_Key(int param_1,int param_2)
       }
     }
   }
-  else if (param_2 == 9) {
+  else if (key == 9) {
     if (bVar3) {
       CompleteCommand();
     }
@@ -985,20 +1008,20 @@ void __cdecl Console_Key(int param_1,int param_2)
     }
     s_shouldCompleteCmd = false;
   }
-  else if ((param_2 == 0x9a) && (iVar1 != 0)) {
+  else if ((key == 0x9a) && (iVar1 != 0)) {
     Con_CycleAutoComplete(-1);
   }
-  else if ((param_2 == 0x9b) && (iVar1 != 0)) {
+  else if ((key == 0x9b) && (iVar1 != 0)) {
     Con_CycleAutoComplete(1);
   }
   else {
-    if ((param_2 == 0xce) && (iVar5 != 0)) {
+    if ((key == 0xce) && (iVar5 != 0)) {
       bVar3 = true;
     }
-    else if (param_2 == 0xb7) {
+    else if (key == 0xb7) {
       bVar3 = true;
     }
-    else if ((param_2 == 0x9a) || ((iVar4 = tolower(param_2), iVar4 == 0x70 && (iVar1 != 0)))) {
+    else if ((key == 0x9a) || ((iVar4 = tolower(key), iVar4 == 0x70 && (iVar1 != 0)))) {
       bVar3 = true;
     }
     else {
@@ -1023,13 +1046,13 @@ void __cdecl Console_Key(int param_1,int param_2)
       Con_AllowAutoCompleteCycling(false);
     }
     else {
-      if ((param_2 == 0xcd) && (iVar5 != 0)) {
+      if ((key == 0xcd) && (iVar5 != 0)) {
         bVar3 = true;
       }
-      else if (param_2 == 0xbd) {
+      else if (key == 0xbd) {
         bVar3 = true;
       }
-      else if ((param_2 == 0x9b) || ((iVar4 = tolower(param_2), iVar4 == 0x6e && (iVar1 != 0)))) {
+      else if ((key == 0x9b) || ((iVar4 = tolower(key), iVar4 == 0x6e && (iVar1 != 0)))) {
         bVar3 = true;
       }
       else {
@@ -1053,45 +1076,44 @@ void __cdecl Console_Key(int param_1,int param_2)
           Field_AdjustScroll(&scrPlaceFull,&g_consoleField);
         }
       }
-      else if (param_2 == 0xa4) {
+      else if (key == 0xa4) {
         Con_PageUp();
       }
-      else if (param_2 == 0xa3) {
+      else if (key == 0xa3) {
         Con_PageDown();
       }
-      else if (param_2 == 0xce) {
+      else if (key == 0xce) {
         Con_PageUp();
         if (iVar1 != 0) {
           Con_PageUp();
           Con_PageUp();
         }
       }
-      else if (param_2 == 0xcd) {
+      else if (key == 0xcd) {
         Con_PageDown();
         if (iVar1 != 0) {
           Con_PageDown();
           Con_PageDown();
         }
       }
-      else if ((param_2 == 0xa5) && (iVar1 != 0)) {
+      else if ((key == 0xa5) && (iVar1 != 0)) {
         Con_Top();
       }
-      else if ((param_2 == 0xa6) && (iVar1 != 0)) {
+      else if ((key == 0xa6) && (iVar1 != 0)) {
         Con_Bottom();
       }
       else {
-        if ((param_2 == 0xa2) || (param_2 == 0x1b)) {
+        if ((key == 0xa2) || (key == 0x1b)) {
           bVar3 = Con_CancelAutoComplete();
           if (bVar3) {
             return;
           }
         }
-        else if (((((param_2 == 0x9d) || (param_2 == 0xbb)) || (param_2 == 0x9c)) ||
-                 (param_2 == 0xb9)) ||
-                (((param_2 != 0x7f && (iVar1 == 0)) && ((iVar2 == 0 && (iVar5 == 0)))))) {
+        else if (((((key == 0x9d) || (key == 0xbb)) || (key == 0x9c)) || (key == 0xb9)) ||
+                (((key != 0x7f && (iVar1 == 0)) && ((iVar2 == 0 && (iVar5 == 0)))))) {
           Con_CommitToAutoComplete();
         }
-        bVar3 = Field_KeyDownEvent(param_1,&scrPlaceFull,&g_consoleField,param_2);
+        bVar3 = Field_KeyDownEvent(localClientNum,&scrPlaceFull,&g_consoleField,key);
         if (bVar3) {
           Con_AllowAutoCompleteCycling(true);
         }
@@ -1105,40 +1127,42 @@ void __cdecl Console_Key(int param_1,int param_2)
 // 0055C000  Message_Key  (client/cl_keys.cpp:1352)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Message_Key(int param_1,int param_2)
+void __cdecl Message_Key(int localClientNum,int key)
 
 {
   clientUIActive_t *pcVar1;
-  char local_414 [1028];
+  clientUIActive_t *cl;
+  char buffer [1028];
   uint local_10;
-  PlayerKeyState *local_c;
-  connstate_t local_8;
+  field_t *chatField;
+  connstate_t clcState;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = playerKeys + param_1;
-  pcVar1 = CL_GetLocalClientUIGlobals(param_1);
-  if (param_2 == 0x1b) {
+  chatField = &playerKeys[localClientNum].chatField;
+  pcVar1 = CL_GetLocalClientUIGlobals(localClientNum);
+  if (key == 0x1b) {
     pcVar1->keyCatchers = pcVar1->keyCatchers & 0xffffffdf;
-    Field_Clear(&local_c->chatField);
+    Field_Clear(chatField);
   }
-  else if ((param_2 == 0xd) || (param_2 == 0xbf)) {
-    local_8 = CL_GetLocalClientConnectionState(param_1);
-    if (((local_c->chatField).buffer[0] != '\0') && (local_8 == CA_ACTIVE)) {
-      if (playerKeys[param_1].chat_team == 0) {
-        Com_sprintf(local_414,0x400,"say \"\x15%s\"\n");
+  else if ((key == 0xd) || (key == 0xbf)) {
+    clcState = CL_GetLocalClientConnectionState(localClientNum);
+    if ((chatField->buffer[0] != '\0') && (clcState == CA_ACTIVE)) {
+      if (playerKeys[localClientNum].chat_team == 0) {
+        Com_sprintf(buffer,0x400,"say \"\x15%s\"\n");
       }
       else {
-        Com_sprintf(local_414,0x400,"say_team \"\x15%s\"\n");
+        Com_sprintf(buffer,0x400,"say_team \"\x15%s\"\n");
       }
-      CL_AddReliableCommand(param_1,local_414);
+      CL_AddReliableCommand(localClientNum,buffer);
     }
     pcVar1->keyCatchers = pcVar1->keyCatchers & 0xffffffdf;
-    Field_Clear(&local_c->chatField);
+    Field_Clear(chatField);
   }
   else {
-    Field_KeyDownEvent(param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                       &local_c->chatField,param_2);
+    Field_KeyDownEvent(localClientNum,(ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                       chatField,key);
   }
   return;
 }
@@ -1146,35 +1170,35 @@ void __cdecl Message_Key(int param_1,int param_2)
 
 // 00559B00  Key_GetOverstrikeMode  (client/cl_keys.cpp:1389)
 
-int __cdecl Key_GetOverstrikeMode(int param_1)
+int __cdecl Key_GetOverstrikeMode(int localClientNum)
 
 {
-  return playerKeys[param_1].overstrikeMode;
+  return playerKeys[localClientNum].overstrikeMode;
 }
 
 
 // 00559B20  Key_SetOverstrikeMode  (client/cl_keys.cpp:1395)
 
-void __cdecl Key_SetOverstrikeMode(int param_1,int param_2)
+void __cdecl Key_SetOverstrikeMode(int localClientNum,int state)
 
 {
-  playerKeys[param_1].overstrikeMode = param_2;
+  playerKeys[localClientNum].overstrikeMode = state;
   return;
 }
 
 
 // 00559B40  Key_IsDown  (client/cl_keys.cpp:1401)
 
-int __cdecl Key_IsDown(int param_1,int param_2)
+int __cdecl Key_IsDown(int localClientNum,int keynum)
 
 {
   int iVar1;
   
-  if (param_2 == -1) {
+  if (keynum == -1) {
     iVar1 = 0;
   }
   else {
-    iVar1 = *(int *)(param_1 * 0x1128 + 0xfa9b3c + param_2 * 0x10);
+    iVar1 = *(int *)(localClientNum * 0x1128 + 0xfa9b3c + keynum * 0x10);
   }
   return iVar1;
 }
@@ -1182,60 +1206,60 @@ int __cdecl Key_IsDown(int param_1,int param_2)
 
 // 00559B70  Key_StringToKeynum  (client/cl_keys.cpp:1423)
 
-int __cdecl Key_StringToKeynum(char *param_1)
+int __cdecl Key_StringToKeynum(char *str)
 
 {
   char cVar1;
   bool bVar2;
   int iVar3;
   char *local_14;
-  int local_10;
-  int local_c;
-  keyname_t *local_8;
+  int n2;
+  int n1;
+  keyname_t *kn;
   
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((str == (char *)0x0) || (*str == '\0')) {
     iVar3 = -1;
   }
-  else if (param_1[1] == '\0') {
-    iVar3 = (int)*param_1;
+  else if (str[1] == '\0') {
+    iVar3 = (int)*str;
   }
   else {
-    if ((*param_1 == '0') && (param_1[1] == 'x')) {
-      local_14 = param_1;
+    if ((*str == '0') && (str[1] == 'x')) {
+      local_14 = str;
       do {
         cVar1 = *local_14;
         local_14 = local_14 + 1;
       } while (cVar1 != '\0');
-      if ((int)local_14 - (int)(param_1 + 1) == 4) {
-        local_c = (int)param_1[2];
-        bVar2 = I_isdigit(local_c);
+      if ((int)local_14 - (int)(str + 1) == 4) {
+        iVar3 = (int)str[2];
+        bVar2 = I_isdigit(iVar3);
         if (bVar2) {
-          local_c = local_c + -0x30;
+          n1 = iVar3 + -0x30;
         }
-        else if ((local_c < 0x61) || (0x66 < local_c)) {
-          local_c = 0;
+        else if ((iVar3 < 0x61) || (0x66 < iVar3)) {
+          n1 = 0;
         }
         else {
-          local_c = local_c + -0x57;
+          n1 = iVar3 + -0x57;
         }
-        local_10 = (int)param_1[3];
-        bVar2 = I_isdigit(local_10);
+        iVar3 = (int)str[3];
+        bVar2 = I_isdigit(iVar3);
         if (bVar2) {
-          local_10 = local_10 + -0x30;
+          n2 = iVar3 + -0x30;
         }
-        else if ((local_10 < 0x61) || (0x66 < local_10)) {
-          local_10 = 0;
+        else if ((iVar3 < 0x61) || (0x66 < iVar3)) {
+          n2 = 0;
         }
         else {
-          local_10 = local_10 + -0x57;
+          n2 = iVar3 + -0x57;
         }
-        return local_c * 0x10 + local_10;
+        return n1 * 0x10 + n2;
       }
     }
-    for (local_8 = keynames; local_8->name != (char *)0x0; local_8 = local_8 + 1) {
-      iVar3 = I_stricmp(param_1,local_8->name);
+    for (kn = keynames; kn->name != (char *)0x0; kn = kn + 1) {
+      iVar3 = I_stricmp(str,kn->name);
       if (iVar3 == 0) {
-        return local_8->keynum;
+        return kn->keynum;
       }
     }
     iVar3 = -1;
@@ -1246,13 +1270,13 @@ int __cdecl Key_StringToKeynum(char *param_1)
 
 // 00559CD0  Key_IsValidGamePadChar  (client/cl_keys.cpp:1484)
 
-bool __cdecl Key_IsValidGamePadChar(char param_1)
+bool __cdecl Key_IsValidGamePadChar(char key)
 
 {
   undefined1 local_8;
   
-  if ((((param_1 < '\x01') || ('\x06' < param_1)) && ((param_1 < '\x0e' || ('\x19' < param_1)))) &&
-     ((param_1 < '\x1c' || ('\x1f' < param_1)))) {
+  if ((((key < '\x01') || ('\x06' < key)) && ((key < '\x0e' || ('\x19' < key)))) &&
+     ((key < '\x1c' || ('\x1f' < key)))) {
     local_8 = false;
   }
   else {
@@ -1264,7 +1288,7 @@ bool __cdecl Key_IsValidGamePadChar(char param_1)
 
 // 00559D30  Key_KeynumToString  (client/cl_keys.cpp:1497)
 
-char * __cdecl Key_KeynumToString(int param_1,int param_2)
+char * __cdecl Key_KeynumToString(int keynum,int translate)
 
 {
   bool bVar1;
@@ -1272,56 +1296,58 @@ char * __cdecl Key_KeynumToString(int param_1,int param_2)
   int iVar3;
   char local_18;
   char local_14;
-  keyname_t *local_c;
+  int j;
+  keyname_t *kn;
+  int i;
   
-  if (param_1 == -1) {
+  if (keynum == -1) {
     pcVar2 = "<KEY NOT FOUND>";
   }
-  else if ((param_1 < 0) || (0xff < param_1)) {
+  else if ((keynum < 0) || (0xff < keynum)) {
     pcVar2 = "<OUT OF RANGE>";
   }
-  else if ((param_2 == 0) ||
+  else if ((translate == 0) ||
           ((((iVar3 = SEH_GetCurrentLanguage(), iVar3 != 1 &&
-             (iVar3 = SEH_GetCurrentLanguage(), iVar3 != 2)) || (param_1 < 0x30)) ||
-           (0x39 < param_1)))) {
-    if (((0x20 < param_1) && (param_1 < 0x7f)) && (param_1 != 0x22)) {
-      iVar3 = toupper(param_1);
+             (iVar3 = SEH_GetCurrentLanguage(), iVar3 != 2)) || (keynum < 0x30)) || (0x39 < keynum))
+          )) {
+    if (((0x20 < keynum) && (keynum < 0x7f)) && (keynum != 0x22)) {
+      iVar3 = toupper(keynum);
       tinystr[0] = (char)iVar3;
       tinystr[1] = '\0';
-      if ((param_1 != 0x3b) || (param_2 != 0)) {
+      if ((keynum != 0x3b) || (translate != 0)) {
         tinystr[1] = '\0';
         return tinystr;
       }
     }
-    if (param_2 == 0) {
-      local_c = keynames;
+    if (translate == 0) {
+      kn = keynames;
     }
     else {
-      bVar1 = Key_IsValidGamePadChar((char)param_1);
+      bVar1 = Key_IsValidGamePadChar((char)keynum);
       if (bVar1) {
-        tinystr[0] = (char)param_1;
+        tinystr[0] = (char)keynum;
         tinystr[1] = '\0';
         return tinystr;
       }
-      local_c = keynames_localized;
+      kn = keynames_localized;
     }
-    for (; local_c->name != (char *)0x0; local_c = local_c + 1) {
-      if (param_1 == local_c->keynum) {
-        return local_c->name;
+    for (; kn->name != (char *)0x0; kn = kn + 1) {
+      if (keynum == kn->keynum) {
+        return kn->name;
       }
     }
     tinystr[0] = '0';
     tinystr[1] = 'x';
-    local_14 = (char)(param_1 >> 4);
-    if (param_1 >> 4 < 10) {
+    local_14 = (char)(keynum >> 4);
+    if (keynum >> 4 < 10) {
       local_14 = local_14 + '0';
     }
     else {
       local_14 = local_14 + 'W';
     }
     tinystr[2] = local_14;
-    local_18 = (char)(param_1 & 0xfU);
-    if ((param_1 & 0xfU) < 10) {
+    local_18 = (char)(keynum & 0xfU);
+    if ((keynum & 0xfU) < 10) {
       local_18 = local_18 + '0';
     }
     else {
@@ -1332,7 +1358,7 @@ char * __cdecl Key_KeynumToString(int param_1,int param_2)
     pcVar2 = tinystr;
   }
   else {
-    pcVar2 = (&keynames_localized[0x5c].name)[param_1];
+    pcVar2 = (&keynames_localized[0x5c].name)[keynum];
   }
   return pcVar2;
 }
@@ -1340,13 +1366,13 @@ char * __cdecl Key_KeynumToString(int param_1,int param_2)
 
 // 00559EC0  Key_SetBinding  (client/cl_keys.cpp:1577)
 
-void __cdecl Key_SetBinding(int param_1,int param_2,char *param_3,int param_4)
+void __cdecl Key_SetBinding(int localClientNum,int keynum,char *binding,int bindNum)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x62a,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -1354,15 +1380,15 @@ void __cdecl Key_SetBinding(int param_1,int param_2,char *param_3,int param_4)
     (*pcVar1)();
     return;
   }
-  if (param_2 != -1) {
-    if (param_4 == 0) {
-      ReplaceString((char **)(param_1 * 0x1128 + 0xfa9b44 + param_2 * 0x10),param_3,"Key_SetBinding"
-                    ,0xb,SCRIPTINSTANCE_SERVER);
+  if (keynum != -1) {
+    if (bindNum == 0) {
+      ReplaceString((char **)(localClientNum * 0x1128 + 0xfa9b44 + keynum * 0x10),binding,
+                    "Key_SetBinding",0xb,SCRIPTINSTANCE_SERVER);
       dvar_modifiedFlags = dvar_modifiedFlags | 1;
     }
     else {
-      ReplaceString((char **)(param_1 * 0x1128 + 0xfa9b48 + param_2 * 0x10),param_3,"Key_SetBinding"
-                    ,0xb,SCRIPTINSTANCE_SERVER);
+      ReplaceString((char **)(localClientNum * 0x1128 + 0xfa9b48 + keynum * 0x10),binding,
+                    "Key_SetBinding",0xb,SCRIPTINSTANCE_SERVER);
       dvar_modifiedFlags = dvar_modifiedFlags | 1;
     }
   }
@@ -1372,13 +1398,13 @@ void __cdecl Key_SetBinding(int param_1,int param_2,char *param_3,int param_4)
 
 // 00559F80  Key_SetBindings  (client/cl_keys.cpp:1603)
 
-void __cdecl Key_SetBindings(int param_1,int *param_2,char *param_3,int param_4)
+void __cdecl Key_SetBindings(int localClientNum,int *twokeys,char *binding,int bindNum)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x644,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -1388,11 +1414,11 @@ void __cdecl Key_SetBindings(int param_1,int *param_2,char *param_3,int param_4)
       return;
     }
   }
-  if (*param_2 != -1) {
-    Key_SetBinding(param_1,*param_2,param_3,param_4);
+  if (*twokeys != -1) {
+    Key_SetBinding(localClientNum,*twokeys,binding,bindNum);
   }
-  if (param_2[1] != -1) {
-    Key_SetBinding(param_1,param_2[1],param_3,param_4);
+  if (twokeys[1] != -1) {
+    Key_SetBinding(localClientNum,twokeys[1],binding,bindNum);
   }
   return;
 }
@@ -1400,14 +1426,14 @@ void __cdecl Key_SetBindings(int param_1,int *param_2,char *param_3,int param_4)
 
 // 0055A000  Key_GetBinding  (client/cl_keys.cpp:1618)
 
-char * __cdecl Key_GetBinding(int param_1,int param_2,int param_3)
+char * __cdecl Key_GetBinding(int localClientNum,int keynum,int bindNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x653,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -1417,7 +1443,7 @@ char * __cdecl Key_GetBinding(int param_1,int param_2,int param_3)
       return pcVar3;
     }
   }
-  if (0xff < (uint)param_2) {
+  if (0xff < (uint)keynum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x654,0,
                              "keynum doesn\'t index MAX_KEYS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1426,11 +1452,11 @@ char * __cdecl Key_GetBinding(int param_1,int param_2,int param_3)
       return pcVar3;
     }
   }
-  if (param_3 == 0) {
-    pcVar3 = *(char **)(param_1 * 0x1128 + 0xfa9b44 + param_2 * 0x10);
+  if (bindNum == 0) {
+    pcVar3 = *(char **)(localClientNum * 0x1128 + 0xfa9b44 + keynum * 0x10);
   }
   else {
-    pcVar3 = *(char **)(param_1 * 0x1128 + 0xfa9b48 + param_2 * 0x10);
+    pcVar3 = *(char **)(localClientNum * 0x1128 + 0xfa9b48 + keynum * 0x10);
   }
   return pcVar3;
 }
@@ -1439,63 +1465,65 @@ char * __cdecl Key_GetBinding(int param_1,int param_2,int param_3)
 // 0055A0C0  Key_GetCommandAssignmentInternal  (client/cl_keys.cpp:1629)
 
 int __cdecl
-Key_GetCommandAssignmentInternal(int param_1,char *param_2,int *param_3,int param_4,int param_5)
+Key_GetCommandAssignmentInternal
+          (int localClientNum,char *command,int *twokeys,int gamePadOnly,int bindNum)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  int local_10;
-  int local_8;
+  char *s0;
+  int iVar2;
+  int keynum;
+  char *binding;
+  int count;
   
-  param_3[1] = -1;
-  *param_3 = -1;
-  local_8 = 0;
-  local_10 = 0;
+  twokeys[1] = -1;
+  *twokeys = -1;
+  count = 0;
+  keynum = 0;
   do {
-    if (0xff < local_10) {
-      return local_8;
+    if (0xff < keynum) {
+      return count;
     }
-    if ((((param_4 != 1) || (bVar1 = Key_IsValidGamePadChar((char)local_10), bVar1)) &&
-        (pcVar2 = Key_GetBinding(param_1,local_10,param_5), pcVar2 != (char *)0x0)) &&
-       ((iVar3 = I_stricmp(pcVar2,param_2), iVar3 == 0 &&
+    if ((((gamePadOnly != 1) || (bVar1 = Key_IsValidGamePadChar((char)keynum), bVar1)) &&
+        (s0 = Key_GetBinding(localClientNum,keynum,bindNum), s0 != (char *)0x0)) &&
+       ((iVar2 = I_stricmp(s0,command), iVar2 == 0 &&
         (((gpad_enabled != (dvar_s *)0x0 && ((gpad_enabled->current).enabled != false)) ||
-         (bVar1 = Key_IsValidGamePadChar((char)local_10), !bVar1)))))) {
-      param_3[local_8] = local_10;
-      local_8 = local_8 + 1;
-      if (local_8 == 2) {
+         (bVar1 = Key_IsValidGamePadChar((char)keynum), !bVar1)))))) {
+      twokeys[count] = keynum;
+      count = count + 1;
+      if (count == 2) {
         return 2;
       }
     }
-    local_10 = local_10 + 1;
+    keynum = keynum + 1;
   } while( true );
 }
 
 
 // 0055A0A0  Key_GetCommandAssignment  (client/cl_keys.cpp:1671)
 
-int __cdecl Key_GetCommandAssignment(int param_1,char *param_2,int *param_3,int param_4)
+int __cdecl Key_GetCommandAssignment(int localClientNum,char *command,int *twokeys,int bindNum)
 
 {
   int iVar1;
   
-  iVar1 = Key_GetCommandAssignmentInternal(param_1,param_2,param_3,0,param_4);
+  iVar1 = Key_GetCommandAssignmentInternal(localClientNum,command,twokeys,0,bindNum);
   return iVar1;
 }
 
 
 // 0055A1B0  Key_IsCommandBound  (client/cl_keys.cpp:1677)
 
-int __cdecl Key_IsCommandBound(int param_1,char *param_2,int param_3)
+int __cdecl Key_IsCommandBound(int localClientNum,char *command,int bindNum)
 
 {
-  int local_10 [2];
-  int local_8;
+  int keys [2];
+  int bindCount;
   
   Sys_EnterCriticalSection(CRITSECT_KEY_BINDINGS);
-  local_8 = Key_GetCommandAssignment(param_1,param_2,local_10,param_3);
+  bindCount = Key_GetCommandAssignment(localClientNum,command,keys,bindNum);
   Sys_LeaveCriticalSection(CRITSECT_KEY_BINDINGS);
-  return (uint)(0 < local_8);
+  return (uint)(0 < bindCount);
 }
 
 
@@ -1505,12 +1533,13 @@ void __cdecl Key_Unbind_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *str;
+  int b;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = Key_StringToKeynum(pcVar2);
+    str = Cmd_Argv(1);
+    iVar1 = Key_StringToKeynum(str);
     if (iVar1 == -1) {
       Cmd_Argv(1);
       Com_Printf(0,"\"%s\" isn\'t a valid key\n");
@@ -1532,12 +1561,13 @@ void __cdecl Key_Unbind2_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *str;
+  int b;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = Key_StringToKeynum(pcVar2);
+    str = Cmd_Argv(1);
+    iVar1 = Key_StringToKeynum(str);
     if (iVar1 == -1) {
       Cmd_Argv(1);
       Com_Printf(0,"\"%s\" isn\'t a valid key\n");
@@ -1558,14 +1588,16 @@ void __cdecl Key_Unbind2_f(void)
 void __cdecl Key_Unbindall_f(void)
 
 {
-  int local_10;
+  int keynum;
+  KeyState *keys;
+  int localClientNum;
   
-  for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-    if (playerKeys[0].keys[local_10].binding != (char *)0x0) {
-      Key_SetBinding(0,local_10,"",0);
+  for (keynum = 0; keynum < 0x100; keynum = keynum + 1) {
+    if (playerKeys[0].keys[keynum].binding != (char *)0x0) {
+      Key_SetBinding(0,keynum,"",0);
     }
-    if (playerKeys[0].keys[local_10].binding2 != (char *)0x0) {
-      Key_SetBinding(0,local_10,"",1);
+    if (playerKeys[0].keys[keynum].binding2 != (char *)0x0) {
+      Key_SetBinding(0,keynum,"",1);
     }
   }
   return;
@@ -1577,11 +1609,13 @@ void __cdecl Key_Unbindall_f(void)
 void __cdecl Key_Unbindall2_f(void)
 
 {
-  int local_10;
+  int keynum;
+  KeyState *keys;
+  int localClientNum;
   
-  for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-    if (playerKeys[0].keys[local_10].binding2 != (char *)0x0) {
-      Key_SetBinding(0,local_10,"",1);
+  for (keynum = 0; keynum < 0x100; keynum = keynum + 1) {
+    if (playerKeys[0].keys[keynum].binding2 != (char *)0x0) {
+      Key_SetBinding(0,keynum,"",1);
     }
   }
   return;
@@ -1599,11 +1633,16 @@ void __cdecl Key_Bind_f(void)
   int iVar2;
   char *pcVar3;
   int iVar4;
-  uchar *puVar5;
+  uchar *string;
   int extraout_EAX;
-  uchar uVar6;
-  int local_418;
-  char local_40c [1028];
+  uchar chr;
+  int keynum;
+  int localClientNum;
+  bool preserveSpace;
+  int i;
+  char *binding;
+  int argc;
+  char cmd [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1632,32 +1671,32 @@ void __cdecl Key_Bind_f(void)
         }
       }
       else {
-        local_40c[0] = '\0';
-        for (local_418 = 2; local_418 < iVar2; local_418 = local_418 + 1) {
+        cmd[0] = '\0';
+        for (i = 2; i < iVar2; i = i + 1) {
           if (iVar2 < 4) {
 LAB_0055a574:
             bVar1 = false;
           }
           else {
-            uVar6 = ' ';
-            puVar5 = (uchar *)Cmd_Argv(local_418);
-            strchr(puVar5,uVar6);
+            chr = ' ';
+            string = (uchar *)Cmd_Argv(i);
+            strchr(string,chr);
             if (extraout_EAX == 0) goto LAB_0055a574;
             bVar1 = true;
           }
           if (bVar1) {
-            I_strncat(local_40c,0x400,"\"");
+            I_strncat(cmd,0x400,"\"");
           }
-          pcVar3 = Cmd_Argv(local_418);
-          I_strncat(local_40c,0x400,pcVar3);
+          pcVar3 = Cmd_Argv(i);
+          I_strncat(cmd,0x400,pcVar3);
           if (bVar1) {
-            I_strncat(local_40c,0x400,"\"");
+            I_strncat(cmd,0x400,"\"");
           }
-          if (local_418 != iVar2 + -1) {
-            I_strncat(local_40c,0x400," ");
+          if (i != iVar2 + -1) {
+            I_strncat(cmd,0x400," ");
           }
         }
-        Key_SetBinding(0,iVar4,local_40c,0);
+        Key_SetBinding(0,iVar4,cmd,0);
       }
     }
   }
@@ -1676,11 +1715,16 @@ void __cdecl Key_Bind2_f(void)
   int iVar2;
   char *pcVar3;
   int iVar4;
-  uchar *puVar5;
+  uchar *string;
   int extraout_EAX;
-  uchar uVar6;
-  int local_418;
-  char local_40c [1028];
+  uchar chr;
+  int keynum;
+  int localClientNum;
+  bool preserveSpace;
+  int i;
+  char *binding;
+  int argc;
+  char cmd [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1709,32 +1753,32 @@ void __cdecl Key_Bind2_f(void)
         }
       }
       else {
-        local_40c[0] = '\0';
-        for (local_418 = 2; local_418 < iVar2; local_418 = local_418 + 1) {
+        cmd[0] = '\0';
+        for (i = 2; i < iVar2; i = i + 1) {
           if (iVar2 < 4) {
 LAB_0055a7d4:
             bVar1 = false;
           }
           else {
-            uVar6 = ' ';
-            puVar5 = (uchar *)Cmd_Argv(local_418);
-            strchr(puVar5,uVar6);
+            chr = ' ';
+            string = (uchar *)Cmd_Argv(i);
+            strchr(string,chr);
             if (extraout_EAX == 0) goto LAB_0055a7d4;
             bVar1 = true;
           }
           if (bVar1) {
-            I_strncat(local_40c,0x400,"\"");
+            I_strncat(cmd,0x400,"\"");
           }
-          pcVar3 = Cmd_Argv(local_418);
-          I_strncat(local_40c,0x400,pcVar3);
+          pcVar3 = Cmd_Argv(i);
+          I_strncat(cmd,0x400,pcVar3);
           if (bVar1) {
-            I_strncat(local_40c,0x400,"\"");
+            I_strncat(cmd,0x400,"\"");
           }
-          if (local_418 != iVar2 + -1) {
-            I_strncat(local_40c,0x400," ");
+          if (i != iVar2 + -1) {
+            I_strncat(cmd,0x400," ");
           }
         }
-        Key_SetBinding(0,iVar4,local_40c,1);
+        Key_SetBinding(0,iVar4,cmd,1);
       }
     }
   }
@@ -1744,165 +1788,170 @@ LAB_0055a7d4:
 
 // 0055AC80  Key_WriteBindingsToBuffer  (client/cl_keys.cpp:1891)
 
-int __cdecl Key_WriteBindingsToBuffer(int param_1,char *param_2,int param_3)
+int __cdecl Key_WriteBindingsToBuffer(int localClientNum,char *buffer,int bufferSize)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
-  int local_18;
-  char *local_14;
-  int local_8;
+  int bytesUsed;
+  char *bind;
+  KeyState *keys;
+  int len;
+  int keyIndex;
   
-  iVar1 = param_1 * 0x1128;
-  iVar3 = param_3 + -4;
-  local_18 = 0;
-  local_8 = 0;
+  iVar1 = localClientNum * 0x1128;
+  iVar3 = bufferSize + -4;
+  bytesUsed = 0;
+  keyIndex = 0;
   do {
-    if (0xff < local_8) {
-      param_2[local_18] = '\0';
-      return local_18;
+    if (0xff < keyIndex) {
+      buffer[bytesUsed] = '\0';
+      return bytesUsed;
     }
-    if (((*(int *)(iVar1 + 0xfa9b44 + local_8 * 0x10) != 0) &&
-        (**(char **)(iVar1 + 0xfa9b44 + local_8 * 0x10) != '\0')) ||
-       ((*(int *)(iVar1 + 0xfa9b48 + local_8 * 0x10) != 0 &&
-        (**(char **)(iVar1 + 0xfa9b48 + local_8 * 0x10) != '\0')))) {
-      if ((*(int *)(iVar1 + 0xfa9b44 + local_8 * 0x10) != 0) &&
-         (**(char **)(iVar1 + 0xfa9b44 + local_8 * 0x10) != '\0')) {
-        Key_KeynumToString(local_8,0);
-        iVar2 = Com_sprintf(param_2 + local_18,iVar3 - local_18,"bind %s \"");
+    if (((*(int *)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != 0) &&
+        (**(char **)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != '\0')) ||
+       ((*(int *)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != 0 &&
+        (**(char **)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != '\0')))) {
+      if ((*(int *)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != 0) &&
+         (**(char **)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != '\0')) {
+        Key_KeynumToString(keyIndex,0);
+        iVar2 = Com_sprintf(buffer + bytesUsed,iVar3 - bytesUsed,"bind %s \"");
         if (iVar2 < 0) {
-          return local_18;
+          return bytesUsed;
         }
-        local_14 = *(char **)(iVar1 + 0xfa9b44 + local_8 * 0x10);
-        for (local_18 = local_18 + iVar2; (*local_14 != '\0' && (local_18 < iVar3));
-            local_18 = local_18 + 1) {
-          if (*local_14 == '\"') {
-            param_2[local_18] = '\\';
-            local_18 = local_18 + 1;
+        bind = *(char **)(iVar1 + 0xfa9b44 + keyIndex * 0x10);
+        for (bytesUsed = bytesUsed + iVar2; (*bind != '\0' && (bytesUsed < iVar3));
+            bytesUsed = bytesUsed + 1) {
+          if (*bind == '\"') {
+            buffer[bytesUsed] = '\\';
+            bytesUsed = bytesUsed + 1;
           }
-          param_2[local_18] = *local_14;
-          local_14 = local_14 + 1;
+          buffer[bytesUsed] = *bind;
+          bind = bind + 1;
         }
-        param_2[local_18] = '\"';
-        param_2[local_18 + 1] = '\n';
-        local_18 = local_18 + 2;
+        buffer[bytesUsed] = '\"';
+        buffer[bytesUsed + 1] = '\n';
+        bytesUsed = bytesUsed + 2;
       }
-      if ((*(int *)(iVar1 + 0xfa9b48 + local_8 * 0x10) != 0) &&
-         (**(char **)(iVar1 + 0xfa9b48 + local_8 * 0x10) != '\0')) {
-        Key_KeynumToString(local_8,0);
-        iVar2 = Com_sprintf(param_2 + local_18,iVar3 - local_18,"bind2 %s \"");
+      if ((*(int *)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != 0) &&
+         (**(char **)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != '\0')) {
+        Key_KeynumToString(keyIndex,0);
+        iVar2 = Com_sprintf(buffer + bytesUsed,iVar3 - bytesUsed,"bind2 %s \"");
         if (iVar2 < 0) {
-          return local_18;
+          return bytesUsed;
         }
-        local_14 = *(char **)(iVar1 + 0xfa9b48 + local_8 * 0x10);
-        for (local_18 = local_18 + iVar2; (*local_14 != '\0' && (local_18 < iVar3));
-            local_18 = local_18 + 1) {
-          if (*local_14 == '\"') {
-            param_2[local_18] = '\\';
-            local_18 = local_18 + 1;
+        bind = *(char **)(iVar1 + 0xfa9b48 + keyIndex * 0x10);
+        for (bytesUsed = bytesUsed + iVar2; (*bind != '\0' && (bytesUsed < iVar3));
+            bytesUsed = bytesUsed + 1) {
+          if (*bind == '\"') {
+            buffer[bytesUsed] = '\\';
+            bytesUsed = bytesUsed + 1;
           }
-          param_2[local_18] = *local_14;
-          local_14 = local_14 + 1;
+          buffer[bytesUsed] = *bind;
+          bind = bind + 1;
         }
-        param_2[local_18] = '\"';
-        param_2[local_18 + 1] = '\n';
-        local_18 = local_18 + 2;
+        buffer[bytesUsed] = '\"';
+        buffer[bytesUsed + 1] = '\n';
+        bytesUsed = bytesUsed + 2;
       }
     }
-    local_8 = local_8 + 1;
+    keyIndex = keyIndex + 1;
   } while( true );
 }
 
 
 // 0055A8C0  Key_WriteBindingsToTempBuf  (client/cl_keys.cpp:1956)
 
-void __cdecl Key_WriteBindingsToTempBuf(int param_1)
+void __cdecl Key_WriteBindingsToTempBuf(int localClientNum)
 
 {
   int iVar1;
   int iVar2;
-  int local_3c;
-  char *local_38;
-  int local_28;
-  char *local_24 [6];
-  uint local_c;
-  dvar_s *local_8;
+  int bytesUsed;
+  char *bind;
+  KeyState *keys;
+  int bufferSize;
+  int len;
+  int keyIndex;
+  char *dvars [6];
+  int i;
+  dvar_s *dvar;
   
-  iVar1 = param_1 * 0x1128;
-  local_3c = 0;
-  for (local_28 = 0; local_28 < 0x100; local_28 = local_28 + 1) {
-    if (((*(int *)(iVar1 + 0xfa9b44 + local_28 * 0x10) != 0) &&
-        (**(char **)(iVar1 + 0xfa9b44 + local_28 * 0x10) != '\0')) ||
-       ((*(int *)(iVar1 + 0xfa9b48 + local_28 * 0x10) != 0 &&
-        (**(char **)(iVar1 + 0xfa9b48 + local_28 * 0x10) != '\0')))) {
-      if ((*(int *)(iVar1 + 0xfa9b44 + local_28 * 0x10) != 0) &&
-         (**(char **)(iVar1 + 0xfa9b44 + local_28 * 0x10) != '\0')) {
-        Key_KeynumToString(local_28,0);
-        iVar2 = Com_sprintf(myTempBuff + local_3c,0xffc - local_3c,"bind %s \"");
+  iVar1 = localClientNum * 0x1128;
+  bytesUsed = 0;
+  for (keyIndex = 0; keyIndex < 0x100; keyIndex = keyIndex + 1) {
+    if (((*(int *)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != 0) &&
+        (**(char **)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != '\0')) ||
+       ((*(int *)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != 0 &&
+        (**(char **)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != '\0')))) {
+      if ((*(int *)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != 0) &&
+         (**(char **)(iVar1 + 0xfa9b44 + keyIndex * 0x10) != '\0')) {
+        Key_KeynumToString(keyIndex,0);
+        iVar2 = Com_sprintf(myTempBuff + bytesUsed,0xffc - bytesUsed,"bind %s \"");
         if (iVar2 < 0) break;
-        local_38 = *(char **)(iVar1 + 0xfa9b44 + local_28 * 0x10);
-        for (local_3c = local_3c + iVar2; (*local_38 != '\0' && (local_3c < 0xffc));
-            local_3c = local_3c + 1) {
-          if (*local_38 == '\"') {
-            myTempBuff[local_3c] = '\\';
-            local_3c = local_3c + 1;
+        bind = *(char **)(iVar1 + 0xfa9b44 + keyIndex * 0x10);
+        for (bytesUsed = bytesUsed + iVar2; (*bind != '\0' && (bytesUsed < 0xffc));
+            bytesUsed = bytesUsed + 1) {
+          if (*bind == '\"') {
+            myTempBuff[bytesUsed] = '\\';
+            bytesUsed = bytesUsed + 1;
           }
-          myTempBuff[local_3c] = *local_38;
-          local_38 = local_38 + 1;
+          myTempBuff[bytesUsed] = *bind;
+          bind = bind + 1;
         }
-        myTempBuff[local_3c] = '\"';
-        myTempBuff[local_3c + 1] = '\n';
-        local_3c = local_3c + 2;
+        myTempBuff[bytesUsed] = '\"';
+        myTempBuff[bytesUsed + 1] = '\n';
+        bytesUsed = bytesUsed + 2;
       }
-      if ((*(int *)(iVar1 + 0xfa9b48 + local_28 * 0x10) != 0) &&
-         (**(char **)(iVar1 + 0xfa9b48 + local_28 * 0x10) != '\0')) {
-        Key_KeynumToString(local_28,0);
-        iVar2 = Com_sprintf(myTempBuff + local_3c,0xffc - local_3c,"bind2 %s \"");
+      if ((*(int *)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != 0) &&
+         (**(char **)(iVar1 + 0xfa9b48 + keyIndex * 0x10) != '\0')) {
+        Key_KeynumToString(keyIndex,0);
+        iVar2 = Com_sprintf(myTempBuff + bytesUsed,0xffc - bytesUsed,"bind2 %s \"");
         if (iVar2 < 0) break;
-        local_38 = *(char **)(iVar1 + 0xfa9b48 + local_28 * 0x10);
-        for (local_3c = local_3c + iVar2; (*local_38 != '\0' && (local_3c < 0xffc));
-            local_3c = local_3c + 1) {
-          if (*local_38 == '\"') {
-            myTempBuff[local_3c] = '\\';
-            local_3c = local_3c + 1;
+        bind = *(char **)(iVar1 + 0xfa9b48 + keyIndex * 0x10);
+        for (bytesUsed = bytesUsed + iVar2; (*bind != '\0' && (bytesUsed < 0xffc));
+            bytesUsed = bytesUsed + 1) {
+          if (*bind == '\"') {
+            myTempBuff[bytesUsed] = '\\';
+            bytesUsed = bytesUsed + 1;
           }
-          myTempBuff[local_3c] = *local_38;
-          local_38 = local_38 + 1;
+          myTempBuff[bytesUsed] = *bind;
+          bind = bind + 1;
         }
-        myTempBuff[local_3c] = '\"';
-        myTempBuff[local_3c + 1] = '\n';
-        local_3c = local_3c + 2;
+        myTempBuff[bytesUsed] = '\"';
+        myTempBuff[bytesUsed + 1] = '\n';
+        bytesUsed = bytesUsed + 2;
       }
     }
   }
-  local_24[0] = "sensitivity";
-  local_24[1] = "cl_freelook";
-  local_24[2] = "ui_mousePitch";
-  local_24[3] = "m_pitch";
-  local_24[4] = "m_filter";
-  local_24[5] = "cl_mouseAccel";
-  for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-    local_8 = Dvar_FindVar(local_24[local_c]);
-    if (local_8 != (dvar_s *)0x0) {
-      Dvar_DisplayableValue(local_8);
-      iVar1 = Com_sprintf(myTempBuff + local_3c,0xffc - local_3c,"set %s \"%s\"\n");
+  dvars[0] = "sensitivity";
+  dvars[1] = "cl_freelook";
+  dvars[2] = "ui_mousePitch";
+  dvars[3] = "m_pitch";
+  dvars[4] = "m_filter";
+  dvars[5] = "cl_mouseAccel";
+  for (i = 0; (uint)i < 6; i = i + 1) {
+    dvar = Dvar_FindVar(dvars[i]);
+    if (dvar != (dvar_s *)0x0) {
+      Dvar_DisplayableValue(dvar);
+      iVar1 = Com_sprintf(myTempBuff + bytesUsed,0xffc - bytesUsed,"set %s \"%s\"\n");
       if (iVar1 < 0) break;
-      local_3c = local_3c + iVar1;
+      bytesUsed = bytesUsed + iVar1;
     }
   }
-  myTempBuff[local_3c] = '\0';
+  myTempBuff[bytesUsed] = '\0';
   return;
 }
 
 
 // 0055ABF0  Key_RestoreBindingsFromTempBuf  (client/cl_keys.cpp:2044)
 
-void __cdecl Key_RestoreBindingsFromTempBuf(int param_1)
+void __cdecl Key_RestoreBindingsFromTempBuf(int localClientNum)
 
 {
-  Cbuf_AddText(param_1,myTempBuff);
-  Cbuf_AddText(param_1,"\n");
+  Cbuf_AddText(localClientNum,myTempBuff);
+  Cbuf_AddText(localClientNum,"\n");
   return;
 }
 
@@ -1912,15 +1961,15 @@ void __cdecl Key_RestoreBindingsFromTempBuf(int param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Key_WriteBindings(int param_1,int param_2)
+void __cdecl Key_WriteBindings(int localClientNum,int f)
 
 {
-  char local_200c [8196];
+  char buffer [8196];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Key_WriteBindingsToBuffer(param_1,local_200c,0x2000);
-  FS_Printf(param_2,"%s");
+  Key_WriteBindingsToBuffer(localClientNum,buffer,0x2000);
+  FS_Printf(f,"%s");
   return;
 }
 
@@ -1931,12 +1980,14 @@ void __cdecl Key_Bindlist_f(void)
 
 {
   char *pcVar1;
-  int local_10;
+  int keynum;
+  int localClientNum;
+  char *binding;
   
-  for (local_10 = 0; local_10 < 0x100; local_10 = local_10 + 1) {
-    pcVar1 = Key_GetBinding(0,local_10,0);
+  for (keynum = 0; keynum < 0x100; keynum = keynum + 1) {
+    pcVar1 = Key_GetBinding(0,keynum,0);
     if ((pcVar1 != (char *)0x0) && (*pcVar1 != '\0')) {
-      Key_KeynumToString(local_10,0);
+      Key_KeynumToString(keynum,0);
       Com_Printf(0,"%s \"%s\"\n");
     }
   }
@@ -1962,14 +2013,14 @@ void __cdecl CL_InitKeyCommands(void)
 
 // 0055C150  CL_MouseInputShouldBypassMenus  (client/cl_keys.cpp:2089)
 
-bool __cdecl CL_MouseInputShouldBypassMenus(int param_1,int param_2)
+bool __cdecl CL_MouseInputShouldBypassMenus(int localClientNum,int key)
 
 {
   bool bVar1;
   uiMenuCommand_t uVar2;
   int iVar3;
   
-  uVar2 = UI_GetActiveMenu(param_1);
+  uVar2 = UI_GetActiveMenu(localClientNum);
   if (uVar2 == UIMENU_SCOREBOARD) {
     bVar1 = true;
   }
@@ -1977,11 +2028,11 @@ bool __cdecl CL_MouseInputShouldBypassMenus(int param_1,int param_2)
           ((cl_bypassMouseInput->current).enabled == false)) {
     bVar1 = false;
   }
-  else if (((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xca)) {
+  else if (((key == 200) || (key == 0xc9)) || (key == 0xca)) {
     bVar1 = true;
   }
   else {
-    if ((cls.uiStarted != 0) && (iVar3 = UI_CheckExecKey(param_1,param_2), iVar3 == 0)) {
+    if ((cls.uiStarted != 0) && (iVar3 = UI_CheckExecKey(localClientNum,key), iVar3 == 0)) {
       return true;
     }
     bVar1 = false;
@@ -1997,15 +2048,16 @@ bool __cdecl CL_MouseInputShouldBypassMenus(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CL_HandleKeySpectatorInput(int param_1,int param_2,int param_3,uint param_4)
+void __cdecl CL_HandleKeySpectatorInput(int localClientNum,int key,int down,uint time)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   char *pcVar4;
+  cg_s *cgameGlob;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
   if (((pcVar3->predictedPlayerState).pm_type != 4) &&
      (((pcVar3->predictedPlayerState).otherFlags & 2U) == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0x882,0,"%s");
@@ -2015,26 +2067,26 @@ void __cdecl CL_HandleKeySpectatorInput(int param_1,int param_2,int param_3,uint
       return;
     }
   }
-  if (param_2 == 200) {
+  if (key == 200) {
     pcVar4 = va("+specNext %i\n-specNext %i\n");
-    Cbuf_AddText(param_1,pcVar4);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","CycleNext","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","SpectatorName","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"spectatingPlayerCard","spectatingPlayerSlide","StartLeft"
-                   ,1);
+    Cbuf_AddText(localClientNum,pcVar4);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","CycleNext","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","SpectatorName","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"spectatingPlayerCard",
+                   "spectatingPlayerSlide","StartLeft",1);
   }
-  else if (param_2 == 0xc9) {
+  else if (key == 0xc9) {
     pcVar4 = va("+specPrev %i\n-specPrev %i\n");
-    Cbuf_AddText(param_1,pcVar4);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","CyclePrev","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","SpectatorName","Flash",1);
-    UI_AnimateItem(param_1,cgDC + param_1,"spectatingPlayerCard","spectatingPlayerSlide",
-                   "StartRight",1);
+    Cbuf_AddText(localClientNum,pcVar4);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","CyclePrev","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","SpectatorName","Flash",1);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"spectatingPlayerCard",
+                   "spectatingPlayerSlide","StartRight",1);
   }
-  else if (param_2 == 0x20) {
+  else if (key == 0x20) {
     pcVar4 = va("+toggleSpec %i\n-toggleSpec %i\n");
-    Cbuf_AddText(param_1,pcVar4);
-    UI_AnimateItem(param_1,cgDC + param_1,"hud_spectator","SpecViewToggle","Flash",1);
+    Cbuf_AddText(localClientNum,pcVar4);
+    UI_AnimateItem(localClientNum,cgDC + localClientNum,"hud_spectator","SpecViewToggle","Flash",1);
   }
   return;
 }
@@ -2049,7 +2101,7 @@ void __cdecl CL_HandleKeySpectatorInput(int param_1,int param_2,int param_3,uint
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
+void __cdecl CL_KeyEvent(int localClientNum,int key,int down,uint time)
 
 {
   byte bVar1;
@@ -2081,28 +2133,35 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
   int local_450;
   byte *local_448;
   byte *local_444;
-  char local_40c [1028];
+  clientUIActive_t *cl;
+  KeyState *keys;
+  cg_s *cgameGlob;
+  char *kb;
+  bool consoleKeyAllowed;
+  connstate_t clcState;
+  LocSelInputState *locSelInputState;
+  char cmd [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar5 = param_1 * 0x1128;
-  pcVar2 = *(char **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
-  *(int *)(iVar5 + 0xfa9b3c + param_2 * 0x10) = param_3;
-  if (param_3 == 0) {
-    *(undefined4 *)(iVar5 + 0xfa9b40 + param_2 * 0x10) = 0;
-    playerKeys[param_1].anyKeyDown = playerKeys[param_1].anyKeyDown + -1;
-    if (playerKeys[param_1].anyKeyDown < 0) {
-      playerKeys[param_1].anyKeyDown = 0;
+  iVar5 = localClientNum * 0x1128;
+  pcVar2 = *(char **)(iVar5 + 0xfa9b44 + key * 0x10);
+  *(int *)(iVar5 + 0xfa9b3c + key * 0x10) = down;
+  if (down == 0) {
+    *(undefined4 *)(iVar5 + 0xfa9b40 + key * 0x10) = 0;
+    playerKeys[localClientNum].anyKeyDown = playerKeys[localClientNum].anyKeyDown + -1;
+    if (playerKeys[localClientNum].anyKeyDown < 0) {
+      playerKeys[localClientNum].anyKeyDown = 0;
     }
   }
   else {
-    *(int *)(iVar5 + 0xfa9b40 + param_2 * 0x10) = *(int *)(iVar5 + 0xfa9b40 + param_2 * 0x10) + 1;
-    if (*(int *)(iVar5 + 0xfa9b40 + param_2 * 0x10) == 1) {
-      playerKeys[param_1].anyKeyDown = playerKeys[param_1].anyKeyDown + 1;
+    *(int *)(iVar5 + 0xfa9b40 + key * 0x10) = *(int *)(iVar5 + 0xfa9b40 + key * 0x10) + 1;
+    if (*(int *)(iVar5 + 0xfa9b40 + key * 0x10) == 1) {
+      playerKeys[localClientNum].anyKeyDown = playerKeys[localClientNum].anyKeyDown + 1;
     }
   }
-  pcVar6 = CL_GetLocalClientUIGlobals(param_1);
-  if (((param_2 == 0x60) || (param_2 == 0x7e)) || ((pcVar6->keyCatchers & 1U) != 0)) {
+  pcVar6 = CL_GetLocalClientUIGlobals(localClientNum);
+  if (((key == 0x60) || (key == 0x7e)) || ((pcVar6->keyCatchers & 1U) != 0)) {
     bVar4 = DevGui_IsActive();
     if (bVar4) {
       DevGui_Toggle();
@@ -2110,24 +2169,24 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
   }
   else {
     if (((pcVar2 != (char *)0x0) && (iVar7 = I_stricmp(pcVar2,"devgui"), iVar7 == 0)) &&
-       ((param_3 != 0 && (*(int *)(iVar5 + 0xfa9b40 + param_2 * 0x10) == 1)))) {
-      Cbuf_AddText(param_1,*(char **)(iVar5 + 0xfa9b44 + param_2 * 0x10));
-      Cbuf_AddText(param_1,"\n");
+       ((down != 0 && (*(int *)(iVar5 + 0xfa9b40 + key * 0x10) == 1)))) {
+      Cbuf_AddText(localClientNum,*(char **)(iVar5 + 0xfa9b44 + key * 0x10));
+      Cbuf_AddText(localClientNum,"\n");
       return;
     }
     bVar4 = DevGui_IsActive();
     if (bVar4) {
-      if (param_3 == 0) {
+      if (down == 0) {
         return;
       }
-      if (*(int *)(iVar5 + 0xfa9b40 + param_2 * 0x10) != 1) {
+      if (*(int *)(iVar5 + 0xfa9b40 + key * 0x10) != 1) {
         return;
       }
-      DevGui_KeyPressed(param_2);
+      DevGui_KeyPressed(key);
       return;
     }
   }
-  if ((param_3 != 0) && (1 < *(int *)(iVar5 + 0xfa9b40 + param_2 * 0x10))) {
+  if ((down != 0) && (1 < *(int *)(iVar5 + 0xfa9b40 + key * 0x10))) {
     if ((pcVar6->keyCatchers & 0x121U) == 0) {
       if ((pcVar6->keyCatchers & 0x10U) == 0) {
         return;
@@ -2139,7 +2198,7 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
         (*pcVar3)();
         return;
       }
-      switch(param_2) {
+      switch(key) {
       case 0x9a:
       case 0x9b:
       case 0xa3:
@@ -2149,19 +2208,19 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
         return;
       }
     }
-    if (param_2 == 0x60) {
+    if (key == 0x60) {
       return;
     }
-    if (param_2 == 0x7e) {
+    if (key == 0x7e) {
       return;
     }
-    if (param_2 == 0x1b) {
+    if (key == 0x1b) {
       return;
     }
   }
   if (((con_restricted->current).enabled == false) || ((pcVar6->keyCatchers & 1U) != 0)) {
-    if ((param_2 == 0x60) || (param_2 == 0x7e)) {
-      if (param_3 == 0) {
+    if ((key == 0x60) || (key == 0x7e)) {
+      if (down == 0) {
         return;
       }
       if ((((pcVar6->keyCatchers & 1U) == 0) && ((com_sv_running->current).enabled == false)) &&
@@ -2174,8 +2233,8 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
       if (!bVar4) {
         return;
       }
-      if (playerKeys[param_1].keys[0xa0].down != 0) {
-        bVar4 = Con_IsActive(param_1);
+      if (playerKeys[localClientNum].keys[0xa0].down != 0) {
+        bVar4 = Con_IsActive(localClientNum);
         if (!bVar4) {
           Con_ToggleConsole();
         }
@@ -2187,38 +2246,38 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
     }
   }
   else {
-    if (((param_2 == 0xa5) && (param_3 != 0)) && (playerKeys[param_1].keys[0x7f].down != 0)) {
+    if (((key == 0xa5) && (down != 0)) && (playerKeys[localClientNum].keys[0x7f].down != 0)) {
       Con_ToggleConsole();
       return;
     }
-    if (param_2 == 0x60) {
+    if (key == 0x60) {
       return;
     }
-    if (param_2 == 0x7e) {
+    if (key == 0x7e) {
       return;
     }
   }
-  pcVar8 = CG_GetLocalClientGlobals(param_1);
-  pLVar11 = &playerKeys[param_1].locSelInputState;
-  if (((pcVar6->keyCatchers & 8U) == 0) || (param_3 < 1)) {
-    if (((pcVar6->keyCatchers & 8U) == 0) || ((param_3 != 0 || (*pLVar11 != LOC_SEL_INPUT_YAW)))) {
+  pcVar8 = CG_GetLocalClientGlobals(localClientNum);
+  pLVar11 = &playerKeys[localClientNum].locSelInputState;
+  if (((pcVar6->keyCatchers & 8U) == 0) || (down < 1)) {
+    if (((pcVar6->keyCatchers & 8U) == 0) || ((down != 0 || (*pLVar11 != LOC_SEL_INPUT_YAW)))) {
       *pLVar11 = LOC_SEL_INPUT_NONE;
     }
     else if (((pcVar8->predictedPlayerState).locationSelectionType == LOC_SEL_NAPALM) ||
             ((pcVar8->predictedPlayerState).locationSelectionType == LOC_SEL_AIRSTRIKE)) {
       *pLVar11 = LOC_SEL_INPUT_CONFIRM;
     }
-    cVar9 = CL_GetLocalClientConnectionState(param_1);
-    if (((param_3 != 0) && (param_2 == 200 || param_2 < 0x80)) &&
+    cVar9 = CL_GetLocalClientConnectionState(localClientNum);
+    if (((down != 0) && (key == 200 || key < 0x80)) &&
        ((((3 < (int)cVar9 &&
-          (pcVar10 = CL_GetLocalClientConnection(param_1), pcVar10->demoplaying != 0)) ||
+          (pcVar10 = CL_GetLocalClientConnection(localClientNum), pcVar10->demoplaying != 0)) ||
          ((cVar9 == CA_CINEMATIC || (cVar9 == CA_LOGO)))) && (pcVar6->keyCatchers == 0)))) {
       Dvar_SetString(nextdemo,"");
-      param_2 = 0x1b;
+      key = 0x1b;
     }
-    if ((param_2 == 0x1b) && (param_3 != 0)) {
+    if ((key == 0x1b) && (down != 0)) {
       if ((pcVar6->keyCatchers & 0x20U) != 0) {
-        Message_Key(param_1,0x1b);
+        Message_Key(localClientNum,0x1b);
         return;
       }
       if ((pcVar6->keyCatchers & 1U) != 0) {
@@ -2228,19 +2287,19 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
         return;
       }
       if ((pcVar6->keyCatchers & 0x50U) != 0) {
-        UI_KeyEvent(param_1,0x1b,param_3);
+        UI_KeyEvent(localClientNum,0x1b,down);
         return;
       }
       switch(cVar9) {
       case CA_CINEMATIC:
       case CA_LOGO:
-        CL_StopLogoOrCinematic(param_1);
+        CL_StopLogoOrCinematic(localClientNum);
         return;
       default:
         if (cls.uiStarted != 0) {
           Com_Error(ERR_DISCONNECT,"Bad server address");
         }
-        UI_SetActiveMenu(param_1,1);
+        UI_SetActiveMenu(localClientNum,1);
         return;
       case CA_CONNECTING:
       case CA_CHALLENGING:
@@ -2249,74 +2308,74 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
           return;
         }
         Com_Printf(0xe,"Client cancelled connecting to server\n");
-        CL_DisconnectLocalClient(param_1);
+        CL_DisconnectLocalClient(localClientNum);
         return;
       case CA_ACTIVE:
         goto switchD_0055bad1_caseD_a;
       }
     }
-    bVar4 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+    bVar4 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
     if ((bVar4) &&
-       (((iVar7 = CG_IsScoreboardDisplayed(param_1), iVar7 != 0 && (param_3 != 0)) &&
-        (bVar4 = Scoreboard_HandleInput(param_1,param_2), bVar4)))) {
+       (((iVar7 = CG_IsScoreboardDisplayed(localClientNum), iVar7 != 0 && (down != 0)) &&
+        (bVar4 = Scoreboard_HandleInput(localClientNum,key), bVar4)))) {
       return;
     }
     if (((pcVar6->keyCatchers & 1U) == 0) && ((pcVar6->keyCatchers & 0x10U) == 0)) {
-      Demo_HandleInput(param_1,0,param_2,param_3);
+      Demo_HandleInput(localClientNum,0,key,down);
     }
-    if (param_3 != 0) {
+    if (down != 0) {
       if ((pcVar6->keyCatchers & 1U) != 0) {
-        Console_Key(param_1,param_2);
+        Console_Key(localClientNum,key);
         return;
       }
       if ((pcVar6->keyCatchers & 0x100U) != 0) {
         return;
       }
       if (((pcVar6->keyCatchers & 0x50U) == 0) ||
-         (bVar4 = CL_MouseInputShouldBypassMenus(param_1,param_2), bVar4)) {
+         (bVar4 = CL_MouseInputShouldBypassMenus(localClientNum,key), bVar4)) {
         if ((pcVar6->keyCatchers & 0x20U) == 0) {
           if (cVar9 == CA_DISCONNECTED) {
-            Console_Key(param_1,param_2);
+            Console_Key(localClientNum,key);
           }
           else {
-            pcVar2 = *(char **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+            pcVar2 = *(char **)(iVar5 + 0xfa9b44 + key * 0x10);
             if (pcVar2 == (char *)0x0) {
-              if (0xce < param_2) {
-                Key_KeynumToString(param_2,0);
+              if (0xce < key) {
+                Key_KeynumToString(key,0);
                 Com_Printf(0xe,"%s is unbound, use controls menu to set.\n");
               }
             }
             else if (*pcVar2 == '+') {
-              Com_sprintf(local_40c,0x400,"%s %i %i\n");
-              Cbuf_AddText(param_1,local_40c);
+              Com_sprintf(cmd,0x400,"%s %i %i\n");
+              Cbuf_AddText(localClientNum,cmd);
             }
             else {
-              Cbuf_AddText(param_1,pcVar2);
-              Cbuf_AddText(param_1,"\n");
+              Cbuf_AddText(localClientNum,pcVar2);
+              Cbuf_AddText(localClientNum,"\n");
             }
-            pcVar2 = *(char **)(iVar5 + 0xfa9b48 + param_2 * 0x10);
+            pcVar2 = *(char **)(iVar5 + 0xfa9b48 + key * 0x10);
             if (pcVar2 == (char *)0x0) {
-              if (0xce < param_2) {
-                Key_KeynumToString(param_2,0);
+              if (0xce < key) {
+                Key_KeynumToString(key,0);
                 Com_Printf(0xe,"%s is unbound, use controls menu to set.\n");
               }
             }
             else if (*pcVar2 == '+') {
-              Com_sprintf(local_40c,0x400,"%s %i %i\n");
-              Cbuf_AddText(param_1,local_40c);
+              Com_sprintf(cmd,0x400,"%s %i %i\n");
+              Cbuf_AddText(localClientNum,cmd);
             }
             else {
-              Cbuf_AddText(param_1,pcVar2);
-              Cbuf_AddText(param_1,"\n");
+              Cbuf_AddText(localClientNum,pcVar2);
+              Cbuf_AddText(localClientNum,"\n");
             }
           }
         }
         else {
-          Message_Key(param_1,param_2);
+          Message_Key(localClientNum,key);
         }
       }
       else if (cls.uiStarted != 0) {
-        UI_KeyEvent(param_1,param_2,param_3);
+        UI_KeyEvent(localClientNum,key,down);
       }
       if (pcVar8 == (cg_s *)0x0) {
         return;
@@ -2325,18 +2384,18 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
          (((pcVar8->predictedPlayerState).otherFlags & 2U) == 0)) {
         return;
       }
-      CL_HandleKeySpectatorInput(param_1,param_2,param_3,param_4);
+      CL_HandleKeySpectatorInput(localClientNum,key,down,time);
       return;
     }
-    pcVar2 = *(char **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+    pcVar2 = *(char **)(iVar5 + 0xfa9b44 + key * 0x10);
     if ((pcVar2 != (char *)0x0) && (*pcVar2 == '+')) {
-      Com_sprintf(local_40c,0x400,"-%s %i %i\n");
-      Cbuf_AddText(param_1,local_40c);
+      Com_sprintf(cmd,0x400,"-%s %i %i\n");
+      Cbuf_AddText(localClientNum,cmd);
     }
-    pcVar2 = *(char **)(iVar5 + 0xfa9b48 + param_2 * 0x10);
+    pcVar2 = *(char **)(iVar5 + 0xfa9b48 + key * 0x10);
     if ((pcVar2 != (char *)0x0) && (*pcVar2 == '+')) {
-      Com_sprintf(local_40c,0x400,"-%s %i %i\n");
-      Cbuf_AddText(param_1,local_40c);
+      Com_sprintf(cmd,0x400,"-%s %i %i\n");
+      Cbuf_AddText(localClientNum,cmd);
     }
     if ((pcVar6->keyCatchers & 0x10U) == 0) {
       return;
@@ -2344,16 +2403,16 @@ void __cdecl CL_KeyEvent(int param_1,int param_2,int param_3,uint param_4)
     if (cls.uiStarted == 0) {
       return;
     }
-    UI_KeyEvent(param_1,param_2,0);
+    UI_KeyEvent(localClientNum,key,0);
     return;
   }
-  if (param_2 == 0x1b) {
+  if (key == 0x1b) {
     *pLVar11 = LOC_SEL_INPUT_CANCEL;
     return;
   }
-  if (*(int *)(iVar5 + 0xfa9b44 + param_2 * 0x10) != 0) {
+  if (*(int *)(iVar5 + 0xfa9b44 + key * 0x10) != 0) {
     local_444 = (byte *)0xc78648;
-    local_448 = *(byte **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+    local_448 = *(byte **)(iVar5 + 0xfa9b44 + key * 0x10);
     do {
       bVar1 = *local_448;
       bVar4 = bVar1 < *local_444;
@@ -2381,14 +2440,14 @@ LAB_0055b50e:
       return;
     }
   }
-  if (param_2 == 0x1b) {
+  if (key == 0x1b) {
 LAB_0055b61f:
     *pLVar11 = LOC_SEL_INPUT_CANCEL;
   }
   else {
-    if (*(int *)(iVar5 + 0xfa9b44 + param_2 * 0x10) != 0) {
+    if (*(int *)(iVar5 + 0xfa9b44 + key * 0x10) != 0) {
       local_458 = (byte *)0xc9a984;
-      local_45c = *(byte **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+      local_45c = *(byte **)(iVar5 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_45c;
         bVar4 = bVar1 < *local_458;
@@ -2408,9 +2467,9 @@ LAB_0055b5ff:
 LAB_0055b60a:
       if (local_464 == 0) goto LAB_0055b61f;
     }
-    if (*(int *)(iVar5 + 0xfa9b44 + param_2 * 0x10) != 0) {
+    if (*(int *)(iVar5 + 0xfa9b44 + key * 0x10) != 0) {
       local_46c = (byte *)0xc7b13c;
-      local_470 = *(byte **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+      local_470 = *(byte **)(iVar5 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_470;
         bVar4 = bVar1 < *local_46c;
@@ -2433,9 +2492,9 @@ LAB_0055b6d0:
         return;
       }
     }
-    if (*(int *)(iVar5 + 0xfa9b44 + param_2 * 0x10) != 0) {
+    if (*(int *)(iVar5 + 0xfa9b44 + key * 0x10) != 0) {
       local_480 = (byte *)0xc77e00;
-      local_484 = *(byte **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+      local_484 = *(byte **)(iVar5 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_484;
         bVar4 = bVar1 < *local_480;
@@ -2458,9 +2517,9 @@ LAB_0055b796:
         return;
       }
     }
-    if (*(int *)(iVar5 + 0xfa9b44 + param_2 * 0x10) != 0) {
+    if (*(int *)(iVar5 + 0xfa9b44 + key * 0x10) != 0) {
       local_494 = (byte *)0xc99968;
-      local_498 = *(byte **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+      local_498 = *(byte **)(iVar5 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_498;
         bVar4 = bVar1 < *local_494;
@@ -2480,7 +2539,7 @@ LAB_0055b851:
 LAB_0055b85c:
       if (local_4a0 != 0) {
         local_4a8 = (byte *)0xc87b3c;
-        local_4ac = *(byte **)(iVar5 + 0xfa9b44 + param_2 * 0x10);
+        local_4ac = *(byte **)(iVar5 + 0xfa9b44 + key * 0x10);
         do {
           bVar1 = *local_4ac;
           bVar4 = bVar1 < *local_4a8;
@@ -2507,28 +2566,28 @@ LAB_0055b8fe:
   }
   return;
 switchD_0055bad1_caseD_a:
-  pcVar10 = CL_GetLocalClientConnection(param_1);
+  pcVar10 = CL_GetLocalClientConnection(localClientNum);
   if (pcVar10->demoplaying != 0) {
-    CL_DisconnectLocalClient(param_1);
+    CL_DisconnectLocalClient(localClientNum);
     return;
   }
-  if (cl_waitingOnServerToLoadMap[param_1] != false) {
-    UI_SetActiveMenu(param_1,1);
+  if (cl_waitingOnServerToLoadMap[localClientNum] != false) {
+    UI_SetActiveMenu(localClientNum,1);
     return;
   }
-  UI_SetActiveMenu(param_1,2);
+  UI_SetActiveMenu(localClientNum,2);
   return;
 }
 
 
 // 0055C500  CL_ConsoleCharEvent  (client/cl_keys.cpp:2751)
 
-void __cdecl CL_ConsoleCharEvent(int param_1,int param_2)
+void __cdecl CL_ConsoleCharEvent(int localClientNum,int key)
 
 {
   bool bVar1;
   
-  bVar1 = Field_CharEvent(param_1,&scrPlaceFull,&g_consoleField,param_2);
+  bVar1 = Field_CharEvent(localClientNum,&scrPlaceFull,&g_consoleField,key);
   if (bVar1) {
     Con_AllowAutoCompleteCycling(true);
   }
@@ -2538,37 +2597,39 @@ void __cdecl CL_ConsoleCharEvent(int param_1,int param_2)
 
 // 0055C3F0  CL_CharEvent  (client/cl_keys.cpp:2759)
 
-void __cdecl CL_CharEvent(int param_1,int param_2)
+void __cdecl CL_CharEvent(int localClientNum,int key)
 
 {
   bool bVar1;
   clientUIActive_t *pcVar2;
   connstate_t cVar3;
+  clientUIActive_t *cl;
+  connstate_t clcState;
   
   bVar1 = DevGui_IsActive();
-  if (((!bVar1) && (param_2 != 0x60)) && (param_2 != 0x7e)) {
-    pcVar2 = CL_GetLocalClientUIGlobals(param_1);
+  if (((!bVar1) && (key != 0x60)) && (key != 0x7e)) {
+    pcVar2 = CL_GetLocalClientUIGlobals(localClientNum);
     if ((pcVar2->keyCatchers & 1U) == 0) {
       if ((pcVar2->keyCatchers & 0x20U) == 0) {
         if ((pcVar2->keyCatchers & 0x100U) == 0) {
           if ((pcVar2->keyCatchers & 0x10U) == 0) {
-            cVar3 = CL_GetLocalClientConnectionState(param_1);
+            cVar3 = CL_GetLocalClientConnectionState(localClientNum);
             if (cVar3 == CA_DISCONNECTED) {
-              CL_ConsoleCharEvent(param_1,param_2);
+              CL_ConsoleCharEvent(localClientNum,key);
             }
           }
           else {
-            UI_KeyEvent(param_1,param_2 | 0x400,1);
+            UI_KeyEvent(localClientNum,key | 0x400,1);
           }
         }
       }
       else {
-        Field_CharEvent(param_1,(ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                        &playerKeys[param_1].chatField,param_2);
+        Field_CharEvent(localClientNum,(ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                        &playerKeys[localClientNum].chatField,key);
       }
     }
-    else if ((param_2 != 8) || (bVar1 = Con_CancelAutoComplete(), !bVar1)) {
-      CL_ConsoleCharEvent(param_1,param_2);
+    else if ((key != 8) || (bVar1 = Con_CancelAutoComplete(), !bVar1)) {
+      CL_ConsoleCharEvent(localClientNum,key);
     }
   }
   return;
@@ -2577,30 +2638,36 @@ void __cdecl CL_CharEvent(int param_1,int param_2)
 
 // 0055C530  Key_ClearStates  (client/cl_keys.cpp:2811)
 
-void __cdecl Key_ClearStates(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Key_ClearStates(int localClientNum)
 
 {
+  int controllerIndex;
   int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  uint uVar5;
-  int iVar6;
-  int local_c;
+  int key;
+  int buttonEvent;
+  uint time;
+  int gamePadButton;
+  int keynum;
+  KeyState *keys;
   
-  playerKeys[param_1].anyKeyDown = 0;
-  iVar2 = param_1 * 0x1128 + 0xfa9b3c;
-  for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-    if (*(int *)(iVar2 + local_c * 0x10) != 0) {
-      iVar6 = 0;
-      uVar5 = 0;
-      iVar4 = 0;
-      iVar3 = local_c;
-      iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-      CL_GamepadButtonEvent(param_1,iVar1,iVar3,iVar4,uVar5,iVar6);
+  playerKeys[localClientNum].anyKeyDown = 0;
+  iVar1 = localClientNum * 0x1128 + 0xfa9b3c;
+  for (keynum = 0; keynum < 0x100; keynum = keynum + 1) {
+    if (*(int *)(iVar1 + keynum * 0x10) != 0) {
+      gamePadButton = 0;
+      time = 0;
+      buttonEvent = 0;
+      key = keynum;
+      controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+      CL_GamepadButtonEvent(localClientNum,controllerIndex,key,buttonEvent,time,gamePadButton);
     }
-    *(undefined4 *)(iVar2 + local_c * 0x10) = 0;
-    *(undefined4 *)(param_1 * 0x1128 + 0xfa9b40 + local_c * 0x10) = 0;
+    *(undefined4 *)(iVar1 + keynum * 0x10) = 0;
+    *(undefined4 *)(localClientNum * 0x1128 + 0xfa9b40 + keynum * 0x10) = 0;
   }
   return;
 }
@@ -2609,20 +2676,21 @@ void __cdecl Key_ClearStates(int param_1)
 // 0055C5F0  CL_GetKeyBindingInternal  (client/cl_keys.cpp:2836)
 
 int __cdecl
-CL_GetKeyBindingInternal(int param_1,char *param_2,char (*param_3) [128],int param_4,int param_5)
+CL_GetKeyBindingInternal
+          (int localClientNum,char *command,char (*keyNames) [128],int gamePadOnly,int bindNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_10;
+  int keys;
   int local_c;
-  int local_8;
+  int bindCount;
   
   Sys_EnterCriticalSection(CRITSECT_KEY_BINDINGS);
-  param_3[1][0] = '\0';
-  local_8 = Key_GetCommandAssignmentInternal(param_1,param_2,&local_10,param_4,param_5);
-  if ((local_8 < 0) || (2 < local_8)) {
+  keyNames[1][0] = '\0';
+  bindCount = Key_GetCommandAssignmentInternal(localClientNum,command,&keys,gamePadOnly,bindNum);
+  if ((bindCount < 0) || (2 < bindCount)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0xb1f,0,
                              "bindCount not in [0, 2]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -2631,56 +2699,58 @@ CL_GetKeyBindingInternal(int param_1,char *param_2,char (*param_3) [128],int par
       return iVar3;
     }
   }
-  if (local_8 == 0) {
-    builtin_strncpy(*param_3,"KEY_",4);
-    builtin_strncpy((char *)((int)param_3 + 4),"UNBO",4);
-    builtin_strncpy((char *)((int)param_3 + 8),"UND",4);
+  if (bindCount == 0) {
+    builtin_strncpy(*keyNames,"KEY_",4);
+    builtin_strncpy((char *)((int)keyNames + 4),"UNBO",4);
+    builtin_strncpy((char *)((int)keyNames + 8),"UND",4);
   }
   else {
-    Key_KeynumToStringBuf(local_10,*param_3,0x80);
-    if (local_8 == 2) {
-      Key_KeynumToStringBuf(local_c,param_3[1],0x80);
+    Key_KeynumToStringBuf(keys,*keyNames,0x80);
+    if (bindCount == 2) {
+      Key_KeynumToStringBuf(local_c,keyNames[1],0x80);
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_KEY_BINDINGS);
-  return local_8;
+  return bindCount;
 }
 
 
 // 0055C5D0  CL_GetKeyBinding  (client/cl_keys.cpp:2866)
 
-int __cdecl CL_GetKeyBinding(int param_1,char *param_2,char (*param_3) [128],int param_4)
+int __cdecl CL_GetKeyBinding(int localClientNum,char *command,char (*keyNames) [128],int bindNum)
 
 {
   int iVar1;
   
-  iVar1 = CL_GetKeyBindingInternal(param_1,param_2,param_3,0,param_4);
+  iVar1 = CL_GetKeyBindingInternal(localClientNum,command,keyNames,0,bindNum);
   return iVar1;
 }
 
 
 // 0055C6D0  CL_GetGamePadBinding  (client/cl_keys.cpp:2873)
 
-int __cdecl CL_GetGamePadBinding(int param_1,char *param_2,char (*param_3) [128],int param_4)
+int __cdecl
+CL_GetGamePadBinding(int localClientNum,char *command,char (*keyNames) [128],int bindNum)
 
 {
   int iVar1;
   
-  iVar1 = CL_GetKeyBindingInternal(param_1,param_2,param_3,1,param_4);
+  iVar1 = CL_GetKeyBindingInternal(localClientNum,command,keyNames,1,bindNum);
   return iVar1;
 }
 
 
 // 0055C6F0  CL_IsKeyPressed  (client/cl_keys.cpp:2880)
 
-int __cdecl CL_IsKeyPressed(int param_1,char *param_2)
+int __cdecl CL_IsKeyPressed(int localClientNum,char *keyName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int key;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0xb41,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -2690,12 +2760,12 @@ int __cdecl CL_IsKeyPressed(int param_1,char *param_2)
       return iVar3;
     }
   }
-  iVar3 = Key_StringToKeynum(param_2);
+  iVar3 = Key_StringToKeynum(keyName);
   if (iVar3 < 0) {
     iVar3 = 0;
   }
   else {
-    if ((param_1 < 0) || (0 < param_1)) {
+    if ((localClientNum < 0) || (0 < localClientNum)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0xb48,0,
                                "%s\n\t(localClientNum) = %i");
       if (!bVar2) {
@@ -2704,7 +2774,7 @@ int __cdecl CL_IsKeyPressed(int param_1,char *param_2)
         return iVar3;
       }
     }
-    iVar3 = *(int *)(param_1 * 0x1128 + 0xfa9b3c + iVar3 * 0x10);
+    iVar3 = *(int *)(localClientNum * 0x1128 + 0xfa9b3c + iVar3 * 0x10);
   }
   return iVar3;
 }
@@ -2715,20 +2785,20 @@ int __cdecl CL_IsKeyPressed(int param_1,char *param_2)
 void __cdecl Key_Shutdown(void)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  int client;
+  int keynum;
   
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-      if (*(int *)(local_c * 0x1128 + 0xfa9b44 + local_8 * 0x10) != 0) {
-        FreeString(*(char **)(local_c * 0x1128 + 0xfa9b44 + local_8 * 0x10),0xb,
-                   SCRIPTINSTANCE_SERVER);
-        *(undefined4 *)(local_c * 0x1128 + 0xfa9b44 + local_8 * 0x10) = 0;
+  for (client = 0; client < 1; client = client + 1) {
+    for (keynum = 0; keynum < 0x100; keynum = keynum + 1) {
+      if (*(int *)(client * 0x1128 + 0xfa9b44 + keynum * 0x10) != 0) {
+        FreeString(*(char **)(client * 0x1128 + 0xfa9b44 + keynum * 0x10),0xb,SCRIPTINSTANCE_SERVER)
+        ;
+        *(undefined4 *)(client * 0x1128 + 0xfa9b44 + keynum * 0x10) = 0;
       }
-      if (*(int *)(local_c * 0x1128 + 0xfa9b48 + local_8 * 0x10) != 0) {
-        FreeString(*(char **)(local_c * 0x1128 + 0xfa9b48 + local_8 * 0x10),0xb,
-                   SCRIPTINSTANCE_SERVER);
-        *(undefined4 *)(local_c * 0x1128 + 0xfa9b48 + local_8 * 0x10) = 0;
+      if (*(int *)(client * 0x1128 + 0xfa9b48 + keynum * 0x10) != 0) {
+        FreeString(*(char **)(client * 0x1128 + 0xfa9b48 + keynum * 0x10),0xb,SCRIPTINSTANCE_SERVER)
+        ;
+        *(undefined4 *)(client * 0x1128 + 0xfa9b48 + keynum * 0x10) = 0;
       }
     }
   }
@@ -2738,18 +2808,19 @@ void __cdecl Key_Shutdown(void)
 
 // 0055C890  Key_IsCatcherActive  (client/cl_keys.cpp:2934)
 
-bool __cdecl Key_IsCatcherActive(int param_1,int param_2)
+bool __cdecl Key_IsCatcherActive(int localClientNum,int mask)
 
 {
   clientUIActive_t *pcVar1;
   bool bVar2;
+  clientUIActive_t *clientUIActive;
   
-  if (param_1 == -1) {
+  if (localClientNum == -1) {
     bVar2 = false;
   }
   else {
-    pcVar1 = CL_GetLocalClientUIGlobals(param_1);
-    bVar2 = (pcVar1->keyCatchers & param_2) != 0;
+    pcVar1 = CL_GetLocalClientUIGlobals(localClientNum);
+    bVar2 = (pcVar1->keyCatchers & mask) != 0;
   }
   return bVar2;
 }
@@ -2757,14 +2828,15 @@ bool __cdecl Key_IsCatcherActive(int param_1,int param_2)
 
 // 0055C8C0  Key_AddCatcher  (client/cl_keys.cpp:2946)
 
-void __cdecl Key_AddCatcher(int param_1,int param_2)
+void __cdecl Key_AddCatcher(int localClientNum,int orMask)
 
 {
   clientUIActive_t *pcVar1;
+  clientUIActive_t *cl;
   
-  if (param_1 != -1) {
-    pcVar1 = CL_GetLocalClientUIGlobals(param_1);
-    pcVar1->keyCatchers = pcVar1->keyCatchers | param_2;
+  if (localClientNum != -1) {
+    pcVar1 = CL_GetLocalClientUIGlobals(localClientNum);
+    pcVar1->keyCatchers = pcVar1->keyCatchers | orMask;
   }
   return;
 }
@@ -2772,25 +2844,26 @@ void __cdecl Key_AddCatcher(int param_1,int param_2)
 
 // 0055C8F0  Key_RemoveCatcher  (client/cl_keys.cpp:2958)
 
-void __cdecl Key_RemoveCatcher(int param_1,int param_2)
+void __cdecl Key_RemoveCatcher(int localClientNum,int andMask)
 
 {
   code *pcVar1;
   bool bVar2;
   clientUIActive_t *pcVar3;
+  clientUIActive_t *cl;
   
-  if (param_1 != -1) {
-    if (((param_2 - 1U & param_2) == 0) &&
+  if (localClientNum != -1) {
+    if (((andMask - 1U & andMask) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_keys.cpp",0xb95,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pcVar3 = CL_GetLocalClientUIGlobals(param_1);
-    pcVar3->keyCatchers = pcVar3->keyCatchers & param_2;
+    pcVar3 = CL_GetLocalClientUIGlobals(localClientNum);
+    pcVar3->keyCatchers = pcVar3->keyCatchers & andMask;
     if ((pcVar3->keyCatchers & 0x10U) == 0) {
-      CL_LocalClient_ClearCUIFlag(param_1,0x40);
+      CL_LocalClient_ClearCUIFlag(localClientNum,0x40);
     }
   }
   return;
@@ -2799,21 +2872,22 @@ void __cdecl Key_RemoveCatcher(int param_1,int param_2)
 
 // 0055C970  Key_SetCatcher  (client/cl_keys.cpp:2976)
 
-void __cdecl Key_SetCatcher(int param_1,int param_2)
+void __cdecl Key_SetCatcher(int localClientNum,int catcher)
 
 {
   clientUIActive_t *pcVar1;
+  clientUIActive_t *cl;
   
-  if (param_1 != -1) {
-    pcVar1 = CL_GetLocalClientUIGlobals(param_1);
+  if (localClientNum != -1) {
+    pcVar1 = CL_GetLocalClientUIGlobals(localClientNum);
     if ((pcVar1->keyCatchers & 1U) == 0) {
-      pcVar1->keyCatchers = param_2;
+      pcVar1->keyCatchers = catcher;
     }
     else {
-      pcVar1->keyCatchers = param_2 | 1;
+      pcVar1->keyCatchers = catcher | 1;
     }
     if ((pcVar1->keyCatchers & 0x10U) == 0) {
-      CL_LocalClient_ClearCUIFlag(param_1,0x40);
+      CL_LocalClient_ClearCUIFlag(localClientNum,0x40);
     }
   }
   return;
@@ -2822,16 +2896,16 @@ void __cdecl Key_SetCatcher(int param_1,int param_2)
 
 // 0055C9D0  Key_ContextIndex_SetCatcher  (client/cl_keys.cpp:2996)
 
-void __cdecl Key_ContextIndex_SetCatcher(int param_1,int param_2)
+void __cdecl Key_ContextIndex_SetCatcher(int contextIndex,int catcher)
 
 {
   int iVar1;
-  undefined4 local_8;
+  int clientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    iVar1 = Com_LocalClient_GetUIContextIndex(local_8);
-    if (iVar1 == param_1) {
-      Key_SetCatcher(local_8,param_2);
+  for (clientNum = 0; clientNum < 1; clientNum = clientNum + 1) {
+    iVar1 = Com_LocalClient_GetUIContextIndex(clientNum);
+    if (iVar1 == contextIndex) {
+      Key_SetCatcher(clientNum,catcher);
     }
   }
   return;

@@ -12,17 +12,18 @@ void __cdecl _dynamic_initializer_for__s_lastTime__(void)
 
 // 00B12F40  Init  (gfx_d3d/r_world_lod.cpp:88)
 
-void __thiscall LodChainState::Init(LodChainState *this,GfxWorldLodChain *param_1,int param_2)
+void __thiscall
+LodChainState::Init(LodChainState *this,GfxWorldLodChain *lodChain,int localClientNum)
 
 {
-  int local_8;
+  int i;
   
-  this->m_lodChain = param_1;
+  this->m_lodChain = lodChain;
   this->m_fade = 0.0;
   this->m_curLevel = '\x01';
   this->m_lastLevel = '\x01';
-  for (local_8 = 1; local_8 < (int)(uint)this->m_lodChain->lodInfoCount; local_8 = local_8 + 1) {
-    SetFadeForSortedSurfaces(0.0,this->m_lodChain->firstLodInfo + local_8,param_2);
+  for (i = 1; i < (int)(uint)this->m_lodChain->lodInfoCount; i = i + 1) {
+    SetFadeForSortedSurfaces(0.0,this->m_lodChain->firstLodInfo + i,localClientNum);
   }
   return;
 }
@@ -30,20 +31,21 @@ void __thiscall LodChainState::Init(LodChainState *this,GfxWorldLodChain *param_
 
 // 00B12FC0  UpdateLevel  (gfx_d3d/r_world_lod.cpp:99)
 
-void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int param_2)
+void __thiscall LodChainState::UpdateLevel(LodChainState *this,int newLevel,int localClientNum)
 
 {
   uint uVar1;
   uint uVar2;
   float local_14;
-  uint local_8;
+  float fade;
+  uint i;
   
-  if (param_1 != (uint)this->m_curLevel) {
+  if (newLevel != (uint)this->m_curLevel) {
     if (this->m_lastLevel != this->m_curLevel) {
-      UpdateFade(this,1000.0,param_2);
+      UpdateFade(this,1000.0,localClientNum);
     }
     this->m_lastLevel = this->m_curLevel;
-    this->m_curLevel = (uchar)param_1;
+    this->m_curLevel = (uchar)newLevel;
     uVar1 = (uint)this->m_curLevel - (uint)this->m_lastLevel;
     uVar2 = (int)uVar1 >> 0x1f;
     if ((int)((uVar1 ^ uVar2) - uVar2) < 2) {
@@ -62,20 +64,22 @@ void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int p
         this->m_fade = 1.0;
         if (this->m_curLevel != '\0') {
           SetFadeForSortedSurfaces
-                    (1.0,(this->m_lodChain->firstLodInfo - 1) + (uint)this->m_curLevel,param_2);
+                    (1.0,(this->m_lodChain->firstLodInfo - 1) + (uint)this->m_curLevel,
+                     localClientNum);
         }
       }
     }
     else {
-      for (local_8 = 0; local_8 < this->m_lodChain->lodInfoCount; local_8 = local_8 + 1) {
-        if (local_8 == this->m_curLevel) {
+      for (i = 0; i < this->m_lodChain->lodInfoCount; i = i + 1) {
+        if (i == this->m_curLevel) {
           local_14 = 1.0;
         }
         else {
           local_14 = 0.0;
         }
-        if (local_8 != 0) {
-          SetFadeForSortedSurfaces(local_14,(this->m_lodChain->firstLodInfo - 1) + local_8,param_2);
+        if (i != 0) {
+          SetFadeForSortedSurfaces(local_14,(this->m_lodChain->firstLodInfo - 1) + i,localClientNum)
+          ;
         }
       }
       this->m_lastLevel = this->m_curLevel;
@@ -87,63 +91,66 @@ void __thiscall LodChainState::UpdateLevel(LodChainState *this,int param_1,int p
 
 // 00B13190  UpdateFade  (gfx_d3d/r_world_lod.cpp:159)
 
-void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int param_2)
+void __thiscall LodChainState::UpdateFade(LodChainState *this,float dt,int localClientNum)
 
 {
   byte bVar1;
-  uint local_c;
-  uint local_8;
+  int savedLastLevel_2;
+  int savedLastLevel;
+  int lodInfoIndex_2;
+  int lodInfoIndex;
   
   if (this->m_curLevel != this->m_lastLevel) {
     if ((this->m_lastLevel == '\0') ||
        ((uint)this->m_lastLevel == this->m_lodChain->lodInfoCount + 1)) {
-      local_8 = this->m_lodChain->firstLodInfo;
+      lodInfoIndex = this->m_lodChain->firstLodInfo;
       if (this->m_lastLevel != '\0') {
-        local_8 = (local_8 - 1) + (uint)this->m_lodChain->lodInfoCount;
+        lodInfoIndex = (lodInfoIndex - 1U) + (uint)this->m_lodChain->lodInfoCount;
       }
-      this->m_fade = param_1 * 1.0 + this->m_fade;
+      this->m_fade = dt * 1.0 + this->m_fade;
       if (1.0 <= this->m_fade) {
         this->m_fade = 1.0;
         this->m_lastLevel = this->m_curLevel;
       }
-      SetFadeForSortedSurfaces(this->m_fade,local_8,param_2);
+      SetFadeForSortedSurfaces(this->m_fade,lodInfoIndex,localClientNum);
     }
     else if ((this->m_curLevel == '\0') ||
             ((uint)this->m_curLevel == this->m_lodChain->lodInfoCount + 1)) {
-      local_c = this->m_lodChain->firstLodInfo;
+      lodInfoIndex_2 = this->m_lodChain->firstLodInfo;
       if (this->m_curLevel != '\0') {
-        local_c = (local_c - 1) + (uint)this->m_lodChain->lodInfoCount;
+        lodInfoIndex_2 = (lodInfoIndex_2 - 1U) + (uint)this->m_lodChain->lodInfoCount;
       }
-      this->m_fade = this->m_fade - param_1 * 1.0;
+      this->m_fade = this->m_fade - dt * 1.0;
       if (this->m_fade <= 0.0) {
         this->m_fade = 0.0;
         this->m_lastLevel = this->m_curLevel;
       }
-      SetFadeForSortedSurfaces(this->m_fade,local_c,param_2);
+      SetFadeForSortedSurfaces(this->m_fade,lodInfoIndex_2,localClientNum);
     }
     else if (this->m_lastLevel < this->m_curLevel) {
       bVar1 = this->m_lastLevel;
-      this->m_fade = param_1 * 1.0 + this->m_fade;
+      this->m_fade = dt * 1.0 + this->m_fade;
       if (1.0 <= this->m_fade) {
         this->m_fade = 1.0;
         this->m_lastLevel = this->m_curLevel;
       }
       if (1.0 <= this->m_fade) {
-        SetFadeForSortedSurfaces(0.0,(this->m_lodChain->firstLodInfo - 1) + (uint)bVar1,param_2);
+        SetFadeForSortedSurfaces
+                  (0.0,(this->m_lodChain->firstLodInfo - 1) + (uint)bVar1,localClientNum);
       }
       SetFadeForSortedSurfaces
-                (this->m_fade,(this->m_lodChain->firstLodInfo - 1) + (uint)this->m_curLevel,param_2)
-      ;
+                (this->m_fade,(this->m_lodChain->firstLodInfo - 1) + (uint)this->m_curLevel,
+                 localClientNum);
     }
     else {
       bVar1 = this->m_lastLevel;
-      this->m_fade = this->m_fade - param_1 * 1.0;
+      this->m_fade = this->m_fade - dt * 1.0;
       if (this->m_fade <= 0.0) {
         this->m_fade = 0.0;
         this->m_lastLevel = this->m_curLevel;
       }
       SetFadeForSortedSurfaces
-                (this->m_fade,(this->m_lodChain->firstLodInfo - 1) + (uint)bVar1,param_2);
+                (this->m_fade,(this->m_lodChain->firstLodInfo - 1) + (uint)bVar1,localClientNum);
     }
   }
   return;
@@ -152,7 +159,7 @@ void __thiscall LodChainState::UpdateFade(LodChainState *this,float param_1,int 
 
 // 00B13470  SetFadeForSortedSurfaces  (gfx_d3d/r_world_lod.cpp:207)
 
-void __cdecl SetFadeForSortedSurfaces(float param_1,int param_2,int param_3)
+void __cdecl SetFadeForSortedSurfaces(float val,int lodInfoIndex,int localClientNum)
 
 {
   uint *puVar1;
@@ -161,7 +168,11 @@ void __cdecl SetFadeForSortedSurfaces(float param_1,int param_2,int param_3)
   code *pcVar4;
   bool bVar5;
   uint uVar6;
-  uint *local_c;
+  uint index;
+  uchar fadeVal;
+  uint offset;
+  uint *surf;
+  uint *last;
   
   pGVar2 = (rgp.world)->worldLodInfos;
   if ((rgp.world)->worldLodSurfaces == (uint *)0x0) {
@@ -173,14 +184,14 @@ void __cdecl SetFadeForSortedSurfaces(float param_1,int param_2,int param_3)
       return;
     }
   }
-  local_c = (rgp.world)->worldLodSurfaces + pGVar2[param_2].firstSurf;
-  puVar1 = local_c + pGVar2[param_2].surfCount;
+  surf = (rgp.world)->worldLodSurfaces + pGVar2[lodInfoIndex].firstSurf;
+  puVar1 = surf + pGVar2[lodInfoIndex].surfCount;
   iVar3 = (rgp.world)->surfaceCount;
   do {
-    if (local_c == puVar1) {
+    if (surf == puVar1) {
       return;
     }
-    uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[*local_c] + param_3 * iVar3;
+    uVar6 = (uint)((rgp.world)->dpvs).sortedSurfIndex[*surf] + localClientNum * iVar3;
     if ((uint)(rgp.world)->surfaceCount <= uVar6) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_world_lod.cpp",0xd9,0,
                                "index doesn\'t index rgp.world->surfaceCount * MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -191,15 +202,15 @@ void __cdecl SetFadeForSortedSurfaces(float param_1,int param_2,int param_3)
         return;
       }
     }
-    s_lodVals[uVar6] = (uchar)(int)(param_1 * 255.0);
-    local_c = local_c + 1;
+    s_lodVals[uVar6] = (uchar)(int)(val * 255.0);
+    surf = surf + 1;
   } while( true );
 }
 
 
 // 00B13750  UpdateChain  (gfx_d3d/r_world_lod.cpp:224)
 
-void __cdecl UpdateChain(int param_1,float *param_2,float param_3,int param_4)
+void __cdecl UpdateChain(int index,float *inputCamPos,float dt,int localClientNum)
 
 {
   bool bVar1;
@@ -235,11 +246,11 @@ void __cdecl UpdateChain(int param_1,float *param_2,float param_3,int param_4)
   GfxWorldLodChain *local_18;
   LodChainState *local_14;
   
-  local_14 = s_lodState[param_4] + param_1;
-  local_18 = (rgp.world)->worldLodChains + param_1;
-  local_50 = *param_2;
-  local_4c = param_2[1];
-  local_48 = param_2[2];
+  local_14 = s_lodState[localClientNum] + index;
+  local_18 = (rgp.world)->worldLodChains + index;
+  local_50 = *inputCamPos;
+  local_4c = inputCamPos[1];
+  local_48 = inputCamPos[2];
   local_34 = 0;
   local_44 = 0;
   local_80 = local_18->origin[0];
@@ -288,8 +299,8 @@ void __cdecl UpdateChain(int param_1,float *param_2,float param_3,int param_4)
   else {
     local_ac = 1;
   }
-  LodChainState::UpdateLevel(local_14,local_ac,param_4);
-  LodChainState::UpdateFade(local_14,param_3,param_4);
+  LodChainState::UpdateLevel(local_14,local_ac,localClientNum);
+  LodChainState::UpdateFade(local_14,dt,localClientNum);
   return;
 }
 
@@ -300,17 +311,16 @@ void __cdecl R_WorldLod_Init(void)
 
 {
   LodChainState *pLVar1;
-  uint local_c;
-  int local_8;
+  uint i;
+  int clientIdx;
   
   s_lodVals = Hunk_Alloc((rgp.world)->surfaceCount,"R_WorldLod_Init",0x17);
   memset(s_lodVals,0xff,(rgp.world)->surfaceCount);
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
+  for (clientIdx = 0; clientIdx < 1; clientIdx = clientIdx + 1) {
     pLVar1 = Hunk_Alloc((rgp.world)->worldLodChainCount * 0xc,"R_WorldLod_Init",0x17);
-    s_lodState[local_8] = pLVar1;
-    for (local_c = 0; local_c < (rgp.world)->worldLodChainCount; local_c = local_c + 1) {
-      LodChainState::Init(s_lodState[local_8] + local_c,(rgp.world)->worldLodChains + local_c,
-                          local_8);
+    s_lodState[clientIdx] = pLVar1;
+    for (i = 0; i < (rgp.world)->worldLodChainCount; i = i + 1) {
+      LodChainState::Init(s_lodState[clientIdx] + i,(rgp.world)->worldLodChains + i,clientIdx);
     }
   }
   return;
@@ -319,16 +329,17 @@ void __cdecl R_WorldLod_Init(void)
 
 // 00B13670  R_WorldLod_FrameUpdate  (gfx_d3d/r_world_lod.cpp:278)
 
-void __cdecl R_WorldLod_FrameUpdate(float param_1,float *param_2,int param_3)
+void __cdecl R_WorldLod_FrameUpdate(float curTime,float *camPos,int localClientNum)
 
 {
   float fVar1;
   float local_14;
   float local_10;
-  uint local_c;
+  uint i;
+  float dt;
   
-  fVar1 = param_1 - s_lastTime;
-  s_lastTime = param_1;
+  fVar1 = curTime - s_lastTime;
+  s_lastTime = curTime;
   local_10 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_10 = 1.0;
@@ -339,8 +350,8 @@ void __cdecl R_WorldLod_FrameUpdate(float param_1,float *param_2,int param_3)
   else {
     local_14 = 0.0;
   }
-  for (local_c = 0; local_c < (rgp.world)->worldLodChainCount; local_c = local_c + 1) {
-    UpdateChain(local_c,param_2,local_14,param_3);
+  for (i = 0; i < (rgp.world)->worldLodChainCount; i = i + 1) {
+    UpdateChain(i,camPos,local_14,localClientNum);
   }
   return;
 }
@@ -348,10 +359,11 @@ void __cdecl R_WorldLod_FrameUpdate(float param_1,float *param_2,int param_3)
 
 // 00B139E0  Abs  (<external>/projects_pc/cod/codsrc/tl/math2/include/vmath.h:430)
 
-float __cdecl math::Abs(Dir3 *param_1)
+float __cdecl math::Abs(Dir3 *_v)
 
 {
   float10 extraout_ST0;
+  float ret;
   
   _CIsqrt();
   return (float)extraout_ST0;

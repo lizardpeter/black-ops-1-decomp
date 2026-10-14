@@ -11,7 +11,7 @@ int __cdecl UI_GetActiveKeyboardType(void)
 
 // 007443A0  UI_SetActiveKeyboardType  (ui/ui_keyboard.cpp:75)
 
-void __cdecl UI_SetActiveKeyboardType(int param_1)
+void __cdecl UI_SetActiveKeyboardType(int keyboardType)
 
 {
   code *pcVar1;
@@ -33,7 +33,7 @@ void __cdecl UI_SetActiveKeyboardType(int param_1)
       return;
     }
   }
-  uiKeyboard.keyboardType = param_1;
+  uiKeyboard.keyboardType = keyboardType;
   uiKeyboard.keyboardActive = true;
   return;
 }
@@ -59,11 +59,16 @@ void __cdecl UI_Keyboard_New_f(void)
   int iVar2;
   char *pcVar3;
   char *local_54;
-  char *local_c;
-  char *local_8;
+  int controllerIndex;
+  int size;
+  int locStrLen;
+  int keyboardType;
+  char *locStr;
+  char *defaultString;
+  char *title;
   
-  local_8 = (char *)0x0;
-  local_c = (char *)0x0;
+  title = (char *)0x0;
+  defaultString = (char *)0x0;
   iVar2 = Cmd_Argc();
   if ((iVar2 == 2) || (iVar2 = Cmd_Argc(), iVar2 == 5)) {
     pcVar3 = Cmd_Argv(1);
@@ -73,24 +78,24 @@ void __cdecl UI_Keyboard_New_f(void)
     }
     else {
       if (iVar2 == 1) {
-        local_8 = Demo_GetKeyboardTitle();
-        local_c = Demo_GetKeyboardDefaultText();
+        title = Demo_GetKeyboardTitle();
+        defaultString = Demo_GetKeyboardDefaultText();
         Demo_GetKeyboardTextSize();
       }
       else if (iVar2 != 2) {
-        local_8 = Cmd_Argv(2);
-        local_c = Cmd_Argv(3);
+        title = Cmd_Argv(2);
+        defaultString = Cmd_Argv(3);
         pcVar3 = Cmd_Argv(4);
         atoi(pcVar3);
       }
-      local_54 = SEH_LocalizeTextMessage(local_8,"menu prompt",LOCMSG_SAFE);
+      local_54 = SEH_LocalizeTextMessage(title,"menu prompt",LOCMSG_SAFE);
       do {
         cVar1 = *local_54;
         local_54 = local_54 + 1;
       } while (cVar1 != '\0');
       UI_SetActiveKeyboardType(iVar2);
-      Dvar_SetStringByName("ui_keyboardtitle",local_8);
-      Dvar_SetStringByName("ui_keyboard_dvar_edit",local_c);
+      Dvar_SetStringByName("ui_keyboardtitle",title);
+      Dvar_SetStringByName("ui_keyboard_dvar_edit",defaultString);
       UI_OpenMenu(0,"popmenu_ui_keyboard_text");
     }
   }
@@ -106,51 +111,52 @@ void __cdecl UI_Keyboard_New_f(void)
 // 007445B0  UI_KeyboardComplete  (ui/ui_keyboard.cpp:525)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl UI_KeyboardComplete(int param_1)
+void __cdecl UI_KeyboardComplete(int localClientNum)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  char *local_418;
-  char local_414 [1028];
+  char *testString;
+  char *errorString;
+  char textReturned [1028];
   uint local_10;
-  bool local_9;
-  int local_8;
+  bool errorReported;
+  int localControllerIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_9 = false;
-  local_418 = "";
+  errorReported = false;
+  errorString = "";
   Dvar_GetString("ui_keyboard_dvar_new");
-  Com_sprintf(local_414,0x400,"%s");
-  bVar1 = UI_VerifyString(local_414,(wchar_t *)0x0);
+  Com_sprintf(textReturned,0x400,"%s");
+  bVar1 = UI_VerifyString(textReturned,(wchar_t *)0x0);
   if (bVar1) {
-    if (local_414[0] != '\0') {
-      pcVar3 = local_414;
-      iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-      bVar1 = isBadWord(iVar2,pcVar3);
+    if (textReturned[0] != '\0') {
+      testString = textReturned;
+      iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
+      bVar1 = isBadWord(iVar2,testString);
       if (bVar1) {
-        local_9 = true;
-        local_418 = "MENU_OFFENSIVETEXT";
+        errorReported = true;
+        errorString = "MENU_OFFENSIVETEXT";
       }
     }
   }
   else {
-    local_9 = true;
-    local_418 = "MENU_INVALIDCHARS";
+    errorReported = true;
+    errorString = "MENU_INVALIDCHARS";
   }
-  if ((local_9 == false) || (iVar2 = UI_GetActiveKeyboardType(), iVar2 == 1)) {
-    local_8 = Com_LocalClient_GetControllerIndex(param_1);
+  if ((errorReported == false) || (iVar2 = UI_GetActiveKeyboardType(), iVar2 == 1)) {
+    localControllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
     iVar2 = UI_GetActiveKeyboardType();
     if (iVar2 == 1) {
-      Demo_KeyboardComplete(param_1,local_414,local_9,local_418);
+      Demo_KeyboardComplete(localClientNum,textReturned,errorReported,errorString);
     }
     UI_ClearKeyboardActive();
   }
   else {
-    Com_SetErrorMessage(local_418);
-    UI_OpenMenu(param_1,"error_popmenu_party");
+    Com_SetErrorMessage(errorString);
+    UI_OpenMenu(localClientNum,"error_popmenu_party");
     UI_ClearKeyboardActive();
   }
   return;

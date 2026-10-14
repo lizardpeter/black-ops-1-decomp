@@ -56,7 +56,7 @@ void __cdecl _unwind_handler4(void)
 
 // 00C20782  _seh_longjmp_unwind4  (line unknown)
 
-void __cdecl _seh_longjmp_unwind4(ulong param_1)
+void __cdecl _seh_longjmp_unwind4(ulong Dummy)
 
 {
   _local_unwind4();

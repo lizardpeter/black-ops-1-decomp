@@ -2,7 +2,7 @@
 
 // 00C0C4F0  memset  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memset.asm:59)
 
-void __cdecl memset(uchar *param_1,uchar param_2,ulong param_3)
+void __cdecl memset(uchar *dst,uchar value,ulong count)
 
 {
   uint uVar1;
@@ -10,43 +10,43 @@ void __cdecl memset(uchar *param_1,uchar param_2,ulong param_3)
   ulong uVar3;
   undefined3 in_stack_00000009;
   
-  if (param_3 == 0) {
+  if (count == 0) {
     return;
   }
-  uVar1 = (uint)param_2;
-  if (((param_2 == '\0') && (0xff < param_3)) && (__sse2_available != 0)) {
-    _VEC_memzero(param_1,_param_2,param_3);
+  uVar1 = (uint)value;
+  if (((value == '\0') && (0xff < count)) && (__sse2_available != 0)) {
+    _VEC_memzero(dst,_value,count);
     return;
   }
-  if (3 < param_3) {
-    uVar2 = -(int)param_1 & 3;
-    uVar3 = param_3;
+  if (3 < count) {
+    uVar2 = -(int)dst & 3;
+    uVar3 = count;
     if (uVar2 != 0) {
-      uVar3 = param_3 - uVar2;
+      uVar3 = count - uVar2;
       do {
-        *param_1 = param_2;
-        param_1 = (uchar *)((int)param_1 + 1);
+        *dst = value;
+        dst = (uchar *)((int)dst + 1);
         uVar2 = uVar2 - 1;
       } while (uVar2 != 0);
     }
     uVar1 = uVar1 * 0x1010101;
-    param_3 = uVar3 & 3;
+    count = uVar3 & 3;
     uVar2 = uVar3 >> 2;
     if (uVar2 != 0) {
       for (; uVar2 != 0; uVar2 = uVar2 - 1) {
-        *(uint *)param_1 = uVar1;
-        param_1 = (uchar *)((int)param_1 + 4);
+        *(uint *)dst = uVar1;
+        dst = (uchar *)((int)dst + 4);
       }
-      if (param_3 == 0) {
+      if (count == 0) {
         return;
       }
     }
   }
   do {
-    *param_1 = (char)uVar1;
-    param_1 = (uchar *)((int)param_1 + 1);
-    param_3 = param_3 - 1;
-  } while (param_3 != 0);
+    *dst = (char)uVar1;
+    dst = (uchar *)((int)dst + 1);
+    count = count - 1;
+  } while (count != 0);
   return;
 }
 

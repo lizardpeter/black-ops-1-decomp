@@ -156,7 +156,7 @@ void __cdecl MemFile_WriteDataInternal(MemoryFile *param_1,int param_2,void *par
 {
   MemoryFile *pMVar1;
   MemoryFile *unaff_ESI;
-  MemoryFile *pMVar2;
+  MemoryFile *count;
   
   MemFile_WriteDataFlushInternal(unaff_ESI);
   if (unaff_ESI->compress_enabled == false) {
@@ -175,15 +175,14 @@ void __cdecl MemFile_WriteDataInternal(MemoryFile *param_1,int param_2,void *par
     pMVar1 = param_1;
     if (0 < (int)param_1) {
       while( true ) {
-        pMVar2 = pMVar1;
+        count = pMVar1;
         if (0x7ff8 < (int)pMVar1) {
-          pMVar2 = (MemoryFile *)0x7ff8;
+          count = (MemoryFile *)0x7ff8;
         }
         memcpy(unaff_ESI->cacheBuffer + unaff_ESI->cacheBufferUsed,
-               (uchar *)((int)param_1 + (param_2 - (int)pMVar1)),(ulong)pMVar2);
-        unaff_ESI->cacheBufferUsed = (int)(pMVar2->cacheBuffer + unaff_ESI->cacheBufferUsed + -0x2c)
-        ;
-        pMVar1 = (MemoryFile *)((int)pMVar1 - (int)pMVar2);
+               (uchar *)((int)param_1 + (param_2 - (int)pMVar1)),(ulong)count);
+        unaff_ESI->cacheBufferUsed = (int)(count->cacheBuffer + unaff_ESI->cacheBufferUsed + -0x2c);
+        pMVar1 = (MemoryFile *)((int)pMVar1 - (int)count);
         if ((int)pMVar1 < 1) break;
         MemFile_WriteDataFlushInternal(unaff_ESI);
       }
@@ -238,7 +237,7 @@ void __cdecl MemFile_ReadData(MemoryFile *param_1,int param_2,void *param_3)
   void *unaff_EBP;
   int *unaff_ESI;
   ulong *unaff_EDI;
-  MemoryFile *pMVar5;
+  MemoryFile *count;
   
   pMVar3 = param_1;
   if ((param_1 != (MemoryFile *)0x0) && (*(char *)((int)unaff_ESI + 0x21) == '\0')) {
@@ -256,7 +255,7 @@ void __cdecl MemFile_ReadData(MemoryFile *param_1,int param_2,void *param_3)
       *(undefined1 *)((int)unaff_ESI + 0x21) = 1;
       return;
     }
-    for (; 0 < (int)pMVar2; pMVar2 = (MemoryFile *)((int)pMVar2 - (int)pMVar5)) {
+    for (; 0 < (int)pMVar2; pMVar2 = (MemoryFile *)((int)pMVar2 - (int)count)) {
       if (unaff_ESI[3] == unaff_ESI[10]) {
         iVar1 = *(int *)(*unaff_ESI + unaff_ESI[2]);
         iVar4 = unaff_ESI[2] + 4;
@@ -268,13 +267,13 @@ void __cdecl MemFile_ReadData(MemoryFile *param_1,int param_2,void *param_3)
         unaff_ESI[10] = (int)param_1;
         unaff_ESI[3] = 0;
       }
-      pMVar5 = (MemoryFile *)unaff_ESI[10];
+      count = (MemoryFile *)unaff_ESI[10];
       if ((int)pMVar2 <= unaff_ESI[10]) {
-        pMVar5 = pMVar2;
+        count = pMVar2;
       }
       memcpy((uchar *)((int)pMVar3 + (param_2 - (int)pMVar2)),
-             (uchar *)(unaff_ESI[3] + 0x2c + (int)unaff_ESI),(ulong)pMVar5);
-      unaff_ESI[3] = (int)(pMVar5->cacheBuffer + unaff_ESI[3] + -0x2c);
+             (uchar *)(unaff_ESI[3] + 0x2c + (int)unaff_ESI),(ulong)count);
+      unaff_ESI[3] = (int)(count->cacheBuffer + unaff_ESI[3] + -0x2c);
     }
   }
   return;

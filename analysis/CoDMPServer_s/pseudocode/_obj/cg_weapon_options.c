@@ -693,18 +693,20 @@ WeaponOptions::WeaponOverride::ToGold::Set(ToGold *this,int param_1,uint param_2
   undefined4 *unaff_ESI;
   GfxImage *unaff_EDI;
   Material *pMVar3;
-  Material *pMVar4;
-  int iVar5;
+  Material *modelIndexMask;
+  int iVar4;
   
   pMVar3 = (Material *)*unaff_ESI;
   iVar2 = param_1;
   pGVar1 = (GfxImage *)R_AllocTextureOverride(pMVar3,param_1,in_EAX,unaff_EDI,unaff_EBP);
-  pMVar4 = (Material *)*unaff_ESI;
-  iVar5 = param_1;
-  pGVar1 = (GfxImage *)R_AllocTextureOverride(pMVar4,param_1,pGVar1,(GfxImage *)pMVar3,iVar2);
+  modelIndexMask = (Material *)*unaff_ESI;
+  iVar4 = param_1;
+  pGVar1 = (GfxImage *)
+           R_AllocTextureOverride(modelIndexMask,param_1,pGVar1,(GfxImage *)pMVar3,iVar2);
   pMVar3 = (Material *)*unaff_ESI;
   iVar2 = param_1;
-  pGVar1 = (GfxImage *)R_AllocTextureOverride(pMVar3,param_1,pGVar1,(GfxImage *)pMVar4,iVar5);
+  pGVar1 = (GfxImage *)
+           R_AllocTextureOverride(pMVar3,param_1,pGVar1,(GfxImage *)modelIndexMask,iVar4);
   iVar2 = R_AllocTextureOverride((Material *)*unaff_ESI,param_1,pGVar1,(GfxImage *)pMVar3,iVar2);
   return iVar2;
 }

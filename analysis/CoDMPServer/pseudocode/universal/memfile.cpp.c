@@ -3,7 +3,8 @@
 // 007CE4F0  MemFile_CommonInit  (universal/memfile.cpp:16)
 
 void __cdecl
-MemFile_CommonInit(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bool param_5)
+MemFile_CommonInit(MemoryFile *memFile,int size,void *buffer,bool errorOnOverflow,
+                  bool compress_enabled)
 
 {
   code *pcVar1;
@@ -13,7 +14,7 @@ MemFile_CommonInit(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bo
     __lzopro_lzo_init_v2(0x2020,2,4,4,4,4,4,4,4,0x18);
     s_isLzoInitialized = true;
   }
-  if (param_1 == (MemoryFile *)0x0) {
+  if (memFile == (MemoryFile *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x1a,0,"%s"
                             );
     if (!bVar2) {
@@ -22,7 +23,7 @@ MemFile_CommonInit(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bo
       return;
     }
   }
-  if (param_3 == (void *)0x0) {
+  if (buffer == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x1b,0,"%s"
                             );
     if (!bVar2) {
@@ -31,7 +32,7 @@ MemFile_CommonInit(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bo
       return;
     }
   }
-  if (param_2 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x1c,0,
                              "%s\n\t(size) = %i");
     if (!bVar2) {
@@ -40,18 +41,18 @@ MemFile_CommonInit(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bo
       return;
     }
   }
-  param_1->buffer = param_3;
-  param_1->bufferSize = param_2;
-  param_1->bytesUsed = 0;
-  param_1->errorOnOverflow = param_4;
-  param_1->memoryOverflow = false;
-  param_1->segmentIndex = -1;
-  param_1->segmentStart = 0;
-  param_1->compress_enabled = param_5;
-  param_1->rle_enabled = true;
-  param_1->cacheBufferUsed = 0;
-  if (param_5) {
-    param_1->rle_enabled = false;
+  memFile->buffer = buffer;
+  memFile->bufferSize = size;
+  memFile->bytesUsed = 0;
+  memFile->errorOnOverflow = errorOnOverflow;
+  memFile->memoryOverflow = false;
+  memFile->segmentIndex = -1;
+  memFile->segmentStart = 0;
+  memFile->compress_enabled = compress_enabled;
+  memFile->rle_enabled = true;
+  memFile->cacheBufferUsed = 0;
+  if (compress_enabled) {
+    memFile->rle_enabled = false;
   }
   return;
 }
@@ -62,21 +63,23 @@ MemFile_CommonInit(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bo
 int __cdecl Live_CountGuestsInUse(void)
 
 {
+  int err_2;
+  
   return 0;
 }
 
 
 // 007CE610  MemFile_InitForReading  (universal/memfile.cpp:288)
 
-void __cdecl MemFile_InitForReading(MemoryFile *param_1,int param_2,void *param_3,bool param_4)
+void __cdecl MemFile_InitForReading(MemoryFile *memFile,int size,void *buffer,bool compress_enabled)
 
 {
-  MemFile_CommonInit(param_1,param_2,param_3,true,param_4);
-  param_1->is_writing = false;
-  param_1->zeroCount = 0;
-  param_1->nonZeroCount = 0;
-  param_1->bytesUsed = 0;
-  MemFile_MoveToSegment(param_1,0);
+  MemFile_CommonInit(memFile,size,buffer,true,compress_enabled);
+  memFile->is_writing = false;
+  memFile->zeroCount = 0;
+  memFile->nonZeroCount = 0;
+  memFile->bytesUsed = 0;
+  MemFile_MoveToSegment(memFile,0);
   return;
 }
 
@@ -84,60 +87,62 @@ void __cdecl MemFile_InitForReading(MemoryFile *param_1,int param_2,void *param_
 // 007CE670  MemFile_InitForWriting  (universal/memfile.cpp:301)
 
 void __cdecl
-MemFile_InitForWriting(MemoryFile *param_1,int param_2,void *param_3,bool param_4,bool param_5)
+MemFile_InitForWriting
+          (MemoryFile *memFile,int size,void *buffer,bool errorOnOverflow,bool compress_enabled)
 
 {
-  MemFile_CommonInit(param_1,param_2,param_3,param_4,param_5);
-  param_1->is_writing = true;
-  param_1->zeroCount = 0;
-  param_1->nonZeroCount = 0;
-  param_1->bytesUsed = 0;
-  MemFile_StartSegment(param_1,0);
+  MemFile_CommonInit(memFile,size,buffer,errorOnOverflow,compress_enabled);
+  memFile->is_writing = true;
+  memFile->zeroCount = 0;
+  memFile->nonZeroCount = 0;
+  memFile->bytesUsed = 0;
+  MemFile_StartSegment(memFile,0);
   return;
 }
 
 
 // 007CE6D0  MemFile_StartSegment  (universal/memfile.cpp:357)
 
-void __cdecl MemFile_StartSegment(MemoryFile *param_1,int param_2)
+void __cdecl MemFile_StartSegment(MemoryFile *memFile,int index)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
+  int segmentIndex;
   
-  if (((param_2 < -1) || (5 < param_2)) &&
+  if (((index < -1) || (5 < index)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x168,0,
                                "%s\n\t(index) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->memoryOverflow == false) &&
-     ((iVar1 = param_1->segmentIndex, iVar1 < 0 ||
-      (MemFile_EndSegment(param_1), param_1->memoryOverflow == false)))) {
-    param_1->segmentIndex = param_2;
-    if (param_2 < 0) {
-      param_1->bufferSize = param_1->bytesUsed;
+  if ((memFile->memoryOverflow == false) &&
+     ((iVar1 = memFile->segmentIndex, iVar1 < 0 ||
+      (MemFile_EndSegment(memFile), memFile->memoryOverflow == false)))) {
+    memFile->segmentIndex = index;
+    if (index < 0) {
+      memFile->bufferSize = memFile->bytesUsed;
     }
     else {
-      if ((iVar1 + 1 != param_2) &&
+      if ((iVar1 + 1 != index) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x17f
                                    ,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      param_1->segmentStart = param_1->bytesUsed;
-      param_1->bytesUsed = param_1->bytesUsed + 4;
-      if ((param_1->memoryOverflow != false) &&
+      memFile->segmentStart = memFile->bytesUsed;
+      memFile->bytesUsed = memFile->bytesUsed + 4;
+      if ((memFile->memoryOverflow != false) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",399,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      GamerProfile_WriteSettings((int)param_1);
+      GamerProfile_WriteSettings((int)memFile);
     }
   }
   return;
@@ -146,73 +151,74 @@ void __cdecl MemFile_StartSegment(MemoryFile *param_1,int param_2)
 
 // 007CE810  MemFile_EndSegment  (universal/memfile.cpp:405)
 
-void __cdecl MemFile_EndSegment(MemoryFile *param_1)
+void __cdecl MemFile_EndSegment(MemoryFile *memFile)
 
 {
   code *pcVar1;
   bool bVar2;
-  LargeLocal local_20;
-  ulong *local_18;
-  void *local_14;
-  int local_10;
-  int local_8;
+  LargeLocal workmem_large_local;
+  ulong *len_2;
+  uchar *workmem;
+  int err;
+  int len;
+  int index;
   
-  if ((param_1->memoryOverflow != false) &&
+  if ((memFile->memoryOverflow != false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x19a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->memoryOverflow == false) {
-    local_8 = param_1->segmentIndex;
-    if (((local_8 < 0) || (5 < local_8)) &&
+  if (memFile->memoryOverflow == false) {
+    index = memFile->segmentIndex;
+    if (((index < 0) || (5 < index)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x1a1,0
                                  ,"%s\n\t(index) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1->compress_enabled == false) {
-      MemFile_WriteDataFlushInternal(param_1);
+    if (memFile->compress_enabled == false) {
+      MemFile_WriteDataFlushInternal(memFile);
     }
-    else if (0 < param_1->cacheBufferUsed) {
-      if (param_1->bufferSize <= param_1->bytesUsed) {
-        if (param_1->errorOnOverflow != false) {
+    else if (0 < memFile->cacheBufferUsed) {
+      if (memFile->bufferSize <= memFile->bytesUsed) {
+        if (memFile->errorOnOverflow != false) {
           Com_Error(ERR_DROP,"MemFile_EndSegment: Out of memory");
         }
         Com_Printf(10,"MemFile_EndSegment: Out of memory");
-        param_1->memoryOverflow = true;
+        memFile->memoryOverflow = true;
         return;
       }
-      LargeLocal::LargeLocal(&local_20,0x2000);
-      local_14 = LargeLocal::GetBuf(&local_20);
-      local_18 = (ulong *)(param_1->buffer + param_1->bytesUsed);
-      param_1->bytesUsed = param_1->bytesUsed + 4;
+      LargeLocal::LargeLocal(&workmem_large_local,0x2000);
+      workmem = LargeLocal::GetBuf(&workmem_large_local);
+      len_2 = (ulong *)(memFile->buffer + memFile->bytesUsed);
+      memFile->bytesUsed = memFile->bytesUsed + 4;
       lzopro_lzo1x_1_11_compress
-                (param_1->cacheBuffer,param_1->cacheBufferUsed,param_1->buffer + param_1->bytesUsed,
-                 local_18,local_14);
-      param_1->cacheBufferUsed = 0;
-      param_1->bytesUsed = param_1->bytesUsed + *local_18;
-      LargeLocal::~LargeLocal(&local_20);
+                (memFile->cacheBuffer,memFile->cacheBufferUsed,memFile->buffer + memFile->bytesUsed,
+                 len_2,workmem);
+      memFile->cacheBufferUsed = 0;
+      memFile->bytesUsed = memFile->bytesUsed + *len_2;
+      LargeLocal::~LargeLocal(&workmem_large_local);
     }
-    local_10 = Live_CountGuestsInUse();
-    if ((local_10 != 0) &&
+    err = Live_CountGuestsInUse();
+    if ((err != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x1ec,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->memoryOverflow != false) &&
+    if ((memFile->memoryOverflow != false) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x1ed,0
                                  ,"%s\n\t%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->segmentIndex = -1;
-    *(int *)(param_1->buffer + param_1->segmentStart) = param_1->bytesUsed - param_1->segmentStart;
+    memFile->segmentIndex = -1;
+    *(int *)(memFile->buffer + memFile->segmentStart) = memFile->bytesUsed - memFile->segmentStart;
   }
   return;
 }
@@ -220,26 +226,26 @@ void __cdecl MemFile_EndSegment(MemoryFile *param_1)
 
 // 007CEB40  MemFile_inflateInit  (universal/memfile.cpp:502)
 
-void __cdecl MemFile_inflateInit(MemoryFile *param_1,void *param_2,int param_3)
+void __cdecl MemFile_inflateInit(MemoryFile *memFile,void *next_in,int len)
 
 {
-  param_1->cacheBufferAvail = 0;
-  param_1->cacheBufferUsed = 0;
+  memFile->cacheBufferAvail = 0;
+  memFile->cacheBufferUsed = 0;
   return;
 }
 
 
 // 007CEB80  MemFile_GetSegmentAddess  (universal/memfile.cpp:539)
 
-uchar * __cdecl MemFile_GetSegmentAddess(MemoryFile *param_1,int param_2)
+uchar * __cdecl MemFile_GetSegmentAddess(MemoryFile *memFile,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
-  int local_8;
+  int segmentStart;
   
-  if ((param_2 < 0) || (5 < param_2)) {
+  if ((index < 0) || (5 < index)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x21e,0,
                              "%s\n\t(index) = %i");
     if (!bVar2) {
@@ -248,7 +254,7 @@ uchar * __cdecl MemFile_GetSegmentAddess(MemoryFile *param_1,int param_2)
       return puVar3;
     }
   }
-  if (param_1->memoryOverflow != false) {
+  if (memFile->memoryOverflow != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x21f,0,
                              "%s");
     if (!bVar2) {
@@ -257,10 +263,10 @@ uchar * __cdecl MemFile_GetSegmentAddess(MemoryFile *param_1,int param_2)
       return puVar3;
     }
   }
-  local_8 = 0;
+  segmentStart = 0;
   do {
-    if (param_2 == 0) {
-      if (param_1->bufferSize < local_8 + 4) {
+    if (index == 0) {
+      if (memFile->bufferSize < segmentStart + 4) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x229,0
                                  ,"%s");
         if (!bVar2) {
@@ -269,9 +275,9 @@ uchar * __cdecl MemFile_GetSegmentAddess(MemoryFile *param_1,int param_2)
           return puVar3;
         }
       }
-      return param_1->buffer + local_8;
+      return memFile->buffer + segmentStart;
     }
-    if (param_1->bufferSize < local_8 + 4) {
+    if (memFile->bufferSize < segmentStart + 4) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x224,0,
                                "%s");
       if (!bVar2) {
@@ -280,45 +286,48 @@ uchar * __cdecl MemFile_GetSegmentAddess(MemoryFile *param_1,int param_2)
         return puVar3;
       }
     }
-    local_8 = local_8 + *(int *)(param_1->buffer + local_8);
-    param_2 = param_2 + -1;
+    segmentStart = segmentStart + *(int *)(memFile->buffer + segmentStart);
+    index = index + -1;
   } while( true );
 }
 
 
 // 007CEA30  MemFile_MoveToSegment  (universal/memfile.cpp:565)
 
-void __cdecl MemFile_MoveToSegment(MemoryFile *param_1,int param_2)
+void __cdecl MemFile_MoveToSegment(MemoryFile *memFile,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int *piVar4;
+  int err;
+  uchar *data;
+  int len;
   
-  if (((param_2 < -1) || (5 < param_2)) &&
+  if (((index < -1) || (5 < index)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x23a,0,
                                "%s\n\t(index) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->memoryOverflow == false) {
-    if (((-1 < param_1->segmentIndex) && (iVar3 = Live_CountGuestsInUse(), iVar3 != 0)) &&
+  if (memFile->memoryOverflow == false) {
+    if (((-1 < memFile->segmentIndex) && (iVar3 = Live_CountGuestsInUse(), iVar3 != 0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x242,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->segmentIndex = param_2;
-    if (-1 < param_2) {
-      param_1->nonZeroCount = 0;
-      param_1->zeroCount = 0;
-      piVar4 = (int *)MemFile_GetSegmentAddess(param_1,param_2);
+    memFile->segmentIndex = index;
+    if (-1 < index) {
+      memFile->nonZeroCount = 0;
+      memFile->zeroCount = 0;
+      piVar4 = (int *)MemFile_GetSegmentAddess(memFile,index);
       iVar3 = *piVar4;
-      param_1->bytesUsed = (int)piVar4 + (4 - (int)param_1->buffer);
-      MemFile_inflateInit(param_1,param_1->buffer + param_1->bytesUsed,iVar3 + -4);
+      memFile->bytesUsed = (int)piVar4 + (4 - (int)memFile->buffer);
+      MemFile_inflateInit(memFile,memFile->buffer + memFile->bytesUsed,iVar3 + -4);
     }
   }
   return;
@@ -327,14 +336,14 @@ void __cdecl MemFile_MoveToSegment(MemoryFile *param_1,int param_2)
 
 // 007CEC90  MemFile_IsReading  (universal/memfile.cpp:622)
 
-bool __cdecl MemFile_IsReading(MemoryFile *param_1)
+bool __cdecl MemFile_IsReading(MemoryFile *memFile)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (MemoryFile *)0x0) {
+  if (memFile == (MemoryFile *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x26f,0,
                              "%s");
     if (!bVar2) {
@@ -343,94 +352,95 @@ bool __cdecl MemFile_IsReading(MemoryFile *param_1)
       return (bool)uVar3;
     }
   }
-  return (bool)('\x01' - (param_1->is_writing != false));
+  return (bool)('\x01' - (memFile->is_writing != false));
 }
 
 
 // 007CECD0  MemFile_WriteDataFlushInternal  (universal/memfile.cpp:635)
 
-void __cdecl MemFile_WriteDataFlushInternal(MemoryFile *param_1)
+void __cdecl MemFile_WriteDataFlushInternal(MemoryFile *memFile)
 
 {
-  LargeLocal local_14;
-  ulong *local_c;
-  void *local_8;
+  LargeLocal workmem_large_local;
+  ulong *len;
+  uchar *workmem;
   
-  if (param_1->compress_enabled == false) {
-    if (param_1->bufferSize < param_1->bytesUsed + param_1->cacheBufferUsed) {
-      if (param_1->errorOnOverflow != false) {
+  if (memFile->compress_enabled == false) {
+    if (memFile->bufferSize < memFile->bytesUsed + memFile->cacheBufferUsed) {
+      if (memFile->errorOnOverflow != false) {
         Com_Error(ERR_DROP,"Trying to write corrupted file");
       }
       Com_Printf(10,"Trying to write corrupted file");
-      param_1->memoryOverflow = true;
+      memFile->memoryOverflow = true;
     }
     else {
-      memcpy(param_1->buffer + param_1->bytesUsed,param_1->cacheBuffer,param_1->cacheBufferUsed);
-      param_1->bytesUsed = param_1->bytesUsed + param_1->cacheBufferUsed;
+      memcpy(memFile->buffer + memFile->bytesUsed,memFile->cacheBuffer,memFile->cacheBufferUsed);
+      memFile->bytesUsed = memFile->bytesUsed + memFile->cacheBufferUsed;
     }
   }
-  else if (0 < param_1->cacheBufferUsed) {
-    if (param_1->bufferSize <= param_1->bytesUsed) {
-      if (param_1->errorOnOverflow != false) {
+  else if (0 < memFile->cacheBufferUsed) {
+    if (memFile->bufferSize <= memFile->bytesUsed) {
+      if (memFile->errorOnOverflow != false) {
         Com_Error(ERR_DROP,"MemFile_EndSegment: Out of memory");
       }
       Com_Printf(10,"MemFile_EndSegment: Out of memory");
-      param_1->memoryOverflow = true;
+      memFile->memoryOverflow = true;
       return;
     }
-    LargeLocal::LargeLocal(&local_14,0x2000);
-    local_8 = LargeLocal::GetBuf(&local_14);
-    local_c = (ulong *)(param_1->buffer + param_1->bytesUsed);
-    param_1->bytesUsed = param_1->bytesUsed + 4;
+    LargeLocal::LargeLocal(&workmem_large_local,0x2000);
+    workmem = LargeLocal::GetBuf(&workmem_large_local);
+    len = (ulong *)(memFile->buffer + memFile->bytesUsed);
+    memFile->bytesUsed = memFile->bytesUsed + 4;
     lzopro_lzo1x_1_11_compress
-              (param_1->cacheBuffer,param_1->cacheBufferUsed,param_1->buffer + param_1->bytesUsed,
-               local_c,local_8);
-    param_1->cacheBufferUsed = 0;
-    param_1->bytesUsed = param_1->bytesUsed + *local_c;
-    LargeLocal::~LargeLocal(&local_14);
+              (memFile->cacheBuffer,memFile->cacheBufferUsed,memFile->buffer + memFile->bytesUsed,
+               len,workmem);
+    memFile->cacheBufferUsed = 0;
+    memFile->bytesUsed = memFile->bytesUsed + *len;
+    LargeLocal::~LargeLocal(&workmem_large_local);
   }
-  param_1->cacheBufferUsed = 0;
+  memFile->cacheBufferUsed = 0;
   return;
 }
 
 
 // 007CEE50  MemFile_WriteDataInternal  (universal/memfile.cpp:706)
 
-void __cdecl MemFile_WriteDataInternal(MemoryFile *param_1,int param_2,void *param_3)
+void __cdecl MemFile_WriteDataInternal(MemoryFile *memFile,int byteCount,void *p)
 
 {
   ulong local_10;
-  ulong local_8;
+  int size;
+  int bytesLeft;
   
-  MemFile_WriteDataFlushInternal(param_1);
-  if (param_1->compress_enabled == false) {
-    if (param_1->bufferSize < param_1->bytesUsed + param_2) {
-      if (param_1->errorOnOverflow != false) {
+  MemFile_WriteDataFlushInternal(memFile);
+  if (memFile->compress_enabled == false) {
+    if (memFile->bufferSize < memFile->bytesUsed + byteCount) {
+      if (memFile->errorOnOverflow != false) {
         Com_Error(ERR_DROP,"Trying to write corrupted file");
       }
       Com_Printf(10,"Trying to write corrupted file");
-      param_1->memoryOverflow = true;
+      memFile->memoryOverflow = true;
     }
     else {
-      memcpy(param_1->buffer + param_1->bytesUsed,param_3,param_2);
-      param_1->bytesUsed = param_1->bytesUsed + param_2;
+      memcpy(memFile->buffer + memFile->bytesUsed,p,byteCount);
+      memFile->bytesUsed = memFile->bytesUsed + byteCount;
     }
   }
   else {
-    local_8 = param_2;
-    while (0 < (int)local_8) {
-      if ((int)local_8 < 0x7ff9) {
-        local_10 = local_8;
+    bytesLeft = byteCount;
+    while (0 < bytesLeft) {
+      if (bytesLeft < 0x7ff9) {
+        local_10 = bytesLeft;
       }
       else {
         local_10 = 0x7ff8;
       }
-      memcpy(param_1->cacheBuffer + param_1->cacheBufferUsed,
-             (uchar *)((param_2 - local_8) + (int)param_3),local_10);
-      param_1->cacheBufferUsed = param_1->cacheBufferUsed + local_10;
-      local_8 = local_8 - local_10;
-      if (0 < (int)local_8) {
-        MemFile_WriteDataFlushInternal(param_1);
+      memcpy(memFile->cacheBuffer + memFile->cacheBufferUsed,
+             (uchar *)((byteCount - bytesLeft) + (int)p),local_10);
+      memFile->cacheBufferUsed = memFile->cacheBufferUsed + local_10;
+      bytesLeft = bytesLeft - local_10;
+      if (0 < bytesLeft) {
+        MemFile_WriteDataFlushInternal(memFile);
       }
     }
   }
@@ -440,29 +450,29 @@ void __cdecl MemFile_WriteDataInternal(MemoryFile *param_1,int param_2,void *par
 
 // 007CEF60  MemFile_ReadCString  (universal/memfile.cpp:777)
 
-char * __cdecl MemFile_ReadCString(MemoryFile *param_1)
+char * __cdecl MemFile_ReadCString(MemoryFile *memFile)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  char *local_8;
+  char *string;
   
-  if ((param_1 == (MemoryFile *)0x0) &&
+  if ((memFile == (MemoryFile *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x30d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((param_1->buffer == (uchar *)0x0) &&
+  if ((memFile->buffer == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x30e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if (((param_1->bytesUsed < 0) || (param_1->bufferSize < param_1->bytesUsed)) &&
+  if (((memFile->bytesUsed < 0) || (memFile->bufferSize < memFile->bytesUsed)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x30f,0,
                                "memFile->bytesUsed not in [0, memFile->bufferSize]\n\t%i not in [%i, %i]"
                               ), !bVar2)) {
@@ -470,15 +480,15 @@ char * __cdecl MemFile_ReadCString(MemoryFile *param_1)
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  local_8 = buffer;
+  string = buffer;
   while( true ) {
-    MemFile_ReadData(param_1,1,local_8);
-    if (param_1->memoryOverflow != false) {
+    MemFile_ReadData(memFile,1,string);
+    if (memFile->memoryOverflow != false) {
       return "";
     }
-    if (*local_8 == '\0') break;
-    local_8 = local_8 + 1;
-    if (buffer + 0x3ff < local_8) {
+    if (*string == '\0') break;
+    string = string + 1;
+    if (buffer + 0x3ff < string) {
       Com_Error(ERR_DROP,"Trying to read corrupted file");
     }
   }
@@ -488,25 +498,26 @@ char * __cdecl MemFile_ReadCString(MemoryFile *param_1)
 
 // 007CF070  MemFile_ReadData  (universal/memfile.cpp:802)
 
-void __cdecl MemFile_ReadData(MemoryFile *param_1,int param_2,void *param_3)
+void __cdecl MemFile_ReadData(MemoryFile *memFile,int byteCount,void *p)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  ulong local_1c;
-  ulong local_10;
-  ulong local_c;
-  ulong local_8;
+  int local_1c;
+  ulong in_len;
+  ulong len;
+  int size;
+  int bytesLeft;
   
-  if ((param_1 == (MemoryFile *)0x0) &&
+  if ((memFile == (MemoryFile *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x323,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  bVar3 = MemFile_IsReading(param_1);
+  bVar3 = MemFile_IsReading(memFile);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x324,0,
                                "%s"), !bVar3)) {
@@ -514,14 +525,14 @@ void __cdecl MemFile_ReadData(MemoryFile *param_1,int param_2,void *param_3)
     (*pcVar2)();
     return;
   }
-  if ((param_1->buffer == (uchar *)0x0) &&
+  if ((memFile->buffer == (uchar *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x325,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1->bytesUsed < 0) || (param_1->bufferSize < param_1->bytesUsed)) &&
+  if (((memFile->bytesUsed < 0) || (memFile->bufferSize < memFile->bytesUsed)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x326,0,
                                "memFile->bytesUsed not in [0, memFile->bufferSize]\n\t%i not in [%i, %i]"
                               ), !bVar3)) {
@@ -529,63 +540,62 @@ void __cdecl MemFile_ReadData(MemoryFile *param_1,int param_2,void *param_3)
     (*pcVar2)();
     return;
   }
-  if ((param_2 < 0) &&
+  if ((byteCount < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",0x327,0,
                                "%s\n\t(byteCount) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 != 0) && (param_1->memoryOverflow == false)) {
-    if (param_1->compress_enabled == false) {
-      if (param_1->bufferSize < param_1->bytesUsed + param_2) {
-        if (param_1->errorOnOverflow != false) {
+  if ((byteCount != 0) && (memFile->memoryOverflow == false)) {
+    if (memFile->compress_enabled == false) {
+      if (memFile->bufferSize < memFile->bytesUsed + byteCount) {
+        if (memFile->errorOnOverflow != false) {
           Com_Error(ERR_DROP,"Trying to read corrupted file");
         }
         Com_Printf(10,"Trying to read corrupted file");
-        param_1->memoryOverflow = true;
+        memFile->memoryOverflow = true;
       }
       else {
-        memcpy(param_3,param_1->buffer + param_1->bytesUsed,param_2);
-        param_1->bytesUsed = param_1->bytesUsed + param_2;
+        memcpy(p,memFile->buffer + memFile->bytesUsed,byteCount);
+        memFile->bytesUsed = memFile->bytesUsed + byteCount;
       }
     }
     else {
-      local_8 = param_2;
-      while (0 < (int)local_8) {
-        if (param_1->cacheBufferUsed == param_1->cacheBufferAvail) {
-          iVar1 = *(int *)(param_1->buffer + param_1->bytesUsed);
-          param_1->bytesUsed = param_1->bytesUsed + 4;
+      bytesLeft = byteCount;
+      while (0 < bytesLeft) {
+        if (memFile->cacheBufferUsed == memFile->cacheBufferAvail) {
+          iVar1 = *(int *)(memFile->buffer + memFile->bytesUsed);
+          memFile->bytesUsed = memFile->bytesUsed + 4;
           lzopro_lzo1x_decompress
-                    (param_1->buffer + param_1->bytesUsed,0,param_1->cacheBuffer,&local_10,
-                     (void *)0x0);
-          param_1->cacheBufferAvail = local_10;
-          param_1->cacheBufferUsed = 0;
-          param_1->bytesUsed = param_1->bytesUsed + iVar1;
+                    (memFile->buffer + memFile->bytesUsed,0,memFile->cacheBuffer,&len,(void *)0x0);
+          memFile->cacheBufferAvail = len;
+          memFile->cacheBufferUsed = 0;
+          memFile->bytesUsed = memFile->bytesUsed + iVar1;
         }
-        if ((param_1->cacheBufferAvail <= param_1->cacheBufferUsed) &&
+        if ((memFile->cacheBufferAvail <= memFile->cacheBufferUsed) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",
                                      0x351,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_1c = param_1->cacheBufferAvail;
-        if ((int)local_8 <= (int)local_1c) {
-          local_1c = local_8;
+        local_1c = memFile->cacheBufferAvail;
+        if (bytesLeft <= local_1c) {
+          local_1c = bytesLeft;
         }
-        local_c = local_1c;
-        if ((param_1->cacheBufferAvail < (int)(param_1->cacheBufferUsed + local_1c)) &&
+        size = local_1c;
+        if ((memFile->cacheBufferAvail < memFile->cacheBufferUsed + local_1c) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\memfile.cpp",
                                      0x353,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        memcpy((uchar *)((param_2 - local_8) + (int)param_3),
-               param_1->cacheBuffer + param_1->cacheBufferUsed,local_c);
-        local_8 = local_8 - local_c;
-        param_1->cacheBufferUsed = param_1->cacheBufferUsed + local_c;
+        memcpy((uchar *)((byteCount - bytesLeft) + (int)p),
+               memFile->cacheBuffer + memFile->cacheBufferUsed,size);
+        bytesLeft = bytesLeft - size;
+        memFile->cacheBufferUsed = memFile->cacheBufferUsed + size;
       }
     }
   }

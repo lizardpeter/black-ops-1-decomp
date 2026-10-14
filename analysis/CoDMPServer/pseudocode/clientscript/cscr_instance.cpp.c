@@ -2,48 +2,48 @@
 
 // 008B6F50  Scr_ClearScrVarDebugPub  (clientscript/cscr_instance.cpp:26)
 
-void __cdecl Scr_ClearScrVarDebugPub(scriptInstance_t param_1)
+void __cdecl Scr_ClearScrVarDebugPub(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrVarDebugPub[_param_1] = (scrVarDebugPub_t *)0x0;
+  gScrVarDebugPub[_inst] = (scrVarDebugPub_t *)0x0;
   return;
 }
 
 
 // 008B6F70  Scr_ResetScrVarDebugPub  (clientscript/cscr_instance.cpp:33)
 
-void __cdecl Scr_ResetScrVarDebugPub(scriptInstance_t param_1)
+void __cdecl Scr_ResetScrVarDebugPub(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrVarDebugPub[_param_1] = gScrVarDebugPubBuff + _param_1;
+  gScrVarDebugPub[_inst] = gScrVarDebugPubBuff + _inst;
   return;
 }
 
 
 // 008B6F90  Scr_ClearScrStringDebugGlob  (clientscript/cscr_instance.cpp:40)
 
-void __cdecl Scr_ClearScrStringDebugGlob(scriptInstance_t param_1)
+void __cdecl Scr_ClearScrStringDebugGlob(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrStringDebugGlob[_param_1] = (scrStringDebugGlob_t *)0x0;
+  gScrStringDebugGlob[_inst] = (scrStringDebugGlob_t *)0x0;
   return;
 }
 
 
 // 008B6FB0  Scr_ResetScrStringDebugGlob  (clientscript/cscr_instance.cpp:47)
 
-void __cdecl Scr_ResetScrStringDebugGlob(scriptInstance_t param_1)
+void __cdecl Scr_ResetScrStringDebugGlob(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrStringDebugGlob[_param_1] = gScrStringDebugGlobBuff + _param_1;
+  gScrStringDebugGlob[_inst] = gScrStringDebugGlobBuff + _inst;
   return;
 }
 

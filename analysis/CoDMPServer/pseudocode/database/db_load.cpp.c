@@ -2,10 +2,10 @@
 
 // 005857D0  Load_LocalizeEntry  (stringed/stringed_load_db.h:113)
 
-void __cdecl Load_LocalizeEntry(bool param_1)
+void __cdecl Load_LocalizeEntry(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varLocalizeEntry,8);
+  Load_Stream(atStreamStart,varLocalizeEntry,8);
   DB_PushStreamPos(4);
   varXString = &varLocalizeEntry->value;
   Load_XString(false);
@@ -18,12 +18,12 @@ void __cdecl Load_LocalizeEntry(bool param_1)
 
 // 00581E60  Load_MapEnts  (qcommon/map_ents_load_db.h:115)
 
-void __cdecl Load_MapEnts(bool param_1)
+void __cdecl Load_MapEnts(bool atStreamStart)
 
 {
   uchar *puVar1;
   
-  Load_Stream(param_1,varMapEnts,0xc);
+  Load_Stream(atStreamStart,varMapEnts,0xc);
   DB_PushStreamPos(4);
   varXString = &varMapEnts->name;
   Load_XString(false);
@@ -40,20 +40,20 @@ void __cdecl Load_MapEnts(bool param_1)
 
 // 0057F860  Load_cplane_t  (qcommon/cm_brush_related_load_db.h:148)
 
-void __cdecl Load_cplane_t(bool param_1)
+void __cdecl Load_cplane_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varcplane_t,0x14);
+  Load_Stream(atStreamStart,varcplane_t,0x14);
   return;
 }
 
 
 // 00585930  Load_FxImpactEntry  (cgame/cg_effects_load_db.h:164)
 
-void __cdecl Load_FxImpactEntry(bool param_1)
+void __cdecl Load_FxImpactEntry(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varFxImpactEntry,0x8c);
+  Load_Stream(atStreamStart,varFxImpactEntry,0x8c);
   varFxEffectDefHandle = varFxImpactEntry->nonflesh;
   Load_FxEffectDefHandleArray(false,0x1f);
   varFxEffectDefHandle = varFxImpactEntry->flesh;
@@ -64,34 +64,38 @@ void __cdecl Load_FxImpactEntry(bool param_1)
 
 // 00588F50  Load_GfxReflectionProbeVolumeDataArray  (gfx_d3d/r_reflection_probe_load_db.h:171)
 
-void __cdecl Load_GfxReflectionProbeVolumeDataArray(bool param_1,int param_2)
+void __cdecl Load_GfxReflectionProbeVolumeDataArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxReflectionProbeVolumeData,param_2 * 0x60);
+  Load_Stream(atStreamStart,varGfxReflectionProbeVolumeData,count * 0x60);
   return;
 }
 
 
 // 0057F880  Load_cplane_tArray  (qcommon/cm_brush_related_load_db.h:173)
 
-void __cdecl Load_cplane_tArray(bool param_1,int param_2)
+void __cdecl Load_cplane_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varcplane_t,param_2 * 0x14);
+  Load_Stream(atStreamStart,varcplane_t,count * 0x14);
   return;
 }
 
 
 // 00585830  Load_LocalizeEntryPtr  (stringed/stringed_load_db.h:182)
 
-void __cdecl Load_LocalizeEntryPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_LocalizeEntryPtr(bool atStreamStart)
 
 {
   LocalizeEntry *pLVar1;
   LocalizeEntry *pLVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varLocalizeEntryPtr,4);
+  Load_Stream(atStreamStart,varLocalizeEntryPtr,4);
   DB_PushStreamPos(0);
   if (*varLocalizeEntryPtr != (LocalizeEntry *)0x0) {
     pLVar1 = *varLocalizeEntryPtr;
@@ -122,10 +126,10 @@ void __cdecl Load_LocalizeEntryPtr(bool param_1)
 
 // 00588510  Load_XGlobals  (qcommon/xglobals_load_db.h:188)
 
-void __cdecl Load_XGlobals(bool param_1)
+void __cdecl Load_XGlobals(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varXGlobals,0x28);
+  Load_Stream(atStreamStart,varXGlobals,0x28);
   DB_PushStreamPos(4);
   varXString = &varXGlobals->name;
   Load_XString(false);
@@ -136,18 +140,18 @@ void __cdecl Load_XGlobals(bool param_1)
 
 // 00585980  Load_FxImpactEntryArray  (cgame/cg_effects_load_db.h:189)
 
-void __cdecl Load_FxImpactEntryArray(bool param_1,int param_2)
+void __cdecl Load_FxImpactEntryArray(bool atStreamStart,int count)
 
 {
-  FxImpactEntry *local_c;
-  int local_8;
+  FxImpactEntry *var;
+  int i;
   
-  Load_Stream(param_1,varFxImpactEntry,param_2 * 0x8c);
-  local_c = varFxImpactEntry;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varFxImpactEntry = local_c;
+  Load_Stream(atStreamStart,varFxImpactEntry,count * 0x8c);
+  var = varFxImpactEntry;
+  for (i = 0; i < count; i = i + 1) {
+    varFxImpactEntry = var;
     Load_FxImpactEntry(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -155,14 +159,18 @@ void __cdecl Load_FxImpactEntryArray(bool param_1,int param_2)
 
 // 00581EE0  Load_MapEntsPtr  (qcommon/map_ents_load_db.h:191)
 
-void __cdecl Load_MapEntsPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_MapEntsPtr(bool atStreamStart)
 
 {
   MapEnts *pMVar1;
   MapEnts *pMVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varMapEntsPtr,4);
+  Load_Stream(atStreamStart,varMapEntsPtr,4);
   DB_PushStreamPos(0);
   if (*varMapEntsPtr != (MapEnts *)0x0) {
     pMVar1 = *varMapEntsPtr;
@@ -193,20 +201,20 @@ void __cdecl Load_MapEntsPtr(bool param_1)
 
 // 0057C5A0  Load_XBoneInfoArray  (xanim/xmodel_public_load_db.h:200)
 
-void __cdecl Load_XBoneInfoArray(bool param_1,int param_2)
+void __cdecl Load_XBoneInfoArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXBoneInfo,param_2 * 0x2c);
+  Load_Stream(atStreamStart,varXBoneInfo,count * 0x2c);
   return;
 }
 
 
 // 00588650  Load_StringTableCell  (universal/com_stringtable_load_db.h:204)
 
-void __cdecl Load_StringTableCell(bool param_1)
+void __cdecl Load_StringTableCell(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varStringTableCell,8);
+  Load_Stream(atStreamStart,varStringTableCell,8);
   varXString = &varStringTableCell->string;
   Load_XString(false);
   return;
@@ -215,22 +223,22 @@ void __cdecl Load_StringTableCell(bool param_1)
 
 // 0058B5C0  Load_GlyphArray  (gfx_d3d/r_font_load_db.h:209)
 
-void __cdecl Load_GlyphArray(bool param_1,int param_2)
+void __cdecl Load_GlyphArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGlyph,param_2 * 0x18);
+  Load_Stream(atStreamStart,varGlyph,count * 0x18);
   return;
 }
 
 
 // 00588F70  Load_GfxReflectionProbe  (gfx_d3d/r_reflection_probe_load_db.h:211)
 
-void __cdecl Load_GfxReflectionProbe(bool param_1)
+void __cdecl Load_GfxReflectionProbe(bool atStreamStart)
 
 {
   GfxReflectionProbeVolumeData *pGVar1;
   
-  Load_Stream(param_1,varGfxReflectionProbe,0x18);
+  Load_Stream(atStreamStart,varGfxReflectionProbe,0x18);
   varGfxImagePtr = &varGfxReflectionProbe->reflectionImage;
   Load_GfxImagePtr(false);
   if (varGfxReflectionProbe->probeVolumes != (GfxReflectionProbeVolumeData *)0x0) {
@@ -245,12 +253,12 @@ void __cdecl Load_GfxReflectionProbe(bool param_1)
 
 // 0057F8A0  Load_cbrushside_t  (qcommon/cm_brush_related_load_db.h:213)
 
-void __cdecl Load_cbrushside_t(bool param_1)
+void __cdecl Load_cbrushside_t(bool atStreamStart)
 
 {
   cplane_s *pcVar1;
   
-  Load_Stream(param_1,varcbrushside_t,0xc);
+  Load_Stream(atStreamStart,varcbrushside_t,0xc);
   if (varcbrushside_t->plane != (cplane_s *)0x0) {
     if (varcbrushside_t->plane == (cplane_s *)0xffffffff) {
       pcVar1 = (cplane_s *)AllocLoad_int();
@@ -268,12 +276,12 @@ void __cdecl Load_cbrushside_t(bool param_1)
 
 // 005859F0  Load_FxImpactTable  (cgame/cg_effects_load_db.h:229)
 
-void __cdecl Load_FxImpactTable(bool param_1)
+void __cdecl Load_FxImpactTable(bool atStreamStart)
 
 {
   FxImpactEntry *pFVar1;
   
-  Load_Stream(param_1,varFxImpactTable,8);
+  Load_Stream(atStreamStart,varFxImpactTable,8);
   DB_PushStreamPos(4);
   varXString = &varFxImpactTable->name;
   Load_XString(false);
@@ -290,18 +298,18 @@ void __cdecl Load_FxImpactTable(bool param_1)
 
 // 00588680  Load_StringTableCellArray  (universal/com_stringtable_load_db.h:229)
 
-void __cdecl Load_StringTableCellArray(bool param_1,int param_2)
+void __cdecl Load_StringTableCellArray(bool atStreamStart,int count)
 
 {
-  StringTableCell *local_c;
-  int local_8;
+  StringTableCell *var;
+  int i;
   
-  Load_Stream(param_1,varStringTableCell,param_2 << 3);
-  local_c = varStringTableCell;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varStringTableCell = local_c;
+  Load_Stream(atStreamStart,varStringTableCell,count << 3);
+  var = varStringTableCell;
+  for (i = 0; i < count; i = i + 1) {
+    varStringTableCell = var;
     Load_StringTableCell(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -309,10 +317,10 @@ void __cdecl Load_StringTableCellArray(bool param_1,int param_2)
 
 // 00588D90  Load_GfxStaticModelDrawInst  (gfx_d3d/r_staticmodel_load_db.h:240)
 
-void __cdecl Load_GfxStaticModelDrawInst(bool param_1)
+void __cdecl Load_GfxStaticModelDrawInst(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxStaticModelDrawInst,0x4c);
+  Load_Stream(atStreamStart,varGfxStaticModelDrawInst,0x4c);
   varXModelPtr = &varGfxStaticModelDrawInst->model;
   Load_XModelPtr(false);
   return;
@@ -321,18 +329,18 @@ void __cdecl Load_GfxStaticModelDrawInst(bool param_1)
 
 // 00588FE0  Load_GfxReflectionProbeArray  (gfx_d3d/r_reflection_probe_load_db.h:248)
 
-void __cdecl Load_GfxReflectionProbeArray(bool param_1,int param_2)
+void __cdecl Load_GfxReflectionProbeArray(bool atStreamStart,int count)
 
 {
-  GfxReflectionProbe *local_c;
-  int local_8;
+  GfxReflectionProbe *var;
+  int i;
   
-  Load_Stream(param_1,varGfxReflectionProbe,param_2 * 0x18);
-  local_c = varGfxReflectionProbe;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxReflectionProbe = local_c;
+  Load_Stream(atStreamStart,varGfxReflectionProbe,count * 0x18);
+  var = varGfxReflectionProbe;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxReflectionProbe = var;
     Load_GfxReflectionProbe(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -340,12 +348,12 @@ void __cdecl Load_GfxReflectionProbeArray(bool param_1,int param_2)
 
 // 0058B5E0  Load_Font  (gfx_d3d/r_font_load_db.h:249)
 
-void __cdecl Load_Font(bool param_1)
+void __cdecl Load_Font(bool atStreamStart)
 
 {
   Glyph *pGVar1;
   
-  Load_Stream(param_1,varFont,0x18);
+  Load_Stream(atStreamStart,varFont,0x18);
   DB_PushStreamPos(4);
   varXString = &varFont->fontName;
   Load_XString(false);
@@ -371,13 +379,13 @@ void __cdecl Load_Font(bool param_1)
 
 // 0057DEF0  Load_water_t  (gfx_d3d/r_water_load_db.h:251)
 
-void __cdecl Load_water_t(bool param_1)
+void __cdecl Load_water_t(bool atStreamStart)
 
 {
   complex_s *pcVar1;
   float *pfVar2;
   
-  Load_Stream(param_1,varwater_t,0x44);
+  Load_Stream(atStreamStart,varwater_t,0x44);
   if (varwater_t->H0 != (complex_s *)0x0) {
     pcVar1 = (complex_s *)AllocLoad_int();
     varwater_t->H0 = pcVar1;
@@ -398,18 +406,18 @@ void __cdecl Load_water_t(bool param_1)
 
 // 0057F910  Load_cbrushside_tArray  (qcommon/cm_brush_related_load_db.h:252)
 
-void __cdecl Load_cbrushside_tArray(bool param_1,int param_2)
+void __cdecl Load_cbrushside_tArray(bool atStreamStart,int count)
 
 {
-  cbrushside_t *local_c;
-  int local_8;
+  cbrushside_t *var;
+  int i;
   
-  Load_Stream(param_1,varcbrushside_t,param_2 * 0xc);
-  local_c = varcbrushside_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varcbrushside_t = local_c;
+  Load_Stream(atStreamStart,varcbrushside_t,count * 0xc);
+  var = varcbrushside_t;
+  for (i = 0; i < count; i = i + 1) {
+    varcbrushside_t = var;
     Load_cbrushside_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -417,13 +425,13 @@ void __cdecl Load_cbrushside_tArray(bool param_1,int param_2)
 
 // 005886F0  Load_StringTable  (universal/com_stringtable_load_db.h:269)
 
-void __cdecl Load_StringTable(bool param_1)
+void __cdecl Load_StringTable(bool atStreamStart)
 
 {
   StringTableCell *pSVar1;
   short *psVar2;
   
-  Load_Stream(param_1,varStringTable,0x14);
+  Load_Stream(atStreamStart,varStringTable,0x14);
   DB_PushStreamPos(4);
   varXString = &varStringTable->name;
   Load_XString(false);
@@ -446,12 +454,12 @@ void __cdecl Load_StringTable(bool param_1)
 
 // 00588390  Load_RawFile  (qcommon/rawfile_load_db.h:279)
 
-void __cdecl Load_RawFile(bool param_1)
+void __cdecl Load_RawFile(bool atStreamStart)
 
 {
   uchar *puVar1;
   
-  Load_Stream(param_1,varRawFile,0xc);
+  Load_Stream(atStreamStart,varRawFile,0xc);
   DB_PushStreamPos(4);
   varXString = &varRawFile->name;
   Load_XString(false);
@@ -468,14 +476,18 @@ void __cdecl Load_RawFile(bool param_1)
 
 // 00588550  Load_XGlobalsPtr  (qcommon/xglobals_load_db.h:282)
 
-void __cdecl Load_XGlobalsPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_XGlobalsPtr(bool atStreamStart)
 
 {
   XGlobals *pXVar1;
   XGlobals *pXVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varXGlobalsPtr,4);
+  Load_Stream(atStreamStart,varXGlobalsPtr,4);
   DB_PushStreamPos(0);
   if (*varXGlobalsPtr != (XGlobals *)0x0) {
     pXVar1 = *varXGlobalsPtr;
@@ -506,24 +518,26 @@ void __cdecl Load_XGlobalsPtr(bool param_1)
 
 // 00588DD0  Load_GfxStaticModelDrawInstArray  (gfx_d3d/r_staticmodel_load_db.h:285)
 
-void __cdecl Load_GfxStaticModelDrawInstArray(bool param_1,int param_2)
+void __cdecl Load_GfxStaticModelDrawInstArray(bool atStreamStart,int count)
 
 {
-  GfxStaticModelDrawInst *local_c;
-  int local_8;
+  GfxStaticModelDrawInst *var;
+  int i;
   
-  Load_Stream(param_1,varGfxStaticModelDrawInst,param_2 * 0x4c);
-  local_c = varGfxStaticModelDrawInst;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxStaticModelDrawInst = local_c;
+  Load_Stream(atStreamStart,varGfxStaticModelDrawInst,count * 0x4c);
+  var = varGfxStaticModelDrawInst;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxStaticModelDrawInst = var;
     Load_GfxStaticModelDrawInst(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
 
 
 // 00585900  Mark_LocalizeEntryPtr  (stringed/stringed_load_db.h:291)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_LocalizeEntryPtr(void)
 
@@ -538,14 +552,18 @@ void __cdecl Mark_LocalizeEntryPtr(void)
 
 // 00585A70  Load_FxImpactTablePtr  (cgame/cg_effects_load_db.h:300)
 
-void __cdecl Load_FxImpactTablePtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_FxImpactTablePtr(bool atStreamStart)
 
 {
   FxImpactTable *pFVar1;
   FxImpactTable *pFVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varFxImpactTablePtr,4);
+  Load_Stream(atStreamStart,varFxImpactTablePtr,4);
   DB_PushStreamPos(0);
   if (*varFxImpactTablePtr != (FxImpactTable *)0x0) {
     pFVar1 = *varFxImpactTablePtr;
@@ -576,10 +594,10 @@ void __cdecl Load_FxImpactTablePtr(bool param_1)
 
 // 0057F3C0  Load_PhysPreset  (physics/physpreset_load_db.h:308)
 
-void __cdecl Load_PhysPreset(bool param_1)
+void __cdecl Load_PhysPreset(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varPhysPreset,0x54);
+  Load_Stream(atStreamStart,varPhysPreset,0x54);
   DB_PushStreamPos(4);
   varXString = &varPhysPreset->name;
   Load_XString(false);
@@ -591,6 +609,8 @@ void __cdecl Load_PhysPreset(bool param_1)
 
 
 // 00581FB0  Mark_MapEntsPtr  (qcommon/map_ents_load_db.h:308)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_MapEntsPtr(void)
 
@@ -618,7 +638,7 @@ void __cdecl Mark_GfxReflectionProbe(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_PathData(bool param_1)
+void __cdecl Load_PathData(bool atStreamStart)
 
 {
   pathnode_t *ppVar1;
@@ -627,7 +647,7 @@ void __cdecl Load_PathData(bool param_1)
   uchar *puVar4;
   pathnode_tree_t *ppVar5;
   
-  Load_Stream(param_1,varPathData,0x28);
+  Load_Stream(atStreamStart,varPathData,0x28);
   if (varPathData->nodes != (pathnode_t *)0x0) {
     ppVar1 = (pathnode_t *)AllocLoad_int();
     varPathData->nodes = ppVar1;
@@ -672,17 +692,17 @@ void __cdecl Load_PathData(bool param_1)
 
 // 00589070  Mark_GfxReflectionProbeArray  (gfx_d3d/r_reflection_probe_load_db.h:340)
 
-void __cdecl Mark_GfxReflectionProbeArray(int param_1)
+void __cdecl Mark_GfxReflectionProbeArray(int count)
 
 {
-  GfxReflectionProbe *local_c;
-  int local_8;
+  GfxReflectionProbe *var;
+  int i;
   
-  local_c = varGfxReflectionProbe;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varGfxReflectionProbe = local_c;
+  var = varGfxReflectionProbe;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxReflectionProbe = var;
     Mark_GfxReflectionProbe();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -690,14 +710,18 @@ void __cdecl Mark_GfxReflectionProbeArray(int param_1)
 
 // 0058B6B0  Load_FontHandle  (gfx_d3d/r_font_load_db.h:347)
 
-void __cdecl Load_FontHandle(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_FontHandle(bool atStreamStart)
 
 {
   Font_s *pFVar1;
   Font_s *pFVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varFontHandle,4);
+  Load_Stream(atStreamStart,varFontHandle,4);
   DB_PushStreamPos(0);
   if (*varFontHandle != (Font_s *)0x0) {
     pFVar1 = *varFontHandle;
@@ -728,14 +752,18 @@ void __cdecl Load_FontHandle(bool param_1)
 
 // 005887C0  Load_StringTablePtr  (universal/com_stringtable_load_db.h:357)
 
-void __cdecl Load_StringTablePtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_StringTablePtr(bool atStreamStart)
 
 {
   StringTable *pSVar1;
   StringTable *pSVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varStringTablePtr,4);
+  Load_Stream(atStreamStart,varStringTablePtr,4);
   DB_PushStreamPos(0);
   if (*varStringTablePtr != (StringTable *)0x0) {
     pSVar1 = *varStringTablePtr;
@@ -766,24 +794,28 @@ void __cdecl Load_StringTablePtr(bool param_1)
 
 // 00588E40  Load_GfxStaticModelInstArray  (gfx_d3d/r_staticmodel_load_db.h:360)
 
-void __cdecl Load_GfxStaticModelInstArray(bool param_1,int param_2)
+void __cdecl Load_GfxStaticModelInstArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxStaticModelInst,param_2 * 0x28);
+  Load_Stream(atStreamStart,varGfxStaticModelInst,count * 0x28);
   return;
 }
 
 
 // 00588410  Load_RawFilePtr  (qcommon/rawfile_load_db.h:366)
 
-void __cdecl Load_RawFilePtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_RawFilePtr(bool atStreamStart)
 
 {
   RawFile *pRVar1;
   RawFile *pRVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varRawFilePtr,4);
+  Load_Stream(atStreamStart,varRawFilePtr,4);
   DB_PushStreamPos(0);
   if (*varRawFilePtr != (RawFile *)0x0) {
     pRVar1 = *varRawFilePtr;
@@ -838,10 +870,10 @@ void __cdecl Mark_water_t(void)
 
 // 00588ED0  Load_sunflare_t  (gfx_d3d/r_sky_load_db.h:386)
 
-void __cdecl Load_sunflare_t(bool param_1)
+void __cdecl Load_sunflare_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varsunflare_t,0x60);
+  Load_Stream(atStreamStart,varsunflare_t,0x60);
   varMaterialHandle = &varsunflare_t->spriteMaterial;
   Load_MaterialHandle(false);
   varMaterialHandle = &varsunflare_t->flareMaterial;
@@ -852,17 +884,17 @@ void __cdecl Load_sunflare_t(bool param_1)
 
 // 00585B80  Mark_FxImpactEntryArray  (cgame/cg_effects_load_db.h:389)
 
-void __cdecl Mark_FxImpactEntryArray(int param_1)
+void __cdecl Mark_FxImpactEntryArray(int count)
 
 {
-  FxImpactEntry *local_c;
-  int local_8;
+  FxImpactEntry *var;
+  int i;
   
-  local_c = varFxImpactEntry;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varFxImpactEntry = local_c;
+  var = varFxImpactEntry;
+  for (i = 0; i < count; i = i + 1) {
+    varFxImpactEntry = var;
     Mark_FxImpactEntry();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -870,10 +902,10 @@ void __cdecl Mark_FxImpactEntryArray(int param_1)
 
 // 0057D160  Load_SndIndexEntryArray  (sound/snd_bank_load_db.h:395)
 
-void __cdecl Load_SndIndexEntryArray(bool param_1,int param_2)
+void __cdecl Load_SndIndexEntryArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varSndIndexEntry,param_2 << 2);
+  Load_Stream(atStreamStart,varSndIndexEntry,count << 2);
   return;
 }
 
@@ -904,6 +936,8 @@ void __cdecl Mark_FxImpactTable(void)
 
 // 00588620  Mark_XGlobalsPtr  (qcommon/xglobals_load_db.h:416)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_XGlobalsPtr(void)
 
 {
@@ -917,17 +951,17 @@ void __cdecl Mark_XGlobalsPtr(void)
 
 // 00588E80  Mark_GfxStaticModelDrawInstArray  (gfx_d3d/r_staticmodel_load_db.h:430)
 
-void __cdecl Mark_GfxStaticModelDrawInstArray(int param_1)
+void __cdecl Mark_GfxStaticModelDrawInstArray(int count)
 
 {
-  GfxStaticModelDrawInst *local_c;
-  int local_8;
+  GfxStaticModelDrawInst *var;
+  int i;
   
-  local_c = varGfxStaticModelDrawInst;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varGfxStaticModelDrawInst = local_c;
+  var = varGfxStaticModelDrawInst;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxStaticModelDrawInst = var;
     Mark_GfxStaticModelDrawInst();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -935,7 +969,7 @@ void __cdecl Mark_GfxStaticModelDrawInstArray(int param_1)
 
 // 0057D180  Load_SndBank  (sound/snd_bank_load_db.h:435)
 
-void __cdecl Load_SndBank(bool param_1)
+void __cdecl Load_SndBank(bool atStreamStart)
 
 {
   snd_alias_list_t *psVar1;
@@ -943,7 +977,7 @@ void __cdecl Load_SndBank(bool param_1)
   snd_radverb *psVar3;
   snd_snapshot *psVar4;
   
-  Load_Stream(param_1,varSndBank,0x28);
+  Load_Stream(atStreamStart,varSndBank,0x28);
   DB_PushStreamPos(4);
   varXString = &varSndBank->name;
   Load_XString(false);
@@ -978,14 +1012,18 @@ void __cdecl Load_SndBank(bool param_1)
 
 // 0057F420  Load_PhysPresetPtr  (physics/physpreset_load_db.h:442)
 
-void __cdecl Load_PhysPresetPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_PhysPresetPtr(bool atStreamStart)
 
 {
   PhysPreset *pPVar1;
   PhysPreset *pPVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varPhysPresetPtr,4);
+  Load_Stream(atStreamStart,varPhysPresetPtr,4);
   DB_PushStreamPos(0);
   if (*varPhysPresetPtr != (PhysPreset *)0x0) {
     pPVar1 = *varPhysPresetPtr;
@@ -1016,6 +1054,8 @@ void __cdecl Load_PhysPresetPtr(bool param_1)
 
 // 00585C00  Mark_FxImpactTablePtr  (cgame/cg_effects_load_db.h:446)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_FxImpactTablePtr(void)
 
 {
@@ -1045,10 +1085,10 @@ void __cdecl Mark_Font(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_GameWorldSp(bool param_1)
+void __cdecl Load_GameWorldSp(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGameWorldSp,0x2c);
+  Load_Stream(atStreamStart,varGameWorldSp,0x2c);
   DB_PushStreamPos(4);
   varXString = &varGameWorldSp->name;
   Load_XString(false);
@@ -1060,6 +1100,8 @@ void __cdecl Load_GameWorldSp(bool param_1)
 
 
 // 0058B7B0  Mark_FontHandle  (gfx_d3d/r_font_load_db.h:504)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_FontHandle(void)
 
@@ -1075,6 +1117,8 @@ void __cdecl Mark_FontHandle(void)
 
 // 00588890  Mark_StringTablePtr  (universal/com_stringtable_load_db.h:521)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_StringTablePtr(void)
 
 {
@@ -1087,6 +1131,8 @@ void __cdecl Mark_StringTablePtr(void)
 
 
 // 005884E0  Mark_RawFilePtr  (qcommon/rawfile_load_db.h:524)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_RawFilePtr(void)
 
@@ -1103,10 +1149,10 @@ void __cdecl Mark_RawFilePtr(void)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_GameWorldMp(bool param_1)
+void __cdecl Load_GameWorldMp(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGameWorldMp,0x2c);
+  Load_Stream(atStreamStart,varGameWorldMp,0x2c);
   DB_PushStreamPos(4);
   varXString = &varGameWorldMp->name;
   Load_XString(false);
@@ -1132,14 +1178,18 @@ void __cdecl Mark_sunflare_t(void)
 
 // 0057D2B0  Load_SndBankPtr  (sound/snd_bank_load_db.h:552)
 
-void __cdecl Load_SndBankPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_SndBankPtr(bool atStreamStart)
 
 {
   SndBank *pSVar1;
   SndBank *pSVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varSndBankPtr,4);
+  Load_Stream(atStreamStart,varSndBankPtr,4);
   DB_PushStreamPos(0);
   if (*varSndBankPtr != (SndBank *)0x0) {
     pSVar1 = *varSndBankPtr;
@@ -1174,6 +1224,7 @@ char * __cdecl AllocLoad_snd_align_char(void)
 
 {
   uchar *puVar1;
+  uint alignment_2;
   
   puVar1 = DB_AllocStreamPos(0x7ff);
   return (char *)puVar1;
@@ -1182,10 +1233,10 @@ char * __cdecl AllocLoad_snd_align_char(void)
 
 // 0057CB50  Load_snd_align_charArray  (sound/snd_asset_load_db.h:583)
 
-void __cdecl Load_snd_align_charArray(bool param_1,int param_2)
+void __cdecl Load_snd_align_charArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_align_char,param_2);
+  Load_Stream(atStreamStart,varsnd_align_char,count);
   return;
 }
 
@@ -1194,14 +1245,16 @@ void __cdecl Load_snd_align_charArray(bool param_1,int param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_GameWorldSpPtr(bool param_1)
+void __cdecl Load_GameWorldSpPtr(bool atStreamStart)
 
 {
   GameWorldSp *pGVar1;
   GameWorldSp *pGVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGameWorldSpPtr,4);
+  Load_Stream(atStreamStart,varGameWorldSpPtr,4);
   DB_PushStreamPos(0);
   if (*varGameWorldSpPtr != (GameWorldSp *)0x0) {
     pGVar1 = *varGameWorldSpPtr;
@@ -1232,10 +1285,10 @@ void __cdecl Load_GameWorldSpPtr(bool param_1)
 
 // 00581BC0  Load_DynEntityDef  (DynEntity/dynentity_load_db.h:610)
 
-void __cdecl Load_DynEntityDef(bool param_1)
+void __cdecl Load_DynEntityDef(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varDynEntityDef,0x54);
+  Load_Stream(atStreamStart,varDynEntityDef,0x54);
   varXModelPtr = &varDynEntityDef->xModel;
   Load_XModelPtr(false);
   varXModelPtr = &varDynEntityDef->destroyedxModel;
@@ -1256,6 +1309,8 @@ void __cdecl Load_DynEntityDef(bool param_1)
 
 // 0057F4F0  Mark_PhysPresetPtr  (physics/physpreset_load_db.h:616)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_PhysPresetPtr(void)
 
 {
@@ -1269,10 +1324,10 @@ void __cdecl Mark_PhysPresetPtr(void)
 
 // 005888C0  Load_ddlMemberDef_t  (ddl/ddl_load_db.h:620)
 
-void __cdecl Load_ddlMemberDef_t(bool param_1)
+void __cdecl Load_ddlMemberDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varddlMemberDef_t,0x30);
+  Load_Stream(atStreamStart,varddlMemberDef_t,0x30);
   varXString = &varddlMemberDef_t->name;
   Load_XString(false);
   return;
@@ -1281,13 +1336,13 @@ void __cdecl Load_ddlMemberDef_t(bool param_1)
 
 // 0057CB70  Load_snd_asset  (sound/snd_asset_load_db.h:623)
 
-void __cdecl Load_snd_asset(bool param_1)
+void __cdecl Load_snd_asset(bool atStreamStart)
 
 {
   uint *puVar1;
   char *pcVar2;
   
-  Load_Stream(param_1,varsnd_asset,0x38);
+  Load_Stream(atStreamStart,varsnd_asset,0x38);
   if (varsnd_asset->seek_table != (uint *)0x0) {
     puVar1 = (uint *)AllocLoad_int();
     varsnd_asset->seek_table = puVar1;
@@ -1310,13 +1365,13 @@ void __cdecl Load_snd_asset(bool param_1)
 
 // 0057D380  Load_SndPatch  (sound/snd_bank_load_db.h:631)
 
-void __cdecl Load_SndPatch(bool param_1)
+void __cdecl Load_SndPatch(bool atStreamStart)
 
 {
   uint *puVar1;
   SoundFile *pSVar2;
   
-  Load_Stream(param_1,varSndPatch,0x14);
+  Load_Stream(atStreamStart,varSndPatch,0x14);
   DB_PushStreamPos(4);
   varXString = &varSndPatch->name;
   Load_XString(false);
@@ -1344,10 +1399,10 @@ void __cdecl Load_SndPatch(bool param_1)
 
 // 0057EF10  Load_GfxLightImage  (gfx_d3d/r_light_load_db.h:635)
 
-void __cdecl Load_GfxLightImage(bool param_1)
+void __cdecl Load_GfxLightImage(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxLightImage,8);
+  Load_Stream(atStreamStart,varGfxLightImage,8);
   varGfxImagePtr = &varGfxLightImage->image;
   Load_GfxImagePtr(false);
   return;
@@ -1356,10 +1411,10 @@ void __cdecl Load_GfxLightImage(bool param_1)
 
 // 00585C30  Load_DestructibleStage  (physics/destructibledef_load_db.h:636)
 
-void __cdecl Load_DestructibleStage(bool param_1)
+void __cdecl Load_DestructibleStage(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varDestructibleStage,0x30);
+  Load_Stream(atStreamStart,varDestructibleStage,0x30);
   varScriptString = &varDestructibleStage->showBone;
   Load_ScriptString(false);
   varFxEffectDefHandle = &varDestructibleStage->breakEffect;
@@ -1380,10 +1435,10 @@ void __cdecl Load_DestructibleStage(bool param_1)
 
 // 0057F140  Load_GfxSurface  (gfx_d3d/r_surface_load_db.h:642)
 
-void __cdecl Load_GfxSurface(bool param_1)
+void __cdecl Load_GfxSurface(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxSurface,0x50);
+  Load_Stream(atStreamStart,varGfxSurface,0x50);
   varMaterialHandle = &varGfxSurface->material;
   Load_MaterialHandle(false);
   return;
@@ -1392,10 +1447,10 @@ void __cdecl Load_GfxSurface(bool param_1)
 
 // 00587D90  Load_EmblemIcon  (bgame/bg_emblems_load_db.h:654)
 
-void __cdecl Load_EmblemIcon(bool param_1)
+void __cdecl Load_EmblemIcon(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varEmblemIcon,0x28);
+  Load_Stream(atStreamStart,varEmblemIcon,0x28);
   varGfxImagePtr = &varEmblemIcon->image;
   Load_GfxImagePtr(false);
   varXString = &varEmblemIcon->description;
@@ -1408,14 +1463,16 @@ void __cdecl Load_EmblemIcon(bool param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_GameWorldMpPtr(bool param_1)
+void __cdecl Load_GameWorldMpPtr(bool atStreamStart)
 
 {
   GameWorldMp *pGVar1;
   GameWorldMp *pGVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGameWorldMpPtr,4);
+  Load_Stream(atStreamStart,varGameWorldMpPtr,4);
   DB_PushStreamPos(0);
   if (*varGameWorldMpPtr != (GameWorldMp *)0x0) {
     pGVar1 = *varGameWorldMpPtr;
@@ -1446,18 +1503,18 @@ void __cdecl Load_GameWorldMpPtr(bool param_1)
 
 // 005888F0  Load_ddlMemberDef_tArray  (ddl/ddl_load_db.h:695)
 
-void __cdecl Load_ddlMemberDef_tArray(bool param_1,int param_2)
+void __cdecl Load_ddlMemberDef_tArray(bool atStreamStart,int count)
 
 {
-  ddlMemberDef_t *local_c;
-  int local_8;
+  ddlMemberDef_t *var;
+  int i;
   
-  Load_Stream(param_1,varddlMemberDef_t,param_2 * 0x30);
-  local_c = varddlMemberDef_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varddlMemberDef_t = local_c;
+  Load_Stream(atStreamStart,varddlMemberDef_t,count * 0x30);
+  var = varddlMemberDef_t;
+  for (i = 0; i < count; i = i + 1) {
+    varddlMemberDef_t = var;
     Load_ddlMemberDef_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1465,18 +1522,18 @@ void __cdecl Load_ddlMemberDef_tArray(bool param_1,int param_2)
 
 // 0057F180  Load_GfxSurfaceArray  (gfx_d3d/r_surface_load_db.h:699)
 
-void __cdecl Load_GfxSurfaceArray(bool param_1,int param_2)
+void __cdecl Load_GfxSurfaceArray(bool atStreamStart,int count)
 
 {
-  GfxSurface *local_c;
-  int local_8;
+  GfxSurface *var;
+  int i;
   
-  Load_Stream(param_1,varGfxSurface,param_2 * 0x50);
-  local_c = varGfxSurface;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxSurface = local_c;
+  Load_Stream(atStreamStart,varGfxSurface,count * 0x50);
+  var = varGfxSurface;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxSurface = var;
     Load_GfxSurface(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1484,18 +1541,18 @@ void __cdecl Load_GfxSurfaceArray(bool param_1,int param_2)
 
 // 00585D00  Load_DestructibleStageArray  (physics/destructibledef_load_db.h:701)
 
-void __cdecl Load_DestructibleStageArray(bool param_1,int param_2)
+void __cdecl Load_DestructibleStageArray(bool atStreamStart,int count)
 
 {
-  DestructibleStage *local_c;
-  int local_8;
+  DestructibleStage *var;
+  int i;
   
-  Load_Stream(param_1,varDestructibleStage,param_2 * 0x30);
-  local_c = varDestructibleStage;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varDestructibleStage = local_c;
+  Load_Stream(atStreamStart,varDestructibleStage,count * 0x30);
+  var = varDestructibleStage;
+  for (i = 0; i < count; i = i + 1) {
+    varDestructibleStage = var;
     Load_DestructibleStage(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1503,24 +1560,24 @@ void __cdecl Load_DestructibleStageArray(bool param_1,int param_2)
 
 // 00583690  Load_operandInternalDataUnion  (universal/com_expressions_load_db.h:702)
 
-void __cdecl Load_operandInternalDataUnion(bool param_1)
+void __cdecl Load_operandInternalDataUnion(bool atStreamStart)
 
 {
   if (varOperand->dataType == VAL_INT) {
-    if (param_1) {
+    if (atStreamStart) {
       varint = &varoperandInternalDataUnion->intVal;
       Load_int(true);
     }
   }
   else if (varOperand->dataType == VAL_FLOAT) {
-    if (param_1) {
+    if (atStreamStart) {
       varfloat = &varoperandInternalDataUnion->floatVal;
       Load_float(true);
     }
   }
   else if (varOperand->dataType == VAL_STRING) {
     varXString = &varoperandInternalDataUnion->string;
-    Load_XString(param_1);
+    Load_XString(atStreamStart);
   }
   return;
 }
@@ -1528,18 +1585,18 @@ void __cdecl Load_operandInternalDataUnion(bool param_1)
 
 // 00581C90  Load_DynEntityDefArray  (DynEntity/dynentity_load_db.h:705)
 
-void __cdecl Load_DynEntityDefArray(bool param_1,int param_2)
+void __cdecl Load_DynEntityDefArray(bool atStreamStart,int count)
 
 {
-  DynEntityDef *local_c;
-  int local_8;
+  DynEntityDef *var;
+  int i;
   
-  Load_Stream(param_1,varDynEntityDef,param_2 * 0x54);
-  local_c = varDynEntityDef;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varDynEntityDef = local_c;
+  Load_Stream(atStreamStart,varDynEntityDef,count * 0x54);
+  var = varDynEntityDef;
+  for (i = 0; i < count; i = i + 1) {
+    varDynEntityDef = var;
     Load_DynEntityDef(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1547,18 +1604,18 @@ void __cdecl Load_DynEntityDefArray(bool param_1,int param_2)
 
 // 00587DE0  Load_EmblemIconArray  (bgame/bg_emblems_load_db.h:719)
 
-void __cdecl Load_EmblemIconArray(bool param_1,int param_2)
+void __cdecl Load_EmblemIconArray(bool atStreamStart,int count)
 
 {
-  EmblemIcon *local_c;
-  int local_8;
+  EmblemIcon *var;
+  int i;
   
-  Load_Stream(param_1,varEmblemIcon,param_2 * 0x28);
-  local_c = varEmblemIcon;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varEmblemIcon = local_c;
+  Load_Stream(atStreamStart,varEmblemIcon,count * 0x28);
+  var = varEmblemIcon;
+  for (i = 0; i < count; i = i + 1) {
+    varEmblemIcon = var;
     Load_EmblemIcon(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1566,10 +1623,10 @@ void __cdecl Load_EmblemIconArray(bool param_1,int param_2)
 
 // 0058B7E0  Load_GlassDef  (glass/glass_load_db.h:723)
 
-void __cdecl Load_GlassDef(bool param_1)
+void __cdecl Load_GlassDef(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGlassDef,0x3c);
+  Load_Stream(atStreamStart,varGlassDef,0x3c);
   varXString = &varGlassDef->name;
   Load_XString(false);
   varMaterialHandle = &varGlassDef->pristineMaterial;
@@ -1594,14 +1651,18 @@ void __cdecl Load_GlassDef(bool param_1)
 
 // 0057D460  Load_SndPatchPtr  (sound/snd_bank_load_db.h:726)
 
-void __cdecl Load_SndPatchPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_SndPatchPtr(bool atStreamStart)
 
 {
   SndPatch *pSVar1;
   SndPatch *pSVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varSndPatchPtr,4);
+  Load_Stream(atStreamStart,varSndPatchPtr,4);
   DB_PushStreamPos(0);
   if (*varSndPatchPtr != (SndPatch *)0x0) {
     pSVar1 = *varSndPatchPtr;
@@ -1632,12 +1693,12 @@ void __cdecl Load_SndPatchPtr(bool param_1)
 
 // 00588960  Load_ddlStructDef_t  (ddl/ddl_load_db.h:735)
 
-void __cdecl Load_ddlStructDef_t(bool param_1)
+void __cdecl Load_ddlStructDef_t(bool atStreamStart)
 
 {
   ddlMemberDef_t *pdVar1;
   
-  Load_Stream(param_1,varddlStructDef_t,0x10);
+  Load_Stream(atStreamStart,varddlStructDef_t,0x10);
   varXString = &varddlStructDef_t->name;
   Load_XString(false);
   if (varddlStructDef_t->members != (ddlMemberDef_t *)0x0) {
@@ -1652,10 +1713,10 @@ void __cdecl Load_ddlStructDef_t(bool param_1)
 
 // 0057F1F0  Load_GfxLightmapArray  (gfx_d3d/r_surface_load_db.h:739)
 
-void __cdecl Load_GfxLightmapArray(bool param_1)
+void __cdecl Load_GfxLightmapArray(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxLightmapArray,0xc);
+  Load_Stream(atStreamStart,varGfxLightmapArray,0xc);
   varGfxImagePtr = &varGfxLightmapArray->primary;
   Load_GfxImagePtr(false);
   varGfxImagePtr = &varGfxLightmapArray->secondary;
@@ -1668,10 +1729,10 @@ void __cdecl Load_GfxLightmapArray(bool param_1)
 
 // 00585D70  Load_DestructiblePiece  (physics/destructibledef_load_db.h:741)
 
-void __cdecl Load_DestructiblePiece(bool param_1)
+void __cdecl Load_DestructiblePiece(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varDestructiblePiece,0x138);
+  Load_Stream(atStreamStart,varDestructiblePiece,0x138);
   varDestructibleStage = varDestructiblePiece->stages;
   Load_DestructibleStageArray(false,5);
   varPhysConstraintsPtr = &varDestructiblePiece->physConstraints;
@@ -1705,10 +1766,10 @@ void __cdecl Mark_PathData(void)
 
 // 0057EF40  Load_GfxLightDef  (gfx_d3d/r_light_load_db.h:755)
 
-void __cdecl Load_GfxLightDef(bool param_1)
+void __cdecl Load_GfxLightDef(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxLightDef,0x10);
+  Load_Stream(atStreamStart,varGfxLightDef,0x10);
   DB_PushStreamPos(4);
   varXString = &varGfxLightDef->name;
   Load_XString(false);
@@ -1721,10 +1782,10 @@ void __cdecl Load_GfxLightDef(bool param_1)
 
 // 00587E50  Load_EmblemBackground  (bgame/bg_emblems_load_db.h:759)
 
-void __cdecl Load_EmblemBackground(bool param_1)
+void __cdecl Load_EmblemBackground(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varEmblemBackground,0x18);
+  Load_Stream(atStreamStart,varEmblemBackground,0x18);
   varMaterialHandle = &varEmblemBackground->material;
   Load_MaterialHandle(false);
   varXString = &varEmblemBackground->description;
@@ -1735,28 +1796,28 @@ void __cdecl Load_EmblemBackground(bool param_1)
 
 // 00581D00  Load_DynEntityPoseArray  (DynEntity/dynentity_load_db.h:760)
 
-void __cdecl Load_DynEntityPoseArray(bool param_1,int param_2)
+void __cdecl Load_DynEntityPoseArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varDynEntityPose,param_2 << 5);
+  Load_Stream(atStreamStart,varDynEntityPose,count << 5);
   return;
 }
 
 
 // 0057F250  Load_GfxLightmapArrayArray  (gfx_d3d/r_surface_load_db.h:769)
 
-void __cdecl Load_GfxLightmapArrayArray(bool param_1,int param_2)
+void __cdecl Load_GfxLightmapArrayArray(bool atStreamStart,int count)
 
 {
-  GfxLightmapArray *local_c;
-  int local_8;
+  GfxLightmapArray *var;
+  int i;
   
-  Load_Stream(param_1,varGfxLightmapArray,param_2 * 0xc);
-  local_c = varGfxLightmapArray;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxLightmapArray = local_c;
+  Load_Stream(atStreamStart,varGfxLightmapArray,count * 0xc);
+  var = varGfxLightmapArray;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxLightmapArray = var;
     Load_GfxLightmapArray(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1764,18 +1825,18 @@ void __cdecl Load_GfxLightmapArrayArray(bool param_1,int param_2)
 
 // 005889D0  Load_ddlStructDef_tArray  (ddl/ddl_load_db.h:772)
 
-void __cdecl Load_ddlStructDef_tArray(bool param_1,int param_2)
+void __cdecl Load_ddlStructDef_tArray(bool atStreamStart,int count)
 
 {
-  ddlStructDef_t *local_c;
-  int local_8;
+  ddlStructDef_t *var;
+  int i;
   
-  Load_Stream(param_1,varddlStructDef_t,param_2 << 4);
-  local_c = varddlStructDef_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varddlStructDef_t = local_c;
+  Load_Stream(atStreamStart,varddlStructDef_t,count << 4);
+  var = varddlStructDef_t;
+  for (i = 0; i < count; i = i + 1) {
+    varddlStructDef_t = var;
     Load_ddlStructDef_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1783,10 +1844,10 @@ void __cdecl Load_ddlStructDef_tArray(bool param_1,int param_2)
 
 // 0057F520  Load_PhysConstraint  (physics/physconstraints_load_db.h:775)
 
-void __cdecl Load_PhysConstraint(bool param_1)
+void __cdecl Load_PhysConstraint(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varPhysConstraint,0xa8);
+  Load_Stream(atStreamStart,varPhysConstraint,0xa8);
   varScriptString = &varPhysConstraint->targetname;
   Load_ScriptString(false);
   varScriptString = &varPhysConstraint->target_ent1;
@@ -1805,18 +1866,18 @@ void __cdecl Load_PhysConstraint(bool param_1)
 
 // 00587EA0  Load_EmblemBackgroundArray  (bgame/bg_emblems_load_db.h:804)
 
-void __cdecl Load_EmblemBackgroundArray(bool param_1,int param_2)
+void __cdecl Load_EmblemBackgroundArray(bool atStreamStart,int count)
 
 {
-  EmblemBackground *local_c;
-  int local_8;
+  EmblemBackground *var;
+  int i;
   
-  Load_Stream(param_1,varEmblemBackground,param_2 * 0x18);
-  local_c = varEmblemBackground;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varEmblemBackground = local_c;
+  Load_Stream(atStreamStart,varEmblemBackground,count * 0x18);
+  var = varEmblemBackground;
+  for (i = 0; i < count; i = i + 1) {
+    varEmblemBackground = var;
     Load_EmblemBackground(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1824,22 +1885,22 @@ void __cdecl Load_EmblemBackgroundArray(bool param_1,int param_2)
 
 // 005806E0  Load_pathlink_tArray  (game/pathnode_load_db.h:811)
 
-void __cdecl Load_pathlink_tArray(bool param_1,int param_2)
+void __cdecl Load_pathlink_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varpathlink_t,param_2 * 0xc);
+  Load_Stream(atStreamStart,varpathlink_t,count * 0xc);
   return;
 }
 
 
 // 00588A40  Load_ddlEnumDef_t  (ddl/ddl_load_db.h:812)
 
-void __cdecl Load_ddlEnumDef_t(bool param_1)
+void __cdecl Load_ddlEnumDef_t(bool atStreamStart)
 
 {
   char **ppcVar1;
   
-  Load_Stream(param_1,varddlEnumDef_t,0xc);
+  Load_Stream(atStreamStart,varddlEnumDef_t,0xc);
   varXString = &varddlEnumDef_t->name;
   Load_XString(false);
   if (varddlEnumDef_t->members != (char **)0x0) {
@@ -1854,24 +1915,28 @@ void __cdecl Load_ddlEnumDef_t(bool param_1)
 
 // 00581D20  Load_DynEntityCollArray  (DynEntity/dynentity_load_db.h:815)
 
-void __cdecl Load_DynEntityCollArray(bool param_1,int param_2)
+void __cdecl Load_DynEntityCollArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varDynEntityColl,param_2 << 5);
+  Load_Stream(atStreamStart,varDynEntityColl,count << 5);
   return;
 }
 
 
 // 0057EFA0  Load_GfxLightDefPtr  (gfx_d3d/r_light_load_db.h:829)
 
-void __cdecl Load_GfxLightDefPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_GfxLightDefPtr(bool atStreamStart)
 
 {
   GfxLightDef *pGVar1;
   GfxLightDef *pGVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGfxLightDefPtr,4);
+  Load_Stream(atStreamStart,varGfxLightDefPtr,4);
   DB_PushStreamPos(0);
   if (*varGfxLightDefPtr != (GfxLightDef *)0x0) {
     pGVar1 = *varGfxLightDefPtr;
@@ -1902,18 +1967,18 @@ void __cdecl Load_GfxLightDefPtr(bool param_1)
 
 // 00585E30  Load_DestructiblePieceArray  (physics/destructibledef_load_db.h:831)
 
-void __cdecl Load_DestructiblePieceArray(bool param_1,int param_2)
+void __cdecl Load_DestructiblePieceArray(bool atStreamStart,int count)
 
 {
-  DestructiblePiece *local_c;
-  int local_8;
+  DestructiblePiece *var;
+  int i;
   
-  Load_Stream(param_1,varDestructiblePiece,param_2 * 0x138);
-  local_c = varDestructiblePiece;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varDestructiblePiece = local_c;
+  Load_Stream(atStreamStart,varDestructiblePiece,count * 0x138);
+  var = varDestructiblePiece;
+  for (i = 0; i < count; i = i + 1) {
+    varDestructiblePiece = var;
     Load_DestructiblePiece(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1934,18 +1999,18 @@ void __cdecl Mark_GameWorldSp(void)
 
 // 00588AB0  Load_ddlEnumDef_tArray  (ddl/ddl_load_db.h:844)
 
-void __cdecl Load_ddlEnumDef_tArray(bool param_1,int param_2)
+void __cdecl Load_ddlEnumDef_tArray(bool atStreamStart,int count)
 
 {
-  ddlEnumDef_t *local_c;
-  int local_8;
+  ddlEnumDef_t *var;
+  int i;
   
-  Load_Stream(param_1,varddlEnumDef_t,param_2 * 0xc);
-  local_c = varddlEnumDef_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varddlEnumDef_t = local_c;
+  Load_Stream(atStreamStart,varddlEnumDef_t,count * 0xc);
+  var = varddlEnumDef_t;
+  for (i = 0; i < count; i = i + 1) {
+    varddlEnumDef_t = var;
     Load_ddlEnumDef_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -1953,10 +2018,10 @@ void __cdecl Load_ddlEnumDef_tArray(bool param_1,int param_2)
 
 // 00583710  Load_Operand  (universal/com_expressions_load_db.h:851)
 
-void __cdecl Load_Operand(bool param_1)
+void __cdecl Load_Operand(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varOperand,8);
+  Load_Stream(atStreamStart,varOperand,8);
   varoperandInternalDataUnion = &varOperand->internals;
   Load_operandInternalDataUnion(false);
   return;
@@ -1968,136 +2033,136 @@ void __cdecl Load_Operand(bool param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_XAssetHeader(bool param_1)
+void __cdecl Load_XAssetHeader(bool atStreamStart)
 
 {
   if (varXAsset->type == ASSET_TYPE_PHYSPRESET) {
     varPhysPresetPtr = &varXAssetHeader->physPreset;
-    Load_PhysPresetPtr(param_1);
+    Load_PhysPresetPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_PHYSCONSTRAINTS) {
     varPhysConstraintsPtr = &varXAssetHeader->physConstraints;
-    Load_PhysConstraintsPtr(param_1);
+    Load_PhysConstraintsPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_DESTRUCTIBLEDEF) {
     varDestructibleDefPtr = &varXAssetHeader->destructibleDef;
-    Load_DestructibleDefPtr(param_1);
+    Load_DestructibleDefPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_XANIMPARTS) {
     varXAnimPartsPtr = &varXAssetHeader->parts;
-    Load_XAnimPartsPtr(param_1);
+    Load_XAnimPartsPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_XMODEL) {
     varXModelPtr = &varXAssetHeader->model;
-    Load_XModelPtr(param_1);
+    Load_XModelPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_MATERIAL) {
     varMaterialHandle = &varXAssetHeader->material;
-    Load_MaterialHandle(param_1);
+    Load_MaterialHandle(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_TECHNIQUE_SET) {
     varMaterialTechniqueSetPtr = &varXAssetHeader->techniqueSet;
-    Load_MaterialTechniqueSetPtr(param_1);
+    Load_MaterialTechniqueSetPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_IMAGE) {
     varGfxImagePtr = &varXAssetHeader->image;
-    Load_GfxImagePtr(param_1);
+    Load_GfxImagePtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_SOUND) {
     varSndBankPtr = &varXAssetHeader->sound;
-    Load_SndBankPtr(param_1);
+    Load_SndBankPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_SOUND_PATCH) {
     varSndPatchPtr = &varXAssetHeader->soundPatch;
-    Load_SndPatchPtr(param_1);
+    Load_SndPatchPtr(atStreamStart);
   }
   else if ((varXAsset->type == ASSET_TYPE_CLIPMAP) || (varXAsset->type == ASSET_TYPE_CLIPMAP_PVS)) {
     varclipMap_ptr = &varXAssetHeader->clipMap;
-    Load_clipMap_ptr(param_1);
+    Load_clipMap_ptr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_COMWORLD) {
     varComWorldPtr = &varXAssetHeader->comWorld;
-    Load_ComWorldPtr(param_1);
+    Load_ComWorldPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_GAMEWORLD_SP) {
     varGameWorldSpPtr = &varXAssetHeader->gameWorldSp;
-    Load_GameWorldSpPtr(param_1);
+    Load_GameWorldSpPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_GAMEWORLD_MP) {
     varGameWorldMpPtr = &varXAssetHeader->gameWorldMp;
-    Load_GameWorldMpPtr(param_1);
+    Load_GameWorldMpPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_MAP_ENTS) {
     varMapEntsPtr = &varXAssetHeader->mapEnts;
-    Load_MapEntsPtr(param_1);
+    Load_MapEntsPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_GFXWORLD) {
     varGfxWorldPtr = &varXAssetHeader->gfxWorld;
-    Load_GfxWorldPtr(param_1);
+    Load_GfxWorldPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_LIGHT_DEF) {
     varGfxLightDefPtr = &varXAssetHeader->lightDef;
-    Load_GfxLightDefPtr(param_1);
+    Load_GfxLightDefPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_FONT) {
     varFontHandle = &varXAssetHeader->font;
-    Load_FontHandle(param_1);
+    Load_FontHandle(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_MENULIST) {
     varMenuListPtr = &varXAssetHeader->menuList;
-    Load_MenuListPtr(param_1);
+    Load_MenuListPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_MENU) {
     varmenuDef_ptr = &varXAssetHeader->menu;
-    Load_menuDef_ptr(param_1);
+    Load_menuDef_ptr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_LOCALIZE_ENTRY) {
     varLocalizeEntryPtr = &varXAssetHeader->localize;
-    Load_LocalizeEntryPtr(param_1);
+    Load_LocalizeEntryPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_WEAPON) {
     varWeaponVariantDefPtr = &varXAssetHeader->weapon;
-    Load_WeaponVariantDefPtr(param_1);
+    Load_WeaponVariantDefPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_SNDDRIVER_GLOBALS) {
     varSndDriverGlobalsPtr = &varXAssetHeader->sndDriverGlobals;
-    Load_SndDriverGlobalsPtr(param_1);
+    Load_SndDriverGlobalsPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_FX) {
     varFxEffectDefHandle = &varXAssetHeader->fx;
-    Load_FxEffectDefHandle(param_1);
+    Load_FxEffectDefHandle(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_IMPACT_FX) {
     varFxImpactTablePtr = &varXAssetHeader->impactFx;
-    Load_FxImpactTablePtr(param_1);
+    Load_FxImpactTablePtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_RAWFILE) {
     varRawFilePtr = &varXAssetHeader->rawfile;
-    Load_RawFilePtr(param_1);
+    Load_RawFilePtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_STRINGTABLE) {
     varStringTablePtr = &varXAssetHeader->stringTable;
-    Load_StringTablePtr(param_1);
+    Load_StringTablePtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_PACK_INDEX) {
     varPackIndexPtr = &varXAssetHeader->packIndex;
-    Load_PackIndexPtr(param_1);
+    Load_PackIndexPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_XGLOBALS) {
     varXGlobalsPtr = &varXAssetHeader->xGlobals;
-    Load_XGlobalsPtr(param_1);
+    Load_XGlobalsPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_DDL) {
     varddlRoot_ptr = &varXAssetHeader->ddlRoot;
-    Load_ddlRoot_ptr(param_1);
+    Load_ddlRoot_ptr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_GLASSES) {
     varGlassesPtr = &varXAssetHeader->glasses;
-    Load_GlassesPtr(param_1);
+    Load_GlassesPtr(atStreamStart);
   }
   else if (varXAsset->type == ASSET_TYPE_EMBLEMSET) {
     varEmblemSetPtr = &varXAssetHeader->emblemSet;
-    Load_EmblemSetPtr(param_1);
+    Load_EmblemSetPtr(atStreamStart);
   }
   return;
 }
@@ -2105,13 +2170,13 @@ void __cdecl Load_XAssetHeader(bool param_1)
 
 // 0058B8E0  Load_Glass  (glass/glass_load_db.h:853)
 
-void __cdecl Load_Glass(bool param_1)
+void __cdecl Load_Glass(bool atStreamStart)
 
 {
   GlassDef *pGVar1;
   float (*pafVar2) [2];
   
-  Load_Stream(param_1,varGlass,0x7c);
+  Load_Stream(atStreamStart,varGlass,0x7c);
   if (varGlass->glassDef != (GlassDef *)0x0) {
     if (varGlass->glassDef == (GlassDef *)0xffffffff) {
       pGVar1 = (GlassDef *)AllocLoad_int();
@@ -2135,22 +2200,22 @@ void __cdecl Load_Glass(bool param_1)
 
 // 00581D40  Load_DynEntityClientArray  (DynEntity/dynentity_load_db.h:870)
 
-void __cdecl Load_DynEntityClientArray(bool param_1,int param_2)
+void __cdecl Load_DynEntityClientArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varDynEntityClient,param_2 * 0x14);
+  Load_Stream(atStreamStart,varDynEntityClient,count * 0x14);
   return;
 }
 
 
 // 00585EA0  Load_DestructibleDef  (physics/destructibledef_load_db.h:871)
 
-void __cdecl Load_DestructibleDef(bool param_1)
+void __cdecl Load_DestructibleDef(bool atStreamStart)
 
 {
   DestructiblePiece *pDVar1;
   
-  Load_Stream(param_1,varDestructibleDef,0x18);
+  Load_Stream(atStreamStart,varDestructibleDef,0x18);
   DB_PushStreamPos(4);
   varXString = &varDestructibleDef->name;
   Load_XString(false);
@@ -2171,10 +2236,10 @@ void __cdecl Load_DestructibleDef(bool param_1)
 
 // 00587F10  Load_EmblemLayerArray  (bgame/bg_emblems_load_db.h:874)
 
-void __cdecl Load_EmblemLayerArray(bool param_1,int param_2)
+void __cdecl Load_EmblemLayerArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varEmblemLayer,param_2 * 0xc);
+  Load_Stream(atStreamStart,varEmblemLayer,count * 0xc);
   return;
 }
 
@@ -2205,14 +2270,14 @@ void __cdecl Mark_GfxSurface(void)
 
 // 00588B20  Load_ddlDef_t  (ddl/ddl_load_db.h:884)
 
-void __cdecl Load_ddlDef_t(bool param_1)
+void __cdecl Load_ddlDef_t(bool atStreamStart)
 
 {
   ddlStructDef_t *pdVar1;
   ddlEnumDef_t *pdVar2;
   ddlDef_t *pdVar3;
   
-  Load_Stream(param_1,varddlDef_t,0x1c);
+  Load_Stream(atStreamStart,varddlDef_t,0x1c);
   if (varddlDef_t->structList != (ddlStructDef_t *)0x0) {
     pdVar1 = (ddlStructDef_t *)AllocLoad_int();
     varddlDef_t->structList = pdVar1;
@@ -2239,12 +2304,12 @@ void __cdecl Load_ddlDef_t(bool param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_pathnode_constant_t(bool param_1)
+void __cdecl Load_pathnode_constant_t(bool atStreamStart)
 
 {
   pathlink_s *ppVar1;
   
-  Load_Stream(param_1,varpathnode_constant_t,0x44);
+  Load_Stream(atStreamStart,varpathnode_constant_t,0x44);
   varScriptString = &varpathnode_constant_t->targetname;
   Load_ScriptString(false);
   varScriptString = &varpathnode_constant_t->script_linkName;
@@ -2267,10 +2332,10 @@ void __cdecl Load_pathnode_constant_t(bool param_1)
 
 // 0057F070  Load_GfxLight  (gfx_d3d/r_light_load_db.h:908)
 
-void __cdecl Load_GfxLight(bool param_1)
+void __cdecl Load_GfxLight(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxLight,0x170);
+  Load_Stream(atStreamStart,varGfxLight,0x170);
   varGfxLightDefPtr = &varGfxLight->def;
   Load_GfxLightDefPtr(false);
   return;
@@ -2295,10 +2360,10 @@ void __cdecl Mark_GameWorldSpPtr(void)
 
 // 00587F30  Load_EmblemCategory  (bgame/bg_emblems_load_db.h:914)
 
-void __cdecl Load_EmblemCategory(bool param_1)
+void __cdecl Load_EmblemCategory(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varEmblemCategory,8);
+  Load_Stream(atStreamStart,varEmblemCategory,8);
   varXString = &varEmblemCategory->name;
   Load_XString(false);
   varXString = &varEmblemCategory->description;
@@ -2309,14 +2374,14 @@ void __cdecl Load_EmblemCategory(bool param_1)
 
 // 00583750  Load_expressionRpnDataUnion  (universal/com_expressions_load_db.h:916)
 
-void __cdecl Load_expressionRpnDataUnion(bool param_1)
+void __cdecl Load_expressionRpnDataUnion(bool atStreamStart)
 
 {
   if (varexpressionRpn->type == 0) {
     varOperand = &varexpressionRpnDataUnion->constant;
-    Load_Operand(param_1);
+    Load_Operand(atStreamStart);
   }
-  else if ((varexpressionRpn->type == 1) && (param_1)) {
+  else if ((varexpressionRpn->type == 1) && (atStreamStart)) {
     varint = &varexpressionRpnDataUnion->cmdIdx;
     Load_int(true);
   }
@@ -2325,6 +2390,8 @@ void __cdecl Load_expressionRpnDataUnion(bool param_1)
 
 
 // 0057D530  Mark_SndBankPtr  (sound/snd_bank_load_db.h:921)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_SndBankPtr(void)
 
@@ -2339,27 +2406,27 @@ void __cdecl Mark_SndBankPtr(void)
 
 // 00581D60  Load_DynEntityServerArray  (DynEntity/dynentity_load_db.h:925)
 
-void __cdecl Load_DynEntityServerArray(bool param_1,int param_2)
+void __cdecl Load_DynEntityServerArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varDynEntityServer,param_2 << 3);
+  Load_Stream(atStreamStart,varDynEntityServer,count << 3);
   return;
 }
 
 
 // 0057F2E0  Mark_GfxSurfaceArray  (gfx_d3d/r_surface_load_db.h:927)
 
-void __cdecl Mark_GfxSurfaceArray(int param_1)
+void __cdecl Mark_GfxSurfaceArray(int count)
 
 {
-  GfxSurface *local_c;
-  int local_8;
+  GfxSurface *var;
+  int i;
   
-  local_c = varGfxSurface;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varGfxSurface = local_c;
+  var = varGfxSurface;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxSurface = var;
     Mark_GfxSurface();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2367,18 +2434,18 @@ void __cdecl Mark_GfxSurfaceArray(int param_1)
 
 // 0057F5D0  Load_PhysConstraintArray  (physics/physconstraints_load_db.h:935)
 
-void __cdecl Load_PhysConstraintArray(bool param_1,int param_2)
+void __cdecl Load_PhysConstraintArray(bool atStreamStart,int count)
 
 {
-  PhysConstraint *local_c;
-  int local_8;
+  PhysConstraint *var;
+  int i;
   
-  Load_Stream(param_1,varPhysConstraint,param_2 * 0xa8);
-  local_c = varPhysConstraint;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varPhysConstraint = local_c;
+  Load_Stream(atStreamStart,varPhysConstraint,count * 0xa8);
+  var = varPhysConstraint;
+  for (i = 0; i < count; i = i + 1) {
+    varPhysConstraint = var;
     Load_PhysConstraint(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2386,18 +2453,18 @@ void __cdecl Load_PhysConstraintArray(bool param_1,int param_2)
 
 // 00587F80  Load_EmblemCategoryArray  (bgame/bg_emblems_load_db.h:939)
 
-void __cdecl Load_EmblemCategoryArray(bool param_1,int param_2)
+void __cdecl Load_EmblemCategoryArray(bool atStreamStart,int count)
 
 {
-  EmblemCategory *local_c;
-  int local_8;
+  EmblemCategory *var;
+  int i;
   
-  Load_Stream(param_1,varEmblemCategory,param_2 << 3);
-  local_c = varEmblemCategory;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varEmblemCategory = local_c;
+  Load_Stream(atStreamStart,varEmblemCategory,count << 3);
+  var = varEmblemCategory;
+  for (i = 0; i < count; i = i + 1) {
+    varEmblemCategory = var;
     Load_EmblemCategory(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2436,18 +2503,18 @@ void __cdecl Mark_GfxLightmapArray(void)
 
 // 0058B990  Load_GlassArray  (glass/glass_load_db.h:949)
 
-void __cdecl Load_GlassArray(bool param_1,int param_2)
+void __cdecl Load_GlassArray(bool atStreamStart,int count)
 
 {
-  Glass *local_c;
-  int local_8;
+  Glass *var;
+  int i;
   
-  Load_Stream(param_1,varGlass,param_2 * 0x7c);
-  local_c = varGlass;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGlass = local_c;
+  Load_Stream(atStreamStart,varGlass,count * 0x7c);
+  var = varGlass;
+  for (i = 0; i < count; i = i + 1) {
+    varGlass = var;
     Load_Glass(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2455,17 +2522,17 @@ void __cdecl Load_GlassArray(bool param_1,int param_2)
 
 // 0057F370  Mark_GfxLightmapArrayArray  (gfx_d3d/r_surface_load_db.h:966)
 
-void __cdecl Mark_GfxLightmapArrayArray(int param_1)
+void __cdecl Mark_GfxLightmapArrayArray(int count)
 
 {
-  GfxLightmapArray *local_c;
-  int local_8;
+  GfxLightmapArray *var;
+  int i;
   
-  local_c = varGfxLightmapArray;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varGfxLightmapArray = local_c;
+  var = varGfxLightmapArray;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxLightmapArray = var;
     Mark_GfxLightmapArray();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2473,10 +2540,10 @@ void __cdecl Mark_GfxLightmapArrayArray(int param_1)
 
 // 0057F640  Load_PhysConstraints  (physics/physconstraints_load_db.h:975)
 
-void __cdecl Load_PhysConstraints(bool param_1)
+void __cdecl Load_PhysConstraints(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varPhysConstraints,0xa88);
+  Load_Stream(atStreamStart,varPhysConstraints,0xa88);
   DB_PushStreamPos(4);
   varXString = &varPhysConstraints->name;
   Load_XString(false);
@@ -2489,7 +2556,7 @@ void __cdecl Load_PhysConstraints(bool param_1)
 
 // 00587FF0  Load_EmblemSet  (bgame/bg_emblems_load_db.h:979)
 
-void __cdecl Load_EmblemSet(bool param_1)
+void __cdecl Load_EmblemSet(bool atStreamStart)
 
 {
   EmblemLayer *pEVar1;
@@ -2498,7 +2565,7 @@ void __cdecl Load_EmblemSet(bool param_1)
   EmblemBackground *pEVar4;
   short *psVar5;
   
-  Load_Stream(param_1,varEmblemSet,0x2c);
+  Load_Stream(atStreamStart,varEmblemSet,0x2c);
   DB_PushStreamPos(4);
   if (varEmblemSet->layers != (EmblemLayer *)0x0) {
     pEVar1 = (EmblemLayer *)AllocLoad_int();
@@ -2537,10 +2604,10 @@ void __cdecl Load_EmblemSet(bool param_1)
 
 // 00588BF0  Load_ddlDefNext  (ddl/ddl_load_db.h:980)
 
-void __cdecl Load_ddlDefNext(bool param_1)
+void __cdecl Load_ddlDefNext(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varddlDefNext,0x1c);
+  Load_Stream(atStreamStart,varddlDefNext,0x1c);
   varddlDef_t = varddlDefNext;
   Load_ddlDef_t(false);
   return;
@@ -2549,12 +2616,12 @@ void __cdecl Load_ddlDefNext(bool param_1)
 
 // 0058BA00  Load_Glasses  (glass/glass_load_db.h:989)
 
-void __cdecl Load_Glasses(bool param_1)
+void __cdecl Load_Glasses(bool atStreamStart)
 
 {
   Glass *pGVar1;
   
-  Load_Stream(param_1,varGlasses,0x38);
+  Load_Stream(atStreamStart,varGlasses,0x38);
   DB_PushStreamPos(4);
   varXString = &varGlasses->name;
   Load_XString(false);
@@ -2571,10 +2638,10 @@ void __cdecl Load_Glasses(bool param_1)
 
 // 005837B0  Load_expressionRpn  (universal/com_expressions_load_db.h:993)
 
-void __cdecl Load_expressionRpn(bool param_1)
+void __cdecl Load_expressionRpn(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varexpressionRpn,0xc);
+  Load_Stream(atStreamStart,varexpressionRpn,0xc);
   varexpressionRpnDataUnion = &varexpressionRpn->data;
   Load_expressionRpnDataUnion(false);
   return;
@@ -2582,6 +2649,8 @@ void __cdecl Load_expressionRpn(bool param_1)
 
 
 // 0057D560  Mark_SndPatchPtr  (sound/snd_bank_load_db.h:1009)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_SndPatchPtr(void)
 
@@ -2619,18 +2688,18 @@ void __cdecl Mark_DynEntityDef(void)
 
 // 005837F0  Load_expressionRpnArray  (universal/com_expressions_load_db.h:1018)
 
-void __cdecl Load_expressionRpnArray(bool param_1,int param_2)
+void __cdecl Load_expressionRpnArray(bool atStreamStart,int count)
 
 {
-  expressionRpn *local_c;
-  int local_8;
+  expressionRpn *var;
+  int i;
   
-  Load_Stream(param_1,varexpressionRpn,param_2 * 0xc);
-  local_c = varexpressionRpn;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varexpressionRpn = local_c;
+  Load_Stream(atStreamStart,varexpressionRpn,count * 0xc);
+  var = varexpressionRpn;
+  for (i = 0; i < count; i = i + 1) {
+    varexpressionRpn = var;
     Load_expressionRpn(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2638,14 +2707,18 @@ void __cdecl Load_expressionRpnArray(bool param_1,int param_2)
 
 // 00585F50  Load_DestructibleDefPtr  (physics/destructibledef_load_db.h:1033)
 
-void __cdecl Load_DestructibleDefPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_DestructibleDefPtr(bool atStreamStart)
 
 {
   DestructibleDef *pDVar1;
   DestructibleDef *pDVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varDestructibleDefPtr,4);
+  Load_Stream(atStreamStart,varDestructibleDefPtr,4);
   DB_PushStreamPos(0);
   if (*varDestructibleDefPtr != (DestructibleDef *)0x0) {
     pDVar1 = *varDestructibleDefPtr;
@@ -2676,12 +2749,12 @@ void __cdecl Load_DestructibleDefPtr(bool param_1)
 
 // 00588C20  Load_ddlRoot_t  (ddl/ddl_load_db.h:1040)
 
-void __cdecl Load_ddlRoot_t(bool param_1)
+void __cdecl Load_ddlRoot_t(bool atStreamStart)
 
 {
   ddlDef_t *pdVar1;
   
-  Load_Stream(param_1,varddlRoot_t,8);
+  Load_Stream(atStreamStart,varddlRoot_t,8);
   DB_PushStreamPos(4);
   varXString = &varddlRoot_t->name;
   Load_XString(false);
@@ -2698,14 +2771,18 @@ void __cdecl Load_ddlRoot_t(bool param_1)
 
 // 0057F6A0  Load_PhysConstraintsPtr  (physics/physconstraints_load_db.h:1049)
 
-void __cdecl Load_PhysConstraintsPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_PhysConstraintsPtr(bool atStreamStart)
 
 {
   PhysConstraints *pPVar1;
   PhysConstraints *pPVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varPhysConstraintsPtr,4);
+  Load_Stream(atStreamStart,varPhysConstraintsPtr,4);
   DB_PushStreamPos(0);
   if (*varPhysConstraintsPtr != (PhysConstraints *)0x0) {
     pPVar1 = *varPhysConstraintsPtr;
@@ -2738,10 +2815,10 @@ void __cdecl Load_PhysConstraintsPtr(bool param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_pathnode_t(bool param_1)
+void __cdecl Load_pathnode_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varpathnode_t,0x80);
+  Load_Stream(atStreamStart,varpathnode_t,0x80);
   varpathnode_constant_t = &varpathnode_t->constant;
   Load_pathnode_constant_t(false);
   return;
@@ -2750,10 +2827,10 @@ void __cdecl Load_pathnode_t(bool param_1)
 
 // 005832F0  Load_ComPrimaryLight  (qcommon/com_bsp_load_db.h:1057)
 
-void __cdecl Load_ComPrimaryLight(bool param_1)
+void __cdecl Load_ComPrimaryLight(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varComPrimaryLight,0xdc);
+  Load_Stream(atStreamStart,varComPrimaryLight,0xdc);
   varXString = &varComPrimaryLight->defName;
   Load_XString(false);
   return;
@@ -2764,18 +2841,18 @@ void __cdecl Load_ComPrimaryLight(bool param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_pathnode_tArray(bool param_1,int param_2)
+void __cdecl Load_pathnode_tArray(bool atStreamStart,int count)
 
 {
-  pathnode_t *local_c;
-  int local_8;
+  pathnode_t *var;
+  int i;
   
-  Load_Stream(param_1,varpathnode_t,param_2 << 7);
-  local_c = varpathnode_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varpathnode_t = local_c;
+  Load_Stream(atStreamStart,varpathnode_t,count << 7);
+  var = varpathnode_t;
+  for (i = 0; i < count; i = i + 1) {
+    varpathnode_t = var;
     Load_pathnode_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2794,17 +2871,17 @@ void __cdecl Mark_GfxLightImage(void)
 
 // 00581E10  Mark_DynEntityDefArray  (DynEntity/dynentity_load_db.h:1095)
 
-void __cdecl Mark_DynEntityDefArray(int param_1)
+void __cdecl Mark_DynEntityDefArray(int count)
 
 {
-  DynEntityDef *local_c;
-  int local_8;
+  DynEntityDef *var;
+  int i;
   
-  local_c = varDynEntityDef;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varDynEntityDef = local_c;
+  var = varDynEntityDef;
+  for (i = 0; i < count; i = i + 1) {
+    varDynEntityDef = var;
     Mark_DynEntityDef();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2812,14 +2889,18 @@ void __cdecl Mark_DynEntityDefArray(int param_1)
 
 // 00588150  Load_EmblemSetPtr  (bgame/bg_emblems_load_db.h:1103)
 
-void __cdecl Load_EmblemSetPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_EmblemSetPtr(bool atStreamStart)
 
 {
   EmblemSet *pEVar1;
   EmblemSet *pEVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varEmblemSetPtr,4);
+  Load_Stream(atStreamStart,varEmblemSetPtr,4);
   DB_PushStreamPos(0);
   if (*varEmblemSetPtr != (EmblemSet *)0x0) {
     pEVar1 = *varEmblemSetPtr;
@@ -2867,14 +2948,18 @@ void __cdecl Mark_DestructibleStage(void)
 
 // 00588C90  Load_ddlRoot_ptr  (ddl/ddl_load_db.h:1111)
 
-void __cdecl Load_ddlRoot_ptr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_ddlRoot_ptr(bool atStreamStart)
 
 {
   ddlRoot_t *pdVar1;
   ddlRoot_t *pdVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varddlRoot_ptr,4);
+  Load_Stream(atStreamStart,varddlRoot_ptr,4);
   DB_PushStreamPos(0);
   if (*varddlRoot_ptr != (ddlRoot_t *)0x0) {
     pdVar1 = *varddlRoot_ptr;
@@ -2905,14 +2990,18 @@ void __cdecl Load_ddlRoot_ptr(bool param_1)
 
 // 0058BA80  Load_GlassesPtr  (glass/glass_load_db.h:1126)
 
-void __cdecl Load_GlassesPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_GlassesPtr(bool atStreamStart)
 
 {
   Glasses *pGVar1;
   Glasses *pGVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGlassesPtr,4);
+  Load_Stream(atStreamStart,varGlassesPtr,4);
   DB_PushStreamPos(0);
   if (*varGlassesPtr != (Glasses *)0x0) {
     pGVar1 = *varGlassesPtr;
@@ -2943,10 +3032,10 @@ void __cdecl Load_GlassesPtr(bool param_1)
 
 // 00580880  Load_pathbasenode_tArray  (game/pathnode_load_db.h:1128)
 
-void __cdecl Load_pathbasenode_tArray(bool param_1,int param_2)
+void __cdecl Load_pathbasenode_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varpathbasenode_t,param_2 << 4);
+  Load_Stream(atStreamStart,varpathbasenode_t,count << 4);
   return;
 }
 
@@ -2964,17 +3053,17 @@ void __cdecl Mark_GfxLightDef(void)
 
 // 00586080  Mark_DestructibleStageArray  (physics/destructibledef_load_db.h:1162)
 
-void __cdecl Mark_DestructibleStageArray(int param_1)
+void __cdecl Mark_DestructibleStageArray(int count)
 
 {
-  DestructibleStage *local_c;
-  int local_8;
+  DestructibleStage *var;
+  int i;
   
-  local_c = varDestructibleStage;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varDestructibleStage = local_c;
+  var = varDestructibleStage;
+  for (i = 0; i < count; i = i + 1) {
+    varDestructibleStage = var;
     Mark_DestructibleStage();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -2982,12 +3071,12 @@ void __cdecl Mark_DestructibleStageArray(int param_1)
 
 // 005808A0  Load_pathnode_tree_nodes_t  (game/pathnode_load_db.h:1168)
 
-void __cdecl Load_pathnode_tree_nodes_t(bool param_1)
+void __cdecl Load_pathnode_tree_nodes_t(bool atStreamStart)
 
 {
   ushort *puVar1;
   
-  Load_Stream(param_1,varpathnode_tree_nodes_t,8);
+  Load_Stream(atStreamStart,varpathnode_tree_nodes_t,8);
   if (varpathnode_tree_nodes_t->nodes != (ushort *)0x0) {
     puVar1 = (ushort *)AllocLoad_short();
     varpathnode_tree_nodes_t->nodes = puVar1;
@@ -3028,6 +3117,8 @@ void __cdecl Mark_EmblemIcon(void)
 
 // 0057F0F0  Mark_GfxLightDefPtr  (gfx_d3d/r_light_load_db.h:1182)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_GfxLightDefPtr(void)
 
 {
@@ -3059,18 +3150,18 @@ void __cdecl Mark_DestructiblePiece(void)
 
 // 00583330  Load_ComPrimaryLightArray  (qcommon/com_bsp_load_db.h:1197)
 
-void __cdecl Load_ComPrimaryLightArray(bool param_1,int param_2)
+void __cdecl Load_ComPrimaryLightArray(bool atStreamStart,int count)
 
 {
-  ComPrimaryLight *local_c;
-  int local_8;
+  ComPrimaryLight *var;
+  int i;
   
-  Load_Stream(param_1,varComPrimaryLight,param_2 * 0xdc);
-  local_c = varComPrimaryLight;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varComPrimaryLight = local_c;
+  Load_Stream(atStreamStart,varComPrimaryLight,count * 0xdc);
+  var = varComPrimaryLight;
+  for (i = 0; i < count; i = i + 1) {
+    varComPrimaryLight = var;
     Load_ComPrimaryLight(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3108,7 +3199,7 @@ void __cdecl Mark_GfxLight(void)
 
 // 0057B880  Load_XAnimIndices  (xanim/xanim_load_db.h:1230)
 
-void __cdecl Load_XAnimIndices(bool param_1)
+void __cdecl Load_XAnimIndices(bool atStreamStart)
 
 {
   uchar *puVar1;
@@ -3134,17 +3225,17 @@ void __cdecl Load_XAnimIndices(bool param_1)
 
 // 00588240  Mark_EmblemIconArray  (bgame/bg_emblems_load_db.h:1232)
 
-void __cdecl Mark_EmblemIconArray(int param_1)
+void __cdecl Mark_EmblemIconArray(int count)
 
 {
-  EmblemIcon *local_c;
-  int local_8;
+  EmblemIcon *var;
+  int i;
   
-  local_c = varEmblemIcon;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varEmblemIcon = local_c;
+  var = varEmblemIcon;
+  for (i = 0; i < count; i = i + 1) {
+    varEmblemIcon = var;
     Mark_EmblemIcon();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3152,12 +3243,12 @@ void __cdecl Mark_EmblemIconArray(int param_1)
 
 // 00580900  Load_pathnode_tree_ptr  (game/pathnode_load_db.h:1235)
 
-void __cdecl Load_pathnode_tree_ptr(bool param_1)
+void __cdecl Load_pathnode_tree_ptr(bool atStreamStart)
 
 {
   pathnode_tree_t *ppVar1;
   
-  Load_Stream(param_1,varpathnode_tree_ptr,4);
+  Load_Stream(atStreamStart,varpathnode_tree_ptr,4);
   if (*varpathnode_tree_ptr != (pathnode_tree_t *)0x0) {
     if (*varpathnode_tree_ptr == (pathnode_tree_t *)0xffffffff) {
       ppVar1 = (pathnode_tree_t *)AllocLoad_int();
@@ -3186,17 +3277,17 @@ void __cdecl Mark_EmblemBackground(void)
 
 // 00586130  Mark_DestructiblePieceArray  (physics/destructibledef_load_db.h:1261)
 
-void __cdecl Mark_DestructiblePieceArray(int param_1)
+void __cdecl Mark_DestructiblePieceArray(int count)
 
 {
-  DestructiblePiece *local_c;
-  int local_8;
+  DestructiblePiece *var;
+  int i;
   
-  local_c = varDestructiblePiece;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varDestructiblePiece = local_c;
+  var = varDestructiblePiece;
+  for (i = 0; i < count; i = i + 1) {
+    varDestructiblePiece = var;
     Mark_DestructiblePiece();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3204,18 +3295,18 @@ void __cdecl Mark_DestructiblePieceArray(int param_1)
 
 // 00580970  Load_pathnode_tree_ptrArray  (game/pathnode_load_db.h:1264)
 
-void __cdecl Load_pathnode_tree_ptrArray(bool param_1,int param_2)
+void __cdecl Load_pathnode_tree_ptrArray(bool atStreamStart,int count)
 
 {
-  pathnode_tree_t **local_c;
-  int local_8;
+  pathnode_tree_t **var;
+  int i;
   
-  Load_Stream(param_1,varpathnode_tree_ptr,param_2 << 2);
-  local_c = varpathnode_tree_ptr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varpathnode_tree_ptr = local_c;
+  Load_Stream(atStreamStart,varpathnode_tree_ptr,count << 2);
+  var = varpathnode_tree_ptr;
+  for (i = 0; i < count; i = i + 1) {
+    varpathnode_tree_ptr = var;
     Load_pathnode_tree_ptr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3223,20 +3314,20 @@ void __cdecl Load_pathnode_tree_ptrArray(bool param_1,int param_2)
 
 // 005833A0  Load_ComWaterCellArray  (qcommon/com_bsp_load_db.h:1272)
 
-void __cdecl Load_ComWaterCellArray(bool param_1,int param_2)
+void __cdecl Load_ComWaterCellArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varComWaterCell,param_2 << 3);
+  Load_Stream(atStreamStart,varComWaterCell,count << 3);
   return;
 }
 
 
 // 0057CC20  Load_LoadedSound  (sound/snd_alias_load_db.h:1275)
 
-void __cdecl Load_LoadedSound(bool param_1)
+void __cdecl Load_LoadedSound(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varLoadedSound,0x3c);
+  Load_Stream(atStreamStart,varLoadedSound,0x3c);
   varXString = &varLoadedSound->name;
   Load_XString(false);
   varsnd_asset = &varLoadedSound->sound;
@@ -3264,17 +3355,17 @@ void __cdecl Mark_DestructibleDef(void)
 
 // 005882B0  Mark_EmblemBackgroundArray  (bgame/bg_emblems_load_db.h:1286)
 
-void __cdecl Mark_EmblemBackgroundArray(int param_1)
+void __cdecl Mark_EmblemBackgroundArray(int count)
 
 {
-  EmblemBackground *local_c;
-  int local_8;
+  EmblemBackground *var;
+  int i;
   
-  local_c = varEmblemBackground;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varEmblemBackground = local_c;
+  var = varEmblemBackground;
+  for (i = 0; i < count; i = i + 1) {
+    varEmblemBackground = var;
     Mark_EmblemBackground();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3295,7 +3386,7 @@ void __cdecl Mark_Glass(void)
 
 // 0057B910  Load_XAnimDynamicIndicesDeltaQuat  (xanim/xanim_load_db.h:1301)
 
-void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool param_1)
+void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool atStreamStart)
 
 {
   code *pcVar1;
@@ -3303,7 +3394,7 @@ void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool param_1)
   XAnimDynamicIndices *pXVar3;
   
   if (varXAnimParts->numframes < 0x100) {
-    if (!param_1) {
+    if (!atStreamStart) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                                ,0x518,0,"%s");
       if (!bVar2) {
@@ -3327,7 +3418,7 @@ void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool param_1)
     Load_byteArray(true,varXAnimDeltaPartQuat->size + 1);
   }
   else {
-    if (!param_1) {
+    if (!atStreamStart) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                                ,0x520,0,"%s");
       if (!bVar2) {
@@ -3356,16 +3447,16 @@ void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool param_1)
 
 // 005809E0  Load_pathnode_tree_info_t  (game/pathnode_load_db.h:1304)
 
-void __cdecl Load_pathnode_tree_info_t(bool param_1)
+void __cdecl Load_pathnode_tree_info_t(bool atStreamStart)
 
 {
   if (varpathnode_tree_t->axis < 0) {
     varpathnode_tree_nodes_t = &varpathnode_tree_info_t->s;
-    Load_pathnode_tree_nodes_t(param_1);
+    Load_pathnode_tree_nodes_t(atStreamStart);
   }
   else {
     varpathnode_tree_ptr = varpathnode_tree_info_t->child;
-    Load_pathnode_tree_ptrArray(param_1,2);
+    Load_pathnode_tree_ptrArray(atStreamStart,2);
   }
   return;
 }
@@ -3373,17 +3464,17 @@ void __cdecl Load_pathnode_tree_info_t(bool param_1)
 
 // 0057F7C0  Mark_PhysConstraintArray  (physics/physconstraints_load_db.h:1323)
 
-void __cdecl Mark_PhysConstraintArray(int param_1)
+void __cdecl Mark_PhysConstraintArray(int count)
 
 {
-  PhysConstraint *local_c;
-  int local_8;
+  PhysConstraint *var;
+  int i;
   
-  local_c = varPhysConstraint;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varPhysConstraint = local_c;
+  var = varPhysConstraint;
+  for (i = 0; i < count; i = i + 1) {
+    varPhysConstraint = var;
     Mark_PhysConstraint();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3391,10 +3482,10 @@ void __cdecl Mark_PhysConstraintArray(int param_1)
 
 // 005833C0  Load_ComBurnableSampleArray  (qcommon/com_bsp_load_db.h:1332)
 
-void __cdecl Load_ComBurnableSampleArray(bool param_1,int param_2)
+void __cdecl Load_ComBurnableSampleArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varComBurnableSample,param_2);
+  Load_Stream(atStreamStart,varComBurnableSample,count);
   return;
 }
 
@@ -3412,17 +3503,17 @@ void __cdecl Mark_PhysConstraints(void)
 
 // 0057CC70  Load_char_align_2048Array  (sound/snd_alias_load_db.h:1360)
 
-void __cdecl Load_char_align_2048Array(bool param_1,int param_2)
+void __cdecl Load_char_align_2048Array(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varchar_align_2048,param_2);
+  Load_Stream(atStreamStart,varchar_align_2048,count);
   return;
 }
 
 
 // 0057BA60  Load_XAnimDeltaPartQuatDataFrames  (xanim/xanim_load_db.h:1370)
 
-void __cdecl Load_XAnimDeltaPartQuatDataFrames(bool param_1)
+void __cdecl Load_XAnimDeltaPartQuatDataFrames(bool atStreamStart)
 
 {
   code *pcVar1;
@@ -3431,7 +3522,7 @@ void __cdecl Load_XAnimDeltaPartQuatDataFrames(bool param_1)
   short (*pasVar4) [2];
   int local_8;
   
-  if (!param_1) {
+  if (!atStreamStart) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                              ,0x55b,0,"%s");
     if (!bVar2) {
@@ -3471,6 +3562,8 @@ void __cdecl Load_XAnimDeltaPartQuatDataFrames(bool param_1)
 
 // 005861E0  Mark_DestructibleDefPtr  (physics/destructibledef_load_db.h:1370)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_DestructibleDefPtr(void)
 
 {
@@ -3485,12 +3578,12 @@ void __cdecl Mark_DestructibleDefPtr(void)
 
 // 005833E0  Load_ComBurnableCell  (qcommon/com_bsp_load_db.h:1372)
 
-void __cdecl Load_ComBurnableCell(bool param_1)
+void __cdecl Load_ComBurnableCell(bool atStreamStart)
 
 {
   ComBurnableSample *pCVar1;
   
-  Load_Stream(param_1,varComBurnableCell,0xc);
+  Load_Stream(atStreamStart,varComBurnableCell,0xc);
   if (varComBurnableCell->data != (ComBurnableSample *)0x0) {
     pCVar1 = (ComBurnableSample *)AllocLoad_byte();
     varComBurnableCell->data = pCVar1;
@@ -3503,10 +3596,10 @@ void __cdecl Load_ComBurnableCell(bool param_1)
 
 // 00580A30  Load_pathnode_tree_t  (game/pathnode_load_db.h:1377)
 
-void __cdecl Load_pathnode_tree_t(bool param_1)
+void __cdecl Load_pathnode_tree_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varpathnode_tree_t,0x10);
+  Load_Stream(atStreamStart,varpathnode_tree_t,0x10);
   varpathnode_tree_info_t = &varpathnode_tree_t->u;
   Load_pathnode_tree_info_t(false);
   return;
@@ -3532,23 +3625,25 @@ void __cdecl Mark_EmblemSet(void)
 
 // 0058BBF0  Mark_GlassArray  (glass/glass_load_db.h:1380)
 
-void __cdecl Mark_GlassArray(int param_1)
+void __cdecl Mark_GlassArray(int count)
 
 {
-  Glass *local_c;
-  int local_8;
+  Glass *var;
+  int i;
   
-  local_c = varGlass;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varGlass = local_c;
+  var = varGlass;
+  for (i = 0; i < count; i = i + 1) {
+    varGlass = var;
     Mark_Glass();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
 
 
 // 0057F830  Mark_PhysConstraintsPtr  (physics/physconstraints_load_db.h:1382)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_PhysConstraintsPtr(void)
 
@@ -3564,12 +3659,12 @@ void __cdecl Mark_PhysConstraintsPtr(void)
 
 // 00583860  Load_ExpressionStatement  (universal/com_expressions_load_db.h:1383)
 
-void __cdecl Load_ExpressionStatement(bool param_1)
+void __cdecl Load_ExpressionStatement(bool atStreamStart)
 
 {
   expressionRpn *peVar1;
   
-  Load_Stream(param_1,varExpressionStatement,0x10);
+  Load_Stream(atStreamStart,varExpressionStatement,0x10);
   varXString = &varExpressionStatement->filename;
   Load_XString(false);
   if (varExpressionStatement->rpn != (expressionRpn *)0x0) {
@@ -3589,12 +3684,12 @@ void __cdecl Load_ExpressionStatement(bool param_1)
 
 // 0057CC90  Load_PrimedSound  (sound/snd_alias_load_db.h:1400)
 
-void __cdecl Load_PrimedSound(bool param_1)
+void __cdecl Load_PrimedSound(bool atStreamStart)
 
 {
   char *pcVar1;
   
-  Load_Stream(param_1,varPrimedSound,0xc);
+  Load_Stream(atStreamStart,varPrimedSound,0xc);
   varXString = &varPrimedSound->name;
   Load_XString(false);
   DB_PushStreamPos(5);
@@ -3627,10 +3722,10 @@ void __cdecl Mark_Glasses(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_XAsset(bool param_1)
+void __cdecl Load_XAsset(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varXAsset,8);
+  Load_Stream(atStreamStart,varXAsset,8);
   varXAssetHeader = &varXAsset->header;
   Load_XAssetHeader(false);
   return;
@@ -3639,18 +3734,18 @@ void __cdecl Load_XAsset(bool param_1)
 
 // 00583430  Load_ComBurnableCellArray  (qcommon/com_bsp_load_db.h:1404)
 
-void __cdecl Load_ComBurnableCellArray(bool param_1,int param_2)
+void __cdecl Load_ComBurnableCellArray(bool atStreamStart,int count)
 
 {
-  ComBurnableCell *local_c;
-  int local_8;
+  ComBurnableCell *var;
+  int i;
   
-  Load_Stream(param_1,varComBurnableCell,param_2 * 0xc);
-  local_c = varComBurnableCell;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varComBurnableCell = local_c;
+  Load_Stream(atStreamStart,varComBurnableCell,count * 0xc);
+  var = varComBurnableCell;
+  for (i = 0; i < count; i = i + 1) {
+    varComBurnableCell = var;
     Load_ComBurnableCell(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3658,18 +3753,18 @@ void __cdecl Load_ComBurnableCellArray(bool param_1,int param_2)
 
 // 00580A70  Load_pathnode_tree_tArray  (game/pathnode_load_db.h:1407)
 
-void __cdecl Load_pathnode_tree_tArray(bool param_1,int param_2)
+void __cdecl Load_pathnode_tree_tArray(bool atStreamStart,int count)
 
 {
-  pathnode_tree_t *local_c;
-  int local_8;
+  pathnode_tree_t *var;
+  int i;
   
-  Load_Stream(param_1,varpathnode_tree_t,param_2 << 4);
-  local_c = varpathnode_tree_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varpathnode_tree_t = local_c;
+  Load_Stream(atStreamStart,varpathnode_tree_t,count << 4);
+  var = varpathnode_tree_t;
+  for (i = 0; i < count; i = i + 1) {
+    varpathnode_tree_t = var;
     Load_pathnode_tree_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -3677,24 +3772,26 @@ void __cdecl Load_pathnode_tree_tArray(bool param_1,int param_2)
 
 // 0057BB50  Load_XAnimDeltaPartQuatData  (xanim/xanim_load_db.h:1436)
 
-void __cdecl Load_XAnimDeltaPartQuatData(bool param_1)
+void __cdecl Load_XAnimDeltaPartQuatData(bool atStreamStart)
 
 {
   if (varXAnimDeltaPartQuat->size == 0) {
-    if (param_1) {
+    if (atStreamStart) {
       varXQuat2 = (short (*) [2])varXAnimDeltaPartQuatData;
       Load_XQuat2(true);
     }
   }
   else {
     varXAnimDeltaPartQuatDataFrames = &varXAnimDeltaPartQuatData->frames;
-    Load_XAnimDeltaPartQuatDataFrames(param_1);
+    Load_XAnimDeltaPartQuatDataFrames(atStreamStart);
   }
   return;
 }
 
 
 // 00588360  Mark_EmblemSetPtr  (bgame/bg_emblems_load_db.h:1473)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_EmblemSetPtr(void)
 
@@ -3710,12 +3807,12 @@ void __cdecl Mark_EmblemSetPtr(void)
 
 // 0057CD10  Load_PrimedSoundPtr  (sound/snd_alias_load_db.h:1487)
 
-void __cdecl Load_PrimedSoundPtr(bool param_1)
+void __cdecl Load_PrimedSoundPtr(bool atStreamStart)
 
 {
   PrimedSound *pPVar1;
   
-  Load_Stream(param_1,varPrimedSoundPtr,4);
+  Load_Stream(atStreamStart,varPrimedSoundPtr,4);
   if (*varPrimedSoundPtr != (PrimedSound *)0x0) {
     if (*varPrimedSoundPtr == (PrimedSound *)0xffffffff) {
       pPVar1 = (PrimedSound *)AllocLoad_int();
@@ -3733,6 +3830,8 @@ void __cdecl Load_PrimedSoundPtr(bool param_1)
 
 // 00588D60  Mark_ddlRoot_ptr  (ddl/ddl_load_db.h:1493)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_ddlRoot_ptr(void)
 
 {
@@ -3745,6 +3844,8 @@ void __cdecl Mark_ddlRoot_ptr(void)
 
 
 // 0058BC70  Mark_GlassesPtr  (glass/glass_load_db.h:1502)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_GlassesPtr(void)
 
@@ -3760,14 +3861,14 @@ void __cdecl Mark_GlassesPtr(void)
 
 // 0057BBA0  Load_XAnimDeltaPartQuat  (xanim/xanim_load_db.h:1509)
 
-void __cdecl Load_XAnimDeltaPartQuat(bool param_1)
+void __cdecl Load_XAnimDeltaPartQuat(bool atStreamStart)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (!param_1) {
+  if (!atStreamStart) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                              ,0x5e6,0,"%s");
     if (!bVar2) {
@@ -3956,10 +4057,10 @@ void __cdecl Mark_XAssetHeader(void)
 
 // 0057CD80  Load_StreamedSound  (sound/snd_alias_load_db.h:1556)
 
-void __cdecl Load_StreamedSound(bool param_1)
+void __cdecl Load_StreamedSound(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varStreamedSound,8);
+  Load_Stream(atStreamStart,varStreamedSound,8);
   varXString = &varStreamedSound->filename;
   Load_XString(false);
   varPrimedSoundPtr = &varStreamedSound->primeSnd;
@@ -3970,13 +4071,13 @@ void __cdecl Load_StreamedSound(bool param_1)
 
 // 0057BC40  Load_XAnimDeltaPart  (xanim/xanim_load_db.h:1573)
 
-void __cdecl Load_XAnimDeltaPart(bool param_1)
+void __cdecl Load_XAnimDeltaPart(bool atStreamStart)
 
 {
   XAnimPartTrans *pXVar1;
   XAnimDeltaPartQuat *pXVar2;
   
-  Load_Stream(param_1,varXAnimDeltaPart,8);
+  Load_Stream(atStreamStart,varXAnimDeltaPart,8);
   if (varXAnimDeltaPart->trans != (XAnimPartTrans *)0x0) {
     pXVar1 = (XAnimPartTrans *)AllocLoad_int();
     varXAnimDeltaPart->trans = pXVar1;
@@ -3995,14 +4096,14 @@ void __cdecl Load_XAnimDeltaPart(bool param_1)
 
 // 005834A0  Load_ComWorld  (qcommon/com_bsp_load_db.h:1594)
 
-void __cdecl Load_ComWorld(bool param_1)
+void __cdecl Load_ComWorld(bool atStreamStart)
 
 {
   ComPrimaryLight *pCVar1;
   ComWaterCell *pCVar2;
   ComBurnableCell *pCVar3;
   
-  Load_Stream(param_1,varComWorld,0x40);
+  Load_Stream(atStreamStart,varComWorld,0x40);
   DB_PushStreamPos(4);
   varXString = &varComWorld->name;
   Load_XString(false);
@@ -4044,7 +4145,7 @@ void __cdecl Mark_pathnode_t(void)
 
 // 0057BCC0  Load_XAnimDynamicIndicesTrans  (xanim/xanim_load_db.h:1642)
 
-void __cdecl Load_XAnimDynamicIndicesTrans(bool param_1)
+void __cdecl Load_XAnimDynamicIndicesTrans(bool atStreamStart)
 
 {
   code *pcVar1;
@@ -4052,7 +4153,7 @@ void __cdecl Load_XAnimDynamicIndicesTrans(bool param_1)
   XAnimDynamicIndices *pXVar3;
   
   if (varXAnimParts->numframes < 0x100) {
-    if (!param_1) {
+    if (!atStreamStart) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                                ,0x66d,0,"%s");
       if (!bVar2) {
@@ -4076,7 +4177,7 @@ void __cdecl Load_XAnimDynamicIndicesTrans(bool param_1)
     Load_byteArray(true,varXAnimPartTrans->size + 1);
   }
   else {
-    if (!param_1) {
+    if (!atStreamStart) {
       bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                                ,0x675,0,"%s");
       if (!bVar2) {
@@ -4107,17 +4208,17 @@ void __cdecl Load_XAnimDynamicIndicesTrans(bool param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Mark_pathnode_tArray(int param_1)
+void __cdecl Mark_pathnode_tArray(int count)
 
 {
-  pathnode_t *local_c;
-  int local_8;
+  pathnode_t *var;
+  int i;
   
-  local_c = varpathnode_t;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varpathnode_t = local_c;
+  var = varpathnode_t;
+  for (i = 0; i < count; i = i + 1) {
+    varpathnode_t = var;
     Mark_pathnode_t();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4125,7 +4226,7 @@ void __cdecl Mark_pathnode_tArray(int param_1)
 
 // 0057CDD0  Load_SoundFileRef  (sound/snd_alias_load_db.h:1653)
 
-void __cdecl Load_SoundFileRef(bool param_1)
+void __cdecl Load_SoundFileRef(bool atStreamStart)
 
 {
   LoadedSound *pLVar1;
@@ -4160,14 +4261,18 @@ void __cdecl Load_SoundFileRef(bool param_1)
 
 // 00583590  Load_ComWorldPtr  (qcommon/com_bsp_load_db.h:1711)
 
-void __cdecl Load_ComWorldPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_ComWorldPtr(bool atStreamStart)
 
 {
   ComWorld *pCVar1;
   ComWorld *pCVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varComWorldPtr,4);
+  Load_Stream(atStreamStart,varComWorldPtr,4);
   DB_PushStreamPos(0);
   if (*varComWorldPtr != (ComWorld *)0x0) {
     pCVar1 = *varComWorldPtr;
@@ -4198,20 +4303,20 @@ void __cdecl Load_ComWorldPtr(bool param_1)
 
 // 0057BE10  Load_ByteVecArray  (xanim/xanim_load_db.h:1731)
 
-void __cdecl Load_ByteVecArray(bool param_1,int param_2)
+void __cdecl Load_ByteVecArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varByteVec,param_2 * 3);
+  Load_Stream(atStreamStart,varByteVec,count * 3);
   return;
 }
 
 
 // 0057CE90  Load_SoundFile  (sound/snd_alias_load_db.h:1742)
 
-void __cdecl Load_SoundFile(bool param_1)
+void __cdecl Load_SoundFile(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varSoundFile,8);
+  Load_Stream(atStreamStart,varSoundFile,8);
   varSoundFileRef = &varSoundFile->u;
   Load_SoundFileRef(false);
   return;
@@ -4220,18 +4325,18 @@ void __cdecl Load_SoundFile(bool param_1)
 
 // 0057CEC0  Load_SoundFileArray  (sound/snd_alias_load_db.h:1772)
 
-void __cdecl Load_SoundFileArray(bool param_1,int param_2)
+void __cdecl Load_SoundFileArray(bool atStreamStart,int count)
 
 {
-  SoundFile *local_c;
-  int local_8;
+  SoundFile *var;
+  int i;
   
-  Load_Stream(param_1,varSoundFile,param_2 << 3);
-  local_c = varSoundFile;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varSoundFile = local_c;
+  Load_Stream(atStreamStart,varSoundFile,count << 3);
+  var = varSoundFile;
+  for (i = 0; i < count; i = i + 1) {
+    varSoundFile = var;
     Load_SoundFile(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4239,22 +4344,22 @@ void __cdecl Load_SoundFileArray(bool param_1,int param_2)
 
 // 0057BE30  Load_UShortVecArray  (xanim/xanim_load_db.h:1791)
 
-void __cdecl Load_UShortVecArray(bool param_1,int param_2)
+void __cdecl Load_UShortVecArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varUShortVec,param_2 * 6);
+  Load_Stream(atStreamStart,varUShortVec,count * 6);
   return;
 }
 
 
 // 0057CF30  Load_snd_alias_t  (sound/snd_alias_load_db.h:1812)
 
-void __cdecl Load_snd_alias_t(bool param_1)
+void __cdecl Load_snd_alias_t(bool atStreamStart)
 
 {
   SoundFile *pSVar1;
   
-  Load_Stream(param_1,varsnd_alias_t,0x54);
+  Load_Stream(atStreamStart,varsnd_alias_t,0x54);
   varXString = &varsnd_alias_t->name;
   Load_XString(false);
   varXString = &varsnd_alias_t->subtitle;
@@ -4278,7 +4383,7 @@ void __cdecl Load_snd_alias_t(bool param_1)
 
 // 0057BE50  Load_XAnimDynamicFrames  (xanim/xanim_load_db.h:1831)
 
-void __cdecl Load_XAnimDynamicFrames(bool param_1)
+void __cdecl Load_XAnimDynamicFrames(bool atStreamStart)
 
 {
   uchar (*pauVar1) [3];
@@ -4317,14 +4422,14 @@ void __cdecl Load_XAnimDynamicFrames(bool param_1)
 
 // 0057BF20  Load_XAnimPartTransFrames  (xanim/xanim_load_db.h:1902)
 
-void __cdecl Load_XAnimPartTransFrames(bool param_1)
+void __cdecl Load_XAnimPartTransFrames(bool atStreamStart)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (!param_1) {
+  if (!atStreamStart) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                              ,0x76f,0,"%s");
     if (!bVar2) {
@@ -4368,18 +4473,18 @@ void __cdecl Mark_XAsset(void)
 
 // 0057BFD0  Load_XAnimPartTransData  (xanim/xanim_load_db.h:1976)
 
-void __cdecl Load_XAnimPartTransData(bool param_1)
+void __cdecl Load_XAnimPartTransData(bool atStreamStart)
 
 {
   if (varXAnimPartTrans->size == 0) {
-    if (param_1) {
+    if (atStreamStart) {
       varvec3_t = (float (*) [3])varXAnimPartTransData;
       Load_vec3_t(true);
     }
   }
   else {
     varXAnimPartTransFrames = &varXAnimPartTransData->frames;
-    Load_XAnimPartTransFrames(param_1);
+    Load_XAnimPartTransFrames(atStreamStart);
   }
   return;
 }
@@ -4387,22 +4492,22 @@ void __cdecl Load_XAnimPartTransData(bool param_1)
 
 // 0057F980  Load_XModelCollTriArray  (xanim/xmodel_load_db.h:1983)
 
-void __cdecl Load_XModelCollTriArray(bool param_1,int param_2)
+void __cdecl Load_XModelCollTriArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXModelCollTri,param_2 * 0x30);
+  Load_Stream(atStreamStart,varXModelCollTri,count * 0x30);
   return;
 }
 
 
 // 0057F9A0  Load_XModelCollSurf  (xanim/xmodel_load_db.h:2024)
 
-void __cdecl Load_XModelCollSurf(bool param_1)
+void __cdecl Load_XModelCollSurf(bool atStreamStart)
 
 {
   XModelCollTri_s *pXVar1;
   
-  Load_Stream(param_1,varXModelCollSurf,0x2c);
+  Load_Stream(atStreamStart,varXModelCollSurf,0x2c);
   if (varXModelCollSurf->collTris != (XModelCollTri_s *)0x0) {
     pXVar1 = (XModelCollTri_s *)AllocLoad_int();
     varXModelCollSurf->collTris = pXVar1;
@@ -4415,18 +4520,18 @@ void __cdecl Load_XModelCollSurf(bool param_1)
 
 // 0057CFF0  Load_snd_alias_tArray  (sound/snd_alias_load_db.h:2036)
 
-void __cdecl Load_snd_alias_tArray(bool param_1,int param_2)
+void __cdecl Load_snd_alias_tArray(bool atStreamStart,int count)
 
 {
-  snd_alias_t *local_c;
-  int local_8;
+  snd_alias_t *var;
+  int i;
   
-  Load_Stream(param_1,varsnd_alias_t,param_2 * 0x54);
-  local_c = varsnd_alias_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varsnd_alias_t = local_c;
+  Load_Stream(atStreamStart,varsnd_alias_t,count * 0x54);
+  var = varsnd_alias_t;
+  for (i = 0; i < count; i = i + 1) {
+    varsnd_alias_t = var;
     Load_snd_alias_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4434,14 +4539,14 @@ void __cdecl Load_snd_alias_tArray(bool param_1,int param_2)
 
 // 0057C020  Load_XAnimPartTrans  (xanim/xanim_load_db.h:2049)
 
-void __cdecl Load_XAnimPartTrans(bool param_1)
+void __cdecl Load_XAnimPartTrans(bool atStreamStart)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (!param_1) {
+  if (!atStreamStart) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../xanim/xanim_load_db.h"
                              ,0x802,0,"%s");
     if (!bVar2) {
@@ -4469,12 +4574,12 @@ void __cdecl Load_XAnimPartTrans(bool param_1)
 
 // 0057D060  Load_snd_alias_list_t  (sound/snd_alias_load_db.h:2076)
 
-void __cdecl Load_snd_alias_list_t(bool param_1)
+void __cdecl Load_snd_alias_list_t(bool atStreamStart)
 
 {
   snd_alias_t *psVar1;
   
-  Load_Stream(param_1,varsnd_alias_list_t,0x14);
+  Load_Stream(atStreamStart,varsnd_alias_list_t,0x14);
   varXString = &varsnd_alias_list_t->name;
   Load_XString(false);
   if (varsnd_alias_list_t->head != (snd_alias_t *)0x0) {
@@ -4494,18 +4599,18 @@ void __cdecl Load_snd_alias_list_t(bool param_1)
 
 // 0057FA00  Load_XModelCollSurfArray  (xanim/xmodel_load_db.h:2078)
 
-void __cdecl Load_XModelCollSurfArray(bool param_1,int param_2)
+void __cdecl Load_XModelCollSurfArray(bool atStreamStart,int count)
 
 {
-  XModelCollSurf_s *local_c;
-  int local_8;
+  XModelCollSurf_s *var;
+  int i;
   
-  Load_Stream(param_1,varXModelCollSurf,param_2 * 0x2c);
-  local_c = varXModelCollSurf;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXModelCollSurf = local_c;
+  Load_Stream(atStreamStart,varXModelCollSurf,count * 0x2c);
+  var = varXModelCollSurf;
+  for (i = 0; i < count; i = i + 1) {
+    varXModelCollSurf = var;
     Load_XModelCollSurf(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4517,6 +4622,7 @@ uchar * __cdecl AllocLoad_byte(void)
 
 {
   uchar *puVar1;
+  uint alignment_6;
   
   puVar1 = DB_AllocStreamPos(0);
   return puVar1;
@@ -4525,20 +4631,20 @@ uchar * __cdecl AllocLoad_byte(void)
 
 // 0057B140  Load_byteArray  (database/db_primtypes_load.h:2107)
 
-void __cdecl Load_byteArray(bool param_1,int param_2)
+void __cdecl Load_byteArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varbyte,param_2);
+  Load_Stream(atStreamStart,varbyte,count);
   return;
 }
 
 
 // 0057C0C0  Load_XAnimNotifyInfo  (xanim/xanim_load_db.h:2118)
 
-void __cdecl Load_XAnimNotifyInfo(bool param_1)
+void __cdecl Load_XAnimNotifyInfo(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varXAnimNotifyInfo,8);
+  Load_Stream(atStreamStart,varXAnimNotifyInfo,8);
   varScriptString = &varXAnimNotifyInfo->name;
   Load_ScriptString(false);
   return;
@@ -4547,18 +4653,18 @@ void __cdecl Load_XAnimNotifyInfo(bool param_1)
 
 // 0057D0F0  Load_snd_alias_list_tArray  (sound/snd_alias_load_db.h:2120)
 
-void __cdecl Load_snd_alias_list_tArray(bool param_1,int param_2)
+void __cdecl Load_snd_alias_list_tArray(bool atStreamStart,int count)
 
 {
-  snd_alias_list_t *local_c;
-  int local_8;
+  snd_alias_list_t *var;
+  int i;
   
-  Load_Stream(param_1,varsnd_alias_list_t,param_2 * 0x14);
-  local_c = varsnd_alias_list_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varsnd_alias_list_t = local_c;
+  Load_Stream(atStreamStart,varsnd_alias_list_t,count * 0x14);
+  var = varsnd_alias_list_t;
+  for (i = 0; i < count; i = i + 1) {
+    varsnd_alias_list_t = var;
     Load_snd_alias_list_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4566,18 +4672,18 @@ void __cdecl Load_snd_alias_list_tArray(bool param_1,int param_2)
 
 // 0057C0F0  Load_XAnimNotifyInfoArray  (xanim/xanim_load_db.h:2143)
 
-void __cdecl Load_XAnimNotifyInfoArray(bool param_1,int param_2)
+void __cdecl Load_XAnimNotifyInfoArray(bool atStreamStart,int count)
 
 {
-  XAnimNotifyInfo *local_c;
-  int local_8;
+  XAnimNotifyInfo *var;
+  int i;
   
-  Load_Stream(param_1,varXAnimNotifyInfo,param_2 << 3);
-  local_c = varXAnimNotifyInfo;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXAnimNotifyInfo = local_c;
+  Load_Stream(atStreamStart,varXAnimNotifyInfo,count << 3);
+  var = varXAnimNotifyInfo;
+  for (i = 0; i < count; i = i + 1) {
+    varXAnimNotifyInfo = var;
     Load_XAnimNotifyInfo(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4585,17 +4691,17 @@ void __cdecl Load_XAnimNotifyInfoArray(bool param_1,int param_2)
 
 // 0057FA70  Load_XModelHighMipBoundsArray  (xanim/xmodel_load_db.h:2145)
 
-void __cdecl Load_XModelHighMipBoundsArray(bool param_1,int param_2)
+void __cdecl Load_XModelHighMipBoundsArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXModelHighMipBounds,param_2 << 4);
+  Load_Stream(atStreamStart,varXModelHighMipBounds,count << 4);
   return;
 }
 
 
 // 0057C160  Load_XAnimParts  (xanim/xanim_load_db.h:2183)
 
-void __cdecl Load_XAnimParts(bool param_1)
+void __cdecl Load_XAnimParts(bool atStreamStart)
 
 {
   ushort *puVar1;
@@ -4605,7 +4711,7 @@ void __cdecl Load_XAnimParts(bool param_1)
   short *psVar5;
   int *piVar6;
   
-  Load_Stream(param_1,varXAnimParts,0x68);
+  Load_Stream(atStreamStart,varXAnimParts,0x68);
   DB_PushStreamPos(4);
   varXString = &varXAnimParts->name;
   Load_XString(false);
@@ -4672,12 +4778,12 @@ void __cdecl Load_XAnimParts(bool param_1)
 
 // 0057FA90  Load_XModelStreamInfo  (xanim/xmodel_load_db.h:2185)
 
-void __cdecl Load_XModelStreamInfo(bool param_1)
+void __cdecl Load_XModelStreamInfo(bool atStreamStart)
 
 {
   XModelHighMipBounds *pXVar1;
   
-  Load_Stream(param_1,varXModelStreamInfo,4);
+  Load_Stream(atStreamStart,varXModelStreamInfo,4);
   if (varXModelStreamInfo->highMipBounds != (XModelHighMipBounds *)0x0) {
     pXVar1 = (XModelHighMipBounds *)AllocLoad_int();
     varXModelStreamInfo->highMipBounds = pXVar1;
@@ -4690,10 +4796,10 @@ void __cdecl Load_XModelStreamInfo(bool param_1)
 
 // 00581FE0  Load_cStaticModel_t  (qcommon/cm_local_load_db.h:2197)
 
-void __cdecl Load_cStaticModel_t(bool param_1)
+void __cdecl Load_cStaticModel_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varcStaticModel_t,0x50);
+  Load_Stream(atStreamStart,varcStaticModel_t,0x50);
   varXModelPtr = &varcStaticModel_t->xmodel;
   Load_XModelPtr(false);
   return;
@@ -4702,15 +4808,17 @@ void __cdecl Load_cStaticModel_t(bool param_1)
 
 // 0057B160  Load_charArray  (database/db_primtypes_load.h:2217)
 
-void __cdecl Load_charArray(bool param_1,int param_2)
+void __cdecl Load_charArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varchar,param_2);
+  Load_Stream(atStreamStart,varchar,count);
   return;
 }
 
 
 // 00583660  Mark_ComWorldPtr  (qcommon/com_bsp_load_db.h:2223)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_ComWorldPtr(void)
 
@@ -4725,18 +4833,18 @@ void __cdecl Mark_ComWorldPtr(void)
 
 // 00582020  Load_cStaticModel_tArray  (qcommon/cm_local_load_db.h:2237)
 
-void __cdecl Load_cStaticModel_tArray(bool param_1,int param_2)
+void __cdecl Load_cStaticModel_tArray(bool atStreamStart,int count)
 
 {
-  cStaticModel_s *local_c;
-  int local_8;
+  cStaticModel_s *var;
+  int i;
   
-  Load_Stream(param_1,varcStaticModel_t,param_2 * 0x50);
-  local_c = varcStaticModel_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varcStaticModel_t = local_c;
+  Load_Stream(atStreamStart,varcStaticModel_t,count * 0x50);
+  var = varcStaticModel_t;
+  for (i = 0; i < count; i = i + 1) {
+    varcStaticModel_t = var;
     Load_cStaticModel_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4744,12 +4852,12 @@ void __cdecl Load_cStaticModel_tArray(bool param_1,int param_2)
 
 // 00582090  Load_cNode_t  (qcommon/cm_local_load_db.h:2277)
 
-void __cdecl Load_cNode_t(bool param_1)
+void __cdecl Load_cNode_t(bool atStreamStart)
 
 {
   cplane_s *pcVar1;
   
-  Load_Stream(param_1,varcNode_t,8);
+  Load_Stream(atStreamStart,varcNode_t,8);
   if (varcNode_t->plane != (cplane_s *)0x0) {
     if (varcNode_t->plane == (cplane_s *)0xffffffff) {
       pcVar1 = (cplane_s *)AllocLoad_int();
@@ -4767,18 +4875,18 @@ void __cdecl Load_cNode_t(bool param_1)
 
 // 00582100  Load_cNode_tArray  (qcommon/cm_local_load_db.h:2311)
 
-void __cdecl Load_cNode_tArray(bool param_1,int param_2)
+void __cdecl Load_cNode_tArray(bool atStreamStart,int count)
 
 {
-  cNode_t *local_c;
-  int local_8;
+  cNode_t *var;
+  int i;
   
-  Load_Stream(param_1,varcNode_t,param_2 << 3);
-  local_c = varcNode_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varcNode_t = local_c;
+  Load_Stream(atStreamStart,varcNode_t,count << 3);
+  var = varcNode_t;
+  for (i = 0; i < count; i = i + 1) {
+    varcNode_t = var;
     Load_cNode_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -4786,14 +4894,14 @@ void __cdecl Load_cNode_tArray(bool param_1,int param_2)
 
 // 0057FAF0  Load_BrushWrapper  (xanim/xmodel_load_db.h:2344)
 
-void __cdecl Load_BrushWrapper(bool param_1)
+void __cdecl Load_BrushWrapper(bool atStreamStart)
 
 {
   cbrushside_t *pcVar1;
   float (*pafVar2) [3];
   cplane_s *pcVar3;
   
-  Load_Stream(param_1,varBrushWrapper,0x60);
+  Load_Stream(atStreamStart,varBrushWrapper,0x60);
   if (varBrushWrapper->sides != (cbrushside_t *)0x0) {
     pcVar1 = (cbrushside_t *)AllocLoad_int();
     varBrushWrapper->sides = pcVar1;
@@ -4828,34 +4936,38 @@ void __cdecl Load_BrushWrapper(bool param_1)
 
 // 0057C5C0  Load_snd_curveArray  (sound/snd_load_db.h:2393)
 
-void __cdecl Load_snd_curveArray(bool param_1,int param_2)
+void __cdecl Load_snd_curveArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_curve,param_2 * 100);
+  Load_Stream(atStreamStart,varsnd_curve,count * 100);
   return;
 }
 
 
 // 00582170  Load_cLeaf_tArray  (qcommon/cm_local_load_db.h:2406)
 
-void __cdecl Load_cLeaf_tArray(bool param_1,int param_2)
+void __cdecl Load_cLeaf_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varcLeaf_t,param_2 * 0x2c);
+  Load_Stream(atStreamStart,varcLeaf_t,count * 0x2c);
   return;
 }
 
 
 // 0057C3D0  Load_XAnimPartsPtr  (xanim/xanim_load_db.h:2415)
 
-void __cdecl Load_XAnimPartsPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_XAnimPartsPtr(bool atStreamStart)
 
 {
   XAnimParts *pXVar1;
   XAnimParts *pXVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varXAnimPartsPtr,4);
+  Load_Stream(atStreamStart,varXAnimPartsPtr,4);
   DB_PushStreamPos(0);
   if (*varXAnimPartsPtr != (XAnimParts *)0x0) {
     pXVar1 = *varXAnimPartsPtr;
@@ -4886,22 +4998,22 @@ void __cdecl Load_XAnimPartsPtr(bool param_1)
 
 // 0057D620  Load_XSurfaceCollisionLeafArray  (gfx_d3d/r_xsurface_load_db.h:2441)
 
-void __cdecl Load_XSurfaceCollisionLeafArray(bool param_1,int param_2)
+void __cdecl Load_XSurfaceCollisionLeafArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXSurfaceCollisionLeaf,param_2 << 1);
+  Load_Stream(atStreamStart,varXSurfaceCollisionLeaf,count << 1);
   return;
 }
 
 
 // 00582190  Load_cLeafBrushNodeLeaf_t  (qcommon/cm_local_load_db.h:2446)
 
-void __cdecl Load_cLeafBrushNodeLeaf_t(bool param_1)
+void __cdecl Load_cLeafBrushNodeLeaf_t(bool atStreamStart)
 
 {
   ushort *puVar1;
   
-  Load_Stream(param_1,varcLeafBrushNodeLeaf_t,4);
+  Load_Stream(atStreamStart,varcLeafBrushNodeLeaf_t,4);
   if (varcLeafBrushNodeLeaf_t->brushes != (ushort *)0x0) {
     if (varcLeafBrushNodeLeaf_t->brushes == (ushort *)0xffffffff) {
       puVar1 = (ushort *)AllocLoad_short();
@@ -4919,12 +5031,12 @@ void __cdecl Load_cLeafBrushNodeLeaf_t(bool param_1)
 
 // 0057FC00  Load_PhysGeomInfo  (xanim/xmodel_load_db.h:2469)
 
-void __cdecl Load_PhysGeomInfo(bool param_1)
+void __cdecl Load_PhysGeomInfo(bool atStreamStart)
 
 {
   BrushWrapper *pBVar1;
   
-  Load_Stream(param_1,varPhysGeomInfo,0x44);
+  Load_Stream(atStreamStart,varPhysGeomInfo,0x44);
   if (varPhysGeomInfo->brush != (BrushWrapper *)0x0) {
     if (varPhysGeomInfo->brush == (BrushWrapper *)0xffffffff) {
       pBVar1 = (BrushWrapper *)AllocLoad_raw_byte16();
@@ -4942,10 +5054,10 @@ void __cdecl Load_PhysGeomInfo(bool param_1)
 
 // 0057B180  Load_int  (database/db_primtypes_load.h:2482)
 
-void __cdecl Load_int(bool param_1)
+void __cdecl Load_int(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varint,4);
+  Load_Stream(atStreamStart,varint,4);
   return;
 }
 
@@ -4956,6 +5068,7 @@ int * __cdecl AllocLoad_int(void)
 
 {
   int *piVar1;
+  uint alignment_198;
   
   piVar1 = (int *)DB_AllocStreamPos(3);
   return piVar1;
@@ -4964,10 +5077,10 @@ int * __cdecl AllocLoad_int(void)
 
 // 0057D590  Load_MaterialInfo  (renderer/tr_types_load_db.h:2490)
 
-void __cdecl Load_MaterialInfo(bool param_1)
+void __cdecl Load_MaterialInfo(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialInfo,0x28);
+  Load_Stream(atStreamStart,varMaterialInfo,0x28);
   varXString = &varMaterialInfo->name;
   Load_XString(false);
   return;
@@ -4976,48 +5089,48 @@ void __cdecl Load_MaterialInfo(bool param_1)
 
 // 0057B1A0  Load_intArray  (database/db_primtypes_load.h:2497)
 
-void __cdecl Load_intArray(bool param_1,int param_2)
+void __cdecl Load_intArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varint,param_2 << 2);
+  Load_Stream(atStreamStart,varint,count << 2);
   return;
 }
 
 
 // 0057D640  Load_XSurfaceCollisionNodeArray  (gfx_d3d/r_xsurface_load_db.h:2511)
 
-void __cdecl Load_XSurfaceCollisionNodeArray(bool param_1,int param_2)
+void __cdecl Load_XSurfaceCollisionNodeArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXSurfaceCollisionNode,param_2 << 4);
+  Load_Stream(atStreamStart,varXSurfaceCollisionNode,count << 4);
   return;
 }
 
 
 // 00582200  Load_cLeafBrushNodeChildren_t  (qcommon/cm_local_load_db.h:2515)
 
-void __cdecl Load_cLeafBrushNodeChildren_t(bool param_1)
+void __cdecl Load_cLeafBrushNodeChildren_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varcLeafBrushNodeChildren_t,0xc);
+  Load_Stream(atStreamStart,varcLeafBrushNodeChildren_t,0xc);
   return;
 }
 
 
 // 0057FC70  Load_PhysGeomInfoArray  (xanim/xmodel_load_db.h:2518)
 
-void __cdecl Load_PhysGeomInfoArray(bool param_1,int param_2)
+void __cdecl Load_PhysGeomInfoArray(bool atStreamStart,int count)
 
 {
-  PhysGeomInfo *local_c;
-  int local_8;
+  PhysGeomInfo *var;
+  int i;
   
-  Load_Stream(param_1,varPhysGeomInfo,param_2 * 0x44);
-  local_c = varPhysGeomInfo;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varPhysGeomInfo = local_c;
+  Load_Stream(atStreamStart,varPhysGeomInfo,count * 0x44);
+  var = varPhysGeomInfo;
+  for (i = 0; i < count; i = i + 1) {
+    varPhysGeomInfo = var;
     Load_PhysGeomInfo(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5025,13 +5138,13 @@ void __cdecl Load_PhysGeomInfoArray(bool param_1,int param_2)
 
 // 0057D660  Load_XSurfaceCollisionTree  (gfx_d3d/r_xsurface_load_db.h:2551)
 
-void __cdecl Load_XSurfaceCollisionTree(bool param_1)
+void __cdecl Load_XSurfaceCollisionTree(bool atStreamStart)
 
 {
   XSurfaceCollisionNode *pXVar1;
   XSurfaceCollisionLeaf *pXVar2;
   
-  Load_Stream(param_1,varXSurfaceCollisionTree,0x28);
+  Load_Stream(atStreamStart,varXSurfaceCollisionTree,0x28);
   if (varXSurfaceCollisionTree->nodes != (XSurfaceCollisionNode *)0x0) {
     pXVar1 = (XSurfaceCollisionNode *)AllocLoad_raw_byte16();
     varXSurfaceCollisionTree->nodes = pXVar1;
@@ -5050,12 +5163,12 @@ void __cdecl Load_XSurfaceCollisionTree(bool param_1)
 
 // 0057FCE0  Load_PhysGeomList  (xanim/xmodel_load_db.h:2558)
 
-void __cdecl Load_PhysGeomList(bool param_1)
+void __cdecl Load_PhysGeomList(bool atStreamStart)
 
 {
   PhysGeomInfo *pPVar1;
   
-  Load_Stream(param_1,varPhysGeomList,0xc);
+  Load_Stream(atStreamStart,varPhysGeomList,0xc);
   if (varPhysGeomList->geoms != (PhysGeomInfo *)0x0) {
     pPVar1 = (PhysGeomInfo *)AllocLoad_raw_byte16();
     varPhysGeomList->geoms = pPVar1;
@@ -5068,18 +5181,18 @@ void __cdecl Load_PhysGeomList(bool param_1)
 
 // 00582220  Load_cLeafBrushNodeData_t  (qcommon/cm_local_load_db.h:2585)
 
-void __cdecl Load_cLeafBrushNodeData_t(bool param_1)
+void __cdecl Load_cLeafBrushNodeData_t(bool atStreamStart)
 
 {
   if (varcLeafBrushNode_t->leafBrushCount < 1) {
-    if (param_1) {
+    if (atStreamStart) {
       varcLeafBrushNodeChildren_t = &varcLeafBrushNodeData_t->children;
       Load_cLeafBrushNodeChildren_t(true);
     }
   }
   else {
     varcLeafBrushNodeLeaf_t = &varcLeafBrushNodeData_t->leaf;
-    Load_cLeafBrushNodeLeaf_t(param_1);
+    Load_cLeafBrushNodeLeaf_t(atStreamStart);
   }
   return;
 }
@@ -5087,22 +5200,22 @@ void __cdecl Load_cLeafBrushNodeData_t(bool param_1)
 
 // 0057C5E0  Load_snd_groupArray  (sound/snd_load_db.h:2593)
 
-void __cdecl Load_snd_groupArray(bool param_1,int param_2)
+void __cdecl Load_snd_groupArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_group,param_2 * 0x50);
+  Load_Stream(atStreamStart,varsnd_group,count * 0x50);
   return;
 }
 
 
 // 0057FD40  Load_Collmap  (xanim/xmodel_load_db.h:2630)
 
-void __cdecl Load_Collmap(bool param_1)
+void __cdecl Load_Collmap(bool atStreamStart)
 
 {
   PhysGeomList *pPVar1;
   
-  Load_Stream(param_1,varCollmap,4);
+  Load_Stream(atStreamStart,varCollmap,4);
   if (varCollmap->geomList != (PhysGeomList *)0x0) {
     pPVar1 = (PhysGeomList *)AllocLoad_int();
     varCollmap->geomList = pPVar1;
@@ -5115,12 +5228,12 @@ void __cdecl Load_Collmap(bool param_1)
 
 // 0057D700  Load_XRigidVertList  (gfx_d3d/r_xsurface_load_db.h:2640)
 
-void __cdecl Load_XRigidVertList(bool param_1)
+void __cdecl Load_XRigidVertList(bool atStreamStart)
 
 {
   XSurfaceCollisionTree *pXVar1;
   
-  Load_Stream(param_1,varXRigidVertList,0xc);
+  Load_Stream(atStreamStart,varXRigidVertList,0xc);
   if (varXRigidVertList->collisionTree != (XSurfaceCollisionTree *)0x0) {
     if (varXRigidVertList->collisionTree == (XSurfaceCollisionTree *)0xffffffff) {
       pXVar1 = (XSurfaceCollisionTree *)AllocLoad_int();
@@ -5138,18 +5251,18 @@ void __cdecl Load_XRigidVertList(bool param_1)
 
 // 0057FD90  Load_CollmapArray  (xanim/xmodel_load_db.h:2652)
 
-void __cdecl Load_CollmapArray(bool param_1,int param_2)
+void __cdecl Load_CollmapArray(bool atStreamStart,int count)
 
 {
-  Collmap *local_c;
-  int local_8;
+  Collmap *var;
+  int i;
   
-  Load_Stream(param_1,varCollmap,param_2 << 2);
-  local_c = varCollmap;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varCollmap = local_c;
+  Load_Stream(atStreamStart,varCollmap,count << 2);
+  var = varCollmap;
+  for (i = 0; i < count; i = i + 1) {
+    varCollmap = var;
     Load_Collmap(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5157,10 +5270,10 @@ void __cdecl Load_CollmapArray(bool param_1,int param_2)
 
 // 00582270  Load_cLeafBrushNode_t  (qcommon/cm_local_load_db.h:2658)
 
-void __cdecl Load_cLeafBrushNode_t(bool param_1)
+void __cdecl Load_cLeafBrushNode_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varcLeafBrushNode_t,0x14);
+  Load_Stream(atStreamStart,varcLeafBrushNode_t,0x14);
   varcLeafBrushNodeData_t = &varcLeafBrushNode_t->data;
   Load_cLeafBrushNodeData_t(false);
   return;
@@ -5169,18 +5282,18 @@ void __cdecl Load_cLeafBrushNode_t(bool param_1)
 
 // 0057D770  Load_XRigidVertListArray  (gfx_d3d/r_xsurface_load_db.h:2689)
 
-void __cdecl Load_XRigidVertListArray(bool param_1,int param_2)
+void __cdecl Load_XRigidVertListArray(bool atStreamStart,int count)
 
 {
-  XRigidVertList *local_c;
-  int local_8;
+  XRigidVertList *var;
+  int i;
   
-  Load_Stream(param_1,varXRigidVertList,param_2 * 0xc);
-  local_c = varXRigidVertList;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXRigidVertList = local_c;
+  Load_Stream(atStreamStart,varXRigidVertList,count * 0xc);
+  var = varXRigidVertList;
+  for (i = 0; i < count; i = i + 1) {
+    varXRigidVertList = var;
     Load_XRigidVertList(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5188,7 +5301,7 @@ void __cdecl Load_XRigidVertListArray(bool param_1,int param_2)
 
 // 0057FE00  Load_XModel  (xanim/xmodel_load_db.h:2692)
 
-void __cdecl Load_XModel(bool param_1)
+void __cdecl Load_XModel(bool atStreamStart)
 
 {
   ushort *puVar1;
@@ -5202,7 +5315,7 @@ void __cdecl Load_XModel(bool param_1)
   XBoneInfo *pXVar9;
   Collmap *pCVar10;
   
-  Load_Stream(param_1,varXModel,0xfc);
+  Load_Stream(atStreamStart,varXModel,0xfc);
   DB_PushStreamPos(4);
   varXString = &varXModel->name;
   Load_XString(false);
@@ -5315,18 +5428,18 @@ void __cdecl Load_XModel(bool param_1)
 
 // 005822B0  Load_cLeafBrushNode_tArray  (qcommon/cm_local_load_db.h:2693)
 
-void __cdecl Load_cLeafBrushNode_tArray(bool param_1,int param_2)
+void __cdecl Load_cLeafBrushNode_tArray(bool atStreamStart,int count)
 
 {
-  cLeafBrushNode_s *local_c;
-  int local_8;
+  cLeafBrushNode_s *var;
+  int i;
   
-  Load_Stream(param_1,varcLeafBrushNode_t,param_2 * 0x14);
-  local_c = varcLeafBrushNode_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varcLeafBrushNode_t = local_c;
+  Load_Stream(atStreamStart,varcLeafBrushNode_t,count * 0x14);
+  var = varcLeafBrushNode_t;
+  for (i = 0; i < count; i = i + 1) {
+    varcLeafBrushNode_t = var;
     Load_cLeafBrushNode_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5334,52 +5447,52 @@ void __cdecl Load_cLeafBrushNode_tArray(bool param_1,int param_2)
 
 // 0057D7E0  Load_GfxVertexBuffer  (gfx_d3d/r_xsurface_load_db.h:2729)
 
-void __cdecl Load_GfxVertexBuffer(bool param_1)
+void __cdecl Load_GfxVertexBuffer(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxVertexBuffer,4);
+  Load_Stream(atStreamStart,varGfxVertexBuffer,4);
   return;
 }
 
 
 // 00582320  Load_CollisionBorder  (qcommon/cm_local_load_db.h:2733)
 
-void __cdecl Load_CollisionBorder(bool param_1)
+void __cdecl Load_CollisionBorder(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varCollisionBorder,0x1c);
+  Load_Stream(atStreamStart,varCollisionBorder,0x1c);
   return;
 }
 
 
 // 00582340  Load_CollisionBorderArray  (qcommon/cm_local_load_db.h:2773)
 
-void __cdecl Load_CollisionBorderArray(bool param_1,int param_2)
+void __cdecl Load_CollisionBorderArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varCollisionBorder,param_2 * 0x1c);
+  Load_Stream(atStreamStart,varCollisionBorder,count * 0x1c);
   return;
 }
 
 
 // 0057D800  Load_XBlendInfoArray  (gfx_d3d/r_xsurface_load_db.h:2804)
 
-void __cdecl Load_XBlendInfoArray(bool param_1,int param_2)
+void __cdecl Load_XBlendInfoArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXBlendInfo,param_2 << 1);
+  Load_Stream(atStreamStart,varXBlendInfo,count << 1);
   return;
 }
 
 
 // 00582360  Load_CollisionPartition  (qcommon/cm_local_load_db.h:2813)
 
-void __cdecl Load_CollisionPartition(bool param_1)
+void __cdecl Load_CollisionPartition(bool atStreamStart)
 
 {
   CollisionBorder *pCVar1;
   
-  Load_Stream(param_1,varCollisionPartition,0x14);
+  Load_Stream(atStreamStart,varCollisionPartition,0x14);
   if (varCollisionPartition->borders != (CollisionBorder *)0x0) {
     if (varCollisionPartition->borders == (CollisionBorder *)0xffffffff) {
       pCVar1 = (CollisionBorder *)AllocLoad_int();
@@ -5397,23 +5510,23 @@ void __cdecl Load_CollisionPartition(bool param_1)
 
 // 0057B1C0  Load_unsignedArray  (database/db_primtypes_load.h:2827)
 
-void __cdecl Load_unsignedArray(bool param_1,int param_2)
+void __cdecl Load_unsignedArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varunsigned,param_2 << 2);
+  Load_Stream(atStreamStart,varunsigned,count << 2);
   return;
 }
 
 
 // 0057D820  Load_XSurfaceVertexInfo  (gfx_d3d/r_xsurface_load_db.h:2844)
 
-void __cdecl Load_XSurfaceVertexInfo(bool param_1)
+void __cdecl Load_XSurfaceVertexInfo(bool atStreamStart)
 
 {
   ushort *puVar1;
   float *pfVar2;
   
-  Load_Stream(param_1,varXSurfaceVertexInfo,0x10);
+  Load_Stream(atStreamStart,varXSurfaceVertexInfo,0x10);
   if (varXSurfaceVertexInfo->vertsBlend != (ushort *)0x0) {
     if (varXSurfaceVertexInfo->vertsBlend == (ushort *)0xffffffff) {
       puVar1 = (ushort *)AllocLoad_short();
@@ -5449,28 +5562,28 @@ void __cdecl Load_XSurfaceVertexInfo(bool param_1)
 
 // 0057C600  Load_snd_radverbArray  (sound/snd_load_db.h:2853)
 
-void __cdecl Load_snd_radverbArray(bool param_1,int param_2)
+void __cdecl Load_snd_radverbArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_radverb,param_2 * 0x60);
+  Load_Stream(atStreamStart,varsnd_radverb,count * 0x60);
   return;
 }
 
 
 // 005823D0  Load_CollisionPartitionArray  (qcommon/cm_local_load_db.h:2867)
 
-void __cdecl Load_CollisionPartitionArray(bool param_1,int param_2)
+void __cdecl Load_CollisionPartitionArray(bool atStreamStart,int count)
 
 {
-  CollisionPartition *local_c;
-  int local_8;
+  CollisionPartition *var;
+  int i;
   
-  Load_Stream(param_1,varCollisionPartition,param_2 * 0x14);
-  local_c = varCollisionPartition;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varCollisionPartition = local_c;
+  Load_Stream(atStreamStart,varCollisionPartition,count * 0x14);
+  var = varCollisionPartition;
+  for (i = 0; i < count; i = i + 1) {
+    varCollisionPartition = var;
     Load_CollisionPartition(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5478,20 +5591,20 @@ void __cdecl Load_CollisionPartitionArray(bool param_1,int param_2)
 
 // 0057B1E0  Load_DWORDArray  (database/db_primtypes_load.h:2882)
 
-void __cdecl Load_DWORDArray(bool param_1,int param_2)
+void __cdecl Load_DWORDArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varDWORD,param_2 << 2);
+  Load_Stream(atStreamStart,varDWORD,count << 2);
   return;
 }
 
 
 // 0057D5C0  Load_GfxWorldVertex0Array  (renderer/tr_types_load_db.h:2883)
 
-void __cdecl Load_GfxWorldVertex0Array(bool param_1,int param_2)
+void __cdecl Load_GfxWorldVertex0Array(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxWorldVertex0,param_2 * 0x2c);
+  Load_Stream(atStreamStart,varGfxWorldVertex0,count * 0x2c);
   return;
 }
 
@@ -5509,14 +5622,18 @@ void __cdecl Mark_XAnimNotifyInfo(void)
 
 // 00580240  Load_XModelPtr  (xanim/xmodel_load_db.h:2982)
 
-void __cdecl Load_XModelPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_XModelPtr(bool atStreamStart)
 
 {
   XModel *pXVar1;
   XModel *pXVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varXModelPtr,4);
+  Load_Stream(atStreamStart,varXModelPtr,4);
   DB_PushStreamPos(0);
   if (*varXModelPtr != (XModel *)0x0) {
     pXVar1 = *varXModelPtr;
@@ -5547,14 +5664,18 @@ void __cdecl Load_XModelPtr(bool param_1)
 
 // 005810A0  Load_FxEffectDefHandle  (EffectsCore/fx_effect_load_db.h:2995)
 
-void __cdecl Load_FxEffectDefHandle(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_FxEffectDefHandle(bool atStreamStart)
 
 {
   FxEffectDef *pFVar1;
   FxEffectDef *pFVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varFxEffectDefHandle,4);
+  Load_Stream(atStreamStart,varFxEffectDefHandle,4);
   DB_PushStreamPos(0);
   if (*varFxEffectDefHandle != (FxEffectDef *)0x0) {
     pFVar1 = *varFxEffectDefHandle;
@@ -5585,17 +5706,17 @@ void __cdecl Load_FxEffectDefHandle(bool param_1)
 
 // 0057C4C0  Mark_XAnimNotifyInfoArray  (xanim/xanim_load_db.h:2996)
 
-void __cdecl Mark_XAnimNotifyInfoArray(int param_1)
+void __cdecl Mark_XAnimNotifyInfoArray(int count)
 
 {
-  XAnimNotifyInfo *local_c;
-  int local_8;
+  XAnimNotifyInfo *var;
+  int i;
   
-  local_c = varXAnimNotifyInfo;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varXAnimNotifyInfo = local_c;
+  var = varXAnimNotifyInfo;
+  for (i = 0; i < count; i = i + 1) {
+    varXAnimNotifyInfo = var;
     Mark_XAnimNotifyInfo();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5603,20 +5724,20 @@ void __cdecl Mark_XAnimNotifyInfoArray(int param_1)
 
 // 0057D940  Load_r_index_tArray  (gfx_d3d/r_xsurface_load_db.h:3007)
 
-void __cdecl Load_r_index_tArray(bool param_1,int param_2)
+void __cdecl Load_r_index_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varr_index_t,param_2 << 1);
+  Load_Stream(atStreamStart,varr_index_t,count << 1);
   return;
 }
 
 
 // 00582460  Load_CollisionAabbTreeArray  (qcommon/cm_local_load_db.h:3008)
 
-void __cdecl Load_CollisionAabbTreeArray(bool param_1,int param_2)
+void __cdecl Load_CollisionAabbTreeArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varCollisionAabbTree,param_2 << 5);
+  Load_Stream(atStreamStart,varCollisionAabbTree,count << 5);
   return;
 }
 
@@ -5640,18 +5761,18 @@ void __cdecl Mark_XAnimParts(void)
 
 // 00580310  Load_XModelPtrArray  (xanim/xmodel_load_db.h:3021)
 
-void __cdecl Load_XModelPtrArray(bool param_1,int param_2)
+void __cdecl Load_XModelPtrArray(bool atStreamStart,int count)
 
 {
-  XModel **local_c;
-  int local_8;
+  XModel **var;
+  int i;
   
-  Load_Stream(param_1,varXModelPtr,param_2 << 2);
-  local_c = varXModelPtr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXModelPtr = local_c;
+  Load_Stream(atStreamStart,varXModelPtr,count << 2);
+  var = varXModelPtr;
+  for (i = 0; i < count; i = i + 1) {
+    varXModelPtr = var;
     Load_XModelPtr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5659,28 +5780,28 @@ void __cdecl Load_XModelPtrArray(bool param_1,int param_2)
 
 // 0057B200  Load_uint  (database/db_primtypes_load.h:3032)
 
-void __cdecl Load_uint(bool param_1)
+void __cdecl Load_uint(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varuint,4);
+  Load_Stream(atStreamStart,varuint,4);
   return;
 }
 
 
 // 00581170  Load_FxEffectDefHandleArray  (EffectsCore/fx_effect_load_db.h:3034)
 
-void __cdecl Load_FxEffectDefHandleArray(bool param_1,int param_2)
+void __cdecl Load_FxEffectDefHandleArray(bool atStreamStart,int count)
 
 {
-  FxEffectDef **local_c;
-  int local_8;
+  FxEffectDef **var;
+  int i;
   
-  Load_Stream(param_1,varFxEffectDefHandle,param_2 << 2);
-  local_c = varFxEffectDefHandle;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varFxEffectDefHandle = local_c;
+  Load_Stream(atStreamStart,varFxEffectDefHandle,count << 2);
+  var = varFxEffectDefHandle;
+  for (i = 0; i < count; i = i + 1) {
+    varFxEffectDefHandle = var;
     Load_FxEffectDefHandle(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5688,20 +5809,20 @@ void __cdecl Load_FxEffectDefHandleArray(bool param_1,int param_2)
 
 // 0057B220  Load_uintArray  (database/db_primtypes_load.h:3047)
 
-void __cdecl Load_uintArray(bool param_1,int param_2)
+void __cdecl Load_uintArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varuint,param_2 << 2);
+  Load_Stream(atStreamStart,varuint,count << 2);
   return;
 }
 
 
 // 00580380  Load_XModelPiece  (xanim/xmodel_load_db.h:3061)
 
-void __cdecl Load_XModelPiece(bool param_1)
+void __cdecl Load_XModelPiece(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varXModelPiece,0x10);
+  Load_Stream(atStreamStart,varXModelPiece,0x10);
   varXModelPtr = &varXModelPiece->model;
   Load_XModelPtr(false);
   return;
@@ -5710,11 +5831,11 @@ void __cdecl Load_XModelPiece(bool param_1)
 
 // 005811E0  Load_FxEffectDefRef  (EffectsCore/fx_effect_load_db.h:3074)
 
-void __cdecl Load_FxEffectDefRef(bool param_1)
+void __cdecl Load_FxEffectDefRef(bool atStreamStart)
 
 {
   varXString = &varFxEffectDefRef->name;
-  Load_XString(param_1);
+  Load_XString(atStreamStart);
   Load_FxEffectDefFromName(&varFxEffectDefRef->name);
   return;
 }
@@ -5722,28 +5843,28 @@ void __cdecl Load_FxEffectDefRef(bool param_1)
 
 // 00582480  Load_cmodel_tArray  (qcommon/cm_local_load_db.h:3083)
 
-void __cdecl Load_cmodel_tArray(bool param_1,int param_2)
+void __cdecl Load_cmodel_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varcmodel_t,param_2 * 0x48);
+  Load_Stream(atStreamStart,varcmodel_t,count * 0x48);
   return;
 }
 
 
 // 005803B0  Load_XModelPieceArray  (xanim/xmodel_load_db.h:3086)
 
-void __cdecl Load_XModelPieceArray(bool param_1,int param_2)
+void __cdecl Load_XModelPieceArray(bool atStreamStart,int count)
 
 {
-  XModelPiece *local_c;
-  int local_8;
+  XModelPiece *var;
+  int i;
   
-  Load_Stream(param_1,varXModelPiece,param_2 << 4);
-  local_c = varXModelPiece;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXModelPiece = local_c;
+  Load_Stream(atStreamStart,varXModelPiece,count << 4);
+  var = varXModelPiece;
+  for (i = 0; i < count; i = i + 1) {
+    varXModelPiece = var;
     Load_XModelPiece(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5751,24 +5872,26 @@ void __cdecl Load_XModelPieceArray(bool param_1,int param_2)
 
 // 0057C620  Load_snd_masterArray  (sound/snd_load_db.h:3093)
 
-void __cdecl Load_snd_masterArray(bool param_1,int param_2)
+void __cdecl Load_snd_masterArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_master,param_2 * 0xb0);
+  Load_Stream(atStreamStart,varsnd_master,count * 0xb0);
   return;
 }
 
 
 // 0057DB40  Load_GfxTextureLoad  (gfx_d3d/r_image_load_db.h:3098)
 
-void __cdecl Load_GfxTextureLoad(bool param_1)
+void __cdecl Load_GfxTextureLoad(bool atStreamStart)
 
 {
   IDirect3DBaseTexture9 *pIVar1;
   IDirect3DBaseTexture9 *pIVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGfxTextureLoad,4);
+  Load_Stream(atStreamStart,varGfxTextureLoad,4);
   DB_PushStreamPos(0);
   if (varGfxTextureLoad->basemap != (IDirect3DBaseTexture9 *)0x0) {
     pIVar1 = varGfxTextureLoad->basemap;
@@ -5800,12 +5923,12 @@ void __cdecl Load_GfxTextureLoad(bool param_1)
 
 // 00580420  Load_XModelPieces  (xanim/xmodel_load_db.h:3126)
 
-void __cdecl Load_XModelPieces(bool param_1)
+void __cdecl Load_XModelPieces(bool atStreamStart)
 
 {
   XModelPiece *pXVar1;
   
-  Load_Stream(param_1,varXModelPieces,0xc);
+  Load_Stream(atStreamStart,varXModelPieces,0xc);
   varXString = &varXModelPieces->name;
   Load_XString(false);
   if (varXModelPieces->pieces != (XModelPiece *)0x0) {
@@ -5820,10 +5943,10 @@ void __cdecl Load_XModelPieces(bool param_1)
 
 // 00581210  Load_FxElemMarkVisuals  (EffectsCore/fx_effect_load_db.h:3131)
 
-void __cdecl Load_FxElemMarkVisuals(bool param_1)
+void __cdecl Load_FxElemMarkVisuals(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varFxElemMarkVisuals,8);
+  Load_Stream(atStreamStart,varFxElemMarkVisuals,8);
   varMaterialHandle = varFxElemMarkVisuals->materials;
   Load_MaterialHandleArray(false,2);
   return;
@@ -5832,28 +5955,28 @@ void __cdecl Load_FxElemMarkVisuals(bool param_1)
 
 // 0057D960  Load_r_index16_tArray  (gfx_d3d/r_xsurface_load_db.h:3132)
 
-void __cdecl Load_r_index16_tArray(bool param_1,int param_2)
+void __cdecl Load_r_index16_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varr_index16_t,param_2 << 1);
+  Load_Stream(atStreamStart,varr_index16_t,count << 1);
   return;
 }
 
 
 // 00581250  Load_FxElemMarkVisualsArray  (EffectsCore/fx_effect_load_db.h:3151)
 
-void __cdecl Load_FxElemMarkVisualsArray(bool param_1,int param_2)
+void __cdecl Load_FxElemMarkVisualsArray(bool atStreamStart,int count)
 
 {
-  FxElemMarkVisuals *local_c;
-  int local_8;
+  FxElemMarkVisuals *var;
+  int i;
   
-  Load_Stream(param_1,varFxElemMarkVisuals,param_2 << 3);
-  local_c = varFxElemMarkVisuals;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varFxElemMarkVisuals = local_c;
+  Load_Stream(atStreamStart,varFxElemMarkVisuals,count << 3);
+  var = varFxElemMarkVisuals;
+  for (i = 0; i < count; i = i + 1) {
+    varFxElemMarkVisuals = var;
     Load_FxElemMarkVisuals(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -5861,34 +5984,34 @@ void __cdecl Load_FxElemMarkVisualsArray(bool param_1,int param_2)
 
 // 0057C650  Load_snd_panArray  (sound/snd_load_db.h:3188)
 
-void __cdecl Load_snd_panArray(bool param_1,int param_2)
+void __cdecl Load_snd_panArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_pan,param_2 * 0x3c);
+  Load_Stream(atStreamStart,varsnd_pan,count * 0x3c);
   return;
 }
 
 
 // 005812C0  Load_FxElemVisuals  (EffectsCore/fx_effect_load_db.h:3191)
 
-void __cdecl Load_FxElemVisuals(bool param_1)
+void __cdecl Load_FxElemVisuals(bool atStreamStart)
 
 {
   if (varFxElemDef->elemType == '\a') {
     varXModelPtr = &varFxElemVisuals->model;
-    Load_XModelPtr(param_1);
+    Load_XModelPtr(atStreamStart);
   }
   else if (varFxElemDef->elemType == '\f') {
     varFxEffectDefRef = &varFxElemVisuals->effectDef;
-    Load_FxEffectDefRef(param_1);
+    Load_FxEffectDefRef(atStreamStart);
   }
   else if (varFxElemDef->elemType == '\n') {
     varXString = &varFxElemVisuals->soundName;
-    Load_XString(param_1);
+    Load_XString(atStreamStart);
   }
   else if ((varFxElemDef->elemType != '\b') && (varFxElemDef->elemType != '\t')) {
     varMaterialHandle = &varFxElemVisuals->material;
-    Load_MaterialHandle(param_1);
+    Load_MaterialHandle(atStreamStart);
   }
   return;
 }
@@ -5896,22 +6019,22 @@ void __cdecl Load_FxElemVisuals(bool param_1)
 
 // 0057B240  Load_float  (database/db_primtypes_load.h:3197)
 
-void __cdecl Load_float(bool param_1)
+void __cdecl Load_float(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varfloat,4);
+  Load_Stream(atStreamStart,varfloat,4);
   return;
 }
 
 
 // 00580490  Load_XModelPiecesPtr  (xanim/xmodel_load_db.h:3198)
 
-void __cdecl Load_XModelPiecesPtr(bool param_1)
+void __cdecl Load_XModelPiecesPtr(bool atStreamStart)
 
 {
   XModelPieces *pXVar1;
   
-  Load_Stream(param_1,varXModelPiecesPtr,4);
+  Load_Stream(atStreamStart,varXModelPiecesPtr,4);
   if (*varXModelPiecesPtr != (XModelPieces *)0x0) {
     if (*varXModelPiecesPtr == (XModelPieces *)0xffffffff) {
       pXVar1 = (XModelPieces *)AllocLoad_int();
@@ -5929,15 +6052,17 @@ void __cdecl Load_XModelPiecesPtr(bool param_1)
 
 // 0057B260  Load_floatArray  (database/db_primtypes_load.h:3212)
 
-void __cdecl Load_floatArray(bool param_1,int param_2)
+void __cdecl Load_floatArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varfloat,param_2 << 2);
+  Load_Stream(atStreamStart,varfloat,count << 2);
   return;
 }
 
 
 // 0057C570  Mark_XAnimPartsPtr  (xanim/xanim_load_db.h:3222)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_XAnimPartsPtr(void)
 
@@ -5953,13 +6078,13 @@ void __cdecl Mark_XAnimPartsPtr(void)
 
 // 005824A0  Load_cbrush_t  (qcommon/cm_local_load_db.h:3243)
 
-void __cdecl Load_cbrush_t(bool param_1)
+void __cdecl Load_cbrush_t(bool atStreamStart)
 
 {
   cbrushside_t *pcVar1;
   float (*pafVar2) [3];
   
-  Load_Stream(param_1,varcbrush_t,0x60);
+  Load_Stream(atStreamStart,varcbrush_t,0x60);
   if (varcbrush_t->sides != (cbrushside_t *)0x0) {
     if (varcbrush_t->sides == (cbrushside_t *)0xffffffff) {
       pcVar1 = (cbrushside_t *)AllocLoad_int();
@@ -5988,28 +6113,28 @@ void __cdecl Load_cbrush_t(bool param_1)
 
 // 0057C670  Load_snd_snapshot_groupArray  (sound/snd_load_db.h:3248)
 
-void __cdecl Load_snd_snapshot_groupArray(bool param_1,int param_2)
+void __cdecl Load_snd_snapshot_groupArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_snapshot_group,param_2 << 5);
+  Load_Stream(atStreamStart,varsnd_snapshot_group,count << 5);
   return;
 }
 
 
 // 00581390  Load_FxElemVisualsArray  (EffectsCore/fx_effect_load_db.h:3252)
 
-void __cdecl Load_FxElemVisualsArray(bool param_1,int param_2)
+void __cdecl Load_FxElemVisualsArray(bool atStreamStart,int count)
 
 {
-  FxElemVisuals *local_c;
-  int local_8;
+  FxElemVisuals *var;
+  int i;
   
-  Load_Stream(param_1,varFxElemVisuals,param_2 << 2);
-  local_c = varFxElemVisuals;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varFxElemVisuals = local_c;
+  Load_Stream(atStreamStart,varFxElemVisuals,count << 2);
+  var = varFxElemVisuals;
+  for (i = 0; i < count; i = i + 1) {
+    varFxElemVisuals = var;
     Load_FxElemVisuals(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -6017,10 +6142,10 @@ void __cdecl Load_FxElemVisualsArray(bool param_1,int param_2)
 
 // 00581400  Load_FxElemSpawnSound  (EffectsCore/fx_effect_load_db.h:3292)
 
-void __cdecl Load_FxElemSpawnSound(bool param_1)
+void __cdecl Load_FxElemSpawnSound(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varFxElemSpawnSound,4);
+  Load_Stream(atStreamStart,varFxElemSpawnSound,4);
   varXString = &varFxElemSpawnSound->spawnSound;
   Load_XString(false);
   return;
@@ -6029,18 +6154,18 @@ void __cdecl Load_FxElemSpawnSound(bool param_1)
 
 // 00582560  Load_cbrush_tArray  (qcommon/cm_local_load_db.h:3321)
 
-void __cdecl Load_cbrush_tArray(bool param_1,int param_2)
+void __cdecl Load_cbrush_tArray(bool atStreamStart,int count)
 
 {
-  cbrush_t *local_c;
-  int local_8;
+  cbrush_t *var;
+  int i;
   
-  Load_Stream(param_1,varcbrush_t,param_2 * 0x60);
-  local_c = varcbrush_t;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varcbrush_t = local_c;
+  Load_Stream(atStreamStart,varcbrush_t,count * 0x60);
+  var = varcbrush_t;
+  for (i = 0; i < count; i = i + 1) {
+    varcbrush_t = var;
     Load_cbrush_t(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -6048,30 +6173,30 @@ void __cdecl Load_cbrush_tArray(bool param_1,int param_2)
 
 // 0057C690  Load_snd_snapshotArray  (sound/snd_load_db.h:3353)
 
-void __cdecl Load_snd_snapshotArray(bool param_1,int param_2)
+void __cdecl Load_snd_snapshotArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_snapshot,param_2 * 0x15c);
+  Load_Stream(atStreamStart,varsnd_snapshot,count * 0x15c);
   return;
 }
 
 
 // 0057B280  Load_raw_uintArray  (database/db_primtypes_load.h:3377)
 
-void __cdecl Load_raw_uintArray(bool param_1,int param_2)
+void __cdecl Load_raw_uintArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varraw_uint,param_2 << 2);
+  Load_Stream(atStreamStart,varraw_uint,count << 2);
   return;
 }
 
 
 // 005825D0  Load_LeafBrushArray  (qcommon/cm_local_load_db.h:3381)
 
-void __cdecl Load_LeafBrushArray(bool param_1,int param_2)
+void __cdecl Load_LeafBrushArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varLeafBrush,param_2 << 1);
+  Load_Stream(atStreamStart,varLeafBrush,count << 1);
   return;
 }
 
@@ -6082,6 +6207,7 @@ uint * __cdecl AllocLoad_raw_uint128(void)
 
 {
   uint *puVar1;
+  uint alignment;
   
   puVar1 = (uint *)DB_AllocStreamPos(0x7f);
   return puVar1;
@@ -6090,47 +6216,47 @@ uint * __cdecl AllocLoad_raw_uint128(void)
 
 // 0057C6C0  Load_snd_contextArray  (sound/snd_load_db.h:3423)
 
-void __cdecl Load_snd_contextArray(bool param_1,int param_2)
+void __cdecl Load_snd_contextArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varsnd_context,param_2 * 0x28);
+  Load_Stream(atStreamStart,varsnd_context,count * 0x28);
   return;
 }
 
 
 // 0057B2C0  Load_raw_uint128Array  (database/db_primtypes_load.h:3432)
 
-void __cdecl Load_raw_uint128Array(bool param_1,int param_2)
+void __cdecl Load_raw_uint128Array(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varraw_uint128,param_2 << 2);
+  Load_Stream(atStreamStart,varraw_uint128,count << 2);
   return;
 }
 
 
 // 005825F0  Load_rope_tArray  (qcommon/cm_local_load_db.h:3436)
 
-void __cdecl Load_rope_tArray(bool param_1,int param_2)
+void __cdecl Load_rope_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varrope_t,param_2 * 0xc74);
+  Load_Stream(atStreamStart,varrope_t,count * 0xc74);
   return;
 }
 
 
 // 00581430  Load_FxElemVisStateSampleArray  (EffectsCore/fx_effect_load_db.h:3457)
 
-void __cdecl Load_FxElemVisStateSampleArray(bool param_1,int param_2)
+void __cdecl Load_FxElemVisStateSampleArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varFxElemVisStateSample,param_2 * 0x30);
+  Load_Stream(atStreamStart,varFxElemVisStateSample,count * 0x30);
   return;
 }
 
 
 // 0057C6E0  Load_SndDriverGlobals  (sound/snd_load_db.h:3463)
 
-void __cdecl Load_SndDriverGlobals(bool param_1)
+void __cdecl Load_SndDriverGlobals(bool atStreamStart)
 
 {
   snd_group *psVar1;
@@ -6140,7 +6266,7 @@ void __cdecl Load_SndDriverGlobals(bool param_1)
   snd_context *psVar5;
   snd_master *psVar6;
   
-  Load_Stream(param_1,varSndDriverGlobals,0x34);
+  Load_Stream(atStreamStart,varSndDriverGlobals,0x34);
   DB_PushStreamPos(4);
   varXString = &varSndDriverGlobals->name;
   Load_XString(false);
@@ -6187,7 +6313,7 @@ void __cdecl Load_SndDriverGlobals(bool param_1)
 
 // 00582620  Load_clipMap_t  (qcommon/cm_local_load_db.h:3476)
 
-void __cdecl Load_clipMap_t(bool param_1)
+void __cdecl Load_clipMap_t(bool atStreamStart)
 
 {
   cplane_s *pcVar1;
@@ -6214,7 +6340,7 @@ void __cdecl Load_clipMap_t(bool param_1)
   PhysConstraint *pPVar22;
   rope_t *prVar23;
   
-  Load_Stream(param_1,varclipMap_t,0x14c);
+  Load_Stream(atStreamStart,varclipMap_t,0x14c);
   DB_PushStreamPos(4);
   varXString = &varclipMap_t->name;
   Load_XString(false);
@@ -6469,20 +6595,20 @@ void __cdecl Load_clipMap_t(bool param_1)
 
 // 0057B2E0  Load_raw_byteArray  (database/db_primtypes_load.h:3487)
 
-void __cdecl Load_raw_byteArray(bool param_1,int param_2)
+void __cdecl Load_raw_byteArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varraw_byte,param_2);
+  Load_Stream(atStreamStart,varraw_byte,count);
   return;
 }
 
 
 // 0057DC10  Load_GfxRawTextureArray  (gfx_d3d/r_image_load_db.h:3495)
 
-void __cdecl Load_GfxRawTextureArray(bool param_1,int param_2)
+void __cdecl Load_GfxRawTextureArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxRawTexture,param_2 << 2);
+  Load_Stream(atStreamStart,varGfxRawTexture,count << 2);
   return;
 }
 
@@ -6493,6 +6619,7 @@ uchar * __cdecl AllocLoad_raw_byte16(void)
 
 {
   uchar *puVar1;
+  uint alignment_12;
   
   puVar1 = DB_AllocStreamPos(0xf);
   return puVar1;
@@ -6501,24 +6628,28 @@ uchar * __cdecl AllocLoad_raw_byte16(void)
 
 // 0057B300  Load_raw_byte16Array  (database/db_primtypes_load.h:3542)
 
-void __cdecl Load_raw_byte16Array(bool param_1,int param_2)
+void __cdecl Load_raw_byte16Array(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varraw_byte16,param_2);
+  Load_Stream(atStreamStart,varraw_byte16,count);
   return;
 }
 
 
 // 0057C890  Load_SndDriverGlobalsPtr  (sound/snd_load_db.h:3599)
 
-void __cdecl Load_SndDriverGlobalsPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_SndDriverGlobalsPtr(bool atStreamStart)
 
 {
   SndDriverGlobals *pSVar1;
   SndDriverGlobals *pSVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varSndDriverGlobalsPtr,4);
+  Load_Stream(atStreamStart,varSndDriverGlobalsPtr,4);
   DB_PushStreamPos(0);
   if (*varSndDriverGlobalsPtr != (SndDriverGlobals *)0x0) {
     pSVar1 = *varSndDriverGlobalsPtr;
@@ -6549,12 +6680,12 @@ void __cdecl Load_SndDriverGlobalsPtr(bool param_1)
 
 // 0057DFD0  Load_GfxVertexShaderLoadDef  (gfx_d3d/r_material_load_db.h:3599)
 
-void __cdecl Load_GfxVertexShaderLoadDef(bool param_1)
+void __cdecl Load_GfxVertexShaderLoadDef(bool atStreamStart)
 
 {
   ulong *puVar1;
   
-  Load_Stream(param_1,varGfxVertexShaderLoadDef,8);
+  Load_Stream(atStreamStart,varGfxVertexShaderLoadDef,8);
   if (varGfxVertexShaderLoadDef->program != (ulong *)0x0) {
     puVar1 = (ulong *)AllocLoad_int();
     varGfxVertexShaderLoadDef->program = puVar1;
@@ -6567,50 +6698,50 @@ void __cdecl Load_GfxVertexShaderLoadDef(bool param_1)
 
 // 00581450  Load_FxElemVelStateSampleArray  (EffectsCore/fx_effect_load_db.h:3652)
 
-void __cdecl Load_FxElemVelStateSampleArray(bool param_1,int param_2)
+void __cdecl Load_FxElemVelStateSampleArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varFxElemVelStateSample,param_2 * 0x60);
+  Load_Stream(atStreamStart,varFxElemVelStateSample,count * 0x60);
   return;
 }
 
 
 // 0057B320  Load_vec2_tArray  (database/db_primtypes_load.h:3662)
 
-void __cdecl Load_vec2_tArray(bool param_1,int param_2)
+void __cdecl Load_vec2_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varvec2_t,param_2 << 3);
+  Load_Stream(atStreamStart,varvec2_t,count << 3);
   return;
 }
 
 
 // 0057D5E0  Load_GfxPackedVertex0Array  (renderer/tr_types_load_db.h:3695)
 
-void __cdecl Load_GfxPackedVertex0Array(bool param_1,int param_2)
+void __cdecl Load_GfxPackedVertex0Array(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxPackedVertex0,param_2 << 5);
+  Load_Stream(atStreamStart,varGfxPackedVertex0,count << 5);
   return;
 }
 
 
 // 0057B340  Load_vec3_t  (database/db_primtypes_load.h:3702)
 
-void __cdecl Load_vec3_t(bool param_1)
+void __cdecl Load_vec3_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varvec3_t,0xc);
+  Load_Stream(atStreamStart,varvec3_t,0xc);
   return;
 }
 
 
 // 0057B360  Load_vec3_tArray  (database/db_primtypes_load.h:3722)
 
-void __cdecl Load_vec3_tArray(bool param_1,int param_2)
+void __cdecl Load_vec3_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varvec3_t,param_2 * 0xc);
+  Load_Stream(atStreamStart,varvec3_t,count * 0xc);
   return;
 }
 
@@ -6638,34 +6769,34 @@ void __cdecl Mark_XModel(void)
 
 // 0057B380  Load_vec4_tArray  (database/db_primtypes_load.h:3782)
 
-void __cdecl Load_vec4_tArray(bool param_1,int param_2)
+void __cdecl Load_vec4_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varvec4_t,param_2 << 4);
+  Load_Stream(atStreamStart,varvec4_t,count << 4);
   return;
 }
 
 
 // 0057C960  Load_PackIndexEntryArray  (sound/snd_load_db.h:3788)
 
-void __cdecl Load_PackIndexEntryArray(bool param_1,int param_2)
+void __cdecl Load_PackIndexEntryArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varPackIndexEntry,param_2 * 0xc);
+  Load_Stream(atStreamStart,varPackIndexEntry,count * 0xc);
   return;
 }
 
 
 // 0057DC30  Load_GfxImageLoadDef  (gfx_d3d/r_image_load_db.h:3790)
 
-void __cdecl Load_GfxImageLoadDef(bool param_1)
+void __cdecl Load_GfxImageLoadDef(bool atStreamStart)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (!param_1) {
+  if (!atStreamStart) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../gfx_d3d/r_image_load_db.h"
                              ,0xecf,0,"%s");
     if (!bVar2) {
@@ -6693,12 +6824,12 @@ void __cdecl Load_GfxImageLoadDef(bool param_1)
 
 // 0057E030  Load_GfxPixelShaderLoadDef  (gfx_d3d/r_material_load_db.h:3814)
 
-void __cdecl Load_GfxPixelShaderLoadDef(bool param_1)
+void __cdecl Load_GfxPixelShaderLoadDef(bool atStreamStart)
 
 {
   ulong *puVar1;
   
-  Load_Stream(param_1,varGfxPixelShaderLoadDef,8);
+  Load_Stream(atStreamStart,varGfxPixelShaderLoadDef,8);
   if (varGfxPixelShaderLoadDef->program != (ulong *)0x0) {
     puVar1 = (ulong *)AllocLoad_int();
     varGfxPixelShaderLoadDef->program = puVar1;
@@ -6711,12 +6842,12 @@ void __cdecl Load_GfxPixelShaderLoadDef(bool param_1)
 
 // 0057C980  Load_PackIndex  (sound/snd_load_db.h:3828)
 
-void __cdecl Load_PackIndex(bool param_1)
+void __cdecl Load_PackIndex(bool atStreamStart)
 
 {
   PackIndexEntry *pPVar1;
   
-  Load_Stream(param_1,varPackIndex,0x1c);
+  Load_Stream(atStreamStart,varPackIndex,0x1c);
   DB_PushStreamPos(4);
   varXString = &varPackIndex->name;
   Load_XString(false);
@@ -6733,24 +6864,28 @@ void __cdecl Load_PackIndex(bool param_1)
 
 // 0057B3A0  Load_DObjAnimMatArray  (database/db_primtypes_load.h:3852)
 
-void __cdecl Load_DObjAnimMatArray(bool param_1,int param_2)
+void __cdecl Load_DObjAnimMatArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varDObjAnimMat,param_2 << 5);
+  Load_Stream(atStreamStart,varDObjAnimMat,count << 5);
   return;
 }
 
 
 // 0057CA00  Load_PackIndexPtr  (sound/snd_load_db.h:3904)
 
-void __cdecl Load_PackIndexPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_PackIndexPtr(bool atStreamStart)
 
 {
   PackIndex *pPVar1;
   PackIndex *pPVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varPackIndexPtr,4);
+  Load_Stream(atStreamStart,varPackIndexPtr,4);
   DB_PushStreamPos(0);
   if (*varPackIndexPtr != (PackIndex *)0x0) {
     pPVar1 = *varPackIndexPtr;
@@ -6781,10 +6916,10 @@ void __cdecl Load_PackIndexPtr(bool param_1)
 
 // 0057E090  Load_MaterialVertexShaderProgram  (gfx_d3d/r_material_load_db.h:3969)
 
-void __cdecl Load_MaterialVertexShaderProgram(bool param_1)
+void __cdecl Load_MaterialVertexShaderProgram(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialVertexShaderProgram,0xc);
+  Load_Stream(atStreamStart,varMaterialVertexShaderProgram,0xc);
   varGfxVertexShaderLoadDef = &varMaterialVertexShaderProgram->loadDef;
   Load_GfxVertexShaderLoadDef(false);
   Load_CreateMaterialVertexShader(&varMaterialVertexShaderProgram->loadDef,varMaterialVertexShader);
@@ -6794,14 +6929,18 @@ void __cdecl Load_MaterialVertexShaderProgram(bool param_1)
 
 // 00583090  Load_clipMap_ptr  (qcommon/cm_local_load_db.h:3976)
 
-void __cdecl Load_clipMap_ptr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_clipMap_ptr(bool atStreamStart)
 
 {
   clipMap_t *pcVar1;
   clipMap_t *pcVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varclipMap_ptr,4);
+  Load_Stream(atStreamStart,varclipMap_ptr,4);
   DB_PushStreamPos(0);
   if (*varclipMap_ptr != (clipMap_t *)0x0) {
     pcVar1 = *varclipMap_ptr;
@@ -6832,7 +6971,7 @@ void __cdecl Load_clipMap_ptr(bool param_1)
 
 // 00581470  Load_FxElemDefVisuals  (EffectsCore/fx_effect_load_db.h:3980)
 
-void __cdecl Load_FxElemDefVisuals(bool param_1)
+void __cdecl Load_FxElemDefVisuals(bool atStreamStart)
 
 {
   FxElemVisuals *pFVar1;
@@ -6847,7 +6986,7 @@ void __cdecl Load_FxElemDefVisuals(bool param_1)
   }
   else if (varFxElemDef->visualCount < 2) {
     varFxElemVisuals = &varFxElemDefVisuals->instance;
-    Load_FxElemVisuals(param_1);
+    Load_FxElemVisuals(atStreamStart);
   }
   else if (varFxElemDefVisuals->markArray != (FxElemMarkVisuals *)0x0) {
     pFVar1 = (FxElemVisuals *)AllocLoad_int();
@@ -6860,6 +6999,8 @@ void __cdecl Load_FxElemDefVisuals(bool param_1)
 
 
 // 00580590  Mark_XModelPtr  (xanim/xmodel_load_db.h:4000)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_XModelPtr(void)
 
@@ -6875,27 +7016,27 @@ void __cdecl Mark_XModelPtr(void)
 
 // 0057B3C0  Load_shared_vec3_t  (database/db_primtypes_load.h:4012)
 
-void __cdecl Load_shared_vec3_t(bool param_1)
+void __cdecl Load_shared_vec3_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varshared_vec3_t,0xc);
+  Load_Stream(atStreamStart,varshared_vec3_t,0xc);
   return;
 }
 
 
 // 005805C0  Mark_XModelPtrArray  (xanim/xmodel_load_db.h:4013)
 
-void __cdecl Mark_XModelPtrArray(int param_1)
+void __cdecl Mark_XModelPtrArray(int count)
 
 {
-  XModel **local_c;
-  int local_8;
+  XModel **var;
+  int i;
   
-  local_c = varXModelPtr;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varXModelPtr = local_c;
+  var = varXModelPtr;
+  for (i = 0; i < count; i = i + 1) {
+    varXModelPtr = var;
     Mark_XModelPtr();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -6903,10 +7044,10 @@ void __cdecl Mark_XModelPtrArray(int param_1)
 
 // 0057B3E0  Load_shared_vec3_tArray  (database/db_primtypes_load.h:4032)
 
-void __cdecl Load_shared_vec3_tArray(bool param_1,int param_2)
+void __cdecl Load_shared_vec3_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varshared_vec3_t,param_2 * 0xc);
+  Load_Stream(atStreamStart,varshared_vec3_t,count * 0xc);
   return;
 }
 
@@ -6924,17 +7065,17 @@ void __cdecl Mark_XModelPiece(void)
 
 // 00580630  Mark_XModelPieceArray  (xanim/xmodel_load_db.h:4047)
 
-void __cdecl Mark_XModelPieceArray(int param_1)
+void __cdecl Mark_XModelPieceArray(int count)
 
 {
-  XModelPiece *local_c;
-  int local_8;
+  XModelPiece *var;
+  int i;
   
-  local_c = varXModelPiece;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varXModelPiece = local_c;
+  var = varXModelPiece;
+  for (i = 0; i < count; i = i + 1) {
+    varXModelPiece = var;
     Mark_XModelPiece();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -6953,10 +7094,10 @@ void __cdecl Mark_cStaticModel_t(void)
 
 // 0057E0E0  Load_MaterialPixelShaderProgram  (gfx_d3d/r_material_load_db.h:4060)
 
-void __cdecl Load_MaterialPixelShaderProgram(bool param_1)
+void __cdecl Load_MaterialPixelShaderProgram(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialPixelShaderProgram,0xc);
+  Load_Stream(atStreamStart,varMaterialPixelShaderProgram,0xc);
   varGfxPixelShaderLoadDef = &varMaterialPixelShaderProgram->loadDef;
   Load_GfxPixelShaderLoadDef(false);
   Load_CreateMaterialPixelShader(&varMaterialPixelShaderProgram->loadDef,varMaterialPixelShader);
@@ -6983,6 +7124,7 @@ short * __cdecl AllocLoad_short(void)
 
 {
   short *psVar1;
+  uint alignment_9;
   
   psVar1 = (short *)DB_AllocStreamPos(1);
   return psVar1;
@@ -6991,17 +7133,17 @@ short * __cdecl AllocLoad_short(void)
 
 // 00583180  Mark_cStaticModel_tArray  (qcommon/cm_local_load_db.h:4080)
 
-void __cdecl Mark_cStaticModel_tArray(int param_1)
+void __cdecl Mark_cStaticModel_tArray(int count)
 
 {
-  cStaticModel_s *local_c;
-  int local_8;
+  cStaticModel_s *var;
+  int i;
   
-  local_c = varcStaticModel_t;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varcStaticModel_t = local_c;
+  var = varcStaticModel_t;
+  for (i = 0; i < count; i = i + 1) {
+    varcStaticModel_t = var;
     Mark_cStaticModel_t();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7009,30 +7151,30 @@ void __cdecl Mark_cStaticModel_tArray(int param_1)
 
 // 0057B400  Load_shortArray  (database/db_primtypes_load.h:4087)
 
-void __cdecl Load_shortArray(bool param_1,int param_2)
+void __cdecl Load_shortArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varshort,param_2 << 1);
+  Load_Stream(atStreamStart,varshort,count << 1);
   return;
 }
 
 
 // 00581530  Load_FxTrailVertexArray  (EffectsCore/fx_effect_load_db.h:4093)
 
-void __cdecl Load_FxTrailVertexArray(bool param_1,int param_2)
+void __cdecl Load_FxTrailVertexArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varFxTrailVertex,param_2 * 0x14);
+  Load_Stream(atStreamStart,varFxTrailVertex,count * 0x14);
   return;
 }
 
 
 // 0057D600  Load_GfxBrushModelArray  (renderer/tr_types_load_db.h:4108)
 
-void __cdecl Load_GfxBrushModelArray(bool param_1,int param_2)
+void __cdecl Load_GfxBrushModelArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxBrushModel,param_2 * 0x3c);
+  Load_Stream(atStreamStart,varGfxBrushModel,count * 0x3c);
   return;
 }
 
@@ -7052,14 +7194,14 @@ void __cdecl Mark_XModelPiecesPtr(void)
 
 // 0057D980  Load_XSurface  (gfx_d3d/r_xsurface_load_db.h:4124)
 
-void __cdecl Load_XSurface(bool param_1)
+void __cdecl Load_XSurface(bool atStreamStart)
 
 {
   GfxPackedVertex *pGVar1;
   XRigidVertList *pXVar2;
   ushort *puVar3;
   
-  Load_Stream(param_1,varXSurface,0x44);
+  Load_Stream(atStreamStart,varXSurface,0x44);
   varXSurfaceVertexInfo = &varXSurface->vertInfo;
   Load_XSurfaceVertexInfo(false);
   if (varXSurface->verts0 != (GfxPackedVertex *)0x0) {
@@ -7101,10 +7243,10 @@ void __cdecl Load_XSurface(bool param_1)
 
 // 0057DCD0  Load_GfxImage  (gfx_d3d/r_image_load_db.h:4130)
 
-void __cdecl Load_GfxImage(bool param_1)
+void __cdecl Load_GfxImage(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGfxImage,0x34);
+  Load_Stream(atStreamStart,varGfxImage,0x34);
   DB_PushStreamPos(4);
   varXString = &varGfxImage->name;
   Load_XString(false);
@@ -7117,13 +7259,13 @@ void __cdecl Load_GfxImage(bool param_1)
 
 // 00581550  Load_FxTrailDef  (EffectsCore/fx_effect_load_db.h:4133)
 
-void __cdecl Load_FxTrailDef(bool param_1)
+void __cdecl Load_FxTrailDef(bool atStreamStart)
 
 {
   FxTrailVertex *pFVar1;
   ushort *puVar2;
   
-  Load_Stream(param_1,varFxTrailDef,0x1c);
+  Load_Stream(atStreamStart,varFxTrailDef,0x1c);
   if ((varFxTrailDef->field4_0x10).vertsEA != (FxTrailVertex *)0x0) {
     pFVar1 = (FxTrailVertex *)AllocLoad_int();
     (varFxTrailDef->field4_0x10).vertsEA = pFVar1;
@@ -7142,10 +7284,10 @@ void __cdecl Load_FxTrailDef(bool param_1)
 
 // 0057E130  Load_MaterialVertexShader  (gfx_d3d/r_material_load_db.h:4226)
 
-void __cdecl Load_MaterialVertexShader(bool param_1)
+void __cdecl Load_MaterialVertexShader(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialVertexShader,0x10);
+  Load_Stream(atStreamStart,varMaterialVertexShader,0x10);
   varXString = &varMaterialVertexShader->name;
   Load_XString(false);
   varMaterialVertexShaderProgram = &varMaterialVertexShader->prog;
@@ -7156,22 +7298,22 @@ void __cdecl Load_MaterialVertexShader(bool param_1)
 
 // 0057B420  Load_ushortArray  (database/db_primtypes_load.h:4252)
 
-void __cdecl Load_ushortArray(bool param_1,int param_2)
+void __cdecl Load_ushortArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varushort,param_2 << 1);
+  Load_Stream(atStreamStart,varushort,count << 1);
   return;
 }
 
 
 // 0057E180  Load_MaterialVertexShaderPtr  (gfx_d3d/r_material_load_db.h:4295)
 
-void __cdecl Load_MaterialVertexShaderPtr(bool param_1)
+void __cdecl Load_MaterialVertexShaderPtr(bool atStreamStart)
 
 {
   MaterialVertexShader *pMVar1;
   
-  Load_Stream(param_1,varMaterialVertexShaderPtr,4);
+  Load_Stream(atStreamStart,varMaterialVertexShaderPtr,4);
   if (*varMaterialVertexShaderPtr != (MaterialVertexShader *)0x0) {
     if (*varMaterialVertexShaderPtr == (MaterialVertexShader *)0xffffffff) {
       pMVar1 = (MaterialVertexShader *)AllocLoad_int();
@@ -7189,14 +7331,18 @@ void __cdecl Load_MaterialVertexShaderPtr(bool param_1)
 
 // 0057DD30  Load_GfxImagePtr  (gfx_d3d/r_image_load_db.h:4321)
 
-void __cdecl Load_GfxImagePtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_GfxImagePtr(bool atStreamStart)
 
 {
   GfxImage *pGVar1;
   GfxImage *pGVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGfxImagePtr,4);
+  Load_Stream(atStreamStart,varGfxImagePtr,4);
   DB_PushStreamPos(0);
   if (*varGfxImagePtr != (GfxImage *)0x0) {
     pGVar1 = *varGfxImagePtr;
@@ -7227,18 +7373,18 @@ void __cdecl Load_GfxImagePtr(bool param_1)
 
 // 0057DAD0  Load_XSurfaceArray  (gfx_d3d/r_xsurface_load_db.h:4323)
 
-void __cdecl Load_XSurfaceArray(bool param_1,int param_2)
+void __cdecl Load_XSurfaceArray(bool atStreamStart,int count)
 
 {
-  XSurface *local_c;
-  int local_8;
+  XSurface *var;
+  int i;
   
-  Load_Stream(param_1,varXSurface,param_2 * 0x44);
-  local_c = varXSurface;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXSurface = local_c;
+  Load_Stream(atStreamStart,varXSurface,count * 0x44);
+  var = varXSurface;
+  for (i = 0; i < count; i = i + 1) {
+    varXSurface = var;
     Load_XSurface(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7246,28 +7392,28 @@ void __cdecl Load_XSurfaceArray(bool param_1,int param_2)
 
 // 0057B440  Load_XQuat2  (database/db_primtypes_load.h:4352)
 
-void __cdecl Load_XQuat2(bool param_1)
+void __cdecl Load_XQuat2(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varXQuat2,4);
+  Load_Stream(atStreamStart,varXQuat2,4);
   return;
 }
 
 
 // 0057DE00  Load_GfxImagePtrArray  (gfx_d3d/r_image_load_db.h:4360)
 
-void __cdecl Load_GfxImagePtrArray(bool param_1,int param_2)
+void __cdecl Load_GfxImagePtrArray(bool atStreamStart,int count)
 
 {
-  GfxImage **local_c;
-  int local_8;
+  GfxImage **var;
+  int i;
   
-  Load_Stream(param_1,varGfxImagePtr,param_2 << 2);
-  local_c = varGfxImagePtr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxImagePtr = local_c;
+  Load_Stream(atStreamStart,varGfxImagePtr,count << 2);
+  var = varGfxImagePtr;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxImagePtr = var;
     Load_GfxImagePtr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7275,14 +7421,14 @@ void __cdecl Load_GfxImagePtrArray(bool param_1,int param_2)
 
 // 005815F0  Load_FxElemDef  (EffectsCore/fx_effect_load_db.h:4369)
 
-void __cdecl Load_FxElemDef(bool param_1)
+void __cdecl Load_FxElemDef(bool atStreamStart)
 
 {
   FxElemVelStateSample *pFVar1;
   FxElemVisStateSample *pFVar2;
   FxTrailDef *pFVar3;
   
-  Load_Stream(param_1,varFxElemDef,0x124);
+  Load_Stream(atStreamStart,varFxElemDef,0x124);
   if (varFxElemDef->velSamples != (FxElemVelStateSample *)0x0) {
     pFVar1 = (FxElemVelStateSample *)AllocLoad_int();
     varFxElemDef->velSamples = pFVar1;
@@ -7319,30 +7465,30 @@ void __cdecl Load_FxElemDef(bool param_1)
 
 // 0057B460  Load_XQuat2Array  (database/db_primtypes_load.h:4372)
 
-void __cdecl Load_XQuat2Array(bool param_1,int param_2)
+void __cdecl Load_XQuat2Array(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varXQuat2,param_2 << 2);
+  Load_Stream(atStreamStart,varXQuat2,count << 2);
   return;
 }
 
 
 // 0057B4A0  Load_UnsignedShortArray  (database/db_primtypes_load.h:4427)
 
-void __cdecl Load_UnsignedShortArray(bool param_1,int param_2)
+void __cdecl Load_UnsignedShortArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varUnsignedShort,param_2 << 1);
+  Load_Stream(atStreamStart,varUnsignedShort,count << 1);
   return;
 }
 
 
 // 0057B4C0  Load_ScriptString  (database/db_primtypes_load.h:4467)
 
-void __cdecl Load_ScriptString(bool param_1)
+void __cdecl Load_ScriptString(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varScriptString,2);
+  Load_Stream(atStreamStart,varScriptString,2);
   Load_ScriptStringCustom(varScriptString);
   return;
 }
@@ -7350,18 +7496,18 @@ void __cdecl Load_ScriptString(bool param_1)
 
 // 0057B4F0  Load_ScriptStringArray  (database/db_primtypes_load.h:4484)
 
-void __cdecl Load_ScriptStringArray(bool param_1,int param_2)
+void __cdecl Load_ScriptStringArray(bool atStreamStart,int count)
 
 {
-  ushort *local_c;
-  int local_8;
+  ushort *var;
+  int i;
   
-  Load_Stream(param_1,varScriptString,param_2 << 1);
-  local_c = varScriptString;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varScriptString = local_c;
+  Load_Stream(atStreamStart,varScriptString,count << 1);
+  var = varScriptString;
+  for (i = 0; i < count; i = i + 1) {
+    varScriptString = var;
     Load_ScriptString(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7369,22 +7515,22 @@ void __cdecl Load_ScriptStringArray(bool param_1,int param_2)
 
 // 0057B580  Load_ConstCharArray  (database/db_primtypes_load.h:4539)
 
-void __cdecl Load_ConstCharArray(bool param_1,int param_2)
+void __cdecl Load_ConstCharArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varConstChar,param_2);
+  Load_Stream(atStreamStart,varConstChar,count);
   return;
 }
 
 
 // 0057B5A0  Load_TempString  (database/db_primtypes_load.h:4579)
 
-void __cdecl Load_TempString(bool param_1)
+void __cdecl Load_TempString(bool atStreamStart)
 
 {
   uchar *puVar1;
   
-  Load_Stream(param_1,varTempString,4);
+  Load_Stream(atStreamStart,varTempString,4);
   if (*varTempString != (char *)0x0) {
     if (*varTempString == (char *)0xffffffff) {
       puVar1 = AllocLoad_byte();
@@ -7402,10 +7548,10 @@ void __cdecl Load_TempString(bool param_1)
 
 // 0057E1F0  Load_MaterialPixelShader  (gfx_d3d/r_material_load_db.h:4597)
 
-void __cdecl Load_MaterialPixelShader(bool param_1)
+void __cdecl Load_MaterialPixelShader(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialPixelShader,0x10);
+  Load_Stream(atStreamStart,varMaterialPixelShader,0x10);
   varXString = &varMaterialPixelShader->name;
   Load_XString(false);
   varMaterialPixelShaderProgram = &varMaterialPixelShader->prog;
@@ -7416,18 +7562,18 @@ void __cdecl Load_MaterialPixelShader(bool param_1)
 
 // 0057B610  Load_TempStringArray  (database/db_primtypes_load.h:4608)
 
-void __cdecl Load_TempStringArray(bool param_1,int param_2)
+void __cdecl Load_TempStringArray(bool atStreamStart,int count)
 
 {
-  char **local_c;
-  int local_8;
+  char **var;
+  int i;
   
-  Load_Stream(param_1,varTempString,param_2 << 2);
-  local_c = varTempString;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varTempString = local_c;
+  Load_Stream(atStreamStart,varTempString,count << 2);
+  var = varTempString;
+  for (i = 0; i < count; i = i + 1) {
+    varTempString = var;
     Load_TempString(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7435,18 +7581,18 @@ void __cdecl Load_TempStringArray(bool param_1,int param_2)
 
 // 00581790  Load_FxElemDefArray  (EffectsCore/fx_effect_load_db.h:4610)
 
-void __cdecl Load_FxElemDefArray(bool param_1,int param_2)
+void __cdecl Load_FxElemDefArray(bool atStreamStart,int count)
 
 {
-  FxElemDef *local_c;
-  int local_8;
+  FxElemDef *var;
+  int i;
   
-  Load_Stream(param_1,varFxElemDef,param_2 * 0x124);
-  local_c = varFxElemDef;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varFxElemDef = local_c;
+  Load_Stream(atStreamStart,varFxElemDef,count * 0x124);
+  var = varFxElemDef;
+  for (i = 0; i < count; i = i + 1) {
+    varFxElemDef = var;
     Load_FxElemDef(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7454,12 +7600,12 @@ void __cdecl Load_FxElemDefArray(bool param_1,int param_2)
 
 // 0057B680  Load_XString  (database/db_primtypes_load.h:4648)
 
-void __cdecl Load_XString(bool param_1)
+void __cdecl Load_XString(bool atStreamStart)
 
 {
   uchar *puVar1;
   
-  Load_Stream(param_1,varXString,4);
+  Load_Stream(atStreamStart,varXString,4);
   if (*varXString != (char *)0x0) {
     if (*varXString == (char *)0xffffffff) {
       puVar1 = AllocLoad_byte();
@@ -7477,12 +7623,12 @@ void __cdecl Load_XString(bool param_1)
 
 // 00581800  Load_FxEffectDef  (EffectsCore/fx_effect_load_db.h:4650)
 
-void __cdecl Load_FxEffectDef(bool param_1)
+void __cdecl Load_FxEffectDef(bool atStreamStart)
 
 {
   FxElemDef *pFVar1;
   
-  Load_Stream(param_1,varFxEffectDef,0x3c);
+  Load_Stream(atStreamStart,varFxEffectDef,0x3c);
   DB_PushStreamPos(4);
   varXString = &varFxEffectDef->name;
   Load_XString(false);
@@ -7501,12 +7647,12 @@ void __cdecl Load_FxEffectDef(bool param_1)
 
 // 005838F0  Load_ScriptCondition  (ui/ui_shared_load_db.h:4664)
 
-void __cdecl Load_ScriptCondition(bool param_1)
+void __cdecl Load_ScriptCondition(bool atStreamStart)
 
 {
   ScriptCondition *pSVar1;
   
-  Load_Stream(param_1,varScriptCondition,0x10);
+  Load_Stream(atStreamStart,varScriptCondition,0x10);
   if (varScriptCondition->next != (ScriptCondition *)0x0) {
     pSVar1 = (ScriptCondition *)AllocLoad_int();
     varScriptCondition->next = pSVar1;
@@ -7519,18 +7665,18 @@ void __cdecl Load_ScriptCondition(bool param_1)
 
 // 0057B6F0  Load_XStringArray  (database/db_primtypes_load.h:4677)
 
-void __cdecl Load_XStringArray(bool param_1,int param_2)
+void __cdecl Load_XStringArray(bool atStreamStart,int count)
 
 {
-  char **local_c;
-  int local_8;
+  char **var;
+  int i;
   
-  Load_Stream(param_1,varXString,param_2 << 2);
-  local_c = varXString;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varXString = local_c;
+  Load_Stream(atStreamStart,varXString,count << 2);
+  var = varXString;
+  for (i = 0; i < count; i = i + 1) {
+    varXString = var;
     Load_XString(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7538,10 +7684,10 @@ void __cdecl Load_XStringArray(bool param_1,int param_2)
 
 // 00583940  Load_ScriptConditionNext  (ui/ui_shared_load_db.h:4741)
 
-void __cdecl Load_ScriptConditionNext(bool param_1)
+void __cdecl Load_ScriptConditionNext(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varScriptConditionNext,0x10);
+  Load_Stream(atStreamStart,varScriptConditionNext,0x10);
   varScriptCondition = varScriptConditionNext;
   Load_ScriptCondition(false);
   return;
@@ -7577,12 +7723,12 @@ void __cdecl Mark_clipMap_t(void)
 
 // 0057B760  Load_ScriptStringList  (database/db_primtypes_load.h:4786)
 
-void __cdecl Load_ScriptStringList(bool param_1)
+void __cdecl Load_ScriptStringList(bool atStreamStart)
 
 {
   char **ppcVar1;
   
-  Load_Stream(param_1,varScriptStringList,8);
+  Load_Stream(atStreamStart,varScriptStringList,8);
   DB_PushStreamPos(4);
   if (varScriptStringList->strings != (char **)0x0) {
     ppcVar1 = (char **)AllocLoad_int();
@@ -7597,13 +7743,13 @@ void __cdecl Load_ScriptStringList(bool param_1)
 
 // 00583970  Load_GenericEventScript  (ui/ui_shared_load_db.h:4801)
 
-void __cdecl Load_GenericEventScript(bool param_1)
+void __cdecl Load_GenericEventScript(bool atStreamStart)
 
 {
   ScriptCondition *pSVar1;
   GenericEventScript *pGVar2;
   
-  Load_Stream(param_1,varGenericEventScript,0x2c);
+  Load_Stream(atStreamStart,varGenericEventScript,0x2c);
   if (varGenericEventScript->prerequisites != (ScriptCondition *)0x0) {
     pSVar1 = (ScriptCondition *)AllocLoad_int();
     varGenericEventScript->prerequisites = pSVar1;
@@ -7626,12 +7772,12 @@ void __cdecl Load_GenericEventScript(bool param_1)
 
 // 0057E240  Load_MaterialPixelShaderPtr  (gfx_d3d/r_material_load_db.h:4832)
 
-void __cdecl Load_MaterialPixelShaderPtr(bool param_1)
+void __cdecl Load_MaterialPixelShaderPtr(bool atStreamStart)
 
 {
   MaterialPixelShader *pMVar1;
   
-  Load_Stream(param_1,varMaterialPixelShaderPtr,4);
+  Load_Stream(atStreamStart,varMaterialPixelShaderPtr,4);
   if (*varMaterialPixelShaderPtr != (MaterialPixelShader *)0x0) {
     if (*varMaterialPixelShaderPtr == (MaterialPixelShader *)0xffffffff) {
       pMVar1 = (MaterialPixelShader *)AllocLoad_int();
@@ -7649,6 +7795,8 @@ void __cdecl Load_MaterialPixelShaderPtr(bool param_1)
 
 // 0057CAD0  Mark_SndDriverGlobalsPtr  (sound/snd_load_db.h:4847)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_SndDriverGlobalsPtr(void)
 
 {
@@ -7662,20 +7810,20 @@ void __cdecl Mark_SndDriverGlobalsPtr(void)
 
 // 0057B7D0  Load_complex_tArray  (database/db_primtypes_load.h:4882)
 
-void __cdecl Load_complex_tArray(bool param_1,int param_2)
+void __cdecl Load_complex_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varcomplex_t,param_2 << 3);
+  Load_Stream(atStreamStart,varcomplex_t,count << 3);
   return;
 }
 
 
 // 00583A20  Load_GenericEventScriptNext  (ui/ui_shared_load_db.h:4900)
 
-void __cdecl Load_GenericEventScriptNext(bool param_1)
+void __cdecl Load_GenericEventScriptNext(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGenericEventScriptNext,0x2c);
+  Load_Stream(atStreamStart,varGenericEventScriptNext,0x2c);
   varGenericEventScript = varGenericEventScriptNext;
   Load_GenericEventScript(false);
   return;
@@ -7684,23 +7832,23 @@ void __cdecl Load_GenericEventScriptNext(bool param_1)
 
 // 0057B7F0  Load_dmaterial_tArray  (database/db_primtypes_load.h:4952)
 
-void __cdecl Load_dmaterial_tArray(bool param_1,int param_2)
+void __cdecl Load_dmaterial_tArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,vardmaterial_t,param_2 * 0x48);
+  Load_Stream(atStreamStart,vardmaterial_t,count * 0x48);
   return;
 }
 
 
 // 00583A50  Load_GenericEventHandler  (ui/ui_shared_load_db.h:4960)
 
-void __cdecl Load_GenericEventHandler(bool param_1)
+void __cdecl Load_GenericEventHandler(bool atStreamStart)
 
 {
   GenericEventScript *pGVar1;
   GenericEventHandler *pGVar2;
   
-  Load_Stream(param_1,varGenericEventHandler,0xc);
+  Load_Stream(atStreamStart,varGenericEventHandler,0xc);
   varXString = &varGenericEventHandler->name;
   Load_XString(false);
   if (varGenericEventHandler->eventScript != (GenericEventScript *)0x0) {
@@ -7721,15 +7869,17 @@ void __cdecl Load_GenericEventHandler(bool param_1)
 
 // 0057E2B0  Load_MaterialVertexDeclaration  (gfx_d3d/r_material_load_db.h:4964)
 
-void __cdecl Load_MaterialVertexDeclaration(bool param_1)
+void __cdecl Load_MaterialVertexDeclaration(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialVertexDeclaration,0x6c);
+  Load_Stream(atStreamStart,varMaterialVertexDeclaration,0x6c);
   return;
 }
 
 
 // 00581890  Mark_FxEffectDefHandle  (EffectsCore/fx_effect_load_db.h:4990)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_FxEffectDefHandle(void)
 
@@ -7745,23 +7895,25 @@ void __cdecl Mark_FxEffectDefHandle(void)
 
 // 005818C0  Mark_FxEffectDefHandleArray  (EffectsCore/fx_effect_load_db.h:5003)
 
-void __cdecl Mark_FxEffectDefHandleArray(int param_1)
+void __cdecl Mark_FxEffectDefHandleArray(int count)
 
 {
-  FxEffectDef **local_c;
-  int local_8;
+  FxEffectDef **var;
+  int i;
   
-  local_c = varFxEffectDefHandle;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varFxEffectDefHandle = local_c;
+  var = varFxEffectDefHandle;
+  for (i = 0; i < count; i = i + 1) {
+    varFxEffectDefHandle = var;
     Mark_FxEffectDefHandle();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
 
 
 // 0057CB00  Mark_PackIndexPtr  (sound/snd_load_db.h:5010)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_PackIndexPtr(void)
 
@@ -7776,10 +7928,10 @@ void __cdecl Mark_PackIndexPtr(void)
 
 // 00583AF0  Load_GenericEventHandlerNext  (ui/ui_shared_load_db.h:5034)
 
-void __cdecl Load_GenericEventHandlerNext(bool param_1)
+void __cdecl Load_GenericEventHandlerNext(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varGenericEventHandlerNext,0xc);
+  Load_Stream(atStreamStart,varGenericEventHandlerNext,0xc);
   varGenericEventHandler = varGenericEventHandlerNext;
   Load_GenericEventHandler(false);
   return;
@@ -7788,10 +7940,10 @@ void __cdecl Load_GenericEventHandlerNext(bool param_1)
 
 // 0057E2D0  Load_MaterialArgumentCodeConst  (gfx_d3d/r_material_load_db.h:5041)
 
-void __cdecl Load_MaterialArgumentCodeConst(bool param_1)
+void __cdecl Load_MaterialArgumentCodeConst(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialArgumentCodeConst,4);
+  Load_Stream(atStreamStart,varMaterialArgumentCodeConst,4);
   return;
 }
 
@@ -7809,17 +7961,17 @@ void __cdecl Mark_FxElemMarkVisuals(void)
 
 // 00581930  Mark_FxElemMarkVisualsArray  (EffectsCore/fx_effect_load_db.h:5061)
 
-void __cdecl Mark_FxElemMarkVisualsArray(int param_1)
+void __cdecl Mark_FxElemMarkVisualsArray(int count)
 
 {
-  FxElemMarkVisuals *local_c;
-  int local_8;
+  FxElemMarkVisuals *var;
+  int i;
   
-  local_c = varFxElemMarkVisuals;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varFxElemMarkVisuals = local_c;
+  var = varFxElemMarkVisuals;
+  for (i = 0; i < count; i = i + 1) {
+    varFxElemMarkVisuals = var;
     Mark_FxElemMarkVisuals();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7845,13 +7997,13 @@ void __cdecl Mark_FxElemVisuals(void)
 
 // 00583B20  Load_ItemKeyHandler  (ui/ui_shared_load_db.h:5094)
 
-void __cdecl Load_ItemKeyHandler(bool param_1)
+void __cdecl Load_ItemKeyHandler(bool atStreamStart)
 
 {
   GenericEventScript *pGVar1;
   ItemKeyHandler *pIVar2;
   
-  Load_Stream(param_1,varItemKeyHandler,0xc);
+  Load_Stream(atStreamStart,varItemKeyHandler,0xc);
   if (varItemKeyHandler->keyScript != (GenericEventScript *)0x0) {
     pGVar1 = (GenericEventScript *)AllocLoad_int();
     varItemKeyHandler->keyScript = pGVar1;
@@ -7870,7 +8022,7 @@ void __cdecl Load_ItemKeyHandler(bool param_1)
 
 // 0057E2F0  Load_MaterialArgumentDef  (gfx_d3d/r_material_load_db.h:5111)
 
-void __cdecl Load_MaterialArgumentDef(bool param_1)
+void __cdecl Load_MaterialArgumentDef(bool atStreamStart)
 
 {
   float *pfVar1;
@@ -7889,18 +8041,18 @@ void __cdecl Load_MaterialArgumentDef(bool param_1)
     }
   }
   else if ((varMaterialShaderArgument->type == 3) || (varMaterialShaderArgument->type == 5)) {
-    if (param_1) {
+    if (atStreamStart) {
       varMaterialArgumentCodeConst = &varMaterialArgumentDef->codeConst;
       Load_MaterialArgumentCodeConst(true);
     }
   }
   else if (varMaterialShaderArgument->type == 4) {
-    if (param_1) {
+    if (atStreamStart) {
       varuint = &varMaterialArgumentDef->codeSampler;
       Load_uint(true);
     }
   }
-  else if (param_1) {
+  else if (atStreamStart) {
     varuint = &varMaterialArgumentDef->codeSampler;
     Load_uint(true);
   }
@@ -7910,17 +8062,17 @@ void __cdecl Load_MaterialArgumentDef(bool param_1)
 
 // 00581A10  Mark_FxElemVisualsArray  (EffectsCore/fx_effect_load_db.h:5121)
 
-void __cdecl Mark_FxElemVisualsArray(int param_1)
+void __cdecl Mark_FxElemVisualsArray(int count)
 
 {
-  FxElemVisuals *local_c;
-  int local_8;
+  FxElemVisuals *var;
+  int i;
   
-  local_c = varFxElemVisuals;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varFxElemVisuals = local_c;
+  var = varFxElemVisuals;
+  for (i = 0; i < count; i = i + 1) {
+    varFxElemVisuals = var;
     Mark_FxElemVisuals();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7928,10 +8080,10 @@ void __cdecl Mark_FxElemVisualsArray(int param_1)
 
 // 00583BA0  Load_ItemKeyHandlerNext  (ui/ui_shared_load_db.h:5168)
 
-void __cdecl Load_ItemKeyHandlerNext(bool param_1)
+void __cdecl Load_ItemKeyHandlerNext(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varItemKeyHandlerNext,0xc);
+  Load_Stream(atStreamStart,varItemKeyHandlerNext,0xc);
   varItemKeyHandler = varItemKeyHandlerNext;
   Load_ItemKeyHandler(false);
   return;
@@ -7940,10 +8092,10 @@ void __cdecl Load_ItemKeyHandlerNext(bool param_1)
 
 // 0057E3F0  Load_MaterialShaderArgument  (gfx_d3d/r_material_load_db.h:5214)
 
-void __cdecl Load_MaterialShaderArgument(bool param_1)
+void __cdecl Load_MaterialShaderArgument(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialShaderArgument,8);
+  Load_Stream(atStreamStart,varMaterialShaderArgument,8);
   varMaterialArgumentDef = &varMaterialShaderArgument->u;
   Load_MaterialArgumentDef(false);
   return;
@@ -7952,15 +8104,17 @@ void __cdecl Load_MaterialShaderArgument(bool param_1)
 
 // 00583BD0  Load_editFieldDef_t  (ui/ui_shared_load_db.h:5228)
 
-void __cdecl Load_editFieldDef_t(bool param_1)
+void __cdecl Load_editFieldDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,vareditFieldDef_t,0x24);
+  Load_Stream(atStreamStart,vareditFieldDef_t,0x24);
   return;
 }
 
 
 // 005832C0  Mark_clipMap_ptr  (qcommon/cm_local_load_db.h:5233)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_clipMap_ptr(void)
 
@@ -7976,18 +8130,18 @@ void __cdecl Mark_clipMap_ptr(void)
 
 // 0057E430  Load_MaterialShaderArgumentArray  (gfx_d3d/r_material_load_db.h:5244)
 
-void __cdecl Load_MaterialShaderArgumentArray(bool param_1,int param_2)
+void __cdecl Load_MaterialShaderArgumentArray(bool atStreamStart,int count)
 
 {
-  MaterialShaderArgument *local_c;
-  int local_8;
+  MaterialShaderArgument *var;
+  int i;
   
-  Load_Stream(param_1,varMaterialShaderArgument,param_2 << 3);
-  local_c = varMaterialShaderArgument;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMaterialShaderArgument = local_c;
+  Load_Stream(atStreamStart,varMaterialShaderArgument,count << 3);
+  var = varMaterialShaderArgument;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialShaderArgument = var;
     Load_MaterialShaderArgument(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -7995,22 +8149,22 @@ void __cdecl Load_MaterialShaderArgumentArray(bool param_1,int param_2)
 
 // 0057E4A0  Load_GfxStateBitsArray  (gfx_d3d/r_material_load_db.h:5307)
 
-void __cdecl Load_GfxStateBitsArray(bool param_1,int param_2)
+void __cdecl Load_GfxStateBitsArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxStateBits,param_2 << 3);
+  Load_Stream(atStreamStart,varGfxStateBits,count << 3);
   return;
 }
 
 
 // 00583BF0  Load_editFieldDef_ptr  (ui/ui_shared_load_db.h:5328)
 
-void __cdecl Load_editFieldDef_ptr(bool param_1)
+void __cdecl Load_editFieldDef_ptr(bool atStreamStart)
 
 {
   editFieldDef_s *peVar1;
   
-  Load_Stream(param_1,vareditFieldDef_ptr,4);
+  Load_Stream(atStreamStart,vareditFieldDef_ptr,4);
   if (*vareditFieldDef_ptr != (editFieldDef_s *)0x0) {
     peVar1 = (editFieldDef_s *)AllocLoad_int();
     *vareditFieldDef_ptr = peVar1;
@@ -8022,6 +8176,8 @@ void __cdecl Load_editFieldDef_ptr(bool param_1)
 
 
 // 0057DE70  Mark_GfxImagePtr  (gfx_d3d/r_image_load_db.h:5370)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_GfxImagePtr(void)
 
@@ -8036,17 +8192,17 @@ void __cdecl Mark_GfxImagePtr(void)
 
 // 0057DEA0  Mark_GfxImagePtrArray  (gfx_d3d/r_image_load_db.h:5383)
 
-void __cdecl Mark_GfxImagePtrArray(int param_1)
+void __cdecl Mark_GfxImagePtrArray(int count)
 
 {
-  GfxImage **local_c;
-  int local_8;
+  GfxImage **var;
+  int i;
   
-  local_c = varGfxImagePtr;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varGfxImagePtr = local_c;
+  var = varGfxImagePtr;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxImagePtr = var;
     Mark_GfxImagePtr();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8054,10 +8210,10 @@ void __cdecl Mark_GfxImagePtrArray(int param_1)
 
 // 00583C40  Load_multiDef_t  (ui/ui_shared_load_db.h:5390)
 
-void __cdecl Load_multiDef_t(bool param_1)
+void __cdecl Load_multiDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varmultiDef_t,0x18c);
+  Load_Stream(atStreamStart,varmultiDef_t,0x18c);
   varXString = varmultiDef_t->dvarList;
   Load_XStringArray(false,0x20);
   varXString = varmultiDef_t->dvarStr;
@@ -8068,13 +8224,13 @@ void __cdecl Load_multiDef_t(bool param_1)
 
 // 0057E4C0  Load_MaterialPass  (gfx_d3d/r_material_load_db.h:5431)
 
-void __cdecl Load_MaterialPass(bool param_1)
+void __cdecl Load_MaterialPass(bool atStreamStart)
 
 {
   MaterialVertexDeclaration *pMVar1;
   MaterialShaderArgument *pMVar2;
   
-  Load_Stream(param_1,varMaterialPass,0x14);
+  Load_Stream(atStreamStart,varMaterialPass,0x14);
   if (varMaterialPass->vertexDecl != (MaterialVertexDeclaration *)0x0) {
     if (varMaterialPass->vertexDecl == (MaterialVertexDeclaration *)0xffffffff) {
       pMVar1 = (MaterialVertexDeclaration *)AllocLoad_int();
@@ -8105,12 +8261,12 @@ void __cdecl Load_MaterialPass(bool param_1)
 
 // 00583C90  Load_multiDef_ptr  (ui/ui_shared_load_db.h:5475)
 
-void __cdecl Load_multiDef_ptr(bool param_1)
+void __cdecl Load_multiDef_ptr(bool atStreamStart)
 
 {
   multiDef_s *pmVar1;
   
-  Load_Stream(param_1,varmultiDef_ptr,4);
+  Load_Stream(atStreamStart,varmultiDef_ptr,4);
   if (*varmultiDef_ptr != (multiDef_s *)0x0) {
     pmVar1 = (multiDef_s *)AllocLoad_int();
     *varmultiDef_ptr = pmVar1;
@@ -8146,10 +8302,10 @@ void __cdecl Mark_FxElemDefVisuals(void)
 
 // 00583CE0  Load_enumDvarDef_t  (ui/ui_shared_load_db.h:5537)
 
-void __cdecl Load_enumDvarDef_t(bool param_1)
+void __cdecl Load_enumDvarDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varenumDvarDef_t,4);
+  Load_Stream(atStreamStart,varenumDvarDef_t,4);
   varXString = &varenumDvarDef_t->enumDvarName;
   Load_XString(false);
   return;
@@ -8158,18 +8314,18 @@ void __cdecl Load_enumDvarDef_t(bool param_1)
 
 // 0057E5C0  Load_MaterialPassArray  (gfx_d3d/r_material_load_db.h:5554)
 
-void __cdecl Load_MaterialPassArray(bool param_1,int param_2)
+void __cdecl Load_MaterialPassArray(bool atStreamStart,int count)
 
 {
-  MaterialPass *local_c;
-  int local_8;
+  MaterialPass *var;
+  int i;
   
-  Load_Stream(param_1,varMaterialPass,param_2 * 0x14);
-  local_c = varMaterialPass;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMaterialPass = local_c;
+  Load_Stream(atStreamStart,varMaterialPass,count * 0x14);
+  var = varMaterialPass;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialPass = var;
     Load_MaterialPass(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8177,14 +8333,14 @@ void __cdecl Load_MaterialPassArray(bool param_1,int param_2)
 
 // 0057E630  Load_MaterialTechnique  (gfx_d3d/r_material_load_db.h:5594)
 
-void __cdecl Load_MaterialTechnique(bool param_1)
+void __cdecl Load_MaterialTechnique(bool atStreamStart)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (!param_1) {
+  if (!atStreamStart) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\database\\../gfx_d3d/r_material_load_db.h"
                              ,0x15db,0,"%s");
     if (!bVar2) {
@@ -8214,12 +8370,12 @@ void __cdecl Load_MaterialTechnique(bool param_1)
 
 // 00583D10  Load_enumDvarDef_ptr  (ui/ui_shared_load_db.h:5597)
 
-void __cdecl Load_enumDvarDef_ptr(bool param_1)
+void __cdecl Load_enumDvarDef_ptr(bool atStreamStart)
 
 {
   enumDvarDef_s *peVar1;
   
-  Load_Stream(param_1,varenumDvarDef_ptr,4);
+  Load_Stream(atStreamStart,varenumDvarDef_ptr,4);
   if (*varenumDvarDef_ptr != (enumDvarDef_s *)0x0) {
     peVar1 = (enumDvarDef_s *)AllocLoad_int();
     *varenumDvarDef_ptr = peVar1;
@@ -8232,7 +8388,7 @@ void __cdecl Load_enumDvarDef_ptr(bool param_1)
 
 // 0057E6F0  Load_MaterialTextureDefInfo  (gfx_d3d/r_material_load_db.h:5734)
 
-void __cdecl Load_MaterialTextureDefInfo(bool param_1)
+void __cdecl Load_MaterialTextureDefInfo(bool atStreamStart)
 
 {
   GfxImage *pGVar1;
@@ -8253,7 +8409,7 @@ void __cdecl Load_MaterialTextureDefInfo(bool param_1)
   }
   else {
     varGfxImagePtr = &varMaterialTextureDefInfo->image;
-    Load_GfxImagePtr(param_1);
+    Load_GfxImagePtr(atStreamStart);
   }
   return;
 }
@@ -8261,12 +8417,12 @@ void __cdecl Load_MaterialTextureDefInfo(bool param_1)
 
 // 00583D60  Load_MenuCell  (ui/ui_shared_load_db.h:5744)
 
-void __cdecl Load_MenuCell(bool param_1)
+void __cdecl Load_MenuCell(bool atStreamStart)
 
 {
   uchar *puVar1;
   
-  Load_Stream(param_1,varMenuCell,0xc);
+  Load_Stream(atStreamStart,varMenuCell,0xc);
   if (varMenuCell->stringValue != (char *)0x0) {
     puVar1 = AllocLoad_byte();
     varMenuCell->stringValue = (char *)puVar1;
@@ -8290,18 +8446,18 @@ void __cdecl Mark_FxElemDef(void)
 
 // 00583DC0  Load_MenuCellArray  (ui/ui_shared_load_db.h:5776)
 
-void __cdecl Load_MenuCellArray(bool param_1,int param_2)
+void __cdecl Load_MenuCellArray(bool atStreamStart,int count)
 
 {
-  MenuCell *local_c;
-  int local_8;
+  MenuCell *var;
+  int i;
   
-  Load_Stream(param_1,varMenuCell,param_2 * 0xc);
-  local_c = varMenuCell;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMenuCell = local_c;
+  Load_Stream(atStreamStart,varMenuCell,count * 0xc);
+  var = varMenuCell;
+  for (i = 0; i < count; i = i + 1) {
+    varMenuCell = var;
     Load_MenuCell(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8309,10 +8465,10 @@ void __cdecl Load_MenuCellArray(bool param_1,int param_2)
 
 // 0057E780  Load_MaterialTextureDef  (gfx_d3d/r_material_load_db.h:5814)
 
-void __cdecl Load_MaterialTextureDef(bool param_1)
+void __cdecl Load_MaterialTextureDef(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialTextureDef,0x10);
+  Load_Stream(atStreamStart,varMaterialTextureDef,0x10);
   varMaterialTextureDefInfo = &varMaterialTextureDef->u;
   Load_MaterialTextureDefInfo(false);
   return;
@@ -8321,13 +8477,13 @@ void __cdecl Load_MaterialTextureDef(bool param_1)
 
 // 00583E30  Load_MenuRow  (ui/ui_shared_load_db.h:5816)
 
-void __cdecl Load_MenuRow(bool param_1)
+void __cdecl Load_MenuRow(bool atStreamStart)
 
 {
   MenuCell *pMVar1;
   uchar *puVar2;
   
-  Load_Stream(param_1,varMenuRow,0x18);
+  Load_Stream(atStreamStart,varMenuRow,0x18);
   if (varMenuRow->cells != (MenuCell *)0x0) {
     pMVar1 = (MenuCell *)AllocLoad_int();
     varMenuRow->cells = pMVar1;
@@ -8352,18 +8508,18 @@ void __cdecl Load_MenuRow(bool param_1)
 
 // 0057E7C0  Load_MaterialTextureDefArray  (gfx_d3d/r_material_load_db.h:5839)
 
-void __cdecl Load_MaterialTextureDefArray(bool param_1,int param_2)
+void __cdecl Load_MaterialTextureDefArray(bool atStreamStart,int count)
 
 {
-  MaterialTextureDef *local_c;
-  int local_8;
+  MaterialTextureDef *var;
+  int i;
   
-  Load_Stream(param_1,varMaterialTextureDef,param_2 << 4);
-  local_c = varMaterialTextureDef;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMaterialTextureDef = local_c;
+  Load_Stream(atStreamStart,varMaterialTextureDef,count << 4);
+  var = varMaterialTextureDef;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialTextureDef = var;
     Load_MaterialTextureDef(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8371,18 +8527,18 @@ void __cdecl Load_MaterialTextureDefArray(bool param_1,int param_2)
 
 // 00583EF0  Load_MenuRowArray  (ui/ui_shared_load_db.h:5867)
 
-void __cdecl Load_MenuRowArray(bool param_1,int param_2)
+void __cdecl Load_MenuRowArray(bool atStreamStart,int count)
 
 {
-  MenuRow *local_c;
-  int local_8;
+  MenuRow *var;
+  int i;
   
-  Load_Stream(param_1,varMenuRow,param_2 * 0x18);
-  local_c = varMenuRow;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMenuRow = local_c;
+  Load_Stream(atStreamStart,varMenuRow,count * 0x18);
+  var = varMenuRow;
+  for (i = 0; i < count; i = i + 1) {
+    varMenuRow = var;
     Load_MenuRow(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8390,22 +8546,22 @@ void __cdecl Load_MenuRowArray(bool param_1,int param_2)
 
 // 0057E830  Load_MaterialConstantDefArray  (gfx_d3d/r_material_load_db.h:5909)
 
-void __cdecl Load_MaterialConstantDefArray(bool param_1,int param_2)
+void __cdecl Load_MaterialConstantDefArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varMaterialConstantDef,param_2 << 5);
+  Load_Stream(atStreamStart,varMaterialConstantDef,count << 5);
   return;
 }
 
 
 // 0057E850  Load_MaterialTechniquePtr  (gfx_d3d/r_material_load_db.h:5949)
 
-void __cdecl Load_MaterialTechniquePtr(bool param_1)
+void __cdecl Load_MaterialTechniquePtr(bool atStreamStart)
 
 {
   MaterialTechnique *pMVar1;
   
-  Load_Stream(param_1,varMaterialTechniquePtr,4);
+  Load_Stream(atStreamStart,varMaterialTechniquePtr,4);
   if (*varMaterialTechniquePtr != (MaterialTechnique *)0x0) {
     if (*varMaterialTechniquePtr == (MaterialTechnique *)0xffffffff) {
       pMVar1 = (MaterialTechnique *)AllocLoad_int();
@@ -8423,18 +8579,18 @@ void __cdecl Load_MaterialTechniquePtr(bool param_1)
 
 // 0057E8C0  Load_MaterialTechniquePtrArray  (gfx_d3d/r_material_load_db.h:5978)
 
-void __cdecl Load_MaterialTechniquePtrArray(bool param_1,int param_2)
+void __cdecl Load_MaterialTechniquePtrArray(bool atStreamStart,int count)
 
 {
-  MaterialTechnique **local_c;
-  int local_8;
+  MaterialTechnique **var;
+  int i;
   
-  Load_Stream(param_1,varMaterialTechniquePtr,param_2 << 2);
-  local_c = varMaterialTechniquePtr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMaterialTechniquePtr = local_c;
+  Load_Stream(atStreamStart,varMaterialTechniquePtr,count << 2);
+  var = varMaterialTechniquePtr;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialTechniquePtr = var;
     Load_MaterialTechniquePtr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8442,17 +8598,17 @@ void __cdecl Load_MaterialTechniquePtrArray(bool param_1,int param_2)
 
 // 00581B20  Mark_FxElemDefArray  (EffectsCore/fx_effect_load_db.h:5981)
 
-void __cdecl Mark_FxElemDefArray(int param_1)
+void __cdecl Mark_FxElemDefArray(int count)
 
 {
-  FxElemDef *local_c;
-  int local_8;
+  FxElemDef *var;
+  int i;
   
-  local_c = varFxElemDef;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varFxElemDef = local_c;
+  var = varFxElemDef;
+  for (i = 0; i < count; i = i + 1) {
+    varFxElemDef = var;
     Mark_FxElemDef();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8474,12 +8630,12 @@ void __cdecl Mark_FxEffectDef(void)
 
 // 00583F60  Load_animParamsDef_t  (ui/ui_shared_load_db.h:6037)
 
-void __cdecl Load_animParamsDef_t(bool param_1)
+void __cdecl Load_animParamsDef_t(bool atStreamStart)
 
 {
   GenericEventHandler *pGVar1;
   
-  Load_Stream(param_1,varanimParamsDef_t,0x6c);
+  Load_Stream(atStreamStart,varanimParamsDef_t,0x6c);
   varXString = &varanimParamsDef_t->name;
   Load_XString(false);
   if (varanimParamsDef_t->onEvent != (GenericEventHandler *)0x0) {
@@ -8494,10 +8650,10 @@ void __cdecl Load_animParamsDef_t(bool param_1)
 
 // 0057E930  Load_MaterialTechniqueSet  (gfx_d3d/r_material_load_db.h:6073)
 
-void __cdecl Load_MaterialTechniqueSet(bool param_1)
+void __cdecl Load_MaterialTechniqueSet(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialTechniqueSet,0x210);
+  Load_Stream(atStreamStart,varMaterialTechniqueSet,0x210);
   DB_PushStreamPos(4);
   varXString = &varMaterialTechniqueSet->name;
   Load_XString(false);
@@ -8520,17 +8676,17 @@ void __cdecl Mark_ScriptString(void)
 
 // 0057B830  Mark_ScriptStringArray  (database/db_primtypes_load.h:6123)
 
-void __cdecl Mark_ScriptStringArray(int param_1)
+void __cdecl Mark_ScriptStringArray(int count)
 
 {
-  ushort *local_c;
-  int local_8;
+  ushort *var;
+  int i;
   
-  local_c = varScriptString;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varScriptString = local_c;
+  var = varScriptString;
+  for (i = 0; i < count; i = i + 1) {
+    varScriptString = var;
     Mark_ScriptString();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8538,10 +8694,10 @@ void __cdecl Mark_ScriptStringArray(int param_1)
 
 // 00583FD0  Load_windowDef_t  (ui/ui_shared_load_db.h:6144)
 
-void __cdecl Load_windowDef_t(bool param_1)
+void __cdecl Load_windowDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varwindowDef_t,0xa4);
+  Load_Stream(atStreamStart,varwindowDef_t,0xa4);
   varXString = &varwindowDef_t->name;
   Load_XString(false);
   varXString = &varwindowDef_t->group;
@@ -8554,14 +8710,18 @@ void __cdecl Load_windowDef_t(bool param_1)
 
 // 0057E990  Load_MaterialTechniqueSetPtr  (gfx_d3d/r_material_load_db.h:6147)
 
-void __cdecl Load_MaterialTechniqueSetPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_MaterialTechniqueSetPtr(bool atStreamStart)
 
 {
   MaterialTechniqueSet *pMVar1;
   MaterialTechniqueSet *pMVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varMaterialTechniqueSetPtr,4);
+  Load_Stream(atStreamStart,varMaterialTechniqueSetPtr,4);
   DB_PushStreamPos(0);
   if (*varMaterialTechniqueSetPtr != (MaterialTechniqueSet *)0x0) {
     pMVar1 = *varMaterialTechniqueSetPtr;
@@ -8593,14 +8753,14 @@ void __cdecl Load_MaterialTechniqueSetPtr(bool param_1)
 
 // 0057EA60  Load_Material  (gfx_d3d/r_material_load_db.h:6226)
 
-void __cdecl Load_Material(bool param_1)
+void __cdecl Load_Material(bool atStreamStart)
 
 {
   MaterialTextureDef *pMVar1;
   MaterialConstantDef *pMVar2;
   GfxStateBits *pGVar3;
   
-  Load_Stream(param_1,varMaterial,0xc0);
+  Load_Stream(atStreamStart,varMaterial,0xc0);
   DB_PushStreamPos(4);
   varMaterialInfo = &varMaterial->info;
   Load_MaterialInfo(false);
@@ -8646,10 +8806,10 @@ void __cdecl Load_Material(bool param_1)
 
 // 00584040  Load_Window  (ui/ui_shared_load_db.h:6309)
 
-void __cdecl Load_Window(bool param_1)
+void __cdecl Load_Window(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varWindow,0xa4);
+  Load_Stream(atStreamStart,varWindow,0xa4);
   varwindowDef_t = varWindow;
   Load_windowDef_t(false);
   return;
@@ -8658,14 +8818,18 @@ void __cdecl Load_Window(bool param_1)
 
 // 0057EC10  Load_MaterialHandle  (gfx_d3d/r_material_load_db.h:6374)
 
-void __cdecl Load_MaterialHandle(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_MaterialHandle(bool atStreamStart)
 
 {
   Material *pMVar1;
   Material *pMVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varMaterialHandle,4);
+  Load_Stream(atStreamStart,varMaterialHandle,4);
   DB_PushStreamPos(0);
   if (*varMaterialHandle != (Material *)0x0) {
     pMVar1 = *varMaterialHandle;
@@ -8696,18 +8860,18 @@ void __cdecl Load_MaterialHandle(bool param_1)
 
 // 0057ECE0  Load_MaterialHandleArray  (gfx_d3d/r_material_load_db.h:6413)
 
-void __cdecl Load_MaterialHandleArray(bool param_1,int param_2)
+void __cdecl Load_MaterialHandleArray(bool atStreamStart,int count)
 
 {
-  Material **local_c;
-  int local_8;
+  Material **var;
+  int i;
   
-  Load_Stream(param_1,varMaterialHandle,param_2 << 2);
-  local_c = varMaterialHandle;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMaterialHandle = local_c;
+  Load_Stream(atStreamStart,varMaterialHandle,count << 2);
+  var = varMaterialHandle;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialHandle = var;
     Load_MaterialHandle(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8715,12 +8879,12 @@ void __cdecl Load_MaterialHandleArray(bool param_1,int param_2)
 
 // 00584080  Load_animParamsDef_ptr  (ui/ui_shared_load_db.h:6431)
 
-void __cdecl Load_animParamsDef_ptr(bool param_1)
+void __cdecl Load_animParamsDef_ptr(bool atStreamStart)
 
 {
   animParamsDef_t *paVar1;
   
-  Load_Stream(param_1,varanimParamsDef_ptr,4);
+  Load_Stream(atStreamStart,varanimParamsDef_ptr,4);
   if (*varanimParamsDef_ptr != (animParamsDef_t *)0x0) {
     paVar1 = (animParamsDef_t *)AllocLoad_int();
     *varanimParamsDef_ptr = paVar1;
@@ -8733,18 +8897,18 @@ void __cdecl Load_animParamsDef_ptr(bool param_1)
 
 // 005840D0  Load_animParamsDef_ptrArray  (ui/ui_shared_load_db.h:6453)
 
-void __cdecl Load_animParamsDef_ptrArray(bool param_1,int param_2)
+void __cdecl Load_animParamsDef_ptrArray(bool atStreamStart,int count)
 
 {
-  animParamsDef_t **local_c;
-  int local_8;
+  animParamsDef_t **var;
+  int i;
   
-  Load_Stream(param_1,varanimParamsDef_ptr,param_2 << 2);
-  local_c = varanimParamsDef_ptr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varanimParamsDef_ptr = local_c;
+  Load_Stream(atStreamStart,varanimParamsDef_ptr,count << 2);
+  var = varanimParamsDef_ptr;
+  for (i = 0; i < count; i = i + 1) {
+    varanimParamsDef_ptr = var;
     Load_animParamsDef_ptr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -8752,10 +8916,10 @@ void __cdecl Load_animParamsDef_ptrArray(bool param_1,int param_2)
 
 // 00584140  Load_imageDef_t  (ui/ui_shared_load_db.h:6493)
 
-void __cdecl Load_imageDef_t(bool param_1)
+void __cdecl Load_imageDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varimageDef_t,0x10);
+  Load_Stream(atStreamStart,varimageDef_t,0x10);
   varExpressionStatement = &varimageDef_t->materialExp;
   Load_ExpressionStatement(false);
   return;
@@ -8764,12 +8928,12 @@ void __cdecl Load_imageDef_t(bool param_1)
 
 // 00584170  Load_imageDef_ptr  (ui/ui_shared_load_db.h:6553)
 
-void __cdecl Load_imageDef_ptr(bool param_1)
+void __cdecl Load_imageDef_ptr(bool atStreamStart)
 
 {
   imageDef_s *piVar1;
   
-  Load_Stream(param_1,varimageDef_ptr,4);
+  Load_Stream(atStreamStart,varimageDef_ptr,4);
   if (*varimageDef_ptr != (imageDef_s *)0x0) {
     piVar1 = (imageDef_s *)AllocLoad_int();
     *varimageDef_ptr = piVar1;
@@ -8782,10 +8946,10 @@ void __cdecl Load_imageDef_ptr(bool param_1)
 
 // 005841C0  Load_ownerDrawDef_t  (ui/ui_shared_load_db.h:6615)
 
-void __cdecl Load_ownerDrawDef_t(bool param_1)
+void __cdecl Load_ownerDrawDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varownerDrawDef_t,0x10);
+  Load_Stream(atStreamStart,varownerDrawDef_t,0x10);
   varExpressionStatement = &varownerDrawDef_t->dataExp;
   Load_ExpressionStatement(false);
   return;
@@ -8794,12 +8958,12 @@ void __cdecl Load_ownerDrawDef_t(bool param_1)
 
 // 005841F0  Load_ownerDrawDef_ptr  (ui/ui_shared_load_db.h:6675)
 
-void __cdecl Load_ownerDrawDef_ptr(bool param_1)
+void __cdecl Load_ownerDrawDef_ptr(bool atStreamStart)
 
 {
   ownerDrawDef_s *poVar1;
   
-  Load_Stream(param_1,varownerDrawDef_ptr,4);
+  Load_Stream(atStreamStart,varownerDrawDef_ptr,4);
   if (*varownerDrawDef_ptr != (ownerDrawDef_s *)0x0) {
     poVar1 = (ownerDrawDef_s *)AllocLoad_int();
     *varownerDrawDef_ptr = poVar1;
@@ -8812,12 +8976,12 @@ void __cdecl Load_ownerDrawDef_ptr(bool param_1)
 
 // 00584240  Load_listBoxDef_t  (ui/ui_shared_load_db.h:6737)
 
-void __cdecl Load_listBoxDef_t(bool param_1)
+void __cdecl Load_listBoxDef_t(bool atStreamStart)
 
 {
   MenuRow *pMVar1;
   
-  Load_Stream(param_1,varlistBoxDef_t,0x29c);
+  Load_Stream(atStreamStart,varlistBoxDef_t,0x29c);
   varMaterialHandle = &varlistBoxDef_t->selectIcon;
   Load_MaterialHandle(false);
   varMaterialHandle = &varlistBoxDef_t->backgroundItemListbox;
@@ -8836,12 +9000,12 @@ void __cdecl Load_listBoxDef_t(bool param_1)
 
 // 00584300  Load_listBoxDef_ptr  (ui/ui_shared_load_db.h:6914)
 
-void __cdecl Load_listBoxDef_ptr(bool param_1)
+void __cdecl Load_listBoxDef_ptr(bool atStreamStart)
 
 {
   listBoxDef_s *plVar1;
   
-  Load_Stream(param_1,varlistBoxDef_ptr,4);
+  Load_Stream(atStreamStart,varlistBoxDef_ptr,4);
   if (*varlistBoxDef_ptr != (listBoxDef_s *)0x0) {
     plVar1 = (listBoxDef_s *)AllocLoad_int();
     *varlistBoxDef_ptr = plVar1;
@@ -8854,16 +9018,16 @@ void __cdecl Load_listBoxDef_ptr(bool param_1)
 
 // 00584350  Load_focusDefData_t  (ui/ui_shared_load_db.h:6976)
 
-void __cdecl Load_focusDefData_t(bool param_1)
+void __cdecl Load_focusDefData_t(bool atStreamStart)
 
 {
   if (varitemDef_t->type == 4) {
     varlistBoxDef_ptr = &varfocusDefData_t->listBox;
-    Load_listBoxDef_ptr(param_1);
+    Load_listBoxDef_ptr(atStreamStart);
   }
   else if (varitemDef_t->type == 10) {
     varmultiDef_ptr = &varfocusDefData_t->multi;
-    Load_multiDef_ptr(param_1);
+    Load_multiDef_ptr(atStreamStart);
   }
   else if ((((((varitemDef_t->type == 5) || (varitemDef_t->type == 0xd)) ||
              (varitemDef_t->type == 7)) ||
@@ -8872,11 +9036,11 @@ void __cdecl Load_focusDefData_t(bool param_1)
             ((varitemDef_t->type == 0xc || (varitemDef_t->type == 0x10)))))) ||
           ((varitemDef_t->type == 8 || (varitemDef_t->type == 0x16)))) {
     vareditFieldDef_ptr = &varfocusDefData_t->editField;
-    Load_editFieldDef_ptr(param_1);
+    Load_editFieldDef_ptr(atStreamStart);
   }
   else if (varitemDef_t->type == 0xb) {
     varenumDvarDef_ptr = &varfocusDefData_t->enumDvar;
-    Load_enumDvarDef_ptr(param_1);
+    Load_enumDvarDef_ptr(atStreamStart);
   }
   return;
 }
@@ -8884,12 +9048,12 @@ void __cdecl Load_focusDefData_t(bool param_1)
 
 // 00584490  Load_focusItemDef_t  (ui/ui_shared_load_db.h:7077)
 
-void __cdecl Load_focusItemDef_t(bool param_1)
+void __cdecl Load_focusItemDef_t(bool atStreamStart)
 
 {
   ItemKeyHandler *pIVar1;
   
-  Load_Stream(param_1,varfocusItemDef_t,0x18);
+  Load_Stream(atStreamStart,varfocusItemDef_t,0x18);
   varXString = &varfocusItemDef_t->mouseEnterText;
   Load_XString(false);
   varXString = &varfocusItemDef_t->mouseExitText;
@@ -8912,12 +9076,12 @@ void __cdecl Load_focusItemDef_t(bool param_1)
 
 // 00584560  Load_focusItemDef_ptr  (ui/ui_shared_load_db.h:7166)
 
-void __cdecl Load_focusItemDef_ptr(bool param_1)
+void __cdecl Load_focusItemDef_ptr(bool atStreamStart)
 
 {
   focusItemDef_s *pfVar1;
   
-  Load_Stream(param_1,varfocusItemDef_ptr,4);
+  Load_Stream(atStreamStart,varfocusItemDef_ptr,4);
   if (*varfocusItemDef_ptr != (focusItemDef_s *)0x0) {
     pfVar1 = (focusItemDef_s *)AllocLoad_int();
     *varfocusItemDef_ptr = pfVar1;
@@ -8930,22 +9094,22 @@ void __cdecl Load_focusItemDef_ptr(bool param_1)
 
 // 005845B0  Load_gameMsgDef_t  (ui/ui_shared_load_db.h:7228)
 
-void __cdecl Load_gameMsgDef_t(bool param_1)
+void __cdecl Load_gameMsgDef_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,vargameMsgDef_t,8);
+  Load_Stream(atStreamStart,vargameMsgDef_t,8);
   return;
 }
 
 
 // 005845D0  Load_gameMsgDef_ptr  (ui/ui_shared_load_db.h:7293)
 
-void __cdecl Load_gameMsgDef_ptr(bool param_1)
+void __cdecl Load_gameMsgDef_ptr(bool atStreamStart)
 
 {
   gameMsgDef_s *pgVar1;
   
-  Load_Stream(param_1,vargameMsgDef_ptr,4);
+  Load_Stream(atStreamStart,vargameMsgDef_ptr,4);
   if (*vargameMsgDef_ptr != (gameMsgDef_s *)0x0) {
     pgVar1 = (gameMsgDef_s *)AllocLoad_int();
     *vargameMsgDef_ptr = pgVar1;
@@ -8958,7 +9122,7 @@ void __cdecl Load_gameMsgDef_ptr(bool param_1)
 
 // 00584620  Load_textDefData_t  (ui/ui_shared_load_db.h:7355)
 
-void __cdecl Load_textDefData_t(bool param_1)
+void __cdecl Load_textDefData_t(bool atStreamStart)
 
 {
   if (((((varitemDef_t->type == 3) || (varitemDef_t->type == 4)) || (varitemDef_t->type == 0x15)) ||
@@ -8970,11 +9134,11 @@ void __cdecl Load_textDefData_t(bool param_1)
            ((varitemDef_t->type == 0x10 || (varitemDef_t->type == 8)))) ||
           ((varitemDef_t->type == 0xb || (varitemDef_t->type == 0x16)))))))) {
     varfocusItemDef_ptr = &vartextDefData_t->focusItemDef;
-    Load_focusItemDef_ptr(param_1);
+    Load_focusItemDef_ptr(atStreamStart);
   }
   else if (varitemDef_t->type == 0xf) {
     vargameMsgDef_ptr = &vartextDefData_t->gameMsgDef;
-    Load_gameMsgDef_ptr(param_1);
+    Load_gameMsgDef_ptr(atStreamStart);
   }
   return;
 }
@@ -8982,20 +9146,20 @@ void __cdecl Load_textDefData_t(bool param_1)
 
 // 005890C0  Load_OccluderArray  (gfx_d3d/r_bsp_load_db.h:7427)
 
-void __cdecl Load_OccluderArray(bool param_1,int param_2)
+void __cdecl Load_OccluderArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varOccluder,param_2 * 0x44);
+  Load_Stream(atStreamStart,varOccluder,count * 0x44);
   return;
 }
 
 
 // 00584770  Load_textExp_t  (ui/ui_shared_load_db.h:7494)
 
-void __cdecl Load_textExp_t(bool param_1)
+void __cdecl Load_textExp_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,vartextExp_t,0x10);
+  Load_Stream(atStreamStart,vartextExp_t,0x10);
   varExpressionStatement = &vartextExp_t->textExp;
   Load_ExpressionStatement(false);
   return;
@@ -9004,12 +9168,12 @@ void __cdecl Load_textExp_t(bool param_1)
 
 // 005847A0  Load_textDef_t  (ui/ui_shared_load_db.h:7616)
 
-void __cdecl Load_textDef_t(bool param_1)
+void __cdecl Load_textDef_t(bool atStreamStart)
 
 {
   textExp_s *ptVar1;
   
-  Load_Stream(param_1,vartextDef_t,0x44);
+  Load_Stream(atStreamStart,vartextDef_t,0x44);
   varXString = &vartextDef_t->text;
   Load_XString(false);
   if (vartextDef_t->textExpData != (textExp_s *)0x0) {
@@ -9026,10 +9190,10 @@ void __cdecl Load_textDef_t(bool param_1)
 
 // 005890E0  Load_StaticModelIndexArray  (gfx_d3d/r_bsp_load_db.h:7682)
 
-void __cdecl Load_StaticModelIndexArray(bool param_1,int param_2)
+void __cdecl Load_StaticModelIndexArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varStaticModelIndex,param_2 << 1);
+  Load_Stream(atStreamStart,varStaticModelIndex,count << 1);
   return;
 }
 
@@ -9055,12 +9219,12 @@ void __cdecl Mark_MaterialTextureDefInfo(void)
 
 // 00589100  Load_GfxAabbTree  (gfx_d3d/r_bsp_load_db.h:7722)
 
-void __cdecl Load_GfxAabbTree(bool param_1)
+void __cdecl Load_GfxAabbTree(bool atStreamStart)
 
 {
   ushort *puVar1;
   
-  Load_Stream(param_1,varGfxAabbTree,0x28);
+  Load_Stream(atStreamStart,varGfxAabbTree,0x28);
   if (varGfxAabbTree->smodelIndexes != (ushort *)0x0) {
     if (varGfxAabbTree->smodelIndexes == (ushort *)0xffffffff) {
       puVar1 = (ushort *)AllocLoad_short();
@@ -9089,12 +9253,12 @@ void __cdecl Mark_MaterialTextureDef(void)
 
 // 00584820  Load_textDef_ptr  (ui/ui_shared_load_db.h:7733)
 
-void __cdecl Load_textDef_ptr(bool param_1)
+void __cdecl Load_textDef_ptr(bool atStreamStart)
 
 {
   textDef_s *ptVar1;
   
-  Load_Stream(param_1,vartextDef_ptr,4);
+  Load_Stream(atStreamStart,vartextDef_ptr,4);
   if (*vartextDef_ptr != (textDef_s *)0x0) {
     ptVar1 = (textDef_s *)AllocLoad_int();
     *vartextDef_ptr = ptVar1;
@@ -9107,17 +9271,17 @@ void __cdecl Load_textDef_ptr(bool param_1)
 
 // 0057EDC0  Mark_MaterialTextureDefArray  (gfx_d3d/r_material_load_db.h:7745)
 
-void __cdecl Mark_MaterialTextureDefArray(int param_1)
+void __cdecl Mark_MaterialTextureDefArray(int count)
 
 {
-  MaterialTextureDef *local_c;
-  int local_8;
+  MaterialTextureDef *var;
+  int i;
   
-  local_c = varMaterialTextureDef;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varMaterialTextureDef = local_c;
+  var = varMaterialTextureDef;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialTextureDef = var;
     Mark_MaterialTextureDef();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9125,18 +9289,18 @@ void __cdecl Mark_MaterialTextureDefArray(int param_1)
 
 // 00589180  Load_GfxAabbTreeArray  (gfx_d3d/r_bsp_load_db.h:7786)
 
-void __cdecl Load_GfxAabbTreeArray(bool param_1,int param_2)
+void __cdecl Load_GfxAabbTreeArray(bool atStreamStart,int count)
 
 {
-  GfxAabbTree *local_c;
-  int local_8;
+  GfxAabbTree *var;
+  int i;
   
-  Load_Stream(param_1,varGfxAabbTree,param_2 * 0x28);
-  local_c = varGfxAabbTree;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxAabbTree = local_c;
+  Load_Stream(atStreamStart,varGfxAabbTree,count * 0x28);
+  var = varGfxAabbTree;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxAabbTree = var;
     Load_GfxAabbTree(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9144,10 +9308,10 @@ void __cdecl Load_GfxAabbTreeArray(bool param_1,int param_2)
 
 // 00584870  Load_rectData_t  (ui/ui_shared_load_db.h:7795)
 
-void __cdecl Load_rectData_t(bool param_1)
+void __cdecl Load_rectData_t(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varrectData_t,0x40);
+  Load_Stream(atStreamStart,varrectData_t,0x40);
   varExpressionStatement = &varrectData_t->rectXExp;
   Load_ExpressionStatement(false);
   varExpressionStatement = &varrectData_t->rectYExp;
@@ -9162,7 +9326,7 @@ void __cdecl Load_rectData_t(bool param_1)
 
 // 005891F0  Load_GfxCell  (gfx_d3d/r_bsp_load_db.h:7826)
 
-void __cdecl Load_GfxCell(bool param_1)
+void __cdecl Load_GfxCell(bool atStreamStart)
 
 {
   GfxAabbTree *pGVar1;
@@ -9170,7 +9334,7 @@ void __cdecl Load_GfxCell(bool param_1)
   int *piVar3;
   uchar *puVar4;
   
-  Load_Stream(param_1,varGfxCell,0x38);
+  Load_Stream(atStreamStart,varGfxCell,0x38);
   if (varGfxCell->aabbTree != (GfxAabbTree *)0x0) {
     pGVar1 = (GfxAabbTree *)AllocLoad_int();
     varGfxCell->aabbTree = pGVar1;
@@ -9201,24 +9365,26 @@ void __cdecl Load_GfxCell(bool param_1)
 
 // 00589300  Load_GfxCellArray  (gfx_d3d/r_bsp_load_db.h:7899)
 
-void __cdecl Load_GfxCellArray(bool param_1,int param_2)
+void __cdecl Load_GfxCellArray(bool atStreamStart,int count)
 
 {
-  GfxCell *local_c;
-  int local_8;
+  GfxCell *var;
+  int i;
   
-  Load_Stream(param_1,varGfxCell,param_2 * 0x38);
-  local_c = varGfxCell;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxCell = local_c;
+  Load_Stream(atStreamStart,varGfxCell,count * 0x38);
+  var = varGfxCell;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxCell = var;
     Load_GfxCell(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
 
 
 // 0057EE10  Mark_MaterialTechniqueSetPtr  (gfx_d3d/r_material_load_db.h:7900)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_MaterialTechniqueSetPtr(void)
 
@@ -9233,7 +9399,7 @@ void __cdecl Mark_MaterialTechniqueSetPtr(void)
 
 // 005848F0  Load_itemDefData_t  (ui/ui_shared_load_db.h:7932)
 
-void __cdecl Load_itemDefData_t(bool param_1)
+void __cdecl Load_itemDefData_t(bool atStreamStart)
 
 {
   if ((((((varitemDef_t->type == 1) || (varitemDef_t->type == 3)) || (varitemDef_t->type == 0xf)) ||
@@ -9245,19 +9411,19 @@ void __cdecl Load_itemDefData_t(bool param_1)
        ((varitemDef_t->type == 8 || ((varitemDef_t->type == 0xb || (varitemDef_t->type == 0x16))))))
       )))) {
     vartextDef_ptr = &varitemDefData_t->textDef;
-    Load_textDef_ptr(param_1);
+    Load_textDef_ptr(atStreamStart);
   }
   else if (varitemDef_t->type == 2) {
     varimageDef_ptr = &varitemDefData_t->imageDef;
-    Load_imageDef_ptr(param_1);
+    Load_imageDef_ptr(atStreamStart);
   }
   else if ((varitemDef_t->type == 0x15) || (varitemDef_t->type == 0x13)) {
     varfocusItemDef_ptr = &varitemDefData_t->blankButtonDef;
-    Load_focusItemDef_ptr(param_1);
+    Load_focusItemDef_ptr(atStreamStart);
   }
   else if (varitemDef_t->type == 6) {
     varownerDrawDef_ptr = &varitemDefData_t->ownerDrawDef;
-    Load_ownerDrawDef_ptr(param_1);
+    Load_ownerDrawDef_ptr(atStreamStart);
   }
   return;
 }
@@ -9280,13 +9446,13 @@ void __cdecl Mark_Material(void)
 
 // 00589370  Load_GfxPortal  (gfx_d3d/r_bsp_load_db.h:7939)
 
-void __cdecl Load_GfxPortal(bool param_1)
+void __cdecl Load_GfxPortal(bool atStreamStart)
 
 {
   GfxCell *pGVar1;
   float (*pafVar2) [3];
   
-  Load_Stream(param_1,varGfxPortal,0x44);
+  Load_Stream(atStreamStart,varGfxPortal,0x44);
   if (varGfxPortal->cell != (GfxCell *)0x0) {
     if (varGfxPortal->cell == (GfxCell *)0xffffffff) {
       pGVar1 = (GfxCell *)AllocLoad_int();
@@ -9310,24 +9476,26 @@ void __cdecl Load_GfxPortal(bool param_1)
 
 // 00589420  Load_GfxPortalArray  (gfx_d3d/r_bsp_load_db.h:7990)
 
-void __cdecl Load_GfxPortalArray(bool param_1,int param_2)
+void __cdecl Load_GfxPortalArray(bool atStreamStart,int count)
 
 {
-  GfxPortal *local_c;
-  int local_8;
+  GfxPortal *var;
+  int i;
   
-  Load_Stream(param_1,varGfxPortal,param_2 * 0x44);
-  local_c = varGfxPortal;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxPortal = local_c;
+  Load_Stream(atStreamStart,varGfxPortal,count * 0x44);
+  var = varGfxPortal;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxPortal = var;
     Load_GfxPortal(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
 
 
 // 0057EE90  Mark_MaterialHandle  (gfx_d3d/r_material_load_db.h:8028)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_MaterialHandle(void)
 
@@ -9343,12 +9511,12 @@ void __cdecl Mark_MaterialHandle(void)
 
 // 00584AC0  Load_UIAnimInfo  (ui/ui_shared_load_db.h:8033)
 
-void __cdecl Load_UIAnimInfo(bool param_1)
+void __cdecl Load_UIAnimInfo(bool atStreamStart)
 
 {
   animParamsDef_t **ppaVar1;
   
-  Load_Stream(param_1,varUIAnimInfo,0xec);
+  Load_Stream(atStreamStart,varUIAnimInfo,0xec);
   if (varUIAnimInfo->animStates != (animParamsDef_t **)0x0) {
     ppaVar1 = (animParamsDef_t **)AllocLoad_int();
     varUIAnimInfo->animStates = ppaVar1;
@@ -9361,17 +9529,17 @@ void __cdecl Load_UIAnimInfo(bool param_1)
 
 // 0057EEC0  Mark_MaterialHandleArray  (gfx_d3d/r_material_load_db.h:8041)
 
-void __cdecl Mark_MaterialHandleArray(int param_1)
+void __cdecl Mark_MaterialHandleArray(int count)
 
 {
-  Material **local_c;
-  int local_8;
+  Material **var;
+  int i;
   
-  local_c = varMaterialHandle;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varMaterialHandle = local_c;
+  var = varMaterialHandle;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialHandle = var;
     Mark_MaterialHandle();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9379,24 +9547,24 @@ void __cdecl Mark_MaterialHandleArray(int param_1)
 
 // 00589490  Load_GfxCullGroupArray  (gfx_d3d/r_bsp_load_db.h:8065)
 
-void __cdecl Load_GfxCullGroupArray(bool param_1,int param_2)
+void __cdecl Load_GfxCullGroupArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxCullGroup,param_2 << 5);
+  Load_Stream(atStreamStart,varGfxCullGroup,count << 5);
   return;
 }
 
 
 // 00584B20  Load_itemDef_t  (ui/ui_shared_load_db.h:8100)
 
-void __cdecl Load_itemDef_t(bool param_1)
+void __cdecl Load_itemDef_t(bool atStreamStart)
 
 {
   rectData_s *prVar1;
   GenericEventHandler *pGVar2;
   UIAnimInfo *pUVar3;
   
-  Load_Stream(param_1,varitemDef_t,0x110);
+  Load_Stream(atStreamStart,varitemDef_t,0x110);
   varWindow = &varitemDef_t->window;
   Load_Window(false);
   varXString = &varitemDef_t->dvar;
@@ -9439,6 +9607,7 @@ itemDef_s * __cdecl AllocLoad_itemDef_t(void)
 
 {
   itemDef_s *piVar1;
+  uint alignment_2;
   
   piVar1 = (itemDef_s *)DB_AllocStreamPos(7);
   return piVar1;
@@ -9447,12 +9616,12 @@ itemDef_s * __cdecl AllocLoad_itemDef_t(void)
 
 // 00584CD0  Load_itemDef_ptr  (ui/ui_shared_load_db.h:8246)
 
-void __cdecl Load_itemDef_ptr(bool param_1)
+void __cdecl Load_itemDef_ptr(bool atStreamStart)
 
 {
   itemDef_s *piVar1;
   
-  Load_Stream(param_1,varitemDef_ptr,4);
+  Load_Stream(atStreamStart,varitemDef_ptr,4);
   if (*varitemDef_ptr != (itemDef_s *)0x0) {
     piVar1 = AllocLoad_itemDef_t();
     *varitemDef_ptr = piVar1;
@@ -9465,18 +9634,18 @@ void __cdecl Load_itemDef_ptr(bool param_1)
 
 // 00584D20  Load_itemDef_ptrArray  (ui/ui_shared_load_db.h:8268)
 
-void __cdecl Load_itemDef_ptrArray(bool param_1,int param_2)
+void __cdecl Load_itemDef_ptrArray(bool atStreamStart,int count)
 
 {
-  itemDef_s **local_c;
-  int local_8;
+  itemDef_s **var;
+  int i;
   
-  Load_Stream(param_1,varitemDef_ptr,param_2 << 2);
-  local_c = varitemDef_ptr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varitemDef_ptr = local_c;
+  Load_Stream(atStreamStart,varitemDef_ptr,count << 2);
+  var = varitemDef_ptr;
+  for (i = 0; i < count; i = i + 1) {
+    varitemDef_ptr = var;
     Load_itemDef_ptr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9484,14 +9653,14 @@ void __cdecl Load_itemDef_ptrArray(bool param_1,int param_2)
 
 // 00584D90  Load_menuDef_t  (ui/ui_shared_load_db.h:8308)
 
-void __cdecl Load_menuDef_t(bool param_1)
+void __cdecl Load_menuDef_t(bool atStreamStart)
 
 {
   GenericEventHandler *pGVar1;
   ItemKeyHandler *pIVar2;
   itemDef_s **ppiVar3;
   
-  Load_Stream(param_1,varmenuDef_t,400);
+  Load_Stream(atStreamStart,varmenuDef_t,400);
   DB_PushStreamPos(4);
   varWindow = &varmenuDef_t->window;
   Load_Window(false);
@@ -9532,30 +9701,30 @@ void __cdecl Load_menuDef_t(bool param_1)
 
 // 005894B0  Load_GfxLightGridEntryArray  (gfx_d3d/r_bsp_load_db.h:8315)
 
-void __cdecl Load_GfxLightGridEntryArray(bool param_1,int param_2)
+void __cdecl Load_GfxLightGridEntryArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxLightGridEntry,param_2 << 2);
+  Load_Stream(atStreamStart,varGfxLightGridEntry,count << 2);
   return;
 }
 
 
 // 005894D0  Load_GfxCompressedLightGridColorsArray  (gfx_d3d/r_bsp_load_db.h:8375)
 
-void __cdecl Load_GfxCompressedLightGridColorsArray(bool param_1,int param_2)
+void __cdecl Load_GfxCompressedLightGridColorsArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxCompressedLightGridColors,param_2 * 0xa8);
+  Load_Stream(atStreamStart,varGfxCompressedLightGridColors,count * 0xa8);
   return;
 }
 
 
 // 00589500  Load_MaterialMemory  (gfx_d3d/r_bsp_load_db.h:8415)
 
-void __cdecl Load_MaterialMemory(bool param_1)
+void __cdecl Load_MaterialMemory(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varMaterialMemory,8);
+  Load_Stream(atStreamStart,varMaterialMemory,8);
   varMaterialHandle = &varMaterialMemory->material;
   Load_MaterialHandle(false);
   return;
@@ -9564,18 +9733,18 @@ void __cdecl Load_MaterialMemory(bool param_1)
 
 // 00589530  Load_MaterialMemoryArray  (gfx_d3d/r_bsp_load_db.h:8440)
 
-void __cdecl Load_MaterialMemoryArray(bool param_1,int param_2)
+void __cdecl Load_MaterialMemoryArray(bool atStreamStart,int count)
 
 {
-  MaterialMemory *local_c;
-  int local_8;
+  MaterialMemory *var;
+  int i;
   
-  Load_Stream(param_1,varMaterialMemory,param_2 << 3);
-  local_c = varMaterialMemory;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varMaterialMemory = local_c;
+  Load_Stream(atStreamStart,varMaterialMemory,count << 3);
+  var = varMaterialMemory;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialMemory = var;
     Load_MaterialMemory(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9583,12 +9752,12 @@ void __cdecl Load_MaterialMemoryArray(bool param_1,int param_2)
 
 // 005895A0  Load_GfxWorldVertexData  (gfx_d3d/r_bsp_load_db.h:8481)
 
-void __cdecl Load_GfxWorldVertexData(bool param_1)
+void __cdecl Load_GfxWorldVertexData(bool atStreamStart)
 
 {
   GfxWorldVertex *pGVar1;
   
-  Load_Stream(param_1,varGfxWorldVertexData,8);
+  Load_Stream(atStreamStart,varGfxWorldVertexData,8);
   if (varGfxWorldVertexData->vertices != (GfxWorldVertex *)0x0) {
     pGVar1 = (GfxWorldVertex *)AllocLoad_int();
     varGfxWorldVertexData->vertices = pGVar1;
@@ -9605,14 +9774,18 @@ void __cdecl Load_GfxWorldVertexData(bool param_1)
 
 // 00584F40  Load_menuDef_ptr  (ui/ui_shared_load_db.h:8553)
 
-void __cdecl Load_menuDef_ptr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_menuDef_ptr(bool atStreamStart)
 
 {
   menuDef_t *pmVar1;
   menuDef_t *pmVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varmenuDef_ptr,4);
+  Load_Stream(atStreamStart,varmenuDef_ptr,4);
   DB_PushStreamPos(0);
   if (*varmenuDef_ptr != (menuDef_t *)0x0) {
     pmVar1 = *varmenuDef_ptr;
@@ -9643,18 +9816,18 @@ void __cdecl Load_menuDef_ptr(bool param_1)
 
 // 00585010  Load_menuDef_ptrArray  (ui/ui_shared_load_db.h:8592)
 
-void __cdecl Load_menuDef_ptrArray(bool param_1,int param_2)
+void __cdecl Load_menuDef_ptrArray(bool atStreamStart,int count)
 
 {
-  menuDef_t **local_c;
-  int local_8;
+  menuDef_t **var;
+  int i;
   
-  Load_Stream(param_1,varmenuDef_ptr,param_2 << 2);
-  local_c = varmenuDef_ptr;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varmenuDef_ptr = local_c;
+  Load_Stream(atStreamStart,varmenuDef_ptr,count << 2);
+  var = varmenuDef_ptr;
+  for (i = 0; i < count; i = i + 1) {
+    varmenuDef_ptr = var;
     Load_menuDef_ptr(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9662,12 +9835,12 @@ void __cdecl Load_menuDef_ptrArray(bool param_1,int param_2)
 
 // 00589640  Load_GfxWorldVertexLayerData  (gfx_d3d/r_bsp_load_db.h:8610)
 
-void __cdecl Load_GfxWorldVertexLayerData(bool param_1)
+void __cdecl Load_GfxWorldVertexLayerData(bool atStreamStart)
 
 {
   uchar *puVar1;
   
-  Load_Stream(param_1,varGfxWorldVertexLayerData,8);
+  Load_Stream(atStreamStart,varGfxWorldVertexLayerData,8);
   if (varGfxWorldVertexLayerData->data != (uchar *)0x0) {
     puVar1 = AllocLoad_byte();
     varGfxWorldVertexLayerData->data = puVar1;
@@ -9684,12 +9857,12 @@ void __cdecl Load_GfxWorldVertexLayerData(bool param_1)
 
 // 00585080  Load_MenuList  (ui/ui_shared_load_db.h:8632)
 
-void __cdecl Load_MenuList(bool param_1)
+void __cdecl Load_MenuList(bool atStreamStart)
 
 {
   menuDef_t **ppmVar1;
   
-  Load_Stream(param_1,varMenuList,0xc);
+  Load_Stream(atStreamStart,varMenuList,0xc);
   DB_PushStreamPos(4);
   varXString = &varMenuList->name;
   Load_XString(false);
@@ -9706,14 +9879,18 @@ void __cdecl Load_MenuList(bool param_1)
 
 // 00585100  Load_MenuListPtr  (ui/ui_shared_load_db.h:8708)
 
-void __cdecl Load_MenuListPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_MenuListPtr(bool atStreamStart)
 
 {
   MenuList *pMVar1;
   MenuList *pMVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varMenuListPtr,4);
+  Load_Stream(atStreamStart,varMenuListPtr,4);
   DB_PushStreamPos(0);
   if (*varMenuListPtr != (MenuList *)0x0) {
     pMVar1 = *varMenuListPtr;
@@ -9744,17 +9921,17 @@ void __cdecl Load_MenuListPtr(bool param_1)
 
 // 005896E0  Load_aligned_byte_pointerArray  (gfx_d3d/r_bsp_load_db.h:8830)
 
-void __cdecl Load_aligned_byte_pointerArray(bool param_1,int param_2)
+void __cdecl Load_aligned_byte_pointerArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varaligned_byte_pointer,param_2);
+  Load_Stream(atStreamStart,varaligned_byte_pointer,count);
   return;
 }
 
 
 // 00589700  Load_GfxLightGrid  (gfx_d3d/r_bsp_load_db.h:8870)
 
-void __cdecl Load_GfxLightGrid(bool param_1)
+void __cdecl Load_GfxLightGrid(bool atStreamStart)
 
 {
   ushort *puVar1;
@@ -9762,7 +9939,7 @@ void __cdecl Load_GfxLightGrid(bool param_1)
   GfxLightGridEntry *pGVar3;
   GfxCompressedLightGridColors *pGVar4;
   
-  Load_Stream(param_1,varGfxLightGrid,0x38);
+  Load_Stream(atStreamStart,varGfxLightGrid,0x38);
   if (varGfxLightGrid->rowDataStart != (ushort *)0x0) {
     puVar1 = (ushort *)AllocLoad_short();
     varGfxLightGrid->rowDataStart = puVar1;
@@ -9794,23 +9971,23 @@ void __cdecl Load_GfxLightGrid(bool param_1)
 
 // 00589830  Load_GfxStreamingAabbTreeArray  (gfx_d3d/r_bsp_load_db.h:9485)
 
-void __cdecl Load_GfxStreamingAabbTreeArray(bool param_1,int param_2)
+void __cdecl Load_GfxStreamingAabbTreeArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxStreamingAabbTree,param_2 << 5);
+  Load_Stream(atStreamStart,varGfxStreamingAabbTree,count << 5);
   return;
 }
 
 
 // 00589850  Load_GfxWorldStreamInfo  (gfx_d3d/r_bsp_load_db.h:9525)
 
-void __cdecl Load_GfxWorldStreamInfo(bool param_1)
+void __cdecl Load_GfxWorldStreamInfo(bool atStreamStart)
 
 {
   GfxStreamingAabbTree *pGVar1;
   int *piVar2;
   
-  Load_Stream(param_1,varGfxWorldStreamInfo,0x10);
+  Load_Stream(atStreamStart,varGfxWorldStreamInfo,0x10);
   if (varGfxWorldStreamInfo->aabbTrees != (GfxStreamingAabbTree *)0x0) {
     pGVar1 = (GfxStreamingAabbTree *)AllocLoad_int();
     varGfxWorldStreamInfo->aabbTrees = pGVar1;
@@ -9851,20 +10028,20 @@ void __cdecl Mark_Window(void)
 
 // 005898E0  Load_GfxSceneDynModelArray  (gfx_d3d/r_bsp_load_db.h:9942)
 
-void __cdecl Load_GfxSceneDynModelArray(bool param_1,int param_2)
+void __cdecl Load_GfxSceneDynModelArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxSceneDynModel,param_2 * 6);
+  Load_Stream(atStreamStart,varGfxSceneDynModel,count * 6);
   return;
 }
 
 
 // 00589900  Load_GfxSceneDynBrushArray  (gfx_d3d/r_bsp_load_db.h:9997)
 
-void __cdecl Load_GfxSceneDynBrushArray(bool param_1,int param_2)
+void __cdecl Load_GfxSceneDynBrushArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxSceneDynBrush,param_2 << 2);
+  Load_Stream(atStreamStart,varGfxSceneDynBrush,count << 2);
   return;
 }
 
@@ -9886,22 +10063,22 @@ void __cdecl Mark_listBoxDef_t(void)
 
 // 00589920  Load_GfxDrawSurfArray  (gfx_d3d/r_bsp_load_db.h:10052)
 
-void __cdecl Load_GfxDrawSurfArray(bool param_1,int param_2)
+void __cdecl Load_GfxDrawSurfArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxDrawSurf,param_2 << 3);
+  Load_Stream(atStreamStart,varGfxDrawSurf,count << 3);
   return;
 }
 
 
 // 00589940  Load_GfxShadowGeometry  (gfx_d3d/r_bsp_load_db.h:10092)
 
-void __cdecl Load_GfxShadowGeometry(bool param_1)
+void __cdecl Load_GfxShadowGeometry(bool atStreamStart)
 
 {
   ushort *puVar1;
   
-  Load_Stream(param_1,varGfxShadowGeometry,0xc);
+  Load_Stream(atStreamStart,varGfxShadowGeometry,0xc);
   if (varGfxShadowGeometry->sortedSurfIndex != (ushort *)0x0) {
     puVar1 = (ushort *)AllocLoad_short();
     varGfxShadowGeometry->sortedSurfIndex = puVar1;
@@ -9920,18 +10097,18 @@ void __cdecl Load_GfxShadowGeometry(bool param_1)
 
 // 005899E0  Load_GfxShadowGeometryArray  (gfx_d3d/r_bsp_load_db.h:10131)
 
-void __cdecl Load_GfxShadowGeometryArray(bool param_1,int param_2)
+void __cdecl Load_GfxShadowGeometryArray(bool atStreamStart,int count)
 
 {
-  GfxShadowGeometry *local_c;
-  int local_8;
+  GfxShadowGeometry *var;
+  int i;
   
-  Load_Stream(param_1,varGfxShadowGeometry,param_2 * 0xc);
-  local_c = varGfxShadowGeometry;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxShadowGeometry = local_c;
+  Load_Stream(atStreamStart,varGfxShadowGeometry,count * 0xc);
+  var = varGfxShadowGeometry;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxShadowGeometry = var;
     Load_GfxShadowGeometry(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -9952,12 +10129,12 @@ void __cdecl Mark_listBoxDef_ptr(void)
 
 // 00589A50  Load_GfxWaterBuffer  (gfx_d3d/r_bsp_load_db.h:10171)
 
-void __cdecl Load_GfxWaterBuffer(bool param_1)
+void __cdecl Load_GfxWaterBuffer(bool atStreamStart)
 
 {
   float (*pafVar1) [4];
   
-  Load_Stream(param_1,varGfxWaterBuffer,8);
+  Load_Stream(atStreamStart,varGfxWaterBuffer,8);
   if (varGfxWaterBuffer->buffer != (float (*) [4])0x0) {
     pafVar1 = (float (*) [4])AllocLoad_int();
     varGfxWaterBuffer->buffer = pafVar1;
@@ -9983,18 +10160,18 @@ void __cdecl Mark_focusDefData_t(void)
 
 // 00589AB0  Load_GfxWaterBufferArray  (gfx_d3d/r_bsp_load_db.h:10198)
 
-void __cdecl Load_GfxWaterBufferArray(bool param_1,int param_2)
+void __cdecl Load_GfxWaterBufferArray(bool atStreamStart,int count)
 
 {
-  GfxWaterBuffer *local_c;
-  int local_8;
+  GfxWaterBuffer *var;
+  int i;
   
-  Load_Stream(param_1,varGfxWaterBuffer,param_2 << 3);
-  local_c = varGfxWaterBuffer;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxWaterBuffer = local_c;
+  Load_Stream(atStreamStart,varGfxWaterBuffer,count << 3);
+  var = varGfxWaterBuffer;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxWaterBuffer = var;
     Load_GfxWaterBuffer(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -10013,10 +10190,10 @@ void __cdecl Mark_focusItemDef_t(void)
 
 // 00589B20  Load_GfxWorldLodChainArray  (gfx_d3d/r_bsp_load_db.h:10273)
 
-void __cdecl Load_GfxWorldLodChainArray(bool param_1,int param_2)
+void __cdecl Load_GfxWorldLodChainArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxWorldLodChain,param_2 * 0x18);
+  Load_Stream(atStreamStart,varGfxWorldLodChain,count * 0x18);
   return;
 }
 
@@ -10036,10 +10213,10 @@ void __cdecl Mark_focusItemDef_ptr(void)
 
 // 00589B40  Load_GfxWorldLodInfoArray  (gfx_d3d/r_bsp_load_db.h:10343)
 
-void __cdecl Load_GfxWorldLodInfoArray(bool param_1,int param_2)
+void __cdecl Load_GfxWorldLodInfoArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxWorldLodInfo,param_2 * 0xc);
+  Load_Stream(atStreamStart,varGfxWorldLodInfo,count * 0xc);
   return;
 }
 
@@ -10066,10 +10243,10 @@ void __cdecl Mark_textDefData_t(void)
 
 // 00586210  Load_flameTable  (bgame/bg_weapons_load_db.h:10412)
 
-void __cdecl Load_flameTable(bool param_1)
+void __cdecl Load_flameTable(bool atStreamStart)
 
 {
-  Load_Stream(param_1,varflameTable,0x1dc);
+  Load_Stream(atStreamStart,varflameTable,0x1dc);
   varXString = &varflameTable->name;
   Load_XString(false);
   varMaterialHandle = &varflameTable->fire;
@@ -10102,20 +10279,20 @@ void __cdecl Load_flameTable(bool param_1)
 
 // 00589B60  Load_GfxLightCoronaArray  (gfx_d3d/r_bsp_load_db.h:10418)
 
-void __cdecl Load_GfxLightCoronaArray(bool param_1,int param_2)
+void __cdecl Load_GfxLightCoronaArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxLightCorona,param_2 << 5);
+  Load_Stream(atStreamStart,varGfxLightCorona,count << 5);
   return;
 }
 
 
 // 00589B80  Load_GfxShadowMapVolumeArray  (gfx_d3d/r_bsp_load_db.h:10493)
 
-void __cdecl Load_GfxShadowMapVolumeArray(bool param_1,int param_2)
+void __cdecl Load_GfxShadowMapVolumeArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxShadowMapVolume,param_2 << 4);
+  Load_Stream(atStreamStart,varGfxShadowMapVolume,count << 4);
   return;
 }
 
@@ -10146,20 +10323,20 @@ void __cdecl Mark_textDef_ptr(void)
 
 // 00589BA0  Load_GfxExposureVolumeArray  (gfx_d3d/r_bsp_load_db.h:10653)
 
-void __cdecl Load_GfxExposureVolumeArray(bool param_1,int param_2)
+void __cdecl Load_GfxExposureVolumeArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxExposureVolume,param_2 * 0x18);
+  Load_Stream(atStreamStart,varGfxExposureVolume,count * 0x18);
   return;
 }
 
 
 // 00589BC0  Load_GfxVolumePlaneArray  (gfx_d3d/r_bsp_load_db.h:10713)
 
-void __cdecl Load_GfxVolumePlaneArray(bool param_1,int param_2)
+void __cdecl Load_GfxVolumePlaneArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxVolumePlane,param_2 << 4);
+  Load_Stream(atStreamStart,varGfxVolumePlane,count << 4);
   return;
 }
 
@@ -10191,22 +10368,22 @@ void __cdecl Mark_itemDefData_t(void)
 
 // 00589BE0  Load_GfxLightRegionAxisArray  (gfx_d3d/r_bsp_load_db.h:10783)
 
-void __cdecl Load_GfxLightRegionAxisArray(bool param_1,int param_2)
+void __cdecl Load_GfxLightRegionAxisArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxLightRegionAxis,param_2 * 0x14);
+  Load_Stream(atStreamStart,varGfxLightRegionAxis,count * 0x14);
   return;
 }
 
 
 // 00589C00  Load_GfxLightRegionHull  (gfx_d3d/r_bsp_load_db.h:10823)
 
-void __cdecl Load_GfxLightRegionHull(bool param_1)
+void __cdecl Load_GfxLightRegionHull(bool atStreamStart)
 
 {
   GfxLightRegionAxis *pGVar1;
   
-  Load_Stream(param_1,varGfxLightRegionHull,0x50);
+  Load_Stream(atStreamStart,varGfxLightRegionHull,0x50);
   if (varGfxLightRegionHull->axis != (GfxLightRegionAxis *)0x0) {
     pGVar1 = (GfxLightRegionAxis *)AllocLoad_int();
     varGfxLightRegionHull->axis = pGVar1;
@@ -10232,18 +10409,18 @@ void __cdecl Mark_itemDef_t(void)
 
 // 00589C60  Load_GfxLightRegionHullArray  (gfx_d3d/r_bsp_load_db.h:10860)
 
-void __cdecl Load_GfxLightRegionHullArray(bool param_1,int param_2)
+void __cdecl Load_GfxLightRegionHullArray(bool atStreamStart,int count)
 
 {
-  GfxLightRegionHull *local_c;
-  int local_8;
+  GfxLightRegionHull *var;
+  int i;
   
-  Load_Stream(param_1,varGfxLightRegionHull,param_2 * 0x50);
-  local_c = varGfxLightRegionHull;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxLightRegionHull = local_c;
+  Load_Stream(atStreamStart,varGfxLightRegionHull,count * 0x50);
+  var = varGfxLightRegionHull;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxLightRegionHull = var;
     Load_GfxLightRegionHull(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -10251,12 +10428,12 @@ void __cdecl Load_GfxLightRegionHullArray(bool param_1,int param_2)
 
 // 00589CD0  Load_GfxLightRegion  (gfx_d3d/r_bsp_load_db.h:10900)
 
-void __cdecl Load_GfxLightRegion(bool param_1)
+void __cdecl Load_GfxLightRegion(bool atStreamStart)
 
 {
   GfxLightRegionHull *pGVar1;
   
-  Load_Stream(param_1,varGfxLightRegion,8);
+  Load_Stream(atStreamStart,varGfxLightRegion,8);
   if (varGfxLightRegion->hulls != (GfxLightRegionHull *)0x0) {
     pGVar1 = (GfxLightRegionHull *)AllocLoad_int();
     varGfxLightRegion->hulls = pGVar1;
@@ -10269,18 +10446,18 @@ void __cdecl Load_GfxLightRegion(bool param_1)
 
 // 00589D30  Load_GfxLightRegionArray  (gfx_d3d/r_bsp_load_db.h:10927)
 
-void __cdecl Load_GfxLightRegionArray(bool param_1,int param_2)
+void __cdecl Load_GfxLightRegionArray(bool atStreamStart,int count)
 
 {
-  GfxLightRegion *local_c;
-  int local_8;
+  GfxLightRegion *var;
+  int i;
   
-  Load_Stream(param_1,varGfxLightRegion,param_2 << 3);
-  local_c = varGfxLightRegion;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    varGfxLightRegion = local_c;
+  Load_Stream(atStreamStart,varGfxLightRegion,count << 3);
+  var = varGfxLightRegion;
+  for (i = 0; i < count; i = i + 1) {
+    varGfxLightRegion = var;
     Load_GfxLightRegion(false);
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -10301,17 +10478,17 @@ void __cdecl Mark_itemDef_ptr(void)
 
 // 00585650  Mark_itemDef_ptrArray  (ui/ui_shared_load_db.h:10960)
 
-void __cdecl Mark_itemDef_ptrArray(int param_1)
+void __cdecl Mark_itemDef_ptrArray(int count)
 
 {
-  itemDef_s **local_c;
-  int local_8;
+  itemDef_s **var;
+  int i;
   
-  local_c = varitemDef_ptr;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varitemDef_ptr = local_c;
+  var = varitemDef_ptr;
+  for (i = 0; i < count; i = i + 1) {
+    varitemDef_ptr = var;
     Mark_itemDef_ptr();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -10319,13 +10496,13 @@ void __cdecl Mark_itemDef_ptrArray(int param_1)
 
 // 00589DA0  Load_GfxWorldDpvsDynamic  (gfx_d3d/r_bsp_load_db.h:10967)
 
-void __cdecl Load_GfxWorldDpvsDynamic(bool param_1)
+void __cdecl Load_GfxWorldDpvsDynamic(bool atStreamStart)
 
 {
   uint *puVar1;
   uchar *puVar2;
   
-  Load_Stream(param_1,varGfxWorldDpvsDynamic,0x30);
+  Load_Stream(atStreamStart,varGfxWorldDpvsDynamic,0x30);
   DB_PushStreamPos(1);
   if (varGfxWorldDpvsDynamic->dynEntCellBits[0] != (uint *)0x0) {
     puVar1 = (uint *)AllocLoad_int();
@@ -10413,7 +10590,7 @@ void __cdecl Mark_menuDef_t(void)
 
 // 0058A040  Load_GfxWorldDpvsStatic  (gfx_d3d/r_bsp_load_db.h:11114)
 
-void __cdecl Load_GfxWorldDpvsStatic(bool param_1)
+void __cdecl Load_GfxWorldDpvsStatic(bool atStreamStart)
 
 {
   uchar *puVar1;
@@ -10425,7 +10602,7 @@ void __cdecl Load_GfxWorldDpvsStatic(bool param_1)
   GfxStaticModelDrawInst *pGVar7;
   GfxDrawSurf *pGVar8;
   
-  Load_Stream(param_1,varGfxWorldDpvsStatic,0x70);
+  Load_Stream(atStreamStart,varGfxWorldDpvsStatic,0x70);
   DB_PushStreamPos(1);
   if (varGfxWorldDpvsStatic->smodelVisData[0] != (uchar *)0x0) {
     puVar1 = AllocLoad_byte();
@@ -10550,7 +10727,7 @@ void __cdecl Load_GfxWorldDpvsStatic(bool param_1)
 
 // 005863B0  Load_WeaponDef  (bgame/bg_weapons_load_db.h:11188)
 
-void __cdecl Load_WeaponDef(bool param_1)
+void __cdecl Load_WeaponDef(bool atStreamStart)
 
 {
   XModel **ppXVar1;
@@ -10560,7 +10737,7 @@ void __cdecl Load_WeaponDef(bool param_1)
   float (*pafVar5) [2];
   flameTable *pfVar6;
   
-  Load_Stream(param_1,varWeaponDef,0x808);
+  Load_Stream(atStreamStart,varWeaponDef,0x808);
   varXString = &varWeaponDef->szOverlayName;
   Load_XString(false);
   if (varWeaponDef->gunXModel != (XModel **)0x0) {
@@ -10965,6 +11142,8 @@ void __cdecl Load_WeaponDef(bool param_1)
 
 // 005856F0  Mark_menuDef_ptr  (ui/ui_shared_load_db.h:11193)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_menuDef_ptr(void)
 
 {
@@ -10979,17 +11158,17 @@ void __cdecl Mark_menuDef_ptr(void)
 
 // 00585720  Mark_menuDef_ptrArray  (ui/ui_shared_load_db.h:11206)
 
-void __cdecl Mark_menuDef_ptrArray(int param_1)
+void __cdecl Mark_menuDef_ptrArray(int count)
 
 {
-  menuDef_t **local_c;
-  int local_8;
+  menuDef_t **var;
+  int i;
   
-  local_c = varmenuDef_ptr;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varmenuDef_ptr = local_c;
+  var = varmenuDef_ptr;
+  for (i = 0; i < count; i = i + 1) {
+    varmenuDef_ptr = var;
     Mark_menuDef_ptr();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -11010,6 +11189,8 @@ void __cdecl Mark_MenuList(void)
 
 // 005857A0  Mark_MenuListPtr  (ui/ui_shared_load_db.h:11268)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_MenuListPtr(void)
 
 {
@@ -11024,14 +11205,14 @@ void __cdecl Mark_MenuListPtr(void)
 
 // 0058A4B0  Load_GfxWorldDpvsPlanes  (gfx_d3d/r_bsp_load_db.h:11434)
 
-void __cdecl Load_GfxWorldDpvsPlanes(bool param_1)
+void __cdecl Load_GfxWorldDpvsPlanes(bool atStreamStart)
 
 {
   cplane_s *pcVar1;
   ushort *puVar2;
   uint *puVar3;
   
-  Load_Stream(param_1,varGfxWorldDpvsPlanes,0x10);
+  Load_Stream(atStreamStart,varGfxWorldDpvsPlanes,0x10);
   if (varGfxWorldDpvsPlanes->planes != (cplane_s *)0x0) {
     if (varGfxWorldDpvsPlanes->planes == (cplane_s *)0xffffffff) {
       pcVar1 = (cplane_s *)AllocLoad_int();
@@ -11063,37 +11244,37 @@ void __cdecl Load_GfxWorldDpvsPlanes(bool param_1)
 
 // 0058A5B0  Load_GfxOutdoorBoundsArray  (gfx_d3d/r_bsp_load_db.h:11544)
 
-void __cdecl Load_GfxOutdoorBoundsArray(bool param_1,int param_2)
+void __cdecl Load_GfxOutdoorBoundsArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxOutdoorBounds,param_2 * 0x18);
+  Load_Stream(atStreamStart,varGfxOutdoorBounds,count * 0x18);
   return;
 }
 
 
 // 0058A5D0  Load_GfxHeroLightArray  (gfx_d3d/r_bsp_load_db.h:11644)
 
-void __cdecl Load_GfxHeroLightArray(bool param_1,int param_2)
+void __cdecl Load_GfxHeroLightArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxHeroLight,param_2 * 0x38);
+  Load_Stream(atStreamStart,varGfxHeroLight,count * 0x38);
   return;
 }
 
 
 // 0058A5F0  Load_GfxHeroLightTreeArray  (gfx_d3d/r_bsp_load_db.h:11709)
 
-void __cdecl Load_GfxHeroLightTreeArray(bool param_1,int param_2)
+void __cdecl Load_GfxHeroLightTreeArray(bool atStreamStart,int count)
 
 {
-  Load_Stream(param_1,varGfxHeroLightTree,param_2 * 0x18);
+  Load_Stream(atStreamStart,varGfxHeroLightTree,count * 0x18);
   return;
 }
 
 
 // 0058A610  Load_GfxWorldDraw  (gfx_d3d/r_bsp_load_db.h:11749)
 
-void __cdecl Load_GfxWorldDraw(bool param_1)
+void __cdecl Load_GfxWorldDraw(bool atStreamStart)
 
 {
   GfxReflectionProbe *pGVar1;
@@ -11101,7 +11282,7 @@ void __cdecl Load_GfxWorldDraw(bool param_1)
   GfxLightmapArray *pGVar3;
   ushort *puVar4;
   
-  Load_Stream(param_1,varGfxWorldDraw,0xc0);
+  Load_Stream(atStreamStart,varGfxWorldDraw,0xc0);
   if (varGfxWorldDraw->reflectionProbes != (GfxReflectionProbe *)0x0) {
     pGVar1 = (GfxReflectionProbe *)AllocLoad_int();
     varGfxWorldDraw->reflectionProbes = pGVar1;
@@ -11164,7 +11345,7 @@ void __cdecl Load_GfxWorldDraw(bool param_1)
 
 // 0058A870  Load_GfxWorld  (gfx_d3d/r_bsp_load_db.h:11945)
 
-void __cdecl Load_GfxWorld(bool param_1)
+void __cdecl Load_GfxWorld(bool atStreamStart)
 
 {
   int *piVar1;
@@ -11189,7 +11370,7 @@ void __cdecl Load_GfxWorld(bool param_1)
   GfxHeroLight *pGVar20;
   GfxHeroLightTree *pGVar21;
   
-  Load_Stream(param_1,varGfxWorld,0x43c);
+  Load_Stream(atStreamStart,varGfxWorld,0x43c);
   DB_PushStreamPos(4);
   varXString = &varGfxWorld->name;
   Load_XString(false);
@@ -11411,14 +11592,18 @@ void __cdecl Load_GfxWorld(bool param_1)
 
 // 0058B260  Load_GfxWorldPtr  (gfx_d3d/r_bsp_load_db.h:12462)
 
-void __cdecl Load_GfxWorldPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_GfxWorldPtr(bool atStreamStart)
 
 {
   GfxWorld *pGVar1;
   GfxWorld *pGVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varGfxWorldPtr,4);
+  Load_Stream(atStreamStart,varGfxWorldPtr,4);
   DB_PushStreamPos(0);
   if (*varGfxWorldPtr != (GfxWorld *)0x0) {
     pGVar1 = *varGfxWorldPtr;
@@ -11460,17 +11645,17 @@ void __cdecl Mark_MaterialMemory(void)
 
 // 0058B350  Mark_MaterialMemoryArray  (gfx_d3d/r_bsp_load_db.h:13159)
 
-void __cdecl Mark_MaterialMemoryArray(int param_1)
+void __cdecl Mark_MaterialMemoryArray(int count)
 
 {
-  MaterialMemory *local_c;
-  int local_8;
+  MaterialMemory *var;
+  int i;
   
-  local_c = varMaterialMemory;
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    varMaterialMemory = local_c;
+  var = varMaterialMemory;
+  for (i = 0; i < count; i = i + 1) {
+    varMaterialMemory = var;
     Mark_MaterialMemory();
-    local_c = local_c + 1;
+    var = var + 1;
   }
   return;
 }
@@ -11478,14 +11663,14 @@ void __cdecl Mark_MaterialMemoryArray(int param_1)
 
 // 005875F0  Load_WeaponVariantDef  (bgame/bg_weapons_load_db.h:13844)
 
-void __cdecl Load_WeaponVariantDef(bool param_1)
+void __cdecl Load_WeaponVariantDef(bool atStreamStart)
 
 {
   WeaponDef *pWVar1;
   char **ppcVar2;
   ushort *puVar3;
   
-  Load_Stream(param_1,varWeaponVariantDef,0xe4);
+  Load_Stream(atStreamStart,varWeaponVariantDef,0xe4);
   DB_PushStreamPos(4);
   varXString = &varWeaponVariantDef->szInternalName;
   Load_XString(false);
@@ -11543,14 +11728,18 @@ void __cdecl Load_WeaponVariantDef(bool param_1)
 
 // 005877E0  Load_WeaponVariantDefPtr  (bgame/bg_weapons_load_db.h:14160)
 
-void __cdecl Load_WeaponVariantDefPtr(bool param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl Load_WeaponVariantDefPtr(bool atStreamStart)
 
 {
   WeaponVariantDef *pWVar1;
   WeaponVariantDef *pWVar2;
   undefined4 local_10;
+  uint value;
+  void **pData;
   
-  Load_Stream(param_1,varWeaponVariantDefPtr,4);
+  Load_Stream(atStreamStart,varWeaponVariantDefPtr,4);
   DB_PushStreamPos(0);
   if (*varWeaponVariantDefPtr != (WeaponVariantDef *)0x0) {
     pWVar1 = *varWeaponVariantDefPtr;
@@ -11766,6 +11955,8 @@ void __cdecl Mark_WeaponDef(void)
 
 // 0058B590  Mark_GfxWorldPtr  (gfx_d3d/r_bsp_load_db.h:15935)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl Mark_GfxWorldPtr(void)
 
 {
@@ -11802,6 +11993,8 @@ void __cdecl Mark_WeaponVariantDef(void)
 
 
 // 00587D60  Mark_WeaponVariantDefPtr  (bgame/bg_weapons_load_db.h:18265)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Mark_WeaponVariantDefPtr(void)
 

@@ -23,7 +23,7 @@ undefined4 FUN_00be7690(int param_1,int param_2,undefined4 param_3)
   int iVar1;
   undefined4 uVar2;
   int iVar3;
-  uchar *puVar4;
+  uchar *str1;
   int extraout_EAX;
   int local_30;
   int local_2c;
@@ -39,8 +39,8 @@ undefined4 FUN_00be7690(int param_1,int param_2,undefined4 param_3)
     iVar3 = _HTMethod_hasEntity(uVar2);
     if (iVar3 != 0) {
       uVar2 = _HTLink_method(iVar1);
-      puVar4 = (uchar *)_HTResponse_challenge(uVar2);
-      if ((puVar4 != (uchar *)0x0) && (strcmp(puVar4,(uchar *)"http"), extraout_EAX == 0)) {
+      str1 = (uchar *)_HTResponse_challenge(uVar2);
+      if ((str1 != (uchar *)0x0) && (strcmp(str1,(uchar *)"http"), extraout_EAX == 0)) {
         FUN_00be7640(param_1);
         if (iVar1 != 0) {
           if (iVar1 == 0) {

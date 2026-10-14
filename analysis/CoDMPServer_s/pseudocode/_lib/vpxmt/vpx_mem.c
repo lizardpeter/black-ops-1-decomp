@@ -46,16 +46,16 @@ uchar * __cdecl vpx_calloc(int param_1,int param_2)
 
 {
   void *pvVar1;
-  uchar *puVar2;
+  uchar *dst;
   
-  puVar2 = (uchar *)0x0;
+  dst = (uchar *)0x0;
   pvVar1 = malloc(param_1 * param_2 + 4);
   if (pvVar1 != (void *)0x0) {
-    puVar2 = (uchar *)((int)pvVar1 + 4);
+    dst = (uchar *)((int)pvVar1 + 4);
     *(void **)pvVar1 = pvVar1;
-    memset(puVar2,'\0',param_1 * param_2);
+    memset(dst,'\0',param_1 * param_2);
   }
-  return puVar2;
+  return dst;
 }
 
 

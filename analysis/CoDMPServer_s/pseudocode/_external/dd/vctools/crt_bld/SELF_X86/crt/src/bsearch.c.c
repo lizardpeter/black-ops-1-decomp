@@ -3,8 +3,7 @@
 // 0095C13A  bsearch  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/bsearch.c:76)
 
 void * __cdecl
-bsearch(void *param_1,void *param_2,uint param_3,uint param_4,
-       _func___cdecl_int_void_ptr_void_ptr *param_5)
+bsearch(void *key,void *base,uint num,uint width,_func___cdecl_int_void_ptr_void_ptr *compare)
 
 {
   int *piVar1;
@@ -14,43 +13,43 @@ bsearch(void *param_1,void *param_2,uint param_3,uint param_4,
   uint uVar5;
   void *pvVar6;
   
-  pvVar6 = (void *)((param_3 - 1) * param_4 + (int)param_2);
-  if ((((param_2 == (void *)0x0) && (param_3 != 0)) || (param_4 == 0)) ||
-     (param_5 == (_func___cdecl_int_void_ptr_void_ptr *)0x0)) {
+  pvVar6 = (void *)((num - 1) * width + (int)base);
+  if ((((base == (void *)0x0) && (num != 0)) || (width == 0)) ||
+     (compare == (_func___cdecl_int_void_ptr_void_ptr *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  else if (param_2 <= pvVar6) {
+  else if (base <= pvVar6) {
     do {
-      uVar5 = param_3 >> 1;
+      uVar5 = num >> 1;
       if (uVar5 == 0) {
-        if (param_3 == 0) {
+        if (num == 0) {
           return (void *)0x0;
         }
-        iVar4 = (*param_5)(param_1,param_2);
-        return (void *)(~-(uint)(iVar4 != 0) & (uint)param_2);
+        iVar4 = (*compare)(key,base);
+        return (void *)(~-(uint)(iVar4 != 0) & (uint)base);
       }
       uVar2 = uVar5;
-      if ((param_3 & 1) == 0) {
+      if ((num & 1) == 0) {
         uVar2 = uVar5 - 1;
       }
-      pvVar3 = (void *)(uVar2 * param_4 + (int)param_2);
-      iVar4 = (*param_5)(param_1,pvVar3);
+      pvVar3 = (void *)(uVar2 * width + (int)base);
+      iVar4 = (*compare)(key,pvVar3);
       if (iVar4 == 0) {
         return pvVar3;
       }
       if (iVar4 < 0) {
-        pvVar6 = (void *)((int)pvVar3 - param_4);
-        if ((param_3 & 1) == 0) {
+        pvVar6 = (void *)((int)pvVar3 - width);
+        if ((num & 1) == 0) {
           uVar5 = uVar5 - 1;
         }
       }
       else {
-        param_2 = (void *)((int)pvVar3 + param_4);
+        base = (void *)((int)pvVar3 + width);
       }
-      param_3 = uVar5;
-    } while (param_2 <= pvVar6);
+      num = uVar5;
+    } while (base <= pvVar6);
   }
   return (void *)0x0;
 }

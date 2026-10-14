@@ -4,7 +4,7 @@
 
 void __cdecl
 R_AddDelayedStaticModelDrawSurf
-          (GfxDelayedCmdBuf *param_1,XSurface *param_2,ushort *param_3,uint param_4,uint param_5)
+          (GfxDelayedCmdBuf *list,XSurface *param_2,ushort *param_3,uint param_4,uint param_5)
 
 {
   GfxBackEndData *pGVar1;
@@ -12,13 +12,14 @@ R_AddDelayedStaticModelDrawSurf
   uint in_EDX;
   int *unaff_ESI;
   uint uVar2;
+  XSurface *xsurf;
   
   pGVar1 = frontEndDataOut;
   unaff_ESI[1] = unaff_ESI[1] + -1;
   pGVar1->primDrawSurfsBuf[*unaff_ESI] = in_EAX << 0x1c | in_EDX;
   unaff_ESI[1] = unaff_ESI[1] + -1;
   *unaff_ESI = *unaff_ESI + 1;
-  pGVar1->primDrawSurfsBuf[*unaff_ESI] = (uint)param_1;
+  pGVar1->primDrawSurfsBuf[*unaff_ESI] = (uint)list;
   *unaff_ESI = *unaff_ESI + 1;
   uVar2 = in_EDX + 1 >> 1;
   unaff_ESI[1] = unaff_ESI[1] - uVar2;
@@ -30,6 +31,8 @@ R_AddDelayedStaticModelDrawSurf
 
 // 00853600  R_GetStaticModelId  (gfx_d3d/r_add_staticmodel.cpp:726)
 
+/* WARNING: Variable defined which should be unmapped: staticModelId */
+
 GfxStaticModelId __cdecl R_GetStaticModelId(int param_1,int param_2)
 
 {
@@ -39,6 +42,7 @@ GfxStaticModelId __cdecl R_GetStaticModelId(int param_1,int param_2)
   uint uVar3;
   int in_EDX;
   ushort *puVar4;
+  GfxStaticModelId staticModelId;
   GfxStaticModelId local_4;
   
   pXVar1 = ((rgp.world)->dpvs).smodelDrawInsts[in_EDX].model;
@@ -67,7 +71,8 @@ GfxStaticModelId __cdecl R_GetStaticModelId(int param_1,int param_2)
 /* WARNING: Type propagation algorithm not settling */
 
 void __cdecl
-R_AddAllStaticModelSurfacesCamera(int param_1,int param_2,GfxLight *param_3,int param_4,int param_5)
+R_AddAllStaticModelSurfacesCamera
+          (int visibleLightCount,int noLodCullOut,GfxLight *param_3,int param_4,int param_5)
 
 {
   ushort *puVar1;
@@ -75,39 +80,48 @@ R_AddAllStaticModelSurfacesCamera(int param_1,int param_2,GfxLight *param_3,int 
   char cVar3;
   ushort uVar4;
   uchar *puVar5;
-  XModel *pXVar6;
+  XModel *primaryLightIndex_00;
+  bool bVar6;
   bool bVar7;
-  bool bVar8;
-  char cVar9;
-  bool bVar10;
-  int iVar11;
-  uint uVar12;
-  GfxStaticModelId GVar13;
+  char cVar8;
+  bool bVar9;
+  int iVar10;
+  uint surfData_00;
+  GfxStaticModelId GVar11;
   int in_ECX;
-  ushort *puVar14;
+  ushort *surfType;
   float *unaff_EBP;
-  float *pfVar15;
+  float *pfVar12;
   float *unaff_ESI;
   GfxSModelDrawSurfLightingData *unaff_EDI;
-  float *pfVar16;
-  float *pfVar17;
-  float10 fVar18;
+  float *pfVar13;
+  float *pfVar14;
+  float10 fVar15;
+  float fVar16;
+  float fVar17;
+  float fVar18;
   float fVar19;
   float fVar20;
   float fVar21;
   float fVar22;
-  float fVar23;
-  float fVar24;
-  float fVar25;
-  byte local_10d2;
-  ushort (*local_10d0) [4];
-  GfxSModelDrawSurfLightingData *local_10c4;
-  ushort (*local_10c0) [4];
-  XModel *local_10b0;
-  uint local_10ac;
-  uint local_10a4;
+  GfxLight *visibleLights;
+  uchar prevPrimaryLightIndex;
+  uchar primaryLightIndex;
+  uint visLightsMask;
+  uint local_10d0;
+  bool prevNoDynamicShadow;
+  bool noDynamicShadow;
+  uint prevVisLightsMask;
+  uint reflectionProbeIndex;
+  int modelInUse;
+  XModel *model;
+  XModel *prevModel;
+  uint smodelIndex;
+  uchar *smodelVisData;
+  uint maxDynSModelCount;
+  uint prevReflectionProbeIndex;
   float local_1098;
-  int local_1094;
+  int surfData;
   int local_1090;
   ushort local_108c [2];
   uint local_1088;
@@ -119,44 +133,44 @@ R_AddAllStaticModelSurfacesCamera(int param_1,int param_2,GfxLight *param_3,int 
   GfxDrawSurf *local_1070;
   GfxDrawSurf *local_106c;
   GfxStaticModelInst *local_1064;
-  float *local_1060;
-  int local_105c;
-  float local_1058;
+  int sunShadowIndex1;
+  float dist;
+  uint *lodData;
   uint *local_1054;
-  float local_1050;
-  uint local_104c;
-  float local_1048;
-  float local_1044;
-  float local_1040;
+  uint smodelCount;
+  float lodScale;
+  float lodBias;
+  float normal_dist;
+  float lodOrigin;
   float local_103c;
   float local_1038;
-  float local_1034;
-  int local_1030;
+  int sunShadowIndex0;
+  int sunShadowIndex2;
   int local_102c;
   float local_1028;
-  float local_1024;
+  float staticModelLodCount;
   ushort local_1020 [2062];
-  undefined4 uStack_4;
+  int teleported;
   
-  uStack_4 = 0x85368a;
-  uVar12 = g_worldDpvs->smodelCount;
+  teleported = 0x85368a;
+  fVar16 = (float)g_worldDpvs->smodelCount;
   local_1054 = ((rgp.world)->dpvs).lodData;
-  local_104c = uVar12;
-  Com_Memset(local_1054,0,(uVar12 + 0x7f >> 4 & 0xffffff8) * 4);
+  lodScale = fVar16;
+  Com_Memset(local_1054,0,((int)fVar16 + 0x7fU >> 4 & 0xffffff8) * 4);
   puVar5 = ((rgp.world)->dpvs).smodelVisData[0];
   g_lodParms = rg.correctedLodParms + in_ECX;
-  local_1048 = rg.correctedLodParms[in_ECX].ramp[0].scale;
-  local_1044 = rg.correctedLodParms[in_ECX].ramp[0].bias;
+  lodBias = rg.correctedLodParms[in_ECX].ramp[0].scale;
+  normal_dist = rg.correctedLodParms[in_ECX].ramp[0].bias;
   local_103c = g_lodParms->origin[0];
   local_1038 = rg.correctedLodParms[in_ECX].origin[1];
-  local_1034 = rg.correctedLodParms[in_ECX].origin[2];
+  sunShadowIndex0 = (int)rg.correctedLodParms[in_ECX].origin[2];
   local_107c = scene.drawSurfs[1] + 0x2000;
   local_1074 = scene.drawSurfs[4] + 0x200;
   local_1090 = -1;
   local_1088 = 0xffffffff;
   local_1084 = 0xffffffff;
   local_106c = scene.drawSurfs[0xb] + 0x2000;
-  local_10a4 = g_worldDpvs->dynamicSModelCount;
+  prevReflectionProbeIndex = g_worldDpvs->dynamicSModelCount;
   local_108c[0] = 0;
   local_108c[1] = 0;
   local_1080 = scene.drawSurfs[1];
@@ -178,51 +192,52 @@ R_AddAllStaticModelSurfacesCamera(int param_1,int param_2,GfxLight *param_3,int 
   local_1020[0xd] = 0;
   local_1020[0xe] = 0;
   local_1020[0xf] = 0;
-  bVar8 = false;
-  local_10b0 = (XModel *)0x0;
-  cVar9 = -1;
-  local_10d2 = 0;
-  local_10c0 = (ushort (*) [4])0x0;
   bVar7 = false;
-  if (0x800 < (int)local_10a4) {
-    local_10a4 = 0x800;
+  smodelIndex = 0;
+  cVar8 = -1;
+  visLightsMask._2_1_ = 0;
+  reflectionProbeIndex = 0;
+  bVar6 = false;
+  if (0x800 < (int)prevReflectionProbeIndex) {
+    prevReflectionProbeIndex = 0x800;
   }
-  local_1030 = dpvsGlob.sunShadow.viewDirSign[0];
-  local_105c = dpvsGlob.sunShadow.viewDirSign[1];
+  sunShadowIndex2 = dpvsGlob.sunShadow.viewDirSign[0];
+  dist = (float)dpvsGlob.sunShadow.viewDirSign[1];
   local_102c = dpvsGlob.sunShadow.viewDirSign[2];
-  local_10ac = 0;
-  if (uVar12 != 0) {
-    pfVar16 = (((rgp.world)->dpvs).smodelInsts)->mins + 1;
-    pfVar15 = ((((rgp.world)->dpvs).smodelDrawInsts)->placement).origin + 2;
+  smodelVisData = (uchar *)0x0;
+  if (fVar16 != 0.0) {
+    pfVar13 = (((rgp.world)->dpvs).smodelInsts)->mins + 1;
+    pfVar12 = ((((rgp.world)->dpvs).smodelDrawInsts)->placement).origin + 2;
     do {
-      if (puVar5[local_10ac] != '\0') {
-        fVar19 = local_103c - ((GfxPackedPlacement *)(pfVar15 + -2))->origin[0];
-        fVar18 = (float10)sqrtf((local_1034 - *pfVar15) * (local_1034 - *pfVar15) +
-                                (local_1038 - pfVar15[-1]) * (local_1038 - pfVar15[-1]) +
-                                fVar19 * fVar19);
-        local_1040 = (float)fVar18;
-        bVar2 = *(byte *)((int)pfVar15 + 0x3f);
-        cVar3 = *(char *)((int)pfVar15 + 0x3e);
-        pXVar6 = (XModel *)pfVar15[0xb];
-        local_1058 = (float)(fVar18 * (float10)local_1048 + (float10)local_1044);
-        local_10d0 = (ushort (*) [4])0x0;
-        if (0 < param_2) {
-          local_1028 = ((GfxStaticModelInst *)(pfVar16 + -1))->mins[0];
-          local_1024 = *pfVar16;
-          local_1050 = pfVar16[1];
-          pfVar17 = (float *)(param_1 + 0x24);
-          local_1094 = param_2;
+      if (smodelVisData[(int)puVar5] != '\0') {
+        fVar16 = local_103c - ((GfxPackedPlacement *)(pfVar12 + -2))->origin[0];
+        fVar15 = (float10)sqrtf(((float)sunShadowIndex0 - *pfVar12) *
+                                ((float)sunShadowIndex0 - *pfVar12) +
+                                (local_1038 - pfVar12[-1]) * (local_1038 - pfVar12[-1]) +
+                                fVar16 * fVar16);
+        lodOrigin = (float)fVar15;
+        bVar2 = *(byte *)((int)pfVar12 + 0x3f);
+        cVar3 = *(char *)((int)pfVar12 + 0x3e);
+        primaryLightIndex_00 = (XModel *)pfVar12[0xb];
+        lodData = (uint *)(float)(fVar15 * (float10)lodBias + (float10)normal_dist);
+        local_10d0 = 0;
+        if (0 < noLodCullOut) {
+          local_1028 = ((GfxStaticModelInst *)(pfVar13 + -1))->mins[0];
+          staticModelLodCount = *pfVar13;
+          smodelCount = (uint)pfVar13[1];
+          pfVar14 = (float *)(visibleLightCount + 0x24);
+          surfData = noLodCullOut;
           do {
-            fVar22 = 0.0;
-            fVar24 = local_1028 - pfVar17[-2];
-            fVar20 = pfVar17[-2] - pfVar16[2];
-            local_1098 = local_1024 - pfVar17[-1];
-            fVar21 = pfVar17[-1] - pfVar16[3];
-            fVar25 = local_1050 - *pfVar17;
-            fVar23 = *pfVar17 - pfVar16[4];
-            fVar19 = fVar22;
-            if (0.0 <= fVar24) {
-              fVar19 = fVar24 * fVar24;
+            fVar19 = 0.0;
+            fVar21 = local_1028 - pfVar14[-2];
+            fVar17 = pfVar14[-2] - pfVar13[2];
+            local_1098 = staticModelLodCount - pfVar14[-1];
+            fVar18 = pfVar14[-1] - pfVar13[3];
+            fVar22 = (float)smodelCount - *pfVar14;
+            fVar20 = *pfVar14 - pfVar13[4];
+            fVar16 = fVar19;
+            if (0.0 <= fVar21) {
+              fVar16 = fVar21 * fVar21;
             }
             if (local_1098 < 0.0) {
               local_1098 = 0.0;
@@ -230,54 +245,55 @@ R_AddAllStaticModelSurfacesCamera(int param_1,int param_2,GfxLight *param_3,int 
             else {
               local_1098 = local_1098 * local_1098;
             }
-            fVar24 = fVar22;
-            if (0.0 <= fVar25) {
-              fVar24 = fVar25 * fVar25;
+            fVar21 = fVar19;
+            if (0.0 <= fVar22) {
+              fVar21 = fVar22 * fVar22;
             }
-            fVar25 = fVar22;
+            fVar22 = fVar19;
+            if (0.0 <= fVar17) {
+              fVar22 = fVar17 * fVar17;
+            }
+            fVar17 = fVar19;
+            if (0.0 <= fVar18) {
+              fVar17 = fVar18 * fVar18;
+            }
             if (0.0 <= fVar20) {
-              fVar25 = fVar20 * fVar20;
+              fVar19 = fVar20 * fVar20;
             }
-            fVar20 = fVar22;
-            if (0.0 <= fVar21) {
-              fVar20 = fVar21 * fVar21;
-            }
-            if (0.0 <= fVar23) {
-              fVar22 = fVar23 * fVar23;
-            }
-            if (fVar19 + fVar22 + fVar20 + fVar25 + fVar24 + local_1098 <= pfVar17[1] * pfVar17[1])
+            if (fVar16 + fVar19 + fVar17 + fVar22 + fVar21 + local_1098 <= pfVar14[1] * pfVar14[1])
             {
-              if (*(char *)(pfVar17 + -9) == '\x03') {
-                local_10d0 = (ushort (*) [4])((uint)local_10d0 | 1);
+              if (*(char *)(pfVar14 + -9) == '\x03') {
+                local_10d0 = local_10d0 | 1;
               }
               else {
-                iVar11 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,unaff_ESI,
+                iVar10 = BoxInPlanes(scene.dynamicSpotLightPlanes[0],(uint)unaff_EDI,unaff_ESI,
                                      unaff_EBP);
-                if (iVar11 != 0) {
-                  local_10d0 = (ushort (*) [4])((uint)local_10d0 | 2);
+                if (iVar10 != 0) {
+                  local_10d0 = local_10d0 | 2;
                 }
               }
             }
-            pfVar17 = pfVar17 + 0x5c;
-            local_1094 = local_1094 + -1;
-          } while (local_1094 != 0);
+            pfVar14 = pfVar14 + 0x5c;
+            surfData = surfData + -1;
+          } while (surfData != 0);
         }
-        local_1064 = (GfxStaticModelInst *)(pfVar16 + -1);
-        local_1060 = pfVar16 + 2;
-        local_10c4 = (GfxSModelDrawSurfLightingData *)CONCAT31(local_10c4._1_3_,1);
-        if ((dpvsGlob.sunShadow.viewDir[1] * (&local_1064)[local_105c]->mins[1] +
-             dpvsGlob.sunShadow.viewDir[0] * (&local_1064)[local_1030]->mins[0] +
+        local_1064 = (GfxStaticModelInst *)(pfVar13 + -1);
+        sunShadowIndex1 = (int)(pfVar13 + 2);
+        prevVisLightsMask = CONCAT31(prevVisLightsMask._1_3_,1);
+        if ((dpvsGlob.sunShadow.viewDir[1] * (&local_1064)[(int)dist]->mins[1] +
+             dpvsGlob.sunShadow.viewDir[0] * (&local_1064)[sunShadowIndex2]->mins[0] +
             (&local_1064)[local_102c]->mins[2] * dpvsGlob.sunShadow.viewDir[2]) -
             dpvsGlob.sunShadow.viewDirDist <= dpvsGlob.sunShadow.sunShadowDrawDist) {
-          local_10c4 = (GfxSModelDrawSurfLightingData *)((uint)local_10c4._1_3_ << 8);
+          prevVisLightsMask = (uint)prevVisLightsMask._1_3_ << 8;
         }
-        if ((((pXVar6 != local_10b0) || (cVar3 != cVar9)) || (bVar2 != local_10d2)) ||
-           ((local_10d0 != local_10c0 || (local_10c4._0_1_ != bVar7)))) {
-          if (bVar8) {
+        if ((((primaryLightIndex_00 != (XModel *)smodelIndex) || (cVar3 != cVar8)) ||
+            (bVar2 != visLightsMask._2_1_)) ||
+           ((local_10d0 != reflectionProbeIndex || (prevVisLightsMask._0_1_ != bVar6)))) {
+          if (bVar7) {
             R_SkinStaticModelsCamera
-                      (local_10b0,(uint)local_10d2,(int)(local_1020 + 0x10),
-                       (ushort (*) [4] [128])&local_1090,local_10c0,bVar7,unaff_EDI,(uint)unaff_ESI,
-                       SUB41(unaff_EBP,0));
+                      ((XModel *)smodelIndex,(uint)visLightsMask._2_1_,(int)(local_1020 + 0x10),
+                       (ushort (*) [4] [128])&local_1090,(ushort (*) [4])reflectionProbeIndex,bVar6,
+                       unaff_EDI,(uint)unaff_ESI,SUB41(unaff_EBP,0));
             local_1020[0] = 0;
             local_1020[1] = 0;
             local_1020[2] = 0;
@@ -294,67 +310,71 @@ R_AddAllStaticModelSurfacesCamera(int param_1,int param_2,GfxLight *param_3,int 
             local_1020[0xd] = 0;
             local_1020[0xe] = 0;
             local_1020[0xf] = 0;
-            bVar8 = false;
+            bVar7 = false;
           }
-          if (pXVar6 != local_10b0) {
-            local_10b0 = pXVar6;
+          if (primaryLightIndex_00 != (XModel *)smodelIndex) {
+            smodelIndex = (uint)primaryLightIndex_00;
           }
-          local_10c0 = local_10d0;
-          local_10d2 = bVar2;
-          bVar7 = local_10c4._0_1_;
-          cVar9 = cVar3;
+          reflectionProbeIndex = local_10d0;
+          visLightsMask._2_1_ = bVar2;
+          bVar6 = prevVisLightsMask._0_1_;
+          cVar8 = cVar3;
         }
-        fVar19 = pfVar15[10];
-        if (fVar19 < 1.0) {
-          fVar19 = 1.0;
+        fVar16 = pfVar12[10];
+        if (fVar16 < 1.0) {
+          fVar16 = 1.0;
         }
-        uVar12 = XModelGetLodForDist((XModel *)((1.0 / fVar19) * local_1040),(float)param_3,
-                                     (float)unaff_EDI,(int)unaff_ESI);
-        if ((int)uVar12 < 0) {
-          puVar5[local_10ac] = '\0';
+        surfData_00 = XModelGetLodForDist((XModel *)((1.0 / fVar16) * lodOrigin),(float)param_3,
+                                          (float)unaff_EDI,(int)unaff_ESI);
+        if ((int)surfData_00 < 0) {
+          smodelVisData[(int)puVar5] = '\0';
         }
         else {
-          if (local_10ac < local_10a4) {
-            scene.dynSModelVisBitsCamera[local_10ac >> 5] =
-                 scene.dynSModelVisBitsCamera[local_10ac >> 5] | 1 << ((byte)local_10ac & 0x1f);
+          if (smodelVisData < prevReflectionProbeIndex) {
+            scene.dynSModelVisBitsCamera[(uint)smodelVisData >> 5] =
+                 scene.dynSModelVisBitsCamera[(uint)smodelVisData >> 5] |
+                 1 << ((byte)smodelVisData & 0x1f);
           }
-          bVar10 = R_AllocStaticModelLighting((GfxStaticModelDrawInst *)(pfVar15 + -3),local_10ac);
-          if (bVar10) {
-            bVar8 = true;
-            local_1054[local_10ac >> 4] =
-                 local_1054[local_10ac >> 4] | uVar12 << ((byte)local_10ac & 0xf) * '\x02';
-            GVar13 = R_GetStaticModelId((int)unaff_EDI,(int)unaff_ESI);
-            iVar11 = (uVar12 - 8) + ((uint)GVar13 & 0xffff) * 4;
-            puVar1 = local_1020 + iVar11;
+          bVar9 = R_AllocStaticModelLighting
+                            ((GfxStaticModelDrawInst *)(pfVar12 + -3),(uint)smodelVisData);
+          if (bVar9) {
+            bVar7 = true;
+            local_1054[(uint)smodelVisData >> 4] =
+                 local_1054[(uint)smodelVisData >> 4] |
+                 surfData_00 << ((byte)smodelVisData & 0xf) * '\x02';
+            GVar11 = R_GetStaticModelId((int)unaff_EDI,(int)unaff_ESI);
+            iVar10 = (surfData_00 - 8) + ((uint)GVar11 & 0xffff) * 4;
+            puVar1 = local_1020 + iVar10;
             uVar4 = *puVar1;
-            (local_1020 + iVar11 * 0x80 + 0x10)[uVar4] = GVar13.objectId;
-            puVar14 = (ushort *)(uVar4 + 1);
-            if (puVar14 < (ushort *)0x80) {
-              *puVar1 = (ushort)puVar14;
+            (local_1020 + iVar10 * 0x80 + 0x10)[uVar4] = GVar11.objectId;
+            surfType = (ushort *)(uVar4 + 1);
+            if (surfType < (ushort *)0x80) {
+              *puVar1 = (ushort)surfType;
             }
             else {
               R_SkinStaticModelsCameraForLod
-                        (pXVar6,(uint)bVar2,(int)(local_1020 + iVar11 * 0x80 + 0x10),puVar14,
-                         (uint)GVar13 & 0xffff,uVar12,(uint)&local_1090,SUB41(local_10d0,0),
-                         local_10c4,(uint)unaff_EDI,SUB41(unaff_ESI,0));
+                        (primaryLightIndex_00,(uint)bVar2,(int)(local_1020 + iVar10 * 0x80 + 0x10),
+                         surfType,(uint)GVar11 & 0xffff,surfData_00,(uint)&local_1090,
+                         SUB41(local_10d0,0),(GfxSModelDrawSurfLightingData *)prevVisLightsMask,
+                         (uint)unaff_EDI,SUB41(unaff_ESI,0));
               *puVar1 = 0;
             }
           }
           else {
             R_WarnOncePerFrame(R_WARN_SMODEL_LIGHTING);
-            puVar5[local_10ac] = '\0';
+            smodelVisData[(int)puVar5] = '\0';
           }
         }
       }
-      local_10ac = local_10ac + 1;
-      pfVar16 = pfVar16 + 10;
-      pfVar15 = pfVar15 + 0x13;
-    } while (local_10ac < local_104c);
-    if (bVar8) {
+      smodelVisData = smodelVisData + 1;
+      pfVar13 = pfVar13 + 10;
+      pfVar12 = pfVar12 + 0x13;
+    } while (smodelVisData < (uint)lodScale);
+    if (bVar7) {
       R_SkinStaticModelsCamera
-                (local_10b0,(uint)local_10d2,(int)(local_1020 + 0x10),
-                 (ushort (*) [4] [128])&local_1090,local_10c0,bVar7,unaff_EDI,(uint)unaff_ESI,
-                 SUB41(unaff_EBP,0));
+                ((XModel *)smodelIndex,(uint)visLightsMask._2_1_,(int)(local_1020 + 0x10),
+                 (ushort (*) [4] [128])&local_1090,(ushort (*) [4])reflectionProbeIndex,bVar6,
+                 unaff_EDI,(uint)unaff_ESI,SUB41(unaff_EBP,0));
     }
     if ((local_1088 & local_1084) != 0xffffffff) {
       frontEndDataOut->primDrawSurfsBuf[local_1090] = 0;
@@ -375,105 +395,102 @@ void __cdecl R_AddAllStaticModelSurfacesSpotShadow(int param_1,uint param_2,uint
 
 {
   ushort *puVar1;
-  ushort uVar2;
-  XModel *pXVar3;
-  bool bVar4;
-  XModelLodInfo *pXVar5;
-  GfxStaticModelId GVar6;
+  float fVar2;
+  float fVar3;
+  float fVar4;
+  float fVar5;
+  float fVar6;
+  ushort uVar7;
+  GfxStaticModelDrawInst *pGVar8;
+  GfxShadowGeometry *pGVar9;
+  XModel *list;
+  bool bVar10;
+  XModelLodInfo *pXVar11;
+  GfxStaticModelId GVar12;
   int in_ECX;
-  int iVar7;
-  uint uVar8;
+  int iVar13;
+  uint surfType;
   int in_EDX;
   int unaff_ESI;
-  GfxStaticModelDrawInst *pGVar9;
+  GfxStaticModelDrawInst *smodelIndex;
   GfxSModelDrawSurfData *unaff_EDI;
-  uint uVar10;
-  float10 fVar11;
-  float fVar12;
-  float fVar13;
-  float fVar14;
-  XModel *pXStack_106c;
-  int iStack_1068;
-  int iStack_1064;
-  uint uStack_1060;
-  uint uStack_105c;
-  GfxDrawSurf *pGStack_1058;
-  GfxDrawSurf *pGStack_1054;
-  uint uStack_104c;
-  int iStack_1048;
-  float fStack_1044;
-  GfxShadowGeometry *pGStack_1040;
-  float fStack_103c;
-  float fStack_1038;
-  float fStack_1034;
-  GfxStaticModelDrawInst *pGStack_1030;
-  float fStack_102c;
-  float fStack_1028;
-  float fStack_1024;
+  uint uVar14;
+  float10 fVar15;
+  float fVar16;
+  float fVar17;
+  float fVar18;
+  int viewIndex;
+  XModel *prevModel;
+  GfxSModelDrawSurfData surfData;
+  uint smodelIter;
+  uint stage;
+  float dist;
+  GfxShadowGeometry *shadowGeom;
+  GfxStaticModelDrawInst *smodelDrawInsts;
+  float lodScale;
+  float lodBias;
+  float normal_dist;
   ushort auStack_1020 [2062];
   undefined4 uStack_4;
   
   uStack_4 = 0x85415a;
-  pGStack_1030 = ((rgp.world)->dpvs).smodelDrawInsts;
-  fStack_102c = rg.correctedLodParms[param_1].ramp[0].scale;
-  fStack_1028 = rg.correctedLodParms[param_1].ramp[0].bias;
-  fStack_103c = rg.correctedLodParms[param_1].origin[0];
-  fStack_1038 = rg.correctedLodParms[param_1].origin[1];
-  fStack_1034 = rg.correctedLodParms[param_1].origin[2];
-  iStack_1048 = in_EDX * 3 + 0x1c;
-  iStack_1068 = -1;
-  uStack_1060 = 0xffffffff;
-  uStack_105c = 0xffffffff;
-  pGStack_1058 = scene.drawSurfs[in_EDX * 3 + 0x1c];
-  pGStack_1040 = (rgp.world)->shadowGeom + in_ECX;
-  pGStack_1054 = pGStack_1058 + scene.maxDrawSurfCount[in_EDX * 3 + 0x1c];
-  iStack_1064 = 0;
-  pXStack_106c = (XModel *)0x0;
-  uStack_104c = 0;
-  if (pGStack_1040->smodelCount != 0) {
+  pGVar8 = ((rgp.world)->dpvs).smodelDrawInsts;
+  pGVar9 = (rgp.world)->shadowGeom;
+  fVar2 = rg.correctedLodParms[param_1].ramp[0].scale;
+  fVar3 = rg.correctedLodParms[param_1].ramp[0].bias;
+  fVar4 = rg.correctedLodParms[param_1].origin[0];
+  fVar5 = rg.correctedLodParms[param_1].origin[1];
+  fVar6 = rg.correctedLodParms[param_1].origin[2];
+  surfData.delayedCmdBuf.primDrawSurfSize = 0xffffffff;
+  surfData.delayedCmdBuf.drawSurfKey.packed._4_4_ = 0xffffffff;
+  surfData.drawSurfList.current = (GfxDrawSurf *)0xffffffff;
+  surfData.drawSurfList.end = scene.drawSurfs[in_EDX * 3 + 0x1c];
+  surfData.delayedCmdBuf.drawSurfKey.packed._0_4_ = 0;
+  surfData.delayedCmdBuf.primDrawSurfPos = 0;
+  stage = 0;
+  if (pGVar9[in_ECX].smodelCount != 0) {
     do {
-      uVar2 = pGStack_1040->smodelIndex[uStack_104c];
-      pGVar9 = pGStack_1030 + uVar2;
-      if ((pGVar9->flags & 1) == 0) {
-        fVar14 = fStack_1034 - (pGVar9->placement).origin[2];
-        fVar13 = fStack_1038 - (pGVar9->placement).origin[1];
-        fVar12 = fStack_103c - (pGVar9->placement).origin[0];
-        fVar11 = (float10)sqrtf(fVar14 * fVar14 + fVar13 * fVar13 + fVar12 * fVar12);
-        fStack_1024 = (float)fVar11;
-        fStack_1044 = (float)((float10)fStack_102c * fVar11 + (float10)fStack_1028);
-        if (fVar11 < (float10)pGVar9->cullDist) {
-          fVar12 = (pGVar9->placement).scale;
-          pXVar3 = pGVar9->model;
-          if (fVar12 < 1.0) {
-            fVar12 = 1.0;
+      uVar7 = pGVar9[in_ECX].smodelIndex[stage];
+      smodelIndex = pGVar8 + uVar7;
+      if ((smodelIndex->flags & 1) == 0) {
+        fVar18 = fVar6 - (smodelIndex->placement).origin[2];
+        fVar17 = fVar5 - (smodelIndex->placement).origin[1];
+        fVar16 = fVar4 - (smodelIndex->placement).origin[0];
+        fVar15 = (float10)sqrtf(fVar18 * fVar18 + fVar17 * fVar17 + fVar16 * fVar16);
+        if (fVar15 < (float10)smodelIndex->cullDist) {
+          fVar16 = (smodelIndex->placement).scale;
+          list = smodelIndex->model;
+          if (fVar16 < 1.0) {
+            fVar16 = 1.0;
           }
-          iVar7 = (int)pXVar3->numLods;
-          fVar13 = (1.0 / fVar12) * fStack_1044;
-          fVar12 = (1.0 / fVar12) * fStack_1024;
-          uVar10 = 0;
-          if (0 < iVar7) {
-            pXVar5 = pXVar3->lodInfo;
+          iVar13 = (int)list->numLods;
+          fVar17 = (1.0 / fVar16) * (float)((float10)fVar2 * fVar15 + (float10)fVar3);
+          fVar16 = (1.0 / fVar16) * (float)fVar15;
+          uVar14 = 0;
+          if (0 < iVar13) {
+            pXVar11 = list->lodInfo;
             do {
-              if (fVar13 < pXVar5->dist) {
-                if (uVar10 != 0xffffffff) goto LAB_00854327;
+              if (fVar17 < pXVar11->dist) {
+                if (uVar14 != 0xffffffff) goto LAB_00854327;
                 goto LAB_008542fb;
               }
-              uVar10 = uVar10 + 1;
-              pXVar5 = pXVar5 + 1;
-            } while ((int)uVar10 < iVar7);
+              uVar14 = uVar14 + 1;
+              pXVar11 = pXVar11 + 1;
+            } while ((int)uVar14 < iVar13);
           }
-          uVar10 = 0xffffffff;
+          uVar14 = 0xffffffff;
 LAB_008542fb:
-          if (fVar13 == fVar12) {
+          if (fVar17 == fVar16) {
 LAB_00854327:
-            if (-1 < (int)uVar10) {
-              bVar4 = R_AllocStaticModelLighting(pGVar9,(uint)uVar2);
-              if (bVar4) {
-                if (pXVar3 != pXStack_106c) {
-                  if (pXStack_106c != (XModel *)0x0) {
+            if (-1 < (int)uVar14) {
+              bVar10 = R_AllocStaticModelLighting(smodelIndex,(uint)uVar7);
+              if (bVar10) {
+                if (list != (XModel *)surfData.delayedCmdBuf.primDrawSurfPos) {
+                  if (surfData.delayedCmdBuf.primDrawSurfPos != 0) {
                     R_SkinStaticModelsShadow
-                              (pXStack_106c,(ushort (*) [4] [128])(auStack_1020 + 0x10),
-                               (ushort (*) [4])&iStack_1068,unaff_EDI);
+                              ((XModel *)surfData.delayedCmdBuf.primDrawSurfPos,
+                               (ushort (*) [4] [128])(auStack_1020 + 0x10),
+                               (ushort (*) [4])&surfData.delayedCmdBuf.primDrawSurfSize,unaff_EDI);
                   }
                   auStack_1020[0] = 0;
                   auStack_1020[1] = 0;
@@ -491,21 +508,21 @@ LAB_00854327:
                   auStack_1020[0xd] = 0;
                   auStack_1020[0xe] = 0;
                   auStack_1020[0xf] = 0;
-                  pXStack_106c = pXVar3;
+                  surfData.delayedCmdBuf.primDrawSurfPos = (int)list;
                 }
-                GVar6 = R_GetStaticModelId((int)unaff_EDI,unaff_ESI);
-                iVar7 = (uVar10 - 8) + ((uint)GVar6 & 0xffff) * 4;
-                puVar1 = auStack_1020 + iVar7;
-                uVar2 = *puVar1;
-                (auStack_1020 + iVar7 * 0x80 + 0x10)[uVar2] = GVar6.objectId;
-                uVar8 = uVar2 + 1;
-                if (uVar8 < 0x80) {
-                  *puVar1 = (ushort)uVar8;
+                GVar12 = R_GetStaticModelId((int)unaff_EDI,unaff_ESI);
+                iVar13 = (uVar14 - 8) + ((uint)GVar12 & 0xffff) * 4;
+                puVar1 = auStack_1020 + iVar13;
+                uVar7 = *puVar1;
+                (auStack_1020 + iVar13 * 0x80 + 0x10)[uVar7] = GVar12.objectId;
+                surfType = uVar7 + 1;
+                if (surfType < 0x80) {
+                  *puVar1 = (ushort)surfType;
                 }
                 else {
                   R_SkinStaticModelsShadowForLod
-                            (pXVar3,auStack_1020 + iVar7 * 0x80 + 0x10,uVar8,(uint)GVar6 & 0xffff,
-                             uVar10,unaff_EDI);
+                            (list,auStack_1020 + iVar13 * 0x80 + 0x10,surfType,(uint)GVar12 & 0xffff
+                             ,uVar14,unaff_EDI);
                   *puVar1 = 0;
                 }
               }
@@ -515,34 +532,38 @@ LAB_00854327:
             }
           }
           else {
-            uVar10 = 0;
-            if (0 < iVar7) {
-              pXVar5 = pXVar3->lodInfo;
+            uVar14 = 0;
+            if (0 < iVar13) {
+              pXVar11 = list->lodInfo;
               do {
-                if (fVar12 < pXVar5->dist) goto LAB_00854327;
-                uVar10 = uVar10 + 1;
-                pXVar5 = pXVar5 + 1;
-              } while ((int)uVar10 < iVar7);
+                if (fVar16 < pXVar11->dist) goto LAB_00854327;
+                uVar14 = uVar14 + 1;
+                pXVar11 = pXVar11 + 1;
+              } while ((int)uVar14 < iVar13);
             }
           }
         }
       }
-      uStack_104c = uStack_104c + 1;
-    } while (uStack_104c < pGStack_1040->smodelCount);
-    if (pXStack_106c != (XModel *)0x0) {
+      stage = stage + 1;
+    } while (stage < pGVar9[in_ECX].smodelCount);
+    if (surfData.delayedCmdBuf.primDrawSurfPos != 0) {
       R_SkinStaticModelsShadow
-                (pXStack_106c,(ushort (*) [4] [128])(auStack_1020 + 0x10),
-                 (ushort (*) [4])&iStack_1068,unaff_EDI);
+                ((XModel *)surfData.delayedCmdBuf.primDrawSurfPos,
+                 (ushort (*) [4] [128])(auStack_1020 + 0x10),
+                 (ushort (*) [4])&surfData.delayedCmdBuf.primDrawSurfSize,unaff_EDI);
     }
-    if ((uStack_1060 & uStack_105c) != 0xffffffff) {
-      uStack_1060 = 0xffffffff;
-      uStack_105c = 0xffffffff;
-      frontEndDataOut->primDrawSurfsBuf[iStack_1068] = 0;
-      iStack_1068 = iStack_1068 + 1;
-      iStack_1064 = iStack_1064 + -1;
+    if ((surfData.delayedCmdBuf.drawSurfKey.packed._4_4_ & (uint)surfData.drawSurfList.current) !=
+        0xffffffff) {
+      surfData.delayedCmdBuf.drawSurfKey.packed._4_4_ = 0xffffffff;
+      surfData.drawSurfList.current = (GfxDrawSurf *)0xffffffff;
+      frontEndDataOut->primDrawSurfsBuf[surfData.delayedCmdBuf.primDrawSurfSize] = 0;
+      surfData.delayedCmdBuf.primDrawSurfSize = surfData.delayedCmdBuf.primDrawSurfSize + 1;
+      surfData.delayedCmdBuf.drawSurfKey.packed._0_4_ =
+           surfData.delayedCmdBuf.drawSurfKey.packed._0_4_ + -1;
     }
   }
-  scene.drawSurfCount[iStack_1048] = (int)pGStack_1058 - (int)scene.drawSurfs[iStack_1048] >> 3;
+  scene.drawSurfCount[in_EDX * 3 + 0x1c] =
+       (int)surfData.drawSurfList.end - (int)scene.drawSurfs[in_EDX * 3 + 0x1c] >> 3;
   qsortArray<GfxSortDrawSurfsInterface,GfxDrawSurf>((GfxDrawSurf *)param_1,param_2);
   return;
 }

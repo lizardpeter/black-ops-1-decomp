@@ -142,12 +142,13 @@ void __cdecl _dynamic_initializer_for__TRACKINST_s_numSortedAttachments__(void)
 
 // 00974410  LiveStats_GetDDLHeaderVersion  (live/live_stats.cpp:230)
 
-int __cdecl LiveStats_GetDDLHeaderVersion(uchar *param_1)
+int __cdecl LiveStats_GetDDLHeaderVersion(uchar *statsBuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  char *buffer;
   
   if (g_statsDDL == (ddlDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xe9,0,"%s");
@@ -157,7 +158,7 @@ int __cdecl LiveStats_GetDDLHeaderVersion(uchar *param_1)
       return iVar3;
     }
   }
-  iVar3 = DDL_GetHeaderVersion((char *)param_1);
+  iVar3 = DDL_GetHeaderVersion((char *)statsBuffer);
   return iVar3;
 }
 
@@ -167,18 +168,18 @@ int __cdecl LiveStats_GetDDLHeaderVersion(uchar *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl LiveStats_ValidateGlobalWithDDL(int param_1)
+int __cdecl LiveStats_ValidateGlobalWithDDL(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_9cfc [40172];
+  char backupBuffer [40172];
   uint local_10;
-  uchar *local_c;
-  int local_8;
+  char *buffer;
+  int bufferSize;
   
-  local_8 = 0x97446d;
+  bufferSize = 0x97446d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (g_statsDDL == (ddlDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xf5,0,"%s");
@@ -188,32 +189,32 @@ int __cdecl LiveStats_ValidateGlobalWithDDL(int param_1)
       return iVar3;
     }
   }
-  local_c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-  local_8 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-  iVar3 = DDL_AssociateBuffer((char *)local_c,local_8,g_statsDDL);
+  buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+  bufferSize = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+  iVar3 = DDL_AssociateBuffer(buffer,bufferSize,g_statsDDL);
   if (iVar3 == 0) {
-    iVar3 = DDL_FixBufferVersion((char *)local_c,g_statsDDL,"ddl_mp/stats.ddl",local_9cfc,0x9ce8);
+    iVar3 = DDL_FixBufferVersion(buffer,g_statsDDL,"ddl_mp/stats.ddl",backupBuffer,0x9ce8);
     if (iVar3 == 0) {
-      iVar3 = DDL_FixBufferVersion
-                        ((char *)local_c,g_statsDDL,"ddl_mp/stats_archive.ddl",local_9cfc,0x9ce8);
+      iVar3 = DDL_FixBufferVersion(buffer,g_statsDDL,"ddl_mp/stats_archive.ddl",backupBuffer,0x9ce8)
+      ;
       if (iVar3 == 0) {
         iVar3 = 0;
       }
       else {
         DDL_NoCheckPrintWarning
                   ("DDL: Stats buffer updated to version %d for controller index %d.\n");
-        LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_GLOBAL,true);
+        LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_GLOBAL,true);
         iVar3 = 1;
       }
     }
     else {
       DDL_NoCheckPrintWarning("DDL: Stats buffer updated to version %d for controller index %d.\n");
-      LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_GLOBAL,true);
+      LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_GLOBAL,true);
       iVar3 = 1;
     }
   }
   else {
-    LiveStorage_SetStatsDDLValidated(param_1,STATS_LOCATION_NORMAL,true);
+    LiveStorage_SetStatsDDLValidated(controllerIndex,STATS_LOCATION_NORMAL,true);
     iVar3 = 1;
   }
   return iVar3;
@@ -222,24 +223,24 @@ int __cdecl LiveStats_ValidateGlobalWithDDL(int param_1)
 
 // 009745D0  LiveStats_CanPerformStatOperation  (live/live_stats.cpp:281)
 
-int __cdecl LiveStats_CanPerformStatOperation(int param_1)
+int __cdecl LiveStats_CanPerformStatOperation(int controllerIndex)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = Live_IsUserSignedInToLive(param_1);
-  if ((!bVar1) || (bVar1 = Live_IsUserSignedInToDemonware(param_1), !bVar1)) {
+  bVar1 = Live_IsUserSignedInToLive(controllerIndex);
+  if ((!bVar1) || (bVar1 = Live_IsUserSignedInToDemonware(controllerIndex), !bVar1)) {
     return 0;
   }
-  bVar1 = LiveStorage_DoWeHaveCurrentStats(param_1);
+  bVar1 = LiveStorage_DoWeHaveCurrentStats(controllerIndex);
   if (!bVar1) {
     Com_PrintError(0x10,"Tried to perform a stats operation before the stats have been fetched.\n");
     return 0;
   }
-  bVar1 = LiveStorage_AreStatsDDLValidated(param_1,STATS_LOCATION_NORMAL);
-  if ((!bVar1) && (iVar2 = LiveStorage_ValidateWithDDL(param_1,STATS_LOCATION_NORMAL), iVar2 == 0))
-  {
+  bVar1 = LiveStorage_AreStatsDDLValidated(controllerIndex,STATS_LOCATION_NORMAL);
+  if ((!bVar1) &&
+     (iVar2 = LiveStorage_ValidateWithDDL(controllerIndex,STATS_LOCATION_NORMAL), iVar2 == 0)) {
     DDL_PrintError("DDL: Error validating stats buffer for controller %d.\n");
     return 0;
   }
@@ -251,7 +252,7 @@ int __cdecl LiveStats_CanPerformStatOperation(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl LiveStats_GetDDLIntStat(int param_1,ddlState_t *param_2)
+int __cdecl LiveStats_GetDDLIntStat(int controllerIndex,ddlState_t *searchState)
 
 {
   code *pcVar1;
@@ -259,9 +260,9 @@ int __cdecl LiveStats_GetDDLIntStat(int param_1,ddlState_t *param_2)
   int iVar3;
   uint uVar4;
   bool local_55;
-  uchar *local_50;
+  char *buffer;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x14d,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -270,23 +271,23 @@ int __cdecl LiveStats_GetDDLIntStat(int param_1,ddlState_t *param_2)
       return iVar3;
     }
   }
-  iVar3 = LiveStats_CanPerformStatOperation(param_1);
+  iVar3 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar3 == 0) {
     uVar4 = 0;
   }
   else {
-    local_50 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+    buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      local_55 = LiveStats_GetBasicTrainingState(local_50);
+      local_55 = LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
     else {
       local_55 = true;
     }
-    if ((local_55 == false) && (param_2->member->permission == 2)) {
-      local_50 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    if ((local_55 == false) && (searchState->member->permission == 2)) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     }
-    uVar4 = DDL_GetInt(param_2,(char *)local_50);
+    uVar4 = DDL_GetInt(searchState,buffer);
   }
   return uVar4;
 }
@@ -294,7 +295,7 @@ int __cdecl LiveStats_GetDDLIntStat(int param_1,ddlState_t *param_2)
 
 // 00974760  LiveStats_GetDDLIntStat  (live/live_stats.cpp:353)
 
-int __cdecl LiveStats_GetDDLIntStat(int param_1,char **param_2,int param_3)
+int __cdecl LiveStats_GetDDLIntStat(int controllerIndex,char **operands,int nOperands)
 
 {
   code *pcVar1;
@@ -302,38 +303,38 @@ int __cdecl LiveStats_GetDDLIntStat(int param_1,char **param_2,int param_3)
   bool bVar3;
   int iVar4;
   uint uVar5;
-  int local_18;
-  ddlState_t local_14;
+  int i;
+  ddlState_t searchState;
   
   iVar4 = Dvar_GetInt(ui_useCustomClassInfo);
   if (iVar4 == 0) {
-    local_14.absoluteOffset = g_statsRootState.absoluteOffset;
-    local_14.arrayIndex = g_statsRootState.arrayIndex;
-    local_14.member = g_statsRootState.member;
-    local_14.ddl = g_statsRootState.ddl;
-    for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-      if (((local_14.member != (ddlMemberDef_t *)0x0) && (1 < (local_14.member)->arraySize)) &&
-         ((local_14.member)->enumIndex == -1)) {
+    searchState.absoluteOffset = g_statsRootState.absoluteOffset;
+    searchState.arrayIndex = g_statsRootState.arrayIndex;
+    searchState.member = g_statsRootState.member;
+    searchState.ddl = g_statsRootState.ddl;
+    for (i = 0; i < nOperands; i = i + 1) {
+      if (((searchState.member != (ddlMemberDef_t *)0x0) && (1 < (searchState.member)->arraySize))
+         && ((searchState.member)->enumIndex == -1)) {
         DDL_PrintError("DDL: array index (integer) expected. Received a string instead.");
         return -1;
       }
-      iVar4 = DDL_MoveToName(&local_14,&local_14,param_2[local_18]);
+      iVar4 = DDL_MoveToName(&searchState,&searchState,operands[i]);
       if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not find member name.");
         return -1;
       }
     }
-    if ((local_14.member == (ddlMemberDef_t *)0x0) &&
+    if ((searchState.member == (ddlMemberDef_t *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x17d,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       iVar4 = (*pcVar1)();
       return iVar4;
     }
-    uVar5 = LiveStats_GetDDLIntStat(param_1,&local_14);
+    uVar5 = LiveStats_GetDDLIntStat(controllerIndex,&searchState);
   }
   else {
-    bVar2 = GetCustomClassLoadoutItemForClassName(param_1,param_2[1],param_2[2]);
+    bVar2 = GetCustomClassLoadoutItemForClassName(controllerIndex,operands[1],operands[2]);
     uVar5 = (uint)bVar2;
   }
   return uVar5;
@@ -342,7 +343,7 @@ int __cdecl LiveStats_GetDDLIntStat(int param_1,char **param_2,int param_3)
 
 // 00974880  LiveStats_GetDIntStat  (live/live_stats.cpp:438)
 
-uint __cdecl LiveStats_GetDIntStat(int param_1,ddlState_t *param_2)
+uint __cdecl LiveStats_GetDIntStat(int controllerIndex,ddlState_t *searchState)
 
 {
   code *pcVar1;
@@ -350,9 +351,9 @@ uint __cdecl LiveStats_GetDIntStat(int param_1,ddlState_t *param_2)
   uint uVar3;
   int iVar4;
   bool local_d;
-  uchar *local_8;
+  char *buffer;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x1b9,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -361,23 +362,23 @@ uint __cdecl LiveStats_GetDIntStat(int param_1,ddlState_t *param_2)
       return uVar3;
     }
   }
-  iVar4 = LiveStats_CanPerformStatOperation(param_1);
+  iVar4 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar4 == 0) {
     uVar3 = 0;
   }
   else {
-    local_8 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+    buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      local_d = LiveStats_GetBasicTrainingState(local_8);
+      local_d = LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
     else {
       local_d = true;
     }
-    if ((local_d == false) && (param_2->member->permission == 2)) {
-      local_8 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    if ((local_d == false) && (searchState->member->permission == 2)) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     }
-    uVar3 = DDL_GetInt(param_2,(char *)local_8);
+    uVar3 = DDL_GetInt(searchState,buffer);
   }
   return uVar3;
 }
@@ -385,7 +386,7 @@ uint __cdecl LiveStats_GetDIntStat(int param_1,ddlState_t *param_2)
 
 // 00974950  LiveStats_GetDIntStatFromBase  (live/live_stats.cpp:460)
 
-uint __cdecl LiveStats_GetDIntStatFromBase(int param_1,ddlState_t *param_2,char *param_3)
+uint __cdecl LiveStats_GetDIntStatFromBase(int controllerIndex,ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -394,7 +395,7 @@ uint __cdecl LiveStats_GetDIntStatFromBase(int param_1,ddlState_t *param_2,char 
   int iVar4;
   bool local_9;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x1cd,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -403,22 +404,22 @@ uint __cdecl LiveStats_GetDIntStatFromBase(int param_1,ddlState_t *param_2,char 
       return uVar3;
     }
   }
-  iVar4 = LiveStats_CanPerformStatOperation(param_1);
+  iVar4 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar4 == 0) {
     uVar3 = 0;
   }
   else {
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      local_9 = LiveStats_GetBasicTrainingState((uchar *)param_3);
+      local_9 = LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
     else {
       local_9 = true;
     }
-    if ((local_9 == false) && (param_2->member->permission == 2)) {
-      param_3 = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    if ((local_9 == false) && (searchState->member->permission == 2)) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     }
-    uVar3 = DDL_GetInt(param_2,param_3);
+    uVar3 = DDL_GetInt(searchState,buffer);
   }
   return uVar3;
 }
@@ -426,7 +427,7 @@ uint __cdecl LiveStats_GetDIntStatFromBase(int param_1,ddlState_t *param_2,char 
 
 // 00974A10  LiveStats_GetDInt64Stat  (live/live_stats.cpp:478)
 
-ulong64 __cdecl LiveStats_GetDInt64Stat(int param_1,ddlState_t *param_2)
+ulong64 __cdecl LiveStats_GetDInt64Stat(int controllerIndex,ddlState_t *searchState)
 
 {
   code *pcVar1;
@@ -434,9 +435,9 @@ ulong64 __cdecl LiveStats_GetDInt64Stat(int param_1,ddlState_t *param_2)
   int iVar3;
   ulong64 uVar4;
   bool local_d;
-  uchar *local_8;
+  char *buffer;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x1e1,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -445,23 +446,23 @@ ulong64 __cdecl LiveStats_GetDInt64Stat(int param_1,ddlState_t *param_2)
       return uVar4;
     }
   }
-  iVar3 = LiveStats_CanPerformStatOperation(param_1);
+  iVar3 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar3 == 0) {
     uVar4 = 0;
   }
   else {
-    local_8 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+    buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      local_d = LiveStats_GetBasicTrainingState(local_8);
+      local_d = LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
     else {
       local_d = true;
     }
-    if ((local_d == false) && (param_2->member->permission == 2)) {
-      local_8 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    if ((local_d == false) && (searchState->member->permission == 2)) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     }
-    uVar4 = DDL_GetInt64(param_2,(char *)local_8);
+    uVar4 = DDL_GetInt64(searchState,buffer);
   }
   return uVar4;
 }
@@ -469,7 +470,7 @@ ulong64 __cdecl LiveStats_GetDInt64Stat(int param_1,ddlState_t *param_2)
 
 // 00974AF0  LiveStats_GetDStringStat  (live/live_stats.cpp:519)
 
-char * __cdecl LiveStats_GetDStringStat(int param_1,ddlState_t *param_2)
+char * __cdecl LiveStats_GetDStringStat(int controllerIndex,ddlState_t *searchState)
 
 {
   code *pcVar1;
@@ -477,9 +478,9 @@ char * __cdecl LiveStats_GetDStringStat(int param_1,ddlState_t *param_2)
   char *pcVar3;
   int iVar4;
   bool local_d;
-  uchar *local_8;
+  char *buffer;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x20a,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -488,23 +489,23 @@ char * __cdecl LiveStats_GetDStringStat(int param_1,ddlState_t *param_2)
       return pcVar3;
     }
   }
-  iVar4 = LiveStats_CanPerformStatOperation(param_1);
+  iVar4 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar4 == 0) {
     pcVar3 = (char *)0x0;
   }
   else {
-    local_8 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+    buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      local_d = LiveStats_GetBasicTrainingState(local_8);
+      local_d = LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
     else {
       local_d = true;
     }
-    if ((local_d == false) && (param_2->member->permission == 2)) {
-      local_8 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    if ((local_d == false) && (searchState->member->permission == 2)) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     }
-    pcVar3 = DDL_GetString(param_2,(char *)local_8);
+    pcVar3 = DDL_GetString(searchState,buffer);
   }
   return pcVar3;
 }
@@ -517,67 +518,67 @@ char * __cdecl LiveStats_GetDStringStat(int param_1,ddlState_t *param_2)
 /* WARNING: Removing unreachable block (ram,0x00974d5b) */
 
 bool __cdecl
-LiveStats_GetIntPlayerStatInternal(int *param_1,int param_2,char **param_3,char *param_4)
+LiveStats_GetIntPlayerStatInternal(int *outInt,int pathDepth,char **statName,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  ddlResult_t local_5c;
+  ddlResult_t result;
   uint local_18;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (int *)0x0) &&
+  if ((outInt == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x22e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (char **)0x0) &&
+  if ((statName == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x22f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((*param_3 == (char *)0x0) &&
+  if ((*statName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x230,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_4 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x231,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((8 < param_2) &&
+  if ((8 < pathDepth) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x232,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((((param_1 != (int *)0x0) && (param_3 != (char **)0x0)) && (*param_3 != (char *)0x0)) &&
-     (param_2 < 9)) {
-    iVar4 = DDL_MoveToPath(&g_statsRootState,&local_14,param_2,param_3);
+  if ((((outInt != (int *)0x0) && (statName != (char **)0x0)) && (*statName != (char *)0x0)) &&
+     (pathDepth < 9)) {
+    iVar4 = DDL_MoveToPath(&g_statsRootState,&searchState,pathDepth,statName);
     if (iVar4 == 0) {
       DDL_PrintError("DDL:Error getting player stat value for %s.\n");
       return false;
     }
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      LiveStats_GetBasicTrainingState((uchar *)param_4);
+      LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
-    iVar4 = DDL_GetValue(&local_14,&local_5c,param_4);
+    iVar4 = DDL_GetValue(&searchState,&result,buffer);
     if (iVar4 != 0) {
-      *param_1 = local_5c.intValue;
+      *outInt = result.intValue;
       return true;
     }
   }
@@ -588,16 +589,16 @@ LiveStats_GetIntPlayerStatInternal(int *param_1,int param_2,char **param_3,char 
 
 // 00974DC0  LiveStats_GetIntPlayerStatFromBase  (live/live_stats.cpp:594)
 
-bool __cdecl LiveStats_GetIntPlayerStatFromBase(int *param_1,char *param_2,char *param_3)
+bool __cdecl LiveStats_GetIntPlayerStatFromBase(int *outInt,char *statName,char *base)
 
 {
   bool bVar1;
-  char *local_c;
+  char *path;
   char *local_8;
   
-  local_c = "PlayerStatsList";
-  local_8 = param_2;
-  bVar1 = LiveStats_GetIntPlayerStatInternal(param_1,2,&local_c,param_3);
+  path = "PlayerStatsList";
+  local_8 = statName;
+  bVar1 = LiveStats_GetIntPlayerStatInternal(outInt,2,&path,base);
   return bVar1;
 }
 
@@ -606,32 +607,32 @@ bool __cdecl LiveStats_GetIntPlayerStatFromBase(int *param_1,char *param_2,char 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl LiveStats_GetIntPlayerStatFromForcedBase(int *param_1,char *param_2,char *param_3)
+bool __cdecl LiveStats_GetIntPlayerStatFromForcedBase(int *outInt,char *statName,char *base)
 
 {
   bool bVar1;
   int iVar2;
-  char *local_64;
+  char *path;
   char *local_60;
-  ddlResult_t local_5c;
+  ddlResult_t result;
   uint local_18;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_64 = "PlayerStatsList";
-  local_60 = param_2;
-  iVar2 = DDL_MoveToPath(&g_statsRootState,&local_14,2,&local_64);
+  path = "PlayerStatsList";
+  local_60 = statName;
+  iVar2 = DDL_MoveToPath(&g_statsRootState,&searchState,2,&path);
   if (iVar2 == 0) {
     DDL_PrintError("DDL:Error getting player stat value for %s.\n");
     bVar1 = false;
   }
   else {
-    iVar2 = DDL_GetValue(&local_14,&local_5c,param_3);
+    iVar2 = DDL_GetValue(&searchState,&result,base);
     if (iVar2 == 0) {
       bVar1 = false;
     }
     else {
-      *param_1 = local_5c.intValue;
+      *outInt = result.intValue;
       bVar1 = true;
     }
   }
@@ -641,7 +642,8 @@ bool __cdecl LiveStats_GetIntPlayerStatFromForcedBase(int *param_1,char *param_2
 
 // 00974E80  LiveStats_GetDIntStatFromForcedBase  (live/live_stats.cpp:634)
 
-uint __cdecl LiveStats_GetDIntStatFromForcedBase(int param_1,ddlState_t *param_2,char *param_3)
+uint __cdecl
+LiveStats_GetDIntStatFromForcedBase(int controllerIndex,ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -649,7 +651,7 @@ uint __cdecl LiveStats_GetDIntStatFromForcedBase(int param_1,ddlState_t *param_2
   uint uVar3;
   int iVar4;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x27b,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -658,12 +660,12 @@ uint __cdecl LiveStats_GetDIntStatFromForcedBase(int param_1,ddlState_t *param_2
       return uVar3;
     }
   }
-  iVar4 = LiveStats_CanPerformStatOperation(param_1);
+  iVar4 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar4 == 0) {
     uVar3 = 0;
   }
   else {
-    uVar3 = DDL_GetInt(param_2,param_3);
+    uVar3 = DDL_GetInt(searchState,buffer);
   }
   return uVar3;
 }
@@ -671,7 +673,8 @@ uint __cdecl LiveStats_GetDIntStatFromForcedBase(int param_1,ddlState_t *param_2
 
 // 00974EE0  LiveStats_GetDInt64StatFromForcedBase  (live/live_stats.cpp:646)
 
-ulong64 __cdecl LiveStats_GetDInt64StatFromForcedBase(int param_1,ddlState_t *param_2,char *param_3)
+ulong64 __cdecl
+LiveStats_GetDInt64StatFromForcedBase(int controllerIndex,ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -679,7 +682,7 @@ ulong64 __cdecl LiveStats_GetDInt64StatFromForcedBase(int param_1,ddlState_t *pa
   int iVar3;
   ulong64 uVar4;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x287,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -688,12 +691,12 @@ ulong64 __cdecl LiveStats_GetDInt64StatFromForcedBase(int param_1,ddlState_t *pa
       return uVar4;
     }
   }
-  iVar3 = LiveStats_CanPerformStatOperation(param_1);
+  iVar3 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar3 == 0) {
     uVar4 = 0;
   }
   else {
-    uVar4 = DDL_GetInt64(param_2,param_3);
+    uVar4 = DDL_GetInt64(searchState,buffer);
   }
   return uVar4;
 }
@@ -701,7 +704,8 @@ ulong64 __cdecl LiveStats_GetDInt64StatFromForcedBase(int param_1,ddlState_t *pa
 
 // 00974F50  LiveStats_GetDStringStatFromForcedBase  (live/live_stats.cpp:658)
 
-char * __cdecl LiveStats_GetDStringStatFromForcedBase(int param_1,ddlState_t *param_2,char *param_3)
+char * __cdecl
+LiveStats_GetDStringStatFromForcedBase(int controllerIndex,ddlState_t *searchState,char *buffer)
 
 {
   code *pcVar1;
@@ -709,7 +713,7 @@ char * __cdecl LiveStats_GetDStringStatFromForcedBase(int param_1,ddlState_t *pa
   char *pcVar3;
   int iVar4;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((controllerIndex < 0) || (0 < controllerIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x293,0,
                              "%s\n\t(controllerIndex) = %i");
     if (!bVar2) {
@@ -718,12 +722,12 @@ char * __cdecl LiveStats_GetDStringStatFromForcedBase(int param_1,ddlState_t *pa
       return pcVar3;
     }
   }
-  iVar4 = LiveStats_CanPerformStatOperation(param_1);
+  iVar4 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar4 == 0) {
     pcVar3 = (char *)0x0;
   }
   else {
-    pcVar3 = DDL_GetString(param_2,param_3);
+    pcVar3 = DDL_GetString(searchState,buffer);
   }
   return pcVar3;
 }
@@ -731,14 +735,15 @@ char * __cdecl LiveStats_GetDStringStatFromForcedBase(int param_1,ddlState_t *pa
 
 // 00974FB0  LiveStats_GetIntPlayerStat  (live/live_stats.cpp:673)
 
-bool __cdecl LiveStats_GetIntPlayerStat(int param_1,int *param_2,char *param_3)
+bool __cdecl LiveStats_GetIntPlayerStat(int controllerIndex,int *outInt,char *statName)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *base;
+  char *buffer;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  bVar1 = LiveStats_GetIntPlayerStatFromBase(param_2,param_3,(char *)puVar2);
+  base = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  bVar1 = LiveStats_GetIntPlayerStatFromBase(outInt,statName,(char *)base);
   return bVar1;
 }
 
@@ -746,20 +751,21 @@ bool __cdecl LiveStats_GetIntPlayerStat(int param_1,int *param_2,char *param_3)
 // 00974FE0  LiveStats_GetIntPlayerStatByGameMode  (live/live_stats.cpp:679)
 
 bool __cdecl
-LiveStats_GetIntPlayerStatByGameMode(int param_1,int *param_2,char *param_3,char *param_4)
+LiveStats_GetIntPlayerStatByGameMode(int controllerIndex,int *outInt,char *gameMode,char *statName)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  char *local_10;
+  uchar *buffer_00;
+  char *buffer;
+  char *path;
   char *local_c;
   char *local_8;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  local_10 = "PlayerStatsByGameMode";
-  local_c = param_3;
-  local_8 = param_4;
-  bVar1 = LiveStats_GetIntPlayerStatInternal(param_2,3,&local_10,(char *)puVar2);
+  buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  path = "PlayerStatsByGameMode";
+  local_c = gameMode;
+  local_8 = statName;
+  bVar1 = LiveStats_GetIntPlayerStatInternal(outInt,3,&path,(char *)buffer_00);
   return bVar1;
 }
 
@@ -768,32 +774,33 @@ LiveStats_GetIntPlayerStatByGameMode(int param_1,int *param_2,char *param_3,char
 
 bool __cdecl
 LiveStats_GetIntPlayerStatByGameModeFromBase
-          (int param_1,int *param_2,char *param_3,char *param_4,char *param_5)
+          (int controllerIndex,int *outInt,char *gameMode,char *statName,char *base)
 
 {
   bool bVar1;
-  char *local_10;
+  char *path;
   char *local_c;
   char *local_8;
   
-  local_10 = "PlayerStatsByGameMode";
-  local_c = param_3;
-  local_8 = param_4;
-  bVar1 = LiveStats_GetIntPlayerStatInternal(param_2,3,&local_10,param_5);
+  path = "PlayerStatsByGameMode";
+  local_c = gameMode;
+  local_8 = statName;
+  bVar1 = LiveStats_GetIntPlayerStatInternal(outInt,3,&path,base);
   return bVar1;
 }
 
 
 // 00975070  LiveStats_GetIntOtherPlayerStat  (live/live_stats.cpp:717)
 
-bool __cdecl LiveStats_GetIntOtherPlayerStat(int param_1,int *param_2,char *param_3)
+bool __cdecl LiveStats_GetIntOtherPlayerStat(int controllerIndex,int *outInt,char *statName)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *base;
+  char *buffer;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_OTHERPLAYER,true);
-  bVar1 = LiveStats_GetIntPlayerStatFromBase(param_2,param_3,(char *)puVar2);
+  base = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_OTHERPLAYER,true);
+  bVar1 = LiveStats_GetIntPlayerStatFromBase(outInt,statName,(char *)base);
   return bVar1;
 }
 
@@ -801,32 +808,35 @@ bool __cdecl LiveStats_GetIntOtherPlayerStat(int param_1,int *param_2,char *para
 // 009750A0  LiveStats_GetIntOtherPlayerStatByGameMode  (live/live_stats.cpp:723)
 
 bool __cdecl
-LiveStats_GetIntOtherPlayerStatByGameMode(int param_1,int *param_2,char *param_3,char *param_4)
+LiveStats_GetIntOtherPlayerStatByGameMode
+          (int controllerIndex,int *outInt,char *gameMode,char *statName)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  char *local_10;
+  uchar *buffer_00;
+  char *buffer;
+  char *path;
   char *local_c;
   char *local_8;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_OTHERPLAYER,true);
-  local_10 = "PlayerStatsByGameMode";
-  local_c = param_3;
-  local_8 = param_4;
-  bVar1 = LiveStats_GetIntPlayerStatInternal(param_2,3,&local_10,(char *)puVar2);
+  buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_OTHERPLAYER,true);
+  path = "PlayerStatsByGameMode";
+  local_c = gameMode;
+  local_8 = statName;
+  bVar1 = LiveStats_GetIntPlayerStatInternal(outInt,3,&path,(char *)buffer_00);
   return bVar1;
 }
 
 
 // 009750F0  LiveStats_GetIntPlayerStatByKey  (live/live_stats.cpp:749)
 
-bool __cdecl LiveStats_GetIntPlayerStatByKey(int param_1,int *param_2,playerStatsKeyIndex_t param_3)
+bool __cdecl
+LiveStats_GetIntPlayerStatByKey(int controllerIndex,int *outInt,playerStatsKeyIndex_t keyIndex)
 
 {
   bool bVar1;
   
-  bVar1 = LiveStats_GetIntPlayerStat(param_1,param_2,playerStatKeys[param_3]);
+  bVar1 = LiveStats_GetIntPlayerStat(controllerIndex,outInt,playerStatKeys[keyIndex]);
   return bVar1;
 }
 
@@ -834,22 +844,22 @@ bool __cdecl LiveStats_GetIntPlayerStatByKey(int param_1,int *param_2,playerStat
 // 00975110  LiveStats_GetIntOtherPlayerStatByKey  (live/live_stats.cpp:754)
 
 bool __cdecl
-LiveStats_GetIntOtherPlayerStatByKey(int param_1,int *param_2,playerStatsKeyIndex_t param_3)
+LiveStats_GetIntOtherPlayerStatByKey(int controllerIndex,int *outInt,playerStatsKeyIndex_t keyIndex)
 
 {
   bool bVar1;
   
-  bVar1 = LiveStats_GetIntOtherPlayerStat(param_1,param_2,playerStatKeys[param_3]);
+  bVar1 = LiveStats_GetIntOtherPlayerStat(controllerIndex,outInt,playerStatKeys[keyIndex]);
   return bVar1;
 }
 
 
 // 00975130  LiveStats_GetPlayerStatStringByKey  (live/live_stats.cpp:759)
 
-char * __cdecl LiveStats_GetPlayerStatStringByKey(playerStatsKeyIndex_t param_1)
+char * __cdecl LiveStats_GetPlayerStatStringByKey(playerStatsKeyIndex_t keyIndex)
 
 {
-  return playerStatKeys[param_1];
+  return playerStatKeys[keyIndex];
 }
 
 
@@ -860,54 +870,54 @@ char * __cdecl LiveStats_GetPlayerStatStringByKey(playerStatsKeyIndex_t param_1)
 
 bool __cdecl
 LiveStats_SetIntPlayerStatInternal
-          (int param_1,int param_2,char **param_3,char *param_4,uint param_5)
+          (int controllerIndex,int pathDepth,char **path,char *buffer,uint statValue)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  if ((param_3 == (char **)0x0) &&
+  if ((path == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x2fd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((*param_3 == (char *)0x0) &&
+  if ((*path == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x2fe,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_4 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x2ff,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((8 < param_2) &&
+  if ((8 < pathDepth) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x300,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_3 != (char **)0x0) && (*param_3 != (char *)0x0)) && (param_2 < 9)) {
-    iVar4 = DDL_MoveToPath(&g_statsRootState,&local_14,param_2,param_3);
+  if (((path != (char **)0x0) && (*path != (char *)0x0)) && (pathDepth < 9)) {
+    iVar4 = DDL_MoveToPath(&g_statsRootState,&searchState,pathDepth,path);
     if (iVar4 == 0) {
       DDL_PrintError("DDL:Error setting player stat value for %s.\n");
       return false;
     }
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      LiveStats_GetBasicTrainingState((uchar *)param_4);
+      LiveStats_GetBasicTrainingState((uchar *)buffer);
     }
-    iVar4 = DDL_SetInt(&local_14,param_5,param_4);
+    iVar4 = DDL_SetInt(&searchState,statValue,buffer);
     if (iVar4 != 0) {
       return true;
     }
@@ -919,26 +929,26 @@ LiveStats_SetIntPlayerStatInternal
 
 // 009752F0  LiveStats_WriteVersionToBuffer  (live/live_stats.cpp:798)
 
-bool __cdecl LiveStats_WriteVersionToBuffer(char *param_1)
+bool __cdecl LiveStats_WriteVersionToBuffer(char *buffer)
 
 {
   bool bVar1;
   int iVar2;
-  char *local_20;
+  char *path;
   char *local_1c;
-  undefined4 local_18;
-  ddlState_t local_14;
+  int pathDepth;
+  ddlState_t searchState;
   
-  local_20 = "PlayerStatsList";
+  path = "PlayerStatsList";
   local_1c = "STATS_VERSION";
-  local_18 = 2;
-  iVar2 = DDL_MoveToPath(&g_statsRootState,&local_14,2,&local_20);
+  pathDepth = 2;
+  iVar2 = DDL_MoveToPath(&g_statsRootState,&searchState,2,&path);
   if (iVar2 == 0) {
     DDL_PrintError("DDL:Error setting player stat value for %s.\n");
     bVar1 = false;
   }
   else {
-    iVar2 = DDL_SetInt(&local_14,(stat_version->current).unsignedInt,param_1);
+    iVar2 = DDL_SetInt(&searchState,(stat_version->current).unsignedInt,buffer);
     if (iVar2 == 0) {
       bVar1 = false;
     }
@@ -952,26 +962,26 @@ bool __cdecl LiveStats_WriteVersionToBuffer(char *param_1)
 
 // 00975370  LiveStats_ReadVersionFromBuffer  (live/live_stats.cpp:822)
 
-int __cdecl LiveStats_ReadVersionFromBuffer(char *param_1)
+int __cdecl LiveStats_ReadVersionFromBuffer(char *buffer)
 
 {
   int iVar1;
   uint uVar2;
-  char *local_20;
+  char *path;
   char *local_1c;
-  undefined4 local_18;
-  ddlState_t local_14;
+  int pathDepth;
+  ddlState_t searchState;
   
-  local_20 = "PlayerStatsList";
+  path = "PlayerStatsList";
   local_1c = "STATS_VERSION";
-  local_18 = 2;
-  iVar1 = DDL_MoveToPath(&g_statsRootState,&local_14,2,&local_20);
+  pathDepth = 2;
+  iVar1 = DDL_MoveToPath(&g_statsRootState,&searchState,2,&path);
   if (iVar1 == 0) {
     DDL_PrintError("DDL:Error setting player stat value for %s.\n");
     uVar2 = 0;
   }
   else {
-    uVar2 = DDL_GetInt(&local_14,param_1);
+    uVar2 = DDL_GetInt(&searchState,buffer);
   }
   return uVar2;
 }
@@ -980,23 +990,26 @@ int __cdecl LiveStats_ReadVersionFromBuffer(char *param_1)
 // 009753E0  LiveStats_GetIntPlayerStatMatchDeltaByGameMode  (live/live_stats.cpp:861)
 
 bool __cdecl
-LiveStats_GetIntPlayerStatMatchDeltaByGameMode(int param_1,int *param_2,char *param_3,char *param_4)
+LiveStats_GetIntPlayerStatMatchDeltaByGameMode
+          (int controllerIndex,int *outInt,char *gameMode,char *statName)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  uchar *puVar3;
-  int local_c;
-  int local_8;
+  uchar *base;
+  uchar *base_00;
+  char *liveStatsBuffer;
+  char *oldStatsBuffer;
+  int valueBeforeMatch;
+  int valueAfterMatch;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_STABLE,true);
+  base = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  base_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_STABLE,true);
   bVar1 = LiveStats_GetIntPlayerStatByGameModeFromBase
-                    (param_1,&local_c,param_3,param_4,(char *)puVar3);
+                    (controllerIndex,&valueBeforeMatch,gameMode,statName,(char *)base_00);
   if ((bVar1) &&
      (bVar1 = LiveStats_GetIntPlayerStatByGameModeFromBase
-                        (param_1,&local_8,param_3,param_4,(char *)puVar2), bVar1)) {
-    *param_2 = local_8 - local_c;
+                        (controllerIndex,&valueAfterMatch,gameMode,statName,(char *)base), bVar1)) {
+    *outInt = valueAfterMatch - valueBeforeMatch;
     return true;
   }
   DDL_PrintError("DDL:Error getting player stat value for %s.\n");
@@ -1006,18 +1019,19 @@ LiveStats_GetIntPlayerStatMatchDeltaByGameMode(int param_1,int *param_2,char *pa
 
 // 00975480  LiveStats_SetIntPlayerStat  (live/live_stats.cpp:880)
 
-bool __cdecl LiveStats_SetIntPlayerStat(int param_1,char *param_2,uint param_3)
+bool __cdecl LiveStats_SetIntPlayerStat(int controllerIndex,char *statName,uint statValue)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  char *local_c;
+  uchar *buffer_00;
+  char *buffer;
+  char *path;
   char *local_8;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  local_c = "PlayerStatsList";
-  local_8 = param_2;
-  bVar1 = LiveStats_SetIntPlayerStatInternal(param_1,2,&local_c,(char *)puVar2,param_3);
+  buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  path = "PlayerStatsList";
+  local_8 = statName;
+  bVar1 = LiveStats_SetIntPlayerStatInternal(controllerIndex,2,&path,(char *)buffer_00,statValue);
   return bVar1;
 }
 
@@ -1025,33 +1039,34 @@ bool __cdecl LiveStats_SetIntPlayerStat(int param_1,char *param_2,uint param_3)
 // 009754D0  LiveStats_GetIntPlayerBackupStatByKey  (live/live_stats.cpp:918)
 
 bool __cdecl
-LiveStats_GetIntPlayerBackupStatByKey(int param_1,int *param_2,playerStatsKeyIndex_t param_3)
+LiveStats_GetIntPlayerBackupStatByKey
+          (int controllerIndex,int *outInt,playerStatsKeyIndex_t keyIndex)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *base;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BACKUP,true);
-  bVar1 = LiveStats_GetIntPlayerStatFromBase(param_2,playerStatKeys[param_3],(char *)puVar2);
+  base = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BACKUP,true);
+  bVar1 = LiveStats_GetIntPlayerStatFromBase(outInt,playerStatKeys[keyIndex],(char *)base);
   return bVar1;
 }
 
 
 // 00975500  LiveStats_ChecksumGamerStats  (live/live_stats.cpp:1016)
 
-uint __cdecl LiveStats_ChecksumGamerStats(uchar *param_1,int param_2)
+uint __cdecl LiveStats_ChecksumGamerStats(uchar *buffer,int len)
 
 {
   uint uVar1;
   
-  uVar1 = Com_BlockChecksumKey32(param_1,param_2,0);
+  uVar1 = Com_BlockChecksumKey32(buffer,len,0);
   return uVar1;
 }
 
 
 // 00975520  LiveStats_SetDInt64Stat  (live/live_stats.cpp:1045)
 
-void __cdecl LiveStats_SetDInt64Stat(int param_1,ddlState_t *param_2,ulong64 param_3)
+void __cdecl LiveStats_SetDInt64Stat(int controllerIndex,ddlState_t *searchState,ulong64 value)
 
 {
   code *pcVar1;
@@ -1059,30 +1074,30 @@ void __cdecl LiveStats_SetDInt64Stat(int param_1,ddlState_t *param_2,ulong64 par
   int iVar3;
   undefined4 in_stack_fffffff0;
   char *pcVar4;
-  uchar *local_8;
+  char *buffer;
   
-  if (((param_1 < 0) || (0 < param_1)) &&
+  if (((controllerIndex < 0) || (0 < controllerIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x418,0,
                                "%s\n\t(controllerIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = LiveStats_CanPerformStatOperation(param_1);
+  iVar3 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar3 != 0) {
-    local_8 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
+    buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
     if ((xblive_basictraining == (dvar_s *)0x0) ||
        ((xblive_basictraining->current).enabled == false)) {
-      bVar2 = LiveStats_GetBasicTrainingState(local_8);
+      bVar2 = LiveStats_GetBasicTrainingState((uchar *)buffer);
       pcVar4 = (char *)CONCAT13(bVar2,(int3)in_stack_fffffff0);
     }
     else {
       pcVar4 = (char *)CONCAT13(1,(int3)in_stack_fffffff0);
     }
-    if (((char)((uint)pcVar4 >> 0x18) == '\0') && (param_2->member->permission == 2)) {
-      local_8 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    if (((char)((uint)pcVar4 >> 0x18) == '\0') && (searchState->member->permission == 2)) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
     }
-    iVar3 = DDL_SetInt64(param_2,CONCAT44(local_8,param_3._4_4_),pcVar4);
+    iVar3 = DDL_SetInt64(searchState,CONCAT44(buffer,value._4_4_),pcVar4);
     if (iVar3 == 0) {
       DDL_PrintError("DDL: Could not set stat \'%s\'");
     }
@@ -1093,24 +1108,25 @@ void __cdecl LiveStats_SetDInt64Stat(int param_1,ddlState_t *param_2,ulong64 par
 
 // 00975620  LiveStats_HexToDec  (live/live_stats.cpp:1093)
 
-int __cdecl LiveStats_HexToDec(char *param_1,int param_2)
+int __cdecl LiveStats_HexToDec(char *hexValue,int hexLength)
 
 {
-  int local_10;
-  int local_c;
-  int local_8;
+  int i;
+  int result;
+  int cumulativeResult;
   
-  local_8 = 0;
-  for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-    if (param_1[local_10] < ':') {
-      local_c = param_1[local_10] + -0x30;
+  cumulativeResult = 0;
+  for (i = 0; i < hexLength; i = i + 1) {
+    if (hexValue[i] < ':') {
+      result = hexValue[i] + -0x30;
     }
     else {
-      local_c = param_1[local_10] + -0x37;
+      result = hexValue[i] + -0x37;
     }
-    local_8 = (1 << ((((char)param_2 + -1) - (char)local_10) * '\x04' & 0x1fU)) * local_c + local_8;
+    cumulativeResult =
+         (1 << ((((char)hexLength + -1) - (char)i) * '\x04' & 0x1fU)) * result + cumulativeResult;
   }
-  return local_8;
+  return cumulativeResult;
 }
 
 
@@ -1120,41 +1136,42 @@ int __cdecl LiveStats_HexToDec(char *param_1,int param_2)
 
 void __cdecl
 LiveStats_ProcessStatChangedData
-          (int param_1,char *param_2,int param_3,int param_4,int param_5,char *param_6)
+          (int controllerIndex,char *buffer,int bufferSize,int offset,int size,char *data)
 
 {
-  byte bVar1;
-  uint uVar2;
-  uint local_5c;
-  int local_54;
-  byte local_4c [68];
+  uint uVar1;
+  int i;
+  int tempResult;
+  int byteCount;
+  char *charData;
+  byte binaryData [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54 = 0;
-  memset(local_4c,'\0',0x40);
-  for (local_5c = 0; (int)local_5c < param_5 * 2; local_5c = local_5c + 1) {
-    if (param_6[local_5c] < ':') {
-      bVar1 = param_6[local_5c] - 0x30;
+  byteCount = 0;
+  memset(binaryData,'\0',0x40);
+  for (i = 0; i < size * 2; i = i + 1) {
+    if (data[i] < ':') {
+      tempResult._0_1_ = data[i] - 0x30;
     }
     else {
-      bVar1 = param_6[local_5c] - 0x37;
+      tempResult._0_1_ = data[i] - 0x37;
     }
-    uVar2 = local_5c & 0x80000001;
-    if ((int)uVar2 < 0) {
-      uVar2 = (uVar2 - 1 | 0xfffffffe) + 1;
+    uVar1 = i & 0x80000001;
+    if ((int)uVar1 < 0) {
+      uVar1 = (uVar1 - 1 | 0xfffffffe) + 1;
     }
-    if (uVar2 == 0) {
-      local_4c[local_54] = 0;
-      local_4c[local_54] = bVar1 & 0xf;
+    if (uVar1 == 0) {
+      binaryData[byteCount] = 0;
+      binaryData[byteCount] = (byte)tempResult & 0xf;
     }
     else {
-      local_4c[local_54] = local_4c[local_54] << 4;
-      local_4c[local_54] = local_4c[local_54] | bVar1 & 0xf;
-      local_54 = local_54 + 1;
+      binaryData[byteCount] = binaryData[byteCount] << 4;
+      binaryData[byteCount] = binaryData[byteCount] | (byte)tempResult & 0xf;
+      byteCount = byteCount + 1;
     }
   }
-  DDL_SetRawBytes(param_2,param_4,param_5,(char *)local_4c);
+  DDL_SetRawBytes(buffer,offset,size,(char *)binaryData);
   return;
 }
 
@@ -1163,72 +1180,74 @@ LiveStats_ProcessStatChangedData
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LiveStats_SetStatChanged(int param_1,char *param_2)
+void __cdecl LiveStats_SetStatChanged(int controllerIndex,char *hexMsg)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uchar *puVar5;
+  uchar *buffer_00;
   char *local_68;
-  uint local_64;
-  int local_60;
-  int local_58;
-  char local_54 [68];
+  uint i;
+  uint runCount;
+  char *buffer;
+  uint startOffset;
+  char statChangeCommand [68];
   uint local_10;
-  int local_c;
-  char local_6;
-  char local_5;
+  uint size;
+  bool sizeFound;
+  bool offsetFound;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_1 < 0) || (0 < param_1)) &&
+  if (((controllerIndex < 0) || (0 < controllerIndex)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x485,0,
                                "%s\n\t(controllerIndex) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar4 = LiveStats_CanPerformStatOperation(param_1);
+  iVar4 = LiveStats_CanPerformStatOperation(controllerIndex);
   if (iVar4 != 0) {
-    puVar5 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-    local_5 = '\0';
-    local_6 = '\0';
-    local_c = 0;
-    local_58 = 0;
-    local_64 = 0;
-    local_60 = 0;
+    buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+    offsetFound = false;
+    sizeFound = false;
+    size = 0;
+    startOffset = 0;
+    i = 0;
+    runCount = 0;
     while( true ) {
-      local_68 = param_2;
+      local_68 = hexMsg;
       do {
         cVar1 = *local_68;
         local_68 = local_68 + 1;
       } while (cVar1 != '\0');
-      if ((uint)((int)local_68 - (int)(param_2 + 1)) <= local_64) break;
-      local_54[local_60] = param_2[local_64];
-      if ((local_6 == '\0') || (local_60 != local_c * 2 + -1)) {
-        if ((local_60 == 3) && ((local_5 == '\0' && (local_6 == '\0')))) {
-          local_58 = LiveStats_HexToDec(local_54,4);
-          local_5 = '\x01';
-          local_60 = 0;
+      if ((uint)((int)local_68 - (int)(hexMsg + 1)) <= i) break;
+      statChangeCommand[runCount] = hexMsg[i];
+      if ((sizeFound == false) || (runCount != size * 2 - 1)) {
+        if ((runCount == 3) && ((offsetFound == false && (sizeFound == false)))) {
+          startOffset = LiveStats_HexToDec(statChangeCommand,4);
+          offsetFound = true;
+          runCount = 0;
         }
-        else if ((local_60 == 0) && ((local_5 != '\0' && (local_6 == '\0')))) {
-          local_c = LiveStats_HexToDec(local_54,1);
-          local_c = local_c + 1;
-          local_6 = '\x01';
-          local_60 = 0;
+        else if ((runCount == 0) && ((offsetFound != false && (sizeFound == false)))) {
+          iVar4 = LiveStats_HexToDec(statChangeCommand,1);
+          size = iVar4 + 1;
+          sizeFound = true;
+          runCount = 0;
         }
         else {
-          local_60 = local_60 + 1;
+          runCount = runCount + 1;
         }
       }
       else {
-        LiveStats_ProcessStatChangedData(param_1,(char *)puVar5,0x9ce8,local_58,local_c,local_54);
-        local_60 = 0;
-        local_5 = '\0';
-        local_6 = '\0';
+        LiveStats_ProcessStatChangedData
+                  (controllerIndex,(char *)buffer_00,0x9ce8,startOffset,size,statChangeCommand);
+        runCount = 0;
+        offsetFound = false;
+        sizeFound = false;
       }
-      local_64 = local_64 + 1;
+      i = i + 1;
     }
   }
   return;
@@ -1237,13 +1256,14 @@ void __cdecl LiveStats_SetStatChanged(int param_1,char *param_2)
 
 // 00975970  LiveStats_SetStatByKey  (live/live_stats.cpp:1207)
 
-void __cdecl LiveStats_SetStatByKey(int param_1,playerStatsKeyIndex_t param_2,int param_3)
+void __cdecl LiveStats_SetStatByKey(int controllerIndex,playerStatsKeyIndex_t keyIndex,int value)
 
 {
   code *pcVar1;
   bool bVar2;
+  int returnVal;
   
-  if (MP_PLAYERSTATSKEY_MONTHLYTIMESTAMP < param_2) {
+  if (MP_PLAYERSTATSKEY_MONTHLYTIMESTAMP < keyIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x4b8,0,
                              "keyIndex doesn\'t index MP_PLAYERSTATSKEY_COUNT\n\t%i not in [0, %i)")
     ;
@@ -1253,11 +1273,12 @@ void __cdecl LiveStats_SetStatByKey(int param_1,playerStatsKeyIndex_t param_2,in
       return;
     }
   }
-  bVar2 = false;
-  if ((int)param_2 < 0x28) {
-    bVar2 = LiveStats_SetIntPlayerStat(param_1,playerStatKeys[param_2],param_3);
+  returnVal = 0;
+  if ((int)keyIndex < 0x28) {
+    bVar2 = LiveStats_SetIntPlayerStat(controllerIndex,playerStatKeys[keyIndex],value);
+    returnVal = (int)bVar2;
   }
-  if (bVar2 == false) {
+  if (returnVal == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x4c0,0,"%s")
     ;
     if (!bVar2) {
@@ -1280,7 +1301,8 @@ void __cdecl LiveStats_StatSetByNameCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  uint uVar3;
+  uint statValue;
+  int controllerIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -1288,9 +1310,9 @@ void __cdecl LiveStats_StatSetByNameCmd(void)
   }
   else {
     pcVar2 = Cmd_Argv(2);
-    uVar3 = atoi(pcVar2);
+    statValue = atoi(pcVar2);
     pcVar2 = Cmd_Argv(1);
-    LiveStats_SetIntPlayerStat(0,pcVar2,uVar3);
+    LiveStats_SetIntPlayerStat(0,pcVar2,statValue);
   }
   return;
 }
@@ -1307,8 +1329,9 @@ void __cdecl LiveStats_StatAddByNameCmd(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  uint uVar4;
-  int local_8;
+  uint statValue_00;
+  int controllerIndex;
+  int statValue;
   
   iVar2 = Cmd_Argc();
   if (iVar2 < 2) {
@@ -1316,13 +1339,13 @@ void __cdecl LiveStats_StatAddByNameCmd(void)
   }
   else {
     pcVar3 = Cmd_Argv(1);
-    bVar1 = LiveStats_GetIntPlayerStat(0,&local_8,pcVar3);
+    bVar1 = LiveStats_GetIntPlayerStat(0,&statValue,pcVar3);
     if (bVar1) {
       pcVar3 = Cmd_Argv(2);
       iVar2 = atoi(pcVar3);
-      uVar4 = iVar2 + local_8;
+      statValue_00 = iVar2 + statValue;
       pcVar3 = Cmd_Argv(1);
-      LiveStats_SetIntPlayerStat(0,pcVar3,uVar4);
+      LiveStats_SetIntPlayerStat(0,pcVar3,statValue_00);
     }
   }
   return;
@@ -1340,7 +1363,9 @@ void __cdecl LiveStats_StatGetByNameInDvarCmd(void)
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  int local_8;
+  int controllerIndex;
+  char *statName;
+  int statValue;
   
   iVar2 = Cmd_Argc();
   if (iVar2 < 2) {
@@ -1348,10 +1373,10 @@ void __cdecl LiveStats_StatGetByNameInDvarCmd(void)
   }
   else {
     pcVar3 = Cmd_Argv(1);
-    bVar1 = LiveStats_GetIntPlayerStat(0,&local_8,pcVar3);
+    bVar1 = LiveStats_GetIntPlayerStat(0,&statValue,pcVar3);
     if (bVar1) {
       pcVar3 = Cmd_Argv(2);
-      Dvar_SetIntByName(pcVar3,local_8);
+      Dvar_SetIntByName(pcVar3,statValue);
     }
   }
   return;
@@ -1360,45 +1385,45 @@ void __cdecl LiveStats_StatGetByNameInDvarCmd(void)
 
 // 00975A00  LiveStats_MakeStableStatsBuffer  (live/live_stats.cpp:1276)
 
-void __cdecl LiveStats_MakeStableStatsBuffer(int param_1)
+void __cdecl LiveStats_MakeStableStatsBuffer(int controllerIndex)
 
 {
-  ulong uVar1;
-  uchar *puVar2;
-  uchar *puVar3;
+  ulong count;
+  uchar *src;
+  uchar *dst;
   
-  uVar1 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_STABLE,true);
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_STABLE,true);
-  memcpy(puVar3,puVar2,uVar1);
-  s_stableStatsBufferInitialized[param_1] = true;
+  count = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_STABLE,true);
+  src = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  dst = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_STABLE,true);
+  memcpy(dst,src,count);
+  s_stableStatsBufferInitialized[controllerIndex] = true;
   return;
 }
 
 
 // 00975A50  LiveStats_IsStableStatsBufferInitialized  (live/live_stats.cpp:1298)
 
-bool __cdecl LiveStats_IsStableStatsBufferInitialized(int param_1)
+bool __cdecl LiveStats_IsStableStatsBufferInitialized(int controllerIndex)
 
 {
-  return s_stableStatsBufferInitialized[param_1];
+  return s_stableStatsBufferInitialized[controllerIndex];
 }
 
 
 // 00975A60  LiveStats_MakeStableGlobalStatsBuffer  (live/live_stats.cpp:1304)
 
-void __cdecl LiveStats_MakeStableGlobalStatsBuffer(int param_1)
+void __cdecl LiveStats_MakeStableGlobalStatsBuffer(int controllerIndex)
 
 {
-  ulong uVar1;
-  uchar *puVar2;
-  uchar *puVar3;
+  ulong count;
+  uchar *src;
+  uchar *dst;
   
   s_statsalreadycompared = false;
-  uVar1 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_GLOBALSTABLE,true);
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBALSTABLE,true);
-  memcpy(puVar3,puVar2,uVar1);
+  count = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_GLOBALSTABLE,true);
+  src = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+  dst = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBALSTABLE,true);
+  memcpy(dst,src,count);
   return;
 }
 
@@ -1408,34 +1433,34 @@ void __cdecl LiveStats_MakeStableGlobalStatsBuffer(int param_1)
 /* WARNING: Removing unreachable block (ram,0x0097836d) */
 /* WARNING: Removing unreachable block (ram,0x00978376) */
 
-uint __cdecl LiveStats_GetPlayerStat(char *param_1,char *param_2,char *param_3)
+uint __cdecl LiveStats_GetPlayerStat(char *statsList,char *statName,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((statName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x52e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_3 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x52f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) {
+  if ((statName == (char *)0x0) || (buffer == (char *)0x0)) {
     uVar3 = 0;
   }
   else {
-    iVar4 = DDL_MoveTo(&g_statsRootState,&local_14,2);
+    iVar4 = DDL_MoveTo(&g_statsRootState,&searchState,2);
     if (iVar4 == 0) {
       Com_PrintError(0x1d,"DDL: Error could not find player stat %s\n");
       uVar3 = 0;
@@ -1443,9 +1468,9 @@ uint __cdecl LiveStats_GetPlayerStat(char *param_1,char *param_2,char *param_3)
     else {
       if ((xblive_basictraining == (dvar_s *)0x0) ||
          ((xblive_basictraining->current).enabled == false)) {
-        LiveStats_GetBasicTrainingState((uchar *)param_3);
+        LiveStats_GetBasicTrainingState((uchar *)buffer);
       }
-      uVar3 = DDL_GetInt(&local_14,param_3);
+      uVar3 = DDL_GetInt(&searchState,buffer);
     }
   }
   return uVar3;
@@ -1454,15 +1479,15 @@ uint __cdecl LiveStats_GetPlayerStat(char *param_1,char *param_2,char *param_3)
 
 // 00975B20  LiveStats_SetPlayerStat  (live/live_stats.cpp:1353)
 
-void __cdecl LiveStats_SetPlayerStat(char *param_1,char *param_2,char *param_3,uint param_4)
+void __cdecl LiveStats_SetPlayerStat(char *statsList,char *statName,char *buffer,uint statValue)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  if (param_2 == (char *)0x0) {
+  if (statName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x54a,0,"%s")
     ;
     if (!bVar2) {
@@ -1471,7 +1496,7 @@ void __cdecl LiveStats_SetPlayerStat(char *param_1,char *param_2,char *param_3,u
       return;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x54b,0,"%s")
     ;
     if (!bVar2) {
@@ -1480,13 +1505,13 @@ void __cdecl LiveStats_SetPlayerStat(char *param_1,char *param_2,char *param_3,u
       return;
     }
   }
-  if ((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) {
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,2);
+  if ((statName != (char *)0x0) && (buffer != (char *)0x0)) {
+    iVar3 = DDL_MoveTo(&g_statsRootState,&searchState,2);
     if (iVar3 == 0) {
       Com_PrintError(0x1d,"DDL: Error could not find player stat %s\n");
     }
     else {
-      DDL_SetInt(&local_14,param_4,param_3);
+      DDL_SetInt(&searchState,statValue,buffer);
     }
   }
   return;
@@ -1496,14 +1521,13 @@ void __cdecl LiveStats_SetPlayerStat(char *param_1,char *param_2,char *param_3,u
 // 00975AB0  LiveStats_SetPlayerStatByKey  (live/live_stats.cpp:1375)
 
 void __cdecl
-LiveStats_SetPlayerStatByKey
-          (char *param_1,playerStatsKeyIndex_t param_2,uint param_3,uchar *param_4)
+LiveStats_SetPlayerStatByKey(char *statsList,playerStatsKeyIndex_t key,uint newvalue,uchar *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (char *)0x0) || (param_4 == (uchar *)0x0)) {
+  if ((statsList == (char *)0x0) || (buffer == (uchar *)0x0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x560,0,"%s")
     ;
     if (!bVar2) {
@@ -1512,8 +1536,8 @@ LiveStats_SetPlayerStatByKey
       return;
     }
   }
-  if ((param_1 != (char *)0x0) && (param_4 != (uchar *)0x0)) {
-    LiveStats_SetPlayerStat(param_1,playerStatKeys[param_2],(char *)param_4,param_3);
+  if ((statsList != (char *)0x0) && (buffer != (uchar *)0x0)) {
+    LiveStats_SetPlayerStat(statsList,playerStatKeys[key],(char *)buffer,newvalue);
   }
   return;
 }
@@ -1523,19 +1547,20 @@ LiveStats_SetPlayerStatByKey
 
 void __cdecl
 LiveStats_AddChallengeForRow
-          (StringTable *param_1,challengeInfo_t *param_2,int param_3,int param_4,int param_5,
-          char *param_6,char *param_7,statsMilestoneTypes_t param_8)
+          (StringTable *statsMilestonestable,challengeInfo_t *challenge,int currentMilestone,
+          int currentValue,int rowNum,char *name,char *statTypeName,statsMilestoneTypes_t type)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  char *pcVar5;
-  int iVar6;
-  char *pcVar7;
+  char *value1;
+  int comparisonColumn3;
+  char *value3;
+  int targetValue;
   
-  if (param_2 == (challengeInfo_t *)0x0) {
+  if (challenge == (challengeInfo_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x56b,0,"%s")
     ;
     if (!bVar2) {
@@ -1544,7 +1569,7 @@ LiveStats_AddChallengeForRow
       return;
     }
   }
-  if (param_1 == (StringTable *)0x0) {
+  if (statsMilestonestable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x56c,0,"%s")
     ;
     if (!bVar2) {
@@ -1553,7 +1578,7 @@ LiveStats_AddChallengeForRow
       return;
     }
   }
-  if (param_5 == -1) {
+  if (rowNum == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x56d,0,"%s")
     ;
     if (!bVar2) {
@@ -1562,36 +1587,38 @@ LiveStats_AddChallengeForRow
       return;
     }
   }
-  if (((param_2 != (challengeInfo_t *)0x0) && (param_1 != (StringTable *)0x0)) && (param_5 != -1)) {
-    pcVar3 = StringTable_GetColumnValueForRow(param_1,param_5,2);
+  if (((challenge != (challengeInfo_t *)0x0) && (statsMilestonestable != (StringTable *)0x0)) &&
+     (rowNum != -1)) {
+    pcVar3 = StringTable_GetColumnValueForRow(statsMilestonestable,rowNum,2);
     iVar4 = atoi(pcVar3);
-    param_2->targetValue = iVar4;
-    param_2->currentValue = param_4;
-    param_2->numToTargetValue = iVar4 - param_2->currentValue;
-    pcVar3 = StringTable_GetColumnValueForRow(param_1,param_5,6);
+    challenge->targetValue = iVar4;
+    challenge->currentValue = currentValue;
+    challenge->numToTargetValue = iVar4 - challenge->currentValue;
+    pcVar3 = StringTable_GetColumnValueForRow(statsMilestonestable,rowNum,6);
     iVar4 = atoi(pcVar3);
-    param_2->xpReward = iVar4;
-    pcVar3 = StringTable_GetColumnValueForRow(param_1,param_5,7);
+    challenge->xpReward = iVar4;
+    pcVar3 = StringTable_GetColumnValueForRow(statsMilestonestable,rowNum,7);
     iVar4 = atoi(pcVar3);
-    param_2->cpReward = iVar4;
-    param_2->milestone = (uchar)param_3;
-    param_2->type = param_8;
-    param_2->name = param_6;
-    param_2->prevTarget = 0;
-    pcVar3 = StringTable_GetColumnValueForRow(param_1,param_5,0);
+    challenge->cpReward = iVar4;
+    challenge->milestone = (uchar)currentMilestone;
+    challenge->type = type;
+    challenge->name = name;
+    challenge->prevTarget = 0;
+    pcVar3 = StringTable_GetColumnValueForRow(statsMilestonestable,rowNum,0);
     iVar4 = atoi(pcVar3);
-    param_2->index = (uchar)iVar4;
-    if (0 < param_3) {
-      iVar6 = 4;
+    challenge->index = (uchar)iVar4;
+    if (0 < currentMilestone) {
+      comparisonColumn3 = 4;
       iVar4 = 3;
-      pcVar3 = param_7;
-      pcVar7 = param_6;
-      pcVar5 = va("%d");
-      param_5 = CL_GetMilestoneRowNum(&param_1,1,pcVar5,iVar4,pcVar3,iVar6,pcVar7);
-      if (param_5 != -1) {
-        pcVar3 = StringTable_GetColumnValueForRow(param_1,param_5,2);
+      pcVar3 = statTypeName;
+      value3 = name;
+      value1 = va("%d");
+      rowNum = CL_GetMilestoneRowNum
+                         (&statsMilestonestable,1,value1,iVar4,pcVar3,comparisonColumn3,value3);
+      if (rowNum != -1) {
+        pcVar3 = StringTable_GetColumnValueForRow(statsMilestonestable,rowNum,2);
         iVar4 = atoi(pcVar3);
-        param_2->prevTarget = iVar4;
+        challenge->prevTarget = iVar4;
       }
     }
   }
@@ -1601,15 +1628,16 @@ LiveStats_AddChallengeForRow
 
 // 00975BE0  LiveStats_SetItemStat  (live/live_stats.cpp:1416)
 
-void __cdecl LiveStats_SetItemStat(ddlState_t *param_1,char *param_2,char *param_3,uint param_4)
+void __cdecl
+LiveStats_SetItemStat(ddlState_t *searchStateStats,char *statMember,char *buffer,uint value)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  if (param_1 == (ddlState_t *)0x0) {
+  if (searchStateStats == (ddlState_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x589,0,"%s")
     ;
     if (!bVar2) {
@@ -1618,7 +1646,7 @@ void __cdecl LiveStats_SetItemStat(ddlState_t *param_1,char *param_2,char *param
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (statMember == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x58a,0,"%s")
     ;
     if (!bVar2) {
@@ -1627,7 +1655,7 @@ void __cdecl LiveStats_SetItemStat(ddlState_t *param_1,char *param_2,char *param
       return;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (buffer == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x58b,0,"%s")
     ;
     if (!bVar2) {
@@ -1636,12 +1664,13 @@ void __cdecl LiveStats_SetItemStat(ddlState_t *param_1,char *param_2,char *param
       return;
     }
   }
-  if (((param_1 != (ddlState_t *)0x0) && (param_2 != (char *)0x0)) && (param_3 != (char *)0x0)) {
-    iVar3 = DDL_MoveTo(param_1,&local_14,1);
+  if (((searchStateStats != (ddlState_t *)0x0) && (statMember != (char *)0x0)) &&
+     (buffer != (char *)0x0)) {
+    iVar3 = DDL_MoveTo(searchStateStats,&searchState,1);
     if (iVar3 == 0) {
       Com_PrintError(0x1d,"DDL: Error could not find member %s\n");
     }
-    DDL_SetInt(&local_14,param_4,param_3);
+    DDL_SetInt(&searchState,value,buffer);
   }
   return;
 }
@@ -1652,41 +1681,42 @@ void __cdecl LiveStats_SetItemStat(ddlState_t *param_1,char *param_2,char *param
 /* WARNING: Removing unreachable block (ram,0x0097773e) */
 /* WARNING: Removing unreachable block (ram,0x00977747) */
 
-uint __cdecl LiveStats_GetItemStat(ddlState_t *param_1,char *param_2,char *param_3)
+uint __cdecl LiveStats_GetItemStat(ddlState_t *searchStateStats,char *statMember,char *buffer)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  if ((param_1 == (ddlState_t *)0x0) &&
+  if ((searchStateStats == (ddlState_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x59c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((statMember == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x59d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_3 == (char *)0x0) &&
+  if ((buffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x59e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (((param_1 == (ddlState_t *)0x0) || (param_2 == (char *)0x0)) || (param_3 == (char *)0x0)) {
+  if (((searchStateStats == (ddlState_t *)0x0) || (statMember == (char *)0x0)) ||
+     (buffer == (char *)0x0)) {
     uVar3 = 0;
   }
   else {
-    iVar4 = DDL_MoveTo(param_1,&local_14,1);
+    iVar4 = DDL_MoveTo(searchStateStats,&searchState,1);
     if (iVar4 == 0) {
       Com_PrintError(0x1d,"DDL: Error could not find member %s\n");
       uVar3 = 0;
@@ -1694,9 +1724,9 @@ uint __cdecl LiveStats_GetItemStat(ddlState_t *param_1,char *param_2,char *param
     else {
       if ((xblive_basictraining == (dvar_s *)0x0) ||
          ((xblive_basictraining->current).enabled == false)) {
-        LiveStats_GetBasicTrainingState((uchar *)param_3);
+        LiveStats_GetBasicTrainingState((uchar *)buffer);
       }
-      uVar3 = DDL_GetInt(&local_14,param_3);
+      uVar3 = DDL_GetInt(&searchState,buffer);
     }
   }
   return uVar3;
@@ -1705,7 +1735,9 @@ uint __cdecl LiveStats_GetItemStat(ddlState_t *param_1,char *param_2,char *param
 
 // 00977550  LiveStats_UpdateItemPersonalBest  (live/live_stats.cpp:1463)
 
-bool __cdecl LiveStats_UpdateItemPersonalBest(char *param_1,char *param_2,ddlState_t *param_3)
+bool __cdecl
+LiveStats_UpdateItemPersonalBest
+          (char *liveStatsBuffer,char *oldStatsBuffer,ddlState_t *searchStateStats)
 
 {
   code *pcVar1;
@@ -1714,20 +1746,26 @@ bool __cdecl LiveStats_UpdateItemPersonalBest(char *param_1,char *param_2,ddlSta
   uint uVar4;
   uint uVar5;
   uint uVar6;
+  uint currentValue;
+  uint currentBest;
+  uint matchDelta;
+  uint lastValue;
   
-  if ((((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) || (param_3 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x5b8,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) && (param_3 != (ddlState_t *)0x0)) {
-    uVar4 = LiveStats_GetItemStat(param_3,"statValue",param_1);
-    uVar5 = LiveStats_GetItemStat(param_3,"statValue",param_2);
-    uVar6 = LiveStats_GetItemStat(param_3,"personalBest",param_1);
+  if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+     (searchStateStats != (ddlState_t *)0x0)) {
+    uVar4 = LiveStats_GetItemStat(searchStateStats,"statValue",liveStatsBuffer);
+    uVar5 = LiveStats_GetItemStat(searchStateStats,"statValue",oldStatsBuffer);
+    uVar6 = LiveStats_GetItemStat(searchStateStats,"personalBest",liveStatsBuffer);
     if (uVar6 < uVar4 - uVar5) {
-      LiveStats_SetItemStat(param_3,"personalBest",param_1,uVar4 - uVar5);
+      LiveStats_SetItemStat(searchStateStats,"personalBest",liveStatsBuffer,uVar4 - uVar5);
       return true;
     }
   }
@@ -1738,43 +1776,48 @@ bool __cdecl LiveStats_UpdateItemPersonalBest(char *param_1,char *param_2,ddlSta
 // 00975CD0  LiveStats_GetMilestoneRowNum  (live/live_stats.cpp:1483)
 
 int __cdecl
-LiveStats_GetMilestoneRowNum(StringTable **param_1,int param_2,char *param_3,char *param_4)
+LiveStats_GetMilestoneRowNum
+          (StringTable **statsMilestonestable,int currentMilestone,char *statType,char *statName)
 
 {
+  char *value1;
   char *pcVar1;
-  char *pcVar2;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
+  char *value3;
+  int rowNum;
   
-  iVar4 = 4;
-  iVar3 = 3;
-  pcVar2 = param_3;
-  pcVar5 = param_4;
-  pcVar1 = va("%d");
-  iVar3 = CL_GetMilestoneRowNum(param_1,1,pcVar1,iVar3,pcVar2,iVar4,pcVar5);
-  if ((iVar3 == -1) && (param_2 != 0)) {
-    iVar4 = 4;
-    iVar3 = 3;
-    pcVar2 = va("%d");
-    iVar3 = CL_GetMilestoneRowNum(param_1,1,pcVar2,iVar3,param_3,iVar4,param_4);
+  iVar3 = 4;
+  iVar2 = 3;
+  pcVar1 = statType;
+  value3 = statName;
+  value1 = va("%d");
+  iVar2 = CL_GetMilestoneRowNum(statsMilestonestable,1,value1,iVar2,pcVar1,iVar3,value3);
+  if ((iVar2 == -1) && (currentMilestone != 0)) {
+    iVar3 = 4;
+    iVar2 = 3;
+    pcVar1 = va("%d");
+    iVar2 = CL_GetMilestoneRowNum(statsMilestonestable,1,pcVar1,iVar2,statType,iVar3,statName);
   }
-  return iVar3;
+  return iVar2;
 }
 
 
 // 00975D50  LiveStats_CheckCurrentValue  (live/live_stats.cpp:1493)
 
-void __cdecl LiveStats_CheckCurrentValue(StringTable *param_1,int param_2,int param_3,int *param_4)
+void __cdecl
+LiveStats_CheckCurrentValue
+          (StringTable *statsMilestonestable,int rowNum,int targetColumn,int *currentValue)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  int targetValue;
   
-  pcVar1 = StringTable_GetColumnValueForRow(param_1,param_2,param_3);
-  iVar2 = atoi(pcVar1);
-  if (iVar2 <= *param_4) {
-    *param_4 = iVar2;
+  nptr = StringTable_GetColumnValueForRow(statsMilestonestable,rowNum,targetColumn);
+  iVar1 = atoi(nptr);
+  if (iVar1 <= *currentValue) {
+    *currentValue = iVar1;
   }
   return;
 }
@@ -1784,7 +1827,8 @@ void __cdecl LiveStats_CheckCurrentValue(StringTable *param_1,int param_2,int pa
 
 bool __cdecl
 LiveStats_UpdateItemStatsMilestones
-          (int param_1,char *param_2,char *param_3,ddlState_t *param_4,int param_5)
+          (int controllerIndex,char *liveStatsBuffer,char *oldStatsBuffer,
+          ddlState_t *searchStateStats,int itemIndex)
 
 {
   statsMilestone_t *psVar1;
@@ -1793,9 +1837,11 @@ LiveStats_UpdateItemStatsMilestones
   undefined1 uVar4;
   uint uVar5;
   uint uVar6;
-  uchar local_c;
+  statsMilestone_t *statsMilestone;
+  uint currentMilestone;
+  uint lastMilestone;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x5df,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -1803,26 +1849,29 @@ LiveStats_UpdateItemStatsMilestones
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x5e0,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (s_currentStatsMilestone[param_1] < 1000) {
-    if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) && (param_4 != (ddlState_t *)0x0)) {
-      uVar5 = LiveStats_GetItemStat(param_4,"challengeTier",param_2);
-      uVar6 = LiveStats_GetItemStat(param_4,"challengeTier",param_3);
+  if (s_currentStatsMilestone[controllerIndex] < 1000) {
+    if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      uVar5 = LiveStats_GetItemStat(searchStateStats,"challengeTier",liveStatsBuffer);
+      uVar6 = LiveStats_GetItemStat(searchStateStats,"challengeTier",oldStatsBuffer);
       if (uVar6 < uVar5) {
-        psVar1 = s_statsMilestonesCompleted[param_1] + s_currentStatsMilestone[param_1];
-        psVar1->index = (uchar)param_5;
-        local_c = (uchar)uVar5;
-        psVar1->milestone = local_c;
+        psVar1 = s_statsMilestonesCompleted[controllerIndex] +
+                 s_currentStatsMilestone[controllerIndex];
+        psVar1->index = (uchar)itemIndex;
+        currentMilestone._0_1_ = (uchar)uVar5;
+        psVar1->milestone = (uchar)currentMilestone;
         psVar1->type = MILESTONE_WEAPON;
-        psVar1->name = param_4->ddl->enumList[param_4->member->enumIndex].members
-                       [param_4->arrayIndex];
-        s_currentStatsMilestone[param_1] = s_currentStatsMilestone[param_1] + 1;
+        psVar1->name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+                       [searchStateStats->arrayIndex];
+        s_currentStatsMilestone[controllerIndex] = s_currentStatsMilestone[controllerIndex] + 1;
         return true;
       }
     }
@@ -1837,26 +1886,39 @@ LiveStats_UpdateItemStatsMilestones
 
 // 009791F0  LiveStats_SetChallengeFlags  (live/live_stats.cpp:1532)
 
-void __cdecl LiveStats_SetChallengeFlags(int param_1,int param_2,challengeInfo_t *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl
+LiveStats_SetChallengeFlags(int controllerIndex,int itemIndex,challengeInfo_t *challenge)
 
 {
   bool bVar1;
   
-  param_3->flags = 0;
-  bVar1 = BG_UnlockablesIsItemClassifiedGeneric(param_1,param_2);
-  param_3->flags = param_3->flags | ((ushort)bVar1 - (ushort)bVar1) - (ushort)bVar1 & 4;
-  bVar1 = BG_UnlockablesIsItemLocked(param_1,param_2);
-  param_3->flags = param_3->flags | ((ushort)bVar1 - (ushort)bVar1) - (ushort)bVar1 & 2;
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2);
-  param_3->flags = param_3->flags | (ushort)!bVar1;
+  challenge->flags = 0;
+  bVar1 = BG_UnlockablesIsItemClassifiedGeneric(controllerIndex,itemIndex);
+  challenge->flags = challenge->flags | ((ushort)bVar1 - (ushort)bVar1) - (ushort)bVar1 & 4;
+  bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+  challenge->flags = challenge->flags | ((ushort)bVar1 - (ushort)bVar1) - (ushort)bVar1 & 2;
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
+  challenge->flags = challenge->flags | (ushort)!bVar1;
   return;
 }
 
 
 // 00978DF0  LiveStats_AddItemChallenge  (live/live_stats.cpp:1541)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
-LiveStats_AddItemChallenge(int param_1,char *param_2,ddlState_t *param_3,int param_4,int param_5)
+LiveStats_AddItemChallenge
+          (int controllerIndex,char *liveStatsBuffer,ddlState_t *searchStateStats,int itemIndex,
+          int type)
 
 {
   code *pcVar1;
@@ -1864,15 +1926,17 @@ LiveStats_AddItemChallenge(int param_1,char *param_2,ddlState_t *param_3,int par
   bool bVar3;
   undefined1 uVar4;
   int iVar5;
-  challengeInfo_t *pcVar6;
-  uint local_1c;
-  uint local_18;
-  char *local_14;
-  char *local_10;
-  char *local_c;
-  StringTable *local_8;
+  challengeInfo_t *challenge_00;
+  challengeInfo_t *challenge;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *statName;
+  char *name;
+  char *group;
+  StringTable *statsMilestonestable;
   
-  if (((param_2 == (char *)0x0) || (param_3 == (ddlState_t *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x606,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -1884,30 +1948,32 @@ LiveStats_AddItemChallenge(int param_1,char *param_2,ddlState_t *param_3,int par
     ;
     return false;
   }
-  if ((param_2 != (char *)0x0) && (param_3 != (ddlState_t *)0x0)) {
-    local_18 = LiveStats_GetItemStat(param_3,"challengeTier",param_2);
-    local_8 = (StringTable *)0x0;
-    local_10 = param_3->ddl->enumList[param_3->member->enumIndex].members[param_3->arrayIndex];
-    local_c = BG_UnlockablesGetItemGroup(param_4);
-    local_14 = BG_UnlockablesGetItemName(param_4);
-    iVar5 = I_stricmp(local_14,"WEAPON_STRELA");
+  if ((liveStatsBuffer != (char *)0x0) && (searchStateStats != (ddlState_t *)0x0)) {
+    currentMilestone = LiveStats_GetItemStat(searchStateStats,"challengeTier",liveStatsBuffer);
+    statsMilestonestable = (StringTable *)0x0;
+    name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+           [searchStateStats->arrayIndex];
+    group = BG_UnlockablesGetItemGroup(itemIndex);
+    statName = BG_UnlockablesGetItemName(itemIndex);
+    iVar5 = I_stricmp(statName,"WEAPON_STRELA");
     if (iVar5 == 0) {
       return false;
     }
-    if ((((local_10 != (char *)0x0) && (local_c != (char *)0x0)) && (*local_10 != '\0')) &&
-       (*local_c != '\0')) {
-      iVar5 = LiveStats_GetMilestoneRowNum(&local_8,local_18,local_c,local_10);
+    if ((((name != (char *)0x0) && (group != (char *)0x0)) && (*name != '\0')) && (*group != '\0'))
+    {
+      iVar5 = LiveStats_GetMilestoneRowNum(&statsMilestonestable,currentMilestone,group,name);
       uVar2 = s_numSortedChallenges;
-      if ((local_8 != (StringTable *)0x0) && (iVar5 != -1)) {
-        pcVar6 = s_sortedChallengeList + s_numSortedChallenges;
-        local_1c = LiveStats_GetItemStat(param_3,"challengeValue",param_2);
-        LiveStats_CheckCurrentValue(local_8,iVar5,2,(int *)&local_1c);
+      if ((statsMilestonestable != (StringTable *)0x0) && (iVar5 != -1)) {
+        challenge_00 = s_sortedChallengeList + s_numSortedChallenges;
+        currentValue = LiveStats_GetItemStat(searchStateStats,"challengeValue",liveStatsBuffer);
+        LiveStats_CheckCurrentValue(statsMilestonestable,iVar5,2,&currentValue);
         LiveStats_AddChallengeForRow
-                  (local_8,pcVar6,local_18,local_1c,iVar5,local_10,local_c,param_5);
-        s_sortedChallengeList[uVar2].index = (uchar)param_4;
-        LiveStats_SetChallengeFlags(param_1,param_4,pcVar6);
+                  (statsMilestonestable,challenge_00,currentMilestone,currentValue,iVar5,name,group,
+                   type);
+        s_sortedChallengeList[uVar2].index = (uchar)itemIndex;
+        LiveStats_SetChallengeFlags(controllerIndex,itemIndex,challenge_00);
         s_numSortedChallenges = s_numSortedChallenges + 1;
-        bVar3 = BG_UnlockablesIsItemLocked(param_1,param_4);
+        bVar3 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
         if ((!bVar3) && ((s_sortedChallengeList[uVar2].flags & 4) == 0)) {
           s_totalNumberOfUnlockedItems = s_totalNumberOfUnlockedItems + 1;
         }
@@ -1922,14 +1988,18 @@ LiveStats_AddItemChallenge(int param_1,char *param_2,ddlState_t *param_3,int par
 // 0097AB80  LiveStats_GetAttachmenNameFromItemIndex  (live/live_stats.cpp:1593)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-char * __cdecl LiveStats_GetAttachmenNameFromItemIndex(int param_1)
+char * __cdecl LiveStats_GetAttachmenNameFromItemIndex(int itemIndex)
 
 {
   itemGroup_t iVar1;
   char *pcVar2;
+  itemGroup_t group;
   
-  iVar1 = BG_UnlockablesGetItemGroupEnum(param_1);
+  iVar1 = BG_UnlockablesGetItemGroupEnum(itemIndex);
   if (iVar1 == ITEMGROUP_MASTERKEY) {
     pcVar2 = "mk";
   }
@@ -1948,25 +2018,34 @@ char * __cdecl LiveStats_GetAttachmenNameFromItemIndex(int param_1)
 
 // 0097A990  LiveStats_AddUnderBarrelAttachmentChallenge  (live/live_stats.cpp:1611)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
 LiveStats_AddUnderBarrelAttachmentChallenge
-          (int param_1,char *param_2,ddlState_t *param_3,int param_4,int param_5)
+          (int controllerIndex,char *liveStatsBuffer,ddlState_t *searchStateStats,int itemIndex,
+          int type)
 
 {
   code *pcVar1;
   uint uVar2;
   bool bVar3;
   undefined1 uVar4;
-  int iVar5;
-  char *pcVar6;
-  challengeInfo_t *pcVar7;
-  uint local_18;
-  uint local_14;
-  char *local_10;
-  char *local_c;
-  StringTable *local_8;
+  int rowNum_00;
+  char *attachmentRef;
+  challengeInfo_t *challenge_00;
+  challengeInfo_t *challenge;
+  char *attachmentName;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *name;
+  char *group;
+  StringTable *statsMilestonestable;
   
-  if (((param_2 == (char *)0x0) || (param_3 == (ddlState_t *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x64c,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -1974,26 +2053,29 @@ LiveStats_AddUnderBarrelAttachmentChallenge
     return (bool)uVar4;
   }
   if (s_numSortedAttachments < 0x18) {
-    if ((param_2 != (char *)0x0) && (param_3 != (ddlState_t *)0x0)) {
-      local_14 = LiveStats_GetItemStat(param_3,"challengeTier",param_2);
-      local_8 = (StringTable *)0x0;
-      local_10 = param_3->ddl->enumList[param_3->member->enumIndex].members[param_3->arrayIndex];
-      local_c = BG_UnlockablesGetItemGroup(param_4);
-      if (((local_10 != (char *)0x0) && ((local_c != (char *)0x0 && (*local_10 != '\0')))) &&
-         (*local_c != '\0')) {
-        iVar5 = LiveStats_GetMilestoneRowNum(&local_8,local_14,local_c,local_10);
+    if ((liveStatsBuffer != (char *)0x0) && (searchStateStats != (ddlState_t *)0x0)) {
+      currentMilestone = LiveStats_GetItemStat(searchStateStats,"challengeTier",liveStatsBuffer);
+      statsMilestonestable = (StringTable *)0x0;
+      name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+             [searchStateStats->arrayIndex];
+      group = BG_UnlockablesGetItemGroup(itemIndex);
+      if (((name != (char *)0x0) && ((group != (char *)0x0 && (*name != '\0')))) && (*group != '\0')
+         ) {
+        rowNum_00 = LiveStats_GetMilestoneRowNum(&statsMilestonestable,currentMilestone,group,name);
         uVar2 = s_numSortedAttachments;
-        if ((local_8 != (StringTable *)0x0) && (iVar5 != -1)) {
-          pcVar7 = s_sortedAttachmentsList + s_numSortedAttachments;
-          local_18 = LiveStats_GetItemStat(param_3,"challengeValue",param_2);
-          LiveStats_CheckCurrentValue(local_8,iVar5,2,(int *)&local_18);
+        if ((statsMilestonestable != (StringTable *)0x0) && (rowNum_00 != -1)) {
+          challenge_00 = s_sortedAttachmentsList + s_numSortedAttachments;
+          currentValue = LiveStats_GetItemStat(searchStateStats,"challengeValue",liveStatsBuffer);
+          LiveStats_CheckCurrentValue(statsMilestonestable,rowNum_00,2,&currentValue);
           LiveStats_AddChallengeForRow
-                    (local_8,pcVar7,local_14,local_18,iVar5,local_10,local_c,param_5);
-          s_sortedAttachmentsList[uVar2].index = (uchar)param_4;
-          pcVar6 = LiveStats_GetAttachmenNameFromItemIndex(param_4);
+                    (statsMilestonestable,challenge_00,currentMilestone,currentValue,rowNum_00,name,
+                     group,type);
+          s_sortedAttachmentsList[uVar2].index = (uchar)itemIndex;
+          attachmentRef = LiveStats_GetAttachmenNameFromItemIndex(itemIndex);
           s_sortedAttachmentsList[uVar2].flags = 0;
-          if ((pcVar6 != (char *)0x0) &&
-             (bVar3 = BG_UnlockablesGetAttachmentPurchased(param_1,pcVar6), !bVar3)) {
+          if ((attachmentRef != (char *)0x0) &&
+             (bVar3 = BG_UnlockablesGetAttachmentPurchased(controllerIndex,attachmentRef), !bVar3))
+          {
             s_sortedAttachmentsList[uVar2].flags = s_sortedAttachmentsList[uVar2].flags | 1;
           }
           s_numSortedAttachments = s_numSortedAttachments + 1;
@@ -2012,7 +2094,8 @@ LiveStats_AddUnderBarrelAttachmentChallenge
 
 // 00979740  LiveStats_AddGroupChallenge  (live/live_stats.cpp:1659)
 
-bool __cdecl LiveStats_AddGroupChallenge(char *param_1,ddlState_t *param_2,int param_3)
+bool __cdecl
+LiveStats_AddGroupChallenge(char *liveStatsBuffer,ddlState_t *searchStateStats,int groupIndex)
 
 {
   code *pcVar1;
@@ -2020,13 +2103,15 @@ bool __cdecl LiveStats_AddGroupChallenge(char *param_1,ddlState_t *param_2,int p
   bool bVar3;
   undefined1 uVar4;
   int iVar5;
-  challengeInfo_t *pcVar6;
-  uint local_14;
-  uint local_10;
-  char *local_c;
-  StringTable *local_8;
+  challengeInfo_t *challenge_00;
+  challengeInfo_t *challenge;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *name;
+  StringTable *statsMilestonestable;
   
-  if (((param_1 == (char *)0x0) || (param_2 == (ddlState_t *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x67c,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -2034,30 +2119,32 @@ bool __cdecl LiveStats_AddGroupChallenge(char *param_1,ddlState_t *param_2,int p
     return (bool)uVar4;
   }
   if (s_numSortedWeaponGroup < 0x10) {
-    if ((param_1 == (char *)0x0) || (param_2 == (ddlState_t *)0x0)) {
+    if ((liveStatsBuffer == (char *)0x0) || (searchStateStats == (ddlState_t *)0x0)) {
       bVar3 = false;
     }
-    else if (((param_3 == -1) || (param_3 == 0xe)) ||
-            ((param_3 == 0x11 || ((param_3 == 0x13 || (param_3 == 0x15)))))) {
+    else if (((groupIndex == -1) || (groupIndex == 0xe)) ||
+            ((groupIndex == 0x11 || ((groupIndex == 0x13 || (groupIndex == 0x15)))))) {
       bVar3 = false;
     }
     else {
-      local_10 = LiveStats_GetItemStat(param_2,"challengeTier",param_1);
-      local_8 = (StringTable *)0x0;
-      local_c = param_2->ddl->enumList[param_2->member->enumIndex].members[param_2->arrayIndex];
-      if (((param_3 == 6) || (param_3 == 7)) && (iVar5 = I_stricmp("headshots",local_c), iVar5 == 0)
-         ) {
+      currentMilestone = LiveStats_GetItemStat(searchStateStats,"challengeTier",liveStatsBuffer);
+      statsMilestonestable = (StringTable *)0x0;
+      name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+             [searchStateStats->arrayIndex];
+      if (((groupIndex == 6) || (groupIndex == 7)) &&
+         (iVar5 = I_stricmp("headshots",name), iVar5 == 0)) {
         return false;
       }
-      iVar5 = LiveStats_GetMilestoneRowNum(&local_8,local_10,"group",local_c);
+      iVar5 = LiveStats_GetMilestoneRowNum(&statsMilestonestable,currentMilestone,"group",name);
       uVar2 = s_numSortedWeaponGroup;
-      if ((local_8 != (StringTable *)0x0) && (iVar5 != -1)) {
-        pcVar6 = s_sortedWeaponGroupList + s_numSortedWeaponGroup;
-        local_14 = LiveStats_GetItemStat(param_2,"challengeValue",param_1);
-        LiveStats_CheckCurrentValue(local_8,iVar5,2,(int *)&local_14);
+      if ((statsMilestonestable != (StringTable *)0x0) && (iVar5 != -1)) {
+        challenge_00 = s_sortedWeaponGroupList + s_numSortedWeaponGroup;
+        currentValue = LiveStats_GetItemStat(searchStateStats,"challengeValue",liveStatsBuffer);
+        LiveStats_CheckCurrentValue(statsMilestonestable,iVar5,2,&currentValue);
         LiveStats_AddChallengeForRow
-                  (local_8,pcVar6,local_10,local_14,iVar5,local_c,"group",MILESTONE_GROUP);
-        s_sortedWeaponGroupList[uVar2].index = (uchar)param_3;
+                  (statsMilestonestable,challenge_00,currentMilestone,currentValue,iVar5,name,
+                   "group",MILESTONE_GROUP);
+        s_sortedWeaponGroupList[uVar2].index = (uchar)groupIndex;
         s_numSortedWeaponGroup = s_numSortedWeaponGroup + 1;
       }
       bVar3 = true;
@@ -2077,22 +2164,26 @@ bool __cdecl LiveStats_AddGroupChallenge(char *param_1,ddlState_t *param_2,int p
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
 bool __cdecl
-LiveStats_AddAttachmentsChallenge(int param_1,char *param_2,ddlState_t *param_3,char *param_4)
+LiveStats_AddAttachmentsChallenge
+          (int controllerIndex,char *liveStatsBuffer,ddlState_t *searchAttachmentStateStats,
+          char *attachmentName)
 
 {
   code *pcVar1;
   uint uVar2;
   bool bVar3;
   undefined1 uVar4;
-  int iVar5;
-  challengeInfo_t *pcVar6;
-  eAttachment eVar7;
-  uint local_14;
-  uint local_10;
-  char *local_c;
-  StringTable *local_8;
+  int rowNum_00;
+  challengeInfo_t *challenge_00;
+  eAttachment eVar5;
+  challengeInfo_t *challenge;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *name;
+  StringTable *statsMilestonestable;
   
-  if (((param_2 == (char *)0x0) || (param_3 == (ddlState_t *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (searchAttachmentStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x6ab,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -2100,25 +2191,30 @@ LiveStats_AddAttachmentsChallenge(int param_1,char *param_2,ddlState_t *param_3,
     return (bool)uVar4;
   }
   if (s_numSortedAttachments < 0x18) {
-    if ((param_2 != (char *)0x0) && (param_3 != (ddlState_t *)0x0)) {
-      local_10 = LiveStats_GetItemStat(param_3,"challengeTier",param_2);
-      local_8 = (StringTable *)0x0;
-      local_c = param_3->ddl->enumList[param_3->member->enumIndex].members[param_3->arrayIndex];
-      if (((local_c != (char *)0x0) && ((*local_c != '\0' && (param_4 != (char *)0x0)))) &&
-         (*param_4 != '\0')) {
-        iVar5 = LiveStats_GetMilestoneRowNum(&local_8,local_10,"attachment",local_c);
+    if ((liveStatsBuffer != (char *)0x0) && (searchAttachmentStateStats != (ddlState_t *)0x0)) {
+      currentMilestone =
+           LiveStats_GetItemStat(searchAttachmentStateStats,"challengeTier",liveStatsBuffer);
+      statsMilestonestable = (StringTable *)0x0;
+      name = searchAttachmentStateStats->ddl->enumList
+             [searchAttachmentStateStats->member->enumIndex].members
+             [searchAttachmentStateStats->arrayIndex];
+      if (((name != (char *)0x0) && ((*name != '\0' && (attachmentName != (char *)0x0)))) &&
+         (*attachmentName != '\0')) {
+        rowNum_00 = LiveStats_GetMilestoneRowNum
+                              (&statsMilestonestable,currentMilestone,"attachment",name);
         uVar2 = s_numSortedAttachments;
-        if ((local_8 != (StringTable *)0x0) && (iVar5 != -1)) {
-          pcVar6 = s_sortedAttachmentsList + s_numSortedAttachments;
-          local_14 = LiveStats_GetItemStat(param_3,"challengeValue",param_2);
-          LiveStats_CheckCurrentValue(local_8,iVar5,2,(int *)&local_14);
+        if ((statsMilestonestable != (StringTable *)0x0) && (rowNum_00 != -1)) {
+          challenge_00 = s_sortedAttachmentsList + s_numSortedAttachments;
+          currentValue = LiveStats_GetItemStat
+                                   (searchAttachmentStateStats,"challengeValue",liveStatsBuffer);
+          LiveStats_CheckCurrentValue(statsMilestonestable,rowNum_00,2,&currentValue);
           LiveStats_AddChallengeForRow
-                    (local_8,pcVar6,local_10,local_14,iVar5,local_c,"attachment",
-                     MILESTONE_ATTACHMENTS);
-          eVar7 = BG_GetAttachmentIndex(param_4);
-          s_sortedAttachmentsList[uVar2].index = (uchar)eVar7;
+                    (statsMilestonestable,challenge_00,currentMilestone,currentValue,rowNum_00,name,
+                     "attachment",MILESTONE_ATTACHMENTS);
+          eVar5 = BG_GetAttachmentIndex(attachmentName);
+          s_sortedAttachmentsList[uVar2].index = (uchar)eVar5;
           s_sortedAttachmentsList[uVar2].flags = 0;
-          bVar3 = BG_UnlockablesGetAttachmentPurchased(param_1,param_4);
+          bVar3 = BG_UnlockablesGetAttachmentPurchased(controllerIndex,attachmentName);
           if (!bVar3) {
             s_sortedAttachmentsList[uVar2].flags = s_sortedAttachmentsList[uVar2].flags | 1;
           }
@@ -2142,7 +2238,8 @@ LiveStats_AddAttachmentsChallenge(int param_1,char *param_2,ddlState_t *param_3,
 
 bool __cdecl
 LiveStats_UpdateGroupStatsMilestones
-          (int param_1,char *param_2,char *param_3,ddlState_t *param_4,itemGroup_t param_5)
+          (int controllerIndex,char *liveStatsBuffer,char *oldStatsBuffer,
+          ddlState_t *searchStateStats,itemGroup_t groupIndex)
 
 {
   statsMilestone_t *psVar1;
@@ -2151,9 +2248,11 @@ LiveStats_UpdateGroupStatsMilestones
   undefined1 uVar4;
   uint uVar5;
   uint uVar6;
-  uchar local_c;
+  statsMilestone_t *statsMilestone;
+  uint currentMilestone;
+  uint lastMilestone;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x6d5,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -2161,26 +2260,29 @@ LiveStats_UpdateGroupStatsMilestones
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x6d6,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (s_currentStatsMilestone[param_1] < 1000) {
-    if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) && (param_4 != (ddlState_t *)0x0)) {
-      uVar5 = LiveStats_GetItemStat(param_4,"challengeTier",param_2);
-      uVar6 = LiveStats_GetItemStat(param_4,"challengeTier",param_3);
+  if (s_currentStatsMilestone[controllerIndex] < 1000) {
+    if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      uVar5 = LiveStats_GetItemStat(searchStateStats,"challengeTier",liveStatsBuffer);
+      uVar6 = LiveStats_GetItemStat(searchStateStats,"challengeTier",oldStatsBuffer);
       if (uVar6 < uVar5) {
-        psVar1 = s_statsMilestonesCompleted[param_1] + s_currentStatsMilestone[param_1];
-        local_c = (uchar)uVar5;
-        psVar1->milestone = local_c;
+        psVar1 = s_statsMilestonesCompleted[controllerIndex] +
+                 s_currentStatsMilestone[controllerIndex];
+        currentMilestone._0_1_ = (uchar)uVar5;
+        psVar1->milestone = (uchar)currentMilestone;
         psVar1->type = MILESTONE_GROUP;
-        psVar1->name = param_4->ddl->enumList[param_4->member->enumIndex].members
-                       [param_4->arrayIndex];
-        psVar1->index = (undefined1)param_5;
-        s_currentStatsMilestone[param_1] = s_currentStatsMilestone[param_1] + 1;
+        psVar1->name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+                       [searchStateStats->arrayIndex];
+        psVar1->index = (undefined1)groupIndex;
+        s_currentStatsMilestone[controllerIndex] = s_currentStatsMilestone[controllerIndex] + 1;
         return true;
       }
     }
@@ -2199,7 +2301,8 @@ LiveStats_UpdateGroupStatsMilestones
 
 bool __cdecl
 LiveStats_UpdateAttachmentStatsMilestones
-          (int param_1,char *param_2,char *param_3,ddlState_t *param_4,eAttachment param_5)
+          (int controllerIndex,char *liveStatsBuffer,char *oldStatsBuffer,
+          ddlState_t *searchStateStats,eAttachment attachmentIndex)
 
 {
   statsMilestone_t *psVar1;
@@ -2208,9 +2311,11 @@ LiveStats_UpdateAttachmentStatsMilestones
   undefined1 uVar4;
   uint uVar5;
   uint uVar6;
-  uchar local_c;
+  statsMilestone_t *statsMilestone;
+  uint currentMilestone;
+  uint lastMilestone;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x6f4,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -2218,26 +2323,29 @@ LiveStats_UpdateAttachmentStatsMilestones
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x6f5,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (s_currentStatsMilestone[param_1] < 1000) {
-    if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) && (param_4 != (ddlState_t *)0x0)) {
-      uVar5 = LiveStats_GetItemStat(param_4,"challengeTier",param_2);
-      uVar6 = LiveStats_GetItemStat(param_4,"challengeTier",param_3);
+  if (s_currentStatsMilestone[controllerIndex] < 1000) {
+    if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      uVar5 = LiveStats_GetItemStat(searchStateStats,"challengeTier",liveStatsBuffer);
+      uVar6 = LiveStats_GetItemStat(searchStateStats,"challengeTier",oldStatsBuffer);
       if (uVar6 < uVar5) {
-        psVar1 = s_statsMilestonesCompleted[param_1] + s_currentStatsMilestone[param_1];
-        local_c = (uchar)uVar5;
-        psVar1->milestone = local_c;
+        psVar1 = s_statsMilestonesCompleted[controllerIndex] +
+                 s_currentStatsMilestone[controllerIndex];
+        currentMilestone._0_1_ = (uchar)uVar5;
+        psVar1->milestone = (uchar)currentMilestone;
         psVar1->type = MILESTONE_ATTACHMENTS;
-        psVar1->name = param_4->ddl->enumList[param_4->member->enumIndex].members
-                       [param_4->arrayIndex];
-        psVar1->index = (undefined1)param_5;
-        s_currentStatsMilestone[param_1] = s_currentStatsMilestone[param_1] + 1;
+        psVar1->name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+                       [searchStateStats->arrayIndex];
+        psVar1->index = (undefined1)attachmentIndex;
+        s_currentStatsMilestone[controllerIndex] = s_currentStatsMilestone[controllerIndex] + 1;
         return true;
       }
     }
@@ -2254,8 +2362,8 @@ LiveStats_UpdateAttachmentStatsMilestones
 
 bool __cdecl
 LiveStats_UpdatePersonalBest
-          (int param_1,char *param_2,char *param_3,ddlState_t *param_4,ddlState_t *param_5,
-          char *param_6)
+          (int __formal,char *liveStatsBuffer,char *oldStatsBuffer,ddlState_t *searchStateStats,
+          ddlState_t *searchStateBests,char *prefix)
 
 {
   code *pcVar1;
@@ -2264,24 +2372,28 @@ LiveStats_UpdatePersonalBest
   uint uVar4;
   uint uVar5;
   uint uVar6;
+  uint currentValue;
+  uint currentBest;
+  int matchDelta;
+  uint lastValue;
   
-  if (((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) ||
-      (param_5 == (ddlState_t *)0x0)) &&
+  if (((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+       (searchStateStats == (ddlState_t *)0x0)) || (searchStateBests == (ddlState_t *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x717,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) &&
-     ((param_4 != (ddlState_t *)0x0 && (param_5 != (ddlState_t *)0x0)))) {
-    uVar4 = DDL_GetInt(param_4,param_2);
-    uVar5 = DDL_GetInt(param_4,param_3);
-    uVar6 = DDL_GetInt(param_5,param_2);
+  if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+     ((searchStateStats != (ddlState_t *)0x0 && (searchStateBests != (ddlState_t *)0x0)))) {
+    uVar4 = DDL_GetInt(searchStateStats,liveStatsBuffer);
+    uVar5 = DDL_GetInt(searchStateStats,oldStatsBuffer);
+    uVar6 = DDL_GetInt(searchStateBests,liveStatsBuffer);
     uVar4 = uVar4 - uVar5;
     if (-1 < (int)uVar4) {
       if ((int)uVar6 < (int)uVar4) {
-        DDL_SetInt(param_5,uVar4,param_2);
+        DDL_SetInt(searchStateBests,uVar4,liveStatsBuffer);
       }
       return true;
     }
@@ -2294,7 +2406,9 @@ LiveStats_UpdatePersonalBest
 // 00977CD0  LiveStats_UpdateStatsMilestones  (live/live_stats.cpp:1878)
 
 bool __cdecl
-LiveStats_UpdateStatsMilestones(int param_1,char *param_2,char *param_3,ddlState_t *param_4)
+LiveStats_UpdateStatsMilestones
+          (int controllerIndex,char *liveStatsBuffer,char *oldStatsBuffer,
+          ddlState_t *searchStateStats)
 
 {
   statsMilestone_t *psVar1;
@@ -2303,9 +2417,11 @@ LiveStats_UpdateStatsMilestones(int param_1,char *param_2,char *param_3,ddlState
   undefined1 uVar4;
   uint uVar5;
   uint uVar6;
-  uchar local_c;
+  statsMilestone_t *statsMilestone;
+  uint currentMilestone;
+  uint lastMilestone;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x757,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -2313,25 +2429,28 @@ LiveStats_UpdateStatsMilestones(int param_1,char *param_2,char *param_3,ddlState
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x758,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (s_currentStatsMilestone[param_1] < 1000) {
-    if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) && (param_4 != (ddlState_t *)0x0)) {
-      uVar5 = DDL_GetInt(param_4,param_2);
-      uVar6 = DDL_GetInt(param_4,param_3);
+  if (s_currentStatsMilestone[controllerIndex] < 1000) {
+    if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      uVar5 = DDL_GetInt(searchStateStats,liveStatsBuffer);
+      uVar6 = DDL_GetInt(searchStateStats,oldStatsBuffer);
       if (uVar6 < uVar5) {
-        psVar1 = s_statsMilestonesCompleted[param_1] + s_currentStatsMilestone[param_1];
-        local_c = (uchar)uVar5;
-        psVar1->milestone = local_c;
+        psVar1 = s_statsMilestonesCompleted[controllerIndex] +
+                 s_currentStatsMilestone[controllerIndex];
+        currentMilestone._0_1_ = (uchar)uVar5;
+        psVar1->milestone = (uchar)currentMilestone;
         psVar1->type = MILESTONE_GLOBAL;
-        psVar1->name = param_4->ddl->enumList[param_4->member->enumIndex].members
-                       [param_4->arrayIndex];
-        s_currentStatsMilestone[param_1] = s_currentStatsMilestone[param_1] + 1;
+        psVar1->name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+                       [searchStateStats->arrayIndex];
+        s_currentStatsMilestone[controllerIndex] = s_currentStatsMilestone[controllerIndex] + 1;
         return true;
       }
     }
@@ -2348,7 +2467,8 @@ LiveStats_UpdateStatsMilestones(int param_1,char *param_2,char *param_3,ddlState
 
 bool __cdecl
 LiveStats_UpdateGameModeStatsMilestones
-          (int param_1,char *param_2,char *param_3,ddlState_t *param_4,char *param_5)
+          (int controllerIndex,char *liveStatsBuffer,char *oldStatsBuffer,
+          ddlState_t *searchStateStats,char *gameModeName)
 
 {
   statsMilestone_t *psVar1;
@@ -2358,10 +2478,12 @@ LiveStats_UpdateGameModeStatsMilestones
   uint uVar5;
   uint uVar6;
   int iVar7;
-  int local_10;
-  uchar local_c;
+  statsMilestone_t *statsMilestone;
+  int currGameMode;
+  uint currentMilestone;
+  uint lastMilestone;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x776,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -2369,29 +2491,32 @@ LiveStats_UpdateGameModeStatsMilestones
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x777,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (s_currentStatsMilestone[param_1] < 1000) {
-    if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) && (param_4 != (ddlState_t *)0x0)) {
-      uVar5 = DDL_GetInt(param_4,param_2);
-      uVar6 = DDL_GetInt(param_4,param_3);
+  if (s_currentStatsMilestone[controllerIndex] < 1000) {
+    if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      uVar5 = DDL_GetInt(searchStateStats,liveStatsBuffer);
+      uVar6 = DDL_GetInt(searchStateStats,oldStatsBuffer);
       if (uVar6 < uVar5) {
-        for (local_10 = 0; local_10 < 0x10; local_10 = local_10 + 1) {
-          iVar7 = I_stricmp(lbTypeEnum[local_10],param_5);
+        for (currGameMode = 0; currGameMode < 0x10; currGameMode = currGameMode + 1) {
+          iVar7 = I_stricmp(lbTypeEnum[currGameMode],gameModeName);
           if (iVar7 == 0) {
-            psVar1 = s_statsMilestonesCompleted[param_1] + s_currentStatsMilestone[param_1];
-            local_c = (uchar)uVar5;
-            psVar1->milestone = local_c;
+            psVar1 = s_statsMilestonesCompleted[controllerIndex] +
+                     s_currentStatsMilestone[controllerIndex];
+            currentMilestone._0_1_ = (uchar)uVar5;
+            psVar1->milestone = (uchar)currentMilestone;
             psVar1->type = MILESTONE_GAMEMODE;
-            psVar1->name = param_4->ddl->enumList[param_4->member->enumIndex].members
-                           [param_4->arrayIndex];
-            psVar1->index = (uchar)local_10;
-            s_currentStatsMilestone[param_1] = s_currentStatsMilestone[param_1] + 1;
+            psVar1->name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].
+                           members[searchStateStats->arrayIndex];
+            psVar1->index = (uchar)currGameMode;
+            s_currentStatsMilestone[controllerIndex] = s_currentStatsMilestone[controllerIndex] + 1;
             return true;
           }
         }
@@ -2412,7 +2537,8 @@ LiveStats_UpdateGameModeStatsMilestones
 
 bool __cdecl
 LiveStats_AddGlobalChallenge
-          (char *param_1,ddlState_t *param_2,challengeInfo_t *param_3,char *param_4)
+          (char *liveStatsBuffer,ddlState_t *searchStateStats,challengeInfo_t *challenge,
+          char *globalChallengesType)
 
 {
   char cVar1;
@@ -2421,58 +2547,61 @@ LiveStats_AddGlobalChallenge
   undefined1 uVar4;
   int iVar5;
   char *local_1c;
-  uint local_14;
-  uint local_10;
-  char *local_c;
-  StringTable *local_8;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *name;
+  StringTable *statsMilestonestable;
   
-  if (((param_1 == (char *)0x0) || (param_2 == (ddlState_t *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x79c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_1 != (char *)0x0) && (param_2 != (ddlState_t *)0x0)) {
-    local_c = param_2->ddl->enumList[param_2->member->enumIndex].members[param_2->arrayIndex];
-    if (param_4 != (char *)0x0) {
-      local_1c = param_4;
+  if ((liveStatsBuffer != (char *)0x0) && (searchStateStats != (ddlState_t *)0x0)) {
+    name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+           [searchStateStats->arrayIndex];
+    if (globalChallengesType != (char *)0x0) {
+      local_1c = globalChallengesType;
       do {
         cVar1 = *local_1c;
         local_1c = local_1c + 1;
       } while (cVar1 != '\0');
-      iVar5 = I_strnicmp(param_4,local_c,(int)local_1c - (int)(param_4 + 1));
+      iVar5 = I_strnicmp(globalChallengesType,name,(int)local_1c - (int)(globalChallengesType + 1));
       if (iVar5 != 0) {
         return false;
       }
     }
     bVar3 = Com_GameMode_IsGameMode(GAMEMODE_BASIC_TRAINING);
     if (bVar3) {
-      iVar5 = I_stricmp(local_c,"perks_lightweight_offense_medal");
+      iVar5 = I_stricmp(name,"perks_lightweight_offense_medal");
       if (iVar5 == 0) {
         return false;
       }
-      iVar5 = I_stricmp(local_c,"perks_flak_jacket_demolished");
+      iVar5 = I_stricmp(name,"perks_flak_jacket_demolished");
       if (iVar5 == 0) {
         return false;
       }
-      iVar5 = I_stricmp(local_c,"perks_marathon_capture_medal");
+      iVar5 = I_stricmp(name,"perks_marathon_capture_medal");
       if (iVar5 == 0) {
         return false;
       }
-      iVar5 = I_stricmp(local_c,"perks_ninja_plants");
+      iVar5 = I_stricmp(name,"perks_ninja_plants");
       if (iVar5 == 0) {
         return false;
       }
     }
-    local_10 = DDL_GetInt(param_2,param_1);
-    local_8 = (StringTable *)0x0;
-    iVar5 = LiveStats_GetMilestoneRowNum(&local_8,local_10,"global",local_c);
-    if ((local_8 != (StringTable *)0x0) && (iVar5 != -1)) {
-      local_14 = LiveStats_GetPlayerStat("ChallengeValue",local_c,param_1);
-      LiveStats_CheckCurrentValue(local_8,iVar5,2,(int *)&local_14);
+    currentMilestone = DDL_GetInt(searchStateStats,liveStatsBuffer);
+    statsMilestonestable = (StringTable *)0x0;
+    iVar5 = LiveStats_GetMilestoneRowNum(&statsMilestonestable,currentMilestone,"global",name);
+    if ((statsMilestonestable != (StringTable *)0x0) && (iVar5 != -1)) {
+      currentValue = LiveStats_GetPlayerStat("ChallengeValue",name,liveStatsBuffer);
+      LiveStats_CheckCurrentValue(statsMilestonestable,iVar5,2,&currentValue);
       LiveStats_AddChallengeForRow
-                (local_8,param_3,local_10,local_14,iVar5,local_c,"global",MILESTONE_GLOBAL);
+                (statsMilestonestable,challenge,currentMilestone,currentValue,iVar5,name,"global",
+                 MILESTONE_GLOBAL);
       return true;
     }
   }
@@ -2483,21 +2612,25 @@ LiveStats_AddGlobalChallenge
 // 0097A4D0  LiveStats_AddGamemodeChallenge  (live/live_stats.cpp:2002)
 
 bool __cdecl
-LiveStats_AddGamemodeChallenge(int param_1,char *param_2,ddlState_t *param_3,ddlState_t *param_4)
+LiveStats_AddGamemodeChallenge
+          (int controllerIndex,char *liveStatsBuffer,ddlState_t *searchStateStats,
+          ddlState_t *searchGameModeStateStats)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int iVar4;
-  challengeInfo_t *pcVar5;
-  uint local_14;
-  uint local_10;
-  char *local_c;
-  StringTable *local_8;
+  int rowNum_00;
+  challengeInfo_t *challenge_00;
+  challengeInfo_t *challenge;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *name;
+  StringTable *statsMilestonestable;
   
-  if ((((param_2 == (char *)0x0) || (param_4 == (ddlState_t *)0x0)) ||
-      (param_3 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (searchGameModeStateStats == (ddlState_t *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x7d5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2505,19 +2638,22 @@ LiveStats_AddGamemodeChallenge(int param_1,char *param_2,ddlState_t *param_3,ddl
     return (bool)uVar3;
   }
   if (s_numSortedGlobalChallenges < 0x20) {
-    if (((param_2 != (char *)0x0) && (param_4 != (ddlState_t *)0x0)) &&
-       (param_3 != (ddlState_t *)0x0)) {
-      local_10 = DDL_GetInt(param_4,param_2);
-      local_8 = (StringTable *)0x0;
-      local_c = param_4->ddl->enumList[param_4->member->enumIndex].members[param_4->arrayIndex];
-      if ((local_c != (char *)0x0) && (*local_c != '\0')) {
-        iVar4 = LiveStats_GetMilestoneRowNum(&local_8,local_10,"gamemode",local_c);
-        if ((local_8 != (StringTable *)0x0) && (iVar4 != -1)) {
-          pcVar5 = s_sortedGlobalChallengeList + s_numSortedGlobalChallenges;
-          local_14 = LiveStats_GetItemStat(param_3,local_c,param_2);
-          LiveStats_CheckCurrentValue(local_8,iVar4,2,(int *)&local_14);
+    if (((liveStatsBuffer != (char *)0x0) && (searchGameModeStateStats != (ddlState_t *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      currentMilestone = DDL_GetInt(searchGameModeStateStats,liveStatsBuffer);
+      statsMilestonestable = (StringTable *)0x0;
+      name = searchGameModeStateStats->ddl->enumList[searchGameModeStateStats->member->enumIndex].
+             members[searchGameModeStateStats->arrayIndex];
+      if ((name != (char *)0x0) && (*name != '\0')) {
+        rowNum_00 = LiveStats_GetMilestoneRowNum
+                              (&statsMilestonestable,currentMilestone,"gamemode",name);
+        if ((statsMilestonestable != (StringTable *)0x0) && (rowNum_00 != -1)) {
+          challenge_00 = s_sortedGlobalChallengeList + s_numSortedGlobalChallenges;
+          currentValue = LiveStats_GetItemStat(searchStateStats,name,liveStatsBuffer);
+          LiveStats_CheckCurrentValue(statsMilestonestable,rowNum_00,2,&currentValue);
           LiveStats_AddChallengeForRow
-                    (local_8,pcVar5,local_10,local_14,iVar4,local_c,"gamemode",MILESTONE_GAMEMODE);
+                    (statsMilestonestable,challenge_00,currentMilestone,currentValue,rowNum_00,name,
+                     "gamemode",MILESTONE_GAMEMODE);
           s_numSortedGlobalChallenges = s_numSortedGlobalChallenges + 1;
         }
         return true;
@@ -2535,37 +2671,42 @@ LiveStats_AddGamemodeChallenge(int param_1,char *param_2,ddlState_t *param_3,ddl
 // 0097A2F0  LiveStats_AddGlobalLifetimeChallenge  (live/live_stats.cpp:2042)
 
 bool __cdecl
-LiveStats_AddGlobalLifetimeChallenge(char *param_1,ddlState_t *param_2,challengeInfo_t *param_3)
+LiveStats_AddGlobalLifetimeChallenge
+          (char *liveStatsBuffer,ddlState_t *searchStateStats,challengeInfo_t *challenge)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
-  int iVar5;
-  uint local_14;
-  uint local_10;
-  char *local_c;
-  StringTable *local_8;
+  char *statName;
+  int rowNum_00;
+  int rowNum;
+  int currentValue;
+  uint currentMilestone;
+  char *name;
+  StringTable *statsMilestonestable;
   
-  if (((param_1 == (char *)0x0) || (param_2 == (ddlState_t *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x7fc,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 != (char *)0x0) && (param_2 != (ddlState_t *)0x0)) {
-    local_c = param_2->ddl->enumList[param_2->member->enumIndex].members[param_2->arrayIndex];
-    local_10 = DDL_GetInt(param_2,param_1);
-    local_8 = (StringTable *)0x0;
-    pcVar4 = va("%s%s");
-    iVar5 = LiveStats_GetMilestoneRowNum(&local_8,local_10,"global",pcVar4);
-    if ((local_8 != (StringTable *)0x0) && (iVar5 != -1)) {
-      local_14 = LiveStats_GetPlayerStat("PlayerStatsList",local_c,param_1);
-      LiveStats_CheckCurrentValue(local_8,iVar5,2,(int *)&local_14);
+  if ((liveStatsBuffer != (char *)0x0) && (searchStateStats != (ddlState_t *)0x0)) {
+    name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+           [searchStateStats->arrayIndex];
+    currentMilestone = DDL_GetInt(searchStateStats,liveStatsBuffer);
+    statsMilestonestable = (StringTable *)0x0;
+    statName = va("%s%s");
+    rowNum_00 = LiveStats_GetMilestoneRowNum
+                          (&statsMilestonestable,currentMilestone,"global",statName);
+    if ((statsMilestonestable != (StringTable *)0x0) && (rowNum_00 != -1)) {
+      currentValue = LiveStats_GetPlayerStat("PlayerStatsList",name,liveStatsBuffer);
+      LiveStats_CheckCurrentValue(statsMilestonestable,rowNum_00,2,&currentValue);
       LiveStats_AddChallengeForRow
-                (local_8,param_3,local_10,local_14,iVar5,local_c,"global",MILESTONE_GLOBAL);
+                (statsMilestonestable,challenge,currentMilestone,currentValue,rowNum_00,name,
+                 "global",MILESTONE_GLOBAL);
       return true;
     }
   }
@@ -2576,7 +2717,9 @@ LiveStats_AddGlobalLifetimeChallenge(char *param_1,ddlState_t *param_2,challenge
 // 00977FE0  LiveStats_UpdatePersonalBestHighest  (live/live_stats.cpp:2071)
 
 bool __cdecl
-LiveStats_UpdatePersonalBestHighest(int param_1,char *param_2,char *param_3,ddlState_t *param_4)
+LiveStats_UpdatePersonalBestHighest
+          (int controllerIndex,char *liveStatsBuffer,char *oldStatsBuffer,
+          ddlState_t *searchStateStats)
 
 {
   personalBest_t *ppVar1;
@@ -2585,8 +2728,12 @@ LiveStats_UpdatePersonalBestHighest(int param_1,char *param_2,char *param_3,ddlS
   undefined1 uVar4;
   uint uVar5;
   uint uVar6;
+  personalBest_t *personalBest;
+  uint currentValue;
+  uint matchDelta;
+  uint lastValue;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x818,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar3)) {
@@ -2594,25 +2741,27 @@ LiveStats_UpdatePersonalBestHighest(int param_1,char *param_2,char *param_3,ddlS
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((((param_2 == (char *)0x0) || (param_3 == (char *)0x0)) || (param_4 == (ddlState_t *)0x0)) &&
+  if ((((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) ||
+      (searchStateStats == (ddlState_t *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x819,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if (s_currentPersonalBest[param_1] < 1000) {
-    if (((param_2 != (char *)0x0) && (param_3 != (char *)0x0)) && (param_4 != (ddlState_t *)0x0)) {
-      uVar5 = DDL_GetInt(param_4,param_2);
-      uVar6 = DDL_GetInt(param_4,param_3);
+  if (s_currentPersonalBest[controllerIndex] < 1000) {
+    if (((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) &&
+       (searchStateStats != (ddlState_t *)0x0)) {
+      uVar5 = DDL_GetInt(searchStateStats,liveStatsBuffer);
+      uVar6 = DDL_GetInt(searchStateStats,oldStatsBuffer);
       if (uVar5 - uVar6 != 0) {
-        ppVar1 = s_personalBests[param_1] + s_currentPersonalBest[param_1];
+        ppVar1 = s_personalBests[controllerIndex] + s_currentPersonalBest[controllerIndex];
         ppVar1->value = uVar5;
         ppVar1->delta = uVar5 - uVar6;
-        ppVar1->name = param_4->ddl->enumList[param_4->member->enumIndex].members
-                       [param_4->arrayIndex];
+        ppVar1->name = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+                       [searchStateStats->arrayIndex];
         ppVar1->prefix = "";
-        s_currentPersonalBest[param_1] = s_currentPersonalBest[param_1] + 1;
+        s_currentPersonalBest[controllerIndex] = s_currentPersonalBest[controllerIndex] + 1;
         return true;
       }
     }
@@ -2626,7 +2775,7 @@ LiveStats_UpdatePersonalBestHighest(int param_1,char *param_2,char *param_3,ddlS
 
 // 00978150  LiveStats_UpdatetBestMatchAccuracy  (live/live_stats.cpp:2102)
 
-bool __cdecl LiveStats_UpdatetBestMatchAccuracy(char *param_1,char *param_2)
+bool __cdecl LiveStats_UpdatetBestMatchAccuracy(char *liveStatsBuffer,char *oldStatsBuffer)
 
 {
   code *pcVar1;
@@ -2637,26 +2786,34 @@ bool __cdecl LiveStats_UpdatetBestMatchAccuracy(char *param_1,char *param_2)
   uint uVar6;
   uint uVar7;
   uint uVar8;
+  uint oldHighestMatchAccuracy;
+  uint oldShots;
+  uint currentShots;
+  uint currentHits;
+  uint matchAccuracy;
+  uint matchHits;
+  uint matchShots;
+  uint oldHits;
   
-  if (((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x837,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {
-    uVar4 = LiveStats_GetPlayerStat("PlayerStatsList","TOTAL_SHOTS",param_2);
-    uVar5 = LiveStats_GetPlayerStat("PlayerStatsList","TOTAL_SHOTS",param_1);
-    uVar6 = LiveStats_GetPlayerStat("PlayerStatsList","HITS",param_2);
-    uVar7 = LiveStats_GetPlayerStat("PlayerStatsList","HITS",param_1);
+  if ((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) {
+    uVar4 = LiveStats_GetPlayerStat("PlayerStatsList","TOTAL_SHOTS",oldStatsBuffer);
+    uVar5 = LiveStats_GetPlayerStat("PlayerStatsList","TOTAL_SHOTS",liveStatsBuffer);
+    uVar6 = LiveStats_GetPlayerStat("PlayerStatsList","HITS",oldStatsBuffer);
+    uVar7 = LiveStats_GetPlayerStat("PlayerStatsList","HITS",liveStatsBuffer);
     if (uVar5 - uVar4 == 0) {
       return false;
     }
-    uVar8 = LiveStats_GetPlayerStat("HighestStats","HIGHEST_ACCURACY",param_2);
+    uVar8 = LiveStats_GetPlayerStat("HighestStats","HIGHEST_ACCURACY",oldStatsBuffer);
     uVar4 = ((uVar7 - uVar6) * 10000) / (uVar5 - uVar4);
     if (uVar8 < uVar4) {
-      LiveStats_SetPlayerStat("HighestStats","HIGHEST_ACCURACY",param_1,uVar4);
+      LiveStats_SetPlayerStat("HighestStats","HIGHEST_ACCURACY",liveStatsBuffer,uVar4);
       return true;
     }
   }
@@ -2666,7 +2823,7 @@ bool __cdecl LiveStats_UpdatetBestMatchAccuracy(char *param_1,char *param_2)
 
 // 009783A0  LiveStats_UpdatetBestMatchKdRatio  (live/live_stats.cpp:2134)
 
-bool __cdecl LiveStats_UpdatetBestMatchKdRatio(char *param_1,char *param_2)
+bool __cdecl LiveStats_UpdatetBestMatchKdRatio(char *liveStatsBuffer,char *oldStatsBuffer)
 
 {
   code *pcVar1;
@@ -2675,31 +2832,39 @@ bool __cdecl LiveStats_UpdatetBestMatchKdRatio(char *param_1,char *param_2)
   uint uVar4;
   uint uVar5;
   uint uVar6;
-  uint local_24;
+  uint uVar7;
+  uint matchDeaths;
+  uint matchKills;
+  uint currentKills;
+  uint oldKills;
+  uint oldDeaths;
+  uint currentDeaths;
+  uint oldHighestKdRatio;
+  uint kdRatio;
   
-  if (((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) &&
+  if (((liveStatsBuffer == (char *)0x0) || (oldStatsBuffer == (char *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x857,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {
-    uVar4 = LiveStats_GetPlayerStat("PlayerStatsList","KILLS",param_2);
-    uVar5 = LiveStats_GetPlayerStat("PlayerStatsList","KILLS",param_1);
-    uVar6 = LiveStats_GetPlayerStat("PlayerStatsList","DEATHS",param_2);
-    local_24 = LiveStats_GetPlayerStat("PlayerStatsList","DEATHS",param_1);
-    local_24 = local_24 - uVar6;
+  if ((liveStatsBuffer != (char *)0x0) && (oldStatsBuffer != (char *)0x0)) {
+    uVar4 = LiveStats_GetPlayerStat("PlayerStatsList","KILLS",oldStatsBuffer);
+    uVar5 = LiveStats_GetPlayerStat("PlayerStatsList","KILLS",liveStatsBuffer);
+    uVar6 = LiveStats_GetPlayerStat("PlayerStatsList","DEATHS",oldStatsBuffer);
+    uVar7 = LiveStats_GetPlayerStat("PlayerStatsList","DEATHS",liveStatsBuffer);
+    matchDeaths = uVar7 - uVar6;
     if (uVar5 - uVar4 == 0) {
       return false;
     }
-    if (local_24 == 0) {
-      local_24 = 1;
+    if (matchDeaths == 0) {
+      matchDeaths = 1;
     }
-    uVar6 = LiveStats_GetPlayerStat("HighestStats","HIGHEST_KDRATIO",param_2);
-    local_24 = ((uVar5 - uVar4) * 1000) / local_24;
-    if (uVar6 < local_24) {
-      LiveStats_SetPlayerStat("HighestStats","HIGHEST_KDRATIO",param_1,local_24);
+    uVar6 = LiveStats_GetPlayerStat("HighestStats","HIGHEST_KDRATIO",oldStatsBuffer);
+    uVar4 = ((uVar5 - uVar4) * 1000) / matchDeaths;
+    if (uVar6 < uVar4) {
+      LiveStats_SetPlayerStat("HighestStats","HIGHEST_KDRATIO",liveStatsBuffer,uVar4);
       return true;
     }
   }
@@ -2709,64 +2874,64 @@ bool __cdecl LiveStats_UpdatetBestMatchKdRatio(char *param_1,char *param_2)
 
 // 00975D90  LiveStats_GetTotalMatchesPlayed  (live/live_stats.cpp:2171)
 
-int __cdecl LiveStats_GetTotalMatchesPlayed(int param_1)
+int __cdecl LiveStats_GetTotalMatchesPlayed(int controllerIndex)
 
 {
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int gameType;
+  int losses;
+  int wins;
+  int numMatches;
+  int ties;
   
-  local_c = 0;
-  local_10 = 0;
-  local_14 = 0;
-  local_8 = 0;
-  for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1) {
+  numMatches = 0;
+  wins = 0;
+  losses = 0;
+  ties = 0;
+  for (gameType = 0; gameType < 0x10; gameType = gameType + 1) {
     LiveStats_GetIntPlayerStatByGameMode
-              (param_1,&local_10,lbTypeEnum[local_18],playerStatKeys[0x1e]);
+              (controllerIndex,&wins,lbTypeEnum[gameType],playerStatKeys[0x1e]);
     LiveStats_GetIntPlayerStatByGameMode
-              (param_1,&local_14,lbTypeEnum[local_18],playerStatKeys[0x1f]);
-    LiveStats_GetIntPlayerStatByGameMode(param_1,&local_8,lbTypeEnum[local_18],playerStatKeys[0x20])
-    ;
-    local_c = local_10 + local_14 + local_8 + local_c;
+              (controllerIndex,&losses,lbTypeEnum[gameType],playerStatKeys[0x1f]);
+    LiveStats_GetIntPlayerStatByGameMode
+              (controllerIndex,&ties,lbTypeEnum[gameType],playerStatKeys[0x20]);
+    numMatches = wins + losses + ties + numMatches;
   }
-  return local_c;
+  return numMatches;
 }
 
 
 // 00975E50  LiveStats_GetTotalMatchesPlayedByGameMode  (live/live_stats.cpp:2190)
 
-int __cdecl LiveStats_GetTotalMatchesPlayedByGameMode(int param_1,char *param_2)
+int __cdecl LiveStats_GetTotalMatchesPlayedByGameMode(int controllerIndex,char *gameModePrefix)
 
 {
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int losses;
+  int wins;
+  int numMatches;
+  int ties;
   
-  local_c = 0;
-  local_10 = 0;
-  local_14 = 0;
-  local_8 = 0;
-  LiveStats_GetIntPlayerStatByGameMode(param_1,&local_10,param_2,playerStatKeys[0x1e]);
-  LiveStats_GetIntPlayerStatByGameMode(param_1,&local_14,param_2,playerStatKeys[0x1f]);
-  LiveStats_GetIntPlayerStatByGameMode(param_1,&local_8,param_2,playerStatKeys[0x20]);
-  return local_10 + local_14 + local_8 + local_c;
+  numMatches = 0;
+  wins = 0;
+  losses = 0;
+  ties = 0;
+  LiveStats_GetIntPlayerStatByGameMode(controllerIndex,&wins,gameModePrefix,playerStatKeys[0x1e]);
+  LiveStats_GetIntPlayerStatByGameMode(controllerIndex,&losses,gameModePrefix,playerStatKeys[0x1f]);
+  LiveStats_GetIntPlayerStatByGameMode(controllerIndex,&ties,gameModePrefix,playerStatKeys[0x20]);
+  return wins + losses + ties + numMatches;
 }
 
 
 // 00975F80  LiveStats_GetStatsMilestone  (live/live_stats.cpp:2227)
 
-statsMilestone_t * __cdecl LiveStats_GetStatsMilestone(int param_1,uint param_2)
+statsMilestone_t * __cdecl LiveStats_GetStatsMilestone(int controllerIndex,uint statsMilestoneNum)
 
 {
   code *pcVar1;
   bool bVar2;
   statsMilestone_t *psVar3;
-  statsMilestone_t *local_8;
+  statsMilestone_t *statsMilestone;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x8b4,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2775,24 +2940,24 @@ statsMilestone_t * __cdecl LiveStats_GetStatsMilestone(int param_1,uint param_2)
       return psVar3;
     }
   }
-  local_8 = (statsMilestone_t *)0x0;
-  if (param_2 < s_currentStatsMilestone[param_1]) {
-    local_8 = s_statsMilestonesCompleted[param_1] + param_2;
+  statsMilestone = (statsMilestone_t *)0x0;
+  if (statsMilestoneNum < s_currentStatsMilestone[controllerIndex]) {
+    statsMilestone = s_statsMilestonesCompleted[controllerIndex] + statsMilestoneNum;
   }
-  return local_8;
+  return statsMilestone;
 }
 
 
 // 00975EE0  LiveStats_GetNumStatsMilestones  (live/live_stats.cpp:2240)
 
-uint __cdecl LiveStats_GetNumStatsMilestones(int param_1)
+uint __cdecl LiveStats_GetNumStatsMilestones(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x8c1,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2801,21 +2966,22 @@ uint __cdecl LiveStats_GetNumStatsMilestones(int param_1)
       return uVar3;
     }
   }
-  return s_currentStatsMilestone[param_1];
+  return s_currentStatsMilestone[controllerIndex];
 }
 
 
 // 00975F20  LiveStats_GetStatsMilestoneTier  (live/live_stats.cpp:2247)
 
-uint __cdecl LiveStats_GetStatsMilestoneTier(int param_1,uint param_2)
+uint __cdecl LiveStats_GetStatsMilestoneTier(int controllerIndex,uint statsMilestoneNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   statsMilestone_t *psVar4;
+  statsMilestone_t *statsMilestone;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x8c8,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2824,7 +2990,7 @@ uint __cdecl LiveStats_GetStatsMilestoneTier(int param_1,uint param_2)
       return uVar3;
     }
   }
-  psVar4 = LiveStats_GetStatsMilestone(param_1,param_2);
+  psVar4 = LiveStats_GetStatsMilestone(controllerIndex,statsMilestoneNum);
   if (psVar4 == (statsMilestone_t *)0x0) {
     uVar3 = 0;
   }
@@ -2837,7 +3003,7 @@ uint __cdecl LiveStats_GetStatsMilestoneTier(int param_1,uint param_2)
 
 // 00975FF0  LiveStats_GetStatsMilestoneItemIndex  (live/live_stats.cpp:2261)
 
-int __cdecl LiveStats_GetStatsMilestoneItemIndex(int param_1,uint param_2)
+int __cdecl LiveStats_GetStatsMilestoneItemIndex(int controllerIndex,uint statsMilestoneNum)
 
 {
   code *pcVar1;
@@ -2845,8 +3011,9 @@ int __cdecl LiveStats_GetStatsMilestoneItemIndex(int param_1,uint param_2)
   int iVar3;
   statsMilestone_t *psVar4;
   uint uVar5;
+  statsMilestone_t *statsMilestone;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x8d6,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2855,7 +3022,7 @@ int __cdecl LiveStats_GetStatsMilestoneItemIndex(int param_1,uint param_2)
       return iVar3;
     }
   }
-  psVar4 = LiveStats_GetStatsMilestone(param_1,param_2);
+  psVar4 = LiveStats_GetStatsMilestone(controllerIndex,statsMilestoneNum);
   if (psVar4 == (statsMilestone_t *)0x0) {
     uVar5 = 0xffffffff;
   }
@@ -2868,15 +3035,16 @@ int __cdecl LiveStats_GetStatsMilestoneItemIndex(int param_1,uint param_2)
 
 // 00976050  LiveStats_GetStatsMilestoneName  (live/live_stats.cpp:2275)
 
-char * __cdecl LiveStats_GetStatsMilestoneName(int param_1,uint param_2)
+char * __cdecl LiveStats_GetStatsMilestoneName(int controllerIndex,uint statsMilestoneNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   statsMilestone_t *psVar4;
+  statsMilestone_t *statsMilestone;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x8e4,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2885,7 +3053,7 @@ char * __cdecl LiveStats_GetStatsMilestoneName(int param_1,uint param_2)
       return pcVar3;
     }
   }
-  psVar4 = LiveStats_GetStatsMilestone(param_1,param_2);
+  psVar4 = LiveStats_GetStatsMilestone(controllerIndex,statsMilestoneNum);
   if (psVar4 == (statsMilestone_t *)0x0) {
     pcVar3 = (char *)0x0;
   }
@@ -2898,15 +3066,17 @@ char * __cdecl LiveStats_GetStatsMilestoneName(int param_1,uint param_2)
 
 // 009760B0  LiveStats_GetStatsMilestoneType  (live/live_stats.cpp:2289)
 
-statsMilestoneTypes_t __cdecl LiveStats_GetStatsMilestoneType(int param_1,uint param_2)
+statsMilestoneTypes_t __cdecl
+LiveStats_GetStatsMilestoneType(int controllerIndex,uint statsMilestoneNum)
 
 {
   code *pcVar1;
   bool bVar2;
   statsMilestoneTypes_t sVar3;
   statsMilestone_t *psVar4;
+  statsMilestone_t *statsMilestone;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x8f2,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2915,7 +3085,7 @@ statsMilestoneTypes_t __cdecl LiveStats_GetStatsMilestoneType(int param_1,uint p
       return sVar3;
     }
   }
-  psVar4 = LiveStats_GetStatsMilestone(param_1,param_2);
+  psVar4 = LiveStats_GetStatsMilestone(controllerIndex,statsMilestoneNum);
   if (psVar4 == (statsMilestone_t *)0x0) {
     sVar3 = MILESTONE_INVALID;
   }
@@ -2928,16 +3098,16 @@ statsMilestoneTypes_t __cdecl LiveStats_GetStatsMilestoneType(int param_1,uint p
 
 // 00976110  LiveStats_GetChallengeCount  (live/live_stats.cpp:2303)
 
-uint __cdecl LiveStats_GetChallengeCount(int param_1)
+uint __cdecl LiveStats_GetChallengeCount(int type)
 
 {
   uint uVar1;
   
   uVar1 = s_numSortedChallenges;
-  if ((((param_1 != 1) && (param_1 != 6)) && (param_1 != 7)) &&
-     (((uVar1 = s_numSortedWeaponGroup, param_1 != 4 &&
-       (uVar1 = s_numSortedGlobalChallenges, param_1 != 0)) &&
-      (uVar1 = s_numSortedAttachments, param_1 != 5)))) {
+  if ((((type != 1) && (type != 6)) && (type != 7)) &&
+     (((uVar1 = s_numSortedWeaponGroup, type != 4 &&
+       (uVar1 = s_numSortedGlobalChallenges, type != 0)) &&
+      (uVar1 = s_numSortedAttachments, type != 5)))) {
     uVar1 = 0;
   }
   return uVar1;
@@ -2946,7 +3116,7 @@ uint __cdecl LiveStats_GetChallengeCount(int param_1)
 
 // 00976160  StringBeginsWith  (live/live_stats.cpp:2317)
 
-bool __cdecl StringBeginsWith(char *param_1,char *param_2)
+bool __cdecl StringBeginsWith(char *prefix,char *name)
 
 {
   char cVar1;
@@ -2954,39 +3124,40 @@ bool __cdecl StringBeginsWith(char *param_1,char *param_2)
   bool bVar3;
   undefined1 uVar4;
   int iVar5;
-  uint uVar6;
+  uint n;
   char *local_1c;
   char *local_c;
+  uint prefixLen;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((prefix == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x90e,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x90f,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {
-    local_c = param_1;
+  if ((prefix != (char *)0x0) && (name != (char *)0x0)) {
+    local_c = prefix;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    uVar6 = (int)local_c - (int)(param_1 + 1);
-    if (uVar6 != 0) {
-      local_1c = param_2;
+    n = (int)local_c - (int)(prefix + 1);
+    if (n != 0) {
+      local_1c = name;
       do {
         cVar1 = *local_1c;
         local_1c = local_1c + 1;
       } while (cVar1 != '\0');
-      if ((uVar6 <= (uint)((int)local_1c - (int)(param_2 + 1))) &&
-         (iVar5 = I_strnicmp(param_1,param_2,uVar6), iVar5 == 0)) {
+      if ((n <= (uint)((int)local_1c - (int)(name + 1))) &&
+         (iVar5 = I_strnicmp(prefix,name,n), iVar5 == 0)) {
         return true;
       }
     }
@@ -2997,34 +3168,34 @@ bool __cdecl StringBeginsWith(char *param_1,char *param_2)
 
 // 00976260  LiveStats_GetChallengeInfo  (live/live_stats.cpp:2336)
 
-bool __cdecl LiveStats_GetChallengeInfo(challengeInfo_t **param_1,uint param_2,int param_3)
+bool __cdecl LiveStats_GetChallengeInfo(challengeInfo_t **challenge,uint challengeNum,int type)
 
 {
-  if (((param_3 == 1) || (param_3 == 6)) || (param_3 == 7)) {
-    if (s_numSortedChallenges <= param_2) {
+  if (((type == 1) || (type == 6)) || (type == 7)) {
+    if (s_numSortedChallenges <= challengeNum) {
       return false;
     }
-    *param_1 = s_sortedChallengeList + param_2;
+    *challenge = s_sortedChallengeList + challengeNum;
   }
-  else if (param_3 == 4) {
-    if (s_numSortedWeaponGroup <= param_2) {
+  else if (type == 4) {
+    if (s_numSortedWeaponGroup <= challengeNum) {
       return false;
     }
-    *param_1 = s_sortedWeaponGroupList + param_2;
+    *challenge = s_sortedWeaponGroupList + challengeNum;
   }
-  else if (param_3 == 0) {
-    if (s_numSortedGlobalChallenges <= param_2) {
+  else if (type == 0) {
+    if (s_numSortedGlobalChallenges <= challengeNum) {
       return false;
     }
-    *param_1 = s_sortedGlobalChallengeList + param_2;
+    *challenge = s_sortedGlobalChallengeList + challengeNum;
   }
-  else if (param_3 == 5) {
-    if (s_numSortedAttachments <= param_2) {
+  else if (type == 5) {
+    if (s_numSortedAttachments <= challengeNum) {
       return false;
     }
-    *param_1 = s_sortedAttachmentsList + param_2;
+    *challenge = s_sortedAttachmentsList + challengeNum;
   }
-  return *param_1 != (challengeInfo_t *)0x0;
+  return *challenge != (challengeInfo_t *)0x0;
 }
 
 
@@ -3032,57 +3203,57 @@ bool __cdecl LiveStats_GetChallengeInfo(challengeInfo_t **param_1,uint param_2,i
 
 bool __cdecl
 LiveStats_GetChallengeInfoParam
-          (sortedChallengeParams_t param_1,uint param_2,char **param_3,int *param_4,int param_5)
+          (sortedChallengeParams_t param,uint challengeNum,char **stringValue,int *value,int type)
 
 {
   bool bVar1;
-  challengeInfo_t *local_8;
+  challengeInfo_t *challenge;
   
-  bVar1 = LiveStats_GetChallengeInfo(&local_8,param_2,param_5);
+  bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,type);
   if (bVar1) {
-    switch(param_1) {
+    switch(param) {
     case CHALLENGE_PARAM_TYPE:
-      *param_4 = local_8->type;
+      *value = challenge->type;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_TIER:
-      *param_4 = (uint)local_8->milestone;
+      *value = (uint)challenge->milestone;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_NAME:
-      *param_3 = local_8->name;
+      *stringValue = challenge->name;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_ITEM_INDEX:
-      *param_4 = (uint)local_8->index;
+      *value = (uint)challenge->index;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_IS_ITEM_CLASSIFIED:
-      *param_4 = (uint)((local_8->flags & 4) != 0);
+      *value = (uint)((challenge->flags & 4) != 0);
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_NUM_TO_TARGET_VALUE:
-      *param_4 = local_8->numToTargetValue;
+      *value = challenge->numToTargetValue;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_TARGETVALUE:
-      *param_4 = local_8->targetValue;
+      *value = challenge->targetValue;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_CURRENTVALUE:
-      *param_4 = local_8->currentValue;
+      *value = challenge->currentValue;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_PREVTARGET:
-      *param_4 = local_8->prevTarget;
+      *value = challenge->prevTarget;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_XP_REWARD:
-      *param_4 = local_8->xpReward;
+      *value = challenge->xpReward;
       bVar1 = true;
       break;
     case CHALLENGE_PARAM_CP_REWARD:
-      *param_4 = local_8->cpReward;
+      *value = challenge->cpReward;
       bVar1 = true;
       break;
     default:
@@ -3098,14 +3269,14 @@ LiveStats_GetChallengeInfoParam
 
 // 00976470  LiveStats_GetNumPersonalBests  (live/live_stats.cpp:2432)
 
-uint __cdecl LiveStats_GetNumPersonalBests(int param_1)
+uint __cdecl LiveStats_GetNumPersonalBests(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x981,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3114,21 +3285,21 @@ uint __cdecl LiveStats_GetNumPersonalBests(int param_1)
       return uVar3;
     }
   }
-  return s_currentPersonalBest[param_1];
+  return s_currentPersonalBest[controllerIndex];
 }
 
 
 // 009764F0  LiveStats_GetPersonalBest  (live/live_stats.cpp:2438)
 
-personalBest_t * __cdecl LiveStats_GetPersonalBest(int param_1,uint param_2)
+personalBest_t * __cdecl LiveStats_GetPersonalBest(int controllerIndex,uint personalBestNum)
 
 {
   code *pcVar1;
   bool bVar2;
   personalBest_t *ppVar3;
-  personalBest_t *local_8;
+  personalBest_t *personalBest;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x987,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3137,23 +3308,24 @@ personalBest_t * __cdecl LiveStats_GetPersonalBest(int param_1,uint param_2)
       return ppVar3;
     }
   }
-  local_8 = (personalBest_t *)0x0;
-  if (param_2 < s_currentPersonalBest[param_1]) {
-    local_8 = s_personalBests[param_1] + param_2;
+  personalBest = (personalBest_t *)0x0;
+  if (personalBestNum < s_currentPersonalBest[controllerIndex]) {
+    personalBest = s_personalBests[controllerIndex] + personalBestNum;
   }
-  return local_8;
+  return personalBest;
 }
 
 
 // 009764B0  LiveStats_GetPersonalBestName  (live/live_stats.cpp:2451)
 
-char * __cdecl LiveStats_GetPersonalBestName(int param_1,uint param_2)
+char * __cdecl LiveStats_GetPersonalBestName(int controllerIndex,uint personalBestNum)
 
 {
   personalBest_t *ppVar1;
   char *pcVar2;
+  personalBest_t *personalBest;
   
-  ppVar1 = LiveStats_GetPersonalBest(param_1,param_2);
+  ppVar1 = LiveStats_GetPersonalBest(controllerIndex,personalBestNum);
   if ((ppVar1 == (personalBest_t *)0x0) || (ppVar1->name == (char *)0x0)) {
     pcVar2 = (char *)0x0;
   }
@@ -3166,13 +3338,14 @@ char * __cdecl LiveStats_GetPersonalBestName(int param_1,uint param_2)
 
 // 00976560  LiveStats_GetPersonalBestPrefix  (live/live_stats.cpp:2463)
 
-char * __cdecl LiveStats_GetPersonalBestPrefix(int param_1,uint param_2)
+char * __cdecl LiveStats_GetPersonalBestPrefix(int controllerIndex,uint personalBestNum)
 
 {
   personalBest_t *ppVar1;
   char *pcVar2;
+  personalBest_t *personalBest;
   
-  ppVar1 = LiveStats_GetPersonalBest(param_1,param_2);
+  ppVar1 = LiveStats_GetPersonalBest(controllerIndex,personalBestNum);
   if ((ppVar1 == (personalBest_t *)0x0) || (ppVar1->prefix == (char *)0x0)) {
     pcVar2 = (char *)0x0;
   }
@@ -3185,13 +3358,14 @@ char * __cdecl LiveStats_GetPersonalBestPrefix(int param_1,uint param_2)
 
 // 009765B0  LiveStats_GetPersonalBestValue  (live/live_stats.cpp:2475)
 
-uint __cdecl LiveStats_GetPersonalBestValue(int param_1,uint param_2)
+uint __cdecl LiveStats_GetPersonalBestValue(int controllerIndex,uint personalBestNum)
 
 {
   personalBest_t *ppVar1;
   uint uVar2;
+  personalBest_t *personalBest;
   
-  ppVar1 = LiveStats_GetPersonalBest(param_1,param_2);
+  ppVar1 = LiveStats_GetPersonalBest(controllerIndex,personalBestNum);
   if (ppVar1 == (personalBest_t *)0x0) {
     uVar2 = 0;
   }
@@ -3204,13 +3378,14 @@ uint __cdecl LiveStats_GetPersonalBestValue(int param_1,uint param_2)
 
 // 009765E0  LiveStats_GetPersonalBestDelta  (live/live_stats.cpp:2487)
 
-int __cdecl LiveStats_GetPersonalBestDelta(int param_1,uint param_2)
+int __cdecl LiveStats_GetPersonalBestDelta(int controllerIndex,uint personalBestNum)
 
 {
   personalBest_t *ppVar1;
   int iVar2;
+  personalBest_t *personalBest;
   
-  ppVar1 = LiveStats_GetPersonalBest(param_1,param_2);
+  ppVar1 = LiveStats_GetPersonalBest(controllerIndex,personalBestNum);
   if (ppVar1 == (personalBest_t *)0x0) {
     iVar2 = 0;
   }
@@ -3223,13 +3398,14 @@ int __cdecl LiveStats_GetPersonalBestDelta(int param_1,uint param_2)
 
 // 00976610  LiveStats_GetPersonalBestRating  (live/live_stats.cpp:2499)
 
-uint __cdecl LiveStats_GetPersonalBestRating(int param_1,uint param_2)
+uint __cdecl LiveStats_GetPersonalBestRating(int controllerIndex,uint personalBestNum)
 
 {
   personalBest_t *ppVar1;
   uint uVar2;
+  personalBest_t *personalBest;
   
-  ppVar1 = LiveStats_GetPersonalBest(param_1,param_2);
+  ppVar1 = LiveStats_GetPersonalBest(controllerIndex,personalBestNum);
   if (ppVar1 == (personalBest_t *)0x0) {
     uVar2 = 0;
   }
@@ -3242,25 +3418,31 @@ uint __cdecl LiveStats_GetPersonalBestRating(int param_1,uint param_2)
 
 // 00978750  isPositive  (live/live_stats.cpp:2511)
 
-int __cdecl isPositive(int param_1)
+int __cdecl isPositive(int value)
 
 {
-  return (uint)(0 < param_1) - (uint)(param_1 < 0);
+  int returnValue;
+  
+  return (uint)(0 < value) - (uint)(value < 0);
 }
 
 
 // 009786F0  LiveStats_ComparePersonalBests  (live/live_stats.cpp:2521)
 
-int __cdecl LiveStats_ComparePersonalBests(void *param_1,void *param_2)
+int __cdecl LiveStats_ComparePersonalBests(void *arg0,void *arg1)
 
 {
   int iVar1;
   int iVar2;
+  personalBest_t *best1;
+  int bestVal1;
+  int bestVal0;
+  personalBest_t *best0;
   
-  iVar1 = isPositive(*(int *)((int)param_1 + 0xc));
-  iVar2 = isPositive(*(int *)((int)param_2 + 0xc));
+  iVar1 = isPositive(*(int *)((int)arg0 + 0xc));
+  iVar2 = isPositive(*(int *)((int)arg1 + 0xc));
   if (iVar1 == iVar2) {
-    iVar2 = *(int *)((int)param_2 + 0x10) - *(int *)((int)param_1 + 0x10);
+    iVar2 = *(int *)((int)arg1 + 0x10) - *(int *)((int)arg0 + 0x10);
   }
   else {
     iVar2 = iVar2 - iVar1;
@@ -3271,7 +3453,7 @@ int __cdecl LiveStats_ComparePersonalBests(void *param_1,void *param_2)
 
 // 009784D0  LiveStats_SortPersonalBests  (live/live_stats.cpp:2541)
 
-void __cdecl LiveStats_SortPersonalBests(int param_1)
+void __cdecl LiveStats_SortPersonalBests(int controllerIndex)
 
 {
   code *pcVar1;
@@ -3280,12 +3462,17 @@ void __cdecl LiveStats_SortPersonalBests(int param_1)
   char *pcVar4;
   int iVar5;
   int iVar6;
-  uint local_28;
-  uint local_10;
-  StringTable *local_c;
-  uint local_8;
+  uint personalBest_2;
+  int minDelta;
+  int delta;
+  int multiplier;
+  personalBest_t *personalBestPtr;
+  int personalBestRow;
+  uint personalBest;
+  StringTable *statsTable;
+  uint numPersonalBests;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x9ee,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar2)) {
@@ -3293,52 +3480,52 @@ void __cdecl LiveStats_SortPersonalBests(int param_1)
     (*pcVar1)();
     return;
   }
-  StringTable_GetAsset("mp/personalbests.csv",&local_c);
-  if ((local_c == (StringTable *)0x0) &&
+  StringTable_GetAsset("mp/personalbests.csv",&statsTable);
+  if ((statsTable == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x9f1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_c != (StringTable *)0x0) {
-    for (local_10 = 0; uVar3 = LiveStats_GetNumPersonalBests(param_1), local_10 < uVar3;
-        local_10 = local_10 + 1) {
-      s_personalBests[param_1][local_10].rating = 0;
+  if (statsTable != (StringTable *)0x0) {
+    for (personalBest = 0; uVar3 = LiveStats_GetNumPersonalBests(controllerIndex),
+        personalBest < uVar3; personalBest = personalBest + 1) {
+      s_personalBests[controllerIndex][personalBest].rating = 0;
       pcVar4 = va("%s%s");
-      iVar5 = StringTable_LookupRowNumForValue(local_c,0,pcVar4);
+      iVar5 = StringTable_LookupRowNumForValue(statsTable,0,pcVar4);
       if (iVar5 == -1) {
-        s_personalBests[param_1][local_10].delta = -0x7fffffff;
+        s_personalBests[controllerIndex][personalBest].delta = -0x7fffffff;
       }
       else {
-        pcVar4 = StringTable_GetColumnValueForRow(local_c,iVar5,1);
+        pcVar4 = StringTable_GetColumnValueForRow(statsTable,iVar5,1);
         iVar6 = atoi(pcVar4);
-        uVar3 = LiveStats_GetPersonalBestDelta(param_1,local_10);
-        pcVar4 = StringTable_GetColumnValueForRow(local_c,iVar5,2);
+        uVar3 = LiveStats_GetPersonalBestDelta(controllerIndex,personalBest);
+        pcVar4 = StringTable_GetColumnValueForRow(statsTable,iVar5,2);
         iVar5 = atoi(pcVar4);
         if ((iVar5 == 0) ||
            (((int)uVar3 < 0 &&
             ((-1 < (int)uVar3 ||
              (iVar6 < (int)((uVar3 ^ (int)uVar3 >> 0x1f) - ((int)uVar3 >> 0x1f)))))))) {
-          s_personalBests[param_1][local_10].delta = -0x7fffffff;
+          s_personalBests[controllerIndex][personalBest].delta = -0x7fffffff;
         }
         else {
-          s_personalBests[param_1][local_10].rating =
-               s_personalBests[param_1][local_10].value * iVar5;
+          s_personalBests[controllerIndex][personalBest].rating =
+               s_personalBests[controllerIndex][personalBest].value * iVar5;
         }
       }
     }
-    qsort(s_personalBests + param_1,s_currentPersonalBest[param_1],0x14,
+    qsort(s_personalBests + controllerIndex,s_currentPersonalBest[controllerIndex],0x14,
           LiveStats_ComparePersonalBests);
-    local_8 = 0;
-    for (local_28 = 0; uVar3 = LiveStats_GetNumPersonalBests(param_1), local_28 < uVar3;
-        local_28 = local_28 + 1) {
-      uVar3 = LiveStats_GetPersonalBestRating(param_1,local_28);
+    numPersonalBests = 0;
+    for (personalBest_2 = 0; uVar3 = LiveStats_GetNumPersonalBests(controllerIndex),
+        personalBest_2 < uVar3; personalBest_2 = personalBest_2 + 1) {
+      uVar3 = LiveStats_GetPersonalBestRating(controllerIndex,personalBest_2);
       if (uVar3 != 0) {
-        local_8 = local_8 + 1;
+        numPersonalBests = numPersonalBests + 1;
       }
     }
-    s_currentPersonalBest[param_1] = local_8;
+    s_currentPersonalBest[controllerIndex] = numPersonalBests;
   }
   return;
 }
@@ -3346,14 +3533,14 @@ void __cdecl LiveStats_SortPersonalBests(int param_1)
 
 // 00976640  LiveStats_GetNumRecentlyUnlockedItems  (live/live_stats.cpp:2596)
 
-int __cdecl LiveStats_GetNumRecentlyUnlockedItems(int param_1)
+int __cdecl LiveStats_GetNumRecentlyUnlockedItems(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xa25,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3362,20 +3549,20 @@ int __cdecl LiveStats_GetNumRecentlyUnlockedItems(int param_1)
       return iVar3;
     }
   }
-  return s_numRecentlyUnlockedItems[param_1];
+  return s_numRecentlyUnlockedItems[controllerIndex];
 }
 
 
 // 00976680  LiveStats_GetRecentlyUnlockedItemIndex  (live/live_stats.cpp:2602)
 
-int __cdecl LiveStats_GetRecentlyUnlockedItemIndex(int param_1,uint param_2)
+int __cdecl LiveStats_GetRecentlyUnlockedItemIndex(int controllerIndex,uint itemNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xa2b,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3384,8 +3571,8 @@ int __cdecl LiveStats_GetRecentlyUnlockedItemIndex(int param_1,uint param_2)
       return iVar3;
     }
   }
-  if ((param_2 < s_numRecentlyUnlockedItems[param_1]) && (param_2 < 0x101)) {
-    iVar3 = s_recentlyUnlockedItems[param_1][param_2];
+  if ((itemNum < s_numRecentlyUnlockedItems[controllerIndex]) && (itemNum < 0x101)) {
+    iVar3 = s_recentlyUnlockedItems[controllerIndex][itemNum];
   }
   else {
     iVar3 = 0;
@@ -3397,36 +3584,48 @@ int __cdecl LiveStats_GetRecentlyUnlockedItemIndex(int param_1,uint param_2)
 // 009766E0  LiveStats_PublishNews  (live/live_stats.cpp:2616)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl LiveStats_PublishNews(int param_1)
+void __cdecl LiveStats_PublishNews(int controllerIndex)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  uchar *puVar4;
-  int iVar5;
-  char *pcVar6;
-  int iVar7;
-  char *pcVar8;
-  ContractStatus_t CVar9;
-  uint uVar10;
-  char *pcVar11;
+  uchar *base;
+  int iVar4;
+  char *pcVar5;
+  int iVar6;
+  char *pcVar7;
+  ContractStatus_t CVar8;
+  uint uVar9;
+  char *value3;
   char *local_a0;
   char *local_8c;
-  int local_84;
-  uint local_7c;
-  uint local_78;
-  int local_5c;
-  undefined4 local_58;
-  char local_54 [64];
+  int contractIndex;
+  int i_3;
+  int rowNum;
+  uint i_2;
+  uint i;
+  char *level;
+  char *localized_weaponname_string;
+  char *oldStatsBuffer;
+  int oldRank;
+  char *targetValue;
+  char *weaponType;
+  int oldRankXP;
+  int newRank;
+  char statsName [64];
   uint local_14;
-  int local_10;
-  StringTable *local_c;
-  int local_8;
+  int newPrestigeLevel;
+  StringTable *statsMilestonestable;
+  int oldPrestigeLevel;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 != 0) {
+  if (controllerIndex != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xa39,0,
                              "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -3435,89 +3634,89 @@ void __cdecl LiveStats_PublishNews(int param_1)
       return;
     }
   }
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBALSTABLE,true);
-  local_5c = 0;
-  local_58 = LiveStats_GetRank(param_1);
-  LiveStats_GetIntPlayerStatFromBase(&local_5c,"RANKXP",(char *)puVar4);
-  iVar5 = CL_GetRankForXp(local_5c);
-  if (iVar5 < local_58) {
-    CL_GetRankData(local_58,MP_RANKTABLE_DISPLAYLEVEL);
-    pcVar6 = va("userPublishNews TICKER_LEVELUPDATE %s\n");
-    iVar5 = param_1;
-    iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar7,iVar5,pcVar6);
+  base = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBALSTABLE,true);
+  oldRankXP = 0;
+  newRank = LiveStats_GetRank(controllerIndex);
+  LiveStats_GetIntPlayerStatFromBase(&oldRankXP,"RANKXP",(char *)base);
+  iVar4 = CL_GetRankForXp(oldRankXP);
+  if (iVar4 < newRank) {
+    CL_GetRankData(newRank,MP_RANKTABLE_DISPLAYLEVEL);
+    pcVar5 = va("userPublishNews TICKER_LEVELUPDATE %s\n");
+    iVar4 = controllerIndex;
+    iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    Cmd_ExecuteSingleCommand(iVar6,iVar4,pcVar5);
   }
-  local_8 = 0;
-  local_10 = 0;
-  LiveStats_GetIntPlayerStatFromBase(&local_8,"PLEVEL",(char *)puVar4);
-  local_10 = LiveStats_GetPrestige(param_1);
-  if (local_8 < local_10) {
-    pcVar6 = va("userPublishNews TICKER_PRESTIGED \n");
-    iVar5 = param_1;
-    iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar7,iVar5,pcVar6);
+  oldPrestigeLevel = 0;
+  newPrestigeLevel = 0;
+  LiveStats_GetIntPlayerStatFromBase(&oldPrestigeLevel,"PLEVEL",(char *)base);
+  newPrestigeLevel = LiveStats_GetPrestige(controllerIndex);
+  if (oldPrestigeLevel < newPrestigeLevel) {
+    pcVar5 = va("userPublishNews TICKER_PRESTIGED \n");
+    iVar4 = controllerIndex;
+    iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    Cmd_ExecuteSingleCommand(iVar6,iVar4,pcVar5);
   }
-  for (local_78 = 0; local_78 < s_numRecentlyUnlockedItems[param_1]; local_78 = local_78 + 1) {
-    BG_UnlockablesGetItemName(s_recentlyUnlockedItems[param_1][local_78]);
-    pcVar6 = va("userPublishNews TICKER_UNLOCKITEMUPDATE %s\n");
-    iVar5 = param_1;
-    iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar7,iVar5,pcVar6);
+  for (i = 0; i < s_numRecentlyUnlockedItems[controllerIndex]; i = i + 1) {
+    BG_UnlockablesGetItemName(s_recentlyUnlockedItems[controllerIndex][i]);
+    pcVar5 = va("userPublishNews TICKER_UNLOCKITEMUPDATE %s\n");
+    iVar4 = controllerIndex;
+    iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+    Cmd_ExecuteSingleCommand(iVar6,iVar4,pcVar5);
   }
-  for (local_7c = 0; local_7c < s_currentStatsMilestone[param_1]; local_7c = local_7c + 1) {
-    I_strncpyz(local_54,"STATS_MILESTONE_STATNAME_",0x40);
-    if (s_statsMilestonesCompleted[param_1][local_7c].type == MILESTONE_WEAPON) {
-      BG_UnlockablesGetItemName((uint)*(byte *)(param_1 * 12000 + 0xa54ff0d + local_7c * 0xc));
-      pcVar6 = BG_UnlockablesGetItemGroup
-                         ((uint)*(byte *)(param_1 * 12000 + 0xa54ff0d + local_7c * 0xc));
-      pcVar11 = (char *)0x0;
-      iVar7 = -1;
-      iVar5 = 3;
-      pcVar8 = va("%d");
-      iVar5 = CL_GetMilestoneRowNum(&local_c,1,pcVar8,iVar5,pcVar6,iVar7,pcVar11);
-      if ((local_c != (StringTable *)0x0) && (iVar5 != -1)) {
-        StringTable_GetColumnValueForRow(local_c,iVar5,2);
-        pcVar6 = *(char **)(param_1 * 12000 + 0xa54ff10 + local_7c * 0xc);
-        local_8c = pcVar6;
+  for (i_2 = 0; i_2 < s_currentStatsMilestone[controllerIndex]; i_2 = i_2 + 1) {
+    I_strncpyz(statsName,"STATS_MILESTONE_STATNAME_",0x40);
+    if (s_statsMilestonesCompleted[controllerIndex][i_2].type == MILESTONE_WEAPON) {
+      BG_UnlockablesGetItemName((uint)*(byte *)(controllerIndex * 12000 + 0xa54ff0d + i_2 * 0xc));
+      pcVar5 = BG_UnlockablesGetItemGroup
+                         ((uint)*(byte *)(controllerIndex * 12000 + 0xa54ff0d + i_2 * 0xc));
+      value3 = (char *)0x0;
+      iVar6 = -1;
+      iVar4 = 3;
+      pcVar7 = va("%d");
+      iVar4 = CL_GetMilestoneRowNum(&statsMilestonestable,1,pcVar7,iVar4,pcVar5,iVar6,value3);
+      if ((statsMilestonestable != (StringTable *)0x0) && (iVar4 != -1)) {
+        StringTable_GetColumnValueForRow(statsMilestonestable,iVar4,2);
+        pcVar5 = *(char **)(controllerIndex * 12000 + 0xa54ff10 + i_2 * 0xc);
+        local_8c = pcVar5;
         do {
           cVar1 = *local_8c;
           local_8c = local_8c + 1;
         } while (cVar1 != '\0');
-        local_a0 = (char *)((int)&local_58 + 3);
+        local_a0 = (char *)((int)&newRank + 3);
         do {
-          pcVar8 = local_a0 + 1;
+          pcVar7 = local_a0 + 1;
           local_a0 = local_a0 + 1;
-        } while (*pcVar8 != '\0');
-        pcVar8 = pcVar6;
-        for (uVar10 = (uint)((int)local_8c - (int)pcVar6) >> 2; uVar10 != 0; uVar10 = uVar10 - 1) {
-          *(undefined4 *)local_a0 = *(undefined4 *)pcVar8;
-          pcVar8 = pcVar8 + 4;
+        } while (*pcVar7 != '\0');
+        pcVar7 = pcVar5;
+        for (uVar9 = (uint)((int)local_8c - (int)pcVar5) >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
+          *(undefined4 *)local_a0 = *(undefined4 *)pcVar7;
+          pcVar7 = pcVar7 + 4;
           local_a0 = local_a0 + 4;
         }
-        for (uVar10 = (int)local_8c - (int)pcVar6 & 3; uVar10 != 0; uVar10 = uVar10 - 1) {
-          *local_a0 = *pcVar8;
-          pcVar8 = pcVar8 + 1;
+        for (uVar9 = (int)local_8c - (int)pcVar5 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
+          *local_a0 = *pcVar7;
+          pcVar7 = pcVar7 + 1;
           local_a0 = local_a0 + 1;
         }
-        pcVar6 = va("userPublishNews TICKER_STATSMILESTONEUPDATE %s %s %s\n");
-        iVar5 = param_1;
-        iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-        Cmd_ExecuteSingleCommand(iVar7,iVar5,pcVar6);
+        pcVar5 = va("userPublishNews TICKER_STATSMILESTONEUPDATE %s %s %s\n");
+        iVar4 = controllerIndex;
+        iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+        Cmd_ExecuteSingleCommand(iVar6,iVar4,pcVar5);
       }
     }
-    local_54[0] = '\0';
+    statsName[0] = '\0';
   }
-  for (local_84 = 0; local_84 < 3; local_84 = local_84 + 1) {
-    CVar9 = LiveContracts_GetActiveContractStatus_Internal((char *)puVar4,local_84);
-    if (CVar9 != CONTRACT_COMPLETE) {
-      CVar9 = LiveContracts_GetActiveContractStatus(param_1,local_84);
-      if (CVar9 == CONTRACT_COMPLETE) {
-        iVar5 = LiveContracts_GetIndexForActiveContract(param_1,local_84);
-        if (-1 < iVar5) {
-          pcVar6 = va("userPublishNews %s %d\n");
-          iVar5 = param_1;
-          iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-          Cmd_ExecuteSingleCommand(iVar7,iVar5,pcVar6);
+  for (i_3 = 0; i_3 < 3; i_3 = i_3 + 1) {
+    CVar8 = LiveContracts_GetActiveContractStatus_Internal((char *)base,i_3);
+    if (CVar8 != CONTRACT_COMPLETE) {
+      CVar8 = LiveContracts_GetActiveContractStatus(controllerIndex,i_3);
+      if (CVar8 == CONTRACT_COMPLETE) {
+        iVar4 = LiveContracts_GetIndexForActiveContract(controllerIndex,i_3);
+        if (-1 < iVar4) {
+          pcVar5 = va("userPublishNews %s %d\n");
+          iVar4 = controllerIndex;
+          iVar6 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+          Cmd_ExecuteSingleCommand(iVar6,iVar4,pcVar5);
         }
       }
     }
@@ -3528,53 +3727,54 @@ void __cdecl LiveStats_PublishNews(int param_1)
 
 // 00976B20  LiveStats_MoveToProItemVersion  (live/live_stats.cpp:2705)
 
-bool __cdecl LiveStats_MoveToProItemVersion(ddlState_t *param_1,int param_2,int param_3)
+bool __cdecl
+LiveStats_MoveToProItemVersion(ddlState_t *searchState,int itemIndex,int challengeIndex)
 
 {
-  ddlState_t *pdVar1;
-  int iVar2;
+  ddlState_t *searchState_00;
+  int iVar1;
   
   va("%d");
   va("%d");
-  iVar2 = 4;
-  pdVar1 = LiveStats_GetRootDDLState();
-  iVar2 = DDL_MoveTo(pdVar1,param_1,iVar2);
-  if (iVar2 == 0) {
+  iVar1 = 4;
+  searchState_00 = LiveStats_GetRootDDLState();
+  iVar1 = DDL_MoveTo(searchState_00,searchState,iVar1);
+  if (iVar1 == 0) {
     DDL_PrintError("DDL: Error could not find item version unlocked %d challenge %d\n");
   }
-  return iVar2 != 0;
+  return iVar1 != 0;
 }
 
 
 // 00978790  LiveStats_ProVersionUnlocked  (live/live_stats.cpp:2716)
 
-bool __cdecl LiveStats_ProVersionUnlocked(int param_1,char *param_2)
+bool __cdecl LiveStats_ProVersionUnlocked(int itemIndex,char *statsBuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   uint uVar4;
-  int local_18;
-  ddlState_t local_14;
+  int proChallenges;
+  ddlState_t searchState;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((statsBuffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xa9d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
+  if (statsBuffer == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
-      bVar2 = LiveStats_MoveToProItemVersion(&local_14,param_1,local_18);
+    for (proChallenges = 0; proChallenges < 3; proChallenges = proChallenges + 1) {
+      bVar2 = LiveStats_MoveToProItemVersion(&searchState,itemIndex,proChallenges);
       if (!bVar2) {
         return false;
       }
-      uVar4 = DDL_GetInt(&local_14,param_2);
+      uVar4 = DDL_GetInt(&searchState,statsBuffer);
       if (uVar4 == 0) {
         return false;
       }
@@ -3589,47 +3789,49 @@ bool __cdecl LiveStats_ProVersionUnlocked(int param_1,char *param_2)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl LiveStats_CompareStatsVsStableBuffer(int param_1)
+void __cdecl LiveStats_CompareStatsVsStableBuffer(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  eAttachment eVar5;
-  ddlState_t local_dc;
-  char *local_cc;
-  int local_c8;
-  int local_c4;
-  char *local_c0;
-  ddlState_t local_bc;
-  char *local_ac;
-  ddlState_t local_a8;
-  int local_98;
-  int local_94;
-  char *local_90;
-  ddlState_t local_8c;
-  char *local_7c;
-  itemGroup_t local_78;
-  uint local_74;
-  int local_70;
-  uint local_6c;
-  uint local_68;
-  uint local_64;
-  int local_60;
-  uchar *local_5c;
-  ddlState_t local_58;
-  ddlState_t local_48;
-  uchar *local_38;
-  int local_34;
-  int local_30;
-  ddlState_t local_2c;
-  int local_1c;
-  int local_18;
-  ddlState_t local_14;
+  eAttachment attachmentIndex;
+  ddlState_t searchStateGameModeMilestones;
+  char *gameModeName_2;
+  int currentGameMode_2;
+  int numGameModes_2;
+  char *statName;
+  ddlState_t searchStateGameModeBests;
+  char *gameModeName;
+  ddlState_t searchStateGameModeCurrentStats;
+  int currentGameMode;
+  int numGameModes;
+  char *attachmentName;
+  ddlState_t searchStateGroupStats;
+  char *groupName;
+  int currItemGroup;
+  uint clanTagFeature;
+  int proItemIndex;
+  int oldProUnlocked;
+  int newProUnlocked;
+  uint itemNumber;
+  int oldPLevel;
+  char *liveStatsBuffer;
+  ddlState_t searchStateGameModeStats;
+  ddlState_t searchAttachmentStateStats;
+  char *oldStatsBuffer;
+  int oldRank;
+  int newPLevel;
+  ddlState_t searchStateBests;
+  int oldRankXP;
+  int newRank;
+  ddlState_t searchStateStats;
   
-  if ((param_1 != 0) &&
+  if ((controllerIndex != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xabb,0,
                                "controllerIndex doesn\'t index MAX_GPAD_COUNT\n\t%i not in [0, %i)")
      , !bVar2)) {
@@ -3637,177 +3839,201 @@ void __cdecl LiveStats_CompareStatsVsStableBuffer(int param_1)
     (*pcVar1)();
     return;
   }
-  local_5c = (uchar *)0x0;
-  local_38 = (uchar *)0x0;
+  liveStatsBuffer = (char *)0x0;
+  oldStatsBuffer = (char *)0x0;
   if ((xblive_basictraining == (dvar_s *)0x0) || ((xblive_basictraining->current).enabled == false))
   {
-    local_5c = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
-    local_38 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBALSTABLE,true);
+    liveStatsBuffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+    oldStatsBuffer =
+         (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBALSTABLE,true);
   }
   else {
-    local_5c = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    local_38 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_STABLE,true);
+    liveStatsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true)
+    ;
+    oldStatsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_STABLE,true);
   }
-  s_currentStatsMilestone[param_1] = 0;
-  local_1c = 0;
-  local_18 = LiveStats_GetRank(param_1);
-  local_30 = LiveStats_GetPrestige(param_1);
-  local_60 = 0;
+  s_currentStatsMilestone[controllerIndex] = 0;
+  oldRankXP = 0;
+  newRank = LiveStats_GetRank(controllerIndex);
+  newPLevel = LiveStats_GetPrestige(controllerIndex);
+  oldPLevel = 0;
   if ((xblive_basictraining->current).enabled == false) {
-    LiveStats_GetIntPlayerStatFromForcedBase(&local_1c,"RANKXP",(char *)local_38);
-    LiveStats_GetIntPlayerStatFromForcedBase(&local_60,"PLEVEL",(char *)local_38);
+    LiveStats_GetIntPlayerStatFromForcedBase(&oldRankXP,"RANKXP",oldStatsBuffer);
+    LiveStats_GetIntPlayerStatFromForcedBase(&oldPLevel,"PLEVEL",oldStatsBuffer);
   }
   else {
-    LiveStats_GetIntPlayerStatFromBase(&local_1c,"RANKXP",(char *)local_38);
-    LiveStats_GetIntPlayerStatFromBase(&local_60,"PLEVEL",(char *)local_38);
+    LiveStats_GetIntPlayerStatFromBase(&oldRankXP,"RANKXP",oldStatsBuffer);
+    LiveStats_GetIntPlayerStatFromBase(&oldPLevel,"PLEVEL",oldStatsBuffer);
   }
-  local_34 = CL_GetRankForXp(local_1c);
-  memset((uchar *)(s_recentlyUnlockedItems + param_1),'\0',0x400);
-  s_numRecentlyUnlockedItems[param_1] = 0;
-  for (local_64 = 0; local_64 < 0x100; local_64 = local_64 + 1) {
-    bVar2 = BG_UnlockablesIsItemValidNotNull(local_64);
+  oldRank = CL_GetRankForXp(oldRankXP);
+  memset((uchar *)(s_recentlyUnlockedItems + controllerIndex),'\0',0x400);
+  s_numRecentlyUnlockedItems[controllerIndex] = 0;
+  for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+    bVar2 = BG_UnlockablesIsItemValidNotNull(itemNumber);
     if (bVar2) {
-      if ((((local_34 < local_18) &&
-           (bVar2 = BG_UnlockablesIsItemLockedForRank(local_30,local_18,local_64), !bVar2)) &&
-          (bVar2 = BG_UnlockablesIsItemLockedForRank(local_60,local_34,local_64), bVar2)) &&
-         (bVar2 = BG_UnlockablesIsItemInDefaultClass(local_64), !bVar2)) {
-        s_recentlyUnlockedItems[param_1][s_numRecentlyUnlockedItems[param_1]] = local_64;
-        s_numRecentlyUnlockedItems[param_1] = s_numRecentlyUnlockedItems[param_1] + 1;
-        BG_UnlockablesSetItemNew(param_1,local_64);
+      if ((((oldRank < newRank) &&
+           (bVar2 = BG_UnlockablesIsItemLockedForRank(newPLevel,newRank,itemNumber), !bVar2)) &&
+          (bVar2 = BG_UnlockablesIsItemLockedForRank(oldPLevel,oldRank,itemNumber), bVar2)) &&
+         (bVar2 = BG_UnlockablesIsItemInDefaultClass(itemNumber), !bVar2)) {
+        s_recentlyUnlockedItems[controllerIndex][s_numRecentlyUnlockedItems[controllerIndex]] =
+             itemNumber;
+        s_numRecentlyUnlockedItems[controllerIndex] =
+             s_numRecentlyUnlockedItems[controllerIndex] + 1;
+        BG_UnlockablesSetItemNew(controllerIndex,itemNumber);
       }
       va("%d");
-      iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,3);
+      iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,3);
       if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_14,&local_14);
+        iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
         while (iVar3 != 0) {
-          LiveStats_UpdateItemPersonalBest((char *)local_5c,(char *)local_38,&local_14);
+          LiveStats_UpdateItemPersonalBest(liveStatsBuffer,oldStatsBuffer,&searchStateStats);
           LiveStats_UpdateItemStatsMilestones
-                    (param_1,(char *)local_5c,(char *)local_38,&local_14,local_64);
-          iVar3 = DDL_IterateNext(&local_14,&local_14);
+                    (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchStateStats,itemNumber);
+          iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
         }
       }
-      bVar2 = LiveStats_ProVersionUnlocked(local_64,(char *)local_38);
-      local_6c = (uint)bVar2;
-      bVar2 = LiveStats_ProVersionUnlocked(local_64,(char *)local_5c);
-      local_68 = (uint)bVar2;
-      if (((int)local_6c < (int)local_68) &&
-         (local_70 = BG_UnlockablesGetProItem(local_64), local_70 != -1)) {
-        s_recentlyUnlockedItems[param_1][s_numRecentlyUnlockedItems[param_1]] = local_70;
-        s_numRecentlyUnlockedItems[param_1] = s_numRecentlyUnlockedItems[param_1] + 1;
-        BG_UnlockablesSetItemNew(param_1,local_70);
+      bVar2 = LiveStats_ProVersionUnlocked(itemNumber,oldStatsBuffer);
+      oldProUnlocked = (int)bVar2;
+      bVar2 = LiveStats_ProVersionUnlocked(itemNumber,liveStatsBuffer);
+      newProUnlocked = (int)bVar2;
+      if ((oldProUnlocked < newProUnlocked) &&
+         (proItemIndex = BG_UnlockablesGetProItem(itemNumber), proItemIndex != -1)) {
+        s_recentlyUnlockedItems[controllerIndex][s_numRecentlyUnlockedItems[controllerIndex]] =
+             proItemIndex;
+        s_numRecentlyUnlockedItems[controllerIndex] =
+             s_numRecentlyUnlockedItems[controllerIndex] + 1;
+        BG_UnlockablesSetItemNew(controllerIndex,proItemIndex);
       }
     }
   }
-  for (local_74 = 0; local_74 < 0x100; local_74 = local_74 + 1) {
-    pcVar4 = BG_UnlockablesGetClanTagFeature(local_74,CLANTAG_COL_UNLOCKLVL);
-    if (((pcVar4 != (char *)0x0) && (local_34 < local_18)) &&
-       ((bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(local_30,local_18,local_74), !bVar2 &&
-        (bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(local_60,local_34,local_74), bVar2))))
-    {
-      BG_UnlockablesSetClanTagFeatureNew(param_1,local_74,1);
+  for (clanTagFeature = 0; clanTagFeature < 0x100; clanTagFeature = clanTagFeature + 1) {
+    pcVar4 = BG_UnlockablesGetClanTagFeature(clanTagFeature,CLANTAG_COL_UNLOCKLVL);
+    if (((pcVar4 != (char *)0x0) && (oldRank < newRank)) &&
+       ((bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(newPLevel,newRank,clanTagFeature),
+        !bVar2 && (bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank
+                                     (oldPLevel,oldRank,clanTagFeature), bVar2)))) {
+      BG_UnlockablesSetClanTagFeatureNew(controllerIndex,clanTagFeature,1);
     }
   }
-  for (local_78 = ITEMGROUP_FIRST; (int)local_78 < 0x18; local_78 = local_78 + ITEMGROUP_ASSAULT) {
-    local_7c = BG_UnlockablesGetItemGroupName(local_78);
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,2);
-    if ((iVar3 != 0) && (iVar3 = DDL_MoveTo(&local_14,&local_8c,1), iVar3 != 0)) {
-      iVar3 = DDL_IterateFirst(&local_8c,&local_8c);
+  for (currItemGroup = 0; currItemGroup < 0x18; currItemGroup = currItemGroup + 1) {
+    groupName = BG_UnlockablesGetItemGroupName(currItemGroup);
+    iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,2);
+    if ((iVar3 != 0) && (iVar3 = DDL_MoveTo(&searchStateStats,&searchStateGroupStats,1), iVar3 != 0)
+       ) {
+      iVar3 = DDL_IterateFirst(&searchStateGroupStats,&searchStateGroupStats);
       while (iVar3 != 0) {
         LiveStats_UpdateGroupStatsMilestones
-                  (param_1,(char *)local_5c,(char *)local_38,&local_8c,local_78);
-        iVar3 = DDL_IterateNext(&local_8c,&local_8c);
+                  (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchStateGroupStats,
+                   currItemGroup);
+        iVar3 = DDL_IterateNext(&searchStateGroupStats,&searchStateGroupStats);
       }
     }
   }
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
   if (iVar3 != 0) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
+    iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     while (iVar3 != 0) {
-      local_90 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].members[local_14.arrayIndex]
-      ;
-      iVar3 = DDL_MoveTo(&local_14,&local_48,1);
+      attachmentName =
+           (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].members
+           [searchStateStats.arrayIndex];
+      iVar3 = DDL_MoveTo(&searchStateStats,&searchAttachmentStateStats,1);
       if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_48,&local_48);
+        iVar3 = DDL_IterateFirst(&searchAttachmentStateStats,&searchAttachmentStateStats);
         while (iVar3 != 0) {
-          eVar5 = BG_GetAttachmentIndex(local_90);
+          attachmentIndex = BG_GetAttachmentIndex(attachmentName);
           LiveStats_UpdateAttachmentStatsMilestones
-                    (param_1,(char *)local_5c,(char *)local_38,&local_48,eVar5);
-          iVar3 = DDL_IterateNext(&local_48,&local_48);
+                    (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchAttachmentStateStats,
+                     attachmentIndex);
+          iVar3 = DDL_IterateNext(&searchAttachmentStateStats,&searchAttachmentStateStats);
         }
       }
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
-  s_currentPersonalBest[param_1] = 0;
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
-  if (((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&local_2c,1), iVar3 != 0)) &&
-     (iVar3 = DDL_IterateFirst(&local_14,&local_14), iVar3 != 0)) {
-    iVar3 = DDL_IterateFirst(&local_2c,&local_2c);
+  s_currentPersonalBest[controllerIndex] = 0;
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+  if (((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateBests,1), iVar3 != 0)) &&
+     (iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats), iVar3 != 0)) {
+    iVar3 = DDL_IterateFirst(&searchStateBests,&searchStateBests);
     while (iVar3 != 0) {
-      LiveStats_UpdatePersonalBest(param_1,(char *)local_5c,(char *)local_38,&local_14,&local_2c,"")
-      ;
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      LiveStats_UpdatePersonalBest
+                (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchStateStats,&searchStateBests,
+                 "");
+      iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
       if (iVar3 == 0) break;
-      iVar3 = DDL_IterateNext(&local_2c,&local_2c);
+      iVar3 = DDL_IterateNext(&searchStateBests,&searchStateBests);
     }
   }
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
   if (iVar3 != 0) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
+    iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     while (iVar3 != 0) {
-      LiveStats_UpdateStatsMilestones(param_1,(char *)local_5c,(char *)local_38,&local_14);
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      LiveStats_UpdateStatsMilestones
+                (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchStateStats);
+      iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
-  LiveStats_UpdatetBestMatchAccuracy((char *)local_5c,(char *)local_38);
-  LiveStats_UpdatetBestMatchKdRatio((char *)local_5c,(char *)local_38);
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+  LiveStats_UpdatetBestMatchAccuracy(liveStatsBuffer,oldStatsBuffer);
+  LiveStats_UpdatetBestMatchKdRatio(liveStatsBuffer,oldStatsBuffer);
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
   if (iVar3 != 0) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
+    iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     while (iVar3 != 0) {
-      LiveStats_UpdatePersonalBestHighest(param_1,(char *)local_5c,(char *)local_38,&local_14);
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      LiveStats_UpdatePersonalBestHighest
+                (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchStateStats);
+      iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
-  if ((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&local_58,1), iVar3 != 0)) {
-    local_94 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].memberCount;
-    for (local_98 = 0; local_98 < local_94; local_98 = local_98 + 1) {
-      local_ac = (local_14.ddl)->enumList[(local_14.member)->enumIndex].members[local_98];
-      iVar3 = DDL_MoveTo(&local_14,&local_bc,2);
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+  if ((iVar3 != 0) &&
+     (iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateGameModeStats,1), iVar3 != 0)) {
+    numGameModes = (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].
+                   memberCount;
+    for (currentGameMode = 0; currentGameMode < numGameModes; currentGameMode = currentGameMode + 1)
+    {
+      gameModeName = (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].members
+                     [currentGameMode];
+      iVar3 = DDL_MoveTo(&searchStateStats,&searchStateGameModeBests,2);
       if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_bc,&local_bc);
+        iVar3 = DDL_IterateFirst(&searchStateGameModeBests,&searchStateGameModeBests);
         while (iVar3 != 0) {
-          local_c0 = (local_bc.ddl)->enumList[(local_bc.member)->enumIndex].members
-                     [local_bc.arrayIndex];
-          iVar3 = DDL_MoveTo(&local_58,&local_a8,2);
+          statName = (searchStateGameModeBests.ddl)->enumList
+                     [(searchStateGameModeBests.member)->enumIndex].members
+                     [searchStateGameModeBests.arrayIndex];
+          iVar3 = DDL_MoveTo(&searchStateGameModeStats,&searchStateGameModeCurrentStats,2);
           if (iVar3 != 0) {
             LiveStats_UpdatePersonalBest
-                      (param_1,(char *)local_5c,(char *)local_38,&local_a8,&local_bc,local_ac);
+                      (controllerIndex,liveStatsBuffer,oldStatsBuffer,
+                       &searchStateGameModeCurrentStats,&searchStateGameModeBests,gameModeName);
           }
-          iVar3 = DDL_IterateNext(&local_bc,&local_bc);
+          iVar3 = DDL_IterateNext(&searchStateGameModeBests,&searchStateGameModeBests);
         }
       }
     }
   }
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
   if (iVar3 != 0) {
-    local_c4 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].memberCount;
-    for (local_c8 = 0; local_c8 < local_c4; local_c8 = local_c8 + 1) {
-      local_cc = (local_14.ddl)->enumList[(local_14.member)->enumIndex].members[local_c8];
-      iVar3 = DDL_MoveTo(&local_14,&local_dc,2);
+    numGameModes_2 =
+         (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].memberCount;
+    for (currentGameMode_2 = 0; currentGameMode_2 < numGameModes_2;
+        currentGameMode_2 = currentGameMode_2 + 1) {
+      gameModeName_2 =
+           (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].members
+           [currentGameMode_2];
+      iVar3 = DDL_MoveTo(&searchStateStats,&searchStateGameModeMilestones,2);
       if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_dc,&local_dc);
+        iVar3 = DDL_IterateFirst(&searchStateGameModeMilestones,&searchStateGameModeMilestones);
         while (iVar3 != 0) {
           LiveStats_UpdateGameModeStatsMilestones
-                    (param_1,(char *)local_5c,(char *)local_38,&local_dc,local_cc);
-          iVar3 = DDL_IterateNext(&local_dc,&local_dc);
+                    (controllerIndex,liveStatsBuffer,oldStatsBuffer,&searchStateGameModeMilestones,
+                     gameModeName_2);
+          iVar3 = DDL_IterateNext(&searchStateGameModeMilestones,&searchStateGameModeMilestones);
         }
       }
     }
   }
-  LiveStats_SortPersonalBests(param_1);
-  LiveStats_PublishNews(param_1);
+  LiveStats_SortPersonalBests(controllerIndex);
+  LiveStats_PublishNews(controllerIndex);
   return;
 }
 
@@ -3820,6 +4046,8 @@ void __cdecl LiveStats_CompareStatsVsStableBuffer(int param_1)
 void __cdecl LiveStats_CompareStatsVsStableBufferCmd(void)
 
 {
+  int controllerIndex;
+  
   if (!s_statsalreadycompared) {
     s_statsalreadycompared = true;
     LiveStats_CompareStatsVsStableBuffer(0);
@@ -3832,18 +4060,19 @@ void __cdecl LiveStats_CompareStatsVsStableBufferCmd(void)
 
 int __cdecl
 LiveStats_SecondaryChallengeComparison
-          (challengeInfo_t *param_1,challengeInfo_t *param_2,int param_3)
+          (challengeInfo_t *challenge0,challengeInfo_t *challenge1,int delta)
 
 {
   int iVar1;
+  int flagDelta;
   
-  iVar1 = (uint)param_1->flags - (uint)param_2->flags;
-  if ((((iVar1 == 0) && (iVar1 = param_3, param_3 == 0)) &&
-      ((param_1->type != MILESTONE_GLOBAL ||
-       ((param_2->type != MILESTONE_GLOBAL ||
-        (iVar1 = (uint)param_1->index - (uint)param_2->index, iVar1 == 0)))))) &&
-     (iVar1 = I_stricmp(param_1->name,param_2->name), iVar1 == 0)) {
-    iVar1 = (uint)param_1->index - (uint)param_2->index;
+  iVar1 = (uint)challenge0->flags - (uint)challenge1->flags;
+  if ((((iVar1 == 0) && (iVar1 = delta, delta == 0)) &&
+      ((challenge0->type != MILESTONE_GLOBAL ||
+       ((challenge1->type != MILESTONE_GLOBAL ||
+        (iVar1 = (uint)challenge0->index - (uint)challenge1->index, iVar1 == 0)))))) &&
+     (iVar1 = I_stricmp(challenge0->name,challenge1->name), iVar1 == 0)) {
+    iVar1 = (uint)challenge0->index - (uint)challenge1->index;
   }
   return iVar1;
 }
@@ -3851,81 +4080,94 @@ LiveStats_SecondaryChallengeComparison
 
 // 00978B20  LiveStats_ChallengeCompareNumToTargetValue  (live/live_stats.cpp:3081)
 
-int __cdecl LiveStats_ChallengeCompareNumToTargetValue(void *param_1,void *param_2)
+int __cdecl LiveStats_ChallengeCompareNumToTargetValue(void *arg0,void *arg1)
 
 {
   int iVar1;
+  int delta;
+  challengeInfo_t *challenge1;
+  challengeInfo_t *challenge0;
   
   iVar1 = LiveStats_SecondaryChallengeComparison
-                    (param_1,param_2,*(int *)((int)param_1 + 8) - *(int *)((int)param_2 + 8));
+                    (arg0,arg1,*(int *)((int)arg0 + 8) - *(int *)((int)arg1 + 8));
   return iVar1;
 }
 
 
 // 00978970  LiveStats_ChallengeComparePercentageCompleted  (live/live_stats.cpp:3092)
 
-int __cdecl LiveStats_ChallengeComparePercentageCompleted(void *param_1,void *param_2)
+int __cdecl LiveStats_ChallengeComparePercentageCompleted(void *arg0,void *arg1)
 
 {
   int iVar1;
+  int delta;
+  challengeInfo_t *challenge1;
+  int percentageChallenge0;
+  int percentageChallenge1;
+  challengeInfo_t *challenge0;
   
   iVar1 = LiveStats_SecondaryChallengeComparison
-                    (param_1,param_2,
-                     (*(int *)((int)param_2 + 0x18) * 100) / *(int *)((int)param_2 + 0x14) -
-                     (*(int *)((int)param_1 + 0x18) * 100) / *(int *)((int)param_1 + 0x14));
+                    (arg0,arg1,
+                     (*(int *)((int)arg1 + 0x18) * 100) / *(int *)((int)arg1 + 0x14) -
+                     (*(int *)((int)arg0 + 0x18) * 100) / *(int *)((int)arg0 + 0x14));
   return iVar1;
 }
 
 
 // 00978C20  LiveStats_ChallengeCompareReward  (live/live_stats.cpp:3106)
 
-int __cdecl LiveStats_ChallengeCompareReward(void *param_1,void *param_2)
+int __cdecl LiveStats_ChallengeCompareReward(void *arg0,void *arg1)
 
 {
   int iVar1;
+  int delta;
+  challengeInfo_t *challenge1;
+  challengeInfo_t *challenge0;
   
   iVar1 = LiveStats_SecondaryChallengeComparison
-                    (param_1,param_2,
-                     (*(int *)((int)param_2 + 0xc) + *(int *)((int)param_2 + 0x10)) -
-                     (*(int *)((int)param_1 + 0xc) + *(int *)((int)param_1 + 0x10)));
+                    (arg0,arg1,
+                     (*(int *)((int)arg1 + 0xc) + *(int *)((int)arg1 + 0x10)) -
+                     (*(int *)((int)arg0 + 0xc) + *(int *)((int)arg0 + 0x10)));
   return iVar1;
 }
 
 
 // 00978D30  LiveStats_ChallengeCompareDefault  (live/live_stats.cpp:3116)
 
-int __cdecl LiveStats_ChallengeCompareDefault(void *param_1,void *param_2)
+int __cdecl LiveStats_ChallengeCompareDefault(void *arg0,void *arg1)
 
 {
   int iVar1;
+  challengeInfo_t *challenge1;
+  challengeInfo_t *challenge0;
   
-  iVar1 = LiveStats_SecondaryChallengeComparison(param_1,param_2,0);
+  iVar1 = LiveStats_SecondaryChallengeComparison(arg0,arg1,0);
   return iVar1;
 }
 
 
 // 009788B0  LiveStats_SortPercentageCompleted  (live/live_stats.cpp:3124)
 
-void __cdecl LiveStats_SortPercentageCompleted(int param_1)
+void __cdecl LiveStats_SortPercentageCompleted(int type)
 
 {
-  if ((param_1 == 1) || (param_1 == 7)) {
+  if ((type == 1) || (type == 7)) {
     qsort(s_sortedChallengeList,s_totalNumberOfUnlockedItems,0x24,
           LiveStats_ChallengeComparePercentageCompleted);
   }
-  else if (param_1 == 5) {
+  else if (type == 5) {
     qsort(s_sortedAttachmentsList,s_numSortedAttachments,0x24,
           LiveStats_ChallengeComparePercentageCompleted);
   }
-  else if (param_1 == 4) {
+  else if (type == 4) {
     qsort(s_sortedWeaponGroupList,s_numSortedWeaponGroup,0x24,
           LiveStats_ChallengeComparePercentageCompleted);
   }
-  else if (param_1 == 0) {
+  else if (type == 0) {
     qsort(s_sortedGlobalChallengeList,s_numSortedGlobalChallenges,0x24,
           LiveStats_ChallengeComparePercentageCompleted);
   }
-  else if (param_1 == 6) {
+  else if (type == 6) {
     qsort(s_sortedChallengeList,s_numSortedChallenges,0x24,
           LiveStats_ChallengeComparePercentageCompleted);
   }
@@ -3935,26 +4177,26 @@ void __cdecl LiveStats_SortPercentageCompleted(int param_1)
 
 // 00978A60  LiveStats_SortNearestToCompletion  (live/live_stats.cpp:3148)
 
-void __cdecl LiveStats_SortNearestToCompletion(int param_1)
+void __cdecl LiveStats_SortNearestToCompletion(int type)
 
 {
-  if ((param_1 == 1) || (param_1 == 7)) {
+  if ((type == 1) || (type == 7)) {
     qsort(s_sortedChallengeList,s_totalNumberOfUnlockedItems,0x24,
           LiveStats_ChallengeCompareNumToTargetValue);
   }
-  else if (param_1 == 5) {
+  else if (type == 5) {
     qsort(s_sortedAttachmentsList,s_numSortedAttachments,0x24,
           LiveStats_ChallengeCompareNumToTargetValue);
   }
-  else if (param_1 == 4) {
+  else if (type == 4) {
     qsort(s_sortedWeaponGroupList,s_numSortedWeaponGroup,0x24,
           LiveStats_ChallengeCompareNumToTargetValue);
   }
-  else if (param_1 == 0) {
+  else if (type == 0) {
     qsort(s_sortedGlobalChallengeList,s_numSortedGlobalChallenges,0x24,
           LiveStats_ChallengeCompareNumToTargetValue);
   }
-  else if (param_1 == 6) {
+  else if (type == 6) {
     qsort(s_sortedChallengeList,s_numSortedChallenges,0x24,
           LiveStats_ChallengeCompareNumToTargetValue);
   }
@@ -3964,23 +4206,23 @@ void __cdecl LiveStats_SortNearestToCompletion(int param_1)
 
 // 00978B60  LiveStats_SortReward  (live/live_stats.cpp:3172)
 
-void __cdecl LiveStats_SortReward(int param_1)
+void __cdecl LiveStats_SortReward(int type)
 
 {
-  if ((param_1 == 1) || (param_1 == 7)) {
+  if ((type == 1) || (type == 7)) {
     qsort(s_sortedChallengeList,s_totalNumberOfUnlockedItems,0x24,LiveStats_ChallengeCompareReward);
   }
-  else if (param_1 == 5) {
+  else if (type == 5) {
     qsort(s_sortedAttachmentsList,s_numSortedAttachments,0x24,LiveStats_ChallengeCompareReward);
   }
-  else if (param_1 == 4) {
+  else if (type == 4) {
     qsort(s_sortedWeaponGroupList,s_numSortedWeaponGroup,0x24,LiveStats_ChallengeCompareReward);
   }
-  else if (param_1 == 0) {
+  else if (type == 0) {
     qsort(s_sortedGlobalChallengeList,s_numSortedGlobalChallenges,0x24,
           LiveStats_ChallengeCompareReward);
   }
-  else if (param_1 == 6) {
+  else if (type == 6) {
     qsort(s_sortedChallengeList,s_numSortedChallenges,0x24,LiveStats_ChallengeCompareReward);
   }
   return;
@@ -3989,24 +4231,24 @@ void __cdecl LiveStats_SortReward(int param_1)
 
 // 00978C70  LiveStats_SortDefault  (live/live_stats.cpp:3196)
 
-void __cdecl LiveStats_SortDefault(int param_1)
+void __cdecl LiveStats_SortDefault(int type)
 
 {
-  if ((param_1 == 1) || (param_1 == 7)) {
+  if ((type == 1) || (type == 7)) {
     qsort(s_sortedChallengeList,s_totalNumberOfUnlockedItems,0x24,LiveStats_ChallengeCompareDefault)
     ;
   }
-  else if (param_1 == 5) {
+  else if (type == 5) {
     qsort(s_sortedAttachmentsList,s_numSortedAttachments,0x24,LiveStats_ChallengeCompareDefault);
   }
-  else if (param_1 == 4) {
+  else if (type == 4) {
     qsort(s_sortedWeaponGroupList,s_numSortedWeaponGroup,0x24,LiveStats_ChallengeCompareDefault);
   }
-  else if (param_1 == 0) {
+  else if (type == 0) {
     qsort(s_sortedGlobalChallengeList,s_numSortedGlobalChallenges,0x24,
           LiveStats_ChallengeCompareDefault);
   }
-  else if (param_1 == 6) {
+  else if (type == 6) {
     qsort(s_sortedChallengeList,s_numSortedChallenges,0x24,LiveStats_ChallengeCompareDefault);
   }
   return;
@@ -4017,21 +4259,21 @@ void __cdecl LiveStats_SortDefault(int param_1)
 
 /* WARNING: Enum "challengeSortOrder_e": Some values do not have unique names */
 
-void __cdecl LiveStats_SortChallenges(challengeSortOrder_e param_1,int param_2)
+void __cdecl LiveStats_SortChallenges(challengeSortOrder_e sortOrder,int type)
 
 {
-  switch(param_1) {
+  switch(sortOrder) {
   case SORTORDER_FIRST:
-    LiveStats_SortNearestToCompletion(param_2);
+    LiveStats_SortNearestToCompletion(type);
     break;
   case SORTORDER_REWARD:
-    LiveStats_SortReward(param_2);
+    LiveStats_SortReward(type);
     break;
   case SORTORDER_PERCENTAGECOMPLETED:
-    LiveStats_SortPercentageCompleted(param_2);
+    LiveStats_SortPercentageCompleted(type);
     break;
   case SORTORDER_DEFAULT:
-    LiveStats_SortDefault(param_2);
+    LiveStats_SortDefault(type);
   }
   return;
 }
@@ -4040,19 +4282,22 @@ void __cdecl LiveStats_SortChallenges(challengeSortOrder_e param_1,int param_2)
 // 00978D60  LiveStats_AddChallenge  (live/live_stats.cpp:3242)
 
 void __cdecl
-LiveStats_AddChallenge(int param_1,char *param_2,int param_3,statsMilestoneTypes_t param_4)
+LiveStats_AddChallenge
+          (int controllerIndex,char *liveStatsBuffer,int itemNumber,
+          statsMilestoneTypes_t challengeType)
 
 {
   int iVar1;
-  ddlState_t local_14;
+  ddlState_t searchStateStats;
   
   va("%d");
-  iVar1 = DDL_MoveTo(&g_statsRootState,&local_14,3);
+  iVar1 = DDL_MoveTo(&g_statsRootState,&searchStateStats,3);
   if (iVar1 != 0) {
-    iVar1 = DDL_IterateFirst(&local_14,&local_14);
+    iVar1 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     while (iVar1 != 0) {
-      LiveStats_AddItemChallenge(param_1,param_2,&local_14,param_3,param_4);
-      iVar1 = DDL_IterateNext(&local_14,&local_14);
+      LiveStats_AddItemChallenge
+                (controllerIndex,liveStatsBuffer,&searchStateStats,itemNumber,challengeType);
+      iVar1 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
   return;
@@ -4061,17 +4306,25 @@ LiveStats_AddChallenge(int param_1,char *param_2,int param_3,statsMilestoneTypes
 
 // 00979430  LiveStats_AddItemForLock  (live/live_stats.cpp:3257)
 
-bool __cdecl LiveStats_AddItemForLock(int param_1,int param_2,int param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+bool __cdecl LiveStats_AddItemForLock(int controllerIndex,int itemNumber,int lock)
 
 {
   bool bVar1;
   bool bVar2;
   bool bVar3;
+  bool isPurchased;
+  bool isUnlocked;
+  bool isUnclassified;
   
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,param_2);
-  bVar2 = BG_UnlockablesIsItemLocked(param_1,param_2);
-  bVar3 = BG_UnlockablesIsItemClassifiedGeneric(param_1,param_2);
-  switch(param_3) {
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemNumber);
+  bVar2 = BG_UnlockablesIsItemLocked(controllerIndex,itemNumber);
+  bVar3 = BG_UnlockablesIsItemClassifiedGeneric(controllerIndex,itemNumber);
+  switch(lock) {
   case 0:
     if (bVar1) {
       return true;
@@ -4099,49 +4352,52 @@ bool __cdecl LiveStats_AddItemForLock(int param_1,int param_2,int param_3)
 // 00979280  LiveStats_BuildChallengeListWithLocks  (live/live_stats.cpp:3295)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl
 LiveStats_BuildChallengeListWithLocks
-          (int param_1,char *param_2,statsMilestoneTypes_t param_3,int param_4)
+          (int controllerIndex,char *liveStatsBuffer,statsMilestoneTypes_t challengeType,
+          int weaponGroup)
 
 {
   bool bVar1;
   itemGroup_t iVar2;
   int iVar3;
   loadoutSlot_t lVar4;
-  uint local_c;
-  int local_8;
+  uint itemNumber;
+  int lock;
   
   s_numSortedChallenges = 0;
   s_totalNumberOfUnlockedItems = 0;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 0x100; local_c = local_c + 1) {
-      bVar1 = BG_UnlockablesIsItemValidNotNull(local_c);
-      if ((bVar1) && (bVar1 = LiveStats_AddItemForLock(param_1,local_c,local_8), bVar1)) {
-        if (param_3 == MILESTONE_WEAPON) {
-          iVar2 = BG_UnlockablesGetItemGroupEnum(local_c);
-          if (((param_4 == iVar2) && (bVar1 = BG_UnlockablesItemIsDualWield(local_c), !bVar1)) &&
-             (iVar3 = BG_UnlockablesGetItemCost(local_c), iVar3 != -1)) {
-            LiveStats_AddChallenge(param_1,param_2,local_c,MILESTONE_WEAPON);
+  for (lock = 0; lock < 4; lock = lock + 1) {
+    for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+      bVar1 = BG_UnlockablesIsItemValidNotNull(itemNumber);
+      if ((bVar1) && (bVar1 = LiveStats_AddItemForLock(controllerIndex,itemNumber,lock), bVar1)) {
+        if (challengeType == MILESTONE_WEAPON) {
+          iVar2 = BG_UnlockablesGetItemGroupEnum(itemNumber);
+          if (((weaponGroup == iVar2) && (bVar1 = BG_UnlockablesItemIsDualWield(itemNumber), !bVar1)
+              ) && (iVar3 = BG_UnlockablesGetItemCost(itemNumber), iVar3 != -1)) {
+            LiveStats_AddChallenge(controllerIndex,liveStatsBuffer,itemNumber,MILESTONE_WEAPON);
           }
         }
         else {
-          iVar2 = BG_UnlockablesGetItemGroupEnum(local_c);
+          iVar2 = BG_UnlockablesGetItemGroupEnum(itemNumber);
           if ((((iVar2 == ITEMGROUP_GRENADE) &&
-               (bVar1 = BG_UnlockablesItemIsDualWield(local_c), !bVar1)) &&
-              (bVar1 = BG_UnlockablesIsItemPassive(local_c), !bVar1)) &&
-             (lVar4 = BG_UnlockablesGetItemLoadoutSlot(local_c),
+               (bVar1 = BG_UnlockablesItemIsDualWield(itemNumber), !bVar1)) &&
+              (bVar1 = BG_UnlockablesIsItemPassive(itemNumber), !bVar1)) &&
+             (lVar4 = BG_UnlockablesGetItemLoadoutSlot(itemNumber),
              lVar4 == LOADOUTSLOT_PRIMARY_GRENADE)) {
-            LiveStats_AddChallenge(param_1,param_2,local_c,param_3);
+            LiveStats_AddChallenge(controllerIndex,liveStatsBuffer,itemNumber,challengeType);
           }
-          iVar2 = BG_UnlockablesGetItemGroupEnum(local_c);
+          iVar2 = BG_UnlockablesGetItemGroupEnum(itemNumber);
           if (((iVar2 == ITEMGROUP_EXPLOSIVE) &&
-              (bVar1 = BG_UnlockablesItemIsDualWield(local_c), !bVar1)) &&
-             ((bVar1 = BG_UnlockablesIsItemPassive(local_c), !bVar1 &&
-              (lVar4 = BG_UnlockablesGetItemLoadoutSlot(local_c), lVar4 == LOADOUTSLOT_EQUIPMENT))))
-          {
-            LiveStats_AddChallenge(param_1,param_2,local_c,param_3);
+              (bVar1 = BG_UnlockablesItemIsDualWield(itemNumber), !bVar1)) &&
+             ((bVar1 = BG_UnlockablesIsItemPassive(itemNumber), !bVar1 &&
+              (lVar4 = BG_UnlockablesGetItemLoadoutSlot(itemNumber), lVar4 == LOADOUTSLOT_EQUIPMENT)
+              ))) {
+            LiveStats_AddChallenge(controllerIndex,liveStatsBuffer,itemNumber,challengeType);
           }
         }
       }
@@ -4158,38 +4414,41 @@ LiveStats_BuildChallengeListWithLocks
 
 void __cdecl
 LiveStats_BuildChallengeList
-          (int param_1,statsMilestoneTypes_t param_2,challengeSortOrder_e param_3,int param_4)
+          (int controllerIndex,statsMilestoneTypes_t challengeType,challengeSortOrder_e sortOrder,
+          int weaponGroup)
 
 {
   int iVar1;
-  ddlState_t local_28;
-  uchar *local_18;
-  ddlState_t local_14;
+  ddlState_t searchStateGroupStats;
+  char *liveStatsBuffer;
+  ddlState_t searchStateStats;
   
-  local_18 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
-  if ((param_2 == MILESTONE_WEAPON) || (param_2 == MILESTONE_GRENADES)) {
-    LiveStats_BuildChallengeListWithLocks(param_1,(char *)local_18,param_2,param_4);
+  liveStatsBuffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+  if ((challengeType == MILESTONE_WEAPON) || (challengeType == MILESTONE_GRENADES)) {
+    LiveStats_BuildChallengeListWithLocks(controllerIndex,liveStatsBuffer,challengeType,weaponGroup)
+    ;
   }
-  else if (param_2 == MILESTONE_GROUP) {
+  else if (challengeType == MILESTONE_GROUP) {
     s_numSortedWeaponGroup = 0;
-    BG_UnlockablesGetItemGroupName(param_4);
-    iVar1 = DDL_MoveTo(&g_statsRootState,&local_14,2);
-    if ((iVar1 != 0) && (iVar1 = DDL_MoveTo(&local_14,&local_28,1), iVar1 != 0)) {
-      iVar1 = DDL_IterateFirst(&local_28,&local_28);
+    BG_UnlockablesGetItemGroupName(weaponGroup);
+    iVar1 = DDL_MoveTo(&g_statsRootState,&searchStateStats,2);
+    if ((iVar1 != 0) && (iVar1 = DDL_MoveTo(&searchStateStats,&searchStateGroupStats,1), iVar1 != 0)
+       ) {
+      iVar1 = DDL_IterateFirst(&searchStateGroupStats,&searchStateGroupStats);
       while (iVar1 != 0) {
-        LiveStats_AddGroupChallenge((char *)local_18,&local_28,param_4);
-        iVar1 = DDL_IterateNext(&local_28,&local_28);
+        LiveStats_AddGroupChallenge(liveStatsBuffer,&searchStateGroupStats,weaponGroup);
+        iVar1 = DDL_IterateNext(&searchStateGroupStats,&searchStateGroupStats);
       }
     }
   }
-  if ((param_3 == SORTORDER_DEFAULT) ||
-     ((param_2 != MILESTONE_WEAPON && (param_2 != MILESTONE_GRENADES)))) {
-    if ((param_3 != SORTORDER_DEFAULT) && (param_2 == MILESTONE_GROUP)) {
-      LiveStats_SortChallenges(param_3,4);
+  if ((sortOrder == SORTORDER_DEFAULT) ||
+     ((challengeType != MILESTONE_WEAPON && (challengeType != MILESTONE_GRENADES)))) {
+    if ((sortOrder != SORTORDER_DEFAULT) && (challengeType == MILESTONE_GROUP)) {
+      LiveStats_SortChallenges(sortOrder,4);
     }
   }
   else {
-    LiveStats_SortChallenges(param_3,param_2);
+    LiveStats_SortChallenges(sortOrder,challengeType);
   }
   return;
 }
@@ -4207,8 +4466,10 @@ void __cdecl LiveStats_BuildChallengeListCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  challengeSortOrder_e local_14;
-  statsMilestoneTypes_t local_8;
+  challengeSortOrder_e sortOrder;
+  int controllerIndex;
+  int weaponGroup;
+  statsMilestoneTypes_t challengeType;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 4) {
@@ -4218,20 +4479,20 @@ void __cdecl LiveStats_BuildChallengeListCmd(void)
   }
   else {
     pcVar2 = Cmd_Argv(1);
-    local_8 = atoi(pcVar2);
+    challengeType = atoi(pcVar2);
     pcVar2 = Cmd_Argv(2);
-    local_14 = atoi(pcVar2);
+    sortOrder = atoi(pcVar2);
     pcVar2 = Cmd_Argv(3);
     iVar1 = atoi(pcVar2);
-    if ((7 < (int)local_8) || ((int)local_8 < -1)) {
+    if ((7 < (int)challengeType) || ((int)challengeType < -1)) {
       Com_PrintError(0xf,"Invalid Challenge Type %d\n");
-      local_8 = MILESTONE_INVALID;
+      challengeType = MILESTONE_INVALID;
     }
-    if ((3 < (int)local_14) || ((int)local_14 < -1)) {
+    if ((3 < (int)sortOrder) || ((int)sortOrder < -1)) {
       Com_PrintError(0xf,"Invalid Sort Order %d\n");
-      local_14 = SORTORDER_FIRST;
+      sortOrder = SORTORDER_FIRST;
     }
-    LiveStats_BuildChallengeList(0,local_8,local_14,iVar1);
+    LiveStats_BuildChallengeList(0,challengeType,sortOrder,iVar1);
   }
   return;
 }
@@ -4239,37 +4500,39 @@ void __cdecl LiveStats_BuildChallengeListCmd(void)
 
 // 00979970  FilterKillstreakChallengesType  (live/live_stats.cpp:3421)
 
-bool __cdecl FilterKillstreakChallengesType(ddlState_t *param_1,char *param_2)
+bool __cdecl FilterKillstreakChallengesType(ddlState_t *searchStateStats,char *killstreakType)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *s0;
+  int iVar1;
+  char *statType;
   
-  pcVar1 = param_1->ddl->enumList[param_1->member->enumIndex].members[param_1->arrayIndex];
-  iVar2 = I_stricmp(param_2,"KILLSTREAK_RECON");
-  if ((iVar2 == 0) || (iVar2 = I_stricmp(param_2,"KILLSTREAK_COUNTER_UAV"), iVar2 == 0)) {
-    iVar2 = I_stricmp(pcVar1,"destroyed");
-    if ((iVar2 != 0) && (iVar2 = I_stricmp(pcVar1,"used"), iVar2 != 0)) {
+  s0 = searchStateStats->ddl->enumList[searchStateStats->member->enumIndex].members
+       [searchStateStats->arrayIndex];
+  iVar1 = I_stricmp(killstreakType,"KILLSTREAK_RECON");
+  if ((iVar1 == 0) || (iVar1 = I_stricmp(killstreakType,"KILLSTREAK_COUNTER_UAV"), iVar1 == 0)) {
+    iVar1 = I_stricmp(s0,"destroyed");
+    if ((iVar1 != 0) && (iVar1 = I_stricmp(s0,"used"), iVar1 != 0)) {
       return false;
     }
     return true;
   }
-  iVar2 = I_stricmp(param_2,"KILLSTREAK_MORTAR");
-  if ((iVar2 != 0) &&
-     ((iVar2 = I_stricmp(param_2,"KILLSTREAK_NAPALM"), iVar2 != 0 &&
-      (iVar2 = I_stricmp(param_2,"KILLSTREAK_AIRSTRIKE"), iVar2 != 0)))) {
-    iVar2 = I_stricmp(param_2,"KILLSTREAK_SATELLITE");
-    if (iVar2 != 0) {
+  iVar1 = I_stricmp(killstreakType,"KILLSTREAK_MORTAR");
+  if ((iVar1 != 0) &&
+     ((iVar1 = I_stricmp(killstreakType,"KILLSTREAK_NAPALM"), iVar1 != 0 &&
+      (iVar1 = I_stricmp(killstreakType,"KILLSTREAK_AIRSTRIKE"), iVar1 != 0)))) {
+    iVar1 = I_stricmp(killstreakType,"KILLSTREAK_SATELLITE");
+    if (iVar1 != 0) {
       return true;
     }
-    iVar2 = I_stricmp(pcVar1,"used");
-    if (iVar2 == 0) {
+    iVar1 = I_stricmp(s0,"used");
+    if (iVar1 == 0) {
       return true;
     }
     return false;
   }
-  iVar2 = I_stricmp(pcVar1,"kills");
-  if ((iVar2 != 0) && (iVar2 = I_stricmp(pcVar1,"used"), iVar2 != 0)) {
+  iVar1 = I_stricmp(s0,"kills");
+  if ((iVar1 != 0) && (iVar1 = I_stricmp(s0,"used"), iVar1 != 0)) {
     return false;
   }
   return true;
@@ -4278,50 +4541,52 @@ bool __cdecl FilterKillstreakChallengesType(ddlState_t *param_1,char *param_2)
 
 // 00979AC0  FilterGamemodeStat  (live/live_stats.cpp:3453)
 
-bool __cdecl FilterGamemodeStat(ddlState_t *param_1,char *param_2)
+bool __cdecl FilterGamemodeStat(ddlState_t *searchGamemodeStateStats,char *gamemode)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *s0;
+  int iVar1;
+  char *statType;
   
-  pcVar1 = param_1->ddl->enumList[param_1->member->enumIndex].members[param_1->arrayIndex];
-  iVar2 = I_stricmp(pcVar1,"SCORE");
-  if ((((iVar2 == 0) || (iVar2 = I_stricmp(pcVar1,"TOP3"), iVar2 == 0)) ||
-      (iVar2 = I_stricmp(pcVar1,"TOPPLAYER"), iVar2 == 0)) ||
-     (iVar2 = I_stricmp(pcVar1,"WINS"), iVar2 == 0)) {
+  s0 = searchGamemodeStateStats->ddl->enumList[searchGamemodeStateStats->member->enumIndex].members
+       [searchGamemodeStateStats->arrayIndex];
+  iVar1 = I_stricmp(s0,"SCORE");
+  if ((((iVar1 == 0) || (iVar1 = I_stricmp(s0,"TOP3"), iVar1 == 0)) ||
+      (iVar1 = I_stricmp(s0,"TOPPLAYER"), iVar1 == 0)) || (iVar1 = I_stricmp(s0,"WINS"), iVar1 == 0)
+     ) {
     return true;
   }
-  iVar2 = I_stricmp(param_2,"dom");
-  if ((iVar2 == 0) || (iVar2 = I_stricmp(param_2,"koth"), iVar2 == 0)) {
-    iVar2 = I_stricmp(pcVar1,"CAPTURES");
-    if (((iVar2 != 0) && (iVar2 = I_stricmp(pcVar1,"OFFENDS"), iVar2 != 0)) &&
-       (iVar2 = I_stricmp(pcVar1,"DEFENDS"), iVar2 != 0)) {
+  iVar1 = I_stricmp(gamemode,"dom");
+  if ((iVar1 == 0) || (iVar1 = I_stricmp(gamemode,"koth"), iVar1 == 0)) {
+    iVar1 = I_stricmp(s0,"CAPTURES");
+    if (((iVar1 != 0) && (iVar1 = I_stricmp(s0,"OFFENDS"), iVar1 != 0)) &&
+       (iVar1 = I_stricmp(s0,"DEFENDS"), iVar1 != 0)) {
       return false;
     }
     return true;
   }
-  iVar2 = I_stricmp(param_2,"SD");
-  if (((iVar2 != 0) &&
-      ((iVar2 = I_stricmp(param_2,"HCSD"), iVar2 != 0 &&
-       (iVar2 = I_stricmp(param_2,"DEM"), iVar2 != 0)))) &&
-     (iVar2 = I_stricmp(param_2,"SAB"), iVar2 != 0)) {
-    iVar2 = I_stricmp(param_2,"CTF");
-    if (iVar2 != 0) {
+  iVar1 = I_stricmp(gamemode,"SD");
+  if (((iVar1 != 0) &&
+      ((iVar1 = I_stricmp(gamemode,"HCSD"), iVar1 != 0 &&
+       (iVar1 = I_stricmp(gamemode,"DEM"), iVar1 != 0)))) &&
+     (iVar1 = I_stricmp(gamemode,"SAB"), iVar1 != 0)) {
+    iVar1 = I_stricmp(gamemode,"CTF");
+    if (iVar1 != 0) {
       return false;
     }
-    iVar2 = I_stricmp(pcVar1,"CAPTURES");
-    if ((((iVar2 != 0) && (iVar2 = I_stricmp(pcVar1,"RETURNS"), iVar2 != 0)) &&
-        (iVar2 = I_stricmp(pcVar1,"OFFENDS"), iVar2 != 0)) &&
-       (iVar2 = I_stricmp(pcVar1,"DEFENDS"), iVar2 != 0)) {
+    iVar1 = I_stricmp(s0,"CAPTURES");
+    if ((((iVar1 != 0) && (iVar1 = I_stricmp(s0,"RETURNS"), iVar1 != 0)) &&
+        (iVar1 = I_stricmp(s0,"OFFENDS"), iVar1 != 0)) &&
+       (iVar1 = I_stricmp(s0,"DEFENDS"), iVar1 != 0)) {
       return false;
     }
     return true;
   }
-  iVar2 = I_stricmp(pcVar1,"PLANTS");
-  if (((iVar2 != 0) && (iVar2 = I_stricmp(pcVar1,"DEFUSES"), iVar2 != 0)) &&
-     ((iVar2 = I_stricmp(pcVar1,"DESTRUCTIONS"), iVar2 != 0 &&
-      ((iVar2 = I_stricmp(pcVar1,"OFFENDS"), iVar2 != 0 &&
-       (iVar2 = I_stricmp(pcVar1,"DEFENDS"), iVar2 != 0)))))) {
+  iVar1 = I_stricmp(s0,"PLANTS");
+  if (((iVar1 != 0) && (iVar1 = I_stricmp(s0,"DEFUSES"), iVar1 != 0)) &&
+     ((iVar1 = I_stricmp(s0,"DESTRUCTIONS"), iVar1 != 0 &&
+      ((iVar1 = I_stricmp(s0,"OFFENDS"), iVar1 != 0 && (iVar1 = I_stricmp(s0,"DEFENDS"), iVar1 != 0)
+       ))))) {
     return false;
   }
   return true;
@@ -4330,20 +4595,23 @@ bool __cdecl FilterGamemodeStat(ddlState_t *param_1,char *param_2)
 
 // 00979F90  LiveStats_AddGlobalKillstreakChallenges  (live/live_stats.cpp:3499)
 
-void __cdecl LiveStats_AddGlobalKillstreakChallenges(char *param_1,char *param_2)
+void __cdecl LiveStats_AddGlobalKillstreakChallenges(char *liveStatsBuffer,char *killstreakType)
 
 {
   uint uVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_14;
+  challengeInfo_t *challenge;
+  ddlState_t searchStateStats;
   
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
   if (iVar3 != 0) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
+    iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     uVar1 = s_numSortedChallenges;
     while (s_numSortedChallenges = uVar1, iVar3 != 0) {
-      bVar2 = LiveStats_AddGlobalChallenge(param_1,&local_14,s_sortedChallengeList + uVar1,param_2);
+      bVar2 = LiveStats_AddGlobalChallenge
+                        (liveStatsBuffer,&searchStateStats,s_sortedChallengeList + uVar1,
+                         killstreakType);
       if (bVar2) {
         s_sortedChallengeList[uVar1].flags = 0;
         s_numSortedChallenges = s_numSortedChallenges + 1;
@@ -4354,7 +4622,7 @@ void __cdecl LiveStats_AddGlobalKillstreakChallenges(char *param_1,char *param_2
           return;
         }
       }
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
       uVar1 = s_numSortedChallenges;
     }
   }
@@ -4365,61 +4633,70 @@ void __cdecl LiveStats_AddGlobalKillstreakChallenges(char *param_1,char *param_2
 // 00979DE0  LiveStats_BuildKillstreakChallengeList  (live/live_stats.cpp:3527)
 
 /* WARNING: Enum "challengeSortOrder_e": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl
-LiveStats_BuildKillstreakChallengeList(int param_1,char *param_2,challengeSortOrder_e param_3)
+LiveStats_BuildKillstreakChallengeList
+          (int controllerIndex,char *killstreakType,challengeSortOrder_e sortOrder)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  char *pcVar3;
-  int iVar4;
-  uint local_1c;
-  ddlState_t local_14;
+  uchar *liveStatsBuffer_00;
+  char *s1;
+  int iVar2;
+  uint itemNumber;
+  char *liveStatsBuffer;
+  ddlState_t searchStateStats;
   
-  puVar2 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+  liveStatsBuffer_00 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
   s_numSortedChallenges = 0;
-  for (local_1c = 0; local_1c < 0x100; local_1c = local_1c + 1) {
-    bVar1 = BG_UnlockablesIsItemValidNotNull(local_1c);
+  for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemNumber);
     if (bVar1) {
-      pcVar3 = BG_UnlockablesGetItemName(local_1c);
-      iVar4 = I_stricmp(param_2,pcVar3);
-      if ((iVar4 == 0) && (iVar4 = BG_UnlockablesGetItemCost(local_1c), iVar4 != -1)) {
+      s1 = BG_UnlockablesGetItemName(itemNumber);
+      iVar2 = I_stricmp(killstreakType,s1);
+      if ((iVar2 == 0) && (iVar2 = BG_UnlockablesGetItemCost(itemNumber), iVar2 != -1)) {
         va("%d");
-        iVar4 = DDL_MoveTo(&g_statsRootState,&local_14,3);
-        if (iVar4 != 0) {
-          iVar4 = DDL_IterateFirst(&local_14,&local_14);
-          while (iVar4 != 0) {
-            bVar1 = FilterKillstreakChallengesType(&local_14,param_2);
+        iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,3);
+        if (iVar2 != 0) {
+          iVar2 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
+          while (iVar2 != 0) {
+            bVar1 = FilterKillstreakChallengesType(&searchStateStats,killstreakType);
             if (bVar1) {
-              LiveStats_AddItemChallenge(param_1,(char *)puVar2,&local_14,local_1c,6);
+              LiveStats_AddItemChallenge
+                        (controllerIndex,(char *)liveStatsBuffer_00,&searchStateStats,itemNumber,6);
             }
-            iVar4 = DDL_IterateNext(&local_14,&local_14);
+            iVar2 = DDL_IterateNext(&searchStateStats,&searchStateStats);
           }
         }
       }
     }
   }
-  if (param_2 != (char *)0x0) {
-    iVar4 = I_stricmp(param_2,"KILLSTREAK_RECON");
-    if (iVar4 == 0) {
-      LiveStats_AddGlobalKillstreakChallenges((char *)puVar2,"KILLSTREAK_KILLS_U2");
+  if (killstreakType != (char *)0x0) {
+    iVar2 = I_stricmp(killstreakType,"KILLSTREAK_RECON");
+    if (iVar2 == 0) {
+      LiveStats_AddGlobalKillstreakChallenges((char *)liveStatsBuffer_00,"KILLSTREAK_KILLS_U2");
     }
     else {
-      iVar4 = I_stricmp(param_2,"KILLSTREAK_SATELLITE");
-      if (iVar4 == 0) {
-        LiveStats_AddGlobalKillstreakChallenges((char *)puVar2,"KILLSTREAK_KILLS_SATELLITE");
+      iVar2 = I_stricmp(killstreakType,"KILLSTREAK_SATELLITE");
+      if (iVar2 == 0) {
+        LiveStats_AddGlobalKillstreakChallenges
+                  ((char *)liveStatsBuffer_00,"KILLSTREAK_KILLS_SATELLITE");
       }
       else {
-        iVar4 = I_stricmp(param_2,"KILLSTREAK_COUNTER_UAV");
-        if (iVar4 == 0) {
-          LiveStats_AddGlobalKillstreakChallenges((char *)puVar2,"KILLSTREAK_KILLS_COUNTER_U2");
+        iVar2 = I_stricmp(killstreakType,"KILLSTREAK_COUNTER_UAV");
+        if (iVar2 == 0) {
+          LiveStats_AddGlobalKillstreakChallenges
+                    ((char *)liveStatsBuffer_00,"KILLSTREAK_KILLS_COUNTER_U2");
         }
       }
     }
   }
-  if (param_3 != SORTORDER_DEFAULT) {
-    LiveStats_SortChallenges(param_3,6);
+  if (sortOrder != SORTORDER_DEFAULT) {
+    LiveStats_SortChallenges(sortOrder,6);
   }
   return;
 }
@@ -4437,18 +4714,19 @@ void __cdecl LiveStats_BuildKillstreakChallengeListCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  challengeSortOrder_e local_c;
+  challengeSortOrder_e sortOrder;
+  int controllerIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
     pcVar2 = Cmd_Argv(2);
-    local_c = atoi(pcVar2);
-    if ((3 < (int)local_c) || ((int)local_c < -1)) {
+    sortOrder = atoi(pcVar2);
+    if ((3 < (int)sortOrder) || ((int)sortOrder < -1)) {
       Com_PrintError(0xf,"Invalid Sort Order %d\n");
-      local_c = SORTORDER_FIRST;
+      sortOrder = SORTORDER_FIRST;
     }
     pcVar2 = Cmd_Argv(1);
-    LiveStats_BuildKillstreakChallengeList(0,pcVar2,local_c);
+    LiveStats_BuildKillstreakChallengeList(0,pcVar2,sortOrder);
   }
   else {
     Com_PrintError(0xf,
@@ -4461,27 +4739,28 @@ void __cdecl LiveStats_BuildKillstreakChallengeListCmd(void)
 
 // 0097A240  LiveStats_BuildLifeTimeGlobalChallengesList  (live/live_stats.cpp:3616)
 
-void __cdecl LiveStats_BuildLifeTimeGlobalChallengesList(char *param_1)
+void __cdecl LiveStats_BuildLifeTimeGlobalChallengesList(char *liveStatsBuffer)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t local_14;
+  challengeInfo_t *challenge;
+  ddlState_t searchStateStats;
   
-  iVar2 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+  iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
   if (iVar2 != 0) {
-    iVar2 = DDL_IterateFirst(&local_14,&local_14);
+    iVar2 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
     while (iVar2 != 0) {
       bVar1 = LiveStats_AddGlobalLifetimeChallenge
-                        (param_1,&local_14,s_sortedGlobalChallengeList + s_numSortedGlobalChallenges
-                        );
+                        (liveStatsBuffer,&searchStateStats,
+                         s_sortedGlobalChallengeList + s_numSortedGlobalChallenges);
       if ((bVar1) &&
          (s_numSortedGlobalChallenges = s_numSortedGlobalChallenges + 1,
          0x32 < s_numSortedGlobalChallenges)) {
         Com_PrintError(0x10,"Tried to add too many stats perks to list - only %d are supported.\n");
         return;
       }
-      iVar2 = DDL_IterateNext(&local_14,&local_14);
+      iVar2 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
   return;
@@ -4490,23 +4769,26 @@ void __cdecl LiveStats_BuildLifeTimeGlobalChallengesList(char *param_1)
 
 // 0097A420  LiveStats_BuildGamemodeChallengesList  (live/live_stats.cpp:3641)
 
-void __cdecl LiveStats_BuildGamemodeChallengesList(int param_1,char *param_2,char *param_3)
+void __cdecl
+LiveStats_BuildGamemodeChallengesList(int controllerIndex,char *liveStatsBuffer,char *gamemode)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  ddlState_t searchStateStats;
+  ddlState_t searchGamemodeStateStats;
   
-  iVar2 = DDL_MoveTo(&g_statsRootState,&local_24,2);
-  if ((iVar2 != 0) && (iVar2 = DDL_MoveTo(&g_statsRootState,&local_14,3), iVar2 != 0)) {
-    iVar2 = DDL_IterateFirst(&local_14,&local_14);
+  iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,2);
+  if ((iVar2 != 0) &&
+     (iVar2 = DDL_MoveTo(&g_statsRootState,&searchGamemodeStateStats,3), iVar2 != 0)) {
+    iVar2 = DDL_IterateFirst(&searchGamemodeStateStats,&searchGamemodeStateStats);
     while (iVar2 != 0) {
-      bVar1 = FilterGamemodeStat(&local_14,param_3);
+      bVar1 = FilterGamemodeStat(&searchGamemodeStateStats,gamemode);
       if (bVar1) {
-        LiveStats_AddGamemodeChallenge(param_1,param_2,&local_24,&local_14);
+        LiveStats_AddGamemodeChallenge
+                  (controllerIndex,liveStatsBuffer,&searchStateStats,&searchGamemodeStateStats);
       }
-      iVar2 = DDL_IterateNext(&local_14,&local_14);
+      iVar2 = DDL_IterateNext(&searchGamemodeStateStats,&searchGamemodeStateStats);
     }
   }
   return;
@@ -4518,29 +4800,35 @@ void __cdecl LiveStats_BuildGamemodeChallengesList(int param_1,char *param_2,cha
 /* WARNING: Enum "challengeSortOrder_e": Some values do not have unique names */
 
 void __cdecl
-LiveStats_BuildGlobalChallengesList(int param_1,char *param_2,challengeSortOrder_e param_3)
+LiveStats_BuildGlobalChallengesList
+          (int controllerIndex,char *globalChallengesType,challengeSortOrder_e sortOrder)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  int iVar3;
-  ddlState_t local_14;
+  uchar *liveStatsBuffer_00;
+  int iVar2;
+  challengeInfo_t *challenge;
+  char *liveStatsBuffer;
+  ddlState_t searchStateStats;
   
-  puVar2 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+  liveStatsBuffer_00 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
   s_numSortedGlobalChallenges = 0;
-  if ((param_2 == (char *)0x0) || (iVar3 = I_stricmp(param_2,"LIFETIME_"), iVar3 == 0)) {
-    if ((param_2 != (char *)0x0) && (iVar3 = I_stricmp(param_2,"LIFETIME_"), iVar3 == 0)) {
-      LiveStats_BuildLifeTimeGlobalChallengesList((char *)puVar2);
+  if ((globalChallengesType == (char *)0x0) ||
+     (iVar2 = I_stricmp(globalChallengesType,"LIFETIME_"), iVar2 == 0)) {
+    if ((globalChallengesType != (char *)0x0) &&
+       (iVar2 = I_stricmp(globalChallengesType,"LIFETIME_"), iVar2 == 0)) {
+      LiveStats_BuildLifeTimeGlobalChallengesList((char *)liveStatsBuffer_00);
     }
   }
   else {
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
-    if (iVar3 != 0) {
-      iVar3 = DDL_IterateFirst(&local_14,&local_14);
-      while (iVar3 != 0) {
+    iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+    if (iVar2 != 0) {
+      iVar2 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
+      while (iVar2 != 0) {
         bVar1 = LiveStats_AddGlobalChallenge
-                          ((char *)puVar2,&local_14,
-                           s_sortedGlobalChallengeList + s_numSortedGlobalChallenges,param_2);
+                          ((char *)liveStatsBuffer_00,&searchStateStats,
+                           s_sortedGlobalChallengeList + s_numSortedGlobalChallenges,
+                           globalChallengesType);
         if ((bVar1) &&
            (s_numSortedGlobalChallenges = s_numSortedGlobalChallenges + 1,
            0x32 < s_numSortedGlobalChallenges)) {
@@ -4548,16 +4836,16 @@ LiveStats_BuildGlobalChallengesList(int param_1,char *param_2,challengeSortOrder
                         );
           return;
         }
-        iVar3 = DDL_IterateNext(&local_14,&local_14);
+        iVar2 = DDL_IterateNext(&searchStateStats,&searchStateStats);
       }
     }
-    bVar1 = StringBeginsWith("GM_",param_2);
+    bVar1 = StringBeginsWith("GM_",globalChallengesType);
     if (bVar1) {
       LiveStats_BuildGamemodeChallengesList
-                (param_1,(char *)puVar2,(ui_challengeGameMode->current).string);
+                (controllerIndex,(char *)liveStatsBuffer_00,(ui_challengeGameMode->current).string);
     }
   }
-  LiveStats_SortChallenges(param_3,0);
+  LiveStats_SortChallenges(sortOrder,0);
   return;
 }
 
@@ -4574,14 +4862,16 @@ void __cdecl LiveStats_BuildGlobalChallengesListCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  challengeSortOrder_e cVar3;
+  challengeSortOrder_e sortOrder_00;
+  challengeSortOrder_e sortOrder;
+  int controllerIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
     pcVar2 = Cmd_Argv(2);
-    cVar3 = atoi(pcVar2);
+    sortOrder_00 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(1);
-    LiveStats_BuildGlobalChallengesList(0,pcVar2,cVar3);
+    LiveStats_BuildGlobalChallengesList(0,pcVar2,sortOrder_00);
   }
   else {
     Com_PrintError(0xf,
@@ -4595,37 +4885,42 @@ void __cdecl LiveStats_BuildGlobalChallengesListCmd(void)
 // 0097A860  LiveStats_AddUnderBarrelAttachments  (live/live_stats.cpp:3731)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl LiveStats_AddUnderBarrelAttachments(int param_1,char *param_2)
+void __cdecl LiveStats_AddUnderBarrelAttachments(int controllerIndex,char *liveStatsBuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   itemGroup_t iVar4;
-  uint local_18;
-  ddlState_t local_14;
+  uint itemNumber;
+  ddlState_t searchStateStats;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((liveStatsBuffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0xe94,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  for (local_18 = 0; local_18 < 0x100; local_18 = local_18 + 1) {
-    bVar2 = BG_UnlockablesIsItemValidNotNull(local_18);
-    if (((bVar2) && (iVar3 = BG_UnlockablesGetItemCost(local_18), iVar3 != -1)) &&
-       ((iVar4 = BG_UnlockablesGetItemGroupEnum(local_18), iVar4 == ITEMGROUP_MASTERKEY ||
-        ((iVar4 = BG_UnlockablesGetItemGroupEnum(local_18), iVar4 == ITEMGROUP_GRENADELAUNCHER ||
-         (iVar4 = BG_UnlockablesGetItemGroupEnum(local_18), iVar4 == ITEMGROUP_FLAMETHROWER)))))) {
+  for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+    bVar2 = BG_UnlockablesIsItemValidNotNull(itemNumber);
+    if (((bVar2) && (iVar3 = BG_UnlockablesGetItemCost(itemNumber), iVar3 != -1)) &&
+       ((iVar4 = BG_UnlockablesGetItemGroupEnum(itemNumber), iVar4 == ITEMGROUP_MASTERKEY ||
+        ((iVar4 = BG_UnlockablesGetItemGroupEnum(itemNumber), iVar4 == ITEMGROUP_GRENADELAUNCHER ||
+         (iVar4 = BG_UnlockablesGetItemGroupEnum(itemNumber), iVar4 == ITEMGROUP_FLAMETHROWER))))))
+    {
       va("%d");
-      iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,3);
+      iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,3);
       if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_14,&local_14);
+        iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
         while (iVar3 != 0) {
-          LiveStats_AddUnderBarrelAttachmentChallenge(param_1,param_2,&local_14,local_18,5);
-          iVar3 = DDL_IterateNext(&local_14,&local_14);
+          LiveStats_AddUnderBarrelAttachmentChallenge
+                    (controllerIndex,liveStatsBuffer,&searchStateStats,itemNumber,5);
+          iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
         }
       }
     }
@@ -4638,35 +4933,41 @@ void __cdecl LiveStats_AddUnderBarrelAttachments(int param_1,char *param_2)
 
 /* WARNING: Enum "challengeSortOrder_e": Some values do not have unique names */
 
-void __cdecl LiveStats_BuildAttachmentsList(int param_1,challengeSortOrder_e param_2)
+void __cdecl LiveStats_BuildAttachmentsList(int controllerIndex,challengeSortOrder_e sortOrder)
 
 {
-  char *pcVar1;
-  uchar *puVar2;
-  int iVar3;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  char *attachmentName_00;
+  uchar *liveStatsBuffer_00;
+  int iVar1;
+  char *attachmentName;
+  char *liveStatsBuffer;
+  ddlState_t searchAttachmentStateStats;
+  ddlState_t searchStateStats;
   
-  puVar2 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
+  liveStatsBuffer_00 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_GLOBAL,true);
   s_numSortedAttachments = 0;
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
-  if (iVar3 != 0) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
-    while (iVar3 != 0) {
-      pcVar1 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].members[local_14.arrayIndex];
-      iVar3 = DDL_MoveTo(&local_14,&local_24,1);
-      if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_24,&local_24);
-        while (iVar3 != 0) {
-          LiveStats_AddAttachmentsChallenge(param_1,(char *)puVar2,&local_24,pcVar1);
-          iVar3 = DDL_IterateNext(&local_24,&local_24);
+  iVar1 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+  if (iVar1 != 0) {
+    iVar1 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
+    while (iVar1 != 0) {
+      attachmentName_00 =
+           (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].members
+           [searchStateStats.arrayIndex];
+      iVar1 = DDL_MoveTo(&searchStateStats,&searchAttachmentStateStats,1);
+      if (iVar1 != 0) {
+        iVar1 = DDL_IterateFirst(&searchAttachmentStateStats,&searchAttachmentStateStats);
+        while (iVar1 != 0) {
+          LiveStats_AddAttachmentsChallenge
+                    (controllerIndex,(char *)liveStatsBuffer_00,&searchAttachmentStateStats,
+                     attachmentName_00);
+          iVar1 = DDL_IterateNext(&searchAttachmentStateStats,&searchAttachmentStateStats);
         }
       }
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      iVar1 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
-  LiveStats_AddUnderBarrelAttachments(param_1,(char *)puVar2);
-  LiveStats_SortChallenges(param_2,5);
+  LiveStats_AddUnderBarrelAttachments(controllerIndex,(char *)liveStatsBuffer_00);
+  LiveStats_SortChallenges(sortOrder,5);
   return;
 }
 
@@ -4682,14 +4983,16 @@ void __cdecl LiveStats_BuildAttachmentsListCmd(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  challengeSortOrder_e cVar3;
+  char *nptr;
+  challengeSortOrder_e sortOrder_00;
+  challengeSortOrder_e sortOrder;
+  int controllerIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    cVar3 = atoi(pcVar2);
-    LiveStats_BuildAttachmentsList(0,cVar3);
+    nptr = Cmd_Argv(1);
+    sortOrder_00 = atoi(nptr);
+    LiveStats_BuildAttachmentsList(0,sortOrder_00);
   }
   else {
     Com_PrintError(0xf,"BuildAttachmentsList usage: BuildAttachmentsList <sortOrder> \n");
@@ -4700,35 +5003,37 @@ void __cdecl LiveStats_BuildAttachmentsListCmd(void)
 
 // 0097AF60  LiveStats_ValidateChecksum  (live/live_stats.cpp:3928)
 
-bool __cdecl LiveStats_ValidateChecksum(uchar *param_1,int param_2)
+bool __cdecl LiveStats_ValidateChecksum(uchar *buffer,int len)
 
 {
   uint uVar1;
+  uint checksum;
   
-  uVar1 = LiveStats_ChecksumGamerStats(param_1 + 4,param_2);
-  return *(uint *)param_1 == uVar1;
+  uVar1 = LiveStats_ChecksumGamerStats(buffer + 4,len);
+  return *(uint *)buffer == uVar1;
 }
 
 
 // 0097AF90  LiveStats_ValidateStatsBackup  (live/live_stats.cpp:3937)
 
-bool __cdecl LiveStats_ValidateStatsBackup(int param_1)
+bool __cdecl LiveStats_ValidateStatsBackup(int controllerIndex)
 
 {
   bool bVar1;
   int iVar2;
-  uchar *puVar3;
-  int local_8;
+  uchar *buffer;
+  int statsBackupVersion;
   
-  iVar2 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_BACKUP,true);
+  iVar2 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_BACKUP,true);
   iVar2 = iVar2 + -4;
-  puVar3 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_BACKUP,true);
-  bVar1 = LiveStats_ValidateChecksum(puVar3,iVar2);
+  buffer = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_BACKUP,true);
+  bVar1 = LiveStats_ValidateChecksum(buffer,iVar2);
   if (bVar1) {
-    local_8 = 0;
-    LiveStats_GetIntPlayerBackupStatByKey(param_1,&local_8,MP_PLAYERSTATSKEY_STATS_VERSION);
-    if (local_8 == (stat_version->current).integer) {
-      LiveStorage_StatsBackupFetchCompleted(param_1);
+    statsBackupVersion = 0;
+    LiveStats_GetIntPlayerBackupStatByKey
+              (controllerIndex,&statsBackupVersion,MP_PLAYERSTATSKEY_STATS_VERSION);
+    if (statsBackupVersion == (stat_version->current).integer) {
+      LiveStorage_StatsBackupFetchCompleted(controllerIndex);
       bVar1 = true;
     }
     else {
@@ -4748,65 +5053,69 @@ bool __cdecl LiveStats_ValidateStatsBackup(int param_1)
 
 bool __cdecl
 LiveStats_GetIntPlayerStatByKey
-          (int param_1,int *param_2,statsLocation param_3,playerStatsKeyIndex_t param_4)
+          (int controllerIndex,int *outInt,statsLocation location,playerStatsKeyIndex_t statKey)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *base;
+  uchar *statsBuffer;
   
-  puVar2 = LiveStorage_GetStatsBuffer(param_1,param_3,true);
-  bVar1 = LiveStats_GetIntPlayerStatFromBase(param_2,playerStatKeys[param_4],(char *)puVar2);
+  base = LiveStorage_GetStatsBuffer(controllerIndex,location,true);
+  bVar1 = LiveStats_GetIntPlayerStatFromBase(outInt,playerStatKeys[statKey],(char *)base);
   return bVar1;
 }
 
 
 // 0097B040  LiveStats_ValidateStats  (live/live_stats.cpp:4019)
 
-void __cdecl LiveStats_ValidateStats(int param_1)
+void __cdecl LiveStats_ValidateStats(int controllerIndex)
 
 {
   bool bVar1;
-  int local_6c;
-  playerStatsKeyIndex_t local_68 [22];
-  int local_10;
-  int local_c;
-  int local_8;
+  int backupStatsValue;
+  int currentStatsValue;
+  playerStatsKeyIndex_t statsKeys [21];
+  int statsInitialVersion;
+  int currentStatsKey;
+  int statsBackupVersion;
   
-  bVar1 = LiveStorage_GetStatsChecksumValid(param_1,STATS_LOCATION_NORMAL);
+  bVar1 = LiveStorage_GetStatsChecksumValid(controllerIndex,STATS_LOCATION_NORMAL);
   if (!bVar1) {
-    GamerProfile_WriteSettings(param_1);
+    GamerProfile_WriteSettings(controllerIndex);
   }
-  local_68[1] = 2;
-  local_68[2] = 1;
-  local_68[3] = 3;
-  local_68[4] = 0x28;
-  local_68[5] = 0x10;
-  local_68[6] = 0x11;
-  local_68[7] = 0x12;
-  local_68[8] = 0x13;
-  local_68[9] = 0x18;
-  local_68[10] = 0x19;
-  local_68[0xb] = 0x1a;
-  local_68[0xc] = 0x1b;
-  local_68[0xd] = 0x1c;
-  local_68[0xe] = 0x1e;
-  local_68[0xf] = 0x1f;
-  local_68[0x10] = 0x20;
-  local_68[0x11] = 0x21;
-  local_68[0x12] = 0x22;
-  local_68[0x13] = 0x23;
-  local_68[0x14] = 0x24;
-  for (local_c = 0; local_68[local_c + 1] != MP_PLAYERSTATSKEY_COUNT; local_c = local_c + 1) {
-    local_6c = 0;
-    local_68[0] = MP_PLAYERSTATSKEY_RANKXP;
+  statsKeys[0] = MP_PLAYERSTATSKEY_SCORE;
+  statsKeys[1] = 1;
+  statsKeys[2] = 3;
+  statsKeys[3] = 0x28;
+  statsKeys[4] = 0x10;
+  statsKeys[5] = 0x11;
+  statsKeys[6] = 0x12;
+  statsKeys[7] = 0x13;
+  statsKeys[8] = 0x18;
+  statsKeys[9] = 0x19;
+  statsKeys[10] = 0x1a;
+  statsKeys[0xb] = 0x1b;
+  statsKeys[0xc] = 0x1c;
+  statsKeys[0xd] = 0x1e;
+  statsKeys[0xe] = 0x1f;
+  statsKeys[0xf] = 0x20;
+  statsKeys[0x10] = 0x21;
+  statsKeys[0x11] = 0x22;
+  statsKeys[0x12] = 0x23;
+  statsKeys[0x13] = 0x24;
+  for (currentStatsKey = 0; statsKeys[currentStatsKey] != MP_PLAYERSTATSKEY_COUNT;
+      currentStatsKey = currentStatsKey + 1) {
+    backupStatsValue = 0;
+    currentStatsValue = 0;
     bVar1 = LiveStats_GetIntPlayerStatByKey
-                      (param_1,&local_6c,STATS_LOCATION_BACKUP,local_68[local_c + 1]);
+                      (controllerIndex,&backupStatsValue,STATS_LOCATION_BACKUP,
+                       statsKeys[currentStatsKey]);
     if ((bVar1) &&
        (bVar1 = LiveStats_GetIntPlayerStatByKey
-                          (param_1,(int *)local_68,STATS_LOCATION_FORCE_NORMAL,local_68[local_c + 1]
-                          ), bVar1)) {
-      if ((int)local_68[0] < local_6c) {
-        GamerProfile_WriteSettings(param_1);
+                          (controllerIndex,&currentStatsValue,STATS_LOCATION_FORCE_NORMAL,
+                           statsKeys[currentStatsKey]), bVar1)) {
+      if (currentStatsValue < backupStatsValue) {
+        GamerProfile_WriteSettings(controllerIndex);
       }
     }
     else {
@@ -4814,14 +5123,16 @@ void __cdecl LiveStats_ValidateStats(int param_1)
     }
   }
   Com_Printf(0x10,"Backup stats are below or equal to current stats\n");
-  local_8 = 0;
-  local_10 = 0;
+  statsBackupVersion = 0;
+  statsInitialVersion = 0;
   LiveStats_GetIntPlayerStatByKey
-            (param_1,&local_8,STATS_LOCATION_BACKUP,MP_PLAYERSTATSKEY_STATS_VERSION);
+            (controllerIndex,&statsBackupVersion,STATS_LOCATION_BACKUP,
+             MP_PLAYERSTATSKEY_STATS_VERSION);
   LiveStats_GetIntPlayerStatByKey
-            (param_1,&local_10,STATS_LOCATION_FORCE_NORMAL,MP_PLAYERSTATSKEY_STATS_VERSION);
-  if (local_8 != local_10) {
-    GamerProfile_WriteSettings(param_1);
+            (controllerIndex,&statsInitialVersion,STATS_LOCATION_FORCE_NORMAL,
+             MP_PLAYERSTATSKEY_STATS_VERSION);
+  if (statsBackupVersion != statsInitialVersion) {
+    GamerProfile_WriteSettings(controllerIndex);
   }
   return;
 }
@@ -4836,11 +5147,11 @@ void __cdecl LiveStats_StatReadDDLCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  int iVar3;
-  int local_64;
-  ddlState_t local_60;
-  uchar *local_50;
-  ddlResult_t local_4c;
+  int checkValidIndex;
+  int i;
+  ddlState_t state;
+  char *buffer;
+  ddlResult_t result;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -4848,54 +5159,54 @@ void __cdecl LiveStats_StatReadDDLCmd(void)
     DDL_PrintError("DDL: Could not find the global stats ddl definition.\n");
   }
   else {
-    DDL_Reset(&local_60,g_statsDDL);
+    DDL_Reset(&state,g_statsDDL);
     DDL_Printf("DDL: Attempting to move.. \n");
     iVar1 = Cmd_Argc();
     if (iVar1 < 2) {
       DDL_Printf("DDL: statsDDLTest usage: statsDDLTest <path>\n");
     }
     else {
-      for (local_64 = 1; iVar1 = Cmd_Argc(), local_64 < iVar1; local_64 = local_64 + 1) {
-        if (local_60.member == (ddlMemberDef_t *)0x0) {
-          pcVar2 = Cmd_Argv(local_64);
-          iVar1 = DDL_MoveToName(&local_60,&local_60,pcVar2);
+      for (i = 1; iVar1 = Cmd_Argc(), i < iVar1; i = i + 1) {
+        if (state.member == (ddlMemberDef_t *)0x0) {
+          pcVar2 = Cmd_Argv(i);
+          iVar1 = DDL_MoveToName(&state,&state,pcVar2);
           if (iVar1 == 0) {
-            Cmd_Argv(local_64);
+            Cmd_Argv(i);
             DDL_PrintError("DDL: Member \'%s\' not found.\n");
             return;
           }
-          Cmd_Argv(local_64);
+          Cmd_Argv(i);
           DDL_Printf("%s");
         }
-        else if ((((local_60.member)->arraySize < 2) || ((local_60.member)->enumIndex != -1)) ||
-                (local_60.arrayIndex != -1)) {
-          pcVar2 = Cmd_Argv(local_64);
-          iVar1 = DDL_MoveToName(&local_60,&local_60,pcVar2);
+        else if ((((state.member)->arraySize < 2) || ((state.member)->enumIndex != -1)) ||
+                (state.arrayIndex != -1)) {
+          pcVar2 = Cmd_Argv(i);
+          iVar1 = DDL_MoveToName(&state,&state,pcVar2);
           if (iVar1 == 0) {
-            Cmd_Argv(local_64);
+            Cmd_Argv(i);
             DDL_PrintError("DDL: Member \'%s\' not found.\n");
             return;
           }
-          if ((local_60.member)->arraySize < 2) {
-            Cmd_Argv(local_64);
+          if ((state.member)->arraySize < 2) {
+            Cmd_Argv(i);
             DDL_Printf(".%s");
           }
           else {
-            Cmd_Argv(local_64);
+            Cmd_Argv(i);
             DDL_Printf("[%s]");
           }
         }
         else {
-          iVar3 = 1;
-          pcVar2 = Cmd_Argv(local_64);
+          checkValidIndex = 1;
+          pcVar2 = Cmd_Argv(i);
           iVar1 = atoi(pcVar2);
-          iVar1 = DDL_MoveToIndex(&local_60,&local_60,iVar1,iVar3);
+          iVar1 = DDL_MoveToIndex(&state,&state,iVar1,checkValidIndex);
           if (iVar1 == 0) {
-            Cmd_Argv(local_64);
+            Cmd_Argv(i);
             DDL_PrintError("DDL: Array index \'%s\' not found.\n");
             return;
           }
-          Cmd_Argv(local_64);
+          Cmd_Argv(i);
           DDL_Printf("[%s]");
         }
       }
@@ -4905,13 +5216,13 @@ void __cdecl LiveStats_StatReadDDLCmd(void)
         DDL_PrintError("DDL: Could not perform stat read operation.\n");
       }
       else {
-        local_50 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-        iVar1 = DDL_GetValue(&local_60,&local_4c,(char *)local_50);
+        buffer = (char *)LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+        iVar1 = DDL_GetValue(&state,&result,buffer);
         if (iVar1 == 0) {
           DDL_PrintError("DDL: Could not read value.\n");
         }
         else {
-          switch((local_60.member)->type) {
+          switch((state.member)->type) {
           case 0:
           case 1:
           case 2:
@@ -4938,64 +5249,64 @@ void __cdecl LiveStats_StatWriteDDLCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  uchar *puVar3;
-  int iVar4;
-  int local_1c;
-  ddlState_t local_18;
-  uchar *local_8;
+  uchar *buffer_00;
+  int checkValidIndex;
+  int i;
+  ddlState_t state;
+  char *buffer;
   
   if (g_statsDDL == (ddlDef_t *)0x0) {
     DDL_PrintError("DDL: Could not find the global stats ddl definition.\n");
   }
   else {
-    DDL_Reset(&local_18,g_statsDDL);
+    DDL_Reset(&state,g_statsDDL);
     DDL_Printf("DDL: Attempting to move.. \n");
     iVar1 = Cmd_Argc();
     if (iVar1 < 2) {
       DDL_Printf("DDL: statsDDLTest usage: statsDDLTest <path>\n");
     }
     else {
-      for (local_1c = 1; iVar1 = Cmd_Argc(), local_1c < iVar1 + -1; local_1c = local_1c + 1) {
-        if (local_18.member == (ddlMemberDef_t *)0x0) {
-          pcVar2 = Cmd_Argv(local_1c);
-          iVar1 = DDL_MoveToName(&local_18,&local_18,pcVar2);
+      for (i = 1; iVar1 = Cmd_Argc(), i < iVar1 + -1; i = i + 1) {
+        if (state.member == (ddlMemberDef_t *)0x0) {
+          pcVar2 = Cmd_Argv(i);
+          iVar1 = DDL_MoveToName(&state,&state,pcVar2);
           if (iVar1 == 0) {
-            Cmd_Argv(local_1c);
+            Cmd_Argv(i);
             DDL_PrintError("DDL: Member \'%s\' not found.\n");
             return;
           }
-          Cmd_Argv(local_1c);
+          Cmd_Argv(i);
           DDL_Printf("%s");
         }
-        else if ((((local_18.member)->arraySize < 2) || ((local_18.member)->enumIndex != -1)) ||
-                (local_18.arrayIndex != -1)) {
-          pcVar2 = Cmd_Argv(local_1c);
-          iVar1 = DDL_MoveToName(&local_18,&local_18,pcVar2);
+        else if ((((state.member)->arraySize < 2) || ((state.member)->enumIndex != -1)) ||
+                (state.arrayIndex != -1)) {
+          pcVar2 = Cmd_Argv(i);
+          iVar1 = DDL_MoveToName(&state,&state,pcVar2);
           if (iVar1 == 0) {
-            Cmd_Argv(local_1c);
+            Cmd_Argv(i);
             DDL_PrintError("DDL: Member \'%s\' not found.\n");
             return;
           }
-          if ((local_18.member)->arraySize < 2) {
-            Cmd_Argv(local_1c);
+          if ((state.member)->arraySize < 2) {
+            Cmd_Argv(i);
             DDL_Printf(".%s");
           }
           else {
-            Cmd_Argv(local_1c);
+            Cmd_Argv(i);
             DDL_Printf("[%s]");
           }
         }
         else {
-          iVar4 = 1;
-          pcVar2 = Cmd_Argv(local_1c);
+          checkValidIndex = 1;
+          pcVar2 = Cmd_Argv(i);
           iVar1 = atoi(pcVar2);
-          iVar1 = DDL_MoveToIndex(&local_18,&local_18,iVar1,iVar4);
+          iVar1 = DDL_MoveToIndex(&state,&state,iVar1,checkValidIndex);
           if (iVar1 == 0) {
-            Cmd_Argv(local_1c);
+            Cmd_Argv(i);
             DDL_PrintError("DDL: Array index \'%s\' not found.\n");
             return;
           }
-          Cmd_Argv(local_1c);
+          Cmd_Argv(i);
           DDL_Printf("[%s]");
         }
       }
@@ -5005,11 +5316,11 @@ void __cdecl LiveStats_StatWriteDDLCmd(void)
         DDL_PrintError("DDL: Could not perform stat write operation.\n");
       }
       else {
-        puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-        local_8 = puVar3;
+        buffer_00 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+        buffer = (char *)buffer_00;
         iVar1 = Cmd_Argc();
         pcVar2 = Cmd_Argv(iVar1 + -1);
-        iVar1 = DDL_SetValue(&local_18,pcVar2,(char *)puVar3);
+        iVar1 = DDL_SetValue(&state,pcVar2,(char *)buffer_00);
         if (iVar1 == 0) {
           iVar1 = Cmd_Argc();
           Cmd_Argv(iVar1 + -1);
@@ -5037,15 +5348,16 @@ void __cdecl LiveStats_ActivateContractCmd(void)
 {
   int iVar1;
   char *pcVar2;
-  int iVar3;
+  int index;
+  int controllerIndex;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
     pcVar2 = Cmd_Argv(2);
     iVar1 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(1);
-    iVar3 = atoi(pcVar2);
-    LiveContracts_ActivateContract(0,iVar3,iVar1);
+    index = atoi(pcVar2);
+    LiveContracts_ActivateContract(0,index,iVar1);
   }
   return;
 }
@@ -5058,13 +5370,14 @@ void __cdecl LiveStats_SetCurrentContractCmd(void)
 {
   int iVar1;
   uiInfo_s *puVar2;
-  char *pcVar3;
+  char *nptr;
+  uiInfo_s *uiInfo;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
     puVar2 = UI_GetInfo(0);
-    pcVar3 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar3);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     puVar2->contractIndex = iVar1;
   }
   return;
@@ -5073,20 +5386,20 @@ void __cdecl LiveStats_SetCurrentContractCmd(void)
 
 // 0097B240  LiveStats_ClearCustomClassWarning  (live/live_stats.cpp:4278)
 
-void __cdecl LiveStats_ClearCustomClassWarning(int param_1)
+void __cdecl LiveStats_ClearCustomClassWarning(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar *puVar4;
-  ddlState_t local_14;
+  uchar *buffer;
+  ddlState_t searchState;
   
-  local_14.absoluteOffset = g_statsCacState.absoluteOffset;
-  local_14.arrayIndex = g_statsCacState.arrayIndex;
-  local_14.member = g_statsCacState.member;
-  local_14.ddl = g_statsCacState.ddl;
-  iVar3 = DDL_MoveTo(&g_statsCacState,&local_14,1);
+  searchState.absoluteOffset = g_statsCacState.absoluteOffset;
+  searchState.arrayIndex = g_statsCacState.arrayIndex;
+  searchState.member = g_statsCacState.member;
+  searchState.ddl = g_statsCacState.ddl;
+  iVar3 = DDL_MoveTo(&g_statsCacState,&searchState,1);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x10bf,0,
                              "Could not find \'resetWarningDislayed\' in stats DDL");
@@ -5097,8 +5410,8 @@ void __cdecl LiveStats_ClearCustomClassWarning(int param_1)
     }
   }
   else {
-    puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    DDL_SetValue(&local_14,"1",(char *)puVar4);
+    buffer = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    DDL_SetValue(&searchState,"1",(char *)buffer);
   }
   return;
 }
@@ -5106,18 +5419,18 @@ void __cdecl LiveStats_ClearCustomClassWarning(int param_1)
 
 // 0097B2D0  LiveStats_GetClanTagFeature  (live/live_stats.cpp:4292)
 
-int __cdecl LiveStats_GetClanTagFeature(int param_1)
+int __cdecl LiveStats_GetClanTagFeature(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar *puVar4;
-  ddlState_t local_18;
-  uint local_8;
+  uchar *buffer;
+  ddlState_t searchState;
+  int retVal;
   
-  local_8 = 0;
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_18,2);
+  retVal = 0;
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchState,2);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x10ce,0,
                              "Could not find \'clanTagStats.selectedFeature\' in stats DDL");
@@ -5128,10 +5441,10 @@ int __cdecl LiveStats_GetClanTagFeature(int param_1)
     }
   }
   else {
-    puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    local_8 = DDL_GetInt(&local_18,(char *)puVar4);
+    buffer = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    retVal = DDL_GetInt(&searchState,(char *)buffer);
   }
-  return local_8;
+  return retVal;
 }
 
 
@@ -5164,26 +5477,28 @@ ddlDef_t * __cdecl LiveStats_GetStatsDDL(void)
 
 // 0097B380  LiveStats_GetXp  (live/live_stats.cpp:4324)
 
-int __cdecl LiveStats_GetXp(int param_1)
+int __cdecl LiveStats_GetXp(int controllerIndex)
 
 {
-  uchar *puVar1;
-  uint uVar2;
+  uchar *buffer_00;
+  uint uVar1;
+  char *buffer;
+  int xp;
   
-  puVar1 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_GLOBAL,true);
-  uVar2 = DDL_GetInt(&g_statsRankXPState,(char *)puVar1);
-  return uVar2;
+  buffer_00 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
+  uVar1 = DDL_GetInt(&g_statsRankXPState,(char *)buffer_00);
+  return uVar1;
 }
 
 
 // 0097B3C0  LiveStats_GetRank  (live/live_stats.cpp:4339)
 
-int __cdecl LiveStats_GetRank(int param_1)
+int __cdecl LiveStats_GetRank(int controllerIndex)
 
 {
   int iVar1;
   
-  iVar1 = LiveStats_GetXp(param_1);
+  iVar1 = LiveStats_GetXp(controllerIndex);
   iVar1 = CL_GetRankForXp(iVar1);
   return iVar1;
 }
@@ -5191,47 +5506,49 @@ int __cdecl LiveStats_GetRank(int param_1)
 
 // 0097B3E0  LiveStats_GetPrestige  (live/live_stats.cpp:4345)
 
-int __cdecl LiveStats_GetPrestige(int param_1)
+int __cdecl LiveStats_GetPrestige(int controllerIndex)
 
 {
-  int local_8;
+  int prestige;
   
-  local_8 = 0;
-  LiveStats_GetIntPlayerStatByKey(param_1,&local_8,MP_PLAYERSTATSKEY_PLEVEL);
-  return local_8;
+  prestige = 0;
+  LiveStats_GetIntPlayerStatByKey(controllerIndex,&prestige,MP_PLAYERSTATSKEY_PLEVEL);
+  return prestige;
 }
 
 
 // 0097B410  LiveStats_GetCurrency  (live/live_stats.cpp:4365)
 
-int __cdecl LiveStats_GetCurrency(int param_1)
+int __cdecl LiveStats_GetCurrency(int controllerIndex)
 
 {
   bool bVar1;
-  int local_8;
+  int currentCodPoints;
   
-  local_8 = 0;
-  bVar1 = LiveStats_GetIntPlayerStatByKey(param_1,&local_8,MP_PLAYERSTATSKEY_CODPOINTS);
+  currentCodPoints = 0;
+  bVar1 = LiveStats_GetIntPlayerStatByKey
+                    (controllerIndex,&currentCodPoints,MP_PLAYERSTATSKEY_CODPOINTS);
   if (!bVar1) {
     Com_PrintError(0xf,"Could not retrieve currency for controller %d\n");
   }
-  return local_8;
+  return currentCodPoints;
 }
 
 
 // 0097B510  LiveStats_TrackSpending  (live/live_stats.cpp:4378)
 
-void __cdecl LiveStats_TrackSpending(int param_1,int param_2)
+void __cdecl LiveStats_TrackSpending(int controllerIndex,int currencyAmount)
 
 {
   bool bVar1;
-  int local_8;
+  int currentCurrencySpent;
   
-  local_8 = 0;
-  bVar1 = LiveStats_GetIntPlayerStatByKey(param_1,&local_8,MP_PLAYERSTATSKEY_CURRENCYSPENT);
+  currentCurrencySpent = 0;
+  bVar1 = LiveStats_GetIntPlayerStatByKey
+                    (controllerIndex,&currentCurrencySpent,MP_PLAYERSTATSKEY_CURRENCYSPENT);
   if (bVar1) {
-    local_8 = local_8 + param_2;
-    LiveStats_SetStatByKey(param_1,MP_PLAYERSTATSKEY_CURRENCYSPENT,local_8);
+    currentCurrencySpent = currentCurrencySpent + currencyAmount;
+    LiveStats_SetStatByKey(controllerIndex,MP_PLAYERSTATSKEY_CURRENCYSPENT,currentCurrencySpent);
   }
   else {
     Com_PrintError(0xf,"Could not retrieve currency spent for controller %d\n");
@@ -5242,27 +5559,33 @@ void __cdecl LiveStats_TrackSpending(int param_1,int param_2)
 
 // 0097B450  LiveStats_SpendCurrency  (live/live_stats.cpp:4394)
 
-bool __cdecl LiveStats_SpendCurrency(int param_1,int param_2,pointsSpent_t param_3,int param_4)
+/* WARNING: Variable defined which should be unmapped: currentCodPoints */
+
+bool __cdecl
+LiveStats_SpendCurrency
+          (int controllerIndex,int currencyAmount,pointsSpent_t reasonType,int reasonIndex)
 
 {
   bool bVar1;
   int iVar2;
+  int currentCodPoints;
   
-  iVar2 = LiveStats_GetCurrency(param_1);
-  if (iVar2 < param_2) {
+  iVar2 = LiveStats_GetCurrency(controllerIndex);
+  if (iVar2 < currencyAmount) {
     Com_PrintError(0xf,"Item costs %d and you only have %d\n");
     bVar1 = false;
   }
   else {
-    iVar2 = iVar2 - param_2;
-    LiveStats_SetStatByKey(param_1,MP_PLAYERSTATSKEY_CODPOINTS,iVar2);
-    LiveStats_TrackSpending(param_1,param_2);
-    if (param_2 < 0) {
-      param_2 = -param_2;
+    iVar2 = iVar2 - currencyAmount;
+    LiveStats_SetStatByKey(controllerIndex,MP_PLAYERSTATSKEY_CODPOINTS,iVar2);
+    LiveStats_TrackSpending(controllerIndex,currencyAmount);
+    if (currencyAmount < 0) {
+      currencyAmount = -currencyAmount;
     }
-    LiveCounter_IncrementCounterValueByName("global_moneyspent",CONCAT44(iVar2,param_2 >> 0x1f));
+    LiveCounter_IncrementCounterValueByName
+              ("global_moneyspent",CONCAT44(iVar2,currencyAmount >> 0x1f));
     if ((recordPointsSpent != (dvar_s *)0x0) && ((recordPointsSpent->current).enabled != false)) {
-      MatchRecordPointsSpent(param_1,param_2,param_3,param_4);
+      MatchRecordPointsSpent(controllerIndex,currencyAmount,reasonType,reasonIndex);
     }
     bVar1 = true;
   }
@@ -5272,7 +5595,9 @@ bool __cdecl LiveStats_SpendCurrency(int param_1,int param_2,pointsSpent_t param
 
 // 0097B570  LiveStats_WriteXUIDToStats  (live/live_stats.cpp:4475)
 
-bool __cdecl LiveStats_WriteXUIDToStats(int param_1)
+/* WARNING: Variable defined which should be unmapped: buff */
+
+bool __cdecl LiveStats_WriteXUIDToStats(int controllerIndex)
 
 {
   code *pcVar1;
@@ -5282,15 +5607,16 @@ bool __cdecl LiveStats_WriteXUIDToStats(int param_1)
   int iVar5;
   uchar *puVar6;
   ulong64 uVar7;
-  ddlState_t local_1c;
-  undefined8 local_c;
+  uchar *buff;
+  ddlState_t searchState;
+  undefined8 myXuid;
   
-  uVar7 = Live_GetXuid(param_1);
-  local_c._0_4_ = (int)uVar7;
-  local_c._4_4_ = (int)(uVar7 >> 0x20);
-  bVar3 = (int)local_c == 0;
-  bVar2 = local_c._4_4_ == 0;
-  local_c = uVar7;
+  uVar7 = Live_GetXuid(controllerIndex);
+  myXuid._0_4_ = (int)uVar7;
+  myXuid._4_4_ = (int)(uVar7 >> 0x20);
+  bVar3 = (int)myXuid == 0;
+  bVar2 = myXuid._4_4_ == 0;
+  myXuid = uVar7;
   if ((bVar3 && bVar2) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x117e,0,
                                "%s"), !bVar3)) {
@@ -5298,11 +5624,11 @@ bool __cdecl LiveStats_WriteXUIDToStats(int param_1)
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if ((int)local_c != 0 || local_c._4_4_ != 0) {
-    iVar5 = DDL_MoveTo(&g_statsRootState,&local_1c,1);
+  if ((int)myXuid != 0 || myXuid._4_4_ != 0) {
+    iVar5 = DDL_MoveTo(&g_statsRootState,&searchState,1);
     if (iVar5 != 0) {
       puVar6 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-      DDL_SetInt64(&local_1c,CONCAT44(puVar6,local_c._4_4_),(char *)puVar6);
+      DDL_SetInt64(&searchState,CONCAT44(puVar6,myXuid._4_4_),(char *)puVar6);
       return true;
     }
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x118c,0,
@@ -5319,69 +5645,71 @@ bool __cdecl LiveStats_WriteXUIDToStats(int param_1)
 
 // 0097B630  LiveStats_ReadXUIDFromStats  (live/live_stats.cpp:4500)
 
-ulong64 __cdecl LiveStats_ReadXUIDFromStats(int param_1)
+ulong64 __cdecl LiveStats_ReadXUIDFromStats(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uchar *puVar4;
-  ulong64 uVar5;
-  ddlState_t local_1c;
-  ulong64 local_c;
+  uchar *buffer;
+  ulong64 uVar4;
+  uchar *buff;
+  ddlState_t searchState;
+  ulong64 statsXuid;
   
-  local_c = 0;
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_1c,1);
+  statsXuid = 0;
+  iVar3 = DDL_MoveTo(&g_statsRootState,&searchState,1);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x119f,0,
                              "Could not find \'PlayerXUID\' in stats DDL");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      uVar5 = (*pcVar1)();
-      return uVar5;
+      uVar4 = (*pcVar1)();
+      return uVar4;
     }
   }
   else {
-    puVar4 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-    local_c = DDL_GetInt64(&local_1c,(char *)puVar4);
+    buffer = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+    statsXuid = DDL_GetInt64(&searchState,(char *)buffer);
   }
-  return local_c;
+  return statsXuid;
 }
 
 
 // 0097B6C0  LiveStats_WritePrestigeToStats  (live/live_stats.cpp:4518)
 
-int __cdecl LiveStats_WritePrestigeToStats(int param_1)
+int __cdecl LiveStats_WritePrestigeToStats(int controllerIndex)
 
 {
   int iVar1;
   int iVar2;
-  uchar *puVar3;
-  char *local_28;
+  uchar *buffer;
+  int prestige;
+  char *path;
   char *local_24;
-  int local_20;
-  ddlState_t local_1c;
-  int local_c;
-  int local_8;
+  int maxPrestige;
+  ddlState_t searchState;
+  int maxXP;
+  int xp;
   
-  local_8 = LiveStats_GetXp(param_1);
-  iVar1 = LiveStats_GetPrestige(param_1);
-  local_c = CL_GetMaxXP();
-  local_20 = CL_GetMaxPrestige();
-  if ((local_8 < local_c) || (local_20 <= iVar1)) {
+  xp = LiveStats_GetXp(controllerIndex);
+  iVar1 = LiveStats_GetPrestige(controllerIndex);
+  maxXP = CL_GetMaxXP();
+  maxPrestige = CL_GetMaxPrestige();
+  if ((xp < maxXP) || (maxPrestige <= iVar1)) {
     iVar1 = 0;
   }
   else {
-    local_28 = "PlayerStatsList";
+    path = "PlayerStatsList";
     local_24 = playerStatKeys[1];
-    iVar2 = DDL_MoveToPath(&g_statsRootState,&local_1c,2,&local_28);
+    iVar2 = DDL_MoveToPath(&g_statsRootState,&searchState,2,&path);
     if (iVar2 == 0) {
       DDL_PrintError("DDL:Error setting player stat value for %s.\n");
       iVar1 = 0;
     }
     else {
-      puVar3 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
-      iVar1 = DDL_SetInt(&local_1c,iVar1 + 1,(char *)puVar3);
+      buffer = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+      iVar1 = DDL_SetInt(&searchState,iVar1 + 1,(char *)buffer);
     }
   }
   return iVar1;
@@ -5392,57 +5720,64 @@ int __cdecl LiveStats_WritePrestigeToStats(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveStats_ResetBasicTrainingStats(int param_1,statsResetReason_t param_2)
+void __cdecl LiveStats_ResetBasicTrainingStats(int controllerIndex,statsResetReason_t reason)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  bool bVar5;
-  ulong uVar6;
-  uchar *puVar7;
-  int iVar8;
-  uchar uVar9;
-  bool bVar10;
+  int value;
+  int value_00;
+  int value_01;
+  int value_02;
+  bool bVar1;
+  ulong count;
+  uchar *puVar2;
+  int len_2;
+  uchar value_03;
+  bool bVar3;
+  int savedUiItemsNoCost;
+  int savedUiUseCustomClassInfo;
+  bool wasBasicTraining;
+  int localClientNum;
+  int savedCustomClassMode;
+  int savedCustomKillstreakMode;
   
-  bVar5 = Live_IsSignedIn(param_1);
-  if ((bVar5) && (bVar5 = CL_IsRenderingSplitScreen(), !bVar5)) {
-    bVar5 = (xblive_basictraining->current).enabled;
+  bVar1 = Live_IsSignedIn(controllerIndex);
+  if ((bVar1) && (bVar1 = CL_IsRenderingSplitScreen(), !bVar1)) {
+    bVar1 = (xblive_basictraining->current).enabled;
     Dvar_SetBool(xblive_basictraining,true);
-    iVar1 = (ui_items_no_cost->current).integer;
-    iVar2 = (custom_class_mode->current).integer;
-    iVar3 = (custom_killstreak_mode->current).integer;
-    iVar4 = (ui_useCustomClassInfo->current).integer;
+    value = (ui_items_no_cost->current).integer;
+    value_00 = (custom_class_mode->current).integer;
+    value_01 = (custom_killstreak_mode->current).integer;
+    value_02 = (ui_useCustomClassInfo->current).integer;
     Dvar_Reset(ui_items_no_cost,DVAR_SOURCE_INTERNAL);
     Dvar_Reset(custom_class_mode,DVAR_SOURCE_INTERNAL);
     Dvar_Reset(custom_killstreak_mode,DVAR_SOURCE_INTERNAL);
     Dvar_Reset(ui_useCustomClassInfo,DVAR_SOURCE_INTERNAL);
-    uVar6 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-    uVar9 = '\0';
-    puVar7 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    memset(puVar7,uVar9,uVar6);
-    LiveStorage_ValidateWithDDL(param_1,STATS_LOCATION_BASICTRAINING);
-    Cmd_ExecuteSingleCommand(-1,param_1,"exec mp/stats_init.cfg");
-    iVar8 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-    puVar7 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    LiveStorage_WriteChecksumToBuffer(puVar7,iVar8);
-    LiveStats_SetStatByKey(param_1,MP_PLAYERSTATSKEY_STATS_VERSION,(stat_version->current).integer);
-    bVar10 = true;
-    puVar7 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    LiveStats_SetBasicTrainingState(puVar7,bVar10);
-    bVar10 = false;
-    puVar7 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-    LiveStats_SetOnlineRankedState(puVar7,bVar10);
-    LiveStorage_SetStatsWriteNeeded(param_1,true,STATS_LOCATION_BASICTRAINING);
-    LiveStorage_SetStatsChecksumValid(param_1,STATS_LOCATION_BASICTRAINING,true);
-    LiveStats_WriteXUIDToStats(param_1);
-    Dvar_SetInt(ui_items_no_cost,iVar1);
-    Dvar_SetInt(custom_class_mode,iVar2);
-    Dvar_SetInt(custom_killstreak_mode,iVar3);
-    Dvar_SetInt(ui_useCustomClassInfo,iVar4);
-    Dvar_SetBool(xblive_basictraining,bVar5);
-    LiveStorage_WriteBasicTrainingStats(param_1);
+    count = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+    value_03 = '\0';
+    puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    memset(puVar2,value_03,count);
+    LiveStorage_ValidateWithDDL(controllerIndex,STATS_LOCATION_BASICTRAINING);
+    Cmd_ExecuteSingleCommand(-1,controllerIndex,"exec mp/stats_init.cfg");
+    len_2 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+    puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    LiveStorage_WriteChecksumToBuffer(puVar2,len_2);
+    LiveStats_SetStatByKey
+              (controllerIndex,MP_PLAYERSTATSKEY_STATS_VERSION,(stat_version->current).integer);
+    bVar3 = true;
+    puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    LiveStats_SetBasicTrainingState(puVar2,bVar3);
+    bVar3 = false;
+    puVar2 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    LiveStats_SetOnlineRankedState(puVar2,bVar3);
+    LiveStorage_SetStatsWriteNeeded(controllerIndex,true,STATS_LOCATION_BASICTRAINING);
+    LiveStorage_SetStatsChecksumValid(controllerIndex,STATS_LOCATION_BASICTRAINING,true);
+    LiveStats_WriteXUIDToStats(controllerIndex);
+    Dvar_SetInt(ui_items_no_cost,value);
+    Dvar_SetInt(custom_class_mode,value_00);
+    Dvar_SetInt(custom_killstreak_mode,value_01);
+    Dvar_SetInt(ui_useCustomClassInfo,value_02);
+    Dvar_SetBool(xblive_basictraining,bVar1);
+    LiveStorage_WriteBasicTrainingStats(controllerIndex);
   }
   return;
 }
@@ -5450,100 +5785,107 @@ void __cdecl LiveStats_ResetBasicTrainingStats(int param_1,statsResetReason_t pa
 
 // 0097B9B0  LiveStats_SetBufferInitialised  (live/live_stats.cpp:4652)
 
-void __cdecl LiveStats_SetBufferInitialised(int param_1,bool param_2)
+void __cdecl LiveStats_SetBufferInitialised(int controllerIndex,bool isInitialised)
 
 {
-  s_statsBufferInitialised[param_1] = param_2;
+  s_statsBufferInitialised[controllerIndex] = isInitialised;
   return;
 }
 
 
 // 0097B9D0  LiveStats_InitStatsBuffer  (live/live_stats.cpp:4667)
 
-void __cdecl LiveStats_InitStatsBuffer(int param_1,statsResetReason_t param_2)
+void __cdecl LiveStats_InitStatsBuffer(int controllerIndex,statsResetReason_t reason)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  ulong uVar5;
-  uchar *puVar6;
-  uchar uVar7;
+  int value;
+  int value_00;
+  int value_01;
+  int value_02;
+  ulong count;
+  uchar *dst;
+  uchar value_03;
+  int savedUiItemsNoCost;
+  int savedUiUseCustomClassInfo;
+  int localClientNum;
+  int savedCustomClassMode;
+  int savedCustomKillstreakMode;
   
-  iVar1 = (ui_items_no_cost->current).integer;
-  iVar2 = (custom_class_mode->current).integer;
-  iVar3 = (custom_killstreak_mode->current).integer;
-  iVar4 = (ui_useCustomClassInfo->current).integer;
+  value = (ui_items_no_cost->current).integer;
+  value_00 = (custom_class_mode->current).integer;
+  value_01 = (custom_killstreak_mode->current).integer;
+  value_02 = (ui_useCustomClassInfo->current).integer;
   Dvar_Reset(ui_items_no_cost,DVAR_SOURCE_INTERNAL);
   Dvar_Reset(custom_class_mode,DVAR_SOURCE_INTERNAL);
   Dvar_Reset(custom_killstreak_mode,DVAR_SOURCE_INTERNAL);
   Dvar_Reset(ui_useCustomClassInfo,DVAR_SOURCE_INTERNAL);
-  LiveStats_SetBufferInitialised(param_1,true);
-  uVar5 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-  uVar7 = '\0';
-  puVar6 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  memset(puVar6,uVar7,uVar5);
-  LiveStorage_ValidateWithDDL(param_1,STATS_LOCATION_NORMAL);
-  Cmd_ExecuteSingleCommand(-1,param_1,"exec mp/stats_init.cfg");
-  Cmd_ExecuteSingleCommand(-1,param_1,"updateprofilefromstats");
-  Dvar_SetInt(ui_items_no_cost,iVar1);
-  Dvar_SetInt(custom_class_mode,iVar2);
-  Dvar_SetInt(custom_killstreak_mode,iVar3);
-  Dvar_SetInt(ui_useCustomClassInfo,iVar4);
+  LiveStats_SetBufferInitialised(controllerIndex,true);
+  count = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+  value_03 = '\0';
+  dst = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  memset(dst,value_03,count);
+  LiveStorage_ValidateWithDDL(controllerIndex,STATS_LOCATION_NORMAL);
+  Cmd_ExecuteSingleCommand(-1,controllerIndex,"exec mp/stats_init.cfg");
+  Cmd_ExecuteSingleCommand(-1,controllerIndex,"updateprofilefromstats");
+  Dvar_SetInt(ui_items_no_cost,value);
+  Dvar_SetInt(custom_class_mode,value_00);
+  Dvar_SetInt(custom_killstreak_mode,value_01);
+  Dvar_SetInt(ui_useCustomClassInfo,value_02);
   return;
 }
 
 
 // 0097BB10  LiveStats_ResetStats  (live/live_stats.cpp:4736)
 
-void __cdecl LiveStats_ResetStats(int param_1,bool param_2,statsResetReason_t param_3)
+void __cdecl LiveStats_ResetStats(int controllerIndex,bool versionChanged,statsResetReason_t reason)
 
 {
-  bool bVar1;
+  bool value;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  uchar *puVar4;
-  bool bVar5;
-  char *pcVar6;
+  uchar *puVar3;
+  bool bVar4;
+  char *pcVar5;
+  bool wasBasicTraining;
   
-  bVar1 = (xblive_basictraining->current).enabled;
+  value = (xblive_basictraining->current).enabled;
   Dvar_SetBool(xblive_basictraining,false);
-  LiveStats_InitStatsBuffer(param_1,param_3);
-  pcVar6 = "updategamerprofile";
-  iVar3 = param_1;
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  Cmd_ExecuteSingleCommand(iVar2,iVar3,pcVar6);
-  pcVar6 = "updatedvarsfromprofile";
-  iVar3 = param_1;
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  Cmd_ExecuteSingleCommand(iVar2,iVar3,pcVar6);
-  iVar3 = LiveStorage_GetStatsBufferSize(param_1,STATS_LOCATION_NORMAL,true);
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  LiveStorage_WriteChecksumToBuffer(puVar4,iVar3);
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  LiveStats_WriteVersionToBuffer((char *)puVar4);
-  bVar5 = false;
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  LiveStats_SetBasicTrainingState(puVar4,bVar5);
-  bVar5 = true;
-  puVar4 = LiveStorage_GetStatsBuffer(param_1,STATS_LOCATION_NORMAL,true);
-  LiveStats_SetOnlineRankedState(puVar4,bVar5);
-  LiveStorage_SetStatsWriteNeeded(param_1,true,STATS_LOCATION_NORMAL);
-  LiveStorage_SetStatsChecksumValid(param_1,STATS_LOCATION_NORMAL,true);
-  LiveStats_WriteXUIDToStats(param_1);
-  if (!param_2) {
-    LiveStats_ClearCustomClassWarning(param_1);
+  LiveStats_InitStatsBuffer(controllerIndex,reason);
+  pcVar5 = "updategamerprofile";
+  iVar2 = controllerIndex;
+  iVar1 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  Cmd_ExecuteSingleCommand(iVar1,iVar2,pcVar5);
+  pcVar5 = "updatedvarsfromprofile";
+  iVar2 = controllerIndex;
+  iVar1 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+  Cmd_ExecuteSingleCommand(iVar1,iVar2,pcVar5);
+  iVar2 = LiveStorage_GetStatsBufferSize(controllerIndex,STATS_LOCATION_NORMAL,true);
+  puVar3 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  LiveStorage_WriteChecksumToBuffer(puVar3,iVar2);
+  puVar3 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  LiveStats_WriteVersionToBuffer((char *)puVar3);
+  bVar4 = false;
+  puVar3 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  LiveStats_SetBasicTrainingState(puVar3,bVar4);
+  bVar4 = true;
+  puVar3 = LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+  LiveStats_SetOnlineRankedState(puVar3,bVar4);
+  LiveStorage_SetStatsWriteNeeded(controllerIndex,true,STATS_LOCATION_NORMAL);
+  LiveStorage_SetStatsChecksumValid(controllerIndex,STATS_LOCATION_NORMAL,true);
+  LiveStats_WriteXUIDToStats(controllerIndex);
+  if (!versionChanged) {
+    LiveStats_ClearCustomClassWarning(controllerIndex);
   }
   CL_CACValidateRequest_f();
-  Dvar_SetBool(xblive_basictraining,bVar1);
+  Dvar_SetBool(xblive_basictraining,value);
   return;
 }
 
 
 // 0097BC60  LiveStats_GetActiveContractStatState  (live/live_stats.cpp:4786)
 
-bool __cdecl LiveStats_GetActiveContractStatState(int param_1,char *param_2,ddlState_t *param_3)
+bool __cdecl
+LiveStats_GetActiveContractStatState(int activeContractIndex,char *statName,ddlState_t *searchState)
 
 {
   code *pcVar1;
@@ -5551,14 +5893,14 @@ bool __cdecl LiveStats_GetActiveContractStatState(int param_1,char *param_2,ddlS
   undefined1 uVar3;
   int iVar4;
   
-  if (((param_1 < 0) || (2 < param_1)) &&
+  if (((activeContractIndex < 0) || (2 < activeContractIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x12b6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  iVar4 = DDL_MoveTo(&g_statsActiveContractsState,param_3,2);
+  iVar4 = DDL_MoveTo(&g_statsActiveContractsState,searchState,2);
   if (iVar4 == 0) {
     DDL_PrintError("DDL: Error could not find stat named %s in active contract %d\n");
   }
@@ -5568,23 +5910,25 @@ bool __cdecl LiveStats_GetActiveContractStatState(int param_1,char *param_2,ddlS
 
 // 0097BCF0  LiveStats_GetContractStatState  (live/live_stats.cpp:4805)
 
-bool __cdecl LiveStats_GetContractStatState(int param_1,char *param_2,ddlState_t *param_3)
+bool __cdecl
+LiveStats_GetContractStatState(int contractIndex,char *statName,ddlState_t *searchState)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
+  char *indexString;
   
   va("%d");
-  if (((param_1 < 0) || (0x1ff < param_1)) &&
+  if (((contractIndex < 0) || (0x1ff < contractIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x12c8,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  iVar4 = DDL_MoveTo(&g_statsContractsState,param_3,2);
+  iVar4 = DDL_MoveTo(&g_statsContractsState,searchState,2);
   if (iVar4 == 0) {
     DDL_PrintError("DDL: Error could not find stat named %s in contract %d\n");
   }
@@ -5594,16 +5938,16 @@ bool __cdecl LiveStats_GetContractStatState(int param_1,char *param_2,ddlState_t
 
 // 0097BD80  LiveStats_GetActiveContractStat  (live/live_stats.cpp:4823)
 
-int __cdecl LiveStats_GetActiveContractStat(char *param_1,int param_2,char *param_3)
+int __cdecl LiveStats_GetActiveContractStat(char *buffer,int activeContractIndex,char *statName)
 
 {
   bool bVar1;
   uint uVar2;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  bVar1 = LiveStats_GetActiveContractStatState(param_2,param_3,&local_14);
+  bVar1 = LiveStats_GetActiveContractStatState(activeContractIndex,statName,&searchState);
   if (bVar1) {
-    uVar2 = DDL_GetInt(&local_14,param_1);
+    uVar2 = DDL_GetInt(&searchState,buffer);
   }
   else {
     uVar2 = 0;
@@ -5614,16 +5958,17 @@ int __cdecl LiveStats_GetActiveContractStat(char *param_1,int param_2,char *para
 
 // 0097BDC0  LiveStats_SetActiveContractStat  (live/live_stats.cpp:4831)
 
-int __cdecl LiveStats_SetActiveContractStat(char *param_1,int param_2,char *param_3,int param_4)
+int __cdecl
+LiveStats_SetActiveContractStat(char *buffer,int activeContractIndex,char *statName,int newValue)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  bVar1 = LiveStats_GetActiveContractStatState(param_2,param_3,&local_14);
+  bVar1 = LiveStats_GetActiveContractStatState(activeContractIndex,statName,&searchState);
   if (bVar1) {
-    iVar2 = DDL_SetInt(&local_14,param_4,param_1);
+    iVar2 = DDL_SetInt(&searchState,newValue,buffer);
   }
   else {
     iVar2 = 0;
@@ -5634,16 +5979,16 @@ int __cdecl LiveStats_SetActiveContractStat(char *param_1,int param_2,char *para
 
 // 0097BE00  LiveStats_GetContractStat  (live/live_stats.cpp:4839)
 
-int __cdecl LiveStats_GetContractStat(char *param_1,int param_2,char *param_3)
+int __cdecl LiveStats_GetContractStat(char *buffer,int contractIndex,char *statName)
 
 {
   bool bVar1;
   uint uVar2;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  bVar1 = LiveStats_GetContractStatState(param_2,param_3,&local_14);
+  bVar1 = LiveStats_GetContractStatState(contractIndex,statName,&searchState);
   if (bVar1) {
-    uVar2 = DDL_GetInt(&local_14,param_1);
+    uVar2 = DDL_GetInt(&searchState,buffer);
   }
   else {
     uVar2 = 0;
@@ -5654,16 +5999,16 @@ int __cdecl LiveStats_GetContractStat(char *param_1,int param_2,char *param_3)
 
 // 0097BE40  LiveStats_SetContractStat  (live/live_stats.cpp:4847)
 
-int __cdecl LiveStats_SetContractStat(char *param_1,int param_2,char *param_3,int param_4)
+int __cdecl LiveStats_SetContractStat(char *buffer,int contractIndex,char *statName,int newValue)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t local_14;
+  ddlState_t searchState;
   
-  bVar1 = LiveStats_GetContractStatState(param_2,param_3,&local_14);
+  bVar1 = LiveStats_GetContractStatState(contractIndex,statName,&searchState);
   if (bVar1) {
-    iVar2 = DDL_SetInt(&local_14,param_4,param_1);
+    iVar2 = DDL_SetInt(&searchState,newValue,buffer);
   }
   else {
     iVar2 = 0;
@@ -5674,143 +6019,152 @@ int __cdecl LiveStats_SetContractStat(char *param_1,int param_2,char *param_3,in
 
 // 0097BE80  LiveStats_SetOnlineRankedState  (live/live_stats.cpp:4855)
 
-void __cdecl LiveStats_SetOnlineRankedState(uchar *param_1,bool param_2)
+void __cdecl LiveStats_SetOnlineRankedState(uchar *buffer,bool value)
 
 {
-  DDL_SetUserFlag((char *)param_1,1,param_2);
+  DDL_SetUserFlag((char *)buffer,1,value);
   return;
 }
 
 
 // 0097BEA0  LiveStats_GetOnlineRankedState  (live/live_stats.cpp:4860)
 
-bool __cdecl LiveStats_GetOnlineRankedState(uchar *param_1)
+bool __cdecl LiveStats_GetOnlineRankedState(uchar *buffer)
 
 {
   bool bVar1;
   
-  bVar1 = DDL_GetUserFlag((char *)param_1,1);
+  bVar1 = DDL_GetUserFlag((char *)buffer,1);
   return bVar1;
 }
 
 
 // 0097BEC0  LiveStats_SetBasicTrainingState  (live/live_stats.cpp:4865)
 
-void __cdecl LiveStats_SetBasicTrainingState(uchar *param_1,bool param_2)
+void __cdecl LiveStats_SetBasicTrainingState(uchar *buffer,bool value)
 
 {
-  DDL_SetUserFlag((char *)param_1,2,param_2);
+  DDL_SetUserFlag((char *)buffer,2,value);
   return;
 }
 
 
 // 0097BEE0  LiveStats_GetBasicTrainingState  (live/live_stats.cpp:4870)
 
-bool __cdecl LiveStats_GetBasicTrainingState(uchar *param_1)
+bool __cdecl LiveStats_GetBasicTrainingState(uchar *buffer)
 
 {
   bool bVar1;
   
-  bVar1 = DDL_GetUserFlag((char *)param_1,2);
+  bVar1 = DDL_GetUserFlag((char *)buffer,2);
   return bVar1;
 }
 
 
 // 0097BF00  LiveStats_GetNemesisXuid  (live/live_stats.cpp:4875)
 
-void __cdecl LiveStats_GetNemesisXuid(int param_1,ulong64 *param_2)
+void __cdecl LiveStats_GetNemesisXuid(int controllerIndex,ulong64 *nemesisXuid)
 
 {
-  ddlState_t *pdVar1;
-  ulong64 uVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_14;
+  ddlState_t *searchState;
+  ulong64 uVar1;
+  ddlState_t *resultState;
+  int argNum;
+  ddlState_t ddlState;
   
-  iVar4 = 2;
-  pdVar3 = &local_14;
-  pdVar1 = LiveStats_GetRootDDLState();
-  DDL_MoveTo(pdVar1,pdVar3,iVar4);
-  uVar2 = LiveStats_GetDInt64Stat(param_1,&local_14);
-  *param_2 = uVar2;
+  argNum = 2;
+  resultState = &ddlState;
+  searchState = LiveStats_GetRootDDLState();
+  DDL_MoveTo(searchState,resultState,argNum);
+  uVar1 = LiveStats_GetDInt64Stat(controllerIndex,&ddlState);
+  *nemesisXuid = uVar1;
   return;
 }
 
 
 // 0097BF40  LiveStats_PrestigeLeaderboardsEnabled  (live/live_stats.cpp:5317)
 
-bool __cdecl LiveStats_PrestigeLeaderboardsEnabled(int param_1)
+bool __cdecl LiveStats_PrestigeLeaderboardsEnabled(int controllerIndex)
 
 {
   bool bVar1;
-  int iVar2;
+  int itemIndex;
   
-  iVar2 = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_LB");
-  bVar1 = BG_UnlockablesIsItemPurchased(param_1,iVar2);
+  itemIndex = BG_UnlockablesGetItemIndexFromName("FEATURE_PRESTIGE_LB");
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
   return bVar1;
 }
 
 
 // 0097BF60  LiveStats_ResetGamemodeChallenges  (live/live_stats.cpp:5324)
 
-void __cdecl LiveStats_ResetGamemodeChallenges(char *param_1)
+void __cdecl LiveStats_ResetGamemodeChallenges(char *liveStatsBuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  ddlState_t local_70;
-  char *local_60;
-  int local_5c;
-  int local_58;
-  char *local_54;
-  ddlState_t local_50;
-  char *local_40;
-  ddlState_t local_3c;
-  int local_2c;
-  int local_28;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  ddlState_t searchStateGameModeMilestones;
+  char *gameModeName_2;
+  int currentGameMode_2;
+  int numGameModes_2;
+  char *statName;
+  ddlState_t searchStateGameModeBests;
+  char *gameModeName;
+  ddlState_t searchStateGameModeCurrentStats;
+  int currentGameMode;
+  int numGameModes;
+  ddlState_t searchStateGameModeStats;
+  ddlState_t searchStateStats;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((liveStatsBuffer == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x14cd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 != (char *)0x0) {
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
-    if ((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&local_24,1), iVar3 != 0)) {
-      local_28 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].memberCount;
-      for (local_2c = 0; local_2c < local_28; local_2c = local_2c + 1) {
-        local_40 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].members[local_2c];
-        iVar3 = DDL_MoveTo(&local_14,&local_50,2);
+  if (liveStatsBuffer != (char *)0x0) {
+    iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+    if ((iVar3 != 0) &&
+       (iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateGameModeStats,1), iVar3 != 0)) {
+      numGameModes = (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].
+                     memberCount;
+      for (currentGameMode = 0; currentGameMode < numGameModes;
+          currentGameMode = currentGameMode + 1) {
+        gameModeName = (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].
+                       members[currentGameMode];
+        iVar3 = DDL_MoveTo(&searchStateStats,&searchStateGameModeBests,2);
         if (iVar3 != 0) {
-          iVar3 = DDL_IterateFirst(&local_50,&local_50);
+          iVar3 = DDL_IterateFirst(&searchStateGameModeBests,&searchStateGameModeBests);
           while (iVar3 != 0) {
-            local_54 = (local_50.ddl)->enumList[(local_50.member)->enumIndex].members
-                       [local_50.arrayIndex];
-            iVar3 = DDL_MoveTo(&local_24,&local_3c,2);
+            statName = (searchStateGameModeBests.ddl)->enumList
+                       [(searchStateGameModeBests.member)->enumIndex].members
+                       [searchStateGameModeBests.arrayIndex];
+            iVar3 = DDL_MoveTo(&searchStateGameModeStats,&searchStateGameModeCurrentStats,2);
             if (iVar3 != 0) {
-              DDL_SetInt(&local_3c,0,param_1);
+              DDL_SetInt(&searchStateGameModeCurrentStats,0,liveStatsBuffer);
             }
-            iVar3 = DDL_IterateNext(&local_50,&local_50);
+            iVar3 = DDL_IterateNext(&searchStateGameModeBests,&searchStateGameModeBests);
           }
         }
       }
     }
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
+    iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
     if (iVar3 != 0) {
-      local_58 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].memberCount;
-      for (local_5c = 0; local_5c < local_58; local_5c = local_5c + 1) {
-        local_60 = (local_14.ddl)->enumList[(local_14.member)->enumIndex].members[local_5c];
-        iVar3 = DDL_MoveTo(&local_14,&local_70,2);
+      numGameModes_2 =
+           (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].memberCount;
+      for (currentGameMode_2 = 0; currentGameMode_2 < numGameModes_2;
+          currentGameMode_2 = currentGameMode_2 + 1) {
+        gameModeName_2 =
+             (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].members
+             [currentGameMode_2];
+        iVar3 = DDL_MoveTo(&searchStateStats,&searchStateGameModeMilestones,2);
         if (iVar3 != 0) {
-          iVar3 = DDL_IterateFirst(&local_70,&local_70);
+          iVar3 = DDL_IterateFirst(&searchStateGameModeMilestones,&searchStateGameModeMilestones);
           while (iVar3 != 0) {
-            DDL_SetInt(&local_70,0,param_1);
-            iVar3 = DDL_IterateNext(&local_70,&local_70);
+            DDL_SetInt(&searchStateGameModeMilestones,0,liveStatsBuffer);
+            iVar3 = DDL_IterateNext(&searchStateGameModeMilestones,&searchStateGameModeMilestones);
           }
         }
       }
@@ -5830,60 +6184,62 @@ void __cdecl LiveStats_PresetigeStatsResetCmd(void)
 
 {
   bool bVar1;
-  uchar *puVar2;
-  int iVar3;
+  uchar *buffer;
+  int iVar2;
   uint in_stack_ffffffc0;
-  uint local_30;
-  ddlState_t local_24;
-  ddlState_t local_14;
+  uint itemNumber;
+  char *liveStatsBuffer;
+  int controllerIndex;
+  ddlState_t searchStateChallenges;
+  ddlState_t searchStateStats;
   
-  puVar2 = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
+  buffer = LiveStorage_GetStatsBuffer(0,STATS_LOCATION_NORMAL,true);
   s_numSortedChallenges = 0;
-  for (local_30 = 0; local_30 < 0x100; local_30 = local_30 + 1) {
-    bVar1 = BG_UnlockablesIsItemValidNotNull(local_30);
+  for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemNumber);
     if (bVar1) {
       va("%d");
-      iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,3);
-      if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst(&local_14,&local_14);
-        while (iVar3 != 0) {
-          LiveStats_SetItemStat(&local_14,"challengeTier",(char *)puVar2,0);
-          LiveStats_SetItemStat(&local_14,"challengeValue",(char *)puVar2,0);
-          iVar3 = DDL_IterateNext(&local_14,&local_14);
+      iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,3);
+      if (iVar2 != 0) {
+        iVar2 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
+        while (iVar2 != 0) {
+          LiveStats_SetItemStat(&searchStateStats,"challengeTier",(char *)buffer,0);
+          LiveStats_SetItemStat(&searchStateStats,"challengeValue",(char *)buffer,0);
+          iVar2 = DDL_IterateNext(&searchStateStats,&searchStateStats);
         }
       }
-      BG_UnlockablesClearWeaponInfo(0,local_30);
+      BG_UnlockablesClearWeaponInfo(0,itemNumber);
     }
   }
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1);
-  if (iVar3 != 0) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
-    while (iVar3 != 0) {
-      iVar3 = DDL_MoveTo(&local_14,(ddlState_t *)&stack0xffffffc0,1);
-      if (iVar3 != 0) {
-        iVar3 = DDL_IterateFirst((ddlState_t *)&stack0xffffffc0,(ddlState_t *)&stack0xffffffc0);
-        while (iVar3 != 0) {
-          LiveStats_SetItemStat((ddlState_t *)&stack0xffffffc0,"challengeTier",(char *)puVar2,0);
-          LiveStats_SetItemStat((ddlState_t *)&stack0xffffffc0,"challengeValue",(char *)puVar2,0);
-          iVar3 = DDL_IterateNext((ddlState_t *)&stack0xffffffc0,(ddlState_t *)&stack0xffffffc0);
+  iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+  if (iVar2 != 0) {
+    iVar2 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
+    while (iVar2 != 0) {
+      iVar2 = DDL_MoveTo(&searchStateStats,(ddlState_t *)&stack0xffffffc0,1);
+      if (iVar2 != 0) {
+        iVar2 = DDL_IterateFirst((ddlState_t *)&stack0xffffffc0,(ddlState_t *)&stack0xffffffc0);
+        while (iVar2 != 0) {
+          LiveStats_SetItemStat((ddlState_t *)&stack0xffffffc0,"challengeTier",(char *)buffer,0);
+          LiveStats_SetItemStat((ddlState_t *)&stack0xffffffc0,"challengeValue",(char *)buffer,0);
+          iVar2 = DDL_IterateNext((ddlState_t *)&stack0xffffffc0,(ddlState_t *)&stack0xffffffc0);
         }
       }
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
+      iVar2 = DDL_IterateNext(&searchStateStats,&searchStateStats);
     }
   }
-  iVar3 = DDL_MoveTo(&g_statsRootState,&local_24,1);
-  if (((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&local_14,1), iVar3 != 0)) &&
-     (iVar3 = DDL_IterateFirst(&local_24,&local_24), iVar3 != 0)) {
-    iVar3 = DDL_IterateFirst(&local_14,&local_14);
-    while (iVar3 != 0) {
-      DDL_SetInt(&local_24,0,(char *)puVar2);
-      DDL_SetInt(&local_14,0,(char *)puVar2);
-      iVar3 = DDL_IterateNext(&local_14,&local_14);
-      if (iVar3 == 0) break;
-      iVar3 = DDL_IterateNext(&local_24,&local_24);
+  iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateChallenges,1);
+  if (((iVar2 != 0) && (iVar2 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1), iVar2 != 0)) &&
+     (iVar2 = DDL_IterateFirst(&searchStateChallenges,&searchStateChallenges), iVar2 != 0)) {
+    iVar2 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
+    while (iVar2 != 0) {
+      DDL_SetInt(&searchStateChallenges,0,(char *)buffer);
+      DDL_SetInt(&searchStateStats,0,(char *)buffer);
+      iVar2 = DDL_IterateNext(&searchStateStats,&searchStateStats);
+      if (iVar2 == 0) break;
+      iVar2 = DDL_IterateNext(&searchStateChallenges,&searchStateChallenges);
     }
   }
-  LiveStats_ResetGamemodeChallenges((char *)puVar2);
+  LiveStats_ResetGamemodeChallenges((char *)buffer);
   LiveCounter_IncrementCounterValueByName("global_prestiged",(ulonglong)in_stack_ffffffc0 << 0x20);
   return;
 }
@@ -5896,38 +6252,43 @@ void __cdecl LiveStats_PresetigeStatsResetCmd(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl SV_UpdatePersonalBestsForClient(int param_1)
+void __cdecl SV_UpdatePersonalBestsForClient(int clientnum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  ddlState_t local_98;
-  char *local_88;
-  ddlState_t local_84;
-  int local_74;
-  int local_70;
-  uint local_6c;
-  int local_68;
-  uint local_64;
-  uint local_60;
-  uint local_5c;
-  int local_58;
-  char *local_54;
-  int local_50;
-  ddlState_t local_4c;
-  int local_3c;
-  char *local_38;
-  int local_34;
-  ddlState_t local_30;
-  int local_20;
-  int local_1c;
-  ddlState_t local_18;
-  int local_8;
+  char *statName;
+  ddlState_t searchStateGameModeBests;
+  char *gameModeName;
+  ddlState_t searchStateGameModeCurrentStats;
+  int currentGameMode;
+  int numGameModes;
+  uint clanTagFeature;
+  int proItemIndex;
+  int oldProUnlocked;
+  int newProUnlocked;
+  uint itemNumber;
+  client_t *client;
+  char *liveStatsBuffer;
+  int newRankXP;
+  ddlState_t searchStateGameModeStats;
+  int oldPrestige;
+  char *oldStatsBuffer;
+  int oldRank;
+  ddlState_t searchStateBests;
+  int oldRankXP;
+  int newRank;
+  ddlState_t searchStateStats;
+  int newPrestige;
   
-  if (((param_1 < 0) || ((com_maxclients->current).integer < param_1)) &&
+  if (((clientnum < 0) || ((com_maxclients->current).integer < clientnum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x1564,0,
                                "clientnum not in [0, com_maxclients->current.integer]\n\t%i not in [%i, %i]"
                               ), !bVar2)) {
@@ -5935,93 +6296,101 @@ void __cdecl SV_UpdatePersonalBestsForClient(int param_1)
     (*pcVar1)();
     return;
   }
-  local_58 = param_1 * 0x84d00 + (int)svs.clients;
-  if ((local_58 == 0) &&
+  client = (client_t *)(clientnum * 0x84d00 + (int)svs.clients);
+  if ((client == (client_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp",0x1567,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (*(int *)(local_58 + 0x84c90) != 0) {
-    local_54 = (char *)(local_58 + 0x6ff11);
-    local_38 = (char *)(local_58 + 0x79bf9);
-    local_20 = 0;
-    local_50 = 0;
-    local_34 = 0;
-    local_1c = 0;
-    local_3c = 0;
-    local_8 = 0;
-    SV_GetStatFromBlob(local_54,"RANKXP",&local_50);
-    local_1c = CL_GetRankForXp(local_50);
-    SV_GetStatFromBlob(local_54,"PLEVEL",&local_8);
-    SV_GetStatFromBlob(local_38,"RANKXP",&local_20);
-    local_34 = CL_GetRankForXp(local_20);
-    SV_GetStatFromBlob(local_38,"PLEVEL",&local_3c);
-    for (local_5c = 0; local_5c < 0x100; local_5c = local_5c + 1) {
-      bVar2 = BG_UnlockablesIsItemValidNotNull(local_5c);
-      if ((bVar2) && (bVar2 = BG_UnlockablesIsItemInDefaultClass(local_5c), !bVar2)) {
-        if ((local_34 < local_1c) &&
-           ((bVar2 = BG_UnlockablesIsItemLockedForRank(local_8,local_1c,local_5c), !bVar2 &&
-            (bVar2 = BG_UnlockablesIsItemLockedForRank(local_3c,local_34,local_5c), bVar2)))) {
-          SV_SetItemNewForClient(local_54,local_5c,local_1c,local_8);
+  if (*(int *)(client[1].userinfo + 0x368) != 0) {
+    liveStatsBuffer = (char *)(client->globalStats + 0x380);
+    oldStatsBuffer = (char *)(client->globalStatsStable + 0x700);
+    oldRankXP = 0;
+    newRankXP = 0;
+    oldRank = 0;
+    newRank = 0;
+    oldPrestige = 0;
+    newPrestige = 0;
+    SV_GetStatFromBlob(liveStatsBuffer,"RANKXP",&newRankXP);
+    newRank = CL_GetRankForXp(newRankXP);
+    SV_GetStatFromBlob(liveStatsBuffer,"PLEVEL",&newPrestige);
+    SV_GetStatFromBlob(oldStatsBuffer,"RANKXP",&oldRankXP);
+    oldRank = CL_GetRankForXp(oldRankXP);
+    SV_GetStatFromBlob(oldStatsBuffer,"PLEVEL",&oldPrestige);
+    for (itemNumber = 0; itemNumber < 0x100; itemNumber = itemNumber + 1) {
+      bVar2 = BG_UnlockablesIsItemValidNotNull(itemNumber);
+      if ((bVar2) && (bVar2 = BG_UnlockablesIsItemInDefaultClass(itemNumber), !bVar2)) {
+        if ((oldRank < newRank) &&
+           ((bVar2 = BG_UnlockablesIsItemLockedForRank(newPrestige,newRank,itemNumber), !bVar2 &&
+            (bVar2 = BG_UnlockablesIsItemLockedForRank(oldPrestige,oldRank,itemNumber), bVar2)))) {
+          SV_SetItemNewForClient(liveStatsBuffer,itemNumber,newRank,newPrestige);
         }
         va("%d");
-        iVar3 = DDL_MoveTo(&g_statsRootState,&local_18,3);
+        iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,3);
         if (iVar3 != 0) {
-          iVar3 = DDL_IterateFirst(&local_18,&local_18);
+          iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats);
           while (iVar3 != 0) {
-            LiveStats_UpdateItemPersonalBest(local_54,local_38,&local_18);
-            iVar3 = DDL_IterateNext(&local_18,&local_18);
+            LiveStats_UpdateItemPersonalBest(liveStatsBuffer,oldStatsBuffer,&searchStateStats);
+            iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
           }
         }
-        bVar2 = LiveStats_ProVersionUnlocked(local_5c,local_38);
-        local_64 = (uint)bVar2;
-        bVar2 = LiveStats_ProVersionUnlocked(local_5c,local_54);
-        local_60 = (uint)bVar2;
-        if (((int)local_64 < (int)local_60) &&
-           (local_68 = BG_UnlockablesGetProItem(local_5c), local_68 != -1)) {
-          SV_SetItemNewForClient(local_54,local_68,local_1c,local_8);
+        bVar2 = LiveStats_ProVersionUnlocked(itemNumber,oldStatsBuffer);
+        oldProUnlocked = (int)bVar2;
+        bVar2 = LiveStats_ProVersionUnlocked(itemNumber,liveStatsBuffer);
+        newProUnlocked = (int)bVar2;
+        if ((oldProUnlocked < newProUnlocked) &&
+           (proItemIndex = BG_UnlockablesGetProItem(itemNumber), proItemIndex != -1)) {
+          SV_SetItemNewForClient(liveStatsBuffer,proItemIndex,newRank,newPrestige);
         }
       }
     }
-    for (local_6c = 0; local_6c < 0x100; local_6c = local_6c + 1) {
-      pcVar4 = BG_UnlockablesGetClanTagFeature(local_6c,CLANTAG_COL_UNLOCKLVL);
-      if ((((pcVar4 != (char *)0x0) && (local_34 < local_1c)) &&
-          (bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(local_8,local_1c,local_6c), !bVar2))
-         && (bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(local_3c,local_34,local_6c), bVar2)
-         ) {
-        SV_SetClanTagFeatureNewForClient(local_54,local_1c,local_8,local_6c,1);
+    for (clanTagFeature = 0; clanTagFeature < 0x100; clanTagFeature = clanTagFeature + 1) {
+      pcVar4 = BG_UnlockablesGetClanTagFeature(clanTagFeature,CLANTAG_COL_UNLOCKLVL);
+      if ((((pcVar4 != (char *)0x0) && (oldRank < newRank)) &&
+          (bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(newPrestige,newRank,clanTagFeature),
+          !bVar2)) &&
+         (bVar2 = BG_UnlockablesIsClanTagFeatureLockedForRank(oldPrestige,oldRank,clanTagFeature),
+         bVar2)) {
+        SV_SetClanTagFeatureNewForClient(liveStatsBuffer,newRank,newPrestige,clanTagFeature,1);
       }
     }
     s_currentPersonalBest[0] = 0;
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_18,1);
-    if (((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&local_30,1), iVar3 != 0)) &&
-       (iVar3 = DDL_IterateFirst(&local_18,&local_18), iVar3 != 0)) {
-      iVar3 = DDL_IterateFirst(&local_30,&local_30);
+    iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+    if (((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateBests,1), iVar3 != 0)) &&
+       (iVar3 = DDL_IterateFirst(&searchStateStats,&searchStateStats), iVar3 != 0)) {
+      iVar3 = DDL_IterateFirst(&searchStateBests,&searchStateBests);
       while (iVar3 != 0) {
-        LiveStats_UpdatePersonalBest(0,local_54,local_38,&local_18,&local_30,"");
-        iVar3 = DDL_IterateNext(&local_18,&local_18);
+        LiveStats_UpdatePersonalBest
+                  (0,liveStatsBuffer,oldStatsBuffer,&searchStateStats,&searchStateBests,"");
+        iVar3 = DDL_IterateNext(&searchStateStats,&searchStateStats);
         if (iVar3 == 0) break;
-        iVar3 = DDL_IterateNext(&local_30,&local_30);
+        iVar3 = DDL_IterateNext(&searchStateBests,&searchStateBests);
       }
     }
-    LiveStats_UpdatetBestMatchAccuracy(local_54,local_38);
-    LiveStats_UpdatetBestMatchKdRatio(local_54,local_38);
-    iVar3 = DDL_MoveTo(&g_statsRootState,&local_18,1);
-    if ((iVar3 != 0) && (iVar3 = DDL_MoveTo(&g_statsRootState,&local_4c,1), iVar3 != 0)) {
-      local_70 = (local_18.ddl)->enumList[(local_18.member)->enumIndex].memberCount;
-      for (local_74 = 0; local_74 < local_70; local_74 = local_74 + 1) {
-        local_88 = (local_18.ddl)->enumList[(local_18.member)->enumIndex].members[local_74];
-        iVar3 = DDL_MoveTo(&local_18,&local_98,2);
+    LiveStats_UpdatetBestMatchAccuracy(liveStatsBuffer,oldStatsBuffer);
+    LiveStats_UpdatetBestMatchKdRatio(liveStatsBuffer,oldStatsBuffer);
+    iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateStats,1);
+    if ((iVar3 != 0) &&
+       (iVar3 = DDL_MoveTo(&g_statsRootState,&searchStateGameModeStats,1), iVar3 != 0)) {
+      numGameModes = (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].
+                     memberCount;
+      for (currentGameMode = 0; currentGameMode < numGameModes;
+          currentGameMode = currentGameMode + 1) {
+        gameModeName = (searchStateStats.ddl)->enumList[(searchStateStats.member)->enumIndex].
+                       members[currentGameMode];
+        iVar3 = DDL_MoveTo(&searchStateStats,&searchStateGameModeBests,2);
         if (iVar3 != 0) {
-          iVar3 = DDL_IterateFirst(&local_98,&local_98);
+          iVar3 = DDL_IterateFirst(&searchStateGameModeBests,&searchStateGameModeBests);
           while (iVar3 != 0) {
-            iVar3 = DDL_MoveTo(&local_4c,&local_84,2);
+            iVar3 = DDL_MoveTo(&searchStateGameModeStats,&searchStateGameModeCurrentStats,2);
             if (iVar3 != 0) {
-              LiveStats_UpdatePersonalBest(0,local_54,local_38,&local_84,&local_98,local_88);
+              LiveStats_UpdatePersonalBest
+                        (0,liveStatsBuffer,oldStatsBuffer,&searchStateGameModeCurrentStats,
+                         &searchStateGameModeBests,gameModeName);
             }
-            iVar3 = DDL_IterateNext(&local_98,&local_98);
+            iVar3 = DDL_IterateNext(&searchStateGameModeBests,&searchStateGameModeBests);
           }
         }
       }
@@ -6032,6 +6401,8 @@ void __cdecl SV_UpdatePersonalBestsForClient(int param_1)
 
 
 // 0097CA10  LiveStats_Init  (live/live_stats.cpp:5654)
+
+/* WARNING: Enum "challengeSortOrder_e": Some values do not have unique names */
 
 void __cdecl LiveStats_Init(void)
 

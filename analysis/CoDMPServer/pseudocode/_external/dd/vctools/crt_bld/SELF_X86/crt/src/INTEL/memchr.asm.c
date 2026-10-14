@@ -2,7 +2,7 @@
 
 // 00C13BF0  memchr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/memchr.asm:56)
 
-void __cdecl memchr(uchar *param_1,uchar param_2,ulong param_3)
+void __cdecl memchr(uchar *buf,uchar chr,ulong cnt)
 
 {
   uint uVar1;
@@ -13,27 +13,27 @@ void __cdecl memchr(uchar *param_1,uchar param_2,ulong param_3)
   uint uVar6;
   bool bVar7;
   
-  if (param_3 == 0) {
+  if (cnt == 0) {
     return;
   }
-  uVar6 = (uint)param_2;
-  while (((uint)param_1 & 3) != 0) {
-    uVar2 = *(uint *)param_1;
-    param_1 = (uchar *)((int)param_1 + 1);
-    if ((uchar)uVar2 == param_2) {
+  uVar6 = (uint)chr;
+  while (((uint)buf & 3) != 0) {
+    uVar2 = *(uint *)buf;
+    buf = (uchar *)((int)buf + 1);
+    if ((uchar)uVar2 == chr) {
       return;
     }
-    param_3 = param_3 - 1;
-    if (param_3 == 0) {
+    cnt = cnt - 1;
+    if (cnt == 0) {
       return;
     }
   }
-  uVar2 = param_3 - 4;
-  if (3 < param_3) {
+  uVar2 = cnt - 4;
+  if (3 < cnt) {
     uVar6 = uVar6 * 0x1010101;
-    puVar4 = (uint *)param_1;
+    puVar4 = (uint *)buf;
     do {
-      param_1 = (uchar *)(puVar4 + 1);
+      buf = (uchar *)(puVar4 + 1);
       if (((*puVar4 ^ uVar6 ^ 0xffffffff ^ (*puVar4 ^ uVar6) + 0x7efefeff) & 0x81010100) != 0) {
         uVar1 = *puVar4;
         cVar5 = (char)uVar6;
@@ -52,7 +52,7 @@ void __cdecl memchr(uchar *param_1,uchar param_2,ulong param_3)
       }
       bVar7 = 3 < uVar2;
       uVar2 = uVar2 - 4;
-      puVar4 = (uint *)param_1;
+      puVar4 = (uint *)buf;
     } while (bVar7);
   }
   iVar3 = uVar2 + 4;
@@ -60,8 +60,8 @@ void __cdecl memchr(uchar *param_1,uchar param_2,ulong param_3)
     if (iVar3 == 0) {
       return;
     }
-    uVar2 = *(uint *)param_1;
-    param_1 = (uchar *)((int)param_1 + 1);
+    uVar2 = *(uint *)buf;
+    buf = (uchar *)((int)buf + 1);
     if ((char)uVar2 == (char)uVar6) break;
     iVar3 = iVar3 + -1;
   }

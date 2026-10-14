@@ -4,7 +4,7 @@
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-bool __cdecl isBadWord(int param_1,char *param_2)
+bool __cdecl isBadWord(int controllerIndex,char *testString)
 
 {
   char cVar1;
@@ -13,60 +13,61 @@ bool __cdecl isBadWord(int param_1,char *param_2)
   char *pcVar4;
   char *local_48;
   bdReference<bdByteBuffer> local_30;
-  int local_2c;
-  bdStatus local_28;
-  bdVerifyString local_24;
-  bdRemoteTask *local_1c;
-  int local_18;
-  ulong64 local_14;
-  bdTitleUtilities *local_8;
+  int maxTaskWaits;
+  bdStatus remoteTaskStatus;
+  bdVerifyString verified;
+  bdRemoteTask *remoteTask;
+  int testStringLength;
+  ulong64 userID;
+  bdTitleUtilities *titleUtil;
   
-  local_8 = dwGetTitleUtilities(param_1);
-  if ((local_8 != (bdTitleUtilities *)0x0) && (bVar2 = dwGetOnlineUserID(param_1,&local_14), bVar2))
-  {
-    local_48 = param_2;
+  titleUtil = dwGetTitleUtilities(controllerIndex);
+  if ((titleUtil != (bdTitleUtilities *)0x0) &&
+     (bVar2 = dwGetOnlineUserID(controllerIndex,&userID), bVar2)) {
+    local_48 = testString;
     do {
       cVar1 = *local_48;
       local_48 = local_48 + 1;
     } while (cVar1 != '\0');
-    local_18 = (int)local_48 - (int)(param_2 + 1);
-    bdVerifyString::bdVerifyString(&local_24);
+    testStringLength = (int)local_48 - (int)(testString + 1);
+    bdVerifyString::bdVerifyString(&verified);
     bVar3 = bdTitleUtilities::verifyString
-                      (local_8,(char *)&local_30,(uint)param_2,(bdVerifyString *)(local_18 + 1));
-    local_1c = (bdRemoteTask *)(bVar3.m_ptr)->_padding_;
+                      (titleUtil,(char *)&local_30,(uint)testString,
+                       (bdVerifyString *)(testStringLength + 1));
+    remoteTask = (bdRemoteTask *)(bVar3.m_ptr)->_padding_;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_30);
-    if (local_1c == (bdRemoteTask *)0x0) {
+    if (remoteTask == (bdRemoteTask *)0x0) {
       pcVar4 = va("Error Occurred whilst checking string %s\n");
       Com_Printf(0x10,pcVar4);
     }
     else {
-      local_28 = bdRemoteTask::getStatus(local_1c);
-      local_2c = 200;
-      while (local_28 == BD_PENDING) {
-        local_28 = bdRemoteTask::getStatus(local_1c);
+      remoteTaskStatus = bdRemoteTask::getStatus(remoteTask);
+      maxTaskWaits = 200;
+      while (remoteTaskStatus == BD_PENDING) {
+        remoteTaskStatus = bdRemoteTask::getStatus(remoteTask);
         dwNetPump();
-        dwLobbyPump(param_1);
+        dwLobbyPump(controllerIndex);
         NET_Sleep(10);
-        local_2c = local_2c + -1;
-        if (local_2c == 0) {
+        maxTaskWaits = maxTaskWaits + -1;
+        if (maxTaskWaits == 0) {
           pcVar4 = va("Timeout whilst checking string %s\n");
           Com_Printf(0x10,pcVar4);
-          bdTaskResult::~bdTaskResult((bdTaskResult *)&local_24);
+          bdTaskResult::~bdTaskResult((bdTaskResult *)&verified);
           return false;
         }
       }
-      if (local_28 == BD_DONE) {
-        if (local_24.m_verified == false) {
+      if (remoteTaskStatus == BD_DONE) {
+        if (verified.m_verified == false) {
           pcVar4 = va("Profanity Detected %s\n");
           Com_Printf(0x10,pcVar4);
-          bdTaskResult::~bdTaskResult((bdTaskResult *)&local_24);
+          bdTaskResult::~bdTaskResult((bdTaskResult *)&verified);
           return true;
         }
         pcVar4 = va("String verified by DW \'%s\'\n");
         Com_Printf(0x10,pcVar4);
       }
     }
-    bdTaskResult::~bdTaskResult((bdTaskResult *)&local_24);
+    bdTaskResult::~bdTaskResult((bdTaskResult *)&verified);
   }
   return false;
 }

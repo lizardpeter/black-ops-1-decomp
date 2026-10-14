@@ -2,26 +2,26 @@
 
 // 0093BCD0  SND_FindInIndex  (sound/snd_bank.cpp:24)
 
-bool __cdecl SND_FindInIndex(uint param_1,SndBank *param_2,snd_alias_list_t **param_3)
+bool __cdecl SND_FindInIndex(uint key,SndBank *bank,snd_alias_list_t **result)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uint local_8;
+  snd_alias_list_t *list;
+  uint idx;
   
-  if (param_2->aliasCount != 0) {
-    for (local_8 = param_1 % param_2->aliasCount; local_8 != 0xffff;
-        local_8 = (uint)param_2->aliasIndex[local_8].next) {
-      if ((param_2->aliasIndex[local_8].value == 0xffff) &&
+  if (bank->aliasCount != 0) {
+    for (idx = key % bank->aliasCount; idx != 0xffff; idx = (uint)bank->aliasIndex[idx].next) {
+      if ((bank->aliasIndex[idx].value == 0xffff) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x22,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (param_2->alias[param_2->aliasIndex[local_8].value].id == param_1) {
-        *param_3 = param_2->alias + param_2->aliasIndex[local_8].value;
+      if (bank->alias[bank->aliasIndex[idx].value].id == key) {
+        *result = bank->alias + bank->aliasIndex[idx].value;
         return true;
       }
     }
@@ -32,25 +32,25 @@ bool __cdecl SND_FindInIndex(uint param_1,SndBank *param_2,snd_alias_list_t **pa
 
 // 0093BB60  SND_AssertBankIndexValid  (sound/snd_bank.cpp:52)
 
-void __cdecl SND_AssertBankIndexValid(SndBank *param_1)
+void __cdecl SND_AssertBankIndexValid(SndBank *bank)
 
 {
   code *pcVar1;
   bool bVar2;
-  snd_alias_list_t *local_10;
-  uint local_c;
-  uint local_8;
+  snd_alias_list_t *value;
+  uint i_2;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (param_1->aliasCount <= local_8) {
-      local_c = 0;
+    if (bank->aliasCount <= i) {
+      i_2 = 0;
       do {
-        if (param_1->aliasCount <= local_c) {
+        if (bank->aliasCount <= i_2) {
           return;
         }
-        local_10 = (snd_alias_list_t *)0x0;
-        bVar2 = SND_FindInIndex(param_1->alias[local_c].id,param_1,&local_10);
+        value = (snd_alias_list_t *)0x0;
+        bVar2 = SND_FindInIndex(bank->alias[i_2].id,bank,&value);
         if (!bVar2) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x44,0,
                                    "%s");
@@ -60,7 +60,7 @@ void __cdecl SND_AssertBankIndexValid(SndBank *param_1)
             return;
           }
         }
-        if (local_10 == (snd_alias_list_t *)0x0) {
+        if (value == (snd_alias_list_t *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x45,0,
                                    "%s");
           if (!bVar2) {
@@ -69,7 +69,7 @@ void __cdecl SND_AssertBankIndexValid(SndBank *param_1)
             return;
           }
         }
-        if (local_10 != param_1->alias + local_c) {
+        if (value != bank->alias + i_2) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x46,0,
                                    "%s");
           if (!bVar2) {
@@ -78,10 +78,10 @@ void __cdecl SND_AssertBankIndexValid(SndBank *param_1)
             return;
           }
         }
-        local_c = local_c + 1;
+        i_2 = i_2 + 1;
       } while( true );
     }
-    if (param_1->aliasIndex[local_8].value == 0xffff) {
+    if (bank->aliasIndex[i].value == 0xffff) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x39,0,"%s")
       ;
       if (!bVar2) {
@@ -90,7 +90,7 @@ void __cdecl SND_AssertBankIndexValid(SndBank *param_1)
         return;
       }
     }
-    if (param_1->aliasCount <= (uint)param_1->aliasIndex[local_8].value) {
+    if (bank->aliasCount <= (uint)bank->aliasIndex[i].value) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x3a,0,"%s")
       ;
       if (!bVar2) {
@@ -99,22 +99,22 @@ void __cdecl SND_AssertBankIndexValid(SndBank *param_1)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0093BA60  SND_AddBank  (sound/snd_bank.cpp:77)
 
-void __cdecl SND_AddBank(SndBank *param_1)
+void __cdecl SND_AddBank(SndBank *bank)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  if (param_1 == (SndBank *)0x0) {
+  if (bank == (SndBank *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x50,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -133,12 +133,12 @@ void __cdecl SND_AddBank(SndBank *param_1)
   if (g_snd_bankCount == 0) {
     memset((uchar *)g_snd_banks,'\0',0x80);
   }
-  g_snd_banks[g_snd_bankCount] = param_1;
+  g_snd_banks[g_snd_bankCount] = bank;
   g_snd_bankCount = g_snd_bankCount + 1;
-  SND_AssertBankIndexValid(param_1);
-  for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    if (g_snd_patches[local_8] != (SndPatch *)0x0) {
-      SND_PatchApply(g_snd_patches[local_8]);
+  SND_AssertBankIndexValid(bank);
+  for (i = 0; i < 8; i = i + 1) {
+    if (g_snd_patches[i] != (SndPatch *)0x0) {
+      SND_PatchApply(g_snd_patches[i]);
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
@@ -148,12 +148,13 @@ void __cdecl SND_AddBank(SndBank *param_1)
 
 // 0093BD90  SND_RemoveBank  (sound/snd_bank.cpp:139)
 
-void __cdecl SND_RemoveBank(SndBank *param_1)
+void __cdecl SND_RemoveBank(SndBank *bank)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_c;
+  uint i;
+  bool found;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
   if (g_snd_bankCount == 0) {
@@ -173,15 +174,15 @@ void __cdecl SND_RemoveBank(SndBank *param_1)
     }
   }
   bVar2 = false;
-  for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-    if ((bVar2) || (g_snd_banks[local_c] != param_1)) {
+  for (i = 0; i < 0x20; i = i + 1) {
+    if ((bVar2) || (g_snd_banks[i] != bank)) {
       if (bVar2) {
-        *(SndBank **)(&DAT_0a0b1c6c + local_c * 4) = g_snd_banks[local_c];
-        g_snd_banks[local_c] = (SndBank *)0x0;
+        *(SndBank **)(&DAT_0a0b1c6c + i * 4) = g_snd_banks[i];
+        g_snd_banks[i] = (SndBank *)0x0;
       }
     }
     else {
-      g_snd_banks[local_c] = (SndBank *)0x0;
+      g_snd_banks[i] = (SndBank *)0x0;
       bVar2 = true;
     }
   }
@@ -195,14 +196,14 @@ void __cdecl SND_RemoveBank(SndBank *param_1)
 
 // 0093BEA0  SND_AddPatch  (sound/snd_bank.cpp:169)
 
-void __cdecl SND_AddPatch(SndPatch *param_1)
+void __cdecl SND_AddPatch(SndPatch *patch)
 
 {
   code *pcVar1;
   bool bVar2;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  if (param_1 == (SndPatch *)0x0) {
+  if (patch == (SndPatch *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0xac,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -228,7 +229,7 @@ void __cdecl SND_AddPatch(SndPatch *param_1)
     g_snd_patches[6] = (SndPatch *)0x0;
     g_snd_patches[7] = (SndPatch *)0x0;
   }
-  g_snd_patches[g_snd_patchCount] = param_1;
+  g_snd_patches[g_snd_patchCount] = patch;
   g_snd_patchCount = g_snd_patchCount + 1;
   Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
   return;
@@ -237,12 +238,13 @@ void __cdecl SND_AddPatch(SndPatch *param_1)
 
 // 0093BF70  SND_RemovePatch  (sound/snd_bank.cpp:187)
 
-void __cdecl SND_RemovePatch(SndPatch *param_1)
+void __cdecl SND_RemovePatch(SndPatch *patch)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_c;
+  uint i;
+  bool found;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
   if (g_snd_patchCount == 0) {
@@ -262,15 +264,15 @@ void __cdecl SND_RemovePatch(SndPatch *param_1)
     }
   }
   bVar2 = false;
-  for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-    if ((bVar2) || (g_snd_patches[local_c] != param_1)) {
+  for (i = 0; i < 8; i = i + 1) {
+    if ((bVar2) || (g_snd_patches[i] != patch)) {
       if (bVar2) {
-        g_snd_banks[local_c + 0x1f] = (SndBank *)g_snd_patches[local_c];
-        g_snd_patches[local_c] = (SndPatch *)0x0;
+        g_snd_banks[i + 0x1f] = (SndBank *)g_snd_patches[i];
+        g_snd_patches[i] = (SndPatch *)0x0;
       }
     }
     else {
-      g_snd_patches[local_c] = (SndPatch *)0x0;
+      g_snd_patches[i] = (SndPatch *)0x0;
       bVar2 = true;
     }
   }
@@ -287,30 +289,31 @@ void __cdecl SND_RemovePatch(SndPatch *param_1)
 uint __cdecl SND_AliasCount(void)
 
 {
-  int local_c;
-  uint local_8;
+  int i;
+  uint total;
   
-  local_8 = 0;
+  total = 0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-    if (g_snd_banks[local_c] != (SndBank *)0x0) {
-      local_8 = local_8 + g_snd_banks[local_c]->aliasCount;
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (g_snd_banks[i] != (SndBank *)0x0) {
+      total = total + g_snd_banks[i]->aliasCount;
     }
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
-  return local_8;
+  return total;
 }
 
 
 // 0093C0F0  SND_IsAliasNameLooping  (sound/snd_bank.cpp:233)
 
-bool __cdecl SND_IsAliasNameLooping(char *param_1)
+bool __cdecl SND_IsAliasNameLooping(char *name)
 
 {
   snd_alias_list_t *psVar1;
   bool bVar2;
+  snd_alias_list_t *list;
   
-  psVar1 = SND_FindAlias(param_1);
+  psVar1 = SND_FindAlias(name);
   if (psVar1 == (snd_alias_list_t *)0x0) {
     bVar2 = false;
   }
@@ -323,118 +326,121 @@ bool __cdecl SND_IsAliasNameLooping(char *param_1)
 
 // 0093C130  SND_AliasByIndex  (sound/snd_bank.cpp:248)
 
-snd_alias_list_t * __cdecl SND_AliasByIndex(uint param_1)
+snd_alias_list_t * __cdecl SND_AliasByIndex(uint index)
 
 {
   snd_alias_list_t *psVar1;
-  int local_c;
-  int local_8;
+  snd_alias_list_t *list;
+  int i;
+  uint total;
   
-  local_8 = 0;
+  total = 0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  local_c = 0;
+  i = 0;
   do {
-    if (0x1f < local_c) {
+    if (0x1f < i) {
       Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
       return (snd_alias_list_t *)0x0;
     }
-    if (g_snd_banks[local_c] != (SndBank *)0x0) {
-      if (param_1 < local_8 + g_snd_banks[local_c]->aliasCount) {
-        psVar1 = g_snd_banks[local_c]->alias;
+    if (g_snd_banks[i] != (SndBank *)0x0) {
+      if (index < total + g_snd_banks[i]->aliasCount) {
+        psVar1 = g_snd_banks[i]->alias;
         Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
-        return psVar1 + (param_1 - local_8);
+        return psVar1 + (index - total);
       }
-      local_8 = local_8 + g_snd_banks[local_c]->aliasCount;
+      total = total + g_snd_banks[i]->aliasCount;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0093C2E0  SND_BankAliasLookup  (sound/snd_bank.cpp:274)
 
-snd_alias_list_t * __cdecl SND_BankAliasLookup(uint param_1)
+snd_alias_list_t * __cdecl SND_BankAliasLookup(uint key)
 
 {
   bool bVar1;
   DWORD DVar2;
-  uint local_c;
-  snd_alias_list_t *local_8;
+  SndBank *bank;
+  uint i;
+  snd_alias_list_t *list;
   
   PIXBeginNamedEvent(-1,"SND_BankAliasLookup");
-  local_8 = (snd_alias_list_t *)0x0;
+  list = (snd_alias_list_t *)0x0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  local_c = 0;
-  while ((local_c < g_snd_bankCount &&
-         (bVar1 = SND_FindInIndex(param_1,*(SndBank **)
-                                           (&DAT_0a0b1c6c + (g_snd_bankCount - local_c) * 4),
-                                  &local_8), !bVar1))) {
-    local_c = local_c + 1;
+  i = 0;
+  while ((i < g_snd_bankCount &&
+         (bVar1 = SND_FindInIndex(key,*(SndBank **)(&DAT_0a0b1c6c + (g_snd_bankCount - i) * 4),&list
+                                 ), !bVar1))) {
+    i = i + 1;
   }
   Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return local_8;
+  return list;
 }
 
 
 // 0093C1E0  SND_FindAlias  (sound/snd_bank.cpp:302)
 
-snd_alias_list_t * __cdecl SND_FindAlias(char *param_1)
+snd_alias_list_t * __cdecl SND_FindAlias(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint uVar4;
-  snd_alias_list_t *psVar5;
-  snd_alias_list_t *local_8;
+  uint hash_00;
+  snd_alias_list_t *psVar4;
+  uint hash;
+  snd_alias_list_t *list;
   
   iVar3 = SND_Active();
   if (iVar3 == 0) {
-    local_8 = (snd_alias_list_t *)0x0;
+    list = (snd_alias_list_t *)0x0;
   }
-  else if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
-    local_8 = (snd_alias_list_t *)0x0;
+  else if ((name == (char *)0x0) || (*name == '\0')) {
+    list = (snd_alias_list_t *)0x0;
   }
   else {
-    uVar4 = SND_HashName(param_1);
-    local_8 = SND_FindAliasFromId(uVar4);
-    if ((local_8 == (snd_alias_list_t *)0x0) || (local_8->count == 0)) {
-      local_8 = (snd_alias_list_t *)0x0;
+    hash_00 = SND_HashName(name);
+    list = SND_FindAliasFromId(hash_00);
+    if ((list == (snd_alias_list_t *)0x0) || (list->count == 0)) {
+      list = (snd_alias_list_t *)0x0;
     }
     else {
-      iVar3 = I_stricmp(param_1,local_8->name);
+      iVar3 = I_stricmp(name,list->name);
       if ((iVar3 != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x144,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        psVar5 = (snd_alias_list_t *)(*pcVar1)();
-        return psVar5;
+        psVar4 = (snd_alias_list_t *)(*pcVar1)();
+        return psVar4;
       }
     }
   }
-  return local_8;
+  return list;
 }
 
 
 // 0093C290  SND_FindAliasFromId  (sound/snd_bank.cpp:332)
 
-snd_alias_list_t * __cdecl SND_FindAliasFromId(uint param_1)
+snd_alias_list_t * __cdecl SND_FindAliasFromId(uint hash)
 
 {
   int iVar1;
   snd_alias_list_t *psVar2;
+  snd_alias_list_t *list;
   
   iVar1 = SND_Active();
-  if ((iVar1 == 0) || (param_1 == 0)) {
+  if ((iVar1 == 0) || (hash == 0)) {
     psVar2 = (snd_alias_list_t *)0x0;
   }
   else {
     Sys_EnterCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
-    psVar2 = SND_BankAliasLookup(param_1);
+    psVar2 = SND_BankAliasLookup(hash);
     Sys_LeaveCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
   }
   return psVar2;
@@ -443,24 +449,26 @@ snd_alias_list_t * __cdecl SND_FindAliasFromId(uint param_1)
 
 // 0093C3A0  SND_FindAliasId  (sound/snd_bank.cpp:349)
 
-uint __cdecl SND_FindAliasId(char *param_1)
+uint __cdecl SND_FindAliasId(char *name)
 
 {
-  uint uVar1;
-  snd_alias_list_t *psVar2;
-  int iVar3;
+  uint hash;
+  snd_alias_list_t *psVar1;
+  int iVar2;
+  snd_alias_list_t *alias;
+  uint id;
   
-  uVar1 = SND_HashName(param_1);
-  if (uVar1 != 0) {
-    psVar2 = SND_FindAliasFromId(uVar1);
-    if (psVar2 == (snd_alias_list_t *)0x0) {
-      iVar3 = SND_Active();
-      if (iVar3 != 0) {
-        SND_LogRegisterString(param_1,uVar1);
+  hash = SND_HashName(name);
+  if (hash != 0) {
+    psVar1 = SND_FindAliasFromId(hash);
+    if (psVar1 == (snd_alias_list_t *)0x0) {
+      iVar2 = SND_Active();
+      if (iVar2 != 0) {
+        SND_LogRegisterString(name,hash);
       }
     }
   }
-  return uVar1;
+  return hash;
 }
 
 
@@ -468,35 +476,36 @@ uint __cdecl SND_FindAliasId(char *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_radverb * __cdecl SND_GetRadverb(uint param_1)
+snd_radverb * __cdecl SND_GetRadverb(uint id)
 
 {
   int iVar1;
-  uint local_14;
-  uint local_c;
-  snd_radverb *local_8;
+  uint r;
+  SndBank *bank;
+  uint i;
+  snd_radverb *radverb;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  local_8 = (snd_radverb *)0x0;
-  local_c = 0;
+  radverb = (snd_radverb *)0x0;
+  i = 0;
   do {
-    if ((g_snd_bankCount <= local_c) || (local_8 != (snd_radverb *)0x0)) {
-      if ((local_8 == (snd_radverb *)0x0) && (g_snd.defaultHash != param_1)) {
-        local_8 = SND_GetRadverb(g_snd.defaultHash);
+    if ((g_snd_bankCount <= i) || (radverb != (snd_radverb *)0x0)) {
+      if ((radverb == (snd_radverb *)0x0) && (g_snd.defaultHash != id)) {
+        radverb = SND_GetRadverb(g_snd.defaultHash);
       }
       Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
-      return local_8;
+      return radverb;
     }
-    iVar1 = *(int *)(&DAT_0a0b1c6c + (g_snd_bankCount - local_c) * 4);
+    iVar1 = *(int *)(&DAT_0a0b1c6c + (g_snd_bankCount - i) * 4);
     if (iVar1 != 0) {
-      for (local_14 = 0; local_14 < *(uint *)(iVar1 + 0x18); local_14 = local_14 + 1) {
-        if (*(uint *)(*(int *)(iVar1 + 0x1c) + 0x20 + local_14 * 0x60) == param_1) {
-          local_8 = (snd_radverb *)(local_14 * 0x60 + *(int *)(iVar1 + 0x1c));
+      for (r = 0; r < *(uint *)(iVar1 + 0x18); r = r + 1) {
+        if (*(uint *)(*(int *)(iVar1 + 0x1c) + 0x20 + r * 0x60) == id) {
+          radverb = (snd_radverb *)(r * 0x60 + *(int *)(iVar1 + 0x1c));
           break;
         }
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -505,36 +514,37 @@ snd_radverb * __cdecl SND_GetRadverb(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_snapshot * __cdecl SND_GetSnapshotById(uint param_1)
+snd_snapshot * __cdecl SND_GetSnapshotById(uint id)
 
 {
   int iVar1;
-  uint local_14;
-  uint local_c;
-  snd_snapshot *local_8;
+  uint r;
+  SndBank *bank;
+  uint i;
+  snd_snapshot *snapshot;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_BANK);
-  local_8 = (snd_snapshot *)0x0;
-  local_c = 0;
+  snapshot = (snd_snapshot *)0x0;
+  i = 0;
   do {
-    if ((g_snd_bankCount <= local_c) || (local_8 != (snd_snapshot *)0x0)) {
-      if ((local_8 == (snd_snapshot *)0x0) && (g_snd.defaultHash != param_1)) {
+    if ((g_snd_bankCount <= i) || (snapshot != (snd_snapshot *)0x0)) {
+      if ((snapshot == (snd_snapshot *)0x0) && (g_snd.defaultHash != id)) {
         Com_PrintError(9,"missing snapshot\n");
-        local_8 = SND_GetSnapshotById(g_snd.defaultHash);
+        snapshot = SND_GetSnapshotById(g_snd.defaultHash);
       }
       Sys_LeaveCriticalSection(CRITSECT_SOUND_BANK);
-      return local_8;
+      return snapshot;
     }
-    iVar1 = *(int *)(&DAT_0a0b1c6c + (g_snd_bankCount - local_c) * 4);
+    iVar1 = *(int *)(&DAT_0a0b1c6c + (g_snd_bankCount - i) * 4);
     if (iVar1 != 0) {
-      for (local_14 = 0; local_14 < *(uint *)(iVar1 + 0x20); local_14 = local_14 + 1) {
-        if (*(uint *)(*(int *)(iVar1 + 0x24) + 0x20 + local_14 * 0x15c) == param_1) {
-          local_8 = (snd_snapshot *)(local_14 * 0x15c + *(int *)(iVar1 + 0x24));
+      for (r = 0; r < *(uint *)(iVar1 + 0x20); r = r + 1) {
+        if (*(uint *)(*(int *)(iVar1 + 0x24) + 0x20 + r * 0x15c) == id) {
+          snapshot = (snd_snapshot *)(r * 0x15c + *(int *)(iVar1 + 0x24));
           break;
         }
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -543,16 +553,17 @@ snd_snapshot * __cdecl SND_GetSnapshotById(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_snapshot * __cdecl SND_GetOcclusionSnapshot(snd_snapshot *param_1)
+snd_snapshot * __cdecl SND_GetOcclusionSnapshot(snd_snapshot *snap)
 
 {
   snd_snapshot *psVar1;
+  snd_snapshot *osnap;
   
-  if (param_1 == (snd_snapshot *)0x0) {
+  if (snap == (snd_snapshot *)0x0) {
     psVar1 = SND_GetSnapshotById(g_snd.defaultHash);
   }
   else {
-    psVar1 = SND_GetSnapshotById(param_1->occlusionId);
+    psVar1 = SND_GetSnapshotById(snap->occlusionId);
     if (psVar1 == (snd_snapshot *)0x0) {
       psVar1 = SND_GetSnapshotById(g_snd.defaultHash);
     }
@@ -563,12 +574,12 @@ snd_snapshot * __cdecl SND_GetOcclusionSnapshot(snd_snapshot *param_1)
 
 // 0093C600  SND_FindRowAlias  (sound/snd_bank.cpp:460)
 
-void * __cdecl SND_FindRowAlias(uint param_1)
+void * __cdecl SND_FindRowAlias(uint id)
 
 {
   snd_alias_list_t *psVar1;
   
-  psVar1 = SND_FindAliasFromId(param_1);
+  psVar1 = SND_FindAliasFromId(id);
   return psVar1;
 }
 
@@ -577,15 +588,15 @@ void * __cdecl SND_FindRowAlias(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void * __cdecl SND_FindRowGroup(uint param_1)
+void * __cdecl SND_FindRowGroup(uint id)
 
 {
-  uint local_8;
+  uint i;
   
   if (g_snd.global_constants != (SndDriverGlobals *)0x0) {
-    for (local_8 = 0; local_8 < (g_snd.global_constants)->groupCount; local_8 = local_8 + 1) {
-      if ((g_snd.global_constants)->groups[local_8].id == param_1) {
-        return (g_snd.global_constants)->groups + local_8;
+    for (i = 0; i < (g_snd.global_constants)->groupCount; i = i + 1) {
+      if ((g_snd.global_constants)->groups[i].id == id) {
+        return (g_snd.global_constants)->groups + i;
       }
     }
   }
@@ -597,15 +608,15 @@ void * __cdecl SND_FindRowGroup(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void * __cdecl SND_FindRowCurve(uint param_1)
+void * __cdecl SND_FindRowCurve(uint id)
 
 {
-  uint local_8;
+  uint i;
   
   if (g_snd.global_constants != (SndDriverGlobals *)0x0) {
-    for (local_8 = 0; local_8 < (g_snd.global_constants)->curveCount; local_8 = local_8 + 1) {
-      if ((g_snd.global_constants)->curves[local_8].id == param_1) {
-        return (g_snd.global_constants)->curves + local_8;
+    for (i = 0; i < (g_snd.global_constants)->curveCount; i = i + 1) {
+      if ((g_snd.global_constants)->curves[i].id == id) {
+        return (g_snd.global_constants)->curves + i;
       }
     }
   }
@@ -617,15 +628,15 @@ void * __cdecl SND_FindRowCurve(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void * __cdecl SND_FindRowPan(uint param_1)
+void * __cdecl SND_FindRowPan(uint id)
 
 {
-  uint local_8;
+  uint i;
   
   if (g_snd.global_constants != (SndDriverGlobals *)0x0) {
-    for (local_8 = 0; local_8 < (g_snd.global_constants)->panCount; local_8 = local_8 + 1) {
-      if ((g_snd.global_constants)->pans[local_8].id == param_1) {
-        return (g_snd.global_constants)->pans + local_8;
+    for (i = 0; i < (g_snd.global_constants)->panCount; i = i + 1) {
+      if ((g_snd.global_constants)->pans[i].id == id) {
+        return (g_snd.global_constants)->pans + i;
       }
     }
   }
@@ -637,20 +648,20 @@ void * __cdecl SND_FindRowPan(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void * __cdecl SND_FindRowContext(uint param_1)
+void * __cdecl SND_FindRowContext(uint id)
 
 {
-  uint local_8;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if ((g_snd.global_constants)->contextCount <= local_8) {
+    if ((g_snd.global_constants)->contextCount <= i) {
       return (void *)0x0;
     }
-    if ((g_snd.global_constants)->contexts[local_8].type == param_1) break;
-    local_8 = local_8 + 1;
+    if ((g_snd.global_constants)->contexts[i].type == id) break;
+    i = i + 1;
   }
-  return (g_snd.global_constants)->contexts + local_8;
+  return (g_snd.global_constants)->contexts + i;
 }
 
 
@@ -658,15 +669,15 @@ void * __cdecl SND_FindRowContext(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void * __cdecl SND_FindRowMaster(uint param_1)
+void * __cdecl SND_FindRowMaster(uint id)
 
 {
-  uint local_8;
+  uint i;
   
   if (g_snd.global_constants != (SndDriverGlobals *)0x0) {
-    for (local_8 = 0; local_8 < (g_snd.global_constants)->masterCount; local_8 = local_8 + 1) {
-      if ((g_snd.global_constants)->masters[local_8].id == param_1) {
-        return (g_snd.global_constants)->masters + local_8;
+    for (i = 0; i < (g_snd.global_constants)->masterCount; i = i + 1) {
+      if ((g_snd.global_constants)->masters[i].id == id) {
+        return (g_snd.global_constants)->masters + i;
       }
     }
   }
@@ -676,14 +687,14 @@ void * __cdecl SND_FindRowMaster(uint param_1)
 
 // 0093C820  SND_FindAsset  (sound/snd_bank.cpp:577)
 
-void * __cdecl SND_FindAsset(uint param_1,uint param_2)
+void * __cdecl SND_FindAsset(uint table,uint id)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (8 < param_1) {
+  if (8 < table) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x242,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -691,8 +702,8 @@ void * __cdecl SND_FindAsset(uint param_1,uint param_2)
       return pvVar3;
     }
   }
-  if (param_1 < 9) {
-    pvVar3 = (*SND_FIND_ROW[param_1])(param_2);
+  if (table < 9) {
+    pvVar3 = (*SND_FIND_ROW[table])(id);
   }
   else {
     pvVar3 = (void *)0x0;
@@ -703,7 +714,7 @@ void * __cdecl SND_FindAsset(uint param_1,uint param_2)
 
 // 0093C870  SND_PatchValue  (sound/snd_bank.cpp:599)
 
-void __cdecl SND_PatchValue(uint param_1,char *param_2,uint param_3,uint param_4)
+void __cdecl SND_PatchValue(uint table,char *asset,uint field,uint value)
 
 {
   code *pcVar1;
@@ -712,37 +723,39 @@ void __cdecl SND_PatchValue(uint param_1,char *param_2,uint param_3,uint param_4
   float *pfVar4;
   float fVar5;
   undefined2 local_2c;
+  char *field_2;
+  snd_csv_entry_t *meta;
   
-  if ((8 < param_1) &&
+  if ((8 < table) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",600,0,"%s"),
      !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != (char *)0x0) {
-    pfVar4 = (float *)(param_2 + SND_TABLE_METADATA[param_1][param_3].offset);
-    uVar2 = (undefined1)param_4;
-    switch(SND_TABLE_METADATA[param_1][param_3].type) {
+  if (asset != (char *)0x0) {
+    pfVar4 = (float *)(asset + SND_TABLE_METADATA[table][field].offset);
+    uVar2 = (undefined1)value;
+    switch(SND_TABLE_METADATA[table][field].type) {
     case SND_CSV_FLOAT:
-      *pfVar4 = (float)param_4 / 65535.0;
+      *pfVar4 = (float)value / 65535.0;
       break;
     case SND_CSV_INT:
-      *pfVar4 = (float)param_4;
+      *pfVar4 = (float)value;
       break;
     case SND_CSV_ENUM:
-      *pfVar4 = (float)param_4;
+      *pfVar4 = (float)value;
       break;
     case SND_CSV_FLAG:
-      *pfVar4 = (float)param_4;
+      *pfVar4 = (float)value;
       break;
     case SND_CSV_DBSPL:
-      fVar5 = SND_dBSPLToLinear((float)param_4);
+      fVar5 = SND_dBSPLToLinear((float)value);
       local_2c = (undefined2)(int)ROUND(fVar5 * 65535.0);
       *(undefined2 *)pfVar4 = local_2c;
       break;
     case SND_CSV_HASH:
-      *pfVar4 = (float)param_4;
+      *pfVar4 = (float)value;
       break;
     case SND_CSV_BYTE:
       *(undefined1 *)pfVar4 = uVar2;
@@ -751,10 +764,10 @@ void __cdecl SND_PatchValue(uint param_1,char *param_2,uint param_3,uint param_4
       *(undefined1 *)pfVar4 = uVar2;
       break;
     case SND_CSV_SHORT:
-      *(undefined2 *)pfVar4 = (undefined2)param_4;
+      *(undefined2 *)pfVar4 = (undefined2)value;
       break;
     case SND_CSV_USHORT:
-      *(undefined2 *)pfVar4 = (undefined2)param_4;
+      *(undefined2 *)pfVar4 = (undefined2)value;
     }
   }
   return;
@@ -763,79 +776,86 @@ void __cdecl SND_PatchValue(uint param_1,char *param_2,uint param_3,uint param_4
 
 // 0093CA00  SND_PatchApply  (sound/snd_bank.cpp:659)
 
-void __cdecl SND_PatchApply(SndPatch *param_1)
+void __cdecl SND_PatchApply(SndPatch *patch)
 
 {
   uint uVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  uint uVar5;
-  uint uVar6;
-  char *pcVar7;
-  uint uVar8;
-  int local_2c;
-  uint local_18;
-  uint local_8;
+  uint id_00;
+  code *pcVar2;
+  bool bVar3;
+  uint table_00;
+  uint field_00;
+  char *asset_00;
+  uint value_00;
+  int a;
+  snd_alias_list_t *list;
+  char *asset;
+  uint field;
+  uint value;
+  uint f;
+  uint table;
+  uint fieldCount;
+  uint id;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (param_1->elementCount <= local_8) {
+    if (patch->elementCount <= i) {
       return;
     }
-    uVar5 = param_1->elements[local_8] >> 0x10;
-    uVar1 = param_1->elements[local_8];
-    if ((8 < uVar5) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x299,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    table_00 = patch->elements[i] >> 0x10;
+    uVar1 = patch->elements[i];
+    if ((8 < table_00) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x299,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    local_8 = local_8 + 1;
-    if ((param_1->elementCount <= local_8) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x29d,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    i = i + 1;
+    if ((patch->elementCount <= i) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x29d,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    if (param_1->elementCount <= local_8) {
+    if (patch->elementCount <= i) {
       return;
     }
-    uVar2 = param_1->elements[local_8];
-    for (local_18 = 0; local_18 < (uVar1 & 0xffff); local_18 = local_18 + 1) {
-      local_8 = local_8 + 1;
-      if ((param_1->elementCount <= local_8) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x2a9,0,
-                                   "%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+    id_00 = patch->elements[i];
+    for (f = 0; f < (uVar1 & 0xffff); f = f + 1) {
+      i = i + 1;
+      if ((patch->elementCount <= i) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x2a9,0,
+                                   "%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      if (param_1->elementCount <= local_8) break;
-      uVar6 = param_1->elements[local_8] >> 0x10;
-      uVar8 = param_1->elements[local_8] & 0xffff;
-      if ((SND_METADATA_FIELD_COUNT[uVar5] == 0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x2b2,0,
-                                   "%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if (patch->elementCount <= i) break;
+      field_00 = patch->elements[i] >> 0x10;
+      value_00 = patch->elements[i] & 0xffff;
+      if ((SND_METADATA_FIELD_COUNT[table_00] == 0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_bank.cpp",0x2b2,0,
+                                   "%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      if ((uVar5 < 9) && (uVar6 < SND_METADATA_FIELD_COUNT[uVar5])) {
-        pcVar7 = SND_FindAsset(uVar5,uVar2);
-        if (uVar5 == 0) {
-          for (local_2c = 0; local_2c < *(int *)(pcVar7 + 0xc); local_2c = local_2c + 1) {
-            SND_PatchValue(0,(char *)(local_2c * 0x54 + *(int *)(pcVar7 + 8)),uVar6,uVar8);
+      if ((table_00 < 9) && (field_00 < SND_METADATA_FIELD_COUNT[table_00])) {
+        asset_00 = SND_FindAsset(table_00,id_00);
+        if (table_00 == 0) {
+          for (a = 0; a < *(int *)(asset_00 + 0xc); a = a + 1) {
+            SND_PatchValue(0,(char *)(a * 0x54 + *(int *)(asset_00 + 8)),field_00,value_00);
           }
         }
         else {
-          SND_PatchValue(uVar5,pcVar7,uVar6,uVar8);
+          SND_PatchValue(table_00,asset_00,field_00,value_00);
         }
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 

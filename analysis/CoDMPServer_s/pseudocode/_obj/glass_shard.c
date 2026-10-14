@@ -1283,98 +1283,98 @@ void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *param_1,float param_2
 {
   byte bVar1;
   Outline OVar2;
-  uchar *puVar3;
-  int iVar4;
-  ulong uVar5;
-  undefined4 uVar6;
-  uint uVar7;
-  int iVar8;
+  uchar *src;
+  int iVar3;
+  ulong count;
+  undefined4 uVar4;
+  uint uVar5;
+  int iVar6;
   int *unaff_ESI;
-  int iVar9;
-  float10 fVar10;
+  int iVar7;
+  float10 fVar8;
+  float fVar9;
+  float fVar10;
   float fVar11;
   float fVar12;
   float fVar13;
-  float fVar14;
-  float fVar15;
   undefined4 uStack_124;
   uchar auStack_104 [260];
   
-  puVar3 = (uchar *)unaff_ESI[1];
-  uVar5 = ((byte)param_1[0xc] - 2) * 3;
-  memcpy(auStack_104,puVar3,uVar5);
-  *unaff_ESI = (int)puVar3;
-  unaff_ESI[1] = (int)(puVar3 + (uint)(byte)param_1[0xc] * 4 + 8);
+  src = (uchar *)unaff_ESI[1];
+  count = ((byte)param_1[0xc] - 2) * 3;
+  memcpy(auStack_104,src,count);
+  *unaff_ESI = (int)src;
+  unaff_ESI[1] = (int)(src + (uint)(byte)param_1[0xc] * 4 + 8);
   *(undefined1 *)(unaff_ESI + 2) = 1;
-  puVar3[0] = '\x7f';
-  puVar3[1] = '\x7f';
-  puVar3[2] = 0xfe;
-  puVar3[3] = '?';
+  src[0] = '\x7f';
+  src[1] = '\x7f';
+  src[2] = 0xfe;
+  src[3] = '?';
   bVar1 = *(byte *)(unaff_ESI + 2);
   *(byte *)(unaff_ESI + 2) = bVar1 + 1;
-  iVar8 = 0;
+  iVar6 = 0;
   *(undefined4 *)(*unaff_ESI + (uint)bVar1 * 4) = 0x3f007f7f;
   *(undefined1 *)((int)unaff_ESI + 0xb) = 0;
-  if (0 < (int)uVar5) {
+  if (0 < (int)count) {
     do {
-      *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) = auStack_104[iVar8] * '\x02'
+      *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) = auStack_104[iVar6] * '\x02'
       ;
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
       *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) =
-           auStack_104[iVar8 + 1] * '\x02';
+           auStack_104[iVar6 + 1] * '\x02';
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
       *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) =
-           auStack_104[iVar8 + 2] * '\x02';
+           auStack_104[iVar6 + 2] * '\x02';
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
-      iVar8 = iVar8 + 3;
-    } while (iVar8 < (int)uVar5);
+      iVar6 = iVar6 + 3;
+    } while (iVar6 < (int)count);
   }
-  iVar8 = 0;
-  if (0 < (int)uVar5) {
+  iVar6 = 0;
+  if (0 < (int)count) {
     do {
       *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) =
-           auStack_104[iVar8] * '\x02' + '\x01';
+           auStack_104[iVar6] * '\x02' + '\x01';
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
       *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) =
-           auStack_104[iVar8 + 2] * '\x02' + '\x01';
+           auStack_104[iVar6 + 2] * '\x02' + '\x01';
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
       *(uchar *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) =
-           auStack_104[iVar8 + 1] * '\x02' + '\x01';
+           auStack_104[iVar6 + 1] * '\x02' + '\x01';
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
-      iVar8 = iVar8 + 3;
-    } while (iVar8 < (int)uVar5);
+      iVar6 = iVar6 + 3;
+    } while (iVar6 < (int)count);
   }
   *(undefined1 *)(unaff_ESI + 3) = *(undefined1 *)((int)unaff_ESI + 0xb);
   OVar2 = param_1[0xc];
   *(char *)((int)unaff_ESI + 9) = (char)OVar2 * '\x02';
   *(char *)((int)unaff_ESI + 10) = (char)OVar2 * '\x02';
-  uVar7 = (uint)(byte)param_1[0xc];
-  iVar8 = 0;
-  if (uVar7 != 0) {
+  uVar5 = (uint)(byte)param_1[0xc];
+  iVar6 = 0;
+  if (uVar5 != 0) {
     uStack_124 = 0x3f007f7f;
-    iVar9 = 0;
+    iVar7 = 0;
     do {
-      uVar6 = uStack_124;
-      iVar8 = iVar8 + 1;
-      iVar4 = *(int *)param_1;
-      fVar13 = *(float *)(iVar4 + iVar9);
-      fVar14 = *(float *)(iVar4 + 4 + iVar9);
-      fVar15 = fVar13 - *(float *)(iVar4 + (iVar8 % (int)uVar7) * 0x18);
-      fVar11 = fVar14 - *(float *)(iVar4 + 4 + (iVar8 % (int)uVar7) * 0x18);
-      fVar12 = fVar11 * (fVar13 - fVar13) - (fVar14 - fVar14) * fVar15;
-      fVar14 = (fVar14 - fVar14) * 0.0 - -param_2 * fVar11;
-      fVar11 = -param_2 * fVar15 - (fVar13 - fVar13) * 0.0;
-      fVar10 = (float10)sqrtf(fVar12 * fVar12 + fVar11 * fVar11 + fVar14 * fVar14);
-      fVar13 = (float)fVar10;
-      if ((float10)0 <= -fVar10) {
-        fVar13 = 1.0;
+      uVar4 = uStack_124;
+      iVar6 = iVar6 + 1;
+      iVar3 = *(int *)param_1;
+      fVar11 = *(float *)(iVar3 + iVar7);
+      fVar12 = *(float *)(iVar3 + 4 + iVar7);
+      fVar13 = fVar11 - *(float *)(iVar3 + (iVar6 % (int)uVar5) * 0x18);
+      fVar9 = fVar12 - *(float *)(iVar3 + 4 + (iVar6 % (int)uVar5) * 0x18);
+      fVar10 = fVar9 * (fVar11 - fVar11) - (fVar12 - fVar12) * fVar13;
+      fVar12 = (fVar12 - fVar12) * 0.0 - -param_2 * fVar9;
+      fVar9 = -param_2 * fVar13 - (fVar11 - fVar11) * 0.0;
+      fVar8 = (float10)sqrtf(fVar10 * fVar10 + fVar9 * fVar9 + fVar12 * fVar12);
+      fVar11 = (float)fVar8;
+      if ((float10)0 <= -fVar8) {
+        fVar11 = 1.0;
       }
-      fVar13 = 1.0 / fVar13;
-      uStack_124._3_1_ = SUB41(uVar6,3);
+      fVar11 = 1.0 / fVar11;
+      uStack_124._3_1_ = SUB41(uVar4,3);
       uStack_124._0_3_ =
-           CONCAT12((char)(int)(fVar12 * fVar13 * 127.0 + 127.5),
-                    CONCAT11((char)(int)(fVar11 * fVar13 * 127.0 + 127.5),
-                             (char)(int)(fVar13 * fVar14 * 127.0 + 127.5)));
+           CONCAT12((char)(int)(fVar10 * fVar11 * 127.0 + 127.5),
+                    CONCAT11((char)(int)(fVar9 * fVar11 * 127.0 + 127.5),
+                             (char)(int)(fVar11 * fVar12 * 127.0 + 127.5)));
       *(undefined4 *)(*unaff_ESI + (uint)*(byte *)(unaff_ESI + 2) * 4) = uStack_124;
       *(undefined1 *)((uint)*(byte *)((int)unaff_ESI + 0xb) + unaff_ESI[1]) =
            *(undefined1 *)((int)unaff_ESI + 9);
@@ -1396,9 +1396,9 @@ void __thiscall GlassShard::Mesh::Init(Mesh *this,Outline *param_1,float param_2
       *(char *)((int)unaff_ESI + 0xb) = *(char *)((int)unaff_ESI + 0xb) + '\x01';
       *(char *)(unaff_ESI + 2) = (char)unaff_ESI[2] + '\x01';
       *(char *)((int)unaff_ESI + 9) = *(char *)((int)unaff_ESI + 9) + '\x04';
-      uVar7 = (uint)(byte)param_1[0xc];
-      iVar9 = iVar9 + 0x18;
-    } while (iVar8 < (int)uVar7);
+      uVar5 = (uint)(byte)param_1[0xc];
+      iVar7 = iVar7 + 0x18;
+    } while (iVar6 < (int)uVar5);
   }
   return;
 }
@@ -1879,32 +1879,32 @@ int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **param_1,int par
 {
   GlassShard **ppGVar1;
   GlassesClient *pGVar2;
-  GlassShard **ppGVar3;
+  GlassShard **base;
   GlassShard *in_EAX;
-  int iVar4;
+  int iVar3;
   GlassShard *this_00;
   GlassShard *extraout_ECX;
+  int iVar4;
+  uint num;
   int iVar5;
-  uint uVar6;
-  int iVar7;
+  float fVar6;
+  float fVar7;
   float fVar8;
   float fVar9;
-  float fVar10;
-  float fVar11;
   
-  ppGVar3 = param_1;
+  base = param_1;
   pGVar2 = clGlasses;
-  fVar9 = *(float *)(*(int *)(*(int *)(in_EAX + 0x88) + 4) + 0x10);
-  fVar10 = *(float *)(*(int *)(*(int *)(in_EAX + 0x88) + 4) + 0xc);
-  if (*(float *)(in_EAX + 0x14) * 0.1 - fVar9 < 0.0) {
-    fVar9 = *(float *)(in_EAX + 0x14) * 0.1;
+  fVar7 = *(float *)(*(int *)(*(int *)(in_EAX + 0x88) + 4) + 0x10);
+  fVar8 = *(float *)(*(int *)(*(int *)(in_EAX + 0x88) + 4) + 0xc);
+  if (*(float *)(in_EAX + 0x14) * 0.1 - fVar7 < 0.0) {
+    fVar7 = *(float *)(in_EAX + 0x14) * 0.1;
   }
-  if (fVar9 * 0.2 - fVar10 < 0.0) {
-    fVar10 = fVar9 * 0.2;
+  if (fVar7 * 0.2 - fVar8 < 0.0) {
+    fVar8 = fVar7 * 0.2;
   }
   *param_1 = in_EAX;
   ppGVar1 = *(GlassShard ***)(*(int *)(*(int *)(in_EAX + 0x88) + 4) + 0x18);
-  uVar6 = 1;
+  num = 1;
   param_1 = *(GlassShard ***)(*(int *)(*(int *)(pGVar2 + 8) + 4) + 0x18);
   if (0 < (int)ppGVar1) {
     param_1 = ppGVar1;
@@ -1912,50 +1912,49 @@ int __thiscall GlassShard::Shatter(GlassShard *this,GlassShard **param_1,int par
   if (399 < (int)param_1) {
     param_1 = (GlassShard **)0x18f;
   }
-  iVar5 = (int)param_1 * 3;
+  iVar4 = (int)param_1 * 3;
   if (1 < (int)param_1) {
-    fVar11 = fVar10 * DAT_00af3e64;
+    fVar9 = fVar8 * DAT_00af3e64;
     do {
-      fVar8 = fVar11;
-      if (0.0 <= fVar11 - fVar9) {
-        fVar8 = fVar9;
+      fVar6 = fVar9;
+      if (0.0 <= fVar9 - fVar7) {
+        fVar6 = fVar7;
       }
-      this_00 = *ppGVar3;
-      if (*(float *)(this_00 + 0x14) <= fVar8) {
-        return uVar6;
+      this_00 = *base;
+      if (*(float *)(this_00 + 0x14) <= fVar6) {
+        return num;
       }
-      if (iVar5 < 1) {
-        return uVar6;
+      if (iVar4 < 1) {
+        return num;
       }
-      iVar4 = 0;
-      iVar7 = 0;
-      if (0 < (int)uVar6) {
+      iVar3 = 0;
+      iVar5 = 0;
+      if (0 < (int)num) {
         do {
-          if (iVar4 != 0) goto LAB_007ae538;
-          fVar8 = fVar11;
-          if (0.0 <= fVar11 - fVar9) {
-            fVar8 = fVar9;
+          if (iVar3 != 0) goto LAB_007ae538;
+          fVar6 = fVar9;
+          if (0.0 <= fVar9 - fVar7) {
+            fVar6 = fVar7;
           }
-          if ((float)*(GlassShard **)(ppGVar3[iVar7] + 0x14) <= fVar8) goto LAB_007ae561;
-          iVar4 = Split(this_00,(GlassShard **)ppGVar3[iVar7],(float)(ppGVar3 + uVar6),(uint)fVar10,
-                        0.0);
-          iVar7 = iVar7 + 1;
-          iVar5 = iVar5 + -1;
+          if ((float)*(GlassShard **)(base[iVar5] + 0x14) <= fVar6) goto LAB_007ae561;
+          iVar3 = Split(this_00,(GlassShard **)base[iVar5],(float)(base + num),(uint)fVar8,0.0);
+          iVar5 = iVar5 + 1;
+          iVar4 = iVar4 + -1;
           this_00 = extraout_ECX;
-        } while (iVar7 < (int)uVar6);
-        if (iVar4 != 0) {
+        } while (iVar5 < (int)num);
+        if (iVar3 != 0) {
 LAB_007ae538:
-          uVar6 = uVar6 + iVar4;
-          qsort(ppGVar3,uVar6,4,(_func___cdecl_int_void_ptr_void_ptr *)&LAB_007ae060);
-          if (*(float *)(*ppGVar3 + 0x14) <= fVar9 && fVar9 != *(float *)(*ppGVar3 + 0x14)) {
-            return uVar6;
+          num = num + iVar3;
+          qsort(base,num,4,(_func___cdecl_int_void_ptr_void_ptr *)&LAB_007ae060);
+          if (*(float *)(*base + 0x14) <= fVar7 && fVar7 != *(float *)(*base + 0x14)) {
+            return num;
           }
         }
       }
 LAB_007ae561:
-    } while ((int)uVar6 < (int)param_1);
+    } while ((int)num < (int)param_1);
   }
-  return uVar6;
+  return num;
 }
 
 
@@ -2095,14 +2094,14 @@ LAB_007ae840:
 bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint param_1,Triangles *param_2)
 
 {
-  ulong uVar1;
-  GlassesClient *pGVar2;
-  short sVar3;
-  uchar *puVar4;
+  ulong count;
+  GlassesClient *pGVar1;
+  short sVar2;
+  uchar *dst;
   void *unaff_ESI;
   int unaff_EDI;
   
-  pGVar2 = clGlasses;
+  pGVar1 = clGlasses;
   if (*(int *)(unaff_EDI + 4) != 0) {
     Allocator::Free((Allocator *)this,unaff_ESI);
     *(undefined4 *)(unaff_EDI + 4) = 0;
@@ -2114,29 +2113,29 @@ bool __thiscall GlassShard::AllocateMemory(GlassShard *this,uint param_1,Triangl
     *(undefined8 *)(unaff_EDI + 0x2c) = 0;
   }
   if (param_2 == (Triangles *)0x0) {
-    sVar3 = 0;
+    sVar2 = 0;
   }
   else {
-    sVar3 = (short)param_1 * 0x10 + -4;
+    sVar2 = (short)param_1 * 0x10 + -4;
   }
-  *(short *)(unaff_EDI + 8) = sVar3 + (short)param_1 * 0x18;
-  puVar4 = Allocator::Allocate(*(Allocator **)(pGVar2 + 8),unaff_EDI,unaff_ESI);
-  *(uchar **)(unaff_EDI + 4) = puVar4;
-  if (puVar4 == (uchar *)0x0) {
+  *(short *)(unaff_EDI + 8) = sVar2 + (short)param_1 * 0x18;
+  dst = Allocator::Allocate(*(Allocator **)(pGVar1 + 8),unaff_EDI,unaff_ESI);
+  *(uchar **)(unaff_EDI + 4) = dst;
+  if (dst == (uchar *)0x0) {
     return false;
   }
   if (param_1 != 0) {
-    *(uchar **)(unaff_EDI + 0xc) = puVar4;
+    *(uchar **)(unaff_EDI + 0xc) = dst;
     *(char *)(unaff_EDI + 0x19) = (char)param_1;
     *(undefined1 *)(unaff_EDI + 0x18) = 0;
-    puVar4 = puVar4 + (param_1 & 0xff) * 0x18;
+    dst = dst + (param_1 & 0xff) * 0x18;
   }
   if (param_2 != (Triangles *)0x0) {
-    uVar1 = *(ulong *)(param_2 + 0x104);
+    count = *(ulong *)(param_2 + 0x104);
     *(undefined8 *)(unaff_EDI + 0x24) = 0;
     *(undefined8 *)(unaff_EDI + 0x2c) = 0;
-    *(uchar **)(unaff_EDI + 0x28) = puVar4;
-    memcpy(puVar4,(uchar *)(param_2 + 4),uVar1);
+    *(uchar **)(unaff_EDI + 0x28) = dst;
+    memcpy(dst,(uchar *)(param_2 + 4),count);
   }
   return true;
 }
@@ -2150,7 +2149,7 @@ void __thiscall GlassShard::Defrag(GlassShard *this)
 
 {
   int iVar1;
-  uchar *puVar2;
+  uchar *dst;
   Allocator *this_00;
   Allocator *this_01;
   GlassShard *this_02;
@@ -2160,14 +2159,14 @@ void __thiscall GlassShard::Defrag(GlassShard *this)
   
   memcpy(local_408,*(uchar **)(this + 4),(uint)*(ushort *)(this + 8));
   Allocator::Free(this_00,unaff_EDI);
-  puVar2 = Allocator::Allocate(this_01,(int)this,unaff_EDI);
-  *(uchar **)(this + 4) = puVar2;
-  if (puVar2 == (uchar *)0x0) {
+  dst = Allocator::Allocate(this_01,(int)this,unaff_EDI);
+  *(uchar **)(this + 4) = dst;
+  if (dst == (uchar *)0x0) {
     Destroy(this_02);
     FixedSizeAllocator<GlassPhysics*>::Free(this_03,(GlassPhysics *)this);
     return;
   }
-  memcpy(puVar2,local_408,(uint)*(ushort *)(this + 8));
+  memcpy(dst,local_408,(uint)*(ushort *)(this + 8));
   *(int *)(this + 0xc) = *(int *)(this + 4);
   iVar1 = *(int *)(this + 4) + (uint)(byte)this[0x18] * 0x18;
   *(int *)(this + 0x24) = iVar1;

@@ -2,7 +2,7 @@
 
 // 005961D0  Load_Stream  (database/db_stream_load.cpp:20)
 
-void __cdecl Load_Stream(bool param_1,void *param_2,int param_3)
+void __cdecl Load_Stream(bool atStreamStart,void *ptr,int size)
 
 {
   code *pcVar1;
@@ -10,17 +10,17 @@ void __cdecl Load_Stream(bool param_1,void *param_2,int param_3)
   uchar *puVar3;
   
   puVar3 = DB_GetStreamPos();
-  if ((param_1 != (param_2 == puVar3)) &&
+  if ((atStreamStart != (ptr == puVar3)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_stream_load.cpp",
                                0x15,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1) && (param_3 != 0)) {
+  if ((atStreamStart) && (size != 0)) {
     if (g_streamPosIndex - 1 < 3) {
       if (g_streamPosIndex == 1) {
-        memset(param_2,'\0',param_3);
+        memset(ptr,'\0',size);
       }
       else {
         if ((0xfff < g_streamDelayIndex) &&
@@ -32,15 +32,15 @@ void __cdecl Load_Stream(bool param_1,void *param_2,int param_3)
           (*pcVar1)();
           return;
         }
-        g_streamDelayArray[g_streamDelayIndex].ptr = param_2;
-        g_streamDelayArray[g_streamDelayIndex].size = param_3;
+        g_streamDelayArray[g_streamDelayIndex].ptr = ptr;
+        g_streamDelayArray[g_streamDelayIndex].size = size;
         g_streamDelayIndex = g_streamDelayIndex + 1;
       }
     }
     else {
-      DB_LoadXFileData(param_2,param_3);
+      DB_LoadXFileData(ptr,size);
     }
-    DB_IncStreamPos(param_3);
+    DB_IncStreamPos(size);
   }
   return;
 }
@@ -51,10 +51,12 @@ void __cdecl Load_Stream(bool param_1,void *param_2,int param_3)
 void __cdecl Load_DelayStream(void)
 
 {
-  uint local_c;
+  int size;
+  uint index;
+  void *ptr;
   
-  for (local_c = 0; local_c < g_streamDelayIndex; local_c = local_c + 1) {
-    DB_LoadXFileData(g_streamDelayArray[local_c].ptr,g_streamDelayArray[local_c].size);
+  for (index = 0; index < g_streamDelayIndex; index = index + 1) {
+    DB_LoadXFileData(g_streamDelayArray[index].ptr,g_streamDelayArray[index].size);
   }
   return;
 }
@@ -62,14 +64,16 @@ void __cdecl Load_DelayStream(void)
 
 // 00596340  DB_ConvertOffsetToAlias  (database/db_stream_load.cpp:62)
 
-void __cdecl DB_ConvertOffsetToAlias(void *param_1)
+void __cdecl DB_ConvertOffsetToAlias(void *data)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
+  uint offset;
+  uint streamIndex;
   
-  iVar1 = *(int *)param_1;
+  iVar1 = *(int *)data;
   if (((iVar1 == 0) || (iVar1 == -1)) || (iVar1 == -2)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_stream_load.cpp",0x43,
                              0,"%s\n\t(offset) = %i");
@@ -79,7 +83,7 @@ void __cdecl DB_ConvertOffsetToAlias(void *param_1)
       return;
     }
   }
-  *(undefined4 *)param_1 =
+  *(undefined4 *)data =
        *(undefined4 *)(g_streamBlocks[iVar1 - 1U >> 0x1d].data + (iVar1 - 1U & 0x1fffffff));
   return;
 }
@@ -87,43 +91,49 @@ void __cdecl DB_ConvertOffsetToAlias(void *param_1)
 
 // 005963C0  DB_ConvertOffsetToPointer  (database/db_stream_load.cpp:76)
 
-void __cdecl DB_ConvertOffsetToPointer(void *param_1)
+void __cdecl DB_ConvertOffsetToPointer(void *data)
 
 {
-  *(uchar **)param_1 =
-       g_streamBlocks[*(int *)param_1 - 1U >> 0x1d].data + (*(int *)param_1 - 1U & 0x1fffffff);
+  uint offset;
+  uint streamIndex;
+  
+  *(uchar **)data =
+       g_streamBlocks[*(int *)data - 1U >> 0x1d].data + (*(int *)data - 1U & 0x1fffffff);
   return;
 }
 
 
 // 00596400  Load_XStringCustom  (database/db_stream_load.cpp:88)
 
-void __cdecl Load_XStringCustom(char **param_1)
+void __cdecl Load_XStringCustom(char **str)
 
 {
-  int iVar1;
+  int size;
+  char *pos;
+  int numBytesLoaded;
+  char *s;
   
-  iVar1 = DB_LoadXFileDataNullTerminated((uchar *)*param_1);
-  DB_IncStreamPos(iVar1);
+  size = DB_LoadXFileDataNullTerminated((uchar *)*str);
+  DB_IncStreamPos(size);
   return;
 }
 
 
 // 00596440  Load_TempStringCustom  (database/db_stream_load.cpp:101)
 
-void __cdecl Load_TempStringCustom(char **param_1)
+void __cdecl Load_TempStringCustom(char **str)
 
 {
   undefined4 local_8;
   
-  Load_XStringCustom(param_1);
-  if (*param_1 == (char *)0x0) {
+  Load_XStringCustom(str);
+  if (*str == (char *)0x0) {
     local_8 = (char *)0x0;
   }
   else {
-    local_8 = (char *)SL_GetString(*param_1,4,SCRIPTINSTANCE_SERVER);
+    local_8 = (char *)SL_GetString(*str,4,SCRIPTINSTANCE_SERVER);
   }
-  *param_1 = local_8;
+  *str = local_8;
   return;
 }
 

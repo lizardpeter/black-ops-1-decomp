@@ -4,12 +4,12 @@
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-char * __cdecl LiveTicker_GetStreamNameTextInternal(streamName_t param_1)
+char * __cdecl LiveTicker_GetStreamNameTextInternal(streamName_t streamName)
 
 {
   char *pcVar1;
   
-  switch(param_1) {
+  switch(streamName) {
   case TICKER_STREAM_COD:
     pcVar1 = UI_SafeTranslateString("TICKER_MESSAGE_CATEGORY_COD_CAPS");
     break;
@@ -42,16 +42,16 @@ char * __cdecl LiveTicker_GetStreamNameTextInternal(streamName_t param_1)
 void __cdecl LiveTicker_DumpTickerInternal(void)
 
 {
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
   Com_Printf(0x10,"**** Start Ticker Dump ****\n");
   Com_Printf(0x10,"Number of streams: %d\n");
   Com_Printf(0x10,"Number of messages: %d\n");
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    LiveTicker_GetStreamNameTextInternal(s_ticker.streams[local_8].streamName);
+  for (i = 0; i < 5; i = i + 1) {
+    LiveTicker_GetStreamNameTextInternal(s_ticker.streams[i].streamName);
     Com_Printf(0x10,"Stream %i (%d messages): %s\n");
-    for (local_c = 0; local_c < s_ticker.streams[local_8].messageCount; local_c = local_c + 1) {
+    for (j = 0; j < s_ticker.streams[i].messageCount; j = j + 1) {
       Com_Printf(0x10,"\t%d: %s\n");
     }
   }
@@ -67,15 +67,15 @@ void __cdecl LiveTicker_DumpTickerInternal(void)
 void __cdecl LiveTicker_SetDefaultDisplayOrder(void)
 
 {
-  int local_8;
+  int i;
   
   s_ticker.streamDisplayOrder[0] = TICKER_STREAM_COD;
   s_ticker.streamDisplayOrder[1] = TICKER_STREAM_CONTRACTS;
   s_ticker.streamDisplayOrder[2] = TICKER_STREAM_SQUADS;
   s_ticker.streamDisplayOrder[3] = TICKER_STREAM_EVENTS;
   s_ticker.streamDisplayOrder[4] = TICKER_STREAM_FRIENDS;
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    s_ticker.streamBatchSize[local_8] = 10;
+  for (i = 0; i < 5; i = i + 1) {
+    s_ticker.streamBatchSize[i] = 10;
   }
   return;
 }
@@ -88,12 +88,12 @@ void __cdecl LiveTicker_SetDefaultDisplayOrder(void)
 void __cdecl LiveTicker_InitializeInternal(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    s_ticker.streams[local_8].messageCount = 0;
-    s_ticker.streamDisplayOrder[local_8] = TICKER_STREAM_COUNT;
-    s_ticker.streams[local_8].streamName = TICKER_STREAM_COUNT;
+  for (i = 0; i < 5; i = i + 1) {
+    s_ticker.streams[i].messageCount = 0;
+    s_ticker.streamDisplayOrder[i] = TICKER_STREAM_COUNT;
+    s_ticker.streams[i].streamName = TICKER_STREAM_COUNT;
   }
   LiveTicker_SetDefaultDisplayOrder();
   s_ticker.currentStream = TICKER_STREAM_COUNT;
@@ -119,7 +119,7 @@ void __cdecl LiveTicker_InitializeInternal(void)
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveTicker_InsertMessageInternal(char *param_1,streamName_t param_2)
+void __cdecl LiveTicker_InsertMessageInternal(char *text,streamName_t streamName)
 
 {
   char cVar1;
@@ -129,20 +129,19 @@ void __cdecl LiveTicker_InsertMessageInternal(char *param_1,streamName_t param_2
   if (!s_isTickerInitialized) {
     LiveTicker_InitializeInternal();
   }
-  if ((((param_1 != (char *)0x0) && (*param_1 != '\0')) &&
-      (iVar2 = I_strncmp(param_1,"\n",4), iVar2 != 0)) &&
-     ((iVar2 = I_strncmp(param_1,"\r",4), iVar2 != 0 &&
-      (s_ticker.streams[param_2].streamName = param_2, s_ticker.streams[param_2].messageCount < 10))
-     )) {
-    local_8 = param_1;
+  if ((((text != (char *)0x0) && (*text != '\0')) && (iVar2 = I_strncmp(text,"\n",4), iVar2 != 0))
+     && ((iVar2 = I_strncmp(text,"\r",4), iVar2 != 0 &&
+         (s_ticker.streams[streamName].streamName = streamName,
+         s_ticker.streams[streamName].messageCount < 10)))) {
+    local_8 = text;
     do {
       cVar1 = *local_8;
       local_8 = local_8 + 1;
     } while (cVar1 != '\0');
-    I_strncpyz((char *)(param_2 * 0x1434 + 0xa615a14 +
-                       s_ticker.streams[param_2].messageCount * 0x204),param_1,
-               (int)(local_8 + (1 - (int)(param_1 + 1))));
-    s_ticker.streams[param_2].messageCount = s_ticker.streams[param_2].messageCount + 1;
+    I_strncpyz((char *)(streamName * 0x1434 + 0xa615a14 +
+                       s_ticker.streams[streamName].messageCount * 0x204),text,
+               (int)(local_8 + (1 - (int)(text + 1))));
+    s_ticker.streams[streamName].messageCount = s_ticker.streams[streamName].messageCount + 1;
     s_ticker.totalMessageCount = s_ticker.totalMessageCount + 1;
   }
   return;
@@ -153,19 +152,19 @@ void __cdecl LiveTicker_InsertMessageInternal(char *param_1,streamName_t param_2
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-bool __cdecl LiveTicker_IsStreamPopulated(streamName_t param_1)
+bool __cdecl LiveTicker_IsStreamPopulated(streamName_t streamName)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return false;
     }
-    if ((s_ticker.streams[local_8].streamName == param_1) &&
-       (s_ticker.streams[local_8].messageCount != 0)) break;
-    local_8 = local_8 + 1;
+    if ((s_ticker.streams[i].streamName == streamName) && (s_ticker.streams[i].messageCount != 0))
+    break;
+    i = i + 1;
   }
   return true;
 }
@@ -173,15 +172,15 @@ bool __cdecl LiveTicker_IsStreamPopulated(streamName_t param_1)
 
 // 0098E450  LiveTicker_GetTickerMessageTextWidth  (live/live_ticker.cpp:243)
 
-int __cdecl
-LiveTicker_GetTickerMessageTextWidth(char *param_1,int param_2,Font_s *param_3,float param_4)
+int __cdecl LiveTicker_GetTickerMessageTextWidth(char *text,int maxChars,Font_s *font,float scale)
 
 {
   int iVar1;
   float fVar2;
+  float actualScale;
   
-  fVar2 = R_NormalizedTextScale(param_3,param_4);
-  iVar1 = R_TextWidth(param_1,param_2,param_3);
+  fVar2 = R_NormalizedTextScale(font,scale);
+  iVar1 = R_TextWidth(text,maxChars,font);
   return (int)((float)iVar1 * fVar2);
 }
 
@@ -193,22 +192,22 @@ LiveTicker_GetTickerMessageTextWidth(char *param_1,int param_2,Font_s *param_3,f
 void __cdecl LiveTicker_MoveToFirstStream(void)
 
 {
-  int local_8;
+  int i;
   
   if (s_ticker.currentStream != TICKER_STREAM_COUNT) {
     *(undefined4 *)
      (s_ticker.currentStream * 0x1434 + 0xa615c14 +
      s_ticker.streams[s_ticker.currentStream].currentMessageIndex * 0x204) = 0;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return;
     }
-    if (0 < s_ticker.streams[s_ticker.streamDisplayOrder[local_8]].messageCount) break;
-    local_8 = local_8 + 1;
+    if (0 < s_ticker.streams[s_ticker.streamDisplayOrder[i]].messageCount) break;
+    i = i + 1;
   }
-  s_ticker.currentStream = s_ticker.streamDisplayOrder[local_8];
+  s_ticker.currentStream = s_ticker.streamDisplayOrder[i];
   s_ticker.streams[s_ticker.currentStream].currentMessageIndex = 0;
   return;
 }
@@ -222,15 +221,15 @@ void __cdecl LiveTicker_MoveToNextStream(void)
 
 {
   streamName_t sVar1;
-  int local_10;
-  int local_c;
-  int local_8;
+  int j;
+  int i_2;
+  int i;
   
   sVar1 = s_ticker.currentStream;
   if (s_ticker.currentStream == TICKER_STREAM_COUNT) {
-    for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      if (0 < s_ticker.streams[s_ticker.streamDisplayOrder[local_8]].messageCount) {
-        s_ticker.currentStream = s_ticker.streamDisplayOrder[local_8];
+    for (i = 0; i < 5; i = i + 1) {
+      if (0 < s_ticker.streams[s_ticker.streamDisplayOrder[i]].messageCount) {
+        s_ticker.currentStream = s_ticker.streamDisplayOrder[i];
         s_ticker.streams[s_ticker.currentStream].currentMessageIndex = 0;
         return;
       }
@@ -238,19 +237,19 @@ void __cdecl LiveTicker_MoveToNextStream(void)
   }
   else {
     s_ticker.previousStream = s_ticker.currentStream;
-    for (local_c = 0; local_c < 5; local_c = local_c + 1) {
-      local_10 = local_c;
-      if (s_ticker.streamDisplayOrder[local_c] == s_ticker.currentStream) {
+    for (i_2 = 0; i_2 < 5; i_2 = i_2 + 1) {
+      j = i_2;
+      if (s_ticker.streamDisplayOrder[i_2] == s_ticker.currentStream) {
         do {
-          local_10 = local_10 + 1;
-          if (local_10 == local_c) {
+          j = j + 1;
+          if (j == i_2) {
             s_ticker.previousStream = sVar1;
             return;
           }
-          if (local_10 == 5) {
-            local_10 = 0;
+          if (j == 5) {
+            j = 0;
           }
-          s_ticker.currentStream = s_ticker.streamDisplayOrder[local_10];
+          s_ticker.currentStream = s_ticker.streamDisplayOrder[j];
         } while (s_ticker.streams[s_ticker.currentStream].messageCount < 1);
         s_ticker.previousStream = sVar1;
         return;
@@ -265,18 +264,22 @@ void __cdecl LiveTicker_MoveToNextStream(void)
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveTicker_MoveToNextMessage(streamName_t param_1)
+void __cdecl LiveTicker_MoveToNextMessage(streamName_t streamName)
 
 {
-  s_ticker.streams[param_1].currentMessageIndex = s_ticker.streams[param_1].currentMessageIndex + 1;
-  if (s_ticker.streams[param_1].currentMessageIndex < s_ticker.streams[param_1].messageCount) {
-    if (s_ticker.streams[param_1].currentMessageIndex %
-        s_ticker.streamBatchSize[s_ticker.streams[param_1].streamName] == 0) {
+  streams_t *currStream;
+  
+  s_ticker.streams[streamName].currentMessageIndex =
+       s_ticker.streams[streamName].currentMessageIndex + 1;
+  if (s_ticker.streams[streamName].currentMessageIndex < s_ticker.streams[streamName].messageCount)
+  {
+    if (s_ticker.streams[streamName].currentMessageIndex %
+        s_ticker.streamBatchSize[s_ticker.streams[streamName].streamName] == 0) {
       LiveTicker_MoveToNextStream();
     }
   }
   else {
-    s_ticker.streams[param_1].currentMessageIndex = 0;
+    s_ticker.streams[streamName].currentMessageIndex = 0;
     LiveTicker_MoveToNextStream();
   }
   return;
@@ -287,12 +290,13 @@ void __cdecl LiveTicker_MoveToNextMessage(streamName_t param_1)
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveTicker_ReplaceMessages(char *param_1,streamName_t param_2,bool param_3)
+void __cdecl LiveTicker_ReplaceMessages(char *text,streamName_t streamName,bool isMultiple)
 
 {
-  s_ticker.totalMessageCount = s_ticker.totalMessageCount - s_ticker.streams[param_2].messageCount;
-  s_ticker.streams[param_2].messageCount = 0;
-  LiveTicker_AddMessages(param_1,param_2,param_3);
+  s_ticker.totalMessageCount =
+       s_ticker.totalMessageCount - s_ticker.streams[streamName].messageCount;
+  s_ticker.streams[streamName].messageCount = 0;
+  LiveTicker_AddMessages(text,streamName,isMultiple);
   return;
 }
 
@@ -302,42 +306,42 @@ void __cdecl LiveTicker_ReplaceMessages(char *param_1,streamName_t param_2,bool 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveTicker_AddMessages(char *param_1,streamName_t param_2,bool param_3)
+void __cdecl LiveTicker_AddMessages(char *text,streamName_t streamName,bool isMultiple)
 
 {
   char cVar1;
   char *local_218;
-  char local_214 [512];
+  char changingFileContents [512];
   uint local_14;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  char *token;
+  int len;
+  char *delimiter;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_3) {
-    local_218 = param_1;
+  if (isMultiple) {
+    local_218 = text;
     do {
       cVar1 = *local_218;
       local_218 = local_218 + 1;
     } while (cVar1 != '\0');
-    local_c = (int)local_218 - (int)(param_1 + 1);
-    local_8 = "\n\r";
-    if (0 < local_c) {
-      I_strncpyz(local_214,param_1,0x200);
-      local_10 = strtok(local_214,local_8);
-      if (param_2 == TICKER_STREAM_COD) {
-        Dvar_SetStringByName("motd",local_10);
+    len = (int)local_218 - (int)(text + 1);
+    delimiter = "\n\r";
+    if (0 < len) {
+      I_strncpyz(changingFileContents,text,0x200);
+      token = strtok(changingFileContents,delimiter);
+      if (streamName == TICKER_STREAM_COD) {
+        Dvar_SetStringByName("motd",token);
       }
-      while (local_10 != (char *)0x0) {
-        if (local_10 != (char *)0x0) {
-          LiveTicker_InsertMessageInternal(local_10,param_2);
-          local_10 = strtok((char *)0x0,local_8);
+      while (token != (char *)0x0) {
+        if (token != (char *)0x0) {
+          LiveTicker_InsertMessageInternal(token,streamName);
+          token = strtok((char *)0x0,delimiter);
         }
       }
     }
   }
   else {
-    LiveTicker_InsertMessageInternal(param_1,param_2);
+    LiveTicker_InsertMessageInternal(text,streamName);
   }
   return;
 }
@@ -347,11 +351,12 @@ void __cdecl LiveTicker_AddMessages(char *param_1,streamName_t param_2,bool para
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveTicker_RemoveStream(streamName_t param_1)
+void __cdecl LiveTicker_RemoveStream(streamName_t streamName)
 
 {
-  s_ticker.totalMessageCount = s_ticker.totalMessageCount - s_ticker.streams[param_1].messageCount;
-  s_ticker.streams[param_1].messageCount = 0;
+  s_ticker.totalMessageCount =
+       s_ticker.totalMessageCount - s_ticker.streams[streamName].messageCount;
+  s_ticker.streams[streamName].messageCount = 0;
   LiveTicker_MoveToFirstStream();
   return;
 }
@@ -363,16 +368,24 @@ void __cdecl LiveTicker_RemoveStream(streamName_t param_1)
 
 char * __cdecl
 LiveTicker_GetCurrentMessage
-          (float param_1,float param_2,float param_3,float param_4,Font_s *param_5,float param_6,
-          float *param_7,float *param_8,float *param_9)
+          (float scrX,float baseX,float baseY,float baseAlpha,Font_s *font,float scale,float *xCoord
+          ,float *yCoord,float *alpha)
 
 {
   int iVar1;
   int iVar2;
-  char *pcVar3;
-  streams_t *psVar4;
-  float fVar5;
-  int local_8;
+  char *text_00;
+  streams_t *psVar3;
+  float fVar4;
+  char *text_2;
+  char *text;
+  int modeCode;
+  float delta;
+  messages_t *currMessage;
+  streams_t *currStream;
+  float moveBy;
+  int currentTime;
+  int xThreshold;
   
   iVar1 = Sys_Milliseconds();
   iVar2 = Dvar_GetInt("ticker_menu_context");
@@ -381,25 +394,25 @@ LiveTicker_GetCurrentMessage
     Dvar_SetIntByName("ticker_menu_context",-1);
   }
   if ((com_wideScreen == (dvar_s *)0x0) || ((com_wideScreen->current).enabled == false)) {
-    local_8 = (tickerStandardWidth->current).integer;
+    xThreshold = (tickerStandardWidth->current).integer;
   }
   else {
-    local_8 = (tickerWidescreenWidth->current).integer;
+    xThreshold = (tickerWidescreenWidth->current).integer;
   }
   if ((s_isTickerInitialized == false) || (s_ticker.totalMessageCount < 1)) {
-    pcVar3 = UI_SafeTranslateString("TICKER_MESSAGE_DEFAULT_OFFLINE");
-    *param_7 = param_2;
-    *param_8 = param_3;
-    *param_9 = param_4;
+    text_00 = UI_SafeTranslateString("TICKER_MESSAGE_DEFAULT_OFFLINE");
+    *xCoord = baseX;
+    *yCoord = baseY;
+    *alpha = baseAlpha;
   }
   else if (s_ticker.isHeaderAnimating == false) {
     if (s_ticker.currentStream == TICKER_STREAM_COUNT) {
       LiveTicker_MoveToNextStream();
     }
-    psVar4 = s_ticker.streams + s_ticker.currentStream;
-    pcVar3 = (char *)(s_ticker.currentStream * 0x1434 + 0xa615a14 +
-                     s_ticker.streams[s_ticker.currentStream].currentMessageIndex * 0x204);
-    switch(*(undefined4 *)(pcVar3 + 0x200)) {
+    psVar3 = s_ticker.streams + s_ticker.currentStream;
+    text_00 = (char *)(s_ticker.currentStream * 0x1434 + 0xa615a14 +
+                      s_ticker.streams[s_ticker.currentStream].currentMessageIndex * 0x204);
+    switch(*(undefined4 *)(text_00 + 0x200)) {
     case 0:
       s_ticker.isHeaderAnimating = false;
       s_ticker.pauseStartTimeA = 0;
@@ -410,110 +423,109 @@ LiveTicker_GetCurrentMessage
       s_ticker.scrollLeftFinalX = 0.0;
       s_ticker.hasMessageScrolledLeft = false;
       s_ticker.scrollUpStartTimeA = Sys_Milliseconds();
-      s_ticker.messagedWidthInPixels =
-           LiveTicker_GetTickerMessageTextWidth(pcVar3,0,param_5,param_6);
-      pcVar3[0x200] = '\x01';
-      pcVar3[0x201] = '\0';
-      pcVar3[0x202] = '\0';
-      pcVar3[0x203] = '\0';
+      s_ticker.messagedWidthInPixels = LiveTicker_GetTickerMessageTextWidth(text_00,0,font,scale);
+      text_00[0x200] = '\x01';
+      text_00[0x201] = '\0';
+      text_00[0x202] = '\0';
+      text_00[0x203] = '\0';
     case 1:
-      fVar5 = (float)(iVar1 - s_ticker.scrollUpStartTimeA) / 250.0;
-      *param_8 = (8.0 - fVar5 * 8.0) + param_3;
-      *param_9 = fVar5;
-      *param_7 = param_2;
+      fVar4 = (float)(iVar1 - s_ticker.scrollUpStartTimeA) / 250.0;
+      *yCoord = (8.0 - fVar4 * 8.0) + baseY;
+      *alpha = fVar4;
+      *xCoord = baseX;
       if (250.0 < (float)(iVar1 - s_ticker.scrollUpStartTimeA)) {
-        pcVar3[0x200] = '\x02';
-        pcVar3[0x201] = '\0';
-        pcVar3[0x202] = '\0';
-        pcVar3[0x203] = '\0';
+        text_00[0x200] = '\x02';
+        text_00[0x201] = '\0';
+        text_00[0x202] = '\0';
+        text_00[0x203] = '\0';
         s_ticker.pauseStartTimeA = iVar1;
       }
       break;
     case 2:
-      *param_7 = param_2;
-      *param_8 = param_3;
-      *param_9 = param_4;
+      *xCoord = baseX;
+      *yCoord = baseY;
+      *alpha = baseAlpha;
       if (5000.0 < (float)(iVar1 - s_ticker.pauseStartTimeA)) {
-        if (local_8 < s_ticker.messagedWidthInPixels) {
-          pcVar3[0x200] = '\x03';
-          pcVar3[0x201] = '\0';
-          pcVar3[0x202] = '\0';
-          pcVar3[0x203] = '\0';
-          s_ticker.scrollLeftDuration = (float)(s_ticker.messagedWidthInPixels - local_8) / 0.04;
+        if (xThreshold < s_ticker.messagedWidthInPixels) {
+          text_00[0x200] = '\x03';
+          text_00[0x201] = '\0';
+          text_00[0x202] = '\0';
+          text_00[0x203] = '\0';
+          s_ticker.scrollLeftDuration = (float)(s_ticker.messagedWidthInPixels - xThreshold) / 0.04;
           s_ticker.scrollLeftStartTime = iVar1;
         }
         else {
-          pcVar3[0x200] = '\x05';
-          pcVar3[0x201] = '\0';
-          pcVar3[0x202] = '\0';
-          pcVar3[0x203] = '\0';
+          text_00[0x200] = '\x05';
+          text_00[0x201] = '\0';
+          text_00[0x202] = '\0';
+          text_00[0x203] = '\0';
           s_ticker.scrollUpStartTimeB = iVar1;
         }
       }
       break;
     case 3:
-      fVar5 = ((float)iVar1 - (float)s_ticker.scrollLeftStartTime) / s_ticker.scrollLeftDuration;
-      local_8 = s_ticker.messagedWidthInPixels - local_8;
-      *param_8 = param_3;
-      *param_9 = param_4;
-      *param_7 = param_2 - (float)local_8 * fVar5;
+      fVar4 = ((float)iVar1 - (float)s_ticker.scrollLeftStartTime) / s_ticker.scrollLeftDuration;
+      iVar2 = s_ticker.messagedWidthInPixels - xThreshold;
+      *yCoord = baseY;
+      *alpha = baseAlpha;
+      *xCoord = baseX - (float)iVar2 * fVar4;
       if (s_ticker.scrollLeftDuration < (float)(iVar1 - s_ticker.scrollLeftStartTime)) {
-        pcVar3[0x200] = '\x04';
-        pcVar3[0x201] = '\0';
-        pcVar3[0x202] = '\0';
-        pcVar3[0x203] = '\0';
-        s_ticker.scrollLeftFinalX = *param_7;
+        text_00[0x200] = '\x04';
+        text_00[0x201] = '\0';
+        text_00[0x202] = '\0';
+        text_00[0x203] = '\0';
+        s_ticker.scrollLeftFinalX = *xCoord;
         s_ticker.hasMessageScrolledLeft = true;
         s_ticker.pauseStartTimeB = iVar1;
       }
       break;
     case 4:
-      *param_7 = s_ticker.scrollLeftFinalX;
-      *param_8 = param_3;
-      *param_9 = param_4;
+      *xCoord = s_ticker.scrollLeftFinalX;
+      *yCoord = baseY;
+      *alpha = baseAlpha;
       if (3000.0 < (float)(iVar1 - s_ticker.pauseStartTimeB)) {
-        pcVar3[0x200] = '\x05';
-        pcVar3[0x201] = '\0';
-        pcVar3[0x202] = '\0';
-        pcVar3[0x203] = '\0';
+        text_00[0x200] = '\x05';
+        text_00[0x201] = '\0';
+        text_00[0x202] = '\0';
+        text_00[0x203] = '\0';
         s_ticker.scrollUpStartTimeB = iVar1;
       }
       break;
     case 5:
-      fVar5 = (float)(iVar1 - s_ticker.scrollUpStartTimeB) / 250.0;
-      *param_8 = param_3 - fVar5 * 8.0;
-      *param_9 = 1.0 - fVar5;
+      fVar4 = (float)(iVar1 - s_ticker.scrollUpStartTimeB) / 250.0;
+      *yCoord = baseY - fVar4 * 8.0;
+      *alpha = 1.0 - fVar4;
       if (s_ticker.hasMessageScrolledLeft == false) {
-        *param_7 = param_2;
+        *xCoord = baseX;
       }
       else {
-        *param_7 = s_ticker.scrollLeftFinalX;
+        *xCoord = s_ticker.scrollLeftFinalX;
       }
       if (250.0 < (float)(iVar1 - s_ticker.scrollUpStartTimeB)) {
-        pcVar3[0x200] = '\x06';
-        pcVar3[0x201] = '\0';
-        pcVar3[0x202] = '\0';
-        pcVar3[0x203] = '\0';
+        text_00[0x200] = '\x06';
+        text_00[0x201] = '\0';
+        text_00[0x202] = '\0';
+        text_00[0x203] = '\0';
       }
       break;
     case 6:
-      pcVar3[0x200] = '\0';
-      pcVar3[0x201] = '\0';
-      pcVar3[0x202] = '\0';
-      pcVar3[0x203] = '\0';
-      LiveTicker_MoveToNextMessage(psVar4->streamName);
+      text_00[0x200] = '\0';
+      text_00[0x201] = '\0';
+      text_00[0x202] = '\0';
+      text_00[0x203] = '\0';
+      LiveTicker_MoveToNextMessage(psVar3->streamName);
     }
-    if (*(int *)(pcVar3 + 0x200) == 0) {
-      pcVar3 = "";
+    if (*(int *)(text_00 + 0x200) == 0) {
+      text_00 = "";
     }
   }
   else {
-    *param_7 = param_2;
-    *param_8 = param_3;
-    *param_9 = param_4;
-    pcVar3 = "";
+    *xCoord = baseX;
+    *yCoord = baseY;
+    *alpha = baseAlpha;
+    text_00 = "";
   }
-  return pcVar3;
+  return text_00;
 }
 
 
@@ -523,20 +535,23 @@ LiveTicker_GetCurrentMessage
 
 char * __cdecl
 LiveTicker_GetCurrentMessageCategory
-          (float param_1,float param_2,float param_3,Font_s *param_4,float param_5,float *param_6,
-          float *param_7,float *param_8)
+          (float baseAlpha,float baseX,float baseWidth,Font_s *font,float baseScale,float *outXCoord
+          ,float *outAlpha,float *outScale)
 
 {
   int iVar1;
   streams_t *psVar2;
-  char *local_8;
+  messages_t *currMessage;
+  streams_t *currStream;
+  int curTime;
+  char *text;
   
-  local_8 = UI_SafeTranslateString("TICKER_MESSAGE_CATEGORY_COD_CAPS");
+  text = UI_SafeTranslateString("TICKER_MESSAGE_CATEGORY_COD_CAPS");
   iVar1 = Sys_Milliseconds();
   if (s_ticker.totalMessageCount < 1) {
-    *param_7 = param_1;
-    *param_8 = param_5;
-    *param_6 = param_2;
+    *outAlpha = baseAlpha;
+    *outScale = baseScale;
+    *outXCoord = baseX;
   }
   else {
     psVar2 = s_ticker.streams + s_ticker.currentStream;
@@ -546,31 +561,31 @@ LiveTicker_GetCurrentMessageCategory
       s_ticker.headerAnimationStartTime = iVar1;
     }
     if (s_ticker.headerAnimationStartTime < 1) {
-      local_8 = LiveTicker_GetStreamNameTextInternal(psVar2->streamName);
-      *param_7 = 1.0;
-      *param_8 = param_5;
+      text = LiveTicker_GetStreamNameTextInternal(psVar2->streamName);
+      *outAlpha = 1.0;
+      *outScale = baseScale;
     }
     else if (iVar1 - s_ticker.headerAnimationStartTime < 100) {
-      local_8 = LiveTicker_GetStreamNameTextInternal(s_ticker.previousStream);
-      *param_7 = 1.0 - (float)(iVar1 - s_ticker.headerAnimationStartTime) / 100.0;
-      *param_8 = param_5 * *param_7;
+      text = LiveTicker_GetStreamNameTextInternal(s_ticker.previousStream);
+      *outAlpha = 1.0 - (float)(iVar1 - s_ticker.headerAnimationStartTime) / 100.0;
+      *outScale = baseScale * *outAlpha;
     }
     else if (iVar1 - s_ticker.headerAnimationStartTime < 200) {
-      local_8 = LiveTicker_GetStreamNameTextInternal(psVar2->streamName);
-      *param_7 = (float)(iVar1 - (s_ticker.headerAnimationStartTime + 100)) / 200.0;
-      *param_8 = param_5 * *param_7;
+      text = LiveTicker_GetStreamNameTextInternal(psVar2->streamName);
+      *outAlpha = (float)(iVar1 - (s_ticker.headerAnimationStartTime + 100)) / 200.0;
+      *outScale = baseScale * *outAlpha;
     }
     else {
-      local_8 = LiveTicker_GetStreamNameTextInternal(psVar2->streamName);
+      text = LiveTicker_GetStreamNameTextInternal(psVar2->streamName);
       s_ticker.previousStream = psVar2->streamName;
       s_ticker.isHeaderAnimating = false;
       s_ticker.headerAnimationStartTime = 0;
-      *param_7 = 1.0;
-      *param_8 = param_5;
+      *outAlpha = 1.0;
+      *outScale = baseScale;
     }
-    *param_6 = param_2;
+    *outXCoord = baseX;
   }
-  return local_8;
+  return text;
 }
 
 
@@ -578,10 +593,10 @@ LiveTicker_GetCurrentMessageCategory
 
 /* WARNING: Enum "streamName_t": Some values do not have unique names */
 
-void __cdecl LiveTicker_SetBatchSize(streamName_t param_1,int param_2)
+void __cdecl LiveTicker_SetBatchSize(streamName_t streamName,int batchSize)
 
 {
-  s_ticker.streamBatchSize[param_1] = param_2;
+  s_ticker.streamBatchSize[streamName] = batchSize;
   return;
 }
 
@@ -594,12 +609,12 @@ void __cdecl LiveTicker_SetContractMsgsBatchSize_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     LiveTicker_SetBatchSize(TICKER_STREAM_CONTRACTS,iVar1);
   }
   else {
@@ -617,12 +632,12 @@ void __cdecl LiveTicker_SetEventMsgsBatchSize_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     LiveTicker_SetBatchSize(TICKER_STREAM_EVENTS,iVar1);
   }
   else {
@@ -640,12 +655,12 @@ void __cdecl LiveTicker_SetCODMsgsBatchSize_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     LiveTicker_SetBatchSize(TICKER_STREAM_COD,iVar1);
   }
   else {
@@ -663,12 +678,12 @@ void __cdecl LiveTicker_SetFriendMsgsBatchSize_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     LiveTicker_SetBatchSize(TICKER_STREAM_FRIENDS,iVar1);
   }
   else {
@@ -686,12 +701,12 @@ void __cdecl LiveTicker_SetClanMsgsBatchSize_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     LiveTicker_SetBatchSize(TICKER_STREAM_SQUADS,iVar1);
   }
   else {

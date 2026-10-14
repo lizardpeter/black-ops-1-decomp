@@ -17,30 +17,35 @@ void __cdecl TRACK_cg_camerashake(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_UpdateCameraShake(cg_s *param_1,CameraShake *param_2)
+int __cdecl CG_UpdateCameraShake(cg_s *cgameGlob,CameraShake *shake)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_10;
+  float fVar5;
+  int dtime;
+  float dist;
+  float val;
+  float timePercent;
+  float x;
   
-  if ((((uint)param_2->length & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)shake->length & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x2a,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((uint)param_2->radius & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)shake->radius & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x2b,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((uint)param_2->scale & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)shake->scale & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x2c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -52,53 +57,53 @@ int __cdecl CG_UpdateCameraShake(cg_s *param_1,CameraShake *param_2)
      ) {
     return 0;
   }
-  iVar3 = param_1->time - param_2->time;
-  if ((iVar3 < 0) || (param_2->length <= (float)iVar3)) {
+  iVar3 = cgameGlob->time - shake->time;
+  if ((iVar3 < 0) || (shake->length <= (float)iVar3)) {
     return 0;
   }
-  if ((param_2->length <= 0.0) &&
+  if ((shake->length <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x36,0
                                ,"%s\n\t(shake->length) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2->radius <= 0.0) &&
+  if ((shake->radius <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x37,0
                                ,"%s\n\t(shake->radius) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2->scale <= 0.0) &&
+  if ((shake->scale <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x38,0
                                ,"%s\n\t(shake->scale) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  fVar4 = Vec3Distance(param_2->src,(param_1->refdef).vieworg);
-  local_10 = 1.0 - fVar4 / param_2->radius;
-  fVar4 = (float)iVar3 / param_2->length;
-  if (((fVar4 < 0.0) || (1.0 <= fVar4)) &&
+  fVar5 = Vec3Distance(shake->src,(cgameGlob->refdef).vieworg);
+  fVar4 = 1.0 - fVar5 / shake->radius;
+  fVar5 = (float)iVar3 / shake->length;
+  if (((fVar5 < 0.0) || (1.0 <= fVar5)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x3e,0
                                ,"%s\n\t(timePercent) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  fVar4 = (1.0 - fVar4) * param_2->scale;
-  if (fVar4 <= 0.0) {
+  fVar5 = (1.0 - fVar5) * shake->scale;
+  if (fVar5 <= 0.0) {
     return 0;
   }
-  if (local_10 < 0.0) {
-    local_10 = local_10 / fVar4;
+  if (fVar4 < 0.0) {
+    val = fVar4 / fVar5;
   }
   else {
-    local_10 = local_10 * fVar4;
+    val = fVar4 * fVar5;
   }
-  param_2->size = local_10;
-  param_2->rumbleScale = fVar4;
+  shake->size = val;
+  shake->rumbleScale = fVar5;
   return 1;
 }
 
@@ -110,94 +115,96 @@ int __cdecl CG_UpdateCameraShake(cg_s *param_1,CameraShake *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_StartShakeCamera(int param_1,float param_2,int param_3,float *param_4,float param_5)
+void __cdecl CG_StartShakeCamera(int localClientNum,float p,int duration,float *src,float radius)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
-  cg_s *pcVar4;
-  int iVar5;
+  cg_s *cgameGlob_00;
+  int iVar4;
+  CameraShake *pCVar5;
   CameraShake *pCVar6;
-  CameraShake *pCVar7;
-  int local_3c;
-  float local_34;
-  int local_30;
-  CameraShake local_28;
+  int j;
+  cg_s *cgameGlob;
+  float minsize;
+  int i;
+  CameraShake *cameraShakeArray;
+  CameraShake buildShake;
   
-  if ((param_2 <= 0.0) &&
+  if ((p <= 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x58,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 < 1) &&
+  if ((duration < 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x59,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_5 <= 0.0) &&
+  if ((radius <= 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",0x5a,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  local_28.size = 0.0;
-  local_28.rumbleScale = 0.0;
-  local_28.scale = param_2;
-  local_28.length = (float)param_3;
-  local_28.time = pcVar4->time;
-  local_28.src[0] = *param_4;
-  local_28.src[1] = param_4[1];
-  local_28.src[2] = param_4[2];
-  local_28.radius = param_5;
-  CG_UpdateCameraShake(pcVar4,&local_28);
-  iVar5 = param_1 * 0x94;
-  local_30 = 0;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  buildShake.size = 0.0;
+  buildShake.rumbleScale = 0.0;
+  buildShake.scale = p;
+  buildShake.length = (float)duration;
+  buildShake.time = cgameGlob_00->time;
+  buildShake.src[0] = *src;
+  buildShake.src[1] = src[1];
+  buildShake.src[2] = src[2];
+  buildShake.radius = radius;
+  CG_UpdateCameraShake(cgameGlob_00,&buildShake);
+  iVar4 = localClientNum * 0x94;
+  i = 0;
   while( true ) {
-    if (3 < local_30) {
-      local_34 = local_28.size;
-      if ((local_30 != 4) &&
+    if (3 < i) {
+      minsize = buildShake.size;
+      if ((i != 4) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_camerashake.cpp",
                                    0x76,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      for (local_3c = 0; local_3c < 4; local_3c = local_3c + 1) {
-        pfVar1 = (float *)(iVar5 + 0xe86b44 + local_3c * 0x24);
-        if (*pfVar1 <= local_34 && local_34 != *pfVar1) {
-          local_34 = *(float *)(iVar5 + 0xe86b44 + local_3c * 0x24);
-          local_30 = local_3c;
+      for (j = 0; j < 4; j = j + 1) {
+        pfVar1 = (float *)(iVar4 + 0xe86b44 + j * 0x24);
+        if (*pfVar1 <= minsize && minsize != *pfVar1) {
+          minsize = *(float *)(iVar4 + 0xe86b44 + j * 0x24);
+          i = j;
         }
       }
-      if (local_30 != 4) {
-        pCVar6 = &local_28;
-        pCVar7 = s_cameraShakeSet[param_1].shakes + local_30;
-        for (iVar5 = 9; iVar5 != 0; iVar5 = iVar5 + -1) {
-          pCVar7->time = pCVar6->time;
+      if (i != 4) {
+        pCVar5 = &buildShake;
+        pCVar6 = s_cameraShakeSet[localClientNum].shakes + i;
+        for (iVar4 = 9; iVar4 != 0; iVar4 = iVar4 + -1) {
+          pCVar6->time = pCVar5->time;
+          pCVar5 = (CameraShake *)&pCVar5->scale;
           pCVar6 = (CameraShake *)&pCVar6->scale;
-          pCVar7 = (CameraShake *)&pCVar7->scale;
         }
       }
       return;
     }
-    if ((pcVar4->time < s_cameraShakeSet[param_1].shakes[local_30].time) ||
-       ((float)s_cameraShakeSet[param_1].shakes[local_30].time +
-        *(float *)(iVar5 + 0xe86b30 + local_30 * 0x24) <= (float)pcVar4->time)) break;
-    local_30 = local_30 + 1;
+    if ((cgameGlob_00->time < s_cameraShakeSet[localClientNum].shakes[i].time) ||
+       ((float)s_cameraShakeSet[localClientNum].shakes[i].time +
+        *(float *)(iVar4 + 0xe86b30 + i * 0x24) <= (float)cgameGlob_00->time)) break;
+    i = i + 1;
   }
-  pCVar6 = &local_28;
-  pCVar7 = s_cameraShakeSet[param_1].shakes + local_30;
-  for (iVar5 = 9; iVar5 != 0; iVar5 = iVar5 + -1) {
-    pCVar7->time = pCVar6->time;
+  pCVar5 = &buildShake;
+  pCVar6 = s_cameraShakeSet[localClientNum].shakes + i;
+  for (iVar4 = 9; iVar4 != 0; iVar4 = iVar4 + -1) {
+    pCVar6->time = pCVar5->time;
+    pCVar5 = (CameraShake *)&pCVar5->scale;
     pCVar6 = (CameraShake *)&pCVar6->scale;
-    pCVar7 = (CameraShake *)&pCVar7->scale;
   }
   return;
 }
@@ -205,15 +212,15 @@ void __cdecl CG_StartShakeCamera(int param_1,float param_2,int param_3,float *pa
 
 // 00480EA0  MemFile_WriteData  (universal/memfile.h:122)
 
-void __cdecl MemFile_WriteData(MemoryFile *param_1,int param_2,void *param_3)
+void __cdecl MemFile_WriteData(MemoryFile *memFile,int byteCount,void *p)
 
 {
-  if (param_1->cacheBufferUsed + param_2 < 0x7ff8) {
-    memcpy(param_1->cacheBuffer + param_1->cacheBufferUsed,param_3,param_2);
-    param_1->cacheBufferUsed = param_1->cacheBufferUsed + param_2;
+  if (memFile->cacheBufferUsed + byteCount < 0x7ff8) {
+    memcpy(memFile->cacheBuffer + memFile->cacheBufferUsed,p,byteCount);
+    memFile->cacheBufferUsed = memFile->cacheBufferUsed + byteCount;
   }
   else {
-    MemFile_WriteDataInternal(param_1,param_2,param_3);
+    MemFile_WriteDataInternal(memFile,byteCount,p);
   }
   return;
 }
@@ -226,59 +233,64 @@ void __cdecl MemFile_WriteData(MemoryFile *param_1,int param_2,void *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ShakeCamera(int param_1)
+void __cdecl CG_ShakeCamera(int localClientNum)
 
 {
-  cg_s *pcVar1;
-  int iVar2;
-  CameraShake *pCVar3;
-  float fVar4;
-  float fVar5;
-  double dVar6;
+  cg_s *cgameGlob_00;
+  int iVar1;
+  CameraShake *shake;
+  float fVar2;
+  float fVar3;
+  double dVar4;
   undefined4 in_stack_ffffffd0;
   undefined4 in_stack_ffffffd4;
-  float local_14;
-  float local_10;
-  int local_c;
+  CameraShakeSet *camShakeSet;
+  CameraShake *cameraShake;
+  cg_s *cgameGlob;
+  float val;
+  float bx;
+  float scale;
+  int i;
+  float sx;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_10 = 0.0;
-  local_14 = 0.0;
-  fVar4 = (float)pcVar1->time / 600.0;
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    pCVar3 = s_cameraShakeSet[param_1].shakes + local_c;
-    iVar2 = CG_UpdateCameraShake(pcVar1,pCVar3);
-    if ((iVar2 != 0) && (local_10 < pCVar3->size)) {
-      local_10 = pCVar3->size;
-      local_14 = pCVar3->rumbleScale;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  scale = 0.0;
+  bx = 0.0;
+  fVar2 = (float)cgameGlob_00->time / 600.0;
+  for (i = 0; i < 4; i = i + 1) {
+    shake = s_cameraShakeSet[localClientNum].shakes + i;
+    iVar1 = CG_UpdateCameraShake(cgameGlob_00,shake);
+    if ((iVar1 != 0) && (scale < shake->size)) {
+      scale = shake->size;
+      bx = shake->rumbleScale;
     }
   }
-  if (local_10 < pcVar1->rumbleScale) {
-    local_10 = pcVar1->rumbleScale;
-    local_14 = pcVar1->rumbleScale;
+  if (scale < cgameGlob_00->rumbleScale) {
+    scale = cgameGlob_00->rumbleScale;
+    bx = cgameGlob_00->rumbleScale;
   }
-  if (0.0 < local_10) {
-    if (1.0 < local_10) {
-      local_10 = 1.0;
+  if (0.0 < scale) {
+    if (1.0 < scale) {
+      scale = 1.0;
     }
-    dVar6 = (double)(fVar4 * 25.132742 + s_cameraShakeSet[param_1].phase);
+    dVar4 = (double)(fVar2 * 25.132742 + s_cameraShakeSet[localClientNum].phase);
     __libm_sse2_sin((double)CONCAT44(in_stack_ffffffd4,in_stack_ffffffd0));
-    pcVar1->refdefViewAngles[0] =
-         pcVar1->refdefViewAngles[0] + (float)dVar6 * local_14 * 18.0 * local_10;
-    fVar5 = fVar4 * 47.12389 + s_cameraShakeSet[param_1].phase;
-    dVar6 = (double)fVar5;
-    __libm_sse2_sin((double)CONCAT44(fVar5,in_stack_ffffffd0));
-    pcVar1->refdefViewAngles[1] =
-         pcVar1->refdefViewAngles[1] + (float)dVar6 * local_14 * 16.0 * local_10;
-    fVar4 = fVar4 * 37.699112 + s_cameraShakeSet[param_1].phase;
-    dVar6 = (double)fVar4;
-    __libm_sse2_sin((double)CONCAT44(fVar5,fVar4));
-    pcVar1->refdefViewAngles[2] =
-         pcVar1->refdefViewAngles[2] + (float)dVar6 * local_14 * 10.0 * local_10;
+    cgameGlob_00->refdefViewAngles[0] =
+         cgameGlob_00->refdefViewAngles[0] + (float)dVar4 * bx * 18.0 * scale;
+    fVar3 = fVar2 * 47.12389 + s_cameraShakeSet[localClientNum].phase;
+    dVar4 = (double)fVar3;
+    __libm_sse2_sin((double)CONCAT44(fVar3,in_stack_ffffffd0));
+    cgameGlob_00->refdefViewAngles[1] =
+         cgameGlob_00->refdefViewAngles[1] + (float)dVar4 * bx * 16.0 * scale;
+    fVar2 = fVar2 * 37.699112 + s_cameraShakeSet[localClientNum].phase;
+    dVar4 = (double)fVar2;
+    __libm_sse2_sin((double)CONCAT44(fVar3,fVar2));
+    cgameGlob_00->refdefViewAngles[2] =
+         cgameGlob_00->refdefViewAngles[2] + (float)dVar4 * bx * 10.0 * scale;
   }
   else {
-    fVar4 = crandom();
-    s_cameraShakeSet[param_1].phase = fVar4 * 3.1415927;
+    fVar2 = crandom();
+    s_cameraShakeSet[localClientNum].phase = fVar2 * 3.1415927;
   }
   return;
 }
@@ -286,10 +298,12 @@ void __cdecl CG_ShakeCamera(int param_1)
 
 // 00480F00  CG_ClearCameraShakes  (cgame/cg_camerashake.cpp:207)
 
-void __cdecl CG_ClearCameraShakes(int param_1)
+void __cdecl CG_ClearCameraShakes(int localClientNum)
 
 {
-  memset((uchar *)(s_cameraShakeSet + param_1),'\0',0x90);
+  CameraShake *cameraShakeArray;
+  
+  memset((uchar *)(s_cameraShakeSet + localClientNum),'\0',0x90);
   return;
 }
 

@@ -26,6 +26,7 @@ int __cdecl Live_FileShareSearch_GetNextTaskDelay(void)
 
 {
   int iVar1;
+  int taskGap;
   
   iVar1 = Live_FileShareSearch_GetTaskGap();
   if (s_searchBackoff.isActive != false) {
@@ -89,13 +90,13 @@ void __cdecl Live_FileShareSearch_ReportSuccess(void)
 void __cdecl Live_FileShareSearch_ClearSearch(void)
 
 {
-  int local_8;
+  int i;
   
   s_fshSearch.totalFiles = 0;
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    s_fshSearch.pages[local_8].numDescriptors = 0;
-    s_fshSearch.pages[local_8].startIndex = -1;
-    s_fshSearch.pages[local_8].timestamp = 0;
+  for (i = 0; i < 3; i = i + 1) {
+    s_fshSearch.pages[i].numDescriptors = 0;
+    s_fshSearch.pages[i].startIndex = -1;
+    s_fshSearch.pages[i].timestamp = 0;
   }
   s_fshSearch.bookFiles.startIndex = 0;
   s_fshSearch.bookFiles.numFiles = 0;
@@ -116,40 +117,40 @@ void __cdecl Live_FileShareSearch_ClearSearch(void)
 
 bool __cdecl
 Live_FileShareSearch_NeedToPerformSearch
-          (bdTag *param_1,int param_2,fileShareLocation param_3,int param_4,bool param_5,int param_6
-          )
+          (bdTag *tags,int numTags,fileShareLocation location,int fileType,bool sortHighestRated,
+          int numPastDays)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  if (((((!s_fshSearch.context.isValid) || (s_fshSearch.context.location != param_3)) ||
-       (s_fshSearch.context.numTags != param_2)) ||
-      ((s_fshSearch.context.fileType != param_4 || (s_fshSearch.context.sortHighestRated != param_5)
-       ))) || ((s_fshSearch.context._980_4_ != param_6 ||
-               (iVar1 = Sys_Milliseconds(), 59999 < iVar1 - s_fshSearch.context.timestamp)))) {
+  if (((((!s_fshSearch.context.isValid) || (s_fshSearch.context.location != location)) ||
+       (s_fshSearch.context.numTags != numTags)) ||
+      ((s_fshSearch.context.fileType != fileType ||
+       (s_fshSearch.context.sortHighestRated != sortHighestRated)))) ||
+     ((s_fshSearch.context._980_4_ != numPastDays ||
+      (iVar1 = Sys_Milliseconds(), 59999 < iVar1 - s_fshSearch.context.timestamp)))) {
     return true;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (numTags <= i) {
       return false;
     }
-    if (((int)param_1[local_8].m_priTag !=
-         (int)((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_priTag) ||
-       (*(int *)((int)&param_1[local_8].m_priTag + 4) !=
-        *(int *)((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_priTag + 4))
-       ) {
+    if (((int)tags[i].m_priTag !=
+         (int)((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_priTag) ||
+       (*(int *)((int)&tags[i].m_priTag + 4) !=
+        *(int *)((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_priTag + 4))) {
       return true;
     }
-    if ((int)param_1[local_8].m_secTag !=
-        (int)((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_secTag) {
+    if ((int)tags[i].m_secTag !=
+        (int)((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_secTag) {
       return true;
     }
-    if (*(int *)((int)&param_1[local_8].m_secTag + 4) !=
-        *(int *)((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_secTag + 4))
+    if (*(int *)((int)&tags[i].m_secTag + 4) !=
+        *(int *)((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_secTag + 4))
     break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -159,22 +160,22 @@ Live_FileShareSearch_NeedToPerformSearch
 
 bool __cdecl
 Live_FileShareSearch_FindDescriptorByID
-          (int param_1,ulong64 param_2,fileShareLocation param_3,bdFileMetaData *param_4)
+          (int controllerIndex,ulong64 param_2,fileShareLocation outDescriptor,
+          bdFileMetaData *param_4)
 
 {
   int in_stack_00000008;
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
   if (s_fshSearch.context.location == param_2._4_4_) {
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      for (local_c = 0; local_c < s_fshSearch.pages[local_8].numDescriptors; local_c = local_c + 1)
-      {
-        if ((*(int *)(local_8 * 0x5240 + 0xa4cf558 + local_c * 0x838) == in_stack_00000008) &&
-           (*(int *)(local_8 * 0x5240 + 0xa4cf55c + local_c * 0x838) == (int)param_2)) {
+    for (i = 0; i < 3; i = i + 1) {
+      for (j = 0; j < s_fshSearch.pages[i].numDescriptors; j = j + 1) {
+        if ((*(int *)(i * 0x5240 + 0xa4cf558 + j * 0x838) == in_stack_00000008) &&
+           (*(int *)(i * 0x5240 + 0xa4cf55c + j * 0x838) == (int)param_2)) {
           bdFileMetaData::operator=
-                    ((bdFileMetaData *)param_3,
-                     (bdFileMetaData *)(local_8 * 0x5240 + 0xa4cf550 + local_c * 0x838));
+                    ((bdFileMetaData *)outDescriptor,
+                     (bdFileMetaData *)(i * 0x5240 + 0xa4cf550 + j * 0x838));
           return true;
         }
       }
@@ -188,69 +189,68 @@ Live_FileShareSearch_FindDescriptorByID
 
 bool __cdecl
 Live_FileShareSearch_FindDescriptor
-          (int param_1,int param_2,bdFileMetaData *param_3,fshSearchPage_t **param_4)
+          (int controllerIndex,int itemIndex,bdFileMetaData *outDescriptor,fshSearchPage_t **page)
 
 {
-  int local_8;
+  int descriptorIndex;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < i) {
       return false;
     }
-    if (((0 < s_fshSearch.pages[local_8].numDescriptors) &&
-        (s_fshSearch.pages[local_8].startIndex <= param_2)) &&
-       (param_2 < s_fshSearch.pages[local_8].startIndex + s_fshSearch.pages[local_8].numDescriptors)
-       ) break;
-    local_8 = local_8 + 1;
+    if (((0 < s_fshSearch.pages[i].numDescriptors) && (s_fshSearch.pages[i].startIndex <= itemIndex)
+        ) && (itemIndex < s_fshSearch.pages[i].startIndex + s_fshSearch.pages[i].numDescriptors))
+    break;
+    i = i + 1;
   }
   bdFileMetaData::operator=
-            (param_3,(bdFileMetaData *)
-                     (local_8 * 0x5240 + 0xa4cf550 +
-                     (param_2 - s_fshSearch.pages[local_8].startIndex) * 0x838));
-  *param_4 = s_fshSearch.pages + local_8;
+            (outDescriptor,
+             (bdFileMetaData *)
+             (i * 0x5240 + 0xa4cf550 + (itemIndex - s_fshSearch.pages[i].startIndex) * 0x838));
+  *page = s_fshSearch.pages + i;
   return true;
 }
 
 
 // 00965150  Live_FileShareSearch_GetFirstPageItem  (live/live_fileshare_search.cpp:281)
 
-int __cdecl Live_FileShareSearch_GetFirstPageItem(int param_1)
+int __cdecl Live_FileShareSearch_GetFirstPageItem(int fileIndex)
 
 {
-  return param_1 - param_1 % 10;
+  return fileIndex - fileIndex % 10;
 }
 
 
 // 00965170  Live_FileShareSearch_IsPageLoading  (live/live_fileshare_search.cpp:290)
 
-bool __cdecl Live_FileShareSearch_IsPageLoading(int param_1)
+bool __cdecl Live_FileShareSearch_IsPageLoading(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = LiveStorage_FileShare_IsPageLoading(param_1);
+  bVar1 = LiveStorage_FileShare_IsPageLoading(controllerIndex);
   return bVar1;
 }
 
 
 // 00964FE0  Live_FileShareSearch_IsPageLoaded  (live/live_fileshare_search.cpp:295)
 
-bool __cdecl Live_FileShareSearch_IsPageLoaded(int param_1)
+bool __cdecl Live_FileShareSearch_IsPageLoaded(int fileIndex)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < i) {
       return false;
     }
-    if (((0 < s_fshSearch.pages[local_8].numDescriptors) &&
-        (s_fshSearch.pages[local_8].startIndex <= param_1)) &&
-       (param_1 < s_fshSearch.pages[local_8].startIndex + s_fshSearch.pages[local_8].numDescriptors)
-       ) break;
-    local_8 = local_8 + 1;
+    if (((0 < s_fshSearch.pages[i].numDescriptors) && (s_fshSearch.pages[i].startIndex <= fileIndex)
+        ) && (fileIndex < s_fshSearch.pages[i].startIndex + s_fshSearch.pages[i].numDescriptors))
+    break;
+    i = i + 1;
   }
   return true;
 }
@@ -258,40 +258,41 @@ bool __cdecl Live_FileShareSearch_IsPageLoaded(int param_1)
 
 // 00965190  Live_FileShareSearch_AllocatePage  (live/live_fileshare_search.cpp:309)
 
-fshSearchPage_t * __cdecl Live_FileShareSearch_AllocatePage(int param_1,int param_2)
+fshSearchPage_t * __cdecl Live_FileShareSearch_AllocatePage(int startIndex,int fileIndex)
 
 {
   int iVar1;
-  int local_10;
-  fshSearchPage_t *local_c;
+  int i;
+  fshSearchPage_t *resultPage;
+  int endIndex;
   
-  local_c = s_fshSearch.pages;
-  local_10 = 0;
+  resultPage = s_fshSearch.pages;
+  i = 0;
   do {
-    if (2 < local_10) {
+    if (2 < i) {
 LAB_0096526f:
-      local_c->numDescriptors = 0;
-      local_c->startIndex = -1;
+      resultPage->numDescriptors = 0;
+      resultPage->startIndex = -1;
       iVar1 = Sys_Milliseconds();
-      local_c->timestamp = iVar1;
-      return local_c;
+      resultPage->timestamp = iVar1;
+      return resultPage;
     }
-    if (s_fshSearch.pages[local_10].startIndex == -1) {
-      local_c = s_fshSearch.pages + local_10;
+    if (s_fshSearch.pages[i].startIndex == -1) {
+      resultPage = s_fshSearch.pages + i;
       goto LAB_0096526f;
     }
-    if (param_1 + 0x11 < s_fshSearch.pages[local_10].startIndex) {
-      local_c = s_fshSearch.pages + local_10;
+    if (startIndex + 0x11 < s_fshSearch.pages[i].startIndex) {
+      resultPage = s_fshSearch.pages + i;
       goto LAB_0096526f;
     }
-    if (s_fshSearch.pages[local_10].startIndex + 10 < param_1) {
-      local_c = s_fshSearch.pages + local_10;
+    if (s_fshSearch.pages[i].startIndex + 10 < startIndex) {
+      resultPage = s_fshSearch.pages + i;
       goto LAB_0096526f;
     }
-    if (s_fshSearch.pages[local_10].timestamp < local_c->timestamp) {
-      local_c = s_fshSearch.pages + local_10;
+    if (s_fshSearch.pages[i].timestamp < resultPage->timestamp) {
+      resultPage = s_fshSearch.pages + i;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -300,7 +301,7 @@ LAB_0096526f:
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FileShareSearch_LoadPage(int param_1,int param_2,int param_3)
+void __cdecl Live_FileShareSearch_LoadPage(int controllerIndex,int startIndex,int itemIndex)
 
 {
   code *pcVar1;
@@ -308,11 +309,14 @@ void __cdecl Live_FileShareSearch_LoadPage(int param_1,int param_2,int param_3)
   fshSearchPage_t *pfVar3;
   int iVar4;
   int local_14;
+  fshSearchPage_t *page;
+  int bookFilesRemaining;
+  int bookOffset;
   
-  bVar2 = Live_FileShareSearch_IsPageLoading(param_1);
+  bVar2 = Live_FileShareSearch_IsPageLoading(controllerIndex);
   if ((!bVar2) && (bVar2 = Live_FileShareSearch_IsTaskPermitted(), bVar2)) {
-    pfVar3 = Live_FileShareSearch_AllocatePage(param_2,param_3);
-    iVar4 = Live_FileShareSearch_GetFirstPageItem(param_3);
+    pfVar3 = Live_FileShareSearch_AllocatePage(startIndex,itemIndex);
+    iVar4 = Live_FileShareSearch_GetFirstPageItem(itemIndex);
     pfVar3->startIndex = iVar4;
     iVar4 = pfVar3->startIndex - s_fshSearch.bookFiles.startIndex;
     local_14 = s_fshSearch.bookFiles.numFiles - iVar4;
@@ -327,7 +331,7 @@ void __cdecl Live_FileShareSearch_LoadPage(int param_1,int param_2,int param_3)
       local_14 = 10;
     }
     LiveStorage_FileShare_LoadPage
-              (param_1,local_14,(bdFileID *)((int)&s_fshSearch + iVar4 * 0x10 + 0x10),
+              (controllerIndex,local_14,(bdFileID *)((int)&s_fshSearch + iVar4 * 0x10 + 0x10),
                s_fshSearch.context.location,pfVar3->descriptors,&pfVar3->numDescriptors,
                Live_FileShareSearch_ReportSuccess,Live_FileShareSearch_ReportFailure);
   }
@@ -337,28 +341,28 @@ void __cdecl Live_FileShareSearch_LoadPage(int param_1,int param_2,int param_3)
 
 // 00964E50  Live_FileShareSearch_GetFirstBookItem  (live/live_fileshare_search.cpp:389)
 
-int __cdecl Live_FileShareSearch_GetFirstBookItem(int param_1)
+int __cdecl Live_FileShareSearch_GetFirstBookItem(int fileIndex)
 
 {
-  undefined4 local_8;
+  int startFileIndex;
   
-  local_8 = param_1 + -0x32;
-  if (local_8 < 0) {
-    local_8 = 0;
+  startFileIndex = fileIndex + -0x32;
+  if (startFileIndex < 0) {
+    startFileIndex = 0;
   }
-  return local_8;
+  return startFileIndex;
 }
 
 
 // 00964E70  Live_FileShareSearch_IsBookLoading  (live/live_fileshare_search.cpp:401)
 
-bool __cdecl Live_FileShareSearch_IsBookLoading(int param_1)
+bool __cdecl Live_FileShareSearch_IsBookLoading(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = LiveStorage_FileShare_IsPerformingSearch(param_1);
-  if ((!bVar1) && (bVar1 = LiveStorage_FileShare_IsReadingTopRated(param_1), !bVar1)) {
+  bVar1 = LiveStorage_FileShare_IsPerformingSearch(controllerIndex);
+  if ((!bVar1) && (bVar1 = LiveStorage_FileShare_IsReadingTopRated(controllerIndex), !bVar1)) {
     return false;
   }
   return true;
@@ -390,44 +394,44 @@ void __cdecl Live_FileShareSearch_LoadBookFailure(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FileShareSearch_LoadBook(int param_1,int param_2,bool param_3)
+void __cdecl Live_FileShareSearch_LoadBook(int controllerIndex,int itemIndex,bool forceTask)
 
 {
   code *pcVar1;
   bool bVar2;
-  fileShareSearchInfo_t local_34;
+  fileShareSearchInfo_t taskInfo;
   
-  bVar2 = Live_FileShareSearch_IsBookLoading(param_1);
-  if ((!bVar2) && ((param_3 || (bVar2 = Live_FileShareSearch_IsTaskPermitted(), bVar2)))) {
-    bVar2 = LiveStorage_FileShare_IsPerformingSearch(param_1);
-    if (((bVar2) || (bVar2 = LiveStorage_FileShare_IsReadingTopRated(param_1), bVar2)) &&
+  bVar2 = Live_FileShareSearch_IsBookLoading(controllerIndex);
+  if ((!bVar2) && ((forceTask || (bVar2 = Live_FileShareSearch_IsTaskPermitted(), bVar2)))) {
+    bVar2 = LiveStorage_FileShare_IsPerformingSearch(controllerIndex);
+    if (((bVar2) || (bVar2 = LiveStorage_FileShare_IsReadingTopRated(controllerIndex), bVar2)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare_search.cpp"
                                  ,0x1b3,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    s_fshSearch.bookFiles.startIndex = Live_FileShareSearch_GetFirstBookItem(param_2);
+    s_fshSearch.bookFiles.startIndex = Live_FileShareSearch_GetFirstBookItem(itemIndex);
     s_fshSearch.bookFiles.numFiles = 0;
     s_fshSearch.bookFiles.needToReadRatings = true;
     if (s_fshSearch.context.sortHighestRated == false) {
-      local_34.tags = s_fshSearch.context.tags;
-      local_34.numTags = s_fshSearch.context.numTags;
-      local_34.location = s_fshSearch.context.location;
-      local_34.maxFileIDs = 100;
-      local_34.outFileIDs = s_fshSearch.bookFiles.fileIDs;
-      local_34.outFileCount = &s_fshSearch.bookFiles.numFiles;
-      local_34.outRatings = s_fshSearch.bookFiles.ratings;
-      local_34.outRatingCount = &s_fshSearch.bookFiles.numRatings;
-      local_34.outTotalFileCount = &s_fshSearch.totalFiles;
-      local_34.successCallback = Live_FileShareSearch_LoadBookSuccess;
-      local_34.failureCallback = Live_FileShareSearch_LoadBookFailure;
-      local_34.startIndex = s_fshSearch.bookFiles.startIndex;
-      LiveStorage_FileShare_PerformSearch(param_1,&local_34);
+      taskInfo.tags = s_fshSearch.context.tags;
+      taskInfo.numTags = s_fshSearch.context.numTags;
+      taskInfo.location = s_fshSearch.context.location;
+      taskInfo.maxFileIDs = 100;
+      taskInfo.outFileIDs = s_fshSearch.bookFiles.fileIDs;
+      taskInfo.outFileCount = &s_fshSearch.bookFiles.numFiles;
+      taskInfo.outRatings = s_fshSearch.bookFiles.ratings;
+      taskInfo.outRatingCount = &s_fshSearch.bookFiles.numRatings;
+      taskInfo.outTotalFileCount = &s_fshSearch.totalFiles;
+      taskInfo.successCallback = Live_FileShareSearch_LoadBookSuccess;
+      taskInfo.failureCallback = Live_FileShareSearch_LoadBookFailure;
+      taskInfo.startIndex = s_fshSearch.bookFiles.startIndex;
+      LiveStorage_FileShare_PerformSearch(controllerIndex,&taskInfo);
     }
     else {
       LiveStorage_FileShare_ReadTopRated
-                (param_1,s_fshSearch.context.fileType,s_fshSearch.bookFiles.startIndex,100,
+                (controllerIndex,s_fshSearch.context.fileType,s_fshSearch.bookFiles.startIndex,100,
                  s_fshSearch.bookFiles.fileIDs,&s_fshSearch.bookFiles.numFiles,
                  &s_fshSearch.totalFiles,Live_FileShareSearch_LoadBookSuccess,
                  Live_FileShareSearch_LoadBookFailure);
@@ -439,13 +443,14 @@ void __cdecl Live_FileShareSearch_LoadBook(int param_1,int param_2,bool param_3)
 
 // 009652A0  Live_FileShareSearch_IsBookLoaded  (live/live_fileshare_search.cpp:479)
 
-bool __cdecl Live_FileShareSearch_IsBookLoaded(int param_1)
+bool __cdecl Live_FileShareSearch_IsBookLoaded(int itemIndex)
 
 {
   bool bVar1;
   int iVar2;
+  int pageStartIndex;
   
-  iVar2 = Live_FileShareSearch_GetFirstPageItem(param_1);
+  iVar2 = Live_FileShareSearch_GetFirstPageItem(itemIndex);
   if (((s_fshSearch.bookFiles.numFiles < 1) || (iVar2 < s_fshSearch.bookFiles.startIndex)) ||
      (s_fshSearch.bookFiles.startIndex + s_fshSearch.bookFiles.numFiles <= iVar2)) {
     bVar1 = false;
@@ -486,7 +491,7 @@ void __cdecl Live_FileShareSearch_LoadSummaryFailure(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FileShareSearch_LoadSummary(int param_1,int param_2)
+void __cdecl Live_FileShareSearch_LoadSummary(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
@@ -497,7 +502,7 @@ void __cdecl Live_FileShareSearch_LoadSummary(int param_1,int param_2)
     bdFileMetaData::bdFileMetaData(&descriptor);
     atexit(`Live_FileShareSearch_LoadSummary'::__l2::_dynamic_atexit_destructor_for__descriptor__);
   }
-  bVar1 = Live_FileShareSearch_GetDescriptor(param_1,param_2,&descriptor);
+  bVar1 = Live_FileShareSearch_GetDescriptor(controllerIndex,itemIndex,&descriptor);
   if (((bVar1) &&
       ((((descriptor.m_fileID._4_4_ == 0 && ((int)descriptor.m_fileID == 0)) ||
         ((int)descriptor.m_fileID != (int)s_summaryFileID)) ||
@@ -510,12 +515,12 @@ void __cdecl Live_FileShareSearch_LoadSummary(int param_1,int param_2)
       s_summaryFileRequestTime = Sys_Milliseconds();
       s_summaryFileLoaded = false;
     }
-    bVar1 = Live_FileShareSearch_GetDescriptor(param_1,param_2,&descriptor);
+    bVar1 = Live_FileShareSearch_GetDescriptor(controllerIndex,itemIndex,&descriptor);
     if ((((bVar1) && (iVar2 = Sys_Milliseconds(), 1999 < iVar2 - s_summaryFileRequestTime)) &&
         ((s_summaryFileID._4_4_ != 0 || ((int)s_summaryFileID != 0)))) &&
        (bVar1 = Live_FileShareSearch_IsTaskPermitted(), bVar1)) {
       LiveStorage_FileShare_ReadSummary
-                (param_1,&descriptor,Live_FileShareSearch_LoadSummarySuccess,
+                (controllerIndex,&descriptor,Live_FileShareSearch_LoadSummarySuccess,
                  Live_FileShareSearch_LoadSummaryFailure);
     }
   }
@@ -534,12 +539,12 @@ bool __cdecl Live_FileShareSearch_AreRatingsLoaded(void)
 
 // 00965380  Live_FileShareSearch_AreRatingsLoading  (live/live_fileshare_search.cpp:577)
 
-bool __cdecl Live_FileShareSearch_AreRatingsLoading(int param_1)
+bool __cdecl Live_FileShareSearch_AreRatingsLoading(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = LiveStorage_FileShare_IsReadingRatings(param_1);
+  bVar1 = LiveStorage_FileShare_IsReadingRatings(controllerIndex);
   return bVar1;
 }
 
@@ -559,16 +564,16 @@ void __cdecl Live_FileShareSearch_LoadRatingsSuccess(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FileShareSearch_LoadRatings(int param_1)
+void __cdecl Live_FileShareSearch_LoadRatings(int controllerIndex)
 
 {
   bool bVar1;
   
-  bVar1 = Live_FileShareSearch_AreRatingsLoading(param_1);
+  bVar1 = Live_FileShareSearch_AreRatingsLoading(controllerIndex);
   if ((((!bVar1) && (bVar1 = Live_FileShareSearch_IsTaskPermitted(), bVar1)) &&
       (fsSearchFileType != (dvar_s *)0x0)) && (0 < (fsSearchFileType->current).integer)) {
     LiveStorage_FileShare_ReadRatingsCommunity
-              (param_1,s_fshSearch.bookFiles.fileIDs,s_fshSearch.bookFiles.numFiles,
+              (controllerIndex,s_fshSearch.bookFiles.fileIDs,s_fshSearch.bookFiles.numFiles,
                s_fshSearch.context.location,s_fshSearch.bookFiles.ratings,
                &s_fshSearch.bookFiles.numRatings,Live_FileShareSearch_LoadRatingsSuccess,
                Live_FileShareSearch_LoadBookFailure);
@@ -581,36 +586,36 @@ void __cdecl Live_FileShareSearch_LoadRatings(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Live_FileShareSearch_SetIndexOverride(int param_1,int param_2)
+void __cdecl Live_FileShareSearch_SetIndexOverride(int controllerIndex,int itemIndex)
 
 {
   bool bVar1;
-  qtime_s local_878;
-  char *local_854;
-  int local_850;
-  int local_84c;
-  int local_848;
-  bdFileMetaData local_844;
+  qtime_s realTime;
+  char *stringResult;
+  int now;
+  int createTime;
+  int maxDiff;
+  bdFileMetaData descriptor;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bdFileMetaData::bdFileMetaData(&local_844);
+  bdFileMetaData::bdFileMetaData(&descriptor);
   if (s_fshSearch.context._980_4_ == -1) {
     s_fshSearch._85776_4_ = 0xffffffff;
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    bdFileMetaData::~bdFileMetaData(&descriptor);
   }
   else {
-    bVar1 = Live_FileShareSearch_GetDescriptor(param_1,param_2,&local_844);
+    bVar1 = Live_FileShareSearch_GetDescriptor(controllerIndex,itemIndex,&descriptor);
     if (bVar1) {
-      Live_FileShare_ReadFromMetaData(2,&local_844,&local_854,&local_84c);
-      local_850 = Com_RealTime(&local_878,true);
-      local_848 = s_fshSearch.context._980_4_ * 0x15180;
-      if ((local_848 < local_850 - local_84c) &&
-         ((s_fshSearch._85776_4_ == -1 || (param_2 < (int)s_fshSearch._85776_4_)))) {
-        s_fshSearch._85776_4_ = param_2;
+      Live_FileShare_ReadFromMetaData(2,&descriptor,&stringResult,&createTime);
+      now = Com_RealTime(&realTime,true);
+      maxDiff = s_fshSearch.context._980_4_ * 0x15180;
+      if ((maxDiff < now - createTime) &&
+         ((s_fshSearch._85776_4_ == -1 || (itemIndex < (int)s_fshSearch._85776_4_)))) {
+        s_fshSearch._85776_4_ = itemIndex;
       }
     }
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    bdFileMetaData::~bdFileMetaData(&descriptor);
   }
   return;
 }
@@ -618,39 +623,40 @@ void __cdecl Live_FileShareSearch_SetIndexOverride(int param_1,int param_2)
 
 // 00964F20  Live_FileShareSearch_LoadItem  (live/live_fileshare_search.cpp:664)
 
-bool __cdecl Live_FileShareSearch_LoadItem(int param_1,int param_2,int param_3,int param_4)
+bool __cdecl
+Live_FileShareSearch_LoadItem(int controllerIndex,int startIndex,int selectedIndex,int itemIndex)
 
 {
   bool bVar1;
   
-  bVar1 = Live_FileShareSearch_IsBookLoaded(param_4);
+  bVar1 = Live_FileShareSearch_IsBookLoaded(itemIndex);
   if (!bVar1) {
-    Live_FileShareSearch_LoadBook(param_1,param_4,false);
+    Live_FileShareSearch_LoadBook(controllerIndex,itemIndex,false);
     return false;
   }
-  bVar1 = Live_FileShareSearch_IsPageLoaded(param_4);
+  bVar1 = Live_FileShareSearch_IsPageLoaded(itemIndex);
   if (bVar1) {
     if ((s_fshSearch.context.location != FILESHARE_LOCATION_USERSTORAGE) ||
        (bVar1 = Live_FileShareSearch_AreRatingsLoaded(), bVar1)) {
-      if ((s_fshSearch.context.location == FILESHARE_LOCATION_POOLEDSTORAGE) && (param_3 == param_4)
-         ) {
-        Live_FileShareSearch_LoadSummary(param_1,param_4);
+      if ((s_fshSearch.context.location == FILESHARE_LOCATION_POOLEDSTORAGE) &&
+         (selectedIndex == itemIndex)) {
+        Live_FileShareSearch_LoadSummary(controllerIndex,itemIndex);
       }
     }
     else {
-      Live_FileShareSearch_LoadRatings(param_1);
+      Live_FileShareSearch_LoadRatings(controllerIndex);
     }
-    Live_FileShareSearch_SetIndexOverride(param_1,param_4);
+    Live_FileShareSearch_SetIndexOverride(controllerIndex,itemIndex);
     return true;
   }
-  Live_FileShareSearch_LoadPage(param_1,param_2,param_4);
+  Live_FileShareSearch_LoadPage(controllerIndex,startIndex,itemIndex);
   return false;
 }
 
 
 // 00964990  Live_FileShareSearch_GetTotalFiles  (live/live_fileshare_search.cpp:706)
 
-int __cdecl Live_FileShareSearch_GetTotalFiles(int param_1)
+int __cdecl Live_FileShareSearch_GetTotalFiles(int controllerIndex)
 
 {
   return s_fshSearch.totalFiles;
@@ -661,38 +667,37 @@ int __cdecl Live_FileShareSearch_GetTotalFiles(int param_1)
 
 void __cdecl
 Live_FileShareSearch_SetContext
-          (int param_1,bdTag *param_2,int param_3,fileShareLocation param_4,bool param_5,int param_6
-          )
+          (int controllerIndex,bdTag *tags,int numTags,fileShareLocation location,
+          bool sortHighestRated,int numPastDays)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
   Com_Printf(0x10,"\tSearch: Setting Context: \n %d tags, %s storage, sortHighestRated: %s.\n");
   bVar1 = Live_FileShareSearch_NeedToPerformSearch
-                    (param_2,param_3,param_4,(fsSearchFileType->current).integer,param_5,param_6);
+                    (tags,numTags,location,(fsSearchFileType->current).integer,sortHighestRated,
+                     numPastDays);
   if (bVar1) {
     Live_FileShareSearch_ClearSearch();
     s_fshSearch.context.timestamp = Sys_Milliseconds();
-    s_fshSearch.context.numTags = param_3;
-    s_fshSearch.context.location = param_4;
-    s_fshSearch.context.sortHighestRated = param_5;
+    s_fshSearch.context.numTags = numTags;
+    s_fshSearch.context.location = location;
+    s_fshSearch.context.sortHighestRated = sortHighestRated;
     s_fshSearch.context.fileType = (fsSearchFileType->current).integer;
     s_fshSearch.context.isValid = false;
-    s_fshSearch.context._980_4_ = param_6;
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      *(int *)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_priTag =
-           (int)param_2[local_8].m_priTag;
-      *(undefined4 *)
-       ((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_priTag + 4) =
-           *(undefined4 *)((int)&param_2[local_8].m_priTag + 4);
-      *(int *)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_secTag =
-           (int)param_2[local_8].m_secTag;
-      *(undefined4 *)
-       ((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[local_8].m_secTag + 4) =
-           *(undefined4 *)((int)&param_2[local_8].m_secTag + 4);
+    s_fshSearch.context._980_4_ = numPastDays;
+    for (i = 0; i < numTags; i = i + 1) {
+      *(int *)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_priTag =
+           (int)tags[i].m_priTag;
+      *(undefined4 *)((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_priTag + 4) =
+           *(undefined4 *)((int)&tags[i].m_priTag + 4);
+      *(int *)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_secTag =
+           (int)tags[i].m_secTag;
+      *(undefined4 *)((int)&((fshSearchContext_t *)(s_fshSearch.pages + 3))->tags[i].m_secTag + 4) =
+           *(undefined4 *)((int)&tags[i].m_secTag + 4);
     }
-    Live_FileShareSearch_LoadBook(param_1,0,true);
+    Live_FileShareSearch_LoadBook(controllerIndex,0,true);
   }
   else {
     Com_Printf(0x10,"\tSearch: Search skipped. Context unchanged or timeout not yet reached.\n");
@@ -703,13 +708,16 @@ Live_FileShareSearch_SetContext
 
 // 00964EE0  Live_FileShareSearch_LoadDescriptor  (live/live_fileshare_search.cpp:756)
 
-bool __cdecl Live_FileShareSearch_LoadDescriptor(int param_1,int param_2,int param_3,int param_4)
+bool __cdecl
+Live_FileShareSearch_LoadDescriptor
+          (int controllerIndex,int startIndex,int selectedIndex,int itemIndex)
 
 {
   bool bVar1;
   
   if ((s_fshSearch.context.isValid) &&
-     (bVar1 = Live_FileShareSearch_LoadItem(param_1,param_2,param_3,param_4), bVar1)) {
+     (bVar1 = Live_FileShareSearch_LoadItem(controllerIndex,startIndex,selectedIndex,itemIndex),
+     bVar1)) {
     return true;
   }
   return false;
@@ -718,13 +726,14 @@ bool __cdecl Live_FileShareSearch_LoadDescriptor(int param_1,int param_2,int par
 
 // 009653C0  Live_FileShareSearch_GetDescriptor  (live/live_fileshare_search.cpp:774)
 
-bool __cdecl Live_FileShareSearch_GetDescriptor(int param_1,int param_2,bdFileMetaData *param_3)
+bool __cdecl
+Live_FileShareSearch_GetDescriptor(int controllerIndex,int itemIndex,bdFileMetaData *outDescriptor)
 
 {
   bool bVar1;
-  fshSearchPage_t *local_8;
+  fshSearchPage_t *page;
   
-  bVar1 = Live_FileShareSearch_FindDescriptor(param_1,param_2,param_3,&local_8);
+  bVar1 = Live_FileShareSearch_FindDescriptor(controllerIndex,itemIndex,outDescriptor,&page);
   return bVar1;
 }
 
@@ -733,50 +742,51 @@ bool __cdecl Live_FileShareSearch_GetDescriptor(int param_1,int param_2,bdFileMe
 
 bool __cdecl
 Live_FileShareSearch_GetDesriptorByID
-          (int param_1,ulong64 param_2,fileShareLocation param_3,bdFileMetaData *param_4)
+          (int controllerIndex,ulong64 param_2,fileShareLocation outDescriptor,
+          bdFileMetaData *param_4)
 
 {
   bool bVar1;
   bdFileMetaData *unaff_EBP;
   
-  bVar1 = Live_FileShareSearch_FindDescriptorByID(param_1,param_2,param_3,unaff_EBP);
+  bVar1 = Live_FileShareSearch_FindDescriptorByID(controllerIndex,param_2,outDescriptor,unaff_EBP);
   return bVar1;
 }
 
 
 // 00965790  Live_FileShareSearch_GetRatings  (live/live_fileshare_search.cpp:797)
 
-void __cdecl Live_FileShareSearch_GetRatings(bdVoteRankStatsInfo **param_1,int *param_2)
+void __cdecl Live_FileShareSearch_GetRatings(bdVoteRankStatsInfo **ratings,int *numRatings)
 
 {
-  *param_1 = s_fshSearch.bookFiles.ratings;
-  *param_2 = s_fshSearch.bookFiles.numRatings;
+  *ratings = s_fshSearch.bookFiles.ratings;
+  *numRatings = s_fshSearch.bookFiles.numRatings;
   return;
 }
 
 
 // 009657B0  Live_FileShareSearch_MarkItemCorrupt  (live/live_fileshare_search.cpp:815)
 
-void __cdecl Live_FileShareSearch_MarkItemCorrupt(int param_1,int param_2)
+void __cdecl Live_FileShareSearch_MarkItemCorrupt(int controllerIndex,int itemIndex)
 
 {
   int iVar1;
-  int local_8;
+  int descriptorIndex;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < i) {
       return;
     }
-    if (((0 < s_fshSearch.pages[local_8].numDescriptors) &&
-        (s_fshSearch.pages[local_8].startIndex <= param_2)) &&
-       (param_2 < s_fshSearch.pages[local_8].startIndex + s_fshSearch.pages[local_8].numDescriptors)
-       ) break;
-    local_8 = local_8 + 1;
+    if (((0 < s_fshSearch.pages[i].numDescriptors) && (s_fshSearch.pages[i].startIndex <= itemIndex)
+        ) && (itemIndex < s_fshSearch.pages[i].startIndex + s_fshSearch.pages[i].numDescriptors))
+    break;
+    i = i + 1;
   }
-  iVar1 = (param_2 - s_fshSearch.pages[local_8].startIndex) * 0x838;
-  *(undefined4 *)(local_8 * 0x5240 + 0xa4cf558 + iVar1) = 0;
-  *(undefined4 *)(local_8 * 0x5240 + 0xa4cf55c + iVar1) = 0;
+  iVar1 = (itemIndex - s_fshSearch.pages[i].startIndex) * 0x838;
+  *(undefined4 *)(i * 0x5240 + 0xa4cf558 + iVar1) = 0;
+  *(undefined4 *)(i * 0x5240 + 0xa4cf55c + iVar1) = 0;
   return;
 }
 
@@ -794,35 +804,35 @@ bool __cdecl Live_FileShareSearch_IsSummaryLoaded(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Live_FileShareSearch_FeederItemEnabled(int param_1)
+bool __cdecl Live_FileShareSearch_FeederItemEnabled(int index)
 
 {
   bool bVar1;
-  qtime_s local_878;
-  char *local_854;
-  int local_850;
-  int local_84c;
-  int local_848;
-  bdFileMetaData local_844;
+  qtime_s realTime;
+  char *stringResult;
+  int now;
+  int createTime;
+  int maxDiff;
+  bdFileMetaData descriptor;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bdFileMetaData::bdFileMetaData(&local_844);
+  bdFileMetaData::bdFileMetaData(&descriptor);
   if (s_fshSearch.context._980_4_ == -1) {
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    bdFileMetaData::~bdFileMetaData(&descriptor);
   }
   else {
-    bVar1 = Live_FileShareSearch_GetDescriptor(0,param_1,&local_844);
+    bVar1 = Live_FileShareSearch_GetDescriptor(0,index,&descriptor);
     if (bVar1) {
-      Live_FileShare_ReadFromMetaData(2,&local_844,&local_854,&local_84c);
-      local_850 = Com_RealTime(&local_878,true);
-      local_848 = s_fshSearch.context._980_4_ * 0x15180;
-      if (local_848 < local_850 - local_84c) {
-        bdFileMetaData::~bdFileMetaData(&local_844);
+      Live_FileShare_ReadFromMetaData(2,&descriptor,&stringResult,&createTime);
+      now = Com_RealTime(&realTime,true);
+      maxDiff = s_fshSearch.context._980_4_ * 0x15180;
+      if (maxDiff < now - createTime) {
+        bdFileMetaData::~bdFileMetaData(&descriptor);
         return false;
       }
     }
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    bdFileMetaData::~bdFileMetaData(&descriptor);
   }
   return true;
 }
@@ -832,27 +842,26 @@ bool __cdecl Live_FileShareSearch_FeederItemEnabled(int param_1)
 
 bool __cdecl
 Live_FileShareSearch_FeederColor
-          (listBoxDef_s *param_1,itemDef_s *param_2,int param_3,int param_4,int param_5,
-          float *param_6)
+          (listBoxDef_s *listPtr,itemDef_s *item,int contextIndex,int index,int column,float *color)
 
 {
   dvar_s *pdVar1;
   bool bVar2;
   
-  if (param_5 == 0) {
-    bVar2 = Live_FileShareSearch_FeederItemEnabled(param_4);
+  if (column == 0) {
+    bVar2 = Live_FileShareSearch_FeederItemEnabled(index);
     pdVar1 = fshOldItemColor;
     if (bVar2) {
-      *param_6 = 1.0;
-      param_6[1] = 1.0;
-      param_6[2] = 1.0;
-      param_6[3] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
+      color[3] = 1.0;
     }
     else {
-      *param_6 = (float)(fshOldItemColor->current).integer;
-      param_6[1] = (pdVar1->current).vector[1];
-      param_6[2] = (pdVar1->current).vector[2];
-      param_6[3] = (pdVar1->current).vector[3];
+      *color = (float)(fshOldItemColor->current).integer;
+      color[1] = (pdVar1->current).vector[1];
+      color[2] = (pdVar1->current).vector[2];
+      color[3] = (pdVar1->current).vector[3];
     }
   }
   return true;
@@ -861,46 +870,46 @@ Live_FileShareSearch_FeederColor
 
 // 009654B0  operator=  (line unknown)
 
-bdFileMetaData * __thiscall bdFileMetaData::operator=(bdFileMetaData *this,bdFileMetaData *param_1)
+bdFileMetaData * __thiscall bdFileMetaData::operator=(bdFileMetaData *this,bdFileMetaData *__that)
 
 {
-  uint local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint _S5;
+  uint _S4;
+  uint _S3;
+  uint _S2;
+  uint _S1;
   
-  *(int *)&this->m_fileID = (int)param_1->m_fileID;
-  *(undefined4 *)((int)&this->m_fileID + 4) = *(undefined4 *)((int)&param_1->m_fileID + 4);
-  this->m_createTime = param_1->m_createTime;
-  this->m_modifedTime = param_1->m_modifedTime;
-  this->m_fileSize = param_1->m_fileSize;
-  *(int *)&this->m_ownerID = (int)param_1->m_ownerID;
-  *(undefined4 *)((int)&this->m_ownerID + 4) = *(undefined4 *)((int)&param_1->m_ownerID + 4);
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    this->m_ownerName[local_8] = param_1->m_ownerName[local_8];
+  *(int *)&this->m_fileID = (int)__that->m_fileID;
+  *(undefined4 *)((int)&this->m_fileID + 4) = *(undefined4 *)((int)&__that->m_fileID + 4);
+  this->m_createTime = __that->m_createTime;
+  this->m_modifedTime = __that->m_modifedTime;
+  this->m_fileSize = __that->m_fileSize;
+  *(int *)&this->m_ownerID = (int)__that->m_ownerID;
+  *(undefined4 *)((int)&this->m_ownerID + 4) = *(undefined4 *)((int)&__that->m_ownerID + 4);
+  for (_S1 = 0; _S1 < 0x40; _S1 = _S1 + 1) {
+    this->m_ownerName[_S1] = __that->m_ownerName[_S1];
   }
-  this->m_fileSlot = param_1->m_fileSlot;
-  for (local_c = 0; local_c < 0x80; local_c = local_c + 1) {
-    this->m_fileName[local_c] = param_1->m_fileName[local_c];
+  this->m_fileSlot = __that->m_fileSlot;
+  for (_S2 = 0; _S2 < 0x80; _S2 = _S2 + 1) {
+    this->m_fileName[_S2] = __that->m_fileName[_S2];
   }
-  for (local_10 = 0; local_10 < 0x180; local_10 = local_10 + 1) {
-    this->m_url[local_10] = param_1->m_url[local_10];
+  for (_S3 = 0; _S3 < 0x180; _S3 = _S3 + 1) {
+    this->m_url[_S3] = __that->m_url[_S3];
   }
-  this->m_category = param_1->m_category;
-  this->m_numTags = param_1->m_numTags;
-  for (local_14 = 0; local_14 < 0x200; local_14 = local_14 + 1) {
-    this->m_metaData[local_14] = param_1->m_metaData[local_14];
+  this->m_category = __that->m_category;
+  this->m_numTags = __that->m_numTags;
+  for (_S4 = 0; _S4 < 0x200; _S4 = _S4 + 1) {
+    this->m_metaData[_S4] = __that->m_metaData[_S4];
   }
-  this->m_metaDataSize = param_1->m_metaDataSize;
-  this->m_summaryFileSize = param_1->m_summaryFileSize;
-  for (local_18 = 0; local_18 < 0x28; local_18 = local_18 + 1) {
-    *(int *)&this->m_tags[local_18].m_priTag = (int)param_1->m_tags[local_18].m_priTag;
-    *(undefined4 *)((int)&this->m_tags[local_18].m_priTag + 4) =
-         *(undefined4 *)((int)&param_1->m_tags[local_18].m_priTag + 4);
-    *(int *)&this->m_tags[local_18].m_secTag = (int)param_1->m_tags[local_18].m_secTag;
-    *(undefined4 *)((int)&this->m_tags[local_18].m_secTag + 4) =
-         *(undefined4 *)((int)&param_1->m_tags[local_18].m_secTag + 4);
+  this->m_metaDataSize = __that->m_metaDataSize;
+  this->m_summaryFileSize = __that->m_summaryFileSize;
+  for (_S5 = 0; _S5 < 0x28; _S5 = _S5 + 1) {
+    *(int *)&this->m_tags[_S5].m_priTag = (int)__that->m_tags[_S5].m_priTag;
+    *(undefined4 *)((int)&this->m_tags[_S5].m_priTag + 4) =
+         *(undefined4 *)((int)&__that->m_tags[_S5].m_priTag + 4);
+    *(int *)&this->m_tags[_S5].m_secTag = (int)__that->m_tags[_S5].m_secTag;
+    *(undefined4 *)((int)&this->m_tags[_S5].m_secTag + 4) =
+         *(undefined4 *)((int)&__that->m_tags[_S5].m_secTag + 4);
   }
   return this;
 }

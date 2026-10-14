@@ -105,59 +105,59 @@ void FUN_008a9920(int param_1,byte param_2)
 
 {
   char *pcVar1;
-  uchar *puVar2;
+  uchar *src;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  int *piVar5;
-  int iVar6;
+  int *piVar4;
+  int iVar5;
   int unaff_ESI;
-  int iVar7;
+  int iVar6;
   int local_c;
   int local_8;
   uint local_4;
   
   local_4 = __security_cookie ^ (uint)&local_c;
-  iVar6 = *(int *)(unaff_ESI + 0x2d828);
-  iVar7 = *(int *)(unaff_ESI + 0x1b50c) * *(int *)(unaff_ESI + 0x1b508);
-  local_c = iVar6;
-  puVar2 = (uchar *)vpx_calloc(iVar7,1);
-  if (puVar2 == (uchar *)0x0) {
+  iVar5 = *(int *)(unaff_ESI + 0x2d828);
+  iVar6 = *(int *)(unaff_ESI + 0x1b50c) * *(int *)(unaff_ESI + 0x1b508);
+  local_c = iVar5;
+  src = (uchar *)vpx_calloc(iVar6,1);
+  if (src == (uchar *)0x0) {
     FUN_008b6c80("Failed to allocate seg_map");
   }
   *(int *)(unaff_ESI + 0x2d830) = param_1;
-  iVar4 = param_1;
+  iVar3 = param_1;
   if (0 < param_1) {
-    piVar5 = (int *)(&_vp8_bits_per_mb + (*(int *)(unaff_ESI + 0x1b4f8) * 0x80 + param_1) * 4);
-    iVar3 = (param_1 + 0x80) * *piVar5;
+    piVar4 = (int *)(&_vp8_bits_per_mb + (*(int *)(unaff_ESI + 0x1b4f8) * 0x80 + param_1) * 4);
+    iVar2 = (param_1 + 0x80) * *piVar4;
     do {
-      iVar6 = local_c;
-      if ((int)(iVar3 + (iVar3 >> 0x1f & 0x3fU)) >> 6 <= *piVar5) break;
-      iVar4 = iVar4 + -1;
-      piVar5 = piVar5 + -1;
-    } while (0 < iVar4);
+      iVar5 = local_c;
+      if ((int)(iVar2 + (iVar2 >> 0x1f & 0x3fU)) >> 6 <= *piVar4) break;
+      iVar3 = iVar3 + -1;
+      piVar4 = piVar4 + -1;
+    } while (0 < iVar3);
   }
-  *(int *)(unaff_ESI + 0x2d830) = iVar4;
+  *(int *)(unaff_ESI + 0x2d830) = iVar3;
   if (*(int *)(unaff_ESI + 0x1b4f8) != 0) {
-    for (iVar4 = *(int *)(unaff_ESI + 0x2d82c); iVar4 < iVar7; iVar4 = iVar4 + 1) {
-      if (*(char *)(iVar4 + *(int *)(unaff_ESI + 0x2d834)) == '\0') {
-        puVar2[iVar4] = '\x01';
+    for (iVar3 = *(int *)(unaff_ESI + 0x2d82c); iVar3 < iVar6; iVar3 = iVar3 + 1) {
+      if (*(char *)(iVar3 + *(int *)(unaff_ESI + 0x2d834)) == '\0') {
+        src[iVar3] = '\x01';
       }
       else {
-        puVar2[iVar4] = '\0';
-        pcVar1 = (char *)(iVar4 + *(int *)(unaff_ESI + 0x2d834));
-        if (*(char *)(iVar4 + *(int *)(unaff_ESI + 0x2d834)) < '\0') {
+        src[iVar3] = '\0';
+        pcVar1 = (char *)(iVar3 + *(int *)(unaff_ESI + 0x2d834));
+        if (*(char *)(iVar3 + *(int *)(unaff_ESI + 0x2d834)) < '\0') {
           *pcVar1 = *pcVar1 + '\x01';
         }
       }
-      if (iVar6 < 1) break;
-      iVar6 = iVar6 + -1;
+      if (iVar5 < 1) break;
+      iVar5 = iVar5 + -1;
     }
-    *(int *)(unaff_ESI + 0x2d82c) = iVar4;
-    if (iVar7 <= iVar4) {
+    *(int *)(unaff_ESI + 0x2d82c) = iVar3;
+    if (iVar6 <= iVar3) {
       *(undefined4 *)(unaff_ESI + 0x2d82c) = 0;
     }
   }
-  memcpy(*(uchar **)(unaff_ESI + 0x2d800),puVar2,
+  memcpy(*(uchar **)(unaff_ESI + 0x2d800),src,
          *(int *)(unaff_ESI + 0x1b50c) * *(int *)(unaff_ESI + 0x1b508));
   local_c = (uint)(byte)(*(char *)(unaff_ESI + 0x2d830) - (char)param_1) << 8;
   local_8 = (uint)param_2 << 8;
@@ -167,8 +167,8 @@ void FUN_008a9920(int param_1,byte param_2)
   *(undefined1 *)(unaff_ESI + 0xdfbf) = 0;
   *(int *)(unaff_ESI + 0x2d804) = local_c;
   *(int *)(unaff_ESI + 0x2d808) = local_8;
-  if (puVar2 != (uchar *)0x0) {
-    vpx_free(puVar2);
+  if (src != (uchar *)0x0) {
+    vpx_free(src);
   }
   return;
 }
@@ -912,22 +912,22 @@ void FUN_008aab30(void)
 void __cdecl vp8_remove_compressor(undefined4 *param_1)
 
 {
-  void *pvVar1;
+  void *__formal;
   void *unaff_EDI;
   
-  pvVar1 = (void *)*param_1;
-  if (pvVar1 != (void *)0x0) {
-    if ((*(int *)((int)pvVar1 + 0x1ea90) != 0) && (*(int *)((int)pvVar1 + 0x2beac) == 2)) {
-      operator_delete(pvVar1,unaff_EDI);
+  __formal = (void *)*param_1;
+  if (__formal != (void *)0x0) {
+    if ((*(int *)((int)__formal + 0x1ea90) != 0) && (*(int *)((int)__formal + 0x2beac) == 2)) {
+      operator_delete(__formal,unaff_EDI);
     }
-    vp8cx_remove_encoder_threads(pvVar1);
-    vp8_dealloc_compressor_data(pvVar1);
-    vpx_free(*(undefined4 *)((int)pvVar1 + 0xe010));
-    vpx_free(*(undefined4 *)((int)pvVar1 + 0x200f8));
-    vpx_free(*(undefined4 *)((int)pvVar1 + 0x20318));
-    vpx_free(*(undefined4 *)((int)pvVar1 + 0x2d834));
-    vp8_remove_common((int)pvVar1 + 0x18300);
-    vpx_free(pvVar1);
+    vp8cx_remove_encoder_threads(__formal);
+    vp8_dealloc_compressor_data(__formal);
+    vpx_free(*(undefined4 *)((int)__formal + 0xe010));
+    vpx_free(*(undefined4 *)((int)__formal + 0x200f8));
+    vpx_free(*(undefined4 *)((int)__formal + 0x20318));
+    vpx_free(*(undefined4 *)((int)__formal + 0x2d834));
+    vp8_remove_common((int)__formal + 0x18300);
+    vpx_free(__formal);
     *param_1 = 0;
   }
   return;
@@ -1557,16 +1557,16 @@ void FUN_008abb00(int param_1,int param_2,int param_3,int param_4,int param_5,in
   uint uVar5;
   int iVar6;
   int iVar7;
-  uint uVar8;
+  uint count;
+  int iVar8;
   int iVar9;
-  int iVar10;
   uint local_24;
   int local_1c;
   int local_18;
   
-  uVar8 = (uint)param_11;
+  count = (uint)param_11;
   iVar6 = 0;
-  iVar1 = param_5 / (int)uVar8;
+  iVar1 = param_5 / (int)count;
   local_18 = 0;
   if (0 < param_7) {
     do {
@@ -1575,27 +1575,27 @@ void FUN_008abb00(int param_1,int param_2,int param_3,int param_4,int param_5,in
         local_1c = iVar1;
         do {
           if (*pbVar2 < 3) {
-            if (uVar8 != 0) {
+            if (count != 0) {
               puVar4 = (undefined1 *)(iVar6 + param_4);
-              local_24 = uVar8;
+              local_24 = count;
               do {
-                iVar9 = 0;
+                iVar8 = 0;
                 iVar7 = 0;
-                iVar10 = 0;
+                iVar9 = 0;
                 if (0 < param_2) {
                   do {
-                    uVar5 = (uint)*(byte *)(*(int *)(param_1 + iVar9 * 4) + iVar6);
+                    uVar5 = (uint)*(byte *)(*(int *)(param_1 + iVar8 * 4) + iVar6);
                     iVar3 = (byte)puVar4[param_3 - param_4] - uVar5;
                     iVar3 = (iVar3 * iVar3 >> (param_8 & 0x1f)) * 3;
                     if (0x10 < iVar3) {
                       iVar3 = 0x10;
                     }
-                    iVar9 = iVar9 + 1;
+                    iVar8 = iVar8 + 1;
                     iVar7 = iVar7 + uVar5 * (0x10 - iVar3);
-                    iVar10 = iVar10 + (0x10 - iVar3);
-                  } while (iVar9 < param_2);
+                    iVar9 = iVar9 + (0x10 - iVar3);
+                  } while (iVar8 < param_2);
                 }
-                *puVar4 = (char)((uint)(((iVar10 >> 1) + iVar7) * *(int *)(param_9 + iVar10 * 4)) >>
+                *puVar4 = (char)((uint)(((iVar9 >> 1) + iVar7) * *(int *)(param_9 + iVar9 * 4)) >>
                                 0x10);
                 puVar4 = puVar4 + 1;
                 iVar6 = iVar6 + 1;
@@ -1604,8 +1604,8 @@ void FUN_008abb00(int param_1,int param_2,int param_3,int param_4,int param_5,in
             }
           }
           else {
-            memcpy((uchar *)(iVar6 + param_4),(uchar *)(iVar6 + param_3),uVar8);
-            iVar6 = iVar6 + uVar8;
+            memcpy((uchar *)(iVar6 + param_4),(uchar *)(iVar6 + param_3),count);
+            iVar6 = iVar6 + count;
           }
           pbVar2 = pbVar2 + 1;
           local_1c = local_1c + -1;
@@ -3423,22 +3423,22 @@ uchar * __cdecl vp8_create_compressor(int param_1)
 
 {
   uchar *puVar1;
-  uchar *puVar2;
+  uchar *dst;
   int extraout_EAX;
-  int iVar3;
+  int iVar2;
   undefined4 extraout_EAX_00;
-  undefined4 *puVar4;
-  uchar *puVar5;
+  undefined4 *puVar3;
+  uchar *puVar4;
   uchar *local_14;
   int local_10;
   uchar *local_c;
   uchar *local_8;
   
-  puVar2 = (uchar *)vpx_memalign(0x20,0x2e030);
-  if (puVar2 != (uchar *)0x0) {
-    local_c = puVar2;
-    local_8 = puVar2;
-    memset(puVar2,'\0',0x2e030);
+  dst = (uchar *)vpx_memalign(0x20,0x2e030);
+  if (dst != (uchar *)0x0) {
+    local_c = dst;
+    local_8 = dst;
+    memset(dst,'\0',0x2e030);
     __setjmp3();
     puVar1 = local_c;
     if (extraout_EAX == 0) {
@@ -3446,25 +3446,25 @@ uchar * __cdecl vp8_create_compressor(int param_1)
       puVar1[0x18359] = '\0';
       puVar1[0x1835a] = '\0';
       puVar1[0x1835b] = '\0';
-      iVar3 = vpx_calloc(0x180,0x14);
-      *(int *)(puVar1 + 0x20318) = iVar3;
-      if (iVar3 == 0) {
+      iVar2 = vpx_calloc(0x180,0x14);
+      *(int *)(puVar1 + 0x20318) = iVar2;
+      if (iVar2 == 0) {
         FUN_008b6c80("Failed to allocate cpi->rdtok");
       }
-      iVar3 = vpx_calloc(8,0x41);
-      *(int *)(puVar1 + 0xe010) = iVar3;
-      if (iVar3 == 0) {
+      iVar2 = vpx_calloc(8,0x41);
+      *(int *)(puVar1 + 0xe010) = iVar2;
+      if (iVar2 == 0) {
         FUN_008b6c80("Failed to allocate cpi->mb.ss");
       }
       vp8_cmachine_specific_config(puVar1);
       vp8_create_common(puVar1 + 0x18300);
       vp8_init_config(puVar1,param_1);
-      puVar4 = &_vp8cx_base_skip_false_prob;
-      puVar5 = puVar1 + 0x2d898;
-      for (iVar3 = 0x80; iVar3 != 0; iVar3 = iVar3 + -1) {
-        *(undefined4 *)puVar5 = *puVar4;
-        puVar4 = puVar4 + 1;
-        puVar5 = puVar5 + 4;
+      puVar3 = &_vp8cx_base_skip_false_prob;
+      puVar4 = puVar1 + 0x2d898;
+      for (iVar2 = 0x80; iVar2 != 0; iVar2 = iVar2 + -1) {
+        *(undefined4 *)puVar4 = *puVar3;
+        puVar3 = puVar3 + 1;
+        puVar4 = puVar4 + 4;
       }
       puVar1[0x1ea90] = '\0';
       puVar1[0x1ea91] = '\0';
@@ -3542,14 +3542,14 @@ uchar * __cdecl vp8_create_compressor(int param_1)
       puVar1[0x1f8e9] = '\0';
       puVar1[0x1f8ea] = '\0';
       puVar1[0x1f8eb] = '\0';
-      iVar3 = vpx_calloc(*(int *)(puVar1 + 0x1b508) * *(int *)(puVar1 + 0x1b50c),1);
-      *(int *)(puVar1 + 0x2d800) = iVar3;
-      if (iVar3 == 0) {
+      iVar2 = vpx_calloc(*(int *)(puVar1 + 0x1b508) * *(int *)(puVar1 + 0x1b50c),1);
+      *(int *)(puVar1 + 0x2d800) = iVar2;
+      if (iVar2 == 0) {
         FUN_008b6c80("Failed to allocate cpi->segmentation_map");
       }
-      iVar3 = vpx_calloc(*(int *)(puVar1 + 0x1b508) * *(int *)(puVar1 + 0x1b50c),1);
-      *(int *)(puVar1 + 0x2d81c) = iVar3;
-      if (iVar3 == 0) {
+      iVar2 = vpx_calloc(*(int *)(puVar1 + 0x1b508) * *(int *)(puVar1 + 0x1b50c),1);
+      *(int *)(puVar1 + 0x2d81c) = iVar2;
+      if (iVar2 == 0) {
         FUN_008b6c80("Failed to allocate cpi->active_map");
       }
       memset(*(uchar **)(puVar1 + 0x2d81c),'\x01',
@@ -3558,9 +3558,9 @@ uchar * __cdecl vp8_create_compressor(int param_1)
       puVar1[0x2d821] = '\0';
       puVar1[0x2d822] = '\0';
       puVar1[0x2d823] = '\0';
-      iVar3 = vpx_calloc(*(undefined4 *)(puVar1 + 0x1b504),1);
-      *(int *)(puVar1 + 0x2be50) = iVar3;
-      if (iVar3 == 0) {
+      iVar2 = vpx_calloc(*(undefined4 *)(puVar1 + 0x1b504),1);
+      *(int *)(puVar1 + 0x2be50) = iVar2;
+      if (iVar2 == 0) {
         FUN_008b6c80("Failed to allocate cpi->fp_motion_map");
       }
       *(undefined4 *)(puVar1 + 0x2d824) = *(undefined4 *)(puVar1 + 0x1f85c);
@@ -3580,9 +3580,9 @@ uchar * __cdecl vp8_create_compressor(int param_1)
         puVar1[0x2d837] = '\0';
       }
       else {
-        iVar3 = vpx_calloc(*(int *)(puVar1 + 0x1b508) * *(int *)(puVar1 + 0x1b50c),1);
-        *(int *)(puVar1 + 0x2d834) = iVar3;
-        if (iVar3 == 0) {
+        iVar2 = vpx_calloc(*(int *)(puVar1 + 0x1b508) * *(int *)(puVar1 + 0x1b50c),1);
+        *(int *)(puVar1 + 0x2d834) = iVar2;
+        if (iVar2 == 0) {
           FUN_008b6c80("Failed to allocate cpi->cyclic_refresh_map");
         }
       }
@@ -3701,13 +3701,13 @@ uchar * __cdecl vp8_create_compressor(int param_1)
       *(uchar **)(puVar1 + 0x1603c) = puVar1 + 0x1303c;
       *(uchar **)(puVar1 + 0x16040) = puVar1 + 0x1503c;
       FUN_008aab30();
-      puVar5 = puVar1 + 0x244d4;
+      puVar4 = puVar1 + 0x244d4;
       local_10 = 5;
       do {
-        *(undefined4 *)(puVar5 + -0x14) = *(undefined4 *)(puVar1 + 0x244f8);
+        *(undefined4 *)(puVar4 + -0x14) = *(undefined4 *)(puVar1 + 0x244f8);
         _ftol2_sse();
-        *(undefined4 *)puVar5 = extraout_EAX_00;
-        puVar5 = puVar5 + 4;
+        *(undefined4 *)puVar4 = extraout_EAX_00;
+        puVar4 = puVar4 + 4;
         local_10 = local_10 + -1;
       } while (local_10 != 0);
       puVar1[0x20200] = '\x0f';
@@ -3723,9 +3723,9 @@ uchar * __cdecl vp8_create_compressor(int param_1)
         vp8_init_first_pass(puVar1);
       }
       else if (*(int *)(puVar1 + 0x2beac) == 2) {
-        iVar3 = *(int *)(param_1 + 0xac);
-        *(int *)(puVar1 + 0x2be40) = iVar3;
-        *(uint *)(puVar1 + 0x2be44) = ((*(uint *)(param_1 + 0xb0) & 0xffffff80) - 0x80) + iVar3;
+        iVar2 = *(int *)(param_1 + 0xac);
+        *(int *)(puVar1 + 0x2be40) = iVar2;
+        *(uint *)(puVar1 + 0x2be44) = ((*(uint *)(param_1 + 0xb0) & 0xffffff80) - 0x80) + iVar2;
         vp8_init_second_pass(puVar1);
       }
       if (*(int *)(puVar1 + 0x2be74) == 2) {
@@ -3841,13 +3841,13 @@ uchar * __cdecl vp8_create_compressor(int param_1)
       puVar1[0x1f8cf] = '\0';
       *(undefined4 *)(puVar1 + 0x2c79c) = *(undefined4 *)(puVar1 + 0x1b504);
       vp8cx_init_quantizer(puVar1);
-      vp8_init_loop_filter(puVar2 + 0x18300);
-      puVar2[0x1b4f4] = '\0';
-      puVar2[0x1b4f5] = '\0';
-      puVar2[0x1b4f6] = '\0';
-      puVar2[0x1b4f7] = '\0';
-      *(undefined4 *)(puVar2 + 0x1b560) = *(undefined4 *)(puVar2 + 0x1b564);
-      *(undefined4 *)(puVar2 + 0x1dd84) = *(undefined4 *)(puVar2 + 0x1dd88);
+      vp8_init_loop_filter(dst + 0x18300);
+      dst[0x1b4f4] = '\0';
+      dst[0x1b4f5] = '\0';
+      dst[0x1b4f6] = '\0';
+      dst[0x1b4f7] = '\0';
+      *(undefined4 *)(dst + 0x1b560) = *(undefined4 *)(dst + 0x1b564);
+      *(undefined4 *)(dst + 0x1dd84) = *(undefined4 *)(dst + 0x1dd88);
       puVar1[0x18358] = '\0';
       puVar1[0x18359] = '\0';
       puVar1[0x1835a] = '\0';

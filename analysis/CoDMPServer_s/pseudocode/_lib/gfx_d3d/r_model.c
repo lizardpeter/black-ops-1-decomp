@@ -53,8 +53,8 @@ void __cdecl R_LockSkinnedCache(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 int __cdecl
-R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement *param_4,
-            float param_5,uint param_6,bool param_7,int param_8)
+R_SkinXModel(XModelDrawInfo *modelInfo,XModel *obj,DObj *placement,GfxPlacement *scale,
+            float gfxEntIndex,uint offscreen,bool noLodCullOut,int param_8)
 
 {
   uint uVar1;
@@ -63,13 +63,13 @@ R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement 
   int iVar4;
   int iVar5;
   uchar *puVar6;
-  ulong uVar7;
+  ulong count;
   int in_ECX;
-  uint *puVar8;
-  undefined4 uVar9;
-  long *plVar10;
+  uint *puVar7;
+  undefined4 uVar8;
+  long *plVar9;
   int unaff_ESI;
-  undefined8 *puVar11;
+  undefined8 *puVar10;
   float *unaff_EDI;
   float in_XMM0_Da;
   undefined3 in_stack_0000001d;
@@ -86,73 +86,73 @@ R_SkinXModel(XModelDrawInfo *param_1,XModel *param_2,DObj *param_3,GfxPlacement 
   bVar3 = (useFastFile->current).enabled;
   if ((bVar3 != false) || (*(char *)(in_ECX + 0xe8) == '\0')) {
     R_GetBaseLodDist(unaff_EDI);
-    iVar5 = XModelGetLodForDist((XModel *)(in_XMM0_Da / (float)param_4),_param_7,(float)unaff_EDI,
-                                unaff_ESI);
+    iVar5 = XModelGetLodForDist((XModel *)(in_XMM0_Da / (float)scale),_noLodCullOut,(float)unaff_EDI
+                                ,unaff_ESI);
     if (-1 < iVar5) {
       local_1c30 = (uint)*(ushort *)(iVar5 * 0x20 + in_ECX + 0x2c);
-      if (param_2 != (XModel *)0x0) {
-        local_1c28 = *(undefined8 *)(param_2->lodInfo[1].partBits + 3);
-        local_1c18._0_2_ = param_2->lodInfo[2].numsurfs;
-        local_1c18._2_2_ = param_2->lodInfo[2].surfIndex;
-        local_1c20 = *(undefined8 *)&param_2->lodInfo[1].lod;
+      if (obj != (XModel *)0x0) {
+        local_1c28 = *(undefined8 *)(obj->lodInfo[1].partBits + 3);
+        local_1c18._0_2_ = obj->lodInfo[2].numsurfs;
+        local_1c18._2_2_ = obj->lodInfo[2].surfIndex;
+        local_1c20 = *(undefined8 *)&obj->lodInfo[1].lod;
       }
       puVar6 = local_1c10;
       if (local_1c30 != 0) {
-        puVar11 = local_1bf8;
-        puVar8 = (uint *)(*(int *)(in_ECX + 0x20) +
+        puVar10 = local_1bf8;
+        puVar7 = (uint *)(*(int *)(in_ECX + 0x20) +
                           (uint)*(ushort *)(iVar5 * 0x20 + 0x2e + in_ECX) * 0x44 + 0x3c);
         do {
-          if (param_2 == (XModel *)0x0) {
+          if (obj == (XModel *)0x0) {
 LAB_007ffa94:
-            if (((*(byte *)((int)puVar8 + -0x3a) & 0x80) == 0) && (bVar3 != false)) {
-              uVar9 = 0xfffffffe;
+            if (((*(byte *)((int)puVar7 + -0x3a) & 0x80) == 0) && (bVar3 != false)) {
+              uVar8 = 0xfffffffe;
             }
             else {
-              uVar9 = 0xffffffff;
+              uVar8 = 0xffffffff;
             }
-            uVar2 = *(undefined8 *)param_3;
-            *(undefined4 *)puVar6 = uVar9;
-            *(uint **)(puVar6 + 4) = puVar8 + -0xf;
-            *puVar11 = uVar2;
-            uVar2 = *(undefined8 *)&param_3->duplicatePartsSize;
-            *(undefined2 *)(puVar6 + 0xe) = param_5._0_2_;
-            puVar11[1] = uVar2;
-            uVar2 = *(undefined8 *)&param_3->locked;
+            uVar2 = *(undefined8 *)placement;
+            *(undefined4 *)puVar6 = uVar8;
+            *(uint **)(puVar6 + 4) = puVar7 + -0xf;
+            *puVar10 = uVar2;
+            uVar2 = *(undefined8 *)&placement->duplicatePartsSize;
+            *(undefined2 *)(puVar6 + 0xe) = gfxEntIndex._0_2_;
+            puVar10[1] = uVar2;
+            uVar2 = *(undefined8 *)&placement->locked;
             puVar6[0x10] = '\0';
             puVar6[0x11] = '\0';
-            iVar4 = (param_3->skel).partBits.anim[1];
-            puVar11[2] = uVar2;
-            *(GfxPlacement **)(puVar6 + 0x34) = param_4;
-            *(int *)(puVar11 + 3) = iVar4;
+            iVar4 = (placement->skel).partBits.anim[1];
+            puVar10[2] = uVar2;
+            *(GfxPlacement **)(puVar6 + 0x34) = scale;
+            *(int *)(puVar10 + 3) = iVar4;
             puVar6 = puVar6 + 0x38;
-            puVar11 = puVar11 + 7;
+            puVar10 = puVar10 + 7;
           }
           else {
-            if (((((puVar8[-3] & (uint)local_1c28) == 0 && (puVar8[-2] & local_1c28._4_4_) == 0) &&
-                 (puVar8[-1] & (uint)local_1c20) == 0) && (puVar8[1] & local_1c18) == 0) &&
-                (*puVar8 & local_1c20._4_4_) == 0) goto LAB_007ffa94;
+            if (((((puVar7[-3] & (uint)local_1c28) == 0 && (puVar7[-2] & local_1c28._4_4_) == 0) &&
+                 (puVar7[-1] & (uint)local_1c20) == 0) && (puVar7[1] & local_1c18) == 0) &&
+                (*puVar7 & local_1c20._4_4_) == 0) goto LAB_007ffa94;
             puVar6[0] = 0xfd;
             puVar6[1] = 0xff;
             puVar6[2] = 0xff;
             puVar6[3] = 0xff;
             puVar6 = puVar6 + 4;
-            puVar11 = (undefined8 *)((int)puVar11 + 4);
+            puVar10 = (undefined8 *)((int)puVar10 + 4);
           }
-          puVar8 = puVar8 + 0x11;
+          puVar7 = puVar7 + 0x11;
           local_1c30 = local_1c30 - 1;
         } while (local_1c30 != 0);
       }
-      uVar7 = (int)puVar6 - (int)local_1c10;
-      plVar10 = &frontEndDataOut->surfPos;
+      count = (int)puVar6 - (int)local_1c10;
+      plVar9 = &frontEndDataOut->surfPos;
       LOCK();
-      uVar1 = *plVar10;
-      *plVar10 = *plVar10 + uVar7;
+      uVar1 = *plVar9;
+      *plVar9 = *plVar9 + count;
       UNLOCK();
-      if (uVar1 + uVar7 < 0x40001) {
-        param_1->surfId = (ushort)(uVar1 >> 2);
-        memcpy(frontEndDataOut->surfsBuffer + uVar1,local_1c10,uVar7);
+      if (uVar1 + count < 0x40001) {
+        modelInfo->surfId = (ushort)(uVar1 >> 2);
+        memcpy(frontEndDataOut->surfsBuffer + uVar1,local_1c10,count);
         local_1c2c = (ushort)iVar5;
-        param_1->lod = local_1c2c;
+        modelInfo->lod = local_1c2c;
         return 1;
       }
       R_WarnOncePerFrame(R_WARN_MAX_SCENE_SURFS_SIZE);
@@ -167,35 +167,43 @@ LAB_007ffa94:
 int __cdecl R_SkinAndBoundSceneEnt(GfxSceneEntity *param_1)
 
 {
+  int *piVar1;
+  uchar *puVar2;
   GfxSceneEntity *in_EAX;
-  DObjAnimMat *pDVar1;
-  uint uVar2;
+  DObjAnimMat *boneMatrix;
+  uint uVar3;
   int unaff_EDI;
-  GfxSceneEntity *local_8;
+  GfxSceneEntity *localSceneEnt;
+  DObj *obj;
   GfxSceneEntity *local_4;
   
-  pDVar1 = R_UpdateSceneEntBounds(in_EAX,&local_4,(DObj **)&DAT_00000001,unaff_EDI);
-  if (pDVar1 != (DObjAnimMat *)0x0) {
-    *(undefined4 *)((local_8->info).pose + 8) = 2;
-    if ((local_8->cull).state < 4) {
+  boneMatrix = R_UpdateSceneEntBounds(in_EAX,&local_4,(DObj **)&DAT_00000001,unaff_EDI);
+  if (boneMatrix != (DObjAnimMat *)0x0) {
+    puVar2 = obj->ikState;
+    piVar1 = (obj->skel).partBits.control + 1;
+    puVar2[8] = '\x02';
+    puVar2[9] = '\0';
+    puVar2[10] = '\0';
+    puVar2[0xb] = '\0';
+    if ((uint)*piVar1 < 4) {
       LOCK();
-      uVar2 = (in_EAX->cull).state;
-      if (uVar2 == 2) {
+      uVar3 = (in_EAX->cull).state;
+      if (uVar3 == 2) {
         (in_EAX->cull).state = 3;
-        uVar2 = 2;
+        uVar3 = 2;
       }
       UNLOCK();
-      if (uVar2 == 2) {
-        uVar2 = R_SkinSceneDObjModels(local_8,(DObj *)local_4,pDVar1);
-        (local_8->cull).state = uVar2 + 4;
+      if (uVar3 == 2) {
+        uVar3 = R_SkinSceneDObjModels((GfxSceneEntity *)obj,(DObj *)local_4,boneMatrix);
+        *piVar1 = uVar3 + 4;
       }
     }
     return 1;
   }
-  if (local_8 != (GfxSceneEntity *)0x0) {
+  if (obj != (DObj *)0x0) {
     LOCK();
-    if (*(int *)((local_8->info).pose + 8) == 0) {
-      *(int *)((local_8->info).pose + 8) = 1;
+    if (*(int *)(obj->ikState + 8) == 0) {
+      *(int *)(obj->ikState + 8) = 1;
     }
     UNLOCK();
   }

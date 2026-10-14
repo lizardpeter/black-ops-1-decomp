@@ -188,9 +188,9 @@ void __cdecl SND_ResetVoiceInfo(int param_1)
 {
   int iVar1;
   snd_notify *psVar2;
-  uchar *puVar3;
+  uchar *dst;
   
-  puVar3 = (uchar *)(&DAT_024deb40 + param_1 * 0x76);
+  dst = (uchar *)(&DAT_024deb40 + param_1 * 0x76);
   iVar1 = *(int *)(&DAT_024deb70 + param_1 * 0x1d8);
   if (iVar1 != 0) {
     psVar2 = SND_GetNewNotify();
@@ -200,12 +200,12 @@ void __cdecl SND_ResetVoiceInfo(int param_1)
       SND_NotifyPush(psVar2);
     }
   }
-  memset(puVar3,'\0',0x1d8);
+  memset(dst,'\0',0x1d8);
   (&DAT_024e73b0)[param_1] = 0;
-  puVar3[0] = '\0';
-  puVar3[1] = '\0';
-  puVar3[2] = '\0';
-  puVar3[3] = '\0';
+  dst[0] = '\0';
+  dst[1] = '\0';
+  dst[2] = '\0';
+  dst[3] = '\0';
   (&DAT_024deba0)[param_1 * 0x76] = 0;
   *(undefined4 *)(&DAT_024deb70 + param_1 * 0x1d8) = 0;
   return;

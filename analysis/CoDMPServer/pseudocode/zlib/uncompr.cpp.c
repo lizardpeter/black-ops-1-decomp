@@ -4,29 +4,30 @@
 
 /* WARNING: Removing unreachable block (ram,0x008136da) */
 
-int __cdecl uncompress(uchar *param_1,ulong *param_2,uchar *param_3,ulong param_4)
+int __cdecl uncompress(uchar *dest,ulong *destLen,uchar *source,ulong sourceLen)
 
 {
   int iVar1;
-  z_stream_s local_38;
+  int err;
+  z_stream_s stream;
   
-  local_38.next_in = param_3;
-  local_38.avail_in = param_4;
-  local_38.next_out = param_1;
-  local_38.avail_out = *param_2;
-  if (local_38.avail_out == *param_2) {
-    local_38.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
-    local_38.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
-    iVar1 = inflateInit_(&local_38,"1.2.3",0x34);
+  stream.next_in = source;
+  stream.avail_in = sourceLen;
+  stream.next_out = dest;
+  stream.avail_out = *destLen;
+  if (stream.avail_out == *destLen) {
+    stream.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
+    stream.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
+    iVar1 = inflateInit_(&stream,"1.2.3",0x34);
     if (iVar1 == 0) {
-      iVar1 = inflate(&local_38,4);
+      iVar1 = inflate(&stream,4);
       if (iVar1 == 1) {
-        *param_2 = local_38.total_out;
-        iVar1 = inflateEnd(&local_38);
+        *destLen = stream.total_out;
+        iVar1 = inflateEnd(&stream);
       }
       else {
-        inflateEnd(&local_38);
-        if ((iVar1 == 2) || ((iVar1 == -5 && (local_38.avail_in == 0)))) {
+        inflateEnd(&stream);
+        if ((iVar1 == 2) || ((iVar1 == -5 && (stream.avail_in == 0)))) {
           iVar1 = -3;
         }
       }

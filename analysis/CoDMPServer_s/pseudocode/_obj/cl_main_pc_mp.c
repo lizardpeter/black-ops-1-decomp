@@ -22,224 +22,224 @@ bool __cdecl CL_UseStrippedMMinfo(void)
 void __cdecl CL_SetServerInfo(serverInfo_t *param_1,char *param_2,int param_3)
 
 {
-  uchar *puVar1;
-  char cVar2;
-  char *pcVar3;
+  uchar *dst;
+  char cVar1;
+  char *pcVar2;
+  int iVar3;
   int iVar4;
-  int iVar5;
   char *unaff_EBP;
   int unaff_ESI;
   int unaff_EDI;
-  uchar *puVar6;
+  uchar *puVar5;
   
   if (unaff_EDI == 0) {
     return;
   }
   if (unaff_ESI == 0) goto LAB_004f79b0;
-  pcVar3 = Info_ValueForKey("nettype",unaff_EBP);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 100) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("minping",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(short *)(unaff_EDI + 0x70) = (short)iVar4;
-  pcVar3 = Info_ValueForKey("maxping",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(short *)(unaff_EDI + 0x72) = (short)iVar4;
-  pcVar3 = Info_ValueForKey("sv_allowAnonymous",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x60) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("con_disabled",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 99) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("pswrd",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x61) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("pure",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x62) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("ff",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x68) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("kc",unaff_EBP);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x69) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("hc",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x6a) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("hw",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x6b) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("mod",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x6c) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("wagerbet",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(int *)(unaff_EDI + 0x124) = iVar4;
-  pcVar3 = Info_ValueForKey("playlist",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(int *)(unaff_EDI + 0x128) = iVar4;
-  pcVar3 = Info_ValueForKey("clients",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x65) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("voice",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x6d) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("pb",unaff_EBP);
-  iVar4 = atoi(pcVar3);
-  *(bool *)(unaff_EDI + 0x6e) = 0 < iVar4;
-  pcVar3 = Info_ValueForKey("basic",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(bool *)(unaff_EDI + 0x130) = 0 < iVar4;
-  pcVar3 = Info_ValueForKey("customclass",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(bool *)(unaff_EDI + 0x131) = 0 < iVar4;
-  pcVar3 = Info_ValueForKey("game",pcVar3);
+  pcVar2 = Info_ValueForKey("nettype",unaff_EBP);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 100) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("minping",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(short *)(unaff_EDI + 0x70) = (short)iVar3;
+  pcVar2 = Info_ValueForKey("maxping",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(short *)(unaff_EDI + 0x72) = (short)iVar3;
+  pcVar2 = Info_ValueForKey("sv_allowAnonymous",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x60) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("con_disabled",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 99) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("pswrd",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x61) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("pure",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x62) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("ff",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x68) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("kc",unaff_EBP);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x69) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("hc",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x6a) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("hw",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x6b) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("mod",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x6c) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("wagerbet",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(int *)(unaff_EDI + 0x124) = iVar3;
+  pcVar2 = Info_ValueForKey("playlist",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(int *)(unaff_EDI + 0x128) = iVar3;
+  pcVar2 = Info_ValueForKey("clients",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x65) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("voice",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x6d) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("pb",unaff_EBP);
+  iVar3 = atoi(pcVar2);
+  *(bool *)(unaff_EDI + 0x6e) = 0 < iVar3;
+  pcVar2 = Info_ValueForKey("basic",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(bool *)(unaff_EDI + 0x130) = 0 < iVar3;
+  pcVar2 = Info_ValueForKey("customclass",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(bool *)(unaff_EDI + 0x131) = 0 < iVar3;
+  pcVar2 = Info_ValueForKey("game",pcVar2);
   if ((undefined1 *)(unaff_EDI + 0xbd) != (undefined1 *)0x0) {
-    if (pcVar3 == (char *)0x0) {
+    if (pcVar2 == (char *)0x0) {
       *(undefined1 *)(unaff_EDI + 0xbd) = 0;
     }
     else {
-      pcVar3 = pcVar3 + -1;
-      iVar5 = 0x40;
-      iVar4 = (unaff_EDI + 0xbc) - (int)pcVar3;
+      pcVar2 = pcVar2 + -1;
+      iVar4 = 0x40;
+      iVar3 = (unaff_EDI + 0xbc) - (int)pcVar2;
       do {
-        cVar2 = pcVar3[1];
-        pcVar3 = pcVar3 + 1;
-        pcVar3[iVar4] = cVar2;
-        if (cVar2 == '\0') break;
-        iVar5 = iVar5 + -1;
-      } while (iVar5 != 0);
+        cVar1 = pcVar2[1];
+        pcVar2 = pcVar2 + 1;
+        pcVar2[iVar3] = cVar1;
+        if (cVar1 == '\0') break;
+        iVar4 = iVar4 + -1;
+      } while (iVar4 != 0);
       *(undefined1 *)(unaff_EDI + 0xfc) = 0;
     }
   }
-  puVar1 = (uchar *)(unaff_EDI + 0x132);
-  puVar6 = puVar1;
-  memset(puVar1,'\0',0x40);
-  pcVar3 = Info_ValueForKey("geolocation",(char *)puVar6);
-  pcVar3 = CL_LongNameForShortName(pcVar3);
-  if (pcVar3 == (char *)0x0) {
-    pcVar3 = Info_ValueForKey("geolocation",unaff_EBP);
-    if (puVar1 != (uchar *)0x0) {
-      if (pcVar3 != (char *)0x0) {
-        pcVar3 = pcVar3 + -1;
-        iVar5 = 0x40;
-        iVar4 = (unaff_EDI + 0x131) - (int)pcVar3;
+  dst = (uchar *)(unaff_EDI + 0x132);
+  puVar5 = dst;
+  memset(dst,'\0',0x40);
+  pcVar2 = Info_ValueForKey("geolocation",(char *)puVar5);
+  pcVar2 = CL_LongNameForShortName(pcVar2);
+  if (pcVar2 == (char *)0x0) {
+    pcVar2 = Info_ValueForKey("geolocation",unaff_EBP);
+    if (dst != (uchar *)0x0) {
+      if (pcVar2 != (char *)0x0) {
+        pcVar2 = pcVar2 + -1;
+        iVar4 = 0x40;
+        iVar3 = (unaff_EDI + 0x131) - (int)pcVar2;
         do {
-          cVar2 = pcVar3[1];
-          pcVar3 = pcVar3 + 1;
-          pcVar3[iVar4] = cVar2;
-          if (cVar2 == '\0') break;
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
+          cVar1 = pcVar2[1];
+          pcVar2 = pcVar2 + 1;
+          pcVar2[iVar3] = cVar1;
+          if (cVar1 == '\0') break;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
         goto LAB_004f7820;
       }
-      *puVar1 = '\0';
+      *dst = '\0';
     }
   }
-  else if (puVar1 != (uchar *)0x0) {
-    pcVar3 = pcVar3 + -1;
-    iVar5 = 0x40;
-    iVar4 = (unaff_EDI + 0x131) - (int)pcVar3;
+  else if (dst != (uchar *)0x0) {
+    pcVar2 = pcVar2 + -1;
+    iVar4 = 0x40;
+    iVar3 = (unaff_EDI + 0x131) - (int)pcVar2;
     do {
-      cVar2 = pcVar3[1];
-      pcVar3 = pcVar3 + 1;
-      pcVar3[iVar4] = cVar2;
-      if (cVar2 == '\0') break;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      cVar1 = pcVar2[1];
+      pcVar2 = pcVar2 + 1;
+      pcVar2[iVar3] = cVar1;
+      if (cVar1 == '\0') break;
+      iVar4 = iVar4 + -1;
+    } while (iVar4 != 0);
 LAB_004f7820:
     *(undefined1 *)(unaff_EDI + 0x171) = 0;
   }
   if (*(int *)(unaff_EDI + 300) == 5) {
-    pcVar3 = Info_ValueForKey("countrycode",unaff_EBP);
+    pcVar2 = Info_ValueForKey("countrycode",unaff_EBP);
     if ((undefined1 *)(unaff_EDI + 0x172) != (undefined1 *)0x0) {
-      if (pcVar3 == (char *)0x0) {
+      if (pcVar2 == (char *)0x0) {
         *(undefined1 *)(unaff_EDI + 0x172) = 0;
       }
       else {
-        pcVar3 = pcVar3 + -1;
-        iVar4 = (unaff_EDI + 0x171) - (int)pcVar3;
-        iVar5 = 3;
+        pcVar2 = pcVar2 + -1;
+        iVar3 = (unaff_EDI + 0x171) - (int)pcVar2;
+        iVar4 = 3;
         do {
-          cVar2 = pcVar3[1];
-          pcVar3 = pcVar3 + 1;
-          pcVar3[iVar4] = cVar2;
-          if (cVar2 == '\0') break;
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
+          cVar1 = pcVar2[1];
+          pcVar2 = pcVar2 + 1;
+          pcVar2[iVar3] = cVar1;
+          if (cVar1 == '\0') break;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
         *(undefined1 *)(unaff_EDI + 0x174) = 0;
       }
     }
   }
   if (((((DAT_047aaac8 == 1) || (DAT_047aaac8 == 2)) || (DAT_047aaac8 == 0)) || (DAT_047aaac8 == 6))
      && ((matchmaking_mininfo->current).enabled != false)) {
-    pcVar3 = Info_ValueForKey("hostname",unaff_EBP);
+    pcVar2 = Info_ValueForKey("hostname",unaff_EBP);
     if ((undefined1 *)(unaff_EDI + 0x7d) != (undefined1 *)0x0) {
-      if (pcVar3 == (char *)0x0) {
+      if (pcVar2 == (char *)0x0) {
         *(undefined1 *)(unaff_EDI + 0x7d) = 0;
       }
       else {
-        pcVar3 = pcVar3 + -1;
-        iVar5 = 0x20;
-        iVar4 = (unaff_EDI + 0x7c) - (int)pcVar3;
+        pcVar2 = pcVar2 + -1;
+        iVar4 = 0x20;
+        iVar3 = (unaff_EDI + 0x7c) - (int)pcVar2;
         do {
-          cVar2 = pcVar3[1];
-          pcVar3 = pcVar3 + 1;
-          pcVar3[iVar4] = cVar2;
-          if (cVar2 == '\0') break;
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
+          cVar1 = pcVar2[1];
+          pcVar2 = pcVar2 + 1;
+          pcVar2[iVar3] = cVar1;
+          if (cVar1 == '\0') break;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
         *(undefined1 *)(unaff_EDI + 0x9c) = 0;
       }
     }
-    pcVar3 = Info_ValueForKey("mapname",unaff_EBP);
+    pcVar2 = Info_ValueForKey("mapname",unaff_EBP);
     if ((undefined1 *)(unaff_EDI + 0x9d) != (undefined1 *)0x0) {
-      if (pcVar3 == (char *)0x0) {
+      if (pcVar2 == (char *)0x0) {
         *(undefined1 *)(unaff_EDI + 0x9d) = 0;
       }
       else {
-        pcVar3 = pcVar3 + -1;
-        iVar5 = 0x20;
-        iVar4 = (unaff_EDI + 0x9c) - (int)pcVar3;
+        pcVar2 = pcVar2 + -1;
+        iVar4 = 0x20;
+        iVar3 = (unaff_EDI + 0x9c) - (int)pcVar2;
         do {
-          cVar2 = pcVar3[1];
-          pcVar3 = pcVar3 + 1;
-          pcVar3[iVar4] = cVar2;
-          if (cVar2 == '\0') break;
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
+          cVar1 = pcVar2[1];
+          pcVar2 = pcVar2 + 1;
+          pcVar2[iVar3] = cVar1;
+          if (cVar1 == '\0') break;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
         *(undefined1 *)(unaff_EDI + 0xbc) = 0;
       }
     }
-    pcVar3 = Info_ValueForKey("gametype",unaff_EBP);
+    pcVar2 = Info_ValueForKey("gametype",unaff_EBP);
     if ((undefined1 *)(unaff_EDI + 0xfd) != (undefined1 *)0x0) {
-      if (pcVar3 == (char *)0x0) {
+      if (pcVar2 == (char *)0x0) {
         *(undefined1 *)(unaff_EDI + 0xfd) = 0;
       }
       else {
-        pcVar3 = pcVar3 + -1;
-        iVar5 = 0x10;
-        iVar4 = (unaff_EDI + 0xfc) - (int)pcVar3;
+        pcVar2 = pcVar2 + -1;
+        iVar4 = 0x10;
+        iVar3 = (unaff_EDI + 0xfc) - (int)pcVar2;
         do {
-          cVar2 = pcVar3[1];
-          pcVar3 = pcVar3 + 1;
-          pcVar3[iVar4] = cVar2;
-          if (cVar2 == '\0') break;
-          iVar5 = iVar5 + -1;
-        } while (iVar5 != 0);
+          cVar1 = pcVar2[1];
+          pcVar2 = pcVar2 + 1;
+          pcVar2[iVar3] = cVar1;
+          if (cVar1 == '\0') break;
+          iVar4 = iVar4 + -1;
+        } while (iVar4 != 0);
         *(undefined1 *)(unaff_EDI + 0x10c) = 0;
       }
     }
   }
-  pcVar3 = Info_ValueForKey("sv_maxclients",unaff_EBP);
-  iVar4 = atoi(pcVar3);
-  *(char *)(unaff_EDI + 0x66) = (char)iVar4;
-  pcVar3 = Info_ValueForKey("mapbits",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(int *)(unaff_EDI + 0x178) = iVar4;
-  pcVar3 = Info_ValueForKey("mappacks",pcVar3);
-  iVar4 = atoi(pcVar3);
-  *(int *)(unaff_EDI + 0x17c) = iVar4;
+  pcVar2 = Info_ValueForKey("sv_maxclients",unaff_EBP);
+  iVar3 = atoi(pcVar2);
+  *(char *)(unaff_EDI + 0x66) = (char)iVar3;
+  pcVar2 = Info_ValueForKey("mapbits",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(int *)(unaff_EDI + 0x178) = iVar3;
+  pcVar2 = Info_ValueForKey("mappacks",pcVar2);
+  iVar3 = atoi(pcVar2);
+  *(int *)(unaff_EDI + 0x17c) = iVar3;
 LAB_004f79b0:
   *(undefined1 *)(unaff_EDI + 0x7c) = 1;
   *(undefined2 *)(unaff_EDI + 0x74) = param_1._0_2_;
@@ -849,8 +849,8 @@ void __cdecl CL_FindServers_f(void)
 {
   int *piVar1;
   TaskRecord *pTVar2;
-  char *pcVar3;
-  uint uVar4;
+  char *nptr;
+  uint uVar3;
   TaskDefinition *unaff_EDI;
   
   if (((DAT_03500fd0 == 0) &&
@@ -861,10 +861,10 @@ void __cdecl CL_FindServers_f(void)
       Com_DPrintf(0xa2fe70,(char *)unaff_EDI);
       return;
     }
-    pcVar3 = Cmd_Argv((int)unaff_EDI);
-    uVar4 = atoi(pcVar3);
-    if (uVar4 < 6) {
-      switch(uVar4) {
+    nptr = Cmd_Argv((int)unaff_EDI);
+    uVar3 = atoi(nptr);
+    if (uVar3 < 6) {
+      switch(uVar3) {
       case 0:
         break;
       case 1:
@@ -883,7 +883,7 @@ void __cdecl CL_FindServers_f(void)
       DAT_03556a84 = 1;
                     /* WARNING: Could not recover jumptable at 0x004f875f. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-      (*(code *)(&PTR_LAB_004f8850)[uVar4])();
+      (*(code *)(&PTR_LAB_004f8850)[uVar3])();
       return;
     }
     Com_DPrintf(0xa2feb8,(char *)unaff_EDI);
@@ -1829,33 +1829,33 @@ void __cdecl CL_QuickMatch_FindSessionsFailure(TaskRecord *param_1)
 void __cdecl CL_QuickMatch_PingResponse(bdSecurityID *param_1,msg_t *param_2)
 
 {
-  uchar *puVar1;
-  undefined1 *puVar2;
-  char cVar3;
+  uchar *dst;
+  undefined1 *puVar1;
+  char cVar2;
+  undefined4 uVar3;
   undefined4 uVar4;
-  undefined4 uVar5;
-  dvar_s *pdVar6;
-  uint uVar7;
-  uint *puVar8;
-  uint uVar9;
-  DWORD DVar10;
-  char *pcVar11;
-  int iVar12;
-  byte *pbVar13;
-  int iVar14;
-  bdSecurityID *pbVar15;
-  uint uVar16;
-  int iVar17;
+  dvar_s *pdVar5;
+  uint uVar6;
+  uint *puVar7;
+  uint uVar8;
+  DWORD DVar9;
+  char *pcVar10;
+  int iVar11;
+  byte *pbVar12;
+  int iVar13;
+  bdSecurityID *pbVar14;
+  uint uVar15;
+  int iVar16;
   uint unaff_ESI;
-  int *piVar18;
-  int iVar19;
+  int *piVar17;
+  int iVar18;
   char *unaff_EDI;
-  int iVar20;
+  int iVar19;
+  float fVar20;
   float fVar21;
   float fVar22;
-  float fVar23;
-  uchar *puVar24;
-  char *pcVar25;
+  uchar *puVar23;
+  char *pcVar24;
   int local_424;
   bdCommonAddr *local_420;
   char *local_41c;
@@ -1866,203 +1866,203 @@ void __cdecl CL_QuickMatch_PingResponse(bdSecurityID *param_1,msg_t *param_2)
   
   local_404 = 0;
   memset(local_403,'\0',0x3ff);
-  uVar16 = 0;
+  uVar15 = 0;
   if (DAT_03500f60 == 0) {
     return;
   }
-  piVar18 = &DAT_0484acf0;
+  piVar17 = &DAT_0484acf0;
 LAB_004f9b58:
-  uVar7 = 8;
-  pbVar13 = (byte *)(piVar18 + -0x85);
-  pbVar15 = param_1;
+  uVar6 = 8;
+  pbVar12 = (byte *)(piVar17 + -0x85);
+  pbVar14 = param_1;
   do {
-    if (*(int *)pbVar15 != *(int *)pbVar13) {
-      iVar14 = (uint)(byte)*pbVar15 - (uint)*pbVar13;
-      if (((iVar14 == 0) && (iVar14 = (uint)(byte)pbVar15[1] - (uint)pbVar13[1], iVar14 == 0)) &&
-         (iVar14 = (uint)(byte)pbVar15[2] - (uint)pbVar13[2], iVar14 == 0)) {
-        iVar14 = (uint)(byte)pbVar15[3] - (uint)pbVar13[3];
+    if (*(int *)pbVar14 != *(int *)pbVar12) {
+      iVar13 = (uint)(byte)*pbVar14 - (uint)*pbVar12;
+      if (((iVar13 == 0) && (iVar13 = (uint)(byte)pbVar14[1] - (uint)pbVar12[1], iVar13 == 0)) &&
+         (iVar13 = (uint)(byte)pbVar14[2] - (uint)pbVar12[2], iVar13 == 0)) {
+        iVar13 = (uint)(byte)pbVar14[3] - (uint)pbVar12[3];
       }
-      if ((iVar14 >> 0x1f | 1U) != 0) goto LAB_004f9bbf;
+      if ((iVar13 >> 0x1f | 1U) != 0) goto LAB_004f9bbf;
       break;
     }
-    uVar7 = uVar7 - 4;
-    pbVar13 = pbVar13 + 4;
-    pbVar15 = pbVar15 + 4;
-  } while (3 < uVar7);
-  if (*piVar18 == 0) {
+    uVar6 = uVar6 - 4;
+    pbVar12 = pbVar12 + 4;
+    pbVar14 = pbVar14 + 4;
+  } while (3 < uVar6);
+  if (*piVar17 == 0) {
 LAB_004f9bbf:
-    uVar16 = uVar16 + 1;
-    piVar18 = piVar18 + 0x8a;
-    if (DAT_03500f60 <= uVar16) {
+    uVar15 = uVar15 + 1;
+    piVar17 = piVar17 + 0x8a;
+    if (DAT_03500f60 <= uVar15) {
       return;
     }
     goto LAB_004f9b58;
   }
-  uVar7 = 2;
+  uVar6 = 2;
   if (1 < DAT_03547648) {
-    puVar8 = &DAT_0284271c;
-    iVar14 = DAT_03547648 + -1;
+    puVar7 = &DAT_0284271c;
+    iVar13 = DAT_03547648 + -1;
     do {
-      if ((char)puVar8[1] != '\0') {
-        uVar7 = uVar7 | *puVar8;
+      if ((char)puVar7[1] != '\0') {
+        uVar6 = uVar6 | *puVar7;
       }
-      puVar8 = puVar8 + 0x27;
-      iVar14 = iVar14 + -1;
-    } while (iVar14 != 0);
+      puVar7 = puVar7 + 0x27;
+      iVar13 = iVar13 + -1;
+    } while (iVar13 != 0);
   }
-  iVar17 = uVar16 * 0x228;
-  iVar14 = Live_GetMapIndex(unaff_EDI);
-  if (iVar14 < 0) {
-    uVar9 = 1;
+  iVar16 = uVar15 * 0x228;
+  iVar13 = Live_GetMapIndex(unaff_EDI);
+  if (iVar13 < 0) {
+    uVar8 = 1;
   }
   else {
-    uVar9 = *(uint *)(&DAT_009ebe10 + iVar14 * 0x10);
+    uVar8 = *(uint *)(&DAT_009ebe10 + iVar13 * 0x10);
   }
-  if ((uVar9 & uVar7) == 0) {
-    Com_DPrintf(0xa30678,(char *)(iVar17 + 0x484ac09));
+  if ((uVar8 & uVar6) == 0) {
+    Com_DPrintf(0xa30678,(char *)(iVar16 + 0x484ac09));
     return;
   }
-  iVar14 = DAT_03500f5c * 0x180;
+  iVar13 = DAT_03500f5c * 0x180;
   DAT_03500f5c = DAT_03500f5c + 1;
   local_41c = MSG_ReadString((msg_t *)0x400,unaff_EDI,unaff_ESI);
   local_414 = 4;
   CL_InitServerInfo(4,0);
   dwGetLocalCommonAddr();
   bdMatchMakingInfo::getHostAddrAsCommonAddr
-            ((bdMatchMakingInfo *)(&DAT_0484aad8 + iVar17),&local_420);
-  bdCommonAddr::serialize(local_420,&DAT_0483ead8 + iVar14);
+            ((bdMatchMakingInfo *)(&DAT_0484aad8 + iVar16),&local_420);
+  bdCommonAddr::serialize(local_420,&DAT_0483ead8 + iVar13);
   if (DAT_04fad834 == 0) {
     sys_timeBase = timeGetTime();
     DAT_04fad834 = 1;
   }
-  DVar10 = timeGetTime();
-  *(short *)(&DAT_0483eb4c + iVar14) =
-       ((short)DVar10 - (short)sys_timeBase) - *(short *)(&DAT_0484acf0 + uVar16 * 0x8a);
-  (&DAT_0484acf0)[uVar16 * 0x8a] = 0;
-  pcVar11 = Info_ValueForKey("clients",unaff_EDI);
-  iVar12 = atoi(pcVar11);
-  (&DAT_0483eb3d)[iVar14] = (char)iVar12;
-  (&DAT_0483eb3e)[iVar14] = *(undefined1 *)(iVar17 + 0x484abec);
-  pcVar11 = Info_ValueForKey("wagerbet",pcVar11);
-  iVar12 = atoi(pcVar11);
-  puVar1 = &DAT_0483ec0a + iVar14;
-  *(int *)(&DAT_0483ebfc + iVar14) = iVar12;
-  puVar24 = puVar1;
-  memset(puVar1,'\0',0x40);
-  pcVar11 = Info_ValueForKey("geolocation",(char *)puVar24);
-  pcVar11 = CL_LongNameForShortName(pcVar11);
-  if (pcVar11 == (char *)0x0) {
-    pcVar11 = Info_ValueForKey("geolocation",unaff_EDI);
-    if (puVar1 == (uchar *)0x0) goto LAB_004f9dd4;
-    if (pcVar11 == (char *)0x0) {
-      *puVar1 = '\0';
+  DVar9 = timeGetTime();
+  *(short *)(&DAT_0483eb4c + iVar13) =
+       ((short)DVar9 - (short)sys_timeBase) - *(short *)(&DAT_0484acf0 + uVar15 * 0x8a);
+  (&DAT_0484acf0)[uVar15 * 0x8a] = 0;
+  pcVar10 = Info_ValueForKey("clients",unaff_EDI);
+  iVar11 = atoi(pcVar10);
+  (&DAT_0483eb3d)[iVar13] = (char)iVar11;
+  (&DAT_0483eb3e)[iVar13] = *(undefined1 *)(iVar16 + 0x484abec);
+  pcVar10 = Info_ValueForKey("wagerbet",pcVar10);
+  iVar11 = atoi(pcVar10);
+  dst = &DAT_0483ec0a + iVar13;
+  *(int *)(&DAT_0483ebfc + iVar13) = iVar11;
+  puVar23 = dst;
+  memset(dst,'\0',0x40);
+  pcVar10 = Info_ValueForKey("geolocation",(char *)puVar23);
+  pcVar10 = CL_LongNameForShortName(pcVar10);
+  if (pcVar10 == (char *)0x0) {
+    pcVar10 = Info_ValueForKey("geolocation",unaff_EDI);
+    if (dst == (uchar *)0x0) goto LAB_004f9dd4;
+    if (pcVar10 == (char *)0x0) {
+      *dst = '\0';
       goto LAB_004f9dd4;
     }
-    pcVar11 = pcVar11 + -1;
-    iVar12 = -1 - (int)pcVar11;
-    iVar20 = 0x40;
+    pcVar10 = pcVar10 + -1;
+    iVar11 = -1 - (int)pcVar10;
+    iVar19 = 0x40;
     while( true ) {
-      cVar3 = pcVar11[1];
-      pcVar11 = pcVar11 + 1;
-      pcVar11[(int)(puVar1 + iVar12)] = cVar3;
-      if (cVar3 == '\0') break;
-      iVar20 = iVar20 + -1;
-      if (iVar20 == 0) break;
+      cVar2 = pcVar10[1];
+      pcVar10 = pcVar10 + 1;
+      pcVar10[(int)(dst + iVar11)] = cVar2;
+      if (cVar2 == '\0') break;
+      iVar19 = iVar19 + -1;
+      if (iVar19 == 0) break;
     }
   }
   else {
-    if (puVar1 == (uchar *)0x0) goto LAB_004f9dd4;
-    pcVar11 = pcVar11 + -1;
-    iVar20 = 0x40;
-    iVar12 = -1 - (int)pcVar11;
+    if (dst == (uchar *)0x0) goto LAB_004f9dd4;
+    pcVar10 = pcVar10 + -1;
+    iVar19 = 0x40;
+    iVar11 = -1 - (int)pcVar10;
     do {
-      cVar3 = pcVar11[1];
-      pcVar11 = pcVar11 + 1;
-      pcVar11[(int)(puVar1 + iVar12)] = cVar3;
-      if (cVar3 == '\0') break;
-      iVar20 = iVar20 + -1;
-    } while (iVar20 != 0);
+      cVar2 = pcVar10[1];
+      pcVar10 = pcVar10 + 1;
+      pcVar10[(int)(dst + iVar11)] = cVar2;
+      if (cVar2 == '\0') break;
+      iVar19 = iVar19 + -1;
+    } while (iVar19 != 0);
   }
-  (&DAT_0483ec49)[iVar14] = 0;
+  (&DAT_0483ec49)[iVar13] = 0;
 LAB_004f9dd4:
-  pcVar11 = &DAT_0483eb55 + iVar14;
-  if (pcVar11 != (char *)0x0) {
-    if (iVar17 == -0x484ac09) {
-      *pcVar11 = '\0';
+  pcVar10 = &DAT_0483eb55 + iVar13;
+  if (pcVar10 != (char *)0x0) {
+    if (iVar16 == -0x484ac09) {
+      *pcVar10 = '\0';
     }
     else {
-      iVar20 = iVar17 + 0x484ac08;
-      iVar19 = 0x20;
-      iVar12 = -1 - iVar20;
+      iVar19 = iVar16 + 0x484ac08;
+      iVar18 = 0x20;
+      iVar11 = -1 - iVar19;
       do {
-        cVar3 = *(char *)(iVar20 + 1);
-        iVar20 = iVar20 + 1;
-        pcVar11[iVar20 + iVar12] = cVar3;
-        if (cVar3 == '\0') break;
-        iVar19 = iVar19 + -1;
-      } while (iVar19 != 0);
-      (&DAT_0483eb74)[iVar14] = 0;
+        cVar2 = *(char *)(iVar19 + 1);
+        iVar19 = iVar19 + 1;
+        pcVar10[iVar19 + iVar11] = cVar2;
+        if (cVar2 == '\0') break;
+        iVar18 = iVar18 + -1;
+      } while (iVar18 != 0);
+      (&DAT_0483eb74)[iVar13] = 0;
     }
   }
-  puVar2 = &DAT_0483eb75 + iVar14;
-  if (puVar2 != (undefined1 *)0x0) {
-    if (iVar17 == -0x484ac58) {
-      *puVar2 = 0;
+  puVar1 = &DAT_0483eb75 + iVar13;
+  if (puVar1 != (undefined1 *)0x0) {
+    if (iVar16 == -0x484ac58) {
+      *puVar1 = 0;
     }
     else {
-      iVar20 = iVar17 + 0x484ac57;
+      iVar19 = iVar16 + 0x484ac57;
       local_424 = 0x20;
-      iVar12 = -1 - iVar20;
+      iVar11 = -1 - iVar19;
       do {
-        cVar3 = *(char *)(iVar20 + 1);
-        iVar20 = iVar20 + 1;
-        puVar2[iVar20 + iVar12] = cVar3;
-        if (cVar3 == '\0') break;
+        cVar2 = *(char *)(iVar19 + 1);
+        iVar19 = iVar19 + 1;
+        puVar1[iVar19 + iVar11] = cVar2;
+        if (cVar2 == '\0') break;
         local_424 = local_424 + -1;
       } while (local_424 != 0);
-      (&DAT_0483eb94)[iVar14] = 0;
+      (&DAT_0483eb94)[iVar13] = 0;
     }
   }
-  pdVar6 = cl_quickmatch_pingweight;
-  uVar4 = (&DAT_0484aadc)[uVar16 * 0x8a];
-  uVar5 = (&DAT_0484aae0)[uVar16 * 0x8a];
-  *(undefined8 *)(&DAT_0483eaf1 + iVar14) = *(undefined8 *)(iVar17 + 0x484abf8);
-  *(undefined8 *)(&DAT_0483eaf9 + iVar14) = *(undefined8 *)(iVar17 + 0x484ac00);
-  *(undefined4 *)(&DAT_0483eb01 + iVar14) = uVar4;
-  *(undefined4 *)(&DAT_0483eb05 + iVar14) = uVar5;
-  local_418 = (float)(pdVar6->current).integer / (float)(int)*(short *)(&DAT_0483eb4c + iVar14);
-  fVar21 = ((float)(byte)(&DAT_0483eb3d)[iVar14] / (float)(byte)(&DAT_0483eb3e)[iVar14]) * 100.0;
-  pcVar25 = "Server %s has pingscore of %f, fullness of %f\n";
-  Com_DPrintf(0xa306d0,pcVar11,(double)local_418,(double)fVar21);
-  pcVar11 = Info_ValueForKey("mappacks",pcVar25);
-  atoi(pcVar11);
-  iVar12 = 8;
+  pdVar5 = cl_quickmatch_pingweight;
+  uVar3 = (&DAT_0484aadc)[uVar15 * 0x8a];
+  uVar4 = (&DAT_0484aae0)[uVar15 * 0x8a];
+  *(undefined8 *)(&DAT_0483eaf1 + iVar13) = *(undefined8 *)(iVar16 + 0x484abf8);
+  *(undefined8 *)(&DAT_0483eaf9 + iVar13) = *(undefined8 *)(iVar16 + 0x484ac00);
+  *(undefined4 *)(&DAT_0483eb01 + iVar13) = uVar3;
+  *(undefined4 *)(&DAT_0483eb05 + iVar13) = uVar4;
+  local_418 = (float)(pdVar5->current).integer / (float)(int)*(short *)(&DAT_0483eb4c + iVar13);
+  fVar20 = ((float)(byte)(&DAT_0483eb3d)[iVar13] / (float)(byte)(&DAT_0483eb3e)[iVar13]) * 100.0;
+  pcVar24 = "Server %s has pingscore of %f, fullness of %f\n";
+  Com_DPrintf(0xa306d0,pcVar10,(double)local_418,(double)fVar20);
+  pcVar10 = Info_ValueForKey("mappacks",pcVar24);
+  atoi(pcVar10);
+  iVar11 = 8;
   do {
-    iVar12 = iVar12 * 2;
-  } while (iVar12 < 0x21);
-  if ((int)((uint)(byte)(&DAT_0483eb3e)[iVar14] - (uint)(byte)(&DAT_0483eb3d)[iVar14]) <
+    iVar11 = iVar11 * 2;
+  } while (iVar11 < 0x21);
+  if ((int)((uint)(byte)(&DAT_0483eb3e)[iVar13] - (uint)(byte)(&DAT_0483eb3d)[iVar13]) <
       (cl_quickmatch_minslots->current).integer) {
+    fVar20 = 0.0;
     fVar21 = 0.0;
-    fVar22 = 0.0;
   }
   else {
-    fVar22 = local_418;
-    if (100.0 <= fVar21) {
+    fVar21 = local_418;
+    if (100.0 <= fVar20) {
+      fVar20 = 0.0;
       fVar21 = 0.0;
-      fVar22 = 0.0;
     }
   }
-  fVar23 = 1.0;
-  if ((DAT_00c8a0ac != '\0') && (DAT_00c8a0b0 < *(int *)(&DAT_0483ebfc + iVar14))) {
-    fVar22 = 1.0;
-    fVar21 = DAT_00af36d8;
+  fVar22 = 1.0;
+  if ((DAT_00c8a0ac != '\0') && (DAT_00c8a0b0 < *(int *)(&DAT_0483ebfc + iVar13))) {
+    fVar21 = 1.0;
+    fVar20 = DAT_00af36d8;
   }
-  fVar21 = (float)(cl_quickmatch_fullnessweight->current).integer * fVar21;
+  fVar20 = (float)(cl_quickmatch_fullnessweight->current).integer * fVar20;
   Com_IntToGametype(unaff_EDI,unaff_ESI);
-  uVar4 = *(undefined4 *)(iVar17 + 0x484aca8);
-  *(undefined4 *)(&DAT_0483ebec + iVar14) = *(undefined4 *)(iVar17 + 0x484acac);
-  *(int *)(&DAT_0483ebf8 + iVar14) = (int)((fVar21 + fVar23) * fVar22);
-  *(undefined4 *)(&DAT_0483ebe8 + iVar14) = uVar4;
+  uVar3 = *(undefined4 *)(iVar16 + 0x484aca8);
+  *(undefined4 *)(&DAT_0483ebec + iVar13) = *(undefined4 *)(iVar16 + 0x484acac);
+  *(int *)(&DAT_0483ebf8 + iVar13) = (int)((fVar20 + fVar22) * fVar21);
+  *(undefined4 *)(&DAT_0483ebe8 + iVar13) = uVar3;
   bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>((bdReference<bdByteBuffer> *)&local_420);
   return;
 }

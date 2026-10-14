@@ -125,84 +125,84 @@ void __cdecl CG_ParsePlayerInfos(int param_1)
 
 {
   char cVar1;
+  char *nptr;
   char *pcVar2;
-  char *pcVar3;
-  int *piVar4;
-  int iVar5;
-  char *pcVar6;
+  int *piVar3;
+  int iVar4;
+  char *pcVar5;
   int unaff_ESI;
-  int iVar7;
+  int iVar6;
   char **unaff_EDI;
-  int iVar8;
+  int iVar7;
   char *local_30;
   undefined8 local_2c;
   char local_24 [36];
   
   if (DAT_0268df84 != 2) {
     Com_DPrintf(0xa27da8,(char *)unaff_EDI);
-    pcVar6 = (char *)0x0;
+    pcVar5 = (char *)0x0;
     do {
-      pcVar6[0x47ab234] = '\0';
-      if ((&DAT_047ae544)[(&DAT_047ab760)[(int)pcVar6]] == '\0') {
-        Com_DPrintf(0xa27e14,pcVar6);
+      pcVar5[0x47ab234] = '\0';
+      if ((&DAT_047ae544)[(&DAT_047ab760)[(int)pcVar5]] == '\0') {
+        Com_DPrintf(0xa27e14,pcVar5);
       }
       else {
-        iVar8 = -1;
-        FUN_005e6b20(0xffffffff,0,0,&DAT_047ae544 + (&DAT_047ab760)[(int)pcVar6],
+        iVar7 = -1;
+        FUN_005e6b20(0xffffffff,0,0,&DAT_047ae544 + (&DAT_047ab760)[(int)pcVar5],
                      0x200 - *(int *)(*(int *)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) +
                                               0x10) + 0x28e4),0);
-        pcVar2 = Cmd_Argv(iVar8);
-        pcVar3 = Cmd_Argv(iVar8);
-        local_2c = _strtoui64(pcVar2,(char **)0x0,0x10);
-        if (pcVar3 == (char *)0x0) {
+        nptr = Cmd_Argv(iVar7);
+        pcVar2 = Cmd_Argv(iVar7);
+        local_2c = _strtoui64(nptr,(char **)0x0,0x10);
+        if (pcVar2 == (char *)0x0) {
           local_24[0] = '\0';
         }
         else {
-          pcVar3 = pcVar3 + -1;
-          iVar7 = 0x20;
-          iVar8 = -1 - (int)pcVar3;
+          pcVar2 = pcVar2 + -1;
+          iVar6 = 0x20;
+          iVar7 = -1 - (int)pcVar2;
           do {
-            cVar1 = pcVar3[1];
-            pcVar3 = pcVar3 + 1;
-            pcVar3[(int)(local_24 + iVar8)] = cVar1;
+            cVar1 = pcVar2[1];
+            pcVar2 = pcVar2 + 1;
+            pcVar2[(int)(local_24 + iVar7)] = cVar1;
             if (cVar1 == '\0') break;
-            iVar7 = iVar7 + -1;
-          } while (iVar7 != 0);
+            iVar6 = iVar6 + -1;
+          } while (iVar6 != 0);
           local_24[0x1f] = 0;
         }
         cVar1 = local_24[0];
-        for (iVar8 = 0; (cVar1 != '\0' && (iVar8 < 0x20)); iVar8 = iVar8 + 1) {
-          if (local_24[iVar8] == '\x01') {
-            local_24[iVar8] = ' ';
+        for (iVar7 = 0; (cVar1 != '\0' && (iVar7 < 0x20)); iVar7 = iVar7 + 1) {
+          if (local_24[iVar7] == '\x01') {
+            local_24[iVar7] = ' ';
           }
-          cVar1 = local_24[iVar8 + 1];
+          cVar1 = local_24[iVar7 + 1];
         }
         local_30 = local_24;
         Live_AddRecentPlayers((__uint64 *)&local_30,unaff_EDI,unaff_ESI);
-        iVar8 = (int)local_2c;
-        iVar7 = local_2c._4_4_;
+        iVar7 = (int)local_2c;
+        iVar6 = local_2c._4_4_;
         if ((int)local_2c != 0 || local_2c._4_4_ != 0) {
-          piVar4 = (int *)SteamFriends();
-          iVar5 = (**(code **)(*piVar4 + 0x14))(iVar8,iVar7);
-          if (iVar5 == 3) {
-            Com_DPrintf(0xa27dd0,pcVar6,iVar8,iVar7,local_24);
-            pcVar6[0x47ab234] = '\x01';
+          piVar3 = (int *)SteamFriends();
+          iVar4 = (**(code **)(*piVar3 + 0x14))(iVar7,iVar6);
+          if (iVar4 == 3) {
+            Com_DPrintf(0xa27dd0,pcVar5,iVar7,iVar6,local_24);
+            pcVar5[0x47ab234] = '\x01';
             goto LAB_004b09ee;
           }
         }
-        Com_DPrintf(0xa27df0,pcVar6,iVar8,iVar7,local_24);
+        Com_DPrintf(0xa27df0,pcVar5,iVar7,iVar6,local_24);
       }
 LAB_004b09ee:
-      piVar4 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-      iVar8 = *piVar4;
-      if (iVar8 != -1) {
-        piVar4[0xa39] = piVar4[0xa39] - piVar4[iVar8 + 0x21];
-        piVar4[0xa39] = piVar4[0xa39] - piVar4[iVar8 + 0x19];
-        piVar4[0xa3a] = piVar4[0xa3a] - piVar4[iVar8 + 0xa31];
-        *piVar4 = iVar8 + -1;
+      piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+      iVar7 = *piVar3;
+      if (iVar7 != -1) {
+        piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar7 + 0x21];
+        piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar7 + 0x19];
+        piVar3[0xa3a] = piVar3[0xa3a] - piVar3[iVar7 + 0xa31];
+        *piVar3 = iVar7 + -1;
       }
-      pcVar6 = pcVar6 + 1;
-    } while ((int)pcVar6 < 0x20);
+      pcVar5 = pcVar5 + 1;
+    } while ((int)pcVar5 < 0x20);
   }
   return;
 }
@@ -232,14 +232,14 @@ void __cdecl CG_ParseGameEndTime(int param_1)
 void __cdecl CG_ParseFog(int param_1)
 
 {
-  int iVar1;
-  cg_s *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  char **ppcVar5;
+  int transitionTime;
+  cg_s *pcVar1;
+  int iVar2;
+  char *pcVar3;
+  char **ppcVar4;
   int unaff_EBP;
   char **unaff_EDI;
-  double dVar6;
+  double dVar5;
   undefined *local_44;
   float local_40;
   float local_3c;
@@ -258,76 +258,76 @@ void __cdecl CG_ParseFog(int param_1)
   float local_8;
   float local_4;
   
-  iVar1 = *(int *)(cgArray + 0x40688);
+  transitionTime = *(int *)(cgArray + 0x40688);
   local_44 = &DAT_047ae544 + DAT_047ab27c;
-  iVar3 = FUN_006a9e90();
-  iVar3 = *(int *)(iVar3 + 0x4280) * 0x428 + iVar3;
-  if (*(char *)(iVar3 + 0x408) != '\0') {
-    local_44 = *(undefined **)(iVar3 + 0x420);
-    *(undefined1 *)(iVar3 + 0x408) = 0;
-    *(undefined4 *)(iVar3 + 0x404) = *(undefined4 *)(iVar3 + 0x41c);
+  iVar2 = FUN_006a9e90();
+  iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
+  if (*(char *)(iVar2 + 0x408) != '\0') {
+    local_44 = *(undefined **)(iVar2 + 0x420);
+    *(undefined1 *)(iVar2 + 0x408) = 0;
+    *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
   }
-  pcVar4 = (char *)FUN_006aa5f0(&local_44,1);
-  dVar6 = atof(pcVar4);
-  local_1c = (float)dVar6;
-  iVar3 = FUN_006a9e90();
-  iVar3 = *(int *)(iVar3 + 0x4280) * 0x428 + iVar3;
-  if (*(char *)(iVar3 + 0x408) != '\0') {
-    local_44 = *(undefined **)(iVar3 + 0x420);
-    *(undefined1 *)(iVar3 + 0x408) = 0;
-    *(undefined4 *)(iVar3 + 0x404) = *(undefined4 *)(iVar3 + 0x41c);
+  pcVar3 = (char *)FUN_006aa5f0(&local_44,1);
+  dVar5 = atof(pcVar3);
+  local_1c = (float)dVar5;
+  iVar2 = FUN_006a9e90();
+  iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
+  if (*(char *)(iVar2 + 0x408) != '\0') {
+    local_44 = *(undefined **)(iVar2 + 0x420);
+    *(undefined1 *)(iVar2 + 0x408) = 0;
+    *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
   }
-  ppcVar5 = (char **)FUN_006aa5f0(&local_44,1);
-  if ((ppcVar5 != (char **)0x0) && (*(char *)ppcVar5 != '\0')) {
-    dVar6 = atof((char *)ppcVar5);
-    local_14 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_18 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_10 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_c = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_8 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_4 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    iVar3 = atoi((char *)ppcVar5);
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_40 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_3c = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_38 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_34 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_30 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_2c = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_28 = (float)dVar6;
-    ppcVar5 = (char **)Com_Parse(ppcVar5);
-    dVar6 = atof((char *)ppcVar5);
-    local_24 = (float)dVar6;
-    pcVar4 = Com_Parse(ppcVar5);
-    dVar6 = atof(pcVar4);
-    local_20 = (float)dVar6;
-    pcVar4 = Com_Parse(unaff_EDI);
-    dVar6 = atof(pcVar4);
-    local_44 = (undefined *)(float)dVar6;
+  ppcVar4 = (char **)FUN_006aa5f0(&local_44,1);
+  if ((ppcVar4 != (char **)0x0) && (*(char *)ppcVar4 != '\0')) {
+    dVar5 = atof((char *)ppcVar4);
+    local_14 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_18 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_10 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_c = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_8 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_4 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    iVar2 = atoi((char *)ppcVar4);
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_40 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_3c = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_38 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_34 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_30 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_2c = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_28 = (float)dVar5;
+    ppcVar4 = (char **)Com_Parse(ppcVar4);
+    dVar5 = atof((char *)ppcVar4);
+    local_24 = (float)dVar5;
+    pcVar3 = Com_Parse(ppcVar4);
+    dVar5 = atof(pcVar3);
+    local_20 = (float)dVar5;
+    pcVar3 = Com_Parse(unaff_EDI);
+    dVar5 = atof(pcVar3);
+    local_44 = (undefined *)(float)dVar5;
     rg.clientFogs[param_1].settings[1].fogStart = local_1c;
     rg.clientFogs[param_1].settings[1].heightDensity = local_18;
     rg.clientFogs[param_1].settings[1].density = local_14;
@@ -346,28 +346,28 @@ void __cdecl CG_ParseFog(int param_1)
     rg.clientFogs[param_1].settings[1].color[1] = local_8;
     rg.clientFogs[param_1].settings[1].color[2] = local_4;
     rg.clientFogs[param_1].settings[1].maxDensity = local_14 * 100.0;
-    R_SwitchFog(1,iVar1,iVar3,(int)pcVar4);
-    pcVar2 = cgArray;
+    R_SwitchFog(1,transitionTime,iVar2,(int)pcVar3);
+    pcVar1 = cgArray;
     *(float *)(cgArray + 0x71908) = local_40;
-    *(float *)(pcVar2 + 0x7190c) = local_3c;
-    *(float *)(pcVar2 + 0x71910) = local_38;
-    *(float *)(pcVar2 + 0x71914) = local_34;
-    *(float *)(pcVar2 + 0x71918) = local_30;
-    *(float *)(pcVar2 + 0x7191c) = local_2c;
-    *(float *)(pcVar2 + 0x71920) = local_28;
-    *(float *)(pcVar2 + 0x71924) = local_24;
-    *(float *)(pcVar2 + 0x71928) = local_20;
-    *(float *)(pcVar2 + 0x718ec) = local_1c;
-    *(float *)(pcVar2 + 0x718f0) = local_c;
-    *(float *)(pcVar2 + 0x718f4) = local_8;
-    *(float *)(pcVar2 + 0x718f8) = local_4;
-    *(float *)(pcVar2 + 0x718fc) = local_14;
-    *(float *)(pcVar2 + 0x71900) = local_18;
-    *(float *)(pcVar2 + 0x71904) = local_10;
-    *(undefined **)(pcVar2 + 0x7192c) = local_44;
+    *(float *)(pcVar1 + 0x7190c) = local_3c;
+    *(float *)(pcVar1 + 0x71910) = local_38;
+    *(float *)(pcVar1 + 0x71914) = local_34;
+    *(float *)(pcVar1 + 0x71918) = local_30;
+    *(float *)(pcVar1 + 0x7191c) = local_2c;
+    *(float *)(pcVar1 + 0x71920) = local_28;
+    *(float *)(pcVar1 + 0x71924) = local_24;
+    *(float *)(pcVar1 + 0x71928) = local_20;
+    *(float *)(pcVar1 + 0x718ec) = local_1c;
+    *(float *)(pcVar1 + 0x718f0) = local_c;
+    *(float *)(pcVar1 + 0x718f4) = local_8;
+    *(float *)(pcVar1 + 0x718f8) = local_4;
+    *(float *)(pcVar1 + 0x718fc) = local_14;
+    *(float *)(pcVar1 + 0x71900) = local_18;
+    *(float *)(pcVar1 + 0x71904) = local_10;
+    *(undefined **)(pcVar1 + 0x7192c) = local_44;
     return;
   }
-  R_SwitchFog(0,iVar1,(int)local_1c,unaff_EBP);
+  R_SwitchFog(0,transitionTime,(int)local_1c,unaff_EBP);
   return;
 }
 

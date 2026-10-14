@@ -22,9 +22,12 @@ MaterialTechniqueSet * __cdecl Material_LoadTechniqueSet(char *param_1)
   char *unaff_ESI;
   char **unaff_EDI;
   bool bVar12;
+  char *name;
   char *pcVar13;
-  LPVOID pvStack_190;
-  LPVOID pvStack_18c;
+  bool usingTechnique;
+  char *text;
+  void *file;
+  void *pvStack_18c;
   byte abStack_188 [136];
   char acStack_100 [256];
   
@@ -88,7 +91,7 @@ LAB_0083680b:
   pMVar7->name = (char *)(pMVar7 + 1);
   pMVar7->worldVertFormat = '\0';
   memcpy((uchar *)(pMVar7 + 1),(uchar *)param_1,(ulong)(pcVar4 + (1 - (int)(param_1 + 1))));
-  pvStack_190 = pvStack_18c;
+  file = pvStack_18c;
   Com_BeginParseSession(acStack_100);
   iVar6 = FUN_006a9e90();
   *(char **)(*(int *)(iVar6 + 0x4280) * 0x428 + 0x418 + iVar6) = "^1ERROR: ";
@@ -103,11 +106,11 @@ LAB_0083680b:
       iVar6 = FUN_006a9e90();
       iVar6 = *(int *)(iVar6 + 0x4280) * 0x428 + iVar6;
       if (*(char *)(iVar6 + 0x408) != '\0') {
-        pvStack_190 = *(LPVOID *)(iVar6 + 0x420);
+        file = *(void **)(iVar6 + 0x420);
         *(undefined1 *)(iVar6 + 0x408) = 0;
         *(undefined4 *)(iVar6 + 0x404) = *(undefined4 *)(iVar6 + 0x41c);
       }
-      pcVar4 = (char *)FUN_006aa5f0(&pvStack_190,1);
+      pcVar4 = (char *)FUN_006aa5f0(&file,1);
       if (*pcVar4 == '\0') goto LAB_00836af9;
       if (*pcVar4 != '\"') break;
       if (iVar11 == 0x82) {
@@ -156,11 +159,11 @@ LAB_00836a35:
     iVar6 = FUN_006a9e90();
     iVar6 = *(int *)(iVar6 + 0x4280) * 0x428 + iVar6;
     if (*(char *)(iVar6 + 0x408) != '\0') {
-      pvStack_190 = *(LPVOID *)(iVar6 + 0x420);
+      file = *(void **)(iVar6 + 0x420);
       *(undefined1 *)(iVar6 + 0x408) = 0;
       *(undefined4 *)(iVar6 + 0x404) = *(undefined4 *)(iVar6 + 0x41c);
     }
-    pbVar9 = (byte *)FUN_006aa5f0(&pvStack_190,1);
+    pbVar9 = (byte *)FUN_006aa5f0(&file,1);
     pbVar10 = &s__;
     pbVar5 = pbVar9;
     do {
@@ -203,6 +206,7 @@ uchar __cdecl MaterialTexture_IsMatureContent(uchar param_1,char *param_2)
 {
   char in_AL;
   int extraout_EAX;
+  char *texImageName;
   undefined3 in_stack_00000005;
   uchar local_8 [4];
   undefined1 *local_4;
@@ -219,57 +223,58 @@ uchar __cdecl MaterialTexture_IsMatureContent(uchar param_1,char *param_2)
 
 // 00838800  Material_Load  (gfx_d3d/r_material_load_obj.cpp:10529)
 
-Material * __cdecl Material_Load(char *param_1,int param_2)
+Material * __cdecl Material_Load(char *imageTrack,int param_2)
 
 {
-  uint uVar1;
-  Material *pMVar2;
-  int iVar3;
-  MaterialRaw *pMVar4;
-  uint uVar5;
+  uint count;
+  Material *pMVar1;
+  int iVar2;
+  MaterialRaw *mtlRaw;
+  uint materialType;
   int unaff_EBP;
-  char *pcVar6;
-  uint uVar7;
+  char *first;
+  uint uVar3;
   int *unaff_EDI;
-  MaterialRaw *pMVar8;
+  char *assetName;
+  MaterialRaw *pMVar4;
   
-  pcVar6 = param_1;
-  if (*param_1 == '*') {
-    pMVar2 = Material_LoadLayered(param_1,unaff_EBP);
-    return pMVar2;
+  first = imageTrack;
+  if (*imageTrack == '*') {
+    pMVar1 = Material_LoadLayered(imageTrack,unaff_EBP);
+    return pMVar1;
   }
-  uVar5 = 1;
-  uVar7 = 0xc;
+  materialType = 1;
+  uVar3 = 0xc;
   do {
-    uVar1 = *(uint *)((int)&g_materialTypeInfo[0].prefixLen + uVar7);
-    iVar3 = strncmp(pcVar6,*(char **)((int)&g_materialTypeInfo[0].prefix + uVar7),uVar1);
-    if (iVar3 == 0) {
-      pcVar6 = pcVar6 + uVar1;
+    count = *(uint *)((int)&g_materialTypeInfo[0].prefixLen + uVar3);
+    iVar2 = strncmp(first,*(char **)((int)&g_materialTypeInfo[0].prefix + uVar3),count);
+    if (iVar2 == 0) {
+      first = first + count;
       break;
     }
-    uVar7 = uVar7 + 0xc;
-    uVar5 = uVar5 + 1;
-  } while (uVar7 < 0x3c);
-  if (uVar5 == 5) {
-    uVar5 = 0;
+    uVar3 = uVar3 + 0xc;
+    materialType = materialType + 1;
+  } while (uVar3 < 0x3c);
+  if (materialType == 5) {
+    materialType = 0;
   }
-  iVar3 = Material_LoadFile((char *)&param_1,unaff_EDI);
-  if (-1 < iVar3) {
-    if (iVar3 != 0) {
-      pMVar4 = (MaterialRaw *)_Hunk_AllocateTempMemoryInternal();
-      pMVar8 = pMVar4;
-      FS_Read(pMVar4,iVar3,(int)param_1);
-      FS_FCloseFile((int)pMVar8);
-      pMVar2 = Material_LoadRaw(pMVar4,uVar5,param_2);
+  iVar2 = Material_LoadFile((char *)&imageTrack,unaff_EDI);
+  if (-1 < iVar2) {
+    if (iVar2 != 0) {
+      mtlRaw = (MaterialRaw *)_Hunk_AllocateTempMemoryInternal();
+      pMVar4 = mtlRaw;
+      FS_Read(mtlRaw,iVar2,(int)imageTrack);
+      FS_FCloseFile((int)pMVar4);
+      pMVar1 = Material_LoadRaw(mtlRaw,materialType,param_2);
       _Hunk_FreeTempMemory();
-      return pMVar2;
+      return pMVar1;
     }
     FS_FCloseFile((int)unaff_EDI);
-    Com_PrintError(8,"^1ERROR: material \'%s\' has zero length\n",pcVar6);
+    Com_PrintError(8,"^1ERROR: material \'%s\' has zero length\n",first);
     return (Material *)0x0;
   }
-  if (*pcVar6 != '$') {
-    Com_PrintError(8,"^1ERROR: Couldn\'t find material \'%s\'\n",pcVar6);
+  if (*first != '$') {
+    Com_PrintError(8,"^1ERROR: Couldn\'t find material \'%s\'\n",first);
   }
   return (Material *)0x0;
 }

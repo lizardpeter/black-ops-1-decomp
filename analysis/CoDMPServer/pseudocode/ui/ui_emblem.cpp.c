@@ -2,23 +2,24 @@
 
 // 0072D3F0  UI_EmblemCyclePalette  (ui/ui_emblem.cpp:69)
 
-int __cdecl UI_EmblemCyclePalette(int param_1,int param_2)
+int __cdecl UI_EmblemCyclePalette(int index,int direction)
 
 {
   int iVar1;
+  int count;
   
   iVar1 = BG_EmblemsGetColorCount();
-  param_1 = param_1 + param_2;
-  if (param_1 < 0) {
-    param_1 = iVar1 + param_1;
+  index = index + direction;
+  if (index < 0) {
+    index = iVar1 + index;
   }
-  return param_1 % iVar1;
+  return index % iVar1;
 }
 
 
 // 0072C890  UI_EmblemClampLayer  (ui/ui_emblem.cpp:80)
 
-void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
+void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *layer)
 
 {
   float fVar1;
@@ -31,7 +32,7 @@ void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
   float local_10;
   float local_8;
   
-  fVar1 = param_1->pos[0];
+  fVar1 = layer->pos[0];
   local_8 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_8 = 1.0;
@@ -42,8 +43,8 @@ void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
   else {
     local_28 = -1.0;
   }
-  param_1->pos[0] = local_28;
-  fVar1 = param_1->pos[1];
+  layer->pos[0] = local_28;
+  fVar1 = layer->pos[1];
   local_10 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_10 = 1.0;
@@ -54,8 +55,8 @@ void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
   else {
     local_2c = -1.0;
   }
-  param_1->pos[1] = local_2c;
-  fVar1 = param_1->scale[0];
+  layer->pos[1] = local_2c;
+  fVar1 = layer->scale[0];
   local_18 = fVar1;
   if (0.0 <= fVar1 - 4.0) {
     local_18 = 4.0;
@@ -66,8 +67,8 @@ void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
   else {
     local_30 = -4.0;
   }
-  param_1->scale[0] = local_30;
-  fVar1 = param_1->scale[1];
+  layer->scale[0] = local_30;
+  fVar1 = layer->scale[1];
   local_20 = fVar1;
   if (0.0 <= fVar1 - 4.0) {
     local_20 = 4.0;
@@ -78,12 +79,12 @@ void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
   else {
     local_34 = -4.0;
   }
-  param_1->scale[1] = local_34;
-  if (360.0 <= param_1->angle) {
-    param_1->angle = param_1->angle - 360.0;
+  layer->scale[1] = local_34;
+  if (360.0 <= layer->angle) {
+    layer->angle = layer->angle - 360.0;
   }
-  if (param_1->angle <= 0.0 && param_1->angle != 0.0) {
-    param_1->angle = param_1->angle + 360.0;
+  if (layer->angle <= 0.0 && layer->angle != 0.0) {
+    layer->angle = layer->angle + 360.0;
   }
   return;
 }
@@ -93,25 +94,25 @@ void __cdecl UI_EmblemClampLayer(CompositeEmblemLayer *param_1)
 
 void __cdecl
 UI_DrawCustomEmblemInternal
-          (int param_1,rectDef_s *param_2,float *param_3,CompositeEmblemLayer *param_4,int param_5,
-          bool param_6)
+          (int contextIndex,rectDef_s *rect,float *color,CompositeEmblemLayer *layers,int layerCount
+          ,bool withSpinner)
 
 {
   bool bVar1;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float x;
+  float y;
+  float h;
+  float w;
   
-  local_14 = param_2->x;
-  local_10 = param_2->y;
-  local_8 = param_2->w;
-  local_c = param_2->h;
-  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_14,&local_10,
-                     &local_8,&local_c,param_2->horzAlign,param_2->vertAlign);
-  bVar1 = CL_CompositeDrawEmblemPhysical(local_14,local_10,local_8,local_c,param_3,param_4,param_5);
-  if ((!bVar1) && (param_6)) {
-    CL_DrawSpinnerPhysical(local_14,local_10,local_8,local_c,param_3);
+  x = rect->x;
+  y = rect->y;
+  w = rect->w;
+  h = rect->h;
+  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),&x,&y,&w,&h,
+                     rect->horzAlign,rect->vertAlign);
+  bVar1 = CL_CompositeDrawEmblemPhysical(x,y,w,h,color,layers,layerCount);
+  if ((!bVar1) && (withSpinner)) {
+    CL_DrawSpinnerPhysical(x,y,w,h,color);
   }
   return;
 }
@@ -119,10 +120,10 @@ UI_DrawCustomEmblemInternal
 
 // 0072B600  UI_DrawCustomEmblem  (ui/ui_emblem.cpp:109)
 
-void __cdecl UI_DrawCustomEmblem(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawCustomEmblem(int contextIndex,rectDef_s *rect,float *color)
 
 {
-  UI_DrawCustomEmblemInternal(param_1,param_2,param_3,s_emblem,0xc,true);
+  UI_DrawCustomEmblemInternal(contextIndex,rect,color,s_emblem,0xc,true);
   return;
 }
 
@@ -130,30 +131,31 @@ void __cdecl UI_DrawCustomEmblem(int param_1,rectDef_s *param_2,float *param_3)
 // 0072B710  UI_DrawEmblemSelector  (ui/ui_emblem.cpp:114)
 
 void __cdecl
-UI_DrawEmblemSelector(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
+UI_DrawEmblemSelector
+          (int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,float *color)
 
 {
-  char *pcVar1;
-  int iVar2;
-  CompositeEmblemLayer local_2c;
-  ExpressionStatement *local_c;
-  short local_8;
+  char *nptr;
+  int iVar1;
+  CompositeEmblemLayer layer;
+  ownerDrawDef_s *ownerDraw;
+  short id;
   
-  local_c = &Item_GetOwnerDrawDef(param_3)->dataExp;
-  if (local_c != (ExpressionStatement *)0x0) {
-    pcVar1 = GetExpressionResultString(param_1,param_3,local_c);
-    iVar2 = atoi(pcVar1);
-    local_8 = (short)iVar2;
-    local_2c.pos[0] = 0.0;
-    local_2c.pos[1] = 0.0;
-    local_2c.scale[0] = 0.0;
-    local_2c.scale[1] = 0.0;
-    local_2c.angle = 0.0;
-    local_2c.outline = false;
-    local_2c.flip = false;
-    local_2c.colorIdx = BG_EmblemsGetIconDefaultColor(local_8);
-    local_2c.icon = local_8;
-    UI_DrawCustomEmblemInternal(param_2,param_4,param_5,&local_2c,1,false);
+  ownerDraw = Item_GetOwnerDrawDef(item);
+  if (&ownerDraw->dataExp != (ExpressionStatement *)0x0) {
+    nptr = GetExpressionResultString(localClientNum,item,&ownerDraw->dataExp);
+    iVar1 = atoi(nptr);
+    id = (short)iVar1;
+    layer.pos[0] = 0.0;
+    layer.pos[1] = 0.0;
+    layer.scale[0] = 0.0;
+    layer.scale[1] = 0.0;
+    layer.angle = 0.0;
+    layer.outline = false;
+    layer.flip = false;
+    layer.colorIdx = BG_EmblemsGetIconDefaultColor(id);
+    layer.icon = id;
+    UI_DrawCustomEmblemInternal(contextIndex,rect,color,&layer,1,false);
   }
   return;
 }
@@ -161,35 +163,37 @@ UI_DrawEmblemSelector(int param_1,int param_2,itemDef_s *param_3,rectDef_s *para
 
 // 0072B7E0  UI_DrawPlayerEmblemServer  (ui/ui_emblem.cpp:140)
 
+/* WARNING: Variable defined which should be unmapped: image */
+
 void __cdecl
 UI_DrawPlayerEmblemServer
-          (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
+          (int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,float *color)
 
 {
-  ExpressionStatement *pEVar1;
-  char *pcVar2;
-  GfxImage *pGVar3;
-  undefined4 in_stack_ffffffd8;
-  float local_20;
-  float local_1c;
-  float local_18;
-  undefined8 local_14;
-  float local_8;
+  ExpressionStatement *statement;
+  char *str;
+  GfxImage *composite;
+  GfxImage *image;
+  ownerDrawDef_s *ownerDraw;
+  float x;
+  float y;
+  float h;
+  undefined8 xuid;
+  float w;
   
-  pEVar1 = &Item_GetOwnerDrawDef(param_3)->dataExp;
-  if (pEVar1 != (ExpressionStatement *)0x0) {
-    pcVar2 = GetExpressionResultString(param_1,param_3,pEVar1);
-    local_14 = I_atoi64(pcVar2);
-    local_20 = param_4->x;
-    local_1c = param_4->y;
-    local_8 = param_4->w;
-    local_18 = param_4->h;
-    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),&local_20,&local_1c,
-                       &local_8,&local_18,param_4->horzAlign,param_4->vertAlign);
-    pGVar3 = PCache_GetPlayerEmblem(-1,CONCAT44(in_stack_ffffffd8,local_14._4_4_));
-    if (pGVar3 != (GfxImage *)0x0) {
-      R_AddCmdDrawStretchComposite
-                (local_20,local_1c,local_8,local_18,0.0,0.0,1.0,1.0,param_5,pGVar3);
+  statement = &Item_GetOwnerDrawDef(item)->dataExp;
+  if (statement != (ExpressionStatement *)0x0) {
+    str = GetExpressionResultString(localClientNum,item,statement);
+    xuid = I_atoi64(str);
+    x = rect->x;
+    y = rect->y;
+    w = rect->w;
+    h = rect->h;
+    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),&x,&y,&w,&h,
+                       rect->horzAlign,rect->vertAlign);
+    composite = PCache_GetPlayerEmblem(-1,CONCAT44(image,xuid._4_4_));
+    if (composite != (GfxImage *)0x0) {
+      R_AddCmdDrawStretchComposite(x,y,w,h,0.0,0.0,1.0,1.0,color,composite);
     }
   }
   return;
@@ -198,21 +202,26 @@ UI_DrawPlayerEmblemServer
 
 // 0072B8F0  UI_DrawPlayerEmblem  (ui/ui_emblem.cpp:167)
 
+/* WARNING: Variable defined which should be unmapped: ownerDraw */
+
 void __cdecl
-UI_DrawPlayerEmblem(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
+UI_DrawPlayerEmblem(int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,float *color
+                   )
 
 {
-  ExpressionStatement *pEVar1;
-  char *pcVar2;
-  long64 lVar3;
+  ExpressionStatement *statement;
+  char *str;
+  long64 lVar1;
+  ownerDrawDef_s *ownerDraw;
   undefined4 local_8;
   
-  pEVar1 = &Item_GetOwnerDrawDef(param_3)->dataExp;
-  if (pEVar1 != (ExpressionStatement *)0x0) {
-    pcVar2 = GetExpressionResultString(param_1,param_3,pEVar1);
-    lVar3 = I_atoi64(pcVar2);
-    local_8 = (undefined4)((ulonglong)lVar3 >> 0x20);
-    UI_DrawPlayerEmblemByXuid(param_1,param_2,param_3,param_4,param_5,CONCAT44(pEVar1,local_8));
+  statement = &Item_GetOwnerDrawDef(item)->dataExp;
+  if (statement != (ExpressionStatement *)0x0) {
+    str = GetExpressionResultString(localClientNum,item,statement);
+    lVar1 = I_atoi64(str);
+    local_8 = (undefined4)((ulonglong)lVar1 >> 0x20);
+    UI_DrawPlayerEmblemByXuid
+              (localClientNum,contextIndex,item,rect,color,CONCAT44(statement,local_8));
   }
   return;
 }
@@ -220,58 +229,64 @@ UI_DrawPlayerEmblem(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_
 
 // 0072B960  UI_DrawPlayerEmblemByXuid  (ui/ui_emblem.cpp:182)
 
+/* WARNING: Variable defined which should be unmapped: localClientNumForMenu */
+
 void __cdecl
 UI_DrawPlayerEmblemByXuid
-          (int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5,
+          (int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,float *color,
           ulong64 param_6)
 
 {
   bool bVar1;
-  uiInfo_s *puVar2;
-  GfxImage *pGVar3;
-  PCacheComponent *pPVar4;
+  uiInfo_s *dc;
+  GfxImage *composite;
+  PCacheComponent *component;
   int in_stack_00000018;
-  int in_stack_ffffffd4;
-  int local_24;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  int localClientNumForMenu;
+  GfxImage *image;
+  int controllerIndex;
+  PCache_ScopedLock __pcache_lock;
+  uiInfo_s *uiInfo;
+  PCachePlayerEmblem *emblem;
+  float x;
+  float y;
+  float h;
+  float w;
   
-  local_24 = Com_LocalClient_GetControllerIndex(param_1);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   if (in_stack_00000018 != 0 || (int)param_6 != 0) {
-    puVar2 = UI_UIContext_GetInfo(param_2);
-    bVar1 = Menu_DoesMenuOrParentsHaveControlFlag(&puVar2->uiDC,param_3->parent,3);
+    dc = UI_UIContext_GetInfo(contextIndex);
+    bVar1 = Menu_DoesMenuOrParentsHaveControlFlag(&dc->uiDC,item->parent,3);
     if ((bVar1) &&
-       (in_stack_ffffffd4 = Menus_MenuInStackLocalClientNum(&puVar2->uiDC,param_3->parent),
-       in_stack_ffffffd4 != -1)) {
-      local_24 = Com_LocalClient_GetControllerIndex(in_stack_ffffffd4);
+       (localClientNumForMenu = Menus_MenuInStackLocalClientNum(&dc->uiDC,item->parent),
+       localClientNumForMenu != -1)) {
+      controllerIndex = Com_LocalClient_GetControllerIndex(localClientNumForMenu);
     }
-    local_14 = param_4->x;
-    local_10 = param_4->y;
-    local_8 = param_4->w;
-    local_c = param_4->h;
-    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),&local_14,&local_10,
-                       &local_8,&local_c,param_4->horzAlign,param_4->vertAlign);
-    bVar1 = CL_CompositeUseGenerated(local_8,local_c);
+    x = rect->x;
+    y = rect->y;
+    w = rect->w;
+    h = rect->h;
+    ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),&x,&y,&w,&h,
+                       rect->horzAlign,rect->vertAlign);
+    bVar1 = CL_CompositeUseGenerated(w,h);
     if ((bVar1) &&
-       (pGVar3 = PCache_GetPlayerEmblem(local_24,CONCAT44(in_stack_ffffffd4,(int)param_6)),
-       pGVar3 != (GfxImage *)0x0)) {
-      R_AddCmdDrawStretchComposite(local_14,local_10,local_8,local_c,0.0,0.0,1.0,1.0,param_5,pGVar3)
-      ;
+       (composite = PCache_GetPlayerEmblem
+                              (controllerIndex,CONCAT44(localClientNumForMenu,(int)param_6)),
+       composite != (GfxImage *)0x0)) {
+      R_AddCmdDrawStretchComposite(x,y,w,h,0.0,0.0,1.0,1.0,color,composite);
     }
     else {
       PCache_Lock();
-      pPVar4 = PCache_GetComponent(local_24,CONCAT44(1,(int)param_6),in_stack_ffffffd4);
-      bVar1 = PCache_TouchComponent(pPVar4);
+      component = PCache_GetComponent(controllerIndex,CONCAT44(1,(int)param_6),localClientNumForMenu
+                                     );
+      bVar1 = PCache_TouchComponent(component);
       if ((bVar1) &&
          (bVar1 = CL_CompositeDrawEmblemPhysical
-                            (local_14,local_10,local_8,local_c,param_5,
-                             (CompositeEmblemLayer *)(pPVar4 + 1),0xc), bVar1)) {
+                            (x,y,w,h,color,(CompositeEmblemLayer *)(component + 1),0xc), bVar1)) {
         PCache_Unlock();
       }
-      else if ((pPVar4->state & 0x20) == 0) {
-        CL_DrawSpinnerPhysical(local_14,local_10,local_8,local_c,param_5);
+      else if ((component->state & 0x20) == 0) {
+        CL_DrawSpinnerPhysical(x,y,w,h,color);
         PCache_Unlock();
       }
       else {
@@ -285,20 +300,20 @@ UI_DrawPlayerEmblemByXuid
 
 // 0072BB80  UI_DrawEmblemIconThumbnail  (ui/ui_emblem.cpp:239)
 
-void __cdecl UI_DrawEmblemIconThumbnail(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawEmblemIconThumbnail(int contextIndex,rectDef_s *rect,float *color)
 
 {
-  CompositeEmblemLayer local_24;
+  CompositeEmblemLayer layer;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    local_24.pos[0] = 0.0;
-    local_24.pos[1] = 0.0;
-    local_24.scale[0] = 0.0;
-    local_24.scale[1] = 0.0;
-    local_24.angle = 0.0;
-    local_24.colorIdx = s_selected->colorIdx;
-    local_24.icon = s_selected->icon;
-    UI_DrawCustomEmblemInternal(param_1,param_2,param_3,&local_24,1,true);
+    layer.pos[0] = 0.0;
+    layer.pos[1] = 0.0;
+    layer.scale[0] = 0.0;
+    layer.scale[1] = 0.0;
+    layer.angle = 0.0;
+    layer.colorIdx = s_selected->colorIdx;
+    layer.icon = s_selected->icon;
+    UI_DrawCustomEmblemInternal(contextIndex,rect,color,&layer,1,true);
   }
   return;
 }
@@ -306,59 +321,66 @@ void __cdecl UI_DrawEmblemIconThumbnail(int param_1,rectDef_s *param_2,float *pa
 
 // 0072BC10  UI_DrawEmblemColors  (ui/ui_emblem.cpp:259)
 
-void __cdecl UI_DrawEmblemColors(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawEmblemColors(int contextIndex,rectDef_s *rect,float *color)
 
 {
   int iVar1;
   float fVar2;
+  float x;
+  float t0;
   float fVar3;
   float fVar4;
-  float fVar5;
-  float fVar6;
-  float local_58;
-  float local_48;
-  float local_2c;
-  Material *local_28;
-  int local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  uiInfo_s *local_14;
-  float local_10;
-  int local_c;
-  float local_8;
+  float by;
+  float t;
+  float bw;
+  float bx;
+  float bh;
+  float blockSize;
+  float SPACING;
+  float spaceSize;
+  int numInRow;
+  uiInfo_s *uiInfo;
+  float mouseY;
+  float dispX;
+  Material *mat;
+  int idx;
+  float dispH;
+  float dispY;
+  float dispW;
+  UiContext *dc;
+  float halfSpaceSize;
+  int count;
+  float mouseX;
   
-  local_c = BG_EmblemsGetColorCount();
-  iVar1 = (int)(local_c + (local_c >> 0x1f & 3U)) >> 2;
-  local_2c = param_2->x;
-  local_1c = param_2->y;
-  local_18 = param_2->w;
-  local_20 = param_2->h * 4.0;
-  local_28 = Material_RegisterHandle("emblem_lut_2d",3);
-  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_2c,&local_1c,
-                     &local_18,&local_20,param_2->horzAlign,param_2->vertAlign);
-  local_14 = UI_GetInfo(0);
-  local_8 = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                            (local_14->uiDC).cursor.x,4);
-  fVar6 = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                          (local_14->uiDC).cursor.y,4);
-  fVar2 = (local_18 * 0.8) / (float)iVar1;
-  fVar5 = local_18 / (float)iVar1 - fVar2;
-  local_10 = fVar5 * 0.5;
-  for (local_24 = 0; local_24 < local_c; local_24 = local_24 + 1) {
-    fVar3 = (float)(local_24 % iVar1) * (fVar2 + fVar5) + local_2c;
-    local_58 = (float)(local_24 / iVar1) * (fVar2 + fVar5) + local_1c;
-    local_48 = fVar2;
-    if ((s_selected != (CompositeEmblemLayer *)0x0) && (local_24 == s_selected->colorIdx)) {
-      local_48 = fVar2 + local_10;
-      local_58 = local_58 - local_10;
+  count = BG_EmblemsGetColorCount();
+  iVar1 = (int)(count + (count >> 0x1f & 3U)) >> 2;
+  dispX = rect->x;
+  dispY = rect->y;
+  dispW = rect->w;
+  dispH = rect->h * 4.0;
+  mat = Material_RegisterHandle("emblem_lut_2d",3);
+  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),&dispX,&dispY,&dispW,
+                     &dispH,rect->horzAlign,rect->vertAlign);
+  dc = &UI_GetInfo(0)->uiDC;
+  mouseX = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                           (((uiInfo_s *)dc)->uiDC).cursor.x,4);
+  fVar4 = ScrPlace_ApplyY((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),(dc->cursor).y,4)
+  ;
+  fVar2 = (dispW * 0.8) / (float)iVar1;
+  fVar3 = dispW / (float)iVar1 - fVar2;
+  halfSpaceSize = fVar3 * 0.5;
+  for (idx = 0; idx < count; idx = idx + 1) {
+    x = (float)(idx % iVar1) * (fVar2 + fVar3) + dispX;
+    by = (float)(idx / iVar1) * (fVar2 + fVar3) + dispY;
+    bh = fVar2;
+    if ((s_selected != (CompositeEmblemLayer *)0x0) && (idx == s_selected->colorIdx)) {
+      bh = fVar2 + halfSpaceSize;
+      by = by - halfSpaceSize;
     }
-    fVar4 = (float)local_24 * 0.0078125 + 0.00390625;
-    R_AddCmdDrawStretchPic
-              (fVar3,local_58,local_48,local_48,0.625,fVar4,0.625,fVar4,colorWhite,local_28);
-    if ((((fVar3 <= local_8) && (local_8 < fVar3 + local_48)) && (local_58 <= fVar6)) &&
-       (fVar6 < local_58 + local_48)) {
-      s_mouseOverColorIdx = local_24;
+    t0 = (float)idx * 0.0078125 + 0.00390625;
+    R_AddCmdDrawStretchPic(x,by,bh,bh,0.625,t0,0.625,t0,colorWhite,mat);
+    if ((((x <= mouseX) && (mouseX < x + bh)) && (by <= fVar4)) && (fVar4 < by + bh)) {
+      s_mouseOverColorIdx = idx;
     }
   }
   return;
@@ -367,124 +389,125 @@ void __cdecl UI_DrawEmblemColors(int param_1,rectDef_s *param_2,float *param_3)
 
 // 0072BED0  UI_EmblemUpdate  (ui/ui_emblem.cpp:408)
 
-void __cdecl UI_EmblemUpdate(int param_1)
+void __cdecl UI_EmblemUpdate(int localClientNum)
 
 {
   int iVar1;
   char *pcVar2;
   float fVar3;
-  float local_84;
+  float fVar4;
+  float r_3;
   float local_80;
   float local_7c;
   float local_78 [3];
-  float local_6c;
+  float r_2;
   float local_68;
   float local_64;
   float local_60 [3];
-  float local_54;
-  float local_50;
-  float local_4c;
-  float local_48;
-  float local_44;
+  float mouseOffsetX;
+  float mouseY;
+  float mouseOffsetY;
+  float mouseX;
+  float r;
   float local_40;
   float local_3c;
   float local_38 [3];
-  undefined4 local_2c;
-  int local_28;
-  uiInfo_s *local_24;
-  float local_20;
-  float local_1c;
-  itemDef_s *local_18;
-  undefined4 local_14;
-  undefined4 local_10;
-  float local_c;
-  menuDef_t *local_8;
+  float ANGULAR_VELOCITY;
+  int controllerIndex;
+  uiInfo_s *uiInfo;
+  float timeScale;
+  float deltaX;
+  itemDef_s *previewItem;
+  float MOVEMENT_VELOCITY;
+  float SCALE_VELOCITY;
+  float deltaY;
+  menuDef_t *emblemMenu;
   
-  local_2c = 0x42900000;
-  local_14 = 0x3ecccccd;
-  local_10 = 0x3f4ccccd;
-  local_24 = UI_GetInfo(param_1);
-  local_28 = Com_LocalClient_GetControllerIndex(param_1);
-  local_20 = 1.0 / (local_24->uiDC).FPS;
-  local_18 = (itemDef_s *)0x0;
-  local_8 = (menuDef_t *)0x0;
-  iVar1 = Key_IsDown(param_1,200);
+  ANGULAR_VELOCITY = 72.0;
+  MOVEMENT_VELOCITY = 0.4;
+  SCALE_VELOCITY = 0.8;
+  uiInfo = UI_GetInfo(localClientNum);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  timeScale = 1.0 / (uiInfo->uiDC).FPS;
+  previewItem = (itemDef_s *)0x0;
+  emblemMenu = (menuDef_t *)0x0;
+  iVar1 = Key_IsDown(localClientNum,200);
   if ((iVar1 == 0) || (s_emblemMoveDownRepeatEnabled == false)) {
-    iVar1 = Key_IsDown(param_1,200);
+    iVar1 = Key_IsDown(localClientNum,200);
     if ((iVar1 == 0) || (s_emblemMoveUpRepeatEnabled == false)) {
       s_emblemMoveUpRepeatEnabled = false;
       s_emblemMoveDownRepeatEnabled = false;
     }
     else {
       pcVar2 = va("emblemMove 0 %f");
-      Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+      Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
       s_emblemMoveDownRepeatEnabled = false;
     }
   }
   else {
     pcVar2 = va("emblemMove 0 %f");
-    Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
     s_emblemMoveUpRepeatEnabled = false;
   }
-  iVar1 = Key_IsDown(param_1,200);
+  iVar1 = Key_IsDown(localClientNum,200);
   if ((iVar1 == 0) || (s_emblemMoveRightRepeatEnabled == false)) {
-    iVar1 = Key_IsDown(param_1,200);
+    iVar1 = Key_IsDown(localClientNum,200);
     if ((iVar1 == 0) || (s_emblemMoveLeftRepeatEnabled == false)) {
       s_emblemMoveLeftRepeatEnabled = false;
       s_emblemMoveRightRepeatEnabled = false;
     }
     else {
       pcVar2 = va("emblemMove %f 0");
-      Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+      Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
       s_emblemMoveRightRepeatEnabled = false;
     }
   }
   else {
     pcVar2 = va("emblemMove %f 0");
-    Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
     s_emblemMoveLeftRepeatEnabled = false;
   }
-  iVar1 = Key_IsDown(param_1,200);
+  iVar1 = Key_IsDown(localClientNum,200);
   if ((iVar1 == 0) || (s_emblemScaleUpRepeatEnabled == false)) {
-    iVar1 = Key_IsDown(param_1,200);
+    iVar1 = Key_IsDown(localClientNum,200);
     if ((iVar1 == 0) || (s_emblemScaleDownRepeatEnabled == false)) {
       s_emblemScaleUpRepeatEnabled = false;
       s_emblemScaleDownRepeatEnabled = false;
     }
     else {
       pcVar2 = va("emblemScale %f %f");
-      Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+      Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
       s_emblemScaleUpRepeatEnabled = false;
     }
   }
   else {
     pcVar2 = va("emblemScale %f %f");
-    Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
     s_emblemScaleDownRepeatEnabled = false;
   }
-  iVar1 = Key_IsDown(param_1,200);
+  iVar1 = Key_IsDown(localClientNum,200);
   if ((iVar1 == 0) || (s_emblemRotateLeftRepeatEnabled == false)) {
-    iVar1 = Key_IsDown(param_1,200);
+    iVar1 = Key_IsDown(localClientNum,200);
     if ((iVar1 == 0) || (s_emblemRotateRightRepeatEnabled == false)) {
       s_emblemRotateLeftRepeatEnabled = false;
       s_emblemRotateRightRepeatEnabled = false;
     }
     else {
       pcVar2 = va("emblemRotate %f");
-      Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+      Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
       s_emblemRotateLeftRepeatEnabled = false;
     }
   }
   else {
     pcVar2 = va("emblemRotate -%f");
-    Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+    Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
     s_emblemRotateRightRepeatEnabled = false;
   }
-  iVar1 = Key_IsDown(param_1,200);
-  if ((iVar1 == 0) || (iVar1 = Key_IsDown(param_1,0xc9), iVar1 == 0)) {
-    if ((s_selected == (CompositeEmblemLayer *)0x0) || (iVar1 = Key_IsDown(param_1,200), iVar1 == 0)
-       ) {
-      iVar1 = Key_IsDown(param_1,0xc9);
+  iVar1 = Key_IsDown(localClientNum,200);
+  if ((iVar1 == 0) || (iVar1 = Key_IsDown(localClientNum,0xc9), iVar1 == 0)) {
+    if ((s_selected == (CompositeEmblemLayer *)0x0) ||
+       (iVar1 = Key_IsDown(localClientNum,200), iVar1 == 0)) {
+      iVar1 = Key_IsDown(localClientNum,0xc9);
       if (iVar1 == 0) {
         s_emblemIsRotating = false;
         s_emblemIsTranslating = false;
@@ -493,66 +516,67 @@ void __cdecl UI_EmblemUpdate(int param_1)
       else {
         s_emblemIsTranslating = false;
         s_emblemIsScaling = false;
-        local_8 = Menus_FindByName(&local_24->uiDC,"emblem_edit");
-        if (((local_8 != (menuDef_t *)0x0) &&
-            (local_18 = Menu_FindItemByName(local_8,"emblem_preview"), local_18 != (itemDef_s *)0x0)
-            ) && ((s_emblemIsRotating != false ||
-                  (iVar1 = Rect_ContainsPoint((local_24->uiDC).contextIndex,&(local_18->window).rect
-                                              ,(local_24->uiDC).cursor.x,(local_24->uiDC).cursor.y),
-                  iVar1 != 0)))) {
+        emblemMenu = Menus_FindByName(&uiInfo->uiDC,"emblem_edit");
+        if (((emblemMenu != (menuDef_t *)0x0) &&
+            (previewItem = Menu_FindItemByName(emblemMenu,"emblem_preview"),
+            previewItem != (itemDef_s *)0x0)) &&
+           ((s_emblemIsRotating != false ||
+            (iVar1 = Rect_ContainsPoint((uiInfo->uiDC).contextIndex,&(previewItem->window).rect,
+                                        (uiInfo->uiDC).cursor.x,(uiInfo->uiDC).cursor.y), iVar1 != 0
+            )))) {
           s_emblemIsRotating = true;
           fVar3 = ScrPlace_ApplyX((ScreenPlacement *)
-                                  (&scrPlaceView + (local_24->uiDC).contextIndex * 0x78),
-                                  (local_24->uiDC).cursor.x,4);
-          local_1c = ScrPlace_ApplyX((ScreenPlacement *)
-                                     (&scrPlaceView + (local_24->uiDC).contextIndex * 0x78),
-                                     (local_24->uiDC).prevCursor.x,4);
-          local_1c = fVar3 - local_1c;
-          local_84 = (local_18->window).rect.x;
-          local_80 = (local_18->window).rect.y;
-          local_7c = (local_18->window).rect.w;
-          local_78[0] = (local_18->window).rect.h;
-          ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_84,&local_80
-                             ,&local_7c,local_78,(local_18->window).rect.horzAlign,
-                             (local_18->window).rect.vertAlign);
-          local_1c = (180.0 / local_7c) * local_1c;
+                                  (&scrPlaceView + (uiInfo->uiDC).contextIndex * 0x78),
+                                  (uiInfo->uiDC).cursor.x,4);
+          fVar4 = ScrPlace_ApplyX((ScreenPlacement *)
+                                  (&scrPlaceView + (uiInfo->uiDC).contextIndex * 0x78),
+                                  (uiInfo->uiDC).prevCursor.x,4);
+          deltaX = fVar3 - fVar4;
+          r_3 = (previewItem->window).rect.x;
+          local_80 = (previewItem->window).rect.y;
+          local_7c = (previewItem->window).rect.w;
+          local_78[0] = (previewItem->window).rect.h;
+          ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&r_3,
+                             &local_80,&local_7c,local_78,(previewItem->window).rect.horzAlign,
+                             (previewItem->window).rect.vertAlign);
+          deltaX = (180.0 / local_7c) * deltaX;
           pcVar2 = va("emblemRotate %f");
-          Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+          Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
         }
       }
     }
     else {
-      local_8 = Menus_FindByName(&local_24->uiDC,"emblem_edit");
-      if (local_8 != (menuDef_t *)0x0) {
+      emblemMenu = Menus_FindByName(&uiInfo->uiDC,"emblem_edit");
+      if (emblemMenu != (menuDef_t *)0x0) {
         s_emblemIsRotating = false;
         s_emblemIsScaling = false;
-        local_18 = Menu_FindItemByName(local_8,"emblem_preview");
-        if ((local_18 != (itemDef_s *)0x0) &&
+        previewItem = Menu_FindItemByName(emblemMenu,"emblem_preview");
+        if ((previewItem != (itemDef_s *)0x0) &&
            ((s_emblemIsTranslating != false ||
-            (iVar1 = Rect_ContainsPoint((local_24->uiDC).contextIndex,&(local_18->window).rect,
-                                        (local_24->uiDC).cursor.x,(local_24->uiDC).cursor.y),
-            iVar1 != 0)))) {
-          local_48 = ScrPlace_ApplyX((ScreenPlacement *)
-                                     (&scrPlaceView + (local_24->uiDC).contextIndex * 0x78),
-                                     (local_24->uiDC).cursor.x,4);
-          local_50 = ScrPlace_ApplyY((ScreenPlacement *)
-                                     (&scrPlaceView + (local_24->uiDC).contextIndex * 0x78),
-                                     (local_24->uiDC).cursor.y,4);
-          local_6c = (local_18->window).rect.x;
-          local_68 = (local_18->window).rect.y;
-          local_64 = (local_18->window).rect.w;
-          local_60[0] = (local_18->window).rect.h;
-          ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_6c,&local_68
-                             ,&local_64,local_60,(local_18->window).rect.horzAlign,
-                             (local_18->window).rect.vertAlign);
-          local_54 = (local_48 - (local_64 * 0.5 + local_6c)) / local_64;
-          local_4c = (local_50 - (local_60[0] * 0.5 + local_68)) / local_60[0];
+            (iVar1 = Rect_ContainsPoint((uiInfo->uiDC).contextIndex,&(previewItem->window).rect,
+                                        (uiInfo->uiDC).cursor.x,(uiInfo->uiDC).cursor.y), iVar1 != 0
+            )))) {
+          mouseX = ScrPlace_ApplyX((ScreenPlacement *)
+                                   (&scrPlaceView + (uiInfo->uiDC).contextIndex * 0x78),
+                                   (uiInfo->uiDC).cursor.x,4);
+          mouseY = ScrPlace_ApplyY((ScreenPlacement *)
+                                   (&scrPlaceView + (uiInfo->uiDC).contextIndex * 0x78),
+                                   (uiInfo->uiDC).cursor.y,4);
+          r_2 = (previewItem->window).rect.x;
+          local_68 = (previewItem->window).rect.y;
+          local_64 = (previewItem->window).rect.w;
+          local_60[0] = (previewItem->window).rect.h;
+          ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&r_2,
+                             &local_68,&local_64,local_60,(previewItem->window).rect.horzAlign,
+                             (previewItem->window).rect.vertAlign);
+          mouseOffsetX = (mouseX - (local_64 * 0.5 + r_2)) / local_64;
+          mouseOffsetY = (mouseY - (local_60[0] * 0.5 + local_68)) / local_60[0];
           if (s_emblemIsTranslating == false) {
-            s_emblemOffsetX = s_selected->pos[0] - local_54;
-            s_emblemOffsetY = s_selected->pos[1] - local_4c;
+            s_emblemOffsetX = s_selected->pos[0] - mouseOffsetX;
+            s_emblemOffsetY = s_selected->pos[1] - mouseOffsetY;
           }
-          s_selected->pos[0] = local_54 + s_emblemOffsetX;
-          s_selected->pos[1] = local_4c + s_emblemOffsetY;
+          s_selected->pos[0] = mouseOffsetX + s_emblemOffsetX;
+          s_selected->pos[1] = mouseOffsetY + s_emblemOffsetY;
           UI_EmblemClampLayer(s_selected);
           s_emblemIsTranslating = true;
         }
@@ -560,33 +584,33 @@ void __cdecl UI_EmblemUpdate(int param_1)
     }
   }
   else {
-    local_8 = Menus_FindByName(&local_24->uiDC,"emblem_edit");
-    if (local_8 != (menuDef_t *)0x0) {
+    emblemMenu = Menus_FindByName(&uiInfo->uiDC,"emblem_edit");
+    if (emblemMenu != (menuDef_t *)0x0) {
       s_emblemIsRotating = false;
       s_emblemIsTranslating = false;
-      local_18 = Menu_FindItemByName(local_8,"emblem_preview");
-      if ((local_18 != (itemDef_s *)0x0) &&
+      previewItem = Menu_FindItemByName(emblemMenu,"emblem_preview");
+      if ((previewItem != (itemDef_s *)0x0) &&
          ((s_emblemIsTranslating != false ||
-          (iVar1 = Rect_ContainsPoint((local_24->uiDC).contextIndex,&(local_18->window).rect,
-                                      (local_24->uiDC).cursor.x,(local_24->uiDC).cursor.y),
-          iVar1 != 0)))) {
+          (iVar1 = Rect_ContainsPoint((uiInfo->uiDC).contextIndex,&(previewItem->window).rect,
+                                      (uiInfo->uiDC).cursor.x,(uiInfo->uiDC).cursor.y), iVar1 != 0))
+         )) {
         fVar3 = ScrPlace_ApplyY((ScreenPlacement *)
-                                (&scrPlaceView + (local_24->uiDC).contextIndex * 0x78),
-                                (local_24->uiDC).cursor.y,4);
-        local_c = ScrPlace_ApplyY((ScreenPlacement *)
-                                  (&scrPlaceView + (local_24->uiDC).contextIndex * 0x78),
-                                  (local_24->uiDC).prevCursor.y,4);
-        local_c = fVar3 - local_c;
-        local_44 = (local_18->window).rect.x;
-        local_40 = (local_18->window).rect.y;
-        local_3c = (local_18->window).rect.w;
-        local_38[0] = (local_18->window).rect.h;
-        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_44,&local_40,
-                           &local_3c,local_38,(local_18->window).rect.horzAlign,
-                           (local_18->window).rect.vertAlign);
-        local_c = (local_c / local_38[0]) * -10.0;
+                                (&scrPlaceView + (uiInfo->uiDC).contextIndex * 0x78),
+                                (uiInfo->uiDC).cursor.y,4);
+        fVar4 = ScrPlace_ApplyY((ScreenPlacement *)
+                                (&scrPlaceView + (uiInfo->uiDC).contextIndex * 0x78),
+                                (uiInfo->uiDC).prevCursor.y,4);
+        deltaY = fVar3 - fVar4;
+        r = (previewItem->window).rect.x;
+        local_40 = (previewItem->window).rect.y;
+        local_3c = (previewItem->window).rect.w;
+        local_38[0] = (previewItem->window).rect.h;
+        ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),&r,&local_40,
+                           &local_3c,local_38,(previewItem->window).rect.horzAlign,
+                           (previewItem->window).rect.vertAlign);
+        deltaY = (deltaY / local_38[0]) * -10.0;
         pcVar2 = va("emblemScale %f %f");
-        Cmd_ExecuteSingleCommand(param_1,local_28,pcVar2);
+        Cmd_ExecuteSingleCommand(localClientNum,controllerIndex,pcVar2);
         s_emblemIsScaling = true;
       }
     }
@@ -606,17 +630,17 @@ int __cdecl UI_EmblemGetSelectedLayer(void)
 
 // 0072CAE0  UI_EmblemCanOutlineLayer  (ui/ui_emblem.cpp:682)
 
-bool __cdecl UI_EmblemCanOutlineLayer(int param_1)
+bool __cdecl UI_EmblemCanOutlineLayer(int layer)
 
 {
   bool bVar1;
   float fVar2;
   
-  if (((param_1 < 0) || (0xb < param_1)) || (s_emblem[param_1].icon == -1)) {
+  if (((layer < 0) || (0xb < layer)) || (s_emblem[layer].icon == -1)) {
     bVar1 = false;
   }
   else {
-    fVar2 = BG_EmblemsGetIconOutlineSize(s_emblem[param_1].icon);
+    fVar2 = BG_EmblemsGetIconOutlineSize(s_emblem[layer].icon);
     bVar1 = 0.0 < fVar2;
   }
   return bVar1;
@@ -625,22 +649,23 @@ bool __cdecl UI_EmblemCanOutlineLayer(int param_1)
 
 // 0072CB40  UI_EmblemCanDuplicateLayer  (ui/ui_emblem.cpp:693)
 
-bool __cdecl UI_EmblemCanDuplicateLayer(int param_1,int param_2)
+bool __cdecl UI_EmblemCanDuplicateLayer(int controllerIndex,int layer)
 
 {
   int iVar1;
   bool local_14;
-  int local_10;
-  int local_8;
+  int i;
+  int purchasedCount;
+  int emptyCount;
   
-  iVar1 = BG_EmblemsGetPurchasedLayerCount(param_1);
-  local_8 = 0;
-  for (local_10 = 0; local_10 < iVar1; local_10 = local_10 + 1) {
-    if (s_emblem[local_10].icon == -1) {
-      local_8 = local_8 + 1;
+  iVar1 = BG_EmblemsGetPurchasedLayerCount(controllerIndex);
+  emptyCount = 0;
+  for (i = 0; i < iVar1; i = i + 1) {
+    if (s_emblem[i].icon == -1) {
+      emptyCount = emptyCount + 1;
     }
   }
-  if ((local_8 < 1) || (iVar1 <= local_8)) {
+  if ((emptyCount < 1) || (iVar1 <= emptyCount)) {
     local_14 = false;
   }
   else {
@@ -662,31 +687,32 @@ void __cdecl UI_EmblemDuplicate_f(void)
   CompositeEmblemLayer *pCVar5;
   char *pcVar6;
   CompositeEmblemLayer *pCVar7;
-  int local_8;
+  int purchasedCount;
+  int hole;
   
   iVar4 = BG_EmblemsGetPurchasedLayerCount(0);
   bVar3 = UI_EmblemCanDuplicateLayer(0,s_selectedLayer);
   if (bVar3) {
-    for (local_8 = 0; (local_8 < iVar4 && (s_emblem[local_8].icon != -1)); local_8 = local_8 + 1) {
+    for (hole = 0; (hole < iVar4 && (s_emblem[hole].icon != -1)); hole = hole + 1) {
     }
-    if ((local_8 == iVar4) &&
+    if ((hole == iVar4) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_emblem.cpp",0x2cf,0,"%s"
                                 ), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((local_8 == s_selectedLayer) &&
+    if ((hole == s_selectedLayer) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_emblem.cpp",0x2d0,0,"%s"
                                 ), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_8 < s_selectedLayer) {
-      for (; local_8 != s_selectedLayer; local_8 = local_8 + 1) {
-        pCVar5 = s_emblem + local_8 + 1;
-        pCVar7 = s_emblem + local_8;
+    if (hole < s_selectedLayer) {
+      for (; hole != s_selectedLayer; hole = hole + 1) {
+        pCVar5 = s_emblem + hole + 1;
+        pCVar7 = s_emblem + hole;
         for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
           uVar2 = *(undefined2 *)&pCVar5->field_0x2;
           pCVar7->icon = pCVar5->icon;
@@ -699,9 +725,9 @@ void __cdecl UI_EmblemDuplicate_f(void)
       s_selected = s_emblem + s_selectedLayer;
     }
     else {
-      for (; local_8 != s_selectedLayer; local_8 = local_8 + -1) {
-        pcVar6 = sTemp + local_8 * 0x20 + 0x30;
-        pCVar5 = s_emblem + local_8;
+      for (; hole != s_selectedLayer; hole = hole + -1) {
+        pcVar6 = sTemp + hole * 0x20 + 0x30;
+        pCVar5 = s_emblem + hole;
         for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
           *(undefined4 *)pCVar5 = *(undefined4 *)pcVar6;
           pcVar6 = pcVar6 + 4;
@@ -716,39 +742,41 @@ void __cdecl UI_EmblemDuplicate_f(void)
 
 // 0072CD20  UI_EmblemIsModified  (ui/ui_emblem.cpp:744)
 
-bool __cdecl UI_EmblemIsModified(int param_1)
+bool __cdecl UI_EmblemIsModified(int controllerIndex)
 
 {
-  PCachePublicProfile *pPVar1;
-  int iVar2;
-  CompositeEmblemLayer *pCVar3;
+  PCachePublicProfile *profile_00;
+  int iVar1;
+  CompositeEmblemLayer *pCVar2;
   int unaff_EDI;
-  CompositeEmblemLayer *pCVar4;
-  bool bVar5;
-  ulong64 uVar6;
-  undefined4 uVar7;
+  CompositeEmblemLayer *pCVar3;
+  bool bVar4;
+  ulong64 uVar5;
+  undefined4 uVar6;
   bool local_198;
-  CompositeEmblemLayer local_18c [12];
-  short local_8 [2];
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *profile;
+  CompositeEmblemLayer layers [12];
+  short backgroundID;
   
   PCache_Lock();
-  uVar7 = 0;
-  uVar6 = Live_GetXuid(param_1);
-  pPVar1 = (PCachePublicProfile *)
-           PCache_GetComponent(param_1,CONCAT44(uVar7,(int)(uVar6 >> 0x20)),unaff_EDI);
-  PCache_GetProfileEmblem(pPVar1,local_18c,0xc,local_8);
-  iVar2 = 0x60;
-  bVar5 = true;
-  pCVar3 = local_18c;
-  pCVar4 = s_emblem;
+  uVar6 = 0;
+  uVar5 = Live_GetXuid(controllerIndex);
+  profile_00 = (PCachePublicProfile *)
+               PCache_GetComponent(controllerIndex,CONCAT44(uVar6,(int)(uVar5 >> 0x20)),unaff_EDI);
+  PCache_GetProfileEmblem(profile_00,layers,0xc,&backgroundID);
+  iVar1 = 0x60;
+  bVar4 = true;
+  pCVar2 = layers;
+  pCVar3 = s_emblem;
   do {
-    if (iVar2 == 0) break;
-    iVar2 = iVar2 + -1;
-    bVar5 = *(int *)pCVar3 == *(int *)pCVar4;
+    if (iVar1 == 0) break;
+    iVar1 = iVar1 + -1;
+    bVar4 = *(int *)pCVar2 == *(int *)pCVar3;
+    pCVar2 = (CompositeEmblemLayer *)&pCVar2->colorIdx;
     pCVar3 = (CompositeEmblemLayer *)&pCVar3->colorIdx;
-    pCVar4 = (CompositeEmblemLayer *)&pCVar4->colorIdx;
-  } while (bVar5);
-  if ((bVar5) && (local_8[0] == s_backgroundID)) {
+  } while (bVar4);
+  if ((bVar4) && (backgroundID == s_backgroundID)) {
     local_198 = false;
   }
   else {
@@ -761,16 +789,16 @@ bool __cdecl UI_EmblemIsModified(int param_1)
 
 // 0072CDD0  UI_EmblemGetLayerName  (ui/ui_emblem.cpp:762)
 
-char * __cdecl UI_EmblemGetLayerName(int param_1)
+char * __cdecl UI_EmblemGetLayerName(int layer)
 
 {
   char *pcVar1;
   
-  if (((param_1 < 0) || (0xb < param_1)) || (s_emblem[param_1].icon == -1)) {
+  if (((layer < 0) || (0xb < layer)) || (s_emblem[layer].icon == -1)) {
     pcVar1 = "";
   }
   else {
-    BG_EmblemsGetIconDesc(-1,s_emblem[param_1].icon);
+    BG_EmblemsGetIconDesc(-1,s_emblem[layer].icon);
     pcVar1 = va("@%s");
   }
   return pcVar1;
@@ -788,13 +816,13 @@ short __cdecl UI_EmblemGetSelectedBackgroundID(void)
 
 // 0072CE30  UI_EmblemGetStateDisplay  (ui/ui_emblem.cpp:798)
 
-char * __cdecl UI_EmblemGetStateDisplay(int param_1,int param_2)
+char * __cdecl UI_EmblemGetStateDisplay(int controllerIndex,int idx)
 
 {
   uint uVar1;
   char *pcVar2;
   
-  uVar1 = param_2 & 0x80000003;
+  uVar1 = idx & 0x80000003;
   if ((int)uVar1 < 0) {
     uVar1 = (uVar1 - 1 | 0xfffffffc) + 1;
   }
@@ -809,24 +837,25 @@ char * __cdecl UI_EmblemGetStateDisplay(int param_1,int param_2)
 
 // 0072CE70  UI_EmblemGetCategoryDisplay  (ui/ui_emblem.cpp:805)
 
-char * __cdecl UI_EmblemGetCategoryDisplay(int param_1,int param_2)
+char * __cdecl UI_EmblemGetCategoryDisplay(int controllerIndex,int idx)
 
 {
   int iVar1;
   char *pcVar2;
   int iVar3;
+  int count;
   
   iVar1 = BG_EmblemsGetCategoryCount();
   iVar1 = iVar1 + -2;
-  iVar1 = (param_2 % iVar1 + iVar1) % iVar1;
+  iVar1 = (idx % iVar1 + iVar1) % iVar1;
   iVar3 = iVar1 + 3;
   if (iVar3 == 3) {
-    BG_EmblemsGetIconCount(param_1,0,0);
+    BG_EmblemsGetIconCount(controllerIndex,0,0);
     UI_SafeTranslateString("EM_CATEGORY_ALL");
     pcVar2 = va("%s (%d)");
   }
   else {
-    BG_EmblemsGetIconCount(param_1,1 << ((char)iVar3 - 1U & 0x1f),0);
+    BG_EmblemsGetIconCount(controllerIndex,1 << ((char)iVar3 - 1U & 0x1f),0);
     pcVar2 = BG_EmblemsGetCategoryDesc(iVar1 + 2);
     UI_SafeTranslateString(pcVar2);
     pcVar2 = va("%s (%d)");
@@ -837,15 +866,17 @@ char * __cdecl UI_EmblemGetCategoryDisplay(int param_1,int param_2)
 
 // 0072CF20  UI_EmblemGetFilterCount  (ui/ui_emblem.cpp:824)
 
-int __cdecl UI_EmblemGetFilterCount(int param_1,int param_2,int param_3)
+int __cdecl UI_EmblemGetFilterCount(int controllerIndex,int state,int category)
 
 {
   int iVar1;
   uint uVar2;
-  uint local_10;
+  uint include;
+  int count;
+  uint exclude;
   
   iVar1 = BG_EmblemsGetCategoryCount();
-  uVar2 = param_2 & 0x80000003;
+  uVar2 = state & 0x80000003;
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
   }
@@ -854,30 +885,32 @@ int __cdecl UI_EmblemGetFilterCount(int param_1,int param_2,int param_3)
     uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
   }
   iVar1 = iVar1 + -2;
-  iVar1 = (param_3 % iVar1 + iVar1) % iVar1 + 3;
+  iVar1 = (category % iVar1 + iVar1) % iVar1 + 3;
   if (iVar1 == 3) {
-    local_10 = s_filterStates[uVar2].include;
+    include = s_filterStates[uVar2].include;
   }
   else {
-    local_10 = 1 << ((char)iVar1 - 1U & 0x1f) | s_filterStates[uVar2].include;
+    include = 1 << ((char)iVar1 - 1U & 0x1f) | s_filterStates[uVar2].include;
   }
-  iVar1 = BG_EmblemsGetIconCount(param_1,local_10,s_filterStates[uVar2].exclude);
+  iVar1 = BG_EmblemsGetIconCount(controllerIndex,include,s_filterStates[uVar2].exclude);
   return iVar1;
 }
 
 
 // 0072CFE0  UI_EmblemGetFilterIconID  (ui/ui_emblem.cpp:844)
 
-short __cdecl UI_EmblemGetFilterIconID(int param_1,int param_2,int param_3,int param_4)
+short __cdecl UI_EmblemGetFilterIconID(int controllerIndex,int state,int category,int index)
 
 {
   short sVar1;
   int iVar2;
   uint uVar3;
-  uint local_10;
+  uint include;
+  int count;
+  uint exclude;
   
   iVar2 = BG_EmblemsGetCategoryCount();
-  uVar3 = param_2 & 0x80000003;
+  uVar3 = state & 0x80000003;
   if ((int)uVar3 < 0) {
     uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
   }
@@ -886,29 +919,29 @@ short __cdecl UI_EmblemGetFilterIconID(int param_1,int param_2,int param_3,int p
     uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
   }
   iVar2 = iVar2 + -2;
-  iVar2 = (param_3 % iVar2 + iVar2) % iVar2 + 3;
+  iVar2 = (category % iVar2 + iVar2) % iVar2 + 3;
   if (iVar2 == 3) {
-    local_10 = s_filterStates[uVar3].include;
+    include = s_filterStates[uVar3].include;
   }
   else {
-    local_10 = 1 << ((char)iVar2 - 1U & 0x1f) | s_filterStates[uVar3].include;
+    include = 1 << ((char)iVar2 - 1U & 0x1f) | s_filterStates[uVar3].include;
   }
-  sVar1 = BG_EmblemsGetIconID(param_1,param_4,local_10,s_filterStates[uVar3].exclude);
+  sVar1 = BG_EmblemsGetIconID(controllerIndex,index,include,s_filterStates[uVar3].exclude);
   return sVar1;
 }
 
 
 // 0072D0A0  UI_EmblemSelect  (ui/ui_emblem.cpp:864)
 
-void __cdecl UI_EmblemSelect(int param_1)
+void __cdecl UI_EmblemSelect(int layer)
 
 {
-  if ((param_1 < 0) || (0xb < param_1)) {
+  if ((layer < 0) || (0xb < layer)) {
     s_selectedLayer = -1;
   }
   else {
-    s_selectedLayer = param_1;
-    s_selected = s_emblem + param_1;
+    s_selectedLayer = layer;
+    s_selected = s_emblem + layer;
   }
   return;
 }
@@ -919,12 +952,13 @@ void __cdecl UI_EmblemSelect(int param_1)
 void __cdecl UI_EmblemSelect_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int layer_00;
+  int layer;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  UI_EmblemSelect(iVar2);
+  nptr = Cmd_Argv(1);
+  layer_00 = atoi(nptr);
+  UI_EmblemSelect(layer_00);
   return;
 }
 
@@ -958,10 +992,10 @@ void __cdecl UI_EmblemClear_f(void)
 void __cdecl UI_EmblemClearAll_f(void)
 
 {
-  int local_8;
+  int layer;
   
-  for (local_8 = 0; local_8 < 0xc; local_8 = local_8 + 1) {
-    CL_CompositeClearLayer(s_emblem + local_8);
+  for (layer = 0; layer < 0xc; layer = layer + 1) {
+    CL_CompositeClearLayer(s_emblem + layer);
   }
   return;
 }
@@ -972,13 +1006,13 @@ void __cdecl UI_EmblemClearAll_f(void)
 void __cdecl UI_EmblemRotate_f(void)
 
 {
-  char *pcVar1;
-  double dVar2;
+  char *nptr;
+  double dVar1;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar1 = Cmd_Argv(1);
-    dVar2 = atof(pcVar1);
-    s_selected->angle = (float)dVar2 + s_selected->angle;
+    nptr = Cmd_Argv(1);
+    dVar1 = atof(nptr);
+    s_selected->angle = (float)dVar1 + s_selected->angle;
     UI_EmblemClampLayer(s_selected);
   }
   return;
@@ -1032,18 +1066,18 @@ void __cdecl UI_EmblemScale_f(void)
 void __cdecl UI_EmblemIcon_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar1 = Cmd_Argv(1);
-    iVar2 = atoi(pcVar1);
-    s_selected->icon = (short)iVar2;
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
+    s_selected->icon = (short)iVar1;
     if ((s_selected->scale[0] == 0.0) || (s_selected->scale[1] == 0.0)) {
       UI_EmblemReset_f();
     }
-    iVar2 = BG_EmblemsGetIconDefaultColor(s_selected->icon);
-    s_selected->colorIdx = iVar2;
+    iVar1 = BG_EmblemsGetIconDefaultColor(s_selected->icon);
+    s_selected->colorIdx = iVar1;
   }
   return;
 }
@@ -1054,13 +1088,13 @@ void __cdecl UI_EmblemIcon_f(void)
 void __cdecl UI_EmblemPalette_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar1 = Cmd_Argv(1);
-    iVar2 = atoi(pcVar1);
-    s_selected->colorIdx = iVar2;
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
+    s_selected->colorIdx = iVar1;
   }
   return;
 }
@@ -1071,14 +1105,14 @@ void __cdecl UI_EmblemPalette_f(void)
 void __cdecl UI_EmblemPaletteCycle_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar1 = Cmd_Argv(1);
-    iVar2 = atoi(pcVar1);
-    iVar2 = UI_EmblemCyclePalette(s_selected->colorIdx,iVar2);
-    s_selected->colorIdx = iVar2;
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
+    iVar1 = UI_EmblemCyclePalette(s_selected->colorIdx,iVar1);
+    s_selected->colorIdx = iVar1;
   }
   return;
 }
@@ -1113,13 +1147,13 @@ void __cdecl UI_EmblemPalettePick_f(void)
 void __cdecl UI_EmblemOutline_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar1 = Cmd_Argv(1);
-    iVar2 = atoi(pcVar1);
-    s_selected->outline = 0 < iVar2;
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
+    s_selected->outline = 0 < iVar1;
   }
   return;
 }
@@ -1142,13 +1176,13 @@ void __cdecl UI_EmblemToggleOutline_f(void)
 void __cdecl UI_EmblemFlip_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar1 = Cmd_Argv(1);
-    iVar2 = atoi(pcVar1);
-    s_selected->flip = 0 < iVar2;
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
+    s_selected->flip = 0 < iVar1;
   }
   return;
 }
@@ -1168,7 +1202,7 @@ void __cdecl UI_EmblemToggleFlip_f(void)
 
 // 0072D5A0  UI_EmblemMoveLayer  (ui/ui_emblem.cpp:1014)
 
-void __cdecl UI_EmblemMoveLayer(int param_1,int param_2)
+void __cdecl UI_EmblemMoveLayer(int controllerIndex,int targetz)
 
 {
   code *pcVar1;
@@ -1180,16 +1214,16 @@ void __cdecl UI_EmblemMoveLayer(int param_1,int param_2)
   CompositeEmblemLayer *pCVar7;
   int local_38;
   int local_30;
-  int local_2c;
-  undefined4 local_28 [8];
-  int local_8;
+  int currentz;
+  undefined4 workLayer [8];
+  int direction;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    local_30 = BG_EmblemsGetPurchasedLayerCount(param_1);
+    local_30 = BG_EmblemsGetPurchasedLayerCount(controllerIndex);
     iVar4 = s_selectedLayer;
     local_30 = local_30 + -1;
-    if (param_2 < local_30) {
-      local_30 = param_2;
+    if (targetz < local_30) {
+      local_30 = targetz;
     }
     if (local_30 < 1) {
       local_38 = 0;
@@ -1198,7 +1232,7 @@ void __cdecl UI_EmblemMoveLayer(int param_1,int param_2)
       local_38 = local_30;
     }
     if (local_38 != s_selectedLayer) {
-      local_2c = s_selectedLayer;
+      currentz = s_selectedLayer;
       if ((local_38 == s_selectedLayer) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_emblem.cpp",0x405,0,
                                    "%s"), !bVar3)) {
@@ -1207,21 +1241,21 @@ void __cdecl UI_EmblemMoveLayer(int param_1,int param_2)
         return;
       }
       if (local_38 < iVar4) {
-        local_8 = -1;
+        direction = -1;
       }
       else {
-        local_8 = 1;
+        direction = 1;
       }
       pCVar5 = s_emblem + s_selectedLayer;
-      puVar6 = local_28;
+      puVar6 = workLayer;
       for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
         *puVar6 = *(undefined4 *)pCVar5;
         pCVar5 = (CompositeEmblemLayer *)&pCVar5->colorIdx;
         puVar6 = puVar6 + 1;
       }
-      for (; local_38 != local_2c; local_2c = local_2c + local_8) {
-        pCVar5 = s_emblem + local_2c + local_8;
-        pCVar7 = s_emblem + local_2c;
+      for (; local_38 != currentz; currentz = currentz + direction) {
+        pCVar5 = s_emblem + currentz + direction;
+        pCVar7 = s_emblem + currentz;
         for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
           uVar2 = *(undefined2 *)&pCVar5->field_0x2;
           pCVar7->icon = pCVar5->icon;
@@ -1230,7 +1264,7 @@ void __cdecl UI_EmblemMoveLayer(int param_1,int param_2)
           pCVar7 = (CompositeEmblemLayer *)&pCVar7->colorIdx;
         }
       }
-      puVar6 = local_28;
+      puVar6 = workLayer;
       pCVar5 = s_emblem + local_38;
       for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
         *(undefined4 *)pCVar5 = *puVar6;
@@ -1256,12 +1290,12 @@ void __cdecl UI_EmblemMoveLayer(int param_1,int param_2)
 void __cdecl UI_EmblemMoveLayer_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int targetz;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  UI_EmblemMoveLayer(0,iVar2);
+  nptr = Cmd_Argv(1);
+  targetz = atoi(nptr);
+  UI_EmblemMoveLayer(0,targetz);
   return;
 }
 
@@ -1271,12 +1305,12 @@ void __cdecl UI_EmblemMoveLayer_f(void)
 void __cdecl UI_EmblemMoveLayerRelative_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  UI_EmblemMoveLayer(0,iVar2 + s_selectedLayer);
+  nptr = Cmd_Argv(1);
+  iVar1 = atoi(nptr);
+  UI_EmblemMoveLayer(0,iVar1 + s_selectedLayer);
   return;
 }
 
@@ -1287,16 +1321,17 @@ void __cdecl UI_EmblemCopy_f(void)
 
 {
   undefined2 uVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
+  CompositeEmblemLayer *pCVar3;
   CompositeEmblemLayer *pCVar4;
-  CompositeEmblemLayer *pCVar5;
   int local_18;
   int local_14;
+  int src;
   
   if (s_selected != (CompositeEmblemLayer *)0x0) {
-    pcVar2 = Cmd_Argv(1);
-    local_14 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    local_14 = atoi(nptr);
     if (10 < local_14) {
       local_14 = 0xb;
     }
@@ -1307,14 +1342,14 @@ void __cdecl UI_EmblemCopy_f(void)
       local_18 = local_14;
     }
     if (local_18 != s_selectedLayer) {
-      pCVar4 = s_emblem + local_18;
-      pCVar5 = s_selected;
-      for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
-        uVar1 = *(undefined2 *)&pCVar4->field_0x2;
-        pCVar5->icon = pCVar4->icon;
-        *(undefined2 *)&pCVar5->field_0x2 = uVar1;
+      pCVar3 = s_emblem + local_18;
+      pCVar4 = s_selected;
+      for (iVar2 = 8; iVar2 != 0; iVar2 = iVar2 + -1) {
+        uVar1 = *(undefined2 *)&pCVar3->field_0x2;
+        pCVar4->icon = pCVar3->icon;
+        *(undefined2 *)&pCVar4->field_0x2 = uVar1;
+        pCVar3 = (CompositeEmblemLayer *)&pCVar3->colorIdx;
         pCVar4 = (CompositeEmblemLayer *)&pCVar4->colorIdx;
-        pCVar5 = (CompositeEmblemLayer *)&pCVar5->colorIdx;
       }
     }
   }
@@ -1357,20 +1392,24 @@ void __cdecl UI_EmblemSetProfile_f(void)
 
 // 0072D840  UI_EmblemGetProfile_f  (ui/ui_emblem.cpp:1098)
 
+/* WARNING: Variable defined which should be unmapped: __pcache_lock */
+
 void __cdecl UI_EmblemGetProfile_f(void)
 
 {
-  PCachePublicProfile *pPVar1;
-  ulong64 uVar2;
-  undefined4 uVar3;
-  int in_stack_fffffff4;
+  PCachePublicProfile *profile_00;
+  ulong64 uVar1;
+  undefined4 uVar2;
+  int iStack_c;
+  PCache_ScopedLock __pcache_lock;
+  PCachePublicProfile *profile;
   
   PCache_Lock();
-  uVar3 = 0;
-  uVar2 = Live_GetXuid(0);
-  pPVar1 = (PCachePublicProfile *)
-           PCache_GetComponent(0,CONCAT44(uVar3,(int)(uVar2 >> 0x20)),in_stack_fffffff4);
-  PCache_GetProfileEmblem(pPVar1,s_emblem,0xc,&s_backgroundID);
+  uVar2 = 0;
+  uVar1 = Live_GetXuid(0);
+  profile_00 = (PCachePublicProfile *)
+               PCache_GetComponent(0,CONCAT44(uVar2,(int)(uVar1 >> 0x20)),iStack_c);
+  PCache_GetProfileEmblem(profile_00,s_emblem,0xc,&s_backgroundID);
   PCache_Unlock();
   return;
 }
@@ -1381,12 +1420,13 @@ void __cdecl UI_EmblemGetProfile_f(void)
 void __cdecl UI_EmblemSelectBackground_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int index_00;
+  int index;
   
-  pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
-  s_backgroundID = BG_EmblemsGetBackgroundID(iVar2);
+  nptr = Cmd_Argv(1);
+  index_00 = atoi(nptr);
+  s_backgroundID = BG_EmblemsGetBackgroundID(index_00);
   return;
 }
 
@@ -1396,12 +1436,13 @@ void __cdecl UI_EmblemSelectBackground_f(void)
 void __cdecl UI_EmblemDump_f(void)
 
 {
-  int local_c;
+  int idx;
+  CompositeEmblemLayer *layer;
   
   Com_Printf(0,"\n// EMBLEM BEGIN\n");
   Com_Printf(0,"emblemClearAll;\n");
-  for (local_c = 0; local_c < 0xc; local_c = local_c + 1) {
-    if (s_emblem[local_c].icon != -1) {
+  for (idx = 0; idx < 0xc; idx = idx + 1) {
+    if (s_emblem[idx].icon != -1) {
       Com_Printf(0,
                  "emblemSelect %d; emblemIcon %d; emblemPalette %d; emblemMove %f %f; emblemScale %f %f; emblemRotate %f; emblemFlip %d; emblemOutline %d;\n"
                 );
@@ -1429,14 +1470,16 @@ void __cdecl UI_EmblemSetAsDefault_f(void)
 
 {
   char *pcVar1;
-  int iVar2;
-  int iVar3;
+  int minlevel_00;
+  int maxlevel_00;
+  int maxlevel;
+  int minlevel;
   
   pcVar1 = Cmd_Argv(1);
-  iVar2 = atoi(pcVar1);
+  minlevel_00 = atoi(pcVar1);
   pcVar1 = Cmd_Argv(2);
-  iVar3 = atoi(pcVar1);
-  BG_EmblemsSetDefaultForLevel(iVar2,iVar3,s_emblem,0xc);
+  maxlevel_00 = atoi(pcVar1);
+  BG_EmblemsSetDefaultForLevel(minlevel_00,maxlevel_00,s_emblem,0xc);
   return;
 }
 

@@ -7,11 +7,11 @@ bool __cdecl ProcessStringEdCmds(void)
 {
   byte bVar1;
   char cVar2;
-  byte *pbVar3;
+  byte *src;
+  char *src_00;
+  LocalizeEntry *pLVar3;
   char *pcVar4;
-  LocalizeEntry *pLVar5;
-  char *pcVar6;
-  bool bVar7;
+  bool bVar5;
   char *local_88;
   char *local_78;
   char *local_68;
@@ -21,100 +21,104 @@ bool __cdecl ProcessStringEdCmds(void)
   int local_30;
   byte *local_28;
   byte *local_24;
-  EXT_Link<LocalizeEntry> *local_1c;
-  LocalizeEntry *local_14;
-  int local_c;
+  LocalizeEntry *Entry;
+  EXT_Link<LocalizeEntry> *Current;
+  char *Value;
+  LocalizeEntry *newEntry;
+  char *Reference;
+  int i;
+  char *strCommand;
   
   Sys_EnterCriticalSection(CRITSECT_STRINGED_COMMAND);
-  local_c = 0;
+  i = 0;
   do {
-    if (StringEdCommandCount <= local_c) {
+    if (StringEdCommandCount <= i) {
       StringEdCommandCount = 0;
       Sys_LeaveCriticalSection(CRITSECT_STRINGED_COMMAND);
       return true;
     }
-    pbVar3 = (byte *)strtok(StringEdCommands[local_c],"!");
-    pcVar4 = strtok((char *)0x0,"\n");
-    local_14 = (LocalizeEntry *)0x0;
-    for (local_1c = overrideLocalizedEntryList.m_Head; pLVar5 = local_14,
-        local_1c != (EXT_Link<LocalizeEntry> *)0x0; local_1c = local_1c->m_Next) {
-      local_24 = (byte *)local_1c->m_Data->name;
-      local_28 = pbVar3;
+    src = (byte *)strtok(StringEdCommands[i],"!");
+    src_00 = strtok((char *)0x0,"\n");
+    newEntry = (LocalizeEntry *)0x0;
+    for (Current = overrideLocalizedEntryList.m_Head; pLVar3 = newEntry,
+        Current != (EXT_Link<LocalizeEntry> *)0x0; Current = Current->m_Next) {
+      local_24 = (byte *)Current->m_Data->name;
+      local_28 = src;
       do {
         bVar1 = *local_28;
-        bVar7 = bVar1 < *local_24;
+        bVar5 = bVar1 < *local_24;
         if (bVar1 != *local_24) {
 LAB_006eda9e:
-          local_30 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
+          local_30 = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
           goto LAB_006edaa6;
         }
         if (bVar1 == 0) break;
         bVar1 = local_28[1];
-        bVar7 = bVar1 < local_24[1];
+        bVar5 = bVar1 < local_24[1];
         if (bVar1 != local_24[1]) goto LAB_006eda9e;
         local_28 = local_28 + 2;
         local_24 = local_24 + 2;
       } while (bVar1 != 0);
       local_30 = 0;
 LAB_006edaa6:
-      pLVar5 = local_1c->m_Data;
+      pLVar3 = Current->m_Data;
       if (local_30 == 0) break;
     }
-    local_14 = pLVar5;
-    if (local_14 == (LocalizeEntry *)0x0) {
-      pLVar5 = Com_LiveAllocate(8);
-      local_38 = pbVar3;
+    newEntry = pLVar3;
+    if (newEntry == (LocalizeEntry *)0x0) {
+      pLVar3 = Com_LiveAllocate(8);
+      local_38 = src;
       do {
         bVar1 = *local_38;
         local_38 = local_38 + 1;
       } while (bVar1 != 0);
-      pcVar6 = Com_LiveAllocate((uint)(local_38 + (1 - (int)(pbVar3 + 1))));
-      pLVar5->name = pcVar6;
-      local_48 = pbVar3;
+      pcVar4 = Com_LiveAllocate((uint)(local_38 + (1 - (int)(src + 1))));
+      pLVar3->name = pcVar4;
+      local_48 = src;
       do {
         bVar1 = *local_48;
         local_48 = local_48 + 1;
       } while (bVar1 != 0);
-      I_strncpyz(pLVar5->name,(char *)pbVar3,(int)(local_48 + (1 - (int)(pbVar3 + 1))));
-      local_58 = pcVar4;
+      I_strncpyz(pLVar3->name,(char *)src,(int)(local_48 + (1 - (int)(src + 1))));
+      local_58 = src_00;
       do {
         cVar2 = *local_58;
         local_58 = local_58 + 1;
       } while (cVar2 != '\0');
-      pcVar6 = Com_LiveAllocate((uint)(local_58 + (1 - (int)(pcVar4 + 1))));
-      pLVar5->value = pcVar6;
-      local_68 = pcVar4;
+      pcVar4 = Com_LiveAllocate((uint)(local_58 + (1 - (int)(src_00 + 1))));
+      pLVar3->value = pcVar4;
+      local_68 = src_00;
       do {
         cVar2 = *local_68;
         local_68 = local_68 + 1;
       } while (cVar2 != '\0');
-      I_strncpyz(pLVar5->value,pcVar4,(int)(local_68 + (1 - (int)(pcVar4 + 1))));
-      EXT_List<LocalizeEntry>::Add(&overrideLocalizedEntryList,pLVar5,false);
+      I_strncpyz(pLVar3->value,src_00,(int)(local_68 + (1 - (int)(src_00 + 1))));
+      EXT_List<LocalizeEntry>::Add(&overrideLocalizedEntryList,pLVar3,false);
     }
     else {
-      Com_LiveDeallocate(local_14->value);
-      local_78 = pcVar4;
+      Com_LiveDeallocate(newEntry->value);
+      local_78 = src_00;
       do {
         cVar2 = *local_78;
         local_78 = local_78 + 1;
       } while (cVar2 != '\0');
-      pcVar6 = Com_LiveAllocate((uint)(local_78 + (1 - (int)(pcVar4 + 1))));
-      local_14->value = pcVar6;
-      local_88 = pcVar4;
+      pcVar4 = Com_LiveAllocate((uint)(local_78 + (1 - (int)(src_00 + 1))));
+      newEntry->value = pcVar4;
+      local_88 = src_00;
       do {
         cVar2 = *local_88;
         local_88 = local_88 + 1;
       } while (cVar2 != '\0');
-      I_strncpyz(local_14->value,pcVar4,(int)(local_88 + (1 - (int)(pcVar4 + 1))));
+      I_strncpyz(newEntry->value,src_00,(int)(local_88 + (1 - (int)(src_00 + 1))));
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 006EDCC0  GetString  (qcommon/stringed_remote.cpp:97)
 
-char * __cdecl GetString(char *param_1)
+char * __cdecl GetString(char *PackageAndStringReference)
 
 {
   byte bVar1;
@@ -122,20 +126,21 @@ char * __cdecl GetString(char *param_1)
   int local_20;
   byte *local_18;
   byte *local_14;
-  EXT_Link<LocalizeEntry> *local_c;
-  char *local_8;
+  LocalizeEntry *Entry;
+  EXT_Link<LocalizeEntry> *Current;
+  char *value;
   
-  local_8 = (char *)0x0;
+  value = (char *)0x0;
   Sys_EnterCriticalSection(CRITSECT_STRINGED_COMMAND);
-  local_c = overrideLocalizedEntryList.m_Head;
+  Current = overrideLocalizedEntryList.m_Head;
   do {
-    if (local_c == (EXT_Link<LocalizeEntry> *)0x0) {
+    if (Current == (EXT_Link<LocalizeEntry> *)0x0) {
 LAB_006edd67:
       Sys_LeaveCriticalSection(CRITSECT_STRINGED_COMMAND);
-      return local_8;
+      return value;
     }
-    local_14 = (byte *)param_1;
-    local_18 = (byte *)local_c->m_Data->name;
+    local_14 = (byte *)PackageAndStringReference;
+    local_18 = (byte *)Current->m_Data->name;
     do {
       bVar1 = *local_18;
       bVar2 = bVar1 < *local_14;
@@ -154,10 +159,10 @@ LAB_006edd44:
     local_20 = 0;
 LAB_006edd4c:
     if (local_20 == 0) {
-      local_8 = local_c->m_Data->value;
+      value = Current->m_Data->value;
       goto LAB_006edd67;
     }
-    local_c = local_c->m_Next;
+    Current = Current->m_Next;
   } while( true );
 }
 
@@ -165,10 +170,11 @@ LAB_006edd4c:
 // 006EDD80  Add  (<external>/projects_pc/cod/codsrc/common/ext_list.h:293)
 
 EXT_Link<LocalizeEntry> * __thiscall
-EXT_List<LocalizeEntry>::Add(EXT_List<LocalizeEntry> *this,LocalizeEntry *param_1,bool param_2)
+EXT_List<LocalizeEntry>::Add(EXT_List<LocalizeEntry> *this,LocalizeEntry *m_Data,bool First)
 
 {
   EXT_Link<LocalizeEntry> *local_14;
+  EXT_Link<LocalizeEntry> *NewLink;
   
   local_14 = operator_new(0xc);
   if (local_14 == (EXT_Link<LocalizeEntry> *)0x0) {
@@ -183,13 +189,13 @@ EXT_List<LocalizeEntry>::Add(EXT_List<LocalizeEntry> *this,LocalizeEntry *param_
     local_14 = (EXT_Link<LocalizeEntry> *)0x0;
   }
   else {
-    local_14->m_Data = param_1;
+    local_14->m_Data = m_Data;
     if ((this->m_Head == (EXT_Link<LocalizeEntry> *)0x0) ||
        (this->m_Tail == (EXT_Link<LocalizeEntry> *)0x0)) {
       this->m_Head = local_14;
       this->m_Tail = local_14;
     }
-    else if (param_2) {
+    else if (First) {
       this->m_Head->m_Last = local_14;
       local_14->m_Next = this->m_Head;
       this->m_Head = local_14;

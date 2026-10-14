@@ -2,13 +2,13 @@
 
 // 00979E7A  _fpclass  (line unknown)
 
-int __cdecl _fpclass(double _X)
+int __cdecl _fpclass(double x)
 
 {
   int iVar1;
   
-  if ((_X._6_2_ & 0x7ff0) == 0x7ff0) {
-    iVar1 = _sptype(_X);
+  if ((x._6_2_ & 0x7ff0) == 0x7ff0) {
+    iVar1 = _sptype(x);
     if (iVar1 == 1) {
       return 0x200;
     }
@@ -23,13 +23,13 @@ int __cdecl _fpclass(double _X)
     }
     return iVar1;
   }
-  if ((((ulonglong)_X & 0x7ff0000000000000) == 0) &&
-     ((((ulonglong)_X & 0xfffff00000000) != 0 || (_X._0_4_ != 0)))) {
-    return (-(uint)(((ulonglong)_X & 0x8000000000000000) != 0) & 0xffffff90) + 0x80;
+  if ((((ulonglong)x & 0x7ff0000000000000) == 0) &&
+     ((((ulonglong)x & 0xfffff00000000) != 0 || (x._0_4_ != 0)))) {
+    return (-(uint)(((ulonglong)x & 0x8000000000000000) != 0) & 0xffffff90) + 0x80;
   }
-  if (_X == 0.0) {
-    return (-(uint)(((ulonglong)_X & 0x8000000000000000) != 0) & 0xffffffe0) + 0x40;
+  if (x == 0.0) {
+    return (-(uint)(((ulonglong)x & 0x8000000000000000) != 0) & 0xffffffe0) + 0x40;
   }
-  return (-(uint)(((ulonglong)_X & 0x8000000000000000) != 0) & 0xffffff08) + 0x100;
+  return (-(uint)(((ulonglong)x & 0x8000000000000000) != 0) & 0xffffff08) + 0x100;
 }
 

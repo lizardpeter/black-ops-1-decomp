@@ -7,14 +7,14 @@
 void __cdecl vp8_update_mode_info_border(int param_1,int param_2,int param_3)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   
   memset((uchar *)(param_1 + param_3 * -300 + -300),'\0',param_3 * 300 + 1);
   if (0 < param_2) {
-    puVar1 = (uchar *)(param_1 + -300);
+    dst = (uchar *)(param_1 + -300);
     do {
-      memset(puVar1,'\0',300);
-      puVar1 = puVar1 + param_3 * 300;
+      memset(dst,'\0',300);
+      dst = dst + param_3 * 300;
       param_2 = param_2 + -1;
     } while (param_2 != 0);
   }

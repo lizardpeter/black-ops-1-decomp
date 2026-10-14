@@ -5,24 +5,25 @@
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-GfxImage * __cdecl WeaponOptions::GetImageFromTable(StringTable *param_1,int param_2,int param_3)
+GfxImage * __cdecl WeaponOptions::GetImageFromTable(StringTable *table,int row,int column)
 
 {
   char cVar1;
-  char *pcVar2;
-  XAssetHeader XVar3;
+  char *name_00;
+  XAssetHeader XVar2;
   char *local_10;
+  char *name;
   
-  pcVar2 = StringTable_GetColumnValueForRow(param_1,param_2,param_3);
-  if (pcVar2 != (char *)0x0) {
-    local_10 = pcVar2;
+  name_00 = StringTable_GetColumnValueForRow(table,row,column);
+  if (name_00 != (char *)0x0) {
+    local_10 = name_00;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    if (local_10 != pcVar2 + 1) {
-      XVar3 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,pcVar2,true,-1);
-      return (GfxImage *)XVar3.xmodelPieces;
+    if (local_10 != name_00 + 1) {
+      XVar2 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,name_00,true,-1);
+      return (GfxImage *)XVar2.xmodelPieces;
     }
   }
   return (GfxImage *)0x0;
@@ -33,20 +34,20 @@ GfxImage * __cdecl WeaponOptions::GetImageFromTable(StringTable *param_1,int par
 
 void __thiscall
 WeaponOptions::InitWeaponOptionTextures
-          (WeaponOptions *this,char *param_1,char *param_2,int param_3,int param_4,
-          GfxImage **param_5,int param_6)
+          (WeaponOptions *this,char *tableName,char *label,int labelCol,int textureCol,
+          GfxImage **overrides,int num)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
-  int local_210;
-  StringTable *local_20c;
-  int local_208;
-  int local_204 [128];
+  int i;
+  StringTable *tablePtr;
+  int nRows;
+  int rows [128];
   
-  StringTable_GetAsset(param_1,&local_20c);
-  if (0x7f < (uint)param_6) {
+  StringTable_GetAsset(tableName,&tablePtr);
+  if (0x7f < (uint)num) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp",
                              0x78,0,"%s");
     if (!bVar2) {
@@ -55,10 +56,10 @@ WeaponOptions::InitWeaponOptionTextures
       return;
     }
   }
-  local_208 = StringTable_Find(local_20c,local_204,param_6,param_3,param_2,-1,(char *)0x0);
-  for (local_210 = 0; local_210 < local_208; local_210 = local_210 + 1) {
-    pGVar3 = GetImageFromTable(local_20c,local_204[local_210],param_4);
-    param_5[local_210] = pGVar3;
+  nRows = StringTable_Find(tablePtr,rows,num,labelCol,label,-1,(char *)0x0);
+  for (i = 0; i < nRows; i = i + 1) {
+    pGVar3 = GetImageFromTable(tablePtr,rows[i],textureCol);
+    overrides[i] = pGVar3;
   }
   return;
 }
@@ -71,23 +72,24 @@ WeaponOptions::InitWeaponOptionTextures
 
 void __thiscall
 WeaponOptions::InitWeaponOptionMaterials
-          (WeaponOptions *this,char *param_1,char *param_2,int param_3,int param_4,
-          Material **param_5,int param_6)
+          (WeaponOptions *this,char *tableName,char *label,int labelCol,int materialCol,
+          Material **overrides,int num)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  XAssetHeader XVar5;
+  char *name;
+  XAssetHeader XVar4;
   char *local_220;
-  int local_210;
-  StringTable *local_20c;
-  int local_208;
-  int local_204 [128];
+  char *materialName;
+  int i;
+  StringTable *tablePtr;
+  int nRows;
+  int rows [128];
   
-  StringTable_GetAsset(param_1,&local_20c);
-  if (0x7f < (uint)param_6) {
+  StringTable_GetAsset(tableName,&tablePtr);
+  if (0x7f < (uint)num) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp",
                              0x87,0,"%s");
     if (!bVar3) {
@@ -96,22 +98,22 @@ WeaponOptions::InitWeaponOptionMaterials
       return;
     }
   }
-  local_208 = StringTable_Find(local_20c,local_204,param_6,param_3,param_2,-1,(char *)0x0);
-  for (local_210 = 0; local_210 < local_208; local_210 = local_210 + 1) {
-    pcVar4 = StringTable_GetColumnValueForRow(local_20c,local_204[local_210],param_4);
-    if (pcVar4 != (char *)0x0) {
-      local_220 = pcVar4;
+  nRows = StringTable_Find(tablePtr,rows,num,labelCol,label,-1,(char *)0x0);
+  for (i = 0; i < nRows; i = i + 1) {
+    name = StringTable_GetColumnValueForRow(tablePtr,rows[i],materialCol);
+    if (name != (char *)0x0) {
+      local_220 = name;
       do {
         cVar1 = *local_220;
         local_220 = local_220 + 1;
       } while (cVar1 != '\0');
-      if (local_220 != pcVar4 + 1) {
-        XVar5 = DB_FindXAssetHeader(ASSET_TYPE_MATERIAL,pcVar4,true,-1);
-        *(XAssetHeader *)(param_5 + local_210) = XVar5;
-        if ((param_5[local_210] != (Material *)0x0) &&
+      if (local_220 != name + 1) {
+        XVar4 = DB_FindXAssetHeader(ASSET_TYPE_MATERIAL,name,true,-1);
+        *(XAssetHeader *)(overrides + i) = XVar4;
+        if ((overrides[i] != (Material *)0x0) &&
            (this->facepaintMaterials[0]->textureCount != '\x01')) {
           Com_PrintWarning(0,"Weapon option material \'%s\' can have only 1 texture\n");
-          param_5[local_210] = (Material *)0x0;
+          overrides[i] = (Material *)0x0;
         }
       }
     }
@@ -124,46 +126,47 @@ WeaponOptions::InitWeaponOptionMaterials
 
 void __thiscall
 WeaponOptions::InitWeaponOptionColors
-          (WeaponOptions *this,char *param_1,char *param_2,int param_3,int param_4,
-          float (*param_5) [4])
+          (WeaponOptions *this,char *tableName,char *label,int labelCol,int colorsCol,
+          float (*colors) [4])
 
 {
   char cVar1;
-  char *pcVar2;
+  char *string;
+  float (*pafVar2) [4];
   float (*pafVar3) [4];
-  float (*pafVar4) [4];
   char *local_6c;
-  int local_54;
-  uint local_50;
-  StringTable *local_4c;
-  int local_48;
-  int local_44 [16];
+  char *colorsStr;
+  int i_2;
+  int i;
+  StringTable *tablePtr;
+  int nRows;
+  int rows [16];
   
-  for (local_50 = 0; local_50 < 0x10; local_50 = local_50 + 1) {
-    pafVar3 = param_5 + local_50;
-    (*pafVar3)[0] = -1.0;
-    (*pafVar3)[1] = -1.0;
-    (*pafVar3)[2] = -1.0;
-    (*pafVar3)[3] = -1.0;
+  for (i = 0; (uint)i < 0x10; i = i + 1) {
+    pafVar2 = colors + i;
+    (*pafVar2)[0] = -1.0;
+    (*pafVar2)[1] = -1.0;
+    (*pafVar2)[2] = -1.0;
+    (*pafVar2)[3] = -1.0;
   }
-  StringTable_GetAsset(param_1,&local_4c);
-  local_48 = StringTable_Find(local_4c,local_44,0x10,param_3,param_2,-1,(char *)0x0);
-  for (local_54 = 0; local_54 < local_48; local_54 = local_54 + 1) {
-    pcVar2 = StringTable_GetColumnValueForRow(local_4c,local_44[local_54],param_4);
-    if (pcVar2 != (char *)0x0) {
-      local_6c = pcVar2;
+  StringTable_GetAsset(tableName,&tablePtr);
+  nRows = StringTable_Find(tablePtr,rows,0x10,labelCol,label,-1,(char *)0x0);
+  for (i_2 = 0; i_2 < nRows; i_2 = i_2 + 1) {
+    string = StringTable_GetColumnValueForRow(tablePtr,rows[i_2],colorsCol);
+    if (string != (char *)0x0) {
+      local_6c = string;
       do {
         cVar1 = *local_6c;
         local_6c = local_6c + 1;
       } while (cVar1 != '\0');
-      if (local_6c != pcVar2 + 1) {
-        sscanf(pcVar2,"%f %f %f");
-        pafVar3 = param_5 + local_54;
-        pafVar4 = param_5 + local_54;
-        (*pafVar3)[0] = (*pafVar4)[0] * 0.003921569;
-        (*pafVar3)[1] = (*pafVar4)[1] * 0.003921569;
-        (*pafVar3)[2] = (*pafVar4)[2] * 0.003921569;
-        (*pafVar3)[3] = (*pafVar4)[3] * 0.003921569;
+      if (local_6c != string + 1) {
+        sscanf(string,"%f %f %f");
+        pafVar2 = colors + i_2;
+        pafVar3 = colors + i_2;
+        (*pafVar2)[0] = (*pafVar3)[0] * 0.003921569;
+        (*pafVar2)[1] = (*pafVar3)[1] * 0.003921569;
+        (*pafVar2)[2] = (*pafVar3)[2] * 0.003921569;
+        (*pafVar2)[3] = (*pafVar3)[3] * 0.003921569;
       }
     }
   }
@@ -180,25 +183,22 @@ void __thiscall WeaponOptions::InitWeaponOptions(WeaponOptions *this)
 
 {
   GfxImage *pGVar1;
-  char *pcVar2;
-  int iVar3;
-  XAssetHeader XVar4;
-  uint local_14;
-  StringTable *local_10;
-  int local_c;
-  int local_8;
+  char *nptr;
+  int iVar2;
+  XAssetHeader XVar3;
+  int i;
+  StringTable *tablePtr;
+  int goldRow;
+  int blackRow;
   
   memset((uchar *)this,'\0',0x8500);
-  for (local_14 = 0; local_14 < 10; local_14 = local_14 + 1) {
+  for (i = 0; (uint)i < 10; i = i + 1) {
     InitWeaponOptionTextures
-              (this,"mp/weaponoptions.csv","camo",1,local_14 + 2,
-               this->camoTextureOverrides[local_14],0x40);
+              (this,"mp/weaponoptions.csv","camo",1,i + 2,this->camoTextureOverrides[i],0x40);
     InitWeaponOptionTextures
-              (this,"mp/weaponoptions.csv","lens",1,local_14 + 3,
-               this->lensTextureOverrides[local_14],0x10);
+              (this,"mp/weaponoptions.csv","lens",1,i + 3,this->lensTextureOverrides[i],0x10);
     InitWeaponOptionTextures
-              (this,"mp/weaponoptions.csv","reticle",1,local_14 + 2,
-               this->reticleTextureOverrides[local_14],0x40);
+              (this,"mp/weaponoptions.csv","reticle",1,i + 2,this->reticleTextureOverrides[i],0x40);
   }
   InitWeaponOptionColors(this,"mp/weaponoptions.csv","reticle_color",1,2,this->reticleColors);
   InitWeaponOptionColors(this,"mp/weaponoptions.csv","lens",1,2,this->lensColors);
@@ -206,38 +206,38 @@ void __thiscall WeaponOptions::InitWeaponOptions(WeaponOptions *this)
   ;
   InitWeaponOptionColors(this,"mp/bodyHeadTable.csv","pattern_color",1,3,this->facepaintColors);
   this->numWeaponOverrides = 0;
-  StringTable_GetAsset("mp/weaponoptions.csv",&local_10);
-  local_c = StringTable_LookupRowNumForValue(local_10,1,"gold");
-  if (local_c != -1) {
-    pGVar1 = GetImageFromTable(local_10,local_c,2);
+  StringTable_GetAsset("mp/weaponoptions.csv",&tablePtr);
+  goldRow = StringTable_LookupRowNumForValue(tablePtr,1,"gold");
+  if (goldRow != -1) {
+    pGVar1 = GetImageFromTable(tablePtr,goldRow,2);
     (this->gold).diffuseTexture = pGVar1;
-    pGVar1 = GetImageFromTable(local_10,local_c,3);
+    pGVar1 = GetImageFromTable(tablePtr,goldRow,3);
     (this->gold).specularTexture = pGVar1;
-    pGVar1 = GetImageFromTable(local_10,local_c,4);
+    pGVar1 = GetImageFromTable(tablePtr,goldRow,4);
     (this->gold).reflectionTexture = pGVar1;
-    pGVar1 = GetImageFromTable(local_10,local_c,5);
+    pGVar1 = GetImageFromTable(tablePtr,goldRow,5);
     (this->gold).camoTexture = pGVar1;
   }
-  local_8 = StringTable_LookupRowNumForValue(local_10,1,"black");
-  if (local_8 != -1) {
-    pGVar1 = GetImageFromTable(local_10,local_8,2);
+  blackRow = StringTable_LookupRowNumForValue(tablePtr,1,"black");
+  if (blackRow != -1) {
+    pGVar1 = GetImageFromTable(tablePtr,blackRow,2);
     (this->black).diffuseTexture = pGVar1;
-    pGVar1 = GetImageFromTable(local_10,local_8,3);
+    pGVar1 = GetImageFromTable(tablePtr,blackRow,3);
     (this->black).specularTexture = pGVar1;
-    pGVar1 = GetImageFromTable(local_10,local_8,4);
+    pGVar1 = GetImageFromTable(tablePtr,blackRow,4);
     (this->black).reflectionTexture = pGVar1;
-    pGVar1 = GetImageFromTable(local_10,local_8,5);
+    pGVar1 = GetImageFromTable(tablePtr,blackRow,5);
     (this->black).camoTexture = pGVar1;
   }
-  pcVar2 = StringTable_Lookup(local_10,1,"camo",2,"gold",0);
-  iVar3 = atoi(pcVar2);
-  this->goldCamoIndex = iVar3;
-  XVar4 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,"emblem_clear",true,-1);
-  this->emblemClearTexture = (GfxImage *)XVar4;
-  XVar4 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,"clan_font_c",true,-1);
-  this->lightClanTagFont = (GfxImage *)XVar4;
-  XVar4 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,"clan_font_dark_c",true,-1);
-  this->darkClanTagFont = (GfxImage *)XVar4;
+  nptr = StringTable_Lookup(tablePtr,1,"camo",2,"gold",0);
+  iVar2 = atoi(nptr);
+  this->goldCamoIndex = iVar2;
+  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,"emblem_clear",true,-1);
+  this->emblemClearTexture = (GfxImage *)XVar3;
+  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,"clan_font_c",true,-1);
+  this->lightClanTagFont = (GfxImage *)XVar3;
+  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,"clan_font_dark_c",true,-1);
+  this->darkClanTagFont = (GfxImage *)XVar3;
   return;
 }
 
@@ -266,16 +266,14 @@ void __cdecl GC_InitWeaponOptionsDvars(void)
 // 00525C00  FindCamoOverrideIndex  (cgame_mp/cg_weapon_options.cpp:248)
 
 uint __thiscall
-WeaponOptions::FindCamoOverrideIndex(WeaponOptions *this,GfxImage *param_1,uint param_2)
+WeaponOptions::FindCamoOverrideIndex(WeaponOptions *this,GfxImage *base,uint defaultIndex)
 
 {
   uint uVar1;
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0;
-      (uVar1 = param_2, local_8 < 10 &&
-      (uVar1 = local_8, this->camoTextureOverrides[local_8][0] != param_1)); local_8 = local_8 + 1)
-  {
+  for (i = 0; (uVar1 = defaultIndex, i < 10 && (uVar1 = i, this->camoTextureOverrides[i][0] != base)
+              ); i = i + 1) {
   }
   return uVar1;
 }
@@ -284,13 +282,13 @@ WeaponOptions::FindCamoOverrideIndex(WeaponOptions *this,GfxImage *param_1,uint 
 // 00525C50  AddToGold  (cgame_mp/cg_weapon_options.cpp:259)
 
 void __thiscall
-WeaponOptions::WeaponOverride::AddToGold(WeaponOverride *this,char *param_1,bool param_2)
+WeaponOptions::WeaponOverride::AddToGold(WeaponOverride *this,char *matName,bool gold)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2) {
+  if (gold) {
     if ((5 < this->numToGold) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp"
                                  ,0x106,0,"%s"), !bVar2)) {
@@ -298,7 +296,7 @@ WeaponOptions::WeaponOverride::AddToGold(WeaponOverride *this,char *param_1,bool
       (*pcVar1)();
       return;
     }
-    bVar2 = ToGold::Init(this->toGold + this->numToGold,param_1);
+    bVar2 = ToGold::Init(this->toGold + this->numToGold,matName);
     if (bVar2) {
       this->numToGold = this->numToGold + 1;
     }
@@ -311,7 +309,7 @@ WeaponOptions::WeaponOverride::AddToGold(WeaponOverride *this,char *param_1,bool
       (*pcVar1)();
       return;
     }
-    bVar2 = ToGold::Init(this->toBlack + this->numToBlack,param_1);
+    bVar2 = ToGold::Init(this->toBlack + this->numToBlack,matName);
     if (bVar2) {
       this->numToBlack = this->numToBlack + 1;
     }
@@ -322,7 +320,8 @@ WeaponOptions::WeaponOverride::AddToGold(WeaponOverride *this,char *param_1,bool
 
 // 00525D30  Init  (cgame_mp/cg_weapon_options.cpp:275)
 
-void __thiscall WeaponOptions::WeaponOverride::Init(WeaponOverride *this,WeaponVariantDef *param_1)
+void __thiscall
+WeaponOptions::WeaponOverride::Init(WeaponOverride *this,WeaponVariantDef *weapVarDef)
 
 {
   GfxImage *pGVar1;
@@ -339,23 +338,23 @@ void __thiscall WeaponOptions::WeaponOverride::Init(WeaponOverride *this,WeaponV
   int extraout_EAX_07;
   int extraout_EAX_08;
   bool bVar4;
-  StringTable *local_c;
-  int local_8;
+  StringTable *tablePtr;
+  int row;
   
-  StringTable_GetAsset("mp/weaponoptions.csv",&local_c);
+  StringTable_GetAsset("mp/weaponoptions.csv",&tablePtr);
   this->lastFrame = com_frameNumber;
-  this->weapon = param_1;
-  local_8 = StringTable_LookupRowNumForValue
-                      (local_c,1,"weapon",2,param_1->weapDef->parentWeaponName,-1,(char *)0x0);
-  if (local_8 == -1) {
+  this->weapon = weapVarDef;
+  row = StringTable_LookupRowNumForValue
+                  (tablePtr,1,"weapon",2,weapVarDef->weapDef->parentWeaponName,-1,(char *)0x0);
+  if (row == -1) {
     Com_PrintWarning(0xe,
                      "Couldn\'t find weapon parent \'%s\' for weapon \'%s\' in weaponOptions.csv\n")
     ;
   }
   else {
-    pGVar1 = GetImageFromTable(local_c,local_8,3);
+    pGVar1 = GetImageFromTable(tablePtr,row,3);
     this->camoBaseTexture1 = pGVar1;
-    pGVar1 = GetImageFromTable(local_c,local_8,4);
+    pGVar1 = GetImageFromTable(tablePtr,row,4);
     this->camoBaseTexture2 = pGVar1;
     uVar2 = FindCamoOverrideIndex(&weaponOptions,this->camoBaseTexture1,0);
     this->camoOverrideIndex1 = uVar2;
@@ -363,104 +362,104 @@ void __thiscall WeaponOptions::WeaponOverride::Init(WeaponOverride *this,WeaponV
     this->camoOverrideIndex2 = uVar2;
     this->numToGold = 0;
     bVar4 = true;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,5);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,5);
     AddToGold(this,pcVar3,bVar4);
     bVar4 = true;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,6);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,6);
     AddToGold(this,pcVar3,bVar4);
     bVar4 = true;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,7);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,7);
     AddToGold(this,pcVar3,bVar4);
     bVar4 = true;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,8);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,8);
     AddToGold(this,pcVar3,bVar4);
-    strstr((uchar *)param_1->szInternalName,(uchar *)"_acog");
+    strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_acog");
     if (extraout_EAX == 0) {
-      strstr((uchar *)param_1->szInternalName,(uchar *)"_elbit");
+      strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_elbit");
       if (extraout_EAX_00 == 0) {
-        strstr((uchar *)param_1->szInternalName,(uchar *)"_ir");
+        strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_ir");
         if (extraout_EAX_01 == 0) {
-          strstr((uchar *)param_1->szInternalName,(uchar *)"_reflex");
+          strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_reflex");
           if (extraout_EAX_02 == 0) {
-            strstr((uchar *)param_1->szInternalName,(uchar *)"_vzoom");
+            strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_vzoom");
             if (extraout_EAX_03 != 0) {
               bVar4 = true;
-              pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x11);
+              pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x11);
               AddToGold(this,pcVar3,bVar4);
             }
           }
           else {
             bVar4 = true;
-            pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x10);
+            pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x10);
             AddToGold(this,pcVar3,bVar4);
           }
         }
         else {
           bVar4 = true;
-          pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0xf);
+          pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0xf);
           AddToGold(this,pcVar3,bVar4);
         }
       }
       else {
         bVar4 = true;
-        pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0xe);
+        pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0xe);
         AddToGold(this,pcVar3,bVar4);
       }
     }
     else {
       bVar4 = true;
-      pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0xd);
+      pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0xd);
       AddToGold(this,pcVar3,bVar4);
     }
     this->numToBlack = 0;
     bVar4 = false;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,9);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,9);
     AddToGold(this,pcVar3,bVar4);
     bVar4 = false;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,10);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,10);
     AddToGold(this,pcVar3,bVar4);
     bVar4 = false;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0xb);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0xb);
     AddToGold(this,pcVar3,bVar4);
     bVar4 = false;
-    pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0xc);
+    pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0xc);
     AddToGold(this,pcVar3,bVar4);
-    strstr((uchar *)param_1->szInternalName,(uchar *)"_acog");
+    strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_acog");
     if (extraout_EAX_04 == 0) {
-      strstr((uchar *)param_1->szInternalName,(uchar *)"_elbit");
+      strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_elbit");
       if (extraout_EAX_05 == 0) {
-        strstr((uchar *)param_1->szInternalName,(uchar *)"_ir");
+        strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_ir");
         if (extraout_EAX_06 == 0) {
-          strstr((uchar *)param_1->szInternalName,(uchar *)"_reflex");
+          strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_reflex");
           if (extraout_EAX_07 == 0) {
-            strstr((uchar *)param_1->szInternalName,(uchar *)"_vzoom");
+            strstr((uchar *)weapVarDef->szInternalName,(uchar *)"_vzoom");
             if (extraout_EAX_08 != 0) {
               bVar4 = false;
-              pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x16);
+              pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x16);
               AddToGold(this,pcVar3,bVar4);
             }
           }
           else {
             bVar4 = false;
-            pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x15);
+            pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x15);
             AddToGold(this,pcVar3,bVar4);
           }
         }
         else {
           bVar4 = false;
-          pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x14);
+          pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x14);
           AddToGold(this,pcVar3,bVar4);
         }
       }
       else {
         bVar4 = false;
-        pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x13);
+        pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x13);
         AddToGold(this,pcVar3,bVar4);
       }
     }
     else {
       bVar4 = false;
-      pcVar3 = StringTable_GetColumnValueForRow(local_c,local_8,0x12);
+      pcVar3 = StringTable_GetColumnValueForRow(tablePtr,row,0x12);
       AddToGold(this,pcVar3,bVar4);
     }
   }
@@ -473,38 +472,38 @@ void __thiscall WeaponOptions::WeaponOverride::Init(WeaponOverride *this,WeaponV
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __thiscall WeaponOptions::WeaponOverride::ToGold::Init(ToGold *this,char *param_1)
+bool __thiscall WeaponOptions::WeaponOverride::ToGold::Init(ToGold *this,char *matName)
 
 {
-  char *pcVar1;
-  bool bVar2;
-  int iVar3;
+  char *name;
+  bool errorIfMissing;
+  int waitTime;
   XAssetHeader local_14;
-  int local_8;
+  int j;
   
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((matName == (char *)0x0) || (*matName == '\0')) {
     local_14.xmodelPieces = (XModelPieces *)0x0;
   }
   else {
-    iVar3 = -1;
-    bVar2 = true;
-    pcVar1 = va("mc/%s");
-    local_14 = DB_FindXAssetHeader(ASSET_TYPE_MATERIAL,pcVar1,bVar2,iVar3);
+    waitTime = -1;
+    errorIfMissing = true;
+    name = va("mc/%s");
+    local_14 = DB_FindXAssetHeader(ASSET_TYPE_MATERIAL,name,errorIfMissing,waitTime);
   }
   this->material = (Material *)local_14;
   if (this->material != (Material *)0x0) {
-    for (local_8 = 0; local_8 < (int)(uint)this->material->textureCount; local_8 = local_8 + 1) {
-      if (this->material->textureTable[local_8].semantic == '\x02') {
-        this->diffuseTexture = (GfxImage *)this->material->textureTable[local_8].u;
+    for (j = 0; j < (int)(uint)this->material->textureCount; j = j + 1) {
+      if (this->material->textureTable[j].semantic == '\x02') {
+        this->diffuseTexture = (GfxImage *)this->material->textureTable[j].u;
       }
-      else if (this->material->textureTable[local_8].semantic == '\b') {
-        this->specularTexture = (GfxImage *)this->material->textureTable[local_8].u;
+      else if (this->material->textureTable[j].semantic == '\b') {
+        this->specularTexture = (GfxImage *)this->material->textureTable[j].u;
       }
-      else if (this->material->textureTable[local_8].semantic == '\x1b') {
-        this->reflectionTexture = (GfxImage *)this->material->textureTable[local_8].u;
+      else if (this->material->textureTable[j].semantic == '\x1b') {
+        this->reflectionTexture = (GfxImage *)this->material->textureTable[j].u;
       }
-      else if (this->material->textureTable[local_8].semantic == '\x13') {
-        this->camoTexture = (GfxImage *)this->material->textureTable[local_8].u;
+      else if (this->material->textureTable[j].semantic == '\x13') {
+        this->camoTexture = (GfxImage *)this->material->textureTable[j].u;
       }
     }
   }
@@ -515,7 +514,8 @@ bool __thiscall WeaponOptions::WeaponOverride::ToGold::Init(ToGold *this,char *p
 // 005262C0  Set  (cgame_mp/cg_weapon_options.cpp:363)
 
 int __thiscall
-WeaponOptions::WeaponOverride::ToGold::Set(ToGold *this,int param_1,uint param_2,ToGold *param_3)
+WeaponOptions::WeaponOverride::ToGold::Set
+          (ToGold *this,int textureOverrideIndex,uint modelMask,ToGold *gold)
 
 {
   code *pcVar1;
@@ -532,14 +532,15 @@ WeaponOptions::WeaponOverride::ToGold::Set(ToGold *this,int param_1,uint param_2
     }
   }
   iVar3 = R_AllocTextureOverride
-                    (this->material,param_2,this->diffuseTexture,param_3->diffuseTexture,param_1);
+                    (this->material,modelMask,this->diffuseTexture,gold->diffuseTexture,
+                     textureOverrideIndex);
   iVar3 = R_AllocTextureOverride
-                    (this->material,param_2,this->specularTexture,param_3->specularTexture,iVar3);
+                    (this->material,modelMask,this->specularTexture,gold->specularTexture,iVar3);
   iVar3 = R_AllocTextureOverride
-                    (this->material,param_2,this->reflectionTexture,param_3->reflectionTexture,iVar3
-                    );
-  iVar3 = R_AllocTextureOverride
-                    (this->material,param_2,this->camoTexture,param_3->camoTexture,iVar3);
+                    (this->material,modelMask,this->reflectionTexture,gold->reflectionTexture,iVar3)
+  ;
+  iVar3 = R_AllocTextureOverride(this->material,modelMask,this->camoTexture,gold->camoTexture,iVar3)
+  ;
   return iVar3;
 }
 
@@ -547,57 +548,57 @@ WeaponOptions::WeaponOverride::ToGold::Set(ToGold *this,int param_1,uint param_2
 // 005263A0  GetWeaponOverrides  (cgame_mp/cg_weapon_options.cpp:374)
 
 WeaponOverride * __thiscall
-WeaponOptions::GetWeaponOverrides(WeaponOptions *this,WeaponVariantDef *param_1)
+WeaponOptions::GetWeaponOverrides(WeaponOptions *this,WeaponVariantDef *weapVarDef)
 
 {
-  int local_14;
-  int local_10;
-  int local_c;
-  WeaponOverride *local_8;
+  int i_2;
+  int minFrame;
+  int i;
+  WeaponOverride *ret;
   
-  local_8 = (WeaponOverride *)0x0;
-  if (param_1 != (WeaponVariantDef *)0x0) {
-    for (local_c = 0; local_c < this->numWeaponOverrides; local_c = local_c + 1) {
-      if (this->weaponOverrides[local_c].weapon == param_1) {
-        this->weaponOverrides[local_c].lastFrame = com_frameNumber;
-        return this->weaponOverrides + local_c;
+  ret = (WeaponOverride *)0x0;
+  if (weapVarDef != (WeaponVariantDef *)0x0) {
+    for (i = 0; i < this->numWeaponOverrides; i = i + 1) {
+      if (this->weaponOverrides[i].weapon == weapVarDef) {
+        this->weaponOverrides[i].lastFrame = com_frameNumber;
+        return this->weaponOverrides + i;
       }
     }
     if (this->numWeaponOverrides == 100) {
-      local_10 = this->weaponOverrides[0].lastFrame;
-      local_8 = this->weaponOverrides;
-      for (local_14 = 0; local_14 < this->numWeaponOverrides; local_14 = local_14 + 1) {
-        if (this->weaponOverrides[local_14].lastFrame < local_10) {
-          local_10 = this->weaponOverrides[local_14].lastFrame;
-          local_8 = this->weaponOverrides + local_14;
+      minFrame = this->weaponOverrides[0].lastFrame;
+      ret = this->weaponOverrides;
+      for (i_2 = 0; i_2 < this->numWeaponOverrides; i_2 = i_2 + 1) {
+        if (this->weaponOverrides[i_2].lastFrame < minFrame) {
+          minFrame = this->weaponOverrides[i_2].lastFrame;
+          ret = this->weaponOverrides + i_2;
         }
       }
     }
     else {
-      local_8 = this->weaponOverrides + this->numWeaponOverrides;
+      ret = this->weaponOverrides + this->numWeaponOverrides;
       this->numWeaponOverrides = this->numWeaponOverrides + 1;
     }
-    WeaponOverride::Init(local_8,param_1);
+    WeaponOverride::Init(ret,weapVarDef);
   }
-  return local_8;
+  return ret;
 }
 
 
 // 00526510  GetShaderConstant  (cgame_mp/cg_weapon_options.cpp:417)
 
-int __cdecl GetShaderConstant(ShaderConstantSet *param_1,char *param_2)
+int __cdecl GetShaderConstant(ShaderConstantSet *constantSet,char *name)
 
 {
-  undefined4 local_8;
+  int index;
   
-  local_8 = R_GetConstantIndex(param_1,param_2);
-  if (local_8 < 0) {
-    local_8 = R_GetFreeConstantIndex(param_1);
-    if (-1 < local_8) {
-      R_MapShaderConstantSet(param_1,local_8,param_2);
+  index = R_GetConstantIndex(constantSet,name);
+  if (index < 0) {
+    index = R_GetFreeConstantIndex(constantSet);
+    if (-1 < index) {
+      R_MapShaderConstantSet(constantSet,index,name);
     }
   }
-  return local_8;
+  return index;
 }
 
 
@@ -611,8 +612,9 @@ int __cdecl GetShaderConstant(ShaderConstantSet *param_1,char *param_2)
 
 int __thiscall
 WeaponOptions::SetupWeaponOptionsRender
-          (WeaponOptions *this,int param_1,float *param_2,WeaponVariantDef *param_3,
-          renderOptions_s param_4,uint param_5,ShaderConstantSet *param_6,char *param_7,int param_8)
+          (WeaponOptions *this,int localClientNum,float *origin,WeaponVariantDef *weapVarDef,
+          renderOptions_s weaponOptions,uint modelMask,ShaderConstantSet *constantSet,char *name,
+          int textureOverrideIndex)
 
 {
   float (*pafVar1) [4];
@@ -625,142 +627,150 @@ WeaponOptions::SetupWeaponOptionsRender
   float fVar8;
   float fVar9;
   float fVar10;
-  XModelLodRampType XVar11;
-  float *pfVar12;
-  float fVar13;
+  XModelLodRampType lodRampType;
+  float *v;
+  float fVar11;
   undefined4 in_stack_ffffff5c;
-  char cVar14;
+  char cVar12;
   float local_a0;
-  int local_78;
-  int local_74 [4];
-  Glyph *local_64;
-  GfxImage *local_60;
-  int local_5c;
-  float local_58;
+  uint fpPattern;
+  int i_6;
+  int glyphs [4];
+  Glyph *glyphSize;
+  GfxImage *emblem;
+  int player;
+  float shaderBase;
   undefined4 local_54;
   undefined4 local_50;
   undefined4 local_4c;
-  float local_48;
+  float color;
   float local_44;
   float local_40;
   float local_3c;
-  uint local_38;
-  uint local_34;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
-  char local_19;
-  cg_s *local_18;
-  float local_14;
-  uint local_10;
-  WeaponOverride *local_c;
-  char local_5;
+  int i_5;
+  int i_4;
+  uint lens;
+  uint reticle;
+  int i_3;
+  uint i_2;
+  uint i;
+  bool firstPerson;
+  cg_s *cgameGlob;
+  float dist;
+  uint camo;
+  WeaponOverride *weaponOverride;
+  bool goldCamo;
   
-  if (param_4.field0_0x0 == 0) {
-    if (param_6 != (ShaderConstantSet *)0x0) {
-      fVar13 = 0.0;
+  if (weaponOptions.field0_0x0 == 0) {
+    if (constantSet != (ShaderConstantSet *)0x0) {
+      fVar11 = 0.0;
       fVar10 = 0.0;
       fVar9 = 0.0;
       fVar8 = 0.0;
-      iVar4 = GetShaderConstant(param_6,"scriptVector4");
-      R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
-      fVar13 = 0.0;
+      iVar4 = GetShaderConstant(constantSet,"scriptVector4");
+      R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
+      fVar11 = 0.0;
       fVar10 = 0.0;
       fVar9 = 0.0;
       fVar8 = 0.0;
-      iVar4 = GetShaderConstant(param_6,"scriptVector5");
-      R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
-      fVar13 = 0.0;
+      iVar4 = GetShaderConstant(constantSet,"scriptVector5");
+      R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
+      fVar11 = 0.0;
       fVar10 = 0.0;
       fVar9 = 0.0;
       fVar8 = 0.0;
-      iVar4 = GetShaderConstant(param_6,"scriptVector6");
-      R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
+      iVar4 = GetShaderConstant(constantSet,"scriptVector6");
+      R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
     }
   }
   else {
-    local_18 = CG_GetLocalClientGlobals(param_1);
-    local_19 = param_2 == (float *)0x0;
-    if ((bool)local_19) {
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    firstPerson = origin == (float *)0x0;
+    if (firstPerson) {
       local_a0 = 0.0;
     }
     else {
-      XVar11 = XMODEL_LOD_RAMP_RIGID;
-      fVar8 = Vec3Distance(param_2,(local_18->refdef).vieworg);
-      local_a0 = R_GetAdjustedLodDist(fVar8,XVar11);
+      lodRampType = XMODEL_LOD_RAMP_RIGID;
+      fVar8 = Vec3Distance(origin,(cgameGlob->refdef).vieworg);
+      local_a0 = R_GetAdjustedLodDist(fVar8,lodRampType);
     }
-    local_14 = local_a0;
-    local_10 = (uint)param_4.field0_0x0 & 0x3f;
-    local_5 = '\0';
-    local_c = GetWeaponOverrides(this,param_3);
-    if ((local_10 != 0) && (local_14 < (weaponCamoLodDist->current).value)) {
-      if (local_10 == this->goldCamoIndex) {
-        if (local_c != (WeaponOverride *)0x0) {
-          local_5 = '\x01';
-          for (local_20 = 0; local_20 < local_c->numToGold; local_20 = local_20 + 1) {
-            param_8 = WeaponOverride::ToGold::Set
-                                (local_c->toGold + local_20,param_8,param_5,&this->gold);
+    dist = local_a0;
+    camo = (uint)weaponOptions.field0_0x0 & 0x3f;
+    goldCamo = false;
+    weaponOverride = GetWeaponOverrides(this,weapVarDef);
+    if ((camo != 0) && (dist < (weaponCamoLodDist->current).value)) {
+      if (camo == this->goldCamoIndex) {
+        if (weaponOverride != (WeaponOverride *)0x0) {
+          goldCamo = true;
+          for (i = 0; i < weaponOverride->numToGold; i = i + 1) {
+            textureOverrideIndex =
+                 WeaponOverride::ToGold::Set
+                           (weaponOverride->toGold + i,textureOverrideIndex,modelMask,&this->gold);
           }
-          for (local_24 = 0; local_24 < local_c->numToBlack; local_24 = local_24 + 1) {
-            param_8 = WeaponOverride::ToGold::Set
-                                (local_c->toBlack + local_24,param_8,param_5,&this->black);
+          for (i_2 = 0; i_2 < weaponOverride->numToBlack; i_2 = i_2 + 1) {
+            textureOverrideIndex =
+                 WeaponOverride::ToGold::Set
+                           (weaponOverride->toBlack + i_2,textureOverrideIndex,modelMask,
+                            &this->black);
           }
         }
       }
-      else if (local_c == (WeaponOverride *)0x0) {
-        for (local_28 = 0; local_28 < 10; local_28 = local_28 + 1) {
-          param_8 = R_AllocTextureOverride
-                              (param_5,this->camoTextureOverrides[local_28][0],
-                               this->camoTextureOverrides[local_28][local_10],param_8);
+      else if (weaponOverride == (WeaponOverride *)0x0) {
+        for (i_3 = 0; (uint)i_3 < 10; i_3 = i_3 + 1) {
+          textureOverrideIndex =
+               R_AllocTextureOverride
+                         (modelMask,this->camoTextureOverrides[i_3][0],
+                          this->camoTextureOverrides[i_3][camo],textureOverrideIndex);
         }
       }
       else {
         iVar4 = R_AllocTextureOverride
-                          (param_5,local_c->camoBaseTexture2,
-                           this->camoTextureOverrides[local_c->camoOverrideIndex2][local_10],param_8
-                          );
-        param_8 = R_AllocTextureOverride
-                            (param_5,local_c->camoBaseTexture1,
-                             this->camoTextureOverrides[local_c->camoOverrideIndex1][local_10],iVar4
-                            );
-        if ((local_c->camoBaseTexture1 != this->camoTextureOverrides[0][0]) &&
-           (local_c->camoBaseTexture2 != this->camoTextureOverrides[0][0])) {
-          param_8 = R_AllocTextureOverride
-                              (param_5,this->camoTextureOverrides[0][0],
-                               this->camoTextureOverrides[0][local_10],param_8);
+                          (modelMask,weaponOverride->camoBaseTexture2,
+                           this->camoTextureOverrides[weaponOverride->camoOverrideIndex2][camo],
+                           textureOverrideIndex);
+        textureOverrideIndex =
+             R_AllocTextureOverride
+                       (modelMask,weaponOverride->camoBaseTexture1,
+                        this->camoTextureOverrides[weaponOverride->camoOverrideIndex1][camo],iVar4);
+        if ((weaponOverride->camoBaseTexture1 != this->camoTextureOverrides[0][0]) &&
+           (weaponOverride->camoBaseTexture2 != this->camoTextureOverrides[0][0])) {
+          textureOverrideIndex =
+               R_AllocTextureOverride
+                         (modelMask,this->camoTextureOverrides[0][0],
+                          this->camoTextureOverrides[0][camo],textureOverrideIndex);
         }
       }
     }
-    if (local_19 != '\0') {
-      local_30 = (uint)param_4.field0_0x0 >> 6 & 0xf;
-      local_2c = (uint)param_4.field0_0x0 >> 10 & 0x3f;
-      if (local_30 != 0) {
-        for (local_34 = 0; local_34 < 10; local_34 = local_34 + 1) {
-          param_8 = R_AllocTextureOverride
-                              (param_5,this->lensTextureOverrides[local_34][0],
-                               this->lensTextureOverrides[local_34][local_30],param_8);
+    if (firstPerson != false) {
+      lens = (uint)weaponOptions.field0_0x0 >> 6 & 0xf;
+      reticle = (uint)weaponOptions.field0_0x0 >> 10 & 0x3f;
+      if (lens != 0) {
+        for (i_4 = 0; (uint)i_4 < 10; i_4 = i_4 + 1) {
+          textureOverrideIndex =
+               R_AllocTextureOverride
+                         (modelMask,this->lensTextureOverrides[i_4][0],
+                          this->lensTextureOverrides[i_4][lens],textureOverrideIndex);
         }
       }
-      if (local_2c != 0) {
-        for (local_38 = 0; local_38 < 10; local_38 = local_38 + 1) {
-          param_8 = R_AllocTextureOverride
-                              (param_5,this->reticleTextureOverrides[local_38][0],
-                               this->reticleTextureOverrides[local_38][local_2c],param_8);
+      if (reticle != 0) {
+        for (i_5 = 0; (uint)i_5 < 10; i_5 = i_5 + 1) {
+          textureOverrideIndex =
+               R_AllocTextureOverride
+                         (modelMask,this->reticleTextureOverrides[i_5][0],
+                          this->reticleTextureOverrides[i_5][reticle],textureOverrideIndex);
         }
       }
-      if (param_6 != (ShaderConstantSet *)0x0) {
-        if (((uint)param_4.field0_0x0 >> 0x10 & 7) == 0) {
-          fVar13 = 0.0;
+      if (constantSet != (ShaderConstantSet *)0x0) {
+        if (((uint)weaponOptions.field0_0x0 >> 0x10 & 7) == 0) {
+          fVar11 = 0.0;
           fVar10 = 0.0;
           fVar9 = 0.0;
           fVar8 = 0.0;
-          iVar4 = GetShaderConstant(param_6,"scriptVector3");
-          R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
+          iVar4 = GetShaderConstant(constantSet,"scriptVector3");
+          R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
         }
         else {
-          if ((0xf < ((uint)param_4.field0_0x0 >> 0x10 & 7)) &&
+          if ((0xf < ((uint)weaponOptions.field0_0x0 >> 0x10 & 7)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp"
                                        ,0x1f2,0,"%s\n\t(weaponOptions.GetReticleColor()) = %i"),
              !bVar3)) {
@@ -768,137 +778,143 @@ WeaponOptions::SetupWeaponOptionsRender
             iVar4 = (*pcVar2)();
             return iVar4;
           }
-          local_58 = 1.0;
+          shaderBase = 1.0;
           local_54 = 0;
           local_50 = 0;
           local_4c = 0;
-          pafVar1 = this->reticleColors + ((uint)param_4.field0_0x0 >> 0x10 & 7);
-          local_48 = (*pafVar1)[0] - 1.0;
+          pafVar1 = this->reticleColors + ((uint)weaponOptions.field0_0x0 >> 0x10 & 7);
+          color = (*pafVar1)[0] - 1.0;
           local_44 = (*pafVar1)[1] - 0.0;
           local_40 = (*pafVar1)[2] - 0.0;
           local_3c = (*pafVar1)[3] - 0.0;
-          pfVar12 = &local_48;
-          iVar4 = GetShaderConstant(param_6,"scriptVector3");
-          R_SetShaderConstantSetValue(param_6,iVar4,pfVar12);
+          v = &color;
+          iVar4 = GetShaderConstant(constantSet,"scriptVector3");
+          R_SetShaderConstantSetValue(constantSet,iVar4,v);
         }
       }
     }
-    if (((((uint)param_4.field0_0x0 >> 0x15 & 0x1f) != 0) &&
-        (((uint)param_4.field0_0x0 >> 0x13 & 1) != 0)) &&
-       (local_14 < (weaponEmblemLodDist->current).value)) {
-      uVar7 = (uint)param_4.field0_0x0 >> 0x15 & 0x1f;
-      local_5c = uVar7 - 1;
-      local_60 = PCache_GetPlayerEmblem
-                           (-1,CONCAT44(in_stack_ffffff5c,local_18->teamScores[uVar7 * 0x172 + -1]))
-      ;
-      if (local_60 != (GfxImage *)0x0) {
-        param_8 = R_AllocTextureOverride(param_5,this->emblemClearTexture,local_60,param_8);
+    if (((((uint)weaponOptions.field0_0x0 >> 0x15 & 0x1f) != 0) &&
+        (((uint)weaponOptions.field0_0x0 >> 0x13 & 1) != 0)) &&
+       (dist < (weaponEmblemLodDist->current).value)) {
+      uVar7 = (uint)weaponOptions.field0_0x0 >> 0x15 & 0x1f;
+      player = uVar7 - 1;
+      emblem = PCache_GetPlayerEmblem
+                         (-1,CONCAT44(in_stack_ffffff5c,cgameGlob->teamScores[uVar7 * 0x172 + -1]));
+      if (emblem != (GfxImage *)0x0) {
+        textureOverrideIndex =
+             R_AllocTextureOverride(modelMask,this->emblemClearTexture,emblem,textureOverrideIndex);
       }
     }
-    if ((param_6 != (ShaderConstantSet *)0x0) && (local_14 < (weaponClanTagLodDist->current).value))
+    if ((constantSet != (ShaderConstantSet *)0x0) && (dist < (weaponClanTagLodDist->current).value))
     {
       if (this->clanFont == (Font_s *)0x0) {
         XVar5 = DB_FindXAssetHeader(ASSET_TYPE_FONT,"fonts/clanFont",false,-1);
         this->clanFont = (Font_s *)XVar5;
       }
-      if ((((uint)param_4.field0_0x0 >> 0x15 & 0x1f) == 0) ||
-         (((uint)param_4.field0_0x0 >> 0x14 & 1) == 0)) {
-        param_7 = (char *)0x0;
+      if ((((uint)weaponOptions.field0_0x0 >> 0x15 & 0x1f) == 0) ||
+         (((uint)weaponOptions.field0_0x0 >> 0x14 & 1) == 0)) {
+        name = (char *)0x0;
       }
-      else if (param_7 == (char *)0x0) {
-        param_7 = (char *)(local_18->teamScores + ((uint)param_4.field0_0x0 >> 0x15 & 0x1f) * 0x172)
-        ;
+      else if (name == (char *)0x0) {
+        name = (char *)(cgameGlob->teamScores +
+                       ((uint)weaponOptions.field0_0x0 >> 0x15 & 0x1f) * 0x172);
       }
-      if ((this->clanFont == (Font_s *)0x0) || (param_7 == (char *)0x0)) {
-        fVar13 = 0.0;
+      if ((this->clanFont == (Font_s *)0x0) || (name == (char *)0x0)) {
+        fVar11 = 0.0;
         fVar10 = 0.0;
         fVar9 = 0.0;
         fVar8 = 0.0;
-        iVar4 = GetShaderConstant(param_6,"scriptVector4");
-        R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
-        fVar13 = 0.0;
+        iVar4 = GetShaderConstant(constantSet,"scriptVector4");
+        R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
+        fVar11 = 0.0;
         fVar10 = 0.0;
         fVar9 = 0.0;
         fVar8 = 0.0;
-        iVar4 = GetShaderConstant(param_6,"scriptVector5");
-        R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
-        fVar13 = 0.0;
+        iVar4 = GetShaderConstant(constantSet,"scriptVector5");
+        R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
+        fVar11 = 0.0;
         fVar10 = 0.0;
         fVar9 = 0.0;
         fVar8 = 0.0;
-        iVar4 = GetShaderConstant(param_6,"scriptVector6");
-        R_SetShaderConstantSetValue(param_6,iVar4,fVar8,fVar9,fVar10,fVar13);
+        iVar4 = GetShaderConstant(constantSet,"scriptVector6");
+        R_SetShaderConstantSetValue(constantSet,iVar4,fVar8,fVar9,fVar10,fVar11);
       }
       else {
-        local_64 = R_GetCharacterGlyph(this->clanFont,0x21);
-        for (local_78 = 0; local_78 < 4; local_78 = local_78 + 1) {
-          if (param_7[local_78] == '\0') {
-            cVar14 = ' ';
+        glyphSize = R_GetCharacterGlyph(this->clanFont,0x21);
+        for (i_6 = 0; i_6 < 4; i_6 = i_6 + 1) {
+          if (name[i_6] == '\0') {
+            cVar12 = ' ';
           }
           else {
-            cVar14 = param_7[local_78];
+            cVar12 = name[i_6];
           }
-          pGVar6 = R_GetCharacterGlyph(this->clanFont,(int)cVar14);
-          local_74[local_78] = (int)pGVar6;
+          pGVar6 = R_GetCharacterGlyph(this->clanFont,(int)cVar12);
+          glyphs[i_6] = (int)pGVar6;
         }
-        fVar13 = 0.0;
+        fVar11 = 0.0;
         fVar10 = 0.0;
-        fVar8 = local_64->t1 - local_64->t0;
-        fVar9 = local_64->s1 - local_64->s0;
-        iVar4 = GetShaderConstant(param_6,"scriptVector4");
-        R_SetShaderConstantSetValue(param_6,iVar4,fVar9,fVar8,fVar10,fVar13);
-        fVar8 = *(float *)(local_74[1] + 0xc);
-        fVar9 = *(float *)(local_74[1] + 8);
-        fVar10 = *(float *)(local_74[0] + 0xc);
-        fVar13 = *(float *)(local_74[0] + 8);
-        iVar4 = GetShaderConstant(param_6,"scriptVector5");
-        R_SetShaderConstantSetValue(param_6,iVar4,fVar13,fVar10,fVar9,fVar8);
-        fVar8 = *(float *)(local_74[3] + 0xc);
-        fVar9 = *(float *)(local_74[3] + 8);
-        fVar10 = *(float *)(local_74[2] + 0xc);
-        fVar13 = *(float *)(local_74[2] + 8);
-        iVar4 = GetShaderConstant(param_6,"scriptVector6");
-        R_SetShaderConstantSetValue(param_6,iVar4,fVar13,fVar10,fVar9,fVar8);
-        if (local_5 != '\0') {
-          param_8 = R_AllocTextureOverride
-                              (param_5,this->lightClanTagFont,this->darkClanTagFont,param_8);
+        fVar8 = glyphSize->t1 - glyphSize->t0;
+        fVar9 = glyphSize->s1 - glyphSize->s0;
+        iVar4 = GetShaderConstant(constantSet,"scriptVector4");
+        R_SetShaderConstantSetValue(constantSet,iVar4,fVar9,fVar8,fVar10,fVar11);
+        fVar8 = *(float *)(glyphs[1] + 0xc);
+        fVar9 = *(float *)(glyphs[1] + 8);
+        fVar10 = *(float *)(glyphs[0] + 0xc);
+        fVar11 = *(float *)(glyphs[0] + 8);
+        iVar4 = GetShaderConstant(constantSet,"scriptVector5");
+        R_SetShaderConstantSetValue(constantSet,iVar4,fVar11,fVar10,fVar9,fVar8);
+        fVar8 = *(float *)(glyphs[3] + 0xc);
+        fVar9 = *(float *)(glyphs[3] + 8);
+        fVar10 = *(float *)(glyphs[2] + 0xc);
+        fVar11 = *(float *)(glyphs[2] + 8);
+        iVar4 = GetShaderConstant(constantSet,"scriptVector6");
+        R_SetShaderConstantSetValue(constantSet,iVar4,fVar11,fVar10,fVar9,fVar8);
+        if (goldCamo != false) {
+          textureOverrideIndex =
+               R_AllocTextureOverride
+                         (modelMask,this->lightClanTagFont,this->darkClanTagFont,
+                          textureOverrideIndex);
         }
       }
     }
-    if ((((param_6 != (ShaderConstantSet *)0x0) && (local_19 == '\0')) &&
-        (local_14 < (facepaintLodDist->current).value)) &&
-       ((uVar7 = (uint)param_4.field0_0x0 >> 0x1a, uVar7 != 0 &&
+    if ((((constantSet != (ShaderConstantSet *)0x0) && (firstPerson == false)) &&
+        (dist < (facepaintLodDist->current).value)) &&
+       ((uVar7 = (uint)weaponOptions.field0_0x0 >> 0x1a, uVar7 != 0 &&
         (this->facepaintMaterials[uVar7] != (Material *)0x0)))) {
-      param_8 = R_AllocTextureOverride
-                          (param_5,(this->facepaintMaterials[0]->textureTable->u).image,
-                           (this->facepaintMaterials[uVar7]->textureTable->u).image,param_8);
+      textureOverrideIndex =
+           R_AllocTextureOverride
+                     (modelMask,(this->facepaintMaterials[0]->textureTable->u).image,
+                      (this->facepaintMaterials[uVar7]->textureTable->u).image,textureOverrideIndex)
+      ;
     }
   }
-  return param_8;
+  return textureOverrideIndex;
 }
 
 
 // 00526F10  IsValidRenderOption  (cgame_mp/cg_weapon_options.cpp:590)
 
-bool __thiscall WeaponOptions::IsValidRenderOption(WeaponOptions *this,renderOptions_s param_1)
+bool __thiscall
+WeaponOptions::IsValidRenderOption(WeaponOptions *this,renderOptions_s renderOptions)
 
 {
   bool bVar1;
   
-  if ((this->camoTextureOverrides[0][(uint)param_1.field0_0x0 & 0x3f] == (GfxImage *)0x0) &&
-     (((uint)param_1.field0_0x0 & 0x3f) != this->goldCamoIndex)) {
+  if ((this->camoTextureOverrides[0][(uint)renderOptions.field0_0x0 & 0x3f] == (GfxImage *)0x0) &&
+     (((uint)renderOptions.field0_0x0 & 0x3f) != this->goldCamoIndex)) {
     bVar1 = false;
   }
-  else if (this->lensTextureOverrides[0][(uint)param_1.field0_0x0 >> 6 & 0xf] == (GfxImage *)0x0) {
-    bVar1 = false;
-  }
-  else if (this->reticleTextureOverrides[0][(uint)param_1.field0_0x0 >> 10 & 0x3f] ==
+  else if (this->lensTextureOverrides[0][(uint)renderOptions.field0_0x0 >> 6 & 0xf] ==
            (GfxImage *)0x0) {
     bVar1 = false;
   }
-  else if (0.0 < this->reticleColors[(uint)param_1.field0_0x0 >> 0x10 & 7][0] ||
-           this->reticleColors[(uint)param_1.field0_0x0 >> 0x10 & 7][0] == 0.0) {
-    if (this->facepaintMaterials[(uint)param_1.field0_0x0 >> 0x1a] == (Material *)0x0) {
+  else if (this->reticleTextureOverrides[0][(uint)renderOptions.field0_0x0 >> 10 & 0x3f] ==
+           (GfxImage *)0x0) {
+    bVar1 = false;
+  }
+  else if (0.0 < this->reticleColors[(uint)renderOptions.field0_0x0 >> 0x10 & 7][0] ||
+           this->reticleColors[(uint)renderOptions.field0_0x0 >> 0x10 & 7][0] == 0.0) {
+    if (this->facepaintMaterials[(uint)renderOptions.field0_0x0 >> 0x1a] == (Material *)0x0) {
       bVar1 = false;
     }
     else {
@@ -915,7 +931,8 @@ bool __thiscall WeaponOptions::IsValidRenderOption(WeaponOptions *this,renderOpt
 // 00526FC0  GetWeaponOptionReticleColor  (cgame_mp/cg_weapon_options.cpp:615)
 
 bool __thiscall
-WeaponOptions::GetWeaponOptionReticleColor(WeaponOptions *this,int param_1,float *param_2)
+WeaponOptions::GetWeaponOptionReticleColor
+          (WeaponOptions *this,int reticleColorIndex,float *outColor)
 
 {
   float (*pafVar1) [4];
@@ -923,7 +940,7 @@ WeaponOptions::GetWeaponOptionReticleColor(WeaponOptions *this,int param_1,float
   bool bVar3;
   undefined1 uVar4;
   
-  if ((param_1 < 0) || (0xf < (uint)param_1)) {
+  if ((reticleColorIndex < 0) || (0xf < (uint)reticleColorIndex)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp",
                              0x268,0,"%s");
     if (!bVar3) {
@@ -932,11 +949,11 @@ WeaponOptions::GetWeaponOptionReticleColor(WeaponOptions *this,int param_1,float
       return (bool)uVar4;
     }
   }
-  if ((param_1 < 0) || (0xf < (uint)param_1)) {
+  if ((reticleColorIndex < 0) || (0xf < (uint)reticleColorIndex)) {
     bVar3 = false;
   }
   else {
-    if (this->reticleColors[param_1][0] < 0.0) {
+    if (this->reticleColors[reticleColorIndex][0] < 0.0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp",
                                0x26c,0,"%s");
       if (!bVar3) {
@@ -945,12 +962,13 @@ WeaponOptions::GetWeaponOptionReticleColor(WeaponOptions *this,int param_1,float
         return (bool)uVar4;
       }
     }
-    if (0.0 < this->reticleColors[param_1][0] || this->reticleColors[param_1][0] == 0.0) {
-      pafVar1 = this->reticleColors + param_1;
-      *param_2 = (*pafVar1)[0];
-      param_2[1] = (*pafVar1)[1];
-      param_2[2] = (*pafVar1)[2];
-      param_2[3] = (*pafVar1)[3];
+    if (0.0 < this->reticleColors[reticleColorIndex][0] ||
+        this->reticleColors[reticleColorIndex][0] == 0.0) {
+      pafVar1 = this->reticleColors + reticleColorIndex;
+      *outColor = (*pafVar1)[0];
+      outColor[1] = (*pafVar1)[1];
+      outColor[2] = (*pafVar1)[2];
+      outColor[3] = (*pafVar1)[3];
       bVar3 = true;
     }
     else {
@@ -964,7 +982,7 @@ WeaponOptions::GetWeaponOptionReticleColor(WeaponOptions *this,int param_1,float
 // 005270C0  GetWeaponOptionLensColor  (cgame_mp/cg_weapon_options.cpp:629)
 
 bool __thiscall
-WeaponOptions::GetWeaponOptionLensColor(WeaponOptions *this,int param_1,float *param_2)
+WeaponOptions::GetWeaponOptionLensColor(WeaponOptions *this,int reticleColorIndex,float *outColor)
 
 {
   float (*pafVar1) [4];
@@ -972,7 +990,7 @@ WeaponOptions::GetWeaponOptionLensColor(WeaponOptions *this,int param_1,float *p
   bool bVar3;
   undefined1 uVar4;
   
-  if ((param_1 < 0) || (0xf < (uint)param_1)) {
+  if ((reticleColorIndex < 0) || (0xf < (uint)reticleColorIndex)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp",
                              0x276,0,"%s");
     if (!bVar3) {
@@ -981,11 +999,11 @@ WeaponOptions::GetWeaponOptionLensColor(WeaponOptions *this,int param_1,float *p
       return (bool)uVar4;
     }
   }
-  if ((param_1 < 0) || (0xf < (uint)param_1)) {
+  if ((reticleColorIndex < 0) || (0xf < (uint)reticleColorIndex)) {
     bVar3 = false;
   }
   else {
-    if (this->lensColors[param_1][0] < 0.0) {
+    if (this->lensColors[reticleColorIndex][0] < 0.0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_weapon_options.cpp",
                                0x27a,0,"%s");
       if (!bVar3) {
@@ -994,12 +1012,13 @@ WeaponOptions::GetWeaponOptionLensColor(WeaponOptions *this,int param_1,float *p
         return (bool)uVar4;
       }
     }
-    if (0.0 < this->lensColors[param_1][0] || this->lensColors[param_1][0] == 0.0) {
-      pafVar1 = this->lensColors + param_1;
-      *param_2 = (*pafVar1)[0];
-      param_2[1] = (*pafVar1)[1];
-      param_2[2] = (*pafVar1)[2];
-      param_2[3] = (*pafVar1)[3];
+    if (0.0 < this->lensColors[reticleColorIndex][0] ||
+        this->lensColors[reticleColorIndex][0] == 0.0) {
+      pafVar1 = this->lensColors + reticleColorIndex;
+      *outColor = (*pafVar1)[0];
+      outColor[1] = (*pafVar1)[1];
+      outColor[2] = (*pafVar1)[2];
+      outColor[3] = (*pafVar1)[3];
       bVar3 = true;
     }
     else {
@@ -1022,69 +1041,80 @@ void __cdecl GC_InitWeaponOptions(void)
 
 // 005271D0  CG_SetupWeaponOptionsRender  (cgame_mp/cg_weapon_options.cpp:652)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 int __cdecl
 CG_SetupWeaponOptionsRender
-          (int param_1,float *param_2,WeaponVariantDef *param_3,renderOptions_s param_4,
-          ShaderConstantSet *param_5,char *param_6)
+          (int localClientNum,float *origin,WeaponVariantDef *weaponVarDef,
+          renderOptions_s renderOptions,ShaderConstantSet *constantSet,char *name)
 
 {
   int iVar1;
   
   iVar1 = WeaponOptions::SetupWeaponOptionsRender
-                    (&weaponOptions,param_1,param_2,param_3,param_4,0xffffffff,param_5,param_6,-1);
+                    (&weaponOptions,localClientNum,origin,weaponVarDef,renderOptions,0xffffffff,
+                     constantSet,name,-1);
   return iVar1;
 }
 
 
 // 00527200  CG_SetupWeaponOptionsRender  (cgame_mp/cg_weapon_options.cpp:657)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 int __cdecl
 CG_SetupWeaponOptionsRender
-          (int param_1,float *param_2,WeaponVariantDef *param_3,renderOptions_s param_4,uint param_5
-          ,ShaderConstantSet *param_6,char *param_7,int param_8)
+          (int localClientNum,float *origin,WeaponVariantDef *wvd,renderOptions_s wo,uint modelMask,
+          ShaderConstantSet *constantSet,char *name,int textureOverrideIndex)
 
 {
   int iVar1;
   
   iVar1 = WeaponOptions::SetupWeaponOptionsRender
-                    (&weaponOptions,param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8)
-  ;
+                    (&weaponOptions,localClientNum,origin,wvd,wo,modelMask,constantSet,name,
+                     textureOverrideIndex);
   return iVar1;
 }
 
 
 // 00527230  CG_IsValidRenderOption  (cgame_mp/cg_weapon_options.cpp:662)
 
-bool __cdecl CG_IsValidRenderOption(renderOptions_s param_1)
+bool __cdecl CG_IsValidRenderOption(renderOptions_s renderOptions)
 
 {
   bool bVar1;
   
-  bVar1 = WeaponOptions::IsValidRenderOption(&weaponOptions,param_1);
+  bVar1 = WeaponOptions::IsValidRenderOption(&weaponOptions,renderOptions);
   return bVar1;
 }
 
 
 // 00527250  CG_GetWeaponOptionReticleColor  (cgame_mp/cg_weapon_options.cpp:667)
 
-bool __cdecl CG_GetWeaponOptionReticleColor(int param_1,float *param_2)
+bool __cdecl CG_GetWeaponOptionReticleColor(int reticleColorIndex,float *outColor)
 
 {
   bool bVar1;
   
-  bVar1 = WeaponOptions::GetWeaponOptionReticleColor(&weaponOptions,param_1,param_2);
+  bVar1 = WeaponOptions::GetWeaponOptionReticleColor(&weaponOptions,reticleColorIndex,outColor);
   return bVar1;
 }
 
 
 // 00527270  CG_GetWeaponOptionLensColor  (cgame_mp/cg_weapon_options.cpp:672)
 
-bool __cdecl CG_GetWeaponOptionLensColor(int param_1,float *param_2)
+bool __cdecl CG_GetWeaponOptionLensColor(int reticleColorIndex,float *outColor)
 
 {
   bool bVar1;
   
-  bVar1 = WeaponOptions::GetWeaponOptionLensColor(&weaponOptions,param_1,param_2);
+  bVar1 = WeaponOptions::GetWeaponOptionLensColor(&weaponOptions,reticleColorIndex,outColor);
   return bVar1;
 }
 

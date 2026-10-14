@@ -3,8 +3,8 @@
 // 00976F3B  _raise_exc_ex  (line unknown)
 
 void __cdecl
-_raise_exc_ex(_FPIEEE_RECORD *param_1,uint *param_2,int param_3,int param_4,void *param_5,
-             void *param_6,int param_7)
+_raise_exc_ex(_FPIEEE_RECORD *prec,uint *pcw,int flags,int opcode,void *parg1,void *presult,
+             int isfloat)
 
 {
   undefined1 *puVar1;
@@ -13,134 +13,127 @@ _raise_exc_ex(_FPIEEE_RECORD *param_1,uint *param_2,int param_3,int param_4,void
   void *pvVar4;
   uint uVar5;
   
-  iVar3 = param_3;
-  puVar2 = param_2;
-  param_1->Cause = (_FPIEEE_EXCEPTION_FLAGS)0x0;
-  param_1->Enable = (_FPIEEE_EXCEPTION_FLAGS)0x0;
-  param_1->Status = (_FPIEEE_EXCEPTION_FLAGS)0x0;
-  if ((param_3 & 0x10U) != 0) {
-    (param_1->Cause).Inexact = 1;
-    param_3 = -0x3fffff71;
+  iVar3 = flags;
+  puVar2 = pcw;
+  prec->Cause = (_FPIEEE_EXCEPTION_FLAGS)0x0;
+  prec->Enable = (_FPIEEE_EXCEPTION_FLAGS)0x0;
+  prec->Status = (_FPIEEE_EXCEPTION_FLAGS)0x0;
+  if ((flags & 0x10U) != 0) {
+    (prec->Cause).Inexact = 1;
+    flags = -0x3fffff71;
   }
   if ((iVar3 & 2U) != 0) {
-    (param_1->Cause).Underflow = 1;
-    param_3 = -0x3fffff6d;
+    (prec->Cause).Underflow = 1;
+    flags = -0x3fffff6d;
   }
   if ((iVar3 & 1U) != 0) {
-    (param_1->Cause).Overflow = 1;
-    param_3 = -0x3fffff6f;
+    (prec->Cause).Overflow = 1;
+    flags = -0x3fffff6f;
   }
   if ((iVar3 & 4U) != 0) {
-    (param_1->Cause).ZeroDivide = 1;
-    param_3 = -0x3fffff72;
+    (prec->Cause).ZeroDivide = 1;
+    flags = -0x3fffff72;
   }
   if ((iVar3 & 8U) != 0) {
-    (param_1->Cause).InvalidOperation = 1;
-    param_3 = -0x3fffff70;
+    (prec->Cause).InvalidOperation = 1;
+    flags = -0x3fffff70;
   }
-  param_1->Enable =
-       (_FPIEEE_EXCEPTION_FLAGS)
-       ((uint)param_1->Enable ^ (~(*param_2 << 4) ^ (uint)param_1->Enable) & 0x10);
-  param_1->Enable =
-       (_FPIEEE_EXCEPTION_FLAGS)
-       ((uint)param_1->Enable ^ (~(*param_2 * 2) ^ (uint)param_1->Enable) & 8);
-  param_1->Enable =
-       (_FPIEEE_EXCEPTION_FLAGS)
-       ((uint)param_1->Enable ^ (~(*param_2 >> 1) ^ (uint)param_1->Enable) & 4);
-  param_1->Enable =
-       (_FPIEEE_EXCEPTION_FLAGS)
-       ((uint)param_1->Enable ^ (~(*param_2 >> 3) ^ (uint)param_1->Enable) & 2);
-  param_1->Enable =
-       (_FPIEEE_EXCEPTION_FLAGS)
-       ((uint)param_1->Enable ^ (~(*param_2 >> 5) ^ (param_1->Enable).Inexact) & 1);
+  prec->Enable = (_FPIEEE_EXCEPTION_FLAGS)
+                 ((uint)prec->Enable ^ (~(*pcw << 4) ^ (uint)prec->Enable) & 0x10);
+  prec->Enable = (_FPIEEE_EXCEPTION_FLAGS)
+                 ((uint)prec->Enable ^ (~(*pcw * 2) ^ (uint)prec->Enable) & 8);
+  prec->Enable = (_FPIEEE_EXCEPTION_FLAGS)
+                 ((uint)prec->Enable ^ (~(*pcw >> 1) ^ (uint)prec->Enable) & 4);
+  prec->Enable = (_FPIEEE_EXCEPTION_FLAGS)
+                 ((uint)prec->Enable ^ (~(*pcw >> 3) ^ (uint)prec->Enable) & 2);
+  prec->Enable = (_FPIEEE_EXCEPTION_FLAGS)
+                 ((uint)prec->Enable ^ (~(*pcw >> 5) ^ (prec->Enable).Inexact) & 1);
   uVar5 = _statfp();
-  pvVar4 = param_6;
+  pvVar4 = presult;
   if ((uVar5 & 1) != 0) {
-    (param_1->Status).InvalidOperation = 1;
+    (prec->Status).InvalidOperation = 1;
   }
   if ((uVar5 & 4) != 0) {
-    (param_1->Status).ZeroDivide = 1;
+    (prec->Status).ZeroDivide = 1;
   }
   if ((uVar5 & 8) != 0) {
-    (param_1->Status).Overflow = 1;
+    (prec->Status).Overflow = 1;
   }
   if ((uVar5 & 0x10) != 0) {
-    (param_1->Status).Underflow = 1;
+    (prec->Status).Underflow = 1;
   }
   if ((uVar5 & 0x20) != 0) {
-    (param_1->Status).Inexact = 1;
+    (prec->Status).Inexact = 1;
   }
   uVar5 = *puVar2 & 0xc00;
   if (uVar5 == 0) {
-    param_1->RoundingMode = 0;
+    prec->RoundingMode = 0;
   }
   else {
     if (uVar5 == 0x400) {
-      uVar5 = *(uint *)param_1 & 0xfffffffd | 1;
+      uVar5 = *(uint *)prec & 0xfffffffd | 1;
     }
     else {
       if (uVar5 != 0x800) {
         if (uVar5 == 0xc00) {
-          param_1->RoundingMode = 3;
+          prec->RoundingMode = 3;
         }
         goto LAB_0097709a;
       }
-      uVar5 = *(uint *)param_1 & 0xfffffffe | 2;
+      uVar5 = *(uint *)prec & 0xfffffffe | 2;
     }
-    *(uint *)param_1 = uVar5;
+    *(uint *)prec = uVar5;
   }
 LAB_0097709a:
   uVar5 = *puVar2 & 0x300;
   if (uVar5 == 0) {
-    uVar5 = *(uint *)param_1 & 0xffffffeb | 8;
+    uVar5 = *(uint *)prec & 0xffffffeb | 8;
 LAB_009770d0:
-    *(uint *)param_1 = uVar5;
+    *(uint *)prec = uVar5;
   }
   else {
     if (uVar5 == 0x200) {
-      uVar5 = *(uint *)param_1 & 0xffffffe7 | 4;
+      uVar5 = *(uint *)prec & 0xffffffe7 | 4;
       goto LAB_009770d0;
     }
     if (uVar5 == 0x300) {
-      param_1->Precision = 0;
+      prec->Precision = 0;
     }
   }
-  *(uint *)param_1 = *(uint *)param_1 ^ (param_4 << 5 ^ *(uint *)param_1) & 0x1ffe0;
-  (param_1->Operand1).OperandValid = 1;
-  if (param_7 == 0) {
-    *(uint *)&(param_1->Operand1).field_0x10 =
-         *(uint *)&(param_1->Operand1).field_0x10 & 0xffffffe3 | 2;
-    (param_1->Operand1).Value.Fp64Value = *(double *)param_5;
-    (param_1->Result).OperandValid = 1;
-    *(uint *)&(param_1->Result).field_0x10 = *(uint *)&(param_1->Result).field_0x10 & 0xffffffe3 | 2
-    ;
-    (param_1->Result).Value.Fp64Value = *(double *)param_6;
+  *(uint *)prec = *(uint *)prec ^ (opcode << 5 ^ *(uint *)prec) & 0x1ffe0;
+  (prec->Operand1).OperandValid = 1;
+  if (isfloat == 0) {
+    *(uint *)&(prec->Operand1).field_0x10 = *(uint *)&(prec->Operand1).field_0x10 & 0xffffffe3 | 2;
+    (prec->Operand1).Value.Fp64Value = *(double *)parg1;
+    (prec->Result).OperandValid = 1;
+    *(uint *)&(prec->Result).field_0x10 = *(uint *)&(prec->Result).field_0x10 & 0xffffffe3 | 2;
+    (prec->Result).Value.Fp64Value = *(double *)presult;
   }
   else {
-    (param_1->Operand1).Format = 0;
-    (param_1->Operand1).Value.Fp32Value = *(float *)param_5;
-    (param_1->Result).OperandValid = 1;
-    (param_1->Result).Format = 0;
-    (param_1->Result).Value.Fp32Value = *(float *)param_6;
+    (prec->Operand1).Format = 0;
+    (prec->Operand1).Value.Fp32Value = *(float *)parg1;
+    (prec->Result).OperandValid = 1;
+    (prec->Result).Format = 0;
+    (prec->Result).Value.Fp32Value = *(float *)presult;
   }
   _clrfp();
-  RaiseException(param_3,0,1,(ULONG_PTR *)&param_1);
-  if ((param_1->Enable).InvalidOperation != 0) {
+  RaiseException(flags,0,1,(ULONG_PTR *)&prec);
+  if ((prec->Enable).InvalidOperation != 0) {
     *puVar2 = *puVar2 & 0xfffffffe;
   }
-  if ((param_1->Enable).ZeroDivide != 0) {
+  if ((prec->Enable).ZeroDivide != 0) {
     *puVar2 = *puVar2 & 0xfffffffb;
   }
-  if ((param_1->Enable).Overflow != 0) {
+  if ((prec->Enable).Overflow != 0) {
     *puVar2 = *puVar2 & 0xfffffff7;
   }
-  if ((param_1->Enable).Underflow != 0) {
+  if ((prec->Enable).Underflow != 0) {
     *puVar2 = *puVar2 & 0xffffffef;
   }
-  if ((param_1->Enable).Inexact != 0) {
+  if ((prec->Enable).Inexact != 0) {
     *puVar2 = *puVar2 & 0xffffffdf;
   }
-  uVar5 = param_1->RoundingMode;
+  uVar5 = prec->RoundingMode;
   if (uVar5 == 0) {
     *puVar2 = *puVar2 & 0xfffff3ff;
   }
@@ -160,7 +153,7 @@ LAB_009770d0:
     *puVar2 = uVar5;
   }
 LAB_009771d5:
-  uVar5 = param_1->Precision;
+  uVar5 = prec->Precision;
   if (uVar5 == 0) {
     uVar5 = *puVar2 & 0xfffff3ff | 0x300;
   }
@@ -175,11 +168,11 @@ LAB_009771d5:
   }
   *puVar2 = uVar5;
 LAB_00977201:
-  if (param_7 == 0) {
-    *(double *)pvVar4 = (param_1->Result).Value.Fp64Value;
+  if (isfloat == 0) {
+    *(double *)pvVar4 = (prec->Result).Value.Fp64Value;
   }
   else {
-    *(float *)pvVar4 = (param_1->Result).Value.Fp32Value;
+    *(float *)pvVar4 = (prec->Result).Value.Fp32Value;
   }
   return;
 }
@@ -188,150 +181,149 @@ LAB_00977201:
 // 00977217  _raise_exc  (line unknown)
 
 void __cdecl
-_raise_exc(_FPIEEE_RECORD *param_1,uint *param_2,int param_3,int param_4,double *param_5,
-          double *param_6)
+_raise_exc(_FPIEEE_RECORD *prec,uint *pcw,int flags,int opcode,double *parg1,double *presult)
 
 {
-  _raise_exc_ex(param_1,param_2,param_3,param_4,param_5,param_6,0);
+  _raise_exc_ex(prec,pcw,flags,opcode,parg1,presult,0);
   return;
 }
 
 
 // 0097723A  _handle_exc  (line unknown)
 
-int __cdecl _handle_exc(uint param_1,double *param_2,uint param_3)
+int __cdecl _handle_exc(uint flags,double *presult,uint cw)
 
 {
   _dbl _Var1;
   bool bVar2;
   _dbl _Var3;
-  uint uVar4;
-  bool bVar5;
-  double dVar6;
-  uint local_18;
-  byte bStack_14;
-  undefined1 uStack_13;
-  ushort uStack_12;
-  int local_c;
-  uint local_8;
+  int iVar4;
+  uint uVar5;
+  bool bVar6;
+  double dVar7;
+  double result;
+  int expn;
+  int flags_p;
   
-  uVar4 = param_1 & 0x1f;
+  uVar5 = flags & 0x1f;
   bVar2 = true;
-  local_8 = uVar4;
-  if (((param_1 & 8) != 0) && ((param_3 & 1) != 0)) {
+  flags_p = uVar5;
+  if (((flags & 8) != 0) && ((cw & 1) != 0)) {
     _set_statfp(1);
-    uVar4 = param_1 & 0x17;
+    uVar5 = flags & 0x17;
     goto LAB_009773fa;
   }
-  if (((param_1 & 4) != 0) && ((param_3 & 4) != 0)) {
+  if (((flags & 4) != 0) && ((cw & 4) != 0)) {
     _set_statfp(4);
-    uVar4 = param_1 & 0x1b;
+    uVar5 = flags & 0x1b;
     goto LAB_009773fa;
   }
-  if (((param_1 & 1) == 0) || ((param_3 & 8) == 0)) {
-    if (((param_1 & 2) == 0) || ((param_3 & 0x10) == 0)) goto LAB_009773fa;
-    bVar5 = (param_1 & 0x10) != 0;
-    if (*param_2 != 0.0) {
-      dVar6 = _decomp(*param_2,&local_c);
-      local_18 = SUB84(dVar6,0);
-      bStack_14 = (byte)((ulonglong)dVar6 >> 0x20);
-      uStack_13 = (undefined1)((ulonglong)dVar6 >> 0x28);
-      uStack_12 = (ushort)((ulonglong)dVar6 >> 0x30);
-      local_c = local_c + -0x600;
-      if (local_c < -0x432) {
-        dVar6 = dVar6 * 0.0;
-        bVar5 = bVar2;
+  if (((flags & 1) == 0) || ((cw & 8) == 0)) {
+    if (((flags & 2) == 0) || ((cw & 0x10) == 0)) goto LAB_009773fa;
+    bVar6 = (flags & 0x10) != 0;
+    if (*presult != 0.0) {
+      dVar7 = _decomp(*presult,&expn);
+      result._0_4_ = SUB84(dVar7,0);
+      result._4_1_ = (byte)((ulonglong)dVar7 >> 0x20);
+      result._5_1_ = (undefined1)((ulonglong)dVar7 >> 0x28);
+      result._6_2_ = (ushort)((ulonglong)dVar7 >> 0x30);
+      iVar4 = expn + -0x600;
+      if (iVar4 < -0x432) {
+        dVar7 = dVar7 * 0.0;
+        bVar6 = bVar2;
 LAB_009773da:
-        local_18 = SUB84(dVar6,0);
-        bStack_14 = (byte)((ulonglong)dVar6 >> 0x20);
-        uStack_13 = (undefined1)((ulonglong)dVar6 >> 0x28);
-        uStack_12 = (ushort)((ulonglong)dVar6 >> 0x30);
+        result._0_4_ = SUB84(dVar7,0);
+        result._4_1_ = (byte)((ulonglong)dVar7 >> 0x20);
+        result._5_1_ = (undefined1)((ulonglong)dVar7 >> 0x28);
+        result._6_2_ = (ushort)((ulonglong)dVar7 >> 0x30);
       }
       else {
-        uStack_12 = uStack_12 & 0xf | 0x10;
-        if (local_c < -0x3fd) {
-          local_c = -0x3fd - local_c;
+        result._6_2_ = result._6_2_ & 0xf | 0x10;
+        if (iVar4 < -0x3fd) {
+          iVar4 = -0x3fd - iVar4;
           do {
-            if (((local_18 & 1) != 0) && (!bVar5)) {
-              bVar5 = bVar2;
+            if (((result._0_4_ & 1) != 0) && (!bVar6)) {
+              bVar6 = bVar2;
             }
-            local_18 = local_18 >> 1;
-            if ((bStack_14 & 1) != 0) {
-              local_18 = local_18 | 0x80000000;
+            result._0_4_ = result._0_4_ >> 1;
+            if ((result._4_1_ & 1) != 0) {
+              result._0_4_ = result._0_4_ | 0x80000000;
             }
-            uVar4 = CONCAT22(uStack_12,CONCAT11(uStack_13,bStack_14)) >> 1;
-            bStack_14 = (byte)uVar4;
-            uStack_13 = (undefined1)(uVar4 >> 8);
-            uStack_12 = uStack_12 >> 1;
-            local_c = local_c + -1;
-          } while (local_c != 0);
+            uVar5 = CONCAT22(result._6_2_,CONCAT11(result._5_1_,result._4_1_)) >> 1;
+            result._4_1_ = (byte)uVar5;
+            result._5_1_ = (undefined1)(uVar5 >> 8);
+            result._6_2_ = (ushort)(uVar5 >> 0x10);
+            iVar4 = iVar4 + -1;
+          } while (iVar4 != 0);
         }
-        if (dVar6 < 0.0) {
-          dVar6 = -(double)CONCAT26(uStack_12,CONCAT15(uStack_13,CONCAT14(bStack_14,local_18)));
+        if (dVar7 < 0.0) {
+          dVar7 = -(double)CONCAT26(result._6_2_,
+                                    CONCAT15(result._5_1_,CONCAT14(result._4_1_,result._0_4_)));
           goto LAB_009773da;
         }
       }
-      *param_2 = (double)CONCAT26(uStack_12,CONCAT15(uStack_13,CONCAT14(bStack_14,local_18)));
-      bVar2 = bVar5;
+      *presult = (double)CONCAT26(result._6_2_,
+                                  CONCAT15(result._5_1_,CONCAT14(result._4_1_,result._0_4_)));
+      bVar2 = bVar6;
     }
     if (bVar2) {
       _set_statfp(0x10);
     }
-    uVar4 = local_8 & 0xfffffffd;
-    local_8 = uVar4;
+    uVar5 = flags_p & 0xfffffffd;
+    flags_p = uVar5;
     goto LAB_009773fa;
   }
   _set_statfp(8);
-  uVar4 = param_3 & 0xc00;
+  uVar5 = cw & 0xc00;
   _Var1 = _d_inf;
   _Var3 = _d_inf;
-  if (uVar4 == 0) {
-    dVar6 = *param_2;
+  if (uVar5 == 0) {
+    dVar7 = *presult;
 joined_r0x009772de:
-    if (dVar6 <= 0.0) {
+    if (dVar7 <= 0.0) {
       _Var1.dbl = -_Var3.dbl;
     }
-    *param_2 = (double)_Var1;
+    *presult = (double)_Var1;
   }
   else {
-    if (uVar4 == 0x400) {
-      dVar6 = *param_2;
+    if (uVar5 == 0x400) {
+      dVar7 = *presult;
       _Var1 = _d_max;
       goto joined_r0x009772de;
     }
     _Var3 = _d_max;
-    if (uVar4 == 0x800) {
-      dVar6 = *param_2;
+    if (uVar5 == 0x800) {
+      dVar7 = *presult;
       goto joined_r0x009772de;
     }
-    if (uVar4 == 0xc00) {
-      dVar6 = *param_2;
+    if (uVar5 == 0xc00) {
+      dVar7 = *presult;
       _Var1 = _d_max;
       goto joined_r0x009772de;
     }
   }
-  uVar4 = param_1 & 0x1e;
+  uVar5 = flags & 0x1e;
 LAB_009773fa:
-  if (((param_1 & 0x10) != 0) && ((param_3 & 0x20) != 0)) {
+  if (((flags & 0x10) != 0) && ((cw & 0x20) != 0)) {
     _set_statfp(0x20);
-    uVar4 = uVar4 & 0xffffffef;
+    uVar5 = uVar5 & 0xffffffef;
   }
-  return (uint)(uVar4 == 0);
+  return (uint)(uVar5 == 0);
 }
 
 
 // 0097741C  _set_errno_from_matherr  (line unknown)
 
-void __cdecl _set_errno_from_matherr(int param_1)
+void __cdecl _set_errno_from_matherr(int matherrtype)
 
 {
   int *piVar1;
   
-  if (param_1 == 1) {
+  if (matherrtype == 1) {
     piVar1 = _errno();
     *piVar1 = 0x21;
   }
-  else if ((1 < param_1) && (param_1 < 4)) {
+  else if ((1 < matherrtype) && (matherrtype < 4)) {
     piVar1 = _errno();
     *piVar1 = 0x22;
     return;
@@ -342,18 +334,18 @@ void __cdecl _set_errno_from_matherr(int param_1)
 
 // 00977449  _errcode  (line unknown)
 
-int __cdecl _errcode(uint param_1)
+int __cdecl _errcode(uint flags)
 
 {
   undefined4 uStack_8;
   
-  if ((param_1 & 0x20) == 0) {
-    if ((param_1 & 8) != 0) {
+  if ((flags & 0x20) == 0) {
+    if ((flags & 8) != 0) {
       return 1;
     }
-    if ((param_1 & 4) == 0) {
-      if ((param_1 & 1) == 0) {
-        return (param_1 & 2) * 2;
+    if ((flags & 4) == 0) {
+      if ((flags & 1) == 0) {
+        return (flags & 2) * 2;
       }
       uStack_8 = 3;
     }
@@ -370,44 +362,43 @@ int __cdecl _errcode(uint param_1)
 
 // 0097747D  _umatherr  (line unknown)
 
-double __cdecl
-_umatherr(int param_1,uint param_2,double param_3,double param_4,double param_5,uint param_6)
+double __cdecl _umatherr(int type,uint opcode,double arg1,double arg2,double retval,uint cw)
 
 {
   int iVar1;
-  _exception local_24;
+  _exception exc;
   
   iVar1 = 0;
   do {
-    if ((&DAT_00abeca0)[iVar1 * 2] == param_2) {
-      local_24.nam = *(ulong *)(iVar1 * 8 + 0xabeca4);
+    if ((&DAT_00abeca0)[iVar1 * 2] == opcode) {
+      exc.nam = *(ulong *)(iVar1 * 8 + 0xabeca4);
       goto LAB_0097749b;
     }
     iVar1 = iVar1 + 1;
   } while (iVar1 < 0x1d);
-  local_24.nam = 0;
+  exc.nam = 0;
 LAB_0097749b:
-  if (local_24.nam != 0) {
-    local_24.typ = param_1;
-    local_24.arg1 = (uint64)param_3;
-    local_24.arg2 = (uint64)param_4;
-    local_24.retval = (uint64)param_5;
-    _ctrlfp(param_6,0xffff);
-    iVar1 = _matherr(&local_24);
+  if (exc.nam != 0) {
+    exc.typ = type;
+    exc.arg1 = (uint64)arg1;
+    exc.arg2 = (uint64)arg2;
+    exc.retval = (uint64)retval;
+    _ctrlfp(cw,0xffff);
+    iVar1 = _matherr(&exc);
     if (iVar1 == 0) {
-      _set_errno_from_matherr(param_1);
+      _set_errno_from_matherr(type);
     }
-    return (double)local_24.retval;
+    return (double)exc.retval;
   }
-  _ctrlfp(param_6,0xffff);
-  _set_errno_from_matherr(param_1);
-  return param_5;
+  _ctrlfp(cw,0xffff);
+  _set_errno_from_matherr(type);
+  return retval;
 }
 
 
 // 0097751D  _handle_qnan1  (line unknown)
 
-double __cdecl _handle_qnan1(uint param_1,double param_2,uint param_3)
+double __cdecl _handle_qnan1(uint opcode,double param_2,uint param_3)
 
 {
   int *piVar1;
@@ -415,7 +406,7 @@ double __cdecl _handle_qnan1(uint param_1,double param_2,uint param_3)
   undefined4 in_stack_00000008;
   
   if (_matherr_flag == 0) {
-    dVar2 = _umatherr(1,param_1,(double)CONCAT44(param_2._0_4_,in_stack_00000008),0.0,
+    dVar2 = _umatherr(1,opcode,(double)CONCAT44(param_2._0_4_,in_stack_00000008),0.0,
                       (double)CONCAT44(param_2._0_4_,in_stack_00000008),param_2._4_4_);
     return dVar2;
   }
@@ -430,7 +421,7 @@ double __cdecl _handle_qnan1(uint param_1,double param_2,uint param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-double __cdecl _except1(int param_1,int param_2,double param_3,double param_4,uint param_5)
+double __cdecl _except1(int flags,int opcode,double arg,double result,uint cw)
 
 {
   int iVar1;
@@ -438,19 +429,19 @@ double __cdecl _except1(int param_1,int param_2,double param_3,double param_4,ui
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  iVar1 = _handle_exc(param_1,&param_4,param_5);
+  iVar1 = _handle_exc(flags,&result,cw);
   if (iVar1 == 0) {
     local_90.Operand2.OperandValid = 0;
-    _raise_exc(&local_90,&param_5,param_1,param_2,&param_3,&param_4);
+    _raise_exc(&local_90,&cw,flags,opcode,&arg,&result);
   }
-  iVar1 = _errcode(param_1);
+  iVar1 = _errcode(flags);
   if ((_matherr_flag == 0) && (iVar1 != 0)) {
-    param_4 = _umatherr(iVar1,param_2,param_3,0.0,param_4,param_5);
+    result = _umatherr(iVar1,opcode,arg,0.0,result,cw);
   }
   else {
     _set_errno_from_matherr(iVar1);
-    _ctrlfp(param_5,0xffff);
+    _ctrlfp(cw,0xffff);
   }
-  return param_4;
+  return result;
 }
 

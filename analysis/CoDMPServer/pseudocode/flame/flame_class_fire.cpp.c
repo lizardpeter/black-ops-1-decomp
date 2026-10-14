@@ -26,10 +26,11 @@ void __cdecl Flame_Class_Fire_Init(void)
 
 // 0088B8E0  Flame_Class_Fire_Alloc  (flame/flame_class_fire.cpp:66)
 
-flameFire_t * __cdecl Flame_Class_Fire_Alloc(bool param_1)
+flameFire_t * __cdecl Flame_Class_Fire_Alloc(bool is_server)
 
 {
   flameFire_t *pfVar1;
+  flameFire_t *freeFire;
   
   pfVar1 = flameFireFree;
   if (flameFireFree == (flameFire_t *)0x0) {
@@ -50,52 +51,53 @@ flameFire_t * __cdecl Flame_Class_Fire_Alloc(bool param_1)
 
 // 0088B940  Flame_Class_Fire_Free  (flame/flame_class_fire.cpp:105)
 
-void __cdecl Flame_Class_Fire_Free(bool param_1,flameFire_t *param_2)
+void __cdecl Flame_Class_Fire_Free(bool is_server,flameFire_t *fire)
 
 {
-  if (param_2->flameRend != (flameRender_s *)0x0) {
-    Flame_List_Sub_Local(&param_2->gen,&param_2->flameRend->fireList);
+  if (fire->flameRend != (flameRender_s *)0x0) {
+    Flame_List_Sub_Local(&fire->gen,&fire->flameRend->fireList);
   }
   Flame_List_Move_Global
-            (&param_2->gen,(flameGeneric_s **)&flameFireUsed,(flameGeneric_s **)&flameFireFree);
+            (&fire->gen,(flameGeneric_s **)&flameFireUsed,(flameGeneric_s **)&flameFireFree);
   g_FireCount = g_FireCount + -1;
-  Flame_Item_Init(&param_2->gen,100);
+  Flame_Item_Init(&fire->gen,100);
   return;
 }
 
 
 // 0088B9A0  Flame_Class_Fire_Age  (flame/flame_class_fire.cpp:181)
 
-void __cdecl Flame_Class_Fire_Age(bool param_1,int param_2,int param_3)
+void __cdecl Flame_Class_Fire_Age(bool is_server,int time,int localClientNum)
 
 {
   flameFire_t *pfVar1;
   phys_static_array<flameGeneric_s_*,1000> *local_14;
-  flameFire_t *local_8;
+  flameFire_t *next;
+  flameFire_t *trav;
   
-  if (!param_1) {
-    local_8 = flameFireUsed;
-    pfVar1 = local_8;
-    while (local_8 = pfVar1, local_8 != (flameFire_t *)0x0) {
-      pfVar1 = (flameFire_t *)(local_8->gen).listGlobal.next;
-      if ((local_8->gen).age.lastUpdateTime < (local_8->gen).age.endTime) {
-        if ((local_8->gen).id < flame_freeze_id) {
-          (local_8->gen).phys.velocity[0] = 0.0;
-          (local_8->gen).phys.velocity[1] = 0.0;
+  if (!is_server) {
+    trav = flameFireUsed;
+    pfVar1 = trav;
+    while (trav = pfVar1, trav != (flameFire_t *)0x0) {
+      pfVar1 = (flameFire_t *)(trav->gen).listGlobal.next;
+      if ((trav->gen).age.lastUpdateTime < (trav->gen).age.endTime) {
+        if ((trav->gen).id < flame_freeze_id) {
+          (trav->gen).phys.velocity[0] = 0.0;
+          (trav->gen).phys.velocity[1] = 0.0;
         }
-        if (param_1) {
+        if (is_server) {
           local_14 = &sv_flames;
         }
         else {
           local_14 = &cl_flames;
         }
-        Flame_Phys_Update_Item_Fire(&local_8->gen,param_2,local_14);
+        Flame_Phys_Update_Item_Fire(&trav->gen,time,local_14);
       }
-      if ((local_8->gen).age.endTime <= (local_8->gen).age.lastUpdateTime) {
-        Flame_Class_Fire_Free(param_1,local_8);
+      if ((trav->gen).age.endTime <= (trav->gen).age.lastUpdateTime) {
+        Flame_Class_Fire_Free(is_server,trav);
       }
     }
-    Flame_Phys_Update_Items(param_1,param_3);
+    Flame_Phys_Update_Items(is_server,localClientNum);
   }
   return;
 }
@@ -104,7 +106,7 @@ void __cdecl Flame_Class_Fire_Age(bool param_1,int param_2,int param_3)
 // 0088BA90  Flame_Class_Fire_Spawn  (flame/flame_class_fire.cpp:239)
 
 flameFire_t * __cdecl
-Flame_Class_Fire_Spawn(bool param_1,flameChunk_s *param_2,int param_3,float param_4)
+Flame_Class_Fire_Spawn(bool is_server,flameChunk_s *fromChunk,int curTime,float minLifeFrac)
 
 {
   code *pcVar1;
@@ -113,73 +115,77 @@ Flame_Class_Fire_Spawn(bool param_1,flameChunk_s *param_2,int param_3,float para
   float fVar4;
   float fVar5;
   float local_78;
-  float local_3c;
+  flameFire_t *fire;
+  flameGeneric_s *gen;
+  float end;
+  float fwdVec;
   float local_38;
   undefined4 local_34;
-  flameRender_s *local_30;
-  float local_2c;
-  flameTable *local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
+  flameRender_s *flameRend;
+  float lifeFrac;
+  flameTable *flameVars;
+  float speed;
+  float lifetime;
+  float sideVec;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float upVec [3];
   
-  local_30 = (flameRender_s *)0x0;
-  local_10[0] = 0.0;
-  local_10[1] = 0.0;
-  local_10[2] = 1.0;
-  if ((param_2 == (flameChunk_s *)0x0) &&
+  flameRend = (flameRender_s *)0x0;
+  upVec[0] = 0.0;
+  upVec[1] = 0.0;
+  upVec[2] = 1.0;
+  if ((fromChunk == (flameChunk_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_fire.cpp",0xfa
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pfVar3 = (flameFire_t *)(*pcVar1)();
     return pfVar3;
   }
-  if (param_1) {
+  if (is_server) {
     pfVar3 = (flameFire_t *)0x0;
   }
-  else if ((param_2 == (flameChunk_s *)0x0) || ((param_2->gen).stream == (flameStream_s *)0x0)) {
+  else if ((fromChunk == (flameChunk_s *)0x0) || ((fromChunk->gen).stream == (flameStream_s *)0x0))
+  {
     pfVar3 = (flameFire_t *)0x0;
   }
   else {
-    pfVar3 = Flame_Class_Fire_Alloc(param_1);
+    pfVar3 = Flame_Class_Fire_Alloc(is_server);
     if (pfVar3 == (flameFire_t *)0x0) {
       pfVar3 = (flameFire_t *)0x0;
     }
     else {
-      local_28 = ((param_2->gen).stream)->flameVars;
-      if (!param_1) {
-        local_30 = ((param_2->gen).stream)->renderList->flameRend;
+      flameVars = ((fromChunk->gen).stream)->flameVars;
+      if (!is_server) {
+        flameRend = ((fromChunk->gen).stream)->renderList->flameRend;
       }
       (pfVar3->gen).type = 2;
-      (pfVar3->gen).stream = (param_2->gen).stream;
-      (pfVar3->gen).id = (param_2->gen).id;
-      if (((param_2->gen).age.endTime == (param_2->gen).age.startTime) &&
+      (pfVar3->gen).stream = (fromChunk->gen).stream;
+      (pfVar3->gen).id = (fromChunk->gen).id;
+      if (((fromChunk->gen).age.endTime == (fromChunk->gen).age.startTime) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_fire.cpp",
                                    0x11c,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pfVar3 = (flameFire_t *)(*pcVar1)();
         return pfVar3;
       }
-      local_78 = (float)((param_2->gen).age.lastUpdateTime - (param_2->gen).age.startTime) /
-                 (float)((param_2->gen).age.endTime - (param_2->gen).age.startTime);
-      if (local_78 <= param_4) {
-        local_78 = param_4;
+      local_78 = (float)((fromChunk->gen).age.lastUpdateTime - (fromChunk->gen).age.startTime) /
+                 (float)((fromChunk->gen).age.endTime - (fromChunk->gen).age.startTime);
+      if (local_78 <= minLifeFrac) {
+        local_78 = minLifeFrac;
       }
-      local_2c = local_78;
-      fVar4 = Flame_Random(param_1);
-      local_20 = fVar4 * local_28->flameVar_fireLifeRand + local_28->flameVar_fireLife;
-      (pfVar3->gen).age.startTime = param_3 - (int)(local_2c * local_20 * 1000.0);
-      (pfVar3->gen).age.endTime = (int)(local_20 * 1000.0) + (pfVar3->gen).age.startTime;
-      (pfVar3->gen).age.lastUpdateTime = param_3;
+      lifeFrac = local_78;
+      fVar4 = Flame_Random(is_server);
+      lifetime = fVar4 * flameVars->flameVar_fireLifeRand + flameVars->flameVar_fireLife;
+      (pfVar3->gen).age.startTime = curTime - (int)(lifeFrac * lifetime * 1000.0);
+      (pfVar3->gen).age.endTime = (int)(lifetime * 1000.0) + (pfVar3->gen).age.startTime;
+      (pfVar3->gen).age.lastUpdateTime = curTime;
       (pfVar3->gen).size.current =
-           (param_2->gen).size.current * local_28->flameVar_fireStartSizeScale;
+           (fromChunk->gen).size.current * flameVars->flameVar_fireStartSizeScale;
       (pfVar3->gen).size.rate =
-           (((param_2->gen).size.current * local_28->flameVar_fireEndSizeScale +
-            local_28->flameVar_fireEndSizeAdd) - (pfVar3->gen).size.current) /
-           ((1.0 - local_2c) * local_28->flameVar_fireLife);
+           (((fromChunk->gen).size.current * flameVars->flameVar_fireEndSizeScale +
+            flameVars->flameVar_fireEndSizeAdd) - (pfVar3->gen).size.current) /
+           ((1.0 - lifeFrac) * flameVars->flameVar_fireLife);
       if (70.0 < (pfVar3->gen).size.rate) {
         (pfVar3->gen).size.rate = 70.0;
       }
@@ -190,39 +196,39 @@ Flame_Class_Fire_Spawn(bool param_1,flameChunk_s *param_2,int param_3,float para
         pfVar3 = (flameFire_t *)(*pcVar1)();
         return pfVar3;
       }
-      (pfVar3->gen).phys.origin[0] = (param_2->gen).phys.origin[0];
-      (pfVar3->gen).phys.origin[1] = (param_2->gen).phys.origin[1];
-      (pfVar3->gen).phys.origin[2] = (param_2->gen).phys.origin[2];
-      fVar4 = local_28->flameVar_fireSpeedScaleRand;
-      fVar5 = Flame_Random(param_1);
-      local_24 = (fVar5 * local_28->flameVar_fireSpeedScaleRand + (1.0 - fVar4)) *
-                 local_28->flameVar_fireSpeedScale;
-      (pfVar3->gen).phys.velocity[0] = local_24 * (param_2->gen).phys.velocity[0];
-      (pfVar3->gen).phys.velocity[1] = local_24 * (param_2->gen).phys.velocity[1];
-      (pfVar3->gen).phys.velocity[2] = local_24 * (param_2->gen).phys.velocity[2];
-      local_3c = (pfVar3->gen).phys.velocity[0];
+      (pfVar3->gen).phys.origin[0] = (fromChunk->gen).phys.origin[0];
+      (pfVar3->gen).phys.origin[1] = (fromChunk->gen).phys.origin[1];
+      (pfVar3->gen).phys.origin[2] = (fromChunk->gen).phys.origin[2];
+      fVar4 = flameVars->flameVar_fireSpeedScaleRand;
+      fVar5 = Flame_Random(is_server);
+      speed = (fVar5 * flameVars->flameVar_fireSpeedScaleRand + (1.0 - fVar4)) *
+              flameVars->flameVar_fireSpeedScale;
+      (pfVar3->gen).phys.velocity[0] = speed * (fromChunk->gen).phys.velocity[0];
+      (pfVar3->gen).phys.velocity[1] = speed * (fromChunk->gen).phys.velocity[1];
+      (pfVar3->gen).phys.velocity[2] = speed * (fromChunk->gen).phys.velocity[2];
+      fwdVec = (pfVar3->gen).phys.velocity[0];
       local_38 = (pfVar3->gen).phys.velocity[1];
       local_34 = 0;
-      local_24 = Vec3Normalize(&local_3c);
-      Vec3Cross(&local_3c,local_10,&local_1c);
-      fVar4 = Flame_CRandom(param_1);
-      fVar4 = fVar4 * local_24 * local_28->flameVar_fireVelocityAddSideways;
-      (pfVar3->gen).phys.velocity[0] = fVar4 * local_1c + (pfVar3->gen).phys.velocity[0];
+      speed = Vec3Normalize(&fwdVec);
+      Vec3Cross(&fwdVec,upVec,&sideVec);
+      fVar4 = Flame_CRandom(is_server);
+      fVar4 = fVar4 * speed * flameVars->flameVar_fireVelocityAddSideways;
+      (pfVar3->gen).phys.velocity[0] = fVar4 * sideVec + (pfVar3->gen).phys.velocity[0];
       (pfVar3->gen).phys.velocity[1] = fVar4 * local_18 + (pfVar3->gen).phys.velocity[1];
       (pfVar3->gen).phys.velocity[2] = fVar4 * local_14 + (pfVar3->gen).phys.velocity[2];
-      fVar4 = Flame_Random(param_1);
+      fVar4 = Flame_Random(is_server);
       (pfVar3->gen).phys.velocity[2] =
-           fVar4 * local_28->flameVar_fireVelocityAddZRand + local_28->flameVar_fireVelocityAddZ +
+           fVar4 * flameVars->flameVar_fireVelocityAddZRand + flameVars->flameVar_fireVelocityAddZ +
            (pfVar3->gen).phys.velocity[2];
       fVar4 = Flame_CalcInvStartSpeed
-                        ((param_2->gen).phys.invStartSpeed,local_28->flameVar_fireSpeedScale);
+                        ((fromChunk->gen).phys.invStartSpeed,flameVars->flameVar_fireSpeedScale);
       (pfVar3->gen).phys.invStartSpeed = fVar4;
-      (pfVar3->gen).phys.gravity = local_28->flameVar_fireGravity;
-      (pfVar3->gen).phys.rotation = (param_2->gen).phys.rotation;
-      fVar4 = Flame_CRandom(param_1);
-      (pfVar3->gen).phys.rotVel = fVar4 * local_28->flameVar_fireMaxRotVel;
-      pfVar3->flameRend = local_30;
-      if (!param_1) {
+      (pfVar3->gen).phys.gravity = flameVars->flameVar_fireGravity;
+      (pfVar3->gen).phys.rotation = (fromChunk->gen).phys.rotation;
+      fVar4 = Flame_CRandom(is_server);
+      (pfVar3->gen).phys.rotVel = fVar4 * flameVars->flameVar_fireMaxRotVel;
+      pfVar3->flameRend = flameRend;
+      if (!is_server) {
         Flame_List_Add_Local(&pfVar3->gen,&pfVar3->flameRend->fireList);
       }
     }
@@ -311,32 +317,32 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Flame_Class_Fire_Render_Item(int param_1,flameFire_t *param_2)
+void __cdecl Flame_Class_Fire_Render_Item(int localClientNum,flameFire_t *fire)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_74 [3];
-  float local_68 [9];
+  float fwd [3];
+  float points [9];
   float local_44;
   float local_40;
-  float local_3c;
+  float start;
   float local_38;
   float local_34;
-  float local_30;
+  float end;
   float local_2c;
   float local_28;
-  float local_24 [2];
+  float angles [2];
   float local_1c;
-  float local_18;
+  float down;
   float local_14;
   float local_10;
-  int local_c;
-  cg_s *local_8;
+  int i;
+  cg_s *clientGlobals;
   
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (local_8 == (cg_s *)0x0) {
+  clientGlobals = CG_GetLocalClientGlobals(localClientNum);
+  if (clientGlobals == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_fire.cpp",0x154,
                              0,"%s\n\t%s");
     if (!bVar2) {
@@ -346,39 +352,39 @@ void __cdecl Flame_Class_Fire_Render_Item(int param_1,flameFire_t *param_2)
     }
   }
   if (0 < (flame_debug_render->current).integer) {
-    local_68[0] = -1.0;
-    local_68[1] = -1.0;
-    local_68[2] = 1.0;
-    local_68[3] = -1.0;
-    local_68[4] = 1.0;
-    local_68[5] = 1.0;
-    local_68[6] = -1.0;
-    local_68[7] = 1.0;
-    AxisToAngles((local_8->refdef).viewaxis,local_24);
-    local_1c = (param_2->gen).phys.rotation;
-    AngleVectors(local_24,local_74,local_68 + 8,&local_18);
-    fVar3 = (param_2->gen).size.current * 0.5;
-    local_68[8] = fVar3 * local_68[8];
+    points[0] = -1.0;
+    points[1] = -1.0;
+    points[2] = 1.0;
+    points[3] = -1.0;
+    points[4] = 1.0;
+    points[5] = 1.0;
+    points[6] = -1.0;
+    points[7] = 1.0;
+    AxisToAngles((clientGlobals->refdef).viewaxis,angles);
+    local_1c = (fire->gen).phys.rotation;
+    AngleVectors(angles,fwd,points + 8,&down);
+    fVar3 = (fire->gen).size.current * 0.5;
+    points[8] = fVar3 * points[8];
     local_44 = fVar3 * local_44;
     local_40 = fVar3 * local_40;
-    fVar3 = (param_2->gen).size.current * -0.5;
-    local_18 = fVar3 * local_18;
+    fVar3 = (fire->gen).size.current * -0.5;
+    down = fVar3 * down;
     local_14 = fVar3 * local_14;
     local_10 = fVar3 * local_10;
-    local_3c = local_68[7] * local_18 + local_68[6] * local_68[8] + (param_2->gen).phys.origin[0];
-    local_38 = local_68[7] * local_14 + local_68[6] * local_44 + (param_2->gen).phys.origin[1];
-    local_34 = local_68[7] * local_10 + local_68[6] * local_40 + (param_2->gen).phys.origin[2];
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      fVar3 = local_68[local_c * 2];
-      local_30 = fVar3 * local_68[8] + (param_2->gen).phys.origin[0];
-      local_2c = fVar3 * local_44 + (param_2->gen).phys.origin[1];
-      local_28 = fVar3 * local_40 + (param_2->gen).phys.origin[2];
-      fVar3 = local_68[local_c * 2 + 1];
-      local_30 = fVar3 * local_18 + local_30;
+    start = points[7] * down + points[6] * points[8] + (fire->gen).phys.origin[0];
+    local_38 = points[7] * local_14 + points[6] * local_44 + (fire->gen).phys.origin[1];
+    local_34 = points[7] * local_10 + points[6] * local_40 + (fire->gen).phys.origin[2];
+    for (i = 0; i < 4; i = i + 1) {
+      fVar3 = points[i * 2];
+      end = fVar3 * points[8] + (fire->gen).phys.origin[0];
+      local_2c = fVar3 * local_44 + (fire->gen).phys.origin[1];
+      local_28 = fVar3 * local_40 + (fire->gen).phys.origin[2];
+      fVar3 = points[i * 2 + 1];
+      end = fVar3 * down + end;
       local_2c = fVar3 * local_14 + local_2c;
       local_28 = fVar3 * local_10 + local_28;
-      G_DebugLineWithDuration(&local_3c,&local_30,colorYellow,1,1);
-      local_3c = local_30;
+      G_DebugLineWithDuration(&start,&end,colorYellow,1,1);
+      start = end;
       local_38 = local_2c;
       local_34 = local_28;
     }
@@ -389,16 +395,21 @@ void __cdecl Flame_Class_Fire_Render_Item(int param_1,flameFire_t *param_2)
 
 // 0088C2E0  Flame_Class_Fire_Render_All  (flame/flame_class_fire.cpp:392)
 
-void __cdecl Flame_Class_Fire_Render_All(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Class_Fire_Render_All(int localClientNum)
 
 {
-  flameFire_t *local_8;
+  flameFire_t *fire;
   
   if (0 < (flame_debug_render->current).integer) {
-    for (local_8 = flameFireUsed; local_8 != (flameFire_t *)0x0;
-        local_8 = (flameFire_t *)(local_8->gen).listGlobal.next) {
+    for (fire = flameFireUsed; fire != (flameFire_t *)0x0;
+        fire = (flameFire_t *)(fire->gen).listGlobal.next) {
       if (0 < (flame_debug_render->current).integer) {
-        Flame_Class_Fire_Render_Item(param_1,local_8);
+        Flame_Class_Fire_Render_Item(localClientNum,fire);
       }
     }
   }
@@ -434,35 +445,38 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Flame_Class_Fire_Render_Local_List(int param_1,flameFire_t *param_2)
+void __cdecl Flame_Class_Fire_Render_Local_List(int localClientNum,flameFire_t *start)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  flameFire_t *local_2594;
-  flameGeneric_s *local_258c [2401];
-  int local_8;
+  cg_s *clientGlobals_00;
+  flameFire_t *fire;
+  cg_s *clientGlobals;
+  flameGeneric_s *renderList [2401];
+  int count;
   
-  local_8 = 0x88c33d;
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if ((pcVar3 == (cg_s *)0x0) &&
+  count = 0x88c33d;
+  clientGlobals_00 = CG_GetLocalClientGlobals(localClientNum);
+  if ((clientGlobals_00 == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_fire.cpp",
                                0x1ab,0,"%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2 == (flameFire_t *)0x0) || ((param_2->gen).stream != (flameStream_s *)0x0)) &&
-     ((param_2 == (flameFire_t *)0x0 || (bVar2 = CL_IsLastActiveLocalClient(param_1), bVar2)))) {
-    local_8 = 0;
-    for (local_2594 = param_2; (local_8 < 0x960 && (local_2594 != (flameFire_t *)0x0));
-        local_2594 = (flameFire_t *)(local_2594->gen).listLocal.next) {
-      local_258c[local_8] = &local_2594->gen;
-      local_8 = local_8 + 1;
+  if (((start == (flameFire_t *)0x0) || ((start->gen).stream != (flameStream_s *)0x0)) &&
+     ((start == (flameFire_t *)0x0 || (bVar2 = CL_IsLastActiveLocalClient(localClientNum), bVar2))))
+  {
+    count = 0;
+    for (fire = start; (count < 0x960 && (fire != (flameFire_t *)0x0));
+        fire = (flameFire_t *)(fire->gen).listLocal.next) {
+      renderList[count] = &fire->gen;
+      count = count + 1;
     }
-    if (1 < local_8) {
-      Flame_Render_Sprites(pcVar3,((param_2->gen).stream)->flameVars->fire,local_258c,local_8);
+    if (1 < count) {
+      Flame_Render_Sprites(clientGlobals_00,((start->gen).stream)->flameVars->fire,renderList,count)
+      ;
     }
   }
   return;

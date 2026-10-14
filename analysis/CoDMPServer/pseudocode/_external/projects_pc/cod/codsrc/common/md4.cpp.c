@@ -2,46 +2,47 @@
 
 // 0086C0B0  MD4Init  (<external>/projects_pc/cod/codsrc/common/md4.cpp:96)
 
-void __cdecl MD4Init(MD4_CTX *param_1)
+void __cdecl MD4Init(MD4_CTX *context)
 
 {
-  param_1->count[1] = 0;
-  param_1->count[0] = 0;
-  param_1->state[0] = 0x67452301;
-  param_1->state[1] = 0xefcdab89;
-  param_1->state[2] = 0x98badcfe;
-  param_1->state[3] = 0x10325476;
+  context->count[1] = 0;
+  context->count[0] = 0;
+  context->state[0] = 0x67452301;
+  context->state[1] = 0xefcdab89;
+  context->state[2] = 0x98badcfe;
+  context->state[3] = 0x10325476;
   return;
 }
 
 
 // 0086C0F0  MD4Update  (<external>/projects_pc/cod/codsrc/common/md4.cpp:108)
 
-void __cdecl MD4Update(MD4_CTX *param_1,uchar *param_2,uint param_3)
+void __cdecl MD4Update(MD4_CTX *context,uchar *input,uint inputLen)
 
 {
-  uint local_c;
-  uint local_8;
+  uint partLen;
+  uint index;
+  uint i;
   
-  local_c = param_1->count[0] >> 3 & 0x3f;
-  param_1->count[0] = param_1->count[0] + param_3 * 8;
-  if (param_1->count[0] < param_3 << 3) {
-    param_1->count[1] = param_1->count[1] + 1;
+  index = context->count[0] >> 3 & 0x3f;
+  context->count[0] = context->count[0] + inputLen * 8;
+  if (context->count[0] < inputLen << 3) {
+    context->count[1] = context->count[1] + 1;
   }
-  param_1->count[1] = (param_3 >> 0x1d) + param_1->count[1];
-  local_8 = 0x40 - local_c;
-  if (param_3 < local_8) {
-    local_8 = 0;
+  context->count[1] = (inputLen >> 0x1d) + context->count[1];
+  i = 0x40 - index;
+  if (inputLen < i) {
+    i = 0;
   }
   else {
-    memcpy(param_1->buffer + local_c,param_2,local_8);
-    MD4Transform(param_1->state,param_1->buffer);
-    for (; local_8 + 0x3f < param_3; local_8 = local_8 + 0x40) {
-      MD4Transform(param_1->state,param_2 + local_8);
+    memcpy(context->buffer + index,input,i);
+    MD4Transform(context->state,context->buffer);
+    for (; i + 0x3f < inputLen; i = i + 0x40) {
+      MD4Transform(context->state,input + i);
     }
-    local_c = 0;
+    index = 0;
   }
-  memcpy(param_1->buffer + local_c,param_2 + local_8,param_3 - local_8);
+  memcpy(context->buffer + index,input + i,inputLen - i);
   return;
 }
 
@@ -50,34 +51,35 @@ void __cdecl MD4Update(MD4_CTX *param_1,uchar *param_2,uint param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl MD4Final(uchar *param_1,MD4_CTX *param_2)
+void __cdecl MD4Final(uchar *digest,MD4_CTX *context)
 
 {
   uint local_1c;
-  uchar local_14 [8];
+  uint padLen;
+  uchar bits [8];
   uint local_c;
-  uint local_8;
+  uint index;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  Encode(local_14,param_2->count,8);
-  local_8 = param_2->count[0] >> 3 & 0x3f;
-  if (local_8 < 0x38) {
-    local_1c = 0x38 - local_8;
+  Encode(bits,context->count,8);
+  index = context->count[0] >> 3 & 0x3f;
+  if (index < 0x38) {
+    local_1c = 0x38 - index;
   }
   else {
-    local_1c = 0x78 - local_8;
+    local_1c = 0x78 - index;
   }
-  MD4Update(param_2,PADDING,local_1c);
-  MD4Update(param_2,local_14,8);
-  Encode(param_1,param_2->state,0x10);
-  memset((uchar *)param_2,'\0',0x58);
+  MD4Update(context,PADDING,local_1c);
+  MD4Update(context,bits,8);
+  Encode(digest,context->state,0x10);
+  memset((uchar *)context,'\0',0x58);
   return;
 }
 
 
 // 0086C2A0  MD4Transform  (<external>/projects_pc/cod/codsrc/common/md4.cpp:168)
 
-void __cdecl MD4Transform(ulong *param_1,uchar *param_2)
+void __cdecl MD4Transform(ulong *state,uchar *block)
 
 {
   ulong uVar1;
@@ -88,7 +90,11 @@ void __cdecl MD4Transform(ulong *param_1,uchar *param_2)
   uint uVar6;
   uint uVar7;
   uint uVar8;
-  ulong local_44;
+  ulong c;
+  ulong d;
+  ulong b;
+  ulong a;
+  ulong x;
   int local_40;
   int local_3c;
   int local_38;
@@ -105,12 +111,12 @@ void __cdecl MD4Transform(ulong *param_1,uchar *param_2)
   int local_c;
   int local_8;
   
-  uVar1 = *param_1;
-  uVar4 = param_1[1];
-  uVar2 = param_1[2];
-  uVar5 = param_1[3];
-  Decode(&local_44,param_2,0x40);
-  uVar3 = (uVar4 & uVar2 | ~uVar4 & uVar5) + local_44 + uVar1;
+  uVar1 = *state;
+  uVar4 = state[1];
+  uVar2 = state[2];
+  uVar5 = state[3];
+  Decode(&x,block,0x40);
+  uVar3 = (uVar4 & uVar2 | ~uVar4 & uVar5) + x + uVar1;
   uVar3 = uVar3 * 8 | uVar3 >> 0x1d;
   uVar5 = (uVar3 & uVar4 | ~uVar3 & uVar2) + local_40 + uVar5;
   uVar5 = uVar5 * 0x80 | uVar5 >> 0x19;
@@ -142,7 +148,7 @@ void __cdecl MD4Transform(ulong *param_1,uchar *param_2)
   uVar7 = uVar3 * 0x800 | uVar3 >> 0x15;
   uVar5 = (uVar7 & uVar6 | ~uVar7 & uVar2) + local_8 + uVar5;
   uVar5 = uVar5 * 0x80000 | uVar5 >> 0xd;
-  uVar4 = uVar2 + 0x5a827999 + (uVar5 & (uVar7 | uVar6) | uVar7 & uVar6) + local_44;
+  uVar4 = uVar2 + 0x5a827999 + (uVar5 & (uVar7 | uVar6) | uVar7 & uVar6) + x;
   uVar8 = uVar4 * 8 | uVar4 >> 0x1d;
   uVar4 = uVar6 + 0x5a827999 + (uVar8 & (uVar5 | uVar7) | uVar5 & uVar7) + local_34;
   uVar3 = uVar4 * 0x20 | uVar4 >> 0x1b;
@@ -174,7 +180,7 @@ void __cdecl MD4Transform(ulong *param_1,uchar *param_2)
   uVar2 = uVar4 * 0x200 | uVar4 >> 0x17;
   uVar4 = uVar5 + 0x5a827999 + (uVar2 & (uVar3 | uVar8) | uVar3 & uVar8) + local_8;
   uVar7 = uVar4 * 0x2000 | uVar4 >> 0x13;
-  uVar4 = uVar8 + 0x6ed9eba1 + (uVar7 ^ uVar2 ^ uVar3) + local_44;
+  uVar4 = uVar8 + 0x6ed9eba1 + (uVar7 ^ uVar2 ^ uVar3) + x;
   uVar6 = uVar4 * 8 | uVar4 >> 0x1d;
   uVar4 = uVar3 + 0x6ed9eba1 + (uVar6 ^ uVar7 ^ uVar2) + local_24;
   uVar5 = uVar4 * 0x200 | uVar4 >> 0x17;
@@ -205,30 +211,30 @@ void __cdecl MD4Transform(ulong *param_1,uchar *param_2)
   uVar4 = uVar2 + 0x6ed9eba1 + (uVar5 ^ uVar6 ^ uVar7) + local_28;
   uVar2 = uVar4 * 0x800 | uVar4 >> 0x15;
   uVar4 = uVar7 + 0x6ed9eba1 + (uVar2 ^ uVar5 ^ uVar6) + local_8;
-  *param_1 = *param_1 + uVar6;
-  param_1[1] = param_1[1] + (uVar4 * 0x8000 | uVar4 >> 0x11);
-  param_1[2] = param_1[2] + uVar2;
-  param_1[3] = param_1[3] + uVar5;
-  memset((uchar *)&local_44,'\0',0x40);
+  *state = *state + uVar6;
+  state[1] = state[1] + (uVar4 * 0x8000 | uVar4 >> 0x11);
+  state[2] = state[2] + uVar2;
+  state[3] = state[3] + uVar5;
+  memset((uchar *)&x,'\0',0x40);
   return;
 }
 
 
 // 0086CBE0  Encode  (<external>/projects_pc/cod/codsrc/common/md4.cpp:239)
 
-void __cdecl Encode(uchar *param_1,ulong *param_2,uint param_3)
+void __cdecl Encode(uchar *output,ulong *input,uint len)
 
 {
-  uint local_c;
-  int local_8;
+  uint j;
+  uint i;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < param_3; local_c = local_c + 4) {
-    param_1[local_c] = (uchar)param_2[local_8];
-    param_1[local_c + 1] = (uchar)(param_2[local_8] >> 8);
-    param_1[local_c + 2] = (uchar)(param_2[local_8] >> 0x10);
-    param_1[local_c + 3] = (uchar)(param_2[local_8] >> 0x18);
-    local_8 = local_8 + 1;
+  i = 0;
+  for (j = 0; j < len; j = j + 4) {
+    output[j] = (uchar)input[i];
+    output[j + 1] = (uchar)(input[i] >> 8);
+    output[j + 2] = (uchar)(input[i] >> 0x10);
+    output[j + 3] = (uchar)(input[i] >> 0x18);
+    i = i + 1;
   }
   return;
 }
@@ -236,18 +242,16 @@ void __cdecl Encode(uchar *param_1,ulong *param_2,uint param_3)
 
 // 0086CC80  Decode  (<external>/projects_pc/cod/codsrc/common/md4.cpp:253)
 
-void __cdecl Decode(ulong *param_1,uchar *param_2,uint param_3)
+void __cdecl Decode(ulong *output,uchar *input,uint len)
 
 {
-  uint local_c;
-  int local_8;
+  uint j;
+  uint i;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < param_3; local_c = local_c + 4) {
-    param_1[local_8] =
-         CONCAT13(param_2[local_c + 3],
-                  CONCAT12(param_2[local_c + 2],CONCAT11(param_2[local_c + 1],param_2[local_c])));
-    local_8 = local_8 + 1;
+  i = 0;
+  for (j = 0; j < len; j = j + 4) {
+    output[i] = CONCAT13(input[j + 3],CONCAT12(input[j + 2],CONCAT11(input[j + 1],input[j])));
+    i = i + 1;
   }
   return;
 }
@@ -257,17 +261,17 @@ void __cdecl Decode(ulong *param_1,uchar *param_2,uint param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_BlockChecksum128(void *param_1,int param_2,int param_3,uint *param_4)
+void __cdecl Com_BlockChecksum128(void *buffer,int length,int key,uint *outChecksum)
 
 {
-  MD4_CTX local_64;
+  MD4_CTX ctx;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  MD4Init(&local_64);
-  MD4Update(&local_64,(uchar *)&param_3,4);
-  MD4Update(&local_64,param_1,param_2);
-  MD4Final((uchar *)param_4,&local_64);
+  MD4Init(&ctx);
+  MD4Update(&ctx,(uchar *)&key,4);
+  MD4Update(&ctx,buffer,length);
+  MD4Final((uchar *)outChecksum,&ctx);
   return;
 }
 
@@ -277,21 +281,22 @@ void __cdecl Com_BlockChecksum128(void *param_1,int param_2,int param_3,uint *pa
 void __cdecl Com_CreateChecksumTable32(void)
 
 {
-  uint local_14;
-  int local_10;
-  uint local_8;
+  uint c;
+  int b;
+  uint CRC_POLYNOMIAL;
+  int i;
   
-  for (local_8 = 0; (int)local_8 < 0x100; local_8 = local_8 + 1) {
-    local_14 = local_8;
-    for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
-      if ((local_14 & 1) == 0) {
-        local_14 = local_14 >> 1;
+  for (i = 0; i < 0x100; i = i + 1) {
+    c = i;
+    for (b = 0; b < 8; b = b + 1) {
+      if ((c & 1) == 0) {
+        c = c >> 1;
       }
       else {
-        local_14 = local_14 >> 1 ^ 0xedb88320;
+        c = c >> 1 ^ 0xedb88320;
       }
     }
-    s_crcTable[local_8] = local_14;
+    s_crcTable[i] = c;
   }
   s_crcTableCreated = true;
   return;
@@ -300,19 +305,20 @@ void __cdecl Com_CreateChecksumTable32(void)
 
 // 0086CDF0  Com_BlockChecksumKey32  (<external>/projects_pc/cod/codsrc/common/md4.cpp:327)
 
-uint __cdecl Com_BlockChecksumKey32(void *param_1,uint param_2,uint param_3)
+uint __cdecl Com_BlockChecksumKey32(void *data,uint length,uint initialCrc)
 
 {
-  byte *local_c;
-  uint local_8;
+  uchar *dataEnd;
+  uchar *dataIter;
+  uint crc;
   
-  local_8 = ~param_3;
+  crc = ~initialCrc;
   if (!s_crcTableCreated) {
     Com_CreateChecksumTable32();
   }
-  for (local_c = param_1; local_c != (byte *)((int)param_1 + param_2); local_c = local_c + 1) {
-    local_8 = local_8 >> 8 ^ s_crcTable[(*local_c ^ local_8) & 0xff];
+  for (dataIter = data; dataIter != (uchar *)((int)data + length); dataIter = dataIter + 1) {
+    crc = crc >> 8 ^ s_crcTable[(*dataIter ^ crc) & 0xff];
   }
-  return ~local_8;
+  return ~crc;
 }
 

@@ -2,42 +2,42 @@
 
 // 00C21B2F  _mbsnbicoll_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbico.c:53)
 
-int __cdecl _mbsnbicoll_l(uchar *param_1,uchar *param_2,uint param_3,localeinfo_struct *param_4)
+int __cdecl _mbsnbicoll_l(uchar *s1,uchar *s2,uint n,localeinfo_struct *plocinfo)
 
 {
   int *piVar1;
   int iVar2;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_4);
-  if (param_3 == 0) {
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (n == 0) {
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     return 0;
   }
-  if ((param_1 == (uchar *)0x0) || (param_2 == (uchar *)0x0)) {
+  if ((s1 == (uchar *)0x0) || (s2 == (uchar *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     return 0x7fffffff;
   }
-  if (param_3 < 0x80000000) {
-    if ((local_14.localeinfo.mbcinfo)->ismbcodepage == 0) {
-      iVar2 = _strnicoll_l((char *)param_1,(char *)param_2,param_3,param_4);
+  if (n < 0x80000000) {
+    if ((_loc_update.localeinfo.mbcinfo)->ismbcodepage == 0) {
+      iVar2 = _strnicoll_l((char *)s1,(char *)s2,n,plocinfo);
     }
     else {
-      iVar2 = __crtCompareStringA(&local_14.localeinfo,(local_14.localeinfo.mbcinfo)->mblcid,0x1001,
-                                  (char *)param_1,param_3,(char *)param_2,param_3,
-                                  (local_14.localeinfo.mbcinfo)->mbcodepage);
+      iVar2 = __crtCompareStringA(&_loc_update.localeinfo,(_loc_update.localeinfo.mbcinfo)->mblcid,
+                                  0x1001,(char *)s1,n,(char *)s2,n,
+                                  (_loc_update.localeinfo.mbcinfo)->mbcodepage);
       if (iVar2 == 0) goto LAB_00c21bfa;
       iVar2 = iVar2 + -2;
     }
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   else {
@@ -45,8 +45,8 @@ int __cdecl _mbsnbicoll_l(uchar *param_1,uchar *param_2,uint param_3,localeinfo_
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
 LAB_00c21bfa:
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     iVar2 = 0x7fffffff;
   }
@@ -56,12 +56,12 @@ LAB_00c21bfa:
 
 // 00C21C1D  _mbsnbicoll  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbico.c:85)
 
-int __cdecl _mbsnbicoll(uchar *param_1,uchar *param_2,uint param_3)
+int __cdecl _mbsnbicoll(uchar *s1,uchar *s2,uint n)
 
 {
   int iVar1;
   
-  iVar1 = _mbsnbicoll_l(param_1,param_2,param_3,(localeinfo_struct *)0x0);
+  iVar1 = _mbsnbicoll_l(s1,s2,n,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

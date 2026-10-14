@@ -12,12 +12,13 @@ int __cdecl _getdrive(void)
   byte *lpBuffer;
   int *piVar3;
   int iVar4;
-  byte local_110 [264];
+  int memfree;
+  byte curdirstr [264];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar1 = false;
-  lpBuffer = local_110;
+  lpBuffer = curdirstr;
   DVar2 = GetCurrentDirectoryA(0x105,(LPSTR)lpBuffer);
   if (0x104 < (int)DVar2) {
     lpBuffer = _calloc_crt(DVar2 + 1,1);

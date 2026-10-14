@@ -303,9 +303,9 @@ undefined4
 _HTConfirm(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,int param_5)
 
 {
-  _iobuf *p_Var1;
-  char *pcVar2;
-  int iVar3;
+  _iobuf *str;
+  char *pcVar1;
+  int iVar2;
   int extraout_EAX;
   int extraout_EAX_00;
   undefined4 local_10;
@@ -317,9 +317,9 @@ _HTConfirm(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,
     _HTPrint(" (%s)",param_5);
   }
   _HTPrint(" (y/n) ");
-  p_Var1 = __iob_func();
-  pcVar2 = fgets((char *)local_8,4,p_Var1);
-  if (pcVar2 == (char *)0x0) {
+  str = __iob_func();
+  pcVar1 = fgets((char *)local_8,4,str);
+  if (pcVar1 == (char *)0x0) {
     local_10 = 0;
   }
   else {
@@ -328,8 +328,8 @@ _HTConfirm(undefined4 param_1,undefined4 param_2,int param_3,undefined4 param_4,
         *local_c = '\0';
         break;
       }
-      iVar3 = toupper((int)(char)*local_c);
-      *local_c = (uchar)iVar3;
+      iVar2 = toupper((int)(char)*local_c);
+      *local_c = (uchar)iVar2;
     }
     strcmp(local_8,(uchar *)"YES");
     if ((extraout_EAX == 0) || (strcmp(local_8,(uchar *)"Y"), extraout_EAX_00 == 0)) {
@@ -351,9 +351,9 @@ undefined4
 _HTPrompt(undefined4 param_1,undefined4 param_2,int param_3,int param_4,int param_5,int param_6)
 
 {
-  _iobuf *p_Var1;
-  char *pcVar2;
-  undefined4 uVar3;
+  _iobuf *str;
+  char *pcVar1;
+  undefined4 uVar2;
   int extraout_EAX;
   uchar local_d4 [204];
   uint local_8;
@@ -367,13 +367,13 @@ _HTPrompt(undefined4 param_1,undefined4 param_2,int param_3,int param_4,int para
     _HTPrint("(RETURN for [%s]) ",param_4);
   }
   if ((param_6 == 0) || (param_3 < 0)) {
-    uVar3 = 0;
+    uVar2 = 0;
   }
   else {
-    p_Var1 = __iob_func();
-    pcVar2 = fgets((char *)local_d4,200,p_Var1);
-    if (pcVar2 == (char *)0x0) {
-      uVar3 = 0;
+    str = __iob_func();
+    pcVar1 = fgets((char *)local_d4,200,str);
+    if (pcVar1 == (char *)0x0) {
+      uVar2 = 0;
     }
     else {
       strlen(local_d4);
@@ -387,10 +387,10 @@ _HTPrompt(undefined4 param_1,undefined4 param_2,int param_3,int param_4,int para
       else {
         _HTAlert_setReplyMessage(param_6,local_d4);
       }
-      uVar3 = 1;
+      uVar2 = 1;
     }
   }
-  return uVar3;
+  return uVar2;
 }
 
 
@@ -403,38 +403,38 @@ _HTPromptPassword(undefined4 param_1,undefined4 param_2,int param_3,undefined4 p
                  undefined4 param_5,int param_6)
 
 {
-  _iobuf *p_Var1;
-  char *pcVar2;
-  undefined4 uVar3;
+  _iobuf *str;
+  char *pcVar1;
+  undefined4 uVar2;
   int extraout_EAX;
   uchar local_74 [108];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((param_6 == 0) || (param_3 < 0)) {
-    uVar3 = 0;
+    uVar2 = 0;
   }
   else {
     memset(local_74,'\0',100);
     _HTPrint("%s ",(&PTR_s_Please_enter_username__00e1bc40)[param_3]);
-    p_Var1 = __iob_func();
-    pcVar2 = fgets((char *)local_74,99,p_Var1);
-    if (pcVar2 == (char *)0x0) {
-      uVar3 = 0;
+    str = __iob_func();
+    pcVar1 = fgets((char *)local_74,99,str);
+    if (pcVar1 == (char *)0x0) {
+      uVar2 = 0;
     }
     else {
       strlen(local_74);
       local_74[extraout_EAX + -1] = '\0';
       if (local_74[0] == '\0') {
-        uVar3 = 0;
+        uVar2 = 0;
       }
       else {
         _HTAlert_setReplySecret(param_6,local_74);
-        uVar3 = 1;
+        uVar2 = 1;
       }
     }
   }
-  return uVar3;
+  return uVar2;
 }
 
 

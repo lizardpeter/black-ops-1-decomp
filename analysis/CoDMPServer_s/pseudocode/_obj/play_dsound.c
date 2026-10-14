@@ -15,9 +15,9 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
   undefined1 *puVar4;
   int unaff_ESI;
   undefined1 *puVar5;
-  undefined1 *puVar6;
-  uchar *puVar7;
-  char *pcVar8;
+  undefined1 *count;
+  uchar *dst;
+  char *pcVar6;
   uchar auStack_c [4];
   uchar auStack_8 [4];
   undefined1 auStack_4 [4];
@@ -35,14 +35,14 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
   if (in_EAX == 0) {
     return 0;
   }
-  puVar7 = auStack_c;
-  puVar6 = auStack_4;
+  dst = auStack_c;
+  count = auStack_4;
   iVar3 = (**(code **)(**(int **)(unaff_ESI + 4) + 0x2c))
                     (*(int **)(unaff_ESI + 4),*(undefined4 *)(unaff_ESI + 0x10));
   if (iVar3 < 0) {
     if (iVar3 < -0x7787ffb9) {
       if (iVar3 == -0x7787ffba) {
-        pcVar8 = "DSERR_PRIOLEVELNEEDED\n";
+        pcVar6 = "DSERR_PRIOLEVELNEEDED\n";
       }
       else {
         if (iVar3 == -0x7ff8ffa9) {
@@ -51,29 +51,29 @@ int __cdecl DSound_UpdateSample(dsound_sample_t *param_1,char *param_2,uint para
           goto LAB_005d4d5b;
         }
         if (iVar3 != -0x7787ffce) goto LAB_005d4d5b;
-        pcVar8 = "DSERR_INVALIDCALL\n";
+        pcVar6 = "DSERR_INVALIDCALL\n";
       }
     }
     else {
       if (iVar3 != -0x7787ff6a) goto LAB_005d4d5b;
-      pcVar8 = "DSERR_BUFFERLOST\n";
+      pcVar6 = "DSERR_BUFFERLOST\n";
     }
-    Com_Printf(9,pcVar8);
+    Com_Printf(9,pcVar6);
 LAB_005d4d5b:
     Com_Printf(9,"Error trying to lock sample!\n");
     return -1;
   }
   puVar5 = (undefined1 *)0x0;
   if (auStack_8 != (uchar *)0x0) {
-    memcpy(auStack_8,(uchar *)param_1,(ulong)puVar6);
-    puVar5 = puVar6;
+    memcpy(auStack_8,(uchar *)param_1,(ulong)count);
+    puVar5 = count;
   }
-  if (puVar7 != (uchar *)0x0) {
-    memcpy(puVar7,puVar5 + (int)param_1,in_EAX);
+  if (dst != (uchar *)0x0) {
+    memcpy(dst,puVar5 + (int)param_1,in_EAX);
     puVar5 = puVar5 + in_EAX;
   }
   iVar3 = (**(code **)(**(int **)(unaff_ESI + 4) + 0x4c))
-                    (*(int **)(unaff_ESI + 4),auStack_8,puVar6,puVar7,in_EAX);
+                    (*(int **)(unaff_ESI + 4),auStack_8,count,dst,in_EAX);
   if (-1 < iVar3) {
     puVar1 = *(undefined1 **)(unaff_ESI + 8);
     if ((*(undefined1 **)(unaff_ESI + 0x18) < puVar1) &&
@@ -86,16 +86,16 @@ LAB_005d4d5b:
       *(undefined4 *)(unaff_ESI + 0x14) = *(undefined4 *)(unaff_ESI + 0x10);
     }
     *(uint *)(unaff_ESI + 0x10) = (uint)(puVar5 + *(int *)(unaff_ESI + 0x10)) % (uint)puVar1;
-    return (int)(puVar7 + (int)puVar6);
+    return (int)(dst + (int)count);
   }
   if (iVar3 == -0x7ff8ffa9) {
-    pcVar8 = "DSERR_INVALIDPARAM\n";
+    pcVar6 = "DSERR_INVALIDPARAM\n";
   }
   else {
     if (iVar3 != -0x7787ffce) goto LAB_005d4df5;
-    pcVar8 = "DSERR_INVALIDCALL\n";
+    pcVar6 = "DSERR_INVALIDCALL\n";
   }
-  Com_Printf(9,pcVar8);
+  Com_Printf(9,pcVar6);
 LAB_005d4df5:
   Com_Printf(9,"Error trying to unlock sample!\n");
   return -1;

@@ -69,7 +69,7 @@ void __cdecl phys_task_manager_shutdown(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl phys_task_manager_process(jqModule *param_1,void *param_2,int param_3)
+void __cdecl phys_task_manager_process(jqModule *module,void *input,int input_count)
 
 {
   code *pcVar1;
@@ -89,18 +89,18 @@ void __cdecl phys_task_manager_process(jqModule *param_1,void *param_2,int param
     (*pcVar1)();
     return;
   }
-  if (param_3 != 0) {
-    if (6 < param_3) {
-      param_3 = 6;
+  if (input_count != 0) {
+    if (6 < input_count) {
+      input_count = 6;
     }
-    g_phys_task_manager_batch.Module = param_1;
-    g_phys_task_manager_batch.Input = param_2;
-    g_phys_task_manager_current_worker_count = param_3;
-    if (0 < param_3) {
+    g_phys_task_manager_batch.Module = module;
+    g_phys_task_manager_batch.Input = input;
+    g_phys_task_manager_current_worker_count = input_count;
+    if (0 < input_count) {
       do {
         IW_task_manager_add_batch(&g_phys_task_manager_batch);
-        param_3 = param_3 + -1;
-      } while (param_3 != 0);
+        input_count = input_count + -1;
+      } while (input_count != 0);
     }
   }
   return;

@@ -2,16 +2,18 @@
 
 // 00AB92B0  R_GetBaseLodDist  (gfx_d3d/r_model_lod.cpp:21)
 
-float __cdecl R_GetBaseLodDist(float *param_1)
+float __cdecl R_GetBaseLodDist(float *origin)
 
 {
   float fVar1;
   float fVar2;
+  float distToExtraCamOrigin;
+  float distToLodOrigin;
   
-  fVar1 = Vec3Distance(param_1,rg.lodParms.origin);
+  fVar1 = Vec3Distance(origin,rg.lodParms.origin);
   fVar2 = fVar1;
   if ((rg.lodParms.extraCamOriginValid != false) &&
-     (fVar2 = Vec3Distance(param_1,rg.lodParms.extraCamOrigin), fVar1 < fVar2)) {
+     (fVar2 = Vec3Distance(origin,rg.lodParms.extraCamOrigin), fVar1 < fVar2)) {
     fVar2 = fVar1;
   }
   return fVar2;
@@ -20,7 +22,7 @@ float __cdecl R_GetBaseLodDist(float *param_1)
 
 // 00AB9320  R_GetAdjustedLodDist  (gfx_d3d/r_model_lod.cpp:42)
 
-float __cdecl R_GetAdjustedLodDist(float param_1,XModelLodRampType param_2)
+float __cdecl R_GetAdjustedLodDist(float dist,XModelLodRampType lodRampType)
 
 {
   code *pcVar1;
@@ -36,6 +38,6 @@ float __cdecl R_GetAdjustedLodDist(float param_1,XModelLodRampType param_2)
       return (float)fVar3;
     }
   }
-  return param_1 * rg.lodParms.ramp[param_2].scale + rg.lodParms.ramp[param_2].bias;
+  return dist * rg.lodParms.ramp[lodRampType].scale + rg.lodParms.ramp[lodRampType].bias;
 }
 

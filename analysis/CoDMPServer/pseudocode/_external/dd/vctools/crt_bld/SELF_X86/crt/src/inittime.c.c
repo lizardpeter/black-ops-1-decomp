@@ -2,53 +2,53 @@
 
 // 00C2B47B  __free_lc_time  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/inittime.c:179)
 
-void __cdecl __free_lc_time(__lc_time_data *param_1)
+void __cdecl __free_lc_time(__lc_time_data *lc_time)
 
 {
-  if (param_1 != (__lc_time_data *)0x0) {
-    free(param_1->wday_abbr[1]);
-    free(param_1->wday_abbr[2]);
-    free(param_1->wday_abbr[3]);
-    free(param_1->wday_abbr[4]);
-    free(param_1->wday_abbr[5]);
-    free(param_1->wday_abbr[6]);
-    free(param_1->wday_abbr[0]);
-    free(param_1->wday[1]);
-    free(param_1->wday[2]);
-    free(param_1->wday[3]);
-    free(param_1->wday[4]);
-    free(param_1->wday[5]);
-    free(param_1->wday[6]);
-    free(param_1->wday[0]);
-    free(param_1->month_abbr[0]);
-    free(param_1->month_abbr[1]);
-    free(param_1->month_abbr[2]);
-    free(param_1->month_abbr[3]);
-    free(param_1->month_abbr[4]);
-    free(param_1->month_abbr[5]);
-    free(param_1->month_abbr[6]);
-    free(param_1->month_abbr[7]);
-    free(param_1->month_abbr[8]);
-    free(param_1->month_abbr[9]);
-    free(param_1->month_abbr[10]);
-    free(param_1->month_abbr[0xb]);
-    free(param_1->month[0]);
-    free(param_1->month[1]);
-    free(param_1->month[2]);
-    free(param_1->month[3]);
-    free(param_1->month[4]);
-    free(param_1->month[5]);
-    free(param_1->month[6]);
-    free(param_1->month[7]);
-    free(param_1->month[8]);
-    free(param_1->month[9]);
-    free(param_1->month[10]);
-    free(param_1->month[0xb]);
-    free(param_1->ampm[0]);
-    free(param_1->ampm[1]);
-    free(param_1->ww_sdatefmt);
-    free(param_1->ww_ldatefmt);
-    free(param_1->ww_timefmt);
+  if (lc_time != (__lc_time_data *)0x0) {
+    free(lc_time->wday_abbr[1]);
+    free(lc_time->wday_abbr[2]);
+    free(lc_time->wday_abbr[3]);
+    free(lc_time->wday_abbr[4]);
+    free(lc_time->wday_abbr[5]);
+    free(lc_time->wday_abbr[6]);
+    free(lc_time->wday_abbr[0]);
+    free(lc_time->wday[1]);
+    free(lc_time->wday[2]);
+    free(lc_time->wday[3]);
+    free(lc_time->wday[4]);
+    free(lc_time->wday[5]);
+    free(lc_time->wday[6]);
+    free(lc_time->wday[0]);
+    free(lc_time->month_abbr[0]);
+    free(lc_time->month_abbr[1]);
+    free(lc_time->month_abbr[2]);
+    free(lc_time->month_abbr[3]);
+    free(lc_time->month_abbr[4]);
+    free(lc_time->month_abbr[5]);
+    free(lc_time->month_abbr[6]);
+    free(lc_time->month_abbr[7]);
+    free(lc_time->month_abbr[8]);
+    free(lc_time->month_abbr[9]);
+    free(lc_time->month_abbr[10]);
+    free(lc_time->month_abbr[0xb]);
+    free(lc_time->month[0]);
+    free(lc_time->month[1]);
+    free(lc_time->month[2]);
+    free(lc_time->month[3]);
+    free(lc_time->month[4]);
+    free(lc_time->month[5]);
+    free(lc_time->month[6]);
+    free(lc_time->month[7]);
+    free(lc_time->month[8]);
+    free(lc_time->month[9]);
+    free(lc_time->month[10]);
+    free(lc_time->month[0xb]);
+    free(lc_time->ampm[0]);
+    free(lc_time->ampm[1]);
+    free(lc_time->ww_sdatefmt);
+    free(lc_time->ww_ldatefmt);
+    free(lc_time->ww_timefmt);
   }
   return;
 }

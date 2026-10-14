@@ -60,12 +60,12 @@ void __cdecl _dynamic_initializer_for__jqMainThreadWorker__(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl jqExecuteBatch(jqWorker *param_1,jqBatch *param_2)
+int __cdecl jqExecuteBatch(jqWorker *Worker,jqBatch *Batch)
 
 {
   int iVar1;
   
-  iVar1 = (*param_2->Module->Code)(param_2);
+  iVar1 = (*Batch->Module->Code)(Batch);
   return iVar1;
 }
 
@@ -77,18 +77,18 @@ void __cdecl _jqInit(void)
 {
   byte bVar1;
   uint uVar2;
-  _SYSTEM_INFO local_28;
+  _SYSTEM_INFO si;
   
   jqNewJobAdded = CreateEventA((LPSECURITY_ATTRIBUTES)0x0,1,0,(LPCSTR)0x0);
   jqProcessorsMask = 0;
-  GetSystemInfo(&local_28);
-  if (local_28.dwNumberOfProcessors != 0) {
+  GetSystemInfo(&si);
+  if (si.dwNumberOfProcessors != 0) {
     uVar2 = 0;
     do {
       bVar1 = (byte)uVar2;
       uVar2 = uVar2 + 1;
       jqProcessorsMask = jqProcessorsMask | 1 << (bVar1 & 0x1f);
-    } while (uVar2 < local_28.dwNumberOfProcessors);
+    } while (uVar2 < si.dwNumberOfProcessors);
   }
   return;
 }
@@ -148,9 +148,9 @@ void __cdecl _jqStart(void)
   HANDLE hThread;
   int iVar4;
   DWORD local_c;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   if (0 < jqNWorkers) {
     iVar4 = 0;
     do {
@@ -170,9 +170,9 @@ void __cdecl _jqStart(void)
         lpParameter[1] = hThread;
         ResumeThread(hThread);
       }
-      local_8 = local_8 + 1;
+      i = i + 1;
       iVar4 = iVar4 + 0xa8;
-    } while (local_8 < jqNWorkers);
+    } while (i < jqNWorkers);
   }
   return;
 }
@@ -203,10 +203,11 @@ void __cdecl _dynamic_initializer_for__jqGlobalQueue__(void)
 
 // 00A0A890  jqPopNextBatchFromQueue  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_kernel.cpp:43)
 
+/* WARNING: Variable defined which should be unmapped: Worker */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 bool __cdecl
-jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3,jqBatch *param_4)
+jqPopNextBatchFromQueue(jqWorker *Queue,jqQueue *GroupID,jqBatchGroup *PoppedBatch,jqBatch *param_4)
 
 {
   void **ppvVar1;
@@ -221,9 +222,11 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
   int *piVar9;
   int iVar10;
   undefined4 *puVar11;
+  int CheckedBatches;
   LONG local_c [2];
+  jqWorker *Worker;
   
-  iVar6 = *(int *)(param_1->_padding_ + 0x58);
+  iVar6 = *(int *)(Queue->_padding_ + 0x58);
   if (iVar6 != 0) {
     iVar10 = 0;
     do {
@@ -231,28 +234,28 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
         return false;
       }
       iVar10 = iVar10 + 1;
-      piVar9 = &param_1->_padding_;
-      bVar4 = jqAtomicQueue<jqBatch,32>::Pop((jqAtomicQueue<jqBatch,32> *)piVar9,(jqBatch *)param_3)
-      ;
+      piVar9 = &Queue->_padding_;
+      bVar4 = jqAtomicQueue<jqBatch,32>::Pop
+                        ((jqAtomicQueue<jqBatch,32> *)piVar9,(jqBatch *)PoppedBatch);
       if (!bVar4) {
         return false;
       }
-      pjVar7 = (jqQueue *)param_3[2].field0_0x0._s_0.QueuedBatchCount;
+      pjVar7 = (jqQueue *)PoppedBatch[2].field0_0x0._s_0.QueuedBatchCount;
       if (pjVar7 == (jqQueue *)0x0) {
-        pjVar7 = (jqQueue *)(param_3[1].field0_0x0._s_0.ExecutingBatchCount + 0x10);
+        pjVar7 = (jqQueue *)(PoppedBatch[1].field0_0x0._s_0.ExecutingBatchCount + 0x10);
       }
-      *(jqWorker **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2074) = param_1;
-      if ((param_2 == (jqQueue *)0x0) || (param_2 == pjVar7)) {
-        iVar6 = param_3[2].field0_0x0._s_0.QueuedBatchCount;
+      *(jqWorker **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2074) = Queue;
+      if ((GroupID == (jqQueue *)0x0) || (GroupID == pjVar7)) {
+        iVar6 = PoppedBatch[2].field0_0x0._s_0.QueuedBatchCount;
         if (iVar6 != 0) {
           piVar9 = (int *)(iVar6 + 4);
           LOCK();
           *piVar9 = *piVar9 + 1;
           UNLOCK();
           LOCK();
-          **(int **)&param_3[2].field0_0x0 = **(int **)&param_3[2].field0_0x0 + -1;
+          **(int **)&PoppedBatch[2].field0_0x0 = **(int **)&PoppedBatch[2].field0_0x0 + -1;
           UNLOCK();
-          if ((**(int **)&param_3[2].field0_0x0 < 0) &&
+          if ((**(int **)&PoppedBatch[2].field0_0x0 < 0) &&
              (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue_kernel.cpp",
                                 0x4f,"PoppedBatch->GroupID->QueuedBatchCount >= 0",
                                 "JobQueue group queued count went below zero!"), bVar4)) {
@@ -261,11 +264,11 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
             return (bool)uVar5;
           }
         }
-        piVar9 = (int *)(param_3[1].field0_0x0._s_0.ExecutingBatchCount + 0x14);
+        piVar9 = (int *)(PoppedBatch[1].field0_0x0._s_0.ExecutingBatchCount + 0x14);
         LOCK();
         *piVar9 = *piVar9 + 1;
         UNLOCK();
-        piVar9 = (int *)(param_3[1].field0_0x0._s_0.ExecutingBatchCount + 0x10);
+        piVar9 = (int *)(PoppedBatch[1].field0_0x0._s_0.ExecutingBatchCount + 0x10);
         LOCK();
         *piVar9 = *piVar9 + -1;
         UNLOCK();
@@ -277,7 +280,7 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
         ((jqPool.ThisPtr)->field2_0x68)._s_0.QueuedBatchCount =
              ((jqPool.ThisPtr)->field2_0x68)._s_0.QueuedBatchCount + -1;
         UNLOCK();
-        piVar9 = (int *)(param_1->_padding_ + 0x58);
+        piVar9 = (int *)(Queue->_padding_ + 0x58);
         LOCK();
         *piVar9 = *piVar9 + -1;
         UNLOCK();
@@ -289,7 +292,7 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
           uVar5 = (*pcVar3)();
           return (bool)uVar5;
         }
-        if (((param_1->WorkerSpecific).Queue.HeadLock.LockCount < 0) &&
+        if (((Queue->WorkerSpecific).Queue.HeadLock.LockCount < 0) &&
            (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue_kernel.cpp",0x59
                               ,"Queue->QueuedBatchCount >= 0",
                               "JobQueue queue count went below zero!"), bVar4)) {
@@ -299,7 +302,7 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
         }
         return true;
       }
-      tlSharedAtomicMutex::Lock((tlSharedAtomicMutex *)&param_1->WorkerSpecific);
+      tlSharedAtomicMutex::Lock((tlSharedAtomicMutex *)&Queue->WorkerSpecific);
       puVar8 = (undefined4 *)*piVar9;
       puVar11 = (undefined4 *)*puVar8;
       if (puVar11 == (undefined4 *)0x0) {
@@ -308,30 +311,30 @@ jqPopNextBatchFromQueue(jqWorker *param_1,jqQueue *param_2,jqBatchGroup *param_3
         puVar11 = (undefined4 *)*puVar8;
       }
       *puVar8 = *puVar11;
-      ppvVar1 = &(((param_1->WorkerSpecific).Queue._FreeList)->Data).Input;
+      ppvVar1 = &(((Queue->WorkerSpecific).Queue._FreeList)->Data).Input;
       *ppvVar1 = (void *)((int)*ppvVar1 + -1);
       if (*ppvVar1 == (void *)0x0) {
         local_c[1] = 0;
         InterlockedExchange(local_c + 1,0);
-        pNVar2 = (param_1->WorkerSpecific).Queue._FreeList;
+        pNVar2 = (Queue->WorkerSpecific).Queue._FreeList;
         pNVar2->Next = (NodeType *)0x0;
         (pNVar2->Data).p3x_info = (void *)0x0;
       }
-      memcpy((uchar *)(puVar11 + 1),(uchar *)param_3,0x7c);
-      this = &(param_1->WorkerSpecific).Queue.FreeLock;
+      memcpy((uchar *)(puVar11 + 1),(uchar *)PoppedBatch,0x7c);
+      this = &(Queue->WorkerSpecific).Queue.FreeLock;
       *puVar11 = 0;
       tlAtomicMutex::Lock((tlAtomicMutex *)this);
-      **(undefined4 **)((int)(param_1->WorkerSpecific).Queue.HeadLock.ThreadId + 0x10) = puVar11;
-      *(undefined4 **)((int)(param_1->WorkerSpecific).Queue.HeadLock.ThreadId + 0x10) = puVar11;
-      piVar9 = &(param_1->WorkerSpecific).Queue.FreeLock.LockCount;
+      **(undefined4 **)((int)(Queue->WorkerSpecific).Queue.HeadLock.ThreadId + 0x10) = puVar11;
+      *(undefined4 **)((int)(Queue->WorkerSpecific).Queue.HeadLock.ThreadId + 0x10) = puVar11;
+      piVar9 = &(Queue->WorkerSpecific).Queue.FreeLock.LockCount;
       *piVar9 = *piVar9 + -1;
       if (*piVar9 == 0) {
         local_c[0] = 0;
         InterlockedExchange(local_c,0);
         *(undefined4 *)&this->ThreadId = 0;
-        *(undefined4 *)((int)&(param_1->WorkerSpecific).Queue.FreeLock.ThreadId + 4) = 0;
+        *(undefined4 *)((int)&(Queue->WorkerSpecific).Queue.FreeLock.ThreadId + 4) = 0;
       }
-      iVar6 = *(int *)(param_1->_padding_ + 0x58);
+      iVar6 = *(int *)(Queue->_padding_ + 0x58);
     } while (iVar6 != 0);
   }
   return false;
@@ -402,7 +405,7 @@ void __cdecl jqInit(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __cdecl jqCanBatchExecute(jqBatch *param_1,jqWorker *param_2)
+bool __cdecl jqCanBatchExecute(jqBatch *Batch,jqWorker *Worker)
 
 {
   return true;
@@ -414,20 +417,21 @@ bool __cdecl jqCanBatchExecute(jqBatch *param_1,jqWorker *param_2)
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __thiscall
-jqAtomicQueue<jqBatch,32>::Init(jqAtomicQueue<jqBatch,32> *this,jqAtomicQueue<jqBatch,32> *param_1)
+jqAtomicQueue<jqBatch,32>::Init
+          (jqAtomicQueue<jqBatch,32> *this,jqAtomicQueue<jqBatch,32> *SharedFreeList)
 
 {
   NodeType *pNVar1;
   
   this->ThisPtr = this;
   this->_FreeList = (NodeType *)0x0;
-  if (param_1 == (jqAtomicQueue<jqBatch,32> *)0x0) {
+  if (SharedFreeList == (jqAtomicQueue<jqBatch,32> *)0x0) {
     this->FreeListPtr = &this->_FreeList;
   }
   else {
-    this->FreeListPtr = param_1->FreeListPtr;
-    if (&param_1->FreeLock != (tlSharedAtomicMutex *)0x0) {
-      (this->FreeLock).ThisPtr = &param_1->FreeLock;
+    this->FreeListPtr = SharedFreeList->FreeListPtr;
+    if (&SharedFreeList->FreeLock != (tlSharedAtomicMutex *)0x0) {
+      (this->FreeLock).ThisPtr = &SharedFreeList->FreeLock;
       goto LAB_00a0bb33;
     }
   }
@@ -457,7 +461,7 @@ LAB_00a0bb33:
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __cdecl jqWorkerSleep(jqWorker *param_1)
+bool __cdecl jqWorkerSleep(jqWorker *Worker)
 
 {
   LONG local_8;
@@ -515,13 +519,13 @@ void __cdecl _jqStop(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqInitQueue(jqQueue *param_1)
+void __cdecl jqInitQueue(jqQueue *Queue)
 
 {
-  param_1->ThisPtr = param_1;
-  param_1->QueuedBatchCount = 0;
-  jqAtomicQueue<jqBatch,32>::Init(&param_1->Queue,&jqPool.BaseQueue.Queue);
-  param_1->ProcessorsMask = 0;
+  Queue->ThisPtr = Queue;
+  Queue->QueuedBatchCount = 0;
+  jqAtomicQueue<jqBatch,32>::Init(&Queue->Queue,&jqPool.BaseQueue.Queue);
+  Queue->ProcessorsMask = 0;
   return;
 }
 
@@ -530,7 +534,7 @@ void __cdecl jqInitQueue(jqQueue *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqAttachQueueToWorkers(jqQueue *param_1,uint param_2)
+void __cdecl jqAttachQueueToWorkers(jqQueue *Queue,uint ProcessorMask)
 
 {
   int *piVar1;
@@ -542,27 +546,28 @@ void __cdecl jqAttachQueueToWorkers(jqQueue *param_1,uint param_2)
   int iVar7;
   uint uVar8;
   int iVar9;
-  uint local_8;
+  uint BaseProcessorsMask;
+  uint Processor;
   
   uVar8 = 1;
-  local_8 = 1;
+  Processor = 1;
   if (jqProcessorsMask != 0) {
     iVar9 = -0xa8;
     uVar6 = jqProcessorsMask;
     do {
       while (pjVar4 = jqWorkers, (uVar6 & uVar8) == 0) {
         uVar8 = uVar8 * 2;
-        local_8 = uVar8;
+        Processor = uVar8;
       }
       uVar6 = uVar6 ^ uVar8;
-      if ((param_2 & uVar8) != 0) {
+      if ((ProcessorMask & uVar8) != 0) {
         piVar1 = (int *)((int)jqWorkers[1].Queues + iVar9 + -100);
         do {
           iVar7 = *piVar1;
           if ((7 < iVar7) &&
              (bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x6c,
                                 "numQueues < JQ_MAX_QUEUES","Ran out of queues for this worker!"),
-             uVar8 = local_8, bVar5)) {
+             uVar8 = Processor, bVar5)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
@@ -571,7 +576,7 @@ void __cdecl jqAttachQueueToWorkers(jqQueue *param_1,uint param_2)
           LOCK();
           iVar7 = *piVar2;
           if (iVar7 == 0) {
-            *piVar2 = (int)param_1;
+            *piVar2 = (int)Queue;
             iVar7 = 0;
           }
           UNLOCK();
@@ -579,8 +584,8 @@ void __cdecl jqAttachQueueToWorkers(jqQueue *param_1,uint param_2)
         LOCK();
         *piVar1 = *piVar1 + 1;
         UNLOCK();
-        param_1->ProcessorsMask =
-             param_1->ProcessorsMask | *(uint *)((int)pjVar4[1].Queues + iVar9 + -0x6c);
+        Queue->ProcessorsMask =
+             Queue->ProcessorsMask | *(uint *)((int)pjVar4[1].Queues + iVar9 + -0x6c);
       }
       iVar9 = iVar9 + 0xa8;
     } while (uVar6 != 0);
@@ -593,7 +598,7 @@ void __cdecl jqAttachQueueToWorkers(jqQueue *param_1,uint param_2)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl _jqAddBatch(jqBatch *param_1)
+void __cdecl _jqAddBatch(jqBatch *Batch)
 
 {
   return;
@@ -605,36 +610,36 @@ void __cdecl _jqAddBatch(jqBatch *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-ulong __cdecl jqWorkerThread(void *param_1)
+ulong __cdecl jqWorkerThread(void *_this)
 
 {
   DWORD DVar1;
-  char local_108 [256];
+  char ThreadName [256];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_108,"JQ Worker %d (Processor 0x%x)");
-  SetThreadName(0xffffffff,local_108);
+  sprintf(ThreadName,"JQ Worker %d (Processor 0x%x)");
+  SetThreadName(0xffffffff,ThreadName);
   DVar1 = GetCurrentThreadId();
-  *(DWORD *)((int)param_1 + 8) = DVar1;
-  jqWorkerLoop(param_1,(jqBatchGroup *)0x0,false,(ulong64 *)0x0);
+  *(DWORD *)((int)_this + 8) = DVar1;
+  jqWorkerLoop(_this,(jqBatchGroup *)0x0,false,(ulong64 *)0x0);
   return 0;
 }
 
 
 // 00A09FC0  jqSetCheckContext  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:93)
 
-void __cdecl jqSetCheckContext(char *param_1)
+void __cdecl jqSetCheckContext(char *desc)
 
 {
-  jqCheckContext = param_1;
+  jqCheckContext = desc;
   return;
 }
 
 
 // 00A0A350  jqAlertWorkers  (<external>/projects_pc/cod/codsrc/tl/jobqueue/xenon/jobqueue_xenon.cpp:93)
 
-void __cdecl jqAlertWorkers(uint param_1)
+void __cdecl jqAlertWorkers(uint ProcessorMask)
 
 {
   PulseEvent(jqNewJobAdded);
@@ -675,19 +680,19 @@ void __cdecl jqLockBatchPoolInternal(void)
 
 // 00A09FD0  jqCheckDMALS  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:101)
 
-void __cdecl jqCheckDMALS(void *param_1)
+void __cdecl jqCheckDMALS(void *addr)
 
 {
-  if (param_1 == (void *)0x0) {
+  if (addr == (void *)0x0) {
     tlFatal("%s (LS) is NULL.");
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)addr & 0xf) != 0) {
     tlFatal("%s 0x%x (LS) not 16byte aligned.");
   }
-  if ((void *)0x40000 < param_1) {
+  if ((void *)0x40000 < addr) {
     tlFatal("%s 0x%x (LS) is > 256k.");
   }
-  if (param_1 < (void *)0x4000) {
+  if (addr < (void *)0x4000) {
     tlFatal("%s 0x%x (LS) is in kernel memory.");
   }
   return;
@@ -698,14 +703,14 @@ void __cdecl jqCheckDMALS(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __thiscall jqAtomicQueue<jqBatch,32>::Push(jqAtomicQueue<jqBatch,32> *this,jqBatch *param_1)
+void __thiscall jqAtomicQueue<jqBatch,32>::Push(jqAtomicQueue<jqBatch,32> *this,jqBatch *Data)
 
 {
   int *piVar1;
   NodeType *pNVar2;
   
   pNVar2 = AllocateNode(this);
-  memcpy((uchar *)&pNVar2->Data,(uchar *)param_1,0x7c);
+  memcpy((uchar *)&pNVar2->Data,(uchar *)Data,0x7c);
   pNVar2->Next = (NodeType *)0x0;
   tlAtomicMutex::Lock(&this->TailLock);
   this->ThisPtr->Tail->Next = pNVar2;
@@ -713,8 +718,8 @@ void __thiscall jqAtomicQueue<jqBatch,32>::Push(jqAtomicQueue<jqBatch,32> *this,
   piVar1 = &(this->TailLock).LockCount;
   *piVar1 = *piVar1 + -1;
   if (*piVar1 == 0) {
-    param_1 = (jqBatch *)0x0;
-    InterlockedExchange((LONG *)&param_1,0);
+    Data = (jqBatch *)0x0;
+    InterlockedExchange((LONG *)&Data,0);
     *(undefined4 *)&(this->TailLock).ThreadId = 0;
     *(undefined4 *)((int)&(this->TailLock).ThreadId + 4) = 0;
   }
@@ -747,16 +752,16 @@ void __cdecl jqUnlockBatchPoolInternal(void)
 
 // 00A0A050  jqCheckDMAMain  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:109)
 
-void __cdecl jqCheckDMAMain(void *param_1)
+void __cdecl jqCheckDMAMain(void *addr)
 
 {
-  if (param_1 == (void *)0x0) {
+  if (addr == (void *)0x0) {
     tlFatal("%s (Main) is NULL.");
   }
-  if (((uint)param_1 & 0xf) != 0) {
+  if (((uint)addr & 0xf) != 0) {
     tlFatal("%s 0x%x (Main) not 16byte aligned.");
   }
-  if (param_1 < (void *)0x40000) {
+  if (addr < (void *)0x40000) {
     tlFatal("%s 0x%x (Main) is < 256k.");
   }
   return;
@@ -767,7 +772,7 @@ void __cdecl jqCheckDMAMain(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqFlush(jqBatchGroup *param_1,ulong64 param_2)
+void __cdecl jqFlush(jqBatchGroup *GroupID,ulong64 param_2)
 
 {
   int iVar1;
@@ -776,21 +781,21 @@ void __cdecl jqFlush(jqBatchGroup *param_1,ulong64 param_2)
   bool bVar4;
   jqBatchGroup_u_0 *pjVar5;
   uint in_stack_00000008;
-  jqBatchGroup_u_0 local_18;
+  jqBatchGroup_u_0 zero;
   LONG local_10;
-  jqBatchGroup_u_0 *local_c;
-  int *local_8;
+  jqBatchGroup_u_0 *workerBatchCount;
+  int *ExecutingBatchCount;
   
   PulseEvent(jqNewJobAdded);
-  if (param_1 == (jqBatchGroup *)0x0) {
+  if (GroupID == (jqBatchGroup *)0x0) {
     pjVar3 = &jqPool.field2_0x68;
     pjVar5 = (jqBatchGroup_u_0 *)&jqPool.field2_0x68;
   }
   else {
-    pjVar3 = (jqBatchPool_u_104 *)&param_1->field0_0x0;
-    pjVar5 = &param_1->field0_0x0;
+    pjVar3 = (jqBatchPool_u_104 *)&GroupID->field0_0x0;
+    pjVar5 = &GroupID->field0_0x0;
   }
-  local_8 = &(pjVar3->_s_0).ExecutingBatchCount;
+  ExecutingBatchCount = &(pjVar3->_s_0).ExecutingBatchCount;
   if (((uint)pjVar5 & 7) != 0) {
     bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\xenon/jobqueue_xenon.cpp",0x8c,
                       "((u32)BatchCount & 0x7)==0",
@@ -801,34 +806,34 @@ void __cdecl jqFlush(jqBatchGroup *param_1,ulong64 param_2)
       return;
     }
   }
-  local_18._s_0.QueuedBatchCount = 0;
-  local_18._s_0.ExecutingBatchCount = 0;
-  local_c = pjVar5;
+  zero._s_0.QueuedBatchCount = 0;
+  zero._s_0.ExecutingBatchCount = 0;
+  workerBatchCount = pjVar5;
   if (in_stack_00000008 != 0 || (uint)param_2 != 0) {
-    local_c = &local_18;
+    workerBatchCount = &zero;
   }
   do {
     iVar1 = (pjVar5->_s_0).QueuedBatchCount;
     local_10 = 0;
     InterlockedExchange(&local_10,0);
-    if (*local_8 + iVar1 == 0) {
+    if (*ExecutingBatchCount + iVar1 == 0) {
       if (((uint)(pjVar5->_s_0).ExecutingBatchCount < (uint)param_2) ||
          (((pjVar5->_s_0).ExecutingBatchCount == (uint)param_2 &&
           ((uint)(pjVar5->_s_0).QueuedBatchCount <= in_stack_00000008)))) {
         return;
       }
     }
-    jqWorkerLoop(jqWorkers,param_1,true,&local_c->BatchCount);
+    jqWorkerLoop(jqWorkers,GroupID,true,&workerBatchCount->BatchCount);
   } while( true );
 }
 
 
 // 00A0A0B0  jqCheckDMASize  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:116)
 
-void __cdecl jqCheckDMASize(uint param_1)
+void __cdecl jqCheckDMASize(uint size)
 
 {
-  if ((param_1 & 0xf) != 0) {
+  if ((size & 0xf) != 0) {
     tlFatal("%s size %d not 16byte aligned.");
   }
   return;
@@ -895,10 +900,10 @@ void __cdecl _dynamic_initializer_for__localQueue__(void)
 
 // 00A0A0D0  jqCheckDMATag  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:121)
 
-void __cdecl jqCheckDMATag(int param_1)
+void __cdecl jqCheckDMATag(int tag)
 
 {
-  if ((param_1 < 0) || (0x1e < param_1)) {
+  if ((tag < 0) || (0x1e < tag)) {
     tlFatal("%s invalid DMA tag %d.");
   }
   return;
@@ -909,7 +914,8 @@ void __cdecl jqCheckDMATag(int param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __cdecl jqPopNextBatch(jqWorker *param_1,jqBatchGroup *param_2,jqBatch *param_3,bool *param_4)
+bool __cdecl
+jqPopNextBatch(jqWorker *GroupID,jqBatchGroup *PoppedBatch,jqBatch *param_3,bool *param_4)
 
 {
   bool bVar1;
@@ -919,13 +925,14 @@ bool __cdecl jqPopNextBatch(jqWorker *param_1,jqBatchGroup *param_2,jqBatch *par
   jqBatch *unaff_EDI;
   undefined4 *puVar3;
   
-  bVar1 = jqPopNextBatchFromQueue((jqWorker *)(in_ECX + 0x20),(jqQueue *)param_1,param_2,unaff_EDI);
+  bVar1 = jqPopNextBatchFromQueue
+                    ((jqWorker *)(in_ECX + 0x20),(jqQueue *)GroupID,PoppedBatch,unaff_EDI);
   if (bVar1) {
     return true;
   }
   if (((jqHighPriorityQueue.ThisPtr != (jqQueue *)0x0) && (*in_EAX != '\0')) &&
      (bVar1 = jqPopNextBatchFromQueue
-                        ((jqWorker *)&jqHighPriorityQueue,(jqQueue *)param_1,param_2,unaff_EDI),
+                        ((jqWorker *)&jqHighPriorityQueue,(jqQueue *)GroupID,PoppedBatch,unaff_EDI),
      bVar1)) {
     *in_EAX = '\0';
     return true;
@@ -933,8 +940,9 @@ bool __cdecl jqPopNextBatch(jqWorker *param_1,jqBatchGroup *param_2,jqBatch *par
   iVar2 = 0;
   puVar3 = (undefined4 *)(in_ECX + 0x80);
   while (((jqWorker *)*puVar3 == (jqWorker *)0x0 ||
-         (bVar1 = jqPopNextBatchFromQueue((jqWorker *)*puVar3,(jqQueue *)param_1,param_2,unaff_EDI),
-         !bVar1))) {
+         (bVar1 = jqPopNextBatchFromQueue
+                            ((jqWorker *)*puVar3,(jqQueue *)GroupID,PoppedBatch,unaff_EDI), !bVar1))
+        ) {
     iVar2 = iVar2 + 1;
     puVar3 = puVar3 + 1;
     if (7 < iVar2) {
@@ -949,32 +957,32 @@ bool __cdecl jqPopNextBatch(jqWorker *param_1,jqBatchGroup *param_2,jqBatch *par
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __thiscall jqAtomicQueue<jqBatch,32>::Pop(jqAtomicQueue<jqBatch,32> *this,jqBatch *param_1)
+bool __thiscall jqAtomicQueue<jqBatch,32>::Pop(jqAtomicQueue<jqBatch,32> *this,jqBatch *p)
 
 {
   tlAtomicMutex *this_00;
   int *piVar1;
   NodeType *pNVar2;
   tlSharedAtomicMutex *ptVar3;
-  NodeType *local_c;
+  NodeType *Node;
   LONG local_8;
   
   this_00 = &this->HeadLock;
   tlAtomicMutex::Lock(this_00);
-  local_c = this->ThisPtr->Head;
-  pNVar2 = local_c->Next;
+  Node = this->ThisPtr->Head;
+  pNVar2 = Node->Next;
   if (pNVar2 == (NodeType *)0x0) {
     piVar1 = &(this->HeadLock).LockCount;
     *piVar1 = *piVar1 + -1;
     if (*piVar1 == 0) {
-      param_1 = (jqBatch *)pNVar2;
-      InterlockedExchange((LONG *)&param_1,0);
+      p = (jqBatch *)pNVar2;
+      InterlockedExchange((LONG *)&p,0);
       *(undefined4 *)&this_00->ThreadId = 0;
       *(undefined4 *)((int)&(this->HeadLock).ThreadId + 4) = 0;
     }
     return false;
   }
-  memcpy((uchar *)param_1,(uchar *)&pNVar2->Data,0x7c);
+  memcpy((uchar *)p,(uchar *)&pNVar2->Data,0x7c);
   this->ThisPtr->Head = pNVar2;
   piVar1 = &(this->HeadLock).LockCount;
   *piVar1 = *piVar1 + -1;
@@ -985,13 +993,13 @@ bool __thiscall jqAtomicQueue<jqBatch,32>::Pop(jqAtomicQueue<jqBatch,32> *this,j
     *(undefined4 *)((int)&(this->HeadLock).ThreadId + 4) = 0;
   }
   tlSharedAtomicMutex::Lock(&this->FreeLock);
-  local_c->Next = *this->FreeListPtr;
-  *this->FreeListPtr = local_c;
+  Node->Next = *this->FreeListPtr;
+  *this->FreeListPtr = Node;
   piVar1 = &((this->FreeLock).ThisPtr)->LockCount;
   *piVar1 = *piVar1 + -1;
   if (*piVar1 == 0) {
-    local_c = (NodeType *)0x0;
-    InterlockedExchange((LONG *)&local_c,0);
+    Node = (NodeType *)0x0;
+    InterlockedExchange((LONG *)&Node,0);
     ptVar3 = (this->FreeLock).ThisPtr;
     *(undefined4 *)&ptVar3->ThreadId = 0;
     *(undefined4 *)((int)&ptVar3->ThreadId + 4) = 0;
@@ -1002,10 +1010,10 @@ bool __thiscall jqAtomicQueue<jqBatch,32>::Pop(jqAtomicQueue<jqBatch,32> *this,j
 
 // 00A0A100  jqCheckRange  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:126)
 
-void __cdecl jqCheckRange(int param_1,int param_2,int param_3)
+void __cdecl jqCheckRange(int val,int mn,int mx)
 
 {
-  if ((param_1 < param_2) || (param_3 < param_1)) {
+  if ((val < mn) || (mx < val)) {
     tlFatal("%s %d out of range [%d-%d].");
   }
   return;
@@ -1014,10 +1022,10 @@ void __cdecl jqCheckRange(int param_1,int param_2,int param_3)
 
 // 00A09C90  jqEnableWorkers  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue.cpp:131)
 
-void __cdecl jqEnableWorkers(uint param_1)
+void __cdecl jqEnableWorkers(uint ProcessorsMask)
 
 {
-  jqProcessorsMask = param_1;
+  jqProcessorsMask = ProcessorsMask;
   return;
 }
 
@@ -1066,14 +1074,14 @@ void __thiscall jqAtomicHeap::~jqAtomicHeap(jqAtomicHeap *this)
 
 // 00A0A140  jqFetch  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:140)
 
-void * __cdecl jqFetch(void *param_1,void *param_2,uint param_3)
+void * __cdecl jqFetch(void *dest,void *src,uint size)
 
 {
-  if (param_3 == 0) {
-    return param_1;
+  if (size == 0) {
+    return dest;
   }
-  memcpy(param_1,param_2,param_3);
-  return param_1;
+  memcpy(dest,src,size);
+  return dest;
 }
 
 
@@ -1147,23 +1155,24 @@ jqBatch * __cdecl jqGetCurrentBatch(void)
 
 // 00A0B980  Init  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:152)
 
-void __thiscall jqAtomicHeap::Init(jqAtomicHeap *this,void *param_1,uint param_2,uint param_3)
+void __thiscall
+jqAtomicHeap::Init(jqAtomicHeap *this,void *_HeapBase,uint _HeapSize,uint _BlockSize)
 
 {
   code *pcVar1;
   uint uVar2;
   bool bVar3;
   int iVar4;
-  uchar *puVar5;
-  ulong64 **ppuVar6;
-  int iVar7;
-  ulong64 *puVar8;
-  int *piVar9;
-  ulong64 *puVar10;
+  uchar *dst;
+  ulong64 **ppuVar5;
+  int iVar6;
+  ulong64 *puVar7;
+  int *piVar8;
+  ulong64 *puVar9;
   
-  this->HeapBase = param_1;
-  this->HeapSize = param_2;
-  this->BlockSize = param_3;
+  this->HeapBase = _HeapBase;
+  this->HeapSize = _HeapSize;
+  this->BlockSize = _BlockSize;
   this->ThisPtr = this;
   this->TotalUsed = 0;
   this->TotalBlocks = 0;
@@ -1187,44 +1196,44 @@ void __thiscall jqAtomicHeap::Init(jqAtomicHeap *this,void *param_1,uint param_2
     (*pcVar1)();
     return;
   }
-  iVar7 = 0;
-  param_1 = (void *)0x0;
+  iVar6 = 0;
+  _HeapBase = (void *)0x0;
   if (0 < this->NLevels) {
-    piVar9 = &this->Levels[0].NBlocks;
+    piVar8 = &this->Levels[0].NBlocks;
     do {
-      ((LevelInfo *)(piVar9 + -1))->BlockSize = this->BlockSize << ((byte)iVar7 & 0x1f);
-      iVar4 = 1 << (((char)this->NLevels - (byte)iVar7) - 1 & 0x1f);
-      iVar7 = iVar7 + 1;
-      *piVar9 = iVar4;
-      piVar9[1] = iVar4 + 0x3fU >> 6;
-      param_1 = (void *)((int)param_1 +
-                        ((int)((*piVar9 + 0x3ffU & 0xfffffc00) +
-                              ((int)(*piVar9 + 0x3ffU) >> 0x1f & 7U)) >> 3));
-      piVar9 = piVar9 + 5;
-    } while (iVar7 < this->NLevels);
+      ((LevelInfo *)(piVar8 + -1))->BlockSize = this->BlockSize << ((byte)iVar6 & 0x1f);
+      iVar4 = 1 << (((char)this->NLevels - (byte)iVar6) - 1 & 0x1f);
+      iVar6 = iVar6 + 1;
+      *piVar8 = iVar4;
+      piVar8[1] = iVar4 + 0x3fU >> 6;
+      _HeapBase = (void *)((int)_HeapBase +
+                          ((int)((*piVar8 + 0x3ffU & 0xfffffc00) +
+                                ((int)(*piVar8 + 0x3ffU) >> 0x1f & 7U)) >> 3));
+      piVar8 = piVar8 + 5;
+    } while (iVar6 < this->NLevels);
   }
-  puVar5 = tlMemAlloc((int)param_1 * 2,0x80,0);
-  this->LevelData = puVar5;
-  memset(puVar5,'\0',(int)param_1 * 2);
-  puVar8 = (ulong64 *)this->LevelData;
-  puVar10 = (ulong64 *)((int)puVar8 + (int)param_1);
-  param_1 = (void *)0x0;
+  dst = tlMemAlloc((int)_HeapBase * 2,0x80,0);
+  this->LevelData = dst;
+  memset(dst,'\0',(int)_HeapBase * 2);
+  puVar7 = (ulong64 *)this->LevelData;
+  puVar9 = (ulong64 *)((int)puVar7 + (int)_HeapBase);
+  _HeapBase = (void *)0x0;
   if (0 < this->NLevels) {
-    ppuVar6 = &this->Levels[0].CellAvailable;
+    ppuVar5 = &this->Levels[0].CellAvailable;
     do {
-      iVar7 = (int)(((int)ppuVar6[-2] + 0x3ffU & 0xfffffc00) +
-                   ((int)((int)ppuVar6[-2] + 0x3ffU) >> 0x1f & 7U)) >> 3;
-      *ppuVar6 = puVar8;
-      ppuVar6[1] = puVar10;
-      puVar8 = (ulong64 *)((int)puVar8 + iVar7);
-      puVar10 = (ulong64 *)((int)puVar10 + iVar7);
-      param_1 = (void *)((int)param_1 + 1);
-      ppuVar6 = ppuVar6 + 5;
-    } while ((int)param_1 < this->NLevels);
+      iVar6 = (int)(((int)ppuVar5[-2] + 0x3ffU & 0xfffffc00) +
+                   ((int)((int)ppuVar5[-2] + 0x3ffU) >> 0x1f & 7U)) >> 3;
+      *ppuVar5 = puVar7;
+      ppuVar5[1] = puVar9;
+      puVar7 = (ulong64 *)((int)puVar7 + iVar6);
+      puVar9 = (ulong64 *)((int)puVar9 + iVar6);
+      _HeapBase = (void *)((int)_HeapBase + 1);
+      ppuVar5 = ppuVar5 + 5;
+    } while ((int)_HeapBase < this->NLevels);
   }
-  puVar10 = this->Levels[this->NLevels + -1].CellAvailable;
-  *(undefined4 *)puVar10 = 1;
-  *(undefined4 *)((int)puVar10 + 4) = 0;
+  puVar9 = this->Levels[this->NLevels + -1].CellAvailable;
+  *(undefined4 *)puVar9 = 1;
+  *(undefined4 *)((int)puVar9 + 4) = 0;
   return;
 }
 
@@ -1244,7 +1253,7 @@ jqWorker * __cdecl jqGetCurrentWorker(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-jqQueue * __cdecl jqGetWorkerQueue(int param_1)
+jqQueue * __cdecl jqGetWorkerQueue(int worker)
 
 {
   int iVar1;
@@ -1254,7 +1263,7 @@ jqQueue * __cdecl jqGetWorkerQueue(int param_1)
   if (0 < jqNWorkers) {
     piVar2 = &jqWorkers->Processor;
     do {
-      if (*piVar2 == param_1) {
+      if (*piVar2 == worker) {
         return &jqWorkers[iVar1].WorkerSpecific;
       }
       iVar1 = iVar1 + 1;
@@ -1267,11 +1276,11 @@ jqQueue * __cdecl jqGetWorkerQueue(int param_1)
 
 // 00A0A170  jqStore  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:162)
 
-void __cdecl jqStore(void *param_1,void *param_2,uint param_3)
+void __cdecl jqStore(void *dest,void *src,uint size)
 
 {
-  if (param_3 != 0) {
-    memcpy(param_1,param_2,param_3);
+  if (size != 0) {
+    memcpy(dest,src,size);
   }
   return;
 }
@@ -1281,7 +1290,8 @@ void __cdecl jqStore(void *param_1,void *param_2,uint param_3)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqWorkerLoop(jqWorker *param_1,jqBatchGroup *param_2,bool param_3,ulong64 *param_4)
+void __cdecl
+jqWorkerLoop(jqWorker *Worker,jqBatchGroup *GroupID,bool BreakWhenEmpty,ulong64 *batchCount)
 
 {
   ulong64 *puVar1;
@@ -1299,80 +1309,80 @@ void __cdecl jqWorkerLoop(jqWorker *param_1,jqBatchGroup *param_2,bool param_3,u
   undefined4 *puVar11;
   ulong64 uVar12;
   ulong64 uVar13;
-  jqBatchGroup_u_0 local_a8;
+  jqBatchGroup_u_0 CurBatch;
   undefined4 local_a0;
   int local_9c;
   int *local_98;
   uint *local_94;
   uint local_90;
   LONG local_28 [2];
-  uint *local_20;
-  ulong64 local_1c;
-  uint local_14;
+  void *CachedConditionalAddress;
+  ulong64 lastConditionalCheckTime;
+  uint CachedConditionalValue;
   int local_10;
-  int local_c;
-  undefined1 local_5;
+  int ret;
+  bool doHighPriority;
   
-  if ((jqWorkerInitFn != (_func___cdecl_void_int *)0x0) && (0 < param_1->WorkerID)) {
-    (*jqWorkerInitFn)(param_1->WorkerID);
+  if ((jqWorkerInitFn != (_func___cdecl_void_int *)0x0) && (0 < Worker->WorkerID)) {
+    (*jqWorkerInitFn)(Worker->WorkerID);
   }
   local_10 = *(int *)((int)ThreadLocalStoragePointer + _tls_index * 4);
-  local_1c = 0;
-  local_20 = (uint *)0x0;
-  local_14 = 0;
-  *(jqWorker **)(local_10 + 0x2078) = param_1;
-  local_5 = 1;
-  local_a8._s_0.QueuedBatchCount = 0;
-  local_a8._s_0.ExecutingBatchCount = 0;
+  lastConditionalCheckTime = 0;
+  CachedConditionalAddress = (void *)0x0;
+  CachedConditionalValue = 0;
+  *(jqWorker **)(local_10 + 0x2078) = Worker;
+  doHighPriority = true;
+  CurBatch._s_0.QueuedBatchCount = 0;
+  CurBatch._s_0.ExecutingBatchCount = 0;
   local_a0 = 0;
   local_9c = 0;
   local_94 = (uint *)0x0;
   local_90 = 0;
   local_98 = (int *)0x0;
   do {
-    bVar4 = jqPopNextBatch((jqWorker *)param_2,(jqBatchGroup *)&local_a8._s_0,unaff_EDI,unaff_ESI);
+    bVar4 = jqPopNextBatch((jqWorker *)GroupID,(jqBatchGroup *)&CurBatch._s_0,unaff_EDI,unaff_ESI);
     if (bVar4) {
       do {
-        *(jqBatchGroup_u_0 **)(local_10 + 0x207c) = &local_a8;
-        local_c = 1;
+        *(jqBatchGroup_u_0 **)(local_10 + 0x207c) = &CurBatch;
+        ret = 1;
         uVar12 = tlPcGetTick();
-        if ((local_20 == local_94) && (local_14 == local_90)) {
+        if ((CachedConditionalAddress == local_94) && (CachedConditionalValue == local_90)) {
           local_94 = (uint *)0x0;
 LAB_00a0ac0f:
-          local_c = (**(code **)(local_9c + 8))(&local_a8);
-          uVar3 = local_1c;
+          ret = (**(code **)(local_9c + 8))(&CurBatch);
+          uVar3 = lastConditionalCheckTime;
 LAB_00a0ac27:
-          local_1c = uVar3;
-          if (local_c == 0) {
+          lastConditionalCheckTime = uVar3;
+          if (ret == 0) {
             uVar13 = tlPcGetTick();
             uVar5 = (uint)(uVar13 - uVar12);
-            puVar1 = &param_1->WorkTime;
+            puVar1 = &Worker->WorkTime;
             uVar3 = *puVar1;
             *(uint *)puVar1 = (int)*puVar1 + uVar5;
-            local_5 = 1;
-            piVar8 = (int *)((int)&param_1->WorkTime + 4);
+            doHighPriority = true;
+            piVar8 = (int *)((int)&Worker->WorkTime + 4);
             *piVar8 = *piVar8 + (int)(uVar13 - uVar12 >> 0x20) + (uint)CARRY4((uint)uVar3,uVar5);
           }
-          else if (local_c == 2) {
-            local_5 = 1;
+          else if (ret == 2) {
+            doHighPriority = true;
           }
         }
         else {
           if (local_94 == (uint *)0x0) goto LAB_00a0ac0f;
-          local_28[0] = (LONG)(uVar12 - local_1c >> 0x20);
-          if ((local_28[0] != 0) || (50000 < (uint)(uVar12 - local_1c))) {
+          local_28[0] = (LONG)(uVar12 - lastConditionalCheckTime >> 0x20);
+          if ((local_28[0] != 0) || (50000 < (uint)(uVar12 - lastConditionalCheckTime))) {
             uVar3 = uVar12;
             if (local_90 <= *local_94) {
-              local_20 = local_94;
-              local_14 = local_90;
+              CachedConditionalAddress = local_94;
+              CachedConditionalValue = local_90;
               local_94 = (uint *)0x0;
-              local_c = (**(code **)(local_9c + 8))(&local_a8);
+              ret = (**(code **)(local_9c + 8))(&CurBatch);
             }
             goto LAB_00a0ac27;
           }
         }
         *(undefined4 *)(local_10 + 0x207c) = 0;
-        if (local_c != 0) {
+        if (ret != 0) {
           LOCK();
           ((jqPool.ThisPtr)->field2_0x68)._s_0.QueuedBatchCount =
                ((jqPool.ThisPtr)->field2_0x68)._s_0.QueuedBatchCount + 1;
@@ -1421,7 +1431,7 @@ LAB_00a0ac27:
             *puVar7 = 0;
             puVar7[1] = 0;
           }
-          memcpy((uchar *)(puVar11 + 1),(uchar *)&local_a8.BatchCount,0x7c);
+          memcpy((uchar *)(puVar11 + 1),(uchar *)&CurBatch.BatchCount,0x7c);
           *puVar11 = 0;
           tlAtomicMutex::Lock((tlAtomicMutex *)(iVar2 + 0x40));
           **(undefined4 **)(*(int *)(iVar2 + 0x50) + 0x10) = puVar11;
@@ -1447,18 +1457,18 @@ LAB_00a0ac27:
           local_98[1] = local_98[1] + -1;
           UNLOCK();
         }
-      } while ((((!param_3) || (local_c == 0)) &&
-               ((param_4 == (ulong64 *)0x0 ||
-                ((int)*param_4 != 0 || *(int *)((int)param_4 + 4) != 0)))) &&
-              (bVar4 = jqPopNextBatch((jqWorker *)param_2,(jqBatchGroup *)&local_a8._s_0,unaff_EDI,
+      } while ((((!BreakWhenEmpty) || (ret == 0)) &&
+               ((batchCount == (ulong64 *)0x0 ||
+                ((int)*batchCount != 0 || *(int *)((int)batchCount + 4) != 0)))) &&
+              (bVar4 = jqPopNextBatch((jqWorker *)GroupID,(jqBatchGroup *)&CurBatch._s_0,unaff_EDI,
                                       unaff_ESI), bVar4));
     }
-    local_5 = 1;
-    if (param_3) {
+    doHighPriority = true;
+    if (BreakWhenEmpty) {
       *(undefined4 *)(local_10 + 0x2078) = 0;
       return;
     }
-    bVar4 = jqWorkerSleep(param_1);
+    bVar4 = jqWorkerSleep(Worker);
     if (!bVar4) {
       *(undefined4 *)(local_10 + 0x2078) = 0;
       return;
@@ -1471,37 +1481,37 @@ LAB_00a0ac27:
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqInitWorker(jqWorker *param_1)
+void __cdecl jqInitWorker(jqWorker *Worker)
 
 {
-  param_1->ThisPtr = param_1;
-  (param_1->WorkerSpecific).ThisPtr = &param_1->WorkerSpecific;
-  (param_1->WorkerSpecific).QueuedBatchCount = 0;
-  jqAtomicQueue<jqBatch,32>::Init(&(param_1->WorkerSpecific).Queue,&jqPool.BaseQueue.Queue);
-  (param_1->WorkerSpecific).ProcessorsMask = 0;
-  param_1->NumQueues = 0;
-  param_1->Queues[0] = (jqQueue *)0x0;
-  param_1->Queues[1] = (jqQueue *)0x0;
-  param_1->Queues[2] = (jqQueue *)0x0;
-  param_1->Queues[3] = (jqQueue *)0x0;
-  param_1->Queues[4] = (jqQueue *)0x0;
-  param_1->Queues[5] = (jqQueue *)0x0;
-  param_1->Queues[6] = (jqQueue *)0x0;
-  param_1->Queues[7] = (jqQueue *)0x0;
+  Worker->ThisPtr = Worker;
+  (Worker->WorkerSpecific).ThisPtr = &Worker->WorkerSpecific;
+  (Worker->WorkerSpecific).QueuedBatchCount = 0;
+  jqAtomicQueue<jqBatch,32>::Init(&(Worker->WorkerSpecific).Queue,&jqPool.BaseQueue.Queue);
+  (Worker->WorkerSpecific).ProcessorsMask = 0;
+  Worker->NumQueues = 0;
+  Worker->Queues[0] = (jqQueue *)0x0;
+  Worker->Queues[1] = (jqQueue *)0x0;
+  Worker->Queues[2] = (jqQueue *)0x0;
+  Worker->Queues[3] = (jqQueue *)0x0;
+  Worker->Queues[4] = (jqQueue *)0x0;
+  Worker->Queues[5] = (jqQueue *)0x0;
+  Worker->Queues[6] = (jqQueue *)0x0;
+  Worker->Queues[7] = (jqQueue *)0x0;
   return;
 }
 
 
 // 00A0A190  jqFetchAsync  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:183)
 
-void * __cdecl jqFetchAsync(void *param_1,void *param_2,uint param_3,uint param_4)
+void * __cdecl jqFetchAsync(void *dest,void *src,uint size,uint tag)
 
 {
-  if (param_3 == 0) {
-    return param_1;
+  if (size == 0) {
+    return dest;
   }
-  memcpy(param_1,param_2,param_3);
-  return param_1;
+  memcpy(dest,src,size);
+  return dest;
 }
 
 
@@ -1509,7 +1519,7 @@ void * __cdecl jqFetchAsync(void *param_1,void *param_2,uint param_3,uint param_
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqShutdownWorker(jqWorker *param_1)
+void __cdecl jqShutdownWorker(jqWorker *Worker)
 
 {
   return;
@@ -1534,10 +1544,10 @@ void __cdecl jqStart(void)
   int iVar9;
   jqAtomicQueue<jqBatch,32> *this;
   LONG local_1c;
-  uint local_18;
-  int local_14;
+  uint ProcessorsMask;
+  int id;
   int local_10;
-  uint local_c;
+  uint Processor;
   NodeType *local_8;
   
   DVar6 = GetCurrentThreadId();
@@ -1557,15 +1567,15 @@ void __cdecl jqStart(void)
   }
   jqWorkers = tlMemAlloc(jqNWorkers * 0xa8,8,0);
   memset((uchar *)jqWorkers,'\0',jqNWorkers * 0xa8);
-  local_14 = 0;
-  local_c = 1;
+  id = 0;
+  Processor = 1;
   if (jqProcessorsMask != 0) {
     local_10 = 0;
-    local_18 = jqProcessorsMask;
+    ProcessorsMask = jqProcessorsMask;
     do {
-      for (; (local_18 & local_c) == 0; local_c = local_c * 2) {
+      for (; (ProcessorsMask & Processor) == 0; Processor = Processor * 2) {
       }
-      local_18 = local_18 ^ local_c;
+      ProcessorsMask = ProcessorsMask ^ Processor;
       iVar9 = (int)jqWorkers->Queues + local_10 + -0x80;
       *(int *)(iVar9 + 0x10) = iVar9;
       *(undefined4 *)(iVar9 + 0x78) = 0;
@@ -1618,13 +1628,13 @@ void __cdecl jqStart(void)
       *(undefined4 *)(iVar9 + 0x94) = 0;
       *(undefined4 *)(iVar9 + 0x98) = 0;
       *(undefined4 *)(iVar9 + 0x9c) = 0;
-      *(uint *)((int)jqWorkers->Queues + local_10 + -0x6c) = local_c;
-      *(int *)((int)jqWorkers->Queues + local_10 + -0x68) = local_14;
-      local_14 = local_14 + 1;
+      *(uint *)((int)jqWorkers->Queues + local_10 + -0x6c) = Processor;
+      *(int *)((int)jqWorkers->Queues + local_10 + -0x68) = id;
+      id = id + 1;
       local_10 = local_10 + 0xa8;
-    } while (local_18 != 0);
+    } while (ProcessorsMask != 0);
   }
-  if ((local_14 != jqNWorkers) &&
+  if ((id != jqNWorkers) &&
      (bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0xdc,
                         "id == jqNWorkers","Worker count mismatch."), bVar5)) {
     pcVar4 = (code *)swi(3);
@@ -1673,15 +1683,15 @@ void __cdecl jqStart(void)
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __thiscall
-jqAtomicQueue<jqBatch,32>::AllocateNodeBlock(jqAtomicQueue<jqBatch,32> *this,int param_1)
+jqAtomicQueue<jqBatch,32>::AllocateNodeBlock(jqAtomicQueue<jqBatch,32> *this,int Count)
 
 {
   NodeType *pNVar1;
   NodeType *pNVar2;
   int iVar3;
   
-  pNVar1 = tlMemAlloc(param_1 * 0x80 + 8,4,0);
-  iVar3 = param_1 + -1;
+  pNVar1 = tlMemAlloc(Count * 0x80 + 8,4,0);
+  iVar3 = Count + -1;
   pNVar2 = pNVar1;
   if (0 < iVar3) {
     do {
@@ -1690,7 +1700,7 @@ jqAtomicQueue<jqBatch,32>::AllocateNodeBlock(jqAtomicQueue<jqBatch,32> *this,int
       pNVar2 = pNVar2 + 1;
     } while (iVar3 != 0);
   }
-  pNVar2 = pNVar1 + param_1;
+  pNVar2 = pNVar1 + Count;
   pNVar2[-1].Next = (NodeType *)0x0;
   pNVar2->Next = pNVar1;
   (pNVar2->Data).p3x_info = this->NodeBlockListHead;
@@ -1702,11 +1712,11 @@ jqAtomicQueue<jqBatch,32>::AllocateNodeBlock(jqAtomicQueue<jqBatch,32> *this,int
 
 // 00A0A1C0  jqStoreAsync  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:205)
 
-void __cdecl jqStoreAsync(void *param_1,void *param_2,uint param_3,uint param_4)
+void __cdecl jqStoreAsync(void *dest,void *src,uint size,uint tag)
 
 {
-  if (param_3 != 0) {
-    memcpy(param_1,param_2,param_3);
+  if (size != 0) {
+    memcpy(dest,src,size);
   }
   return;
 }
@@ -1714,7 +1724,7 @@ void __cdecl jqStoreAsync(void *param_1,void *param_2,uint param_3,uint param_4)
 
 // 00A095B0  GetAvailableBlock  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:213)
 
-bool __thiscall jqAtomicHeap::GetAvailableBlock(jqAtomicHeap *this,LevelInfo *param_1,int *param_2)
+bool __thiscall jqAtomicHeap::GetAvailableBlock(jqAtomicHeap *this,LevelInfo *FitLevel,int *FitSlot)
 
 {
   ulong64 uVar1;
@@ -1726,13 +1736,14 @@ bool __thiscall jqAtomicHeap::GetAvailableBlock(jqAtomicHeap *this,LevelInfo *pa
   uint uVar6;
   uint extraout_EDX;
   uint uVar7;
+  int c;
   int local_8;
   
   iVar5 = 0;
-  if (0 < param_1->NCells) {
+  if (0 < FitLevel->NCells) {
     do {
-      uVar2 = (uint)param_1->CellAvailable[iVar5];
-      uVar3 = *(uint *)((int)param_1->CellAvailable + iVar5 * 8 + 4);
+      uVar2 = (uint)FitLevel->CellAvailable[iVar5];
+      uVar3 = *(uint *)((int)FitLevel->CellAvailable + iVar5 * 8 + 4);
       if (uVar2 != 0 || uVar3 != 0) {
         uVar7 = 0x80000000;
         uVar6 = 0;
@@ -1744,8 +1755,8 @@ bool __thiscall jqAtomicHeap::GetAvailableBlock(jqAtomicHeap *this,LevelInfo *pa
             uVar7 = uVar7 >> 1;
           } while ((uVar6 & uVar2) == 0 && (uVar7 & uVar3) == 0);
         }
-        *param_2 = iVar5 * 0x40 + (0x3f - local_8);
-        puVar4 = param_1->CellAvailable;
+        *FitSlot = iVar5 * 0x40 + (0x3f - local_8);
+        puVar4 = FitLevel->CellAvailable;
         _allshl();
         LOCK();
         uVar1 = puVar4[iVar5];
@@ -1765,7 +1776,7 @@ bool __thiscall jqAtomicHeap::GetAvailableBlock(jqAtomicHeap *this,LevelInfo *pa
         return false;
       }
       iVar5 = iVar5 + 1;
-    } while (iVar5 < param_1->NCells);
+    } while (iVar5 < FitLevel->NCells);
   }
   return false;
 }
@@ -1773,7 +1784,7 @@ bool __thiscall jqAtomicHeap::GetAvailableBlock(jqAtomicHeap *this,LevelInfo *pa
 
 // 00A0A1E0  jqWait  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:226)
 
-void __cdecl jqWait(uint param_1)
+void __cdecl jqWait(uint tag)
 
 {
   return;
@@ -1782,19 +1793,19 @@ void __cdecl jqWait(uint param_1)
 
 // 00A09690  AllocBlock  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:236)
 
-bool __thiscall jqAtomicHeap::AllocBlock(jqAtomicHeap *this,LevelInfo **param_1,int *param_2)
+bool __thiscall jqAtomicHeap::AllocBlock(jqAtomicHeap *this,LevelInfo **FitLevel,int *FitSlot)
 
 {
   bool bVar1;
   
-  if (*param_1 < this->Levels + this->NLevels) {
+  if (*FitLevel < this->Levels + this->NLevels) {
     do {
-      bVar1 = GetAvailableBlock(this,*param_1,param_2);
+      bVar1 = GetAvailableBlock(this,*FitLevel,FitSlot);
       if (bVar1) {
         return true;
       }
-      *param_1 = *param_1 + 1;
-    } while (*param_1 < this->Levels + this->NLevels);
+      *FitLevel = *FitLevel + 1;
+    } while (*FitLevel < this->Levels + this->NLevels);
   }
   return false;
 }
@@ -1802,7 +1813,7 @@ bool __thiscall jqAtomicHeap::AllocBlock(jqAtomicHeap *this,LevelInfo **param_1,
 
 // 00A0A1F0  jqWaitMultiple  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:237)
 
-void __cdecl jqWaitMultiple(uint param_1)
+void __cdecl jqWaitMultiple(uint mask)
 
 {
   return;
@@ -1811,7 +1822,7 @@ void __cdecl jqWaitMultiple(uint param_1)
 
 // 00A0A200  jqSetMemBase  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:247)
 
-void __cdecl jqSetMemBase(void *param_1)
+void __cdecl jqSetMemBase(void *ptr)
 
 {
   return;
@@ -1821,7 +1832,7 @@ void __cdecl jqSetMemBase(void *param_1)
 // 00A096F0  SplitBlock  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:253)
 
 int __thiscall
-jqAtomicHeap::SplitBlock(jqAtomicHeap *this,LevelInfo *param_1,int param_2,LevelInfo *param_3)
+jqAtomicHeap::SplitBlock(jqAtomicHeap *this,LevelInfo *Level,int Slot,LevelInfo *LevelTo)
 
 {
   undefined4 extraout_EDX;
@@ -1829,16 +1840,16 @@ jqAtomicHeap::SplitBlock(jqAtomicHeap *this,LevelInfo *param_1,int param_2,Level
   undefined4 unaff_EBX;
   undefined4 unaff_EDI;
   
-  for (; param_3 < param_1; param_1 = param_1 + -1) {
-    param_2 = param_2 * 2;
+  for (; LevelTo < Level; Level = Level + -1) {
+    Slot = Slot * 2;
     _allshl();
-    tlAtomicOr(param_1[-1].CellAvailable + ((int)(param_2 + 1 + (param_2 + 1 >> 0x1f & 0x3fU)) >> 6)
-               ,CONCAT44(unaff_EBX,extraout_EDX));
+    tlAtomicOr(Level[-1].CellAvailable + ((int)(Slot + 1 + (Slot + 1 >> 0x1f & 0x3fU)) >> 6),
+               CONCAT44(unaff_EBX,extraout_EDX));
   }
   _allshl();
-  tlAtomicOr(param_1->CellAllocated + ((int)(param_2 + (param_2 >> 0x1f & 0x3fU)) >> 6),
+  tlAtomicOr(Level->CellAllocated + ((int)(Slot + (Slot >> 0x1f & 0x3fU)) >> 6),
              CONCAT44(unaff_EDI,extraout_EDX_00));
-  return param_2;
+  return Slot;
 }
 
 
@@ -1888,7 +1899,7 @@ void __cdecl jqStop(void)
 
 // 00A0A210  jqSetStackSize  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:261)
 
-void __cdecl jqSetStackSize(int param_1)
+void __cdecl jqSetStackSize(int size)
 
 {
   return;
@@ -1897,25 +1908,25 @@ void __cdecl jqSetStackSize(int param_1)
 
 // 00A09780  AllocLevel  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:266)
 
-void * __thiscall jqAtomicHeap::AllocLevel(jqAtomicHeap *this,int param_1)
+void * __thiscall jqAtomicHeap::AllocLevel(jqAtomicHeap *this,int LevelIdx)
 
 {
-  LevelInfo *pLVar1;
-  bool bVar2;
-  int iVar3;
-  LevelInfo *local_8;
+  LevelInfo *LevelTo;
+  bool bVar1;
+  int iVar2;
+  LevelInfo *FitLevel;
   
-  pLVar1 = this->Levels + param_1;
-  param_1 = 0;
-  local_8 = pLVar1;
-  bVar2 = AllocBlock(this,&local_8,&param_1);
-  if (!bVar2) {
+  LevelTo = this->Levels + LevelIdx;
+  LevelIdx = 0;
+  FitLevel = LevelTo;
+  bVar1 = AllocBlock(this,&FitLevel,&LevelIdx);
+  if (!bVar1) {
     return (void *)0x0;
   }
-  iVar3 = SplitBlock(this,local_8,param_1,pLVar1);
+  iVar2 = SplitBlock(this,FitLevel,LevelIdx,LevelTo);
   tlAtomicAdd(&this->ThisPtr->TotalBlocks,1);
-  tlAtomicAdd(&this->ThisPtr->TotalUsed,pLVar1->BlockSize);
-  return this->HeapBase + pLVar1->BlockSize * iVar3;
+  tlAtomicAdd(&this->ThisPtr->TotalUsed,LevelTo->BlockSize);
+  return this->HeapBase + LevelTo->BlockSize * iVar2;
 }
 
 
@@ -1932,28 +1943,28 @@ int __cdecl jqGetMemAvailable(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl jqGetQueuedBatchCount(jqBatchGroup *param_1)
+int __cdecl jqGetQueuedBatchCount(jqBatchGroup *GroupID)
 
 {
-  if (param_1 == (jqBatchGroup *)0x0) {
+  if (GroupID == (jqBatchGroup *)0x0) {
     return jqPool.field2_0x68._s_0.QueuedBatchCount;
   }
-  return (param_1->field0_0x0)._s_0.QueuedBatchCount;
+  return (GroupID->field0_0x0)._s_0.QueuedBatchCount;
 }
 
 
 // 00A09800  FindLevelForSize  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:285)
 
-int __thiscall jqAtomicHeap::FindLevelForSize(jqAtomicHeap *this,uint param_1)
+int __thiscall jqAtomicHeap::FindLevelForSize(jqAtomicHeap *this,uint Size)
 
 {
   uint uVar1;
   
   uVar1 = this->BlockSize;
-  return (uint)(uVar1 << 10 < param_1) + (uint)(uVar1 << 9 < param_1) + (uint)(uVar1 << 8 < param_1)
-         + (uint)(uVar1 << 7 < param_1) + (uint)(uVar1 << 6 < param_1) +
-         (uint)(uVar1 << 5 < param_1) + (uint)(uVar1 << 4 < param_1) + (uint)(uVar1 * 8 < param_1) +
-         (uint)(uVar1 * 4 < param_1) + (uint)(uVar1 * 2 < param_1) + (uint)(uVar1 < param_1);
+  return (uint)(uVar1 << 10 < Size) + (uint)(uVar1 << 9 < Size) + (uint)(uVar1 << 8 < Size) +
+         (uint)(uVar1 << 7 < Size) + (uint)(uVar1 << 6 < Size) + (uint)(uVar1 << 5 < Size) +
+         (uint)(uVar1 << 4 < Size) + (uint)(uVar1 * 8 < Size) + (uint)(uVar1 * 4 < Size) +
+         (uint)(uVar1 * 2 < Size) + (uint)(uVar1 < Size);
 }
 
 
@@ -1961,19 +1972,19 @@ int __thiscall jqAtomicHeap::FindLevelForSize(jqAtomicHeap *this,uint param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl jqGetExecutingBatchCount(jqBatchGroup *param_1)
+int __cdecl jqGetExecutingBatchCount(jqBatchGroup *GroupID)
 
 {
-  if (param_1 == (jqBatchGroup *)0x0) {
+  if (GroupID == (jqBatchGroup *)0x0) {
     return jqPool.field2_0x68._s_0.ExecutingBatchCount;
   }
-  return (param_1->field0_0x0)._s_0.ExecutingBatchCount;
+  return (GroupID->field0_0x0)._s_0.ExecutingBatchCount;
 }
 
 
 // 00A0A230  jqAlloc  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_mem.cpp:287)
 
-void * __cdecl jqAlloc(uint param_1)
+void * __cdecl jqAlloc(uint size)
 
 {
   return (void *)0x0;
@@ -1984,14 +1995,14 @@ void * __cdecl jqAlloc(uint param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqAddBatchToQueue(jqBatch *param_1,jqQueue *param_2,bool param_3)
+void __cdecl jqAddBatchToQueue(jqBatch *Batch,jqQueue *Queue,bool Front)
 
 {
   code *pcVar1;
   bool bVar2;
   jqBatchGroup *pjVar3;
   
-  if (param_1->Module == (jqModule *)0x0) {
+  if (Batch->Module == (jqModule *)0x0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x127,
                       "Batch.Module != NULL","Batch has no module assigned.");
     if (bVar2) {
@@ -2000,13 +2011,13 @@ void __cdecl jqAddBatchToQueue(jqBatch *param_1,jqQueue *param_2,bool param_3)
       return;
     }
   }
-  pjVar3 = param_1->GroupID;
+  pjVar3 = Batch->GroupID;
   if (pjVar3 != (jqBatchGroup *)0x0) {
     LOCK();
     (pjVar3->field0_0x0)._s_0.QueuedBatchCount = (pjVar3->field0_0x0)._s_0.QueuedBatchCount + 1;
     UNLOCK();
   }
-  pjVar3 = &param_1->Module->Group;
+  pjVar3 = &Batch->Module->Group;
   LOCK();
   (pjVar3->field0_0x0)._s_0.QueuedBatchCount = (pjVar3->field0_0x0)._s_0.QueuedBatchCount + 1;
   UNLOCK();
@@ -2014,9 +2025,9 @@ void __cdecl jqAddBatchToQueue(jqBatch *param_1,jqQueue *param_2,bool param_3)
   jqPool.field2_0x68._s_0.QueuedBatchCount = jqPool.field2_0x68._s_0.QueuedBatchCount + 1;
   UNLOCK();
   LOCK();
-  param_2->QueuedBatchCount = param_2->QueuedBatchCount + 1;
+  Queue->QueuedBatchCount = Queue->QueuedBatchCount + 1;
   UNLOCK();
-  jqAtomicQueue<jqBatch,32>::Push(&param_2->Queue,param_1);
+  jqAtomicQueue<jqBatch,32>::Push(&Queue->Queue,Batch);
   PulseEvent(jqNewJobAdded);
   return;
 }
@@ -2033,34 +2044,34 @@ void * __cdecl jqGetMemBase(void)
 
 // 00A098A0  Alloc  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:312)
 
-void * __thiscall jqAtomicHeap::Alloc(jqAtomicHeap *this,uint param_1,uint param_2)
+void * __thiscall jqAtomicHeap::Alloc(jqAtomicHeap *this,uint Size,uint Align)
 
 {
   int *piVar1;
-  uint uVar2;
-  int iVar3;
-  void *pvVar4;
+  uint Size_00;
+  int LevelIdx;
+  void *pvVar2;
   
   tlAtomicMutex::Lock(&this->Mutex);
-  uVar2 = param_1;
-  if (param_1 < param_2) {
-    uVar2 = param_2;
+  Size_00 = Size;
+  if (Size < Align) {
+    Size_00 = Align;
   }
-  if (this->HeapSize < uVar2) {
+  if (this->HeapSize < Size_00) {
     tlPrintf("Size (%d) > HeapSize (%d), return NULL\n");
     return (void *)0x0;
   }
-  iVar3 = FindLevelForSize(this,uVar2);
-  pvVar4 = AllocLevel(this,iVar3);
+  LevelIdx = FindLevelForSize(this,Size_00);
+  pvVar2 = AllocLevel(this,LevelIdx);
   piVar1 = &(this->Mutex).LockCount;
   *piVar1 = *piVar1 + -1;
   if (*piVar1 == 0) {
-    param_1 = 0;
-    InterlockedExchange((LONG *)&param_1,0);
+    Size = 0;
+    InterlockedExchange((LONG *)&Size,0);
     *(undefined4 *)&(this->Mutex).ThreadId = 0;
     *(undefined4 *)((int)&(this->Mutex).ThreadId + 4) = 0;
   }
-  return pvVar4;
+  return pvVar2;
 }
 
 
@@ -2068,17 +2079,17 @@ void * __thiscall jqAtomicHeap::Alloc(jqAtomicHeap *this,uint param_1,uint param
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqAddBatch(jqBatch *param_1,jqQueue *param_2)
+void __cdecl jqAddBatch(jqBatch *Data,jqQueue *Queue)
 
 {
   code *pcVar1;
   bool bVar2;
   jqBatchGroup *pjVar3;
   
-  if (param_2 == (jqQueue *)0x0) {
-    param_2 = &jqGlobalQueue;
+  if (Queue == (jqQueue *)0x0) {
+    Queue = &jqGlobalQueue;
   }
-  if (param_1->Module == (jqModule *)0x0) {
+  if (Data->Module == (jqModule *)0x0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x127,
                       "Batch.Module != NULL","Batch has no module assigned.");
     if (bVar2) {
@@ -2087,13 +2098,13 @@ void __cdecl jqAddBatch(jqBatch *param_1,jqQueue *param_2)
       return;
     }
   }
-  pjVar3 = param_1->GroupID;
+  pjVar3 = Data->GroupID;
   if (pjVar3 != (jqBatchGroup *)0x0) {
     LOCK();
     (pjVar3->field0_0x0)._s_0.QueuedBatchCount = (pjVar3->field0_0x0)._s_0.QueuedBatchCount + 1;
     UNLOCK();
   }
-  pjVar3 = &param_1->Module->Group;
+  pjVar3 = &Data->Module->Group;
   LOCK();
   (pjVar3->field0_0x0)._s_0.QueuedBatchCount = (pjVar3->field0_0x0)._s_0.QueuedBatchCount + 1;
   UNLOCK();
@@ -2101,9 +2112,9 @@ void __cdecl jqAddBatch(jqBatch *param_1,jqQueue *param_2)
   jqPool.field2_0x68._s_0.QueuedBatchCount = jqPool.field2_0x68._s_0.QueuedBatchCount + 1;
   UNLOCK();
   LOCK();
-  param_2->QueuedBatchCount = param_2->QueuedBatchCount + 1;
+  Queue->QueuedBatchCount = Queue->QueuedBatchCount + 1;
   UNLOCK();
-  jqAtomicQueue<jqBatch,32>::Push(&param_2->Queue,param_1);
+  jqAtomicQueue<jqBatch,32>::Push(&Queue->Queue,Data);
   PulseEvent(jqNewJobAdded);
   return;
 }
@@ -2112,7 +2123,7 @@ void __cdecl jqAddBatch(jqBatch *param_1,jqQueue *param_2)
 // 00A09920  FindAllocatedBlock  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:334)
 
 void __thiscall
-jqAtomicHeap::FindAllocatedBlock(jqAtomicHeap *this,uint param_1,LevelInfo **param_2,int *param_3)
+jqAtomicHeap::FindAllocatedBlock(jqAtomicHeap *this,uint Offset,LevelInfo **FitLevel,int *FitSlot)
 
 {
   ulong64 *puVar1;
@@ -2124,22 +2135,22 @@ jqAtomicHeap::FindAllocatedBlock(jqAtomicHeap *this,uint param_1,LevelInfo **par
   LevelInfo *pLVar5;
   int iVar6;
   
-  *param_2 = this->Levels;
+  *FitLevel = this->Levels;
   if (this->Levels < this->Levels + this->NLevels) {
     do {
-      uVar4 = param_1 / (*param_2)->BlockSize;
-      *param_3 = uVar4;
-      pLVar5 = *param_2;
+      uVar4 = Offset / (*FitLevel)->BlockSize;
+      *FitSlot = uVar4;
+      pLVar5 = *FitLevel;
       iVar6 = (int)(uVar4 + ((int)uVar4 >> 0x1f & 0x3fU)) >> 6;
       _allshl();
       puVar1 = pLVar5->CellAllocated;
       if ((extraout_EAX & (uint)puVar1[iVar6]) != 0 ||
           (extraout_EDX & *(uint *)((int)puVar1 + iVar6 * 8 + 4)) != 0) break;
       pLVar5 = pLVar5 + 1;
-      *param_2 = pLVar5;
+      *FitLevel = pLVar5;
     } while (pLVar5 < this->Levels + this->NLevels);
   }
-  if ((this->Levels + this->NLevels <= *param_2) &&
+  if ((this->Levels + this->NLevels <= *FitLevel) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue_atomic_heap.h",0x157,
                         "FitLevel < Levels+NLevels",
                         "jqAtomicHeap error detected, block not found in heap."), bVar3)) {
@@ -2156,8 +2167,8 @@ jqAtomicHeap::FindAllocatedBlock(jqAtomicHeap *this,uint param_1,LevelInfo **par
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl
-jqTempWorkerLoop(jqWorker *param_1,jqBatchGroup *param_2,_func___cdecl_bool_void_ptr *param_3,
-                void *param_4)
+jqTempWorkerLoop(jqWorker *Worker,jqBatchGroup *GroupID,_func___cdecl_bool_void_ptr *callback,
+                void *context)
 
 {
   bool bVar1;
@@ -2171,7 +2182,7 @@ jqTempWorkerLoop(jqWorker *param_1,jqBatchGroup *param_2,_func___cdecl_bool_void
   int iVar7;
   undefined4 *puVar8;
   jqBatch *pjVar9;
-  jqBatchGroup_u_0 local_98;
+  jqBatchGroup_u_0 CurBatch;
   undefined4 local_90;
   int local_8c;
   int *local_88;
@@ -2180,35 +2191,35 @@ jqTempWorkerLoop(jqWorker *param_1,jqBatchGroup *param_2,_func___cdecl_bool_void
   LONG local_1c;
   LONG local_18;
   int local_14;
-  int local_10;
-  int local_c;
-  undefined1 local_5;
+  int ret;
+  int numJobs;
+  bool doHighPriority;
   
   iVar6 = *(int *)((int)ThreadLocalStoragePointer + _tls_index * 4);
-  *(jqWorker **)(iVar6 + 0x2078) = param_1;
-  local_5 = 1;
-  local_98._s_0.QueuedBatchCount = 0;
-  local_98._s_0.ExecutingBatchCount = 0;
+  *(jqWorker **)(iVar6 + 0x2078) = Worker;
+  doHighPriority = true;
+  CurBatch._s_0.QueuedBatchCount = 0;
+  CurBatch._s_0.ExecutingBatchCount = 0;
   local_90 = 0;
   local_8c = 0;
   local_84 = 0;
   local_80 = 0;
   local_88 = (int *)0x0;
   local_14 = iVar6;
-  bVar1 = (*param_3)(param_4);
+  bVar1 = (*callback)(context);
   while (!bVar1) {
     pjVar9 = (jqBatch *)0x0;
-    local_c = jqGetQueuedBatchCount((jqBatchGroup *)0x0);
-    bVar1 = jqPopNextBatch((jqWorker *)param_2,(jqBatchGroup *)&local_98._s_0,pjVar9,
+    numJobs = jqGetQueuedBatchCount((jqBatchGroup *)0x0);
+    bVar1 = jqPopNextBatch((jqWorker *)GroupID,(jqBatchGroup *)&CurBatch._s_0,pjVar9,
                            (bool *)unaff_EDI);
     if (bVar1) {
       do {
-        *(jqBatchGroup_u_0 **)(iVar6 + 0x207c) = &local_98;
-        local_10 = (**(code **)(local_8c + 8))(&local_98);
+        *(jqBatchGroup_u_0 **)(iVar6 + 0x207c) = &CurBatch;
+        ret = (**(code **)(local_8c + 8))(&CurBatch);
         *(undefined4 *)(iVar6 + 0x207c) = 0;
-        if (local_10 == 0) {
+        if (ret == 0) {
 LAB_00a0b097:
-          local_5 = 1;
+          doHighPriority = true;
         }
         else {
           LOCK();
@@ -2259,7 +2270,7 @@ LAB_00a0b097:
             *puVar3 = 0;
             puVar3[1] = 0;
           }
-          memcpy((uchar *)(puVar8 + 1),(uchar *)&local_98.BatchCount,0x7c);
+          memcpy((uchar *)(puVar8 + 1),(uchar *)&CurBatch.BatchCount,0x7c);
           *puVar8 = 0;
           tlAtomicMutex::Lock((tlAtomicMutex *)(iVar6 + 0x40));
           **(undefined4 **)(*(int *)(iVar6 + 0x50) + 0x10) = puVar8;
@@ -2273,7 +2284,7 @@ LAB_00a0b097:
             *(undefined4 *)(iVar6 + 0x44) = 0;
           }
           iVar6 = local_14;
-          if (local_10 == 2) goto LAB_00a0b097;
+          if (ret == 2) goto LAB_00a0b097;
         }
         piVar4 = &((jqPool.ThisPtr)->field2_0x68)._s_0.ExecutingBatchCount;
         LOCK();
@@ -2287,17 +2298,17 @@ LAB_00a0b097:
           local_88[1] = local_88[1] + -1;
           UNLOCK();
         }
-        if ((local_10 == 0) || (local_c = local_c + -1, local_c < 1)) {
-          bVar1 = (*param_3)(param_4);
+        if ((ret == 0) || (numJobs = numJobs + -1, numJobs < 1)) {
+          bVar1 = (*callback)(context);
           if (bVar1) goto LAB_00a0b132;
-          local_c = jqGetQueuedBatchCount((jqBatchGroup *)0x0);
+          numJobs = jqGetQueuedBatchCount((jqBatchGroup *)0x0);
         }
-        bVar1 = jqPopNextBatch((jqWorker *)param_2,(jqBatchGroup *)&local_98._s_0,unaff_EDI,
+        bVar1 = jqPopNextBatch((jqWorker *)GroupID,(jqBatchGroup *)&CurBatch._s_0,unaff_EDI,
                                unaff_ESI);
       } while (bVar1);
     }
-    local_5 = 1;
-    bVar1 = (*param_3)(param_4);
+    doHighPriority = true;
+    bVar1 = (*callback)(context);
   }
 LAB_00a0b132:
   *(undefined4 *)(iVar6 + 0x2078) = 0;
@@ -2307,7 +2318,7 @@ LAB_00a0b132:
 
 // 00A099D0  MergeBlocks  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:349)
 
-void __thiscall jqAtomicHeap::MergeBlocks(jqAtomicHeap *this,LevelInfo **param_1,int *param_2)
+void __thiscall jqAtomicHeap::MergeBlocks(jqAtomicHeap *this,LevelInfo **FitLevel,int *FitSlot)
 
 {
   ulong64 *puVar1;
@@ -2320,13 +2331,13 @@ void __thiscall jqAtomicHeap::MergeBlocks(jqAtomicHeap *this,LevelInfo **param_1
   uint uVar6;
   int iVar7;
   
-  if (*param_1 < this->Levels + this->NLevels + -1) {
+  if (*FitLevel < this->Levels + this->NLevels + -1) {
     do {
-      iVar7 = (int)((*param_2 ^ 1U) + ((int)(*param_2 ^ 1U) >> 0x1f & 0x3fU)) >> 6;
+      iVar7 = (int)((*FitSlot ^ 1U) + ((int)(*FitSlot ^ 1U) >> 0x1f & 0x3fU)) >> 6;
       _allshl();
       do {
-        uVar3 = *(uint *)((int)(*param_1)->CellAvailable + iVar7 * 8 + 4);
-        puVar1 = (*param_1)->CellAvailable + iVar7;
+        uVar3 = *(uint *)((int)(*FitLevel)->CellAvailable + iVar7 * 8 + 4);
+        puVar1 = (*FitLevel)->CellAvailable + iVar7;
         uVar4 = (uint)*puVar1;
         if ((extraout_EAX & uVar4) == 0 && (extraout_EDX & uVar3) == 0) {
           return;
@@ -2344,9 +2355,9 @@ void __thiscall jqAtomicHeap::MergeBlocks(jqAtomicHeap *this,LevelInfo **param_1
         }
         UNLOCK();
       } while ((uVar5 != uVar4) || (uVar6 != uVar3));
-      *param_1 = *param_1 + 1;
-      *param_2 = *param_2 >> 1;
-    } while (*param_1 < this->Levels + this->NLevels + -1);
+      *FitLevel = *FitLevel + 1;
+      *FitSlot = *FitSlot >> 1;
+    } while (*FitLevel < this->Levels + this->NLevels + -1);
   }
   return;
 }
@@ -2357,22 +2368,22 @@ void __thiscall jqAtomicHeap::MergeBlocks(jqAtomicHeap *this,LevelInfo **param_1
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl
-jqAddBatch(jqModule *param_1,void *param_2,void *param_3,jqBatchGroup *param_4,jqQueue *param_5,
-          void *param_6,int param_7)
+jqAddBatch(jqModule *Module,void *Input,void *Output,jqBatchGroup *GroupID,jqQueue *Queue,
+          void *ParamData,int ParamSize)
 
 {
   code *pcVar1;
   bool bVar2;
-  jqBatch local_80;
+  jqBatch Batch;
   
-  local_80.Module = param_1;
-  local_80.p3x_info = (void *)0x0;
-  local_80.ConditionalAddress = (void *)0x0;
-  local_80.ConditionalValue = 0;
-  local_80.Input = param_2;
-  local_80.Output = param_3;
-  local_80.GroupID = param_4;
-  if ((param_7 < 0) || (0x5c < param_7)) {
+  Batch.Module = Module;
+  Batch.p3x_info = (void *)0x0;
+  Batch.ConditionalAddress = (void *)0x0;
+  Batch.ConditionalValue = 0;
+  Batch.Input = Input;
+  Batch.Output = Output;
+  Batch.GroupID = GroupID;
+  if ((ParamSize < 0) || (0x5c < ParamSize)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x164,
                       "ParamSize >= 0 && ParamSize <= (int)sizeof(Batch.ParamData)",
                       "Invalid Batch ParamSize.");
@@ -2382,11 +2393,11 @@ jqAddBatch(jqModule *param_1,void *param_2,void *param_3,jqBatchGroup *param_4,j
       return;
     }
   }
-  if ((param_6 != (void *)0x0) && (param_7 != 0)) {
-    memcpy((uchar *)local_80.ParamData,param_6,param_7);
+  if ((ParamData != (void *)0x0) && (ParamSize != 0)) {
+    memcpy((uchar *)Batch.ParamData,ParamData,ParamSize);
   }
-  memset((uchar *)((int)local_80.ParamData + param_7),0xcd,0x5c - param_7);
-  jqAddBatch(&local_80,param_5);
+  memset((uchar *)((int)Batch.ParamData + ParamSize),0xcd,0x5c - ParamSize);
+  jqAddBatch(&Batch,Queue);
   return;
 }
 
@@ -2410,7 +2421,7 @@ void __cdecl jqSkipBatch(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-jqWorker * __cdecl jqFindWorkerForProcessor(jqProcessor param_1)
+jqWorker * __cdecl jqFindWorkerForProcessor(jqProcessor Processor)
 
 {
   int iVar1;
@@ -2420,7 +2431,7 @@ jqWorker * __cdecl jqFindWorkerForProcessor(jqProcessor param_1)
   if (0 < jqNWorkers) {
     piVar2 = &jqWorkers->Processor;
     do {
-      if (*piVar2 == param_1) {
+      if (*piVar2 == Processor) {
         return jqWorkers + iVar1;
       }
       iVar1 = iVar1 + 1;
@@ -2435,17 +2446,17 @@ jqWorker * __cdecl jqFindWorkerForProcessor(jqProcessor param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __cdecl jqPoll(jqBatchGroup *param_1)
+bool __cdecl jqPoll(jqBatchGroup *GroupID)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (jqBatchGroup *)0x0) {
-    param_1 = (jqBatchGroup *)&jqPool.field2_0x68;
+  if (GroupID == (jqBatchGroup *)0x0) {
+    GroupID = (jqBatchGroup *)&jqPool.field2_0x68;
   }
-  if (((uint)param_1 & 7) != 0) {
+  if (((uint)GroupID & 7) != 0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x186,
                       "((u32)BatchCount & 0x7)==0",
                       "Data not aligned correctly, read won\'t be atomic!\n");
@@ -2455,7 +2466,7 @@ bool __cdecl jqPoll(jqBatchGroup *param_1)
       return (bool)uVar3;
     }
   }
-  if (((jqBatchPool_u_104_s_0 *)param_1)->QueuedBatchCount != 0 || *(int *)((int)param_1 + 4) != 0)
+  if (((jqBatchPool_u_104_s_0 *)GroupID)->QueuedBatchCount != 0 || *(int *)((int)GroupID + 4) != 0)
   {
     return true;
   }
@@ -2465,54 +2476,52 @@ bool __cdecl jqPoll(jqBatchGroup *param_1)
 
 // 00A09AA0  Free  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue_atomic_heap.h:381)
 
-void __thiscall jqAtomicHeap::Free(jqAtomicHeap *this,void *param_1)
+void __thiscall jqAtomicHeap::Free(jqAtomicHeap *this,void *Ptr)
 
 {
   int *piVar1;
   code *pcVar2;
   int iVar3;
   void *pvVar4;
-  uint uVar5;
-  bool bVar6;
+  bool bVar5;
   uint extraout_EAX;
   uint extraout_EDX;
   uint extraout_EDX_00;
   undefined4 unaff_EDI;
-  uint local_8;
+  int FitSlot;
   
   tlAtomicMutex::Lock(&this->Mutex);
-  local_8 = 0;
-  FindAllocatedBlock(this,(int)param_1 - (int)this->HeapBase,&param_1,(int *)&local_8);
-  uVar5 = local_8;
+  FitSlot = 0;
+  FindAllocatedBlock(this,(int)Ptr - (int)this->HeapBase,&Ptr,&FitSlot);
+  iVar3 = FitSlot;
   _allshl();
-  pvVar4 = param_1;
+  pvVar4 = Ptr;
   tlAtomicAnd((ulong64 *)
-              (*(int *)((int)param_1 + 0x10) +
-              ((int)(uVar5 + ((int)uVar5 >> 0x1f & 0x3fU)) >> 6) * 8),
+              (*(int *)((int)Ptr + 0x10) + ((int)(iVar3 + (iVar3 >> 0x1f & 0x3fU)) >> 6) * 8),
               CONCAT44(unaff_EDI,~extraout_EDX));
   tlAtomicAdd(&this->ThisPtr->TotalBlocks,0xffffffff);
   tlAtomicAdd(&this->ThisPtr->TotalUsed,-*(int *)pvVar4);
-  MergeBlocks(this,&param_1,(int *)&local_8);
-  iVar3 = ((int)(local_8 + ((int)local_8 >> 0x1f & 0x3fU)) >> 6) * 8;
+  MergeBlocks(this,&Ptr,&FitSlot);
+  iVar3 = ((int)(FitSlot + (FitSlot >> 0x1f & 0x3fU)) >> 6) * 8;
   _allshl();
-  local_8 = extraout_EDX_00;
-  if ((*(uint *)(*(int *)((int)param_1 + 0xc) + iVar3) & extraout_EAX) != 0 ||
-      (*(uint *)(*(int *)((int)param_1 + 0xc) + 4 + iVar3) & extraout_EDX_00) != 0) {
-    bVar6 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue_atomic_heap.h",0x192,
+  FitSlot = extraout_EDX_00;
+  if ((*(uint *)(*(int *)((int)Ptr + 0xc) + iVar3) & extraout_EAX) != 0 ||
+      (*(uint *)(*(int *)((int)Ptr + 0xc) + 4 + iVar3) & extraout_EDX_00) != 0) {
+    bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue_atomic_heap.h",0x192,
                       "(jqGet(&FitLevel->CellAvailable[BlockCell(FitSlot)]) & BlockBit(FitSlot)) == 0"
                       ,"jqAtomicHeap error detected, invalid tree state.");
-    if (bVar6) {
+    if (bVar5) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
-  tlAtomicOr((ulong64 *)(*(int *)((int)param_1 + 0xc) + iVar3),CONCAT44(unaff_EDI,local_8));
+  tlAtomicOr((ulong64 *)(*(int *)((int)Ptr + 0xc) + iVar3),CONCAT44(unaff_EDI,FitSlot));
   piVar1 = &(this->Mutex).LockCount;
   *piVar1 = *piVar1 + -1;
   if (*piVar1 == 0) {
-    param_1 = (void *)0x0;
-    InterlockedExchange((LONG *)&param_1,0);
+    Ptr = (void *)0x0;
+    InterlockedExchange((LONG *)&Ptr,0);
     *(undefined4 *)&(this->Mutex).ThreadId = 0;
     *(undefined4 *)((int)&(this->Mutex).ThreadId + 4) = 0;
   }
@@ -2524,13 +2533,13 @@ void __thiscall jqAtomicHeap::Free(jqAtomicHeap *this,void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-bool __cdecl jqAreJobsQueued(jqBatchGroup *param_1)
+bool __cdecl jqAreJobsQueued(jqBatchGroup *GroupID)
 
 {
-  if (param_1 == (jqBatchGroup *)0x0) {
-    param_1 = (jqBatchGroup *)&jqPool.field2_0x68;
+  if (GroupID == (jqBatchGroup *)0x0) {
+    GroupID = (jqBatchGroup *)&jqPool.field2_0x68;
   }
-  return ((jqBatchPool_u_104_s_0 *)param_1)->QueuedBatchCount != 0;
+  return ((jqBatchPool_u_104_s_0 *)GroupID)->QueuedBatchCount != 0;
 }
 
 
@@ -2539,15 +2548,15 @@ bool __cdecl jqAreJobsQueued(jqBatchGroup *param_1)
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl
-jqAssistWithBatches(_func___cdecl_bool_void_ptr *param_1,void *param_2,jqBatchGroup *param_3)
+jqAssistWithBatches(_func___cdecl_bool_void_ptr *callback,void *context,jqBatchGroup *GroupID)
 
 {
   code *pcVar1;
   bool bVar2;
-  jqWorker *pjVar3;
+  jqWorker *Worker;
   
   if (jqTempWorkers != (jqWorker *)0x0) {
-    if (param_1 == (_func___cdecl_bool_void_ptr *)0x0) {
+    if (callback == (_func___cdecl_bool_void_ptr *)0x0) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x1a1,"callback",
                         "You must supply a callback function");
       if (bVar2) {
@@ -2569,12 +2578,12 @@ jqAssistWithBatches(_func___cdecl_bool_void_ptr *param_1,void *param_2,jqBatchGr
     }
     LOCK();
     UNLOCK();
-    pjVar3 = jqTempWorkers + jqNextAvailTempWorker;
+    Worker = jqTempWorkers + jqNextAvailTempWorker;
     jqNextAvailTempWorker = jqNextAvailTempWorker + 1;
-    pjVar3->Processor = -1;
-    pjVar3->NumQueues = 1;
-    pjVar3->Queues[0] = &jqGlobalQueue;
-    jqTempWorkerLoop(pjVar3,param_3,param_1,param_2);
+    Worker->Processor = -1;
+    Worker->NumQueues = 1;
+    Worker->Queues[0] = &jqGlobalQueue;
+    jqTempWorkerLoop(Worker,GroupID,callback,context);
     LOCK();
     jqNextAvailTempWorker = jqNextAvailTempWorker + -1;
     UNLOCK();
@@ -2585,10 +2594,10 @@ jqAssistWithBatches(_func___cdecl_bool_void_ptr *param_1,void *param_2,jqBatchGr
 
 // 00A09E70  jqSetWorkerInitFunction  (<external>/projects_pc/cod/codsrc/tl/jobqueue/jobqueue.cpp:435)
 
-void __cdecl jqSetWorkerInitFunction(_func___cdecl_void_int *param_1)
+void __cdecl jqSetWorkerInitFunction(_func___cdecl_void_int *fn)
 
 {
-  jqWorkerInitFn = param_1;
+  jqWorkerInitFn = fn;
   return;
 }
 
@@ -2678,12 +2687,12 @@ void __cdecl jqUnlockBatchPool(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqSetBatchDataHeapSize(uint param_1,uint param_2)
+void __cdecl jqSetBatchDataHeapSize(uint Size,uint BlockSize)
 
 {
   code *pcVar1;
   bool bVar2;
-  void *pvVar3;
+  void *_HeapBase;
   
   if (jqNWorkers != 0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x1d5,"!jqNWorkers"
@@ -2694,7 +2703,7 @@ void __cdecl jqSetBatchDataHeapSize(uint param_1,uint param_2)
       return;
     }
   }
-  if (param_1 == 0) {
+  if (Size == 0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",0x1d6,"Size > 0",
                       "Invalid batch pool size.");
     if (bVar2) {
@@ -2706,8 +2715,8 @@ void __cdecl jqSetBatchDataHeapSize(uint param_1,uint param_2)
   if (jqPool.BatchDataHeap.LevelData != (uchar *)0x0) {
     tlMemFree(jqPool.BatchDataHeap.LevelData);
   }
-  pvVar3 = tlMemAlloc(param_1,0x80,0);
-  jqAtomicHeap::Init(&jqPool.BatchDataHeap,pvVar3,param_1,param_2);
+  _HeapBase = tlMemAlloc(Size,0x80,0);
+  jqAtomicHeap::Init(&jqPool.BatchDataHeap,_HeapBase,Size,BlockSize);
   return;
 }
 
@@ -2716,12 +2725,12 @@ void __cdecl jqSetBatchDataHeapSize(uint param_1,uint param_2)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void * __cdecl jqAllocBatchData(uint param_1)
+void * __cdecl jqAllocBatchData(uint Size)
 
 {
   void *pvVar1;
   
-  pvVar1 = jqAtomicHeap::Alloc(&jqPool.BatchDataHeap,param_1,0x10);
+  pvVar1 = jqAtomicHeap::Alloc(&jqPool.BatchDataHeap,Size,0x10);
   return pvVar1;
 }
 
@@ -2730,10 +2739,10 @@ void * __cdecl jqAllocBatchData(uint param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl jqFreeBatchData(void *param_1)
+void __cdecl jqFreeBatchData(void *Ptr)
 
 {
-  jqAtomicHeap::Free(&jqPool.BatchDataHeap,param_1);
+  jqAtomicHeap::Free(&jqPool.BatchDataHeap,Ptr);
   return;
 }
 
@@ -2751,57 +2760,57 @@ uint __cdecl jqGetBatchDataAvailable(void)
 
 // 00A093C0  tlAtomicAdd  (<external>/projects_pc/cod/codsrc/tl/base/include/tl_thread.h:620)
 
-uint __cdecl tlAtomicAdd(uint *param_1,uint param_2)
+uint __cdecl tlAtomicAdd(uint *var,uint value)
 
 {
   uint uVar1;
   uint uVar2;
   
-  uVar2 = *param_1;
+  uVar2 = *var;
   LOCK();
-  uVar1 = *param_1;
+  uVar1 = *var;
   if (uVar2 == uVar1) {
-    *param_1 = uVar2 + param_2;
+    *var = uVar2 + value;
     uVar1 = uVar2;
   }
   UNLOCK();
   if (uVar1 != uVar2) {
     do {
       Sleep(0);
-      uVar2 = *param_1;
+      uVar2 = *var;
       LOCK();
-      uVar1 = *param_1;
+      uVar1 = *var;
       if (uVar2 == uVar1) {
-        *param_1 = uVar2 + param_2;
+        *var = uVar2 + value;
         uVar1 = uVar2;
       }
       UNLOCK();
     } while (uVar1 != uVar2);
   }
-  return uVar2 + param_2;
+  return uVar2 + value;
 }
 
 
 // 00A09410  tlAtomicAnd  (<external>/projects_pc/cod/codsrc/tl/base/include/tl_thread.h:961)
 
-ulong64 __cdecl tlAtomicAnd(ulong64 *param_1,ulong64 param_2)
+ulong64 __cdecl tlAtomicAnd(ulong64 *var,ulong64 param_2)
 
 {
   ulong64 uVar1;
   uint uVar2;
   uint uVar3;
   uint in_stack_00000008;
-  undefined4 local_c;
+  undefined4 v;
   undefined4 local_8;
   
-  local_c = (uint)*param_1;
-  local_8 = *(uint *)((int)param_1 + 4);
+  v = (uint)*var;
+  local_8 = *(uint *)((int)var + 4);
   while( true ) {
     LOCK();
-    uVar1 = *param_1;
-    if (CONCAT44(local_8,local_c) == uVar1) {
-      *param_1 = CONCAT44(local_8 & (uint)param_2,local_c & in_stack_00000008);
-      uVar2 = local_c;
+    uVar1 = *var;
+    if (CONCAT44(local_8,v) == uVar1) {
+      *var = CONCAT44(local_8 & (uint)param_2,v & in_stack_00000008);
+      uVar2 = v;
       uVar3 = local_8;
     }
     else {
@@ -2809,35 +2818,35 @@ ulong64 __cdecl tlAtomicAnd(ulong64 *param_1,ulong64 param_2)
       uVar3 = (uint)(uVar1 >> 0x20);
     }
     UNLOCK();
-    if ((uVar2 == local_c) && (uVar3 == local_8)) break;
+    if ((uVar2 == v) && (uVar3 == local_8)) break;
     Sleep(0);
-    local_c = (uint)*param_1;
-    local_8 = *(uint *)((int)param_1 + 4);
+    v = (uint)*var;
+    local_8 = *(uint *)((int)var + 4);
   }
-  return CONCAT44(local_8 & (uint)param_2,local_c & in_stack_00000008);
+  return CONCAT44(local_8 & (uint)param_2,v & in_stack_00000008);
 }
 
 
 // 00A09480  tlAtomicOr  (<external>/projects_pc/cod/codsrc/tl/base/include/tl_thread.h:989)
 
-ulong64 __cdecl tlAtomicOr(ulong64 *param_1,ulong64 param_2)
+ulong64 __cdecl tlAtomicOr(ulong64 *var,ulong64 param_2)
 
 {
   ulong64 uVar1;
   uint uVar2;
   uint uVar3;
   uint in_stack_00000008;
-  undefined4 local_c;
+  undefined4 v;
   undefined4 local_8;
   
-  local_c = (uint)*param_1;
-  local_8 = *(uint *)((int)param_1 + 4);
+  v = (uint)*var;
+  local_8 = *(uint *)((int)var + 4);
   while( true ) {
     LOCK();
-    uVar1 = *param_1;
-    if (CONCAT44(local_8,local_c) == uVar1) {
-      *param_1 = CONCAT44(local_8 | (uint)param_2,local_c | in_stack_00000008);
-      uVar2 = local_c;
+    uVar1 = *var;
+    if (CONCAT44(local_8,v) == uVar1) {
+      *var = CONCAT44(local_8 | (uint)param_2,v | in_stack_00000008);
+      uVar2 = v;
       uVar3 = local_8;
     }
     else {
@@ -2845,12 +2854,12 @@ ulong64 __cdecl tlAtomicOr(ulong64 *param_1,ulong64 param_2)
       uVar3 = (uint)(uVar1 >> 0x20);
     }
     UNLOCK();
-    if ((uVar2 == local_c) && (uVar3 == local_8)) break;
+    if ((uVar2 == v) && (uVar3 == local_8)) break;
     Sleep(0);
-    local_c = (uint)*param_1;
-    local_8 = *(uint *)((int)param_1 + 4);
+    v = (uint)*var;
+    local_8 = *(uint *)((int)var + 4);
   }
-  return CONCAT44(local_8 | (uint)param_2,local_c | in_stack_00000008);
+  return CONCAT44(local_8 | (uint)param_2,v | in_stack_00000008);
 }
 
 

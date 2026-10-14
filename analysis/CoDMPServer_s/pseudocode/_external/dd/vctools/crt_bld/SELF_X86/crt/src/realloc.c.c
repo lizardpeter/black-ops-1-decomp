@@ -5,7 +5,7 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void * __cdecl realloc(void *param_1,uint param_2)
+void * __cdecl realloc(void *pBlock,uint newsize)
 
 {
   void *pvVar1;
@@ -14,89 +14,89 @@ void * __cdecl realloc(void *param_1,uint param_2)
   int *piVar4;
   DWORD DVar5;
   LPVOID pvVar6;
-  tagHeader *local_24;
-  uchar *local_20;
+  tagHeader *pHeader;
+  void *pvReturn;
   
-  if (param_1 == (void *)0x0) {
-    pvVar1 = malloc(param_2);
+  if (pBlock == (void *)0x0) {
+    pvVar1 = malloc(newsize);
     return pvVar1;
   }
-  if (param_2 == 0) {
-    free(param_1);
+  if (newsize == 0) {
+    free(pBlock);
     return (void *)0x0;
   }
   if (__active_heap == 3) {
     do {
-      local_20 = (uchar *)0x0;
-      if (0xffffffe0 < param_2) goto LAB_00960550;
+      pvReturn = (void *)0x0;
+      if (0xffffffe0 < newsize) goto LAB_00960550;
       _lock(4);
-      local_24 = __sbh_find_block(param_1);
-      if (local_24 != (tagHeader *)0x0) {
-        if (param_2 <= __sbh_threshold) {
-          iVar2 = __sbh_resize_block(local_24,param_1,param_2);
+      pHeader = __sbh_find_block(pBlock);
+      if (pHeader != (tagHeader *)0x0) {
+        if (newsize <= __sbh_threshold) {
+          iVar2 = __sbh_resize_block(pHeader,pBlock,newsize);
           if (iVar2 == 0) {
-            local_20 = __sbh_alloc_block(param_2);
-            if (local_20 != (uchar *)0x0) {
-              uVar3 = *(int *)((int)param_1 + -4) - 1;
-              if (param_2 <= uVar3) {
-                uVar3 = param_2;
+            pvReturn = __sbh_alloc_block(newsize);
+            if (pvReturn != (uchar *)0x0) {
+              uVar3 = *(int *)((int)pBlock + -4) - 1;
+              if (newsize <= uVar3) {
+                uVar3 = newsize;
               }
-              memcpy(local_20,param_1,uVar3);
-              local_24 = __sbh_find_block(param_1);
-              __sbh_free_block(local_24,param_1);
+              memcpy(pvReturn,pBlock,uVar3);
+              pHeader = __sbh_find_block(pBlock);
+              __sbh_free_block(pHeader,pBlock);
             }
           }
           else {
-            local_20 = param_1;
+            pvReturn = pBlock;
           }
         }
-        if (local_20 == (uchar *)0x0) {
-          if (param_2 == 0) {
-            param_2 = 1;
+        if (pvReturn == (void *)0x0) {
+          if (newsize == 0) {
+            newsize = 1;
           }
-          param_2 = param_2 + 0xf & 0xfffffff0;
-          local_20 = HeapAlloc(_crtheap,0,param_2);
-          if (local_20 != (uchar *)0x0) {
-            uVar3 = *(int *)((int)param_1 + -4) - 1;
-            if (param_2 <= uVar3) {
-              uVar3 = param_2;
+          newsize = newsize + 0xf & 0xfffffff0;
+          pvReturn = HeapAlloc(_crtheap,0,newsize);
+          if (pvReturn != (uchar *)0x0) {
+            uVar3 = *(int *)((int)pBlock + -4) - 1;
+            if (newsize <= uVar3) {
+              uVar3 = newsize;
             }
-            memcpy(local_20,param_1,uVar3);
-            __sbh_free_block(local_24,param_1);
+            memcpy(pvReturn,pBlock,uVar3);
+            __sbh_free_block(pHeader,pBlock);
           }
         }
       }
       FUN_009604bb();
-      if (local_24 == (tagHeader *)0x0) {
-        if (param_2 == 0) {
-          param_2 = 1;
+      if (pHeader == (tagHeader *)0x0) {
+        if (newsize == 0) {
+          newsize = 1;
         }
-        param_2 = param_2 + 0xf & 0xfffffff0;
-        local_20 = HeapReAlloc(_crtheap,0,param_1,param_2);
+        newsize = newsize + 0xf & 0xfffffff0;
+        pvReturn = HeapReAlloc(_crtheap,0,pBlock,newsize);
       }
-      if (local_20 != (uchar *)0x0) {
-        return local_20;
+      if (pvReturn != (LPVOID)0x0) {
+        return pvReturn;
       }
       if (_newmode == 0) {
         piVar4 = _errno();
-        if (local_24 != (tagHeader *)0x0) {
+        if (pHeader != (tagHeader *)0x0) {
           *piVar4 = 0xc;
           return (void *)0x0;
         }
         goto LAB_0096057d;
       }
-      iVar2 = _callnewh(param_2);
+      iVar2 = _callnewh(newsize);
     } while (iVar2 != 0);
     piVar4 = _errno();
-    if (local_24 != (tagHeader *)0x0) goto LAB_0096055c;
+    if (pHeader != (tagHeader *)0x0) goto LAB_0096055c;
   }
   else {
     do {
-      if (0xffffffe0 < param_2) goto LAB_00960550;
-      if (param_2 == 0) {
-        param_2 = 1;
+      if (0xffffffe0 < newsize) goto LAB_00960550;
+      if (newsize == 0) {
+        newsize = 1;
       }
-      pvVar6 = HeapReAlloc(_crtheap,0,param_1,param_2);
+      pvVar6 = HeapReAlloc(_crtheap,0,pBlock,newsize);
       if (pvVar6 != (LPVOID)0x0) {
         return pvVar6;
       }
@@ -108,7 +108,7 @@ LAB_0096057d:
         *piVar4 = iVar2;
         return (void *)0x0;
       }
-      iVar2 = _callnewh(param_2);
+      iVar2 = _callnewh(newsize);
     } while (iVar2 != 0);
     piVar4 = _errno();
   }
@@ -117,7 +117,7 @@ LAB_0096057d:
   *piVar4 = iVar2;
   return (void *)0x0;
 LAB_00960550:
-  _callnewh(param_2);
+  _callnewh(newsize);
   piVar4 = _errno();
 LAB_0096055c:
   *piVar4 = 0xc;

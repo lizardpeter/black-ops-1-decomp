@@ -2,14 +2,14 @@
 
 // 00B40E60  R_RegisterShaderConst  (gfx_d3d/r_material_consts.cpp:13)
 
-void __cdecl R_RegisterShaderConst(uint param_1,float *param_2,GfxShaderConstantBlock *param_3)
+void __cdecl R_RegisterShaderConst(uint dest,float *value,GfxShaderConstantBlock *consts)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint sortedIndex;
   
-  if (0x1f < param_3->count) {
+  if (0x1f < consts->count) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_consts.cpp",
                              0x10,1,
                              "consts->count doesn\'t index ARRAY_COUNT( consts->dest )\n\t%i not in [0, %i)"
@@ -20,15 +20,15 @@ void __cdecl R_RegisterShaderConst(uint param_1,float *param_2,GfxShaderConstant
       return;
     }
   }
-  local_8 = param_3->count;
-  while ((local_8 != 0 && (param_1 < param_3->dest[local_8 - 1]))) {
-    param_3->dest[local_8] = param_3->dest[local_8 - 1];
-    param_3->value[local_8] = param_3->value[local_8 - 1];
-    local_8 = local_8 - 1;
+  sortedIndex = consts->count;
+  while ((sortedIndex != 0 && (dest < consts->dest[sortedIndex - 1]))) {
+    consts->dest[sortedIndex] = consts->dest[sortedIndex - 1];
+    consts->value[sortedIndex] = consts->value[sortedIndex - 1];
+    sortedIndex = sortedIndex - 1;
   }
-  param_3->dest[local_8] = (ushort)param_1;
-  param_3->value[local_8] = param_2;
-  param_3->count = param_3->count + 1;
+  consts->dest[sortedIndex] = (ushort)dest;
+  consts->value[sortedIndex] = value;
+  consts->count = consts->count + 1;
   return;
 }
 
@@ -36,40 +36,39 @@ void __cdecl R_RegisterShaderConst(uint param_1,float *param_2,GfxShaderConstant
 // 00B40CF0  R_GetPixelLiteralConsts  (gfx_d3d/r_material_consts.cpp:32)
 
 void __cdecl
-R_GetPixelLiteralConsts(Material *param_1,MaterialPass *param_2,GfxShaderConstantBlock *param_3)
+R_GetPixelLiteralConsts(Material *mtl,MaterialPass *pass,GfxShaderConstantBlock *pixelLiteralConsts)
 
 {
   code *pcVar1;
   bool bVar2;
-  MaterialConstantDef *local_10;
-  uint local_c;
-  MaterialShaderArgument *local_8;
+  MaterialConstantDef *constDef;
+  uint argCount;
+  MaterialShaderArgument *arg;
   
-  param_3->count = 0;
-  local_c = (uint)param_2->stableArgCount;
-  if (local_c == 0) {
+  pixelLiteralConsts->count = 0;
+  argCount = (uint)pass->stableArgCount;
+  if (argCount == 0) {
     return;
   }
-  local_8 = (param_2->field7_0x10).localArgs +
-            (uint)param_2->perPrimArgCount + (uint)param_2->perObjArgCount;
+  arg = (pass->field7_0x10).localArgs + (uint)pass->perPrimArgCount + (uint)pass->perObjArgCount;
   do {
-    if (5 < local_8->type) {
-      local_10 = (param_1->field10_0xb8).localConstantTable;
+    if (5 < arg->type) {
+      constDef = (mtl->field10_0xb8).localConstantTable;
       do {
-        if (local_8->type != 6) {
+        if (arg->type != 6) {
           do {
-            if (local_8->type != 7) {
+            if (arg->type != 7) {
               return;
             }
-            R_RegisterShaderConst((uint)local_8->dest,(local_8->u).literalConst,param_3);
-            local_8 = local_8 + 1;
-            local_c = local_c - 1;
-          } while (local_c != 0);
+            R_RegisterShaderConst((uint)arg->dest,(arg->u).literalConst,pixelLiteralConsts);
+            arg = arg + 1;
+            argCount = argCount - 1;
+          } while (argCount != 0);
           return;
         }
-        while ((float *)local_10->nameHash != (local_8->u).literalConst) {
-          local_10 = local_10 + 1;
-          if (local_10 == (param_1->field10_0xb8).localConstantTable + param_1->constantCount) {
+        while ((float *)constDef->nameHash != (arg->u).literalConst) {
+          constDef = constDef + 1;
+          if (constDef == (mtl->field10_0xb8).localConstantTable + mtl->constantCount) {
             va("material \'%s\' is missing a required named constant");
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_consts.cpp"
                                      ,0x3b,0,"%s\n\t%s");
@@ -80,15 +79,15 @@ R_GetPixelLiteralConsts(Material *param_1,MaterialPass *param_2,GfxShaderConstan
             }
           }
         }
-        R_RegisterShaderConst((uint)local_8->dest,local_10->literal,param_3);
-        local_8 = local_8 + 1;
-        local_c = local_c - 1;
-      } while (local_c != 0);
+        R_RegisterShaderConst((uint)arg->dest,constDef->literal,pixelLiteralConsts);
+        arg = arg + 1;
+        argCount = argCount - 1;
+      } while (argCount != 0);
       return;
     }
-    local_8 = local_8 + 1;
-    local_c = local_c - 1;
-  } while (local_c != 0);
+    arg = arg + 1;
+    argCount = argCount - 1;
+  } while (argCount != 0);
   return;
 }
 
@@ -98,7 +97,7 @@ R_GetPixelLiteralConsts(Material *param_1,MaterialPass *param_2,GfxShaderConstan
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Type propagation algorithm not settling */
 
-int __cdecl R_ComparePixelConsts(Material **param_1,MaterialPass **param_2)
+int __cdecl R_ComparePixelConsts(Material **material,MaterialPass **pass)
 
 {
   float *pfVar1;
@@ -106,71 +105,71 @@ int __cdecl R_ComparePixelConsts(Material **param_1,MaterialPass **param_2)
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  int local_5b0;
-  GfxShaderConstantBlock local_5ac;
+  int j;
+  GfxShaderConstantBlock pixelLiteralConsts;
   int local_4e8;
   ushort auStack_4e4 [32];
   int aiStack_4a4 [32];
   ushort auStack_424 [256];
   ushort auStack_224 [256];
   uint local_24;
-  uint local_20;
-  MaterialShaderArgument *local_1c;
-  int local_18;
-  int local_14;
-  uint local_10;
-  uint local_c [2];
+  uint argCount;
+  MaterialShaderArgument *arg;
+  int i;
+  int comparison;
+  uint constIndex;
+  uint pixelConstsCount [2];
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = 0;
+  i = 0;
 LAB_00b40f46:
-  if (1 < local_18) {
-    local_14 = local_c[0] - local_c[1];
-    if (local_14 == 0) {
-      for (local_10 = 0; local_10 < local_c[0]; local_10 = local_10 + 1) {
-        local_14 = (uint)auStack_424[local_10] - (uint)auStack_224[local_10];
-        if (local_14 != 0) {
-          return local_14;
+  if (1 < i) {
+    comparison = pixelConstsCount[0] - pixelConstsCount[1];
+    if (comparison == 0) {
+      for (constIndex = 0; constIndex < pixelConstsCount[0]; constIndex = constIndex + 1) {
+        comparison = (uint)auStack_424[constIndex] - (uint)auStack_224[constIndex];
+        if (comparison != 0) {
+          return comparison;
         }
       }
-      local_14 = local_5ac.count - local_4e8;
-      if (local_14 == 0) {
-        for (local_10 = 0; local_10 < local_5ac.count; local_10 = local_10 + 1) {
-          local_14 = (uint)local_5ac.dest[local_10] - (uint)auStack_4e4[local_10];
-          if (local_14 != 0) {
-            return local_14;
+      comparison = pixelLiteralConsts.count - local_4e8;
+      if (comparison == 0) {
+        for (constIndex = 0; constIndex < pixelLiteralConsts.count; constIndex = constIndex + 1) {
+          comparison = (uint)pixelLiteralConsts.dest[constIndex] - (uint)auStack_4e4[constIndex];
+          if (comparison != 0) {
+            return comparison;
           }
-          for (local_5b0 = 0; local_5b0 < 4; local_5b0 = local_5b0 + 1) {
-            fVar2 = *(float *)(aiStack_4a4[local_10] + local_5b0 * 4);
-            if (local_5ac.value[local_10][local_5b0] <= fVar2 &&
-                fVar2 != local_5ac.value[local_10][local_5b0]) {
+          for (j = 0; j < 4; j = j + 1) {
+            fVar2 = *(float *)(aiStack_4a4[constIndex] + j * 4);
+            if (pixelLiteralConsts.value[constIndex][j] <= fVar2 &&
+                fVar2 != pixelLiteralConsts.value[constIndex][j]) {
               return -1;
             }
-            pfVar1 = (float *)(aiStack_4a4[local_10] + local_5b0 * 4);
-            if (*pfVar1 <= local_5ac.value[local_10][local_5b0] &&
-                local_5ac.value[local_10][local_5b0] != *pfVar1) {
+            pfVar1 = (float *)(aiStack_4a4[constIndex] + j * 4);
+            if (*pfVar1 <= pixelLiteralConsts.value[constIndex][j] &&
+                pixelLiteralConsts.value[constIndex][j] != *pfVar1) {
               return 1;
             }
           }
         }
-        local_14 = 0;
+        comparison = 0;
       }
     }
-    return local_14;
+    return comparison;
   }
-  local_c[local_18] = 0;
-  (&local_5ac)[local_18].count = 0;
-  local_1c = (param_2[local_18]->field7_0x10).localArgs +
-             (uint)param_2[local_18]->perPrimArgCount + (uint)param_2[local_18]->perObjArgCount;
-  local_20 = (uint)param_2[local_18]->stableArgCount;
-  while (local_20 != 0) {
-    if (4 < local_1c->type) goto LAB_00b40fe9;
-    local_1c = local_1c + 1;
-    local_20 = local_20 - 1;
+  pixelConstsCount[i] = 0;
+  (&pixelLiteralConsts)[i].count = 0;
+  arg = (pass[i]->field7_0x10).localArgs +
+        (uint)pass[i]->perPrimArgCount + (uint)pass[i]->perObjArgCount;
+  argCount = (uint)pass[i]->stableArgCount;
+  while (argCount != 0) {
+    if (4 < arg->type) goto LAB_00b40fe9;
+    arg = arg + 1;
+    argCount = argCount - 1;
   }
   goto LAB_00b40f3d;
   while( true ) {
-    if ((0xff < local_c[local_18]) &&
+    if ((0xff < pixelConstsCount[i]) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_consts.cpp"
                                  ,0x94,0,
                                  "pixelConstsCount[i] doesn\'t index ARRAY_COUNT( pixelConsts[i] )\n\t%i not in [0, %i)"
@@ -179,19 +178,19 @@ LAB_00b40f46:
       iVar5 = (*pcVar3)();
       return iVar5;
     }
-    auStack_424[local_18 * 0x100 + local_c[local_18]] = (local_1c->u).codeConst.index;
-    local_c[local_18] = local_c[local_18] + 1;
-    local_1c = local_1c + 1;
-    local_20 = local_20 - 1;
-    if (local_20 == 0) break;
+    auStack_424[i * 0x100 + pixelConstsCount[i]] = (arg->u).codeConst.index;
+    pixelConstsCount[i] = pixelConstsCount[i] + 1;
+    arg = arg + 1;
+    argCount = argCount - 1;
+    if (argCount == 0) break;
 LAB_00b40fe9:
-    if (local_1c->type != 5) {
-      R_GetPixelLiteralConsts(param_1[local_18],param_2[local_18],&local_5ac + local_18);
+    if (arg->type != 5) {
+      R_GetPixelLiteralConsts(material[i],pass[i],&pixelLiteralConsts + i);
       break;
     }
   }
 LAB_00b40f3d:
-  local_18 = local_18 + 1;
+  i = i + 1;
   goto LAB_00b40f46;
 }
 

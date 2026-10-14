@@ -204,12 +204,14 @@ void __cdecl RB_UnbindAllImages(void)
 
 {
   int iVar1;
-  uint local_c;
+  uint samplerIndex;
+  int semaphore;
   
   if (dx.device != (IDirect3DDevice9 *)0x0) {
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    for (local_c = 0; local_c < vidConfig.maxTextureMaps; local_c = local_c + 1) {
-      R_DisableSampler(&gfxCmdBufState,local_c);
+    for (samplerIndex = 0; samplerIndex < vidConfig.maxTextureMaps; samplerIndex = samplerIndex + 1)
+    {
+      R_DisableSampler(&gfxCmdBufState,samplerIndex);
     }
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
@@ -237,10 +239,11 @@ void __cdecl RB_InitSceneViewport(void)
 void __cdecl RB_BindDefaultImages(void)
 
 {
-  undefined4 local_c;
+  uint samplerIndex;
+  uchar DEFAULT_SAMPLER_STATE;
   
-  for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-    R_SetSampler((GfxCmdBufContext)0xb473fe00b472550,local_c,'\x01',rgp.whiteImage);
+  for (samplerIndex = 0; samplerIndex < 0x10; samplerIndex = samplerIndex + 1) {
+    R_SetSampler((GfxCmdBufContext)0xb473fe00b472550,samplerIndex,'\x01',rgp.whiteImage);
   }
   return;
 }
@@ -252,6 +255,7 @@ void __cdecl RB_InitImages(void)
 
 {
   int iVar1;
+  int semaphore;
   
   RB_InitCodeImages();
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);

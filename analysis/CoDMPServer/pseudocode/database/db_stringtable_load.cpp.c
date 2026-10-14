@@ -5,21 +5,23 @@
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_ScriptStringCustom(ushort *param_1)
+void __cdecl Load_ScriptStringCustom(ushort *var)
 
 {
-  *param_1 = *(ushort *)((varXAssetList->stringList).strings + *param_1);
+  *var = *(ushort *)((varXAssetList->stringList).strings + *var);
   return;
 }
 
 
 // 005964B0  Mark_ScriptStringCustom  (database/db_stringtable_load.cpp:17)
 
-void __cdecl Mark_ScriptStringCustom(ushort *param_1)
+void __cdecl Mark_ScriptStringCustom(ushort *var)
 
 {
-  if (*param_1 != 0) {
-    SL_AddUser((uint)*param_1,4,SCRIPTINSTANCE_SERVER);
+  uint value;
+  
+  if (*var != 0) {
+    SL_AddUser((uint)*var,4,SCRIPTINSTANCE_SERVER);
   }
   return;
 }

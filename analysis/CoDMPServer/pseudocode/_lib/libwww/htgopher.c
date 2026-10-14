@@ -83,16 +83,16 @@ undefined4 FUN_00bdbcd0(int param_1,char *param_2)
   undefined1 *extraout_EAX_03;
   uchar *extraout_EAX_04;
   uchar *extraout_EAX_05;
-  uchar *extraout_EAX_06;
-  undefined1 *extraout_EAX_07;
+  uchar *string;
+  undefined1 *extraout_EAX_06;
   int iVar3;
   undefined4 uVar4;
   undefined4 uVar5;
+  int extraout_EAX_07;
   int extraout_EAX_08;
   int extraout_EAX_09;
-  int extraout_EAX_10;
-  char *pcVar6;
-  uchar *puVar7;
+  char *string_00;
+  uchar *str1;
   uchar *local_40;
   int local_3c;
   uchar *local_28;
@@ -101,28 +101,28 @@ undefined4 FUN_00bdbcd0(int param_1,char *param_2)
   
   piVar1 = *(int **)(param_1 + 4);
   iVar2 = (int)*param_2;
-  puVar7 = (uchar *)(param_2 + 1);
+  str1 = (uchar *)(param_2 + 1);
   if (iVar2 == 0x69) {
-    strchr(puVar7,'\t');
+    strchr(str1,'\t');
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
     }
-    (**(code **)(*piVar1 + 0x14))(piVar1,puVar7);
+    (**(code **)(*piVar1 + 0x14))(piVar1,str1);
   }
   else if (iVar2 == 0x33) {
-    strchr(puVar7,'\t');
+    strchr(str1,'\t');
     if (extraout_EAX_00 != (undefined1 *)0x0) {
       *extraout_EAX_00 = 0;
     }
-    (**(code **)(*piVar1 + 0x14))(piVar1,puVar7);
+    (**(code **)(*piVar1 + 0x14))(piVar1,str1);
   }
   else {
-    strstr(puVar7,(uchar *)"error.host");
-    if ((extraout_EAX_01 == 0) && (strstr(puVar7,(uchar *)"errorhost"), extraout_EAX_02 == 0)) {
+    strstr(str1,(uchar *)"error.host");
+    if ((extraout_EAX_01 == 0) && (strstr(str1,(uchar *)"errorhost"), extraout_EAX_02 == 0)) {
       if (iVar2 == 0x2e) {
         return 0;
       }
-      strchr(puVar7,'\t');
+      strchr(str1,'\t');
       local_24 = (uchar *)0x0;
       local_1c = (uchar *)0x0;
       local_28 = extraout_EAX_04;
@@ -135,15 +135,15 @@ undefined4 FUN_00bdbcd0(int param_1,char *param_2)
           *extraout_EAX_05 = '\0';
           local_24 = extraout_EAX_05 + 1;
           strchr(local_24,'\t');
-          local_1c = extraout_EAX_06;
-          if (extraout_EAX_06 != (uchar *)0x0) {
-            *extraout_EAX_06 = ':';
-            strchr(extraout_EAX_06,'\t');
-            if (extraout_EAX_07 != (undefined1 *)0x0) {
-              *extraout_EAX_07 = 0;
+          local_1c = string;
+          if (string != (uchar *)0x0) {
+            *string = ':';
+            strchr(string,'\t');
+            if (extraout_EAX_06 != (undefined1 *)0x0) {
+              *extraout_EAX_06 = 0;
             }
-            if ((extraout_EAX_06[1] == '0') && (extraout_EAX_06[2] == '\0')) {
-              *extraout_EAX_06 = '\0';
+            if ((string[1] == '0') && (string[2] == '\0')) {
+              *string = '\0';
             }
           }
         }
@@ -162,7 +162,7 @@ undefined4 FUN_00bdbcd0(int param_1,char *param_2)
       if (iVar2 == 0x77) {
         uVar4 = _HTEscape(local_28,4);
         _HTStartAnchor(piVar1,0,uVar4);
-        (**(code **)(*piVar1 + 0x14))(piVar1,puVar7);
+        (**(code **)(*piVar1 + 0x14))(piVar1,str1);
         (**(code **)(*piVar1 + 0x20))(piVar1,0);
         _HTMemory_free(uVar4);
       }
@@ -170,57 +170,57 @@ undefined4 FUN_00bdbcd0(int param_1,char *param_2)
         local_40 = (uchar *)0x0;
         if ((local_28 == (uchar *)0x0) || (*local_28 == '\0')) {
           strlen(local_24);
-          local_3c = extraout_EAX_10 + 0x10;
+          local_3c = extraout_EAX_09 + 0x10;
         }
         else {
           local_40 = (uchar *)_HTEscape(local_28,4);
           strlen(local_40);
           strlen(local_24);
-          local_3c = extraout_EAX_08 + 0x10 + extraout_EAX_09;
+          local_3c = extraout_EAX_07 + 0x10 + extraout_EAX_08;
         }
-        pcVar6 = (char *)_HTMemory_malloc(local_3c);
-        if (pcVar6 == (char *)0x0) {
+        string_00 = (char *)_HTMemory_malloc(local_3c);
+        if (string_00 == (char *)0x0) {
           _HTMemory_outofmem("GopherMenuLine",
                              "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTGopher.c",
                              300);
         }
-        *pcVar6 = '\0';
+        *string_00 = '\0';
         if (iVar2 == 0x38) {
           if (local_40 == (uchar *)0x0) {
-            sprintf(pcVar6,"telnet://%s/");
+            sprintf(string_00,"telnet://%s/");
           }
           else {
-            sprintf(pcVar6,"telnet://%s@%s/");
+            sprintf(string_00,"telnet://%s@%s/");
           }
         }
         else if (iVar2 == 0x54) {
           if (local_40 == (uchar *)0x0) {
-            sprintf(pcVar6,"tn3270://%s/");
+            sprintf(string_00,"tn3270://%s/");
           }
           else {
-            sprintf(pcVar6,"tn3270://%s@%s/");
+            sprintf(string_00,"tn3270://%s@%s/");
           }
         }
         else if (local_40 == (uchar *)0x0) {
-          sprintf(pcVar6,"//%s/%c");
+          sprintf(string_00,"//%s/%c");
         }
         else {
-          sprintf(pcVar6,"//%s/%c%s");
+          sprintf(string_00,"//%s/%c%s");
         }
-        _HTStartAnchor(piVar1,0,pcVar6);
-        (**(code **)(*piVar1 + 0x14))(piVar1,puVar7);
+        _HTStartAnchor(piVar1,0,string_00);
+        (**(code **)(*piVar1 + 0x14))(piVar1,str1);
         (**(code **)(*piVar1 + 0x20))(piVar1,0);
-        _HTMemory_free(pcVar6);
+        _HTMemory_free(string_00);
         _HTMemory_free(local_40);
         (**(code **)(*piVar1 + 0x10))(piVar1,10);
       }
     }
     else {
-      strchr(puVar7,'\t');
+      strchr(str1,'\t');
       if (extraout_EAX_03 != (undefined1 *)0x0) {
         *extraout_EAX_03 = 0;
       }
-      (**(code **)(*piVar1 + 0x14))(piVar1,puVar7);
+      (**(code **)(*piVar1 + 0x14))(piVar1,str1);
     }
   }
   return 1;
@@ -301,11 +301,11 @@ undefined4 FUN_00bdc380(int param_1,uchar *param_2)
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
-  uchar *puVar3;
+  uchar *string;
   undefined1 *extraout_EAX_02;
   int extraout_EAX_03;
   undefined1 *extraout_EAX_04;
-  undefined4 uVar4;
+  undefined4 uVar3;
   int extraout_EAX_05;
   uchar *local_28;
   char *local_20;
@@ -340,8 +340,8 @@ undefined4 FUN_00bdc380(int param_1,uchar *param_2)
     else if (*param_2 == '-') {
       strchr(param_2,':');
       if (extraout_EAX_01 != 0) {
-        puVar3 = (uchar *)(extraout_EAX_01 + 1);
-        strchr(puVar3,':');
+        string = (uchar *)(extraout_EAX_01 + 1);
+        strchr(string,':');
         if (extraout_EAX_02 != (undefined1 *)0x0) {
           bVar2 = true;
           *extraout_EAX_02 = 0;
@@ -349,7 +349,7 @@ undefined4 FUN_00bdc380(int param_1,uchar *param_2)
             (**(code **)(*piVar1 + 0x1c))(piVar1,0x1a,0,0);
           }
           else {
-            strcmp((uchar *)(param_1 + 0x20),puVar3);
+            strcmp((uchar *)(param_1 + 0x20),string);
             if (extraout_EAX_03 == 0) {
               bVar2 = false;
             }
@@ -366,18 +366,18 @@ undefined4 FUN_00bdc380(int param_1,uchar *param_2)
             *extraout_EAX_04 = 0;
             local_20 = extraout_EAX_04 + 1;
           }
-          uVar4 = _HTStrip(extraout_EAX_02 + 1);
-          (**(code **)(*piVar1 + 0x14))(piVar1,uVar4);
+          uVar3 = _HTStrip(extraout_EAX_02 + 1);
+          (**(code **)(*piVar1 + 0x14))(piVar1,uVar3);
           (**(code **)(*piVar1 + 0x1c))(piVar1,0x15,0,0);
-          uVar4 = _HTStrip(local_20);
+          uVar3 = _HTStrip(local_20);
           if (bVar2) {
-            (**(code **)(*piVar1 + 0x14))(piVar1,uVar4);
+            (**(code **)(*piVar1 + 0x14))(piVar1,uVar3);
             (**(code **)(*piVar1 + 0x20))(piVar1,6);
           }
           else {
-            (**(code **)(*piVar1 + 0x14))(piVar1,uVar4);
+            (**(code **)(*piVar1 + 0x14))(piVar1,uVar3);
           }
-          strcpy((uchar *)(param_1 + 0x20),puVar3);
+          strcpy((uchar *)(param_1 + 0x20),string);
         }
       }
     }

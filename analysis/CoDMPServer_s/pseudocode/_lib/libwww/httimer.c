@@ -7,19 +7,19 @@
 undefined4 _HTTimer_delete(void)
 
 {
+  int *pBlock;
   int *piVar1;
-  int *piVar2;
   void *unaff_ESI;
   
-  piVar1 = DAT_035477f8;
+  pBlock = DAT_035477f8;
   do {
-    piVar2 = piVar1;
-    if (((piVar2 == (int *)0x0) || (piVar1 = (int *)piVar2[1], piVar1 == (int *)0x0)) ||
-       ((void *)*piVar1 == (void *)0x0)) goto LAB_0089d453;
-  } while ((void *)*piVar1 != unaff_ESI);
-  if ((piVar1 != (int *)0x0) && (piVar2 != (int *)0x0)) {
-    piVar2[1] = piVar1[1];
-    free(piVar1);
+    piVar1 = pBlock;
+    if (((piVar1 == (int *)0x0) || (pBlock = (int *)piVar1[1], pBlock == (int *)0x0)) ||
+       ((void *)*pBlock == (void *)0x0)) goto LAB_0089d453;
+  } while ((void *)*pBlock != unaff_ESI);
+  if ((pBlock != (int *)0x0) && (piVar1 != (int *)0x0)) {
+    piVar1[1] = pBlock[1];
+    free(pBlock);
   }
 LAB_0089d453:
   if (_DAT_03547800 != (code *)0x0) {
@@ -41,18 +41,18 @@ uint * _HTTimer_new(uint *param_1,uint param_2,uint param_3,uint param_4,uint pa
 {
   uint *puVar1;
   DWORD DVar2;
-  void *pvVar3;
-  undefined4 *puVar4;
-  uint uVar5;
-  uint *puVar6;
+  void *pBlock;
+  undefined4 *puVar3;
+  uint uVar4;
+  uint *puVar5;
   
   DVar2 = GetTickCount();
   if (param_5 == 0) {
-    uVar5 = param_4;
+    uVar4 = param_4;
     param_4 = param_4 - DVar2;
   }
   else {
-    uVar5 = DVar2 + param_4;
+    uVar4 = DVar2 + param_4;
   }
   if (DAT_035477f8 == (uint *)0x0) {
     DAT_035477f8 = (uint *)_HTList_new();
@@ -70,30 +70,30 @@ uint * _HTTimer_new(uint *param_1,uint param_2,uint param_3,uint param_4,uint pa
     }
   }
   else {
-    pvVar3 = (void *)_HTList_elementOf();
-    if (pvVar3 == (void *)0x0) {
+    pBlock = (void *)_HTList_elementOf();
+    if (pBlock == (void *)0x0) {
       return (uint *)0x0;
     }
     puVar1 = param_1;
     if (param_1 != (uint *)0x0) {
-      param_1[1] = *(uint *)((int)pvVar3 + 4);
-      free(pvVar3);
+      param_1[1] = *(uint *)((int)pBlock + 4);
+      free(pBlock);
     }
   }
   do {
-    puVar6 = puVar1;
-    if (((puVar6 == (uint *)0x0) || (puVar1 = (uint *)puVar6[1], puVar1 == (uint *)0x0)) ||
+    puVar5 = puVar1;
+    if (((puVar5 == (uint *)0x0) || (puVar1 = (uint *)puVar5[1], puVar1 == (uint *)0x0)) ||
        (*puVar1 == 0)) break;
-  } while (*(uint *)(*puVar1 + 4) < uVar5);
+  } while (*(uint *)(*puVar1 + 4) < uVar4);
   param_1[5] = param_2;
   param_1[4] = param_3;
-  param_1[1] = uVar5;
+  param_1[1] = uVar4;
   *param_1 = param_4;
   param_1[2] = param_5;
   param_1[3] = param_6;
-  if (puVar6 != (uint *)0x0) {
-    puVar4 = (undefined4 *)_HTMemory_calloc(1);
-    if (puVar4 == (undefined4 *)0x0) {
+  if (puVar5 != (uint *)0x0) {
+    puVar3 = (undefined4 *)_HTMemory_calloc(1);
+    if (puVar3 == (undefined4 *)0x0) {
       if (DAT_03547718 != (code *)0x0) {
         (*DAT_03547718)("HTList_addObject",
                         "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTList.c",0x58);
@@ -101,15 +101,15 @@ uint * _HTTimer_new(uint *param_1,uint param_2,uint param_3,uint param_4,uint pa
                     /* WARNING: Subroutine does not return */
       abort();
     }
-    *puVar4 = param_1;
-    puVar4[1] = puVar6[1];
-    puVar6[1] = (uint)puVar4;
+    *puVar3 = param_1;
+    puVar3[1] = puVar5[1];
+    puVar5[1] = (uint)puVar3;
   }
   if (_DAT_035477fc != (code *)0x0) {
     (*_DAT_035477fc)(param_1);
   }
   if (param_1[1] <= DVar2) {
-    FUN_0089d3b0(puVar6);
+    FUN_0089d3b0(puVar5);
   }
   return param_1;
 }

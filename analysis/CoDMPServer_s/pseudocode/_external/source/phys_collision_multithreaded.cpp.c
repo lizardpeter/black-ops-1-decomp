@@ -6,16 +6,16 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl phys_gjk_collide_jq_batch_function(jqBatch *param_1)
+int __cdecl phys_gjk_collide_jq_batch_function(jqBatch *pBatch)
 
 {
   undefined4 *puVar1;
   int *piVar2;
-  phys_collision_pair *ppVar3;
-  contact_point_info *pcVar4;
-  bool bVar5;
-  phys_collision_pair *ppVar6;
-  contact_point_info *pcVar7;
+  phys_collision_pair *pcp;
+  contact_point_info *pcVar3;
+  bool bVar4;
+  phys_collision_pair *ppVar5;
+  contact_point_info *pcVar6;
   undefined1 auStack_4594 [4];
   phys_gjk_input pStack_4590;
   phys_gjk_info pStack_4540;
@@ -23,46 +23,46 @@ int __cdecl phys_gjk_collide_jq_batch_function(jqBatch *param_1)
   uint uStack_14;
   
   uStack_14 = __security_cookie ^ (uint)auStack_4594;
-  puVar1 = param_1->Input;
+  puVar1 = pBatch->Input;
   phys_contact_manifold_process::phys_contact_manifold_process(&pStack_41a0);
   pStack_41a0.m_cpi_allocator = contact_point_info::get_cpi_allocator();
   pStack_41a0.m_rbc_contact_search_tree_root = (rigid_body_constraint_contact *)puVar1[1];
   piVar2 = (int *)puVar1[2];
-  ppVar3 = (phys_collision_pair *)*piVar2;
-  while (ppVar3 != (phys_collision_pair *)0x0) {
+  pcp = (phys_collision_pair *)*piVar2;
+  while (pcp != (phys_collision_pair *)0x0) {
     LOCK();
-    ppVar6 = (phys_collision_pair *)*piVar2;
-    if (ppVar3 == ppVar6) {
-      *piVar2 = ppVar3->_padding_;
-      ppVar6 = ppVar3;
+    ppVar5 = (phys_collision_pair *)*piVar2;
+    if (pcp == ppVar5) {
+      *piVar2 = pcp->_padding_;
+      ppVar5 = pcp;
     }
     UNLOCK();
-    if (ppVar6 == ppVar3) {
-      setup_gjk_input_from_pcp(&pStack_4590,ppVar3);
+    if (ppVar5 == pcp) {
+      setup_gjk_input_from_pcp(&pStack_4590,pcp);
       pStack_4590.m_sep_thresh = 1.02;
       pStack_4590.m_intersection_test_only = false;
       pStack_4590.m_continuous_collision = true;
-      bVar5 = phys_gjk_info::phys_collide_do_gjk_collide(&pStack_4540,&pStack_4590);
-      if (bVar5) {
-        phys_contact_manifold_process::process(&pStack_41a0,ppVar3,&pStack_4540);
+      bVar4 = phys_gjk_info::phys_collide_do_gjk_collide(&pStack_4540,&pStack_4590);
+      if (bVar4) {
+        phys_contact_manifold_process::process(&pStack_41a0,pcp,&pStack_4540);
       }
     }
     piVar2 = (int *)puVar1[2];
-    ppVar3 = (phys_collision_pair *)*piVar2;
+    pcp = (phys_collision_pair *)*piVar2;
   }
   if (pStack_41a0.m_list_cpi.m_first != (contact_point_info *)0x0) {
     do {
       piVar2 = (int *)*puVar1;
-      pcVar4 = (contact_point_info *)*piVar2;
+      pcVar3 = (contact_point_info *)*piVar2;
       LOCK();
-      pcVar7 = (contact_point_info *)*piVar2;
-      if (pcVar4 == pcVar7) {
+      pcVar6 = (contact_point_info *)*piVar2;
+      if (pcVar3 == pcVar6) {
         *piVar2 = (int)pStack_41a0.m_list_cpi.m_first;
-        pcVar7 = pcVar4;
+        pcVar6 = pcVar3;
       }
       UNLOCK();
-    } while (pcVar7 != pcVar4);
-    *pStack_41a0.m_list_cpi.m_last_next_ptr = pcVar4;
+    } while (pcVar6 != pcVar3);
+    *pStack_41a0.m_list_cpi.m_last_next_ptr = pcVar3;
   }
   return 0;
 }
@@ -75,6 +75,7 @@ void __cdecl process_cpi(contact_point_info *param_1)
 {
   contact_point_info *pcVar1;
   rigid_body_constraint_contact *prVar2;
+  contact_point_info *cpi;
   
   while (pcVar1 = param_1, pcVar1 != (contact_point_info *)0x0) {
     prVar2 = pcVar1->m_rbc_contact;
@@ -101,17 +102,17 @@ process_list_do_gjk_collide_and_contact_manifold(phys_link_list<phys_collision_p
 
 {
   phys_transient_allocator *this;
-  undefined4 *puVar1;
+  undefined4 *input_count;
   
   if (0 < param_1->m_alloc_count) {
     g_list_pcp_iterator = param_1->m_first;
     g_list_output_cpi = (contact_point_info *)0x0;
     this = contact_point_info::get_cpi_allocator();
-    puVar1 = phys_transient_allocator::allocate(this,0xc,4,0,"");
-    puVar1[2] = &g_list_pcp_iterator;
-    puVar1[1] = (g_physics_system->m_search_tree_rbc_contact).m_tree_root;
-    *puVar1 = &g_list_output_cpi;
-    phys_task_manager_process(&phys_gjk_collide_jqModule,puVar1,param_1->m_alloc_count);
+    input_count = phys_transient_allocator::allocate(this,0xc,4,0,"");
+    input_count[2] = &g_list_pcp_iterator;
+    input_count[1] = (g_physics_system->m_search_tree_rbc_contact).m_tree_root;
+    *input_count = &g_list_output_cpi;
+    phys_task_manager_process(&phys_gjk_collide_jqModule,input_count,param_1->m_alloc_count);
     phys_task_manager_flush();
     process_cpi(g_list_output_cpi);
     return;

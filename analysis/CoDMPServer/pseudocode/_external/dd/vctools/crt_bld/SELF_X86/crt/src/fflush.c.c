@@ -5,17 +5,18 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl fflush(_iobuf *param_1)
+int __cdecl fflush(_iobuf *stream)
 
 {
   int iVar1;
+  int rc;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (stream == (_iobuf *)0x0) {
     iVar1 = flsall(0);
   }
   else {
-    _lock_file(param_1);
-    iVar1 = _fflush_nolock(param_1);
+    _lock_file(stream);
+    iVar1 = _fflush_nolock(stream);
     FUN_00c12ab8();
   }
   return iVar1;
@@ -24,22 +25,22 @@ int __cdecl fflush(_iobuf *param_1)
 
 // 00C1294D  _fflush_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c:98)
 
-int __cdecl _fflush_nolock(_iobuf *param_1)
+int __cdecl _fflush_nolock(_iobuf *str)
 
 {
   int iVar1;
   
-  if (param_1 == (_iobuf *)0x0) {
+  if (str == (_iobuf *)0x0) {
     iVar1 = flsall(0);
   }
   else {
-    iVar1 = _flush(param_1);
+    iVar1 = _flush(str);
     if (iVar1 == 0) {
-      if ((param_1->_flag & 0x4000U) == 0) {
+      if ((str->_flag & 0x4000U) == 0) {
         iVar1 = 0;
       }
       else {
-        iVar1 = _fileno(param_1);
+        iVar1 = _fileno(str);
         iVar1 = _commit(iVar1);
         iVar1 = -(uint)(iVar1 != 0);
       }
@@ -54,37 +55,37 @@ int __cdecl _fflush_nolock(_iobuf *param_1)
 
 // 00C128E5  _flush  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fflush.c:142)
 
-int __cdecl _flush(_iobuf *param_1)
+int __cdecl _flush(_iobuf *str)
 
 {
-  int iVar1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
-  char *pcVar5;
+  int fh;
+  uint uVar1;
+  int iVar2;
+  uint uVar3;
+  char *buf;
   
-  iVar3 = 0;
-  if ((((byte)param_1->_flag & 3) == 2) && ((param_1->_flag & 0x108U) != 0)) {
-    pcVar5 = param_1->_base;
-    uVar4 = (int)param_1->_ptr - (int)pcVar5;
-    if (0 < (int)uVar4) {
-      uVar2 = uVar4;
-      iVar1 = _fileno(param_1);
-      uVar2 = _write(iVar1,pcVar5,uVar2);
-      if (uVar2 == uVar4) {
-        if ((char)param_1->_flag < '\0') {
-          param_1->_flag = param_1->_flag & 0xfffffffd;
+  iVar2 = 0;
+  if ((((byte)str->_flag & 3) == 2) && ((str->_flag & 0x108U) != 0)) {
+    buf = str->_base;
+    uVar3 = (int)str->_ptr - (int)buf;
+    if (0 < (int)uVar3) {
+      uVar1 = uVar3;
+      fh = _fileno(str);
+      uVar1 = _write(fh,buf,uVar1);
+      if (uVar1 == uVar3) {
+        if ((char)str->_flag < '\0') {
+          str->_flag = str->_flag & 0xfffffffd;
         }
       }
       else {
-        param_1->_flag = param_1->_flag | 0x20;
-        iVar3 = -1;
+        str->_flag = str->_flag | 0x20;
+        iVar2 = -1;
       }
     }
   }
-  param_1->_cnt = 0;
-  param_1->_ptr = param_1->_base;
-  return iVar3;
+  str->_cnt = 0;
+  str->_ptr = str->_base;
+  return iVar2;
 }
 
 
@@ -105,35 +106,36 @@ int __cdecl _flushall(void)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl flsall(int param_1)
+int __cdecl flsall(int flushflag)
 
 {
-  void *pvVar1;
-  _iobuf *p_Var2;
-  int iVar3;
-  int iVar4;
-  int local_28;
-  int local_20;
+  void *s;
+  _iobuf *str;
+  int iVar1;
+  int i_00;
+  int err;
+  int i;
+  int count;
   
-  local_20 = 0;
-  local_28 = 0;
+  count = 0;
+  err = 0;
   _lock(1);
-  for (iVar4 = 0; iVar4 < _nstream; iVar4 = iVar4 + 1) {
-    if ((__piob[iVar4] != (void *)0x0) &&
-       (pvVar1 = __piob[iVar4], (*(byte *)((int)pvVar1 + 0xc) & 0x83) != 0)) {
-      _lock_file2(iVar4,pvVar1);
-      p_Var2 = __piob[iVar4];
-      if ((p_Var2->_flag & 0x83U) != 0) {
-        if (param_1 == 1) {
-          iVar3 = _fflush_nolock(p_Var2);
-          if (iVar3 != -1) {
-            local_20 = local_20 + 1;
+  for (i_00 = 0; i_00 < _nstream; i_00 = i_00 + 1) {
+    if ((__piob[i_00] != (void *)0x0) && (s = __piob[i_00], (*(byte *)((int)s + 0xc) & 0x83) != 0))
+    {
+      _lock_file2(i_00,s);
+      str = __piob[i_00];
+      if ((str->_flag & 0x83U) != 0) {
+        if (flushflag == 1) {
+          iVar1 = _fflush_nolock(str);
+          if (iVar1 != -1) {
+            count = count + 1;
           }
         }
-        else if ((param_1 == 0) && ((p_Var2->_flag & 2U) != 0)) {
-          iVar3 = _fflush_nolock(p_Var2);
-          if (iVar3 == -1) {
-            local_28 = -1;
+        else if ((flushflag == 0) && ((str->_flag & 2U) != 0)) {
+          iVar1 = _fflush_nolock(str);
+          if (iVar1 == -1) {
+            err = -1;
           }
         }
       }
@@ -141,9 +143,9 @@ int __cdecl flsall(int param_1)
     }
   }
   FUN_00c12a66();
-  if (param_1 != 1) {
-    local_20 = local_28;
+  if (flushflag != 1) {
+    count = err;
   }
-  return local_20;
+  return count;
 }
 

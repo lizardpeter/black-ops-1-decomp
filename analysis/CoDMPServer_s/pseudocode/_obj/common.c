@@ -19,19 +19,19 @@ void _Com_LiveAllocate(undefined4 param_1)
 uchar * _Com_LiveRealloc(ulong param_1)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   uchar *unaff_ESI;
   
   if ((param_1 == 0) && (unaff_ESI != (uchar *)0x0)) {
     (*(code *)(&PTR_operator_delete_00adbb50)[*DAT_03501064 * 5])(DAT_03501064);
     return (uchar *)0x0;
   }
-  puVar1 = (uchar *)_Com_LiveAllocate(param_1);
-  if ((puVar1 != (uchar *)0x0) && (unaff_ESI != (uchar *)0x0)) {
-    memcpy(puVar1,unaff_ESI,param_1);
+  dst = (uchar *)_Com_LiveAllocate(param_1);
+  if ((dst != (uchar *)0x0) && (unaff_ESI != (uchar *)0x0)) {
+    memcpy(dst,unaff_ESI,param_1);
     (*(code *)(&PTR_operator_delete_00adbb50)[*DAT_03501064 * 5])(DAT_03501064);
   }
-  return puVar1;
+  return dst;
 }
 
 
@@ -566,8 +566,8 @@ void __cdecl Com_Quit_f(void)
 
 {
   iwd_pure_check_s *piVar1;
-  iwd_pure_check_s *piVar2;
-  char *pcVar3;
+  iwd_pure_check_s *pBlock;
+  char *pcVar2;
   uint unaff_ESI;
   _func___cdecl_void *unaff_EDI;
   LONG local_4;
@@ -598,11 +598,11 @@ void __cdecl Com_Quit_f(void)
     comWorld.isInUse = 0;
     local_4 = 0;
     InterlockedExchange(&local_4,0);
-    pcVar3 = cm.name;
+    pcVar2 = cm.name;
     if ((useFastFile->current).enabled != false) {
       Com_Memset(&cm,0,0x14c);
     }
-    cm.name = pcVar3;
+    cm.name = pcVar2;
     R_Shutdown((int)unaff_EDI);
     _DAT_047aaacc = 0;
     _DAT_047aaad0 = 0;
@@ -619,11 +619,11 @@ void __cdecl Com_Quit_f(void)
       DAT_01cedd24 = 0;
     }
     FS_Shutdown((int)unaff_EDI);
-    piVar2 = fs_iwdPureChecks;
-    while (piVar2 != (iwd_pure_check_s *)0x0) {
-      piVar1 = *(iwd_pure_check_s **)piVar2;
-      free(piVar2);
-      piVar2 = piVar1;
+    pBlock = fs_iwdPureChecks;
+    while (pBlock != (iwd_pure_check_s *)0x0) {
+      piVar1 = *(iwd_pure_check_s **)pBlock;
+      free(pBlock);
+      pBlock = piVar1;
     }
     fs_iwdPureChecks = (iwd_pure_check_s *)0x0;
     FUN_00692210(&fs_numServerIwds,&fs_serverIwdNames);
@@ -943,17 +943,17 @@ void __cdecl Com_EventLoop(void)
 void __cdecl Com_ReadCDKey(void)
 
 {
-  _iobuf *p_Var1;
-  uint uVar2;
+  _iobuf *stream;
+  uint uVar1;
   undefined8 local_20;
   undefined8 local_18;
   char *local_10;
   
-  p_Var1 = fopen("dwclientkey.txt","rt");
-  if (p_Var1 != (_iobuf *)0x0) {
-    uVar2 = fread(&local_20,1,0x14,p_Var1);
-    fclose(p_Var1);
-    if (uVar2 == 0x14) {
+  stream = fopen("dwclientkey.txt","rt");
+  if (stream != (_iobuf *)0x0) {
+    uVar1 = fread(&local_20,1,0x14,stream);
+    fclose(stream);
+    if (uVar1 == 0x14) {
       _cl_cdkey = local_20;
       _DAT_00ae0574 = local_10;
       DAT_00ae0578 = 0;

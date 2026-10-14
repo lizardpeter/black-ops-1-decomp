@@ -42,7 +42,7 @@ void __cdecl _dynamic_initializer_for__TRACKINST_s_playlistRuleBuffer__(void)
 
 // 00757330  Playlist_Strdup  (ui/ui_playlists.cpp:167)
 
-char * __cdecl Playlist_Strdup(char *param_1)
+char * __cdecl Playlist_Strdup(char *src)
 
 {
   char cVar1;
@@ -53,13 +53,16 @@ char * __cdecl Playlist_Strdup(char *param_1)
   uchar *local_28;
   uchar *local_24;
   char *local_14;
+  int used;
+  int len;
+  char *newString;
   
-  local_14 = param_1;
+  local_14 = src;
   do {
     cVar1 = *local_14;
     local_14 = local_14 + 1;
   } while (cVar1 != '\0');
-  local_14 = local_14 + ((s_playlistStringBufferUsed + 1) - (int)(param_1 + 1));
+  local_14 = local_14 + ((s_playlistStringBufferUsed + 1) - (int)(src + 1));
   pcVar5 = (char *)(s_playlistStringBuffer + s_playlistStringBufferUsed);
   if ((0x8000 < (int)local_14) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0xac,0,"%s"
@@ -69,7 +72,7 @@ char * __cdecl Playlist_Strdup(char *param_1)
     return pcVar5;
   }
   if ((int)local_14 < 0x8001) {
-    local_24 = (uchar *)param_1;
+    local_24 = (uchar *)src;
     local_28 = (uchar *)pcVar5;
     do {
       uVar2 = *local_24;
@@ -89,7 +92,7 @@ char * __cdecl Playlist_Strdup(char *param_1)
 
 // 00757420  Playlist_Strdup_Newline  (ui/ui_playlists.cpp:185)
 
-char * __cdecl Playlist_Strdup_Newline(char *param_1)
+char * __cdecl Playlist_Strdup_Newline(char *src)
 
 {
   char cVar1;
@@ -97,14 +100,17 @@ char * __cdecl Playlist_Strdup_Newline(char *param_1)
   bool bVar3;
   char *pcVar4;
   char *local_18;
-  uchar *local_c;
+  int used;
+  int len;
+  char *dest;
+  char *newString;
   
-  local_18 = param_1;
+  local_18 = src;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  local_18 = local_18 + ((s_playlistStringBufferUsed + 1) - (int)(param_1 + 1));
+  local_18 = local_18 + ((s_playlistStringBufferUsed + 1) - (int)(src + 1));
   pcVar4 = (char *)(s_playlistStringBuffer + s_playlistStringBufferUsed);
   if ((0x8000 < (int)local_18) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0xc0,0,"%s"
@@ -113,20 +119,20 @@ char * __cdecl Playlist_Strdup_Newline(char *param_1)
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  local_c = (uchar *)pcVar4;
+  dest = pcVar4;
   if ((int)local_18 < 0x8001) {
-    while (*param_1 != '\0') {
-      if ((*param_1 == '\\') && (param_1[1] == 'n')) {
-        *local_c = '\n';
-        param_1 = param_1 + 2;
+    while (*src != '\0') {
+      if ((*src == '\\') && (src[1] == 'n')) {
+        *dest = '\n';
+        src = src + 2;
       }
       else {
-        *local_c = *param_1;
-        param_1 = param_1 + 1;
+        *dest = *src;
+        src = src + 1;
       }
-      local_c = local_c + 1;
+      dest = dest + 1;
     }
-    *local_c = '\0';
+    *dest = '\0';
     s_playlistStringBufferUsed = (int)local_18;
   }
   else {
@@ -162,7 +168,7 @@ char * __cdecl Playlist_BeginRules(void)
 
 // 007575A0  Playlist_AppendRules  (ui/ui_playlists.cpp:240)
 
-bool __cdecl Playlist_AppendRules(char *param_1,char *param_2)
+bool __cdecl Playlist_AppendRules(char *base,char *token)
 
 {
   char cVar1;
@@ -173,14 +179,15 @@ bool __cdecl Playlist_AppendRules(char *param_1,char *param_2)
   char *local_20;
   char *local_1c;
   char *local_c;
+  int len;
   
-  local_c = param_2;
+  local_c = token;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  if (s_playlistRuleBuffer + s_playlistRuleBufferBase == param_1) {
-    if ((int)(local_c + ((s_playlistRuleBufferUsed + 2) - (int)(param_2 + 1))) < 0x8001) {
+  if (s_playlistRuleBuffer + s_playlistRuleBufferBase == base) {
+    if ((int)(local_c + ((s_playlistRuleBufferUsed + 2) - (int)(token + 1))) < 0x8001) {
       if (s_playlistRuleBuffer[s_playlistRuleBufferUsed] != '\0') {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0xfe,0,
                                  "%s");
@@ -190,7 +197,7 @@ bool __cdecl Playlist_AppendRules(char *param_1,char *param_2)
           return (bool)uVar4;
         }
       }
-      local_1c = param_2;
+      local_1c = token;
       pcVar5 = s_playlistRuleBuffer + s_playlistRuleBufferUsed;
       local_20 = pcVar5;
       do {
@@ -199,7 +206,7 @@ bool __cdecl Playlist_AppendRules(char *param_1,char *param_2)
         local_1c = local_1c + 1;
         local_20 = local_20 + 1;
       } while (cVar1 != '\0');
-      s_playlistRuleBufferUsed = (int)(local_c + (s_playlistRuleBufferUsed - (int)(param_2 + 1)));
+      s_playlistRuleBufferUsed = (int)(local_c + (s_playlistRuleBufferUsed - (int)(token + 1)));
       if (s_playlistRuleBuffer[s_playlistRuleBufferUsed] != '\0') {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x103,0,
                                  "%s");
@@ -239,75 +246,77 @@ bool __cdecl Playlist_AppendRules(char *param_1,char *param_2)
 
 // 00755470  Playlist_GetCategoryIdByName  (ui/ui_playlists.cpp:281)
 
-int __cdecl Playlist_GetCategoryIdByName(char *param_1)
+int __cdecl Playlist_GetCategoryIdByName(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int index;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x11a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  index = 0;
   while( true ) {
-    if (categoryCount < local_8) {
+    if (categoryCount < index) {
       return -1;
     }
-    iVar3 = I_strcmp(categories[local_8].internalName,param_1);
+    iVar3 = I_strcmp(categories[index].internalName,name);
     if (iVar3 == 0) break;
-    local_8 = local_8 + 1;
+    index = index + 1;
   }
-  return local_8;
+  return index;
 }
 
 
 // 00757750  ParseIntRange  (ui/ui_playlists.cpp:298)
 
-int __cdecl ParseIntRange(char *param_1,char **param_2,int param_3,int param_4)
+int __cdecl ParseIntRange(char *field,char **pData,int min,int max)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *nptr;
+  char *token;
+  int value;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((field == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x12e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (char **)0x0) &&
+  if ((pData == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x12f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  pcVar4 = Com_ParseOnLine(param_2);
-  if (*pcVar4 == '\0') {
+  nptr = Com_ParseOnLine(pData);
+  if (*nptr == '\0') {
     Com_GetCurrentParseLine();
     Com_PrintError(0x10,"Playlist error: line %i: Expected \'%s\' number after \'%s\' command\n");
-    iVar3 = param_3;
+    iVar3 = min;
   }
   else {
-    iVar3 = atoi(pcVar4);
-    if (iVar3 < param_3) {
+    iVar3 = atoi(nptr);
+    if (iVar3 < min) {
       Com_GetCurrentParseLine();
       Com_PrintError(0x10,"Playlist error: line %i: \'%s\' number (%i) must be >= %i, \n");
-      iVar3 = param_3;
+      iVar3 = min;
     }
-    else if (param_4 < iVar3) {
+    else if (max < iVar3) {
       Com_GetCurrentParseLine();
       Com_PrintError(0x10,"Playlist error: line %i: \'%s\' number (%i) must be <= %i, \n");
-      iVar3 = param_4;
+      iVar3 = max;
     }
   }
   return iVar3;
@@ -318,7 +327,7 @@ int __cdecl ParseIntRange(char *param_1,char **param_2,int param_3,int param_4)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Playlist_ParsePlaylists(char *param_1)
+void __cdecl Playlist_ParsePlaylists(char *buffer)
 
 {
   code *pcVar1;
@@ -327,27 +336,27 @@ void __cdecl Playlist_ParsePlaylists(char *param_1)
   char *pcVar4;
   dvar_s *pdVar5;
   int iVar6;
-  char local_62c [512];
-  char local_42c [512];
-  char local_22c [512];
+  char key_2 [512];
+  char key [512];
+  char value [512];
   uint local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  playlistEntry *local_18;
-  int local_14;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  int index;
+  int foundLocalizedName;
+  int playlistNum;
+  int currentParseBlockType;
+  playlistEntry *entry;
+  int currentCategory;
+  char *token;
+  int foundLocalizedDesc;
+  char *p;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
   totalEntries = 0;
-  local_20 = 0;
+  playlistNum = 0;
   numGametypes = -1;
   categoryCount = -1;
-  local_24 = 0;
-  local_c = 0;
+  foundLocalizedName = 0;
+  foundLocalizedDesc = 0;
   memset((uchar *)playlists,'\0',0x2400);
   memset((uchar *)gametypes,'\0',0x500);
   memset((uchar *)categories,'\0',0x680);
@@ -388,10 +397,10 @@ void __cdecl Playlist_ParsePlaylists(char *param_1)
   s_playlistStringBufferUsed = 0;
   s_playlistRuleBufferBase = 0;
   s_playlistRuleBufferUsed = 0;
-  local_1c = 0;
+  currentParseBlockType = 0;
   Com_BeginParseSession("playlists");
   Com_SetSpaceDelimited(1);
-  local_8 = param_1;
+  p = buffer;
 LAB_007555f8:
   do {
     while( true ) {
@@ -405,53 +414,53 @@ LAB_007555f8:
                     while( true ) {
                       while( true ) {
                         do {
-                          local_10 = Com_ParseOnLine(&local_8);
-                          if (local_8 == (char *)0x0) {
+                          token = Com_ParseOnLine(&p);
+                          if (p == (char *)0x0) {
                             Com_EndParseSession();
                             return;
                           }
-                        } while ((local_10 == (char *)0x0) || (*local_8 == '\0'));
-                        if (*local_10 != '\0') break;
-                        Com_SkipRestOfLine(&local_8);
+                        } while ((token == (char *)0x0) || (*p == '\0'));
+                        if (*token != '\0') break;
+                        Com_SkipRestOfLine(&p);
                       }
-                      iVar3 = I_stricmp(local_10,"version");
+                      iVar3 = I_stricmp(token,"version");
                       if (iVar3 != 0) break;
-                      local_10 = Com_ParseOnLine(&local_8);
-                      if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                      token = Com_ParseOnLine(&p);
+                      if ((token == (char *)0x0) || (*p == '\0')) {
                         Com_GetCurrentParseLine();
                         Com_Printf(0x10,
                                    "Playlist error: line %i: Expected version number after version command\n"
                                   );
-                        Com_SkipRestOfLine(&local_8);
+                        Com_SkipRestOfLine(&p);
                       }
                       else {
-                        playlist_versionNum = atoi(local_10);
+                        playlist_versionNum = atoi(token);
                         if (playlist_versionNum < 0) {
                           Com_GetCurrentParseLine();
                           Com_Printf(0x10,
                                      "Playlist error: line %i: Invalid version number %i after version command\n"
                                     );
-                          Com_SkipRestOfLine(&local_8);
+                          Com_SkipRestOfLine(&p);
                         }
                         else {
-                          Com_SkipRestOfLine(&local_8);
+                          Com_SkipRestOfLine(&p);
                         }
                       }
                     }
-                    iVar3 = I_stricmp(local_10,"settings");
+                    iVar3 = I_stricmp(token,"settings");
                     if (iVar3 != 0) break;
-                    local_1c = 5;
-                    Com_SkipRestOfLine(&local_8);
+                    currentParseBlockType = 5;
+                    Com_SkipRestOfLine(&p);
                   }
-                  iVar3 = I_stricmp(local_10,"gametype");
+                  iVar3 = I_stricmp(token,"gametype");
                   if (iVar3 != 0) break;
-                  local_10 = Com_ParseOnLine(&local_8);
-                  if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                  token = Com_ParseOnLine(&p);
+                  if ((token == (char *)0x0) || (*p == '\0')) {
                     Com_GetCurrentParseLine();
                     Com_Printf(0x10,
                                "Playlist error: line %i: Expected gametype name after gametype command\n"
                               );
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                   }
                   else if (numGametypes < 0x3f) {
                     if (-1 < numGametypes) {
@@ -478,34 +487,34 @@ LAB_007555f8:
                       (*pcVar1)();
                       return;
                     }
-                    local_1c = 1;
-                    local_24 = 0;
-                    pcVar4 = Playlist_Strdup(local_10);
+                    currentParseBlockType = 1;
+                    foundLocalizedName = 0;
+                    pcVar4 = Playlist_Strdup(token);
                     gametypes[numGametypes].internalName = pcVar4;
                     pcVar4 = Playlist_BeginRules();
                     gametypes[numGametypes].rules = pcVar4;
                     gametypes[numGametypes].scriptName = "";
                     gametypes[numGametypes].localizedName = "";
                     gametypes[numGametypes].teamBased = false;
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                   }
                   else {
                     Com_GetCurrentParseLine();
                     Com_Printf(0x10,
                                "Playlist error: line %i: More than %i gametypes specified in playlist\n"
                               );
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                   }
                 }
-                iVar3 = I_stricmp(local_10,"category");
-                if ((iVar3 != 0) || (local_1c == 2)) break;
-                local_10 = Com_ParseOnLine(&local_8);
-                if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                iVar3 = I_stricmp(token,"category");
+                if ((iVar3 != 0) || (currentParseBlockType == 2)) break;
+                token = Com_ParseOnLine(&p);
+                if ((token == (char *)0x0) || (*p == '\0')) {
                   Com_GetCurrentParseLine();
                   Com_Printf(0x10,
                              "Playlist error: line %i: Expected category name after category command\n"
                             );
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                 }
                 else {
                   categoryCount = categoryCount + 1;
@@ -518,8 +527,8 @@ LAB_007555f8:
                     (*pcVar1)();
                     return;
                   }
-                  local_1c = 3;
-                  pcVar4 = Playlist_Strdup(local_10);
+                  currentParseBlockType = 3;
+                  pcVar4 = Playlist_Strdup(token);
                   categories[categoryCount].internalName = pcVar4;
                   pcVar4 = Playlist_BeginRules();
                   categories[categoryCount].rules = pcVar4;
@@ -529,126 +538,126 @@ LAB_007555f8:
                   categories[categoryCount].lockdescription = "";
                   categories[categoryCount].iconName = "";
                   categories[categoryCount].playlistCount = 0;
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                 }
               }
-              iVar3 = I_stricmp(local_10,"categoryCoop");
-              if ((iVar3 != 0) || (local_1c == 2)) break;
-              local_10 = Com_ParseOnLine(&local_8);
-              if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+              iVar3 = I_stricmp(token,"categoryCoop");
+              if ((iVar3 != 0) || (currentParseBlockType == 2)) break;
+              token = Com_ParseOnLine(&p);
+              if ((token == (char *)0x0) || (*p == '\0')) {
                 Com_GetCurrentParseLine();
                 Com_Printf(0x10,
                            "Playlist error: line %i: Expected category name after category command\n"
                           );
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
               else {
-                local_1c = 4;
-                Com_SkipRestOfLine(&local_8);
+                currentParseBlockType = 4;
+                Com_SkipRestOfLine(&p);
               }
             }
-            iVar3 = I_stricmp(local_10,"playlist");
+            iVar3 = I_stricmp(token,"playlist");
             if (iVar3 != 0) break;
-            local_10 = Com_ParseOnLine(&local_8);
-            if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+            token = Com_ParseOnLine(&p);
+            if ((token == (char *)0x0) || (*p == '\0')) {
               Com_GetCurrentParseLine();
               Com_Printf(0x10,
                          "Playlist error: line %i: Expected playlist number after playlist command\n"
                         );
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
             }
             else {
-              local_1c = 2;
-              local_20 = atoi(local_10);
-              if ((local_20 < 0) || (0x3f < local_20)) {
+              currentParseBlockType = 2;
+              playlistNum = atoi(token);
+              if ((playlistNum < 0) || (0x3f < playlistNum)) {
                 Com_GetCurrentParseLine();
                 Com_Printf(0x10,
                            "Playlist error: line %i: Invalid playlist number %i after playlist command\n"
                           );
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
               else {
-                local_24 = 0;
-                local_c = 0;
+                foundLocalizedName = 0;
+                foundLocalizedDesc = 0;
                 pcVar4 = Playlist_BeginRules();
-                playlists[local_20].rules = pcVar4;
-                playlists[local_20].name = "";
-                playlists[local_20].description = "";
-                playlists[local_20].lockdescription = "";
-                playlists[local_20].iconName = "";
-                playlists[local_20].baseEntry = totalEntries;
-                playlists[local_20].numEntries = 0;
-                playlists[local_20].ranked = false;
-                playlists[local_20].unlockXp = 0;
-                playlists[local_20].unlockPLevel = 0;
-                playlists[local_20].gametypeBan = 0;
-                playlists[local_20].maxPartySize = 1;
-                playlists[local_20].minPartySize = 0;
-                playlists[local_20].categoryCount = 0;
-                playlists[local_20].maxLocalPlayers = 1;
-                playlists[local_20].disableGuests = false;
-                for (local_28 = 0; local_28 < 0x10; local_28 = local_28 + 1) {
-                  *(char **)(local_20 * 0x90 + 0x990dbec + local_28 * 4) = "";
+                playlists[playlistNum].rules = pcVar4;
+                playlists[playlistNum].name = "";
+                playlists[playlistNum].description = "";
+                playlists[playlistNum].lockdescription = "";
+                playlists[playlistNum].iconName = "";
+                playlists[playlistNum].baseEntry = totalEntries;
+                playlists[playlistNum].numEntries = 0;
+                playlists[playlistNum].ranked = false;
+                playlists[playlistNum].unlockXp = 0;
+                playlists[playlistNum].unlockPLevel = 0;
+                playlists[playlistNum].gametypeBan = 0;
+                playlists[playlistNum].maxPartySize = 1;
+                playlists[playlistNum].minPartySize = 0;
+                playlists[playlistNum].categoryCount = 0;
+                playlists[playlistNum].maxLocalPlayers = 1;
+                playlists[playlistNum].disableGuests = false;
+                for (index = 0; index < 0x10; index = index + 1) {
+                  *(char **)(playlistNum * 0x90 + 0x990dbec + index * 4) = "";
                 }
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
               }
             }
           }
-          iVar3 = I_stricmp(local_10,"playlistCoop");
+          iVar3 = I_stricmp(token,"playlistCoop");
           if (iVar3 != 0) break;
-          local_10 = Com_ParseOnLine(&local_8);
-          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+          token = Com_ParseOnLine(&p);
+          if ((token == (char *)0x0) || (*p == '\0')) {
             Com_GetCurrentParseLine();
             Com_Printf(0x10,
                        "Playlist error: line %i: Expected playlist number after playlist command\n")
             ;
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
           else {
-            local_1c = 4;
-            Com_SkipRestOfLine(&local_8);
+            currentParseBlockType = 4;
+            Com_SkipRestOfLine(&p);
           }
         }
-        iVar3 = I_stricmp(local_10,"script");
+        iVar3 = I_stricmp(token,"script");
         if (iVar3 != 0) break;
-        if (local_1c == 1) {
-          local_10 = Com_ParseOnLine(&local_8);
-          if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+        if (currentParseBlockType == 1) {
+          token = Com_ParseOnLine(&p);
+          if ((token == (char *)0x0) || (*p == '\0')) {
             Com_GetCurrentParseLine();
             Com_Printf(0x10,"Playlist error: line %i: Expected script name after script command\n");
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
           else {
-            pcVar4 = Playlist_Strdup(local_10);
+            pcVar4 = Playlist_Strdup(token);
             gametypes[numGametypes].scriptName = pcVar4;
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
         }
         else {
           Com_GetCurrentParseLine();
           Com_Printf(0x10,
                      "Playlist error: line %i: Stray \'script\' line outside of gametype block\n");
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
         }
       }
-      iVar3 = I_stricmp(local_10,"rule");
-      if ((iVar3 != 0) && (iVar3 = I_stricmp(local_10,"set"), iVar3 != 0)) break;
-      local_10 = Com_ParseRestOfLine(&local_8);
-      switch(local_1c) {
+      iVar3 = I_stricmp(token,"rule");
+      if ((iVar3 != 0) && (iVar3 = I_stricmp(token,"set"), iVar3 != 0)) break;
+      token = Com_ParseRestOfLine(&p);
+      switch(currentParseBlockType) {
       case 1:
-        bVar2 = Playlist_AppendRules(gametypes[numGametypes].rules,local_10);
+        bVar2 = Playlist_AppendRules(gametypes[numGametypes].rules,token);
         if (!bVar2) {
           Com_PrintError(0x10,"Error adding \'%s\' to gametype %s rules\n");
         }
         break;
       case 2:
-        bVar2 = Playlist_AppendRules(playlists[local_20].rules,local_10);
+        bVar2 = Playlist_AppendRules(playlists[playlistNum].rules,token);
         if (!bVar2) {
           Com_PrintError(0x10,"Error adding \'%s\' to playlist %i rules\n");
         }
         break;
       case 3:
-        bVar2 = Playlist_AppendRules(categories[categoryCount].rules,local_10);
+        bVar2 = Playlist_AppendRules(categories[categoryCount].rules,token);
         if (!bVar2) {
           Com_PrintError(0x10,"Error adding \'%s\' to category %s rules\n");
         }
@@ -661,24 +670,24 @@ LAB_007555f8:
                        "Playlist error: line %i: \'rule\' found outside of any gametype or playlist block\n"
                       );
       }
-      Com_SkipRestOfLine(&local_8);
+      Com_SkipRestOfLine(&p);
     }
-    iVar3 = I_stricmp(local_10,"name");
+    iVar3 = I_stricmp(token,"name");
     if (iVar3 != 0) {
-      iVar3 = I_stricmp(local_10,"icon");
+      iVar3 = I_stricmp(token,"icon");
       if (iVar3 == 0) {
-        if ((local_1c == 4) || (local_1c == 0)) {
-          Com_SkipRestOfLine(&local_8);
+        if ((currentParseBlockType == 4) || (currentParseBlockType == 0)) {
+          Com_SkipRestOfLine(&p);
         }
         else {
-          if (local_1c == 2) {
-            local_10 = Com_ParseOnLine(&local_8);
-            pcVar4 = Playlist_Strdup(local_10);
-            playlists[local_20].iconName = pcVar4;
+          if (currentParseBlockType == 2) {
+            token = Com_ParseOnLine(&p);
+            pcVar4 = Playlist_Strdup(token);
+            playlists[playlistNum].iconName = pcVar4;
           }
-          else if (local_1c == 3) {
-            local_10 = Com_ParseOnLine(&local_8);
-            pcVar4 = Playlist_Strdup(local_10);
+          else if (currentParseBlockType == 3) {
+            token = Com_ParseOnLine(&p);
+            pcVar4 = Playlist_Strdup(token);
             categories[categoryCount].iconName = pcVar4;
           }
           else {
@@ -687,35 +696,35 @@ LAB_007555f8:
                            "Playlist error: line %i: Stray \'icon\' line outside of category/playlist block\n"
                           );
           }
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
         }
       }
       else {
-        iVar3 = I_stricmp(local_10,"filter");
+        iVar3 = I_stricmp(token,"filter");
         if (iVar3 == 0) {
-          if ((local_1c == 4) || (local_1c == 0)) {
-            Com_SkipRestOfLine(&local_8);
+          if ((currentParseBlockType == 4) || (currentParseBlockType == 0)) {
+            Com_SkipRestOfLine(&p);
           }
-          else if (local_1c == 3) {
-            local_10 = Com_ParseRestOfLine(&local_8);
-            pcVar4 = Playlist_Strdup(local_10);
+          else if (currentParseBlockType == 3) {
+            token = Com_ParseRestOfLine(&p);
+            pcVar4 = Playlist_Strdup(token);
             categories[categoryCount].filter = pcVar4;
           }
           else {
             Com_GetCurrentParseLine();
             Com_Printf(0x10,"Playlist error: line %i: filter keyword outside of category block\n");
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
         }
         else {
-          iVar3 = I_stricmp(local_10,"description");
+          iVar3 = I_stricmp(token,"description");
           if (iVar3 != 0) {
-            iVar3 = I_stricmp(local_10,"lockdescription");
+            iVar3 = I_stricmp(token,"lockdescription");
             if (iVar3 != 0) {
-              iVar3 = I_stricmp(local_10,"teambased");
+              iVar3 = I_stricmp(token,"teambased");
               if (iVar3 == 0) {
-                Com_SkipRestOfLine(&local_8);
-                if (local_1c == 1) {
+                Com_SkipRestOfLine(&p);
+                if (currentParseBlockType == 1) {
                   gametypes[numGametypes].teamBased = true;
                 }
                 else {
@@ -726,14 +735,14 @@ LAB_007555f8:
                 }
               }
               else {
-                iVar3 = I_stricmp(local_10,"setdvar");
+                iVar3 = I_stricmp(token,"setdvar");
                 if (iVar3 == 0) {
-                  if (local_1c == 5) {
-                    local_10 = Com_ParseOnLine(&local_8);
-                    I_strncpyz(local_42c,local_10,0x200);
-                    local_10 = Com_ParseOnLine(&local_8);
-                    I_strncpyz(local_22c,local_10,0x200);
-                    Dvar_SetFromStringByName(local_42c,local_22c);
+                  if (currentParseBlockType == 5) {
+                    token = Com_ParseOnLine(&p);
+                    I_strncpyz(key,token,0x200);
+                    token = Com_ParseOnLine(&p);
+                    I_strncpyz(value,token,0x200);
+                    Dvar_SetFromStringByName(key,value);
                   }
                   else {
                     Com_GetCurrentParseLine();
@@ -741,14 +750,14 @@ LAB_007555f8:
                                    "Playlist error: line %i: found \'setdvar\' flag outside of settings definition.\n"
                                   );
                   }
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                 }
                 else {
-                  iVar3 = I_stricmp(local_10,"ranked");
+                  iVar3 = I_stricmp(token,"ranked");
                   if (iVar3 == 0) {
-                    Com_SkipRestOfLine(&local_8);
-                    if (local_1c == 2) {
-                      playlists[local_20].ranked = true;
+                    Com_SkipRestOfLine(&p);
+                    if (currentParseBlockType == 2) {
+                      playlists[playlistNum].ranked = true;
                     }
                     else {
                       Com_GetCurrentParseLine();
@@ -758,25 +767,25 @@ LAB_007555f8:
                     }
                   }
                   else {
-                    iVar3 = I_stricmp(local_10,"visible_dvar");
+                    iVar3 = I_stricmp(token,"visible_dvar");
                     if (iVar3 == 0) {
-                      local_10 = Com_ParseOnLine(&local_8);
-                      I_strncpyz(local_62c,local_10,0x200);
-                      Com_SkipRestOfLine(&local_8);
-                      if (local_1c == 2) {
-                        playlists[local_20].visible_dvar = true;
-                        pdVar5 = Dvar_FindVar(local_62c);
-                        playlists[local_20].visDvar = pdVar5;
-                        if (playlists[local_20].visDvar == (dvar_s *)0x0) {
+                      token = Com_ParseOnLine(&p);
+                      I_strncpyz(key_2,token,0x200);
+                      Com_SkipRestOfLine(&p);
+                      if (currentParseBlockType == 2) {
+                        playlists[playlistNum].visible_dvar = true;
+                        pdVar5 = Dvar_FindVar(key_2);
+                        playlists[playlistNum].visDvar = pdVar5;
+                        if (playlists[playlistNum].visDvar == (dvar_s *)0x0) {
                           Com_GetCurrentParseLine();
                           Com_PrintError(0x10,
                                          "Playlist error: line %i: found \'visible_dvar\' but no matching DVAR.\n"
                                         );
                         }
                       }
-                      else if (local_1c == 3) {
+                      else if (currentParseBlockType == 3) {
                         categories[categoryCount].visible_dvar = true;
-                        pdVar5 = Dvar_FindVar(local_62c);
+                        pdVar5 = Dvar_FindVar(key_2);
                         categories[categoryCount].visDvar = pdVar5;
                         if (categories[categoryCount].visDvar == (dvar_s *)0x0) {
                           Com_GetCurrentParseLine();
@@ -793,13 +802,13 @@ LAB_007555f8:
                       }
                     }
                     else {
-                      iVar3 = I_stricmp(local_10,"collectors");
+                      iVar3 = I_stricmp(token,"collectors");
                       if (iVar3 == 0) {
-                        Com_SkipRestOfLine(&local_8);
-                        if (local_1c == 2) {
-                          playlists[local_20].collectorsEditionRequired = true;
+                        Com_SkipRestOfLine(&p);
+                        if (currentParseBlockType == 2) {
+                          playlists[playlistNum].collectorsEditionRequired = true;
                         }
-                        else if (local_1c == 3) {
+                        else if (currentParseBlockType == 3) {
                           categories[categoryCount].collectorsEditionRequired = true;
                         }
                         else {
@@ -810,13 +819,13 @@ LAB_007555f8:
                         }
                       }
                       else {
-                        iVar3 = I_stricmp(local_10,"finishedsolo");
+                        iVar3 = I_stricmp(token,"finishedsolo");
                         if (iVar3 == 0) {
-                          Com_SkipRestOfLine(&local_8);
-                          if (local_1c == 2) {
-                            playlists[local_20].finishedSoloRequired = true;
+                          Com_SkipRestOfLine(&p);
+                          if (currentParseBlockType == 2) {
+                            playlists[playlistNum].finishedSoloRequired = true;
                           }
-                          else if (local_1c == 3) {
+                          else if (currentParseBlockType == 3) {
                             categories[categoryCount].finishedSoloRequired = true;
                           }
                           else {
@@ -826,18 +835,18 @@ LAB_007555f8:
                                           );
                           }
                         }
-                        else if ((local_1c == 4) || (local_1c == 0)) {
-                          Com_SkipRestOfLine(&local_8);
+                        else if ((currentParseBlockType == 4) || (currentParseBlockType == 0)) {
+                          Com_SkipRestOfLine(&p);
                         }
                         else {
-                          iVar3 = I_stricmp(local_10,"unlockxp");
+                          iVar3 = I_stricmp(token,"unlockxp");
                           if (iVar3 == 0) {
-                            if (local_1c == 2) {
-                              iVar3 = ParseIntRange("unlockxp",&local_8,-0x80000000,0x7fffffff);
-                              playlists[local_20].unlockXp = iVar3;
+                            if (currentParseBlockType == 2) {
+                              iVar3 = ParseIntRange("unlockxp",&p,-0x80000000,0x7fffffff);
+                              playlists[playlistNum].unlockXp = iVar3;
                             }
-                            else if (local_1c == 3) {
-                              iVar3 = ParseIntRange("unlockxp",&local_8,0,0x7fffffff);
+                            else if (currentParseBlockType == 3) {
+                              iVar3 = ParseIntRange("unlockxp",&p,0,0x7fffffff);
                               categories[categoryCount].unlockXp = iVar3;
                             }
                             else {
@@ -846,18 +855,17 @@ LAB_007555f8:
                                              "Playlist error: line %i: Stray \'unlockxp\' line outside of playlist or category block\n"
                                             );
                             }
-                            Com_SkipRestOfLine(&local_8);
+                            Com_SkipRestOfLine(&p);
                           }
                           else {
-                            iVar3 = I_stricmp(local_10,"unlockPLevel");
+                            iVar3 = I_stricmp(token,"unlockPLevel");
                             if (iVar3 == 0) {
-                              if (local_1c == 2) {
-                                iVar3 = ParseIntRange("unlockPLevel",&local_8,-0x80000000,0x7fffffff
-                                                     );
-                                playlists[local_20].unlockPLevel = iVar3;
+                              if (currentParseBlockType == 2) {
+                                iVar3 = ParseIntRange("unlockPLevel",&p,-0x80000000,0x7fffffff);
+                                playlists[playlistNum].unlockPLevel = iVar3;
                               }
-                              else if (local_1c == 3) {
-                                iVar3 = ParseIntRange("unlockPLevel",&local_8,0,0x7fffffff);
+                              else if (currentParseBlockType == 3) {
+                                iVar3 = ParseIntRange("unlockPLevel",&p,0,0x7fffffff);
                                 categories[categoryCount].unlockPLevel = iVar3;
                               }
                               else {
@@ -866,14 +874,14 @@ LAB_007555f8:
                                                "Playlist error: line %i: Stray \'unlockPLevel\' line outside of playlist or category block\n"
                                               );
                               }
-                              Com_SkipRestOfLine(&local_8);
+                              Com_SkipRestOfLine(&p);
                             }
                             else {
-                              iVar3 = I_stricmp(local_10,"gametypeban");
+                              iVar3 = I_stricmp(token,"gametypeban");
                               if (iVar3 == 0) {
-                                if (local_1c == 2) {
-                                  iVar3 = ParseIntRange("gametypeban",&local_8,0,0x7fffffff);
-                                  playlists[local_20].gametypeBan = iVar3;
+                                if (currentParseBlockType == 2) {
+                                  iVar3 = ParseIntRange("gametypeban",&p,0,0x7fffffff);
+                                  playlists[playlistNum].gametypeBan = iVar3;
                                 }
                                 else {
                                   Com_GetCurrentParseLine();
@@ -881,14 +889,14 @@ LAB_007555f8:
                                                  "Playlist error: line %i: Stray \'gametypeban\' line outside of playlist block\n"
                                                 );
                                 }
-                                Com_SkipRestOfLine(&local_8);
+                                Com_SkipRestOfLine(&p);
                               }
                               else {
-                                iVar3 = I_stricmp(local_10,"wagerbet");
+                                iVar3 = I_stricmp(token,"wagerbet");
                                 if (iVar3 == 0) {
-                                  if (local_1c == 2) {
-                                    iVar3 = ParseIntRange("wagerbet",&local_8,0,0x7fffffff);
-                                    playlists[local_20].wagerBet = iVar3;
+                                  if (currentParseBlockType == 2) {
+                                    iVar3 = ParseIntRange("wagerbet",&p,0,0x7fffffff);
+                                    playlists[playlistNum].wagerBet = iVar3;
                                   }
                                   else {
                                     Com_GetCurrentParseLine();
@@ -896,14 +904,14 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'wagerbet\' line outside of playlist block\n"
                                                   );
                                   }
-                                  Com_SkipRestOfLine(&local_8);
+                                  Com_SkipRestOfLine(&p);
                                 }
                                 else {
-                                  iVar3 = I_stricmp(local_10,"wagerentry");
+                                  iVar3 = I_stricmp(token,"wagerentry");
                                   if (iVar3 == 0) {
-                                    if (local_1c == 2) {
-                                      iVar3 = ParseIntRange("wagerentry",&local_8,0,0x7fffffff);
-                                      playlists[local_20].wagerEntry = iVar3;
+                                    if (currentParseBlockType == 2) {
+                                      iVar3 = ParseIntRange("wagerentry",&p,0,0x7fffffff);
+                                      playlists[playlistNum].wagerEntry = iVar3;
                                     }
                                     else {
                                       Com_GetCurrentParseLine();
@@ -911,15 +919,14 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'wagerentry\' line outside of playlist block\n"
                                                   );
                                     }
-                                    Com_SkipRestOfLine(&local_8);
+                                    Com_SkipRestOfLine(&p);
                                   }
                                   else {
-                                    iVar3 = I_stricmp(local_10,"maxLocalPlayers");
+                                    iVar3 = I_stricmp(token,"maxLocalPlayers");
                                     if (iVar3 == 0) {
-                                      if (local_1c == 2) {
-                                        iVar3 = ParseIntRange("maxlocalplayers",&local_8,0,
-                                                              0x7fffffff);
-                                        playlists[local_20].maxLocalPlayers = iVar3;
+                                      if (currentParseBlockType == 2) {
+                                        iVar3 = ParseIntRange("maxlocalplayers",&p,0,0x7fffffff);
+                                        playlists[playlistNum].maxLocalPlayers = iVar3;
                                       }
                                       else {
                                         Com_GetCurrentParseLine();
@@ -927,13 +934,13 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'maxlocalplayres\' line outside of playlist block\n"
                                                   );
                                       }
-                                      Com_SkipRestOfLine(&local_8);
+                                      Com_SkipRestOfLine(&p);
                                     }
                                     else {
-                                      iVar3 = I_stricmp(local_10,"disableGuests");
+                                      iVar3 = I_stricmp(token,"disableGuests");
                                       if (iVar3 == 0) {
-                                        if (local_1c == 2) {
-                                          playlists[local_20].disableGuests = true;
+                                        if (currentParseBlockType == 2) {
+                                          playlists[playlistNum].disableGuests = true;
                                         }
                                         else {
                                           Com_GetCurrentParseLine();
@@ -941,15 +948,15 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'disableGuests\' line outside of playlist block\n"
                                                   );
                                         }
-                                        Com_SkipRestOfLine(&local_8);
+                                        Com_SkipRestOfLine(&p);
                                       }
                                       else {
-                                        iVar6 = I_stricmp(local_10,"dlc");
-                                        iVar3 = local_20;
+                                        iVar6 = I_stricmp(token,"dlc");
+                                        iVar3 = playlistNum;
                                         if (iVar6 == 0) {
-                                          if (local_1c == 2) {
-                                            iVar6 = ParseIntRange("dlc",&local_8,1,0x7fffffff);
-                                            playlists[local_20].requiredDLCMask =
+                                          if (currentParseBlockType == 2) {
+                                            iVar6 = ParseIntRange("dlc",&p,1,0x7fffffff);
+                                            playlists[playlistNum].requiredDLCMask =
                                                  1 << ((char)iVar6 + 1U & 0x1f) |
                                                  playlists[iVar3].requiredDLCMask;
                                           }
@@ -959,14 +966,14 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'requiredDlcPack\' line outside of playlist block\n"
                                                   );
                                           }
-                                          Com_SkipRestOfLine(&local_8);
+                                          Com_SkipRestOfLine(&p);
                                         }
                                         else {
-                                          iVar3 = I_stricmp(local_10,"maxparty");
+                                          iVar3 = I_stricmp(token,"maxparty");
                                           if (iVar3 == 0) {
-                                            if (local_1c == 2) {
-                                              iVar3 = ParseIntRange("maxparty",&local_8,1,0x20);
-                                              playlists[local_20].maxPartySize = iVar3;
+                                            if (currentParseBlockType == 2) {
+                                              iVar3 = ParseIntRange("maxparty",&p,1,0x20);
+                                              playlists[playlistNum].maxPartySize = iVar3;
                                             }
                                             else {
                                               Com_GetCurrentParseLine();
@@ -974,14 +981,14 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'maxparty\' line outside of playlist block\n"
                                                   );
                                             }
-                                            Com_SkipRestOfLine(&local_8);
+                                            Com_SkipRestOfLine(&p);
                                           }
                                           else {
-                                            iVar3 = I_stricmp(local_10,"minparty");
+                                            iVar3 = I_stricmp(token,"minparty");
                                             if (iVar3 == 0) {
-                                              if (local_1c == 2) {
-                                                iVar3 = ParseIntRange("minparty",&local_8,0,0x20);
-                                                playlists[local_20].minPartySize = iVar3;
+                                              if (currentParseBlockType == 2) {
+                                                iVar3 = ParseIntRange("minparty",&p,0,0x20);
+                                                playlists[playlistNum].minPartySize = iVar3;
                                               }
                                               else {
                                                 Com_GetCurrentParseLine();
@@ -989,48 +996,48 @@ LAB_007555f8:
                                                   "Playlist error: line %i: Stray \'minparty\' line outside of playlist block\n"
                                                   );
                                               }
-                                              Com_SkipRestOfLine(&local_8);
+                                              Com_SkipRestOfLine(&p);
                                             }
                                             else {
-                                              iVar3 = I_stricmp(local_10,"categories");
+                                              iVar3 = I_stricmp(token,"categories");
                                               if (iVar3 == 0) {
-                                                playlists[local_20].categoryCount = 0;
-                                                if (local_1c == 2) {
-                                                  local_10 = Com_ParseOnLine(&local_8);
-                                                  if ((local_10 == (char *)0x0) ||
-                                                     (*local_8 == '\0')) {
+                                                playlists[playlistNum].categoryCount = 0;
+                                                if (currentParseBlockType == 2) {
+                                                  token = Com_ParseOnLine(&p);
+                                                  if ((token == (char *)0x0) || (*p == '\0')) {
                                                     Com_GetCurrentParseLine();
                                                     Com_Printf(0x10,
                                                   "Playlist error: line %i: Expected at least one category name after category command\n"
                                                   );
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   }
                                                   else {
-                                                    while (((*local_10 != '\0' && (*local_8 != '\0')
-                                                            ) && (playlists[local_20].categoryCount
-                                                                  < 0xf))) {
-                                                      pcVar4 = Playlist_Strdup(local_10);
-                                                      *(char **)(local_20 * 0x90 + 0x990dbec +
-                                                                playlists[local_20].categoryCount *
-                                                                4) = pcVar4;
-                                                      playlists[local_20].categoryCount =
-                                                           playlists[local_20].categoryCount + 1;
-                                                      local_14 = Playlist_GetCategoryIdByName
-                                                                           (local_10);
-                                                      if (local_14 < 0) {
+                                                    while (((*token != '\0' && (*p != '\0')) &&
+                                                           (playlists[playlistNum].categoryCount <
+                                                            0xf))) {
+                                                      pcVar4 = Playlist_Strdup(token);
+                                                      *(char **)(playlistNum * 0x90 + 0x990dbec +
+                                                                playlists[playlistNum].categoryCount
+                                                                * 4) = pcVar4;
+                                                      playlists[playlistNum].categoryCount =
+                                                           playlists[playlistNum].categoryCount + 1;
+                                                      currentCategory =
+                                                           Playlist_GetCategoryIdByName(token);
+                                                      if (currentCategory < 0) {
                                                         Com_GetCurrentParseLine();
                                                         Com_Printf(0x10,
                                                   "Playlist error: line %i: There is no existing category named %s.\n"
                                                   );
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   }
                                                   else {
-                                                    categories[local_14].playlistCount =
-                                                         categories[local_14].playlistCount + 1;
-                                                    local_10 = Com_ParseOnLine(&local_8);
+                                                    categories[currentCategory].playlistCount =
+                                                         categories[currentCategory].playlistCount +
+                                                         1;
+                                                    token = Com_ParseOnLine(&p);
                                                   }
                                                   }
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   }
                                                 }
                                                 else {
@@ -1038,23 +1045,22 @@ LAB_007555f8:
                                                   Com_PrintError(0x10,
                                                   "Playlist error: line %i: Stray \'category\' line outside of playlist block\n"
                                                   );
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                 }
                                               }
                                               else {
                                                 Com_UngetToken();
                                                 Com_SetCSV(1);
-                                                local_10 = Com_ParseOnLine(&local_8);
-                                                if ((local_10 == (char *)0x0) || (*local_8 == '\0'))
-                                                {
+                                                token = Com_ParseOnLine(&p);
+                                                if ((token == (char *)0x0) || (*p == '\0')) {
                                                   Com_GetCurrentParseLine();
                                                   Com_PrintError(0x10,
                                                   "line %i: Invalid line in playlist %i\n");
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   Com_SetCSV(0);
                                                 }
                                                 else {
-                                                  if ((*local_10 == '\0') &&
+                                                  if ((*token == '\0') &&
                                                      (bVar2 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp"
                                                   ,0x4b7,0,"%s"), !bVar2)) {
@@ -1063,46 +1069,44 @@ LAB_007555f8:
                                                     return;
                                                   }
                                                   if (totalEntries < 0x2000) {
-                                                    local_18 = playlistEntries + totalEntries;
-                                                    pcVar4 = Playlist_Strdup(local_10);
-                                                    local_18->mapname = pcVar4;
-                                                    local_10 = Com_ParseOnLine(&local_8);
-                                                    if ((local_10 == (char *)0x0) ||
-                                                       (*local_8 == '\0')) {
+                                                    entry = playlistEntries + totalEntries;
+                                                    pcVar4 = Playlist_Strdup(token);
+                                                    entry->mapname = pcVar4;
+                                                    token = Com_ParseOnLine(&p);
+                                                    if ((token == (char *)0x0) || (*p == '\0')) {
                                                       Com_GetCurrentParseLine();
                                                       Com_PrintError(0x10,
                                                   "line %i: Invalid line in playlist %i\n");
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   Com_SetCSV(0);
                                                   }
                                                   else {
-                                                    local_18->ignore = 0;
-                                                    pcVar4 = Playlist_Strdup(local_10);
-                                                    local_18->gametype = pcVar4;
-                                                    local_10 = Com_ParseOnLine(&local_8);
-                                                    if ((local_10 == (char *)0x0) ||
-                                                       (*local_8 == '\0')) {
+                                                    entry->ignore = 0;
+                                                    pcVar4 = Playlist_Strdup(token);
+                                                    entry->gametype = pcVar4;
+                                                    token = Com_ParseOnLine(&p);
+                                                    if ((token == (char *)0x0) || (*p == '\0')) {
                                                       Com_GetCurrentParseLine();
                                                       Com_PrintError(0x10,
                                                   "line %i: Invalid line in playlist %i\n");
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   Com_SetCSV(0);
                                                   }
                                                   else {
-                                                    iVar3 = atoi(local_10);
-                                                    local_18->fullWeight = iVar3;
-                                                    if (local_18->fullWeight < 1) {
+                                                    iVar3 = atoi(token);
+                                                    entry->fullWeight = iVar3;
+                                                    if (entry->fullWeight < 1) {
                                                       Com_GetCurrentParseLine();
                                                       Com_PrintError(0x10,
                                                   "line %i: Invalid line in playlist %i\n");
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   Com_SetCSV(0);
                                                   }
                                                   else {
-                                                    Com_SkipRestOfLine(&local_8);
+                                                    Com_SkipRestOfLine(&p);
                                                     Com_SetCSV(0);
-                                                    playlists[local_20].numEntries =
-                                                         playlists[local_20].numEntries + 1;
+                                                    playlists[playlistNum].numEntries =
+                                                         playlists[playlistNum].numEntries + 1;
                                                     totalEntries = totalEntries + 1;
                                                   }
                                                   }
@@ -1113,7 +1117,7 @@ LAB_007555f8:
                                                     Com_PrintError(0x10,
                                                   "line %i: Exceeded max total entries %d in playlist %i\n"
                                                   );
-                                                  Com_SkipRestOfLine(&local_8);
+                                                  Com_SkipRestOfLine(&p);
                                                   Com_SetCSV(0);
                                                   }
                                                 }
@@ -1136,199 +1140,201 @@ LAB_007555f8:
               }
               goto LAB_007555f8;
             }
-            if ((local_1c == 4) || (local_1c == 0)) {
-              Com_SkipRestOfLine(&local_8);
+            if ((currentParseBlockType == 4) || (currentParseBlockType == 0)) {
+              Com_SkipRestOfLine(&p);
             }
             else {
-              local_10 = Com_ParseOnLine(&local_8);
-              if ((local_10 != (char *)0x0) && (*local_8 != '\0')) {
+              token = Com_ParseOnLine(&p);
+              if ((token != (char *)0x0) && (*p != '\0')) {
                 iVar3 = SEH_GetCurrentLanguage();
                 pcVar4 = SEH_GetLanguageName(iVar3);
-                iVar3 = I_stricmp(local_10,pcVar4);
+                iVar3 = I_stricmp(token,pcVar4);
                 if (iVar3 == 0) {
-                  local_10 = Com_ParseOnLine(&local_8);
-                  if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                  token = Com_ParseOnLine(&p);
+                  if ((token == (char *)0x0) || (*p == '\0')) {
                     Com_GetCurrentParseLine();
                     Com_Printf(0x10,
                                "Playlist error: line %i: Expected playlist lockdescription after description <language> command\n"
                               );
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                     goto LAB_007555f8;
                   }
-                  local_c = 1;
-                  if (local_1c == 2) {
-                    pcVar4 = Playlist_Strdup_Newline(local_10);
-                    playlists[local_20].lockdescription = pcVar4;
+                  foundLocalizedDesc = 1;
+                  if (currentParseBlockType == 2) {
+                    pcVar4 = Playlist_Strdup_Newline(token);
+                    playlists[playlistNum].lockdescription = pcVar4;
                   }
                   else {
-                    pcVar4 = Playlist_Strdup_Newline(local_10);
+                    pcVar4 = Playlist_Strdup_Newline(token);
                     categories[categoryCount].lockdescription = pcVar4;
                   }
                 }
-                else if ((local_c == 0) && (iVar3 = I_stricmp("english",local_10), iVar3 == 0)) {
-                  local_10 = Com_ParseOnLine(&local_8);
-                  if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                else if ((foundLocalizedDesc == 0) &&
+                        (iVar3 = I_stricmp("english",token), iVar3 == 0)) {
+                  token = Com_ParseOnLine(&p);
+                  if ((token == (char *)0x0) || (*p == '\0')) {
                     Com_GetCurrentParseLine();
                     Com_Printf(0x10,
                                "Playlist error: line %i: Expected playlist lockdescription after lockdescription <language> command\n"
                               );
-                    Com_SkipRestOfLine(&local_8);
+                    Com_SkipRestOfLine(&p);
                     goto LAB_007555f8;
                   }
-                  if (local_1c == 2) {
-                    pcVar4 = Playlist_Strdup_Newline(local_10);
-                    playlists[local_20].lockdescription = pcVar4;
+                  if (currentParseBlockType == 2) {
+                    pcVar4 = Playlist_Strdup_Newline(token);
+                    playlists[playlistNum].lockdescription = pcVar4;
                   }
                   else {
-                    pcVar4 = Playlist_Strdup_Newline(local_10);
+                    pcVar4 = Playlist_Strdup_Newline(token);
                     categories[categoryCount].lockdescription = pcVar4;
                   }
                 }
-                Com_SkipRestOfLine(&local_8);
+                Com_SkipRestOfLine(&p);
                 goto LAB_007555f8;
               }
               Com_GetCurrentParseLine();
               Com_Printf(0x10,
                          "Playlist error: line %i: Expected language name after lockdescription command\n"
                         );
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
             }
             goto LAB_007555f8;
           }
-          if ((local_1c == 4) || (local_1c == 0)) {
-            Com_SkipRestOfLine(&local_8);
+          if ((currentParseBlockType == 4) || (currentParseBlockType == 0)) {
+            Com_SkipRestOfLine(&p);
           }
           else {
-            local_10 = Com_ParseOnLine(&local_8);
-            if ((local_10 != (char *)0x0) && (*local_8 != '\0')) {
+            token = Com_ParseOnLine(&p);
+            if ((token != (char *)0x0) && (*p != '\0')) {
               iVar3 = SEH_GetCurrentLanguage();
               pcVar4 = SEH_GetLanguageName(iVar3);
-              iVar3 = I_stricmp(local_10,pcVar4);
+              iVar3 = I_stricmp(token,pcVar4);
               if (iVar3 == 0) {
-                local_10 = Com_ParseOnLine(&local_8);
-                if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+                token = Com_ParseOnLine(&p);
+                if ((token == (char *)0x0) || (*p == '\0')) {
                   Com_GetCurrentParseLine();
                   Com_Printf(0x10,
                              "Playlist error: line %i: Expected playlist description after description <language> command\n"
                             );
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                   goto LAB_007555f8;
                 }
-                local_c = 1;
-                if (local_1c == 2) {
-                  pcVar4 = Playlist_Strdup_Newline(local_10);
-                  playlists[local_20].description = pcVar4;
+                foundLocalizedDesc = 1;
+                if (currentParseBlockType == 2) {
+                  pcVar4 = Playlist_Strdup_Newline(token);
+                  playlists[playlistNum].description = pcVar4;
                 }
                 else {
-                  pcVar4 = Playlist_Strdup_Newline(local_10);
+                  pcVar4 = Playlist_Strdup_Newline(token);
                   categories[categoryCount].description = pcVar4;
                 }
               }
-              else if ((local_c == 0) && (iVar3 = I_stricmp("english",local_10), iVar3 == 0)) {
-                local_10 = Com_ParseOnLine(&local_8);
-                if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+              else if ((foundLocalizedDesc == 0) && (iVar3 = I_stricmp("english",token), iVar3 == 0)
+                      ) {
+                token = Com_ParseOnLine(&p);
+                if ((token == (char *)0x0) || (*p == '\0')) {
                   Com_GetCurrentParseLine();
                   Com_Printf(0x10,
                              "Playlist error: line %i: Expected playlist description after description <language> command\n"
                             );
-                  Com_SkipRestOfLine(&local_8);
+                  Com_SkipRestOfLine(&p);
                   goto LAB_007555f8;
                 }
-                if (local_1c == 2) {
-                  pcVar4 = Playlist_Strdup_Newline(local_10);
-                  playlists[local_20].description = pcVar4;
+                if (currentParseBlockType == 2) {
+                  pcVar4 = Playlist_Strdup_Newline(token);
+                  playlists[playlistNum].description = pcVar4;
                 }
                 else {
-                  pcVar4 = Playlist_Strdup_Newline(local_10);
+                  pcVar4 = Playlist_Strdup_Newline(token);
                   categories[categoryCount].description = pcVar4;
                 }
               }
-              Com_SkipRestOfLine(&local_8);
+              Com_SkipRestOfLine(&p);
               goto LAB_007555f8;
             }
             Com_GetCurrentParseLine();
             Com_Printf(0x10,
                        "Playlist error: line %i: Expected language name after description command\n"
                       );
-            Com_SkipRestOfLine(&local_8);
+            Com_SkipRestOfLine(&p);
           }
         }
       }
       goto LAB_007555f8;
     }
-    local_10 = Com_ParseOnLine(&local_8);
-    if ((local_10 != (char *)0x0) && (*local_8 != '\0')) {
+    token = Com_ParseOnLine(&p);
+    if ((token != (char *)0x0) && (*p != '\0')) {
       iVar3 = SEH_GetCurrentLanguage();
       pcVar4 = SEH_GetLanguageName(iVar3);
-      iVar3 = I_stricmp(local_10,pcVar4);
+      iVar3 = I_stricmp(token,pcVar4);
       if (iVar3 == 0) {
-        local_10 = Com_ParseOnLine(&local_8);
-        if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+        token = Com_ParseOnLine(&p);
+        if ((token == (char *)0x0) || (*p == '\0')) {
           Com_GetCurrentParseLine();
           Com_Printf(0x10,"Playlist error: line %i: Expected %s name after name command\n");
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
           goto LAB_007555f8;
         }
-        local_24 = 1;
-        if (local_1c == 1) {
-          pcVar4 = Playlist_Strdup(local_10);
+        foundLocalizedName = 1;
+        if (currentParseBlockType == 1) {
+          pcVar4 = Playlist_Strdup(token);
           gametypes[numGametypes].localizedName = pcVar4;
         }
-        else if (local_1c == 2) {
-          pcVar4 = Playlist_Strdup(local_10);
-          playlists[local_20].name = pcVar4;
+        else if (currentParseBlockType == 2) {
+          pcVar4 = Playlist_Strdup(token);
+          playlists[playlistNum].name = pcVar4;
         }
-        else if (local_1c == 3) {
-          pcVar4 = Playlist_Strdup(local_10);
+        else if (currentParseBlockType == 3) {
+          pcVar4 = Playlist_Strdup(token);
           categories[categoryCount].localizedName = pcVar4;
         }
       }
-      else if ((local_24 == 0) && (iVar3 = I_stricmp("english",local_10), iVar3 == 0)) {
-        local_10 = Com_ParseOnLine(&local_8);
-        if ((local_10 == (char *)0x0) || (*local_8 == '\0')) {
+      else if ((foundLocalizedName == 0) && (iVar3 = I_stricmp("english",token), iVar3 == 0)) {
+        token = Com_ParseOnLine(&p);
+        if ((token == (char *)0x0) || (*p == '\0')) {
           Com_GetCurrentParseLine();
           Com_Printf(0x10,"Playlist error: line %i: Expected %s name after name command\n");
-          Com_SkipRestOfLine(&local_8);
+          Com_SkipRestOfLine(&p);
           goto LAB_007555f8;
         }
-        if (local_1c == 1) {
-          pcVar4 = Playlist_Strdup(local_10);
+        if (currentParseBlockType == 1) {
+          pcVar4 = Playlist_Strdup(token);
           gametypes[numGametypes].localizedName = pcVar4;
         }
-        else if (local_1c == 2) {
-          pcVar4 = Playlist_Strdup(local_10);
-          playlists[local_20].name = pcVar4;
+        else if (currentParseBlockType == 2) {
+          pcVar4 = Playlist_Strdup(token);
+          playlists[playlistNum].name = pcVar4;
         }
-        else if (local_1c == 3) {
-          pcVar4 = Playlist_Strdup(local_10);
+        else if (currentParseBlockType == 3) {
+          pcVar4 = Playlist_Strdup(token);
           categories[categoryCount].localizedName = pcVar4;
         }
       }
-      Com_SkipRestOfLine(&local_8);
+      Com_SkipRestOfLine(&p);
       goto LAB_007555f8;
     }
     Com_Printf(0x10,"Playlist error: Expected language name after name command\n");
-    Com_SkipRestOfLine(&local_8);
+    Com_SkipRestOfLine(&p);
   } while( true );
 }
 
 
 // 00757860  Playlist_HasCategory  (ui/ui_playlists.cpp:1265)
 
-bool __cdecl Playlist_HasCategory(int param_1,char *param_2)
+bool __cdecl Playlist_HasCategory(int playlistId,char *category)
 
 {
   int iVar1;
-  int local_8;
+  int index;
   
-  local_8 = 0;
+  index = 0;
   while( true ) {
-    if (playlists[param_1].categoryCount <= local_8) {
+    if (playlists[playlistId].categoryCount <= index) {
       return false;
     }
-    iVar1 = I_strcmp(*(char **)(param_1 * 0x90 + 0x990dbec + local_8 * 4),param_2);
+    iVar1 = I_strcmp(*(char **)(playlistId * 0x90 + 0x990dbec + index * 4),category);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    index = index + 1;
   }
   return true;
 }
@@ -1339,16 +1345,16 @@ bool __cdecl Playlist_HasCategory(int param_1,char *param_2)
 int __cdecl Playlist_GetPlaylistCount(void)
 
 {
-  int local_c;
-  int local_8;
+  int num;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {
-    if (playlists[local_c].numEntries != 0) {
-      local_8 = local_8 + 1;
+  count = 0;
+  for (num = 0; num < 0x40; num = num + 1) {
+    if (playlists[num].numEntries != 0) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
@@ -1357,38 +1363,38 @@ int __cdecl Playlist_GetPlaylistCount(void)
 int __cdecl Playlist_GetCategoryCount(void)
 
 {
-  int local_c;
-  int local_8;
+  int index;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-    if ((categories[local_c].playlistCount != 0) && (categoryFilter[local_c] != false)) {
-      local_8 = local_8 + 1;
+  count = 0;
+  for (index = 0; index < 0x20; index = index + 1) {
+    if ((categories[index].playlistCount != 0) && (categoryFilter[index] != false)) {
+      count = count + 1;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 00757970  Playlist_GetPlaylistCount  (ui/ui_playlists.cpp:1306)
 
-int __cdecl Playlist_GetPlaylistCount(int param_1)
+int __cdecl Playlist_GetPlaylistCount(int category)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int num;
+  int count;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {
-    if (playlists[local_c].numEntries != 0) {
-      bVar1 = Playlist_HasCategory(local_c,categories[param_1].internalName);
+  count = 0;
+  for (num = 0; num < 0x40; num = num + 1) {
+    if (playlists[num].numEntries != 0) {
+      bVar1 = Playlist_HasCategory(num,categories[category].internalName);
       if (bVar1) {
-        local_8 = local_8 + 1;
+        count = count + 1;
       }
     }
   }
-  return local_8;
+  return count;
 }
 
 
@@ -1401,7 +1407,8 @@ void __cdecl Playlist_ValidatePlaylistNum(void)
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_c;
+  int controllerIndex;
+  int num;
   
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (!bVar2) {
@@ -1414,61 +1421,63 @@ void __cdecl Playlist_ValidatePlaylistNum(void)
     }
   }
   iVar3 = Playlist_GetPlaylistCount();
-  local_c = 0;
+  controllerIndex = 0;
   do {
-    if (0 < local_c) {
+    if (0 < controllerIndex) {
       return;
     }
-    iVar4 = GamerProfile_GetPlaylistNum(local_c);
+    iVar4 = GamerProfile_GetPlaylistNum(controllerIndex);
     if (iVar4 < iVar3) {
-      iVar4 = GamerProfile_GetPlaylistNum(local_c);
+      iVar4 = GamerProfile_GetPlaylistNum(controllerIndex);
       if (iVar4 < 0) goto LAB_00757a59;
     }
     else {
 LAB_00757a59:
-      GamerProfile_SetPlaylistNum(local_c,0);
+      GamerProfile_SetPlaylistNum(controllerIndex,0);
     }
-    local_c = local_c + 1;
+    controllerIndex = controllerIndex + 1;
   } while( true );
 }
 
 
 // 00757A70  Playlist_GetPlaylistIdForNum  (ui/ui_playlists.cpp:1338)
 
-int __cdecl Playlist_GetPlaylistIdForNum(int param_1,int param_2)
+int __cdecl Playlist_GetPlaylistIdForNum(int controllerIndex,int num)
 
 {
   bool bVar1;
   
   bVar1 = LiveStorage_DoWeHavePlaylists();
   if (bVar1) {
-    if ((0x3f < param_2) || (playlists[param_2].numEntries == 0)) {
+    if ((0x3f < num) || (playlists[num].numEntries == 0)) {
       Com_Printf(0x10,"Warning: Invalid playlist ID found, returning first playlist.\n");
-      param_2 = 1;
+      num = 1;
     }
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
-    param_2 = 0;
+    num = 0;
   }
-  return param_2;
+  return num;
 }
 
 
 // 00757AE0  Playlist_GetPlaylistIdForNum  (ui/ui_playlists.cpp:1366)
 
-int __cdecl Playlist_GetPlaylistIdForNum(int param_1,int param_2,int param_3)
+int __cdecl
+Playlist_GetPlaylistIdForNum(int controllerIndex,int categoryPlaylistNum,int categoryNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_10;
-  int local_8;
+  int index;
+  int categoryId;
+  int count;
   
-  local_8 = 0;
-  iVar3 = Playlist_GetCategoryIdForNum(param_3);
-  if (((param_2 < 0) || (0x3f < param_2)) &&
+  count = 0;
+  iVar3 = Playlist_GetCategoryIdForNum(categoryNum);
+  if (((categoryPlaylistNum < 0) || (0x3f < categoryPlaylistNum)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x55b,0,
                                "%s\n\t(categoryPlaylistNum) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1484,13 +1493,13 @@ int __cdecl Playlist_GetPlaylistIdForNum(int param_1,int param_2,int param_3)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    for (local_10 = 0; local_10 < 0x40; local_10 = local_10 + 1) {
-      if ((playlists[local_10].numEntries != 0) &&
-         (bVar2 = Playlist_HasCategory(local_10,categories[iVar3].internalName), bVar2)) {
-        if (local_8 == param_2) {
-          return local_10;
+    for (index = 0; index < 0x40; index = index + 1) {
+      if ((playlists[index].numEntries != 0) &&
+         (bVar2 = Playlist_HasCategory(index,categories[iVar3].internalName), bVar2)) {
+        if (count == categoryPlaylistNum) {
+          return index;
         }
-        local_8 = local_8 + 1;
+        count = count + 1;
       }
     }
     Com_Printf(0x10,"Warning: Invalid playlist ID found, returning first playlist.\n");
@@ -1506,22 +1515,22 @@ int __cdecl Playlist_GetPlaylistIdForNum(int param_1,int param_2,int param_3)
 
 // 00757C10  Playlist_GetPlaylistNumFromId  (ui/ui_playlists.cpp:1393)
 
-int __cdecl Playlist_GetPlaylistNumFromId(int param_1,int param_2)
+int __cdecl Playlist_GetPlaylistNumFromId(int controllerIndex,int id)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int index;
+  int count;
   
-  local_8 = 0;
+  count = 0;
   bVar1 = LiveStorage_DoWeHavePlaylists();
   if (bVar1) {
-    for (local_c = 0; local_c < 0x40; local_c = local_c + 1) {
-      if (playlists[local_c].numEntries != 0) {
-        if (local_c == param_2) {
-          return local_8;
+    for (index = 0; index < 0x40; index = index + 1) {
+      if (playlists[index].numEntries != 0) {
+        if (index == id) {
+          return count;
         }
-        local_8 = local_8 + 1;
+        count = count + 1;
       }
     }
     Com_Printf(0x10,"Warning: Invalid playlist num found, returning first playlist.\n");
@@ -1535,63 +1544,63 @@ int __cdecl Playlist_GetPlaylistNumFromId(int param_1,int param_2)
 
 // 00757CA0  Playlist_GetCategoryIdForNum  (ui/ui_playlists.cpp:1416)
 
-int __cdecl Playlist_GetCategoryIdForNum(int param_1)
+int __cdecl Playlist_GetCategoryIdForNum(int num)
 
 {
-  int local_c;
-  int local_8;
+  int index;
+  int count;
   
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  index = 0;
   do {
-    if (0x1f < local_c) {
+    if (0x1f < index) {
       Com_Printf(0x10,"Warning: Invalid category ID found, returning first category.\n");
       return 0;
     }
-    if ((categories[local_c].playlistCount != 0) && (categoryFilter[local_c] != false)) {
-      if (local_8 == param_1) {
-        return local_c;
+    if ((categories[index].playlistCount != 0) && (categoryFilter[index] != false)) {
+      if (count == num) {
+        return index;
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_c = local_c + 1;
+    index = index + 1;
   } while( true );
 }
 
 
 // 00757D10  Playlist_GetCategoryIdForPlaylistId  (ui/ui_playlists.cpp:1436)
 
-int __cdecl Playlist_GetCategoryIdForPlaylistId(int param_1)
+int __cdecl Playlist_GetCategoryIdForPlaylistId(int num)
 
 {
   int iVar1;
-  int local_8;
+  int index;
   
-  local_8 = 0;
+  index = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < index) {
       Com_Printf(0x10,"Warning: Invalid category for playlist %d , returning first category.\n");
       return 0;
     }
-    if ((categories[local_8].playlistCount != 0) &&
-       (iVar1 = I_strcmp(categories[local_8].internalName,playlists[param_1].category[0]),
-       iVar1 == 0)) break;
-    local_8 = local_8 + 1;
+    if ((categories[index].playlistCount != 0) &&
+       (iVar1 = I_strcmp(categories[index].internalName,playlists[num].category[0]), iVar1 == 0))
+    break;
+    index = index + 1;
   }
-  return local_8;
+  return index;
 }
 
 
 // 00757D90  Playlist_GetNumEntries  (ui/ui_playlists.cpp:1453)
 
-int __cdecl Playlist_GetNumEntries(int param_1)
+int __cdecl Playlist_GetNumEntries(int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (0x3f < (uint)param_1) {
+  if (0x3f < (uint)playlistId) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x5ae,0,
                              "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1600,11 +1609,11 @@ int __cdecl Playlist_GetNumEntries(int param_1)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (0x3f < param_1)) {
+  if ((playlistId < 0) || (0x3f < playlistId)) {
     iVar3 = 0;
   }
   else {
-    iVar3 = playlists[param_1].numEntries;
+    iVar3 = playlists[playlistId].numEntries;
   }
   return iVar3;
 }
@@ -1612,16 +1621,17 @@ int __cdecl Playlist_GetNumEntries(int param_1)
 
 // 00757DF0  Playlist_GetEntry  (ui/ui_playlists.cpp:1463)
 
-playlistEntry * __cdecl Playlist_GetEntry(int param_1,int param_2)
+playlistEntry * __cdecl Playlist_GetEntry(int playlistId,int entry)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   playlistEntry *ppVar4;
+  int numEntries;
   
-  uVar3 = Playlist_GetNumEntries(param_1);
-  if (uVar3 <= (uint)param_2) {
+  uVar3 = Playlist_GetNumEntries(playlistId);
+  if (uVar3 <= (uint)entry) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x5b9,0,
                              "entry doesn\'t index numEntries\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1630,11 +1640,11 @@ playlistEntry * __cdecl Playlist_GetEntry(int param_1,int param_2)
       return ppVar4;
     }
   }
-  if ((((int)uVar3 < 1) || (param_2 < 0)) || ((int)uVar3 <= param_2)) {
+  if ((((int)uVar3 < 1) || (entry < 0)) || ((int)uVar3 <= entry)) {
     ppVar4 = &nullPlaylistEntry;
   }
   else {
-    ppVar4 = playlistEntries + playlists[param_1].baseEntry + param_2;
+    ppVar4 = playlistEntries + playlists[playlistId].baseEntry + entry;
   }
   return ppVar4;
 }
@@ -1683,33 +1693,33 @@ void __cdecl Playlist_ResetCategoryFilter(void)
 
 // 00757EA0  Playlist_EnableCategoryInFilter  (ui/ui_playlists.cpp:1481)
 
-void __cdecl Playlist_EnableCategoryInFilter(char *param_1)
+void __cdecl Playlist_EnableCategoryInFilter(char *filterName)
 
 {
   char *pcVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < i) {
       return;
     }
-    if ((categories[local_8].filter == (char *)0x0) || (*categories[local_8].filter == '\0')) {
+    if ((categories[i].filter == (char *)0x0) || (*categories[i].filter == '\0')) {
 LAB_00757efb:
-      categoryFilter[local_8] = true;
+      categoryFilter[i] = true;
     }
     else {
-      pcVar1 = I_stristr(categories[local_8].filter,param_1);
+      pcVar1 = I_stristr(categories[i].filter,filterName);
       if (pcVar1 != (char *)0x0) goto LAB_00757efb;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00757F10  Playlist_GetCategoryLocalizedName  (ui/ui_playlists.cpp:1492)
 
-char * __cdecl Playlist_GetCategoryLocalizedName(int param_1,int param_2)
+char * __cdecl Playlist_GetCategoryLocalizedName(int controllerIndex,int categoryId)
 
 {
   code *pcVar1;
@@ -1717,7 +1727,7 @@ char * __cdecl Playlist_GetCategoryLocalizedName(int param_1,int param_2)
   char *pcVar3;
   PlaylistLockState PVar4;
   
-  if (((param_2 < 0) || (0x1f < param_2)) &&
+  if (((categoryId < 0) || (0x1f < categoryId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x5d5,0,
                                "%s\n\t(categoryId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1726,17 +1736,17 @@ char * __cdecl Playlist_GetCategoryLocalizedName(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    PVar4 = Playlist_CategoryIsLocked(param_1,param_2,0,0,0,0);
+    PVar4 = Playlist_CategoryIsLocked(controllerIndex,categoryId,0,0,0,0);
     if (PVar4 == PLS_FINISHEDSOLO) {
       pcVar3 = UI_SafeTranslateString("MPUI_PLAYLIST_FINISHEDSOLO_CAPS");
     }
     else {
-      PVar4 = Playlist_CategoryIsLocked(param_1,param_2,0,0,0,0);
+      PVar4 = Playlist_CategoryIsLocked(controllerIndex,categoryId,0,0,0,0);
       if (PVar4 == PLS_VISDVAR) {
         pcVar3 = UI_SafeTranslateString("UIPLS_PLAYLIST_NOTVISIBLE_CAPS");
       }
       else {
-        pcVar3 = categories[param_2].localizedName;
+        pcVar3 = categories[categoryId].localizedName;
       }
     }
   }
@@ -1750,7 +1760,7 @@ char * __cdecl Playlist_GetCategoryLocalizedName(int param_1,int param_2)
 
 // 00757FE0  Playlist_GetPlaylistName  (ui/ui_playlists.cpp:1511)
 
-char * __cdecl Playlist_GetPlaylistName(int param_1,int param_2)
+char * __cdecl Playlist_GetPlaylistName(int controllerIndex,int playlistId)
 
 {
   code *pcVar1;
@@ -1758,7 +1768,7 @@ char * __cdecl Playlist_GetPlaylistName(int param_1,int param_2)
   char *pcVar3;
   PlaylistLockState PVar4;
   
-  if (((param_2 < 0) || (0x3f < param_2)) &&
+  if (((playlistId < 0) || (0x3f < playlistId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x5e8,0,
                                "%s\n\t(playlistId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1767,17 +1777,17 @@ char * __cdecl Playlist_GetPlaylistName(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    PVar4 = Playlist_IsLocked(param_1,param_2,0,0,0,0);
+    PVar4 = Playlist_IsLocked(controllerIndex,playlistId,0,0,0,0);
     if (PVar4 == PLS_FINISHEDSOLO) {
       pcVar3 = UI_SafeTranslateString("MPUI_PLAYLIST_CATEGORY_FINISHEDSOLO");
     }
     else {
-      PVar4 = Playlist_IsLocked(param_1,param_2,0,0,0,0);
+      PVar4 = Playlist_IsLocked(controllerIndex,playlistId,0,0,0,0);
       if (PVar4 == PLS_VISDVAR) {
         pcVar3 = UI_SafeTranslateString("UIPLS_PLAYLIST_CATEGORY_NOTVISIBLE");
       }
       else {
-        pcVar3 = playlists[param_2].name;
+        pcVar3 = playlists[playlistId].name;
       }
     }
   }
@@ -1791,15 +1801,15 @@ char * __cdecl Playlist_GetPlaylistName(int param_1,int param_2)
 
 // 007580B0  Playlist_GetPlaylistDescription  (ui/ui_playlists.cpp:1543)
 
-char * __cdecl Playlist_GetPlaylistDescription(int param_1,int param_2)
+char * __cdecl Playlist_GetPlaylistDescription(int controllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
+  int replaceInt;
   
-  if (((param_2 < 0) || (0x3f < param_2)) &&
+  if (((playlistId < 0) || (0x3f < playlistId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x608,0,
                                "%s\n\t(playlistId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1808,13 +1818,13 @@ char * __cdecl Playlist_GetPlaylistDescription(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    if (playlists[param_2].wagerBet == 0) {
-      pcVar3 = playlists[param_2].description;
+    if (playlists[playlistId].wagerBet == 0) {
+      pcVar3 = playlists[playlistId].description;
     }
     else {
-      iVar4 = playlists[param_2].wagerBet;
+      replaceInt = playlists[playlistId].wagerBet;
       pcVar3 = UI_SafeTranslateString("MENU_POINTS");
-      UI_ReplaceConversionInt(pcVar3,iVar4);
+      UI_ReplaceConversionInt(pcVar3,replaceInt);
       UI_SafeTranslateString("MPUI_WAGERMATCH_BUY_IN");
       pcVar3 = va("%s\n%s %s");
     }
@@ -1829,14 +1839,14 @@ char * __cdecl Playlist_GetPlaylistDescription(int param_1,int param_2)
 
 // 007581A0  Playlist_GetPlaylistIconName  (ui/ui_playlists.cpp:1599)
 
-char * __cdecl Playlist_GetPlaylistIconName(int param_1,int param_2)
+char * __cdecl Playlist_GetPlaylistIconName(int controllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((param_2 < 0) || (0x3f < param_2)) &&
+  if (((playlistId < 0) || (0x3f < playlistId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x640,0,
                                "%s\n\t(playlistId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1845,7 +1855,7 @@ char * __cdecl Playlist_GetPlaylistIconName(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    pcVar3 = playlists[param_2].iconName;
+    pcVar3 = playlists[playlistId].iconName;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -1857,14 +1867,14 @@ char * __cdecl Playlist_GetPlaylistIconName(int param_1,int param_2)
 
 // 00758220  Playlist_GetCategoryIconName  (ui/ui_playlists.cpp:1609)
 
-char * __cdecl Playlist_GetCategoryIconName(int param_1,int param_2)
+char * __cdecl Playlist_GetCategoryIconName(int controllerIndex,int categoryId)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((param_2 < 0) || (0x1f < param_2)) &&
+  if (((categoryId < 0) || (0x1f < categoryId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x64a,0,
                                "%s\n\t(categoryId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1873,7 +1883,7 @@ char * __cdecl Playlist_GetCategoryIconName(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    pcVar3 = categories[param_2].iconName;
+    pcVar3 = categories[categoryId].iconName;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -1886,7 +1896,8 @@ char * __cdecl Playlist_GetCategoryIconName(int param_1,int param_2)
 // 007582A0  Playlist_IsLocked  (ui/ui_playlists.cpp:1619)
 
 PlaylistLockState __cdecl
-Playlist_IsLocked(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6)
+Playlist_IsLocked(int controllerIndex,int playlistId,int xp,int prestige,int gametypeBan,
+                 int partyCount)
 
 {
   code *pcVar1;
@@ -1895,7 +1906,7 @@ Playlist_IsLocked(int param_1,int param_2,int param_3,int param_4,int param_5,in
   int iVar4;
   int iVar5;
   
-  if (((param_2 < 0) || (0x3f < param_2)) &&
+  if (((playlistId < 0) || (0x3f < playlistId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x655,0,
                                "%s\n\t(playlistId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1904,41 +1915,41 @@ Playlist_IsLocked(int param_1,int param_2,int param_3,int param_4,int param_5,in
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    if ((param_3 < playlists[param_2].unlockXp) && (param_4 == 0)) {
+    if ((xp < playlists[playlistId].unlockXp) && (prestige == 0)) {
       PVar3 = PLS_XP;
     }
-    else if (playlists[param_2].maxPartySize < param_6) {
+    else if (playlists[playlistId].maxPartySize < partyCount) {
       PVar3 = PLS_MAXPARTY;
     }
-    else if (param_6 < playlists[param_2].minPartySize) {
+    else if (partyCount < playlists[playlistId].minPartySize) {
       PVar3 = PLS_MINPARTY;
     }
-    else if ((playlists[param_2].gametypeBan == 1) && (0 < param_5)) {
+    else if ((playlists[playlistId].gametypeBan == 1) && (0 < gametypeBan)) {
       PVar3 = PLS_GAMETYPEBAN;
     }
-    else if ((playlists[param_2].visible_dvar == false) ||
-            ((playlists[param_2].visDvar != (dvar_s *)0x0 &&
-             (((playlists[param_2].visDvar)->current).enabled != false)))) {
-      if ((playlists[param_2].collectorsEditionRequired == false) ||
+    else if ((playlists[playlistId].visible_dvar == false) ||
+            ((playlists[playlistId].visDvar != (dvar_s *)0x0 &&
+             (((playlists[playlistId].visDvar)->current).enabled != false)))) {
+      if ((playlists[playlistId].collectorsEditionRequired == false) ||
          ((collectors->current).enabled != false)) {
-        if (playlists[param_2].finishedSoloRequired != false) {
+        if (playlists[playlistId].finishedSoloRequired != false) {
           iVar4 = Dvar_GetInt("mis_01");
           iVar5 = Dvar_GetInt("mis_01_unlock");
           if (iVar4 < iVar5) {
             return PLS_FINISHEDSOLO;
           }
         }
-        if (param_4 < playlists[param_2].unlockPLevel) {
+        if (prestige < playlists[playlistId].unlockPLevel) {
           PVar3 = PLS_PLEVEL;
         }
         else {
           iVar4 = Com_LocalClients_GetUsedControllerCount();
-          if (playlists[param_2].maxLocalPlayers < iVar4) {
+          if (playlists[playlistId].maxLocalPlayers < iVar4) {
             PVar3 = PLS_LOCALPLAYERS;
           }
-          else if ((playlists[param_2].disableGuests == false) ||
+          else if ((playlists[playlistId].disableGuests == false) ||
                   (iVar4 = Live_CountGuestsInUse(), iVar4 < 1)) {
-            bVar2 = Playlist_DoWeHaveRequiredDLC(param_1,param_2);
+            bVar2 = Playlist_DoWeHaveRequiredDLC(controllerIndex,playlistId);
             if (bVar2) {
               PVar3 = PLS_UNLOCKED;
             }
@@ -1970,7 +1981,8 @@ Playlist_IsLocked(int param_1,int param_2,int param_3,int param_4,int param_5,in
 // 007584C0  Playlist_CategoryIsLocked  (ui/ui_playlists.cpp:1714)
 
 PlaylistLockState __cdecl
-Playlist_CategoryIsLocked(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6)
+Playlist_CategoryIsLocked
+          (int controllerIndex,int categoryId,int xp,int prestige,int gametypeBan,int partyCount)
 
 {
   code *pcVar1;
@@ -1979,7 +1991,7 @@ Playlist_CategoryIsLocked(int param_1,int param_2,int param_3,int param_4,int pa
   int iVar4;
   int iVar5;
   
-  if (((param_2 < 0) || (0x1f < param_2)) &&
+  if (((categoryId < 0) || (0x1f < categoryId)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x6b4,0,
                                "%s\n\t(categoryId) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1988,17 +2000,17 @@ Playlist_CategoryIsLocked(int param_1,int param_2,int param_3,int param_4,int pa
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    if ((param_3 < categories[param_2].unlockXp) && (param_4 == 0)) {
+    if ((xp < categories[categoryId].unlockXp) && (prestige == 0)) {
       PVar3 = PLS_XP;
     }
-    else if ((categories[param_2].unlockPLevel == 0) ||
-            (categories[param_2].unlockPLevel <= param_4)) {
-      if ((categories[param_2].visible_dvar == false) ||
-         ((categories[param_2].visDvar != (dvar_s *)0x0 &&
-          (((categories[param_2].visDvar)->current).enabled != false)))) {
-        if ((categories[param_2].collectorsEditionRequired == false) ||
+    else if ((categories[categoryId].unlockPLevel == 0) ||
+            (categories[categoryId].unlockPLevel <= prestige)) {
+      if ((categories[categoryId].visible_dvar == false) ||
+         ((categories[categoryId].visDvar != (dvar_s *)0x0 &&
+          (((categories[categoryId].visDvar)->current).enabled != false)))) {
+        if ((categories[categoryId].collectorsEditionRequired == false) ||
            ((collectors->current).enabled != false)) {
-          if (categories[param_2].finishedSoloRequired != false) {
+          if (categories[categoryId].finishedSoloRequired != false) {
             iVar4 = Dvar_GetInt("mis_01");
             iVar5 = Dvar_GetInt("mis_01_unlock");
             if (iVar4 < iVar5) {
@@ -2029,7 +2041,7 @@ Playlist_CategoryIsLocked(int param_1,int param_2,int param_3,int param_4,int pa
 
 // 00758620  Playlist_GetMapPacksUsedByPlaylist  (ui/ui_playlists.cpp:1781)
 
-int __cdecl Playlist_GetMapPacksUsedByPlaylist(int param_1)
+int __cdecl Playlist_GetMapPacksUsedByPlaylist(int playlistId)
 
 {
   code *pcVar1;
@@ -2038,11 +2050,14 @@ int __cdecl Playlist_GetMapPacksUsedByPlaylist(int param_1)
   playlistEntry *ppVar4;
   int iVar5;
   uint uVar6;
-  int local_c;
-  uint local_8;
+  playlistEntry *entry;
+  int mapIndex;
+  int thisMapsMapPack;
+  int entryNum;
+  int mapPacksUsed;
   
-  local_8 = 0;
-  if (0x3f < (uint)param_1) {
+  mapPacksUsed = 0;
+  if (0x3f < (uint)playlistId) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x6f7,0,
                              "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2051,16 +2066,16 @@ int __cdecl Playlist_GetMapPacksUsedByPlaylist(int param_1)
       return iVar3;
     }
   }
-  local_c = 0;
+  entryNum = 0;
   do {
-    iVar3 = Playlist_GetNumEntries(param_1);
-    if (iVar3 <= local_c) {
-      return local_8;
+    iVar3 = Playlist_GetNumEntries(playlistId);
+    if (iVar3 <= entryNum) {
+      return mapPacksUsed;
     }
-    ppVar4 = Playlist_GetEntry(param_1,local_c);
+    ppVar4 = Playlist_GetEntry(playlistId,entryNum);
     iVar3 = Live_GetMapIndex(ppVar4->mapname);
     if (iVar3 < 0) {
-      local_8 = local_8 | 2;
+      mapPacksUsed = mapPacksUsed | 2;
     }
     else {
       if (iVar3 < 0) {
@@ -2078,16 +2093,16 @@ LAB_007586c6:
         if (iVar5 <= iVar3) goto LAB_007586c6;
       }
       uVar6 = Live_GetMapSource(iVar3);
-      local_8 = local_8 | uVar6;
+      mapPacksUsed = mapPacksUsed | uVar6;
     }
-    local_c = local_c + 1;
+    entryNum = entryNum + 1;
   } while( true );
 }
 
 
 // 00758720  Playlist_DoWeHaveRequiredDLC  (ui/ui_playlists.cpp:1806)
 
-bool __cdecl Playlist_DoWeHaveRequiredDLC(int param_1,int param_2)
+bool __cdecl Playlist_DoWeHaveRequiredDLC(int controllerIndex,int playlistId)
 
 {
   code *pcVar1;
@@ -2095,8 +2110,11 @@ bool __cdecl Playlist_DoWeHaveRequiredDLC(int param_1,int param_2)
   undefined1 uVar3;
   uint uVar4;
   uint uVar5;
+  int missingPacks;
+  int mapPacksUsedByPlaylist;
+  int availablePacks;
   
-  if ((0x3f < (uint)param_2) &&
+  if ((0x3f < (uint)playlistId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x712,0,
                                "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2116,8 +2134,8 @@ bool __cdecl Playlist_DoWeHaveRequiredDLC(int param_1,int param_2)
     }
   }
   uVar4 = Content_GetAvailableContentPacks();
-  if ((~uVar4 & playlists[param_2].requiredDLCMask) == 0) {
-    uVar5 = Playlist_GetMapPacksUsedByPlaylist(param_2);
+  if ((~uVar4 & playlists[playlistId].requiredDLCMask) == 0) {
+    uVar5 = Playlist_GetMapPacksUsedByPlaylist(playlistId);
     if ((uVar4 & uVar5) == 0) {
       bVar2 = false;
     }
@@ -2134,25 +2152,26 @@ bool __cdecl Playlist_DoWeHaveRequiredDLC(int param_1,int param_2)
 
 // 007587F0  Playlist_GetCategoryInternalName  (ui/ui_playlists.cpp:1845)
 
-char * __cdecl Playlist_GetCategoryInternalName(int param_1)
+char * __cdecl Playlist_GetCategoryInternalName(int categoryId)
 
 {
-  return categories[param_1].internalName;
+  return categories[categoryId].internalName;
 }
 
 
 // 00758B40  Playlist_ResetWeights  (ui/ui_playlists.cpp:1850)
 
-void __cdecl Playlist_ResetWeights(int param_1)
+void __cdecl Playlist_ResetWeights(int playlistId)
 
 {
   int iVar1;
   playlistEntry *ppVar2;
-  int local_8;
+  playlistEntry *entry;
+  int entryNum;
   
-  for (local_8 = 0; iVar1 = Playlist_GetNumEntries(param_1), local_8 < iVar1; local_8 = local_8 + 1)
-  {
-    ppVar2 = Playlist_GetEntry(param_1,local_8);
+  for (entryNum = 0; iVar1 = Playlist_GetNumEntries(playlistId), entryNum < iVar1;
+      entryNum = entryNum + 1) {
+    ppVar2 = Playlist_GetEntry(playlistId,entryNum);
     if (ppVar2->ignore == 0) {
       ppVar2->remainingWeight = ppVar2->fullWeight;
     }
@@ -2163,87 +2182,92 @@ void __cdecl Playlist_ResetWeights(int param_1)
 
 // 00758BA0  Playlist_CalcTotalWeights  (ui/ui_playlists.cpp:1866)
 
-int __cdecl Playlist_CalcTotalWeights(int param_1,int param_2)
+int __cdecl Playlist_CalcTotalWeights(int playlistId,int lastSelection)
 
 {
   int iVar1;
   playlistEntry *ppVar2;
-  int local_c;
-  int local_8;
+  playlistEntry *entry;
+  int weight;
+  int entryNum;
   
-  local_c = 0;
-  for (local_8 = 0; iVar1 = Playlist_GetNumEntries(param_1), local_8 < iVar1; local_8 = local_8 + 1)
-  {
-    if ((local_8 != param_2) && (ppVar2 = Playlist_GetEntry(param_1,local_8), ppVar2->ignore == 0))
-    {
-      local_c = local_c + ppVar2->remainingWeight;
+  weight = 0;
+  for (entryNum = 0; iVar1 = Playlist_GetNumEntries(playlistId), entryNum < iVar1;
+      entryNum = entryNum + 1) {
+    if ((entryNum != lastSelection) &&
+       (ppVar2 = Playlist_GetEntry(playlistId,entryNum), ppVar2->ignore == 0)) {
+      weight = weight + ppVar2->remainingWeight;
     }
   }
-  return local_c;
+  return weight;
 }
 
 
 // 00758C10  Playlist_FindEntryByWeight  (ui/ui_playlists.cpp:1890)
 
-int __cdecl Playlist_FindEntryByWeight(int param_1,int param_2,int param_3)
+int __cdecl Playlist_FindEntryByWeight(int playlistId,int selectedWeight,int lastSelection)
 
 {
   int iVar1;
   playlistEntry *ppVar2;
-  int local_c;
-  int local_8;
+  playlistEntry *entry;
+  int weight;
+  int entryNum;
   
-  local_c = 0;
-  local_8 = 0;
+  weight = 0;
+  entryNum = 0;
   while( true ) {
-    iVar1 = Playlist_GetNumEntries(param_1);
-    if (iVar1 <= local_8) {
-      iVar1 = Playlist_CalcTotalWeights(param_1,param_3);
+    iVar1 = Playlist_GetNumEntries(playlistId);
+    if (iVar1 <= entryNum) {
+      iVar1 = Playlist_CalcTotalWeights(playlistId,lastSelection);
       if (iVar1 == 0) {
-        if ((param_3 < 0) || (iVar1 = Playlist_GetNumEntries(param_1), iVar1 <= param_3)) {
+        if ((lastSelection < 0) ||
+           (iVar1 = Playlist_GetNumEntries(playlistId), iVar1 <= lastSelection)) {
           Com_Printf(0,"Playlist: an entry couldn\'t be found, returning first entry\n");
-          param_3 = 0;
+          lastSelection = 0;
         }
         else {
           Com_Printf(0,"Playlist: all entries where ignored, returning lastSelection entry\n");
         }
       }
       else {
-        Playlist_CalcTotalWeights(param_1,param_3);
+        Playlist_CalcTotalWeights(playlistId,lastSelection);
         Com_Error(ERR_DROP,
                   "Invalid selectedWeight of %i for playlist %i, total weight for this playlist is %i"
                  );
-        param_3 = local_c;
+        lastSelection = weight;
       }
-      return param_3;
+      return lastSelection;
     }
-    if (((local_8 != param_3) && (ppVar2 = Playlist_GetEntry(param_1,local_8), ppVar2->ignore == 0))
-       && (local_c = local_c + ppVar2->remainingWeight, param_2 < local_c)) break;
-    local_8 = local_8 + 1;
+    if (((entryNum != lastSelection) &&
+        (ppVar2 = Playlist_GetEntry(playlistId,entryNum), ppVar2->ignore == 0)) &&
+       (weight = weight + ppVar2->remainingWeight, selectedWeight < weight)) break;
+    entryNum = entryNum + 1;
   }
-  return local_8;
+  return entryNum;
 }
 
 
 // 00758810  Playlist_FindGametype  (ui/ui_playlists.cpp:1930)
 
-playlistGametype * __cdecl Playlist_FindGametype(char *param_1)
+playlistGametype * __cdecl Playlist_FindGametype(char *gametypeInternalName)
 
 {
   int iVar1;
-  int local_8;
+  int gametypeNum;
   
-  local_8 = 0;
+  gametypeNum = 0;
   while( true ) {
-    if (0x3f < local_8) {
+    if (0x3f < gametypeNum) {
       Com_Error(ERR_DROP,"Unknown gametype name \'%s\' in playlist.\n");
       return (playlistGametype *)0x0;
     }
-    if ((gametypes[local_8].internalName != (char *)0x0) &&
-       (iVar1 = I_stricmp(gametypes[local_8].internalName,param_1), iVar1 == 0)) break;
-    local_8 = local_8 + 1;
+    if ((gametypes[gametypeNum].internalName != (char *)0x0) &&
+       (iVar1 = I_stricmp(gametypes[gametypeNum].internalName,gametypeInternalName), iVar1 == 0))
+    break;
+    gametypeNum = gametypeNum + 1;
   }
-  return gametypes + local_8;
+  return gametypes + gametypeNum;
 }
 
 
@@ -2258,14 +2282,14 @@ int __cdecl Playlist_GetGametypeCount(void)
 
 // 00758890  Playlist_GetGametypeLocalizedName  (ui/ui_playlists.cpp:1948)
 
-char * __cdecl Playlist_GetGametypeLocalizedName(int param_1)
+char * __cdecl Playlist_GetGametypeLocalizedName(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_1 < 0) || (0x3f < param_1)) {
+  if ((index < 0) || (0x3f < index)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x79d,0,"%s")
     ;
     if (!bVar2) {
@@ -2274,20 +2298,20 @@ char * __cdecl Playlist_GetGametypeLocalizedName(int param_1)
       return pcVar3;
     }
   }
-  return gametypes[param_1].localizedName;
+  return gametypes[index].localizedName;
 }
 
 
 // 007588E0  Playlist_GetGametypeInternalName  (ui/ui_playlists.cpp:1955)
 
-char * __cdecl Playlist_GetGametypeInternalName(int param_1)
+char * __cdecl Playlist_GetGametypeInternalName(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_1 < 0) || (0x3f < param_1)) {
+  if ((index < 0) || (0x3f < index)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x7a4,0,"%s")
     ;
     if (!bVar2) {
@@ -2296,18 +2320,19 @@ char * __cdecl Playlist_GetGametypeInternalName(int param_1)
       return pcVar3;
     }
   }
-  return gametypes[param_1].internalName;
+  return gametypes[index].internalName;
 }
 
 
 // 00758D10  Playlist_MarkEntryPlayed  (ui/ui_playlists.cpp:1963)
 
-void __cdecl Playlist_MarkEntryPlayed(int param_1,int param_2)
+void __cdecl Playlist_MarkEntryPlayed(int playlistId,int entryNum)
 
 {
   playlistEntry *ppVar1;
+  playlistEntry *entry;
   
-  ppVar1 = Playlist_GetEntry(param_1,param_2);
+  ppVar1 = Playlist_GetEntry(playlistId,entryNum);
   if (ppVar1->remainingWeight == 0) {
     Com_PrintWarning(0x10,
                      "Trying to mark playlistId %i, entry %i as played but it\'s already reached its quota for this playlist\n"
@@ -2322,7 +2347,7 @@ void __cdecl Playlist_MarkEntryPlayed(int param_1,int param_2)
 
 // 00758930  Playlist_ChooseEntry  (ui/ui_playlists.cpp:1975)
 
-int __cdecl Playlist_ChooseEntry(int param_1,int param_2)
+int __cdecl Playlist_ChooseEntry(int localControllerIndex,int lastSelection)
 
 {
   code *pcVar1;
@@ -2330,121 +2355,128 @@ int __cdecl Playlist_ChooseEntry(int param_1,int param_2)
   int iVar3;
   int iVar4;
   int extraout_EAX;
+  int selectedWeight;
   int extraout_EAX_00;
-  int extraout_EAX_01;
-  int extraout_EAX_02;
-  int local_20;
+  int selectedWeight_00;
+  int itemSelected;
+  int randVal;
+  int playlistId;
+  int totalWeight;
   
-  iVar3 = Playlist_GetPlaylistIdForNum(param_1,(playlist->current).integer);
+  iVar3 = Playlist_GetPlaylistIdForNum(localControllerIndex,(playlist->current).integer);
   iVar4 = Playlist_GetNumEntries(iVar3);
   if (iVar4 == 0) {
     Com_Error(ERR_DROP,"Playlist %s has no entries\n");
-    local_20 = -1;
+    itemSelected = -1;
   }
   else {
-    iVar4 = Playlist_CalcTotalWeights(iVar3,param_2);
+    iVar4 = Playlist_CalcTotalWeights(iVar3,lastSelection);
     if (iVar4 == 0) {
       Playlist_ResetWeights(iVar3);
-      Playlist_CalcTotalWeights(iVar3,param_2);
+      Playlist_CalcTotalWeights(iVar3,lastSelection);
     }
     bVar2 = Dvar_GetBool("party_linearMapCycle");
     if ((bVar2) || (bVar2 = Dvar_GetBool("party_linearMapCycleRandom"), bVar2)) {
-      if ((param_2 < 0) || (iVar4 = Playlist_GetNumEntries(iVar3), iVar4 <= param_2)) {
+      if ((lastSelection < 0) || (iVar4 = Playlist_GetNumEntries(iVar3), iVar4 <= lastSelection)) {
         bVar2 = Dvar_GetBool("party_linearMapCycleRandom");
         if (bVar2) {
           rand();
           _allmul();
           iVar4 = extraout_EAX;
           _aulldiv();
-          local_20 = Playlist_FindEntryByWeight(iVar3,extraout_EAX_00,iVar4);
+          itemSelected = Playlist_FindEntryByWeight(iVar3,selectedWeight,iVar4);
         }
         else {
-          local_20 = 0;
+          itemSelected = 0;
         }
       }
       else {
         iVar4 = Playlist_GetNumEntries(iVar3);
-        if (param_2 == iVar4 + -1) {
-          local_20 = 0;
+        if (lastSelection == iVar4 + -1) {
+          itemSelected = 0;
         }
         else {
-          local_20 = param_2 + 1;
+          itemSelected = lastSelection + 1;
         }
       }
     }
     else {
       rand();
       _allmul();
-      iVar4 = extraout_EAX_01;
+      iVar4 = extraout_EAX_00;
       _aulldiv();
-      local_20 = Playlist_FindEntryByWeight(iVar3,extraout_EAX_02,iVar4);
+      itemSelected = Playlist_FindEntryByWeight(iVar3,selectedWeight_00,iVar4);
     }
     iVar4 = Playlist_GetNumEntries(iVar3);
-    if ((iVar4 <= local_20) &&
+    if ((iVar4 <= itemSelected) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x7ec,0,
                                  "%s\n\t(itemSelected) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    Playlist_MarkEntryPlayed(iVar3,local_20);
+    Playlist_MarkEntryPlayed(iVar3,itemSelected);
   }
-  return local_20;
+  return itemSelected;
 }
 
 
 // 00758D60  Playlist_RunRules  (ui/ui_playlists.cpp:2088)
 
-void __cdecl Playlist_RunRules(int param_1,int param_2)
+void __cdecl Playlist_RunRules(int localControllerIndex,int entryNum)
 
 {
+  int num;
   int iVar1;
-  int iVar2;
-  playlistEntry *ppVar3;
-  playlistGametype *ppVar4;
-  char *pcVar5;
-  int iVar6;
-  int iVar7;
+  playlistEntry *ppVar2;
+  playlistGametype *ppVar3;
+  char *pcVar4;
+  int localClientNum;
+  int iVar5;
+  playlistEntry *entry;
+  int playlistId;
+  int categoryId;
+  playlistGametype *gametypeEntry;
   
-  if (param_2 != 0xff) {
-    iVar1 = Playlist_GetPlaylistIdForNum(param_1,(playlist->current).integer);
-    iVar2 = Playlist_GetCategoryIdForPlaylistId(iVar1);
-    ppVar3 = Playlist_GetEntry(iVar1,param_2);
-    ppVar4 = Playlist_FindGametype(ppVar3->gametype);
-    Dvar_SetBoolByName("xblive_rankedmatch",*(bool *)(iVar1 * 0x90 + 0x990dc4c));
-    Dvar_SetStringByName("ui_mapname",ppVar3->mapname);
-    if (ppVar4 == (playlistGametype *)0x0) {
-      Dvar_SetStringByName("ui_gametype",ppVar3->gametype);
+  if (entryNum != 0xff) {
+    num = Playlist_GetPlaylistIdForNum(localControllerIndex,(playlist->current).integer);
+    iVar1 = Playlist_GetCategoryIdForPlaylistId(num);
+    ppVar2 = Playlist_GetEntry(num,entryNum);
+    ppVar3 = Playlist_FindGametype(ppVar2->gametype);
+    Dvar_SetBoolByName("xblive_rankedmatch",*(bool *)(num * 0x90 + 0x990dc4c));
+    Dvar_SetStringByName("ui_mapname",ppVar2->mapname);
+    if (ppVar3 == (playlistGametype *)0x0) {
+      Dvar_SetStringByName("ui_gametype",ppVar2->gametype);
     }
     else {
       Com_DPrintf(0x10,"Setting up gametype %s (running script %s)\n");
-      Dvar_SetStringByName("ui_gametype",ppVar4->scriptName);
+      Dvar_SetStringByName("ui_gametype",ppVar3->scriptName);
     }
-    pcVar5 = va("exec %s");
-    iVar7 = param_1;
-    iVar6 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar6,iVar7,pcVar5);
+    pcVar4 = va("exec %s");
+    iVar5 = localControllerIndex;
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
+    Cmd_ExecuteSingleCommand(localClientNum,iVar5,pcVar4);
     Com_DPrintf(0xe,"Setting up rules for the \'%s\' category\n");
-    pcVar5 = categories[iVar2].rules;
-    iVar2 = param_1;
-    iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cmd_ExecuteSingleCommand(iVar7,iVar2,pcVar5);
+    pcVar4 = categories[iVar1].rules;
+    iVar1 = localControllerIndex;
+    iVar5 = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
+    Cmd_ExecuteSingleCommand(iVar5,iVar1,pcVar4);
     Com_DPrintf(0xe,"Setting up rules for the \'%s\' playlist\n");
-    pcVar5 = playlists[iVar1].rules;
-    iVar2 = param_1;
-    iVar7 = Com_ControllerIndex_GetLocalClientNum(param_1);
-    Cbuf_ExecuteBuffer(iVar7,iVar2,pcVar5);
-    if (ppVar4 != (playlistGametype *)0x0) {
+    pcVar4 = playlists[num].rules;
+    iVar1 = localControllerIndex;
+    iVar5 = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
+    Cbuf_ExecuteBuffer(iVar5,iVar1,pcVar4);
+    if (ppVar3 != (playlistGametype *)0x0) {
       Com_DPrintf(0x10,"Running custom game rules for gametype %s: %s\n");
-      if ((ppVar4->rules != (char *)0x0) && (*ppVar4->rules != '\0')) {
-        pcVar5 = ppVar4->rules;
-        iVar2 = Com_ControllerIndex_GetLocalClientNum(param_1);
-        Cbuf_ExecuteBuffer(iVar2,param_1,pcVar5);
+      if ((ppVar3->rules != (char *)0x0) && (*ppVar3->rules != '\0')) {
+        pcVar4 = ppVar3->rules;
+        iVar1 = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
+        Cbuf_ExecuteBuffer(iVar1,localControllerIndex,pcVar4);
       }
-      Dvar_SetBoolByName("party_teambased",ppVar4->teamBased);
+      Dvar_SetBoolByName("party_teambased",ppVar3->teamBased);
     }
     if ((xblive_wagermatch->current).enabled != false) {
-      Dvar_SetIntByName("scr_wagerBet",playlists[iVar1].wagerBet);
+      Dvar_SetIntByName("scr_wagerBet",playlists[num].wagerBet);
     }
   }
   return;
@@ -2462,14 +2494,14 @@ int __cdecl Playlist_GetVersionNumber(void)
 
 // 00758FA0  Playlist_GetUnlockXp  (ui/ui_playlists.cpp:2259)
 
-int __cdecl Playlist_GetUnlockXp(int param_1,int param_2)
+int __cdecl Playlist_GetUnlockXp(int localControllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((0x3f < (uint)param_2) &&
+  if ((0x3f < (uint)playlistId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x8d4,0,
                                "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2479,7 +2511,7 @@ int __cdecl Playlist_GetUnlockXp(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    iVar3 = playlists[param_2].unlockXp;
+    iVar3 = playlists[playlistId].unlockXp;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -2491,14 +2523,14 @@ int __cdecl Playlist_GetUnlockXp(int param_1,int param_2)
 
 // 00759020  Playlist_GetUnlockPLevel  (ui/ui_playlists.cpp:2270)
 
-int __cdecl Playlist_GetUnlockPLevel(int param_1,int param_2)
+int __cdecl Playlist_GetUnlockPLevel(int localControllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((0x3f < (uint)param_2) &&
+  if ((0x3f < (uint)playlistId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x8df,0,
                                "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2508,7 +2540,7 @@ int __cdecl Playlist_GetUnlockPLevel(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    iVar3 = playlists[param_2].unlockPLevel;
+    iVar3 = playlists[playlistId].unlockPLevel;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -2520,14 +2552,14 @@ int __cdecl Playlist_GetUnlockPLevel(int param_1,int param_2)
 
 // 007590A0  Playlist_GetMaxPartySize  (ui/ui_playlists.cpp:2305)
 
-int __cdecl Playlist_GetMaxPartySize(int param_1,int param_2)
+int __cdecl Playlist_GetMaxPartySize(int localControllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((0x3f < (uint)param_2) &&
+  if ((0x3f < (uint)playlistId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x902,0,
                                "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2537,7 +2569,7 @@ int __cdecl Playlist_GetMaxPartySize(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    iVar3 = playlists[param_2].maxPartySize;
+    iVar3 = playlists[playlistId].maxPartySize;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -2549,14 +2581,14 @@ int __cdecl Playlist_GetMaxPartySize(int param_1,int param_2)
 
 // 00759110  Playlist_GetMinPartySize  (ui/ui_playlists.cpp:2315)
 
-int __cdecl Playlist_GetMinPartySize(int param_1,int param_2)
+int __cdecl Playlist_GetMinPartySize(int localControllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((0x3f < (uint)param_2) &&
+  if ((0x3f < (uint)playlistId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x90c,0,
                                "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2566,7 +2598,7 @@ int __cdecl Playlist_GetMinPartySize(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    iVar3 = playlists[param_2].minPartySize;
+    iVar3 = playlists[playlistId].minPartySize;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -2578,14 +2610,14 @@ int __cdecl Playlist_GetMinPartySize(int param_1,int param_2)
 
 // 00759180  Playlist_GetWagerBet  (ui/ui_playlists.cpp:2325)
 
-int __cdecl Playlist_GetWagerBet(int param_1,int param_2)
+int __cdecl Playlist_GetWagerBet(int localControllerIndex,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((0x3f < (uint)param_2) &&
+  if ((0x3f < (uint)playlistId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0x916,0,
                                "playlistId doesn\'t index MAX_PLAYLISTS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2595,7 +2627,7 @@ int __cdecl Playlist_GetWagerBet(int param_1,int param_2)
   }
   bVar2 = LiveStorage_DoWeHavePlaylists();
   if (bVar2) {
-    iVar3 = playlists[param_2].wagerBet;
+    iVar3 = playlists[playlistId].wagerBet;
   }
   else {
     UI_OpenMenu(0,"popup_gettingdata");
@@ -2613,6 +2645,7 @@ void __cdecl Playlist_SetPrevPlaylist(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int categoryId;
   
   if ((xblive_wagermatch->current).enabled == false) {
     if (((category->current).integer < 0) || (0x1f < (category->current).integer)) {
@@ -2689,7 +2722,12 @@ void __cdecl Playlist_GetPrevPlaylist(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
+  int oldPlaylist_2;
+  int oldPlaylist;
+  int playlistNum;
+  int controllerIndex;
+  int playlistId;
+  int categoryId;
   
   if ((xblive_wagermatch->current).enabled == false) {
     if (((category->current).integer < 0) || (0x1f < (category->current).integer)) {
@@ -2722,8 +2760,8 @@ void __cdecl Playlist_GetPrevPlaylist(void)
       }
     }
     Dvar_SetInt(categoryPlaylist,iVar3);
-    local_c = Playlist_GetPlaylistIdForNum
-                        (0,(categoryPlaylist->current).integer,(category->current).integer);
+    playlistId = Playlist_GetPlaylistIdForNum
+                           (0,(categoryPlaylist->current).integer,(category->current).integer);
   }
   else {
     if (((wagerCategory->current).integer < 0) || (0x1f < (wagerCategory->current).integer)) {
@@ -2756,11 +2794,11 @@ void __cdecl Playlist_GetPrevPlaylist(void)
       }
     }
     Dvar_SetInt(wagerCategoryPlaylist,iVar3);
-    local_c = Playlist_GetPlaylistIdForNum
-                        (0,(wagerCategoryPlaylist->current).integer,(wagerCategory->current).integer
-                        );
+    playlistId = Playlist_GetPlaylistIdForNum
+                           (0,(wagerCategoryPlaylist->current).integer,
+                            (wagerCategory->current).integer);
   }
-  iVar3 = Playlist_GetPlaylistNumFromId(0,local_c);
+  iVar3 = Playlist_GetPlaylistNumFromId(0,playlistId);
   Dvar_SetInt(playlist,iVar3);
   return;
 }
@@ -2768,19 +2806,20 @@ void __cdecl Playlist_GetPrevPlaylist(void)
 
 // 00759650  Playlist_SetPlaylistEntry  (ui/ui_playlists.cpp:2440)
 
-void __cdecl Playlist_SetPlaylistEntry(int param_1)
+void __cdecl Playlist_SetPlaylistEntry(int num)
 
 {
+  int playlistId_00;
   int iVar1;
-  int iVar2;
+  int playlistId;
   
-  iVar1 = Playlist_GetPlaylistIdForNum(0,(playlist->current).integer);
-  if ((-1 < param_1) && (iVar2 = Playlist_GetNumEntries(iVar1), param_1 < iVar2)) {
-    g_currentEntry = param_1;
-    Dvar_SetInt(playlist_entry,param_1);
+  playlistId_00 = Playlist_GetPlaylistIdForNum(0,(playlist->current).integer);
+  if ((-1 < num) && (iVar1 = Playlist_GetNumEntries(playlistId_00), num < iVar1)) {
+    g_currentEntry = num;
+    Dvar_SetInt(playlist_entry,num);
     return;
   }
-  Playlist_GetNumEntries(iVar1);
+  Playlist_GetNumEntries(playlistId_00);
   Com_PrintError(0x10,"Playlist_SetPlaylistEntry error: %d not between (0,%d)\n");
   return;
 }
@@ -2814,51 +2853,51 @@ void __cdecl Playlist_SetSVMapRotation(void)
   char *local_854;
   char *local_844;
   char *local_834;
-  int local_828;
-  undefined4 local_820;
-  char local_81c [1024];
-  int local_41c;
-  undefined4 local_418;
-  int local_414;
-  undefined1 local_410 [4];
-  char local_40c [10];
+  int i;
+  int gametype_len;
+  playlistEntry *entry;
+  char rotation [1024];
+  int playlistId;
+  int total_len;
+  int mapname_len;
+  playlistGametype *gametypeEntryPrevious;
+  char token [10];
   char local_402 [1014];
   uint local_c;
-  playlistGametype *local_8;
+  playlistGametype *gametypeEntry;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_81c[0] = '\0';
-  memset((uchar *)(local_81c + 1),'\0',0x3ff);
-  local_40c[0] = '\0';
-  memset((uchar *)(local_40c + 1),'\0',0x3ff);
-  local_41c = Playlist_GetPlaylistIdForNum(0,(playlist->current).integer);
-  iVar3 = Playlist_GetNumEntries(local_41c);
+  rotation[0] = '\0';
+  memset((uchar *)(rotation + 1),'\0',0x3ff);
+  token[0] = '\0';
+  memset((uchar *)(token + 1),'\0',0x3ff);
+  playlistId = Playlist_GetPlaylistIdForNum(0,(playlist->current).integer);
+  iVar3 = Playlist_GetNumEntries(playlistId);
   if (iVar3 != 0) {
     Dvar_SetStringByName("sv_maprotationcurrent","");
     Dvar_SetStringByName("sv_maprotation","");
-    local_418 = 0;
-    for (local_828 = 0; iVar3 = Playlist_GetNumEntries(local_41c), local_828 < iVar3;
-        local_828 = local_828 + 1) {
-      local_820 = Playlist_GetEntry(local_41c,local_828);
-      local_8 = Playlist_FindGametype(local_820->gametype);
-      if (local_8 != (playlistGametype *)0x0) {
-        local_834 = local_820->mapname;
+    total_len = 0;
+    for (i = 0; iVar3 = Playlist_GetNumEntries(playlistId), i < iVar3; i = i + 1) {
+      entry = Playlist_GetEntry(playlistId,i);
+      gametypeEntry = Playlist_FindGametype(entry->gametype);
+      if (gametypeEntry != (playlistGametype *)0x0) {
+        local_834 = entry->mapname;
         pcVar7 = local_834 + 1;
         do {
           cVar1 = *local_834;
           local_834 = local_834 + 1;
         } while (cVar1 != '\0');
-        local_414 = (int)local_834 - (int)pcVar7;
-        local_844 = local_8->scriptName;
+        mapname_len = (int)local_834 - (int)pcVar7;
+        local_844 = gametypeEntry->scriptName;
         do {
           cVar1 = *local_844;
           local_844 = local_844 + 1;
         } while (cVar1 != '\0');
-        puVar5 = (uchar *)local_8->scriptName;
+        puVar5 = (uchar *)gametypeEntry->scriptName;
         puVar4 = (uchar *)Dvar_GetString("playlist_excludeGametype");
         strstr(puVar4,puVar5);
         if (extraout_EAX == 0) {
-          puVar5 = (uchar *)local_820->mapname;
+          puVar5 = (uchar *)entry->mapname;
           puVar4 = (uchar *)Dvar_GetString("playlist_excludeMap");
           strstr(puVar4,puVar5);
           if (extraout_EAX_00 == 0) {
@@ -2866,9 +2905,9 @@ void __cdecl Playlist_SetSVMapRotation(void)
             puVar4 = (uchar *)Dvar_GetString("playlist_excludeGametypeMap");
             strstr(puVar4,puVar5);
             if (extraout_EAX_01 == 0) {
-              local_820->ignore = 0;
-              if (local_828 == 0) {
-                pcVar7 = local_410 + 3;
+              entry->ignore = 0;
+              if (i == 0) {
+                pcVar7 = (char *)((int)&gametypeEntryPrevious + 3);
                 do {
                   local_854 = pcVar7;
                   pcVar7 = local_854 + 1;
@@ -2877,12 +2916,12 @@ void __cdecl Playlist_SetSVMapRotation(void)
                 strncat();
               }
               else {
-                ppVar6 = Playlist_GetEntry(local_41c,local_828 + -1);
-                local_410 = (undefined1  [4])Playlist_FindGametype(ppVar6->gametype);
-                if ((local_410 == (undefined1  [4])0x0) ||
-                   (iVar3 = I_strcmp(((playlistGametype *)local_410)->scriptName,local_8->scriptName
-                                    ), iVar3 != 0)) {
-                  pcVar7 = local_410 + 3;
+                ppVar6 = Playlist_GetEntry(playlistId,i + -1);
+                gametypeEntryPrevious = Playlist_FindGametype(ppVar6->gametype);
+                if ((gametypeEntryPrevious == (playlistGametype *)0x0) ||
+                   (iVar3 = I_strcmp(gametypeEntryPrevious->scriptName,gametypeEntry->scriptName),
+                   iVar3 != 0)) {
+                  pcVar7 = (char *)((int)&gametypeEntryPrevious + 3);
                   do {
                     local_85c = pcVar7;
                     pcVar7 = local_85c + 1;
@@ -2891,7 +2930,7 @@ void __cdecl Playlist_SetSVMapRotation(void)
                   strncat();
                 }
               }
-              puVar2 = (undefined4 *)(local_410 + 3);
+              puVar2 = (undefined4 *)((int)&gametypeEntryPrevious + 3);
               do {
                 local_864 = puVar2;
                 puVar2 = (undefined4 *)((int)local_864 + 1);
@@ -2899,30 +2938,30 @@ void __cdecl Playlist_SetSVMapRotation(void)
               *(undefined4 *)((int)local_864 + 1) = 0x70616d20;
               *(undefined2 *)((int)local_864 + 5) = 0x20;
               strncat();
-              local_86c = local_40c;
+              local_86c = token;
               do {
                 cVar1 = *local_86c;
                 local_86c = local_86c + 1;
               } while (cVar1 != '\0');
-              pcVar7 = local_81c;
+              pcVar7 = rotation;
               do {
                 local_87c = pcVar7;
                 pcVar7 = local_87c + 1;
               } while (*local_87c != '\0');
               if (local_86c + (int)&stack0x00000000 * -2 + (int)(local_87c + 0xc27) < (char *)0x400)
               {
-                local_88c = local_40c;
+                local_88c = token;
                 do {
                   cVar1 = *local_88c;
                   local_88c = local_88c + 1;
                 } while (cVar1 != '\0');
-                uVar9 = (int)local_88c - (int)local_40c;
-                local_8a0 = (char *)((int)&local_820 + 3);
+                uVar9 = (int)local_88c - (int)token;
+                local_8a0 = (char *)((int)&entry + 3);
                 do {
                   pcVar7 = local_8a0 + 1;
                   local_8a0 = local_8a0 + 1;
                 } while (*pcVar7 != '\0');
-                pcVar7 = local_40c;
+                pcVar7 = token;
                 for (uVar8 = uVar9 >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
                   *(undefined4 *)local_8a0 = *(undefined4 *)pcVar7;
                   pcVar7 = pcVar7 + 4;
@@ -2933,7 +2972,7 @@ void __cdecl Playlist_SetSVMapRotation(void)
                   pcVar7 = pcVar7 + 1;
                   local_8a0 = local_8a0 + 1;
                 }
-                local_40c[0] = '\0';
+                token[0] = '\0';
                 goto LAB_00759794;
               }
               break;
@@ -2941,11 +2980,11 @@ void __cdecl Playlist_SetSVMapRotation(void)
           }
         }
         Com_Printf(0x10,"Playlist %d entry %d excluded: %s %s.\n");
-        local_820->ignore = 1;
+        entry->ignore = 1;
       }
 LAB_00759794:
     }
-    Dvar_SetStringByName("sv_maprotation",local_81c);
+    Dvar_SetStringByName("sv_maprotation",rotation);
   }
   return;
 }
@@ -2957,7 +2996,7 @@ void __cdecl Playlist_RegisterDvars(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int licensetype;
   
   _Dvar_RegisterBool("party_linearMapCycle",false,0,
                      "We will cycle through the maps linearly if this is true.");
@@ -2974,8 +3013,8 @@ void __cdecl Playlist_RegisterDvars(void)
        _Dvar_RegisterString
                  ("playlist_excludeGametypeMap","",1,
                   "Gametype Map, Gametype Map pairs to exclude from rotation.");
-  iVar2 = SV_GetLicenseType();
-  bVar1 = SV_IsServerRanked(iVar2);
+  licensetype = SV_GetLicenseType();
+  bVar1 = SV_IsServerRanked(licensetype);
   if (bVar1) {
     playlist_enabled =
          _Dvar_RegisterBool("playlist_enabled",true,0x44,"The server is using playlist");
@@ -2996,7 +3035,7 @@ void __cdecl Playlist_RegisterDvars(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Playlist_SetSVMapRotationCurrent(int param_1)
+void __cdecl Playlist_SetSVMapRotationCurrent(int entryNum)
 
 {
   char cVar1;
@@ -3008,34 +3047,35 @@ void __cdecl Playlist_SetSVMapRotationCurrent(int param_1)
   undefined4 *local_438;
   char *local_428;
   char *local_420;
-  undefined1 local_410 [4];
-  char local_40c [1024];
+  playlistEntry *entry;
+  int playlistId;
+  char token [1024];
   uint local_c;
-  playlistGametype *local_8;
+  playlistGametype *gametypeEntry;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40c[0] = '\0';
-  memset((uchar *)(local_40c + 1),'\0',0x3ff);
-  local_410 = (undefined1  [4])Playlist_GetPlaylistIdForNum(0,(playlist->current).integer);
-  iVar4 = Playlist_GetNumEntries((int)local_410);
+  token[0] = '\0';
+  memset((uchar *)(token + 1),'\0',0x3ff);
+  playlistId = Playlist_GetPlaylistIdForNum(0,(playlist->current).integer);
+  iVar4 = Playlist_GetNumEntries(playlistId);
   if (iVar4 != 0) {
-    ppVar5 = Playlist_GetEntry((int)local_410,param_1);
-    local_8 = Playlist_FindGametype(ppVar5->gametype);
-    if (local_8 != (playlistGametype *)0x0) {
-      pcVar3 = local_410 + 3;
+    ppVar5 = Playlist_GetEntry(playlistId,entryNum);
+    gametypeEntry = Playlist_FindGametype(ppVar5->gametype);
+    if (gametypeEntry != (playlistGametype *)0x0) {
+      pcVar3 = (char *)((int)&playlistId + 3);
       do {
         local_420 = pcVar3;
         pcVar3 = local_420 + 1;
       } while (local_420[1] != '\0');
       builtin_strncpy(local_420 + 1,"gametype ",10);
-      local_428 = local_8->scriptName;
+      local_428 = gametypeEntry->scriptName;
       do {
         cVar1 = *local_428;
         local_428 = local_428 + 1;
       } while (cVar1 != '\0');
       strncat();
     }
-    puVar2 = (undefined4 *)(local_410 + 3);
+    puVar2 = (undefined4 *)((int)&playlistId + 3);
     do {
       local_438 = puVar2;
       puVar2 = (undefined4 *)((int)local_438 + 1);
@@ -3048,7 +3088,7 @@ void __cdecl Playlist_SetSVMapRotationCurrent(int param_1)
       local_440 = local_440 + 1;
     } while (cVar1 != '\0');
     strncat();
-    Dvar_SetStringByName("sv_mapRotationCurrent",local_40c);
+    Dvar_SetStringByName("sv_mapRotationCurrent",token);
   }
   return;
 }
@@ -3059,10 +3099,10 @@ void __cdecl Playlist_SetSVMapRotationCurrent(int param_1)
 void __cdecl Playlist_SVMapRotate(void)
 
 {
-  int iVar1;
+  int num;
   
-  iVar1 = Playlist_ChooseEntry(0,g_currentEntry);
-  Playlist_SetPlaylistEntry(iVar1);
+  num = Playlist_ChooseEntry(0,g_currentEntry);
+  Playlist_SetPlaylistEntry(num);
   Playlist_RunRules(0,g_currentEntry);
   Playlist_SetSVMapRotationCurrent(g_currentEntry);
   return;
@@ -3111,14 +3151,14 @@ void __cdecl Playlist_Init(void)
 
 // 0075A130  Playlist_GetWagerAmount  (ui/ui_playlists.cpp:2627)
 
-int __cdecl Playlist_GetWagerAmount(int param_1,int param_2,int *param_3)
+int __cdecl Playlist_GetWagerAmount(int version,int index,int *wagerAmount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_3 == (int *)0x0) {
+  if (wagerAmount == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_playlists.cpp",0xa44,0,"%s")
     ;
     if (!bVar2) {
@@ -3127,15 +3167,15 @@ int __cdecl Playlist_GetWagerAmount(int param_1,int param_2,int *param_3)
       return iVar3;
     }
   }
-  if (((playlist_versionNum == param_1) && (0 < param_2)) && (param_2 < totalEntries)) {
-    *param_3 = playlists[param_2].wagerBet;
+  if (((playlist_versionNum == version) && (0 < index)) && (index < totalEntries)) {
+    *wagerAmount = playlists[index].wagerBet;
     iVar3 = 0;
   }
-  else if (param_1 == playlist_versionNum) {
+  else if (version == playlist_versionNum) {
     iVar3 = 0;
   }
   else {
-    iVar3 = (uint)(playlist_versionNum <= param_1) * 2 + -1;
+    iVar3 = (uint)(playlist_versionNum <= version) * 2 + -1;
   }
   return iVar3;
 }

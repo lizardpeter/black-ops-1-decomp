@@ -2,15 +2,15 @@
 
 // 006E8F60  NET_AdrToString  (qcommon/net_chan_mp.cpp:190)
 
-char * __cdecl NET_AdrToString(netadr_t param_1)
+char * __cdecl NET_AdrToString(netadr_t a)
 
 {
   Com_sprintf(s,0x40,"unknown");
-  if (param_1.type == NA_LOOPBACK) {
+  if (a.type == NA_LOOPBACK) {
     Com_sprintf(s,0x40,"loopback");
   }
-  else if (param_1.type == NA_IP) {
-    BigShort(param_1.port);
+  else if (a.type == NA_IP) {
+    BigShort(a.port);
     Com_sprintf(s,0x40,"%i.%i.%i.%i:%i");
   }
   return s;
@@ -19,14 +19,14 @@ char * __cdecl NET_AdrToString(netadr_t param_1)
 
 // 006E8FE0  NET_AdrToStringDW  (qcommon/net_chan_mp.cpp:216)
 
-char * __cdecl NET_AdrToStringDW(netadr_t param_1)
+char * __cdecl NET_AdrToStringDW(netadr_t a)
 
 {
   Com_sprintf(s,0x40,"unknown");
-  if (param_1.type == NA_LOOPBACK) {
+  if (a.type == NA_LOOPBACK) {
     Com_sprintf(s,0x40,"loopback");
   }
-  else if (param_1.type == NA_IP) {
+  else if (a.type == NA_IP) {
     Com_sprintf(s,0x40,"%i.%i.%i.%i:%i");
   }
   return s;
@@ -35,7 +35,7 @@ char * __cdecl NET_AdrToStringDW(netadr_t param_1)
 
 // 006E9050  NetProf_PrepProfiling  (qcommon/net_chan_mp.cpp:241)
 
-void __cdecl NetProf_PrepProfiling(netProfileInfo_t *param_1)
+void __cdecl NetProf_PrepProfiling(netProfileInfo_t *prof)
 
 {
   bool bVar1;
@@ -44,7 +44,7 @@ void __cdecl NetProf_PrepProfiling(netProfileInfo_t *param_1)
     if (net_iProfilingOn != 0) {
       net_iProfilingOn = 0;
       Com_Printf(0x10,"Net Profiling turned off\n");
-      memset((uchar *)param_1,'\0',0x5e0);
+      memset((uchar *)prof,'\0',0x5e0);
     }
   }
   else if (net_iProfilingOn == 0) {
@@ -56,7 +56,7 @@ void __cdecl NetProf_PrepProfiling(netProfileInfo_t *param_1)
       net_iProfilingOn = 2;
     }
     Com_Printf(0x10,"Net Profiling turned on: %s\n");
-    memset((uchar *)param_1,'\0',0x5e0);
+    memset((uchar *)prof,'\0',0x5e0);
   }
   return;
 }
@@ -64,13 +64,14 @@ void __cdecl NetProf_PrepProfiling(netProfileInfo_t *param_1)
 
 // 006E9110  NetProf_AddPacket  (qcommon/net_chan_mp.cpp:274)
 
-void __cdecl NetProf_AddPacket(netProfileStream_t *param_1,int param_2,int param_3)
+void __cdecl NetProf_AddPacket(netProfileStream_t *pProfStream,int iSize,int bFragment)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   netProfilePacket_t *pnVar4;
+  netProfilePacket_t *pPacket;
   
   if (net_iProfilingOn == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x115,0,
@@ -81,12 +82,12 @@ void __cdecl NetProf_AddPacket(netProfileStream_t *param_1,int param_2,int param
       return;
     }
   }
-  param_1->iCurrPacket = (param_1->iCurrPacket + 1) % 0x3c;
-  pnVar4 = param_1->packets + param_1->iCurrPacket;
+  pProfStream->iCurrPacket = (pProfStream->iCurrPacket + 1) % 0x3c;
+  pnVar4 = pProfStream->packets + pProfStream->iCurrPacket;
   iVar3 = Sys_Milliseconds();
   pnVar4->iTime = iVar3;
-  pnVar4->iSize = param_2;
-  pnVar4->bFragment = param_3;
+  pnVar4->iSize = iSize;
+  pnVar4->bFragment = bFragment;
   return;
 }
 
@@ -95,11 +96,11 @@ void __cdecl NetProf_AddPacket(netProfileStream_t *param_1,int param_2,int param
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl NetProf_NewSendPacket(netchan_t *param_1,int param_2,int param_3)
+void __cdecl NetProf_NewSendPacket(netchan_t *pChan,int iSize,int bFragment)
 
 {
   if ((net_iProfilingOn != 0) &&
-     (NetProf_AddPacket(&(param_1->prof).send,param_2,param_3),
+     (NetProf_AddPacket(&(pChan->prof).send,iSize,bFragment),
      ((net_showprofile->current).unsignedInt & 2) != 0)) {
     Com_Printf(0x10,"[%s] send%s: %i\n");
   }
@@ -111,11 +112,11 @@ void __cdecl NetProf_NewSendPacket(netchan_t *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl NetProf_NewRecievePacket(netchan_t *param_1,int param_2,int param_3)
+void __cdecl NetProf_NewRecievePacket(netchan_t *pChan,int iSize,int bFragment)
 
 {
   if ((net_iProfilingOn != 0) &&
-     (NetProf_AddPacket(&(param_1->prof).recieve,param_2,param_3),
+     (NetProf_AddPacket(&(pChan->prof).recieve,iSize,bFragment),
      ((net_showprofile->current).unsignedInt & 2) != 0)) {
     Com_Printf(0x10,"[%s] recieve%s: %i\n");
   }
@@ -125,23 +126,26 @@ void __cdecl NetProf_NewRecievePacket(netchan_t *param_1,int param_2,int param_3
 
 // 006E92A0  NetProf_UpdateStatistics  (qcommon/net_chan_mp.cpp:334)
 
-void __cdecl NetProf_UpdateStatistics(netProfileStream_t *param_1)
+void __cdecl NetProf_UpdateStatistics(netProfileStream_t *pStream)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_8;
+  int iTimeSpan;
+  int iTotalBytes;
+  int iLargestSize;
+  int iOldestPacket;
+  int iSmallestSize;
+  int iNumFragments;
+  int i;
+  int iNumPackets;
+  int iMaxPacketAge;
+  int iBPSCalcTimeStep;
+  int iOldestPacketTime;
   
-  if ((param_1 == (netProfileStream_t *)0x0) &&
+  if ((pStream == (netProfileStream_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x15c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -155,84 +159,87 @@ void __cdecl NetProf_UpdateStatistics(netProfileStream_t *param_1)
     (*pcVar1)();
     return;
   }
-  local_14 = 0;
-  local_1c = 0;
-  local_24 = -1;
-  local_8 = Sys_Milliseconds();
-  local_2c = 0;
-  local_20 = 9999;
-  local_28 = 0;
-  for (local_18 = 0; local_18 < 0x3c; local_18 = local_18 + 1) {
-    if ((param_1->packets[local_18].iTime != 0) &&
-       (iVar3 = Sys_Milliseconds(), iVar3 <= param_1->packets[local_18].iTime + 1000)) {
-      local_14 = local_14 + 1;
-      if (param_1->packets[local_18].bFragment != 0) {
-        local_1c = local_1c + 1;
+  iNumPackets = 0;
+  iNumFragments = 0;
+  iOldestPacket = -1;
+  iOldestPacketTime = Sys_Milliseconds();
+  iTotalBytes = 0;
+  iSmallestSize = 9999;
+  iLargestSize = 0;
+  for (i = 0; i < 0x3c; i = i + 1) {
+    if ((pStream->packets[i].iTime != 0) &&
+       (iVar3 = Sys_Milliseconds(), iVar3 <= pStream->packets[i].iTime + 1000)) {
+      iNumPackets = iNumPackets + 1;
+      if (pStream->packets[i].bFragment != 0) {
+        iNumFragments = iNumFragments + 1;
       }
-      if (param_1->packets[local_18].iTime < local_8) {
-        local_24 = local_18;
-        local_8 = param_1->packets[local_18].iTime;
+      if (pStream->packets[i].iTime < iOldestPacketTime) {
+        iOldestPacket = i;
+        iOldestPacketTime = pStream->packets[i].iTime;
       }
-      local_2c = local_2c + param_1->packets[local_18].iSize;
-      if (param_1->packets[local_18].iSize < local_20) {
-        local_20 = param_1->packets[local_18].iSize;
+      iTotalBytes = iTotalBytes + pStream->packets[i].iSize;
+      if (pStream->packets[i].iSize < iSmallestSize) {
+        iSmallestSize = pStream->packets[i].iSize;
       }
-      if (local_28 < param_1->packets[local_18].iSize) {
-        local_28 = param_1->packets[local_18].iSize;
+      if (iLargestSize < pStream->packets[i].iSize) {
+        iLargestSize = pStream->packets[i].iSize;
       }
     }
   }
-  if (local_14 == 0) {
-    param_1->iBytesPerSecond = 0;
-    param_1->iLastBPSCalcTime = 0;
-    param_1->iCountedPackets = 0;
-    param_1->iCountedFragments = 0;
-    param_1->iFragmentPercentage = 0;
-    param_1->iLargestPacket = 0;
-    param_1->iSmallestPacket = 0;
+  if (iNumPackets == 0) {
+    pStream->iBytesPerSecond = 0;
+    pStream->iLastBPSCalcTime = 0;
+    pStream->iCountedPackets = 0;
+    pStream->iCountedFragments = 0;
+    pStream->iFragmentPercentage = 0;
+    pStream->iLargestPacket = 0;
+    pStream->iSmallestPacket = 0;
   }
   else {
-    if (local_1c == 0) {
-      param_1->iFragmentPercentage = 0;
+    if (iNumFragments == 0) {
+      pStream->iFragmentPercentage = 0;
     }
     else {
-      param_1->iFragmentPercentage = (local_1c * 100) / local_14;
+      pStream->iFragmentPercentage = (iNumFragments * 100) / iNumPackets;
     }
-    param_1->iLargestPacket = local_28;
-    param_1->iSmallestPacket = local_20;
-    iVar3 = param_1->iLastBPSCalcTime;
+    pStream->iLargestPacket = iLargestSize;
+    pStream->iSmallestPacket = iSmallestSize;
+    iVar3 = pStream->iLastBPSCalcTime;
     iVar4 = Sys_Milliseconds();
     if (iVar3 + 100 < iVar4) {
       iVar3 = Sys_Milliseconds();
-      if (local_24 != -1) {
-        local_2c = local_2c - param_1->packets[local_24].iSize;
-        local_14 = local_14 + -1;
-        if (param_1->packets[local_24].bFragment != 0) {
-          local_1c = local_1c + -1;
+      if (iOldestPacket != -1) {
+        iTotalBytes = iTotalBytes - pStream->packets[iOldestPacket].iSize;
+        iNumPackets = iNumPackets + -1;
+        if (pStream->packets[iOldestPacket].bFragment != 0) {
+          iNumFragments = iNumFragments + -1;
         }
       }
-      if ((iVar3 - local_8 < 1) || (local_14 == 0)) {
-        param_1->iBytesPerSecond = 0;
+      if ((iVar3 - iOldestPacketTime < 1) || (iNumPackets == 0)) {
+        pStream->iBytesPerSecond = 0;
       }
       else {
-        if (local_2c == 0) {
-          param_1->iBytesPerSecond = 0;
+        if (iTotalBytes == 0) {
+          pStream->iBytesPerSecond = 0;
         }
         else {
-          param_1->iBytesPerSecond = (int)((float)local_2c / ((float)(iVar3 - local_8) * 0.001));
+          pStream->iBytesPerSecond =
+               (int)((float)iTotalBytes / ((float)(iVar3 - iOldestPacketTime) * 0.001));
         }
         iVar3 = Sys_Milliseconds();
-        param_1->iLastBPSCalcTime = iVar3;
+        pStream->iLastBPSCalcTime = iVar3;
       }
     }
-    param_1->iCountedPackets = local_14;
-    param_1->iCountedFragments = local_1c;
+    pStream->iCountedPackets = iNumPackets;
+    pStream->iCountedFragments = iNumFragments;
   }
   return;
 }
 
 
 // 006E9840  Net_DumpProfile_f  (qcommon/net_chan_mp.cpp:455)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl Net_DumpProfile_f(void)
 
@@ -266,14 +273,15 @@ void __cdecl Net_SetQPort_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
+  int qport;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 1) {
     Com_PrintError(0x10,"setqport usage: setqport <qport>\n");
   }
-  pcVar2 = Cmd_Argv(1);
-  iVar1 = atoi(pcVar2);
+  nptr = Cmd_Argv(1);
+  iVar1 = atoi(nptr);
   g_qport = (int)(short)iVar1;
   return;
 }
@@ -281,7 +289,9 @@ void __cdecl Net_SetQPort_f(void)
 
 // 006E95C0  Net_DisplayProfile  (qcommon/net_chan_mp.cpp:516)
 
-void __cdecl Net_DisplayProfile(int param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
+void __cdecl Net_DisplayProfile(int localClientNum)
 
 {
   if ((net_profile->current).integer == 0) {
@@ -289,7 +299,7 @@ void __cdecl Net_DisplayProfile(int param_1)
   }
   if (net_iProfilingOn != 0) {
     if (net_iProfilingOn == 1) {
-      CL_Netchan_PrintProfileStats(param_1,0);
+      CL_Netchan_PrintProfileStats(localClientNum,0);
     }
     else {
       GamerProfile_WriteSettings(0);
@@ -313,13 +323,13 @@ void __cdecl TRACK_net_chan(void)
 
 // 006E9670  Netchan_Init  (qcommon/net_chan_mp.cpp:1072)
 
-void __cdecl Netchan_Init(int param_1)
+void __cdecl Netchan_Init(int port)
 
 {
   showpackets = _Dvar_RegisterInt("showpackets",0,0,2,0,"Show packets");
   showdrop = _Dvar_RegisterBool("showdrop",false,0,"Show dropped packets");
   packetDebug = _Dvar_RegisterBool("packetDebug",false,0,"Enable packet debugging information");
-  g_qport = (int)(short)param_1;
+  g_qport = (int)(short)port;
   net_profile = _Dvar_RegisterInt("net_profile",0,0,2,0,"Profile network performance");
   net_showprofile = _Dvar_RegisterInt("net_showprofile",0,0,3,0,"Show network profiling display");
   net_minigraph =
@@ -349,23 +359,23 @@ void __cdecl Netchan_Init(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-Netchan_Setup(netsrc_t param_1,netchan_t *param_2,netadr_t param_3,int param_4,char *param_5,
-             int param_6,char *param_7,int param_8)
+Netchan_Setup(netsrc_t sock,netchan_t *chan,netadr_t adr,int qport,char *outgoingBuffer,
+             int outgoingBufferSize,char *incomingBuffer,int incomingBufferSize)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  memset((uchar *)param_2,'\0',0x6c0);
-  *(undefined4 *)&param_2->sock = _param_1;
-  (param_2->remoteAddress).type = param_3.type;
-  *&(param_2->remoteAddress).ip = param_3.ip;
-  (param_2->remoteAddress).port = param_3.port;
-  *(undefined2 *)&(param_2->remoteAddress).field_0xa = param_3._10_2_;
-  (param_2->remoteAddress).addrHandleIndex = param_3.addrHandleIndex;
-  param_2->qport = param_4;
-  if ((param_3.type != NA_BOT) && (param_4 == 0)) {
+  memset((uchar *)chan,'\0',0x6c0);
+  *(undefined4 *)&chan->sock = _sock;
+  (chan->remoteAddress).type = adr.type;
+  *&(chan->remoteAddress).ip = adr.ip;
+  (chan->remoteAddress).port = adr.port;
+  *(undefined2 *)&(chan->remoteAddress).field_0xa = adr._10_2_;
+  (chan->remoteAddress).addrHandleIndex = adr.addrHandleIndex;
+  chan->qport = qport;
+  if ((adr.type != NA_BOT) && (qport == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x46f,0,
                              "%s");
     if (!bVar2) {
@@ -374,13 +384,13 @@ Netchan_Setup(netsrc_t param_1,netchan_t *param_2,netadr_t param_3,int param_4,c
       return;
     }
   }
-  param_2->incomingSequence = 0;
-  param_2->outgoingSequence = 1;
-  param_2->unsentBuffer = (uchar *)param_5;
-  param_2->unsentBufferSize = param_6;
-  param_2->fragmentBuffer = (uchar *)param_7;
-  param_2->fragmentBufferSize = param_8;
-  NetProf_PrepProfiling(&param_2->prof);
+  chan->incomingSequence = 0;
+  chan->outgoingSequence = 1;
+  chan->unsentBuffer = (uchar *)outgoingBuffer;
+  chan->unsentBufferSize = outgoingBufferSize;
+  chan->fragmentBuffer = (uchar *)incomingBuffer;
+  chan->fragmentBufferSize = incomingBufferSize;
+  NetProf_PrepProfiling(&chan->prof);
   return;
 }
 
@@ -390,42 +400,43 @@ Netchan_Setup(netsrc_t param_1,netchan_t *param_2,netadr_t param_3,int param_4,c
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Netchan_TransmitFragment(netchan_t *param_1,int param_2,int param_3,int param_4)
+int __cdecl
+Netchan_TransmitFragment(netchan_t *chan,int fragmentLength,int fragmentIndex,int maxFragmentIndex)
 
 {
   bool bVar1;
-  msg_t local_534;
-  uchar local_504 [1268];
+  msg_t send;
+  uchar send_buf [1268];
   uint local_10;
-  uint local_c;
-  int local_8;
+  int res;
+  int fragmentStart;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  MSG_Init(&local_534,local_504,0x4f0);
-  if (param_1->reliable_fragments == 0) {
-    MSG_WriteLong(&local_534,param_1->outgoingSequence | 0x80000000);
+  MSG_Init(&send,send_buf,0x4f0);
+  if (chan->reliable_fragments == 0) {
+    MSG_WriteLong(&send,chan->outgoingSequence | 0x80000000);
   }
   else {
-    MSG_WriteLong(&local_534,param_1->outgoingSequence | 0xc0000000);
+    MSG_WriteLong(&send,chan->outgoingSequence | 0xc0000000);
   }
-  if (*(int *)&param_1->sock < 1) {
-    MSG_WriteShort(&local_534,param_1->qport);
+  if (*(int *)&chan->sock < 1) {
+    MSG_WriteShort(&send,chan->qport);
   }
-  MSG_WriteByte(&local_534,param_3 & 0xff);
-  MSG_WriteByte(&local_534,param_4 & 0xff);
-  MSG_WriteShort(&local_534,0x48c);
-  MSG_WriteShort(&local_534,param_2);
-  local_8 = param_3 * 0x48c;
-  MSG_WriteData(&local_534,param_1->unsentBuffer + local_8,param_2);
-  bVar1 = NET_SendPacket((netsrc_t)*(undefined4 *)&param_1->sock,local_534.cursize,local_534.data,
-                         param_1->remoteAddress);
-  local_c = (uint)bVar1;
-  NetProf_NewSendPacket(param_1,local_534.cursize,1);
+  MSG_WriteByte(&send,fragmentIndex & 0xff);
+  MSG_WriteByte(&send,maxFragmentIndex & 0xff);
+  MSG_WriteShort(&send,0x48c);
+  MSG_WriteShort(&send,fragmentLength);
+  fragmentStart = fragmentIndex * 0x48c;
+  MSG_WriteData(&send,chan->unsentBuffer + fragmentStart,fragmentLength);
+  bVar1 = NET_SendPacket((netsrc_t)*(undefined4 *)&chan->sock,send.cursize,send.data,
+                         chan->remoteAddress);
+  res = (int)bVar1;
+  NetProf_NewSendPacket(chan,send.cursize,1);
   if (((showpackets->current).integer != 0) &&
-     ((1 < (showpackets->current).integer || ((param_1->remoteAddress).type != NA_LOOPBACK)))) {
+     ((1 < (showpackets->current).integer || ((chan->remoteAddress).type != NA_LOOPBACK)))) {
     Com_Printf(0x10,"[%s] send %4i : s=%i fragment=%i,%i\n");
   }
-  return local_c;
+  return res;
 }
 
 
@@ -433,52 +444,57 @@ int __cdecl Netchan_TransmitFragment(netchan_t *param_1,int param_2,int param_3,
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Netchan_TransmitNextFragment(netchan_t *param_1)
+bool __cdecl Netchan_TransmitNextFragment(netchan_t *chan)
 
 {
   bool bVar1;
   int iVar2;
   int iVar3;
-  int local_28;
-  int local_20;
-  int local_18;
+  int fragmentLength;
+  int res;
+  int i_2;
+  int fragmentStart;
+  int i;
+  bool fragment_is_acked;
+  int ack_bit_index;
+  int maxFragments;
+  bool message_is_acked;
   
-  NetProf_PrepProfiling(&param_1->prof);
-  iVar2 = (param_1->unsentLength + 0x48b) / 0x48c;
+  NetProf_PrepProfiling(&chan->prof);
+  iVar2 = (chan->unsentLength + 0x48b) / 0x48c;
   bVar1 = true;
-  for (local_18 = 0; local_18 < iVar2; local_18 = local_18 + 1) {
-    bVar1 = (bool)(bVar1 & (1 << ((byte)local_18 & 0x1f) & param_1->fragment_ack[local_18 >> 5]) !=
-                           0);
+  for (i = 0; i < iVar2; i = i + 1) {
+    bVar1 = (bool)(bVar1 & (1 << ((byte)i & 0x1f) & chan->fragment_ack[i >> 5]) != 0);
   }
   if (bVar1) {
-    param_1->outgoingSequence = param_1->outgoingSequence + 1;
-    param_1->unsentFragments = 0;
-    param_1->reliable_fragments = 0;
+    chan->outgoingSequence = chan->outgoingSequence + 1;
+    chan->unsentFragments = 0;
+    chan->reliable_fragments = 0;
     return true;
   }
   do {
-    for (local_20 = 0; local_20 < 0x80; local_20 = local_20 + 1) {
-      iVar3 = local_20 * 0x48c;
-      if (((iVar3 < param_1->unsentLength) &&
-          ((int)(uint)param_1->fragment_send_count[local_20] <= param_1->lowest_send_count)) &&
-         ((1 << ((byte)local_20 & 0x1f) & param_1->fragment_ack[local_20 >> 5]) == 0)) {
-        param_1->fragment_send_count[local_20] = param_1->fragment_send_count[local_20] + '\x01';
-        if (param_1->unsentLength < iVar3 + 0x48c) {
-          local_28 = param_1->unsentLength + local_20 * -0x48c;
+    for (i_2 = 0; i_2 < 0x80; i_2 = i_2 + 1) {
+      iVar3 = i_2 * 0x48c;
+      if (((iVar3 < chan->unsentLength) &&
+          ((int)(uint)chan->fragment_send_count[i_2] <= chan->lowest_send_count)) &&
+         ((1 << ((byte)i_2 & 0x1f) & chan->fragment_ack[i_2 >> 5]) == 0)) {
+        chan->fragment_send_count[i_2] = chan->fragment_send_count[i_2] + '\x01';
+        if (chan->unsentLength < iVar3 + 0x48c) {
+          fragmentLength = chan->unsentLength + i_2 * -0x48c;
         }
         else {
-          local_28 = 0x48c;
+          fragmentLength = 0x48c;
         }
-        iVar2 = Netchan_TransmitFragment(param_1,local_28,local_20,iVar2 + -1);
-        if ((param_1->reliable_fragments == 0) && (iVar3 + local_28 == param_1->unsentLength)) {
-          param_1->outgoingSequence = param_1->outgoingSequence + 1;
-          param_1->unsentFragments = 0;
-          param_1->reliable_fragments = 0;
+        iVar2 = Netchan_TransmitFragment(chan,fragmentLength,i_2,iVar2 + -1);
+        if ((chan->reliable_fragments == 0) && (iVar3 + fragmentLength == chan->unsentLength)) {
+          chan->outgoingSequence = chan->outgoingSequence + 1;
+          chan->unsentFragments = 0;
+          chan->reliable_fragments = 0;
         }
         return 0 < iVar2;
       }
-      if ((param_1->reliable_fragments != 0) && (param_1->unsentLength <= iVar3)) {
-        param_1->lowest_send_count = param_1->lowest_send_count + 1;
+      if ((chan->reliable_fragments != 0) && (chan->unsentLength <= iVar3)) {
+        chan->lowest_send_count = chan->lowest_send_count + 1;
         return true;
       }
     }
@@ -491,69 +507,70 @@ bool __cdecl Netchan_TransmitNextFragment(netchan_t *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Netchan_Transmit(netchan_t *param_1,int param_2,uchar *param_3,bool param_4)
+bool __cdecl Netchan_Transmit(netchan_t *chan,int length,uchar *data,bool reliable_fragments)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int iVar4;
-  msg_t local_52c;
-  uchar local_4fc [1264];
+  int h;
+  int file;
+  msg_t send;
+  uchar send_buf [1264];
   uint local_c;
-  uint local_8;
+  int res;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (0x10000 < param_2) {
-    iVar4 = FS_FOpenFileWrite("badpacket.dat");
-    if (iVar4 != 0) {
-      FS_Write(param_3,param_2,iVar4);
-      FS_FCloseFile(iVar4);
+  if (0x10000 < length) {
+    h = FS_FOpenFileWrite("badpacket.dat");
+    if (h != 0) {
+      FS_Write(data,length,h);
+      FS_FCloseFile(h);
     }
     Com_Error(ERR_DROP,"\x15Netchan_Transmit: length = %i");
   }
-  param_1->unsentFragmentStart = 0;
-  if ((param_1->remoteAddress).type == NA_BOT) {
-    param_1->outgoingSequence = param_1->outgoingSequence + 1;
+  chan->unsentFragmentStart = 0;
+  if ((chan->remoteAddress).type == NA_BOT) {
+    chan->outgoingSequence = chan->outgoingSequence + 1;
     bVar2 = true;
   }
-  else if (param_2 < 0x48c) {
-    NetProf_PrepProfiling(&param_1->prof);
-    MSG_Init(&local_52c,local_4fc,0x4f0);
-    MSG_WriteLong(&local_52c,param_1->outgoingSequence);
-    param_1->outgoingSequence = param_1->outgoingSequence + 1;
-    if (*(int *)&param_1->sock < 1) {
-      MSG_WriteShort(&local_52c,param_1->qport);
+  else if (length < 0x48c) {
+    NetProf_PrepProfiling(&chan->prof);
+    MSG_Init(&send,send_buf,0x4f0);
+    MSG_WriteLong(&send,chan->outgoingSequence);
+    chan->outgoingSequence = chan->outgoingSequence + 1;
+    if (*(int *)&chan->sock < 1) {
+      MSG_WriteShort(&send,chan->qport);
     }
     if ((packetDebug->current).enabled != false) {
       Com_Printf(0x10,"Adding %i byte payload to packet\n");
     }
-    MSG_WriteData(&local_52c,param_3,param_2);
+    MSG_WriteData(&send,data,length);
     if ((packetDebug->current).enabled != false) {
       Com_Printf(0x10,"Sending %i byte packet\n");
     }
-    bVar2 = NET_SendPacket((netsrc_t)*(undefined4 *)&param_1->sock,local_52c.cursize,local_52c.data,
-                           param_1->remoteAddress);
-    local_8 = (uint)bVar2;
-    NetProf_NewSendPacket(param_1,local_52c.cursize,0);
+    bVar2 = NET_SendPacket((netsrc_t)*(undefined4 *)&chan->sock,send.cursize,send.data,
+                           chan->remoteAddress);
+    res = (int)bVar2;
+    NetProf_NewSendPacket(chan,send.cursize,0);
     if (((showpackets->current).integer != 0) &&
-       ((1 < (showpackets->current).integer || ((param_1->remoteAddress).type != NA_LOOPBACK)))) {
+       ((1 < (showpackets->current).integer || ((chan->remoteAddress).type != NA_LOOPBACK)))) {
       Com_Printf(0x10,"[%s] send->%u.%u.%u.%u (%4i bytes) : s=%i ack=%i\n");
     }
-    bVar2 = 0 < (int)local_8;
+    bVar2 = 0 < res;
   }
   else {
-    param_1->unsentFragments = 1;
-    param_1->unsentLength = param_2;
-    param_1->reliable_fragments = (uint)param_4;
-    param_1->lowest_send_count = 0;
-    param_1->fragmentLength = 0;
-    param_1->fragment_ack[0] = 0;
-    param_1->fragment_ack[1] = 0;
-    param_1->fragment_ack[2] = 0;
-    param_1->fragment_ack[3] = 0;
-    memset(param_1->fragment_send_count,'\0',0x80);
-    if (param_1->unsentBufferSize <= param_2) {
+    chan->unsentFragments = 1;
+    chan->unsentLength = length;
+    chan->reliable_fragments = (uint)reliable_fragments;
+    chan->lowest_send_count = 0;
+    chan->fragmentLength = 0;
+    chan->fragment_ack[0] = 0;
+    chan->fragment_ack[1] = 0;
+    chan->fragment_ack[2] = 0;
+    chan->fragment_ack[3] = 0;
+    memset(chan->fragment_send_count,'\0',0x80);
+    if (chan->unsentBufferSize <= length) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x595,0
                                ,"%s\n\t(length) = %i");
       if (!bVar2) {
@@ -562,8 +579,8 @@ bool __cdecl Netchan_Transmit(netchan_t *param_1,int param_2,uchar *param_3,bool
         return (bool)uVar3;
       }
     }
-    Com_Memcpy(param_1->unsentBuffer,param_3,param_2);
-    Netchan_TransmitNextFragment(param_1);
+    Com_Memcpy(chan->unsentBuffer,data,length);
+    Netchan_TransmitNextFragment(chan);
     bVar2 = true;
   }
   return bVar2;
@@ -575,173 +592,172 @@ bool __cdecl Netchan_Transmit(netchan_t *param_1,int param_2,uchar *param_3,bool
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Netchan_Process(netchan_t *param_1,msg_t *param_2)
+int __cdecl Netchan_Process(netchan_t *chan,msg_t *msg)
 
 {
   bool bVar1;
   uint uVar2;
   int iVar3;
-  uint local_888;
-  uchar local_884 [2048];
+  int i;
+  uchar data [2048];
   uint local_84;
-  msg_t local_80;
-  uint local_50;
-  uint local_4c;
-  ulong local_48;
-  uint local_44;
-  int local_40;
-  uint local_3c;
-  byte local_35;
-  int local_34;
-  char local_2d;
-  int local_2c;
-  uint local_28;
+  msg_t buf;
+  int res;
+  int maxFragmentIndex;
+  int fragmentLength;
+  int fragmentIndex;
+  int fragmentSize_2;
+  int ack_bit_index;
+  bool messageComplete;
+  int fragmentOffset;
+  bool previously_acked;
+  int fragmentSize;
+  uint fragment_ack;
   uint local_24;
   uint local_20;
-  int local_18;
-  int local_14;
-  int local_10;
-  uint local_c;
-  int local_8;
+  int force_ack;
+  int fragmented;
+  int ack_requested;
+  int sequence;
+  int qport;
   
   local_84 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = 0;
-  local_18 = 0;
-  NetProf_PrepProfiling(&param_1->prof);
-  MSG_BeginReading(param_2);
-  local_c = MSG_ReadLong(param_2);
-  if (*(int *)&param_1->sock == 1) {
-    local_8 = MSG_ReadShort(param_2);
+  ack_requested = 0;
+  force_ack = 0;
+  NetProf_PrepProfiling(&chan->prof);
+  MSG_BeginReading(msg);
+  sequence = MSG_ReadLong(msg);
+  if (*(int *)&chan->sock == 1) {
+    qport = MSG_ReadShort(msg);
   }
-  if ((local_c & 0x80000000) == 0) {
-    local_14 = 0;
+  if ((sequence & 0x80000000U) == 0) {
+    fragmented = 0;
   }
   else {
-    if ((local_c & 0x40000000) != 0) {
-      local_10 = 1;
+    if ((sequence & 0x40000000U) != 0) {
+      ack_requested = 1;
     }
-    if ((local_c & 0x20000000) != 0) {
-      MSG_ReadByte(param_2);
-      MSG_ReadByte(param_2);
-      local_2c = MSG_ReadShort(param_2);
-      MSG_ReadShort(param_2);
-      if (local_2c != 0x48c) {
-        NET_AdrToString(param_1->remoteAddress);
+    if ((sequence & 0x20000000U) != 0) {
+      MSG_ReadByte(msg);
+      MSG_ReadByte(msg);
+      fragmentSize = MSG_ReadShort(msg);
+      MSG_ReadShort(msg);
+      if (fragmentSize != 0x48c) {
+        NET_AdrToString(chan->remoteAddress);
         Sys_Milliseconds();
         Com_Printf(0x10,"%08d: [%s] Warning: Invalid fragment size %d\n");
       }
-      local_28 = MSG_ReadLong(param_2);
-      local_24 = MSG_ReadLong(param_2);
-      local_20 = MSG_ReadLong(param_2);
-      uVar2 = MSG_ReadLong(param_2);
-      if ((local_c & 0x1fffffff) == param_1->outgoingSequence) {
-        param_1->fragment_ack[0] = param_1->fragment_ack[0] | local_28;
-        param_1->fragment_ack[1] = param_1->fragment_ack[1] | local_24;
-        param_1->fragment_ack[2] = param_1->fragment_ack[2] | local_20;
-        param_1->fragment_ack[3] = param_1->fragment_ack[3] | uVar2;
+      fragment_ack = MSG_ReadLong(msg);
+      local_24 = MSG_ReadLong(msg);
+      local_20 = MSG_ReadLong(msg);
+      uVar2 = MSG_ReadLong(msg);
+      if ((sequence & 0x1fffffffU) == chan->outgoingSequence) {
+        chan->fragment_ack[0] = chan->fragment_ack[0] | fragment_ack;
+        chan->fragment_ack[1] = chan->fragment_ack[1] | local_24;
+        chan->fragment_ack[2] = chan->fragment_ack[2] | local_20;
+        chan->fragment_ack[3] = chan->fragment_ack[3] | uVar2;
       }
       return 0;
     }
-    local_c = local_c & 0x1fffffff;
-    local_14 = 1;
+    sequence = sequence & 0x1fffffff;
+    fragmented = 1;
   }
-  if ((int)local_c <= param_1->incomingSequence) {
-    if ((local_c != param_1->incomingSequence) || (local_10 == 0)) {
+  if (sequence <= chan->incomingSequence) {
+    if ((sequence != chan->incomingSequence) || (ack_requested == 0)) {
       if (((showdrop->current).enabled != false) ||
          (((showpackets->current).integer != 0 &&
-          ((1 < (showpackets->current).integer || ((param_1->remoteAddress).type != NA_LOOPBACK)))))
-         ) {
-        NET_AdrToString(param_1->remoteAddress);
+          ((1 < (showpackets->current).integer || ((chan->remoteAddress).type != NA_LOOPBACK)))))) {
+        NET_AdrToString(chan->remoteAddress);
         Com_Printf(0x10,"[%s] %s: Out of order packet %i at %i\n");
       }
       return 0;
     }
-    local_18 = 1;
+    force_ack = 1;
   }
-  NetProf_NewRecievePacket(param_1,param_2->cursize,local_14);
-  if (local_14 != 0) {
-    local_44 = MSG_ReadByte(param_2);
-    local_4c = MSG_ReadByte(param_2);
-    local_40 = MSG_ReadShort(param_2);
-    local_48 = MSG_ReadShort(param_2);
-    if (param_1->fragmentSequence < (int)local_c) {
-      param_1->fragmentSequence = local_c;
-      param_1->fragmentLength = 0;
-      param_1->fragment_ack[0] = 0;
-      param_1->fragment_ack[1] = 0;
-      param_1->fragment_ack[2] = 0;
-      param_1->fragment_ack[3] = 0;
+  NetProf_NewRecievePacket(chan,msg->cursize,fragmented);
+  if (fragmented != 0) {
+    fragmentIndex = MSG_ReadByte(msg);
+    maxFragmentIndex = MSG_ReadByte(msg);
+    fragmentSize_2 = MSG_ReadShort(msg);
+    fragmentLength = MSG_ReadShort(msg);
+    if (chan->fragmentSequence < sequence) {
+      chan->fragmentSequence = sequence;
+      chan->fragmentLength = 0;
+      chan->fragment_ack[0] = 0;
+      chan->fragment_ack[1] = 0;
+      chan->fragment_ack[2] = 0;
+      chan->fragment_ack[3] = 0;
     }
-    local_34 = local_44 * local_40;
-    local_3c = local_44 & 0x1f;
-    iVar3 = (int)local_44 >> 5;
-    local_2d = (1 << (sbyte)local_3c & param_1->fragment_ack[iVar3]) != 0;
-    if (local_18 == 0) {
-      param_1->fragment_ack[iVar3] = 1 << (sbyte)local_3c | param_1->fragment_ack[iVar3];
+    fragmentOffset = fragmentIndex * fragmentSize_2;
+    ack_bit_index = fragmentIndex & 0x1f;
+    iVar3 = fragmentIndex >> 5;
+    previously_acked = (1 << (sbyte)ack_bit_index & chan->fragment_ack[iVar3]) != 0;
+    if (force_ack == 0) {
+      chan->fragment_ack[iVar3] = 1 << (sbyte)ack_bit_index | chan->fragment_ack[iVar3];
     }
-    if (local_10 != 0) {
-      memset((uchar *)&local_80,'\0',0x30);
-      MSG_Init(&local_80,local_884,0x800);
-      MSG_WriteLong(&local_80,param_1->fragmentSequence | 0xa0000000);
-      if (*(int *)&param_1->sock < 1) {
-        MSG_WriteShort(&local_80,param_1->qport);
+    if (ack_requested != 0) {
+      memset((uchar *)&buf,'\0',0x30);
+      MSG_Init(&buf,data,0x800);
+      MSG_WriteLong(&buf,chan->fragmentSequence | 0xa0000000);
+      if (*(int *)&chan->sock < 1) {
+        MSG_WriteShort(&buf,chan->qport);
       }
-      MSG_WriteByte(&local_80,local_44 & 0xff);
-      MSG_WriteByte(&local_80,local_4c & 0xff);
-      MSG_WriteShort(&local_80,local_40);
-      MSG_WriteShort(&local_80,local_48);
-      if (local_18 != 0) {
-        MSG_WriteLong(&local_80,-1);
-        MSG_WriteLong(&local_80,-1);
-        MSG_WriteLong(&local_80,-1);
-        MSG_WriteLong(&local_80,-1);
-        NET_SendPacket((netsrc_t)*(undefined4 *)&param_1->sock,local_80.cursize,local_80.data,
-                       param_1->remoteAddress);
+      MSG_WriteByte(&buf,fragmentIndex & 0xff);
+      MSG_WriteByte(&buf,maxFragmentIndex & 0xff);
+      MSG_WriteShort(&buf,fragmentSize_2);
+      MSG_WriteShort(&buf,fragmentLength);
+      if (force_ack != 0) {
+        MSG_WriteLong(&buf,-1);
+        MSG_WriteLong(&buf,-1);
+        MSG_WriteLong(&buf,-1);
+        MSG_WriteLong(&buf,-1);
+        NET_SendPacket((netsrc_t)*(undefined4 *)&chan->sock,buf.cursize,buf.data,chan->remoteAddress
+                      );
         return 0;
       }
-      MSG_WriteLong(&local_80,param_1->fragment_ack[0]);
-      MSG_WriteLong(&local_80,param_1->fragment_ack[1]);
-      MSG_WriteLong(&local_80,param_1->fragment_ack[2]);
-      MSG_WriteLong(&local_80,param_1->fragment_ack[3]);
-      bVar1 = NET_SendPacket((netsrc_t)*(undefined4 *)&param_1->sock,local_80.cursize,local_80.data,
-                             param_1->remoteAddress);
-      local_50 = (uint)bVar1;
+      MSG_WriteLong(&buf,chan->fragment_ack[0]);
+      MSG_WriteLong(&buf,chan->fragment_ack[1]);
+      MSG_WriteLong(&buf,chan->fragment_ack[2]);
+      MSG_WriteLong(&buf,chan->fragment_ack[3]);
+      bVar1 = NET_SendPacket((netsrc_t)*(undefined4 *)&chan->sock,buf.cursize,buf.data,
+                             chan->remoteAddress);
+      res = (int)bVar1;
     }
-    if (local_2d == '\0') {
-      param_1->fragmentLength = param_1->fragmentLength + local_48;
-      memcpy(param_1->fragmentBuffer + local_34,param_2->data + param_2->readcount,local_48);
+    if (previously_acked == false) {
+      chan->fragmentLength = chan->fragmentLength + fragmentLength;
+      memcpy(chan->fragmentBuffer + fragmentOffset,msg->data + msg->readcount,fragmentLength);
     }
-    local_35 = 1;
-    for (local_888 = 0; (int)local_888 <= (int)local_4c; local_888 = local_888 + 1) {
-      local_3c = local_888 & 0x1f;
-      local_35 = local_35 & (1 << (sbyte)local_3c & param_1->fragment_ack[(int)local_888 >> 5]) != 0
-      ;
-      if (local_35 == 0) {
+    messageComplete = true;
+    for (i = 0; i <= maxFragmentIndex; i = i + 1) {
+      ack_bit_index = i & 0x1f;
+      messageComplete =
+           (bool)(messageComplete & (1 << (sbyte)ack_bit_index & chan->fragment_ack[i >> 5]) != 0);
+      if (messageComplete == false) {
         return 0;
       }
     }
-    if (param_2->maxsize < param_1->fragmentLength) {
+    if (msg->maxsize < chan->fragmentLength) {
       return 0;
     }
-    *(uint *)param_2->data = local_c;
-    memcpy(param_2->data + 4,param_1->fragmentBuffer,param_1->fragmentLength);
-    param_2->cursize = param_1->fragmentLength + 4;
-    param_1->fragmentLength = 0;
-    param_1->fragment_ack[0] = 0;
-    param_1->fragment_ack[1] = 0;
-    param_1->fragment_ack[2] = 0;
-    param_1->fragment_ack[3] = 0;
-    MSG_BeginReading(param_2);
-    MSG_ReadLong(param_2);
+    *(int *)msg->data = sequence;
+    memcpy(msg->data + 4,chan->fragmentBuffer,chan->fragmentLength);
+    msg->cursize = chan->fragmentLength + 4;
+    chan->fragmentLength = 0;
+    chan->fragment_ack[0] = 0;
+    chan->fragment_ack[1] = 0;
+    chan->fragment_ack[2] = 0;
+    chan->fragment_ack[3] = 0;
+    MSG_BeginReading(msg);
+    MSG_ReadLong(msg);
   }
-  param_1->incomingSequence = local_c;
+  chan->incomingSequence = sequence;
   return 1;
 }
 
 
 // 006EA7E0  NET_CompareBaseAdrSigned  (qcommon/net_chan_mp.cpp:1793)
 
-int __cdecl NET_CompareBaseAdrSigned(netadr_t *param_1,netadr_t *param_2,bool param_3)
+int __cdecl NET_CompareBaseAdrSigned(netadr_t *a,netadr_t *b,bool skipLocalClient)
 
 {
   int iVar1;
@@ -751,20 +767,20 @@ int __cdecl NET_CompareBaseAdrSigned(netadr_t *param_1,netadr_t *param_2,bool pa
   bool bVar5;
   int local_8;
   
-  if (param_1->type == param_2->type) {
-    if (param_1->type == NA_LOOPBACK) {
-      local_8 = (uint)param_1->port - (uint)param_2->port;
+  if (a->type == b->type) {
+    if (a->type == NA_LOOPBACK) {
+      local_8 = (uint)a->port - (uint)b->port;
     }
-    else if (param_1->type == NA_BOT) {
-      local_8 = (uint)param_1->port - (uint)param_2->port;
+    else if (a->type == NA_BOT) {
+      local_8 = (uint)a->port - (uint)b->port;
     }
-    else if (param_1->type == NA_IP) {
+    else if (a->type == NA_IP) {
       iVar1 = 4;
       bVar4 = false;
       bVar5 = true;
       local_8 = 0;
-      puVar2 = param_1->ip;
-      puVar3 = param_2->ip;
+      puVar2 = a->ip;
+      puVar3 = b->ip;
       do {
         if (iVar1 == 0) break;
         iVar1 = iVar1 + -1;
@@ -783,7 +799,7 @@ int __cdecl NET_CompareBaseAdrSigned(netadr_t *param_1,netadr_t *param_2,bool pa
     }
   }
   else {
-    local_8 = param_1->type - param_2->type;
+    local_8 = a->type - b->type;
   }
   return local_8;
 }
@@ -791,19 +807,19 @@ int __cdecl NET_CompareBaseAdrSigned(netadr_t *param_1,netadr_t *param_2,bool pa
 
 // 006EA880  NET_CompareBaseAdr  (qcommon/net_chan_mp.cpp:1831)
 
-int __cdecl NET_CompareBaseAdr(netadr_t param_1,netadr_t param_2)
+int __cdecl NET_CompareBaseAdr(netadr_t a,netadr_t b)
 
 {
   int iVar1;
   
-  iVar1 = NET_CompareBaseAdrSigned(&param_1,&param_2,false);
+  iVar1 = NET_CompareBaseAdrSigned(&a,&b,false);
   return (uint)(iVar1 == 0);
 }
 
 
 // 006EA8B0  NET_CompareAdrSigned  (qcommon/net_chan_mp.cpp:1849)
 
-int __cdecl NET_CompareAdrSigned(netadr_t *param_1,netadr_t *param_2)
+int __cdecl NET_CompareAdrSigned(netadr_t *a,netadr_t *b)
 
 {
   int iVar1;
@@ -813,18 +829,18 @@ int __cdecl NET_CompareAdrSigned(netadr_t *param_1,netadr_t *param_2)
   bool bVar5;
   int local_8;
   
-  if (param_1->type == param_2->type) {
-    if (param_1->type == NA_LOOPBACK) {
+  if (a->type == b->type) {
+    if (a->type == NA_LOOPBACK) {
       local_8 = 0;
     }
-    else if (param_1->type == NA_IP) {
-      if (param_1->port == param_2->port) {
+    else if (a->type == NA_IP) {
+      if (a->port == b->port) {
         iVar1 = 4;
         bVar4 = false;
         bVar5 = true;
         local_8 = 0;
-        puVar2 = param_1->ip;
-        puVar3 = param_2->ip;
+        puVar2 = a->ip;
+        puVar3 = b->ip;
         do {
           if (iVar1 == 0) break;
           iVar1 = iVar1 + -1;
@@ -838,7 +854,7 @@ int __cdecl NET_CompareAdrSigned(netadr_t *param_1,netadr_t *param_2)
         }
       }
       else {
-        local_8 = (uint)param_1->port - (uint)param_2->port;
+        local_8 = (uint)a->port - (uint)b->port;
       }
     }
     else {
@@ -847,7 +863,7 @@ int __cdecl NET_CompareAdrSigned(netadr_t *param_1,netadr_t *param_2)
     }
   }
   else {
-    local_8 = param_1->type - param_2->type;
+    local_8 = a->type - b->type;
   }
   return local_8;
 }
@@ -855,24 +871,24 @@ int __cdecl NET_CompareAdrSigned(netadr_t *param_1,netadr_t *param_2)
 
 // 006EA950  NET_CompareAdr  (qcommon/net_chan_mp.cpp:1882)
 
-int __cdecl NET_CompareAdr(netadr_t param_1,netadr_t param_2)
+int __cdecl NET_CompareAdr(netadr_t a,netadr_t b)
 
 {
   int iVar1;
   
-  iVar1 = NET_CompareAdrSigned(&param_1,&param_2);
+  iVar1 = NET_CompareAdrSigned(&a,&b);
   return (uint)(iVar1 == 0);
 }
 
 
 // 006EA970  NET_IsLocalAddress  (qcommon/net_chan_mp.cpp:1892)
 
-int __cdecl NET_IsLocalAddress(netadr_t param_1)
+int __cdecl NET_IsLocalAddress(netadr_t adr)
 
 {
   undefined4 local_c;
   
-  if ((param_1.type == NA_LOOPBACK) || (param_1.type == NA_BOT)) {
+  if ((adr.type == NA_LOOPBACK) || (adr.type == NA_BOT)) {
     local_c = 1;
   }
   else {
@@ -884,14 +900,14 @@ int __cdecl NET_IsLocalAddress(netadr_t param_1)
 
 // 006EA9A0  NET_SetNetAdrLoopbackIP  (qcommon/net_chan_mp.cpp:1918)
 
-void __cdecl NET_SetNetAdrLoopbackIP(netadr_t *param_1)
+void __cdecl NET_SetNetAdrLoopbackIP(netadr_t *src)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (netadr_t *)0x0) {
+  if (src == (netadr_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x77f,0,
                              "%s");
     if (!bVar2) {
@@ -900,14 +916,14 @@ void __cdecl NET_SetNetAdrLoopbackIP(netadr_t *param_1)
       return;
     }
   }
-  param_1->ip[0] = '\x7f';
-  param_1->ip[1] = '\0';
-  param_1->ip[2] = '\0';
-  param_1->ip[3] = '\x01';
+  src->ip[0] = '\x7f';
+  src->ip[1] = '\0';
+  src->ip[2] = '\0';
+  src->ip[3] = '\x01';
   iVar3 = dwGetLoopbackIndex();
-  param_1->addrHandleIndex = iVar3;
-  param_1->type = NA_LOOPBACK;
-  param_1->port = 0;
+  src->addrHandleIndex = iVar3;
+  src->type = NA_LOOPBACK;
+  src->port = 0;
   return;
 }
 
@@ -916,12 +932,12 @@ void __cdecl NET_SetNetAdrLoopbackIP(netadr_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl NET_GetClientPacket(netadr_t *param_1,msg_t *param_2)
+int __cdecl NET_GetClientPacket(netadr_t *net_from_2,msg_t *net_message_2)
 
 {
   int iVar1;
   
-  iVar1 = Sys_GetPacket(param_1,param_2);
+  iVar1 = Sys_GetPacket(net_from_2,net_message_2);
   return iVar1;
 }
 
@@ -930,36 +946,38 @@ int __cdecl NET_GetClientPacket(netadr_t *param_1,msg_t *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl NET_GetLoopPacket_Real(netsrc_t param_1,netadr_t *param_2,msg_t *param_3)
+int __cdecl NET_GetLoopPacket_Real(netsrc_t sock,netadr_t *net_from,msg_t *net_message)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
   undefined3 in_stack_00000005;
+  loopback_t *loop;
+  int i;
   
-  iVar2 = _param_1 * 0x4f88;
-  if (0x10 < loopbacks[_param_1].send - loopbacks[_param_1].get) {
-    loopbacks[_param_1].get = loopbacks[_param_1].send + -0x10;
+  iVar2 = _sock * 0x4f88;
+  if (0x10 < loopbacks[_sock].send - loopbacks[_sock].get) {
+    loopbacks[_sock].get = loopbacks[_sock].send + -0x10;
   }
-  bVar1 = loopbacks[_param_1].get < loopbacks[_param_1].send;
+  bVar1 = loopbacks[_sock].get < loopbacks[_sock].send;
   if (bVar1) {
-    uVar3 = loopbacks[_param_1].get & 0xf;
+    uVar3 = loopbacks[_sock].get & 0xf;
     LOCK();
-    loopbacks[_param_1].get = loopbacks[_param_1].get + 1;
+    loopbacks[_sock].get = loopbacks[_sock].get + 1;
     UNLOCK();
-    memcpy(param_3->data,loopbacks[_param_1].msgs[uVar3].data,
+    memcpy(net_message->data,loopbacks[_sock].msgs[uVar3].data,
            *(ulong *)(iVar2 + 0x97644c8 + uVar3 * 0x4f8));
-    param_3->cursize = *(int *)(iVar2 + 0x97644c8 + uVar3 * 0x4f8);
-    param_2->type = NA_BOT;
-    param_2->ip[0] = '\0';
-    param_2->ip[1] = '\0';
-    param_2->ip[2] = '\0';
-    param_2->ip[3] = '\0';
-    *(undefined4 *)&param_2->port = 0;
-    param_2->addrHandleIndex = 0;
-    param_2->type = NA_LOOPBACK;
-    param_2->port = *(ushort *)(iVar2 + 0x97644cc + uVar3 * 0x4f8);
+    net_message->cursize = *(int *)(iVar2 + 0x97644c8 + uVar3 * 0x4f8);
+    net_from->type = NA_BOT;
+    net_from->ip[0] = '\0';
+    net_from->ip[1] = '\0';
+    net_from->ip[2] = '\0';
+    net_from->ip[3] = '\0';
+    *(undefined4 *)&net_from->port = 0;
+    net_from->addrHandleIndex = 0;
+    net_from->type = NA_LOOPBACK;
+    net_from->port = *(ushort *)(iVar2 + 0x97644cc + uVar3 * 0x4f8);
   }
   return (uint)bVar1;
 }
@@ -969,12 +987,13 @@ int __cdecl NET_GetLoopPacket_Real(netsrc_t param_1,netadr_t *param_2,msg_t *par
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl NET_GetLoopPacket(netsrc_t param_1,netadr_t *param_2,msg_t *param_3)
+int __cdecl NET_GetLoopPacket(netsrc_t sock,netadr_t *net_from,msg_t *net_message)
 
 {
   int iVar1;
+  int result;
   
-  iVar1 = NET_GetLoopPacket_Real(param_1,param_2,param_3);
+  iVar1 = NET_GetLoopPacket_Real(sock,net_from,net_message);
   return iVar1;
 }
 
@@ -983,27 +1002,29 @@ int __cdecl NET_GetLoopPacket(netsrc_t param_1,netadr_t *param_2,msg_t *param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl NET_SendLoopPacket(netsrc_t param_1,int param_2,void *param_3,netadr_t param_4)
+void __cdecl NET_SendLoopPacket(netsrc_t sock,int length,void *data,netadr_t to)
 
 {
   uint uVar1;
   undefined3 in_stack_00000005;
-  uint local_c;
+  loopback_t *loop;
+  int i;
+  int port;
   
-  local_c = 0;
-  if ((int)_param_1 < 1) {
-    local_c = _param_1;
-    _param_1 = 1;
+  port = 0;
+  if ((int)_sock < 1) {
+    port = _sock;
+    _sock = 1;
   }
-  else if (_param_1 == 1) {
-    _param_1 = (uint)param_4.port;
+  else if (_sock == 1) {
+    _sock = (uint)to.port;
   }
-  uVar1 = loopbacks[_param_1].send & 0xf;
-  memcpy(loopbacks[_param_1].msgs[uVar1].data,param_3,param_2);
-  *(int *)(_param_1 * 0x4f88 + 0x97644c8 + uVar1 * 0x4f8) = param_2;
-  *(uint *)(_param_1 * 0x4f88 + 0x97644cc + uVar1 * 0x4f8) = local_c;
+  uVar1 = loopbacks[_sock].send & 0xf;
+  memcpy(loopbacks[_sock].msgs[uVar1].data,data,length);
+  *(int *)(_sock * 0x4f88 + 0x97644c8 + uVar1 * 0x4f8) = length;
+  *(int *)(_sock * 0x4f88 + 0x97644cc + uVar1 * 0x4f8) = port;
   LOCK();
-  loopbacks[_param_1].send = loopbacks[_param_1].send + 1;
+  loopbacks[_sock].send = loopbacks[_sock].send + 1;
   UNLOCK();
   return;
 }
@@ -1013,7 +1034,7 @@ void __cdecl NET_SendLoopPacket(netsrc_t param_1,int param_2,void *param_3,netad
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl NET_DeferPacketToClient(netadr_t *param_1,msg_t *param_2)
+void __cdecl NET_DeferPacketToClient(netadr_t *net_from,msg_t *net_message)
 
 {
   code *pcVar1;
@@ -1021,6 +1042,8 @@ void __cdecl NET_DeferPacketToClient(netadr_t *param_1,msg_t *param_2)
   undefined2 uVar3;
   bool bVar4;
   uint uVar5;
+  DeferredMsg *msg;
+  int idx;
   
   bVar4 = Sys_IsServerThread();
   if (!bVar4) {
@@ -1033,17 +1056,17 @@ void __cdecl NET_DeferPacketToClient(netadr_t *param_1,msg_t *param_2)
     }
   }
   uVar5 = deferredQueue.send & 0xf;
-  memcpy(deferredQueue.msgs[uVar5].data,param_2->data,param_2->cursize);
-  deferredQueue.msgs[uVar5].datalen = param_2->cursize;
-  uVar2 = *(undefined3 *)&param_2->field_0x2d;
-  deferredQueue.msgs[uVar5].targetLocalNetID = param_2->targetLocalNetID;
+  memcpy(deferredQueue.msgs[uVar5].data,net_message->data,net_message->cursize);
+  deferredQueue.msgs[uVar5].datalen = net_message->cursize;
+  uVar2 = *(undefined3 *)&net_message->field_0x2d;
+  deferredQueue.msgs[uVar5].targetLocalNetID = net_message->targetLocalNetID;
   *(undefined3 *)&deferredQueue.msgs[uVar5].field_0x505 = uVar2;
-  deferredQueue.msgs[uVar5].addr.type = param_1->type;
-  *(undefined4 *)deferredQueue.msgs[uVar5].addr.ip = *(undefined4 *)param_1->ip;
-  uVar3 = *(undefined2 *)&param_1->field_0xa;
-  deferredQueue.msgs[uVar5].addr.port = param_1->port;
+  deferredQueue.msgs[uVar5].addr.type = net_from->type;
+  *(undefined4 *)deferredQueue.msgs[uVar5].addr.ip = *(undefined4 *)net_from->ip;
+  uVar3 = *(undefined2 *)&net_from->field_0xa;
+  deferredQueue.msgs[uVar5].addr.port = net_from->port;
   *(undefined2 *)&deferredQueue.msgs[uVar5].addr.field_0xa = uVar3;
-  deferredQueue.msgs[uVar5].addr.addrHandleIndex = param_1->addrHandleIndex;
+  deferredQueue.msgs[uVar5].addr.addrHandleIndex = net_from->addrHandleIndex;
   LOCK();
   deferredQueue.send = deferredQueue.send + 1;
   UNLOCK();
@@ -1055,7 +1078,7 @@ void __cdecl NET_DeferPacketToClient(netadr_t *param_1,msg_t *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl NET_GetDeferredClientPacket(netadr_t *param_1,msg_t *param_2)
+bool __cdecl NET_GetDeferredClientPacket(netadr_t *net_from,msg_t *net_message)
 
 {
   code *pcVar1;
@@ -1064,6 +1087,8 @@ bool __cdecl NET_GetDeferredClientPacket(netadr_t *param_1,msg_t *param_2)
   bool bVar4;
   undefined1 uVar5;
   uint uVar6;
+  DeferredMsg *msg;
+  int idx;
   
   bVar4 = Sys_IsMainThread();
   if ((!bVar4) &&
@@ -1073,14 +1098,14 @@ bool __cdecl NET_GetDeferredClientPacket(netadr_t *param_1,msg_t *param_2)
     uVar5 = (*pcVar1)();
     return (bool)uVar5;
   }
-  if ((param_1 == (netadr_t *)0x0) &&
+  if ((net_from == (netadr_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x826,0
                                ,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     uVar5 = (*pcVar1)();
     return (bool)uVar5;
   }
-  if ((param_2 == (msg_t *)0x0) &&
+  if ((net_message == (msg_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x827,0
                                ,"%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
@@ -1093,17 +1118,17 @@ bool __cdecl NET_GetDeferredClientPacket(netadr_t *param_1,msg_t *param_2)
   bVar4 = deferredQueue.get < deferredQueue.send;
   if (bVar4) {
     uVar6 = deferredQueue.get & 0xf;
-    memcpy(param_2->data,deferredQueue.msgs[uVar6].data,deferredQueue.msgs[uVar6].datalen);
-    param_2->cursize = deferredQueue.msgs[uVar6].datalen;
+    memcpy(net_message->data,deferredQueue.msgs[uVar6].data,deferredQueue.msgs[uVar6].datalen);
+    net_message->cursize = deferredQueue.msgs[uVar6].datalen;
     uVar2 = *(undefined3 *)&deferredQueue.msgs[uVar6].field_0x505;
-    param_2->targetLocalNetID = deferredQueue.msgs[uVar6].targetLocalNetID;
-    *(undefined3 *)&param_2->field_0x2d = uVar2;
-    param_1->type = deferredQueue.msgs[uVar6].addr.type;
-    *(undefined4 *)param_1->ip = *(undefined4 *)deferredQueue.msgs[uVar6].addr.ip;
+    net_message->targetLocalNetID = deferredQueue.msgs[uVar6].targetLocalNetID;
+    *(undefined3 *)&net_message->field_0x2d = uVar2;
+    net_from->type = deferredQueue.msgs[uVar6].addr.type;
+    *(undefined4 *)net_from->ip = *(undefined4 *)deferredQueue.msgs[uVar6].addr.ip;
     uVar3 = *(undefined2 *)&deferredQueue.msgs[uVar6].addr.field_0xa;
-    param_1->port = deferredQueue.msgs[uVar6].addr.port;
-    *(undefined2 *)&param_1->field_0xa = uVar3;
-    param_1->addrHandleIndex = deferredQueue.msgs[uVar6].addr.addrHandleIndex;
+    net_from->port = deferredQueue.msgs[uVar6].addr.port;
+    *(undefined2 *)&net_from->field_0xa = uVar3;
+    net_from->addrHandleIndex = deferredQueue.msgs[uVar6].addr.addrHandleIndex;
     LOCK();
     deferredQueue.get = deferredQueue.get + 1;
     UNLOCK();
@@ -1116,26 +1141,26 @@ bool __cdecl NET_GetDeferredClientPacket(netadr_t *param_1,msg_t *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl NET_SendPacket(netsrc_t param_1,int param_2,void *param_3,netadr_t param_4)
+bool __cdecl NET_SendPacket(netsrc_t sock,int length,void *data,netadr_t to)
 
 {
   bool bVar1;
   
-  if (((showpackets->current).integer != 0) && (*(int *)param_3 == -1)) {
+  if (((showpackets->current).integer != 0) && (*(int *)data == -1)) {
     Com_Printf(0x10,"[%s] send packet %4i\n");
   }
-  if (param_4.type == NA_LOOPBACK) {
-    NET_SendLoopPacket(param_1,param_2,param_3,param_4);
+  if (to.type == NA_LOOPBACK) {
+    NET_SendLoopPacket(sock,length,data,to);
     bVar1 = true;
   }
-  else if (param_4.type == NA_BAD) {
+  else if (to.type == NA_BAD) {
     bVar1 = false;
   }
-  else if (param_4.type == NA_BOT) {
+  else if (to.type == NA_BOT) {
     bVar1 = false;
   }
   else {
-    bVar1 = Sys_SendPacket(param_2,param_3,param_4);
+    bVar1 = Sys_SendPacket(length,data,to);
   }
   return bVar1;
 }
@@ -1145,7 +1170,7 @@ bool __cdecl NET_SendPacket(netsrc_t param_1,int param_2,void *param_3,netadr_t 
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl NET_OutOfBandPrint(netsrc_t param_1,netadr_t param_2,char *param_3)
+bool __cdecl NET_OutOfBandPrint(netsrc_t sock,netadr_t adr,char *data)
 
 {
   char cVar1;
@@ -1153,35 +1178,38 @@ bool __cdecl NET_OutOfBandPrint(netsrc_t param_1,netadr_t param_2,char *param_3)
   uchar *puVar3;
   bool bVar4;
   undefined1 uVar5;
-  char *pcVar6;
+  char *fmt;
   undefined3 in_stack_00000005;
   uchar *local_58;
   char *local_48;
   char *local_38;
   char *local_28;
   char *local_18;
+  int iLength;
+  uint buffer_position;
+  int res;
   
   tempNetchanPacketBuf[0] = 0xff;
   tempNetchanPacketBuf[1] = 0xff;
   tempNetchanPacketBuf[2] = 0xff;
   tempNetchanPacketBuf[3] = 0xff;
   if (((showpackets->current).integer != 0) &&
-     ((1 < (showpackets->current).integer || (param_2.type != NA_LOOPBACK)))) {
-    NET_AdrToString(param_2);
+     ((1 < (showpackets->current).integer || (adr.type != NA_LOOPBACK)))) {
+    NET_AdrToString(adr);
     Com_DPrintf(0x10,"OOB Print->%s: %s\n");
   }
-  local_18 = param_3;
+  local_18 = data;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  if (local_18 + (1 - (int)(param_3 + 1)) < (char *)0xfffd) {
-    local_48 = param_3;
+  if (local_18 + (1 - (int)(data + 1)) < (char *)0xfffd) {
+    local_48 = data;
     do {
       cVar1 = *local_48;
       local_48 = local_48 + 1;
     } while (cVar1 != '\0');
-    memcpy(tempNetchanPacketBuf + 4,(uchar *)param_3,(ulong)(local_48 + (1 - (int)(param_3 + 1))));
+    memcpy(tempNetchanPacketBuf + 4,(uchar *)data,(ulong)(local_48 + (1 - (int)(data + 1))));
     local_58 = tempNetchanPacketBuf;
     puVar3 = local_58;
     do {
@@ -1189,29 +1217,29 @@ bool __cdecl NET_OutOfBandPrint(netsrc_t param_1,netadr_t param_2,char *param_3)
       puVar3 = local_58 + 1;
     } while (*local_58 != '\0');
     local_58 = local_58 + -0x9772f78;
-    bVar4 = NET_SendPacket(param_1,(int)local_58,tempNetchanPacketBuf,param_2);
-    if (_param_1 == 1) {
+    bVar4 = NET_SendPacket(sock,(int)local_58,tempNetchanPacketBuf,adr);
+    if (_sock == 1) {
       SV_Netchan_AddOOBProfilePacket((int)local_58);
     }
     else {
-      CL_Netchan_AddOOBProfilePacket(_param_1,(int)local_58);
+      CL_Netchan_AddOOBProfilePacket(_sock,(int)local_58);
     }
   }
   else {
-    local_28 = param_3;
+    local_28 = data;
     do {
       cVar1 = *local_28;
       local_28 = local_28 + 1;
     } while (cVar1 != '\0');
     Com_DPrintf(0x10,"OOB Packet is %i bytes - too large to send\n");
-    local_38 = param_3;
+    local_38 = data;
     do {
       cVar1 = *local_38;
       local_38 = local_38 + 1;
     } while (cVar1 != '\0');
-    pcVar6 = va("OOB Packet is %i bytes - too large to send\n");
+    fmt = va("OOB Packet is %i bytes - too large to send\n");
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x8e9,0,
-                             pcVar6);
+                             fmt);
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
       uVar5 = (*pcVar2)();
@@ -1227,32 +1255,35 @@ bool __cdecl NET_OutOfBandPrint(netsrc_t param_1,netadr_t param_2,char *param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl NET_OutOfBandData(netsrc_t param_1,netadr_t param_2,uchar *param_3,int param_4)
+bool __cdecl NET_OutOfBandData(netsrc_t sock,netadr_t adr,uchar *format,int len)
 
 {
   bool bVar1;
-  int iVar2;
+  int length;
   undefined3 in_stack_00000005;
-  int local_14;
+  msg_t mbuf;
+  int i;
+  int buffer_position;
+  int res;
   
   tempNetchanPacketBuf[0] = 0xff;
   tempNetchanPacketBuf[1] = 0xff;
   tempNetchanPacketBuf[2] = 0xff;
   tempNetchanPacketBuf[3] = 0xff;
-  for (local_14 = 0; local_14 < param_4; local_14 = local_14 + 1) {
-    tempNetchanPacketBuf[local_14 + 4] = param_3[local_14];
+  for (i = 0; i < len; i = i + 1) {
+    tempNetchanPacketBuf[i + 4] = format[i];
   }
-  iVar2 = param_4 + 4;
+  length = len + 4;
   if (((showpackets->current).integer != 0) &&
-     ((1 < (showpackets->current).integer || (param_2.type != NA_LOOPBACK)))) {
+     ((1 < (showpackets->current).integer || (adr.type != NA_LOOPBACK)))) {
     Com_DPrintf(0x10,"OOB Data->%u.%u.%u.%u: %i bytes\n");
   }
-  bVar1 = NET_SendPacket(param_1,iVar2,tempNetchanPacketBuf,param_2);
-  if (_param_1 == 1) {
-    SV_Netchan_AddOOBProfilePacket(iVar2);
+  bVar1 = NET_SendPacket(sock,length,tempNetchanPacketBuf,adr);
+  if (_sock == 1) {
+    SV_Netchan_AddOOBProfilePacket(length);
   }
   else {
-    CL_Netchan_AddOOBProfilePacket(_param_1,iVar2);
+    CL_Netchan_AddOOBProfilePacket(_sock,length);
   }
   return bVar1;
 }
@@ -1262,19 +1293,22 @@ bool __cdecl NET_OutOfBandData(netsrc_t param_1,netadr_t param_2,uchar *param_3,
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl NET_OutOfBandVoiceData(netsrc_t param_1,netadr_t param_2,uchar *param_3,int param_4)
+int __cdecl NET_OutOfBandVoiceData(netsrc_t sock,netadr_t adr,uchar *format,int len)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   undefined3 in_stack_00000005;
+  msg_t mbuf;
+  int index;
+  int res;
   
   tempNetchanPacketBuf[0] = 0xff;
   tempNetchanPacketBuf[1] = 0xff;
   tempNetchanPacketBuf[2] = 0xff;
   tempNetchanPacketBuf[3] = 0xff;
-  if (0xffff < param_4 + 4) {
+  if (0xffff < len + 4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\net_chan_mp.cpp",0x9b9,0,
                              "%s");
     if (!bVar2) {
@@ -1283,14 +1317,14 @@ int __cdecl NET_OutOfBandVoiceData(netsrc_t param_1,netadr_t param_2,uchar *para
       return iVar3;
     }
   }
-  memcpy(tempNetchanPacketBuf + 4,param_3,param_4);
-  iVar3 = param_4 + 4;
-  bVar2 = NET_SendPacket(param_1,iVar3,tempNetchanPacketBuf,param_2);
-  if (_param_1 == 1) {
+  memcpy(tempNetchanPacketBuf + 4,format,len);
+  iVar3 = len + 4;
+  bVar2 = NET_SendPacket(sock,iVar3,tempNetchanPacketBuf,adr);
+  if (_sock == 1) {
     SV_Netchan_AddOOBProfilePacket(iVar3);
   }
   else {
-    CL_Netchan_AddOOBProfilePacket(_param_1,iVar3);
+    CL_Netchan_AddOOBProfilePacket(_sock,iVar3);
   }
   return (uint)bVar2;
 }
@@ -1300,7 +1334,7 @@ int __cdecl NET_OutOfBandVoiceData(netsrc_t param_1,netadr_t param_2,uchar *para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl NET_StringToAdr(char *param_1,netadr_t *param_2)
+int __cdecl NET_StringToAdr(char *s,netadr_t *a)
 
 {
   byte bVar1;
@@ -1311,13 +1345,14 @@ int __cdecl NET_StringToAdr(char *param_1,netadr_t *param_2)
   int local_420;
   byte *local_418;
   byte *local_414;
-  uchar local_40c [1024];
+  int r;
+  uchar base [1024];
   uint local_c;
-  char *local_8;
+  char *port;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   local_414 = (byte *)0xc96b70;
-  local_418 = (byte *)param_1;
+  local_418 = (byte *)s;
   do {
     bVar1 = *local_418;
     bVar4 = bVar1 < *local_414;
@@ -1336,43 +1371,43 @@ LAB_006eb454:
   local_420 = 0;
 LAB_006eb45f:
   if (local_420 == 0) {
-    param_2->type = NA_BOT;
-    param_2->ip[0] = '\0';
-    param_2->ip[1] = '\0';
-    param_2->ip[2] = '\0';
-    param_2->ip[3] = '\0';
-    *(undefined4 *)&param_2->port = 0;
-    param_2->addrHandleIndex = 0;
-    param_2->type = NA_LOOPBACK;
+    a->type = NA_BOT;
+    a->ip[0] = '\0';
+    a->ip[1] = '\0';
+    a->ip[2] = '\0';
+    a->ip[3] = '\0';
+    *(undefined4 *)&a->port = 0;
+    a->addrHandleIndex = 0;
+    a->type = NA_LOOPBACK;
     iVar3 = 1;
   }
   else {
-    I_strncpyz((char *)local_40c,param_1,0x400);
-    strstr(local_40c,":");
-    local_8 = extraout_EAX;
+    I_strncpyz((char *)base,s,0x400);
+    strstr(base,":");
+    port = extraout_EAX;
     if (extraout_EAX != (char *)0x0) {
       *extraout_EAX = '\0';
-      local_8 = extraout_EAX + 1;
+      port = extraout_EAX + 1;
     }
-    iVar3 = Sys_StringToAdr((char *)local_40c,param_2);
+    iVar3 = Sys_StringToAdr((char *)base,a);
     if (iVar3 == 0) {
-      param_2->type = NA_BAD;
+      a->type = NA_BAD;
       iVar3 = 0;
     }
-    else if ((((param_2->ip[0] == 0xff) && (param_2->ip[1] == 0xff)) && (param_2->ip[2] == 0xff)) &&
-            (param_2->ip[3] == 0xff)) {
-      param_2->type = NA_BAD;
+    else if ((((a->ip[0] == 0xff) && (a->ip[1] == 0xff)) && (a->ip[2] == 0xff)) &&
+            (a->ip[3] == 0xff)) {
+      a->type = NA_BAD;
       iVar3 = 0;
     }
     else {
-      if (local_8 == (char *)0x0) {
+      if (port == (char *)0x0) {
         uVar2 = BigShort(0xc02);
-        param_2->port = uVar2;
+        a->port = uVar2;
       }
       else {
-        iVar3 = atoi(local_8);
+        iVar3 = atoi(port);
         uVar2 = BigShort((short)iVar3);
-        param_2->port = uVar2;
+        a->port = uVar2;
       }
       iVar3 = 1;
     }
@@ -1383,47 +1418,49 @@ LAB_006eb45f:
 
 // 006EB5A0  Int64ToString  (qcommon/net_chan_mp.cpp:2578)
 
-void __cdecl Int64ToString(long64 param_1,char *param_2)
+void __cdecl Int64ToString(long64 int64,char *str)
 
 {
-  _snprintf(param_2,0x11,"%08x%08x");
+  uint *chunks;
+  
+  _snprintf(str,0x11,"%08x%08x");
   return;
 }
 
 
 // 006EB5D0  StringToInt64  (qcommon/net_chan_mp.cpp:2594)
 
-long64 __cdecl StringToInt64(char *param_1)
+long64 __cdecl StringToInt64(char *str)
 
 {
-  long64 local_14;
-  long64 *local_8;
+  long64 int64;
+  uint *intptr;
   
-  local_8 = &local_14;
-  sscanf(param_1,"%8x%8x");
-  return local_14;
+  intptr = (uint *)&int64;
+  sscanf(str,"%8x%8x");
+  return int64;
 }
 
 
 // 006EB610  XUIDToString  (qcommon/net_chan_mp.cpp:2612)
 
-void __cdecl XUIDToString(ulong64 *param_1,char *param_2)
+void __cdecl XUIDToString(ulong64 *xuid,char *str)
 
 {
-  _ui64toa(*param_1,param_2,0x10);
+  _ui64toa(*xuid,str,0x10);
   return;
 }
 
 
 // 006EB630  StringToXUID  (qcommon/net_chan_mp.cpp:2627)
 
-void __cdecl StringToXUID(char *param_1,ulong64 *param_2)
+void __cdecl StringToXUID(char *str,ulong64 *xuid)
 
 {
   ulong64 uVar1;
   
-  uVar1 = _strtoui64(param_1,(char **)0x0,0x10);
-  *param_2 = uVar1;
+  uVar1 = _strtoui64(str,(char **)0x0,0x10);
+  *xuid = uVar1;
   return;
 }
 

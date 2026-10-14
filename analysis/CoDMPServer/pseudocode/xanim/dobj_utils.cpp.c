@@ -2,14 +2,14 @@
 
 // 007E9DA0  DObjGetRotTransArray  (xanim/dobj_utils.cpp:36)
 
-DObjAnimMat * __cdecl DObjGetRotTransArray(DObj *param_1)
+DObjAnimMat * __cdecl DObjGetRotTransArray(DObj *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x25,0,"%s")
     ;
     if (!bVar2) {
@@ -18,29 +18,29 @@ DObjAnimMat * __cdecl DObjGetRotTransArray(DObj *param_1)
       return pDVar3;
     }
   }
-  return (param_1->skel).field2_0x40.mat;
+  return (obj->skel).field2_0x40.mat;
 }
 
 
 // 007E9DE0  DObjGetNumModels  (xanim/dobj_utils.cpp:66)
 
-int __cdecl DObjGetNumModels(DObj *param_1)
+int __cdecl DObjGetNumModels(DObj *obj)
 
 {
-  return (uint)param_1->numModels;
+  return (uint)obj->numModels;
 }
 
 
 // 007E9DF0  DObjGetEntNum  (xanim/dobj_utils.cpp:72)
 
-ushort __cdecl DObjGetEntNum(DObj *param_1)
+ushort __cdecl DObjGetEntNum(DObj *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x49,0,"%s")
     ;
     if (!bVar2) {
@@ -49,13 +49,13 @@ ushort __cdecl DObjGetEntNum(DObj *param_1)
       return uVar3;
     }
   }
-  return param_1->entnum;
+  return obj->entnum;
 }
 
 
 // 007E9E30  DObjGetSurfaces  (xanim/dobj_utils.cpp:89)
 
-int __cdecl DObjGetSurfaces(DObj *param_1,int *param_2,char *param_3)
+int __cdecl DObjGetSurfaces(DObj *obj,int *partBits,char *lods)
 
 {
   byte bVar1;
@@ -66,18 +66,26 @@ int __cdecl DObjGetSurfaces(DObj *param_1,int *param_2,char *param_3)
   int iVar6;
   byte bVar7;
   int iVar8;
-  int local_68;
-  int local_64;
-  int local_60;
-  int local_5c;
-  int local_58;
-  uint local_50;
-  uint local_40;
+  int i_4;
+  int i_3;
+  int i_2;
+  int i;
+  int j;
+  int numBones;
+  int boneIndex;
+  XModelLodInfo *lodInfo;
+  int numModels;
+  XModel *model;
+  int surfaceCount;
+  int targBoneIndexLow;
+  int invTargBoneIndexLow;
+  int lod;
+  int targBoneIndexHigh;
   uint auStack_2c [4];
   int aiStack_1c [5];
-  XModel **local_8;
+  XModel **models;
   
-  bVar1 = param_1->numModels;
+  bVar1 = obj->numModels;
   if ((bVar1 == 0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x6b,0,
                                "%s"), !bVar5)) {
@@ -85,81 +93,84 @@ int __cdecl DObjGetSurfaces(DObj *param_1,int *param_2,char *param_3)
     iVar6 = (*pcVar3)();
     return iVar6;
   }
-  local_8 = (param_1->field14_0x78).localModels;
-  pXVar2 = *local_8;
-  local_50 = XModelNumBones(pXVar2);
-  iVar6 = (int)*param_3;
+  models = (obj->field14_0x78).localModels;
+  pXVar2 = *models;
+  boneIndex = XModelNumBones(pXVar2);
+  iVar6 = (int)*lods;
   if (iVar6 < 0) {
-    local_40 = 0;
-    for (local_60 = 0; local_60 < 5; local_60 = local_60 + 1) {
-      param_2[local_60] = 0;
+    surfaceCount = 0;
+    for (i_2 = 0; i_2 < 5; i_2 = i_2 + 1) {
+      partBits[i_2] = 0;
     }
   }
   else {
-    local_40 = (uint)pXVar2->lodInfo[iVar6].numsurfs;
-    for (local_5c = 0; local_5c < 5; local_5c = local_5c + 1) {
-      param_2[local_5c] = pXVar2->lodInfo[iVar6].partBits[local_5c];
+    surfaceCount = (int)pXVar2->lodInfo[iVar6].numsurfs;
+    for (i = 0; i < 5; i = i + 1) {
+      partBits[i] = pXVar2->lodInfo[iVar6].partBits[i];
     }
   }
-  for (local_64 = 0; local_64 < 4; local_64 = local_64 + 1) {
-    auStack_2c[local_64] = 0;
+  for (i_3 = 0; i_3 < 4; i_3 = i_3 + 1) {
+    auStack_2c[i_3] = 0;
   }
-  for (local_58 = 1; local_58 < (int)(uint)bVar1; local_58 = local_58 + 1) {
-    pXVar2 = local_8[local_58];
+  for (j = 1; j < (int)(uint)bVar1; j = j + 1) {
+    pXVar2 = models[j];
     iVar6 = XModelNumBones(pXVar2);
-    iVar8 = (int)param_3[local_58];
+    iVar8 = (int)lods[j];
     if (-1 < iVar8) {
-      local_40 = pXVar2->lodInfo[iVar8].numsurfs + local_40;
-      for (local_68 = 0; local_68 < 5; local_68 = local_68 + 1) {
-        aiStack_1c[local_68] = pXVar2->lodInfo[iVar8].partBits[local_68];
+      surfaceCount = (uint)pXVar2->lodInfo[iVar8].numsurfs + surfaceCount;
+      for (i_4 = 0; i_4 < 5; i_4 = i_4 + 1) {
+        aiStack_1c[i_4] = pXVar2->lodInfo[iVar8].partBits[i_4];
       }
-      iVar8 = (int)local_50 >> 5;
-      if ((local_50 & 0x1f) == 0) {
-        *param_2 = *param_2 | auStack_2c[4 - iVar8];
-        param_2[1] = param_2[1] | auStack_2c[5 - iVar8];
-        param_2[2] = param_2[2] | auStack_2c[6 - iVar8];
-        param_2[3] = param_2[3] | auStack_2c[7 - iVar8];
-        param_2[4] = param_2[4] | auStack_2c[8 - iVar8];
+      iVar8 = boneIndex >> 5;
+      if ((boneIndex & 0x1fU) == 0) {
+        *partBits = *partBits | auStack_2c[4 - iVar8];
+        partBits[1] = partBits[1] | auStack_2c[5 - iVar8];
+        partBits[2] = partBits[2] | auStack_2c[6 - iVar8];
+        partBits[3] = partBits[3] | auStack_2c[7 - iVar8];
+        partBits[4] = partBits[4] | auStack_2c[8 - iVar8];
       }
       else {
-        sVar4 = (sbyte)(local_50 & 0x1f);
+        sVar4 = (sbyte)(boneIndex & 0x1fU);
         bVar7 = 0x20 - sVar4;
-        *param_2 = auStack_2c[4 - iVar8] >> sVar4 | *param_2;
-        param_2[1] = auStack_2c[4 - iVar8] << (bVar7 & 0x1f) | auStack_2c[5 - iVar8] >> sVar4 |
-                     param_2[1];
-        param_2[2] = auStack_2c[5 - iVar8] << (bVar7 & 0x1f) | auStack_2c[6 - iVar8] >> sVar4 |
-                     param_2[2];
-        param_2[3] = auStack_2c[6 - iVar8] << (bVar7 & 0x1f) | auStack_2c[7 - iVar8] >> sVar4 |
-                     param_2[3];
-        param_2[4] = auStack_2c[7 - iVar8] << (bVar7 & 0x1f) | auStack_2c[8 - iVar8] >> sVar4 |
-                     param_2[4];
+        *partBits = auStack_2c[4 - iVar8] >> sVar4 | *partBits;
+        partBits[1] = auStack_2c[4 - iVar8] << (bVar7 & 0x1f) | auStack_2c[5 - iVar8] >> sVar4 |
+                      partBits[1];
+        partBits[2] = auStack_2c[5 - iVar8] << (bVar7 & 0x1f) | auStack_2c[6 - iVar8] >> sVar4 |
+                      partBits[2];
+        partBits[3] = auStack_2c[6 - iVar8] << (bVar7 & 0x1f) | auStack_2c[7 - iVar8] >> sVar4 |
+                      partBits[3];
+        partBits[4] = auStack_2c[7 - iVar8] << (bVar7 & 0x1f) | auStack_2c[8 - iVar8] >> sVar4 |
+                      partBits[4];
       }
     }
-    local_50 = local_50 + iVar6;
+    boneIndex = boneIndex + iVar6;
   }
-  return local_40;
+  return surfaceCount;
 }
 
 
 // 007EA160  DObjGetSurfaceData  (xanim/dobj_utils.cpp:209)
 
-void __cdecl
-DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char *param_5)
+void __cdecl DObjGetSurfaceData(DObj *obj,float *origin,float scale,bool offscreen,char *lods)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  XModel *pXVar4;
-  XModelLodRampType XVar5;
-  int iVar6;
-  float fVar7;
-  float fVar8;
-  float local_18;
-  char local_14;
-  int local_8;
+  XModel *model_00;
+  XModelLodRampType lodRampType_00;
+  int iVar4;
+  float fVar5;
+  float fVar6;
+  XModelLodRampType lodRampType;
+  XModel *model;
+  float adjustedDist;
+  int lod;
+  float baseDist;
+  int modelCount;
+  int modelIndex;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0xdc,0,"%s")
     ;
     if (!bVar2) {
@@ -168,9 +179,9 @@ DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char 
       return;
     }
   }
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+      (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)origin[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0xdd,0,"%s")
     ;
     if (!bVar2) {
@@ -179,7 +190,7 @@ DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char 
       return;
     }
   }
-  iVar3 = DObjGetNumModels(param_1);
+  iVar3 = DObjGetNumModels(obj);
   if (0x20 < iVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0xe0,1,"%s")
     ;
@@ -189,10 +200,10 @@ DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char 
       return;
     }
   }
-  fVar7 = R_GetBaseLodDist(param_2);
-  fVar8 = I_fres(param_3);
-  fVar8 = fVar8 * fVar7;
-  if (((uint)param_3 & 0x7f800000) == 0x7f800000) {
+  fVar5 = R_GetBaseLodDist(origin);
+  fVar6 = I_fres(scale);
+  fVar6 = fVar6 * fVar5;
+  if (((uint)scale & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0xe4,0,"%s")
     ;
     if (!bVar2) {
@@ -201,7 +212,7 @@ DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char 
       return;
     }
   }
-  if (((uint)fVar8 & 0x7f800000) == 0x7f800000) {
+  if (((uint)fVar6 & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0xe5,0,"%s")
     ;
     if (!bVar2) {
@@ -210,19 +221,19 @@ DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char 
       return;
     }
   }
-  for (local_8 = 0; local_8 < iVar3; local_8 = local_8 + 1) {
-    pXVar4 = DObjGetModel(param_1,local_8);
-    local_14 = -1;
-    if (pXVar4 != (XModel *)0x0) {
-      XVar5 = XModelGetLodRampType(pXVar4);
-      local_18 = R_GetAdjustedLodDist(fVar8,XVar5);
-      if (param_4) {
-        local_18 = local_18 * (r_offscreenCasterLodScale->current).value;
+  for (modelIndex = 0; modelIndex < iVar3; modelIndex = modelIndex + 1) {
+    model_00 = DObjGetModel(obj,modelIndex);
+    lod._0_1_ = -1;
+    if (model_00 != (XModel *)0x0) {
+      lodRampType_00 = XModelGetLodRampType(model_00);
+      adjustedDist = R_GetAdjustedLodDist(fVar6,lodRampType_00);
+      if (offscreen) {
+        adjustedDist = adjustedDist * (r_offscreenCasterLodScale->current).value;
       }
-      iVar6 = DObjGetLodForDist(param_1,local_8,local_18,fVar8);
-      local_14 = (char)iVar6;
+      iVar4 = DObjGetLodForDist(obj,modelIndex,adjustedDist,fVar6);
+      lod._0_1_ = (char)iVar4;
     }
-    param_5[local_8] = local_14;
+    lods[modelIndex] = (char)lod;
   }
   return;
 }
@@ -230,22 +241,25 @@ DObjGetSurfaceData(DObj *param_1,float *param_2,float param_3,bool param_4,char 
 
 // 007EA3C0  DObjGetBoneInfo  (xanim/dobj_utils.cpp:271)
 
-void __cdecl DObjGetBoneInfo(DObj *param_1,XBoneInfo **param_2)
+void __cdecl DObjGetBoneInfo(DObj *obj,XBoneInfo **boneInfo)
 
 {
   byte bVar1;
   XModel **ppXVar2;
   XModel *pXVar3;
-  int local_18;
-  int local_c;
+  int j;
+  XModel *model;
+  int size;
+  int i;
+  XModel **models;
   
-  ppXVar2 = (param_1->field14_0x78).localModels;
-  for (local_18 = 0; local_18 < (int)(uint)param_1->numModels; local_18 = local_18 + 1) {
-    pXVar3 = ppXVar2[local_18];
+  ppXVar2 = (obj->field14_0x78).localModels;
+  for (j = 0; j < (int)(uint)obj->numModels; j = j + 1) {
+    pXVar3 = ppXVar2[j];
     bVar1 = pXVar3->numBones;
-    for (local_c = 0; local_c < (int)(uint)bVar1; local_c = local_c + 1) {
-      *param_2 = (pXVar3->field18_0xb8).localBoneInfo + local_c;
-      param_2 = param_2 + 1;
+    for (i = 0; i < (int)(uint)bVar1; i = i + 1) {
+      *boneInfo = (pXVar3->field18_0xb8).localBoneInfo + i;
+      boneInfo = boneInfo + 1;
     }
   }
   return;
@@ -254,37 +268,37 @@ void __cdecl DObjGetBoneInfo(DObj *param_1,XBoneInfo **param_2)
 
 // 007EA450  DObjNumBones  (xanim/dobj_utils.cpp:314)
 
-int __cdecl DObjNumBones(DObj *param_1)
+int __cdecl DObjNumBones(DObj *obj)
 
 {
-  return (uint)param_1->numBones;
+  return (uint)obj->numBones;
 }
 
 
 // 007EA460  DObjGetLodForDist  (xanim/dobj_utils.cpp:329)
 
-int __cdecl DObjGetLodForDist(DObj *param_1,int param_2,float param_3,float param_4)
+int __cdecl DObjGetLodForDist(DObj *obj,int modelIndex,float dist,float base_dist)
 
 {
-  int local_8;
+  int lod;
   
-  local_8 = XModelGetLodForDist((param_1->field14_0x78).localModels[param_2],param_3,param_4,false);
-  if (((r_warm_dobj->current).enabled != false) && (local_8 < 0)) {
-    local_8 = 0;
+  lod = XModelGetLodForDist((obj->field14_0x78).localModels[modelIndex],dist,base_dist,false);
+  if (((r_warm_dobj->current).enabled != false) && (lod < 0)) {
+    lod = 0;
   }
-  return local_8;
+  return lod;
 }
 
 
 // 007EA4B0  DObjGetSetBones  (xanim/dobj_utils.cpp:354)
 
-void __cdecl DObjGetSetBones(DObj *param_1,int *param_2)
+void __cdecl DObjGetSetBones(DObj *obj,int *setPartBits)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    param_2[local_8] = (param_1->skel).partBits.anim[local_8];
+  for (i = 0; i < 5; i = i + 1) {
+    setPartBits[i] = (obj->skel).partBits.anim[i];
   }
   return;
 }
@@ -292,15 +306,16 @@ void __cdecl DObjGetSetBones(DObj *param_1,int *param_2)
 
 // 007EA4F0  DObjGetRootBoneCount  (xanim/dobj_utils.cpp:368)
 
-uint __cdecl DObjGetRootBoneCount(DObj *param_1)
+uint __cdecl DObjGetRootBoneCount(DObj *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   XModel *pXVar3;
   uint uVar4;
+  XModel *model;
   
-  pXVar3 = DObjGetModel(param_1,0);
+  pXVar3 = DObjGetModel(obj,0);
   if (pXVar3->numRootBones == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x174,0,"%s"
                             );
@@ -316,15 +331,18 @@ uint __cdecl DObjGetRootBoneCount(DObj *param_1)
 
 // 007EA550  DObjSetRotTransIndex  (xanim/dobj_utils.cpp:389)
 
-int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
+int __cdecl DObjSetRotTransIndex(DObj *obj,int *partBits,int boneIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  DSkel *skel;
+  int boneIndexHigh;
+  int boneIndexLow;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x18a,0,"%s"
                             );
     if (!bVar2) {
@@ -333,7 +351,7 @@ int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  if ((param_1->skel).field2_0x40.mat == (DObjAnimMat *)0x0) {
+  if ((obj->skel).field2_0x40.mat == (DObjAnimMat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x18b,0,"%s"
                             );
     if (!bVar2) {
@@ -342,7 +360,7 @@ int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  if (param_3 < 0) {
+  if (boneIndex < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x18c,0,
                              "%s\n\t(boneIndex) = %i");
     if (!bVar2) {
@@ -351,7 +369,7 @@ int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  if ((int)(uint)param_1->numBones <= param_3) {
+  if ((int)(uint)obj->numBones <= boneIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x18d,0,
                              "%s\n\t(boneIndex) = %i");
     if (!bVar2) {
@@ -360,13 +378,13 @@ int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  iVar3 = param_3 >> 5;
-  uVar4 = 0x80000000 >> ((byte)param_3 & 0x1f);
-  if ((param_2[iVar3] & uVar4) == 0) {
+  iVar3 = boneIndex >> 5;
+  uVar4 = 0x80000000 >> ((byte)boneIndex & 0x1f);
+  if ((partBits[iVar3] & uVar4) == 0) {
     iVar3 = 0;
   }
-  else if (((param_1->skel).partBits.anim[iVar3] & uVar4) == 0) {
-    if (((param_1->skel).partBits.skel[iVar3] & uVar4) != 0) {
+  else if (((obj->skel).partBits.anim[iVar3] & uVar4) == 0) {
+    if (((obj->skel).partBits.skel[iVar3] & uVar4) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x19e,0,
                                "%s");
       if (!bVar2) {
@@ -375,7 +393,7 @@ int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
         return iVar3;
       }
     }
-    (param_1->skel).partBits.anim[iVar3] = (param_1->skel).partBits.anim[iVar3] | uVar4;
+    (obj->skel).partBits.anim[iVar3] = (obj->skel).partBits.anim[iVar3] | uVar4;
     iVar3 = 1;
   }
   else {
@@ -387,7 +405,7 @@ int __cdecl DObjSetRotTransIndex(DObj *param_1,int *param_2,int param_3)
 
 // 007EA6B0  DObjSetSkelRotTransIndex  (xanim/dobj_utils.cpp:432)
 
-bool __cdecl DObjSetSkelRotTransIndex(DObj *param_1,int *param_2,int param_3)
+bool __cdecl DObjSetSkelRotTransIndex(DObj *obj,int *partBits,int boneIndex)
 
 {
   code *pcVar1;
@@ -395,8 +413,11 @@ bool __cdecl DObjSetSkelRotTransIndex(DObj *param_1,int *param_2,int param_3)
   undefined1 uVar3;
   int iVar4;
   uint uVar5;
+  DSkel *skel;
+  int boneIndexHigh;
+  int boneIndexLow;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x1b5,0,"%s"
                             );
     if (!bVar2) {
@@ -405,17 +426,17 @@ bool __cdecl DObjSetSkelRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return (bool)uVar3;
     }
   }
-  if ((param_3 < 0) || ((int)(uint)param_1->numBones <= param_3)) {
+  if ((boneIndex < 0) || ((int)(uint)obj->numBones <= boneIndex)) {
     bVar2 = false;
   }
   else {
-    iVar4 = param_3 >> 5;
-    uVar5 = 0x80000000 >> ((byte)param_3 & 0x1f);
-    if ((param_2[iVar4] & uVar5) == 0) {
+    iVar4 = boneIndex >> 5;
+    uVar5 = 0x80000000 >> ((byte)boneIndex & 0x1f);
+    if ((partBits[iVar4] & uVar5) == 0) {
       bVar2 = true;
     }
-    else if (((param_1->skel).partBits.anim[iVar4] & uVar5) == 0) {
-      if (((param_1->skel).partBits.skel[iVar4] & uVar5) != 0) {
+    else if (((obj->skel).partBits.anim[iVar4] & uVar5) == 0) {
+      if (((obj->skel).partBits.skel[iVar4] & uVar5) != 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x1cf,0,
                                  "%s");
         if (!bVar2) {
@@ -424,8 +445,8 @@ bool __cdecl DObjSetSkelRotTransIndex(DObj *param_1,int *param_2,int param_3)
           return (bool)uVar3;
         }
       }
-      (param_1->skel).partBits.anim[iVar4] = (param_1->skel).partBits.anim[iVar4] | uVar5;
-      (param_1->skel).partBits.skel[iVar4] = (param_1->skel).partBits.skel[iVar4] | uVar5;
+      (obj->skel).partBits.anim[iVar4] = (obj->skel).partBits.anim[iVar4] | uVar5;
+      (obj->skel).partBits.skel[iVar4] = (obj->skel).partBits.skel[iVar4] | uVar5;
       bVar2 = true;
     }
     else {
@@ -438,20 +459,20 @@ bool __cdecl DObjSetSkelRotTransIndex(DObj *param_1,int *param_2,int param_3)
 
 // 007EA7B0  DObjSetControlTagAngles  (xanim/dobj_utils.cpp:479)
 
-void __cdecl DObjSetControlTagAngles(DObj *param_1,int *param_2,uint param_3,float *param_4)
+void __cdecl DObjSetControlTagAngles(DObj *obj,int *partBits,uint boneIndex,float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_3 < 0xfe) {
-    iVar3 = DObjSetControlRotTransIndex(param_1,param_2,param_3);
+  if (boneIndex < 0xfe) {
+    iVar3 = DObjSetControlRotTransIndex(obj,partBits,boneIndex);
     if (iVar3 != 0) {
-      DObjSetLocalTagInternal(param_1,vec3_origin,param_4,param_3);
+      DObjSetLocalTagInternal(obj,vec3_origin,angles,boneIndex);
     }
   }
-  else if (((param_3 != 0xfe) && (param_3 != 0xff)) &&
+  else if (((boneIndex != 0xfe) && (boneIndex != 0xff)) &&
           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x1e3
                                     ,0,"%s\n\t(boneIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -464,14 +485,14 @@ void __cdecl DObjSetControlTagAngles(DObj *param_1,int *param_2,uint param_3,flo
 
 // 007EA830  DObjGetModel  (xanim/dobj_utils.cpp:504)
 
-XModel * __cdecl DObjGetModel(DObj *param_1,int param_2)
+XModel * __cdecl DObjGetModel(DObj *obj,int modelIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   XModel *pXVar3;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x1f9,0,"%s"
                             );
     if (!bVar2) {
@@ -480,11 +501,11 @@ XModel * __cdecl DObjGetModel(DObj *param_1,int param_2)
       return pXVar3;
     }
   }
-  if ((param_2 < 0) || ((int)(uint)param_1->numModels <= param_2)) {
+  if ((modelIndex < 0) || ((int)(uint)obj->numModels <= modelIndex)) {
     pXVar3 = (XModel *)0x0;
   }
   else {
-    pXVar3 = (param_1->field14_0x78).localModels[param_2];
+    pXVar3 = (obj->field14_0x78).localModels[modelIndex];
   }
   return pXVar3;
 }
@@ -492,67 +513,69 @@ XModel * __cdecl DObjGetModel(DObj *param_1,int param_2)
 
 // 007EA890  DObjGetModelBoneIndex  (xanim/dobj_utils.cpp:562)
 
-int __cdecl DObjGetModelBoneIndex(DObj *param_1,int param_2,uint param_3,uchar *param_4)
+int __cdecl DObjGetModelBoneIndex(DObj *obj,int model_index,uint name,uchar *index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_18;
-  uint local_14;
+  int j;
+  uint boneIndex;
+  int numModels;
+  XModel *model;
+  XModel **models;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x239,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == 0) &&
+  if ((name == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x23a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_14 = 0;
-  local_18 = 0;
+  boneIndex = 0;
+  j = 0;
   do {
-    if ((int)(uint)param_1->numModels <= local_18) {
+    if ((int)(uint)obj->numModels <= j) {
 LAB_007ea96a:
-      *param_4 = 0xff;
+      *index = 0xff;
       return 0;
     }
-    if (local_18 == param_2) {
-      iVar3 = XModelGetBoneIndex((param_1->field14_0x78).localModels[local_18],param_3,local_14,
-                                 param_4);
+    if (j == model_index) {
+      iVar3 = XModelGetBoneIndex((obj->field14_0x78).localModels[j],name,boneIndex,index);
       if (iVar3 != 0) {
         return 1;
       }
       goto LAB_007ea96a;
     }
-    local_14 = (param_1->field14_0x78).localModels[local_18]->numBones + local_14;
-    local_18 = local_18 + 1;
+    boneIndex = (obj->field14_0x78).localModels[j]->numBones + boneIndex;
+    j = j + 1;
   } while( true );
 }
 
 
 // 007EA980  DObjSetLocalTag  (xanim/dobj_utils.cpp:610)
 
-void __cdecl DObjSetLocalTag(DObj *param_1,int *param_2,uint param_3,float *param_4,float *param_5)
+void __cdecl DObjSetLocalTag(DObj *obj,int *partBits,uint boneIndex,float *trans,float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_3 < 0xfe) {
-    iVar3 = DObjSetRotTransIndex(param_1,param_2,param_3);
+  if (boneIndex < 0xfe) {
+    iVar3 = DObjSetRotTransIndex(obj,partBits,boneIndex);
     if (iVar3 != 0) {
-      DObjSetLocalTagInternal(param_1,param_4,param_5,param_3);
+      DObjSetLocalTagInternal(obj,trans,angles,boneIndex);
     }
   }
-  else if (((param_3 != 0xfe) && (param_3 != 0xff)) &&
+  else if (((boneIndex != 0xfe) && (boneIndex != 0xff)) &&
           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x265
                                     ,0,"%s\n\t(boneIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -565,21 +588,22 @@ void __cdecl DObjSetLocalTag(DObj *param_1,int *param_2,uint param_3,float *para
 
 // 007EAA00  DObjSetLocalTagInternal  (xanim/dobj_utils.cpp:639)
 
-void __cdecl DObjSetLocalTagInternal(DObj *param_1,float *param_2,float *param_3,int param_4)
+void __cdecl DObjSetLocalTagInternal(DObj *obj,float *trans,float *angles,int boneIndex)
 
 {
   DObjAnimMat *pDVar1;
+  DObjAnimMat *rotTrans;
   
-  pDVar1 = DObjGetRotTransArray(param_1);
+  pDVar1 = DObjGetRotTransArray(obj);
   if (pDVar1 != (DObjAnimMat *)0x0) {
-    pDVar1 = pDVar1 + param_4;
-    if (param_3 == (float *)0x0) {
+    pDVar1 = pDVar1 + boneIndex;
+    if (angles == (float *)0x0) {
       DObjClearAngles(pDVar1);
     }
     else {
-      DObjSetAngles(pDVar1,param_3);
+      DObjSetAngles(pDVar1,angles);
     }
-    DObjSetTrans(pDVar1,param_2);
+    DObjSetTrans(pDVar1,trans);
   }
   return;
 }
@@ -587,7 +611,7 @@ void __cdecl DObjSetLocalTagInternal(DObj *param_1,float *param_2,float *param_3
 
 // 007EAA60  DObjSetAngles  (xanim/dobj_utils.cpp:670)
 
-void __cdecl DObjSetAngles(DObjAnimMat *param_1,float *param_2)
+void __cdecl DObjSetAngles(DObjAnimMat *rotTrans,float *angles)
 
 {
   float fVar1;
@@ -603,91 +627,98 @@ void __cdecl DObjSetAngles(DObjAnimMat *param_1,float *param_2)
   float fVar11;
   float fVar12;
   
-  fVar3 = (float10)fcos((float10)(param_2[1] * 0.008726646));
-  fVar6 = (float10)fsin((float10)(param_2[1] * 0.008726646));
-  fVar4 = (float10)fcos((float10)(*param_2 * 0.008726646));
-  fVar7 = (float10)fsin((float10)(*param_2 * 0.008726646));
-  fVar5 = (float10)fcos((float10)(param_2[2] * 0.008726646));
-  fVar8 = (float10)fsin((float10)(param_2[2] * 0.008726646));
+  fVar3 = (float10)fcos((float10)(angles[1] * 0.008726646));
+  fVar6 = (float10)fsin((float10)(angles[1] * 0.008726646));
+  fVar4 = (float10)fcos((float10)(*angles * 0.008726646));
+  fVar7 = (float10)fsin((float10)(*angles * 0.008726646));
+  fVar5 = (float10)fcos((float10)(angles[2] * 0.008726646));
+  fVar8 = (float10)fsin((float10)(angles[2] * 0.008726646));
   fVar1 = (float)fVar5;
   fVar2 = (float)fVar8;
   fVar9 = -(float)fVar7 * (float)fVar6;
   fVar10 = (float)fVar7 * (float)fVar3;
   fVar11 = (float)fVar4 * (float)fVar6;
   fVar12 = (float)fVar4 * (float)fVar3;
-  param_1->quat[0] = fVar2 * fVar12 + fVar1 * fVar9;
-  param_1->quat[1] = fVar1 * fVar10 + fVar2 * fVar11;
-  param_1->quat[2] = -fVar2 * fVar10 + fVar1 * fVar11;
-  param_1->quat[3] = fVar1 * fVar12 - fVar2 * fVar9;
+  rotTrans->quat[0] = fVar2 * fVar12 + fVar1 * fVar9;
+  rotTrans->quat[1] = fVar1 * fVar10 + fVar2 * fVar11;
+  rotTrans->quat[2] = -fVar2 * fVar10 + fVar1 * fVar11;
+  rotTrans->quat[3] = fVar1 * fVar12 - fVar2 * fVar9;
   return;
 }
 
 
 // 007EABD0  DObjClearAngles  (xanim/dobj_utils.cpp:708)
 
-void __cdecl DObjClearAngles(DObjAnimMat *param_1)
+void __cdecl DObjClearAngles(DObjAnimMat *rotTrans)
 
 {
-  param_1->quat[0] = 0.0;
-  param_1->quat[1] = 0.0;
-  param_1->quat[2] = 0.0;
-  param_1->quat[3] = 1.0;
+  rotTrans->quat[0] = 0.0;
+  rotTrans->quat[1] = 0.0;
+  rotTrans->quat[2] = 0.0;
+  rotTrans->quat[3] = 1.0;
   return;
 }
 
 
 // 007EAC20  DObjSetTrans  (xanim/dobj_utils.cpp:722)
 
-void __cdecl DObjSetTrans(DObjAnimMat *param_1,float *param_2)
+void __cdecl DObjSetTrans(DObjAnimMat *rotTrans,float *trans)
 
 {
-  param_1->transWeight = 0.0;
-  param_1->trans[0] = *param_2;
-  param_1->trans[1] = param_2[1];
-  param_1->trans[2] = param_2[2];
+  rotTrans->transWeight = 0.0;
+  rotTrans->trans[0] = *trans;
+  rotTrans->trans[1] = trans[1];
+  rotTrans->trans[2] = trans[2];
   return;
 }
 
 
 // 007EAC70  DObjCompleteHierarchyBits  (xanim/dobj_utils.cpp:750)
 
-void __cdecl DObjCompleteHierarchyBits(DObj *param_1,int *param_2)
+/* WARNING: Variable defined which should be unmapped: j */
+/* WARNING: Variable defined which should be unmapped: pos */
+/* WARNING: Enum "IKBoneNames": Some values do not have unique names */
+
+void __cdecl DObjCompleteHierarchyBits(DObj *obj,int *partBits)
 
 {
   XModel **ppXVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  char *pcVar5;
-  uint uVar6;
-  int iVar7;
-  uint uVar8;
-  byte *pbVar9;
-  uint local_b0;
-  XModel *local_a0;
+  int *piVar5;
+  uint stringValue;
+  int iVar6;
+  int j;
+  uchar *pos;
+  int newBoneIndex;
+  uchar *modelParents;
+  uchar *duplicateParts;
+  int numModels;
+  XModel *subModel;
   int aiStack_9c [33];
-  int local_18;
-  uchar *local_14;
-  int local_10;
-  char *local_c;
-  XModel **local_8;
+  int localBoneIndex;
+  uchar *parentList;
+  int objBoneIndex;
+  int *duplicatePartBits;
+  XModel **models;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x2ff,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_1->numBones == '\0') &&
+  if ((obj->numBones == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x300,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_10 = param_1->numBones - 1;
-  uVar4 = (uint)param_1->numModels;
+  objBoneIndex = obj->numBones - 1;
+  uVar4 = (uint)obj->numModels;
   if ((uVar4 == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x305,0,
                                "%s"), !bVar3)) {
@@ -695,106 +726,108 @@ void __cdecl DObjCompleteHierarchyBits(DObj *param_1,int *param_2)
     (*pcVar2)();
     return;
   }
-  if ((param_1->duplicateParts == 0) &&
+  if ((obj->duplicateParts == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x307,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  uVar6 = (uint)param_1->duplicateParts;
-  pcVar5 = SL_ConvertToString(uVar6,SCRIPTINSTANCE_SERVER);
-  local_c = pcVar5;
-  local_b0 = 0;
-  local_a0 = (XModel *)0x0;
-  ppXVar1 = (param_1->field14_0x78).localModels;
-  local_8 = ppXVar1;
-  for (uVar8 = 0; (int)uVar8 < (int)uVar4; uVar8 = uVar8 + 1) {
-    aiStack_9c[uVar8] = local_b0;
-    local_a0 = local_8[uVar8];
-    local_b0 = (uint)local_a0->numBones + aiStack_9c[uVar8];
-    if (local_10 < (int)local_b0) break;
+  stringValue = (uint)obj->duplicateParts;
+  piVar5 = (int *)SL_ConvertToString(stringValue,SCRIPTINSTANCE_SERVER);
+  duplicatePartBits = piVar5;
+  newBoneIndex = 0;
+  subModel = (XModel *)0x0;
+  ppXVar1 = (obj->field14_0x78).localModels;
+  models = ppXVar1;
+  for (j = 0; j < (int)uVar4; j = j + 1) {
+    aiStack_9c[j] = newBoneIndex;
+    subModel = models[j];
+    newBoneIndex = (uint)subModel->numBones + aiStack_9c[j];
+    if (objBoneIndex < newBoneIndex) break;
   }
-  if ((uVar8 == uVar4) &&
-     (pbVar9 = (byte *)(pcVar5 + 0x14),
-     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x31d,0,
-                              "%s"), !bVar3)) {
+  if ((j == uVar4) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x31d,0,
+                               "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    (*pcVar2)(uVar6,uVar8,pbVar9);
+    (*pcVar2)(stringValue,j,piVar5 + 5);
     return;
   }
-  *param_2 = *param_2 | 0x80000000;
-  local_14 = (local_a0->field6_0xc).localParentList;
-  bVar3 = IKImport_IsIKEntity((uchar *)param_1);
+  *partBits = *partBits | 0x80000000;
+  parentList = (subModel->field6_0xc).localParentList;
+  bVar3 = IKImport_IsIKEntity((uchar *)obj);
   if (bVar3) {
-    IKImport_SetIKPartBits(param_1,param_2);
+    IKImport_SetIKPartBits(obj,partBits);
   }
   do {
     while( true ) {
       while( true ) {
         while( true ) {
-          local_18 = local_10 - aiStack_9c[uVar8];
-          if (-1 < local_18) break;
-          uVar8 = uVar8 - 1;
-          if ((int)uVar8 < 0) {
+          localBoneIndex = objBoneIndex - aiStack_9c[j];
+          if (-1 < localBoneIndex) break;
+          j = j + -1;
+          if (j < 0) {
             return;
           }
-          local_a0 = local_8[uVar8];
-          local_14 = (local_a0->field6_0xc).localParentList;
+          subModel = models[j];
+          parentList = (subModel->field6_0xc).localParentList;
         }
-        if ((0x80000000U >> ((byte)local_10 & 0x1f) & param_2[local_10 >> 5]) != 0) break;
-        local_10 = local_10 + -1;
+        if ((0x80000000U >> ((byte)objBoneIndex & 0x1f) & partBits[objBoneIndex >> 5]) != 0) break;
+        objBoneIndex = objBoneIndex + -1;
       }
-      pbVar9 = (byte *)(pcVar5 + 0x14);
-      if ((0x80000000U >> ((byte)local_10 & 0x1f) & *(uint *)(local_c + (local_10 >> 5) * 4)) == 0)
+      pos = (uchar *)(piVar5 + 5);
+      if ((0x80000000U >> ((byte)objBoneIndex & 0x1f) & duplicatePartBits[objBoneIndex >> 5]) == 0)
       break;
       while( true ) {
-        if ((*pbVar9 == 0) &&
+        if ((*pos == '\0') &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",
                                      0x37b,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        if (local_10 == *pbVar9 - 1) break;
-        pbVar9 = pbVar9 + 2;
+        if (objBoneIndex == *pos - 1) break;
+        pos = pos + 2;
       }
-      local_b0 = pbVar9[1] - 1;
+      newBoneIndex = pos[1] - 1;
 LAB_007eb015:
-      if ((param_1->numBones <= local_b0) &&
+      if (((uint)obj->numBones <= (uint)newBoneIndex) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x388,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      param_2[(int)local_b0 >> 5] =
-           0x80000000U >> ((byte)local_b0 & 0x1f) | param_2[(int)local_b0 >> 5];
-      local_10 = local_10 + -1;
+      partBits[newBoneIndex >> 5] =
+           0x80000000U >> ((byte)newBoneIndex & 0x1f) | partBits[newBoneIndex >> 5];
+      objBoneIndex = objBoneIndex + -1;
     }
-    iVar7 = local_18 - (uint)local_a0->numRootBones;
-    if (-1 < iVar7) {
-      local_b0 = local_10 - (uint)local_14[iVar7];
+    iVar6 = localBoneIndex - (uint)subModel->numRootBones;
+    if (-1 < iVar6) {
+      newBoneIndex = objBoneIndex - (uint)parentList[iVar6];
       goto LAB_007eb015;
     }
-    local_b0 = (uint)*(byte *)((int)ppXVar1 + uVar8 + uVar4 * 4);
-    if (local_b0 != 0xff) goto LAB_007eb015;
-    local_10 = local_10 + -1;
+    newBoneIndex = (int)*(byte *)((int)ppXVar1 + j + uVar4 * 4);
+    if (newBoneIndex != 0xff) goto LAB_007eb015;
+    objBoneIndex = objBoneIndex + -1;
   } while( true );
 }
 
 
 // 007EB090  DObjSetControlRotTransIndex  (xanim/dobj_utils.cpp:925)
 
-int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
+int __cdecl DObjSetControlRotTransIndex(DObj *obj,int *partBits,int boneIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  DSkel *skel;
+  int boneIndexHigh;
+  int boneIndexLow;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3a2,0,"%s"
                             );
     if (!bVar2) {
@@ -803,7 +836,7 @@ int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  if ((param_1->skel).field2_0x40.mat == (DObjAnimMat *)0x0) {
+  if ((obj->skel).field2_0x40.mat == (DObjAnimMat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3a3,0,"%s"
                             );
     if (!bVar2) {
@@ -812,7 +845,7 @@ int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  if (param_3 < 0) {
+  if (boneIndex < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3a4,0,"%s"
                             );
     if (!bVar2) {
@@ -821,7 +854,7 @@ int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  if ((int)(uint)param_1->numBones <= param_3) {
+  if ((int)(uint)obj->numBones <= boneIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3a5,0,"%s"
                             );
     if (!bVar2) {
@@ -830,13 +863,13 @@ int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
       return iVar3;
     }
   }
-  iVar3 = param_3 >> 5;
-  uVar4 = 0x80000000 >> ((byte)param_3 & 0x1f);
-  if ((param_2[iVar3] & uVar4) == 0) {
+  iVar3 = boneIndex >> 5;
+  uVar4 = 0x80000000 >> ((byte)boneIndex & 0x1f);
+  if ((partBits[iVar3] & uVar4) == 0) {
     iVar3 = 0;
   }
-  else if (((param_1->skel).partBits.anim[iVar3] & uVar4) == 0) {
-    if (((param_1->skel).partBits.skel[iVar3] & uVar4) != 0) {
+  else if (((obj->skel).partBits.anim[iVar3] & uVar4) == 0) {
+    if (((obj->skel).partBits.skel[iVar3] & uVar4) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3b7,0,
                                "%s");
       if (!bVar2) {
@@ -845,8 +878,8 @@ int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
         return iVar3;
       }
     }
-    (param_1->skel).partBits.control[iVar3] = (param_1->skel).partBits.control[iVar3] | uVar4;
-    (param_1->skel).partBits.anim[iVar3] = (param_1->skel).partBits.anim[iVar3] | uVar4;
+    (obj->skel).partBits.control[iVar3] = (obj->skel).partBits.control[iVar3] | uVar4;
+    (obj->skel).partBits.anim[iVar3] = (obj->skel).partBits.anim[iVar3] | uVar4;
     iVar3 = 1;
   }
   else {
@@ -858,16 +891,16 @@ int __cdecl DObjSetControlRotTransIndex(DObj *param_1,int *param_2,int param_3)
 
 // 007EB210  DObjSkelExists  (xanim/dobj_utils.cpp:974)
 
-int __cdecl DObjSkelExists(DObj *param_1,int param_2)
+int __cdecl DObjSkelExists(DObj *obj,int timeStamp)
 
 {
   uint uVar1;
   
-  if ((param_1->skel).timeStamp == param_2) {
-    uVar1 = (uint)((param_1->skel).field2_0x40.mat != (DObjAnimMat *)0x0);
+  if ((obj->skel).timeStamp == timeStamp) {
+    uVar1 = (uint)((obj->skel).field2_0x40.mat != (DObjAnimMat *)0x0);
   }
   else {
-    memset((uchar *)&param_1->skel,'\0',0x44);
+    memset((uchar *)&obj->skel,'\0',0x44);
     uVar1 = 0;
   }
   return uVar1;
@@ -876,13 +909,13 @@ int __cdecl DObjSkelExists(DObj *param_1,int param_2)
 
 // 007EB250  DObjClearSkel  (xanim/dobj_utils.cpp:1000)
 
-void __cdecl DObjClearSkel(DObj *param_1)
+void __cdecl DObjClearSkel(DObj *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->locked == 0) {
+  if (obj->locked == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3e9,0,"%s"
                             );
     if (!bVar2) {
@@ -891,42 +924,43 @@ void __cdecl DObjClearSkel(DObj *param_1)
       return;
     }
   }
-  memset((uchar *)&param_1->skel,'\0',0x3c);
+  memset((uchar *)&obj->skel,'\0',0x3c);
   return;
 }
 
 
 // 007EB2A0  DObjSkelAreBonesUpToDate  (xanim/dobj_utils.cpp:1015)
 
-int __cdecl DObjSkelAreBonesUpToDate(DObj *param_1,int *param_2)
+int __cdecl DObjSkelAreBonesUpToDate(DObj *obj,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  DSkel *skel;
+  int i;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3fb,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 == (DObj *)0xffffffec) &&
+  if ((obj == (DObj *)0xffffffec) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x3fe,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return 1;
     }
-    if ((~(param_1->skel).partBits.skel[local_8] & param_2[local_8]) != 0) break;
-    local_8 = local_8 + 1;
+    if ((~(obj->skel).partBits.skel[i] & partBits[i]) != 0) break;
+    i = i + 1;
   }
   return 0;
 }
@@ -934,15 +968,16 @@ int __cdecl DObjSkelAreBonesUpToDate(DObj *param_1,int *param_2)
 
 // 007EB350  DObjSkelSetSkel  (xanim/dobj_utils.cpp:1047)
 
-void __cdecl DObjSkelSetSkel(DObj *param_1,int *param_2)
+void __cdecl DObjSkelSetSkel(DObj *obj,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   DSkel *pDVar3;
-  int local_8;
+  DSkel *skel;
+  int i;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x41b,0,"%s"
                             );
     if (!bVar2) {
@@ -951,7 +986,7 @@ void __cdecl DObjSkelSetSkel(DObj *param_1,int *param_2)
       return;
     }
   }
-  pDVar3 = &param_1->skel;
+  pDVar3 = &obj->skel;
   if (pDVar3 == (DSkel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x41e,0,"%s"
                             );
@@ -961,10 +996,9 @@ void __cdecl DObjSkelSetSkel(DObj *param_1,int *param_2)
       return;
     }
   }
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    (param_1->skel).partBits.skel[local_8] =
-         (param_1->skel).partBits.skel[local_8] | param_2[local_8];
-    (pDVar3->partBits).anim[local_8] = (pDVar3->partBits).anim[local_8] | param_2[local_8];
+  for (i = 0; i < 5; i = i + 1) {
+    (obj->skel).partBits.skel[i] = (obj->skel).partBits.skel[i] | partBits[i];
+    (pDVar3->partBits).anim[i] = (pDVar3->partBits).anim[i] | partBits[i];
   }
   return;
 }
@@ -972,30 +1006,30 @@ void __cdecl DObjSkelSetSkel(DObj *param_1,int *param_2)
 
 // 007EB410  DObjGetAllocSkelSize  (xanim/dobj_utils.cpp:1074)
 
-int __cdecl DObjGetAllocSkelSize(DObj *param_1)
+int __cdecl DObjGetAllocSkelSize(DObj *obj)
 
 {
-  return (uint)param_1->numBones << 5;
+  return (uint)obj->numBones << 5;
 }
 
 
 // 007EB420  DObjCreateSkel  (xanim/dobj_utils.cpp:1089)
 
-void __cdecl DObjCreateSkel(DObj *param_1,char *param_2,int param_3)
+void __cdecl DObjCreateSkel(DObj *obj,char *buf,int timeStamp)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  (param_1->skel).field2_0x40.mat = (DObjAnimMat *)param_2;
-  (param_1->skel).timeStamp = param_3;
-  local_8 = 0;
+  (obj->skel).field2_0x40.mat = (DObjAnimMat *)buf;
+  (obj->skel).timeStamp = timeStamp;
+  i = 0;
   do {
-    if (4 < local_8) {
+    if (4 < i) {
       return;
     }
-    if ((param_1->skel).partBits.anim[local_8] != 0) {
+    if ((obj->skel).partBits.anim[i] != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x44f,0,
                                "%s");
       if (!bVar2) {
@@ -1004,7 +1038,7 @@ void __cdecl DObjCreateSkel(DObj *param_1,char *param_2,int param_3)
         return;
       }
     }
-    if ((param_1->skel).partBits.control[local_8] != 0) {
+    if ((obj->skel).partBits.control[i] != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x450,0,
                                "%s");
       if (!bVar2) {
@@ -1013,7 +1047,7 @@ void __cdecl DObjCreateSkel(DObj *param_1,char *param_2,int param_3)
         return;
       }
     }
-    if ((param_1->skel).partBits.skel[local_8] != 0) {
+    if ((obj->skel).partBits.skel[i] != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x451,0,
                                "%s");
       if (!bVar2) {
@@ -1022,21 +1056,21 @@ void __cdecl DObjCreateSkel(DObj *param_1,char *param_2,int param_3)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 007EB500  I_dmaGetDObjSkel  (xanim/dobj_utils.cpp:1122)
 
-DObjAnimMat * __cdecl I_dmaGetDObjSkel(DObj *param_1)
+DObjAnimMat * __cdecl I_dmaGetDObjSkel(DObj *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
   
-  if ((param_1->skel).field2_0x40.mat == (DObjAnimMat *)0x0) {
+  if ((obj->skel).field2_0x40.mat == (DObjAnimMat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x463,0,"%s"
                             );
     if (!bVar2) {
@@ -1045,27 +1079,27 @@ DObjAnimMat * __cdecl I_dmaGetDObjSkel(DObj *param_1)
       return pDVar3;
     }
   }
-  return (param_1->skel).field2_0x40.mat;
+  return (obj->skel).field2_0x40.mat;
 }
 
 
 // 007EB540  DObjGetHidePartBits  (xanim/dobj_utils.cpp:1139)
 
-void __cdecl DObjGetHidePartBits(DObj *param_1,uint *param_2)
+void __cdecl DObjGetHidePartBits(DObj *obj,uint *partBits)
 
 {
-  *param_2 = param_1->hidePartBits[0];
-  param_2[1] = param_1->hidePartBits[1];
-  param_2[2] = param_1->hidePartBits[2];
-  param_2[3] = param_1->hidePartBits[3];
-  param_2[4] = param_1->hidePartBits[4];
+  *partBits = obj->hidePartBits[0];
+  partBits[1] = obj->hidePartBits[1];
+  partBits[2] = obj->hidePartBits[2];
+  partBits[3] = obj->hidePartBits[3];
+  partBits[4] = obj->hidePartBits[4];
   return;
 }
 
 
 // 007EB570  DObjGetBoneIndex  (xanim/dobj_utils.cpp:1172)
 
-int __cdecl DObjGetBoneIndex(DObj *param_1,uint param_2,uchar *param_3,int param_4)
+int __cdecl DObjGetBoneIndex(DObj *obj,uint name,uchar *index,int modelNum)
 
 {
   byte bVar1;
@@ -1074,50 +1108,53 @@ int __cdecl DObjGetBoneIndex(DObj *param_1,uint param_2,uchar *param_3,int param
   code *pcVar4;
   bool bVar5;
   int iVar6;
-  int local_1c;
-  uint local_18;
-  uint local_c;
+  int j;
+  uint boneIndex;
+  int numModels;
+  XModel *model;
+  uint localBoneIndex;
+  XModel **models;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x49c,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     iVar6 = (*pcVar4)();
     return iVar6;
   }
-  if ((param_2 == 0) &&
+  if ((name == 0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x49d,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     iVar6 = (*pcVar4)();
     return iVar6;
   }
-  local_c = (uint)*param_3;
-  if (local_c != 0xff) {
-    bVar1 = param_1->numModels;
-    ppXVar2 = (param_1->field14_0x78).localModels;
-    if (local_c < param_1->numBones) {
-      for (local_1c = 0; local_1c < (int)(uint)bVar1; local_1c = local_1c + 1) {
-        pXVar3 = ppXVar2[local_1c];
-        if (local_c < pXVar3->numBones) {
-          if (param_2 == (pXVar3->field5_0x8).localBoneNames[local_c]) {
+  localBoneIndex = (uint)*index;
+  if (localBoneIndex != 0xff) {
+    bVar1 = obj->numModels;
+    ppXVar2 = (obj->field14_0x78).localModels;
+    if (localBoneIndex < obj->numBones) {
+      for (j = 0; j < (int)(uint)bVar1; j = j + 1) {
+        pXVar3 = ppXVar2[j];
+        if (localBoneIndex < pXVar3->numBones) {
+          if (name == (pXVar3->field5_0x8).localBoneNames[localBoneIndex]) {
             return 1;
           }
           break;
         }
-        local_c = local_c - pXVar3->numBones;
+        localBoneIndex = localBoneIndex - pXVar3->numBones;
       }
     }
-    local_18 = 0;
-    for (local_1c = 0; local_1c < (int)(uint)bVar1; local_1c = local_1c + 1) {
-      pXVar3 = ppXVar2[local_1c];
-      if (((param_4 == -1) || (param_4 == local_1c)) &&
-         (iVar6 = XModelGetBoneIndex(pXVar3,param_2,local_18,param_3), iVar6 != 0)) {
+    boneIndex = 0;
+    for (j = 0; j < (int)(uint)bVar1; j = j + 1) {
+      pXVar3 = ppXVar2[j];
+      if (((modelNum == -1) || (modelNum == j)) &&
+         (iVar6 = XModelGetBoneIndex(pXVar3,name,boneIndex,index), iVar6 != 0)) {
         return 1;
       }
-      local_18 = pXVar3->numBones + local_18;
+      boneIndex = pXVar3->numBones + boneIndex;
     }
-    *param_3 = 0xff;
+    *index = 0xff;
   }
   return 0;
 }
@@ -1125,82 +1162,87 @@ int __cdecl DObjGetBoneIndex(DObj *param_1,uint param_2,uchar *param_3,int param
 
 // 007EB6F0  DObjGetChildBones  (xanim/dobj_utils.cpp:1294)
 
-int __cdecl DObjGetChildBones(DObj *param_1,uchar param_2,uchar *param_3,int param_4)
+int __cdecl DObjGetChildBones(DObj *obj,uchar parentBone,uchar *children,int maxChildren)
 
 {
   XModel *pXVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  byte local_21;
-  int local_20;
-  byte local_19;
-  int local_10;
-  char local_9;
+  int parent_index;
+  uchar child_index;
+  int j;
+  uchar modelBoneIndex;
+  int numModels;
+  XModel *model;
+  int numChildBones;
+  uchar childBoneIndexStart;
+  XModel **models;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x517,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_1->numBones <= param_2) &&
+  if ((obj->numBones <= parentBone) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x518,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_3 == (uchar *)0x0) &&
+  if ((children == (uchar *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x519,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_10 = 0;
-  local_19 = param_2;
-  local_9 = '\0';
-  local_20 = 0;
+  numChildBones = 0;
+  modelBoneIndex = parentBone;
+  childBoneIndexStart = '\0';
+  j = 0;
   while( true ) {
-    if ((int)(uint)param_1->numModels <= local_20) {
+    if ((int)(uint)obj->numModels <= j) {
       return 0;
     }
-    pXVar1 = (param_1->field14_0x78).localModels[local_20];
-    if (local_19 < pXVar1->numBones) break;
-    local_19 = local_19 - pXVar1->numBones;
-    local_9 = local_9 + pXVar1->numBones;
-    local_20 = local_20 + 1;
+    pXVar1 = (obj->field14_0x78).localModels[j];
+    if (modelBoneIndex < pXVar1->numBones) break;
+    modelBoneIndex = modelBoneIndex - pXVar1->numBones;
+    childBoneIndexStart = childBoneIndexStart + pXVar1->numBones;
+    j = j + 1;
   }
-  local_21 = 0;
+  child_index = '\0';
   do {
-    if (pXVar1->numBones <= local_21) {
-      return local_10;
+    if (pXVar1->numBones <= child_index) {
+      return numChildBones;
     }
-    if ((uint)local_19 ==
-        (uint)local_21 -
-        (uint)(pXVar1->field6_0xc).localParentList[(uint)local_21 - (uint)pXVar1->numRootBones]) {
-      param_3[local_10] = local_9 + local_21;
-      local_10 = local_10 + 1;
-      if (local_10 == param_4) {
-        return local_10;
+    if ((uint)modelBoneIndex ==
+        (uint)child_index -
+        (uint)(pXVar1->field6_0xc).localParentList[(uint)child_index - (uint)pXVar1->numRootBones])
+    {
+      children[numChildBones] = childBoneIndexStart + child_index;
+      numChildBones = numChildBones + 1;
+      if (numChildBones == maxChildren) {
+        return numChildBones;
       }
     }
-    local_21 = local_21 + 1;
+    child_index = child_index + '\x01';
   } while( true );
 }
 
 
 // 007EB890  DObjLock  (xanim/dobj_utils.cpp:1365)
 
-void __cdecl DObjLock(DObj *param_1)
+void __cdecl DObjLock(DObj *obj)
 
 {
   long *plVar1;
   int iVar2;
   
-  plVar1 = &param_1->locked;
+  plVar1 = &obj->locked;
   do {
     do {
     } while (*plVar1 != 0);
@@ -1218,13 +1260,13 @@ void __cdecl DObjLock(DObj *param_1)
 
 // 007EB8C0  DObjUnlock  (xanim/dobj_utils.cpp:1379)
 
-void __cdecl DObjUnlock(DObj *param_1)
+void __cdecl DObjUnlock(DObj *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->locked == 0) {
+  if (obj->locked == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp",0x564,0,"%s"
                             );
     if (!bVar2) {
@@ -1233,16 +1275,16 @@ void __cdecl DObjUnlock(DObj *param_1)
       return;
     }
   }
-  param_1->locked = 0;
+  obj->locked = 0;
   return;
 }
 
 
 // 007EB900  DObjIsRecorded  (xanim/dobj_utils.cpp:1396)
 
-int __cdecl DObjIsRecorded(DObj *param_1)
+int __cdecl DObjIsRecorded(DObj *obj)
 
 {
-  return (uint)((param_1->flags & 4) != 0);
+  return (uint)((obj->flags & 4) != 0);
 }
 

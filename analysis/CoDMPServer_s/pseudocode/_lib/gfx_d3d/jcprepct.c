@@ -2,6 +2,8 @@
 
 // 0087A600  jinit_c_prep_controller  (jpeg-6/jcprepct.c:316)
 
+/* WARNING: Variable defined which should be unmapped: need_full_buffer */
+
 void __cdecl jinit_c_prep_controller(jpeg_compress_struct *param_1,uchar param_2)
 
 {
@@ -10,6 +12,7 @@ void __cdecl jinit_c_prep_controller(jpeg_compress_struct *param_1,uchar param_2
   undefined4 uVar2;
   int iVar3;
   jpeg_compress_struct *unaff_EDI;
+  uchar need_full_buffer;
   
   puVar1 = (undefined4 *)(*(code *)**(undefined4 **)(in_EAX + 4))();
   *(undefined4 **)(in_EAX + 0x14c) = puVar1;

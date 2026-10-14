@@ -4,16 +4,17 @@
 
 void __cdecl
 R_SetStreamsForXModelSurface
-          (XSurface *param_1,GfxCmdBufPrimState *param_2,GfxCmdBufPrimState *param_3)
+          (XSurface *localSurf,GfxCmdBufPrimState *primState,GfxCmdBufPrimState *prepassPrimState)
 
 {
-  IDirect3DVertexBuffer9 *pIVar1;
+  IDirect3DVertexBuffer9 *vb;
+  IDirect3DVertexBuffer9 *vb0;
   
-  pIVar1 = param_1->vb0;
-  if (param_3 != (GfxCmdBufPrimState *)0x0) {
-    R_SetStreamSource(param_3,pIVar1,0,0x20);
+  vb = localSurf->vb0;
+  if (prepassPrimState != (GfxCmdBufPrimState *)0x0) {
+    R_SetStreamSource(prepassPrimState,vb,0,0x20);
   }
-  R_SetStreamSource(param_2,pIVar1,0,0x20);
+  R_SetStreamSource(primState,vb,0,0x20);
   return;
 }
 

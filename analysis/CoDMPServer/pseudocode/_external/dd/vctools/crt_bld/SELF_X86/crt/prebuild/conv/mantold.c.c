@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl __mtold12(char *param_1,uint param_2,_LDBL12 *param_3)
+void __cdecl __mtold12(char *manptr,uint manlen,_LDBL12 *ld12)
 
 {
   uint uVar1;
@@ -17,102 +17,103 @@ void __cdecl __mtold12(char *param_1,uint param_2,_LDBL12 *param_3)
   uint uVar8;
   uint uVar9;
   uint uVar10;
+  ushort expn;
   
   sVar7 = 0x404e;
-  param_3->ld12[0] = '\0';
-  param_3->ld12[1] = '\0';
-  param_3->ld12[2] = '\0';
-  param_3->ld12[3] = '\0';
-  param_3->ld12[4] = '\0';
-  param_3->ld12[5] = '\0';
-  param_3->ld12[6] = '\0';
-  param_3->ld12[7] = '\0';
-  param_3->ld12[8] = '\0';
-  param_3->ld12[9] = '\0';
-  param_3->ld12[10] = '\0';
-  param_3->ld12[0xb] = '\0';
-  for (; param_2 != 0; param_2 = param_2 - 1) {
-    uVar3 = *(uint *)param_3->ld12;
-    uVar9 = *(uint *)(param_3->ld12 + 4);
-    uVar10 = *(uint *)param_3->ld12;
-    uVar1 = *(uint *)(param_3->ld12 + 4);
-    iVar2 = *(int *)(param_3->ld12 + 8);
+  ld12->ld12[0] = '\0';
+  ld12->ld12[1] = '\0';
+  ld12->ld12[2] = '\0';
+  ld12->ld12[3] = '\0';
+  ld12->ld12[4] = '\0';
+  ld12->ld12[5] = '\0';
+  ld12->ld12[6] = '\0';
+  ld12->ld12[7] = '\0';
+  ld12->ld12[8] = '\0';
+  ld12->ld12[9] = '\0';
+  ld12->ld12[10] = '\0';
+  ld12->ld12[0xb] = '\0';
+  for (; manlen != 0; manlen = manlen - 1) {
+    uVar3 = *(uint *)ld12->ld12;
+    uVar9 = *(uint *)(ld12->ld12 + 4);
+    uVar10 = *(uint *)ld12->ld12;
+    uVar1 = *(uint *)(ld12->ld12 + 4);
+    iVar2 = *(int *)(ld12->ld12 + 8);
     bVar5 = false;
-    uVar8 = (*(int *)(param_3->ld12 + 8) * 2 | uVar9 >> 0x1f) * 2 | (uVar9 & 0x7fffffff) >> 0x1e;
+    uVar8 = (*(int *)(ld12->ld12 + 8) * 2 | uVar9 >> 0x1f) * 2 | (uVar9 & 0x7fffffff) >> 0x1e;
     uVar4 = uVar3 * 4;
     uVar9 = (uVar9 * 2 | uVar3 >> 0x1f) * 2 | (uVar3 & 0x7fffffff) >> 0x1e;
     uVar3 = uVar4 + uVar10;
-    *(uint *)param_3->ld12 = uVar4;
-    *(uint *)(param_3->ld12 + 4) = uVar9;
-    *(uint *)(param_3->ld12 + 8) = uVar8;
+    *(uint *)ld12->ld12 = uVar4;
+    *(uint *)(ld12->ld12 + 4) = uVar9;
+    *(uint *)(ld12->ld12 + 8) = uVar8;
     if ((uVar3 < uVar4) || (uVar3 < uVar10)) {
       bVar5 = true;
     }
     bVar6 = false;
-    *(uint *)param_3->ld12 = uVar3;
+    *(uint *)ld12->ld12 = uVar3;
     if (bVar5) {
       uVar10 = uVar9 + 1;
       if ((uVar10 < uVar9) || (uVar10 == 0)) {
         bVar6 = true;
       }
-      *(uint *)(param_3->ld12 + 4) = uVar10;
+      *(uint *)(ld12->ld12 + 4) = uVar10;
       if (bVar6) {
-        *(uint *)(param_3->ld12 + 8) = uVar8 + 1;
+        *(uint *)(ld12->ld12 + 8) = uVar8 + 1;
       }
     }
-    uVar10 = *(uint *)(param_3->ld12 + 4) + uVar1;
+    uVar10 = *(uint *)(ld12->ld12 + 4) + uVar1;
     bVar5 = false;
-    if ((uVar10 < *(uint *)(param_3->ld12 + 4)) || (uVar10 < uVar1)) {
+    if ((uVar10 < *(uint *)(ld12->ld12 + 4)) || (uVar10 < uVar1)) {
       bVar5 = true;
     }
-    *(uint *)(param_3->ld12 + 4) = uVar10;
+    *(uint *)(ld12->ld12 + 4) = uVar10;
     if (bVar5) {
-      *(int *)(param_3->ld12 + 8) = *(int *)(param_3->ld12 + 8) + 1;
+      *(int *)(ld12->ld12 + 8) = *(int *)(ld12->ld12 + 8) + 1;
     }
-    *(int *)(param_3->ld12 + 8) = *(int *)(param_3->ld12 + 8) + iVar2;
+    *(int *)(ld12->ld12 + 8) = *(int *)(ld12->ld12 + 8) + iVar2;
     bVar5 = false;
     uVar1 = uVar3 * 2;
     uVar9 = uVar10 * 2 | uVar3 >> 0x1f;
-    uVar10 = *(int *)(param_3->ld12 + 8) * 2 | uVar10 >> 0x1f;
-    *(uint *)param_3->ld12 = uVar1;
-    *(uint *)(param_3->ld12 + 4) = uVar9;
-    *(uint *)(param_3->ld12 + 8) = uVar10;
-    uVar3 = uVar1 + (int)*param_1;
-    if ((uVar3 < uVar1) || (uVar3 < (uint)(int)*param_1)) {
+    uVar10 = *(int *)(ld12->ld12 + 8) * 2 | uVar10 >> 0x1f;
+    *(uint *)ld12->ld12 = uVar1;
+    *(uint *)(ld12->ld12 + 4) = uVar9;
+    *(uint *)(ld12->ld12 + 8) = uVar10;
+    uVar3 = uVar1 + (int)*manptr;
+    if ((uVar3 < uVar1) || (uVar3 < (uint)(int)*manptr)) {
       bVar5 = true;
     }
-    *(uint *)param_3->ld12 = uVar3;
+    *(uint *)ld12->ld12 = uVar3;
     if (bVar5) {
       uVar3 = uVar9 + 1;
       bVar5 = false;
       if ((uVar3 < uVar9) || (uVar3 == 0)) {
         bVar5 = true;
       }
-      *(uint *)(param_3->ld12 + 4) = uVar3;
+      *(uint *)(ld12->ld12 + 4) = uVar3;
       if (bVar5) {
-        *(uint *)(param_3->ld12 + 8) = uVar10 + 1;
+        *(uint *)(ld12->ld12 + 8) = uVar10 + 1;
       }
     }
-    param_1 = param_1 + 1;
+    manptr = manptr + 1;
   }
-  while (*(int *)(param_3->ld12 + 8) == 0) {
-    *(uint *)(param_3->ld12 + 8) = *(uint *)(param_3->ld12 + 4) >> 0x10;
-    uVar3 = *(uint *)param_3->ld12;
+  while (*(int *)(ld12->ld12 + 8) == 0) {
+    *(uint *)(ld12->ld12 + 8) = *(uint *)(ld12->ld12 + 4) >> 0x10;
+    uVar3 = *(uint *)ld12->ld12;
     sVar7 = sVar7 + -0x10;
-    *(uint *)(param_3->ld12 + 4) = *(uint *)(param_3->ld12 + 4) << 0x10 | uVar3 >> 0x10;
-    *(uint *)param_3->ld12 = uVar3 << 0x10;
+    *(uint *)(ld12->ld12 + 4) = *(uint *)(ld12->ld12 + 4) << 0x10 | uVar3 >> 0x10;
+    *(uint *)ld12->ld12 = uVar3 << 0x10;
   }
-  uVar3 = *(uint *)(param_3->ld12 + 8);
+  uVar3 = *(uint *)(ld12->ld12 + 8);
   while ((uVar3 & 0x8000) == 0) {
-    uVar10 = *(uint *)param_3->ld12;
-    uVar1 = *(uint *)(param_3->ld12 + 4);
+    uVar10 = *(uint *)ld12->ld12;
+    uVar1 = *(uint *)(ld12->ld12 + 4);
     sVar7 = sVar7 + -1;
-    *(uint *)param_3->ld12 = uVar10 * 2;
-    uVar3 = *(int *)(param_3->ld12 + 8) * 2;
-    *(uint *)(param_3->ld12 + 4) = uVar1 * 2 | uVar10 >> 0x1f;
-    *(uint *)(param_3->ld12 + 8) = uVar3 | uVar1 >> 0x1f;
+    *(uint *)ld12->ld12 = uVar10 * 2;
+    uVar3 = *(int *)(ld12->ld12 + 8) * 2;
+    *(uint *)(ld12->ld12 + 4) = uVar1 * 2 | uVar10 >> 0x1f;
+    *(uint *)(ld12->ld12 + 8) = uVar3 | uVar1 >> 0x1f;
   }
-  *(short *)(param_3->ld12 + 10) = sVar7;
+  *(short *)(ld12->ld12 + 10) = sVar7;
   return;
 }
 

@@ -7,61 +7,59 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_Flame_Apply_Damage(gentity_s *param_1)
+void __cdecl SV_Flame_Apply_Damage(gentity_s *ent)
 
 {
   int iVar1;
-  int local_30;
-  float local_2c;
+  int damage;
+  float dir;
   float local_28;
   undefined4 local_24;
-  int local_20;
-  int local_1c;
-  float local_18;
+  int cur_time;
+  int dflags;
+  float hitPos;
   float local_14;
   undefined4 local_10;
-  int local_c;
-  int local_8;
+  int i;
+  int total_time;
   
-  local_1c = 0;
-  local_2c = 0.0;
+  dflags = 0;
+  dir = 0.0;
   local_28 = 1.0;
   local_24 = 0;
-  local_18 = 0.0;
+  hitPos = 0.0;
   local_14 = 1.0;
   local_10 = 0;
-  local_20 = G_GetTime();
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    if (param_1->flame_timed_damage[local_c].start_timestamp != 0) {
-      local_8 = (int)param_1->flame_timed_damage[local_c].damageDuration +
-                param_1->flame_timed_damage[local_c].start_timestamp;
-      local_30 = 0;
-      if (param_1->flame_timed_damage[local_c].lastupdate_timestamp == 0) {
-        param_1->flame_timed_damage[local_c].lastupdate_timestamp =
-             param_1->flame_timed_damage[local_c].start_timestamp;
+  cur_time = G_GetTime();
+  for (i = 0; i < 4; i = i + 1) {
+    if (ent->flame_timed_damage[i].start_timestamp != 0) {
+      total_time = (int)ent->flame_timed_damage[i].damageDuration +
+                   ent->flame_timed_damage[i].start_timestamp;
+      damage = 0;
+      if (ent->flame_timed_damage[i].lastupdate_timestamp == 0) {
+        ent->flame_timed_damage[i].lastupdate_timestamp = ent->flame_timed_damage[i].start_timestamp
+        ;
       }
-      while ((param_1->flame_timed_damage[local_c].lastupdate_timestamp < local_8 &&
-             ((int)param_1->flame_timed_damage[local_c].damageInterval +
-              param_1->flame_timed_damage[local_c].lastupdate_timestamp <= local_20))) {
-        param_1->flame_timed_damage[local_c].lastupdate_timestamp =
-             (int)param_1->flame_timed_damage[local_c].damageInterval +
-             param_1->flame_timed_damage[local_c].lastupdate_timestamp;
-        local_30 = (param_1->flame_timed_damage[local_c].damage -
-                   (int)((float)(param_1->flame_timed_damage[local_c].lastupdate_timestamp -
-                                param_1->flame_timed_damage[local_c].start_timestamp) /
-                        param_1->flame_timed_damage[local_c].damageInterval)) + local_30;
+      while ((ent->flame_timed_damage[i].lastupdate_timestamp < total_time &&
+             ((int)ent->flame_timed_damage[i].damageInterval +
+              ent->flame_timed_damage[i].lastupdate_timestamp <= cur_time))) {
+        ent->flame_timed_damage[i].lastupdate_timestamp =
+             (int)ent->flame_timed_damage[i].damageInterval +
+             ent->flame_timed_damage[i].lastupdate_timestamp;
+        damage = (ent->flame_timed_damage[i].damage -
+                 (int)((float)(ent->flame_timed_damage[i].lastupdate_timestamp -
+                              ent->flame_timed_damage[i].start_timestamp) /
+                      ent->flame_timed_damage[i].damageInterval)) + damage;
       }
-      if (local_8 < local_20) {
-        param_1->flame_timed_damage[local_c].start_timestamp = 0;
-        param_1->flame_timed_damage[local_c].lastupdate_timestamp = 0;
-        param_1->flame_timed_damage[local_c].end_timestamp = 0;
+      if (total_time < cur_time) {
+        ent->flame_timed_damage[i].start_timestamp = 0;
+        ent->flame_timed_damage[i].lastupdate_timestamp = 0;
+        ent->flame_timed_damage[i].end_timestamp = 0;
       }
-      if (((-1 < param_1->health) || (param_1->destructible != (Destructible *)0x0)) &&
-         (0 < local_30)) {
+      if (((-1 < ent->health) || (ent->destructible != (Destructible *)0x0)) && (0 < damage)) {
         iVar1 = G_GetTime();
-        G_Damage(param_1,param_1->flame_timed_damage[local_c].attacker,
-                 param_1->flame_timed_damage[local_c].attacker,&local_2c,&local_18,local_30,local_1c
-                 ,0x11,-1,HITLOC_NONE,0,0,level.time - iVar1);
+        G_Damage(ent,ent->flame_timed_damage[i].attacker,ent->flame_timed_damage[i].attacker,&dir,
+                 &hitPos,damage,dflags,0x11,-1,HITLOC_NONE,0,0,level.time - iVar1);
       }
     }
   }

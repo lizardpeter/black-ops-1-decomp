@@ -2,36 +2,38 @@
 
 // 007BBE20  Dvar_CompareNames  (universal/dvar.cpp:55)
 
-bool __cdecl Dvar_CompareNames(dvar_s *param_1,dvar_s *param_2)
+bool __cdecl Dvar_CompareNames(dvar_s *cached0,dvar_s *cached1)
 
 {
   int iVar1;
   
-  iVar1 = I_stricmp(param_1->name,param_2->name);
+  iVar1 = I_stricmp(cached0->name,cached1->name);
   return iVar1 < 0;
 }
 
 
 // 00ACE9A0  Material_HashVertexDecl  (gfx_d3d/r_material_load_obj.cpp:2094)
 
-uint __cdecl Material_HashVertexDecl(MaterialStreamRouting *param_1,int param_2)
+uint __cdecl Material_HashVertexDecl(MaterialStreamRouting *routingData,int streamCount)
 
 {
-  uint local_14;
-  uint local_8;
+  uint hash;
+  uchar *data;
+  uint byteCount;
+  uint byteIndex;
   
-  local_14 = 0;
-  for (local_8 = 0; local_8 < (uint)(param_2 << 1); local_8 = local_8 + 1) {
-    local_14 = (uint)(&param_1->source)[local_8] * (local_8 + 0x77) + local_14;
+  hash = 0;
+  for (byteIndex = 0; byteIndex < (uint)(streamCount << 1); byteIndex = byteIndex + 1) {
+    hash = (uint)(&routingData->source)[byteIndex] * (byteIndex + 0x77) + hash;
   }
-  return local_14 & 0x3f;
+  return hash & 0x3f;
 }
 
 
 // 00ACE7E0  Material_AllocVertexDecl  (gfx_d3d/r_material_load_obj.cpp:2115)
 
 MaterialVertexDeclaration * __cdecl
-Material_AllocVertexDecl(MaterialStreamRouting *param_1,int param_2,bool *param_3)
+Material_AllocVertexDecl(MaterialStreamRouting *routingData,int streamCount,bool *existing)
 
 {
   code *pcVar1;
@@ -40,26 +42,26 @@ Material_AllocVertexDecl(MaterialStreamRouting *param_1,int param_2,bool *param_
   int iVar4;
   MaterialVertexStreamRouting *pMVar5;
   MaterialStreamRouting *pMVar6;
-  uint local_10;
-  MaterialVertexDeclaration *local_c;
-  int local_8;
+  uint hashIndex;
+  MaterialVertexDeclaration *mvd;
+  int routingIndex;
   
-  if ((param_2 == 0) &&
+  if ((streamCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x848,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pMVar3 = (MaterialVertexDeclaration *)(*pcVar1)();
     return pMVar3;
   }
-  local_10 = Material_HashVertexDecl(param_1,param_2);
+  hashIndex = Material_HashVertexDecl(routingData,streamCount);
   while( true ) {
-    local_c = mtlLoadGlob.vertexDeclHashTable + local_10;
-    if (local_c->streamCount == '\0') break;
-    if ((uint)local_c->streamCount == param_2) {
-      iVar4 = param_2 << 1;
+    mvd = mtlLoadGlob.vertexDeclHashTable + hashIndex;
+    if (mvd->streamCount == '\0') break;
+    if ((uint)mvd->streamCount == streamCount) {
+      iVar4 = streamCount << 1;
       bVar2 = true;
-      pMVar5 = &mtlLoadGlob.vertexDeclHashTable[local_10].routing;
-      pMVar6 = param_1;
+      pMVar5 = &mtlLoadGlob.vertexDeclHashTable[hashIndex].routing;
+      pMVar6 = routingData;
       do {
         if (iVar4 == 0) break;
         iVar4 = iVar4 + -1;
@@ -68,19 +70,20 @@ Material_AllocVertexDecl(MaterialStreamRouting *param_1,int param_2,bool *param_
         pMVar6 = (MaterialStreamRouting *)&pMVar6->dest;
       } while (bVar2);
       if (bVar2) {
-        *param_3 = true;
-        return local_c;
+        *existing = true;
+        return mvd;
       }
     }
-    local_10 = local_10 + 1 & 0x3f;
+    hashIndex = hashIndex + 1 & 0x3f;
   }
   if (mtlLoadGlob.vertexDeclCount == 0x3f) {
     Com_Error(ERR_DROP,"More than %i vertex declarations in use");
   }
   mtlLoadGlob.vertexDeclCount = mtlLoadGlob.vertexDeclCount + 1;
-  memset(&local_c->streamCount,'\0',0x6c);
-  memcpy((uchar *)&mtlLoadGlob.vertexDeclHashTable[local_10].routing,&param_1->source,param_2 << 1);
-  if ((0xf < (uint)param_2) &&
+  memset(&mvd->streamCount,'\0',0x6c);
+  memcpy((uchar *)&mtlLoadGlob.vertexDeclHashTable[hashIndex].routing,&routingData->source,
+         streamCount << 1);
+  if ((0xf < (uint)streamCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x85d,0,
                                "streamCount doesn\'t index ARRAY_COUNT( mvd->routing.data )\n\t%i not in [0, %i)"
@@ -89,43 +92,43 @@ Material_AllocVertexDecl(MaterialStreamRouting *param_1,int param_2,bool *param_
     pMVar3 = (MaterialVertexDeclaration *)(*pcVar1)();
     return pMVar3;
   }
-  local_c->streamCount = (uchar)param_2;
-  if (((uint)local_c->streamCount != param_2) &&
+  mvd->streamCount = (uchar)streamCount;
+  if (((uint)mvd->streamCount != streamCount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x85f,0,"%s\n\t(streamCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pMVar3 = (MaterialVertexDeclaration *)(*pcVar1)();
     return pMVar3;
   }
-  local_8 = 0;
+  routingIndex = 0;
   do {
-    if (param_2 <= local_8) {
+    if (streamCount <= routingIndex) {
 LAB_00ace983:
-      *param_3 = false;
-      return local_c;
+      *existing = false;
+      return mvd;
     }
-    if (4 < *(byte *)(local_10 * 0x6c + 0xb4b7340 + local_8 * 2)) {
-      mtlLoadGlob.vertexDeclHashTable[local_10].hasOptionalSource = true;
+    if (4 < *(byte *)(hashIndex * 0x6c + 0xb4b7340 + routingIndex * 2)) {
+      mtlLoadGlob.vertexDeclHashTable[hashIndex].hasOptionalSource = true;
       goto LAB_00ace983;
     }
-    local_8 = local_8 + 1;
+    routingIndex = routingIndex + 1;
   } while( true );
 }
 
 
 // 00AD2840  Material_RegisterLiteral  (gfx_d3d/r_material_load_obj.cpp:2158)
 
-float * __cdecl Material_RegisterLiteral(float *param_1)
+float * __cdecl Material_RegisterLiteral(float *literal)
 
 {
   bool bVar1;
-  uint local_8;
+  uint literalIndex;
   
-  for (local_8 = 0; local_8 < mtlLoadGlob.literalCount; local_8 = local_8 + 1) {
-    if ((((*param_1 == mtlLoadGlob.literalTable[local_8][0]) &&
-         (param_1[1] == mtlLoadGlob.literalTable[local_8][1])) &&
-        (param_1[2] == mtlLoadGlob.literalTable[local_8][2])) &&
-       (param_1[3] == mtlLoadGlob.literalTable[local_8][3])) {
+  for (literalIndex = 0; literalIndex < mtlLoadGlob.literalCount; literalIndex = literalIndex + 1) {
+    if ((((*literal == mtlLoadGlob.literalTable[literalIndex][0]) &&
+         (literal[1] == mtlLoadGlob.literalTable[literalIndex][1])) &&
+        (literal[2] == mtlLoadGlob.literalTable[literalIndex][2])) &&
+       (literal[3] == mtlLoadGlob.literalTable[literalIndex][3])) {
       bVar1 = true;
     }
     else {
@@ -133,16 +136,16 @@ float * __cdecl Material_RegisterLiteral(float *param_1)
     }
     if (bVar1) goto LAB_00ad295d;
   }
-  if (local_8 == 0x20) {
+  if (literalIndex == 0x20) {
     Com_Error(ERR_DROP,"more than %i shader literals used");
   }
   mtlLoadGlob.literalCount = mtlLoadGlob.literalCount + 1;
-  mtlLoadGlob.literalTable[local_8][0] = *param_1;
-  mtlLoadGlob.literalTable[local_8][1] = param_1[1];
-  mtlLoadGlob.literalTable[local_8][2] = param_1[2];
-  mtlLoadGlob.literalTable[local_8][3] = param_1[3];
+  mtlLoadGlob.literalTable[literalIndex][0] = *literal;
+  mtlLoadGlob.literalTable[literalIndex][1] = literal[1];
+  mtlLoadGlob.literalTable[literalIndex][2] = literal[2];
+  mtlLoadGlob.literalTable[literalIndex][3] = literal[3];
 LAB_00ad295d:
-  return mtlLoadGlob.literalTable[local_8];
+  return mtlLoadGlob.literalTable[literalIndex];
 }
 
 
@@ -158,27 +161,28 @@ void __cdecl Material_FreeAllLiterals(void)
 
 // 00AD6BD0  Material_StringFromHash  (gfx_d3d/r_material_load_obj.cpp:2181)
 
-char * __cdecl Material_StringFromHash(uint param_1)
+char * __cdecl Material_StringFromHash(uint hash)
 
 {
-  uint local_8;
+  uint uVar1;
+  uint hashIndex;
   
-  local_8 = param_1;
+  uVar1 = hash;
   while( true ) {
-    local_8 = local_8 & 0x3ff;
-    if (mtlLoadGlob.stringHashTable[local_8].string == (char *)0x0) {
+    hashIndex = uVar1 & 0x3ff;
+    if (mtlLoadGlob.stringHashTable[hashIndex].string == (char *)0x0) {
       return (char *)0x0;
     }
-    if (mtlLoadGlob.stringHashTable[local_8].hash == param_1) break;
-    local_8 = local_8 + 1;
+    if (mtlLoadGlob.stringHashTable[hashIndex].hash == hash) break;
+    uVar1 = hashIndex + 1;
   }
-  return mtlLoadGlob.stringHashTable[local_8].string;
+  return mtlLoadGlob.stringHashTable[hashIndex].string;
 }
 
 
 // 00AD2120  Material_RegisterString  (gfx_d3d/r_material_load_obj.cpp:2197)
 
-char * __cdecl Material_RegisterString(char *param_1)
+char * __cdecl Material_RegisterString(char *string)
 
 {
   byte bVar1;
@@ -186,7 +190,8 @@ char * __cdecl Material_RegisterString(char *param_1)
   code *pcVar3;
   uint uVar4;
   char *pcVar5;
-  uchar *puVar6;
+  uint uVar6;
+  uchar *dst;
   bool bVar7;
   char *local_40;
   int local_38;
@@ -195,31 +200,34 @@ char * __cdecl Material_RegisterString(char *param_1)
   int local_24;
   byte *local_1c;
   byte *local_18;
-  uint local_c;
+  char *buffer;
+  uint hash;
+  uint hashIndex;
+  uint size;
   
-  uVar4 = R_HashString(param_1);
-  local_c = uVar4;
+  uVar4 = R_HashString(string);
+  uVar6 = uVar4;
   do {
-    local_c = local_c & 0x3ff;
-    if (mtlLoadGlob.stringHashTable[local_c].string == (char *)0x0) {
+    hashIndex = uVar6 & 0x3ff;
+    if (mtlLoadGlob.stringHashTable[hashIndex].string == (char *)0x0) {
       mtlLoadGlob.stringCount = mtlLoadGlob.stringCount + 1;
       if (mtlLoadGlob.stringCount == 0x400) {
         Com_Error(ERR_DROP,"More than %i string identifiers used by shaders");
       }
-      local_40 = param_1;
+      local_40 = string;
       do {
         cVar2 = *local_40;
         local_40 = local_40 + 1;
       } while (cVar2 != '\0');
-      puVar6 = Material_Alloc((int)(local_40 + (1 - (int)(param_1 + 1))));
-      memcpy(puVar6,(uchar *)param_1,(ulong)(local_40 + (1 - (int)(param_1 + 1))));
-      mtlLoadGlob.stringHashTable[local_c].string = (char *)puVar6;
-      mtlLoadGlob.stringHashTable[local_c].hash = uVar4;
-      return mtlLoadGlob.stringHashTable[local_c].string;
+      dst = Material_Alloc((int)(local_40 + (1 - (int)(string + 1))));
+      memcpy(dst,(uchar *)string,(ulong)(local_40 + (1 - (int)(string + 1))));
+      mtlLoadGlob.stringHashTable[hashIndex].string = (char *)dst;
+      mtlLoadGlob.stringHashTable[hashIndex].hash = uVar4;
+      return mtlLoadGlob.stringHashTable[hashIndex].string;
     }
-    if (mtlLoadGlob.stringHashTable[local_c].hash == uVar4) {
-      local_18 = (byte *)param_1;
-      local_1c = (byte *)mtlLoadGlob.stringHashTable[local_c].string;
+    if (mtlLoadGlob.stringHashTable[hashIndex].hash == uVar4) {
+      local_18 = (byte *)string;
+      local_1c = (byte *)mtlLoadGlob.stringHashTable[hashIndex].string;
       do {
         bVar1 = *local_1c;
         bVar7 = bVar1 < *local_18;
@@ -238,12 +246,12 @@ LAB_00ad21b5:
       local_24 = 0;
 LAB_00ad21bd:
       if (local_24 == 0) {
-        local_2c = (byte *)param_1;
-        local_30 = (byte *)mtlLoadGlob.stringHashTable[local_c].string;
+        local_2c = (byte *)string;
+        local_30 = (byte *)mtlLoadGlob.stringHashTable[hashIndex].string;
         break;
       }
     }
-    local_c = local_c + 1;
+    uVar6 = hashIndex + 1;
   } while( true );
   while( true ) {
     bVar1 = local_30[1];
@@ -273,7 +281,7 @@ LAB_00ad2225:
       return pcVar5;
     }
   }
-  return mtlLoadGlob.stringHashTable[local_c].string;
+  return mtlLoadGlob.stringHashTable[hashIndex].string;
 }
 
 
@@ -290,7 +298,7 @@ void __cdecl Material_FreeAllStrings(void)
 
 // 00ACD590  Material_HashStateMap  (gfx_d3d/r_material_load_obj.cpp:2249)
 
-bool __cdecl Material_HashStateMap(char *param_1,uint *param_2)
+bool __cdecl Material_HashStateMap(char *name,uint *foundHashIndex)
 
 {
   byte bVar1;
@@ -301,17 +309,18 @@ bool __cdecl Material_HashStateMap(char *param_1,uint *param_2)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  uint initialHashIndex;
+  uint hashIndex;
   
-  uVar4 = R_HashAssetName(param_1);
-  local_8 = uVar4 & 0x3f;
+  uVar4 = R_HashAssetName(name);
+  hashIndex = uVar4 & 0x3f;
   do {
-    if (mtlLoadGlob.stateMapHashTable[local_8] == (MaterialStateMap *)0x0) {
-      *param_2 = local_8;
+    if (mtlLoadGlob.stateMapHashTable[hashIndex] == (MaterialStateMap *)0x0) {
+      *foundHashIndex = hashIndex;
       return false;
     }
-    local_10 = (byte *)param_1;
-    local_14 = (byte *)mtlLoadGlob.stateMapHashTable[local_8]->name;
+    local_10 = (byte *)name;
+    local_14 = (byte *)mtlLoadGlob.stateMapHashTable[hashIndex]->name;
     do {
       bVar1 = *local_14;
       bVar5 = bVar1 < *local_10;
@@ -330,11 +339,11 @@ LAB_00acd611:
     local_1c = 0;
 LAB_00acd619:
     if (local_1c == 0) {
-      *param_2 = local_8;
+      *foundHashIndex = hashIndex;
       return true;
     }
-    local_8 = local_8 + 1 & 0x3f;
-    if ((local_8 == (uVar4 & 0x3f)) &&
+    hashIndex = hashIndex + 1 & 0x3f;
+    if ((hashIndex == (uVar4 & 0x3f)) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x8d6,0,
                                  "%s\n\t(\"Increase the size of the state map hash table\") = %s"),
@@ -349,16 +358,16 @@ LAB_00acd619:
 
 // 00ACD560  Material_FindStateMap  (gfx_d3d/r_material_load_obj.cpp:2269)
 
-MaterialStateMap * __cdecl Material_FindStateMap(char *param_1)
+MaterialStateMap * __cdecl Material_FindStateMap(char *name)
 
 {
   bool bVar1;
   MaterialStateMap *pMVar2;
-  uint local_8;
+  uint hashIndex;
   
-  bVar1 = Material_HashStateMap(param_1,&local_8);
+  bVar1 = Material_HashStateMap(name,&hashIndex);
   if (bVar1) {
-    pMVar2 = mtlLoadGlob.stateMapHashTable[local_8];
+    pMVar2 = mtlLoadGlob.stateMapHashTable[hashIndex];
   }
   else {
     pMVar2 = (MaterialStateMap *)0x0;
@@ -369,13 +378,13 @@ MaterialStateMap * __cdecl Material_FindStateMap(char *param_1)
 
 // 00ACD690  Material_SetStateMap  (gfx_d3d/r_material_load_obj.cpp:2278)
 
-void __cdecl Material_SetStateMap(char *param_1,MaterialStateMap *param_2)
+void __cdecl Material_SetStateMap(char *name,MaterialStateMap *stateMap)
 
 {
-  uint local_8;
+  uint hashIndex;
   
-  Material_HashStateMap(param_1,&local_8);
-  mtlLoadGlob.stateMapHashTable[local_8] = param_2;
+  Material_HashStateMap(name,&hashIndex);
+  mtlLoadGlob.stateMapHashTable[hashIndex] = stateMap;
   return;
 }
 
@@ -393,39 +402,41 @@ void __cdecl Material_FreeAllStateMaps(void)
 
 // 00ACC850  MaterialTechnique_FindHashLocation  (gfx_d3d/r_material_load_obj.cpp:2318)
 
-bool __cdecl MaterialTechnique_FindHashLocation(char *param_1,uint *param_2)
+bool __cdecl MaterialTechnique_FindHashLocation(char *name,uint *foundHashIndex)
 
 {
-  int iVar1;
-  uint local_c;
+  uint uVar1;
+  int iVar2;
+  uint hashIndex;
+  MaterialTechnique **hashTable;
   
-  local_c = R_HashAssetName(param_1);
+  uVar1 = R_HashAssetName(name);
   while( true ) {
-    local_c = local_c & 0x3fff;
-    if (mtlLoadGlob.techniqueHashTable[local_c] == (MaterialTechnique *)0x0) {
-      *param_2 = local_c;
+    hashIndex = uVar1 & 0x3fff;
+    if (mtlLoadGlob.techniqueHashTable[hashIndex] == (MaterialTechnique *)0x0) {
+      *foundHashIndex = hashIndex;
       return false;
     }
-    iVar1 = I_stricmp(mtlLoadGlob.techniqueHashTable[local_c]->name,param_1);
-    if (iVar1 == 0) break;
-    local_c = local_c + 1;
+    iVar2 = I_stricmp(mtlLoadGlob.techniqueHashTable[hashIndex]->name,name);
+    if (iVar2 == 0) break;
+    uVar1 = hashIndex + 1;
   }
-  *param_2 = local_c;
+  *foundHashIndex = hashIndex;
   return true;
 }
 
 
 // 00ACC7F0  Material_FindTechnique  (gfx_d3d/r_material_load_obj.cpp:2339)
 
-MaterialTechnique * __cdecl Material_FindTechnique(char *param_1)
+MaterialTechnique * __cdecl Material_FindTechnique(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   MaterialTechnique *pMVar3;
-  uint local_8;
+  uint hashIndex;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x926,0,"%s");
     if (!bVar2) {
@@ -434,9 +445,9 @@ MaterialTechnique * __cdecl Material_FindTechnique(char *param_1)
       return pMVar3;
     }
   }
-  bVar2 = MaterialTechnique_FindHashLocation(param_1,&local_8);
+  bVar2 = MaterialTechnique_FindHashLocation(name,&hashIndex);
   if (bVar2) {
-    pMVar3 = mtlLoadGlob.techniqueHashTable[local_8];
+    pMVar3 = mtlLoadGlob.techniqueHashTable[hashIndex];
   }
   else {
     pMVar3 = (MaterialTechnique *)0x0;
@@ -447,17 +458,17 @@ MaterialTechnique * __cdecl Material_FindTechnique(char *param_1)
 
 // 00ACC8D0  Material_SetTechnique  (gfx_d3d/r_material_load_obj.cpp:2350)
 
-void __cdecl Material_SetTechnique(char *param_1,MaterialTechnique *param_2)
+void __cdecl Material_SetTechnique(char *name,MaterialTechnique *technique)
 
 {
-  uint local_8;
+  uint hashIndex;
   
   if (mtlLoadGlob.techniqueCount == 0x3fff) {
     Com_Error(ERR_DROP,"More than %i techniques in use");
   }
-  MaterialTechnique_FindHashLocation(param_1,&local_8);
+  MaterialTechnique_FindHashLocation(name,&hashIndex);
   mtlLoadGlob.techniqueCount = mtlLoadGlob.techniqueCount + 1;
-  mtlLoadGlob.techniqueHashTable[local_8] = param_2;
+  mtlLoadGlob.techniqueHashTable[hashIndex] = technique;
   return;
 }
 
@@ -487,48 +498,50 @@ void __cdecl Material_FreeAll(void)
 
 // 00AD0440  Material_FindCachedShaderText  (gfx_d3d/r_material_load_obj.cpp:2386)
 
-bool __cdecl Material_FindCachedShaderText(char *param_1,char **param_2,uint *param_3)
+bool __cdecl Material_FindCachedShaderText(char *filename,char **data,uint *byteCount)
 
 {
   int iVar1;
   int iVar2;
-  int local_14;
-  int local_10;
+  int top;
+  int bot;
+  int comparison;
+  int mid;
   
-  local_10 = 0;
-  local_14 = mtlLoadGlob.cachedShaderCount - 1;
+  bot = 0;
+  top = mtlLoadGlob.cachedShaderCount - 1;
   while( true ) {
-    if (local_14 < local_10) {
+    if (top < bot) {
       return false;
     }
-    iVar2 = local_10 + local_14 >> 1;
-    iVar1 = I_stricmp(param_1,mtlLoadGlob.cachedShaderText[iVar2].name);
+    iVar2 = bot + top >> 1;
+    iVar1 = I_stricmp(filename,mtlLoadGlob.cachedShaderText[iVar2].name);
     if (iVar1 == 0) break;
     if (iVar1 < 0) {
-      local_14 = iVar2 + -1;
+      top = iVar2 + -1;
     }
     else {
-      local_10 = iVar2 + 1;
+      bot = iVar2 + 1;
     }
   }
-  *param_3 = mtlLoadGlob.cachedShaderText[iVar2].textSize;
-  *param_2 = mtlLoadGlob.cachedShaderText[iVar2].text;
+  *byteCount = mtlLoadGlob.cachedShaderText[iVar2].textSize;
+  *data = mtlLoadGlob.cachedShaderText[iVar2].text;
   return true;
 }
 
 
 // 00AD0310  Material_EmitShaderChar  (gfx_d3d/r_material_load_obj.cpp:2414)
 
-void __cdecl Material_EmitShaderChar(GfxAssembledShaderText *param_1,char param_2)
+void __cdecl Material_EmitShaderChar(GfxAssembledShaderText *prog,char ch)
 
 {
-  if (param_1->overflowed == false) {
-    param_1->string[param_1->used] = param_2;
-    param_1->used = param_1->used + 1;
-    if (param_2 == '\n') {
-      param_1->currentDestLine = param_1->currentDestLine + 1;
+  if (prog->overflowed == false) {
+    prog->string[prog->used] = ch;
+    prog->used = prog->used + 1;
+    if (ch == '\n') {
+      prog->currentDestLine = prog->currentDestLine + 1;
     }
-    param_1->overflowed = param_1->used == param_1->total;
+    prog->overflowed = prog->used == prog->total;
   }
   else {
     Com_ScriptError("Shader text overflowed. You may need to increase R_SHADER_TEXT_SIZE_LIMIT.\n");
@@ -539,49 +552,50 @@ void __cdecl Material_EmitShaderChar(GfxAssembledShaderText *param_1,char param_
 
 // 00ACFE70  Material_MemCopyAndReturnLines  (gfx_d3d/r_material_load_obj.cpp:2429)
 
-int __cdecl Material_MemCopyAndReturnLines(char *param_1,char *param_2,int param_3)
+int __cdecl Material_MemCopyAndReturnLines(char *destString,char *srcString,int len)
 
 {
-  int local_c;
-  int local_8;
+  int i;
+  int iLines;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
-    param_1[local_c] = param_2[local_c];
-    if (param_2[local_c] == '\n') {
-      local_8 = local_8 + 1;
+  iLines = 0;
+  for (i = 0; i < len; i = i + 1) {
+    destString[i] = srcString[i];
+    if (srcString[i] == '\n') {
+      iLines = iLines + 1;
     }
   }
-  return local_8;
+  return iLines;
 }
 
 
 // 00ACFDC0  Material_EmitShaderString  (gfx_d3d/r_material_load_obj.cpp:2442)
 
-void __cdecl Material_EmitShaderString(GfxAssembledShaderText *param_1,char *param_2)
+void __cdecl Material_EmitShaderString(GfxAssembledShaderText *prog,char *string)
 
 {
   char cVar1;
+  int len_00;
   int iVar2;
-  int iVar3;
   char *local_c;
+  uint len;
   
-  if (param_1->overflowed == false) {
-    local_c = param_2;
+  if (prog->overflowed == false) {
+    local_c = string;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    iVar2 = (int)local_c - (int)(param_2 + 1);
-    if (param_1->used + iVar2 < param_1->total) {
-      iVar3 = Material_MemCopyAndReturnLines(param_1->string + param_1->used,param_2,iVar2);
-      param_1->currentDestLine = iVar3 + param_1->currentDestLine;
-      param_1->used = param_1->used + iVar2;
+    len_00 = (int)local_c - (int)(string + 1);
+    if (prog->used + len_00 < prog->total) {
+      iVar2 = Material_MemCopyAndReturnLines(prog->string + prog->used,string,len_00);
+      prog->currentDestLine = iVar2 + prog->currentDestLine;
+      prog->used = prog->used + len_00;
     }
     else {
       Com_ScriptError("Shader text overflowed. You may need to increase R_SHADER_TEXT_SIZE_LIMIT.\n"
                      );
-      param_1->overflowed = true;
+      prog->overflowed = true;
     }
   }
   return;
@@ -590,15 +604,15 @@ void __cdecl Material_EmitShaderString(GfxAssembledShaderText *param_1,char *par
 
 // 00ACFED0  Material_AddShaderFile  (gfx_d3d/r_material_load_obj.cpp:2471)
 
-void __cdecl Material_AddShaderFile(GfxAssembledShaderText *param_1,char *param_2,uint param_3)
+void __cdecl Material_AddShaderFile(GfxAssembledShaderText *prog,char *shaderFileName,uint srcLine)
 
 {
-  if (param_1->fileCount < 0x80) {
-    GamerProfile_WriteSettings((int)param_1);
-    I_strncpyz(param_1->files[param_1->fileCount].fileName,param_2,0x100);
-    param_1->files[param_1->fileCount].srcLine = param_3;
-    param_1->files[param_1->fileCount].destLine = param_1->currentDestLine;
-    param_1->fileCount = param_1->fileCount + 1;
+  if (prog->fileCount < 0x80) {
+    GamerProfile_WriteSettings((int)prog);
+    I_strncpyz(prog->files[prog->fileCount].fileName,shaderFileName,0x100);
+    prog->files[prog->fileCount].srcLine = srcLine;
+    prog->files[prog->fileCount].destLine = prog->currentDestLine;
+    prog->fileCount = prog->fileCount + 1;
   }
   else {
     Com_ScriptError("Max shader include files exceeded.  Increase R_SHADER_MAX_INCLUDE_FILES.\n");
@@ -611,27 +625,27 @@ void __cdecl Material_AddShaderFile(GfxAssembledShaderText *param_1,char *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Material_IncludeShader(GfxAssembledShaderText *param_1,char *param_2,bool param_3)
+bool __cdecl Material_IncludeShader(GfxAssembledShaderText *prog,char *includeName,bool isInLibDir)
 
 {
   bool bVar1;
   int iVar2;
-  char local_54 [64];
+  char extendedName [64];
   uint local_14;
-  char *local_10;
-  uint local_c;
-  char local_5;
+  char *file;
+  uint fileSize;
+  bool hasLibPrefix;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = _strnicmp(param_2,"lib/",4);
-  local_5 = '\x01' - (iVar2 != 0);
-  if ((param_3) && (local_5 == '\0')) {
-    Com_sprintf(local_54,0x40,"lib/%s");
-    param_2 = local_54;
+  iVar2 = _strnicmp(includeName,"lib/",4);
+  hasLibPrefix = (bool)('\x01' - (iVar2 != 0));
+  if ((isInLibDir) && (hasLibPrefix == false)) {
+    Com_sprintf(extendedName,0x40,"lib/%s");
+    includeName = extendedName;
   }
-  bVar1 = Material_FindCachedShaderText(param_2,&local_10,&local_c);
+  bVar1 = Material_FindCachedShaderText(includeName,&file,&fileSize);
   if (bVar1) {
-    bVar1 = Material_GenerateShaderString_r(param_1,param_2,local_10,local_c,true);
+    bVar1 = Material_GenerateShaderString_r(prog,includeName,file,fileSize,true);
   }
   else {
     Com_ScriptError("Didn\'t preload shader file \'%s\'\n");
@@ -647,94 +661,94 @@ bool __cdecl Material_IncludeShader(GfxAssembledShaderText *param_1,char *param_
 
 bool __cdecl
 Material_GenerateShaderString_r
-          (GfxAssembledShaderText *param_1,char *param_2,char *param_3,uint param_4,bool param_5)
+          (GfxAssembledShaderText *prog,char *shaderName,char *file,uint fileSize,bool isInLibDir)
 
 {
   bool bVar1;
   int iVar2;
-  char local_414 [1024];
+  bool atStartOfLine;
+  char includeName [1024];
   uint local_14;
-  char *local_10;
-  int local_c;
-  uint local_8;
+  char *parse;
+  int includeNameLen;
+  uint includeLine;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar1 = true;
-  local_10 = param_3;
+  parse = file;
   while( true ) {
     while( true ) {
       while( true ) {
         while( true ) {
-          if (*local_10 == '\0') {
-            Material_EmitShaderChar(param_1,'\n');
-            return (bool)('\x01' - (param_1->overflowed != false));
+          if (*parse == '\0') {
+            Material_EmitShaderChar(prog,'\n');
+            return (bool)('\x01' - (prog->overflowed != false));
           }
-          if ((*local_10 != '/') || (local_10[1] != '*')) break;
-          Material_EmitShaderChar(param_1,' ');
-          for (local_10 = local_10 + 2; (*local_10 != '*' || (local_10[1] != '/'));
-              local_10 = local_10 + 1) {
-            if (*local_10 == '\n') {
-              Material_EmitShaderString(param_1,"\n");
+          if ((*parse != '/') || (parse[1] != '*')) break;
+          Material_EmitShaderChar(prog,' ');
+          for (parse = parse + 2; (*parse != '*' || (parse[1] != '/')); parse = parse + 1) {
+            if (*parse == '\n') {
+              Material_EmitShaderString(prog,"\n");
             }
-            if (*local_10 == '\0') {
+            if (*parse == '\0') {
               return false;
             }
           }
-          local_10 = local_10 + 2;
+          parse = parse + 2;
         }
-        if ((*local_10 != '/') || (local_10[1] != '/')) break;
-        Material_EmitShaderChar(param_1,'\n');
-        for (local_10 = local_10 + 2; *local_10 != '\n'; local_10 = local_10 + 1) {
-          if (*local_10 == '\0') {
-            return (bool)('\x01' - (param_1->overflowed != false));
+        if ((*parse != '/') || (parse[1] != '/')) break;
+        Material_EmitShaderChar(prog,'\n');
+        for (parse = parse + 2; *parse != '\n'; parse = parse + 1) {
+          if (*parse == '\0') {
+            return (bool)('\x01' - (prog->overflowed != false));
           }
         }
-        local_10 = local_10 + 1;
+        parse = parse + 1;
         bVar1 = true;
       }
-      if (((bVar1) && (iVar2 = strncmp(local_10,"#include",8), iVar2 == 0)) &&
-         (iVar2 = isspace((int)local_10[8]), iVar2 != 0)) break;
-      Material_EmitShaderChar(param_1,*local_10);
-      if (*local_10 == '\n') {
+      if (((bVar1) && (iVar2 = strncmp(parse,"#include",8), iVar2 == 0)) &&
+         (iVar2 = isspace((int)parse[8]), iVar2 != 0)) break;
+      Material_EmitShaderChar(prog,*parse);
+      if (*parse == '\n') {
         bVar1 = true;
       }
       else {
-        iVar2 = isspace((int)*local_10);
+        iVar2 = isspace((int)*parse);
         if (iVar2 == 0) {
           bVar1 = false;
         }
       }
-      local_10 = local_10 + 1;
+      parse = parse + 1;
     }
-    local_10 = local_10 + 9;
-    while (iVar2 = isspace((int)*local_10), iVar2 != 0) {
-      local_10 = local_10 + 1;
+    parse = parse + 9;
+    while (iVar2 = isspace((int)*parse), iVar2 != 0) {
+      parse = parse + 1;
     }
-    if (*local_10 != '\"') {
+    if (*parse != '\"') {
       Com_Error(ERR_DROP,"Found \'%c\' instead of \'\"\' in #include for shader %s\n");
     }
-    local_10 = local_10 + 1;
-    for (local_c = 0; local_10[local_c] != '\"'; local_c = local_c + 1) {
-      if ((local_10[local_c] == '\n') || (local_10[local_c] == '\0')) {
+    parse = parse + 1;
+    for (includeNameLen = 0; parse[includeNameLen] != '\"'; includeNameLen = includeNameLen + 1) {
+      if ((parse[includeNameLen] == '\n') || (parse[includeNameLen] == '\0')) {
         Com_Error(ERR_DROP,"Missing ending \'\"\' in #include for shader %s\n");
       }
-      local_414[local_c] = local_10[local_c];
+      includeName[includeNameLen] = parse[includeNameLen];
     }
-    local_414[local_c] = '\0';
-    local_8 = (param_1->currentDestLine -
-              *(int *)((int)param_1 + (param_1->fileCount - 1) * 0x108 + 0x1c)) +
-              *(int *)((int)param_1 + (param_1->fileCount - 1) * 0x108 + 0x18);
-    Material_AddShaderFile(param_1,local_414,1);
-    bVar1 = Material_IncludeShader(param_1,local_414,param_5);
+    includeName[includeNameLen] = '\0';
+    includeLine = (prog->currentDestLine -
+                  *(int *)((int)prog + (prog->fileCount - 1) * 0x108 + 0x1c)) +
+                  *(int *)((int)prog + (prog->fileCount - 1) * 0x108 + 0x18);
+    Material_AddShaderFile(prog,includeName,1);
+    bVar1 = Material_IncludeShader(prog,includeName,isInLibDir);
     if (!bVar1) break;
-    Material_AddShaderFile(param_1,param_2,local_8);
-    Material_EmitShaderChar(param_1,'\n');
-    for (local_10 = local_10 + local_c + 1; *local_10 != '\n'; local_10 = local_10 + 1) {
-      if (*local_10 == '\0') {
-        return (bool)('\x01' - (param_1->overflowed != false));
+    Material_AddShaderFile(prog,shaderName,includeLine);
+    Material_EmitShaderChar(prog,'\n');
+    for (parse = parse + includeNameLen + 1; *parse != '\n'; parse = parse + 1) {
+      if (*parse == '\0') {
+        return (bool)('\x01' - (prog->overflowed != false));
       }
     }
-    local_10 = local_10 + 1;
+    parse = parse + 1;
     bVar1 = true;
   }
   return false;
@@ -747,75 +761,75 @@ Material_GenerateShaderString_r
 
 uint __cdecl
 Material_GenerateShaderString
-          (GfxAssembledShaderText *param_1,char *param_2,MaterialShaderType param_3,char *param_4,
-          int param_5)
+          (GfxAssembledShaderText *prog,char *shaderName,MaterialShaderType shaderType,
+          char *shaderString,int sizeofShaderString)
 
 {
   uint uVar1;
   int iVar2;
-  char local_22c [268];
-  char *local_120;
-  char local_119;
-  uint local_118;
-  char local_114 [260];
+  char shaderFilename [268];
+  char *iwProjectGameDir;
+  bool wasGenerated;
+  int textSize;
+  char filepath [260];
   uint local_10;
-  char *local_c;
-  char *local_8;
+  char *formatString;
+  char *text;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((!gIsPIMPEnabled) || (gIsSW2Material)) {
-    local_c = "shaders/%s";
+    formatString = "shaders/%s";
   }
   else {
-    local_c = "pimp/shaders/%s";
+    formatString = "pimp/shaders/%s";
   }
-  Com_sprintf(local_114,0x100,local_c);
-  local_118 = FS_ReadFile(local_114,&local_8);
-  if ((int)local_118 < 0) {
+  Com_sprintf(filepath,0x100,formatString);
+  textSize = FS_ReadFile(filepath,&text);
+  if (textSize < 0) {
     Com_PrintWarning(8,"Couldn\'t read shader \'%s\'\n");
     uVar1 = 0;
   }
   else {
-    param_1->string = param_4;
-    param_1->used = 0;
-    param_1->currentDestLine = 1;
-    param_1->fileCount = 0;
-    param_1->total = param_5;
-    param_1->overflowed = false;
-    local_120 = getenv("IW_PROJECT_GAMEDIR");
-    if (((local_120 != (char *)0x0) && (iVar2 = isalpha((int)*local_120), iVar2 != 0)) &&
-       (local_120[1] == ':')) {
-      local_120 = local_120 + 2;
+    prog->string = shaderString;
+    prog->used = 0;
+    prog->currentDestLine = 1;
+    prog->fileCount = 0;
+    prog->total = sizeofShaderString;
+    prog->overflowed = false;
+    iwProjectGameDir = getenv("IW_PROJECT_GAMEDIR");
+    if (((iwProjectGameDir != (char *)0x0) && (iVar2 = isalpha((int)*iwProjectGameDir), iVar2 != 0))
+       && (iwProjectGameDir[1] == ':')) {
+      iwProjectGameDir = iwProjectGameDir + 2;
     }
-    Com_sprintf(local_22c,0x104,"%s/%s/main/%s");
-    FS_ReplaceSeparators(local_22c);
-    Material_EmitShaderString(param_1,"#define SET_TARGET 1\n");
-    Material_EmitShaderString(param_1,"#define viewProj\t\t\t\tviewProjectionMatrix\n");
-    Material_EmitShaderString(param_1,"#define worldIT  \t\t\t\tworldMatrix\n");
-    Material_EmitShaderString(param_1,"#define world\t\t\t\t\tworldMatrix\n");
-    Material_EmitShaderString(param_1,"#define view \t\t\t\t\tviewMatrix\n");
-    Material_EmitShaderString(param_1,"#define viewInverse  \t\t\tinverseViewMatrix\n");
-    Material_EmitShaderString(param_1,"#define Projection  \t\t\tprojectionMatrix\n");
-    Material_EmitShaderString(param_1,"#define PC\n");
-    Material_EmitShaderString(param_1,"#define NGL_PC 1\n");
-    Material_EmitShaderString(param_1,"#define CONFIG_RELATIVE_WORLD  1\n");
-    if (param_3 == MTL_VERTEX_SHADER) {
-      Material_EmitShaderString(param_1,"#define IS_VERTEX_SHADER 1\n");
-      Material_EmitShaderString(param_1,"#define IS_PIXEL_SHADER 0\n");
+    Com_sprintf(shaderFilename,0x104,"%s/%s/main/%s");
+    FS_ReplaceSeparators(shaderFilename);
+    Material_EmitShaderString(prog,"#define SET_TARGET 1\n");
+    Material_EmitShaderString(prog,"#define viewProj\t\t\t\tviewProjectionMatrix\n");
+    Material_EmitShaderString(prog,"#define worldIT  \t\t\t\tworldMatrix\n");
+    Material_EmitShaderString(prog,"#define world\t\t\t\t\tworldMatrix\n");
+    Material_EmitShaderString(prog,"#define view \t\t\t\t\tviewMatrix\n");
+    Material_EmitShaderString(prog,"#define viewInverse  \t\t\tinverseViewMatrix\n");
+    Material_EmitShaderString(prog,"#define Projection  \t\t\tprojectionMatrix\n");
+    Material_EmitShaderString(prog,"#define PC\n");
+    Material_EmitShaderString(prog,"#define NGL_PC 1\n");
+    Material_EmitShaderString(prog,"#define CONFIG_RELATIVE_WORLD  1\n");
+    if (shaderType == MTL_VERTEX_SHADER) {
+      Material_EmitShaderString(prog,"#define IS_VERTEX_SHADER 1\n");
+      Material_EmitShaderString(prog,"#define IS_PIXEL_SHADER 0\n");
     }
     else {
-      Material_EmitShaderString(param_1,"#define IS_VERTEX_SHADER 0\n");
-      Material_EmitShaderString(param_1,"#define IS_PIXEL_SHADER 1\n");
+      Material_EmitShaderString(prog,"#define IS_VERTEX_SHADER 0\n");
+      Material_EmitShaderString(prog,"#define IS_PIXEL_SHADER 1\n");
     }
-    Material_AddShaderFile(param_1,param_2,1);
-    local_119 = Material_GenerateShaderString_r(param_1,param_2,local_8,local_118,false);
-    FS_FreeFile(local_8);
-    if (local_119 == '\0') {
+    Material_AddShaderFile(prog,shaderName,1);
+    wasGenerated = Material_GenerateShaderString_r(prog,shaderName,text,textSize,false);
+    FS_FreeFile(text);
+    if (wasGenerated == false) {
       uVar1 = 0;
     }
-    else if (param_1->overflowed == false) {
-      param_1->string[param_1->used] = '\0';
-      uVar1 = param_1->used;
+    else if (prog->overflowed == false) {
+      prog->string[prog->used] = '\0';
+      uVar1 = prog->used;
     }
     else {
       uVar1 = 0;
@@ -827,14 +841,14 @@ Material_GenerateShaderString
 
 // 00ACC710  Material_UsingTechnique  (gfx_d3d/r_material_load_obj.cpp:2819)
 
-bool __cdecl Material_UsingTechnique(int param_1)
+bool __cdecl Material_UsingTechnique(int techType)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (0x81 < (uint)param_1) {
+  if (0x81 < (uint)techType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0xb04,0,"techType doesn\'t index TECHNIQUE_COUNT\n\t%i not in [0, %i)")
     ;
@@ -844,18 +858,18 @@ bool __cdecl Material_UsingTechnique(int param_1)
       return (bool)uVar3;
     }
   }
-  return g_useTechnique[param_1];
+  return g_useTechnique[techType];
 }
 
 
 // 00ACC760  Material_MatchToken  (gfx_d3d/r_material_load_obj.cpp:2825)
 
-bool __cdecl Material_MatchToken(char **param_1,char *param_2)
+bool __cdecl Material_MatchToken(char **text,char *match)
 
 {
   int iVar1;
   
-  iVar1 = Com_MatchToken(param_1,param_2,1);
+  iVar1 = Com_MatchToken(text,match,1);
   return iVar1 != 0;
 }
 
@@ -864,7 +878,7 @@ bool __cdecl Material_MatchToken(char **param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MtlStateMapBitName * __cdecl Material_ParseValueForState(char **param_1,MtlStateMapBitName *param_2)
+MtlStateMapBitName * __cdecl Material_ParseValueForState(char **text,MtlStateMapBitName *bitNames)
 
 {
   byte bVar1;
@@ -872,26 +886,26 @@ MtlStateMapBitName * __cdecl Material_ParseValueForState(char **param_1,MtlState
   int local_124;
   byte *local_11c;
   byte *local_118;
-  int local_114;
-  byte *local_110;
-  byte local_10c [260];
+  int valueIndex;
+  char *token;
+  char signedToken [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_110 = (byte *)Com_Parse(param_1);
-  if (*local_110 == 0x2d) {
-    Com_Parse(param_1);
-    Com_sprintf((char *)local_10c,0x100,"-%s");
-    local_110 = local_10c;
+  token = Com_Parse(text);
+  if (*token == '-') {
+    Com_Parse(text);
+    Com_sprintf(signedToken,0x100,"-%s");
+    token = signedToken;
   }
-  local_114 = 0;
+  valueIndex = 0;
   do {
-    if (param_2[local_114].name == (char *)0x0) {
+    if (bitNames[valueIndex].name == (char *)0x0) {
       Com_ScriptError("%s is not a valid state value\n");
       return (MtlStateMapBitName *)0x0;
     }
-    local_118 = (byte *)param_2[local_114].name;
-    local_11c = local_110;
+    local_118 = (byte *)bitNames[valueIndex].name;
+    local_11c = (byte *)token;
     do {
       bVar1 = *local_11c;
       bVar2 = bVar1 < *local_118;
@@ -910,9 +924,9 @@ LAB_00ace19b:
     local_124 = 0;
 LAB_00ace1a6:
     if (local_124 == 0) {
-      return param_2 + local_114;
+      return bitNames + valueIndex;
     }
-    local_114 = local_114 + 1;
+    valueIndex = valueIndex + 1;
   } while( true );
 }
 
@@ -920,7 +934,7 @@ LAB_00ace1a6:
 // 00ACDEE0  Material_ParseRuleSetConditionTest  (gfx_d3d/r_material_load_obj.cpp:2856)
 
 MtlParseSuccess __cdecl
-Material_ParseRuleSetConditionTest(char **param_1,char *param_2,MaterialStateMapRule *param_3)
+Material_ParseRuleSetConditionTest(char **text,char *token,MaterialStateMapRule *rule)
 
 {
   byte bVar1;
@@ -931,16 +945,17 @@ Material_ParseRuleSetConditionTest(char **param_1,char *param_2,MaterialStateMap
   int local_20;
   byte *local_18;
   byte *local_14;
-  int local_10;
-  int local_8;
+  int sourceIndex;
+  MtlStateMapBitName *bitName;
+  int stateBitsIndex;
   
-  local_10 = 0;
+  sourceIndex = 0;
   do {
-    if (s_stateMapSrcBitGroup[local_10].name == (char *)0x0) {
+    if (s_stateMapSrcBitGroup[sourceIndex].name == (char *)0x0) {
       return MTL_PARSE_NO_MATCH;
     }
-    local_14 = (byte *)s_stateMapSrcBitGroup[local_10].name;
-    local_18 = (byte *)param_2;
+    local_14 = (byte *)s_stateMapSrcBitGroup[sourceIndex].name;
+    local_18 = (byte *)token;
     do {
       bVar1 = *local_18;
       bVar5 = bVar1 < *local_14;
@@ -959,25 +974,26 @@ LAB_00acdf5e:
     local_20 = 0;
 LAB_00acdf66:
     if (local_20 == 0) {
-      bVar5 = Material_MatchToken(param_1,"==");
+      bVar5 = Material_MatchToken(text,"==");
       if (!bVar5) {
         return MTL_PARSE_ERROR;
       }
-      pMVar3 = Material_ParseValueForState(param_1,s_stateMapSrcBitGroup[local_10].bitNames);
+      pMVar3 = Material_ParseValueForState(text,s_stateMapSrcBitGroup[sourceIndex].bitNames);
       if (pMVar3 == (MtlStateMapBitName *)0x0) {
         return MTL_PARSE_ERROR;
       }
-      local_8 = 0;
+      stateBitsIndex = 0;
       do {
-        if (*(int *)(local_10 * 0x10 + 0xd888f0 + local_8 * 4) != 0) {
-          param_3->stateBitsMask[local_8] =
-               param_3->stateBitsMask[local_8] | *(uint *)(local_10 * 0x10 + 0xd888f0 + local_8 * 4)
+        if (*(int *)(sourceIndex * 0x10 + 0xd888f0 + stateBitsIndex * 4) != 0) {
+          rule->stateBitsMask[stateBitsIndex] =
+               rule->stateBitsMask[stateBitsIndex] |
+               *(uint *)(sourceIndex * 0x10 + 0xd888f0 + stateBitsIndex * 4);
+          rule->stateBitsValue[stateBitsIndex] = rule->stateBitsValue[stateBitsIndex] | pMVar3->bits
           ;
-          param_3->stateBitsValue[local_8] = param_3->stateBitsValue[local_8] | pMVar3->bits;
           return MTL_PARSE_SUCCESS;
         }
-        local_8 = local_8 + 1;
-      } while ((local_8 < 2) ||
+        stateBitsIndex = stateBitsIndex + 1;
+      } while ((stateBitsIndex < 2) ||
               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                         ,0xb42,0,
                                         "%s\n\t(s_stateMapSrcBitGroup[sourceIndex].name) = %s"),
@@ -986,7 +1002,7 @@ LAB_00acdf66:
       MVar4 = (*pcVar2)();
       return MVar4;
     }
-    local_10 = local_10 + 1;
+    sourceIndex = sourceIndex + 1;
   } while( true );
 }
 
@@ -994,14 +1010,14 @@ LAB_00acdf66:
 // 00ACDC20  Material_ParseRuleSetCondition  (gfx_d3d/r_material_load_obj.cpp:2890)
 
 MtlParseSuccess __cdecl
-Material_ParseRuleSetCondition(char **param_1,char *param_2,MaterialStateMapRule *param_3)
+Material_ParseRuleSetCondition(char **text,char *token,MaterialStateMapRule *rule)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
   MtlParseSuccess MVar4;
-  char *pcVar5;
+  char *token_00;
   int local_40;
   byte *local_38;
   byte *local_34;
@@ -1011,29 +1027,30 @@ Material_ParseRuleSetCondition(char **param_1,char *param_2,MaterialStateMapRule
   int local_18;
   byte *local_10;
   byte *local_c;
+  MtlParseSuccess success;
   
-  if ((param_3->stateBitsMask[0] != 0) &&
+  if ((rule->stateBitsMask[0] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb4d,1,"%s\n\t(rule->stateBitsMask[0]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     MVar4 = (*pcVar2)();
     return MVar4;
   }
-  if ((param_3->stateBitsMask[1] != 0) &&
+  if ((rule->stateBitsMask[1] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb4e,1,"%s\n\t(rule->stateBitsMask[1]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     MVar4 = (*pcVar2)();
     return MVar4;
   }
-  if ((param_3->stateBitsValue[0] != 0) &&
+  if ((rule->stateBitsValue[0] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb4f,1,"%s\n\t(rule->stateBitsValue[0]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     MVar4 = (*pcVar2)();
     return MVar4;
   }
-  if ((param_3->stateBitsValue[1] != 0) &&
+  if ((rule->stateBitsValue[1] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb50,1,"%s\n\t(rule->stateBitsValue[1]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1041,7 +1058,7 @@ Material_ParseRuleSetCondition(char **param_1,char *param_2,MaterialStateMapRule
     return MVar4;
   }
   local_c = (byte *)0xc5f4d0;
-  local_10 = (byte *)param_2;
+  local_10 = (byte *)token;
   do {
     bVar1 = *local_10;
     bVar3 = bVar1 < *local_c;
@@ -1060,14 +1077,14 @@ LAB_00acdd46:
   local_18 = 0;
 LAB_00acdd4e:
   if (local_18 == 0) {
-    bVar3 = Material_MatchToken(param_1,":");
+    bVar3 = Material_MatchToken(text,":");
     MVar4 = (-(uint)bVar3 & 0xfffffffe) + MTL_PARSE_ERROR;
   }
   else {
-    MVar4 = Material_ParseRuleSetConditionTest(param_1,param_2,param_3);
+    MVar4 = Material_ParseRuleSetConditionTest(text,token,rule);
     if (MVar4 == MTL_PARSE_SUCCESS) {
       do {
-        local_38 = (byte *)Com_Parse(param_1);
+        local_38 = (byte *)Com_Parse(text);
         local_20 = &s__;
         local_24 = local_38;
         do {
@@ -1112,8 +1129,8 @@ LAB_00acde68:
           Com_ScriptError("expected \':\' or \'&&\', found \'%s\'\n");
           return MTL_PARSE_ERROR;
         }
-        pcVar5 = Com_Parse(param_1);
-        MVar4 = Material_ParseRuleSetConditionTest(param_1,pcVar5,param_3);
+        token_00 = Com_Parse(text);
+        MVar4 = Material_ParseRuleSetConditionTest(text,token_00,rule);
       } while (MVar4 == MTL_PARSE_SUCCESS);
       if (MVar4 == MTL_PARSE_NO_MATCH) {
         Com_ScriptError("failed parsing conditional after \'&&\'\n");
@@ -1129,7 +1146,7 @@ LAB_00acde68:
 
 bool __cdecl
 Material_ParseRuleSetValue
-          (char **param_1,char *param_2,MtlStateMapBitGroup *param_3,MaterialStateMapRule *param_4)
+          (char **text,char *token,MtlStateMapBitGroup *stateSet,MaterialStateMapRule *rule)
 
 {
   byte bVar1;
@@ -1140,31 +1157,32 @@ Material_ParseRuleSetValue
   int local_20;
   byte *local_18;
   byte *local_14;
-  int local_10;
-  int local_8;
+  int stateIndex;
+  MtlStateMapBitName *bitName;
+  int stateBitsIndex;
   
-  if ((param_4->stateBitsClear[0] != 0) &&
+  if ((rule->stateBitsClear[0] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb73,1,"%s\n\t(rule->stateBitsClear[0]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_4->stateBitsClear[1] != 0) &&
+  if ((rule->stateBitsClear[1] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb74,1,"%s\n\t(rule->stateBitsClear[1]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_4->stateBitsSet[0] != 0) &&
+  if ((rule->stateBitsSet[0] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb75,1,"%s\n\t(rule->stateBitsSet[0]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_4->stateBitsSet[1] != 0) &&
+  if ((rule->stateBitsSet[1] != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xb76,1,"%s\n\t(rule->stateBitsSet[1]) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1172,7 +1190,7 @@ Material_ParseRuleSetValue
     return (bool)uVar4;
   }
   local_14 = (byte *)0xd894e4;
-  local_18 = (byte *)param_2;
+  local_18 = (byte *)token;
   do {
     bVar1 = *local_18;
     bVar3 = bVar1 < *local_14;
@@ -1191,20 +1209,20 @@ LAB_00ace329:
   local_20 = 0;
 LAB_00ace331:
   if (local_20 == 0) {
-    bVar3 = Material_MatchToken(param_1,";");
+    bVar3 = Material_MatchToken(text,";");
   }
   else {
     Com_UngetToken();
-    local_10 = 0;
+    stateIndex = 0;
     do {
-      pMVar5 = Material_ParseValueForState(param_1,param_3[local_10].bitNames);
+      pMVar5 = Material_ParseValueForState(text,stateSet[stateIndex].bitNames);
       if (pMVar5 == (MtlStateMapBitName *)0x0) {
         return false;
       }
-      local_8 = 0;
-      while (param_3[local_10].stateBitsMask[local_8] == 0) {
-        local_8 = local_8 + 1;
-        if ((1 < local_8) &&
+      stateBitsIndex = 0;
+      while (stateSet[stateIndex].stateBitsMask[stateBitsIndex] == 0) {
+        stateBitsIndex = stateBitsIndex + 1;
+        if ((1 < stateBitsIndex) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                      ,0xb8d,0,"%s\n\t(stateSet[stateIndex].name) = %s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -1212,15 +1230,16 @@ LAB_00ace331:
           return (bool)uVar4;
         }
       }
-      param_4->stateBitsSet[local_8] = param_4->stateBitsSet[local_8] | pMVar5->bits;
-      param_4->stateBitsClear[local_8] =
-           param_4->stateBitsClear[local_8] | param_3[local_10].stateBitsMask[local_8];
-      local_10 = local_10 + 1;
-      if (param_3[local_10].name == (char *)0x0) {
-        bVar3 = Material_MatchToken(param_1,";");
+      rule->stateBitsSet[stateBitsIndex] = rule->stateBitsSet[stateBitsIndex] | pMVar5->bits;
+      rule->stateBitsClear[stateBitsIndex] =
+           rule->stateBitsClear[stateBitsIndex] | stateSet[stateIndex].stateBitsMask[stateBitsIndex]
+      ;
+      stateIndex = stateIndex + 1;
+      if (stateSet[stateIndex].name == (char *)0x0) {
+        bVar3 = Material_MatchToken(text,";");
         return bVar3;
       }
-      bVar3 = Material_MatchToken(param_1,",");
+      bVar3 = Material_MatchToken(text,",");
     } while (bVar3);
     bVar3 = false;
   }
@@ -1231,20 +1250,21 @@ LAB_00ace331:
 // 00ACE480  Material_AssembleRuleSet  (gfx_d3d/r_material_load_obj.cpp:2971)
 
 MaterialStateMapRuleSet * __cdecl
-Material_AssembleRuleSet(int param_1,MaterialStateMapRule *param_2)
+Material_AssembleRuleSet(int ruleCount,MaterialStateMapRule *rules)
 
 {
   MaterialStateMapRuleSet *pMVar1;
-  int local_10;
-  int local_8;
+  int stateBitsIndex;
+  MaterialStateMapRuleSet *ruleSet;
+  int ruleIndex;
   
-  pMVar1 = Material_Alloc(param_1 * 0x20 + 4);
-  pMVar1->ruleCount = param_1;
-  Com_Memcpy(pMVar1->rules,param_2,param_1 << 5);
-  for (local_8 = 0; local_8 < param_1; local_8 = local_8 + 1) {
-    for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-      pMVar1->rules[local_8].stateBitsClear[local_10] =
-           ~pMVar1->rules[local_8].stateBitsClear[local_10];
+  pMVar1 = Material_Alloc(ruleCount * 0x20 + 4);
+  pMVar1->ruleCount = ruleCount;
+  Com_Memcpy(pMVar1->rules,rules,ruleCount << 5);
+  for (ruleIndex = 0; ruleIndex < ruleCount; ruleIndex = ruleIndex + 1) {
+    for (stateBitsIndex = 0; stateBitsIndex < 2; stateBitsIndex = stateBitsIndex + 1) {
+      pMVar1->rules[ruleIndex].stateBitsClear[stateBitsIndex] =
+           ~pMVar1->rules[ruleIndex].stateBitsClear[stateBitsIndex];
     }
   }
   return pMVar1;
@@ -1257,65 +1277,65 @@ Material_AssembleRuleSet(int param_1,MaterialStateMapRule *param_2)
 
 bool __cdecl
 Material_ParseRuleSet
-          (char **param_1,char *param_2,MtlStateMapBitGroup *param_3,
-          MaterialStateMapRuleSet **param_4)
+          (char **text,char *ruleSetName,MtlStateMapBitGroup *stateSet,
+          MaterialStateMapRuleSet **ruleSet)
 
 {
   bool bVar1;
   MaterialStateMapRuleSet *pMVar2;
-  int local_2038;
-  MaterialStateMapRule local_2034 [257];
-  MtlParseSuccess local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  int firstRule;
+  MaterialStateMapRule rules [257];
+  MtlParseSuccess success;
+  int ruleCount;
+  char *token;
+  int ruleIndex;
   
-  local_8 = 0xacd9ed;
-  bVar1 = Material_MatchToken(param_1,param_2);
-  if ((bVar1) && (bVar1 = Material_MatchToken(param_1,"{"), bVar1)) {
-    memset((uchar *)local_2034,'\0',0x2020);
-    local_2038 = 0;
-    local_10 = 0;
-    while (local_10 < 0x101) {
-      local_c = Com_Parse(param_1);
-      if (*local_c == '}') {
-        if (local_10 == 0) {
+  ruleIndex = 0xacd9ed;
+  bVar1 = Material_MatchToken(text,ruleSetName);
+  if ((bVar1) && (bVar1 = Material_MatchToken(text,"{"), bVar1)) {
+    memset((uchar *)rules,'\0',0x2020);
+    firstRule = 0;
+    ruleCount = 0;
+    while (ruleCount < 0x101) {
+      token = Com_Parse(text);
+      if (*token == '}') {
+        if (ruleCount == 0) {
           Com_ScriptError("no entries for state %s: you may want to do \'default: passthrough;\'\n")
           ;
           return false;
         }
-        if (local_2038 == local_10) {
-          pMVar2 = Material_AssembleRuleSet(local_10,local_2034);
-          *param_4 = pMVar2;
+        if (firstRule == ruleCount) {
+          pMVar2 = Material_AssembleRuleSet(ruleCount,rules);
+          *ruleSet = pMVar2;
           return true;
         }
         Com_ScriptError("missing value for state %s\n");
         return false;
       }
-      local_14 = Material_ParseRuleSetCondition(param_1,local_c,local_2034 + local_10);
-      if (local_14 == MTL_PARSE_SUCCESS) {
-        local_10 = local_10 + 1;
+      success = Material_ParseRuleSetCondition(text,token,rules + ruleCount);
+      if (success == MTL_PARSE_SUCCESS) {
+        ruleCount = ruleCount + 1;
       }
       else {
-        if (local_14 == MTL_PARSE_ERROR) {
+        if (success == MTL_PARSE_ERROR) {
           return false;
         }
-        if (local_2038 == local_10) {
+        if (firstRule == ruleCount) {
           Com_ScriptError("missing rule condition for state %s\n");
           return false;
         }
-        bVar1 = Material_ParseRuleSetValue(param_1,local_c,param_3,local_2034 + local_2038);
-        local_8 = local_2038;
+        bVar1 = Material_ParseRuleSetValue(text,token,stateSet,rules + firstRule);
+        ruleIndex = firstRule;
         if (!bVar1) {
           return false;
         }
-        while (local_8 = local_8 + 1, local_8 < local_10) {
-          local_2034[local_8].stateBitsSet[0] = local_2034[local_2038].stateBitsSet[0];
-          local_2034[local_8].stateBitsSet[1] = local_2034[local_2038].stateBitsSet[1];
-          local_2034[local_8].stateBitsClear[0] = local_2034[local_2038].stateBitsClear[0];
-          local_2034[local_8].stateBitsClear[1] = local_2034[local_2038].stateBitsClear[1];
+        while (ruleIndex = ruleIndex + 1, ruleIndex < ruleCount) {
+          rules[ruleIndex].stateBitsSet[0] = rules[firstRule].stateBitsSet[0];
+          rules[ruleIndex].stateBitsSet[1] = rules[firstRule].stateBitsSet[1];
+          rules[ruleIndex].stateBitsClear[0] = rules[firstRule].stateBitsClear[0];
+          rules[ruleIndex].stateBitsClear[1] = rules[firstRule].stateBitsClear[1];
         }
-        local_2038 = local_10;
+        firstRule = ruleCount;
       }
     }
     Com_ScriptError("state %s has more than %i rules\n");
@@ -1326,47 +1346,45 @@ Material_ParseRuleSet
 
 // 00ACD830  Material_ParseStateMap  (gfx_d3d/r_material_load_obj.cpp:3053)
 
-bool __cdecl Material_ParseStateMap(char **param_1,MaterialStateMap *param_2)
+bool __cdecl Material_ParseStateMap(char **text,MaterialStateMap *stateMap)
 
 {
   bool bVar1;
   
-  bVar1 = Material_ParseRuleSet(param_1,"alphaTest",s_stateMapDstAlphaTestBitGroup,param_2->ruleSet)
-  ;
+  bVar1 = Material_ParseRuleSet(text,"alphaTest",s_stateMapDstAlphaTestBitGroup,stateMap->ruleSet);
   if (bVar1) {
     bVar1 = Material_ParseRuleSet
-                      (param_1,"blendFunc",s_stateMapDstBlendFuncRgbBitGroup,param_2->ruleSet + 1);
+                      (text,"blendFunc",s_stateMapDstBlendFuncRgbBitGroup,stateMap->ruleSet + 1);
     if (bVar1) {
       bVar1 = Material_ParseRuleSet
-                        (param_1,"separateAlphaBlendFunc",s_stateMapDstBlendFuncAlphaBitGroup,
-                         param_2->ruleSet + 2);
+                        (text,"separateAlphaBlendFunc",s_stateMapDstBlendFuncAlphaBitGroup,
+                         stateMap->ruleSet + 2);
       if (bVar1) {
         bVar1 = Material_ParseRuleSet
-                          (param_1,"cullFace",s_stateMapDstCullFaceBitGroup,param_2->ruleSet + 3);
+                          (text,"cullFace",s_stateMapDstCullFaceBitGroup,stateMap->ruleSet + 3);
         if (bVar1) {
           bVar1 = Material_ParseRuleSet
-                            (param_1,"depthTest",s_stateMapDstDepthTestBitGroup,param_2->ruleSet + 4
-                            );
+                            (text,"depthTest",s_stateMapDstDepthTestBitGroup,stateMap->ruleSet + 4);
           if (bVar1) {
             bVar1 = Material_ParseRuleSet
-                              (param_1,"depthWrite",s_stateMapDstDepthWriteBitGroup,
-                               param_2->ruleSet + 5);
+                              (text,"depthWrite",s_stateMapDstDepthWriteBitGroup,
+                               stateMap->ruleSet + 5);
             if (bVar1) {
               bVar1 = Material_ParseRuleSet
-                                (param_1,"colorWrite",s_stateMapDstColorWriteBitGroup,
-                                 param_2->ruleSet + 6);
+                                (text,"colorWrite",s_stateMapDstColorWriteBitGroup,
+                                 stateMap->ruleSet + 6);
               if (bVar1) {
                 bVar1 = Material_ParseRuleSet
-                                  (param_1,"polygonOffset",s_stateMapDstPolygonOffsetBitGroup,
-                                   param_2->ruleSet + 7);
+                                  (text,"polygonOffset",s_stateMapDstPolygonOffsetBitGroup,
+                                   stateMap->ruleSet + 7);
                 if (bVar1) {
                   bVar1 = Material_ParseRuleSet
-                                    (param_1,"stencil",s_stateMapDstStencilBitGroup,
-                                     param_2->ruleSet + 8);
+                                    (text,"stencil",s_stateMapDstStencilBitGroup,
+                                     stateMap->ruleSet + 8);
                   if (bVar1) {
                     bVar1 = Material_ParseRuleSet
-                                      (param_1,"wireframe",s_stateMapDstWireframeBitGroup,
-                                       param_2->ruleSet + 9);
+                                      (text,"wireframe",s_stateMapDstWireframeBitGroup,
+                                       stateMap->ruleSet + 9);
                     if (bVar1) {
                       bVar1 = true;
                     }
@@ -1417,97 +1435,99 @@ bool __cdecl Material_ParseStateMap(char **param_1,MaterialStateMap *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MaterialStateMap * __cdecl Material_LoadStateMap(char *param_1)
+MaterialStateMap * __cdecl Material_LoadStateMap(char *name)
 
 {
   char cVar1;
   bool bVar2;
   char *local_124;
-  MaterialStateMap *local_120;
-  char local_11c [260];
+  MaterialStateMap *stateMap;
+  char filename [260];
   uint local_18;
-  char *local_14;
-  int local_10;
-  char *local_c;
-  char *local_8;
+  int nameSize;
+  int fileSize;
+  void *file;
+  char *text;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_11c,0x100,"statemaps/%s.sm");
-  local_10 = FS_ReadFile(local_11c,&local_c);
-  if (local_10 < 0) {
+  Com_sprintf(filename,0x100,"statemaps/%s.sm");
+  fileSize = FS_ReadFile(filename,&file);
+  if (fileSize < 0) {
     Com_ScriptError("Couldn\'t open statemap \'%s\'\n");
-    local_120 = (MaterialStateMap *)0x0;
+    stateMap = (MaterialStateMap *)0x0;
   }
   else {
-    local_8 = local_c;
-    Com_BeginParseSession(local_11c);
+    text = file;
+    Com_BeginParseSession(filename);
     Com_SetScriptWarningPrefix("^1ERROR: ");
     Com_SetSpaceDelimited(0);
-    local_124 = param_1;
+    local_124 = name;
     do {
       cVar1 = *local_124;
       local_124 = local_124 + 1;
     } while (cVar1 != '\0');
-    local_14 = local_124 + (1 - (int)(param_1 + 1));
-    local_120 = Material_Alloc((int)(local_124 + (0x2d - (int)(param_1 + 1))));
-    local_120->name = (char *)(local_120 + 1);
-    memcpy((uchar *)local_120->name,(uchar *)param_1,(ulong)local_14);
-    bVar2 = Material_ParseStateMap(&local_8,local_120);
+    nameSize = (int)(local_124 + (1 - (int)(name + 1)));
+    stateMap = Material_Alloc((int)(local_124 + (0x2d - (int)(name + 1))));
+    stateMap->name = (char *)(stateMap + 1);
+    memcpy((uchar *)stateMap->name,(uchar *)name,nameSize);
+    bVar2 = Material_ParseStateMap(&text,stateMap);
     if (!bVar2) {
-      local_120 = (MaterialStateMap *)0x0;
+      stateMap = (MaterialStateMap *)0x0;
     }
     Com_EndParseSession();
-    FS_FreeFile(local_c);
+    FS_FreeFile(file);
   }
-  return local_120;
+  return stateMap;
 }
 
 
 // 00ACD510  Material_RegisterStateMap  (gfx_d3d/r_material_load_obj.cpp:3124)
 
-MaterialStateMap * __cdecl Material_RegisterStateMap(char *param_1)
+MaterialStateMap * __cdecl Material_RegisterStateMap(char *name)
 
 {
-  MaterialStateMap *pMVar1;
+  MaterialStateMap *stateMap_00;
+  MaterialStateMap *stateMap;
   
-  pMVar1 = Material_FindStateMap(param_1);
-  if (pMVar1 == (MaterialStateMap *)0x0) {
-    pMVar1 = Material_LoadStateMap(param_1);
-    if (pMVar1 == (MaterialStateMap *)0x0) {
-      pMVar1 = (MaterialStateMap *)0x0;
+  stateMap_00 = Material_FindStateMap(name);
+  if (stateMap_00 == (MaterialStateMap *)0x0) {
+    stateMap_00 = Material_LoadStateMap(name);
+    if (stateMap_00 == (MaterialStateMap *)0x0) {
+      stateMap_00 = (MaterialStateMap *)0x0;
     }
     else {
-      Material_SetStateMap(param_1,pMVar1);
+      Material_SetStateMap(name,stateMap_00);
     }
   }
-  return pMVar1;
+  return stateMap_00;
 }
 
 
 // 00ACD480  Material_LoadPassStateMap  (gfx_d3d/r_material_load_obj.cpp:3140)
 
-bool __cdecl Material_LoadPassStateMap(char **param_1,MaterialStateMap **param_2)
+bool __cdecl Material_LoadPassStateMap(char **text,MaterialStateMap **stateMap)
 
 {
   bool bVar1;
-  char *pcVar2;
-  MaterialStateMap *pMVar3;
+  char *name;
+  MaterialStateMap *pMVar2;
+  char *token;
   
-  bVar1 = Material_MatchToken(param_1,"stateMap");
+  bVar1 = Material_MatchToken(text,"stateMap");
   if (bVar1) {
-    pcVar2 = Com_Parse(param_1);
-    if ((*pcVar2 == '\0') || (*pcVar2 == ';')) {
+    name = Com_Parse(text);
+    if ((*name == '\0') || (*name == ';')) {
       Com_ScriptError("missing stateMap filename\n");
       bVar1 = false;
     }
     else {
-      pMVar3 = Material_RegisterStateMap(pcVar2);
-      *param_2 = pMVar3;
-      if (*param_2 == (MaterialStateMap *)0x0) {
+      pMVar2 = Material_RegisterStateMap(name);
+      *stateMap = pMVar2;
+      if (*stateMap == (MaterialStateMap *)0x0) {
         bVar1 = false;
       }
       else {
-        bVar1 = Material_MatchToken(param_1,";");
+        bVar1 = Material_MatchToken(text,";");
       }
     }
   }
@@ -1520,20 +1540,20 @@ bool __cdecl Material_LoadPassStateMap(char **param_1,MaterialStateMap **param_2
 
 // 00ACECF0  Material_ParseIndex  (gfx_d3d/r_material_load_obj.cpp:3158)
 
-bool __cdecl Material_ParseIndex(char **param_1,int param_2,int *param_3)
+bool __cdecl Material_ParseIndex(char **text,int indexCount,int *index)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = Material_MatchToken(param_1,"[");
+  bVar1 = Material_MatchToken(text,"[");
   if (bVar1) {
-    iVar2 = Com_ParseInt(param_1);
-    *param_3 = iVar2;
-    if ((*param_3 < 0) || (param_2 <= *param_3)) {
+    iVar2 = Com_ParseInt(text);
+    *index = iVar2;
+    if ((*index < 0) || (indexCount <= *index)) {
       Com_ScriptError("index \'%i\' is not in the range [0, %i]\n");
     }
-    bVar1 = Material_MatchToken(param_1,"]");
+    bVar1 = Material_MatchToken(text,"]");
   }
   else {
     bVar1 = false;
@@ -1544,14 +1564,14 @@ bool __cdecl Material_ParseIndex(char **param_1,int param_2,int *param_3)
 
 // 00ACF190  Material_NameForStreamDest  (gfx_d3d/r_material_load_obj.cpp:3168)
 
-char * __cdecl Material_NameForStreamDest(uchar param_1)
+char * __cdecl Material_NameForStreamDest(uchar dest)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  switch(param_1) {
+  switch(dest) {
   case '\0':
     pcVar3 = "position";
     break;
@@ -1629,7 +1649,7 @@ char * __cdecl Material_NameForStreamDest(uchar param_1)
 
 // 00ACEA00  Material_StreamDestForName  (gfx_d3d/r_material_load_obj.cpp:3221)
 
-bool __cdecl Material_StreamDestForName(char **param_1,char *param_2,uchar *param_3)
+bool __cdecl Material_StreamDestForName(char **text,char *destName,uchar *dest)
 
 {
   byte bVar1;
@@ -1652,10 +1672,10 @@ bool __cdecl Material_StreamDestForName(char **param_1,char *param_2,uchar *para
   int local_18;
   byte *local_10;
   byte *local_c;
-  char local_8 [4];
+  int index;
   
   local_c = (byte *)0xc8aef0;
-  local_10 = (byte *)param_2;
+  local_10 = (byte *)destName;
   do {
     bVar1 = *local_10;
     bVar2 = bVar1 < *local_c;
@@ -1674,12 +1694,12 @@ LAB_00acea50:
   local_18 = 0;
 LAB_00acea58:
   if (local_18 == 0) {
-    *param_3 = '\0';
+    *dest = '\0';
     bVar2 = true;
   }
   else {
     local_20 = (byte *)0xc8aee8;
-    local_24 = (byte *)param_2;
+    local_24 = (byte *)destName;
     do {
       bVar1 = *local_24;
       bVar2 = bVar1 < *local_20;
@@ -1698,12 +1718,12 @@ LAB_00aceabb:
     local_2c = 0;
 LAB_00aceac3:
     if (local_2c == 0) {
-      *param_3 = '\x01';
+      *dest = '\x01';
       bVar2 = true;
     }
     else {
       local_34 = (byte *)0xc5cbf0;
-      local_38 = (byte *)param_2;
+      local_38 = (byte *)destName;
       do {
         bVar1 = *local_38;
         bVar2 = bVar1 < *local_34;
@@ -1722,9 +1742,9 @@ LAB_00aceb26:
       local_40 = 0;
 LAB_00aceb2e:
       if (local_40 == 0) {
-        bVar2 = Material_ParseIndex(param_1,2,(int *)local_8);
+        bVar2 = Material_ParseIndex(text,2,&index);
         if (bVar2) {
-          *param_3 = local_8[0] + '\x02';
+          *dest = (char)index + '\x02';
           bVar2 = true;
         }
         else {
@@ -1733,7 +1753,7 @@ LAB_00aceb2e:
       }
       else {
         local_48 = (byte *)0xd89730;
-        local_4c = (byte *)param_2;
+        local_4c = (byte *)destName;
         do {
           bVar1 = *local_4c;
           bVar2 = bVar1 < *local_48;
@@ -1752,12 +1772,12 @@ LAB_00acebb6:
         local_54 = 0;
 LAB_00acebbe:
         if (local_54 == 0) {
-          *param_3 = '\x04';
+          *dest = '\x04';
           bVar2 = true;
         }
         else {
           local_5c = (byte *)0xd89724;
-          local_60 = (byte *)param_2;
+          local_60 = (byte *)destName;
           do {
             bVar1 = *local_60;
             bVar2 = bVar1 < *local_5c;
@@ -1776,9 +1796,9 @@ LAB_00acec21:
           local_68 = 0;
 LAB_00acec29:
           if (local_68 == 0) {
-            bVar2 = Material_ParseIndex(param_1,0xe,(int *)local_8);
+            bVar2 = Material_ParseIndex(text,0xe,&index);
             if (bVar2) {
-              *param_3 = local_8[0] + '\x05';
+              *dest = (char)index + '\x05';
               bVar2 = true;
             }
             else {
@@ -1787,7 +1807,7 @@ LAB_00acec29:
           }
           else {
             local_70 = (byte *)0xd89718;
-            local_74 = (byte *)param_2;
+            local_74 = (byte *)destName;
             do {
               bVar1 = *local_74;
               bVar2 = bVar1 < *local_70;
@@ -1806,7 +1826,7 @@ LAB_00acecae:
             local_7c = 0;
 LAB_00acecb6:
             if (local_7c == 0) {
-              *param_3 = '\x13';
+              *dest = '\x13';
               bVar2 = true;
             }
             else {
@@ -1824,7 +1844,7 @@ LAB_00acecb6:
 
 // 00ACED60  Material_StreamSourceForName  (gfx_d3d/r_material_load_obj.cpp:3263)
 
-bool __cdecl Material_StreamSourceForName(char **param_1,char *param_2,uchar *param_3)
+bool __cdecl Material_StreamSourceForName(char **text,char *sourceName,uchar *source)
 
 {
   byte bVar1;
@@ -1850,10 +1870,10 @@ bool __cdecl Material_StreamSourceForName(char **param_1,char *param_2,uchar *pa
   int local_18;
   byte *local_10;
   byte *local_c;
-  int local_8;
+  int index;
   
   local_c = (byte *)0xc8aef0;
-  local_10 = (byte *)param_2;
+  local_10 = (byte *)sourceName;
   do {
     bVar1 = *local_10;
     bVar2 = bVar1 < *local_c;
@@ -1872,12 +1892,12 @@ LAB_00acedb3:
   local_18 = 0;
 LAB_00acedbb:
   if (local_18 == 0) {
-    *param_3 = '\0';
+    *source = '\0';
     bVar2 = true;
   }
   else {
     local_20 = (byte *)0xc8aee8;
-    local_24 = (byte *)param_2;
+    local_24 = (byte *)sourceName;
     do {
       bVar1 = *local_24;
       bVar2 = bVar1 < *local_20;
@@ -1896,12 +1916,12 @@ LAB_00acee1e:
     local_2c = 0;
 LAB_00acee26:
     if (local_2c == 0) {
-      *param_3 = '\x03';
+      *source = '\x03';
       bVar2 = true;
     }
     else {
       local_34 = (byte *)0xd8978c;
-      local_38 = (byte *)param_2;
+      local_38 = (byte *)sourceName;
       do {
         bVar1 = *local_38;
         bVar2 = bVar1 < *local_34;
@@ -1920,12 +1940,12 @@ LAB_00acee89:
       local_40 = 0;
 LAB_00acee91:
       if (local_40 == 0) {
-        *param_3 = '\x04';
+        *source = '\x04';
         bVar2 = true;
       }
       else {
         local_48 = (byte *)0xc5cbf0;
-        local_4c = (byte *)param_2;
+        local_4c = (byte *)sourceName;
         do {
           bVar1 = *local_4c;
           bVar2 = bVar1 < *local_48;
@@ -1944,12 +1964,12 @@ LAB_00aceef4:
         local_54 = 0;
 LAB_00aceefc:
         if (local_54 == 0) {
-          *param_3 = '\x01';
+          *source = '\x01';
           bVar2 = true;
         }
         else {
           local_5c = (byte *)0xd89724;
-          local_60 = (byte *)param_2;
+          local_60 = (byte *)sourceName;
           do {
             bVar1 = *local_60;
             bVar2 = bVar1 < *local_5c;
@@ -1968,13 +1988,13 @@ LAB_00acef5f:
           local_68 = 0;
 LAB_00acef67:
           if (local_68 == 0) {
-            bVar2 = Material_ParseIndex(param_1,3,&local_8);
+            bVar2 = Material_ParseIndex(text,3,&index);
             if (bVar2) {
-              if (local_8 == 0) {
-                *param_3 = '\x02';
+              if (index == 0) {
+                *source = '\x02';
               }
               else {
-                *param_3 = (char)local_8 + '\x04';
+                *source = (char)index + '\x04';
               }
               bVar2 = true;
             }
@@ -1984,7 +2004,7 @@ LAB_00acef67:
           }
           else {
             local_70 = (byte *)0xd8977c;
-            local_74 = (byte *)param_2;
+            local_74 = (byte *)sourceName;
             do {
               bVar1 = *local_74;
               bVar2 = bVar1 < *local_70;
@@ -2003,9 +2023,9 @@ LAB_00acf002:
             local_7c = 0;
 LAB_00acf00a:
             if (local_7c == 0) {
-              bVar2 = Material_ParseIndex(param_1,2,&local_8);
+              bVar2 = Material_ParseIndex(text,2,&index);
               if (bVar2) {
-                *param_3 = (char)local_8 + '\a';
+                *source = (char)index + '\a';
                 bVar2 = true;
               }
               else {
@@ -2014,7 +2034,7 @@ LAB_00acf00a:
             }
             else {
               local_84 = (byte *)0xd89718;
-              local_88 = (byte *)param_2;
+              local_88 = (byte *)sourceName;
               do {
                 bVar1 = *local_88;
                 bVar2 = bVar1 < *local_84;
@@ -2033,7 +2053,7 @@ LAB_00acf0ad:
               local_90 = 0;
 LAB_00acf0b8:
               if (local_90 == 0) {
-                *param_3 = '\t';
+                *source = '\t';
                 bVar2 = true;
               }
               else {
@@ -2054,47 +2074,47 @@ LAB_00acf0b8:
 
 bool __cdecl
 Material_ResourceDestForStreamDest
-          (uchar param_1,ShaderVaryingDef *param_2,uint param_3,uchar *param_4)
+          (uchar streamDest,ShaderVaryingDef *inputTable,uint inputCount,uchar *resourceDest)
 
 {
-  uint local_8;
+  uint inputIndex;
   
-  local_8 = 0;
+  inputIndex = 0;
   while( true ) {
-    if (param_3 <= local_8) {
-      Material_NameForStreamDest(param_1);
+    if (inputCount <= inputIndex) {
+      Material_NameForStreamDest(streamDest);
       Com_ScriptError("vertex shader doesn\'t use input \'%s\'.\n");
       return false;
     }
-    if (param_2[local_8].streamDest == param_1) break;
-    local_8 = local_8 + 1;
+    if (inputTable[inputIndex].streamDest == streamDest) break;
+    inputIndex = inputIndex + 1;
   }
-  if (param_2[local_8].isAssigned != false) {
+  if (inputTable[inputIndex].isAssigned != false) {
     Com_ScriptError("vertex input \'%s\' specified more than once.\n");
     return false;
   }
-  param_2[local_8].isAssigned = true;
-  *param_4 = param_2[local_8].resourceDest;
+  inputTable[inputIndex].isAssigned = true;
+  *resourceDest = inputTable[inputIndex].resourceDest;
   return true;
 }
 
 
 // 00ACF2E0  Material_CheckUnspecifiedVertexInputs  (gfx_d3d/r_material_load_obj.cpp:3337)
 
-bool __cdecl Material_CheckUnspecifiedVertexInputs(ShaderVaryingDef *param_1,uint param_2)
+bool __cdecl Material_CheckUnspecifiedVertexInputs(ShaderVaryingDef *inputTable,uint inputCount)
 
 {
-  uint local_c;
-  bool local_5;
+  uint inputIndex;
+  bool isValid;
   
-  local_5 = true;
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-    if (param_1[local_c].isAssigned == false) {
+  isValid = true;
+  for (inputIndex = 0; inputIndex < inputCount; inputIndex = inputIndex + 1) {
+    if (inputTable[inputIndex].isAssigned == false) {
       Com_ScriptError("vertex input \'%s\' is not specified.\n");
-      local_5 = false;
+      isValid = false;
     }
   }
-  return local_5;
+  return isValid;
 }
 
 
@@ -2104,7 +2124,7 @@ bool __cdecl Material_CheckUnspecifiedVertexInputs(ShaderVaryingDef *param_1,uin
 
 bool __cdecl
 Material_LoadPassVertexDecl
-          (char **param_1,ShaderVaryingDef *param_2,uint param_3,MaterialPass *param_4)
+          (char **text,ShaderVaryingDef *inputTable,uint inputCount,MaterialPass *pass)
 
 {
   byte bVar1;
@@ -2113,26 +2133,26 @@ Material_LoadPassVertexDecl
   int local_50;
   byte *local_48;
   byte *local_44;
-  byte local_3e;
-  byte local_3d;
-  uint local_3c;
-  bool local_35;
-  byte *local_34;
-  uint local_30;
-  byte abStack_2a [2];
-  MaterialStreamRouting local_28 [16];
+  uchar source;
+  uchar resourceDest;
+  int insertIndex;
+  bool existing;
+  char *token;
+  int routingIndex;
+  uchar streamDest;
+  MaterialStreamRouting routing [16];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_30 = 0;
+  routingIndex = 0;
   do {
-    if (0xf < local_30) {
+    if (0xf < (uint)routingIndex) {
       Com_ScriptError("More than %i vertex mappings\n");
       return false;
     }
-    local_34 = (byte *)Com_Parse(param_1);
+    token = Com_Parse(text);
     local_44 = (byte *)0xd89628;
-    local_48 = local_34;
+    local_48 = (byte *)token;
     do {
       bVar1 = *local_48;
       bVar3 = bVar1 < *local_44;
@@ -2152,62 +2172,61 @@ LAB_00ace5b5:
 LAB_00ace5bd:
     if (local_50 != 0) {
       Com_UngetToken();
-      bVar3 = Material_CheckUnspecifiedVertexInputs(param_2,param_3);
+      bVar3 = Material_CheckUnspecifiedVertexInputs(inputTable,inputCount);
       if (!bVar3) {
         return false;
       }
-      pMVar2 = Material_AllocVertexDecl
-                         ((MaterialStreamRouting *)(abStack_2a + 2),local_30,&local_35);
-      param_4->vertexDecl = pMVar2;
-      if (local_35 == false) {
-        Load_BuildVertexDecl(&param_4->vertexDecl);
+      pMVar2 = Material_AllocVertexDecl(routing,routingIndex,&existing);
+      pass->vertexDecl = pMVar2;
+      if (existing == false) {
+        Load_BuildVertexDecl(&pass->vertexDecl);
       }
       return true;
     }
-    bVar3 = Material_MatchToken(param_1,".");
+    bVar3 = Material_MatchToken(text,".");
     if (!bVar3) {
       return false;
     }
-    local_34 = (byte *)Com_Parse(param_1);
-    bVar3 = Material_StreamDestForName(param_1,(char *)local_34,abStack_2a + 1);
+    token = Com_Parse(text);
+    bVar3 = Material_StreamDestForName(text,token,&streamDest);
     if (!bVar3) {
       return false;
     }
-    bVar3 = Material_ResourceDestForStreamDest(abStack_2a[1],param_2,param_3,&local_3d);
+    bVar3 = Material_ResourceDestForStreamDest(streamDest,inputTable,inputCount,&resourceDest);
     if (!bVar3) {
       return false;
     }
-    bVar3 = Material_MatchToken(param_1,"=");
+    bVar3 = Material_MatchToken(text,"=");
     if (!bVar3) {
       return false;
     }
-    bVar3 = Material_MatchToken(param_1,"code");
+    bVar3 = Material_MatchToken(text,"code");
     if (!bVar3) {
       return false;
     }
-    bVar3 = Material_MatchToken(param_1,".");
+    bVar3 = Material_MatchToken(text,".");
     if (!bVar3) {
       return false;
     }
-    local_34 = (byte *)Com_Parse(param_1);
-    bVar3 = Material_StreamSourceForName(param_1,(char *)local_34,&local_3e);
+    token = Com_Parse(text);
+    bVar3 = Material_StreamSourceForName(text,token,&source);
     if (!bVar3) {
       return false;
     }
-    bVar3 = Material_MatchToken(param_1,";");
+    bVar3 = Material_MatchToken(text,";");
     if (!bVar3) {
       return false;
     }
-    local_3c = local_30;
-    while (((0 < (int)local_3c && (local_3e <= abStack_2a[local_3c * 2])) &&
-           ((abStack_2a[local_3c * 2] != local_3e || (local_3d <= abStack_2a[local_3c * 2 + 1])))))
-    {
-      *(undefined2 *)(abStack_2a + local_3c * 2 + 2) = *(undefined2 *)(abStack_2a + local_3c * 2);
-      local_3c = local_3c - 1;
+    insertIndex = routingIndex;
+    while (((0 < insertIndex && (source <= (byte)(&stack0xffffffd6)[insertIndex * 2])) &&
+           (((&stack0xffffffd6)[insertIndex * 2] != source ||
+            (resourceDest <= routing[insertIndex + -1].dest))))) {
+      routing[insertIndex] = *(MaterialStreamRouting *)(&stack0xffffffd6 + insertIndex * 2);
+      insertIndex = insertIndex + -1;
     }
-    abStack_2a[local_3c * 2 + 2] = local_3e;
-    abStack_2a[local_3c * 2 + 3] = local_3d;
-    local_30 = local_30 + 1;
+    routing[insertIndex].source = source;
+    routing[insertIndex].dest = resourceDest;
+    routingIndex = routingIndex + 1;
   } while( true );
 }
 
@@ -2215,53 +2234,56 @@ LAB_00ace5bd:
 // 00AD3330  Material_DefaultIndexRange  (gfx_d3d/r_material_load_obj.cpp:3419)
 
 bool __cdecl
-Material_DefaultIndexRange(ShaderIndexRange *param_1,uint param_2,ShaderIndexRange *param_3)
+Material_DefaultIndexRange
+          (ShaderIndexRange *indexRangeRef,uint arrayCount,ShaderIndexRange *indexRangeSet)
 
 {
-  if (param_2 == 0) {
-    if ((param_1->first != 0) || (param_1->count != 1)) {
+  if (arrayCount == 0) {
+    if ((indexRangeRef->first != 0) || (indexRangeRef->count != 1)) {
       return false;
     }
   }
-  else if (param_2 < param_1->first + param_1->count) {
+  else if (arrayCount < indexRangeRef->first + indexRangeRef->count) {
     return false;
   }
-  param_3->first = param_1->first;
-  param_3->count = param_1->count;
-  param_3->isImplicit = false;
+  indexRangeSet->first = indexRangeRef->first;
+  indexRangeSet->count = indexRangeRef->count;
+  indexRangeSet->isImplicit = false;
   return true;
 }
 
 
 // 00AD1BF0  Material_ParseIndexRange  (gfx_d3d/r_material_load_obj.cpp:3437)
 
-bool __cdecl Material_ParseIndexRange(char **param_1,uint param_2,ShaderIndexRange *param_3)
+bool __cdecl Material_ParseIndexRange(char **text,uint arrayCount,ShaderIndexRange *indexRange)
 
 {
   bool bVar1;
   char *pcVar2;
   uint uVar3;
+  char *token;
+  uint last;
   
-  pcVar2 = Com_Parse(param_1);
+  pcVar2 = Com_Parse(text);
   if (*pcVar2 == '[') {
-    param_3->isImplicit = false;
-    uVar3 = Com_ParseInt(param_1);
-    param_3->first = uVar3;
-    if (param_3->first < param_2) {
-      pcVar2 = Com_Parse(param_1);
+    indexRange->isImplicit = false;
+    uVar3 = Com_ParseInt(text);
+    indexRange->first = uVar3;
+    if (indexRange->first < arrayCount) {
+      pcVar2 = Com_Parse(text);
       if (*pcVar2 == ',') {
-        uVar3 = Com_ParseInt(param_1);
-        if ((uVar3 < param_3->first) || (param_2 <= uVar3)) {
+        uVar3 = Com_ParseInt(text);
+        if ((uVar3 < indexRange->first) || (arrayCount <= uVar3)) {
           Com_ScriptError("ending index %i is not in the range [%i, %i]\n");
           bVar1 = false;
         }
         else {
-          bVar1 = Material_MatchToken(param_1,"]");
+          bVar1 = Material_MatchToken(text,"]");
         }
       }
       else {
         Com_UngetToken();
-        param_3->count = 1;
+        indexRange->count = 1;
         bVar1 = true;
       }
     }
@@ -2272,9 +2294,9 @@ bool __cdecl Material_ParseIndexRange(char **param_1,uint param_2,ShaderIndexRan
   }
   else {
     Com_UngetToken();
-    param_3->first = 0;
-    param_3->count = param_2;
-    param_3->isImplicit = true;
+    indexRange->first = 0;
+    indexRange->count = arrayCount;
+    indexRange->isImplicit = true;
     bVar1 = true;
   }
   return bVar1;
@@ -2283,32 +2305,33 @@ bool __cdecl Material_ParseIndexRange(char **param_1,uint param_2,ShaderIndexRan
 
 // 00AD15A0  BufferOffset  (gfx_d3d/r_material_load_obj.cpp:3480)
 
-void * __cdecl BufferOffset(void *param_1,int param_2)
+void * __cdecl BufferOffset(void *buffer,int offset)
 
 {
-  return (void *)((int)param_1 + param_2);
+  return (void *)((int)buffer + offset);
 }
 
 
 // 00AD25C0  Material_ParseArrayOffset  (gfx_d3d/r_material_load_obj.cpp:3487)
 
-bool __cdecl Material_ParseArrayOffset(char **param_1,int param_2,int param_3,int *param_4)
+bool __cdecl Material_ParseArrayOffset(char **text,int arrayCount,int arrayStride,int *offset)
 
 {
   bool bVar1;
   int iVar2;
+  int arrayIndex;
   
-  bVar1 = Material_MatchToken(param_1,"[");
+  bVar1 = Material_MatchToken(text,"[");
   if (bVar1) {
-    iVar2 = Com_ParseInt(param_1);
-    if ((iVar2 < 0) || (param_2 <= iVar2)) {
+    iVar2 = Com_ParseInt(text);
+    if ((iVar2 < 0) || (arrayCount <= iVar2)) {
       Com_ScriptError("array index must be in range [0, %i]\n");
       bVar1 = false;
     }
     else {
-      bVar1 = Material_MatchToken(param_1,"]");
+      bVar1 = Material_MatchToken(text,"]");
       if (bVar1) {
-        *param_4 = iVar2 * param_3;
+        *offset = iVar2 * arrayStride;
         bVar1 = true;
       }
       else {
@@ -2329,7 +2352,7 @@ bool __cdecl Material_ParseArrayOffset(char **param_1,int param_2,int param_3,in
 
 bool __cdecl
 Material_CodeSamplerSource_r
-          (char **param_1,int param_2,CodeSamplerSource *param_3,ShaderArgumentSource *param_4)
+          (char **text,int offset,CodeSamplerSource *sourceTable,ShaderArgumentSource *argSource)
 
 {
   byte bVar1;
@@ -2339,30 +2362,31 @@ Material_CodeSamplerSource_r
   int local_20;
   byte *local_18;
   byte *local_14;
-  int local_10;
-  int local_c;
-  byte *local_8;
+  int sourceIndex;
+  int additionalOffset;
+  char *token;
   
-  if ((param_1 == (char **)0x0) &&
+  if ((text == (char **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xdb7,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_3 == (CodeSamplerSource *)0x0) &&
+  if ((sourceTable == (CodeSamplerSource *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xdb8,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  bVar3 = Material_MatchToken(param_1,".");
+  bVar3 = Material_MatchToken(text,".");
   if (bVar3) {
-    local_8 = (byte *)Com_Parse(param_1);
-    for (local_10 = 0; param_3[local_10].name != (char *)0x0; local_10 = local_10 + 1) {
-      local_14 = (byte *)param_3[local_10].name;
-      local_18 = local_8;
+    token = Com_Parse(text);
+    for (sourceIndex = 0; sourceTable[sourceIndex].name != (char *)0x0;
+        sourceIndex = sourceIndex + 1) {
+      local_14 = (byte *)sourceTable[sourceIndex].name;
+      local_18 = (byte *)token;
       do {
         bVar1 = *local_18;
         bVar3 = bVar1 < *local_14;
@@ -2381,23 +2405,24 @@ LAB_00ad2453:
       local_20 = 0;
 LAB_00ad245b:
       if (local_20 == 0) {
-        if (param_3[local_10].subtable != (CodeSamplerSource *)0x0) {
-          if (param_3[local_10].arrayCount != 0) {
+        if (sourceTable[sourceIndex].subtable != (CodeSamplerSource *)0x0) {
+          if (sourceTable[sourceIndex].arrayCount != 0) {
             bVar3 = Material_ParseArrayOffset
-                              (param_1,param_3[local_10].arrayCount,param_3[local_10].arrayStride,
-                               &local_c);
+                              (text,sourceTable[sourceIndex].arrayCount,
+                               sourceTable[sourceIndex].arrayStride,&additionalOffset);
             if (!bVar3) {
               return false;
             }
-            param_2 = param_2 + local_c;
+            offset = offset + additionalOffset;
           }
-          bVar3 = Material_CodeSamplerSource_r(param_1,param_2,param_3[local_10].subtable,param_4);
+          bVar3 = Material_CodeSamplerSource_r
+                            (text,offset,sourceTable[sourceIndex].subtable,argSource);
           return bVar3;
         }
-        param_4->type = 4;
-        (param_4->u).codeIndex = (short)param_3[local_10].source + (short)param_2;
-        if (param_3[local_10].arrayCount != 0) {
-          if ((param_3[local_10].arrayStride != 1) &&
+        argSource->type = 4;
+        (argSource->u).codeIndex = (short)sourceTable[sourceIndex].source + (short)offset;
+        if (sourceTable[sourceIndex].arrayCount != 0) {
+          if ((sourceTable[sourceIndex].arrayStride != 1) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                        ,0xdd2,0,"%s\n\t(sourceIndex) = %i"), !bVar3)) {
             pcVar2 = (code *)swi(3);
@@ -2405,12 +2430,12 @@ LAB_00ad245b:
             return (bool)uVar4;
           }
           bVar3 = Material_ParseIndexRange
-                            (param_1,param_3[local_10].arrayCount,&param_4->indexRange);
+                            (text,sourceTable[sourceIndex].arrayCount,&argSource->indexRange);
           return bVar3;
         }
-        (param_4->indexRange).first = 0;
-        (param_4->indexRange).count = 1;
-        (param_4->indexRange).isImplicit = true;
+        (argSource->indexRange).first = 0;
+        (argSource->indexRange).count = 1;
+        (argSource->indexRange).isImplicit = true;
         return true;
       }
     }
@@ -2424,7 +2449,7 @@ LAB_00ad245b:
 
 /* WARNING: Enum "MaterialTextureSource": Some values do not have unique names */
 
-bool __cdecl Material_ParseSamplerSource(char **param_1,ShaderArgumentSource *param_2)
+bool __cdecl Material_ParseSamplerSource(char **text,ShaderArgumentSource *argSource)
 
 {
   byte bVar1;
@@ -2436,8 +2461,9 @@ bool __cdecl Material_ParseSamplerSource(char **param_1,ShaderArgumentSource *pa
   int local_18;
   byte *local_10;
   byte *local_c;
+  char *token;
   
-  local_24 = (byte *)Com_Parse(param_1);
+  local_24 = (byte *)Com_Parse(text);
   local_c = (byte *)0xd8a1fc;
   local_10 = local_24;
   do {
@@ -2458,7 +2484,7 @@ LAB_00ad1fff:
   local_18 = 0;
 LAB_00ad2007:
   if (local_18 == 0) {
-    bVar3 = Material_CodeSamplerSource_r(param_1,0,s_codeSamplers,param_2);
+    bVar3 = Material_CodeSamplerSource_r(text,0,s_codeSamplers,argSource);
   }
   else {
     local_20 = (byte *)0xc947f8;
@@ -2480,16 +2506,16 @@ LAB_00ad2079:
     local_2c = 0;
 LAB_00ad2081:
     if (local_2c == 0) {
-      bVar3 = Material_MatchToken(param_1,".");
+      bVar3 = Material_MatchToken(text,".");
       if (bVar3) {
-        pcVar2 = Com_Parse(param_1);
-        param_2->type = 2;
+        pcVar2 = Com_Parse(text);
+        argSource->type = 2;
         pcVar2 = Material_RegisterString(pcVar2);
-        (param_2->u).name = pcVar2;
-        (param_2->indexRange).first = 0;
-        (param_2->indexRange).count = 1;
-        (param_2->indexRange).isImplicit = true;
-        bVar3 = (param_2->u).literalConst != (float *)0x0;
+        (argSource->u).name = pcVar2;
+        (argSource->indexRange).first = 0;
+        (argSource->indexRange).count = 1;
+        (argSource->indexRange).isImplicit = true;
+        bVar3 = (argSource->u).literalConst != (float *)0x0;
       }
       else {
         bVar3 = false;
@@ -2510,8 +2536,8 @@ LAB_00ad2081:
 
 bool __cdecl
 Material_DefaultSamplerSourceFromTable
-          (char *param_1,ShaderIndexRange *param_2,CodeSamplerSource *param_3,
-          ShaderArgumentSource *param_4)
+          (char *constantName,ShaderIndexRange *indexRange,CodeSamplerSource *sourceTable,
+          ShaderArgumentSource *argSource)
 
 {
   byte bVar1;
@@ -2521,44 +2547,44 @@ Material_DefaultSamplerSourceFromTable
   int local_18;
   byte *local_10;
   byte *local_c;
-  int local_8;
+  int sourceIndex;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((constantName == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xdff,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_3 == (CodeSamplerSource *)0x0) &&
+  if ((sourceTable == (CodeSamplerSource *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe00,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (ShaderIndexRange *)0x0) &&
+  if ((indexRange == (ShaderIndexRange *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe01,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_4 == (ShaderArgumentSource *)0x0) &&
+  if ((argSource == (ShaderArgumentSource *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe02,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_8 = 0;
+  sourceIndex = 0;
   do {
-    if (param_3[local_8].name == (char *)0x0) {
+    if (sourceTable[sourceIndex].name == (char *)0x0) {
       return false;
     }
-    if (param_3[local_8].subtable == (CodeSamplerSource *)0x0) {
-      local_c = (byte *)param_3[local_8].name;
-      local_10 = (byte *)param_1;
+    if (sourceTable[sourceIndex].subtable == (CodeSamplerSource *)0x0) {
+      local_c = (byte *)sourceTable[sourceIndex].name;
+      local_10 = (byte *)constantName;
       do {
         bVar1 = *local_10;
         bVar3 = bVar1 < *local_c;
@@ -2578,13 +2604,14 @@ LAB_00ad32af:
 LAB_00ad32b7:
       if ((local_18 == 0) &&
          (bVar3 = Material_DefaultIndexRange
-                            (param_2,param_3[local_8].arrayCount,&param_4->indexRange), bVar3)) {
-        param_4->type = 4;
-        (param_4->u).codeIndex = (short)param_3[local_8].source;
+                            (indexRange,sourceTable[sourceIndex].arrayCount,&argSource->indexRange),
+         bVar3)) {
+        argSource->type = 4;
+        (argSource->u).codeIndex = (short)sourceTable[sourceIndex].source;
         return true;
       }
     }
-    local_8 = local_8 + 1;
+    sourceIndex = sourceIndex + 1;
   } while( true );
 }
 
@@ -2594,37 +2621,39 @@ LAB_00ad32b7:
 /* WARNING: Enum "MaterialTextureSource": Some values do not have unique names */
 
 bool __cdecl
-Material_DefaultSamplerSource(char *param_1,ShaderIndexRange *param_2,ShaderArgumentSource *param_3)
+Material_DefaultSamplerSource
+          (char *constantName,ShaderIndexRange *indexRange,ShaderArgumentSource *argSource)
 
 {
   bool bVar1;
   
-  bVar1 = Material_DefaultSamplerSourceFromTable(param_1,param_2,s_defaultCodeSamplers,param_3);
+  bVar1 = Material_DefaultSamplerSourceFromTable
+                    (constantName,indexRange,s_defaultCodeSamplers,argSource);
   return bVar1;
 }
 
 
 // 00AD2C20  Material_ParseVector  (gfx_d3d/r_material_load_obj.cpp:3613)
 
-bool __cdecl Material_ParseVector(char **param_1,int param_2,float *param_3)
+bool __cdecl Material_ParseVector(char **text,int elemCount,float *vector)
 
 {
   bool bVar1;
   float fVar2;
-  int local_8;
+  int elemIndex;
   
-  bVar1 = Material_MatchToken(param_1,"(");
+  bVar1 = Material_MatchToken(text,"(");
   if (bVar1) {
-    local_8 = 0;
+    elemIndex = 0;
     do {
-      fVar2 = Com_ParseFloat(param_1);
-      param_3[local_8] = fVar2;
-      local_8 = local_8 + 1;
-      if (local_8 == param_2) {
-        bVar1 = Material_MatchToken(param_1,")");
+      fVar2 = Com_ParseFloat(text);
+      vector[elemIndex] = fVar2;
+      elemIndex = elemIndex + 1;
+      if (elemIndex == elemCount) {
+        bVar1 = Material_MatchToken(text,")");
         return bVar1;
       }
-      bVar1 = Material_MatchToken(param_1,",");
+      bVar1 = Material_MatchToken(text,",");
     } while (bVar1);
   }
   return false;
@@ -2633,7 +2662,7 @@ bool __cdecl Material_ParseVector(char **param_1,int param_2,float *param_3)
 
 // 00AD2970  Material_ParseLiteral  (gfx_d3d/r_material_load_obj.cpp:3632)
 
-bool __cdecl Material_ParseLiteral(char **param_1,char *param_2,float *param_3)
+bool __cdecl Material_ParseLiteral(char **text,char *token,float *literal)
 
 {
   byte bVar1;
@@ -2653,33 +2682,33 @@ bool __cdecl Material_ParseLiteral(char **param_1,char *param_2,float *param_3)
   byte *local_c;
   byte *local_8;
   
-  if ((param_1 == (char **)0x0) &&
+  if ((text == (char **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe31,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((token == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe32,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((literal == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe33,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  *param_3 = 0.0;
-  param_3[1] = 0.0;
-  param_3[2] = 0.0;
-  param_3[3] = 1.0;
+  *literal = 0.0;
+  literal[1] = 0.0;
+  literal[2] = 0.0;
+  literal[3] = 1.0;
   local_8 = &s_float1;
-  local_c = (byte *)param_2;
+  local_c = (byte *)token;
   do {
     bVar1 = *local_c;
     bVar3 = bVar1 < *local_8;
@@ -2698,11 +2727,11 @@ LAB_00ad2a83:
   local_14 = 0;
 LAB_00ad2a8b:
   if (local_14 == 0) {
-    Material_ParseVector(param_1,1,param_3);
+    Material_ParseVector(text,1,literal);
   }
   else {
     local_1c = &s_float2;
-    local_20 = (byte *)param_2;
+    local_20 = (byte *)token;
     do {
       bVar1 = *local_20;
       bVar3 = bVar1 < *local_1c;
@@ -2721,11 +2750,11 @@ LAB_00ad2af8:
     local_28 = 0;
 LAB_00ad2b00:
     if (local_28 == 0) {
-      Material_ParseVector(param_1,2,param_3);
+      Material_ParseVector(text,2,literal);
     }
     else {
       local_30 = &s_float3;
-      local_34 = (byte *)param_2;
+      local_34 = (byte *)token;
       do {
         bVar1 = *local_34;
         bVar3 = bVar1 < *local_30;
@@ -2744,11 +2773,11 @@ LAB_00ad2b6d:
       local_3c = 0;
 LAB_00ad2b75:
       if (local_3c == 0) {
-        Material_ParseVector(param_1,3,param_3);
+        Material_ParseVector(text,3,literal);
       }
       else {
         local_44 = &s_float4;
-        local_48 = (byte *)param_2;
+        local_48 = (byte *)token;
         do {
           bVar1 = *local_48;
           bVar3 = bVar1 < *local_44;
@@ -2769,7 +2798,7 @@ LAB_00ad2be7:
         if (local_50 != 0) {
           return false;
         }
-        Material_ParseVector(param_1,4,param_3);
+        Material_ParseVector(text,4,literal);
       }
     }
   }
@@ -2781,8 +2810,8 @@ LAB_00ad2be7:
 
 bool __cdecl
 Material_ParseCodeConstantSource_r
-          (MaterialShaderType param_1,char **param_2,int param_3,CodeConstantSource *param_4,
-          ShaderArgumentSource *param_5)
+          (MaterialShaderType shaderType,char **text,int offset,CodeConstantSource *sourceTable,
+          ShaderArgumentSource *argSource)
 
 {
   byte bVar1;
@@ -2792,37 +2821,38 @@ Material_ParseCodeConstantSource_r
   int local_20;
   byte *local_18;
   byte *local_14;
-  int local_10;
-  int local_c;
-  byte *local_8;
+  int sourceIndex;
+  int additionalOffset;
+  char *token;
   
-  if ((param_2 == (char **)0x0) &&
+  if ((text == (char **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe4e,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_4 == (CodeConstantSource *)0x0) &&
+  if ((sourceTable == (CodeConstantSource *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe4f,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_5 == (ShaderArgumentSource *)0x0) &&
+  if ((argSource == (ShaderArgumentSource *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xe50,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  bVar3 = Material_MatchToken(param_2,".");
+  bVar3 = Material_MatchToken(text,".");
   if (bVar3) {
-    local_8 = (byte *)Com_Parse(param_2);
-    for (local_10 = 0; param_4[local_10].name != (char *)0x0; local_10 = local_10 + 1) {
-      local_14 = (byte *)param_4[local_10].name;
-      local_18 = local_8;
+    token = Com_Parse(text);
+    for (sourceIndex = 0; sourceTable[sourceIndex].name != (char *)0x0;
+        sourceIndex = sourceIndex + 1) {
+      local_14 = (byte *)sourceTable[sourceIndex].name;
+      local_18 = (byte *)token;
       do {
         bVar1 = *local_18;
         bVar3 = bVar1 < *local_14;
@@ -2841,9 +2871,10 @@ LAB_00ad2ddf:
       local_20 = 0;
 LAB_00ad2de7:
       if (local_20 == 0) {
-        if (param_4[local_10].arrayCount != 0) {
-          if ((param_4[local_10].subtable == (CodeConstantSource *)0x0) &&
-             (((0xc4 < param_4[local_10].source || (param_4[local_10].arrayStride != 1)) &&
+        if (sourceTable[sourceIndex].arrayCount != 0) {
+          if ((sourceTable[sourceIndex].subtable == (CodeConstantSource *)0x0) &&
+             (((0xc4 < sourceTable[sourceIndex].source ||
+               (sourceTable[sourceIndex].arrayStride != 1)) &&
               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                         ,0xe5d,0,"%s\n\t(sourceTable[sourceIndex].name) = %s"),
               !bVar3)))) {
@@ -2851,8 +2882,8 @@ LAB_00ad2de7:
             uVar4 = (*pcVar2)();
             return (bool)uVar4;
           }
-          if (param_4[local_10].subtable == (CodeConstantSource *)0x0) {
-            if ((param_4[local_10].arrayStride != 1) &&
+          if (sourceTable[sourceIndex].subtable == (CodeConstantSource *)0x0) {
+            if ((sourceTable[sourceIndex].arrayStride != 1) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0xe60,1,"%s\n\t(sourceIndex) = %i"), !bVar3)) {
               pcVar2 = (code *)swi(3);
@@ -2860,44 +2891,44 @@ LAB_00ad2de7:
               return (bool)uVar4;
             }
             bVar3 = Material_ParseIndexRange
-                              (param_2,param_4[local_10].arrayCount,&param_5->indexRange);
+                              (text,sourceTable[sourceIndex].arrayCount,&argSource->indexRange);
             if (!bVar3) {
               return false;
             }
           }
           else {
             bVar3 = Material_ParseArrayOffset
-                              (param_2,param_4[local_10].arrayCount,param_4[local_10].arrayStride,
-                               &local_c);
+                              (text,sourceTable[sourceIndex].arrayCount,
+                               sourceTable[sourceIndex].arrayStride,&additionalOffset);
             if (!bVar3) {
               return false;
             }
-            param_3 = param_3 + local_c;
+            offset = offset + additionalOffset;
           }
         }
-        if (param_4[local_10].subtable != (CodeConstantSource *)0x0) {
+        if (sourceTable[sourceIndex].subtable != (CodeConstantSource *)0x0) {
           bVar3 = Material_ParseCodeConstantSource_r
-                            (param_1,param_2,param_3,param_4[local_10].subtable,param_5);
+                            (shaderType,text,offset,sourceTable[sourceIndex].subtable,argSource);
           return bVar3;
         }
-        param_5->type = (ushort)(param_1 != MTL_VERTEX_SHADER) * 2 + 3;
-        (param_5->u).codeIndex = (ushort)param_4[local_10].source + (short)param_3;
-        if (((param_5->type != 3) &&
-            (*(int *)(&s_codeConstUpdateFreq + (uint)(param_5->u).codeIndex * 4) == 0)) &&
+        argSource->type = (ushort)(shaderType != MTL_VERTEX_SHADER) * 2 + 3;
+        (argSource->u).codeIndex = (ushort)sourceTable[sourceIndex].source + (short)offset;
+        if (((argSource->type != 3) &&
+            (*(int *)(&s_codeConstUpdateFreq + (uint)(argSource->u).codeIndex * 4) == 0)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                      ,0xe71,0,"%s\n\t(argSource->u.codeIndex) = %i"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           uVar4 = (*pcVar2)();
           return (bool)uVar4;
         }
-        if (param_4[local_10].arrayCount == 0) {
-          if ((param_5->u).codeIndex < 0xc5) {
-            (param_5->indexRange).first = 0;
-            (param_5->indexRange).count = 1;
-            (param_5->indexRange).isImplicit = false;
+        if (sourceTable[sourceIndex].arrayCount == 0) {
+          if ((argSource->u).codeIndex < 0xc5) {
+            (argSource->indexRange).first = 0;
+            (argSource->indexRange).count = 1;
+            (argSource->indexRange).isImplicit = false;
           }
           else {
-            bVar3 = Material_ParseIndexRange(param_2,4,&param_5->indexRange);
+            bVar3 = Material_ParseIndexRange(text,4,&argSource->indexRange);
             if (!bVar3) {
               return false;
             }
@@ -2916,7 +2947,7 @@ LAB_00ad2de7:
 
 bool __cdecl
 Material_ParseConstantSource
-          (MaterialShaderType param_1,char **param_2,ShaderArgumentSource *param_3)
+          (MaterialShaderType shaderType,char **text,ShaderArgumentSource *argSource)
 
 {
   byte bVar1;
@@ -2929,23 +2960,23 @@ Material_ParseConstantSource
   int local_28;
   byte *local_20;
   byte *local_1c;
-  float local_18 [4];
-  byte *local_8;
+  float literal [4];
+  char *token;
   
-  local_8 = (byte *)Com_Parse(param_2);
-  bVar2 = Material_ParseLiteral(param_2,(char *)local_8,local_18);
+  token = Com_Parse(text);
+  bVar2 = Material_ParseLiteral(text,token,literal);
   if (bVar2) {
-    param_3->type = (-(ushort)(param_1 != MTL_VERTEX_SHADER) & 6) + 1;
-    pfVar3 = Material_RegisterLiteral(local_18);
-    (param_3->u).literalConst = pfVar3;
-    (param_3->indexRange).first = 0;
-    (param_3->indexRange).count = 1;
-    (param_3->indexRange).isImplicit = true;
-    bVar2 = (param_3->u).literalConst != (float *)0x0;
+    argSource->type = (-(ushort)(shaderType != MTL_VERTEX_SHADER) & 6) + 1;
+    pfVar3 = Material_RegisterLiteral(literal);
+    (argSource->u).literalConst = pfVar3;
+    (argSource->indexRange).first = 0;
+    (argSource->indexRange).count = 1;
+    (argSource->indexRange).isImplicit = true;
+    bVar2 = (argSource->u).literalConst != (float *)0x0;
   }
   else {
     local_1c = (byte *)0xccc2e8;
-    local_20 = local_8;
+    local_20 = (byte *)token;
     do {
       bVar1 = *local_20;
       bVar2 = bVar1 < *local_1c;
@@ -2964,11 +2995,11 @@ LAB_00ad271d:
     local_28 = 0;
 LAB_00ad2725:
     if (local_28 == 0) {
-      bVar2 = Material_ParseCodeConstantSource_r(param_1,param_2,0,s_codeConsts,param_3);
+      bVar2 = Material_ParseCodeConstantSource_r(shaderType,text,0,s_codeConsts,argSource);
     }
     else {
       local_30 = (byte *)0xc947f8;
-      local_34 = local_8;
+      local_34 = (byte *)token;
       do {
         bVar1 = *local_34;
         bVar2 = bVar1 < *local_30;
@@ -2987,16 +3018,16 @@ LAB_00ad279b:
       local_3c = 0;
 LAB_00ad27a3:
       if (local_3c == 0) {
-        bVar2 = Material_MatchToken(param_2,".");
+        bVar2 = Material_MatchToken(text,".");
         if (bVar2) {
-          local_8 = (byte *)Com_Parse(param_2);
-          param_3->type = -(ushort)(param_1 != MTL_VERTEX_SHADER) & 6;
-          pcVar4 = Material_RegisterString((char *)local_8);
-          (param_3->u).name = pcVar4;
-          (param_3->indexRange).first = 0;
-          (param_3->indexRange).count = 1;
-          (param_3->indexRange).isImplicit = true;
-          bVar2 = (param_3->u).literalConst != (float *)0x0;
+          token = Com_Parse(text);
+          argSource->type = -(ushort)(shaderType != MTL_VERTEX_SHADER) & 6;
+          pcVar4 = Material_RegisterString(token);
+          (argSource->u).name = pcVar4;
+          (argSource->indexRange).first = 0;
+          (argSource->indexRange).count = 1;
+          (argSource->indexRange).isImplicit = true;
+          bVar2 = (argSource->u).literalConst != (float *)0x0;
         }
         else {
           bVar2 = false;
@@ -3016,8 +3047,8 @@ LAB_00ad27a3:
 
 bool __cdecl
 Material_DefaultConstantSourceFromTable
-          (MaterialShaderType param_1,char *param_2,ShaderIndexRange *param_3,
-          CodeConstantSource *param_4,ShaderArgumentSource *param_5)
+          (MaterialShaderType shaderType,char *constantName,ShaderIndexRange *indexRange,
+          CodeConstantSource *sourceTable,ShaderArgumentSource *argSource)
 
 {
   byte bVar1;
@@ -3028,17 +3059,17 @@ Material_DefaultConstantSourceFromTable
   int local_20;
   byte *local_18;
   byte *local_14;
-  int local_c;
-  uint local_8;
+  uint sourceIndex;
+  uint arrayCount;
   
-  local_c = 0;
+  sourceIndex = 0;
   do {
-    if (param_4[local_c].name == (char *)0x0) {
+    if (sourceTable[sourceIndex].name == (char *)0x0) {
       return false;
     }
-    if (param_4[local_c].subtable == (CodeConstantSource *)0x0) {
-      local_14 = (byte *)param_4[local_c].name;
-      local_18 = (byte *)param_2;
+    if (sourceTable[sourceIndex].subtable == (CodeConstantSource *)0x0) {
+      local_14 = (byte *)sourceTable[sourceIndex].name;
+      local_18 = (byte *)constantName;
       do {
         bVar1 = *local_18;
         bVar4 = bVar1 < *local_14;
@@ -3057,29 +3088,29 @@ LAB_00ad347f:
       local_20 = 0;
 LAB_00ad3487:
       if (local_20 == 0) {
-        if (param_4[local_c].source < 0xc5) {
-          local_28 = param_4[local_c].arrayCount;
+        if (sourceTable[sourceIndex].source < 0xc5) {
+          local_28 = sourceTable[sourceIndex].arrayCount;
           if ((int)local_28 < 2) {
             local_28 = 1;
           }
-          local_8 = local_28;
+          arrayCount = local_28;
         }
         else {
-          if ((param_4[local_c].arrayCount != 0) &&
+          if ((sourceTable[sourceIndex].arrayCount != 0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                        ,0xebb,0,"%s\n\t(constantName) = %s"), !bVar4)) {
             pcVar2 = (code *)swi(3);
             uVar3 = (*pcVar2)();
             return (bool)uVar3;
           }
-          local_8 = 4;
+          arrayCount = 4;
         }
-        bVar4 = Material_DefaultIndexRange(param_3,local_8,&param_5->indexRange);
+        bVar4 = Material_DefaultIndexRange(indexRange,arrayCount,&argSource->indexRange);
         if (bVar4) {
-          param_5->type = (ushort)(param_1 != MTL_VERTEX_SHADER) * 2 + 3;
-          *(ushort *)&param_5->u = (ushort)param_4[local_c].source;
-          if (((param_5->type != 3) &&
-              (*(int *)(&s_codeConstUpdateFreq + (uint)(param_5->u).codeIndex * 4) == 0)) &&
+          argSource->type = (ushort)(shaderType != MTL_VERTEX_SHADER) * 2 + 3;
+          *(ushort *)&argSource->u = (ushort)sourceTable[sourceIndex].source;
+          if (((argSource->type != 3) &&
+              (*(int *)(&s_codeConstUpdateFreq + (uint)(argSource->u).codeIndex * 4) == 0)) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                        ,0xec7,0,"%s\n\t(argSource->u.codeIndex) = %i"), !bVar4)) {
             pcVar2 = (code *)swi(3);
@@ -3090,7 +3121,7 @@ LAB_00ad3487:
         }
       }
     }
-    local_c = local_c + 1;
+    sourceIndex = sourceIndex + 1;
   } while( true );
 }
 
@@ -3099,19 +3130,20 @@ LAB_00ad3487:
 
 bool __cdecl
 Material_DefaultConstantSource
-          (MaterialShaderType param_1,char *param_2,ShaderIndexRange *param_3,
-          ShaderArgumentSource *param_4)
+          (MaterialShaderType shaderType,char *constantName,ShaderIndexRange *indexRange,
+          ShaderArgumentSource *argSource)
 
 {
   bool bVar1;
   
-  bVar1 = Material_DefaultConstantSourceFromTable(param_1,param_2,param_3,s_codeConsts,param_4);
+  bVar1 = Material_DefaultConstantSourceFromTable
+                    (shaderType,constantName,indexRange,s_codeConsts,argSource);
   if (bVar1) {
     bVar1 = true;
   }
   else {
     bVar1 = Material_DefaultConstantSourceFromTable
-                      (param_1,param_2,param_3,s_defaultCodeConsts,param_4);
+                      (shaderType,constantName,indexRange,s_defaultCodeConsts,argSource);
     if (bVar1) {
       bVar1 = true;
     }
@@ -3127,28 +3159,28 @@ Material_DefaultConstantSource
 
 bool __cdecl
 Material_UnknownShaderworksConstantSource
-          (MaterialShaderType param_1,char *param_2,ShaderIndexRange *param_3,
-          ShaderArgumentSource *param_4)
+          (MaterialShaderType shaderType,char *constantName,ShaderIndexRange *indexRange,
+          ShaderArgumentSource *argSource)
 
 {
   int iVar1;
   float *pfVar2;
   bool bVar3;
-  float local_14 [4];
+  float literalVal [4];
   
-  iVar1 = I_strnicmp(param_2,"__",2);
+  iVar1 = I_strnicmp(constantName,"__",2);
   if (iVar1 == 0) {
-    local_14[0] = 0.0;
-    local_14[1] = 0.0;
-    local_14[2] = 0.0;
-    local_14[3] = 0.0;
-    param_4->type = (-(ushort)(param_1 != MTL_VERTEX_SHADER) & 6) + 1;
-    pfVar2 = Material_RegisterLiteral(local_14);
-    (param_4->u).literalConst = pfVar2;
-    (param_4->indexRange).first = param_3->first;
-    (param_4->indexRange).count = param_3->count;
-    (param_4->indexRange).isImplicit = true;
-    bVar3 = (param_4->u).literalConst != (float *)0x0;
+    literalVal[0] = 0.0;
+    literalVal[1] = 0.0;
+    literalVal[2] = 0.0;
+    literalVal[3] = 0.0;
+    argSource->type = (-(ushort)(shaderType != MTL_VERTEX_SHADER) & 6) + 1;
+    pfVar2 = Material_RegisterLiteral(literalVal);
+    (argSource->u).literalConst = pfVar2;
+    (argSource->indexRange).first = indexRange->first;
+    (argSource->indexRange).count = indexRange->count;
+    (argSource->indexRange).isImplicit = true;
+    bVar3 = (argSource->u).literalConst != (float *)0x0;
   }
   else {
     bVar3 = false;
@@ -3161,8 +3193,8 @@ Material_UnknownShaderworksConstantSource
 
 uint __cdecl
 Material_ElemCountForParamName
-          (char *param_1,ShaderUniformDef *param_2,uint param_3,char *param_4,
-          ShaderParamType *param_5)
+          (char *shaderName,ShaderUniformDef *paramTable,uint paramCount,char *name,
+          ShaderParamType *paramType)
 
 {
   byte bVar1;
@@ -3172,17 +3204,17 @@ Material_ElemCountForParamName
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_c;
-  uint local_8;
+  uint paramIndex;
+  uint count;
   
-  local_8 = 0;
-  local_c = 0;
+  count = 0;
+  paramIndex = 0;
   do {
-    if (param_3 <= local_c) {
-      return local_8;
+    if (paramCount <= paramIndex) {
+      return count;
     }
-    local_10 = (byte *)param_2[local_c].name;
-    local_14 = (byte *)param_4;
+    local_10 = (byte *)paramTable[paramIndex].name;
+    local_14 = (byte *)name;
     do {
       bVar1 = *local_14;
       bVar4 = bVar1 < *local_10;
@@ -3201,14 +3233,14 @@ LAB_00ad1d7e:
     local_1c = 0;
 LAB_00ad1d86:
     if (local_1c == 0) {
-      if ((local_8 != 0) && (param_2[local_c].type != *param_5)) {
+      if ((count != 0) && (paramTable[paramIndex].type != *paramType)) {
         Com_Error(ERR_DROP,"param type changed from %i to %i");
       }
-      *param_5 = param_2[local_c].type;
-      if (local_8 <= param_2[local_c].index) {
-        local_8 = param_2[local_c].index + 1;
+      *paramType = paramTable[paramIndex].type;
+      if (count <= paramTable[paramIndex].index) {
+        count = paramTable[paramIndex].index + 1;
       }
-      if (local_8 == 0) {
+      if (count == 0) {
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0xef6,0,"%s");
         if (!bVar4) {
@@ -3218,7 +3250,7 @@ LAB_00ad1d86:
         }
       }
     }
-    local_c = local_c + 1;
+    paramIndex = paramIndex + 1;
   } while( true );
 }
 
@@ -3227,52 +3259,52 @@ LAB_00ad1d86:
 
 bool __cdecl
 Material_ParseArgumentSource
-          (MaterialShaderType param_1,char **param_2,char *param_3,ShaderParamType param_4,
-          ShaderArgumentSource *param_5)
+          (MaterialShaderType shaderType,char **text,char *shaderName,ShaderParamType paramType,
+          ShaderArgumentSource *argSource)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
+  char *fmt;
   
-  if ((param_2 == (char **)0x0) &&
+  if ((text == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xf01,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((*param_2 == (char *)0x0) &&
+  if ((*text == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xf02,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (char *)0x0) &&
+  if ((shaderName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xf03,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_5 == (ShaderArgumentSource *)0x0) &&
+  if ((argSource == (ShaderArgumentSource *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xf04,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = Material_MatchToken(param_2,"=");
+  bVar2 = Material_MatchToken(text,"=");
   if (bVar2) {
-    if (param_4 == SHADER_PARAM_FLOAT4) {
-      bVar2 = Material_ParseConstantSource(param_1,param_2,param_5);
+    if (paramType == SHADER_PARAM_FLOAT4) {
+      bVar2 = Material_ParseConstantSource(shaderType,text,argSource);
     }
-    else if (((int)param_4 < 1) || (4 < (int)param_4)) {
-      pcVar4 = va("unknown constant type \'%i\'\n");
+    else if (((int)paramType < 1) || (4 < (int)paramType)) {
+      fmt = va("unknown constant type \'%i\'\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
-                               ,0xf15,1,pcVar4);
+                               ,0xf15,1,fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
@@ -3281,7 +3313,7 @@ Material_ParseArgumentSource
       bVar2 = false;
     }
     else {
-      bVar2 = Material_ParseSamplerSource(param_2,param_5);
+      bVar2 = Material_ParseSamplerSource(text,argSource);
     }
   }
   else {
@@ -3295,42 +3327,43 @@ Material_ParseArgumentSource
 
 bool __cdecl
 Material_DefaultArgumentSource
-          (MaterialShaderType param_1,char *param_2,ShaderParamType param_3,
-          ShaderIndexRange *param_4,ShaderArgumentSource *param_5)
+          (MaterialShaderType shaderType,char *constantName,ShaderParamType paramType,
+          ShaderIndexRange *indexRange,ShaderArgumentSource *argSource)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((constantName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xf1d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_5 == (ShaderArgumentSource *)0x0) &&
+  if ((argSource == (ShaderArgumentSource *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xf1e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_3 == SHADER_PARAM_FLOAT4) {
-    bVar2 = Material_DefaultConstantSource(param_1,param_2,param_4,param_5);
+  if (paramType == SHADER_PARAM_FLOAT4) {
+    bVar2 = Material_DefaultConstantSource(shaderType,constantName,indexRange,argSource);
     if (bVar2) {
       bVar2 = true;
     }
     else {
-      bVar2 = Material_UnknownShaderworksConstantSource(param_1,param_2,param_4,param_5);
+      bVar2 = Material_UnknownShaderworksConstantSource
+                        (shaderType,constantName,indexRange,argSource);
     }
   }
-  else if (((int)param_3 < 1) || (4 < (int)param_3)) {
+  else if (((int)paramType < 1) || (4 < (int)paramType)) {
     bVar2 = false;
   }
   else {
-    bVar2 = Material_DefaultSamplerSource(param_2,param_4,param_5);
+    bVar2 = Material_DefaultSamplerSource(constantName,indexRange,argSource);
   }
   return bVar2;
 }
@@ -3339,7 +3372,8 @@ Material_DefaultArgumentSource
 // 00AD1420  R_SetParameterDefArray  (gfx_d3d/r_material_load_obj.cpp:3895)
 
 uint __cdecl
-R_SetParameterDefArray(_D3DXSHADER_CONSTANTTABLE *param_1,uint param_2,ShaderUniformDef *param_3)
+R_SetParameterDefArray
+          (_D3DXSHADER_CONSTANTTABLE *constantTable,uint constantIndex,ShaderUniformDef *paramDef)
 
 {
   short sVar1;
@@ -3347,90 +3381,97 @@ R_SetParameterDefArray(_D3DXSHADER_CONSTANTTABLE *param_1,uint param_2,ShaderUni
   int *piVar3;
   short *psVar4;
   char *pcVar5;
-  uint local_14;
-  ShaderParamType local_8;
+  _D3DXSHADER_TYPEINFO *typeInfo;
+  char *name;
+  uint paramDefIndex;
+  bool isTransposed;
+  _D3DXSHADER_CONSTANTINFO *constantInfo;
+  ShaderParamType type;
   
-  pvVar2 = BufferOffset(param_1,param_1->ConstantInfo);
-  piVar3 = (int *)((int)pvVar2 + param_2 * 0x14);
-  psVar4 = BufferOffset(param_1,piVar3[3]);
-  pcVar5 = BufferOffset(param_1,*piVar3);
+  pvVar2 = BufferOffset(constantTable,constantTable->ConstantInfo);
+  piVar3 = (int *)((int)pvVar2 + constantIndex * 0x14);
+  psVar4 = BufferOffset(constantTable,piVar3[3]);
+  pcVar5 = BufferOffset(constantTable,*piVar3);
   sVar1 = *psVar4;
   switch(psVar4[1]) {
   case 1:
-    local_8 = SHADER_PARAM_FLOAT4;
+    type = SHADER_PARAM_FLOAT4;
     break;
   default:
     Com_ScriptError("Unknown constant type \'%i\'");
     return 0;
   case 3:
-    local_8 = SHADER_PARAM_FLOAT4;
+    type = SHADER_PARAM_FLOAT4;
     break;
   case 0xb:
-    local_8 = SHADER_PARAM_SAMPLER_1D;
+    type = SHADER_PARAM_SAMPLER_1D;
     break;
   case 0xc:
-    local_8 = SHADER_PARAM_SAMPLER_2D;
+    type = SHADER_PARAM_SAMPLER_2D;
     break;
   case 0xd:
-    local_8 = SHADER_PARAM_SAMPLER_3D;
+    type = SHADER_PARAM_SAMPLER_3D;
     break;
   case 0xe:
-    local_8 = SHADER_PARAM_SAMPLER_CUBE;
+    type = SHADER_PARAM_SAMPLER_CUBE;
   }
-  for (local_14 = 0; local_14 < *(ushort *)(piVar3 + 2); local_14 = local_14 + 1) {
-    param_3->type = local_8;
-    param_3->name = pcVar5;
-    param_3->index = (ushort)local_14;
-    param_3->resourceDest = *(short *)((int)piVar3 + 6) + (ushort)local_14;
-    param_3->isTransposed = sVar1 == 3;
-    param_3->isAssigned = false;
-    param_3 = param_3 + 1;
+  for (paramDefIndex = 0; paramDefIndex < *(ushort *)(piVar3 + 2); paramDefIndex = paramDefIndex + 1
+      ) {
+    paramDef->type = type;
+    paramDef->name = pcVar5;
+    paramDef->index = (ushort)paramDefIndex;
+    paramDef->resourceDest = *(short *)((int)piVar3 + 6) + (ushort)paramDefIndex;
+    paramDef->isTransposed = sVar1 == 3;
+    paramDef->isAssigned = false;
+    paramDef = paramDef + 1;
   }
-  return local_14;
+  return paramDefIndex;
 }
 
 
 // 00AD13C0  Material_PrepareToParseShaderArguments  (gfx_d3d/r_material_load_obj.cpp:3967)
 
 int __cdecl
-Material_PrepareToParseShaderArguments(_D3DXSHADER_CONSTANTTABLE *param_1,ShaderUniformDef *param_2)
+Material_PrepareToParseShaderArguments
+          (_D3DXSHADER_CONSTANTTABLE *constantTable,ShaderUniformDef *paramTable)
 
 {
   uint uVar1;
-  uint local_c;
-  int local_8;
+  uint constantIndex;
+  uint usedCount;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < param_1->Constants; local_c = local_c + 1) {
-    uVar1 = R_SetParameterDefArray(param_1,local_c,param_2 + local_8);
-    local_8 = uVar1 + local_8;
+  usedCount = 0;
+  for (constantIndex = 0; constantIndex < constantTable->Constants;
+      constantIndex = constantIndex + 1) {
+    uVar1 = R_SetParameterDefArray(constantTable,constantIndex,paramTable + usedCount);
+    usedCount = uVar1 + usedCount;
   }
-  return local_8;
+  return usedCount;
 }
 
 
 // 00AD3760  Material_CompareShaderArgumentsForCombining  (gfx_d3d/r_material_load_obj.cpp:3980)
 
-int __cdecl Material_CompareShaderArgumentsForCombining(void *param_1,void *param_2)
+int __cdecl Material_CompareShaderArgumentsForCombining(void *e0,void *e1)
 
 {
   undefined4 local_1c;
   undefined4 local_18;
   
-  if ((*(short *)param_1 == 4) || (*(short *)param_1 == 2)) {
+  if ((*(short *)e0 == 4) || (*(short *)e0 == 2)) {
     local_18 = 1;
   }
   else {
     local_18 = 0;
   }
-  if ((*(short *)param_2 == 4) || (*(short *)param_2 == 2)) {
+  if ((*(short *)e1 == 4) || (*(short *)e1 == 2)) {
     local_1c = 1;
   }
   else {
     local_1c = 0;
   }
   if (local_18 == local_1c) {
-    local_18 = (uint)*(ushort *)((int)param_1 + 2) - (uint)*(ushort *)((int)param_2 + 2);
+    local_18 = (uint)*(ushort *)((int)e0 + 2) - (uint)*(ushort *)((int)e1 + 2);
   }
   else {
     local_18 = local_18 - local_1c;
@@ -3442,27 +3483,26 @@ int __cdecl Material_CompareShaderArgumentsForCombining(void *param_1,void *para
 // 00AD3870  Material_AttemptCombineShaderArguments  (gfx_d3d/r_material_load_obj.cpp:3994)
 
 bool __cdecl
-Material_AttemptCombineShaderArguments
-          (MaterialShaderArgument *param_1,MaterialShaderArgument *param_2)
+Material_AttemptCombineShaderArguments(MaterialShaderArgument *arg0,MaterialShaderArgument *arg1)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1->type == param_2->type) {
-    if ((param_1->type == 3) || (param_1->type == 5)) {
-      if ((uint)param_1->dest + (uint)(param_1->u).codeConst.rowCount == (uint)param_2->dest) {
-        if ((param_1->u).codeConst.index < 0xc5) {
+  if (arg0->type == arg1->type) {
+    if ((arg0->type == 3) || (arg0->type == 5)) {
+      if ((uint)arg0->dest + (uint)(arg0->u).codeConst.rowCount == (uint)arg1->dest) {
+        if ((arg0->u).codeConst.index < 0xc5) {
           bVar2 = false;
         }
-        else if ((param_1->u).codeConst.index == (param_2->u).codeConst.index) {
-          if ((uint)(param_1->u).codeConst.firstRow + (uint)(param_1->u).codeConst.rowCount ==
-              (uint)(param_2->u).codeConst.firstRow) {
-            if (((uint)(param_1->u).codeConst.firstRow + (uint)(param_1->u).codeConst.rowCount +
-                 (uint)(param_2->u).codeConst.rowCount < 2) ||
-               (4 < (uint)(param_1->u).codeConst.firstRow + (uint)(param_1->u).codeConst.rowCount +
-                    (uint)(param_2->u).codeConst.rowCount)) {
+        else if ((arg0->u).codeConst.index == (arg1->u).codeConst.index) {
+          if ((uint)(arg0->u).codeConst.firstRow + (uint)(arg0->u).codeConst.rowCount ==
+              (uint)(arg1->u).codeConst.firstRow) {
+            if (((uint)(arg0->u).codeConst.firstRow + (uint)(arg0->u).codeConst.rowCount +
+                 (uint)(arg1->u).codeConst.rowCount < 2) ||
+               (4 < (uint)(arg0->u).codeConst.firstRow + (uint)(arg0->u).codeConst.rowCount +
+                    (uint)(arg1->u).codeConst.rowCount)) {
               bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                        ,0xfab,0,
                                        "arg0->u.codeConst.firstRow + arg0->u.codeConst.rowCount + arg1->u.codeConst.rowCount not in [2, 4]\n\t%i not in [%i, %i]"
@@ -3473,8 +3513,8 @@ Material_AttemptCombineShaderArguments
                 return (bool)uVar3;
               }
             }
-            (param_1->u).codeConst.rowCount =
-                 (param_1->u).codeConst.rowCount + (param_2->u).codeConst.rowCount;
+            (arg0->u).codeConst.rowCount =
+                 (arg0->u).codeConst.rowCount + (arg1->u).codeConst.rowCount;
             bVar2 = true;
           }
           else {
@@ -3502,28 +3542,28 @@ Material_AttemptCombineShaderArguments
 
 // 00AD37F0  Material_CombineShaderArguments  (gfx_d3d/r_material_load_obj.cpp:4020)
 
-uint __cdecl Material_CombineShaderArguments(uint param_1,MaterialShaderArgument *param_2)
+uint __cdecl Material_CombineShaderArguments(uint usedCount,MaterialShaderArgument *localArgs)
 
 {
   MaterialArgumentDef MVar1;
   ushort uVar2;
   bool bVar3;
-  uint local_c;
-  int local_8;
+  uint srcIndex;
+  uint dstIndex;
   
-  local_8 = 0;
-  for (local_c = 1; local_c < param_1; local_c = local_c + 1) {
-    bVar3 = Material_AttemptCombineShaderArguments(param_2 + local_8,param_2 + local_c);
+  dstIndex = 0;
+  for (srcIndex = 1; srcIndex < usedCount; srcIndex = srcIndex + 1) {
+    bVar3 = Material_AttemptCombineShaderArguments(localArgs + dstIndex,localArgs + srcIndex);
     if (!bVar3) {
-      local_8 = local_8 + 1;
-      uVar2 = param_2[local_c].dest;
-      MVar1 = param_2[local_c].u;
-      param_2[local_8].type = param_2[local_c].type;
-      param_2[local_8].dest = uVar2;
-      param_2[local_8].u = MVar1;
+      dstIndex = dstIndex + 1;
+      uVar2 = localArgs[srcIndex].dest;
+      MVar1 = localArgs[srcIndex].u;
+      localArgs[dstIndex].type = localArgs[srcIndex].type;
+      localArgs[dstIndex].dest = uVar2;
+      localArgs[dstIndex].u = MVar1;
     }
   }
-  return local_8 + 1;
+  return dstIndex + 1;
 }
 
 
@@ -3531,8 +3571,8 @@ uint __cdecl Material_CombineShaderArguments(uint param_1,MaterialShaderArgument
 
 bool __cdecl
 Material_SetShaderArguments
-          (uint param_1,MaterialShaderArgument *param_2,uint param_3,uint *param_4,
-          MaterialShaderArgument *param_5)
+          (uint usedCount,MaterialShaderArgument *localArgs,uint argLimit,uint *argCount,
+          MaterialShaderArgument *args)
 
 {
   code *pcVar1;
@@ -3540,7 +3580,7 @@ Material_SetShaderArguments
   undefined1 uVar3;
   uint uVar4;
   
-  if (param_5 == (MaterialShaderArgument *)0x0) {
+  if (args == (MaterialShaderArgument *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0xfc6,0,"%s");
     if (!bVar2) {
@@ -3549,7 +3589,7 @@ Material_SetShaderArguments
       return (bool)uVar3;
     }
   }
-  if (param_4 == (uint *)0x0) {
+  if (argCount == (uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0xfc7,0,"%s");
     if (!bVar2) {
@@ -3558,18 +3598,18 @@ Material_SetShaderArguments
       return (bool)uVar3;
     }
   }
-  if (param_1 == 0) {
+  if (usedCount == 0) {
     bVar2 = true;
   }
-  else if (param_3 < param_1 + *param_4) {
+  else if (argLimit < usedCount + *argCount) {
     Com_ScriptError("more than %i total shader arguments\n");
     bVar2 = false;
   }
   else {
-    qsort(param_2,param_1,8,Material_CompareShaderArgumentsForCombining);
-    uVar4 = Material_CombineShaderArguments(param_1,param_2);
-    memcpy((uchar *)(param_5 + *param_4),(uchar *)param_2,uVar4 << 3);
-    *param_4 = *param_4 + uVar4;
+    qsort(localArgs,usedCount,8,Material_CompareShaderArgumentsForCombining);
+    uVar4 = Material_CombineShaderArguments(usedCount,localArgs);
+    memcpy((uchar *)(args + *argCount),(uchar *)localArgs,uVar4 << 3);
+    *argCount = *argCount + uVar4;
     bVar2 = true;
   }
   return bVar2;
@@ -3579,7 +3619,8 @@ Material_SetShaderArguments
 // 00AD3DC0  Material_GetShaderArgumentDest  (gfx_d3d/r_material_load_obj.cpp:4058)
 
 ShaderUniformDef * __cdecl
-Material_GetShaderArgumentDest(char *param_1,uint param_2,ShaderUniformDef *param_3,uint param_4)
+Material_GetShaderArgumentDest
+          (char *paramName,uint paramIndex,ShaderUniformDef *paramTable,uint paramCount)
 
 {
   byte bVar1;
@@ -3589,11 +3630,11 @@ Material_GetShaderArgumentDest(char *param_1,uint param_2,ShaderUniformDef *para
   int local_18;
   byte *local_10;
   byte *local_c;
-  uint local_8;
+  uint tableIndex;
   
-  local_8 = 0;
+  tableIndex = 0;
   do {
-    if (param_4 <= local_8) {
+    if (paramCount <= tableIndex) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0xfeb,1,"unfound name should be caught earlier");
       if (bVar4) {
@@ -3603,9 +3644,9 @@ Material_GetShaderArgumentDest(char *param_1,uint param_2,ShaderUniformDef *para
       pSVar3 = (ShaderUniformDef *)(*pcVar2)();
       return pSVar3;
     }
-    if (param_3[local_8].index == param_2) {
-      local_c = (byte *)param_1;
-      local_10 = (byte *)param_3[local_8].name;
+    if (paramTable[tableIndex].index == paramIndex) {
+      local_c = (byte *)paramName;
+      local_10 = (byte *)paramTable[tableIndex].name;
       do {
         bVar1 = *local_10;
         bVar4 = bVar1 < *local_c;
@@ -3624,15 +3665,15 @@ LAB_00ad3e4e:
       local_18 = 0;
 LAB_00ad3e56:
       if (local_18 == 0) {
-        if (param_3[local_8].isAssigned != false) {
+        if (paramTable[tableIndex].isAssigned != false) {
           Com_ScriptError("parameter %s index %i already assigned\n");
           return (ShaderUniformDef *)0x0;
         }
-        param_3[local_8].isAssigned = true;
-        return param_3 + local_8;
+        paramTable[tableIndex].isAssigned = true;
+        return paramTable + tableIndex;
       }
     }
-    local_8 = local_8 + 1;
+    tableIndex = tableIndex + 1;
   } while( true );
 }
 
@@ -3641,15 +3682,15 @@ LAB_00ad3e56:
 
 bool __cdecl
 MaterialAddShaderArgument
-          (char *param_1,char *param_2,MaterialShaderArgument *param_3,char (*param_4) [64])
+          (char *shaderName,char *paramName,MaterialShaderArgument *arg,char (*registerUsage) [64])
 
 {
   bool bVar1;
   
-  if ((param_3->type < 2) || (param_3->type == 3)) {
-    if (param_3->dest < 0x100) {
-      if (param_4[param_3->dest][0] == '\0') {
-        I_strncpyz(param_4[param_3->dest],param_2,0x40);
+  if ((arg->type < 2) || (arg->type == 3)) {
+    if (arg->dest < 0x100) {
+      if (registerUsage[arg->dest][0] == '\0') {
+        I_strncpyz(registerUsage[arg->dest],paramName,0x40);
         bVar1 = true;
       }
       else {
@@ -3675,17 +3716,17 @@ MaterialAddShaderArgument
 
 bool __cdecl
 Material_AddShaderArgumentFromLiteral
-          (char *param_1,char *param_2,ushort param_3,float *param_4,ShaderUniformDef *param_5,
-          MaterialShaderArgument *param_6,char (*param_7) [64])
+          (char *shaderName,char *paramName,ushort type,float *literal,ShaderUniformDef *dest,
+          MaterialShaderArgument *arg,char (*registerUsage) [64])
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  param_6->type = param_3;
-  param_6->dest = param_5->resourceDest;
-  if ((param_3 == 7) && (0xff < param_6->dest)) {
+  arg->type = type;
+  arg->dest = dest->resourceDest;
+  if ((type == 7) && (0xff < arg->dest)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x1017,0,
                              "arg->dest doesn\'t index R_MAX_PIXEL_SHADER_CONSTS\n\t%i not in [0, %i)"
@@ -3696,8 +3737,8 @@ Material_AddShaderArgumentFromLiteral
       return (bool)uVar3;
     }
   }
-  (param_6->u).literalConst = param_4;
-  bVar2 = MaterialAddShaderArgument(param_1,param_2,param_6,param_7);
+  (arg->u).literalConst = literal;
+  bVar2 = MaterialAddShaderArgument(shaderName,paramName,arg,registerUsage);
   return bVar2;
 }
 
@@ -3706,17 +3747,17 @@ Material_AddShaderArgumentFromLiteral
 
 bool __cdecl
 Material_AddShaderArgumentFromCodeConst
-          (char *param_1,char *param_2,ushort param_3,uint param_4,uint param_5,
-          ShaderUniformDef *param_6,MaterialShaderArgument *param_7,char (*param_8) [64])
+          (char *shaderName,char *paramName,ushort type,uint codeIndex,uint offset,
+          ShaderUniformDef *dest,MaterialShaderArgument *arg,char (*registerUsage) [64])
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  param_7->type = param_3;
-  param_7->dest = param_6->resourceDest;
-  if ((param_3 == 5) && (0xff < param_7->dest)) {
+  arg->type = type;
+  arg->dest = dest->resourceDest;
+  if ((type == 5) && (0xff < arg->dest)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x1028,0,
                              "arg->dest doesn\'t index R_MAX_PIXEL_SHADER_CONSTS\n\t%i not in [0, %i)"
@@ -3727,21 +3768,21 @@ Material_AddShaderArgumentFromCodeConst
       return (bool)uVar3;
     }
   }
-  if (param_4 < 0xc5) {
-    (param_7->u).codeConst.index = (ushort)param_4 + (short)param_5;
-    (param_7->u).codeConst.firstRow = '\0';
+  if (codeIndex < 0xc5) {
+    (arg->u).codeConst.index = (ushort)codeIndex + (short)offset;
+    (arg->u).codeConst.firstRow = '\0';
   }
   else {
-    if (param_6->isTransposed == false) {
-      (param_7->u).codeConst.index = (ushort)param_4;
+    if (dest->isTransposed == false) {
+      (arg->u).codeConst.index = (ushort)codeIndex;
     }
     else {
-      (param_7->u).codeConst.index = ((ushort)param_4 - 0xc5 ^ 2) + 0xc5;
+      (arg->u).codeConst.index = ((ushort)codeIndex - 0xc5 ^ 2) + 0xc5;
     }
-    (param_7->u).codeConst.firstRow = (uchar)param_5;
+    (arg->u).codeConst.firstRow = (uchar)offset;
   }
-  (param_7->u).codeConst.rowCount = '\x01';
-  bVar2 = MaterialAddShaderArgument(param_1,param_2,param_7,param_8);
+  (arg->u).codeConst.rowCount = '\x01';
+  bVar2 = MaterialAddShaderArgument(shaderName,paramName,arg,registerUsage);
   return bVar2;
 }
 
@@ -3750,12 +3791,12 @@ Material_AddShaderArgumentFromCodeConst
 
 void __cdecl
 Material_AddShaderArgumentFromCodeSampler
-          (ushort param_1,uint param_2,ShaderUniformDef *param_3,MaterialShaderArgument *param_4)
+          (ushort type,uint codeSampler,ShaderUniformDef *dest,MaterialShaderArgument *arg)
 
 {
-  param_4->type = param_1;
-  param_4->dest = param_3->resourceDest;
-  (param_4->u).codeSampler = param_2;
+  arg->type = type;
+  arg->dest = dest->resourceDest;
+  (arg->u).codeSampler = codeSampler;
   return;
 }
 
@@ -3764,8 +3805,8 @@ Material_AddShaderArgumentFromCodeSampler
 
 bool __cdecl
 Material_AddShaderArgumentFromMaterial
-          (char *param_1,char *param_2,ushort param_3,char *param_4,ShaderUniformDef *param_5,
-          MaterialShaderArgument *param_6,char (*param_7) [64])
+          (char *shaderName,char *paramName,ushort type,char *name,ShaderUniformDef *dest,
+          MaterialShaderArgument *arg,char (*registerUsage) [64])
 
 {
   code *pcVar1;
@@ -3773,10 +3814,10 @@ Material_AddShaderArgumentFromMaterial
   undefined1 uVar3;
   uint uVar4;
   
-  Material_RegisterString(param_4);
-  param_6->type = param_3;
-  param_6->dest = param_5->resourceDest;
-  if ((param_3 == 6) && (0xff < param_6->dest)) {
+  Material_RegisterString(name);
+  arg->type = type;
+  arg->dest = dest->resourceDest;
+  if ((type == 6) && (0xff < arg->dest)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x104f,0,
                              "arg->dest doesn\'t index R_MAX_PIXEL_SHADER_CONSTS\n\t%i not in [0, %i)"
@@ -3787,9 +3828,9 @@ Material_AddShaderArgumentFromMaterial
       return (bool)uVar3;
     }
   }
-  uVar4 = R_HashString(param_4);
-  (param_6->u).codeSampler = uVar4;
-  bVar2 = MaterialAddShaderArgument(param_1,param_2,param_6,param_7);
+  uVar4 = R_HashString(name);
+  (arg->u).codeSampler = uVar4;
+  bVar2 = MaterialAddShaderArgument(shaderName,paramName,arg,registerUsage);
   return bVar2;
 }
 
@@ -3798,51 +3839,52 @@ Material_AddShaderArgumentFromMaterial
 
 bool __cdecl
 Material_AddShaderArgument
-          (char *param_1,MaterialShaderType param_2,ShaderArgumentSource *param_3,
-          ShaderArgumentDest *param_4,ShaderUniformDef *param_5,uint param_6,uint *param_7,
-          MaterialShaderArgument *param_8,char (*param_9) [64])
+          (char *shaderName,MaterialShaderType shaderType,ShaderArgumentSource *argSource,
+          ShaderArgumentDest *argDest,ShaderUniformDef *paramTable,uint paramCount,uint *usedCount,
+          MaterialShaderArgument *argTable,char (*registerUsage) [64])
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   ShaderUniformDef *pSVar4;
-  char *pcVar5;
-  uint local_8;
+  char *fmt;
+  ShaderUniformDef *dest;
+  uint indexOffset;
   
-  if ((param_3->indexRange).isImplicit == false) {
-    if ((param_4->indexRange).count != (param_3->indexRange).count) {
+  if ((argSource->indexRange).isImplicit == false) {
+    if ((argDest->indexRange).count != (argSource->indexRange).count) {
       Com_ScriptError("The destination needs %i entries, but the source provides %i");
       return false;
     }
   }
   else {
-    if (((param_3->indexRange).first != 0) &&
+    if (((argSource->indexRange).first != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x105f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((param_3->indexRange).count < (param_4->indexRange).count) {
+    if ((argSource->indexRange).count < (argDest->indexRange).count) {
       Com_ScriptError("The destination needs %i entries, but the source can only provide %i");
       return false;
     }
-    (param_3->indexRange).count = (param_4->indexRange).count;
+    (argSource->indexRange).count = (argDest->indexRange).count;
   }
-  switch(param_3->type) {
+  switch(argSource->type) {
   case 0:
   case 2:
   case 6:
-    if ((param_4->indexRange).count == 1) {
-      if (((param_3->indexRange).first != 0) &&
+    if ((argDest->indexRange).count == 1) {
+      if (((argSource->indexRange).first != 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                    ,0x10a1,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (((param_3->indexRange).count != 1) &&
+      if (((argSource->indexRange).count != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                    ,0x10a2,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -3850,16 +3892,16 @@ Material_AddShaderArgument
         return (bool)uVar3;
       }
       pSVar4 = Material_GetShaderArgumentDest
-                         (param_4->paramName,(param_4->indexRange).first,param_5,param_6);
+                         (argDest->paramName,(argDest->indexRange).first,paramTable,paramCount);
       if (pSVar4 == (ShaderUniformDef *)0x0) {
         bVar2 = false;
       }
       else {
         bVar2 = Material_AddShaderArgumentFromMaterial
-                          (param_1,param_4->paramName,param_3->type,(param_3->u).name,pSVar4,
-                           param_8 + *param_7,param_9);
+                          (shaderName,argDest->paramName,argSource->type,(argSource->u).name,pSVar4,
+                           argTable + *usedCount,registerUsage);
         if (bVar2) {
-          *param_7 = *param_7 + 1;
+          *usedCount = *usedCount + 1;
           bVar2 = true;
         }
         else {
@@ -3874,18 +3916,18 @@ Material_AddShaderArgument
     break;
   case 1:
   case 7:
-    if ((param_4->indexRange).count == 1) {
+    if ((argDest->indexRange).count == 1) {
       pSVar4 = Material_GetShaderArgumentDest
-                         (param_4->paramName,(param_4->indexRange).first,param_5,param_6);
+                         (argDest->paramName,(argDest->indexRange).first,paramTable,paramCount);
       if (pSVar4 == (ShaderUniformDef *)0x0) {
         bVar2 = false;
       }
       else {
         bVar2 = Material_AddShaderArgumentFromLiteral
-                          (param_1,param_4->paramName,param_3->type,(param_3->u).literalConst,pSVar4
-                           ,param_8 + *param_7,param_9);
+                          (shaderName,argDest->paramName,argSource->type,(argSource->u).literalConst
+                           ,pSVar4,argTable + *usedCount,registerUsage);
         if (bVar2) {
-          *param_7 = *param_7 + 1;
+          *usedCount = *usedCount + 1;
           bVar2 = true;
         }
         else {
@@ -3900,40 +3942,46 @@ Material_AddShaderArgument
     break;
   case 3:
   case 5:
-    for (local_8 = 0; local_8 < (param_4->indexRange).count; local_8 = local_8 + 1) {
+    for (indexOffset = 0; indexOffset < (argDest->indexRange).count; indexOffset = indexOffset + 1)
+    {
       pSVar4 = Material_GetShaderArgumentDest
-                         (param_4->paramName,(param_4->indexRange).first + local_8,param_5,param_6);
+                         (argDest->paramName,(argDest->indexRange).first + indexOffset,paramTable,
+                          paramCount);
       if (pSVar4 == (ShaderUniformDef *)0x0) {
         return false;
       }
       bVar2 = Material_AddShaderArgumentFromCodeConst
-                        (param_1,param_4->paramName,param_3->type,(uint)(param_3->u).codeIndex,
-                         (param_3->indexRange).first + local_8,pSVar4,param_8 + *param_7,param_9);
+                        (shaderName,argDest->paramName,argSource->type,
+                         (uint)(argSource->u).codeIndex,(argSource->indexRange).first + indexOffset,
+                         pSVar4,argTable + *usedCount,registerUsage);
       if (!bVar2) {
         return false;
       }
-      *param_7 = *param_7 + 1;
+      *usedCount = *usedCount + 1;
     }
     bVar2 = true;
     break;
   case 4:
-    for (local_8 = 0; local_8 < (param_4->indexRange).count; local_8 = local_8 + 1) {
+    for (indexOffset = 0; indexOffset < (argDest->indexRange).count; indexOffset = indexOffset + 1)
+    {
       pSVar4 = Material_GetShaderArgumentDest
-                         (param_4->paramName,(param_4->indexRange).first + local_8,param_5,param_6);
+                         (argDest->paramName,(argDest->indexRange).first + indexOffset,paramTable,
+                          paramCount);
       if (pSVar4 == (ShaderUniformDef *)0x0) {
         return false;
       }
       Material_AddShaderArgumentFromCodeSampler
-                (param_3->type,(uint)(param_3->u).codeIndex + (param_3->indexRange).first + local_8,
-                 pSVar4,param_8 + *param_7);
-      *param_7 = *param_7 + 1;
+                (argSource->type,
+                 (uint)(argSource->u).codeIndex + (argSource->indexRange).first + indexOffset,pSVar4
+                 ,argTable + *usedCount);
+      *usedCount = *usedCount + 1;
     }
     bVar2 = true;
     break;
   default:
-    pcVar5 = va("unhandled case %i");
+    fmt = va("unhandled case %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
-                             0x10ac,1,pcVar5);
+                             0x10ac,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
@@ -3947,18 +3995,18 @@ Material_AddShaderArgument
 
 // 00AD41E0  CodeConstIsOneOf  (gfx_d3d/r_material_load_obj.cpp:4275)
 
-bool __cdecl CodeConstIsOneOf(ushort param_1,ushort *param_2,int param_3)
+bool __cdecl CodeConstIsOneOf(ushort constCodeIndex,ushort *consts,int numConsts)
 
 {
-  int local_8;
+  int constIdx;
   
-  local_8 = 0;
+  constIdx = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (numConsts <= constIdx) {
       return false;
     }
-    if (param_2[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (consts[constIdx] == constCodeIndex) break;
+    constIdx = constIdx + 1;
   }
   return true;
 }
@@ -3971,157 +4019,159 @@ bool __cdecl CodeConstIsOneOf(ushort param_1,ushort *param_2,int param_3)
 
 bool __cdecl
 Material_ParseShaderArguments
-          (char **param_1,char *param_2,MaterialShaderType param_3,ShaderUniformDef *param_4,
-          uint param_5,ushort *param_6,uint param_7,uint *param_8,MaterialShaderArgument *param_9)
+          (char **text,char *shaderName,MaterialShaderType shaderType,ShaderUniformDef *paramTable,
+          uint paramCount,ushort *techFlags,uint argLimit,uint *argCount,
+          MaterialShaderArgument *args)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  ushort local_5150 [6];
-  ShaderArgumentSource local_5144;
-  uint local_5130;
-  char local_512c [256];
-  uint local_502c;
-  ShaderArgumentDest local_5028;
-  ShaderParamType local_5018;
-  uint local_5014;
-  char *local_5010;
-  MaterialShaderArgument local_500c [512];
-  uchar local_400c [16388];
+  ushort scorchConsts [6];
+  ShaderArgumentSource argSource;
+  uint usedCount;
+  char paramName [256];
+  uint paramIndex;
+  ShaderArgumentDest argDest;
+  ShaderParamType paramType;
+  uint registerCount;
+  char *token;
+  MaterialShaderArgument localArgs [512];
+  uchar registerUsage [16388];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset(local_400c,'\0',0x4000);
-  if ((param_6 == (ushort *)0x0) &&
+  memset(registerUsage,'\0',0x4000);
+  if ((techFlags == (ushort *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x10cb,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_4 == (ShaderUniformDef *)0x0) &&
+  if ((paramTable == (ShaderUniformDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x10cc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_5130 = 0;
-  bVar2 = Material_MatchToken(param_1,"{");
+  usedCount = 0;
+  bVar2 = Material_MatchToken(text,"{");
   if (bVar2) {
-    while (local_5010 = Com_Parse(param_1), *local_5010 != '\0') {
-      if (*local_5010 == '}') {
-        if (local_5130 == param_5) {
-          bVar2 = Material_SetShaderArguments(local_5130,local_500c,param_7,param_8,param_9);
+    while (token = Com_Parse(text), *token != '\0') {
+      if (*token == '}') {
+        if (usedCount == paramCount) {
+          bVar2 = Material_SetShaderArguments(usedCount,localArgs,argLimit,argCount,args);
           return bVar2;
         }
-        local_502c = 0;
+        paramIndex = 0;
         do {
-          if (param_5 <= local_502c) {
-            if (local_5130 != param_5) {
+          if (paramCount <= paramIndex) {
+            if (usedCount != paramCount) {
               Com_PrintWarning(8,"Undefined shader parameter(s) in %s\n");
-              for (local_502c = 0; local_502c < param_5; local_502c = local_502c + 1) {
-                if (param_4[local_502c].isAssigned == false) {
+              for (paramIndex = 0; paramIndex < paramCount; paramIndex = paramIndex + 1) {
+                if (paramTable[paramIndex].isAssigned == false) {
                   Com_PrintWarning(8,"  %s\n");
                 }
               }
               Com_PrintWarning(8,"%i parameter(s) were undefined\n");
               return false;
             }
-            bVar2 = Material_SetShaderArguments(local_5130,local_500c,param_7,param_8,param_9);
+            bVar2 = Material_SetShaderArguments(usedCount,localArgs,argLimit,argCount,args);
             return bVar2;
           }
-          if (param_4[local_502c].isAssigned == false) {
-            local_5028.paramName = param_4[local_502c].name;
-            local_5028.indexRange.first = (uint)param_4[local_502c].index;
-            local_5028.indexRange.count = 1;
-            local_5028.indexRange.isImplicit = false;
+          if (paramTable[paramIndex].isAssigned == false) {
+            argDest.paramName = paramTable[paramIndex].name;
+            argDest.indexRange.first = (uint)paramTable[paramIndex].index;
+            argDest.indexRange.count = 1;
+            argDest.indexRange.isImplicit = false;
             bVar2 = Material_DefaultArgumentSource
-                              (param_3,param_4[local_502c].name,param_4[local_502c].type,
-                               &local_5028.indexRange,&local_5144);
+                              (shaderType,paramTable[paramIndex].name,paramTable[paramIndex].type,
+                               &argDest.indexRange,&argSource);
             if (bVar2) {
-              if (local_5144.type == 5) {
-                if (local_5144.u.codeIndex == 4) {
-                  *param_6 = *param_6 | 0x10;
+              if (argSource.type == 5) {
+                if (argSource.u.codeIndex == 4) {
+                  *techFlags = *techFlags | 0x10;
                 }
               }
-              else if ((local_5144.type == 4) &&
-                      (((local_5144.u.codeIndex == 0x13 || (local_5144.u.codeIndex == 0x14)) ||
-                       (local_5144.u.codeIndex == 0x15)))) {
-                *param_6 = *param_6 | 0x40;
+              else if ((argSource.type == 4) &&
+                      (((argSource.u.codeIndex == 0x13 || (argSource.u.codeIndex == 0x14)) ||
+                       (argSource.u.codeIndex == 0x15)))) {
+                *techFlags = *techFlags | 0x40;
               }
-              if ((local_5144.type == 3) && (local_5144.u.codeIndex == 0x78)) {
-                *param_6 = *param_6 | 0x100;
+              if ((argSource.type == 3) && (argSource.u.codeIndex == 0x78)) {
+                *techFlags = *techFlags | 0x100;
               }
-              if ((local_5144.type == 3) && ((*param_6 & 0x20) == 0)) {
-                local_5150[2] = 0x51;
-                local_5150[3] = 0x52;
-                local_5150[4] = 0x53;
-                local_5150[5] = 0x54;
-                bVar2 = CodeConstIsOneOf(local_5144.u.codeIndex,local_5150 + 2,4);
+              if ((argSource.type == 3) && ((*techFlags & 0x20) == 0)) {
+                scorchConsts[2] = 0x51;
+                scorchConsts[3] = 0x52;
+                scorchConsts[4] = 0x53;
+                scorchConsts[5] = 0x54;
+                bVar2 = CodeConstIsOneOf(argSource.u.codeIndex,scorchConsts + 2,4);
                 if (bVar2) {
-                  *param_6 = *param_6 | 0x20;
+                  *techFlags = *techFlags | 0x20;
                 }
               }
-              if ((local_5144.type == 3) && ((*param_6 & 0x200) == 0)) {
-                local_5150[0] = 0x72;
-                local_5150[1] = 0x76;
-                bVar2 = CodeConstIsOneOf(local_5144.u.codeIndex,local_5150,2);
+              if ((argSource.type == 3) && ((*techFlags & 0x200) == 0)) {
+                scorchConsts[0] = 0x72;
+                scorchConsts[1] = 0x76;
+                bVar2 = CodeConstIsOneOf(argSource.u.codeIndex,scorchConsts,2);
                 if (bVar2) {
-                  *param_6 = *param_6 | 0x200;
+                  *techFlags = *techFlags | 0x200;
                 }
               }
               bVar2 = Material_AddShaderArgument
-                                (param_2,param_3,&local_5144,&local_5028,param_4,param_5,&local_5130
-                                 ,local_500c,(char (*) [64])local_400c);
+                                (shaderName,shaderType,&argSource,&argDest,paramTable,paramCount,
+                                 &usedCount,localArgs,(char (*) [64])registerUsage);
               if (!bVar2) {
                 return false;
               }
             }
           }
-          local_502c = local_502c + 1;
+          paramIndex = paramIndex + 1;
         } while( true );
       }
-      I_strncpyz(local_512c,local_5010,0x100);
-      local_5014 = Material_ElemCountForParamName(param_2,param_4,param_5,local_512c,&local_5018);
-      if (local_5014 == 0) {
-        bVar2 = Material_MatchToken(param_1,"=");
+      I_strncpyz(paramName,token,0x100);
+      registerCount =
+           Material_ElemCountForParamName(shaderName,paramTable,paramCount,paramName,&paramType);
+      if (registerCount == 0) {
+        bVar2 = Material_MatchToken(text,"=");
         if (!bVar2) {
           return false;
         }
-        Com_SkipRestOfLine(param_1);
+        Com_SkipRestOfLine(text);
       }
       else {
-        bVar2 = Material_ParseIndexRange(param_1,local_5014,&local_5028.indexRange);
+        bVar2 = Material_ParseIndexRange(text,registerCount,&argDest.indexRange);
         if (!bVar2) {
           return false;
         }
-        local_5028.paramName = local_512c;
-        bVar2 = Material_ParseArgumentSource(param_3,param_1,param_2,local_5018,&local_5144);
+        argDest.paramName = paramName;
+        bVar2 = Material_ParseArgumentSource(shaderType,text,shaderName,paramType,&argSource);
         if (!bVar2) {
           return false;
         }
-        bVar2 = Material_MatchToken(param_1,";");
+        bVar2 = Material_MatchToken(text,";");
         if (!bVar2) {
           return false;
         }
         bVar2 = Material_AddShaderArgument
-                          (param_2,param_3,&local_5144,&local_5028,param_4,param_5,&local_5130,
-                           local_500c,(char (*) [64])local_400c);
+                          (shaderName,shaderType,&argSource,&argDest,paramTable,paramCount,
+                           &usedCount,localArgs,(char (*) [64])registerUsage);
         if (!bVar2) {
           return false;
         }
-        if (local_5144.type == 4) {
-          if (local_5144.u.codeIndex == 9) {
-            *param_6 = *param_6 | 1;
+        if (argSource.type == 4) {
+          if (argSource.u.codeIndex == 9) {
+            *techFlags = *techFlags | 1;
           }
-          else if (local_5144.u.codeIndex == 10) {
-            *param_6 = *param_6 | 2;
+          else if (argSource.u.codeIndex == 10) {
+            *techFlags = *techFlags | 2;
           }
-          else if (((local_5144.u.codeIndex == 0x13) || (local_5144.u.codeIndex == 0x14)) ||
-                  (local_5144.u.codeIndex == 0x15)) {
-            *param_6 = *param_6 | 0x40;
+          else if (((argSource.u.codeIndex == 0x13) || (argSource.u.codeIndex == 0x14)) ||
+                  (argSource.u.codeIndex == 0x15)) {
+            *techFlags = *techFlags | 0x40;
           }
         }
       }
@@ -4134,13 +4184,13 @@ Material_ParseShaderArguments
 
 // 00AD0B90  Material_SubtractDays  (gfx_d3d/r_material_load_obj.cpp:4436)
 
-void __cdecl Material_SubtractDays(_SYSTEMTIME *param_1,ushort param_2)
+void __cdecl Material_SubtractDays(_SYSTEMTIME *sysTime,ushort daysOld)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x14 < param_2) {
+  if (0x14 < daysOld) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x1155,0,"%s");
     if (!bVar2) {
@@ -4149,17 +4199,17 @@ void __cdecl Material_SubtractDays(_SYSTEMTIME *param_1,ushort param_2)
       return;
     }
   }
-  if (param_2 < param_1->wDay) {
-    param_1->wDay = param_1->wDay - param_2;
+  if (daysOld < sysTime->wDay) {
+    sysTime->wDay = sysTime->wDay - daysOld;
   }
   else {
-    param_1->wDay = (param_1->wDay + 0x1c) - param_2;
-    if (param_1->wMonth < 2) {
-      param_1->wMonth = 0xc;
-      param_1->wYear = param_1->wYear - 1;
+    sysTime->wDay = (sysTime->wDay + 0x1c) - daysOld;
+    if (sysTime->wMonth < 2) {
+      sysTime->wMonth = 0xc;
+      sysTime->wYear = sysTime->wYear - 1;
     }
     else {
-      param_1->wMonth = param_1->wMonth - 1;
+      sysTime->wMonth = sysTime->wMonth - 1;
     }
   }
   return;
@@ -4170,37 +4220,39 @@ void __cdecl Material_SubtractDays(_SYSTEMTIME *param_1,ushort param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Material_DeleteOldFilesInDirectory(char *param_1,ushort param_2)
+void __cdecl Material_DeleteOldFilesInDirectory(char *dirname,ushort daysOld)
 
 {
   HANDLE hFindFile;
   LONG LVar1;
   BOOL BVar2;
-  _WIN32_FIND_DATAA local_374;
-  char local_234 [264];
-  char local_12c [268];
+  ulong errorCode;
+  void *handle;
+  _WIN32_FIND_DATAA findData;
+  char fullfilename [264];
+  char fulldirname [268];
   uint local_20;
-  _SYSTEMTIME local_1c;
-  _FILETIME local_c;
+  _SYSTEMTIME sysTime;
+  _FILETIME fileTime;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetSystemTime(&local_1c);
-  Material_SubtractDays((_SYSTEMTIME *)&local_1c,param_2);
-  SystemTimeToFileTime(&local_1c,&local_c);
-  Com_sprintf(local_12c,0x104,"%s/*");
-  hFindFile = FindFirstFileA(local_12c,&local_374);
+  GetSystemTime(&sysTime);
+  Material_SubtractDays((_SYSTEMTIME *)&sysTime,daysOld);
+  SystemTimeToFileTime(&sysTime,&fileTime);
+  Com_sprintf(fulldirname,0x104,"%s/*");
+  hFindFile = FindFirstFileA(fulldirname,&findData);
   if (hFindFile != (HANDLE)0xffffffff) {
     do {
-      if (((local_374.dwFileAttributes & 0x11) == 0) &&
-         (LVar1 = CompareFileTime(&local_374.ftLastAccessTime,&local_c), LVar1 < 0)) {
-        Com_sprintf(local_234,0x104,"%s/%s");
-        BVar2 = DeleteFileA(local_234);
+      if (((findData.dwFileAttributes & 0x11) == 0) &&
+         (LVar1 = CompareFileTime(&findData.ftLastAccessTime,&fileTime), LVar1 < 0)) {
+        Com_sprintf(fullfilename,0x104,"%s/%s");
+        BVar2 = DeleteFileA(fullfilename);
         if (BVar2 == 0) {
           GetLastError();
           Com_PrintError(1,"ERROR: Failed to delete %s errorCode %d\n");
         }
       }
-      BVar2 = FindNextFileA(hFindFile,&local_374);
+      BVar2 = FindNextFileA(hFindFile,&findData);
     } while (BVar2 != 0);
     FindClose(hFindFile);
   }
@@ -4212,34 +4264,36 @@ void __cdecl Material_DeleteOldFilesInDirectory(char *param_1,ushort param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Material_DeleteDirectory(char *param_1)
+void __cdecl Material_DeleteDirectory(char *dirname)
 
 {
   HANDLE hFindFile;
   BOOL BVar1;
-  _WIN32_FIND_DATAA local_35c;
-  char local_21c [264];
-  char local_114 [268];
+  ulong errorCode;
+  void *handle;
+  _WIN32_FIND_DATAA findData;
+  char fullfilename [264];
+  char fulldirname [268];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_114,0x104,"%s/*");
-  hFindFile = FindFirstFileA(local_114,&local_35c);
+  Com_sprintf(fulldirname,0x104,"%s/*");
+  hFindFile = FindFirstFileA(fulldirname,&findData);
   if (hFindFile != (HANDLE)0xffffffff) {
     do {
-      if ((local_35c.dwFileAttributes & 0x11) == 0) {
-        Com_sprintf(local_21c,0x104,"%s/%s");
-        BVar1 = DeleteFileA(local_21c);
+      if ((findData.dwFileAttributes & 0x11) == 0) {
+        Com_sprintf(fullfilename,0x104,"%s/%s");
+        BVar1 = DeleteFileA(fullfilename);
         if (BVar1 == 0) {
           GetLastError();
           Com_PrintError(1,"ERROR: Failed to delete %s errorCode %d\n");
         }
       }
-      BVar1 = FindNextFileA(hFindFile,&local_35c);
+      BVar1 = FindNextFileA(hFindFile,&findData);
     } while (BVar1 != 0);
     FindClose(hFindFile);
   }
-  RemoveDirectoryA(param_1);
+  RemoveDirectoryA(dirname);
   return;
 }
 
@@ -4261,19 +4315,20 @@ void __cdecl _dynamic_initializer_for__IW_PROJECT_GAMEDIR__(void)
 void __cdecl Material_DeleteOldCachedShaders(void)
 
 {
-  char local_114 [264];
+  char dirname [264];
   uint local_c;
-  uint local_8;
+  uint oldShaderCacheVersion;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (!once) {
     once = true;
-    for (local_8 = 1; local_8 < 2; local_8 = local_8 + 1) {
-      Com_sprintf(local_114,0x104,"%s/%s/shadercache%d");
-      Material_DeleteDirectory(local_114);
+    for (oldShaderCacheVersion = 1; oldShaderCacheVersion < 2;
+        oldShaderCacheVersion = oldShaderCacheVersion + 1) {
+      Com_sprintf(dirname,0x104,"%s/%s/shadercache%d");
+      Material_DeleteDirectory(dirname);
     }
-    Com_sprintf(local_114,0x104,"%s/%s/shadercache%d");
-    Material_DeleteOldFilesInDirectory(local_114,10);
+    Com_sprintf(dirname,0x104,"%s/%s/shadercache%d");
+    Material_DeleteOldFilesInDirectory(dirname,10);
   }
   return;
 }
@@ -4282,7 +4337,8 @@ void __cdecl Material_DeleteOldCachedShaders(void)
 // 00AD0770  Material_FindCachedShader  (gfx_d3d/r_material_load_obj.cpp:4560)
 
 bool __cdecl
-Material_FindCachedShader(char *param_1,uint param_2,char *param_3,void **param_4,uint *param_5)
+Material_FindCachedShader
+          (char *shaderText,uint shaderTextLen,char *filename,void **cachedShader,uint *shaderLen)
 
 {
   code *pcVar1;
@@ -4291,39 +4347,39 @@ Material_FindCachedShader(char *param_1,uint param_2,char *param_3,void **param_
   void *pvVar4;
   char *pcVar5;
   bool bVar6;
-  uint local_10;
-  _iobuf *local_c;
-  char *local_8;
+  uint cachedShaderTextLen;
+  _iobuf *cacheFile;
+  char *cachedShaderText;
   
   Material_DeleteOldCachedShaders();
-  *param_4 = (void *)0x0;
-  *param_5 = 0;
-  local_c = fopen(param_3,"rb");
-  if (local_c == (_iobuf *)0x0) {
+  *cachedShader = (void *)0x0;
+  *shaderLen = 0;
+  cacheFile = fopen(filename,"rb");
+  if (cacheFile == (_iobuf *)0x0) {
     bVar6 = false;
   }
   else {
-    uVar3 = fread(&local_10,4,1,local_c);
+    uVar3 = fread(&cachedShaderTextLen,4,1,cacheFile);
     if (uVar3 == 1) {
-      if (local_10 == param_2) {
-        local_8 = Z_Malloc(local_10,"Material_FindCachedShader",0x20);
-        uVar3 = fread(local_8,1,local_10,local_c);
-        if (local_10 == uVar3) {
+      if (cachedShaderTextLen == shaderTextLen) {
+        cachedShaderText = Z_Malloc(cachedShaderTextLen,"Material_FindCachedShader",0x20);
+        uVar3 = fread(cachedShaderText,1,cachedShaderTextLen,cacheFile);
+        if (cachedShaderTextLen == uVar3) {
           bVar6 = true;
-          pcVar5 = local_8;
+          pcVar5 = cachedShaderText;
           do {
-            if (local_10 == 0) break;
-            local_10 = local_10 - 1;
-            bVar6 = *pcVar5 == *param_1;
+            if (cachedShaderTextLen == 0) break;
+            cachedShaderTextLen = cachedShaderTextLen - 1;
+            bVar6 = *pcVar5 == *shaderText;
             pcVar5 = pcVar5 + 1;
-            param_1 = param_1 + 1;
+            shaderText = shaderText + 1;
           } while (bVar6);
           if (bVar6) {
-            uVar3 = fread(param_5,4,1,local_c);
+            uVar3 = fread(shaderLen,4,1,cacheFile);
             if (uVar3 == 1) {
-              pvVar4 = Z_Malloc(*param_5,"Material_FindCachedShader",0x20);
-              *param_4 = pvVar4;
-              if (*param_4 == (void *)0x0) {
+              pvVar4 = Z_Malloc(*shaderLen,"Material_FindCachedShader",0x20);
+              *cachedShader = pvVar4;
+              if (*cachedShader == (void *)0x0) {
                 bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x1203,0,"%s");
                 if (!bVar6) {
@@ -4332,36 +4388,36 @@ Material_FindCachedShader(char *param_1,uint param_2,char *param_3,void **param_
                   return (bool)uVar2;
                 }
               }
-              fread(*param_4,1,*param_5,local_c);
-              Z_Free(local_8,0x20);
-              fclose(local_c);
+              fread(*cachedShader,1,*shaderLen,cacheFile);
+              Z_Free(cachedShaderText,0x20);
+              fclose(cacheFile);
               bVar6 = true;
             }
             else {
-              Z_Free(local_8,0x20);
-              fclose(local_c);
+              Z_Free(cachedShaderText,0x20);
+              fclose(cacheFile);
               bVar6 = false;
             }
           }
           else {
-            Z_Free(local_8,0x20);
-            fclose(local_c);
+            Z_Free(cachedShaderText,0x20);
+            fclose(cacheFile);
             bVar6 = false;
           }
         }
         else {
-          Z_Free(local_8,0x20);
-          fclose(local_c);
+          Z_Free(cachedShaderText,0x20);
+          fclose(cacheFile);
           bVar6 = false;
         }
       }
       else {
-        fclose(local_c);
+        fclose(cacheFile);
         bVar6 = false;
       }
     }
     else {
-      fclose(local_c);
+      fclose(cacheFile);
       bVar6 = false;
     }
   }
@@ -4374,21 +4430,22 @@ Material_FindCachedShader(char *param_1,uint param_2,char *param_3,void **param_
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Material_CacheShader(char *param_1,uint param_2,char *param_3,void *param_4,uint param_5)
+Material_CacheShader
+          (char *shaderText,uint shaderTextLen,char *filename,void *shaderBuffer,uint shaderLen)
 
 {
   DWORD DVar1;
-  CHAR local_40c;
+  CHAR fileFullPath;
   uchar local_40b [1023];
   uint local_c;
-  _iobuf *local_8;
+  _iobuf *cacheFile;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = fopen(param_3,"wb");
-  if (local_8 == (_iobuf *)0x0) {
-    local_40c = '\0';
+  cacheFile = fopen(filename,"wb");
+  if (cacheFile == (_iobuf *)0x0) {
+    fileFullPath = '\0';
     memset(local_40b,'\0',0x3ff);
-    DVar1 = GetFullPathNameA(param_3,0x400,&local_40c,(LPSTR *)0x0);
+    DVar1 = GetFullPathNameA(filename,0x400,&fileFullPath,(LPSTR *)0x0);
     if (DVar1 == 0) {
       Com_PrintWarning(10,"Material_CacheShader: Failed to open for writing \'%s\'\n");
     }
@@ -4397,11 +4454,11 @@ Material_CacheShader(char *param_1,uint param_2,char *param_3,void *param_4,uint
     }
   }
   else {
-    fwrite(&param_2,4,1,local_8);
-    fwrite(param_1,1,param_2,local_8);
-    fwrite(&param_5,4,1,local_8);
-    fwrite(param_4,1,param_5,local_8);
-    fclose(local_8);
+    fwrite(&shaderTextLen,4,1,cacheFile);
+    fwrite(shaderText,1,shaderTextLen,cacheFile);
+    fwrite(&shaderLen,4,1,cacheFile);
+    fwrite(shaderBuffer,1,shaderLen,cacheFile);
+    fclose(cacheFile);
   }
   return;
 }
@@ -4409,24 +4466,25 @@ Material_CacheShader(char *param_1,uint param_2,char *param_3,void *param_4,uint
 
 // 00AD05F0  Material_ParseLineNumber  (gfx_d3d/r_material_load_obj.cpp:4652)
 
-bool __cdecl Material_ParseLineNumber(char *param_1,uint *param_2)
+bool __cdecl Material_ParseLineNumber(char *errorMessage,uint *lineNumber)
 
 {
   bool bVar1;
-  char *extraout_EAX;
+  char *string;
   int iVar2;
+  char *lineNumberStart;
   
-  strchr((uchar *)param_1,'(');
-  if (extraout_EAX == (char *)0x0) {
+  strchr((uchar *)errorMessage,'(');
+  if (string == (char *)0x0) {
     bVar1 = false;
   }
   else {
-    iVar2 = sscanf(extraout_EAX,"(%d,%d)");
+    iVar2 = sscanf(string,"(%d,%d)");
     if (iVar2 == 2) {
       bVar1 = true;
     }
     else {
-      iVar2 = sscanf(extraout_EAX,"(%d)");
+      iVar2 = sscanf(string,"(%d)");
       if (iVar2 == 1) {
         bVar1 = true;
       }
@@ -4443,16 +4501,16 @@ bool __cdecl Material_ParseLineNumber(char *param_1,uint *param_2)
 
 void __cdecl
 Material_FileIncludeFileAndLineNumber
-          (GfxAssembledShaderText *param_1,char *param_2,char **param_3,uint *param_4)
+          (GfxAssembledShaderText *prog,char *errorMessage,char **fileName,uint *lineNumber)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
-  bVar2 = Material_ParseLineNumber(param_2,param_4);
+  bVar2 = Material_ParseLineNumber(errorMessage,lineNumber);
   if (bVar2) {
-    if ((*param_4 < param_1->files[0].destLine) &&
+    if ((*lineNumber < prog->files[0].destLine) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x1244,0,"*lineNumber >= prog->files[0].destLine\n\t%i, %i"),
        !bVar2)) {
@@ -4460,17 +4518,15 @@ Material_FileIncludeFileAndLineNumber
       (*pcVar1)();
       return;
     }
-    for (local_8 = 1;
-        (local_8 < param_1->fileCount && (param_1->files[local_8].destLine <= *param_4));
-        local_8 = local_8 + 1) {
+    for (i = 1; (i < prog->fileCount && (prog->files[i].destLine <= *lineNumber)); i = i + 1) {
     }
-    *param_3 = (char *)((int)param_1 + (local_8 - 1) * 0x108 + 0x20);
-    *param_4 = (*param_4 - *(int *)((int)param_1 + (local_8 - 1) * 0x108 + 0x1c)) +
-               *(int *)((int)param_1 + (local_8 - 1) * 0x108 + 0x18);
+    *fileName = (char *)((int)prog + (i - 1) * 0x108 + 0x20);
+    *lineNumber = (*lineNumber - *(int *)((int)prog + (i - 1) * 0x108 + 0x1c)) +
+                  *(int *)((int)prog + (i - 1) * 0x108 + 0x18);
   }
   else {
-    *param_3 = "Message format changed.  Update Material_FileIncludeFileAndLineNumber.";
-    *param_4 = 0;
+    *fileName = "Message format changed.  Update Material_FileIncludeFileAndLineNumber.";
+    *lineNumber = 0;
   }
   return;
 }
@@ -4478,27 +4534,28 @@ Material_FileIncludeFileAndLineNumber
 
 // 00AD0D50  Material_CopyTextToDXBuffer  (gfx_d3d/r_material_load_obj.cpp:4720)
 
-bool __cdecl Material_CopyTextToDXBuffer(void *param_1,uint param_2,ID3DXBuffer **param_3)
+bool __cdecl Material_CopyTextToDXBuffer(void *cachedShader,uint shaderLen,ID3DXBuffer **shader)
 
 {
-  int iVar1;
-  uchar *puVar2;
-  ID3DXBuffer *pIVar3;
+  int hr_00;
+  uchar *dst;
+  ID3DXBuffer *src;
+  HRESULT hr;
   
-  iVar1 = _D3DXCreateBuffer_8(param_2,param_3);
-  if (-1 < iVar1) {
-    pIVar3 = *param_3;
-    puVar2 = (uchar *)(**(code **)((int)**param_3 + 0xc))(pIVar3,param_1,param_2);
-    memcpy(puVar2,(uchar *)pIVar3,(ulong)param_1);
+  hr_00 = _D3DXCreateBuffer_8(shaderLen,shader);
+  if (-1 < hr_00) {
+    src = *shader;
+    dst = (uchar *)(**(code **)((int)**shader + 0xc))(src,cachedShader,shaderLen);
+    memcpy(dst,(uchar *)src,(ulong)cachedShader);
   }
   else {
-    R_ErrorDescription(iVar1);
+    R_ErrorDescription(hr_00);
     Com_PrintError(8,
                    "ERROR: Material_CopyTextToDXBuffer: D3DXCreateBuffer(%d) failed: %s (0x%08x)\n")
     ;
-    free(param_1);
+    free(cachedShader);
   }
-  return -1 < iVar1;
+  return -1 < hr_00;
 }
 
 
@@ -4508,29 +4565,29 @@ bool __cdecl Material_CopyTextToDXBuffer(void *param_1,uint param_2,ID3DXBuffer 
 
 bool __cdecl
 Material_FindCachedShaderDX
-          (char *param_1,uint param_2,char *param_3,char *param_4,ID3DXBuffer **param_5,
-          char *param_6,int param_7)
+          (char *shaderText,uint shaderTextLen,char *entryPoint,char *target,ID3DXBuffer **shader,
+          char *shaderName,int useUPDB)
 
 {
   bool bVar1;
-  uint local_128;
-  char local_124 [264];
+  uint shaderLen;
+  char filename [264];
   uint local_1c;
-  uint local_18 [4];
-  void *local_8;
+  uint checksum [4];
+  void *cachedShader;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_BlockChecksum128(param_1,param_2,param_7,local_18);
-  Com_sprintf(local_124,0x104,"%s/%s/shadercache%d/%s_%s_%8x%8x%8x%8x");
-  bVar1 = Material_FindCachedShader(param_1,param_2,local_124,&local_8,&local_128);
+  Com_BlockChecksum128(shaderText,shaderTextLen,useUPDB,checksum);
+  Com_sprintf(filename,0x104,"%s/%s/shadercache%d/%s_%s_%8x%8x%8x%8x");
+  bVar1 = Material_FindCachedShader(shaderText,shaderTextLen,filename,&cachedShader,&shaderLen);
   if (bVar1) {
-    bVar1 = Material_CopyTextToDXBuffer(local_8,local_128,param_5);
+    bVar1 = Material_CopyTextToDXBuffer(cachedShader,shaderLen,shader);
     if (bVar1) {
-      Z_Free(local_8,0x20);
+      Z_Free(cachedShader,0x20);
       bVar1 = true;
     }
     else {
-      Z_Free(local_8,0x20);
+      Z_Free(cachedShader,0x20);
       bVar1 = false;
     }
   }
@@ -4547,29 +4604,30 @@ Material_FindCachedShaderDX
 
 void __cdecl
 Material_CacheShaderDX
-          (char *param_1,uint param_2,char *param_3,char *param_4,ID3DXBuffer *param_5,int param_6)
+          (char *shaderText,uint shaderTextLen,char *entryPoint,char *target,ID3DXBuffer *shader,
+          int useUPDB)
 
 {
   undefined4 uVar1;
-  void *pvVar2;
-  char *pcVar3;
-  char local_22c [264];
-  uint local_124 [4];
-  char local_114 [268];
+  void *shaderBuffer;
+  char *pcVar2;
+  char filename [264];
+  uint checksum [4];
+  char dirname [268];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_BlockChecksum128(param_1,param_2,param_6,local_124);
-  pcVar3 = IW_PROJECT_GAMEDIR;
+  Com_BlockChecksum128(shaderText,shaderTextLen,useUPDB,checksum);
+  pcVar2 = IW_PROJECT_GAMEDIR;
   if (IW_PROJECT_GAMEDIR == (char *)0x0) {
-    pcVar3 = "..";
+    pcVar2 = "..";
   }
-  Com_sprintf(local_114,0x104,"%s/%s/shadercache%d");
-  Sys_Mkdir(local_114);
-  Com_sprintf(local_22c,0x104,"%s/%s_%s_%8x%8x%8x%8x");
-  uVar1 = (**(code **)((int)*param_5 + 0x10))(param_5,pcVar3);
-  pvVar2 = (void *)(**(code **)((int)*param_5 + 0xc))(param_5,uVar1);
-  Material_CacheShader(param_1,param_2,local_22c,pvVar2,(uint)param_5);
+  Com_sprintf(dirname,0x104,"%s/%s/shadercache%d");
+  Sys_Mkdir(dirname);
+  Com_sprintf(filename,0x104,"%s/%s_%s_%8x%8x%8x%8x");
+  uVar1 = (**(code **)((int)*shader + 0x10))(shader,pcVar2);
+  shaderBuffer = (void *)(**(code **)((int)*shader + 0xc))(shader,uVar1);
+  Material_CacheShader(shaderText,shaderTextLen,filename,shaderBuffer,(uint)shader);
   return;
 }
 
@@ -4580,119 +4638,123 @@ Material_CacheShaderDX
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 ID3DXBuffer * __cdecl
-Material_CompileShader(char *param_1,MaterialShaderType param_2,char *param_3,char *param_4)
+Material_CompileShader(char *shaderName,MaterialShaderType shaderType,char *entryPoint,char *target)
 
 {
   bool bVar1;
   int extraout_EAX;
   char *pcVar2;
-  int *piVar3;
-  undefined1 local_8e64 [2052];
-  char *local_8660;
-  char *local_865c;
-  code *local_8658;
-  char local_8651;
-  char *local_8650;
-  uint local_864c [2];
-  char local_8644 [516];
-  uint local_8440;
-  int *local_843c;
-  int local_8438;
-  GfxAssembledShaderText local_8434;
+  ID3DXBuffer *substr;
+  char *errorPrefix;
+  undefined1 extendedErrorInfo [2052];
+  char *warningPrefix;
+  char *fileName;
+  code *fcn;
+  bool NoShaderWarnings;
+  char *compilerMsg;
+  uint lineNumber;
+  int maxSamplers;
+  char filename [516];
+  uint shaderTextLen;
+  ID3DXConstantTable *constants;
+  HRESULT hr;
+  GfxAssembledShaderText prog;
   uint local_1c;
-  char *local_18;
-  int *local_14;
-  undefined4 local_10;
-  ID3DXBuffer *local_c;
-  uint local_8;
+  char *shaderText;
+  ID3DXBuffer *messages;
+  int maxTempRegs;
+  ID3DXBuffer *shader;
+  ulong flags;
   
-  local_8 = 0xacf72d;
+  flags = 0xacf72d;
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = (ID3DXBuffer *)0x0;
-  local_14 = (int *)0x0;
-  local_843c = (int *)0x0;
-  local_864c[1] = 0;
-  local_10 = 0;
-  Com_sprintf(local_8644,0x200,"shaders/%s");
-  local_18 = Hunk_AllocateTempMemory(0x80000,"Material_CompileShader");
-  local_8440 = Material_GenerateShaderString(&local_8434,param_1,param_2,local_18,0x80000);
-  if (local_8440 == 0) {
-    Hunk_FreeTempMemory(local_18);
+  shader = (ID3DXBuffer *)0x0;
+  messages = (ID3DXBuffer *)0x0;
+  constants = (ID3DXConstantTable *)0x0;
+  maxSamplers = 0;
+  maxTempRegs = 0;
+  Com_sprintf(filename,0x200,"shaders/%s");
+  shaderText = Hunk_AllocateTempMemory(0x80000,"Material_CompileShader");
+  shaderTextLen = Material_GenerateShaderString(&prog,shaderName,shaderType,shaderText,0x80000);
+  if (shaderTextLen == 0) {
+    Hunk_FreeTempMemory(shaderText);
     return (ID3DXBuffer *)0x0;
   }
-  bVar1 = Material_FindCachedShaderDX(local_18,local_8440,param_3,param_4,&local_c,param_1,0);
+  bVar1 = Material_FindCachedShaderDX
+                    (shaderText,shaderTextLen,entryPoint,target,&shader,shaderName,0);
   if (!bVar1) {
-    local_8 = 2;
-    strstr((uchar *)param_1,(uchar *)"pimp_shader_sw4");
+    flags = 2;
+    strstr((uchar *)shaderName,(uchar *)"pimp_shader_sw4");
     if (extraout_EAX == 0) {
-      local_8 = local_8 | 0x10000;
+      flags = flags | 0x10000;
     }
-    local_8438 = _D3DXCompileShader_40
-                           (local_18,local_8440,0,0,param_3,param_4,local_8,&local_c,&local_14,
-                            &local_843c);
-    if (local_14 != (int *)0x0) {
-      local_8651 = '\0';
-      piVar3 = local_14;
-      pcVar2 = (char *)(**(code **)(*local_14 + 0xc))(local_14,"error");
-      pcVar2 = I_stristr(pcVar2,(char *)piVar3);
+    hr = _D3DXCompileShader_40
+                   (shaderText,shaderTextLen,0,0,entryPoint,target,flags,&shader,&messages,
+                    &constants);
+    if (messages != (ID3DXBuffer *)0x0) {
+      NoShaderWarnings = false;
+      substr = messages;
+      pcVar2 = (char *)(**(code **)((int)*messages + 0xc))(messages,"error");
+      pcVar2 = I_stristr(pcVar2,(char *)substr);
       if (pcVar2 == (char *)0x0) {
-        local_8658 = Com_ScriptWarning;
+        fcn = Com_ScriptWarning;
       }
       else {
-        local_8658 = Com_ScriptError;
+        fcn = Com_ScriptError;
       }
-      if ((local_8651 != '\0') && (local_8658 == Com_ScriptWarning)) {
-        local_8658 = (code *)0x0;
+      if ((NoShaderWarnings != false) && (fcn == Com_ScriptWarning)) {
+        fcn = (code *)0x0;
       }
-      local_8650 = (char *)(**(code **)(*local_14 + 0xc))(local_14);
-      Material_FileIncludeFileAndLineNumber(&local_8434,local_8650,&local_865c,local_864c);
-      if (local_8658 != (code *)0x0) {
+      compilerMsg = (char *)(**(code **)((int)*messages + 0xc))(messages);
+      Material_FileIncludeFileAndLineNumber(&prog,compilerMsg,&fileName,&lineNumber);
+      if (fcn != (code *)0x0) {
         pcVar2 = Com_GetScriptErrorPrefix();
-        local_8660 = Com_GetScriptWarningPrefix();
+        warningPrefix = Com_GetScriptWarningPrefix();
         Com_SetScriptWarningPrefix("^3WARNING: ");
         Com_SetScriptErrorPrefix("^1ERROR: ");
-        local_8e64[0] = 0;
-        (*local_8658)("compiler message(s) for %s (entryPoint=\"%s\", target=\"%s\"):\n%s\n%s\n%s(%d)\n"
-                      ,local_8644,param_3,param_4,local_8650,local_8e64,local_865c,local_864c[0]);
-        Com_SetScriptWarningPrefix(local_8660);
+        extendedErrorInfo[0] = 0;
+        (*fcn)("compiler message(s) for %s (entryPoint=\"%s\", target=\"%s\"):\n%s\n%s\n%s(%d)\n",
+               filename,entryPoint,target,compilerMsg,extendedErrorInfo,fileName,lineNumber);
+        Com_SetScriptWarningPrefix(warningPrefix);
         Com_SetScriptErrorPrefix(pcVar2);
       }
-      (**(code **)(*local_14 + 8))(local_14);
+      (**(code **)((int)*messages + 8))(messages);
     }
-    if (local_8438 < 0) {
-      R_ErrorDescription(local_8438);
+    if (hr < 0) {
+      R_ErrorDescription(hr);
       Com_ScriptError("%s compilation failed - %s\n");
-      Hunk_FreeTempMemory(local_18);
+      Hunk_FreeTempMemory(shaderText);
       return (ID3DXBuffer *)0x0;
     }
-    if (local_c == (ID3DXBuffer *)0x0) {
-      if (local_843c != (int *)0x0) {
-        (**(code **)(*local_843c + 8))(local_843c);
+    if (shader == (ID3DXBuffer *)0x0) {
+      if (constants != (ID3DXConstantTable *)0x0) {
+        (**(code **)((int)*constants + 8))(constants);
       }
       Com_ScriptError("%s compilation failed - NULL shader\n");
-      Hunk_FreeTempMemory(local_18);
+      Hunk_FreeTempMemory(shaderText);
       return (ID3DXBuffer *)0x0;
     }
-    if (local_843c == (int *)0x0) {
-      (**(code **)((int)*local_c + 8))(local_c);
+    if (constants == (ID3DXConstantTable *)0x0) {
+      (**(code **)((int)*shader + 8))(shader);
       Com_ScriptError("%s compilation failed - NULL constants\n");
-      Hunk_FreeTempMemory(local_18);
+      Hunk_FreeTempMemory(shaderText);
       return (ID3DXBuffer *)0x0;
     }
-    (**(code **)(*local_843c + 8))(local_843c);
-    Material_CacheShaderDX(local_18,local_8440,param_3,param_4,local_c,0);
+    (**(code **)((int)*constants + 8))(constants);
+    Material_CacheShaderDX(shaderText,shaderTextLen,entryPoint,target,shader,0);
   }
-  Hunk_FreeTempMemory(local_18);
-  return local_c;
+  Hunk_FreeTempMemory(shaderText);
+  return shader;
 }
 
 
 // 00AD0FF0  Material_GetShaderTargetString  (gfx_d3d/r_material_load_obj.cpp:5124)
 
-void __cdecl Material_GetShaderTargetString(char *param_1,int param_2,char *param_3,int param_4)
+void __cdecl
+Material_GetShaderTargetString(char *target,int maxChars,char *prefix,int shaderVersion)
 
 {
-  Com_sprintf(param_1,param_2,"%s_3_0");
+  Com_sprintf(target,maxChars,"%s_3_0");
   return;
 }
 
@@ -4701,7 +4763,7 @@ void __cdecl Material_GetShaderTargetString(char *param_1,int param_2,char *para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MaterialVertexShader * __cdecl Material_LoadVertexShader(char *param_1,int param_2)
+MaterialVertexShader * __cdecl Material_LoadVertexShader(char *shaderName,int shaderVersion)
 
 {
   char cVar1;
@@ -4709,27 +4771,30 @@ MaterialVertexShader * __cdecl Material_LoadVertexShader(char *param_1,int param
   bool bVar3;
   uint uVar4;
   MaterialVertexShader *pMVar5;
-  uchar *puVar6;
-  int iVar7;
-  ID3DXBuffer *pIVar8;
+  uchar *src;
+  int hr_00;
+  ID3DXBuffer *count;
   char *local_40;
-  char local_30 [16];
+  uint programSize;
+  uchar *buffer;
+  HRESULT hr;
+  char target [16];
   uint local_20;
-  MaterialVertexShader *local_1c;
-  char *local_18;
-  int local_14;
-  ID3DXBuffer *local_10;
-  char *local_c;
-  MaterialVertexShader *local_8;
+  ulong *program;
+  uint nameSize;
+  int semaphore;
+  ID3DXBuffer *shader;
+  uint totalSize;
+  MaterialVertexShader *mtlShader;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Material_GetShaderTargetString(local_30,0x10,"vs",param_2);
-  local_10 = Material_CompileShader(param_1,MTL_VERTEX_SHADER,"vs_main",local_30);
-  if (local_10 == (ID3DXBuffer *)0x0) {
-    local_8 = (MaterialVertexShader *)0x0;
+  Material_GetShaderTargetString(target,0x10,"vs",shaderVersion);
+  shader = Material_CompileShader(shaderName,MTL_VERTEX_SHADER,"vs_main",target);
+  if (shader == (ID3DXBuffer *)0x0) {
+    mtlShader = (MaterialVertexShader *)0x0;
   }
   else {
-    uVar4 = (**(code **)((int)*local_10 + 0x10))(local_10);
+    uVar4 = (**(code **)((int)*shader + 0x10))(shader);
     if (uVar4 == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1422,0,"%s\n\t(programSize) = %i");
@@ -4739,33 +4804,33 @@ MaterialVertexShader * __cdecl Material_LoadVertexShader(char *param_1,int param
         return pMVar5;
       }
     }
-    local_40 = param_1;
+    local_40 = shaderName;
     do {
       cVar1 = *local_40;
       local_40 = local_40 + 1;
     } while (cVar1 != '\0');
-    local_18 = local_40 + (1 - (int)(param_1 + 1));
-    local_c = local_18 + uVar4 + 0x10;
-    local_8 = Material_Alloc((int)local_c);
-    local_1c = local_8 + 1;
-    local_8->name = (char *)((int)&local_8[1].name + uVar4);
-    memcpy((uchar *)local_8->name,(uchar *)param_1,(ulong)local_18);
-    pIVar8 = local_10;
-    puVar6 = (uchar *)(**(code **)((int)*local_10 + 0xc))(local_10,uVar4);
-    memcpy((uchar *)local_1c,puVar6,(ulong)pIVar8);
-    local_14 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar7 = (**(code **)((int)*dx.device + 0x16c))(dx.device,local_1c,&local_8->prog);
-    if (iVar7 < 0) {
-      R_ErrorDescription(iVar7);
+    nameSize = (uint)(local_40 + (1 - (int)(shaderName + 1)));
+    totalSize = nameSize + uVar4 + 0x10;
+    mtlShader = Material_Alloc(totalSize);
+    program = (ulong *)(mtlShader + 1);
+    mtlShader->name = (char *)((int)&mtlShader[1].name + uVar4);
+    memcpy((uchar *)mtlShader->name,(uchar *)shaderName,nameSize);
+    count = shader;
+    src = (uchar *)(**(code **)((int)*shader + 0xc))(shader,uVar4);
+    memcpy((uchar *)program,src,(ulong)count);
+    semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+    hr_00 = (**(code **)((int)*dx.device + 0x16c))(dx.device,program,&mtlShader->prog);
+    if (hr_00 < 0) {
+      R_ErrorDescription(hr_00);
       Com_ScriptError("vertex shader creation failed for %s: %s\n");
-      local_8 = (MaterialVertexShader *)0x0;
+      mtlShader = (MaterialVertexShader *)0x0;
     }
     else {
-      if (local_14 != 0) {
+      if (semaphore != 0) {
         R_ReleaseDXDeviceOwnership();
       }
-      (local_8->prog).loadDef.programSize = (ushort)(uVar4 >> 2);
-      if ((uint)(local_8->prog).loadDef.programSize * 4 != uVar4) {
+      (mtlShader->prog).loadDef.programSize = (ushort)(uVar4 >> 2);
+      if ((uint)(mtlShader->prog).loadDef.programSize * 4 != uVar4) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x1455,1,
                                  "mtlShader->prog.loadDef.programSize * sizeof( mtlShader->prog.loadDef.program[0] ) == programSize\n\t%i, %i"
@@ -4776,11 +4841,11 @@ MaterialVertexShader * __cdecl Material_LoadVertexShader(char *param_1,int param
           return pMVar5;
         }
       }
-      (local_8->prog).loadDef.program = (ulong *)local_1c;
-      (**(code **)((int)*local_10 + 8))(local_10);
+      (mtlShader->prog).loadDef.program = program;
+      (**(code **)((int)*shader + 8))(shader);
     }
   }
-  return local_8;
+  return mtlShader;
 }
 
 
@@ -4788,7 +4853,7 @@ MaterialVertexShader * __cdecl Material_LoadVertexShader(char *param_1,int param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MaterialPixelShader * __cdecl Material_LoadPixelShader(char *param_1,int param_2)
+MaterialPixelShader * __cdecl Material_LoadPixelShader(char *shaderName,int shaderVersion)
 
 {
   char cVar1;
@@ -4796,27 +4861,30 @@ MaterialPixelShader * __cdecl Material_LoadPixelShader(char *param_1,int param_2
   bool bVar3;
   uint uVar4;
   MaterialPixelShader *pMVar5;
-  uchar *puVar6;
-  int iVar7;
-  ID3DXBuffer *pIVar8;
+  uchar *src;
+  int hr_00;
+  ID3DXBuffer *count;
   char *local_40;
-  char local_30 [16];
+  uint programSize;
+  uchar *buffer;
+  HRESULT hr;
+  char target [16];
   uint local_20;
-  MaterialPixelShader *local_1c;
-  char *local_18;
-  int local_14;
-  ID3DXBuffer *local_10;
-  char *local_c;
-  MaterialPixelShader *local_8;
+  ulong *program;
+  uint nameSize;
+  int semaphore;
+  ID3DXBuffer *shader;
+  uint totalSize;
+  MaterialPixelShader *mtlShader;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Material_GetShaderTargetString(local_30,0x10,"ps",param_2);
-  local_10 = Material_CompileShader(param_1,MTL_PIXEL_SHADER,"ps_main",local_30);
-  if (local_10 == (ID3DXBuffer *)0x0) {
-    local_8 = (MaterialPixelShader *)0x0;
+  Material_GetShaderTargetString(target,0x10,"ps",shaderVersion);
+  shader = Material_CompileShader(shaderName,MTL_PIXEL_SHADER,"ps_main",target);
+  if (shader == (ID3DXBuffer *)0x0) {
+    mtlShader = (MaterialPixelShader *)0x0;
   }
   else {
-    uVar4 = (**(code **)((int)*local_10 + 0x10))(local_10);
+    uVar4 = (**(code **)((int)*shader + 0x10))(shader);
     if (uVar4 == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x149a,0,"%s\n\t(programSize) = %i");
@@ -4826,36 +4894,36 @@ MaterialPixelShader * __cdecl Material_LoadPixelShader(char *param_1,int param_2
         return pMVar5;
       }
     }
-    local_40 = param_1;
+    local_40 = shaderName;
     do {
       cVar1 = *local_40;
       local_40 = local_40 + 1;
     } while (cVar1 != '\0');
-    local_18 = local_40 + (1 - (int)(param_1 + 1));
-    local_c = local_18 + uVar4 + 0x10;
-    local_8 = Material_Alloc((int)local_c);
-    local_1c = local_8 + 1;
-    local_8->name = (char *)((int)&local_8[1].name + uVar4);
-    memcpy((uchar *)local_8->name,(uchar *)param_1,(ulong)local_18);
-    pIVar8 = local_10;
-    puVar6 = (uchar *)(**(code **)((int)*local_10 + 0xc))(local_10,uVar4);
-    memcpy((uchar *)local_1c,puVar6,(ulong)pIVar8);
-    local_14 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar7 = (**(code **)((int)*dx.device + 0x1a8))(dx.device,local_1c,&local_8->prog);
-    if (iVar7 < 0) {
-      R_ErrorDescription(iVar7);
+    nameSize = (uint)(local_40 + (1 - (int)(shaderName + 1)));
+    totalSize = nameSize + uVar4 + 0x10;
+    mtlShader = Material_Alloc(totalSize);
+    program = (ulong *)(mtlShader + 1);
+    mtlShader->name = (char *)((int)&mtlShader[1].name + uVar4);
+    memcpy((uchar *)mtlShader->name,(uchar *)shaderName,nameSize);
+    count = shader;
+    src = (uchar *)(**(code **)((int)*shader + 0xc))(shader,uVar4);
+    memcpy((uchar *)program,src,(ulong)count);
+    semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+    hr_00 = (**(code **)((int)*dx.device + 0x1a8))(dx.device,program,&mtlShader->prog);
+    if (hr_00 < 0) {
+      R_ErrorDescription(hr_00);
       Com_ScriptError("pixel shader creation failed for %s: %s\n");
-      if (local_14 != 0) {
+      if (semaphore != 0) {
         R_ReleaseDXDeviceOwnership();
       }
-      local_8 = (MaterialPixelShader *)0x0;
+      mtlShader = (MaterialPixelShader *)0x0;
     }
     else {
-      if (local_14 != 0) {
+      if (semaphore != 0) {
         R_ReleaseDXDeviceOwnership();
       }
-      (local_8->prog).loadDef.programSize = (ushort)(uVar4 >> 2);
-      if ((uint)(local_8->prog).loadDef.programSize * 4 != uVar4) {
+      (mtlShader->prog).loadDef.programSize = (ushort)(uVar4 >> 2);
+      if ((uint)(mtlShader->prog).loadDef.programSize * 4 != uVar4) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x14dc,1,
                                  "mtlShader->prog.loadDef.programSize * sizeof( mtlShader->prog.loadDef.program[0] ) == programSize\n\t%i, %i"
@@ -4866,51 +4934,53 @@ MaterialPixelShader * __cdecl Material_LoadPixelShader(char *param_1,int param_2
           return pMVar5;
         }
       }
-      (local_8->prog).loadDef.program = (ulong *)local_1c;
-      (**(code **)((int)*local_10 + 8))(local_10);
+      (mtlShader->prog).loadDef.program = program;
+      (**(code **)((int)*shader + 8))(shader);
     }
   }
-  return local_8;
+  return mtlShader;
 }
 
 
 // 00AD1010  Material_GetVertexShaderHashIndex  (gfx_d3d/r_material_load_obj.cpp:7467)
 
-bool __cdecl Material_GetVertexShaderHashIndex(char *param_1,uint *param_2)
+bool __cdecl Material_GetVertexShaderHashIndex(char *shaderName,uint *foundHashIndex)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  uint uVar5;
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_c;
+  uint hashIndex;
+  MaterialVertexShader **hashTable;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((shaderName == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1d2f,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (uint *)0x0) &&
+  if ((foundHashIndex == (uint *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1d30,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_c = R_HashAssetName(param_1);
+  uVar5 = R_HashAssetName(shaderName);
   do {
-    local_c = local_c % 0x1400;
-    if (mtlLoadGlob.vertexShaderHashTable[local_c] == (MaterialVertexShader *)0x0) {
-      *param_2 = local_c;
+    hashIndex = uVar5 % 0x1400;
+    if (mtlLoadGlob.vertexShaderHashTable[hashIndex] == (MaterialVertexShader *)0x0) {
+      *foundHashIndex = hashIndex;
       return false;
     }
-    local_10 = (byte *)param_1;
-    local_14 = (byte *)mtlLoadGlob.vertexShaderHashTable[local_c]->name;
+    local_10 = (byte *)shaderName;
+    local_14 = (byte *)mtlLoadGlob.vertexShaderHashTable[hashIndex]->name;
     do {
       bVar1 = *local_14;
       bVar3 = bVar1 < *local_10;
@@ -4929,17 +4999,17 @@ LAB_00ad10ee:
     local_1c = 0;
 LAB_00ad10f6:
     if (local_1c == 0) {
-      *param_2 = local_c;
+      *foundHashIndex = hashIndex;
       return true;
     }
-    local_c = local_c + 1;
+    uVar5 = hashIndex + 1;
   } while( true );
 }
 
 
 // 00ACF400  Material_RegisterVertexShader  (gfx_d3d/r_material_load_obj.cpp:7491)
 
-MaterialVertexShader * __cdecl Material_RegisterVertexShader(char *param_1,uchar param_2)
+MaterialVertexShader * __cdecl Material_RegisterVertexShader(char *shaderName,uchar shaderVersion)
 
 {
   byte bVar1;
@@ -4947,21 +5017,21 @@ MaterialVertexShader * __cdecl Material_RegisterVertexShader(char *param_1,uchar
   int local_20;
   byte *local_18;
   byte *local_14;
-  uint local_10;
-  undefined1 local_9;
-  MaterialVertexShader *local_8;
+  uint hashIndex;
+  bool exists;
+  MaterialVertexShader *mtlShader;
   
-  local_9 = Material_GetVertexShaderHashIndex(param_1,&local_10);
-  if ((bool)local_9) {
-    local_8 = mtlLoadGlob.vertexShaderHashTable[local_10];
+  exists = Material_GetVertexShaderHashIndex(shaderName,&hashIndex);
+  if (exists) {
+    mtlShader = mtlLoadGlob.vertexShaderHashTable[hashIndex];
   }
   else {
     ProfLoad_Begin("Load vertex shader");
-    local_8 = Material_LoadVertexShader(param_1,(uint)param_2);
+    mtlShader = Material_LoadVertexShader(shaderName,(uint)shaderVersion);
     ProfLoad_End();
-    if (local_8 != (MaterialVertexShader *)0x0) {
-      local_14 = (byte *)param_1;
-      local_18 = (byte *)local_8->name;
+    if (mtlShader != (MaterialVertexShader *)0x0) {
+      local_14 = (byte *)shaderName;
+      local_18 = (byte *)mtlShader->name;
       do {
         bVar1 = *local_18;
         bVar2 = bVar1 < *local_14;
@@ -4980,7 +5050,7 @@ LAB_00acf4ab:
       local_20 = 0;
 LAB_00acf4b3:
       if (local_20 == 0) {
-        mtlLoadGlob.vertexShaderHashTable[local_10] = local_8;
+        mtlLoadGlob.vertexShaderHashTable[hashIndex] = mtlShader;
         mtlLoadGlob.vertexShaderCount = mtlLoadGlob.vertexShaderCount + 1;
         if (mtlLoadGlob.vertexShaderCount == 0x1400) {
           Com_Error(ERR_DROP,"More than %i unique vertex shaders");
@@ -4988,47 +5058,49 @@ LAB_00acf4b3:
       }
     }
   }
-  return local_8;
+  return mtlShader;
 }
 
 
 // 00AD4860  Material_GetPixelShaderHashIndex  (gfx_d3d/r_material_load_obj.cpp:7545)
 
-bool __cdecl Material_GetPixelShaderHashIndex(char *param_1,uint *param_2)
+bool __cdecl Material_GetPixelShaderHashIndex(char *shaderName,uint *foundHashIndex)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  uint uVar5;
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_c;
+  uint hashIndex;
+  MaterialPixelShader **hashTable;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((shaderName == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1d7d,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (uint *)0x0) &&
+  if ((foundHashIndex == (uint *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1d7e,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_c = R_HashAssetName(param_1);
+  uVar5 = R_HashAssetName(shaderName);
   do {
-    local_c = local_c % 0x5000;
-    if (mtlLoadGlob.pixelShaderHashTable[local_c] == (MaterialPixelShader *)0x0) {
-      *param_2 = local_c;
+    hashIndex = uVar5 % 0x5000;
+    if (mtlLoadGlob.pixelShaderHashTable[hashIndex] == (MaterialPixelShader *)0x0) {
+      *foundHashIndex = hashIndex;
       return false;
     }
-    local_10 = (byte *)param_1;
-    local_14 = (byte *)mtlLoadGlob.pixelShaderHashTable[local_c]->name;
+    local_10 = (byte *)shaderName;
+    local_14 = (byte *)mtlLoadGlob.pixelShaderHashTable[hashIndex]->name;
     do {
       bVar1 = *local_14;
       bVar3 = bVar1 < *local_10;
@@ -5047,17 +5119,17 @@ LAB_00ad493e:
     local_1c = 0;
 LAB_00ad4946:
     if (local_1c == 0) {
-      *param_2 = local_c;
+      *foundHashIndex = hashIndex;
       return true;
     }
-    local_c = local_c + 1;
+    uVar5 = hashIndex + 1;
   } while( true );
 }
 
 
 // 00AD4530  Material_RegisterPixelShader  (gfx_d3d/r_material_load_obj.cpp:7569)
 
-MaterialPixelShader * __cdecl Material_RegisterPixelShader(char *param_1,uchar param_2)
+MaterialPixelShader * __cdecl Material_RegisterPixelShader(char *shaderName,uchar shaderVersion)
 
 {
   byte bVar1;
@@ -5065,21 +5137,21 @@ MaterialPixelShader * __cdecl Material_RegisterPixelShader(char *param_1,uchar p
   int local_20;
   byte *local_18;
   byte *local_14;
-  uint local_10;
-  undefined1 local_9;
-  MaterialPixelShader *local_8;
+  uint hashIndex;
+  bool exists;
+  MaterialPixelShader *mtlShader;
   
-  local_9 = Material_GetPixelShaderHashIndex(param_1,&local_10);
-  if ((bool)local_9) {
-    local_8 = mtlLoadGlob.pixelShaderHashTable[local_10];
+  exists = Material_GetPixelShaderHashIndex(shaderName,&hashIndex);
+  if (exists) {
+    mtlShader = mtlLoadGlob.pixelShaderHashTable[hashIndex];
   }
   else {
     ProfLoad_Begin("Load pixel shader");
-    local_8 = Material_LoadPixelShader(param_1,(uint)param_2);
+    mtlShader = Material_LoadPixelShader(shaderName,(uint)shaderVersion);
     ProfLoad_End();
-    if (local_8 != (MaterialPixelShader *)0x0) {
-      local_14 = (byte *)param_1;
-      local_18 = (byte *)local_8->name;
+    if (mtlShader != (MaterialPixelShader *)0x0) {
+      local_14 = (byte *)shaderName;
+      local_18 = (byte *)mtlShader->name;
       do {
         bVar1 = *local_18;
         bVar2 = bVar1 < *local_14;
@@ -5098,7 +5170,7 @@ LAB_00ad45db:
       local_20 = 0;
 LAB_00ad45e3:
       if (local_20 == 0) {
-        mtlLoadGlob.pixelShaderHashTable[local_10] = local_8;
+        mtlLoadGlob.pixelShaderHashTable[hashIndex] = mtlShader;
         mtlLoadGlob.pixelShaderCount = mtlLoadGlob.pixelShaderCount + 1;
         if (mtlLoadGlob.pixelShaderCount == 0x5000) {
           Com_Error(ERR_DROP,"More than %i unique pixel shaders");
@@ -5106,55 +5178,56 @@ LAB_00ad45e3:
       }
     }
   }
-  return local_8;
+  return mtlShader;
 }
 
 
 // 00AD1140  Material_ParseShaderVersion  (gfx_d3d/r_material_load_obj.cpp:7604)
 
-uchar __cdecl Material_ParseShaderVersion(char **param_1)
+uchar __cdecl Material_ParseShaderVersion(char **text)
 
 {
   float fVar1;
+  float versionNumber;
   
-  fVar1 = Com_ParseFloat(param_1);
+  fVar1 = Com_ParseFloat(text);
   return (uchar)(int)(fVar1 * 10.0 + 0.5);
 }
 
 
 // 00AD4260  Material_GetStreamDestForSemantic  (gfx_d3d/r_material_load_obj.cpp:7866)
 
-uchar __cdecl Material_GetStreamDestForSemantic(_D3DXSEMANTIC *param_1)
+uchar __cdecl Material_GetStreamDestForSemantic(_D3DXSEMANTIC *semantic)
 
 {
-  switch(param_1->Usage) {
+  switch(semantic->Usage) {
   case 0:
-    if (param_1->UsageIndex == 0) {
+    if (semantic->UsageIndex == 0) {
       return '\0';
     }
     break;
   case 1:
-    if (param_1->UsageIndex == 0) {
+    if (semantic->UsageIndex == 0) {
       return '\x13';
     }
     break;
   case 3:
-    if (param_1->UsageIndex == 0) {
+    if (semantic->UsageIndex == 0) {
       return '\x01';
     }
     break;
   case 5:
-    if (param_1->UsageIndex < 0xe) {
-      return (char)param_1->UsageIndex + '\x05';
+    if (semantic->UsageIndex < 0xe) {
+      return (char)semantic->UsageIndex + '\x05';
     }
     break;
   case 10:
-    if (param_1->UsageIndex < 2) {
-      return (char)param_1->UsageIndex + '\x02';
+    if (semantic->UsageIndex < 2) {
+      return (char)semantic->UsageIndex + '\x02';
     }
     break;
   case 0xc:
-    if (param_1->UsageIndex == 0) {
+    if (semantic->UsageIndex == 0) {
       return '\x04';
     }
   }
@@ -5165,18 +5238,18 @@ uchar __cdecl Material_GetStreamDestForSemantic(_D3DXSEMANTIC *param_1)
 
 // 00AD4220  Material_SetVaryingParameterDef  (gfx_d3d/r_material_load_obj.cpp:7929)
 
-void __cdecl Material_SetVaryingParameterDef(_D3DXSEMANTIC *param_1,ShaderVaryingDef *param_2)
+void __cdecl Material_SetVaryingParameterDef(_D3DXSEMANTIC *semantic,ShaderVaryingDef *paramDef)
 
 {
   uchar uVar1;
   char *pcVar2;
   
-  uVar1 = Material_GetStreamDestForSemantic(param_1);
-  param_2->streamDest = uVar1;
-  param_2->resourceDest = param_2->streamDest;
-  pcVar2 = Material_NameForStreamDest(param_2->streamDest);
-  param_2->name = pcVar2;
-  param_2->isAssigned = false;
+  uVar1 = Material_GetStreamDestForSemantic(semantic);
+  paramDef->streamDest = uVar1;
+  paramDef->resourceDest = paramDef->streamDest;
+  pcVar2 = Material_NameForStreamDest(paramDef->streamDest);
+  paramDef->name = pcVar2;
+  paramDef->isAssigned = false;
   return;
 }
 
@@ -5187,33 +5260,35 @@ void __cdecl Material_SetVaryingParameterDef(_D3DXSEMANTIC *param_1,ShaderVaryin
 
 bool __cdecl
 Material_SetPassShaderArguments_DX
-          (char **param_1,char *param_2,MaterialShaderType param_3,ulong *param_4,ushort *param_5,
-          ShaderParameterSet *param_6,uint param_7,uint *param_8,MaterialShaderArgument *param_9)
+          (char **text,char *shaderName,MaterialShaderType shaderType,ulong *program,
+          ushort *techFlags,ShaderParameterSet *paramSet,uint argLimit,uint *argCount,
+          MaterialShaderArgument *args)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  _D3DXSHADER_CONSTANTTABLE *p_Var4;
-  uint uVar5;
-  _D3DXSEMANTIC local_10a4 [512];
-  int *local_a0;
-  uint local_9c;
-  int local_98;
-  uint local_94;
-  char local_8d;
-  _D3DXSEMANTIC local_8c [16];
-  uint local_8;
+  _D3DXSHADER_CONSTANTTABLE *constantTable_00;
+  uint uVar4;
+  _D3DXSHADER_CONSTANTTABLE *constantTable;
+  _D3DXSEMANTIC inputSemantics [512];
+  ID3DXConstantTable *constants;
+  uint inputCount;
+  HRESULT hr;
+  uint outputCount;
+  bool success;
+  _D3DXSEMANTIC outputSemantics [16];
+  uint semanticIndex;
   
-  local_8 = 0xad117d;
-  local_98 = _D3DXGetShaderConstantTable_8(param_4,&local_a0);
-  if (local_98 < 0) {
-    R_ErrorDescription(local_98);
+  semanticIndex = 0xad117d;
+  hr = _D3DXGetShaderConstantTable_8(program,&constants);
+  if (hr < 0) {
+    R_ErrorDescription(hr);
     Com_ScriptError("Couldn\'t get the constant table: %s (%08x)\n");
     bVar2 = false;
   }
   else {
-    if (local_a0 == (int *)0x0) {
+    if (constants == (ID3DXConstantTable *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1f25,0,"%s");
       if (!bVar2) {
@@ -5222,31 +5297,33 @@ Material_SetPassShaderArguments_DX
         return (bool)uVar3;
       }
     }
-    p_Var4 = (_D3DXSHADER_CONSTANTTABLE *)(**(code **)(*local_a0 + 0xc))(local_a0);
-    uVar5 = Material_PrepareToParseShaderArguments(p_Var4,param_6->uniformInputs);
-    param_6->uniformInputCount = uVar5;
-    local_8d = Material_ParseShaderArguments
-                         (param_1,param_2,param_3,param_6->uniformInputs,param_6->uniformInputCount,
-                          param_5,param_7,param_8,param_9);
-    (**(code **)(*local_a0 + 8))(local_a0);
-    if (local_8d == '\0') {
+    constantTable_00 = (_D3DXSHADER_CONSTANTTABLE *)(**(code **)((int)*constants + 0xc))(constants);
+    uVar4 = Material_PrepareToParseShaderArguments(constantTable_00,paramSet->uniformInputs);
+    paramSet->uniformInputCount = uVar4;
+    success = Material_ParseShaderArguments
+                        (text,shaderName,shaderType,paramSet->uniformInputs,
+                         paramSet->uniformInputCount,techFlags,argLimit,argCount,args);
+    (**(code **)((int)*constants + 8))(constants);
+    if (success == false) {
       bVar2 = false;
     }
     else {
-      local_98 = _D3DXGetShaderInputSemantics_12(param_4,local_10a4,&local_9c);
-      param_6->varyingInputCount = 0;
-      for (local_8 = 0; local_8 < local_9c; local_8 = local_8 + 1) {
+      hr = _D3DXGetShaderInputSemantics_12(program,inputSemantics,&inputCount);
+      paramSet->varyingInputCount = 0;
+      for (semanticIndex = 0; semanticIndex < inputCount; semanticIndex = semanticIndex + 1) {
         Material_SetVaryingParameterDef
-                  (local_10a4 + local_8,param_6->varyingInputs + param_6->varyingInputCount);
-        param_6->varyingInputCount = param_6->varyingInputCount + 1;
+                  (inputSemantics + semanticIndex,
+                   paramSet->varyingInputs + paramSet->varyingInputCount);
+        paramSet->varyingInputCount = paramSet->varyingInputCount + 1;
       }
-      local_98 = _D3DXGetShaderOutputSemantics_12(param_4,local_8c,&local_94);
-      param_6->outputCount = 0;
-      for (local_8 = 0; local_8 < local_94; local_8 = local_8 + 1) {
-        if ((local_8c[local_8].Usage != 0) && (local_8c[local_8].Usage != 0xb)) {
+      hr = _D3DXGetShaderOutputSemantics_12(program,outputSemantics,&outputCount);
+      paramSet->outputCount = 0;
+      for (semanticIndex = 0; semanticIndex < outputCount; semanticIndex = semanticIndex + 1) {
+        if ((outputSemantics[semanticIndex].Usage != 0) &&
+           (outputSemantics[semanticIndex].Usage != 0xb)) {
           Material_SetVaryingParameterDef
-                    (local_8c + local_8,param_6->outputs + param_6->outputCount);
-          param_6->outputCount = param_6->outputCount + 1;
+                    (outputSemantics + semanticIndex,paramSet->outputs + paramSet->outputCount);
+          paramSet->outputCount = paramSet->outputCount + 1;
         }
       }
       bVar2 = true;
@@ -5260,29 +5337,33 @@ Material_SetPassShaderArguments_DX
 
 bool __cdecl
 Material_LoadPassVertexShader
-          (char **param_1,ushort *param_2,ShaderParameterSet *param_3,MaterialPass *param_4,
-          uint param_5,uint *param_6,MaterialShaderArgument *param_7)
+          (char **text,ushort *techFlags,ShaderParameterSet *paramSet,MaterialPass *pass,
+          uint argLimit,uint *argCount,MaterialShaderArgument *args)
 
 {
   bool bVar1;
-  uchar uVar2;
-  char *pcVar3;
-  MaterialVertexShader *pMVar4;
+  uchar shaderVersion_00;
+  char *shaderName_00;
+  MaterialVertexShader *pMVar2;
+  uchar shaderVersion;
+  ulong *program;
+  char *shaderName;
+  MaterialVertexShader *mtlShader;
   
-  memset((uchar *)param_3,'\0',0x308c);
-  bVar1 = Material_MatchToken(param_1,"vertexShader");
+  memset((uchar *)paramSet,'\0',0x308c);
+  bVar1 = Material_MatchToken(text,"vertexShader");
   if (bVar1) {
-    uVar2 = Material_ParseShaderVersion(param_1);
-    pcVar3 = Com_Parse(param_1);
-    pMVar4 = Material_RegisterVertexShader(pcVar3,uVar2);
-    if (pMVar4 == (MaterialVertexShader *)0x0) {
+    shaderVersion_00 = Material_ParseShaderVersion(text);
+    shaderName_00 = Com_Parse(text);
+    pMVar2 = Material_RegisterVertexShader(shaderName_00,shaderVersion_00);
+    if (pMVar2 == (MaterialVertexShader *)0x0) {
       bVar1 = false;
     }
     else {
-      param_4->vertexShader = pMVar4;
+      pass->vertexShader = pMVar2;
       bVar1 = Material_SetPassShaderArguments_DX
-                        (param_1,pMVar4->name,MTL_VERTEX_SHADER,(ulong *)(pMVar4 + 1),param_2,
-                         param_3,param_5,param_6,param_7);
+                        (text,pMVar2->name,MTL_VERTEX_SHADER,(ulong *)(pMVar2 + 1),techFlags,
+                         paramSet,argLimit,argCount,args);
     }
   }
   else {
@@ -5294,7 +5375,7 @@ Material_LoadPassVertexShader
 
 // 00AD4350  Material_LoadDeclTypes  (gfx_d3d/r_material_load_obj.cpp:8049)
 
-bool __cdecl Material_LoadDeclTypes(char **param_1,MaterialPass *param_2)
+bool __cdecl Material_LoadDeclTypes(char **text,MaterialPass *pass)
 
 {
   byte bVar1;
@@ -5308,7 +5389,7 @@ bool __cdecl Material_LoadDeclTypes(char **param_1,MaterialPass *param_2)
   byte *local_c;
   byte *local_8;
   
-  if ((param_2->vertexShader == (MaterialVertexShader *)0x0) &&
+  if ((pass->vertexShader == (MaterialVertexShader *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x1f7c,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -5316,7 +5397,7 @@ bool __cdecl Material_LoadDeclTypes(char **param_1,MaterialPass *param_2)
     return (bool)uVar4;
   }
   local_8 = (byte *)0xd8a878;
-  local_c = (byte *)Com_Parse(param_1);
+  local_c = (byte *)Com_Parse(text);
   do {
     bVar1 = *local_c;
     bVar3 = bVar1 < *local_8;
@@ -5336,7 +5417,7 @@ LAB_00ad43d8:
 LAB_00ad43e0:
   if (local_14 == 0) {
     do {
-      local_1c = (byte *)Com_Parse(param_1);
+      local_1c = (byte *)Com_Parse(text);
       local_20 = &s__;
       do {
         bVar1 = *local_20;
@@ -5368,29 +5449,33 @@ LAB_00ad4447:
 
 bool __cdecl
 Material_LoadPassPixelShader
-          (char **param_1,ushort *param_2,ShaderParameterSet *param_3,MaterialPass *param_4,
-          uint param_5,uint *param_6,MaterialShaderArgument *param_7)
+          (char **text,ushort *techFlags,ShaderParameterSet *paramSet,MaterialPass *pass,
+          uint argLimit,uint *argCount,MaterialShaderArgument *args)
 
 {
   bool bVar1;
-  uchar uVar2;
-  char *pcVar3;
-  MaterialPixelShader *pMVar4;
+  uchar shaderVersion_00;
+  char *shaderName_00;
+  MaterialPixelShader *pMVar2;
+  uchar shaderVersion;
+  ulong *program;
+  char *shaderName;
+  MaterialPixelShader *mtlShader;
   
-  memset((uchar *)param_3,'\0',0x308c);
-  bVar1 = Material_MatchToken(param_1,"pixelShader");
+  memset((uchar *)paramSet,'\0',0x308c);
+  bVar1 = Material_MatchToken(text,"pixelShader");
   if (bVar1) {
-    uVar2 = Material_ParseShaderVersion(param_1);
-    pcVar3 = Com_Parse(param_1);
-    pMVar4 = Material_RegisterPixelShader(pcVar3,uVar2);
-    if (pMVar4 == (MaterialPixelShader *)0x0) {
+    shaderVersion_00 = Material_ParseShaderVersion(text);
+    shaderName_00 = Com_Parse(text);
+    pMVar2 = Material_RegisterPixelShader(shaderName_00,shaderVersion_00);
+    if (pMVar2 == (MaterialPixelShader *)0x0) {
       bVar1 = false;
     }
     else {
-      (param_4->field2_0x8).pixelShader = pMVar4;
+      (pass->field2_0x8).pixelShader = pMVar2;
       bVar1 = Material_SetPassShaderArguments_DX
-                        (param_1,pMVar4->name,MTL_PIXEL_SHADER,(ulong *)(pMVar4 + 1),param_2,param_3
-                         ,param_5,param_6,param_7);
+                        (text,pMVar2->name,MTL_PIXEL_SHADER,(ulong *)(pMVar2 + 1),techFlags,paramSet
+                         ,argLimit,argCount,args);
     }
   }
   else {
@@ -5402,18 +5487,18 @@ Material_LoadPassPixelShader
 
 // 00AD4A90  Material_HasMatchingParameter  (gfx_d3d/r_material_load_obj.cpp:8181)
 
-bool __cdecl Material_HasMatchingParameter(uchar param_1,ShaderVaryingDef *param_2,uint param_3)
+bool __cdecl Material_HasMatchingParameter(uchar find,ShaderVaryingDef *paramTable,uint paramCount)
 
 {
-  uint local_8;
+  uint paramIndex;
   
-  local_8 = 0;
+  paramIndex = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (paramCount <= paramIndex) {
       return false;
     }
-    if (param_2[local_8].resourceDest == param_1) break;
-    local_8 = local_8 + 1;
+    if (paramTable[paramIndex].resourceDest == find) break;
+    paramIndex = paramIndex + 1;
   }
   return true;
 }
@@ -5423,16 +5508,16 @@ bool __cdecl Material_HasMatchingParameter(uchar param_1,ShaderVaryingDef *param
 
 bool __cdecl
 Material_HasMatchingParameter_BuggySdkWorkaround
-          (uchar param_1,ShaderVaryingDef *param_2,uint param_3)
+          (uchar find,ShaderVaryingDef *paramTable,uint paramCount)
 
 {
   bool bVar1;
   
-  if (param_1 == '\x02') {
-    bVar1 = Material_HasMatchingParameter('\x03',param_2,param_3);
+  if (find == '\x02') {
+    bVar1 = Material_HasMatchingParameter('\x03',paramTable,paramCount);
   }
-  else if (param_1 == '\x03') {
-    bVar1 = Material_HasMatchingParameter('\x02',param_2,param_3);
+  else if (find == '\x03') {
+    bVar1 = Material_HasMatchingParameter('\x02',paramTable,paramCount);
   }
   else {
     bVar1 = false;
@@ -5445,60 +5530,65 @@ Material_HasMatchingParameter_BuggySdkWorkaround
 
 bool __cdecl
 Material_ValidateShaderLinkage
-          (ShaderVaryingDef *param_1,uint param_2,ShaderVaryingDef *param_3,uint param_4)
+          (ShaderVaryingDef *vertexOutputs,uint vertexOutputCount,ShaderVaryingDef *pixelInputs,
+          uint pixelInputCount)
 
 {
   bool bVar1;
-  uint local_c;
-  bool local_5;
+  uint paramIndex;
+  bool isValid;
   
-  local_5 = true;
-  for (local_c = 0; local_c < param_4; local_c = local_c + 1) {
-    bVar1 = Material_HasMatchingParameter(param_3[local_c].resourceDest,param_1,param_2);
+  isValid = true;
+  for (paramIndex = 0; paramIndex < pixelInputCount; paramIndex = paramIndex + 1) {
+    bVar1 = Material_HasMatchingParameter
+                      (pixelInputs[paramIndex].resourceDest,vertexOutputs,vertexOutputCount);
     if ((!bVar1) &&
        (bVar1 = Material_HasMatchingParameter_BuggySdkWorkaround
-                          (param_3[local_c].resourceDest,param_1,param_2), !bVar1)) {
+                          (pixelInputs[paramIndex].resourceDest,vertexOutputs,vertexOutputCount),
+       !bVar1)) {
       Com_ScriptError(
                      "Pixel shader input \'%s\' doesn\'t have a corresponding vertex shader output.\n"
                      );
-      local_5 = false;
+      isValid = false;
     }
   }
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-    bVar1 = Material_HasMatchingParameter(param_1[local_c].resourceDest,param_3,param_4);
+  for (paramIndex = 0; paramIndex < vertexOutputCount; paramIndex = paramIndex + 1) {
+    bVar1 = Material_HasMatchingParameter
+                      (vertexOutputs[paramIndex].resourceDest,pixelInputs,pixelInputCount);
     if (!bVar1) {
       Material_HasMatchingParameter_BuggySdkWorkaround
-                (param_1[local_c].resourceDest,param_3,param_4);
+                (vertexOutputs[paramIndex].resourceDest,pixelInputs,pixelInputCount);
     }
   }
-  return local_5;
+  return isValid;
 }
 
 
 // 00AD4BD0  Material_GetArgUpdateFrequency  (gfx_d3d/r_material_load_obj.cpp:8262)
 
-MaterialUpdateFrequency __cdecl Material_GetArgUpdateFrequency(MaterialShaderArgument *param_1)
+MaterialUpdateFrequency __cdecl Material_GetArgUpdateFrequency(MaterialShaderArgument *arg)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
   MaterialUpdateFrequency MVar4;
+  MaterialUpdateFrequency updateFreq;
   
-  if ((param_1 == (MaterialShaderArgument *)0x0) &&
+  if ((arg == (MaterialShaderArgument *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2049,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     MVar4 = (*pcVar2)();
     return MVar4;
   }
-  uVar1 = param_1->type;
+  uVar1 = arg->type;
   if (uVar1 == 3) {
     MVar4 = *(MaterialUpdateFrequency *)
-             (&s_codeConstUpdateFreq + (uint)(param_1->u).codeConst.index * 4);
+             (&s_codeConstUpdateFreq + (uint)(arg->u).codeConst.index * 4);
   }
   else if (uVar1 == 4) {
-    MVar4 = s_codeSamplerUpdateFreq[(param_1->u).codeSampler];
+    MVar4 = s_codeSamplerUpdateFreq[(arg->u).codeSampler];
     if ((((MVar4 != MTL_UPDATE_PER_OBJECT) && (MVar4 != MTL_UPDATE_RARELY)) &&
         (MVar4 != MTL_UPDATE_CUSTOM)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
@@ -5510,7 +5600,7 @@ MaterialUpdateFrequency __cdecl Material_GetArgUpdateFrequency(MaterialShaderArg
   }
   else if (uVar1 == 5) {
     MVar4 = *(MaterialUpdateFrequency *)
-             (&s_codeConstUpdateFreq + (uint)(param_1->u).codeConst.index * 4);
+             (&s_codeConstUpdateFreq + (uint)(arg->u).codeConst.index * 4);
     if ((MVar4 != MTL_UPDATE_RARELY) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x2052,0,"%s\n\t(arg->u.codeConst.index) = %i"), !bVar3)) {
@@ -5528,27 +5618,26 @@ MaterialUpdateFrequency __cdecl Material_GetArgUpdateFrequency(MaterialShaderArg
 
 // 00AD4B20  Material_CompareShaderArgumentsForRuntime  (gfx_d3d/r_material_load_obj.cpp:8288)
 
-int __cdecl Material_CompareShaderArgumentsForRuntime(void *param_1,void *param_2)
+int __cdecl Material_CompareShaderArgumentsForRuntime(void *e0,void *e1)
 
 {
   MaterialUpdateFrequency MVar1;
   MaterialUpdateFrequency MVar2;
   int iVar3;
   
-  MVar1 = Material_GetArgUpdateFrequency(param_1);
-  MVar2 = Material_GetArgUpdateFrequency(param_2);
+  MVar1 = Material_GetArgUpdateFrequency(e0);
+  MVar2 = Material_GetArgUpdateFrequency(e1);
   if (MVar1 == MVar2) {
-    if (*(short *)param_1 == *(short *)param_2) {
-      if (((*(short *)param_1 == 0) || (*(short *)param_1 == 6)) || (*(short *)param_1 == 2)) {
-        iVar3 = (-(uint)(*(uint *)((int)param_1 + 4) < *(uint *)((int)param_2 + 4)) & 0xfffffffe) +
-                1;
+    if (*(short *)e0 == *(short *)e1) {
+      if (((*(short *)e0 == 0) || (*(short *)e0 == 6)) || (*(short *)e0 == 2)) {
+        iVar3 = (-(uint)(*(uint *)((int)e0 + 4) < *(uint *)((int)e1 + 4)) & 0xfffffffe) + 1;
       }
       else {
-        iVar3 = (uint)*(ushort *)((int)param_1 + 2) - (uint)*(ushort *)((int)param_2 + 2);
+        iVar3 = (uint)*(ushort *)((int)e0 + 2) - (uint)*(ushort *)((int)e1 + 2);
       }
     }
     else {
-      iVar3 = (uint)*(ushort *)param_1 - (uint)*(ushort *)param_2;
+      iVar3 = (uint)*(ushort *)e0 - (uint)*(ushort *)e1;
     }
   }
   else {
@@ -5562,23 +5651,23 @@ int __cdecl Material_CompareShaderArgumentsForRuntime(void *param_1,void *param_
 
 uchar __cdecl
 Material_CountArgsWithUpdateFrequency
-          (MaterialUpdateFrequency param_1,MaterialShaderArgument *param_2,uint param_3,
-          uint *param_4)
+          (MaterialUpdateFrequency updateFreq,MaterialShaderArgument *args,uint argCount,
+          uint *firstArg)
 
 {
   uint uVar1;
   uint uVar2;
   MaterialUpdateFrequency MVar3;
-  uint local_8;
+  uint matchCount;
   
-  uVar1 = *param_4;
-  uVar2 = *param_4;
-  for (local_8 = 0; local_8 < param_3 - uVar2; local_8 = local_8 + 1) {
-    MVar3 = Material_GetArgUpdateFrequency(param_2 + uVar1 + local_8);
-    if (MVar3 != param_1) break;
+  uVar1 = *firstArg;
+  uVar2 = *firstArg;
+  for (matchCount = 0; matchCount < argCount - uVar2; matchCount = matchCount + 1) {
+    MVar3 = Material_GetArgUpdateFrequency(args + uVar1 + matchCount);
+    if (MVar3 != updateFreq) break;
   }
-  *param_4 = *param_4 + local_8;
-  return (uchar)local_8;
+  *firstArg = *firstArg + matchCount;
+  return (uchar)matchCount;
 }
 
 
@@ -5587,7 +5676,7 @@ Material_CountArgsWithUpdateFrequency
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 bool __cdecl
-Material_LoadPass(char **param_1,ushort *param_2,MaterialPass *param_3,MaterialStateMap **param_4)
+Material_LoadPass(char **text,ushort *techFlags,MaterialPass *pass,MaterialStateMap **stateMap)
 
 {
   code *pcVar1;
@@ -5600,163 +5689,161 @@ Material_LoadPass(char **param_1,ushort *param_2,MaterialPass *param_3,MaterialS
   int local_6564;
   byte *local_655c;
   byte *local_6558;
-  MaterialShaderArgument *local_6554;
-  int local_654c;
-  ShaderParameterSet local_6544;
-  undefined1 local_34ad;
-  ShaderParameterSet local_34ac;
-  uint local_418;
-  uint local_414;
-  uint local_410;
-  uint local_40c;
-  MaterialShaderArgument *local_408;
-  MaterialShaderArgument local_404 [127];
+  MaterialShaderArgument *customArg;
+  bool hasPixelShader;
+  int argIndex;
+  uint customCount;
+  ShaderParameterSet pixelParamSet;
+  bool success;
+  ShaderParameterSet vertexParamSet;
+  uint argCount;
+  uint firstArg;
+  uint customArgIndex;
+  uint customSamplerIndex;
+  MaterialShaderArgument *arg;
+  MaterialShaderArgument args [127];
   undefined4 uStack_8;
   
   uStack_8 = 0xaccd9d;
-  local_34ad = 1;
-  param_3->vertexDecl = (MaterialVertexDeclaration *)0x0;
-  param_3->vertexShader = (MaterialVertexShader *)0x0;
-  (param_3->field2_0x8).pixelShader = (MaterialPixelShader *)0x0;
-  param_3->perPrimArgCount = '\0';
-  param_3->perObjArgCount = '\0';
-  param_3->stableArgCount = '\0';
-  param_3->customSamplerFlags = '\0';
-  (param_3->field7_0x10).localArgs = (MaterialShaderArgument *)0x0;
-  bVar2 = Material_LoadPassStateMap(param_1,param_4);
+  success = true;
+  pass->vertexDecl = (MaterialVertexDeclaration *)0x0;
+  pass->vertexShader = (MaterialVertexShader *)0x0;
+  (pass->field2_0x8).pixelShader = (MaterialPixelShader *)0x0;
+  pass->perPrimArgCount = '\0';
+  pass->perObjArgCount = '\0';
+  pass->stableArgCount = '\0';
+  pass->customSamplerFlags = '\0';
+  (pass->field7_0x10).localArgs = (MaterialShaderArgument *)0x0;
+  bVar2 = Material_LoadPassStateMap(text,stateMap);
   if (bVar2) {
-    local_418 = 0;
-    bVar2 = Material_LoadPassVertexShader
-                      (param_1,param_2,&local_34ac,param_3,0x80,&local_418,local_404);
+    argCount = 0;
+    bVar2 = Material_LoadPassVertexShader(text,techFlags,&vertexParamSet,pass,0x80,&argCount,args);
     if (bVar2) {
-      if (local_418 == 0) {
+      if (argCount == 0) {
         Com_ScriptError(
                        "material has no vertex arguments; it should at least have a transform matrix.\n"
                        );
-        local_34ad = 0;
+        success = false;
       }
       else {
-        bVar2 = Material_LoadPassPixelShader
-                          (param_1,param_2,&local_6544,param_3,0x80,&local_418,local_404);
+        bVar2 = Material_LoadPassPixelShader(text,techFlags,&pixelParamSet,pass,0x80,&argCount,args)
+        ;
         if (bVar2) {
-          qsort(local_404,local_418,8,Material_CompareShaderArgumentsForRuntime);
-          local_414 = 0;
+          qsort(args,argCount,8,Material_CompareShaderArgumentsForRuntime);
+          firstArg = 0;
+          uVar3 = Material_CountArgsWithUpdateFrequency(MTL_UPDATE_PER_PRIM,args,argCount,&firstArg)
+          ;
+          pass->perPrimArgCount = uVar3;
           uVar3 = Material_CountArgsWithUpdateFrequency
-                            (MTL_UPDATE_PER_PRIM,local_404,local_418,&local_414);
-          param_3->perPrimArgCount = uVar3;
-          uVar3 = Material_CountArgsWithUpdateFrequency
-                            (MTL_UPDATE_PER_OBJECT,local_404,local_418,&local_414);
-          param_3->perObjArgCount = uVar3;
-          uVar3 = Material_CountArgsWithUpdateFrequency
-                            (MTL_UPDATE_RARELY,local_404,local_418,&local_414);
-          param_3->stableArgCount = uVar3;
-          local_6554 = local_404 + local_414;
-          bVar4 = Material_CountArgsWithUpdateFrequency
-                            (MTL_UPDATE_CUSTOM,local_404,local_418,&local_414);
-          param_3->customSamplerFlags = '\0';
-          for (local_410 = 0; local_410 < bVar4; local_410 = local_410 + 1) {
-            if ((local_6554->type != 4) &&
+                            (MTL_UPDATE_PER_OBJECT,args,argCount,&firstArg);
+          pass->perObjArgCount = uVar3;
+          uVar3 = Material_CountArgsWithUpdateFrequency(MTL_UPDATE_RARELY,args,argCount,&firstArg);
+          pass->stableArgCount = uVar3;
+          customArg = args + firstArg;
+          bVar4 = Material_CountArgsWithUpdateFrequency(MTL_UPDATE_CUSTOM,args,argCount,&firstArg);
+          pass->customSamplerFlags = '\0';
+          for (customArgIndex = 0; customArgIndex < bVar4; customArgIndex = customArgIndex + 1) {
+            if ((customArg->type != 4) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x20f6,0,"%s\n\t(customArg->type) = %i"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            if ((local_6554->dest == 0xff) &&
+            if ((customArg->dest == 0xff) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x20f7,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            for (local_40c = 0; local_40c < 4; local_40c = local_40c + 1) {
-              if ((local_6554->u).literalConst == (float *)g_customSamplerSrc[local_40c]) {
-                if ((((uint)param_3->customSamplerFlags & 1 << ((byte)local_40c & 0x1f)) != 0) &&
-                   (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
-                                             ,0x20fe,0,"%s"), !bVar2)) {
+            for (customSamplerIndex = 0; customSamplerIndex < 4;
+                customSamplerIndex = customSamplerIndex + 1) {
+              if ((customArg->u).literalConst == (float *)g_customSamplerSrc[customSamplerIndex]) {
+                if ((((uint)pass->customSamplerFlags & 1 << ((byte)customSamplerIndex & 0x1f)) != 0)
+                   && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
+                                                ,0x20fe,0,"%s"), !bVar2)) {
                   pcVar1 = (code *)swi(3);
                   uVar5 = (*pcVar1)();
                   return (bool)uVar5;
                 }
-                if (((uint)local_6554->dest != g_customSamplerDest[local_40c]) &&
+                if (((uint)customArg->dest != g_customSamplerDest[customSamplerIndex]) &&
                    (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                              ,0x20ff,0,"%s"), !bVar2)) {
                   pcVar1 = (code *)swi(3);
                   uVar5 = (*pcVar1)();
                   return (bool)uVar5;
                 }
-                param_3->customSamplerFlags =
-                     param_3->customSamplerFlags | (byte)(1 << ((byte)local_40c & 0x1f));
+                pass->customSamplerFlags =
+                     pass->customSamplerFlags | (byte)(1 << ((byte)customSamplerIndex & 0x1f));
                 break;
               }
             }
-            if ((local_40c == 4) &&
+            if ((customSamplerIndex == 4) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x2104,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            local_6554 = local_6554 + 1;
+            customArg = customArg + 1;
           }
-          local_418 = (uint)param_3->perPrimArgCount + (uint)param_3->perObjArgCount +
-                      (uint)param_3->stableArgCount;
-          pMVar6 = Material_Alloc(local_418 * 8);
-          (param_3->field7_0x10).localArgs = pMVar6;
-          memcpy((uchar *)(param_3->field7_0x10).localArgs,(uchar *)local_404,local_418 << 3);
-          local_408 = (param_3->field7_0x10).localArgs;
-          for (local_654c = 0; local_654c < (int)(uint)param_3->perPrimArgCount;
-              local_654c = local_654c + 1) {
-            if ((local_408->type < 3) &&
+          argCount = (uint)pass->perPrimArgCount + (uint)pass->perObjArgCount +
+                     (uint)pass->stableArgCount;
+          pMVar6 = Material_Alloc(argCount * 8);
+          (pass->field7_0x10).localArgs = pMVar6;
+          memcpy((uchar *)(pass->field7_0x10).localArgs,(uchar *)args,argCount << 3);
+          arg = (pass->field7_0x10).localArgs;
+          for (argIndex = 0; argIndex < (int)(uint)pass->perPrimArgCount; argIndex = argIndex + 1) {
+            if ((arg->type < 3) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x2110,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            if ((5 < local_408->type) &&
+            if ((5 < arg->type) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x2111,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            local_408 = local_408 + 1;
+            arg = arg + 1;
           }
-          local_408 = (param_3->field7_0x10).localArgs + param_3->perPrimArgCount;
-          for (local_654c = 0; local_654c < (int)(uint)param_3->perObjArgCount;
-              local_654c = local_654c + 1) {
-            if ((local_408->type < 3) &&
+          arg = (pass->field7_0x10).localArgs + pass->perPrimArgCount;
+          for (argIndex = 0; argIndex < (int)(uint)pass->perObjArgCount; argIndex = argIndex + 1) {
+            if ((arg->type < 3) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x2117,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            if ((5 < local_408->type) &&
+            if ((5 < arg->type) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                          ,0x2118,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               uVar5 = (*pcVar1)();
               return (bool)uVar5;
             }
-            local_408 = local_408 + 1;
+            arg = arg + 1;
           }
           bVar2 = Material_ValidateShaderLinkage
-                            (local_34ac.outputs,local_34ac.outputCount,local_6544.varyingInputs,
-                             local_6544.varyingInputCount);
+                            (vertexParamSet.outputs,vertexParamSet.outputCount,
+                             pixelParamSet.varyingInputs,pixelParamSet.varyingInputCount);
           if (bVar2) {
-            local_34ad = Material_LoadPassVertexDecl
-                                   (param_1,local_34ac.varyingInputs,local_34ac.varyingInputCount,
-                                    param_3);
-            GamerProfile_WriteSettings((int)&local_34ac);
-            GamerProfile_WriteSettings((int)&local_6544);
-            Material_LoadDeclTypes(param_1,param_3);
-            strstr((uchar *)*param_1,(uchar *)"vertexDef");
+            success = Material_LoadPassVertexDecl
+                                (text,vertexParamSet.varyingInputs,vertexParamSet.varyingInputCount,
+                                 pass);
+            GamerProfile_WriteSettings((int)&vertexParamSet);
+            GamerProfile_WriteSettings((int)&pixelParamSet);
+            Material_LoadDeclTypes(text,pass);
+            strstr((uchar *)*text,(uchar *)"vertexDef");
             local_6564 = extraout_EAX;
 joined_r0x00acd3cf:
             if (local_6564 != 0) {
-              local_6558 = (byte *)Com_Parse(param_1);
+              local_6558 = (byte *)Com_Parse(text);
               local_655c = &s__;
               do {
                 bVar4 = *local_655c;
@@ -5778,27 +5865,27 @@ LAB_00acd44f:
             }
           }
           else {
-            GamerProfile_WriteSettings((int)&local_34ac);
-            GamerProfile_WriteSettings((int)&local_6544);
-            local_34ad = 0;
+            GamerProfile_WriteSettings((int)&vertexParamSet);
+            GamerProfile_WriteSettings((int)&pixelParamSet);
+            success = false;
           }
         }
         else {
-          GamerProfile_WriteSettings((int)&local_34ac);
-          GamerProfile_WriteSettings((int)&local_6544);
-          local_34ad = 0;
+          GamerProfile_WriteSettings((int)&vertexParamSet);
+          GamerProfile_WriteSettings((int)&pixelParamSet);
+          success = false;
         }
       }
     }
     else {
-      GamerProfile_WriteSettings((int)&local_34ac);
-      local_34ad = 0;
+      GamerProfile_WriteSettings((int)&vertexParamSet);
+      success = false;
     }
   }
   else {
-    local_34ad = 0;
+    success = false;
   }
-  return (bool)local_34ad;
+  return success;
 }
 
 
@@ -5806,7 +5893,7 @@ LAB_00acd44f:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MaterialTechnique * __cdecl Material_LoadTechnique(char *param_1)
+MaterialTechnique * __cdecl Material_LoadTechnique(char *name)
 
 {
   char cVar1;
@@ -5820,85 +5907,87 @@ MaterialTechnique * __cdecl Material_LoadTechnique(char *param_1)
   byte *local_1bc;
   byte *local_1b8;
   char *local_1a8;
-  MaterialStateMap *local_19c [4];
-  char local_18c [260];
+  MaterialTechnique *technique;
+  uint stateMapSize;
+  MaterialStateMap *stateMap [4];
+  char filename [260];
   uint local_88;
-  MaterialVertexDeclaration *local_84;
-  char *local_80;
-  ushort local_7c [2];
-  int local_78;
-  char *local_74;
-  char local_6d;
-  MaterialPass local_6c [4];
-  char *local_1c;
-  MaterialPass *local_18;
-  ushort local_14;
-  char *local_10;
-  char *local_c;
-  int local_8;
+  MaterialVertexDeclaration *vertexDecl;
+  uint nameSize;
+  ushort techFlags;
+  int fileSize;
+  void *file;
+  bool error;
+  MaterialPass passes [4];
+  char *token;
+  MaterialStateMap **stateMapForPass;
+  ushort passCount;
+  char *formatString;
+  char *text;
+  int passIndex;
   
   local_88 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((!gIsPIMPEnabled) || (gIsSW2Material)) {
-    local_10 = "techniques/%s.tech";
+    formatString = "techniques/%s.tech";
   }
   else {
-    local_10 = "pimp/techniques/%s.tech";
+    formatString = "pimp/techniques/%s.tech";
   }
-  Com_sprintf(local_18c,0x100,local_10);
-  local_78 = FS_ReadFile(local_18c,&local_74);
-  if (local_78 < 0) {
+  Com_sprintf(filename,0x100,formatString);
+  fileSize = FS_ReadFile(filename,&file);
+  if (fileSize < 0) {
     Com_ScriptError("Couldn\'t open technique \'%s\'\n");
     pMVar4 = (MaterialTechnique *)0x0;
   }
   else {
-    local_c = local_74;
-    Com_BeginParseSession(local_18c);
+    text = file;
+    Com_BeginParseSession(filename);
     Com_SetScriptWarningPrefix("^1ERROR: ");
     Com_SetSpaceDelimited(0);
-    local_6d = '\0';
-    local_7c[0] = 0;
-    local_14 = 0;
+    error = false;
+    techFlags = 0;
+    passCount = 0;
     while( true ) {
-      if ((3 < local_14) || (local_1c = Com_Parse(&local_c), *local_1c == '\0')) goto LAB_00accabf;
-      if (*local_1c != '{') break;
-      bVar7 = Material_LoadPass(&local_c,local_7c,local_6c + local_14,local_19c + local_14);
+      if ((3 < passCount) || (token = Com_Parse(&text), *token == '\0')) goto LAB_00accabf;
+      if (*token != '{') break;
+      bVar7 = Material_LoadPass(&text,&techFlags,passes + passCount,stateMap + passCount);
       if (!bVar7) {
         Com_ScriptError("Error loading pass for dx9 technique \'%s\'\n");
-        local_6d = '\x01';
+        error = true;
         goto LAB_00accabf;
       }
-      bVar7 = Material_MatchToken(&local_c,"}");
+      bVar7 = Material_MatchToken(&text,"}");
       if (!bVar7) {
-        local_6d = '\x01';
+        error = true;
         goto LAB_00accabf;
       }
-      local_14 = local_14 + 1;
+      passCount = passCount + 1;
     }
     Com_ScriptError("expected \'{\' but found \'%s\'\n");
-    local_6d = '\x01';
+    error = true;
 LAB_00accabf:
     Com_EndParseSession();
-    FS_FreeFile(local_74);
-    if (local_6d == '\0') {
-      if (local_14 == 0) {
+    FS_FreeFile(file);
+    if (error == false) {
+      if (passCount == 0) {
         Com_ScriptError(
                        "Technique \'%s\' has no passes.  The technique should be left blank in the techniqueset instead.\n"
                        );
         pMVar4 = (MaterialTechnique *)0x0;
       }
       else {
-        uVar6 = (uint)local_14;
-        local_1a8 = param_1;
+        uVar6 = (uint)passCount;
+        local_1a8 = name;
         do {
           cVar1 = *local_1a8;
           local_1a8 = local_1a8 + 1;
         } while (cVar1 != '\0');
-        local_80 = local_1a8 + (1 - (int)(param_1 + 1));
-        pMVar4 = Material_Alloc((int)(local_80 + (uint)local_14 * 0x14 + 8 + uVar6 * 4));
-        local_18 = pMVar4->passArray + local_14;
-        pMVar4->name = (char *)(&local_18->vertexDecl + local_14);
-        memcpy((uchar *)pMVar4->name,(uchar *)param_1,(ulong)local_80);
-        pMVar4->flags = local_7c[0];
+        nameSize = (uint)(local_1a8 + (1 - (int)(name + 1)));
+        pMVar4 = Material_Alloc((int)(nameSize + (uint)passCount * 0x14 + 8 + uVar6 * 4));
+        stateMapForPass = (MaterialStateMap **)(pMVar4->passArray + passCount);
+        pMVar4->name = (char *)(&((MaterialPass *)stateMapForPass)->vertexDecl + passCount);
+        memcpy((uchar *)pMVar4->name,(uchar *)name,nameSize);
+        pMVar4->flags = techFlags;
         local_1b8 = (byte *)0xd88e70;
         local_1bc = (byte *)pMVar4->name;
         do {
@@ -5923,23 +6012,23 @@ LAB_00accc51:
            (iVar5 = strncmp(pMVar4->name,"pimp_technique_layer_zprepass_",0x1e), iVar5 == 0)) {
           pMVar4->flags = pMVar4->flags | 4;
         }
-        for (local_8 = 0; local_8 < (int)(uint)local_14; local_8 = local_8 + 1) {
-          local_84 = local_6c[local_8].vertexDecl;
-          if ((local_84 == (MaterialVertexDeclaration *)0x0) &&
+        for (passIndex = 0; passIndex < (int)(uint)passCount; passIndex = passIndex + 1) {
+          vertexDecl = passes[passIndex].vertexDecl;
+          if ((vertexDecl == (MaterialVertexDeclaration *)0x0) &&
              (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                        ,0x219c,0,"%s"), !bVar7)) {
             pcVar3 = (code *)swi(3);
             pMVar4 = (MaterialTechnique *)(*pcVar3)();
             return pMVar4;
           }
-          if (local_84->hasOptionalSource != false) {
+          if (vertexDecl->hasOptionalSource != false) {
             pMVar4->flags = pMVar4->flags | 8;
             break;
           }
         }
-        pMVar4->passCount = local_14;
-        memcpy((uchar *)pMVar4->passArray,(uchar *)local_6c,(uint)local_14 * 0x14);
-        memcpy((uchar *)local_18,(uchar *)local_19c,uVar6 * 4);
+        pMVar4->passCount = passCount;
+        memcpy((uchar *)pMVar4->passArray,(uchar *)passes,(uint)passCount * 0x14);
+        memcpy((uchar *)stateMapForPass,(uchar *)stateMap,uVar6 * 4);
       }
     }
     else {
@@ -5952,59 +6041,62 @@ LAB_00accc51:
 
 // 00AD8160  Material_RegisterWaterImage  (gfx_d3d/r_material_load_obj.cpp:8625)
 
-water_t * __cdecl Material_RegisterWaterImage(MaterialWaterDef *param_1)
+water_t * __cdecl Material_RegisterWaterImage(MaterialWaterDef *water)
 
 {
   ushort uVar1;
   water_t *pwVar2;
   int local_5c;
   int local_58;
-  water_t local_4c;
+  water_t setup;
   
-  uVar1 = truncate_cast<unsigned_short>(param_1->textureWidth);
-  local_4c.Lx = param_1->horizontalWorldLength;
-  local_4c.Lz = param_1->verticalWorldLength;
-  local_4c.gravity = 800.0;
-  local_4c.windvel = param_1->windSpeed;
-  local_4c.winddir[0] = param_1->windDirection[0];
-  local_4c.winddir[1] = param_1->windDirection[1];
-  local_4c.amplitude = param_1->amplitude;
-  local_4c.image = (GfxImage *)0x0;
+  uVar1 = truncate_cast<unsigned_short>(water->textureWidth);
+  setup.Lx = water->horizontalWorldLength;
+  setup.Lz = water->verticalWorldLength;
+  setup.gravity = 800.0;
+  setup.windvel = water->windSpeed;
+  setup.winddir[0] = water->windDirection[0];
+  setup.winddir[1] = water->windDirection[1];
+  setup.amplitude = water->amplitude;
+  setup.image = (GfxImage *)0x0;
   local_58 = (int)(uint)uVar1 >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
   if (local_58 < 4) {
     local_58 = 4;
   }
-  local_4c.M = local_58;
+  setup.M = local_58;
   local_5c = (int)(uint)uVar1 >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
   if (local_5c < 4) {
     local_5c = 4;
   }
-  local_4c.N = local_5c;
-  pwVar2 = R_LoadWaterSetup(&local_4c);
+  setup.N = local_5c;
+  pwVar2 = R_LoadWaterSetup(&setup);
   return pwVar2;
 }
 
 
 // 00AD87B0  Material_RegisterImage  (gfx_d3d/r_material_load_obj.cpp:8648)
 
-bool __cdecl Material_RegisterImage(MaterialRaw *param_1,int param_2,uchar param_3,int param_4)
+bool __cdecl
+Material_RegisterImage(MaterialRaw *material,int imageNameOffset,uchar semantic,int imageTrack)
 
 {
   GfxImage *pGVar1;
+  char *imageName;
   
-  pGVar1 = Image_Register((char *)((int)param_1->refStateBits + param_2 + -0x28),param_3,param_4);
+  pGVar1 = Image_Register((char *)((int)material->refStateBits + imageNameOffset + -0x28),semantic,
+                          imageTrack);
   return pGVar1 != (GfxImage *)0x0;
 }
 
 
 // 00AD87E0  R_IsWorldMaterialType  (gfx_d3d/r_material_load_obj.cpp:8656)
 
-int __cdecl R_IsWorldMaterialType(uint param_1)
+int __cdecl R_IsWorldMaterialType(uint materialType)
 
 {
   undefined4 local_8;
   
-  if ((param_1 == 3) || (param_1 == 4)) {
+  if ((materialType == 3) || (materialType == 4)) {
     local_8 = 1;
   }
   else {
@@ -6018,7 +6110,7 @@ int __cdecl R_IsWorldMaterialType(uint param_1)
 
 bool __cdecl
 Material_FinishLoadingTexdef
-          (MaterialRaw *param_1,MaterialTextureDefRaw *param_2,uint param_3,int param_4)
+          (MaterialRaw *material,MaterialTextureDefRaw *texdef,uint materialType,int imageTrack)
 
 {
   code *pcVar1;
@@ -6026,8 +6118,9 @@ Material_FinishLoadingTexdef
   undefined1 uVar3;
   int iVar4;
   water_t *pwVar5;
+  MaterialWaterDef *water;
   
-  if (param_2 == (MaterialTextureDefRaw *)0x0) {
+  if (texdef == (MaterialTextureDefRaw *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x21d8,0,"%s");
     if (!bVar2) {
@@ -6036,26 +6129,27 @@ Material_FinishLoadingTexdef
       return (bool)uVar3;
     }
   }
-  if ((param_1->info).sortKey == '\x04') {
-    iVar4 = R_IsWorldMaterialType(param_3);
-    if (((iVar4 != 0) && ((param_2->samplerState & 0x18) == 8)) &&
-       ((param_2->semantic == '\x02' ||
-        ((param_2->semantic == '\x05' || (param_2->semantic == '\b')))))) {
-      param_2->samplerState = param_2->samplerState & 0xe7;
-      param_2->samplerState = param_2->samplerState | 0x10;
+  if ((material->info).sortKey == '\x04') {
+    iVar4 = R_IsWorldMaterialType(materialType);
+    if (((iVar4 != 0) && ((texdef->samplerState & 0x18) == 8)) &&
+       ((texdef->semantic == '\x02' || ((texdef->semantic == '\x05' || (texdef->semantic == '\b'))))
+       )) {
+      texdef->samplerState = texdef->samplerState & 0xe7;
+      texdef->samplerState = texdef->samplerState | 0x10;
     }
   }
-  if (param_2->semantic == '\v') {
+  if (texdef->semantic == '\v') {
     pwVar5 = Material_RegisterWaterImage
                        ((MaterialWaterDef *)
-                        ((int)param_1->refStateBits + ((param_2->u).imageNameOffset - 0x28)));
+                        ((int)material->refStateBits + ((texdef->u).imageNameOffset - 0x28)));
     bVar2 = pwVar5 != (water_t *)0x0;
   }
-  else if (param_2->semantic == '\x1c') {
+  else if (texdef->semantic == '\x1c') {
     bVar2 = true;
   }
   else {
-    bVar2 = Material_RegisterImage(param_1,(param_2->u).imageNameOffset,param_2->semantic,param_4);
+    bVar2 = Material_RegisterImage(material,(texdef->u).imageNameOffset,texdef->semantic,imageTrack)
+    ;
   }
   return bVar2;
 }
@@ -6063,21 +6157,22 @@ Material_FinishLoadingTexdef
 
 // 00ACC790  Material_RegisterTechnique  (gfx_d3d/r_material_load_obj.cpp:8710)
 
-MaterialTechnique * __cdecl Material_RegisterTechnique(char *param_1)
+MaterialTechnique * __cdecl Material_RegisterTechnique(char *name)
 
 {
-  MaterialTechnique *pMVar1;
+  MaterialTechnique *technique_00;
+  MaterialTechnique *technique;
   
-  pMVar1 = Material_FindTechnique(param_1);
-  if (pMVar1 == (MaterialTechnique *)0x0) {
+  technique_00 = Material_FindTechnique(name);
+  if (technique_00 == (MaterialTechnique *)0x0) {
     ProfLoad_Begin("Load technique");
-    pMVar1 = Material_LoadTechnique(param_1);
+    technique_00 = Material_LoadTechnique(name);
     ProfLoad_End();
-    if (pMVar1 != (MaterialTechnique *)0x0) {
-      Material_SetTechnique(param_1,pMVar1);
+    if (technique_00 != (MaterialTechnique *)0x0) {
+      Material_SetTechnique(name,technique_00);
     }
   }
-  return pMVar1;
+  return technique_00;
 }
 
 
@@ -6086,7 +6181,7 @@ MaterialTechnique * __cdecl Material_RegisterTechnique(char *param_1)
 /* WARNING: Heritage AFTER dead removal. Example location: s0xfffffff4 : 0x00ad4d78 */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-bool __cdecl Material_IgnoreTechnique(char *param_1)
+bool __cdecl Material_IgnoreTechnique(char *name)
 
 {
   byte bVar1;
@@ -6094,6 +6189,7 @@ bool __cdecl Material_IgnoreTechnique(char *param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
+  int techniqueIndex;
   
   bVar2 = false;
   do {
@@ -6101,7 +6197,7 @@ bool __cdecl Material_IgnoreTechnique(char *param_1)
       return false;
     }
     local_10 = (byte *)0xd8aa2c;
-    local_14 = (byte *)param_1;
+    local_14 = (byte *)name;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -6129,7 +6225,7 @@ LAB_00ad4dca:
 
 // 00AD4DF0  Material_TechniqueTypeForName  (gfx_d3d/r_material_load_obj.cpp:8763)
 
-uchar __cdecl Material_TechniqueTypeForName(char *param_1)
+uchar __cdecl Material_TechniqueTypeForName(char *name)
 
 {
   byte bVar1;
@@ -6137,146 +6233,146 @@ uchar __cdecl Material_TechniqueTypeForName(char *param_1)
   int local_224;
   byte *local_21c;
   byte *local_218;
-  char *local_214 [131];
-  uint local_8;
+  char *techniqueNames [131];
+  int techniqueIndex;
   
-  local_214[0] = "\"depth prepass\"";
-  local_214[1] = "\"build floatz\"";
-  local_214[2] = "\"build shadowmap depth\"";
-  local_214[3] = "\"build shadowmap color\"";
-  local_214[4] = "\"unlit\"";
-  local_214[5] = "\"emissive\"";
-  local_214[6] = "\"emissive shadow\"";
-  local_214[7] = "\"emissive nvintz\"";
-  local_214[8] = "\"emissive shadow nvintz\"";
-  local_214[9] = "\"emissive reflected\"";
-  local_214[10] = "\"lit\"";
-  local_214[0xb] = "\"lit sun\"";
-  local_214[0xc] = "\"lit sun shadow\"";
-  local_214[0xd] = "\"lit spot\"";
-  local_214[0xe] = "\"lit spot shadow\"";
-  local_214[0xf] = "\"lit omni\"";
-  local_214[0x10] = "\"lit omni shadow\"";
-  local_214[0x11] = "\"lit dlight\"";
-  local_214[0x12] = "\"lit sun dlight\"";
-  local_214[0x13] = "\"lit sun shadow dlight\"";
-  local_214[0x14] = "\"lit spot dlight\"";
-  local_214[0x15] = "\"lit spot shadow dlight\"";
-  local_214[0x16] = "\"lit omni dlight\"";
-  local_214[0x17] = "\"lit omni shadow dlight\"";
-  local_214[0x18] = "\"lit glight\"";
-  local_214[0x19] = "\"lit sun glight\"";
-  local_214[0x1a] = "\"lit sun shadow glight\"";
-  local_214[0x1b] = "\"lit spot glight\"";
-  local_214[0x1c] = "\"lit spot shadow glight\"";
-  local_214[0x1d] = "\"lit omni glight\"";
-  local_214[0x1e] = "\"lit omni shadow glight\"";
-  local_214[0x1f] = "\"lit dlight glight\"";
-  local_214[0x20] = "\"lit sun dlight glight\"";
-  local_214[0x21] = "\"lit sun shadow dlight glight\"";
-  local_214[0x22] = "\"lit spot dlight glight\"";
-  local_214[0x23] = "\"lit spot shadow dlight glight\"";
-  local_214[0x24] = "\"lit omni dlight glight\"";
-  local_214[0x25] = "\"lit omni shadow dlight glight\"";
-  local_214[0x26] = "\"lit alpha\"";
-  local_214[0x27] = "\"lit sun alpha\"";
-  local_214[0x28] = "\"lit sun shadow alpha\"";
-  local_214[0x29] = "\"lit spot alpha\"";
-  local_214[0x2a] = "\"lit spot shadow alpha\"";
-  local_214[0x2b] = "\"lit omni alpha\"";
-  local_214[0x2c] = "\"lit omni shadow alpha\"";
-  local_214[0x2d] = "\"lit remap\"";
-  local_214[0x2e] = "\"lit sun remap\"";
-  local_214[0x2f] = "\"lit sun shadow remap\"";
-  local_214[0x30] = "\"lit spot remap\"";
-  local_214[0x31] = "\"lit spot shadow remap\"";
-  local_214[0x32] = "\"lit omni remap\"";
-  local_214[0x33] = "\"lit omni shadow remap\"";
-  local_214[0x34] = "\"lit fade\"";
-  local_214[0x35] = "\"lit sun fade\"";
-  local_214[0x36] = "\"lit sun shadow fade\"";
-  local_214[0x37] = "\"lit spot fade\"";
-  local_214[0x38] = "\"lit spot shadow fade\"";
-  local_214[0x39] = "\"lit omni fade\"";
-  local_214[0x3a] = "\"lit omni shadow fade\"";
-  local_214[0x3b] = "\"lit charred\"";
-  local_214[0x3c] = "\"lit fade charred\"";
-  local_214[0x3d] = "\"lit sun charred\"";
-  local_214[0x3e] = "\"lit sun fade charred\"";
-  local_214[0x3f] = "\"lit sun shadow charred\"";
-  local_214[0x40] = "\"lit sun shadow fade charred\"";
-  local_214[0x41] = "\"lit spot charred\"";
-  local_214[0x42] = "\"lit spot fade charred\"";
-  local_214[0x43] = "\"lit spot shadow charred\"";
-  local_214[0x44] = "\"lit spot shadow fade charred\"";
-  local_214[0x45] = "\"lit omni charred\"";
-  local_214[0x46] = "\"lit omni fade charred\"";
-  local_214[0x47] = "\"lit omni shadow charred\"";
-  local_214[0x48] = "\"lit omni shadow fade charred\"";
-  local_214[0x49] = "\"lit instanced\"";
-  local_214[0x4a] = "\"lit instanced sun\"";
-  local_214[0x4b] = "\"lit instanced sun shadow\"";
-  local_214[0x4c] = "\"lit instanced spot\"";
-  local_214[0x4d] = "\"lit instanced spot shadow\"";
-  local_214[0x4e] = "\"lit instanced omni\"";
-  local_214[0x4f] = "\"lit instanced omni shadow\"";
-  local_214[0x50] = "\"lit nvintz\"";
-  local_214[0x51] = "\"lit sun nvintz\"";
-  local_214[0x52] = "\"lit sun shadow nvintz\"";
-  local_214[0x53] = "\"lit spot nvintz\"";
-  local_214[0x54] = "\"lit spot shadow nvintz\"";
-  local_214[0x55] = "\"lit omni nvintz\"";
-  local_214[0x56] = "\"lit omni shadow nvintz\"";
-  local_214[0x57] = "\"lit dlight nvintz\"";
-  local_214[0x58] = "\"lit sun dlight nvintz\"";
-  local_214[0x59] = "\"lit sun shadow dlight nvintz\"";
-  local_214[0x5a] = "\"lit spot dlight nvintz\"";
-  local_214[0x5b] = "\"lit spot shadow dlight nvintz\"";
-  local_214[0x5c] = "\"lit omni dlight nvintz\"";
-  local_214[0x5d] = "\"lit omni shadow dlight nvintz\"";
-  local_214[0x5e] = "\"lit glight nvintz\"";
-  local_214[0x5f] = "\"lit sun glight nvintz\"";
-  local_214[0x60] = "\"lit sun shadow glight nvintz\"";
-  local_214[0x61] = "\"lit spot glight nvintz\"";
-  local_214[0x62] = "\"lit spot shadow glight nvintz\"";
-  local_214[99] = "\"lit omni glight nvintz\"";
-  local_214[100] = "\"lit omni shadow glight nvintz\"";
-  local_214[0x65] = "\"lit dlight glight nvintz\"";
-  local_214[0x66] = "\"lit sun dlight glight nvintz\"";
-  local_214[0x67] = "\"lit sun shadow dlight glight nvintz\"";
-  local_214[0x68] = "\"lit spot dlight glight nvintz\"";
-  local_214[0x69] = "\"lit spot shadow dlight glight nvintz\"";
-  local_214[0x6a] = "\"lit omni dlight glight nvintz\"";
-  local_214[0x6b] = "\"lit omni shadow dlight glight nvintz\"";
-  local_214[0x6c] = "\"lit instanced nvintz\"";
-  local_214[0x6d] = "\"lit instanced sun nvintz\"";
-  local_214[0x6e] = "\"lit instanced sun shadow nvintz\"";
-  local_214[0x6f] = "\"lit instanced spot nvintz\"";
-  local_214[0x70] = "\"lit instanced spot shadow nvintz\"";
-  local_214[0x71] = "\"lit instanced omni nvintz\"";
-  local_214[0x72] = "\"lit instanced omni shadow nvintz\"";
-  local_214[0x73] = "\"light spot\"";
-  local_214[0x74] = "\"light omni\"";
-  local_214[0x75] = "\"light spot shadow\"";
-  local_214[0x76] = "\"light spot charred\"";
-  local_214[0x77] = "\"light omni charred\"";
-  local_214[0x78] = "\"light spot shadow charred\"";
-  local_214[0x79] = "\"fakelight normal\"";
-  local_214[0x7a] = "\"fakelight view\"";
-  local_214[0x7b] = "\"sunlight preview\"";
-  local_214[0x7c] = "\"case texture\"";
-  local_214[0x7d] = "\"solid wireframe\"";
-  local_214[0x7e] = "\"shaded wireframe\"";
-  local_214[0x7f] = "\"debug bumpmap\"";
-  local_214[0x80] = "\"debug bumpmap instanced\"";
-  local_214[0x81] = "\"impact mask\"";
-  local_8 = 0;
+  techniqueNames[0] = "\"depth prepass\"";
+  techniqueNames[1] = "\"build floatz\"";
+  techniqueNames[2] = "\"build shadowmap depth\"";
+  techniqueNames[3] = "\"build shadowmap color\"";
+  techniqueNames[4] = "\"unlit\"";
+  techniqueNames[5] = "\"emissive\"";
+  techniqueNames[6] = "\"emissive shadow\"";
+  techniqueNames[7] = "\"emissive nvintz\"";
+  techniqueNames[8] = "\"emissive shadow nvintz\"";
+  techniqueNames[9] = "\"emissive reflected\"";
+  techniqueNames[10] = "\"lit\"";
+  techniqueNames[0xb] = "\"lit sun\"";
+  techniqueNames[0xc] = "\"lit sun shadow\"";
+  techniqueNames[0xd] = "\"lit spot\"";
+  techniqueNames[0xe] = "\"lit spot shadow\"";
+  techniqueNames[0xf] = "\"lit omni\"";
+  techniqueNames[0x10] = "\"lit omni shadow\"";
+  techniqueNames[0x11] = "\"lit dlight\"";
+  techniqueNames[0x12] = "\"lit sun dlight\"";
+  techniqueNames[0x13] = "\"lit sun shadow dlight\"";
+  techniqueNames[0x14] = "\"lit spot dlight\"";
+  techniqueNames[0x15] = "\"lit spot shadow dlight\"";
+  techniqueNames[0x16] = "\"lit omni dlight\"";
+  techniqueNames[0x17] = "\"lit omni shadow dlight\"";
+  techniqueNames[0x18] = "\"lit glight\"";
+  techniqueNames[0x19] = "\"lit sun glight\"";
+  techniqueNames[0x1a] = "\"lit sun shadow glight\"";
+  techniqueNames[0x1b] = "\"lit spot glight\"";
+  techniqueNames[0x1c] = "\"lit spot shadow glight\"";
+  techniqueNames[0x1d] = "\"lit omni glight\"";
+  techniqueNames[0x1e] = "\"lit omni shadow glight\"";
+  techniqueNames[0x1f] = "\"lit dlight glight\"";
+  techniqueNames[0x20] = "\"lit sun dlight glight\"";
+  techniqueNames[0x21] = "\"lit sun shadow dlight glight\"";
+  techniqueNames[0x22] = "\"lit spot dlight glight\"";
+  techniqueNames[0x23] = "\"lit spot shadow dlight glight\"";
+  techniqueNames[0x24] = "\"lit omni dlight glight\"";
+  techniqueNames[0x25] = "\"lit omni shadow dlight glight\"";
+  techniqueNames[0x26] = "\"lit alpha\"";
+  techniqueNames[0x27] = "\"lit sun alpha\"";
+  techniqueNames[0x28] = "\"lit sun shadow alpha\"";
+  techniqueNames[0x29] = "\"lit spot alpha\"";
+  techniqueNames[0x2a] = "\"lit spot shadow alpha\"";
+  techniqueNames[0x2b] = "\"lit omni alpha\"";
+  techniqueNames[0x2c] = "\"lit omni shadow alpha\"";
+  techniqueNames[0x2d] = "\"lit remap\"";
+  techniqueNames[0x2e] = "\"lit sun remap\"";
+  techniqueNames[0x2f] = "\"lit sun shadow remap\"";
+  techniqueNames[0x30] = "\"lit spot remap\"";
+  techniqueNames[0x31] = "\"lit spot shadow remap\"";
+  techniqueNames[0x32] = "\"lit omni remap\"";
+  techniqueNames[0x33] = "\"lit omni shadow remap\"";
+  techniqueNames[0x34] = "\"lit fade\"";
+  techniqueNames[0x35] = "\"lit sun fade\"";
+  techniqueNames[0x36] = "\"lit sun shadow fade\"";
+  techniqueNames[0x37] = "\"lit spot fade\"";
+  techniqueNames[0x38] = "\"lit spot shadow fade\"";
+  techniqueNames[0x39] = "\"lit omni fade\"";
+  techniqueNames[0x3a] = "\"lit omni shadow fade\"";
+  techniqueNames[0x3b] = "\"lit charred\"";
+  techniqueNames[0x3c] = "\"lit fade charred\"";
+  techniqueNames[0x3d] = "\"lit sun charred\"";
+  techniqueNames[0x3e] = "\"lit sun fade charred\"";
+  techniqueNames[0x3f] = "\"lit sun shadow charred\"";
+  techniqueNames[0x40] = "\"lit sun shadow fade charred\"";
+  techniqueNames[0x41] = "\"lit spot charred\"";
+  techniqueNames[0x42] = "\"lit spot fade charred\"";
+  techniqueNames[0x43] = "\"lit spot shadow charred\"";
+  techniqueNames[0x44] = "\"lit spot shadow fade charred\"";
+  techniqueNames[0x45] = "\"lit omni charred\"";
+  techniqueNames[0x46] = "\"lit omni fade charred\"";
+  techniqueNames[0x47] = "\"lit omni shadow charred\"";
+  techniqueNames[0x48] = "\"lit omni shadow fade charred\"";
+  techniqueNames[0x49] = "\"lit instanced\"";
+  techniqueNames[0x4a] = "\"lit instanced sun\"";
+  techniqueNames[0x4b] = "\"lit instanced sun shadow\"";
+  techniqueNames[0x4c] = "\"lit instanced spot\"";
+  techniqueNames[0x4d] = "\"lit instanced spot shadow\"";
+  techniqueNames[0x4e] = "\"lit instanced omni\"";
+  techniqueNames[0x4f] = "\"lit instanced omni shadow\"";
+  techniqueNames[0x50] = "\"lit nvintz\"";
+  techniqueNames[0x51] = "\"lit sun nvintz\"";
+  techniqueNames[0x52] = "\"lit sun shadow nvintz\"";
+  techniqueNames[0x53] = "\"lit spot nvintz\"";
+  techniqueNames[0x54] = "\"lit spot shadow nvintz\"";
+  techniqueNames[0x55] = "\"lit omni nvintz\"";
+  techniqueNames[0x56] = "\"lit omni shadow nvintz\"";
+  techniqueNames[0x57] = "\"lit dlight nvintz\"";
+  techniqueNames[0x58] = "\"lit sun dlight nvintz\"";
+  techniqueNames[0x59] = "\"lit sun shadow dlight nvintz\"";
+  techniqueNames[0x5a] = "\"lit spot dlight nvintz\"";
+  techniqueNames[0x5b] = "\"lit spot shadow dlight nvintz\"";
+  techniqueNames[0x5c] = "\"lit omni dlight nvintz\"";
+  techniqueNames[0x5d] = "\"lit omni shadow dlight nvintz\"";
+  techniqueNames[0x5e] = "\"lit glight nvintz\"";
+  techniqueNames[0x5f] = "\"lit sun glight nvintz\"";
+  techniqueNames[0x60] = "\"lit sun shadow glight nvintz\"";
+  techniqueNames[0x61] = "\"lit spot glight nvintz\"";
+  techniqueNames[0x62] = "\"lit spot shadow glight nvintz\"";
+  techniqueNames[99] = "\"lit omni glight nvintz\"";
+  techniqueNames[100] = "\"lit omni shadow glight nvintz\"";
+  techniqueNames[0x65] = "\"lit dlight glight nvintz\"";
+  techniqueNames[0x66] = "\"lit sun dlight glight nvintz\"";
+  techniqueNames[0x67] = "\"lit sun shadow dlight glight nvintz\"";
+  techniqueNames[0x68] = "\"lit spot dlight glight nvintz\"";
+  techniqueNames[0x69] = "\"lit spot shadow dlight glight nvintz\"";
+  techniqueNames[0x6a] = "\"lit omni dlight glight nvintz\"";
+  techniqueNames[0x6b] = "\"lit omni shadow dlight glight nvintz\"";
+  techniqueNames[0x6c] = "\"lit instanced nvintz\"";
+  techniqueNames[0x6d] = "\"lit instanced sun nvintz\"";
+  techniqueNames[0x6e] = "\"lit instanced sun shadow nvintz\"";
+  techniqueNames[0x6f] = "\"lit instanced spot nvintz\"";
+  techniqueNames[0x70] = "\"lit instanced spot shadow nvintz\"";
+  techniqueNames[0x71] = "\"lit instanced omni nvintz\"";
+  techniqueNames[0x72] = "\"lit instanced omni shadow nvintz\"";
+  techniqueNames[0x73] = "\"light spot\"";
+  techniqueNames[0x74] = "\"light omni\"";
+  techniqueNames[0x75] = "\"light spot shadow\"";
+  techniqueNames[0x76] = "\"light spot charred\"";
+  techniqueNames[0x77] = "\"light omni charred\"";
+  techniqueNames[0x78] = "\"light spot shadow charred\"";
+  techniqueNames[0x79] = "\"fakelight normal\"";
+  techniqueNames[0x7a] = "\"fakelight view\"";
+  techniqueNames[0x7b] = "\"sunlight preview\"";
+  techniqueNames[0x7c] = "\"case texture\"";
+  techniqueNames[0x7d] = "\"solid wireframe\"";
+  techniqueNames[0x7e] = "\"shaded wireframe\"";
+  techniqueNames[0x7f] = "\"debug bumpmap\"";
+  techniqueNames[0x80] = "\"debug bumpmap instanced\"";
+  techniqueNames[0x81] = "\"impact mask\"";
+  techniqueIndex = 0;
   do {
-    if (0x81 < local_8) {
+    if (0x81 < (uint)techniqueIndex) {
       return 0x82;
     }
-    local_218 = (byte *)local_214[local_8];
-    local_21c = (byte *)param_1;
+    local_218 = (byte *)techniqueNames[techniqueIndex];
+    local_21c = (byte *)name;
     do {
       bVar1 = *local_21c;
       bVar2 = bVar1 < *local_218;
@@ -6295,24 +6391,24 @@ LAB_00ad5349:
     local_224 = 0;
 LAB_00ad5354:
     if (local_224 == 0) {
-      return (uchar)local_8;
+      return (uchar)techniqueIndex;
     }
-    local_8 = local_8 + 1;
+    techniqueIndex = techniqueIndex + 1;
   } while( true );
 }
 
 
 // 00AD6270  Material_GetTechniqueSetDrawRegion  (gfx_d3d/r_material_load_obj.cpp:8983)
 
-uint __cdecl Material_GetTechniqueSetDrawRegion(MaterialTechniqueSet *param_1)
+uint __cdecl Material_GetTechniqueSetDrawRegion(MaterialTechniqueSet *techniqueSet)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_8;
+  uint cameraRegion;
   
-  if (param_1 == (MaterialTechniqueSet *)0x0) {
+  if (techniqueSet == (MaterialTechniqueSet *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x231a,0,"%s");
     if (!bVar2) {
@@ -6321,33 +6417,33 @@ uint __cdecl Material_GetTechniqueSetDrawRegion(MaterialTechniqueSet *param_1)
       return uVar3;
     }
   }
-  if (param_1->techniques[10] == (MaterialTechnique *)0x0) {
-    if (param_1->techniques[5] == (MaterialTechnique *)0x0) {
-      local_8 = 3;
+  if (techniqueSet->techniques[10] == (MaterialTechnique *)0x0) {
+    if (techniqueSet->techniques[5] == (MaterialTechnique *)0x0) {
+      cameraRegion = 3;
     }
     else {
-      local_8 = 2;
+      cameraRegion = 2;
     }
   }
   else {
-    local_8 = 0;
+    cameraRegion = 0;
   }
-  return local_8;
+  return cameraRegion;
 }
 
 
 // 00AD6220  Material_SetMaterialDrawRegion  (gfx_d3d/r_material_load_obj.cpp:9012)
 
-void __cdecl Material_SetMaterialDrawRegion(Material *param_1)
+void __cdecl Material_SetMaterialDrawRegion(Material *material)
 
 {
-  uint local_8;
+  uint cameraRegion;
   
-  local_8 = Material_GetTechniqueSetDrawRegion((param_1->field8_0xb0).localTechniqueSet);
-  if ((local_8 == 0) && (0x17 < (param_1->info).sortKey)) {
-    local_8 = 1;
+  cameraRegion = Material_GetTechniqueSetDrawRegion((material->field8_0xb0).localTechniqueSet);
+  if ((cameraRegion == 0) && (0x17 < (material->info).sortKey)) {
+    cameraRegion = 1;
   }
-  param_1->cameraRegion = (uchar)local_8;
+  material->cameraRegion = (uchar)cameraRegion;
   return;
 }
 
@@ -6356,7 +6452,7 @@ void __cdecl Material_SetMaterialDrawRegion(Material *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MaterialTechniqueSet * __cdecl Material_LoadTechniqueSet(char *param_1)
+MaterialTechniqueSet * __cdecl Material_LoadTechniqueSet(char *name)
 
 {
   char cVar1;
@@ -6371,19 +6467,20 @@ MaterialTechniqueSet * __cdecl Material_LoadTechniqueSet(char *param_1)
   int local_1d0;
   byte *local_1c8;
   byte *local_1c4;
-  int local_1bc;
-  char *local_1b8;
-  char local_1b4 [260];
-  int local_b0;
+  MaterialTechnique *technique;
+  int techTypeCount;
+  char *filenameTemplate;
+  char filename [260];
+  int techTypeIndex;
   byte abStack_ac [136];
   uint local_24;
-  char local_1d;
-  char *local_1c;
-  int local_18;
-  char *local_14;
-  char *local_10;
-  MaterialTechniqueSet *local_c;
-  char *local_8;
+  bool usingTechnique;
+  int nameSize;
+  int fileSize;
+  void *file;
+  char *token;
+  MaterialTechniqueSet *techniqueSet;
+  char *text;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (gCheckedForPimp) goto LAB_00acc341;
@@ -6418,101 +6515,101 @@ LAB_00acc2cd:
   Com_Printf(0,"^0PIMP (%s)\n");
   gCheckedForPimp = true;
 LAB_00acc341:
-  strstr((uchar *)param_1,(uchar *)"sw_");
-  if (((extraout_EAX == 0) && (strstr((uchar *)param_1,(uchar *)"swb_"), extraout_EAX_00 == 0)) &&
-     (strstr((uchar *)param_1,"swl_"), extraout_EAX_01 == 0)) {
+  strstr((uchar *)name,(uchar *)"sw_");
+  if (((extraout_EAX == 0) && (strstr((uchar *)name,(uchar *)"swb_"), extraout_EAX_00 == 0)) &&
+     (strstr((uchar *)name,"swl_"), extraout_EAX_01 == 0)) {
     gIsSW2Material = false;
   }
   else {
     gIsSW2Material = true;
   }
   if ((gIsPIMPEnabled == false) || (gIsSW2Material)) {
-    local_1b8 = "techsets/%s.techset";
+    filenameTemplate = "techsets/%s.techset";
   }
   else {
-    local_1b8 = "pimp/techsets/%s.techset";
+    filenameTemplate = "pimp/techsets/%s.techset";
   }
-  Com_sprintf(local_1b4,0x100,local_1b8);
-  local_18 = FS_ReadFile(local_1b4,&local_14);
-  if (local_18 < 0) {
+  Com_sprintf(filename,0x100,filenameTemplate);
+  fileSize = FS_ReadFile(filename,&file);
+  if (fileSize < 0) {
     Com_PrintError(8,"^1ERROR: Couldn\'t open techniqueSet \'%s\'\n");
-    local_c = (MaterialTechniqueSet *)0x0;
+    techniqueSet = (MaterialTechniqueSet *)0x0;
   }
   else {
-    local_1e4 = param_1;
+    local_1e4 = name;
     do {
       cVar1 = *local_1e4;
       local_1e4 = local_1e4 + 1;
     } while (cVar1 != '\0');
-    local_1c = local_1e4 + (1 - (int)(param_1 + 1));
-    local_c = Material_Alloc((int)(local_1e4 + (0x211 - (int)(param_1 + 1))));
-    local_c->name = (char *)(local_c + 1);
-    local_c->worldVertFormat = '\0';
-    memcpy((uchar *)local_c->name,(uchar *)param_1,(ulong)local_1c);
-    local_8 = local_14;
-    Com_BeginParseSession(local_1b4);
+    nameSize = (int)(local_1e4 + (1 - (int)(name + 1)));
+    techniqueSet = Material_Alloc((int)(local_1e4 + (0x211 - (int)(name + 1))));
+    techniqueSet->name = (char *)(techniqueSet + 1);
+    techniqueSet->worldVertFormat = '\0';
+    memcpy((uchar *)techniqueSet->name,(uchar *)name,nameSize);
+    text = file;
+    Com_BeginParseSession(filename);
     Com_SetScriptWarningPrefix("^1ERROR: ");
     Com_SetSpaceDelimited(0);
     Com_SetKeepStringQuotes(1);
-    local_1bc = 0;
-    local_1d = '\0';
+    techTypeCount = 0;
+    usingTechnique = false;
     do {
       while( true ) {
-        local_10 = Com_Parse(&local_8);
-        if (*local_10 == '\0') goto LAB_00acc6e7;
-        if (*local_10 != '\"') break;
-        if (local_1bc == 0x82) {
+        token = Com_Parse(&text);
+        if (*token == '\0') goto LAB_00acc6e7;
+        if (*token != '\"') break;
+        if (techTypeCount == 0x82) {
           Com_ScriptError("Too many labels in technique set\n");
-          local_c = (MaterialTechniqueSet *)0x0;
+          techniqueSet = (MaterialTechniqueSet *)0x0;
           goto LAB_00acc6e7;
         }
-        bVar5 = Material_IgnoreTechnique(local_10);
+        bVar5 = Material_IgnoreTechnique(token);
         if (!bVar5) {
-          bVar2 = Material_TechniqueTypeForName(local_10);
-          abStack_ac[local_1bc] = bVar2;
-          if (abStack_ac[local_1bc] == 0x82) {
+          bVar2 = Material_TechniqueTypeForName(token);
+          abStack_ac[techTypeCount] = bVar2;
+          if (abStack_ac[techTypeCount] == 0x82) {
             Com_ScriptError("Unknown technique type \'%s\'\n");
-            local_c = (MaterialTechniqueSet *)0x0;
+            techniqueSet = (MaterialTechniqueSet *)0x0;
             goto LAB_00acc6e7;
           }
-          bVar5 = Material_UsingTechnique((uint)abStack_ac[local_1bc]);
+          bVar5 = Material_UsingTechnique((uint)abStack_ac[techTypeCount]);
           if (bVar5) {
-            local_1d = '\x01';
+            usingTechnique = true;
           }
-          local_1bc = local_1bc + 1;
+          techTypeCount = techTypeCount + 1;
         }
-        bVar5 = Material_MatchToken(&local_8,":");
+        bVar5 = Material_MatchToken(&text,":");
         if (!bVar5) {
-          local_c = (MaterialTechniqueSet *)0x0;
+          techniqueSet = (MaterialTechniqueSet *)0x0;
           goto LAB_00acc6e7;
         }
       }
-      if (local_1d != '\0') {
-        if (local_1bc == 0) {
+      if (usingTechnique != false) {
+        if (techTypeCount == 0) {
           Com_ScriptError("Unknown technique type \'%s\'\n");
-          local_c = (MaterialTechniqueSet *)0x0;
+          techniqueSet = (MaterialTechniqueSet *)0x0;
           goto LAB_00acc6e7;
         }
-        pMVar4 = Material_RegisterTechnique(local_10);
+        pMVar4 = Material_RegisterTechnique(token);
         if (pMVar4 == (MaterialTechnique *)0x0) {
           Com_ScriptError("Couldn\'t register technique \'%s\'\n");
-          local_c = (MaterialTechniqueSet *)0x0;
+          techniqueSet = (MaterialTechniqueSet *)0x0;
           goto LAB_00acc6e7;
         }
-        for (local_b0 = 0; local_b0 < local_1bc; local_b0 = local_b0 + 1) {
-          local_c->techniques[abStack_ac[local_b0]] = pMVar4;
+        for (techTypeIndex = 0; techTypeIndex < techTypeCount; techTypeIndex = techTypeIndex + 1) {
+          techniqueSet->techniques[abStack_ac[techTypeIndex]] = pMVar4;
         }
       }
-      local_1bc = 0;
-      local_1d = '\0';
-      bVar5 = Material_MatchToken(&local_8,";");
+      techTypeCount = 0;
+      usingTechnique = false;
+      bVar5 = Material_MatchToken(&text,";");
     } while (bVar5);
-    local_c = (MaterialTechniqueSet *)0x0;
+    techniqueSet = (MaterialTechniqueSet *)0x0;
 LAB_00acc6e7:
     Com_EndParseSession();
-    FS_FreeFile(local_14);
+    FS_FreeFile(file);
   }
-  return local_c;
+  return techniqueSet;
 }
 
 
@@ -6522,27 +6619,30 @@ LAB_00acc6e7:
 
 void __cdecl
 Material_ApplyStateBitsRemapRuleSet
-          (Material *param_1,MaterialStateMap *param_2,uint param_3,uint *param_4,uint *param_5)
+          (Material *material,MaterialStateMap *stateMap,uint ruleSetIndex,uint *refStateBits,
+          uint *stateBitsOut)
 
 {
   MaterialStateMapRule *pMVar1;
-  int local_8;
+  MaterialStateMapRule *rule;
+  MaterialStateMapRuleSet *ruleSet;
+  int ruleIndex;
   
-  local_8 = 0;
+  ruleIndex = 0;
   while( true ) {
-    if (param_2->ruleSet[param_3]->ruleCount <= local_8) {
+    if (stateMap->ruleSet[ruleSetIndex]->ruleCount <= ruleIndex) {
       Com_Error(ERR_FATAL,
                 "No rule in stateMap \'%s\' rule set %i matched the current material state for material \'%s\'"
                );
       return;
     }
-    pMVar1 = param_2->ruleSet[param_3]->rules + local_8;
-    if (((*param_4 & pMVar1->stateBitsMask[0]) == pMVar1->stateBitsValue[0]) &&
-       ((param_4[1] & pMVar1->stateBitsMask[1]) == pMVar1->stateBitsValue[1])) break;
-    local_8 = local_8 + 1;
+    pMVar1 = stateMap->ruleSet[ruleSetIndex]->rules + ruleIndex;
+    if (((*refStateBits & pMVar1->stateBitsMask[0]) == pMVar1->stateBitsValue[0]) &&
+       ((refStateBits[1] & pMVar1->stateBitsMask[1]) == pMVar1->stateBitsValue[1])) break;
+    ruleIndex = ruleIndex + 1;
   }
-  *param_5 = *param_5 & pMVar1->stateBitsClear[0] | pMVar1->stateBitsSet[0];
-  param_5[1] = param_5[1] & pMVar1->stateBitsClear[1] | pMVar1->stateBitsSet[1];
+  *stateBitsOut = *stateBitsOut & pMVar1->stateBitsClear[0] | pMVar1->stateBitsSet[0];
+  stateBitsOut[1] = stateBitsOut[1] & pMVar1->stateBitsClear[1] | pMVar1->stateBitsSet[1];
   return;
 }
 
@@ -6551,19 +6651,20 @@ Material_ApplyStateBitsRemapRuleSet
 
 void __cdecl
 Material_RemapStateBits
-          (Material *param_1,uint param_2,MaterialStateMap *param_3,uint *param_4,uint *param_5)
+          (Material *material,uint toolFlags,MaterialStateMap *stateMap,uint *refStateBits,
+          uint *stateBitsOut)
 
 {
-  uint local_8;
+  uint ruleSetIndex;
   
-  *param_5 = *param_4;
-  param_5[1] = param_4[1];
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    Material_ApplyStateBitsRemapRuleSet(param_1,param_3,local_8,param_4,param_5);
+  *stateBitsOut = *refStateBits;
+  stateBitsOut[1] = refStateBits[1];
+  for (ruleSetIndex = 0; ruleSetIndex < 10; ruleSetIndex = ruleSetIndex + 1) {
+    Material_ApplyStateBitsRemapRuleSet(material,stateMap,ruleSetIndex,refStateBits,stateBitsOut);
   }
-  if (((param_2 & 0x200) == 0) && ((param_5[1] & 0x30) == 0x10)) {
-    param_5[1] = param_5[1] & 0xffffffcf;
-    param_5[1] = param_5[1];
+  if (((toolFlags & 0x200) == 0) && ((stateBitsOut[1] & 0x30) == 0x10)) {
+    stateBitsOut[1] = stateBitsOut[1] & 0xffffffcf;
+    stateBitsOut[1] = stateBitsOut[1];
   }
   return;
 }
@@ -6573,7 +6674,8 @@ Material_RemapStateBits
 
 uchar __cdecl
 Material_AddStateBitsArrayToTable
-          (uint (*param_1) [2],uint param_2,uint (*param_3) [2],uint *param_4)
+          (uint (*stateBitsForPass) [2],uint passCount,uint (*stateBitsTable) [2],
+          uint *stateBitsCount)
 
 {
   code *pcVar1;
@@ -6582,17 +6684,18 @@ Material_AddStateBitsArrayToTable
   int iVar4;
   uint (*pauVar5) [2];
   uint (*pauVar6) [2];
-  uint local_c;
-  uint local_8;
+  uint scan;
+  uint partialMatchCount;
   
-  for (local_c = 0; local_8 = *param_4 - local_c, local_8 != 0; local_c = local_c + 1) {
-    if (param_2 < local_8) {
-      local_8 = param_2;
+  for (scan = 0; partialMatchCount = *stateBitsCount - scan, partialMatchCount != 0; scan = scan + 1
+      ) {
+    if (passCount < partialMatchCount) {
+      partialMatchCount = passCount;
     }
-    iVar4 = local_8 << 3;
+    iVar4 = partialMatchCount << 3;
     bVar2 = true;
-    pauVar5 = param_3 + local_c;
-    pauVar6 = param_1;
+    pauVar5 = stateBitsTable + scan;
+    pauVar6 = stateBitsForPass;
     do {
       if (iVar4 == 0) break;
       iVar4 = iVar4 + -1;
@@ -6602,9 +6705,10 @@ Material_AddStateBitsArrayToTable
     } while (bVar2);
     if (bVar2) break;
   }
-  memcpy((uchar *)(param_3 + *param_4),(uchar *)(param_1 + local_8),(param_2 - local_8) * 8);
-  *param_4 = (param_2 - local_8) + *param_4;
-  if ((local_c != (local_c & 0xff)) &&
+  memcpy((uchar *)(stateBitsTable + *stateBitsCount),(uchar *)(stateBitsForPass + partialMatchCount)
+         ,(passCount - partialMatchCount) * 8);
+  *stateBitsCount = (passCount - partialMatchCount) + *stateBitsCount;
+  if ((scan != (scan & 0xff)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x240d,0,"scan == static_cast< byte >( scan )\n\t%i, %i"), !bVar2))
   {
@@ -6612,25 +6716,29 @@ Material_AddStateBitsArrayToTable
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  return (uchar)local_c;
+  return (uchar)scan;
 }
 
 
 // 00AD63F0  Material_GetCullFlags  (gfx_d3d/r_material_load_obj.cpp:9234)
 
-uint __cdecl Material_GetCullFlags(Material *param_1)
+uint __cdecl Material_GetCullFlags(Material *material)
 
 {
   MaterialTechniqueSet *pMVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  uint local_1c;
-  uint local_14;
-  uint local_10;
+  MaterialTechnique *technique;
+  uint techType;
+  uint cullBits;
+  uint cullFlags;
+  uint techTypeCullFlags;
+  MaterialTechniqueSet *techniqueSet;
+  GfxStateBits *refStateBits;
   
-  local_14 = 0xffffffff;
-  pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+  cullFlags = 0xffffffff;
+  pMVar1 = (material->field8_0xb0).localTechniqueSet;
   if ((pMVar1 == (MaterialTechniqueSet *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x241e,0,"%s"), !bVar3)) {
@@ -6638,50 +6746,54 @@ uint __cdecl Material_GetCullFlags(Material *param_1)
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  local_1c = 10;
+  techType = 10;
   do {
-    if (0x72 < local_1c) {
+    if (0x72 < techType) {
 LAB_00ad64ee:
-      if (local_14 == 0xffffffff) {
-        local_14 = 0;
+      if (cullFlags == 0xffffffff) {
+        cullFlags = 0;
       }
-      return local_14;
+      return cullFlags;
     }
-    if (pMVar1->techniques[local_1c] != (MaterialTechnique *)0x0) {
-      uVar4 = param_1->stateBitsTable[param_1->stateBitsEntry[local_1c]].loadBits[0] & 0xc000;
+    if (pMVar1->techniques[techType] != (MaterialTechnique *)0x0) {
+      uVar4 = material->stateBitsTable[material->stateBitsEntry[techType]].loadBits[0] & 0xc000;
       if (uVar4 == 0x8000) {
-        local_10 = 1;
+        techTypeCullFlags = 1;
       }
       else if (uVar4 == 0xc000) {
-        local_10 = 2;
+        techTypeCullFlags = 2;
       }
       else {
-        local_10 = 0;
+        techTypeCullFlags = 0;
       }
-      if ((local_14 != 0xffffffff) && (local_14 != local_10)) {
+      if ((cullFlags != 0xffffffff) && (cullFlags != techTypeCullFlags)) {
         Com_PrintWarning(8,"Material \'%s\' uses technique set \'%s\' with mismatched cull modes.\n"
                         );
         goto LAB_00ad64ee;
       }
-      local_14 = local_10;
+      cullFlags = techTypeCullFlags;
     }
-    local_1c = local_1c + 1;
+    techType = techType + 1;
   } while( true );
 }
 
 
 // 00AD6510  Material_GetCullShadowFlags  (gfx_d3d/r_material_load_obj.cpp:9280)
 
-uint __cdecl Material_GetCullShadowFlags(Material *param_1)
+uint __cdecl Material_GetCullShadowFlags(Material *material)
 
 {
   MaterialTechniqueSet *pMVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  uint local_10;
+  MaterialTechnique *technique;
+  uint cullBits;
+  uint cullFlags;
+  MaterialTechniqueSet *techniqueSet;
+  GfxStateBits *refStateBits;
   
-  pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+  pMVar1 = (material->field8_0xb0).localTechniqueSet;
   if ((pMVar1 == (MaterialTechniqueSet *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2448,0,"%s"), !bVar3)) {
@@ -6690,27 +6802,27 @@ uint __cdecl Material_GetCullShadowFlags(Material *param_1)
     return uVar4;
   }
   if (pMVar1->techniques[2] == (MaterialTechnique *)0x0) {
-    local_10 = 0;
+    cullFlags = 0;
   }
   else {
-    uVar4 = param_1->stateBitsTable[param_1->stateBitsEntry[2]].loadBits[0] & 0xc000;
+    uVar4 = material->stateBitsTable[material->stateBitsEntry[2]].loadBits[0] & 0xc000;
     if (uVar4 == 0x8000) {
-      local_10 = 0x40;
+      cullFlags = 0x40;
     }
     else if (uVar4 == 0xc000) {
-      local_10 = 0x80;
+      cullFlags = 0x80;
     }
     else {
-      local_10 = 0;
+      cullFlags = 0;
     }
   }
-  return local_10;
+  return cullFlags;
 }
 
 
 // 00AD65C0  Material_GetDecalFlags  (gfx_d3d/r_material_load_obj.cpp:9307)
 
-uint __cdecl Material_GetDecalFlags(Material *param_1)
+uint __cdecl Material_GetDecalFlags(Material *mtl)
 
 {
   MaterialTechniqueSet *pMVar1;
@@ -6718,12 +6830,14 @@ uint __cdecl Material_GetDecalFlags(Material *param_1)
   bool bVar3;
   uint uVar4;
   uint local_10;
+  uint entry;
+  MaterialTechniqueSet *techniqueSet;
   
-  if (param_1->stateBitsTable == (GfxStateBits *)0x0) {
+  if (mtl->stateBitsTable == (GfxStateBits *)0x0) {
     uVar4 = 0;
   }
   else {
-    pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+    pMVar1 = (mtl->field8_0xb0).localTechniqueSet;
     if (pMVar1 == (MaterialTechniqueSet *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2463,0,"%s");
@@ -6737,9 +6851,9 @@ uint __cdecl Material_GetDecalFlags(Material *param_1)
       local_10 = 0;
     }
     else {
-      local_10 = (uint)param_1->stateBitsEntry[4];
+      local_10 = (uint)mtl->stateBitsEntry[4];
     }
-    uVar4 = -(uint)((param_1->stateBitsTable[local_10].loadBits[1] & 0x30) != 0) & 4;
+    uVar4 = -(uint)((mtl->stateBitsTable[local_10].loadBits[1] & 0x30) != 0) & 4;
   }
   return uVar4;
 }
@@ -6747,7 +6861,7 @@ uint __cdecl Material_GetDecalFlags(Material *param_1)
 
 // 00AD6650  Material_GetWritesDepthFlags  (gfx_d3d/r_material_load_obj.cpp:9322)
 
-uint __cdecl Material_GetWritesDepthFlags(Material *param_1)
+uint __cdecl Material_GetWritesDepthFlags(Material *mtl)
 
 {
   MaterialTechniqueSet *pMVar1;
@@ -6755,12 +6869,14 @@ uint __cdecl Material_GetWritesDepthFlags(Material *param_1)
   bool bVar3;
   uint uVar4;
   uint local_10;
+  uint entry;
+  MaterialTechniqueSet *techniqueSet;
   
-  if (param_1->stateBitsTable == (GfxStateBits *)0x0) {
+  if (mtl->stateBitsTable == (GfxStateBits *)0x0) {
     uVar4 = 0;
   }
   else {
-    pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+    pMVar1 = (mtl->field8_0xb0).localTechniqueSet;
     if (pMVar1 == (MaterialTechniqueSet *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2472,0,"%s");
@@ -6774,9 +6890,9 @@ uint __cdecl Material_GetWritesDepthFlags(Material *param_1)
       local_10 = 0;
     }
     else {
-      local_10 = (uint)param_1->stateBitsEntry[4];
+      local_10 = (uint)mtl->stateBitsEntry[4];
     }
-    uVar4 = -(uint)((param_1->stateBitsTable[local_10].loadBits[1] & 1) != 0) & 8;
+    uVar4 = -(uint)((mtl->stateBitsTable[local_10].loadBits[1] & 1) != 0) & 8;
   }
   return uVar4;
 }
@@ -6784,7 +6900,7 @@ uint __cdecl Material_GetWritesDepthFlags(Material *param_1)
 
 // 00AD66E0  Material_GetUsesDepthBufferFlags  (gfx_d3d/r_material_load_obj.cpp:9337)
 
-uint __cdecl Material_GetUsesDepthBufferFlags(Material *param_1)
+uint __cdecl Material_GetUsesDepthBufferFlags(Material *mtl)
 
 {
   MaterialTechniqueSet *pMVar1;
@@ -6793,10 +6909,13 @@ uint __cdecl Material_GetUsesDepthBufferFlags(Material *param_1)
   bool bVar4;
   uint uVar5;
   int iVar6;
-  uint local_14;
-  uint local_8;
+  MaterialTechnique *technique;
+  uint techType;
+  MaterialTechniqueSet *techniqueSet;
+  GfxStateBits *refStateBits;
+  uint passIndex;
   
-  pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+  pMVar1 = (mtl->field8_0xb0).localTechniqueSet;
   if ((pMVar1 == (MaterialTechniqueSet *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2481,0,"%s"), !bVar4)) {
@@ -6804,31 +6923,31 @@ uint __cdecl Material_GetUsesDepthBufferFlags(Material *param_1)
     uVar5 = (*pcVar3)();
     return uVar5;
   }
-  local_14 = 0;
+  techType = 0;
   do {
-    if (0x81 < local_14) {
+    if (0x81 < techType) {
       return 0;
     }
-    pMVar2 = pMVar1->techniques[local_14];
+    pMVar2 = pMVar1->techniques[techType];
     if (pMVar2 != (MaterialTechnique *)0x0) {
-      for (local_8 = 0; local_8 < pMVar2->passCount; local_8 = local_8 + 1) {
-        iVar6 = param_1->stateBitsEntry[local_14] + local_8;
-        if ((param_1->stateBitsTable[iVar6].loadBits[1] & 0x3d) != 0) {
+      for (passIndex = 0; passIndex < pMVar2->passCount; passIndex = passIndex + 1) {
+        iVar6 = mtl->stateBitsEntry[techType] + passIndex;
+        if ((mtl->stateBitsTable[iVar6].loadBits[1] & 0x3d) != 0) {
           return 0x10;
         }
-        if ((param_1->stateBitsTable[iVar6].loadBits[1] & 2) == 0) {
+        if ((mtl->stateBitsTable[iVar6].loadBits[1] & 2) == 0) {
           return 0x10;
         }
       }
     }
-    local_14 = local_14 + 1;
+    techType = techType + 1;
   } while( true );
 }
 
 
 // 00AD67C0  Material_GetUsesStencilBufferFlags  (gfx_d3d/r_material_load_obj.cpp:9367)
 
-uint __cdecl Material_GetUsesStencilBufferFlags(Material *param_1)
+uint __cdecl Material_GetUsesStencilBufferFlags(Material *mtl)
 
 {
   MaterialTechniqueSet *pMVar1;
@@ -6836,10 +6955,13 @@ uint __cdecl Material_GetUsesStencilBufferFlags(Material *param_1)
   code *pcVar3;
   bool bVar4;
   uint uVar5;
-  uint local_14;
-  uint local_8;
+  MaterialTechnique *technique;
+  uint techType;
+  MaterialTechniqueSet *techniqueSet;
+  GfxStateBits *refStateBits;
+  uint passIndex;
   
-  pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+  pMVar1 = (mtl->field8_0xb0).localTechniqueSet;
   if ((pMVar1 == (MaterialTechniqueSet *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x249f,0,"%s"), !bVar4)) {
@@ -6847,28 +6969,28 @@ uint __cdecl Material_GetUsesStencilBufferFlags(Material *param_1)
     uVar5 = (*pcVar3)();
     return uVar5;
   }
-  local_14 = 0;
+  techType = 0;
   do {
-    if (0x81 < local_14) {
+    if (0x81 < techType) {
       return 0;
     }
-    pMVar2 = pMVar1->techniques[local_14];
+    pMVar2 = pMVar1->techniques[techType];
     if (pMVar2 != (MaterialTechnique *)0x0) {
-      for (local_8 = 0; local_8 < pMVar2->passCount; local_8 = local_8 + 1) {
-        if ((param_1->stateBitsTable[param_1->stateBitsEntry[local_14] + local_8].loadBits[1] & 0xc0
-            ) != 0) {
+      for (passIndex = 0; passIndex < pMVar2->passCount; passIndex = passIndex + 1) {
+        if ((mtl->stateBitsTable[mtl->stateBitsEntry[techType] + passIndex].loadBits[1] & 0xc0) != 0
+           ) {
           return 0x20;
         }
       }
     }
-    local_14 = local_14 + 1;
+    techType = techType + 1;
   } while( true );
 }
 
 
 // 00AD6360  Material_UpdateStateFlags  (gfx_d3d/r_material_load_obj.cpp:9395)
 
-void __cdecl Material_UpdateStateFlags(Material *param_1)
+void __cdecl Material_UpdateStateFlags(Material *mtl)
 
 {
   uint uVar1;
@@ -6877,28 +6999,30 @@ void __cdecl Material_UpdateStateFlags(Material *param_1)
   uint uVar4;
   uint uVar5;
   uint uVar6;
-  byte local_c;
+  uint stateFlags;
+  MaterialTechniqueSet *techniqueSet;
   
-  if ((param_1->field8_0xb0).localTechniqueSet == (MaterialTechniqueSet *)0x0) {
-    local_c = 0;
+  if ((mtl->field8_0xb0).localTechniqueSet == (MaterialTechniqueSet *)0x0) {
+    stateFlags._0_1_ = 0;
   }
   else {
-    uVar1 = Material_GetCullFlags(param_1);
-    uVar2 = Material_GetCullShadowFlags(param_1);
-    uVar3 = Material_GetDecalFlags(param_1);
-    uVar4 = Material_GetWritesDepthFlags(param_1);
-    uVar5 = Material_GetUsesDepthBufferFlags(param_1);
-    uVar6 = Material_GetUsesStencilBufferFlags(param_1);
-    local_c = (byte)uVar1 | (byte)uVar2 | (byte)uVar3 | (byte)uVar4 | (byte)uVar5 | (byte)uVar6;
+    uVar1 = Material_GetCullFlags(mtl);
+    uVar2 = Material_GetCullShadowFlags(mtl);
+    uVar3 = Material_GetDecalFlags(mtl);
+    uVar4 = Material_GetWritesDepthFlags(mtl);
+    uVar5 = Material_GetUsesDepthBufferFlags(mtl);
+    uVar6 = Material_GetUsesStencilBufferFlags(mtl);
+    stateFlags._0_1_ =
+         (byte)uVar1 | (byte)uVar2 | (byte)uVar3 | (byte)uVar4 | (byte)uVar5 | (byte)uVar6;
   }
-  param_1->stateFlags = local_c;
+  mtl->stateFlags = (byte)stateFlags;
   return;
 }
 
 
 // 00AD6890  Material_UpdateTechniqueFlags  (gfx_d3d/r_material_load_obj.cpp:9419)
 
-void __cdecl Material_UpdateTechniqueFlags(Material *param_1)
+void __cdecl Material_UpdateTechniqueFlags(Material *material)
 
 {
   byte bVar1;
@@ -6907,9 +7031,12 @@ void __cdecl Material_UpdateTechniqueFlags(Material *param_1)
   GfxStateBits *pGVar4;
   code *pcVar5;
   bool bVar6;
-  uint local_10;
+  MaterialTechnique *technique;
+  uint techType;
+  MaterialTechniqueSet *techniqueSet;
+  GfxStateBits *refStateBits;
   
-  pMVar2 = (param_1->field8_0xb0).localTechniqueSet;
+  pMVar2 = (material->field8_0xb0).localTechniqueSet;
   if ((pMVar2 == (MaterialTechniqueSet *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x24d2,0,"%s"), !bVar6)) {
@@ -6917,11 +7044,11 @@ void __cdecl Material_UpdateTechniqueFlags(Material *param_1)
     (*pcVar5)();
     return;
   }
-  for (local_10 = 0; local_10 < 0x82; local_10 = local_10 + 1) {
-    pMVar3 = pMVar2->techniques[local_10];
+  for (techType = 0; techType < 0x82; techType = techType + 1) {
+    pMVar3 = pMVar2->techniques[techType];
     if (pMVar3 != (MaterialTechnique *)0x0) {
-      bVar1 = param_1->stateBitsEntry[local_10];
-      pGVar4 = param_1->stateBitsTable;
+      bVar1 = material->stateBitsEntry[techType];
+      pGVar4 = material->stateBitsTable;
       if ((pGVar4[bVar1].loadBits[1] & 0x3d) != 0) {
         pMVar3->flags = pMVar3->flags | 0x80;
       }
@@ -6936,22 +7063,23 @@ void __cdecl Material_UpdateTechniqueFlags(Material *param_1)
 
 // 00AD62E0  Material_SetStateBits  (gfx_d3d/r_material_load_obj.cpp:9443)
 
-void __cdecl Material_SetStateBits(Material *param_1,uint (*param_2) [2],uint param_3)
+void __cdecl
+Material_SetStateBits(Material *material,uint (*stateBitsTable) [2],uint stateBitsCount)
 
 {
   GfxStateBits *local_8;
   
-  param_1->stateBitsCount = (uchar)param_3;
-  if (param_3 == 0) {
+  material->stateBitsCount = (uchar)stateBitsCount;
+  if (stateBitsCount == 0) {
     local_8 = (GfxStateBits *)0x0;
   }
   else {
-    local_8 = Material_Alloc(param_3 << 3);
+    local_8 = Material_Alloc(stateBitsCount << 3);
   }
-  param_1->stateBitsTable = local_8;
-  memcpy((uchar *)param_1->stateBitsTable,(uchar *)param_2,param_3 << 3);
-  Material_UpdateStateFlags(param_1);
-  Material_UpdateTechniqueFlags(param_1);
+  material->stateBitsTable = local_8;
+  memcpy((uchar *)material->stateBitsTable,(uchar *)stateBitsTable,stateBitsCount << 3);
+  Material_UpdateStateFlags(material);
+  Material_UpdateTechniqueFlags(material);
   return;
 }
 
@@ -6960,58 +7088,60 @@ void __cdecl Material_SetStateBits(Material *param_1,uint (*param_2) [2],uint pa
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl Material_BuildStateBitsTable(Material *param_1,uint param_2,uint *param_3)
+void __cdecl Material_BuildStateBitsTable(Material *material,uint toolFlags,uint *refStateBits)
 
 {
   ushort uVar1;
   MaterialTechnique *pMVar2;
   uchar uVar3;
-  uint local_1074;
-  uint local_106c [1040];
-  uint local_2c [8];
-  uint local_c;
-  uint local_8;
+  MaterialTechnique *technique;
+  uint techType;
+  MaterialStateMap **stateMapTable;
+  uint stateBitsTable [1040];
+  uint stateBitsForPass [8];
+  uint stateBitsCount;
+  uint passIndex;
   
-  local_8 = 0xad825d;
-  local_c = 0;
-  for (local_1074 = 0; local_1074 < 0x82; local_1074 = local_1074 + 1) {
-    pMVar2 = ((param_1->field8_0xb0).localTechniqueSet)->techniques[local_1074];
+  passIndex = 0xad825d;
+  stateBitsCount = 0;
+  for (techType = 0; techType < 0x82; techType = techType + 1) {
+    pMVar2 = ((material->field8_0xb0).localTechniqueSet)->techniques[techType];
     if (pMVar2 == (MaterialTechnique *)0x0) {
-      param_1->stateBitsEntry[local_1074] = 0xff;
+      material->stateBitsEntry[techType] = 0xff;
     }
     else {
       uVar1 = pMVar2->passCount;
-      for (local_8 = 0; local_8 < pMVar2->passCount; local_8 = local_8 + 1) {
+      for (passIndex = 0; passIndex < pMVar2->passCount; passIndex = passIndex + 1) {
         Material_RemapStateBits
-                  (param_1,param_2,
-                   (MaterialStateMap *)(&pMVar2->passArray[uVar1].vertexDecl)[local_8],param_3,
-                   local_2c + local_8 * 2);
+                  (material,toolFlags,
+                   (MaterialStateMap *)(&pMVar2->passArray[uVar1].vertexDecl)[passIndex],
+                   refStateBits,stateBitsForPass + passIndex * 2);
       }
       uVar3 = Material_AddStateBitsArrayToTable
-                        ((uint (*) [2])local_2c,(uint)pMVar2->passCount,(uint (*) [2])local_106c,
-                         &local_c);
-      param_1->stateBitsEntry[local_1074] = uVar3;
+                        ((uint (*) [2])stateBitsForPass,(uint)pMVar2->passCount,
+                         (uint (*) [2])stateBitsTable,&stateBitsCount);
+      material->stateBitsEntry[techType] = uVar3;
     }
   }
-  Material_SetStateBits(param_1,(uint (*) [2])local_106c,local_c);
+  Material_SetStateBits(material,(uint (*) [2])stateBitsTable,stateBitsCount);
   return;
 }
 
 
 // 00AD6960  Material_HasConstant  (gfx_d3d/r_material_load_obj.cpp:9563)
 
-bool __cdecl Material_HasConstant(Material *param_1,uint param_2)
+bool __cdecl Material_HasConstant(Material *mtl,uint nameHash)
 
 {
-  uint local_8;
+  uint constantIndex;
   
-  local_8 = 0;
+  constantIndex = 0;
   while( true ) {
-    if (param_1->constantCount <= local_8) {
+    if (mtl->constantCount <= constantIndex) {
       return false;
     }
-    if ((param_1->field10_0xb8).localConstantTable[local_8].nameHash == param_2) break;
-    local_8 = local_8 + 1;
+    if ((mtl->field10_0xb8).localConstantTable[constantIndex].nameHash == nameHash) break;
+    constantIndex = constantIndex + 1;
   }
   return true;
 }
@@ -7019,18 +7149,18 @@ bool __cdecl Material_HasConstant(Material *param_1,uint param_2)
 
 // 00AD6C20  Material_HasTexture  (gfx_d3d/r_material_load_obj.cpp:9575)
 
-bool __cdecl Material_HasTexture(Material *param_1,uint param_2)
+bool __cdecl Material_HasTexture(Material *mtl,uint nameHash)
 
 {
-  uint local_8;
+  uint textureIndex;
   
-  local_8 = 0;
+  textureIndex = 0;
   while( true ) {
-    if (param_1->textureCount <= local_8) {
+    if (mtl->textureCount <= textureIndex) {
       return false;
     }
-    if (param_1->textureTable[local_8].nameHash == param_2) break;
-    local_8 = local_8 + 1;
+    if (mtl->textureTable[textureIndex].nameHash == nameHash) break;
+    textureIndex = textureIndex + 1;
   }
   return true;
 }
@@ -7040,61 +7170,64 @@ bool __cdecl Material_HasTexture(Material *param_1,uint param_2)
 
 bool __cdecl
 Material_ValidatePassArguments
-          (Material *param_1,char *param_2,uint param_3,MaterialShaderArgument *param_4)
+          (Material *mtl,char *techniqueName,uint argCount,MaterialShaderArgument *args)
 
 {
   bool bVar1;
-  uint local_c;
+  uint argIndex;
+  char *argName;
   
-  local_c = 0;
+  argIndex = 0;
   do {
-    if (param_3 <= local_c) {
+    if (argCount <= argIndex) {
       return true;
     }
-    if ((param_4[local_c].type == 0) || (param_4[local_c].type == 6)) {
-      bVar1 = Material_HasConstant(param_1,param_4[local_c].u.codeSampler);
+    if ((args[argIndex].type == 0) || (args[argIndex].type == 6)) {
+      bVar1 = Material_HasConstant(mtl,args[argIndex].u.codeSampler);
       if (!bVar1) {
-        Material_StringFromHash(param_4[local_c].u.codeSampler);
+        Material_StringFromHash(args[argIndex].u.codeSampler);
         Com_PrintError(8,
                        "material \'%s\' using technique \'%s\' from techniqueSet \'%s\' doesn\'t expose a \'%s\' constant\n"
                       );
         return false;
       }
     }
-    else if ((param_4[local_c].type == 2) &&
-            (bVar1 = Material_HasTexture(param_1,param_4[local_c].u.codeSampler), !bVar1)) {
-      Material_StringFromHash(param_4[local_c].u.codeSampler);
+    else if ((args[argIndex].type == 2) &&
+            (bVar1 = Material_HasTexture(mtl,args[argIndex].u.codeSampler), !bVar1)) {
+      Material_StringFromHash(args[argIndex].u.codeSampler);
       Com_PrintError(8,
                      "material \'%s\' using technique \'%s\' from techniqueSet \'%s\' doesn\'t expose a \'%s\' texture\n"
                     );
       return false;
     }
-    local_c = local_c + 1;
+    argIndex = argIndex + 1;
   } while( true );
 }
 
 
 // 00AD6A20  Material_ValidateTechnique  (gfx_d3d/r_material_load_obj.cpp:9614)
 
-bool __cdecl Material_ValidateTechnique(Material *param_1,MaterialTechnique *param_2)
+bool __cdecl Material_ValidateTechnique(Material *material,MaterialTechnique *technique)
 
 {
   bool bVar1;
-  uint local_8;
+  MaterialPass *pass;
+  uint argCount;
+  uint passIndex;
   
-  local_8 = 0;
+  passIndex = 0;
   while( true ) {
-    if (param_2->passCount <= local_8) {
+    if (technique->passCount <= passIndex) {
       return true;
     }
     bVar1 = Material_ValidatePassArguments
-                      (param_1,param_2->name,
-                       (uint)param_2->passArray[local_8].perPrimArgCount +
-                       (uint)param_2->passArray[local_8].perObjArgCount +
-                       (uint)param_2->passArray[local_8].stableArgCount,
-                       param_2->passArray[local_8].field7_0x10.localArgs);
+                      (material,technique->name,
+                       (uint)technique->passArray[passIndex].perPrimArgCount +
+                       (uint)technique->passArray[passIndex].perObjArgCount +
+                       (uint)technique->passArray[passIndex].stableArgCount,
+                       technique->passArray[passIndex].field7_0x10.localArgs);
     if (!bVar1) break;
-    local_8 = local_8 + 1;
+    passIndex = passIndex + 1;
   }
   return false;
 }
@@ -7102,22 +7235,23 @@ bool __cdecl Material_ValidateTechnique(Material *param_1,MaterialTechnique *par
 
 // 00AD69B0  Material_Validate  (gfx_d3d/r_material_load_obj.cpp:9632)
 
-bool __cdecl Material_Validate(Material *param_1)
+bool __cdecl Material_Validate(Material *material)
 
 {
   bool bVar1;
-  int local_8;
+  int techType;
   
-  local_8 = 0;
+  techType = 0;
   while( true ) {
-    if (0x81 < local_8) {
+    if (0x81 < techType) {
       return true;
     }
-    if ((((param_1->field8_0xb0).localTechniqueSet)->techniques[local_8] != (MaterialTechnique *)0x0
-        ) && (bVar1 = Material_ValidateTechnique
-                                (param_1,((param_1->field8_0xb0).localTechniqueSet)->techniques
-                                         [local_8]), !bVar1)) break;
-    local_8 = local_8 + 1;
+    if ((((material->field8_0xb0).localTechniqueSet)->techniques[techType] !=
+         (MaterialTechnique *)0x0) &&
+       (bVar1 = Material_ValidateTechnique
+                          (material,((material->field8_0xb0).localTechniqueSet)->techniques
+                                    [techType]), !bVar1)) break;
+    techType = techType + 1;
   }
   return false;
 }
@@ -7125,7 +7259,7 @@ bool __cdecl Material_Validate(Material *param_1)
 
 // 00AD8810  CompareRawMaterialConstants  (gfx_d3d/r_material_load_obj.cpp:9646)
 
-int __cdecl CompareRawMaterialConstants(void *param_1,void *param_2)
+int __cdecl CompareRawMaterialConstants(void *e0_2,void *e1_2)
 
 {
   int iVar1;
@@ -7133,10 +7267,10 @@ int __cdecl CompareRawMaterialConstants(void *param_1,void *param_2)
   uint uVar3;
   uint uVar4;
   
-  iVar1 = *(int *)param_2;
+  iVar1 = *(int *)e1_2;
   puVar2 = (mtlLoadGlob.sortMtlRaw)->refStateBits;
-  uVar3 = R_HashString((char *)((int)(mtlLoadGlob.sortMtlRaw)->refStateBits +
-                               *(int *)param_1 + -0x28));
+  uVar3 = R_HashString((char *)((int)(mtlLoadGlob.sortMtlRaw)->refStateBits + *(int *)e0_2 + -0x28))
+  ;
   uVar4 = R_HashString((char *)((int)puVar2 + iVar1 + -0x28));
   return (-(uint)(uVar3 < uVar4) & 0xfffffffe) + 1;
 }
@@ -7144,10 +7278,10 @@ int __cdecl CompareRawMaterialConstants(void *param_1,void *param_2)
 
 // 00AD6C70  CompareHashedMaterialConstants  (gfx_d3d/r_material_load_obj.cpp:9667)
 
-int __cdecl CompareHashedMaterialConstants(void *param_1,void *param_2)
+int __cdecl CompareHashedMaterialConstants(void *e0_2,void *e1_2)
 
 {
-  return (-(uint)(*(uint *)param_1 < *(uint *)param_2) & 0xfffffffe) + 1;
+  return (-(uint)(*(uint *)e0_2 < *(uint *)e1_2) & 0xfffffffe) + 1;
 }
 
 
@@ -7157,30 +7291,31 @@ int __cdecl CompareHashedMaterialConstants(void *param_1,void *param_2)
 
 bool __cdecl
 Material_FinishLoadingInstance
-          (MaterialRaw *param_1,char *param_2,MaterialTechniqueSet **param_3,uint param_4,
-          int param_5)
+          (MaterialRaw *mtlRaw,char *techniqueSetVertDeclPrefix,MaterialTechniqueSet **techniqueSet,
+          uint materialType,int imageTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   MaterialTechniqueSet *pMVar4;
-  void *pvVar5;
-  int local_118;
-  char local_114 [260];
+  void *base;
+  MaterialConstantDefRaw *constantTable;
+  int constantIndex;
+  char techniqueSetName [260];
   uint local_10;
-  void *local_c;
-  int local_8;
+  MaterialTextureDefRaw *textureTable;
+  int textureIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (MaterialRaw *)0x0) &&
+  if ((mtlRaw == (MaterialRaw *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x25e1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((0x3f < (param_1->info).sortKey) &&
+  if ((0x3f < (mtlRaw->info).sortKey) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x25e2,0,
                                "mtlRaw->info.sortKey doesn\'t index 1 << MTL_SORT_PRIMARY_SORT_KEY_BITS\n\t%i not in [0, %i)"
@@ -7189,31 +7324,32 @@ Material_FinishLoadingInstance
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_c = (void *)((int)param_1->refStateBits + (param_1->textureTableOffset - 0x28));
-  for (local_8 = 0; local_8 < (int)(uint)param_1->textureCount; local_8 = local_8 + 1) {
-    bVar2 = Material_FinishLoadingTexdef
-                      (param_1,(MaterialTextureDefRaw *)(local_8 * 0xc + (int)local_c),param_4,
-                       param_5);
+  textureTable = (MaterialTextureDefRaw *)
+                 ((int)mtlRaw->refStateBits + (mtlRaw->textureTableOffset - 0x28));
+  for (textureIndex = 0; textureIndex < (int)(uint)mtlRaw->textureCount;
+      textureIndex = textureIndex + 1) {
+    bVar2 = Material_FinishLoadingTexdef(mtlRaw,textureTable + textureIndex,materialType,imageTrack)
+    ;
     if (!bVar2) {
       return false;
     }
   }
-  mtlLoadGlob.sortMtlRaw = param_1;
-  qsort(local_c,(uint)param_1->textureCount,0xc,CompareRawMaterialConstants);
-  pvVar5 = (void *)((int)param_1->refStateBits + (param_1->constantTableOffset - 0x28));
-  local_118 = 0;
+  mtlLoadGlob.sortMtlRaw = mtlRaw;
+  qsort(textureTable,(uint)mtlRaw->textureCount,0xc,CompareRawMaterialConstants);
+  base = (void *)((int)mtlRaw->refStateBits + (mtlRaw->constantTableOffset - 0x28));
+  constantIndex = 0;
   while( true ) {
-    if ((int)(uint)param_1->constantCount <= local_118) {
-      mtlLoadGlob.sortMtlRaw = param_1;
-      qsort(pvVar5,(uint)param_1->constantCount,0x14,CompareRawMaterialConstants);
+    if ((int)(uint)mtlRaw->constantCount <= constantIndex) {
+      mtlLoadGlob.sortMtlRaw = mtlRaw;
+      qsort(base,(uint)mtlRaw->constantCount,0x14,CompareRawMaterialConstants);
       mtlLoadGlob.sortMtlRaw = (MaterialRaw *)0x0;
-      Com_sprintf(local_114,0x100,"%s%s");
-      pMVar4 = Material_RegisterTechniqueSet(local_114);
-      *param_3 = pMVar4;
-      return *param_3 != (MaterialTechniqueSet *)0x0;
+      Com_sprintf(techniqueSetName,0x100,"%s%s");
+      pMVar4 = Material_RegisterTechniqueSet(techniqueSetName);
+      *techniqueSet = pMVar4;
+      return *techniqueSet != (MaterialTechniqueSet *)0x0;
     }
-    if (*(int *)((int)pvVar5 + local_118 * 0x14) == 0) break;
-    local_118 = local_118 + 1;
+    if (*(int *)((int)base + constantIndex * 0x14) == 0) break;
+    constantIndex = constantIndex + 1;
   }
   mtlLoadGlob.sortMtlRaw = (MaterialRaw *)0x0;
   return false;
@@ -7222,24 +7358,25 @@ Material_FinishLoadingInstance
 
 // 00AD6CA0  Material_AppendCharToConstName  (gfx_d3d/r_material_load_obj.cpp:9730)
 
-void __cdecl Material_AppendCharToConstName(char *param_1,char param_2)
+void __cdecl Material_AppendCharToConstName(char *name,char ch)
 
 {
-  uint local_8;
+  uint nameLimit;
+  uint nameIndex;
   
-  local_8 = 0;
+  nameIndex = 0;
   while( true ) {
-    if (0xb < local_8) {
+    if (0xb < nameIndex) {
       return;
     }
-    if (param_1[local_8] == '\0') break;
-    local_8 = local_8 + 1;
+    if (name[nameIndex] == '\0') break;
+    nameIndex = nameIndex + 1;
   }
-  param_1[local_8] = param_2;
-  if (0xb < local_8 + 1) {
+  name[nameIndex] = ch;
+  if (0xb < nameIndex + 1) {
     return;
   }
-  param_1[local_8 + 1] = '\0';
+  name[nameIndex + 1] = '\0';
   return;
 }
 
@@ -7247,27 +7384,29 @@ void __cdecl Material_AppendCharToConstName(char *param_1,char param_2)
 // 00AD6F10  Material_GetLayeredStateBits  (gfx_d3d/r_material_load_obj.cpp:9752)
 
 void __cdecl
-Material_GetLayeredStateBits(Material **param_1,uint param_2,uint param_3,uint *param_4)
+Material_GetLayeredStateBits(Material **layerMtl,uint layerCount,uint techType,uint *stateBits)
 
 {
   byte bVar1;
   GfxStateBits *pGVar2;
   code *pcVar3;
   bool bVar4;
-  uint local_8;
+  GfxStateBits *srcStateBits;
+  uint layerEntry;
+  uint layerIndex;
   
-  if (((*param_1)->stateBitsEntry[param_3] == 0xff) &&
+  if (((*layerMtl)->stateBitsEntry[techType] == 0xff) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x261d,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  bVar1 = (*param_1)->stateBitsEntry[param_3];
-  pGVar2 = (*param_1)->stateBitsTable;
-  *param_4 = pGVar2[bVar1].loadBits[0];
-  param_4[1] = pGVar2[bVar1].loadBits[1];
-  switch(param_3) {
+  bVar1 = (*layerMtl)->stateBitsEntry[techType];
+  pGVar2 = (*layerMtl)->stateBitsTable;
+  *stateBits = pGVar2[bVar1].loadBits[0];
+  stateBits[1] = pGVar2[bVar1].loadBits[1];
+  switch(techType) {
   case 0x34:
   case 0x35:
   case 0x36:
@@ -7288,26 +7427,26 @@ Material_GetLayeredStateBits(Material **param_1,uint param_2,uint param_3,uint *
     bVar4 = false;
   }
   if (!bVar4) {
-    if ((*param_4 & 0xf0) == 0x10) {
-      if ((*param_4 & 0x3800) != 0x800) {
-        for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-          bVar1 = param_1[local_8]->stateBitsEntry[param_3];
+    if ((*stateBits & 0xf0) == 0x10) {
+      if ((*stateBits & 0x3800) != 0x800) {
+        for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+          bVar1 = layerMtl[layerIndex]->stateBitsEntry[techType];
           if ((bVar1 != 0xff) &&
-             (pGVar2 = param_1[local_8]->stateBitsTable, (pGVar2[bVar1].loadBits[0] & 0xf0) != 0x10)
-             ) {
-            *param_4 = *param_4 & 0xffffc000;
-            *param_4 = *param_4 | 0x800;
-            *param_4 = *param_4 | 0x100;
-            *param_4 = *param_4 | 2;
-            *param_4 = pGVar2[bVar1].loadBits[0] & 0xf0 | *param_4;
+             (pGVar2 = layerMtl[layerIndex]->stateBitsTable,
+             (pGVar2[bVar1].loadBits[0] & 0xf0) != 0x10)) {
+            *stateBits = *stateBits & 0xffffc000;
+            *stateBits = *stateBits | 0x800;
+            *stateBits = *stateBits | 0x100;
+            *stateBits = *stateBits | 2;
+            *stateBits = pGVar2[bVar1].loadBits[0] & 0xf0 | *stateBits;
             return;
           }
         }
       }
     }
-    else if ((*param_4 & 0xf) != 1) {
-      *param_4 = *param_4 & 0xfffffff0;
-      *param_4 = *param_4 | 2;
+    else if ((*stateBits & 0xf) != 1) {
+      *stateBits = *stateBits & 0xfffffff0;
+      *stateBits = *stateBits | 2;
     }
   }
   return;
@@ -7318,29 +7457,29 @@ Material_GetLayeredStateBits(Material **param_1,uint param_2,uint param_3,uint *
 
 uint __cdecl
 Material_CreateLayeredStateBitsTable
-          (Material **param_1,uint param_2,MaterialTechniqueSet *param_3,uchar *param_4,
-          uint (*param_5) [2])
+          (Material **layerMtl,uint layerCount,MaterialTechniqueSet *techSet,uchar *stateBitsEntry,
+          uint (*stateBitsTable) [2])
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   uint uVar4;
-  uint local_14;
-  uint local_10 [2];
-  uint local_8;
+  uint techType;
+  uint derivedStateBits [2];
+  uint stateBitsCount;
   
-  local_8 = 0;
-  local_14 = 0;
+  stateBitsCount = 0;
+  techType = 0;
   do {
-    if (0x81 < local_14) {
-      return local_8;
+    if (0x81 < techType) {
+      return stateBitsCount;
     }
-    if (param_3->techniques[local_14] == (MaterialTechnique *)0x0) {
-      param_4[local_14] = 0xff;
+    if (techSet->techniques[techType] == (MaterialTechnique *)0x0) {
+      stateBitsEntry[techType] = 0xff;
     }
     else {
-      if ((((*param_1)->field8_0xb0).localTechniqueSet)->techniques[local_14] ==
+      if ((((*layerMtl)->field8_0xb0).localTechniqueSet)->techniques[techType] ==
           (MaterialTechnique *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x265c,0,"%s");
@@ -7350,7 +7489,7 @@ Material_CreateLayeredStateBitsTable
           return uVar4;
         }
       }
-      if ((((*param_1)->field8_0xb0).localTechniqueSet)->techniques[local_14]->passCount != 1) {
+      if ((((*layerMtl)->field8_0xb0).localTechniqueSet)->techniques[techType]->passCount != 1) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x265d,0,"%s");
         if (!bVar2) {
@@ -7359,8 +7498,8 @@ Material_CreateLayeredStateBitsTable
           return uVar4;
         }
       }
-      Material_GetLayeredStateBits(param_1,param_2,local_14,local_10);
-      if ((local_10[0] & 0x3800) == 0) {
+      Material_GetLayeredStateBits(layerMtl,layerCount,techType,derivedStateBits);
+      if ((derivedStateBits[0] & 0x3800) == 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x265f,0,"%s");
         if (!bVar2) {
@@ -7369,10 +7508,10 @@ Material_CreateLayeredStateBitsTable
           return uVar4;
         }
       }
-      uVar3 = Material_AddStateBitsArrayToTable(&local_10,1,param_5,&local_8);
-      param_4[local_14] = uVar3;
+      uVar3 = Material_AddStateBitsArrayToTable(&derivedStateBits,1,stateBitsTable,&stateBitsCount);
+      stateBitsEntry[techType] = uVar3;
     }
-    local_14 = local_14 + 1;
+    techType = techType + 1;
   } while( true );
 }
 
@@ -7381,21 +7520,21 @@ Material_CreateLayeredStateBitsTable
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uchar __cdecl MaterialTexture_IsMatureContent(uchar param_1,char *param_2)
+uchar __cdecl MaterialTexture_IsMatureContent(uchar texSemantic,char *texImageName)
 
 {
   uchar uVar1;
   int extraout_EAX;
-  uchar local_10 [8];
+  uchar FILENAME_PATTERN [8];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  builtin_memcpy(local_10,"_mature",8);
-  if (((param_1 == '\v') || (param_1 == '\x01')) || (param_1 == '\0')) {
+  builtin_memcpy(FILENAME_PATTERN,"_mature",8);
+  if (((texSemantic == '\v') || (texSemantic == '\x01')) || (texSemantic == '\0')) {
     uVar1 = '\0';
   }
   else {
-    strstr((uchar *)param_2,local_10);
+    strstr((uchar *)texImageName,FILENAME_PATTERN);
     if (extraout_EAX == 0) {
       uVar1 = '\0';
     }
@@ -7412,7 +7551,7 @@ uchar __cdecl MaterialTexture_IsMatureContent(uchar param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 Material * __cdecl
-Material_CreateLayered(char *param_1,Material **param_2,uint param_3,MaterialTechniqueSet *param_4)
+Material_CreateLayered(char *name,Material **layerMtl,uint layerCount,MaterialTechniqueSet *techSet)
 
 {
   char cVar1;
@@ -7423,217 +7562,229 @@ Material_CreateLayered(char *param_1,Material **param_2,uint param_3,MaterialTec
   uchar uVar6;
   Material *pMVar7;
   MaterialTextureDef *pMVar8;
-  uint uVar9;
-  int iVar10;
-  char *pcVar11;
-  uint uVar12;
-  int iVar13;
-  uchar *puVar14;
-  MaterialConstantDef *pMVar15;
-  uchar *puVar16;
-  MaterialConstantDef *pMVar17;
+  int iVar9;
+  uint uVar10;
+  int iVar11;
+  char *pcVar12;
+  uint uVar13;
+  int iVar14;
+  ulong count;
+  uchar *puVar15;
+  MaterialConstantDef *pMVar16;
+  uchar *puVar17;
+  MaterialConstantDef *pMVar18;
   char local_539;
   MaterialConstantDef *local_538;
   Material *local_534;
   char *local_524;
   char *local_514;
-  uint local_4fc;
-  uint local_4f8;
-  char *local_4ec;
-  uint local_4e8;
-  MaterialTextureDef *local_4e0;
-  uint local_4dc;
-  uint local_4d8;
-  uint local_4d4 [261];
-  MaterialConstantDef *local_c0;
-  uint local_bc;
-  MaterialConstantDef *local_b8;
-  char local_b2;
-  byte local_b1;
-  MaterialTextureDef *local_b0;
-  uchar local_ac [140];
+  uint shift;
+  uint layerSurfType;
+  uchar *memory;
+  uint oredSurfaceTypeBits;
+  uint texIndex;
+  uint texTableSize;
+  uint newMtlSize;
+  uint nameSize;
+  uint andedGameFlags;
+  uint constTableSize;
+  MaterialTextureDef *newTexEntry;
+  uint oredGameFlags;
+  uint oredLayeredSurfaceTypes;
+  uint stateBitsTable [261];
+  MaterialConstantDef *oldConstTable;
+  uint tintConstNameHash;
+  MaterialConstantDef *newConstEntry;
+  bool isTintSpecified;
+  uchar constantCount;
+  MaterialTextureDef *oldTexTable;
+  uchar stateBitsEntry [140];
   uint local_20;
-  Material *local_1c;
-  uint local_18;
-  uint local_14;
-  byte local_d;
-  uint local_c;
-  char local_5;
+  Material *newMtl;
+  uint layerIndex;
+  uint constIndex;
+  uchar textureCount;
+  uint stateBitsCount;
+  char layerChar;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4e8 = 0xffffffff;
-  local_4dc = 0;
-  local_d = 0;
-  local_b1 = 0;
-  local_4fc = 0;
-  local_bc = R_HashString("colorTint");
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-    local_4e8 = local_4e8 & (param_2[local_18]->info).gameFlags;
-    local_4dc = local_4dc | (param_2[local_18]->info).gameFlags;
-    local_d = local_d + param_2[local_18]->textureCount;
-    local_b1 = local_b1 + param_2[local_18]->constantCount;
-    local_4fc = local_4fc | (param_2[local_18]->info).surfaceTypeBits;
-    bVar5 = Material_HasConstant(param_2[local_18],local_bc);
+  andedGameFlags = 0xffffffff;
+  oredGameFlags = 0;
+  textureCount = '\0';
+  constantCount = '\0';
+  oredSurfaceTypeBits = 0;
+  tintConstNameHash = R_HashString("colorTint");
+  for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+    andedGameFlags = andedGameFlags & (layerMtl[layerIndex]->info).gameFlags;
+    oredGameFlags = oredGameFlags | (layerMtl[layerIndex]->info).gameFlags;
+    textureCount = textureCount + layerMtl[layerIndex]->textureCount;
+    constantCount = constantCount + layerMtl[layerIndex]->constantCount;
+    oredSurfaceTypeBits = oredSurfaceTypeBits | (layerMtl[layerIndex]->info).surfaceTypeBits;
+    bVar5 = Material_HasConstant(layerMtl[layerIndex],tintConstNameHash);
     if (!bVar5) {
-      local_b1 = local_b1 + 1;
+      constantCount = constantCount + '\x01';
     }
   }
-  local_4d8 = 0;
-  local_514 = param_1;
+  oredLayeredSurfaceTypes = 0;
+  local_514 = name;
   do {
     cVar1 = *local_514;
     local_514 = local_514 + 1;
   } while (cVar1 != '\0');
-  local_4ec = local_514 + (1 - (int)(param_1 + 1));
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-    local_4d8 = ((param_2[local_18]->info).layeredSurfaceTypes & 0x3f) <<
-                ((char)local_18 * '\x06' & 0x1fU) | local_4d8;
-    local_524 = (param_2[local_18]->info).name;
-    pcVar11 = local_524 + 1;
+  nameSize = (uint)(local_514 + (1 - (int)(name + 1)));
+  for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+    oredLayeredSurfaceTypes =
+         ((layerMtl[layerIndex]->info).layeredSurfaceTypes & 0x3f) <<
+         ((char)layerIndex * '\x06' & 0x1fU) | oredLayeredSurfaceTypes;
+    local_524 = (layerMtl[layerIndex]->info).name;
+    pcVar12 = local_524 + 1;
     do {
       cVar1 = *local_524;
       local_524 = local_524 + 1;
     } while (cVar1 != '\0');
-    local_4ec = local_524 + ((int)local_4ec - (int)pcVar11);
-    if (local_18 + 1 < param_3) {
-      local_4ec = local_4ec + 1;
+    nameSize = (uint)(local_524 + (nameSize - (int)pcVar12));
+    if (layerIndex + 1 < layerCount) {
+      nameSize = nameSize + 1;
     }
   }
-  local_4ec = local_4ec + 2;
-  local_c = Material_CreateLayeredStateBitsTable
-                      (param_2,param_3,param_4,local_ac,(uint (*) [2])local_4d4);
-  uVar9 = (uint)local_d;
-  iVar10 = uVar9 * 0x10;
-  uVar12 = (uint)local_b1;
-  iVar13 = uVar12 * 0x20;
-  pMVar7 = Material_Alloc((int)(local_4ec + iVar10 + 0xc0 + iVar13));
-  memset((uchar *)pMVar7,'\0',(ulong)(local_4ec + iVar10 + 0xc0 + iVar13));
-  if (uVar9 == 0) {
+  iVar9 = nameSize + 2;
+  stateBitsCount =
+       Material_CreateLayeredStateBitsTable
+                 (layerMtl,layerCount,techSet,stateBitsEntry,(uint (*) [2])stateBitsTable);
+  uVar10 = (uint)textureCount;
+  iVar11 = uVar10 * 0x10;
+  uVar13 = (uint)constantCount;
+  iVar14 = uVar13 * 0x20;
+  count = iVar11 + 0xc0 + iVar14 + iVar9;
+  pMVar7 = Material_Alloc(count);
+  memset((uchar *)pMVar7,'\0',count);
+  if (uVar10 == 0) {
     local_534 = (Material *)0x0;
   }
   else {
     local_534 = pMVar7 + 1;
   }
   pMVar7->textureTable = (MaterialTextureDef *)local_534;
-  if (uVar12 == 0) {
+  if (uVar13 == 0) {
     local_538 = (MaterialConstantDef *)0x0;
   }
   else {
-    local_538 = (MaterialConstantDef *)(pMVar7[1].stateBitsEntry + iVar10 + -0x28);
+    local_538 = (MaterialConstantDef *)(pMVar7[1].stateBitsEntry + iVar11 + -0x28);
   }
   (pMVar7->field10_0xb8).localConstantTable = local_538;
-  (pMVar7->field8_0xb0).localTechniqueSet = param_4;
-  (pMVar7->info).name = (char *)(pMVar7[1].stateBitsEntry + iVar13 + iVar10 + -0x28);
-  local_1c = pMVar7;
-  I_strncpyz((pMVar7->info).name,param_1,(int)local_4ec);
-  I_strncat((local_1c->info).name,(int)local_4ec,"(");
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-    I_strncat((local_1c->info).name,(int)local_4ec,(param_2[local_18]->info).name);
-    if (local_18 + 1 < param_3) {
-      I_strncat((local_1c->info).name,(int)local_4ec,":");
+  (pMVar7->field8_0xb0).localTechniqueSet = techSet;
+  (pMVar7->info).name = (char *)(pMVar7[1].stateBitsEntry + iVar14 + iVar11 + -0x28);
+  newMtl = pMVar7;
+  I_strncpyz((pMVar7->info).name,name,iVar9);
+  I_strncat((newMtl->info).name,iVar9,"(");
+  for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+    I_strncat((newMtl->info).name,iVar9,(layerMtl[layerIndex]->info).name);
+    if (layerIndex + 1 < layerCount) {
+      I_strncat((newMtl->info).name,iVar9,":");
     }
   }
-  I_strncat((local_1c->info).name,(int)local_4ec,")");
-  (local_1c->info).gameFlags = local_4e8 & 4 | local_4dc & 0xfffffffb;
-  (local_1c->info).sortKey = ((*param_2)->info).sortKey;
-  (local_1c->info).surfaceTypeBits = local_4fc;
-  (local_1c->info).layeredSurfaceTypes = local_4d8;
-  if ((7 < param_3) &&
+  I_strncat((newMtl->info).name,iVar9,")");
+  (newMtl->info).gameFlags = andedGameFlags & 4 | oredGameFlags & 0xfffffffb;
+  (newMtl->info).sortKey = ((*layerMtl)->info).sortKey;
+  (newMtl->info).surfaceTypeBits = oredSurfaceTypeBits;
+  (newMtl->info).layeredSurfaceTypes = oredLayeredSurfaceTypes;
+  if ((7 < layerCount) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x26d7,0,"%s"), !bVar5)) {
     pcVar2 = (code *)swi(3);
     pMVar7 = (Material *)(*pcVar2)();
     return pMVar7;
   }
-  (local_1c->info).layeredSurfaceTypes = param_3 << 0x1d | (local_1c->info).layeredSurfaceTypes;
-  local_1c->textureCount = local_d;
-  local_1c->constantCount = local_b1;
-  puVar14 = local_ac;
-  puVar16 = local_1c->stateBitsEntry;
-  for (iVar10 = 0x20; iVar10 != 0; iVar10 = iVar10 + -1) {
-    *(undefined4 *)puVar16 = *(undefined4 *)puVar14;
-    puVar14 = puVar14 + 4;
-    puVar16 = puVar16 + 4;
+  (newMtl->info).layeredSurfaceTypes = layerCount << 0x1d | (newMtl->info).layeredSurfaceTypes;
+  newMtl->textureCount = textureCount;
+  newMtl->constantCount = constantCount;
+  puVar15 = stateBitsEntry;
+  puVar17 = newMtl->stateBitsEntry;
+  for (iVar9 = 0x20; iVar9 != 0; iVar9 = iVar9 + -1) {
+    *(undefined4 *)puVar17 = *(undefined4 *)puVar15;
+    puVar15 = puVar15 + 4;
+    puVar17 = puVar17 + 4;
   }
-  *(undefined2 *)puVar16 = *(undefined2 *)puVar14;
-  Material_SetStateBits(local_1c,(uint (*) [2])local_4d4,local_c);
-  local_4e0 = local_1c->textureTable;
-  local_b8 = (local_1c->field10_0xb8).localConstantTable;
-  for (local_18 = 0; local_18 < param_3; local_18 = local_18 + 1) {
-    if (local_18 == 0) {
+  *(undefined2 *)puVar17 = *(undefined2 *)puVar15;
+  Material_SetStateBits(newMtl,(uint (*) [2])stateBitsTable,stateBitsCount);
+  newTexEntry = newMtl->textureTable;
+  newConstEntry = (newMtl->field10_0xb8).localConstantTable;
+  for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+    if (layerIndex == 0) {
       local_539 = '\0';
     }
     else {
-      local_539 = (char)local_18 + '0';
+      local_539 = (char)layerIndex + '0';
     }
-    local_5 = local_539;
-    local_b0 = param_2[local_18]->textureTable;
-    for (local_4f8 = 0; local_4f8 < param_2[local_18]->textureCount; local_4f8 = local_4f8 + 1) {
-      pMVar8 = local_b0 + local_4f8;
-      local_4e0->nameHash = pMVar8->nameHash;
+    layerChar = local_539;
+    oldTexTable = layerMtl[layerIndex]->textureTable;
+    for (texIndex = 0; texIndex < layerMtl[layerIndex]->textureCount; texIndex = texIndex + 1) {
+      pMVar8 = oldTexTable + texIndex;
+      newTexEntry->nameHash = pMVar8->nameHash;
       cVar1 = pMVar8->nameEnd;
       uVar6 = pMVar8->samplerState;
       uVar3 = pMVar8->semantic;
-      local_4e0->nameStart = pMVar8->nameStart;
-      local_4e0->nameEnd = cVar1;
-      local_4e0->samplerState = uVar6;
-      local_4e0->semantic = uVar3;
+      newTexEntry->nameStart = pMVar8->nameStart;
+      newTexEntry->nameEnd = cVar1;
+      newTexEntry->samplerState = uVar6;
+      newTexEntry->semantic = uVar3;
       uVar6 = pMVar8->pad[0];
       uVar3 = pMVar8->pad[1];
       uVar4 = pMVar8->pad[2];
-      local_4e0->isMatureContent = pMVar8->isMatureContent;
-      local_4e0->pad[0] = uVar6;
-      local_4e0->pad[1] = uVar3;
-      local_4e0->pad[2] = uVar4;
-      local_4e0->u = pMVar8->u;
-      if (((local_4e0->samplerState & 0x18) == 8) &&
-         (((local_4e0->semantic == '\x02' || (local_4e0->semantic == '\x05')) ||
-          (local_4e0->semantic == '\b')))) {
-        local_4e0->samplerState = local_4e0->samplerState & 0xe7;
-        local_4e0->samplerState = local_4e0->samplerState | 0x10;
+      newTexEntry->isMatureContent = pMVar8->isMatureContent;
+      newTexEntry->pad[0] = uVar6;
+      newTexEntry->pad[1] = uVar3;
+      newTexEntry->pad[2] = uVar4;
+      newTexEntry->u = pMVar8->u;
+      if (((newTexEntry->samplerState & 0x18) == 8) &&
+         (((newTexEntry->semantic == '\x02' || (newTexEntry->semantic == '\x05')) ||
+          (newTexEntry->semantic == '\b')))) {
+        newTexEntry->samplerState = newTexEntry->samplerState & 0xe7;
+        newTexEntry->samplerState = newTexEntry->samplerState | 0x10;
       }
-      if (local_5 != '\0') {
-        local_4e0->nameEnd = local_5;
-        local_4e0->nameHash = local_4e0->nameHash * 0x21 ^ (int)local_5;
+      if (layerChar != '\0') {
+        newTexEntry->nameEnd = layerChar;
+        newTexEntry->nameHash = newTexEntry->nameHash * 0x21 ^ (int)layerChar;
       }
-      uVar6 = MaterialTexture_IsMatureContent(local_4e0->semantic,((local_4e0->u).image)->name);
-      local_4e0->isMatureContent = uVar6;
-      local_4e0 = local_4e0 + 1;
+      uVar6 = MaterialTexture_IsMatureContent(newTexEntry->semantic,((newTexEntry->u).image)->name);
+      newTexEntry->isMatureContent = uVar6;
+      newTexEntry = newTexEntry + 1;
     }
-    local_c0 = (param_2[local_18]->field10_0xb8).localConstantTable;
-    local_b2 = '\0';
-    for (local_14 = 0; local_14 < param_2[local_18]->constantCount; local_14 = local_14 + 1) {
-      pMVar15 = local_c0 + local_14;
-      pMVar17 = local_b8;
-      for (iVar10 = 8; iVar10 != 0; iVar10 = iVar10 + -1) {
-        pMVar17->nameHash = pMVar15->nameHash;
-        pMVar15 = (MaterialConstantDef *)pMVar15->name;
-        pMVar17 = (MaterialConstantDef *)pMVar17->name;
+    oldConstTable = (layerMtl[layerIndex]->field10_0xb8).localConstantTable;
+    isTintSpecified = false;
+    for (constIndex = 0; constIndex < layerMtl[layerIndex]->constantCount;
+        constIndex = constIndex + 1) {
+      pMVar16 = oldConstTable + constIndex;
+      pMVar18 = newConstEntry;
+      for (iVar9 = 8; iVar9 != 0; iVar9 = iVar9 + -1) {
+        pMVar18->nameHash = pMVar16->nameHash;
+        pMVar16 = (MaterialConstantDef *)pMVar16->name;
+        pMVar18 = (MaterialConstantDef *)pMVar18->name;
       }
-      if (local_5 != '\0') {
-        Material_AppendCharToConstName(local_b8->name,local_5);
-        local_b8->nameHash = local_b8->nameHash * 0x21 ^ (int)local_5;
+      if (layerChar != '\0') {
+        Material_AppendCharToConstName(newConstEntry->name,layerChar);
+        newConstEntry->nameHash = newConstEntry->nameHash * 0x21 ^ (int)layerChar;
       }
-      if (local_c0[local_14].nameHash == local_bc) {
-        local_b2 = '\x01';
+      if (oldConstTable[constIndex].nameHash == tintConstNameHash) {
+        isTintSpecified = true;
       }
-      local_b8 = local_b8 + 1;
+      newConstEntry = newConstEntry + 1;
     }
-    if (local_b2 == '\0') {
-      strncpy((uchar *)local_b8->name,(uchar *)"colorTint",0xc);
-      local_b8->nameHash = local_bc;
-      local_b8->literal[0] = 1.0;
-      local_b8->literal[1] = 1.0;
-      local_b8->literal[2] = 1.0;
-      local_b8->literal[3] = 1.0;
-      if (local_5 != '\0') {
-        Material_AppendCharToConstName(local_b8->name,local_5);
-        local_b8->nameHash = local_b8->nameHash * 0x21 ^ (int)local_5;
+    if (isTintSpecified == false) {
+      strncpy((uchar *)newConstEntry->name,(uchar *)"colorTint",0xc);
+      newConstEntry->nameHash = tintConstNameHash;
+      newConstEntry->literal[0] = 1.0;
+      newConstEntry->literal[1] = 1.0;
+      newConstEntry->literal[2] = 1.0;
+      newConstEntry->literal[3] = 1.0;
+      if (layerChar != '\0') {
+        Material_AppendCharToConstName(newConstEntry->name,layerChar);
+        newConstEntry->nameHash = newConstEntry->nameHash * 0x21 ^ (int)layerChar;
       }
-      local_b8 = local_b8 + 1;
+      newConstEntry = newConstEntry + 1;
     }
   }
-  if (((int)local_4e0 - (int)local_1c->textureTable >> 4 != (uint)local_1c->textureCount) &&
+  if (((int)newTexEntry - (int)newMtl->textureTable >> 4 != (uint)newMtl->textureCount) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2725,0,
                                "newTexEntry - newMtl->textureTable == newMtl->textureCount\n\t%i, %i"
@@ -7642,8 +7793,8 @@ Material_CreateLayered(char *param_1,Material **param_2,uint param_3,MaterialTec
     pMVar7 = (Material *)(*pcVar2)();
     return pMVar7;
   }
-  if (((int)local_b8 - (int)(local_1c->field10_0xb8).localConstantTable >> 5 !=
-       (uint)local_1c->constantCount) &&
+  if (((int)newConstEntry - (int)(newMtl->field10_0xb8).localConstantTable >> 5 !=
+       (uint)newMtl->constantCount) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2726,0,
                                "newConstEntry - newMtl->constantTable == newMtl->constantCount\n\t%i, %i"
@@ -7652,21 +7803,21 @@ Material_CreateLayered(char *param_1,Material **param_2,uint param_3,MaterialTec
     pMVar7 = (Material *)(*pcVar2)();
     return pMVar7;
   }
-  qsort(local_1c->textureTable,(uint)local_1c->textureCount,0x10,CompareHashedMaterialConstants);
-  qsort((local_1c->field10_0xb8).localConstantTable,(uint)local_1c->constantCount,0x20,
+  qsort(newMtl->textureTable,(uint)newMtl->textureCount,0x10,CompareHashedMaterialConstants);
+  qsort((newMtl->field10_0xb8).localConstantTable,(uint)newMtl->constantCount,0x20,
         CompareHashedMaterialConstants);
-  Material_SetMaterialDrawRegion(local_1c);
-  bVar5 = Material_Validate(local_1c);
+  Material_SetMaterialDrawRegion(newMtl);
+  bVar5 = Material_Validate(newMtl);
   if (!bVar5) {
-    local_1c = (Material *)0x0;
+    newMtl = (Material *)0x0;
   }
-  return local_1c;
+  return newMtl;
 }
 
 
 // 00AD7100  Material_HasNormalMap  (gfx_d3d/r_material_load_obj.cpp:10048)
 
-bool __cdecl Material_HasNormalMap(Material *param_1)
+bool __cdecl Material_HasNormalMap(Material *mtl)
 
 {
   byte bVar1;
@@ -7678,25 +7829,26 @@ bool __cdecl Material_HasNormalMap(Material *param_1)
   int local_20;
   byte *local_18;
   byte *local_14;
-  char *local_10;
-  uint local_c;
+  char *techSetName;
+  uint texIndex;
+  uint normalMapNameHash;
   
-  local_10 = ((param_1->field8_0xb0).localTechniqueSet)->name;
-  iVar5 = strncmp(local_10,"w_",2);
+  techSetName = ((mtl->field8_0xb0).localTechniqueSet)->name;
+  iVar5 = strncmp(techSetName,"w_",2);
   if (iVar5 == 0) {
-    local_10 = local_10 + 2;
+    techSetName = techSetName + 2;
   }
   else {
-    iVar5 = strncmp(local_10,"wc_",3);
+    iVar5 = strncmp(techSetName,"wc_",3);
     if (iVar5 == 0) {
-      local_10 = local_10 + 3;
+      techSetName = techSetName + 3;
     }
   }
-  iVar5 = strncmp(local_10,"swb_",4);
+  iVar5 = strncmp(techSetName,"swb_",4);
   if (iVar5 == 0) {
     return true;
   }
-  if ((param_1 == (Material *)0x0) &&
+  if ((mtl == (Material *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x274e,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -7704,29 +7856,29 @@ bool __cdecl Material_HasNormalMap(Material *param_1)
     return (bool)uVar4;
   }
   uVar6 = R_HashString("normalMap");
-  local_c = 0;
+  texIndex = 0;
   while( true ) {
-    if (param_1->textureCount <= local_c) {
+    if (mtl->textureCount <= texIndex) {
       return false;
     }
-    if (param_1->textureTable[local_c].nameHash == uVar6) break;
-    local_c = local_c + 1;
+    if (mtl->textureTable[texIndex].nameHash == uVar6) break;
+    texIndex = texIndex + 1;
   }
-  if ((param_1->textureTable[local_c].nameStart != 'n') &&
+  if ((mtl->textureTable[texIndex].nameStart != 'n') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2756,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_1->textureTable[local_c].nameEnd != 'p') &&
+  if ((mtl->textureTable[texIndex].nameEnd != 'p') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2757,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_1->textureTable[local_c].semantic != '\x05') &&
+  if ((mtl->textureTable[texIndex].semantic != '\x05') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2758,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -7734,7 +7886,7 @@ bool __cdecl Material_HasNormalMap(Material *param_1)
     return (bool)uVar4;
   }
   local_14 = (byte *)0xd818b4;
-  local_18 = (byte *)(param_1->textureTable[local_c].u.image)->name;
+  local_18 = (byte *)(mtl->textureTable[texIndex].u.image)->name;
   do {
     bVar1 = *local_18;
     bVar3 = bVar1 < *local_14;
@@ -7758,63 +7910,65 @@ LAB_00ad7310:
 
 // 00AD78C0  Material_AppendTechniqueSetName  (gfx_d3d/r_material_load_obj.cpp:10084)
 
-uint __cdecl Material_AppendTechniqueSetName(char *param_1,uint param_2,char *param_3,char param_4)
+uint __cdecl Material_AppendTechniqueSetName(char *name,uint nameLen,char *append,char lyrToken)
 
 {
   char cVar1;
   
-  for (; *param_3 != '\0'; param_3 = param_3 + 1) {
-    if (param_2 == 0x3f) {
-      param_1[0x3f] = '\0';
+  for (; *append != '\0'; append = append + 1) {
+    if (nameLen == 0x3f) {
+      name[0x3f] = '\0';
       Com_Error(ERR_FATAL,"technique set name %s%s is too long");
     }
-    cVar1 = param_4;
-    if (*param_3 != '0') {
-      cVar1 = *param_3;
+    cVar1 = lyrToken;
+    if (*append != '0') {
+      cVar1 = *append;
     }
-    param_1[param_2] = cVar1;
-    param_2 = param_2 + 1;
+    name[nameLen] = cVar1;
+    nameLen = nameLen + 1;
   }
-  param_1[param_2] = '\0';
-  return param_2;
+  name[nameLen] = '\0';
+  return nameLen;
 }
 
 
 // 00AD7940  Material_GetLayeredTechniqueSetName  (gfx_d3d/r_material_load_obj.cpp:10106)
 
-LayeredTechniqueSetName * __cdecl Material_GetLayeredTechniqueSetName(char *param_1)
+LayeredTechniqueSetName * __cdecl Material_GetLayeredTechniqueSetName(char *techSetName)
 
 {
   int iVar1;
   uint uVar2;
-  uint local_14;
-  uint local_10;
+  uint top;
+  uint bot;
+  int comparison;
+  uint mid;
   
-  iVar1 = strncmp(param_1,"w_",2);
+  iVar1 = strncmp(techSetName,"w_",2);
   if (iVar1 == 0) {
-    param_1 = param_1 + 2;
+    techSetName = techSetName + 2;
   }
   else {
-    iVar1 = strncmp(param_1,"wc_",3);
+    iVar1 = strncmp(techSetName,"wc_",3);
     if (iVar1 != 0) {
       return (LayeredTechniqueSetName *)0x0;
     }
-    param_1 = param_1 + 3;
+    techSetName = techSetName + 3;
   }
-  local_10 = 0;
-  local_14 = 0x79;
+  bot = 0;
+  top = 0x79;
   do {
-    uVar2 = local_10 + local_14 >> 1;
-    iVar1 = I_strcmp(param_1,s_lyrTechSetNames[uVar2].inputName);
+    uVar2 = bot + top >> 1;
+    iVar1 = I_strcmp(techSetName,s_lyrTechSetNames[uVar2].inputName);
     if (-1 < iVar1) {
       if (iVar1 < 1) {
         return s_lyrTechSetNames + uVar2;
       }
-      local_10 = uVar2 + 1;
-      uVar2 = local_14;
+      bot = uVar2 + 1;
+      uVar2 = top;
     }
-    local_14 = uVar2;
-  } while (local_10 < local_14);
+    top = uVar2;
+  } while (bot < top);
   return (LayeredTechniqueSetName *)0x0;
 }
 
@@ -7823,7 +7977,7 @@ LayeredTechniqueSetName * __cdecl Material_GetLayeredTechniqueSetName(char *para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MaterialTechniqueSet * __cdecl Material_RegisterLayeredTechniqueSet(Material **param_1,uint param_2)
+MaterialTechniqueSet * __cdecl Material_RegisterLayeredTechniqueSet(Material **mtl,uint layerCount)
 
 {
   char cVar1;
@@ -7845,22 +7999,22 @@ MaterialTechniqueSet * __cdecl Material_RegisterLayeredTechniqueSet(Material **p
   char *local_888;
   char *local_880;
   char *local_878;
-  char local_874 [2052];
-  char *local_70;
-  char *local_6c;
-  uint local_68;
-  uint local_64;
-  char local_5d;
-  uint local_5c;
-  undefined4 local_58;
-  char local_54 [64];
+  char buf [2052];
+  char *end;
+  char *base_techset_name;
+  uint newTechSetNameLen;
+  MaterialWorldVertexFormat worldVertFormat;
+  char layerToken;
+  uint normalMapCount;
+  MaterialTechniqueSet *techSet;
+  char newTechSetName [64];
   uint local_14;
-  uint local_10;
-  LayeredTechniqueSetName *local_c;
-  char local_5;
+  uint layerIndex;
+  LayeredTechniqueSetName *lyrTechSetName;
+  bool found;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((3 < param_2 - 1) &&
+  if ((3 < layerCount - 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x27a7,0,
                                "layerCount - 1 doesn\'t index ARRAY_COUNT( s_worldVertFormatForLayerCount )\n\t%i not in [0, %i)"
@@ -7869,57 +8023,58 @@ MaterialTechniqueSet * __cdecl Material_RegisterLayeredTechniqueSet(Material **p
     pMVar5 = (MaterialTechniqueSet *)(*pcVar2)();
     return pMVar5;
   }
-  local_64 = s_stateMapDstStencilBitGroup[9].stateBitsMask[param_2 + 1];
-  local_5c = 0;
-  local_68 = 0;
-  local_5 = '\0';
-  if (param_2 == 2) {
-    local_6c = (((*param_1)->field8_0xb0).localTechniqueSet)->name;
-    iVar6 = strncmp(local_6c,"w_",2);
+  worldVertFormat = s_stateMapDstStencilBitGroup[9].stateBitsMask[layerCount + 1];
+  normalMapCount = 0;
+  newTechSetNameLen = 0;
+  found = false;
+  if (layerCount == 2) {
+    base_techset_name = (((*mtl)->field8_0xb0).localTechniqueSet)->name;
+    iVar6 = strncmp(base_techset_name,"w_",2);
     if (iVar6 == 0) {
-      local_6c = local_6c + 2;
+      base_techset_name = base_techset_name + 2;
     }
     else {
-      iVar6 = strncmp(local_6c,"wc_",3);
+      iVar6 = strncmp(base_techset_name,"wc_",3);
       if (iVar6 == 0) {
-        local_6c = local_6c + 3;
+        base_techset_name = base_techset_name + 3;
       }
       else {
-        local_6c = (char *)0x0;
+        base_techset_name = (char *)0x0;
       }
     }
-    if ((((local_6c != (char *)0x0) && (iVar6 = strncmp(local_6c,"swb_",4), iVar6 == 0)) &&
-        (local_c = Material_GetLayeredTechniqueSetName
-                             (((param_1[1]->field8_0xb0).localTechniqueSet)->name),
-        local_c != (LayeredTechniqueSetName *)0x0)) && (*local_c->nameChunk == 'b')) {
-      local_5c = 1;
-      builtin_strncpy(local_54,"swl_",5);
-      strstr((uchar *)local_c->nameChunk,(uchar *)"n0");
+    if ((((base_techset_name != (char *)0x0) &&
+         (iVar6 = strncmp(base_techset_name,"swb_",4), iVar6 == 0)) &&
+        (lyrTechSetName =
+              Material_GetLayeredTechniqueSetName(((mtl[1]->field8_0xb0).localTechniqueSet)->name),
+        lyrTechSetName != (LayeredTechniqueSetName *)0x0)) && (*lyrTechSetName->nameChunk == 'b')) {
+      normalMapCount = 1;
+      builtin_strncpy(newTechSetName,"swl_",5);
+      strstr((uchar *)lyrTechSetName->nameChunk,(uchar *)"n0");
       if (extraout_EAX != 0) {
-        local_878 = (char *)((int)&local_58 + 3);
+        local_878 = (char *)((int)&techSet + 3);
         do {
           pcVar7 = local_878 + 1;
           local_878 = local_878 + 1;
         } while (*pcVar7 != '\0');
         *(char (*) [4])local_878 = (char  [4])0x5f316e;
-        local_5c = local_5c + 1;
+        normalMapCount = normalMapCount + 1;
       }
-      strstr((uchar *)local_c->nameChunk,(uchar *)"d0");
+      strstr((uchar *)lyrTechSetName->nameChunk,(uchar *)"d0");
       if (extraout_EAX_00 != 0) {
-        local_880 = (char *)((int)&local_58 + 3);
+        local_880 = (char *)((int)&techSet + 3);
         do {
           pcVar7 = local_880 + 1;
           local_880 = local_880 + 1;
         } while (*pcVar7 != '\0');
         *(char (*) [4])local_880 = (char  [4])0x5f3164;
       }
-      pcVar7 = local_6c + 4;
+      pcVar7 = base_techset_name + 4;
       local_888 = pcVar7;
       do {
         cVar1 = *local_888;
         local_888 = local_888 + 1;
       } while (cVar1 != '\0');
-      local_89c = (char *)((int)&local_58 + 3);
+      local_89c = (char *)((int)&techSet + 3);
       do {
         pcVar9 = local_89c + 1;
         local_89c = local_89c + 1;
@@ -7935,68 +8090,73 @@ MaterialTechniqueSet * __cdecl Material_RegisterLayeredTechniqueSet(Material **p
         pcVar9 = pcVar9 + 1;
         local_89c = local_89c + 1;
       }
-      local_5 = '\x01';
+      found = true;
     }
   }
-  if (local_5 == '\0') {
-    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-      local_c = Material_GetLayeredTechniqueSetName
-                          (((param_1[local_10]->field8_0xb0).localTechniqueSet)->name);
-      if (local_c == (LayeredTechniqueSetName *)0x0) {
+  if (found == false) {
+    for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+      lyrTechSetName =
+           Material_GetLayeredTechniqueSetName
+                     (((mtl[layerIndex]->field8_0xb0).localTechniqueSet)->name);
+      if (lyrTechSetName == (LayeredTechniqueSetName *)0x0) {
         Com_PrintWarning(8,
                          "Material \'%s\' uses technique set \'%s\' which cannot be used in a layered material; using default instead.  Recompile the bsp to fix.\n"
                         );
         return (MaterialTechniqueSet *)0x0;
       }
-      local_5d = (char)local_10 + '0';
-      if (local_5d == '0') {
-        if (local_c->namePrefixRegister != (char *)0x0) {
-          local_68 = Material_AppendTechniqueSetName
-                               (local_54,local_68,local_c->namePrefixRegister,'0');
+      layerToken = (char)layerIndex + '0';
+      if (layerToken == '0') {
+        if (lyrTechSetName->namePrefixRegister != (char *)0x0) {
+          newTechSetNameLen =
+               Material_AppendTechniqueSetName
+                         (newTechSetName,newTechSetNameLen,lyrTechSetName->namePrefixRegister,'0');
         }
       }
       else {
-        local_68 = Material_AppendTechniqueSetName(local_54,local_68,"_",local_5d);
+        newTechSetNameLen =
+             Material_AppendTechniqueSetName(newTechSetName,newTechSetNameLen,"_",layerToken);
       }
-      if ((local_c != (LayeredTechniqueSetName *)0x0) &&
-         (strchr((uchar *)local_c->nameChunk,'n'), extraout_EAX_01 != 0)) {
-        local_5c = local_5c + 1;
+      if ((lyrTechSetName != (LayeredTechniqueSetName *)0x0) &&
+         (strchr((uchar *)lyrTechSetName->nameChunk,'n'), extraout_EAX_01 != 0)) {
+        normalMapCount = normalMapCount + 1;
       }
-      local_68 = Material_AppendTechniqueSetName(local_54,local_68,local_c->nameChunk,local_5d);
+      newTechSetNameLen =
+           Material_AppendTechniqueSetName
+                     (newTechSetName,newTechSetNameLen,lyrTechSetName->nameChunk,layerToken);
     }
   }
-  local_58 = Material_RegisterTechniqueSet(local_54);
-  if (local_58 == (MaterialTechniqueSet *)0x0) {
-    local_874[0] = '\0';
-    local_70 = local_874;
-    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-      local_8a4 = (param_1[local_10]->info).name;
-      local_8a8 = local_70;
+  techSet = Material_RegisterTechniqueSet(newTechSetName);
+  if (techSet == (MaterialTechniqueSet *)0x0) {
+    buf[0] = '\0';
+    end = buf;
+    for (layerIndex = 0; layerIndex < layerCount; layerIndex = layerIndex + 1) {
+      local_8a4 = (mtl[layerIndex]->info).name;
+      local_8a8 = end;
       do {
         cVar1 = *local_8a4;
         *local_8a8 = cVar1;
         local_8a4 = local_8a4 + 1;
         local_8a8 = local_8a8 + 1;
       } while (cVar1 != '\0');
-      local_8b4 = local_70;
+      local_8b4 = end;
       pcVar7 = local_8b4;
       do {
         local_8b4 = pcVar7;
         pcVar7 = local_8b4 + 1;
       } while (*local_8b4 != '\0');
-      local_70 = local_8b4;
+      end = local_8b4;
       *local_8b4 = '\n';
-      local_70 = local_70 + 1;
+      end = end + 1;
     }
-    *local_70 = '\0';
-    local_70 = local_70 + 1;
+    *end = '\0';
+    end = end + 1;
     Com_ScriptError("Cannot create techset \'%s\'. The offending %i-layer combination is:\n%s");
   }
   else {
-    if (1 < local_5c) {
-      local_64 = (local_64 - 1) + local_5c;
+    if (1 < normalMapCount) {
+      worldVertFormat = (worldVertFormat - MTL_WORLDVERT_TEX_2_NRM_1) + normalMapCount;
     }
-    if ((local_58->worldVertFormat != '\0') && (local_58->worldVertFormat != local_64)) {
+    if ((techSet->worldVertFormat != '\0') && (techSet->worldVertFormat != worldVertFormat)) {
       va("%i, %i");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x27ed,0,"%s\n\t%s");
@@ -8006,16 +8166,16 @@ MaterialTechniqueSet * __cdecl Material_RegisterLayeredTechniqueSet(Material **p
         return pMVar5;
       }
     }
-    uVar4 = truncate_cast<unsigned_char>(local_64);
-    local_58->worldVertFormat = uVar4;
+    uVar4 = truncate_cast<unsigned_char>(worldVertFormat);
+    techSet->worldVertFormat = uVar4;
   }
-  return local_58;
+  return techSet;
 }
 
 
 // 00AD55A0  Material_LoadLayered  (gfx_d3d/r_material_load_obj.cpp:10246)
 
-Material * __cdecl Material_LoadLayered(char *param_1,int param_2)
+Material * __cdecl Material_LoadLayered(char *assetName,int imageTrack)
 
 {
   code *pcVar1;
@@ -8025,84 +8185,86 @@ Material * __cdecl Material_LoadLayered(char *param_1,int param_2)
   Material *pMVar5;
   uint uVar6;
   int iVar7;
-  uint local_30;
-  char *local_24;
-  uint local_20;
-  bool local_19;
-  Material *local_18 [4];
-  MaterialTechniqueSet *local_8;
+  uint bspMaterialIndex;
+  bool hasError;
+  int bspVersion;
+  char *name;
+  uint layerCount;
+  bool expectNormal;
+  Material *mtl [4];
+  MaterialTechniqueSet *techSet;
   
-  if ((*param_1 != '*') &&
+  if ((*assetName != '*') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2810,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     pMVar5 = (Material *)(*pcVar1)();
     return pMVar5;
   }
-  local_20 = 0;
+  layerCount = 0;
   bVar3 = false;
   uVar6 = Com_GetBspVersion();
-  pcVar2 = param_1;
+  pcVar2 = assetName;
   while( true ) {
-    local_30 = 0;
+    bspMaterialIndex = 0;
     while( true ) {
-      local_24 = pcVar2 + 1;
-      iVar7 = isdigit((int)*local_24);
+      name = pcVar2 + 1;
+      iVar7 = isdigit((int)*name);
       if (iVar7 == 0) break;
-      local_30 = local_30 * 10 + -0x30 + (int)*local_24;
-      pcVar2 = local_24;
+      bspMaterialIndex = bspMaterialIndex * 10 + -0x30 + (int)*name;
+      pcVar2 = name;
     }
-    if ((3 < local_20) &&
+    if ((3 < layerCount) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x281e,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
       pMVar5 = (Material *)(*pcVar1)();
       return pMVar5;
     }
-    pMVar5 = R_GetBspMaterial(local_30,(GfxSurface *)0x0,(GfxWorldVertex *)0x0);
-    local_18[local_20] = pMVar5;
+    pMVar5 = R_GetBspMaterial(bspMaterialIndex,(GfxSurface *)0x0,(GfxWorldVertex *)0x0);
+    mtl[layerCount] = pMVar5;
     if ((int)uVar6 < 10) {
-      if (((*local_24 != 'n') && (*local_24 != 'x')) &&
+      if (((*name != 'n') && (*name != 'x')) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                    ,0x282c,0,"%s\n\t(assetName) = %s"), !bVar4)) {
         pcVar1 = (code *)swi(3);
         pMVar5 = (Material *)(*pcVar1)();
         return pMVar5;
       }
-      local_19 = *local_24 == 'n';
-      local_24 = pcVar2 + 8;
+      expectNormal = *name == 'n';
+      name = pcVar2 + 8;
     }
     else {
-      if (((*local_24 != 'n') && (*local_24 != '_')) &&
-         ((*local_24 != '\0' &&
+      if (((*name != 'n') && (*name != '_')) &&
+         ((*name != '\0' &&
           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                     ,0x2824,0,"%s\n\t(assetName) = %s"), !bVar4)))) {
         pcVar1 = (code *)swi(3);
         pMVar5 = (Material *)(*pcVar1)();
         return pMVar5;
       }
-      local_19 = *local_24 == 'n';
-      if (local_19) {
-        local_24 = pcVar2 + 2;
+      expectNormal = *name == 'n';
+      if (expectNormal) {
+        name = pcVar2 + 2;
       }
     }
-    bVar4 = Material_IsDefault(local_18[local_20]);
+    bVar4 = Material_IsDefault(mtl[layerCount]);
     if (bVar4) {
       bVar3 = true;
     }
     else {
-      bVar4 = Material_HasNormalMap(local_18[local_20]);
-      if (local_19 != bVar4) {
+      bVar4 = Material_HasNormalMap(mtl[layerCount]);
+      if (expectNormal != bVar4) {
         Com_PrintError(1,
                        "In layered material, expected material \'%s\' %s; using default instead.  Recompile the bsp to fix.\n"
                       );
         bVar3 = true;
       }
     }
-    local_20 = local_20 + 1;
-    if (*local_24 == '\0') break;
-    pcVar2 = local_24;
-    if ((*local_24 != '_') &&
+    layerCount = layerCount + 1;
+    if (*name == '\0') break;
+    pcVar2 = name;
+    if ((*name != '_') &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x2840,0,"%s"), !bVar4)) {
       pcVar1 = (code *)swi(3);
@@ -8111,12 +8273,12 @@ Material * __cdecl Material_LoadLayered(char *param_1,int param_2)
     }
   }
   if ((bVar3) ||
-     (local_8 = Material_RegisterLayeredTechniqueSet(local_18,local_20),
-     local_8 == (MaterialTechniqueSet *)0x0)) {
+     (techSet = Material_RegisterLayeredTechniqueSet(mtl,layerCount),
+     techSet == (MaterialTechniqueSet *)0x0)) {
     pMVar5 = (Material *)0x0;
   }
   else {
-    pMVar5 = Material_CreateLayered(param_1,local_18,local_20,local_8);
+    pMVar5 = Material_CreateLayered(assetName,mtl,layerCount,techSet);
   }
   return pMVar5;
 }
@@ -8124,210 +8286,229 @@ Material * __cdecl Material_LoadLayered(char *param_1,int param_2)
 
 // 00AD7A00  Material_LoadRaw  (gfx_d3d/r_material_load_obj.cpp:10320)
 
-Material * __cdecl Material_LoadRaw(MaterialRaw *param_1,uint param_2,int param_3)
+Material * __cdecl Material_LoadRaw(MaterialRaw *mtlRaw,uint materialType,int imageTrack)
 
 {
   float *pfVar1;
   float *pfVar2;
-  ulong uVar3;
-  code *pcVar4;
-  bool bVar5;
-  uchar uVar6;
-  Material *pMVar7;
+  ulong count;
+  code *pcVar3;
+  bool bVar4;
+  uchar uVar5;
+  Material *material_00;
   uint extraout_EAX;
-  Material *pMVar8;
-  MaterialTextureDef *pMVar9;
-  char *pcVar10;
-  water_t *pwVar11;
-  GfxImage *pGVar12;
-  MaterialConstantDef *pMVar13;
+  Material *pMVar6;
+  MaterialTextureDef *pMVar7;
+  char *pcVar8;
+  water_t *pwVar9;
+  GfxImage *pGVar10;
+  MaterialConstantDef *pMVar11;
+  uint uVar12;
+  MaterialTechnique *pMVar13;
   uint uVar14;
-  MaterialTechnique *pMVar15;
-  uint uVar16;
-  uchar *puVar17;
+  uchar *puVar15;
   char *local_7c;
   uchar *local_64;
-  int local_48;
-  Material_u_176 local_18;
-  int local_14;
-  uint local_10;
-  Material *local_c;
-  uint local_8;
+  int texIndex;
+  char *imageName;
+  char *constName;
+  char *strDest;
+  MaterialConstantDefRaw *constantTableRaw;
+  uint surfIndex;
+  MaterialWaterDef *waterDef;
+  Material *material;
+  uint nameSize;
+  char *tableEntryName;
+  char *name;
+  uint prefixLen;
+  MaterialTechniqueSet *techniqueSet;
+  MaterialTextureDefRaw *textureTableRaw;
+  uint constIndex;
+  void *materialMem;
+  uint texIndexIn;
   
-  bVar5 = Material_FinishLoadingInstance
-                    (param_1,g_materialTypeInfo[param_2].techniqueSetPrefix,
-                     &local_18.localTechniqueSet,param_2,param_3);
-  if (bVar5) {
-    puVar17 = (uchar *)((int)param_1->refStateBits + ((param_1->info).nameOffset - 0x28));
-    uVar3 = g_materialTypeInfo[param_2].prefixLen;
-    local_64 = puVar17;
+  bVar4 = Material_FinishLoadingInstance
+                    (mtlRaw,g_materialTypeInfo[materialType].techniqueSetPrefix,&techniqueSet,
+                     materialType,imageTrack);
+  if (bVar4) {
+    puVar15 = (uchar *)((int)mtlRaw->refStateBits + ((mtlRaw->info).nameOffset - 0x28));
+    count = g_materialTypeInfo[materialType].prefixLen;
+    local_64 = puVar15;
     do {
-      uVar6 = *local_64;
+      uVar5 = *local_64;
       local_64 = local_64 + 1;
-    } while (uVar6 != '\0');
-    pMVar7 = Material_Alloc((int)(local_64 + (1 - (int)(puVar17 + 1)) + uVar3 + 0xc0));
-    pMVar8 = pMVar7 + 1;
-    local_c = pMVar7;
-    memcpy((uchar *)pMVar8,(uchar *)g_materialTypeInfo[param_2].prefix,uVar3);
-    memcpy(pMVar8->stateBitsEntry + (uVar3 - 0x28),puVar17,
-           (ulong)(local_64 + (1 - (int)(puVar17 + 1))));
-    (pMVar7->info).name = (char *)pMVar8;
+    } while (uVar5 != '\0');
+    material_00 = Material_Alloc((int)(local_64 + (1 - (int)(puVar15 + 1)) + count + 0xc0));
+    pMVar6 = material_00 + 1;
+    materialMem = material_00;
+    memcpy((uchar *)pMVar6,(uchar *)g_materialTypeInfo[materialType].prefix,count);
+    memcpy(pMVar6->stateBitsEntry + (count - 0x28),puVar15,
+           (ulong)(local_64 + (1 - (int)(puVar15 + 1))));
+    (material_00->info).name = (char *)pMVar6;
     _aullshr();
     if (((extraout_EAX & 0xfff) != 0) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
-                                 ,0x2881,0,"%s"), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      pMVar8 = (Material *)(*pcVar4)();
-      return pMVar8;
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
+                                 ,0x2881,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      pMVar6 = (Material *)(*pcVar3)();
+      return pMVar6;
     }
-    (pMVar7->info).gameFlags = (uint)(param_1->info).gameFlags;
-    uVar16 = (int)((param_1->info).surfaceFlags & 0x3f00000U) >> 0x14;
-    if (uVar16 == 0) {
-      (pMVar7->info).surfaceTypeBits = 0;
-      (pMVar7->info).layeredSurfaceTypes = 0;
+    (material_00->info).gameFlags = (uint)(mtlRaw->info).gameFlags;
+    uVar14 = (int)((mtlRaw->info).surfaceFlags & 0x3f00000U) >> 0x14;
+    if (uVar14 == 0) {
+      (material_00->info).surfaceTypeBits = 0;
+      (material_00->info).layeredSurfaceTypes = 0;
     }
     else {
-      (pMVar7->info).surfaceTypeBits = 1 << ((char)uVar16 - 1U & 0x1f);
-      (pMVar7->info).layeredSurfaceTypes = uVar16;
+      (material_00->info).surfaceTypeBits = 1 << ((char)uVar14 - 1U & 0x1f);
+      (material_00->info).layeredSurfaceTypes = uVar14;
     }
-    (pMVar7->info).layeredSurfaceTypes = (pMVar7->info).layeredSurfaceTypes | 0x20000000;
-    if ((param_2 != 3) && (param_2 != 4)) {
-      (pMVar7->info).gameFlags = (pMVar7->info).gameFlags & 0xfffffffd;
+    (material_00->info).layeredSurfaceTypes = (material_00->info).layeredSurfaceTypes | 0x20000000;
+    if ((materialType != 3) && (materialType != 4)) {
+      (material_00->info).gameFlags = (material_00->info).gameFlags & 0xfffffffd;
     }
-    (pMVar7->info).sortKey = (param_1->info).sortKey;
-    (pMVar7->info).textureAtlasRowCount = (param_1->info).textureAtlasRowCount;
-    (pMVar7->info).textureAtlasColumnCount = (param_1->info).textureAtlasColumnCount;
-    pMVar7->textureCount = (uchar)param_1->textureCount;
-    pMVar7->constantCount = (uchar)param_1->constantCount;
-    pMVar7->field8_0xb0 = local_18;
-    if (param_1->textureCount != 0) {
-      pMVar9 = Material_Alloc((uint)param_1->textureCount << 4);
-      pMVar7->textureTable = pMVar9;
-      local_14 = (int)param_1->refStateBits + (param_1->textureTableOffset - 0x28);
-      local_48 = 0;
-      for (local_8 = 0; local_8 < param_1->textureCount; local_8 = local_8 + 1) {
-        pcVar10 = (char *)((int)param_1->refStateBits + *(int *)(local_14 + local_8 * 0xc) + -0x28);
-        uVar16 = R_HashString(pcVar10);
-        pMVar7->textureTable[local_48].nameHash = uVar16;
-        pMVar7->textureTable[local_48].nameStart = *pcVar10;
+    (material_00->info).sortKey = (mtlRaw->info).sortKey;
+    (material_00->info).textureAtlasRowCount = (mtlRaw->info).textureAtlasRowCount;
+    (material_00->info).textureAtlasColumnCount = (mtlRaw->info).textureAtlasColumnCount;
+    material_00->textureCount = (uchar)mtlRaw->textureCount;
+    material_00->constantCount = (uchar)mtlRaw->constantCount;
+    (material_00->field8_0xb0).localTechniqueSet = techniqueSet;
+    if (mtlRaw->textureCount != 0) {
+      pMVar7 = Material_Alloc((uint)mtlRaw->textureCount << 4);
+      material_00->textureTable = pMVar7;
+      textureTableRaw =
+           (MaterialTextureDefRaw *)
+           ((int)mtlRaw->refStateBits + (mtlRaw->textureTableOffset - 0x28));
+      texIndex = 0;
+      for (texIndexIn = 0; texIndexIn < mtlRaw->textureCount; texIndexIn = texIndexIn + 1) {
+        pcVar8 = (char *)((int)mtlRaw->refStateBits +
+                         (textureTableRaw[texIndexIn].nameOffset - 0x28));
+        uVar14 = R_HashString(pcVar8);
+        material_00->textureTable[texIndex].nameHash = uVar14;
+        material_00->textureTable[texIndex].nameStart = *pcVar8;
         do {
-          local_7c = pcVar10;
-          pcVar10 = local_7c + 1;
+          local_7c = pcVar8;
+          pcVar8 = local_7c + 1;
         } while (*local_7c != '\0');
-        pMVar7->textureTable[local_48].nameEnd = local_7c[-1];
-        pMVar7->textureTable[local_48].samplerState = *(uchar *)(local_14 + 4 + local_8 * 0xc);
-        if (((pMVar7->textureTable[local_48].samplerState & 7) == 0) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
-                                     ,0x28c0,0,"%s"), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          pMVar8 = (Material *)(*pcVar4)();
-          return pMVar8;
+        material_00->textureTable[texIndex].nameEnd = local_7c[-1];
+        material_00->textureTable[texIndex].samplerState = textureTableRaw[texIndexIn].samplerState;
+        if (((material_00->textureTable[texIndex].samplerState & 7) == 0) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
+                                     ,0x28c0,0,"%s"), !bVar4)) {
+          pcVar3 = (code *)swi(3);
+          pMVar6 = (Material *)(*pcVar3)();
+          return pMVar6;
         }
-        pMVar7->textureTable[local_48].semantic = *(uchar *)(local_14 + 5 + local_8 * 0xc);
-        pMVar7->textureTable[local_48].isMatureContent = '\0';
-        if (pMVar7->textureTable[local_48].semantic == '\v') {
-          pwVar11 = Material_RegisterWaterImage
-                              ((MaterialWaterDef *)
-                               ((int)param_1->refStateBits +
-                               *(int *)(local_14 + 8 + local_8 * 0xc) + -0x28));
-          pMVar7->textureTable[local_48].u.water = pwVar11;
-          local_48 = local_48 + 1;
+        material_00->textureTable[texIndex].semantic = textureTableRaw[texIndexIn].semantic;
+        material_00->textureTable[texIndex].isMatureContent = '\0';
+        if (material_00->textureTable[texIndex].semantic == '\v') {
+          pwVar9 = Material_RegisterWaterImage
+                             ((MaterialWaterDef *)
+                              ((int)mtlRaw->refStateBits +
+                              (textureTableRaw[texIndexIn].u.imageNameOffset - 0x28)));
+          material_00->textureTable[texIndex].u.water = pwVar9;
+          texIndex = texIndex + 1;
         }
-        else if (pMVar7->textureTable[local_48].semantic != '\x1c') {
-          pcVar10 = (char *)((int)param_1->refStateBits +
-                            *(int *)(local_14 + 8 + local_8 * 0xc) + -0x28);
-          pGVar12 = Image_Register(pcVar10,*(uchar *)(local_14 + 5 + local_8 * 0xc),param_3);
-          pMVar7->textureTable[local_48].u.image = pGVar12;
-          uVar6 = MaterialTexture_IsMatureContent(pMVar7->textureTable[local_8].semantic,pcVar10);
-          pMVar7->textureTable[local_48].isMatureContent = uVar6;
-          local_48 = local_48 + 1;
+        else if (material_00->textureTable[texIndex].semantic != '\x1c') {
+          pcVar8 = (char *)((int)mtlRaw->refStateBits +
+                           (textureTableRaw[texIndexIn].u.imageNameOffset - 0x28));
+          pGVar10 = Image_Register(pcVar8,textureTableRaw[texIndexIn].semantic,imageTrack);
+          material_00->textureTable[texIndex].u.image = pGVar10;
+          uVar5 = MaterialTexture_IsMatureContent
+                            (material_00->textureTable[texIndexIn].semantic,pcVar8);
+          material_00->textureTable[texIndex].isMatureContent = uVar5;
+          texIndex = texIndex + 1;
         }
       }
-      pMVar7->textureCount = (uchar)local_48;
+      material_00->textureCount = (uchar)texIndex;
     }
-    if (param_1->constantCount != 0) {
-      pMVar13 = Material_Alloc((uint)param_1->constantCount << 5);
-      (pMVar7->field10_0xb8).localConstantTable = pMVar13;
-      uVar16 = param_1->constantTableOffset;
-      for (local_10 = 0; local_10 < param_1->constantCount; local_10 = local_10 + 1) {
-        puVar17 = (uchar *)((int)param_1->refStateBits +
-                           *(int *)((int)param_1->refStateBits + local_10 * 0x14 + uVar16 + -0x28) +
-                           -0x28);
-        uVar14 = R_HashString((char *)puVar17);
-        (pMVar7->field10_0xb8).localConstantTable[local_10].nameHash = uVar14;
-        strncpy((uchar *)(pMVar7->field10_0xb8).localConstantTable[local_10].name,puVar17,0xc);
-        pfVar1 = (pMVar7->field10_0xb8).localConstantTable[local_10].literal;
-        pfVar2 = (float *)((int)param_1->refStateBits + local_10 * 0x14 + uVar16 + -0x24);
+    if (mtlRaw->constantCount != 0) {
+      pMVar11 = Material_Alloc((uint)mtlRaw->constantCount << 5);
+      (material_00->field10_0xb8).localConstantTable = pMVar11;
+      uVar14 = mtlRaw->constantTableOffset;
+      for (constIndex = 0; constIndex < mtlRaw->constantCount; constIndex = constIndex + 1) {
+        puVar15 = (uchar *)((int)mtlRaw->refStateBits +
+                           *(int *)((int)mtlRaw->refStateBits + constIndex * 0x14 + uVar14 + -0x28)
+                           + -0x28);
+        uVar12 = R_HashString((char *)puVar15);
+        (material_00->field10_0xb8).localConstantTable[constIndex].nameHash = uVar12;
+        strncpy((uchar *)(material_00->field10_0xb8).localConstantTable[constIndex].name,puVar15,0xc
+               );
+        pfVar1 = (material_00->field10_0xb8).localConstantTable[constIndex].literal;
+        pfVar2 = (float *)((int)mtlRaw->refStateBits + constIndex * 0x14 + uVar14 + -0x24);
         *pfVar1 = *pfVar2;
         pfVar1[1] = pfVar2[1];
         pfVar1[2] = pfVar2[2];
         pfVar1[3] = pfVar2[3];
       }
     }
-    Material_BuildStateBitsTable(pMVar7,(uint)(param_1->info).toolFlags,param_1->refStateBits);
-    Material_SetMaterialDrawRegion(pMVar7);
-    bVar5 = Material_Validate(pMVar7);
-    if (bVar5) {
-      if (((pMVar7->field8_0xb0).localTechniqueSet == (MaterialTechniqueSet *)0x0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
-                                   ,0x28ff,0,"%s"), !bVar5)) {
-        pcVar4 = (code *)swi(3);
-        pMVar8 = (Material *)(*pcVar4)();
-        return pMVar8;
+    Material_BuildStateBitsTable(material_00,(uint)(mtlRaw->info).toolFlags,mtlRaw->refStateBits);
+    Material_SetMaterialDrawRegion(material_00);
+    bVar4 = Material_Validate(material_00);
+    if (bVar4) {
+      if (((material_00->field8_0xb0).localTechniqueSet == (MaterialTechniqueSet *)0x0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
+                                   ,0x28ff,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        pMVar6 = (Material *)(*pcVar3)();
+        return pMVar6;
       }
-      if ((((pMVar7->info).gameFlags & 0x40) != 0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
-                                   ,0x2900,0,"%s"), !bVar5)) {
-        pcVar4 = (code *)swi(3);
-        pMVar8 = (Material *)(*pcVar4)();
-        return pMVar8;
+      if ((((material_00->info).gameFlags & 0x40) != 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
+                                   ,0x2900,0,"%s"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        pMVar6 = (Material *)(*pcVar3)();
+        return pMVar6;
       }
-      if (((((param_1->info).surfaceFlags & 0x40000U) == 0) &&
-          (pMVar15 = Material_GetTechnique(pMVar7,'\x02'), pMVar15 != (MaterialTechnique *)0x0)) &&
-         ((pMVar7->stateFlags & 4) == 0)) {
-        (pMVar7->info).gameFlags = (pMVar7->info).gameFlags | 0x40;
+      if (((((mtlRaw->info).surfaceFlags & 0x40000U) == 0) &&
+          (pMVar13 = Material_GetTechnique(material_00,'\x02'), pMVar13 != (MaterialTechnique *)0x0)
+          ) && ((material_00->stateFlags & 4) == 0)) {
+        (material_00->info).gameFlags = (material_00->info).gameFlags | 0x40;
       }
-      if (((((param_1->info).surfaceFlags & 0x80000U) != 0) &&
-          (pMVar15 = Material_GetTechnique(pMVar7,'\x02'), pMVar15 != (MaterialTechnique *)0x0)) &&
-         ((pMVar7->stateFlags & 4) == 0)) {
-        (pMVar7->info).gameFlags = (pMVar7->info).gameFlags | 1;
+      if (((((mtlRaw->info).surfaceFlags & 0x80000U) != 0) &&
+          (pMVar13 = Material_GetTechnique(material_00,'\x02'), pMVar13 != (MaterialTechnique *)0x0)
+          ) && ((material_00->stateFlags & 4) == 0)) {
+        (material_00->info).gameFlags = (material_00->info).gameFlags | 1;
       }
-      if (((param_1->info).surfaceFlags & 0x100U) != 0) {
-        (pMVar7->info).gameFlags = (pMVar7->info).gameFlags | 0x80;
+      if (((mtlRaw->info).surfaceFlags & 0x100U) != 0) {
+        (material_00->info).gameFlags = (material_00->info).gameFlags | 0x80;
       }
-      if (((param_1->info).surfaceFlags & 0x200U) != 0) {
-        (pMVar7->info).gameFlags = (pMVar7->info).gameFlags | 0x100;
+      if (((mtlRaw->info).surfaceFlags & 0x200U) != 0) {
+        (material_00->info).gameFlags = (material_00->info).gameFlags | 0x100;
       }
-      if (((param_1->info).surfaceFlags & 0x800U) != 0) {
-        (pMVar7->info).gameFlags = (pMVar7->info).gameFlags | 0x200;
+      if (((mtlRaw->info).surfaceFlags & 0x800U) != 0) {
+        (material_00->info).gameFlags = (material_00->info).gameFlags | 0x200;
       }
     }
     else {
-      pMVar7 = (Material *)0x0;
+      material_00 = (Material *)0x0;
     }
   }
   else {
-    pMVar7 = (Material *)0x0;
+    material_00 = (Material *)0x0;
   }
-  return pMVar7;
+  return material_00;
 }
 
 
 // 00AD53F0  Material_Load  (gfx_d3d/r_material_load_obj.cpp:10516)
 
-Material * __cdecl Material_Load(char *param_1,int param_2)
+Material * __cdecl Material_Load(char *assetName,int imageTrack)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
   int iVar4;
-  MaterialRaw *pMVar5;
-  int local_10;
-  uint local_c;
-  uint local_8;
+  MaterialRaw *mtlRaw_00;
+  Material *material;
+  MaterialRaw *mtlRaw;
+  int fileSize;
+  int fileHandle;
+  uint materialType;
+  uint prefixLen;
   
-  if (param_1 == (char *)0x0) {
+  if (assetName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x291c,0,"%s");
     if (!bVar2) {
@@ -8336,7 +8517,7 @@ Material * __cdecl Material_Load(char *param_1,int param_2)
       return pMVar3;
     }
   }
-  if (*param_1 == '\0') {
+  if (*assetName == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x291d,0,"%s");
     if (!bVar2) {
@@ -8345,39 +8526,39 @@ Material * __cdecl Material_Load(char *param_1,int param_2)
       return pMVar3;
     }
   }
-  if (*param_1 == '*') {
-    pMVar3 = Material_LoadLayered(param_1,param_2);
+  if (*assetName == '*') {
+    pMVar3 = Material_LoadLayered(assetName,imageTrack);
   }
   else {
-    for (local_c = 1; local_c < 5; local_c = local_c + 1) {
-      local_8 = g_materialTypeInfo[local_c].prefixLen;
-      iVar4 = strncmp(param_1,g_materialTypeInfo[local_c].prefix,local_8);
+    for (materialType = 1; materialType < 5; materialType = materialType + 1) {
+      prefixLen = g_materialTypeInfo[materialType].prefixLen;
+      iVar4 = strncmp(assetName,g_materialTypeInfo[materialType].prefix,prefixLen);
       if (iVar4 == 0) {
-        param_1 = param_1 + local_8;
+        assetName = assetName + prefixLen;
         break;
       }
     }
-    if (local_c == 5) {
-      local_c = 0;
+    if (materialType == 5) {
+      materialType = 0;
     }
-    iVar4 = Material_LoadFile(param_1,&local_10);
+    iVar4 = Material_LoadFile(assetName,&fileHandle);
     if (iVar4 < 0) {
-      if (*param_1 != '$') {
+      if (*assetName != '$') {
         Com_PrintError(8,"^1ERROR: Couldn\'t find material \'%s\'\n");
       }
       pMVar3 = (Material *)0x0;
     }
     else if (iVar4 == 0) {
-      FS_FCloseFile(local_10);
+      FS_FCloseFile(fileHandle);
       Com_PrintError(8,"^1ERROR: material \'%s\' has zero length\n");
       pMVar3 = (Material *)0x0;
     }
     else {
-      pMVar5 = Hunk_AllocateTempMemory(iVar4,"Material_Load");
-      FS_Read(pMVar5,iVar4,local_10);
-      FS_FCloseFile(local_10);
-      pMVar3 = Material_LoadRaw(pMVar5,local_c,param_2);
-      Hunk_FreeTempMemory(pMVar5);
+      mtlRaw_00 = Hunk_AllocateTempMemory(iVar4,"Material_Load");
+      FS_Read(mtlRaw_00,iVar4,fileHandle);
+      FS_FCloseFile(fileHandle);
+      pMVar3 = Material_LoadRaw(mtlRaw_00,materialType,imageTrack);
+      Hunk_FreeTempMemory(mtlRaw_00);
     }
   }
   return pMVar3;
@@ -8389,7 +8570,7 @@ Material * __cdecl Material_Load(char *param_1,int param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Material_PreLoadSingleShaderText(char *param_1,char *param_2,GfxCachedShaderText *param_3)
+Material_PreLoadSingleShaderText(char *filename,char *subdir,GfxCachedShaderText *cached)
 
 {
   char cVar1;
@@ -8399,15 +8580,17 @@ Material_PreLoadSingleShaderText(char *param_1,char *param_2,GfxCachedShaderText
   int iVar5;
   char *local_70;
   char *local_60;
-  int local_54;
-  int local_50;
-  char local_4c [68];
+  char *buffer;
+  int nameLen;
+  int fileHandle;
+  int fileSize;
+  char filepath [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_4c,0x40,"shaders/%s%s");
-  local_50 = FS_FOpenFileReadCurrentThread(local_4c,&local_54);
-  if (local_50 < 0) {
+  Com_sprintf(filepath,0x40,"shaders/%s%s");
+  fileSize = FS_FOpenFileReadCurrentThread(filepath,&fileHandle);
+  if (fileSize < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x295b,0,"%s");
     if (!bVar3) {
@@ -8416,28 +8599,28 @@ Material_PreLoadSingleShaderText(char *param_1,char *param_2,GfxCachedShaderText
       return;
     }
   }
-  local_60 = param_2;
+  local_60 = subdir;
   do {
     cVar1 = *local_60;
     local_60 = local_60 + 1;
   } while (cVar1 != '\0');
-  local_70 = param_1;
+  local_70 = filename;
   do {
     cVar1 = *local_70;
     local_70 = local_70 + 1;
   } while (cVar1 != '\0');
   pcVar4 = Hunk_AllocAlign((int)(local_70 +
                                 (int)(local_60 +
-                                     (((local_50 - (int)(param_2 + 1)) + 2) - (int)(param_1 + 1)))),
+                                     (((fileSize - (int)(subdir + 1)) + 2) - (int)(filename + 1)))),
                            1,"Material_PreLoadSingleShaderText",0x17);
-  param_3->name = pcVar4;
+  cached->name = pcVar4;
   iVar5 = sprintf(pcVar4,"%s%s");
   pcVar4 = pcVar4 + iVar5 + 1;
-  param_3->text = pcVar4;
-  FS_Read(pcVar4,local_50,local_54);
-  FS_FCloseFile(local_54);
-  pcVar4[local_50] = '\0';
-  param_3->textSize = local_50;
+  cached->text = pcVar4;
+  FS_Read(pcVar4,fileSize,fileHandle);
+  FS_FCloseFile(fileHandle);
+  pcVar4[fileSize] = '\0';
+  cached->textSize = fileSize;
   return;
 }
 
@@ -8449,58 +8632,63 @@ Material_PreLoadSingleShaderText(char *param_1,char *param_2,GfxCachedShaderText
 void __cdecl Material_PreLoadAllShaderText(void)
 
 {
-  int local_24;
-  char **local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  char **local_10;
-  char **local_c;
-  int local_8;
+  int fileCountLib3;
+  char **shaderListLib1;
+  int fileCountLib2;
+  int cachedIndex;
+  int fileIndex;
+  char **shaderListLib3;
+  char **shaderListLib2;
+  int fileCountLib1;
   
-  local_20 = FS_ListFilesInLocation("shaders/lib/","hlsl",FS_LIST_PURE_ONLY,&local_8,8,0x17);
-  local_c = FS_ListFilesInLocation("shaders/","hlsl",FS_LIST_PURE_ONLY,&local_1c,8,0x17);
-  local_10 = FS_ListFilesInLocation("shaders/","fx",FS_LIST_PURE_ONLY,&local_24,8,0x17);
-  mtlLoadGlob.cachedShaderCount = local_8 + local_1c + local_24;
+  shaderListLib1 =
+       FS_ListFilesInLocation("shaders/lib/","hlsl",FS_LIST_PURE_ONLY,&fileCountLib1,8,0x17);
+  shaderListLib2 = FS_ListFilesInLocation("shaders/","hlsl",FS_LIST_PURE_ONLY,&fileCountLib2,8,0x17)
+  ;
+  shaderListLib3 = FS_ListFilesInLocation("shaders/","fx",FS_LIST_PURE_ONLY,&fileCountLib3,8,0x17);
+  mtlLoadGlob.cachedShaderCount = fileCountLib1 + fileCountLib2 + fileCountLib3;
   mtlLoadGlob.cachedShaderText =
        Hunk_Alloc(mtlLoadGlob.cachedShaderCount * 0xc,"Material_PreLoadShaderText",0x17);
-  local_18 = 0;
-  for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 1) {
+  cachedIndex = 0;
+  for (fileIndex = 0; fileIndex < fileCountLib1; fileIndex = fileIndex + 1) {
     Material_PreLoadSingleShaderText
-              (local_20[local_14],"lib/",mtlLoadGlob.cachedShaderText + local_18);
-    local_18 = local_18 + 1;
+              (shaderListLib1[fileIndex],"lib/",mtlLoadGlob.cachedShaderText + cachedIndex);
+    cachedIndex = cachedIndex + 1;
   }
-  for (local_14 = 0; local_14 < local_1c; local_14 = local_14 + 1) {
-    Material_PreLoadSingleShaderText(local_c[local_14],"",mtlLoadGlob.cachedShaderText + local_18);
-    local_18 = local_18 + 1;
+  for (fileIndex = 0; fileIndex < fileCountLib2; fileIndex = fileIndex + 1) {
+    Material_PreLoadSingleShaderText
+              (shaderListLib2[fileIndex],"",mtlLoadGlob.cachedShaderText + cachedIndex);
+    cachedIndex = cachedIndex + 1;
   }
-  for (local_14 = 0; local_14 < local_24; local_14 = local_14 + 1) {
-    Material_PreLoadSingleShaderText(local_10[local_14],"",mtlLoadGlob.cachedShaderText + local_18);
-    local_18 = local_18 + 1;
+  for (fileIndex = 0; fileIndex < fileCountLib3; fileIndex = fileIndex + 1) {
+    Material_PreLoadSingleShaderText
+              (shaderListLib3[fileIndex],"",mtlLoadGlob.cachedShaderText + cachedIndex);
+    cachedIndex = cachedIndex + 1;
   }
   std::_Sort<pathsort_t_*,int,bool_(__cdecl*)(pathsort_t_const_&,pathsort_t_const_&)>
             ((pathsort_t *)mtlLoadGlob.cachedShaderText,
              (pathsort_t *)(mtlLoadGlob.cachedShaderText + mtlLoadGlob.cachedShaderCount),
              ((int)(mtlLoadGlob.cachedShaderText + mtlLoadGlob.cachedShaderCount) -
              (int)mtlLoadGlob.cachedShaderText) / 0xc,Dvar_CompareNames);
-  Sys_FreeFileList(local_20);
-  Sys_FreeFileList(local_c);
-  Sys_FreeFileList(local_10);
+  Sys_FreeFileList(shaderListLib1);
+  Sys_FreeFileList(shaderListLib2);
+  Sys_FreeFileList(shaderListLib3);
   return;
 }
 
 
 // 00AD8BF0  Material_GetInfo  (gfx_d3d/r_material_load_obj.cpp:10661)
 
-void __cdecl Material_GetInfo(Material *param_1,MaterialInfo *param_2)
+void __cdecl Material_GetInfo(Material *handle,MaterialInfo *matInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
   int iVar4;
+  Material *material;
   
-  if (param_1 == (Material *)0x0) {
+  if (handle == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x29a6,0,"%s");
     if (!bVar2) {
@@ -8509,7 +8697,7 @@ void __cdecl Material_GetInfo(Material *param_1,MaterialInfo *param_2)
       return;
     }
   }
-  if (param_2 == (MaterialInfo *)0x0) {
+  if (matInfo == (MaterialInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x29a7,0,"%s");
     if (!bVar2) {
@@ -8518,11 +8706,11 @@ void __cdecl Material_GetInfo(Material *param_1,MaterialInfo *param_2)
       return;
     }
   }
-  pMVar3 = Material_FromHandle(param_1);
+  pMVar3 = Material_FromHandle(handle);
   for (iVar4 = 10; iVar4 != 0; iVar4 = iVar4 + -1) {
-    param_2->name = (pMVar3->info).name;
+    matInfo->name = (pMVar3->info).name;
     pMVar3 = (Material *)&(pMVar3->info).gameFlags;
-    param_2 = (MaterialInfo *)&param_2->gameFlags;
+    matInfo = (MaterialInfo *)&matInfo->gameFlags;
   }
   return;
 }
@@ -8530,7 +8718,7 @@ void __cdecl Material_GetInfo(Material *param_1,MaterialInfo *param_2)
 
 // 00AD8F60  R_DrawSurfStandardPrepassSortKey  (gfx_d3d/r_material_load_obj.cpp:10682)
 
-uint __cdecl R_DrawSurfStandardPrepassSortKey(Material *param_1)
+uint __cdecl R_DrawSurfStandardPrepassSortKey(Material *material)
 
 {
   MaterialTechniqueSet *pMVar1;
@@ -8538,8 +8726,10 @@ uint __cdecl R_DrawSurfStandardPrepassSortKey(Material *param_1)
   code *pcVar3;
   bool bVar4;
   uint uVar5;
+  MaterialTechniqueSet *techSet;
+  MaterialTechnique *prepassTech;
   
-  pMVar1 = (param_1->field8_0xb0).localTechniqueSet;
+  pMVar1 = (material->field8_0xb0).localTechniqueSet;
   if ((pMVar1 == (MaterialTechniqueSet *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x29c3,0,"%s"), !bVar4)) {
@@ -8557,8 +8747,8 @@ uint __cdecl R_DrawSurfStandardPrepassSortKey(Material *param_1)
     }
   }
   else {
-    if (((param_1->stateFlags & 4) != 0) &&
-       (bVar4 = Material_IsForSeeThruBulletHoleDecal(param_1), !bVar4)) {
+    if (((material->stateFlags & 4) != 0) &&
+       (bVar4 = Material_IsForSeeThruBulletHoleDecal(material), !bVar4)) {
       return 2;
     }
     uVar5 = (uint)((pMVar2->flags & 4) == 0);
@@ -8569,13 +8759,13 @@ uint __cdecl R_DrawSurfStandardPrepassSortKey(Material *param_1)
 
 // 00AD9910  Material_GetVertexShaderName  (gfx_d3d/r_material_load_obj.cpp:10746)
 
-void __cdecl Material_GetVertexShaderName(char *param_1,MaterialPass *param_2,int param_3)
+void __cdecl Material_GetVertexShaderName(char *dest,MaterialPass *pass,int destsize)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2->vertexShader == (MaterialVertexShader *)0x0) {
+  if (pass->vertexShader == (MaterialVertexShader *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x2a16,0,"%s");
     if (!bVar2) {
@@ -8584,32 +8774,33 @@ void __cdecl Material_GetVertexShaderName(char *param_1,MaterialPass *param_2,in
       return;
     }
   }
-  I_strncpyz(param_1,param_2->vertexShader->name,param_3);
+  I_strncpyz(dest,pass->vertexShader->name,destsize);
   return;
 }
 
 
 // 00AD8C70  Material_HasImpactMaskTech  (gfx_d3d/r_material_load_obj.cpp:10782)
 
-bool __cdecl Material_HasImpactMaskTech(Material *param_1)
+bool __cdecl Material_HasImpactMaskTech(Material *material)
 
 {
   MaterialTechniqueSet *pMVar1;
+  MaterialTechniqueSet *techset;
   
-  pMVar1 = Material_GetTechniqueSet(param_1);
+  pMVar1 = Material_GetTechniqueSet(material);
   return pMVar1->techniques[0x81] != (MaterialTechnique *)0x0;
 }
 
 
 // 00AD8CA0  Material_IsForSeeThruBulletHoleDecal  (gfx_d3d/r_material_load_obj.cpp:10789)
 
-bool __cdecl Material_IsForSeeThruBulletHoleDecal(Material *param_1)
+bool __cdecl Material_IsForSeeThruBulletHoleDecal(Material *mat)
 
 {
   bool bVar1;
   
-  bVar1 = Material_HasImpactMaskTech(param_1);
-  if ((!bVar1) && (bVar1 = Material_CanReceiveSeeThruDecals(param_1), !bVar1)) {
+  bVar1 = Material_HasImpactMaskTech(mat);
+  if ((!bVar1) && (bVar1 = Material_CanReceiveSeeThruDecals(mat), !bVar1)) {
     return false;
   }
   return true;
@@ -8618,31 +8809,31 @@ bool __cdecl Material_IsForSeeThruBulletHoleDecal(Material *param_1)
 
 // 00AD8CF0  Material_CanReceiveSeeThruDecals  (gfx_d3d/r_material_load_obj.cpp:10794)
 
-bool __cdecl Material_CanReceiveSeeThruDecals(Material *param_1)
+bool __cdecl Material_CanReceiveSeeThruDecals(Material *mat_2)
 
 {
-  return ((param_1->info).gameFlags & 0x100) != 0;
+  return ((mat_2->info).gameFlags & 0x100) != 0;
 }
 
 
 // 00AD9960  Material_ComparePixelConsts  (gfx_d3d/r_material_load_obj.cpp:10808)
 
-int __cdecl Material_ComparePixelConsts(Material *param_1,Material *param_2,uchar param_3)
+int __cdecl Material_ComparePixelConsts(Material *mtl0,Material *mtl1,uchar techType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  MaterialPass *local_1c;
+  MaterialPass *pass;
   MaterialPass *local_18;
-  MaterialTechnique *local_14;
+  MaterialTechnique *techniqueLit;
   MaterialTechnique *local_10;
-  Material *local_c;
+  Material *mtl;
   Material *local_8;
   
-  local_14 = Material_GetTechnique(param_1,param_3);
-  local_10 = Material_GetTechnique(param_2,param_3);
-  if (local_14 == (MaterialTechnique *)0x0) {
+  techniqueLit = Material_GetTechnique(mtl0,techType);
+  local_10 = Material_GetTechnique(mtl1,techType);
+  if (techniqueLit == (MaterialTechnique *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x2a40,0,"%s");
     if (!bVar2) {
@@ -8660,11 +8851,11 @@ int __cdecl Material_ComparePixelConsts(Material *param_1,Material *param_2,ucha
       return iVar3;
     }
   }
-  local_c = param_1;
-  local_8 = param_2;
-  local_1c = local_14->passArray;
+  mtl = mtl0;
+  local_8 = mtl1;
+  pass = techniqueLit->passArray;
   local_18 = local_10->passArray;
-  iVar3 = R_ComparePixelConsts(&local_c,&local_1c);
+  iVar3 = R_ComparePixelConsts(&mtl,&pass);
   return iVar3;
 }
 
@@ -8673,7 +8864,7 @@ int __cdecl Material_ComparePixelConsts(Material *param_1,Material *param_2,ucha
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Material_Compare(Material *param_1,Material *param_2)
+bool __cdecl Material_Compare(Material *mtl0,Material *mtl1)
 
 {
   byte bVar1;
@@ -8704,61 +8895,61 @@ bool __cdecl Material_Compare(Material *param_1,Material *param_2)
   int local_17c;
   byte *local_174;
   byte *local_170;
-  byte local_134 [128];
-  uint local_b4;
+  byte name0 [128];
+  uint hasTechniqueEmissive;
   uint local_b0;
-  uint local_ac;
+  uint hasTechniqueLit;
   uint local_a8;
-  uint local_a4;
+  uint prepass;
   uint local_a0;
-  byte local_9c [128];
+  byte name1 [128];
   uint local_1c;
-  MaterialTechniqueSet *local_18;
+  MaterialTechniqueSet *techSet;
   MaterialTechniqueSet *local_14;
-  int local_10;
-  uint local_c;
+  int comparison;
+  uint hasLightmap;
   uint local_8;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (Material *)0x0) &&
+  if ((mtl0 == (Material *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2a61,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_2 == (Material *)0x0) &&
+  if ((mtl1 == (Material *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2a62,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_18 = Material_GetTechniqueSet(param_1);
-  local_14 = Material_GetTechniqueSet(param_2);
-  if (((local_18 == (MaterialTechniqueSet *)0x0) || (local_14 == (MaterialTechniqueSet *)0x0)) &&
+  techSet = Material_GetTechniqueSet(mtl0);
+  local_14 = Material_GetTechniqueSet(mtl1);
+  if (((techSet == (MaterialTechniqueSet *)0x0) || (local_14 == (MaterialTechniqueSet *)0x0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2a72,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  pMVar5 = Material_GetTechnique(param_1,'\n');
-  pMVar6 = Material_GetTechnique(param_2,'\n');
-  local_ac = (uint)(pMVar5 != (MaterialTechnique *)0x0);
+  pMVar5 = Material_GetTechnique(mtl0,'\n');
+  pMVar6 = Material_GetTechnique(mtl1,'\n');
+  hasTechniqueLit = (uint)(pMVar5 != (MaterialTechnique *)0x0);
   local_a8 = (uint)(pMVar6 != (MaterialTechnique *)0x0);
-  local_10 = local_a8 - local_ac;
-  if (local_10 != 0) {
-    return local_10 < 0;
+  comparison = local_a8 - hasTechniqueLit;
+  if (comparison != 0) {
+    return comparison < 0;
   }
-  local_c = (uint)(((param_1->info).gameFlags & 2) != 0);
-  local_8 = (uint)(((param_2->info).gameFlags & 2) != 0);
-  pMVar7 = Material_GetTechnique(param_1,'\x05');
-  pMVar8 = Material_GetTechnique(param_2,'\x05');
-  local_b4 = (uint)(pMVar7 != (MaterialTechnique *)0x0);
+  hasLightmap = (uint)(((mtl0->info).gameFlags & 2) != 0);
+  local_8 = (uint)(((mtl1->info).gameFlags & 2) != 0);
+  pMVar7 = Material_GetTechnique(mtl0,'\x05');
+  pMVar8 = Material_GetTechnique(mtl1,'\x05');
+  hasTechniqueEmissive = (uint)(pMVar7 != (MaterialTechnique *)0x0);
   local_b0 = (uint)(pMVar8 != (MaterialTechnique *)0x0);
-  if (local_ac == 0) {
-    if (local_c != 0) {
+  if (hasTechniqueLit == 0) {
+    if (hasLightmap != 0) {
       va("material \'%s\' no techlit, but hasLightmap");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                ,0x2a97,0,"%s\n\t%s");
@@ -8778,16 +8969,16 @@ bool __cdecl Material_Compare(Material *param_1,Material *param_2)
         return (bool)uVar4;
       }
     }
-    if (local_b0 != local_b4) {
-      return (int)(local_b0 - local_b4) < 0;
+    if (local_b0 != hasTechniqueEmissive) {
+      return (int)(local_b0 - hasTechniqueEmissive) < 0;
     }
-    local_10 = (uint)(param_1->info).sortKey - (uint)(param_2->info).sortKey;
-    if (local_10 != 0) {
-      return local_10 < 0;
+    comparison = (uint)(mtl0->info).sortKey - (uint)(mtl1->info).sortKey;
+    if (comparison != 0) {
+      return comparison < 0;
     }
   }
   else {
-    if ((local_b4 != 0) &&
+    if ((hasTechniqueEmissive != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                  ,0x2a89,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -8801,24 +8992,24 @@ bool __cdecl Material_Compare(Material *param_1,Material *param_2)
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    uVar10 = (uint)(param_1->info).sortKey;
-    uVar9 = (uint)(param_2->info).sortKey;
+    uVar10 = (uint)(mtl0->info).sortKey;
+    uVar9 = (uint)(mtl1->info).sortKey;
     if (uVar10 != uVar9) {
       return (int)(uVar10 - uVar9) < 0;
     }
-    if (local_8 != local_c) {
-      return (int)(local_8 - local_c) < 0;
+    if (local_8 != hasLightmap) {
+      return (int)(local_8 - hasLightmap) < 0;
     }
-    local_10 = 0;
+    comparison = 0;
   }
-  local_a4 = R_DrawSurfStandardPrepassSortKey(param_1);
-  local_a0 = R_DrawSurfStandardPrepassSortKey(param_2);
-  if (local_a4 == local_a0) {
-    uVar9 = (uint)((param_1->stateFlags & 8) != 0);
-    uVar10 = (uint)((param_2->stateFlags & 8) != 0);
+  prepass = R_DrawSurfStandardPrepassSortKey(mtl0);
+  local_a0 = R_DrawSurfStandardPrepassSortKey(mtl1);
+  if (prepass == local_a0) {
+    uVar9 = (uint)((mtl0->stateFlags & 8) != 0);
+    uVar10 = (uint)((mtl1->stateFlags & 8) != 0);
     if (uVar10 == uVar9) {
-      if (local_ac == 0) {
-        if (local_b4 != 0) {
+      if (hasTechniqueLit == 0) {
+        if (hasTechniqueEmissive != 0) {
           local_198 = (byte *)(pMVar8->passArray[0].field2_0x8.pixelShader)->name;
           local_19c = (byte *)(pMVar7->passArray[0].field2_0x8.pixelShader)->name;
           do {
@@ -8838,18 +9029,18 @@ LAB_00ad9619:
           } while (bVar1 != 0);
           local_1a4 = 0;
 LAB_00ad9624:
-          local_10 = local_1a4;
+          comparison = local_1a4;
           if (local_1a4 != 0) {
             return local_1a4 < 0;
           }
-          local_10 = Material_ComparePixelConsts(param_1,param_2,'\x05');
-          if (local_10 != 0) {
-            return local_10 < 0;
+          comparison = Material_ComparePixelConsts(mtl0,mtl1,'\x05');
+          if (comparison != 0) {
+            return comparison < 0;
           }
-          Material_GetVertexShaderName((char *)local_134,pMVar7->passArray,0x80);
-          Material_GetVertexShaderName((char *)local_9c,pMVar8->passArray,0x80);
-          local_1ac = local_9c;
-          local_1b0 = local_134;
+          Material_GetVertexShaderName((char *)name0,pMVar7->passArray,0x80);
+          Material_GetVertexShaderName((char *)name1,pMVar8->passArray,0x80);
+          local_1ac = name1;
+          local_1b0 = name0;
           do {
             bVar1 = *local_1b0;
             bVar3 = bVar1 < *local_1ac;
@@ -8892,18 +9083,18 @@ LAB_00ad943b:
         } while (bVar1 != 0);
         local_17c = 0;
 LAB_00ad9446:
-        local_10 = local_17c;
+        comparison = local_17c;
         if (local_17c != 0) {
           return local_17c < 0;
         }
         if ((uVar9 != 0) &&
-           (local_10 = Material_ComparePixelConsts(param_1,param_2,'\n'), local_10 != 0)) {
-          return local_10 < 0;
+           (comparison = Material_ComparePixelConsts(mtl0,mtl1,'\n'), comparison != 0)) {
+          return comparison < 0;
         }
-        Material_GetVertexShaderName((char *)local_134,pMVar5->passArray,0x80);
-        Material_GetVertexShaderName((char *)local_9c,pMVar6->passArray,0x80);
-        local_184 = local_9c;
-        local_188 = local_134;
+        Material_GetVertexShaderName((char *)name0,pMVar5->passArray,0x80);
+        Material_GetVertexShaderName((char *)name1,pMVar6->passArray,0x80);
+        local_184 = name1;
+        local_188 = name0;
         do {
           bVar1 = *local_188;
           bVar3 = bVar1 < *local_184;
@@ -8926,7 +9117,7 @@ LAB_00ad955e:
         }
       }
       local_1c0 = (byte *)local_14->name;
-      local_1c4 = (byte *)local_18->name;
+      local_1c4 = (byte *)techSet->name;
       do {
         bVar1 = *local_1c4;
         bVar3 = bVar1 < *local_1c0;
@@ -8944,17 +9135,17 @@ LAB_00ad97d0:
       } while (bVar1 != 0);
       local_1cc = 0;
 LAB_00ad97db:
-      local_10 = local_1cc;
+      comparison = local_1cc;
       if (local_1cc == 0) {
-        if ((param_1 == param_2) &&
+        if ((mtl0 == mtl1) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                      ,0x2ae0,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           uVar4 = (*pcVar2)();
           return (bool)uVar4;
         }
-        local_1d4 = (byte *)(param_2->info).name;
-        local_1d8 = (byte *)(param_1->info).name;
+        local_1d4 = (byte *)(mtl1->info).name;
+        local_1d8 = (byte *)(mtl0->info).name;
         do {
           bVar1 = *local_1d8;
           bVar3 = bVar1 < *local_1d4;
@@ -8972,7 +9163,7 @@ LAB_00ad98a6:
         } while (bVar1 != 0);
         local_1e0 = 0;
 LAB_00ad98b1:
-        local_10 = local_1e0;
+        comparison = local_1e0;
         if ((local_1e0 == 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp"
                                      ,0x2ae2,0,"%s"), !bVar3)) {
@@ -8980,7 +9171,7 @@ LAB_00ad98b1:
           uVar4 = (*pcVar2)();
           return (bool)uVar4;
         }
-        bVar3 = local_10 < 0;
+        bVar3 = comparison < 0;
       }
       else {
         bVar3 = local_1cc < 0;
@@ -8991,7 +9182,7 @@ LAB_00ad98b1:
     }
   }
   else {
-    bVar3 = (int)(local_a4 - local_a0) < 0;
+    bVar3 = (int)(prepass - local_a0) < 0;
   }
   return bVar3;
 }
@@ -8999,14 +9190,14 @@ LAB_00ad98b1:
 
 // 00AD9A20  R_DrawSurfPrimarySortKey  (gfx_d3d/r_material_load_obj.cpp:10985)
 
-uint __cdecl R_DrawSurfPrimarySortKey(Material *param_1)
+uint __cdecl R_DrawSurfPrimarySortKey(Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if (0x3f < (param_1->info).sortKey) {
+  if (0x3f < (material->info).sortKey) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                              0x2aea,0,
                              "material->info.sortKey doesn\'t index 1 << MTL_SORT_PRIMARY_SORT_KEY_BITS\n\t%i not in [0, %i)"
@@ -9017,71 +9208,73 @@ uint __cdecl R_DrawSurfPrimarySortKey(Material *param_1)
       return uVar3;
     }
   }
-  return (uint)(param_1->info).sortKey;
+  return (uint)(material->info).sortKey;
 }
 
 
 // 00AD8D60  Material_SortInternal  (gfx_d3d/r_material_load_obj.cpp:10992)
 
-void __cdecl Material_SortInternal(Material **param_1,uint param_2)
+void __cdecl Material_SortInternal(Material **sortedMaterials,uint materialCount)
 
 {
-  Material *pMVar1;
-  uint uVar2;
+  Material *material_00;
+  uint uVar1;
   uint extraout_EAX;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
   uint extraout_EAX_02;
-  GfxDrawSurf *pGVar3;
+  GfxDrawSurf *pGVar2;
   uint extraout_EDX;
   uint extraout_EDX_00;
   uint extraout_EDX_01;
   uint extraout_EDX_02;
-  int local_14;
-  uint local_10;
+  int techIdx;
+  uint sortedIndex;
+  GfxDrawSurf *drawSurf;
+  Material *material;
   
   std::_Sort<dvar_s_const_*_*,int,bool_(__cdecl*)(dvar_s_const_*,dvar_s_const_*)>
-            ((dvar_s **)param_1,(dvar_s **)(param_1 + param_2),
-             (int)(param_1 + param_2) - (int)param_1 >> 2,Material_Compare);
-  local_10 = 0;
+            ((dvar_s **)sortedMaterials,(dvar_s **)(sortedMaterials + materialCount),
+             (int)(sortedMaterials + materialCount) - (int)sortedMaterials >> 2,Material_Compare);
+  sortedIndex = 0;
   do {
-    if (param_2 <= local_10) {
+    if (materialCount <= sortedIndex) {
       return;
     }
-    pMVar1 = param_1[local_10];
-    pGVar3 = &(pMVar1->info).drawSurf;
-    *(undefined4 *)pGVar3 = 0;
-    *(undefined4 *)((int)&(pMVar1->info).drawSurf + 4) = 0;
-    R_DrawSurfPrimarySortKey(pMVar1);
+    material_00 = sortedMaterials[sortedIndex];
+    pGVar2 = &(material_00->info).drawSurf;
+    *(undefined4 *)pGVar2 = 0;
+    *(undefined4 *)((int)&(material_00->info).drawSurf + 4) = 0;
+    R_DrawSurfPrimarySortKey(material_00);
     _allshl();
-    uVar2 = *(uint *)((int)&(pMVar1->info).drawSurf + 4);
-    *(uint *)pGVar3 = *(uint *)pGVar3 | extraout_EAX;
-    *(uint *)((int)&(pMVar1->info).drawSurf + 4) = uVar2 & 0x3ffffff | extraout_EDX;
-    R_DrawSurfStandardPrepassSortKey(pMVar1);
+    uVar1 = *(uint *)((int)&(material_00->info).drawSurf + 4);
+    *(uint *)pGVar2 = *(uint *)pGVar2 | extraout_EAX;
+    *(uint *)((int)&(material_00->info).drawSurf + 4) = uVar1 & 0x3ffffff | extraout_EDX;
+    R_DrawSurfStandardPrepassSortKey(material_00);
     _allshl();
-    uVar2 = *(uint *)((int)&(pMVar1->info).drawSurf + 4);
-    *(uint *)pGVar3 = *(uint *)pGVar3 | extraout_EAX_00;
-    *(uint *)((int)&(pMVar1->info).drawSurf + 4) = uVar2 & 0xfe7fffff | extraout_EDX_00;
+    uVar1 = *(uint *)((int)&(material_00->info).drawSurf + 4);
+    *(uint *)pGVar2 = *(uint *)pGVar2 | extraout_EAX_00;
+    *(uint *)((int)&(material_00->info).drawSurf + 4) = uVar1 & 0xfe7fffff | extraout_EDX_00;
     _allshl();
-    uVar2 = *(uint *)((int)&(pMVar1->info).drawSurf + 4);
-    *(uint *)pGVar3 = *(uint *)pGVar3 & 0xfe0fffff | extraout_EAX_01;
-    *(uint *)((int)&(pMVar1->info).drawSurf + 4) = uVar2 | extraout_EDX_01;
+    uVar1 = *(uint *)((int)&(material_00->info).drawSurf + 4);
+    *(uint *)pGVar2 = *(uint *)pGVar2 & 0xfe0fffff | extraout_EAX_01;
+    *(uint *)((int)&(material_00->info).drawSurf + 4) = uVar1 | extraout_EDX_01;
     _allshl();
-    uVar2 = *(uint *)((int)&(pMVar1->info).drawSurf + 4);
-    *(uint *)pGVar3 = *(uint *)pGVar3 & 0x7fffffff | extraout_EAX_02;
-    *(uint *)((int)&(pMVar1->info).drawSurf + 4) = uVar2 & 0xfffff800 | extraout_EDX_02;
-    if ((pMVar1->field8_0xb0).localTechniqueSet != (MaterialTechniqueSet *)0x0) {
-      ((pMVar1->field8_0xb0).localTechniqueSet)->techsetFlags = 0;
-      for (local_14 = 0x50; local_14 < 0x73; local_14 = local_14 + 1) {
-        if (((pMVar1->field8_0xb0).localTechniqueSet)->techniques[local_14] !=
+    uVar1 = *(uint *)((int)&(material_00->info).drawSurf + 4);
+    *(uint *)pGVar2 = *(uint *)pGVar2 & 0x7fffffff | extraout_EAX_02;
+    *(uint *)((int)&(material_00->info).drawSurf + 4) = uVar1 & 0xfffff800 | extraout_EDX_02;
+    if ((material_00->field8_0xb0).localTechniqueSet != (MaterialTechniqueSet *)0x0) {
+      ((material_00->field8_0xb0).localTechniqueSet)->techsetFlags = 0;
+      for (techIdx = 0x50; techIdx < 0x73; techIdx = techIdx + 1) {
+        if (((material_00->field8_0xb0).localTechniqueSet)->techniques[techIdx] !=
             (MaterialTechnique *)0x0) {
-          ((pMVar1->field8_0xb0).localTechniqueSet)->techsetFlags =
-               ((pMVar1->field8_0xb0).localTechniqueSet)->techsetFlags | 1;
+          ((material_00->field8_0xb0).localTechniqueSet)->techsetFlags =
+               ((material_00->field8_0xb0).localTechniqueSet)->techsetFlags | 1;
           break;
         }
       }
     }
-    local_10 = local_10 + 1;
+    sortedIndex = sortedIndex + 1;
   } while( true );
 }
 
@@ -9094,6 +9287,8 @@ void __cdecl Material_SortInternal(Material **param_1,uint param_2)
 void __cdecl Material_Sort(void)
 
 {
+  tlNamedEventMarker marker;
+  
   if ((useFastFile->current).enabled != false) {
     rgp.materialCount = DB_GetAllXAssetOfType(ASSET_TYPE_MATERIAL,(XAssetHeader *)&rgp,0x1000);
   }
@@ -9104,16 +9299,15 @@ void __cdecl Material_Sort(void)
 
 // 00AD9B40  R_FindCodeConstantName_BySource  (gfx_d3d/r_material_load_obj.cpp:11141)
 
-char * __cdecl R_FindCodeConstantName_BySource(uchar param_1)
+char * __cdecl R_FindCodeConstantName_BySource(uchar src)
 
 {
-  CodeConstantSource *local_8;
+  CodeConstantSource *source;
   
-  for (local_8 = s_codeConsts;
-      (local_8 != (CodeConstantSource *)0x0 && (local_8->name != (char *)0x0));
-      local_8 = local_8 + 1) {
-    if (local_8->source == param_1) {
-      return local_8->name;
+  for (source = s_codeConsts; (source != (CodeConstantSource *)0x0 && (source->name != (char *)0x0))
+      ; source = source + 1) {
+    if (source->source == src) {
+      return source->name;
     }
   }
   return (char *)0x0;
@@ -9122,15 +9316,16 @@ char * __cdecl R_FindCodeConstantName_BySource(uchar param_1)
 
 // 00AD9AF0  R_BuildScritableConstantArray  (gfx_d3d/r_material_load_obj.cpp:11184)
 
-void __cdecl R_BuildScritableConstantArray(ScriptableConstant *param_1,int param_2)
+void __cdecl R_BuildScritableConstantArray(ScriptableConstant *array,int arraySize)
 
 {
   char *pcVar1;
-  int local_8;
+  ScriptableConstant *scrConst;
+  int i;
   
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pcVar1 = R_FindCodeConstantName_BySource(param_1[local_8].source);
-    param_1[local_8].sourceName = pcVar1;
+  for (i = 0; i < arraySize; i = i + 1) {
+    pcVar1 = R_FindCodeConstantName_BySource(array[i].source);
+    array[i].sourceName = pcVar1;
   }
   return;
 }
@@ -9138,49 +9333,51 @@ void __cdecl R_BuildScritableConstantArray(ScriptableConstant *param_1,int param
 
 // 00AD9A70  R_FindScriptableConstantSource_ByName  (gfx_d3d/r_material_load_obj.cpp:11194)
 
-bool __cdecl R_FindScriptableConstantSource_ByName(char *param_1,uchar *param_2)
+bool __cdecl R_FindScriptableConstantSource_ByName(char *name,uchar *dest)
 
 {
   int iVar1;
-  uint local_8;
+  ScriptableConstant *scrConst;
+  int i;
   
   if (!g_scriptableConstantArrayBuilt) {
     R_BuildScritableConstantArray(g_scriptableConstantArray,0xd);
     g_scriptableConstantArrayBuilt = true;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xc < local_8) {
+    if (0xc < (uint)i) {
       return false;
     }
-    iVar1 = I_stricmp(param_1,g_scriptableConstantArray[local_8].sourceName);
+    iVar1 = I_stricmp(name,g_scriptableConstantArray[i].sourceName);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  *param_2 = g_scriptableConstantArray[local_8].source;
+  *dest = g_scriptableConstantArray[i].source;
   return true;
 }
 
 
 // 00AD9B80  R_FindScriptableConstantName_BySource  (gfx_d3d/r_material_load_obj.cpp:11216)
 
-char * __cdecl R_FindScriptableConstantName_BySource(uchar param_1)
+char * __cdecl R_FindScriptableConstantName_BySource(uchar src)
 
 {
-  uint local_8;
+  ScriptableConstant *scrConst;
+  int i;
   
   if (!g_scriptableConstantArrayBuilt) {
     R_BuildScritableConstantArray(g_scriptableConstantArray,0xd);
     g_scriptableConstantArrayBuilt = true;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xc < local_8) {
+    if (0xc < (uint)i) {
       return (char *)0x0;
     }
-    if (g_scriptableConstantArray[local_8].source == param_1) break;
-    local_8 = local_8 + 1;
+    if (g_scriptableConstantArray[i].source == src) break;
+    i = i + 1;
   }
-  return g_scriptableConstantArray[local_8].sourceName;
+  return g_scriptableConstantArray[i].sourceName;
 }
 

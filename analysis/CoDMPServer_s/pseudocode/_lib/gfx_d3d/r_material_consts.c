@@ -2,6 +2,8 @@
 
 // 0086EB20  R_GetPixelLiteralConsts  (gfx_d3d/r_material_consts.cpp:32)
 
+/* WARNING: Variable defined which should be unmapped: argCount */
+
 void __cdecl
 R_GetPixelLiteralConsts(Material *param_1,MaterialPass *param_2,GfxShaderConstantBlock *param_3)
 
@@ -16,6 +18,8 @@ R_GetPixelLiteralConsts(Material *param_1,MaterialPass *param_2,GfxShaderConstan
   float *unaff_EBP;
   MaterialConstantDef *pMVar6;
   GfxShaderConstantBlock *unaff_EDI;
+  Material *mtl;
+  uint argCount;
   
   *in_ECX = 0;
   uVar3 = (uint)*(byte *)(in_EAX + 0xe);
@@ -81,6 +85,7 @@ int __cdecl R_ComparePixelConsts(Material **param_1,MaterialPass **param_2)
   int iVar10;
   MaterialPass *unaff_EDI;
   uint uVar11;
+  Material **material;
   uint *local_59c;
   int local_598;
   uint local_590 [3];

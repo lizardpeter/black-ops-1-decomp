@@ -9,7 +9,7 @@
 
 phys_vec3 * __cdecl
 gjk_sep_dir::comp_sep_dir
-          (phys_vec3 *__return_storage_ptr__,phys_gjk_input *param_1,phys_gjk_info *param_2)
+          (phys_vec3 *__return_storage_ptr__,phys_gjk_input *m_pcd,phys_gjk_info *m_gjk_info)
 
 {
   float *pfVar1;
@@ -71,25 +71,25 @@ gjk_sep_dir::comp_sep_dir
   local_28 = 0.0;
   iVar12 = 0;
   do {
-    (**(code **)*param_1->gjk_cg1)((int)&m_list_support_dir[0].x + iVar12,&local_70,local_d0);
+    (**(code **)*m_pcd->gjk_cg1)((int)&m_list_support_dir[0].x + iVar12,&local_70,local_d0);
     local_a0 = -*(float *)((int)&m_list_support_dir[0].x + iVar12);
     local_9c = -*(float *)((int)&m_list_support_dir[0].y + iVar12);
     local_98 = -*(float *)((int)&m_list_support_dir[0].z + iVar12);
-    local_c0 = local_a0 * (param_2->cg2_to_cg1_xform).x.x +
-               local_9c * (param_2->cg2_to_cg1_xform).x.y +
-               local_98 * (param_2->cg2_to_cg1_xform).x.z;
-    local_bc = local_98 * (param_2->cg2_to_cg1_xform).y.z +
-               (param_2->cg2_to_cg1_xform).y.y * local_9c +
-               (param_2->cg2_to_cg1_xform).y.x * local_a0;
-    local_b8 = (param_2->cg2_to_cg1_xform).z.x * local_a0 +
-               (param_2->cg2_to_cg1_xform).z.y * local_9c +
-               (param_2->cg2_to_cg1_xform).z.z * local_98;
-    (**(code **)*param_1->gjk_cg2)(&local_c0,&local_b0,local_f0);
-    ppVar9 = phys_multiply33(&local_e0,&param_2->cg2_to_cg1_xform,&local_b0);
-    local_80 = ppVar9->x + (param_2->cg2_to_cg1_xform).w.x;
+    local_c0 = local_a0 * (m_gjk_info->cg2_to_cg1_xform).x.x +
+               local_9c * (m_gjk_info->cg2_to_cg1_xform).x.y +
+               local_98 * (m_gjk_info->cg2_to_cg1_xform).x.z;
+    local_bc = local_98 * (m_gjk_info->cg2_to_cg1_xform).y.z +
+               (m_gjk_info->cg2_to_cg1_xform).y.y * local_9c +
+               (m_gjk_info->cg2_to_cg1_xform).y.x * local_a0;
+    local_b8 = (m_gjk_info->cg2_to_cg1_xform).z.x * local_a0 +
+               (m_gjk_info->cg2_to_cg1_xform).z.y * local_9c +
+               (m_gjk_info->cg2_to_cg1_xform).z.z * local_98;
+    (**(code **)*m_pcd->gjk_cg2)(&local_c0,&local_b0,local_f0);
+    ppVar9 = phys_multiply33(&local_e0,&m_gjk_info->cg2_to_cg1_xform,&local_b0);
+    local_80 = ppVar9->x + (m_gjk_info->cg2_to_cg1_xform).w.x;
     iVar13 = iVar12 + 0x10;
-    local_7c = ppVar9->y + (param_2->cg2_to_cg1_xform).w.y;
-    local_78 = ppVar9->z + (param_2->cg2_to_cg1_xform).w.z;
+    local_7c = ppVar9->y + (m_gjk_info->cg2_to_cg1_xform).w.y;
+    local_78 = ppVar9->z + (m_gjk_info->cg2_to_cg1_xform).w.z;
     local_90 = local_70 - local_80;
     local_8c = local_6c - local_7c;
     local_88 = local_68 - local_78;
@@ -224,7 +224,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 // 00A24FF0  dist_seg  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk_sep_dir.cpp:275)
 
 float __cdecl
-gjk_sep_dir::dist_seg(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec3 *param_4)
+gjk_sep_dir::dist_seg(phys_vec3 *v0,phys_vec3 *v1,phys_vec3 *mesh_center,phys_vec3 *direction)
 
 {
   float fVar1;
@@ -233,17 +233,17 @@ gjk_sep_dir::dist_seg(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,p
   float fVar4;
   float local_14;
   
-  fVar3 = param_2->x - param_1->x;
-  fVar1 = param_2->y - param_1->y;
-  fVar2 = param_2->z - param_1->z;
+  fVar3 = v1->x - v0->x;
+  fVar1 = v1->y - v0->y;
+  fVar2 = v1->z - v0->z;
   local_14 = fVar1 * fVar1 + fVar3 * fVar3 + fVar2 * fVar2;
   if (local_14 <= 0.001) {
-    param_4->x = param_2->x;
-    param_4->y = param_2->y;
-    fVar3 = param_2->z;
+    direction->x = v1->x;
+    direction->y = v1->y;
+    fVar3 = v1->z;
   }
   else {
-    local_14 = (-param_1->x * fVar3 + -param_1->y * fVar1 + -param_1->z * fVar2) / local_14;
+    local_14 = (-v0->x * fVar3 + -v0->y * fVar1 + -v0->z * fVar2) / local_14;
     if (0.0 <= local_14) {
       if (1.0 < local_14) {
         local_14 = 1.0;
@@ -252,20 +252,22 @@ gjk_sep_dir::dist_seg(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,p
     else {
       local_14 = 0.0;
     }
-    fVar1 = param_2->y;
+    fVar1 = v1->y;
     fVar4 = 1.0 - local_14;
-    fVar2 = param_1->y;
-    fVar3 = fVar4 * param_1->z + param_2->z * local_14;
-    param_4->x = fVar4 * param_1->x + local_14 * param_2->x;
-    param_4->y = fVar4 * fVar2 + local_14 * fVar1;
+    fVar2 = v0->y;
+    fVar3 = fVar4 * v0->z + v1->z * local_14;
+    direction->x = fVar4 * v0->x + local_14 * v1->x;
+    direction->y = fVar4 * fVar2 + local_14 * fVar1;
   }
-  param_4->z = fVar3;
-  local_14 = -(param_4->z * param_4->z + param_4->x * param_4->x + param_4->y * param_4->y);
-  if (param_4->z * (param_4->z - param_3->z) +
-      (param_4->x - param_3->x) * param_4->x + param_4->y * (param_4->y - param_3->y) < 0.0) {
-    param_4->x = -param_4->x;
-    param_4->y = -param_4->y;
-    param_4->z = -param_4->z;
+  direction->z = fVar3;
+  local_14 = -(direction->z * direction->z +
+              direction->x * direction->x + direction->y * direction->y);
+  if (direction->z * (direction->z - mesh_center->z) +
+      (direction->x - mesh_center->x) * direction->x +
+      direction->y * (direction->y - mesh_center->y) < 0.0) {
+    direction->x = -direction->x;
+    direction->y = -direction->y;
+    direction->z = -direction->z;
     local_14 = -local_14;
   }
   return local_14;

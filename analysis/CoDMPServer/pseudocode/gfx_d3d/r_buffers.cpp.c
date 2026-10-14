@@ -12,18 +12,19 @@ void __cdecl TRACK_r_buffers(void)
 
 // 00AC5290  R_LockVertexBuffer  (gfx_d3d/r_buffers.cpp:130)
 
-void * __cdecl
-R_LockVertexBuffer(IDirect3DVertexBuffer9 *param_1,int param_2,int param_3,int param_4)
+void * __cdecl R_LockVertexBuffer(IDirect3DVertexBuffer9 *handle,int offset,int bytes,int lockFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int iVar4;
-  int iVar5;
-  void *local_8;
+  int hr_00;
+  HRESULT hr;
+  int semaphore;
+  void *bufferData;
   
-  if (param_1 == (IDirect3DVertexBuffer9 *)0x0) {
+  if (handle == (IDirect3DVertexBuffer9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x86,0,"%s"
                             );
     if (!bVar2) {
@@ -33,27 +34,28 @@ R_LockVertexBuffer(IDirect3DVertexBuffer9 *param_1,int param_2,int param_3,int p
     }
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*param_1 + 0x2c))(param_1,param_2,param_3,&local_8,param_4);
-  if (iVar5 < 0) {
-    R_FatalLockError(iVar5);
+  hr_00 = (**(code **)((int)*handle + 0x2c))(handle,offset,bytes,&bufferData,lockFlags);
+  if (hr_00 < 0) {
+    R_FatalLockError(hr_00);
   }
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  return local_8;
+  return bufferData;
 }
 
 
 // 00AC5320  R_UnlockVertexBuffer  (gfx_d3d/r_buffers.cpp:145)
 
-void __cdecl R_UnlockVertexBuffer(IDirect3DVertexBuffer9 *param_1)
+void __cdecl R_UnlockVertexBuffer(IDirect3DVertexBuffer9 *handle)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int semaphore;
   
-  if (param_1 == (IDirect3DVertexBuffer9 *)0x0) {
+  if (handle == (IDirect3DVertexBuffer9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x92,0,"%s"
                             );
     if (!bVar2) {
@@ -63,7 +65,7 @@ void __cdecl R_UnlockVertexBuffer(IDirect3DVertexBuffer9 *param_1)
     }
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  (**(code **)((int)*param_1 + 0x30))(param_1);
+  (**(code **)((int)*handle + 0x30))(handle);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -73,17 +75,19 @@ void __cdecl R_UnlockVertexBuffer(IDirect3DVertexBuffer9 *param_1)
 
 // 00AC5380  R_LockIndexBuffer  (gfx_d3d/r_buffers.cpp:153)
 
-void * __cdecl R_LockIndexBuffer(IDirect3DIndexBuffer9 *param_1,int param_2,int param_3,int param_4)
+void * __cdecl R_LockIndexBuffer(IDirect3DIndexBuffer9 *handle,int offset,int bytes,int lockFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int iVar4;
-  int iVar5;
-  void *local_8;
+  int hr_00;
+  HRESULT hr;
+  int semaphore;
+  void *bufferData;
   
-  if (param_1 == (IDirect3DIndexBuffer9 *)0x0) {
+  if (handle == (IDirect3DIndexBuffer9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x9d,0,"%s"
                             );
     if (!bVar2) {
@@ -93,27 +97,28 @@ void * __cdecl R_LockIndexBuffer(IDirect3DIndexBuffer9 *param_1,int param_2,int 
     }
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*param_1 + 0x2c))(param_1,param_2,param_3,&local_8,param_4);
-  if (iVar5 < 0) {
-    R_FatalLockError(iVar5);
+  hr_00 = (**(code **)((int)*handle + 0x2c))(handle,offset,bytes,&bufferData,lockFlags);
+  if (hr_00 < 0) {
+    R_FatalLockError(hr_00);
   }
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  return local_8;
+  return bufferData;
 }
 
 
 // 00AC5410  R_UnlockIndexBuffer  (gfx_d3d/r_buffers.cpp:168)
 
-void __cdecl R_UnlockIndexBuffer(IDirect3DIndexBuffer9 *param_1)
+void __cdecl R_UnlockIndexBuffer(IDirect3DIndexBuffer9 *handle)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int semaphore;
   
-  if (param_1 == (IDirect3DIndexBuffer9 *)0x0) {
+  if (handle == (IDirect3DIndexBuffer9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0xa9,0,"%s"
                             );
     if (!bVar2) {
@@ -123,7 +128,7 @@ void __cdecl R_UnlockIndexBuffer(IDirect3DIndexBuffer9 *param_1)
     }
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  (**(code **)((int)*param_1 + 0x30))(param_1);
+  (**(code **)((int)*handle + 0x30))(handle);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -135,24 +140,27 @@ void __cdecl R_UnlockIndexBuffer(IDirect3DIndexBuffer9 *param_1)
 
 void * __cdecl
 R_AllocDynamicVertexBuffer
-          (IDirect3DVertexBuffer9 **param_1,int param_2,bool param_3,uint param_4,char *param_5)
+          (IDirect3DVertexBuffer9 **vb,int sizeInBytes,bool writeOnly,uint __formal,char *__formal_2
+          )
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int iVar4;
-  int iVar5;
-  char *pcVar6;
+  int hr_00;
+  char *msg;
+  HRESULT hr;
+  int semaphore;
   
-  if ((param_1 == (IDirect3DVertexBuffer9 **)0x0) &&
+  if ((vb == (IDirect3DVertexBuffer9 **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0xb4,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  if ((param_2 < 1) &&
+  if ((sizeInBytes < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0xb5,0,
                                "%s\n\t(sizeInBytes) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -161,11 +169,11 @@ R_AllocDynamicVertexBuffer
   }
   if ((r_loadForRenderer->current).enabled != false) {
     iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar5 = (**(code **)((int)*dx.device + 0x68))(dx.device,param_2,0x208,0,0,param_1,0);
-    if (iVar5 < 0) {
-      R_ErrorDescription(iVar5);
-      pcVar6 = va("DirectX didn\'t create a %i-byte dynamic vertex buffer: %s\n");
-      R_FatalInitError(pcVar6);
+    hr_00 = (**(code **)((int)*dx.device + 0x68))(dx.device,sizeInBytes,0x208,0,0,vb,0);
+    if (hr_00 < 0) {
+      R_ErrorDescription(hr_00);
+      msg = va("DirectX didn\'t create a %i-byte dynamic vertex buffer: %s\n");
+      R_FatalInitError(msg);
     }
     if (iVar4 != 0) {
       R_ReleaseDXDeviceOwnership();
@@ -178,7 +186,8 @@ R_AllocDynamicVertexBuffer
 // 00AC5560  R_AllocStaticVertexBuffer  (gfx_d3d/r_buffers.cpp:202)
 
 void * __cdecl
-R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **param_1,int param_2,uint param_3,char *param_4)
+R_AllocStaticVertexBuffer
+          (IDirect3DVertexBuffer9 **vb,int sizeInBytes,uint __formal,char *__formal_2)
 
 {
   code *pcVar1;
@@ -186,10 +195,11 @@ R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **param_1,int param_2,uint para
   void *pvVar3;
   int iVar4;
   char *pcVar5;
-  void *local_c;
-  int local_8;
+  HRESULT hr;
+  void *vertexBufferData;
+  int semaphore;
   
-  if (param_1 == (IDirect3DVertexBuffer9 **)0x0) {
+  if (vb == (IDirect3DVertexBuffer9 **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0xce,0,"%s"
                             );
     if (!bVar2) {
@@ -198,7 +208,7 @@ R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **param_1,int param_2,uint para
       return pvVar3;
     }
   }
-  if (param_2 < 1) {
+  if (sizeInBytes < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0xcf,0,
                              "%s\n\t(sizeInBytes) = %i");
     if (!bVar2) {
@@ -207,34 +217,37 @@ R_AllocStaticVertexBuffer(IDirect3DVertexBuffer9 **param_1,int param_2,uint para
       return pvVar3;
     }
   }
-  local_8 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar4 = (**(code **)((int)*dx.device + 0x68))(dx.device,param_2,8,0,0,param_1,0);
+  semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+  iVar4 = (**(code **)((int)*dx.device + 0x68))(dx.device,sizeInBytes,8,0,0,vb,0);
   if (iVar4 < 0) {
     R_ErrorDescription(iVar4);
     pcVar5 = va("DirectX didn\'t create a %i-byte vertex buffer: %s\n");
     R_FatalInitError(pcVar5);
   }
-  iVar4 = (**(code **)((int)**param_1 + 0x2c))(*param_1,0,0,&local_c,0);
+  iVar4 = (**(code **)((int)**vb + 0x2c))(*vb,0,0,&vertexBufferData,0);
   if (iVar4 < 0) {
     R_ErrorDescription(iVar4);
     pcVar5 = va("DirectX didn\'t lock a vertex buffer: %s\n");
     R_FatalInitError(pcVar5);
   }
-  if (local_8 != 0) {
+  if (semaphore != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  return local_c;
+  return vertexBufferData;
 }
 
 
 // 00AC5680  R_FinishStaticVertexBuffer  (gfx_d3d/r_buffers.cpp:227)
 
-void __cdecl R_FinishStaticVertexBuffer(IDirect3DVertexBuffer9 *param_1)
+void __cdecl R_FinishStaticVertexBuffer(IDirect3DVertexBuffer9 *vb)
 
 {
   int iVar1;
   int iVar2;
-  int iVar3;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
   
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   R_AssertDXDeviceOwnership();
@@ -242,13 +255,13 @@ void __cdecl R_FinishStaticVertexBuffer(IDirect3DVertexBuffer9 *param_1)
     RB_LogPrint("vb->Unlock()\n");
   }
   iVar2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar3 = (**(code **)((int)*param_1 + 0x30))(param_1);
+  hr_00 = (**(code **)((int)*vb + 0x30))(vb);
   if (iVar2 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar3 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar3);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp (%i) vb->Unlock() failed: %s\n"
              );
@@ -262,19 +275,20 @@ void __cdecl R_FinishStaticVertexBuffer(IDirect3DVertexBuffer9 *param_1)
 
 // 00AC5740  R_FreeStaticVertexBuffer  (gfx_d3d/r_buffers.cpp:234)
 
-void __cdecl R_FreeStaticVertexBuffer(IDirect3DVertexBuffer9 *param_1)
+void __cdecl R_FreeStaticVertexBuffer(IDirect3DVertexBuffer9 *vb)
 
 {
-  IDirect3DVertexBuffer9 *pIVar1;
+  IDirect3DVertexBuffer9 *var_9;
+  IDirect3DVertexBuffer9 *varCopy;
   
   do {
-    pIVar1 = param_1;
+    var_9 = vb;
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("vb->Release()\n");
     }
-    param_1 = (IDirect3DVertexBuffer9 *)0x0;
+    vb = (IDirect3DVertexBuffer9 *)0x0;
     R_ReleaseAndSetNULL<IDirect3DTexture9>
-              ((IDirect3DTexture9 *)pIVar1,"vb",
+              ((IDirect3DTexture9 *)var_9,"vb",
                "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0xeb);
   } while (alwaysfails != 0);
   return;
@@ -285,20 +299,22 @@ void __cdecl R_FreeStaticVertexBuffer(IDirect3DVertexBuffer9 *param_1)
 
 void * __cdecl
 R_AllocDynamicIndexBuffer
-          (IDirect3DIndexBuffer9 **param_1,int param_2,bool param_3,uint param_4,char *param_5)
+          (IDirect3DIndexBuffer9 **ib,int sizeInBytes,bool writeOnly,uint __formal,char *__formal_2)
 
 {
   int iVar1;
-  int iVar2;
-  char *pcVar3;
+  int hr_00;
+  char *msg;
+  HRESULT hr;
+  int semaphore;
   
   if ((r_loadForRenderer->current).enabled != false) {
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*dx.device + 0x6c))(dx.device,param_2,0x208,0x65,0,param_1,0);
-    if (iVar2 < 0) {
-      R_ErrorDescription(iVar2);
-      pcVar3 = va("Couldn\'t create a %i-byte dynamic index buffer: %s");
-      R_FatalInitError(pcVar3);
+    hr_00 = (**(code **)((int)*dx.device + 0x6c))(dx.device,sizeInBytes,0x208,0x65,0,ib,0);
+    if (hr_00 < 0) {
+      R_ErrorDescription(hr_00);
+      msg = va("Couldn\'t create a %i-byte dynamic index buffer: %s");
+      R_FatalInitError(msg);
     }
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
@@ -311,57 +327,61 @@ R_AllocDynamicIndexBuffer
 // 00AC5830  R_AllocStaticIndexBuffer  (gfx_d3d/r_buffers.cpp:262)
 
 void * __cdecl
-R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 **param_1,int param_2,uint param_3,char *param_4)
+R_AllocStaticIndexBuffer(IDirect3DIndexBuffer9 **ib,int sizeInBytes,uint __formal,char *__formal_2)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int iVar4;
-  void *local_c;
-  int local_8;
+  HRESULT hr;
+  void *indexBufferData;
+  int semaphore;
   
-  if ((param_1 == (IDirect3DIndexBuffer9 **)0x0) &&
+  if ((ib == (IDirect3DIndexBuffer9 **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x10a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  if ((param_2 < 1) &&
+  if ((sizeInBytes < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x10b,0,
                                "%s\n\t(sizeInBytes) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  local_8 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar4 = (**(code **)((int)*dx.device + 0x6c))(dx.device,param_2,8,0x65,0,param_1,0);
-  if (local_8 != 0) {
+  semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+  iVar4 = (**(code **)((int)*dx.device + 0x6c))(dx.device,sizeInBytes,8,0x65,0,ib,0);
+  if (semaphore != 0) {
     R_ReleaseDXDeviceOwnership();
   }
   if (iVar4 < 0) {
-    local_c = (void *)0x0;
+    indexBufferData = (void *)0x0;
   }
   else {
-    iVar4 = (**(code **)((int)**param_1 + 0x2c))(*param_1,0,0,&local_c,0);
+    iVar4 = (**(code **)((int)**ib + 0x2c))(*ib,0,0,&indexBufferData,0);
     if (iVar4 < 0) {
-      (**(code **)((int)**param_1 + 8))(*param_1);
-      local_c = (void *)0x0;
+      (**(code **)((int)**ib + 8))(*ib);
+      indexBufferData = (void *)0x0;
     }
   }
-  return local_c;
+  return indexBufferData;
 }
 
 
 // 00AC5920  R_FinishStaticIndexBuffer  (gfx_d3d/r_buffers.cpp:292)
 
-void __cdecl R_FinishStaticIndexBuffer(IDirect3DIndexBuffer9 *param_1)
+void __cdecl R_FinishStaticIndexBuffer(IDirect3DIndexBuffer9 *ib)
 
 {
   int iVar1;
   int iVar2;
-  int iVar3;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
   
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   R_AssertDXDeviceOwnership();
@@ -369,13 +389,13 @@ void __cdecl R_FinishStaticIndexBuffer(IDirect3DIndexBuffer9 *param_1)
     RB_LogPrint("ib->Unlock()\n");
   }
   iVar2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar3 = (**(code **)((int)*param_1 + 0x30))(param_1);
+  hr_00 = (**(code **)((int)*ib + 0x30))(ib);
   if (iVar2 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar3 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar3);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp (%i) ib->Unlock() failed: %s\n"
              );
@@ -389,19 +409,20 @@ void __cdecl R_FinishStaticIndexBuffer(IDirect3DIndexBuffer9 *param_1)
 
 // 00AC59E0  R_FreeStaticIndexBuffer  (gfx_d3d/r_buffers.cpp:299)
 
-void __cdecl R_FreeStaticIndexBuffer(IDirect3DIndexBuffer9 *param_1)
+void __cdecl R_FreeStaticIndexBuffer(IDirect3DIndexBuffer9 *ib)
 
 {
-  IDirect3DIndexBuffer9 *pIVar1;
+  IDirect3DIndexBuffer9 *var_9;
+  IDirect3DIndexBuffer9 *varCopy;
   
   do {
-    pIVar1 = param_1;
+    var_9 = ib;
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("ib->Release()\n");
     }
-    param_1 = (IDirect3DIndexBuffer9 *)0x0;
+    ib = (IDirect3DIndexBuffer9 *)0x0;
     R_ReleaseAndSetNULL<IDirect3DTexture9>
-              ((IDirect3DTexture9 *)pIVar1,"ib",
+              ((IDirect3DTexture9 *)var_9,"ib",
                "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",300);
   } while (alwaysfails != 0);
   return;
@@ -410,24 +431,25 @@ void __cdecl R_FreeStaticIndexBuffer(IDirect3DIndexBuffer9 *param_1)
 
 // 00AC5A40  Load_VertexBuffer  (gfx_d3d/r_buffers.cpp:324)
 
-void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,int param_3)
+void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **vb,void *bufferData,int sizeInBytes)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *dst;
+  void *destVerts;
   
-  if (((r_loadForRenderer->current).enabled == false) || (param_2 == (void *)0x0)) {
-    *param_1 = (IDirect3DVertexBuffer9 *)0x0;
+  if (((r_loadForRenderer->current).enabled == false) || (bufferData == (void *)0x0)) {
+    *vb = (IDirect3DVertexBuffer9 *)0x0;
   }
   else {
     bVar1 = Sys_IsRenderThread();
     if (bVar1) {
-      puVar2 = R_AllocStaticVertexBuffer(param_1,param_3,1,"Load_VertexBuffer");
-      memcpy(puVar2,param_2,param_3);
-      R_FinishStaticVertexBuffer(*param_1);
+      dst = R_AllocStaticVertexBuffer(vb,sizeInBytes,1,"Load_VertexBuffer");
+      memcpy(dst,bufferData,sizeInBytes);
+      R_FinishStaticVertexBuffer(*vb);
     }
     else {
-      RB_Resource_LoadVertexBuffer(param_1,param_2,param_3);
+      RB_Resource_LoadVertexBuffer(vb,bufferData,sizeInBytes);
       RB_Resource_Flush();
     }
   }
@@ -438,14 +460,15 @@ void __cdecl Load_VertexBuffer(IDirect3DVertexBuffer9 **param_1,void *param_2,in
 // 00AC5AD0  R_InitDynamicVertexBufferState  (gfx_d3d/r_buffers.cpp:542)
 
 void __cdecl
-R_InitDynamicVertexBufferState(GfxVertexBufferState *param_1,int param_2,bool param_3,uint param_4)
+R_InitDynamicVertexBufferState(GfxVertexBufferState *vb,int bytes,bool writeOnly,uint location)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
+  void *verts;
   
-  if (param_1 == (GfxVertexBufferState *)0x0) {
+  if (vb == (GfxVertexBufferState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x221,0,
                              "%s");
     if (!bVar2) {
@@ -454,10 +477,9 @@ R_InitDynamicVertexBufferState(GfxVertexBufferState *param_1,int param_2,bool pa
       return;
     }
   }
-  param_1->used = 0;
-  param_1->total = param_2;
-  puVar3 = R_AllocDynamicVertexBuffer
-                     (&param_1->buffer,param_2,param_3,param_4,"Dynamic Vertex Buffer");
+  vb->used = 0;
+  vb->total = bytes;
+  puVar3 = R_AllocDynamicVertexBuffer(&vb->buffer,bytes,writeOnly,location,"Dynamic Vertex Buffer");
   if (puVar3 != (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x22c,1,
                              "%s");
@@ -467,7 +489,7 @@ R_InitDynamicVertexBufferState(GfxVertexBufferState *param_1,int param_2,bool pa
       return;
     }
   }
-  param_1->verts = puVar3;
+  vb->verts = puVar3;
   return;
 }
 
@@ -475,14 +497,15 @@ R_InitDynamicVertexBufferState(GfxVertexBufferState *param_1,int param_2,bool pa
 // 00AC5D80  R_InitDynamicIndexBufferState  (gfx_d3d/r_buffers.cpp:566)
 
 void __cdecl
-R_InitDynamicIndexBufferState(GfxIndexBufferState *param_1,int param_2,bool param_3,uint param_4)
+R_InitDynamicIndexBufferState(GfxIndexBufferState *ib,int indexCount,bool writeOnly,uint location)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
+  void *indices;
   
-  if (param_1 == (GfxIndexBufferState *)0x0) {
+  if (ib == (GfxIndexBufferState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x239,0,
                              "%s");
     if (!bVar2) {
@@ -491,10 +514,10 @@ R_InitDynamicIndexBufferState(GfxIndexBufferState *param_1,int param_2,bool para
       return;
     }
   }
-  param_1->used = 0;
-  param_1->total = param_2;
+  ib->used = 0;
+  ib->total = indexCount;
   pvVar3 = R_AllocDynamicIndexBuffer
-                     (&param_1->buffer,param_2 << 1,param_3,param_4,"Dynamic Index Buffer");
+                     (&ib->buffer,indexCount << 1,writeOnly,location,"Dynamic Index Buffer");
   if (pvVar3 != (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x245,1,
                              "%s");
@@ -510,14 +533,16 @@ R_InitDynamicIndexBufferState(GfxIndexBufferState *param_1,int param_2,bool para
 
 // 00AC5B70  R_InitDynamicIndices  (gfx_d3d/r_buffers.cpp:588)
 
-void __cdecl R_InitDynamicIndices(GfxDynamicIndices *param_1,int param_2,uint param_3)
+void __cdecl R_InitDynamicIndices(GfxDynamicIndices *ib,int indexCount,uint location)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort *puVar3;
+  void *indices;
+  int sizeInBytes;
   
-  if (param_1 == (GfxDynamicIndices *)0x0) {
+  if (ib == (GfxDynamicIndices *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x250,0,
                              "%s");
     if (!bVar2) {
@@ -526,9 +551,9 @@ void __cdecl R_InitDynamicIndices(GfxDynamicIndices *param_1,int param_2,uint pa
       return;
     }
   }
-  param_1->used = 0;
-  param_1->total = param_2;
-  puVar3 = Z_VirtualAlloc(param_2 << 1,"Dynamic Index Buffer",0x13);
+  ib->used = 0;
+  ib->total = indexCount;
+  puVar3 = Z_VirtualAlloc(indexCount << 1,"Dynamic Index Buffer",0x13);
   if (puVar3 == (ushort *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x262,1,
                              "%s");
@@ -538,7 +563,7 @@ void __cdecl R_InitDynamicIndices(GfxDynamicIndices *param_1,int param_2,uint pa
       return;
     }
   }
-  param_1->indices = puVar3;
+  ib->indices = puVar3;
   return;
 }
 
@@ -550,27 +575,28 @@ void __cdecl R_CreateDynamicBuffers(void)
 {
   uchar *puVar1;
   ushort *puVar2;
-  int local_c;
+  int bufferIter;
+  uint location;
   
-  for (local_c = 0; local_c != 1; local_c = local_c + 1) {
-    R_InitDynamicVertexBufferState(gfxBuf.dynamicVertexBufferPool + local_c,0x100000,false,1);
+  for (bufferIter = 0; bufferIter != 1; bufferIter = bufferIter + 1) {
+    R_InitDynamicVertexBufferState(gfxBuf.dynamicVertexBufferPool + bufferIter,0x100000,false,1);
   }
   gfxBuf.dynamicVertexBuffer = gfxBuf.dynamicVertexBufferPool;
-  for (local_c = 0; local_c != 2; local_c = local_c + 1) {
-    R_InitDynamicVertexBufferState(gfxBuf.skinnedCacheVbPool + local_c,0x800000,false,1);
-    puVar1 = Z_VirtualAlloc(gfxBuf.skinnedCacheVbPool[local_c].total,"skinnedCacheVbPool",0x13);
-    gfxBuf.skinnedCacheVbPool[local_c].verts = puVar1;
+  for (bufferIter = 0; bufferIter != 2; bufferIter = bufferIter + 1) {
+    R_InitDynamicVertexBufferState(gfxBuf.skinnedCacheVbPool + bufferIter,0x800000,false,1);
+    puVar1 = Z_VirtualAlloc(gfxBuf.skinnedCacheVbPool[bufferIter].total,"skinnedCacheVbPool",0x13);
+    gfxBuf.skinnedCacheVbPool[bufferIter].verts = puVar1;
   }
   R_InitTempSkinBuf();
   R_InitWaterSimulationVertexBuffers(1);
-  for (local_c = 0; local_c != 1; local_c = local_c + 1) {
-    R_InitDynamicIndexBufferState(gfxBuf.dynamicIndexBufferPool + local_c,0x100000,false,1);
+  for (bufferIter = 0; bufferIter != 1; bufferIter = bufferIter + 1) {
+    R_InitDynamicIndexBufferState(gfxBuf.dynamicIndexBufferPool + bufferIter,0x100000,false,1);
   }
   gfxBuf.dynamicIndexBuffer = gfxBuf.dynamicIndexBufferPool;
-  for (local_c = 0; local_c != 2; local_c = local_c + 1) {
-    R_InitDynamicIndexBufferState(gfxBuf.preTessIndexBufferPool + local_c,0x100000,false,1);
+  for (bufferIter = 0; bufferIter != 2; bufferIter = bufferIter + 1) {
+    R_InitDynamicIndexBufferState(gfxBuf.preTessIndexBufferPool + bufferIter,0x100000,false,1);
     puVar2 = Z_VirtualAlloc(0x200000,"preTessIndexBuffer",0x13);
-    gfxBuf.preTessIndexBufferPool[local_c].indices = puVar2;
+    gfxBuf.preTessIndexBufferPool[bufferIter].indices = puVar2;
   }
   gfxBuf.preTessIndexBuffer = gfxBuf.preTessIndexBufferPool;
   gfxBuf.preTessBufferFrame = 0;
@@ -586,32 +612,36 @@ void __cdecl R_DestroyDynamicBuffers(void)
   IDirect3DTexture9 *pIVar1;
   IDirect3DIndexBuffer9 *pIVar2;
   IDirect3DVertexBuffer9 *pIVar3;
-  int local_8;
+  IDirect3DVertexBuffer9 *varCopy_4;
+  IDirect3DVertexBuffer9 *varCopy_3;
+  IDirect3DIndexBuffer9 *varCopy_2;
+  IDirect3DIndexBuffer9 *varCopy;
+  int bufferIter;
   
-  for (local_8 = 0; local_8 != 2; local_8 = local_8 + 1) {
-    pIVar2 = gfxBuf.preTessIndexBufferPool[local_8].buffer;
+  for (bufferIter = 0; bufferIter != 2; bufferIter = bufferIter + 1) {
+    pIVar2 = gfxBuf.preTessIndexBufferPool[bufferIter].buffer;
     while (pIVar2 != (IDirect3DIndexBuffer9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("gfxBuf.preTessIndexBufferPool[bufferIter].buffer->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)gfxBuf.preTessIndexBufferPool[local_8].buffer;
-      gfxBuf.preTessIndexBufferPool[local_8].buffer = (IDirect3DIndexBuffer9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)gfxBuf.preTessIndexBufferPool[bufferIter].buffer;
+      gfxBuf.preTessIndexBufferPool[bufferIter].buffer = (IDirect3DIndexBuffer9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"gfxBuf.preTessIndexBufferPool[bufferIter].buffer",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x2b5);
       pIVar2 = (IDirect3DIndexBuffer9 *)alwaysfails;
     }
-    Z_VirtualFree(gfxBuf.preTessIndexBufferPool[local_8].indices,0x13);
-    gfxBuf.preTessIndexBufferPool[local_8].indices = (ushort *)0x0;
+    Z_VirtualFree(gfxBuf.preTessIndexBufferPool[bufferIter].indices,0x13);
+    gfxBuf.preTessIndexBufferPool[bufferIter].indices = (ushort *)0x0;
   }
-  for (local_8 = 0; local_8 != 1; local_8 = local_8 + 1) {
-    pIVar2 = gfxBuf.dynamicIndexBufferPool[local_8].buffer;
+  for (bufferIter = 0; bufferIter != 1; bufferIter = bufferIter + 1) {
+    pIVar2 = gfxBuf.dynamicIndexBufferPool[bufferIter].buffer;
     while (pIVar2 != (IDirect3DIndexBuffer9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("gfxBuf.dynamicIndexBufferPool[bufferIter].buffer->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)gfxBuf.dynamicIndexBufferPool[local_8].buffer;
-      gfxBuf.dynamicIndexBufferPool[local_8].buffer = (IDirect3DIndexBuffer9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)gfxBuf.dynamicIndexBufferPool[bufferIter].buffer;
+      gfxBuf.dynamicIndexBufferPool[bufferIter].buffer = (IDirect3DIndexBuffer9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"gfxBuf.dynamicIndexBufferPool[bufferIter].buffer",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x2c1);
@@ -619,30 +649,30 @@ void __cdecl R_DestroyDynamicBuffers(void)
     }
   }
   R_FreeWaterSimulationVertexBuffers();
-  for (local_8 = 0; local_8 != 2; local_8 = local_8 + 1) {
-    pIVar3 = gfxBuf.skinnedCacheVbPool[local_8].buffer;
+  for (bufferIter = 0; bufferIter != 2; bufferIter = bufferIter + 1) {
+    pIVar3 = gfxBuf.skinnedCacheVbPool[bufferIter].buffer;
     while (pIVar3 != (IDirect3DVertexBuffer9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("gfxBuf.skinnedCacheVbPool[bufferIter].buffer->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)gfxBuf.skinnedCacheVbPool[local_8].buffer;
-      gfxBuf.skinnedCacheVbPool[local_8].buffer = (IDirect3DVertexBuffer9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)gfxBuf.skinnedCacheVbPool[bufferIter].buffer;
+      gfxBuf.skinnedCacheVbPool[bufferIter].buffer = (IDirect3DVertexBuffer9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"gfxBuf.skinnedCacheVbPool[bufferIter].buffer",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x2ce);
       pIVar3 = (IDirect3DVertexBuffer9 *)alwaysfails;
     }
-    Z_VirtualFree(gfxBuf.skinnedCacheVbPool[local_8].verts,0x13);
-    gfxBuf.skinnedCacheVbPool[local_8].verts = (uchar *)0x0;
+    Z_VirtualFree(gfxBuf.skinnedCacheVbPool[bufferIter].verts,0x13);
+    gfxBuf.skinnedCacheVbPool[bufferIter].verts = (uchar *)0x0;
   }
-  for (local_8 = 0; local_8 != 1; local_8 = local_8 + 1) {
-    pIVar3 = gfxBuf.dynamicVertexBufferPool[local_8].buffer;
+  for (bufferIter = 0; bufferIter != 1; bufferIter = bufferIter + 1) {
+    pIVar3 = gfxBuf.dynamicVertexBufferPool[bufferIter].buffer;
     while (pIVar3 != (IDirect3DVertexBuffer9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("gfxBuf.dynamicVertexBufferPool[bufferIter].buffer->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)gfxBuf.dynamicVertexBufferPool[local_8].buffer;
-      gfxBuf.dynamicVertexBufferPool[local_8].buffer = (IDirect3DVertexBuffer9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)gfxBuf.dynamicVertexBufferPool[bufferIter].buffer;
+      gfxBuf.dynamicVertexBufferPool[bufferIter].buffer = (IDirect3DVertexBuffer9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"gfxBuf.dynamicVertexBufferPool[bufferIter].buffer",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x2d9);
@@ -656,13 +686,13 @@ void __cdecl R_DestroyDynamicBuffers(void)
 
 // 00AC60E0  R_ShutdownDynamicIndices  (gfx_d3d/r_buffers.cpp:739)
 
-void __cdecl R_ShutdownDynamicIndices(GfxDynamicIndices *param_1)
+void __cdecl R_ShutdownDynamicIndices(GfxDynamicIndices *ib)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->indices == (ushort *)0x0) {
+  if (ib->indices == (ushort *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",0x2e5,0,
                              "%s");
     if (!bVar2) {
@@ -671,8 +701,8 @@ void __cdecl R_ShutdownDynamicIndices(GfxDynamicIndices *param_1)
       return;
     }
   }
-  Z_VirtualFree(param_1->indices,0x13);
-  param_1->indices = (ushort *)0x0;
+  Z_VirtualFree(ib->indices,0x13);
+  ib->indices = (ushort *)0x0;
   return;
 }
 
@@ -695,79 +725,83 @@ void __cdecl R_CreateParticleCloudBuffer(void)
   float local_b8;
   float local_b0;
   float local_a8;
-  int local_9c;
-  int local_98;
-  undefined2 local_94 [6];
-  ushort *local_88;
-  float local_84 [6];
-  float local_6c;
-  int local_68;
-  undefined4 local_64;
-  undefined4 local_60;
-  int local_5c;
-  undefined4 local_58;
-  ushort *local_54;
-  uint local_50;
-  float local_4c;
-  float local_48;
-  int local_44;
-  ushort local_40;
-  int local_3c;
-  int local_38;
-  float local_34 [2];
-  undefined2 *local_2c;
-  undefined4 local_28;
-  undefined2 *local_24;
-  ushort local_20 [6];
+  ushort particleIndex;
+  ushort gaussParticleIndex;
+  int i;
+  int j;
+  short xyz [6];
+  ushort *particleIndicesIter;
+  float pos [6];
+  float rand3;
+  int particleId;
+  int cornerStep;
+  int indexSizeInBytes;
+  int xIter;
+  int vertSizeInBytes;
+  ushort *particleIndices;
+  int vertexIndex;
+  float rand0;
+  float rand1;
+  int yIter;
+  ushort lfsr;
+  int zIter;
+  int cornerIter;
+  float rand2;
+  uint location;
+  GfxParticleCloudVertex *particleVerts;
+  uint mask;
+  GfxParticleCloudVertex *gaussParticleVertsIter;
+  ushort quadIndices [6];
   uint local_14;
-  ushort *local_10;
-  undefined2 *local_c;
-  int local_8;
+  ushort *gaussParticleIndicesIter;
+  GfxParticleCloudVertex *particleVertsIter;
+  int indIter;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20[0] = 0;
-  local_20[1] = 1;
-  local_20[2] = 2;
-  local_20[3] = 2;
-  local_20[4] = 1;
-  local_20[5] = 3;
-  local_34[1] = 1.4013e-45;
-  local_58 = 0x10000;
-  local_64 = 0x2000;
-  local_60 = 0x3000;
-  local_40 = 0x1ff;
-  local_28 = 0x240;
-  local_2c = R_AllocStaticVertexBuffer
-                       (&gfxBuf.particleCloudVertexBuffer,0x10000,1,"Particle Cloud Verts");
-  local_24 = local_2c + 0x4000;
-  local_c = local_2c;
-  local_88 = R_AllocStaticIndexBuffer
-                       (&gfxBuf.particleCloudIndexBuffer,0x6000,1,"Particle Cloud Indices");
-  local_10 = local_88 + 0x1800;
-  local_68 = 0;
-  local_50 = 0;
-  local_5c = 0;
-  local_54 = local_88;
+  quadIndices[0] = 0;
+  quadIndices[1] = 1;
+  quadIndices[2] = 2;
+  quadIndices[3] = 2;
+  quadIndices[4] = 1;
+  quadIndices[5] = 3;
+  location = 1;
+  vertSizeInBytes = 0x10000;
+  cornerStep = 0x2000;
+  indexSizeInBytes = 0x3000;
+  lfsr = 0x1ff;
+  mask = 0x240;
+  particleVerts =
+       R_AllocStaticVertexBuffer(&gfxBuf.particleCloudVertexBuffer,0x10000,1,"Particle Cloud Verts")
+  ;
+  gaussParticleVertsIter = particleVerts + 0x1000;
+  particleVertsIter = particleVerts;
+  particleIndicesIter =
+       R_AllocStaticIndexBuffer(&gfxBuf.particleCloudIndexBuffer,0x6000,1,"Particle Cloud Indices");
+  gaussParticleIndicesIter = particleIndicesIter + 0x1800;
+  particleId = 0;
+  vertexIndex = 0;
+  xIter = 0;
+  particleIndices = particleIndicesIter;
   do {
-    if (local_5c == 8) {
+    if (xIter == 8) {
       R_FinishStaticIndexBuffer(gfxBuf.particleCloudIndexBuffer);
       R_FinishStaticVertexBuffer(gfxBuf.particleCloudVertexBuffer);
       return;
     }
-    for (local_44 = 0; local_44 != 8; local_44 = local_44 + 1) {
-      for (local_3c = 0; local_3c != 0x10; local_3c = local_3c + 1) {
-        local_c = local_2c + local_50 * 0x10;
-        local_40 = (ushort)((int)(uint)local_40 >> 1) ^ -(local_40 & 1) & 0x240;
-        local_50 = local_40 & 0x3ff;
+    for (yIter = 0; yIter != 8; yIter = yIter + 1) {
+      for (zIter = 0; zIter != 0x10; zIter = zIter + 1) {
+        particleVertsIter = particleVerts + vertexIndex * 4;
+        lfsr = (ushort)((int)(uint)lfsr >> 1) ^ -(lfsr & 1) & 0x240;
+        vertexIndex = lfsr & 0x3ff;
         iVar3 = rand();
-        local_84[0] = ((float)iVar3 / 32767.0 + (float)local_5c) * 0.25 + -1.0;
+        pos[0] = ((float)iVar3 / 32767.0 + (float)xIter) * 0.25 + -1.0;
         iVar3 = rand();
-        local_84[1] = ((float)iVar3 / 32767.0 + (float)local_44) * 0.25 + -1.0;
+        pos[1] = ((float)iVar3 / 32767.0 + (float)yIter) * 0.25 + -1.0;
         iVar3 = rand();
-        local_84[2] = ((float)iVar3 / 32767.0 + (float)local_3c) * 0.125 + -1.0;
-        GaussianRandom(&local_4c,&local_48);
-        GaussianRandom(local_34,&local_6c);
-        fVar5 = local_4c * 0.25;
+        pos[2] = ((float)iVar3 / 32767.0 + (float)zIter) * 0.125 + -1.0;
+        GaussianRandom(&rand0,&rand1);
+        GaussianRandom(&rand2,&rand3);
+        fVar5 = rand0 * 0.25;
         local_a8 = fVar5;
         if (0.0 <= fVar5 - 1.0) {
           local_a8 = 1.0;
@@ -778,8 +812,8 @@ void __cdecl R_CreateParticleCloudBuffer(void)
         else {
           local_c0 = -1.0;
         }
-        local_84[3] = local_c0;
-        fVar5 = local_48 * 0.25;
+        pos[3] = local_c0;
+        fVar5 = rand1 * 0.25;
         local_b0 = fVar5;
         if (0.0 <= fVar5 - 1.0) {
           local_b0 = 1.0;
@@ -790,8 +824,8 @@ void __cdecl R_CreateParticleCloudBuffer(void)
         else {
           local_c4 = -1.0;
         }
-        local_84[4] = local_c4;
-        fVar5 = local_34[0] * 0.25;
+        pos[4] = local_c4;
+        fVar5 = rand2 * 0.25;
         local_b8 = fVar5;
         if (0.0 <= fVar5 - 1.0) {
           local_b8 = 1.0;
@@ -802,50 +836,50 @@ void __cdecl R_CreateParticleCloudBuffer(void)
         else {
           local_c8 = -1.0;
         }
-        local_84[5] = local_c8;
-        for (local_98 = 0; local_98 < 2; local_98 = local_98 + 1) {
-          for (local_9c = 0; local_9c < 3; local_9c = local_9c + 1) {
-            local_94[local_98 * 3 + local_9c] =
-                 (short)(int)(local_84[local_98 * 3 + local_9c] * 32767.0);
+        pos[5] = local_c8;
+        for (j = 0; j < 2; j = j + 1) {
+          for (i = 0; i < 3; i = i + 1) {
+            xyz[j * 3 + i] = (short)(int)(pos[j * 3 + i] * 32767.0);
           }
         }
-        for (local_38 = 0; local_38 != 4; local_38 = local_38 + 1) {
-          *local_c = local_94[0];
-          local_c[1] = local_94[1];
-          local_c[2] = local_94[2];
-          local_c[3] = (short)(local_38 << 0xd);
-          local_c = local_c + 4;
-          *local_24 = local_94[3];
-          local_24[1] = local_94[4];
-          local_24[2] = local_94[5];
-          local_24[3] = (short)(local_38 << 0xd);
-          local_24 = local_24 + 4;
+        for (cornerIter = 0; cornerIter != 4; cornerIter = cornerIter + 1) {
+          particleVertsIter->xyz[0] = xyz[0];
+          particleVertsIter->xyz[1] = xyz[1];
+          particleVertsIter->xyz[2] = xyz[2];
+          particleVertsIter->corner = (short)(cornerIter << 0xd);
+          particleVertsIter = particleVertsIter + 1;
+          gaussParticleVertsIter->xyz[0] = xyz[3];
+          gaussParticleVertsIter->xyz[1] = xyz[4];
+          gaussParticleVertsIter->xyz[2] = xyz[5];
+          gaussParticleVertsIter->corner = (short)(cornerIter << 0xd);
+          gaussParticleVertsIter = gaussParticleVertsIter + 1;
         }
-        for (local_8 = 0; local_8 != 6; local_8 = local_8 + 1) {
-          uVar4 = (local_68 + 0x400U & 0xffff) << 2;
-          *local_88 = local_20[local_8] + (short)local_68 * 4;
-          if (((uint)local_20[local_8] + (uint)(ushort)((short)local_68 * 4) != (uint)*local_88) &&
+        for (indIter = 0; indIter != 6; indIter = indIter + 1) {
+          uVar4 = (particleId + 0x400U & 0xffff) << 2;
+          *particleIndicesIter = quadIndices[indIter] + (short)particleId * 4;
+          if (((uint)quadIndices[indIter] + (uint)(ushort)((short)particleId * 4) !=
+               (uint)*particleIndicesIter) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",
                                        0x38b,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          local_88 = local_88 + 1;
-          *local_10 = local_20[local_8] + (short)uVar4;
-          if (((uint)local_20[local_8] + (uVar4 & 0xffff) != (uint)*local_10) &&
+          particleIndicesIter = particleIndicesIter + 1;
+          *gaussParticleIndicesIter = quadIndices[indIter] + (short)uVar4;
+          if (((uint)quadIndices[indIter] + (uVar4 & 0xffff) != (uint)*gaussParticleIndicesIter) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_buffers.cpp",
                                        0x38f,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          local_10 = local_10 + 1;
+          gaussParticleIndicesIter = gaussParticleIndicesIter + 1;
         }
-        local_68 = local_68 + 1;
+        particleId = particleId + 1;
       }
     }
-    local_5c = local_5c + 1;
+    xIter = xIter + 1;
   } while( true );
 }
 

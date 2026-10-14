@@ -957,18 +957,18 @@ LAB_0061bb50:
 void __cdecl SV_BuildClientSnapshot(client_t *param_1)
 
 {
-  client_t *pcVar1;
-  short sVar2;
+  client_t *dst;
+  short sVar1;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  undefined4 *puVar5;
+  undefined4 *puVar4;
   float unaff_EBP;
   float unaff_ESI;
-  undefined4 *puVar6;
+  undefined4 *puVar5;
   float unaff_EDI;
-  int iVar7;
-  uint uVar8;
-  undefined4 *puVar9;
+  int iVar6;
+  uint uVar7;
+  undefined4 *puVar8;
   int local_1020;
   int local_101c;
   client_t *local_1018;
@@ -980,81 +980,81 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
   undefined4 uStack_4;
   
   uStack_4 = 0x61bcaa;
-  pcVar1 = param_1 + (*(int *)(param_1 + 0x10) % 0x1c) * 10000 + 0x5774;
-  *(undefined4 *)(pcVar1 + 0x270c) = DAT_01ded72c;
-  *(undefined4 *)(pcVar1 + 0x26e8) = 0;
-  *(undefined4 *)(pcVar1 + 0x26ec) = 0;
+  dst = param_1 + (*(int *)(param_1 + 0x10) % 0x1c) * 10000 + 0x5774;
+  *(undefined4 *)(dst + 0x270c) = DAT_01ded72c;
+  *(undefined4 *)(dst + 0x26e8) = 0;
+  *(undefined4 *)(dst + 0x26ec) = 0;
   if ((*(int *)(param_1 + 0x556c) != 0) && (*(int *)param_1 != 1)) {
-    *(int *)(pcVar1 + 0x26f0) = DAT_01e5d4b8;
-    *(int *)(pcVar1 + 0x26f4) = DAT_01e5d4bc;
-    *(int *)(pcVar1 + 0x26f8) = DAT_01e5d4c0;
+    *(int *)(dst + 0x26f0) = DAT_01e5d4b8;
+    *(int *)(dst + 0x26f4) = DAT_01e5d4bc;
+    *(int *)(dst + 0x26f8) = DAT_01e5d4c0;
     if (_sv == 2) {
       local_1008 = 0;
-      iVar4 = ((int)param_1 - (int)DAT_01e5d49c) / 0x7c2e8;
-      iVar7 = iVar4 * 0x2a28;
-      local_1020 = *(int *)(iVar7 + 0x26f8 + _level);
-      local_1018 = pcVar1;
-      iVar3 = FUN_0061ae30(&local_1020);
-      *(int *)(iVar7 + 0x26f8 + _level) = local_1020;
-      if (iVar3 == 0) {
+      iVar3 = ((int)param_1 - (int)DAT_01e5d49c) / 0x7c2e8;
+      iVar6 = iVar3 * 0x2a28;
+      local_1020 = *(int *)(iVar6 + 0x26f8 + _level);
+      local_1018 = dst;
+      iVar2 = FUN_0061ae30(&local_1020);
+      *(int *)(iVar6 + 0x26f8 + _level) = local_1020;
+      if (iVar2 == 0) {
         local_101c = 0;
       }
       else {
-        local_101c = DAT_01e5d48c - *(int *)(iVar3 + 4);
+        local_101c = DAT_01e5d48c - *(int *)(iVar2 + 4);
       }
-      memcpy((uchar *)pcVar1,(uchar *)(DAT_01e498d0 * iVar4 + DAT_01e498cc),0x26e8);
-      uVar8 = (uint)(byte)pcVar1[0x130];
-      if (0x3ff < uVar8) {
+      memcpy((uchar *)dst,(uchar *)(DAT_01e498d0 * iVar3 + DAT_01e498cc),0x26e8);
+      uVar7 = (uint)(byte)dst[0x130];
+      if (0x3ff < uVar7) {
         Com_Error(ERR_DROP,"\x15SV_BuildClientSnapshot: bad gEnt");
       }
-      local_1014 = *(undefined4 *)(pcVar1 + 0x24);
-      local_1010 = *(undefined4 *)(pcVar1 + 0x28);
-      local_100c = *(float *)(pcVar1 + 400) + *(float *)(pcVar1 + 0x2c);
-      AddLeanToPosition(*(float **)(pcVar1 + 0x184),*(float *)(pcVar1 + 0x7c),unaff_EDI,unaff_ESI,
+      local_1014 = *(undefined4 *)(dst + 0x24);
+      local_1010 = *(undefined4 *)(dst + 0x28);
+      local_100c = *(float *)(dst + 400) + *(float *)(dst + 0x2c);
+      AddLeanToPosition(*(float **)(dst + 0x184),*(float *)(dst + 0x7c),unaff_EDI,unaff_ESI,
                         unaff_EBP);
-      if (iVar3 == 0) {
-        FUN_00619b90(&local_1014,uVar8,&local_1008);
-        puVar6 = &DAT_01c5a780;
-        puVar9 = (undefined4 *)((DAT_01e5d4b8 % DAT_01e5d4ac) * 0x80 + DAT_01e5d4c4);
-        for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
-          *puVar9 = *puVar6;
-          puVar6 = puVar6 + 1;
-          puVar9 = puVar9 + 1;
+      if (iVar2 == 0) {
+        FUN_00619b90(&local_1014,uVar7,&local_1008);
+        puVar5 = &DAT_01c5a780;
+        puVar8 = (undefined4 *)((DAT_01e5d4b8 % DAT_01e5d4ac) * 0x80 + DAT_01e5d4c4);
+        for (iVar3 = 0x20; iVar3 != 0; iVar3 = iVar3 + -1) {
+          *puVar8 = *puVar5;
+          puVar5 = puVar5 + 1;
+          puVar8 = puVar8 + 1;
         }
         DAT_01e5d4b8 = DAT_01e5d4b8 + 1;
         if (0x7ffffffd < DAT_01e5d4b8) {
           Com_Error(ERR_FATAL,"\x15svs.nextSnapshotMatchStates wrapped");
         }
-        iVar4 = 0;
+        iVar3 = 0;
         if (0 < local_1008) {
           do {
-            puVar6 = (undefined4 *)(aiStack_1004[iVar4] * DAT_01e498c4 + DAT_01e498c0);
-            puVar9 = (undefined4 *)((DAT_01e5d4bc % DAT_01e5d4b0) * 0xe0 + DAT_01e5d4c8);
-            for (iVar3 = 0x38; iVar3 != 0; iVar3 = iVar3 + -1) {
-              *puVar9 = *puVar6;
-              puVar6 = puVar6 + 1;
-              puVar9 = puVar9 + 1;
+            puVar5 = (undefined4 *)(aiStack_1004[iVar3] * DAT_01e498c4 + DAT_01e498c0);
+            puVar8 = (undefined4 *)((DAT_01e5d4bc % DAT_01e5d4b0) * 0xe0 + DAT_01e5d4c8);
+            for (iVar2 = 0x38; iVar2 != 0; iVar2 = iVar2 + -1) {
+              *puVar8 = *puVar5;
+              puVar5 = puVar5 + 1;
+              puVar8 = puVar8 + 1;
             }
             DAT_01e5d4bc = DAT_01e5d4bc + 1;
             if (0x7ffffffd < DAT_01e5d4bc) {
               Com_Error(ERR_FATAL,"\x15svs.nextSnapshotEntities wrapped");
             }
-            *(int *)(pcVar1 + 0x26e8) = *(int *)(pcVar1 + 0x26e8) + 1;
-            iVar4 = iVar4 + 1;
-          } while (iVar4 < local_1008);
+            *(int *)(dst + 0x26e8) = *(int *)(dst + 0x26e8) + 1;
+            iVar3 = iVar3 + 1;
+          } while (iVar3 < local_1008);
         }
-        iVar4 = 0;
+        iVar3 = 0;
         param_1 = DAT_01e5d49c;
         if (0 < (com_maxclients->current).integer) {
-          iVar3 = 0;
+          iVar2 = 0;
           do {
             if (2 < *(int *)param_1) {
-              puVar6 = (undefined4 *)(iVar3 + 0x27b8 + _level);
-              puVar9 = (undefined4 *)((DAT_01e5d4c0 % DAT_01e5d4b4) * 0xd8 + DAT_01e5d4cc);
-              for (iVar7 = 0x36; iVar7 != 0; iVar7 = iVar7 + -1) {
-                *puVar9 = *puVar6;
-                puVar6 = puVar6 + 1;
-                puVar9 = puVar9 + 1;
+              puVar5 = (undefined4 *)(iVar2 + 0x27b8 + _level);
+              puVar8 = (undefined4 *)((DAT_01e5d4c0 % DAT_01e5d4b4) * 0xd8 + DAT_01e5d4cc);
+              for (iVar6 = 0x36; iVar6 != 0; iVar6 = iVar6 + -1) {
+                *puVar8 = *puVar5;
+                puVar5 = puVar5 + 1;
+                puVar8 = puVar8 + 1;
               }
               DAT_01e5d4c0 = DAT_01e5d4c0 + 1;
               if (0x7ffffffd < DAT_01e5d4c0) {
@@ -1063,26 +1063,26 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
               *(int *)(local_1018 + 0x26ec) = *(int *)(local_1018 + 0x26ec) + 1;
             }
             param_1 = param_1 + 0x7c2e8;
-            iVar4 = iVar4 + 1;
-            iVar3 = iVar3 + 0x2a28;
-          } while (iVar4 < (com_maxclients->current).integer);
+            iVar3 = iVar3 + 1;
+            iVar2 = iVar2 + 0x2a28;
+          } while (iVar3 < (com_maxclients->current).integer);
           _DAT_01e79c80 = local_1008;
           return;
         }
       }
       else {
-        FUN_00619dc0(*(undefined4 *)(iVar3 + 0x10),*(undefined4 *)(iVar3 + 0x14),&local_1014,uVar8,
-                     &local_1008,pcVar1);
-        iVar4 = (*(int *)(iVar3 + 0xc) % DAT_01e5d4a0) * 0x80 + DAT_01e5d4f0;
-        iVar7 = (DAT_01e5d4b8 % DAT_01e5d4ac) * 0x80 + DAT_01e5d4c4;
-        *(undefined8 *)(iVar7 + 4) = *(undefined8 *)(iVar4 + 4);
-        *(undefined4 *)(iVar7 + 0xc) = *(undefined4 *)(iVar4 + 0xc);
-        *(undefined8 *)(iVar7 + 0x10) = DAT_01c5a790;
-        *(undefined8 *)(iVar7 + 0x18) = DAT_01c5a798;
-        *(undefined8 *)(iVar7 + 0x20) = DAT_01c5a7a0;
-        *(undefined8 *)(iVar7 + 0x28) = DAT_01c5a7a8;
-        *(undefined8 *)(iVar7 + 0x30) = DAT_01c5a7b0;
-        *(undefined8 *)(iVar7 + 0x38) = DAT_01c5a7b8;
+        FUN_00619dc0(*(undefined4 *)(iVar2 + 0x10),*(undefined4 *)(iVar2 + 0x14),&local_1014,uVar7,
+                     &local_1008,dst);
+        iVar3 = (*(int *)(iVar2 + 0xc) % DAT_01e5d4a0) * 0x80 + DAT_01e5d4f0;
+        iVar6 = (DAT_01e5d4b8 % DAT_01e5d4ac) * 0x80 + DAT_01e5d4c4;
+        *(undefined8 *)(iVar6 + 4) = *(undefined8 *)(iVar3 + 4);
+        *(undefined4 *)(iVar6 + 0xc) = *(undefined4 *)(iVar3 + 0xc);
+        *(undefined8 *)(iVar6 + 0x10) = DAT_01c5a790;
+        *(undefined8 *)(iVar6 + 0x18) = DAT_01c5a798;
+        *(undefined8 *)(iVar6 + 0x20) = DAT_01c5a7a0;
+        *(undefined8 *)(iVar6 + 0x28) = DAT_01c5a7a8;
+        *(undefined8 *)(iVar6 + 0x30) = DAT_01c5a7b0;
+        *(undefined8 *)(iVar6 + 0x38) = DAT_01c5a7b8;
         DAT_01e5d4b8 = DAT_01e5d4b8 + 1;
         if (0x7ffffffd < DAT_01e5d4b8) {
           Com_Error(ERR_FATAL,"\x15svs.nextSnapshotMatchStates wrapped");
@@ -1090,56 +1090,56 @@ void __cdecl SV_BuildClientSnapshot(client_t *param_1)
         local_1020 = 0;
         if (0 < local_1008) {
           do {
-            puVar5 = (undefined4 *)((DAT_01e5d4bc % DAT_01e5d4b0) * 0xe0 + DAT_01e5d4c8);
-            puVar6 = (undefined4 *)
-                     (((aiStack_1004[local_1020] + *(int *)(iVar3 + 0x14)) % DAT_01e5d4a4) * 0x100 +
+            puVar4 = (undefined4 *)((DAT_01e5d4bc % DAT_01e5d4b0) * 0xe0 + DAT_01e5d4c8);
+            puVar5 = (undefined4 *)
+                     (((aiStack_1004[local_1020] + *(int *)(iVar2 + 0x14)) % DAT_01e5d4a4) * 0x100 +
                      DAT_01e5d484);
-            puVar9 = puVar5;
-            for (iVar4 = 0x38; iVar4 != 0; iVar4 = iVar4 + -1) {
-              *puVar9 = *puVar6;
-              puVar6 = puVar6 + 1;
-              puVar9 = puVar9 + 1;
+            puVar8 = puVar4;
+            for (iVar3 = 0x38; iVar3 != 0; iVar3 = iVar3 + -1) {
+              *puVar8 = *puVar5;
+              puVar5 = puVar5 + 1;
+              puVar8 = puVar8 + 1;
             }
-            if (puVar5[4] != 0) {
-              puVar5[4] = puVar5[4] + local_101c;
+            if (puVar4[4] != 0) {
+              puVar4[4] = puVar4[4] + local_101c;
             }
-            if (puVar5[0xd] != 0) {
-              puVar5[0xd] = puVar5[0xd] + local_101c;
+            if (puVar4[0xd] != 0) {
+              puVar4[0xd] = puVar4[0xd] + local_101c;
             }
-            if (puVar5[0x1e] != 0) {
-              puVar5[0x1e] = puVar5[0x1e] + local_101c;
+            if (puVar4[0x1e] != 0) {
+              puVar4[0x1e] = puVar4[0x1e] + local_101c;
             }
-            sVar2 = *(short *)((int)puVar5 + 0xbe);
-            if (((sVar2 == 4) || (sVar2 == 0)) || (sVar2 == 0x52)) {
-              puVar5[0x15] = puVar5[0x15] + local_101c;
+            sVar1 = *(short *)((int)puVar4 + 0xbe);
+            if (((sVar1 == 4) || (sVar1 == 0)) || (sVar1 == 0x52)) {
+              puVar4[0x15] = puVar4[0x15] + local_101c;
             }
             DAT_01e5d4bc = DAT_01e5d4bc + 1;
             if (0x7ffffffd < DAT_01e5d4bc) {
               Com_Error(ERR_FATAL,"\x15svs.nextSnapshotEntities wrapped");
             }
-            *(int *)(pcVar1 + 0x26e8) = *(int *)(pcVar1 + 0x26e8) + 1;
+            *(int *)(dst + 0x26e8) = *(int *)(dst + 0x26e8) + 1;
             local_1020 = local_1020 + 1;
           } while (local_1020 < local_1008);
         }
-        iVar4 = 0;
-        if (0 < *(int *)(iVar3 + 0x18)) {
+        iVar3 = 0;
+        if (0 < *(int *)(iVar2 + 0x18)) {
           do {
-            puVar6 = (undefined4 *)
-                     (((*(int *)(iVar3 + 0x1c) + iVar4) % DAT_01e5d4a8) * 0x27d0 + DAT_01e5d4f4 + 8)
+            puVar5 = (undefined4 *)
+                     (((*(int *)(iVar2 + 0x1c) + iVar3) % DAT_01e5d4a8) * 0x27d0 + DAT_01e5d4f4 + 8)
             ;
-            puVar9 = (undefined4 *)((DAT_01e5d4c0 % DAT_01e5d4b4) * 0xd8 + DAT_01e5d4cc);
-            for (iVar7 = 0x36; iVar7 != 0; iVar7 = iVar7 + -1) {
-              *puVar9 = *puVar6;
-              puVar6 = puVar6 + 1;
-              puVar9 = puVar9 + 1;
+            puVar8 = (undefined4 *)((DAT_01e5d4c0 % DAT_01e5d4b4) * 0xd8 + DAT_01e5d4cc);
+            for (iVar6 = 0x36; iVar6 != 0; iVar6 = iVar6 + -1) {
+              *puVar8 = *puVar5;
+              puVar5 = puVar5 + 1;
+              puVar8 = puVar8 + 1;
             }
             DAT_01e5d4c0 = DAT_01e5d4c0 + 1;
             if (0x7ffffffd < DAT_01e5d4c0) {
               Com_Error(ERR_FATAL,"\x15svs.nextSnapshotClients wrapped");
             }
             *(int *)(local_1018 + 0x26ec) = *(int *)(local_1018 + 0x26ec) + 1;
-            iVar4 = iVar4 + 1;
-          } while (iVar4 < *(int *)(iVar3 + 0x18));
+            iVar3 = iVar3 + 1;
+          } while (iVar3 < *(int *)(iVar2 + 0x18));
         }
       }
       _DAT_01e79c80 = local_1008;
@@ -1460,18 +1460,18 @@ void __cdecl SV_SendClientMessages(void)
   uint uVar9;
   int iVar10;
   int iVar11;
-  uchar *puVar12;
+  uchar *dst;
   msg_t *unaff_ESI;
-  client_t *pcVar13;
-  ulong uVar14;
+  client_t *pcVar12;
+  ulong count;
   netchan_t *unaff_EDI;
-  int iVar15;
+  int iVar13;
+  float fVar14;
+  float fVar15;
   float fVar16;
   float fVar17;
-  float fVar18;
-  float fVar19;
-  uchar **ppuVar20;
-  ulong uVar21;
+  uchar **src;
+  ulong count_00;
   int iStack_78;
   int iStack_74;
   int iStack_70;
@@ -1480,7 +1480,7 @@ void __cdecl SV_SendClientMessages(void)
   undefined1 auStack_60 [16];
   undefined1 auStack_50 [16];
   
-  iVar15 = 0;
+  iVar13 = 0;
   _DAT_01e49934 = 0;
   _DAT_01e4998c = 0;
   iVar6 = (com_maxclients->current).integer;
@@ -1493,36 +1493,36 @@ void __cdecl SV_SendClientMessages(void)
   if (0 < iVar6) {
     do {
       iVar10 = (iStack_70 + iStack_78) % iVar6;
-      pcVar13 = (client_t *)(iVar10 * 0x7c2e8 + DAT_01e5d49c);
-      iVar11 = *(int *)pcVar13;
+      pcVar12 = (client_t *)(iVar10 * 0x7c2e8 + DAT_01e5d49c);
+      iVar11 = *(int *)pcVar12;
       iVar3 = _DAT_00af3bdc;
-      if (((iVar11 != 0) && (*(int *)(pcVar13 + 0x5768) <= DAT_01e5d48c)) &&
-         ((*(int *)(pcVar13 + 370000) == 0 || (*(int *)(pcVar13 + 0x20) != 0)))) {
-        if (iVar8 < iVar15) break;
+      if (((iVar11 != 0) && (*(int *)(pcVar12 + 0x5768) <= DAT_01e5d48c)) &&
+         ((*(int *)(pcVar12 + 370000) == 0 || (*(int *)(pcVar12 + 0x20) != 0)))) {
+        if (iVar8 < iVar13) break;
         iStack_68 = iStack_68 + 1;
-        if (*(int *)(pcVar13 + 0x44) == 0) {
+        if (*(int *)(pcVar12 + 0x44) == 0) {
           auStack_60[iVar10] = 1;
-          if ((iVar15 < iVar8) && ((iVar11 == 5 || (iVar11 == 1)))) {
-            SV_BuildClientSnapshot(pcVar13);
-            iVar15 = _DAT_01e49934;
+          if ((iVar13 < iVar8) && ((iVar11 == 5 || (iVar11 == 1)))) {
+            SV_BuildClientSnapshot(pcVar12);
+            iVar13 = _DAT_01e49934;
             iVar3 = _DAT_00af3bdc;
           }
         }
         else {
-          if (*(int *)(pcVar13 + 0x20) == 2) {
-            *(int *)(pcVar13 + 0x5768) = DAT_01e5d48c + -1;
+          if (*(int *)(pcVar12 + 0x20) == 2) {
+            *(int *)(pcVar12 + 0x5768) = DAT_01e5d48c + -1;
           }
           else {
-            iVar15 = FUN_0061c1d0();
-            *(int *)(pcVar13 + 0x5768) = *(int *)(pcVar13 + 0xec) * 0x32 + iVar15 + DAT_01e5d48c;
+            iVar13 = FUN_0061c1d0();
+            *(int *)(pcVar12 + 0x5768) = *(int *)(pcVar12 + 0xec) * 0x32 + iVar13 + DAT_01e5d48c;
           }
-          *(int *)(pcVar13 + 0x576c) = DAT_01e5d48c;
+          *(int *)(pcVar12 + 0x576c) = DAT_01e5d48c;
           Netchan_TransmitNextFragment(unaff_EDI);
-          iVar15 = _DAT_01e49934;
+          iVar13 = _DAT_01e49934;
           iVar3 = iVar10;
-          if (*(int *)(pcVar13 + 0x44) == 0) {
+          if (*(int *)(pcVar12 + 0x44) == 0) {
             FUN_00619270();
-            iVar15 = _DAT_01e49934;
+            iVar13 = _DAT_01e49934;
           }
         }
       }
@@ -1535,23 +1535,23 @@ void __cdecl SV_SendClientMessages(void)
   if (0 < iVar6) {
     do {
       iVar11 = (iStack_70 + iStack_78) % iVar6;
-      pcVar13 = (client_t *)(iVar11 * 0x7c2e8 + DAT_01e5d49c);
+      pcVar12 = (client_t *)(iVar11 * 0x7c2e8 + DAT_01e5d49c);
       if (auStack_60[iVar11] != '\0') {
-        if (iVar8 <= iVar15) goto LAB_0061ccf1;
+        if (iVar8 <= iVar13) goto LAB_0061ccf1;
         _DAT_00af3bdc = iVar11;
         va("SV_SendClientSnapshot %d");
         SV_BeginClientSnapshot((client_t *)unaff_EDI,unaff_ESI);
-        if ((*(int *)pcVar13 == 5) || (*(int *)pcVar13 == 1)) {
-          SV_WriteSnapshotToClient(pcVar13,(msg_t *)unaff_EDI);
+        if ((*(int *)pcVar12 == 5) || (*(int *)pcVar12 == 1)) {
+          SV_WriteSnapshotToClient(pcVar12,(msg_t *)unaff_EDI);
         }
         SV_EndClientSnapshot((client_t *)unaff_EDI,unaff_ESI);
-        SV_SendClientVoiceData(pcVar13);
-        iVar15 = _DAT_01e49934;
+        SV_SendClientVoiceData(pcVar12);
+        iVar13 = _DAT_01e49934;
       }
       iStack_78 = iStack_78 + 1;
     } while (iStack_78 < iVar6);
   }
-  if (iVar15 < iVar8) {
+  if (iVar13 < iVar8) {
     _DAT_00af3bdc = -1;
   }
 LAB_0061ccf1:
@@ -1561,17 +1561,17 @@ LAB_0061ccf1:
         (((demo_recordingrate->current).integer <= DAT_01ea9f04 - DAT_026a5ff4 &&
          (*(int *)(g_democlientindex * 0x7c2e8 + 0x10 + DAT_01e5d49c) != DAT_026a5ff8)))))) &&
       (DAT_0268df84 == 1)) &&
-     ((iVar15 = *(int *)(g_democlientindex * 0x7c2e8 + DAT_01e5d49c), iVar15 == 5 || (iVar15 == 1)))
+     ((iVar13 = *(int *)(g_democlientindex * 0x7c2e8 + DAT_01e5d49c), iVar13 == 5 || (iVar13 == 1)))
      ) {
     Demo_BuildDemoSnapshot();
   }
-  iVar15 = DAT_01e499e8 * 0x324;
-  piVar7 = (int *)(&DAT_01e499ec + iVar15);
+  iVar13 = DAT_01e499e8 * 0x324;
+  piVar7 = (int *)(&DAT_01e499ec + iVar13);
   *piVar7 = DAT_01e5d48c;
-  *(undefined8 *)(&DAT_01e499f0 + iVar15) = 0;
-  *(undefined8 *)(iVar15 + 0x1e499f8) = 0;
-  *(undefined8 *)(iVar15 + 0x1e49a00) = 0;
-  *(undefined8 *)(iVar15 + 0x1e49a08) = 0;
+  *(undefined8 *)(&DAT_01e499f0 + iVar13) = 0;
+  *(undefined8 *)(iVar13 + 0x1e499f8) = 0;
+  *(undefined8 *)(iVar13 + 0x1e49a00) = 0;
+  *(undefined8 *)(iVar13 + 0x1e49a08) = 0;
   iStack_78 = 0;
   if (3 < iVar6) {
     iStack_74 = iStack_70 + 1;
@@ -1591,7 +1591,7 @@ LAB_0061ccf1:
         piVar7[iVar10 + 0x69] = *(int *)(iVar3 + 0x3c);
         piVar7[iVar10 + 0x6a] = *(int *)(iVar3 + 0x40);
         piVar7[iVar10 + 0x6b] = *(int *)(iVar3 + 0x44);
-        (&DAT_01e499f0)[iVar11 + iVar15] = 1;
+        (&DAT_01e499f0)[iVar11 + iVar13] = 1;
       }
       iVar11 = iStack_74 % iVar6;
       piVar5 = (int *)(iVar11 * 0x7c2e8 + DAT_01e5d49c);
@@ -1606,7 +1606,7 @@ LAB_0061ccf1:
         piVar7[iVar10 + 0x69] = *(int *)(iVar3 + 0x3c);
         piVar7[iVar10 + 0x6a] = *(int *)(iVar3 + 0x40);
         piVar7[iVar10 + 0x6b] = *(int *)(iVar3 + 0x44);
-        (&DAT_01e499f0)[iVar11 + iVar15] = 1;
+        (&DAT_01e499f0)[iVar11 + iVar13] = 1;
       }
       iVar11 = (iStack_74 + 1) % iVar6;
       piVar5 = (int *)(iVar11 * 0x7c2e8 + DAT_01e5d49c);
@@ -1621,7 +1621,7 @@ LAB_0061ccf1:
         piVar7[iVar10 + 0x69] = *(int *)(iVar3 + 0x3c);
         piVar7[iVar10 + 0x6a] = *(int *)(iVar3 + 0x40);
         piVar7[iVar10 + 0x6b] = *(int *)(iVar3 + 0x44);
-        (&DAT_01e499f0)[iVar11 + iVar15] = 1;
+        (&DAT_01e499f0)[iVar11 + iVar13] = 1;
       }
       iVar11 = (iStack_74 + 2) % iVar6;
       piVar5 = (int *)(iVar11 * 0x7c2e8 + DAT_01e5d49c);
@@ -1636,7 +1636,7 @@ LAB_0061ccf1:
         piVar7[iVar10 + 0x69] = *(int *)(iVar3 + 0x3c);
         piVar7[iVar10 + 0x6a] = *(int *)(iVar3 + 0x40);
         piVar7[iVar10 + 0x6b] = *(int *)(iVar3 + 0x44);
-        (&DAT_01e499f0)[iVar11 + iVar15] = 1;
+        (&DAT_01e499f0)[iVar11 + iVar13] = 1;
       }
       iStack_74 = iStack_74 + 4;
       iStack_64 = iStack_64 + -1;
@@ -1660,7 +1660,7 @@ LAB_0061ccf1:
         *piVar1 = *(int *)(iVar3 + 0x3c);
         piVar1[1] = *(int *)(iVar3 + 0x40);
         piVar1[2] = *(int *)(iVar3 + 0x44);
-        (&DAT_01e499f0)[iVar11 + iVar15] = 1;
+        (&DAT_01e499f0)[iVar11 + iVar13] = 1;
       }
       iStack_70 = iStack_70 + 1;
       iStack_64 = iStack_64 + -1;
@@ -1673,28 +1673,28 @@ LAB_0061ccf1:
   DAT_0272f9ac = _DAT_01e49934;
   DAT_0272f9b0 = iVar8;
   if (0 < iStack_68) {
-    fVar19 = 0.0;
-    iVar8 = 0;
-    fVar18 = 0.0;
     fVar17 = 0.0;
+    iVar8 = 0;
+    fVar16 = 0.0;
+    fVar15 = 0.0;
     iVar6 = 0;
     do {
       *(undefined4 *)(&DAT_01e498e0 + iVar6 * 4) = *(undefined4 *)(&DAT_01e498e4 + iVar6 * 4);
       iVar8 = iVar8 + _DAT_01e49934;
       *(int *)(&DAT_01e4993c + iVar6 * 4) = *(int *)(&DAT_01e49940 + iVar6 * 4);
       *(undefined4 *)(&DAT_01e498e4 + iVar6 * 4) = *(undefined4 *)(&DAT_01e498e8 + iVar6 * 4);
-      iVar15 = iVar6 * 4;
+      iVar13 = iVar6 * 4;
       iVar8 = iVar8 + _DAT_01e49934;
-      fVar18 = (float)*(int *)(&DAT_01e49940 + iVar6 * 4) + fVar18;
-      *(int *)(&DAT_01e49940 + iVar6 * 4) = *(int *)(&DAT_01e49944 + iVar15);
+      fVar16 = (float)*(int *)(&DAT_01e49940 + iVar6 * 4) + fVar16;
+      *(int *)(&DAT_01e49940 + iVar6 * 4) = *(int *)(&DAT_01e49944 + iVar13);
       iVar6 = iVar6 + 2;
-      fVar19 = (float)*(int *)(&DAT_01e49944 + iVar15) + fVar19;
+      fVar17 = (float)*(int *)(&DAT_01e49944 + iVar13) + fVar17;
     } while (iVar6 < 0x12);
     if (iVar6 < 0x13) {
       *(undefined4 *)(&DAT_01e498e0 + iVar6 * 4) = *(undefined4 *)(&DAT_01e498e4 + iVar6 * 4);
       iVar8 = iVar8 + _DAT_01e49934;
       *(int *)(&DAT_01e4993c + iVar6 * 4) = *(int *)(&DAT_01e49940 + iVar6 * 4);
-      fVar17 = (float)*(int *)(&DAT_01e49940 + iVar6 * 4);
+      fVar15 = (float)*(int *)(&DAT_01e49940 + iVar6 * 4);
     }
     _DAT_01e4992c = _DAT_01e49934;
     _DAT_01e49988 = _DAT_01e4998c;
@@ -1706,13 +1706,13 @@ LAB_0061ccf1:
     }
     _DAT_01e49930 = _DAT_01e49930 + 1;
     if ((0x13 < _DAT_01e49930) && ((sv_showAverageBPS->current).enabled != false)) {
-      fVar16 = (float)(iVar8 + _DAT_01e49934) * 0.05;
+      fVar14 = (float)(iVar8 + _DAT_01e49934) * 0.05;
       _DAT_01e49994 =
            _DAT_01e49994 +
-           (1.0 - fVar16 / ((fVar19 + fVar18 + fVar17 + (float)_DAT_01e4998c) * 0.05)) * 100.0;
+           (1.0 - fVar14 / ((fVar17 + fVar16 + fVar15 + (float)_DAT_01e4998c) * 0.05)) * 100.0;
       _DAT_01e49998 = _DAT_01e49998 + 1;
       _DAT_01e49930 = 0;
-      Com_DPrintf(0xa58680,SUB84((double)(fVar16 / (float)iStack_68),0));
+      Com_DPrintf(0xa58680,SUB84((double)(fVar14 / (float)iStack_68),0));
     }
   }
   if (_sv == 2) {
@@ -1743,17 +1743,17 @@ LAB_0061ccf1:
         uVar9 = (uVar9 - 1 | 0xff000000) + 1;
       }
       DAT_01e5d4dc = (int)(DAT_01e5d4dc + _DAT_01e89dc4) % 0x28000000;
-      uVar14 = 0x1000000 - uVar9;
-      puVar12 = DAT_01e5d4d8 + uVar9;
-      ppuVar20 = _DAT_01e89db8;
-      uVar21 = _DAT_01e89dc4;
-      if ((int)uVar14 < (int)_DAT_01e89dc4) {
-        memcpy(puVar12,(uchar *)_DAT_01e89db8,uVar14);
-        puVar12 = DAT_01e5d4d8;
-        ppuVar20 = (uchar **)((int)_DAT_01e89db8 + uVar14);
-        uVar21 = _DAT_01e89dc4 - uVar14;
+      count = 0x1000000 - uVar9;
+      dst = DAT_01e5d4d8 + uVar9;
+      src = _DAT_01e89db8;
+      count_00 = _DAT_01e89dc4;
+      if ((int)count < (int)_DAT_01e89dc4) {
+        memcpy(dst,(uchar *)_DAT_01e89db8,count);
+        dst = DAT_01e5d4d8;
+        src = (uchar **)((int)_DAT_01e89db8 + count);
+        count_00 = _DAT_01e89dc4 - count;
       }
-      memcpy(puVar12,(uchar *)ppuVar20,uVar21);
+      memcpy(dst,(uchar *)src,count_00);
       DAT_01e5d4d0 = DAT_01e5d4d0 + 1;
       if (0x7ffffffd < DAT_01e5d4d0) {
         Com_Error(ERR_FATAL,"\x15svs.nextArchivedSnapshotFrames wrapped");

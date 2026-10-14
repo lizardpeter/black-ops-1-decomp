@@ -29,6 +29,8 @@ void __cdecl R_UploadWaterTextureInternal(void *param_1)
 
 // 0082EE10  Load_PicmipWater  (gfx_d3d/r_water.cpp:739)
 
+/* WARNING: Variable defined which should be unmapped: N */
+
 void __cdecl Load_PicmipWater(water_t **param_1)
 
 {
@@ -41,6 +43,7 @@ void __cdecl Load_PicmipWater(water_t **param_1)
   int iVar7;
   int iVar8;
   int iVar9;
+  int N;
   int iStack_c;
   int iStack_8;
   

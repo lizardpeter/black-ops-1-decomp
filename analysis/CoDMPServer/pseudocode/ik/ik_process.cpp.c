@@ -4,14 +4,14 @@
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_GeneratePreIKMatrices(IKState *param_1,bool param_2)
+void __cdecl IK_GeneratePreIKMatrices(IKState *ikState,bool isLocalBones)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  IKImport_GetBoneMatrixArray(param_1,param_2);
-  if (!param_2) {
+  IKImport_GetBoneMatrixArray(ikState,isLocalBones);
+  if (!isLocalBones) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_process.cpp",0x40,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -28,7 +28,7 @@ void __cdecl IK_GeneratePreIKMatrices(IKState *param_1,bool param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_GenerateIKXformMatrices(IKState *param_1,bool param_2)
+void __cdecl IK_GenerateIKXformMatrices(IKState *ikState,bool isLocalBones)
 
 {
   code *pcVar1;
@@ -134,18 +134,18 @@ void __cdecl IK_GenerateIKXformMatrices(IKState *param_1,bool param_2)
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_18 = IKImport_GetMaxLayerLerp(param_1);
-  local_1c = param_1->matArrayXforms;
-  local_20 = param_1->matArrayPreIK;
-  local_24 = param_1->matArrayPostIK;
+  local_18 = IKImport_GetMaxLayerLerp(ikState);
+  local_1c = ikState->matArrayXforms;
+  local_20 = ikState->matArrayPreIK;
+  local_24 = ikState->matArrayPostIK;
   local_28 = 0;
   do {
     if (0x16 < local_28) {
       return;
     }
-    local_29 = param_1->ikBoneToObjBone[local_28] != 0xa1;
+    local_29 = ikState->ikBoneToObjBone[local_28] != 0xa1;
     if ((bool)local_29) {
-      if (param_2) {
+      if (isLocalBones) {
         if ((local_20 == (float (*) [4] [4])&local_150) &&
            (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s")
            , !bVar2)) {
@@ -205,9 +205,9 @@ void __cdecl IK_GenerateIKXformMatrices(IKState *param_1,bool param_2)
       }
       else {
         ikCalcBoneModelMatrix
-                  (param_1,local_28,(float *)param_1->matArrayPreIK,(float (*) [4])&local_70);
+                  (ikState,local_28,(float *)ikState->matArrayPreIK,(float (*) [4])&local_70);
         ikCalcBoneModelMatrix
-                  (param_1,local_28,(float *)param_1->matArrayPostIK,(float (*) [4])&local_b0);
+                  (ikState,local_28,(float *)ikState->matArrayPostIK,(float (*) [4])&local_b0);
         if ((&local_70 == &local_f0) &&
            (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_math.h",0xa5,0,"%s")
            , !bVar2)) {
@@ -303,20 +303,19 @@ void __cdecl IK_GenerateIKXformMatrices(IKState *param_1,bool param_2)
 
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-bool __cdecl IK_HasAnimatedBones(IKState *param_1)
+bool __cdecl IK_HasAnimatedBones(IKState *ikState)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
-  local_8 = 1;
+  i = 1;
   while( true ) {
-    if (0x16 < local_8) {
+    if (0x16 < i) {
       return false;
     }
-    if ((param_1->ikBoneToObjBone[local_8] != 0xa1) &&
-       (bVar1 = IK_IsCalcBone(param_1,local_8), bVar1)) break;
-    local_8 = local_8 + 1;
+    if ((ikState->ikBoneToObjBone[i] != 0xa1) && (bVar1 = IK_IsCalcBone(ikState,i), bVar1)) break;
+    i = i + 1;
   }
   return true;
 }
@@ -328,7 +327,7 @@ bool __cdecl IK_HasAnimatedBones(IKState *param_1)
 /* WARNING: Removing unreachable block (ram,0x0088a060) */
 /* WARNING: Enum "IKBoneNames": Some values do not have unique names */
 
-void __cdecl IK_Process(IKState *param_1,bool param_2)
+void __cdecl IK_Process(IKState *ikState,bool isLocalBones)
 
 {
   code *pcVar1;
@@ -344,55 +343,55 @@ void __cdecl IK_Process(IKState *param_1,bool param_2)
   undefined4 uStack_14;
   
   uStack_14 = 0x889f90;
-  if ((param_1->matArrayPostIK != (float (*) [4] [4])0x0) &&
+  if ((ikState->matArrayPostIK != (float (*) [4] [4])0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_process.cpp",0xb8,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->matArrayPostIK = (float (*) [4] [4])local_5d0;
-  param_1->matArrayPreIK = (float (*) [4] [4])local_b90;
-  param_1->matArrayXforms = (float (*) [4] [4])local_1150;
-  param_1->matArrayCache = (float (*) [4] [4])local_1710;
-  param_1->matArrayCachePre = (float (*) [4] [4])local_1cd0;
-  param_1->cacheActive = 1;
-  param_1->bHasActiveLayers = true;
-  if (param_1->cacheActive != 0) {
-    memset((uchar *)param_1->matArrayCache,'\0',0x5c0);
-    param_1->cacheActive = 0;
+  ikState->matArrayPostIK = (float (*) [4] [4])local_5d0;
+  ikState->matArrayPreIK = (float (*) [4] [4])local_b90;
+  ikState->matArrayXforms = (float (*) [4] [4])local_1150;
+  ikState->matArrayCache = (float (*) [4] [4])local_1710;
+  ikState->matArrayCachePre = (float (*) [4] [4])local_1cd0;
+  ikState->cacheActive = 1;
+  ikState->bHasActiveLayers = true;
+  if (ikState->cacheActive != 0) {
+    memset((uchar *)ikState->matArrayCache,'\0',0x5c0);
+    ikState->cacheActive = 0;
   }
-  memset((uchar *)param_1->matArrayCachePre,'\0',0x5c0);
-  bVar2 = IK_HasAnimatedBones(param_1);
+  memset((uchar *)ikState->matArrayCachePre,'\0',0x5c0);
+  bVar2 = IK_HasAnimatedBones(ikState);
   if (bVar2) {
-    param_1->modifiedIKBones = 0;
-    IK_GeneratePreIKMatrices(param_1,param_2);
-    pfVar4 = (float *)param_1->matArrayPreIK;
-    pfVar5 = (float *)param_1->matArrayPostIK;
+    ikState->modifiedIKBones = 0;
+    IK_GeneratePreIKMatrices(ikState,isLocalBones);
+    pfVar4 = (float *)ikState->matArrayPreIK;
+    pfVar5 = (float *)ikState->matArrayPostIK;
     for (iVar3 = 0x170; iVar3 != 0; iVar3 = iVar3 + -1) {
       *pfVar5 = *pfVar4;
       pfVar4 = pfVar4 + 1;
       pfVar5 = pfVar5 + 1;
     }
-    if (param_1->bJointVarsValid == 0) {
-      IK_GetJointVars(param_1);
+    if (ikState->bJointVarsValid == 0) {
+      IK_GetJointVars(ikState);
     }
-    IKImport_Profiler(param_1);
-    IK_ProcessLayers(param_1);
-    if (param_1->bHasActiveLayers != false) {
-      IK_GenerateIKXformMatrices(param_1,param_2);
+    IKImport_Profiler(ikState);
+    IK_ProcessLayers(ikState);
+    if (ikState->bHasActiveLayers != false) {
+      IK_GenerateIKXformMatrices(ikState,isLocalBones);
     }
-    IKImport_ApplyIKToSkeleton(param_1,param_2);
+    IKImport_ApplyIKToSkeleton(ikState,isLocalBones);
     iVar3 = IKImport_GetVar_IK_Debug();
     if (iVar3 == 2) {
-      IKImport_DrawDebugSkeleton(param_1);
+      IKImport_DrawDebugSkeleton(ikState);
     }
   }
-  param_1->matArrayPostIK = (float (*) [4] [4])0x0;
-  param_1->matArrayPreIK = (float (*) [4] [4])0x0;
-  param_1->matArrayXforms = (float (*) [4] [4])0x0;
-  param_1->matArrayCache = (float (*) [4] [4])0x0;
-  param_1->matArrayCachePre = (float (*) [4] [4])0x0;
+  ikState->matArrayPostIK = (float (*) [4] [4])0x0;
+  ikState->matArrayPreIK = (float (*) [4] [4])0x0;
+  ikState->matArrayXforms = (float (*) [4] [4])0x0;
+  ikState->matArrayCache = (float (*) [4] [4])0x0;
+  ikState->matArrayCachePre = (float (*) [4] [4])0x0;
   return;
 }
 

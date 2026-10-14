@@ -110,7 +110,7 @@ void __cdecl _dynamic_initializer_for__g_rb_vehicle_list__(void)
 cdl_proftimer * __thiscall cdl_proftimer::cdl_proftimer(cdl_proftimer *this)
 
 {
-  int local_8;
+  int i;
   
   *(undefined4 *)&this->value = 0;
   *(undefined4 *)((int)&this->value + 4) = 0;
@@ -118,9 +118,9 @@ cdl_proftimer * __thiscall cdl_proftimer::cdl_proftimer(cdl_proftimer *this)
   *(undefined4 *)((int)&this->avr + 4) = 0;
   *(undefined4 *)&this->capture_count = 0;
   *(undefined4 *)((int)&this->capture_count + 4) = 0;
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    *(undefined4 *)(this->mx + local_8) = 0;
-    *(undefined4 *)((int)this->mx + local_8 * 8 + 4) = 0;
+  for (i = 0; i < 5; i = i + 1) {
+    *(undefined4 *)(this->mx + i) = 0;
+    *(undefined4 *)((int)this->mx + i * 8 + 4) = 0;
   }
   this->capture = false;
   return this;
@@ -156,18 +156,19 @@ void __cdecl _dynamic_initializer_for__g_ragdoll_body_pool__(void)
 
 phys_vec3 * __thiscall
 phys_static_array<phys_vec3,6144>::add
-          (phys_static_array<phys_vec3,6144> *this,int param_1,char *param_2)
+          (phys_static_array<phys_vec3,6144> *this,int no_error,char *error_msg)
 
 {
   phys_vec3 *ppVar1;
+  phys_vec3 *rbc;
   
   if (this->m_alloc_count < 0x1800) {
     ppVar1 = this->m_slot_array + this->m_alloc_count;
     this->m_alloc_count = this->m_alloc_count + 1;
   }
   else {
-    if (param_1 == 0) {
-      tlFatal(param_2);
+    if (no_error == 0) {
+      tlFatal(error_msg);
     }
     ppVar1 = (phys_vec3 *)0x0;
   }
@@ -179,7 +180,7 @@ phys_static_array<phys_vec3,6144>::add
 
 ch_triangle * __thiscall
 phys_static_array<phys_convex_hull::ch_triangle,256>::add
-          (phys_static_array<phys_convex_hull::ch_triangle,256> *this,int param_1,char *param_2)
+          (phys_static_array<phys_convex_hull::ch_triangle,256> *this,int no_error,char *error_msg)
 
 {
   ch_triangle *pcVar1;
@@ -189,8 +190,8 @@ phys_static_array<phys_convex_hull::ch_triangle,256>::add
     this->m_alloc_count = this->m_alloc_count + 1;
   }
   else {
-    if (param_1 == 0) {
-      tlFatal(param_2);
+    if (no_error == 0) {
+      tlFatal(error_msg);
     }
     pcVar1 = (ch_triangle *)0x0;
   }
@@ -202,7 +203,7 @@ phys_static_array<phys_convex_hull::ch_triangle,256>::add
 
 ch_triangle * __thiscall
 phys_static_array<phys_convex_hull::ch_triangle,64>::add
-          (phys_static_array<phys_convex_hull::ch_triangle,64> *this,int param_1,char *param_2)
+          (phys_static_array<phys_convex_hull::ch_triangle,64> *this,int no_error,char *error_msg)
 
 {
   ch_triangle *pcVar1;
@@ -212,8 +213,8 @@ phys_static_array<phys_convex_hull::ch_triangle,64>::add
     this->m_alloc_count = this->m_alloc_count + 1;
   }
   else {
-    if (param_1 == 0) {
-      tlFatal(param_2);
+    if (no_error == 0) {
+      tlFatal(error_msg);
     }
     pcVar1 = (ch_triangle *)0x0;
   }
@@ -223,28 +224,27 @@ phys_static_array<phys_convex_hull::ch_triangle,64>::add
 
 // 0084F9C0  get_dist  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:17)
 
-float __thiscall phys_convex_hull::ch_triangle::get_dist(ch_triangle *this,phys_vec3 *param_1)
+float __thiscall phys_convex_hull::ch_triangle::get_dist(ch_triangle *this,phys_vec3 *vert)
 
 {
   phys_vec3 *ppVar1;
   
   ppVar1 = this->m_verts[0];
-  return (this->m_normal).x * (param_1->x - ppVar1->x) +
-         (this->m_normal).y * (param_1->y - ppVar1->y) +
-         (this->m_normal).z * (param_1->z - ppVar1->z);
+  return (this->m_normal).x * (vert->x - ppVar1->x) + (this->m_normal).y * (vert->y - ppVar1->y) +
+         (this->m_normal).z * (vert->z - ppVar1->z);
 }
 
 
 // 0084EB70  add_convex_hull_vert  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:51)
 
-void __thiscall phys_convex_hull::add_convex_hull_vert(phys_convex_hull *this,phys_vec3 **param_1)
+void __thiscall phys_convex_hull::add_convex_hull_vert(phys_convex_hull *this,phys_vec3 **vert)
 
 {
   code *pcVar1;
   bool bVar2;
   phys_vec3 **local_14;
   
-  if ((param_1 == (phys_vec3 **)0x0) &&
+  if ((vert == (phys_vec3 **)0x0) &&
      (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_convex_hull.h"
                         ,0x34,"vert",""), bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -261,8 +261,8 @@ void __thiscall phys_convex_hull::add_convex_hull_vert(phys_convex_hull *this,ph
     tlFatal("phys array add overflow.");
     local_14 = (phys_vec3 **)0x0;
   }
-  *local_14 = *param_1;
-  phys_static_array<phys_vec3_*,6144>::remove(&this->m_intermediate_vertex_list,param_1);
+  *local_14 = *vert;
+  phys_static_array<phys_vec3_*,6144>::remove(&this->m_intermediate_vertex_list,vert);
   return;
 }
 
@@ -270,60 +270,59 @@ void __thiscall phys_convex_hull::add_convex_hull_vert(phys_convex_hull *this,ph
 // 0084FE40  add_intermediate_edge  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:58)
 
 void __thiscall
-phys_convex_hull::add_intermediate_edge
-          (phys_convex_hull *this,phys_vec3 *param_1,phys_vec3 *param_2)
+phys_convex_hull::add_intermediate_edge(phys_convex_hull *this,phys_vec3 *v0,phys_vec3 *v1)
 
 {
   code *pcVar1;
   bool bVar2;
-  ch_edge *local_c;
-  ch_edge *local_8;
+  ch_edge *edge_i;
+  ch_edge *edge;
   
-  if ((((param_1 == (phys_vec3 *)0x0) || (param_2 == (phys_vec3 *)0x0)) || (param_1 == param_2)) &&
+  if ((((v0 == (phys_vec3 *)0x0) || (v1 == (phys_vec3 *)0x0)) || (v0 == v1)) &&
      (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_convex_hull.h"
                         ,0x3b,"v0 && v1 && v0 != v1",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = (this->m_intermediate_edge_list).m_slot_array;
+  edge_i = (this->m_intermediate_edge_list).m_slot_array;
   while( true ) {
     if ((this->m_intermediate_edge_list).m_slot_array +
-        (this->m_intermediate_edge_list).m_alloc_count == local_c) {
+        (this->m_intermediate_edge_list).m_alloc_count == edge_i) {
       if ((this->m_intermediate_edge_list).m_alloc_count < 0x80) {
-        local_8 = (this->m_intermediate_edge_list).m_slot_array +
-                  (this->m_intermediate_edge_list).m_alloc_count;
+        edge = (this->m_intermediate_edge_list).m_slot_array +
+               (this->m_intermediate_edge_list).m_alloc_count;
         (this->m_intermediate_edge_list).m_alloc_count =
              (this->m_intermediate_edge_list).m_alloc_count + 1;
       }
       else {
         tlFatal("phys array add overflow.");
-        local_8 = (ch_edge *)0x0;
+        edge = (ch_edge *)0x0;
       }
-      local_8->m_verts[0] = param_1;
-      local_8->m_verts[1] = param_2;
+      edge->m_verts[0] = v0;
+      edge->m_verts[1] = v1;
       return;
     }
-    if (((local_c->m_verts[0] == param_1) && (local_c->m_verts[1] == param_2)) ||
-       ((local_c->m_verts[0] == param_2 && (local_c->m_verts[1] == param_1)))) break;
-    local_c = local_c + 1;
+    if (((edge_i->m_verts[0] == v0) && (edge_i->m_verts[1] == v1)) ||
+       ((edge_i->m_verts[0] == v1 && (edge_i->m_verts[1] == v0)))) break;
+    edge_i = edge_i + 1;
   }
   phys_static_array<phys_convex_hull::ch_edge,128>::remove_slow
-            (&this->m_intermediate_edge_list,local_c);
+            (&this->m_intermediate_edge_list,edge_i);
   return;
 }
 
 
 // 00848020  get_flag  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body.h:60)
 
-uint __thiscall rigid_body::get_flag(rigid_body *this,uint param_1)
+uint __thiscall rigid_body::get_flag(rigid_body *this,uint f)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if ((param_1 & 0xffffff00) != 0) {
+  if ((f & 0xffffff00) != 0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rigid_body.h",0x3c,
                       "(f & ~(FLAG_CLIENT_FLAGS_START - 1)) == 0","invalid rigid body flag");
     if (bVar2) {
@@ -332,7 +331,7 @@ uint __thiscall rigid_body::get_flag(rigid_body *this,uint param_1)
       return uVar3;
     }
   }
-  return this->m_flags & param_1;
+  return this->m_flags & f;
 }
 
 
@@ -341,7 +340,7 @@ uint __thiscall rigid_body::get_flag(rigid_body *this,uint param_1)
 void __thiscall cdl_proftimer::start_capture(cdl_proftimer *this)
 
 {
-  int local_8;
+  int i;
   
   if (this->capture == false) {
     this->capture = true;
@@ -351,9 +350,9 @@ void __thiscall cdl_proftimer::start_capture(cdl_proftimer *this)
     *(undefined4 *)((int)&this->tot + 4) = 0;
     *(undefined4 *)&this->avr = 0;
     *(undefined4 *)((int)&this->avr + 4) = 0;
-    for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-      *(undefined4 *)(this->mx + local_8) = 0;
-      *(undefined4 *)((int)this->mx + local_8 * 8 + 4) = 0;
+    for (i = 0; i < 5; i = i + 1) {
+      *(undefined4 *)(this->mx + i) = 0;
+      *(undefined4 *)((int)this->mx + i * 8 + 4) = 0;
     }
   }
   return;
@@ -366,15 +365,15 @@ void __thiscall cdl_proftimer::start_capture(cdl_proftimer *this)
 
 void __thiscall
 phys_static_array<phys_vec3_*,6144>::remove
-          (phys_static_array<phys_vec3_*,6144> *this,phys_vec3 **param_1)
+          (phys_static_array<phys_vec3_*,6144> *this,phys_vec3 **data)
 
 {
   code *pcVar1;
   bool bVar2;
   phys_vec3 **pppVar3;
   
-  if ((uint)((int)param_1 - (int)this->m_slot_array) % 4 == 0) {
-    if ((param_1 < this->m_slot_array) || (this->m_slot_array + this->m_alloc_count <= param_1)) {
+  if ((uint)((int)data - (int)this->m_slot_array) % 4 == 0) {
+    if ((data < this->m_slot_array) || (this->m_slot_array + this->m_alloc_count <= data)) {
       bVar2 = false;
     }
     else {
@@ -392,7 +391,7 @@ phys_static_array<phys_vec3_*,6144>::remove
     return;
   }
   pppVar3 = back(this);
-  *param_1 = *pppVar3;
+  *data = *pppVar3;
   this->m_alloc_count = this->m_alloc_count + -1;
   return;
 }
@@ -424,14 +423,14 @@ void __thiscall broad_phase_group::set(broad_phase_group *this)
 
 void __thiscall
 phys_static_array<phys_convex_hull::ch_triangle,256>::remove_slow
-          (phys_static_array<phys_convex_hull::ch_triangle,256> *this,ch_triangle *param_1)
+          (phys_static_array<phys_convex_hull::ch_triangle,256> *this,ch_triangle *data)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((uint)((int)param_1 - (int)this->m_slot_array) % 0x20 == 0) {
-    if ((param_1 < this->m_slot_array) || (this->m_slot_array + this->m_alloc_count <= param_1)) {
+  if ((uint)((int)data - (int)this->m_slot_array) % 0x20 == 0) {
+    if ((data < this->m_slot_array) || (this->m_slot_array + this->m_alloc_count <= data)) {
       bVar2 = false;
     }
     else {
@@ -451,7 +450,7 @@ phys_static_array<phys_convex_hull::ch_triangle,256>::remove_slow
     }
   }
   this->m_alloc_count = this->m_alloc_count + -1;
-  phys_convex_hull::ch_triangle::operator=(param_1,this->m_slot_array + this->m_alloc_count);
+  phys_convex_hull::ch_triangle::operator=(data,this->m_slot_array + this->m_alloc_count);
   return;
 }
 
@@ -460,15 +459,15 @@ phys_static_array<phys_convex_hull::ch_triangle,256>::remove_slow
 
 void __thiscall
 phys_static_array<phys_convex_hull::ch_edge,128>::remove_slow
-          (phys_static_array<phys_convex_hull::ch_edge,128> *this,ch_edge *param_1)
+          (phys_static_array<phys_convex_hull::ch_edge,128> *this,ch_edge *data)
 
 {
   phys_vec3 *ppVar1;
   code *pcVar2;
   bool bVar3;
   
-  if ((uint)((int)param_1 - (int)this->m_slot_array) % 8 == 0) {
-    if ((param_1 < this->m_slot_array) || (this->m_slot_array + this->m_alloc_count <= param_1)) {
+  if ((uint)((int)data - (int)this->m_slot_array) % 8 == 0) {
+    if ((data < this->m_slot_array) || (this->m_slot_array + this->m_alloc_count <= data)) {
       bVar3 = false;
     }
     else {
@@ -489,20 +488,20 @@ phys_static_array<phys_convex_hull::ch_edge,128>::remove_slow
   }
   this->m_alloc_count = this->m_alloc_count + -1;
   ppVar1 = this->m_slot_array[this->m_alloc_count].m_verts[1];
-  param_1->m_verts[0] = this->m_slot_array[this->m_alloc_count].m_verts[0];
-  param_1->m_verts[1] = ppVar1;
+  data->m_verts[0] = this->m_slot_array[this->m_alloc_count].m_verts[0];
+  data->m_verts[1] = ppVar1;
   return;
 }
 
 
 // 0084FDE0  add_triangle_edges  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:79)
 
-void __thiscall phys_convex_hull::add_triangle_edges(phys_convex_hull *this,ch_triangle *param_1)
+void __thiscall phys_convex_hull::add_triangle_edges(phys_convex_hull *this,ch_triangle *tri)
 
 {
-  add_intermediate_edge(this,param_1->m_verts[0],param_1->m_verts[1]);
-  add_intermediate_edge(this,param_1->m_verts[1],param_1->m_verts[2]);
-  add_intermediate_edge(this,param_1->m_verts[2],param_1->m_verts[0]);
+  add_intermediate_edge(this,tri->m_verts[0],tri->m_verts[1]);
+  add_intermediate_edge(this,tri->m_verts[1],tri->m_verts[2]);
+  add_intermediate_edge(this,tri->m_verts[2],tri->m_verts[0]);
   return;
 }
 
@@ -511,7 +510,7 @@ void __thiscall phys_convex_hull::add_triangle_edges(phys_convex_hull *this,ch_t
 
 void __thiscall
 phys_convex_hull::create_intermediate_triangle
-          (phys_convex_hull *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+          (phys_convex_hull *this,phys_vec3 *v0,phys_vec3 *v1,phys_vec3 *v2)
 
 {
   code *pcVar1;
@@ -532,15 +531,15 @@ phys_convex_hull::create_intermediate_triangle
   local_14 = this;
   local_18 = phys_static_array<phys_convex_hull::ch_triangle,256>::add
                        (&this->m_intermediate_triangle_list,0,"phys array add overflow.");
-  local_18->m_verts[0] = param_1;
-  local_18->m_verts[1] = param_2;
-  local_18->m_verts[2] = param_3;
-  local_40.x = param_3->x - param_1->x;
-  local_40.y = param_3->y - param_1->y;
-  local_40.z = param_3->z - param_1->z;
-  local_60.x = param_2->x - param_1->x;
-  local_60.y = param_2->y - param_1->y;
-  local_60.z = param_2->z - param_1->z;
+  local_18->m_verts[0] = v0;
+  local_18->m_verts[1] = v1;
+  local_18->m_verts[2] = v2;
+  local_40.x = v2->x - v0->x;
+  local_40.y = v2->y - v0->y;
+  local_40.z = v2->z - v0->z;
+  local_60.x = v1->x - v0->x;
+  local_60.y = v1->y - v0->y;
+  local_60.z = v1->z - v0->z;
   local_4c = local_60.z;
   local_48 = local_60.y;
   local_44 = local_60.x;
@@ -570,26 +569,26 @@ phys_convex_hull::create_intermediate_triangle
 
 /* WARNING: Removing unreachable block (ram,0x00848184) */
 
-void __thiscall broad_phase_group::add_bpi(broad_phase_group *this,broad_phase_info *param_1)
+void __thiscall broad_phase_group::add_bpi(broad_phase_group *this,broad_phase_info *bpi)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (((param_1->_padding_ & 0x40U) != 0) &&
+  if (((bpi->_padding_ & 0x40U) != 0) &&
      (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase.h"
                         ,0x5c,"!bpi->get_flag(broad_phase_info::FLAG_ON_BPG_LIST)",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  environment_collision_list_remove((broad_phase_base *)param_1);
-  param_1->_padding_ = param_1->_padding_ | 0x40;
-  param_1->_padding_ = (int)this->m_list_bpi_head;
-  this->m_list_bpi_head = param_1;
+  environment_collision_list_remove((broad_phase_base *)bpi);
+  bpi->_padding_ = bpi->_padding_ | 0x40;
+  bpi->_padding_ = (int)this->m_list_bpi_head;
+  this->m_list_bpi_head = bpi;
   this->m_bpi_count = this->m_bpi_count + 1;
-  this->_padding_ = this->_padding_ | param_1->_padding_;
-  this->_padding_ = this->_padding_ | param_1->_padding_;
+  this->_padding_ = this->_padding_ | bpi->_padding_;
+  this->_padding_ = this->_padding_ | bpi->_padding_;
   return;
 }
 
@@ -607,19 +606,19 @@ void __cdecl _dynamic_initializer_for__proftimer_physics_frame_advance__(void)
 // 00848410  list_bpb_remove  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_broad_phase_inline.h:100)
 
 void __thiscall
-broad_phase_memory::list_bpb_remove(broad_phase_memory *this,broad_phase_base *param_1)
+broad_phase_memory::list_bpb_remove(broad_phase_memory *this,broad_phase_base *bpb_to_remove)
 
 {
   code *pcVar1;
   bool bVar2;
-  broad_phase_base *local_c;
-  broad_phase_base **local_8;
+  broad_phase_base *bpb;
+  broad_phase_base **bpb_cur;
   
-  local_8 = &this->g_list_bpb;
-  local_c = *local_8;
+  bpb_cur = &this->g_list_bpb;
+  bpb = *bpb_cur;
   do {
-    if (local_c == param_1) {
-      if (local_c != param_1) {
+    if (bpb == bpb_to_remove) {
+      if (bpb != bpb_to_remove) {
         bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                           ,0x6d,"bpb == bpb_to_remove","");
         if (bVar2) {
@@ -628,11 +627,11 @@ broad_phase_memory::list_bpb_remove(broad_phase_memory *this,broad_phase_base *p
           return;
         }
       }
-      *local_8 = local_c->m_list_bpb_next;
+      *bpb_cur = bpb->m_list_bpb_next;
       this->g_list_bpb_count = this->g_list_bpb_count + -1;
       return;
     }
-    if (local_c == (broad_phase_base *)0x0) {
+    if (bpb == (broad_phase_base *)0x0) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                         ,0x69,"bpb","");
       if (bVar2) {
@@ -641,8 +640,8 @@ broad_phase_memory::list_bpb_remove(broad_phase_memory *this,broad_phase_base *p
         return;
       }
     }
-    local_8 = &local_c->m_list_bpb_next;
-    local_c = *local_8;
+    bpb_cur = &bpb->m_list_bpb_next;
+    bpb = *bpb_cur;
   } while( true );
 }
 
@@ -650,7 +649,7 @@ broad_phase_memory::list_bpb_remove(broad_phase_memory *this,broad_phase_base *p
 // 0084EE30  support_intermediate_verts  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:105)
 
 phys_vec3 ** __thiscall
-phys_convex_hull::support_intermediate_verts(phys_convex_hull *this,phys_vec3 *param_1)
+phys_convex_hull::support_intermediate_verts(phys_convex_hull *this,phys_vec3 *dir)
 
 {
   phys_vec3 *ppVar1;
@@ -658,23 +657,25 @@ phys_convex_hull::support_intermediate_verts(phys_convex_hull *this,phys_vec3 *p
   bool bVar3;
   phys_vec3 **pppVar4;
   float fVar5;
-  phys_vec3 **local_14;
-  phys_vec3 **local_c;
-  float local_8;
+  float dotp;
+  phys_vec3 **vert;
+  phys_vec3 **vert_i;
+  phys_vec3 **best_vert;
+  float best_dotp;
   
-  local_c = (phys_vec3 **)0x0;
-  local_8 = -1e+06;
-  for (local_14 = (this->m_intermediate_vertex_list).m_slot_array;
+  best_vert = (phys_vec3 **)0x0;
+  best_dotp = -1e+06;
+  for (vert_i = (this->m_intermediate_vertex_list).m_slot_array;
       (this->m_intermediate_vertex_list).m_slot_array +
-      (this->m_intermediate_vertex_list).m_alloc_count != local_14; local_14 = local_14 + 1) {
-    ppVar1 = *local_14;
-    fVar5 = param_1->x * ppVar1->x + param_1->y * ppVar1->y + param_1->z * ppVar1->z;
-    if (local_8 < fVar5) {
-      local_c = local_14;
-      local_8 = fVar5;
+      (this->m_intermediate_vertex_list).m_alloc_count != vert_i; vert_i = vert_i + 1) {
+    ppVar1 = *vert_i;
+    fVar5 = dir->x * ppVar1->x + dir->y * ppVar1->y + dir->z * ppVar1->z;
+    if (best_dotp < fVar5) {
+      best_vert = vert_i;
+      best_dotp = fVar5;
     }
   }
-  if (local_c == (phys_vec3 **)0x0) {
+  if (best_vert == (phys_vec3 **)0x0) {
     bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_convex_hull.h"
                       ,0x76,"best_vert","");
     if (bVar3) {
@@ -683,7 +684,7 @@ phys_convex_hull::support_intermediate_verts(phys_convex_hull *this,phys_vec3 *p
       return pppVar4;
     }
   }
-  return local_c;
+  return best_vert;
 }
 
 
@@ -708,13 +709,13 @@ phys_convex_hull::support_intermediate_verts(phys_convex_hull *this,phys_vec3 *p
 /* WARNING: Removing unreachable block (ram,0x0084c417) */
 /* WARNING: Removing unreachable block (ram,0x0084c437) */
 
-void __thiscall rigid_body::dangerous_set_t_vel(rigid_body *this,phys_vec3 *param_1)
+void __thiscall rigid_body::dangerous_set_t_vel(rigid_body *this,phys_vec3 *t_vel)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->x != param_1->x) || (param_1->y != param_1->y)) || (param_1->z != param_1->z)) &&
+  if ((((t_vel->x != t_vel->x) || (t_vel->y != t_vel->y)) || (t_vel->z != t_vel->z)) &&
      (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rigid_body.h",0x6f,
                         "(t_vel.GetX() == t_vel.GetX() && t_vel.GetY() == t_vel.GetY() && t_vel.GetZ() == t_vel.GetZ())"
                         ,"invalid vector"), bVar2)) {
@@ -722,9 +723,9 @@ void __thiscall rigid_body::dangerous_set_t_vel(rigid_body *this,phys_vec3 *para
     (*pcVar1)();
     return;
   }
-  (this->m_t_vel).x = param_1->x;
-  (this->m_t_vel).y = param_1->y;
-  (this->m_t_vel).z = param_1->z;
+  (this->m_t_vel).x = t_vel->x;
+  (this->m_t_vel).y = t_vel->y;
+  (this->m_t_vel).z = t_vel->z;
   if (((((this->m_t_vel).x != (this->m_t_vel).x) || (100000.0 < ABS((this->m_t_vel).x))) ||
       (((this->m_t_vel).y != (this->m_t_vel).y ||
        ((100000.0 < ABS((this->m_t_vel).y) || ((this->m_t_vel).z != (this->m_t_vel).z)))))) ||
@@ -756,13 +757,13 @@ void __thiscall rigid_body::dangerous_set_t_vel(rigid_body *this,phys_vec3 *para
 /* WARNING: Removing unreachable block (ram,0x0084bfc7) */
 /* WARNING: Removing unreachable block (ram,0x0084bfe7) */
 
-void __thiscall rigid_body::dangerous_set_a_vel(rigid_body *this,phys_vec3 *param_1)
+void __thiscall rigid_body::dangerous_set_a_vel(rigid_body *this,phys_vec3 *a_vel)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->x != param_1->x) || (param_1->y != param_1->y)) || (param_1->z != param_1->z)) &&
+  if ((((a_vel->x != a_vel->x) || (a_vel->y != a_vel->y)) || (a_vel->z != a_vel->z)) &&
      (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rigid_body.h",0x70,
                         "(a_vel.GetX() == a_vel.GetX() && a_vel.GetY() == a_vel.GetY() && a_vel.GetZ() == a_vel.GetZ())"
                         ,"invalid vector"), bVar2)) {
@@ -770,9 +771,9 @@ void __thiscall rigid_body::dangerous_set_a_vel(rigid_body *this,phys_vec3 *para
     (*pcVar1)();
     return;
   }
-  (this->m_a_vel).x = param_1->x;
-  (this->m_a_vel).y = param_1->y;
-  (this->m_a_vel).z = param_1->z;
+  (this->m_a_vel).x = a_vel->x;
+  (this->m_a_vel).y = a_vel->y;
+  (this->m_a_vel).z = a_vel->z;
   if (((((this->m_a_vel).x != (this->m_a_vel).x) || (100000.0 < ABS((this->m_a_vel).x))) ||
       (((this->m_a_vel).y != (this->m_a_vel).y ||
        ((100000.0 < ABS((this->m_a_vel).y) || ((this->m_a_vel).z != (this->m_a_vel).z)))))) ||
@@ -786,14 +787,14 @@ void __thiscall rigid_body::dangerous_set_a_vel(rigid_body *this,phys_vec3 *para
 // 00854950  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:117)
 
 phys_vec3 * __thiscall
-phys_static_array<phys_vec3,6144>::operator[](phys_static_array<phys_vec3,6144> *this,int param_1)
+phys_static_array<phys_vec3,6144>::operator[](phys_static_array<phys_vec3,6144> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   phys_vec3 *ppVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -802,22 +803,21 @@ phys_static_array<phys_vec3,6144>::operator[](phys_static_array<phys_vec3,6144> 
       return ppVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
 // 00854A70  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:117)
 
 phys_vec3 ** __thiscall
-phys_static_array<phys_vec3_*,6144>::operator[]
-          (phys_static_array<phys_vec3_*,6144> *this,int param_1)
+phys_static_array<phys_vec3_*,6144>::operator[](phys_static_array<phys_vec3_*,6144> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   phys_vec3 **pppVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -826,21 +826,21 @@ phys_static_array<phys_vec3_*,6144>::operator[]
       return pppVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
 // 00854D40  operator[]  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_array_base.inc:117)
 
 phys_vec3 ** __thiscall
-phys_static_array<phys_vec3_*,64>::operator[](phys_static_array<phys_vec3_*,64> *this,int param_1)
+phys_static_array<phys_vec3_*,64>::operator[](phys_static_array<phys_vec3_*,64> *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   phys_vec3 **pppVar3;
   
-  if ((param_1 < 0) || (this->m_alloc_count <= param_1)) {
+  if ((i < 0) || (this->m_alloc_count <= i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",0x76
                       ,"i >= 0 && i < m_alloc_count","");
     if (bVar2) {
@@ -849,7 +849,7 @@ phys_static_array<phys_vec3_*,64>::operator[](phys_static_array<phys_vec3_*,64> 
       return pppVar3;
     }
   }
-  return this->m_slot_array + param_1;
+  return this->m_slot_array + i;
 }
 
 
@@ -874,13 +874,13 @@ phys_static_array<phys_vec3_*,64>::operator[](phys_static_array<phys_vec3_*,64> 
 /* WARNING: Removing unreachable block (ram,0x0084d63a) */
 /* WARNING: Removing unreachable block (ram,0x0084d65a) */
 
-void __thiscall rigid_body::add_torque(rigid_body *this,phys_vec3 *param_1)
+void __thiscall rigid_body::add_torque(rigid_body *this,phys_vec3 *torque)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->x != param_1->x) || (param_1->y != param_1->y)) || (param_1->z != param_1->z)) &&
+  if ((((torque->x != torque->x) || (torque->y != torque->y)) || (torque->z != torque->z)) &&
      (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rigid_body.h",0x78,
                         "(torque.GetX() == torque.GetX() && torque.GetY() == torque.GetY() && torque.GetZ() == torque.GetZ())"
                         ,"invalid vector"), bVar2)) {
@@ -888,9 +888,9 @@ void __thiscall rigid_body::add_torque(rigid_body *this,phys_vec3 *param_1)
     (*pcVar1)();
     return;
   }
-  (this->m_torque_sum).x = (this->m_torque_sum).x + param_1->x;
-  (this->m_torque_sum).y = (this->m_torque_sum).y + param_1->y;
-  (this->m_torque_sum).z = (this->m_torque_sum).z + param_1->z;
+  (this->m_torque_sum).x = (this->m_torque_sum).x + torque->x;
+  (this->m_torque_sum).y = (this->m_torque_sum).y + torque->y;
+  (this->m_torque_sum).z = (this->m_torque_sum).z + torque->z;
   if (((((this->m_torque_sum).x != (this->m_torque_sum).x) ||
        (100000.0 < ABS((this->m_torque_sum).x))) ||
       (((this->m_torque_sum).y != (this->m_torque_sum).y ||
@@ -905,6 +905,8 @@ void __thiscall rigid_body::add_torque(rigid_body *this,phys_vec3 *param_1)
 
 // 0084F210  calculate_initial_triangle_vertices  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:123)
 
+/* WARNING: Variable defined which should be unmapped: NUM_SPHERE_VERTS */
+
 void __thiscall phys_convex_hull::calculate_initial_triangle_vertices(phys_convex_hull *this)
 
 {
@@ -912,10 +914,13 @@ void __thiscall phys_convex_hull::calculate_initial_triangle_vertices(phys_conve
   phys_vec3 **pppVar2;
   code *pcVar3;
   bool bVar4;
-  phys_vec3 *this_00;
   phys_vec3 *ppVar5;
+  phys_vec3 *ppVar6;
   int local_17c;
-  phys_vec3 **local_16c;
+  phys_vec3 **temp;
+  int i;
+  undefined4 *puStack_16c;
+  bool not_done;
   phys_vec3 local_160;
   float local_144;
   float local_140;
@@ -923,88 +928,85 @@ void __thiscall phys_convex_hull::calculate_initial_triangle_vertices(phys_conve
   phys_vec3 *local_138;
   phys_vec3 *local_134;
   phys_vec3 local_130;
-  phys_vec3 local_120;
-  phys_vec3 local_110;
-  float local_f4;
-  float local_f0;
-  float local_ec;
-  phys_vec3 *local_e8;
-  phys_vec3 *local_e4;
+  undefined1 local_120 [12];
+  phys_vec3 nn;
   phys_vec3 local_e0;
   float local_c8;
   float local_c4;
   float local_c0;
   phys_vec3 *local_bc;
   phys_vec3 *local_b8;
-  phys_vec3 **local_b4 [3];
-  float local_a8;
+  phys_vec3 **local_b4 [4];
   phys_vec3 *local_a4;
-  phys_vec3 local_a0;
+  float twice_area_sq;
   phys_vec3 local_90;
   float local_74;
   float local_70;
   float local_6c;
   phys_vec3 *local_68;
-  phys_vec3 *local_64;
+  float *local_64;
   phys_vec3 local_60;
   float local_48;
   float local_44;
   float local_40;
   phys_vec3 *local_3c;
-  phys_vec3 *local_38;
+  float *local_38;
   phys_vec3 **local_34;
-  int local_30;
+  phys_vec3 **local_30;
   phys_vec3 **local_2c;
-  int local_28;
-  phys_vec3 **local_24;
-  int local_20;
-  int local_1c;
-  float local_18;
-  phys_convex_hull *local_14;
+  phys_vec3 **z2;
+  int v2;
+  phys_vec3 **z1;
+  int v1;
+  phys_vec3 **z0;
+  int v0;
+  int NUM_SPHERE_VERTS;
+  float largest_twice_area_sq;
   
-  local_18 = 0.0;
-  local_1c = (this->m_intermediate_vertex_list).m_alloc_count;
-  local_14 = this;
-  for (local_20 = 0; local_20 < local_1c + -2; local_20 = local_20 + 1) {
-    local_24 = phys_static_array<phys_vec3_*,6144>::operator[]
-                         (&local_14->m_intermediate_vertex_list,local_20);
-    local_28 = local_20;
-    while (local_28 = local_28 + 1, local_28 < local_1c + -1) {
+  z0 = (phys_vec3 **)0x0;
+  v1 = (this->m_intermediate_vertex_list).m_alloc_count;
+  v0 = (int)this;
+  for (z1 = (phys_vec3 **)0x0; (int)z1 < v1 + -2; z1 = (phys_vec3 **)((int)z1 + 1)) {
+    v2 = (int)phys_static_array<phys_vec3_*,6144>::operator[]
+                        ((phys_static_array<phys_vec3_*,6144> *)(v0 + 0x18010),(int)z1);
+    z2 = z1;
+    while (z2 = (phys_vec3 **)((int)z2 + 1), (int)z2 < v1 + -1) {
       local_2c = phys_static_array<phys_vec3_*,6144>::operator[]
-                           (&local_14->m_intermediate_vertex_list,local_28);
-      local_30 = local_28;
-      while (local_30 = local_30 + 1, local_30 < local_1c) {
+                           ((phys_static_array<phys_vec3_*,6144> *)(v0 + 0x18010),(int)z2);
+      local_30 = z2;
+      while (local_30 = (phys_vec3 **)((int)local_30 + 1), (int)local_30 < v1) {
         local_34 = phys_static_array<phys_vec3_*,6144>::operator[]
-                             (&local_14->m_intermediate_vertex_list,local_30);
-        local_38 = *local_24;
+                             ((phys_static_array<phys_vec3_*,6144> *)(v0 + 0x18010),(int)local_30);
+        local_38 = *(float **)v2;
         local_3c = *local_34;
-        local_60.x = local_3c->x - local_38->x;
-        local_60.y = local_3c->y - local_38->y;
-        local_60.z = local_3c->z - local_38->z;
-        local_64 = *local_24;
+        local_60.x = local_3c->x - *local_38;
+        local_60.y = local_3c->y - local_38[1];
+        local_60.z = local_3c->z - local_38[2];
+        local_64 = *(float **)v2;
         local_68 = *local_2c;
-        local_90.x = local_68->x - local_64->x;
-        local_90.y = local_68->y - local_64->y;
-        local_90.z = local_68->z - local_64->z;
+        local_90.x = local_68->x - *local_64;
+        local_90.y = local_68->y - local_64[1];
+        local_90.z = local_68->z - local_64[2];
         local_74 = local_90.z;
         local_70 = local_90.y;
         local_6c = local_90.x;
         local_48 = local_60.z;
         local_44 = local_60.y;
         local_40 = local_60.x;
-        local_a4 = phys_cross(&local_a0,&local_90,&local_60);
-        local_a8 = local_a4->x * local_a4->x + local_a4->y * local_a4->y + local_a4->z * local_a4->z
-        ;
-        if (local_18 < local_a8) {
-          local_b4[0] = local_24;
+        local_a4 = phys_cross((phys_vec3 *)&stack0xffffff60,&local_90,&local_60);
+        local_b4[3] = (phys_vec3 **)
+                      (local_a4->x * local_a4->x + local_a4->y * local_a4->y +
+                      local_a4->z * local_a4->z);
+        if ((float)z0 < (float)local_b4[3]) {
+          local_b4[0] = (phys_vec3 **)v2;
           local_b4[1] = local_2c;
           local_b4[2] = local_34;
-          local_18 = local_a8;
+          z0 = local_b4[3];
         }
       }
     }
   }
-  if ((local_18 <= 0.0) &&
+  if (((float)z0 <= 0.0) &&
      (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_convex_hull.h"
                         ,0xd2,"largest_twice_area_sq>0.0f",""), bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -1016,46 +1018,42 @@ void __thiscall phys_convex_hull::calculate_initial_triangle_vertices(phys_conve
   local_e0.x = local_bc->x - local_b8->x;
   local_e0.y = local_bc->y - local_b8->y;
   local_e0.z = local_bc->z - local_b8->z;
-  local_e4 = *local_b4[0];
-  local_e8 = *local_b4[1];
-  local_110.x = local_e8->x - local_e4->x;
-  local_110.y = local_e8->y - local_e4->y;
-  local_110.z = local_e8->z - local_e4->z;
-  local_f4 = local_110.z;
-  local_f0 = local_110.y;
-  local_ec = local_110.x;
+  ppVar6 = *local_b4[0];
+  ppVar5 = *local_b4[1];
+  nn.y = ppVar5->x - ppVar6->x;
+  nn.z = ppVar5->y - ppVar6->y;
+  nn.w = ppVar5->z - ppVar6->z;
   local_c8 = local_e0.z;
   local_c4 = local_e0.y;
   local_c0 = local_e0.x;
-  phys_cross(&local_120,&local_110,&local_e0);
-  local_134 = phys_Unitize(&local_130,&local_120);
-  local_120.x = local_134->x;
-  local_120.y = local_134->y;
-  local_120.z = local_134->z;
+  phys_cross((phys_vec3 *)local_120,(phys_vec3 *)&nn.y,&local_e0);
+  local_134 = phys_Unitize(&local_130,(phys_vec3 *)local_120);
+  local_120._0_4_ = local_134->x;
+  local_120._4_4_ = local_134->y;
+  local_120._8_4_ = local_134->z;
   local_138 = *local_b4[0];
-  local_160.x = local_138->x + local_120.x;
-  local_160.y = local_138->y + local_120.y;
-  local_160.z = local_138->z + local_120.z;
-  ppVar5 = &local_160;
+  local_160.x = local_138->x + (float)local_120._0_4_;
+  local_160.y = local_138->y + (float)local_120._4_4_;
+  local_160.z = local_138->z + (float)local_120._8_4_;
+  ppVar6 = &local_160;
   local_144 = local_160.z;
   local_140 = local_160.y;
   local_13c = local_160.x;
-  this_00 = phys_static_array<phys_vec3,6144>::add
-                      (&local_14->m_vertex_buffer,0,"phys array add overflow.");
-  phys_vec3::operator=(this_00,ppVar5);
-  iVar1 = (local_14->m_vertex_buffer).m_alloc_count;
-  if ((local_14->m_intermediate_vertex_list).m_alloc_count < 0x1800) {
-    local_16c = (local_14->m_intermediate_vertex_list).m_slot_array +
-                (local_14->m_intermediate_vertex_list).m_alloc_count;
-    (local_14->m_intermediate_vertex_list).m_alloc_count =
-         (local_14->m_intermediate_vertex_list).m_alloc_count + 1;
+  ppVar5 = phys_static_array<phys_vec3,6144>::add
+                     ((phys_static_array<phys_vec3,6144> *)v0,0,"phys array add overflow.");
+  phys_vec3::operator=(ppVar5,ppVar6);
+  iVar1 = *(int *)(v0 + 0x18004);
+  if (*(int *)(v0 + 0x1e014) < 0x1800) {
+    puStack_16c = (undefined4 *)(*(int *)(v0 + 0x1e010) + *(int *)(v0 + 0x1e014) * 4);
+    *(int *)(v0 + 0x1e014) = *(int *)(v0 + 0x1e014) + 1;
   }
   else {
     tlFatal("phys array add overflow.");
-    local_16c = (phys_vec3 **)0x0;
+    puStack_16c = (undefined4 *)0x0;
   }
-  ppVar5 = phys_static_array<phys_vec3,6144>::operator[](&local_14->m_vertex_buffer,iVar1 + -1);
-  *local_16c = ppVar5;
+  ppVar6 = phys_static_array<phys_vec3,6144>::operator[]
+                     ((phys_static_array<phys_vec3,6144> *)v0,iVar1 + -1);
+  *puStack_16c = ppVar6;
   bVar4 = true;
   while (bVar4) {
     bVar4 = false;
@@ -1068,9 +1066,9 @@ void __thiscall phys_convex_hull::calculate_initial_triangle_vertices(phys_conve
       }
     }
   }
-  add_convex_hull_vert(local_14,local_b4[0]);
-  add_convex_hull_vert(local_14,local_b4[1]);
-  add_convex_hull_vert(local_14,local_b4[2]);
+  add_convex_hull_vert((phys_convex_hull *)v0,local_b4[0]);
+  add_convex_hull_vert((phys_convex_hull *)v0,local_b4[1]);
+  add_convex_hull_vert((phys_convex_hull *)v0,local_b4[2]);
   return;
 }
 
@@ -1107,29 +1105,28 @@ phys_static_array<phys_convex_hull::ch_triangle,256>::get_list_head
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_link_list1<PhysObjUserData>::add
-          (phys_link_list1<PhysObjUserData> *this,PhysObjUserData *param_1)
+phys_link_list1<PhysObjUserData>::add(phys_link_list1<PhysObjUserData> *this,PhysObjUserData *p)
 
 {
   code *pcVar1;
   bool bVar2;
-  PhysObjUserData *local_8;
+  PhysObjUserData *i;
   
-  local_8 = this->m_first;
+  i = this->m_first;
   do {
-    if (local_8 == (PhysObjUserData *)0x0) {
+    if (i == (PhysObjUserData *)0x0) {
       this->m_alloc_count = this->m_alloc_count + 1;
       if (this->m_last == (PhysObjUserData *)0x0) {
-        this->m_first = param_1;
+        this->m_first = p;
       }
       else {
-        this->m_last->m_next_link = param_1;
+        this->m_last->m_next_link = p;
       }
-      this->m_last = param_1;
+      this->m_last = p;
       this->m_last->m_next_link = (PhysObjUserData *)0x0;
       return;
     }
-    if (local_8 == param_1) {
+    if (i == p) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_local.h",0x87,"i != p","")
       ;
       if (bVar2) {
@@ -1138,7 +1135,7 @@ phys_link_list1<PhysObjUserData>::add
         return;
       }
     }
-    local_8 = local_8->m_next_link;
+    i = i->m_next_link;
   } while( true );
 }
 
@@ -1175,19 +1172,18 @@ uint __thiscall rigid_body::is_dangerous(rigid_body *this)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_link_list1<PhysObjUserData>::remove
-          (phys_link_list1<PhysObjUserData> *this,PhysObjUserData *param_1)
+phys_link_list1<PhysObjUserData>::remove(phys_link_list1<PhysObjUserData> *this,PhysObjUserData *p)
 
 {
   code *pcVar1;
   bool bVar2;
-  PhysObjUserData *local_c;
-  PhysObjUserData *local_8;
+  PhysObjUserData *i;
+  PhysObjUserData *last_i;
   
-  local_c = this->m_first;
-  local_8 = (PhysObjUserData *)0x0;
+  i = this->m_first;
+  last_i = (PhysObjUserData *)0x0;
   while( true ) {
-    if (local_c == (PhysObjUserData *)0x0) {
+    if (i == (PhysObjUserData *)0x0) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_local.h",0xa5,"0","");
       if (!bVar2) {
         return;
@@ -1196,25 +1192,25 @@ phys_link_list1<PhysObjUserData>::remove
       (*pcVar1)();
       return;
     }
-    if (param_1 == local_c) break;
-    local_8 = local_c;
-    local_c = local_c->m_next_link;
+    if (p == i) break;
+    last_i = i;
+    i = i->m_next_link;
   }
   this->m_alloc_count = this->m_alloc_count + -1;
-  if (local_8 == (PhysObjUserData *)0x0) {
-    this->m_first = local_c->m_next_link;
+  if (last_i == (PhysObjUserData *)0x0) {
+    this->m_first = i->m_next_link;
   }
   else {
-    local_8->m_next_link = local_c->m_next_link;
+    last_i->m_next_link = i->m_next_link;
   }
-  if (local_c != this->m_last) {
+  if (i != this->m_last) {
     return;
   }
-  this->m_last = local_8;
-  if (local_8 == (PhysObjUserData *)0x0) {
+  this->m_last = last_i;
+  if (last_i == (PhysObjUserData *)0x0) {
     return;
   }
-  if (local_8->m_next_link == (PhysObjUserData *)0x0) {
+  if (last_i->m_next_link == (PhysObjUserData *)0x0) {
     return;
   }
   bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_local.h",0xa0,
@@ -1291,14 +1287,14 @@ void __cdecl _dynamic_initializer_for__TRACKINST_physGlob__(void)
 
 void __cdecl
 Nitrous_ForEachBody<void_(__cdecl*)(PhysObjUserData_&,float)>
-          (_func___cdecl_void_PhysObjUserData_ptr_float *param_1,float param_2)
+          (_func___cdecl_void_PhysObjUserData_ptr_float *func,float t)
 
 {
-  PhysGlob *local_8;
+  PhysGlob *i;
   
-  for (local_8 = (PhysGlob *)physGlob.objects.m_dummy_head.m_next_T_internal; local_8 != &physGlob;
-      local_8 = (PhysGlob *)(local_8->objects).m_dummy_head.m_next_T_internal) {
-    (*param_1)((PhysObjUserData *)(local_8->objects).m_ptr_list,param_2);
+  for (i = (PhysGlob *)physGlob.objects.m_dummy_head.m_next_T_internal; i != &physGlob;
+      i = (PhysGlob *)(i->objects).m_dummy_head.m_next_T_internal) {
+    (*func)((PhysObjUserData *)(i->objects).m_ptr_list,t);
   }
   return;
 }
@@ -1306,7 +1302,7 @@ Nitrous_ForEachBody<void_(__cdecl*)(PhysObjUserData_&,float)>
 
 // 008541B0  phys_inv_multiply_mat  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:219)
 
-void __cdecl phys_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat44 *param_3)
+void __cdecl phys_inv_multiply_mat(phys_mat44 *dest,phys_mat44 *left,phys_mat44 *right)
 
 {
   phys_vec3 *ppVar1;
@@ -1321,30 +1317,30 @@ void __cdecl phys_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_
   phys_vec3 *local_24;
   phys_vec3 local_20;
   
-  if (param_1 == param_2) {
+  if (dest == left) {
     ppVar3 = &local_b0;
     for (iVar2 = 0x10; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (ppVar3->x).x = (param_2->x).x;
-      param_2 = (phys_mat44 *)&(param_2->x).y;
+      (ppVar3->x).x = (left->x).x;
+      left = (phys_mat44 *)&(left->x).y;
       ppVar3 = (phys_mat44 *)&(ppVar3->x).y;
     }
-    phys_inv_multiply_mat(param_1,&local_b0,param_3);
+    phys_inv_multiply_mat(dest,&local_b0,right);
   }
   else {
-    local_24 = phys_inv_multiply(&local_20,param_2,&param_3->x);
-    local_28 = param_1;
-    (param_1->x).x = local_24->x;
-    (param_1->x).y = local_24->y;
-    (param_1->x).z = local_24->z;
-    local_44 = phys_inv_multiply(&local_40,param_2,&param_3->y);
-    local_48 = &param_1->y;
+    local_24 = phys_inv_multiply(&local_20,left,&right->x);
+    local_28 = dest;
+    (dest->x).x = local_24->x;
+    (dest->x).y = local_24->y;
+    (dest->x).z = local_24->z;
+    local_44 = phys_inv_multiply(&local_40,left,&right->y);
+    local_48 = &dest->y;
     local_48->x = local_44->x;
-    (param_1->y).y = local_44->y;
-    (param_1->y).z = local_44->z;
-    ppVar1 = phys_inv_multiply(&local_60,param_2,&param_3->z);
-    (param_1->z).x = ppVar1->x;
-    (param_1->z).y = ppVar1->y;
-    (param_1->z).z = ppVar1->z;
+    (dest->y).y = local_44->y;
+    (dest->y).z = local_44->z;
+    ppVar1 = phys_inv_multiply(&local_60,left,&right->z);
+    (dest->z).x = ppVar1->x;
+    (dest->z).y = ppVar1->y;
+    (dest->z).z = ppVar1->z;
   }
   return;
 }
@@ -1354,29 +1350,29 @@ void __cdecl phys_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_
 
 /* WARNING: Removing unreachable block (ram,0x00848306) */
 
-void __cdecl environment_collision_list_add(broad_phase_base *param_1)
+void __cdecl environment_collision_list_add(broad_phase_base *bpb)
 
 {
   code *pcVar1;
   broad_phase_memory *pbVar2;
   bool bVar3;
   
-  if ((((param_1->m_flags & 1) == 0) && ((param_1->m_flags & 2) == 0)) &&
+  if ((((bpb->m_flags & 1) == 0) && ((bpb->m_flags & 2) == 0)) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                         ,0xeb,"bpb->is_bpi() || bpb->is_bpg()",""), bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->m_flags & 0x40) != 0) &&
+  if (((bpb->m_flags & 0x40) != 0) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                         ,0xec,"!bpb->get_flag(broad_phase_base::FLAG_ON_BPG_LIST)",""), bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->m_flags & 0x20) == 0) {
-    if ((param_1->m_list_bpb_next != (broad_phase_base *)0x0) &&
+  if ((bpb->m_flags & 0x20) == 0) {
+    if ((bpb->m_list_bpb_next != (broad_phase_base *)0x0) &&
        (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                           ,0xef,"bpb->m_list_bpb_next == NULL",""), bVar3)) {
       pcVar1 = (code *)swi(3);
@@ -1384,10 +1380,10 @@ void __cdecl environment_collision_list_add(broad_phase_base *param_1)
       return;
     }
     pbVar2 = G_BPM;
-    param_1->m_list_bpb_next = G_BPM->g_list_bpb;
-    pbVar2->g_list_bpb = param_1;
+    bpb->m_list_bpb_next = G_BPM->g_list_bpb;
+    pbVar2->g_list_bpb = bpb;
     pbVar2->g_list_bpb_count = pbVar2->g_list_bpb_count + 1;
-    param_1->m_flags = param_1->m_flags | 0x20;
+    bpb->m_flags = bpb->m_flags | 0x20;
   }
   return;
 }
@@ -1409,7 +1405,7 @@ void __thiscall phys_convex_hull::init_convex_hull(phys_convex_hull *this)
   int local_34;
   phys_vec3 **local_30;
   int local_10;
-  phys_vec3 *local_c;
+  phys_vec3 *vert_i;
   
   for (local_10 = 0; local_10 < (this->m_intermediate_vertex_list).m_alloc_count;
       local_10 = local_10 + 1) {
@@ -1417,8 +1413,8 @@ void __thiscall phys_convex_hull::init_convex_hull(phys_convex_hull *this)
   (this->m_intermediate_vertex_list).m_alloc_count = 0;
   iVar1 = (this->m_vertex_buffer).m_alloc_count;
   ppVar6 = (this->m_vertex_buffer).m_slot_array;
-  for (local_c = (this->m_vertex_buffer).m_slot_array; ppVar6 + iVar1 != local_c;
-      local_c = local_c + 1) {
+  for (vert_i = (this->m_vertex_buffer).m_slot_array; ppVar6 + iVar1 != vert_i; vert_i = vert_i + 1)
+  {
     if ((this->m_intermediate_vertex_list).m_alloc_count < 0x1800) {
       local_30 = (this->m_intermediate_vertex_list).m_slot_array +
                  (this->m_intermediate_vertex_list).m_alloc_count;
@@ -1429,7 +1425,7 @@ void __thiscall phys_convex_hull::init_convex_hull(phys_convex_hull *this)
       tlFatal("phys array add overflow.");
       local_30 = (phys_vec3 **)0x0;
     }
-    *local_30 = local_c;
+    *local_30 = vert_i;
   }
   for (local_34 = 0; local_34 < (this->m_convex_hull_vert_list).m_alloc_count;
       local_34 = local_34 + 1) {
@@ -1471,30 +1467,30 @@ void __thiscall phys_convex_hull::init_convex_hull(phys_convex_hull *this)
 
 /* WARNING: Removing unreachable block (ram,0x008483c7) */
 
-void __cdecl environment_collision_list_remove(broad_phase_base *param_1)
+void __cdecl environment_collision_list_remove(broad_phase_base *bpb)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->m_flags & 1) == 0) && ((param_1->m_flags & 2) == 0)) &&
+  if ((((bpb->m_flags & 1) == 0) && ((bpb->m_flags & 2) == 0)) &&
      (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                         ,0xf7,"bpb->is_bpi() || bpb->is_bpg()",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->m_flags & 0x40) != 0) &&
+  if (((bpb->m_flags & 0x40) != 0) &&
      (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
                         ,0xf8,"!bpb->get_flag(broad_phase_base::FLAG_ON_BPG_LIST)",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->m_flags & 0x20) != 0) {
-    broad_phase_memory::list_bpb_remove(G_BPM,param_1);
-    param_1->m_list_bpb_next = (broad_phase_base *)0x0;
-    param_1->m_flags = param_1->m_flags & 0xffffffdf;
+  if ((bpb->m_flags & 0x20) != 0) {
+    broad_phase_memory::list_bpb_remove(G_BPM,bpb);
+    bpb->m_list_bpb_next = (broad_phase_base *)0x0;
+    bpb->m_flags = bpb->m_flags & 0xffffffdf;
   }
   return;
 }
@@ -1517,10 +1513,10 @@ void __cdecl Phys_Init(void)
   phys_surface_type_info local_4c;
   phys_surface_type_info local_3c;
   phys_surface_type_info local_2c;
-  float local_1c;
-  float local_18;
-  int local_14;
-  broad_phase_memory_info local_10;
+  float surfaceFriction;
+  float surfaceBounce;
+  int i;
+  broad_phase_memory_info bpmi;
   
   physGlob.timeLastSnapshot = 0;
   physGlob.timeLastUpdate = 0;
@@ -1684,11 +1680,11 @@ void __cdecl Phys_Init(void)
     phys_memory_manager_init(G_PHYSICS_TOTAL_MEMORY_BUFFER,0x380000);
     phys_task_manager_init();
     phys_sys::phys_init();
-    broad_phase_memory_info::broad_phase_memory_info(&local_10);
-    local_10.m_max_num_gjk_ci = 0x800;
-    local_10.m_max_num_sap_active_pairs = 0x800;
-    local_10.m_max_num_surface_types = 0x23;
-    broad_phase_system_init(&local_10,Phys_ShouldCollideCallback);
+    broad_phase_memory_info::broad_phase_memory_info(&bpmi);
+    bpmi.m_max_num_gjk_ci = 0x800;
+    bpmi.m_max_num_sap_active_pairs = 0x800;
+    bpmi.m_max_num_surface_types = 0x23;
+    broad_phase_system_init(&bpmi,Phys_ShouldCollideCallback);
     phys_sys::set_collision_callback(Phys_CollisionCallback);
     phys_sys::set_max_delta_t(1.0);
     phys_sys::set_v_tol(8);
@@ -1709,19 +1705,19 @@ void __cdecl Phys_Init(void)
     local_4c.m_solver_priority = 0;
     local_4c.m_no_overflow_error = true;
     surface_type_info_database_set(0x20,0x20,&local_4c);
-    for (local_14 = 0; local_14 < 0x1f; local_14 = local_14 + 1) {
-      local_1c = Com_SurfaceFrictionScale(local_14);
-      local_5c.m_bounce_coef = Com_SurfaceBounceScale(local_14);
-      local_5c.m_friction_coef = local_1c;
+    for (i = 0; i < 0x1f; i = i + 1) {
+      surfaceFriction = Com_SurfaceFrictionScale(i);
+      local_5c.m_bounce_coef = Com_SurfaceBounceScale(i);
+      local_5c.m_friction_coef = surfaceFriction;
       local_5c.m_solver_priority = 1;
       local_5c.m_no_overflow_error = false;
-      local_18 = local_5c.m_bounce_coef;
-      surface_type_info_database_set(0x1f,local_14,&local_5c);
-      local_6c.m_friction_coef = local_1c;
-      local_6c.m_bounce_coef = local_18;
+      surfaceBounce = local_5c.m_bounce_coef;
+      surface_type_info_database_set(0x1f,i,&local_5c);
+      local_6c.m_friction_coef = surfaceFriction;
+      local_6c.m_bounce_coef = surfaceBounce;
       local_6c.m_solver_priority = 1;
       local_6c.m_no_overflow_error = false;
-      surface_type_info_database_set(0x20,local_14,&local_6c);
+      surface_type_info_database_set(0x20,i,&local_6c);
     }
     RB_SetDebugBrushesAndPatchesCallback(render_debug_brushes_and_patches);
   }
@@ -1733,8 +1729,7 @@ void __cdecl Phys_Init(void)
 
 float __thiscall
 phys_convex_hull::tetrahedron_volume
-          (phys_convex_hull *this,phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,
-          phys_vec3 *param_4)
+          (phys_convex_hull *this,phys_vec3 *a,phys_vec3 *b,phys_vec3 *c,phys_vec3 *d)
 
 {
   phys_vec3 *ppVar1;
@@ -1755,15 +1750,15 @@ phys_convex_hull::tetrahedron_volume
   float local_18;
   phys_convex_hull *local_14;
   
-  local_30.x = param_3->x - param_4->x;
-  local_30.y = param_3->y - param_4->y;
-  local_30.z = param_3->z - param_4->z;
-  local_50.x = param_2->x - param_4->x;
-  local_50.y = param_2->y - param_4->y;
-  local_50.z = param_2->z - param_4->z;
-  local_70 = param_1->x - param_4->x;
-  local_6c = param_1->y - param_4->y;
-  local_68 = param_1->z - param_4->z;
+  local_30.x = c->x - d->x;
+  local_30.y = c->y - d->y;
+  local_30.z = c->z - d->z;
+  local_50.x = b->x - d->x;
+  local_50.y = b->y - d->y;
+  local_50.z = b->z - d->z;
+  local_70 = a->x - d->x;
+  local_6c = a->y - d->y;
+  local_68 = a->z - d->z;
   local_5c = local_68;
   local_58 = local_6c;
   local_54 = local_70;
@@ -1817,7 +1812,7 @@ void __cdecl _dynamic_initializer_for__PHYS_Y_VEC__(void)
 
 // 0084F8B0  calc_expansion_volume  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:268)
 
-float __thiscall phys_convex_hull::calc_expansion_volume(phys_convex_hull *this,phys_vec3 *param_1)
+float __thiscall phys_convex_hull::calc_expansion_volume(phys_convex_hull *this,phys_vec3 *vert)
 
 {
   int iVar1;
@@ -1826,22 +1821,22 @@ float __thiscall phys_convex_hull::calc_expansion_volume(phys_convex_hull *this,
   bool bVar4;
   float10 fVar5;
   float fVar6;
-  ch_triangle *local_10;
-  float local_8;
+  float vert_dist;
+  ch_triangle *tri_i;
+  float volume;
   
-  local_8 = 0.0;
+  volume = 0.0;
   iVar1 = (this->m_intermediate_triangle_list).m_alloc_count;
   pcVar2 = (this->m_intermediate_triangle_list).m_slot_array;
-  for (local_10 = (this->m_intermediate_triangle_list).m_slot_array; pcVar2 + iVar1 != local_10;
-      local_10 = local_10 + 1) {
-    fVar6 = ch_triangle::get_dist(local_10,param_1);
+  for (tri_i = (this->m_intermediate_triangle_list).m_slot_array; pcVar2 + iVar1 != tri_i;
+      tri_i = tri_i + 1) {
+    fVar6 = ch_triangle::get_dist(tri_i,vert);
     if (0.034 < fVar6) {
-      fVar6 = tetrahedron_volume(this,param_1,local_10->m_verts[0],local_10->m_verts[1],
-                                 local_10->m_verts[2]);
-      local_8 = fVar6 + local_8;
+      fVar6 = tetrahedron_volume(this,vert,tri_i->m_verts[0],tri_i->m_verts[1],tri_i->m_verts[2]);
+      volume = fVar6 + volume;
     }
   }
-  if (local_8 <= 0.0) {
+  if (volume <= 0.0) {
     bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_convex_hull.h"
                       ,0x115,"volume > 0.0f","");
     if (bVar4) {
@@ -1850,7 +1845,7 @@ float __thiscall phys_convex_hull::calc_expansion_volume(phys_convex_hull *this,
       return (float)fVar5;
     }
   }
-  return local_8;
+  return volume;
 }
 
 
@@ -1893,7 +1888,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 0084FC10  create_edge_list  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:282)
 
-void __thiscall phys_convex_hull::create_edge_list(phys_convex_hull *this,phys_vec3 *param_1)
+void __thiscall phys_convex_hull::create_edge_list(phys_convex_hull *this,phys_vec3 *vert)
 
 {
   phys_vec3 *ppVar1;
@@ -1910,9 +1905,9 @@ void __thiscall phys_convex_hull::create_edge_list(phys_convex_hull *this,phys_v
   while ((this->m_intermediate_triangle_list).m_slot_array +
          (this->m_intermediate_triangle_list).m_alloc_count != local_24) {
     ppVar1 = local_24->m_verts[0];
-    if ((local_24->m_normal).x * (param_1->x - ppVar1->x) +
-        (local_24->m_normal).y * (param_1->y - ppVar1->y) +
-        (local_24->m_normal).z * (param_1->z - ppVar1->z) <= 0.034) {
+    if ((local_24->m_normal).x * (vert->x - ppVar1->x) +
+        (local_24->m_normal).y * (vert->y - ppVar1->y) +
+        (local_24->m_normal).z * (vert->z - ppVar1->z) <= 0.034) {
       local_24 = local_24 + 1;
     }
     else {
@@ -1941,26 +1936,29 @@ void __thiscall phys_convex_hull::remove_inside_verts(phys_convex_hull *this)
   ch_triangle *pcVar2;
   bool bVar3;
   float fVar4;
-  ch_triangle *local_18;
-  phys_vec3 **local_8;
+  float vert_dist;
+  ch_triangle *tri_i;
+  bool inside;
+  phys_vec3 **vert;
+  phys_vec3 **vert_i;
   
-  local_8 = (this->m_intermediate_vertex_list).m_slot_array;
+  vert_i = (this->m_intermediate_vertex_list).m_slot_array;
   while ((this->m_intermediate_vertex_list).m_slot_array +
-         (this->m_intermediate_vertex_list).m_alloc_count != local_8) {
+         (this->m_intermediate_vertex_list).m_alloc_count != vert_i) {
     bVar3 = true;
-    local_18 = (this->m_intermediate_triangle_list).m_slot_array;
+    tri_i = (this->m_intermediate_triangle_list).m_slot_array;
     iVar1 = (this->m_intermediate_triangle_list).m_alloc_count;
     pcVar2 = (this->m_intermediate_triangle_list).m_slot_array;
-    while ((pcVar2 + iVar1 != local_18 && (bVar3))) {
-      fVar4 = ch_triangle::get_dist(local_18,*local_8);
+    while ((pcVar2 + iVar1 != tri_i && (bVar3))) {
+      fVar4 = ch_triangle::get_dist(tri_i,*vert_i);
       bVar3 = fVar4 <= 0.034;
-      local_18 = local_18 + 1;
+      tri_i = tri_i + 1;
     }
     if (bVar3) {
-      phys_static_array<phys_vec3_*,6144>::remove(&this->m_intermediate_vertex_list,local_8);
+      phys_static_array<phys_vec3_*,6144>::remove(&this->m_intermediate_vertex_list,vert_i);
     }
     else {
-      local_8 = local_8 + 1;
+      vert_i = vert_i + 1;
     }
   }
   return;
@@ -1970,7 +1968,8 @@ void __thiscall phys_convex_hull::remove_inside_verts(phys_convex_hull *this)
 // 0084E730  compute_convex_hull  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_convex_hull.h:330)
 
 void __thiscall
-phys_convex_hull::compute_convex_hull(phys_convex_hull *this,int param_1,float param_2)
+phys_convex_hull::compute_convex_hull
+          (phys_convex_hull *this,int max_verts,float min_expansion_volume_percent)
 
 {
   int iVar1;
@@ -2008,7 +2007,7 @@ phys_convex_hull::compute_convex_hull(phys_convex_hull *this,int param_1,float p
   phys_convex_hull *local_14;
   
   local_14 = this;
-  if ((param_1 < 3) &&
+  if ((max_verts < 3) &&
      (bVar4 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_convex_hull.h"
                         ,0x14b,"max_verts >= 3",""), bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -2017,7 +2016,7 @@ phys_convex_hull::compute_convex_hull(phys_convex_hull *this,int param_1,float p
   }
   init_convex_hull(local_14);
   local_18 = 0.0;
-  while (((local_1c = (local_14->m_convex_hull_vert_list).m_alloc_count, local_1c < param_1 &&
+  while (((local_1c = (local_14->m_convex_hull_vert_list).m_alloc_count, local_1c < max_verts &&
           (local_20 = (local_14->m_intermediate_triangle_list).m_alloc_count, 0 < local_20)) &&
          (local_24 = (local_14->m_intermediate_vertex_list).m_alloc_count, 0 < local_24))) {
     local_28 = (ch_triangle *)0x0;
@@ -2088,7 +2087,7 @@ phys_convex_hull::compute_convex_hull(phys_convex_hull *this,int param_1,float p
     else {
       local_88 = local_30 / local_18;
     }
-    if (local_88 < param_2) break;
+    if (local_88 < min_expansion_volume_percent) break;
     local_18 = local_18 + local_30;
     create_edge_list(local_14,*local_2c);
     iVar1 = (local_14->m_intermediate_edge_list).m_alloc_count;
@@ -2116,7 +2115,8 @@ phys_convex_hull::compute_convex_hull(phys_convex_hull *this,int param_1,float p
 
 // 00847D40  surface_type_info_database_set  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_broad_phase_inline.h:345)
 
-void __cdecl surface_type_info_database_set(int param_1,int param_2,phys_surface_type_info *param_3)
+void __cdecl
+surface_type_info_database_set(int surface_type_1,int surface_type_2,phys_surface_type_info *pst)
 
 {
   code *pcVar1;
@@ -2137,13 +2137,13 @@ void __cdecl surface_type_info_database_set(int param_1,int param_2,phys_surface
       return;
     }
   }
-  iVar4 = surface_type_info_database_get_index(param_1,param_2);
+  iVar4 = surface_type_info_database_get_index(surface_type_1,surface_type_2);
   ppVar5 = G_BPM->g_surface_type_info_database + iVar4;
-  ppVar5->m_friction_coef = param_3->m_friction_coef;
-  ppVar5->m_bounce_coef = param_3->m_bounce_coef;
-  ppVar5->m_solver_priority = param_3->m_solver_priority;
-  uVar2 = *(undefined3 *)&param_3->field_0xd;
-  ppVar5->m_no_overflow_error = param_3->m_no_overflow_error;
+  ppVar5->m_friction_coef = pst->m_friction_coef;
+  ppVar5->m_bounce_coef = pst->m_bounce_coef;
+  ppVar5->m_solver_priority = pst->m_solver_priority;
+  uVar2 = *(undefined3 *)&pst->field_0xd;
+  ppVar5->m_no_overflow_error = pst->m_no_overflow_error;
   *(undefined3 *)&ppVar5->field_0xd = uVar2;
   return;
 }
@@ -2151,7 +2151,7 @@ void __cdecl surface_type_info_database_set(int param_1,int param_2,phys_surface
 
 // 0084A230  phys_full_inverse  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:353)
 
-void __cdecl phys_full_inverse(phys_mat44 *param_1,phys_mat44 *param_2)
+void __cdecl phys_full_inverse(phys_mat44 *dest,phys_mat44 *source)
 
 {
   float fVar1;
@@ -2160,18 +2160,18 @@ void __cdecl phys_full_inverse(phys_mat44 *param_1,phys_mat44 *param_2)
   phys_mat44 local_90;
   phys_vec3 local_20;
   
-  if (param_1 == param_2) {
-    phys_full_inverse(&local_90,param_2);
-    phys_mat44::operator=(param_1,&local_90);
+  if (dest == source) {
+    phys_full_inverse(&local_90,source);
+    phys_mat44::operator=(dest,&local_90);
   }
   else {
-    phys_transpose(param_1,param_2);
-    ppVar3 = phys_multiply33(&local_20,param_1,&param_2->w);
+    phys_transpose(dest,source);
+    ppVar3 = phys_multiply33(&local_20,dest,&source->w);
     fVar1 = ppVar3->y;
     fVar2 = ppVar3->z;
-    (param_1->w).x = -ppVar3->x;
-    (param_1->w).y = -fVar1;
-    (param_1->w).z = -fVar2;
+    (dest->w).x = -ppVar3->x;
+    (dest->w).y = -fVar1;
+    (dest->w).z = -fVar2;
   }
   return;
 }
@@ -2205,8 +2205,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<PhysObjUserData>::debug_add
-          (phys_free_list<PhysObjUserData> *this,T_internal *param_1)
+phys_free_list<PhysObjUserData>::debug_add(phys_free_list<PhysObjUserData> *this,T_internal *T_i)
 
 {
   int local_14;
@@ -2219,12 +2218,12 @@ phys_free_list<PhysObjUserData>::debug_add
   }
   this->m_list_count_high_water = local_14;
   if (this->m_ptr_list_count < 0x100) {
-    param_1->m_ptr_list_index = this->m_ptr_list_count;
-    this->m_ptr_list[this->m_ptr_list_count] = &param_1->m_data;
+    T_i->m_ptr_list_index = this->m_ptr_list_count;
+    this->m_ptr_list[this->m_ptr_list_count] = &T_i->m_data;
     this->m_ptr_list_count = this->m_ptr_list_count + 1;
   }
   else {
-    param_1->m_ptr_list_index = -1;
+    T_i->m_ptr_list_index = -1;
   }
   return;
 }
@@ -2232,7 +2231,12 @@ phys_free_list<PhysObjUserData>::debug_add
 
 // 00847DD0  create_broad_phase_info  (physics/phys_main.cpp:409)
 
-void __cdecl create_broad_phase_info(rigid_body *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl create_broad_phase_info(rigid_body *body)
 
 {
   void *pvVar1;
@@ -2245,9 +2249,15 @@ void __cdecl create_broad_phase_info(rigid_body *param_1)
   uint uVar6;
   void *pvVar7;
   uint uVar8;
-  gjk_base_t *local_c;
+  int flags;
+  broad_phase_info *bpi_2;
+  gjk_base_t *gjk_geom;
+  broad_phase_info *bpi;
+  broad_phase_group *bpg;
+  gjk_base_t *geom;
+  PhysObjUserData *userData;
   
-  pvVar1 = param_1->m_userdata;
+  pvVar1 = body->m_userdata;
   iVar4 = gjk_geom_list_t::get_geom_count((gjk_geom_list_t *)((int)pvVar1 + 8));
   if (iVar4 < 2) {
     iVar4 = gjk_geom_list_t::get_geom_count((gjk_geom_list_t *)((int)pvVar1 + 8));
@@ -2286,11 +2296,11 @@ void __cdecl create_broad_phase_info(rigid_body *param_1)
     bVar3 = true;
     uVar6 = gjk_base_t::get_geom_id(this);
     broad_phase_info::set
-              (pbVar5,param_1,&param_1->m_mat,(phys_mat44 *)((int)pvVar1 + 0x60),
+              (pbVar5,body,&body->m_mat,(phys_mat44 *)((int)pvVar1 + 0x60),
                (phys_mat44 *)((int)pvVar1 + 0x20),(phys_gjk_geom *)this,uVar6,bVar3,iVar4,pvVar7,
                uVar8);
     *(broad_phase_info **)((int)pvVar1 + 0xa0) = pbVar5;
-    uVar6 = rigid_body::get_flag(param_1,0x20);
+    uVar6 = rigid_body::get_flag(body,0x20);
     if (uVar6 != 0) {
       pbVar5->_padding_ = pbVar5->_padding_ & 0xfffffffe;
     }
@@ -2307,8 +2317,8 @@ void __cdecl create_broad_phase_info(rigid_body *param_1)
         return;
       }
     }
-    local_c = *(gjk_base_t **)((int)pvVar1 + 8);
-    if (local_c == (gjk_base_t *)0x0) {
+    geom = *(gjk_base_t **)((int)pvVar1 + 8);
+    if (geom == (gjk_base_t *)0x0) {
       bVar3 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x1a1,"geom","")
       ;
       if (bVar3) {
@@ -2317,17 +2327,17 @@ void __cdecl create_broad_phase_info(rigid_body *param_1)
         return;
       }
     }
-    for (; local_c != (gjk_base_t *)0x0; local_c = local_c->m_next_geom) {
+    for (; geom != (gjk_base_t *)0x0; geom = geom->m_next_geom) {
       pbVar5 = create_broad_phase_info();
       uVar8 = 0x1c7;
       pvVar7 = (void *)0x0;
       iVar4 = 0x1f;
       bVar3 = true;
-      uVar6 = gjk_base_t::get_geom_id(local_c);
+      uVar6 = gjk_base_t::get_geom_id(geom);
       broad_phase_info::set
-                (pbVar5,param_1,&param_1->m_mat,(phys_mat44 *)((int)pvVar1 + 0x60),
-                 (phys_mat44 *)((int)pvVar1 + 0x20),(phys_gjk_geom *)local_c,uVar6,bVar3,iVar4,
-                 pvVar7,uVar8);
+                (pbVar5,body,&body->m_mat,(phys_mat44 *)((int)pvVar1 + 0x60),
+                 (phys_mat44 *)((int)pvVar1 + 0x20),(phys_gjk_geom *)geom,uVar6,bVar3,iVar4,pvVar7,
+                 uVar8);
       broad_phase_group::add_bpi(this_00,pbVar5);
     }
     *(broad_phase_group **)((int)pvVar1 + 0xa0) = this_00;
@@ -2346,15 +2356,14 @@ void __cdecl create_broad_phase_info(rigid_body *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<PhysObjUserData>::debug_remove
-          (phys_free_list<PhysObjUserData> *this,T_internal *param_1)
+phys_free_list<PhysObjUserData>::debug_remove(phys_free_list<PhysObjUserData> *this,T_internal *T_i)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->m_ptr_list_index != -1) {
-    if ((param_1->m_ptr_list_index < 0) || (0xff < param_1->m_ptr_list_index)) {
+  if (T_i->m_ptr_list_index != -1) {
+    if ((T_i->m_ptr_list_index < 0) || (0xff < T_i->m_ptr_list_index)) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a5,
                         "T_i->m_ptr_list_index >= 0 && T_i->m_ptr_list_index < PTR_LIST_SIZE","");
       if (bVar2) {
@@ -2363,7 +2372,7 @@ phys_free_list<PhysObjUserData>::debug_remove
         return;
       }
     }
-    if (this->m_ptr_list[param_1->m_ptr_list_index] != &param_1->m_data) {
+    if (this->m_ptr_list[T_i->m_ptr_list_index] != &T_i->m_data) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a6,
                         "m_ptr_list[T_i->m_ptr_list_index] == &T_i->m_data","");
       if (bVar2) {
@@ -2373,8 +2382,8 @@ phys_free_list<PhysObjUserData>::debug_remove
       }
     }
     this->m_ptr_list_count = this->m_ptr_list_count + -1;
-    this->m_ptr_list[this->m_ptr_list_count][1].body = (rigid_body *)param_1->m_ptr_list_index;
-    this->m_ptr_list[param_1->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
+    this->m_ptr_list[this->m_ptr_list_count][1].body = (rigid_body *)T_i->m_ptr_list_index;
+    this->m_ptr_list[T_i->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
   }
   return;
 }
@@ -2384,14 +2393,14 @@ phys_free_list<PhysObjUserData>::debug_remove
 
 void __thiscall
 phys_free_list<VehicleParameter>::debug_remove
-          (phys_free_list<VehicleParameter> *this,T_internal *param_1)
+          (phys_free_list<VehicleParameter> *this,T_internal *T_i)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->m_ptr_list_index != -1) {
-    if ((param_1->m_ptr_list_index < 0) || (0xff < param_1->m_ptr_list_index)) {
+  if (T_i->m_ptr_list_index != -1) {
+    if ((T_i->m_ptr_list_index < 0) || (0xff < T_i->m_ptr_list_index)) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a5,
                         "T_i->m_ptr_list_index >= 0 && T_i->m_ptr_list_index < PTR_LIST_SIZE","");
       if (bVar2) {
@@ -2400,7 +2409,7 @@ phys_free_list<VehicleParameter>::debug_remove
         return;
       }
     }
-    if (this->m_ptr_list[param_1->m_ptr_list_index] != &param_1->m_data) {
+    if (this->m_ptr_list[T_i->m_ptr_list_index] != &T_i->m_data) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a6,
                         "m_ptr_list[T_i->m_ptr_list_index] == &T_i->m_data","");
       if (bVar2) {
@@ -2410,8 +2419,8 @@ phys_free_list<VehicleParameter>::debug_remove
       }
     }
     this->m_ptr_list_count = this->m_ptr_list_count + -1;
-    this->m_ptr_list[this->m_ptr_list_count][1].m_speed_max = (float)param_1->m_ptr_list_index;
-    this->m_ptr_list[param_1->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
+    this->m_ptr_list[this->m_ptr_list_count][1].m_speed_max = (float)T_i->m_ptr_list_index;
+    this->m_ptr_list[T_i->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
   }
   return;
 }
@@ -2420,14 +2429,14 @@ phys_free_list<VehicleParameter>::debug_remove
 // 008558D0  debug_remove  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:418)
 
 void __thiscall
-phys_free_list<RagdollBody>::debug_remove(phys_free_list<RagdollBody> *this,T_internal *param_1)
+phys_free_list<RagdollBody>::debug_remove(phys_free_list<RagdollBody> *this,T_internal *T_i)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->m_ptr_list_index != -1) {
-    if ((param_1->m_ptr_list_index < 0) || (0xff < param_1->m_ptr_list_index)) {
+  if (T_i->m_ptr_list_index != -1) {
+    if ((T_i->m_ptr_list_index < 0) || (0xff < T_i->m_ptr_list_index)) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a5,
                         "T_i->m_ptr_list_index >= 0 && T_i->m_ptr_list_index < PTR_LIST_SIZE","");
       if (bVar2) {
@@ -2436,7 +2445,7 @@ phys_free_list<RagdollBody>::debug_remove(phys_free_list<RagdollBody> *this,T_in
         return;
       }
     }
-    if (this->m_ptr_list[param_1->m_ptr_list_index] != &param_1->m_data) {
+    if (this->m_ptr_list[T_i->m_ptr_list_index] != &T_i->m_data) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a6,
                         "m_ptr_list[T_i->m_ptr_list_index] == &T_i->m_data","");
       if (bVar2) {
@@ -2446,8 +2455,8 @@ phys_free_list<RagdollBody>::debug_remove(phys_free_list<RagdollBody> *this,T_in
       }
     }
     this->m_ptr_list_count = this->m_ptr_list_count + -1;
-    this->m_ptr_list[this->m_ptr_list_count][1].references = param_1->m_ptr_list_index;
-    this->m_ptr_list[param_1->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
+    this->m_ptr_list[this->m_ptr_list_count][1].references = T_i->m_ptr_list_index;
+    this->m_ptr_list[T_i->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
   }
   return;
 }
@@ -2648,16 +2657,22 @@ phys_free_list<RagdollBody>::~phys_free_list<RagdollBody>(phys_free_list<Ragdoll
 
 // 00848500  destroy_broad_phase_info  (physics/phys_main.cpp:448)
 
-void __cdecl destroy_broad_phase_info(rigid_body *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl destroy_broad_phase_info(rigid_body *body)
 
 {
   void *pvVar1;
   code *pcVar2;
   bool bVar3;
-  broad_phase_info *pbVar4;
-  broad_phase_group *pbVar5;
+  broad_phase_info *bpi;
+  broad_phase_group *pbVar4;
+  PhysObjUserData *userData;
   
-  pvVar1 = param_1->m_userdata;
+  pvVar1 = body->m_userdata;
   if (*(int *)((int)pvVar1 + 0xa0) != 0) {
     aasap_list_remove(*(broad_phase_base **)((int)pvVar1 + 0xa0));
     environment_collision_list_remove(*(broad_phase_base **)((int)pvVar1 + 0xa0));
@@ -2671,14 +2686,14 @@ void __cdecl destroy_broad_phase_info(rigid_body *param_1)
           return;
         }
       }
-      pbVar5 = broad_phase_base::get_bpg(*(broad_phase_base **)((int)pvVar1 + 0xa0));
-      destroy_broad_phase_info_list(pbVar5->m_list_bpi_head);
-      pbVar5 = broad_phase_base::get_bpg(*(broad_phase_base **)((int)pvVar1 + 0xa0));
-      destroy_broad_phase_group(pbVar5);
+      pbVar4 = broad_phase_base::get_bpg(*(broad_phase_base **)((int)pvVar1 + 0xa0));
+      destroy_broad_phase_info_list(pbVar4->m_list_bpi_head);
+      pbVar4 = broad_phase_base::get_bpg(*(broad_phase_base **)((int)pvVar1 + 0xa0));
+      destroy_broad_phase_group(pbVar4);
     }
     else {
-      pbVar4 = broad_phase_base::get_bpi(*(broad_phase_base **)((int)pvVar1 + 0xa0));
-      destroy_broad_phase_info(pbVar4);
+      bpi = broad_phase_base::get_bpi(*(broad_phase_base **)((int)pvVar1 + 0xa0));
+      destroy_broad_phase_info(bpi);
     }
     *(undefined4 *)((int)pvVar1 + 0xa0) = 0;
   }
@@ -2696,40 +2711,40 @@ void __cdecl destroy_broad_phase_info(rigid_body *param_1)
 
 PhysObjUserData * __thiscall
 phys_free_list<PhysObjUserData>::add
-          (phys_free_list<PhysObjUserData> *this,int param_1,char *param_2)
+          (phys_free_list<PhysObjUserData> *this,int no_error,char *error_msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  T_internal *pTVar3;
-  PhysObjUserData *pPVar4;
+  T_internal *T_i;
+  PhysObjUserData *pPVar3;
   
-  pTVar3 = PMM_ALLOC(0x150,0x10);
-  if (pTVar3 == (T_internal *)0x0) {
-    if ((param_1 == 0) &&
+  T_i = PMM_ALLOC(0x150,0x10);
+  if (T_i == (T_internal *)0x0) {
+    if ((no_error == 0) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1d6,
-                          "no_error",param_2), bVar2)) {
+                          "no_error",error_msg), bVar2)) {
       pcVar1 = (code *)swi(3);
-      pPVar4 = (PhysObjUserData *)(*pcVar1)();
-      return pPVar4;
+      pPVar3 = (PhysObjUserData *)(*pcVar1)();
+      return pPVar3;
     }
-    pPVar4 = (PhysObjUserData *)0x0;
+    pPVar3 = (PhysObjUserData *)0x0;
   }
   else {
-    if (pTVar3 != (T_internal *)0x0) {
-      (pTVar3->m_data).m_gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
-      (pTVar3->m_data).m_gjk_geom_list.m_geom_count = 0;
-      (pTVar3->m_data).m_bpb = (broad_phase_base *)0x0;
+    if (T_i != (T_internal *)0x0) {
+      (T_i->m_data).m_gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+      (T_i->m_data).m_gjk_geom_list.m_geom_count = 0;
+      (T_i->m_data).m_bpb = (broad_phase_base *)0x0;
     }
-    *(phys_free_list<PhysObjUserData> **)pTVar3 = this;
-    *(T_internal_base **)&pTVar3->field_0x4 = (this->m_dummy_head).m_next_T_internal;
-    ((this->m_dummy_head).m_next_T_internal)->m_prev_T_internal = (T_internal_base *)pTVar3;
-    (this->m_dummy_head).m_next_T_internal = (T_internal_base *)pTVar3;
+    *(phys_free_list<PhysObjUserData> **)T_i = this;
+    *(T_internal_base **)&T_i->field_0x4 = (this->m_dummy_head).m_next_T_internal;
+    ((this->m_dummy_head).m_next_T_internal)->m_prev_T_internal = (T_internal_base *)T_i;
+    (this->m_dummy_head).m_next_T_internal = (T_internal_base *)T_i;
     this->m_list_count = this->m_list_count + 1;
-    debug_add(this,pTVar3);
-    pPVar4 = &pTVar3->m_data;
+    debug_add(this,T_i);
+    pPVar3 = &T_i->m_data;
   }
-  return pPVar4;
+  return pPVar3;
 }
 
 
@@ -2740,21 +2755,22 @@ phys_free_list<PhysObjUserData>::add
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-PhysObjUserData * __cdecl Phys_CreateUserData(int param_1)
+PhysObjUserData * __cdecl Phys_CreateUserData(int worldIndex)
 
 {
-  PhysObjUserData *pPVar1;
+  PhysObjUserData *p;
+  PhysObjUserData *userData;
   
-  pPVar1 = phys_free_list<PhysObjUserData>::add
-                     (&physGlob.objects,1,"phys_free_list error: out of memory.");
-  if (pPVar1 == (PhysObjUserData *)0x0) {
-    pPVar1 = (PhysObjUserData *)0x0;
+  p = phys_free_list<PhysObjUserData>::add
+                (&physGlob.objects,1,"phys_free_list error: out of memory.");
+  if (p == (PhysObjUserData *)0x0) {
+    p = (PhysObjUserData *)0x0;
   }
   else {
-    memset((uchar *)pPVar1,'\0',0x130);
-    phys_link_list1<PhysObjUserData>::add(physGlob.objects_by_world + param_1,pPVar1);
+    memset((uchar *)p,'\0',0x130);
+    phys_link_list1<PhysObjUserData>::add(physGlob.objects_by_world + worldIndex,p);
   }
-  return pPVar1;
+  return p;
 }
 
 
@@ -2767,7 +2783,7 @@ PhysObjUserData * __cdecl Phys_CreateUserData(int param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<PhysObjUserData>::remove(phys_free_list<PhysObjUserData> *this,T_internal *param_1)
+phys_free_list<PhysObjUserData>::remove(phys_free_list<PhysObjUserData> *this,T_internal *data)
 
 {
   int *piVar1;
@@ -2775,7 +2791,7 @@ phys_free_list<PhysObjUserData>::remove(phys_free_list<PhysObjUserData> *this,T_
   code *pcVar3;
   bool bVar4;
   
-  if ((param_1 == (T_internal *)0x0) &&
+  if ((data == (T_internal *)0x0) &&
      (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
                         "data",""), bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -2783,12 +2799,12 @@ phys_free_list<PhysObjUserData>::remove(phys_free_list<PhysObjUserData> *this,T_
     return;
   }
   this->m_list_count = this->m_list_count + -1;
-  debug_remove(this,param_1);
-  piVar1 = *(int **)&param_1->field_0x4;
-  iVar2 = *(int *)param_1;
+  debug_remove(this,data);
+  piVar1 = *(int **)&data->field_0x4;
+  iVar2 = *(int *)data;
   *(int **)(iVar2 + 4) = piVar1;
   *piVar1 = iVar2;
-  PMM_FREE(param_1,0x150,0x10);
+  PMM_FREE(data,0x150,0x10);
   return;
 }
 
@@ -2798,7 +2814,7 @@ phys_free_list<PhysObjUserData>::remove(phys_free_list<PhysObjUserData> *this,T_
 /* WARNING: Removing unreachable block (ram,0x00855556) */
 
 void __thiscall
-phys_free_list<VehicleParameter>::remove(phys_free_list<VehicleParameter> *this,T_internal *param_1)
+phys_free_list<VehicleParameter>::remove(phys_free_list<VehicleParameter> *this,T_internal *data)
 
 {
   int *piVar1;
@@ -2806,7 +2822,7 @@ phys_free_list<VehicleParameter>::remove(phys_free_list<VehicleParameter> *this,
   code *pcVar3;
   bool bVar4;
   
-  if ((param_1 == (T_internal *)0x0) &&
+  if ((data == (T_internal *)0x0) &&
      (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
                         "data",""), bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -2814,12 +2830,12 @@ phys_free_list<VehicleParameter>::remove(phys_free_list<VehicleParameter> *this,
     return;
   }
   this->m_list_count = this->m_list_count + -1;
-  debug_remove(this,param_1);
-  piVar1 = (int *)param_1->_padding_;
-  iVar2 = param_1->_padding_;
+  debug_remove(this,data);
+  piVar1 = (int *)data->_padding_;
+  iVar2 = data->_padding_;
   *(int **)(iVar2 + 4) = piVar1;
   *piVar1 = iVar2;
-  PMM_FREE(param_1,0x130,4);
+  PMM_FREE(data,0x130,4);
   return;
 }
 
@@ -2829,7 +2845,7 @@ phys_free_list<VehicleParameter>::remove(phys_free_list<VehicleParameter> *this,
 /* WARNING: Removing unreachable block (ram,0x008558a6) */
 
 void __thiscall
-phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,T_internal *param_1)
+phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,T_internal *data)
 
 {
   int *piVar1;
@@ -2837,7 +2853,7 @@ phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,T_internal
   code *pcVar3;
   bool bVar4;
   
-  if ((param_1 == (T_internal *)0x0) &&
+  if ((data == (T_internal *)0x0) &&
      (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
                         "data",""), bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -2845,12 +2861,12 @@ phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,T_internal
     return;
   }
   this->m_list_count = this->m_list_count + -1;
-  debug_remove(this,param_1);
-  piVar1 = (int *)param_1->_padding_;
-  iVar2 = param_1->_padding_;
+  debug_remove(this,data);
+  piVar1 = (int *)data->_padding_;
+  iVar2 = data->_padding_;
   *(int **)(iVar2 + 4) = piVar1;
   *piVar1 = iVar2;
-  PMM_FREE(param_1,0xa34,4);
+  PMM_FREE(data,0xa34,4);
   return;
 }
 
@@ -2862,11 +2878,11 @@ phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,T_internal
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_DestroyUserData(int param_1,PhysObjUserData *param_2)
+void __cdecl Phys_DestroyUserData(int worldIndex,PhysObjUserData *userData)
 
 {
-  phys_link_list1<PhysObjUserData>::remove(physGlob.objects_by_world + param_1,param_2);
-  phys_free_list<PhysObjUserData>::remove(&physGlob.objects,param_2);
+  phys_link_list1<PhysObjUserData>::remove(physGlob.objects_by_world + worldIndex,userData);
+  phys_free_list<PhysObjUserData>::remove(&physGlob.objects,userData);
   return;
 }
 
@@ -2879,7 +2895,7 @@ void __cdecl Phys_DestroyUserData(int param_1,PhysObjUserData *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Phys_CreateUserBody(float *param_1,int param_2,PhysicsGeomType param_3)
+int __cdecl Phys_CreateUserBody(float *position,int id,PhysicsGeomType geomType)
 
 {
   float fVar1;
@@ -2931,7 +2947,7 @@ int __cdecl Phys_CreateUserBody(float *param_1,int param_2,PhysicsGeomType param
   undefined4 local_28;
   phys_vec3 local_20;
   
-  Phys_Vec3ToNitrousVec(param_1,&local_20);
+  Phys_Vec3ToNitrousVec(position,&local_20);
   local_30 = 1.0;
   local_2c = 0;
   local_28 = 0;
@@ -2965,7 +2981,7 @@ int __cdecl Phys_CreateUserBody(float *param_1,int param_2,PhysicsGeomType param
       local_bc != &physGlob;
       local_bc = (PhysGlob *)(local_bc->objects).m_dummy_head.m_next_T_internal) {
     local_c4 = (PhysObjUserData *)(local_bc->objects).m_ptr_list;
-    if ((local_bc->objects).m_ptr_list[0x37] == (PhysObjUserData *)param_2) {
+    if ((local_bc->objects).m_ptr_list[0x37] == (PhysObjUserData *)id) {
       uVar8 = rigid_body::is_user_rigid_body(*(rigid_body **)local_c4);
       if ((uVar8 == 0) &&
          (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x1fa
@@ -3002,7 +3018,7 @@ int __cdecl Phys_CreateUserBody(float *param_1,int param_2,PhysicsGeomType param
         iVar9 = (*pcVar6)();
         return iVar9;
       }
-      local_d0 = param_3 - PHYS_GEOM_CYLINDER;
+      local_d0 = geomType - PHYS_GEOM_CYLINDER;
       switch(local_d0) {
       case 0:
         local_dc[0] = 0.0;
@@ -3119,7 +3135,7 @@ int __cdecl Phys_CreateUserBody(float *param_1,int param_2,PhysicsGeomType param
       rigid_body::set_flag((rigid_body *)local_cc,0x40,1);
       local_c4->body = (rigid_body *)local_cc;
       local_c4->refcount = 1;
-      local_c4->id = param_2;
+      local_c4->id = id;
       local_c8 = local_c4;
       for (local_220 = 0; local_220 < 0x10; local_220 = local_220 + 1) {
         if (physGlob.userRigidBodies[local_220] == (PhysObjUserData *)0x0) {
@@ -3144,12 +3160,12 @@ int __cdecl Phys_CreateUserBody(float *param_1,int param_2,PhysicsGeomType param
 
 void __thiscall
 phys_free_list<PhysObjUserData>::remove
-          (phys_free_list<PhysObjUserData> *this,PhysObjUserData *param_1)
+          (phys_free_list<PhysObjUserData> *this,PhysObjUserData *data_)
 
 {
-  if (param_1 != (PhysObjUserData *)0x0) {
-    PMM_VALIDATE(param_1[-1].centerOfMassOffset,0x150,0x10);
-    remove(this,(T_internal *)param_1[-1].centerOfMassOffset);
+  if (data_ != (PhysObjUserData *)0x0) {
+    PMM_VALIDATE(data_[-1].centerOfMassOffset,0x150,0x10);
+    remove(this,(T_internal *)data_[-1].centerOfMassOffset);
   }
   return;
 }
@@ -3165,7 +3181,8 @@ phys_free_list<PhysObjUserData>::remove
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3,bool param_4)
+Phys_CreateBodyFromState
+          (int worldIndex,BodyState *state,gjk_geom_list_t *gjk_geom_list,bool do_collision_test)
 
 {
   code *pcVar1;
@@ -3284,47 +3301,47 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
   float local_18;
   float local_14;
   
-  if ((param_2 == (BodyState *)0x0) &&
+  if ((state == (BodyState *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x2f2,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_14 = param_2->position[0];
+  local_14 = state->position[0];
   if ((((((uint)local_14 & 0x7f800000) == 0x7f800000) ||
-       (local_18 = param_2->position[1], ((uint)local_18 & 0x7f800000) == 0x7f800000)) ||
-      (local_1c = param_2->position[2], ((uint)local_1c & 0x7f800000) == 0x7f800000)) &&
+       (local_18 = state->position[1], ((uint)local_18 & 0x7f800000) == 0x7f800000)) ||
+      (local_1c = state->position[2], ((uint)local_1c & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x2f4,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_20 = param_2->velocity[0];
+  local_20 = state->velocity[0];
   if ((((((uint)local_20 & 0x7f800000) == 0x7f800000) ||
-       (local_24 = param_2->velocity[1], ((uint)local_24 & 0x7f800000) == 0x7f800000)) ||
-      (local_28 = param_2->velocity[2], ((uint)local_28 & 0x7f800000) == 0x7f800000)) &&
+       (local_24 = state->velocity[1], ((uint)local_24 & 0x7f800000) == 0x7f800000)) ||
+      (local_28 = state->velocity[2], ((uint)local_28 & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x2f5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_2c = param_2->angVelocity[0];
+  local_2c = state->angVelocity[0];
   if ((((((uint)local_2c & 0x7f800000) == 0x7f800000) ||
-       (local_30 = param_2->angVelocity[1], ((uint)local_30 & 0x7f800000) == 0x7f800000)) ||
-      (local_34 = param_2->angVelocity[2], ((uint)local_34 & 0x7f800000) == 0x7f800000)) &&
+       (local_30 = state->angVelocity[1], ((uint)local_30 & 0x7f800000) == 0x7f800000)) ||
+      (local_34 = state->angVelocity[2], ((uint)local_34 & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x2f6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_38 = param_2->centerOfMassOffset[0];
+  local_38 = state->centerOfMassOffset[0];
   if ((((((uint)local_38 & 0x7f800000) == 0x7f800000) ||
-       (local_3c = param_2->centerOfMassOffset[1], ((uint)local_3c & 0x7f800000) == 0x7f800000)) ||
-      (local_40 = param_2->centerOfMassOffset[2], ((uint)local_40 & 0x7f800000) == 0x7f800000)) &&
+       (local_3c = state->centerOfMassOffset[1], ((uint)local_3c & 0x7f800000) == 0x7f800000)) ||
+      (local_40 = state->centerOfMassOffset[2], ((uint)local_40 & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x2f7,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -3332,14 +3349,14 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
     return iVar3;
   }
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-  if (param_2->id != -1) {
+  if (state->id != -1) {
     local_44 = physGlob.objects.m_dummy_head.m_next_T_internal;
     for (local_48 = (PhysGlob *)physGlob.objects.m_dummy_head.m_next_T_internal;
         local_4c = &physGlob, local_48 != &physGlob;
         local_48 = (PhysGlob *)(local_48->objects).m_dummy_head.m_next_T_internal) {
       local_50 = (PhysObjUserData *)(local_48->objects).m_ptr_list;
-      if ((local_48->objects).m_ptr_list[0x37] == (PhysObjUserData *)param_2->id) {
-        destroy_gjk_geom(param_3);
+      if ((local_48->objects).m_ptr_list[0x37] == (PhysObjUserData *)state->id) {
+        destroy_gjk_geom(gjk_geom_list);
         *(PhysObjUserData **)((int)local_50 + 0xe0) =
              (PhysObjUserData *)((int)&(*(PhysObjUserData **)((int)local_50 + 0xe0))->body + 1);
         local_54 = local_50;
@@ -3350,15 +3367,15 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
   }
   local_58 = phys_sys::create_rigid_body(1);
   if (local_58 == (rigid_body *)0x0) {
-    destroy_gjk_geom(param_3);
+    destroy_gjk_geom(gjk_geom_list);
     Com_PrintWarning(0x14,"Maximum number of physics bodies exceeded\n");
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
     local_54 = (PhysObjUserData *)0x0;
   }
   else {
-    local_50 = Phys_CreateUserData(param_1);
+    local_50 = Phys_CreateUserData(worldIndex);
     if (local_50 == (PhysObjUserData *)0x0) {
-      destroy_gjk_geom(param_3);
+      destroy_gjk_geom(gjk_geom_list);
       phys_sys::destroy(local_58);
       Com_PrintWarning(0x14,"Maximum number of Phys User Data exceeded\n");
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
@@ -3376,39 +3393,39 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
       local_70.y = 3.0;
       local_70.z = 3.0;
       nuge::calc_box_inertia(&local_70,&local_90,&local_74);
-      local_94 = param_2->mass / local_74;
+      local_94 = state->mass / local_74;
       local_90.x = local_90.x * local_94;
       local_90.y = local_90.y * local_94;
       local_90.z = local_90.z * local_94;
       local_98 = 16.0;
       local_9c = 3;
-      if (param_1 == 2) {
+      if (worldIndex == 2) {
         local_9c = 1;
       }
-      local_c0.x = param_2->velocity[0];
-      local_c0.y = param_2->velocity[1];
-      local_c0.z = param_2->velocity[2];
-      local_e0.x = param_2->angVelocity[0];
-      local_e0.y = param_2->angVelocity[1];
-      local_e0.z = param_2->angVelocity[2];
-      local_140.x.x = param_2->rotation[0][0];
-      local_140.x.y = param_2->rotation[0][1];
-      local_140.x.z = param_2->rotation[0][2];
-      local_160 = param_2->rotation[1][0];
-      local_15c = param_2->rotation[1][1];
-      local_158 = param_2->rotation[1][2];
+      local_c0.x = state->velocity[0];
+      local_c0.y = state->velocity[1];
+      local_c0.z = state->velocity[2];
+      local_e0.x = state->angVelocity[0];
+      local_e0.y = state->angVelocity[1];
+      local_e0.z = state->angVelocity[2];
+      local_140.x.x = state->rotation[0][0];
+      local_140.x.y = state->rotation[0][1];
+      local_140.x.z = state->rotation[0][2];
+      local_160 = state->rotation[1][0];
+      local_15c = state->rotation[1][1];
+      local_158 = state->rotation[1][2];
       local_164 = &local_140.y;
-      local_180 = param_2->rotation[2][0];
-      local_17c = param_2->rotation[2][1];
-      local_178 = param_2->rotation[2][2];
+      local_180 = state->rotation[2][0];
+      local_17c = state->rotation[2][1];
+      local_178 = state->rotation[2][2];
       local_184 = &local_140.z;
-      local_1a0 = param_2->position[0];
-      local_19c = param_2->position[1];
-      local_198 = param_2->position[2];
+      local_1a0 = state->position[0];
+      local_19c = state->position[1];
+      local_198 = state->position[2];
       local_1a4 = &local_140.w;
       local_54 = local_50;
-      iVar3 = param_3->m_geom_count;
-      (local_50->m_gjk_geom_list).m_first_geom = param_3->m_first_geom;
+      iVar3 = gjk_geom_list->m_geom_count;
+      (local_50->m_gjk_geom_list).m_first_geom = gjk_geom_list->m_first_geom;
       (local_50->m_gjk_geom_list).m_geom_count = iVar3;
       local_190 = local_198;
       local_18c = local_19c;
@@ -3455,7 +3472,7 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
       local_1dc = local_1e8;
       local_1d8 = local_1ec;
       local_1d4 = local_1f0;
-      Phys_Vec3ToNitrousVec(param_2->centerOfMassOffset,&local_220);
+      Phys_Vec3ToNitrousVec(state->centerOfMassOffset,&local_220);
       local_210 = local_210 + local_220.x;
       local_20c = local_20c + local_220.y;
       local_208 = local_208 + local_220.z;
@@ -3487,7 +3504,7 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      rigid_body::set(local_58,param_2->mass,&local_90,&local_2d0,&local_c0,&local_e0,local_9c);
+      rigid_body::set(local_58,state->mass,&local_90,&local_2d0,&local_c0,&local_e0,local_9c);
       local_58->m_userdata = local_50;
       Phys_Vec3ToNitrousVec(&(phys_gravity_dir->current).value,&local_2e0);
       local_2e4 = (phys_gravity->current).value;
@@ -3501,22 +3518,22 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
       local_58->m_max_avel = local_98;
       local_50->body = local_58;
       local_308 = local_50->savedPos;
-      *local_308 = param_2->position[0];
-      local_50->savedPos[1] = param_2->position[1];
-      local_50->savedPos[2] = param_2->position[2];
-      pafVar4 = param_2->rotation;
+      *local_308 = state->position[0];
+      local_50->savedPos[1] = state->position[1];
+      local_50->savedPos[2] = state->position[2];
+      pafVar4 = state->rotation;
       pafVar5 = local_50->savedRot;
       for (iVar3 = 9; iVar3 != 0; iVar3 = iVar3 + -1) {
         (*pafVar5)[0] = (*pafVar4)[0];
         pafVar4 = (float (*) [3])(*pafVar4 + 1);
         pafVar5 = (float (*) [3])(*pafVar5 + 1);
       }
-      local_50->bounce = param_2->bounce;
-      local_50->buoyancy = param_2->buoyancy;
-      local_50->friction = param_2->friction;
-      local_50->underwater = param_2->underwater;
-      local_50->mass = param_2->mass;
-      local_50->id = param_2->id;
+      local_50->bounce = state->bounce;
+      local_50->buoyancy = state->buoyancy;
+      local_50->friction = state->friction;
+      local_50->underwater = state->underwater;
+      local_50->mass = state->mass;
+      local_50->id = state->id;
       local_50->refcount = 1;
       local_50->timeBuoyant = -1;
       local_50->timeRipple = -1;
@@ -3524,20 +3541,20 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
       local_50->m_time_since_last_reeval = (phys_reeval_frequency->current).value + 0.01;
       local_50->m_flags = 0;
       local_30c = local_50->buoyancyBoxMin;
-      local_310 = param_2->buoyancyBoxMin;
+      local_310 = state->buoyancyBoxMin;
       *local_30c = *local_310;
-      local_50->buoyancyBoxMin[1] = param_2->buoyancyBoxMin[1];
-      local_50->buoyancyBoxMin[2] = param_2->buoyancyBoxMin[2];
+      local_50->buoyancyBoxMin[1] = state->buoyancyBoxMin[1];
+      local_50->buoyancyBoxMin[2] = state->buoyancyBoxMin[2];
       local_314 = local_50->buoyancyBoxMax;
-      local_318 = param_2->buoyancyBoxMax;
+      local_318 = state->buoyancyBoxMax;
       *local_314 = *local_318;
-      local_50->buoyancyBoxMax[1] = param_2->buoyancyBoxMax[1];
-      local_50->buoyancyBoxMax[2] = param_2->buoyancyBoxMax[2];
+      local_50->buoyancyBoxMax[1] = state->buoyancyBoxMax[1];
+      local_50->buoyancyBoxMax[2] = state->buoyancyBoxMax[2];
       local_31c = local_50->centerOfMassOffset;
-      local_320 = param_2->centerOfMassOffset;
+      local_320 = state->centerOfMassOffset;
       *local_31c = *local_320;
-      local_50->centerOfMassOffset[1] = param_2->centerOfMassOffset[1];
-      local_50->centerOfMassOffset[2] = param_2->centerOfMassOffset[2];
+      local_50->centerOfMassOffset[1] = state->centerOfMassOffset[1];
+      local_50->centerOfMassOffset[2] = state->centerOfMassOffset[2];
       local_324 = local_50->body;
       local_328 = local_324->m_inv_mass;
       local_32c = 1.0 / local_328;
@@ -3565,7 +3582,7 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
       local_370.z = local_370.z * local_354;
       rigid_body::set_inertia(local_324,&local_370);
       create_broad_phase_info(local_50->body);
-      if (param_4) {
+      if (do_collision_test) {
         GamerProfile_WriteSettings((int)local_54);
       }
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
@@ -3583,19 +3600,21 @@ Phys_CreateBodyFromState(int param_1,BodyState *param_2,gjk_geom_list_t *param_3
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Phys_ObjCreateAxis(int param_1,float *param_2,float (*param_3) [3],float *param_4,
-                  PhysPreset *param_5,gjk_geom_list_t *param_6,int param_7,bool param_8)
+Phys_ObjCreateAxis(int worldIndex,float *position,float (*axis) [3],float *velocity,
+                  PhysPreset *physPreset,gjk_geom_list_t *gjk_geom_list,int id,
+                  bool do_collision_test)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  BodyState local_94;
+  BodyState state;
+  int returnVal;
   
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*position & 0x7f800000) == 0x7f800000) ||
+      (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)position[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3a0,0,
                              "%s");
     if (!bVar2) {
@@ -3604,9 +3623,9 @@ Phys_ObjCreateAxis(int param_1,float *param_2,float (*param_3) [3],float *param_
       return iVar3;
     }
   }
-  if (((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*velocity & 0x7f800000) == 0x7f800000) ||
+      (((uint)velocity[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)velocity[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3a1,0,
                              "%s");
     if (!bVar2) {
@@ -3624,7 +3643,7 @@ Phys_ObjCreateAxis(int param_1,float *param_2,float (*param_3) [3],float *param_
       return iVar3;
     }
   }
-  if (param_5 == (PhysPreset *)0x0) {
+  if (physPreset == (PhysPreset *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3a4,0,
                              "%s");
     if (!bVar2) {
@@ -3633,39 +3652,39 @@ Phys_ObjCreateAxis(int param_1,float *param_2,float (*param_3) [3],float *param_
       return iVar3;
     }
   }
-  Vec3PackNormAxis(param_3,local_94.rotation);
-  local_94.position[0] = *param_2;
-  local_94.position[1] = param_2[1];
-  local_94.position[2] = param_2[2];
-  local_94.velocity[0] = *param_4;
-  local_94.velocity[1] = param_4[1];
-  local_94.velocity[2] = param_4[2];
-  local_94.angVelocity[0] = 0.0;
-  local_94.angVelocity[1] = 0.0;
-  local_94.angVelocity[2] = 0.0;
-  local_94.mass = param_5->mass;
-  local_94.bounce = param_5->bounce;
-  local_94.friction = param_5->friction;
-  local_94.timeLastAsleep = physGlob.timeLastUpdate;
-  local_94.underwater = 0;
-  local_94.id = param_7;
-  if (param_5->canFloat == 0) {
+  Vec3PackNormAxis(axis,state.rotation);
+  state.position[0] = *position;
+  state.position[1] = position[1];
+  state.position[2] = position[2];
+  state.velocity[0] = *velocity;
+  state.velocity[1] = velocity[1];
+  state.velocity[2] = velocity[2];
+  state.angVelocity[0] = 0.0;
+  state.angVelocity[1] = 0.0;
+  state.angVelocity[2] = 0.0;
+  state.mass = physPreset->mass;
+  state.bounce = physPreset->bounce;
+  state.friction = physPreset->friction;
+  state.timeLastAsleep = physGlob.timeLastUpdate;
+  state.underwater = 0;
+  state.id = id;
+  if (physPreset->canFloat == 0) {
     fVar4 = (phys_gravity->current).value * -0.9;
   }
   else {
     fVar4 = (phys_gravity->current).value * -1.1;
   }
-  local_94.buoyancy = (int)fVar4;
-  local_94.buoyancyBoxMin[0] = param_5->buoyancyBoxMin[0];
-  local_94.buoyancyBoxMin[1] = param_5->buoyancyBoxMin[1];
-  local_94.buoyancyBoxMin[2] = param_5->buoyancyBoxMin[2];
-  local_94.buoyancyBoxMax[0] = param_5->buoyancyBoxMax[0];
-  local_94.buoyancyBoxMax[1] = param_5->buoyancyBoxMax[1];
-  local_94.buoyancyBoxMax[2] = param_5->buoyancyBoxMax[2];
-  local_94.centerOfMassOffset[0] = param_5->centerOfMassOffset[0];
-  local_94.centerOfMassOffset[1] = param_5->centerOfMassOffset[1];
-  local_94.centerOfMassOffset[2] = param_5->centerOfMassOffset[2];
-  iVar3 = Phys_CreateBodyFromState(param_1,&local_94,param_6,param_8);
+  state.buoyancy = (int)fVar4;
+  state.buoyancyBoxMin[0] = physPreset->buoyancyBoxMin[0];
+  state.buoyancyBoxMin[1] = physPreset->buoyancyBoxMin[1];
+  state.buoyancyBoxMin[2] = physPreset->buoyancyBoxMin[2];
+  state.buoyancyBoxMax[0] = physPreset->buoyancyBoxMax[0];
+  state.buoyancyBoxMax[1] = physPreset->buoyancyBoxMax[1];
+  state.buoyancyBoxMax[2] = physPreset->buoyancyBoxMax[2];
+  state.centerOfMassOffset[0] = physPreset->centerOfMassOffset[0];
+  state.centerOfMassOffset[1] = physPreset->centerOfMassOffset[1];
+  state.centerOfMassOffset[2] = physPreset->centerOfMassOffset[2];
+  iVar3 = Phys_CreateBodyFromState(worldIndex,&state,gjk_geom_list,do_collision_test);
   return iVar3;
 }
 
@@ -3673,18 +3692,18 @@ Phys_ObjCreateAxis(int param_1,float *param_2,float (*param_3) [3],float *param_
 // 0084A3C0  Phys_ObjCreate  (physics/phys_main.cpp:961)
 
 int __cdecl
-Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPreset *param_5,
-              gjk_geom_list_t *param_6,bool param_7,int param_8)
+Phys_ObjCreate(int worldIndex,float *position,float *quat,float *velocity,PhysPreset *physPreset,
+              gjk_geom_list_t *gjk_geom_list,bool do_collision_test,int id)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_28 [9];
+  float axis [9];
   
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*position & 0x7f800000) == 0x7f800000) ||
+      (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)position[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3c4,0,
                              "%s");
     if (!bVar2) {
@@ -3693,9 +3712,8 @@ Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPres
       return iVar3;
     }
   }
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*quat & 0x7f800000) == 0x7f800000) || (((uint)quat[1] & 0x7f800000) == 0x7f800000))
+     || (((uint)quat[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3c5,0,
                              "%s");
     if (!bVar2) {
@@ -3704,9 +3722,9 @@ Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPres
       return iVar3;
     }
   }
-  if (((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*velocity & 0x7f800000) == 0x7f800000) ||
+      (((uint)velocity[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)velocity[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3c6,0,
                              "%s");
     if (!bVar2) {
@@ -3724,7 +3742,7 @@ Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPres
       return iVar3;
     }
   }
-  if (param_5 == (PhysPreset *)0x0) {
+  if (physPreset == (PhysPreset *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3c9,0,
                              "%s");
     if (!bVar2) {
@@ -3733,7 +3751,7 @@ Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPres
       return iVar3;
     }
   }
-  if (param_6 == (gjk_geom_list_t *)0x0) {
+  if (gjk_geom_list == (gjk_geom_list_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3ca,0,
                              "%s");
     if (!bVar2) {
@@ -3742,9 +3760,9 @@ Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPres
       return iVar3;
     }
   }
-  QuatToAxis(param_3,(float (*) [3])local_28);
-  iVar3 = Phys_ObjCreateAxis(param_1,param_2,(float (*) [3])local_28,param_4,param_5,param_6,param_8
-                             ,param_7);
+  QuatToAxis(quat,(float (*) [3])axis);
+  iVar3 = Phys_ObjCreateAxis(worldIndex,position,(float (*) [3])axis,velocity,physPreset,
+                             gjk_geom_list,id,do_collision_test);
   return iVar3;
 }
 
@@ -3794,7 +3812,7 @@ Phys_ObjCreate(int param_1,float *param_2,float *param_3,float *param_4,PhysPres
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjSetPosition(int param_1,float *param_2)
+void __cdecl Phys_ObjSetPosition(int id,float *newPosition)
 
 {
   rigid_body *prVar1;
@@ -3813,18 +3831,18 @@ void __cdecl Phys_ObjSetPosition(int param_1,float *param_2)
   float local_18;
   float local_14;
   
-  local_14 = *param_2;
+  local_14 = *newPosition;
   if ((((((uint)local_14 & 0x7f800000) == 0x7f800000) ||
-       (local_18 = param_2[1], ((uint)local_18 & 0x7f800000) == 0x7f800000)) ||
-      (local_1c = param_2[2], ((uint)local_1c & 0x7f800000) == 0x7f800000)) &&
+       (local_18 = newPosition[1], ((uint)local_18 & 0x7f800000) == 0x7f800000)) ||
+      (local_1c = newPosition[2], ((uint)local_1c & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3d3,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  Phys_Vec3ToNitrousVec(param_2,&local_30);
-  local_34 = Phys_GetUserData(param_1);
+  Phys_Vec3ToNitrousVec(newPosition,&local_30);
+  local_34 = Phys_GetUserData(id);
   local_38 = &(local_34->cg2rb).w;
   local_60.x = local_30.x + local_38->x;
   local_60.y = local_30.y + (local_34->cg2rb).w.y;
@@ -3847,9 +3865,9 @@ void __cdecl Phys_ObjSetPosition(int param_1,float *param_2)
     (*pcVar3)();
     return;
   }
-  local_34->savedPos[0] = *param_2;
-  local_34->savedPos[1] = param_2[1];
-  local_34->savedPos[2] = param_2[2];
+  local_34->savedPos[0] = *newPosition;
+  local_34->savedPos[1] = newPosition[1];
+  local_34->savedPos[2] = newPosition[2];
   if ((((local_34->body->m_last_position).x != (local_34->body->m_last_position).x) ||
       (100000.0 < ABS((local_34->body->m_last_position).x))) ||
      (((local_34->body->m_last_position).y != (local_34->body->m_last_position).y ||
@@ -3915,7 +3933,7 @@ void __cdecl Phys_ObjSetPosition(int param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjSetOrientation(int param_1,float *param_2,float *param_3)
+void __cdecl Phys_ObjSetOrientation(int id,float *newPosition,float *newOrientation)
 
 {
   rigid_body *prVar1;
@@ -3923,66 +3941,66 @@ void __cdecl Phys_ObjSetOrientation(int param_1,float *param_2,float *param_3)
   bool bVar3;
   float *pfVar4;
   float *pfVar5;
-  float local_54 [9];
-  float local_30;
+  float newRotation [9];
+  float newCenterOfGravity;
   float local_2c;
   float local_28;
-  float local_24;
+  float rotatedCGOffset;
   float local_20;
   float local_1c;
-  PhysObjUserData *local_18;
-  phys_mat44 *local_14;
-  float local_10 [3];
+  PhysObjUserData *userData;
+  phys_mat44 *rb2w;
+  float trans [3];
   
-  local_18 = Phys_GetUserData(param_1);
-  local_14 = &local_18->body->m_mat;
-  Phys_NitrousVecToVec3(&(local_18->cg2rb).w,local_10);
-  QuatToAxis(param_3,(float (*) [3])local_54);
-  AxisTransformVec3((float (*) [3])local_54,local_10,&local_24);
-  local_30 = *param_2 - local_24;
-  local_2c = param_2[1] - local_20;
-  local_28 = param_2[2] - local_1c;
-  local_18->savedPos[0] = local_30;
-  local_18->savedPos[1] = local_2c;
-  local_18->savedPos[2] = local_28;
-  Vec3PackNormAxis((float (*) [3])local_54,local_18->savedRot);
-  Phys_Vec3ToNitrousVec(&local_30,&local_14->w);
-  Phys_AxisToNitrousMat((float (*) [3])local_54,local_14);
-  prVar1 = local_18->body;
-  (prVar1->m_last_position).x = (local_14->w).x;
-  (prVar1->m_last_position).y = (local_14->w).y;
-  (prVar1->m_last_position).z = (local_14->w).z;
-  if ((((((uint)(local_18->body->m_last_position).x & 0x7f800000) == 0x7f800000) ||
-       (((uint)(local_18->body->m_last_position).y & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(local_18->body->m_last_position).z & 0x7f800000) == 0x7f800000)) &&
+  userData = Phys_GetUserData(id);
+  rb2w = &userData->body->m_mat;
+  Phys_NitrousVecToVec3(&(userData->cg2rb).w,trans);
+  QuatToAxis(newOrientation,(float (*) [3])newRotation);
+  AxisTransformVec3((float (*) [3])newRotation,trans,&rotatedCGOffset);
+  newCenterOfGravity = *newPosition - rotatedCGOffset;
+  local_2c = newPosition[1] - local_20;
+  local_28 = newPosition[2] - local_1c;
+  userData->savedPos[0] = newCenterOfGravity;
+  userData->savedPos[1] = local_2c;
+  userData->savedPos[2] = local_28;
+  Vec3PackNormAxis((float (*) [3])newRotation,userData->savedRot);
+  Phys_Vec3ToNitrousVec(&newCenterOfGravity,&rb2w->w);
+  Phys_AxisToNitrousMat((float (*) [3])newRotation,rb2w);
+  prVar1 = userData->body;
+  (prVar1->m_last_position).x = (rb2w->w).x;
+  (prVar1->m_last_position).y = (rb2w->w).y;
+  (prVar1->m_last_position).z = (rb2w->w).z;
+  if ((((((uint)(userData->body->m_last_position).x & 0x7f800000) == 0x7f800000) ||
+       (((uint)(userData->body->m_last_position).y & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(userData->body->m_last_position).z & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x3f3,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((((local_18->body->m_last_position).x != (local_18->body->m_last_position).x) ||
-       (100000.0 < ABS((local_18->body->m_last_position).x))) ||
-      (((local_18->body->m_last_position).y != (local_18->body->m_last_position).y ||
-       ((100000.0 < ABS((local_18->body->m_last_position).y) ||
-        ((local_18->body->m_last_position).z != (local_18->body->m_last_position).z)))))) ||
-     (100000.0 < ABS((local_18->body->m_last_position).z))) {
-    phys_exec_debug_callback(local_18->body);
+  if (((((userData->body->m_last_position).x != (userData->body->m_last_position).x) ||
+       (100000.0 < ABS((userData->body->m_last_position).x))) ||
+      (((userData->body->m_last_position).y != (userData->body->m_last_position).y ||
+       ((100000.0 < ABS((userData->body->m_last_position).y) ||
+        ((userData->body->m_last_position).z != (userData->body->m_last_position).z)))))) ||
+     (100000.0 < ABS((userData->body->m_last_position).z))) {
+    phys_exec_debug_callback(userData->body);
   }
-  if (((((local_18->body->m_mat).w.x == (local_18->body->m_mat).w.x) &&
-       (ABS((local_18->body->m_mat).w.x) <= 100000.0)) &&
-      ((local_18->body->m_mat).w.y == (local_18->body->m_mat).w.y)) &&
-     (ABS((local_18->body->m_mat).w.y) <= 100000.0)) {
-    prVar1 = local_18->body;
-    pfVar4 = phys_vec3::operator[]<int>(&(local_18->body->m_mat).w,2);
+  if (((((userData->body->m_mat).w.x == (userData->body->m_mat).w.x) &&
+       (ABS((userData->body->m_mat).w.x) <= 100000.0)) &&
+      ((userData->body->m_mat).w.y == (userData->body->m_mat).w.y)) &&
+     (ABS((userData->body->m_mat).w.y) <= 100000.0)) {
+    prVar1 = userData->body;
+    pfVar4 = phys_vec3::operator[]<int>(&(userData->body->m_mat).w,2);
     pfVar5 = phys_vec3::operator[]<int>(&(prVar1->m_mat).w,2);
     if ((*pfVar4 == *pfVar5) &&
-       (pfVar4 = phys_vec3::operator[]<int>(&(local_18->body->m_mat).w,2), ABS(*pfVar4) <= 100000.0)
+       (pfVar4 = phys_vec3::operator[]<int>(&(userData->body->m_mat).w,2), ABS(*pfVar4) <= 100000.0)
        ) {
       return;
     }
   }
-  phys_exec_debug_callback(local_18->body);
+  phys_exec_debug_callback(userData->body);
   return;
 }
 
@@ -3994,7 +4012,7 @@ void __cdecl Phys_ObjSetOrientation(int param_1,float *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjSetAngularVelocity(int param_1,float *param_2)
+void __cdecl Phys_ObjSetAngularVelocity(int id,float *angularVel)
 
 {
   PhysObjUserData *pPVar1;
@@ -4004,11 +4022,11 @@ void __cdecl Phys_ObjSetAngularVelocity(int param_1,float *param_2)
   float local_18;
   rigid_body *local_14;
   
-  pPVar1 = Phys_GetUserData(param_1);
+  pPVar1 = Phys_GetUserData(id);
   local_14 = pPVar1->body;
-  local_30.x = param_2[2];
-  local_30.y = *param_2;
-  local_30.z = param_2[1];
+  local_30.x = angularVel[2];
+  local_30.y = *angularVel;
+  local_30.z = angularVel[1];
   local_20 = local_30.z;
   local_1c = local_30.y;
   local_18 = local_30.x;
@@ -4024,7 +4042,7 @@ void __cdecl Phys_ObjSetAngularVelocity(int param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjSetVelocity(int param_1,float *param_2)
+void __cdecl Phys_ObjSetVelocity(int id,float *velocity)
 
 {
   PhysObjUserData *pPVar1;
@@ -4034,11 +4052,11 @@ void __cdecl Phys_ObjSetVelocity(int param_1,float *param_2)
   float local_18;
   rigid_body *local_14;
   
-  pPVar1 = Phys_GetUserData(param_1);
+  pPVar1 = Phys_GetUserData(id);
   local_14 = pPVar1->body;
-  local_30.x = *param_2;
-  local_30.y = param_2[1];
-  local_30.z = param_2[2];
+  local_30.x = *velocity;
+  local_30.y = velocity[1];
+  local_30.z = velocity[2];
   local_20 = local_30.z;
   local_1c = local_30.y;
   local_18 = local_30.x;
@@ -4054,7 +4072,7 @@ void __cdecl Phys_ObjSetVelocity(int param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjSetAngularVelocityRaw(int param_1,float *param_2)
+void __cdecl Phys_ObjSetAngularVelocityRaw(int id,float *angularVel)
 
 {
   PhysObjUserData *pPVar1;
@@ -4064,11 +4082,11 @@ void __cdecl Phys_ObjSetAngularVelocityRaw(int param_1,float *param_2)
   float local_18;
   rigid_body *local_14;
   
-  pPVar1 = Phys_GetUserData(param_1);
+  pPVar1 = Phys_GetUserData(id);
   local_14 = pPVar1->body;
-  local_30.x = *param_2;
-  local_30.y = param_2[1];
-  local_30.z = param_2[2];
+  local_30.x = *angularVel;
+  local_30.y = angularVel[1];
+  local_30.z = angularVel[2];
   local_20 = local_30.z;
   local_1c = local_30.y;
   local_18 = local_30.x;
@@ -4106,18 +4124,18 @@ int __thiscall gjk_geom_list_t::get_geom_count(gjk_geom_list_t *this)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjGetPosition(int param_1,float *param_2,float (*param_3) [3])
+void __cdecl Phys_ObjGetPosition(int id,float *outPosition,float (*outRotation) [3])
 
 {
   phys_mat44 local_60;
   phys_mat44 *local_18;
   PhysObjUserData *local_14;
   
-  local_14 = Phys_GetUserData(param_1);
+  local_14 = Phys_GetUserData(id);
   local_18 = &local_14->body->m_mat;
   phys_full_multiply_mat(&local_60,local_18,&local_14->cg2rb);
-  Phys_NitrousVecToVec3(&local_60.w,param_2);
-  Phys_NitrousMat44ToVec33(&local_60,param_3);
+  Phys_NitrousVecToVec3(&local_60.w,outPosition);
+  Phys_NitrousMat44ToVec33(&local_60,outRotation);
   return;
 }
 
@@ -4129,13 +4147,14 @@ void __cdecl Phys_ObjGetPosition(int param_1,float *param_2,float (*param_3) [3]
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjGetVelocities(int param_1,float *param_2,float *param_3)
+void __cdecl Phys_ObjGetVelocities(int id,float *tvel,float *avel)
 
 {
   rigid_body *prVar1;
   code *pcVar2;
   bool bVar3;
   PhysObjUserData *pPVar4;
+  rigid_body *body;
   
   if (!physInited) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x417,0,
@@ -4146,10 +4165,10 @@ void __cdecl Phys_ObjGetVelocities(int param_1,float *param_2,float *param_3)
       return;
     }
   }
-  pPVar4 = Phys_GetUserData(param_1);
+  pPVar4 = Phys_GetUserData(id);
   prVar1 = pPVar4->body;
-  Phys_NitrousVecToVec3(&prVar1->m_t_vel,param_2);
-  Phys_NitrousVecToVec3(&prVar1->m_a_vel,param_3);
+  Phys_NitrousVecToVec3(&prVar1->m_t_vel,tvel);
+  Phys_NitrousVecToVec3(&prVar1->m_a_vel,avel);
   return;
 }
 
@@ -4161,12 +4180,13 @@ void __cdecl Phys_ObjGetVelocities(int param_1,float *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjGetCenterOfMass(int param_1,float *param_2)
+void __cdecl Phys_ObjGetCenterOfMass(int id,float *outPosition)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysObjUserData *pPVar3;
+  rigid_body *body;
   
   if (!physInited) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x41f,0,
@@ -4177,24 +4197,34 @@ void __cdecl Phys_ObjGetCenterOfMass(int param_1,float *param_2)
       return;
     }
   }
-  pPVar3 = Phys_GetUserData(param_1);
-  Phys_NitrousVecToVec3(&(pPVar3->body->m_mat).w,param_2);
+  pPVar3 = Phys_GetUserData(id);
+  Phys_NitrousVecToVec3(&(pPVar3->body->m_mat).w,outPosition);
   return;
 }
 
 
 // 0084C670  Phys_ObjAddCollFlags  (physics/phys_main.cpp:1062)
 
-void __cdecl Phys_ObjAddCollFlags(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Phys_ObjAddCollFlags(int physObjId,int collFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   broad_phase_info *pbVar3;
   broad_phase_group *pbVar4;
-  broad_phase_info *local_18;
+  int flags_2;
+  broad_phase_info *bpi_2;
+  broad_phase_group *bpg;
+  broad_phase_info *bpi;
+  int flags;
+  PhysObjUserData *userData;
   
-  if (param_1 == 0) {
+  if (physObjId == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x427,0,
                              "%s");
     if (!bVar2) {
@@ -4203,16 +4233,16 @@ void __cdecl Phys_ObjAddCollFlags(int param_1,int param_2)
       return;
     }
   }
-  if ((*(uint *)(*(int *)(param_1 + 0xa0) + 0x30) & 1) == 0) {
-    pbVar4 = broad_phase_base::get_bpg(*(broad_phase_base **)(param_1 + 0xa0));
-    for (local_18 = pbVar4->m_list_bpi_head; local_18 != (broad_phase_info *)0x0;
-        local_18 = (broad_phase_info *)local_18->_padding_) {
-      local_18->_padding_ = local_18->_padding_ | param_2;
+  if ((*(uint *)(*(int *)(physObjId + 0xa0) + 0x30) & 1) == 0) {
+    pbVar4 = broad_phase_base::get_bpg(*(broad_phase_base **)(physObjId + 0xa0));
+    for (bpi_2 = pbVar4->m_list_bpi_head; bpi_2 != (broad_phase_info *)0x0;
+        bpi_2 = (broad_phase_info *)bpi_2->_padding_) {
+      bpi_2->_padding_ = bpi_2->_padding_ | collFlags;
     }
   }
   else {
-    pbVar3 = broad_phase_base::get_bpi(*(broad_phase_base **)(param_1 + 0xa0));
-    pbVar3->_padding_ = pbVar3->_padding_ | param_2;
+    pbVar3 = broad_phase_base::get_bpi(*(broad_phase_base **)(physObjId + 0xa0));
+    pbVar3->_padding_ = pbVar3->_padding_ | collFlags;
   }
   return;
 }
@@ -4220,16 +4250,26 @@ void __cdecl Phys_ObjAddCollFlags(int param_1,int param_2)
 
 // 0084C740  Phys_ObjRemoveCollFlags  (physics/phys_main.cpp:1086)
 
-void __cdecl Phys_ObjRemoveCollFlags(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Phys_ObjRemoveCollFlags(int physObjId,int collFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   broad_phase_info *pbVar3;
   broad_phase_group *pbVar4;
-  broad_phase_info *local_18;
+  int flags_2;
+  broad_phase_info *bpi_2;
+  broad_phase_group *bpg;
+  broad_phase_info *bpi;
+  int flags;
+  PhysObjUserData *userData;
   
-  if (param_1 == 0) {
+  if (physObjId == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x43f,0,
                              "%s");
     if (!bVar2) {
@@ -4238,16 +4278,16 @@ void __cdecl Phys_ObjRemoveCollFlags(int param_1,int param_2)
       return;
     }
   }
-  if ((*(uint *)(*(int *)(param_1 + 0xa0) + 0x30) & 1) == 0) {
-    pbVar4 = broad_phase_base::get_bpg(*(broad_phase_base **)(param_1 + 0xa0));
-    for (local_18 = pbVar4->m_list_bpi_head; local_18 != (broad_phase_info *)0x0;
-        local_18 = (broad_phase_info *)local_18->_padding_) {
-      local_18->_padding_ = ~param_2 & local_18->_padding_;
+  if ((*(uint *)(*(int *)(physObjId + 0xa0) + 0x30) & 1) == 0) {
+    pbVar4 = broad_phase_base::get_bpg(*(broad_phase_base **)(physObjId + 0xa0));
+    for (bpi_2 = pbVar4->m_list_bpi_head; bpi_2 != (broad_phase_info *)0x0;
+        bpi_2 = (broad_phase_info *)bpi_2->_padding_) {
+      bpi_2->_padding_ = ~collFlags & bpi_2->_padding_;
     }
   }
   else {
-    pbVar3 = broad_phase_base::get_bpi(*(broad_phase_base **)(param_1 + 0xa0));
-    pbVar3->_padding_ = ~param_2 & pbVar3->_padding_;
+    pbVar3 = broad_phase_base::get_bpi(*(broad_phase_base **)(physObjId + 0xa0));
+    pbVar3->_padding_ = ~collFlags & pbVar3->_padding_;
   }
   return;
 }
@@ -4255,19 +4295,19 @@ void __cdecl Phys_ObjRemoveCollFlags(int param_1,int param_2)
 
 // 0084C820  fixup_wheel_constraints  (physics/phys_main.cpp:1110)
 
-void __cdecl fixup_wheel_constraints(rigid_body *param_1)
+void __cdecl fixup_wheel_constraints(rigid_body *rb)
 
 {
   phys_free_list<rigid_body_constraint_wheel> *ppVar1;
-  T_internal_base *local_c;
+  rigid_body_constraint_wheel *ci;
+  T_internal_base *wci;
   
   ppVar1 = &g_physics_system->m_list_rbc_wheel;
-  for (local_c = (g_physics_system->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
-      ppVar1 != (phys_free_list<rigid_body_constraint_wheel> *)local_c;
-      local_c = local_c->m_next_T_internal) {
-    if (((rigid_body_constraint_wheel *)(local_c + 2) != (rigid_body_constraint_wheel *)0x0) &&
-       ((rigid_body *)local_c[2].m_next_T_internal == param_1)) {
-      rigid_body_constraint_wheel::set_no_collision((rigid_body_constraint_wheel *)(local_c + 2));
+  for (wci = (g_physics_system->m_list_rbc_wheel).m_dummy_head.m_next_T_internal;
+      ppVar1 != (phys_free_list<rigid_body_constraint_wheel> *)wci; wci = wci->m_next_T_internal) {
+    if (((rigid_body_constraint_wheel *)(wci + 2) != (rigid_body_constraint_wheel *)0x0) &&
+       ((rigid_body *)wci[2].m_next_T_internal == rb)) {
+      rigid_body_constraint_wheel::set_no_collision((rigid_body_constraint_wheel *)(wci + 2));
     }
   }
   return;
@@ -4283,13 +4323,14 @@ void __cdecl fixup_wheel_constraints(rigid_body *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjDestroy(int param_1,int param_2)
+void __cdecl Phys_ObjDestroy(int worldIndex,int id)
 
 {
   code *pcVar1;
   bool bVar2;
-  PhysObjUserData *pPVar3;
-  int local_c;
+  PhysObjUserData *userData_00;
+  int i;
+  PhysObjUserData *userData;
   
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
   if ((physInited == false) &&
@@ -4299,25 +4340,25 @@ void __cdecl Phys_ObjDestroy(int param_1,int param_2)
     (*pcVar1)();
     return;
   }
-  pPVar3 = Phys_GetUserData(param_2);
-  pPVar3->refcount = pPVar3->refcount + -1;
-  if (pPVar3->refcount < 1) {
-    fixup_wheel_constraints(pPVar3->body);
-    destroy_broad_phase_info(pPVar3->body);
-    if ((pPVar3->body->m_flags & 0x20) == 0) {
-      phys_sys::destroy(pPVar3->body);
+  userData_00 = Phys_GetUserData(id);
+  userData_00->refcount = userData_00->refcount + -1;
+  if (userData_00->refcount < 1) {
+    fixup_wheel_constraints(userData_00->body);
+    destroy_broad_phase_info(userData_00->body);
+    if ((userData_00->body->m_flags & 0x20) == 0) {
+      phys_sys::destroy(userData_00->body);
     }
     else {
-      for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-        if (physGlob.userRigidBodies[local_c] == pPVar3) {
-          physGlob.userRigidBodies[local_c] = (PhysObjUserData *)0x0;
+      for (i = 0; i < 0x10; i = i + 1) {
+        if (physGlob.userRigidBodies[i] == userData_00) {
+          physGlob.userRigidBodies[i] = (PhysObjUserData *)0x0;
         }
       }
-      phys_sys::destroy((user_rigid_body *)pPVar3->body);
+      phys_sys::destroy((user_rigid_body *)userData_00->body);
     }
-    pPVar3->body = (rigid_body *)0x0;
-    destroy_gjk_geom(&pPVar3->m_gjk_geom_list);
-    Phys_DestroyUserData(param_1,pPVar3);
+    userData_00->body = (rigid_body *)0x0;
+    destroy_gjk_geom(&userData_00->m_gjk_geom_list);
+    Phys_DestroyUserData(worldIndex,userData_00);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
   }
   else {
@@ -4329,15 +4370,16 @@ void __cdecl Phys_ObjDestroy(int param_1,int param_2)
 
 // 0084A340  destroy_gjk_geom  (physics/phys_colgeom.h:1182)
 
-void __cdecl destroy_gjk_geom(gjk_geom_list_t *param_1)
+void __cdecl destroy_gjk_geom(gjk_geom_list_t *gjk_geom_list)
 
 {
   gjk_base_t *pgVar1;
   code *pcVar2;
   bool bVar3;
-  gjk_base_t *local_8;
+  gjk_base_t *next_geom;
+  gjk_base_t *geom;
   
-  if (param_1->m_geom_count < 0) {
+  if (gjk_geom_list->m_geom_count < 0) {
     bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x40b,
                       "m_geom_count >= 0","");
     if (bVar3) {
@@ -4346,14 +4388,14 @@ void __cdecl destroy_gjk_geom(gjk_geom_list_t *param_1)
       return;
     }
   }
-  local_8 = param_1->m_first_geom;
-  while (local_8 != (gjk_base_t *)0x0) {
-    pgVar1 = local_8->m_next_geom;
-    destroy_gjk_geom(local_8);
-    local_8 = pgVar1;
+  geom = gjk_geom_list->m_first_geom;
+  while (geom != (gjk_base_t *)0x0) {
+    pgVar1 = geom->m_next_geom;
+    destroy_gjk_geom(geom);
+    geom = pgVar1;
   }
-  param_1->m_first_geom = (gjk_base_t *)0x0;
-  param_1->m_geom_count = 0;
+  gjk_geom_list->m_first_geom = (gjk_base_t *)0x0;
+  gjk_geom_list->m_geom_count = 0;
   return;
 }
 
@@ -4368,6 +4410,7 @@ void __cdecl destroy_gjk_geom(gjk_geom_list_t *param_1)
 void __cdecl Phys_AddCacheImpulses(void)
 
 {
+  rigid_body *this;
   code *pcVar1;
   bool bVar2;
   PhysObjUserData *pPVar3;
@@ -4377,17 +4420,16 @@ void __cdecl Phys_AddCacheImpulses(void)
   float local_4c;
   float local_48;
   float local_44;
-  phys_vec3 local_40;
-  phys_vec3 local_30;
-  rigid_body *local_20;
-  int local_1c;
-  PhysImpulse *local_18;
-  int local_14;
+  undefined1 local_40 [12];
+  phys_vec3 force;
+  phys_vec3 pos;
+  rigid_body *body;
+  int i;
   
   PIXBeginNamedEvent(-1,"Phys_AddCacheImpulses");
-  local_14 = 0;
+  body = (rigid_body *)0x0;
   do {
-    if (gImpulseCacheNum <= local_14) {
+    if (gImpulseCacheNum <= (int)body) {
       gImpulseCacheNum = 0;
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -4395,14 +4437,12 @@ void __cdecl Phys_AddCacheImpulses(void)
       }
       return;
     }
-    local_18 = gImpulseCache + local_14;
-    local_1c = local_18->id;
-    pPVar3 = Phys_GetUserData(local_1c);
-    local_20 = pPVar3->body;
-    if (local_20 != (rigid_body *)0x0) {
-      Phys_Vec3ToNitrousVec(local_18->hitp,&local_30);
-      Phys_Vec3ToNitrousVec(local_18->hitd,&local_40);
-      fVar5 = Abs(&local_40);
+    pPVar3 = Phys_GetUserData(gImpulseCache[(int)body].id);
+    this = pPVar3->body;
+    if (this != (rigid_body *)0x0) {
+      Phys_Vec3ToNitrousVec(gImpulseCache[(int)body].hitp,(phys_vec3 *)&force.y);
+      Phys_Vec3ToNitrousVec(gImpulseCache[(int)body].hitd,(phys_vec3 *)local_40);
+      fVar5 = Abs((phys_vec3 *)local_40);
       if ((1e+06 <= fVar5) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x4b6
                                    ,0,"%s"), !bVar2)) {
@@ -4410,85 +4450,90 @@ void __cdecl Phys_AddCacheImpulses(void)
         (*pcVar1)();
         return;
       }
-      local_60.x = local_40.x * 0.001;
-      local_60.y = local_40.y * 0.001;
-      local_60.z = local_40.z * 0.001;
+      local_60.x = (float)local_40._0_4_ * 0.001;
+      local_60.y = (float)local_40._4_4_ * 0.001;
+      local_60.z = (float)local_40._8_4_ * 0.001;
       local_4c = local_60.z;
       local_48 = local_60.y;
       local_44 = local_60.x;
-      rigid_body::add_force(local_20,&local_60,&local_30,1.0);
+      rigid_body::add_force(this,&local_60,(phys_vec3 *)&force.y,1.0);
     }
-    local_14 = local_14 + 1;
+    body = (rigid_body *)((int)&(body->m_last_position).x + 1);
   } while( true );
 }
 
 
 // 0084CBC0  Phys_ObjAddCustomForce  (physics/phys_main.cpp:1214)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-Phys_ObjAddCustomForce(int param_1,float *param_2,float *param_3,int param_4,PhysPreset *param_5)
+Phys_ObjAddCustomForce(int physObjId,float *hitPos,float *hitDir,int mod,PhysPreset *physPreset)
 
 {
-  float local_2c;
+  float torque;
   float local_28;
   float local_24;
-  float local_20;
+  float modHitPos;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
+  float scale;
+  float modHitDir;
   float local_c;
   float local_8;
   
-  if (param_1 != 0) {
-    switch(param_4) {
+  if (physObjId != 0) {
+    switch(mod) {
     case 0:
-      local_10 = *param_3;
-      local_c = param_3[1];
-      local_8 = param_3[2];
-      local_14 = Vec3Normalize(&local_10);
+      modHitDir = *hitDir;
+      local_c = hitDir[1];
+      local_8 = hitDir[2];
+      scale = Vec3Normalize(&modHitDir);
       break;
     default:
-      local_14 = (dynEnt_bulletForce->current).value * param_5->bulletForceScale;
-      Phys_ObjGetCenterOfMass(param_1,&local_20);
-      local_20 = spin_scale * (*param_2 - local_20) + local_20;
-      local_1c = spin_scale * (param_2[1] - local_1c) + local_1c;
-      local_18 = spin_scale * (param_2[2] - local_18) + local_18;
-      local_10 = local_14 * *param_3;
-      local_c = local_14 * param_3[1];
-      local_8 = local_14 * param_3[2];
+      scale = (dynEnt_bulletForce->current).value * physPreset->bulletForceScale;
+      Phys_ObjGetCenterOfMass(physObjId,&modHitPos);
+      modHitPos = spin_scale * (*hitPos - modHitPos) + modHitPos;
+      local_1c = spin_scale * (hitPos[1] - local_1c) + local_1c;
+      local_18 = spin_scale * (hitPos[2] - local_18) + local_18;
+      modHitDir = scale * *hitDir;
+      local_c = scale * hitDir[1];
+      local_8 = scale * hitDir[2];
       break;
     case 4:
     case 6:
     case 0xf:
-      local_14 = (dynEnt_explodeForce->current).value * param_5->explosiveForceScale;
-      Phys_ObjGetCenterOfMass(param_1,&local_20);
-      local_20 = spin_scale * (*param_2 - local_20) + local_20;
-      local_1c = spin_scale * (param_2[1] - local_1c) + local_1c;
-      local_18 = spin_scale * (param_2[2] - local_18) + local_18;
-      local_10 = local_14 * *param_3;
-      local_c = local_14 * param_3[1];
-      local_8 = local_14 * param_3[2];
+      scale = (dynEnt_explodeForce->current).value * physPreset->explosiveForceScale;
+      Phys_ObjGetCenterOfMass(physObjId,&modHitPos);
+      modHitPos = spin_scale * (*hitPos - modHitPos) + modHitPos;
+      local_1c = spin_scale * (hitPos[1] - local_1c) + local_1c;
+      local_18 = spin_scale * (hitPos[2] - local_18) + local_18;
+      modHitDir = scale * *hitDir;
+      local_c = scale * hitDir[1];
+      local_8 = scale * hitDir[2];
       break;
     case 0x11:
-      local_14 = 1.0;
-      Phys_ObjGetCenterOfMass(param_1,&local_20);
-      local_10 = *param_3;
-      local_c = param_3[1];
-      local_8 = param_3[2];
-      if (param_1 != 0) {
-        local_2c = CG_flrand(-range,range);
+      scale = 1.0;
+      Phys_ObjGetCenterOfMass(physObjId,&modHitPos);
+      modHitDir = *hitDir;
+      local_c = hitDir[1];
+      local_8 = hitDir[2];
+      if (physObjId != 0) {
+        torque = CG_flrand(-range,range);
         local_28 = CG_flrand(-range,range);
         local_24 = CG_flrand(-range,range);
-        Phys_ObjAddTorque(param_1,&local_2c);
+        Phys_ObjAddTorque(physObjId,&torque);
       }
     }
-    if (param_1 != 0) {
-      if (param_4 == 0) {
-        Phys_ObjBulletImpact(param_1,param_2,&local_10,local_14,param_5->bulletForceScale);
+    if (physObjId != 0) {
+      if (mod == 0) {
+        Phys_ObjBulletImpact(physObjId,hitPos,&modHitDir,scale,physPreset->bulletForceScale);
       }
       else {
-        Phys_ObjAddForce(param_1,&local_20,&local_10,false);
+        Phys_ObjAddForce(physObjId,&modHitPos,&modHitDir,false);
       }
     }
   }
@@ -4503,15 +4548,15 @@ Phys_ObjAddCustomForce(int param_1,float *param_2,float *param_3,int param_4,Phy
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjAddForce(int param_1,float *param_2,float *param_3,bool param_4)
+void __cdecl Phys_ObjAddForce(int id,float *worldPos,float *impulse,bool relative)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysObjUserData *pPVar3;
-  phys_vec3 *ppVar4;
-  float fVar5;
-  phys_vec3 *ppVar6;
+  phys_vec3 *a;
+  float fVar4;
+  phys_vec3 *b;
   phys_vec3 local_c0;
   float local_ac;
   float local_a8;
@@ -4533,32 +4578,32 @@ void __cdecl Phys_ObjAddForce(int param_1,float *param_2,float *param_3,bool par
   float local_18;
   rigid_body *local_14;
   
-  if ((param_1 != 0) && (param_1 != -1)) {
-    pPVar3 = Phys_GetUserData(param_1);
+  if ((id != 0) && (id != -1)) {
+    pPVar3 = Phys_GetUserData(id);
     local_14 = pPVar3->body;
-    local_30.x = *param_3;
-    local_30.y = param_3[1];
-    local_30.z = param_3[2];
-    local_50.x = *param_2;
-    local_50.y = param_2[1];
-    local_50.z = param_2[2];
+    local_30.x = *impulse;
+    local_30.y = impulse[1];
+    local_30.z = impulse[2];
+    local_50.x = *worldPos;
+    local_50.y = worldPos[1];
+    local_50.z = worldPos[2];
     local_3c = local_50.z;
     local_38 = local_50.y;
     local_34 = local_50.x;
     local_20 = local_30.z;
     local_1c = local_30.y;
     local_18 = local_30.x;
-    if (param_4) {
+    if (relative) {
       local_54 = &local_14->m_mat;
-      ppVar6 = &(local_14->m_mat).w;
-      ppVar4 = phys_multiply33(&local_70,local_54,&local_50);
-      operator+(&local_80,ppVar4,ppVar6);
+      b = &(local_14->m_mat).w;
+      a = phys_multiply33(&local_70,local_54,&local_50);
+      operator+(&local_80,a,b);
       local_50.x = local_80.x;
       local_50.y = local_80.y;
       local_50.z = local_80.z;
     }
-    fVar5 = Abs(&local_30);
-    if ((1e+06 <= fVar5) &&
+    fVar4 = Abs(&local_30);
+    if ((1e+06 <= fVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x511,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -4595,7 +4640,7 @@ void __cdecl Phys_ObjAddForce(int param_1,float *param_2,float *param_3,bool par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ObjAddTorque(int param_1,float *param_2)
+void __cdecl Phys_ObjAddTorque(int id,float *torque)
 
 {
   code *pcVar1;
@@ -4609,9 +4654,9 @@ void __cdecl Phys_ObjAddTorque(int param_1,float *param_2)
   phys_vec3 local_30;
   rigid_body *local_14;
   
-  pPVar3 = Phys_GetUserData(param_1);
+  pPVar3 = Phys_GetUserData(id);
   local_14 = pPVar3->body;
-  Phys_Vec3ToNitrousVec(param_2,&local_30);
+  Phys_Vec3ToNitrousVec(torque,&local_30);
   fVar4 = Abs(&local_30);
   if (1e+06 <= fVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x51d,0,
@@ -4635,7 +4680,7 @@ void __cdecl Phys_ObjAddTorque(int param_1,float *param_2)
 
 // 0084D790  Phys_TweakBulletImpact  (physics/phys_main.cpp:1314)
 
-void __cdecl Phys_TweakBulletImpact(float *param_1,float *param_2,float *param_3)
+void __cdecl Phys_TweakBulletImpact(float *worldPos,float *bulletDir,float *centerOfMass)
 
 {
   float fVar1;
@@ -4662,14 +4707,14 @@ void __cdecl Phys_TweakBulletImpact(float *param_1,float *param_2,float *param_3
       return;
     }
   }
-  param_2[2] = param_2[2] + (phys_bulletUpBias->current).value;
-  Vec3Normalize(param_2);
-  fVar1 = param_3[1];
-  fVar2 = param_3[2];
+  bulletDir[2] = bulletDir[2] + (phys_bulletUpBias->current).value;
+  Vec3Normalize(bulletDir);
+  fVar1 = centerOfMass[1];
+  fVar2 = centerOfMass[2];
   fVar3 = (phys_bulletSpinScale->current).value;
-  *param_1 = *param_1 + fVar3 * (*param_1 - *param_3);
-  param_1[1] = param_1[1] + fVar3 * (param_1[1] - fVar1);
-  param_1[2] = param_1[2] + fVar3 * (param_1[2] - fVar2);
+  *worldPos = *worldPos + fVar3 * (*worldPos - *centerOfMass);
+  worldPos[1] = worldPos[1] + fVar3 * (worldPos[1] - fVar1);
+  worldPos[2] = worldPos[2] + fVar3 * (worldPos[2] - fVar2);
   return;
 }
 
@@ -4682,37 +4727,38 @@ void __cdecl Phys_TweakBulletImpact(float *param_1,float *param_2,float *param_3
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Phys_ObjBulletImpact(int param_1,float *param_2,float *param_3,float param_4,float param_5)
+Phys_ObjBulletImpact(int id,float *worldPosRaw,float *bulletDirRaw,float bulletSpeed,float scale)
 
 {
   PhysObjUserData *pPVar1;
-  float local_38;
+  PhysObjUserData *userData;
+  float force;
   float local_34;
   float local_30;
-  rigid_body *local_2c;
-  float local_28 [3];
-  float local_1c;
+  rigid_body *body;
+  float centerOfMass [3];
+  float bulletDir;
   float local_18;
   float local_14;
-  float local_10;
+  float worldPos;
   float local_c;
   float local_8;
   
-  pPVar1 = Phys_GetUserData(param_1);
-  local_2c = pPVar1->body;
-  Phys_NitrousVecToVec3(&(local_2c->m_mat).w,local_28);
-  local_1c = *param_3;
-  local_18 = param_3[1];
-  local_14 = param_3[2];
-  local_10 = *param_2;
-  local_c = param_2[1];
-  local_8 = param_2[2];
-  Phys_TweakBulletImpact(&local_10,&local_1c,local_28);
-  local_30 = param_5 * param_4;
-  local_38 = local_30 * local_1c;
+  pPVar1 = Phys_GetUserData(id);
+  body = pPVar1->body;
+  Phys_NitrousVecToVec3(&(body->m_mat).w,centerOfMass);
+  bulletDir = *bulletDirRaw;
+  local_18 = bulletDirRaw[1];
+  local_14 = bulletDirRaw[2];
+  worldPos = *worldPosRaw;
+  local_c = worldPosRaw[1];
+  local_8 = worldPosRaw[2];
+  Phys_TweakBulletImpact(&worldPos,&bulletDir,centerOfMass);
+  local_30 = scale * bulletSpeed;
+  force = local_30 * bulletDir;
   local_34 = local_30 * local_18;
   local_30 = local_30 * local_14;
-  Phys_ObjAddForce(param_1,&local_10,&local_38,false);
+  Phys_ObjAddForce(id,&worldPos,&force,false);
   return;
 }
 
@@ -4724,11 +4770,11 @@ Phys_ObjBulletImpact(int param_1,float *param_2,float *param_3,float param_4,flo
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_DebugRender(PhysObjUserData *param_1,float param_2)
+void __cdecl Phys_DebugRender(PhysObjUserData *userData,float deltaT)
 
 {
   if ((phys_drawCollisionObj->current).enabled != false) {
-    debug_render(param_1);
+    debug_render(userData);
   }
   return;
 }
@@ -4743,15 +4789,16 @@ void __cdecl Phys_DebugRender(PhysObjUserData *param_1,float param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_BodyGrabSnapshotNitrous(PhysObjUserData *param_1,float param_2)
+void __cdecl Phys_BodyGrabSnapshotNitrous(PhysObjUserData *userData,float deltaT)
 
 {
   rigid_body *prVar1;
   code *pcVar2;
   bool bVar3;
-  float local_8;
+  rigid_body *body;
+  float drag_scale;
   
-  prVar1 = param_1->body;
+  prVar1 = userData->body;
   if ((prVar1 == (rigid_body *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x550,0,
                                "%s"), !bVar3)) {
@@ -4759,17 +4806,17 @@ void __cdecl Phys_BodyGrabSnapshotNitrous(PhysObjUserData *param_1,float param_2
     (*pcVar2)();
     return;
   }
-  phys_full_multiply_mat(&param_1->cg2w,&param_1->body->m_mat,&param_1->cg2rb);
+  phys_full_multiply_mat(&userData->cg2w,&userData->body->m_mat,&userData->cg2rb);
   if ((prVar1->m_flags & 0x20) == 0) {
-    local_8 = 1.0;
-    if ((param_1->m_flags & 1U) == 0) {
-      local_8 = 2.0;
+    drag_scale = 1.0;
+    if ((userData->m_flags & 1U) == 0) {
+      drag_scale = 2.0;
     }
-    prVar1->m_t_drag_coef = (phys_dragLinear->current).value * local_8;
-    prVar1->m_a_drag_coef = (phys_dragAngular->current).value * local_8;
-    param_1->m_time_since_last_event = param_1->m_time_since_last_event + param_2;
-    param_1->m_time_since_last_reeval = param_1->m_time_since_last_reeval + param_2;
-    Phys_ReEvalPriority(param_1);
+    prVar1->m_t_drag_coef = (phys_dragLinear->current).value * drag_scale;
+    prVar1->m_a_drag_coef = (phys_dragAngular->current).value * drag_scale;
+    userData->m_time_since_last_event = userData->m_time_since_last_event + deltaT;
+    userData->m_time_since_last_reeval = userData->m_time_since_last_reeval + deltaT;
+    Phys_ReEvalPriority(userData);
   }
   return;
 }
@@ -4782,22 +4829,23 @@ void __cdecl Phys_BodyGrabSnapshotNitrous(PhysObjUserData *param_1,float param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Phys_ObjGetSnapshot(int param_1,float *param_2,float (*param_3) [3])
+int __cdecl Phys_ObjGetSnapshot(int id,float *outPos,float (*outMat) [3])
 
 {
   PhysObjUserData *pPVar1;
   int iVar2;
   float (*pafVar3) [3];
+  PhysObjUserData *userData;
   
-  pPVar1 = Phys_GetUserData(param_1);
-  *param_2 = pPVar1->savedPos[0];
-  param_2[1] = pPVar1->savedPos[1];
-  param_2[2] = pPVar1->savedPos[2];
+  pPVar1 = Phys_GetUserData(id);
+  *outPos = pPVar1->savedPos[0];
+  outPos[1] = pPVar1->savedPos[1];
+  outPos[2] = pPVar1->savedPos[2];
   pafVar3 = pPVar1->savedRot;
   for (iVar2 = 9; iVar2 != 0; iVar2 = iVar2 + -1) {
-    (*param_3)[0] = (*pafVar3)[0];
+    (*outMat)[0] = (*pafVar3)[0];
     pafVar3 = (float (*) [3])(*pafVar3 + 1);
-    param_3 = (float (*) [3])((int)param_3 + 4);
+    outMat = (float (*) [3])((int)outMat + 4);
   }
   return physGlob.timeLastSnapshot;
 }
@@ -4808,56 +4856,56 @@ int __cdecl Phys_ObjGetSnapshot(int param_1,float *param_2,float (*param_3) [3])
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Phys_RenderBulletMeshInfo(float *param_1,XModel *param_2,char *param_3,int param_4,float param_5)
+Phys_RenderBulletMeshInfo(float *pos,XModel *model,char *type,int numTriangles,float avgArea)
 
 {
-  char local_10c [255];
+  char lineStr [255];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  XModelRenderString(param_1,param_2->name);
-  param_1[2] = param_1[2] - s_lineHeight;
-  if (param_3 == (char *)0x0) {
-    XModelRenderString(param_1,"  No bullet mesh");
+  XModelRenderString(pos,model->name);
+  pos[2] = pos[2] - s_lineHeight;
+  if (type == (char *)0x0) {
+    XModelRenderString(pos,"  No bullet mesh");
   }
   else {
-    _snprintf(local_10c,0xff,"  %s, tris(%d), avgarea(%d)");
+    _snprintf(lineStr,0xff,"  %s, tris(%d), avgarea(%d)");
     local_d = 0;
-    XModelRenderString(param_1,local_10c);
-    param_1[2] = param_1[2] - s_lineHeight;
-    _snprintf(local_10c,0xff,"lods(%d) collod(%d), bones(%d)");
+    XModelRenderString(pos,lineStr);
+    pos[2] = pos[2] - s_lineHeight;
+    _snprintf(lineStr,0xff,"lods(%d) collod(%d), bones(%d)");
     local_d = 0;
-    XModelRenderString(param_1,local_10c);
-    param_1[2] = param_1[2] - s_lineHeight;
-    XModelHasCollmap(param_2);
-    _snprintf(local_10c,0xff,"collmaps(%d)");
+    XModelRenderString(pos,lineStr);
+    pos[2] = pos[2] - s_lineHeight;
+    XModelHasCollmap(model);
+    _snprintf(lineStr,0xff,"collmaps(%d)");
     local_d = 0;
-    XModelRenderString(param_1,local_10c);
+    XModelRenderString(pos,lineStr);
   }
-  param_1[2] = param_1[2] - s_lineHeight;
+  pos[2] = pos[2] - s_lineHeight;
   return;
 }
 
 
 // 0084DAE0  Phys_ComputeStringPosition  (physics/phys_main.cpp:1462)
 
-void __cdecl Phys_ComputeStringPosition(float *param_1,float *param_2,float *param_3)
+void __cdecl Phys_ComputeStringPosition(float *start,float *end,float *position)
 
 {
   float fVar1;
   
-  *param_3 = *param_2 - *param_1;
-  param_3[1] = param_2[1] - param_1[1];
-  param_3[2] = param_2[2] - param_1[2];
-  Vec3Normalize(param_3);
+  *position = *end - *start;
+  position[1] = end[1] - start[1];
+  position[2] = end[2] - start[2];
+  Vec3Normalize(position);
   fVar1 = s_stringPosScale;
-  *param_3 = s_stringPosScale * *param_3;
-  param_3[1] = fVar1 * param_3[1];
-  param_3[2] = fVar1 * param_3[2];
-  *param_3 = *param_3 + *param_1;
-  param_3[1] = param_3[1] + param_1[1];
-  param_3[2] = param_3[2] + param_1[2];
+  *position = s_stringPosScale * *position;
+  position[1] = fVar1 * position[1];
+  position[2] = fVar1 * position[2];
+  *position = *position + *start;
+  position[1] = position[1] + start[1];
+  position[2] = position[2] + start[2];
   return;
 }
 
@@ -4870,18 +4918,22 @@ void __cdecl Phys_ComputeStringPosition(float *param_1,float *param_2,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_FindAndRenderBulletMesh(float *param_1,float *param_2,int param_3,bool param_4)
+void __cdecl Phys_FindAndRenderBulletMesh(float *start,float *end,int contentmask,bool showNormals)
 
 {
   ushort uVar1;
-  centity_s *pcVar2;
-  XModel *pXVar3;
-  int local_148 [5];
-  float *local_134;
-  DObj *local_130;
-  float *local_12c;
-  DynEntityPose *local_128;
-  float4 local_124;
+  centity_s *remote_pose;
+  XModel *model_00;
+  int baseBoneIndex;
+  XModel *model;
+  centity_s *cent;
+  DObjAnimMat *boneMtxList;
+  int partBits [5];
+  float *modelOrigin_2;
+  DObj *dobj;
+  float *modelOrigin;
+  DynEntityPose *dynEntPose;
+  float4 clip;
   float local_114;
   float local_110;
   float local_10c;
@@ -4889,123 +4941,124 @@ void __cdecl Phys_FindAndRenderBulletMesh(float *param_1,float *param_2,int para
   int local_f0;
   undefined4 local_ec;
   undefined4 local_e8;
-  float local_e0 [9];
-  float4 local_bc;
+  float localToWorld [9];
+  float4 resultsDyn;
   float local_ac;
   int local_a0;
-  float local_84;
+  float viewDirNormalized;
   float local_80;
   float local_7c;
-  DynEntityDrawType local_78;
-  char local_71;
-  char *local_70;
-  uint local_6c;
-  int local_68;
-  ushort local_64;
-  DynEntityDef *local_60;
-  int local_5c;
-  float4 local_58;
+  DynEntityDrawType drawType;
+  bool bHitDynEnt;
+  char *dynEntTypeStr;
+  int entityHitId;
+  int localClientNum;
+  ushort dynEntityHitId;
+  DynEntityDef *dynEntDef;
+  int numTriangles;
+  float4 results;
   int local_3c;
   int local_28;
   uint local_20;
-  float local_1c [3];
-  int local_10;
-  int local_c;
-  float local_8;
+  float stringPos [3];
+  int modelCount;
+  int modelIndex;
+  float avgArea;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58.v[0] = 0.0;
-  local_58.v[1] = 0.0;
-  local_58.v[2] = 0.0;
-  local_58.v[3] = 0.0;
+  results.v[0] = 0.0;
+  results.v[1] = 0.0;
+  results.v[2] = 0.0;
+  results.v[3] = 0.0;
   local_28 = 0;
-  local_71 = '\0';
-  local_bc.v[0] = 0.0;
-  local_bc.v[1] = 0.0;
-  local_bc.v[2] = 0.0;
-  local_bc.v[3] = 0.0;
-  TraceExtents::TraceExtents((TraceExtents *)&local_124);
-  memset((uchar *)local_bc.u,'\0',0x38);
+  bHitDynEnt = false;
+  resultsDyn.v[0] = 0.0;
+  resultsDyn.v[1] = 0.0;
+  resultsDyn.v[2] = 0.0;
+  resultsDyn.v[3] = 0.0;
+  TraceExtents::TraceExtents((TraceExtents *)&clip);
+  memset((uchar *)resultsDyn.u,'\0',0x38);
   local_ac = 1.0;
-  local_124.v[0] = *param_1;
-  local_124.v[1] = param_1[1];
-  local_124.v[2] = param_1[2];
-  local_114 = *param_2;
-  local_110 = param_2[1];
-  local_10c = param_2[2];
-  CM_CalcTraceExtents((TraceExtents *)&local_124);
+  clip.v[0] = *start;
+  clip.v[1] = start[1];
+  clip.v[2] = start[2];
+  local_114 = *end;
+  local_110 = end[1];
+  local_10c = end[2];
+  CM_CalcTraceExtents((TraceExtents *)&clip);
   local_f4 = 0;
   local_f0 = 0x802013;
   local_ec = 1;
   local_e8 = 0;
-  DynEntCl_PointTrace((pointtrace_t *)&local_124,(trace_t *)&local_bc);
+  DynEntCl_PointTrace((pointtrace_t *)&clip,(trace_t *)&resultsDyn);
   if (local_a0 == 2) {
-    local_64 = Trace_GetDynEntHitId((trace_t *)&local_bc,&local_78);
-    local_70 = "dynent";
-    local_71 = '\x01';
+    dynEntityHitId = Trace_GetDynEntHitId((trace_t *)&resultsDyn,&drawType);
+    dynEntTypeStr = "dynent";
+    bHitDynEnt = true;
   }
   else {
-    local_64 = 0;
-    local_78 = DYNENT_DRAW_MODEL;
-    local_70 = "";
+    dynEntityHitId = 0;
+    drawType = DYNENT_DRAW_MODEL;
+    dynEntTypeStr = "";
   }
-  if (local_71 == '\0') {
-    CG_LocationalTrace((trace_t *)&local_58,param_1,param_2,0,0x280e833,false,(col_context_t *)0x0);
+  if (bHitDynEnt == false) {
+    CG_LocationalTrace((trace_t *)&results,start,end,0,0x280e833,false,(col_context_t *)0x0);
     if (local_3c == 1) {
-      local_68 = cgCollWorldLocalClientNum;
-      uVar1 = Trace_GetEntityHitId((trace_t *)&local_58);
-      local_6c = (uint)uVar1;
-      local_130 = Com_GetClientDObj(local_6c,local_68);
-      if (local_130 == (DObj *)0x0) {
+      localClientNum = cgCollWorldLocalClientNum;
+      uVar1 = Trace_GetEntityHitId((trace_t *)&results);
+      entityHitId = (int)uVar1;
+      dobj = Com_GetClientDObj(entityHitId,localClientNum);
+      if (dobj == (DObj *)0x0) {
         if (local_28 != 0) {
-          local_134 = (float *)(local_28 + 8);
-          local_84 = *local_134 - *param_1;
-          local_80 = *(float *)(local_28 + 0xc) - param_1[1];
-          local_7c = *(float *)(local_28 + 0x10) - param_1[2];
-          Vec3Normalize(&local_84);
-          Phys_ComputeStringPosition(param_1,local_134,local_1c);
-          MatrixInverse((float (*) [3])(local_28 + 0x14),(float (*) [3])local_e0);
-          local_5c = CL_GetFirstActiveLocalClient();
-          Phys_RenderBulletMeshInfo(local_1c,*(XModel **)(local_28 + 4),"static",local_5c,local_8);
+          modelOrigin_2 = (float *)(local_28 + 8);
+          viewDirNormalized = *modelOrigin_2 - *start;
+          local_80 = *(float *)(local_28 + 0xc) - start[1];
+          local_7c = *(float *)(local_28 + 0x10) - start[2];
+          Vec3Normalize(&viewDirNormalized);
+          Phys_ComputeStringPosition(start,modelOrigin_2,stringPos);
+          MatrixInverse((float (*) [3])(local_28 + 0x14),(float (*) [3])localToWorld);
+          numTriangles = CL_GetFirstActiveLocalClient();
+          Phys_RenderBulletMeshInfo
+                    (stringPos,*(XModel **)(local_28 + 4),"static",numTriangles,avgArea);
         }
       }
       else {
-        pcVar2 = CG_GetEntity(local_68,local_6c);
-        AnglesToAxis((pcVar2->pose).angles,(float (*) [3])local_e0);
-        local_84 = (pcVar2->pose).origin[0] - *param_1;
-        local_80 = (pcVar2->pose).origin[1] - param_1[1];
-        local_7c = (pcVar2->pose).origin[2] - param_1[2];
-        Vec3Normalize(&local_84);
-        Phys_ComputeStringPosition(param_1,(pcVar2->pose).origin,local_1c);
-        local_10 = DObjGetNumModels(local_130);
-        DObjGeomTracelinePartBits(local_130,local_f0,local_148);
-        CG_DObjCalcPose(&pcVar2->pose,local_130,local_148);
-        DObjGetRotTransArray(local_130);
-        for (local_c = 0; local_c < local_10; local_c = local_c + 1) {
-          pXVar3 = DObjGetModel(local_130,local_c);
-          if (pXVar3->collLod < 0) {
-            Phys_RenderBulletMeshInfo(local_1c,pXVar3,(char *)0x0,0,0.0);
+        remote_pose = CG_GetEntity(localClientNum,entityHitId);
+        AnglesToAxis((remote_pose->pose).angles,(float (*) [3])localToWorld);
+        viewDirNormalized = (remote_pose->pose).origin[0] - *start;
+        local_80 = (remote_pose->pose).origin[1] - start[1];
+        local_7c = (remote_pose->pose).origin[2] - start[2];
+        Vec3Normalize(&viewDirNormalized);
+        Phys_ComputeStringPosition(start,(remote_pose->pose).origin,stringPos);
+        modelCount = DObjGetNumModels(dobj);
+        DObjGeomTracelinePartBits(dobj,local_f0,partBits);
+        CG_DObjCalcPose(&remote_pose->pose,dobj,partBits);
+        DObjGetRotTransArray(dobj);
+        for (modelIndex = 0; modelIndex < modelCount; modelIndex = modelIndex + 1) {
+          model_00 = DObjGetModel(dobj,modelIndex);
+          if (model_00->collLod < 0) {
+            Phys_RenderBulletMeshInfo(stringPos,model_00,(char *)0x0,0,0.0);
           }
           else {
-            local_5c = CL_GetFirstActiveLocalClient();
-            Phys_RenderBulletMeshInfo(local_1c,pXVar3,"dobj",local_5c,local_8);
+            numTriangles = CL_GetFirstActiveLocalClient();
+            Phys_RenderBulletMeshInfo(stringPos,model_00,"dobj",numTriangles,avgArea);
           }
         }
       }
     }
   }
   else {
-    local_60 = DynEnt_GetEntityDef(local_64,local_78);
-    local_128 = DynEnt_GetClientPose(local_64,local_78);
-    local_12c = (local_128->pose).origin;
-    local_84 = *local_12c - *param_1;
-    local_80 = (local_128->pose).origin[1] - param_1[1];
-    local_7c = (local_128->pose).origin[2] - param_1[2];
-    Vec3Normalize(&local_84);
-    Phys_ComputeStringPosition(param_1,local_12c,local_1c);
-    UnitQuatToAxis((float *)local_128,(float (*) [3])local_e0);
-    local_5c = CL_GetFirstActiveLocalClient();
-    Phys_RenderBulletMeshInfo(local_1c,local_60->xModel,local_70,local_5c,local_8);
+    dynEntDef = DynEnt_GetEntityDef(dynEntityHitId,drawType);
+    dynEntPose = DynEnt_GetClientPose(dynEntityHitId,drawType);
+    modelOrigin = (dynEntPose->pose).origin;
+    viewDirNormalized = *modelOrigin - *start;
+    local_80 = (dynEntPose->pose).origin[1] - start[1];
+    local_7c = (dynEntPose->pose).origin[2] - start[2];
+    Vec3Normalize(&viewDirNormalized);
+    Phys_ComputeStringPosition(start,modelOrigin,stringPos);
+    UnitQuatToAxis((float *)dynEntPose,(float (*) [3])localToWorld);
+    numTriangles = CL_GetFirstActiveLocalClient();
+    Phys_RenderBulletMeshInfo(stringPos,dynEntDef->xModel,dynEntTypeStr,numTriangles,avgArea);
   }
   return;
 }
@@ -5015,7 +5068,7 @@ void __cdecl Phys_FindAndRenderBulletMesh(float *param_1,float *param_2,int para
 
 /* WARNING: Removing unreachable block (ram,0x0084e23c) */
 
-chull_t * __cdecl create_chull(phys_convex_hull *param_1)
+chull_t * __cdecl create_chull(phys_convex_hull *pch)
 
 {
   int iVar1;
@@ -5025,56 +5078,55 @@ chull_t * __cdecl create_chull(phys_convex_hull *param_1)
   chull_t *pcVar5;
   phys_vec3 *ppVar6;
   ushort *puVar7;
-  ushort uVar8;
-  phys_vec3 *ppVar9;
-  phys_vec3 **local_2c;
-  ch_triangle *local_20;
-  phys_vec3 **local_18;
-  int local_10;
-  int local_c;
+  phys_vec3 *ppVar8;
+  phys_vec3 **vi_2;
+  ch_triangle *tri_i;
+  phys_vec3 **vi;
+  int ind_i;
+  int vert_i;
+  chull_t *hull;
   
   pcVar5 = PMM_ALLOC(0x20,4);
-  pcVar5->nverts = (param_1->m_convex_hull_vert_list).m_alloc_count;
+  pcVar5->nverts = (pch->m_convex_hull_vert_list).m_alloc_count;
   ppVar6 = PMM_ALLOC(pcVar5->nverts << 4,0x10);
   pcVar5->verts = ppVar6;
-  pcVar5->ninds = (param_1->m_convex_hull_triangle_list).m_alloc_count * 3;
+  pcVar5->ninds = (pch->m_convex_hull_triangle_list).m_alloc_count * 3;
   puVar7 = PMM_ALLOC(pcVar5->ninds * 2 + 3U & 0xfffffffc,4);
   pcVar5->inds = puVar7;
   pcVar5->next = (chull_t *)0x0;
-  local_c = 0;
-  iVar1 = (param_1->m_convex_hull_vert_list).m_alloc_count;
-  pppVar2 = (param_1->m_convex_hull_vert_list).m_slot_array;
-  for (local_18 = (param_1->m_convex_hull_vert_list).m_slot_array; pppVar2 + iVar1 != local_18;
-      local_18 = local_18 + 1) {
-    ppVar9 = pcVar5->verts + local_c;
-    local_c = local_c + 1;
-    ppVar6 = *local_18;
-    ppVar9->x = ppVar6->x;
-    ppVar9->y = ppVar6->y;
-    ppVar9->z = ppVar6->z;
+  vert_i = 0;
+  iVar1 = (pch->m_convex_hull_vert_list).m_alloc_count;
+  pppVar2 = (pch->m_convex_hull_vert_list).m_slot_array;
+  for (vi = (pch->m_convex_hull_vert_list).m_slot_array; pppVar2 + iVar1 != vi; vi = vi + 1) {
+    ppVar8 = pcVar5->verts + vert_i;
+    vert_i = vert_i + 1;
+    ppVar6 = *vi;
+    ppVar8->x = ppVar6->x;
+    ppVar8->y = ppVar6->y;
+    ppVar8->z = ppVar6->z;
   }
-  local_10 = 0;
-  iVar1 = (param_1->m_convex_hull_triangle_list).m_alloc_count;
-  pcVar3 = (param_1->m_convex_hull_triangle_list).m_slot_array;
-  for (local_20 = (param_1->m_convex_hull_triangle_list).m_slot_array; pcVar3 + iVar1 != local_20;
-      local_20 = local_20 + 1) {
-    uVar8 = 0;
-    iVar4 = (param_1->m_convex_hull_vert_list).m_alloc_count;
-    pppVar2 = (param_1->m_convex_hull_vert_list).m_slot_array;
-    for (local_2c = (param_1->m_convex_hull_vert_list).m_slot_array; pppVar2 + iVar4 != local_2c;
-        local_2c = local_2c + 1) {
-      if (local_20->m_verts[0] == *local_2c) {
-        pcVar5->inds[local_10] = uVar8;
+  ind_i = 0;
+  iVar1 = (pch->m_convex_hull_triangle_list).m_alloc_count;
+  pcVar3 = (pch->m_convex_hull_triangle_list).m_slot_array;
+  for (tri_i = (pch->m_convex_hull_triangle_list).m_slot_array; pcVar3 + iVar1 != tri_i;
+      tri_i = tri_i + 1) {
+    vert_i = 0;
+    iVar4 = (pch->m_convex_hull_vert_list).m_alloc_count;
+    pppVar2 = (pch->m_convex_hull_vert_list).m_slot_array;
+    for (vi_2 = (pch->m_convex_hull_vert_list).m_slot_array; pppVar2 + iVar4 != vi_2;
+        vi_2 = vi_2 + 1) {
+      if (tri_i->m_verts[0] == *vi_2) {
+        pcVar5->inds[ind_i] = (ushort)vert_i;
       }
-      if (local_20->m_verts[1] == *local_2c) {
-        pcVar5->inds[local_10 + 1] = uVar8;
+      if (tri_i->m_verts[1] == *vi_2) {
+        pcVar5->inds[ind_i + 1] = (ushort)vert_i;
       }
-      if (local_20->m_verts[2] == *local_2c) {
-        pcVar5->inds[local_10 + 2] = uVar8;
+      if (tri_i->m_verts[2] == *vi_2) {
+        pcVar5->inds[ind_i + 2] = (ushort)vert_i;
       }
-      uVar8 = uVar8 + 1;
+      vert_i = vert_i + 1;
     }
-    local_10 = local_10 + 3;
+    ind_i = ind_i + 3;
   }
   return pcVar5;
 }
@@ -5084,17 +5136,18 @@ chull_t * __cdecl create_chull(phys_convex_hull *param_1)
 
 /* WARNING: Removing unreachable block (ram,0x0084e549) */
 
-void __cdecl free_chull(chull_t *param_1)
+void __cdecl free_chull(chull_t *first)
 
 {
   chull_t *pcVar1;
+  chull_t *next;
   
-  while (param_1 != (chull_t *)0x0) {
-    pcVar1 = param_1->next;
-    PMM_FREE(param_1->verts,param_1->nverts << 4,0x10);
-    PMM_FREE(param_1->inds,param_1->ninds * 2 + 3U & 0xfffffffc,4);
-    PMM_FREE(param_1,0x20,4);
-    param_1 = pcVar1;
+  while (first != (chull_t *)0x0) {
+    pcVar1 = first->next;
+    PMM_FREE(first->verts,first->nverts << 4,0x10);
+    PMM_FREE(first->inds,first->ninds * 2 + 3U & 0xfffffffc,4);
+    PMM_FREE(first,0x20,4);
+    first = pcVar1;
   }
   return;
 }
@@ -5112,13 +5165,13 @@ void __cdecl _dynamic_initializer_for__entities_map__(void)
 
 // 0084E580  chull_list_add  (physics/phys_main.cpp:1649)
 
-void __cdecl chull_list_add(chull_t *param_1,uint param_2)
+void __cdecl chull_list_add(chull_t *chull,uint key)
 
 {
-  generic_avl_map_add(&entities_map,param_1,param_2);
-  param_1->key = param_2;
-  param_1->next_list = chull_list;
-  chull_list = param_1;
+  generic_avl_map_add(&entities_map,chull,key);
+  chull->key = key;
+  chull->next_list = chull_list;
+  chull_list = chull;
   return;
 }
 
@@ -5129,23 +5182,24 @@ void __cdecl free_chull_lists(void)
 
 {
   chull_t *pcVar1;
-  chull_t *local_c;
-  chull_t **local_8;
+  chull_t *next_list;
+  chull_t *first_list;
+  chull_t **prev_next;
   
-  local_c = chull_list;
-  local_8 = &chull_list;
-  while (local_c != (chull_t *)0x0) {
-    pcVar1 = local_c->next_list;
-    if (local_c->touched == 1) {
-      local_c->touched = 0;
-      local_8 = &local_c->next_list;
-      local_c = pcVar1;
+  first_list = chull_list;
+  prev_next = &chull_list;
+  while (first_list != (chull_t *)0x0) {
+    pcVar1 = first_list->next_list;
+    if (first_list->touched == 1) {
+      first_list->touched = 0;
+      prev_next = &first_list->next_list;
+      first_list = pcVar1;
     }
     else {
-      *local_8 = pcVar1;
-      generic_avl_map_destroy(&entities_map,local_c->key);
-      free_chull(local_c);
-      local_c = pcVar1;
+      *prev_next = pcVar1;
+      generic_avl_map_destroy(&entities_map,first_list->key);
+      free_chull(first_list);
+      first_list = pcVar1;
     }
   }
   return;
@@ -5175,7 +5229,7 @@ void __cdecl _dynamic_initializer_for__TRACKINST_g_hull__(void)
 
 // 0084E640  generate_brush_chull  (physics/phys_main.cpp:1682)
 
-chull_t * __cdecl generate_brush_chull(cbrush_t *param_1)
+chull_t * __cdecl generate_brush_chull(cbrush_t *brush)
 
 {
   chull_t *pcVar1;
@@ -5184,15 +5238,15 @@ chull_t * __cdecl generate_brush_chull(cbrush_t *param_1)
   uint local_18;
   int local_14;
   
-  if (param_1 == (cbrush_t *)0x0) {
+  if (brush == (cbrush_t *)0x0) {
     pcVar1 = (chull_t *)0x0;
   }
   else {
     for (local_14 = 0; local_14 < g_hull.m_vertex_buffer.m_alloc_count; local_14 = local_14 + 1) {
     }
     g_hull.m_vertex_buffer.m_alloc_count = 0;
-    for (local_18 = 0; local_18 < param_1->numverts; local_18 = local_18 + 1) {
-      Phys_Vec3ToNitrousVec(param_1->verts[local_18],&local_30);
+    for (local_18 = 0; local_18 < brush->numverts; local_18 = local_18 + 1) {
+      Phys_Vec3ToNitrousVec(brush->verts[local_18],&local_30);
       ppVar2 = phys_static_array<phys_vec3,6144>::add
                          (&g_hull.m_vertex_buffer,0,"phys array add overflow.");
       ppVar2->x = local_30.x;
@@ -5208,7 +5262,7 @@ chull_t * __cdecl generate_brush_chull(cbrush_t *param_1)
 
 // 00850170  generate_partition_chull  (physics/phys_main.cpp:1699)
 
-chull_t * __cdecl generate_partition_chull(CollisionAabbTree *param_1)
+chull_t * __cdecl generate_partition_chull(CollisionAabbTree *tree)
 
 {
   chull_t *pcVar1;
@@ -5221,14 +5275,14 @@ chull_t * __cdecl generate_partition_chull(CollisionAabbTree *param_1)
   CollisionPartition *local_18;
   int local_14;
   
-  if (param_1 == (CollisionAabbTree *)0x0) {
+  if (tree == (CollisionAabbTree *)0x0) {
     pcVar1 = (chull_t *)0x0;
   }
   else {
     for (local_14 = 0; local_14 < g_hull.m_vertex_buffer.m_alloc_count; local_14 = local_14 + 1) {
     }
     g_hull.m_vertex_buffer.m_alloc_count = 0;
-    local_18 = cm.partitions + (param_1->u).firstChildIndex;
+    local_18 = cm.partitions + (tree->u).firstChildIndex;
     local_1c = cm.verts;
     local_20 = cm.uinds + local_18->fuind;
     local_24 = local_18->nuinds;
@@ -5249,27 +5303,29 @@ chull_t * __cdecl generate_partition_chull(CollisionAabbTree *param_1)
 
 // 008502A0  generate_brushmodel_chull_r  (physics/phys_main.cpp:1719)
 
-void __cdecl generate_brushmodel_chull_r(cLeafBrushNode_s *param_1,chull_t **param_2)
+void __cdecl generate_brushmodel_chull_r(cLeafBrushNode_s *node,chull_t **hull)
 
 {
   chull_t *pcVar1;
-  int local_8;
+  cbrush_t *brush;
+  chull_t *chull;
+  int brushnum;
+  int i;
   
-  if (param_1->leafBrushCount != 0) {
-    if (0 < param_1->leafBrushCount) {
-      for (local_8 = 0; local_8 < param_1->leafBrushCount; local_8 = local_8 + 1) {
-        pcVar1 = generate_brush_chull(cm.brushes + (param_1->data).leaf.brushes[local_8]);
-        pcVar1->next = *param_2;
-        *param_2 = pcVar1;
+  if (node->leafBrushCount != 0) {
+    if (0 < node->leafBrushCount) {
+      for (i = 0; i < node->leafBrushCount; i = i + 1) {
+        pcVar1 = generate_brush_chull(cm.brushes + (node->data).leaf.brushes[i]);
+        pcVar1->next = *hull;
+        *hull = pcVar1;
       }
       return;
     }
-    generate_brushmodel_chull_r(param_1 + 1,param_2);
+    generate_brushmodel_chull_r(node + 1,hull);
   }
-  if (((param_1->data).children.childOffset[0] != 0) ||
-     ((param_1->data).children.childOffset[1] != 0)) {
-    generate_brushmodel_chull_r(param_1 + (param_1->data).children.childOffset[0],param_2);
-    generate_brushmodel_chull_r(param_1 + (param_1->data).children.childOffset[1],param_2);
+  if (((node->data).children.childOffset[0] != 0) || ((node->data).children.childOffset[1] != 0)) {
+    generate_brushmodel_chull_r(node + (node->data).children.childOffset[0],hull);
+    generate_brushmodel_chull_r(node + (node->data).children.childOffset[1],hull);
   }
   return;
 }
@@ -5277,58 +5333,63 @@ void __cdecl generate_brushmodel_chull_r(cLeafBrushNode_s *param_1,chull_t **par
 
 // 00850390  generate_brushmodel_chull  (physics/phys_main.cpp:1745)
 
-chull_t * __cdecl generate_brushmodel_chull(int param_1)
+chull_t * __cdecl generate_brushmodel_chull(int brushmodel)
 
 {
   cmodel_t *pcVar1;
-  chull_t *local_8;
+  cLeafBrushNode_s *node;
+  cmodel_t *model;
+  chull_t *hull;
   
-  local_8 = (chull_t *)0x0;
-  pcVar1 = CM_ClipHandleToModel(param_1);
-  generate_brushmodel_chull_r(cm.leafbrushNodes + (pcVar1->leaf).leafBrushNode,&local_8);
-  return local_8;
+  hull = (chull_t *)0x0;
+  pcVar1 = CM_ClipHandleToModel(brushmodel);
+  generate_brushmodel_chull_r(cm.leafbrushNodes + (pcVar1->leaf).leafBrushNode,&hull);
+  return hull;
 }
 
 
 // 008503E0  generate_collmap_chull  (physics/phys_main.cpp:1755)
 
-chull_t * __cdecl generate_collmap_chull(PhysGeomList *param_1)
+chull_t * __cdecl generate_collmap_chull(PhysGeomList *geomList)
 
 {
   chull_t *pcVar1;
-  PhysGeomInfo *local_10;
-  chull_t *local_c;
-  uint local_8;
+  chull_t *hull;
+  cbrush_t *brush;
+  PhysGeomInfo *geom;
+  chull_t *first;
+  uint gi;
   
-  local_c = (chull_t *)0x0;
-  local_8 = 0;
-  local_10 = param_1->geoms;
-  for (; local_8 < param_1->count; local_8 = local_8 + 1) {
-    if (local_10->brush != (BrushWrapper *)0x0) {
-      pcVar1 = generate_brush_chull((cbrush_t *)local_10->brush);
-      pcVar1->next = local_c;
-      local_c = pcVar1;
+  first = (chull_t *)0x0;
+  gi = 0;
+  geom = geomList->geoms;
+  for (; gi < geomList->count; gi = gi + 1) {
+    if (geom->brush != (BrushWrapper *)0x0) {
+      pcVar1 = generate_brush_chull((cbrush_t *)geom->brush);
+      pcVar1->next = first;
+      first = pcVar1;
     }
-    local_10 = local_10 + 1;
+    geom = geom + 1;
   }
-  return local_c;
+  return first;
 }
 
 
 // 00850450  get_collmap_chull  (physics/phys_main.cpp:1774)
 
-chull_t * __cdecl get_collmap_chull(PhysGeomList *param_1,uint param_2)
+chull_t * __cdecl get_collmap_chull(PhysGeomList *geomList,uint key)
 
 {
   code *pcVar1;
   bool bVar2;
   chull_t *pcVar3;
   generic_avl_map_node_t *local_10;
-  chull_t *local_8;
+  generic_avl_map_node_t *node;
+  chull_t *chull;
   
   local_10 = entities_map.m_tree_root;
-  while ((local_10 != (generic_avl_map_node_t *)0x0 && (param_2 != local_10->m_avl_key))) {
-    if (param_2 < local_10->m_avl_key) {
+  while ((local_10 != (generic_avl_map_node_t *)0x0 && (key != local_10->m_avl_key))) {
+    if (key < local_10->m_avl_key) {
       local_10 = (local_10->m_avl_node_info).m_left;
     }
     else {
@@ -5336,41 +5397,42 @@ chull_t * __cdecl get_collmap_chull(PhysGeomList *param_1,uint param_2)
     }
   }
   if (local_10 == (generic_avl_map_node_t *)0x0) {
-    local_8 = generate_collmap_chull(param_1);
-    if (local_8 == (chull_t *)0x0) {
+    chull = generate_collmap_chull(geomList);
+    if (chull == (chull_t *)0x0) {
       return (chull_t *)0x0;
     }
-    chull_list_add(local_8,param_2);
+    chull_list_add(chull,key);
   }
   else {
-    local_8 = local_10->m_data;
+    chull = local_10->m_data;
   }
-  if ((local_8 == (chull_t *)0x0) &&
+  if ((chull == (chull_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x6fd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (chull_t *)(*pcVar1)();
     return pcVar3;
   }
-  local_8->touched = 1;
-  return local_8;
+  chull->touched = 1;
+  return chull;
 }
 
 
 // 00850510  get_brushmodel_chull  (physics/phys_main.cpp:1795)
 
-chull_t * __cdecl get_brushmodel_chull(int param_1,uint param_2)
+chull_t * __cdecl get_brushmodel_chull(int brushmodel,uint key)
 
 {
   code *pcVar1;
   bool bVar2;
   chull_t *pcVar3;
   generic_avl_map_node_t *local_10;
-  chull_t *local_8;
+  generic_avl_map_node_t *node;
+  chull_t *chull;
   
   local_10 = entities_map.m_tree_root;
-  while ((local_10 != (generic_avl_map_node_t *)0x0 && (param_2 != local_10->m_avl_key))) {
-    if (param_2 < local_10->m_avl_key) {
+  while ((local_10 != (generic_avl_map_node_t *)0x0 && (key != local_10->m_avl_key))) {
+    if (key < local_10->m_avl_key) {
       local_10 = (local_10->m_avl_node_info).m_left;
     }
     else {
@@ -5378,42 +5440,44 @@ chull_t * __cdecl get_brushmodel_chull(int param_1,uint param_2)
     }
   }
   if (local_10 == (generic_avl_map_node_t *)0x0) {
-    local_8 = generate_brushmodel_chull(param_1);
-    if (local_8 == (chull_t *)0x0) {
+    chull = generate_brushmodel_chull(brushmodel);
+    if (chull == (chull_t *)0x0) {
       return (chull_t *)0x0;
     }
-    chull_list_add(local_8,param_2);
+    chull_list_add(chull,key);
   }
   else {
-    local_8 = local_10->m_data;
+    chull = local_10->m_data;
   }
-  if ((local_8 == (chull_t *)0x0) &&
+  if ((chull == (chull_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x712,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (chull_t *)(*pcVar1)();
     return pcVar3;
   }
-  local_8->touched = 1;
-  return local_8;
+  chull->touched = 1;
+  return chull;
 }
 
 
 // 008505D0  get_brush_chull  (physics/phys_main.cpp:1816)
 
-chull_t * __cdecl get_brush_chull(cbrush_t *param_1)
+chull_t * __cdecl get_brush_chull(cbrush_t *brush)
 
 {
   code *pcVar1;
   bool bVar2;
   chull_t *pcVar3;
   generic_avl_map_node_t *local_14;
-  chull_t *local_c;
+  generic_avl_map_node_t *node;
+  chull_t *chull;
+  uint key;
   
   local_14 = entities_map.m_tree_root;
-  while ((local_14 != (generic_avl_map_node_t *)0x0 && (param_1 != (cbrush_t *)local_14->m_avl_key))
-        ) {
-    if (param_1 < (cbrush_t *)local_14->m_avl_key) {
+  while ((local_14 != (generic_avl_map_node_t *)0x0 && (brush != (cbrush_t *)local_14->m_avl_key)))
+  {
+    if (brush < (cbrush_t *)local_14->m_avl_key) {
       local_14 = (local_14->m_avl_node_info).m_left;
     }
     else {
@@ -5421,42 +5485,44 @@ chull_t * __cdecl get_brush_chull(cbrush_t *param_1)
     }
   }
   if (local_14 == (generic_avl_map_node_t *)0x0) {
-    local_c = generate_brush_chull(param_1);
-    if (local_c == (chull_t *)0x0) {
+    chull = generate_brush_chull(brush);
+    if (chull == (chull_t *)0x0) {
       return (chull_t *)0x0;
     }
-    chull_list_add(local_c,(uint)param_1);
+    chull_list_add(chull,(uint)brush);
   }
   else {
-    local_c = local_14->m_data;
+    chull = local_14->m_data;
   }
-  if ((local_c == (chull_t *)0x0) &&
+  if ((chull == (chull_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x728,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (chull_t *)(*pcVar1)();
     return pcVar3;
   }
-  local_c->touched = 1;
-  return local_c;
+  chull->touched = 1;
+  return chull;
 }
 
 
 // 008506A0  get_partition_chull  (physics/phys_main.cpp:1838)
 
-chull_t * __cdecl get_partition_chull(CollisionAabbTree *param_1)
+chull_t * __cdecl get_partition_chull(CollisionAabbTree *tree)
 
 {
   code *pcVar1;
   bool bVar2;
   chull_t *pcVar3;
   generic_avl_map_node_t *local_14;
-  chull_t *local_c;
+  generic_avl_map_node_t *node;
+  chull_t *chull;
+  uint key;
   
   local_14 = entities_map.m_tree_root;
   while ((local_14 != (generic_avl_map_node_t *)0x0 &&
-         (param_1 != (CollisionAabbTree *)local_14->m_avl_key))) {
-    if (param_1 < (CollisionAabbTree *)local_14->m_avl_key) {
+         (tree != (CollisionAabbTree *)local_14->m_avl_key))) {
+    if (tree < (CollisionAabbTree *)local_14->m_avl_key) {
       local_14 = (local_14->m_avl_node_info).m_left;
     }
     else {
@@ -5464,38 +5530,40 @@ chull_t * __cdecl get_partition_chull(CollisionAabbTree *param_1)
     }
   }
   if (local_14 == (generic_avl_map_node_t *)0x0) {
-    local_c = generate_partition_chull(param_1);
-    if (local_c == (chull_t *)0x0) {
+    chull = generate_partition_chull(tree);
+    if (chull == (chull_t *)0x0) {
       return (chull_t *)0x0;
     }
-    chull_list_add(local_c,(uint)param_1);
+    chull_list_add(chull,(uint)tree);
   }
   else {
-    local_c = local_14->m_data;
+    chull = local_14->m_data;
   }
-  if ((local_c == (chull_t *)0x0) &&
+  if ((chull == (chull_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0x73e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (chull_t *)(*pcVar1)();
     return pcVar3;
   }
-  local_c->touched = 1;
-  return local_c;
+  chull->touched = 1;
+  return chull;
 }
 
 
 // 008523C0  SortDEntsByDist  (physics/phys_main.cpp:1866)
 
-int __cdecl SortDEntsByDist(void *param_1,void *param_2)
+int __cdecl SortDEntsByDist(void *a_2,void *b_2)
 
 {
   int iVar1;
+  smodel_debug_info_t *cb_2;
+  smodel_debug_info_t *ca_2;
   
-  if (*(float *)((int)param_1 + 4) < *(float *)((int)param_2 + 4) ||
-      *(float *)((int)param_1 + 4) == *(float *)((int)param_2 + 4)) {
-    if (*(float *)((int)param_2 + 4) < *(float *)((int)param_1 + 4) ||
-        *(float *)((int)param_2 + 4) == *(float *)((int)param_1 + 4)) {
+  if (*(float *)((int)a_2 + 4) < *(float *)((int)b_2 + 4) ||
+      *(float *)((int)a_2 + 4) == *(float *)((int)b_2 + 4)) {
+    if (*(float *)((int)b_2 + 4) < *(float *)((int)a_2 + 4) ||
+        *(float *)((int)b_2 + 4) == *(float *)((int)a_2 + 4)) {
       iVar1 = 0;
     }
     else {
@@ -5518,18 +5586,18 @@ int __cdecl SortDEntsByDist(void *param_1,void *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
+void __cdecl Phys_FindAndRenderEntityBrushes(float *pos,int contentmask)
 
 {
   ushort uVar1;
   XModel *pXVar2;
   int iVar3;
-  PhysGeomList *pPVar4;
-  chull_t *pcVar5;
-  gentity_s *pgVar6;
-  centity_s *pcVar7;
-  phys_mat44 *ppVar8;
-  float *pfVar9;
+  PhysGeomList *geomList;
+  chull_t *first;
+  gentity_s *key;
+  centity_s *key_00;
+  phys_mat44 *ppVar4;
+  float *pfVar5;
   phys_mat44 local_38f0;
   float local_38a8 [9];
   DynEntityPose *local_3884;
@@ -5599,12 +5667,12 @@ void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
   local_18 = query_radius;
   local_24 = 1000;
   local_28 = 200;
-  local_34 = *param_1 - query_radius;
-  local_30 = param_1[1] - query_radius;
-  local_2c = param_1[2] - query_radius;
-  local_60[8] = *param_1 + query_radius;
-  local_3c = param_1[1] + query_radius;
-  local_38 = param_1[2] + query_radius;
+  local_34 = *pos - query_radius;
+  local_30 = pos[1] - query_radius;
+  local_2c = pos[2] - query_radius;
+  local_60[8] = *pos + query_radius;
+  local_3c = pos[1] + query_radius;
+  local_38 = pos[2] + query_radius;
   local_60[4] = 0.0;
   local_60[5] = 1.0;
   local_60[6] = 1.0;
@@ -5625,7 +5693,7 @@ void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
   local_8c = 1.0;
   local_88 = 1.0;
   local_84 = 0.25;
-  local_1034 = CM_AreaEntities(&local_34,local_60 + 8,local_1030,200,param_2);
+  local_1034 = CM_AreaEntities(&local_34,local_60 + 8,local_1030,200,contentmask);
   for (local_1038 = 0; local_1038 < (int)local_1034; local_1038 = local_1038 + 1) {
     local_103c = g_entities + local_1030[local_1038];
     AnglesToAxis(g_entities[local_1030[local_1038]].r.currentAngles,(float (*) [3])local_1060);
@@ -5651,11 +5719,11 @@ void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
       else {
         local_10a8 = local_60;
       }
-      ppVar8 = &local_10a0;
-      pgVar6 = local_103c;
-      pfVar9 = local_10a8;
+      ppVar4 = &local_10a0;
+      key = local_103c;
+      pfVar5 = local_10a8;
       pXVar2 = DObjGetXModel(local_10a4,0);
-      render_xmodel_chull(pXVar2,(uint)pgVar6,ppVar8,pfVar9);
+      render_xmodel_chull(pXVar2,(uint)key,ppVar4,pfVar5);
     }
   }
   iVar3 = Phys_GetMaskFromDVar();
@@ -5670,7 +5738,7 @@ void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
   local_10b4 = local_10b0;
   if (local_10b0 == 0) {
     local_10b8 = cgCollWorldLocalClientNum;
-    local_1034 = CG_AreaEntities(&local_34,local_60 + 8,local_1030,200,param_2);
+    local_1034 = CG_AreaEntities(&local_34,local_60 + 8,local_1030,200,contentmask);
     for (local_10bc = 0; local_10bc < (int)local_1034; local_10bc = local_10bc + 1) {
       if (0x3ff < local_1030[local_10bc]) {
         local_10c0 = CG_GetEntity(local_10b8,local_1030[local_10bc]);
@@ -5698,17 +5766,17 @@ void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
           else {
             local_1138 = &local_90;
           }
-          ppVar8 = &local_1130;
-          pcVar7 = local_10c0;
-          pfVar9 = local_1138;
+          ppVar4 = &local_1130;
+          key_00 = local_10c0;
+          pfVar5 = local_1138;
           pXVar2 = DObjGetXModel(local_1134,0);
-          render_xmodel_chull(pXVar2,(uint)pcVar7,ppVar8,pfVar9);
+          render_xmodel_chull(pXVar2,(uint)key_00,ppVar4,pfVar5);
         }
       }
     }
     for (local_1140 = DYNENT_DRAW_MODEL; (int)local_1140 < 2;
         local_1140 = local_1140 + DYNENT_DRAW_BRUSH) {
-      uVar1 = DynEntCl_AreaEntities(local_1140,&local_34,local_60 + 8,param_2,1000,local_1910);
+      uVar1 = DynEntCl_AreaEntities(local_1140,&local_34,local_60 + 8,contentmask,1000,local_1910);
       local_1034 = (uint)uVar1;
       local_1914 = CG_GetLocalClientGlobals(0);
       local_1918 = (local_1914->predictedPlayerState).origin;
@@ -5740,9 +5808,9 @@ void __cdecl Phys_FindAndRenderEntityBrushes(float *param_1,int param_2)
           render_xmodel_chull(local_3880->xModel,(uint)local_3880,&local_38f0,local_60 + 4);
           iVar3 = XModelHasCollmap(local_3880->xModel);
           if (iVar3 != 0) {
-            pPVar4 = XModelGetCollmap(local_3880->xModel,0);
-            pcVar5 = get_collmap_chull(pPVar4,(uint)local_3880);
-            render_chull(pcVar5,&local_38f0,&local_70);
+            geomList = XModelGetCollmap(local_3880->xModel,0);
+            first = get_collmap_chull(geomList,(uint)local_3880);
+            render_chull(first,&local_38f0,&local_70);
           }
         }
         else {
@@ -5774,11 +5842,11 @@ void __thiscall colgeom_debug_renderer_t::reset(colgeom_debug_renderer_t *this)
 // 00851520  visit  (physics/phys_main.cpp:2015)
 
 void __thiscall
-colgeom_debug_renderer_t::visit(colgeom_debug_renderer_t *this,CollisionAabbTree *param_1)
+colgeom_debug_renderer_t::visit(colgeom_debug_renderer_t *this,CollisionAabbTree *tree)
 
 {
   if (this->bRenderStaticCollision != false) {
-    add_debug_patch(param_1);
+    add_debug_patch(tree);
   }
   return;
 }
@@ -5786,11 +5854,11 @@ colgeom_debug_renderer_t::visit(colgeom_debug_renderer_t *this,CollisionAabbTree
 
 // 00851550  visit  (physics/phys_main.cpp:2023)
 
-void __thiscall colgeom_debug_renderer_t::visit(colgeom_debug_renderer_t *this,cbrush_t *param_1)
+void __thiscall colgeom_debug_renderer_t::visit(colgeom_debug_renderer_t *this,cbrush_t *brush)
 
 {
   if (this->bRenderBrushes != false) {
-    add_debug_brush(param_1,(phys_mat44 *)0x0);
+    add_debug_brush(brush,(phys_mat44 *)0x0);
   }
   return;
 }
@@ -5800,10 +5868,10 @@ void __thiscall colgeom_debug_renderer_t::visit(colgeom_debug_renderer_t *this,c
 
 void __thiscall
 colgeom_debug_renderer_t::update
-          (colgeom_debug_renderer_t *this,float *param_1,float *param_2,int param_3,float *param_4)
+          (colgeom_debug_renderer_t *this,float *_mn,float *_mx,int mask,float *expand_vec)
 
 {
-  char local_5c;
+  bool local_5c;
   float local_44;
   float local_40;
   float local_3c;
@@ -5813,37 +5881,37 @@ colgeom_debug_renderer_t::update
   float local_2c;
   float local_28;
   float local_24;
-  char local_1d;
-  float local_1c;
+  bool inside;
+  float mx;
   float local_18;
   float local_14;
-  float local_10;
+  float mn;
   float local_c;
   float local_8;
   
-  local_2c = (float)this->_padding_ - *param_1;
-  local_28 = (float)this->_padding_ - param_1[1];
-  local_24 = (float)this->_padding_ - param_1[2];
-  local_38 = *param_2 - (float)this->_padding_;
-  local_34 = param_2[1] - (float)this->_padding_;
-  local_30 = param_2[2] - (float)this->_padding_;
+  local_2c = (float)this->_padding_ - *_mn;
+  local_28 = (float)this->_padding_ - _mn[1];
+  local_24 = (float)this->_padding_ - _mn[2];
+  local_38 = *_mx - (float)this->_padding_;
+  local_34 = _mx[1] - (float)this->_padding_;
+  local_30 = _mx[2] - (float)this->_padding_;
   Vec3Max(&local_2c,&local_38,&local_44);
   if (((0.0 <= local_44) || (0.0 <= local_40)) || (0.0 <= local_3c)) {
-    local_5c = '\0';
+    local_5c = false;
   }
   else {
-    local_5c = '\x01';
+    local_5c = true;
   }
-  local_1d = local_5c;
-  if ((this->_padding_ != param_3) || (local_5c == '\0')) {
-    local_10 = *param_1 - *param_4;
-    local_c = param_1[1] - param_4[1];
-    local_8 = param_1[2] - param_4[2];
-    local_1c = *param_2 + *param_4;
-    local_18 = param_2[1] + param_4[1];
-    local_14 = param_2[2] + param_4[2];
+  inside = local_5c;
+  if ((this->_padding_ != mask) || (local_5c == false)) {
+    mn = *_mn - *expand_vec;
+    local_c = _mn[1] - expand_vec[1];
+    local_8 = _mn[2] - expand_vec[2];
+    mx = *_mx + *expand_vec;
+    local_18 = _mx[1] + expand_vec[1];
+    local_14 = _mx[2] + expand_vec[2];
     reset(this);
-    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&local_10,&local_1c,param_3);
+    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&mn,&mx,mask);
   }
   return;
 }
@@ -5887,6 +5955,7 @@ int __cdecl Phys_GetMaskFromDVar(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int mask;
   
   iVar3 = (g_debugRenderMask->current).integer;
   if (((iVar3 < 0) || (8 < iVar3)) &&
@@ -5935,64 +6004,67 @@ int __cdecl Phys_GetMaskFromDVar(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Phys_RenderWorldCollMesh(float *param_1,bool param_2,bool param_3)
+void __cdecl Phys_RenderWorldCollMesh(float *pos,bool bRenderStaticCollision,bool bRenderBrushes)
 
 {
   float fVar1;
-  colgeom_debug_renderer_t local_a4;
+  float distsq;
+  float thresh;
+  float s_expand_h;
+  colgeom_debug_renderer_t colgeomDebugVisitor;
   uint local_24;
-  undefined1 local_1d;
-  undefined4 local_1c;
-  float local_18;
+  bool bDebugRenderChanged;
+  float s_expand_v;
+  float expand_vec;
   float local_14;
   undefined4 local_10;
-  int local_c;
-  char local_5;
+  int mask;
+  bool bDoWork;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5 = '\0';
-  local_1d = Phys_DebugRenderChanged();
-  if ((param_2) || (param_3)) {
-    if ((bool)local_1d) {
-      local_5 = '\x01';
+  bDoWork = false;
+  bDebugRenderChanged = Phys_DebugRenderChanged();
+  if ((bRenderStaticCollision) || (bRenderBrushes)) {
+    if (bDebugRenderChanged) {
+      bDoWork = true;
     }
     else if (previous_pos[0] == 3.4028235e+38) {
-      local_5 = '\x01';
+      bDoWork = true;
     }
     else {
       fVar1 = (g_debugRenderCollisionDistance->current).value * 0.5;
       if (fVar1 * fVar1 <
-          (*param_1 - previous_pos[0]) * (*param_1 - previous_pos[0]) +
-          (param_1[1] - previous_pos[1]) * (param_1[1] - previous_pos[1]) +
-          (param_1[2] - previous_pos[2]) * (param_1[2] - previous_pos[2])) {
-        local_5 = '\x01';
+          (*pos - previous_pos[0]) * (*pos - previous_pos[0]) +
+          (pos[1] - previous_pos[1]) * (pos[1] - previous_pos[1]) +
+          (pos[2] - previous_pos[2]) * (pos[2] - previous_pos[2])) {
+        bDoWork = true;
       }
     }
-    if (local_5 != '\0') {
-      previous_pos[0] = *param_1;
-      previous_pos[1] = param_1[1];
-      previous_pos[2] = param_1[2];
+    if (bDoWork != false) {
+      previous_pos[0] = *pos;
+      previous_pos[1] = pos[1];
+      previous_pos[2] = pos[2];
       DebugPatchesAndBrushesProlog();
       clear_debug_brushes_and_patches();
-      colgeom_visitor_t::colgeom_visitor_t((colgeom_visitor_t *)&local_a4);
-      local_a4._padding_ = (int)colgeom_debug_renderer_t::vftable;
-      colgeom_debug_renderer_t::reset(&local_a4);
-      local_a4.bRenderStaticCollision = param_2;
-      local_a4.bRenderBrushes = param_3;
-      local_a4.lightPos[0] = *param_1;
-      local_a4.lightPos[1] = param_1[1];
-      local_a4.lightPos[2] = param_1[2];
-      local_c = Phys_GetMaskFromDVar();
-      local_18 = (float)(g_debugRenderCollisionDistance->current).integer;
-      local_1c = 0x459c4000;
+      colgeom_visitor_t::colgeom_visitor_t((colgeom_visitor_t *)&colgeomDebugVisitor);
+      colgeomDebugVisitor._padding_ = (int)colgeom_debug_renderer_t::vftable;
+      colgeom_debug_renderer_t::reset(&colgeomDebugVisitor);
+      colgeomDebugVisitor.bRenderStaticCollision = bRenderStaticCollision;
+      colgeomDebugVisitor.bRenderBrushes = bRenderBrushes;
+      colgeomDebugVisitor.lightPos[0] = *pos;
+      colgeomDebugVisitor.lightPos[1] = pos[1];
+      colgeomDebugVisitor.lightPos[2] = pos[2];
+      mask = Phys_GetMaskFromDVar();
+      expand_vec = (float)(g_debugRenderCollisionDistance->current).integer;
+      s_expand_v = 5000.0;
       local_10 = 0x459c4000;
-      local_14 = local_18;
-      colgeom_debug_renderer_t::reset(&local_a4);
-      colgeom_debug_renderer_t::update(&local_a4,param_1,param_1,local_c,&local_18);
+      local_14 = expand_vec;
+      colgeom_debug_renderer_t::reset(&colgeomDebugVisitor);
+      colgeom_debug_renderer_t::update(&colgeomDebugVisitor,pos,pos,mask,&expand_vec);
       DebugPatchesAndBrushesEpilog();
     }
   }
-  else if ((bool)local_1d) {
+  else if (bDebugRenderChanged) {
     DebugPatchesAndBrushesProlog();
     clear_debug_brushes_and_patches();
     R_ClearPersistentDebugPolygons();
@@ -6009,79 +6081,78 @@ void __cdecl Phys_RenderWorldCollMesh(float *param_1,bool param_2,bool param_3)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 void __cdecl debug_loop(void)
 
 {
   ushort uVar1;
   int iVar2;
-  DObj *local_79c;
-  float local_794 [3];
-  DynEntityDef *local_788;
-  float local_784;
+  DObj *dobj;
+  int id;
+  float endpos [3];
+  DynEntityDef *def;
+  float hitDir;
   undefined4 local_780;
   undefined4 local_77c;
-  float local_778;
+  float vel;
   float local_774;
   float local_770;
-  float local_76c;
+  float origin;
   float local_768;
   float local_764;
-  float local_760 [4];
-  CollisionAabbTreeIndex local_750;
+  float quat [5];
   col_prim_t_u_4 local_74c;
   float local_748;
-  colgeom_visitor_inlined_t<200> local_744;
-  col_prim_t_u_4 local_88;
+  colgeom_visitor_inlined_t<200> visitor;
+  col_prim_t_u_4 mins;
   int local_84;
   col_prim_t_u_4 local_80;
-  float local_7c;
+  float maxs;
   col_prim_t_u_4 local_78;
   float local_74;
-  col_prim_t_u_4 local_70;
-  int local_6c;
-  col_prim_t_u_4 local_68;
-  int local_64;
-  col_prim_t_u_4 local_60;
-  CollisionAabbTreeIndex local_5c;
+  int mask_2;
+  int hitNum;
+  int mask;
+  int passEntityNum;
+  cg_s *cgameGlob;
+  float start;
   col_prim_t_u_4 local_58;
   float local_54;
-  col_prim_t_u_4 local_50;
+  col_prim_t_u_4 end;
   float local_4c;
   col_prim_t_u_4 local_48;
-  char local_41;
-  float4 local_40;
+  bool render_hitpoint;
+  float4 results;
   col_prim_t_u_4 local_30;
   int local_24;
   int local_c;
   col_prim_t_u_4 local_8;
   
   local_8.tree = (CollisionAabbTree *)(__security_cookie ^ (uint)&stack0xfffffffc);
-  local_60.tree = (CollisionAabbTree *)CG_GetLocalClientGlobals(0);
-  if ((((cg_s *)local_60.tree != (cg_s *)0x0) && (g_bDebugRenderBulletMeshes != (dvar_s *)0x0)) &&
+  cgameGlob = CG_GetLocalClientGlobals(0);
+  if (((cgameGlob != (cg_s *)0x0) && (g_bDebugRenderBulletMeshes != (dvar_s *)0x0)) &&
      (g_bDebugRenderEntityBrushes != (dvar_s *)0x0)) {
-    local_5c = local_60.tree[0x2176].u;
-    local_58 = *(col_prim_t_u_4 *)(local_60.tree + 0x2177);
-    local_54 = local_60.tree[0x2177].origin[1];
-    local_50 = (col_prim_t_u_4)
-               (scale * (*(float (*) [3])&local_60.tree[0x2177].materialIndex)[0] + (float)local_5c)
-    ;
-    local_4c = scale * local_60.tree[0x2177].halfSize[0] + (float)local_58;
-    local_48 = (col_prim_t_u_4)(scale * local_60.tree[0x2177].halfSize[1] + local_54);
+    start = (cgameGlob->refdef).vieworg[0];
+    local_58 = *(col_prim_t_u_4 *)((cgameGlob->refdef).vieworg + 1);
+    local_54 = (cgameGlob->refdef).vieworg[2];
+    end = (col_prim_t_u_4)(scale * (cgameGlob->refdef).viewaxis[0][0] + start);
+    local_4c = scale * (cgameGlob->refdef).viewaxis[0][1] + (float)local_58;
+    local_48 = (col_prim_t_u_4)(scale * (cgameGlob->refdef).viewaxis[0][2] + local_54);
     if ((g_bDebugRenderBulletMeshes->current).enabled != false) {
-      Phys_FindAndRenderBulletMesh((float *)&local_5c,(float *)&local_50,0x280e833,false);
+      Phys_FindAndRenderBulletMesh(&start,(float *)&end,0x280e833,false);
     }
     if ((g_bDebugRenderEntityBrushes->current).enabled != false) {
-      local_68.tree = (CollisionAabbTree *)0x42dce83b;
+      mask = 0x42dce83b;
       if (((g_bDebugRenderPatches->current).enabled != false) ||
          ((g_bDebugRenderBrushes->current).enabled != false)) {
-        local_68 = (col_prim_t_u_4)Phys_GetMaskFromDVar();
+        mask = Phys_GetMaskFromDVar();
       }
-      Phys_FindAndRenderEntityBrushes((float *)&local_5c,(int)local_68);
+      Phys_FindAndRenderEntityBrushes(&start,mask);
     }
     g_debug_partition = 0;
     Phys_RenderWorldCollMesh
-              ((float *)&local_5c,(g_bDebugRenderPatches->current).enabled,
+              (&start,(g_bDebugRenderPatches->current).enabled,
                (g_bDebugRenderBrushes->current).enabled);
     if ((g_bDebugRenderStaticModelsBounds->current).enabled != false) {
       draw_static_models_bounds();
@@ -6091,94 +6162,87 @@ void __cdecl debug_loop(void)
       print_static_models_stats();
     }
     if ((debug_trace->current).integer != 0) {
-      local_64 = 0;
-      local_40.v[0] = 0.0;
-      local_40.v[1] = 0.0;
-      local_40.v[2] = 0.0;
-      local_40.v[3] = 0.0;
-      memset((uchar *)local_40.u,'\0',0x38);
-      local_41 = '\0';
+      passEntityNum = 0;
+      results.v[0] = 0.0;
+      results.v[1] = 0.0;
+      results.v[2] = 0.0;
+      results.v[3] = 0.0;
+      memset((uchar *)results.u,'\0',0x38);
+      render_hitpoint = false;
       switch((debug_trace->current).integer) {
       case 1:
-        local_6c = 0;
-        CG_SightTracePoint(&local_6c,(float *)&local_5c,(float *)&local_50,0x280e833,
-                           (trace_t *)&local_40);
-        local_41 = '\x01';
+        hitNum = 0;
+        CG_SightTracePoint(&hitNum,&start,(float *)&end,0x280e833,(trace_t *)&results);
+        render_hitpoint = true;
         break;
       case 2:
-        G_LocationalTrace((trace_t *)&local_40,(float *)&local_5c,(float *)&local_50,local_64,
-                          0x280e833,&bulletPriorityMap,
-                          (_func___cdecl_int_int_col_context_t_ptr *)0x0);
-        local_41 = '\x01';
+        G_LocationalTrace((trace_t *)&results,&start,(float *)&end,passEntityNum,0x280e833,
+                          &bulletPriorityMap,(_func___cdecl_int_int_col_context_t_ptr *)0x0);
+        render_hitpoint = true;
         g_debug_partition = local_c;
         break;
       case 3:
-        CG_LocationalTrace((trace_t *)&local_40,(float *)&local_5c,(float *)&local_50,local_64,
-                           0x280e833,false,(col_context_t *)0x0);
-        local_41 = '\x01';
+        CG_LocationalTrace((trace_t *)&results,&start,(float *)&end,passEntityNum,0x280e833,false,
+                           (col_context_t *)0x0);
+        render_hitpoint = true;
         g_debug_partition = local_c;
         break;
       case 4:
-        colgeom_visitor_t::colgeom_visitor_t((colgeom_visitor_t *)&local_744);
-        local_744._padding_ = (int)colgeom_visitor_inlined_t<200>::vftable;
-        colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)&local_744);
-        local_88.tree = (CollisionAabbTree *)0xc2480000;
+        colgeom_visitor_t::colgeom_visitor_t((colgeom_visitor_t *)&visitor);
+        visitor._padding_ = (int)colgeom_visitor_inlined_t<200>::vftable;
+        colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)&visitor);
+        mins.tree = (CollisionAabbTree *)0xc2480000;
         local_84 = -0x3db80000;
         local_80.tree = (CollisionAabbTree *)0xc2480000;
-        local_7c = 50.0;
+        maxs = 50.0;
         local_78 = (col_prim_t_u_4)50.0;
         local_74 = 50.0;
-        local_70 = (col_prim_t_u_4)0xffffffff;
-        colgeom_visitor_inlined_t<200>::update
-                  (&local_744,(float *)&local_5c,(float *)&local_5c,(float *)&local_88,&local_7c,-1)
-        ;
-        render_prims(local_744.prims,local_744.nprims);
-        local_744._padding_ = (int)visitor_base_t::vftable;
+        mask_2 = -1;
+        colgeom_visitor_inlined_t<200>::update(&visitor,&start,&start,(float *)&mins,&maxs,-1);
+        render_prims(visitor.prims,visitor.nprims);
+        visitor._padding_ = (int)visitor_base_t::vftable;
         break;
       case 5:
         if (((down != 0) && (iVar2 = Key_IsDown(0,0x13), iVar2 == 0)) && (cm.dynEntCount[0] != 0)) {
-          local_750 = local_5c;
+          quat[4] = start;
           local_74c = local_58;
           local_748 = local_54;
-          local_784 = 1.0;
+          hitDir = 1.0;
           local_780 = 0;
           local_77c = 0;
-          local_760[0] = 0.0;
-          local_760[1] = 0.0;
-          local_760[2] = 0.0;
-          local_760[3] = 1.0;
-          local_76c = sc1 * (*(float (*) [3])&local_60.tree[0x2177].materialIndex)[0] +
-                      (float)local_5c;
-          local_768 = sc1 * local_60.tree[0x2177].halfSize[0] + (float)local_58;
-          local_764 = sc1 * local_60.tree[0x2177].halfSize[1] + local_54;
-          local_778 = velScale * (*(float (*) [3])&local_60.tree[0x2177].materialIndex)[0];
-          local_774 = velScale * local_60.tree[0x2177].halfSize[0];
-          local_770 = velScale * local_60.tree[0x2177].halfSize[1];
+          quat[0] = 0.0;
+          quat[1] = 0.0;
+          quat[2] = 0.0;
+          quat[3] = 1.0;
+          origin = sc1 * (cgameGlob->refdef).viewaxis[0][0] + start;
+          local_768 = sc1 * (cgameGlob->refdef).viewaxis[0][1] + (float)local_58;
+          local_764 = sc1 * (cgameGlob->refdef).viewaxis[0][2] + local_54;
+          vel = velScale * (cgameGlob->refdef).viewaxis[0][0];
+          local_774 = velScale * (cgameGlob->refdef).viewaxis[0][1];
+          local_770 = velScale * (cgameGlob->refdef).viewaxis[0][2];
           iVar2 = G_irand(0,cm.dynEntCount[0] - 1);
-          local_788 = cm.dynEntDefList[0] + iVar2;
-          if (local_788->physPreset != (PhysPreset *)0x0) {
-            DynEntCl_CreateEntityModel
-                      (local_788->xModel,local_760,&local_76c,&local_76c,&local_778,7,
-                       local_788->physPreset);
+          def = cm.dynEntDefList[0] + iVar2;
+          if (def->physPreset != (PhysPreset *)0x0) {
+            DynEntCl_CreateEntityModel(def->xModel,quat,&origin,&origin,&vel,7,def->physPreset);
           }
         }
         down = Key_IsDown(0,0x13);
       }
-      if ((local_41 != '\0') && ((float)local_30 < 1.0)) {
-        Vec3Lerp((float *)&local_5c,(float *)&local_50,(float)local_30,local_794);
-        G_DebugStar(local_794,colorRed,1);
+      if ((render_hitpoint != false) && ((float)local_30 < 1.0)) {
+        Vec3Lerp(&start,(float *)&end,(float)local_30,endpos);
+        G_DebugStar(endpos,colorRed,1);
         if (local_24 == 1) {
-          uVar1 = Trace_GetEntityHitId((trace_t *)&local_40);
-          local_79c = (DObj *)0x0;
+          uVar1 = Trace_GetEntityHitId((trace_t *)&results);
+          dobj = (DObj *)0x0;
           if ((debug_trace->current).integer == 2) {
-            local_79c = Com_GetServerDObj((uint)uVar1);
+            dobj = Com_GetServerDObj((uint)uVar1);
           }
           else if ((debug_trace->current).integer == 3) {
-            local_79c = Com_GetClientDObj((uint)uVar1,0);
+            dobj = Com_GetClientDObj((uint)uVar1,0);
           }
-          if (local_79c != (DObj *)0x0) {
-            if (local_79c != (DObj *)0x0) {
-              DObjGetName(local_79c);
+          if (dobj != (DObj *)0x0) {
+            if (dobj != (DObj *)0x0) {
+              DObjGetName(dobj);
             }
             Com_Printf(0x14,"%d, %s\n");
           }
@@ -6192,15 +6256,17 @@ void __cdecl debug_loop(void)
 
 // 008521E0  SortModelsFunc  (physics/phys_main.cpp:2366)
 
-int __cdecl SortModelsFunc(void *param_1,void *param_2)
+int __cdecl SortModelsFunc(void *a,void *b)
 
 {
   int iVar1;
+  cStaticModel_s **cb;
+  cStaticModel_s **ca;
   
-  if (*(uint *)(*(int *)param_2 + 4) < *(uint *)(*(int *)param_1 + 4)) {
+  if (*(uint *)(*(int *)b + 4) < *(uint *)(*(int *)a + 4)) {
     iVar1 = -1;
   }
-  else if (*(uint *)(*(int *)param_1 + 4) < *(uint *)(*(int *)param_2 + 4)) {
+  else if (*(uint *)(*(int *)a + 4) < *(uint *)(*(int *)b + 4)) {
     iVar1 = 1;
   }
   else {
@@ -6212,10 +6278,13 @@ int __cdecl SortModelsFunc(void *param_1,void *param_2)
 
 // 00851E30  print_smodel  (physics/phys_main.cpp:2382)
 
-void __cdecl print_smodel(cStaticModel_s *param_1,int param_2,float *param_3)
+void __cdecl print_smodel(cStaticModel_s *smodel,int refcount,float *dims)
 
 {
-  GamerProfile_WriteSettings((int)param_1->xmodel);
+  XModel *model;
+  int ntris;
+  
+  GamerProfile_WriteSettings((int)smodel->xmodel);
   Com_Printf(0x14,
              "%-42s\t refs( %4d ) lods( %d ) ncol_tris( %4d )   avr dims( %5.0f, %5.0f, %5.0f )\n");
   return;
@@ -6231,17 +6300,18 @@ void __cdecl print_static_models_stats(void)
 {
   cStaticModel_s *pcVar1;
   uint uStack_10054;
-  int iStack_10030;
-  int iStack_1002c;
-  cStaticModel_s *pcStack_10028;
+  cStaticModel_s *smodel;
+  int i_2;
+  int i;
+  cStaticModel_s *prevModel;
   cStaticModel_s *apcStack_10024 [16384];
-  int local_24;
-  float local_14;
+  int refcount;
+  float dims;
   float local_10;
   float local_c;
-  uint local_8;
+  int nmodels;
   
-  local_8 = 0x851efd;
+  nmodels = 0x851efd;
   Com_Printf(0x14,"Static models %d\n\n");
   if ((int)cm.numStaticModels < 0x4001) {
     uStack_10054 = cm.numStaticModels;
@@ -6249,34 +6319,34 @@ void __cdecl print_static_models_stats(void)
   else {
     uStack_10054 = 0x4000;
   }
-  local_8 = uStack_10054;
-  for (iStack_1002c = 0; iStack_1002c < (int)uStack_10054; iStack_1002c = iStack_1002c + 1) {
-    apcStack_10024[iStack_1002c] = cm.staticModelList + iStack_1002c;
+  nmodels = uStack_10054;
+  for (i = 0; i < (int)uStack_10054; i = i + 1) {
+    apcStack_10024[i] = cm.staticModelList + i;
   }
   qsort(apcStack_10024,uStack_10054,4,SortModelsFunc);
-  local_24 = 1;
-  pcStack_10028 = apcStack_10024[0];
-  local_14 = apcStack_10024[0]->absmax[0] - apcStack_10024[0]->absmin[0];
+  refcount = 1;
+  prevModel = apcStack_10024[0];
+  dims = apcStack_10024[0]->absmax[0] - apcStack_10024[0]->absmin[0];
   local_10 = apcStack_10024[0]->absmax[1] - apcStack_10024[0]->absmin[1];
   local_c = apcStack_10024[0]->absmax[2] - apcStack_10024[0]->absmin[2];
-  for (iStack_10030 = 1; iStack_10030 < (int)local_8; iStack_10030 = iStack_10030 + 1) {
-    pcVar1 = apcStack_10024[iStack_10030];
-    if (pcVar1->xmodel == pcStack_10028->xmodel) {
-      local_24 = local_24 + 1;
-      local_14 = (pcStack_10028->absmax[0] - pcStack_10028->absmin[0]) + local_14;
-      local_10 = (pcStack_10028->absmax[1] - pcStack_10028->absmin[1]) + local_10;
-      local_c = (pcStack_10028->absmax[2] - pcStack_10028->absmin[2]) + local_c;
+  for (i_2 = 1; i_2 < nmodels; i_2 = i_2 + 1) {
+    pcVar1 = apcStack_10024[i_2];
+    if (pcVar1->xmodel == prevModel->xmodel) {
+      refcount = refcount + 1;
+      dims = (prevModel->absmax[0] - prevModel->absmin[0]) + dims;
+      local_10 = (prevModel->absmax[1] - prevModel->absmin[1]) + local_10;
+      local_c = (prevModel->absmax[2] - prevModel->absmin[2]) + local_c;
     }
     else {
-      print_smodel(pcStack_10028,local_24,&local_14);
-      local_14 = pcVar1->absmax[0] - pcVar1->absmin[0];
+      print_smodel(prevModel,refcount,&dims);
+      dims = pcVar1->absmax[0] - pcVar1->absmin[0];
       local_10 = pcVar1->absmax[1] - pcVar1->absmin[1];
       local_c = pcVar1->absmax[2] - pcVar1->absmin[2];
-      local_24 = 1;
-      pcStack_10028 = pcVar1;
+      refcount = 1;
+      prevModel = pcVar1;
     }
   }
-  print_smodel(pcStack_10028,local_24,&local_14);
+  print_smodel(prevModel,refcount,&dims);
   return;
 }
 
@@ -6294,13 +6364,15 @@ void __cdecl draw_static_models_bounds(void)
   cg_s *pcVar1;
   cStaticModel_s *pcVar2;
   float fVar3;
-  uint local_50;
+  int local_50;
   uint local_4c;
-  int local_34;
-  int local_28;
-  float local_20 [3];
-  uint local_14;
-  float local_10;
+  int i;
+  float len2;
+  int si;
+  cg_s *cgameGlob;
+  float proj [3];
+  int nmodels;
+  float p;
   float local_c;
   float local_8;
   
@@ -6310,32 +6382,32 @@ void __cdecl draw_static_models_bounds(void)
   else {
     local_4c = 0x4000;
   }
-  local_14 = local_4c;
+  nmodels = local_4c;
   pcVar1 = CG_GetLocalClientGlobals(0);
-  local_10 = (pcVar1->predictedPlayerState).origin[0];
+  p = (pcVar1->predictedPlayerState).origin[0];
   local_c = (pcVar1->predictedPlayerState).origin[1];
   local_8 = (pcVar1->predictedPlayerState).origin[2];
-  for (local_28 = 0; local_28 < (int)local_14; local_28 = local_28 + 1) {
-    pcVar2 = cm.staticModelList + local_28;
-    Vec3Min(pcVar2->absmax,&local_10,local_20);
-    Vec3Max(local_20,pcVar2->absmin,local_20);
-    fVar3 = Vec3DistanceSq(&local_10,local_20);
-    smodel_debug_infos[local_28].smodel = pcVar2;
-    smodel_debug_infos[local_28].dist2 = fVar3;
+  for (si = 0; si < nmodels; si = si + 1) {
+    pcVar2 = cm.staticModelList + si;
+    Vec3Min(pcVar2->absmax,&p,proj);
+    Vec3Max(proj,pcVar2->absmin,proj);
+    fVar3 = Vec3DistanceSq(&p,proj);
+    smodel_debug_infos[si].smodel = pcVar2;
+    smodel_debug_infos[si].dist2 = fVar3;
   }
-  qsort(smodel_debug_infos,local_14,8,SortDEntsByDist);
-  local_34 = 0;
+  qsort(smodel_debug_infos,nmodels,8,SortDEntsByDist);
+  i = 0;
   while( true ) {
-    if ((int)local_14 < nboxes) {
-      local_50 = local_14;
+    if (nmodels < nboxes) {
+      local_50 = nmodels;
     }
     else {
       local_50 = nboxes;
     }
-    if ((int)local_50 <= local_34) break;
-    G_DebugBox(vec3_origin,(smodel_debug_infos[local_34].smodel)->absmin,
-               (smodel_debug_infos[local_34].smodel)->absmax,0.0,colorWhite,1,1);
-    local_34 = local_34 + 1;
+    if (local_50 <= i) break;
+    G_DebugBox(vec3_origin,(smodel_debug_infos[i].smodel)->absmin,
+               (smodel_debug_infos[i].smodel)->absmax,0.0,colorWhite,1,1);
+    i = i + 1;
   }
   return;
 }
@@ -6371,17 +6443,17 @@ void __cdecl _dynamic_initializer_for__g_pop_iter_end__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl buoyancy_worker(jqBatch *param_1)
+int __cdecl buoyancy_worker(jqBatch *pBatch)
 
 {
-  PhysObjUserData *pPVar1;
+  PhysObjUserData *userData;
   
   while (g_pop_iter_end.m_ptr != g_pop_iter.m_ptr) {
     LOCK();
     UNLOCK();
-    pPVar1 = (PhysObjUserData *)(g_pop_iter.m_ptr + 2);
+    userData = (PhysObjUserData *)(g_pop_iter.m_ptr + 2);
     g_pop_iter.m_ptr = (g_pop_iter.m_ptr)->m_next_T_internal;
-    Phys_BodyGrabSnapshotNitrous(pPVar1,g_delta_t);
+    Phys_BodyGrabSnapshotNitrous(userData,g_delta_t);
   }
   return 0;
 }
@@ -6410,7 +6482,7 @@ void __cdecl _dynamic_initializer_for__buoyancyModule__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl UpdateRigidBody(float param_1)
+void __cdecl UpdateRigidBody(float delta_t)
 
 {
   float fVar1;
@@ -6438,11 +6510,11 @@ void __cdecl UpdateRigidBody(float param_1)
     }
     gravityChange = false;
   }
-  if (0.1 <= param_1) {
+  if (0.1 <= delta_t) {
     local_60 = 0.1;
   }
   else {
-    local_60 = param_1;
+    local_60 = delta_t;
   }
   Phys_AddCacheImpulses();
   Nitrous_ForEachBody<void_(__cdecl*)(PhysObjUserData_&,float)>
@@ -6484,87 +6556,87 @@ void __cdecl UpdateRigidBody(float param_1)
 void __cdecl Phys_CollisionCallback(void)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  phys_vec3 *ppVar3;
-  phys_vec3 local_b0;
-  phys_vec3 local_a0;
+  int iVar1;
+  phys_mat44 *mat;
+  gjk_base_t *geom_00;
+  code *pcVar2;
+  bool bVar3;
+  phys_vec3 *v2;
+  phys_free_list<rigid_body_constraint_contact> *ppVar4;
+  undefined1 local_b0 [12];
+  phys_vec3 closest_point;
   phys_vec3 local_90;
   phys_vec3 local_80;
-  phys_vec3 local_70;
-  gjk_base_t *local_54;
-  phys_mat44 *local_50;
+  undefined1 local_70 [12];
+  phys_vec3 player_origin_loc;
   broad_phase_info *local_4c;
-  float local_48;
-  float local_44;
-  phys_vec3 local_40;
-  centity_s *local_28;
-  T_internal_base *local_24;
+  gjk_base_t *geom;
+  undefined1 bpi_env [4];
+  float max_draw_dist_sq;
+  phys_vec3 player_origin;
   T_internal_base *local_20;
-  T_internal_base *local_1c;
-  int local_18;
-  int local_14;
+  centity_s *player_cent;
   
-  local_14 = physGlob.objects_by_world[0].m_alloc_count;
   if ((9 < physGlob.objects_by_world[0].m_alloc_count) ||
-     (local_18 = physGlob.objects_by_world[1].m_alloc_count,
-     3 < physGlob.objects_by_world[1].m_alloc_count)) {
+     (3 < physGlob.objects_by_world[1].m_alloc_count)) {
     cdl_proftimer::start_capture(&proftimer_physics_frame_advance);
   }
   prop_system_collision_process();
   broad_phase_process();
   Phys_EffectsProcess();
   if ((phys_drawcontacts->current).enabled != false) {
-    local_24 = &(g_physics_system->m_list_rbc_contact).m_dummy_head;
-    local_20 = (g_physics_system->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
-    local_1c = local_20;
-    for (; local_24 != local_20; local_20 = local_20->m_next_T_internal) {
+    ppVar4 = &g_physics_system->m_list_rbc_contact;
+    for (local_20 = (g_physics_system->m_list_rbc_contact).m_dummy_head.m_next_T_internal;
+        ppVar4 != (phys_free_list<rigid_body_constraint_contact> *)local_20;
+        local_20 = local_20->m_next_T_internal) {
       render_contact((rigid_body_constraint_contact *)(local_20 + 1));
     }
   }
   if (0 < (render_bpi_env_collision->current).integer) {
-    local_28 = CG_GetEntity(0,0);
-    Phys_Vec3ToNitrousVec(&local_40,(local_28->pose).origin);
-    local_44 = (float)(render_bpi_env_collision->current).integer;
-    local_48 = local_44 * local_44;
+    player_origin.w = (float)CG_GetEntity(0,0);
+    Phys_Vec3ToNitrousVec((phys_vec3 *)bpi_env,(((centity_s *)player_origin.w)->pose).origin);
+    iVar1 = (render_bpi_env_collision->current).integer;
     for (local_4c = G_BPM->m_list_bpi_env; local_4c != (broad_phase_info *)0x0;
         local_4c = (broad_phase_info *)local_4c->_padding_) {
-      local_50 = local_4c->m_cg_to_world_xform;
-      local_54 = (gjk_base_t *)local_4c->m_gjk_geom;
-      (**(code **)((int)*(phys_gjk_geom *)local_54 + 0x24))();
-      phys_full_inv_multiply(&local_70,local_50,&local_40);
-      if ((local_54->m_flags & 2) == 0) {
-        bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x52,
+      mat = local_4c->m_cg_to_world_xform;
+      geom_00 = (gjk_base_t *)local_4c->m_gjk_geom;
+      (**(code **)(*(int *)geom_00 + 0x24))();
+      phys_full_inv_multiply((phys_vec3 *)local_70,mat,(phys_vec3 *)bpi_env);
+      if ((geom_00->m_flags & 2) == 0) {
+        bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x52,
                           "get_flag(FLAG_AABB_LOC_VALID)","");
-        if (bVar2) {
-          pcVar1 = (code *)swi(3);
-          (*pcVar1)();
+        if (bVar3) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
       }
-      local_80.x = (local_54->m_aabb_mn_loc).x;
-      local_80.y = (local_54->m_aabb_mn_loc).y;
-      local_80.z = (local_54->m_aabb_mn_loc).z;
-      local_80.w = (local_54->m_aabb_mn_loc).w;
-      if ((local_54->m_flags & 2) == 0) {
-        bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x53,
+      local_80.x = (geom_00->m_aabb_mn_loc).x;
+      local_80.y = (geom_00->m_aabb_mn_loc).y;
+      local_80.z = (geom_00->m_aabb_mn_loc).z;
+      local_80.w = (geom_00->m_aabb_mn_loc).w;
+      if ((geom_00->m_flags & 2) == 0) {
+        bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x53,
                           "get_flag(FLAG_AABB_LOC_VALID)","");
-        if (bVar2) {
-          pcVar1 = (code *)swi(3);
-          (*pcVar1)();
+        if (bVar3) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
       }
-      local_90.x = (local_54->m_aabb_mx_loc).x;
-      local_90.y = (local_54->m_aabb_mx_loc).y;
-      local_90.z = (local_54->m_aabb_mx_loc).z;
-      local_90.w = (local_54->m_aabb_mx_loc).w;
-      ppVar3 = phys_max(&local_a0,&local_80,&local_70);
-      phys_min(&local_b0,&local_90,ppVar3);
-      if ((local_b0.x - local_70.x) * (local_b0.x - local_70.x) +
-          (local_b0.y - local_70.y) * (local_b0.y - local_70.y) +
-          (local_b0.z - local_70.z) * (local_b0.z - local_70.z) <= local_48) {
-        render_gjk_geom(local_54,local_50);
+      local_90.x = (geom_00->m_aabb_mx_loc).x;
+      local_90.y = (geom_00->m_aabb_mx_loc).y;
+      local_90.z = (geom_00->m_aabb_mx_loc).z;
+      local_90.w = (geom_00->m_aabb_mx_loc).w;
+      v2 = phys_max((phys_vec3 *)&closest_point.y,&local_80,(phys_vec3 *)local_70);
+      phys_min((phys_vec3 *)local_b0,&local_90,v2);
+      if (((float)local_b0._0_4_ - (float)local_70._0_4_) *
+          ((float)local_b0._0_4_ - (float)local_70._0_4_) +
+          ((float)local_b0._4_4_ - (float)local_70._4_4_) *
+          ((float)local_b0._4_4_ - (float)local_70._4_4_) +
+          ((float)local_b0._8_4_ - (float)local_70._8_4_) *
+          ((float)local_b0._8_4_ - (float)local_70._8_4_) <= (float)iVar1 * (float)iVar1) {
+        render_gjk_geom(geom_00,mat);
       }
     }
   }
@@ -6575,21 +6647,21 @@ void __cdecl Phys_CollisionCallback(void)
 
 // 00852C60  Phys_ShouldCollideCallback  (physics/phys_main.cpp:2619)
 
-bool __cdecl Phys_ShouldCollideCallback(broad_phase_base *param_1,broad_phase_base *param_2)
+bool __cdecl Phys_ShouldCollideCallback(broad_phase_base *bpi1,broad_phase_base *bpi2)
 
 {
-  if ((param_1->m_my_collision_type_flags & 0x40) == 0) {
-    if ((param_1->m_my_collision_type_flags & 4) == 0) {
-      if (((param_1->m_my_collision_type_flags & 0x400) != 0) &&
-         ((param_2->m_my_collision_type_flags & 0x400) != 0)) {
+  if ((bpi1->m_my_collision_type_flags & 0x40) == 0) {
+    if ((bpi1->m_my_collision_type_flags & 4) == 0) {
+      if (((bpi1->m_my_collision_type_flags & 0x400) != 0) &&
+         ((bpi2->m_my_collision_type_flags & 0x400) != 0)) {
         return false;
       }
     }
-    else if ((param_2->m_my_collision_type_flags & 0x40) != 0) {
+    else if ((bpi2->m_my_collision_type_flags & 0x40) != 0) {
       return false;
     }
   }
-  else if ((param_2->m_my_collision_type_flags & 4) != 0) {
+  else if ((bpi2->m_my_collision_type_flags & 4) != 0) {
     return false;
   }
   return true;
@@ -6609,14 +6681,16 @@ void __cdecl PhysicsSystem_Update(void)
   bool bVar1;
   cg_s *pcVar2;
   connstate_t cVar3;
-  int local_c;
+  cg_s *cgameGlob;
+  int i;
+  cg_s *cg;
   
   pcVar2 = CG_GetLocalClientGlobals(0);
   if ((pcVar2 != (cg_s *)0x0) && (pcVar2->snap != (snapshot_s *)0x0)) {
-    for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-      bVar1 = CL_LocalClient_IsActive(local_c);
-      if ((bVar1) && (cVar3 = CL_GetLocalClientConnectionState(local_c), 3 < (int)cVar3)) {
-        pcVar2 = CG_GetLocalClientGlobals(local_c);
+    for (i = 0; i < 1; i = i + 1) {
+      bVar1 = CL_LocalClient_IsActive(i);
+      if ((bVar1) && (cVar3 = CL_GetLocalClientConnectionState(i), 3 < (int)cVar3)) {
+        pcVar2 = CG_GetLocalClientGlobals(i);
         if (pcVar2 == (cg_s *)0x0) {
           return;
         }
@@ -6636,50 +6710,50 @@ void __cdecl PhysicsSystem_Update(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_RunToTime(int param_1)
+void __cdecl Phys_RunToTime(int timeNow)
 
 {
   code *pcVar1;
-  char *pcVar2;
-  DWORD DVar3;
-  bool bVar4;
-  ulong64 uVar5;
+  char *Name;
+  DWORD DVar2;
+  bool bVar3;
+  ulong64 uVar4;
   int local_38;
   uint local_2c;
   int local_28;
   int local_1c;
-  int local_8;
+  int time_msec;
   
   proftimer_physics_frame_advance.stamp = tlPcGetTick();
-  bVar4 = 0xfffffffe < (uint)proftimer_physics_frame_advance.calls;
+  bVar3 = 0xfffffffe < (uint)proftimer_physics_frame_advance.calls;
   proftimer_physics_frame_advance.calls._0_4_ = (uint)proftimer_physics_frame_advance.calls + 1;
   proftimer_physics_frame_advance.calls._4_4_ =
-       proftimer_physics_frame_advance.calls._4_4_ + (uint)bVar4;
-  pcVar2 = va("Physics update (obj=%d)");
-  PIXBeginNamedEvent(-1,pcVar2);
+       proftimer_physics_frame_advance.calls._4_4_ + (uint)bVar3;
+  Name = va("Physics update (obj=%d)");
+  PIXBeginNamedEvent(-1,Name);
   if (physInited == false) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0xa78,0,
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0xa78,0,
                              "%s");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
   physGlob.timeLastSnapshot = physGlob.timeLastUpdate;
-  local_1c = param_1 - physGlob.timeLastUpdate;
-  local_8 = local_1c;
+  local_1c = timeNow - physGlob.timeLastUpdate;
+  time_msec = local_1c;
   if (local_1c == 0) goto LAB_00852eac;
   PIXBeginNamedEvent(-1,"auto_rigid_body");
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   auto_rigid_body::update();
-  bVar4 = Demo_IsPlaying();
-  if (bVar4) {
-    bVar4 = Demo_IsPaused();
-    if (((!bVar4) && (0 < local_1c)) && (local_1c < 100)) goto LAB_00852e59;
+  bVar3 = Demo_IsPlaying();
+  if (bVar3) {
+    bVar3 = Demo_IsPaused();
+    if (((!bVar3) && (0 < local_1c)) && (local_1c < 100)) goto LAB_00852e59;
   }
   else {
 LAB_00852e59:
@@ -6692,19 +6766,19 @@ LAB_00852e59:
     else {
       local_38 = local_1c;
     }
-    local_8 = local_38;
+    time_msec = local_38;
     UpdateRigidBody((float)local_38 * 0.001);
   }
-  physGlob.timeLastUpdate = param_1;
+  physGlob.timeLastUpdate = timeNow;
 LAB_00852eac:
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  uVar5 = tlPcGetTick();
-  local_2c = (uint)uVar5;
-  local_28 = (int)(uVar5 >> 0x20);
-  bVar4 = CARRY4(local_2c - (uint)proftimer_physics_frame_advance.stamp,
+  uVar4 = tlPcGetTick();
+  local_2c = (uint)uVar4;
+  local_28 = (int)(uVar4 >> 0x20);
+  bVar3 = CARRY4(local_2c - (uint)proftimer_physics_frame_advance.stamp,
                  (uint)proftimer_physics_frame_advance.value);
   proftimer_physics_frame_advance.value._0_4_ =
        (local_2c - (uint)proftimer_physics_frame_advance.stamp) +
@@ -6712,44 +6786,49 @@ LAB_00852eac:
   proftimer_physics_frame_advance.value._4_4_ =
        proftimer_physics_frame_advance.value._4_4_ +
        ((local_28 - proftimer_physics_frame_advance.stamp._4_4_) -
-       (uint)(local_2c < (uint)proftimer_physics_frame_advance.stamp)) + (uint)bVar4;
+       (uint)(local_2c < (uint)proftimer_physics_frame_advance.stamp)) + (uint)bVar3;
   PIXBeginNamedEvent(-1,"Ragdoll_Update/XDoll_Update");
-  DVar3 = GetCurrentThreadId();
-  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar2 = GetCurrentThreadId();
+  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  Ragdoll_Update(local_8);
-  XDoll_Update(local_8);
+  Ragdoll_Update(time_msec);
+  XDoll_Update(time_msec);
   return;
 }
 
 
 // 00852F70  Phys_ObjGetInterpolatedState  (physics/phys_main.cpp:2724)
 
-void __cdecl Phys_ObjGetInterpolatedState(int param_1,float *param_2,float *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Phys_ObjGetInterpolatedState(int id,float *outPos,float *outQuat)
 
 {
-  float local_88 [9];
-  float local_64 [3];
-  float local_58;
-  float local_54 [9];
-  float local_30 [3];
-  float local_24 [4];
-  float local_14 [4];
+  float oldMat [9];
+  float newPos [3];
+  float frac;
+  float newMat [9];
+  float oldPos [3];
+  float newQuat [4];
+  float oldQuat [4];
   
-  local_58 = 1.0;
+  frac = 1.0;
   if ((phys_msecStep->current).integer < 1) {
-    Phys_ObjGetPosition(param_1,param_2,(float (*) [3])local_54);
-    AxisToQuat((float (*) [3])local_54,param_3);
+    Phys_ObjGetPosition(id,outPos,(float (*) [3])newMat);
+    AxisToQuat((float (*) [3])newMat,outQuat);
   }
   else {
-    Phys_ObjGetSnapshot(param_1,local_30,(float (*) [3])local_88);
-    Phys_ObjGetPosition(param_1,local_64,(float (*) [3])local_54);
-    Vec3Lerp(local_30,local_64,local_58,param_2);
-    AxisToQuat((float (*) [3])local_88,local_14);
-    AxisToQuat((float (*) [3])local_54,local_24);
-    QuatLerp(local_14,local_24,local_58,param_3);
-    Vec4Normalize(param_3);
+    Phys_ObjGetSnapshot(id,oldPos,(float (*) [3])oldMat);
+    Phys_ObjGetPosition(id,newPos,(float (*) [3])newMat);
+    Vec3Lerp(oldPos,newPos,frac,outPos);
+    AxisToQuat((float (*) [3])oldMat,oldQuat);
+    AxisToQuat((float (*) [3])newMat,newQuat);
+    QuatLerp(oldQuat,newQuat,frac,outQuat);
+    Vec4Normalize(outQuat);
   }
   return;
 }
@@ -6762,7 +6841,7 @@ void __cdecl Phys_ObjGetInterpolatedState(int param_1,float *param_2,float *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_SetUserBody(int param_1,float *param_2)
+void __cdecl Phys_SetUserBody(int id,float *position)
 
 {
   phys_mat44 local_80;
@@ -6773,9 +6852,9 @@ void __cdecl Phys_SetUserBody(int param_1,float *param_2)
   user_rigid_body *local_18;
   PhysObjUserData *local_14;
   
-  local_14 = Phys_GetUserData(param_1);
+  local_14 = Phys_GetUserData(id);
   local_18 = (user_rigid_body *)local_14->body;
-  Phys_Vec3ToNitrousVec(param_2,&local_30);
+  Phys_Vec3ToNitrousVec(position,&local_30);
   local_40 = 1.0;
   local_3c = 0;
   local_38 = 0;
@@ -6803,39 +6882,39 @@ void __cdecl Phys_SetUserBody(int param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Phys_ObjIsAsleep(int param_1)
+bool __cdecl Phys_ObjIsAsleep(int id)
 
 {
   PhysObjUserData *pPVar1;
   uint uVar2;
-  char *pcVar3;
-  float local_20;
+  char *Format;
+  float _p1;
   undefined4 local_1c;
   float local_18;
-  float local_14;
+  float _p0;
   undefined4 local_10;
   float local_c;
-  rigid_body *local_8;
+  rigid_body *body;
   
-  pPVar1 = Phys_GetUserData(param_1);
-  local_8 = pPVar1->body;
+  pPVar1 = Phys_GetUserData(id);
+  body = pPVar1->body;
   if (((phys_debugDangerousRigidBodies->current).enabled != false) &&
-     (uVar2 = rigid_body::is_dangerous(local_8), uVar2 != 0)) {
+     (uVar2 = rigid_body::is_dangerous(body), uVar2 != 0)) {
     minspec_mutex::Lock(&g_render_mutex);
-    Phys_NitrousVecToVec3(&local_8->m_last_position,&local_14);
-    local_20 = local_14;
+    Phys_NitrousVecToVec3(&body->m_last_position,&_p0);
+    _p1 = _p0;
     local_1c = local_10;
     local_18 = local_c + 10000.0;
-    G_DebugLineWithDuration(&local_14,&local_20,colorYellow,1,2000);
-    pcVar3 = va(
+    G_DebugLineWithDuration(&_p0,&_p1,colorYellow,1,2000);
+    Format = va(
                "The rigid body at (%6.2f, %6.2f, %6.2f) is about to freakout! Check if it was improperly placed in solid."
                );
-    tlWarning(pcVar3);
+    tlWarning(Format);
     minspec_mutex::Unlock(&g_render_mutex);
   }
-  uVar2 = rigid_body::is_group_stable(local_8);
-  if (((uVar2 == 0) && (uVar2 = rigid_body::is_dangerous(local_8), uVar2 == 0)) &&
-     (-10000.0 <= (local_8->m_mat).w.z)) {
+  uVar2 = rigid_body::is_group_stable(body);
+  if (((uVar2 == 0) && (uVar2 = rigid_body::is_dangerous(body), uVar2 == 0)) &&
+     (-10000.0 <= (body->m_mat).w.z)) {
     return false;
   }
   return true;
@@ -6849,39 +6928,39 @@ bool __cdecl Phys_ObjIsAsleep(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Phys_ObjIsAsleepSingle(int param_1)
+bool __cdecl Phys_ObjIsAsleepSingle(int id)
 
 {
   PhysObjUserData *pPVar1;
   uint uVar2;
-  char *pcVar3;
-  float local_20;
+  char *Format;
+  float _p1;
   undefined4 local_1c;
   float local_18;
-  float local_14;
+  float _p0;
   undefined4 local_10;
   float local_c;
-  rigid_body *local_8;
+  rigid_body *body;
   
-  pPVar1 = Phys_GetUserData(param_1);
-  local_8 = pPVar1->body;
+  pPVar1 = Phys_GetUserData(id);
+  body = pPVar1->body;
   if (((phys_debugDangerousRigidBodies->current).enabled != false) &&
-     (uVar2 = rigid_body::is_dangerous(local_8), uVar2 != 0)) {
+     (uVar2 = rigid_body::is_dangerous(body), uVar2 != 0)) {
     minspec_mutex::Lock(&g_render_mutex);
-    Phys_NitrousVecToVec3(&local_8->m_last_position,&local_14);
-    local_20 = local_14;
+    Phys_NitrousVecToVec3(&body->m_last_position,&_p0);
+    _p1 = _p0;
     local_1c = local_10;
     local_18 = local_c + 10000.0;
-    G_DebugLineWithDuration(&local_14,&local_20,colorYellow,1,2000);
-    pcVar3 = va(
+    G_DebugLineWithDuration(&_p0,&_p1,colorYellow,1,2000);
+    Format = va(
                "The rigid body at (%6.2f, %6.2f, %6.2f) is about to freakout! Check if it was improperly placed in solid."
                );
-    tlWarning(pcVar3);
+    tlWarning(Format);
     minspec_mutex::Unlock(&g_render_mutex);
   }
-  uVar2 = rigid_body::is_stable(local_8);
-  if (((uVar2 == 0) && (uVar2 = rigid_body::is_dangerous(local_8), uVar2 == 0)) &&
-     (-10000.0 <= (local_8->m_mat).w.z)) {
+  uVar2 = rigid_body::is_stable(body);
+  if (((uVar2 == 0) && (uVar2 = rigid_body::is_dangerous(body), uVar2 == 0)) &&
+     (-10000.0 <= (body->m_mat).w.z)) {
     return false;
   }
   return true;
@@ -6890,14 +6969,14 @@ bool __cdecl Phys_ObjIsAsleepSingle(int param_1)
 
 // 00853580  Phys_SetHingeParams  (physics/phys_main.cpp:2899)
 
-void __cdecl
-Phys_SetHingeParams(int param_1,float param_2,float param_3,float param_4,float param_5)
+void __cdecl Phys_SetHingeParams(int id,float motorSpeed,float damp,float lowStop,float highStop)
 
 {
   code *pcVar1;
   bool bVar2;
+  rigid_body_constraint_ragdoll *joint;
   
-  if (param_1 == 0) {
+  if (id == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0xb54,0,
                              "%s");
     if (!bVar2) {
@@ -6907,8 +6986,8 @@ Phys_SetHingeParams(int param_1,float param_2,float param_3,float param_4,float 
     }
   }
   rigid_body_constraint_ragdoll::set_damp_k
-            ((rigid_body_constraint_ragdoll *)param_1,
-             param_3 * (phys_ragdoll_joint_damp_scale->current).value);
+            ((rigid_body_constraint_ragdoll *)id,
+             damp * (phys_ragdoll_joint_damp_scale->current).value);
   return;
 }
 
@@ -6921,8 +7000,8 @@ Phys_SetHingeParams(int param_1,float param_2,float param_3,float param_4,float 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float param_5,float param_6,
-                float param_7,float param_8)
+Phys_CreateHinge(int obj1,int obj2,float *anchor,float *axis,float motorSpeed,float damp,
+                float lowStop,float highStop)
 
 {
   PhysObjUserData *pPVar1;
@@ -6961,9 +7040,9 @@ Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float par
   rigid_body *local_18;
   rigid_body *local_14;
   
-  pPVar1 = Phys_GetUserData(param_1);
+  pPVar1 = Phys_GetUserData(obj1);
   local_14 = pPVar1->body;
-  pPVar1 = Phys_GetUserData(param_2);
+  pPVar1 = Phys_GetUserData(obj2);
   local_18 = pPVar1->body;
   local_1c = phys_sys::create_rbc_ragdoll(local_14,local_18,1);
   if (local_1c == (rigid_body_constraint_ragdoll *)0x0) {
@@ -6971,12 +7050,12 @@ Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float par
     local_1c = (rigid_body_constraint_ragdoll *)0x0;
   }
   else {
-    local_40.x = *param_3;
-    local_40.y = param_3[1];
-    local_40.z = param_3[2];
-    local_60.x = *param_4;
-    local_60.y = param_4[1];
-    local_60.z = param_4[2];
+    local_40.x = *anchor;
+    local_40.y = anchor[1];
+    local_40.z = anchor[2];
+    local_60.x = *axis;
+    local_60.y = axis[1];
+    local_60.z = axis[2];
     local_70 = 1.0;
     local_6c = 0;
     local_68 = 0;
@@ -7016,8 +7095,8 @@ Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float par
     local_170.z = 0.0;
     rigid_body_constraint_ragdoll::set(local_1c,&local_a0,&local_d0);
     rigid_body_constraint_ragdoll::set_hinge
-              (local_1c,&local_100,&local_130,&local_150,&local_170,param_7,param_8);
-    rigid_body_constraint_ragdoll::set_damp_k(local_1c,param_6);
+              (local_1c,&local_100,&local_130,&local_150,&local_170,lowStop,highStop);
+    rigid_body_constraint_ragdoll::set_damp_k(local_1c,damp);
   }
   return (int)local_1c;
 }
@@ -7026,15 +7105,16 @@ Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float par
 // 00853980  Phys_SetAngularMotorParams  (physics/phys_main.cpp:2945)
 
 void __cdecl
-Phys_SetAngularMotorParams(int param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+Phys_SetAngularMotorParams(int id,float *motorSpeeds,float *damp,float *lowStops,float *highStops)
 
 {
   code *pcVar1;
   bool bVar2;
   float *pfVar3;
   float local_10;
+  rigid_body_constraint_ragdoll *joint;
   
-  if (param_1 == 0) {
+  if (id == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0xb82,0,
                              "%s");
     if (!bVar2) {
@@ -7043,15 +7123,15 @@ Phys_SetAngularMotorParams(int param_1,float *param_2,float *param_3,float *para
       return;
     }
   }
-  pfVar3 = param_3 + 1;
-  if (*param_3 < *pfVar3 || *param_3 == *pfVar3) {
+  pfVar3 = damp + 1;
+  if (*damp < *pfVar3 || *damp == *pfVar3) {
     local_10 = *pfVar3;
   }
   else {
-    local_10 = *param_3;
+    local_10 = *damp;
   }
   rigid_body_constraint_ragdoll::set_damp_k
-            ((rigid_body_constraint_ragdoll *)param_1,
+            ((rigid_body_constraint_ragdoll *)id,
              local_10 * (phys_ragdoll_joint_damp_scale->current).value);
   return;
 }
@@ -7065,8 +7145,8 @@ Phys_SetAngularMotorParams(int param_1,float *param_2,float *param_3,float *para
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float (*param_5) [3],
-                 float *param_6,float *param_7,float *param_8,float *param_9)
+Phys_CreateSwivel(int obj1,int obj2,float *anchor,int numAxes,float (*axes) [3],float *motorSpeeds,
+                 float *motorFMaxs,float *lowStops,float *highStops)
 
 {
   code *pcVar1;
@@ -7139,11 +7219,11 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float (*par
   rigid_body *local_18;
   rigid_body *local_14;
   
-  pPVar3 = Phys_GetUserData(param_1);
+  pPVar3 = Phys_GetUserData(obj1);
   local_14 = pPVar3->body;
-  pPVar3 = Phys_GetUserData(param_2);
+  pPVar3 = Phys_GetUserData(obj2);
   local_18 = pPVar3->body;
-  if (((param_4 < 0) || (3 < param_4)) &&
+  if (((numAxes < 0) || (3 < numAxes)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0xb8e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -7156,15 +7236,15 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float (*par
     local_1c = (rigid_body_constraint_ragdoll *)0x0;
   }
   else {
-    local_40.x = *param_3;
-    local_40.y = param_3[1];
-    local_40.z = param_3[2];
-    local_60.x = (*param_5)[0];
-    local_60.y = (*param_5)[1];
-    local_60.z = (*param_5)[2];
-    local_80.x = param_5[1][0];
-    local_80.y = param_5[1][1];
-    local_80.z = param_5[1][2];
+    local_40.x = *anchor;
+    local_40.y = anchor[1];
+    local_40.z = anchor[2];
+    local_60.x = (*axes)[0];
+    local_60.y = (*axes)[1];
+    local_60.z = (*axes)[2];
+    local_80.x = axes[1][0];
+    local_80.y = axes[1][1];
+    local_80.z = axes[1][2];
     local_84 = &local_14->m_mat;
     local_6c = local_80.z;
     local_68 = local_80.y;
@@ -7206,15 +7286,15 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float (*par
     local_1c4 = 0x3f99999a;
     local_1c8 = -1.2;
     local_1cc = local_1c8;
-    if (-1.2 < *param_8) {
-      local_1cc = *param_8;
+    if (-1.2 < *lowStops) {
+      local_1cc = *lowStops;
     }
     local_1d0 = local_1cc;
-    if (1.2 < *param_9 || *param_9 == 1.2) {
+    if (1.2 < *highStops || *highStops == 1.2) {
       local_1d4 = 1.2;
     }
     else {
-      local_1d4 = *param_9;
+      local_1d4 = *highStops;
     }
     local_1d8 = local_1d4;
     local_200.x = -local_1c0;
@@ -7231,17 +7311,17 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float (*par
     local_1dc = local_200.x;
     rigid_body_constraint_ragdoll::set_swivel
               (local_1c,&local_130,&local_160,&local_220,&local_200,local_1cc,local_1d4);
-    for (local_224 = 1; local_224 < param_4; local_224 = local_224 + 1) {
-      local_240.x = (*param_5)[0];
-      local_240.y = (*param_5)[1];
-      local_240.z = (*param_5)[2];
-      local_244 = (param_9[local_224] - param_8[local_224]) * 0.5;
-      local_248 = param_9[local_224] + param_8[local_224];
+    for (local_224 = 1; local_224 < numAxes; local_224 = local_224 + 1) {
+      local_240.x = (*axes)[0];
+      local_240.y = (*axes)[1];
+      local_240.z = (*axes)[2];
+      local_244 = (highStops[local_224] - lowStops[local_224]) * 0.5;
+      local_248 = highStops[local_224] + lowStops[local_224];
       local_230 = local_240.z;
       local_22c = local_240.y;
       local_228 = local_240.x;
       phys_inv_multiply(&local_260,&local_14->m_mat,&local_240);
-      Phys_AxisToNitrousMat(param_5,&local_2a0);
+      Phys_AxisToNitrousMat(axes,&local_2a0);
       phys_inv_multiply_mat(&local_2a0,&local_14->m_mat,&local_2a0);
       if (local_224 == 1) {
         local_2a4 = &local_2a0.y;
@@ -7256,7 +7336,7 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float (*par
 
 // 008542F0  Phys_CalcPreset  (physics/phys_main.cpp:3018)
 
-void __cdecl Phys_CalcPreset(PhysPreset *param_1,float *param_2,int param_3)
+void __cdecl Phys_CalcPreset(PhysPreset *physPreset,float *dims,int surfaceType)
 
 {
   float fVar1;
@@ -7267,37 +7347,40 @@ void __cdecl Phys_CalcPreset(PhysPreset *param_1,float *param_2,int param_3)
   float fVar6;
   float local_28;
   float local_14;
+  float size;
+  bool floats;
+  float density;
   
-  if ((param_1 == (PhysPreset *)0x0) &&
+  if ((physPreset == (PhysPreset *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_main.cpp",0xbcb,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  fVar6 = Com_SurfaceDensity(param_3);
-  fVar1 = *param_2;
-  fVar2 = param_2[1];
-  fVar3 = param_2[2];
-  bVar5 = Com_SurfaceFloats(param_3);
-  if (param_1->bounce == 0.0) {
-    param_1->bounce = 0.25;
+  fVar6 = Com_SurfaceDensity(surfaceType);
+  fVar1 = *dims;
+  fVar2 = dims[1];
+  fVar3 = dims[2];
+  bVar5 = Com_SurfaceFloats(surfaceType);
+  if (physPreset->bounce == 0.0) {
+    physPreset->bounce = 0.25;
   }
-  if (param_1->friction == 0.0) {
-    param_1->friction = 1.0;
+  if (physPreset->friction == 0.0) {
+    physPreset->friction = 1.0;
   }
-  param_1->bulletForceScale = 1.0;
-  param_1->explosiveForceScale = 1.0;
-  param_1->canFloat = (uint)bVar5;
-  if (param_3 == 8) {
-    param_1->gravityScale = 0.3;
+  physPreset->bulletForceScale = 1.0;
+  physPreset->explosiveForceScale = 1.0;
+  physPreset->canFloat = (uint)bVar5;
+  if (surfaceType == 8) {
+    physPreset->gravityScale = 0.3;
   }
   else {
-    param_1->gravityScale = 1.0;
+    physPreset->gravityScale = 1.0;
   }
-  if (param_1->mass == 0.0) {
-    param_1->mass = (fVar1 + fVar2 + fVar3) * fVar6;
-    fVar1 = param_1->mass;
+  if (physPreset->mass == 0.0) {
+    physPreset->mass = (fVar1 + fVar2 + fVar3) * fVar6;
+    fVar1 = physPreset->mass;
     local_14 = fVar1;
     if (0.0 <= fVar1 - 1000.0) {
       local_14 = 1000.0;
@@ -7308,19 +7391,19 @@ void __cdecl Phys_CalcPreset(PhysPreset *param_1,float *param_2,int param_3)
     else {
       local_28 = 1.0;
     }
-    param_1->mass = local_28;
+    physPreset->mass = local_28;
   }
-  param_1->mass = param_1->mass * 0.001;
-  param_1->buoyancyBoxMin[0] = 0.0;
-  param_1->buoyancyBoxMin[1] = 0.0;
-  param_1->buoyancyBoxMin[2] = 0.0;
-  param_1->buoyancyBoxMax[0] = 0.0;
-  param_1->buoyancyBoxMax[1] = 0.0;
-  param_1->buoyancyBoxMax[2] = 0.0;
-  param_1->centerOfMassOffset[0] = 0.0;
-  param_1->centerOfMassOffset[1] = 0.0;
-  param_1->centerOfMassOffset[2] = 0.0;
-  param_1->flags = param_1->flags | 2;
+  physPreset->mass = physPreset->mass * 0.001;
+  physPreset->buoyancyBoxMin[0] = 0.0;
+  physPreset->buoyancyBoxMin[1] = 0.0;
+  physPreset->buoyancyBoxMin[2] = 0.0;
+  physPreset->buoyancyBoxMax[0] = 0.0;
+  physPreset->buoyancyBoxMax[1] = 0.0;
+  physPreset->buoyancyBoxMax[2] = 0.0;
+  physPreset->centerOfMassOffset[0] = 0.0;
+  physPreset->centerOfMassOffset[1] = 0.0;
+  physPreset->centerOfMassOffset[2] = 0.0;
+  physPreset->flags = physPreset->flags | 2;
   return;
 }
 
@@ -7342,16 +7425,16 @@ int __cdecl Phys_GetCurrentTime(void)
 // 00850100  operator=  (line unknown)
 
 ch_triangle * __thiscall
-phys_convex_hull::ch_triangle::operator=(ch_triangle *this,ch_triangle *param_1)
+phys_convex_hull::ch_triangle::operator=(ch_triangle *this,ch_triangle *__that)
 
 {
-  uint local_8;
+  uint _S2;
   
-  (this->m_normal).x = (param_1->m_normal).x;
-  (this->m_normal).y = (param_1->m_normal).y;
-  (this->m_normal).z = (param_1->m_normal).z;
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    this->m_verts[local_8] = param_1->m_verts[local_8];
+  (this->m_normal).x = (__that->m_normal).x;
+  (this->m_normal).y = (__that->m_normal).y;
+  (this->m_normal).z = (__that->m_normal).z;
+  for (_S2 = 0; _S2 < 3; _S2 = _S2 + 1) {
+    this->m_verts[_S2] = __that->m_verts[_S2];
   }
   return this;
 }

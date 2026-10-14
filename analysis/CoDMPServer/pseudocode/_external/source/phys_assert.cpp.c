@@ -2,22 +2,22 @@
 
 // 00A192C0  phys_set_debug_callback  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_assert.cpp:7)
 
-void __cdecl phys_set_debug_callback(_func___cdecl_void_void_ptr *param_1)
+void __cdecl phys_set_debug_callback(_func___cdecl_void_void_ptr *debug_callback)
 
 {
-  g_phys_debug_callback = param_1;
+  g_phys_debug_callback = debug_callback;
   return;
 }
 
 
 // 00A192D0  phys_exec_debug_callback  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_assert.cpp:12)
 
-void __cdecl phys_exec_debug_callback(void *param_1)
+void __cdecl phys_exec_debug_callback(void *data)
 
 {
                     /* WARNING: Could not recover jumptable at 0x00a192d4. Too many branches */
                     /* WARNING: Treating indirect jump as call */
-  (*g_phys_debug_callback)(param_1);
+  (*g_phys_debug_callback)(data);
   return;
 }
 
@@ -26,15 +26,15 @@ void __cdecl phys_exec_debug_callback(void *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl PHYS_WARNING(char *param_1,int param_2,char *param_3,char *param_4)
+void __cdecl PHYS_WARNING(char *file,int line,char *expr,char *desc)
 
 {
-  char local_208 [512];
+  char strbuf [512];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_208,"%s(%d) - \'%s\' \"%s\"\n");
-  tlWarning(local_208);
+  sprintf(strbuf,"%s(%d) - \'%s\' \"%s\"\n");
+  tlWarning(strbuf);
   return;
 }
 
@@ -42,14 +42,15 @@ void __cdecl PHYS_WARNING(char *param_1,int param_2,char *param_3,char *param_4)
 // 00A19340  phys_assert_info  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_assert.cpp:28)
 
 phys_assert_info * __thiscall
-phys_assert_info::phys_assert_info(phys_assert_info *this,int param_1,int param_2,bool param_3)
+phys_assert_info::phys_assert_info
+          (phys_assert_info *this,int max_hits_total,int max_hits_per_frame,bool use_warnings_only)
 
 {
-  this->m_max_hits_total = param_1;
+  this->m_max_hits_total = max_hits_total;
   this->m_hits_total_count = 0;
   this->m_hits_frame_count = 0;
-  this->m_max_hits_per_frame = param_2;
-  this->m_use_warnings_only = param_3;
+  this->m_max_hits_per_frame = max_hits_per_frame;
+  this->m_use_warnings_only = use_warnings_only;
   this->m_next = g_list_phys_assert_info;
   g_list_phys_assert_info = this;
   return this;

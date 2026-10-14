@@ -5,16 +5,18 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-char * __cdecl getenv(char *param_1)
+char * __cdecl getenv(char *option)
 
 {
   int *piVar1;
   uint uVar2;
   char *pcVar3;
+  int _Expr_val;
+  char *retval;
   
-  if ((param_1 != (char *)0x0) && (uVar2 = strnlen(param_1,0x7fff), uVar2 < 0x7fff)) {
+  if ((option != (char *)0x0) && (uVar2 = strnlen(option,0x7fff), uVar2 < 0x7fff)) {
     _lock(7);
-    pcVar3 = _getenv_helper_nolock(param_1);
+    pcVar3 = _getenv_helper_nolock(option);
     FUN_00c10e8f();
     return pcVar3;
   }
@@ -27,24 +29,24 @@ char * __cdecl getenv(char *param_1)
 
 // 00C10D8E  _getenv_helper_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/getenv.c:95)
 
-char * __cdecl _getenv_helper_nolock(char *param_1)
+char * __cdecl _getenv_helper_nolock(char *option)
 
 {
   int iVar1;
+  uint n;
   uint extraout_EAX;
-  uint extraout_EAX_00;
   char **ppcVar2;
   
   if (((__env_initialized != 0) &&
       ((_environ != (char **)0x0 ||
        (((_wenviron != (ushort **)0x0 && (iVar1 = __wtomb_environ(), iVar1 == 0)) &&
-        (_environ != (char **)0x0)))))) && (ppcVar2 = _environ, param_1 != (char *)0x0)) {
-    strlen((uchar *)param_1);
+        (_environ != (char **)0x0)))))) && (ppcVar2 = _environ, option != (char *)0x0)) {
+    strlen((uchar *)option);
     for (; (uchar *)*ppcVar2 != (uchar *)0x0; ppcVar2 = ppcVar2 + 1) {
       strlen((uchar *)*ppcVar2);
-      if (((extraout_EAX < extraout_EAX_00) && ((*ppcVar2)[extraout_EAX] == '=')) &&
-         (iVar1 = _mbsnbicoll((uchar *)*ppcVar2,(uchar *)param_1,extraout_EAX), iVar1 == 0)) {
-        return *ppcVar2 + extraout_EAX + 1;
+      if (((n < extraout_EAX) && ((*ppcVar2)[n] == '=')) &&
+         (iVar1 = _mbsnbicoll((uchar *)*ppcVar2,(uchar *)option,n), iVar1 == 0)) {
+        return *ppcVar2 + n + 1;
       }
     }
   }

@@ -107,11 +107,11 @@ UI_DrawHandlePicFramed
   float *unaff_EDI;
   float in_XMM0_Da;
   float fVar1;
-  float fVar2;
+  float thicknessH;
   
   ScrPlace_ApplyRect(param_1,(float *)param_6,(float *)param_7,unaff_EDI,(float *)unaff_ESI,
                      unaff_EBP,unaff_EBX);
-  fVar2 = ScrPlace_ApplyW((ScreenPlacement *)param_8,(float)unaff_EDI,(int)unaff_ESI);
+  thicknessH = ScrPlace_ApplyW((ScreenPlacement *)param_8,(float)unaff_EDI,(int)unaff_ESI);
   fVar1 = param_8;
   switch(param_7) {
   default:
@@ -125,8 +125,8 @@ UI_DrawHandlePicFramed
   }
   fVar1 = fVar1 * param_8;
 switchD_00623f17_caseD_5:
-  R_AddCmdDrawFramed(param_2,param_3,param_4,param_5,fVar2,(fVar1 / in_XMM0_Da) * param_8,param_9,
-                     param_10,unaff_EDI,unaff_ESI);
+  R_AddCmdDrawFramed(param_2,param_3,param_4,param_5,thicknessH,(fVar1 / in_XMM0_Da) * param_8,
+                     param_9,param_10,unaff_EDI,unaff_ESI);
   return;
 }
 

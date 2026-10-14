@@ -14,8 +14,8 @@ void __cdecl TRACK_r_debug(void)
 
 void __cdecl
 R_AddDebugPolygonInternal
-          (PolySet *param_1,int param_2,float (*param_3) [3],float *param_4,bool param_5,
-          float *param_6,bool param_7)
+          (PolySet *polySet,int pointCount,float (*points) [3],float *faceColor,bool faceDepthTest,
+          float *edgeColor,bool edgeDepthTest)
 
 {
   code *pcVar1;
@@ -23,17 +23,17 @@ R_AddDebugPolygonInternal
   GfxDebugPoly *pGVar3;
   
   Sys_EnterCriticalSection(CRITSECT_DEBUG_LINE);
-  if (param_1->vertLimit < param_1->vertCount + param_2) {
+  if (polySet->vertLimit < polySet->vertCount + pointCount) {
     Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
     Com_Printf(0,"Debug vertex limit exceeded, current=%d, adding=%d, limit=%d\n");
   }
-  else if (param_1->polyLimit < param_1->polyCount + 1) {
+  else if (polySet->polyLimit < polySet->polyCount + 1) {
     Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
     Com_Printf(0,"Debug polygon limit exceeded, current=%d, limit=%d\n");
   }
   else {
-    if (param_1->polys == (GfxDebugPoly *)0x0) {
-      if (param_1->verts != (float (*) [3])0x0) {
+    if (polySet->polys == (GfxDebugPoly *)0x0) {
+      if (polySet->verts != (float (*) [3])0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_debug.cpp",0x34,0,
                                  "%s");
         if (!bVar2) {
@@ -42,29 +42,29 @@ R_AddDebugPolygonInternal
           return;
         }
       }
-      R_DebugAlloc(&param_1->polys,param_1->polyLimit * 0x30,"(debugGlobalsEntry->polys)");
-      R_DebugAlloc(&param_1->verts,param_1->vertLimit * 0xc,"(debugGlobalsEntry->verts)");
+      R_DebugAlloc(&polySet->polys,polySet->polyLimit * 0x30,"(debugGlobalsEntry->polys)");
+      R_DebugAlloc(&polySet->verts,polySet->vertLimit * 0xc,"(debugGlobalsEntry->verts)");
     }
-    if ((param_1->polys == (GfxDebugPoly *)0x0) || (param_1->verts == (float (*) [3])0x0)) {
+    if ((polySet->polys == (GfxDebugPoly *)0x0) || (polySet->verts == (float (*) [3])0x0)) {
       Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
     }
     else {
-      pGVar3 = param_1->polys + param_1->polyCount;
-      pGVar3->firstVert = param_1->vertCount;
-      pGVar3->vertCount = param_2;
-      pGVar3->faceColor[0] = *param_4;
-      pGVar3->faceColor[1] = param_4[1];
-      pGVar3->faceColor[2] = param_4[2];
-      pGVar3->faceColor[3] = param_4[3];
-      pGVar3->faceDepthTest = param_5;
-      pGVar3->edgeColor[0] = *param_6;
-      pGVar3->edgeColor[1] = param_6[1];
-      pGVar3->edgeColor[2] = param_6[2];
-      pGVar3->edgeColor[3] = param_6[3];
-      pGVar3->edgeDepthTest = param_7;
-      param_1->polyCount = param_1->polyCount + 1;
-      memcpy((uchar *)(param_1->verts + param_1->vertCount),(uchar *)param_3,param_2 * 0xc);
-      param_1->vertCount = param_1->vertCount + param_2;
+      pGVar3 = polySet->polys + polySet->polyCount;
+      pGVar3->firstVert = polySet->vertCount;
+      pGVar3->vertCount = pointCount;
+      pGVar3->faceColor[0] = *faceColor;
+      pGVar3->faceColor[1] = faceColor[1];
+      pGVar3->faceColor[2] = faceColor[2];
+      pGVar3->faceColor[3] = faceColor[3];
+      pGVar3->faceDepthTest = faceDepthTest;
+      pGVar3->edgeColor[0] = *edgeColor;
+      pGVar3->edgeColor[1] = edgeColor[1];
+      pGVar3->edgeColor[2] = edgeColor[2];
+      pGVar3->edgeColor[3] = edgeColor[3];
+      pGVar3->edgeDepthTest = edgeDepthTest;
+      polySet->polyCount = polySet->polyCount + 1;
+      memcpy((uchar *)(polySet->verts + polySet->vertCount),(uchar *)points,pointCount * 0xc);
+      polySet->vertCount = polySet->vertCount + pointCount;
       Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
     }
   }
@@ -75,11 +75,13 @@ R_AddDebugPolygonInternal
 // 00ABC550  R_AddDebugPolygon  (gfx_d3d/r_debug.cpp:87)
 
 void __cdecl
-R_AddDebugPolygon(DebugGlobals *param_1,int param_2,float (*param_3) [3],float *param_4,bool param_5
-                 ,float *param_6,bool param_7)
+R_AddDebugPolygon(DebugGlobals *debugGlobalsEntry,int pointCount,float (*points) [3],
+                 float *faceColor,bool faceDepthTest,float *edgeColor,bool edgeDepthTest)
 
 {
-  R_AddDebugPolygonInternal(&param_1->polySet,param_2,param_3,param_4,param_5,param_6,param_7);
+  R_AddDebugPolygonInternal
+            (&debugGlobalsEntry->polySet,pointCount,points,faceColor,faceDepthTest,edgeColor,
+             edgeDepthTest);
   return;
 }
 
@@ -88,11 +90,12 @@ R_AddDebugPolygon(DebugGlobals *param_1,int param_2,float (*param_3) [3],float *
 
 void __cdecl
 R_AddPersistentDebugPolygon
-          (DebugGlobals *param_1,int param_2,float (*param_3) [3],float *param_4,bool param_5,
-          float *param_6,bool param_7)
+          (DebugGlobals *debugGlobalsEntry,int pointCount,float (*points) [3],float *faceColor,
+          bool faceDepthTest,float *edgeColor,bool edgeDepthTest)
 
 {
-  R_AddDebugPolygonInternal(&persistentPolySet,param_2,param_3,param_4,param_5,param_6,param_7);
+  R_AddDebugPolygonInternal
+            (&persistentPolySet,pointCount,points,faceColor,faceDepthTest,edgeColor,edgeDepthTest);
   return;
 }
 
@@ -113,25 +116,26 @@ void __cdecl R_ClearPersistentDebugPolygons(void)
 // 00ABC7F0  R_AddDebugAxis  (gfx_d3d/r_debug.cpp:124)
 
 void __cdecl
-R_AddDebugAxis(DebugGlobals *param_1,float *param_2,float (*param_3) [3],float param_4,int param_5)
+R_AddDebugAxis(DebugGlobals *debugGlobalsEntry,float *origin,float (*axis) [3],float length,
+              int doDepthTest)
 
 {
   float (*pafVar1) [3];
-  int local_20;
-  float local_1c;
+  int i;
+  float end;
   float local_18;
   float local_14;
-  float *local_10 [3];
+  float *axisColors [3];
   
-  local_10[0] = colorRed;
-  local_10[1] = colorGreen;
-  local_10[2] = colorBlue;
-  for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-    pafVar1 = param_3 + local_20;
-    local_1c = param_4 * (*pafVar1)[0] + *param_2;
-    local_18 = param_4 * (*pafVar1)[1] + param_2[1];
-    local_14 = param_4 * (*pafVar1)[2] + param_2[2];
-    R_AddDebugLine(param_1,param_2,&local_1c,local_10[local_20],param_5);
+  axisColors[0] = colorRed;
+  axisColors[1] = colorGreen;
+  axisColors[2] = colorBlue;
+  for (i = 0; i < 3; i = i + 1) {
+    pafVar1 = axis + i;
+    end = length * (*pafVar1)[0] + *origin;
+    local_18 = length * (*pafVar1)[1] + origin[1];
+    local_14 = length * (*pafVar1)[2] + origin[2];
+    R_AddDebugLine(debugGlobalsEntry,origin,&end,axisColors[i],doDepthTest);
   }
   return;
 }
@@ -140,36 +144,37 @@ R_AddDebugAxis(DebugGlobals *param_1,float *param_2,float (*param_3) [3],float p
 // 00ABC8B0  R_AddDebugLine  (gfx_d3d/r_debug.cpp:143)
 
 void __cdecl
-R_AddDebugLine(DebugGlobals *param_1,float *param_2,float *param_3,float *param_4,int param_5)
+R_AddDebugLine(DebugGlobals *debugGlobalsEntry,float *start,float *end,float *color,int doDepthTest)
 
 {
   trDebugLine_t *ptVar1;
+  trDebugLine_t *pDebugLine;
   
   Sys_EnterCriticalSection(CRITSECT_DEBUG_LINE);
-  if (param_1->lineLimit < param_1->lineCount + 1) {
+  if (debugGlobalsEntry->lineLimit < debugGlobalsEntry->lineCount + 1) {
     Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
     Com_Printf(0,"Debug line limit exceeded, current=%d, limit=%d\n");
   }
   else {
-    if ((param_1->lines == (trDebugLine_t *)0x0) &&
-       (R_DebugAlloc(&param_1->lines,param_1->lineLimit * 0x2c,"R_AddDebugLine"),
-       param_1->lines == (trDebugLine_t *)0x0)) {
+    if ((debugGlobalsEntry->lines == (trDebugLine_t *)0x0) &&
+       (R_DebugAlloc(&debugGlobalsEntry->lines,debugGlobalsEntry->lineLimit * 0x2c,"R_AddDebugLine")
+       , debugGlobalsEntry->lines == (trDebugLine_t *)0x0)) {
       Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
       return;
     }
-    ptVar1 = param_1->lines + param_1->lineCount;
-    ptVar1->start[0] = *param_2;
-    ptVar1->start[1] = param_2[1];
-    ptVar1->start[2] = param_2[2];
-    ptVar1->end[0] = *param_3;
-    ptVar1->end[1] = param_3[1];
-    ptVar1->end[2] = param_3[2];
-    ptVar1->color[0] = *param_4;
-    ptVar1->color[1] = param_4[1];
-    ptVar1->color[2] = param_4[2];
-    ptVar1->color[3] = param_4[3];
-    ptVar1->depthTest = param_5;
-    param_1->lineCount = param_1->lineCount + 1;
+    ptVar1 = debugGlobalsEntry->lines + debugGlobalsEntry->lineCount;
+    ptVar1->start[0] = *start;
+    ptVar1->start[1] = start[1];
+    ptVar1->start[2] = start[2];
+    ptVar1->end[0] = *end;
+    ptVar1->end[1] = end[1];
+    ptVar1->end[2] = end[2];
+    ptVar1->color[0] = *color;
+    ptVar1->color[1] = color[1];
+    ptVar1->color[2] = color[2];
+    ptVar1->color[3] = color[3];
+    ptVar1->depthTest = doDepthTest;
+    debugGlobalsEntry->lineCount = debugGlobalsEntry->lineCount + 1;
     Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
   }
   return;
@@ -178,28 +183,28 @@ R_AddDebugLine(DebugGlobals *param_1,float *param_2,float *param_3,float *param_
 
 // 00ABCA00  R_AddDebugBox  (gfx_d3d/r_debug.cpp:186)
 
-void __cdecl R_AddDebugBox(DebugGlobals *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl R_AddDebugBox(DebugGlobals *debugGlobalsEntry,float *mins,float *maxs,float *color)
 
 {
   float local_70;
-  uint local_6c;
-  uint local_68;
+  uint j;
+  uint i;
   float afStack_64 [24];
   
-  for (local_68 = 0; local_68 < 8; local_68 = local_68 + 1) {
-    for (local_6c = 0; local_6c < 3; local_6c = local_6c + 1) {
-      if ((1 << ((byte)local_6c & 0x1f) & local_68) == 0) {
-        local_70 = param_2[local_6c];
+  for (i = 0; i < 8; i = i + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      if ((1 << ((byte)j & 0x1f) & i) == 0) {
+        local_70 = mins[j];
       }
       else {
-        local_70 = param_3[local_6c];
+        local_70 = maxs[j];
       }
-      afStack_64[local_68 * 3 + local_6c] = local_70;
+      afStack_64[i * 3 + j] = local_70;
     }
   }
-  for (local_68 = 0; local_68 < 0xc; local_68 = local_68 + 1) {
-    R_AddDebugLine(param_1,afStack_64 + edge[local_68][0] * 3,afStack_64 + edge[local_68][1] * 3,
-                   param_4,0);
+  for (i = 0; i < 0xc; i = i + 1) {
+    R_AddDebugLine(debugGlobalsEntry,afStack_64 + edge[i][0] * 3,afStack_64 + edge[i][1] * 3,color,0
+                  );
   }
   return;
 }
@@ -208,34 +213,36 @@ void __cdecl R_AddDebugBox(DebugGlobals *param_1,float *param_2,float *param_3,f
 // 00ABCAE0  R_AddDebugString  (gfx_d3d/r_debug.cpp:221)
 
 void __cdecl
-R_AddDebugString(DebugGlobals *param_1,float *param_2,float *param_3,float param_4,char *param_5)
+R_AddDebugString(DebugGlobals *debugGlobalsEntry,float *origin,float *color,float scale,char *string
+                )
 
 {
   trDebugString_t *ptVar1;
+  trDebugString_t *pDebugString;
   
   Sys_EnterCriticalSection(CRITSECT_DEBUG_LINE);
-  if (param_1->stringLimit < param_1->stringCount + 1) {
+  if (debugGlobalsEntry->stringLimit < debugGlobalsEntry->stringCount + 1) {
     Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
   }
   else {
-    if ((param_1->strings == (trDebugString_t *)0x0) &&
-       (R_DebugAlloc(&param_1->strings,param_1->stringLimit << 7,"R_AddDebugString"),
-       param_1->strings == (trDebugString_t *)0x0)) {
+    if ((debugGlobalsEntry->strings == (trDebugString_t *)0x0) &&
+       (R_DebugAlloc(&debugGlobalsEntry->strings,debugGlobalsEntry->stringLimit << 7,
+                     "R_AddDebugString"), debugGlobalsEntry->strings == (trDebugString_t *)0x0)) {
       Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
       return;
     }
-    ptVar1 = param_1->strings + param_1->stringCount;
-    ptVar1->xyz[0] = *param_2;
-    ptVar1->xyz[1] = param_2[1];
-    ptVar1->xyz[2] = param_2[2];
-    ptVar1->color[0] = *param_3;
-    ptVar1->color[1] = param_3[1];
-    ptVar1->color[2] = param_3[2];
-    ptVar1->color[3] = param_3[3];
-    ptVar1->scale = param_4;
-    strncpy((uchar *)ptVar1->text,(uchar *)param_5,0x5f);
+    ptVar1 = debugGlobalsEntry->strings + debugGlobalsEntry->stringCount;
+    ptVar1->xyz[0] = *origin;
+    ptVar1->xyz[1] = origin[1];
+    ptVar1->xyz[2] = origin[2];
+    ptVar1->color[0] = *color;
+    ptVar1->color[1] = color[1];
+    ptVar1->color[2] = color[2];
+    ptVar1->color[3] = color[3];
+    ptVar1->scale = scale;
+    strncpy((uchar *)ptVar1->text,(uchar *)string,0x5f);
     ptVar1->text[0x5f] = '\0';
-    param_1->stringCount = param_1->stringCount + 1;
+    debugGlobalsEntry->stringCount = debugGlobalsEntry->stringCount + 1;
     Sys_LeaveCriticalSection(CRITSECT_DEBUG_LINE);
   }
   return;
@@ -246,42 +253,44 @@ R_AddDebugString(DebugGlobals *param_1,float *param_2,float *param_3,float param
 
 void __cdecl
 R_AddScaledDebugString
-          (DebugGlobals *param_1,GfxViewParms *param_2,float *param_3,float *param_4,char *param_5)
+          (DebugGlobals *debugGlobalsEntry,GfxViewParms *viewParms,float *origin,float *color,
+          char *string)
 
 {
-  float local_18;
+  float fVar1;
+  float delta;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float scale;
+  float dot;
   
-  local_18 = *param_3 - param_2->origin[0];
-  local_14 = param_3[1] - param_2->origin[1];
-  local_10 = param_3[2] - param_2->origin[2];
-  local_c = Vec3Normalize(&local_18);
-  local_8 = local_18 * param_2->axis[0][0] + local_14 * param_2->axis[0][1] +
-            local_10 * param_2->axis[0][2];
-  local_c = (local_8 - 0.995) * local_c;
-  if (local_c < 1.0) {
-    local_c = 1.0;
+  delta = *origin - viewParms->origin[0];
+  local_14 = origin[1] - viewParms->origin[1];
+  local_10 = origin[2] - viewParms->origin[2];
+  fVar1 = Vec3Normalize(&delta);
+  dot = delta * viewParms->axis[0][0] + local_14 * viewParms->axis[0][1] +
+        local_10 * viewParms->axis[0][2];
+  scale = (dot - 0.995) * fVar1;
+  if (scale < 1.0) {
+    scale = 1.0;
   }
-  R_AddDebugString(param_1,param_3,param_4,local_c,param_5);
+  R_AddDebugString(debugGlobalsEntry,origin,color,scale,string);
   return;
 }
 
 
 // 00ABCD00  R_InitDebugEntry  (gfx_d3d/r_debug.cpp:277)
 
-void __cdecl R_InitDebugEntry(DebugGlobals *param_1)
+void __cdecl R_InitDebugEntry(DebugGlobals *debugGlobalsEntry)
 
 {
-  memset((uchar *)param_1,'\0',0x6c);
-  (param_1->polySet).vertLimit = 0x8000;
-  (param_1->polySet).polyLimit = 0x2000;
-  param_1->stringLimit = 0x1000;
-  param_1->lineLimit = 0x4000;
-  param_1->sphereLimit = 0x400;
-  param_1->plumeLimit = 0x1000;
+  memset((uchar *)debugGlobalsEntry,'\0',0x6c);
+  (debugGlobalsEntry->polySet).vertLimit = 0x8000;
+  (debugGlobalsEntry->polySet).polyLimit = 0x2000;
+  debugGlobalsEntry->stringLimit = 0x1000;
+  debugGlobalsEntry->lineLimit = 0x4000;
+  debugGlobalsEntry->sphereLimit = 0x400;
+  debugGlobalsEntry->plumeLimit = 0x1000;
   return;
 }
 
@@ -300,18 +309,18 @@ void __cdecl R_InitDebug(void)
 
 // 00ABCD90  R_ShutdownDebugEntry  (gfx_d3d/r_debug.cpp:296)
 
-void __cdecl R_ShutdownDebugEntry(DebugGlobals *param_1)
+void __cdecl R_ShutdownDebugEntry(DebugGlobals *debugGlobalsEntry)
 
 {
-  R_DebugFree(&(param_1->polySet).polys);
-  R_DebugFree((void **)param_1);
-  R_DebugFree(&param_1->strings);
-  R_DebugFree(&param_1->externStrings);
-  R_DebugFree(&param_1->spheres);
-  R_DebugFree(&param_1->externSpheres);
-  R_DebugFree(&param_1->lines);
-  R_DebugFree(&param_1->externLines);
-  R_DebugFree(&param_1->plumes);
+  R_DebugFree(&(debugGlobalsEntry->polySet).polys);
+  R_DebugFree((void **)debugGlobalsEntry);
+  R_DebugFree(&debugGlobalsEntry->strings);
+  R_DebugFree(&debugGlobalsEntry->externStrings);
+  R_DebugFree(&debugGlobalsEntry->spheres);
+  R_DebugFree(&debugGlobalsEntry->externSpheres);
+  R_DebugFree(&debugGlobalsEntry->lines);
+  R_DebugFree(&debugGlobalsEntry->externLines);
+  R_DebugFree(&debugGlobalsEntry->plumes);
   free_chull_lists();
   return;
 }
@@ -319,17 +328,18 @@ void __cdecl R_ShutdownDebugEntry(DebugGlobals *param_1)
 
 // 00ABCF30  R_UpdatePersistentDebugPolys  (gfx_d3d/r_debug.cpp:313)
 
-void __cdecl R_UpdatePersistentDebugPolys(DebugGlobals *param_1)
+void __cdecl R_UpdatePersistentDebugPolys(DebugGlobals *debugGlobalsEntry)
 
 {
-  GfxDebugPoly *pGVar1;
-  int local_8;
+  GfxDebugPoly *faceColor;
+  GfxDebugPoly *poly;
+  int ipoly;
   
-  for (local_8 = 0; local_8 < persistentPolySet.polyCount; local_8 = local_8 + 1) {
-    pGVar1 = persistentPolySet.polys + local_8;
-    R_AddDebugPolygon(param_1,pGVar1->vertCount,persistentPolySet.verts + pGVar1->firstVert,
-                      pGVar1->faceColor,pGVar1->faceDepthTest,pGVar1->edgeColor,
-                      pGVar1->edgeDepthTest);
+  for (ipoly = 0; ipoly < persistentPolySet.polyCount; ipoly = ipoly + 1) {
+    faceColor = persistentPolySet.polys + ipoly;
+    R_AddDebugPolygon(debugGlobalsEntry,faceColor->vertCount,
+                      persistentPolySet.verts + faceColor->firstVert,faceColor->faceColor,
+                      faceColor->faceDepthTest,faceColor->edgeColor,faceColor->edgeDepthTest);
   }
   return;
 }
@@ -337,21 +347,22 @@ void __cdecl R_UpdatePersistentDebugPolys(DebugGlobals *param_1)
 
 // 00ABCE20  R_TransferDebugGlobals  (gfx_d3d/r_debug.cpp:324)
 
-void __cdecl R_TransferDebugGlobals(DebugGlobals *param_1)
+void __cdecl R_TransferDebugGlobals(DebugGlobals *debugGlobalsEntry)
 
 {
   int iVar1;
   GfxDebugPlume *pGVar2;
   GfxDebugPlume *pGVar3;
-  int local_8;
+  int dt;
+  int plumeIndex;
   
-  local_8 = 0;
-  while (local_8 < debugGlobals.plumeCount) {
-    iVar1 = scene.def.time - debugGlobals.plumes[local_8].startTime;
-    if ((iVar1 < 0) || (debugGlobals.plumes[local_8].duration < iVar1)) {
+  plumeIndex = 0;
+  while (plumeIndex < debugGlobals.plumeCount) {
+    iVar1 = scene.def.time - debugGlobals.plumes[plumeIndex].startTime;
+    if ((iVar1 < 0) || (debugGlobals.plumes[plumeIndex].duration < iVar1)) {
       debugGlobals.plumeCount = debugGlobals.plumeCount + -1;
       pGVar2 = debugGlobals.plumes + debugGlobals.plumeCount;
-      pGVar3 = debugGlobals.plumes + local_8;
+      pGVar3 = debugGlobals.plumes + plumeIndex;
       for (iVar1 = 10; iVar1 != 0; iVar1 = iVar1 + -1) {
         pGVar3->origin[0] = pGVar2->origin[0];
         pGVar2 = (GfxDebugPlume *)(pGVar2->origin + 1);
@@ -359,20 +370,22 @@ void __cdecl R_TransferDebugGlobals(DebugGlobals *param_1)
       }
     }
     else {
-      local_8 = local_8 + 1;
+      plumeIndex = plumeIndex + 1;
     }
   }
   if (debugGlobals.plumes != (GfxDebugPlume *)0x0) {
-    if ((param_1->plumes == (GfxDebugPlume *)0x0) &&
-       (R_DebugAlloc(&param_1->plumes,debugGlobals.plumeLimit * 0x28,"(debugGlobalsEntry->plumes)"),
-       param_1->plumes == (GfxDebugPlume *)0x0)) {
+    if ((debugGlobalsEntry->plumes == (GfxDebugPlume *)0x0) &&
+       (R_DebugAlloc(&debugGlobalsEntry->plumes,debugGlobals.plumeLimit * 0x28,
+                     "(debugGlobalsEntry->plumes)"),
+       debugGlobalsEntry->plumes == (GfxDebugPlume *)0x0)) {
       return;
     }
-    memcpy((uchar *)param_1->plumes,(uchar *)debugGlobals.plumes,debugGlobals.plumeCount * 0x28);
+    memcpy((uchar *)debugGlobalsEntry->plumes,(uchar *)debugGlobals.plumes,
+           debugGlobals.plumeCount * 0x28);
   }
-  param_1->plumeCount = debugGlobals.plumeCount;
+  debugGlobalsEntry->plumeCount = debugGlobals.plumeCount;
   if (persistentPolySet.polys != (GfxDebugPoly *)0x0) {
-    R_UpdatePersistentDebugPolys(param_1);
+    R_UpdatePersistentDebugPolys(debugGlobalsEntry);
   }
   return;
 }
@@ -393,28 +406,30 @@ void __cdecl R_ShutdownDebug(void)
 // 00ABCFE0  R_CopyDebugStrings  (gfx_d3d/r_debug.cpp:367)
 
 void __cdecl
-R_CopyDebugStrings(trDebugString_t *param_1,int param_2,trDebugString_t *param_3,int param_4,
-                  int param_5)
+R_CopyDebugStrings(trDebugString_t *clStrings,int clStringCnt,trDebugString_t *svStrings,
+                  int svStringCnt,int maxStringCount)
 
 {
   GfxBackEndData *pGVar1;
-  trDebugString_t *local_8;
+  DebugGlobals *dg;
+  uint copysize;
+  trDebugString_t *dest;
   
   pGVar1 = frontEndDataOut;
   (frontEndDataOut->debugGlobals).externStringCount = 0;
-  if ((((param_1 == (trDebugString_t *)0x0) && (param_3 == (trDebugString_t *)0x0)) ||
+  if ((((clStrings == (trDebugString_t *)0x0) && (svStrings == (trDebugString_t *)0x0)) ||
       ((pGVar1->debugGlobals).externStrings != (trDebugString_t *)0x0)) ||
-     (R_DebugAlloc(&(pGVar1->debugGlobals).externStrings,param_5 << 7,"R_CopyDebugStrings"),
+     (R_DebugAlloc(&(pGVar1->debugGlobals).externStrings,maxStringCount << 7,"R_CopyDebugStrings"),
      (pGVar1->debugGlobals).externStrings != (trDebugString_t *)0x0)) {
-    local_8 = (pGVar1->debugGlobals).externStrings;
-    if (param_1 != (trDebugString_t *)0x0) {
-      memcpy((uchar *)local_8,(uchar *)param_1,param_2 << 7);
-      local_8 = local_8 + param_2;
+    dest = (pGVar1->debugGlobals).externStrings;
+    if (clStrings != (trDebugString_t *)0x0) {
+      memcpy((uchar *)dest,(uchar *)clStrings,clStringCnt << 7);
+      dest = dest + clStringCnt;
     }
-    if (param_3 != (trDebugString_t *)0x0) {
-      memcpy((uchar *)local_8,(uchar *)param_3,param_4 << 7);
+    if (svStrings != (trDebugString_t *)0x0) {
+      memcpy((uchar *)dest,(uchar *)svStrings,svStringCnt << 7);
     }
-    (pGVar1->debugGlobals).externStringCount = param_2 + param_4;
+    (pGVar1->debugGlobals).externStringCount = clStringCnt + svStringCnt;
   }
   return;
 }
@@ -423,26 +438,30 @@ R_CopyDebugStrings(trDebugString_t *param_1,int param_2,trDebugString_t *param_3
 // 00ABD0B0  R_CopyDebugLines  (gfx_d3d/r_debug.cpp:401)
 
 void __cdecl
-R_CopyDebugLines(trDebugLine_t *param_1,int param_2,trDebugLine_t *param_3,int param_4,int param_5)
+R_CopyDebugLines(trDebugLine_t *clLines,int clLineCnt,trDebugLine_t *svLines,int svLineCnt,
+                int maxLineCount)
 
 {
   GfxBackEndData *pGVar1;
-  trDebugLine_t *local_8;
+  DebugGlobals *dg;
+  uint copysize;
+  trDebugLine_t *dest;
   
   pGVar1 = frontEndDataOut;
-  if ((((param_1 == (trDebugLine_t *)0x0) && (param_3 == (trDebugLine_t *)0x0)) ||
+  if ((((clLines == (trDebugLine_t *)0x0) && (svLines == (trDebugLine_t *)0x0)) ||
       ((frontEndDataOut->debugGlobals).externLines != (trDebugLine_t *)0x0)) ||
-     (R_DebugAlloc(&(frontEndDataOut->debugGlobals).externLines,param_5 * 0x2c,"R_CopyDebugLines"),
-     (pGVar1->debugGlobals).externLines != (trDebugLine_t *)0x0)) {
-    local_8 = (pGVar1->debugGlobals).externLines;
-    if (param_1 != (trDebugLine_t *)0x0) {
-      memcpy((uchar *)local_8,(uchar *)param_1,param_2 * 0x2c);
-      local_8 = local_8 + param_2;
+     (R_DebugAlloc(&(frontEndDataOut->debugGlobals).externLines,maxLineCount * 0x2c,
+                   "R_CopyDebugLines"), (pGVar1->debugGlobals).externLines != (trDebugLine_t *)0x0))
+  {
+    dest = (pGVar1->debugGlobals).externLines;
+    if (clLines != (trDebugLine_t *)0x0) {
+      memcpy((uchar *)dest,(uchar *)clLines,clLineCnt * 0x2c);
+      dest = dest + clLineCnt;
     }
-    if (param_3 != (trDebugLine_t *)0x0) {
-      memcpy((uchar *)local_8,(uchar *)param_3,param_4 * 0x2c);
+    if (svLines != (trDebugLine_t *)0x0) {
+      memcpy((uchar *)dest,(uchar *)svLines,svLineCnt * 0x2c);
     }
-    (pGVar1->debugGlobals).externLineCount = param_2 + param_4;
+    (pGVar1->debugGlobals).externLineCount = clLineCnt + svLineCnt;
   }
   return;
 }
@@ -451,28 +470,30 @@ R_CopyDebugLines(trDebugLine_t *param_1,int param_2,trDebugLine_t *param_3,int p
 // 00ABD170  R_CopyDebugSpheres  (gfx_d3d/r_debug.cpp:434)
 
 void __cdecl
-R_CopyDebugSpheres(trDebugSphere_t *param_1,int param_2,trDebugSphere_t *param_3,int param_4,
-                  int param_5)
+R_CopyDebugSpheres(trDebugSphere_t *clSpheres,int clSphereCnt,trDebugSphere_t *svSpheres,
+                  int svSphereCnt,int maxSphereCount)
 
 {
   GfxBackEndData *pGVar1;
-  trDebugSphere_t *local_8;
+  DebugGlobals *dg;
+  uint copysize;
+  trDebugSphere_t *dest;
   
   pGVar1 = frontEndDataOut;
-  if ((((param_1 == (trDebugSphere_t *)0x0) && (param_3 == (trDebugSphere_t *)0x0)) ||
+  if ((((clSpheres == (trDebugSphere_t *)0x0) && (svSpheres == (trDebugSphere_t *)0x0)) ||
       ((frontEndDataOut->debugGlobals).externSpheres != (trDebugSphere_t *)0x0)) ||
-     (R_DebugAlloc(&(frontEndDataOut->debugGlobals).externSpheres,param_5 * 0x28,
+     (R_DebugAlloc(&(frontEndDataOut->debugGlobals).externSpheres,maxSphereCount * 0x28,
                    "R_CopyDebugSpheres"),
      (pGVar1->debugGlobals).externSpheres != (trDebugSphere_t *)0x0)) {
-    local_8 = (pGVar1->debugGlobals).externSpheres;
-    if (param_1 != (trDebugSphere_t *)0x0) {
-      memcpy((uchar *)local_8,(uchar *)param_1,param_2 * 0x28);
-      local_8 = local_8 + param_2;
+    dest = (pGVar1->debugGlobals).externSpheres;
+    if (clSpheres != (trDebugSphere_t *)0x0) {
+      memcpy((uchar *)dest,(uchar *)clSpheres,clSphereCnt * 0x28);
+      dest = dest + clSphereCnt;
     }
-    if (param_3 != (trDebugSphere_t *)0x0) {
-      memcpy((uchar *)local_8,(uchar *)param_3,param_4 * 0x28);
+    if (svSpheres != (trDebugSphere_t *)0x0) {
+      memcpy((uchar *)dest,(uchar *)svSpheres,svSphereCnt * 0x28);
     }
-    (pGVar1->debugGlobals).externSphereCount = param_2 + param_4;
+    (pGVar1->debugGlobals).externSphereCount = clSphereCnt + svSphereCnt;
   }
   return;
 }

@@ -2,10 +2,10 @@
 
 // 008626B0  XDoll_InitBody  (physics/xdoll.cpp:55)
 
-void __cdecl XDoll_InitBody(XDollBody *param_1)
+void __cdecl XDoll_InitBody(XDollBody *body)
 
 {
-  memset((uchar *)param_1,'\0',0x118);
+  memset((uchar *)body,'\0',0x118);
   return;
 }
 
@@ -15,34 +15,34 @@ void __cdecl XDoll_InitBody(XDollBody *param_1)
 int __cdecl XDoll_GetUnusedBody(void)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x7f < local_8) {
+    if (0x7f < i) {
       return 0;
     }
-    if (xdollBodies[local_8].references < 1) break;
-    local_8 = local_8 + 1;
+    if (xdollBodies[i].references < 1) break;
+    i = i + 1;
   }
-  XDoll_InitBody(xdollBodies + local_8);
-  xdollBodies[local_8].references = xdollBodies[local_8].references + 1;
-  return local_8 + 1;
+  XDoll_InitBody(xdollBodies + i);
+  xdollBodies[i].references = xdollBodies[i].references + 1;
+  return i + 1;
 }
 
 
 // 008620F0  XDoll_SnapshotBonePositions  (physics/xdoll.cpp:96)
 
-void __cdecl XDoll_SnapshotBonePositions(XDollBody *param_1,XDollBoneOrientation *param_2)
+void __cdecl XDoll_SnapshotBonePositions(XDollBody *body,XDollBoneOrientation *boneSnapshot)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_10;
-  XDollBoneOrientation *local_c;
-  XDollBone *local_8;
+  int i;
+  XDollBoneOrientation *snapshot;
+  XDollBone *bone;
   
-  if (param_2 == (XDollBoneOrientation *)0x0) {
+  if (boneSnapshot == (XDollBoneOrientation *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",100,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -50,9 +50,9 @@ void __cdecl XDoll_SnapshotBonePositions(XDollBody *param_1,XDollBoneOrientation
       return;
     }
   }
-  local_8 = param_1->bones;
-  local_c = param_2;
-  if (3 < param_1->numBones) {
+  bone = body->bones;
+  snapshot = boneSnapshot;
+  if (3 < body->numBones) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x68,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -60,12 +60,12 @@ void __cdecl XDoll_SnapshotBonePositions(XDollBody *param_1,XDollBoneOrientation
       return;
     }
   }
-  for (local_10 = 0; local_10 < param_1->numBones; local_10 = local_10 + 1) {
-    if (local_8->rigidBody != 0) {
-      Phys_ObjGetInterpolatedState(local_8->rigidBody,local_c->origin,local_c->orientation);
+  for (i = 0; i < body->numBones; i = i + 1) {
+    if (bone->rigidBody != 0) {
+      Phys_ObjGetInterpolatedState(bone->rigidBody,snapshot->origin,snapshot->orientation);
     }
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    bone = bone + 1;
+    snapshot = snapshot + 1;
   }
   return;
 }
@@ -73,23 +73,23 @@ void __cdecl XDoll_SnapshotBonePositions(XDollBody *param_1,XDollBoneOrientation
 
 // 008622C0  XDoll_DestroyConstraint  (physics/xdoll.cpp:113)
 
-void __cdecl XDoll_DestroyConstraint(XDoll_ConstraintInfo *param_1)
+void __cdecl XDoll_DestroyConstraint(XDoll_ConstraintInfo *cinfo)
 
 {
   int iVar1;
   
-  if ((param_1->field2_0x8).constraint != (rigid_body_constraint *)0x0) {
-    iVar1 = param_1->type;
+  if ((cinfo->field2_0x8).constraint != (rigid_body_constraint *)0x0) {
+    iVar1 = cinfo->type;
     if (iVar1 == 1) {
-      phys_sys::destroy((param_1->field2_0x8).point_constraint);
+      phys_sys::destroy((cinfo->field2_0x8).point_constraint);
     }
     else if (iVar1 == 3) {
-      phys_sys::destroy((param_1->field2_0x8).hinge_constraint);
+      phys_sys::destroy((cinfo->field2_0x8).hinge_constraint);
     }
     else if (iVar1 == 5) {
-      phys_sys::destroy((param_1->field2_0x8).actuator_constraint);
+      phys_sys::destroy((cinfo->field2_0x8).actuator_constraint);
     }
-    (param_1->field2_0x8).constraint = (rigid_body_constraint *)0x0;
+    (cinfo->field2_0x8).constraint = (rigid_body_constraint *)0x0;
   }
   return;
 }
@@ -99,8 +99,8 @@ void __cdecl XDoll_DestroyConstraint(XDoll_ConstraintInfo *param_1)
 
 rigid_body_constraint_hinge * __cdecl
 XDoll_CreateHingeConstraint
-          (rigid_body *param_1,rigid_body *param_2,phys_vec3 *param_3,phys_vec3 *param_4,
-          phys_vec3 *param_5,float param_6,float param_7,float param_8)
+          (rigid_body *rb1,rigid_body *rb2,phys_vec3 *b1_anchor_loc,phys_vec3 *b1_hinge_axis_loc,
+          phys_vec3 *b1_ref_axis_loc,float damp,float lowStop,float highStop)
 
 {
   phys_vec3 local_80;
@@ -111,21 +111,21 @@ XDoll_CreateHingeConstraint
   phys_vec3 local_30;
   rigid_body_constraint_hinge *local_14;
   
-  local_14 = phys_sys::create_rbc_hinge(param_1,param_2,0);
+  local_14 = phys_sys::create_rbc_hinge(rb1,rb2,0);
   if (local_14 == (rigid_body_constraint_hinge *)0x0) {
     Com_PrintWarning(0x14,"Physics: Out of hinge constraints\n");
     local_14 = (rigid_body_constraint_hinge *)0x0;
   }
   else {
-    phys_full_multiply(&local_30,&param_1->m_mat,param_3);
-    phys_full_inv_multiply(&local_40,&param_2->m_mat,&local_30);
-    phys_multiply33(&local_50,&param_1->m_mat,param_4);
-    phys_inv_multiply(&local_60,&param_2->m_mat,&local_50);
-    phys_multiply33(&local_70,&param_1->m_mat,param_5);
-    phys_inv_multiply(&local_80,&param_2->m_mat,&local_70);
+    phys_full_multiply(&local_30,&rb1->m_mat,b1_anchor_loc);
+    phys_full_inv_multiply(&local_40,&rb2->m_mat,&local_30);
+    phys_multiply33(&local_50,&rb1->m_mat,b1_hinge_axis_loc);
+    phys_inv_multiply(&local_60,&rb2->m_mat,&local_50);
+    phys_multiply33(&local_70,&rb1->m_mat,b1_ref_axis_loc);
+    phys_inv_multiply(&local_80,&rb2->m_mat,&local_70);
     rigid_body_constraint_hinge::set
-              (local_14,param_3,&local_40,param_4,&local_60,param_5,&local_80,param_7,param_8,
-               param_6);
+              (local_14,b1_anchor_loc,&local_40,b1_hinge_axis_loc,&local_60,b1_ref_axis_loc,
+               &local_80,lowStop,highStop,damp);
   }
   return local_14;
 }
@@ -134,22 +134,22 @@ XDoll_CreateHingeConstraint
 // 008633D0  XDoll_CreatePointConstraint  (physics/xdoll.cpp:161)
 
 rigid_body_constraint_point * __cdecl
-XDoll_CreatePointConstraint(rigid_body *param_1,rigid_body *param_2,phys_vec3 *param_3)
+XDoll_CreatePointConstraint(rigid_body *rb1,rigid_body *rb2,phys_vec3 *b1_anchor_loc)
 
 {
   phys_vec3 local_40;
   phys_vec3 local_30;
   rigid_body_constraint_point *local_14;
   
-  local_14 = phys_sys::create_rbc_point(param_1,param_2,0);
+  local_14 = phys_sys::create_rbc_point(rb1,rb2,0);
   if (local_14 == (rigid_body_constraint_point *)0x0) {
     Com_PrintWarning(0x14,"Physics: Out of point constraints\n");
     local_14 = (rigid_body_constraint_point *)0x0;
   }
   else {
-    phys_full_multiply(&local_30,&param_1->m_mat,param_3);
-    phys_full_inv_multiply(&local_40,&param_2->m_mat,&local_30);
-    rigid_body_constraint_point::set(local_14,param_3,&local_40);
+    phys_full_multiply(&local_30,&rb1->m_mat,b1_anchor_loc);
+    phys_full_inv_multiply(&local_40,&rb2->m_mat,&local_30);
+    rigid_body_constraint_point::set(local_14,b1_anchor_loc,&local_40);
   }
   return local_14;
 }
@@ -158,7 +158,7 @@ XDoll_CreatePointConstraint(rigid_body *param_1,rigid_body *param_2,phys_vec3 *p
 // 00863460  XDoll_CreateActuatorConstraint  (physics/xdoll.cpp:176)
 
 rigid_body_constraint_angular_actuator * __cdecl
-XDoll_CreateActuatorConstraint(rigid_body *param_1,rigid_body *param_2,float param_3)
+XDoll_CreateActuatorConstraint(rigid_body *rb1,rigid_body *rb2,float power)
 
 {
   phys_mat44 local_60;
@@ -166,16 +166,16 @@ XDoll_CreateActuatorConstraint(rigid_body *param_1,rigid_body *param_2,float par
   phys_mat44 *local_18;
   rigid_body_constraint_angular_actuator *local_14;
   
-  local_14 = phys_sys::create_rbc_angular_actuator(param_1,param_2,0);
+  local_14 = phys_sys::create_rbc_angular_actuator(rb1,rb2,0);
   if (local_14 == (rigid_body_constraint_angular_actuator *)0x0) {
     Com_PrintWarning(0x14,"Physics: Out of actuator constraints\n");
     local_14 = (rigid_body_constraint_angular_actuator *)0x0;
   }
   else {
-    local_18 = &param_1->m_mat;
-    local_1c = &param_2->m_mat;
+    local_18 = &rb1->m_mat;
+    local_1c = &rb2->m_mat;
     phys_inv_multiply_mat(&local_60,local_18,local_1c);
-    rigid_body_constraint_angular_actuator::set(local_14,param_3 / param_1->m_inv_mass,&local_60);
+    rigid_body_constraint_angular_actuator::set(local_14,power / rb1->m_inv_mass,&local_60);
   }
   return local_14;
 }
@@ -183,12 +183,12 @@ XDoll_CreateActuatorConstraint(rigid_body *param_1,rigid_body *param_2,float par
 
 // 00861C70  XDoll_IsXDollConstraint  (physics/xdoll.cpp:195)
 
-bool __cdecl XDoll_IsXDollConstraint(ConstraintType param_1)
+bool __cdecl XDoll_IsXDollConstraint(ConstraintType type)
 
 {
   bool bVar1;
   
-  if (((int)param_1 < 1) || (5 < (int)param_1)) {
+  if (((int)type < 1) || (5 < (int)type)) {
     bVar1 = false;
   }
   else {
@@ -200,30 +200,30 @@ bool __cdecl XDoll_IsXDollConstraint(ConstraintType param_1)
 
 // 00862D90  XDoll_Activate  (physics/xdoll.cpp:202)
 
-bool __cdecl XDoll_Activate(PhysConstraints *param_1,int param_2)
+bool __cdecl XDoll_Activate(PhysConstraints *constraintsDef,int health)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  uint local_8;
+  uint ci;
   
-  if ((3 < param_1->count) &&
+  if ((3 < constraintsDef->count) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0xcb,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  ci = 0;
   while( true ) {
-    if (param_1->count <= local_8) {
+    if (constraintsDef->count <= ci) {
       return false;
     }
-    bVar2 = XDoll_IsXDollConstraint(param_1->data[local_8].type);
-    if (((bVar2) && (param_1->data[local_8].min_health < param_2)) &&
-       (param_2 <= param_1->data[local_8].max_health)) break;
-    local_8 = local_8 + 1;
+    bVar2 = XDoll_IsXDollConstraint(constraintsDef->data[ci].type);
+    if (((bVar2) && (constraintsDef->data[ci].min_health < health)) &&
+       (health <= constraintsDef->data[ci].max_health)) break;
+    ci = ci + 1;
   }
   return true;
 }
@@ -231,47 +231,55 @@ bool __cdecl XDoll_Activate(PhysConstraints *param_1,int param_2)
 
 // 00861C90  XDoll_SetCollides  (physics/xdoll.cpp:215)
 
-void __cdecl XDoll_SetCollides(XDollBone *param_1,bool param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl XDoll_SetCollides(XDollBone *bone,bool collides)
 
 {
   int iVar1;
   broad_phase_info *pbVar2;
   broad_phase_group *pbVar3;
-  uint local_1c;
-  broad_phase_info *local_18;
-  uint local_c;
+  int flags_2;
+  broad_phase_info *bpi_2;
+  broad_phase_group *bpg;
+  broad_phase_info *bpi;
+  int flags;
+  PhysObjUserData *userData;
   
-  if (param_1->rigidBody != 0) {
-    iVar1 = param_1->rigidBody;
+  if (bone->rigidBody != 0) {
+    iVar1 = bone->rigidBody;
     if ((*(uint *)(*(int *)(iVar1 + 0xa0) + 0x30) & 1) == 0) {
       pbVar3 = broad_phase_base::get_bpg(*(broad_phase_base **)(iVar1 + 0xa0));
-      for (local_18 = pbVar3->m_list_bpi_head; local_18 != (broad_phase_info *)0x0;
-          local_18 = (broad_phase_info *)local_18->_padding_) {
-        if (param_2) {
-          local_1c = local_18->_padding_ | 3;
+      for (bpi_2 = pbVar3->m_list_bpi_head; bpi_2 != (broad_phase_info *)0x0;
+          bpi_2 = (broad_phase_info *)bpi_2->_padding_) {
+        if (collides) {
+          flags_2 = bpi_2->_padding_ | 3;
         }
         else {
-          local_1c = local_18->_padding_ & 0xfffffffc;
+          flags_2 = bpi_2->_padding_ & 0xfffffffc;
         }
-        local_18->_padding_ = local_1c;
+        bpi_2->_padding_ = flags_2;
       }
     }
     else {
       pbVar2 = broad_phase_base::get_bpi(*(broad_phase_base **)(iVar1 + 0xa0));
-      if (param_2) {
-        local_c = pbVar2->_padding_ | 3;
+      if (collides) {
+        flags = pbVar2->_padding_ | 3;
       }
       else {
-        local_c = pbVar2->_padding_ & 0xfffffffc;
+        flags = pbVar2->_padding_ & 0xfffffffc;
       }
-      pbVar2->_padding_ = local_c;
+      pbVar2->_padding_ = flags;
     }
   }
-  if (param_2) {
-    param_1->flags = param_1->flags | 2;
+  if (collides) {
+    bone->flags = bone->flags | 2;
   }
   else {
-    param_1->flags = param_1->flags & 0xfd;
+    bone->flags = bone->flags & 0xfd;
   }
   return;
 }
@@ -279,13 +287,18 @@ void __cdecl XDoll_SetCollides(XDollBone *param_1,bool param_2)
 
 // 00861DA0  XDoll_SetCollides  (physics/xdoll.cpp:251)
 
-void __cdecl XDoll_SetCollides(XDollBody *param_1,bool param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl XDoll_SetCollides(XDollBody *body,bool collides)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < param_1->numBones; local_8 = local_8 + 1) {
-    XDoll_SetCollides(param_1->bones + local_8,param_2);
+  for (i = 0; i < body->numBones; i = i + 1) {
+    XDoll_SetCollides(body->bones + i,collides);
   }
   return;
 }
@@ -293,14 +306,14 @@ void __cdecl XDoll_SetCollides(XDollBody *param_1,bool param_2)
 
 // 00861DF0  XDoll_SetCollides  (physics/xdoll.cpp:259)
 
-void __cdecl XDoll_SetCollides(int param_1,bool param_2)
+void __cdecl XDoll_SetCollides(int xdoll_handle,bool collides)
 
 {
-  XDollBody *pXVar1;
+  XDollBody *body;
   
-  if (param_1 != 0) {
-    pXVar1 = XDoll_HandleBody(param_1);
-    XDoll_SetCollides(pXVar1,param_2);
+  if (xdoll_handle != 0) {
+    body = XDoll_HandleBody(xdoll_handle);
+    XDoll_SetCollides(body,collides);
   }
   return;
 }
@@ -356,12 +369,12 @@ void __cdecl _dynamic_initializer_for__PHYS_Z_VEC__(void)
 
 // 00861E20  XDoll_GetStableTime  (physics/xdoll.cpp:269)
 
-int __cdecl XDoll_GetStableTime(int param_1)
+int __cdecl XDoll_GetStableTime(int xdoll_handle)
 
 {
   XDollBody *pXVar1;
   
-  pXVar1 = XDoll_HandleBody(param_1);
+  pXVar1 = XDoll_HandleBody(xdoll_handle);
   return pXVar1->stableTime;
 }
 
@@ -393,92 +406,98 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 008626D0  XDoll_CreatePhysObj  (physics/xdoll.cpp:275)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 bool __cdecl
-XDoll_CreatePhysObj(XDollBody *param_1,XDollBone *param_2,XModel *param_3,cpose_t *param_4,
-                   PhysPreset *param_5,bool param_6)
+XDoll_CreatePhysObj(XDollBody *body,XDollBone *bone,XModel *model,cpose_t *pose,
+                   PhysPreset *physPreset,bool collide)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  DObj *pDVar4;
-  int iVar5;
-  PhysGeomList *pPVar6;
-  gjk_base_t *pgVar7;
+  DObj *obj_00;
+  int iVar4;
+  PhysGeomList *pPVar5;
+  gjk_base_t *geom;
   char *local_64;
-  float local_58 [3];
-  int local_4c;
-  float local_48 [4];
-  float local_38 [9];
-  gjk_collision_visitor local_14;
+  int stype;
+  DObj *obj;
+  float origin [3];
+  PhysObjUserData *userData;
+  float quat [4];
+  float mat [9];
+  gjk_collision_visitor collision_visitor;
   gjk_geom_list_t *local_10;
-  gjk_geom_list_t local_c;
+  gjk_geom_list_t gjk_geom_list;
   
-  pDVar4 = XDoll_BodyDObj(param_1,(uint)param_4->localClientNum);
-  if ((pDVar4 == (DObj *)0x0) &&
+  obj_00 = XDoll_BodyDObj(body,(uint)pose->localClientNum);
+  if ((obj_00 == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x119,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  iVar5 = CG_DObjGetWorldTagMatrix
-                    (param_4,pDVar4,param_2->name_hash,(float (*) [3])local_38,local_58);
-  if (iVar5 == 0) {
-    SL_ConvertToString(param_2->name_hash,SCRIPTINSTANCE_SERVER);
+  iVar4 = CG_DObjGetWorldTagMatrix(pose,obj_00,bone->name_hash,(float (*) [3])mat,origin);
+  if (iVar4 == 0) {
+    SL_ConvertToString(bone->name_hash,SCRIPTINSTANCE_SERVER);
     Com_PrintWarning(0xe,
                      "XDoll: Failed to get world tag matrix for bone %s in XDoll_CreatePhysObj!\n");
     return false;
   }
-  AxisToQuat((float (*) [3])local_38,local_48);
-  if (param_5 == (PhysPreset *)0x0) {
+  AxisToQuat((float (*) [3])mat,quat);
+  if (physPreset == (PhysPreset *)0x0) {
     Com_PrintWarning(0xe,"XDoll: Failed to model physPreset\n");
   }
-  local_c.m_first_geom = (gjk_base_t *)0x0;
-  local_c.m_geom_count = 0;
-  local_14 = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
-  local_10 = &local_c;
-  if (((param_3 == (XModel *)0x0) || (iVar5 = XModelHasCollmap(param_3), iVar5 == 0)) ||
-     (param_2->index != '\0')) {
-    pPVar6 = XModelGetCollmapForBoneIndex(param_3,(uint)param_2->index);
-    if (pPVar6 == (PhysGeomList *)0x0) {
-      if (param_3->collSurfs == (XModelCollSurf_s *)0x0) {
+  gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+  gjk_geom_list.m_geom_count = 0;
+  collision_visitor = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
+  local_10 = &gjk_geom_list;
+  if (((model == (XModel *)0x0) || (iVar4 = XModelHasCollmap(model), iVar4 == 0)) ||
+     (bone->index != '\0')) {
+    pPVar5 = XModelGetCollmapForBoneIndex(model,(uint)bone->index);
+    if (pPVar5 == (PhysGeomList *)0x0) {
+      if (model->collSurfs == (XModelCollSurf_s *)0x0) {
         local_64 = "t";
       }
       else {
-        local_64 = (char *)param_3->collSurfs->surfFlags;
+        local_64 = (char *)model->collSurfs->surfFlags;
       }
-      pgVar7 = create_aabb_gjk_geom
-                         (param_3->mins,param_3->maxs,(int)((uint)local_64 & 0x3f00000) >> 0x14,
-                          (gjk_collision_visitor *)&g_empty_collision_visitor);
-      gjk_geom_list_t::add_geom(&local_c,pgVar7);
+      geom = create_aabb_gjk_geom
+                       (model->mins,model->maxs,(int)((uint)local_64 & 0x3f00000) >> 0x14,
+                        (gjk_collision_visitor *)&g_empty_collision_visitor);
+      gjk_geom_list_t::add_geom(&gjk_geom_list,geom);
     }
     else {
       create_xmodel_gjk_geom
-                (param_3,&local_14,(uint)param_2->index,0xffffffff,true,0,(phys_mat44 *)0x0);
+                (model,&collision_visitor,(uint)bone->index,0xffffffff,true,0,(phys_mat44 *)0x0);
     }
   }
   else {
-    create_xmodel_gjk_geom(param_3,&local_14,-1,0x280ec93,true,0,(phys_mat44 *)0x0);
+    create_xmodel_gjk_geom(model,&collision_visitor,-1,0x280ec93,true,0,(phys_mat44 *)0x0);
   }
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-  param_2->physPreset = param_5;
-  iVar5 = Phys_ObjCreate(0,local_58,local_48,vec3_origin,param_5,&local_c,true,-1);
-  param_2->rigidBody = iVar5;
-  local_4c = param_2->rigidBody;
-  if ((*(int *)(local_4c + 0xa0) == 0) &&
+  bone->physPreset = physPreset;
+  iVar4 = Phys_ObjCreate(0,origin,quat,vec3_origin,physPreset,&gjk_geom_list,true,-1);
+  bone->rigidBody = iVar4;
+  userData = (PhysObjUserData *)bone->rigidBody;
+  if ((userData->m_bpb == (broad_phase_base *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x147,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  aasap_list_remove(*(broad_phase_base **)(local_4c + 0xa0));
+  aasap_list_remove(userData->m_bpb);
   Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
-  bVar2 = param_2->rigidBody != 0;
+  bVar2 = bone->rigidBody != 0;
   if (bVar2) {
-    XDoll_SetCollides(param_2,param_6);
-    param_2->flags = param_2->flags & 0xfe;
+    XDoll_SetCollides(bone,collide);
+    bone->flags = bone->flags & 0xfe;
   }
   else {
     Com_PrintWarning(0xe,"XDoll: Failed to create rigid body\n");
@@ -489,33 +508,33 @@ XDoll_CreatePhysObj(XDollBody *param_1,XDollBone *param_2,XModel *param_3,cpose_
 
 // 008621C0  XDoll_UpdateTimers  (physics/xdoll.cpp:348)
 
-void __cdecl XDoll_UpdateTimers(XDollBody *param_1,int param_2)
+void __cdecl XDoll_UpdateTimers(XDollBody *body,int msec)
 
 {
-  XDoll_ConstraintInfo *pXVar1;
-  PhysConstraints *pPVar2;
-  code *pcVar3;
-  bool bVar4;
-  uint local_c;
+  XDoll_ConstraintInfo *cinfo;
+  PhysConstraints *pPVar1;
+  code *pcVar2;
+  bool bVar3;
+  uint ci;
   
-  if (param_1->constraintsDef != (PhysConstraints *)0x0) {
-    pPVar2 = param_1->constraintsDef;
-    if (3 < pPVar2->count) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x160,0,"%s")
+  if (body->constraintsDef != (PhysConstraints *)0x0) {
+    pPVar1 = body->constraintsDef;
+    if (3 < pPVar1->count) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x160,0,"%s")
       ;
-      if (!bVar4) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if (!bVar3) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
     }
-    for (local_c = 0; local_c < pPVar2->count; local_c = local_c + 1) {
-      pXVar1 = param_1->constraintInfos + local_c;
-      if ((((pXVar1->field2_0x8).constraint != (rigid_body_constraint *)0x0) &&
-          (pXVar1->timer = pXVar1->timer + param_2, pPVar2->data[local_c].timeout != 0)) &&
-         (pPVar2->data[local_c].timeout * 1000 < pXVar1->timer)) {
-        XDoll_DestroyConstraint(pXVar1);
-        XDoll_SetCollides(param_1,true);
+    for (ci = 0; ci < pPVar1->count; ci = ci + 1) {
+      cinfo = body->constraintInfos + ci;
+      if ((((cinfo->field2_0x8).constraint != (rigid_body_constraint *)0x0) &&
+          (cinfo->timer = cinfo->timer + msec, pPVar1->data[ci].timeout != 0)) &&
+         (pPVar1->data[ci].timeout * 1000 < cinfo->timer)) {
+        XDoll_DestroyConstraint(cinfo);
+        XDoll_SetCollides(body,true);
       }
     }
   }
@@ -525,48 +544,54 @@ void __cdecl XDoll_UpdateTimers(XDollBody *param_1,int param_2)
 
 // 00861E40  XDoll_UpdateStability  (physics/xdoll.cpp:372)
 
-void __cdecl XDoll_UpdateStability(XDollBody *param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl XDoll_UpdateStability(XDollBody *body,int msec)
 
 {
   bool bVar1;
   bool bVar2;
-  int local_18;
-  int local_c;
+  int ci;
+  bool hasConstraints;
+  int bi;
+  bool allStable;
   
   bVar1 = true;
-  local_c = 0;
+  bi = 0;
   do {
-    if (param_1->numBones <= local_c) {
+    if (body->numBones <= bi) {
       if (bVar1) {
-        param_1->stableTime = param_1->stableTime + param_2;
+        body->stableTime = body->stableTime + msec;
       }
       else {
-        param_1->stableTime = 0;
+        body->stableTime = 0;
       }
       return;
     }
-    if (param_1->bones[local_c].rigidBody != 0) {
+    if (body->bones[bi].rigidBody != 0) {
       bVar2 = false;
-      for (local_18 = 0; local_18 < 4; local_18 = local_18 + 1) {
-        if (param_1->constraintInfos[local_18].field2_0x8.constraint != (rigid_body_constraint *)0x0
-           ) {
+      for (ci = 0; ci < 4; ci = ci + 1) {
+        if (body->constraintInfos[ci].field2_0x8.constraint != (rigid_body_constraint *)0x0) {
           bVar2 = true;
           break;
         }
       }
       if (!bVar2) {
-        bVar2 = Phys_ObjIsAsleep(param_1->bones[local_c].rigidBody);
+        bVar2 = Phys_ObjIsAsleep(body->bones[bi].rigidBody);
         if (bVar2) {
-          Phys_ObjDestroy(0,param_1->bones[local_c].rigidBody);
-          param_1->bones[local_c].rigidBody = 0;
-          param_1->bones[local_c].flags = param_1->bones[local_c].flags | 1;
+          Phys_ObjDestroy(0,body->bones[bi].rigidBody);
+          body->bones[bi].rigidBody = 0;
+          body->bones[bi].flags = body->bones[bi].flags | 1;
           goto LAB_00861e53;
         }
       }
       bVar1 = false;
     }
 LAB_00861e53:
-    local_c = local_c + 1;
+    bi = bi + 1;
   } while( true );
 }
 
@@ -598,19 +623,20 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl XDoll_Update(int param_1)
+void __cdecl XDoll_Update(int msec)
 
 {
   code *pcVar1;
   bool bVar2;
-  XDollBoneOrientation *pXVar3;
-  DObj *pDVar4;
-  int iVar5;
-  float local_40 [3];
-  centity_s *local_34;
-  float local_30 [9];
-  XDollBody *local_c;
-  int local_8;
+  XDollBoneOrientation *boneSnapshot;
+  DObj *obj_00;
+  int iVar3;
+  DObj *obj;
+  float origin [3];
+  centity_s *cent;
+  float mat [9];
+  XDollBody *body;
+  int i;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -620,26 +646,26 @@ void __cdecl XDoll_Update(int param_1)
     (*pcVar1)();
     return;
   }
-  xdollTime = xdollTime + param_1;
-  for (local_8 = 0; local_8 < 0x80; local_8 = local_8 + 1) {
-    local_c = xdollBodies + local_8;
-    if (0 < local_c->references) {
-      pXVar3 = XDoll_BodyBoneOrientations(local_c);
-      XDoll_SnapshotBonePositions(local_c,pXVar3);
-      XDoll_UpdateTimers(local_c,param_1);
-      XDoll_UpdateStability(local_c,param_1);
-      if (local_c->userBody != 0) {
-        local_34 = CG_GetEntity(local_c->client_index,local_c->entity_index);
-        pDVar4 = Com_GetClientDObj(local_c->entity_index,local_c->client_index);
-        if (((local_34->nextValid == 0) || (local_34->destructible == (Destructible *)0x0)) ||
-           (pDVar4 == (DObj *)0x0)) {
-          XDoll_DestroyXDoll(local_c);
+  xdollTime = xdollTime + msec;
+  for (i = 0; i < 0x80; i = i + 1) {
+    body = xdollBodies + i;
+    if (0 < body->references) {
+      boneSnapshot = XDoll_BodyBoneOrientations(body);
+      XDoll_SnapshotBonePositions(body,boneSnapshot);
+      XDoll_UpdateTimers(body,msec);
+      XDoll_UpdateStability(body,msec);
+      if (body->userBody != 0) {
+        cent = CG_GetEntity(body->client_index,body->entity_index);
+        obj_00 = Com_GetClientDObj(body->entity_index,body->client_index);
+        if (((cent->nextValid == 0) || (cent->destructible == (Destructible *)0x0)) ||
+           (obj_00 == (DObj *)0x0)) {
+          XDoll_DestroyXDoll(body);
         }
-        else if ((local_c->userBodyBoneHash != 0) &&
-                (iVar5 = CG_DObjGetWorldTagMatrix
-                                   (&local_34->pose,pDVar4,local_c->userBodyBoneHash,
-                                    (float (*) [3])local_30,local_40), iVar5 != 0)) {
-          Phys_SetUserBody(local_c->userBody,local_40);
+        else if ((body->userBodyBoneHash != 0) &&
+                (iVar3 = CG_DObjGetWorldTagMatrix
+                                   (&cent->pose,obj_00,body->userBodyBoneHash,(float (*) [3])mat,
+                                    origin), iVar3 != 0)) {
+          Phys_SetUserBody(body->userBody,origin);
         }
       }
     }
@@ -650,38 +676,40 @@ void __cdecl XDoll_Update(int param_1)
 
 // 00863510  XDoll_GetRigidBody  (physics/xdoll.cpp:449)
 
-rigid_body * __cdecl XDoll_GetRigidBody(XDollBody *param_1,char *param_2)
+rigid_body * __cdecl XDoll_GetRigidBody(XDollBody *body,char *bone_name)
 
 {
   uint uVar1;
   uint uVar2;
-  int local_14;
-  rigid_body *local_10;
+  int bi;
+  rigid_body *rb;
+  uint bone_name_hash;
+  uint parent_bone_hash;
   
-  local_10 = (rigid_body *)0x0;
-  uVar1 = SL_FindLowercaseString(param_2,SCRIPTINSTANCE_SERVER);
+  rb = (rigid_body *)0x0;
+  uVar1 = SL_FindLowercaseString(bone_name,SCRIPTINSTANCE_SERVER);
   uVar2 = SL_FindLowercaseString("parent",SCRIPTINSTANCE_SERVER);
   if (uVar1 == uVar2) {
-    local_10 = Destructible_GetRigidBody(param_1->client_index,param_1->entity_index);
+    rb = Destructible_GetRigidBody(body->client_index,body->entity_index);
   }
   else {
-    for (local_14 = 0; local_14 < param_1->numBones; local_14 = local_14 + 1) {
-      if (uVar1 == param_1->bones[local_14].name_hash) {
-        if (param_1->bones[local_14].rigidBody != 0) {
-          return *(rigid_body **)param_1->bones[local_14].rigidBody;
+    for (bi = 0; bi < body->numBones; bi = bi + 1) {
+      if (uVar1 == body->bones[bi].name_hash) {
+        if (body->bones[bi].rigidBody != 0) {
+          return *(rigid_body **)body->bones[bi].rigidBody;
         }
         return (rigid_body *)0x0;
       }
     }
   }
-  return local_10;
+  return rb;
 }
 
 
 // 00862F90  XDoll_CreateConstraint  (physics/xdoll.cpp:475)
 
 void __cdecl
-XDoll_CreateConstraint(XDollBody *param_1,PhysConstraint *param_2,XDoll_ConstraintInfo *param_3)
+XDoll_CreateConstraint(XDollBody *body,PhysConstraint *constraint,XDoll_ConstraintInfo *cinfo)
 
 {
   code *pcVar1;
@@ -714,12 +742,12 @@ XDoll_CreateConstraint(XDollBody *param_1,PhysConstraint *param_2,XDoll_Constrai
   rigid_body *local_18;
   rigid_body *local_14;
   
-  local_14 = XDoll_GetRigidBody(param_1,param_2->target_bone1);
-  local_18 = XDoll_GetRigidBody(param_1,param_2->target_bone2);
+  local_14 = XDoll_GetRigidBody(body,constraint->target_bone1);
+  local_18 = XDoll_GetRigidBody(body,constraint->target_bone2);
   if ((local_14 != (rigid_body *)0x0) && (local_18 != (rigid_body *)0x0)) {
     prVar3 = (rigid_body *)phys_sys::get_environment_rigid_body();
-    if ((local_18 == prVar3) && (param_1->userBody != 0)) {
-      local_1c = (undefined4 *)param_1->userBody;
+    if ((local_18 == prVar3) && (body->userBody != 0)) {
+      local_1c = (undefined4 *)body->userBody;
       local_18 = (rigid_body *)*local_1c;
     }
     if ((local_14 == (rigid_body *)0x0) &&
@@ -736,25 +764,25 @@ XDoll_CreateConstraint(XDollBody *param_1,PhysConstraint *param_2,XDoll_Constrai
       (*pcVar1)();
       return;
     }
-    param_3->type = param_2->type;
-    param_3->timer = 0;
-    local_20 = param_2->type;
+    cinfo->type = constraint->type;
+    cinfo->timer = 0;
+    local_20 = constraint->type;
     if (local_20 == CONSTRAINT_POINT) {
-      Phys_Vec3ToNitrousVec(param_2->offset,&local_30);
+      Phys_Vec3ToNitrousVec(constraint->offset,&local_30);
       local_34 = local_14->m_userdata;
       local_38 = (phys_mat44 *)((int)local_34 + 0x20);
       ppVar8 = (phys_vec3 *)((int)local_34 + 0x50);
       ppVar6 = phys_multiply33(&local_50,local_38,&local_30);
       operator+(&local_60,ppVar6,ppVar8);
       prVar4 = XDoll_CreatePointConstraint(local_14,local_18,&local_60);
-      (param_3->field2_0x8).point_constraint = prVar4;
+      (cinfo->field2_0x8).point_constraint = prVar4;
     }
     else if (local_20 == CONSTRAINT_HINGE) {
-      Phys_Vec3ToNitrousVec(param_2->offset,&local_70);
+      Phys_Vec3ToNitrousVec(constraint->offset,&local_70);
       local_74 = local_14->m_userdata;
-      local_78 = param_2->damp;
-      local_7c = param_2->minAngle * 0.017453292;
-      local_80 = param_2->maxAngle * 0.017453292;
+      local_78 = constraint->damp;
+      local_7c = constraint->minAngle * 0.017453292;
+      local_80 = constraint->maxAngle * 0.017453292;
       local_84 = (phys_mat44 *)((int)local_74 + 0x20);
       ppVar8 = (phys_vec3 *)((int)local_74 + 0x50);
       ppVar6 = phys_multiply33(&local_a0,local_84,&local_70);
@@ -770,11 +798,11 @@ XDoll_CreateConstraint(XDollBody *param_1,PhysConstraint *param_2,XDoll_Constrai
       prVar7 = XDoll_CreateHingeConstraint
                          (local_14,local_18,&local_b0,&local_e0,&local_f0,local_78,local_7c,local_80
                          );
-      (param_3->field2_0x8).hinge_constraint = prVar7;
+      (cinfo->field2_0x8).hinge_constraint = prVar7;
     }
     else if (local_20 == CONSTRAINT_ACTUATOR) {
-      prVar5 = XDoll_CreateActuatorConstraint(local_14,local_18,param_2->power);
-      (param_3->field2_0x8).actuator_constraint = prVar5;
+      prVar5 = XDoll_CreateActuatorConstraint(local_14,local_18,constraint->power);
+      (cinfo->field2_0x8).actuator_constraint = prVar5;
     }
   }
   return;
@@ -783,14 +811,14 @@ XDoll_CreateConstraint(XDollBody *param_1,PhysConstraint *param_2,XDoll_Constrai
 
 // 00862340  XDoll_DestroyXDoll  (physics/xdoll.cpp:543)
 
-void __cdecl XDoll_DestroyXDoll(int param_1)
+void __cdecl XDoll_DestroyXDoll(int xdoll_handle)
 
 {
-  XDollBody *pXVar1;
+  XDollBody *body;
   
-  if (param_1 != 0) {
-    pXVar1 = XDoll_HandleBody(param_1);
-    XDoll_DestroyXDoll(pXVar1);
+  if (xdoll_handle != 0) {
+    body = XDoll_HandleBody(xdoll_handle);
+    XDoll_DestroyXDoll(body);
   }
   return;
 }
@@ -798,31 +826,35 @@ void __cdecl XDoll_DestroyXDoll(int param_1)
 
 // 00862370  XDoll_DestroyXDoll  (physics/xdoll.cpp:553)
 
-void __cdecl XDoll_DestroyXDoll(XDollBody *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl XDoll_DestroyXDoll(XDollBody *body)
 
 {
-  uint local_10;
-  int local_8;
+  uint ci;
+  int bi;
   
-  for (local_8 = 0; local_8 < param_1->numBones; local_8 = local_8 + 1) {
-    if (param_1->bones[local_8].rigidBody != 0) {
-      Phys_ObjDestroy(0,param_1->bones[local_8].rigidBody);
+  for (bi = 0; bi < body->numBones; bi = bi + 1) {
+    if (body->bones[bi].rigidBody != 0) {
+      Phys_ObjDestroy(0,body->bones[bi].rigidBody);
     }
-    param_1->bones[local_8].rigidBody = 0;
-    if (param_1->constraintsDef != (PhysConstraints *)0x0) {
-      for (local_10 = 0; local_10 < param_1->constraintsDef->count; local_10 = local_10 + 1) {
-        if (param_1->constraintInfos[local_10].field2_0x8.constraint != (rigid_body_constraint *)0x0
-           ) {
-          param_1->constraintInfos[local_10].field2_0x8.constraint = (rigid_body_constraint *)0x0;
+    body->bones[bi].rigidBody = 0;
+    if (body->constraintsDef != (PhysConstraints *)0x0) {
+      for (ci = 0; ci < body->constraintsDef->count; ci = ci + 1) {
+        if (body->constraintInfos[ci].field2_0x8.constraint != (rigid_body_constraint *)0x0) {
+          body->constraintInfos[ci].field2_0x8.constraint = (rigid_body_constraint *)0x0;
         }
       }
     }
   }
-  if (param_1->userBody != 0) {
-    Phys_ObjDestroy(0,param_1->userBody);
-    param_1->userBody = 0;
+  if (body->userBody != 0) {
+    Phys_ObjDestroy(0,body->userBody);
+    body->userBody = 0;
   }
-  param_1->references = 0;
+  body->references = 0;
   return;
 }
 
@@ -835,59 +867,63 @@ void __cdecl XDoll_DestroyXDoll(XDollBody *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-XDoll_CreateXDollForBoneLaunch(int param_1,int param_2,int param_3,int param_4,PhysPreset *param_5)
+XDoll_CreateXDollForBoneLaunch
+          (int localClientNum,int entity_index,int piece_index,int bone_name,PhysPreset *physPreset)
 
 {
-  XDollBone *pXVar1;
-  DObj *pDVar2;
-  int iVar3;
-  XModel *pXVar4;
-  XDollBody *pXVar5;
-  centity_s *pcVar6;
-  int local_24;
-  int local_1c;
+  XDollBone *bone;
+  DObj *obj_00;
+  int xdollHandle;
+  XModel *model_00;
+  XDollBody *body;
+  centity_s *pose;
+  int bi;
+  int i;
+  DObj *obj;
+  XModel *model;
+  int xdoll_handle;
+  centity_s *cent;
   
-  pDVar2 = Com_GetClientDObj(param_2,param_1);
-  if (pDVar2 == (DObj *)0x0) {
-    iVar3 = 0;
+  obj_00 = Com_GetClientDObj(entity_index,localClientNum);
+  if (obj_00 == (DObj *)0x0) {
+    xdollHandle = 0;
   }
   else {
-    pXVar4 = DObjGetModel(pDVar2,0);
-    if (param_5 == (PhysPreset *)0x0) {
-      iVar3 = 0;
+    model_00 = DObjGetModel(obj_00,0);
+    if (physPreset == (PhysPreset *)0x0) {
+      xdollHandle = 0;
     }
     else {
-      for (local_1c = 0; local_1c < 0x80; local_1c = local_1c + 1) {
-        if (((0 < xdollBodies[local_1c].references) &&
-            (xdollBodies[local_1c].piece_index == param_3)) &&
-           (xdollBodies[local_1c].entity_index == param_2)) {
-          xdollBodies[local_1c].references = xdollBodies[local_1c].references + 1;
-          return local_1c + 1;
+      for (i = 0; i < 0x80; i = i + 1) {
+        if (((0 < xdollBodies[i].references) && (xdollBodies[i].piece_index == piece_index)) &&
+           (xdollBodies[i].entity_index == entity_index)) {
+          xdollBodies[i].references = xdollBodies[i].references + 1;
+          return i + 1;
         }
       }
-      iVar3 = XDoll_GetUnusedBody();
-      if (iVar3 == 0) {
-        iVar3 = 0;
+      xdollHandle = XDoll_GetUnusedBody();
+      if (xdollHandle == 0) {
+        xdollHandle = 0;
       }
       else {
-        pXVar5 = XDoll_HandleBody(iVar3);
-        pXVar5->constraintsDef = (PhysConstraints *)0x0;
-        pXVar5->numBones = 0;
-        pXVar5->entity_index = param_2;
-        pXVar5->client_index = param_1;
-        pXVar5->piece_index = param_3;
-        pXVar5->numBones = 1;
-        pXVar5->bones[0].name_hash = param_4;
-        pcVar6 = CG_GetEntity(param_1,param_2);
-        for (local_24 = 0; local_24 < pXVar5->numBones; local_24 = local_24 + 1) {
-          pXVar1 = pXVar5->bones + local_24;
-          DObjGetModelBoneIndex(pDVar2,0,pXVar1->name_hash,&pXVar1->index);
-          XDoll_CreatePhysObj(pXVar5,pXVar1,pXVar4,&pcVar6->pose,param_5,true);
+        body = XDoll_HandleBody(xdollHandle);
+        body->constraintsDef = (PhysConstraints *)0x0;
+        body->numBones = 0;
+        body->entity_index = entity_index;
+        body->client_index = localClientNum;
+        body->piece_index = piece_index;
+        body->numBones = 1;
+        body->bones[0].name_hash = bone_name;
+        pose = CG_GetEntity(localClientNum,entity_index);
+        for (bi = 0; bi < body->numBones; bi = bi + 1) {
+          bone = body->bones + bi;
+          DObjGetModelBoneIndex(obj_00,0,bone->name_hash,&bone->index);
+          XDoll_CreatePhysObj(body,bone,model_00,&pose->pose,physPreset,true);
         }
       }
     }
   }
-  return iVar3;
+  return xdollHandle;
 }
 
 
@@ -900,174 +936,172 @@ XDoll_CreateXDollForBoneLaunch(int param_1,int param_2,int param_3,int param_4,P
 
 int __cdecl
 XDoll_CreateXDollForConstraints
-          (int param_1,int param_2,int param_3,int param_4,PhysConstraints *param_5,
-          PhysPreset *param_6)
+          (int localClientNum,int entity_index,int piece_index,int health,
+          PhysConstraints *constraints,PhysPreset *physPreset)
 
 {
-  XDollBone *pXVar1;
-  PhysConstraints *pPVar2;
-  code *pcVar3;
-  bool bVar4;
-  DObj *pDVar5;
-  int iVar6;
-  uint uVar7;
-  int local_6c;
-  int local_68;
-  int local_60;
-  uint local_54;
-  int local_4c;
-  float local_44 [3];
-  XModel *local_38;
-  int local_34;
-  centity_s *local_30;
-  XDollBody *local_2c;
-  float local_28 [9];
+  XDollBone *bone;
+  PhysConstraints *pPVar1;
+  code *pcVar2;
+  bool bVar3;
+  DObj *obj_00;
+  int iVar4;
+  uint uVar5;
+  int bi_3;
+  int bi_2;
+  uint bone_name_hash_2;
+  int bi;
+  uint bone_name_hash;
+  uint ci;
+  int i;
+  DObj *obj;
+  float origin [3];
+  XModel *model;
+  int xdoll_handle;
+  centity_s *cent;
+  XDollBody *body;
+  float mat [9];
   
-  pDVar5 = Com_GetClientDObj(param_2,param_1);
-  if (pDVar5 == (DObj *)0x0) {
-    local_34 = 0;
+  obj_00 = Com_GetClientDObj(entity_index,localClientNum);
+  if (obj_00 == (DObj *)0x0) {
+    xdoll_handle = 0;
   }
   else {
-    local_38 = DObjGetModel(pDVar5,0);
-    if ((param_5 == (PhysConstraints *)0x0) || (param_6 == (PhysPreset *)0x0)) {
-      local_34 = 0;
+    model = DObjGetModel(obj_00,0);
+    if ((constraints == (PhysConstraints *)0x0) || (physPreset == (PhysPreset *)0x0)) {
+      xdoll_handle = 0;
     }
     else {
-      bVar4 = XDoll_Activate(param_5,param_4);
-      if (bVar4) {
-        for (local_4c = 0; local_4c < 0x80; local_4c = local_4c + 1) {
-          if (((0 < xdollBodies[local_4c].references) &&
-              (xdollBodies[local_4c].piece_index == param_3)) &&
-             (xdollBodies[local_4c].entity_index == param_2)) {
-            xdollBodies[local_4c].references = xdollBodies[local_4c].references + 1;
-            return local_4c + 1;
+      bVar3 = XDoll_Activate(constraints,health);
+      if (bVar3) {
+        for (i = 0; i < 0x80; i = i + 1) {
+          if (((0 < xdollBodies[i].references) && (xdollBodies[i].piece_index == piece_index)) &&
+             (xdollBodies[i].entity_index == entity_index)) {
+            xdollBodies[i].references = xdollBodies[i].references + 1;
+            return i + 1;
           }
         }
-        local_34 = XDoll_GetUnusedBody();
-        if (local_34 == 0) {
-          local_34 = 0;
+        xdoll_handle = XDoll_GetUnusedBody();
+        if (xdoll_handle == 0) {
+          xdoll_handle = 0;
         }
         else {
-          local_2c = XDoll_HandleBody(local_34);
-          local_2c->constraintsDef = param_5;
-          local_2c->numBones = 0;
-          local_2c->entity_index = param_2;
-          local_2c->client_index = param_1;
-          local_2c->piece_index = param_3;
-          for (local_54 = 0; local_54 < local_2c->constraintsDef->count; local_54 = local_54 + 1) {
-            pPVar2 = local_2c->constraintsDef;
-            bVar4 = XDoll_IsXDollConstraint(pPVar2->data[local_54].type);
-            if (bVar4) {
-              iVar6 = I_stricmp(pPVar2->data[local_54].target_bone1,"parent");
-              if (iVar6 != 0) {
-                uVar7 = SL_FindLowercaseString
-                                  (pPVar2->data[local_54].target_bone1,SCRIPTINSTANCE_SERVER);
-                for (local_60 = 0;
-                    (local_60 < local_2c->numBones && (uVar7 != local_2c->bones[local_60].name_hash)
-                    ); local_60 = local_60 + 1) {
+          body = XDoll_HandleBody(xdoll_handle);
+          body->constraintsDef = constraints;
+          body->numBones = 0;
+          body->entity_index = entity_index;
+          body->client_index = localClientNum;
+          body->piece_index = piece_index;
+          for (ci = 0; ci < body->constraintsDef->count; ci = ci + 1) {
+            pPVar1 = body->constraintsDef;
+            bVar3 = XDoll_IsXDollConstraint(pPVar1->data[ci].type);
+            if (bVar3) {
+              iVar4 = I_stricmp(pPVar1->data[ci].target_bone1,"parent");
+              if (iVar4 != 0) {
+                uVar5 = SL_FindLowercaseString(pPVar1->data[ci].target_bone1,SCRIPTINSTANCE_SERVER);
+                for (bi = 0; (bi < body->numBones && (uVar5 != body->bones[bi].name_hash));
+                    bi = bi + 1) {
                 }
-                if (local_60 == local_2c->numBones) {
-                  local_2c->bones[local_2c->numBones].name_hash = uVar7;
-                  local_2c->numBones = local_2c->numBones + 1;
-                  if ((3 < local_2c->numBones) &&
-                     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp"
-                                               ,0x2ad,0,"%s"), !bVar4)) {
-                    pcVar3 = (code *)swi(3);
-                    iVar6 = (*pcVar3)();
-                    return iVar6;
+                if (bi == body->numBones) {
+                  body->bones[body->numBones].name_hash = uVar5;
+                  body->numBones = body->numBones + 1;
+                  if ((3 < body->numBones) &&
+                     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp"
+                                               ,0x2ad,0,"%s"), !bVar3)) {
+                    pcVar2 = (code *)swi(3);
+                    iVar4 = (*pcVar2)();
+                    return iVar4;
                   }
                 }
               }
-              iVar6 = I_stricmp(pPVar2->data[local_54].target_bone2,"parent");
-              if (iVar6 != 0) {
-                uVar7 = SL_FindLowercaseString
-                                  (pPVar2->data[local_54].target_bone2,SCRIPTINSTANCE_SERVER);
-                for (local_68 = 0;
-                    (local_68 < local_2c->numBones && (uVar7 != local_2c->bones[local_68].name_hash)
-                    ); local_68 = local_68 + 1) {
+              iVar4 = I_stricmp(pPVar1->data[ci].target_bone2,"parent");
+              if (iVar4 != 0) {
+                uVar5 = SL_FindLowercaseString(pPVar1->data[ci].target_bone2,SCRIPTINSTANCE_SERVER);
+                for (bi_2 = 0; (bi_2 < body->numBones && (uVar5 != body->bones[bi_2].name_hash));
+                    bi_2 = bi_2 + 1) {
                 }
-                if (local_68 == local_2c->numBones) {
-                  local_2c->bones[local_2c->numBones].name_hash = uVar7;
-                  local_2c->numBones = local_2c->numBones + 1;
-                  if ((3 < local_2c->numBones) &&
-                     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp"
-                                               ,0x2bd,0,"%s"), !bVar4)) {
-                    pcVar3 = (code *)swi(3);
-                    iVar6 = (*pcVar3)();
-                    return iVar6;
+                if (bi_2 == body->numBones) {
+                  body->bones[body->numBones].name_hash = uVar5;
+                  body->numBones = body->numBones + 1;
+                  if ((3 < body->numBones) &&
+                     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp"
+                                               ,0x2bd,0,"%s"), !bVar3)) {
+                    pcVar2 = (code *)swi(3);
+                    iVar4 = (*pcVar2)();
+                    return iVar4;
                   }
                 }
               }
             }
           }
-          local_30 = CG_GetEntity(param_1,param_2);
-          for (local_6c = 0; local_6c < local_2c->numBones; local_6c = local_6c + 1) {
-            pXVar1 = local_2c->bones + local_6c;
-            DObjGetModelBoneIndex(pDVar5,0,pXVar1->name_hash,&pXVar1->index);
-            XDoll_CreatePhysObj(local_2c,pXVar1,local_38,&local_30->pose,param_6,false);
+          cent = CG_GetEntity(localClientNum,entity_index);
+          for (bi_3 = 0; bi_3 < body->numBones; bi_3 = bi_3 + 1) {
+            bone = body->bones + bi_3;
+            DObjGetModelBoneIndex(obj_00,0,bone->name_hash,&bone->index);
+            XDoll_CreatePhysObj(body,bone,model,&cent->pose,physPreset,false);
           }
-          local_2c->userBody = 0;
-          uVar7 = SL_FindLowercaseString("body_animate_jnt",SCRIPTINSTANCE_SERVER);
-          local_2c->userBodyBoneHash = uVar7;
-          if ((local_2c->userBodyBoneHash != 0) &&
-             (iVar6 = CG_DObjGetWorldTagMatrix
-                                (&local_30->pose,pDVar5,local_2c->userBodyBoneHash,
-                                 (float (*) [3])local_28,local_44), iVar6 != 0)) {
-            iVar6 = Phys_CreateUserBody(local_44,param_2,PHYS_GEOM_CAPSULE);
-            local_2c->userBody = iVar6;
-            if (local_2c->userBody != 0) {
-              Phys_SetUserBody(local_2c->userBody,local_44);
+          body->userBody = 0;
+          uVar5 = SL_FindLowercaseString("body_animate_jnt",SCRIPTINSTANCE_SERVER);
+          body->userBodyBoneHash = uVar5;
+          if ((body->userBodyBoneHash != 0) &&
+             (iVar4 = CG_DObjGetWorldTagMatrix
+                                (&cent->pose,obj_00,body->userBodyBoneHash,(float (*) [3])mat,origin
+                                ), iVar4 != 0)) {
+            iVar4 = Phys_CreateUserBody(origin,entity_index,PHYS_GEOM_CAPSULE);
+            body->userBody = iVar4;
+            if (body->userBody != 0) {
+              Phys_SetUserBody(body->userBody,origin);
             }
           }
         }
       }
       else {
-        local_34 = 0;
+        xdoll_handle = 0;
       }
     }
   }
-  return local_34;
+  return xdoll_handle;
 }
 
 
 // 00862E30  XDoll_UpdateHealth  (physics/xdoll.cpp:734)
 
-void __cdecl XDoll_UpdateHealth(int param_1,int param_2)
+void __cdecl XDoll_UpdateHealth(int xdoll_handle,int health)
 
 {
-  PhysConstraint *pPVar1;
-  XDoll_ConstraintInfo *pXVar2;
-  PhysConstraints *pPVar3;
-  code *pcVar4;
-  bool bVar5;
-  XDollBody *pXVar6;
-  uint local_10;
+  PhysConstraint *constraint;
+  XDoll_ConstraintInfo *cinfo;
+  PhysConstraints *pPVar1;
+  code *pcVar2;
+  bool bVar3;
+  XDollBody *body;
+  uint ci;
   
-  pXVar6 = XDoll_HandleBody(param_1);
-  if (pXVar6->constraintsDef != (PhysConstraints *)0x0) {
-    pPVar3 = pXVar6->constraintsDef;
-    if ((3 < pPVar3->count) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x2e3,0,
-                                 "%s"), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+  body = XDoll_HandleBody(xdoll_handle);
+  if (body->constraintsDef != (PhysConstraints *)0x0) {
+    pPVar1 = body->constraintsDef;
+    if ((3 < pPVar1->count) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x2e3,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    for (local_10 = 0; local_10 < pPVar3->count; local_10 = local_10 + 1) {
-      pPVar1 = pPVar3->data + local_10;
-      bVar5 = XDoll_IsXDollConstraint(pPVar1->type);
-      if (bVar5) {
-        pXVar2 = pXVar6->constraintInfos + local_10;
-        if ((pXVar2->field2_0x8).constraint == (rigid_body_constraint *)0x0) {
-          if (((pPVar1->min_health < param_2) && (param_2 <= pPVar1->max_health)) &&
-             ((pXVar2->timer < pPVar1->timeout * 1000 || (pPVar1->timeout == 0)))) {
-            XDoll_CreateConstraint(pXVar6,pPVar1,pXVar2);
-            XDoll_SetCollides(pXVar6,false);
+    for (ci = 0; ci < pPVar1->count; ci = ci + 1) {
+      constraint = pPVar1->data + ci;
+      bVar3 = XDoll_IsXDollConstraint(constraint->type);
+      if (bVar3) {
+        cinfo = body->constraintInfos + ci;
+        if ((cinfo->field2_0x8).constraint == (rigid_body_constraint *)0x0) {
+          if (((constraint->min_health < health) && (health <= constraint->max_health)) &&
+             ((cinfo->timer < constraint->timeout * 1000 || (constraint->timeout == 0)))) {
+            XDoll_CreateConstraint(body,constraint,cinfo);
+            XDoll_SetCollides(body,false);
           }
         }
-        else if ((param_2 < pPVar1->min_health) || (pPVar1->max_health <= param_2)) {
-          XDoll_DestroyConstraint(pXVar2);
-          XDoll_SetCollides(pXVar6,true);
+        else if ((health < constraint->min_health) || (constraint->max_health <= health)) {
+          XDoll_DestroyConstraint(cinfo);
+          XDoll_SetCollides(body,true);
         }
       }
     }
@@ -1083,30 +1117,32 @@ void __cdecl XDoll_UpdateHealth(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl XDoll_ApplyForce(int param_1,float *param_2,float *param_3,int param_4)
+void __cdecl XDoll_ApplyForce(int xdoll_handle,float *hitp,float *hitd,int mod)
 
 {
-  XDollBone *pXVar1;
-  XDollBody *pXVar2;
-  centity_s *pcVar3;
-  DObj *pDVar4;
-  XModel *pXVar5;
-  int local_c;
+  XDollBone *bone;
+  XDollBody *body;
+  centity_s *pose;
+  DObj *obj_00;
+  XModel *model_00;
+  XModel *model;
+  DObj *obj;
+  centity_s *cent;
+  int bi;
   
-  pXVar2 = XDoll_HandleBody(param_1);
-  for (local_c = 0; local_c < pXVar2->numBones; local_c = local_c + 1) {
-    pXVar1 = pXVar2->bones + local_c;
-    if ((pXVar1->flags & 1) != 0) {
-      pcVar3 = CG_GetEntity(pXVar2->client_index,pXVar2->entity_index);
-      pDVar4 = Com_GetClientDObj(pXVar2->entity_index,pXVar2->client_index);
-      if (pDVar4 != (DObj *)0x0) {
-        pXVar5 = DObjGetModel(pDVar4,0);
-        XDoll_CreatePhysObj(pXVar2,pXVar1,pXVar5,&pcVar3->pose,pXVar1->physPreset,
-                            (pXVar1->flags & 2) != 0);
+  body = XDoll_HandleBody(xdoll_handle);
+  for (bi = 0; bi < body->numBones; bi = bi + 1) {
+    bone = body->bones + bi;
+    if ((bone->flags & 1) != 0) {
+      pose = CG_GetEntity(body->client_index,body->entity_index);
+      obj_00 = Com_GetClientDObj(body->entity_index,body->client_index);
+      if (obj_00 != (DObj *)0x0) {
+        model_00 = DObjGetModel(obj_00,0);
+        XDoll_CreatePhysObj(body,bone,model_00,&pose->pose,bone->physPreset,(bone->flags & 2) != 0);
       }
     }
-    if (pXVar1->rigidBody != 0) {
-      Phys_ObjAddCustomForce(pXVar1->rigidBody,param_2,param_3,param_4,pXVar1->physPreset);
+    if (bone->rigidBody != 0) {
+      Phys_ObjAddCustomForce(bone->rigidBody,hitp,hitd,mod,bone->physPreset);
     }
   }
   return;
@@ -1115,14 +1151,14 @@ void __cdecl XDoll_ApplyForce(int param_1,float *param_2,float *param_3,int para
 
 // 008636C0  XDoll_HandleBody  (physics/xdoll.cpp:794)
 
-XDollBody * __cdecl XDoll_HandleBody(int param_1)
+XDollBody * __cdecl XDoll_HandleBody(int xdollHandle)
 
 {
   code *pcVar1;
   bool bVar2;
   XDollBody *pXVar3;
   
-  if (0x7f < param_1 - 1U) {
+  if (0x7f < xdollHandle - 1U) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x31b,0,
                              "xdollHandle - 1 doesn\'t index XDOLL_MAX\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -1131,82 +1167,88 @@ XDollBody * __cdecl XDoll_HandleBody(int param_1)
       return pXVar3;
     }
   }
-  return xdollBodies + param_1 + -1;
+  return xdollBodies + xdollHandle + -1;
 }
 
 
 // 00863710  XDoll_BodyDObj  (physics/xdoll.cpp:804)
 
-DObj * __cdecl XDoll_BodyDObj(XDollBody *param_1,int param_2)
+DObj * __cdecl XDoll_BodyDObj(XDollBody *body,int localClientNum)
 
 {
   DObj *pDVar1;
   
-  pDVar1 = Com_GetClientDObj(param_1->entity_index,param_2);
+  pDVar1 = Com_GetClientDObj(body->entity_index,localClientNum);
   return pDVar1;
 }
 
 
 // 00863730  XDoll_BodyBoneOrientations  (physics/xdoll.cpp:809)
 
-XDollBoneOrientation * __cdecl XDoll_BodyBoneOrientations(XDollBody *param_1)
+XDollBoneOrientation * __cdecl XDoll_BodyBoneOrientations(XDollBody *body)
 
 {
-  return param_1->boneOrientations;
+  return body->boneOrientations;
 }
 
 
 // 00863740  XDoll_DoControllers  (physics/xdoll.cpp:815)
 
-void __cdecl XDoll_DoControllers(int param_1,int *param_2,int param_3)
+void __cdecl XDoll_DoControllers(int xdoll_handle,int *partBits,int localClientNum)
 
 {
   XDollBone *pXVar1;
   code *pcVar2;
   bool bVar3;
-  XDollBody *pXVar4;
-  DObj *pDVar5;
-  DObjAnimMat *pDVar6;
-  DObjAnimMat *pDVar7;
-  float fVar8;
-  int local_20;
-  XDollBoneOrientation *local_1c;
+  XDollBody *body_00;
+  DObj *obj_00;
+  DObjAnimMat *pDVar4;
+  DObjAnimMat *v;
+  float fVar5;
+  XDollBone *bone;
+  int i;
+  XDollBoneOrientation *boneOrientation;
+  DObj *obj;
+  XDollBody *body;
+  DObjAnimMat *boneMat;
+  DObj *remoteObj;
+  DObjAnimMat *skel;
   
-  if (param_1 != 0) {
-    pXVar4 = XDoll_HandleBody(param_1);
-    pDVar5 = XDoll_BodyDObj(pXVar4,param_3);
-    pDVar6 = DObjGetRotTransArray(pDVar5);
-    if (pDVar6 != (DObjAnimMat *)0x0) {
-      local_1c = XDoll_BodyBoneOrientations(pXVar4);
-      if ((3 < pXVar4->numBones) &&
+  if (xdoll_handle != 0) {
+    body_00 = XDoll_HandleBody(xdoll_handle);
+    obj_00 = XDoll_BodyDObj(body_00,localClientNum);
+    pDVar4 = DObjGetRotTransArray(obj_00);
+    if (pDVar4 != (DObjAnimMat *)0x0) {
+      boneOrientation = XDoll_BodyBoneOrientations(body_00);
+      if ((3 < body_00->numBones) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp",0x35e,0,
                                    "%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      for (local_20 = 0; local_20 < pXVar4->numBones; local_20 = local_20 + 1) {
-        pXVar1 = pXVar4->bones + local_20;
+      for (i = 0; i < body_00->numBones; i = i + 1) {
+        pXVar1 = body_00->bones + i;
         if ((pXVar1->index != '\0') &&
-           (bVar3 = DObjSetSkelRotTransIndex(pDVar5,param_2,(uint)pXVar1->index), bVar3)) {
-          pDVar7 = pDVar6 + pXVar1->index;
-          pDVar7->trans[0] = local_1c->origin[0];
-          pDVar7->trans[1] = local_1c->origin[1];
-          pDVar7->trans[2] = local_1c->origin[2];
-          pDVar7->quat[0] = local_1c->orientation[0];
-          pDVar7->quat[1] = local_1c->orientation[1];
-          pDVar7->quat[2] = local_1c->orientation[2];
-          pDVar7->quat[3] = local_1c->orientation[3];
-          fVar8 = Vec4LengthSq(pDVar7->quat);
-          if (fVar8 == 0.0) {
-            pDVar7->quat[3] = 1.0;
-            pDVar7->transWeight = 2.0;
+           (bVar3 = DObjSetSkelRotTransIndex(obj_00,partBits,(uint)pXVar1->index), bVar3)) {
+          v = pDVar4 + pXVar1->index;
+          v->trans[0] = boneOrientation->origin[0];
+          v->trans[1] = boneOrientation->origin[1];
+          v->trans[2] = boneOrientation->origin[2];
+          v->quat[0] = boneOrientation->orientation[0];
+          v->quat[1] = boneOrientation->orientation[1];
+          v->quat[2] = boneOrientation->orientation[2];
+          v->quat[3] = boneOrientation->orientation[3];
+          fVar5 = Vec4LengthSq(v->quat);
+          if (fVar5 == 0.0) {
+            v->quat[3] = 1.0;
+            v->transWeight = 2.0;
           }
           else {
-            pDVar7->transWeight = 2.0 / fVar8;
+            v->transWeight = 2.0 / fVar5;
           }
         }
-        local_1c = local_1c + 1;
+        boneOrientation = boneOrientation + 1;
       }
     }
   }

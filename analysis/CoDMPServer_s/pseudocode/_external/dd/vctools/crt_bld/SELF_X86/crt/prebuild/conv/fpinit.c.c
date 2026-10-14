@@ -21,12 +21,12 @@ void __cdecl _cfltcvt_init(void)
 
 // 00960F4B  _fpmath  (line unknown)
 
-void __cdecl _fpmath(int param_1)
+void __cdecl _fpmath(int initPrecision)
 
 {
   _cfltcvt_init();
   _adjust_fdiv = _ms_p5_mp_test_fdiv();
-  if (param_1 != 0) {
+  if (initPrecision != 0) {
     _setdefaultprecision();
   }
   return;

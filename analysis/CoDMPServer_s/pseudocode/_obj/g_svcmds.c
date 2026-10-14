@@ -8,12 +8,12 @@ void __cdecl G_ProcessIPBans(void)
 
 {
   uchar uVar1;
-  uchar *puVar2;
+  uchar *string;
+  int iVar2;
   int iVar3;
-  int iVar4;
   uchar *extraout_EAX;
-  int iVar5;
-  uchar *puVar6;
+  int iVar4;
+  uchar *puVar5;
   uchar local_404 [1023];
   undefined1 local_5;
   
@@ -22,33 +22,33 @@ void __cdecl G_ProcessIPBans(void)
     local_404[0] = '\0';
   }
   else {
-    iVar3 = (g_banIPs->current).integer + -1;
-    iVar5 = 0x400;
-    iVar4 = iVar3;
+    iVar2 = (g_banIPs->current).integer + -1;
+    iVar4 = 0x400;
+    iVar3 = iVar2;
     do {
-      uVar1 = *(uchar *)(iVar4 + 1);
-      iVar4 = iVar4 + 1;
-      local_404[(iVar4 - iVar3) + -1] = uVar1;
+      uVar1 = *(uchar *)(iVar3 + 1);
+      iVar3 = iVar3 + 1;
+      local_404[(iVar3 - iVar2) + -1] = uVar1;
       if (uVar1 == '\0') break;
-      iVar5 = iVar5 + -1;
-    } while (iVar5 != 0);
+      iVar4 = iVar4 + -1;
+    } while (iVar4 != 0);
     local_5 = 0;
   }
-  puVar2 = local_404;
+  string = local_404;
   uVar1 = local_404[0];
-  while ((uVar1 != '\0' && (strchr(puVar2,' '), extraout_EAX != (uchar *)0x0))) {
+  while ((uVar1 != '\0' && (strchr(string,' '), extraout_EAX != (uchar *)0x0))) {
     uVar1 = *extraout_EAX;
-    puVar6 = extraout_EAX;
+    puVar5 = extraout_EAX;
     while (uVar1 == ' ') {
-      *puVar6 = '\0';
-      puVar6 = puVar6 + 1;
-      uVar1 = *puVar6;
+      *puVar5 = '\0';
+      puVar5 = puVar5 + 1;
+      uVar1 = *puVar5;
     }
-    if (*puVar2 != '\0') {
-      FUN_005c1a40(puVar2);
+    if (*string != '\0') {
+      FUN_005c1a40(string);
     }
-    uVar1 = *puVar6;
-    puVar2 = puVar6;
+    uVar1 = *puVar5;
+    string = puVar5;
   }
   return;
 }

@@ -2,38 +2,37 @@
 
 // 00C2AEE7  _set_exp  (line unknown)
 
-double __cdecl _set_exp(double param_1,int param_2)
+double __cdecl _set_exp(double x,int exp)
 
 {
-  undefined8 local_c;
+  double retval;
   
-  local_c = (double)CONCAT26(((short)param_2 + 0x3fe) * 0x10 | param_1._6_2_ & 0x800f,
-                             SUB86(param_1,0));
-  return local_c;
+  retval = (double)CONCAT26(((short)exp + 0x3fe) * 0x10 | x._6_2_ & 0x800f,SUB86(x,0));
+  return retval;
 }
 
 
 // 00C2AF13  _sptype  (line unknown)
 
-int __cdecl _sptype(double param_1)
+int __cdecl _sptype(double x)
 
 {
   int iStack_8;
   
-  if ((int)((ulonglong)param_1 >> 0x20) == 0x7ff00000) {
-    if (param_1._0_4_ == 0) {
+  if ((int)((ulonglong)x >> 0x20) == 0x7ff00000) {
+    if (x._0_4_ == 0) {
       return 1;
     }
   }
-  else if (param_1 == -INFINITY) {
+  else if (x == -INFINITY) {
     return 2;
   }
-  if ((param_1._6_2_ & 0x7ff8) == 0x7ff8) {
+  if ((x._6_2_ & 0x7ff8) == 0x7ff8) {
     iStack_8 = 3;
   }
   else {
-    if (((param_1._6_2_ & 0x7ff8) != 0x7ff0) ||
-       ((((ulonglong)param_1 & 0x7ffff00000000) == 0 && (param_1._0_4_ == 0)))) {
+    if (((x._6_2_ & 0x7ff8) != 0x7ff0) ||
+       ((((ulonglong)x & 0x7ffff00000000) == 0 && (x._0_4_ == 0)))) {
       return 0;
     }
     iStack_8 = 4;
@@ -44,7 +43,7 @@ int __cdecl _sptype(double param_1)
 
 // 00C2AF73  _decomp  (line unknown)
 
-double __cdecl _decomp(double param_1,int *param_2)
+double __cdecl _decomp(double x,int *pexp)
 
 {
   ushort uVar1;
@@ -55,43 +54,41 @@ double __cdecl _decomp(double param_1,int *param_2)
   double dVar4;
   
   dVar4 = 0.0;
-  if (param_1 == 0.0) {
+  if (x == 0.0) {
     iVar3 = 0;
   }
-  else if ((((ulonglong)param_1 & 0x7ff0000000000000) == 0) &&
-          ((((ulonglong)param_1 & 0xfffff00000000) != 0 || (param_1._0_4_ != 0)))) {
-    if (0.0 <= param_1) {
+  else if ((((ulonglong)x & 0x7ff0000000000000) == 0) &&
+          ((((ulonglong)x & 0xfffff00000000) != 0 || (x._0_4_ != 0)))) {
+    if (0.0 <= x) {
       bVar2 = false;
     }
     else {
       bVar2 = true;
     }
-    while ((param_1._6_1_ & 0x10) == 0) {
-      iVar3 = CONCAT13(param_1._7_1_,CONCAT12(param_1._6_1_,param_1._4_2_)) << 1;
-      param_1._4_2_ = (ushort)iVar3;
-      param_1._6_1_ = (byte)((uint)iVar3 >> 0x10);
-      param_1._7_1_ = (byte)((uint)iVar3 >> 0x18);
-      if ((param_1._0_4_ & 0x80000000) != 0) {
-        param_1._4_2_ = param_1._4_2_ | 1;
+    while ((x._6_1_ & 0x10) == 0) {
+      iVar3 = CONCAT13(x._7_1_,CONCAT12(x._6_1_,x._4_2_)) << 1;
+      x._4_2_ = (ushort)iVar3;
+      x._6_1_ = (byte)((uint)iVar3 >> 0x10);
+      x._7_1_ = (byte)((uint)iVar3 >> 0x18);
+      if ((x._0_4_ & 0x80000000) != 0) {
+        x._4_2_ = x._4_2_ | 1;
       }
-      param_1._0_4_ = param_1._0_4_ << 1;
+      x._0_4_ = x._0_4_ << 1;
     }
-    uVar1 = CONCAT11(param_1._7_1_,param_1._6_1_) & 0xffef;
-    param_1._6_1_ = (byte)uVar1;
-    param_1._7_1_ = (byte)(uVar1 >> 8);
+    uVar1 = CONCAT11(x._7_1_,x._6_1_) & 0xffef;
+    x._6_1_ = (byte)uVar1;
+    x._7_1_ = (byte)(uVar1 >> 8);
     if (bVar2) {
-      param_1._7_1_ = param_1._7_1_ | 0x80;
+      x._7_1_ = x._7_1_ | 0x80;
     }
-    dVar4 = _set_exp((double)CONCAT17(param_1._7_1_,
-                                      CONCAT16(param_1._6_1_,CONCAT24(param_1._4_2_,param_1._0_4_)))
-                     ,0);
+    dVar4 = _set_exp((double)CONCAT17(x._7_1_,CONCAT16(x._6_1_,CONCAT24(x._4_2_,x._0_4_))),0);
     iVar3 = extraout_EDX;
   }
   else {
-    dVar4 = _set_exp(param_1,0);
+    dVar4 = _set_exp(x,0);
     iVar3 = (extraout_EDX_00 >> 4 & 0x7ff) - 0x3fe;
   }
-  *param_2 = iVar3;
+  *pexp = iVar3;
   return dVar4;
 }
 

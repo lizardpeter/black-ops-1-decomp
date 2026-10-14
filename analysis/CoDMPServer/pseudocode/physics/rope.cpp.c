@@ -13,22 +13,22 @@ void __cdecl _dynamic_initializer_for__g_ropeCurve__(void)
 
 // 0085DAF0  Rope_Create  (physics/rope.cpp:118)
 
-void __cdecl Rope_Create(int param_1)
+void __cdecl Rope_Create(int rope_index)
 
 {
-  g_ropes[param_1].m_client_verts.frame_index = 0;
+  g_ropes[rope_index].m_client_verts.frame_index = 0;
   return;
 }
 
 
 // 0085D170  Rope_IsValid  (physics/rope.cpp:123)
 
-bool __cdecl Rope_IsValid(int param_1)
+bool __cdecl Rope_IsValid(int rope_index)
 
 {
   undefined1 local_8;
   
-  if ((param_1 < 0) || (g_max_ropes <= param_1)) {
+  if ((rope_index < 0) || (g_max_ropes <= rope_index)) {
     local_8 = false;
   }
   else {
@@ -40,14 +40,15 @@ bool __cdecl Rope_IsValid(int param_1)
 
 // 0085D690  Rope_Activate  (physics/rope.cpp:128)
 
-void __cdecl Rope_Activate(int param_1)
+void __cdecl Rope_Activate(int rope_index)
 
 {
   code *pcVar1;
   rope_t *prVar2;
   bool bVar3;
+  rope_t *rope;
   
-  bVar3 = Rope_IsValid(param_1);
+  bVar3 = Rope_IsValid(rope_index);
   if (!bVar3) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x81,0,"%s");
     if (!bVar3) {
@@ -57,22 +58,23 @@ void __cdecl Rope_Activate(int param_1)
     }
   }
   prVar2 = g_ropes;
-  g_ropes[param_1].m_flags = g_ropes[param_1].m_flags & 0xfffffffd;
-  prVar2[param_1].m_flags = prVar2[param_1].m_flags | 8;
-  prVar2[param_1].m_stable_count = 0;
+  g_ropes[rope_index].m_flags = g_ropes[rope_index].m_flags & 0xfffffffd;
+  prVar2[rope_index].m_flags = prVar2[rope_index].m_flags | 8;
+  prVar2[rope_index].m_stable_count = 0;
   return;
 }
 
 
 // 0085D1A0  Rope_SetFlag  (physics/rope.cpp:137)
 
-void __cdecl Rope_SetFlag(int param_1,int param_2,int param_3)
+void __cdecl Rope_SetFlag(int rope_index,int flags,int onoff)
 
 {
   code *pcVar1;
   bool bVar2;
+  rope_t *rope;
   
-  bVar2 = Rope_IsValid(param_1);
+  bVar2 = Rope_IsValid(rope_index);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x8a,0,"%s");
     if (!bVar2) {
@@ -81,11 +83,11 @@ void __cdecl Rope_SetFlag(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_3 == 0) {
-    g_ropes[param_1].m_flags = ~param_2 & g_ropes[param_1].m_flags;
+  if (onoff == 0) {
+    g_ropes[rope_index].m_flags = ~flags & g_ropes[rope_index].m_flags;
   }
   else {
-    g_ropes[param_1].m_flags = g_ropes[param_1].m_flags | param_2;
+    g_ropes[rope_index].m_flags = g_ropes[rope_index].m_flags | flags;
   }
   return;
 }
@@ -93,15 +95,16 @@ void __cdecl Rope_SetFlag(int param_1,int param_2,int param_3)
 
 // 0085D2E0  Rope_Reset  (physics/rope.cpp:154)
 
-void __cdecl Rope_Reset(int param_1)
+void __cdecl Rope_Reset(int rope_index)
 
 {
   code *pcVar1;
   rope_t *prVar2;
   bool bVar3;
-  int local_c;
+  int i;
+  rope_t *rope;
   
-  bVar3 = Rope_IsValid(param_1);
+  bVar3 = Rope_IsValid(rope_index);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x9b,0,"%s"),
      !bVar3)) {
@@ -110,21 +113,21 @@ void __cdecl Rope_Reset(int param_1)
     return;
   }
   prVar2 = g_ropes;
-  g_ropes[param_1].m_num_entity_anchors = 0;
-  prVar2[param_1].m_num_constraints = 0;
-  prVar2[param_1].m_num_particles = 0;
-  prVar2[param_1].m_num_draw_verts = 0;
-  prVar2[param_1].m_in_use = 0;
-  local_c = 0;
+  g_ropes[rope_index].m_num_entity_anchors = 0;
+  prVar2[rope_index].m_num_constraints = 0;
+  prVar2[rope_index].m_num_particles = 0;
+  prVar2[rope_index].m_num_draw_verts = 0;
+  prVar2[rope_index].m_in_use = 0;
+  i = 0;
   while( true ) {
-    if (g_ropesWithEntsAnchorsCount <= local_c) {
+    if (g_ropesWithEntsAnchorsCount <= i) {
       return;
     }
-    if (g_ropesWithEntsAnchors[local_c] == param_1) break;
-    local_c = local_c + 1;
+    if (g_ropesWithEntsAnchors[i] == rope_index) break;
+    i = i + 1;
   }
   g_ropesWithEntsAnchorsCount = g_ropesWithEntsAnchorsCount + -1;
-  g_ropesWithEntsAnchors[local_c] = g_ropesWithEntsAnchors[g_ropesWithEntsAnchorsCount];
+  g_ropesWithEntsAnchors[i] = g_ropesWithEntsAnchors[g_ropesWithEntsAnchorsCount];
   return;
 }
 
@@ -134,18 +137,18 @@ void __cdecl Rope_Reset(int param_1)
 void __cdecl Rope_Reset(void)
 
 {
-  int local_c;
-  int local_8;
+  int ri;
+  int rope_index;
   
   g_rope_sys_time = 0;
   g_ropes = cm.ropes;
   g_max_ropes = cm.max_ropes;
-  local_8 = 0;
-  for (local_c = 0; local_c < cm.num_constraints; local_c = local_c + 1) {
-    if (cm.constraints[local_c].type == CONSTRAINT_ROPE) {
-      cm.constraints[local_c].rope_index = -1;
-      Rope_Reset(local_8);
-      local_8 = local_8 + 1;
+  rope_index = 0;
+  for (ri = 0; ri < cm.num_constraints; ri = ri + 1) {
+    if (cm.constraints[ri].type == CONSTRAINT_ROPE) {
+      cm.constraints[ri].rope_index = -1;
+      Rope_Reset(rope_index);
+      rope_index = rope_index + 1;
     }
   }
   g_ropesWithEntsAnchorsCount = 0;
@@ -156,13 +159,14 @@ void __cdecl Rope_Reset(void)
 
 // 0085D3D0  Rope_SetMaterial  (physics/rope.cpp:204)
 
-void __cdecl Rope_SetMaterial(int param_1,Material *param_2)
+void __cdecl Rope_SetMaterial(int rope_index,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
+  rope_t *rope;
   
-  bVar2 = Rope_IsValid(param_1);
+  bVar2 = Rope_IsValid(rope_index);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0xcd,0,"%s");
     if (!bVar2) {
@@ -171,21 +175,22 @@ void __cdecl Rope_SetMaterial(int param_1,Material *param_2)
       return;
     }
   }
-  g_ropes[param_1].m_material = param_2;
+  g_ropes[rope_index].m_material = material;
   return;
 }
 
 
 // 0085D430  Rope_GetNumParticles  (physics/rope.cpp:218)
 
-int __cdecl Rope_GetNumParticles(int param_1)
+int __cdecl Rope_GetNumParticles(int rope_index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  rope_t *rope;
   
-  bVar2 = Rope_IsValid(param_1);
+  bVar2 = Rope_IsValid(rope_index);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0xdb,0,"%s");
     if (!bVar2) {
@@ -194,21 +199,22 @@ int __cdecl Rope_GetNumParticles(int param_1)
       return iVar3;
     }
   }
-  return g_ropes[param_1].m_num_particles;
+  return g_ropes[rope_index].m_num_particles;
 }
 
 
 // 0085DEF0  Rope_AddParticle  (physics/rope.cpp:225)
 
-void __cdecl Rope_AddParticle(int param_1,float *param_2)
+void __cdecl Rope_AddParticle(int rope_index,float *pos)
 
 {
   code *pcVar1;
   rope_t *prVar2;
   bool bVar3;
   par_t *ppVar4;
+  rope_t *rope;
   
-  bVar3 = Rope_IsValid(param_1);
+  bVar3 = Rope_IsValid(rope_index);
   if (!bVar3) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0xe2,0,"%s");
     if (!bVar3) {
@@ -218,7 +224,7 @@ void __cdecl Rope_AddParticle(int param_1,float *param_2)
     }
   }
   prVar2 = g_ropes;
-  if (0x18 < g_ropes[param_1].m_num_particles) {
+  if (0x18 < g_ropes[rope_index].m_num_particles) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0xe5,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -226,17 +232,17 @@ void __cdecl Rope_AddParticle(int param_1,float *param_2)
       return;
     }
   }
-  ppVar4 = prVar2[param_1].m_particles + prVar2[param_1].m_num_particles;
-  prVar2[param_1].m_num_particles = prVar2[param_1].m_num_particles + 1;
-  ppVar4->p[0] = *param_2;
-  ppVar4->p[1] = param_2[1];
-  ppVar4->p[2] = param_2[2];
-  ppVar4->p0[0] = *param_2;
-  ppVar4->p0[1] = param_2[1];
-  ppVar4->p0[2] = param_2[2];
-  ppVar4->p_prev[0] = *param_2;
-  ppVar4->p_prev[1] = param_2[1];
-  ppVar4->p_prev[2] = param_2[2];
+  ppVar4 = prVar2[rope_index].m_particles + prVar2[rope_index].m_num_particles;
+  prVar2[rope_index].m_num_particles = prVar2[rope_index].m_num_particles + 1;
+  ppVar4->p[0] = *pos;
+  ppVar4->p[1] = pos[1];
+  ppVar4->p[2] = pos[2];
+  ppVar4->p0[0] = *pos;
+  ppVar4->p0[1] = pos[1];
+  ppVar4->p0[2] = pos[2];
+  ppVar4->p_prev[0] = *pos;
+  ppVar4->p_prev[1] = pos[1];
+  ppVar4->p_prev[2] = pos[2];
   ppVar4->flags = 0;
   return;
 }
@@ -245,8 +251,8 @@ void __cdecl Rope_AddParticle(int param_1,float *param_2)
 // 0085DB10  Rope_Init  (physics/rope.cpp:238)
 
 void __cdecl
-Rope_Init(int param_1,int param_2,float *param_3,float *param_4,float param_5,float param_6,
-         float param_7,float param_8,int param_9)
+Rope_Init(int rope_index,int npars,float *p0,float *p1,float rope_len,float rope_width,float scale,
+         float force_scale,int static_rope)
 
 {
   code *pcVar1;
@@ -260,20 +266,20 @@ Rope_Init(int param_1,int param_2,float *param_3,float *param_4,float param_5,fl
   float local_58 [6];
   char local_40;
   char local_3f;
-  int local_3c;
-  int local_38;
-  float local_34;
-  rope_t *local_30;
-  float local_2c;
+  int i_2;
+  int i;
+  float vlen;
+  rope_t *rope;
+  float dv;
   float local_28;
   float local_24;
-  float local_20;
-  phys_vec3 local_1c;
+  float seg_len;
+  phys_vec3 v;
   float local_c;
   float local_8;
   
-  Rope_Reset(param_1);
-  bVar2 = Rope_IsValid(param_1);
+  Rope_Reset(rope_index);
+  bVar2 = Rope_IsValid(rope_index);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0xf1,0,"%s");
     if (!bVar2) {
@@ -282,13 +288,13 @@ Rope_Init(int param_1,int param_2,float *param_3,float *param_4,float param_5,fl
       return;
     }
   }
-  local_30 = g_ropes + param_1;
-  local_30->m_start[0] = *param_3;
-  local_30->m_start[1] = param_3[1];
-  local_30->m_start[2] = param_3[2];
-  local_30->m_end[0] = *param_4;
-  local_30->m_end[1] = param_4[1];
-  local_30->m_end[2] = param_4[2];
+  rope = g_ropes + rope_index;
+  rope->m_start[0] = *p0;
+  rope->m_start[1] = p0[1];
+  rope->m_start[2] = p0[2];
+  rope->m_end[0] = *p1;
+  rope->m_end[1] = p1[1];
+  rope->m_end[2] = p1[2];
   pMVar3 = R_Rope_GetMaterialFromGfxWorld();
   if (pMVar3 == (Material *)0x0) {
     local_6c = cgMedia.ropeMaterial;
@@ -296,65 +302,65 @@ Rope_Init(int param_1,int param_2,float *param_3,float *param_4,float param_5,fl
   else {
     local_6c = R_Rope_GetMaterialFromGfxWorld();
   }
-  local_30->m_material = local_6c;
-  local_30->m_in_use = 1;
-  local_30->m_num_entity_anchors = 0;
-  local_30->m_length = param_5;
-  local_30->m_width = param_6;
-  local_30->m_force_scale = param_8;
-  local_30->m_scale = param_7;
-  local_30->m_frame = 0;
-  local_30->m_visible = 0;
-  local_30->m_flags = 0;
-  local_30->m_stable_count = 0;
-  local_30->m_static_rope = param_9;
-  local_1c.x = *param_4 - *param_3;
-  local_1c.y = param_4[1] - param_3[1];
-  local_1c.z = param_4[2] - param_3[2];
-  local_34 = Abs(&local_1c);
-  if (local_34 < 0.001) {
-    local_1c.x = 0.0;
-    local_1c.y = 0.0;
-    local_1c.z = -1.0;
-    local_34 = 1.0;
+  rope->m_material = local_6c;
+  rope->m_in_use = 1;
+  rope->m_num_entity_anchors = 0;
+  rope->m_length = rope_len;
+  rope->m_width = rope_width;
+  rope->m_force_scale = force_scale;
+  rope->m_scale = scale;
+  rope->m_frame = 0;
+  rope->m_visible = 0;
+  rope->m_flags = 0;
+  rope->m_stable_count = 0;
+  rope->m_static_rope = static_rope;
+  v.x = *p1 - *p0;
+  v.y = p1[1] - p0[1];
+  v.z = p1[2] - p0[2];
+  vlen = Abs(&v);
+  if (vlen < 0.001) {
+    v.x = 0.0;
+    v.y = 0.0;
+    v.z = -1.0;
+    vlen = 1.0;
   }
-  fVar7 = 1.0 / local_34;
-  local_1c.x = fVar7 * local_1c.x;
-  local_1c.y = fVar7 * local_1c.y;
-  local_1c.z = fVar7 * local_1c.z;
-  local_20 = (param_5 * param_7) / (float)(param_2 + -1);
-  local_2c = local_20 * local_1c.x;
-  local_28 = local_20 * local_1c.y;
-  local_24 = local_20 * local_1c.z;
-  local_1c.w = *param_3;
-  local_c = param_3[1];
-  local_8 = param_3[2];
-  for (local_38 = 0; local_38 < param_2; local_38 = local_38 + 1) {
-    Rope_AddParticle(param_1,&local_1c.w);
-    local_1c.w = local_1c.w + local_2c;
+  fVar7 = 1.0 / vlen;
+  v.x = fVar7 * v.x;
+  v.y = fVar7 * v.y;
+  v.z = fVar7 * v.z;
+  seg_len = (rope_len * scale) / (float)(npars + -1);
+  dv = seg_len * v.x;
+  local_28 = seg_len * v.y;
+  local_24 = seg_len * v.z;
+  v.w = *p0;
+  local_c = p0[1];
+  local_8 = p0[2];
+  for (i = 0; i < npars; i = i + 1) {
+    Rope_AddParticle(rope_index,&v.w);
+    v.w = v.w + dv;
     local_c = local_c + local_28;
     local_8 = local_8 + local_24;
   }
-  local_30->m_seglen = local_20;
-  local_30->m_health = 0;
-  local_30->m_dist_constraint = 0;
-  for (local_3c = 0; local_3c < param_2 + -1; local_3c = local_3c + 1) {
-    local_40 = (char)local_3c;
-    local_3f = (char)local_3c + '\x01';
-    local_58[0] = local_1c.w;
+  rope->m_seglen = seg_len;
+  rope->m_health = 0;
+  rope->m_dist_constraint = 0;
+  for (i_2 = 0; i_2 < npars + -1; i_2 = i_2 + 1) {
+    local_40 = (char)i_2;
+    local_3f = (char)i_2 + '\x01';
+    local_58[0] = v.w;
     local_58[1] = local_c;
     local_58[2] = local_8;
     local_58[3] = 0.0;
     pfVar5 = local_58;
-    pcVar6 = local_30->m_constraints + local_30->m_num_constraints;
+    pcVar6 = rope->m_constraints + rope->m_num_constraints;
     for (iVar4 = 7; iVar4 != 0; iVar4 = iVar4 + -1) {
       pcVar6->p[0] = *pfVar5;
       pfVar5 = pfVar5 + 1;
       pcVar6 = (constraint_t *)(pcVar6->p + 1);
     }
-    local_30->m_num_constraints = local_30->m_num_constraints + 1;
+    rope->m_num_constraints = rope->m_num_constraints + 1;
   }
-  local_30->m_lightingHandle = 0;
+  rope->m_lightingHandle = 0;
   return;
 }
 
@@ -435,8 +441,8 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 // 0085D490  Rope_AddAnchor  (physics/rope.cpp:296)
 
 void __cdecl
-Rope_AddAnchor(int param_1,int param_2,float *param_3,int param_4,int param_5,
-              rope_constraint_e param_6)
+Rope_AddAnchor(int rope_index,int particle_index,float *p,int entity_index,int bone_name_hash,
+              rope_constraint_e type)
 
 {
   code *pcVar1;
@@ -447,9 +453,9 @@ Rope_AddAnchor(int param_1,int param_2,float *param_3,int param_4,int param_5,
   float local_24 [6];
   undefined1 local_c;
   undefined1 local_b;
-  rope_t *local_8;
+  rope_t *rope;
   
-  bVar2 = Rope_IsValid(param_1);
+  bVar2 = Rope_IsValid(rope_index);
   if ((!bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x129,0,"%s"),
      !bVar2)) {
@@ -457,9 +463,9 @@ Rope_AddAnchor(int param_1,int param_2,float *param_3,int param_4,int param_5,
     (*pcVar1)();
     return;
   }
-  local_8 = g_ropes + param_1;
-  if (param_6 == ROPE_CENTITY_CONSTRAINT) {
-    if (2 < local_8->m_num_entity_anchors) {
+  rope = g_ropes + rope_index;
+  if (type == ROPE_CENTITY_CONSTRAINT) {
+    if (2 < rope->m_num_entity_anchors) {
       Com_PrintWarning(0x10,"WARNING: Max number of entity nachors exeeded. (%d)\n");
       return;
     }
@@ -468,66 +474,67 @@ Rope_AddAnchor(int param_1,int param_2,float *param_3,int param_4,int param_5,
       return;
     }
   }
-  if ((0x1d < local_8->m_num_constraints) &&
+  if ((0x1d < rope->m_num_constraints) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x13a,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = (undefined1)param_2;
-  local_b = (undefined1)param_2;
-  local_24[0] = *param_3;
-  local_24[1] = param_3[1];
-  local_24[2] = param_3[2];
+  local_c = (undefined1)particle_index;
+  local_b = (undefined1)particle_index;
+  local_24[0] = *p;
+  local_24[1] = p[1];
+  local_24[2] = p[2];
   local_24[3] = 0.0;
   pfVar4 = local_24;
-  pcVar5 = local_8->m_constraints + local_8->m_num_constraints;
+  pcVar5 = rope->m_constraints + rope->m_num_constraints;
   for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
     pcVar5->p[0] = *pfVar4;
     pfVar4 = pfVar4 + 1;
     pcVar5 = (constraint_t *)(pcVar5->p + 1);
   }
-  local_8->m_constraints[local_8->m_num_constraints].type = param_6;
-  local_8->m_constraints[local_8->m_num_constraints].entity_index = param_4;
-  local_8->m_constraints[local_8->m_num_constraints].bone_name_hash = param_5;
-  if (param_6 == ROPE_CENTITY_CONSTRAINT) {
-    local_8->m_entity_anchors[local_8->m_num_entity_anchors] = local_8->m_num_constraints;
-    local_8->m_num_entity_anchors = local_8->m_num_entity_anchors + 1;
-    if (local_8->m_num_entity_anchors == 1) {
-      g_ropesWithEntsAnchors[g_ropesWithEntsAnchorsCount] = param_1;
+  rope->m_constraints[rope->m_num_constraints].type = type;
+  rope->m_constraints[rope->m_num_constraints].entity_index = entity_index;
+  rope->m_constraints[rope->m_num_constraints].bone_name_hash = bone_name_hash;
+  if (type == ROPE_CENTITY_CONSTRAINT) {
+    rope->m_entity_anchors[rope->m_num_entity_anchors] = rope->m_num_constraints;
+    rope->m_num_entity_anchors = rope->m_num_entity_anchors + 1;
+    if (rope->m_num_entity_anchors == 1) {
+      g_ropesWithEntsAnchors[g_ropesWithEntsAnchorsCount] = rope_index;
       g_ropesWithEntsAnchorsCount = g_ropesWithEntsAnchorsCount + 1;
     }
   }
-  local_8->m_num_constraints = local_8->m_num_constraints + 1;
-  Rope_Activate(param_1);
+  rope->m_num_constraints = rope->m_num_constraints + 1;
+  Rope_Activate(rope_index);
   return;
 }
 
 
 // 0085D720  Rope_AddDynEntAnchor  (physics/rope.cpp:331)
 
-void __cdecl Rope_AddDynEntAnchor(int param_1,int param_2,float *param_3,int param_4)
+void __cdecl Rope_AddDynEntAnchor(int rope_index,int particle_index,float *p,int entity_index)
 
 {
-  Rope_AddAnchor(param_1,param_2,param_3,param_4,0,ROPE_DENTITY_CONSTRAINT);
+  Rope_AddAnchor(rope_index,particle_index,p,entity_index,0,ROPE_DENTITY_CONSTRAINT);
   return;
 }
 
 
 // 0085D750  Rope_AddEntAnchor  (physics/rope.cpp:336)
 
-void __cdecl Rope_AddEntAnchor(int param_1,int param_2,float *param_3,int param_4,int param_5)
+void __cdecl
+Rope_AddEntAnchor(int rope_index,int particle_index,float *p,int entity_index,int bone_name_hash)
 
 {
-  Rope_AddAnchor(param_1,param_2,param_3,param_4,param_5,ROPE_CENTITY_CONSTRAINT);
+  Rope_AddAnchor(rope_index,particle_index,p,entity_index,bone_name_hash,ROPE_CENTITY_CONSTRAINT);
   return;
 }
 
 
 // 0085D780  Rope_RemoveAnchor  (physics/rope.cpp:390)
 
-void __cdecl Rope_RemoveAnchor(int param_1,int param_2)
+void __cdecl Rope_RemoveAnchor(int rope_index,int particle_index)
 
 {
   int iVar1;
@@ -538,12 +545,15 @@ void __cdecl Rope_RemoveAnchor(int param_1,int param_2)
   int iVar6;
   constraint_t *pcVar7;
   constraint_t *pcVar8;
-  int local_24;
-  int local_20;
-  int local_18;
-  int local_c;
+  int i;
+  int ea1;
+  int ci_2;
+  int ea;
+  int num_entitty_anchors;
+  int ci;
+  rope_t *rope;
   
-  bVar4 = Rope_IsValid(param_1);
+  bVar4 = Rope_IsValid(rope_index);
   if (!bVar4) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x187,0,"%s");
     if (!bVar4) {
@@ -553,54 +563,54 @@ void __cdecl Rope_RemoveAnchor(int param_1,int param_2)
     }
   }
   prVar3 = g_ropes;
-  for (local_c = 0; local_c < prVar3[param_1].m_num_constraints; local_c = local_c + 1) {
-    if (((prVar3[param_1].m_constraints[local_c].pi1 == prVar3[param_1].m_constraints[local_c].pi2)
-        && ((uint)prVar3[param_1].m_constraints[local_c].pi1 == param_2)) &&
-       (prVar3[param_1].m_constraints[local_c].type != ROPE_CENTITY_CONSTRAINT)) {
-      prVar3[param_1].m_num_constraints = prVar3[param_1].m_num_constraints + -1;
-      pcVar7 = prVar3[param_1].m_constraints + prVar3[param_1].m_num_constraints;
-      pcVar8 = prVar3[param_1].m_constraints + local_c;
+  for (ci = 0; ci < prVar3[rope_index].m_num_constraints; ci = ci + 1) {
+    if (((prVar3[rope_index].m_constraints[ci].pi1 == prVar3[rope_index].m_constraints[ci].pi2) &&
+        ((uint)prVar3[rope_index].m_constraints[ci].pi1 == particle_index)) &&
+       (prVar3[rope_index].m_constraints[ci].type != ROPE_CENTITY_CONSTRAINT)) {
+      prVar3[rope_index].m_num_constraints = prVar3[rope_index].m_num_constraints + -1;
+      pcVar7 = prVar3[rope_index].m_constraints + prVar3[rope_index].m_num_constraints;
+      pcVar8 = prVar3[rope_index].m_constraints + ci;
       for (iVar5 = 7; iVar5 != 0; iVar5 = iVar5 + -1) {
         pcVar8->p[0] = pcVar7->p[0];
         pcVar7 = (constraint_t *)(pcVar7->p + 1);
         pcVar8 = (constraint_t *)(pcVar8->p + 1);
       }
-      local_c = local_c + -1;
+      ci = ci + -1;
     }
   }
-  iVar5 = prVar3[param_1].m_num_entity_anchors;
-  for (local_18 = 0; local_18 < prVar3[param_1].m_num_entity_anchors; local_18 = local_18 + 1) {
-    iVar1 = prVar3[param_1].m_entity_anchors[local_18];
-    if ((uint)prVar3[param_1].m_constraints[iVar1].pi1 == param_2) {
-      prVar3[param_1].m_num_constraints = prVar3[param_1].m_num_constraints + -1;
-      pcVar7 = prVar3[param_1].m_constraints + prVar3[param_1].m_num_constraints;
-      pcVar8 = prVar3[param_1].m_constraints + iVar1;
+  iVar5 = prVar3[rope_index].m_num_entity_anchors;
+  for (ea = 0; ea < prVar3[rope_index].m_num_entity_anchors; ea = ea + 1) {
+    iVar1 = prVar3[rope_index].m_entity_anchors[ea];
+    if ((uint)prVar3[rope_index].m_constraints[iVar1].pi1 == particle_index) {
+      prVar3[rope_index].m_num_constraints = prVar3[rope_index].m_num_constraints + -1;
+      pcVar7 = prVar3[rope_index].m_constraints + prVar3[rope_index].m_num_constraints;
+      pcVar8 = prVar3[rope_index].m_constraints + iVar1;
       for (iVar6 = 7; iVar6 != 0; iVar6 = iVar6 + -1) {
         pcVar8->p[0] = pcVar7->p[0];
         pcVar7 = (constraint_t *)(pcVar7->p + 1);
         pcVar8 = (constraint_t *)(pcVar8->p + 1);
       }
-      prVar3[param_1].m_num_entity_anchors = prVar3[param_1].m_num_entity_anchors + -1;
-      prVar3[param_1].m_entity_anchors[local_18] =
-           prVar3[param_1].m_entity_anchors[prVar3[param_1].m_num_entity_anchors];
-      local_18 = local_18 + -1;
-      for (local_20 = 0; local_20 < prVar3[param_1].m_num_entity_anchors; local_20 = local_20 + 1) {
-        if (prVar3[param_1].m_entity_anchors[local_20] == prVar3[param_1].m_num_constraints) {
-          prVar3[param_1].m_entity_anchors[local_20] = iVar1;
+      prVar3[rope_index].m_num_entity_anchors = prVar3[rope_index].m_num_entity_anchors + -1;
+      prVar3[rope_index].m_entity_anchors[ea] =
+           prVar3[rope_index].m_entity_anchors[prVar3[rope_index].m_num_entity_anchors];
+      ea = ea + -1;
+      for (ea1 = 0; ea1 < prVar3[rope_index].m_num_entity_anchors; ea1 = ea1 + 1) {
+        if (prVar3[rope_index].m_entity_anchors[ea1] == prVar3[rope_index].m_num_constraints) {
+          prVar3[rope_index].m_entity_anchors[ea1] = iVar1;
         }
       }
     }
   }
-  if ((0 < iVar5) && (prVar3[param_1].m_num_entity_anchors == 0)) {
-    for (local_24 = 0; local_24 < g_ropesWithEntsAnchorsCount; local_24 = local_24 + 1) {
-      if (g_ropesWithEntsAnchors[local_24] == param_1) {
+  if ((0 < iVar5) && (prVar3[rope_index].m_num_entity_anchors == 0)) {
+    for (i = 0; i < g_ropesWithEntsAnchorsCount; i = i + 1) {
+      if (g_ropesWithEntsAnchors[i] == rope_index) {
         g_ropesWithEntsAnchorsCount = g_ropesWithEntsAnchorsCount + -1;
-        g_ropesWithEntsAnchors[local_24] = g_ropesWithEntsAnchors[g_ropesWithEntsAnchorsCount];
-        local_24 = local_24 + -1;
+        g_ropesWithEntsAnchors[i] = g_ropesWithEntsAnchors[g_ropesWithEntsAnchorsCount];
+        i = i + -1;
       }
     }
   }
-  Rope_Activate(param_1);
+  Rope_Activate(rope_index);
   return;
 }
 
@@ -627,7 +637,12 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 0085E4E0  Rope_ApplyPhysics  (physics/rope.cpp:455)
 
-void __cdecl Rope_ApplyPhysics(int param_1,float param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Rope_ApplyPhysics(int rope_index,float dt)
 
 {
   float fVar1;
@@ -639,19 +654,21 @@ void __cdecl Rope_ApplyPhysics(int param_1,float param_2)
   bool bVar7;
   int iVar8;
   rope_t *prVar9;
-  uint uVar10;
-  par_t *ppVar11;
+  uint which;
+  par_t *ppVar10;
+  float fVar11;
   float fVar12;
   float fVar13;
-  float fVar14;
-  rope_t *prVar15;
-  float local_48;
-  int local_44;
-  float local_24;
+  rope_t *pos;
+  float fric;
+  int i;
+  rope_t *rope;
+  float wind_vector;
   float local_20;
-  float local_18;
+  float gravity;
+  float windscale;
   
-  bVar7 = Rope_IsValid(param_1);
+  bVar7 = Rope_IsValid(rope_index);
   if (!bVar7) {
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x1ca,0,"%s");
     if (!bVar7) {
@@ -660,57 +677,57 @@ void __cdecl Rope_ApplyPhysics(int param_1,float param_2)
       return;
     }
   }
-  prVar9 = g_ropes + param_1;
+  prVar9 = g_ropes + rope_index;
   g_update_count = g_update_count + 1;
-  local_18 = -800.0;
-  uVar10 = param_1 & 0x8000000f;
-  if ((int)uVar10 < 0) {
-    uVar10 = (uVar10 - 1 | 0xfffffff0) + 1;
+  gravity = -800.0;
+  which = rope_index & 0x8000000f;
+  if ((int)which < 0) {
+    which = (which - 1 | 0xfffffff0) + 1;
   }
-  BG_GetVariantWindVector(uVar10,&local_24);
+  BG_GetVariantWindVector(which,&wind_vector);
   iVar8 = rand();
-  local_24 = ((float)(iVar8 % 0x65) / 100.0) * local_24;
+  wind_vector = ((float)(iVar8 % 0x65) / 100.0) * wind_vector;
   iVar8 = rand();
   local_20 = ((float)(iVar8 % 0x65) / 100.0) * local_20;
-  prVar15 = prVar9;
+  pos = prVar9;
   iVar8 = CL_GetFirstActiveLocalClient();
-  fVar14 = CG_GetLocalWindSourceScale(iVar8,(float *)prVar15);
-  fVar14 = fVar14 * 10.0 + 1.0;
-  local_24 = local_24 * fVar14 * prVar9->m_force_scale;
-  local_20 = local_20 * fVar14 * prVar9->m_force_scale;
+  fVar13 = CG_GetLocalWindSourceScale(iVar8,(float *)pos);
+  fVar13 = fVar13 * 10.0 + 1.0;
+  wind_vector = wind_vector * fVar13 * prVar9->m_force_scale;
+  local_20 = local_20 * fVar13 * prVar9->m_force_scale;
   if ((prVar9->m_flags & 0x80U) != 0) {
-    local_24 = 0.0;
+    wind_vector = 0.0;
     local_20 = 0.0;
   }
-  for (local_44 = 0; local_44 < prVar9->m_num_particles; local_44 = local_44 + 1) {
-    ppVar11 = prVar9->m_particles + local_44;
-    fVar14 = ppVar11->p[0];
-    fVar1 = ppVar11->p[1];
-    fVar2 = ppVar11->p[2];
-    fVar3 = ppVar11->p0[0];
-    fVar4 = ppVar11->p0[1];
-    fVar5 = ppVar11->p0[2];
-    local_48 = base_fric;
-    if ((ppVar11->flags & 1U) == 0) {
-      if ((ppVar11->flags & 2U) != 0) {
-        local_48 = wall_col_fric;
+  for (i = 0; i < prVar9->m_num_particles; i = i + 1) {
+    ppVar10 = prVar9->m_particles + i;
+    fVar13 = ppVar10->p[0];
+    fVar1 = ppVar10->p[1];
+    fVar2 = ppVar10->p[2];
+    fVar3 = ppVar10->p0[0];
+    fVar4 = ppVar10->p0[1];
+    fVar5 = ppVar10->p0[2];
+    fric = base_fric;
+    if ((ppVar10->flags & 1U) == 0) {
+      if ((ppVar10->flags & 2U) != 0) {
+        fric = wall_col_fric;
       }
     }
     else {
-      local_48 = col_fric;
+      fric = col_fric;
     }
-    fVar12 = 2.0 - local_48;
-    fVar13 = param_2 * param_2;
-    ppVar11->p[0] = fVar12 * fVar14 + fVar13 * local_24;
-    ppVar11->p[1] = fVar12 * fVar1 + fVar13 * local_20;
-    ppVar11->p[2] = fVar12 * fVar2 + fVar13 * local_18;
-    local_48 = 1.0 - local_48;
-    ppVar11->p[0] = ppVar11->p[0] - local_48 * fVar3;
-    ppVar11->p[1] = ppVar11->p[1] - local_48 * fVar4;
-    ppVar11->p[2] = ppVar11->p[2] - local_48 * fVar5;
-    ppVar11->p0[0] = fVar14;
-    ppVar11->p0[1] = fVar1;
-    ppVar11->p0[2] = fVar2;
+    fVar11 = 2.0 - fric;
+    fVar12 = dt * dt;
+    ppVar10->p[0] = fVar11 * fVar13 + fVar12 * wind_vector;
+    ppVar10->p[1] = fVar11 * fVar1 + fVar12 * local_20;
+    ppVar10->p[2] = fVar11 * fVar2 + fVar12 * gravity;
+    fVar11 = 1.0 - fric;
+    ppVar10->p[0] = ppVar10->p[0] - fVar11 * fVar3;
+    ppVar10->p[1] = ppVar10->p[1] - fVar11 * fVar4;
+    ppVar10->p[2] = ppVar10->p[2] - fVar11 * fVar5;
+    ppVar10->p0[0] = fVar13;
+    ppVar10->p0[1] = fVar1;
+    ppVar10->p0[2] = fVar2;
   }
   return;
 }
@@ -718,7 +735,7 @@ void __cdecl Rope_ApplyPhysics(int param_1,float param_2)
 
 // 0085E9B0  Rope_ApplyContactConstraint  (physics/rope.cpp:515)
 
-void __cdecl Rope_ApplyContactConstraint(int param_1,int param_2)
+void __cdecl Rope_ApplyContactConstraint(int rope_index,int contact_index)
 
 {
   float *pfVar1;
@@ -729,8 +746,10 @@ void __cdecl Rope_ApplyContactConstraint(int param_1,int param_2)
   par_t *ppVar6;
   par_t *ppVar7;
   float fVar8;
+  float d;
+  rope_t *rope;
   
-  bVar5 = Rope_IsValid(param_1);
+  bVar5 = Rope_IsValid(rope_index);
   if (!bVar5) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x204,0,"%s");
     if (!bVar5) {
@@ -740,29 +759,30 @@ void __cdecl Rope_ApplyContactConstraint(int param_1,int param_2)
     }
   }
   prVar4 = g_ropes;
-  ppVar6 = g_ropes[param_1].m_particles + g_contacts[param_2].particle_index;
-  fVar8 = (ppVar6->p[0] - g_contacts[param_2].point[0]) * g_contacts[param_2].normal[0] +
-          (ppVar6->p[1] - g_contacts[param_2].point[1]) * g_contacts[param_2].normal[1] +
-          (ppVar6->p[2] - g_contacts[param_2].point[2]) * g_contacts[param_2].normal[2];
+  ppVar6 = g_ropes[rope_index].m_particles + g_contacts[contact_index].particle_index;
+  fVar8 = (ppVar6->p[0] - g_contacts[contact_index].point[0]) * g_contacts[contact_index].normal[0]
+          + (ppVar6->p[1] - g_contacts[contact_index].point[1]) *
+            g_contacts[contact_index].normal[1] +
+          (ppVar6->p[2] - g_contacts[contact_index].point[2]) * g_contacts[contact_index].normal[2];
   if (fVar8 <= 0.0) {
-    ppVar6 = g_ropes[param_1].m_particles + g_contacts[param_2].particle_index;
+    ppVar6 = g_ropes[rope_index].m_particles + g_contacts[contact_index].particle_index;
     fVar8 = -fVar8;
-    ppVar7 = g_ropes[param_1].m_particles + g_contacts[param_2].particle_index;
-    ppVar6->p[0] = fVar8 * g_contacts[param_2].normal[0] + ppVar7->p[0];
-    ppVar6->p[1] = fVar8 * g_contacts[param_2].normal[1] + ppVar7->p[1];
-    ppVar6->p[2] = fVar8 * g_contacts[param_2].normal[2] + ppVar7->p[2];
+    ppVar7 = g_ropes[rope_index].m_particles + g_contacts[contact_index].particle_index;
+    ppVar6->p[0] = fVar8 * g_contacts[contact_index].normal[0] + ppVar7->p[0];
+    ppVar6->p[1] = fVar8 * g_contacts[contact_index].normal[1] + ppVar7->p[1];
+    ppVar6->p[2] = fVar8 * g_contacts[contact_index].normal[2] + ppVar7->p[2];
   }
-  pfVar1 = prVar4[param_1].m_particles[g_contacts[param_2].particle_index].p0;
-  fVar8 = (*pfVar1 - g_contacts[param_2].point[0]) * g_contacts[param_2].normal[0] +
-          (pfVar1[1] - g_contacts[param_2].point[1]) * g_contacts[param_2].normal[1] +
-          (pfVar1[2] - g_contacts[param_2].point[2]) * g_contacts[param_2].normal[2];
+  pfVar1 = prVar4[rope_index].m_particles[g_contacts[contact_index].particle_index].p0;
+  fVar8 = (*pfVar1 - g_contacts[contact_index].point[0]) * g_contacts[contact_index].normal[0] +
+          (pfVar1[1] - g_contacts[contact_index].point[1]) * g_contacts[contact_index].normal[1] +
+          (pfVar1[2] - g_contacts[contact_index].point[2]) * g_contacts[contact_index].normal[2];
   if (fVar8 <= 0.0) {
-    pfVar1 = prVar4[param_1].m_particles[g_contacts[param_2].particle_index].p0;
+    pfVar1 = prVar4[rope_index].m_particles[g_contacts[contact_index].particle_index].p0;
     fVar8 = -fVar8;
-    pfVar2 = prVar4[param_1].m_particles[g_contacts[param_2].particle_index].p0;
-    *pfVar1 = fVar8 * g_contacts[param_2].normal[0] + *pfVar2;
-    pfVar1[1] = fVar8 * g_contacts[param_2].normal[1] + pfVar2[1];
-    pfVar1[2] = fVar8 * g_contacts[param_2].normal[2] + pfVar2[2];
+    pfVar2 = prVar4[rope_index].m_particles[g_contacts[contact_index].particle_index].p0;
+    *pfVar1 = fVar8 * g_contacts[contact_index].normal[0] + *pfVar2;
+    pfVar1[1] = fVar8 * g_contacts[contact_index].normal[1] + pfVar2[1];
+    pfVar1[2] = fVar8 * g_contacts[contact_index].normal[2] + pfVar2[2];
   }
   return;
 }
@@ -775,7 +795,7 @@ void __cdecl Rope_ApplyContactConstraint(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Rope_ApplyConstraint(int param_1,int param_2)
+void __cdecl Rope_ApplyConstraint(int rope_index,int constraint_index)
 
 {
   float *pfVar1;
@@ -789,25 +809,32 @@ void __cdecl Rope_ApplyConstraint(int param_1,int param_2)
   float fVar9;
   float fVar10;
   float fVar11;
-  phys_vec3 local_94;
-  DObj *local_84;
-  float local_80 [9];
+  float vlen;
+  float *p1;
+  float *p2;
+  float targetd;
+  float v;
+  float local_90;
+  float local_8c;
+  float l1;
+  DObj *obj;
+  float xform_2 [9];
   float local_5c;
   float local_58;
   float local_54;
-  centity_s *local_50;
-  DynEntityPose *local_4c;
-  DynEntityDrawType local_48;
-  float local_44 [9];
+  centity_s *cent;
+  DynEntityPose *dynEntPose;
+  DynEntityDrawType drawType;
+  float xform [9];
   float local_20;
   float local_1c;
   float local_18;
-  ushort local_14 [2];
-  uint local_10;
-  rope_t *local_c;
-  constraint_t *local_8;
+  ushort dynEntId;
+  int ind;
+  rope_t *rope;
+  constraint_t *constraint;
   
-  bVar5 = Rope_IsValid(param_1);
+  bVar5 = Rope_IsValid(rope_index);
   if ((!bVar5) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x21a,0,"%s"),
      !bVar5)) {
@@ -815,89 +842,88 @@ void __cdecl Rope_ApplyConstraint(int param_1,int param_2)
     (*pcVar4)();
     return;
   }
-  local_c = g_ropes + param_1;
-  local_8 = local_c->m_constraints + param_2;
-  if (local_8->pi1 == local_8->pi2) {
-    local_10 = (uint)local_8->pi1;
-    if (local_8->type == ROPE_WORLD_CONSTRAINT) {
-      ppVar6 = local_c->m_particles + local_10;
-      ppVar6->p[0] = local_8->p[0];
-      ppVar6->p[1] = local_8->p[1];
-      ppVar6->p[2] = local_8->p[2];
-      pfVar1 = local_c->m_particles[local_10].p0;
-      *pfVar1 = local_8->p[0];
-      pfVar1[1] = local_8->p[1];
-      pfVar1[2] = local_8->p[2];
+  rope = g_ropes + rope_index;
+  constraint = rope->m_constraints + constraint_index;
+  if (constraint->pi1 == constraint->pi2) {
+    ind = (int)constraint->pi1;
+    if (constraint->type == ROPE_WORLD_CONSTRAINT) {
+      ppVar6 = rope->m_particles + ind;
+      ppVar6->p[0] = constraint->p[0];
+      ppVar6->p[1] = constraint->p[1];
+      ppVar6->p[2] = constraint->p[2];
+      pfVar1 = rope->m_particles[ind].p0;
+      *pfVar1 = constraint->p[0];
+      pfVar1[1] = constraint->p[1];
+      pfVar1[2] = constraint->p[2];
     }
-    else if (local_8->type == ROPE_DENTITY_CONSTRAINT) {
-      DynEnt_GetClientIdDrawType((ushort)local_8->entity_index,local_14,&local_48);
-      local_4c = DynEnt_GetClientPose(local_14[0],local_48);
-      UnitQuatToAxis((float *)local_4c,(float (*) [3])local_44);
-      local_20 = (local_4c->pose).origin[0];
-      local_1c = (local_4c->pose).origin[1];
-      local_18 = (local_4c->pose).origin[2];
-      MatrixTransformVector43(local_8->p,(float (*) [3])local_44,local_c->m_particles[local_10].p);
-      pfVar1 = local_c->m_particles[local_10].p0;
-      ppVar6 = local_c->m_particles + local_10;
+    else if (constraint->type == ROPE_DENTITY_CONSTRAINT) {
+      DynEnt_GetClientIdDrawType((ushort)constraint->entity_index,&dynEntId,&drawType);
+      dynEntPose = DynEnt_GetClientPose(dynEntId,drawType);
+      UnitQuatToAxis((float *)dynEntPose,(float (*) [3])xform);
+      local_20 = (dynEntPose->pose).origin[0];
+      local_1c = (dynEntPose->pose).origin[1];
+      local_18 = (dynEntPose->pose).origin[2];
+      MatrixTransformVector43(constraint->p,(float (*) [3])xform,rope->m_particles[ind].p);
+      pfVar1 = rope->m_particles[ind].p0;
+      ppVar6 = rope->m_particles + ind;
       *pfVar1 = ppVar6->p[0];
       pfVar1[1] = ppVar6->p[1];
       pfVar1[2] = ppVar6->p[2];
-      local_c->m_stable_count = 0;
+      rope->m_stable_count = 0;
     }
-    else if (local_8->type == ROPE_CENTITY_CONSTRAINT) {
-      local_50 = CG_GetEntity(0,local_8->entity_index);
-      if (local_50->nextValid == 0) {
-        local_c->m_flags = local_c->m_flags | 8;
+    else if (constraint->type == ROPE_CENTITY_CONSTRAINT) {
+      cent = CG_GetEntity(0,constraint->entity_index);
+      if (cent->nextValid == 0) {
+        rope->m_flags = rope->m_flags | 8;
       }
       else {
-        if (local_8->bone_name_hash == 0) {
-          AnglesToAxis((local_50->pose).angles,(float (*) [3])local_80);
-          local_5c = (local_50->pose).origin[0];
-          local_58 = (local_50->pose).origin[1];
-          local_54 = (local_50->pose).origin[2];
+        if (constraint->bone_name_hash == 0) {
+          AnglesToAxis((cent->pose).angles,(float (*) [3])xform_2);
+          local_5c = (cent->pose).origin[0];
+          local_58 = (cent->pose).origin[1];
+          local_54 = (cent->pose).origin[2];
         }
         else {
-          local_84 = Com_GetClientDObj(local_8->entity_index,0);
-          if (local_84 == (DObj *)0x0) {
+          obj = Com_GetClientDObj(constraint->entity_index,0);
+          if (obj == (DObj *)0x0) {
             return;
           }
           iVar7 = CG_DObjGetWorldTagMatrix
-                            (&local_50->pose,local_84,local_8->bone_name_hash,
-                             (float (*) [3])local_80,&local_5c);
+                            (&cent->pose,obj,constraint->bone_name_hash,(float (*) [3])xform_2,
+                             &local_5c);
           if (iVar7 == 0) {
             return;
           }
         }
-        MatrixTransformVector43(local_8->p,(float (*) [3])local_80,local_c->m_particles[local_10].p)
-        ;
-        pfVar1 = local_c->m_particles[local_10].p0;
-        ppVar6 = local_c->m_particles + local_10;
+        MatrixTransformVector43(constraint->p,(float (*) [3])xform_2,rope->m_particles[ind].p);
+        pfVar1 = rope->m_particles[ind].p0;
+        ppVar6 = rope->m_particles + ind;
         *pfVar1 = ppVar6->p[0];
         pfVar1[1] = ppVar6->p[1];
         pfVar1[2] = ppVar6->p[2];
-        local_c->m_stable_count = 0;
+        rope->m_stable_count = 0;
       }
     }
   }
   else {
-    ppVar8 = local_c->m_particles + local_8->pi1;
-    ppVar6 = local_c->m_particles + local_8->pi2;
-    local_94.x = ppVar6->p[0] - ppVar8->p[0];
-    local_94.y = ppVar6->p[1] - ppVar8->p[1];
-    local_94.z = ppVar6->p[2] - ppVar8->p[2];
-    fVar11 = Abs(&local_94);
+    ppVar8 = rope->m_particles + constraint->pi1;
+    ppVar6 = rope->m_particles + constraint->pi2;
+    v = ppVar6->p[0] - ppVar8->p[0];
+    local_90 = ppVar6->p[1] - ppVar8->p[1];
+    local_8c = ppVar6->p[2] - ppVar8->p[2];
+    fVar11 = Abs((phys_vec3 *)&stack0xffffff6c);
     fVar9 = 1.0 / fVar11;
-    fVar10 = (local_c->m_seglen + fVar11) * 0.5;
+    fVar10 = (rope->m_seglen + fVar11) * 0.5;
     fVar11 = ppVar6->p[0];
     fVar2 = ppVar6->p[1];
     fVar3 = ppVar6->p[2];
-    ppVar6->p[0] = fVar10 * fVar9 * local_94.x + ppVar8->p[0];
-    ppVar6->p[1] = fVar10 * fVar9 * local_94.y + ppVar8->p[1];
-    ppVar6->p[2] = fVar10 * fVar9 * local_94.z + ppVar8->p[2];
+    ppVar6->p[0] = fVar10 * fVar9 * v + ppVar8->p[0];
+    ppVar6->p[1] = fVar10 * fVar9 * local_90 + ppVar8->p[1];
+    ppVar6->p[2] = fVar10 * fVar9 * local_8c + ppVar8->p[2];
     fVar10 = -fVar10;
-    ppVar8->p[0] = fVar10 * fVar9 * local_94.x + fVar11;
-    ppVar8->p[1] = fVar10 * fVar9 * local_94.y + fVar2;
-    ppVar8->p[2] = fVar10 * fVar9 * local_94.z + fVar3;
+    ppVar8->p[0] = fVar10 * fVar9 * v + fVar11;
+    ppVar8->p[1] = fVar10 * fVar9 * local_90 + fVar2;
+    ppVar8->p[2] = fVar10 * fVar9 * local_8c + fVar3;
   }
   return;
 }
@@ -905,18 +931,24 @@ void __cdecl Rope_ApplyConstraint(int param_1,int param_2)
 
 // 0085E880  Rope_ApplyConstraints  (physics/rope.cpp:612)
 
-void __cdecl Rope_ApplyConstraints(int param_1,bool param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Rope_ApplyConstraints(int rope_index,bool forward)
 
 {
   code *pcVar1;
   rope_t *prVar2;
   bool bVar3;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
+  int ci_4;
+  int ci_3;
+  int ci_2;
+  int ci;
+  rope_t *rope;
   
-  bVar3 = Rope_IsValid(param_1);
+  bVar3 = Rope_IsValid(rope_index);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x265,0,"%s"),
      !bVar3)) {
@@ -925,21 +957,21 @@ void __cdecl Rope_ApplyConstraints(int param_1,bool param_2)
     return;
   }
   prVar2 = g_ropes;
-  if (param_2) {
-    local_c = g_ropes[param_1].m_num_constraints;
-    while (local_c = local_c + -1, local_10 = g_num_contacts, -1 < local_c) {
-      Rope_ApplyConstraint(param_1,local_c);
+  if (forward) {
+    ci = g_ropes[rope_index].m_num_constraints;
+    while (ci = ci + -1, ci_2 = g_num_contacts, -1 < ci) {
+      Rope_ApplyConstraint(rope_index,ci);
     }
-    while (local_10 = local_10 + -1, -1 < local_10) {
-      Rope_ApplyContactConstraint(param_1,local_10);
+    while (ci_2 = ci_2 + -1, -1 < ci_2) {
+      Rope_ApplyContactConstraint(rope_index,ci_2);
     }
   }
   else {
-    for (local_14 = 0; local_14 < prVar2[param_1].m_num_constraints; local_14 = local_14 + 1) {
-      Rope_ApplyConstraint(param_1,local_14);
+    for (ci_3 = 0; ci_3 < prVar2[rope_index].m_num_constraints; ci_3 = ci_3 + 1) {
+      Rope_ApplyConstraint(rope_index,ci_3);
     }
-    for (local_18 = 0; local_18 < g_num_contacts; local_18 = local_18 + 1) {
-      Rope_ApplyContactConstraint(param_1,local_18);
+    for (ci_4 = 0; ci_4 < g_num_contacts; ci_4 = ci_4 + 1) {
+      Rope_ApplyContactConstraint(rope_index,ci_4);
     }
   }
   return;
@@ -949,7 +981,8 @@ void __cdecl Rope_ApplyConstraints(int param_1,bool param_2)
 // 008600C0  Rope_ExplosionEvent  (physics/rope.cpp:643)
 
 void __cdecl
-Rope_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,int param_5,int param_6)
+Rope_ExplosionEvent(int rope_index,float *origin,float innerRadius,float outerRadius,int innerDamage
+                   ,int outerDamage)
 
 {
   float *pfVar1;
@@ -970,11 +1003,20 @@ Rope_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,int p
   float fVar16;
   float fVar17;
   float local_68;
-  int local_44;
-  float local_24;
-  float local_10;
+  float dist;
+  float dist2;
+  int i;
+  float distSqr;
+  float outer_force;
+  float force;
+  rope_t *rope;
+  float invRange;
+  float innerRadiusSqr;
+  float scale;
+  float outerRadiusSqr;
+  float inner_force;
   
-  bVar7 = Rope_IsValid(param_1);
+  bVar7 = Rope_IsValid(rope_index);
   if ((!bVar7) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x28a,0,"%s"),
      !bVar7)) {
@@ -983,14 +1025,14 @@ Rope_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,int p
     return;
   }
   prVar6 = g_ropes;
-  if (g_ropes[param_1].m_visible != 0) {
-    fVar10 = param_4 * param_4;
-    fVar11 = param_3 * param_3;
-    fVar17 = PointToBoxDistSq(param_2,g_ropes[param_1].m_min,g_ropes[param_1].m_max);
+  if (g_ropes[rope_index].m_visible != 0) {
+    fVar10 = outerRadius * outerRadius;
+    fVar11 = innerRadius * innerRadius;
+    fVar17 = PointToBoxDistSq(origin,g_ropes[rope_index].m_min,g_ropes[rope_index].m_max);
     if (fVar17 <= fVar10) {
-      prVar6[param_1].m_flags = prVar6[param_1].m_flags & 0xfffffffd;
-      prVar6[param_1].m_stable_count = 0;
-      fVar17 = (float)param_5 * 0.1;
+      prVar6[rope_index].m_flags = prVar6[rope_index].m_flags & 0xfffffffd;
+      prVar6[rope_index].m_stable_count = 0;
+      fVar17 = (float)innerDamage * 0.1;
       local_68 = fVar17;
       if (0.0 <= fVar17 - magic_inner_force_clamp) {
         local_68 = magic_inner_force_clamp;
@@ -998,21 +1040,21 @@ Rope_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,int p
       if (0.0 <= 0.0 - fVar17) {
         local_68 = 0.0;
       }
-      local_24 = 0.0;
+      invRange = 0.0;
       if (fVar11 < fVar10) {
-        local_24 = 1.0 / (param_3 - param_4);
+        invRange = 1.0 / (innerRadius - outerRadius);
       }
-      for (local_44 = 0; local_44 < prVar6[param_1].m_num_particles; local_44 = local_44 + 1) {
-        ppVar8 = prVar6[param_1].m_particles + local_44;
+      for (i = 0; i < prVar6[rope_index].m_num_particles; i = i + 1) {
+        ppVar8 = prVar6[rope_index].m_particles + i;
         fVar2 = ppVar8->p[0];
         fVar3 = ppVar8->p[1];
         fVar4 = ppVar8->p[2];
-        fVar12 = fVar2 - *param_2;
-        fVar13 = fVar3 - param_2[1];
-        fVar14 = fVar4 - param_2[2];
+        fVar12 = fVar2 - *origin;
+        fVar13 = fVar3 - origin[1];
+        fVar14 = fVar4 - origin[2];
         fVar16 = fVar12 * fVar12 + fVar13 * fVar13 + fVar14 * fVar14;
         if (fVar16 < fVar10) {
-          local_10 = 1.0;
+          scale = 1.0;
           if (fVar11 < fVar16) {
             if ((fVar10 <= fVar11) &&
                (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",
@@ -1021,29 +1063,29 @@ Rope_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,int p
               (*pcVar5)();
               return;
             }
-            local_10 = (SQRT(fVar16) - param_4) * local_24 * 1.0;
+            scale = (SQRT(fVar16) - outerRadius) * invRange * 1.0;
           }
-          if ((local_10 < 0.0) &&
+          if ((scale < 0.0) &&
              (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x2b7,
                                        1,"%s"), !bVar7)) {
             pcVar5 = (code *)swi(3);
             (*pcVar5)(local_68);
             return;
           }
-          fVar15 = ((fVar17 - (float)param_6 * 0.1) * local_10 + (float)param_6 * 0.1) *
-                   prVar6[param_1].m_force_scale;
+          fVar15 = ((fVar17 - (float)outerDamage * 0.1) * scale + (float)outerDamage * 0.1) *
+                   prVar6[rope_index].m_force_scale;
           fVar16 = 1.0 / SQRT(fVar16);
-          pfVar1 = prVar6[param_1].m_particles[local_44].p0;
-          ppVar8 = prVar6[param_1].m_particles + local_44;
+          pfVar1 = prVar6[rope_index].m_particles[i].p0;
+          ppVar8 = prVar6[rope_index].m_particles + i;
           ppVar8->p[0] = fVar2 * 2.0 + *pfVar1 * -1.0;
           ppVar8->p[1] = fVar3 * 2.0 + pfVar1[1] * -1.0;
           ppVar8->p[2] = fVar4 * 2.0 + pfVar1[2] * -1.0;
-          ppVar9 = prVar6[param_1].m_particles + local_44;
-          ppVar8 = prVar6[param_1].m_particles + local_44;
+          ppVar9 = prVar6[rope_index].m_particles + i;
+          ppVar8 = prVar6[rope_index].m_particles + i;
           ppVar9->p[0] = ppVar8->p[0] + fVar15 * fVar16 * fVar12;
           ppVar9->p[1] = ppVar8->p[1] + fVar15 * fVar16 * fVar13;
           ppVar9->p[2] = ppVar8->p[2] + fVar15 * fVar16 * fVar14;
-          pfVar1 = prVar6[param_1].m_particles[local_44].p0;
+          pfVar1 = prVar6[rope_index].m_particles[i].p0;
           *pfVar1 = fVar2;
           pfVar1[1] = fVar3;
           pfVar1[2] = fVar4;
@@ -1062,7 +1104,7 @@ Rope_ExplosionEvent(int param_1,float *param_2,float param_3,float param_4,int p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Rope_UpdateVisible(int param_1)
+void __cdecl Rope_UpdateVisible(int rope_index)
 
 {
   code *pcVar1;
@@ -1081,18 +1123,19 @@ void __cdecl Rope_UpdateVisible(int param_1)
   float fVar14;
   float fVar15;
   float fVar16;
-  float local_34;
-  int local_28;
-  float local_24;
+  float dist2;
+  cg_s *cgameGlob;
+  int ci;
+  float p1;
   float local_20;
   float local_1c;
-  rope_t *local_18;
-  int local_14;
-  float local_10;
+  rope_t *rope;
+  int skip;
+  float p0;
   float local_c;
   float local_8;
   
-  bVar2 = Rope_IsValid(param_1);
+  bVar2 = Rope_IsValid(rope_index);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x2c8,0,"%s");
     if (!bVar2) {
@@ -1101,62 +1144,62 @@ void __cdecl Rope_UpdateVisible(int param_1)
       return;
     }
   }
-  local_18 = g_ropes + param_1;
-  local_14 = 1;
-  local_10 = local_18->m_particles[0].p[0];
-  local_c = local_18->m_particles[0].p[1];
-  local_8 = local_18->m_particles[0].p[2];
-  ppVar3 = local_18->m_particles + local_18->m_num_particles + -1;
-  local_24 = ppVar3->p[0];
+  rope = g_ropes + rope_index;
+  skip = 1;
+  p0 = rope->m_particles[0].p[0];
+  local_c = rope->m_particles[0].p[1];
+  local_8 = rope->m_particles[0].p[2];
+  ppVar3 = rope->m_particles + rope->m_num_particles + -1;
+  p1 = ppVar3->p[0];
   local_20 = ppVar3->p[1];
   local_1c = ppVar3->p[2];
-  local_28 = 0;
+  ci = 0;
   do {
-    if (0 < local_28) {
+    if (0 < ci) {
 LAB_0085f564:
-      if (local_14 != 0) {
-        local_18->m_visible = 0;
+      if (skip != 0) {
+        rope->m_visible = 0;
       }
       return;
     }
-    bVar2 = CL_LocalClient_IsActive(local_28);
+    bVar2 = CL_LocalClient_IsActive(ci);
     if (bVar2) {
-      pcVar4 = CG_GetLocalClientGlobals(local_28);
-      if (cg_pmove[local_28].ps != (playerState_s *)0x0) {
+      pcVar4 = CG_GetLocalClientGlobals(ci);
+      if (cg_pmove[ci].ps != (playerState_s *)0x0) {
         pfVar6 = (pcVar4->refdef).vieworg;
-        fVar7 = local_24 - local_10;
+        fVar7 = p1 - p0;
         fVar8 = local_20 - local_c;
         fVar9 = local_1c - local_8;
-        fVar10 = *pfVar6 - local_10;
+        fVar10 = *pfVar6 - p0;
         fVar11 = (pcVar4->refdef).vieworg[1] - local_c;
         fVar12 = (pcVar4->refdef).vieworg[2] - local_8;
-        fVar13 = *pfVar6 - local_24;
+        fVar13 = *pfVar6 - p1;
         fVar14 = (pcVar4->refdef).vieworg[1] - local_20;
         fVar15 = (pcVar4->refdef).vieworg[2] - local_1c;
         fVar16 = fVar10 * fVar7 + fVar11 * fVar8 + fVar12 * fVar9;
         if (0.0 < fVar16) {
           fVar7 = fVar7 * fVar7 + fVar8 * fVar8 + fVar9 * fVar9;
           if (fVar16 < fVar7) {
-            local_34 = (fVar10 * fVar10 + fVar11 * fVar11 + fVar12 * fVar12) -
-                       (fVar16 * fVar16) / fVar7;
+            dist2 = (fVar10 * fVar10 + fVar11 * fVar11 + fVar12 * fVar12) -
+                    (fVar16 * fVar16) / fVar7;
           }
           else {
-            local_34 = fVar13 * fVar13 + fVar14 * fVar14 + fVar15 * fVar15;
+            dist2 = fVar13 * fVar13 + fVar14 * fVar14 + fVar15 * fVar15;
           }
         }
         else {
-          local_34 = fVar10 * fVar10 + fVar11 * fVar11 + fVar12 * fVar12;
+          dist2 = fVar10 * fVar10 + fVar11 * fVar11 + fVar12 * fVar12;
         }
-        if (local_34 < dist_thresh2) {
-          iVar5 = R_CullLine(local_28,&local_10,&local_24,cull_thresh);
+        if (dist2 < dist_thresh2) {
+          iVar5 = R_CullLine(ci,&p0,&p1,cull_thresh);
           if (iVar5 == 0) {
-            local_14 = 0;
+            skip = 0;
             goto LAB_0085f564;
           }
         }
       }
     }
-    local_28 = local_28 + 1;
+    ci = ci + 1;
   } while( true );
 }
 
@@ -1168,24 +1211,30 @@ LAB_0085f564:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Rope_Tick(RopeUpdateCmdData *param_1,int param_2,float param_3,bool param_4)
+void __cdecl Rope_Tick(RopeUpdateCmdData *cmd,int rope_index,float dt,bool force_update)
 
 {
   code *pcVar1;
   bool bVar2;
   rope_t *prVar3;
   bool bVar4;
-  int iVar5;
-  cg_s *pcVar6;
-  par_t *ppVar7;
+  int localClientNum;
+  cg_s *pcVar5;
+  par_t *a;
+  float fVar6;
+  float fVar7;
   float fVar8;
-  float fVar9;
-  float fVar10;
-  int local_34;
-  int local_18;
-  bool local_e;
+  int i_2;
+  float minDelta;
+  float len;
+  int i;
+  cg_s *cgameGlob;
+  bool forward;
+  bool stable;
+  int update;
+  rope_t *rope;
   
-  bVar4 = Rope_IsValid(param_2);
+  bVar4 = Rope_IsValid(rope_index);
   if ((!bVar4) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x2f5,0,"%s"),
      !bVar4)) {
@@ -1194,70 +1243,71 @@ void __cdecl Rope_Tick(RopeUpdateCmdData *param_1,int param_2,float param_3,bool
     return;
   }
   prVar3 = g_ropes;
-  if (g_ropes[param_2].m_num_constraints != 0) {
-    g_ropes[param_2].m_visible = 1;
-    if ((param_4) || ((prVar3[param_2].m_flags & 0x40U) != 0)) {
+  if (g_ropes[rope_index].m_num_constraints != 0) {
+    g_ropes[rope_index].m_visible = 1;
+    if ((force_update) || ((prVar3[rope_index].m_flags & 0x40U) != 0)) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
-    if (((bVar4) || ((prVar3[param_2].m_flags & 8U) != 0)) ||
-       (Rope_UpdateVisible(param_2), prVar3[param_2].m_visible != 0)) {
-      if ((prVar3[param_2].m_flags & 2U) == 0) {
-        if ((!bVar4) && ((prVar3[param_2].m_flags & 8U) != 0)) {
-          iVar5 = CL_GetFirstActiveLocalClient();
-          pcVar6 = CG_GetLocalClientGlobals(iVar5);
-          if (pcVar6->nextSnap == (snapshot_s *)0x0) {
+    if (((bVar4) || ((prVar3[rope_index].m_flags & 8U) != 0)) ||
+       (Rope_UpdateVisible(rope_index), prVar3[rope_index].m_visible != 0)) {
+      if ((prVar3[rope_index].m_flags & 2U) == 0) {
+        if ((!bVar4) && ((prVar3[rope_index].m_flags & 8U) != 0)) {
+          localClientNum = CL_GetFirstActiveLocalClient();
+          pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+          if (pcVar5->nextSnap == (snapshot_s *)0x0) {
             return;
           }
-          Rope_Settle(param_2);
+          Rope_Settle(rope_index);
         }
-        prVar3[param_2].m_flags = prVar3[param_2].m_flags & 0xfffffff7;
+        prVar3[rope_index].m_flags = prVar3[rope_index].m_flags & 0xfffffff7;
         g_num_contacts = 0;
-        Rope_ApplyPhysics(param_2,param_3);
-        prVar3[param_2].m_min[0] = 3.4028235e+38;
-        prVar3[param_2].m_min[1] = 3.4028235e+38;
-        prVar3[param_2].m_min[2] = 3.4028235e+38;
-        prVar3[param_2].m_max[0] = -3.4028235e+38;
-        prVar3[param_2].m_max[1] = -3.4028235e+38;
-        prVar3[param_2].m_max[2] = -3.4028235e+38;
+        Rope_ApplyPhysics(rope_index,dt);
+        prVar3[rope_index].m_min[0] = 3.4028235e+38;
+        prVar3[rope_index].m_min[1] = 3.4028235e+38;
+        prVar3[rope_index].m_min[2] = 3.4028235e+38;
+        prVar3[rope_index].m_max[0] = -3.4028235e+38;
+        prVar3[rope_index].m_max[1] = -3.4028235e+38;
+        prVar3[rope_index].m_max[2] = -3.4028235e+38;
         bVar2 = true;
-        for (local_18 = 0; local_18 < prVar3[param_2].m_num_particles; local_18 = local_18 + 1) {
-          ppVar7 = prVar3[param_2].m_particles + local_18;
-          Vec3Min(ppVar7->p,prVar3[param_2].m_min,prVar3[param_2].m_min);
-          Vec3Min(ppVar7->p_prev,prVar3[param_2].m_min,prVar3[param_2].m_min);
-          Vec3Max(ppVar7->p,prVar3[param_2].m_max,prVar3[param_2].m_max);
-          Vec3Max(ppVar7->p_prev,prVar3[param_2].m_max,prVar3[param_2].m_max);
-          fVar8 = ppVar7->p[0] - ppVar7->p0[0];
-          fVar9 = ppVar7->p[1] - ppVar7->p0[1];
-          fVar10 = ppVar7->p[2] - ppVar7->p0[2];
-          if (0.0625 < fVar8 * fVar8 + fVar9 * fVar9 + fVar10 * fVar10) {
+        for (i = 0; i < prVar3[rope_index].m_num_particles; i = i + 1) {
+          a = prVar3[rope_index].m_particles + i;
+          Vec3Min(a->p,prVar3[rope_index].m_min,prVar3[rope_index].m_min);
+          Vec3Min(a->p_prev,prVar3[rope_index].m_min,prVar3[rope_index].m_min);
+          Vec3Max(a->p,prVar3[rope_index].m_max,prVar3[rope_index].m_max);
+          Vec3Max(a->p_prev,prVar3[rope_index].m_max,prVar3[rope_index].m_max);
+          fVar6 = a->p[0] - a->p0[0];
+          fVar7 = a->p[1] - a->p0[1];
+          fVar8 = a->p[2] - a->p0[2];
+          if (0.0625 < fVar6 * fVar6 + fVar7 * fVar7 + fVar8 * fVar8) {
             bVar2 = false;
           }
         }
         if (bVar2) {
-          prVar3[param_2].m_stable_count = prVar3[param_2].m_stable_count + 1;
-          if ((0x1e < prVar3[param_2].m_stable_count) && ((prVar3[param_2].m_flags & 4U) != 0)) {
-            prVar3[param_2].m_flags = prVar3[param_2].m_flags | 2;
+          prVar3[rope_index].m_stable_count = prVar3[rope_index].m_stable_count + 1;
+          if ((0x1e < prVar3[rope_index].m_stable_count) && ((prVar3[rope_index].m_flags & 4U) != 0)
+             ) {
+            prVar3[rope_index].m_flags = prVar3[rope_index].m_flags | 2;
           }
         }
         else {
-          prVar3[param_2].m_stable_count = 0;
+          prVar3[rope_index].m_stable_count = 0;
         }
-        if ((!bVar4) && ((prVar3[param_2].m_flags & 1U) != 0)) {
-          Rope_CollideWorld(param_2);
-          Rope_CollideEntities(param_2);
+        if ((!bVar4) && ((prVar3[rope_index].m_flags & 1U) != 0)) {
+          Rope_CollideWorld(rope_index);
+          Rope_CollideEntities(rope_index);
         }
-        local_e = true;
-        for (local_34 = 0; local_34 < 6; local_34 = local_34 + 1) {
-          Rope_ApplyConstraints(param_2,local_e);
-          local_e = (bool)('\x01' - (local_e != false));
+        forward = true;
+        for (i_2 = 0; i_2 < 6; i_2 = i_2 + 1) {
+          Rope_ApplyConstraints(rope_index,forward);
+          forward = (bool)('\x01' - (forward != false));
         }
-        prVar3[param_2].m_frame = prVar3[param_2].m_frame + 1;
+        prVar3[rope_index].m_frame = prVar3[rope_index].m_frame + 1;
       }
-      if (param_1 != (RopeUpdateCmdData *)0x0) {
-        Rope_BuildCurve(param_1,param_2);
+      if (cmd != (RopeUpdateCmdData *)0x0) {
+        Rope_BuildCurve(cmd,rope_index);
       }
     }
   }
@@ -1267,7 +1317,7 @@ void __cdecl Rope_Tick(RopeUpdateCmdData *param_1,int param_2,float param_3,bool
 
 // 008605F0  PointToBoxDistSq  (universal/com_math.h:830)
 
-float __cdecl PointToBoxDistSq(float *param_1,float *param_2,float *param_3)
+float __cdecl PointToBoxDistSq(float *pt,float *mins,float *maxs)
 
 {
   float local_34;
@@ -1276,13 +1326,19 @@ float __cdecl PointToBoxDistSq(float *param_1,float *param_2,float *param_3)
   float local_28;
   float local_24;
   float local_20;
+  float delta0_mins_pt;
+  float delta1_mins_pt;
+  float delta0_pt_maxs;
+  float delta2_pt_maxs;
+  float delta1_pt_maxs;
+  float delta2_mins_pt;
   
-  local_20 = *param_2 - *param_1;
-  local_24 = param_2[1] - param_1[1];
-  local_28 = param_2[2] - param_1[2];
-  local_2c = *param_1 - *param_3;
-  local_30 = param_1[1] - param_3[1];
-  local_34 = param_1[2] - param_3[2];
+  local_20 = *mins - *pt;
+  local_24 = mins[1] - pt[1];
+  local_28 = mins[2] - pt[2];
+  local_2c = *pt - *maxs;
+  local_30 = pt[1] - maxs[1];
+  local_34 = pt[2] - maxs[2];
   if (local_20 < 0.0) {
     local_20 = 0.0;
   }
@@ -1325,34 +1381,34 @@ float __cdecl PointToBoxDistSq(float *param_1,float *param_2,float *param_3)
 
 // 0085FC90  Rope_DebugDraw  (physics/rope.cpp:862)
 
-void __cdecl Rope_DebugDraw(int param_1)
+void __cdecl Rope_DebugDraw(int rope_index)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_40;
+  float p1;
   float local_3c;
   float local_38;
-  contact_t *local_34;
-  int local_30;
-  par_t *local_2c;
-  int local_28;
-  int local_24;
-  undefined4 local_20;
+  contact_t *contact;
+  int i_3;
+  par_t *par;
+  int i_2;
+  int i;
+  undefined4 mins;
   undefined4 local_1c;
   undefined4 local_18;
-  rope_t *local_14;
-  undefined4 local_10;
+  rope_t *rope;
+  undefined4 maxs;
   undefined4 local_c;
   undefined4 local_8;
   
-  local_20 = 0xc0200000;
+  mins = 0xc0200000;
   local_1c = 0xc0200000;
   local_18 = 0xc0200000;
-  local_10 = 0x40200000;
+  maxs = 0x40200000;
   local_c = 0x40200000;
   local_8 = 0x40200000;
-  bVar2 = Rope_IsValid(param_1);
+  bVar2 = Rope_IsValid(rope_index);
   if ((!bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x364,0,"%s"),
      !bVar2)) {
@@ -1360,23 +1416,21 @@ void __cdecl Rope_DebugDraw(int param_1)
     (*pcVar1)();
     return;
   }
-  local_14 = g_ropes + param_1;
-  if (local_14->m_num_particles != 0) {
-    for (local_24 = 0; local_24 < local_14->m_num_particles + -1; local_24 = local_24 + 1) {
-      G_DebugLineWithDuration
-                (local_14->m_particles[local_24].p,local_14->m_particles[local_24 + 1].p,colorBlack,
-                 0,1);
+  rope = g_ropes + rope_index;
+  if (rope->m_num_particles != 0) {
+    for (i = 0; i < rope->m_num_particles + -1; i = i + 1) {
+      G_DebugLineWithDuration(rope->m_particles[i].p,rope->m_particles[i + 1].p,colorBlack,0,1);
     }
-    for (local_28 = 0; local_28 < local_14->m_num_particles; local_28 = local_28 + 1) {
-      local_2c = local_14->m_particles + local_28;
-      G_DebugStar(local_2c->p_prev,colorGreen,0);
+    for (i_2 = 0; i_2 < rope->m_num_particles; i_2 = i_2 + 1) {
+      par = rope->m_particles + i_2;
+      G_DebugStar(par->p_prev,colorGreen,0);
     }
-    for (local_30 = 0; local_30 < g_num_contacts; local_30 = local_30 + 1) {
-      local_34 = g_contacts + local_30;
-      local_40 = sc * g_contacts[local_30].normal[0] + local_34->point[0];
-      local_3c = sc * g_contacts[local_30].normal[1] + g_contacts[local_30].point[1];
-      local_38 = sc * g_contacts[local_30].normal[2] + g_contacts[local_30].point[2];
-      G_DebugLineWithDuration(local_34->point,&local_40,colorYellow,0,1);
+    for (i_3 = 0; i_3 < g_num_contacts; i_3 = i_3 + 1) {
+      contact = g_contacts + i_3;
+      p1 = sc * g_contacts[i_3].normal[0] + contact->point[0];
+      local_3c = sc * g_contacts[i_3].normal[1] + g_contacts[i_3].point[1];
+      local_38 = sc * g_contacts[i_3].normal[2] + g_contacts[i_3].point[2];
+      G_DebugLineWithDuration(contact->point,&p1,colorYellow,0,1);
     }
   }
   return;
@@ -1385,7 +1439,7 @@ void __cdecl Rope_DebugDraw(int param_1)
 
 // 0085F580  Rope_BuildCurve  (physics/rope.cpp:914)
 
-void __cdecl Rope_BuildCurve(RopeUpdateCmdData *param_1,int param_2)
+void __cdecl Rope_BuildCurve(RopeUpdateCmdData *cmd,int rope_index)
 
 {
   rope_frame_verts_t *prVar1;
@@ -1395,20 +1449,27 @@ void __cdecl Rope_BuildCurve(RopeUpdateCmdData *param_1,int param_2)
   int local_80;
   int local_74;
   int local_6c;
-  int local_68;
-  int local_4c;
-  int local_40;
-  float local_38;
-  float local_24;
+  int i_2;
+  int i;
+  float segLength;
+  rope_frame_verts_t *verts;
+  int segCount;
+  uint frameIdx;
+  float segDist;
+  float dx;
+  float dist;
+  float scale;
+  float dy;
+  float p1;
   float local_20;
   float local_1c;
-  float local_18;
+  float p2;
   float local_14;
   float local_10;
-  int local_c;
-  rope_t *local_8;
+  int numSegments;
+  rope_t *rope;
   
-  bVar3 = Rope_IsValid(param_2);
+  bVar3 = Rope_IsValid(rope_index);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x393,0,"%s"),
      !bVar3)) {
@@ -1416,29 +1477,27 @@ void __cdecl Rope_BuildCurve(RopeUpdateCmdData *param_1,int param_2)
     (*pcVar2)();
     return;
   }
-  local_8 = g_ropes + param_2;
-  if (local_8->m_num_particles != 0) {
-    local_c = local_8->m_num_particles * 3;
-    if (0x31 < local_c) {
-      local_c = 0x31;
+  rope = g_ropes + rope_index;
+  if (rope->m_num_particles != 0) {
+    numSegments = rope->m_num_particles * 3;
+    if (0x31 < numSegments) {
+      numSegments = 0x31;
     }
-    if ((local_8->m_flags & 0x100U) == 0) {
-      MatrixVecMultiplyProject(param_1->screenMtx,(float *)local_8,&local_24);
-      MatrixVecMultiplyProject
-                (param_1->screenMtx,local_8->m_particles[local_8->m_num_particles + -1].p,&local_18)
-      ;
+    if ((rope->m_flags & 0x100U) == 0) {
+      MatrixVecMultiplyProject(cmd->screenMtx,(float *)rope,&p1);
+      MatrixVecMultiplyProject(cmd->screenMtx,rope->m_particles[rope->m_num_particles + -1].p,&p2);
       if (1.0 < local_1c == 1.0 < local_10) {
-        if (local_c < 6) {
-          local_74 = local_c;
+        if (numSegments < 6) {
+          local_74 = numSegments;
         }
         else {
           local_74 = 6;
         }
-        local_6c = (int)((float)local_c *
-                        SQRT((local_24 - local_18) * (local_24 - local_18) +
-                             (local_20 - local_14) * (local_20 - local_14)) * 2.0);
-        if (local_c <= local_6c) {
-          local_6c = local_c;
+        local_6c = (int)((float)numSegments *
+                        SQRT((p1 - p2) * (p1 - p2) + (local_20 - local_14) * (local_20 - local_14))
+                        * 2.0);
+        if (numSegments <= local_6c) {
+          local_6c = numSegments;
         }
         if (local_74 < local_6c) {
           local_80 = local_6c;
@@ -1446,35 +1505,35 @@ void __cdecl Rope_BuildCurve(RopeUpdateCmdData *param_1,int param_2)
         else {
           local_80 = local_74;
         }
-        local_c = local_80;
+        numSegments = local_80;
       }
     }
-    if (((local_8->m_flags & 2U) == 0) || (local_8->m_num_draw_verts != local_c)) {
-      local_8->m_num_draw_verts = local_c;
-      (local_8->m_client_verts).frame_index = 1 - (local_8->m_client_verts).frame_index;
-      prVar1 = (local_8->m_client_verts).frame_verts + (local_8->m_client_verts).frame_index;
-      prVar1->num_verts = local_c;
+    if (((rope->m_flags & 2U) == 0) || (rope->m_num_draw_verts != numSegments)) {
+      rope->m_num_draw_verts = numSegments;
+      (rope->m_client_verts).frame_index = 1 - (rope->m_client_verts).frame_index;
+      prVar1 = (rope->m_client_verts).frame_verts + (rope->m_client_verts).frame_index;
+      prVar1->num_verts = numSegments;
       cCurve::Reinit(&g_ropeCurve);
-      for (local_4c = 0; local_4c < local_8->m_num_particles; local_4c = local_4c + 1) {
-        cCurve::AddNode(&g_ropeCurve,local_8->m_particles[local_4c].p);
+      for (i = 0; i < rope->m_num_particles; i = i + 1) {
+        cCurve::AddNode(&g_ropeCurve,rope->m_particles[i].p);
       }
       if (g_ropeCurve.mCurveType != CURVE_BSPLINE) {
         g_ropeCurve.mCurveType = CURVE_BSPLINE;
       }
       cCurve::Build(&g_ropeCurve);
-      fVar4 = (float)local_c;
-      local_38 = 0.0;
-      for (local_40 = 0; local_40 < local_c; local_40 = local_40 + 1) {
-        cCurve::GetPos(&g_ropeCurve,local_38,prVar1->v[local_40]);
-        local_38 = local_38 + 1.0 / fVar4;
+      fVar4 = (float)numSegments;
+      segDist = 0.0;
+      for (segCount = 0; segCount < numSegments; segCount = segCount + 1) {
+        cCurve::GetPos(&g_ropeCurve,segDist,prVar1->v[segCount]);
+        segDist = segDist + 1.0 / fVar4;
       }
-      cCurve::GetPos(&g_ropeCurve,1.0,prVar1->v[local_40]);
-      if ((local_8->m_client_verts).frame_index == 0) {
-        local_8->m_flags = local_8->m_flags | 4;
+      cCurve::GetPos(&g_ropeCurve,1.0,prVar1->v[segCount]);
+      if ((rope->m_client_verts).frame_index == 0) {
+        rope->m_flags = rope->m_flags | 4;
       }
       if ((debug_rope->current).enabled != false) {
-        for (local_68 = 0; local_68 < local_c; local_68 = local_68 + 1) {
-          G_DebugStar(prVar1->v[local_68],colorRed,0);
+        for (i_2 = 0; i_2 < numSegments; i_2 = i_2 + 1) {
+          G_DebugStar(prVar1->v[i_2],colorRed,0);
         }
       }
     }
@@ -1485,17 +1544,18 @@ void __cdecl Rope_BuildCurve(RopeUpdateCmdData *param_1,int param_2)
 
 // 0085FE90  Rope_Draw  (physics/rope.cpp:1001)
 
-void __cdecl Rope_Draw(int param_1,int param_2)
+void __cdecl Rope_Draw(int rope_index,int localClientNum)
 
 {
   code *pcVar1;
   rope_t *prVar2;
   bool bVar3;
-  VisualRope local_2c;
-  rope_frame_verts_t *local_c;
-  uint local_8;
+  rope_t *rope;
+  VisualRope vrope;
+  rope_frame_verts_t *verts;
+  uint frameIdx;
   
-  bVar3 = Rope_IsValid(param_1);
+  bVar3 = Rope_IsValid(rope_index);
   if ((!bVar3) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x3ea,0,"%s"),
      !bVar3)) {
@@ -1504,26 +1564,26 @@ void __cdecl Rope_Draw(int param_1,int param_2)
     return;
   }
   prVar2 = g_ropes;
-  if (((g_ropes[param_1].m_num_particles != 0) && (g_ropes[param_1].m_visible != 0)) &&
-     (local_2c.visibilityFlags = R_Rope_CalcVisibility(g_ropes[param_1].m_min,param_2),
-     local_2c.visibilityFlags != '\0')) {
+  if (((g_ropes[rope_index].m_num_particles != 0) && (g_ropes[rope_index].m_visible != 0)) &&
+     (vrope.visibilityFlags = R_Rope_CalcVisibility(g_ropes[rope_index].m_min,localClientNum),
+     vrope.visibilityFlags != '\0')) {
     g_ropesRendered = g_ropesRendered + 1;
-    local_8 = prVar2[param_1].m_client_verts.frame_index;
-    local_c = prVar2[param_1].m_client_verts.frame_verts + local_8;
-    local_2c.beginRadius = prVar2[param_1].m_width * 0.5;
-    local_2c.endRadius = prVar2[param_1].m_width * 0.5;
-    local_2c.material = prVar2[param_1].m_material;
-    local_2c.segmentVerts = local_c->v[0];
-    local_2c.segmentCount = local_c->num_verts;
-    local_2c.lightingHandle = &prVar2[param_1].m_lightingHandle;
-    if ((prVar2[param_1].m_material == (Material *)0x0) &&
+    frameIdx = prVar2[rope_index].m_client_verts.frame_index;
+    verts = prVar2[rope_index].m_client_verts.frame_verts + frameIdx;
+    vrope.beginRadius = prVar2[rope_index].m_width * 0.5;
+    vrope.endRadius = prVar2[rope_index].m_width * 0.5;
+    vrope.material = prVar2[rope_index].m_material;
+    vrope.segmentVerts = verts->v[0];
+    vrope.segmentCount = verts->num_verts;
+    vrope.lightingHandle = &prVar2[rope_index].m_lightingHandle;
+    if ((prVar2[rope_index].m_material == (Material *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x419,0,"%s"
                                 ), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    R_Rope_Add(&local_2c);
+    R_Rope_Add(&vrope);
   }
   return;
 }
@@ -1532,28 +1592,28 @@ void __cdecl Rope_Draw(int param_1,int param_2)
 // 0085DA30  Rope_Create  (physics/rope.cpp:1060)
 
 void __cdecl
-Rope_Create(int param_1,float *param_2,float *param_3,float param_4,float param_5,float param_6,
-           float param_7,int param_8)
+Rope_Create(int rope_index,float *start,float *end,float length,float scale,float width,
+           float force_scale,int static_rope)
 
 {
-  int local_8;
+  int nsegments;
   
-  if (g_ropeCount <= param_1) {
-    g_ropeCount = param_1 + 1;
+  if (g_ropeCount <= rope_index) {
+    g_ropeCount = rope_index + 1;
   }
   if (g_max_ropes < g_ropeCount) {
     Com_PrintWarning(0x10,"WARNING: Ran out of ropes. Max is %d\n");
   }
   else {
-    Rope_Create(param_1);
-    local_8 = (int)(param_4 / denom);
-    if (local_8 < 4) {
-      local_8 = 4;
+    Rope_Create(rope_index);
+    nsegments = (int)(length / denom);
+    if (nsegments < 4) {
+      nsegments = 4;
     }
-    if (0x19 < local_8) {
-      local_8 = 0x19;
+    if (0x19 < nsegments) {
+      nsegments = 0x19;
     }
-    Rope_Init(param_1,local_8,param_2,param_3,param_4,param_6,param_5,param_7,param_8);
+    Rope_Init(rope_index,nsegments,start,end,length,width,scale,force_scale,static_rope);
   }
   return;
 }
@@ -1561,16 +1621,23 @@ Rope_Create(int param_1,float *param_2,float *param_3,float param_4,float param_
 
 // 0085E020  Rope_UpdateInternal  (physics/rope.cpp:1088)
 
-void __cdecl Rope_UpdateInternal(RopeUpdateCmdData *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Rope_UpdateInternal(RopeUpdateCmdData *cmd)
 
 {
   DWORD DVar1;
-  int local_10;
+  int ri;
+  PIXProfile pixProfile;
+  float delta_t;
   
   PIXBeginNamedEvent(-1,"Rope_UpdateInternal");
-  for (local_10 = 0; local_10 < param_1->ropeCount; local_10 = local_10 + 1) {
-    if (param_1->ropes[local_10].m_in_use != 0) {
-      Rope_Tick(param_1,local_10,0.017,false);
+  for (ri = 0; ri < cmd->ropeCount; ri = ri + 1) {
+    if (cmd->ropes[ri].m_in_use != 0) {
+      Rope_Tick(cmd,ri,0.017,false);
     }
   }
   DVar1 = GetCurrentThreadId();
@@ -1588,7 +1655,7 @@ void __cdecl Rope_UpdateInternal(RopeUpdateCmdData *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Rope_Update(int param_1,int param_2)
+void __cdecl Rope_Update(int localClientNum,int curtime)
 
 {
   bool bVar1;
@@ -1613,7 +1680,7 @@ void __cdecl Rope_Update(int param_1,int param_2)
     local_14 = va("Rope_Update %i/%i");
     PIXBeginNamedEvent(-1,local_14);
     g_update_count = 0;
-    local_18 = param_2 - g_rope_sys_time;
+    local_18 = curtime - g_rope_sys_time;
     if (local_18 < 1) {
       local_20 = GetCurrentThreadId();
       local_1c = 0;
@@ -1623,10 +1690,10 @@ void __cdecl Rope_Update(int param_1,int param_2)
     }
     else {
       iVar2 = CL_GetFirstActiveLocalClient();
-      if (iVar2 == param_1) {
+      if (iVar2 == localClientNum) {
         local_90.ropeCount = g_ropeCount;
         local_90.ropes = g_ropes;
-        local_94 = CG_GetLocalClientGlobals(param_1);
+        local_94 = CG_GetLocalClientGlobals(localClientNum);
         local_98 = (local_94->refdef).vieworg;
         local_90.viewOrg[0] = *local_98;
         local_90.viewOrg[1] = (local_94->refdef).vieworg[1];
@@ -1643,7 +1710,7 @@ void __cdecl Rope_Update(int param_1,int param_2)
         ;
         MatrixTranspose44(local_180,local_90.screenMtx[0]);
         Rope_UpdateInternal(&local_90);
-        g_rope_sys_time = param_2;
+        g_rope_sys_time = curtime;
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
@@ -1664,16 +1731,17 @@ void __cdecl Rope_Update(int param_1,int param_2)
 
 // 0085FBB0  Rope_Render  (physics/rope.cpp:1185)
 
-void __cdecl Rope_Render(int param_1)
+void __cdecl Rope_Render(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  int local_c;
+  int ri;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Rope_Render");
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\rope.cpp",0x4ab,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -1681,10 +1749,10 @@ void __cdecl Rope_Render(int param_1)
     (*pcVar1)();
     return;
   }
-  for (local_c = 0; local_c < g_ropeCount; local_c = local_c + 1) {
-    if ((g_ropes[local_c].m_in_use != 0) &&
-       (Rope_Draw(local_c,param_1), (debug_rope->current).enabled != false)) {
-      Rope_DebugDraw(local_c);
+  for (ri = 0; ri < g_ropeCount; ri = ri + 1) {
+    if ((g_ropes[ri].m_in_use != 0) &&
+       (Rope_Draw(ri,localClientNum), (debug_rope->current).enabled != false)) {
+      Rope_DebugDraw(ri);
     }
   }
   DVar3 = GetCurrentThreadId();
@@ -1697,14 +1765,19 @@ void __cdecl Rope_Render(int param_1)
 
 // 00860000  Rope_Settle  (physics/rope.cpp:1211)
 
-void __cdecl Rope_Settle(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Rope_Settle(int rope_index)
 
 {
-  undefined4 local_8;
+  int i;
   
   if (doSettle) {
-    for (local_8 = 0; local_8 < 100; local_8 = local_8 + 1) {
-      Rope_Tick((RopeUpdateCmdData *)0x0,param_1,0.017,true);
+    for (i = 0; i < 100; i = i + 1) {
+      Rope_Tick((RopeUpdateCmdData *)0x0,rope_index,0.017,true);
     }
   }
   return;
@@ -1713,14 +1786,16 @@ void __cdecl Rope_Settle(int param_1)
 
 // 00860050  Rope_ExplosionEvent  (physics/rope.cpp:1219)
 
-void __cdecl Rope_ExplosionEvent(float *param_1,float param_2,float param_3,int param_4,int param_5)
+void __cdecl
+Rope_ExplosionEvent(float *origin,float innerRadius,float outerRadius,int innerDamage,
+                   int outerDamage)
 
 {
-  int local_8;
+  int ri;
   
-  for (local_8 = 0; local_8 < g_ropeCount; local_8 = local_8 + 1) {
-    if (g_ropes[local_8].m_in_use != 0) {
-      Rope_ExplosionEvent(local_8,param_1,param_2,param_3,param_4,param_5);
+  for (ri = 0; ri < g_ropeCount; ri = ri + 1) {
+    if (g_ropes[ri].m_in_use != 0) {
+      Rope_ExplosionEvent(ri,origin,innerRadius,outerRadius,innerDamage,outerDamage);
     }
   }
   return;
@@ -1729,9 +1804,7 @@ void __cdecl Rope_ExplosionEvent(float *param_1,float param_2,float param_3,int 
 
 // 00860790  trace_point_through_sphere  (physics/rope.cpp:1228)
 
-int __cdecl
-trace_point_through_sphere
-          (float *param_1,float *param_2,float *param_3,float param_4,float *param_5,float *param_6)
+int __cdecl trace_point_through_sphere(float *p,float *ud,float *ctr,float r,float *t,float *hitp)
 
 {
   int iVar1;
@@ -1739,23 +1812,26 @@ trace_point_through_sphere
   float fVar3;
   float fVar4;
   float fVar5;
+  float c;
+  float b;
+  float discr;
   
-  fVar2 = *param_1 - *param_3;
-  fVar3 = param_1[1] - param_3[1];
-  fVar4 = param_1[2] - param_3[2];
-  fVar5 = fVar2 * *param_2 + fVar3 * param_2[1] + fVar4 * param_2[2];
-  fVar2 = (fVar2 * fVar2 + fVar3 * fVar3 + fVar4 * fVar4) - param_4 * param_4;
+  fVar2 = *p - *ctr;
+  fVar3 = p[1] - ctr[1];
+  fVar4 = p[2] - ctr[2];
+  fVar5 = fVar2 * *ud + fVar3 * ud[1] + fVar4 * ud[2];
+  fVar2 = (fVar2 * fVar2 + fVar3 * fVar3 + fVar4 * fVar4) - r * r;
   if ((fVar2 <= 0.0) || (fVar5 <= 0.0)) {
     fVar2 = fVar5 * fVar5 - fVar2;
     if (0.0 <= fVar2) {
-      *param_5 = -fVar5 - SQRT(fVar2);
-      if (*param_5 <= 0.0 && *param_5 != 0.0) {
-        *param_5 = 0.0;
+      *t = -fVar5 - SQRT(fVar2);
+      if (*t <= 0.0 && *t != 0.0) {
+        *t = 0.0;
       }
-      fVar2 = *param_5;
-      *param_6 = fVar2 * *param_2 + *param_1;
-      param_6[1] = fVar2 * param_2[1] + param_1[1];
-      param_6[2] = fVar2 * param_2[2] + param_1[2];
+      fVar2 = *t;
+      *hitp = fVar2 * *ud + *p;
+      hitp[1] = fVar2 * ud[1] + p[1];
+      hitp[2] = fVar2 * ud[2] + p[2];
       iVar1 = 1;
     }
     else {
@@ -1771,7 +1847,7 @@ trace_point_through_sphere
 
 // 00860930  Rope_Trace  (physics/rope.cpp:1246)
 
-void __cdecl Rope_Trace(float *param_1,float *param_2)
+void __cdecl Rope_Trace(float *p0,float *p1)
 
 {
   float *pfVar1;
@@ -1786,82 +1862,84 @@ void __cdecl Rope_Trace(float *param_1,float *param_2)
   par_t *ppVar10;
   float fVar11;
   float fVar12;
-  int local_50;
-  int local_44;
-  float local_40;
-  float local_3c;
-  phys_vec3 local_34;
-  float local_1c;
+  float force;
+  int pi;
+  int vi;
+  int nverts;
+  int ri;
+  float t;
+  float vlen;
+  PIXProfile pixProfile;
+  phys_vec3 ud;
+  float mins;
   float local_18;
   float local_14;
-  float local_10;
+  float maxs;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"Rope_Trace");
-  local_34.x = *param_2 - *param_1;
-  local_34.y = param_2[1] - param_1[1];
-  local_34.z = param_2[2] - param_1[2];
-  local_3c = Abs(&local_34);
-  if (0.01 <= local_3c) {
-    fVar11 = 1.0 / local_3c;
-    local_34.x = fVar11 * local_34.x;
-    local_34.y = fVar11 * local_34.y;
-    local_34.z = fVar11 * local_34.z;
-    Vec3Min(param_1,param_2,&local_1c);
-    Vec3Max(param_1,param_2,&local_10);
-    for (local_44 = 0; prVar6 = g_ropes, local_44 < g_ropeCount; local_44 = local_44 + 1) {
-      if (g_ropes[local_44].m_in_use != 0) {
-        if (((((local_10 < g_ropes[local_44].m_min[0]) || (local_c < g_ropes[local_44].m_min[1])) ||
-             (local_8 < g_ropes[local_44].m_min[2])) ||
-            ((g_ropes[local_44].m_max[0] < local_1c || (g_ropes[local_44].m_max[1] < local_18)))) ||
-           (g_ropes[local_44].m_max[2] < local_14)) {
+  ud.x = *p1 - *p0;
+  ud.y = p1[1] - p0[1];
+  ud.z = p1[2] - p0[2];
+  vlen = Abs(&ud);
+  if (0.01 <= vlen) {
+    fVar11 = 1.0 / vlen;
+    ud.x = fVar11 * ud.x;
+    ud.y = fVar11 * ud.y;
+    ud.z = fVar11 * ud.z;
+    Vec3Min(p0,p1,&mins);
+    Vec3Max(p0,p1,&maxs);
+    for (ri = 0; prVar6 = g_ropes, ri < g_ropeCount; ri = ri + 1) {
+      if (g_ropes[ri].m_in_use != 0) {
+        if (((((maxs < g_ropes[ri].m_min[0]) || (local_c < g_ropes[ri].m_min[1])) ||
+             (local_8 < g_ropes[ri].m_min[2])) ||
+            ((g_ropes[ri].m_max[0] < mins || (g_ropes[ri].m_max[1] < local_18)))) ||
+           (g_ropes[ri].m_max[2] < local_14)) {
           bVar5 = false;
         }
         else {
           bVar5 = true;
         }
         if (bVar5) {
-          iVar4 = g_ropes[local_44].m_num_particles;
-          for (local_50 = 0; local_50 < iVar4 * 3; local_50 = local_50 + 1) {
+          iVar4 = g_ropes[ri].m_num_particles;
+          for (vi = 0; vi < iVar4 * 3; vi = vi + 1) {
             iVar8 = trace_point_through_sphere
-                              (param_1,&local_34.x,
-                               (float *)(prVar6[local_44].m_entity_anchors + local_50 * 3 + 8),
-                               radius,&local_40,&local_34.w);
-            if ((iVar8 != 0) && (local_40 < local_3c)) {
-              prVar6[local_44].m_flags = prVar6[local_44].m_flags & 0xfffffffd;
-              prVar6[local_44].m_stable_count = 0;
-              fVar12 = local_scale * prVar6[local_44].m_force_scale;
-              iVar8 = local_50 / 3;
-              ppVar9 = prVar6[local_44].m_particles + iVar8;
+                              (p0,&ud.x,(float *)(prVar6[ri].m_entity_anchors + vi * 3 + 8),radius,
+                               &t,&ud.w);
+            if ((iVar8 != 0) && (t < vlen)) {
+              prVar6[ri].m_flags = prVar6[ri].m_flags & 0xfffffffd;
+              prVar6[ri].m_stable_count = 0;
+              fVar12 = local_scale * prVar6[ri].m_force_scale;
+              iVar8 = vi / 3;
+              ppVar9 = prVar6[ri].m_particles + iVar8;
               fVar11 = ppVar9->p[0];
               fVar2 = ppVar9->p[1];
               fVar3 = ppVar9->p[2];
-              pfVar1 = prVar6[local_44].m_particles[iVar8].p0;
-              ppVar9 = prVar6[local_44].m_particles + iVar8;
+              pfVar1 = prVar6[ri].m_particles[iVar8].p0;
+              ppVar9 = prVar6[ri].m_particles + iVar8;
               ppVar9->p[0] = fVar11 * 2.0 + *pfVar1 * -1.0;
               ppVar9->p[1] = fVar2 * 2.0 + pfVar1[1] * -1.0;
               ppVar9->p[2] = fVar3 * 2.0 + pfVar1[2] * -1.0;
-              ppVar9 = prVar6[local_44].m_particles + iVar8;
-              ppVar10 = prVar6[local_44].m_particles + iVar8;
-              ppVar9->p[0] = ppVar10->p[0] + fVar12 * local_34.x;
-              ppVar9->p[1] = ppVar10->p[1] + fVar12 * local_34.y;
-              ppVar9->p[2] = ppVar10->p[2] + fVar12 * local_34.z;
-              pfVar1 = prVar6[local_44].m_particles[iVar8].p0;
+              ppVar9 = prVar6[ri].m_particles + iVar8;
+              ppVar10 = prVar6[ri].m_particles + iVar8;
+              ppVar9->p[0] = ppVar10->p[0] + fVar12 * ud.x;
+              ppVar9->p[1] = ppVar10->p[1] + fVar12 * ud.y;
+              ppVar9->p[2] = ppVar10->p[2] + fVar12 * ud.z;
+              pfVar1 = prVar6[ri].m_particles[iVar8].p0;
               *pfVar1 = fVar11;
               pfVar1[1] = fVar2;
               pfVar1[2] = fVar3;
-              if ((0 < prVar6[local_44].m_health) &&
-                 (prVar6[local_44].m_health = prVar6[local_44].m_health + -1,
-                 prVar6[local_44].m_health == 0)) {
-                DeleteConstraint(local_44);
-                if (prVar6[local_44].m_constraints[prVar6[local_44].m_num_particles + -1].type ==
+              if ((0 < prVar6[ri].m_health) &&
+                 (prVar6[ri].m_health = prVar6[ri].m_health + -1, prVar6[ri].m_health == 0)) {
+                DeleteConstraint(ri);
+                if (prVar6[ri].m_constraints[prVar6[ri].m_num_particles + -1].type ==
                     ROPE_WORLD_CONSTRAINT) {
-                  Rope_RemoveAnchor(local_44,0);
+                  Rope_RemoveAnchor(ri,0);
                 }
-                else if (prVar6[local_44].m_constraints[prVar6[local_44].m_num_particles].type ==
+                else if (prVar6[ri].m_constraints[prVar6[ri].m_num_particles].type ==
                          ROPE_WORLD_CONSTRAINT) {
-                  Rope_RemoveAnchor(local_44,prVar6[local_44].m_num_particles + -1);
+                  Rope_RemoveAnchor(ri,prVar6[ri].m_num_particles + -1);
                 }
               }
             }
@@ -1888,149 +1966,145 @@ void __cdecl Rope_Trace(float *param_1,float *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Rope_CollideWorld(int param_1)
+void __cdecl Rope_CollideWorld(int rope_index)
 
 {
   float fVar1;
-  int local_7e0;
-  float local_7dc;
-  contact_t *local_7d8;
-  int local_7d4;
-  float local_7d0;
-  phys_vec3 local_7cc;
+  int hint_2;
+  float d;
+  contact_t *contact;
+  int hint;
+  float len;
+  phys_vec3 dir;
   col_prim_t_u_4 local_7bc;
   float local_7b8;
-  float local_7b4;
+  float p1;
   float local_7b0;
   float local_7ac;
-  float *local_7a8;
-  float local_7a4;
+  float *par;
+  float pi;
   float local_7a0;
   float local_79c;
-  float local_798;
+  float p2;
   float local_794;
   float local_790;
-  float local_78c;
+  float p0;
   float local_788;
   float local_784;
-  int local_780;
-  float local_77c;
+  int i;
+  float fudge_vec;
   float local_778;
   float local_774;
-  float local_770;
+  float expand_vec;
   float local_76c;
   float local_768;
-  colgeom_visitor_inlined_t<200> local_764;
-  col_context_t local_a8;
-  col_prim_t_u_4 local_80;
-  float4 local_7c;
+  colgeom_visitor_inlined_t<200> visitor;
+  col_context_t context;
+  col_prim_t_u_4 rope;
+  float4 trace;
   float local_6c;
-  int local_44;
-  float4 local_40;
+  int mask;
+  float4 trace1;
   col_prim_t_u_4 local_30;
   col_prim_t_u_4 local_8;
   
   local_8.tree = (CollisionAabbTree *)(__security_cookie ^ (uint)&stack0xfffffffc);
-  local_80.tree = (CollisionAabbTree *)(g_ropes + param_1);
-  colgeom_visitor_t::colgeom_visitor_t((colgeom_visitor_t *)&local_764);
-  local_764._padding_ = (int)colgeom_visitor_inlined_t<200>::vftable;
-  colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)&local_764);
-  local_44 = 0x280ec93;
-  local_7c.v[0] = 0.0;
-  local_7c.v[1] = 0.0;
-  local_7c.v[2] = 0.0;
-  local_7c.v[3] = 0.0;
-  local_40.v[0] = 0.0;
-  local_40.v[1] = 0.0;
-  local_40.v[2] = 0.0;
-  local_40.v[3] = 0.0;
-  col_context_t::col_context_t(&local_a8);
-  if (local_80.tree[0x61].halfSize[2] != 0.0) {
-    colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)&local_764);
+  rope.tree = (CollisionAabbTree *)(g_ropes + rope_index);
+  colgeom_visitor_t::colgeom_visitor_t((colgeom_visitor_t *)&visitor);
+  visitor._padding_ = (int)colgeom_visitor_inlined_t<200>::vftable;
+  colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)&visitor);
+  mask = 0x280ec93;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  trace1.v[0] = 0.0;
+  trace1.v[1] = 0.0;
+  trace1.v[2] = 0.0;
+  trace1.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  if (rope.tree[0x61].halfSize[2] != 0.0) {
+    colgeom_visitor_inlined_t<500>::reset((colgeom_visitor_inlined_t<500> *)&visitor);
     fVar1 = ex;
-    local_77c = ex;
+    fudge_vec = ex;
     local_778 = ex;
     local_774 = ex;
-    local_80.tree[0x60].halfSize[1] = local_80.tree[0x60].halfSize[1] + ex;
-    local_80.tree[0x60].halfSize[2] = local_80.tree[0x60].halfSize[2] + fVar1;
-    local_80.tree[0x60].u = (CollisionAabbTreeIndex)(local_80.tree[0x60].u + fVar1);
-    local_80.tree[0x60].origin[2] = local_80.tree[0x60].origin[2] - fVar1;
-    *(float *)&local_80.tree[0x60].materialIndex =
-         *(float *)&local_80.tree[0x60].materialIndex - fVar1;
-    local_80.tree[0x60].halfSize[0] = local_80.tree[0x60].halfSize[0] - fVar1;
-    local_770 = 1.0;
+    rope.tree[0x60].halfSize[1] = rope.tree[0x60].halfSize[1] + ex;
+    rope.tree[0x60].halfSize[2] = rope.tree[0x60].halfSize[2] + fVar1;
+    rope.tree[0x60].u = (CollisionAabbTreeIndex)(rope.tree[0x60].u + fVar1);
+    rope.tree[0x60].origin[2] = rope.tree[0x60].origin[2] - fVar1;
+    *(float *)&rope.tree[0x60].materialIndex = *(float *)&rope.tree[0x60].materialIndex - fVar1;
+    rope.tree[0x60].halfSize[0] = rope.tree[0x60].halfSize[0] - fVar1;
+    expand_vec = 1.0;
     local_76c = 1.0;
     local_768 = 1.0;
     colgeom_visitor_inlined_t<200>::update
-              (&local_764,local_80.tree[0x60].origin + 2,local_80.tree[0x60].halfSize + 1,local_44,
-               &local_770);
-    local_a8.prims = local_764.prims;
-    local_a8.nprims = local_764.nprims;
-    for (local_780 = 0; local_780 < local_80.tree[0x39].u.firstChildIndex; local_780 = local_780 + 1
-        ) {
-      local_7a8 = (float *)(local_780 * 0x28 + (int)local_80.tree);
-      local_7a8[9] = (float)((uint)local_7a8[9] & 0xfffffffc);
+              (&visitor,rope.tree[0x60].origin + 2,rope.tree[0x60].halfSize + 1,mask,&expand_vec);
+    context.prims = visitor.prims;
+    context.nprims = visitor.nprims;
+    for (i = 0; i < rope.tree[0x39].u.firstChildIndex; i = i + 1) {
+      par = (float *)(i * 0x28 + (int)rope.tree);
+      par[9] = (float)((uint)par[9] & 0xfffffffc);
       if (g_num_contacts < 600) {
-        local_78c = local_7a8[6];
-        local_788 = local_7a8[7];
-        local_784 = local_7a8[8];
-        local_7b4 = *local_7a8;
-        local_7b0 = local_7a8[1];
-        local_7ac = local_7a8[2];
-        local_7cc.x = local_7b4 - local_78c;
-        local_7cc.y = local_7b0 - local_788;
-        local_7cc.z = local_7ac - local_784;
-        local_7d0 = Abs(&local_7cc);
-        if (0.001 <= local_7d0) {
-          local_7d4 = -1;
-          trace_point_vs_env((trace_t *)&local_7c,&local_78c,&local_7b4,&local_a8,&local_7d4);
+        p0 = par[6];
+        local_788 = par[7];
+        local_784 = par[8];
+        p1 = *par;
+        local_7b0 = par[1];
+        local_7ac = par[2];
+        dir.x = p1 - p0;
+        dir.y = local_7b0 - local_788;
+        dir.z = local_7ac - local_784;
+        len = Abs(&dir);
+        if (0.001 <= len) {
+          hint = -1;
+          trace_point_vs_env((trace_t *)&trace,&p0,&p1,&context,&hint);
           if (1.0 <= local_6c) {
-            Vec3Copy(local_7a8,local_7a8 + 6);
+            Vec3Copy(par,par + 6);
           }
           else {
-            local_7d8 = g_contacts + g_num_contacts;
+            contact = g_contacts + g_num_contacts;
             g_num_contacts = g_num_contacts + 1;
-            Vec3Lerp(&local_78c,&local_7b4,local_6c * 0.99,&local_7a4);
-            local_7dc = (local_7b4 - local_7a4) * local_7c.v[0] +
-                        (local_7b0 - local_7a0) * local_7c.v[1] +
-                        (local_7ac - local_79c) * local_7c.v[2];
-            local_7dc = local_7dc - ABS(local_7dc) * 0.01;
-            fVar1 = -local_7dc;
-            local_7cc.x = fVar1 * local_7c.v[0] + (local_7b4 - local_7a4);
-            local_7cc.y = fVar1 * local_7c.v[1] + (local_7b0 - local_7a0);
-            local_7cc.z = fVar1 * local_7c.v[2] + (local_7ac - local_79c);
-            local_798 = local_7a4 + local_7cc.x;
-            local_794 = local_7a0 + local_7cc.y;
-            local_790 = local_79c + local_7cc.z;
-            local_7e0 = -1;
-            trace_point_vs_env((trace_t *)&local_40,&local_7a4,&local_798,&local_a8,&local_7e0);
+            Vec3Lerp(&p0,&p1,local_6c * 0.99,&pi);
+            fVar1 = (p1 - pi) * trace.v[0] + (local_7b0 - local_7a0) * trace.v[1] +
+                    (local_7ac - local_79c) * trace.v[2];
+            d = fVar1 - ABS(fVar1) * 0.01;
+            fVar1 = -d;
+            dir.x = fVar1 * trace.v[0] + (p1 - pi);
+            dir.y = fVar1 * trace.v[1] + (local_7b0 - local_7a0);
+            dir.z = fVar1 * trace.v[2] + (local_7ac - local_79c);
+            p2 = pi + dir.x;
+            local_794 = local_7a0 + dir.y;
+            local_790 = local_79c + dir.z;
+            hint_2 = -1;
+            trace_point_vs_env((trace_t *)&trace1,&pi,&p2,&context,&hint_2);
             if (1.0 <= (float)local_30) {
-              local_7cc.w = local_7c.v[0];
-              local_7bc = (col_prim_t_u_4)local_7c.v[1];
-              local_7b8 = local_7c.v[2];
+              dir.w = trace.v[0];
+              local_7bc = (col_prim_t_u_4)trace.v[1];
+              local_7b8 = trace.v[2];
             }
             else {
-              local_7cc.w = (local_7c.v[0] + local_40.v[0]) * 1.0;
-              local_7bc = (col_prim_t_u_4)((local_7c.v[1] + local_40.v[1]) * 1.0);
-              local_7b8 = (local_7c.v[2] + local_40.v[2]) * 1.0;
-              Vec3Lerp(&local_7a4,&local_798,(float)local_30,&local_7a4);
+              dir.w = (trace.v[0] + trace1.v[0]) * 1.0;
+              local_7bc = (col_prim_t_u_4)((trace.v[1] + trace1.v[1]) * 1.0);
+              local_7b8 = (trace.v[2] + trace1.v[2]) * 1.0;
+              Vec3Lerp(&pi,&p2,(float)local_30,&pi);
             }
             fVar1 = fudge;
-            local_7d8->point[0] = fudge * local_7cc.w + local_7a4;
-            local_7d8->point[1] = fVar1 * (float)local_7bc + local_7a0;
-            local_7d8->point[2] = fVar1 * local_7b8 + local_79c;
-            local_7a8[6] = local_7cc.w * 1.0 + local_7a4;
-            local_7a8[7] = (float)local_7bc * 1.0 + local_7a0;
-            local_7a8[8] = local_7b8 * 1.0 + local_79c;
-            local_7d8->particle_index = local_780;
-            local_7d8->normal[0] = local_7cc.w;
-            *(col_prim_t_u_4 *)(local_7d8->normal + 1) = local_7bc;
-            local_7d8->normal[2] = local_7b8;
+            contact->point[0] = fudge * dir.w + pi;
+            contact->point[1] = fVar1 * (float)local_7bc + local_7a0;
+            contact->point[2] = fVar1 * local_7b8 + local_79c;
+            par[6] = dir.w * 1.0 + pi;
+            par[7] = (float)local_7bc * 1.0 + local_7a0;
+            par[8] = local_7b8 * 1.0 + local_79c;
+            contact->particle_index = i;
+            contact->normal[0] = dir.w;
+            *(col_prim_t_u_4 *)(contact->normal + 1) = local_7bc;
+            contact->normal[2] = local_7b8;
             if (local_7b8 <= 0.8) {
-              local_7a8[9] = (float)((uint)local_7a8[9] | 2);
+              par[9] = (float)((uint)par[9] | 2);
             }
             else {
-              local_7a8[9] = (float)((uint)local_7a8[9] | 1);
+              par[9] = (float)((uint)par[9] | 1);
             }
           }
         }
@@ -2043,7 +2117,7 @@ void __cdecl Rope_CollideWorld(int param_1)
 
 // 00861730  Rope_CollideEntitiesHelper  (physics/rope.cpp:1405)
 
-void __cdecl Rope_CollideEntitiesHelper(int param_1,float *param_2)
+void __cdecl Rope_CollideEntitiesHelper(int rope_index,float *origin)
 
 {
   float fVar1;
@@ -2058,17 +2132,19 @@ void __cdecl Rope_CollideEntitiesHelper(int param_1,float *param_2)
   float fVar10;
   float fVar11;
   float fVar12;
-  int local_30;
+  float dist;
+  float dist2;
+  int pi;
   
   prVar6 = g_ropes;
-  fVar1 = *param_2;
-  fVar2 = param_2[1];
-  for (local_30 = 0; local_30 < prVar6[param_1].m_num_particles; local_30 = local_30 + 1) {
-    ppVar7 = prVar6[param_1].m_particles + local_30;
+  fVar1 = *origin;
+  fVar2 = origin[1];
+  for (pi = 0; pi < prVar6[rope_index].m_num_particles; pi = pi + 1) {
+    ppVar7 = prVar6[rope_index].m_particles + pi;
     fVar3 = ppVar7->p[0];
     fVar4 = ppVar7->p[1];
     fVar5 = ppVar7->p[2];
-    if ((param_2[2] + 10.0 < fVar5) && (fVar5 < param_2[2] + 60.0)) {
+    if ((origin[2] + 10.0 < fVar5) && (fVar5 < origin[2] + 60.0)) {
       fVar8 = fVar3 - fVar1;
       fVar9 = fVar4 - fVar2;
       fVar10 = fVar5 - fVar5;
@@ -2100,26 +2176,28 @@ void __cdecl Rope_CollideEntitiesHelper(int param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Rope_CollideEntities(int param_1)
+void __cdecl Rope_CollideEntities(int rope_index)
 
 {
   bool bVar1;
   int iVar2;
   centity_s *pcVar3;
-  int local_58;
-  int local_4c [17];
-  rope_t *local_8;
+  centity_s *cent;
+  int i;
+  int numEnts;
+  int entitylist [17];
+  rope_t *rope;
   
-  local_8 = g_ropes + param_1;
-  if (local_8->m_in_use != 0) {
+  rope = g_ropes + rope_index;
+  if (rope->m_in_use != 0) {
     bVar1 = CL_LocalClient_IsActive(0);
     if ((bVar1) && (cg_pmove[0].ps != (playerState_s *)0x0)) {
-      Rope_CollideEntitiesHelper(param_1,(cg_pmove[0].ps)->origin);
+      Rope_CollideEntitiesHelper(rope_index,(cg_pmove[0].ps)->origin);
     }
-    iVar2 = CG_AreaEntities(local_8->m_min,local_8->m_max,local_4c,0x10,0x2008000);
-    for (local_58 = 0; local_58 < iVar2; local_58 = local_58 + 1) {
-      pcVar3 = CG_GetEntity(0,local_4c[local_58]);
-      Rope_CollideEntitiesHelper(param_1,(pcVar3->pose).origin);
+    iVar2 = CG_AreaEntities(rope->m_min,rope->m_max,entitylist,0x10,0x2008000);
+    for (i = 0; i < iVar2; i = i + 1) {
+      pcVar3 = CG_GetEntity(0,entitylist[i]);
+      Rope_CollideEntitiesHelper(rope_index,(pcVar3->pose).origin);
     }
   }
   return;

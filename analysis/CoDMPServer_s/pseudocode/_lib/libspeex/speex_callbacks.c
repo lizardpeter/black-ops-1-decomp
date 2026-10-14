@@ -2,18 +2,19 @@
 
 // 007DCFB0  speex_inband_handler  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex_callbacks.c:43)
 
-int __cdecl speex_inband_handler(SpeexBits *param_1,SpeexCallback *param_2,void *param_3)
+int __cdecl speex_inband_handler(SpeexBits *state,SpeexCallback *param_2,void *param_3)
 
 {
   uint uVar1;
   int iVar2;
   int extraout_EDX;
   int unaff_ESI;
+  SpeexCallback *callback_list;
   
   uVar1 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000004,unaff_ESI);
-  if ((code *)(&param_1->nbBits)[uVar1 * 5] != (code *)0x0) {
-    iVar2 = (*(code *)(&param_1->nbBits)[uVar1 * 5])
-                      (extraout_EDX,param_2,(&param_1->charPtr)[uVar1 * 5]);
+  if ((code *)(&state->nbBits)[uVar1 * 5] != (code *)0x0) {
+    iVar2 = (*(code *)(&state->nbBits)[uVar1 * 5])
+                      (extraout_EDX,param_2,(&state->charPtr)[uVar1 * 5]);
     return iVar2;
   }
   if ((int)uVar1 < 2) {
@@ -45,13 +46,14 @@ int __cdecl speex_inband_handler(SpeexBits *param_1,SpeexCallback *param_2,void 
 
 // 007DD060  speex_default_user_handler  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/speex_callbacks.c:136)
 
-int __cdecl speex_default_user_handler(SpeexBits *param_1,void *param_2,void *param_3)
+int __cdecl speex_default_user_handler(SpeexBits *state,void *data,void *param_3)
 
 {
   int iVar1;
   uint uVar2;
   int extraout_EDX;
   int unaff_EDI;
+  SpeexBits *bits;
   
   uVar2 = speex_bits_unpack_unsigned((SpeexBits *)&DAT_00000004,unaff_EDI);
   iVar1 = uVar2 * 8 + 5;

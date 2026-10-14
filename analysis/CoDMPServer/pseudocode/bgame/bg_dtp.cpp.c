@@ -5,6 +5,8 @@
 void __cdecl Dtp_RegisterDvars(void)
 
 {
+  ushort flags;
+  
   dtp = _Dvar_RegisterBool("dtp",true,0x4080,"Turn on/off the dive to prone functionality");
   dtp_debug = _Dvar_RegisterBool("dtp_debug",false,0x4080,
                                  "Turn on/off dive to prone debug draw path");
@@ -54,28 +56,30 @@ void __cdecl Dtp_RegisterDvars(void)
 
 // 00417FA0  Dtp_CalcSurfaceType  (bgame/bg_dtp.cpp:55)
 
-int __cdecl Dtp_CalcSurfaceType(pmove_t *param_1,pml_t *param_2)
+int __cdecl Dtp_CalcSurfaceType(pmove_t *pm,pml_t *pml)
 
 {
   int iVar1;
+  int dtp_stype;
+  int stype;
   
-  iVar1 = PM_GroundSurfaceType(param_1->ps,param_2);
+  iVar1 = PM_GroundSurfaceType(pm->ps,pml);
   return Dtp_SurfaceRemapTable[iVar1];
 }
 
 
 // 00417FD0  Dtp_IsSliding  (bgame/bg_dtp.cpp:62)
 
-int __cdecl Dtp_IsSliding(playerState_s *param_1)
+int __cdecl Dtp_IsSliding(playerState_s *ps)
 
 {
   uint uVar1;
   
-  if (((dtp->current).enabled == false) || ((param_1->pm_flags & 0x400000U) == 0)) {
+  if (((dtp->current).enabled == false) || ((ps->pm_flags & 0x400000U) == 0)) {
     uVar1 = 0;
   }
   else {
-    uVar1 = (uint)(param_1->jumpTime < 0);
+    uVar1 = (uint)(ps->jumpTime < 0);
   }
   return uVar1;
 }
@@ -83,7 +87,7 @@ int __cdecl Dtp_IsSliding(playerState_s *param_1)
 
 // 00418010  Dtp_AdjustDamage  (bgame/bg_dtp.cpp:71)
 
-void __cdecl Dtp_AdjustDamage(playerState_s *param_1,float param_2,int *param_3)
+void __cdecl Dtp_AdjustDamage(playerState_s *ps,float fallHeight,int *damage)
 
 {
   code *pcVar1;
@@ -91,7 +95,7 @@ void __cdecl Dtp_AdjustDamage(playerState_s *param_1,float param_2,int *param_3)
   int local_10;
   int local_8;
   
-  if (((dtp->current).enabled != false) && ((param_1->pm_flags & 0x400000U) != 0)) {
+  if (((dtp->current).enabled != false) && ((ps->pm_flags & 0x400000U) != 0)) {
     if (((dtp_fall_damage_min_height->current).value <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x4a,0,"%s")
        , !bVar2)) {
@@ -108,12 +112,12 @@ void __cdecl Dtp_AdjustDamage(playerState_s *param_1,float param_2,int *param_3)
       (*pcVar1)();
       return;
     }
-    if ((dtp_fall_damage_min_height->current).value < param_2) {
-      if (param_2 < (dtp_fall_damage_max_height->current).value) {
-        *param_3 = (int)(((param_2 - (dtp_fall_damage_min_height->current).value) /
-                         ((dtp_fall_damage_max_height->current).value -
-                         (dtp_fall_damage_min_height->current).value)) * 100.0);
-        local_8 = *param_3;
+    if ((dtp_fall_damage_min_height->current).value < fallHeight) {
+      if (fallHeight < (dtp_fall_damage_max_height->current).value) {
+        *damage = (int)(((fallHeight - (dtp_fall_damage_min_height->current).value) /
+                        ((dtp_fall_damage_max_height->current).value -
+                        (dtp_fall_damage_min_height->current).value)) * 100.0);
+        local_8 = *damage;
         if (99 < local_8) {
           local_8 = 100;
         }
@@ -123,14 +127,14 @@ void __cdecl Dtp_AdjustDamage(playerState_s *param_1,float param_2,int *param_3)
         else {
           local_10 = local_8;
         }
-        *param_3 = local_10;
+        *damage = local_10;
       }
       else {
-        *param_3 = 100;
+        *damage = 100;
       }
     }
     else {
-      *param_3 = 0;
+      *damage = 0;
     }
   }
   return;
@@ -139,7 +143,7 @@ void __cdecl Dtp_AdjustDamage(playerState_s *param_1,float param_2,int *param_3)
 
 // 00418900  Dtp_Start  (bgame/bg_dtp.cpp:93)
 
-void __cdecl Dtp_Start(pmove_t *param_1,pml_t *param_2,float param_3)
+void __cdecl Dtp_Start(pmove_t *pm,pml_t *pml,float _height)
 
 {
   float fVar1;
@@ -147,8 +151,10 @@ void __cdecl Dtp_Start(pmove_t *param_1,pml_t *param_2,float param_3)
   int iVar3;
   code *pcVar4;
   bool bVar5;
+  float velocitySqrd;
+  playerState_s *ps;
   
-  ppVar2 = param_1->ps;
+  ppVar2 = pm->ps;
   if (ppVar2 == (playerState_s *)0x0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x62,0,"%s");
     if (!bVar5) {
@@ -159,17 +165,17 @@ void __cdecl Dtp_Start(pmove_t *param_1,pml_t *param_2,float param_3)
   }
   fVar1 = (jump_height->current).value;
   iVar3 = ppVar2->gravity;
-  param_2->groundPlane = 0;
-  param_2->almostGroundPlane = 0;
-  param_2->walking = 0;
+  pml->groundPlane = 0;
+  pml->almostGroundPlane = 0;
+  pml->walking = 0;
   ppVar2->groundEntityNum = 0x3ff;
-  ppVar2->jumpTime = (param_1->cmd).serverTime;
+  ppVar2->jumpTime = (pm->cmd).serverTime;
   ppVar2->velocity[2] = SQRT(fVar1 * 2.0 * (float)iVar3);
   if ((dtp_new_trajectory->current).enabled != false) {
     ppVar2->velocity[2] = ppVar2->velocity[2] * (dtp_new_trajectory_multiplier->current).value;
   }
   ppVar2->pm_flags = ppVar2->pm_flags | 0x400000;
-  BG_AnimScriptEvent(param_1,ANIM_ET_DTP_TAKEOFF,0,1);
+  BG_AnimScriptEvent(pm,ANIM_ET_DTP_TAKEOFF,0,1);
   ppVar2->pm_flags = ppVar2->pm_flags & 0xffdfbe7f;
   ppVar2->pm_time = 0;
   ppVar2->jumpOriginZ = ppVar2->origin[2];
@@ -179,60 +185,60 @@ void __cdecl Dtp_Start(pmove_t *param_1,pml_t *param_2,float param_3)
 
 // 004182D0  Dtp_End  (bgame/bg_dtp.cpp:126)
 
-void __cdecl Dtp_End(pmove_t *param_1)
+void __cdecl Dtp_End(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   
-  param_1->ps->pm_flags = param_1->ps->pm_flags & 0xffbfffff;
-  param_1->ps->jumpTime = 0;
-  ppVar1 = param_1->ps;
+  pm->ps->pm_flags = pm->ps->pm_flags & 0xffbfffff;
+  pm->ps->jumpTime = 0;
+  ppVar1 = pm->ps;
   ppVar1->velocity[0] = 0.0;
   ppVar1->velocity[1] = 0.0;
   ppVar1->velocity[2] = 0.0;
-  param_1->ps->lastDtpEnd = (param_1->cmd).serverTime;
-  (param_1->ps->sprintState).sprintButtonUpRequired = 0;
+  pm->ps->lastDtpEnd = (pm->cmd).serverTime;
+  (pm->ps->sprintState).sprintButtonUpRequired = 0;
   return;
 }
 
 
 // 00418160  Dtp_Interrupt  (bgame/bg_dtp.cpp:135)
 
-void __cdecl Dtp_Interrupt(pmove_t *param_1)
+void __cdecl Dtp_Interrupt(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   
-  param_1->ps->pm_flags = param_1->ps->pm_flags & 0xffbfffff;
-  param_1->ps->jumpTime = 0;
-  ppVar1 = param_1->ps;
+  pm->ps->pm_flags = pm->ps->pm_flags & 0xffbfffff;
+  pm->ps->jumpTime = 0;
+  ppVar1 = pm->ps;
   ppVar1->velocity[0] = 0.0;
   ppVar1->velocity[1] = 0.0;
   ppVar1->velocity[2] = 0.0;
-  param_1->ps->lastDtpEnd =
-       ((param_1->cmd).serverTime - (int)(dtp_post_move_pause->current).value) + -1;
-  if (param_1->ps->lastDtpEnd < 0) {
-    param_1->ps->lastDtpEnd = 0;
+  pm->ps->lastDtpEnd = ((pm->cmd).serverTime - (int)(dtp_post_move_pause->current).value) + -1;
+  if (pm->ps->lastDtpEnd < 0) {
+    pm->ps->lastDtpEnd = 0;
   }
-  (param_1->ps->sprintState).sprintButtonUpRequired = 0;
+  (pm->ps->sprintState).sprintButtonUpRequired = 0;
   return;
 }
 
 
 // 00418220  Dtp_CheckForEnd  (bgame/bg_dtp.cpp:145)
 
-void __cdecl Dtp_CheckForEnd(pmove_t *param_1)
+void __cdecl Dtp_CheckForEnd(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
+  float vel2;
   
-  if ((((dtp->current).enabled != false) && ((param_1->ps->pm_flags & 0x400000U) != 0)) &&
-     (param_1->ps->jumpTime < 0)) {
-    ppVar1 = param_1->ps;
+  if ((((dtp->current).enabled != false) && ((pm->ps->pm_flags & 0x400000U) != 0)) &&
+     (pm->ps->jumpTime < 0)) {
+    ppVar1 = pm->ps;
     if (ppVar1->velocity[0] * ppVar1->velocity[0] + ppVar1->velocity[1] * ppVar1->velocity[1] +
         ppVar1->velocity[2] * ppVar1->velocity[2] <
         (dtp_min_speed->current).value * (dtp_min_speed->current).value) {
-      Dtp_End(param_1);
+      Dtp_End(pm);
     }
   }
   return;
@@ -243,7 +249,7 @@ void __cdecl Dtp_CheckForEnd(pmove_t *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-float __cdecl Dtp_ReduceFriction(pmove_t *param_1,playerState_s *param_2)
+float __cdecl Dtp_ReduceFriction(pmove_t *pm,playerState_s *ps)
 
 {
   code *pcVar1;
@@ -251,18 +257,19 @@ float __cdecl Dtp_ReduceFriction(pmove_t *param_1,playerState_s *param_2)
   bool bVar3;
   int iVar4;
   float10 fVar5;
-  float local_58;
+  int delta;
+  float start;
   float local_54;
   float local_50;
-  float4 local_4c;
+  float4 trace;
   float local_3c;
   uint local_14;
-  float local_10;
+  float point;
   float local_c;
   float local_8;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2->pm_flags & 0x400000U) == 0) {
+  if ((ps->pm_flags & 0x400000U) == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x9f,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
@@ -270,25 +277,24 @@ float __cdecl Dtp_ReduceFriction(pmove_t *param_1,playerState_s *param_2)
       return (float)fVar5;
     }
   }
-  local_4c.v[0] = 0.0;
-  local_4c.v[1] = 0.0;
-  local_4c.v[2] = 0.0;
-  local_4c.v[3] = 0.0;
-  if (param_2->jumpTime < 0) {
-    iVar4 = (param_1->cmd).serverTime + param_1->ps->jumpTime;
-    local_58 = param_2->origin[0];
-    local_54 = param_2->origin[1];
-    local_50 = param_2->origin[2] + 1.0;
-    local_10 = param_2->origin[0];
-    local_c = param_2->origin[1];
-    local_8 = param_2->origin[2] - 1.0;
-    PM_trace(param_1,(trace_t *)&local_4c,&local_58,param_1->mins,param_1->maxs,&local_10,
-             (uint)param_2->clientNum,0x1000000);
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if (ps->jumpTime < 0) {
+    iVar4 = (pm->cmd).serverTime + pm->ps->jumpTime;
+    start = ps->origin[0];
+    local_54 = ps->origin[1];
+    local_50 = ps->origin[2] + 1.0;
+    point = ps->origin[0];
+    local_c = ps->origin[1];
+    local_8 = ps->origin[2] - 1.0;
+    PM_trace(pm,(trace_t *)&trace,&start,pm->mins,pm->maxs,&point,(uint)ps->clientNum,0x1000000);
     if ((1.0 <= local_3c) ||
        ((dtp_max_slide_duration->current).value + (dtp_max_slide_addition->current).value <=
         (float)iVar4)) {
       if ((dtp_max_slide_duration->current).value <= (float)iVar4) {
-        Dtp_End(param_1);
+        Dtp_End(pm);
         fVar2 = 1.0;
       }
       else {
@@ -308,39 +314,39 @@ float __cdecl Dtp_ReduceFriction(pmove_t *param_1,playerState_s *param_2)
 
 // 00418550  Dtp_AirMove  (bgame/bg_dtp.cpp:193)
 
-void __cdecl Dtp_AirMove(playerState_s *param_1,pmove_t *param_2)
+void __cdecl Dtp_AirMove(playerState_s *ps,pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_c;
   
-  if (((param_1->pm_flags & 0x400000U) == 0) &&
+  if (((ps->pm_flags & 0x400000U) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0xc2,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((dtp_debug->current).enabled != false) && (param_2->handler == '\0')) {
+  if (((dtp_debug->current).enabled != false) && (pm->handler == '\0')) {
     if ((dtp_new_trajectory->current).enabled == false) {
-      G_DebugStar(param_1->origin,colorYellow,0x5dc);
+      G_DebugStar(ps->origin,colorYellow,0x5dc);
     }
     else {
-      G_DebugStar(param_1->origin,colorRed,0x5dc);
+      G_DebugStar(ps->origin,colorRed,0x5dc);
     }
   }
   if (((dtp_new_trajectory->current).enabled != false) &&
-     (param_1->jumpOriginZ + (jump_height->current).value <= param_1->origin[2])) {
-    if ((param_2->cmd).serverTime - param_1->jumpTime < (dtp_max_apex_duration->current).integer) {
-      param_1->velocity[2] = 0.0;
+     (ps->jumpOriginZ + (jump_height->current).value <= ps->origin[2])) {
+    if ((pm->cmd).serverTime - ps->jumpTime < (dtp_max_apex_duration->current).integer) {
+      ps->velocity[2] = 0.0;
     }
     else {
-      local_c = param_1->velocity[2];
+      local_c = ps->velocity[2];
       if (0.0 - local_c < 0.0) {
         local_c = 0.0;
       }
-      param_1->velocity[2] = local_c;
+      ps->velocity[2] = local_c;
     }
   }
   return;
@@ -349,20 +355,21 @@ void __cdecl Dtp_AirMove(playerState_s *param_1,pmove_t *param_2)
 
 // 004186A0  Dtp_CanMove  (bgame/bg_dtp.cpp:229)
 
-int __cdecl Dtp_CanMove(pmove_t *param_1)
+int __cdecl Dtp_CanMove(pmove_t *pm)
 
 {
   int iVar1;
+  int timeSinceLastDtp;
   
-  if (((((dtp->current).enabled != false) && ((param_1->ps->pm_flags & 0x400000U) != 0)) &&
-      (0 < param_1->ps->waterlevel)) &&
-     (((dtp_new_trajectory->current).enabled == false || (param_1->ps->velocity[2] <= 0.0)))) {
-    Dtp_Interrupt(param_1);
+  if (((((dtp->current).enabled != false) && ((pm->ps->pm_flags & 0x400000U) != 0)) &&
+      (0 < pm->ps->waterlevel)) &&
+     (((dtp_new_trajectory->current).enabled == false || (pm->ps->velocity[2] <= 0.0)))) {
+    Dtp_Interrupt(pm);
   }
-  if ((((dtp->current).enabled == false) || ((param_1->ps->pm_flags & 0x400000U) != 0)) ||
-     ((param_1->ps->lastDtpEnd == 0 ||
-      ((dtp_post_move_pause->current).value <=
-       (float)((param_1->cmd).serverTime - param_1->ps->lastDtpEnd))))) {
+  if ((((dtp->current).enabled == false) || ((pm->ps->pm_flags & 0x400000U) != 0)) ||
+     ((pm->ps->lastDtpEnd == 0 ||
+      ((dtp_post_move_pause->current).value <= (float)((pm->cmd).serverTime - pm->ps->lastDtpEnd))))
+     ) {
     iVar1 = 1;
   }
   else {
@@ -374,7 +381,7 @@ int __cdecl Dtp_CanMove(pmove_t *param_1)
 
 // 00418A20  Dtp_IsDtp  (bgame/bg_dtp.cpp:257)
 
-int __cdecl Dtp_IsDtp(pmove_t *param_1,playerState_s *param_2)
+int __cdecl Dtp_IsDtp(pmove_t *pm,playerState_s *ps)
 
 {
   bool bVar1;
@@ -384,16 +391,15 @@ int __cdecl Dtp_IsDtp(pmove_t *param_1,playerState_s *param_2)
     iVar2 = 0;
   }
   else {
-    bVar1 = BG_WeaponBlocksProne((uint)param_2->weapon);
+    bVar1 = BG_WeaponBlocksProne((uint)ps->weapon);
     if (bVar1) {
       iVar2 = 0;
     }
-    else if ((param_2->sprintState).lastSprintEnd == (param_1->cmd).serverTime) {
-      bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0x2c);
+    else if ((ps->sprintState).lastSprintEnd == (pm->cmd).serverTime) {
+      bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,0x2c);
       if (bVar1) {
         if ((dtp_min_speed->current).value * (dtp_min_speed->current).value <
-            param_2->velocity[0] * param_2->velocity[0] +
-            param_2->velocity[1] * param_2->velocity[1]) {
+            ps->velocity[0] * ps->velocity[0] + ps->velocity[1] * ps->velocity[1]) {
           iVar2 = 1;
         }
         else {
@@ -414,52 +420,57 @@ int __cdecl Dtp_IsDtp(pmove_t *param_1,playerState_s *param_2)
 
 // 00418760  Dtp_Update  (bgame/bg_dtp.cpp:287)
 
-int __cdecl Dtp_Update(pmove_t *param_1,pml_t *param_2)
+int __cdecl Dtp_Update(pmove_t *pm,pml_t *pml)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  float fVar6;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uint uVar4;
+  float fVar5;
+  int dtp_stype_2;
+  int sprintDuration;
+  int timeSinceLastDtp;
+  int dtp_stype;
+  playerState_s *ps;
   
   if ((dtp->current).enabled != false) {
-    if ((param_1 == (pmove_t *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x123,0,"%s"
-                                ), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if ((pm == (pmove_t *)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x123,0,"%s"
+                                ), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
-    ppVar1 = param_1->ps;
-    if ((ppVar1 == (playerState_s *)0x0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x126,0,"%s"
-                                ), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    ps_00 = pm->ps;
+    if ((ps_00 == (playerState_s *)0x0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_dtp.cpp",0x126,0,"%s"
+                                ), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
-    if ((ppVar1->pm_flags & 0x400000U) != 0) {
-      if (0 < ppVar1->jumpTime) {
-        uVar5 = Dtp_CalcSurfaceType(param_1,param_2);
-        BG_AddPredictableEventToPlayerstate(0xbb,uVar5,ppVar1);
-        BG_AnimScriptEvent(param_1,ANIM_ET_DTP_LAND,1,1);
-        ppVar1->jumpTime = -(param_1->cmd).serverTime;
+    if ((ps_00->pm_flags & 0x400000U) != 0) {
+      if (0 < ps_00->jumpTime) {
+        uVar4 = Dtp_CalcSurfaceType(pm,pml);
+        BG_AddPredictableEventToPlayerstate(0xbb,uVar4,ps_00);
+        BG_AnimScriptEvent(pm,ANIM_ET_DTP_LAND,1,1);
+        ps_00->jumpTime = -(pm->cmd).serverTime;
       }
       return 1;
     }
-    iVar4 = Dtp_IsDtp(param_1,ppVar1);
-    if ((iVar4 == 1) &&
-       (((iVar4 = (param_1->cmd).serverTime - ppVar1->lastDtpEnd, fVar6 = (float)iVar4,
-         (dtp_exhaustion_window->current).value <= fVar6 &&
-         fVar6 != (dtp_exhaustion_window->current).value || (iVar4 < 0)) &&
-        (fVar6 = (float)((param_1->cmd).serverTime - (ppVar1->sprintState).lastSprintStart),
-        (dtp_startup_delay->current).value <= fVar6 && fVar6 != (dtp_startup_delay->current).value))
+    iVar3 = Dtp_IsDtp(pm,ps_00);
+    if ((iVar3 == 1) &&
+       (((iVar3 = (pm->cmd).serverTime - ps_00->lastDtpEnd, fVar5 = (float)iVar3,
+         (dtp_exhaustion_window->current).value <= fVar5 &&
+         fVar5 != (dtp_exhaustion_window->current).value || (iVar3 < 0)) &&
+        (fVar5 = (float)((pm->cmd).serverTime - (ps_00->sprintState).lastSprintStart),
+        (dtp_startup_delay->current).value <= fVar5 && fVar5 != (dtp_startup_delay->current).value))
        )) {
-      Dtp_Start(param_1,param_2,1.0);
-      uVar5 = Dtp_CalcSurfaceType(param_1,param_2);
-      BG_AddPredictableEventToPlayerstate(0xba,uVar5,ppVar1);
+      Dtp_Start(pm,pml,1.0);
+      uVar4 = Dtp_CalcSurfaceType(pm,pml);
+      BG_AddPredictableEventToPlayerstate(0xba,uVar4,ps_00);
       return 1;
     }
   }

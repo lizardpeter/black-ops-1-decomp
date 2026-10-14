@@ -66,30 +66,30 @@ undefined4 _HTError_addSystem(int param_1,undefined4 param_2,undefined4 param_3)
   char cVar1;
   char *in_EAX;
   undefined4 uVar2;
+  char *pBlock;
   char *pcVar3;
-  char *pcVar4;
-  int iVar5;
+  int iVar4;
   
   uVar2 = 0;
   if (param_1 != 0) {
-    pcVar3 = (char *)_HTErrnoString();
+    pBlock = (char *)_HTErrnoString();
     if (in_EAX == (char *)0x0) {
       in_EAX = "unknown";
     }
-    if (pcVar3 == (char *)0x0) {
-      iVar5 = 0;
+    if (pBlock == (char *)0x0) {
+      iVar4 = 0;
     }
     else {
-      pcVar4 = pcVar3;
+      pcVar3 = pBlock;
       do {
-        cVar1 = *pcVar4;
-        pcVar4 = pcVar4 + 1;
+        cVar1 = *pcVar3;
+        pcVar3 = pcVar3 + 1;
       } while (cVar1 != '\0');
-      iVar5 = (int)pcVar4 - (int)(pcVar3 + 1);
+      iVar4 = (int)pcVar3 - (int)(pBlock + 1);
     }
-    uVar2 = _HTError_add(param_1,param_2,param_3,0x49,iVar5,in_EAX);
-    if (pcVar3 != (char *)0x0) {
-      free(pcVar3);
+    uVar2 = _HTError_add(param_1,param_2,param_3,0x49,iVar4,in_EAX);
+    if (pBlock != (char *)0x0) {
+      free(pBlock);
     }
   }
   return uVar2;
@@ -101,30 +101,30 @@ undefined4 _HTError_addSystem(int param_1,undefined4 param_2,undefined4 param_3)
 undefined4 _HTError_deleteAll(void)
 
 {
-  void *pvVar1;
+  void *pBlock;
   undefined4 *in_EAX;
-  undefined4 *puVar2;
+  undefined4 *puVar1;
   
-  puVar2 = in_EAX;
+  puVar1 = in_EAX;
   if (in_EAX == (undefined4 *)0x0) {
     return 0;
   }
-  while (((puVar2 != (undefined4 *)0x0 &&
-          (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
-         (pvVar1 = (void *)*puVar2, pvVar1 != (void *)0x0))) {
-    if (*(void **)((int)pvVar1 + 0xc) != (void *)0x0) {
-      free(*(void **)((int)pvVar1 + 0xc));
+  while (((puVar1 != (undefined4 *)0x0 &&
+          (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+         (pBlock = (void *)*puVar1, pBlock != (void *)0x0))) {
+    if (*(void **)((int)pBlock + 0xc) != (void *)0x0) {
+      free(*(void **)((int)pBlock + 0xc));
     }
-    *(undefined4 *)((int)pvVar1 + 0xc) = 0;
-    free(pvVar1);
+    *(undefined4 *)((int)pBlock + 0xc) = 0;
+    free(pBlock);
   }
   do {
-    puVar2 = (undefined4 *)in_EAX[1];
+    puVar1 = (undefined4 *)in_EAX[1];
     if (in_EAX != (undefined4 *)0x0) {
       free(in_EAX);
     }
-    in_EAX = puVar2;
-  } while (puVar2 != (undefined4 *)0x0);
+    in_EAX = puVar1;
+  } while (puVar1 != (undefined4 *)0x0);
   return 1;
 }
 

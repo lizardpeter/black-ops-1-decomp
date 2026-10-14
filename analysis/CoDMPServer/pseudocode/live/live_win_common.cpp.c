@@ -23,24 +23,27 @@ void __cdecl _dynamic_initializer_for__overlappedTasks__(void)
 
 // 009943F0  Live_Frame_MP  (live/live_win_common.cpp:1001)
 
-bool __cdecl Live_Frame_MP(int param_1,int param_2)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+bool __cdecl Live_Frame_MP(int localControllerIndex,int msec)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   bool bVar4;
-  DWOnlineStatus DVar5;
-  char local_25;
-  char *local_20;
-  DWOnlineStatus local_1c;
-  DWOnlineStatus local_18;
-  char local_11;
-  DWOnlineStatus local_10;
-  bool local_9;
-  int local_8;
+  int iVar5;
+  DWOnlineStatus DVar6;
+  bool local_25;
+  char *disconnectMessage;
+  DWOnlineStatus newOnlineStatus_2;
+  DWOnlineStatus newOnlineStatus;
+  bool justSignedIn;
+  DWOnlineStatus onlineStatus;
+  bool online;
+  int elapsed;
   
-  local_8 = 0;
+  elapsed = 0;
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_win_common.cpp",0x3ec,
@@ -61,71 +64,71 @@ bool __cdecl Live_Frame_MP(int param_1,int param_2)
     else if ((dw_dupe_key->current).enabled == false) {
       if (dw_disconnect_detected == false) {
         dw_disconnect_detected = false;
-        local_10 = dwGetLogOnStatus(param_1);
-        switch(local_10) {
+        onlineStatus = dwGetLogOnStatus(localControllerIndex);
+        switch(onlineStatus) {
         case DW_LIVE_ERROR:
           Live_DemonwareDisconnectCleanup(0);
           break;
         case DW_LIVE_DISCONNECTED:
           Com_DPrintf(0x10,"Connecting to Demonware...\n");
           Live_UpdateUiPopup("popup_connecting_dw",false);
-          dwLogOnStart(param_1);
+          dwLogOnStart(localControllerIndex);
           break;
         case DW_LIVE_CONNECTING:
-          dwLogOnComplete(param_1);
-          local_18 = dwGetLogOnStatus(param_1);
-          if (local_18 == DW_LIVE_DISCONNECTED) {
+          dwLogOnComplete(localControllerIndex);
+          newOnlineStatus = dwGetLogOnStatus(localControllerIndex);
+          if (newOnlineStatus == DW_LIVE_DISCONNECTED) {
             Com_Printf(0x10,"Failed to log on.\n");
             Live_UpdateUiPopup("popup_cannot_connect_to_dw",false);
             dw_disconnect_detected = true;
           }
           break;
         case DW_LIVE_CONNECTED:
-          local_8 = Sys_Milliseconds();
-          local_8 = local_8 - sessiontimer;
+          iVar5 = Sys_Milliseconds();
+          elapsed = iVar5 - sessiontimer;
           sessiontimer = Sys_Milliseconds();
-          dwLobbyPump(param_1);
+          dwLobbyPump(localControllerIndex);
           CL_CACValidate_Frame();
-          PCache_Update(param_1);
-          LiveCounter_Update(param_1);
-          LiveNews_UpdateCountersTicker(param_1);
+          PCache_Update(localControllerIndex);
+          LiveCounter_Update(localControllerIndex);
+          LiveNews_UpdateCountersTicker(localControllerIndex);
           LiveStorage_CheckOngoingSessionTasks();
           Live_CheckOngoingSessionTasks();
           LB_CheckOngoingTasks();
-          LiveGroups_Update(param_1);
+          LiveGroups_Update(localControllerIndex);
           Live_CheckOngoingMatchRecordingTasks();
-          bVar2 = MatchMakingInfo::doUpdate(g_matchmakingInfo,local_8,3000,180000);
+          bVar2 = MatchMakingInfo::doUpdate(g_matchmakingInfo,elapsed,3000,180000);
           if (bVar2) {
             Session_Modify(0,&g_serverSession,0,g_serverSession.publicSlots,
                            g_serverSession.privateSlots);
           }
-          local_1c = dwGetLogOnStatus(param_1);
-          if (local_1c == DW_LIVE_DISCONNECTED) {
+          newOnlineStatus_2 = dwGetLogOnStatus(localControllerIndex);
+          if (newOnlineStatus_2 == DW_LIVE_DISCONNECTED) {
             Com_Printf(0x10,"Lost connection to lobby server.\n");
           }
         }
-        DVar5 = dwGetLogOnStatus(param_1);
-        local_9 = DVar5 == DW_LIVE_CONNECTED;
-        dwNetStart(local_9);
-        bVar2 = local_9;
+        DVar6 = dwGetLogOnStatus(localControllerIndex);
+        online = DVar6 == DW_LIVE_CONNECTED;
+        dwNetStart(online);
+        bVar2 = online;
         bVar4 = Dvar_GetBool("dw_loggedin");
         if (bVar2 != bVar4) {
-          Dvar_SetBoolByName("dw_loggedin",local_9);
+          Dvar_SetBoolByName("dw_loggedin",online);
         }
-        DVar5 = dwGetLogOnStatus(param_1);
-        if ((DVar5 == DW_LIVE_CONNECTED) && (local_10 != DW_LIVE_CONNECTED)) {
-          local_25 = '\x01';
+        DVar6 = dwGetLogOnStatus(localControllerIndex);
+        if ((DVar6 == DW_LIVE_CONNECTED) && (onlineStatus != DW_LIVE_CONNECTED)) {
+          local_25 = true;
         }
         else {
-          local_25 = '\0';
+          local_25 = false;
         }
-        local_11 = local_25;
-        if (local_25 != '\0') {
-          Live_UserSignedInToLive(param_1,&local_20);
+        justSignedIn = local_25;
+        if (local_25 != false) {
+          Live_UserSignedInToLive(localControllerIndex,&disconnectMessage);
         }
-        DVar5 = dwGetLogOnStatus(param_1);
-        if (DVar5 == DW_LIVE_CONNECTED) {
-          Live_FindSessionsPump(param_2);
+        DVar6 = dwGetLogOnStatus(localControllerIndex);
+        if (DVar6 == DW_LIVE_CONNECTED) {
+          Live_FindSessionsPump(msec);
           bVar2 = true;
         }
         else {
@@ -150,7 +153,7 @@ bool __cdecl Live_Frame_MP(int param_1,int param_2)
 
 // 00994700  Live_UpdateUiPopup  (live/live_win_common.cpp:1433)
 
-void __cdecl Live_UpdateUiPopup(char *param_1,bool param_2)
+void __cdecl Live_UpdateUiPopup(char *popupname,bool reset)
 
 {
   int iVar1;
@@ -162,19 +165,19 @@ void __cdecl Live_UpdateUiPopup(char *param_1,bool param_2)
   }
   else {
     Com_Printf(0x10,"Live_UpdateUiPopup: %s\n");
-    if (param_2) {
+    if (reset) {
       local_8 = "";
     }
     else {
-      local_8 = param_1;
+      local_8 = popupname;
     }
     iVar1 = I_stricmp((dw_popup->current).string,local_8);
     if (iVar1 != 0) {
-      if (param_2) {
+      if (reset) {
         local_c = "";
       }
       else {
-        local_c = param_1;
+        local_c = popupname;
       }
       Dvar_SetString(dw_popup,local_c);
     }
@@ -185,31 +188,33 @@ void __cdecl Live_UpdateUiPopup(char *param_1,bool param_2)
 
 // 009947A0  Live_ShowPlayerProfile  (live/live_win_common.cpp:1450)
 
-void __cdecl Live_ShowPlayerProfile(int param_1,ulong64 param_2,char *param_3)
+void __cdecl Live_ShowPlayerProfile(int localClientNum,ulong64 param_2,char *param_3)
 
 {
-  int iVar1;
-  char *pcVar2;
-  uiInfo_s *puVar3;
-  menuDef_t *pmVar4;
-  ulong64 uVar5;
+  int controllerIndex;
+  char *value;
+  uiInfo_s *dc;
+  menuDef_t *menu_00;
+  ulong64 uVar1;
   int in_stack_00000008;
-  int local_14;
+  int myXUID;
   int local_10;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
   
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  uVar5 = Live_GetXuid(iVar1);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  uVar1 = Live_GetXuid(controllerIndex);
   if ((in_stack_00000008 != 0 || (int)param_2 != 0) &&
-     ((local_14 = (int)uVar5, in_stack_00000008 != local_14 ||
-      (local_10 = (int)(uVar5 >> 0x20), (int)param_2 != local_10)))) {
-    pcVar2 = va("%11d");
-    Dvar_SetStringByName("selectedPlayerXuid",pcVar2);
+     ((myXUID = (int)uVar1, in_stack_00000008 != myXUID ||
+      (local_10 = (int)(uVar1 >> 0x20), (int)param_2 != local_10)))) {
+    value = va("%11d");
+    Dvar_SetStringByName("selectedPlayerXuid",value);
     Dvar_SetStringByName("selectedFriendName",param_2._4_4_);
-    puVar3 = UI_GetInfo(param_1);
-    pmVar4 = Menus_FindByName(&puVar3->uiDC,"menu_playercard");
-    if (pmVar4 != (menuDef_t *)0x0) {
-      pmVar4->openSlideDirection = 2;
-      Menus_Open(param_1,&puVar3->uiDC,pmVar4);
+    dc = UI_GetInfo(localClientNum);
+    menu_00 = Menus_FindByName(&dc->uiDC,"menu_playercard");
+    if (menu_00 != (menuDef_t *)0x0) {
+      menu_00->openSlideDirection = 2;
+      Menus_Open(localClientNum,&dc->uiDC,menu_00);
     }
   }
   return;
@@ -229,9 +234,12 @@ void __cdecl Live_ShowPlayerProfile(int param_1,ulong64 param_2,char *param_3)
 /* WARNING: Removing unreachable block (ram,0x0099489a) */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SocketRouter_EmergencyFrame(char *param_1)
+void __cdecl SocketRouter_EmergencyFrame(char *from)
 
 {
+  clientConnection_t *clc;
+  int msec;
+  
   Sys_IsMainThread();
   return;
 }

@@ -2,12 +2,14 @@
 
 // 00469A60  GetMemory  (botlib/l_memory.cpp:23)
 
-void * __cdecl GetMemory(ulong param_1)
+void * __cdecl GetMemory(ulong size)
 
 {
   undefined4 *puVar1;
+  ulong *memid;
+  void *ptr;
   
-  puVar1 = Z_Malloc(param_1 + 4,"GetMemory",0xb);
+  puVar1 = Z_Malloc(size + 4,"GetMemory",0xb);
   if (puVar1 == (undefined4 *)0x0) {
     puVar1 = (undefined4 *)0x0;
   }
@@ -21,24 +23,27 @@ void * __cdecl GetMemory(ulong param_1)
 
 // 00469AB0  GetClearedMemory  (botlib/l_memory.cpp:43)
 
-void * __cdecl GetClearedMemory(ulong param_1)
+void * __cdecl GetClearedMemory(ulong size)
 
 {
-  uchar *puVar1;
+  uchar *dst;
+  void *ptr;
   
-  puVar1 = GetMemory(param_1);
-  memset(puVar1,'\0',param_1);
-  return puVar1;
+  dst = GetMemory(size);
+  memset(dst,'\0',size);
+  return dst;
 }
 
 
 // 00469AE0  FreeMemory  (botlib/l_memory.cpp:59)
 
-void __cdecl FreeMemory(void *param_1)
+void __cdecl FreeMemory(void *ptr)
 
 {
-  if (*(int *)((int)param_1 + -4) == 0x12345678) {
-    Z_Free((int *)((int)param_1 + -4),0xb);
+  ulong *memid;
+  
+  if (*(int *)((int)ptr + -4) == 0x12345678) {
+    Z_Free((int *)((int)ptr + -4),0xb);
   }
   return;
 }

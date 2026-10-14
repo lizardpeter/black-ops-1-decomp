@@ -29,26 +29,26 @@ void __cdecl _dynamic_initializer_for__gWheelAxisLoc__(void)
 
 // 008227F0  Phys_Mat4ToNitrousMat  (physics/phys_convert.h:46)
 
-void __cdecl Phys_Mat4ToNitrousMat(float (*param_1) [3],phys_mat44 *param_2)
+void __cdecl Phys_Mat4ToNitrousMat(float (*inMat) [3],phys_mat44 *outMat)
 
 {
-  Phys_Vec3ToNitrousVec(*param_1,&param_2->x);
-  Phys_Vec3ToNitrousVec(param_1[1],&param_2->y);
-  Phys_Vec3ToNitrousVec(param_1[2],&param_2->z);
-  Phys_Vec3ToNitrousVec(param_1[3],&param_2->w);
+  Phys_Vec3ToNitrousVec(*inMat,&outMat->x);
+  Phys_Vec3ToNitrousVec(inMat[1],&outMat->y);
+  Phys_Vec3ToNitrousVec(inMat[2],&outMat->z);
+  Phys_Vec3ToNitrousVec(inMat[3],&outMat->w);
   return;
 }
 
 
 // 008205F0  set_flag  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body.h:59)
 
-void __thiscall rigid_body::set_flag(rigid_body *this,uint param_1,int param_2)
+void __thiscall rigid_body::set_flag(rigid_body *this,uint f,int b)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 & 0xffffff00) != 0) {
+  if ((f & 0xffffff00) != 0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\rigid_body.h",0x3b,
                       "(f & ~(FLAG_CLIENT_FLAGS_START - 1)) == 0","invalid rigid body flag");
     if (bVar2) {
@@ -57,11 +57,11 @@ void __thiscall rigid_body::set_flag(rigid_body *this,uint param_1,int param_2)
       return;
     }
   }
-  if (param_2 == 0) {
-    this->m_flags = ~param_1 & this->m_flags;
+  if (b == 0) {
+    this->m_flags = ~f & this->m_flags;
   }
   else {
-    this->m_flags = this->m_flags | param_1;
+    this->m_flags = this->m_flags | f;
   }
   return;
 }
@@ -69,45 +69,45 @@ void __thiscall rigid_body::set_flag(rigid_body *this,uint param_1,int param_2)
 
 // 00829110  Phys_NitrousMat44ToVec33  (physics/phys_convert.h:61)
 
-void __cdecl Phys_NitrousMat44ToVec33(phys_mat44 *param_1,float (*param_2) [3])
+void __cdecl Phys_NitrousMat44ToVec33(phys_mat44 *inMat,float (*outAxis) [3])
 
 {
-  (*param_2)[0] = (param_1->x).x;
-  (*param_2)[1] = (param_1->x).y;
-  (*param_2)[2] = (param_1->x).z;
-  param_2[1][0] = (param_1->y).x;
-  param_2[1][1] = (param_1->y).y;
-  param_2[1][2] = (param_1->y).z;
-  param_2[2][0] = (param_1->z).x;
-  param_2[2][1] = (param_1->z).y;
-  param_2[2][2] = (param_1->z).z;
+  (*outAxis)[0] = (inMat->x).x;
+  (*outAxis)[1] = (inMat->x).y;
+  (*outAxis)[2] = (inMat->x).z;
+  outAxis[1][0] = (inMat->y).x;
+  outAxis[1][1] = (inMat->y).y;
+  outAxis[1][2] = (inMat->y).z;
+  outAxis[2][0] = (inMat->z).x;
+  outAxis[2][1] = (inMat->z).y;
+  outAxis[2][2] = (inMat->z).z;
   return;
 }
 
 
 // 00826C30  operator*  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:63)
 
-phys_vec3 * __cdecl operator*(phys_vec3 *__return_storage_ptr__,float param_1,phys_vec3 *param_2)
+phys_vec3 * __cdecl operator*(phys_vec3 *__return_storage_ptr__,float d,phys_vec3 *a)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = param_2->y;
-  fVar2 = param_2->z;
-  __return_storage_ptr__->x = param_1 * param_2->x;
-  __return_storage_ptr__->y = param_1 * fVar1;
-  __return_storage_ptr__->z = param_1 * fVar2;
+  fVar1 = a->y;
+  fVar2 = a->z;
+  __return_storage_ptr__->x = d * a->x;
+  __return_storage_ptr__->y = d * fVar1;
+  __return_storage_ptr__->z = d * fVar2;
   return __return_storage_ptr__;
 }
 
 
 // 00828770  AbsSquared  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:72)
 
-float __cdecl AbsSquared(phys_vec3 *param_1)
+float __cdecl AbsSquared(phys_vec3 *a)
 
 {
-  return param_1->z * param_1->z + param_1->y * param_1->y + param_1->x * param_1->x;
+  return a->z * a->z + a->y * a->y + a->x * a->x;
 }
 
 
@@ -166,8 +166,7 @@ VehicleParameter * __thiscall VehicleParameter::VehicleParameter(VehicleParamete
 
 // 00827A60  phys_cross  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:88)
 
-phys_vec3 * __cdecl
-phys_cross(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param_2)
+phys_vec3 * __cdecl phys_cross(phys_vec3 *__return_storage_ptr__,phys_vec3 *a,phys_vec3 *b)
 
 {
   float fVar1;
@@ -179,15 +178,15 @@ phys_cross(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,phys_vec3 *param
   float fVar7;
   float fVar8;
   
-  fVar1 = param_1->x;
-  fVar2 = param_2->z;
-  fVar3 = param_1->z;
-  fVar4 = param_2->x;
-  fVar5 = param_1->y;
-  fVar6 = param_2->x;
-  fVar7 = param_1->x;
-  fVar8 = param_2->y;
-  __return_storage_ptr__->x = param_1->y * param_2->z - param_1->z * param_2->y;
+  fVar1 = a->x;
+  fVar2 = b->z;
+  fVar3 = a->z;
+  fVar4 = b->x;
+  fVar5 = a->y;
+  fVar6 = b->x;
+  fVar7 = a->x;
+  fVar8 = b->y;
+  __return_storage_ptr__->x = a->y * b->z - a->z * b->y;
   __return_storage_ptr__->y = fVar3 * fVar4 - fVar1 * fVar2;
   __return_storage_ptr__->z = fVar7 * fVar8 - fVar5 * fVar6;
   return __return_storage_ptr__;
@@ -218,7 +217,7 @@ NitrousVehicle * __thiscall NitrousVehicle::NitrousVehicle(NitrousVehicle *this)
 {
   int local_14;
   int local_10;
-  int local_8;
+  int i;
   
   local_10 = 6;
   do {
@@ -248,8 +247,8 @@ NitrousVehicle * __thiscall NitrousVehicle::NitrousVehicle(NitrousVehicle *this)
   this->m_state_flags = 0;
   this->m_flags = this->m_flags | 1;
   this->m_flags = this->m_flags & 0xfffffffd;
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    this->m_wheels[local_8] = (rigid_body_constraint_wheel *)0x0;
+  for (i = 0; i < 6; i = i + 1) {
+    this->m_wheels[i] = (rigid_body_constraint_wheel *)0x0;
   }
   return this;
 }
@@ -284,13 +283,13 @@ NitrousVehicle * __thiscall NitrousVehicle::NitrousVehicle(NitrousVehicle *this)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicle::init(NitrousVehicle *this,gentity_s *param_1,VehicleParameter *param_2)
+NitrousVehicle::init(NitrousVehicle *this,gentity_s *owner,VehicleParameter *parameter)
 
 {
   vehicle_info_t *pvVar1;
-  DObj *pDVar2;
-  XModel *pXVar3;
-  int iVar4;
+  DObj *obj;
+  XModel *pXVar2;
+  int modelIndex;
   float local_48 [9];
   phys_vec3 *local_24;
   float *local_20;
@@ -299,21 +298,21 @@ NitrousVehicle::init(NitrousVehicle *this,gentity_s *param_1,VehicleParameter *p
   float *local_14;
   float *local_10;
   float *local_c;
-  int local_8;
+  int i;
   
-  if (param_2 == (VehicleParameter *)0x0) {
-    param_2 = &g_default_params;
+  if (parameter == (VehicleParameter *)0x0) {
+    parameter = &g_default_params;
   }
   pause_physics(this,false);
-  this->m_owner = param_1;
-  this->m_entnum = (param_1->s).number;
-  pvVar1 = BG_GetVehicleInfo((int)param_1->scr_vehicle->infoIdx);
+  this->m_owner = owner;
+  this->m_entnum = (owner->s).number;
+  pvVar1 = BG_GetVehicleInfo((int)owner->scr_vehicle->infoIdx);
   this->m_vehicle_info = pvVar1;
-  iVar4 = 0;
-  pDVar2 = Com_GetServerDObj(this->m_entnum);
-  pXVar3 = DObjGetModel(pDVar2,iVar4);
-  this->m_xmodel = pXVar3;
-  this->m_parameter = param_2;
+  modelIndex = 0;
+  obj = Com_GetServerDObj(this->m_entnum);
+  pXVar2 = DObjGetModel(obj,modelIndex);
+  this->m_xmodel = pXVar2;
+  this->m_parameter = parameter;
   this->m_hand_brake = 0.0;
   this->m_brake = 0.0;
   set_throttle(this,0.0);
@@ -322,15 +321,15 @@ NitrousVehicle::init(NitrousVehicle *this,gentity_s *param_1,VehicleParameter *p
   this->m_script_brake = 0.0;
   this->m_stuck_time = 0.0;
   local_10 = this->m_origin;
-  local_c = (param_1->r).currentOrigin;
+  local_c = (owner->r).currentOrigin;
   *local_10 = *local_c;
-  this->m_origin[1] = (param_1->r).currentOrigin[1];
-  this->m_origin[2] = (param_1->r).currentOrigin[2];
+  this->m_origin[1] = (owner->r).currentOrigin[1];
+  this->m_origin[2] = (owner->r).currentOrigin[2];
   local_18 = this->m_angles;
-  local_14 = (param_1->r).currentAngles;
+  local_14 = (owner->r).currentAngles;
   *local_18 = *local_14;
-  this->m_angles[1] = (param_1->r).currentAngles[1];
-  this->m_angles[2] = (param_1->r).currentAngles[2];
+  this->m_angles[1] = (owner->r).currentAngles[1];
+  this->m_angles[2] = (owner->r).currentAngles[2];
   local_1c = this->m_networkErrorOrigin;
   *local_1c = 0.0;
   this->m_networkErrorOrigin[1] = 0.0;
@@ -365,11 +364,11 @@ NitrousVehicle::init(NitrousVehicle *this,gentity_s *param_1,VehicleParameter *p
     phys_exec_debug_callback((void *)0x0);
   }
   _setup_wheels(this,0);
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    this->m_wheel_state[local_8].m_state = WHEEL_STATE_AIRBORN;
-    this->m_wheel_state[local_8].m_last_state = WHEEL_STATE_AIRBORN;
-    this->m_wheel_state[local_8].m_state_time = 0.0;
-    this->m_wheel_state[local_8].m_rate = 0.0;
+  for (i = 0; i < 4; i = i + 1) {
+    this->m_wheel_state[i].m_state = WHEEL_STATE_AIRBORN;
+    this->m_wheel_state[i].m_last_state = WHEEL_STATE_AIRBORN;
+    this->m_wheel_state[i].m_state_time = 0.0;
+    this->m_wheel_state[i].m_rate = 0.0;
   }
   return;
 }
@@ -426,7 +425,8 @@ void __thiscall phys_mat44::fix_w_column(phys_mat44 *this)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicle::init(NitrousVehicle *this,int param_1,centity_s *param_2,VehicleParameter *param_3)
+NitrousVehicle::init
+          (NitrousVehicle *this,int localClientNum,centity_s *owner,VehicleParameter *parameter)
 
 {
   code *pcVar1;
@@ -441,32 +441,32 @@ NitrousVehicle::init(NitrousVehicle *this,int param_1,centity_s *param_2,Vehicle
   float *local_1c;
   float *local_18;
   float *local_14;
-  int local_10;
-  DObj *local_c;
-  cgs_t *local_8;
+  int i;
+  DObj *obj;
+  cgs_t *cgs;
   
   if (this->refcount < 2) {
-    if (param_3 == (VehicleParameter *)0x0) {
-      param_3 = &g_default_params;
+    if (parameter == (VehicleParameter *)0x0) {
+      parameter = &g_default_params;
     }
-    local_8 = CG_GetLocalClientStaticGlobals(param_1);
-    local_c = CG_PreProcess_GetDObj
-                        (param_1,(param_2->nextState).number,(int)(param_2->nextState).eType,
-                         local_8->gameModels[(param_2->nextState).un3.item],(XModel *)0x0);
-    if ((local_c == (DObj *)0x0) &&
+    cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+    obj = CG_PreProcess_GetDObj
+                    (localClientNum,(owner->nextState).number,(int)(owner->nextState).eType,
+                     cgs->gameModels[(owner->nextState).un3.item],(XModel *)0x0);
+    if ((obj == (DObj *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
                                  0xbc,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pXVar3 = DObjGetModel(local_c,0);
+    pXVar3 = DObjGetModel(obj,0);
     this->m_xmodel = pXVar3;
     this->m_owner = (gentity_s *)0x0;
-    this->m_entnum = (param_2->nextState).number;
-    pvVar4 = CG_GetVehicleInfo((uint)(param_2->nextState).un2.vehicleState.vehicleInfoIndex);
+    this->m_entnum = (owner->nextState).number;
+    pvVar4 = CG_GetVehicleInfo((uint)(owner->nextState).un2.vehicleState.vehicleInfoIndex);
     this->m_vehicle_info = pvVar4;
-    this->m_parameter = param_3;
+    this->m_parameter = parameter;
     this->m_hand_brake = 0.0;
     this->m_brake = 0.0;
     set_throttle(this,0.0);
@@ -475,15 +475,15 @@ NitrousVehicle::init(NitrousVehicle *this,int param_1,centity_s *param_2,Vehicle
     this->m_script_brake = 0.0;
     this->m_stuck_time = 0.0;
     local_18 = this->m_origin;
-    local_14 = (param_2->pose).origin;
+    local_14 = (owner->pose).origin;
     *local_18 = *local_14;
-    this->m_origin[1] = (param_2->pose).origin[1];
-    this->m_origin[2] = (param_2->pose).origin[2];
+    this->m_origin[1] = (owner->pose).origin[1];
+    this->m_origin[2] = (owner->pose).origin[2];
     local_20 = this->m_angles;
-    local_1c = (param_2->pose).angles;
+    local_1c = (owner->pose).angles;
     *local_20 = *local_1c;
-    this->m_angles[1] = (param_2->pose).angles[1];
-    this->m_angles[2] = (param_2->pose).angles[2];
+    this->m_angles[1] = (owner->pose).angles[1];
+    this->m_angles[2] = (owner->pose).angles[2];
     local_24 = this->m_networkErrorOrigin;
     *local_24 = 0.0;
     this->m_networkErrorOrigin[1] = 0.0;
@@ -512,12 +512,12 @@ NitrousVehicle::init(NitrousVehicle *this,int param_1,centity_s *param_2,Vehicle
         (100000.0 < ABS((this->m_prev_rb_mat).w.z))))) {
       phys_exec_debug_callback((void *)0x0);
     }
-    _setup_wheels(this,param_1);
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      this->m_wheel_state[local_10].m_state = WHEEL_STATE_AIRBORN;
-      this->m_wheel_state[local_10].m_last_state = WHEEL_STATE_AIRBORN;
-      this->m_wheel_state[local_10].m_state_time = 0.0;
-      this->m_wheel_state[local_10].m_rate = 0.0;
+    _setup_wheels(this,localClientNum);
+    for (i = 0; i < 4; i = i + 1) {
+      this->m_wheel_state[i].m_state = WHEEL_STATE_AIRBORN;
+      this->m_wheel_state[i].m_last_state = WHEEL_STATE_AIRBORN;
+      this->m_wheel_state[i].m_state_time = 0.0;
+      this->m_wheel_state[i].m_rate = 0.0;
     }
   }
   return;
@@ -526,7 +526,7 @@ NitrousVehicle::init(NitrousVehicle *this,int param_1,centity_s *param_2,Vehicle
 
 // 008287A0  phys_multiply_mat  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:188)
 
-void __cdecl phys_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat44 *param_3)
+void __cdecl phys_multiply_mat(phys_mat44 *dest,phys_mat44 *left,phys_mat44 *right)
 
 {
   phys_vec3 *ppVar1;
@@ -540,29 +540,29 @@ void __cdecl phys_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat4
   phys_vec3 *local_24;
   phys_vec3 local_20;
   
-  if (param_1 == param_2) {
+  if (dest == left) {
     ppVar3 = &local_b0;
     for (iVar2 = 0x10; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (ppVar3->x).x = (param_2->x).x;
-      param_2 = (phys_mat44 *)&(param_2->x).y;
+      (ppVar3->x).x = (left->x).x;
+      left = (phys_mat44 *)&(left->x).y;
       ppVar3 = (phys_mat44 *)&(ppVar3->x).y;
     }
-    phys_multiply_mat(param_1,&local_b0,param_3);
+    phys_multiply_mat(dest,&local_b0,right);
   }
   else {
-    local_24 = phys_multiply33(&local_20,param_2,&param_3->x);
-    (param_1->x).x = local_24->x;
-    (param_1->x).y = local_24->y;
-    (param_1->x).z = local_24->z;
-    local_44 = phys_multiply33(&local_40,param_2,&param_3->y);
-    local_48 = &param_1->y;
+    local_24 = phys_multiply33(&local_20,left,&right->x);
+    (dest->x).x = local_24->x;
+    (dest->x).y = local_24->y;
+    (dest->x).z = local_24->z;
+    local_44 = phys_multiply33(&local_40,left,&right->y);
+    local_48 = &dest->y;
     local_48->x = local_44->x;
-    (param_1->y).y = local_44->y;
-    (param_1->y).z = local_44->z;
-    ppVar1 = phys_multiply33(&local_60,param_2,&param_3->z);
-    (param_1->z).x = ppVar1->x;
-    (param_1->z).y = ppVar1->y;
-    (param_1->z).z = ppVar1->z;
+    (dest->y).y = local_44->y;
+    (dest->y).z = local_44->z;
+    ppVar1 = phys_multiply33(&local_60,left,&right->z);
+    (dest->z).x = ppVar1->x;
+    (dest->z).y = ppVar1->y;
+    (dest->z).z = ppVar1->z;
   }
   return;
 }
@@ -570,7 +570,7 @@ void __cdecl phys_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat4
 
 // 00826CA0  phys_full_multiply_mat  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:203)
 
-void __cdecl phys_full_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat44 *param_3)
+void __cdecl phys_full_multiply_mat(phys_mat44 *dest,phys_mat44 *left,phys_mat44 *right)
 
 {
   phys_vec3 *ppVar1;
@@ -587,34 +587,34 @@ void __cdecl phys_full_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys
   phys_vec3 *local_24;
   phys_vec3 local_20;
   
-  if (param_1 == param_2) {
+  if (dest == left) {
     ppVar3 = &local_d0;
     for (iVar2 = 0x10; iVar2 != 0; iVar2 = iVar2 + -1) {
-      (ppVar3->x).x = (param_2->x).x;
-      param_2 = (phys_mat44 *)&(param_2->x).y;
+      (ppVar3->x).x = (left->x).x;
+      left = (phys_mat44 *)&(left->x).y;
       ppVar3 = (phys_mat44 *)&(ppVar3->x).y;
     }
-    phys_full_multiply_mat(param_1,&local_d0,param_3);
+    phys_full_multiply_mat(dest,&local_d0,right);
   }
   else {
-    local_24 = phys_multiply33(&local_20,param_2,&param_3->x);
-    (param_1->x).x = local_24->x;
-    (param_1->x).y = local_24->y;
-    (param_1->x).z = local_24->z;
-    local_44 = phys_multiply33(&local_40,param_2,&param_3->y);
-    local_48 = &param_1->y;
+    local_24 = phys_multiply33(&local_20,left,&right->x);
+    (dest->x).x = local_24->x;
+    (dest->x).y = local_24->y;
+    (dest->x).z = local_24->z;
+    local_44 = phys_multiply33(&local_40,left,&right->y);
+    local_48 = &dest->y;
     local_48->x = local_44->x;
-    (param_1->y).y = local_44->y;
-    (param_1->y).z = local_44->z;
-    local_64 = phys_multiply33(&local_60,param_2,&param_3->z);
-    local_68 = &param_1->z;
+    (dest->y).y = local_44->y;
+    (dest->y).z = local_44->z;
+    local_64 = phys_multiply33(&local_60,left,&right->z);
+    local_68 = &dest->z;
     local_68->x = local_64->x;
-    (param_1->z).y = local_64->y;
-    (param_1->z).z = local_64->z;
-    ppVar1 = phys_full_multiply(&local_80,param_2,&param_3->w);
-    (param_1->w).x = ppVar1->x;
-    (param_1->w).y = ppVar1->y;
-    (param_1->w).z = ppVar1->z;
+    (dest->z).y = local_64->y;
+    (dest->z).z = local_64->z;
+    ppVar1 = phys_full_multiply(&local_80,left,&right->w);
+    (dest->w).x = ppVar1->x;
+    (dest->w).y = ppVar1->y;
+    (dest->w).z = ppVar1->z;
   }
   return;
 }
@@ -629,20 +629,21 @@ void __cdecl phys_full_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys
 
 int __cdecl
 Phys_ObjCreateNitrousVehicle
-          (float *param_1,float *param_2,float *param_3,float *param_4,PhysPreset *param_5,
-          gjk_geom_list_t *param_6)
+          (float *position,float *angles,float *velocity,float *translation,PhysPreset *physPreset,
+          gjk_geom_list_t *gjk_geom_list)
 
 {
   code *pcVar1;
   float fVar2;
   bool bVar3;
   int iVar4;
-  BodyState local_b4;
-  float local_28 [9];
+  BodyState state;
+  int returnVal;
+  float axis [9];
   
-  if (((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*position & 0x7f800000) == 0x7f800000) ||
+      (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)position[2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",0xe8,
                              0,"%s");
     if (!bVar3) {
@@ -651,9 +652,9 @@ Phys_ObjCreateNitrousVehicle
       return iVar4;
     }
   }
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*velocity & 0x7f800000) == 0x7f800000) ||
+      (((uint)velocity[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)velocity[2] & 0x7f800000) == 0x7f800000)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",0xe9,
                              0,"%s");
     if (!bVar3) {
@@ -662,7 +663,7 @@ Phys_ObjCreateNitrousVehicle
       return iVar4;
     }
   }
-  if (param_5 == (PhysPreset *)0x0) {
+  if (physPreset == (PhysPreset *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",0xeb,
                              0,"%s");
     if (!bVar3) {
@@ -671,40 +672,40 @@ Phys_ObjCreateNitrousVehicle
       return iVar4;
     }
   }
-  AnglesToAxis(param_2,(float (*) [3])local_28);
-  Vec3PackNormAxis((float (*) [3])local_28,local_b4.rotation);
-  local_b4.position[0] = *param_1;
-  local_b4.position[1] = param_1[1];
-  local_b4.position[2] = param_1[2];
-  local_b4.velocity[0] = *param_3;
-  local_b4.velocity[1] = param_3[1];
-  local_b4.velocity[2] = param_3[2];
-  local_b4.angVelocity[0] = 0.0;
-  local_b4.angVelocity[1] = 0.0;
-  local_b4.angVelocity[2] = 0.0;
-  local_b4.centerOfMassOffset[0] = 0.0;
-  local_b4.centerOfMassOffset[1] = 0.0;
-  local_b4.centerOfMassOffset[2] = 0.0;
-  local_b4.buoyancyBoxMin[0] = 0.0;
-  local_b4.buoyancyBoxMin[1] = 0.0;
-  local_b4.buoyancyBoxMin[2] = 0.0;
-  local_b4.buoyancyBoxMax[0] = 0.0;
-  local_b4.buoyancyBoxMax[1] = 0.0;
-  local_b4.buoyancyBoxMax[2] = 0.0;
-  local_b4.mass = param_5->mass;
-  local_b4.bounce = param_5->bounce;
-  local_b4.friction = param_5->friction;
-  local_b4.timeLastAsleep = physGlob.timeLastUpdate;
-  if (param_5->canFloat == 0) {
+  AnglesToAxis(angles,(float (*) [3])axis);
+  Vec3PackNormAxis((float (*) [3])axis,state.rotation);
+  state.position[0] = *position;
+  state.position[1] = position[1];
+  state.position[2] = position[2];
+  state.velocity[0] = *velocity;
+  state.velocity[1] = velocity[1];
+  state.velocity[2] = velocity[2];
+  state.angVelocity[0] = 0.0;
+  state.angVelocity[1] = 0.0;
+  state.angVelocity[2] = 0.0;
+  state.centerOfMassOffset[0] = 0.0;
+  state.centerOfMassOffset[1] = 0.0;
+  state.centerOfMassOffset[2] = 0.0;
+  state.buoyancyBoxMin[0] = 0.0;
+  state.buoyancyBoxMin[1] = 0.0;
+  state.buoyancyBoxMin[2] = 0.0;
+  state.buoyancyBoxMax[0] = 0.0;
+  state.buoyancyBoxMax[1] = 0.0;
+  state.buoyancyBoxMax[2] = 0.0;
+  state.mass = physPreset->mass;
+  state.bounce = physPreset->bounce;
+  state.friction = physPreset->friction;
+  state.timeLastAsleep = physGlob.timeLastUpdate;
+  if (physPreset->canFloat == 0) {
     fVar2 = (phys_gravity->current).value * -0.9;
   }
   else {
     fVar2 = (phys_gravity->current).value * -1.1;
   }
-  local_b4.buoyancy = (int)fVar2;
-  local_b4.underwater = 0;
-  local_b4.id = -1;
-  iVar4 = Phys_CreateBodyFromState(0,&local_b4,param_6,true);
+  state.buoyancy = (int)fVar2;
+  state.underwater = 0;
+  state.id = -1;
+  iVar4 = Phys_CreateBodyFromState(0,&state,gjk_geom_list,true);
   return iVar4;
 }
 
@@ -725,19 +726,20 @@ void __thiscall NitrousVehicle::unpause_physics(NitrousVehicle *this)
   float fVar2;
   rigid_body *prVar3;
   PhysObjUserData *pPVar4;
-  phys_vec3 local_c0;
-  uint local_ac;
-  uint local_a8;
+  broad_phase_info *pbVar5;
+  broad_phase_group *pbVar6;
+  undefined1 local_c0 [12];
+  phys_vec3 gravity_dir;
   broad_phase_info *local_a4;
-  broad_phase_group *local_a0;
-  uint local_9c;
-  uint local_98;
-  broad_phase_info *local_94;
-  gjk_collision_visitor local_90;
-  gjk_geom_list_t *local_8c;
-  gjk_geom_list_t local_88;
+  int flags_2;
+  broad_phase_info *bpi_2;
+  broad_phase_group *bpg;
+  int flags;
+  broad_phase_info **local_8c;
+  broad_phase_info *bpi;
+  int collision_visitor;
   float local_80 [3];
-  VehicleParameter *local_74;
+  VehicleParameter *vel;
   PhysPreset local_70;
   int local_18;
   NitrousVehicle *local_14;
@@ -754,48 +756,51 @@ void __thiscall NitrousVehicle::unpause_physics(NitrousVehicle *this)
     else {
       local_70.friction = 0.4;
     }
-    local_74 = this->m_parameter;
-    local_70.mass = local_74->m_body_mass;
+    vel = this->m_parameter;
+    local_70.mass = vel->m_body_mass;
     local_70.canFloat = (int)(this->m_parameter->m_buoyancybox_min[0] != 0.0);
     local_80[0] = 0.0;
     local_80[1] = 0.0;
     local_80[2] = 0.0;
-    local_88.m_first_geom = (gjk_base_t *)0x0;
-    local_88.m_geom_count = 0;
-    local_90 = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
-    local_8c = &local_88;
+    bpi = (broad_phase_info *)0x0;
+    collision_visitor = 0;
+    flags = (int)create_gjk_geom_collision_visitor::vftable;
+    local_8c = &bpi;
     local_14 = this;
-    create_xmodel_gjk_geom(this->m_xmodel,&local_90,-1,0x280ec93,true,0,(phys_mat44 *)0x0);
+    create_xmodel_gjk_geom
+              (this->m_xmodel,(gjk_collision_visitor *)&flags,-1,0x280ec93,true,0,(phys_mat44 *)0x0)
+    ;
     pPVar4 = (PhysObjUserData *)
              Phys_ObjCreateNitrousVehicle
                        (local_14->m_origin,local_14->m_angles,local_80,
-                        local_14->m_parameter->m_mass_center_offset,&local_70,&local_88);
+                        local_14->m_parameter->m_mass_center_offset,&local_70,
+                        (gjk_geom_list_t *)&bpi);
     local_14->m_phys_user_data = pPVar4;
     local_14->m_phys_user_data->vehicle = local_14;
     if ((local_14->m_phys_user_data->m_bpb->m_flags & 1) == 0) {
-      local_a0 = broad_phase_base::get_bpg(local_14->m_phys_user_data->m_bpb);
-      for (local_a4 = local_a0->m_list_bpi_head; local_a4 != (broad_phase_info *)0x0;
+      pbVar6 = broad_phase_base::get_bpg(local_14->m_phys_user_data->m_bpb);
+      for (local_a4 = pbVar6->m_list_bpi_head; local_a4 != (broad_phase_info *)0x0;
           local_a4 = (broad_phase_info *)local_a4->_padding_) {
-        local_a8 = local_a4->_padding_;
-        local_ac = (uint)(local_14->m_vehicle_info->remoteControl != 0) * 8 + 8 |
-                   local_a8 & 0xffffff7f;
-        local_a4->_padding_ = local_ac;
+        gravity_dir.w = (float)local_a4->_padding_;
+        gravity_dir.z =
+             (float)((uint)(local_14->m_vehicle_info->remoteControl != 0) * 8 + 8 |
+                    (uint)gravity_dir.w & 0xffffff7f);
+        local_a4->_padding_ = (int)gravity_dir.z;
       }
     }
     else {
-      local_94 = broad_phase_base::get_bpi(local_14->m_phys_user_data->m_bpb);
-      local_98 = local_94->_padding_;
-      local_9c = (uint)(local_14->m_vehicle_info->remoteControl != 0) * 8 + 8 |
-                 local_98 & 0xffffff7f;
-      local_94->_padding_ = local_9c;
+      pbVar5 = broad_phase_base::get_bpi(local_14->m_phys_user_data->m_bpb);
+      pbVar5->_padding_ =
+           (uint)(local_14->m_vehicle_info->remoteControl != 0) * 8 + 8 |
+           pbVar5->_padding_ & 0xffffff7fU;
     }
-    Phys_Vec3ToNitrousVec(&(phys_gravity_dir->current).value,&local_c0);
+    Phys_Vec3ToNitrousVec(&(phys_gravity_dir->current).value,(phys_vec3 *)local_c0);
     fVar1 = (phys_gravity->current).value;
     fVar2 = (phys_vehicleGravityMultiplier->current).value;
     prVar3 = local_14->m_phys_user_data->body;
-    (prVar3->m_gravity_acc_vec).x = fVar2 * fVar1 * local_c0.x;
-    (prVar3->m_gravity_acc_vec).y = fVar2 * fVar1 * local_c0.y;
-    (prVar3->m_gravity_acc_vec).z = fVar2 * fVar1 * local_c0.z;
+    (prVar3->m_gravity_acc_vec).x = fVar2 * fVar1 * (float)local_c0._0_4_;
+    (prVar3->m_gravity_acc_vec).y = fVar2 * fVar1 * (float)local_c0._4_4_;
+    (prVar3->m_gravity_acc_vec).z = fVar2 * fVar1 * (float)local_c0._8_4_;
     update_parms(local_14,local_14->m_parameter,true);
     local_14->m_flags = local_14->m_flags | 2;
     NitrousVehicleController::Init(&local_14->mVehicleController);
@@ -885,12 +890,12 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::pause_physics(NitrousVehicle *this,bool param_1)
+void __thiscall NitrousVehicle::pause_physics(NitrousVehicle *this,bool shutdown)
 
 {
   if ((this->m_flags & 1U) == 0) {
     Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
-    if (!param_1) {
+    if (!shutdown) {
       phys_mat44::operator=(&this->m_prev_rb_mat,&this->m_phys_user_data->body->m_mat);
       remove_wheels(this);
       if (this->m_orientation_constraint != (rigid_body_constraint_custom_orientation *)0x0) {
@@ -922,6 +927,10 @@ void __thiscall NitrousVehicle::pause_physics(NitrousVehicle *this,bool param_1)
 void __thiscall NitrousVehicle::_update_pause(NitrousVehicle *this)
 
 {
+  rigid_body *body_2;
+  rigid_body *body;
+  bool active_vehicle;
+  
   this->m_flags = this->m_flags | 0x40;
   if (this->m_phys_user_data != (PhysObjUserData *)0x0) {
     rigid_body::set_flag(this->m_phys_user_data->body,0x40,1);
@@ -974,7 +983,7 @@ void __thiscall NitrousVehicle::_update_pause(NitrousVehicle *this)
 /* WARNING: Removing unreachable block (ram,0x00828f0a) */
 /* WARNING: Removing unreachable block (ram,0x00828f2a) */
 
-void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,float param_3,float param_4)
+void __cdecl make_rotate(phys_mat44 *m,phys_vec3 *u,float ca,float sa)
 
 {
   float fVar1;
@@ -989,39 +998,49 @@ void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,float param_3,fl
   float fVar10;
   float fVar11;
   float fVar12;
+  float yy;
+  float xsa;
+  float xy;
+  float zsa;
+  float zz;
+  float omca;
+  float ysa;
+  float xz;
+  float yz;
+  float xx;
   
-  fVar6 = 1.0 - param_3;
-  fVar7 = param_2->x * param_2->y * fVar6;
-  fVar8 = param_2->x * param_2->z * fVar6;
-  fVar1 = param_2->y;
-  fVar2 = param_2->y;
-  fVar9 = param_2->y * param_2->z * fVar6;
-  fVar3 = param_2->z;
-  fVar4 = param_2->z;
-  fVar10 = param_2->x * param_4;
-  fVar11 = param_2->y * param_4;
-  fVar12 = param_2->z * param_4;
-  (param_1->x).x = param_2->x * param_2->x * fVar6 + param_3;
-  (param_1->y).x = fVar7 - fVar12;
-  (param_1->z).x = fVar8 + fVar11;
-  (param_1->w).x = 0.0;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->x,1);
+  fVar6 = 1.0 - ca;
+  fVar7 = u->x * u->y * fVar6;
+  fVar8 = u->x * u->z * fVar6;
+  fVar1 = u->y;
+  fVar2 = u->y;
+  fVar9 = u->y * u->z * fVar6;
+  fVar3 = u->z;
+  fVar4 = u->z;
+  fVar10 = u->x * sa;
+  fVar11 = u->y * sa;
+  fVar12 = u->z * sa;
+  (m->x).x = u->x * u->x * fVar6 + ca;
+  (m->y).x = fVar7 - fVar12;
+  (m->z).x = fVar8 + fVar11;
+  (m->w).x = 0.0;
+  pfVar5 = phys_vec3::operator[]<int>(&m->x,1);
   *pfVar5 = fVar7 + fVar12;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->y,1);
-  *pfVar5 = fVar1 * fVar2 * fVar6 + param_3;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->z,1);
+  pfVar5 = phys_vec3::operator[]<int>(&m->y,1);
+  *pfVar5 = fVar1 * fVar2 * fVar6 + ca;
+  pfVar5 = phys_vec3::operator[]<int>(&m->z,1);
   *pfVar5 = fVar9 - fVar10;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->w,1);
+  pfVar5 = phys_vec3::operator[]<int>(&m->w,1);
   *pfVar5 = 0.0;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->x,2);
+  pfVar5 = phys_vec3::operator[]<int>(&m->x,2);
   *pfVar5 = fVar8 - fVar11;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->y,2);
+  pfVar5 = phys_vec3::operator[]<int>(&m->y,2);
   *pfVar5 = fVar9 + fVar10;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->z,2);
-  *pfVar5 = fVar3 * fVar4 * fVar6 + param_3;
-  pfVar5 = phys_vec3::operator[]<int>(&param_1->w,2);
+  pfVar5 = phys_vec3::operator[]<int>(&m->z,2);
+  *pfVar5 = fVar3 * fVar4 * fVar6 + ca;
+  pfVar5 = phys_vec3::operator[]<int>(&m->w,2);
   *pfVar5 = 0.0;
-  phys_mat44::fix_w_column(param_1);
+  phys_mat44::fix_w_column(m);
   return;
 }
 
@@ -1042,7 +1061,7 @@ void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,float param_3,fl
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicle::update_parms(NitrousVehicle *this,VehicleParameter *param_1,bool param_2)
+NitrousVehicle::update_parms(NitrousVehicle *this,VehicleParameter *params,bool initialization)
 
 {
   VehicleParameter *pVVar1;
@@ -1052,12 +1071,12 @@ NitrousVehicle::update_parms(NitrousVehicle *this,VehicleParameter *param_1,bool
   code *pcVar5;
   bool bVar6;
   float fVar7;
+  float coasting_factor;
   float fVar8;
-  float fVar9;
-  float fVar10;
-  float fVar11;
-  float fVar12;
-  phys_vec3 *ppVar13;
+  float desired_speed_factor;
+  float reference_wheel_radius;
+  float steer_max_angle;
+  phys_vec3 *steer_front_pt_loc;
   float local_234;
   phys_vec3 local_230;
   float local_220;
@@ -1147,8 +1166,8 @@ NitrousVehicle::update_parms(NitrousVehicle *this,VehicleParameter *param_1,bool
   phys_vec3 local_30;
   NitrousVehicle *local_14;
   
-  if (param_1 != (VehicleParameter *)0x0) {
-    this->m_parameter = param_1;
+  if (params != (VehicleParameter *)0x0) {
+    this->m_parameter = params;
   }
   if ((phys_heavyTankSwitch->current).enabled != false) {
     if (this->m_parameter->m_susp_damp_k == S_T34_DAMP) {
@@ -1235,7 +1254,7 @@ NitrousVehicle::update_parms(NitrousVehicle *this,VehicleParameter *param_1,bool
       }
       else {
         local_148 = (rigid_body_constraint_wheel *)0x0;
-        if (param_2) {
+        if (initialization) {
           local_148 = phys_sys::create_rbc_wheel(local_f8,(rigid_body *)0x0,0);
           if ((local_148 == (rigid_body_constraint_wheel *)0x0) &&
              (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp"
@@ -1402,17 +1421,18 @@ NitrousVehicle::update_parms(NitrousVehicle *this,VehicleParameter *param_1,bool
                   ((local_14->m_wheels[2]->m_b1_wheel_center_loc).x +
                   (local_14->m_wheels[3]->m_b1_wheel_center_loc).x) * 0.5;
     }
-    fVar9 = get_maximum_acceleration(local_14);
-    fVar9 = fVar9 * local_14->m_parameter->m_body_mass;
-    ppVar13 = &local_230;
+    fVar8 = get_maximum_acceleration(local_14);
+    fVar8 = fVar8 * local_14->m_parameter->m_body_mass;
+    steer_front_pt_loc = &local_230;
     fVar7 = local_14->m_parameter->m_steer_speed;
-    fVar12 = local_14->m_parameter->m_steer_angle_max;
-    fVar11 = local_14->m_parameter->m_wheel_radius;
-    fVar8 = local_14->m_parameter->m_tire_damp_coast * local_14->m_parameter->m_body_mass;
-    fVar10 = get_max_speed(local_14,true);
+    steer_max_angle = local_14->m_parameter->m_steer_angle_max;
+    reference_wheel_radius = local_14->m_parameter->m_wheel_radius;
+    coasting_factor = local_14->m_parameter->m_tire_damp_coast * local_14->m_parameter->m_body_mass;
+    desired_speed_factor = get_max_speed(local_14,true);
     set(local_14,local_14->m_parameter->m_tire_damp_hand * local_14->m_parameter->m_body_mass,
-        local_14->m_parameter->m_tire_damp_brake * local_14->m_parameter->m_body_mass,fVar10,fVar9,
-        fVar8,fVar11,fVar12,fVar7,ppVar13,local_234);
+        local_14->m_parameter->m_tire_damp_brake * local_14->m_parameter->m_body_mass,
+        desired_speed_factor,fVar8,coasting_factor,reference_wheel_radius,steer_max_angle,fVar7,
+        steer_front_pt_loc,local_234);
     if (local_14->m_orientation_constraint != (rigid_body_constraint_custom_orientation *)0x0) {
       local_14->m_orientation_constraint->m_torque_resistance_pitch_roll =
            local_14->m_parameter->m_pitch_roll_resistance * local_14->m_parameter->m_body_mass;
@@ -1458,7 +1478,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<NitrousVehicle>::debug_add(phys_free_list<NitrousVehicle> *this,T_internal *param_1)
+phys_free_list<NitrousVehicle>::debug_add(phys_free_list<NitrousVehicle> *this,T_internal *T_i)
 
 {
   int local_14;
@@ -1471,12 +1491,12 @@ phys_free_list<NitrousVehicle>::debug_add(phys_free_list<NitrousVehicle> *this,T
   }
   this->m_list_count_high_water = local_14;
   if (this->m_ptr_list_count < 0x100) {
-    param_1->m_ptr_list_index = this->m_ptr_list_count;
-    this->m_ptr_list[this->m_ptr_list_count] = &param_1->m_data;
+    T_i->m_ptr_list_index = this->m_ptr_list_count;
+    this->m_ptr_list[this->m_ptr_list_count] = &T_i->m_data;
     this->m_ptr_list_count = this->m_ptr_list_count + 1;
   }
   else {
-    param_1->m_ptr_list_index = -1;
+    T_i->m_ptr_list_index = -1;
   }
   return;
 }
@@ -1484,11 +1504,11 @@ phys_free_list<NitrousVehicle>::debug_add(phys_free_list<NitrousVehicle> *this,T
 
 // 008288C0  make_rotate  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:414)
 
-void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,float param_3,float param_4)
+void __cdecl make_rotate(phys_mat44 *mat,phys_vec3 *v,float theta_factor,float max_rotation_radians)
 
 {
-  float fVar1;
-  double dVar2;
+  float sa;
+  double dVar1;
   undefined4 in_stack_ffffffb0;
   undefined4 in_stack_ffffffb4;
   phys_vec3 local_40;
@@ -1498,28 +1518,28 @@ void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,float param_3,fl
   float local_18;
   float local_14;
   
-  local_14 = Abs(param_2);
+  local_14 = Abs(v);
   if (1e-05 <= local_14) {
     local_18 = 1.0 / local_14;
-    local_40.x = local_18 * param_2->x;
-    local_40.y = local_18 * param_2->y;
-    local_40.z = local_18 * param_2->z;
-    local_14 = local_14 * param_3;
-    if (param_4 < local_14) {
-      local_14 = param_4;
+    local_40.x = local_18 * v->x;
+    local_40.y = local_18 * v->y;
+    local_40.z = local_18 * v->z;
+    local_14 = local_14 * theta_factor;
+    if (max_rotation_radians < local_14) {
+      local_14 = max_rotation_radians;
     }
-    dVar2 = (double)local_14;
+    dVar1 = (double)local_14;
     local_24 = local_40.z;
     local_20 = local_40.y;
     local_1c = local_40.x;
     __libm_sse2_sin((double)CONCAT44(in_stack_ffffffb4,in_stack_ffffffb0));
-    fVar1 = (float)dVar2;
-    dVar2 = (double)local_14;
-    __libm_sse2_cos((double)CONCAT44(in_stack_ffffffb0,fVar1));
-    make_rotate(param_1,&local_40,(float)dVar2,fVar1);
+    sa = (float)dVar1;
+    dVar1 = (double)local_14;
+    __libm_sse2_cos((double)CONCAT44(in_stack_ffffffb0,sa));
+    make_rotate(mat,&local_40,(float)dVar1,sa);
   }
   else {
-    phys_mat44::operator=(param_1,&PHYS_IDENTITY_MATRIX);
+    phys_mat44::operator=(mat,&PHYS_IDENTITY_MATRIX);
   }
   return;
 }
@@ -1533,15 +1553,14 @@ void __cdecl make_rotate(phys_mat44 *param_1,phys_vec3 *param_2,float param_3,fl
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<NitrousVehicle>::debug_remove
-          (phys_free_list<NitrousVehicle> *this,T_internal *param_1)
+phys_free_list<NitrousVehicle>::debug_remove(phys_free_list<NitrousVehicle> *this,T_internal *T_i)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->m_ptr_list_index != -1) {
-    if ((param_1->m_ptr_list_index < 0) || (0xff < param_1->m_ptr_list_index)) {
+  if (T_i->m_ptr_list_index != -1) {
+    if ((T_i->m_ptr_list_index < 0) || (0xff < T_i->m_ptr_list_index)) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a5,
                         "T_i->m_ptr_list_index >= 0 && T_i->m_ptr_list_index < PTR_LIST_SIZE","");
       if (bVar2) {
@@ -1550,7 +1569,7 @@ phys_free_list<NitrousVehicle>::debug_remove
         return;
       }
     }
-    if (this->m_ptr_list[param_1->m_ptr_list_index] != &param_1->m_data) {
+    if (this->m_ptr_list[T_i->m_ptr_list_index] != &T_i->m_data) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a6,
                         "m_ptr_list[T_i->m_ptr_list_index] == &T_i->m_data","");
       if (bVar2) {
@@ -1560,9 +1579,8 @@ phys_free_list<NitrousVehicle>::debug_remove
       }
     }
     this->m_ptr_list_count = this->m_ptr_list_count + -1;
-    this->m_ptr_list[this->m_ptr_list_count][1].m_wheel_state[0].m_state = param_1->m_ptr_list_index
-    ;
-    this->m_ptr_list[param_1->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
+    this->m_ptr_list[this->m_ptr_list_count][1].m_wheel_state[0].m_state = T_i->m_ptr_list_index;
+    this->m_ptr_list[T_i->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
   }
   return;
 }
@@ -1575,13 +1593,13 @@ phys_free_list<NitrousVehicle>::debug_remove
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::set_throttle(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::set_throttle(NitrousVehicle *this,float throttle)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < -1.0) || (1.0 < param_1)) {
+  if ((throttle < -1.0) || (1.0 < throttle)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.h",0x1c5,0
                              ,"%s\n\t%s");
     if (!bVar2) {
@@ -1590,7 +1608,7 @@ void __thiscall NitrousVehicle::set_throttle(NitrousVehicle *this,float param_1)
       return;
     }
   }
-  this->m_throttle = param_1;
+  this->m_throttle = throttle;
   return;
 }
 
@@ -1604,38 +1622,39 @@ void __thiscall NitrousVehicle::set_throttle(NitrousVehicle *this,float param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 NitrousVehicle * __thiscall
-phys_free_list<NitrousVehicle>::add(phys_free_list<NitrousVehicle> *this,int param_1,char *param_2)
+phys_free_list<NitrousVehicle>::add
+          (phys_free_list<NitrousVehicle> *this,int no_error,char *error_msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  T_internal *pTVar3;
-  NitrousVehicle *pNVar4;
+  T_internal *T_i;
+  NitrousVehicle *pNVar3;
   
-  pTVar3 = PMM_ALLOC(0x460,0x10);
-  if (pTVar3 == (T_internal *)0x0) {
-    if ((param_1 == 0) &&
+  T_i = PMM_ALLOC(0x460,0x10);
+  if (T_i == (T_internal *)0x0) {
+    if ((no_error == 0) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1d6,
-                          "no_error",param_2), bVar2)) {
+                          "no_error",error_msg), bVar2)) {
       pcVar1 = (code *)swi(3);
-      pNVar4 = (NitrousVehicle *)(*pcVar1)();
-      return pNVar4;
+      pNVar3 = (NitrousVehicle *)(*pcVar1)();
+      return pNVar3;
     }
-    pNVar4 = (NitrousVehicle *)0x0;
+    pNVar3 = (NitrousVehicle *)0x0;
   }
   else {
-    if (pTVar3 != (T_internal *)0x0) {
-      NitrousVehicle::NitrousVehicle(&pTVar3->m_data);
+    if (T_i != (T_internal *)0x0) {
+      NitrousVehicle::NitrousVehicle(&T_i->m_data);
     }
-    *(phys_free_list<NitrousVehicle> **)pTVar3 = this;
-    *(T_internal_base **)&pTVar3->field_0x4 = (this->m_dummy_head).m_next_T_internal;
-    ((this->m_dummy_head).m_next_T_internal)->m_prev_T_internal = (T_internal_base *)pTVar3;
-    (this->m_dummy_head).m_next_T_internal = (T_internal_base *)pTVar3;
+    *(phys_free_list<NitrousVehicle> **)T_i = this;
+    *(T_internal_base **)&T_i->field_0x4 = (this->m_dummy_head).m_next_T_internal;
+    ((this->m_dummy_head).m_next_T_internal)->m_prev_T_internal = (T_internal_base *)T_i;
+    (this->m_dummy_head).m_next_T_internal = (T_internal_base *)T_i;
     this->m_list_count = this->m_list_count + 1;
-    debug_add(this,pTVar3);
-    pNVar4 = &pTVar3->m_data;
+    debug_add(this,T_i);
+    pNVar3 = &T_i->m_data;
   }
-  return pNVar4;
+  return pNVar3;
 }
 
 
@@ -1648,7 +1667,7 @@ phys_free_list<NitrousVehicle>::add(phys_free_list<NitrousVehicle> *this,int par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,T_internal *param_1)
+phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,T_internal *data)
 
 {
   int *piVar1;
@@ -1656,7 +1675,7 @@ phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,T_in
   code *pcVar3;
   bool bVar4;
   
-  if ((param_1 == (T_internal *)0x0) &&
+  if ((data == (T_internal *)0x0) &&
      (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
                         "data",""), bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -1664,12 +1683,12 @@ phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,T_in
     return;
   }
   this->m_list_count = this->m_list_count + -1;
-  debug_remove(this,param_1);
-  piVar1 = *(int **)&param_1->field_0x4;
-  iVar2 = *(int *)param_1;
+  debug_remove(this,data);
+  piVar1 = *(int **)&data->field_0x4;
+  iVar2 = *(int *)data;
   *(int **)(iVar2 + 4) = piVar1;
   *piVar1 = iVar2;
-  PMM_FREE(param_1,0x460,0x10);
+  PMM_FREE(data,0x460,0x10);
   return;
 }
 
@@ -1683,12 +1702,12 @@ phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,T_in
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,NitrousVehicle *param_1)
+phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,NitrousVehicle *data_)
 
 {
-  if (param_1 != (NitrousVehicle *)0x0) {
-    PMM_VALIDATE(&param_1[-1].m_steer_front_back_length,0x460,0x10);
-    remove(this,(T_internal *)&param_1[-1].m_steer_front_back_length);
+  if (data_ != (NitrousVehicle *)0x0) {
+    PMM_VALIDATE(&data_[-1].m_steer_front_back_length,0x460,0x10);
+    remove(this,(T_internal *)&data_[-1].m_steer_front_back_length);
   }
   return;
 }
@@ -1701,7 +1720,7 @@ phys_free_list<NitrousVehicle>::remove(phys_free_list<NitrousVehicle> *this,Nitr
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_setup_wheels(NitrousVehicle *this,int param_1)
+void __thiscall NitrousVehicle::_setup_wheels(NitrousVehicle *this,int localClientNum)
 
 {
   phys_vec3 *ppVar1;
@@ -1741,7 +1760,7 @@ void __thiscall NitrousVehicle::_setup_wheels(NitrousVehicle *this,int param_1)
     }
   }
   if (local_14->m_owner == (gentity_s *)0x0) {
-    local_1c = Com_GetClientDObj(local_14->m_entnum,param_1);
+    local_1c = Com_GetClientDObj(local_14->m_entnum,localClientNum);
   }
   else {
     local_20 = local_14->m_owner;
@@ -1862,14 +1881,14 @@ void __thiscall NitrousVehicle::_setup_wheels(NitrousVehicle *this,int param_1)
 
 float __thiscall
 NitrousVehicle::_calc_initial_susp_spring_k
-          (NitrousVehicle *this,rigid_body_constraint_wheel *param_1)
+          (NitrousVehicle *this,rigid_body_constraint_wheel *wheel_constraint)
 
 {
   float fVar1;
   float local_44;
   float local_40;
   
-  fVar1 = ABS((param_1->m_b1_wheel_center_loc).x) / this->m_steer_front_back_length;
+  fVar1 = ABS((wheel_constraint->m_b1_wheel_center_loc).x) / this->m_steer_front_back_length;
   local_40 = fVar1;
   if (0.0 <= fVar1 - 1.0) {
     local_40 = 1.0;
@@ -1917,18 +1936,20 @@ bool __thiscall NitrousVehicle::is_peeling_out(NitrousVehicle *this)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::destructible_damage(NitrousVehicle *this,char *param_1,int param_2)
+void __thiscall
+NitrousVehicle::destructible_damage(NitrousVehicle *this,char *notifyLabel,int damageStage)
 
 {
   int iVar1;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  rigid_body_constraint_wheel *rbc_wheel;
+  int j;
+  int i;
+  int max;
+  int min;
   
-  local_8 = 0;
-  local_c = -1;
-  if (param_1 != (char *)0x0) {
+  min = 0;
+  max = -1;
+  if (notifyLabel != (char *)0x0) {
     if (s_tankWheelJnts[0] == 0) {
       s_tankWheelJnts[0] = (uint)scr_const.tag_wheel_front_left;
       s_tankWheelJnts[1] = (uint)scr_const.tag_wheel_middle_left;
@@ -1937,28 +1958,27 @@ void __thiscall NitrousVehicle::destructible_damage(NitrousVehicle *this,char *p
       s_tankWheelJnts[4] = (uint)scr_const.tag_wheel_middle_right;
       s_tankWheelJnts[5] = (uint)scr_const.tag_wheel_back_right;
     }
-    iVar1 = I_strcmp(param_1,"left_tread_destroyed");
+    iVar1 = I_strcmp(notifyLabel,"left_tread_destroyed");
     if (iVar1 == 0) {
-      local_8 = 0;
-      local_c = 3;
+      min = 0;
+      max = 3;
       this->m_speed_scale = 0.0;
     }
     else {
-      iVar1 = I_strcmp(param_1,"right_tread_destroyed");
+      iVar1 = I_strcmp(notifyLabel,"right_tread_destroyed");
       if (iVar1 == 0) {
-        local_8 = 3;
-        local_c = 6;
+        min = 3;
+        max = 6;
         this->m_speed_scale = 0.0;
       }
     }
     if (this->m_speed_scale <= 0.0 && this->m_speed_scale != 0.0) {
       this->m_speed_scale = 1.0;
     }
-    for (local_10 = local_8; local_10 < local_c; local_10 = local_10 + 1) {
-      for (local_14 = 0; local_14 < 6; local_14 = local_14 + 1) {
-        if (s_tankWheelJnts[local_10] == (uint)*s_wheelTags[local_14]) {
-          this->m_wheels[local_14]->m_wheel_radius =
-               this->m_parameter->m_wheel_radius * tempRadiusPercent;
+    for (i = min; i < max; i = i + 1) {
+      for (j = 0; j < 6; j = j + 1) {
+        if (s_tankWheelJnts[i] == (uint)*s_wheelTags[j]) {
+          this->m_wheels[j]->m_wheel_radius = this->m_parameter->m_wheel_radius * tempRadiusPercent;
         }
       }
     }
@@ -1975,52 +1995,53 @@ void __thiscall NitrousVehicle::destructible_damage(NitrousVehicle *this,char *p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicle::damage(NitrousVehicle *this,int param_1,float *param_2,float *param_3,int param_4)
+NitrousVehicle::damage(NitrousVehicle *this,int damage,float *point,float *dir,int mod)
 
 {
   gentity_s *pgVar1;
   gentity_s *pgVar2;
   float fVar3;
-  float local_18;
+  gentity_s *tempent;
+  float force;
   float local_14;
   float local_10;
-  float local_c;
-  char local_5;
+  float forcescale;
+  bool doForce;
   
-  if ((param_4 < 3) || ((6 < param_4 && (param_4 != 0xf)))) {
-    local_5 = '\0';
+  if ((mod < 3) || ((6 < mod && (mod != 0xf)))) {
+    doForce = false;
   }
   else {
-    local_5 = '\x01';
+    doForce = true;
   }
-  if ((this->m_phys_user_data != (PhysObjUserData *)0x0) && (local_5 != '\0')) {
-    if (param_1 < 0xfb) {
-      if (param_1 < 0x32) {
-        param_1 = 0x32;
+  if ((this->m_phys_user_data != (PhysObjUserData *)0x0) && (doForce != false)) {
+    if (damage < 0xfb) {
+      if (damage < 0x32) {
+        damage = 0x32;
       }
     }
     else {
-      param_1 = 0xfa;
+      damage = 0xfa;
     }
-    local_18 = *param_3;
-    local_14 = param_3[1];
-    local_10 = param_3[2];
-    Vec3NormalizeFast(&local_18);
-    local_c = (phys_vehicleDamageFroceScale->current).value;
-    fVar3 = (float)param_1 * local_c;
-    local_18 = fVar3 * local_18;
+    force = *dir;
+    local_14 = dir[1];
+    local_10 = dir[2];
+    Vec3NormalizeFast(&force);
+    forcescale = (phys_vehicleDamageFroceScale->current).value;
+    fVar3 = (float)damage * forcescale;
+    force = fVar3 * force;
     local_14 = fVar3 * local_14;
     local_10 = fVar3 * local_10;
     if (this->m_owner != (gentity_s *)0x0) {
-      pgVar2 = G_TempEntity(&local_18,0x4b);
+      pgVar2 = G_TempEntity(&force,0x4b);
       AssignToSmallerType<short>(&(pgVar2->s).otherEntityNum,(this->m_owner->s).number);
-      (pgVar2->s).lerp.pos.trDelta[0] = local_18;
+      (pgVar2->s).lerp.pos.trDelta[0] = force;
       (pgVar2->s).lerp.pos.trDelta[1] = local_14;
       (pgVar2->s).lerp.pos.trDelta[2] = local_10;
       pgVar1 = this->m_owner;
-      (pgVar2->s).lerp.pos.trDelta[0] = *param_2 - (pgVar1->r).currentOrigin[0];
-      (pgVar2->s).lerp.pos.trDelta[1] = param_2[1] - (pgVar1->r).currentOrigin[1];
-      (pgVar2->s).lerp.pos.trDelta[2] = param_2[2] - (pgVar1->r).currentOrigin[2];
+      (pgVar2->s).lerp.pos.trDelta[0] = *point - (pgVar1->r).currentOrigin[0];
+      (pgVar2->s).lerp.pos.trDelta[1] = point[1] - (pgVar1->r).currentOrigin[1];
+      (pgVar2->s).lerp.pos.trDelta[2] = point[2] - (pgVar1->r).currentOrigin[2];
     }
   }
   return;
@@ -2106,7 +2127,10 @@ void __thiscall NitrousVehicle::_update_orientation_constraint(NitrousVehicle *t
   bool bVar2;
   bool local_3a;
   bool local_39;
-  int local_c;
+  rigid_body_constraint_wheel *rbc_wheel;
+  int i;
+  bool no_orientation_correction;
+  bool active;
   
   if (this->m_orientation_constraint == (rigid_body_constraint_custom_orientation *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",0x370,
@@ -2157,9 +2181,9 @@ void __thiscall NitrousVehicle::_update_orientation_constraint(NitrousVehicle *t
     this->m_orientation_constraint->m_torque_resistance_yaw = 0.0;
     this->m_orientation_constraint->m_upright_strength = 0.0;
     this->m_orientation_constraint->m_no_orientation_correction = true;
-    for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-      if (this->m_wheels[local_c] != (rigid_body_constraint_wheel *)0x0) {
-        this->m_wheels[local_c]->m_roll_stability_factor = 0.0;
+    for (i = 0; i < 6; i = i + 1) {
+      if (this->m_wheels[i] != (rigid_body_constraint_wheel *)0x0) {
+        this->m_wheels[i]->m_roll_stability_factor = 0.0;
       }
     }
   }
@@ -2174,13 +2198,15 @@ void __thiscall NitrousVehicle::_update_orientation_constraint(NitrousVehicle *t
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __thiscall NitrousVehicle::_get_stuck_accel_factor(NitrousVehicle *this,float param_1)
+float __thiscall NitrousVehicle::_get_stuck_accel_factor(NitrousVehicle *this,float delta_t)
 
 {
   rigid_body *prVar1;
   float fVar2;
   float local_28;
   float local_20;
+  float accel_scale;
+  float abs_steer_factor;
   
   if (this->m_phys_user_data == (PhysObjUserData *)0x0) {
     local_28 = 1.0;
@@ -2201,11 +2227,11 @@ float __thiscall NitrousVehicle::_get_stuck_accel_factor(NitrousVehicle *this,fl
           this->m_stuck_time = 0.0;
         }
         else {
-          this->m_stuck_time = this->m_stuck_time + param_1;
+          this->m_stuck_time = this->m_stuck_time + delta_t;
         }
       }
       else {
-        this->m_stuck_time = this->m_stuck_time + param_1;
+        this->m_stuck_time = this->m_stuck_time + delta_t;
       }
     }
     if (this->m_stuck_time <= 0.4) {
@@ -2234,7 +2260,7 @@ float __thiscall NitrousVehicle::_get_stuck_accel_factor(NitrousVehicle *this,fl
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float delta_t)
 
 {
   float *pfVar1;
@@ -2247,13 +2273,19 @@ void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1
   bool bVar8;
   float local_44;
   float local_40;
-  bool local_6;
+  float regenPerSecond;
+  bool tryingToBoost;
+  bool intervalLeft;
+  bool cooldownLeft;
+  bool wasBoosting;
+  bool boosting;
+  bool durationLeft;
   
-  local_6 = false;
+  boosting = false;
   bVar7 = bitarray<51>::testBit(&(this->mVehicleController).m_cmd.button_bits,0x2b);
   bVar8 = (this->m_flags & 0x800U) != 0;
   if (bVar8) {
-    this->m_boost_time_pool = this->m_boost_time_pool - param_1;
+    this->m_boost_time_pool = this->m_boost_time_pool - delta_t;
   }
   bVar6 = this->m_boost_time_pool <= 0.0;
   if (this->m_boost_start_time == 0) {
@@ -2277,18 +2309,18 @@ void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1
     pfVar1 = &this->m_vehicle_info->boostDuration;
     if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
       Com_PrintWarning(0xf,"boostDuration duration must be less than boostInterval\n");
-      bVar8 = local_6;
+      bVar8 = boosting;
     }
     else if ((!bVar8) || (bVar6)) {
       if ((!bVar7) || ((bVar6 || (bVar4)))) {
-        bVar8 = local_6;
+        bVar8 = boosting;
         if ((bVar4) &&
            (fVar2 = this->m_vehicle_info->boostDuration,
            this->m_boost_time_pool <= fVar2 && fVar2 != this->m_boost_time_pool)) {
           this->m_boost_time_pool =
                (this->m_vehicle_info->boostDuration /
                (this->m_vehicle_info->boostInterval - this->m_vehicle_info->boostDuration)) *
-               param_1 + this->m_boost_time_pool;
+               delta_t + this->m_boost_time_pool;
           local_40 = this->m_vehicle_info->boostDuration;
           if (0.0 <= local_40 - this->m_boost_time_pool) {
             local_40 = this->m_boost_time_pool;
@@ -2297,13 +2329,13 @@ void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1
         }
       }
       else {
-        local_6 = true;
-        bVar8 = local_6;
+        boosting = true;
+        bVar8 = boosting;
       }
     }
   }
   else {
-    bVar8 = local_6;
+    bVar8 = boosting;
     if (sVar3 == 1) {
       if ((!bVar7) || (bVar6)) {
         if ((!bVar7) &&
@@ -2311,7 +2343,7 @@ void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1
             (fVar2 = this->m_vehicle_info->boostDuration,
             this->m_boost_time_pool <= fVar2 && fVar2 != this->m_boost_time_pool)))) {
           this->m_boost_time_pool =
-               this->m_vehicle_info->boostContinuousRegenAmount * param_1 + this->m_boost_time_pool;
+               this->m_vehicle_info->boostContinuousRegenAmount * delta_t + this->m_boost_time_pool;
           local_44 = this->m_vehicle_info->boostDuration;
           if (0.0 <= local_44 - this->m_boost_time_pool) {
             local_44 = this->m_boost_time_pool;
@@ -2320,13 +2352,13 @@ void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1
         }
       }
       else {
-        local_6 = true;
-        bVar8 = local_6;
+        boosting = true;
+        bVar8 = boosting;
       }
     }
   }
-  local_6 = bVar8;
-  set_boosting(this,local_6);
+  boosting = bVar8;
+  set_boosting(this,boosting);
   return;
 }
 
@@ -2345,7 +2377,7 @@ void __thiscall NitrousVehicle::_update_boost(NitrousVehicle *this,float param_1
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_update_prolog(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::_update_prolog(NitrousVehicle *this,float delta_t)
 
 {
   VehicleParameter *pVVar1;
@@ -2374,8 +2406,8 @@ void __thiscall NitrousVehicle::_update_prolog(NitrousVehicle *this,float param_
   
   _update_pause(this);
   this->m_notify_flags = 0;
-  NitrousVehicleController::UpdateControls(&this->mVehicleController,this,param_1);
-  _update_boost(this,param_1);
+  NitrousVehicleController::UpdateControls(&this->mVehicleController,this,delta_t);
+  _update_boost(this,delta_t);
   if (this->m_throttle <= 0.0) {
     this->m_state_flags = this->m_state_flags & 0xfffffffb;
   }
@@ -2408,7 +2440,7 @@ void __thiscall NitrousVehicle::_update_prolog(NitrousVehicle *this,float param_
       local_44 = local_38;
     }
     fVar4 = this->m_throttle;
-    fVar3 = _get_stuck_accel_factor(this,param_1);
+    fVar3 = _get_stuck_accel_factor(this,delta_t);
     local_30 = fVar3 * local_30 * ABS(fVar4) * (6.0 / (float)local_44);
   }
   else {
@@ -2570,10 +2602,10 @@ void __thiscall NitrousVehicle::_update_prolog(NitrousVehicle *this,float param_
     this->m_state_flags = this->m_state_flags | 2;
   }
   if ((this->m_flags & 1U) == 0) {
-    update_braking_and_acceleration(this,param_1);
-    update_steering(this,param_1);
-    _update_fakey_stuff(this,param_1);
-    _update_friction(this,param_1);
+    update_braking_and_acceleration(this,delta_t);
+    update_steering(this,delta_t);
+    _update_fakey_stuff(this,delta_t);
+    _update_friction(this,delta_t);
     _update_orientation_constraint(this);
     if ((this->m_flags & 0x80U) != 0) {
       if (this->m_vpc == (rigid_body_constraint_custom_path *)0x0) {
@@ -2591,7 +2623,7 @@ void __thiscall NitrousVehicle::_update_prolog(NitrousVehicle *this,float param_
 // 00821B40  comp_aabb_loc  (physics/phys_colgeom.h:1039)
 
 void __thiscall
-gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *param_1,phys_vec3 *param_2)
+gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *aabb_mn_loc,phys_vec3 *aabb_mx_loc)
 
 {
   code *pcVar1;
@@ -2640,9 +2672,9 @@ gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *param_1,phys_vec
   local_2c = (local_18->m_aabb_mn_loc).y;
   local_28 = (local_18->m_aabb_mn_loc).z;
   local_24 = (local_18->m_aabb_mn_loc).w;
-  param_1->x = local_30;
-  param_1->y = local_2c;
-  param_1->z = local_28;
+  aabb_mn_loc->x = local_30;
+  aabb_mn_loc->y = local_2c;
+  aabb_mn_loc->z = local_28;
   local_34 = local_14->m_first_geom;
   if ((local_34->m_flags & 2) == 0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\vehicle\\../physics/phys_colgeom.h",0x53,
@@ -2657,9 +2689,9 @@ gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *param_1,phys_vec
   local_4c = (local_34->m_aabb_mx_loc).y;
   local_48 = (local_34->m_aabb_mx_loc).z;
   local_44 = (local_34->m_aabb_mx_loc).w;
-  param_2->x = local_50;
-  param_2->y = local_4c;
-  param_2->z = local_48;
+  aabb_mx_loc->x = local_50;
+  aabb_mx_loc->y = local_4c;
+  aabb_mx_loc->z = local_48;
   local_54 = local_14->m_first_geom->m_next_geom;
   do {
     if (local_54 == (gjk_base_t *)0x0) {
@@ -2679,10 +2711,10 @@ gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *param_1,phys_vec
     local_70.y = (local_54->m_aabb_mn_loc).y;
     local_70.z = (local_54->m_aabb_mn_loc).z;
     local_70.w = (local_54->m_aabb_mn_loc).w;
-    local_84 = phys_min(&local_80,param_1,&local_70);
-    param_1->x = local_84->x;
-    param_1->y = local_84->y;
-    param_1->z = local_84->z;
+    local_84 = phys_min(&local_80,aabb_mn_loc,&local_70);
+    aabb_mn_loc->x = local_84->x;
+    aabb_mn_loc->y = local_84->y;
+    aabb_mn_loc->z = local_84->z;
     if ((local_54->m_flags & 2) == 0) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\src\\vehicle\\../physics/phys_colgeom.h",0x53
                         ,"get_flag(FLAG_AABB_LOC_VALID)","");
@@ -2696,10 +2728,10 @@ gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *param_1,phys_vec
     local_a0.y = (local_54->m_aabb_mx_loc).y;
     local_a0.z = (local_54->m_aabb_mx_loc).z;
     local_a0.w = (local_54->m_aabb_mx_loc).w;
-    ppVar3 = phys_max(&local_b0,param_2,&local_a0);
-    param_2->x = ppVar3->x;
-    param_2->y = ppVar3->y;
-    param_2->z = ppVar3->z;
+    ppVar3 = phys_max(&local_b0,aabb_mx_loc,&local_a0);
+    aabb_mx_loc->x = ppVar3->x;
+    aabb_mx_loc->y = ppVar3->y;
+    aabb_mx_loc->z = ppVar3->z;
     local_54 = local_54->m_next_geom;
   } while( true );
 }
@@ -2712,10 +2744,10 @@ gjk_geom_list_t::comp_aabb_loc(gjk_geom_list_t *this,phys_vec3 *param_1,phys_vec
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_update_epilog(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::_update_epilog(NitrousVehicle *this,float delta_t)
 
 {
-  _update_wheel_effect_states(this,param_1);
+  _update_wheel_effect_states(this,delta_t);
   return;
 }
 
@@ -2727,22 +2759,24 @@ void __thiscall NitrousVehicle::_update_epilog(NitrousVehicle *this,float param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_update_friction(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::_update_friction(NitrousVehicle *this,float delta_t)
 
 {
   bool bVar1;
   float fVar2;
   float local_2c;
   float local_1c;
-  float local_10;
+  float fric_scaler;
+  bool bAxleIndependantFriction;
+  float up;
   
   if ((this->m_flags & 0x80U) == 0) {
-    this->m_hand_brake_friction_time = this->m_hand_brake_friction_time - param_1;
+    this->m_hand_brake_friction_time = this->m_hand_brake_friction_time - delta_t;
     if ((0.1 < this->m_hand_brake) && (0.0 < this->m_parameter->m_tire_fric_hand_brake)) {
       this->m_hand_brake_friction_time = hand_brake_friction_time;
     }
     fVar2 = (this->m_phys_user_data->body->m_mat).z.z;
-    local_10 = 1.0;
+    fric_scaler = 1.0;
     if ((fVar2 < this->m_vehicle_info->max_fric_tilt_angle) &&
        (0.0 < this->m_vehicle_info->max_fric_tilt_angle)) {
       fVar2 = (this->m_vehicle_info->max_fric_tilt / this->m_vehicle_info->max_fric_tilt_angle) *
@@ -2757,33 +2791,33 @@ void __thiscall NitrousVehicle::_update_friction(NitrousVehicle *this,float para
       else {
         local_2c = 0.15;
       }
-      local_10 = local_2c;
+      fric_scaler = local_2c;
     }
     bVar1 = is_boosting(this);
     if ((bVar1) && (0.0 < this->m_vehicle_info->boostFrictionMultiplier)) {
-      local_10 = local_10 * this->m_vehicle_info->boostFrictionMultiplier;
+      fric_scaler = fric_scaler * this->m_vehicle_info->boostFrictionMultiplier;
     }
     if ((this->m_flags & 0x80U) == 0) {
       if (this->m_brake <= 0.1) {
         if (this->m_hand_brake_friction_time <= 0.0) {
           this->m_current_front_side_fric_scale =
-               this->m_parameter->m_tire_fric_side * local_10 * side_fric_scale;
+               this->m_parameter->m_tire_fric_side * fric_scaler * side_fric_scale;
           this->m_current_front_fwd_fric_scale =
-               this->m_parameter->m_tire_fric_fwd * local_10 * fwd_fric_scale;
+               this->m_parameter->m_tire_fric_fwd * fric_scaler * fwd_fric_scale;
         }
         else {
           this->m_current_front_side_fric_scale =
-               this->m_parameter->m_tire_fric_hand_brake * local_10;
+               this->m_parameter->m_tire_fric_hand_brake * fric_scaler;
           if (ABS(this->m_throttle) <= 0.1) {
             this->m_current_front_fwd_fric_scale = this->m_current_front_side_fric_scale;
           }
           else {
-            this->m_current_front_fwd_fric_scale = this->m_parameter->m_tire_fric_fwd * local_10;
+            this->m_current_front_fwd_fric_scale = this->m_parameter->m_tire_fric_fwd * fric_scaler;
           }
         }
       }
       else {
-        this->m_current_front_side_fric_scale = this->m_parameter->m_tire_fric_brake * local_10;
+        this->m_current_front_side_fric_scale = this->m_parameter->m_tire_fric_brake * fric_scaler;
         this->m_current_front_fwd_fric_scale = this->m_current_front_side_fric_scale;
       }
     }
@@ -2805,67 +2839,79 @@ void __thiscall NitrousVehicle::_update_friction(NitrousVehicle *this,float para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_update_fakey_stuff(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::_update_fakey_stuff(NitrousVehicle *this,float delta_t)
 
 {
-  rigid_body *prVar1;
-  rigid_body_constraint_wheel *prVar2;
+  rigid_body *b1;
+  rigid_body_constraint_wheel *prVar1;
+  bool bVar2;
   bool bVar3;
-  bool bVar4;
-  rigid_body *prVar5;
-  rigid_body_constraint_custom_orientation *prVar6;
-  float fVar7;
-  int iVar8;
-  int local_40;
-  int local_38;
-  float local_34;
-  float local_2c;
-  float local_28;
-  int local_20;
-  float local_10;
+  rigid_body *b2;
+  rigid_body_constraint_custom_orientation *prVar4;
+  float fVar5;
+  int no_error;
+  float boat_rpm_target;
+  rigid_body_constraint_wheel *rbc_wheel_2;
+  int i_2;
+  rigid_body_constraint_wheel *rbc_wheel;
+  int i;
+  float rpm_lerp_rate;
+  rigid_body *rb;
+  float spring_delta;
+  float spring_k;
+  float peel_out_vel;
+  int num_colliding_wheels;
+  bool high_rpm;
+  float current_speed_pct;
+  float delta_rpm;
+  float rpm_target;
+  bool peeling_out;
+  rigid_body_constraint_wheel *wheel;
   
-  prVar1 = this->m_phys_user_data->body;
-  local_20 = 0;
-  local_2c = 0.0;
+  b1 = this->m_phys_user_data->body;
+  num_colliding_wheels = 0;
+  spring_delta = 0.0;
   if (this->m_throttle <= 0.5) {
     if (this->m_throttle < -0.5) {
-      local_2c = -this->m_parameter->m_susp_spring_k * this->m_parameter->m_tilt_fakey *
-                 this->m_parameter->m_body_mass;
+      spring_delta = -this->m_parameter->m_susp_spring_k * this->m_parameter->m_tilt_fakey *
+                     this->m_parameter->m_body_mass;
     }
   }
   else {
-    local_2c = this->m_parameter->m_susp_spring_k * this->m_parameter->m_tilt_fakey *
-               this->m_parameter->m_body_mass;
+    spring_delta = this->m_parameter->m_susp_spring_k * this->m_parameter->m_tilt_fakey *
+                   this->m_parameter->m_body_mass;
   }
-  local_28 = 30.0;
-  prVar2 = this->m_wheels[1];
-  if (prVar2 != (rigid_body_constraint_wheel *)0x0) {
-    local_28 = _calc_initial_susp_spring_k(this,prVar2);
-    prVar2->m_suspension_stiffness_k = local_28 + local_2c;
-    if ((prVar2->m_wheel_flags & 1) != 0) {
-      local_20 = 1;
+  spring_k = 30.0;
+  prVar1 = this->m_wheels[1];
+  if (prVar1 != (rigid_body_constraint_wheel *)0x0) {
+    spring_k = _calc_initial_susp_spring_k(this,prVar1);
+    prVar1->m_suspension_stiffness_k = spring_k + spring_delta;
+    if ((prVar1->m_wheel_flags & 1) != 0) {
+      num_colliding_wheels = 1;
     }
   }
-  prVar2 = this->m_wheels[0];
-  if ((prVar2 != (rigid_body_constraint_wheel *)0x0) &&
-     (prVar2->m_suspension_stiffness_k = local_28 + local_2c, (prVar2->m_wheel_flags & 1) != 0)) {
-    local_20 = local_20 + 1;
+  prVar1 = this->m_wheels[0];
+  if ((prVar1 != (rigid_body_constraint_wheel *)0x0) &&
+     (prVar1->m_suspension_stiffness_k = spring_k + spring_delta, (prVar1->m_wheel_flags & 1) != 0))
+  {
+    num_colliding_wheels = num_colliding_wheels + 1;
   }
-  prVar2 = this->m_wheels[3];
-  if (prVar2 != (rigid_body_constraint_wheel *)0x0) {
-    local_28 = _calc_initial_susp_spring_k(this,prVar2);
-    if ((prVar2->m_wheel_flags & 1) != 0) {
-      local_20 = local_20 + 1;
+  prVar1 = this->m_wheels[3];
+  if (prVar1 != (rigid_body_constraint_wheel *)0x0) {
+    spring_k = _calc_initial_susp_spring_k(this,prVar1);
+    if ((prVar1->m_wheel_flags & 1) != 0) {
+      num_colliding_wheels = num_colliding_wheels + 1;
     }
-    prVar2->m_suspension_stiffness_k = local_28 - local_2c;
+    prVar1->m_suspension_stiffness_k = spring_k - spring_delta;
   }
-  prVar2 = this->m_wheels[2];
-  if ((prVar2 != (rigid_body_constraint_wheel *)0x0) &&
-     (prVar2->m_suspension_stiffness_k = local_28 - local_2c, (prVar2->m_wheel_flags & 1) != 0)) {
-    local_20 = local_20 + 1;
+  prVar1 = this->m_wheels[2];
+  if ((prVar1 != (rigid_body_constraint_wheel *)0x0) &&
+     (prVar1->m_suspension_stiffness_k = spring_k - spring_delta, (prVar1->m_wheel_flags & 1) != 0))
+  {
+    num_colliding_wheels = num_colliding_wheels + 1;
   }
-  if ((this->m_num_colliding_wheels == 0) || (local_20 != 0)) {
-    if ((this->m_num_colliding_wheels == 0) && (local_20 != 0)) {
+  if ((this->m_num_colliding_wheels == 0) || (num_colliding_wheels != 0)) {
+    if ((this->m_num_colliding_wheels == 0) && (num_colliding_wheels != 0)) {
       this->m_notify_flags = this->m_notify_flags | 4;
       this->m_server_notify_flags = this->m_server_notify_flags | 4;
     }
@@ -2874,20 +2920,20 @@ void __thiscall NitrousVehicle::_update_fakey_stuff(NitrousVehicle *this,float p
     this->m_notify_flags = this->m_notify_flags | 2;
     this->m_server_notify_flags = this->m_server_notify_flags | 2;
   }
-  local_38 = 0;
+  i = 0;
   do {
-    if (5 < local_38) {
+    if (5 < i) {
 LAB_00824c5a:
-      this->m_num_colliding_wheels = local_20;
+      this->m_num_colliding_wheels = num_colliding_wheels;
       if ((this->mVehicleController).m_stun.m_changed_this_frame != false) {
         this->m_notify_flags = this->m_notify_flags | 0x10;
         this->m_server_notify_flags = this->m_server_notify_flags | 0x10;
       }
       if (this->m_orientation_constraint == (rigid_body_constraint_custom_orientation *)0x0) {
-        iVar8 = 0;
-        prVar5 = (rigid_body *)phys_sys::get_environment_rigid_body();
-        prVar6 = phys_sys::create_rbc_custom_orientation(prVar1,prVar5,iVar8);
-        this->m_orientation_constraint = prVar6;
+        no_error = 0;
+        b2 = (rigid_body *)phys_sys::get_environment_rigid_body();
+        prVar4 = phys_sys::create_rbc_custom_orientation(b1,b2,no_error);
+        this->m_orientation_constraint = prVar4;
         this->m_orientation_constraint->m_torque_resistance_pitch_roll =
              this->m_parameter->m_pitch_roll_resistance * this->m_parameter->m_body_mass;
         this->m_orientation_constraint->m_torque_resistance_yaw =
@@ -2895,57 +2941,58 @@ LAB_00824c5a:
         this->m_orientation_constraint->m_upright_strength =
              this->m_parameter->m_upright_strength * this->m_parameter->m_body_mass;
       }
-      bVar4 = is_peeling_out(this);
-      bVar3 = false;
+      bVar3 = is_peeling_out(this);
+      bVar2 = false;
       if ((this->m_vehicle_info->type != 2) && (this->m_vehicle_info->type != 4)) {
-        for (local_40 = 0; local_40 < 6; local_40 = local_40 + 1) {
-          prVar2 = this->m_wheels[local_40];
-          if (((prVar2 != (rigid_body_constraint_wheel *)0x0) && (prVar2->m_wheel_state == 0)) &&
-             ((bVar4 || ((0.7 < this->m_throttle && ((prVar2->m_wheel_flags & 1) == 0)))))) {
-            bVar3 = true;
-            prVar2->m_wheel_pos = param_1 * 40.0 + prVar2->m_wheel_pos;
+        for (i_2 = 0; i_2 < 6; i_2 = i_2 + 1) {
+          prVar1 = this->m_wheels[i_2];
+          if (((prVar1 != (rigid_body_constraint_wheel *)0x0) && (prVar1->m_wheel_state == 0)) &&
+             ((bVar3 || ((0.7 < this->m_throttle && ((prVar1->m_wheel_flags & 1) == 0)))))) {
+            bVar2 = true;
+            prVar1->m_wheel_pos = delta_t * 40.0 + prVar1->m_wheel_pos;
           }
         }
       }
-      if ((bVar4) && (0.7 < this->m_throttle)) {
-        bVar3 = true;
+      if ((bVar3) && (0.7 < this->m_throttle)) {
+        bVar2 = true;
       }
-      fVar7 = get_max_speed(this,true);
-      local_10 = ABS(this->m_throttle) * ABS(this->m_forward_vel / fVar7);
+      fVar5 = get_max_speed(this,true);
+      rpm_target = ABS(this->m_throttle) * ABS(this->m_forward_vel / fVar5);
       if (this->m_vehicle_info->type == 4) {
-        fVar7 = this->m_throttle * 0.8;
-        if (local_10 < fVar7) {
-          local_10 = fVar7;
+        fVar5 = this->m_throttle * 0.8;
+        if (rpm_target < fVar5) {
+          rpm_target = fVar5;
         }
         if ((this->m_flags & 0x400U) == 0) {
-          local_10 = 1.0;
+          rpm_target = 1.0;
         }
       }
-      if ((bVar3) && (local_10 < 0.8)) {
-        local_10 = 0.8;
+      if ((bVar2) && (rpm_target < 0.8)) {
+        rpm_target = 0.8;
       }
-      local_34 = 1.5;
+      rpm_lerp_rate = 1.5;
       if ((snd_boat_using_lerp_rpm != (dvar_s *)0x0) &&
          ((snd_boat_using_lerp_rpm->current).enabled != false)) {
-        local_34 = (snd_boat_lerp_rpm->current).value;
+        rpm_lerp_rate = (snd_boat_lerp_rpm->current).value;
       }
-      this->m_fake_rpm = param_1 * (local_10 - this->m_fake_rpm) * local_34 + this->m_fake_rpm;
+      this->m_fake_rpm =
+           delta_t * (rpm_target - this->m_fake_rpm) * rpm_lerp_rate + this->m_fake_rpm;
       return;
     }
-    if ((this->m_wheels[local_38] != (rigid_body_constraint_wheel *)0x0) &&
-       ((this->m_wheels[local_38]->m_wheel_flags & 2) != 0)) {
+    if ((this->m_wheels[i] != (rigid_body_constraint_wheel *)0x0) &&
+       ((this->m_wheels[i]->m_wheel_flags & 2) != 0)) {
       this->m_notify_flags = this->m_notify_flags | 8;
       this->m_server_notify_flags = this->m_server_notify_flags | 8;
       goto LAB_00824c5a;
     }
-    local_38 = local_38 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00822B90  BeginGenerateVerts  (glass/glass_renderer.cpp:1332)
 
-void __thiscall GlassRenderer::BeginGenerateVerts(GlassRenderer *this,int param_1,uint param_2)
+void __thiscall GlassRenderer::BeginGenerateVerts(GlassRenderer *this,int boneName,uint damageStage)
 
 {
   return;
@@ -2982,35 +3029,35 @@ void __thiscall GlassRenderer::BeginGenerateVerts(GlassRenderer *this,int param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::start_path(NitrousVehicle *this,int param_1)
+void __thiscall NitrousVehicle::start_path(NitrousVehicle *this,int attach_mode)
 
 {
   gentity_s *pgVar1;
   rigid_body_constraint_custom_path *prVar2;
   float local_40 [9];
   float *local_1c;
-  float local_18;
+  float origin;
   float local_14;
   float local_10;
-  rigid_body_constraint_wheel *local_c;
-  int local_8;
+  rigid_body_constraint_wheel *rbc_wheel;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
   Sys_EnterCriticalSection(CRITSECT_PHYSICS);
   this->m_flags = this->m_flags & 0xfffffffb;
   this->m_flags = this->m_flags & 0xfffffeff;
   this->m_flags = this->m_flags & 0xffffff7f;
-  if (param_1 == 0) {
+  if (attach_mode == 0) {
     this->m_flags = this->m_flags | 0x80;
     if ((this->m_flags & 1U) == 0) {
       if (this->m_vpc == (rigid_body_constraint_custom_path *)0x0) {
         prVar2 = path_constraint_create(this->m_owner);
         this->m_vpc = prVar2;
-        for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-          local_c = this->m_wheels[local_8];
-          if (local_c != (rigid_body_constraint_wheel *)0x0) {
-            local_c->m_fwd_fric_k = 0.01;
-            local_c->m_side_fric_k = 0.01;
+        for (i = 0; i < 6; i = i + 1) {
+          rbc_wheel = this->m_wheels[i];
+          if (rbc_wheel != (rigid_body_constraint_wheel *)0x0) {
+            rbc_wheel->m_fwd_fric_k = 0.01;
+            rbc_wheel->m_side_fric_k = 0.01;
           }
         }
       }
@@ -3018,12 +3065,12 @@ void __thiscall NitrousVehicle::start_path(NitrousVehicle *this,int param_1)
     else {
       pgVar1 = this->m_owner;
       local_1c = (pgVar1->r).currentOrigin;
-      local_18 = *local_1c;
+      origin = *local_1c;
       local_14 = (pgVar1->r).currentOrigin[1];
       local_10 = (pgVar1->r).currentOrigin[2] + 40.0;
       AnglesToAxis((this->m_owner->r).currentAngles,(float (*) [3])local_40);
       Phys_AxisToNitrousMat((float (*) [3])local_40,&this->m_prev_rb_mat);
-      Phys_Vec3ToNitrousVec(&local_18,&(this->m_prev_rb_mat).w);
+      Phys_Vec3ToNitrousVec(&origin,&(this->m_prev_rb_mat).w);
       if (((((this->m_prev_rb_mat).w.x != (this->m_prev_rb_mat).w.x) ||
            (100000.0 < ABS((this->m_prev_rb_mat).w.x))) ||
           ((this->m_prev_rb_mat).w.y != (this->m_prev_rb_mat).w.y)) ||
@@ -3093,17 +3140,18 @@ void __thiscall NitrousVehicle::cleanup_path(NitrousVehicle *this)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl NitrousVehicle::frame_prolog_all_systems(float param_1)
+void __cdecl NitrousVehicle::frame_prolog_all_systems(float delta_t)
 
 {
   DWORD DVar1;
-  phys_free_list<NitrousVehicle> *local_c;
+  phys_free_list<NitrousVehicle> *i;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"NitrousVehicle::frame_prolog");
-  for (local_c = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
-      local_c != &g_rb_vehicle_list;
-      local_c = (phys_free_list<NitrousVehicle> *)(local_c->m_dummy_head).m_next_T_internal) {
-    _update_prolog((NitrousVehicle *)local_c->m_ptr_list,param_1);
+  for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+      i != &g_rb_vehicle_list;
+      i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+    _update_prolog((NitrousVehicle *)i->m_ptr_list,delta_t);
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3120,17 +3168,18 @@ void __cdecl NitrousVehicle::frame_prolog_all_systems(float param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl NitrousVehicle::frame_epilog_all_systems(float param_1)
+void __cdecl NitrousVehicle::frame_epilog_all_systems(float delta_t)
 
 {
   DWORD DVar1;
-  phys_free_list<NitrousVehicle> *local_c;
+  phys_free_list<NitrousVehicle> *i;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"NitrousVehicle::frame_epilog");
-  for (local_c = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
-      local_c != &g_rb_vehicle_list;
-      local_c = (phys_free_list<NitrousVehicle> *)(local_c->m_dummy_head).m_next_T_internal) {
-    _update_epilog((NitrousVehicle *)local_c->m_ptr_list,param_1);
+  for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+      i != &g_rb_vehicle_list;
+      i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+    _update_epilog((NitrousVehicle *)i->m_ptr_list,delta_t);
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3147,22 +3196,24 @@ void __cdecl NitrousVehicle::frame_epilog_all_systems(float param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-NitrousVehicle * __cdecl NitrousVehicle::add_vehicle(int param_1)
+NitrousVehicle * __cdecl NitrousVehicle::add_vehicle(int id)
 
 {
   code *pcVar1;
   bool bVar2;
   NitrousVehicle *pNVar3;
-  phys_free_list<NitrousVehicle> *local_c;
+  NitrousVehicle *veh;
+  phys_free_list<NitrousVehicle> *i;
+  NitrousVehicle *vehicle;
   
-  if (param_1 != -1) {
-    for (local_c = (phys_free_list<NitrousVehicle> *)
-                   g_rb_vehicle_list.m_dummy_head.m_next_T_internal; local_c != &g_rb_vehicle_list;
-        local_c = (phys_free_list<NitrousVehicle> *)(local_c->m_dummy_head).m_next_T_internal) {
-      if (local_c->m_ptr_list[0xf4] == (NitrousVehicle *)param_1) {
-        local_c->m_ptr_list[0xf5] =
-             (NitrousVehicle *)((int)&local_c->m_ptr_list[0xf5]->m_wheel_state[0].m_state + 1);
-        return (NitrousVehicle *)local_c->m_ptr_list;
+  if (id != -1) {
+    for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+        i != &g_rb_vehicle_list;
+        i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+      if (i->m_ptr_list[0xf4] == (NitrousVehicle *)id) {
+        i->m_ptr_list[0xf5] =
+             (NitrousVehicle *)((int)&i->m_ptr_list[0xf5]->m_wheel_state[0].m_state + 1);
+        return (NitrousVehicle *)i->m_ptr_list;
       }
     }
   }
@@ -3183,7 +3234,7 @@ NitrousVehicle * __cdecl NitrousVehicle::add_vehicle(int param_1)
     pNVar3 = (NitrousVehicle *)(*pcVar1)();
     return pNVar3;
   }
-  pNVar3->id = param_1;
+  pNVar3->id = id;
   pNVar3->refcount = 1;
   return pNVar3;
 }
@@ -3199,13 +3250,13 @@ NitrousVehicle * __cdecl NitrousVehicle::add_vehicle(int param_1)
 void __cdecl NitrousVehicle::reinit_parms(void)
 
 {
-  phys_free_list<NitrousVehicle> *local_8;
+  NitrousVehicle *veh;
+  phys_free_list<NitrousVehicle> *i;
   
-  for (local_8 = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
-      local_8 != &g_rb_vehicle_list;
-      local_8 = (phys_free_list<NitrousVehicle> *)(local_8->m_dummy_head).m_next_T_internal) {
-    update_parms((NitrousVehicle *)local_8->m_ptr_list,(VehicleParameter *)local_8->m_ptr_list[0x7c]
-                 ,false);
+  for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+      i != &g_rb_vehicle_list;
+      i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+    update_parms((NitrousVehicle *)i->m_ptr_list,(VehicleParameter *)i->m_ptr_list[0x7c],false);
   }
   return;
 }
@@ -3221,13 +3272,14 @@ void __cdecl NitrousVehicle::reinit_parms(void)
 void __cdecl NitrousVehicle::reset_vehicle_physics(void)
 
 {
-  phys_free_list<NitrousVehicle> *local_8;
+  NitrousVehicle *veh;
+  phys_free_list<NitrousVehicle> *i;
   
-  for (local_8 = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
-      local_8 != &g_rb_vehicle_list;
-      local_8 = (phys_free_list<NitrousVehicle> *)(local_8->m_dummy_head).m_next_T_internal) {
-    pause_physics((NitrousVehicle *)local_8->m_ptr_list,false);
-    unpause_physics((NitrousVehicle *)local_8->m_ptr_list);
+  for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+      i != &g_rb_vehicle_list;
+      i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+    pause_physics((NitrousVehicle *)i->m_ptr_list,false);
+    unpause_physics((NitrousVehicle *)i->m_ptr_list);
   }
   return;
 }
@@ -3240,13 +3292,13 @@ void __cdecl NitrousVehicle::reset_vehicle_physics(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl NitrousVehicle::remove_vehicle(NitrousVehicle *param_1)
+void __cdecl NitrousVehicle::remove_vehicle(NitrousVehicle *v)
 
 {
-  param_1->refcount = param_1->refcount + -1;
-  if (param_1->refcount == 0) {
-    pause_physics(param_1,true);
-    phys_free_list<NitrousVehicle>::remove(&g_rb_vehicle_list,param_1);
+  v->refcount = v->refcount + -1;
+  if (v->refcount == 0) {
+    pause_physics(v,true);
+    phys_free_list<NitrousVehicle>::remove(&g_rb_vehicle_list,v);
   }
   return;
 }
@@ -3262,12 +3314,12 @@ void __cdecl NitrousVehicle::remove_vehicle(NitrousVehicle *param_1)
 void __cdecl NitrousVehicle::debug_render_all(void)
 
 {
-  phys_free_list<NitrousVehicle> *local_8;
+  phys_free_list<NitrousVehicle> *i;
   
-  for (local_8 = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
-      local_8 != &g_rb_vehicle_list;
-      local_8 = (phys_free_list<NitrousVehicle> *)(local_8->m_dummy_head).m_next_T_internal) {
-    debug_render((NitrousVehicle *)local_8->m_ptr_list);
+  for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+      i != &g_rb_vehicle_list;
+      i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+    debug_render((NitrousVehicle *)i->m_ptr_list);
   }
   return;
 }
@@ -3284,14 +3336,18 @@ void __cdecl NitrousVehicle::debug_render_all(void)
 void __thiscall NitrousVehicle::debug_render(NitrousVehicle *this)
 
 {
+  float radius_00;
   rigid_body *prVar1;
   PhysObjUserData *pPVar2;
-  phys_vec3 *ppVar3;
-  phys_vec3 *ppVar4;
+  rigid_body_constraint_wheel *prVar3;
+  int iVar4;
+  phys_vec3 *ppVar5;
+  phys_vec3 *ppVar6;
+  float fVar7;
   char local_638 [508];
   float local_43c [2];
   float local_434;
-  float local_430;
+  float textPos;
   float local_42c;
   float local_428;
   float local_420;
@@ -3308,43 +3364,16 @@ void __thiscall NitrousVehicle::debug_render(NitrousVehicle *this)
   float local_3f0;
   float local_3ec;
   float local_3e8 [7];
-  float local_3cc [3];
-  phys_vec3 local_3c0;
-  phys_vec3 local_3b0;
+  float _pos [3];
+  undefined1 _dir [12];
+  phys_vec3 dir;
   phys_vec3 local_3a0;
   phys_vec3 local_390;
   phys_mat44 *local_374;
-  phys_vec3 local_370;
-  float local_35c;
-  float local_358;
-  float local_354;
-  float local_350;
-  float local_34c;
-  float local_348;
-  float local_344;
-  float local_340;
-  float local_33c;
-  float local_338;
-  float local_330;
-  float local_32c;
-  float local_328;
-  float local_324;
-  float local_320;
-  float local_31c;
-  float local_318;
-  float local_314;
-  float local_304;
-  phys_vec3 local_300;
-  float local_2ec;
-  float local_2e8;
-  float local_2e4;
-  float local_2e0;
-  float local_2dc;
-  float local_2d8;
-  float local_2d0;
-  float local_2cc;
-  float local_2c8;
-  phys_vec3 *local_2c4;
+  undefined1 local_370 [12];
+  phys_vec3 limit_pos;
+  undefined1 local_300 [12];
+  phys_vec3 hit_pos_displaced;
   phys_vec3 local_2c0;
   phys_vec3 local_2b0;
   float local_294;
@@ -3352,286 +3381,203 @@ void __thiscall NitrousVehicle::debug_render(NitrousVehicle *this)
   phys_vec3 local_280;
   phys_vec3 local_270;
   phys_mat44 *local_254;
-  phys_vec3 local_250;
-  phys_vec3 local_240;
-  float local_224;
-  int local_220;
-  rigid_body_constraint_wheel *local_21c;
-  float local_218 [4];
+  undefined1 local_250 [12];
+  phys_vec3 wheel_pos;
+  float radius;
+  rigid_body *b1;
+  rigid_body_constraint_wheel *rbc_wheel;
+  undefined4 col;
   int local_208;
   undefined4 local_204;
-  phys_vec3 local_200;
+  float local_200;
+  int i;
+  float alpha;
   float local_1ec;
   float local_1e8;
   float local_1e4;
-  phys_mat44 local_1e0;
-  phys_vec3 local_1a0;
-  float local_18c;
-  float local_188;
-  float local_184;
-  float local_180;
-  float local_17c;
-  float local_178;
-  float local_16c;
-  float local_168;
-  float local_164;
-  float local_160;
-  float local_15c;
-  float local_158;
-  float local_14c;
-  float local_148;
-  float local_144;
-  phys_vec3 local_140;
-  phys_vec3 local_130;
-  phys_vec3 local_120;
-  float local_10c;
-  float local_108;
-  float local_104;
-  phys_mat44 local_100;
-  phys_vec3 *local_b4;
-  phys_vec3 local_b0;
-  float local_9c;
-  float local_98;
-  float local_94;
-  float local_90;
-  float local_8c;
-  float local_88;
-  float local_7c;
-  float local_78;
-  float local_74;
-  float local_70;
-  float local_6c;
-  float local_68;
-  float local_5c;
-  float local_58;
-  float local_54;
-  phys_vec3 local_50;
-  phys_vec3 local_40;
-  phys_vec3 local_30;
-  phys_mat44 *local_1c;
-  NitrousVehicle *local_18;
-  uint local_14;
+  undefined1 local_1e0 [12];
+  phys_mat44 transform_2;
+  phys_vec3 com_2;
+  phys_vec3 dim_2;
+  undefined1 local_140 [12];
+  phys_vec3 vmax_2;
+  phys_vec3 vmin_2;
+  undefined1 local_100 [12];
+  phys_mat44 transform;
+  undefined1 local_b0 [12];
+  phys_vec3 com;
+  phys_vec3 dim;
+  undefined1 local_50 [12];
+  phys_vec3 vmax;
+  phys_vec3 vmin;
   
-  local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_18 = this;
   if ((((phys_drawNitrousVehicle->current).enabled != false) || ((this->m_flags & 8U) != 0)) &&
      (this->m_phys_user_data != (PhysObjUserData *)0x0)) {
     prVar1 = this->m_phys_user_data->body;
-    local_1c = &prVar1->m_mat;
-    local_30.x = (prVar1->m_mat).w.x;
-    local_30.y = (prVar1->m_mat).w.y;
-    local_30.z = (prVar1->m_mat).w.z;
-    local_30.w = (prVar1->m_mat).w.w;
+    vmin.y = (prVar1->m_mat).w.x;
+    vmin.z = (prVar1->m_mat).w.y;
+    vmin.w = (prVar1->m_mat).w.z;
     Phys_DebugBox(&this->m_phys_user_data->body->m_mat,colorYellow,1.0);
-    if (local_18->m_parameter->m_bbox_min[0] != 0.0) {
-      Phys_Vec3ToNitrousVec(local_18->m_parameter->m_bbox_min,&local_40);
-      Phys_Vec3ToNitrousVec(local_18->m_parameter->m_bbox_max,&local_50);
-      local_70 = local_50.x - local_40.x;
-      local_6c = local_50.y - local_40.y;
-      local_68 = local_50.z - local_40.z;
-      local_90 = local_50.x + local_40.x;
-      local_8c = local_50.y + local_40.y;
-      local_88 = local_50.z + local_40.z;
-      local_94 = local_90 * 0.5;
-      local_98 = local_8c * 0.5;
-      local_9c = local_88 * 0.5;
-      pPVar2 = local_18->m_phys_user_data;
-      local_b4 = &(pPVar2->cg2rb).w;
-      local_b0.x = local_94 + local_b4->x;
-      local_b0.y = local_98 + (pPVar2->cg2rb).w.y;
-      local_b0.z = local_9c + (pPVar2->cg2rb).w.z;
-      local_7c = local_88;
-      local_78 = local_8c;
-      local_74 = local_90;
-      local_5c = local_68;
-      local_58 = local_6c;
-      local_54 = local_70;
-      phys_mat44::operator=(&local_100,&::PHYS_IDENTITY_MATRIX);
-      phys_vec3::operator=(&local_100.w,&local_b0);
-      phys_full_multiply_mat(&local_100,&local_100,&local_18->m_phys_user_data->body->m_mat);
-      local_120.x = local_70 * 0.5;
-      local_120.y = local_6c * 0.5;
-      local_120.z = local_68 * 0.5;
-      local_10c = local_120.z;
-      local_108 = local_120.y;
-      local_104 = local_120.x;
-      Phys_DebugBox(&local_100,&local_120,colorGreen);
+    if (this->m_parameter->m_bbox_min[0] != 0.0) {
+      Phys_Vec3ToNitrousVec(this->m_parameter->m_bbox_min,(phys_vec3 *)&vmax.y);
+      Phys_Vec3ToNitrousVec(this->m_parameter->m_bbox_max,(phys_vec3 *)local_50);
+      com.w = ((float)local_50._4_4_ + vmax.z) * 0.5;
+      com.z = ((float)local_50._8_4_ + vmax.w) * 0.5;
+      pPVar2 = this->m_phys_user_data;
+      local_b0._0_4_ = ((float)local_50._0_4_ + vmax.y) * 0.5 + (pPVar2->cg2rb).w.x;
+      local_b0._4_4_ = com.w + (pPVar2->cg2rb).w.y;
+      local_b0._8_4_ = com.z + (pPVar2->cg2rb).w.z;
+      phys_mat44::operator=((phys_mat44 *)local_100,&::PHYS_IDENTITY_MATRIX);
+      phys_vec3::operator=((phys_vec3 *)&transform.z.y,(phys_vec3 *)local_b0);
+      phys_full_multiply_mat
+                ((phys_mat44 *)local_100,(phys_mat44 *)local_100,
+                 &this->m_phys_user_data->body->m_mat);
+      vmin_2.y = ((float)local_50._0_4_ - vmax.y) * 0.5;
+      vmin_2.z = ((float)local_50._4_4_ - vmax.z) * 0.5;
+      vmin_2.w = ((float)local_50._8_4_ - vmax.w) * 0.5;
+      Phys_DebugBox((phys_mat44 *)local_100,(phys_vec3 *)&vmin_2.y,colorGreen);
     }
-    if (local_18->m_parameter->m_buoyancybox_min[0] != 0.0) {
-      Phys_Vec3ToNitrousVec(local_18->m_parameter->m_buoyancybox_min,&local_130);
-      Phys_Vec3ToNitrousVec(local_18->m_parameter->m_buoyancybox_max,&local_140);
-      local_160 = local_140.x - local_130.x;
-      local_15c = local_140.y - local_130.y;
-      local_158 = local_140.z - local_130.z;
-      local_180 = local_140.x + local_130.x;
-      local_17c = local_140.y + local_130.y;
-      local_178 = local_140.z + local_130.z;
-      local_1a0.x = local_180 * 0.5;
-      local_1a0.y = local_17c * 0.5;
-      local_1a0.z = local_178 * 0.5;
-      local_18c = local_1a0.z;
-      local_188 = local_1a0.y;
-      local_184 = local_1a0.x;
-      local_16c = local_178;
-      local_168 = local_17c;
-      local_164 = local_180;
-      local_14c = local_158;
-      local_148 = local_15c;
-      local_144 = local_160;
-      phys_mat44::operator=(&local_1e0,&::PHYS_IDENTITY_MATRIX);
-      phys_vec3::operator=(&local_1e0.w,&local_1a0);
-      phys_full_multiply_mat(&local_1e0,&local_1e0,&local_18->m_phys_user_data->body->m_mat);
-      local_200.x = local_160 * 0.5;
-      local_200.y = local_15c * 0.5;
-      local_200.z = local_158 * 0.5;
-      local_1ec = local_200.z;
-      local_1e8 = local_200.y;
-      local_1e4 = local_200.x;
-      Phys_DebugBox(&local_1e0,&local_200,colorBlue);
+    if (this->m_parameter->m_buoyancybox_min[0] != 0.0) {
+      Phys_Vec3ToNitrousVec(this->m_parameter->m_buoyancybox_min,(phys_vec3 *)&vmax_2.y);
+      Phys_Vec3ToNitrousVec(this->m_parameter->m_buoyancybox_max,(phys_vec3 *)local_140);
+      transform_2.w.y = ((float)local_140._0_4_ + vmax_2.y) * 0.5;
+      transform_2.w.z = ((float)local_140._4_4_ + vmax_2.z) * 0.5;
+      transform_2.w.w = ((float)local_140._8_4_ + vmax_2.w) * 0.5;
+      phys_mat44::operator=((phys_mat44 *)local_1e0,&::PHYS_IDENTITY_MATRIX);
+      phys_vec3::operator=((phys_vec3 *)&transform_2.z.y,(phys_vec3 *)&transform_2.w.y);
+      phys_full_multiply_mat
+                ((phys_mat44 *)local_1e0,(phys_mat44 *)local_1e0,
+                 &this->m_phys_user_data->body->m_mat);
+      local_200 = ((float)local_140._0_4_ - vmax_2.y) * 0.5;
+      i = (int)(((float)local_140._4_4_ - vmax_2.z) * 0.5);
+      alpha = ((float)local_140._8_4_ - vmax_2.w) * 0.5;
+      local_1ec = alpha;
+      local_1e8 = (float)i;
+      local_1e4 = local_200;
+      Phys_DebugBox((phys_mat44 *)local_1e0,(phys_vec3 *)&stack0xfffffe00,colorBlue);
     }
     local_204 = 0x3e3851ec;
     for (local_208 = 0; local_208 < 6; local_208 = local_208 + 1) {
-      local_218[0] = 0.0;
-      local_218[1] = 1.0;
-      local_218[2] = 0.0;
-      local_218[3] = (float)local_204;
-      local_21c = local_18->m_wheels[local_208];
-      if (local_21c != (rigid_body_constraint_wheel *)0x0) {
-        local_220 = local_21c->_padding_;
-        local_224 = local_21c->m_wheel_radius;
-        ppVar3 = operator*(&local_240,local_21c->m_wheel_displaced_center_dist,
-                           &local_21c->m_b1_suspension_dir_loc);
-        operator-(&local_250,&local_21c->m_b1_wheel_center_loc,ppVar3);
-        local_254 = (phys_mat44 *)(local_220 + 0x30);
-        ppVar3 = (phys_vec3 *)(local_220 + 0x60);
-        ppVar4 = phys_multiply33(&local_270,local_254,&local_250);
-        operator+(&local_280,ppVar4,ppVar3);
-        local_250.x = local_280.x;
-        local_250.y = local_280.y;
-        local_250.z = local_280.z;
-        local_290.x = (local_21c->m_b2_hitp_loc).x;
-        local_290.y = (local_21c->m_b2_hitp_loc).y;
-        local_290.z = (local_21c->m_b2_hitp_loc).z;
-        local_290.w = (local_21c->m_b2_hitp_loc).w;
-        local_294 = local_21c->m_roll_stability_factor;
-        local_2b0.x = (local_21c->m_b1_suspension_dir_loc).x;
-        local_2b0.y = (local_21c->m_b1_suspension_dir_loc).y;
-        local_2b0.z = (local_21c->m_b1_suspension_dir_loc).z;
-        local_2b0.w = (local_21c->m_b1_suspension_dir_loc).w;
-        local_2c4 = phys_multiply33(&local_2c0,(phys_mat44 *)(local_220 + 0x30),&local_2b0);
-        local_2e0 = local_294 * local_2c4->x;
-        local_2dc = local_294 * local_2c4->y;
-        local_2d8 = local_294 * local_2c4->z;
-        local_300.x = local_290.x - local_2e0;
-        local_300.y = local_290.y - local_2dc;
-        local_300.z = local_290.z - local_2d8;
-        if ((local_21c->m_wheel_flags & 1) != 0) {
-          local_218[0] = 1.0;
-          local_218[1] = 1.0;
-          local_218[2] = 0.0;
-          local_218[3] = (float)local_204;
+      radius = 0.0;
+      b1 = (rigid_body *)&DAT_3f800000;
+      rbc_wheel = (rigid_body_constraint_wheel *)0x0;
+      col = local_204;
+      prVar3 = this->m_wheels[local_208];
+      if (prVar3 != (rigid_body_constraint_wheel *)0x0) {
+        iVar4 = prVar3->_padding_;
+        radius_00 = prVar3->m_wheel_radius;
+        ppVar5 = operator*((phys_vec3 *)&wheel_pos.y,prVar3->m_wheel_displaced_center_dist,
+                           &prVar3->m_b1_suspension_dir_loc);
+        operator-((phys_vec3 *)local_250,&prVar3->m_b1_wheel_center_loc,ppVar5);
+        local_254 = (phys_mat44 *)(iVar4 + 0x30);
+        ppVar5 = (phys_vec3 *)(iVar4 + 0x60);
+        ppVar6 = phys_multiply33(&local_270,local_254,(phys_vec3 *)local_250);
+        operator+(&local_280,ppVar6,ppVar5);
+        local_250._0_4_ = local_280.x;
+        local_250._4_4_ = local_280.y;
+        local_250._8_4_ = local_280.z;
+        local_290.x = (prVar3->m_b2_hitp_loc).x;
+        local_290.y = (prVar3->m_b2_hitp_loc).y;
+        local_290.z = (prVar3->m_b2_hitp_loc).z;
+        local_290.w = (prVar3->m_b2_hitp_loc).w;
+        local_294 = prVar3->m_roll_stability_factor;
+        local_2b0.x = (prVar3->m_b1_suspension_dir_loc).x;
+        local_2b0.y = (prVar3->m_b1_suspension_dir_loc).y;
+        local_2b0.z = (prVar3->m_b1_suspension_dir_loc).z;
+        local_2b0.w = (prVar3->m_b1_suspension_dir_loc).w;
+        ppVar5 = phys_multiply33(&local_2c0,(phys_mat44 *)(iVar4 + 0x30),&local_2b0);
+        local_300._0_4_ = local_290.x - local_294 * ppVar5->x;
+        local_300._4_4_ = local_290.y - local_294 * ppVar5->y;
+        local_300._8_4_ = local_290.z - local_294 * ppVar5->z;
+        if ((prVar3->m_wheel_flags & 1) != 0) {
+          radius = 1.0;
+          b1 = (rigid_body *)&DAT_3f800000;
+          rbc_wheel = (rigid_body_constraint_wheel *)0x0;
+          col = local_204;
         }
-        if ((local_21c->m_wheel_flags & 4) != 0) {
-          local_218[0] = 1.0;
-          local_218[1] = 0.0;
-          local_218[2] = 0.0;
-          local_218[3] = (float)local_204;
+        if ((prVar3->m_wheel_flags & 4) != 0) {
+          radius = 1.0;
+          b1 = (rigid_body *)0x0;
+          rbc_wheel = (rigid_body_constraint_wheel *)0x0;
+          col = local_204;
         }
-        local_2ec = local_300.z;
-        local_2e8 = local_300.y;
-        local_2e4 = local_300.x;
-        local_2d0 = local_2d8;
-        local_2cc = local_2dc;
-        local_2c8 = local_2e0;
-        if ((local_21c->m_wheel_flags & 2) != 0) {
-          local_304 = local_21c->m_hard_limit_dist;
-          local_320 = (local_21c->m_b1_suspension_dir_loc).x;
-          local_31c = (local_21c->m_b1_suspension_dir_loc).y;
-          local_318 = (local_21c->m_b1_suspension_dir_loc).z;
-          local_314 = (local_21c->m_b1_suspension_dir_loc).w;
-          local_324 = local_304 + local_224;
-          local_340 = local_324 * local_320;
-          local_33c = local_324 * local_31c;
-          local_338 = local_324 * local_318;
-          local_350 = (local_21c->m_b1_wheel_center_loc).x;
-          local_34c = (local_21c->m_b1_wheel_center_loc).y;
-          local_348 = (local_21c->m_b1_wheel_center_loc).z;
-          local_344 = (local_21c->m_b1_wheel_center_loc).w;
-          local_370.x = local_350 - local_340;
-          local_370.y = local_34c - local_33c;
-          local_370.z = local_348 - local_338;
-          local_374 = (phys_mat44 *)(local_220 + 0x30);
-          ppVar4 = (phys_vec3 *)(local_220 + 0x60);
-          local_35c = local_370.z;
-          local_358 = local_370.y;
-          local_354 = local_370.x;
-          local_330 = local_338;
-          local_32c = local_33c;
-          local_328 = local_340;
-          ppVar3 = phys_multiply33(&local_390,local_374,&local_370);
-          operator+(&local_3a0,ppVar3,ppVar4);
-          local_370.x = local_3a0.x;
-          local_370.y = local_3a0.y;
-          local_370.z = local_3a0.z;
-          if ((local_21c->m_wheel_flags & 2) == 0) {
-            Phys_DebugPoint(&local_370,sphere_size,colorGreen);
+        hit_pos_displaced.z = (float)local_300._8_4_;
+        hit_pos_displaced.w = (float)local_300._4_4_;
+        if ((prVar3->m_wheel_flags & 2) != 0) {
+          fVar7 = prVar3->m_hard_limit_dist + radius_00;
+          local_370._0_4_ =
+               (prVar3->m_b1_wheel_center_loc).x - fVar7 * (prVar3->m_b1_suspension_dir_loc).x;
+          local_370._4_4_ =
+               (prVar3->m_b1_wheel_center_loc).y - fVar7 * (prVar3->m_b1_suspension_dir_loc).y;
+          local_370._8_4_ =
+               (prVar3->m_b1_wheel_center_loc).z - fVar7 * (prVar3->m_b1_suspension_dir_loc).z;
+          local_374 = (phys_mat44 *)(iVar4 + 0x30);
+          ppVar6 = (phys_vec3 *)(iVar4 + 0x60);
+          limit_pos.z = (float)local_370._8_4_;
+          limit_pos.w = (float)local_370._4_4_;
+          ppVar5 = phys_multiply33(&local_390,local_374,(phys_vec3 *)local_370);
+          operator+(&local_3a0,ppVar5,ppVar6);
+          local_370._0_4_ = local_3a0.x;
+          local_370._4_4_ = local_3a0.y;
+          local_370._8_4_ = local_3a0.z;
+          if ((prVar3->m_wheel_flags & 2) == 0) {
+            Phys_DebugPoint((phys_vec3 *)local_370,sphere_size,colorGreen);
           }
           else {
-            Phys_DebugPoint(&local_370,sphere_size,colorRed);
+            Phys_DebugPoint((phys_vec3 *)local_370,sphere_size,colorRed);
           }
         }
         Phys_DebugPoint(&local_290,sphere_size,colorRed);
-        Phys_DebugPoint(&local_300,sphere_size,colorBlue);
-        Phys_DebugPoint(&local_250,local_224,local_218);
-        if ((local_18->m_vehicle_info->type == 2) || (render_wheel_cir != false)) {
-          local_3b0.x = (local_21c->m_b1_wheel_axis_loc).x;
-          local_3b0.y = (local_21c->m_b1_wheel_axis_loc).y;
-          local_3b0.z = (local_21c->m_b1_wheel_axis_loc).z;
-          local_3b0.w = (local_21c->m_b1_wheel_axis_loc).w;
-          phys_multiply33(&local_3c0,(phys_mat44 *)(local_220 + 0x30),&local_3b0);
-          Phys_NitrousVecToVec3(&local_3c0,local_3cc);
-          Phys_NitrousVecToVec3(&local_250,local_3e8 + 4);
-          G_DebugCircleEx(local_3e8 + 4,local_224,local_3cc,colorWhite,0,0);
+        Phys_DebugPoint((phys_vec3 *)local_300,sphere_size,colorBlue);
+        Phys_DebugPoint((phys_vec3 *)local_250,radius_00,&radius);
+        if ((this->m_vehicle_info->type == 2) || (render_wheel_cir != false)) {
+          dir.y = (prVar3->m_b1_wheel_axis_loc).x;
+          dir.z = (prVar3->m_b1_wheel_axis_loc).y;
+          dir.w = (prVar3->m_b1_wheel_axis_loc).z;
+          phys_multiply33((phys_vec3 *)_dir,(phys_mat44 *)(iVar4 + 0x30),(phys_vec3 *)&dir.y);
+          Phys_NitrousVecToVec3((phys_vec3 *)_dir,_pos);
+          Phys_NitrousVecToVec3((phys_vec3 *)local_250,local_3e8 + 4);
+          G_DebugCircleEx(local_3e8 + 4,radius_00,_pos,colorWhite,0,0);
         }
         local_3e8[0] = 0.0;
         local_3e8[1] = 1.0;
         local_3e8[2] = 1.0;
-        local_3ec = local_30.z;
-        local_3f0 = local_300.z;
-        if (local_30.z - 5.0 < local_300.z) {
+        local_3ec = vmin.w;
+        local_3f0 = (float)local_300._8_4_;
+        if (vmin.w - 5.0 < (float)local_300._8_4_) {
           local_3e8[0] = 1.0;
           local_3e8[1] = 0.0;
           local_3e8[2] = 0.0;
         }
         local_3e8[3] = 1.0;
-        render_line(&local_30,&local_300,local_3e8,0,0);
+        render_line((phys_vec3 *)&vmin.y,(phys_vec3 *)local_300,local_3e8,0,0);
       }
     }
-    prVar1 = local_18->m_phys_user_data->body;
+    prVar1 = this->m_phys_user_data->body;
     local_3f4 = &prVar1->m_mat;
     local_410 = (local_3f4->x).x * 130.0;
     local_40c = (prVar1->m_mat).x.y * 130.0;
     local_408 = (prVar1->m_mat).x.z * 130.0;
-    local_30.x = local_30.x + local_410;
-    local_30.y = local_30.y + local_40c;
-    local_30.z = local_30.z + local_408;
-    if ((local_18->m_flags & 0x40U) != 0) {
-      prVar1 = local_18->m_phys_user_data->body;
+    vmin.y = vmin.y + local_410;
+    vmin.z = vmin.z + local_40c;
+    vmin.w = vmin.w + local_408;
+    if ((this->m_flags & 0x40U) != 0) {
+      prVar1 = this->m_phys_user_data->body;
       local_414 = &prVar1->m_mat;
-      local_430 = (local_414->x).x * 100.0;
+      textPos = (local_414->x).x * 100.0;
       local_42c = (prVar1->m_mat).x.y * 100.0;
       local_428 = (prVar1->m_mat).x.z * 100.0;
-      local_30.x = local_30.x + local_430;
-      local_30.y = local_30.y + local_42c;
-      local_30.z = local_30.z + local_428;
+      vmin.y = vmin.y + textPos;
+      vmin.z = vmin.z + local_42c;
+      vmin.w = vmin.w + local_428;
       local_420 = local_428;
       local_41c = local_42c;
-      local_418 = local_430;
+      local_418 = textPos;
     }
     local_400 = local_408;
     local_3fc = local_40c;
     local_3f8 = local_410;
-    Phys_NitrousVecToVec3(&local_30,local_43c);
+    Phys_NitrousVecToVec3((phys_vec3 *)&vmin.y,local_43c);
     local_434 = local_434 + 50.0;
     sprintf(local_638,"Speed %.1f %.0f");
     CL_AddDebugString(local_43c,colorWhite,1.0,local_638,1);
@@ -3645,7 +3591,7 @@ void __thiscall NitrousVehicle::debug_render(NitrousVehicle *this)
       CL_AddDebugString(local_43c,colorWhite,1.0,local_638,1);
     }
   }
-  debug_render_effects(local_18);
+  debug_render_effects(this);
   return;
 }
 
@@ -3660,11 +3606,11 @@ void __thiscall NitrousVehicle::debug_render(NitrousVehicle *this)
 void __thiscall NitrousVehicle::remove_wheels(NitrousVehicle *this)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    if (this->m_wheels[local_8] != (rigid_body_constraint_wheel *)0x0) {
-      this->m_wheels[local_8] = (rigid_body_constraint_wheel *)0x0;
+  for (i = 0; i < 6; i = i + 1) {
+    if (this->m_wheels[i] != (rigid_body_constraint_wheel *)0x0) {
+      this->m_wheels[i] = (rigid_body_constraint_wheel *)0x0;
     }
   }
   return;
@@ -3679,23 +3625,24 @@ void __thiscall NitrousVehicle::remove_wheels(NitrousVehicle *this)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicle::set(NitrousVehicle *this,float param_1,float param_2,float param_3,float param_4,
-                   float param_5,float param_6,float param_7,float param_8,phys_vec3 *param_9,
-                   float param_10)
+NitrousVehicle::set(NitrousVehicle *this,float power_braking_factor,float braking_factor,
+                   float desired_speed_factor,float acceleration_factor,float coasting_factor,
+                   float reference_wheel_radius,float steer_max_angle,float steer_speed,
+                   phys_vec3 *steer_front_pt_loc,float steer_front_back_length)
 
 {
-  this->m_power_braking_factor = param_1;
-  this->m_braking_factor = param_2;
-  this->m_desired_speed_factor = param_3;
-  this->m_acceleration_factor = param_4;
-  this->m_coasting_factor = param_5;
-  this->m_reference_wheel_radius = param_6;
-  this->m_steer_max_angle = param_7;
-  this->m_steer_speed = param_8;
-  (this->m_steer_front_pt_loc).x = param_9->x;
-  (this->m_steer_front_pt_loc).y = param_9->y;
-  (this->m_steer_front_pt_loc).z = param_9->z;
-  this->m_steer_front_back_length = param_10;
+  this->m_power_braking_factor = power_braking_factor;
+  this->m_braking_factor = braking_factor;
+  this->m_desired_speed_factor = desired_speed_factor;
+  this->m_acceleration_factor = acceleration_factor;
+  this->m_coasting_factor = coasting_factor;
+  this->m_reference_wheel_radius = reference_wheel_radius;
+  this->m_steer_max_angle = steer_max_angle;
+  this->m_steer_speed = steer_speed;
+  (this->m_steer_front_pt_loc).x = steer_front_pt_loc->x;
+  (this->m_steer_front_pt_loc).y = steer_front_pt_loc->y;
+  (this->m_steer_front_pt_loc).z = steer_front_pt_loc->z;
+  this->m_steer_front_back_length = steer_front_back_length;
   this->m_steer_factor = 0.0;
   this->m_steer_current_angle = 0.0;
   this->m_state_flags = 0;
@@ -3713,7 +3660,7 @@ NitrousVehicle::set(NitrousVehicle *this,float param_1,float param_2,float param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::update_steering(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::update_steering(NitrousVehicle *this,float delta_t)
 
 {
   rigid_body_constraint_wheel *prVar1;
@@ -3777,7 +3724,7 @@ void __thiscall NitrousVehicle::update_steering(NitrousVehicle *this,float param
     local_18 = 1.0;
   }
   local_1c = this->m_steer_max_angle * local_18;
-  local_20 = this->m_steer_speed * param_1;
+  local_20 = this->m_steer_speed * delta_t;
   fVar2 = local_1c - this->m_steer_current_angle;
   local_24 = local_20;
   if ((fVar2 <= local_20) && (local_24 = fVar2, fVar2 < -local_20)) {
@@ -3924,14 +3871,15 @@ void __thiscall NitrousVehicle::update_steering(NitrousVehicle *this,float param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::update_braking_and_acceleration(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::update_braking_and_acceleration(NitrousVehicle *this,float __formal)
 
 {
   rigid_body_constraint_wheel *this_00;
-  int local_8;
+  rigid_body_constraint_wheel *rbc_wheel;
+  int i;
   
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    this_00 = this->m_wheels[local_8];
+  for (i = 0; i < 6; i = i + 1) {
+    this_00 = this->m_wheels[i];
     if (this_00 != (rigid_body_constraint_wheel *)0x0) {
       if (((this->m_state_flags & 1) == 0) || ((this_00->m_wheel_flags & 0x20) == 0)) {
         if (((this->m_state_flags & 2) == 0) || ((this_00->m_wheel_flags & 0x40) == 0)) {
@@ -3977,11 +3925,13 @@ void __thiscall NitrousVehicle::update_braking_and_acceleration(NitrousVehicle *
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::set_boosting(NitrousVehicle *this,bool param_1)
+void __thiscall NitrousVehicle::set_boosting(NitrousVehicle *this,bool boosting)
 
 {
-  if (param_1 != ((this->m_flags & 0x800U) != 0)) {
-    if (param_1) {
+  bool was_boosting;
+  
+  if (boosting != ((this->m_flags & 0x800U) != 0)) {
+    if (boosting) {
       this->m_flags = this->m_flags | 0x800;
       this->m_boost_start_time = (this->mVehicleController).m_cmd.serverTime;
     }
@@ -4032,14 +3982,14 @@ float __thiscall NitrousVehicle::get_maximum_acceleration(NitrousVehicle *this)
 
 {
   bool bVar1;
-  float local_8;
+  float maximum_acceleration;
   
-  local_8 = this->m_parameter->m_accel_max;
+  maximum_acceleration = this->m_parameter->m_accel_max;
   bVar1 = is_boosting(this);
   if (bVar1) {
-    local_8 = local_8 * this->m_vehicle_info->boostAccelMultiplier;
+    maximum_acceleration = maximum_acceleration * this->m_vehicle_info->boostAccelMultiplier;
   }
-  return local_8;
+  return maximum_acceleration;
 }
 
 
@@ -4050,34 +4000,34 @@ float __thiscall NitrousVehicle::get_maximum_acceleration(NitrousVehicle *this)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __thiscall NitrousVehicle::get_max_speed(NitrousVehicle *this,bool param_1)
+float __thiscall NitrousVehicle::get_max_speed(NitrousVehicle *this,bool include_perks)
 
 {
   bool bVar1;
-  float local_8;
+  float max_speed;
   
-  local_8 = this->m_parameter->m_speed_max;
+  max_speed = this->m_parameter->m_speed_max;
   bVar1 = is_boosting(this);
   if (bVar1) {
-    local_8 = local_8 * this->m_vehicle_info->boostSpeedIncrease;
+    max_speed = max_speed * this->m_vehicle_info->boostSpeedIncrease;
   }
-  return local_8;
+  return max_speed;
 }
 
 
 // 00829210  CompareVec3ToPhysVec  (vehicle/nitrous_vehicle.cpp:2051)
 
-bool __cdecl CompareVec3ToPhysVec(float *param_1,phys_vec3 *param_2,float param_3)
+bool __cdecl CompareVec3ToPhysVec(float *a,phys_vec3 *b,float acceptableError)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   
-  fVar1 = param_2->x - *param_1;
-  fVar2 = param_2->y - param_1[1];
-  fVar3 = param_2->z - param_1[2];
-  return fVar1 * fVar1 + fVar2 * fVar2 + fVar3 * fVar3 < param_3 * param_3;
+  fVar1 = b->x - *a;
+  fVar2 = b->y - a[1];
+  fVar3 = b->z - a[2];
+  return fVar1 * fVar1 + fVar2 * fVar2 + fVar3 * fVar3 < acceptableError * acceptableError;
 }
 
 
@@ -4089,7 +4039,8 @@ bool __cdecl CompareVec3ToPhysVec(float *param_1,phys_vec3 *param_2,float param_
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __thiscall
-NitrousVehicle::update_control_from_network(NitrousVehicle *this,LerpEntityStateVehicle *param_1)
+NitrousVehicle::update_control_from_network
+          (NitrousVehicle *this,LerpEntityStateVehicle *vehicleState)
 
 {
   float fVar1;
@@ -4097,8 +4048,8 @@ NitrousVehicle::update_control_from_network(NitrousVehicle *this,LerpEntityState
   float local_8;
   
   if (this->m_phys_user_data != (PhysObjUserData *)0x0) {
-    set_throttle(this,(float)(int)(param_1->field3_0x18).throttle * 3.0517578e-05);
-    fVar1 = param_1->steerYaw;
+    set_throttle(this,(float)(int)(vehicleState->field3_0x18).throttle * 3.0517578e-05);
+    fVar1 = vehicleState->steerYaw;
     local_8 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_8 = 1.0;
@@ -4143,14 +4094,14 @@ NitrousVehicle::update_control_from_network(NitrousVehicle *this,LerpEntityState
 
 void __thiscall
 NitrousVehicle::update_from_network
-          (NitrousVehicle *this,trajectory_t param_1,trajectory_t param_2,
-          LerpEntityStateVehicle *param_3,float param_4)
+          (NitrousVehicle *this,trajectory_t pos,trajectory_t apos,
+          LerpEntityStateVehicle *vehicleState,float timeDifference)
 
 {
   rigid_body *prVar1;
   bool bVar2;
-  phys_vec3 *ppVar3;
-  float fVar4;
+  phys_vec3 *v;
+  float fVar3;
   float local_298 [3];
   float local_28c [3];
   float local_280 [9];
@@ -4221,22 +4172,22 @@ NitrousVehicle::update_from_network
     return;
   }
   local_14 = this;
-  update_control_from_network(this,param_3);
+  update_control_from_network(this,vehicleState);
   prVar1 = local_14->m_phys_user_data->body;
   local_18 = &prVar1->m_mat;
   local_1c = &local_14->m_phys_user_data->body->m_t_vel;
   local_20 = &local_14->m_phys_user_data->body->m_a_vel;
   Phys_NitrousVecToVec3(&(prVar1->m_mat).w,local_2c);
-  AnglesToAxis(param_2.trBase,&local_50);
+  AnglesToAxis(apos.trBase,&local_50);
   Phys_NitrousVecToVec3(&(local_14->m_phys_user_data->cg2rb).w,local_5c);
   MatrixTranspose(&local_50,(float (*) [3])local_80);
   MatrixVecMultiply((float (*) [3])local_80,local_5c,&local_8c);
-  local_98 = param_1.trBase[0] - local_8c;
-  local_94 = param_1.trBase[1] - local_88;
-  local_90 = param_1.trBase[2] - local_84;
-  local_a4 = param_2.trBase[0];
-  local_a0 = param_2.trBase[1];
-  local_9c = param_2.trBase[2];
+  local_98 = pos.trBase[0] - local_8c;
+  local_94 = pos.trBase[1] - local_88;
+  local_90 = pos.trBase[2] - local_84;
+  local_a4 = apos.trBase[0];
+  local_a0 = apos.trBase[1];
+  local_9c = apos.trBase[2];
   Phys_Vec3ToNitrousVec(&local_98,&local_c0);
   local_c4 = 3;
   local_104 = &local_100;
@@ -4247,14 +4198,14 @@ NitrousVehicle::update_from_network
   Phys_Vec3ToNitrousVec(local_44,&local_f0);
   Phys_Vec3ToNitrousVec(local_38,&local_e0);
   Phys_NitrousMat44ToVec33(local_18,(float (*) [3])local_128);
-  Phys_Vec3ToNitrousVec(param_1.trDelta,&local_140);
-  local_144 = ABS(param_4);
+  Phys_Vec3ToNitrousVec(pos.trDelta,&local_140);
+  local_144 = ABS(timeDifference);
   if (timeCap <= local_144) {
     return;
   }
-  local_160 = param_4 * local_140.x;
-  local_15c = param_4 * local_140.y;
-  local_158 = param_4 * local_140.z;
+  local_160 = timeDifference * local_140.x;
+  local_15c = timeDifference * local_140.y;
+  local_158 = timeDifference * local_140.z;
   local_190.x = local_c0.x + local_160;
   local_190.y = local_c0.y + local_15c;
   local_190.z = local_c0.z + local_158;
@@ -4267,24 +4218,24 @@ NitrousVehicle::update_from_network
   local_150 = local_158;
   local_14c = local_15c;
   local_148 = local_160;
-  bVar2 = CompareVec3ToPhysVec(param_1.trDelta,local_1c,acceptableVelError);
+  bVar2 = CompareVec3ToPhysVec(pos.trDelta,local_1c,acceptableVelError);
   if (!bVar2) {
-    Phys_Vec3ToNitrousVec(param_1.trDelta,local_1c);
+    Phys_Vec3ToNitrousVec(pos.trDelta,local_1c);
   }
-  bVar2 = CompareVec3ToPhysVec(param_2.trDelta,local_20,acceptableAVelError);
+  bVar2 = CompareVec3ToPhysVec(apos.trDelta,local_20,acceptableAVelError);
   if (!bVar2) {
-    Phys_Vec3ToNitrousVec(param_2.trDelta,local_20);
+    Phys_Vec3ToNitrousVec(apos.trDelta,local_20);
   }
   local_194 = acceptablePosErrorBase;
-  ppVar3 = operator-(&local_1b0,&local_190,&local_18->w);
-  phys_vec3::operator=(&local_1c0,ppVar3);
-  fVar4 = AbsSquared(&local_1c0);
-  local_1c1 = fVar4 < local_194 * local_194;
+  v = operator-(&local_1b0,&local_190,&local_18->w);
+  phys_vec3::operator=(&local_1c0,v);
+  fVar3 = AbsSquared(&local_1c0);
+  local_1c1 = fVar3 < local_194 * local_194;
   if ((bool)local_1c1) {
     return;
   }
-  Phys_Vec3ToNitrousVec(param_1.trDelta,local_1c);
-  Phys_Vec3ToNitrousVec(param_2.trDelta,local_20);
+  Phys_Vec3ToNitrousVec(pos.trDelta,local_1c);
+  Phys_Vec3ToNitrousVec(apos.trDelta,local_20);
   phys_vec3::operator=(&local_18->x,&local_100);
   phys_vec3::operator=(&local_18->y,&local_f0);
   phys_vec3::operator=(&local_18->z,&local_e0);
@@ -4322,7 +4273,7 @@ LAB_008285a7:
   Vec3Sub(local_2c,local_204,local_210);
   Vec3Add(local_210,local_14->m_networkErrorOrigin,local_14->m_networkErrorOrigin);
   phys_vec3::phys_vec3(&local_250.x);
-  make_rotate(&local_250,local_20,param_4,1000.0);
+  make_rotate(&local_250,local_20,timeDifference,1000.0);
   phys_multiply_mat(local_18,&local_250,local_18);
   AxisToAngles((float (*) [3])local_128,local_25c);
   Phys_NitrousMat44ToVec33(local_18,(float (*) [3])local_280);
@@ -4330,11 +4281,11 @@ LAB_008285a7:
   AnglesSubtract(local_25c,local_28c,local_298);
   Vec3Add(local_298,local_14->m_networkErrorAngles,local_14->m_networkErrorAngles);
   if ((phys_drawNitrousVehicle->current).enabled != false) {
-    G_DebugStar(&local_98,colorGreen,duration);
-    G_DebugStar(local_204,colorYellow,duration);
-    G_DebugStar(local_2c,colorRed,duration);
-    G_DebugLineWithDuration(&local_98,local_204,colorWhite,1,duration);
-    G_DebugLineWithDuration(local_204,local_2c,colorWhite,1,duration);
+    G_DebugStar(&local_98,colorGreen,::duration);
+    G_DebugStar(local_204,colorYellow,::duration);
+    G_DebugStar(local_2c,colorRed,::duration);
+    G_DebugLineWithDuration(&local_98,local_204,colorWhite,1,::duration);
+    G_DebugLineWithDuration(local_204,local_2c,colorWhite,1,::duration);
   }
   return;
 }
@@ -4349,7 +4300,7 @@ LAB_008285a7:
 
 void __thiscall
 NitrousVehicle::GetEntityPose
-          (NitrousVehicle *this,float *param_1,float *param_2,int param_3,bool param_4)
+          (NitrousVehicle *this,float *origin,float *angles,int curTime,bool isDriver)
 
 {
   float fVar1;
@@ -4361,36 +4312,37 @@ NitrousVehicle::GetEntityPose
   float local_90;
   float local_58;
   float local_44;
-  float local_3c;
+  float dt;
+  float reduction;
   float local_38;
   float local_34;
-  float local_30;
-  float local_2c;
+  float scale;
+  float rbPosition;
   float local_28;
   float local_24;
-  float local_20;
+  float rbAngles;
   float local_1c;
   float local_18;
-  float local_14 [4];
+  float rbRotation [4];
   
   Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
   if (this->m_phys_user_data == (PhysObjUserData *)0x0) {
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
   }
   else {
-    if (param_4) {
-      Phys_ObjGetInterpolatedState((int)this->m_phys_user_data,&local_2c,local_14);
-      UnitQuatToAngles(local_14,&local_20);
-      *param_1 = local_2c;
-      param_1[1] = local_28;
-      param_1[2] = local_24;
-      *param_2 = local_20;
-      param_2[1] = local_1c;
-      param_2[2] = local_18;
+    if (isDriver) {
+      Phys_ObjGetInterpolatedState((int)this->m_phys_user_data,&rbPosition,rbRotation);
+      UnitQuatToAngles(rbRotation,&rbAngles);
+      *origin = rbPosition;
+      origin[1] = local_28;
+      origin[2] = local_24;
+      *angles = rbAngles;
+      angles[1] = local_1c;
+      angles[2] = local_18;
     }
     else {
-      if (this->m_lastErrorReductionTime < param_3) {
-        fVar4 = (float)(param_3 - this->m_lastErrorReductionTime) * 0.001;
+      if (this->m_lastErrorReductionTime < curTime) {
+        fVar4 = (float)(curTime - this->m_lastErrorReductionTime) * 0.001;
         fVar5 = errorReductionRate * fVar4;
         local_44 = fVar5;
         if (0.0 <= fVar5 - 1.0) {
@@ -4419,41 +4371,41 @@ NitrousVehicle::GetEntityPose
         else {
           local_94 = 0.0;
         }
-        local_30 = local_94;
-        local_3c = local_94 * this->m_networkErrorAngles[0];
+        scale = local_94;
+        reduction = local_94 * this->m_networkErrorAngles[0];
         local_38 = local_94 * this->m_networkErrorAngles[1];
         local_34 = local_94 * this->m_networkErrorAngles[2];
-        AnglesSubtract(this->m_networkErrorAngles,&local_3c,this->m_networkErrorAngles);
+        AnglesSubtract(this->m_networkErrorAngles,&reduction,this->m_networkErrorAngles);
       }
-      this->m_lastErrorReductionTime = param_3;
-      Phys_ObjGetInterpolatedState((int)this->m_phys_user_data,&local_2c,local_14);
-      UnitQuatToAngles(local_14,&local_20);
-      local_2c = local_2c + this->m_networkErrorOrigin[0];
+      this->m_lastErrorReductionTime = curTime;
+      Phys_ObjGetInterpolatedState((int)this->m_phys_user_data,&rbPosition,rbRotation);
+      UnitQuatToAngles(rbRotation,&rbAngles);
+      rbPosition = rbPosition + this->m_networkErrorOrigin[0];
       local_28 = local_28 + this->m_networkErrorOrigin[1];
       local_24 = local_24 + this->m_networkErrorOrigin[2];
-      local_20 = local_20 + this->m_networkErrorAngles[0];
+      rbAngles = rbAngles + this->m_networkErrorAngles[0];
       local_1c = local_1c + this->m_networkErrorAngles[1];
       local_18 = local_18 + this->m_networkErrorAngles[2];
-      *param_1 = local_2c;
-      param_1[1] = local_28;
-      param_1[2] = local_24;
-      *param_2 = local_20;
-      param_2[1] = local_1c;
-      param_2[2] = local_18;
+      *origin = rbPosition;
+      origin[1] = local_28;
+      origin[2] = local_24;
+      *angles = rbAngles;
+      angles[1] = local_1c;
+      angles[2] = local_18;
     }
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS_UPDATE);
-    if ((((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
                                  0x941,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*angles & 0x7f800000) == 0x7f800000) ||
+         (((uint)angles[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)angles[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
                                  0x942,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -4473,17 +4425,17 @@ NitrousVehicle::GetEntityPose
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl G_SetVehDriverInputs(int param_1,int param_2,usercmd_s *param_3)
+void __cdecl G_SetVehDriverInputs(int localClientNum,int vehEntNum,usercmd_s *cmd)
 
 {
-  float *pfVar1;
-  rigid_body *prVar2;
+  float *inVector;
+  rigid_body *prVar1;
+  NitrousVehicle *pNVar2;
   NitrousVehicle *pNVar3;
-  NitrousVehicle *pNVar4;
-  code *pcVar5;
-  bool bVar6;
-  int iVar7;
-  usercmd_s *puVar8;
+  code *pcVar4;
+  bool bVar5;
+  int iVar6;
+  usercmd_s *puVar7;
   float local_d0 [9];
   float *local_ac;
   float *local_a8;
@@ -4492,101 +4444,102 @@ void __cdecl G_SetVehDriverInputs(int param_1,int param_2,usercmd_s *param_3)
   float *local_78;
   NitrousVehicle *local_74;
   NitrousVehicleController *local_70;
-  phys_vec3 *local_6c;
-  phys_vec3 *local_68;
-  float local_64;
+  phys_vec3 *velocity;
+  phys_vec3 *aVelocity;
+  float localPos;
   float local_60;
   float local_5c;
-  float local_58;
+  float currentOriginError;
   float local_54;
   float local_50;
-  phys_mat44 *local_4c;
-  float local_48 [9];
-  float local_24 [3];
-  float local_18;
+  phys_mat44 *mat;
+  float localPhysAxis [9];
+  float localAngles [3];
+  float currentAnglesError;
   float local_14;
   float local_10;
-  gentity_s *local_c;
-  gentity_s *local_8;
+  gentity_s *ent;
+  gentity_s *self;
   
-  local_8 = g_entities + param_2;
-  if ((g_entities[param_2].scr_vehicle != (scr_vehicle_s *)0x0) &&
-     ((g_entities[param_2].scr_vehicle)->nitrousVehicle != (NitrousVehicle *)0x0)) {
-    local_74 = (g_entities[param_2].scr_vehicle)->nitrousVehicle;
+  self = g_entities + vehEntNum;
+  if ((g_entities[vehEntNum].scr_vehicle != (scr_vehicle_s *)0x0) &&
+     ((g_entities[vehEntNum].scr_vehicle)->nitrousVehicle != (NitrousVehicle *)0x0)) {
+    local_74 = (g_entities[vehEntNum].scr_vehicle)->nitrousVehicle;
     local_70 = &local_74->mVehicleController;
-    puVar8 = &(local_74->mVehicleController).m_cmd;
-    for (iVar7 = 0xd; iVar7 != 0; iVar7 = iVar7 + -1) {
-      puVar8->serverTime = param_3->serverTime;
-      param_3 = (usercmd_s *)&param_3->button_bits;
-      puVar8 = (usercmd_s *)&puVar8->button_bits;
+    puVar7 = &(local_74->mVehicleController).m_cmd;
+    for (iVar6 = 0xd; iVar6 != 0; iVar6 = iVar6 + -1) {
+      puVar7->serverTime = cmd->serverTime;
+      cmd = (usercmd_s *)&cmd->button_bits;
+      puVar7 = (usercmd_s *)&puVar7->button_bits;
     }
-    (local_74->mVehicleController).m_cmd_local_client_num = param_1;
+    (local_74->mVehicleController).m_cmd_local_client_num = localClientNum;
     (local_74->mVehicleController).m_cmd_valid = true;
-    iVar7 = EntHandle::isDefined(&g_entities[param_2].r.ownerNum);
-    if (iVar7 != 0) {
-      local_c = EntHandle::ent(&(local_8->r).ownerNum);
-      if (((local_c->s).lerp.eFlags & 0x4000U) == 0) {
-        bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
+    iVar6 = EntHandle::isDefined(&g_entities[vehEntNum].r.ownerNum);
+    if (iVar6 != 0) {
+      ent = EntHandle::ent(&(self->r).ownerNum);
+      if (((ent->s).lerp.eFlags & 0x4000U) == 0) {
+        bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
                                  0x951,0,"%s");
-        if (!bVar6) {
-          pcVar5 = (code *)swi(3);
-          (*pcVar5)();
+        if (!bVar5) {
+          pcVar4 = (code *)swi(3);
+          (*pcVar4)();
           return;
         }
       }
-      if (0x1f < (local_c->s).number) {
-        bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
+      if (0x1f < (ent->s).number) {
+        bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle.cpp",
                                  0x952,0,"%s");
-        if (!bVar6) {
-          pcVar5 = (code *)swi(3);
-          (*pcVar5)();
+        if (!bVar5) {
+          pcVar4 = (code *)swi(3);
+          (*pcVar4)();
           return;
         }
       }
-      if (*(char *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x6e0) != '\0') {
+      if (*(char *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6e0) != '\0') {
         Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-        prVar2 = local_8->scr_vehicle->nitrousVehicle->m_phys_user_data->body;
-        local_4c = &prVar2->m_mat;
-        local_6c = &local_8->scr_vehicle->nitrousVehicle->m_phys_user_data->body->m_t_vel;
-        local_68 = &local_8->scr_vehicle->nitrousVehicle->m_phys_user_data->body->m_a_vel;
-        Phys_NitrousVecToVec3(&(prVar2->m_mat).w,&local_64);
-        local_78 = (float *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x6e4);
-        local_58 = local_64 - *local_78;
+        prVar1 = self->scr_vehicle->nitrousVehicle->m_phys_user_data->body;
+        mat = &prVar1->m_mat;
+        velocity = &self->scr_vehicle->nitrousVehicle->m_phys_user_data->body->m_t_vel;
+        aVelocity = &self->scr_vehicle->nitrousVehicle->m_phys_user_data->body->m_a_vel;
+        Phys_NitrousVecToVec3(&(prVar1->m_mat).w,&localPos);
+        local_78 = (float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6e4);
+        currentOriginError = localPos - *local_78;
         local_54 = local_60 - local_78[1];
         local_50 = local_5c - local_78[2];
-        pNVar3 = local_8->scr_vehicle->nitrousVehicle;
-        local_80 = pNVar3->m_networkErrorOrigin;
-        pNVar4 = local_8->scr_vehicle->nitrousVehicle;
-        local_7c = pNVar4->m_networkErrorOrigin;
-        *local_80 = local_58 + *local_7c;
-        pNVar3->m_networkErrorOrigin[1] = local_54 + pNVar4->m_networkErrorOrigin[1];
-        pNVar3->m_networkErrorOrigin[2] = local_50 + pNVar4->m_networkErrorOrigin[2];
-        Phys_NitrousMat44ToVec33(local_4c,(float (*) [3])local_48);
-        AxisToAngles((float (*) [3])local_48,local_24);
-        AnglesSubtract(local_24,(float *)((int)svs.clients +
-                                         (uint)(local_c->s).clientNum * 0x84d00 + 0x6f0),&local_18);
-        pNVar3 = local_8->scr_vehicle->nitrousVehicle;
-        local_ac = pNVar3->m_networkErrorAngles;
-        pNVar4 = local_8->scr_vehicle->nitrousVehicle;
-        local_a8 = pNVar4->m_networkErrorAngles;
-        *local_ac = local_18 + *local_a8;
-        pNVar3->m_networkErrorAngles[1] = local_14 + pNVar4->m_networkErrorAngles[1];
-        pNVar3->m_networkErrorAngles[2] = local_10 + pNVar4->m_networkErrorAngles[2];
+        pNVar2 = self->scr_vehicle->nitrousVehicle;
+        local_80 = pNVar2->m_networkErrorOrigin;
+        pNVar3 = self->scr_vehicle->nitrousVehicle;
+        local_7c = pNVar3->m_networkErrorOrigin;
+        *local_80 = currentOriginError + *local_7c;
+        pNVar2->m_networkErrorOrigin[1] = local_54 + pNVar3->m_networkErrorOrigin[1];
+        pNVar2->m_networkErrorOrigin[2] = local_50 + pNVar3->m_networkErrorOrigin[2];
+        Phys_NitrousMat44ToVec33(mat,(float (*) [3])localPhysAxis);
+        AxisToAngles((float (*) [3])localPhysAxis,localAngles);
+        AnglesSubtract(localAngles,
+                       (float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6f0),
+                       &currentAnglesError);
+        pNVar2 = self->scr_vehicle->nitrousVehicle;
+        local_ac = pNVar2->m_networkErrorAngles;
+        pNVar3 = self->scr_vehicle->nitrousVehicle;
+        local_a8 = pNVar3->m_networkErrorAngles;
+        *local_ac = currentAnglesError + *local_a8;
+        pNVar2->m_networkErrorAngles[1] = local_14 + pNVar3->m_networkErrorAngles[1];
+        pNVar2->m_networkErrorAngles[2] = local_10 + pNVar3->m_networkErrorAngles[2];
         Phys_Vec3ToNitrousVec
-                  ((float *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x6fc),
-                   local_6c);
+                  ((float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6fc),velocity
+                  );
         Phys_Vec3ToNitrousVec
-                  ((float *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x708),
-                   local_68);
-        pfVar1 = (float *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x6e4);
-        AnglesToAxis((float *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x6f0),
+                  ((float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x708),
+                   aVelocity);
+        inVector = (float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6e4);
+        AnglesToAxis((float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6f0),
                      (float (*) [3])local_d0);
-        Phys_AxisToNitrousMat((float (*) [3])local_d0,local_4c);
-        Phys_Vec3ToNitrousVec(pfVar1,&local_4c->w);
+        Phys_AxisToNitrousMat((float (*) [3])local_d0,mat);
+        Phys_Vec3ToNitrousVec(inVector,&mat->w);
         if ((phys_drawNitrousVehicle->current).enabled != false) {
-          G_DebugStar((float *)((int)svs.clients + (uint)(local_c->s).clientNum * 0x84d00 + 0x6e4),
+          G_DebugStar((float *)((int)svs.clients + (uint)(ent->s).clientNum * 0x84d00 + 0x6e4),
                       colorGreen,duration);
-          G_DebugStar(&local_64,colorRed,duration);
+          G_DebugStar(&localPos,colorRed,duration);
         }
         Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
       }
@@ -4608,20 +4561,20 @@ void __cdecl G_ClearVehicleInputs(void)
 {
   int iVar1;
   DWORD DVar2;
-  phys_free_list<NitrousVehicle> *local_c;
+  phys_free_list<NitrousVehicle> *i;
+  PIXProfile pp;
   
   if (0 < g_rb_vehicle_list.m_list_count) {
     PIXBeginNamedEvent(-1,"G_ClearVehicleInputs");
     Sys_EnterCriticalSection(CRITSECT_PHYSICS_UPDATE);
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    for (local_c = (phys_free_list<NitrousVehicle> *)
-                   g_rb_vehicle_list.m_dummy_head.m_next_T_internal; local_c != &g_rb_vehicle_list;
-        local_c = (phys_free_list<NitrousVehicle> *)(local_c->m_dummy_head).m_next_T_internal) {
-      if (((local_c->m_ptr_list[0x89] != (NitrousVehicle *)0x0) &&
-          (local_c->m_ptr_list[0x89]->m_wheel_orig_relpo[4].y.z != 0.0)) &&
-         (iVar1 = VEH_GetSeatOccupantEntNum((gentity_s *)local_c->m_ptr_list[0x89],0),
-         iVar1 == 0x3ff)) {
-        memset((uchar *)(local_c->m_ptr_list + 0xc4),'\0',0x34);
+    for (i = (phys_free_list<NitrousVehicle> *)g_rb_vehicle_list.m_dummy_head.m_next_T_internal;
+        i != &g_rb_vehicle_list;
+        i = (phys_free_list<NitrousVehicle> *)(i->m_dummy_head).m_next_T_internal) {
+      if (((i->m_ptr_list[0x89] != (NitrousVehicle *)0x0) &&
+          (i->m_ptr_list[0x89]->m_wheel_orig_relpo[4].y.z != 0.0)) &&
+         (iVar1 = VEH_GetSeatOccupantEntNum((gentity_s *)i->m_ptr_list[0x89],0), iVar1 == 0x3ff)) {
+        memset((uchar *)(i->m_ptr_list + 0xc4),'\0',0x34);
       }
     }
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
@@ -4642,24 +4595,25 @@ void __cdecl G_ClearVehicleInputs(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_SetVehDriverInputs(int param_1,int param_2,usercmd_s *param_3)
+void __cdecl CG_SetVehDriverInputs(int localClientNum,int vehEntNum,usercmd_s *cmd)
 
 {
   NitrousVehicle *pNVar1;
   centity_s *pcVar2;
   int iVar3;
   usercmd_s *puVar4;
+  centity_s *self;
   
-  pcVar2 = CG_GetEntity(param_1,param_2);
+  pcVar2 = CG_GetEntity(localClientNum,vehEntNum);
   if (pcVar2->nitrousVeh != (NitrousVehicle *)0x0) {
     pNVar1 = pcVar2->nitrousVeh;
     puVar4 = &(pNVar1->mVehicleController).m_cmd;
     for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-      puVar4->serverTime = param_3->serverTime;
-      param_3 = (usercmd_s *)&param_3->button_bits;
+      puVar4->serverTime = cmd->serverTime;
+      cmd = (usercmd_s *)&cmd->button_bits;
       puVar4 = (usercmd_s *)&puVar4->button_bits;
     }
-    (pNVar1->mVehicleController).m_cmd_local_client_num = param_1;
+    (pNVar1->mVehicleController).m_cmd_local_client_num = localClientNum;
     (pNVar1->mVehicleController).m_cmd_valid = true;
   }
   return;
@@ -4674,20 +4628,20 @@ void __cdecl CG_SetVehDriverInputs(int param_1,int param_2,usercmd_s *param_3)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Vehicle_Launch(int param_1,centity_s *param_2,float *param_3,float *param_4,bool param_5)
+Vehicle_Launch(int localClientNum,centity_s *cent,float *hitp,float *force,bool relative)
 
 {
-  float local_10;
+  float scaledForce;
   float local_c;
   float local_8;
   
-  if (((param_1 == 0) && (param_2->nitrousVeh != (NitrousVehicle *)0x0)) &&
-     (param_2->nitrousVeh->m_phys_user_data != (PhysObjUserData *)0x0)) {
+  if (((localClientNum == 0) && (cent->nitrousVeh != (NitrousVehicle *)0x0)) &&
+     (cent->nitrousVeh->m_phys_user_data != (PhysObjUserData *)0x0)) {
     local_8 = (dynEnt_bulletForce->current).value;
-    local_10 = local_8 * *param_4;
-    local_c = local_8 * param_4[1];
-    local_8 = local_8 * param_4[2];
-    Phys_ObjAddForce((int)param_2->nitrousVeh->m_phys_user_data,param_3,&local_10,param_5);
+    scaledForce = local_8 * *force;
+    local_c = local_8 * force[1];
+    local_8 = local_8 * force[2];
+    Phys_ObjAddForce((int)cent->nitrousVeh->m_phys_user_data,hitp,&scaledForce,relative);
   }
   return;
 }

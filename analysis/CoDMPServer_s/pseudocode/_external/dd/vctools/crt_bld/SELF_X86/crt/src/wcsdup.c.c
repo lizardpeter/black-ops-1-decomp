@@ -2,29 +2,29 @@
 
 // 00977F59  _wcsdup  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wcsdup.c:68)
 
-ushort * __cdecl _wcsdup(wchar_t *param_1)
+ushort * __cdecl _wcsdup(wchar_t *string)
 
 {
-  ushort *puVar1;
-  uint uVar2;
-  int iVar3;
+  ushort *_Dst;
+  uint uVar1;
+  int iVar2;
   
-  if (param_1 == (wchar_t *)0x0) {
-    puVar1 = (ushort *)0x0;
+  if (string == (wchar_t *)0x0) {
+    _Dst = (ushort *)0x0;
   }
   else {
-    uVar2 = wcslen(param_1);
-    puVar1 = calloc(uVar2 + 1,2);
-    if (puVar1 == (ushort *)0x0) {
-      puVar1 = (ushort *)0x0;
+    uVar1 = wcslen(string);
+    _Dst = calloc(uVar1 + 1,2);
+    if (_Dst == (ushort *)0x0) {
+      _Dst = (ushort *)0x0;
     }
     else {
-      iVar3 = wcscpy_s(puVar1,uVar2 + 1,param_1);
-      if (iVar3 != 0) {
+      iVar2 = wcscpy_s(_Dst,uVar1 + 1,string);
+      if (iVar2 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
     }
   }
-  return puVar1;
+  return _Dst;
 }
 

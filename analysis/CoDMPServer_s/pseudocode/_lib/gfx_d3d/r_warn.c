@@ -2,10 +2,14 @@
 
 // 00839E30  R_WarnOncePerFrame  (gfx_d3d/r_warn.cpp:158)
 
+/* WARNING: Variable defined which should be unmapped: frameRate */
+
 void __cdecl R_WarnOncePerFrame(GfxWarningType param_1)
 
 {
   float in_XMM0_Da;
+  GfxWarningType warnType;
+  float frameRate;
   int local_408;
   char local_400 [1024];
   

@@ -4,10 +4,10 @@
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_Netchan_TransmitNextFragment(netchan_t *param_1)
+void __cdecl CL_Netchan_TransmitNextFragment(netchan_t *chan)
 
 {
-  Netchan_TransmitNextFragment(param_1);
+  Netchan_TransmitNextFragment(chan);
   return;
 }
 
@@ -16,10 +16,10 @@ void __cdecl CL_Netchan_TransmitNextFragment(netchan_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_Netchan_Transmit(netchan_t *param_1,uchar *param_2,int param_3)
+void __cdecl CL_Netchan_Transmit(netchan_t *chan,uchar *data,int length)
 
 {
-  Netchan_Transmit(param_1,param_3,param_2,false);
+  Netchan_Transmit(chan,length,data,false);
   return;
 }
 
@@ -28,15 +28,16 @@ void __cdecl CL_Netchan_Transmit(netchan_t *param_1,uchar *param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_Netchan_AddOOBProfilePacket(int param_1,int param_2)
+void __cdecl CL_Netchan_AddOOBProfilePacket(int localClientNum,int iLength)
 
 {
   clientConnection_t *pcVar1;
+  clientConnection_t *clc;
   
   if (((net_profile->current).integer != 0) && (clientConnections != (clientConnection_t *)0x0)) {
-    pcVar1 = CL_GetLocalClientConnection(param_1);
+    pcVar1 = CL_GetLocalClientConnection(localClientNum);
     NetProf_PrepProfiling(&pcVar1->OOBProf);
-    NetProf_AddPacket(&(pcVar1->OOBProf).send,param_2,0);
+    NetProf_AddPacket(&(pcVar1->OOBProf).send,iLength,0);
   }
   return;
 }
@@ -46,12 +47,13 @@ void __cdecl CL_Netchan_AddOOBProfilePacket(int param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_Netchan_UpdateProfileStats(int param_1)
+void __cdecl CL_Netchan_UpdateProfileStats(int localClientNum)
 
 {
   clientConnection_t *pcVar1;
+  clientConnection_t *clc;
   
-  pcVar1 = CL_GetLocalClientConnection(param_1);
+  pcVar1 = CL_GetLocalClientConnection(localClientNum);
   NetProf_UpdateStatistics(&(pcVar1->netchan).prof.send);
   NetProf_UpdateStatistics(&(pcVar1->netchan).prof.recieve);
   NetProf_UpdateStatistics(&(pcVar1->OOBProf).send);
@@ -62,10 +64,10 @@ void __cdecl CL_Netchan_UpdateProfileStats(int param_1)
 
 // 00570390  CL_ProfDraw  (client_mp/cl_net_chan_mp.cpp:184)
 
-void __cdecl CL_ProfDraw(int param_1,char *param_2)
+void __cdecl CL_ProfDraw(int y,char *pszString)
 
 {
-  CL_DrawString(0x20,param_1,param_2,0,(cl_profileTextHeight->current).integer);
+  CL_DrawString(0x20,y,pszString,0,(cl_profileTextHeight->current).integer);
   return;
 }
 
@@ -75,27 +77,27 @@ void __cdecl CL_ProfDraw(int param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_Netchan_PrintProfileStats(int param_1,int param_2)
+void __cdecl CL_Netchan_PrintProfileStats(int localClientNum,int bPrintToConsole)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_424 [1024];
+  char szLine [1024];
   uint local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  clientConnection_t *local_14;
-  int local_10;
-  undefined4 local_c;
-  netProfileInfo_t *local_8;
+  int iYPos;
+  int iTotalBPSRecieved;
+  int iTotalBPSSent;
+  clientConnection_t *clc;
+  int iTotalBPS;
+  int iYStep;
+  netProfileInfo_t *pStream;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = 0;
-  local_1c = 0;
-  local_10 = 0;
-  local_20 = 0x50;
-  local_c = 10;
+  iTotalBPSSent = 0;
+  iTotalBPSRecieved = 0;
+  iTotalBPS = 0;
+  iYPos = 0x50;
+  iYStep = 10;
   if ((net_profile->current).integer == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_net_chan_mp.cpp",0xea
                              ,0,"%s");
@@ -105,79 +107,79 @@ void __cdecl CL_Netchan_PrintProfileStats(int param_1,int param_2)
       return;
     }
   }
-  CL_Netchan_UpdateProfileStats(param_1);
-  if (param_2 != 0) {
+  CL_Netchan_UpdateProfileStats(localClientNum);
+  if (bPrintToConsole != 0) {
     Com_Printf(0xe,"\n\n");
   }
-  Com_sprintf(local_424,0x400,"====================");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  Com_sprintf(szLine,0x400,"====================");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");
   }
-  Com_sprintf(local_424,0x400,"Client Network Profile:");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
-    local_20 = local_20 + 10;
+  Com_sprintf(szLine,0x400,"Client Network Profile:");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
+    iYPos = iYPos + 10;
   }
   else {
     Com_Printf(0xe,"%s\n\n");
   }
-  Com_sprintf(local_424,0x400,"      Source    bps   max   min frag%%");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  Com_sprintf(szLine,0x400,"      Source    bps   max   min frag%%");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");
   }
-  local_14 = CL_GetLocalClientConnection(param_1);
-  local_8 = &local_14->OOBProf;
-  local_18 = local_18 + (local_14->OOBProf).send.iBytesPerSecond;
-  local_1c = local_1c + (local_14->OOBProf).recieve.iBytesPerSecond;
-  Com_sprintf(local_424,0x400,"    OOB Sent: %5i %5i %5i    -");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  clc = CL_GetLocalClientConnection(localClientNum);
+  pStream = &clc->OOBProf;
+  iTotalBPSSent = iTotalBPSSent + (clc->OOBProf).send.iBytesPerSecond;
+  iTotalBPSRecieved = iTotalBPSRecieved + (clc->OOBProf).recieve.iBytesPerSecond;
+  Com_sprintf(szLine,0x400,"    OOB Sent: %5i %5i %5i    -");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");
   }
-  Com_sprintf(local_424,0x400,"OOB Recieved: %5i %5i %5i    -");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  Com_sprintf(szLine,0x400,"OOB Recieved: %5i %5i %5i    -");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");
   }
-  local_8 = &(local_14->netchan).prof;
-  local_18 = local_18 + (local_14->netchan).prof.send.iBytesPerSecond;
-  local_1c = local_1c + (local_14->netchan).prof.recieve.iBytesPerSecond;
-  Com_sprintf(local_424,0x400,"        Sent: %5i %5i %5i  %3i%%");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  pStream = &(clc->netchan).prof;
+  iTotalBPSSent = iTotalBPSSent + (clc->netchan).prof.send.iBytesPerSecond;
+  iTotalBPSRecieved = iTotalBPSRecieved + (clc->netchan).prof.recieve.iBytesPerSecond;
+  Com_sprintf(szLine,0x400,"        Sent: %5i %5i %5i  %3i%%");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");
   }
-  Com_sprintf(local_424,0x400,"    Recieved: %5i %5i %5i  %3i%%");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  Com_sprintf(szLine,0x400,"    Recieved: %5i %5i %5i  %3i%%");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");
   }
-  local_10 = local_18 + local_1c;
-  Com_sprintf(local_424,0x400,"       Total: %5i");
-  if (param_2 == 0) {
-    local_20 = local_20 + 10;
-    CL_ProfDraw(local_20,local_424);
+  iTotalBPS = iTotalBPSSent + iTotalBPSRecieved;
+  Com_sprintf(szLine,0x400,"       Total: %5i");
+  if (bPrintToConsole == 0) {
+    iYPos = iYPos + 10;
+    CL_ProfDraw(iYPos,szLine);
   }
   else {
     Com_Printf(0xe,"%s\n");

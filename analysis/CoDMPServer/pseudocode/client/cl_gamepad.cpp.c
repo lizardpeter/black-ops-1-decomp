@@ -66,14 +66,14 @@ void __cdecl CL_InitGamepadCommands(void)
 void __cdecl CL_InitGamepadAxisBindings(void)
 
 {
-  int local_c;
-  int local_8;
+  int localClientNum;
+  int axisIndex;
   
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-      *(undefined4 *)(local_c * 0x48 + 0xfa8500 + local_8 * 8) = 0xffffffff;
-      *(undefined4 *)(local_c * 0x48 + 0xfa8504 + local_8 * 8) = 1;
-      gaGlobs[local_c].axesValues[local_8] = 0;
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    for (axisIndex = 0; axisIndex < 6; axisIndex = axisIndex + 1) {
+      *(undefined4 *)(localClientNum * 0x48 + 0xfa8500 + axisIndex * 8) = 0xffffffff;
+      *(undefined4 *)(localClientNum * 0x48 + 0xfa8504 + axisIndex * 8) = 1;
+      gaGlobs[localClientNum].axesValues[axisIndex] = 0;
     }
   }
   return;
@@ -82,76 +82,76 @@ void __cdecl CL_InitGamepadAxisBindings(void)
 
 // 0054FEB0  Gamepad_StringToPhysicalAxis  (client/cl_gamepad.cpp:253)
 
-GamepadPhysicalAxis __cdecl Gamepad_StringToPhysicalAxis(char *param_1)
+GamepadPhysicalAxis __cdecl Gamepad_StringToPhysicalAxis(char *axisName)
 
 {
   code *pcVar1;
   bool bVar2;
   GamepadPhysicalAxis GVar3;
   int iVar4;
-  GamepadPhysicalAxis local_8;
+  uint axis;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((axisName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x100,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     GVar3 = (*pcVar1)();
     return GVar3;
   }
-  local_8 = GPAD_PHYSAXIS_RSTICK_X;
+  axis = 0;
   while( true ) {
-    if (GPAD_PHYSAXIS_LTRIGGER < local_8) {
+    if (5 < axis) {
       return GPAD_PHYSAXIS_NONE;
     }
-    iVar4 = I_stricmp(param_1,physicalAxisNames[local_8]);
+    iVar4 = I_stricmp(axisName,physicalAxisNames[axis]);
     if (iVar4 == 0) break;
-    local_8 = local_8 + GPAD_PHYSAXIS_RSTICK_Y;
+    axis = axis + 1;
   }
-  return local_8;
+  return axis;
 }
 
 
 // 0054FF30  Axis_StringToVirtualAxis  (client/cl_gamepad.cpp:267)
 
-GamepadVirtualAxis __cdecl Axis_StringToVirtualAxis(char *param_1)
+GamepadVirtualAxis __cdecl Axis_StringToVirtualAxis(char *axisName)
 
 {
   code *pcVar1;
   bool bVar2;
   GamepadVirtualAxis GVar3;
   int iVar4;
-  GamepadVirtualAxis local_8;
+  uint axis;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((axisName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x10e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     GVar3 = (*pcVar1)();
     return GVar3;
   }
-  local_8 = GPAD_VIRTAXIS_SIDE;
+  axis = 0;
   while( true ) {
-    if (GPAD_VIRTAXIS_ATTACK < local_8) {
+    if (5 < axis) {
       return GPAD_VIRTAXIS_NONE;
     }
-    iVar4 = I_stricmp(param_1,virtualAxisNames[local_8]);
+    iVar4 = I_stricmp(axisName,virtualAxisNames[axis]);
     if (iVar4 == 0) break;
-    local_8 = local_8 + GPAD_VIRTAXIS_FORWARD;
+    axis = axis + 1;
   }
-  return local_8;
+  return axis;
 }
 
 
 // 00550280  Axis_NumToAxisString  (client/cl_gamepad.cpp:281)
 
-char * __cdecl Axis_NumToAxisString(GamepadPhysicalAxis param_1)
+char * __cdecl Axis_NumToAxisString(GamepadPhysicalAxis axis)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (5 < (int)param_1)) {
+  if (((int)axis < 0) || (5 < (int)axis)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x11a,0,
                              "%s\n\t(axis) = %i");
     if (!bVar2) {
@@ -160,20 +160,20 @@ char * __cdecl Axis_NumToAxisString(GamepadPhysicalAxis param_1)
       return pcVar3;
     }
   }
-  return physicalAxisNames[param_1];
+  return physicalAxisNames[axis];
 }
 
 
 // 005502D0  Gamepad_VirtualAxisName  (client/cl_gamepad.cpp:288)
 
-char * __cdecl Gamepad_VirtualAxisName(GamepadVirtualAxis param_1)
+char * __cdecl Gamepad_VirtualAxisName(GamepadVirtualAxis axis)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (5 < (int)param_1)) {
+  if (((int)axis < 0) || (5 < (int)axis)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x121,0,
                              "%s\n\t(axis) = %i");
     if (!bVar2) {
@@ -182,51 +182,51 @@ char * __cdecl Gamepad_VirtualAxisName(GamepadVirtualAxis param_1)
       return pcVar3;
     }
   }
-  return virtualAxisNames[param_1];
+  return virtualAxisNames[axis];
 }
 
 
 // 0054FFB0  Gamepad_InputTypeStringToId  (client/cl_gamepad.cpp:295)
 
-GamepadMapping __cdecl Gamepad_InputTypeStringToId(char *param_1)
+GamepadMapping __cdecl Gamepad_InputTypeStringToId(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   GamepadMapping GVar3;
   int iVar4;
-  GamepadMapping local_8;
+  uint type;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x12a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     GVar3 = (*pcVar1)();
     return GVar3;
   }
-  local_8 = GPAD_MAP_LINEAR;
+  type = 0;
   while( true ) {
-    if (GPAD_MAP_SQUARED < local_8) {
+    if (1 < type) {
       return GPAD_MAP_NONE;
     }
-    iVar4 = I_stricmp(param_1,inputTypeNames[local_8]);
+    iVar4 = I_stricmp(name,inputTypeNames[type]);
     if (iVar4 == 0) break;
-    local_8 = local_8 + GPAD_MAP_SQUARED;
+    type = type + 1;
   }
-  return local_8;
+  return type;
 }
 
 
 // 00550320  Gamepad_InputTypeName  (client/cl_gamepad.cpp:309)
 
-char * __cdecl Gamepad_InputTypeName(GamepadMapping param_1)
+char * __cdecl Gamepad_InputTypeName(GamepadMapping mapType)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (((int)param_1 < 0) || (1 < (int)param_1)) {
+  if (((int)mapType < 0) || (1 < (int)mapType)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x136,0,
                              "%s\n\t(mapType) = %i");
     if (!bVar2) {
@@ -235,21 +235,21 @@ char * __cdecl Gamepad_InputTypeName(GamepadMapping param_1)
       return pcVar3;
     }
   }
-  return inputTypeNames[param_1];
+  return inputTypeNames[mapType];
 }
 
 
 // 00550030  Gamepad_BindAxis  (client/cl_gamepad.cpp:316)
 
 void __cdecl
-Gamepad_BindAxis(GpadAxesGlob *param_1,GamepadPhysicalAxis param_2,GamepadVirtualAxis param_3,
-                GamepadMapping param_4)
+Gamepad_BindAxis(GpadAxesGlob *gaGlob,GamepadPhysicalAxis realIndex,GamepadVirtualAxis axisIndex,
+                GamepadMapping mapType)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 != GPAD_PHYSAXIS_NONE) && (((int)param_2 < 0 || (5 < (int)param_2)))) {
+  if ((realIndex != GPAD_PHYSAXIS_NONE) && (((int)realIndex < 0 || (5 < (int)realIndex)))) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x13d,0,
                              "%s\n\t(realIndex) = %i");
     if (!bVar2) {
@@ -258,7 +258,7 @@ Gamepad_BindAxis(GpadAxesGlob *param_1,GamepadPhysicalAxis param_2,GamepadVirtua
       return;
     }
   }
-  if (5 < (int)param_3) {
+  if (5 < (int)axisIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x13e,0,
                              "%s");
     if (!bVar2) {
@@ -267,7 +267,7 @@ Gamepad_BindAxis(GpadAxesGlob *param_1,GamepadPhysicalAxis param_2,GamepadVirtua
       return;
     }
   }
-  if (1 < (int)param_4) {
+  if (1 < (int)mapType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x13f,0,
                              "%s");
     if (!bVar2) {
@@ -276,8 +276,8 @@ Gamepad_BindAxis(GpadAxesGlob *param_1,GamepadPhysicalAxis param_2,GamepadVirtua
       return;
     }
   }
-  param_1->virtualAxes[param_3].physicalAxis = param_2;
-  param_1->virtualAxes[param_3].mapType = param_4;
+  gaGlob->virtualAxes[axisIndex].physicalAxis = realIndex;
+  gaGlob->virtualAxes[axisIndex].mapType = mapType;
   dvar_modifiedFlags = dvar_modifiedFlags | 1;
   return;
 }
@@ -292,62 +292,62 @@ void __cdecl Axis_Bind_f(void)
 {
   char *pcVar1;
   int iVar2;
-  char local_41c [1024];
+  char buffer [1024];
   uint local_1c;
-  int local_18;
-  GamepadMapping local_14;
-  GamepadPhysicalAxis local_10;
-  GamepadVirtualAxis local_c;
-  char *local_8;
+  int c;
+  GamepadMapping inputType;
+  GamepadPhysicalAxis physicalAxis;
+  GamepadVirtualAxis virtualAxis;
+  char *cmd;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = Cmd_Argc();
-  if (local_18 < 2) {
+  c = Cmd_Argc();
+  if (c < 2) {
     Com_Printf(0xe,"bindaxis <real axis> [virtual axis] : setup pad axis\n");
   }
   else {
     iVar2 = 0x400;
     pcVar1 = Cmd_Argv(1);
-    I_strncpyz(local_41c,pcVar1,iVar2);
-    I_strupr(local_41c);
-    local_8 = local_41c;
-    local_10 = Gamepad_StringToPhysicalAxis(local_8);
-    if (local_10 == GPAD_PHYSAXIS_NONE) {
+    I_strncpyz(buffer,pcVar1,iVar2);
+    I_strupr(buffer);
+    cmd = buffer;
+    physicalAxis = Gamepad_StringToPhysicalAxis(cmd);
+    if (physicalAxis == GPAD_PHYSAXIS_NONE) {
       Cmd_Argv(1);
       Com_Printf(0xe,"\"%s\" isn\'t a valid axis\n");
     }
     else {
-      if (local_18 < 3) {
-        local_c = GPAD_VIRTAXIS_NONE;
+      if (c < 3) {
+        virtualAxis = GPAD_VIRTAXIS_NONE;
       }
       else {
         iVar2 = 0x400;
         pcVar1 = Cmd_Argv(2);
-        I_strncpyz(local_41c,pcVar1,iVar2);
-        I_strupr(local_41c);
-        local_c = Axis_StringToVirtualAxis(local_41c);
-        if (local_c == GPAD_VIRTAXIS_NONE) {
+        I_strncpyz(buffer,pcVar1,iVar2);
+        I_strupr(buffer);
+        virtualAxis = Axis_StringToVirtualAxis(buffer);
+        if (virtualAxis == GPAD_VIRTAXIS_NONE) {
           Cmd_Argv(2);
           Com_Printf(0xe,"\"%s\" isn\'t a valid axis\n");
           return;
         }
       }
-      if (local_18 < 4) {
-        local_14 = GPAD_MAP_SQUARED;
+      if (c < 4) {
+        inputType = GPAD_MAP_SQUARED;
       }
       else {
         iVar2 = 0x400;
         pcVar1 = Cmd_Argv(3);
-        I_strncpyz(local_41c,pcVar1,iVar2);
-        I_strupr(local_41c);
-        local_14 = Gamepad_InputTypeStringToId(local_41c);
-        if (local_14 == GPAD_MAP_NONE) {
+        I_strncpyz(buffer,pcVar1,iVar2);
+        I_strupr(buffer);
+        inputType = Gamepad_InputTypeStringToId(buffer);
+        if (inputType == GPAD_MAP_NONE) {
           Cmd_Argv(3);
           Com_Printf(0xe,"\"%s\" isn\'t a valid input type\n");
           return;
         }
       }
-      Gamepad_BindAxis(gaGlobs,local_10,local_c,local_14);
+      Gamepad_BindAxis(gaGlobs,physicalAxis,virtualAxis,inputType);
     }
   }
   return;
@@ -359,10 +359,11 @@ void __cdecl Axis_Bind_f(void)
 void __cdecl Axis_Unbindall_f(void)
 
 {
-  int local_8;
+  int localClientNum;
+  int axis;
   
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    gaGlobs[0].virtualAxes[local_8].physicalAxis = GPAD_PHYSAXIS_NONE;
+  for (axis = 0; axis < 6; axis = axis + 1) {
+    gaGlobs[0].virtualAxes[axis].physicalAxis = GPAD_PHYSAXIS_NONE;
   }
   return;
 }
@@ -370,7 +371,7 @@ void __cdecl Axis_Unbindall_f(void)
 
 // 00550140  Gamepad_WriteBindings  (client/cl_gamepad.cpp:406)
 
-void __cdecl Gamepad_WriteBindings(int param_1,int param_2)
+void __cdecl Gamepad_WriteBindings(int localClientNum,int f)
 
 {
   code *pcVar1;
@@ -379,19 +380,23 @@ void __cdecl Gamepad_WriteBindings(int param_1,int param_2)
   char *pcVar4;
   char *pcVar5;
   char *pcVar6;
-  GamepadVirtualAxis local_8;
+  GpadAxesGlob *gaGlob;
+  char *inputTypeName;
+  char *virtualAxisName;
+  char *realAxisName;
+  int axis;
   
-  iVar3 = param_1 * 0x48;
-  FS_Printf(param_2,"unbindallaxis\n");
-  local_8 = GPAD_VIRTAXIS_SIDE;
+  iVar3 = localClientNum * 0x48;
+  FS_Printf(f,"unbindallaxis\n");
+  axis = 0;
   do {
-    if (5 < (int)local_8) {
+    if (5 < axis) {
       return;
     }
-    if (*(int *)(iVar3 + 0xfa8500 + local_8 * 8) != -1) {
-      pcVar4 = Gamepad_VirtualAxisName(local_8);
-      pcVar5 = Axis_NumToAxisString(*(GamepadPhysicalAxis *)(iVar3 + 0xfa8500 + local_8 * 8));
-      pcVar6 = Gamepad_InputTypeName(*(GamepadMapping *)(iVar3 + 0xfa8504 + local_8 * 8));
+    if (*(int *)(iVar3 + 0xfa8500 + axis * 8) != -1) {
+      pcVar4 = Gamepad_VirtualAxisName(axis);
+      pcVar5 = Axis_NumToAxisString(*(GamepadPhysicalAxis *)(iVar3 + 0xfa8500 + axis * 8));
+      pcVar6 = Gamepad_InputTypeName(*(GamepadMapping *)(iVar3 + 0xfa8504 + axis * 8));
       if ((pcVar5 == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x1a8
                                    ,0,"%s"), !bVar2)) {
@@ -413,9 +418,9 @@ void __cdecl Gamepad_WriteBindings(int param_1,int param_2)
         (*pcVar1)();
         return;
       }
-      FS_Printf(param_2,"bindaxis %s %s %s\n");
+      FS_Printf(f,"bindaxis %s %s %s\n");
     }
-    local_8 = local_8 + GPAD_VIRTAXIS_FORWARD;
+    axis = axis + 1;
   } while( true );
 }
 
@@ -424,47 +429,48 @@ void __cdecl Gamepad_WriteBindings(int param_1,int param_2)
 
 /* WARNING: Enum "GamePadStick": Some values do not have unique names */
 
-void __cdecl CL_GamepadGenerateAPad(int param_1,int param_2,int param_3,int param_4)
+void __cdecl CL_GamepadGenerateAPad(int localClientNum,int portIndex,int physicalAxis,int time)
 
 {
   code *pcVar1;
   bool bVar2;
-  GamePadStick GVar3;
-  int local_1c [6];
+  GamePadStick stick_00;
+  GamePadStick stick;
+  int stickForAxis [6];
   
-  local_1c[0] = 0x40000002;
-  local_1c[1] = 0x40000003;
-  local_1c[2] = 0x40000000;
-  local_1c[3] = 0x40000001;
-  local_1c[4] = 0;
-  local_1c[5] = 0;
-  if (((param_3 < 0) || (5 < param_3)) &&
+  stickForAxis[0] = 0x40000002;
+  stickForAxis[1] = 0x40000003;
+  stickForAxis[2] = 0x40000000;
+  stickForAxis[3] = 0x40000001;
+  stickForAxis[4] = 0;
+  stickForAxis[5] = 0;
+  if (((physicalAxis < 0) || (5 < physicalAxis)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x1e0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_1c[param_3] != 0) {
-    GVar3 = (GamePadStick)local_1c[param_3];
-    bVar2 = GPad_IsStickPressed(param_2,GVar3,GPAD_STICK_POS);
+  if (stickForAxis[physicalAxis] != 0) {
+    stick_00 = (GamePadStick)stickForAxis[physicalAxis];
+    bVar2 = GPad_IsStickPressed(portIndex,stick_00,GPAD_STICK_POS);
     if (bVar2) {
-      GamerProfile_WriteSettings(param_1);
+      GamerProfile_WriteSettings(localClientNum);
     }
     else {
-      bVar2 = GPad_IsStickPressed(param_2,GVar3,GPAD_STICK_NEG);
+      bVar2 = GPad_IsStickPressed(portIndex,stick_00,GPAD_STICK_NEG);
       if (bVar2) {
-        GamerProfile_WriteSettings(param_1);
+        GamerProfile_WriteSettings(localClientNum);
       }
     }
-    bVar2 = GPad_IsStickReleased(param_2,GVar3,GPAD_STICK_POS);
+    bVar2 = GPad_IsStickReleased(portIndex,stick_00,GPAD_STICK_POS);
     if (bVar2) {
-      GamerProfile_WriteSettings(param_1);
+      GamerProfile_WriteSettings(localClientNum);
     }
     else {
-      bVar2 = GPad_IsStickReleased(param_2,GVar3,GPAD_STICK_NEG);
+      bVar2 = GPad_IsStickReleased(portIndex,stick_00,GPAD_STICK_NEG);
       if (bVar2) {
-        GamerProfile_WriteSettings(param_1);
+        GamerProfile_WriteSettings(localClientNum);
       }
     }
   }
@@ -474,7 +480,9 @@ void __cdecl CL_GamepadGenerateAPad(int param_1,int param_2,int param_3,int para
 
 // 00550370  CL_GamepadEvent  (client/cl_gamepad.cpp:499)
 
-void __cdecl CL_GamepadEvent(int param_1,int param_2,int param_3,int param_4)
+/* WARNING: Enum "GamePadStick": Some values do not have unique names */
+
+void __cdecl CL_GamepadEvent(int portIndex,int physicalAxis,int value,int time)
 
 {
   connstate_t cVar1;
@@ -485,18 +493,22 @@ void __cdecl CL_GamepadEvent(int param_1,int param_2,int param_3,int param_4)
   int iVar6;
   int iVar7;
   uint uVar8;
-  int local_18;
+  int value_2;
+  GpadAxesGlob *gaGlob;
+  int localClientNum;
+  connstate_t clcState;
+  int mask;
   
-  if ((param_2 < 0) || (5 < param_2)) {
+  if ((physicalAxis < 0) || (5 < physicalAxis)) {
     Com_Error(ERR_DROP,"\x15CL_GamepadEvent: bad axis %i");
   }
   cVar1 = CL_GetLocalClientConnectionState(0);
   if ((((cVar1 == CA_CINEMATIC) || (cVar1 == CA_LOGO)) || (cVar1 == CA_DISCONNECTED)) &&
-     (gaGlobs[0].axesValues[param_2] != param_3)) {
+     (gaGlobs[0].axesValues[physicalAxis] != value)) {
     CL_ResetLastGamePadEventTime();
   }
-  CL_GamepadGenerateAPad(0,param_1,param_2,param_4);
-  gaGlobs[0].axesValues[param_2] = param_3;
+  CL_GamepadGenerateAPad(0,portIndex,physicalAxis,time);
+  gaGlobs[0].axesValues[physicalAxis] = value;
   iVar2 = Key_IsDown(0,0x10);
   iVar3 = Key_IsDown(0,0x11);
   iVar4 = Key_IsDown(0,0x12);
@@ -512,11 +524,11 @@ void __cdecl CL_GamepadEvent(int param_1,int param_2,int param_3,int param_4)
   }
   else if ((keyMask[0] == 0x13) &&
           ((uVar8 != 0x13 && (sv_debugPacketContentsQuick != (dvar_s *)0x0)))) {
-    local_18 = (sv_debugPacketContentsQuick->current).integer + 1;
-    if ((sv_debugPacketContentsQuick->domain).integer.max < local_18) {
-      local_18 = 0;
+    value_2 = (sv_debugPacketContentsQuick->current).integer + 1;
+    if ((sv_debugPacketContentsQuick->domain).integer.max < value_2) {
+      value_2 = 0;
     }
-    Dvar_SetInt(sv_debugPacketContentsQuick,local_18);
+    Dvar_SetInt(sv_debugPacketContentsQuick,value_2);
     Com_Printf(0x10,"Network logging: %d\n");
   }
   keyMask[0] = uVar8;
@@ -526,52 +538,58 @@ void __cdecl CL_GamepadEvent(int param_1,int param_2,int param_3,int param_4)
 
 // 005506C0  CL_GamepadAxisValue  (client/cl_gamepad.cpp:706)
 
-float __cdecl CL_GamepadAxisValue(int param_1,int param_2)
+float __cdecl CL_GamepadAxisValue(int localClientNum,int virtualAxis)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   float10 fVar4;
-  float local_14;
-  float local_c;
+  GpadAxesGlob *gaGlob;
+  float axisDeflection;
+  int otherSameStickAxis;
+  float otherAxisDeflection;
+  GamepadPhysicalAxis physicalAxis;
   
-  if (((param_2 < 0) || (5 < param_2)) &&
+  if (((virtualAxis < 0) || (5 < virtualAxis)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x2c9,0,
                                "%s\n\t(virtualAxis) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     fVar4 = (float10)(*pcVar2)();
     return (float)fVar4;
   }
-  iVar1 = *(int *)(param_1 * 0x48 + 0xfa8500 + param_2 * 8);
+  iVar1 = *(int *)(localClientNum * 0x48 + 0xfa8500 + virtualAxis * 8);
   bVar3 = DevGui_IsActive();
   if (bVar3) {
-    local_14 = 0.0;
+    axisDeflection = 0.0;
   }
   else {
     if (iVar1 == -1) {
-      local_14 = 0.0;
+      axisDeflection = 0.0;
     }
     else {
-      local_14 = (float)gaGlobs[param_1].axesValues[iVar1] * 1.5259022e-05;
-      if (*(int *)(param_1 * 0x48 + 0xfa8504 + param_2 * 8) == 1) {
+      axisDeflection = (float)gaGlobs[localClientNum].axesValues[iVar1] * 1.5259022e-05;
+      if (*(int *)(localClientNum * 0x48 + 0xfa8504 + virtualAxis * 8) == 1) {
         if (axisSameStick[iVar1] == GPAD_PHYSAXIS_NONE) {
-          local_c = 0.0;
+          otherAxisDeflection = 0.0;
         }
         else {
-          local_c = (float)gaGlobs[param_1].axesValues[axisSameStick[iVar1]] * 1.5259022e-05;
+          otherAxisDeflection =
+               (float)gaGlobs[localClientNum].axesValues[axisSameStick[iVar1]] * 1.5259022e-05;
         }
-        local_14 = SQRT(local_14 * local_14 + local_c * local_c) * local_14;
+        axisDeflection =
+             SQRT(axisDeflection * axisDeflection + otherAxisDeflection * otherAxisDeflection) *
+             axisDeflection;
       }
     }
-    if ((ABS(local_14) < 0.0) &&
+    if ((ABS(axisDeflection) < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x2e7,1
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       fVar4 = (float10)(*pcVar2)();
       return (float)fVar4;
     }
-    if ((1.0 < ABS(local_14)) &&
+    if ((1.0 < ABS(axisDeflection)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x2e8,1
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -579,7 +597,7 @@ float __cdecl CL_GamepadAxisValue(int param_1,int param_2)
       return (float)fVar4;
     }
   }
-  return local_14;
+  return axisDeflection;
 }
 
 
@@ -587,60 +605,62 @@ float __cdecl CL_GamepadAxisValue(int param_1,int param_2)
 
 /* WARNING: Enum "keyNum_t": Some values do not have unique names */
 
-bool __cdecl CL_CheckForIgnoreDueToRepeat(int param_1,int param_2,int param_3,int param_4)
+bool __cdecl CL_CheckForIgnoreDueToRepeat(int localClientNum,int key,int repeatCount,int time)
 
 {
   clientUIActive_t *pcVar1;
-  int local_14;
-  int local_c;
-  int local_8;
+  clientUIActive_t *cl;
+  int scrollDelayRest;
+  int buttonCount;
+  int buttonIndex;
+  int scrollDelayFirst;
   
-  pcVar1 = CL_GetLocalClientUIGlobals(param_1);
+  pcVar1 = CL_GetLocalClientUIGlobals(localClientNum);
   if ((pcVar1->keyCatchers & 0x10U) != 0) {
     if ((pcVar1->keyCatchers & 0x80U) == 0) {
-      local_8 = Dvar_GetInt("gpad_menu_scroll_delay_first");
-      local_14 = Dvar_GetInt("gpad_menu_scroll_delay_rest");
+      scrollDelayFirst = Dvar_GetInt("gpad_menu_scroll_delay_first");
+      scrollDelayRest = Dvar_GetInt("gpad_menu_scroll_delay_rest");
     }
     else {
-      local_8 = Dvar_GetInt("emblem_scroll_delay_first");
-      local_14 = Dvar_GetInt("emblem_scroll_delay_rest");
+      scrollDelayFirst = Dvar_GetInt("emblem_scroll_delay_first");
+      scrollDelayRest = Dvar_GetInt("emblem_scroll_delay_rest");
     }
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      if (param_2 == *(undefined4 *)(menuScrollButtonList + local_c * 4)) {
-        if (param_3 == 1) {
-          pcVar1->nextScrollTime = param_4 + local_8;
+    for (buttonIndex = 0; buttonIndex < 8; buttonIndex = buttonIndex + 1) {
+      if (key == *(undefined4 *)(menuScrollButtonList + buttonIndex * 4)) {
+        if (repeatCount == 1) {
+          pcVar1->nextScrollTime = time + scrollDelayFirst;
           return false;
         }
-        if (pcVar1->nextScrollTime < param_4) {
-          pcVar1->nextScrollTime = param_4 + local_14;
+        if (pcVar1->nextScrollTime < time) {
+          pcVar1->nextScrollTime = time + scrollDelayRest;
           return false;
         }
       }
     }
   }
-  return 1 < param_3;
+  return 1 < repeatCount;
 }
 
 
 // 00551890  IsGamepadKey  (client/cl_gamepad.cpp:810)
 
-bool __cdecl IsGamepadKey(int param_1)
+bool __cdecl IsGamepadKey(int key)
 
 {
   bool bVar1;
   
-  if (((((param_1 == 1) || (param_1 == 2)) || (param_1 == 3)) ||
-      ((param_1 == 4 || (param_1 == 0xe)))) || (param_1 == 0xf)) {
+  if (((((key == 1) || (key == 2)) || (key == 3)) || ((key == 4 || (key == 0xe)))) || (key == 0xf))
+  {
     bVar1 = true;
   }
-  else if (((param_1 == 5) || (param_1 == 6)) ||
-          ((param_1 == 0x10 || (((param_1 == 0x11 || (param_1 == 0x12)) || (param_1 == 0x13)))))) {
+  else if (((key == 5) || (key == 6)) ||
+          ((key == 0x10 || (((key == 0x11 || (key == 0x12)) || (key == 0x13)))))) {
     bVar1 = true;
   }
-  else if (((param_1 == 0x14) || (param_1 == 0x15)) || ((param_1 == 0x16 || (param_1 == 0x17)))) {
+  else if (((key == 0x14) || (key == 0x15)) || ((key == 0x16 || (key == 0x17)))) {
     bVar1 = true;
   }
-  else if (((param_1 == 0x1c) || (param_1 == 0x1d)) || ((param_1 == 0x1e || (param_1 == 0x1f)))) {
+  else if (((key == 0x1c) || (key == 0x1d)) || ((key == 0x1e || (key == 0x1f)))) {
     bVar1 = true;
   }
   else {
@@ -654,19 +674,22 @@ bool __cdecl IsGamepadKey(int param_1)
 
 /* WARNING: Enum "keyNum_t": Some values do not have unique names */
 
-void __cdecl CL_GamepadResetMenuScrollTime(int param_1,int param_2,int param_3,uint param_4)
+void __cdecl CL_GamepadResetMenuScrollTime(int localClientNum,int key,int down,uint time)
 
 {
   int iVar1;
   clientUIActive_t *pcVar2;
-  int local_c;
+  clientUIActive_t *cl;
+  int buttonCount;
+  int buttonIndex;
+  int scrollDelayFirst;
   
-  if (param_3 != 0) {
+  if (down != 0) {
     iVar1 = Dvar_GetInt("gpad_menu_scroll_delay_first");
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      if (param_2 == *(undefined4 *)(menuScrollButtonList + local_c * 4)) {
-        pcVar2 = CL_GetLocalClientUIGlobals(param_1);
-        pcVar2->nextScrollTime = param_4 + iVar1;
+    for (buttonIndex = 0; buttonIndex < 8; buttonIndex = buttonIndex + 1) {
+      if (key == *(undefined4 *)(menuScrollButtonList + buttonIndex * 4)) {
+        pcVar2 = CL_GetLocalClientUIGlobals(localClientNum);
+        pcVar2->nextScrollTime = time + iVar1;
         return;
       }
     }
@@ -684,21 +707,23 @@ void __cdecl CL_GamepadResetMenuScrollTime(int param_1,int param_2,int param_3,u
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CL_GamepadButtonEvent(int param_1,int param_2,int param_3,int param_4,uint param_5,int param_6)
+CL_GamepadButtonEvent
+          (int localClientNum,int controllerIndex,int key,int buttonEvent,uint time,
+          int gamePadButton)
 
 {
   byte bVar1;
   bool bVar2;
-  uint uVar3;
-  clientUIActive_t *pcVar4;
-  connstate_t cVar5;
-  int iVar6;
-  LocSelInputState *pLVar7;
-  EUserTier EVar8;
-  char *pcVar9;
-  cg_s *pcVar10;
-  int iVar11;
-  GamePadButton GVar12;
+  uint pressed_00;
+  clientUIActive_t *pcVar3;
+  connstate_t cVar4;
+  int iVar5;
+  LocSelInputState *pLVar6;
+  EUserTier EVar7;
+  char *pcVar8;
+  cg_s *pcVar9;
+  int iVar10;
+  GamePadButton button;
   uiMenuCommand_t local_4d4;
   int local_4cc;
   byte *local_4c4;
@@ -715,84 +740,98 @@ CL_GamepadButtonEvent(int param_1,int param_2,int param_3,int param_4,uint param
   int local_47c;
   byte *local_474;
   byte *local_470;
-  byte local_46c;
+  bool local_46c;
   byte local_468;
   byte local_464;
   int local_460;
-  int local_444;
-  int local_43c;
-  char *local_428;
-  char local_40c [1024];
+  float keyDown_2;
+  int tempControllerIndex;
+  float keyDown;
+  int i;
+  cg_s *cgameGlob;
+  playerState_s *ps;
+  clientUIActive_t *cl;
+  KeyState *keys;
+  char *kb;
+  bool backB;
+  connstate_t clcState;
+  int activeMenu;
+  LocSelInputState *locSelInputState;
+  int pressed;
+  int down;
+  char cmd [1024];
   uint local_c;
-  byte local_5;
+  bool devguiToggle;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar3 = (uint)(param_4 == 1);
-  if ((param_4 == 1) || (param_4 == 2)) {
+  pressed_00 = (uint)(buttonEvent == 1);
+  if ((buttonEvent == 1) || (buttonEvent == 2)) {
     local_460 = 1;
   }
   else {
     local_460 = 0;
   }
-  pcVar4 = CL_GetLocalClientUIGlobals(param_1);
-  if ((pcVar4->keyCatchers & 0x100U) != 0) {
+  pcVar3 = CL_GetLocalClientUIGlobals(localClientNum);
+  if ((pcVar3->keyCatchers & 0x100U) != 0) {
     return;
   }
-  bVar2 = IsGamepadKey(param_3);
+  bVar2 = IsGamepadKey(key);
   if (!bVar2) {
-    CL_KeyEvent(param_1,param_3,uVar3,param_5);
+    CL_KeyEvent(localClientNum,key,pressed_00,time);
     return;
   }
-  iVar11 = param_1 * 0x1128;
-  *(int *)(iVar11 + 0xfa9b3c + param_3 * 0x10) = local_460;
-  cVar5 = CL_GetLocalClientConnectionState(param_1);
-  if ((param_5 != 0) &&
-     ((((cVar5 == CA_CINEMATIC || (cVar5 == CA_LOGO)) || (cVar5 == CA_DISCONNECTED)) ||
-      (cVar5 == CA_UICINEMATIC)))) {
+  iVar10 = localClientNum * 0x1128;
+  *(int *)(iVar10 + 0xfa9b3c + key * 0x10) = local_460;
+  cVar4 = CL_GetLocalClientConnectionState(localClientNum);
+  if ((time != 0) &&
+     ((((cVar4 == CA_CINEMATIC || (cVar4 == CA_LOGO)) || (cVar4 == CA_DISCONNECTED)) ||
+      (cVar4 == CA_UICINEMATIC)))) {
     CL_ResetLastGamePadEventTime();
   }
-  if (uVar3 == 0) {
-    *(undefined4 *)(iVar11 + 0xfa9b40 + param_3 * 0x10) = 0;
-    playerKeys[param_1].anyKeyDown = playerKeys[param_1].anyKeyDown + -1;
-    if (playerKeys[param_1].anyKeyDown < 0) {
-      playerKeys[param_1].anyKeyDown = 0;
+  if (pressed_00 == 0) {
+    *(undefined4 *)(iVar10 + 0xfa9b40 + key * 0x10) = 0;
+    playerKeys[localClientNum].anyKeyDown = playerKeys[localClientNum].anyKeyDown + -1;
+    if (playerKeys[localClientNum].anyKeyDown < 0) {
+      playerKeys[localClientNum].anyKeyDown = 0;
     }
   }
   else {
-    *(int *)(iVar11 + 0xfa9b40 + param_3 * 0x10) = *(int *)(iVar11 + 0xfa9b40 + param_3 * 0x10) + 1;
-    if (*(int *)(iVar11 + 0xfa9b40 + param_3 * 0x10) == 1) {
-      playerKeys[param_1].anyKeyDown = playerKeys[param_1].anyKeyDown + 1;
+    *(int *)(iVar10 + 0xfa9b40 + key * 0x10) = *(int *)(iVar10 + 0xfa9b40 + key * 0x10) + 1;
+    if (*(int *)(iVar10 + 0xfa9b40 + key * 0x10) == 1) {
+      playerKeys[localClientNum].anyKeyDown = playerKeys[localClientNum].anyKeyDown + 1;
     }
   }
-  pcVar9 = *(char **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
-  if (((pcVar9 == (char *)0x0) || (iVar6 = I_stricmp(pcVar9,"devgui"), iVar6 != 0)) ||
-     ((uVar3 == 0 || (*(int *)(iVar11 + 0xfa9b40 + param_3 * 0x10) != 1)))) {
+  pcVar8 = *(char **)(iVar10 + 0xfa9b44 + key * 0x10);
+  if (((pcVar8 == (char *)0x0) || (iVar5 = I_stricmp(pcVar8,"devgui"), iVar5 != 0)) ||
+     ((pressed_00 == 0 || (*(int *)(iVar10 + 0xfa9b40 + key * 0x10) != 1)))) {
     local_464 = 0;
   }
   else {
     local_464 = 1;
   }
-  if ((playerKeys[param_1].keys[0xf].down == 0) || (playerKeys[param_1].keys[0xe].down == 0)) {
+  if ((playerKeys[localClientNum].keys[0xf].down == 0) ||
+     (playerKeys[localClientNum].keys[0xe].down == 0)) {
     local_468 = 0;
   }
   else {
     local_468 = 1;
   }
-  local_5 = local_464 | local_468;
+  devguiToggle = (bool)(local_464 | local_468);
   if ((zombiemode->current).enabled != false) {
-    if ((playerKeys[param_1].keys[0xf].down == 0) || (playerKeys[param_1].keys[0xe].down == 0)) {
-      local_46c = 0;
+    if ((playerKeys[localClientNum].keys[0xf].down == 0) ||
+       (playerKeys[localClientNum].keys[0xe].down == 0)) {
+      local_46c = false;
     }
     else {
-      local_46c = 1;
+      local_46c = true;
     }
-    local_5 = local_46c;
+    devguiToggle = local_46c;
   }
-  if (local_5 != 0) {
+  if (devguiToggle != false) {
     bVar2 = DevGui_IsActive();
     if (!bVar2) {
-      Cbuf_AddText(param_1,"devgui\n");
-      Cbuf_AddText(param_1,"-scores\n");
+      Cbuf_AddText(localClientNum,"devgui\n");
+      Cbuf_AddText(localClientNum,"-scores\n");
       return;
     }
     DevGui_Toggle();
@@ -804,73 +843,75 @@ CL_GamepadButtonEvent(int param_1,int param_2,int param_3,int param_4,uint param
   }
   bVar2 = Com_IsMenuLevel((char *)0x0);
   if ((((!bVar2) && (local_464 != 0)) && ((zombiemode->current).enabled != false)) &&
-     (bVar2 = Menu_IsMenuOpenAndVisible(param_1,"menu_friends"), !bVar2)) {
-    Cbuf_AddText(param_1,"togglescores\n");
+     (bVar2 = Menu_IsMenuOpenAndVisible(localClientNum,"menu_friends"), !bVar2)) {
+    Cbuf_AddText(localClientNum,"togglescores\n");
     return;
   }
-  pLVar7 = &playerKeys[param_1].locSelInputState;
-  if (((pcVar4->keyCatchers & 8U) == 0) || (local_460 == 0)) {
-    *pLVar7 = LOC_SEL_INPUT_NONE;
-    if ((pcVar4->keyCatchers & 0x10U) == 0) {
+  pLVar6 = &playerKeys[localClientNum].locSelInputState;
+  if (((pcVar3->keyCatchers & 8U) == 0) || (local_460 == 0)) {
+    *pLVar6 = LOC_SEL_INPUT_NONE;
+    if ((pcVar3->keyCatchers & 0x10U) == 0) {
       local_4d4 = UIMENU_NONE;
     }
     else {
-      local_4d4 = UI_GetActiveMenu(param_1);
+      local_4d4 = UI_GetActiveMenu(localClientNum);
     }
-    if ((cVar5 == CA_CINEMATIC) || (cVar5 == CA_LOGO)) {
-      if (uVar3 == 0) {
+    if ((cVar4 == CA_CINEMATIC) || (cVar4 == CA_LOGO)) {
+      if (pressed_00 == 0) {
         return;
       }
-      if ((param_3 != 1) && (param_3 != 0xe)) {
+      if ((key != 1) && (key != 0xe)) {
         return;
       }
-      if (((pcVar4->keyCatchers & 0x10U) != 0) && (local_4d4 != UIMENU_NONE)) {
+      if (((pcVar3->keyCatchers & 0x10U) != 0) && (local_4d4 != UIMENU_NONE)) {
         return;
       }
-      CL_StopLogoOrCinematic(param_1);
+      CL_StopLogoOrCinematic(localClientNum);
       return;
     }
     if (((local_460 != 0) &&
         (bVar2 = CL_CheckForIgnoreDueToRepeat
-                           (param_1,param_3,*(int *)(iVar11 + 0xfa9b40 + param_3 * 0x10),param_5),
-        bVar2)) && (param_4 != 2)) {
+                           (localClientNum,key,*(int *)(iVar10 + 0xfa9b40 + key * 0x10),time), bVar2
+        )) && (buttonEvent != 2)) {
       return;
     }
-    if (((pcVar9 != (char *)0x0) && (iVar6 = I_stricmp(pcVar9,"mainmenu"), iVar6 == 0)) &&
-       (uVar3 != 0)) {
-      if (((pcVar4->keyCatchers & 0x10U) == 0) && (cVar5 == CA_ACTIVE)) {
+    if (((pcVar8 != (char *)0x0) && (iVar5 = I_stricmp(pcVar8,"mainmenu"), iVar5 == 0)) &&
+       (pressed_00 != 0)) {
+      if (((pcVar3->keyCatchers & 0x10U) == 0) && (cVar4 == CA_ACTIVE)) {
         return;
       }
-      UI_KeyEvent(param_1,0xf,uVar3);
+      UI_KeyEvent(localClientNum,0xf,pressed_00);
       return;
     }
-    Demo_HandleInput(param_1,param_2,param_3,uVar3);
-    if (((playerKeys[param_1].keys[0x10].down != 0) && (playerKeys[param_1].keys[0x11].down != 0))
-       && (((playerKeys[param_1].keys[0x13].down != 0 &&
-            (((playerKeys[param_1].keys[0x12].down != 0 && (param_2 != -1)) &&
-             (EVar8 = Live_GetTier(param_2), EVar8 == USER_TIER_SUPER)))) &&
-           ((bVar2 = Menu_IsMenuOpenAndVisible(param_1,"menu_xboxlive"), bVar2 ||
-            (bVar2 = Menu_IsMenuOpenAndVisible(param_1,"menu_xboxlive_lobby"), bVar2)))))) {
-      BG_UnlockablesClearAllItemsNew(param_2);
+    Demo_HandleInput(localClientNum,controllerIndex,key,pressed_00);
+    if (((playerKeys[localClientNum].keys[0x10].down != 0) &&
+        (playerKeys[localClientNum].keys[0x11].down != 0)) &&
+       (((playerKeys[localClientNum].keys[0x13].down != 0 &&
+         (((playerKeys[localClientNum].keys[0x12].down != 0 && (controllerIndex != -1)) &&
+          (EVar7 = Live_GetTier(controllerIndex), EVar7 == USER_TIER_SUPER)))) &&
+        ((bVar2 = Menu_IsMenuOpenAndVisible(localClientNum,"menu_xboxlive"), bVar2 ||
+         (bVar2 = Menu_IsMenuOpenAndVisible(localClientNum,"menu_xboxlive_lobby"), bVar2)))))) {
+      BG_UnlockablesClearAllItemsNew(controllerIndex);
     }
-    if ((playerKeys[param_1].keys[0x10].down != 0) && (playerKeys[param_1].keys[0x11].down == 0)) {
-      if (param_3 == 0x14) {
-        if (uVar3 != 0) {
-          pcVar9 = va("exec screenshot.cfg\n");
-          Cbuf_AddText(param_1,pcVar9);
+    if ((playerKeys[localClientNum].keys[0x10].down != 0) &&
+       (playerKeys[localClientNum].keys[0x11].down == 0)) {
+      if (key == 0x14) {
+        if (pressed_00 != 0) {
+          pcVar8 = va("exec screenshot.cfg\n");
+          Cbuf_AddText(localClientNum,pcVar8);
         }
       }
-      else if (param_3 == 0x15) {
-        if (uVar3 != 0) {
-          pcVar9 = "noclip";
-          iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-          Cmd_ExecuteSingleCommand(param_1,iVar6,pcVar9);
+      else if (key == 0x15) {
+        if (pressed_00 != 0) {
+          pcVar8 = "noclip";
+          iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+          Cmd_ExecuteSingleCommand(localClientNum,iVar5,pcVar8);
         }
       }
-      else if ((param_3 == 0x17) && (uVar3 != 0)) {
-        pcVar9 = "notarget";
-        iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar6,pcVar9);
+      else if ((key == 0x17) && (pressed_00 != 0)) {
+        pcVar8 = "notarget";
+        iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar5,pcVar8);
       }
     }
     if ((((net_showprofile->current).integer != 0) && ((com_sv_running->current).enabled != false))
@@ -878,103 +919,103 @@ CL_GamepadButtonEvent(int param_1,int param_2,int param_3,int param_4,uint param
       return;
     }
     if (local_4d4 == UIMENU_SCOREBOARD) {
-      if ((uVar3 != 0) && (bVar2 = Scoreboard_HandleInput(param_1,param_3), bVar2)) {
+      if ((pressed_00 != 0) && (bVar2 = Scoreboard_HandleInput(localClientNum,key), bVar2)) {
         return;
       }
-      pcVar10 = CG_GetLocalClientGlobals(param_1);
-      if ((pcVar10->nextSnap->ps).pm_type == 5) {
-        UI_KeyEvent(param_1,param_3,local_460);
+      pcVar9 = CG_GetLocalClientGlobals(localClientNum);
+      if ((pcVar9->nextSnap->ps).pm_type == 5) {
+        UI_KeyEvent(localClientNum,key,local_460);
         return;
       }
     }
-    if (((local_4d4 == UIMENU_GAMERCARD) && (uVar3 != 0)) &&
-       (bVar2 = Gamercard_HandleInput(param_1,param_3), bVar2)) {
+    if (((local_4d4 == UIMENU_GAMERCARD) && (pressed_00 != 0)) &&
+       (bVar2 = Gamercard_HandleInput(localClientNum,key), bVar2)) {
       return;
     }
-    if (((local_4d4 == UIMENU_MUTEERROR) && (uVar3 != 0)) &&
-       (bVar2 = Gamercard_HandleInput(param_1,param_3), bVar2)) {
+    if (((local_4d4 == UIMENU_MUTEERROR) && (pressed_00 != 0)) &&
+       (bVar2 = Gamercard_HandleInput(localClientNum,key), bVar2)) {
       return;
     }
-    local_43c = 0;
+    i = 0;
     do {
-      if (1 < local_43c) {
+      if (1 < i) {
         return;
       }
-      if (local_43c == 0) {
-        local_428 = *(char **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
+      if (i == 0) {
+        kb = *(char **)(iVar10 + 0xfa9b44 + key * 0x10);
       }
       else {
-        local_428 = *(char **)(iVar11 + 0xfa9b48 + param_3 * 0x10);
+        kb = *(char **)(iVar10 + 0xfa9b48 + key * 0x10);
       }
       if (local_460 == 0) {
-        if ((local_428 != (char *)0x0) && (*local_428 == '+')) {
-          if (param_6 != 0) {
-            local_444 = Com_LocalClient_GetControllerIndex(param_1);
-            if (local_444 == -1) {
-              local_444 = param_2;
+        if ((kb != (char *)0x0) && (*kb == '+')) {
+          if (gamePadButton != 0) {
+            tempControllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+            if (tempControllerIndex == -1) {
+              tempControllerIndex = controllerIndex;
             }
-            GPad_GetButton(local_444,param_6);
+            GPad_GetButton(tempControllerIndex,gamePadButton);
           }
-          Com_sprintf(local_40c,0x400,"-%s %i %i %0.3f\n");
-          Cbuf_AddText(param_1,local_40c);
+          Com_sprintf(cmd,0x400,"-%s %i %i %0.3f\n");
+          Cbuf_AddText(localClientNum,cmd);
         }
-        if ((((pcVar4->keyCatchers & 0x10U) != 0) && (cls.uiStarted != 0)) && (local_43c == 0)) {
-          UI_KeyEvent(param_1,param_3,0);
+        if ((((pcVar3->keyCatchers & 0x10U) != 0) && (cls.uiStarted != 0)) && (i == 0)) {
+          UI_KeyEvent(localClientNum,key,0);
         }
 joined_r0x00551680:
-        if (local_43c == 1) {
+        if (i == 1) {
           return;
         }
       }
-      else if (((pcVar4->keyCatchers & 0x50U) == 0) || (local_4d4 == UIMENU_SCOREBOARD)) {
-        if ((cVar5 != CA_DISCONNECTED) && (cVar5 != CA_UICINEMATIC)) {
-          if (local_428 == (char *)0x0) {
-            if (199 < param_3) {
-              Key_KeynumToString(param_3,0);
+      else if (((pcVar3->keyCatchers & 0x50U) == 0) || (local_4d4 == UIMENU_SCOREBOARD)) {
+        if ((cVar4 != CA_DISCONNECTED) && (cVar4 != CA_UICINEMATIC)) {
+          if (kb == (char *)0x0) {
+            if (199 < key) {
+              Key_KeynumToString(key,0);
               Com_Printf(0xe,"%s is unbound, use controls menu to set.\n");
             }
           }
           else {
-            bVar2 = CG_TranslateGamepadButton(param_1,param_3,local_428);
+            bVar2 = CG_TranslateGamepadButton(localClientNum,key,kb);
             if (bVar2) goto joined_r0x00551680;
-            if (*local_428 == '+') {
-              if (param_6 != 0) {
-                GVar12 = param_6;
-                iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-                GPad_GetButton(iVar6,GVar12);
+            if (*kb == '+') {
+              if (gamePadButton != 0) {
+                button = gamePadButton;
+                iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+                GPad_GetButton(iVar5,button);
               }
-              Com_sprintf(local_40c,0x400,"%s %i %i %0.3f\n");
-              Cbuf_AddText(param_1,local_40c);
+              Com_sprintf(cmd,0x400,"%s %i %i %0.3f\n");
+              Cbuf_AddText(localClientNum,cmd);
             }
             else {
-              iVar6 = I_stricmp(local_428,"devgui");
-              if (iVar6 == 0) {
-                Cbuf_AddText(param_1,local_428);
-                Cbuf_AddText(param_1,"\n");
+              iVar5 = I_stricmp(kb,"devgui");
+              if (iVar5 == 0) {
+                Cbuf_AddText(localClientNum,kb);
+                Cbuf_AddText(localClientNum,"\n");
               }
               else {
-                Cbuf_AddText(param_1,local_428);
-                Cbuf_AddText(param_1,"\n");
+                Cbuf_AddText(localClientNum,kb);
+                Cbuf_AddText(localClientNum,"\n");
               }
             }
           }
         }
       }
-      else if ((cls.uiStarted != 0) && (local_43c == 0)) {
+      else if ((cls.uiStarted != 0) && (i == 0)) {
         GamerProfile_WriteSettings(1);
-        UI_KeyEvent(param_1,param_3,local_460);
+        UI_KeyEvent(localClientNum,key,local_460);
       }
-      local_43c = local_43c + 1;
+      i = i + 1;
     } while( true );
   }
-  if (param_3 == 2) {
+  if (key == 2) {
 LAB_00550d4d:
-    *pLVar7 = LOC_SEL_INPUT_CANCEL;
+    *pLVar6 = LOC_SEL_INPUT_CANCEL;
     return;
   }
-  if (*(int *)(iVar11 + 0xfa9b44 + param_3 * 0x10) != 0) {
+  if (*(int *)(iVar10 + 0xfa9b44 + key * 0x10) != 0) {
     local_470 = (byte *)0xc913ec;
-    local_474 = *(byte **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
+    local_474 = *(byte **)(iVar10 + 0xfa9b44 + key * 0x10);
     do {
       bVar1 = *local_474;
       bVar2 = bVar1 < *local_470;
@@ -994,14 +1035,14 @@ LAB_00550d2d:
 LAB_00550d38:
     if (local_47c == 0) goto LAB_00550d4d;
   }
-  if (param_3 == 1) {
+  if (key == 1) {
 LAB_00550e1d:
-    *pLVar7 = LOC_SEL_INPUT_CONFIRM;
+    *pLVar6 = LOC_SEL_INPUT_CONFIRM;
   }
   else {
-    if (*(int *)(iVar11 + 0xfa9b44 + param_3 * 0x10) != 0) {
+    if (*(int *)(iVar10 + 0xfa9b44 + key * 0x10) != 0) {
       local_484 = (byte *)0xc78648;
-      local_488 = *(byte **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
+      local_488 = *(byte **)(iVar10 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_488;
         bVar2 = bVar1 < *local_484;
@@ -1021,9 +1062,9 @@ LAB_00550dfd:
 LAB_00550e08:
       if (local_490 == 0) goto LAB_00550e1d;
     }
-    if (*(int *)(iVar11 + 0xfa9b44 + param_3 * 0x10) != 0) {
+    if (*(int *)(iVar10 + 0xfa9b44 + key * 0x10) != 0) {
       local_498 = (byte *)0xc7b13c;
-      local_49c = *(byte **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
+      local_49c = *(byte **)(iVar10 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_49c;
         bVar2 = bVar1 < *local_498;
@@ -1042,13 +1083,13 @@ LAB_00550ec3:
       local_4a4 = 0;
 LAB_00550ece:
       if (local_4a4 == 0) {
-        *pLVar7 = LOC_SEL_INPUT_REGROUP;
+        *pLVar6 = LOC_SEL_INPUT_REGROUP;
         return;
       }
     }
-    if (*(int *)(iVar11 + 0xfa9b44 + param_3 * 0x10) != 0) {
+    if (*(int *)(iVar10 + 0xfa9b44 + key * 0x10) != 0) {
       local_4ac = (byte *)0xc87cc0;
-      local_4b0 = *(byte **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
+      local_4b0 = *(byte **)(iVar10 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_4b0;
         bVar2 = bVar1 < *local_4ac;
@@ -1067,13 +1108,13 @@ LAB_00550f89:
       local_4b8 = 0;
 LAB_00550f94:
       if (local_4b8 == 0) {
-        *pLVar7 = LOC_SEL_INPUT_DEFEND;
+        *pLVar6 = LOC_SEL_INPUT_DEFEND;
         return;
       }
     }
-    if (*(int *)(iVar11 + 0xfa9b44 + param_3 * 0x10) != 0) {
+    if (*(int *)(iVar10 + 0xfa9b44 + key * 0x10) != 0) {
       local_4c0 = (byte *)0xc993cc;
-      local_4c4 = *(byte **)(iVar11 + 0xfa9b44 + param_3 * 0x10);
+      local_4c4 = *(byte **)(iVar10 + 0xfa9b44 + key * 0x10);
       do {
         bVar1 = *local_4c4;
         bVar2 = bVar1 < *local_4c0;
@@ -1092,7 +1133,7 @@ LAB_0055104f:
       local_4cc = 0;
 LAB_0055105a:
       if (local_4cc == 0) {
-        *pLVar7 = LOC_SEL_INPUT_SQUAD_CANCEL;
+        *pLVar6 = LOC_SEL_INPUT_SQUAD_CANCEL;
       }
     }
   }
@@ -1102,16 +1143,22 @@ LAB_0055105a:
 
 // 00551920  CL_GamepadButtonEventForPort  (client/cl_gamepad.cpp:1474)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-CL_GamepadButtonEventForPort(int param_1,int param_2,int param_3,uint param_4,int param_5)
+CL_GamepadButtonEventForPort(int portIndex,int key,int buttonEvent,uint time,int button)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int localClientNum_00;
+  int localClientNum;
   
-  iVar3 = Com_ControllerIndex_GetLocalClientNum(param_1);
-  if (iVar3 == -1) {
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(portIndex);
+  if (localClientNum_00 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_gamepad.cpp",0x5c6,0,
                              "%s");
     if (!bVar2) {
@@ -1120,11 +1167,11 @@ CL_GamepadButtonEventForPort(int param_1,int param_2,int param_3,uint param_4,in
       return;
     }
   }
-  bVar2 = Key_IsCatcherActive(iVar3,0x10);
+  bVar2 = Key_IsCatcherActive(localClientNum_00,0x10);
   if (bVar2) {
-    CL_GamepadResetMenuScrollTime(iVar3,param_2,(uint)(param_3 == 1),param_4);
+    CL_GamepadResetMenuScrollTime(localClientNum_00,key,(uint)(buttonEvent == 1),time);
   }
-  CL_GamepadButtonEvent(iVar3,param_1,param_2,param_3,param_4,param_5);
+  CL_GamepadButtonEvent(localClientNum_00,portIndex,key,buttonEvent,time,button);
   return;
 }
 

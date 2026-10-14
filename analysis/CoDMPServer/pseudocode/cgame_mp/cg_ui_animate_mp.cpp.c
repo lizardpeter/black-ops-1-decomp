@@ -5,64 +5,66 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-UI_AnimateLocalItem(int param_1,UiContext *param_2,char *param_3,char *param_4,char *param_5,
-                   int param_6)
+UI_AnimateLocalItem(int localClientNum,UiContext *dc,char *menuName,char *itemName,
+                   char *newStateName,int milliseconds)
 
 {
-  char local_8c [132];
+  char menuNameLocal [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Com_sprintf(local_8c,0x80,"%s%i");
-  UI_AnimateItem(param_1,param_2,local_8c,param_4,param_5,param_6);
+  Com_sprintf(menuNameLocal,0x80,"%s%i");
+  UI_AnimateItem(localClientNum,dc,menuNameLocal,itemName,newStateName,milliseconds);
   return;
 }
 
 
 // 0050BE40  UI_SetLocalVarStringByName  (cgame_mp/cg_ui_animate_mp.cpp:43)
 
-void __cdecl UI_SetLocalVarStringByName(char *param_1,char *param_2,int param_3)
+void __cdecl UI_SetLocalVarStringByName(char *inputName,char *inputValue,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
-  UILocalVar *pUVar4;
+  UILocalVar *var_00;
+  UILocalVar *var;
+  uiInfo_s *uiInfo;
   
-  if ((0 < param_3) &&
+  if ((0 < localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                                0x2c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 1) && (-1 < param_3)) {
-    puVar3 = UI_GetInfo(param_3);
-    if ((param_1 == (char *)0x0) &&
+  if ((localClientNum < 1) && (-1 < localClientNum)) {
+    puVar3 = UI_GetInfo(localClientNum);
+    if ((inputName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x33,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1 != (char *)0x0) {
-      if ((param_2 == (char *)0x0) &&
+    if (inputName != (char *)0x0) {
+      if ((inputValue == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x37,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_2 != (char *)0x0) {
-        pUVar4 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,param_1);
-        if ((pUVar4 == (UILocalVar *)0x0) &&
+      if (inputValue != (char *)0x0) {
+        var_00 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,inputName);
+        if ((var_00 == (UILocalVar *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                      ,0x3d,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        UILocalVar_SetString(pUVar4,param_2);
+        UILocalVar_SetString(var_00,inputValue);
       }
     }
   }
@@ -74,34 +76,34 @@ void __cdecl UI_SetLocalVarStringByName(char *param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl UI_SetFakeLocalDvarStringByName(char *param_1,char *param_2,int param_3)
+void __cdecl UI_SetFakeLocalDvarStringByName(char *inputName,char *inputValue,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_8c [132];
+  char dvarName [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 < 2) && (-1 < param_3)) {
-    if ((param_1 == (char *)0x0) &&
+  if ((localClientNum < 2) && (-1 < localClientNum)) {
+    if ((inputName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x46,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1 != (char *)0x0) {
-      if ((param_2 == (char *)0x0) &&
+    if (inputName != (char *)0x0) {
+      if ((inputValue == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x4a,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_2 != (char *)0x0) {
-        Com_sprintf(local_8c,0x80,"%s%i");
-        Dvar_SetStringByName(local_8c,param_2);
+      if (inputValue != (char *)0x0) {
+        Com_sprintf(dvarName,0x80,"%s%i");
+        Dvar_SetStringByName(dvarName,inputValue);
       }
     }
   }
@@ -111,59 +113,64 @@ void __cdecl UI_SetFakeLocalDvarStringByName(char *param_1,char *param_2,int par
 
 // 0050C030  CG_ClearPopUpUI  (cgame_mp/cg_ui_animate_mp.cpp:86)
 
-void __cdecl CG_ClearPopUpUI(int param_1)
+void __cdecl CG_ClearPopUpUI(int localClientNum)
 
 {
-  CG_ClearCenterPopUpUI(param_1);
-  CG_ClearPlayerCardPopUpUI(param_1);
-  CG_TeamMessagePopUpUI(param_1);
-  CG_GameMessagePopUpUI(param_1);
+  CG_ClearCenterPopUpUI(localClientNum);
+  CG_ClearPlayerCardPopUpUI(localClientNum);
+  CG_TeamMessagePopUpUI(localClientNum);
+  CG_GameMessagePopUpUI(localClientNum);
   return;
 }
 
 
 // 0050C070  CG_ClearCenterPopUpUI  (cgame_mp/cg_ui_animate_mp.cpp:94)
 
-void __cdecl CG_ClearCenterPopUpUI(int param_1)
+void __cdecl CG_ClearCenterPopUpUI(int localClientNum)
 
 {
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps","KillstreakPopUp","Hide",0);
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps","RankPopUp","Hide",0);
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps","ChallengePopUp","Hide",0);
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps","MedalPopUp","Hide",0);
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps","ContractPopUp","Hide",0);
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps","WagerPopUp","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps","KillstreakPopUp","Hide",0
+                     );
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps","RankPopUp","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps","ChallengePopUp","Hide",0)
+  ;
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps","MedalPopUp","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps","ContractPopUp","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps","WagerPopUp","Hide",0);
   return;
 }
 
 
 // 0050C190  CG_ClearPlayerCardPopUpUI  (cgame_mp/cg_ui_animate_mp.cpp:104)
 
-void __cdecl CG_ClearPlayerCardPopUpUI(int param_1)
+void __cdecl CG_ClearPlayerCardPopUpUI(int localClientNum)
 
 {
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"playerKilled","playerCardPopUp","Hide",0);
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"playerCard","playerCardPopUp","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"playerKilled","playerCardPopUp","Hide",0
+                     );
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"playerCard","playerCardPopUp","Hide",0);
   return;
 }
 
 
 // 0050C1F0  CG_TeamMessagePopUpUI  (cgame_mp/cg_ui_animate_mp.cpp:110)
 
-void __cdecl CG_TeamMessagePopUpUI(int param_1)
+void __cdecl CG_TeamMessagePopUpUI(int localClientNum)
 
 {
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"teamMessageSlideOut","SlideOut","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"teamMessageSlideOut","SlideOut","Hide",0
+                     );
   return;
 }
 
 
 // 0050C230  CG_GameMessagePopUpUI  (cgame_mp/cg_ui_animate_mp.cpp:115)
 
-void __cdecl CG_GameMessagePopUpUI(int param_1)
+void __cdecl CG_GameMessagePopUpUI(int localClientNum)
 
 {
-  UI_AnimateLocalItem(param_1,cgDC + param_1,"GameMessageSlideOut","SlideOut","Hide",0);
+  UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"GameMessageSlideOut","SlideOut","Hide",0
+                     );
   return;
 }
 
@@ -172,42 +179,43 @@ void __cdecl CG_GameMessagePopUpUI(int param_1)
 
 void __cdecl
 CG_DisplayCenterPopup
-          (int param_1,char *param_2,char *param_3,char *param_4,char *param_5,char *param_6,
-          char *param_7)
+          (int localClientNum,char *animationType,char *displayString1,char *displayString2,
+          char *displayString3,char *displayMaterial,char *displayBacking)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (((param_3 == (char *)0x0) || (param_4 == (char *)0x0)) &&
+  if (((displayString1 == (char *)0x0) || (displayString2 == (char *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                                0x79,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 != (char *)0x0) && (param_4 != (char *)0x0)) {
-    if ((param_2 == (char *)0x0) &&
+  if ((displayString1 != (char *)0x0) && (displayString2 != (char *)0x0)) {
+    if ((animationType == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x7d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_2 != (char *)0x0) {
-      UI_SetLocalVarStringByName("popUpCenterStringA",param_3,param_1);
-      UI_SetLocalVarStringByName("popUpCenterStringB",param_4,param_1);
-      if (param_5 != (char *)0x0) {
-        UI_SetLocalVarStringByName("popUpCenterStringC",param_5,param_1);
+    if (animationType != (char *)0x0) {
+      UI_SetLocalVarStringByName("popUpCenterStringA",displayString1,localClientNum);
+      UI_SetLocalVarStringByName("popUpCenterStringB",displayString2,localClientNum);
+      if (displayString3 != (char *)0x0) {
+        UI_SetLocalVarStringByName("popUpCenterStringC",displayString3,localClientNum);
       }
-      if (param_6 != (char *)0x0) {
-        UI_SetLocalVarStringByName("popUpCenterMaterial",param_6,param_1);
+      if (displayMaterial != (char *)0x0) {
+        UI_SetLocalVarStringByName("popUpCenterMaterial",displayMaterial,localClientNum);
       }
-      if (param_7 != (char *)0x0) {
-        UI_SetLocalVarStringByName("popUpCenterMaterialBacking",param_7,param_1);
+      if (displayBacking != (char *)0x0) {
+        UI_SetLocalVarStringByName("popUpCenterMaterialBacking",displayBacking,localClientNum);
       }
-      CG_ClearCenterPopUpUI(param_1);
-      UI_AnimateLocalItem(param_1,cgDC + param_1,"InGamePopUps",param_2,"Start",0);
+      CG_ClearCenterPopUpUI(localClientNum);
+      UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"InGamePopUps",animationType,"Start",
+                          0);
     }
   }
   return;
@@ -216,23 +224,24 @@ CG_DisplayCenterPopup
 
 // 0050C3A0  CG_PlayPopUpSound  (cgame_mp/cg_ui_animate_mp.cpp:146)
 
-void __cdecl CG_PlayPopUpSound(int param_1,char *param_2)
+void __cdecl CG_PlayPopUpSound(int localClientNum,char *sound)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int entitynum;
+  int entNum;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((sound == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                                0x95,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != (char *)0x0) {
-    iVar3 = CG_GetClientNumForLocalClient(param_1);
-    CG_PlaySound(param_1,iVar3,(float *)0x0,0,false,1.0,param_2);
+  if (sound != (char *)0x0) {
+    entitynum = CG_GetClientNumForLocalClient(localClientNum);
+    CG_PlaySound(localClientNum,entitynum,(float *)0x0,0,false,1.0,sound);
   }
   return;
 }
@@ -245,59 +254,69 @@ void __cdecl CG_PlayPopUpSound(int param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayRankUp(int param_1)
+void __cdecl CG_DisplayRankUp(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  char *nptr;
   char *pcVar4;
-  char *pcVar5;
-  int iVar6;
-  cg_s *pcVar7;
-  int iVar8;
-  char *pcVar9;
-  char *pcVar10;
-  char *local_28;
+  int iVar5;
+  cg_s *pcVar6;
+  int iVar7;
+  char *inputValue;
+  char *replaceString;
+  char *localizedPromoted;
+  char *rankImage;
+  int prestige;
+  char *rank;
+  cg_s *cgameGlob;
+  char *cpEarned;
+  char *sound;
+  int rankIndex;
+  char *localizedCpEarned;
   
-  local_28 = UI_SafeTranslateString("RANK_PROMOTED_TO");
+  localizedPromoted = UI_SafeTranslateString("RANK_PROMOTED_TO");
   pcVar3 = UI_SafeTranslateString("RANK_COD_POINTS");
-  pcVar4 = Cmd_Argv(2);
-  pcVar5 = Cmd_Argv(3);
-  iVar6 = atoi(pcVar5);
-  pcVar5 = Cmd_Argv(4);
+  nptr = Cmd_Argv(2);
+  pcVar4 = Cmd_Argv(3);
+  iVar5 = atoi(pcVar4);
+  pcVar4 = Cmd_Argv(4);
   bVar2 = Demo_IsThirdPersonCamera();
   if ((!bVar2) && (bVar2 = Demo_IsMovieCamera(), !bVar2)) {
-    pcVar7 = CG_GetLocalClientGlobals(param_1);
-    pcVar7->compassScrambler[0xf].pos[1] = (float)pcVar7->time;
-    pcVar7->compassScrambler[0xf].startTime = 0x40e00000;
-    iVar8 = atoi(pcVar4);
-    pcVar9 = CL_GetRankIconName(iVar8 + -1,iVar6);
-    if ((pcVar9 == (char *)0x0) &&
+    pcVar6 = CG_GetLocalClientGlobals(localClientNum);
+    pcVar6->compassScrambler[0xf].pos[1] = (float)pcVar6->time;
+    pcVar6->compassScrambler[0xf].startTime = 0x40e00000;
+    iVar7 = atoi(nptr);
+    inputValue = CL_GetRankIconName(iVar7 + -1,iVar5);
+    if ((inputValue == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0xb2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (pcVar9 != (char *)0x0) {
-      UI_SetFakeLocalDvarStringByName("rankUpPopUpIcon",pcVar9,param_1);
-      pcVar10 = CL_GetRankData(iVar8 + -1,MP_RANKTABLE_CP);
-      if ((pcVar10 == (char *)0x0) &&
+    if (inputValue != (char *)0x0) {
+      UI_SetFakeLocalDvarStringByName("rankUpPopUpIcon",inputValue,localClientNum);
+      replaceString = CL_GetRankData(iVar7 + -1,MP_RANKTABLE_CP);
+      if ((replaceString == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0xb9,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (pcVar10 != (char *)0x0) {
-        pcVar3 = UI_ReplaceConversionString(pcVar3,pcVar10);
-        iVar6 = atoi(pcVar4);
-        if ((iVar6 < 999) && (iVar6 = atoi(pcVar4), -1 < iVar6)) {
-          local_28 = UI_ReplaceConversionString(local_28,pcVar4);
+      if (replaceString != (char *)0x0) {
+        pcVar3 = UI_ReplaceConversionString(pcVar3,replaceString);
+        iVar5 = atoi(nptr);
+        if ((iVar5 < 999) && (iVar5 = atoi(nptr), -1 < iVar5)) {
+          localizedPromoted = UI_ReplaceConversionString(localizedPromoted,nptr);
         }
-        CG_DisplayCenterPopup(param_1,"RankPopUp",local_28,pcVar3,(char *)0x0,pcVar9,(char *)0x0);
-        CG_PlayPopUpSound(param_1,pcVar5);
+        CG_DisplayCenterPopup
+                  (localClientNum,"RankPopUp",localizedPromoted,pcVar3,(char *)0x0,inputValue,
+                   (char *)0x0);
+        CG_PlayPopUpSound(localClientNum,pcVar4);
       }
     }
   }
@@ -313,7 +332,7 @@ void __cdecl CG_DisplayRankUp(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayMilestoneComplete(int param_1)
+void __cdecl CG_DisplayMilestoneComplete(int localClientNum)
 
 {
   code *pcVar1;
@@ -322,41 +341,44 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
   bool bVar4;
   char *pcVar5;
   char *pcVar6;
-  int iVar7;
-  double dVar8;
-  char local_45c [32];
-  char local_43c [256];
-  statsMilestoneTypes_t local_33c;
-  char *local_338;
-  cg_s *local_334;
-  int local_330;
-  char *local_32c;
-  char *local_328;
-  char *local_324;
-  char *local_320;
-  char local_31c [256];
-  int local_21c;
-  float local_218;
-  char local_214 [260];
-  char *local_110;
-  char local_10c [260];
+  int targetValue_00;
+  double dVar7;
+  bool nameLocalized;
+  bool descLocalized;
+  char *milestoneIndex;
+  char localizedMilestoneXP [32];
+  char backingMaterialName [256];
+  statsMilestoneTypes_t milestoneType;
+  char *perkName;
+  cg_s *cgameGlob;
+  int statIndex;
+  char *statName;
+  char *targetValue;
+  char *weaponType;
+  char *sound;
+  char materialName [256];
+  int milestoneTier;
+  float xpScale;
+  char milestoneLocalizedDesc [260];
+  char *statType;
+  char milestoneLocalizedName [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   pcVar5 = Cmd_Argv(2);
-  local_21c = atoi(pcVar5);
+  milestoneTier = atoi(pcVar5);
   pcVar5 = Cmd_Argv(3);
   pcVar6 = Cmd_Argv(4);
-  dVar8 = atof(pcVar6);
-  local_218 = (float)dVar8;
+  dVar7 = atof(pcVar6);
+  xpScale = (float)dVar7;
   pcVar6 = Cmd_Argv(5);
-  local_330 = atoi(pcVar6);
-  local_324 = Cmd_Argv(6);
-  local_320 = Cmd_Argv(7);
+  statIndex = atoi(pcVar6);
+  weaponType = Cmd_Argv(6);
+  sound = Cmd_Argv(7);
   bVar2 = Demo_IsThirdPersonCamera();
   if ((!bVar2) && (bVar2 = Demo_IsMovieCamera(), !bVar2)) {
-    local_334 = CG_GetLocalClientGlobals(param_1);
-    local_334->typewriterStartTime = local_334->time;
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    cgameGlob->typewriterStartTime = cgameGlob->time;
     if ((pcVar5 == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0xe0,0,"%s"), !bVar2)) {
@@ -365,75 +387,77 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
       return;
     }
     if (pcVar5 != (char *)0x0) {
-      local_32c = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_STATNAME);
-      if ((local_32c == (char *)0x0) &&
+      statName = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_STATNAME);
+      if ((statName == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0xe5,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_32c != (char *)0x0) {
-        local_328 = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_TARGETVALUE);
-        if ((local_328 == (char *)0x0) &&
+      if (statName != (char *)0x0) {
+        targetValue = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_TARGETVALUE);
+        if ((targetValue == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                      ,0xea,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_328 != (char *)0x0) {
-          local_110 = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_STATTYPE);
-          if ((local_110 == (char *)0x0) &&
+        if (targetValue != (char *)0x0) {
+          statType = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_STATTYPE);
+          if ((statType == (char *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                        ,0xef,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if (local_110 != (char *)0x0) {
-            local_338 = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_PERKNAME);
-            if ((local_338 == (char *)0x0) &&
+          if (statType != (char *)0x0) {
+            perkName = CL_GetMilestoneData(pcVar5,MILESTONE_COLUMN_PERKNAME);
+            if ((perkName == (char *)0x0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                          ,0xf4,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            if (local_338 != (char *)0x0) {
-              if ((local_324 == (char *)0x0) &&
+            if (perkName != (char *)0x0) {
+              if ((weaponType == (char *)0x0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                            ,0xf8,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              if (local_324 != (char *)0x0) {
-                if ((local_320 == (char *)0x0) &&
+              if (weaponType != (char *)0x0) {
+                if ((sound == (char *)0x0) &&
                    (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                              ,0xfc,0,"%s"), !bVar2)) {
                   pcVar1 = (code *)swi(3);
                   (*pcVar1)();
                   return;
                 }
-                if (local_320 != (char *)0x0) {
-                  local_33c = getMilestoneType(local_110);
-                  if ((local_33c == MILESTONE_INVALID) &&
+                if (sound != (char *)0x0) {
+                  milestoneType = getMilestoneType(statType);
+                  if ((milestoneType == MILESTONE_INVALID) &&
                      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                                ,0x101,0,"%s"), !bVar2)) {
                     pcVar1 = (code *)swi(3);
                     (*pcVar1)();
                     return;
                   }
-                  if (local_33c != MILESTONE_INVALID) {
-                    CL_GetMilestoneLocalizedXP(local_45c,0x20,local_218,local_21c,pcVar5);
+                  if (milestoneType != MILESTONE_INVALID) {
+                    CL_GetMilestoneLocalizedXP
+                              (localizedMilestoneXP,0x20,xpScale,milestoneTier,pcVar5);
                     bVar2 = CL_GetInGameMilestoneLocalizedName
-                                      (param_1,local_10c,0x100,local_32c,local_33c,local_330,
-                                       local_21c,local_324);
-                    iVar7 = atoi(local_328);
+                                      (localClientNum,milestoneLocalizedName,0x100,statName,
+                                       milestoneType,statIndex,milestoneTier,weaponType);
+                    targetValue_00 = atoi(targetValue);
                     bVar3 = CL_GetInGameMilestoneLocalizedDesc
-                                      (param_1,local_214,0x100,local_32c,local_33c,local_330,
-                                       local_21c,local_324,iVar7);
+                                      (localClientNum,milestoneLocalizedDesc,0x100,statName,
+                                       milestoneType,statIndex,milestoneTier,weaponType,
+                                       targetValue_00);
                     if ((!bVar2) &&
                        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                                  ,0x108,0,"%s"), !bVar4)) {
@@ -449,14 +473,15 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
                       return;
                     }
                     if ((bVar2) && (bVar3)) {
-                      CL_GetMilestoneMaterial(local_31c,0x100,local_32c,local_338);
-                      CL_GetMilestoneBackingMaterial(local_43c,0x100,local_32c,local_338);
+                      CL_GetMilestoneMaterial(materialName,0x100,statName,perkName);
+                      CL_GetMilestoneBackingMaterial(backingMaterialName,0x100,statName,perkName);
                       if ((&stack0x00000000 != (undefined1 *)0x43c) &&
                          (&stack0x00000000 != (undefined1 *)0x31c)) {
                         CG_DisplayCenterPopup
-                                  (param_1,"ChallengePopUp",local_10c,local_214,local_45c,local_31c,
-                                   local_43c);
-                        CG_PlayPopUpSound(param_1,local_320);
+                                  (localClientNum,"ChallengePopUp",milestoneLocalizedName,
+                                   milestoneLocalizedDesc,localizedMilestoneXP,materialName,
+                                   backingMaterialName);
+                        CG_PlayPopUpSound(localClientNum,sound);
                       }
                     }
                   }
@@ -474,30 +499,36 @@ void __cdecl CG_DisplayMilestoneComplete(int param_1)
 
 // 0050CB10  CG_SetupEndGame  (cgame_mp/cg_ui_animate_mp.cpp:281)
 
-void __cdecl CG_SetupEndGame(int param_1)
+void __cdecl CG_SetupEndGame(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
   char *pcVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  int iVar8;
-  UILocalVar *pUVar9;
+  int i;
+  int i_00;
+  int i_01;
+  int i_02;
+  UILocalVar *pUVar5;
+  UILocalVar *var;
+  int contract2;
+  uiInfo_s *uiInfo;
+  int contract0;
+  int promoted;
+  int contract1;
   
-  puVar3 = UI_GetInfo(param_1);
+  puVar3 = UI_GetInfo(localClientNum);
   pcVar4 = Cmd_Argv(2);
-  iVar5 = atoi(pcVar4);
+  i = atoi(pcVar4);
   pcVar4 = Cmd_Argv(3);
-  iVar6 = atoi(pcVar4);
+  i_00 = atoi(pcVar4);
   pcVar4 = Cmd_Argv(4);
-  iVar7 = atoi(pcVar4);
+  i_01 = atoi(pcVar4);
   pcVar4 = Cmd_Argv(5);
-  iVar8 = atoi(pcVar4);
-  pUVar9 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"promoted");
-  if (pUVar9 == (UILocalVar *)0x0) {
+  i_02 = atoi(pcVar4);
+  pUVar5 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"promoted");
+  if (pUVar5 == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                              0x128,0,"%s");
     if (!bVar2) {
@@ -506,9 +537,9 @@ void __cdecl CG_SetupEndGame(int param_1)
       return;
     }
   }
-  UILocalVar_SetInt(pUVar9,iVar5);
-  pUVar9 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"contract0");
-  if (pUVar9 == (UILocalVar *)0x0) {
+  UILocalVar_SetInt(pUVar5,i);
+  pUVar5 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"contract0");
+  if (pUVar5 == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",299
                              ,0,"%s");
     if (!bVar2) {
@@ -517,9 +548,9 @@ void __cdecl CG_SetupEndGame(int param_1)
       return;
     }
   }
-  UILocalVar_SetInt(pUVar9,iVar6);
-  pUVar9 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"contract1");
-  if (pUVar9 == (UILocalVar *)0x0) {
+  UILocalVar_SetInt(pUVar5,i_00);
+  pUVar5 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"contract1");
+  if (pUVar5 == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                              0x12e,0,"%s");
     if (!bVar2) {
@@ -528,9 +559,9 @@ void __cdecl CG_SetupEndGame(int param_1)
       return;
     }
   }
-  UILocalVar_SetInt(pUVar9,iVar7);
-  pUVar9 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"contract2");
-  if (pUVar9 == (UILocalVar *)0x0) {
+  UILocalVar_SetInt(pUVar5,i_01);
+  pUVar5 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"contract2");
+  if (pUVar5 == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                              0x131,0,"%s");
     if (!bVar2) {
@@ -539,7 +570,7 @@ void __cdecl CG_SetupEndGame(int param_1)
       return;
     }
   }
-  UILocalVar_SetInt(pUVar9,iVar8);
+  UILocalVar_SetInt(pUVar5,i_02);
   return;
 }
 
@@ -548,7 +579,7 @@ void __cdecl CG_SetupEndGame(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CG_SetupMilestoneEndGame(int param_1)
+void __cdecl CG_SetupMilestoneEndGame(int localClientNum)
 
 {
   code *pcVar1;
@@ -556,117 +587,119 @@ void __cdecl CG_SetupMilestoneEndGame(int param_1)
   bool bVar3;
   bool bVar4;
   char *pcVar5;
-  int iVar6;
-  char local_444;
+  int targetValue_00;
+  bool nameLocalized;
+  bool descLocalized;
+  char localVarDescString;
   uchar local_443 [259];
-  UILocalVar *local_340;
-  char *local_33c;
-  statsMilestoneTypes_t local_338;
-  uiInfo_s *local_334;
-  int local_330;
-  int local_32c;
-  char *local_328;
-  char *local_324;
-  char *local_320;
-  char local_31c;
+  UILocalVar *var;
+  char *milestoneIndex;
+  statsMilestoneTypes_t milestoneType;
+  uiInfo_s *uiInfo;
+  int slot;
+  int statIndex;
+  char *statName;
+  char *targetValue;
+  char *weaponType;
+  char milestoneLocalizedDesc;
   uchar local_31b [259];
-  int local_218;
-  int local_214;
-  char *local_210;
-  char local_20c;
+  int milestoneTier;
+  int argCount;
+  char *statType;
+  char localVarNameString;
   uchar local_20b [255];
-  char local_10c;
+  char milestoneLocalizedName;
   uchar local_10b [259];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_334 = UI_GetInfo(param_1);
-  local_20c = '\0';
+  uiInfo = UI_GetInfo(localClientNum);
+  localVarNameString = '\0';
   memset(local_20b,'\0',0xff);
-  local_444 = '\0';
+  localVarDescString = '\0';
   memset(local_443,'\0',0xff);
-  local_10c = '\0';
+  milestoneLocalizedName = '\0';
   memset(local_10b,'\0',0xff);
-  local_31c = '\0';
+  milestoneLocalizedDesc = '\0';
   memset(local_31b,'\0',0xff);
   pcVar5 = Cmd_Argv(2);
-  local_330 = atoi(pcVar5);
+  slot = atoi(pcVar5);
   pcVar5 = Cmd_Argv(3);
-  local_218 = atoi(pcVar5);
-  local_33c = Cmd_Argv(4);
+  milestoneTier = atoi(pcVar5);
+  milestoneIndex = Cmd_Argv(4);
   pcVar5 = Cmd_Argv(5);
-  local_32c = atoi(pcVar5);
-  local_320 = Cmd_Argv(6);
-  local_214 = Cmd_Argc();
-  if ((local_214 != 7) &&
+  statIndex = atoi(pcVar5);
+  weaponType = Cmd_Argv(6);
+  argCount = Cmd_Argc();
+  if ((argCount != 7) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                                0x14a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_214 == 7) {
-    local_328 = CL_GetMilestoneData(local_33c,MILESTONE_COLUMN_STATNAME);
-    if ((local_328 == (char *)0x0) &&
+  if (argCount == 7) {
+    statName = CL_GetMilestoneData(milestoneIndex,MILESTONE_COLUMN_STATNAME);
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x14f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_328 != (char *)0x0) {
-      local_324 = CL_GetMilestoneData(local_33c,MILESTONE_COLUMN_TARGETVALUE);
-      if ((local_324 == (char *)0x0) &&
+    if (statName != (char *)0x0) {
+      targetValue = CL_GetMilestoneData(milestoneIndex,MILESTONE_COLUMN_TARGETVALUE);
+      if ((targetValue == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x154,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_324 != (char *)0x0) {
-        local_210 = CL_GetMilestoneData(local_33c,MILESTONE_COLUMN_STATTYPE);
-        if ((local_210 == (char *)0x0) &&
+      if (targetValue != (char *)0x0) {
+        statType = CL_GetMilestoneData(milestoneIndex,MILESTONE_COLUMN_STATTYPE);
+        if ((statType == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                      ,0x159,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_210 != (char *)0x0) {
-          if ((local_320 == (char *)0x0) &&
+        if (statType != (char *)0x0) {
+          if ((weaponType == (char *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                        ,0x15d,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if (local_320 != (char *)0x0) {
-            if (((3 < local_330) || (local_330 < 0)) &&
+          if (weaponType != (char *)0x0) {
+            if (((3 < slot) || (slot < 0)) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                          ,0x161,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            if ((local_330 < 4) && (-1 < local_330)) {
-              Com_sprintf(&local_20c,0x100,"milestoneEndGameNameString%i");
-              Com_sprintf(&local_444,0x100,"milestoneEndGameDescString%i");
-              local_338 = getMilestoneType(local_210);
-              if ((local_338 == MILESTONE_INVALID) &&
+            if ((slot < 4) && (-1 < slot)) {
+              Com_sprintf(&localVarNameString,0x100,"milestoneEndGameNameString%i");
+              Com_sprintf(&localVarDescString,0x100,"milestoneEndGameDescString%i");
+              milestoneType = getMilestoneType(statType);
+              if ((milestoneType == MILESTONE_INVALID) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                            ,0x169,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              if (local_338 != MILESTONE_INVALID) {
+              if (milestoneType != MILESTONE_INVALID) {
                 bVar2 = CL_GetInGameMilestoneLocalizedName
-                                  (param_1,&local_10c,0x100,local_328,local_338,local_32c,local_218,
-                                   local_320);
-                iVar6 = atoi(local_324);
+                                  (localClientNum,&milestoneLocalizedName,0x100,statName,
+                                   milestoneType,statIndex,milestoneTier,weaponType);
+                targetValue_00 = atoi(targetValue);
                 bVar3 = CL_GetInGameMilestoneLocalizedDesc
-                                  (param_1,&local_31c,0x100,local_328,local_338,local_32c,local_218,
-                                   local_320,iVar6);
+                                  (localClientNum,&milestoneLocalizedDesc,0x100,statName,
+                                   milestoneType,statIndex,milestoneTier,weaponType,targetValue_00);
                 if ((!bVar2) &&
                    (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                              ,0x16e,0,"%s"), !bVar4)) {
@@ -682,26 +715,26 @@ void __cdecl CG_SetupMilestoneEndGame(int param_1)
                   return;
                 }
                 if ((bVar2) && (bVar3)) {
-                  local_340 = UILocalVar_FindOrCreate(&(local_334->uiDC).localVars,&local_20c);
-                  if ((local_340 == (UILocalVar *)0x0) &&
+                  var = UILocalVar_FindOrCreate(&(uiInfo->uiDC).localVars,&localVarNameString);
+                  if ((var == (UILocalVar *)0x0) &&
                      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                                ,0x174,0,"%s"), !bVar2)) {
                     pcVar1 = (code *)swi(3);
                     (*pcVar1)();
                     return;
                   }
-                  if (local_340 != (UILocalVar *)0x0) {
-                    UILocalVar_SetString(local_340,&local_10c);
-                    local_340 = UILocalVar_FindOrCreate(&(local_334->uiDC).localVars,&local_444);
-                    if ((local_340 == (UILocalVar *)0x0) &&
+                  if (var != (UILocalVar *)0x0) {
+                    UILocalVar_SetString(var,&milestoneLocalizedName);
+                    var = UILocalVar_FindOrCreate(&(uiInfo->uiDC).localVars,&localVarDescString);
+                    if ((var == (UILocalVar *)0x0) &&
                        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                                  ,0x17a,0,"%s"), !bVar2)) {
                       pcVar1 = (code *)swi(3);
                       (*pcVar1)();
                       return;
                     }
-                    if (local_340 != (UILocalVar *)0x0) {
-                      UILocalVar_SetString(local_340,&local_31c);
+                    if (var != (UILocalVar *)0x0) {
+                      UILocalVar_SetString(var,&milestoneLocalizedDesc);
                     }
                   }
                 }
@@ -718,15 +751,17 @@ void __cdecl CG_SetupMilestoneEndGame(int param_1)
 
 // 0050D250  CG_ClearEndGame  (cgame_mp/cg_ui_animate_mp.cpp:387)
 
-void __cdecl CG_ClearEndGame(int param_1)
+void __cdecl CG_ClearEndGame(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
   UILocalVar *pUVar4;
+  UILocalVar *var;
+  uiInfo_s *uiInfo;
   
-  puVar3 = UI_GetInfo(param_1);
+  puVar3 = UI_GetInfo(localClientNum);
   pUVar4 = UILocalVar_FindOrCreate(&(puVar3->uiDC).localVars,"promoted");
   if (pUVar4 == (UILocalVar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
@@ -810,16 +845,19 @@ void __cdecl CG_ClearEndGame(int param_1)
 
 // 0050D4C0  CG_DisplayGameModeMessage  (cgame_mp/cg_ui_animate_mp.cpp:415)
 
-void __cdecl CG_DisplayGameModeMessage(int param_1)
+void __cdecl CG_DisplayGameModeMessage(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  char *pcVar4;
+  char *sound_00;
+  char *sound;
+  char *localizedGameModeMessage;
+  char *gameModeMessage;
   
   pcVar3 = Cmd_Argv(2);
-  pcVar4 = Cmd_Argv(3);
+  sound_00 = Cmd_Argv(3);
   pcVar3 = SEH_LocalizeTextMessage(pcVar3,"gameModeMessage",LOCMSG_SAFE);
   if ((pcVar3 == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
@@ -829,9 +867,10 @@ void __cdecl CG_DisplayGameModeMessage(int param_1)
     return;
   }
   if (pcVar3 != (char *)0x0) {
-    UI_SetLocalVarStringByName("gameModeMessage",pcVar3,param_1);
-    CG_PlayPopUpSound(param_1,pcVar4);
-    UI_AnimateLocalItem(param_1,cgDC + param_1,"GameMessageSlideOut","SlideOut","Start",0);
+    UI_SetLocalVarStringByName("gameModeMessage",pcVar3,localClientNum);
+    CG_PlayPopUpSound(localClientNum,sound_00);
+    UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"GameMessageSlideOut","SlideOut",
+                        "Start",0);
   }
   return;
 }
@@ -845,88 +884,98 @@ void __cdecl CG_DisplayGameModeMessage(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayTeamMessage(int param_1)
+void __cdecl CG_DisplayTeamMessage(int localClientNum)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
+  char *sound_00;
   char *pcVar4;
-  char *pcVar5;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  cg_s *pcVar8;
-  int iVar9;
+  cg_s *pcVar7;
+  int iVar8;
   undefined4 in_stack_fffffb84;
-  char local_448;
+  int configStringIndex;
+  cg_s *cgameGlob;
+  clientInfo_t *selfClientInfo;
+  char *rank;
+  char *sound;
+  int playerNum;
+  clientInfo_t *clientInfo;
+  char clanTag;
   uchar local_447 [43];
-  char *local_41c;
-  char *local_418;
-  char local_414;
+  char *localizedGameModeMessage;
+  char *teamMessageRankIcon;
+  char teamMessageXuid;
   uchar local_413 [1027];
   uint local_10;
-  undefined1 local_9;
-  char *local_8;
+  bool friendly;
+  char *teamMessage;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar4 = Cmd_Argv(4);
-  pcVar5 = Cmd_Argv(3);
-  iVar6 = atoi(pcVar5);
-  pcVar5 = Cmd_Argv(2);
-  iVar7 = atoi(pcVar5);
-  local_448 = '\0';
+  sound_00 = Cmd_Argv(4);
+  pcVar4 = Cmd_Argv(3);
+  iVar5 = atoi(pcVar4);
+  pcVar4 = Cmd_Argv(2);
+  iVar6 = atoi(pcVar4);
+  clanTag = '\0';
   memset(local_447,'\0',0x29);
-  local_414 = '\0';
+  teamMessageXuid = '\0';
   memset(local_413,'\0',0x3ff);
-  local_9 = 0;
-  if ((param_1 < 2) && (-1 < param_1)) {
-    pcVar8 = CG_GetLocalClientGlobals(param_1);
-    iVar1 = pcVar8->clientNum;
-    iVar9 = iVar6 * 0x5c8;
-    if ((0x3e6 < *(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x38)) &&
+  friendly = false;
+  if ((localClientNum < 2) && (-1 < localClientNum)) {
+    pcVar7 = CG_GetLocalClientGlobals(localClientNum);
+    iVar1 = pcVar7->clientNum;
+    iVar8 = iVar5 * 0x5c8;
+    if ((0x3e6 < *(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x38)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x1c6,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (*(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x38) < 999) {
-      local_8 = CL_GetConfigString(iVar7 + 0x203);
-      local_41c = SEH_LocalizeTextMessage(local_8,"teamMessage",LOCMSG_SAFE);
-      if ((local_41c == (char *)0x0) &&
+    if (*(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x38) < 999) {
+      teamMessage = CL_GetConfigString(iVar6 + 0x203);
+      localizedGameModeMessage = SEH_LocalizeTextMessage(teamMessage,"teamMessage",LOCMSG_SAFE);
+      if ((localizedGameModeMessage == (char *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x1cc,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (local_41c != (char *)0x0) {
-        local_418 = CL_GetRankIconName(*(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x38),
-                                       *(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x3c));
-        UI_SetLocalVarStringByName("teamMessageRankIcon",local_418,param_1);
-        pcVar5 = CL_GetRankData(*(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x38),
+      if (localizedGameModeMessage != (char *)0x0) {
+        teamMessageRankIcon =
+             CL_GetRankIconName(*(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x38),
+                                *(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x3c));
+        UI_SetLocalVarStringByName("teamMessageRankIcon",teamMessageRankIcon,localClientNum);
+        pcVar4 = CL_GetRankData(*(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x38),
                                 MP_RANKTABLE_DISPLAYLEVEL);
-        UI_SetLocalVarStringByName("teamMessage",local_41c,param_1);
+        UI_SetLocalVarStringByName("teamMessage",localizedGameModeMessage,localClientNum);
         UI_SetLocalVarStringByName
-                  ("teamMessageName",(char *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0xc),param_1);
-        UI_SetLocalVarStringByName("teamMessageRank",pcVar5,param_1);
-        Com_sprintf(&local_414,0x400,"teamMessageXuid%d");
-        Dvar_SetInt64ByName(&local_414,
+                  ("teamMessageName",(char *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0xc),
+                   localClientNum);
+        UI_SetLocalVarStringByName("teamMessageRank",pcVar4,localClientNum);
+        Com_sprintf(&teamMessageXuid,0x400,"teamMessageXuid%d");
+        Dvar_SetInt64ByName(&teamMessageXuid,
                             CONCAT44(in_stack_fffffb84,
-                                     *(undefined4 *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x54)))
+                                     *(undefined4 *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x54)))
         ;
-        if (*(char *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x58) != '\0') {
-          Com_sprintf(&local_448,0x2a,"[%s]");
+        if (*(char *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x58) != '\0') {
+          Com_sprintf(&clanTag,0x2a,"[%s]");
         }
-        UI_SetLocalVarStringByName("teamClanTagPopUp",&local_448,param_1);
-        if ((iVar6 == pcVar8->clientNum) ||
-           ((*(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x30) != 0 &&
-            (*(int *)((int)(pcVar8->bgs).clientinfo + iVar1 * 0x5c8 + 0x30) ==
-             *(int *)((int)(pcVar8->bgs).clientinfo + iVar9 + 0x30))))) {
-          local_9 = 1;
+        UI_SetLocalVarStringByName("teamClanTagPopUp",&clanTag,localClientNum);
+        if ((iVar5 == pcVar7->clientNum) ||
+           ((*(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x30) != 0 &&
+            (*(int *)((int)(pcVar7->bgs).clientinfo + iVar1 * 0x5c8 + 0x30) ==
+             *(int *)((int)(pcVar7->bgs).clientinfo + iVar8 + 0x30))))) {
+          friendly = true;
         }
-        CG_PlayPopUpSound(param_1,pcVar4);
-        UI_AnimateLocalItem(param_1,cgDC + param_1,"teamMessageSlideOut","SlideOut","Start",0);
+        CG_PlayPopUpSound(localClientNum,sound_00);
+        UI_AnimateLocalItem(localClientNum,cgDC + localClientNum,"teamMessageSlideOut","SlideOut",
+                            "Start",0);
       }
     }
   }
@@ -941,66 +990,76 @@ void __cdecl CG_DisplayTeamMessage(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayWagerMedal(int param_1)
+void __cdecl CG_DisplayWagerMedal(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
+  int wagerMedalIndex_00;
   int iVar4;
-  int iVar5;
+  char *pcVar5;
   char *pcVar6;
-  char *pcVar7;
-  char *pcVar8;
+  char *displayString3;
+  char *localizedPopUpDesc;
+  cg_s *cgameGlob;
+  char *medalPopUpName;
+  char *sound;
+  char *medalPopUpDesc;
+  char *localizedPopUpCp;
+  bool teamBased;
+  char *localizedPopUpName;
+  int wagerMedalIndex;
   
   pcVar3 = Cmd_Argv(2);
-  iVar4 = atoi(pcVar3);
+  wagerMedalIndex_00 = atoi(pcVar3);
   pcVar3 = Cmd_Argv(3);
-  iVar5 = atoi(pcVar3);
+  iVar4 = atoi(pcVar3);
   pcVar3 = Cmd_Argv(4);
   bVar2 = Demo_IsThirdPersonCamera();
   if ((!bVar2) && (bVar2 = Demo_IsMovieCamera(), !bVar2)) {
-    CG_GetLocalClientGlobals(param_1);
-    pcVar6 = CG_GetWagerMedalData(iVar4,WAGER_MEDAL_COLUMN_NAME);
-    if ((pcVar6 == (char *)0x0) &&
+    CG_GetLocalClientGlobals(localClientNum);
+    pcVar5 = CG_GetWagerMedalData(wagerMedalIndex_00,WAGER_MEDAL_COLUMN_NAME);
+    if ((pcVar5 == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x201,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (pcVar6 != (char *)0x0) {
-      pcVar7 = CG_GetWagerMedalData(iVar4,WAGER_MEDAL_COLUMN_DESC);
-      if ((pcVar7 == (char *)0x0) &&
+    if (pcVar5 != (char *)0x0) {
+      pcVar6 = CG_GetWagerMedalData(wagerMedalIndex_00,WAGER_MEDAL_COLUMN_DESC);
+      if ((pcVar6 == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x205,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (pcVar7 != (char *)0x0) {
-        pcVar6 = SEH_LocalizeTextMessage(pcVar6,"popUpName",LOCMSG_SAFE);
-        if ((pcVar6 == (char *)0x0) &&
+      if (pcVar6 != (char *)0x0) {
+        pcVar5 = SEH_LocalizeTextMessage(pcVar5,"popUpName",LOCMSG_SAFE);
+        if ((pcVar5 == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                      ,0x209,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (pcVar6 != (char *)0x0) {
-          pcVar7 = SEH_LocalizeTextMessage(pcVar7,"popUpDesc",LOCMSG_SAFE);
-          if ((pcVar7 == (char *)0x0) &&
+        if (pcVar5 != (char *)0x0) {
+          pcVar6 = SEH_LocalizeTextMessage(pcVar6,"popUpDesc",LOCMSG_SAFE);
+          if ((pcVar6 == (char *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                        ,0x20d,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if (pcVar7 != (char *)0x0) {
-            pcVar8 = CG_GetWagerMedalLocalizedCP(iVar4,iVar5 != 0);
-            CG_DisplayCenterPopup(param_1,"MedalPopUp",pcVar6,pcVar7,pcVar8,(char *)0x0,(char *)0x0)
-            ;
-            CG_PlayPopUpSound(param_1,pcVar3);
+          if (pcVar6 != (char *)0x0) {
+            displayString3 = CG_GetWagerMedalLocalizedCP(wagerMedalIndex_00,iVar4 != 0);
+            CG_DisplayCenterPopup
+                      (localClientNum,"MedalPopUp",pcVar5,pcVar6,displayString3,(char *)0x0,
+                       (char *)0x0);
+            CG_PlayPopUpSound(localClientNum,pcVar3);
           }
         }
       }
@@ -1018,7 +1077,7 @@ void __cdecl CG_DisplayWagerMedal(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayMedal(int param_1)
+void __cdecl CG_DisplayMedal(int localClientNum)
 
 {
   code *pcVar1;
@@ -1026,102 +1085,102 @@ void __cdecl CG_DisplayMedal(int param_1)
   char *pcVar3;
   int iVar4;
   double dVar5;
-  char local_dc [132];
+  char localizedPopUpDesc [132];
   uint local_58;
-  char *local_54;
-  cg_s *local_50;
-  char *local_4c;
-  char *local_48;
-  char *local_44;
-  float local_40;
-  char *local_3c;
-  bool local_35;
-  char *local_34;
-  ConversionArguments local_30;
-  int local_8;
+  char *popUpXp;
+  cg_s *cgameGlob;
+  char *medalPopUpName;
+  char *sound;
+  char *medalPopUpDesc;
+  float xpScale;
+  char *localizedPopUpXp;
+  bool teamBased;
+  char *localizedPopUpName;
+  ConversionArguments conversion;
+  int medalIndex;
   
   local_58 = __security_cookie ^ (uint)&stack0xfffffffc;
   pcVar3 = Cmd_Argv(2);
-  local_8 = atoi(pcVar3);
+  medalIndex = atoi(pcVar3);
   pcVar3 = Cmd_Argv(3);
   iVar4 = atoi(pcVar3);
-  local_35 = iVar4 != 0;
+  teamBased = iVar4 != 0;
   pcVar3 = Cmd_Argv(4);
   dVar5 = atof(pcVar3);
-  local_40 = (float)dVar5;
-  local_48 = Cmd_Argv(5);
+  xpScale = (float)dVar5;
+  sound = Cmd_Argv(5);
   bVar2 = Demo_IsThirdPersonCamera();
   if ((!bVar2) && (bVar2 = Demo_IsMovieCamera(), !bVar2)) {
-    local_50 = CG_GetLocalClientGlobals(param_1);
-    local_4c = CG_GetMedalData(local_8,MEDAL_COLUMN_NAME);
-    if ((local_4c == (char *)0x0) &&
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    medalPopUpName = CG_GetMedalData(medalIndex,MEDAL_COLUMN_NAME);
+    if ((medalPopUpName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x22c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_4c != (char *)0x0) {
-      local_44 = CG_GetMedalData(local_8,MEDAL_COLUMN_DESC);
-      if ((local_44 == (char *)0x0) &&
+    if (medalPopUpName != (char *)0x0) {
+      medalPopUpDesc = CG_GetMedalData(medalIndex,MEDAL_COLUMN_DESC);
+      if ((medalPopUpDesc == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x230,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_44 != (char *)0x0) {
-        local_34 = SEH_LocalizeTextMessage(local_4c,"popUpName",LOCMSG_SAFE);
-        if ((local_34 == (char *)0x0) &&
+      if (medalPopUpDesc != (char *)0x0) {
+        localizedPopUpName = SEH_LocalizeTextMessage(medalPopUpName,"popUpName",LOCMSG_SAFE);
+        if ((localizedPopUpName == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                      ,0x234,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_34 != (char *)0x0) {
-          local_3c = CG_GetMedalLocalizedXP(local_40,local_8,local_35);
-          if ((local_3c == (char *)0x0) &&
+        if (localizedPopUpName != (char *)0x0) {
+          localizedPopUpXp = CG_GetMedalLocalizedXP(xpScale,medalIndex,teamBased);
+          if ((localizedPopUpXp == (char *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                        ,0x238,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if (local_3c != (char *)0x0) {
-            local_30.argCount = 2;
-            local_30.args[0] = SEH_LocalizeTextMessage(local_44,"popUpDesc",LOCMSG_SAFE);
-            if ((local_30.args[0] == (char *)0x0) &&
+          if (localizedPopUpXp != (char *)0x0) {
+            conversion.argCount = 2;
+            conversion.args[0] = SEH_LocalizeTextMessage(medalPopUpDesc,"popUpDesc",LOCMSG_SAFE);
+            if ((conversion.args[0] == (char *)0x0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                          ,0x23d,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            if (local_30.args[0] != (char *)0x0) {
-              local_30.args[1] = CG_GetMedalLocalizedXP(local_40,local_8,local_35);
-              local_54 = SEH_LocalizeTextMessage("MEDAL_DESC_POPUP","popUpName",LOCMSG_SAFE);
-              if ((local_54 == (char *)0x0) &&
+            if (conversion.args[0] != (char *)0x0) {
+              conversion.args[1] = CG_GetMedalLocalizedXP(xpScale,medalIndex,teamBased);
+              popUpXp = SEH_LocalizeTextMessage("MEDAL_DESC_POPUP","popUpName",LOCMSG_SAFE);
+              if ((popUpXp == (char *)0x0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                            ,0x243,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              if (local_54 != (char *)0x0) {
+              if (popUpXp != (char *)0x0) {
                 bVar2 = Live_IsPublicOnlineMatch();
                 if ((bVar2) || (bVar2 = Live_IsCombatTrainingMatch(), bVar2)) {
-                  UI_ReplaceConversions(local_54,&local_30,local_dc,0x80);
+                  UI_ReplaceConversions(popUpXp,&conversion,localizedPopUpDesc,0x80);
                   CG_DisplayCenterPopup
-                            (param_1,"MedalPopUp",local_34,local_dc,local_3c,(char *)0x0,(char *)0x0
-                            );
+                            (localClientNum,"MedalPopUp",localizedPopUpName,localizedPopUpDesc,
+                             localizedPopUpXp,(char *)0x0,(char *)0x0);
                 }
                 else {
                   CG_DisplayCenterPopup
-                            (param_1,"MedalPopUp",local_34,local_30.args[0],(char *)0x0,(char *)0x0,
-                             (char *)0x0);
+                            (localClientNum,"MedalPopUp",localizedPopUpName,conversion.args[0],
+                             (char *)0x0,(char *)0x0,(char *)0x0);
                 }
-                CG_PlayPopUpSound(param_1,local_48);
+                CG_PlayPopUpSound(localClientNum,sound);
               }
             }
           }
@@ -1140,7 +1199,7 @@ void __cdecl CG_DisplayMedal(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayContract(int param_1)
+void __cdecl CG_DisplayContract(int localClientNum)
 
 {
   code *pcVar1;
@@ -1150,11 +1209,19 @@ void __cdecl CG_DisplayContract(int param_1)
   char *pcVar5;
   int iVar6;
   cg_s *pcVar7;
-  char *pcVar8;
-  char *pcVar9;
-  char *local_1c;
-  char *local_10;
-  char *local_c;
+  char *displayString2;
+  char *sourceString;
+  int cpReward;
+  char *localizedPopUpDesc;
+  cg_s *cgameGlob;
+  char *popUpDesc;
+  int contractIndex;
+  char *displayMaterial;
+  int passed;
+  char *sound;
+  char *localizedCP;
+  char *popupBackingMaterialArg;
+  char *localizedPopUpName;
   
   pcVar3 = Cmd_Argv(2);
   iVar4 = atoi(pcVar3);
@@ -1163,7 +1230,7 @@ void __cdecl CG_DisplayContract(int param_1)
   iVar6 = atoi(pcVar5);
   bVar2 = Demo_IsThirdPersonCamera();
   if ((!bVar2) && (bVar2 = Demo_IsMovieCamera(), !bVar2)) {
-    pcVar7 = CG_GetLocalClientGlobals(param_1);
+    pcVar7 = CG_GetLocalClientGlobals(localClientNum);
     pcVar7->compassScrambler[0xf].handle = 0x3f000000;
     UI_SafeTranslateString("MP_CONTRACT_COMPLETE_DESC");
     pcVar5 = LiveContracts_GetContractName(iVar4);
@@ -1175,34 +1242,36 @@ void __cdecl CG_DisplayContract(int param_1)
       return;
     }
     if (pcVar5 != (char *)0x0) {
-      pcVar8 = LiveContracts_GetContractDesc(iVar4);
-      if ((pcVar8 == (char *)0x0) &&
+      displayString2 = LiveContracts_GetContractDesc(iVar4);
+      if ((displayString2 == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x26f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (pcVar8 != (char *)0x0) {
+      if (displayString2 != (char *)0x0) {
         if (iVar6 == 0) {
-          local_10 = "";
-          local_1c = "contract_expired";
-          local_c = "hud_medal_burst_red";
+          localizedCP = "";
+          displayMaterial = "contract_expired";
+          popupBackingMaterialArg = "hud_medal_burst_red";
         }
         else {
           iVar4 = LiveContracts_GetContractRewardCP(iVar4);
           if (iVar4 < 1) {
-            local_10 = "";
+            localizedCP = "";
           }
           else {
-            pcVar9 = UI_SafeTranslateString("MENU_POINTS");
-            local_10 = UI_ReplaceConversionInt(pcVar9,iVar4);
+            sourceString = UI_SafeTranslateString("MENU_POINTS");
+            localizedCP = UI_ReplaceConversionInt(sourceString,iVar4);
           }
-          local_1c = "contract_completed";
-          local_c = "hud_medal_burst_green";
+          displayMaterial = "contract_completed";
+          popupBackingMaterialArg = "hud_medal_burst_green";
         }
-        CG_DisplayCenterPopup(param_1,"ContractPopUp",pcVar5,pcVar8,local_10,local_1c,local_c);
-        CG_PlayPopUpSound(param_1,pcVar3);
+        CG_DisplayCenterPopup
+                  (localClientNum,"ContractPopUp",pcVar5,displayString2,localizedCP,displayMaterial,
+                   popupBackingMaterialArg);
+        CG_PlayPopUpSound(localClientNum,pcVar3);
       }
     }
   }
@@ -1218,85 +1287,87 @@ void __cdecl CG_DisplayContract(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayKillstreak(int param_1)
+void __cdecl CG_DisplayKillstreak(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  char local_19c [64];
-  cg_s *local_15c;
-  char *local_158;
-  StringTable *local_154;
-  char *local_150;
-  char *local_14c;
-  char *local_148;
-  char *local_144;
-  char *local_140;
-  char local_13c [260];
+  char *replaceString;
+  char *localizedPopUpDesc;
+  char *streakCount;
+  char eventString [64];
+  cg_s *cgameGlob;
+  char *popUpDesc;
+  StringTable *tablePtr;
+  char *killstreakText;
+  char *killstreakTextUnlocalized;
+  char *killstreakIcon;
+  char *displayString;
+  char *killstreakTableNumber;
+  char binding [260];
   uint local_38;
-  char *local_34;
-  char *local_30;
-  ConversionArguments local_2c;
+  char *popUpName;
+  char *localizedPopUpName;
+  ConversionArguments conversion;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar3 = Cmd_Argv(2);
-  local_140 = Cmd_Argv(3);
-  local_15c = CG_GetLocalClientGlobals(param_1);
-  local_15c->compassScrambler[0xf].handle = 0;
-  StringTable_GetAsset("mp/statstable.csv",&local_154);
-  if ((local_154 == (StringTable *)0x0) &&
+  replaceString = Cmd_Argv(2);
+  killstreakTableNumber = Cmd_Argv(3);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  cgameGlob->compassScrambler[0xf].handle = 0;
+  StringTable_GetAsset("mp/statstable.csv",&tablePtr);
+  if ((tablePtr == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp",
                                0x2a4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_154 != (StringTable *)0x0) {
-    local_148 = StringTable_Lookup(local_154,0,local_140,6);
-    if ((local_148 == (char *)0x0) &&
+  if (tablePtr != (StringTable *)0x0) {
+    killstreakIcon = StringTable_Lookup(tablePtr,0,killstreakTableNumber,6);
+    if ((killstreakIcon == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                  ,0x2a9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_148 != (char *)0x0) {
-      local_14c = StringTable_Lookup(local_154,0,local_140,3);
-      if ((local_14c == (char *)0x0) &&
+    if (killstreakIcon != (char *)0x0) {
+      killstreakTextUnlocalized = StringTable_Lookup(tablePtr,0,killstreakTableNumber,3);
+      if ((killstreakTextUnlocalized == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                    ,0x2ad,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_14c != (char *)0x0) {
-        local_150 = UI_SafeTranslateString(local_14c);
-        local_15c = CG_GetLocalClientGlobals(param_1);
-        UI_GetKeyBindingLocalizedString(param_1,"+actionslot 4",local_13c,0);
-        local_144 = SEH_LocalizeTextMessage
-                              ("KILLSTREAK_PRESS_TO_KILLSTREAK","Hint String",LOCMSG_SAFE);
-        if ((local_144 == (char *)0x0) &&
+      if (killstreakTextUnlocalized != (char *)0x0) {
+        killstreakText = UI_SafeTranslateString(killstreakTextUnlocalized);
+        cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+        UI_GetKeyBindingLocalizedString(localClientNum,"+actionslot 4",binding,0);
+        displayString =
+             SEH_LocalizeTextMessage("KILLSTREAK_PRESS_TO_KILLSTREAK","Hint String",LOCMSG_SAFE);
+        if ((displayString == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_ui_animate_mp.cpp"
                                      ,0x2b7,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_144 != (char *)0x0) {
-          local_2c.argCount = 1;
-          local_2c.args[0] = local_13c;
-          local_34 = UI_SafeTranslateString("KILLSTREAK_KILLCOUNT_DISPLAY");
-          local_158 = local_144;
-          local_158 = UI_SafeTranslateString(local_144);
-          local_30 = UI_ReplaceConversionString(local_34,pcVar3);
-          UI_ReplaceConversions(local_158,&local_2c,local_19c,0x40);
-          if (*pcVar3 == '0') {
-            local_30 = local_150;
+        if (displayString != (char *)0x0) {
+          conversion.argCount = 1;
+          conversion.args[0] = binding;
+          popUpName = UI_SafeTranslateString("KILLSTREAK_KILLCOUNT_DISPLAY");
+          popUpDesc = displayString;
+          popUpDesc = UI_SafeTranslateString(displayString);
+          localizedPopUpName = UI_ReplaceConversionString(popUpName,replaceString);
+          UI_ReplaceConversions(popUpDesc,&conversion,eventString,0x40);
+          if (*replaceString == '0') {
+            localizedPopUpName = killstreakText;
           }
           CG_DisplayCenterPopup
-                    (param_1,"KillstreakPopUp",local_30,local_19c,(char *)0x0,local_148,(char *)0x0)
-          ;
+                    (localClientNum,"KillstreakPopUp",localizedPopUpName,eventString,(char *)0x0,
+                     killstreakIcon,(char *)0x0);
         }
       }
     }
@@ -1312,46 +1383,52 @@ void __cdecl CG_DisplayKillstreak(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisplayWagerPopup(int param_1)
+void __cdecl CG_DisplayWagerPopup(int localClientNum)
 
 {
   bool bVar1;
   char *pcVar2;
   int iVar3;
+  int replaceInt;
   int iVar4;
-  int iVar5;
-  char *pcVar6;
-  char *local_1c;
-  int local_14;
-  char *local_c;
+  char *pcVar5;
+  int messageStringIndex;
+  char *subMessageString;
+  int points;
+  int subMessageStringIndex;
+  cg_s *cgameGlob;
+  char *localizedPoints;
+  char *messageString;
   
-  local_1c = "";
+  subMessageString = "";
   pcVar2 = Cmd_Argv(2);
   iVar3 = atoi(pcVar2);
   pcVar2 = Cmd_Argv(3);
-  iVar4 = atoi(pcVar2);
-  local_c = (char *)0x0;
-  local_14 = -1;
+  replaceInt = atoi(pcVar2);
+  localizedPoints = (char *)0x0;
+  subMessageStringIndex = -1;
   bVar1 = Demo_IsThirdPersonCamera();
   if ((!bVar1) && (bVar1 = Demo_IsMovieCamera(), !bVar1)) {
-    iVar5 = Cmd_Argc();
-    if (iVar5 == 5) {
+    iVar4 = Cmd_Argc();
+    if (iVar4 == 5) {
       pcVar2 = Cmd_Argv(4);
-      local_14 = atoi(pcVar2);
+      subMessageStringIndex = atoi(pcVar2);
     }
-    CG_GetLocalClientGlobals(param_1);
+    CG_GetLocalClientGlobals(localClientNum);
     pcVar2 = CL_GetConfigString(iVar3 + 0x203);
     pcVar2 = UI_SafeTranslateString(pcVar2);
-    if (-1 < local_14) {
-      pcVar6 = CL_GetConfigString(local_14 + 0x203);
-      local_1c = UI_SafeTranslateString(pcVar6);
+    if (-1 < subMessageStringIndex) {
+      pcVar5 = CL_GetConfigString(subMessageStringIndex + 0x203);
+      subMessageString = UI_SafeTranslateString(pcVar5);
     }
-    if (0 < iVar4) {
-      pcVar6 = UI_SafeTranslateString("MEDAL_XP_POPUP");
-      local_c = UI_ReplaceConversionInt(pcVar6,iVar4);
+    if (0 < replaceInt) {
+      pcVar5 = UI_SafeTranslateString("MEDAL_XP_POPUP");
+      localizedPoints = UI_ReplaceConversionInt(pcVar5,replaceInt);
     }
-    CG_DisplayCenterPopup(param_1,"WagerPopUp",pcVar2,local_1c,local_c,(char *)0x0,(char *)0x0);
-    CG_PlayPopUpSound(param_1,"uin_challenge_repeatable");
+    CG_DisplayCenterPopup
+              (localClientNum,"WagerPopUp",pcVar2,subMessageString,localizedPoints,(char *)0x0,
+               (char *)0x0);
+    CG_PlayPopUpSound(localClientNum,"uin_challenge_repeatable");
   }
   return;
 }
@@ -1359,15 +1436,17 @@ void __cdecl CG_DisplayWagerPopup(int param_1)
 
 // 0050E3C0  CG_DisplayHudAnim  (cgame_mp/cg_ui_animate_mp.cpp:751)
 
-void __cdecl CG_DisplayHudAnim(int param_1)
+void __cdecl CG_DisplayHudAnim(int localClientNum)
 
 {
-  char *pcVar1;
-  char *pcVar2;
+  char *itemName;
+  char *menuName_00;
+  char *menuName;
+  char *animName;
   
-  pcVar1 = Cmd_Argv(3);
-  pcVar2 = Cmd_Argv(2);
-  UI_AnimateItem(param_1,cgDC + param_1,pcVar2,pcVar1,"Start",0);
+  itemName = Cmd_Argv(3);
+  menuName_00 = Cmd_Argv(2);
+  UI_AnimateItem(localClientNum,cgDC + localClientNum,menuName_00,itemName,"Start",0);
   return;
 }
 

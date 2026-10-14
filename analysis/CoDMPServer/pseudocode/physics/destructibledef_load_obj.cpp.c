@@ -2,7 +2,7 @@
 
 // 0081DAB0  DestructibleDef_Strcpy  (physics/destructibledef_load_obj.cpp:694)
 
-void __cdecl DestructibleDef_Strcpy(uchar *param_1,char *param_2)
+void __cdecl DestructibleDef_Strcpy(uchar *member,char *keyValue)
 
 {
   char cVar1;
@@ -10,19 +10,21 @@ void __cdecl DestructibleDef_Strcpy(uchar *param_1,char *param_2)
   char *local_24;
   char *local_20;
   char *local_10;
+  char *buf;
+  char **memberString;
   
-  if (*param_2 == '\0') {
-    *(char **)param_1 = "";
+  if (*keyValue == '\0') {
+    *(char **)member = "";
   }
   else {
-    local_10 = param_2;
+    local_10 = keyValue;
     do {
       cVar1 = *local_10;
       local_10 = local_10 + 1;
     } while (cVar1 != '\0');
-    pcVar2 = Hunk_AllocLowAlign((int)(local_10 + (1 - (int)(param_2 + 1))),1,
+    pcVar2 = Hunk_AllocLowAlign((int)(local_10 + (1 - (int)(keyValue + 1))),1,
                                 "SetDestructibleDefString",0);
-    local_20 = param_2;
+    local_20 = keyValue;
     local_24 = pcVar2;
     do {
       cVar1 = *local_20;
@@ -30,7 +32,7 @@ void __cdecl DestructibleDef_Strcpy(uchar *param_1,char *param_2)
       local_20 = local_20 + 1;
       local_24 = local_24 + 1;
     } while (cVar1 != '\0');
-    *(char **)param_1 = pcVar2;
+    *(char **)member = pcVar2;
   }
   return;
 }
@@ -40,19 +42,21 @@ void __cdecl DestructibleDef_Strcpy(uchar *param_1,char *param_2)
 
 int __cdecl
 DestructiblePiece_SetFlag
-          (DestructiblePiece *param_1,char *param_2,int param_3,int param_4,int param_5,int param_6)
+          (DestructiblePiece *piece,char *pValue,int iFieldType,int minVal,int maxVal,int flag)
 
 {
   int iVar1;
+  int stageIndex;
+  int iValue;
   
-  if ((param_3 < param_4) || (param_5 < param_3)) {
+  if ((iFieldType < minVal) || (maxVal < iFieldType)) {
     iVar1 = 0;
   }
   else {
-    iVar1 = atoi(param_2);
+    iVar1 = atoi(pValue);
     if (iVar1 != 0) {
-      *(uint *)((int)param_1 + (param_3 - param_4) * 0x30 + 0xc) =
-           *(uint *)((int)param_1 + (param_3 - param_4) * 0x30 + 0xc) | param_6;
+      *(uint *)((int)piece + (iFieldType - minVal) * 0x30 + 0xc) =
+           *(uint *)((int)piece + (iFieldType - minVal) * 0x30 + 0xc) | flag;
     }
     iVar1 = 1;
   }
@@ -63,18 +67,21 @@ DestructiblePiece_SetFlag
 // 0081D6F0  DestructiblePiece_ParseDefSpecificFieldType  (physics/destructibledef_load_obj.cpp:727)
 
 int __cdecl
-DestructiblePiece_ParseDefSpecificFieldType(uchar *param_1,char *param_2,int param_3,int param_4)
+DestructiblePiece_ParseDefSpecificFieldType
+          (uchar *pStruct,char *pValue,int iFieldType,int iFieldOffset)
 
 {
   int iVar1;
+  DestructiblePiece *piece;
   
-  iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)param_1,param_2,param_3,0xf,0x13,1);
+  iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)pStruct,pValue,iFieldType,0xf,0x13,1);
   if (iVar1 == 0) {
-    iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)param_1,param_2,param_3,0x14,0x18,8);
+    iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)pStruct,pValue,iFieldType,0x14,0x18,8);
     if (iVar1 == 0) {
-      iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)param_1,param_2,param_3,0x19,0x1d,2);
+      iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)pStruct,pValue,iFieldType,0x19,0x1d,2);
       if (iVar1 == 0) {
-        iVar1 = DestructiblePiece_SetFlag((DestructiblePiece *)param_1,param_2,param_3,0x1e,0x22,4);
+        iVar1 = DestructiblePiece_SetFlag
+                          ((DestructiblePiece *)pStruct,pValue,iFieldType,0x1e,0x22,4);
         if (iVar1 == 0) {
           iVar1 = 0;
         }
@@ -102,7 +109,8 @@ DestructiblePiece_ParseDefSpecificFieldType(uchar *param_1,char *param_2,int par
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-DestructiblePiece * __cdecl DestructiblePieceLoadFile(char *param_1,DestructiblePiece *param_2)
+DestructiblePiece * __cdecl
+DestructiblePieceLoadFile(char *name,DestructiblePiece *destructiblePiece)
 
 {
   char cVar1;
@@ -113,97 +121,97 @@ DestructiblePiece * __cdecl DestructiblePieceLoadFile(char *param_1,Destructible
   DestructiblePiece *pDVar6;
   char *local_40b0;
   char *local_40a0;
-  char local_409c [128];
-  char local_401c [16388];
+  char filename [128];
+  char buffer [16388];
   uint local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  char *identifierStr;
+  int fileSize;
+  int fileHandle;
+  int identifierStrLength;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = "DESTRUCTIBLEPIECE";
+  identifierStr = "DESTRUCTIBLEPIECE";
   local_40a0 = "DESTRUCTIBLEPIECE";
   pcVar3 = local_40a0;
   do {
     local_40a0 = pcVar3;
     pcVar3 = local_40a0 + 1;
   } while (*local_40a0 != '\0');
-  local_8 = local_40a0 + -0xd1767c;
-  local_40b0 = param_1;
+  identifierStrLength = (int)(local_40a0 + -0xd1767c);
+  local_40b0 = name;
   do {
     cVar1 = *local_40b0;
     local_40b0 = local_40b0 + 1;
   } while (cVar1 != '\0');
-  if (local_40b0 == param_1 + 1) {
-    param_2 = (DestructiblePiece *)0x0;
+  if (local_40b0 == name + 1) {
+    destructiblePiece = (DestructiblePiece *)0x0;
   }
   else {
-    iVar5 = Com_sprintf(local_409c,0x80,"destructiblepiece/%s");
+    iVar5 = Com_sprintf(filename,0x80,"destructiblepiece/%s");
     if (iVar5 < 0) {
       Com_PrintError(0x14,"ERROR: filename \'%s\' too long\n");
-      param_2 = (DestructiblePiece *)0x0;
+      destructiblePiece = (DestructiblePiece *)0x0;
     }
     else {
-      local_10 = FS_FOpenFileByMode(local_409c,&local_c,FS_READ);
-      if (local_10 < 0) {
+      fileSize = FS_FOpenFileByMode(filename,&fileHandle,FS_READ);
+      if (fileSize < 0) {
         Com_PrintError(0x14,"ERROR: destructible piece \'%s\' not found\n");
-        param_2 = (DestructiblePiece *)0x0;
+        destructiblePiece = (DestructiblePiece *)0x0;
       }
       else {
-        FS_Read(local_401c,(int)local_8,local_c);
-        local_401c[(int)local_8] = '\0';
-        iVar5 = strncmp(local_401c,local_14,(uint)local_8);
+        FS_Read(buffer,identifierStrLength,fileHandle);
+        buffer[identifierStrLength] = '\0';
+        iVar5 = strncmp(buffer,identifierStr,identifierStrLength);
         if (iVar5 == 0) {
-          if (local_10 - (int)local_8 < 0x4000) {
-            FS_Read(local_401c,local_10 - (int)local_8,local_c);
-            local_401c[local_10 - (int)local_8] = '\0';
-            FS_FCloseFile(local_c);
-            iVar5 = Info_Validate(local_401c);
+          if (fileSize - identifierStrLength < 0x4000) {
+            FS_Read(buffer,fileSize - identifierStrLength,fileHandle);
+            buffer[fileSize - identifierStrLength] = '\0';
+            FS_FCloseFile(fileHandle);
+            iVar5 = Info_Validate(buffer);
             if (iVar5 == 0) {
               Com_PrintError(0x14,"ERROR: destructible piece file [%s] is not valid\n");
-              param_2 = (DestructiblePiece *)0x0;
+              destructiblePiece = (DestructiblePiece *)0x0;
             }
             else {
-              if ((param_2 == (DestructiblePiece *)0x0) &&
+              if ((destructiblePiece == (DestructiblePiece *)0x0) &&
                  (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructibledef_load_obj.cpp"
                                            ,0x328,0,"%s"), !bVar4)) {
                 pcVar2 = (code *)swi(3);
                 pDVar6 = (DestructiblePiece *)(*pcVar2)();
                 return pDVar6;
               }
-              memset((uchar *)param_2,'\0',0x138);
+              memset((uchar *)destructiblePiece,'\0',0x138);
               iVar5 = ParseConfigStringToStruct
-                                ((uchar *)param_2,destructiblePieceFields,0x46,local_401c,0x23,
-                                 DestructiblePiece_ParseDefSpecificFieldType,DestructibleDef_Strcpy)
-              ;
+                                ((uchar *)destructiblePiece,destructiblePieceFields,0x46,buffer,0x23
+                                 ,DestructiblePiece_ParseDefSpecificFieldType,DestructibleDef_Strcpy
+                                );
               if (iVar5 == 0) {
-                param_2 = (DestructiblePiece *)0x0;
+                destructiblePiece = (DestructiblePiece *)0x0;
               }
             }
           }
           else {
             Com_PrintError(0x14,"ERROR: destructible piece file [%s] is to big\n");
-            FS_FCloseFile(local_c);
-            param_2 = (DestructiblePiece *)0x0;
+            FS_FCloseFile(fileHandle);
+            destructiblePiece = (DestructiblePiece *)0x0;
           }
         }
         else {
           Com_PrintError(0x14,"ERROR: file [%s] is not a destructible piece file\n");
-          FS_FCloseFile(local_c);
-          param_2 = (DestructiblePiece *)0x0;
+          FS_FCloseFile(fileHandle);
+          destructiblePiece = (DestructiblePiece *)0x0;
         }
       }
     }
   }
-  return param_2;
+  return destructiblePiece;
 }
 
 
 // 0081DB60  Destructible_ParseDefSpecificFieldType  (physics/destructibledef_load_obj.cpp:822)
 
 int __cdecl
-Destructible_ParseDefSpecificFieldType(uchar *param_1,char *param_2,int param_3,int param_4)
+Destructible_ParseDefSpecificFieldType(uchar *pStruct,char *pValue,int iFieldType,int iFieldOffset)
 
 {
   code *pcVar1;
@@ -214,105 +222,124 @@ Destructible_ParseDefSpecificFieldType(uchar *param_1,char *param_2,int param_3,
   FxEffectDef *pFVar6;
   uint uVar7;
   double dVar8;
+  int pieceIndex_15;
+  int pieceIndex_14;
+  int pieceIndex_13;
+  int pieceIndex_12;
+  int pieceIndex_11;
+  int pieceIndex_10;
+  int pieceIndex_9;
+  int pieceIndex_8;
+  int pieceIndex_7;
+  int pieceIndex_6;
+  int pieceIndex_5;
+  int pieceIndex_4;
+  int pieceIndex_3;
+  int pieceIndex_2;
+  int pieceIndex;
+  DestructibleDef *ddef;
   
-  if (*(int *)(param_1 + 0x10) == 0) {
-    if (((0xe < param_3) && (param_3 < 0x2f)) && (*(int *)(param_1 + 0xc) < param_3 + -0xe)) {
-      *(int *)(param_1 + 0xc) = param_3 + -0xe;
+  if (*(int *)(pStruct + 0x10) == 0) {
+    if (((0xe < iFieldType) && (iFieldType < 0x2f)) && (*(int *)(pStruct + 0xc) < iFieldType + -0xe)
+       ) {
+      *(int *)(pStruct + 0xc) = iFieldType + -0xe;
     }
   }
-  else if ((param_3 < 0xf) || (0x2e < param_3)) {
-    if ((param_3 < 0x2f) || (0x4e < param_3)) {
-      if ((param_3 < 0x4f) || (0x6e < param_3)) {
-        if ((param_3 < 0x6f) || (0x8e < param_3)) {
-          if ((param_3 < 0x8f) || (0xae < param_3)) {
-            if ((param_3 < 0xaf) || (0xce < param_3)) {
-              if ((param_3 < 0xcf) || (0xee < param_3)) {
-                if ((param_3 < 0xef) || (0x10e < param_3)) {
-                  if ((param_3 < 0x10f) || (0x12e < param_3)) {
-                    if ((param_3 < 0x12f) || (0x14e < param_3)) {
-                      if ((param_3 < 0x14f) || (0x16e < param_3)) {
-                        if ((param_3 < 0x16f) || (0x18e < param_3)) {
-                          if ((param_3 < 399) || (0x1ae < param_3)) {
-                            if ((0x1ae < param_3) &&
-                               ((param_3 < 0x1cf && (param_3 + -0x1af < *(int *)(param_1 + 0xc)))))
-                            {
-                              uVar7 = SL_GetLowercaseString(param_2,0,SCRIPTINSTANCE_SERVER);
-                              *(short *)(*(int *)(param_1 + 0x10) + 0x120 +
-                                        (param_3 + -0x1af) * 0x138) = (short)uVar7;
+  else if ((iFieldType < 0xf) || (0x2e < iFieldType)) {
+    if ((iFieldType < 0x2f) || (0x4e < iFieldType)) {
+      if ((iFieldType < 0x4f) || (0x6e < iFieldType)) {
+        if ((iFieldType < 0x6f) || (0x8e < iFieldType)) {
+          if ((iFieldType < 0x8f) || (0xae < iFieldType)) {
+            if ((iFieldType < 0xaf) || (0xce < iFieldType)) {
+              if ((iFieldType < 0xcf) || (0xee < iFieldType)) {
+                if ((iFieldType < 0xef) || (0x10e < iFieldType)) {
+                  if ((iFieldType < 0x10f) || (0x12e < iFieldType)) {
+                    if ((iFieldType < 0x12f) || (0x14e < iFieldType)) {
+                      if ((iFieldType < 0x14f) || (0x16e < iFieldType)) {
+                        if ((iFieldType < 0x16f) || (0x18e < iFieldType)) {
+                          if ((iFieldType < 399) || (0x1ae < iFieldType)) {
+                            if ((0x1ae < iFieldType) &&
+                               ((iFieldType < 0x1cf &&
+                                (iFieldType + -0x1af < *(int *)(pStruct + 0xc))))) {
+                              uVar7 = SL_GetLowercaseString(pValue,0,SCRIPTINSTANCE_SERVER);
+                              *(short *)(*(int *)(pStruct + 0x10) + 0x120 +
+                                        (iFieldType + -0x1af) * 0x138) = (short)uVar7;
                             }
                           }
-                          else if (param_3 + -399 < *(int *)(param_1 + 0xc)) {
-                            iVar3 = atoi(param_2);
-                            *(float *)(*(int *)(param_1 + 0x10) + 0x108 + (param_3 + -399) * 0x138)
-                                 = (float)iVar3 * 0.01;
+                          else if (iFieldType + -399 < *(int *)(pStruct + 0xc)) {
+                            iVar3 = atoi(pValue);
+                            *(float *)(*(int *)(pStruct + 0x10) + 0x108 +
+                                      (iFieldType + -399) * 0x138) = (float)iVar3 * 0.01;
                           }
                         }
-                        else if (param_3 + -0x16f < *(int *)(param_1 + 0xc)) {
+                        else if (iFieldType + -0x16f < *(int *)(pStruct + 0xc)) {
                           DestructibleDef_Strcpy
-                                    ((uchar *)(*(int *)(param_1 + 0x10) + 0x11c +
-                                              (param_3 + -0x16f) * 0x138),param_2);
+                                    ((uchar *)(*(int *)(pStruct + 0x10) + 0x11c +
+                                              (iFieldType + -0x16f) * 0x138),pValue);
                         }
                       }
-                      else if (param_3 + -0x14f < *(int *)(param_1 + 0xc)) {
-                        pFVar6 = FX_Register(param_2);
+                      else if (iFieldType + -0x14f < *(int *)(pStruct + 0xc)) {
+                        pFVar6 = FX_Register(pValue);
                         *(FxEffectDef **)
-                         (*(int *)(param_1 + 0x10) + 0x118 + (param_3 + -0x14f) * 0x138) = pFVar6;
+                         (*(int *)(pStruct + 0x10) + 0x118 + (iFieldType + -0x14f) * 0x138) = pFVar6
+                        ;
                       }
                     }
                     else {
                       bVar2 = G_ExitAfterToolComplete();
-                      if ((!bVar2) && (param_3 + -0x12f < *(int *)(param_1 + 0xc))) {
+                      if ((!bVar2) && (iFieldType + -0x12f < *(int *)(pStruct + 0xc))) {
                         DestructibleDef_Strcpy
-                                  ((uchar *)(*(int *)(param_1 + 0x10) + 0x114 +
-                                            (param_3 + -0x12f) * 0x138),param_2);
+                                  ((uchar *)(*(int *)(pStruct + 0x10) + 0x114 +
+                                            (iFieldType + -0x12f) * 0x138),pValue);
                       }
                     }
                   }
-                  else if (((param_3 + -0x10f < *(int *)(param_1 + 0xc)) && (param_2 != (char *)0x0)
-                           ) && (*param_2 != '\0')) {
+                  else if (((iFieldType + -0x10f < *(int *)(pStruct + 0xc)) &&
+                           (pValue != (char *)0x0)) && (*pValue != '\0')) {
                     pPVar5 = XModel_PhysConstraintsPrecache
-                                       (param_2,(_func___cdecl_void_ptr_int *)0x0);
+                                       (pValue,(_func___cdecl_void_ptr_int *)0x0);
                     *(PhysConstraints **)
-                     (*(int *)(param_1 + 0x10) + 0x10c + (param_3 + -0x10f) * 0x138) = pPVar5;
+                     (*(int *)(pStruct + 0x10) + 0x10c + (iFieldType + -0x10f) * 0x138) = pPVar5;
                   }
                 }
-                else if (param_3 + -0xef < *(int *)(param_1 + 0xc)) {
-                  dVar8 = atof(param_2);
-                  *(float *)(*(int *)(param_1 + 0x10) + 0x104 + (param_3 + -0xef) * 0x138) =
+                else if (iFieldType + -0xef < *(int *)(pStruct + 0xc)) {
+                  dVar8 = atof(pValue);
+                  *(float *)(*(int *)(pStruct + 0x10) + 0x104 + (iFieldType + -0xef) * 0x138) =
                        (float)dVar8;
                 }
               }
-              else if (param_3 + -0xcf < *(int *)(param_1 + 0xc)) {
-                dVar8 = atof(param_2);
-                *(float *)(*(int *)(param_1 + 0x10) + 0x100 + (param_3 + -0xcf) * 0x138) =
+              else if (iFieldType + -0xcf < *(int *)(pStruct + 0xc)) {
+                dVar8 = atof(pValue);
+                *(float *)(*(int *)(pStruct + 0x10) + 0x100 + (iFieldType + -0xcf) * 0x138) =
                      (float)dVar8;
               }
             }
-            else if (param_3 + -0xaf < *(int *)(param_1 + 0xc)) {
-              dVar8 = atof(param_2);
-              *(float *)(*(int *)(param_1 + 0x10) + 0xfc + (param_3 + -0xaf) * 0x138) = (float)dVar8
-              ;
+            else if (iFieldType + -0xaf < *(int *)(pStruct + 0xc)) {
+              dVar8 = atof(pValue);
+              *(float *)(*(int *)(pStruct + 0x10) + 0xfc + (iFieldType + -0xaf) * 0x138) =
+                   (float)dVar8;
             }
           }
-          else if (param_3 + -0x8f < *(int *)(param_1 + 0xc)) {
-            dVar8 = atof(param_2);
-            *(float *)(*(int *)(param_1 + 0x10) + 0xf8 + (param_3 + -0x8f) * 0x138) = (float)dVar8;
+          else if (iFieldType + -0x8f < *(int *)(pStruct + 0xc)) {
+            dVar8 = atof(pValue);
+            *(float *)(*(int *)(pStruct + 0x10) + 0xf8 + (iFieldType + -0x8f) * 0x138) =
+                 (float)dVar8;
           }
         }
-        else if (param_3 + -0x6f < *(int *)(param_1 + 0xc)) {
-          iVar3 = atoi(param_2);
-          *(float *)(*(int *)(param_1 + 0x10) + 0xf4 + (param_3 + -0x6f) * 0x138) =
+        else if (iFieldType + -0x6f < *(int *)(pStruct + 0xc)) {
+          iVar3 = atoi(pValue);
+          *(float *)(*(int *)(pStruct + 0x10) + 0xf4 + (iFieldType + -0x6f) * 0x138) =
                (float)iVar3 / 100.0;
         }
       }
       else {
-        iVar3 = param_3 + -0x4f;
-        if (iVar3 < *(int *)(param_1 + 0xc)) {
-          iVar4 = atoi(param_2);
-          *(char *)(*(int *)(param_1 + 0x10) + 0xf0 + iVar3 * 0x138) = (char)iVar4;
-          if (((*(char *)(*(int *)(param_1 + 0x10) + 0xf0 + iVar3 * 0x138) != -1) &&
-              (*(int *)(param_1 + 0xc) <=
-               (int)(uint)*(byte *)(*(int *)(param_1 + 0x10) + 0xf0 + iVar3 * 0x138))) &&
+        iVar3 = iFieldType + -0x4f;
+        if (iVar3 < *(int *)(pStruct + 0xc)) {
+          iVar4 = atoi(pValue);
+          *(char *)(*(int *)(pStruct + 0x10) + 0xf0 + iVar3 * 0x138) = (char)iVar4;
+          if (((*(char *)(*(int *)(pStruct + 0x10) + 0xf0 + iVar3 * 0x138) != -1) &&
+              (*(int *)(pStruct + 0xc) <=
+               (int)(uint)*(byte *)(*(int *)(pStruct + 0x10) + 0xf0 + iVar3 * 0x138))) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructibledef_load_obj.cpp"
                                        ,0x356,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -322,14 +349,15 @@ Destructible_ParseDefSpecificFieldType(uchar *param_1,char *param_2,int param_3,
         }
       }
     }
-    else if (param_3 + -0x2f < *(int *)(param_1 + 0xc)) {
-      iVar3 = atoi(param_2);
-      *(int *)(*(int *)(param_1 + 0x10) + 0x110 + (param_3 + -0x2f) * 0x138) = iVar3;
+    else if (iFieldType + -0x2f < *(int *)(pStruct + 0xc)) {
+      iVar3 = atoi(pValue);
+      *(int *)(*(int *)(pStruct + 0x10) + 0x110 + (iFieldType + -0x2f) * 0x138) = iVar3;
     }
   }
   else {
     DestructiblePieceLoadFile
-              (param_2,(DestructiblePiece *)((param_3 + -0xf) * 0x138 + *(int *)(param_1 + 0x10)));
+              (pValue,(DestructiblePiece *)((iFieldType + -0xf) * 0x138 + *(int *)(pStruct + 0x10)))
+    ;
   }
   return 1;
 }
@@ -340,7 +368,7 @@ Destructible_ParseDefSpecificFieldType(uchar *param_1,char *param_2,int param_3,
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-DestructibleDef * __cdecl DestructibleDefLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2)
+DestructibleDef * __cdecl DestructibleDefLoadFile(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   char cVar1;
@@ -353,130 +381,129 @@ DestructibleDef * __cdecl DestructibleDefLoadFile(char *param_1,_func___cdecl_vo
   PhysGeomList *pPVar8;
   char *local_8088;
   char *local_8078;
-  byte local_8071;
-  uint local_8070;
-  int local_806c;
-  int local_8068;
-  char local_8064 [64];
-  char local_8024 [32768];
+  uchar boneIndex;
+  uint boneName;
+  int k;
+  int i;
+  char filename [64];
+  char buffer [32768];
   uint local_24;
-  char *local_20;
-  DestructibleDef *local_1c;
-  ulong local_18;
-  int local_14;
-  int local_10;
-  XModel *local_c;
-  char *local_8;
+  char *identifierStr;
+  DestructibleDef *destructibleDef;
+  int piecesSize;
+  int fileSize;
+  int fileHandle;
+  XModel *baseModel;
+  int identifierStrLength;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20 = "DESTRUCTIBLEDEF";
+  identifierStr = "DESTRUCTIBLEDEF";
   local_8078 = "DESTRUCTIBLEDEF";
   pcVar3 = local_8078;
   do {
     local_8078 = pcVar3;
     pcVar3 = local_8078 + 1;
   } while (*local_8078 != '\0');
-  local_8 = local_8078 + -0xd178b8;
-  local_8088 = param_1;
+  identifierStrLength = (int)(local_8078 + -0xd178b8);
+  local_8088 = name;
   do {
     cVar1 = *local_8088;
     local_8088 = local_8088 + 1;
   } while (cVar1 != '\0');
-  if (local_8088 == param_1 + 1) {
-    local_1c = (DestructibleDef *)0x0;
+  if (local_8088 == name + 1) {
+    destructibleDef = (DestructibleDef *)0x0;
   }
   else {
-    iVar5 = Com_sprintf(local_8064,0x40,"destructibledef/%s");
+    iVar5 = Com_sprintf(filename,0x40,"destructibledef/%s");
     if (iVar5 < 0) {
       Com_PrintError(0x14,"ERROR: Filename \'%s\' too long\n");
-      local_1c = (DestructibleDef *)0x0;
+      destructibleDef = (DestructibleDef *)0x0;
     }
     else {
-      local_14 = FS_FOpenFileByMode(local_8064,&local_10,FS_READ);
-      if (local_14 < 0) {
+      fileSize = FS_FOpenFileByMode(filename,&fileHandle,FS_READ);
+      if (fileSize < 0) {
         Com_PrintError(0x14,"ERROR: Destructible \'%s\' not found\n");
-        local_1c = (DestructibleDef *)0x0;
+        destructibleDef = (DestructibleDef *)0x0;
       }
       else {
-        FS_Read(local_8024,(int)local_8,local_10);
-        local_8024[(int)local_8] = '\0';
-        iVar5 = strncmp(local_8024,local_20,(uint)local_8);
+        FS_Read(buffer,identifierStrLength,fileHandle);
+        buffer[identifierStrLength] = '\0';
+        iVar5 = strncmp(buffer,identifierStr,identifierStrLength);
         if (iVar5 == 0) {
-          if (local_14 - (int)local_8 < 0x8000) {
-            FS_Read(local_8024,local_14 - (int)local_8,local_10);
-            local_8024[local_14 - (int)local_8] = '\0';
-            FS_FCloseFile(local_10);
-            iVar5 = Info_Validate(local_8024);
+          if (fileSize - identifierStrLength < 0x8000) {
+            FS_Read(buffer,fileSize - identifierStrLength,fileHandle);
+            buffer[fileSize - identifierStrLength] = '\0';
+            FS_FCloseFile(fileHandle);
+            iVar5 = Info_Validate(buffer);
             if (iVar5 == 0) {
               Com_PrintError(0x14,"ERROR: Destructible file [%s] is not valid\n");
-              local_1c = (DestructibleDef *)0x0;
+              destructibleDef = (DestructibleDef *)0x0;
             }
             else {
-              local_1c = (*param_2)(0x18);
-              if ((local_1c == (DestructibleDef *)0x0) &&
+              destructibleDef = (*Alloc)(0x18);
+              if ((destructibleDef == (DestructibleDef *)0x0) &&
                  (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructibledef_load_obj.cpp"
                                            ,0x3e3,0,"%s"), !bVar4)) {
                 pcVar2 = (code *)swi(3);
                 pDVar6 = (DestructibleDef *)(*pcVar2)();
                 return pDVar6;
               }
-              local_1c->name = (char *)0x0;
-              local_1c->model = (XModel *)0x0;
-              local_1c->pristineModel = (XModel *)0x0;
-              local_1c->numPieces = 0;
-              local_1c->pieces = (DestructiblePiece *)0x0;
-              local_1c->clientOnly = 0;
+              destructibleDef->name = (char *)0x0;
+              destructibleDef->model = (XModel *)0x0;
+              destructibleDef->pristineModel = (XModel *)0x0;
+              destructibleDef->numPieces = 0;
+              destructibleDef->pieces = (DestructiblePiece *)0x0;
+              destructibleDef->clientOnly = 0;
               iVar5 = ParseConfigStringToStruct
-                                ((uchar *)local_1c,destructibleDefFields,0x1c5,local_8024,0x1cf,
+                                ((uchar *)destructibleDef,destructibleDefFields,0x1c5,buffer,0x1cf,
                                  Destructible_ParseDefSpecificFieldType,DestructibleDef_Strcpy);
               if (iVar5 == 0) {
-                local_1c = (DestructibleDef *)0x0;
+                destructibleDef = (DestructibleDef *)0x0;
               }
               else {
-                local_18 = local_1c->numPieces * 0x138;
-                pDVar7 = (*param_2)(local_18);
-                local_1c->pieces = pDVar7;
-                memset((uchar *)local_1c->pieces,'\0',local_18);
+                piecesSize = destructibleDef->numPieces * 0x138;
+                pDVar7 = (*Alloc)(piecesSize);
+                destructibleDef->pieces = pDVar7;
+                memset((uchar *)destructibleDef->pieces,'\0',piecesSize);
                 iVar5 = ParseConfigStringToStruct
-                                  ((uchar *)local_1c,destructibleDefFields,0x1c5,local_8024,0x1cf,
-                                   Destructible_ParseDefSpecificFieldType,DestructibleDef_Strcpy);
+                                  ((uchar *)destructibleDef,destructibleDefFields,0x1c5,buffer,0x1cf
+                                   ,Destructible_ParseDefSpecificFieldType,DestructibleDef_Strcpy);
                 if (iVar5 == 0) {
-                  local_1c = (DestructibleDef *)0x0;
+                  destructibleDef = (DestructibleDef *)0x0;
                 }
                 else {
-                  local_c = local_1c->model;
-                  if (local_c == (XModel *)0x0) {
-                    local_1c = (DestructibleDef *)0x0;
+                  baseModel = destructibleDef->model;
+                  if (baseModel == (XModel *)0x0) {
+                    destructibleDef = (DestructibleDef *)0x0;
                   }
                   else {
-                    for (local_8068 = 0; local_8068 < local_1c->numPieces;
-                        local_8068 = local_8068 + 1) {
-                      for (local_806c = 0; local_806c < 5; local_806c = local_806c + 1) {
-                        local_1c->pieces[local_8068].stages[local_806c].breakHealth =
-                             local_1c->pieces[local_8068].stages[local_806c].breakHealth / 100.0;
-                        local_8070 = (uint)local_1c->pieces[local_8068].stages[local_806c].showBone;
-                        if (local_8070 != 0) {
-                          local_8071 = 0;
-                          iVar5 = XModelGetBoneIndex(local_c,local_8070,&local_8071);
+                    for (i = 0; i < destructibleDef->numPieces; i = i + 1) {
+                      for (k = 0; k < 5; k = k + 1) {
+                        destructibleDef->pieces[i].stages[k].breakHealth =
+                             destructibleDef->pieces[i].stages[k].breakHealth / 100.0;
+                        boneName = (uint)destructibleDef->pieces[i].stages[k].showBone;
+                        if (boneName != 0) {
+                          boneIndex = '\0';
+                          iVar5 = XModelGetBoneIndex(baseModel,boneName,&boneIndex);
                           if (iVar5 == 0) {
-                            SL_ConvertToString(local_8070,SCRIPTINSTANCE_SERVER);
+                            SL_ConvertToString(boneName,SCRIPTINSTANCE_SERVER);
                             Com_PrintError(0x14,
                                            "ERROR: Destructible file [%s] can not find bone [%s] in model [%s] for piece [%i] stage [%i]\n"
                                           );
                           }
                           else {
-                            if ((local_1c->pieces[local_8068].stages[local_806c].physPreset !=
+                            if ((destructibleDef->pieces[i].stages[k].physPreset !=
                                  (PhysPreset *)0x0) &&
-                               (pPVar8 = XModelGetCollmapForBoneIndex(local_c,(uint)local_8071),
+                               (pPVar8 = XModelGetCollmapForBoneIndex(baseModel,(uint)boneIndex),
                                pPVar8 == (PhysGeomList *)0x0)) {
-                              SL_ConvertToString(local_8070,SCRIPTINSTANCE_SERVER);
+                              SL_ConvertToString(boneName,SCRIPTINSTANCE_SERVER);
                               Com_PrintError(0x14,
                                              "ERROR: No collmap for bone [%s] but it has a physPreset [%s] in destructible file [%s] model [%s] piece [%i] stage [%i]\n"
                                             );
                             }
-                            local_1c->pieces[local_8068].hideBones[(int)(uint)local_8071 >> 5] =
-                                 0x80000000U >> (local_8071 & 0x1f) |
-                                 local_1c->pieces[local_8068].hideBones[(int)(uint)local_8071 >> 5];
+                            destructibleDef->pieces[i].hideBones[(int)(uint)boneIndex >> 5] =
+                                 0x80000000U >> (boneIndex & 0x1f) |
+                                 destructibleDef->pieces[i].hideBones[(int)(uint)boneIndex >> 5];
                           }
                         }
                       }
@@ -488,25 +515,25 @@ DestructibleDef * __cdecl DestructibleDefLoadFile(char *param_1,_func___cdecl_vo
           }
           else {
             Com_PrintError(0x14,"ERROR: Destructible file [%s] is too big\n");
-            FS_FCloseFile(local_10);
-            local_1c = (DestructibleDef *)0x0;
+            FS_FCloseFile(fileHandle);
+            destructibleDef = (DestructibleDef *)0x0;
           }
         }
         else {
           Com_PrintError(0x14,"ERROR: File [%s] is not a destructible file\n");
-          FS_FCloseFile(local_10);
-          local_1c = (DestructibleDef *)0x0;
+          FS_FCloseFile(fileHandle);
+          destructibleDef = (DestructibleDef *)0x0;
         }
       }
     }
   }
-  return local_1c;
+  return destructibleDef;
 }
 
 
 // 0081E620  XModelGetBoneIndex  (physics/destructibledef_load_obj.cpp:1077)
 
-int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uchar *param_3)
+int __cdecl XModelGetBoneIndex(XModel *model,uint name,uchar *index)
 
 {
   byte bVar1;
@@ -514,17 +541,19 @@ int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uchar *param_3)
   code *pcVar3;
   bool bVar4;
   int iVar5;
-  uint local_c;
+  uint numBones;
+  uint localBoneIndex;
+  ushort *boneNames;
   
-  if ((param_3 == (uchar *)0x0) &&
+  if ((index == (uchar *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructibledef_load_obj.cpp"
                                ,0x43a,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  puVar2 = (param_1->field5_0x8).localBoneNames;
-  bVar1 = param_1->numBones;
+  puVar2 = (model->field5_0x8).localBoneNames;
+  bVar1 = model->numBones;
   if ((0x9f < bVar1) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructibledef_load_obj.cpp"
                                ,0x43f,0,"%s"), !bVar4)) {
@@ -532,16 +561,16 @@ int __cdecl XModelGetBoneIndex(XModel *param_1,uint param_2,uchar *param_3)
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  local_c = 0;
+  localBoneIndex = 0;
   while( true ) {
-    if (bVar1 <= local_c) {
+    if (bVar1 <= localBoneIndex) {
       return 0;
     }
-    if (param_2 == puVar2[local_c]) break;
-    local_c = local_c + 1;
+    if (name == puVar2[localBoneIndex]) break;
+    localBoneIndex = localBoneIndex + 1;
   }
-  *param_3 = (uchar)local_c;
-  if ((*param_3 != local_c) &&
+  *index = (uchar)localBoneIndex;
+  if ((*index != localBoneIndex) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructibledef_load_obj.cpp"
                                ,0x446,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);

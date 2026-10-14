@@ -2,8 +2,10 @@
 
 // 0083EAA0  lzopro_lzo1x_decompress  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/plzo1x_d.ch:85)
 
+/* WARNING: Variable defined which should be unmapped: in_len */
+
 int __cdecl
-lzopro_lzo1x_decompress(uchar *param_1,ulong param_2,uchar *param_3,ulong *param_4,void *param_5)
+lzopro_lzo1x_decompress(uchar *out,ulong out_len,uchar *param_3,ulong *param_4,void *param_5)
 
 {
   ushort uVar1;
@@ -19,19 +21,21 @@ lzopro_lzo1x_decompress(uchar *param_1,ulong param_2,uchar *param_3,ulong *param
   byte *pbVar11;
   uint uVar12;
   uint uVar13;
+  uchar *in;
+  ulong in_len;
   
-  bVar6 = *param_1;
+  bVar6 = *out;
   param_3[0] = '\0';
   param_3[1] = '\0';
   param_3[2] = '\0';
   param_3[3] = '\0';
   iVar9 = 0x100;
-  pbVar3 = (byte *)param_2;
-  puVar4 = (ushort *)param_1;
+  pbVar3 = (byte *)out_len;
+  puVar4 = (ushort *)out;
   if (0x11 < bVar6) {
     uVar12 = bVar6 - 0x11;
     iVar9 = (-(uint)(uVar12 < 4) & 0xfffffe00) + 0x200;
-    puVar4 = (ushort *)(param_1 + 1);
+    puVar4 = (ushort *)(out + 1);
     for (; 3 < uVar12; uVar12 = uVar12 - 4) {
       *(undefined4 *)pbVar3 = *(undefined4 *)puVar4;
       pbVar3 = pbVar3 + 4;
@@ -449,11 +453,11 @@ LAB_00841202:
         pbVar7 = pbVar3 + -(uint)(*puVar5 >> 2);
         puVar5 = puVar5 + 1;
         if (pbVar7 == pbVar3) {
-          *(ulong *)param_3 = (int)pbVar3 - param_2;
-          if (puVar5 == (ushort *)param_1) {
+          *(ulong *)param_3 = (int)pbVar3 - out_len;
+          if (puVar5 == (ushort *)out) {
             return 0;
           }
-          return (-(uint)(puVar5 < param_1) & 0xfffffffc) - 4;
+          return (-(uint)(puVar5 < out) & 0xfffffffc) - 4;
         }
         *(undefined2 *)pbVar3 = *(undefined2 *)(pbVar7 + -0x4000);
         pbVar3[2] = pbVar7[-0x3ffe];
@@ -3218,7 +3222,7 @@ switchD_0083eb16_caseD_83eb20:
 // 0083E9D0  lzopro_lzo1x_1_11_compress  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/plzo1x_c.ch:262)
 
 int __cdecl
-lzopro_lzo1x_1_11_compress(uchar *param_1,ulong param_2,uchar *param_3,ulong *param_4,void *param_5)
+lzopro_lzo1x_1_11_compress(uchar *out,ulong out_len,uchar *param_3,ulong *param_4,void *param_5)
 
 {
   ulong uVar1;
@@ -3230,34 +3234,35 @@ lzopro_lzo1x_1_11_compress(uchar *param_1,ulong param_2,uchar *param_3,ulong *pa
   ulong uVar5;
   uchar *puVar6;
   void *unaff_EDI;
+  uchar *in;
   
-  uVar1 = param_2;
-  puVar2 = (uchar *)param_2;
+  uVar1 = out_len;
+  puVar2 = (uchar *)out_len;
   uVar5 = in_ECX;
   if (0xd < in_ECX) {
-    uVar5 = lzopro_lzo1x_1_11_compress_core(param_1,param_2,param_3,in_EAX,unaff_EDI);
-    puVar2 = (uchar *)(*(int *)param_3 + param_2);
+    uVar5 = lzopro_lzo1x_1_11_compress_core(out,out_len,param_3,in_EAX,unaff_EDI);
+    puVar2 = (uchar *)(*(int *)param_3 + out_len);
   }
   if (uVar5 == 0) goto LAB_0083ea7f;
-  puVar6 = param_1 + (in_ECX - uVar5);
+  puVar6 = out + (in_ECX - uVar5);
   bVar4 = (byte)uVar5;
-  if ((puVar2 == (uchar *)param_2) && (uVar5 < 0xef)) {
-    param_2 = (ulong)(byte)(bVar4 + 0x11);
+  if ((puVar2 == (uchar *)out_len) && (uVar5 < 0xef)) {
+    out_len = (ulong)(byte)(bVar4 + 0x11);
 LAB_0083ea71:
-    *puVar2 = (uchar)param_2;
+    *puVar2 = (uchar)out_len;
 LAB_0083ea73:
     puVar2 = puVar2 + 1;
   }
   else {
     if (3 < uVar5) {
       if (0x12 < uVar5) {
-        param_2 = uVar5 - 0x12;
+        out_len = uVar5 - 0x12;
         *puVar2 = '\0';
         puVar2 = puVar2 + 1;
-        if (0xff < param_2) {
+        if (0xff < out_len) {
           iVar3 = (uVar5 - 0x112) / 0xff + 1;
           do {
-            param_2 = param_2 - 0xff;
+            out_len = out_len - 0xff;
             *puVar2 = '\0';
             puVar2 = puVar2 + 1;
             iVar3 = iVar3 + -1;

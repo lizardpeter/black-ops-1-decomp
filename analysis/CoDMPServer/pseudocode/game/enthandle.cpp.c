@@ -17,11 +17,12 @@ void __cdecl TRACK_enthandle(void)
 void __cdecl EntHandle::Init(void)
 
 {
-  uint local_8;
+  EntHandleInfo *info;
+  uint i;
   
-  for (local_8 = 1; local_8 < 0x400; local_8 = local_8 + 1) {
-    g_entHandleInfoArray[local_8].next = (short)local_8 + 1;
-    g_entHandleInfoArray[local_8].handle = (void *)0x0;
+  for (i = 1; i < 0x400; i = i + 1) {
+    g_entHandleInfoArray[i].next = (short)i + 1;
+    g_entHandleInfoArray[i].handle = (void *)0x0;
   }
   g_entHandleInfoArray[0x3ff].next = 0;
   g_entHandleInfoHead = 1;
@@ -38,20 +39,21 @@ void __cdecl EntHandle::Shutdown(void)
 {
   code *pcVar1;
   bool bVar2;
-  uint local_10;
-  uint local_8;
+  uint usedEntHandle;
+  EntHandleInfo *info;
+  uint i;
   
   if (g_usedEntHandle != 0) {
     Com_Printf(1,"EntHandle BEGIN\n");
-    local_10 = 0;
-    for (local_8 = 1; local_8 < 0x400; local_8 = local_8 + 1) {
-      if (g_entHandleInfoArray[local_8].handle != (void *)0x0) {
+    usedEntHandle = 0;
+    for (i = 1; i < 0x400; i = i + 1) {
+      if (g_entHandleInfoArray[i].handle != (void *)0x0) {
         Com_Printf(1,"%p\n");
-        local_10 = local_10 + 1;
+        usedEntHandle = usedEntHandle + 1;
       }
     }
     Com_Printf(1,"EntHandle END\n");
-    if (local_10 != g_usedEntHandle) {
+    if (usedEntHandle != g_usedEntHandle) {
       va("%d %d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\enthandle.cpp",0x69,0,
                                "%s\n\t%s");
@@ -166,21 +168,23 @@ void __cdecl SentientHandle::Init(void)
 
 // 005F5D10  EntHandleDissociateInternal  (game/enthandle.cpp:122)
 
-void __cdecl EntHandleDissociateInternal(EntHandleList *param_1)
+void __cdecl EntHandleDissociateInternal(EntHandleList *entHandleList)
 
 {
   EntHandleInfo *pEVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  uint local_8;
+  EntHandleInfo *info;
+  uint infoIndexHead;
+  uint infoIndex;
   
-  uVar4 = (uint)param_1->infoIndex;
+  uVar4 = (uint)entHandleList->infoIndex;
   if (uVar4 != 0) {
-    param_1->infoIndex = 0;
-    local_8 = uVar4;
+    entHandleList->infoIndex = 0;
+    infoIndex = uVar4;
     do {
-      pEVar1 = g_entHandleInfoArray + local_8;
+      pEVar1 = g_entHandleInfoArray + infoIndex;
       if (pEVar1->handle == (void *)0x0) {
         va("%d %p");
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\enthandle.cpp",0x8b,0,
@@ -201,8 +205,8 @@ void __cdecl EntHandleDissociateInternal(EntHandleList *param_1)
         return;
       }
       g_usedEntHandle = g_usedEntHandle - 1;
-      local_8 = (uint)g_entHandleInfoArray[local_8].next;
-    } while (local_8 != uVar4);
+      infoIndex = (uint)g_entHandleInfoArray[infoIndex].next;
+    } while (infoIndex != uVar4);
     g_entHandleInfoArray[g_entHandleInfoArray[uVar4].prev].next = (ushort)g_entHandleInfoHead;
     g_entHandleInfoHead = uVar4;
   }
@@ -217,10 +221,10 @@ void __cdecl EntHandleDissociateInternal(EntHandleList *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EntHandleDissociate(gentity_s *param_1)
+void __cdecl EntHandleDissociate(gentity_s *ent)
 
 {
-  EntHandleDissociateInternal(g_entitiesHandleList + (int)param_1[-0x1487a].r.mins / 0x2f8);
+  EntHandleDissociateInternal(g_entitiesHandleList + (int)ent[-0x1487a].r.mins / 0x2f8);
   return;
 }
 
@@ -232,31 +236,35 @@ void __cdecl EntHandleDissociate(gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl SentientHandleDissociate(sentient_s *param_1)
+void __cdecl SentientHandleDissociate(sentient_s *sentient)
 
 {
   EntHandleDissociateInternal
-            (g_sentientsHandleList + (int)param_1[-0x6ebc3].meleeAttackerSpot / 0x90);
+            (g_sentientsHandleList + (int)sentient[-0x6ebc3].meleeAttackerSpot / 0x90);
   return;
 }
 
 
 // 005F6050  RemoveEntHandleInfo  (game/enthandle.cpp:177)
 
-void __cdecl RemoveEntHandleInfo(EntHandleList *param_1,uint param_2)
+void __cdecl RemoveEntHandleInfo(EntHandleList *entHandleList,uint oldInfoIndex)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
+  EntHandleInfo *info;
+  EntHandleInfo *next;
+  uint infoIndex;
+  EntHandleInfo *prev;
   
-  if (param_2 != 0) {
-    if (param_1->infoIndex == param_2) {
-      param_1->infoIndex =
-           -(ushort)(g_entHandleInfoArray[param_2].next != param_2) &
-           g_entHandleInfoArray[param_2].next;
+  if (oldInfoIndex != 0) {
+    if (entHandleList->infoIndex == oldInfoIndex) {
+      entHandleList->infoIndex =
+           -(ushort)(g_entHandleInfoArray[oldInfoIndex].next != oldInfoIndex) &
+           g_entHandleInfoArray[oldInfoIndex].next;
     }
-    if (g_entHandleInfoArray[param_2].handle == (void *)0x0) {
+    if (g_entHandleInfoArray[oldInfoIndex].handle == (void *)0x0) {
       va("%d %p");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\enthandle.cpp",0xc4,0,
                                "%s\n\t%s");
@@ -266,7 +274,7 @@ void __cdecl RemoveEntHandleInfo(EntHandleList *param_1,uint param_2)
         return;
       }
     }
-    g_entHandleInfoArray[param_2].handle = (void *)0x0;
+    g_entHandleInfoArray[oldInfoIndex].handle = (void *)0x0;
     if ((g_usedEntHandle == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\enthandle.cpp",0xc6,0,
                                  "%s"), !bVar3)) {
@@ -275,12 +283,12 @@ void __cdecl RemoveEntHandleInfo(EntHandleList *param_1,uint param_2)
       return;
     }
     g_usedEntHandle = g_usedEntHandle - 1;
-    uVar1 = g_entHandleInfoArray[param_2].prev;
-    g_entHandleInfoArray[g_entHandleInfoArray[param_2].next].prev =
-         g_entHandleInfoArray[param_2].prev;
-    g_entHandleInfoArray[uVar1].next = g_entHandleInfoArray[param_2].next;
-    g_entHandleInfoArray[param_2].next = (ushort)g_entHandleInfoHead;
-    g_entHandleInfoHead = param_2;
+    uVar1 = g_entHandleInfoArray[oldInfoIndex].prev;
+    g_entHandleInfoArray[g_entHandleInfoArray[oldInfoIndex].next].prev =
+         g_entHandleInfoArray[oldInfoIndex].prev;
+    g_entHandleInfoArray[uVar1].next = g_entHandleInfoArray[oldInfoIndex].next;
+    g_entHandleInfoArray[oldInfoIndex].next = (ushort)g_entHandleInfoHead;
+    g_entHandleInfoHead = oldInfoIndex;
   }
   return;
 }
@@ -288,14 +296,17 @@ void __cdecl RemoveEntHandleInfo(EntHandleList *param_1,uint param_2)
 
 // 005F6180  AddEntHandleInfo  (game/enthandle.cpp:215)
 
-uint __cdecl AddEntHandleInfo(EntHandleList *param_1,void *param_2)
+uint __cdecl AddEntHandleInfo(EntHandleList *entHandleList,void *handle)
 
 {
   ushort uVar1;
   uint uVar2;
   uint uVar3;
   uint local_18;
-  ushort local_c;
+  EntHandleInfo *info;
+  uint infoIndexHead;
+  uint infoIndex;
+  EntHandleInfo *infoHead;
   
   uVar2 = g_entHandleInfoHead;
   if (g_entHandleInfoHead == 0) {
@@ -308,20 +319,20 @@ uint __cdecl AddEntHandleInfo(EntHandleList *param_1,void *param_2)
     local_18 = g_maxUsedEntHandle;
   }
   g_maxUsedEntHandle = local_18;
-  g_entHandleInfoArray[uVar2].handle = param_2;
-  uVar1 = param_1->infoIndex;
+  g_entHandleInfoArray[uVar2].handle = handle;
+  uVar1 = entHandleList->infoIndex;
   uVar3 = (uint)uVar1;
-  local_c = (ushort)uVar2;
+  infoIndex._0_2_ = (ushort)uVar2;
   if (uVar3 == 0) {
-    g_entHandleInfoArray[uVar2].next = local_c;
-    g_entHandleInfoArray[uVar2].prev = local_c;
-    param_1->infoIndex = local_c;
+    g_entHandleInfoArray[uVar2].next = (ushort)infoIndex;
+    g_entHandleInfoArray[uVar2].prev = (ushort)infoIndex;
+    entHandleList->infoIndex = (ushort)infoIndex;
   }
   else {
     g_entHandleInfoArray[uVar2].next = g_entHandleInfoArray[uVar3].next;
     g_entHandleInfoArray[uVar2].prev = uVar1;
-    g_entHandleInfoArray[g_entHandleInfoArray[uVar3].next].prev = local_c;
-    g_entHandleInfoArray[uVar3].next = local_c;
+    g_entHandleInfoArray[g_entHandleInfoArray[uVar3].next].prev = (ushort)infoIndex;
+    g_entHandleInfoArray[uVar3].next = (ushort)infoIndex;
   }
   return uVar2;
 }
@@ -334,37 +345,38 @@ uint __cdecl AddEntHandleInfo(EntHandleList *param_1,void *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall EntHandle::setEnt(EntHandle *this,gentity_s *param_1)
+void __thiscall EntHandle::setEnt(EntHandle *this,gentity_s *ent)
 
 {
   int iVar1;
   gentity_s *pgVar2;
   uint uVar3;
-  ushort local_8;
+  gentity_s *oldEnt;
+  uint infoIndex;
   
   iVar1 = isDefined(this);
   if (iVar1 == 0) {
-    if (param_1 == (gentity_s *)0x0) {
+    if (ent == (gentity_s *)0x0) {
       return;
     }
   }
   else {
-    pgVar2 = ent(this);
-    if (param_1 == pgVar2) {
+    pgVar2 = EntHandle::ent(this);
+    if (ent == pgVar2) {
       return;
     }
     RemoveEntHandleInfo(g_entitiesHandleList + (int)pgVar2[-0x1487a].r.mins / 0x2f8,
                         (uint)this->infoIndex);
-    if (param_1 == (gentity_s *)0x0) {
+    if (ent == (gentity_s *)0x0) {
       this->number = 0;
       this->infoIndex = 0;
       return;
     }
   }
-  uVar3 = AddEntHandleInfo(g_entitiesHandleList + (int)param_1[-0x1487a].r.mins / 0x2f8,this);
-  local_8 = (ushort)uVar3;
-  this->infoIndex = local_8;
-  this->number = (short)((int)param_1[-0x1487a].r.mins / 0x2f8) + 1;
+  uVar3 = AddEntHandleInfo(g_entitiesHandleList + (int)ent[-0x1487a].r.mins / 0x2f8,this);
+  infoIndex._0_2_ = (ushort)uVar3;
+  this->infoIndex = (ushort)infoIndex;
+  this->number = (short)((int)ent[-0x1487a].r.mins / 0x2f8) + 1;
   return;
 }
 
@@ -376,38 +388,39 @@ void __thiscall EntHandle::setEnt(EntHandle *this,gentity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __thiscall SentientHandle::setSentient(SentientHandle *this,sentient_s *param_1)
+void __thiscall SentientHandle::setSentient(SentientHandle *this,sentient_s *sentient)
 
 {
   int iVar1;
   sentient_s *psVar2;
   uint uVar3;
-  ushort local_8;
+  sentient_s *oldSentient;
+  uint infoIndex;
   
   iVar1 = isDefined(this);
   if (iVar1 == 0) {
-    if (param_1 == (sentient_s *)0x0) {
+    if (sentient == (sentient_s *)0x0) {
       return;
     }
   }
   else {
-    psVar2 = sentient(this);
-    if (param_1 == psVar2) {
+    psVar2 = SentientHandle::sentient(this);
+    if (sentient == psVar2) {
       return;
     }
     RemoveEntHandleInfo(g_sentientsHandleList + (int)psVar2[-0x6ebc3].meleeAttackerSpot / 0x90,
                         (uint)this->infoIndex);
-    if (param_1 == (sentient_s *)0x0) {
+    if (sentient == (sentient_s *)0x0) {
       this->number = 0;
       this->infoIndex = 0;
       return;
     }
   }
-  uVar3 = AddEntHandleInfo(g_sentientsHandleList + (int)param_1[-0x6ebc3].meleeAttackerSpot / 0x90,
+  uVar3 = AddEntHandleInfo(g_sentientsHandleList + (int)sentient[-0x6ebc3].meleeAttackerSpot / 0x90,
                            this);
-  local_8 = (ushort)uVar3;
-  this->infoIndex = local_8;
-  this->number = (short)((int)param_1[-0x6ebc3].meleeAttackerSpot / 0x90) + 1;
+  infoIndex._0_2_ = (ushort)uVar3;
+  this->infoIndex = (ushort)infoIndex;
+  this->number = (short)((int)sentient[-0x6ebc3].meleeAttackerSpot / 0x90) + 1;
   return;
 }
 

@@ -12,22 +12,23 @@ void __cdecl _dynamic_initializer_for__TRACKINST_g_largeLocalBuf__(void)
 
 // 007CD2B0  LargeLocalRoundSize  (universal/mem_largelocal.cpp:21)
 
-int __cdecl LargeLocalRoundSize(int param_1)
+int __cdecl LargeLocalRoundSize(int size)
 
 {
-  return param_1 + 3U & 0xfffffffc;
+  return size + 3U & 0xfffffffc;
 }
 
 
 // 007CD1E0  LargeLocalBegin  (universal/mem_largelocal.cpp:32)
 
-int __cdecl LargeLocalBegin(int param_1)
+int __cdecl LargeLocalBegin(int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
+  int startPos;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -39,7 +40,7 @@ int __cdecl LargeLocalBegin(int param_1)
       return iVar3;
     }
   }
-  iVar4 = LargeLocalRoundSize(param_1);
+  iVar4 = LargeLocalRoundSize(size);
   iVar3 = g_largeLocalPos;
   g_largeLocalPos = g_largeLocalPos + iVar4;
   if (0x80000 < g_largeLocalPos) {
@@ -66,7 +67,7 @@ int __cdecl LargeLocalBegin(int param_1)
 
 // 007CD2C0  LargeLocalEnd  (universal/mem_largelocal.cpp:58)
 
-void __cdecl LargeLocalEnd(int param_1)
+void __cdecl LargeLocalEnd(int startPos)
 
 {
   code *pcVar1;
@@ -82,8 +83,8 @@ void __cdecl LargeLocalEnd(int param_1)
       return;
     }
   }
-  g_largeLocalPos = param_1;
-  if (g_largeLocalRightPos < param_1) {
+  g_largeLocalPos = startPos;
+  if (g_largeLocalRightPos < startPos) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_largelocal.cpp",0x40
                              ,0,"%s");
     if (!bVar2) {
@@ -98,13 +99,14 @@ void __cdecl LargeLocalEnd(int param_1)
 
 // 007CD460  LargeLocalBeginRight  (universal/mem_largelocal.cpp:77)
 
-int __cdecl LargeLocalBeginRight(int param_1)
+int __cdecl LargeLocalBeginRight(int size)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   int iVar4;
+  int startPos;
   
   bVar3 = Sys_IsServerThread();
   if (!bVar3) {
@@ -116,7 +118,7 @@ int __cdecl LargeLocalBeginRight(int param_1)
       return iVar4;
     }
   }
-  iVar4 = LargeLocalRoundSize(param_1);
+  iVar4 = LargeLocalRoundSize(size);
   if (g_largeLocalRightPos - iVar4 <= g_largeLocalPos) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_largelocal.cpp",0x54
                              ,0,"%s");
@@ -134,7 +136,7 @@ int __cdecl LargeLocalBeginRight(int param_1)
 
 // 007CD580  LargeLocalEndRight  (universal/mem_largelocal.cpp:99)
 
-void __cdecl LargeLocalEndRight(int param_1)
+void __cdecl LargeLocalEndRight(int startPos)
 
 {
   code *pcVar1;
@@ -150,8 +152,8 @@ void __cdecl LargeLocalEndRight(int param_1)
       return;
     }
   }
-  g_largeLocalRightPos = param_1;
-  if (param_1 <= g_largeLocalPos) {
+  g_largeLocalRightPos = startPos;
+  if (startPos <= g_largeLocalPos) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_largelocal.cpp",0x68
                              ,0,"%s");
     if (!bVar2) {
@@ -166,13 +168,14 @@ void __cdecl LargeLocalEndRight(int param_1)
 
 // 007CD330  LargeLocalGetBuf  (universal/mem_largelocal.cpp:117)
 
-void * __cdecl LargeLocalGetBuf(int param_1,int param_2)
+void * __cdecl LargeLocalGetBuf(int startPos,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int iVar4;
+  int startIndex;
   
   bVar2 = Sys_IsMainThread();
   if (((!bVar2) && (bVar2 = Sys_IsServerThread(), !bVar2)) &&
@@ -184,9 +187,9 @@ void * __cdecl LargeLocalGetBuf(int param_1,int param_2)
   }
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
-    iVar4 = LargeLocalRoundSize(param_2);
-    param_1 = param_1 - iVar4;
-    if ((param_1 < 0) &&
+    iVar4 = LargeLocalRoundSize(size);
+    startPos = startPos - iVar4;
+    if ((startPos < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_largelocal.cpp",
                                  0x86,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -194,13 +197,13 @@ void * __cdecl LargeLocalGetBuf(int param_1,int param_2)
       return pvVar3;
     }
   }
-  return g_largeLocalBuf + param_1;
+  return g_largeLocalBuf + startPos;
 }
 
 
 // 007CD3D0  LargeLocal  (universal/mem_largelocal.cpp:147)
 
-LargeLocal * __thiscall LargeLocal::LargeLocal(LargeLocal *this,int param_1)
+LargeLocal * __thiscall LargeLocal::LargeLocal(LargeLocal *this,int sizeParam)
 
 {
   code *pcVar1;
@@ -223,14 +226,14 @@ LargeLocal * __thiscall LargeLocal::LargeLocal(LargeLocal *this,int param_1)
   }
   bVar2 = Sys_IsMainThread();
   if (bVar2) {
-    iVar4 = LargeLocalBegin(param_1);
+    iVar4 = LargeLocalBegin(sizeParam);
     this->startPos = iVar4;
   }
   else {
-    iVar4 = LargeLocalBeginRight(param_1);
+    iVar4 = LargeLocalBeginRight(sizeParam);
     this->startPos = iVar4;
   }
-  this->size = param_1;
+  this->size = sizeParam;
   return this;
 }
 

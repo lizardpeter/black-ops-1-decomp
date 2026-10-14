@@ -1149,15 +1149,15 @@ void __cdecl GlassCl_AllocateMemory(void)
 void * __thiscall GlassesClient::_scalar_deleting_destructor_(GlassesClient *this,uint param_1)
 
 {
-  void *pvVar1;
+  void *pBlock;
   GlassRenderer *this_00;
   undefined4 *unaff_EDI;
   
   free((void *)*unaff_EDI);
-  pvVar1 = (void *)unaff_EDI[2];
-  if (pvVar1 != (void *)0x0) {
+  pBlock = (void *)unaff_EDI[2];
+  if (pBlock != (void *)0x0) {
     GlassRenderer::~GlassRenderer(this_00);
-    free(pvVar1);
+    free(pBlock);
   }
   free(unaff_EDI);
   return unaff_EDI;

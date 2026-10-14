@@ -122,19 +122,19 @@ char * __cdecl CCS_GetConfigStringValue(int param_1)
 int __cdecl CCS_GetConfigStringNum(int param_1)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   int in_EDX;
   
   if (DAT_01f3b124 == 0) {
     return 0;
   }
   if ((((*(int *)(DAT_01f3b124 + 4) < 1) || (*(int *)(DAT_01f3b124 + 8) <= in_EDX)) || (in_EDX < 0))
-     || (pcVar1 = *(char **)(*(int *)(DAT_01f3b124 + 0xc) + *(int *)(DAT_01f3b124 + 4) * in_EDX * 8)
-        , pcVar1 == (char *)0x0)) {
-    pcVar1 = "";
+     || (nptr = *(char **)(*(int *)(DAT_01f3b124 + 0xc) + *(int *)(DAT_01f3b124 + 4) * in_EDX * 8),
+        nptr == (char *)0x0)) {
+    nptr = "";
   }
-  iVar2 = atoi(pcVar1);
-  return iVar2;
+  iVar1 = atoi(nptr);
+  return iVar1;
 }
 

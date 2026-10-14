@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Com_Filter(char *param_1,char *param_2,int param_3)
+bool __cdecl Com_Filter(char *filter,char *name,int casesensitive)
 
 {
   uchar uVar1;
@@ -13,11 +13,11 @@ bool __cdecl Com_Filter(char *param_1,char *param_2,int param_3)
   int iVar3;
   uchar *local_428;
   uchar *local_418;
-  uchar local_414 [1024];
+  uchar buf [1024];
   uint local_14;
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *ptr;
+  int i;
+  int found;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   while( true ) {
@@ -25,103 +25,102 @@ bool __cdecl Com_Filter(char *param_1,char *param_2,int param_3)
       while( true ) {
         while( true ) {
           while( true ) {
-            if (*param_1 == '\0') {
+            if (*filter == '\0') {
               return true;
             }
-            if (*param_1 != '*') break;
-            local_c = 0;
-            while (((param_1 = param_1 + 1, *param_1 != '\0' && (*param_1 != '*')) &&
-                   (*param_1 != '?'))) {
-              local_414[local_c] = *param_1;
-              local_c = local_c + 1;
+            if (*filter != '*') break;
+            i = 0;
+            while (((filter = filter + 1, *filter != '\0' && (*filter != '*')) && (*filter != '?')))
+            {
+              buf[i] = *filter;
+              i = i + 1;
             }
-            local_414[local_c] = '\0';
-            local_418 = local_414;
+            buf[i] = '\0';
+            local_418 = buf;
             do {
               uVar1 = *local_418;
               local_418 = local_418 + 1;
             } while (uVar1 != '\0');
-            if (local_418 != local_414 + 1) {
-              if (param_3 == 0) {
-                strstr((uchar *)param_2,local_414);
-                local_10 = extraout_EAX;
+            if (local_418 != buf + 1) {
+              if (casesensitive == 0) {
+                strstr((uchar *)name,buf);
+                ptr = extraout_EAX;
               }
               else {
-                local_10 = I_stristr(param_2,(char *)local_414);
+                ptr = I_stristr(name,(char *)buf);
               }
-              if (local_10 == (char *)0x0) {
+              if (ptr == (char *)0x0) {
                 return false;
               }
-              local_428 = local_414;
+              local_428 = buf;
               do {
                 uVar1 = *local_428;
                 local_428 = local_428 + 1;
               } while (uVar1 != '\0');
-              param_2 = local_10 + ((int)local_428 - (int)(local_414 + 1));
+              name = ptr + ((int)local_428 - (int)(buf + 1));
             }
           }
-          if (*param_1 != '?') break;
-          param_1 = param_1 + 1;
-          param_2 = param_2 + 1;
+          if (*filter != '?') break;
+          filter = filter + 1;
+          name = name + 1;
         }
-        if ((*param_1 != '[') || (param_1[1] != '[')) break;
-        param_1 = param_1 + 1;
+        if ((*filter != '[') || (filter[1] != '[')) break;
+        filter = filter + 1;
       }
-      if (*param_1 == '[') break;
-      if (param_3 == 0) {
-        iVar2 = toupper((int)*param_1);
-        iVar3 = toupper((int)*param_2);
+      if (*filter == '[') break;
+      if (casesensitive == 0) {
+        iVar2 = toupper((int)*filter);
+        iVar3 = toupper((int)*name);
         if (iVar2 != iVar3) {
           return false;
         }
       }
-      else if (*param_1 != *param_2) {
+      else if (*filter != *name) {
         return false;
       }
-      param_1 = param_1 + 1;
-      param_2 = param_2 + 1;
+      filter = filter + 1;
+      name = name + 1;
     }
-    param_1 = param_1 + 1;
-    local_8 = 0;
-    while (((*param_1 != '\0' && (local_8 == 0)) && ((*param_1 != ']' || (param_1[1] == ']'))))) {
-      if (((param_1[1] == '-') && (param_1[2] != '\0')) &&
-         ((param_1[2] != ']' || (param_1[3] == ']')))) {
-        if (param_3 == 0) {
-          iVar2 = toupper((int)*param_2);
-          iVar3 = toupper((int)*param_1);
+    filter = filter + 1;
+    found = 0;
+    while (((*filter != '\0' && (found == 0)) && ((*filter != ']' || (filter[1] == ']'))))) {
+      if (((filter[1] == '-') && (filter[2] != '\0')) && ((filter[2] != ']' || (filter[3] == ']'))))
+      {
+        if (casesensitive == 0) {
+          iVar2 = toupper((int)*name);
+          iVar3 = toupper((int)*filter);
           if (iVar3 <= iVar2) {
-            iVar2 = toupper((int)*param_2);
-            iVar3 = toupper((int)param_1[2]);
+            iVar2 = toupper((int)*name);
+            iVar3 = toupper((int)filter[2]);
             if (iVar2 <= iVar3) {
-              local_8 = 1;
+              found = 1;
             }
           }
         }
-        else if ((*param_1 <= *param_2) && (*param_2 <= param_1[2])) {
-          local_8 = 1;
+        else if ((*filter <= *name) && (*name <= filter[2])) {
+          found = 1;
         }
-        param_1 = param_1 + 3;
+        filter = filter + 3;
       }
       else {
-        if (param_3 == 0) {
-          iVar2 = toupper((int)*param_1);
-          iVar3 = toupper((int)*param_2);
+        if (casesensitive == 0) {
+          iVar2 = toupper((int)*filter);
+          iVar3 = toupper((int)*name);
           if (iVar2 == iVar3) {
-            local_8 = 1;
+            found = 1;
           }
         }
-        else if (*param_1 == *param_2) {
-          local_8 = 1;
+        else if (*filter == *name) {
+          found = 1;
         }
-        param_1 = param_1 + 1;
+        filter = filter + 1;
       }
     }
-    if (local_8 == 0) break;
-    for (; (*param_1 != '\0' && ((*param_1 != ']' || (param_1[1] == ']')))); param_1 = param_1 + 1)
-    {
+    if (found == 0) break;
+    for (; (*filter != '\0' && ((*filter != ']' || (filter[1] == ']')))); filter = filter + 1) {
     }
-    param_1 = param_1 + 1;
-    param_2 = param_2 + 1;
+    filter = filter + 1;
+    name = name + 1;
   }
   return false;
 }
@@ -131,57 +130,57 @@ bool __cdecl Com_Filter(char *param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Com_FilterPath(char *param_1,char *param_2,int param_3)
+bool __cdecl Com_FilterPath(char *filter,char *name,int casesensitive)
 
 {
   bool bVar1;
-  char local_8c [64];
-  char local_4c [64];
+  char new_filter [64];
+  char new_name [64];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; (local_8 < 0x3f && (param_1[local_8] != '\0')); local_8 = local_8 + 1) {
-    if ((param_1[local_8] == '\\') || (param_1[local_8] == ':')) {
-      local_8c[local_8] = '/';
+  for (i = 0; (i < 0x3f && (filter[i] != '\0')); i = i + 1) {
+    if ((filter[i] == '\\') || (filter[i] == ':')) {
+      new_filter[i] = '/';
     }
     else {
-      local_8c[local_8] = param_1[local_8];
+      new_filter[i] = filter[i];
     }
   }
-  local_8c[local_8] = '\0';
-  for (local_8 = 0; (local_8 < 0x3f && (param_2[local_8] != '\0')); local_8 = local_8 + 1) {
-    if ((param_2[local_8] == '\\') || (param_2[local_8] == ':')) {
-      local_4c[local_8] = '/';
+  new_filter[i] = '\0';
+  for (i = 0; (i < 0x3f && (name[i] != '\0')); i = i + 1) {
+    if ((name[i] == '\\') || (name[i] == ':')) {
+      new_name[i] = '/';
     }
     else {
-      local_4c[local_8] = param_2[local_8];
+      new_name[i] = name[i];
     }
   }
-  local_4c[local_8] = '\0';
-  bVar1 = Com_Filter(local_8c,local_4c,param_3);
+  new_name[i] = '\0';
+  bVar1 = Com_Filter(new_filter,new_name,casesensitive);
   return bVar1;
 }
 
 
 // 007B5970  Com_HashKey  (universal/com_shared.cpp:168)
 
-int __cdecl Com_HashKey(char *param_1,int param_2)
+int __cdecl Com_HashKey(char *string,int maxlen)
 
 {
   uint uVar1;
-  uint local_c;
-  int local_8;
+  int hash;
+  int i;
   
-  local_c = 0;
-  if (param_1 == (char *)0x0) {
+  hash = 0;
+  if (string == (char *)0x0) {
     uVar1 = 0;
   }
   else {
-    for (local_8 = 0; (local_8 < param_2 && (param_1[local_8] != '\0')); local_8 = local_8 + 1) {
-      local_c = (int)param_1[local_8] * (local_8 + 0x77) + local_c;
+    for (i = 0; (i < maxlen && (string[i] != '\0')); i = i + 1) {
+      hash = (int)string[i] * (i + 0x77) + hash;
     }
-    uVar1 = (int)local_c >> 10 ^ local_c ^ (int)local_c >> 0x14;
+    uVar1 = hash >> 10 ^ hash ^ hash >> 0x14;
   }
   return uVar1;
 }
@@ -189,33 +188,33 @@ int __cdecl Com_HashKey(char *param_1,int param_2)
 
 // 007B59F0  Com_GetQTime  (universal/com_shared.cpp:191)
 
-void __cdecl Com_GetQTime(int param_1,qtime_s *param_2,bool param_3)
+void __cdecl Com_GetQTime(int time,qtime_s *qtime,bool useLocalTime)
 
 {
-  int local_14;
+  int t;
   int local_10;
-  tm *local_8;
+  tm *tms;
   
-  if (param_2 != (qtime_s *)0x0) {
-    local_8 = (tm *)0x0;
-    local_10 = param_1 >> 0x1f;
-    local_14 = param_1;
-    if (param_3) {
-      local_8 = _localtime64((long64 *)&local_14);
+  if (qtime != (qtime_s *)0x0) {
+    tms = (tm *)0x0;
+    local_10 = time >> 0x1f;
+    t = time;
+    if (useLocalTime) {
+      tms = _localtime64((long64 *)&t);
     }
     else {
-      local_8 = _gmtime64((long64 *)&local_14);
+      tms = _gmtime64((long64 *)&t);
     }
-    if (local_8 != (tm *)0x0) {
-      param_2->tm_sec = local_8->tm_sec;
-      param_2->tm_min = local_8->tm_min;
-      param_2->tm_hour = local_8->tm_hour;
-      param_2->tm_mday = local_8->tm_mday;
-      param_2->tm_mon = local_8->tm_mon;
-      param_2->tm_year = local_8->tm_year;
-      param_2->tm_wday = local_8->tm_wday;
-      param_2->tm_yday = local_8->tm_yday;
-      param_2->tm_isdst = local_8->tm_isdst;
+    if (tms != (tm *)0x0) {
+      qtime->tm_sec = tms->tm_sec;
+      qtime->tm_min = tms->tm_min;
+      qtime->tm_hour = tms->tm_hour;
+      qtime->tm_mday = tms->tm_mday;
+      qtime->tm_mon = tms->tm_mon;
+      qtime->tm_year = tms->tm_year;
+      qtime->tm_wday = tms->tm_wday;
+      qtime->tm_yday = tms->tm_yday;
+      qtime->tm_isdst = tms->tm_isdst;
     }
   }
   return;
@@ -224,64 +223,64 @@ void __cdecl Com_GetQTime(int param_1,qtime_s *param_2,bool param_3)
 
 // 007B5AB0  Com_RealTime  (universal/com_shared.cpp:223)
 
-int __cdecl Com_RealTime(qtime_s *param_1,bool param_2)
+int __cdecl Com_RealTime(qtime_s *qtime,bool useLocalTime)
 
 {
   long64 lVar1;
-  undefined4 local_c;
+  undefined4 t;
   
   lVar1 = _time64((long64 *)0x0);
-  local_c = (int)lVar1;
-  if (param_1 != (qtime_s *)0x0) {
-    Com_GetQTime(local_c,param_1,param_2);
+  t = (int)lVar1;
+  if (qtime != (qtime_s *)0x0) {
+    Com_GetQTime(t,qtime,useLocalTime);
   }
-  return local_c;
+  return t;
 }
 
 
 // 007B5AF0  _copyDWord  (universal/com_shared.cpp:275)
 
-void __cdecl _copyDWord(uint *param_1,uint param_2,uint param_3)
+void __cdecl _copyDWord(uint *dest,uint constant,uint count)
 
 {
   uint uVar1;
   uint uVar2;
   uint *puVar3;
   
-  uVar1 = param_3 & 0xfffffff8;
+  uVar1 = count & 0xfffffff8;
   if (uVar1 != 0) {
     do {
       uVar2 = uVar1 - 8;
-      param_1[uVar2] = param_2;
-      param_1[uVar1 - 7] = param_2;
-      param_1[uVar1 - 6] = param_2;
-      param_1[uVar1 - 5] = param_2;
-      param_1[uVar1 - 4] = param_2;
-      param_1[uVar1 - 3] = param_2;
-      param_1[uVar1 - 2] = param_2;
-      param_1[uVar1 - 1] = param_2;
+      dest[uVar2] = constant;
+      dest[uVar1 - 7] = constant;
+      dest[uVar1 - 6] = constant;
+      dest[uVar1 - 5] = constant;
+      dest[uVar1 - 4] = constant;
+      dest[uVar1 - 3] = constant;
+      dest[uVar1 - 2] = constant;
+      dest[uVar1 - 1] = constant;
       uVar1 = uVar2;
     } while (7 < (int)uVar2);
   }
-  uVar1 = param_3 & 7;
+  uVar1 = count & 7;
   if (uVar1 != 0) {
-    puVar3 = param_1 + (param_3 & 0xfffffff8);
+    puVar3 = dest + (count & 0xfffffff8);
     if (3 < uVar1) {
-      *puVar3 = param_2;
-      puVar3[1] = param_2;
-      puVar3[2] = param_2;
-      puVar3[3] = param_2;
+      *puVar3 = constant;
+      puVar3[1] = constant;
+      puVar3[2] = constant;
+      puVar3[3] = constant;
       puVar3 = puVar3 + 4;
       uVar1 = uVar1 - 4;
     }
     if (1 < (int)uVar1) {
-      *puVar3 = param_2;
-      puVar3[1] = param_2;
+      *puVar3 = constant;
+      puVar3[1] = constant;
       puVar3 = puVar3 + 2;
       uVar1 = uVar1 - 2;
     }
     if (0 < (int)uVar1) {
-      *puVar3 = param_2;
+      *puVar3 = constant;
     }
   }
   return;
@@ -290,17 +289,17 @@ void __cdecl _copyDWord(uint *param_1,uint param_2,uint param_3)
 
 // 007B5B80  Com_Memcpy  (universal/com_shared.cpp:331)
 
-void __cdecl Com_Memcpy(void *param_1,void *param_2,int param_3)
+void __cdecl Com_Memcpy(void *dest,void *src,int count)
 
 {
-  memcpy(param_1,param_2,param_3);
+  memcpy(dest,src,count);
   return;
 }
 
 
 // 007B5BA0  Com_Memset  (universal/com_shared.cpp:440)
 
-void __cdecl Com_Memset(void *param_1,int param_2,int param_3)
+void __cdecl Com_Memset(void *dest,int val,int count)
 
 {
   undefined1 uVar1;
@@ -308,30 +307,31 @@ void __cdecl Com_Memset(void *param_1,int param_2,int param_3)
   uint uVar3;
   uint uVar4;
   undefined2 *puVar5;
+  uint fillval;
   
-  uVar1 = (undefined1)param_2;
-  if (param_3 < 8) {
+  uVar1 = (undefined1)val;
+  if (count < 8) {
     iVar2 = (uint)CONCAT11(uVar1,uVar1) * 0x10000 + (uint)CONCAT11(uVar1,uVar1);
-    if (3 < param_3) {
-      *(int *)param_1 = iVar2;
-      param_1 = (void *)((int)param_1 + 4);
-      param_3 = param_3 + -4;
+    if (3 < count) {
+      *(int *)dest = iVar2;
+      dest = (void *)((int)dest + 4);
+      count = count + -4;
     }
-    if (1 < param_3) {
-      *(short *)param_1 = (short)iVar2;
-      param_1 = (void *)((int)param_1 + 2);
-      param_3 = param_3 + -2;
+    if (1 < count) {
+      *(short *)dest = (short)iVar2;
+      dest = (void *)((int)dest + 2);
+      count = count + -2;
     }
-    if (param_3 != 0) {
-      *(char *)param_1 = (char)iVar2;
+    if (count != 0) {
+      *(char *)dest = (char)iVar2;
     }
   }
   else {
-    uVar3 = param_2 << 8 | param_2;
-    _copyDWord(param_1,uVar3 << 0x10 | uVar3,(int)(param_3 + (param_3 >> 0x1f & 3U)) >> 2);
-    uVar4 = param_3 & 3;
+    uVar3 = val << 8 | val;
+    _copyDWord(dest,uVar3 << 0x10 | uVar3,(int)(count + (count >> 0x1f & 3U)) >> 2);
+    uVar4 = count & 3;
     if (uVar4 != 0) {
-      puVar5 = (undefined2 *)((int)param_1 + (param_3 & 0xfffffffcU));
+      puVar5 = (undefined2 *)((int)dest + (count & 0xfffffffcU));
       if (uVar4 < 2) {
         if (uVar4 != 0) {
           *(undefined1 *)puVar5 = uVar1;

@@ -206,12 +206,12 @@ void __cdecl Voice_IncomingVoiceData(uchar param_1,uchar *param_2,int param_3)
 
 {
   DWORD DVar1;
-  _iobuf *p_Var2;
+  _iobuf *stream;
+  char *pcVar2;
   char *pcVar3;
-  char *pcVar4;
   uint unaff_ESI;
   short *unaff_EDI;
-  uint uVar5;
+  uint size;
   dsound_sample_t local_2000 [8188];
   undefined4 uStack_4;
   
@@ -220,8 +220,8 @@ void __cdecl Voice_IncomingVoiceData(uchar param_1,uchar *param_2,int param_3)
     if (DAT_03508c57 == '\0') {
       DAT_03508c57 = '\x01';
     }
-    uVar5 = 0;
-    pcVar4 = (char *)0x0;
+    size = 0;
+    pcVar3 = (char *)0x0;
     if (DAT_04fad834 == 0) {
       sys_timeBase = timeGetTime();
       DAT_04fad834 = 1;
@@ -230,21 +230,21 @@ void __cdecl Voice_IncomingVoiceData(uchar param_1,uchar *param_2,int param_3)
     (&DAT_020cb0d0)[param_1] = DVar1 - sys_timeBase;
     if (0 < param_3) {
       do {
-        pcVar3 = (char *)g_decode_frame_size;
-        if (param_3 - (int)pcVar4 < g_decode_frame_size) {
-          pcVar3 = (char *)(param_3 - (int)pcVar4);
+        pcVar2 = (char *)g_decode_frame_size;
+        if (param_3 - (int)pcVar3 < g_decode_frame_size) {
+          pcVar2 = (char *)(param_3 - (int)pcVar3);
         }
-        uVar5 = Decode_Sample(pcVar3,(int)local_2000,unaff_EDI,unaff_ESI);
-        if (0 < (int)uVar5) {
+        size = Decode_Sample(pcVar2,(int)local_2000,unaff_EDI,unaff_ESI);
+        if (0 < (int)size) {
           DSound_UpdateSample(local_2000,(char *)unaff_EDI,unaff_ESI);
         }
-        pcVar4 = pcVar4 + (int)pcVar3;
-      } while ((int)pcVar4 < param_3);
+        pcVar3 = pcVar3 + (int)pcVar2;
+      } while ((int)pcVar3 < param_3);
     }
     if (((winvoice_save_voice->current).enabled != false) &&
-       (p_Var2 = fopen("voice.wav","ab"), p_Var2 != (_iobuf *)0x0)) {
-      fwrite(local_2000,uVar5,1,p_Var2);
-      fclose(p_Var2);
+       (stream = fopen("voice.wav","ab"), stream != (_iobuf *)0x0)) {
+      fwrite(local_2000,size,1,stream);
+      fclose(stream);
     }
   }
   return;
@@ -429,14 +429,14 @@ int __cdecl mixerGetRecordSource(char *param_1)
 {
   UINT UVar1;
   MMRESULT MVar2;
-  LPMIXERCONTROLA ptVar3;
-  void *pvVar4;
-  _union_1099 _Var5;
-  DWORD *pDVar6;
-  uchar *puVar7;
-  void *pvVar8;
-  DWORD DVar9;
-  int iVar10;
+  LPMIXERCONTROLA pBlock;
+  void *pvVar3;
+  _union_1099 _Var4;
+  DWORD *pDVar5;
+  uchar *source;
+  void *pBlock_00;
+  DWORD DVar6;
+  int iVar7;
   HMIXEROBJ local_ec;
   void *local_e8;
   LPMIXERCONTROLA local_e4;
@@ -448,64 +448,64 @@ int __cdecl mixerGetRecordSource(char *param_1)
   
   UVar1 = waveInGetNumDevs();
   if ((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) {
-    pvVar8 = (void *)0x0;
+    pBlock_00 = (void *)0x0;
     MVar2 = mixerOpen((LPHMIXER)&local_ec,0,0,0,0);
     if (MVar2 == 0) {
       local_dc = (void *)0x0;
       local_a8.cbStruct = 0xa8;
       local_a8.dwComponentType = 7;
       mixerGetLineInfoA(local_ec,&local_a8,3);
-      ptVar3 = calloc(local_a8.cControls * 0x94,1);
+      pBlock = calloc(local_a8.cControls * 0x94,1);
       local_c0.dwLineID = local_a8.dwLineID;
       local_c0.cbStruct = 0x18;
       local_c0.u.dwControlID = 0;
       local_c0.cControls = local_a8.cControls;
       local_c0.cbmxctrl = 0x94;
-      local_e4 = ptVar3;
-      local_c0.pamxctrl = ptVar3;
+      local_e4 = pBlock;
+      local_c0.pamxctrl = pBlock;
       MVar2 = mixerGetLineControlsA(local_ec,&local_c0,0);
-      pvVar4 = (void *)0x0;
+      pvVar3 = (void *)0x0;
       if ((MVar2 == 0) && (local_e0 = 0, 0 < (int)local_a8.cControls)) {
-        pDVar6 = &ptVar3->fdwControl;
+        pDVar5 = &pBlock->fdwControl;
         do {
-          if ((pDVar6[-1] & 0xf0000000) == 0x70000000) {
-            _Var5.hwndOwner = (HWND)0x0;
-            DVar9 = local_a8.cChannels;
-            if ((*pDVar6 & 1) != 0) {
-              DVar9 = 1;
+          if ((pDVar5[-1] & 0xf0000000) == 0x70000000) {
+            _Var4.hwndOwner = (HWND)0x0;
+            DVar6 = local_a8.cChannels;
+            if ((*pDVar5 & 1) != 0) {
+              DVar6 = 1;
             }
-            if ((*pDVar6 & 2) != 0) {
-              _Var5 = (_union_1099)((_union_1099 *)(pDVar6 + 1))->cMultipleItems;
+            if ((*pDVar5 & 2) != 0) {
+              _Var4 = (_union_1099)((_union_1099 *)(pDVar5 + 1))->cMultipleItems;
             }
-            local_e8 = calloc(_Var5.cMultipleItems * DVar9 * 0x48,1);
+            local_e8 = calloc(_Var4.cMultipleItems * DVar6 * 0x48,1);
             local_d8.cbStruct = 0x18;
-            local_d8.dwControlID = pDVar6[-2];
+            local_d8.dwControlID = pDVar5[-2];
             local_d8.cbDetails = 0x48;
-            local_d8.cChannels = DVar9;
-            local_d8.u = _Var5;
+            local_d8.cChannels = DVar6;
+            local_d8.u = _Var4;
             local_d8.paDetails = local_e8;
             MVar2 = mixerGetControlDetailsA(local_ec,&local_d8,1);
-            ptVar3 = local_e4;
-            pvVar8 = local_e8;
+            pBlock = local_e4;
+            pBlock_00 = local_e8;
             if (MVar2 == 0) {
-              pvVar4 = calloc(_Var5.cMultipleItems * DVar9 * 4,1);
+              pvVar3 = calloc(_Var4.cMultipleItems * DVar6 * 4,1);
               local_d8.cbDetails = 4;
-              local_dc = pvVar4;
-              local_d8.paDetails = pvVar4;
+              local_dc = pvVar3;
+              local_d8.paDetails = pvVar3;
               MVar2 = mixerGetControlDetailsA(local_ec,&local_d8,0);
-              ptVar3 = local_e4;
-              pvVar8 = local_e8;
+              pBlock = local_e4;
+              pBlock_00 = local_e8;
               if (MVar2 == 0) {
-                iVar10 = 0;
-                if (0 < (int)_Var5.hwndOwner) {
-                  puVar7 = (uchar *)((int)local_e8 + 8);
+                iVar7 = 0;
+                if (0 < (int)_Var4.hwndOwner) {
+                  source = (uchar *)((int)local_e8 + 8);
                   do {
-                    if (*(int *)((int)pvVar4 + iVar10 * 4) == 1) {
-                      strncpy((uchar *)param_1,puVar7,0xff);
+                    if (*(int *)((int)pvVar3 + iVar7 * 4) == 1) {
+                      strncpy((uchar *)param_1,source,0xff);
                     }
-                    iVar10 = iVar10 + 1;
-                    puVar7 = puVar7 + 0x48;
-                  } while (iVar10 < (int)_Var5.hwndOwner);
+                    iVar7 = iVar7 + 1;
+                    source = source + 0x48;
+                  } while (iVar7 < (int)_Var4.hwndOwner);
                 }
                 if (local_e4 != (LPMIXERCONTROLA)0x0) {
                   free(local_e4);
@@ -513,26 +513,26 @@ int __cdecl mixerGetRecordSource(char *param_1)
                 if (local_e8 != (void *)0x0) {
                   free(local_e8);
                 }
-                if (pvVar4 != (void *)0x0) {
-                  free(pvVar4);
+                if (pvVar3 != (void *)0x0) {
+                  free(pvVar3);
                 }
                 return 1;
               }
             }
           }
           local_e0 = local_e0 + 1;
-          pDVar6 = pDVar6 + 0x25;
-          pvVar4 = local_dc;
+          pDVar5 = pDVar5 + 0x25;
+          pvVar3 = local_dc;
         } while (local_e0 < (int)local_a8.cControls);
       }
-      if (ptVar3 != (LPMIXERCONTROLA)0x0) {
-        free(ptVar3);
+      if (pBlock != (LPMIXERCONTROLA)0x0) {
+        free(pBlock);
       }
-      if (pvVar8 != (void *)0x0) {
-        free(pvVar8);
+      if (pBlock_00 != (void *)0x0) {
+        free(pBlock_00);
       }
-      if (pvVar4 != (void *)0x0) {
-        free(pvVar4);
+      if (pvVar3 != (void *)0x0) {
+        free(pvVar3);
       }
     }
   }
@@ -549,16 +549,16 @@ int __cdecl mixerSetRecordSource(char *param_1)
 {
   UINT UVar1;
   MMRESULT MVar2;
-  LPMIXERCONTROLA ptVar3;
-  int iVar4;
-  DWORD DVar5;
-  char *pcVar6;
+  LPMIXERCONTROLA pBlock;
+  int iVar3;
+  DWORD DVar4;
+  char *pcVar5;
   int unaff_ESI;
-  void *pvVar7;
-  int iVar8;
+  void *pBlock_00;
+  int iVar6;
   char *unaff_EDI;
-  _union_1099 _Var9;
-  void *pvVar10;
+  _union_1099 _Var7;
+  void *pBlock_01;
   void *local_ec;
   HMIXEROBJ local_e8;
   void *local_e4;
@@ -570,66 +570,66 @@ int __cdecl mixerSetRecordSource(char *param_1)
   
   UVar1 = waveInGetNumDevs();
   if ((UVar1 != 0) && (UVar1 = mixerGetNumDevs(), UVar1 != 0)) {
-    pvVar7 = (void *)0x0;
+    pBlock_00 = (void *)0x0;
     MVar2 = mixerOpen((LPHMIXER)&local_e8,0,0,0,0);
     if (MVar2 == 0) {
       local_ec = (void *)0x0;
       local_a8.cbStruct = 0xa8;
       local_a8.dwComponentType = 7;
       mixerGetLineInfoA(local_e8,&local_a8,3);
-      ptVar3 = calloc(local_a8.cControls * 0x94,1);
+      pBlock = calloc(local_a8.cControls * 0x94,1);
       local_c0.dwLineID = local_a8.dwLineID;
       local_c0.cbStruct = 0x18;
       local_c0.u.dwControlID = 0;
       local_c0.cControls = local_a8.cControls;
       local_c0.cbmxctrl = 0x94;
-      local_c0.pamxctrl = ptVar3;
+      local_c0.pamxctrl = pBlock;
       MVar2 = mixerGetLineControlsA(local_e8,&local_c0,0);
-      pvVar10 = (void *)0x0;
+      pBlock_01 = (void *)0x0;
       if ((MVar2 == 0) && (local_dc = 0, 0 < (int)local_a8.cControls)) {
         local_e0 = 0;
         do {
-          if ((*(uint *)(ptVar3->szShortName + local_e0 + -0xc) & 0xf0000000) == 0x70000000) {
-            _Var9.hwndOwner = (HWND)0x0;
-            DVar5 = local_a8.cChannels;
-            if ((*(uint *)(ptVar3->szShortName + local_e0 + -8) & 1) != 0) {
-              DVar5 = 1;
+          if ((*(uint *)(pBlock->szShortName + local_e0 + -0xc) & 0xf0000000) == 0x70000000) {
+            _Var7.hwndOwner = (HWND)0x0;
+            DVar4 = local_a8.cChannels;
+            if ((*(uint *)(pBlock->szShortName + local_e0 + -8) & 1) != 0) {
+              DVar4 = 1;
             }
-            if ((*(uint *)(ptVar3->szShortName + local_e0 + -8) & 2) != 0) {
-              _Var9 = (_union_1099)
-                      ((_union_1099 *)(ptVar3->szShortName + local_e0 + -4))->cMultipleItems;
+            if ((*(uint *)(pBlock->szShortName + local_e0 + -8) & 2) != 0) {
+              _Var7 = (_union_1099)
+                      ((_union_1099 *)(pBlock->szShortName + local_e0 + -4))->cMultipleItems;
             }
-            local_e4 = calloc(_Var9.cMultipleItems * DVar5 * 0x48,1);
+            local_e4 = calloc(_Var7.cMultipleItems * DVar4 * 0x48,1);
             local_d8.cbStruct = 0x18;
-            local_d8.dwControlID = *(DWORD *)(ptVar3->szShortName + local_e0 + -0x10);
+            local_d8.dwControlID = *(DWORD *)(pBlock->szShortName + local_e0 + -0x10);
             local_d8.cbDetails = 0x48;
-            local_d8.cChannels = DVar5;
-            local_d8.u = _Var9;
+            local_d8.cChannels = DVar4;
+            local_d8.u = _Var7;
             local_d8.paDetails = local_e4;
             MVar2 = mixerGetControlDetailsA(local_e8,&local_d8,1);
-            pvVar7 = local_e4;
+            pBlock_00 = local_e4;
             if (MVar2 == 0) {
-              local_ec = calloc(_Var9.cMultipleItems * DVar5 * 4,1);
+              local_ec = calloc(_Var7.cMultipleItems * DVar4 * 4,1);
               local_d8.cbDetails = 4;
               local_d8.paDetails = local_ec;
               MVar2 = mixerGetControlDetailsA(local_e8,&local_d8,0);
-              pvVar7 = local_e4;
+              pBlock_00 = local_e4;
               if (MVar2 == 0) {
-                iVar8 = 0;
-                if (0 < (int)_Var9.hwndOwner) {
-                  pcVar6 = (char *)((int)local_e4 + 8);
+                iVar6 = 0;
+                if (0 < (int)_Var7.hwndOwner) {
+                  pcVar5 = (char *)((int)local_e4 + 8);
                   do {
-                    iVar4 = I_strnicmp(pcVar6,unaff_EDI,unaff_ESI);
-                    *(uint *)((int)local_ec + iVar8 * 4) = (uint)(iVar4 == 0);
-                    iVar8 = iVar8 + 1;
-                    pcVar6 = pcVar6 + 0x48;
-                  } while (iVar8 < (int)_Var9.hwndOwner);
+                    iVar3 = I_strnicmp(pcVar5,unaff_EDI,unaff_ESI);
+                    *(uint *)((int)local_ec + iVar6 * 4) = (uint)(iVar3 == 0);
+                    iVar6 = iVar6 + 1;
+                    pcVar5 = pcVar5 + 0x48;
+                  } while (iVar6 < (int)_Var7.hwndOwner);
                 }
                 MVar2 = mixerSetControlDetails(local_e8,&local_d8,0);
-                if (ptVar3 != (LPMIXERCONTROLA)0x0) {
-                  free(ptVar3);
+                if (pBlock != (LPMIXERCONTROLA)0x0) {
+                  free(pBlock);
                 }
-                ptVar3 = (LPMIXERCONTROLA)0x0;
+                pBlock = (LPMIXERCONTROLA)0x0;
                 if (local_e4 != (void *)0x0) {
                   free(local_e4);
                 }
@@ -638,7 +638,7 @@ int __cdecl mixerSetRecordSource(char *param_1)
                   free(local_ec);
                 }
                 local_ec = (void *)0x0;
-                pvVar7 = local_e4;
+                pBlock_00 = local_e4;
                 if (MVar2 == 0) {
                   return 1;
                 }
@@ -647,17 +647,17 @@ int __cdecl mixerSetRecordSource(char *param_1)
           }
           local_dc = local_dc + 1;
           local_e0 = local_e0 + 0x94;
-          pvVar10 = local_ec;
+          pBlock_01 = local_ec;
         } while (local_dc < (int)local_a8.cControls);
       }
-      if (ptVar3 != (LPMIXERCONTROLA)0x0) {
-        free(ptVar3);
+      if (pBlock != (LPMIXERCONTROLA)0x0) {
+        free(pBlock);
       }
-      if (pvVar7 != (void *)0x0) {
-        free(pvVar7);
+      if (pBlock_00 != (void *)0x0) {
+        free(pBlock_00);
       }
-      if (pvVar10 != (void *)0x0) {
-        free(pvVar10);
+      if (pBlock_01 != (void *)0x0) {
+        free(pBlock_01);
       }
     }
   }

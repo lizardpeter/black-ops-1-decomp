@@ -2,44 +2,44 @@
 
 // 006DD650  GDTCmd_NextToken  (qcommon/gdt_remote.cpp:24)
 
-char * __cdecl GDTCmd_NextToken(char *param_1,char *param_2,uint param_3)
+char * __cdecl GDTCmd_NextToken(char *src,char *dst,uint len)
 
 {
   char *pcVar1;
   int iVar2;
-  uint local_c;
-  uint local_8;
+  uint start;
+  uint i;
   
-  if (param_1 == (char *)0x0) {
+  if (src == (char *)0x0) {
     pcVar1 = (char *)0x0;
   }
   else {
-    local_c = 0;
-    local_8 = 0;
-    while ((local_8 < param_3 && (iVar2 = isspace((int)param_1[local_8]), iVar2 != 0))) {
-      local_c = local_c + 1;
-      local_8 = local_8 + 1;
+    start = 0;
+    i = 0;
+    while ((i < len && (iVar2 = isspace((int)src[i]), iVar2 != 0))) {
+      start = start + 1;
+      i = i + 1;
     }
-    if (param_1[local_c] == '\0') {
+    if (src[start] == '\0') {
       pcVar1 = (char *)0x0;
     }
     else {
-      for (local_8 = local_c; local_8 < param_3; local_8 = local_8 + 1) {
-        iVar2 = isspace((int)param_1[local_8]);
-        if ((iVar2 != 0) || (param_1[local_8] == '\0')) {
-          param_2[local_8 - local_c] = '\0';
+      for (i = start; i < len; i = i + 1) {
+        iVar2 = isspace((int)src[i]);
+        if ((iVar2 != 0) || (src[i] == '\0')) {
+          dst[i - start] = '\0';
           break;
         }
-        param_2[local_8 - local_c] = param_1[local_8];
+        dst[i - start] = src[i];
       }
-      while ((local_8 < param_3 && (iVar2 = isspace((int)param_1[local_8]), iVar2 != 0))) {
-        local_8 = local_8 + 1;
+      while ((i < len && (iVar2 = isspace((int)src[i]), iVar2 != 0))) {
+        i = i + 1;
       }
-      if (param_1[local_8] == '\0') {
+      if (src[i] == '\0') {
         pcVar1 = (char *)0x0;
       }
       else {
-        pcVar1 = param_1 + local_8;
+        pcVar1 = src + i;
       }
     }
   }
@@ -51,20 +51,20 @@ char * __cdecl GDTCmd_NextToken(char *param_1,char *param_2,uint param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl GDT_RemoteWeaponUpdate(char *param_1)
+bool __cdecl GDT_RemoteWeaponUpdate(char *in)
 
 {
   bool bVar1;
-  char local_8c;
+  char weaponName;
   uchar local_8b [127];
   uint local_c;
-  char *local_8;
+  char *keyValue;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8c = '\0';
+  weaponName = '\0';
   memset(local_8b,'\0',0x7f);
-  local_8 = GDTCmd_NextToken(param_1,&local_8c,0x80);
-  bVar1 = BG_WeaponUpdateField(&local_8c,local_8);
+  keyValue = GDTCmd_NextToken(in,&weaponName,0x80);
+  bVar1 = BG_WeaponUpdateField(&weaponName,keyValue);
   return bVar1;
 }
 
@@ -73,20 +73,21 @@ bool __cdecl GDT_RemoteWeaponUpdate(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl GDT_RemoteFlametableUpdate(char *param_1)
+bool __cdecl GDT_RemoteFlametableUpdate(char *in)
 
 {
   bool bVar1;
-  char *pcVar2;
-  char local_8c;
+  char *keyValue_00;
+  char *keyValue;
+  char flameTableName;
   uchar local_8b [131];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8c = '\0';
+  flameTableName = '\0';
   memset(local_8b,'\0',0x7f);
-  pcVar2 = GDTCmd_NextToken(param_1,&local_8c,0x80);
-  bVar1 = BG_FlameTableUpdateField(&local_8c,pcVar2);
+  keyValue_00 = GDTCmd_NextToken(in,&flameTableName,0x80);
+  bVar1 = BG_FlameTableUpdateField(&flameTableName,keyValue_00);
   return bVar1;
 }
 
@@ -95,19 +96,20 @@ bool __cdecl GDT_RemoteFlametableUpdate(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl GDT_RemotePhysConstraintsUpdate(char *param_1)
+bool __cdecl GDT_RemotePhysConstraintsUpdate(char *in)
 
 {
-  char *pcVar1;
-  char local_8c;
+  char *keyvalue;
+  char *keyValue;
+  char assetName;
   uchar local_8b [131];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8c = '\0';
+  assetName = '\0';
   memset(local_8b,'\0',0x7f);
-  pcVar1 = GDTCmd_NextToken(param_1,&local_8c,0x80);
-  PhysConstraintsUpdateField(&local_8c,pcVar1);
+  keyvalue = GDTCmd_NextToken(in,&assetName,0x80);
+  PhysConstraintsUpdateField(&assetName,keyvalue);
   return true;
 }
 
@@ -115,23 +117,24 @@ bool __cdecl GDT_RemotePhysConstraintsUpdate(char *param_1)
 // 006DD870  GDT_RemoteVehicleUpdate  (qcommon/gdt_remote.cpp:122)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl GDT_RemoteVehicleUpdate(char *param_1)
+bool __cdecl GDT_RemoteVehicleUpdate(char *in)
 
 {
   bool bVar1;
-  char local_8c;
+  char vehicleInfoName;
   uchar local_8b [127];
   uint local_c;
-  char *local_8;
+  char *keyValue;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8c = '\0';
+  vehicleInfoName = '\0';
   memset(local_8b,'\0',0x7f);
-  local_8 = GDTCmd_NextToken(param_1,&local_8c,0x80);
-  bVar1 = G_VehicleUpdateField(&local_8c,local_8);
+  keyValue = GDTCmd_NextToken(in,&vehicleInfoName,0x80);
+  bVar1 = G_VehicleUpdateField(&vehicleInfoName,keyValue);
   if (bVar1) {
-    bVar1 = CG_VehicleUpdateField(&local_8c,local_8);
+    bVar1 = CG_VehicleUpdateField(&vehicleInfoName,keyValue);
     if (bVar1) {
       bVar1 = true;
     }
@@ -150,7 +153,7 @@ bool __cdecl GDT_RemoteVehicleUpdate(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl GDT_RemoteXModelUpdate(char *param_1)
+bool __cdecl GDT_RemoteXModelUpdate(char *in)
 
 {
   char cVar1;
@@ -159,102 +162,108 @@ bool __cdecl GDT_RemoteXModelUpdate(char *param_1)
   int iVar4;
   GfxScene *pGVar5;
   double dVar6;
-  int local_354;
-  int local_34c;
-  int local_344;
-  uint local_33c;
-  int local_32c;
-  char local_324 [256];
-  int local_224;
-  XModel *local_220;
-  int local_21c;
-  int local_218;
-  char local_214 [256];
-  char local_114 [256];
+  float lodDistance;
+  XModel *model_3;
+  int i_3;
+  XModel *model_2;
+  int j;
+  int modelCount;
+  int i_2;
+  XModel *model;
+  uint i;
+  char *Dst_2;
+  char *Dst;
+  char c;
+  int lodIndex;
+  GfxScene *scene;
+  char ModelVariable [256];
+  int DstIndex;
+  XModel *foundModel;
+  int SrcIndex;
+  int TokenIndex;
+  char ModelName [256];
+  char VariableValue [256];
   uint local_14;
-  char *local_10 [3];
+  char *TokenArray [3];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_21c = 0;
-  local_224 = 0;
-  local_10[0] = local_214;
-  local_10[1] = local_324;
-  local_10[2] = local_114;
-  local_218 = 0;
+  SrcIndex = 0;
+  DstIndex = 0;
+  TokenArray[0] = ModelName;
+  TokenArray[1] = ModelVariable;
+  TokenArray[2] = VariableValue;
+  TokenIndex = 0;
   while( true ) {
-    cVar1 = param_1[local_21c];
-    local_21c = local_21c + 1;
+    cVar1 = in[SrcIndex];
+    SrcIndex = SrcIndex + 1;
     if (cVar1 == '\0') break;
     if (cVar1 == '\\') {
-      local_10[local_218][local_224] = '\0';
-      local_224 = 0;
-      local_218 = local_218 + 1;
+      TokenArray[TokenIndex][DstIndex] = '\0';
+      DstIndex = 0;
+      TokenIndex = TokenIndex + 1;
     }
     else if (cVar1 != ' ') {
-      local_10[local_218][local_224] = cVar1;
-      local_224 = local_224 + 1;
+      TokenArray[TokenIndex][DstIndex] = cVar1;
+      DstIndex = DstIndex + 1;
     }
   }
-  iVar4 = I_stricmp(local_324,"highLodDist");
+  iVar4 = I_stricmp(ModelVariable,"highLodDist");
   if (iVar4 == 0) {
-    local_32c = 0;
+    lodIndex = 0;
   }
   else {
-    iVar4 = I_stricmp(local_10[1],"mediumLodDist");
+    iVar4 = I_stricmp(TokenArray[1],"mediumLodDist");
     if (iVar4 == 0) {
-      local_32c = 1;
+      lodIndex = 1;
     }
     else {
-      iVar4 = I_stricmp(local_10[1],"lowLodDist");
+      iVar4 = I_stricmp(TokenArray[1],"lowLodDist");
       if (iVar4 == 0) {
-        local_32c = 2;
+        lodIndex = 2;
       }
       else {
-        iVar4 = I_stricmp(local_10[1],"lowestLodDist");
+        iVar4 = I_stricmp(TokenArray[1],"lowestLodDist");
         if (iVar4 != 0) {
           return true;
         }
-        local_32c = 3;
+        lodIndex = 3;
       }
     }
   }
-  local_220 = (XModel *)0x0;
-  for (local_33c = 0; pXVar3 = local_220, local_33c < ((rgp.world)->dpvs).smodelCount;
-      local_33c = local_33c + 1) {
-    pXVar3 = ((rgp.world)->dpvs).smodelDrawInsts[local_33c].model;
-    iVar4 = I_stricmp(pXVar3->name,local_10[0]);
+  foundModel = (XModel *)0x0;
+  for (i = 0; pXVar3 = foundModel, i < ((rgp.world)->dpvs).smodelCount; i = i + 1) {
+    pXVar3 = ((rgp.world)->dpvs).smodelDrawInsts[i].model;
+    iVar4 = I_stricmp(pXVar3->name,TokenArray[0]);
     if (iVar4 == 0) break;
   }
-  local_220 = pXVar3;
+  foundModel = pXVar3;
   pGVar5 = R_GetScene();
   if (pGVar5 != (GfxScene *)0x0) {
-    if ((local_220 == (XModel *)0x0) && (pGVar5 != (GfxScene *)0x0)) {
-      for (local_344 = 0; local_344 < pGVar5->sceneDObjCount; local_344 = local_344 + 1) {
-        bVar2 = (pGVar5->sceneDObj[local_344].obj)->numModels;
-        for (local_34c = 0; pXVar3 = local_220, local_34c < (int)(uint)bVar2;
-            local_34c = local_34c + 1) {
-          pXVar3 = ((pGVar5->sceneDObj[local_344].obj)->field14_0x78).localModels[local_34c];
-          iVar4 = I_stricmp(pXVar3->name,local_10[0]);
+    if ((foundModel == (XModel *)0x0) && (pGVar5 != (GfxScene *)0x0)) {
+      for (i_2 = 0; i_2 < pGVar5->sceneDObjCount; i_2 = i_2 + 1) {
+        bVar2 = (pGVar5->sceneDObj[i_2].obj)->numModels;
+        for (j = 0; pXVar3 = foundModel, j < (int)(uint)bVar2; j = j + 1) {
+          pXVar3 = ((pGVar5->sceneDObj[i_2].obj)->field14_0x78).localModels[j];
+          iVar4 = I_stricmp(pXVar3->name,TokenArray[0]);
           if (iVar4 == 0) break;
         }
-        local_220 = pXVar3;
-        if (local_220 != (XModel *)0x0) break;
+        foundModel = pXVar3;
+        if (foundModel != (XModel *)0x0) break;
       }
     }
-    pXVar3 = local_220;
-    if ((local_220 == (XModel *)0x0) && (pGVar5 != (GfxScene *)0x0)) {
-      for (local_354 = 0; pXVar3 = local_220, local_354 < pGVar5->sceneModelCount;
-          local_354 = local_354 + 1) {
-        pXVar3 = pGVar5->sceneModel[local_354].model;
-        iVar4 = I_stricmp(pXVar3->name,local_10[0]);
+    pXVar3 = foundModel;
+    if ((foundModel == (XModel *)0x0) && (pGVar5 != (GfxScene *)0x0)) {
+      for (i_3 = 0; pXVar3 = foundModel, i_3 < pGVar5->sceneModelCount; i_3 = i_3 + 1) {
+        pXVar3 = pGVar5->sceneModel[i_3].model;
+        iVar4 = I_stricmp(pXVar3->name,TokenArray[0]);
         if (iVar4 == 0) break;
       }
     }
-    local_220 = pXVar3;
-    if ((local_220 != (XModel *)0x0) && (local_32c < local_220->numLods)) {
-      dVar6 = atof(local_114);
+    foundModel = pXVar3;
+    if ((foundModel != (XModel *)0x0) && (lodIndex < foundModel->numLods)) {
+      dVar6 = atof(VariableValue);
       if (0.0 < (float)dVar6) {
-        local_220->lodInfo[local_32c].dist = (float)dVar6;
+        foundModel->lodInfo[lodIndex].dist = (float)dVar6;
       }
     }
   }
@@ -266,102 +275,107 @@ bool __cdecl GDT_RemoteXModelUpdate(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl GDT_RemoteMaterialUpdate(char *param_1)
+bool __cdecl GDT_RemoteMaterialUpdate(char *in)
 
 {
   Material *pMVar1;
   int iVar2;
   double dVar3;
-  int local_364;
-  char *local_35c;
-  char acStack_34e [262];
-  char local_248 [12];
-  char *local_23c;
-  char local_235;
-  uint local_234;
-  int local_230;
-  bool local_229;
-  int local_228;
-  char local_224 [256];
-  int local_124;
-  char local_11d;
-  int local_11c;
-  char local_115;
-  char local_114 [256];
+  int j;
+  Material *material;
+  char *CleanMaterialName;
+  char *Dst_2;
+  char *Dst;
+  char cStack_34e;
+  char c;
+  char MaterialVariable [260];
+  char RequiredPrefix [12];
+  char *VariableName;
+  bool IsW;
+  uint VariableNameHash;
+  int DstIndex;
+  bool IsY;
+  int SrcIndex;
+  char MaterialName [256];
+  int TokenIndex;
+  bool IsZ;
+  int i;
+  bool IsX;
+  char VariableValue [256];
   uint local_14;
-  char *local_10 [3];
+  char *TokenArray [3];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_228 = 0;
-  local_230 = 0;
-  local_10[0] = local_224;
-  local_10[1] = acStack_34e + 2;
-  local_10[2] = local_114;
-  local_124 = 0;
+  SrcIndex = 0;
+  DstIndex = 0;
+  TokenArray[0] = MaterialName;
+  TokenArray[1] = MaterialVariable;
+  TokenArray[2] = VariableValue;
+  TokenIndex = 0;
   while( true ) {
-    acStack_34e[1] = param_1[local_228];
-    local_228 = local_228 + 1;
-    if (acStack_34e[1] == '\0') break;
-    if (acStack_34e[1] == '\\') {
-      local_10[local_124][local_230] = '\0';
-      local_230 = 0;
-      local_124 = local_124 + 1;
+    c = in[SrcIndex];
+    SrcIndex = SrcIndex + 1;
+    if (c == '\0') break;
+    if (c == '\\') {
+      TokenArray[TokenIndex][DstIndex] = '\0';
+      DstIndex = 0;
+      TokenIndex = TokenIndex + 1;
     }
-    else if (acStack_34e[1] != ' ') {
-      local_10[local_124][local_230] = acStack_34e[1];
-      local_230 = local_230 + 1;
+    else if (c != ' ') {
+      TokenArray[TokenIndex][DstIndex] = c;
+      DstIndex = DstIndex + 1;
     }
   }
-  builtin_strncpy(local_248,"SW4_Float_",0xb);
-  for (local_11c = 0; local_11c < 0x100; local_11c = local_11c + 1) {
-    if ((local_11c < 10) && (acStack_34e[local_11c + 2] != local_248[local_11c])) {
+  builtin_strncpy(RequiredPrefix,"SW4_Float_",0xb);
+  for (i = 0; i < 0x100; i = i + 1) {
+    if ((i < 10) && (MaterialVariable[i] != RequiredPrefix[i])) {
       return true;
     }
-    if (acStack_34e[local_11c + 2] == '\0') break;
+    if (MaterialVariable[i] == '\0') break;
   }
-  acStack_34e[local_11c] = '\0';
-  local_23c = acStack_34e + 0xc;
-  local_115 = acStack_34e[local_11c + 1] == 'x';
-  local_229 = acStack_34e[local_11c + 1] == 'y';
-  local_11d = acStack_34e[local_11c + 1] == 'z';
-  local_235 = acStack_34e[local_11c + 1] == 'w';
-  local_234 = R_HashString(acStack_34e + 0xc);
-  for (local_11c = 0; local_11c < rgp.materialCount; local_11c = local_11c + 1) {
-    pMVar1 = rgp.sortedMaterials[local_11c];
-    local_35c = (pMVar1->info).name;
-    if (*local_35c == '/') {
-      local_35c = local_35c + 1;
+  (&cStack_34e)[i] = '\0';
+  VariableName = MaterialVariable + 10;
+  IsX = MaterialVariable[i + -1] == 'x';
+  IsY = MaterialVariable[i + -1] == 'y';
+  IsZ = MaterialVariable[i + -1] == 'z';
+  IsW = MaterialVariable[i + -1] == 'w';
+  VariableNameHash = R_HashString(MaterialVariable + 10);
+  for (i = 0; i < rgp.materialCount; i = i + 1) {
+    pMVar1 = rgp.sortedMaterials[i];
+    CleanMaterialName = (pMVar1->info).name;
+    if (*CleanMaterialName == '/') {
+      CleanMaterialName = CleanMaterialName + 1;
     }
-    else if (local_35c[1] == '/') {
-      local_35c = local_35c + 2;
+    else if (CleanMaterialName[1] == '/') {
+      CleanMaterialName = CleanMaterialName + 2;
     }
-    else if (local_35c[2] == '/') {
-      local_35c = local_35c + 3;
+    else if (CleanMaterialName[2] == '/') {
+      CleanMaterialName = CleanMaterialName + 3;
     }
-    else if (local_35c[3] == '/') {
-      local_35c = local_35c + 4;
+    else if (CleanMaterialName[3] == '/') {
+      CleanMaterialName = CleanMaterialName + 4;
     }
-    iVar2 = I_stricmp(local_35c,local_224);
+    iVar2 = I_stricmp(CleanMaterialName,MaterialName);
     if (iVar2 == 0) {
-      for (local_364 = 0; local_364 < (int)(uint)pMVar1->constantCount; local_364 = local_364 + 1) {
-        iVar2 = strncmp((pMVar1->field10_0xb8).localConstantTable[local_364].name,local_23c,0xc);
+      for (j = 0; j < (int)(uint)pMVar1->constantCount; j = j + 1) {
+        iVar2 = strncmp((pMVar1->field10_0xb8).localConstantTable[j].name,VariableName,0xc);
         if ((iVar2 == 0) &&
-           ((pMVar1->field10_0xb8).localConstantTable[local_364].nameHash == local_234)) {
-          if (local_115 != '\0') {
-            dVar3 = atof(local_114);
-            (pMVar1->field10_0xb8).localConstantTable[local_364].literal[0] = (float)dVar3;
+           ((pMVar1->field10_0xb8).localConstantTable[j].nameHash == VariableNameHash)) {
+          if (IsX != false) {
+            dVar3 = atof(VariableValue);
+            (pMVar1->field10_0xb8).localConstantTable[j].literal[0] = (float)dVar3;
           }
-          if (local_229 != false) {
-            dVar3 = atof(local_114);
-            (pMVar1->field10_0xb8).localConstantTable[local_364].literal[1] = (float)dVar3;
+          if (IsY != false) {
+            dVar3 = atof(VariableValue);
+            (pMVar1->field10_0xb8).localConstantTable[j].literal[1] = (float)dVar3;
           }
-          if (local_11d != '\0') {
-            dVar3 = atof(local_114);
-            (pMVar1->field10_0xb8).localConstantTable[local_364].literal[2] = (float)dVar3;
+          if (IsZ != false) {
+            dVar3 = atof(VariableValue);
+            (pMVar1->field10_0xb8).localConstantTable[j].literal[2] = (float)dVar3;
           }
-          if (local_235 != '\0') {
-            dVar3 = atof(local_114);
-            (pMVar1->field10_0xb8).localConstantTable[local_364].literal[3] = (float)dVar3;
+          if (IsW != false) {
+            dVar3 = atof(VariableValue);
+            (pMVar1->field10_0xb8).localConstantTable[j].literal[3] = (float)dVar3;
           }
         }
       }
@@ -375,18 +389,18 @@ bool __cdecl GDT_RemoteMaterialUpdate(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl GDT_RemoteMptypeUpdate(char *param_1)
+bool __cdecl GDT_RemoteMptypeUpdate(char *in)
 
 {
-  char *pcVar1;
-  char local_10c [128];
-  char local_8c [132];
+  char *src;
+  char asset [128];
+  char keyValue [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = GDTCmd_NextToken(param_1,local_10c,0x80);
-  GDTCmd_NextToken(pcVar1,local_8c,0x80);
-  GScr_Gdt_Update(local_10c,local_8c);
+  src = GDTCmd_NextToken(in,asset,0x80);
+  GDTCmd_NextToken(src,keyValue,0x80);
+  GScr_Gdt_Update(asset,keyValue);
   return true;
 }
 
@@ -400,33 +414,34 @@ bool __cdecl ProcessGDTCmds(void)
 {
   char *pcVar1;
   int iVar2;
-  int local_94;
-  char local_8c [128];
+  int j;
+  char *strCommand;
+  char assetType [128];
   uint local_c;
-  uint local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   Sys_EnterCriticalSection(CRITSECT_GDT_COMMAND);
-  local_94 = 0;
+  j = 0;
   do {
-    if (GDTCommandCount <= local_94) {
+    if (GDTCommandCount <= j) {
       GDTCommandCount = 0;
       Sys_LeaveCriticalSection(CRITSECT_GDT_COMMAND);
       return true;
     }
-    pcVar1 = GDTCmd_NextToken(GDTCommands[local_94],local_8c,0x80);
-    for (local_8 = 0; local_8 < 0x11; local_8 = local_8 + 1) {
-      iVar2 = I_stricmp(gdt_remote_handlers[local_8].assetType,local_8c);
+    pcVar1 = GDTCmd_NextToken(GDTCommands[j],assetType,0x80);
+    for (i = 0; (uint)i < 0x11; i = i + 1) {
+      iVar2 = I_stricmp(gdt_remote_handlers[i].assetType,assetType);
       if (iVar2 == 0) {
         Com_Printf(5,"GDT CMD: %s\n");
-        (*gdt_remote_handlers[local_8].action)(pcVar1);
+        (*gdt_remote_handlers[i].action)(pcVar1);
         break;
       }
     }
-    if (local_8 == 0x11) {
+    if (i == 0x11) {
       Com_Printf(5,"Unknown GDT CMD: %s for asset type %s\n");
     }
-    local_94 = local_94 + 1;
+    j = j + 1;
   } while( true );
 }
 

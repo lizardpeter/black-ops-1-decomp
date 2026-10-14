@@ -14,13 +14,13 @@ undefined4 * _HTDir_new(int param_1,undefined4 param_2)
   int iVar5;
   undefined4 uVar6;
   undefined4 *puVar7;
-  void *pvVar8;
-  uchar *puVar9;
+  void *pBlock;
+  uchar *string;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
-  undefined1 *puVar10;
+  undefined1 *puVar8;
   uchar *extraout_EAX_01;
-  uchar *puVar11;
+  uchar *puVar9;
   
   if (param_1 == 0) {
     return (undefined4 *)0x0;
@@ -72,33 +72,33 @@ undefined4 * _HTDir_new(int param_1,undefined4 param_2)
       iVar5 = _HTMemory_malloc();
       puVar4[4] = iVar5;
       if (iVar5 != 0) {
-        pvVar8 = (void *)_HTAnchor_address();
-        puVar9 = (uchar *)_HTParse("",5);
-        strchr(puVar9,';');
-        puVar10 = extraout_EAX;
+        pBlock = (void *)_HTAnchor_address();
+        string = (uchar *)_HTParse("",5);
+        strchr(string,';');
+        puVar8 = extraout_EAX;
         if ((extraout_EAX != (undefined1 *)0x0) ||
-           (strchr(puVar9,'?'), puVar10 = extraout_EAX_00, extraout_EAX_00 != (undefined1 *)0x0)) {
-          *puVar10 = 0;
+           (strchr(string,'?'), puVar8 = extraout_EAX_00, extraout_EAX_00 != (undefined1 *)0x0)) {
+          *puVar8 = 0;
         }
-        _HTSACopy(puVar9);
+        _HTSACopy(string);
         _HTUnEscape(0);
-        strrchr(puVar9,'/');
-        puVar3 = puVar9;
+        strrchr(string,'/');
+        puVar3 = string;
         if (extraout_EAX_01 != (uchar *)0x0) {
           do {
-            puVar11 = puVar3;
-            puVar3 = puVar11 + 1;
-          } while (*puVar11 != '\0');
-          if ((extraout_EAX_01 < puVar11 + -1) || (extraout_EAX_01 == puVar9)) {
+            puVar9 = puVar3;
+            puVar3 = puVar9 + 1;
+          } while (*puVar9 != '\0');
+          if ((extraout_EAX_01 < puVar9 + -1) || (extraout_EAX_01 == string)) {
             _HTSACopy(extraout_EAX_01 + 1);
             _HTSACat(puVar4 + 5,"/");
           }
         }
-        if (pvVar8 != (void *)0x0) {
-          free(pvVar8);
+        if (pBlock != (void *)0x0) {
+          free(pBlock);
         }
-        if (puVar9 != (uchar *)0x0) {
-          free(puVar9);
+        if (string != (uchar *)0x0) {
+          free(string);
         }
         piVar2 = (int *)*puVar4;
         (**(code **)(*piVar2 + 0x1c))(piVar2,0x2a,0,0);
@@ -222,9 +222,9 @@ undefined4 _HTDir_free(void)
   code *pcVar2;
   uint uVar3;
   int *piVar4;
-  uint *puVar5;
+  uint *pBlock;
   undefined4 *unaff_EDI;
-  char *pcVar6;
+  char *pcVar5;
   undefined1 auStack_28 [4];
   uint *local_24;
   char acStack_20 [20];
@@ -235,41 +235,41 @@ undefined4 _HTDir_free(void)
     return 0;
   }
   if (unaff_EDI[7] != 0) {
-    puVar5 = (uint *)unaff_EDI[2];
-    local_24 = puVar5;
+    pBlock = (uint *)unaff_EDI[2];
+    local_24 = pBlock;
     FUN_008a0a50();
     pcVar2 = FUN_008a1170;
     if (unaff_EDI[7] != 2) {
       pcVar2 = FUN_008a1130;
     }
-    if (puVar5 == (uint *)0x0) {
+    if (pBlock == (uint *)0x0) {
       uVar3 = 0xffffffff;
     }
     else {
       if (pcVar2 != (_func___cdecl_int_void_ptr_void_ptr *)0x0) {
-        qsort((void *)puVar5[3],*puVar5,4,pcVar2);
+        qsort((void *)pBlock[3],*pBlock,4,pcVar2);
       }
-      piVar4 = (int *)puVar5[3];
+      piVar4 = (int *)pBlock[3];
       if (piVar4 != (int *)0x0) {
         iVar1 = *piVar4;
-        while (puVar5 = local_24, iVar1 != 0) {
+        while (pBlock = local_24, iVar1 != 0) {
           piVar4 = piVar4 + 1;
           FUN_008a0580();
           FUN_008a04c0();
-          puVar5 = local_24;
+          pBlock = local_24;
           if (piVar4 == (int *)0x0) break;
           iVar1 = *piVar4;
         }
       }
-      uVar3 = *puVar5;
+      uVar3 = *pBlock;
     }
     unaff_EDI[8] = uVar3;
-    if (puVar5 != (uint *)0x0) {
-      if ((void *)puVar5[3] != (void *)0x0) {
-        free((void *)puVar5[3]);
+    if (pBlock != (uint *)0x0) {
+      if ((void *)pBlock[3] != (void *)0x0) {
+        free((void *)pBlock[3]);
       }
-      puVar5[3] = 0;
-      free(puVar5);
+      pBlock[3] = 0;
+      free(pBlock);
     }
   }
   piVar4 = (int *)*unaff_EDI;
@@ -278,7 +278,7 @@ undefined4 _HTDir_free(void)
   (**(code **)(*piVar4 + 0x1c))(piVar4,0x42,0,0);
   if (unaff_EDI[8] == 0) {
     pcVar2 = *(code **)(*piVar4 + 0x14);
-    pcVar6 = "Empty directory";
+    pcVar5 = "Empty directory";
   }
   else {
     if (unaff_EDI[8] == 1) {
@@ -287,9 +287,9 @@ undefined4 _HTDir_free(void)
     }
     sprintf(acStack_20,"%u files");
     pcVar2 = *(code **)(*piVar4 + 0x14);
-    pcVar6 = acStack_20;
+    pcVar5 = acStack_20;
   }
-  (*pcVar2)(piVar4,pcVar6);
+  (*pcVar2)(piVar4,pcVar5);
 LAB_008a12cc:
   (**(code **)(*piVar4 + 0x20))(piVar4,0x42);
   (**(code **)(*piVar4 + 0x20))(piVar4,0xc);

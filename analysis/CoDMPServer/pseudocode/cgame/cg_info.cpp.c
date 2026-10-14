@@ -7,19 +7,19 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_LoadingString(int param_1,char *param_2)
+void __cdecl CG_LoadingString(int localClientNum,char *s)
 
 {
   char cVar1;
   cg_s *pcVar2;
-  char *pcVar3;
+  char *fmt;
   
-  cVar1 = *param_2;
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  cVar1 = *s;
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   pcVar2->isLoading = cVar1 != '\0';
-  if ((param_2 != (char *)0x0) && (*param_2 != '\0')) {
-    pcVar3 = va("LOADING... %s\n");
-    Com_Printf(0xe,pcVar3);
+  if ((s != (char *)0x0) && (*s != '\0')) {
+    fmt = va("LOADING... %s\n");
+    Com_Printf(0xe,fmt);
   }
   SCR_UpdateLoadScreen();
   return;
@@ -49,31 +49,41 @@ bool __cdecl CG_IsShowingProgress_FastFile(void)
 
 // 004BE7A0  CG_DrawInformation  (cgame/cg_info.cpp:62)
 
-void __cdecl CG_DrawInformation(int param_1)
+void __cdecl CG_DrawInformation(int localClientNum)
 
 {
   bool bVar1;
   bool bVar2;
   char cVar3;
-  Font_s *pFVar4;
-  char *pcVar5;
-  int iVar6;
+  Font_s *font_00;
+  char *pcVar4;
+  int iVar5;
   code *local_30;
+  bool serverLoading;
+  char *info;
+  Font_s *font;
+  float width;
+  int time;
+  char *s;
+  char *dots;
+  float x;
+  float y;
+  float fontScale;
   
   bVar1 = CL_IsServerLoadingMap();
   if (bVar1) {
-    bVar2 = CL_IsWaitingOnServerToLoadMap(param_1);
+    bVar2 = CL_IsWaitingOnServerToLoadMap(localClientNum);
     if (!bVar2) {
-      CG_CloseScriptMenu(param_1,false);
-      UI_CloseAllMenus(param_1);
-      CL_SetWaitingOnServerToLoadMap(param_1,true);
+      CG_CloseScriptMenu(localClientNum,false);
+      UI_CloseAllMenus(localClientNum);
+      CL_SetWaitingOnServerToLoadMap(localClientNum,true);
     }
   }
   else {
-    CL_SetWaitingOnServerToLoadMap(param_1,false);
+    CL_SetWaitingOnServerToLoadMap(localClientNum,false);
   }
   CL_GetConfigString(0);
-  UI_DrawMapLevelshot(param_1);
+  UI_DrawMapLevelshot(localClientNum);
   if ((useFastFile->current).enabled == false) {
     local_30 = CG_IsShowingProgress_LoadObj;
   }
@@ -82,13 +92,13 @@ void __cdecl CG_DrawInformation(int param_1)
   }
   cVar3 = (*local_30)();
   if (((cVar3 == '\0') && (bVar1)) && (g_waitingForServer != false)) {
-    pFVar4 = UI_GetFontHandle(&scrPlaceFull,0,0.5);
+    font_00 = UI_GetFontHandle(&scrPlaceFull,0,0.5);
     Sys_Milliseconds();
-    pcVar5 = UI_SafeTranslateString("CGAME_WAITINGFORSERVERLOAD");
-    iVar6 = UI_TextWidth(pcVar5,0,pFVar4,0.5);
-    pcVar5 = va("%s%s");
-    UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar5,0x7fffffff,pFVar4,
-                (640.0 - (float)iVar6) * 0.5,439.0,0,0,0.5,colorWhite,3);
+    pcVar4 = UI_SafeTranslateString("CGAME_WAITINGFORSERVERLOAD");
+    iVar5 = UI_TextWidth(pcVar4,0,font_00,0.5);
+    pcVar4 = va("%s%s");
+    UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,0x7fffffff,font_00
+                ,(640.0 - (float)iVar5) * 0.5,439.0,0,0,0.5,colorWhite,3);
   }
   return;
 }

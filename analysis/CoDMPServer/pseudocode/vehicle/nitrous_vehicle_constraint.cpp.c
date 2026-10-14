@@ -7,7 +7,7 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl path_constraint_update(rigid_body_constraint_custom_path *param_1,gentity_s *param_2)
+void __cdecl path_constraint_update(rigid_body_constraint_custom_path *vpc,gentity_s *veh)
 
 {
   code *pcVar1;
@@ -16,11 +16,11 @@ void __cdecl path_constraint_update(rigid_body_constraint_custom_path *param_1,g
   phys_mat44 *local_18;
   scr_vehicle_s *local_14;
   
-  if ((((param_1 != (rigid_body_constraint_custom_path *)0x0) && (param_2 != (gentity_s *)0x0)) &&
-      (param_2->scr_vehicle != (scr_vehicle_s *)0x0)) &&
-     (param_2->scr_vehicle->nitrousVehicle != (NitrousVehicle *)0x0)) {
-    local_14 = param_2->scr_vehicle;
-    local_18 = &param_1->m_path_mat;
+  if ((((vpc != (rigid_body_constraint_custom_path *)0x0) && (veh != (gentity_s *)0x0)) &&
+      (veh->scr_vehicle != (scr_vehicle_s *)0x0)) &&
+     (veh->scr_vehicle->nitrousVehicle != (NitrousVehicle *)0x0)) {
+    local_14 = veh->scr_vehicle;
+    local_18 = &vpc->m_path_mat;
     AnglesToAxis((local_14->pathPos).angles,(float (*) [3])local_3c);
     Phys_AxisToNitrousMat((float (*) [3])local_3c,local_18);
     Phys_Vec3ToNitrousVec((local_14->pathPos).origin,&local_18->w);
@@ -45,12 +45,12 @@ void __cdecl path_constraint_update(rigid_body_constraint_custom_path *param_1,g
     if ((phys_drawNitrousVehicle->current).enabled != false) {
       G_DebugSphere((local_14->pathPos).origin,15.0,colorGreen,10,0,1);
     }
-    (param_1->b1_r_loc).x = 0.0;
-    (param_1->b1_r_loc).y = 0.0;
-    (param_1->b1_r_loc).z = 0.0;
-    if ((2 < param_2->scr_vehicle->nitrousVehicle->m_num_colliding_wheels) ||
-       (param_2->scr_vehicle->nitrousVehicle->m_vehicle_info->type == 4)) {
-      (param_1->b1_r_loc).z = -6.0;
+    (vpc->b1_r_loc).x = 0.0;
+    (vpc->b1_r_loc).y = 0.0;
+    (vpc->b1_r_loc).z = 0.0;
+    if ((2 < veh->scr_vehicle->nitrousVehicle->m_num_colliding_wheels) ||
+       (veh->scr_vehicle->nitrousVehicle->m_vehicle_info->type == 4)) {
+      (vpc->b1_r_loc).z = -6.0;
     }
   }
   return;
@@ -64,7 +64,7 @@ void __cdecl path_constraint_update(rigid_body_constraint_custom_path *param_1,g
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *param_1)
+rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *veh)
 
 {
   code *pcVar1;
@@ -83,7 +83,7 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
   PhysObjUserData *local_18;
   PhysObjUserData *local_14;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (veh == (gentity_s *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x26,"veh","");
     if (bVar2) {
@@ -92,7 +92,7 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
       return prVar3;
     }
   }
-  if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
+  if (veh->scr_vehicle == (scr_vehicle_s *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x27,"veh->scr_vehicle","");
     if (bVar2) {
@@ -101,7 +101,7 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
       return prVar3;
     }
   }
-  if (param_1->scr_vehicle->nitrousVehicle == (NitrousVehicle *)0x0) {
+  if (veh->scr_vehicle->nitrousVehicle == (NitrousVehicle *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x28,"veh->scr_vehicle->nitrousVehicle","");
     if (bVar2) {
@@ -110,7 +110,7 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
       return prVar3;
     }
   }
-  local_14 = param_1->scr_vehicle->nitrousVehicle->m_phys_user_data;
+  local_14 = veh->scr_vehicle->nitrousVehicle->m_phys_user_data;
   if (local_14 == (PhysObjUserData *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x29,"veh->scr_vehicle->nitrousVehicle->get_phys_user_data()","");
@@ -120,7 +120,7 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
       return prVar3;
     }
   }
-  local_18 = param_1->scr_vehicle->nitrousVehicle->m_phys_user_data;
+  local_18 = veh->scr_vehicle->nitrousVehicle->m_phys_user_data;
   if (local_18->body == (rigid_body *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x2a,"veh->scr_vehicle->nitrousVehicle->get_phys_user_data()->body","");
@@ -130,7 +130,7 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
       return prVar3;
     }
   }
-  local_1c = param_1->scr_vehicle->nitrousVehicle->m_phys_user_data;
+  local_1c = veh->scr_vehicle->nitrousVehicle->m_phys_user_data;
   local_20 = local_1c->body;
   local_24 = phys_sys::create_user_rigid_body(0);
   user_rigid_body::set(local_24,(phys_mat44 *)0x0);
@@ -152,9 +152,9 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
   (local_28->b1_r_loc).y = 0.0;
   (local_28->b1_r_loc).z = 0.0;
   local_48 = &local_28->m_path_mat;
-  AnglesToAxis((param_1->r).currentAngles,(float (*) [3])local_6c);
+  AnglesToAxis((veh->r).currentAngles,(float (*) [3])local_6c);
   Phys_AxisToNitrousMat((float (*) [3])local_6c,local_48);
-  Phys_Vec3ToNitrousVec((param_1->r).currentOrigin,&local_48->w);
+  Phys_Vec3ToNitrousVec((veh->r).currentOrigin,&local_48->w);
   local_28->m_urb = local_24;
   user_rigid_body::set(local_28->m_urb,&local_28->m_path_mat);
   return local_28;
@@ -163,13 +163,13 @@ rigid_body_constraint_custom_path * __cdecl path_constraint_create(gentity_s *pa
 
 // 0082A780  path_constraint_destroy  (vehicle/nitrous_vehicle_constraint.cpp:59)
 
-void __cdecl path_constraint_destroy(rigid_body_constraint_custom_path *param_1)
+void __cdecl path_constraint_destroy(rigid_body_constraint_custom_path *vpc)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->m_urb == (user_rigid_body *)0x0) {
+  if (vpc->m_urb == (user_rigid_body *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x3c,"vpc->m_urb","");
     if (bVar2) {
@@ -178,7 +178,7 @@ void __cdecl path_constraint_destroy(rigid_body_constraint_custom_path *param_1)
       return;
     }
   }
-  if (*(user_rigid_body **)&param_1->field_0x4 != param_1->m_urb) {
+  if (*(user_rigid_body **)&vpc->field_0x4 != vpc->m_urb) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\vehicle\\nitrous_vehicle_constraint.cpp",
                       0x3d,"vpc->get_b2() == vpc->m_urb","");
     if (bVar2) {
@@ -187,7 +187,7 @@ void __cdecl path_constraint_destroy(rigid_body_constraint_custom_path *param_1)
       return;
     }
   }
-  phys_sys::destroy(param_1->m_urb);
+  phys_sys::destroy(vpc->m_urb);
   return;
 }
 

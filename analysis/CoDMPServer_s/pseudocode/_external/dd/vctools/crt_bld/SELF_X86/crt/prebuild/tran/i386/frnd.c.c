@@ -2,9 +2,11 @@
 
 // 0097763B  _frnd  (line unknown)
 
-double __cdecl _frnd(double param_1)
+double __cdecl _frnd(double x)
 
 {
-  return ROUND(param_1);
+  double result;
+  
+  return ROUND(x);
 }
 

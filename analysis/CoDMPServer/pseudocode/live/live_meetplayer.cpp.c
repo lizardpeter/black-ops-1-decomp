@@ -20,21 +20,22 @@ void __cdecl _dynamic_initializer_for__metPlayersXuidinfo__(void)
 
 // 0096CCD0  LiveMeetPlayer_MetPlayerCompare  (live/live_meetplayer.cpp:59)
 
-int __cdecl LiveMeetPlayer_MetPlayerCompare(void *param_1,void *param_2)
+int __cdecl LiveMeetPlayer_MetPlayerCompare(void *arg0,void *arg1)
 
 {
   uint uVar1;
   uint uVar2;
   int iVar3;
+  XuidInfo *metFriend0;
+  XuidInfo *metFriend1;
   
-  uVar1 = *(uint *)((int)param_1 + 0x2c);
-  uVar2 = *(uint *)((int)param_2 + 0x2c);
-  if ((*(uint *)((int)param_1 + 0x28) == *(uint *)((int)param_2 + 0x28)) && (uVar1 == uVar2)) {
-    iVar3 = *(int *)param_1 - *(int *)param_2;
+  uVar1 = *(uint *)((int)arg0 + 0x2c);
+  uVar2 = *(uint *)((int)arg1 + 0x2c);
+  if ((*(uint *)((int)arg0 + 0x28) == *(uint *)((int)arg1 + 0x28)) && (uVar1 == uVar2)) {
+    iVar3 = *(int *)arg0 - *(int *)arg1;
   }
   else if ((uVar2 < uVar1) ||
-          ((uVar2 <= uVar1 && (*(uint *)((int)param_2 + 0x28) <= *(uint *)((int)param_1 + 0x28)))))
-  {
+          ((uVar2 <= uVar1 && (*(uint *)((int)arg1 + 0x28) <= *(uint *)((int)arg0 + 0x28))))) {
     iVar3 = -1;
   }
   else {
@@ -48,32 +49,33 @@ int __cdecl LiveMeetPlayer_MetPlayerCompare(void *param_1,void *param_2)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveMeetPlayer_DownloadMetPlayersList(int param_1)
+void __cdecl LiveMeetPlayer_DownloadMetPlayersList(int localControllerIndex)
 
 {
   LiveStorage_ReadMetPlayerList
-            (param_1,"CompressedMetPlayer3.info",&metPlayersXuidinfo + param_1 * 0x970,0x970);
+            (localControllerIndex,"CompressedMetPlayer3.info",
+             &metPlayersXuidinfo + localControllerIndex * 0x970,0x970);
   return;
 }
 
 
 // 0096C9F0  LiveMeetPlayer_ClearUploadFlags  (live/live_meetplayer.cpp:109)
 
-void __cdecl LiveMeetPlayer_ClearUploadFlags(int param_1)
+void __cdecl LiveMeetPlayer_ClearUploadFlags(int controllerIndex)
 
 {
   int iVar1;
   
   iVar1 = Sys_Milliseconds();
-  s_metPlayerLastUploadTime[param_1] = iVar1;
-  s_metPlayerListChanged[param_1] = false;
+  s_metPlayerLastUploadTime[controllerIndex] = iVar1;
+  s_metPlayerListChanged[controllerIndex] = false;
   return;
 }
 
 
 // 0096CA10  LiveMeetPlayer_UploadMetPlayerListNeeded  (live/live_meetplayer.cpp:116)
 
-bool __cdecl LiveMeetPlayer_UploadMetPlayerListNeeded(int param_1)
+bool __cdecl LiveMeetPlayer_UploadMetPlayerListNeeded(int controllerIndex)
 
 {
   int iVar1;
@@ -82,9 +84,9 @@ bool __cdecl LiveMeetPlayer_UploadMetPlayerListNeeded(int param_1)
   int iVar4;
   
   iVar3 = Sys_Milliseconds();
-  iVar1 = s_metPlayerLastUploadTime[param_1];
+  iVar1 = s_metPlayerLastUploadTime[controllerIndex];
   iVar4 = Dvar_GetInt(metPlayerListUploadInterval);
-  if ((iVar4 < iVar3 - iVar1) && (s_metPlayerListChanged[param_1] != false)) {
+  if ((iVar4 < iVar3 - iVar1) && (s_metPlayerListChanged[controllerIndex] != false)) {
     bVar2 = true;
   }
   else {
@@ -96,35 +98,33 @@ bool __cdecl LiveMeetPlayer_UploadMetPlayerListNeeded(int param_1)
 
 // 0096CA50  LiveMeetPlayer_ResetData  (live/live_meetplayer.cpp:126)
 
-void __cdecl LiveMeetPlayer_ResetData(int param_1)
+void __cdecl LiveMeetPlayer_ResetData(int controllerIndex)
 
 {
-  memset(&metPlayersXuidinfo + param_1 * 0x970,'\0',0x970);
-  (&metPlayersXuidinfo)[param_1 * 0x970] = 5;
+  memset(&metPlayersXuidinfo + controllerIndex * 0x970,'\0',0x970);
+  (&metPlayersXuidinfo)[controllerIndex * 0x970] = 5;
   return;
 }
 
 
 // 0096CA90  LiveMeetPlayer_CheckDownloadedVersionAndResetData  (live/live_meetplayer.cpp:176)
 
-void __cdecl LiveMeetPlayer_CheckDownloadedVersionAndResetData(int param_1)
+void __cdecl LiveMeetPlayer_CheckDownloadedVersionAndResetData(int localControllerIndex)
 
 {
-  int local_198;
+  int i;
   undefined4 auStack_194 [100];
   
-  if ((&metPlayersXuidinfo)[param_1 * 0x970] == '\x05') {
-    for (local_198 = 0; local_198 < (int)(uint)(byte)(&DAT_0a522460)[param_1 * 0x970];
-        local_198 = local_198 + 1) {
-      auStack_194[local_198 * 2] =
-           *(undefined4 *)(&DAT_0a521b00 + local_198 * 0x30 + param_1 * 0x970);
-      auStack_194[local_198 * 2 + 1] =
-           *(undefined4 *)(&DAT_0a521b04 + local_198 * 0x30 + param_1 * 0x970);
+  if ((&metPlayersXuidinfo)[localControllerIndex * 0x970] == '\x05') {
+    for (i = 0; i < (int)(uint)(byte)(&DAT_0a522460)[localControllerIndex * 0x970]; i = i + 1) {
+      auStack_194[i * 2] = *(undefined4 *)(&DAT_0a521b00 + i * 0x30 + localControllerIndex * 0x970);
+      auStack_194[i * 2 + 1] =
+           *(undefined4 *)(&DAT_0a521b04 + i * 0x30 + localControllerIndex * 0x970);
     }
   }
   else {
-    LiveMeetPlayer_ResetData(param_1);
-    (&metPlayersXuidinfo)[param_1 * 0x970] = 5;
+    LiveMeetPlayer_ResetData(localControllerIndex);
+    (&metPlayersXuidinfo)[localControllerIndex * 0x970] = 5;
   }
   return;
 }
@@ -134,25 +134,26 @@ void __cdecl LiveMeetPlayer_CheckDownloadedVersionAndResetData(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveMeetPlayer_UploadMetPlayerList(int param_1)
+void __cdecl LiveMeetPlayer_UploadMetPlayerList(int localControllerIndex)
 
 {
   LiveStorage_WriteMetPlayerList
-            (param_1,"CompressedMetPlayer3.info",&metPlayersXuidinfo + param_1 * 0x970,0x970);
+            (localControllerIndex,"CompressedMetPlayer3.info",
+             &metPlayersXuidinfo + localControllerIndex * 0x970,0x970);
   return;
 }
 
 
 // 0096CB70  LiveMeetPlayer_Init  (live/live_meetplayer.cpp:204)
 
-void __cdecl LiveMeetPlayer_Init(int param_1)
+void __cdecl LiveMeetPlayer_Init(int localControllerIndex)
 
 {
-  int local_8;
+  int i;
   
   memset(&metPlayersXuidinfo,'\0',0x970);
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    (&metPlayersXuidinfo)[local_8 * 0x970] = 5;
+  for (i = 0; i < 1; i = i + 1) {
+    (&metPlayersXuidinfo)[i * 0x970] = 5;
   }
   metPlayerListUpdateInterval =
        _Dvar_RegisterInt("metPlayerListUpdateInterval",10000,0,0x7fffffff,0,
@@ -167,65 +168,68 @@ void __cdecl LiveMeetPlayer_Init(int param_1)
 
 // 0096CC00  LiveMeetPlayer_GetXUIDPosInMetPlayerList  (live/live_meetplayer.cpp:219)
 
-int __cdecl LiveMeetPlayer_GetXUIDPosInMetPlayerList(int param_1,ulong64 param_2)
+int __cdecl LiveMeetPlayer_GetXUIDPosInMetPlayerList(int localControllerIndex,ulong64 param_2)
 
 {
   int in_stack_00000008;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if ((int)(uint)(byte)(&DAT_0a522460)[param_1 * 0x970] <= local_8) {
+    if ((int)(uint)(byte)(&DAT_0a522460)[localControllerIndex * 0x970] <= i) {
       return -1;
     }
-    if ((in_stack_00000008 == *(int *)(&DAT_0a521b00 + local_8 * 0x30 + param_1 * 0x970)) &&
-       ((int)param_2 == *(int *)(&DAT_0a521b04 + local_8 * 0x30 + param_1 * 0x970))) break;
-    local_8 = local_8 + 1;
+    if ((in_stack_00000008 == *(int *)(&DAT_0a521b00 + i * 0x30 + localControllerIndex * 0x970)) &&
+       ((int)param_2 == *(int *)(&DAT_0a521b04 + i * 0x30 + localControllerIndex * 0x970))) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 0096CC80  LiveMeetPlayer_GetNoOfMetPlayers  (live/live_meetplayer.cpp:228)
 
-int __cdecl LiveMeetPlayer_GetNoOfMetPlayers(int param_1)
+int __cdecl LiveMeetPlayer_GetNoOfMetPlayers(int localControllerIndex)
 
 {
-  return (uint)(byte)(&DAT_0a522460)[param_1 * 0x970];
+  return (uint)(byte)(&DAT_0a522460)[localControllerIndex * 0x970];
 }
 
 
 // 0096CCA0  LiveMeetPlayer_SortMetPlayers  (live/live_meetplayer.cpp:233)
 
-void __cdecl LiveMeetPlayer_SortMetPlayers(int param_1,int param_2)
+void __cdecl LiveMeetPlayer_SortMetPlayers(int localControllerIndex,int noOfPlayers)
 
 {
-  qsort(&DAT_0a521b00 + param_1 * 0x970,param_2,0x30,LiveMeetPlayer_MetPlayerCompare);
+  qsort(&DAT_0a521b00 + localControllerIndex * 0x970,noOfPlayers,0x30,
+        LiveMeetPlayer_MetPlayerCompare);
   return;
 }
 
 
 // 0096D000  LiveMeetPlayer_SetCurrentTime  (live/live_meetplayer.cpp:241)
 
-void __cdecl LiveMeetPlayer_SetCurrentTime(_FILETIME *param_1)
+void __cdecl LiveMeetPlayer_SetCurrentTime(_FILETIME *currentTime)
 
 {
-  GetSystemTimeAsFileTime((LPFILETIME)param_1);
+  GetSystemTimeAsFileTime((LPFILETIME)currentTime);
   return;
 }
 
 
 // 0096D010  LiveMeetPlayer_AddPlayerAtSlot  (live/live_meetplayer.cpp:327)
 
-bool __cdecl LiveMeetPlayer_AddPlayerAtSlot(int param_1,ulong64 param_2,char *param_3,int param_4)
+bool __cdecl
+LiveMeetPlayer_AddPlayerAtSlot(int localControllerIndex,ulong64 param_2,char *slot,int param_4)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int in_stack_00000008;
+  char *gamerTag;
   
-  if (0x31 < (int)param_3) {
+  if (0x31 < (int)slot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_meetplayer.cpp",0x148,0,
                              "%s");
     if (!bVar2) {
@@ -234,7 +238,7 @@ bool __cdecl LiveMeetPlayer_AddPlayerAtSlot(int param_1,ulong64 param_2,char *pa
       return (bool)uVar3;
     }
   }
-  if ((int)param_3 < 0x32) {
+  if ((int)slot < 0x32) {
     if (in_stack_00000008 == 0 && (int)param_2 == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_meetplayer.cpp",0x151,
                                0,"%s");
@@ -251,11 +255,12 @@ bool __cdecl LiveMeetPlayer_AddPlayerAtSlot(int param_1,ulong64 param_2,char *pa
       bVar2 = false;
     }
     else {
-      *(int *)(&DAT_0a521b00 + (int)param_3 * 0x30 + param_1 * 0x970) = in_stack_00000008;
-      *(int *)(&DAT_0a521b04 + (int)param_3 * 0x30 + param_1 * 0x970) = (int)param_2;
-      I_strncpyz(&DAT_0a521b08 + (int)param_3 * 0x30 + param_1 * 0x970,param_2._4_4_,0x20);
+      *(int *)(&DAT_0a521b00 + (int)slot * 0x30 + localControllerIndex * 0x970) = in_stack_00000008;
+      *(int *)(&DAT_0a521b04 + (int)slot * 0x30 + localControllerIndex * 0x970) = (int)param_2;
+      I_strncpyz(&DAT_0a521b08 + (int)slot * 0x30 + localControllerIndex * 0x970,param_2._4_4_,0x20)
+      ;
       LiveMeetPlayer_SetCurrentTime
-                ((_FILETIME *)(&DAT_0a521b28 + (int)param_3 * 0x30 + param_1 * 0x970));
+                ((_FILETIME *)(&DAT_0a521b28 + (int)slot * 0x30 + localControllerIndex * 0x970));
       Live_RequestSessionsFromRecentPlayers();
       bVar2 = true;
     }
@@ -269,19 +274,23 @@ bool __cdecl LiveMeetPlayer_AddPlayerAtSlot(int param_1,ulong64 param_2,char *pa
 
 // 0096CD60  LiveMeetPlayer_UpdateMeetPlayerList  (live/live_meetplayer.cpp:442)
 
-void __cdecl LiveMeetPlayer_UpdateMeetPlayerList(int param_1,ulong64 param_2,char *param_3)
+/* WARNING: Variable defined which should be unmapped: i */
+
+void __cdecl
+LiveMeetPlayer_UpdateMeetPlayerList(int localControllerIndex,ulong64 param_2,char *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
   int in_stack_00000008;
-  int in_stack_ffffffe4;
-  char *local_14;
+  int i;
+  int currTime;
+  int currentPlayerPosition;
+  int currentMetPlayerCount;
   
   iVar3 = Sys_Milliseconds();
-  s_lastUpdateTime[param_1] = iVar3;
+  s_lastUpdateTime[localControllerIndex] = iVar3;
   if ((in_stack_00000008 == 0 && (int)param_2 == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_meetplayer.cpp",0x1c1,
                                0,"%s"), !bVar2)) {
@@ -290,56 +299,60 @@ void __cdecl LiveMeetPlayer_UpdateMeetPlayerList(int param_1,ulong64 param_2,cha
     return;
   }
   if (in_stack_00000008 != 0 || (int)param_2 != 0) {
-    iVar3 = LiveMeetPlayer_GetXUIDPosInMetPlayerList
-                      (param_1,CONCAT44(in_stack_ffffffe4,(int)param_2));
-    s_metPlayerListChanged[param_1] = true;
+    iVar3 = LiveMeetPlayer_GetXUIDPosInMetPlayerList(localControllerIndex,CONCAT44(i,(int)param_2));
+    s_metPlayerListChanged[localControllerIndex] = true;
     if (iVar3 == -1) {
-      if ((byte)(&DAT_0a522460)[param_1 * 0x970] < 0x32) {
+      if ((byte)(&DAT_0a522460)[localControllerIndex * 0x970] < 0x32) {
         bVar2 = LiveMeetPlayer_AddPlayerAtSlot
-                          (param_1,param_2,(char *)(uint)(byte)(&DAT_0a522460)[param_1 * 0x970],
-                           in_stack_ffffffe4);
+                          (localControllerIndex,param_2,
+                           (char *)(uint)(byte)(&DAT_0a522460)[localControllerIndex * 0x970],i);
         if (bVar2) {
-          (&DAT_0a522460)[param_1 * 0x970] = (&DAT_0a522460)[param_1 * 0x970] + '\x01';
+          (&DAT_0a522460)[localControllerIndex * 0x970] =
+               (&DAT_0a522460)[localControllerIndex * 0x970] + '\x01';
         }
       }
       else {
-        if (((&DAT_0a522460)[param_1 * 0x970] != '2') &&
+        if (((&DAT_0a522460)[localControllerIndex * 0x970] != '2') &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_meetplayer.cpp",
                                      0x1df,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_14 = (char *)0x0;
-        for (pcVar4 = &DAT_00000001; (int)pcVar4 < (int)(uint)(byte)(&DAT_0a522460)[param_1 * 0x970]
-            ; pcVar4 = pcVar4 + 1) {
+        currentPlayerPosition = 0;
+        for (i = 1; i < (int)(uint)(byte)(&DAT_0a522460)[localControllerIndex * 0x970]; i = i + 1) {
           iVar3 = LiveMeetPlayer_MetPlayerCompare
-                            (&DAT_0a521b00 + (int)local_14 * 0x30 + param_1 * 0x970,
-                             &DAT_0a521b00 + (int)pcVar4 * 0x30 + param_1 * 0x970);
+                            (&DAT_0a521b00 +
+                             currentPlayerPosition * 0x30 + localControllerIndex * 0x970,
+                             &DAT_0a521b00 + i * 0x30 + localControllerIndex * 0x970);
           if (iVar3 == -1) {
-            local_14 = pcVar4;
+            currentPlayerPosition = i;
           }
         }
         metPlayerXuid._0_4_ =
-             *(undefined4 *)(&DAT_0a521b00 + (int)local_14 * 0x30 + param_1 * 0x970);
+             *(undefined4 *)
+              (&DAT_0a521b00 + currentPlayerPosition * 0x30 + localControllerIndex * 0x970);
         metPlayerXuid._4_4_ =
-             *(undefined4 *)(&DAT_0a521b04 + (int)local_14 * 0x30 + param_1 * 0x970);
-        bVar2 = LiveMeetPlayer_AddPlayerAtSlot(param_1,param_2,local_14,(int)pcVar4);
+             *(undefined4 *)
+              (&DAT_0a521b04 + currentPlayerPosition * 0x30 + localControllerIndex * 0x970);
+        bVar2 = LiveMeetPlayer_AddPlayerAtSlot
+                          (localControllerIndex,param_2,(char *)currentPlayerPosition,i);
         if (!bVar2) {
           Com_PrintWarning(0x17,"This might be bad.\n");
         }
       }
     }
     else {
-      if (((int)(uint)(byte)(&DAT_0a522460)[param_1 * 0x970] <= iVar3) &&
+      if (((int)(uint)(byte)(&DAT_0a522460)[localControllerIndex * 0x970] <= iVar3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_meetplayer.cpp",
                                    0x1d1,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      LiveMeetPlayer_SetCurrentTime((_FILETIME *)(&DAT_0a521b28 + iVar3 * 0x30 + param_1 * 0x970));
-      I_strncpyz(&DAT_0a521b08 + iVar3 * 0x30 + param_1 * 0x970,param_2._4_4_,0x20);
+      LiveMeetPlayer_SetCurrentTime
+                ((_FILETIME *)(&DAT_0a521b28 + iVar3 * 0x30 + localControllerIndex * 0x970));
+      I_strncpyz(&DAT_0a521b08 + iVar3 * 0x30 + localControllerIndex * 0x970,param_2._4_4_,0x20);
     }
   }
   return;
@@ -348,7 +361,7 @@ void __cdecl LiveMeetPlayer_UpdateMeetPlayerList(int param_1,ulong64 param_2,cha
 
 // 0096D120  LiveMeetPlayer_GetLastMetTime  (live/live_meetplayer.cpp:504)
 
-ulong __cdecl LiveMeetPlayer_GetLastMetTime(int param_1,int param_2)
+ulong __cdecl LiveMeetPlayer_GetLastMetTime(int localControllerIndex,int index)
 
 {
   uint uVar1;
@@ -356,16 +369,17 @@ ulong __cdecl LiveMeetPlayer_GetLastMetTime(int param_1,int param_2)
   uint uVar3;
   float10 extraout_ST0;
   ulong local_5c;
-  _FILETIME local_c;
+  ulong noOfSeconds;
+  _FILETIME sysTime2;
   
-  uVar1 = *(uint *)(&DAT_0a521b28 + param_2 * 0x30 + param_1 * 0x970);
-  iVar2 = *(int *)(&DAT_0a521b2c + param_2 * 0x30 + param_1 * 0x970);
-  LiveMeetPlayer_SetCurrentTime(&local_c);
-  uVar3 = (local_c.dwHighDateTime - iVar2) - (uint)(local_c.dwLowDateTime < uVar1);
+  uVar1 = *(uint *)(&DAT_0a521b28 + index * 0x30 + localControllerIndex * 0x970);
+  iVar2 = *(int *)(&DAT_0a521b2c + index * 0x30 + localControllerIndex * 0x970);
+  LiveMeetPlayer_SetCurrentTime(&sysTime2);
+  uVar3 = (sysTime2.dwHighDateTime - iVar2) - (uint)(sysTime2.dwLowDateTime < uVar1);
   _CIpow();
   local_5c = (ulong)(longlong)
                     ROUND((float10)(-(double)(longlong)(((ulonglong)uVar3 & 0x80000000) << 0x20) +
-                                   (double)(CONCAT44(uVar3,local_c.dwLowDateTime - uVar1) &
+                                   (double)(CONCAT44(uVar3,sysTime2.dwLowDateTime - uVar1) &
                                            0x7fffffffffffffff)) / extraout_ST0);
   return local_5c;
 }
@@ -374,14 +388,14 @@ ulong __cdecl LiveMeetPlayer_GetLastMetTime(int param_1,int param_2)
 // 0096D200  LiveMeetPlayer_GetMetFriendInfo  (live/live_meetplayer.cpp:533)
 
 XuidInfo * __cdecl
-LiveMeetPlayer_GetMetFriendInfo(XuidInfo *__return_storage_ptr__,int param_1,int param_2)
+LiveMeetPlayer_GetMetFriendInfo(XuidInfo *__return_storage_ptr__,int localControllerIndex,int index)
 
 {
   int iVar1;
   undefined4 *puVar2;
   XuidInfo *pXVar3;
   
-  puVar2 = (undefined4 *)(&DAT_0a521b00 + param_2 * 0x30 + param_1 * 0x970);
+  puVar2 = (undefined4 *)(&DAT_0a521b00 + index * 0x30 + localControllerIndex * 0x970);
   pXVar3 = __return_storage_ptr__;
   for (iVar1 = 0xc; iVar1 != 0; iVar1 = iVar1 + -1) {
     *(undefined4 *)&pXVar3->playerXuids = *puVar2;
@@ -394,30 +408,32 @@ LiveMeetPlayer_GetMetFriendInfo(XuidInfo *__return_storage_ptr__,int param_1,int
 
 // 0096D2C0  LiveMeetPlayer_GetRecentPlayerIndexByID  (live/live_meetplayer.cpp:538)
 
-int __cdecl LiveMeetPlayer_GetRecentPlayerIndexByID(int param_1,ulong64 param_2)
+int __cdecl LiveMeetPlayer_GetRecentPlayerIndexByID(int controllerIndex,ulong64 param_2)
 
 {
   int iVar1;
   int in_stack_00000008;
-  uint local_c;
+  uint i;
+  MetPlayerInfo *metPlayersXuidData;
   
-  iVar1 = param_1 * 0x970;
-  local_c = 0;
+  iVar1 = controllerIndex * 0x970;
+  i = 0;
   while( true ) {
-    if ((byte)(&DAT_0a522460)[iVar1] <= local_c) {
+    if ((byte)(&DAT_0a522460)[iVar1] <= i) {
       return -1;
     }
-    if ((*(int *)(&DAT_0a521b00 + local_c * 0x30 + iVar1) == in_stack_00000008) &&
-       (*(int *)(&DAT_0a521b04 + local_c * 0x30 + iVar1) == (int)param_2)) break;
-    local_c = local_c + 1;
+    if ((*(int *)(&DAT_0a521b00 + i * 0x30 + iVar1) == in_stack_00000008) &&
+       (*(int *)(&DAT_0a521b04 + i * 0x30 + iVar1) == (int)param_2)) break;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
 // 0096D230  LiveMeetPlayer_GetRecentPlayerInfoByID  (live/live_meetplayer.cpp:553)
 
-bool __cdecl LiveMeetPlayer_GetRecentPlayerInfoByID(int param_1,ulong64 param_2,XuidInfo *param_3)
+bool __cdecl
+LiveMeetPlayer_GetRecentPlayerInfoByID(int controllerIndex,ulong64 param_2,XuidInfo *param_3)
 
 {
   code *pcVar1;
@@ -427,6 +443,8 @@ bool __cdecl LiveMeetPlayer_GetRecentPlayerInfoByID(int param_1,ulong64 param_2,
   int iVar5;
   undefined4 *puVar6;
   undefined4 unaff_EDI;
+  int playerIndex;
+  MetPlayerInfo *metPlayersXuidData;
   
   if ((param_2._4_4_ == (undefined4 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_meetplayer.cpp",0x22a,
@@ -436,10 +454,10 @@ bool __cdecl LiveMeetPlayer_GetRecentPlayerInfoByID(int param_1,ulong64 param_2,
     return (bool)uVar3;
   }
   if (param_2._4_4_ != (undefined4 *)0x0) {
-    iVar4 = LiveMeetPlayer_GetRecentPlayerIndexByID(param_1,CONCAT44(unaff_EDI,(undefined4)param_2))
-    ;
+    iVar4 = LiveMeetPlayer_GetRecentPlayerIndexByID
+                      (controllerIndex,CONCAT44(unaff_EDI,(undefined4)param_2));
     if (iVar4 != -1) {
-      puVar6 = (undefined4 *)(&DAT_0a521b00 + iVar4 * 0x30 + param_1 * 0x970);
+      puVar6 = (undefined4 *)(&DAT_0a521b00 + iVar4 * 0x30 + controllerIndex * 0x970);
       for (iVar5 = 0xc; iVar5 != 0; iVar5 = iVar5 + -1) {
         *param_2._4_4_ = *puVar6;
         puVar6 = puVar6 + 1;
@@ -454,16 +472,17 @@ bool __cdecl LiveMeetPlayer_GetRecentPlayerInfoByID(int param_1,ulong64 param_2,
 
 // 0096D340  LiveMeetPlayer_UpdatePlayerSession  (live/live_meetplayer.cpp:576)
 
-void __cdecl LiveMeetPlayer_UpdatePlayerSession(ulong64 param_1,ulong64 param_2)
+void __cdecl LiveMeetPlayer_UpdatePlayerSession(ulong64 playerUid,ulong64 sessionUid)
 
 {
-  uint local_c;
+  uint i;
+  MetPlayerInfo *metPlayersXuidData;
   
-  for (local_c = 0; local_c < DAT_0a522460; local_c = local_c + 1) {
-    if ((*(int *)(&DAT_0a521b00 + local_c * 0x30) == (int)param_1) &&
-       (*(int *)(&DAT_0a521b04 + local_c * 0x30) == param_1._4_4_)) {
-      *(undefined4 *)(recentPlayerSessionIDs + local_c) = (undefined4)param_2;
-      *(undefined4 *)((int)recentPlayerSessionIDs + local_c * 8 + 4) = param_2._4_4_;
+  for (i = 0; i < DAT_0a522460; i = i + 1) {
+    if ((*(int *)(&DAT_0a521b00 + i * 0x30) == (int)playerUid) &&
+       (*(int *)(&DAT_0a521b04 + i * 0x30) == playerUid._4_4_)) {
+      *(undefined4 *)(recentPlayerSessionIDs + i) = (undefined4)sessionUid;
+      *(undefined4 *)((int)recentPlayerSessionIDs + i * 8 + 4) = sessionUid._4_4_;
     }
   }
   return;
@@ -472,28 +491,29 @@ void __cdecl LiveMeetPlayer_UpdatePlayerSession(ulong64 param_1,ulong64 param_2)
 
 // 0096D3C0  LiveMeetPlayer_GetPlayerSessionByID  (live/live_meetplayer.cpp:589)
 
-ulong64 __cdecl LiveMeetPlayer_GetPlayerSessionByID(ulong64 param_1)
+ulong64 __cdecl LiveMeetPlayer_GetPlayerSessionByID(ulong64 playerUid)
 
 {
   undefined4 uVar1;
   undefined4 uVar2;
-  uint local_c;
+  uint i;
+  MetPlayerInfo *metPlayersXuidData;
   
-  local_c = 0;
+  i = 0;
   do {
-    if (DAT_0a522460 <= local_c) {
+    if (DAT_0a522460 <= i) {
       uVar1 = 0;
       uVar2 = 0;
 LAB_0096d434:
       return CONCAT44(uVar2,uVar1);
     }
-    if ((*(int *)(&DAT_0a521b00 + local_c * 0x30) == (int)param_1) &&
-       (*(int *)(&DAT_0a521b04 + local_c * 0x30) == param_1._4_4_)) {
-      uVar1 = (undefined4)recentPlayerSessionIDs[local_c];
-      uVar2 = *(undefined4 *)((int)recentPlayerSessionIDs + local_c * 8 + 4);
+    if ((*(int *)(&DAT_0a521b00 + i * 0x30) == (int)playerUid) &&
+       (*(int *)(&DAT_0a521b04 + i * 0x30) == playerUid._4_4_)) {
+      uVar1 = (undefined4)recentPlayerSessionIDs[i];
+      uVar2 = *(undefined4 *)((int)recentPlayerSessionIDs + i * 8 + 4);
       goto LAB_0096d434;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 

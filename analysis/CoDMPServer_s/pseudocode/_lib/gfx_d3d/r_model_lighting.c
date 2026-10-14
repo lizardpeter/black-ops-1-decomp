@@ -25,7 +25,7 @@ void __cdecl R_SetModelLightingCoords(ushort param_1,float *param_2)
 
 // 00846A30  R_AllocStaticModelLighting  (gfx_d3d/r_model_lighting.cpp:222)
 
-bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint param_2)
+bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *smodelIndex,uint param_2)
 
 {
   uint uVar1;
@@ -33,9 +33,10 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
   uint uVar2;
   ushort uVar3;
   uint uVar4;
+  GfxStaticModelDrawInst *smodelDrawInst;
   
-  if (param_1->lightingHandle != 0) {
-    smodelLightGlob.local.usedFrameCount[param_1->lightingHandle - 1] =
+  if (smodelIndex->lightingHandle != 0) {
+    smodelLightGlob.local.usedFrameCount[smodelIndex->lightingHandle - 1] =
          smodelLightGlob.local.frameCount;
     return true;
   }
@@ -59,7 +60,7 @@ bool __cdecl R_AllocStaticModelLighting(GfxStaticModelDrawInst *param_1,uint par
          = 0;
     R_UncacheStaticModel(unaff_EBP);
   }
-  param_1->lightingHandle = uVar3;
+  smodelIndex->lightingHandle = uVar3;
   smodelLightGlob.local.smodelIndex[uVar2] = (ushort)param_2;
   smodelLightGlob.lightingBits[param_2 >> 5] =
        smodelLightGlob.lightingBits[param_2 >> 5] | 0x80000000U >> ((byte)param_2 & 0x1f);
@@ -125,6 +126,8 @@ void __cdecl R_CalcModelLightingCmd(CalcLightingCmd *param_1)
 
 // 00846FC0  R_SetAllStaticModelLighting  (gfx_d3d/r_model_lighting.cpp:913)
 
+/* WARNING: Variable defined which should be unmapped: bits */
+
 void __cdecl R_SetAllStaticModelLighting(void)
 
 {
@@ -132,6 +135,7 @@ void __cdecl R_SetAllStaticModelLighting(void)
   uint uVar2;
   uint uVar3;
   uint unaff_EDI;
+  uint bits;
   uint uStack_4;
   
   uVar2 = 0;
@@ -166,7 +170,7 @@ void __cdecl R_SetAllStaticModelLighting(void)
 
 // 008470C0  RB_PatchModelLighting  (gfx_d3d/r_model_lighting.cpp:1041)
 
-void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *param_1,uint param_2)
+void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *patchList,uint param_2)
 
 {
   int iVar1;
@@ -183,28 +187,28 @@ void __cdecl RB_PatchModelLighting(GfxModelLightingPatch *param_1,uint param_2)
     s_lightGridRowDelta = modelLightGlob.lockedBox.RowPitch;
     for (; in_EAX != 0; in_EAX = in_EAX + -1) {
       puVar2 = (uchar *)((int)modelLightGlob.lockedBox.pBits +
-                        (param_1->modelLightingIndex & 0x3f) * 0x10 +
-                        (param_1->modelLightingIndex >> 4 & 0xffffffc) *
+                        (patchList->modelLightingIndex & 0x3f) * 0x10 +
+                        (patchList->modelLightingIndex >> 4 & 0xffffffc) *
                         modelLightGlob.lockedBox.RowPitch);
-      if (param_1->colorsCount == '\0') {
+      if (patchList->colorsCount == '\0') {
         uVar3 = 0;
         do {
           *(undefined4 *)(puVar2 + *(int *)((int)s_modelLightingSampleDelta + uVar3)) =
-               *(undefined4 *)param_1->groundLighting;
+               *(undefined4 *)patchList->groundLighting;
           *(undefined4 *)(puVar2 + *(int *)((int)s_modelLightingSampleDelta + uVar3 + 4)) =
-               *(undefined4 *)param_1->groundLighting;
+               *(undefined4 *)patchList->groundLighting;
           *(undefined4 *)(puVar2 + *(int *)((int)s_modelLightingSampleDelta + uVar3 + 8)) =
-               *(undefined4 *)param_1->groundLighting;
+               *(undefined4 *)patchList->groundLighting;
           iVar1 = uVar3 + 0xc;
           uVar3 = uVar3 + 0x10;
           *(undefined4 *)(puVar2 + *(int *)((int)s_modelLightingSampleDelta + iVar1)) =
-               *(undefined4 *)param_1->groundLighting;
+               *(undefined4 *)patchList->groundLighting;
         } while (uVar3 < 0x100);
       }
       else {
-        R_ApplyLightGridColorsPatch(param_1,puVar2);
+        R_ApplyLightGridColorsPatch(patchList,puVar2);
       }
-      param_1 = param_1 + 1;
+      patchList = patchList + 1;
     }
     (**(code **)((int)*((modelLightGlob.image)->texture).basemap + 0x50))
               (((modelLightGlob.image)->texture).basemap,0);
@@ -325,8 +329,8 @@ void __cdecl R_ResetModelLighting(void)
 void __cdecl R_InitModelLightingImage(void)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint depth;
+  int iVar1;
   ushort unaff_SI;
   char *unaff_EDI;
   int unaff_retaddr;
@@ -336,17 +340,17 @@ void __cdecl R_InitModelLightingImage(void)
   g_imageProgs[0xc].category = '\x04';
   g_imageProgs[0xc].semantic = '\x01';
   g_imageProgs[0xc].track = '\0';
-  iVar2 = Image_GetAvailableHashLocation(unaff_EDI);
-  uVar1 = modelLightGlob.imageHeight;
-  imageGlobals.imageHashTable[iVar2] = (GfxImage *)0x345cd70;
+  iVar1 = Image_GetAvailableHashLocation(unaff_EDI);
+  depth = modelLightGlob.imageHeight;
+  imageGlobals.imageHashTable[iVar1] = (GfxImage *)0x345cd70;
   g_imageProgs[0xc].width = 0x100;
   modelLightGlob.image = g_imageProgs + 0xc;
-  g_imageProgs[0xc].height = (ushort)uVar1;
+  g_imageProgs[0xc].height = (ushort)depth;
   g_imageProgs[0xc].depth = 4;
   if ((r_loadForRenderer->current).enabled != false) {
     Image_Create3DTexture_PC
               (g_imageProgs + 0xc,1,0x15,unaff_SI,(int)unaff_EDI,unaff_retaddr,in_stack_00000004);
-    Image_TrackTexture(g_imageProgs + 0xc,10,D3DFMT_A8R8G8B8,0x100,uVar1,4);
+    Image_TrackTexture(g_imageProgs + 0xc,10,D3DFMT_A8R8G8B8,0x100,depth,4);
   }
   return;
 }

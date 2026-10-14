@@ -409,19 +409,19 @@ char * _HTAnchor_address(int param_1)
 char * _HTAnchor_expandedAddress(int param_1)
 
 {
-  uchar *puVar1;
+  uchar *buf;
   int extraout_EAX;
   int extraout_EAX_00;
   char *local_8;
   
   local_8 = (char *)0x0;
   if (param_1 != 0) {
-    puVar1 = (uchar *)_HTAnchor_base(*(undefined4 *)(param_1 + 0x14));
+    buf = (uchar *)_HTAnchor_base(*(undefined4 *)(param_1 + 0x14));
     if ((param_1 == *(int *)(param_1 + 0x14)) || (*(int *)(param_1 + 0x18) == 0)) {
-      _HTSACopy(&local_8,puVar1);
+      _HTSACopy(&local_8,buf);
     }
     else {
-      strlen(puVar1);
+      strlen(buf);
       strlen(*(uchar **)(param_1 + 0x18));
       local_8 = (char *)_HTMemory_malloc(extraout_EAX + 2 + extraout_EAX_00);
       if (local_8 == (char *)0x0) {
@@ -1054,29 +1054,29 @@ void _HTAnchor_setLastModified(int param_1,undefined4 param_2,undefined4 param_3
 undefined8 _HTAnchor_age(int param_1)
 
 {
-  char *pcVar1;
-  long lVar2;
+  char *nptr;
+  long lVar1;
+  undefined4 uVar2;
   undefined4 uVar3;
-  undefined4 uVar4;
   
   if (param_1 == 0) {
+    uVar2 = 0xffffffff;
     uVar3 = 0xffffffff;
-    uVar4 = 0xffffffff;
   }
   else {
     if (((*(uint *)(param_1 + 0x88) & *(uint *)(param_1 + 0x8c)) == 0xffffffff) &&
        (*(int *)(param_1 + 0x30) != 0)) {
-      pcVar1 = (char *)_HTAssocList_findObject(*(undefined4 *)(param_1 + 0x30),"age");
-      if (pcVar1 != (char *)0x0) {
-        lVar2 = atol(pcVar1);
-        *(long *)(param_1 + 0x88) = lVar2;
-        *(long *)(param_1 + 0x8c) = lVar2 >> 0x1f;
+      nptr = (char *)_HTAssocList_findObject(*(undefined4 *)(param_1 + 0x30),"age");
+      if (nptr != (char *)0x0) {
+        lVar1 = atol(nptr);
+        *(long *)(param_1 + 0x88) = lVar1;
+        *(long *)(param_1 + 0x8c) = lVar1 >> 0x1f;
       }
     }
-    uVar3 = *(undefined4 *)(param_1 + 0x88);
-    uVar4 = *(undefined4 *)(param_1 + 0x8c);
+    uVar2 = *(undefined4 *)(param_1 + 0x88);
+    uVar3 = *(undefined4 *)(param_1 + 0x8c);
   }
-  return CONCAT44(uVar4,uVar3);
+  return CONCAT44(uVar3,uVar2);
 }
 
 

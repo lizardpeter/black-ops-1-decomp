@@ -2,27 +2,27 @@
 
 // 00408730  BG_ActorIsProne  (bgame/bg_actor_prone.cpp:17)
 
-int __cdecl BG_ActorIsProne(actor_prone_info_s *param_1,int param_2)
+int __cdecl BG_ActorIsProne(actor_prone_info_s *pInfo,int iCurrentTime)
 
 {
   int iVar1;
   
-  if (((param_1->prone == false) || (param_1->bCorpseOrientation != false)) ||
-     (param_1->orientPitch != false)) {
+  if (((pInfo->prone == false) || (pInfo->bCorpseOrientation != false)) ||
+     (pInfo->orientPitch != false)) {
     iVar1 = 0;
   }
-  else if (param_1->iProneTrans == 0) {
+  else if (pInfo->iProneTrans == 0) {
     iVar1 = 1;
   }
   else {
-    if (param_1->iProneTrans < 0) {
-      if (param_1->iProneTime - param_1->iProneTrans < param_2) {
-        param_1->prone = false;
+    if (pInfo->iProneTrans < 0) {
+      if (pInfo->iProneTime - pInfo->iProneTrans < iCurrentTime) {
+        pInfo->prone = false;
         return 0;
       }
     }
-    else if (param_1->iProneTime + param_1->iProneTrans < param_2) {
-      param_1->iProneTrans = 0;
+    else if (pInfo->iProneTime + pInfo->iProneTrans < iCurrentTime) {
+      pInfo->iProneTrans = 0;
     }
     iVar1 = 1;
   }
@@ -32,32 +32,32 @@ int __cdecl BG_ActorIsProne(actor_prone_info_s *param_1,int param_2)
 
 // 004087C0  BG_GetActorProneFraction  (bgame/bg_actor_prone.cpp:72)
 
-float __cdecl BG_GetActorProneFraction(actor_prone_info_s *param_1,int param_2)
+float __cdecl BG_GetActorProneFraction(actor_prone_info_s *pInfo,int iCurrentTime)
 
 {
   float fVar1;
   
-  if (param_1->prone == false) {
+  if (pInfo->prone == false) {
     fVar1 = 0.0;
   }
-  else if (param_1->iProneTrans == 0) {
+  else if (pInfo->iProneTrans == 0) {
     fVar1 = 1.0;
   }
-  else if (param_1->iProneTrans < 0) {
-    if (param_1->iProneTime - param_1->iProneTrans < param_2) {
-      param_1->prone = false;
+  else if (pInfo->iProneTrans < 0) {
+    if (pInfo->iProneTime - pInfo->iProneTrans < iCurrentTime) {
+      pInfo->prone = false;
       fVar1 = 0.0;
     }
     else {
-      fVar1 = 1.0 - (float)(param_2 - param_1->iProneTime) / (float)-param_1->iProneTrans;
+      fVar1 = 1.0 - (float)(iCurrentTime - pInfo->iProneTime) / (float)-pInfo->iProneTrans;
     }
   }
-  else if (param_1->iProneTime + param_1->iProneTrans < param_2) {
-    param_1->iProneTrans = 0;
+  else if (pInfo->iProneTime + pInfo->iProneTrans < iCurrentTime) {
+    pInfo->iProneTrans = 0;
     fVar1 = 1.0;
   }
   else {
-    fVar1 = (float)(param_2 - param_1->iProneTime) / (float)param_1->iProneTrans;
+    fVar1 = (float)(iCurrentTime - pInfo->iProneTime) / (float)pInfo->iProneTrans;
   }
   return fVar1;
 }

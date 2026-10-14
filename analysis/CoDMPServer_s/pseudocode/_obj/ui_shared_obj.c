@@ -27,12 +27,12 @@ void __cdecl Menus_FreeAllMemory(UiContext *param_1)
 void __cdecl UI_MapLoadInfo(char *param_1)
 
 {
-  uint uVar1;
-  uchar uVar2;
-  int iVar3;
-  uchar *puVar4;
-  uchar *puVar5;
-  char *pcVar6;
+  uint count;
+  uchar uVar1;
+  int iVar2;
+  uchar *src;
+  uchar *puVar3;
+  char *pcVar4;
   LPVOID pvStack_108;
   LPVOID pvStack_104;
   uchar auStack_100 [256];
@@ -40,64 +40,64 @@ void __cdecl UI_MapLoadInfo(char *param_1)
   if (*param_1 == '\0') {
     return;
   }
-  iVar3 = _FS_ReadFile(&pvStack_104);
-  if (iVar3 < 0) {
+  iVar2 = _FS_ReadFile(&pvStack_104);
+  if (iVar2 < 0) {
     Com_PrintWarning(0xd,"WARNING: Could not find \'%s\'.\n");
     return;
   }
   pvStack_108 = pvStack_104;
   Com_BeginParseSession(param_1);
-  iVar3 = FUN_006a9e90();
-  *(undefined1 *)(*(int *)(iVar3 + 0x4280) * 0x428 + 0x40b + iVar3) = 1;
+  iVar2 = FUN_006a9e90();
+  *(undefined1 *)(*(int *)(iVar2 + 0x4280) * 0x428 + 0x40b + iVar2) = 1;
   do {
-    iVar3 = FUN_006a9e90();
-    iVar3 = *(int *)(iVar3 + 0x4280) * 0x428 + iVar3;
-    if (*(char *)(iVar3 + 0x408) != '\0') {
-      pvStack_108 = *(LPVOID *)(iVar3 + 0x420);
-      *(undefined1 *)(iVar3 + 0x408) = 0;
-      *(undefined4 *)(iVar3 + 0x404) = *(undefined4 *)(iVar3 + 0x41c);
+    iVar2 = FUN_006a9e90();
+    iVar2 = *(int *)(iVar2 + 0x4280) * 0x428 + iVar2;
+    if (*(char *)(iVar2 + 0x408) != '\0') {
+      pvStack_108 = *(LPVOID *)(iVar2 + 0x420);
+      *(undefined1 *)(iVar2 + 0x408) = 0;
+      *(undefined4 *)(iVar2 + 0x404) = *(undefined4 *)(iVar2 + 0x41c);
     }
-    puVar4 = (uchar *)FUN_006aa5f0(&pvStack_108,1);
-    if (*puVar4 == '\0') goto LAB_00664eff;
-    puVar5 = puVar4;
+    src = (uchar *)FUN_006aa5f0(&pvStack_108,1);
+    if (*src == '\0') goto LAB_00664eff;
+    puVar3 = src;
     do {
-      uVar2 = *puVar5;
-      puVar5 = puVar5 + 1;
-    } while (uVar2 != '\0');
-    uVar1 = ((int)puVar5 - (int)(puVar4 + 1)) + 1;
-    if (0xff < uVar1) {
-      iVar3 = FUN_006a9e90();
-      if (*(int *)(iVar3 + 0x4280) == 0) {
+      uVar1 = *puVar3;
+      puVar3 = puVar3 + 1;
+    } while (uVar1 != '\0');
+    count = ((int)puVar3 - (int)(src + 1)) + 1;
+    if (0xff < count) {
+      iVar2 = FUN_006a9e90();
+      if (*(int *)(iVar2 + 0x4280) == 0) {
         Com_Error(ERR_FATAL,"\x15Com_EndParseSession: session underflow");
       }
-      *(int *)(iVar3 + 0x4280) = *(int *)(iVar3 + 0x4280) + -1;
+      *(int *)(iVar2 + 0x4280) = *(int *)(iVar2 + 0x4280) + -1;
       Com_Error(ERR_DROP,"key \'%s\' is %i > %i characters long",auStack_100,
-                (int)puVar5 - (int)(puVar4 + 1),0xff);
+                (int)puVar3 - (int)(src + 1),0xff);
     }
-    memcpy(auStack_100,puVar4,uVar1);
-    iVar3 = FUN_006a9e90();
-    pcVar6 = (char *)(*(int *)(iVar3 + 0x4280) * 0x428 + iVar3);
-    if (pcVar6[0x408] == '\0') {
+    memcpy(auStack_100,src,count);
+    iVar2 = FUN_006a9e90();
+    pcVar4 = (char *)(*(int *)(iVar2 + 0x4280) * 0x428 + iVar2);
+    if (pcVar4[0x408] == '\0') {
 LAB_00664ebf:
-      pcVar6 = (char *)FUN_006aa5f0(&pvStack_108,0);
+      pcVar4 = (char *)FUN_006aa5f0(&pvStack_108,0);
     }
     else {
-      pcVar6[0x408] = '\0';
-      if (pcVar6[0x409] != '\0') {
-        pvStack_108 = *(LPVOID *)(pcVar6 + 0x420);
-        *(undefined4 *)(pcVar6 + 0x404) = *(undefined4 *)(pcVar6 + 0x41c);
+      pcVar4[0x408] = '\0';
+      if (pcVar4[0x409] != '\0') {
+        pvStack_108 = *(LPVOID *)(pcVar4 + 0x420);
+        *(undefined4 *)(pcVar4 + 0x404) = *(undefined4 *)(pcVar4 + 0x41c);
         goto LAB_00664ebf;
       }
     }
-    if (*pcVar6 == '\0') {
+    if (*pcVar4 == '\0') {
       Com_EndParseSession();
       Com_Error(ERR_DROP,"key \'%s\' missing value in \'%s\'\n",auStack_100,param_1);
 LAB_00664eff:
-      iVar3 = FUN_006a9e90();
-      if (*(int *)(iVar3 + 0x4280) == 0) {
+      iVar2 = FUN_006a9e90();
+      if (*(int *)(iVar2 + 0x4280) == 0) {
         Com_Error(ERR_FATAL,"\x15Com_EndParseSession: session underflow");
       }
-      *(int *)(iVar3 + 0x4280) = *(int *)(iVar3 + 0x4280) + -1;
+      *(int *)(iVar2 + 0x4280) = *(int *)(iVar2 + 0x4280) + -1;
       fs_loadStack = fs_loadStack + -1;
       VirtualFree(pvStack_104,0,0x8000);
       return;

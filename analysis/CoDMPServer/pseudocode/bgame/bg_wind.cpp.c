@@ -5,6 +5,10 @@
 void __cdecl BG_Wind_RegisterDvars(void)
 
 {
+  bool ENABLE_WIND;
+  bool ENABLE_GRASS_WIND;
+  ushort defaultDvarFlags;
+  
   g_EnableGlobalWind = _Dvar_RegisterBool("enable_global_wind",false,0x1000,"enable wind effect");
   g_EnableGrassWind =
        _Dvar_RegisterBool("enable_grass_wind",false,0x1000,"enable grass wind effect");
@@ -81,100 +85,103 @@ void __cdecl BG_Wind_RegisterDvars(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DisplayWindDebug(int param_1)
+void __cdecl DisplayWindDebug(int cur_time)
 
 {
   float fVar1;
-  float local_a4;
+  float start;
   float local_a0;
   undefined4 local_9c;
-  float local_98;
+  float end;
   float local_94;
   undefined4 local_90;
-  float local_8c [3];
-  int local_80;
-  float local_7c;
+  float debugCircleDir [3];
+  int i;
+  float loWindStart;
   float local_78;
   float local_74;
-  float local_70;
+  float pos;
   float local_6c;
   undefined4 local_68;
-  float local_64;
+  float vertLineStart;
   float local_60;
   undefined4 local_5c;
-  float local_58;
+  float vertColor;
   float local_54;
   float local_50;
   float local_4c;
-  float local_48;
+  float hiWindEnd;
   float local_44;
   float local_40;
-  float local_3c [5];
+  float lineColor [5];
   float local_28;
   float local_24;
-  float local_20;
+  float vertLineEnd;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float loWindEnd;
   float local_10;
   float local_c;
-  cg_s *local_8;
+  cg_s *cgameGlob;
   
   if (g_GlobalWindDebugDisplay != (dvar_s *)0x0) {
-    local_8 = CG_GetLocalClientGlobals(0);
+    cgameGlob = CG_GetLocalClientGlobals(0);
     if ((g_GlobalWindDebugDisplay->current).enabled != false) {
-      if ((debugValLastFrame == false) && (local_8 != (cg_s *)0x0)) {
-        windDebugPos[0] = (local_8->refdef).viewaxis[0][0] * 100.0 + (local_8->refdef).vieworg[0];
-        windDebugPos[1] = (local_8->refdef).viewaxis[0][1] * 100.0 + (local_8->refdef).vieworg[1];
-        windDebugPos[2] = (local_8->refdef).viewaxis[0][2] * 100.0 + (local_8->refdef).vieworg[2];
+      if ((debugValLastFrame == false) && (cgameGlob != (cg_s *)0x0)) {
+        windDebugPos[0] =
+             (cgameGlob->refdef).viewaxis[0][0] * 100.0 + (cgameGlob->refdef).vieworg[0];
+        windDebugPos[1] =
+             (cgameGlob->refdef).viewaxis[0][1] * 100.0 + (cgameGlob->refdef).vieworg[1];
+        windDebugPos[2] =
+             (cgameGlob->refdef).viewaxis[0][2] * 100.0 + (cgameGlob->refdef).vieworg[2];
       }
-      local_64 = windDebugPos[0];
+      vertLineStart = windDebugPos[0];
       local_60 = windDebugPos[1];
       local_5c = 0x461c4000;
-      local_20 = windDebugPos[0];
+      vertLineEnd = windDebugPos[0];
       local_1c = windDebugPos[1];
       local_18 = 0xc61c4000;
-      local_7c = windDebugPos[0];
+      loWindStart = windDebugPos[0];
       local_78 = windDebugPos[1];
       local_74 = (g_GlobalLowWindAltitude->current).value;
-      local_3c[4] = windDebugPos[0];
+      lineColor[4] = windDebugPos[0];
       local_28 = windDebugPos[1];
       local_24 = (g_GlobalHiWindAltitude->current).value;
       fVar1 = (g_GlobalLowWindStrengthPercentage->current).value;
-      local_14 = fVar1 * (g_GlobalWindVector->current).value + windDebugPos[0];
+      loWindEnd = fVar1 * (g_GlobalWindVector->current).value + windDebugPos[0];
       local_10 = fVar1 * (g_GlobalWindVector->current).vector[1] + windDebugPos[1];
       local_c = fVar1 * (g_GlobalWindVector->current).vector[2] + local_74;
-      local_48 = windDebugPos[0] + (g_GlobalWindVector->current).value;
+      hiWindEnd = windDebugPos[0] + (g_GlobalWindVector->current).value;
       local_44 = windDebugPos[1] + (g_GlobalWindVector->current).vector[1];
       local_40 = local_24 + (g_GlobalWindVector->current).vector[2];
-      local_58 = 0.75;
+      vertColor = 0.75;
       local_54 = 0.75;
       local_50 = 0.75;
       local_4c = 1.0;
-      G_DebugLineWithDuration(&local_64,&local_20,&local_58,0,2);
-      G_DebugLineWithDuration(&local_14,&local_48,&local_58,0,2);
-      local_3c[0] = 1.0;
-      local_3c[1] = 0.0;
-      local_3c[2] = 1.0;
-      local_3c[3] = 1.0;
-      G_DebugLineWithDuration(&local_7c,&local_14,local_3c,0,2);
-      G_DebugLineWithDuration(local_3c + 4,&local_48,local_3c,0,2);
-      for (local_80 = 0; local_80 < 0x10; local_80 = local_80 + 1) {
-        local_a4 = g_GrassWind[0][local_80].pos[0];
-        local_a0 = g_GrassWind[0][local_80].pos[1];
+      G_DebugLineWithDuration(&vertLineStart,&vertLineEnd,&vertColor,0,2);
+      G_DebugLineWithDuration(&loWindEnd,&hiWindEnd,&vertColor,0,2);
+      lineColor[0] = 1.0;
+      lineColor[1] = 0.0;
+      lineColor[2] = 1.0;
+      lineColor[3] = 1.0;
+      G_DebugLineWithDuration(&loWindStart,&loWindEnd,lineColor,0,2);
+      G_DebugLineWithDuration(lineColor + 4,&hiWindEnd,lineColor,0,2);
+      for (i = 0; i < 0x10; i = i + 1) {
+        start = g_GrassWind[0][i].pos[0];
+        local_a0 = g_GrassWind[0][i].pos[1];
         local_68 = 0;
         local_90 = 0;
         local_9c = 0x447a0000;
-        local_98 = local_a4;
+        end = start;
         local_94 = local_a0;
-        local_70 = local_a4;
+        pos = start;
         local_6c = local_a0;
-        CM_TracePointDown(&local_a4,&local_98,0x831,0x3f00000,&local_70,(float *)0x0,(float *)0x0);
-        G_DebugStar(&local_70,local_3c,3);
-        local_8c[0] = 0.0;
-        local_8c[1] = 0.0;
-        local_8c[2] = 1.0;
-        G_DebugCircleEx(&local_70,(g_GlobalWindGustRadius->current).value,local_8c,colorWhite,1,1);
+        CM_TracePointDown(&start,&end,0x831,0x3f00000,&pos,(float *)0x0,(float *)0x0);
+        G_DebugStar(&pos,lineColor,3);
+        debugCircleDir[0] = 0.0;
+        debugCircleDir[1] = 0.0;
+        debugCircleDir[2] = 1.0;
+        G_DebugCircleEx(&pos,(g_GlobalWindGustRadius->current).value,debugCircleDir,colorWhite,1,1);
       }
     }
     debugValLastFrame = (g_GlobalWindDebugDisplay->current).enabled;
@@ -186,7 +193,7 @@ void __cdecl DisplayWindDebug(int param_1)
 // 00468670  SeedVariantWind  (bgame/bg_wind.cpp:267)
 
 void __cdecl
-SeedVariantWind(VariantWind *param_1,int param_2,int param_3,float *param_4,float param_5)
+SeedVariantWind(VariantWind *wind,int i,int start_time,float *seedWindVector,float windLeafScale)
 
 {
   float fVar1;
@@ -194,66 +201,67 @@ SeedVariantWind(VariantWind *param_1,int param_2,int param_3,float *param_4,floa
   int iVar3;
   int iVar4;
   float fVar5;
+  float v_scale;
+  float v;
   
-  param_1->reset_timer = param_3 + (0x10 - param_2) * -0x753;
-  param_1->gust_start =
-       param_3 - (0x10 - param_2) * (int)((g_GlobalWindGrassGustInterval->current).value / 16.0);
+  wind->reset_timer = start_time + (0x10 - i) * -0x753;
+  wind->gust_start =
+       start_time - (0x10 - i) * (int)((g_GlobalWindGrassGustInterval->current).value / 16.0);
   fVar5 = (g_GlobalWindGrassGustInterval->current).value;
   iVar2 = rand();
-  param_1->gust_dur =
+  wind->gust_dur =
        (int)(fVar5 / 2.0) + iVar2 % (int)((g_GlobalWindGrassGustInterval->current).value / 2.0);
-  fVar5 = g_WindVariants[(param_2 + 1) % 0x11];
-  fVar1 = g_WindVariants[(param_2 + 2) % 0x11];
-  param_1->wind_vector[0] = *param_4 * g_WindVariants[param_2 % 0x11];
-  param_1->wind_vector[1] = param_4[1] * fVar5;
-  param_1->wind_vector[2] = param_4[2] * fVar1;
-  param_1->wind_vector[0] = *param_4 + param_1->wind_vector[0];
-  param_1->wind_vector[1] = param_4[1] + param_1->wind_vector[1];
-  param_1->wind_vector[2] = param_4[2] + param_1->wind_vector[2];
-  fVar5 = (param_1->wind_vector[0] * param_1->wind_vector[0] +
-           param_1->wind_vector[1] * param_1->wind_vector[1] +
-          param_1->wind_vector[2] * param_1->wind_vector[2]) / (param_5 * param_5);
+  fVar5 = g_WindVariants[(i + 1) % 0x11];
+  fVar1 = g_WindVariants[(i + 2) % 0x11];
+  wind->wind_vector[0] = *seedWindVector * g_WindVariants[i % 0x11];
+  wind->wind_vector[1] = seedWindVector[1] * fVar5;
+  wind->wind_vector[2] = seedWindVector[2] * fVar1;
+  wind->wind_vector[0] = *seedWindVector + wind->wind_vector[0];
+  wind->wind_vector[1] = seedWindVector[1] + wind->wind_vector[1];
+  wind->wind_vector[2] = seedWindVector[2] + wind->wind_vector[2];
+  fVar5 = (wind->wind_vector[0] * wind->wind_vector[0] + wind->wind_vector[1] * wind->wind_vector[1]
+          + wind->wind_vector[2] * wind->wind_vector[2]) / (windLeafScale * windLeafScale);
   iVar2 = rand();
   iVar3 = rand();
   iVar4 = rand();
-  param_1->rustle_amplitude[0] = fVar5 * ((float)(iVar2 + -0x3fff) / 32767.0);
-  param_1->rustle_amplitude[1] = fVar5 * ((float)(iVar3 + -0x3fff) / 32767.0);
-  param_1->rustle_amplitude[2] = fVar5 * ((float)(iVar4 + -0x3fff) / 32767.0);
+  wind->rustle_amplitude[0] = fVar5 * ((float)(iVar2 + -0x3fff) / 32767.0);
+  wind->rustle_amplitude[1] = fVar5 * ((float)(iVar3 + -0x3fff) / 32767.0);
+  wind->rustle_amplitude[2] = fVar5 * ((float)(iVar4 + -0x3fff) / 32767.0);
   iVar2 = rand();
   iVar3 = rand();
   iVar4 = rand();
   fVar5 = fVar5 * 3.1415927;
-  param_1->rustle_angular_frequency[0] = fVar5 * ((float)(iVar2 + -0x3fff) / 32767.0);
-  param_1->rustle_angular_frequency[1] = fVar5 * ((float)(iVar3 + -0x3fff) / 32767.0);
-  param_1->rustle_angular_frequency[2] = fVar5 * ((float)(iVar4 + -0x3fff) / 32767.0);
+  wind->rustle_angular_frequency[0] = fVar5 * ((float)(iVar2 + -0x3fff) / 32767.0);
+  wind->rustle_angular_frequency[1] = fVar5 * ((float)(iVar3 + -0x3fff) / 32767.0);
+  wind->rustle_angular_frequency[2] = fVar5 * ((float)(iVar4 + -0x3fff) / 32767.0);
   return;
 }
 
 
 // 004689A0  BG_SeedVarintWinds  (bgame/bg_wind.cpp:308)
 
-void __cdecl BG_SeedVarintWinds(int param_1,int param_2)
+void __cdecl BG_SeedVarintWinds(int variant_seed,int start_time)
 
 {
   int iVar1;
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  srand(param_1);
-  for (local_8 = 0; local_8 < 0x11; local_8 = local_8 + 1) {
+  srand(variant_seed);
+  for (i = 0; i < 0x11; i = i + 1) {
     iVar1 = rand();
-    g_WindVariants[local_8] = ((float)(iVar1 + -0x3fff) * 0.1) / 32767.0;
+    g_WindVariants[i] = ((float)(iVar1 + -0x3fff) * 0.1) / 32767.0;
   }
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    SeedVariantWind(g_VariantWind + local_8,local_8,param_2,&(g_GlobalWindVector->current).value,
+  for (i = 0; i < 0x10; i = i + 1) {
+    SeedVariantWind(g_VariantWind + i,i,start_time,&(g_GlobalWindVector->current).value,
                     (g_GlobalWindLeafScale->current).value);
   }
-  SeedVariantWind(&g_localWind.wind,0,param_2,&(g_GlobalWindVector->current).value,
+  SeedVariantWind(&g_localWind.wind,0,start_time,&(g_GlobalWindVector->current).value,
                   (g_GlobalWindLeafScale->current).value);
-  for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-      *(undefined4 *)(local_c * 0x1c0 + 0xe86550 + local_8 * 0x1c) = 0;
-      *(undefined4 *)(local_c * 0x1c0 + 0xe8654c + local_8 * 0x1c) = 0;
+  for (j = 0; j < 1; j = j + 1) {
+    for (i = 0; i < 0x10; i = i + 1) {
+      *(undefined4 *)(j * 0x1c0 + 0xe86550 + i * 0x1c) = 0;
+      *(undefined4 *)(j * 0x1c0 + 0xe8654c + i * 0x1c) = 0;
     }
   }
   return;
@@ -262,7 +270,8 @@ void __cdecl BG_SeedVarintWinds(int param_1,int param_2)
 
 // 00468AE0  BG_UpdateVariantWind  (bgame/bg_wind.cpp:340)
 
-void __cdecl BG_UpdateVariantWind(VariantWind *param_1,int param_2,float *param_3,int param_4)
+void __cdecl
+BG_UpdateVariantWind(VariantWind *wind,int variantIndex,float *seedWindVector,int cur_time)
 
 {
   int iVar1;
@@ -272,35 +281,34 @@ void __cdecl BG_UpdateVariantWind(VariantWind *param_1,int param_2,float *param_
   float fVar4;
   undefined4 in_stack_ffffffd4;
   
-  if (param_1->reset_timer <= param_4) {
-    param_1->reset_timer = param_4 + 30000;
-    fVar3 = g_WindVariants[(param_2 + 1) % 0x11];
-    fVar4 = g_WindVariants[(param_2 + 2) % 0x11];
-    param_1->wind_vector[0] = *param_3 * g_WindVariants[param_2 % 0x11];
-    param_1->wind_vector[1] = param_3[1] * fVar3;
-    param_1->wind_vector[2] = param_3[2] * fVar4;
-    param_1->wind_vector[0] = *param_3 + param_1->wind_vector[0];
-    param_1->wind_vector[1] = param_3[1] + param_1->wind_vector[1];
-    param_1->wind_vector[2] = param_3[2] + param_1->wind_vector[2];
+  if (wind->reset_timer <= cur_time) {
+    wind->reset_timer = cur_time + 30000;
+    fVar3 = g_WindVariants[(variantIndex + 1) % 0x11];
+    fVar4 = g_WindVariants[(variantIndex + 2) % 0x11];
+    wind->wind_vector[0] = *seedWindVector * g_WindVariants[variantIndex % 0x11];
+    wind->wind_vector[1] = seedWindVector[1] * fVar3;
+    wind->wind_vector[2] = seedWindVector[2] * fVar4;
+    wind->wind_vector[0] = *seedWindVector + wind->wind_vector[0];
+    wind->wind_vector[1] = seedWindVector[1] + wind->wind_vector[1];
+    wind->wind_vector[2] = seedWindVector[2] + wind->wind_vector[2];
   }
-  if (param_1->gust_start + param_1->gust_dur <= param_4) {
-    param_1->gust_start = param_4;
+  if (wind->gust_start + wind->gust_dur <= cur_time) {
+    wind->gust_start = cur_time;
     fVar3 = (g_GlobalWindGrassGustInterval->current).value;
     iVar1 = rand();
-    param_1->gust_dur =
+    wind->gust_dur =
          (int)(fVar3 / 2.0) + iVar1 % (int)((g_GlobalWindGrassGustInterval->current).value / 2.0);
-    fVar3 = param_1->wind_vector[0] * param_1->wind_vector[0] +
-            param_1->wind_vector[1] * param_1->wind_vector[1] +
-            param_1->wind_vector[2] * param_1->wind_vector[2];
+    fVar3 = wind->wind_vector[0] * wind->wind_vector[0] +
+            wind->wind_vector[1] * wind->wind_vector[1] +
+            wind->wind_vector[2] * wind->wind_vector[2];
     fVar4 = random();
     dVar2 = (double)(fVar4 * -fVar3 + fVar3 + 1.0);
     __libm_sse2_log((double)CONCAT44(in_stack_ffffffd4,unaff_ESI));
-    param_1->blade_acceleration = (float)dVar2 / (g_GlobalWindGrassScale->current).value;
+    wind->blade_acceleration = (float)dVar2 / (g_GlobalWindGrassScale->current).value;
   }
-  param_1->blade_velocity = param_1->blade_velocity + param_1->blade_acceleration;
-  param_1->blade_acceleration =
-       -(g_GlobalWindGrassTension->current).value * param_1->blade_velocity +
-       param_1->blade_acceleration;
+  wind->blade_velocity = wind->blade_velocity + wind->blade_acceleration;
+  wind->blade_acceleration =
+       -(g_GlobalWindGrassTension->current).value * wind->blade_velocity + wind->blade_acceleration;
   return;
 }
 
@@ -312,7 +320,7 @@ void __cdecl BG_UpdateVariantWind(VariantWind *param_1,int param_2,float *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateWind(int param_1)
+void __cdecl CG_UpdateWind(int cur_time)
 
 {
   bool bVar1;
@@ -377,7 +385,7 @@ void __cdecl CG_UpdateWind(int param_1)
   PIXBeginNamedEvent(-1,"CG_UpdateWind");
   if ((_S1 & 1) == 0) {
     _S1 = _S1 | 1;
-    last_time = param_1;
+    last_time = cur_time;
   }
   if ((g_EnableGlobalWind->current).enabled == false) {
     local_18 = GetCurrentThreadId();
@@ -403,14 +411,14 @@ void __cdecl CG_UpdateWind(int param_1)
       g_LastGlobalWindVector[1] = (g_GlobalWindVector->current).vector[1];
       g_LastGlobalWindVector[2] = (g_GlobalWindVector->current).vector[2];
       g_LastGlobalWindVector[3] = (g_GlobalWindVector->current).vector[3];
-      BG_SeedVarintWinds(0x7fff,param_1);
+      BG_SeedVarintWinds(0x7fff,cur_time);
     }
     for (local_30 = 0; (int)local_30 < 0x10; local_30 = local_30 + 1) {
       BG_UpdateVariantWind
-                (g_VariantWind + local_30,local_30,&(g_GlobalWindVector->current).value,param_1);
+                (g_VariantWind + local_30,local_30,&(g_GlobalWindVector->current).value,cur_time);
       for (local_34 = 0; local_34 < 3; local_34 = local_34 + 1) {
-        local_38 = ((float)param_1 / 1000.0) * *(float *)(local_30 * 0x38 + 0xe861c4 + local_34 * 4)
-        ;
+        local_38 = ((float)cur_time / 1000.0) *
+                   *(float *)(local_30 * 0x38 + 0xe861c4 + local_34 * 4);
         _CIfmod();
         local_40 = (float)extraout_ST0;
         dVar4 = (double)local_40;
@@ -428,9 +436,10 @@ void __cdecl CG_UpdateWind(int param_1)
         if ((bVar1) && (local_58 = CG_GetLocalClientGlobals(local_54), local_58 != (cg_s *)0x0)) {
           for (local_30 = 0; (int)local_30 < 0x10; local_30 = local_30 + 1) {
             if ((local_30 == 0) && (g_localWind.entnum != 0x3ff)) {
-              BG_UpdateVariantWind(&g_localWind.wind,0,&(g_localWindVector->current).value,param_1);
+              BG_UpdateVariantWind(&g_localWind.wind,0,&(g_localWindVector->current).value,cur_time)
+              ;
               for (local_34 = 0; local_34 < 3; local_34 = local_34 + 1) {
-                local_5c = ((float)param_1 / 1000.0) *
+                local_5c = ((float)cur_time / 1000.0) *
                            *(float *)((int)&g_localWindFrequency->current + local_34 * 4);
                 _CIfmod();
                 local_64 = (float)extraout_ST0_00;
@@ -454,7 +463,7 @@ void __cdecl CG_UpdateWind(int param_1)
             }
             else {
               if (*(int *)(local_54 * 0x1c0 + 0xe86550 + local_30 * 0x1c) +
-                  *(int *)(local_54 * 0x1c0 + 0xe8654c + local_30 * 0x1c) < param_1) {
+                  *(int *)(local_54 * 0x1c0 + 0xe8654c + local_30 * 0x1c) < cur_time) {
                 *(float *)(local_54 * 0x1c0 + 0xe86540 + local_30 * 0x1c) =
                      (g_GlobalWindVector->current).value * g_WindVariants[(int)local_30 % 0x11] +
                      (g_GlobalWindVector->current).value;
@@ -470,7 +479,7 @@ void __cdecl CG_UpdateWind(int param_1)
                      (g_GlobalWindGustSpeedMultiplier->current).value;
                 fVar5 = flrand(0.1,1.0);
                 *(float *)(local_54 * 0x1c0 + 0xe86548 + local_30 * 0x1c) = fVar5;
-                *(int *)(local_54 * 0x1c0 + 0xe86550 + local_30 * 0x1c) = param_1;
+                *(int *)(local_54 * 0x1c0 + 0xe86550 + local_30 * 0x1c) = cur_time;
                 iVar2 = irand(5000,10000);
                 *(int *)(local_54 * 0x1c0 + 0xe8654c + local_30 * 0x1c) = iVar2;
                 local_84 = (float *)(local_54 * 0x1c0 + 0xe86540 + local_30 * 0x1c);
@@ -498,7 +507,7 @@ void __cdecl CG_UpdateWind(int param_1)
                 local_a8->dir[0] = local_ac->dir[0] + local_98;
               }
               else {
-                local_b0 = (float)(param_1 - last_time) / 1000.0;
+                local_b0 = (float)(cur_time - last_time) / 1000.0;
                 local_bc = (float *)(local_54 * 0x1c0 + 0xe86540 + local_30 * 0x1c);
                 local_b8 = local_b0 * *local_bc;
                 local_b4 = local_b0 * local_bc[1];
@@ -507,9 +516,9 @@ void __cdecl CG_UpdateWind(int param_1)
                 local_c0->pos[0] = local_c4->pos[0] + local_b8;
                 local_c0->pos[1] = local_c4->pos[1] + local_b4;
               }
-              local_c8 = ((float)(param_1 - *(int *)(local_54 * 0x1c0 + 0xe86550 + local_30 * 0x1c))
-                         / (float)*(int *)(local_54 * 0x1c0 + 0xe8654c + local_30 * 0x1c)) *
-                         3.1415927;
+              local_c8 = ((float)(cur_time - *(int *)(local_54 * 0x1c0 + 0xe86550 + local_30 * 0x1c)
+                                 ) / (float)*(int *)(local_54 * 0x1c0 + 0xe8654c + local_30 * 0x1c))
+                         * 3.1415927;
               _CIfmod();
               local_d0 = (float)extraout_ST0_01;
               dVar4 = (double)local_d0;
@@ -526,8 +535,8 @@ void __cdecl CG_UpdateWind(int param_1)
         }
       }
     }
-    DisplayWindDebug(param_1);
-    local_d8 = ((float)param_1 * (g_GlobalTreeFrequency->current).value) / 1000.0;
+    DisplayWindDebug(cur_time);
+    local_d8 = ((float)cur_time * (g_GlobalTreeFrequency->current).value) / 1000.0;
     dVar4 = (double)local_d8;
     __libm_sse2_sin((double)CONCAT44(in_stack_fffffef4,unaff_ESI));
     local_dc = (float)dVar4;
@@ -541,14 +550,14 @@ void __cdecl CG_UpdateWind(int param_1)
     local_100.lowWindAltitude = (float)(g_GlobalLowWindAltitude->current).integer;
     local_100.lowWindStrengthPercent = (float)(g_GlobalLowWindStrengthPercentage->current).integer;
     FX_SetGlobalWind(&local_100);
-    last_time = param_1;
+    last_time = cur_time;
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    last_time = param_1;
+    last_time = cur_time;
     local_20 = GetCurrentThreadId();
     local_1c = 0;
     if ((local_20 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -561,13 +570,13 @@ void __cdecl CG_UpdateWind(int param_1)
 
 // 004698F0  BG_GetVariantWindVector  (bgame/bg_wind.cpp:510)
 
-void __cdecl BG_GetVariantWindVector(int param_1,float *param_2)
+void __cdecl BG_GetVariantWindVector(int which,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0xf < param_1) {
+  if (0xf < which) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_wind.cpp",0x1ff,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -575,30 +584,30 @@ void __cdecl BG_GetVariantWindVector(int param_1,float *param_2)
       return;
     }
   }
-  *param_2 = g_VariantWind[param_1].wind_vector[0];
-  param_2[1] = g_VariantWind[param_1].wind_vector[1];
-  param_2[2] = g_VariantWind[param_1].wind_vector[2];
+  *out = g_VariantWind[which].wind_vector[0];
+  out[1] = g_VariantWind[which].wind_vector[1];
+  out[2] = g_VariantWind[which].wind_vector[2];
   return;
 }
 
 
 // 00469960  BG_GetGlobalWind  (bgame/bg_wind.cpp:521)
 
-void __cdecl BG_GetGlobalWind(float *param_1)
+void __cdecl BG_GetGlobalWind(float *out)
 
 {
   dvar_s *pdVar1;
   
   pdVar1 = g_GlobalWindVector;
   if (g_GlobalWindVector == (dvar_s *)0x0) {
-    *param_1 = 0.0;
-    param_1[1] = 0.0;
-    param_1[2] = 0.0;
+    *out = 0.0;
+    out[1] = 0.0;
+    out[2] = 0.0;
   }
   else {
-    *param_1 = (float)(g_GlobalWindVector->current).integer;
-    param_1[1] = (pdVar1->current).vector[1];
-    param_1[2] = (pdVar1->current).vector[2];
+    *out = (float)(g_GlobalWindVector->current).integer;
+    out[1] = (pdVar1->current).vector[1];
+    out[2] = (pdVar1->current).vector[2];
   }
   return;
 }
@@ -606,10 +615,10 @@ void __cdecl BG_GetGlobalWind(float *param_1)
 
 // 004699D0  CG_EnableLocalWindSource  (bgame/bg_wind.cpp:540)
 
-void __cdecl CG_EnableLocalWindSource(int param_1)
+void __cdecl CG_EnableLocalWindSource(int entnum)
 
 {
-  g_localWind.entnum = param_1;
+  g_localWind.entnum = entnum;
   return;
 }
 
@@ -621,20 +630,23 @@ void __cdecl CG_EnableLocalWindSource(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_GetLocalWindSourceScale(int param_1,float *param_2)
+float __cdecl CG_GetLocalWindSourceScale(int localClientNum,float *pos)
 
 {
   centity_s *pcVar1;
   float fVar2;
   float fVar3;
+  float gust_dist;
+  centity_s *ent;
+  float ent_dist;
   
   if (g_localWind.entnum == 0x3ff) {
     fVar2 = 0.0;
   }
   else {
-    pcVar1 = CG_GetEntity(param_1,g_localWind.entnum);
+    pcVar1 = CG_GetEntity(localClientNum,g_localWind.entnum);
     fVar2 = (g_GlobalWindGustRadius->current).value * (g_GlobalWindGustRadius->current).value;
-    fVar3 = Vec3DistanceSq(param_2,(pcVar1->pose).origin);
+    fVar3 = Vec3DistanceSq(pos,(pcVar1->pose).origin);
     if (fVar3 <= fVar2) {
       fVar2 = (fVar2 - fVar3) / fVar2;
     }

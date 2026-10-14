@@ -2,7 +2,7 @@
 
 // 0095F648  _gmtime64_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gmtime64.c:48)
 
-int __cdecl _gmtime64_s(tm *param_1,long64 *param_2)
+int __cdecl _gmtime64_s(tm *ptm,long64 *timp)
 
 {
   tm *ptVar1;
@@ -25,17 +25,18 @@ int __cdecl _gmtime64_s(tm *param_1,long64 *param_2)
   undefined *puVar9;
   undefined *puVar10;
   bool bVar11;
+  int islpyr;
   
-  ptVar5 = param_1;
+  ptVar5 = ptm;
   bVar4 = false;
-  if ((param_1 == (tm *)0x0) || (memset((uchar *)param_1,0xff,0x24), param_2 == (long64 *)0x0)) {
+  if ((ptm == (tm *)0x0) || (memset((uchar *)ptm,0xff,0x24), timp == (long64 *)0x0)) {
     piVar6 = _errno();
     *piVar6 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return 0x16;
   }
-  uVar7 = (uint)*param_2;
-  uVar3 = *(uint *)((int)param_2 + 4);
+  uVar7 = (uint)*timp;
+  uVar3 = *(uint *)((int)timp + 4);
   if (((0x7fffffff < uVar3) && (((int)uVar3 < -1 || (uVar7 < 0xffff5740)))) ||
      ((6 < (int)uVar3 && ((7 < (int)uVar3 || (0x934126cf < uVar7)))))) {
     piVar6 = _errno();
@@ -43,7 +44,7 @@ int __cdecl _gmtime64_s(tm *param_1,long64 *param_2)
     return 0x16;
   }
   _alldiv();
-  param_1 = (tm *)(extraout_EAX + 0x46);
+  ptm = (tm *)(extraout_EAX + 0x46);
   ptVar1 = (tm *)(extraout_EAX + 0x45);
   _allmul();
   _allmul();
@@ -55,25 +56,25 @@ int __cdecl _gmtime64_s(tm *param_1,long64 *param_2)
     if ((int)uVar7 < 0) {
       bVar11 = (uVar7 - 1 | 0xfffffffc) == 0xffffffff;
     }
-    param_1 = ptVar1;
+    ptm = ptVar1;
     if (((!bVar11) || ((int)ptVar1 % 100 == 0)) &&
        (puVar10 = &DAT_01e13380 + (int)puVar9, (extraout_EAX + 0x7b1) % 400 != 0))
     goto LAB_0095f7cc;
     puVar9 = puVar9 + 0x1e28500;
   }
   else {
-    uVar7 = (uint)param_1 & 0x80000003;
+    uVar7 = (uint)ptm & 0x80000003;
     bVar11 = uVar7 == 0;
     if ((int)uVar7 < 0) {
       bVar11 = (uVar7 - 1 | 0xfffffffc) == 0xffffffff;
     }
-    if (((!bVar11) || ((int)param_1 % 100 == 0)) &&
+    if (((!bVar11) || ((int)ptm % 100 == 0)) &&
        (puVar10 = puVar9, (extraout_EAX + 0x7b2) % 400 != 0)) goto LAB_0095f7cc;
   }
   bVar4 = true;
   puVar10 = puVar9;
 LAB_0095f7cc:
-  ptVar5->tm_year = (int)param_1;
+  ptVar5->tm_year = (int)ptm;
   _alldiv();
   ptVar5->tm_yday = extraout_EAX_01;
   _allmul();
@@ -104,19 +105,19 @@ LAB_0095f7cc:
 
 // 0095F88B  _gmtime64  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/gmtime64.c:162)
 
-tm * __cdecl _gmtime64(long64 *param_1)
+tm * __cdecl _gmtime64(long64 *timp)
 
 {
-  tm *ptVar1;
-  int iVar2;
-  tm *ptVar3;
+  tm *ptm;
+  int iVar1;
+  tm *ptVar2;
   
-  ptVar1 = __getgmtimebuf();
-  ptVar3 = (tm *)0x0;
-  if (ptVar1 != (tm *)0x0) {
-    iVar2 = _gmtime64_s(ptVar1,param_1);
-    ptVar3 = (tm *)(~-(uint)(iVar2 != 0) & (uint)ptVar1);
+  ptm = __getgmtimebuf();
+  ptVar2 = (tm *)0x0;
+  if (ptm != (tm *)0x0) {
+    iVar1 = _gmtime64_s(ptm,timp);
+    ptVar2 = (tm *)(~-(uint)(iVar1 != 0) & (uint)ptm);
   }
-  return ptVar3;
+  return ptVar2;
 }
 

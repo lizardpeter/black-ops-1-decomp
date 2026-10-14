@@ -2,7 +2,7 @@
 
 // 008002A0  ConsumeQuat  (xanim/xanim_load_obj.cpp:99)
 
-void __cdecl ConsumeQuat(uchar **param_1,short *param_2)
+void __cdecl ConsumeQuat(uchar **pos,short *out)
 
 {
   short sVar1;
@@ -11,19 +11,19 @@ void __cdecl ConsumeQuat(uchar **param_1,short *param_2)
   int extraout_EAX;
   int local_30;
   short local_c;
+  int temp;
   
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  *param_2 = sVar1;
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  param_2[1] = sVar1;
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  param_2[2] = sVar1;
-  if (0x3fff0001 -
-      ((int)*param_2 * (int)*param_2 + (int)param_2[1] * (int)param_2[1] +
-      (int)param_2[2] * (int)param_2[2]) < 1) {
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  *out = sVar1;
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  out[1] = sVar1;
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  out[2] = sVar1;
+  if (0x3fff0001 - ((int)*out * (int)*out + (int)out[1] * (int)out[1] + (int)out[2] * (int)out[2]) <
+      1) {
     local_30 = 0;
   }
   else {
@@ -41,14 +41,14 @@ void __cdecl ConsumeQuat(uchar **param_1,short *param_2)
       return;
     }
   }
-  param_2[3] = local_c;
+  out[3] = local_c;
   return;
 }
 
 
 // 007FD0F0  ConsumeQuat2  (xanim/xanim_load_obj.cpp:121)
 
-void __cdecl ConsumeQuat2(uchar **param_1,short *param_2)
+void __cdecl ConsumeQuat2(uchar **pos,short *out)
 
 {
   short sVar1;
@@ -57,11 +57,12 @@ void __cdecl ConsumeQuat2(uchar **param_1,short *param_2)
   int extraout_EAX;
   int local_20;
   short local_c;
+  int temp;
   
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  *param_2 = sVar1;
-  if (0x3fff0001 - (int)*param_2 * (int)*param_2 < 1) {
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  *out = sVar1;
+  if (0x3fff0001 - (int)*out * (int)*out < 1) {
     local_20 = 0;
   }
   else {
@@ -79,7 +80,7 @@ void __cdecl ConsumeQuat2(uchar **param_1,short *param_2)
       return;
     }
   }
-  param_2[1] = local_c;
+  out[1] = local_c;
   return;
 }
 
@@ -87,8 +88,7 @@ void __cdecl ConsumeQuat2(uchar **param_1,short *param_2)
 // 007FFA50  ReadNoteTracks  (xanim/xanim_load_obj.cpp:139)
 
 void __cdecl
-ReadNoteTracks(char *param_1,uchar **param_2,XAnimParts *param_3,_func___cdecl_void_ptr_int *param_4
-              )
+ReadNoteTracks(char *name,uchar **pos,XAnimParts *parts,_func___cdecl_void_ptr_int *Alloc)
 
 {
   byte bVar1;
@@ -101,11 +101,14 @@ ReadNoteTracks(char *param_1,uchar **param_2,XAnimParts *param_3,_func___cdecl_v
   uchar *puVar8;
   float local_30;
   uchar *local_20;
-  XAnimNotifyInfo *local_c;
-  int local_8;
+  bool customLoopEntry;
+  int numNoteTracks;
+  int frameIndex;
+  XAnimNotifyInfo *notify;
+  int i;
   
-  bVar1 = **param_2;
-  *param_2 = *param_2 + 1;
+  bVar1 = **pos;
+  *pos = *pos + 1;
   if ((0xfe < bVar1) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0x95,0
                                ,"%s"), !bVar5)) {
@@ -113,40 +116,40 @@ ReadNoteTracks(char *param_1,uchar **param_2,XAnimParts *param_3,_func___cdecl_v
     (*pcVar4)();
     return;
   }
-  param_3->notifyCount = bVar1 + 1;
-  local_c = (*param_4)((uint)param_3->notifyCount << 3);
-  param_3->notify = local_c;
-  local_8 = 0;
+  parts->notifyCount = bVar1 + 1;
+  notify = (*Alloc)((uint)parts->notifyCount << 3);
+  parts->notify = notify;
+  i = 0;
   do {
-    if ((int)(uint)bVar1 <= local_8) {
+    if ((int)(uint)bVar1 <= i) {
       uVar7 = SL_GetString_(SCRIPTINSTANCE_SERVER,"end",0,3);
-      local_c->name = (ushort)uVar7;
-      local_c->time = 1.0;
+      notify->name = (ushort)uVar7;
+      notify->time = 1.0;
       return;
     }
-    iVar6 = I_stricmp("loop_begin",(char *)*param_2);
-    uVar7 = SL_GetString_(SCRIPTINSTANCE_SERVER,(char *)*param_2,0,3);
-    local_c->name = (ushort)uVar7;
-    local_20 = *param_2;
+    iVar6 = I_stricmp("loop_begin",(char *)*pos);
+    uVar7 = SL_GetString_(SCRIPTINSTANCE_SERVER,(char *)*pos,0,3);
+    notify->name = (ushort)uVar7;
+    local_20 = *pos;
     puVar8 = local_20 + 1;
     do {
       uVar2 = *local_20;
       local_20 = local_20 + 1;
     } while (uVar2 != '\0');
-    *param_2 = *param_2 + (int)(local_20 + (1 - (int)puVar8));
-    uVar3 = *(ushort *)*param_2;
-    *param_2 = *param_2 + 2;
-    if (param_3->numframes == 0) {
+    *pos = *pos + (int)(local_20 + (1 - (int)puVar8));
+    uVar3 = *(ushort *)*pos;
+    *pos = *pos + 2;
+    if (parts->numframes == 0) {
       local_30 = 0.0;
     }
     else {
-      local_30 = (float)uVar3 / (float)param_3->numframes;
+      local_30 = (float)uVar3 / (float)parts->numframes;
     }
-    local_c->time = local_30;
-    if ((iVar6 == 0) && (param_3->bLoop != false)) {
-      param_3->loopEntryTime = local_c->time;
+    notify->time = local_30;
+    if ((iVar6 == 0) && (parts->bLoop != false)) {
+      parts->loopEntryTime = notify->time;
     }
-    if ((local_c->time < 0.0) || (1.0 < local_c->time)) {
+    if ((notify->time < 0.0) || (1.0 < notify->time)) {
       va("xanim: \'%s\', time: %f");
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0xad,0
                                ,"%s\n\t%s");
@@ -156,8 +159,8 @@ ReadNoteTracks(char *param_1,uchar **param_2,XAnimParts *param_3,_func___cdecl_v
         return;
       }
     }
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    i = i + 1;
+    notify = notify + 1;
   } while( true );
 }
 
@@ -167,8 +170,8 @@ ReadNoteTracks(char *param_1,uchar **param_2,XAnimParts *param_3,_func___cdecl_v
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 uchar * __cdecl
-GetDeltaQuaternions(XAnimDeltaPart *param_1,_func___cdecl_void_ptr_int *param_2,uchar *param_3,
-                   ushort param_4,bool param_5)
+GetDeltaQuaternions(XAnimDeltaPart *deltaPart,_func___cdecl_void_ptr_int *Alloc,uchar *pos,
+                   ushort numloopframes,bool useSmallIndices)
 
 {
   short (*pasVar1) [2];
@@ -177,130 +180,134 @@ GetDeltaQuaternions(XAnimDeltaPart *param_1,_func___cdecl_void_ptr_int *param_2,
   XAnimDeltaPartQuat *pXVar4;
   uchar *puVar5;
   short (*pasVar6) [2];
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  short local_18;
+  short *sQ;
+  short *sQ2;
+  int dot;
+  int i_4;
+  int i_3;
+  int i_2;
+  int i;
+  short quat;
   short local_16;
   uint local_10;
-  uint local_c;
-  ushort local_8;
+  int size;
+  ushort numQuatIndices;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = *(ushort *)param_3;
-  param_3 = param_3 + 2;
-  if (local_8 == 0) {
-    param_1->quat = (XAnimDeltaPartQuat *)0x0;
+  numQuatIndices = *(ushort *)pos;
+  pos = pos + 2;
+  if (numQuatIndices == 0) {
+    deltaPart->quat = (XAnimDeltaPartQuat *)0x0;
   }
-  else if (local_8 == 1) {
-    ConsumeQuat2(&param_3,&local_18);
-    pXVar4 = (*param_2)(8);
-    param_1->quat = pXVar4;
-    param_1->quat->size = 0;
-    (param_1->quat->u).frame0[0] = local_18;
-    (param_1->quat->u).frame0[1] = local_16;
+  else if (numQuatIndices == 1) {
+    ConsumeQuat2(&pos,&quat);
+    pXVar4 = (*Alloc)(8);
+    deltaPart->quat = pXVar4;
+    deltaPart->quat->size = 0;
+    (deltaPart->quat->u).frame0[0] = quat;
+    (deltaPart->quat->u).frame0[1] = local_16;
   }
   else {
-    if ((param_4 < local_8) &&
+    if ((numloopframes < numQuatIndices) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0xcc
                                  ,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       puVar5 = (uchar *)(*pcVar2)();
       return puVar5;
     }
-    if (param_5 == false) {
-      pXVar4 = (*param_2)((uint)local_8 * 2 + 8);
-      param_1->quat = pXVar4;
-      if (local_8 < param_4) {
-        local_c = (uint)local_8 << 1;
-        memcpy((uchar *)((param_1->quat->u).frame0 + 2),param_3,local_c);
-        param_3 = param_3 + local_c;
+    if (useSmallIndices == false) {
+      pXVar4 = (*Alloc)((uint)numQuatIndices * 2 + 8);
+      deltaPart->quat = pXVar4;
+      if (numQuatIndices < numloopframes) {
+        size = (uint)numQuatIndices << 1;
+        memcpy((uchar *)((deltaPart->quat->u).frame0 + 2),pos,size);
+        pos = pos + size;
       }
       else {
-        for (local_20 = 0; local_20 < (int)(uint)local_8; local_20 = local_20 + 1) {
-          *(undefined2 *)((int)&param_1->quat->u + local_20 * 2 + 4) = (undefined2)local_20;
+        for (i_2 = 0; i_2 < (int)(uint)numQuatIndices; i_2 = i_2 + 1) {
+          *(undefined2 *)((int)&deltaPart->quat->u + i_2 * 2 + 4) = (undefined2)i_2;
         }
       }
     }
     else {
-      pXVar4 = (*param_2)(local_8 + 8);
-      param_1->quat = pXVar4;
-      if (local_8 < param_4) {
-        local_c = (uint)local_8;
-        memcpy((uchar *)((param_1->quat->u).frame0 + 2),param_3,local_c);
-        param_3 = param_3 + local_c;
+      pXVar4 = (*Alloc)(numQuatIndices + 8);
+      deltaPart->quat = pXVar4;
+      if (numQuatIndices < numloopframes) {
+        size = (int)numQuatIndices;
+        memcpy((uchar *)((deltaPart->quat->u).frame0 + 2),pos,size);
+        pos = pos + size;
       }
       else {
-        for (local_1c = 0; local_1c < (int)(uint)local_8; local_1c = local_1c + 1) {
-          *(undefined1 *)((int)&param_1->quat->u + local_1c + 4) = (undefined1)local_1c;
+        for (i = 0; i < (int)(uint)numQuatIndices; i = i + 1) {
+          *(undefined1 *)((int)&deltaPart->quat->u + i + 4) = (undefined1)i;
         }
       }
     }
-    param_1->quat->size = local_8 - 1;
-    pasVar6 = (*param_2)((uint)local_8 << 2);
-    (param_1->quat->u).frames.frames = pasVar6;
-    for (local_24 = 0; local_24 < (int)(uint)local_8; local_24 = local_24 + 1) {
-      ConsumeQuat2(&param_3,&local_18);
-      (param_1->quat->u).frames.frames[local_24][0] = local_18;
-      (param_1->quat->u).frames.frames[local_24][1] = local_16;
+    deltaPart->quat->size = numQuatIndices - 1;
+    pasVar6 = (*Alloc)((uint)numQuatIndices << 2);
+    (deltaPart->quat->u).frames.frames = pasVar6;
+    for (i_3 = 0; i_3 < (int)(uint)numQuatIndices; i_3 = i_3 + 1) {
+      ConsumeQuat2(&pos,&quat);
+      (deltaPart->quat->u).frames.frames[i_3][0] = quat;
+      (deltaPart->quat->u).frames.frames[i_3][1] = local_16;
     }
-    for (local_28 = 1; local_28 < (int)(uint)local_8; local_28 = local_28 + 1) {
-      pasVar6 = (param_1->quat->u).frames.frames + local_28;
-      pasVar1 = (param_1->quat->u).frames.frames + local_28 + -1;
+    for (i_4 = 1; i_4 < (int)(uint)numQuatIndices; i_4 = i_4 + 1) {
+      pasVar6 = (deltaPart->quat->u).frames.frames + i_4;
+      pasVar1 = (deltaPart->quat->u).frames.frames + i_4 + -1;
       if ((int)(*pasVar6)[0] * (int)(*pasVar1)[0] + (int)(*pasVar6)[1] * (int)(*pasVar1)[1] < 0) {
         (*pasVar6)[0] = -(*pasVar6)[0];
         (*pasVar6)[1] = -(*pasVar6)[1];
       }
     }
   }
-  return param_3;
+  return pos;
 }
 
 
 // 007FD420  LoadTrans  (xanim/xanim_load_obj.cpp:273)
 
 uchar * __cdecl
-LoadTrans(_func___cdecl_void_ptr_int *param_1,uchar *param_2,ushort param_3,XAnimPartTrans *param_4)
+LoadTrans(_func___cdecl_void_ptr_int *Alloc,uchar *pos,ushort numTransIndices,XAnimPartTrans *trans)
 
 {
   uchar (*pauVar1) [3];
-  uchar *puVar2;
-  ulong uVar3;
+  uchar *src;
+  ulong count;
+  int size;
   
-  param_4->smallTrans = *param_2;
-  (param_4->u).frames.mins[0] = *(float *)(param_2 + 1);
-  (param_4->u).frames.mins[1] = *(float *)(param_2 + 5);
-  (param_4->u).frames.mins[2] = *(float *)(param_2 + 9);
-  (param_4->u).frames.size[0] = *(float *)(param_2 + 0xd);
-  (param_4->u).frames.size[1] = *(float *)(param_2 + 0x11);
-  puVar2 = param_2 + 0x19;
-  (param_4->u).frames.size[2] = *(float *)(param_2 + 0x15);
-  if (param_4->smallTrans == '\0') {
-    (param_4->u).frames.size[0] = (param_4->u).frames.size[0] * 1.5259022e-05;
-    (param_4->u).frames.size[1] = (param_4->u).frames.size[1] * 1.5259022e-05;
-    (param_4->u).frames.size[2] = (param_4->u).frames.size[2] * 1.5259022e-05;
+  trans->smallTrans = *pos;
+  (trans->u).frames.mins[0] = *(float *)(pos + 1);
+  (trans->u).frames.mins[1] = *(float *)(pos + 5);
+  (trans->u).frames.mins[2] = *(float *)(pos + 9);
+  (trans->u).frames.size[0] = *(float *)(pos + 0xd);
+  (trans->u).frames.size[1] = *(float *)(pos + 0x11);
+  src = pos + 0x19;
+  (trans->u).frames.size[2] = *(float *)(pos + 0x15);
+  if (trans->smallTrans == '\0') {
+    (trans->u).frames.size[0] = (trans->u).frames.size[0] * 1.5259022e-05;
+    (trans->u).frames.size[1] = (trans->u).frames.size[1] * 1.5259022e-05;
+    (trans->u).frames.size[2] = (trans->u).frames.size[2] * 1.5259022e-05;
   }
   else {
-    (param_4->u).frames.size[0] = (param_4->u).frames.size[0] * 0.003921569;
-    (param_4->u).frames.size[1] = (param_4->u).frames.size[1] * 0.003921569;
-    (param_4->u).frames.size[2] = (param_4->u).frames.size[2] * 0.003921569;
+    (trans->u).frames.size[0] = (trans->u).frames.size[0] * 0.003921569;
+    (trans->u).frames.size[1] = (trans->u).frames.size[1] * 0.003921569;
+    (trans->u).frames.size[2] = (trans->u).frames.size[2] * 0.003921569;
   }
-  param_4->size = param_3 - 1;
-  if (param_4->smallTrans == '\0') {
-    uVar3 = (uint)param_3 * 6;
-    pauVar1 = (*param_1)(uVar3);
-    (param_4->u).frames.frames._1 = pauVar1;
-    memcpy(*(param_4->u).frames.frames._1,puVar2,uVar3);
+  trans->size = numTransIndices - 1;
+  if (trans->smallTrans == '\0') {
+    count = (uint)numTransIndices * 6;
+    pauVar1 = (*Alloc)(count);
+    (trans->u).frames.frames._1 = pauVar1;
+    memcpy(*(trans->u).frames.frames._1,src,count);
   }
   else {
-    uVar3 = (uint)param_3 * 3;
-    pauVar1 = (*param_1)(uVar3);
-    (param_4->u).frames.frames._1 = pauVar1;
-    memcpy(*(param_4->u).frames.frames._1,puVar2,uVar3);
+    count = (uint)numTransIndices * 3;
+    pauVar1 = (*Alloc)(count);
+    (trans->u).frames.frames._1 = pauVar1;
+    memcpy(*(trans->u).frames.frames._1,src,count);
   }
-  param_2 = puVar2 + uVar3;
-  return param_2;
+  pos = src + count;
+  return pos;
 }
 
 
@@ -308,96 +315,97 @@ LoadTrans(_func___cdecl_void_ptr_int *param_1,uchar *param_2,ushort param_3,XAni
 
 uchar * __cdecl
 GetDeltaTranslations
-          (char *param_1,XAnimDeltaPart *param_2,_func___cdecl_void_ptr_int *param_3,uchar *param_4,
-          ushort param_5,bool param_6)
+          (char *name,XAnimDeltaPart *deltaPart,_func___cdecl_void_ptr_int *Alloc,uchar *pos,
+          ushort numloopframes,bool useSmallIndices)
 
 {
-  ushort uVar1;
+  ushort numTransIndices_00;
+  float fVar1;
   float fVar2;
   float fVar3;
-  float fVar4;
-  code *pcVar5;
-  bool bVar6;
-  XAnimPartTrans *pXVar7;
-  uchar *puVar8;
-  float *pfVar9;
-  int local_20;
-  int local_1c;
+  code *pcVar4;
+  bool bVar5;
+  XAnimPartTrans *pXVar6;
+  uchar *puVar7;
+  float *src;
+  int i_2;
+  int i;
+  ushort numTransIndices;
+  int size;
   
-  uVar1 = *(ushort *)param_4;
-  pfVar9 = (float *)(param_4 + 2);
-  if (uVar1 == 0) {
-    param_2->trans = (XAnimPartTrans *)0x0;
-    param_4 = (uchar *)pfVar9;
+  numTransIndices_00 = *(ushort *)pos;
+  src = (float *)(pos + 2);
+  if (numTransIndices_00 == 0) {
+    deltaPart->trans = (XAnimPartTrans *)0x0;
+    pos = (uchar *)src;
   }
-  else if (uVar1 == 1) {
-    fVar2 = *pfVar9;
-    fVar3 = *(float *)(param_4 + 6);
-    fVar4 = *(float *)(param_4 + 10);
-    param_4 = param_4 + 0xe;
-    pXVar7 = (*param_3)(0x10);
-    param_2->trans = pXVar7;
-    param_2->trans->size = 0;
-    pXVar7 = param_2->trans;
-    (pXVar7->u).frames.mins[0] = fVar2;
-    (pXVar7->u).frames.mins[1] = fVar3;
-    (pXVar7->u).frames.mins[2] = fVar4;
+  else if (numTransIndices_00 == 1) {
+    fVar1 = *src;
+    fVar2 = *(float *)(pos + 6);
+    fVar3 = *(float *)(pos + 10);
+    pos = pos + 0xe;
+    pXVar6 = (*Alloc)(0x10);
+    deltaPart->trans = pXVar6;
+    deltaPart->trans->size = 0;
+    pXVar6 = deltaPart->trans;
+    (pXVar6->u).frames.mins[0] = fVar1;
+    (pXVar6->u).frames.mins[1] = fVar2;
+    (pXVar6->u).frames.mins[2] = fVar3;
   }
   else {
-    if (param_5 < uVar1) {
+    if (numloopframes < numTransIndices_00) {
       va("ERROR: xanim %s numTransIndices > numloopframes\n");
-      bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0x159,
+      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0x159,
                                0,"%s\n\t%s");
-      if (!bVar6) {
-        pcVar5 = (code *)swi(3);
-        puVar8 = (uchar *)(*pcVar5)();
-        return puVar8;
+      if (!bVar5) {
+        pcVar4 = (code *)swi(3);
+        puVar7 = (uchar *)(*pcVar4)();
+        return puVar7;
       }
     }
-    if (param_6) {
-      pXVar7 = (*param_3)(uVar1 + 0x20);
-      param_2->trans = pXVar7;
-      if (uVar1 < param_5) {
-        memcpy((uchar *)((int)&param_2->trans->u + 0x1c),(uchar *)pfVar9,(uint)uVar1);
-        param_4 = (uchar *)((int)pfVar9 + (uint)uVar1);
+    if (useSmallIndices) {
+      pXVar6 = (*Alloc)(numTransIndices_00 + 0x20);
+      deltaPart->trans = pXVar6;
+      if (numTransIndices_00 < numloopframes) {
+        memcpy((uchar *)((int)&deltaPart->trans->u + 0x1c),(uchar *)src,(uint)numTransIndices_00);
+        pos = (uchar *)((int)src + (uint)numTransIndices_00);
       }
       else {
-        for (local_1c = 0; param_4 = (uchar *)pfVar9, local_1c < (int)(uint)uVar1;
-            local_1c = local_1c + 1) {
-          *(undefined1 *)((int)&param_2->trans->u + local_1c + 0x1c) = (undefined1)local_1c;
+        for (i = 0; pos = (uchar *)src, i < (int)(uint)numTransIndices_00; i = i + 1) {
+          *(undefined1 *)((int)&deltaPart->trans->u + i + 0x1c) = (undefined1)i;
         }
       }
     }
     else {
-      pXVar7 = (*param_3)((uint)uVar1 * 2 + 0x20);
-      param_2->trans = pXVar7;
-      if (uVar1 < param_5) {
-        memcpy((uchar *)((int)&param_2->trans->u + 0x1c),(uchar *)pfVar9,(uint)uVar1 * 2);
-        param_4 = (uchar *)((int)pfVar9 + (uint)uVar1 * 2);
+      pXVar6 = (*Alloc)((uint)numTransIndices_00 * 2 + 0x20);
+      deltaPart->trans = pXVar6;
+      if (numTransIndices_00 < numloopframes) {
+        memcpy((uchar *)((int)&deltaPart->trans->u + 0x1c),(uchar *)src,(uint)numTransIndices_00 * 2
+              );
+        pos = (uchar *)((int)src + (uint)numTransIndices_00 * 2);
       }
       else {
-        for (local_20 = 0; param_4 = (uchar *)pfVar9, local_20 < (int)(uint)uVar1;
-            local_20 = local_20 + 1) {
-          *(undefined2 *)((int)&param_2->trans->u + local_20 * 2 + 0x1c) = (undefined2)local_20;
+        for (i_2 = 0; pos = (uchar *)src, i_2 < (int)(uint)numTransIndices_00; i_2 = i_2 + 1) {
+          *(undefined2 *)((int)&deltaPart->trans->u + i_2 * 2 + 0x1c) = (undefined2)i_2;
         }
       }
     }
-    param_4 = LoadTrans(param_3,param_4,uVar1,param_2->trans);
+    pos = LoadTrans(Alloc,pos,numTransIndices_00,deltaPart->trans);
   }
-  return param_4;
+  return pos;
 }
 
 
 // 00800A80  truncate_cast<unsigned_short>  (universal/assertive.h:334)
 
-ushort __cdecl truncate_cast<unsigned_short>(int param_1)
+ushort __cdecl truncate_cast<unsigned_short>(int i)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if (param_1 != (param_1 & 0xffffU)) {
+  if (i != (i & 0xffffU)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../universal/assertive.h",
                              0x14f,0,"i == static_cast< Type >( i )\n\t%i, %i");
     if (!bVar2) {
@@ -406,13 +414,13 @@ ushort __cdecl truncate_cast<unsigned_short>(int param_1)
       return uVar3;
     }
   }
-  return (ushort)param_1;
+  return (ushort)i;
 }
 
 
 // 008003E0  XAnimTempAlloc  (xanim/xanim_load_obj.cpp:392)
 
-void * __cdecl XAnimTempAlloc(int param_1)
+void * __cdecl XAnimTempAlloc(int size)
 
 {
   code *pcVar1;
@@ -428,7 +436,7 @@ void * __cdecl XAnimTempAlloc(int param_1)
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_UserAlloc(g_animUser,param_1,4,(char *)0x0);
+  pvVar3 = Hunk_UserAlloc(g_animUser,size,4,(char *)0x0);
   return pvVar3;
 }
 
@@ -438,8 +446,8 @@ void * __cdecl XAnimTempAlloc(int param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 uchar * __cdecl
-GetQuaternions(XAnimPartQuatPtr *param_1,uchar *param_2,bool param_3,bool param_4,ushort param_5,
-              bool param_6)
+GetQuaternions(XAnimPartQuatPtr *part,uchar *pos,bool bFlipQuat,bool bSimpleQuat,
+              ushort numloopframes,bool useSmallIndices)
 
 {
   short *psVar1;
@@ -450,122 +458,128 @@ GetQuaternions(XAnimPartQuatPtr *param_1,uchar *param_2,bool param_3,bool param_
   uchar *puVar6;
   XAnimPartQuat *pXVar7;
   short (*pasVar8) [4];
-  int local_3c;
-  int local_38;
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  short local_18;
+  short *sQ_2;
+  short *sQ2_2;
+  int dot_2;
+  int i_6;
+  int i_5;
+  short *sQ;
+  short *sQ2;
+  int dot;
+  int i_4;
+  int i_3;
+  int i_2;
+  int i;
+  short quat;
   short local_16;
   short local_14;
   short local_12;
   uint local_10;
-  uint local_c;
-  ushort local_8;
+  int size;
+  ushort numQuatIndices;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = *(ushort *)param_2;
-  param_2 = param_2 + 2;
-  if (local_8 == 0) {
-    if ((!param_4) &&
+  numQuatIndices = *(ushort *)pos;
+  pos = pos + 2;
+  if (numQuatIndices == 0) {
+    if ((!bSimpleQuat) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
                                  0x197,0,"%s"), !bVar5)) {
       pcVar4 = (code *)swi(3);
       puVar6 = (uchar *)(*pcVar4)();
       return puVar6;
     }
-    param_1->quat = (XAnimPartQuat *)0x0;
+    part->quat = (XAnimPartQuat *)0x0;
   }
-  else if (local_8 == 1) {
-    if (param_4) {
-      ConsumeQuat2(&param_2,&local_18);
-      if (param_3 != false) {
-        local_18 = -local_18;
+  else if (numQuatIndices == 1) {
+    if (bSimpleQuat) {
+      ConsumeQuat2(&pos,&quat);
+      if (bFlipQuat != false) {
+        quat = -quat;
         local_16 = -local_16;
       }
       pXVar7 = XAnimTempAlloc(8);
-      param_1->quat = pXVar7;
-      (param_1->quat->u).frame0[0] = local_18;
-      (param_1->quat->u).frame0[1] = local_16;
+      part->quat = pXVar7;
+      (part->quat->u).frame0[0] = quat;
+      (part->quat->u).frame0[1] = local_16;
     }
     else {
-      ConsumeQuat(&param_2,&local_18);
-      if (param_3 != false) {
-        local_18 = -local_18;
+      ConsumeQuat(&pos,&quat);
+      if (bFlipQuat != false) {
+        quat = -quat;
         local_16 = -local_16;
         local_14 = -local_14;
         local_12 = -local_12;
       }
       pXVar7 = XAnimTempAlloc(0xc);
-      param_1->quat = pXVar7;
-      (param_1->quat->u).frame0[0] = local_18;
-      (param_1->quat->u).frame0[1] = local_16;
-      (param_1->quat->u).frame0[2] = local_14;
-      (param_1->quat->u).frame0[3] = local_12;
+      part->quat = pXVar7;
+      (part->quat->u).frame0[0] = quat;
+      (part->quat->u).frame0[1] = local_16;
+      (part->quat->u).frame0[2] = local_14;
+      (part->quat->u).frame0[3] = local_12;
     }
-    param_1->quat->size = 0;
+    part->quat->size = 0;
   }
   else {
-    if ((param_5 < local_8) &&
+    if ((numloopframes < numQuatIndices) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
                                  0x1c1,0,"%s"), !bVar5)) {
       pcVar4 = (code *)swi(3);
       puVar6 = (uchar *)(*pcVar4)();
       return puVar6;
     }
-    if (param_6 == false) {
-      pXVar7 = XAnimTempAlloc((uint)local_8 * 2 + 8);
-      param_1->quat = pXVar7;
-      if (local_8 < param_5) {
-        local_c = (uint)local_8 << 1;
-        memcpy((uchar *)((param_1->quat->u).frame0 + 2),param_2,local_c);
-        param_2 = param_2 + local_c;
+    if (useSmallIndices == false) {
+      pXVar7 = XAnimTempAlloc((uint)numQuatIndices * 2 + 8);
+      part->quat = pXVar7;
+      if (numQuatIndices < numloopframes) {
+        size = (uint)numQuatIndices << 1;
+        memcpy((uchar *)((part->quat->u).frame0 + 2),pos,size);
+        pos = pos + size;
       }
       else {
-        for (local_20 = 0; local_20 < (int)(uint)local_8; local_20 = local_20 + 1) {
-          *(undefined2 *)((int)&param_1->quat->u + local_20 * 2 + 4) = (undefined2)local_20;
+        for (i_2 = 0; i_2 < (int)(uint)numQuatIndices; i_2 = i_2 + 1) {
+          *(undefined2 *)((int)&part->quat->u + i_2 * 2 + 4) = (undefined2)i_2;
         }
       }
     }
     else {
-      pXVar7 = XAnimTempAlloc(local_8 + 8);
-      param_1->quat = pXVar7;
-      if (local_8 < param_5) {
-        local_c = (uint)local_8;
-        memcpy((uchar *)((param_1->quat->u).frame0 + 2),param_2,local_c);
-        param_2 = param_2 + local_c;
+      pXVar7 = XAnimTempAlloc(numQuatIndices + 8);
+      part->quat = pXVar7;
+      if (numQuatIndices < numloopframes) {
+        size = (int)numQuatIndices;
+        memcpy((uchar *)((part->quat->u).frame0 + 2),pos,size);
+        pos = pos + size;
       }
       else {
-        for (local_1c = 0; local_1c < (int)(uint)local_8; local_1c = local_1c + 1) {
-          *(undefined1 *)((int)&param_1->quat->u + local_1c + 4) = (undefined1)local_1c;
+        for (i = 0; i < (int)(uint)numQuatIndices; i = i + 1) {
+          *(undefined1 *)((int)&part->quat->u + i + 4) = (undefined1)i;
         }
       }
     }
-    if (param_4 == false) {
-      pasVar8 = XAnimTempAlloc((uint)local_8 << 3);
-      (param_1->quat->u).frames.u.frames = pasVar8;
-      ConsumeQuat(&param_2,&local_18);
-      if (param_3 != false) {
-        local_18 = -local_18;
+    if (bSimpleQuat == false) {
+      pasVar8 = XAnimTempAlloc((uint)numQuatIndices << 3);
+      (part->quat->u).frames.u.frames = pasVar8;
+      ConsumeQuat(&pos,&quat);
+      if (bFlipQuat != false) {
+        quat = -quat;
         local_16 = -local_16;
         local_14 = -local_14;
         local_12 = -local_12;
       }
-      **(short **)&param_1->quat->u = local_18;
-      (*(param_1->quat->u).frames.u.frames)[1] = local_16;
-      (*(param_1->quat->u).frames.u.frames)[2] = local_14;
-      (*(param_1->quat->u).frames.u.frames)[3] = local_12;
-      for (local_38 = 1; local_38 < (int)(uint)local_8; local_38 = local_38 + 1) {
-        ConsumeQuat(&param_2,&local_18);
-        (param_1->quat->u).frames.u.frames[local_38][0] = local_18;
-        (param_1->quat->u).frames.u.frames[local_38][1] = local_16;
-        (param_1->quat->u).frames.u.frames[local_38][2] = local_14;
-        (param_1->quat->u).frames.u.frames[local_38][3] = local_12;
+      **(short **)&part->quat->u = quat;
+      (*(part->quat->u).frames.u.frames)[1] = local_16;
+      (*(part->quat->u).frames.u.frames)[2] = local_14;
+      (*(part->quat->u).frames.u.frames)[3] = local_12;
+      for (i_5 = 1; i_5 < (int)(uint)numQuatIndices; i_5 = i_5 + 1) {
+        ConsumeQuat(&pos,&quat);
+        (part->quat->u).frames.u.frames[i_5][0] = quat;
+        (part->quat->u).frames.u.frames[i_5][1] = local_16;
+        (part->quat->u).frames.u.frames[i_5][2] = local_14;
+        (part->quat->u).frames.u.frames[i_5][3] = local_12;
       }
-      for (local_3c = 1; local_3c < (int)(uint)local_8; local_3c = local_3c + 1) {
-        pasVar8 = (param_1->quat->u).frames.u.frames + local_3c;
-        pasVar3 = (param_1->quat->u).frames.u.frames + local_3c + -1;
+      for (i_6 = 1; i_6 < (int)(uint)numQuatIndices; i_6 = i_6 + 1) {
+        pasVar8 = (part->quat->u).frames.u.frames + i_6;
+        pasVar3 = (part->quat->u).frames.u.frames + i_6 + -1;
         if ((int)(*pasVar8)[0] * (int)(*pasVar3)[0] + (int)(*pasVar8)[1] * (int)(*pasVar3)[1] +
             (int)(*pasVar8)[2] * (int)(*pasVar3)[2] + (int)(*pasVar8)[3] * (int)(*pasVar3)[3] < 0) {
           (*pasVar8)[0] = -(*pasVar8)[0];
@@ -576,126 +590,127 @@ GetQuaternions(XAnimPartQuatPtr *param_1,uchar *param_2,bool param_3,bool param_
       }
     }
     else {
-      pasVar8 = XAnimTempAlloc((uint)local_8 << 2);
-      (param_1->quat->u).frames.u.frames = pasVar8;
-      ConsumeQuat2(&param_2,&local_18);
-      if (param_3 != false) {
-        local_18 = -local_18;
+      pasVar8 = XAnimTempAlloc((uint)numQuatIndices << 2);
+      (part->quat->u).frames.u.frames = pasVar8;
+      ConsumeQuat2(&pos,&quat);
+      if (bFlipQuat != false) {
+        quat = -quat;
         local_16 = -local_16;
       }
-      **(short **)&param_1->quat->u = local_18;
-      (*(param_1->quat->u).frames.u.frames)[1] = local_16;
-      for (local_24 = 1; local_24 < (int)(uint)local_8; local_24 = local_24 + 1) {
-        ConsumeQuat2(&param_2,&local_18);
-        (*(param_1->quat->u).frames.u.frames)[local_24 * 2] = local_18;
-        (*(param_1->quat->u).frames.u.frames)[local_24 * 2 + 1] = local_16;
+      **(short **)&part->quat->u = quat;
+      (*(part->quat->u).frames.u.frames)[1] = local_16;
+      for (i_3 = 1; i_3 < (int)(uint)numQuatIndices; i_3 = i_3 + 1) {
+        ConsumeQuat2(&pos,&quat);
+        (*(part->quat->u).frames.u.frames)[i_3 * 2] = quat;
+        (*(part->quat->u).frames.u.frames)[i_3 * 2 + 1] = local_16;
       }
-      for (local_28 = 1; local_28 < (int)(uint)local_8; local_28 = local_28 + 1) {
-        psVar1 = *(param_1->quat->u).frames.u.frames + local_28 * 2;
-        psVar2 = (param_1->quat->u).frames.u.frames[-1] + local_28 * 2 + 2;
+      for (i_4 = 1; i_4 < (int)(uint)numQuatIndices; i_4 = i_4 + 1) {
+        psVar1 = *(part->quat->u).frames.u.frames + i_4 * 2;
+        psVar2 = (part->quat->u).frames.u.frames[-1] + i_4 * 2 + 2;
         if ((int)*psVar1 * (int)*psVar2 + (int)psVar1[1] * (int)psVar2[1] < 0) {
           *psVar1 = -*psVar1;
           psVar1[1] = -psVar1[1];
         }
       }
     }
-    param_1->quat->size = local_8 - 1;
+    part->quat->size = numQuatIndices - 1;
   }
-  return param_2;
+  return pos;
 }
 
 
 // 00800430  GetTranslations  (xanim/xanim_load_obj.cpp:576)
 
 uchar * __cdecl
-GetTranslations(XAnimPartTransPtr *param_1,uchar *param_2,ushort param_3,bool param_4)
+GetTranslations(XAnimPartTransPtr *part,uchar *pos,ushort numloopframes,bool useSmallIndices)
 
 {
-  ushort uVar1;
+  ushort numTransIndices_00;
+  float fVar1;
   float fVar2;
   float fVar3;
-  float fVar4;
-  code *pcVar5;
-  bool bVar6;
-  XAnimPartTrans *pXVar7;
-  uchar *puVar8;
-  float *pfVar9;
-  int local_20;
-  int local_1c;
+  code *pcVar4;
+  bool bVar5;
+  XAnimPartTrans *pXVar6;
+  uchar *puVar7;
+  float *src;
+  int i_2;
+  int i;
+  ushort numTransIndices;
+  int size;
   
-  uVar1 = *(ushort *)param_2;
-  pfVar9 = (float *)(param_2 + 2);
-  if (uVar1 == 0) {
-    param_1->trans = (XAnimPartTrans *)0x0;
-    param_2 = (uchar *)pfVar9;
+  numTransIndices_00 = *(ushort *)pos;
+  src = (float *)(pos + 2);
+  if (numTransIndices_00 == 0) {
+    part->trans = (XAnimPartTrans *)0x0;
+    pos = (uchar *)src;
   }
-  else if (uVar1 == 1) {
-    fVar2 = *pfVar9;
-    fVar3 = *(float *)(param_2 + 6);
-    fVar4 = *(float *)(param_2 + 10);
-    param_2 = param_2 + 0xe;
-    pXVar7 = XAnimTempAlloc(0x10);
-    param_1->trans = pXVar7;
-    param_1->trans->size = 0;
-    pXVar7 = param_1->trans;
-    (pXVar7->u).frames.mins[0] = fVar2;
-    (pXVar7->u).frames.mins[1] = fVar3;
-    (pXVar7->u).frames.mins[2] = fVar4;
+  else if (numTransIndices_00 == 1) {
+    fVar1 = *src;
+    fVar2 = *(float *)(pos + 6);
+    fVar3 = *(float *)(pos + 10);
+    pos = pos + 0xe;
+    pXVar6 = XAnimTempAlloc(0x10);
+    part->trans = pXVar6;
+    part->trans->size = 0;
+    pXVar6 = part->trans;
+    (pXVar6->u).frames.mins[0] = fVar1;
+    (pXVar6->u).frames.mins[1] = fVar2;
+    (pXVar6->u).frames.mins[2] = fVar3;
   }
   else {
-    if ((param_3 < uVar1) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
-                                 0x256,0,"%s"), !bVar6)) {
-      pcVar5 = (code *)swi(3);
-      puVar8 = (uchar *)(*pcVar5)();
-      return puVar8;
+    if ((numloopframes < numTransIndices_00) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
+                                 0x256,0,"%s"), !bVar5)) {
+      pcVar4 = (code *)swi(3);
+      puVar7 = (uchar *)(*pcVar4)();
+      return puVar7;
     }
-    if (param_4) {
-      pXVar7 = XAnimTempAlloc(uVar1 + 0x20);
-      param_1->trans = pXVar7;
-      if (uVar1 < param_3) {
-        memcpy((uchar *)((int)&param_1->trans->u + 0x1c),(uchar *)pfVar9,(uint)uVar1);
-        param_2 = (uchar *)((int)pfVar9 + (uint)uVar1);
+    if (useSmallIndices) {
+      pXVar6 = XAnimTempAlloc(numTransIndices_00 + 0x20);
+      part->trans = pXVar6;
+      if (numTransIndices_00 < numloopframes) {
+        memcpy((uchar *)((int)&part->trans->u + 0x1c),(uchar *)src,(uint)numTransIndices_00);
+        pos = (uchar *)((int)src + (uint)numTransIndices_00);
       }
       else {
-        for (local_1c = 0; param_2 = (uchar *)pfVar9, local_1c < (int)(uint)uVar1;
-            local_1c = local_1c + 1) {
-          *(undefined1 *)((int)&param_1->trans->u + local_1c + 0x1c) = (undefined1)local_1c;
+        for (i = 0; pos = (uchar *)src, i < (int)(uint)numTransIndices_00; i = i + 1) {
+          *(undefined1 *)((int)&part->trans->u + i + 0x1c) = (undefined1)i;
         }
       }
     }
     else {
-      pXVar7 = XAnimTempAlloc((uint)uVar1 * 2 + 0x20);
-      param_1->trans = pXVar7;
-      if (uVar1 < param_3) {
-        memcpy((uchar *)((int)&param_1->trans->u + 0x1c),(uchar *)pfVar9,(uint)uVar1 * 2);
-        param_2 = (uchar *)((int)pfVar9 + (uint)uVar1 * 2);
+      pXVar6 = XAnimTempAlloc((uint)numTransIndices_00 * 2 + 0x20);
+      part->trans = pXVar6;
+      if (numTransIndices_00 < numloopframes) {
+        memcpy((uchar *)((int)&part->trans->u + 0x1c),(uchar *)src,(uint)numTransIndices_00 * 2);
+        pos = (uchar *)((int)src + (uint)numTransIndices_00 * 2);
       }
       else {
-        for (local_20 = 0; param_2 = (uchar *)pfVar9, local_20 < (int)(uint)uVar1;
-            local_20 = local_20 + 1) {
-          *(undefined2 *)((int)&param_1->trans->u + local_20 * 2 + 0x1c) = (undefined2)local_20;
+        for (i_2 = 0; pos = (uchar *)src, i_2 < (int)(uint)numTransIndices_00; i_2 = i_2 + 1) {
+          *(undefined2 *)((int)&part->trans->u + i_2 * 2 + 0x1c) = (undefined2)i_2;
         }
       }
     }
-    param_2 = LoadTrans(XAnimTempAlloc,param_2,uVar1,param_1->trans);
+    pos = LoadTrans(XAnimTempAlloc,pos,numTransIndices_00,part->trans);
   }
-  return param_2;
+  return pos;
 }
 
 
 // 00800680  XAnimGetPartQuatType  (xanim/xanim_load_obj.cpp:646)
 
-uint __cdecl XAnimGetPartQuatType(uint param_1)
+uint __cdecl XAnimGetPartQuatType(uint animPartIndex)
 
 {
   XAnimPartQuat *pXVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
+  XAnimPartQuat *quat;
   
-  pXVar1 = g_partQuatArray[param_1].quat;
-  if (((int)g_simpleQuatBits[param_1 >> 3] & 1 << ((byte)param_1 & 7)) == 0) {
+  pXVar1 = g_partQuatArray[animPartIndex].quat;
+  if (((int)g_simpleQuatBits[animPartIndex >> 3] & 1 << ((byte)animPartIndex & 7)) == 0) {
     if (pXVar1 == (XAnimPartQuat *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0x2a7,
                                0,"%s");
@@ -727,13 +742,14 @@ uint __cdecl XAnimGetPartQuatType(uint param_1)
 
 // 00800720  XAnimGetPartTransType  (xanim/xanim_load_obj.cpp:689)
 
-uint __cdecl XAnimGetPartTransType(uint param_1)
+uint __cdecl XAnimGetPartTransType(uint animPartIndex)
 
 {
   XAnimPartTrans *pXVar1;
   uint uVar2;
+  XAnimPartTrans *trans;
   
-  pXVar1 = g_partTransArray[param_1].trans;
+  pXVar1 = g_partTransArray[animPartIndex].trans;
   if (pXVar1 == (XAnimPartTrans *)0x0) {
     uVar2 = 8;
   }
@@ -752,25 +768,26 @@ uint __cdecl XAnimGetPartTransType(uint param_1)
 
 // 00800770  XAnimCompareQuatParts  (xanim/xanim_load_obj.cpp:706)
 
-int __cdecl XAnimCompareQuatParts(void *param_1,void *param_2)
+int __cdecl XAnimCompareQuatParts(void *p0,void *p1)
 
 {
   uint uVar1;
   int iVar2;
-  uint local_1c [4];
-  int local_c;
-  uint local_8;
+  uint partArrayIndices [2];
+  int diff;
+  uint type [2];
+  uint i;
   
-  local_1c[0] = (uint)*(ushort *)param_1;
-  local_1c[1] = (uint)*(ushort *)param_2;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    uVar1 = XAnimGetPartQuatType(local_1c[local_8]);
-    local_1c[local_8 + 3] = uVar1;
+  partArrayIndices[0] = (uint)*(ushort *)p0;
+  partArrayIndices[1] = (uint)*(ushort *)p1;
+  for (i = 0; i < 2; i = i + 1) {
+    uVar1 = XAnimGetPartQuatType(partArrayIndices[i]);
+    type[i] = uVar1;
   }
-  iVar2 = local_1c[3] - local_c;
+  iVar2 = type[0] - type[1];
   if (iVar2 == 0) {
-    iVar2 = (uint)g_partQuatArray[local_1c[0]].partIndex -
-            (uint)g_partQuatArray[local_1c[1]].partIndex;
+    iVar2 = (uint)g_partQuatArray[partArrayIndices[0]].partIndex -
+            (uint)g_partQuatArray[partArrayIndices[1]].partIndex;
   }
   return iVar2;
 }
@@ -778,25 +795,26 @@ int __cdecl XAnimCompareQuatParts(void *param_1,void *param_2)
 
 // 008007F0  XAnimCompareTransParts  (xanim/xanim_load_obj.cpp:726)
 
-int __cdecl XAnimCompareTransParts(void *param_1,void *param_2)
+int __cdecl XAnimCompareTransParts(void *p0,void *p1)
 
 {
   uint uVar1;
   int iVar2;
-  uint local_1c [4];
-  int local_c;
-  uint local_8;
+  uint partArrayIndices [2];
+  int diff;
+  uint type [2];
+  uint i;
   
-  local_1c[0] = (uint)*(ushort *)param_1;
-  local_1c[1] = (uint)*(ushort *)param_2;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    uVar1 = XAnimGetPartTransType(local_1c[local_8]);
-    local_1c[local_8 + 3] = uVar1;
+  partArrayIndices[0] = (uint)*(ushort *)p0;
+  partArrayIndices[1] = (uint)*(ushort *)p1;
+  for (i = 0; i < 2; i = i + 1) {
+    uVar1 = XAnimGetPartTransType(partArrayIndices[i]);
+    type[i] = uVar1;
   }
-  iVar2 = local_1c[3] - local_c;
+  iVar2 = type[0] - type[1];
   if (iVar2 == 0) {
-    iVar2 = (uint)g_partTransArray[local_1c[0]].partIndex -
-            (uint)g_partTransArray[local_1c[1]].partIndex;
+    iVar2 = (uint)g_partTransArray[partArrayIndices[0]].partIndex -
+            (uint)g_partTransArray[partArrayIndices[1]].partIndex;
   }
   return iVar2;
 }
@@ -804,7 +822,7 @@ int __cdecl XAnimCompareTransParts(void *param_1,void *param_2)
 
 // 00800870  XAnimIsHighPrecisionPart  (xanim/xanim_load_obj.cpp:746)
 
-int __cdecl XAnimIsHighPrecisionPart(char *param_1)
+int __cdecl XAnimIsHighPrecisionPart(char *name)
 
 {
   byte bVar1;
@@ -813,20 +831,22 @@ int __cdecl XAnimIsHighPrecisionPart(char *param_1)
   int local_24;
   byte *local_1c;
   byte *local_18;
-  uint local_10;
-  uint local_c;
+  int diff;
+  uint low;
+  uint high;
+  uint mid;
   
-  local_10 = 0;
-  local_c = 0x12;
-  uVar2 = local_c;
+  low = 0;
+  high = 0x12;
+  uVar2 = high;
   do {
-    local_c = uVar2;
-    if (local_c <= local_10) {
+    high = uVar2;
+    if (high <= low) {
       return 0;
     }
-    uVar2 = local_10 + local_c >> 1;
+    uVar2 = low + high >> 1;
     local_18 = (byte *)g_highPrecisionParts[uVar2];
-    local_1c = (byte *)param_1;
+    local_1c = (byte *)name;
     do {
       bVar1 = *local_1c;
       bVar3 = bVar1 < *local_18;
@@ -848,8 +868,8 @@ LAB_008008f3:
       if (local_24 < 1) {
         return 1;
       }
-      local_10 = uVar2 + 1;
-      uVar2 = local_c;
+      low = uVar2 + 1;
+      uVar2 = high;
     }
   } while( true );
 }
@@ -859,30 +879,31 @@ LAB_008008f3:
 
 void __cdecl
 XAnimEmitFrameIndices
-          (uint param_1,uchar **param_2,short **param_3,XAnimIndices *param_4,
-          XAnimDynamicIndices *param_5,bool param_6)
+          (uint tableSize,uchar **dataByte,short **dataShort,XAnimIndices *indices,
+          XAnimDynamicIndices *frameIndices,bool useSmallIndices)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   uint uVar4;
-  uint local_c;
+  uint i;
+  uint longTableSize;
   
-  if (param_6) {
-    memcpy(*param_2,param_5->_1,param_1 + 1);
-    *param_2 = *param_2 + param_1 + 1;
+  if (useSmallIndices) {
+    memcpy(*dataByte,frameIndices->_1,tableSize + 1);
+    *dataByte = *dataByte + tableSize + 1;
   }
-  else if (param_1 < 0x40) {
-    memcpy((uchar *)*param_3,param_5->_1,param_1 * 2 + 2);
-    *param_3 = *param_3 + param_1 + 1;
+  else if (tableSize < 0x40) {
+    memcpy((uchar *)*dataShort,frameIndices->_1,tableSize * 2 + 2);
+    *dataShort = *dataShort + tableSize + 1;
   }
   else {
-    memcpy(param_4->_1,param_5->_1,param_1 * 2 + 2);
-    param_4->_1 = param_4->_1 + param_1 * 2 + 2;
-    uVar3 = param_1 - 1 >> 8;
+    memcpy(indices->_1,frameIndices->_1,tableSize * 2 + 2);
+    indices->_1 = indices->_1 + tableSize * 2 + 2;
+    uVar3 = tableSize - 1 >> 8;
     uVar4 = uVar3 + 1;
-    if (param_5->_2[0] != 0) {
+    if (frameIndices->_2[0] != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",0x33c,
                                0,"%s");
       if (!bVar2) {
@@ -891,11 +912,11 @@ XAnimEmitFrameIndices
         return;
       }
     }
-    for (local_c = 0; local_c < uVar4; local_c = local_c + 1) {
-      *(XAnimDynamicIndices *)(*param_3 + local_c) = param_5[local_c * 0x100];
+    for (i = 0; i < uVar4; i = i + 1) {
+      *(XAnimDynamicIndices *)(*dataShort + i) = frameIndices[i * 0x100];
     }
-    *(XAnimDynamicIndices *)(*param_3 + uVar4) = param_5[param_1];
-    *param_3 = *param_3 + uVar3 + 2;
+    *(XAnimDynamicIndices *)(*dataShort + uVar4) = frameIndices[tableSize];
+    *dataShort = *dataShort + uVar3 + 2;
   }
   return;
 }
@@ -906,33 +927,35 @@ XAnimEmitFrameIndices
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-XAnimParts * __cdecl XAnimLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2,bool param_3)
+XAnimParts * __cdecl
+XAnimLoadFile(char *name,_func___cdecl_void_ptr_int *Alloc,bool streamedVersion)
 
 {
   uchar *puVar1;
   byte bVar2;
-  code *pcVar3;
-  XAnimPartTransPtr *pXVar4;
-  undefined1 uVar5;
+  short sVar3;
+  code *pcVar4;
+  XAnimPartTransPtr *pXVar5;
   undefined1 uVar6;
   undefined1 uVar7;
-  float *pfVar8;
-  uchar uVar9;
-  ushort uVar10;
-  XAnimParts *pXVar11;
-  int iVar12;
-  XAnimDeltaPart *pXVar13;
-  uint uVar14;
-  ushort *puVar15;
-  uint uVar16;
-  bool bVar17;
-  uchar *local_19c8;
-  uchar *local_19c4;
+  undefined1 uVar8;
+  float *pfVar9;
+  uchar uVar10;
+  ushort uVar11;
+  XAnimParts *pXVar12;
+  int iVar13;
+  XAnimDeltaPart *pXVar14;
+  uint uVar15;
+  ushort *puVar16;
+  uint uVar17;
+  bool bVar18;
+  void *local_19c8;
+  void *local_19c4;
   int *local_19c0;
   short *local_19bc;
   uchar *local_19b8;
   int *local_19b4;
-  ushort *local_19b0;
+  short *local_19b0;
   uchar *local_19ac;
   int local_19a8;
   int local_19a4;
@@ -942,82 +965,84 @@ XAnimParts * __cdecl XAnimLoadFile(char *param_1,_func___cdecl_void_ptr_int *par
   int local_1994;
   int local_1990;
   int local_198c;
-  float *local_197c;
+  uchar *local_197c;
   float local_1978;
   ushort local_1972;
   int local_196c;
   byte *local_1964;
   byte *local_1960;
-  uchar local_1914;
-  float *local_1910;
-  bool local_1909;
-  uchar local_1908 [20];
-  uint local_18f4;
-  uint local_18f0;
-  char local_18ec [128];
+  bool bFlipQuat;
+  bool bSimpleQuat;
+  uint numBones;
+  uchar *pos;
+  bool useSmallIndices;
+  uchar simpleQuatBits [20];
+  uint j;
+  uint keyFrameIndex;
+  char filename [128];
   int iStack_186c;
   uchar auStack_1868 [1276];
-  ushort *local_136c;
-  uint local_1368;
-  uint local_1364;
-  uchar *local_1360;
-  int *local_135c;
-  uint local_1358;
-  int local_1354 [5];
+  short *dataShort;
+  uint animPartIndex;
+  uint dataByteCount;
+  uchar *dataByte;
+  int *randomDataInt;
+  uint dataIntCount;
+  int boneCount [5];
   int local_1340;
   int local_133c;
   int local_1338;
   int local_1334;
   undefined4 local_1330;
-  char *local_132c;
-  short local_1328;
-  ushort local_1324;
-  short *local_1320;
-  byte *local_131c;
-  uint local_1318;
-  int *local_1314;
-  int local_1310;
-  ushort local_130c [162];
-  uint local_11c8;
-  short *local_11c4;
-  uint local_11c0;
-  float *local_11bc;
-  uchar *local_11b8;
-  uint local_11b4;
-  XAnimIndices local_11b0;
-  XAnimPartQuatPtr local_11ac [160];
+  char *fmt_str;
+  short version;
+  ushort numframes;
+  uchar *buf;
+  int len;
+  uint size;
+  int *dataInt;
+  int fileSize;
+  ushort partQuatArrayIndices [162];
+  uint randomDataShortCount;
+  short *randomDataShort;
+  uint indexCount;
+  uchar *flipQuatBits;
+  uchar *randomDataByte;
+  uint tableSize;
+  XAnimIndices indices;
+  XAnimPartQuatPtr partQuatArrayBuf [160];
   ushort auStack_cac [160];
-  uint local_b6c;
-  uint local_b68;
+  int highPrecision;
+  uint type;
   int aiStack_b64 [320];
-  ushort local_664 [162];
+  ushort partTransArrayIndices [162];
   uint local_520;
-  XAnimPartTransPtr local_51c [160];
-  XAnimParts *local_1c;
-  ushort local_18;
-  byte local_11;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  XAnimPartTransPtr partTransArrayBuf [160];
+  XAnimParts *parts;
+  ushort numloopframes;
+  uchar flags;
+  uint dataShortCount;
+  uint randomDataByteCount;
+  uint randomDataIntCount;
   
-  local_8 = 0x7fd64d;
+  randomDataIntCount = 0x7fd64d;
   local_520 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (g_checkBoneOrder == 0) {
     g_checkBoneOrder = 1;
-    for (local_18f4 = 0; local_18f4 < 0x11; local_18f4 = local_18f4 + 1) {
-      local_1960 = (byte *)g_highPrecisionParts[local_18f4 + 1];
-      local_1964 = (byte *)g_highPrecisionParts[local_18f4];
+    for (j = 0; j < 0x11; j = j + 1) {
+      local_1960 = (byte *)g_highPrecisionParts[j + 1];
+      local_1964 = (byte *)g_highPrecisionParts[j];
       do {
         bVar2 = *local_1964;
-        bVar17 = bVar2 < *local_1960;
+        bVar18 = bVar2 < *local_1960;
         if (bVar2 != *local_1960) {
 LAB_007fd71d:
-          local_196c = (1 - (uint)bVar17) - (uint)(bVar17 != 0);
+          local_196c = (1 - (uint)bVar18) - (uint)(bVar18 != 0);
           goto LAB_007fd728;
         }
         if (bVar2 == 0) break;
         bVar2 = local_1964[1];
-        bVar17 = bVar2 < local_1960[1];
+        bVar18 = bVar2 < local_1960[1];
         if (bVar2 != local_1960[1]) goto LAB_007fd71d;
         local_1964 = local_1964 + 2;
         local_1960 = local_1960 + 2;
@@ -1026,284 +1051,277 @@ LAB_007fd71d:
 LAB_007fd728:
       if (-1 < local_196c) {
         va("\'%s\' \'%s\'");
-        bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
+        bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
                                   0x37c,0,"%s\n\t%s");
-        if (!bVar17) {
-          pcVar3 = (code *)swi(3);
-          pXVar11 = (XAnimParts *)(*pcVar3)();
-          return pXVar11;
+        if (!bVar18) {
+          pcVar4 = (code *)swi(3);
+          pXVar12 = (XAnimParts *)(*pcVar4)();
+          return pXVar12;
         }
       }
     }
   }
-  local_132c = "xanim/%s";
-  if (param_3) {
-    local_132c = "xanim/streamed/%s.ahi";
+  fmt_str = "xanim/%s";
+  if (streamedVersion) {
+    fmt_str = "xanim/streamed/%s.ahi";
   }
-  iVar12 = Com_sprintf(local_18ec,0x80,local_132c);
-  if (iVar12 < 0) {
+  iVar13 = Com_sprintf(filename,0x80,fmt_str);
+  if (iVar13 < 0) {
     Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n");
-    local_1c = (XAnimParts *)0x0;
+    parts = (XAnimParts *)0x0;
   }
   else {
-    local_1310 = FS_ReadFile(local_18ec,&local_1320);
-    if (local_1310 < 0) {
-      if ((local_1320 != (short *)0x0) &&
-         (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
-                                    0x38d,0,"%s"), !bVar17)) {
-        pcVar3 = (code *)swi(3);
-        pXVar11 = (XAnimParts *)(*pcVar3)();
-        return pXVar11;
+    fileSize = FS_ReadFile(filename,&buf);
+    if (fileSize < 0) {
+      if ((buf != (uchar *)0x0) &&
+         (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
+                                    0x38d,0,"%s"), !bVar18)) {
+        pcVar4 = (code *)swi(3);
+        pXVar12 = (XAnimParts *)(*pcVar4)();
+        return pXVar12;
       }
       Com_PrintError(0x13,"ERROR: xanim \'%s\' not found\n");
-      local_1c = (XAnimParts *)0x0;
+      parts = (XAnimParts *)0x0;
     }
-    else if (local_1310 == 0) {
+    else if (fileSize == 0) {
       Com_PrintError(0x13,"ERROR: xanim \'%s\' has 0 length\n");
-      FS_FreeFile(local_1320);
-      local_1c = (XAnimParts *)0x0;
+      FS_FreeFile(buf);
+      parts = (XAnimParts *)0x0;
     }
     else {
-      if ((local_1320 == (short *)0x0) &&
-         (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
-                                    0x399,0,"%s"), !bVar17)) {
-        pcVar3 = (code *)swi(3);
-        pXVar11 = (XAnimParts *)(*pcVar3)();
-        return pXVar11;
+      if ((buf == (uchar *)0x0) &&
+         (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp",
+                                    0x399,0,"%s"), !bVar18)) {
+        pcVar4 = (code *)swi(3);
+        pXVar12 = (XAnimParts *)(*pcVar4)();
+        return pXVar12;
       }
-      local_1328 = *local_1320;
-      local_1910 = (float *)(local_1320 + 1);
-      if (local_1328 == 0x13) {
-        iVar12 = I_strnicmp(param_1,"viewmodel_",10);
-        local_b6c = (uint)(iVar12 == 0);
-        local_1324 = *(ushort *)local_1910;
-        uVar10 = *(ushort *)((int)local_1910 + 2);
-        local_1910 = local_1910 + 1;
-        uVar16 = (uint)(short)uVar10;
-        if ((0xa0 < uVar16) &&
-           (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                      ,0x3a9,0,"%s\n\t(numBones) = %i"), !bVar17)) {
-          pcVar3 = (code *)swi(3);
-          pXVar11 = (XAnimParts *)(*pcVar3)();
-          return pXVar11;
+      version = *(short *)buf;
+      pos = buf + 2;
+      if (version == 0x13) {
+        iVar13 = I_strnicmp(name,"viewmodel_",10);
+        highPrecision = (int)(iVar13 == 0);
+        numframes = *(ushort *)pos;
+        sVar3 = *(short *)(pos + 2);
+        pos = pos + 4;
+        uVar17 = (uint)sVar3;
+        if ((0xa0 < uVar17) &&
+           (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                      ,0x3a9,0,"%s\n\t(numBones) = %i"), !bVar18)) {
+          pcVar4 = (code *)swi(3);
+          pXVar12 = (XAnimParts *)(*pcVar4)();
+          return pXVar12;
         }
-        local_11 = *(byte *)local_1910;
-        local_1910 = (float *)((int)local_1910 + 1);
-        if ((local_11 & 8) == 0) {
-          local_1c = (*param_2)(0x68);
-          if ((local_1c == (XAnimParts *)0x0) &&
-             (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                        ,0x3b9,0,"%s"), !bVar17)) {
-            pcVar3 = (code *)swi(3);
-            pXVar11 = (XAnimParts *)(*pcVar3)();
-            return pXVar11;
+        flags = *pos;
+        pos = pos + 1;
+        if ((flags & 8) == 0) {
+          parts = (*Alloc)(0x68);
+          if ((parts == (XAnimParts *)0x0) &&
+             (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                        ,0x3b9,0,"%s"), !bVar18)) {
+            pcVar4 = (code *)swi(3);
+            pXVar12 = (XAnimParts *)(*pcVar4)();
+            return pXVar12;
           }
-          local_1914 = (uchar)uVar10;
-          local_1c->boneCount[9] = local_1914;
-          local_1c->bLoop = (local_11 & 1) != 0;
-          local_1c->bDelta = (local_11 & 2) != 0;
-          local_1c->bLeftHandGripIK = (local_11 & 4) != 0;
-          local_1c->bStreamable = (local_11 & 8) != 0;
-          local_1c->loopEntryTime = 0.0;
-          local_1c->assetType = *(byte *)local_1910;
-          local_1c->framerate = (float)(int)*(short *)((int)local_1910 + 1);
-          local_1c->primedLength = 0.0;
-          pfVar8 = (float *)((int)local_1910 + 3);
-          if (local_1c->bStreamable != false) {
-            local_1c->primedLength = *(float *)((int)local_1910 + 3);
-            pfVar8 = (float *)((int)local_1910 + 7);
+          numBones._0_1_ = (uchar)sVar3;
+          parts->boneCount[9] = (uchar)numBones;
+          parts->bLoop = (flags & 1) != 0;
+          parts->bDelta = (flags & 2) != 0;
+          parts->bLeftHandGripIK = (flags & 4) != 0;
+          parts->bStreamable = (flags & 8) != 0;
+          parts->loopEntryTime = 0.0;
+          parts->assetType = *pos;
+          parts->framerate = (float)(int)*(short *)(pos + 1);
+          parts->primedLength = 0.0;
+          pfVar9 = (float *)(pos + 3);
+          if (parts->bStreamable != false) {
+            parts->primedLength = *(float *)(pos + 3);
+            pfVar9 = (float *)(pos + 7);
           }
-          local_1910 = pfVar8;
-          if ((local_1324 == 0) &&
-             (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                        ,0x3ce,0,"%s"), !bVar17)) {
-            pcVar3 = (code *)swi(3);
-            pXVar11 = (XAnimParts *)(*pcVar3)();
-            return pXVar11;
+          pos = (uchar *)pfVar9;
+          if ((numframes == 0) &&
+             (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                        ,0x3ce,0,"%s"), !bVar18)) {
+            pcVar4 = (code *)swi(3);
+            pXVar12 = (XAnimParts *)(*pcVar4)();
+            return pXVar12;
           }
-          if (local_1c->bLoop == false) {
-            local_1972 = local_1324;
+          if (parts->bLoop == false) {
+            local_1972 = numframes;
           }
           else {
-            local_1972 = local_1324 + 1;
+            local_1972 = numframes + 1;
           }
-          local_18 = local_1972;
-          local_1909 = local_1972 < 0x101;
-          local_1c->numframes = local_1972 - 1;
-          if (local_1c->numframes == 0) {
+          numloopframes = local_1972;
+          useSmallIndices = local_1972 < 0x101;
+          parts->numframes = local_1972 - 1;
+          if (parts->numframes == 0) {
             local_1978 = 0.0;
           }
           else {
-            local_1978 = local_1c->framerate / (float)local_1c->numframes;
+            local_1978 = parts->framerate / (float)parts->numframes;
           }
-          local_1c->frequency = local_1978;
-          if ((local_1c->frequency < 0.0) &&
-             (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                        ,0x3d4,0,"%s\n\t(parts->frequency) = %g"), !bVar17)) {
-            pcVar3 = (code *)swi(3);
-            pXVar11 = (XAnimParts *)(*pcVar3)();
-            return pXVar11;
+          parts->frequency = local_1978;
+          if ((parts->frequency < 0.0) &&
+             (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                        ,0x3d4,0,"%s\n\t(parts->frequency) = %g"), !bVar18)) {
+            pcVar4 = (code *)swi(3);
+            pXVar12 = (XAnimParts *)(*pcVar4)();
+            return pXVar12;
           }
-          if (local_1c->bDelta != false) {
-            pXVar13 = (*param_2)(8);
-            local_1c->deltaPart = pXVar13;
-            local_1910 = (float *)GetDeltaQuaternions(local_1c->deltaPart,param_2,
-                                                      (uchar *)local_1910,local_18,local_1909);
-            local_1910 = (float *)GetDeltaTranslations
-                                            (param_1,local_1c->deltaPart,param_2,(uchar *)local_1910
-                                             ,local_18,local_1909);
+          if (parts->bDelta != false) {
+            pXVar14 = (*Alloc)(8);
+            parts->deltaPart = pXVar14;
+            pos = GetDeltaQuaternions(parts->deltaPart,Alloc,pos,numloopframes,useSmallIndices);
+            pos = GetDeltaTranslations
+                            (name,parts->deltaPart,Alloc,pos,numloopframes,useSmallIndices);
           }
-          if (uVar16 == 0) {
-            local_11bc = (float *)0x0;
+          if (uVar17 == 0) {
+            flipQuatBits = (uchar *)0x0;
           }
           else {
-            local_131c = (byte *)((uVar16 - 1 >> 3) + 1);
-            local_11bc = local_1910;
-            local_1910 = (float *)((int)local_1910 + (int)local_131c);
-            memcpy(local_1908,(uchar *)local_1910,(ulong)local_131c);
-            local_1910 = (float *)((int)local_1910 + (int)local_131c);
-            memset((uchar *)local_11ac,'\0',uVar16 << 3);
-            memset((uchar *)local_51c,'\0',uVar16 << 3);
-            for (local_18f4 = 0; local_18f4 < uVar16; local_18f4 = local_18f4 + 1) {
-              local_11ac[local_18f4].partIndex = (uchar)local_18f4;
-              local_51c[local_18f4].partIndex = (uchar)local_18f4;
+            len = (uVar17 - 1 >> 3) + 1;
+            flipQuatBits = pos;
+            pos = pos + len;
+            memcpy(simpleQuatBits,pos,len);
+            pos = pos + len;
+            memset((uchar *)partQuatArrayBuf,'\0',uVar17 << 3);
+            memset((uchar *)partTransArrayBuf,'\0',uVar17 << 3);
+            for (j = 0; j < uVar17; j = j + 1) {
+              partQuatArrayBuf[j].partIndex = (uchar)j;
+              partTransArrayBuf[j].partIndex = (uchar)j;
             }
           }
-          for (local_18f4 = 0; local_18f4 < uVar16; local_18f4 = local_18f4 + 1) {
-            local_197c = local_1910;
+          for (j = 0; j < uVar17; j = j + 1) {
+            local_197c = pos;
             do {
-              bVar2 = *(byte *)local_197c;
-              local_197c = (float *)((int)local_197c + 1);
-            } while (bVar2 != 0);
-            local_131c = (byte *)((int)local_197c + (1 - (int)((int)local_1910 + 1)));
-            uVar14 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,(char *)local_1910,0,(uint)local_131c,
-                                        9);
-            auStack_cac[local_18f4] = (ushort)uVar14;
-            if ((local_b6c == 0) &&
-               (iVar12 = XAnimIsHighPrecisionPart((char *)local_1910), iVar12 == 0)) {
+              uVar10 = *local_197c;
+              local_197c = local_197c + 1;
+            } while (uVar10 != '\0');
+            len = (int)(local_197c + (1 - (int)(pos + 1)));
+            uVar15 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,(char *)pos,0,len,9);
+            auStack_cac[j] = (ushort)uVar15;
+            if ((highPrecision == 0) &&
+               (iVar13 = XAnimIsHighPrecisionPart((char *)pos), iVar13 == 0)) {
               local_198c = 0;
             }
             else {
               local_198c = 1;
             }
-            g_highPrecisionPart[local_18f4] = local_198c;
-            local_1910 = (float *)((int)local_1910 + (int)local_131c);
+            g_highPrecisionPart[j] = local_198c;
+            pos = pos + len;
           }
           if ((g_animUser != (HunkUser *)0x0) &&
-             (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                        ,0x3fd,0,"%s"), !bVar17)) {
-            pcVar3 = (code *)swi(3);
-            pXVar11 = (XAnimParts *)(*pcVar3)();
-            return pXVar11;
+             (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                        ,0x3fd,0,"%s"), !bVar18)) {
+            pcVar4 = (code *)swi(3);
+            pXVar12 = (XAnimParts *)(*pcVar4)();
+            return pXVar12;
           }
           g_animUser = Hunk_UserCreate(0x40000,HU_SCHEME_DEFAULT,0,(void *)0x0,"XAnimLoadFile",0xd);
-          for (local_18f4 = 0; local_18f4 < uVar16; local_18f4 = local_18f4 + 1) {
-            local_1910 = (float *)GetQuaternions(local_11ac + local_18f4,(uchar *)local_1910,
-                                                 ((uint)*(byte *)((int)local_11bc +
-                                                                 (local_18f4 >> 3)) &
-                                                 1 << ((byte)local_18f4 & 7)) != 0,
-                                                 ((int)(char)local_1908[local_18f4 >> 3] &
-                                                 1 << ((byte)local_18f4 & 7)) != 0,local_18,
-                                                 local_1909);
-            local_1910 = (float *)GetTranslations(local_51c + local_18f4,(uchar *)local_1910,
-                                                  local_18,local_1909);
+          for (j = 0; j < uVar17; j = j + 1) {
+            pos = GetQuaternions(partQuatArrayBuf + j,pos,
+                                 ((uint)flipQuatBits[j >> 3] & 1 << ((byte)j & 7)) != 0,
+                                 ((int)(char)simpleQuatBits[j >> 3] & 1 << ((byte)j & 7)) != 0,
+                                 numloopframes,useSmallIndices);
+            pos = GetTranslations(partTransArrayBuf + j,pos,numloopframes,useSmallIndices);
           }
-          ReadNoteTracks(param_1,(uchar **)&local_1910,local_1c,param_2);
-          if (((float *)((int)local_1320 + local_1310) != local_1910) &&
-             (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                        ,0x40c,1,"%s\n\t(name) = %s"), !bVar17)) {
-            pcVar3 = (code *)swi(3);
-            pXVar11 = (XAnimParts *)(*pcVar3)();
-            return pXVar11;
+          ReadNoteTracks(name,&pos,parts,Alloc);
+          if ((buf + fileSize != pos) &&
+             (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                        ,0x40c,1,"%s\n\t(name) = %s"), !bVar18)) {
+            pcVar4 = (code *)swi(3);
+            pXVar12 = (XAnimParts *)(*pcVar4)();
+            return pXVar12;
           }
-          FS_FreeFile(local_1320);
-          if (uVar16 != 0) {
-            for (local_18f4 = 0; local_18f4 < uVar16; local_18f4 = local_18f4 + 1) {
-              local_130c[local_18f4] = (ushort)local_18f4;
+          FS_FreeFile(buf);
+          if (uVar17 != 0) {
+            for (j = 0; j < uVar17; j = j + 1) {
+              partQuatArrayIndices[j] = (ushort)j;
             }
-            g_partQuatArray = local_11ac;
-            g_partTransArray = local_51c;
-            g_simpleQuatBits = (char *)local_1908;
-            puVar15 = (*param_2)(uVar16 << 1);
-            local_1c->names = puVar15;
-            local_1354[0] = 0;
-            local_1354[1] = 0;
-            local_1354[2] = 0;
-            local_1354[3] = 0;
-            local_1354[4] = 0;
+            g_partQuatArray = partQuatArrayBuf;
+            g_partTransArray = partTransArrayBuf;
+            g_simpleQuatBits = (char *)simpleQuatBits;
+            puVar16 = (*Alloc)(uVar17 << 1);
+            parts->names = puVar16;
+            boneCount[0] = 0;
+            boneCount[1] = 0;
+            boneCount[2] = 0;
+            boneCount[3] = 0;
+            boneCount[4] = 0;
             local_1340 = 0;
             local_133c = 0;
             local_1338 = 0;
             local_1334 = 0;
             local_1330 = 0;
-            qsort(local_130c,uVar16,2,XAnimCompareQuatParts);
-            for (local_18f4 = 0; local_18f4 < uVar16; local_18f4 = local_18f4 + 1) {
-              local_1368 = (uint)local_130c[local_18f4];
-              local_11ac[local_1368].partIndex = (uchar)local_18f4;
-              local_51c[local_1368].partIndex = (uchar)local_18f4;
-              iVar12 = *(int *)&local_11ac[local_1368].partIndex;
-              aiStack_b64[local_18f4 * 2] = (int)local_11ac[local_1368].quat;
-              aiStack_b64[local_18f4 * 2 + 1] = iVar12;
-              local_1c->names[local_18f4] = auStack_cac[local_1368];
-              local_b68 = XAnimGetPartQuatType(local_1368);
-              local_1354[local_b68] = local_18f4 + 1;
+            qsort(partQuatArrayIndices,uVar17,2,XAnimCompareQuatParts);
+            for (j = 0; j < uVar17; j = j + 1) {
+              animPartIndex = (uint)partQuatArrayIndices[j];
+              partQuatArrayBuf[animPartIndex].partIndex = (uchar)j;
+              partTransArrayBuf[animPartIndex].partIndex = (uchar)j;
+              iVar13 = *(int *)&partQuatArrayBuf[animPartIndex].partIndex;
+              aiStack_b64[j * 2] = (int)partQuatArrayBuf[animPartIndex].quat;
+              aiStack_b64[j * 2 + 1] = iVar13;
+              parts->names[j] = auStack_cac[animPartIndex];
+              type = XAnimGetPartQuatType(animPartIndex);
+              boneCount[type] = j + 1;
             }
-            if (local_1354[1] < local_1354[0]) {
-              local_1990 = local_1354[0];
+            if (boneCount[1] < boneCount[0]) {
+              local_1990 = boneCount[0];
             }
             else {
-              local_1990 = local_1354[1];
+              local_1990 = boneCount[1];
             }
-            local_1354[1] = local_1990;
-            if (local_1354[2] < local_1990) {
+            boneCount[1] = local_1990;
+            if (boneCount[2] < local_1990) {
               local_1994 = local_1990;
             }
             else {
-              local_1994 = local_1354[2];
+              local_1994 = boneCount[2];
             }
-            local_1354[2] = local_1994;
-            if (local_1354[3] < local_1994) {
+            boneCount[2] = local_1994;
+            if (boneCount[3] < local_1994) {
               local_1998 = local_1994;
             }
             else {
-              local_1998 = local_1354[3];
+              local_1998 = boneCount[3];
             }
-            local_1354[3] = local_1998;
-            if (local_1354[4] < local_1998) {
+            boneCount[3] = local_1998;
+            if (boneCount[4] < local_1998) {
               local_199c = local_1998;
             }
             else {
-              local_199c = local_1354[4];
+              local_199c = boneCount[4];
             }
-            local_1354[4] = local_199c;
-            uVar9 = truncate_cast<unsigned_char>(local_1354[0]);
-            local_1c->boneCount[0] = uVar9;
-            uVar9 = truncate_cast<unsigned_char>(local_1354[1] - local_1354[0]);
-            local_1c->boneCount[1] = uVar9;
-            uVar9 = truncate_cast<unsigned_char>(local_1354[2] - local_1354[1]);
-            local_1c->boneCount[2] = uVar9;
-            uVar9 = truncate_cast<unsigned_char>(local_1354[3] - local_1354[2]);
-            local_1c->boneCount[3] = uVar9;
-            uVar9 = truncate_cast<unsigned_char>(local_1354[4] - local_1354[3]);
-            local_1c->boneCount[4] = uVar9;
-            memcpy((uchar *)local_664,(uchar *)local_130c,uVar16 << 1);
-            qsort(local_664,uVar16,2,XAnimCompareTransParts);
-            for (local_18f4 = 0; local_18f4 < uVar16; local_18f4 = local_18f4 + 1) {
-              local_1368 = (uint)local_664[local_18f4];
-              pXVar4 = local_51c + local_1368;
-              uVar9 = pXVar4->partIndex;
-              uVar5 = pXVar4->field_0x5;
-              uVar6 = pXVar4->field_0x6;
-              uVar7 = pXVar4->field_0x7;
-              *(XAnimPartTrans **)(auStack_1868 + local_18f4 * 8 + -4) = local_51c[local_1368].trans
-              ;
-              puVar1 = auStack_1868 + local_18f4 * 8;
-              puVar1[0] = uVar9;
-              puVar1[1] = uVar5;
-              puVar1[2] = uVar6;
-              puVar1[3] = uVar7;
-              local_b68 = XAnimGetPartTransType(local_1368);
-              local_1354[local_b68] = local_18f4 + 1;
+            boneCount[4] = local_199c;
+            uVar10 = truncate_cast<unsigned_char>(boneCount[0]);
+            parts->boneCount[0] = uVar10;
+            uVar10 = truncate_cast<unsigned_char>(boneCount[1] - boneCount[0]);
+            parts->boneCount[1] = uVar10;
+            uVar10 = truncate_cast<unsigned_char>(boneCount[2] - boneCount[1]);
+            parts->boneCount[2] = uVar10;
+            uVar10 = truncate_cast<unsigned_char>(boneCount[3] - boneCount[2]);
+            parts->boneCount[3] = uVar10;
+            uVar10 = truncate_cast<unsigned_char>(boneCount[4] - boneCount[3]);
+            parts->boneCount[4] = uVar10;
+            memcpy((uchar *)partTransArrayIndices,(uchar *)partQuatArrayIndices,uVar17 << 1);
+            qsort(partTransArrayIndices,uVar17,2,XAnimCompareTransParts);
+            for (j = 0; j < uVar17; j = j + 1) {
+              animPartIndex = (uint)partTransArrayIndices[j];
+              pXVar5 = partTransArrayBuf + animPartIndex;
+              uVar10 = pXVar5->partIndex;
+              uVar6 = pXVar5->field_0x5;
+              uVar7 = pXVar5->field_0x6;
+              uVar8 = pXVar5->field_0x7;
+              *(XAnimPartTrans **)(auStack_1868 + j * 8 + -4) =
+                   partTransArrayBuf[animPartIndex].trans;
+              puVar1 = auStack_1868 + j * 8;
+              puVar1[0] = uVar10;
+              puVar1[1] = uVar6;
+              puVar1[2] = uVar7;
+              puVar1[3] = uVar8;
+              type = XAnimGetPartTransType(animPartIndex);
+              boneCount[type] = j + 1;
             }
             if (local_133c < local_1340) {
               local_19a0 = local_1340;
@@ -1326,464 +1344,472 @@ LAB_007fd728:
               local_19a8 = local_1334;
             }
             local_1334 = local_19a8;
-            local_1c->boneCount[5] = (uchar)local_1340;
-            local_1c->boneCount[6] = (char)local_19a0 - (uchar)local_1340;
-            local_1c->boneCount[7] = (char)local_19a4 - (char)local_19a0;
-            local_1c->boneCount[8] = (char)local_19a8 - (char)local_19a4;
-            local_1364 = 0;
-            local_10 = 0;
-            local_1358 = 0;
-            local_c = 0;
-            local_11c8 = 0;
-            local_8 = 0;
-            local_11c0 = 0;
-            local_1368 = (uint)local_1c->boneCount[0];
-            local_1318 = (uint)local_1c->boneCount[1] + (uint)local_1c->boneCount[0];
-            for (; uVar16 = local_10, local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              local_11b4 = (uint)*(ushort *)aiStack_b64[local_1368 * 2];
-              local_10 = local_10 + 1;
-              if (local_1909 == false) {
-                if (local_11b4 < 0x40) {
-                  local_10 = uVar16 + 2 + local_11b4;
+            parts->boneCount[5] = (uchar)local_1340;
+            parts->boneCount[6] = (char)local_19a0 - (uchar)local_1340;
+            parts->boneCount[7] = (char)local_19a4 - (char)local_19a0;
+            parts->boneCount[8] = (char)local_19a8 - (char)local_19a4;
+            dataByteCount = 0;
+            dataShortCount = 0;
+            dataIntCount = 0;
+            randomDataByteCount = 0;
+            randomDataShortCount = 0;
+            randomDataIntCount = 0;
+            indexCount = 0;
+            animPartIndex = (uint)parts->boneCount[0];
+            size = (uint)parts->boneCount[1] + (uint)parts->boneCount[0];
+            for (; uVar17 = dataShortCount, animPartIndex < size; animPartIndex = animPartIndex + 1)
+            {
+              tableSize = (uint)*(ushort *)aiStack_b64[animPartIndex * 2];
+              dataShortCount = dataShortCount + 1;
+              if (useSmallIndices == false) {
+                if (tableSize < 0x40) {
+                  dataShortCount = uVar17 + 2 + tableSize;
                 }
                 else {
-                  local_10 = uVar16 + (local_11b4 - 1 >> 8) + 3;
-                  local_11c0 = local_11c0 + 1 + local_11b4;
+                  dataShortCount = uVar17 + (tableSize - 1 >> 8) + 3;
+                  indexCount = indexCount + 1 + tableSize;
                 }
               }
               else {
-                local_1364 = local_1364 + 1 + local_11b4;
+                dataByteCount = dataByteCount + 1 + tableSize;
               }
-              local_11c8 = local_11c8 + 2 + local_11b4 * 2;
+              randomDataShortCount = randomDataShortCount + 2 + tableSize * 2;
             }
-            local_1318 = local_1c->boneCount[2] + local_1318;
-            for (; uVar16 = local_10, local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              local_11b4 = (uint)*(ushort *)aiStack_b64[local_1368 * 2];
-              local_10 = local_10 + 1;
-              if (local_1909 == false) {
-                if (local_11b4 < 0x40) {
-                  local_10 = uVar16 + 2 + local_11b4;
+            size = parts->boneCount[2] + size;
+            for (; uVar17 = dataShortCount, animPartIndex < size; animPartIndex = animPartIndex + 1)
+            {
+              tableSize = (uint)*(ushort *)aiStack_b64[animPartIndex * 2];
+              dataShortCount = dataShortCount + 1;
+              if (useSmallIndices == false) {
+                if (tableSize < 0x40) {
+                  dataShortCount = uVar17 + 2 + tableSize;
                 }
                 else {
-                  local_10 = uVar16 + (local_11b4 - 1 >> 8) + 3;
-                  local_11c0 = local_11c0 + 1 + local_11b4;
+                  dataShortCount = uVar17 + (tableSize - 1 >> 8) + 3;
+                  indexCount = indexCount + 1 + tableSize;
                 }
               }
               else {
-                local_1364 = local_1364 + 1 + local_11b4;
+                dataByteCount = dataByteCount + 1 + tableSize;
               }
-              local_11c8 = local_11c8 + 4 + local_11b4 * 4;
+              randomDataShortCount = randomDataShortCount + 4 + tableSize * 4;
             }
-            local_1318 = (uint)local_1c->boneCount[4] + local_1c->boneCount[3] + local_1318;
-            local_1368 = (uint)local_1c->boneCount[4] + local_1c->boneCount[3] + local_1368;
-            local_10 = local_10 + (uint)local_1c->boneCount[3] * 2 +
-                       (uint)local_1c->boneCount[4] * 4;
-            if ((local_1368 != local_1c->boneCount[9]) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+            size = (uint)parts->boneCount[4] + parts->boneCount[3] + size;
+            animPartIndex = (uint)parts->boneCount[4] + parts->boneCount[3] + animPartIndex;
+            dataShortCount =
+                 dataShortCount + (uint)parts->boneCount[3] * 2 + (uint)parts->boneCount[4] * 4;
+            if ((animPartIndex != parts->boneCount[9]) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
                                           ,0x4a3,0,
                                           "animPartIndex == parts->boneCount[PART_TYPE_ALL]\n\t%i, %i"
-                                         ), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+                                         ), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1368 = 0;
-            local_1318 = (uint)local_1c->boneCount[5];
-            local_1364 = local_1c->boneCount[5] + local_1364;
-            local_1358 = (uint)local_1c->boneCount[5] * 6 + local_1358;
-            for (; uVar16 = local_10, local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              local_11b4 = (uint)**(ushort **)(auStack_1868 + local_1368 * 8 + -4);
-              local_10 = local_10 + 1;
-              if (local_1909 == false) {
-                if (local_11b4 < 0x40) {
-                  local_10 = uVar16 + 2 + local_11b4;
+            animPartIndex = 0;
+            size = (uint)parts->boneCount[5];
+            dataByteCount = parts->boneCount[5] + dataByteCount;
+            dataIntCount = (uint)parts->boneCount[5] * 6 + dataIntCount;
+            for (; uVar17 = dataShortCount, animPartIndex < size; animPartIndex = animPartIndex + 1)
+            {
+              tableSize = (uint)**(ushort **)(auStack_1868 + animPartIndex * 8 + -4);
+              dataShortCount = dataShortCount + 1;
+              if (useSmallIndices == false) {
+                if (tableSize < 0x40) {
+                  dataShortCount = uVar17 + 2 + tableSize;
                 }
                 else {
-                  local_10 = uVar16 + (local_11b4 - 1 >> 8) + 3;
-                  local_11c0 = local_11c0 + 1 + local_11b4;
+                  dataShortCount = uVar17 + (tableSize - 1 >> 8) + 3;
+                  indexCount = indexCount + 1 + tableSize;
                 }
               }
               else {
-                local_1364 = local_1364 + 1 + local_11b4;
+                dataByteCount = dataByteCount + 1 + tableSize;
               }
-              local_c = (local_11b4 + 1) * 3 + local_c;
+              randomDataByteCount = (tableSize + 1) * 3 + randomDataByteCount;
             }
-            local_1318 = local_1c->boneCount[6] + local_1318;
-            local_1364 = local_1c->boneCount[6] + local_1364;
-            local_1358 = (uint)local_1c->boneCount[6] * 6 + local_1358;
-            for (; uVar16 = local_10, local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              local_11b4 = (uint)**(ushort **)(auStack_1868 + local_1368 * 8 + -4);
-              local_10 = local_10 + 1;
-              if (local_1909 == false) {
-                if (local_11b4 < 0x40) {
-                  local_10 = uVar16 + 2 + local_11b4;
+            size = parts->boneCount[6] + size;
+            dataByteCount = parts->boneCount[6] + dataByteCount;
+            dataIntCount = (uint)parts->boneCount[6] * 6 + dataIntCount;
+            for (; uVar17 = dataShortCount, animPartIndex < size; animPartIndex = animPartIndex + 1)
+            {
+              tableSize = (uint)**(ushort **)(auStack_1868 + animPartIndex * 8 + -4);
+              dataShortCount = dataShortCount + 1;
+              if (useSmallIndices == false) {
+                if (tableSize < 0x40) {
+                  dataShortCount = uVar17 + 2 + tableSize;
                 }
                 else {
-                  local_10 = uVar16 + (local_11b4 - 1 >> 8) + 3;
-                  local_11c0 = local_11c0 + 1 + local_11b4;
+                  dataShortCount = uVar17 + (tableSize - 1 >> 8) + 3;
+                  indexCount = indexCount + 1 + tableSize;
                 }
               }
               else {
-                local_1364 = local_1364 + 1 + local_11b4;
+                dataByteCount = dataByteCount + 1 + tableSize;
               }
-              local_11c8 = (local_11b4 + 1) * 3 + local_11c8;
+              randomDataShortCount = (tableSize + 1) * 3 + randomDataShortCount;
             }
-            local_1358 = (uint)local_1c->boneCount[7] * 3 + local_1358;
-            local_1318 = (uint)local_1c->boneCount[8] + local_1c->boneCount[7] + local_1318;
-            local_1368 = (uint)local_1c->boneCount[8] + local_1c->boneCount[7] + local_1368;
-            local_1364 = (uint)local_1c->boneCount[8] + local_1c->boneCount[7] + local_1364;
-            if ((local_1368 != local_1c->boneCount[9]) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x4c4,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            dataIntCount = (uint)parts->boneCount[7] * 3 + dataIntCount;
+            size = (uint)parts->boneCount[8] + parts->boneCount[7] + size;
+            animPartIndex = (uint)parts->boneCount[8] + parts->boneCount[7] + animPartIndex;
+            dataByteCount = (uint)parts->boneCount[8] + parts->boneCount[7] + dataByteCount;
+            if ((animPartIndex != parts->boneCount[9]) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x4c4,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if (local_1364 == 0) {
+            if (dataByteCount == 0) {
               local_19ac = (uchar *)0x0;
             }
             else {
-              local_19ac = (*param_2)(local_1364 << 1);
+              local_19ac = (*Alloc)(dataByteCount << 1);
             }
-            local_1360 = local_19ac;
-            local_1c->dataByteCount = (ushort)local_1364;
-            if ((local_1c->dataByteCount != local_1364) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x4c9,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            dataByte = local_19ac;
+            parts->dataByteCount = (ushort)dataByteCount;
+            if ((parts->dataByteCount != dataByteCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x4c9,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1c->dataByte = local_1360;
-            if (local_10 == 0) {
-              local_19b0 = (ushort *)0x0;
+            parts->dataByte = dataByte;
+            if (dataShortCount == 0) {
+              local_19b0 = (short *)0x0;
             }
             else {
-              local_19b0 = (*param_2)(local_10 << 1);
+              local_19b0 = (*Alloc)(dataShortCount << 1);
             }
-            local_136c = local_19b0;
-            local_1c->dataShortCount = (ushort)local_10;
-            if ((local_1c->dataShortCount != local_10) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x4ce,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            dataShort = local_19b0;
+            parts->dataShortCount = (ushort)dataShortCount;
+            if ((parts->dataShortCount != dataShortCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x4ce,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1c->dataShort = (short *)local_136c;
-            if (local_1358 == 0) {
+            parts->dataShort = dataShort;
+            if (dataIntCount == 0) {
               local_19b4 = (int *)0x0;
             }
             else {
-              local_19b4 = (*param_2)(local_1358 << 2);
+              local_19b4 = (*Alloc)(dataIntCount << 2);
             }
-            local_1314 = local_19b4;
-            local_1c->dataIntCount = (ushort)local_1358;
-            if ((local_1c->dataIntCount != local_1358) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x4d3,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            dataInt = local_19b4;
+            parts->dataIntCount = (ushort)dataIntCount;
+            if ((parts->dataIntCount != dataIntCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x4d3,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1c->dataInt = local_1314;
-            if (local_c == 0) {
+            parts->dataInt = dataInt;
+            if (randomDataByteCount == 0) {
               local_19b8 = (uchar *)0x0;
             }
             else {
-              local_19b8 = (*param_2)(local_c << 1);
+              local_19b8 = (*Alloc)(randomDataByteCount << 1);
             }
-            local_11b8 = local_19b8;
-            local_1c->randomDataByteCount = (ushort)local_c;
-            if ((local_1c->randomDataByteCount != local_c) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x4d9,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            randomDataByte = local_19b8;
+            parts->randomDataByteCount = (ushort)randomDataByteCount;
+            if ((parts->randomDataByteCount != randomDataByteCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x4d9,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1c->randomDataByte = local_11b8;
-            if (local_11c8 == 0) {
+            parts->randomDataByte = randomDataByte;
+            if (randomDataShortCount == 0) {
               local_19bc = (short *)0x0;
             }
             else {
-              local_19bc = (*param_2)(local_11c8 << 1);
+              local_19bc = (*Alloc)(randomDataShortCount << 1);
             }
-            local_11c4 = local_19bc;
-            local_1c->randomDataShortCount = local_11c8;
-            local_1c->randomDataShort = local_19bc;
-            if (local_8 == 0) {
+            randomDataShort = local_19bc;
+            parts->randomDataShortCount = randomDataShortCount;
+            parts->randomDataShort = local_19bc;
+            if (randomDataIntCount == 0) {
               local_19c0 = (int *)0x0;
             }
             else {
-              local_19c0 = (*param_2)(local_8 << 2);
+              local_19c0 = (*Alloc)(randomDataIntCount << 2);
             }
-            local_135c = local_19c0;
-            local_1c->randomDataIntCount = (ushort)local_8;
-            if ((local_1c->randomDataIntCount != local_8) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x4e6,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            randomDataInt = local_19c0;
+            parts->randomDataIntCount = (ushort)randomDataIntCount;
+            if ((parts->randomDataIntCount != randomDataIntCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x4e6,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1c->randomDataInt = local_135c;
-            if (local_1909 == false) {
-              if (local_11c0 == 0) {
-                local_19c8 = (uchar *)0x0;
+            parts->randomDataInt = randomDataInt;
+            if (useSmallIndices == false) {
+              if (indexCount == 0) {
+                local_19c8 = (void *)0x0;
               }
               else {
-                local_19c8 = (*param_2)(local_11c0 << 1);
+                local_19c8 = (*Alloc)(indexCount << 1);
               }
-              local_11b0.data = local_19c8;
+              indices.data = local_19c8;
             }
             else {
-              if (local_11c0 == 0) {
-                local_19c4 = (uchar *)0x0;
+              if (indexCount == 0) {
+                local_19c4 = (void *)0x0;
               }
               else {
-                local_19c4 = (*param_2)(local_11c0);
+                local_19c4 = (*Alloc)(indexCount);
               }
-              local_11b0.data = local_19c4;
+              indices.data = local_19c4;
             }
-            (local_1c->indices).data = (void *)local_11b0;
-            local_1c->indexCount = local_11c0;
-            local_1368 = (uint)local_1c->boneCount[0];
-            local_1318 = (uint)local_1c->boneCount[1] + (uint)local_1c->boneCount[0];
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              local_11b4 = (uint)*(ushort *)aiStack_b64[local_1368 * 2];
-              uVar10 = truncate_cast<unsigned_short>(local_11b4);
-              *local_136c = uVar10;
-              local_136c = local_136c + 1;
-              memcpy((uchar *)local_11c4,*(uchar **)(aiStack_b64[local_1368 * 2] + 4),
-                     (local_11b4 * 2 + 2) * 2);
-              local_11c4 = local_11c4 + local_11b4 * 2 + 2;
+            parts->indices = indices;
+            parts->indexCount = indexCount;
+            animPartIndex = (uint)parts->boneCount[0];
+            size = (uint)parts->boneCount[1] + (uint)parts->boneCount[0];
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              tableSize = (uint)*(ushort *)aiStack_b64[animPartIndex * 2];
+              uVar11 = truncate_cast<unsigned_short>(tableSize);
+              *dataShort = uVar11;
+              dataShort = dataShort + 1;
+              memcpy((uchar *)randomDataShort,*(uchar **)(aiStack_b64[animPartIndex * 2] + 4),
+                     (tableSize * 2 + 2) * 2);
+              randomDataShort = randomDataShort + tableSize * 2 + 2;
               XAnimEmitFrameIndices
-                        (local_11b4,&local_1360,(short **)&local_136c,&local_11b0,
-                         (XAnimDynamicIndices *)(aiStack_b64[local_1368 * 2] + 8),local_1909);
+                        (tableSize,&dataByte,&dataShort,&indices,
+                         (XAnimDynamicIndices *)(aiStack_b64[animPartIndex * 2] + 8),useSmallIndices
+                        );
             }
-            local_1318 = local_1c->boneCount[2] + local_1318;
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              local_11b4 = (uint)*(ushort *)aiStack_b64[local_1368 * 2];
-              uVar10 = truncate_cast<unsigned_short>(local_11b4);
-              *local_136c = uVar10;
-              local_136c = local_136c + 1;
-              memcpy((uchar *)local_11c4,*(uchar **)(aiStack_b64[local_1368 * 2] + 4),
-                     (local_11b4 * 4 + 4) * 2);
-              local_11c4 = local_11c4 + local_11b4 * 4 + 4;
+            size = parts->boneCount[2] + size;
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              tableSize = (uint)*(ushort *)aiStack_b64[animPartIndex * 2];
+              uVar11 = truncate_cast<unsigned_short>(tableSize);
+              *dataShort = uVar11;
+              dataShort = dataShort + 1;
+              memcpy((uchar *)randomDataShort,*(uchar **)(aiStack_b64[animPartIndex * 2] + 4),
+                     (tableSize * 4 + 4) * 2);
+              randomDataShort = randomDataShort + tableSize * 4 + 4;
               XAnimEmitFrameIndices
-                        (local_11b4,&local_1360,(short **)&local_136c,&local_11b0,
-                         (XAnimDynamicIndices *)(aiStack_b64[local_1368 * 2] + 8),local_1909);
+                        (tableSize,&dataByte,&dataShort,&indices,
+                         (XAnimDynamicIndices *)(aiStack_b64[animPartIndex * 2] + 8),useSmallIndices
+                        );
             }
-            local_1318 = local_1c->boneCount[3] + local_1318;
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              *(undefined4 *)local_136c = *(undefined4 *)(aiStack_b64[local_1368 * 2] + 4);
-              local_136c = local_136c + 2;
+            size = parts->boneCount[3] + size;
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              *(undefined4 *)dataShort = *(undefined4 *)(aiStack_b64[animPartIndex * 2] + 4);
+              dataShort = dataShort + 2;
             }
-            local_1318 = local_1c->boneCount[4] + local_1318;
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              iVar12 = aiStack_b64[local_1368 * 2];
-              *(undefined4 *)local_136c = *(undefined4 *)(iVar12 + 4);
-              *(undefined4 *)(local_136c + 2) = *(undefined4 *)(iVar12 + 8);
-              local_136c = local_136c + 4;
+            size = parts->boneCount[4] + size;
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              iVar13 = aiStack_b64[animPartIndex * 2];
+              *(undefined4 *)dataShort = *(undefined4 *)(iVar13 + 4);
+              *(undefined4 *)(dataShort + 2) = *(undefined4 *)(iVar13 + 8);
+              dataShort = dataShort + 4;
             }
-            if ((local_1368 != local_1c->boneCount[9]) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+            if ((animPartIndex != parts->boneCount[9]) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
                                           ,0x592,0,
                                           "animPartIndex == parts->boneCount[PART_TYPE_ALL]\n\t%i, %i"
-                                         ), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+                                         ), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            local_1368 = 0;
-            local_1318 = (uint)local_1c->boneCount[5];
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              *local_1360 = auStack_1868[local_1368 * 8];
-              local_1360 = local_1360 + 1;
-              *local_136c = **(ushort **)(auStack_1868 + local_1368 * 8 + -4);
-              local_11b4 = (uint)*local_136c;
-              local_136c = local_136c + 1;
-              *local_1314 = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 4);
-              local_1314[1] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 8);
-              local_1314[2] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0xc);
-              local_1314[3] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x10);
-              local_1314[4] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x14);
-              local_1314[5] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x18);
-              for (local_18f0 = 0; local_18f0 <= local_11b4; local_18f0 = local_18f0 + 1) {
-                *local_11b8 = *(uchar *)(local_18f0 * 3 +
-                                        *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x1c
-                                                ));
-                local_11b8[1] =
-                     *(uchar *)(*(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x1c) + 1 +
-                               local_18f0 * 3);
-                local_11b8[2] =
-                     *(uchar *)(*(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x1c) + 2 +
-                               local_18f0 * 3);
-                local_11b8 = local_11b8 + 3;
+            animPartIndex = 0;
+            size = (uint)parts->boneCount[5];
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              *dataByte = auStack_1868[animPartIndex * 8];
+              dataByte = dataByte + 1;
+              *dataShort = **(short **)(auStack_1868 + animPartIndex * 8 + -4);
+              tableSize = (uint)(ushort)*dataShort;
+              dataShort = dataShort + 1;
+              *dataInt = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 4);
+              dataInt[1] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 8);
+              dataInt[2] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0xc);
+              dataInt[3] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x10);
+              dataInt[4] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x14);
+              dataInt[5] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x18);
+              for (keyFrameIndex = 0; keyFrameIndex <= tableSize; keyFrameIndex = keyFrameIndex + 1)
+              {
+                *randomDataByte =
+                     *(uchar *)(keyFrameIndex * 3 +
+                               *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x1c));
+                randomDataByte[1] =
+                     *(uchar *)(*(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x1c) + 1
+                               + keyFrameIndex * 3);
+                randomDataByte[2] =
+                     *(uchar *)(*(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x1c) + 2
+                               + keyFrameIndex * 3);
+                randomDataByte = randomDataByte + 3;
               }
               XAnimEmitFrameIndices
-                        (local_11b4,&local_1360,(short **)&local_136c,&local_11b0,
+                        (tableSize,&dataByte,&dataShort,&indices,
                          (XAnimDynamicIndices *)
-                         (*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x20),local_1909);
-              local_1314 = local_1314 + 6;
+                         (*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x20),useSmallIndices);
+              dataInt = dataInt + 6;
             }
-            local_1318 = local_1c->boneCount[6] + local_1318;
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              *local_1360 = auStack_1868[local_1368 * 8];
-              local_1360 = local_1360 + 1;
-              *local_136c = **(ushort **)(auStack_1868 + local_1368 * 8 + -4);
-              local_11b4 = (uint)*local_136c;
-              local_136c = local_136c + 1;
-              *local_1314 = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 4);
-              local_1314[1] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 8);
-              local_1314[2] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0xc);
-              local_1314[3] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x10);
-              local_1314[4] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x14);
-              local_1314[5] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x18);
-              for (local_18f0 = 0; local_18f0 <= local_11b4; local_18f0 = local_18f0 + 1) {
-                *local_11c4 = *(short *)(local_18f0 * 6 +
-                                        *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x1c
-                                                ));
-                local_11c4[1] =
-                     *(short *)(*(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x1c) + 2 +
-                               local_18f0 * 6);
-                local_11c4[2] =
-                     *(short *)(*(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x1c) + 4 +
-                               local_18f0 * 6);
-                local_11c4 = local_11c4 + 3;
+            size = parts->boneCount[6] + size;
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              *dataByte = auStack_1868[animPartIndex * 8];
+              dataByte = dataByte + 1;
+              *dataShort = **(short **)(auStack_1868 + animPartIndex * 8 + -4);
+              tableSize = (uint)(ushort)*dataShort;
+              dataShort = dataShort + 1;
+              *dataInt = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 4);
+              dataInt[1] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 8);
+              dataInt[2] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0xc);
+              dataInt[3] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x10);
+              dataInt[4] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x14);
+              dataInt[5] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x18);
+              for (keyFrameIndex = 0; keyFrameIndex <= tableSize; keyFrameIndex = keyFrameIndex + 1)
+              {
+                *randomDataShort =
+                     *(short *)(keyFrameIndex * 6 +
+                               *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x1c));
+                randomDataShort[1] =
+                     *(short *)(*(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x1c) + 2
+                               + keyFrameIndex * 6);
+                randomDataShort[2] =
+                     *(short *)(*(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x1c) + 4
+                               + keyFrameIndex * 6);
+                randomDataShort = randomDataShort + 3;
               }
               XAnimEmitFrameIndices
-                        (local_11b4,&local_1360,(short **)&local_136c,&local_11b0,
+                        (tableSize,&dataByte,&dataShort,&indices,
                          (XAnimDynamicIndices *)
-                         (*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0x20),local_1909);
-              local_1314 = local_1314 + 6;
+                         (*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0x20),useSmallIndices);
+              dataInt = dataInt + 6;
             }
-            local_1318 = local_1c->boneCount[7] + local_1318;
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              *local_1360 = auStack_1868[local_1368 * 8];
-              *local_1314 = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 4);
-              local_1314[1] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 8);
-              local_1314[2] = *(int *)(*(int *)(auStack_1868 + local_1368 * 8 + -4) + 0xc);
-              local_1360 = local_1360 + 1;
-              local_1314 = local_1314 + 3;
+            size = parts->boneCount[7] + size;
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              *dataByte = auStack_1868[animPartIndex * 8];
+              *dataInt = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 4);
+              dataInt[1] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 8);
+              dataInt[2] = *(int *)(*(int *)(auStack_1868 + animPartIndex * 8 + -4) + 0xc);
+              dataByte = dataByte + 1;
+              dataInt = dataInt + 3;
             }
-            local_1318 = local_1c->boneCount[8] + local_1318;
-            for (; local_1368 < local_1318; local_1368 = local_1368 + 1) {
-              *local_1360 = auStack_1868[local_1368 * 8];
-              local_1360 = local_1360 + 1;
+            size = parts->boneCount[8] + size;
+            for (; animPartIndex < size; animPartIndex = animPartIndex + 1) {
+              *dataByte = auStack_1868[animPartIndex * 8];
+              dataByte = dataByte + 1;
             }
-            if ((local_1368 != local_1c->boneCount[9]) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+            if ((animPartIndex != parts->boneCount[9]) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
                                           ,0x5e2,0,
                                           "animPartIndex == parts->boneCount[PART_TYPE_ALL]\n\t%i, %i"
-                                         ), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+                                         ), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if (local_1909 == false) {
-              if ((local_11b0._1 != (local_1c->indices)._1 + local_11c0 * 2) &&
-                 (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                            ,0x5e8,0,"%s"), !bVar17)) {
-                pcVar3 = (code *)swi(3);
-                pXVar11 = (XAnimParts *)(*pcVar3)();
-                return pXVar11;
+            if (useSmallIndices == false) {
+              if ((indices._1 != (parts->indices)._1 + indexCount * 2) &&
+                 (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                            ,0x5e8,0,"%s"), !bVar18)) {
+                pcVar4 = (code *)swi(3);
+                pXVar12 = (XAnimParts *)(*pcVar4)();
+                return pXVar12;
               }
             }
-            else if ((local_11b0._1 != (local_1c->indices)._1 + local_11c0) &&
-                    (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                               ,0x5e6,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            else if ((indices._1 != (parts->indices)._1 + indexCount) &&
+                    (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                               ,0x5e6,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((local_1360 != local_1c->dataByte + local_1364) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5e9,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((dataByte != parts->dataByte + dataByteCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5e9,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((local_136c != (ushort *)(local_1c->dataShort + local_10)) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5ea,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((dataShort != parts->dataShort + dataShortCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5ea,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((local_1314 != local_1c->dataInt + local_1358) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5eb,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((dataInt != parts->dataInt + dataIntCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5eb,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((local_11b8 != local_1c->randomDataByte + local_c) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5ec,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((randomDataByte != parts->randomDataByte + randomDataByteCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5ec,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((local_11c4 != local_1c->randomDataShort + local_11c8) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5ed,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((randomDataShort != parts->randomDataShort + randomDataShortCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5ed,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((local_135c != local_1c->randomDataInt + local_8) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5ee,0,"%s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((randomDataInt != parts->randomDataInt + randomDataIntCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5ee,0,"%s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((0x4000 < local_1364) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5f0,0,"%s\n\t(name) = %s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((0x4000 < dataByteCount) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5f0,0,"%s\n\t(name) = %s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((0x4000 < local_10 * 2) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5f1,0,"%s\n\t(name) = %s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((0x4000 < dataShortCount * 2) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5f1,0,"%s\n\t(name) = %s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
-            if ((0x4000 < local_1358 << 2) &&
-               (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                          ,0x5f2,0,"%s\n\t(name) = %s"), !bVar17)) {
-              pcVar3 = (code *)swi(3);
-              pXVar11 = (XAnimParts *)(*pcVar3)();
-              return pXVar11;
+            if ((0x4000 < dataIntCount << 2) &&
+               (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                          ,0x5f2,0,"%s\n\t(name) = %s"), !bVar18)) {
+              pcVar4 = (code *)swi(3);
+              pXVar12 = (XAnimParts *)(*pcVar4)();
+              return pXVar12;
             }
           }
           if ((g_animUser == (HunkUser *)0x0) &&
-             (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
-                                        ,0x5f5,0,"%s"), !bVar17)) {
-            pcVar3 = (code *)swi(3);
-            pXVar11 = (XAnimParts *)(*pcVar3)();
-            return pXVar11;
+             (bVar18 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xanim_load_obj.cpp"
+                                        ,0x5f5,0,"%s"), !bVar18)) {
+            pcVar4 = (code *)swi(3);
+            pXVar12 = (XAnimParts *)(*pcVar4)();
+            return pXVar12;
           }
           Hunk_UserDestroy(g_animUser);
           g_animUser = (HunkUser *)0x0;
         }
         else {
-          FS_FreeFile(local_1320);
-          local_1c = XAnimLoadFile(param_1,param_2,true);
+          FS_FreeFile(buf);
+          parts = XAnimLoadFile(name,Alloc,true);
         }
       }
       else {
-        FS_FreeFile(local_1320);
+        FS_FreeFile(buf);
         Com_PrintError(0x13,"ERROR: xanim \'%s\' out of date (version %d, expecting %d)\n");
-        local_1c = (XAnimParts *)0x0;
+        parts = (XAnimParts *)0x0;
       }
     }
   }
-  return local_1c;
+  return parts;
 }
 

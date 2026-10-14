@@ -2,48 +2,53 @@
 
 // 006A76B0  Encode_SetOptions  (groupvoice/encode.cpp:48)
 
-void __cdecl Encode_SetOptions(int param_1,int param_2)
+/* WARNING: Variable defined which should be unmapped: yes */
+
+void __cdecl Encode_SetOptions(int frequency,int quality)
 
 {
   undefined3 in_ECX;
+  undefined4 uStack_8;
+  bool yes;
   
-  speex_encoder_ctl(g_encoder,0x18,&param_1,CONCAT13(1,in_ECX));
-  speex_encoder_ctl(g_encoder,4,&param_2);
+  uStack_8 = CONCAT13(1,in_ECX);
+  speex_encoder_ctl(g_encoder,0x18,&frequency,uStack_8);
+  speex_encoder_ctl(g_encoder,4,&quality);
   speex_encoder_ctl(g_encoder,3,&g_frame_size);
-  speex_encoder_ctl(g_encoder,0x1e,&stack0xfffffffb);
-  speex_encoder_ctl(g_encoder,0x22,&stack0xfffffffb);
-  g_encoder_quality = param_2;
-  g_encoder_samplerate = param_1;
+  speex_encoder_ctl(g_encoder,0x1e,&yes);
+  speex_encoder_ctl(g_encoder,0x22,&yes);
+  g_encoder_quality = quality;
+  g_encoder_samplerate = frequency;
   return;
 }
 
 
 // 006A7740  Encode_Init  (groupvoice/encode.cpp:64)
 
-bool __cdecl Encode_Init(int param_1)
+bool __cdecl Encode_Init(int bandwidthEnum)
 
 {
-  SpeexMode *local_8;
+  SpeexMode *mode;
   
-  if (param_1 == 0) {
-    local_8 = &speex_nb_mode;
+  if (bandwidthEnum == 0) {
+    mode = &speex_nb_mode;
   }
-  else if (param_1 == 1) {
-    local_8 = &speex_wb_mode;
+  else if (bandwidthEnum == 1) {
+    mode = &speex_wb_mode;
   }
   else {
-    if (param_1 != 2) {
+    if (bandwidthEnum != 2) {
       Com_Printf(9,"Unknown bandwidth mode %i\n");
       return false;
     }
-    local_8 = &speex_uwb_mode;
+    mode = &speex_uwb_mode;
   }
-  g_encoder = (void *)speex_encoder_init(local_8);
+  g_encoder = (void *)speex_encoder_init(mode);
   speex_bits_init(&encodeBits);
   g_speex_initialized = 1;
   Encode_SetOptions(g_encoder_samplerate,g_encoder_quality);
   speex_encoder_ctl(g_encoder,3,&g_frame_size);
-  g_current_bandwidth_setting = param_1;
+  g_current_bandwidth_setting = bandwidthEnum;
   return g_encoder != (void *)0x0;
 }
 
@@ -67,22 +72,25 @@ bool __cdecl Encode_Shutdown(void)
 
 // 006A7860  Encode_Sample  (groupvoice/encode.cpp:123)
 
-int __cdecl Encode_Sample(short *param_1,char *param_2,int param_3)
+/* WARNING: Variable defined which should be unmapped: bytes */
+/* WARNING: Variable defined which should be unmapped: bytesEncoded */
+
+int __cdecl Encode_Sample(short *buffer_in,char *buffer_out,int maxLength)
 
 {
   undefined4 uVar1;
   int iVar2;
-  int iVar3;
+  int bytes;
+  int bytesEncoded;
   
-  iVar3 = 0;
   if ((sv_voiceQuality->current).integer != g_encoder_quality) {
     g_encoder_quality = (sv_voiceQuality->current).integer;
     speex_encoder_ctl(g_encoder,4,&g_encoder_quality);
   }
   speex_bits_reset(&encodeBits);
-  uVar1 = speex_encode_int(g_encoder,param_1,&encodeBits);
-  iVar2 = speex_bits_write(&encodeBits,param_2,param_3,iVar3,uVar1);
-  return iVar2 + iVar3;
+  uVar1 = speex_encode_int(g_encoder,buffer_in,&encodeBits);
+  iVar2 = speex_bits_write(&encodeBits,buffer_out,maxLength,0,uVar1);
+  return iVar2;
 }
 
 

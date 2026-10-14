@@ -53,20 +53,20 @@ void __cdecl _dynamic_initializer_for__g_customGameModeClassDescriptions__(void)
 
 // 0073CF30  MemFile_WriteFloat  (universal/memfile.h:226)
 
-void __cdecl MemFile_WriteFloat(MemoryFile *param_1,float param_2)
+void __cdecl MemFile_WriteFloat(MemoryFile *memFile,float valuef)
 
 {
-  uchar local_8;
+  uint value;
   
-  if (0x7ff7 < param_1->cacheBufferUsed + 4U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 4U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  local_8 = SUB41(param_2,0);
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = local_8;
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 1] = (uchar)((uint)param_2 >> 8);
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 2] = (uchar)((uint)param_2 >> 0x10);
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 3] = (uchar)((uint)param_2 >> 0x18);
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 4;
+  value._0_1_ = SUB41(valuef,0);
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = (uchar)value;
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 1] = (uchar)((uint)valuef >> 8);
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 2] = (uchar)((uint)valuef >> 0x10);
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 3] = (uchar)((uint)valuef >> 0x18);
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 4;
   return;
 }
 
@@ -76,17 +76,17 @@ void __cdecl MemFile_WriteFloat(MemoryFile *param_1,float param_2)
 void __cdecl EnableMinimumCustomClasses(void)
 
 {
-  int local_8;
+  int c;
   
-  local_8 = 0;
+  c = 0;
   while( true ) {
-    if (9 < local_8) {
+    if (9 < c) {
       g_customGameModeClasses[0].team = 1;
       g_customGameModeClasses[0].isActive = 1;
       return;
     }
-    if (0 < g_customGameModeClasses[local_8].isActive) break;
-    local_8 = local_8 + 1;
+    if (0 < g_customGameModeClasses[c].isActive) break;
+    c = c + 1;
   }
   return;
 }
@@ -94,11 +94,11 @@ void __cdecl EnableMinimumCustomClasses(void)
 
 // 0073CC20  UI_Gametype_ShowErrorPopup  (ui_mp/ui_gametype_custom_mp.cpp:268)
 
-void __cdecl UI_Gametype_ShowErrorPopup(char *param_1,char *param_2)
+void __cdecl UI_Gametype_ShowErrorPopup(char *title,char *message)
 
 {
-  Dvar_SetStringByName("com_errorTitle",param_1);
-  Dvar_SetStringByName("com_errorMessage",param_2);
+  Dvar_SetStringByName("com_errorTitle",title);
+  Dvar_SetStringByName("com_errorMessage",message);
   UI_OpenMenu(0,"popup_custom_game_error");
   return;
 }
@@ -106,68 +106,69 @@ void __cdecl UI_Gametype_ShowErrorPopup(char *param_1,char *param_2)
 
 // 0073CC60  UI_Gametype_WriteDvarChunk  (ui_mp/ui_gametype_custom_mp.cpp:277)
 
-void __cdecl UI_Gametype_WriteDvarChunk(MemoryFile *param_1,char *param_2)
+void __cdecl UI_Gametype_WriteDvarChunk(MemoryFile *memFile,char *dvarName)
 
 {
   bool bVar1;
   dvarType_t dVar2;
   dvar_s *pdVar3;
+  dvar_s *dvar;
   
-  pdVar3 = Dvar_FindVar(param_2);
+  pdVar3 = Dvar_FindVar(dvarName);
   if (pdVar3 != (dvar_s *)0x0) {
-    if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-      MemFile_WriteDataFlushInternal(param_1);
+    if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+      MemFile_WriteDataFlushInternal(memFile);
     }
-    param_1->cacheBuffer[param_1->cacheBufferUsed] = '\0';
-    param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
-    MemFile_WriteCString(param_1,param_2);
+    memFile->cacheBuffer[memFile->cacheBufferUsed] = '\0';
+    memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
+    MemFile_WriteCString(memFile,dvarName);
     dVar2 = pdVar3->type;
-    if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-      MemFile_WriteDataFlushInternal(param_1);
+    if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+      MemFile_WriteDataFlushInternal(memFile);
     }
-    param_1->cacheBuffer[param_1->cacheBufferUsed] = (char)dVar2;
-    param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
+    memFile->cacheBuffer[memFile->cacheBufferUsed] = (char)dVar2;
+    memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
     switch(pdVar3->type) {
     case DVAR_TYPE_BOOL:
       bVar1 = (pdVar3->current).enabled;
-      if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-        MemFile_WriteDataFlushInternal(param_1);
+      if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+        MemFile_WriteDataFlushInternal(memFile);
       }
-      param_1->cacheBuffer[param_1->cacheBufferUsed] = bVar1;
-      param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
+      memFile->cacheBuffer[memFile->cacheBufferUsed] = bVar1;
+      memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
       break;
     case DVAR_TYPE_FLOAT:
-      MemFile_WriteFloat(param_1,(pdVar3->current).value);
+      MemFile_WriteFloat(memFile,(pdVar3->current).value);
       break;
     case DVAR_TYPE_FLOAT_2:
-      MemFile_WriteFloat(param_1,(pdVar3->current).value);
-      MemFile_WriteFloat(param_1,(pdVar3->current).vector[1]);
+      MemFile_WriteFloat(memFile,(pdVar3->current).value);
+      MemFile_WriteFloat(memFile,(pdVar3->current).vector[1]);
       break;
     case DVAR_TYPE_FLOAT_3:
-      MemFile_WriteFloat(param_1,(pdVar3->current).value);
-      MemFile_WriteFloat(param_1,(pdVar3->current).vector[1]);
-      MemFile_WriteFloat(param_1,(pdVar3->current).vector[2]);
+      MemFile_WriteFloat(memFile,(pdVar3->current).value);
+      MemFile_WriteFloat(memFile,(pdVar3->current).vector[1]);
+      MemFile_WriteFloat(memFile,(pdVar3->current).vector[2]);
       break;
     case DVAR_TYPE_FLOAT_4:
-      MemFile_WriteFloat(param_1,(pdVar3->current).value);
-      MemFile_WriteFloat(param_1,(pdVar3->current).vector[1]);
-      MemFile_WriteFloat(param_1,(pdVar3->current).vector[2]);
-      MemFile_WriteFloat(param_1,(pdVar3->current).vector[3]);
+      MemFile_WriteFloat(memFile,(pdVar3->current).value);
+      MemFile_WriteFloat(memFile,(pdVar3->current).vector[1]);
+      MemFile_WriteFloat(memFile,(pdVar3->current).vector[2]);
+      MemFile_WriteFloat(memFile,(pdVar3->current).vector[3]);
       break;
     case DVAR_TYPE_INT:
-      MemFile_WriteInt(param_1,(pdVar3->current).integer);
+      MemFile_WriteInt(memFile,(pdVar3->current).integer);
       break;
     case DVAR_TYPE_ENUM:
-      MemFile_WriteInt(param_1,(pdVar3->current).integer);
+      MemFile_WriteInt(memFile,(pdVar3->current).integer);
       break;
     case DVAR_TYPE_STRING:
-      MemFile_WriteCString(param_1,(pdVar3->current).string);
+      MemFile_WriteCString(memFile,(pdVar3->current).string);
       break;
     case DVAR_TYPE_COLOR:
-      MemFile_WriteByte(param_1,(pdVar3->current).color[0]);
-      MemFile_WriteByte(param_1,(pdVar3->current).color[1]);
-      MemFile_WriteByte(param_1,(pdVar3->current).color[2]);
-      MemFile_WriteByte(param_1,(pdVar3->current).color[3]);
+      MemFile_WriteByte(memFile,(pdVar3->current).color[0]);
+      MemFile_WriteByte(memFile,(pdVar3->current).color[1]);
+      MemFile_WriteByte(memFile,(pdVar3->current).color[2]);
+      MemFile_WriteByte(memFile,(pdVar3->current).color[3]);
     }
   }
   return;
@@ -176,19 +177,19 @@ void __cdecl UI_Gametype_WriteDvarChunk(MemoryFile *param_1,char *param_2)
 
 // 0073D410  MemFile_ReadVec3  (universal/memfile.h:303)
 
-void __cdecl MemFile_ReadVec3(MemoryFile *param_1,float *param_2)
+void __cdecl MemFile_ReadVec3(MemoryFile *memFile,float *value)
 
 {
   float local_10;
   float local_c;
   float local_8;
   
-  MemFile_ReadData(param_1,4,&local_8);
-  *param_2 = local_8;
-  MemFile_ReadData(param_1,4,&local_c);
-  param_2[1] = local_c;
-  MemFile_ReadData(param_1,4,&local_10);
-  param_2[2] = local_10;
+  MemFile_ReadData(memFile,4,&local_8);
+  *value = local_8;
+  MemFile_ReadData(memFile,4,&local_c);
+  value[1] = local_c;
+  MemFile_ReadData(memFile,4,&local_10);
+  value[2] = local_10;
   return;
 }
 
@@ -197,11 +198,11 @@ void __cdecl MemFile_ReadVec3(MemoryFile *param_1,float *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl UI_Gametype_ReadDvarChunk(MemoryFile *param_1)
+bool __cdecl UI_Gametype_ReadDvarChunk(MemoryFile *memFile)
 
 {
   bool bVar1;
-  char *pcVar2;
+  char *value;
   byte local_480;
   byte local_47f;
   byte local_47e;
@@ -216,89 +217,89 @@ bool __cdecl UI_Gametype_ReadDvarChunk(MemoryFile *param_1)
   float local_454;
   int local_450;
   char local_44a;
-  undefined1 local_449;
-  float local_448;
-  float local_444;
-  float local_440;
-  float local_43c;
-  float local_438;
-  float local_434;
-  float local_430;
-  float local_42c;
-  float local_428;
-  float local_424;
+  uchar local_449;
+  float r;
+  float g;
+  float b;
+  float byteToFloatConversion;
+  float a;
+  float z;
+  float x_2;
+  float y_2;
+  float w;
+  float vec;
   float local_420;
   float local_41c;
-  float local_418;
-  float local_414;
-  char *local_410;
-  char local_40c [1024];
+  float x;
+  float y;
+  char *dvarNameFromCache;
+  char dvarName [1024];
   uint local_c;
-  undefined1 local_5;
+  uchar type;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_410 = MemFile_ReadCString(param_1);
-  if ((local_410 == (char *)0x0) || (*local_410 == '\0')) {
+  dvarNameFromCache = MemFile_ReadCString(memFile);
+  if ((dvarNameFromCache == (char *)0x0) || (*dvarNameFromCache == '\0')) {
     bVar1 = false;
   }
   else {
-    I_strncpyz(local_40c,local_410,0x400);
-    MemFile_ReadData(param_1,1,&local_449);
-    local_5 = local_449;
+    I_strncpyz(dvarName,dvarNameFromCache,0x400);
+    MemFile_ReadData(memFile,1,&local_449);
+    type = local_449;
     switch(local_449) {
-    case 0:
-      MemFile_ReadData(param_1,1,&local_44a);
-      Dvar_SetBoolByName(local_40c,local_44a != '\0');
+    case '\0':
+      MemFile_ReadData(memFile,1,&local_44a);
+      Dvar_SetBoolByName(dvarName,local_44a != '\0');
       break;
-    case 1:
-      MemFile_ReadData(param_1,4,&local_454);
-      Dvar_SetFloatByName(local_40c,local_454);
+    case '\x01':
+      MemFile_ReadData(memFile,4,&local_454);
+      Dvar_SetFloatByName(dvarName,local_454);
       break;
-    case 2:
-      MemFile_ReadData(param_1,4,&local_458);
-      local_418 = local_458;
-      MemFile_ReadData(param_1,4,&local_45c);
-      local_414 = local_45c;
-      Dvar_SetVec2ByName(local_40c,local_418,local_45c);
+    case '\x02':
+      MemFile_ReadData(memFile,4,&local_458);
+      x = local_458;
+      MemFile_ReadData(memFile,4,&local_45c);
+      y = local_45c;
+      Dvar_SetVec2ByName(dvarName,x,local_45c);
       break;
-    case 3:
-      MemFile_ReadVec3(param_1,&local_424);
-      Dvar_SetVec3ByName(local_40c,local_424,local_420,local_41c);
+    case '\x03':
+      MemFile_ReadVec3(memFile,&vec);
+      Dvar_SetVec3ByName(dvarName,vec,local_420,local_41c);
       break;
-    case 4:
-      MemFile_ReadData(param_1,4,local_46c);
-      local_430 = local_46c[0];
-      MemFile_ReadData(param_1,4,&local_470);
-      local_42c = local_470;
-      MemFile_ReadData(param_1,4,&local_474);
-      local_434 = local_474;
-      MemFile_ReadData(param_1,4,&local_478);
-      local_428 = local_478;
-      Dvar_SetVec4ByName(local_40c,local_430,local_42c,local_434,local_478);
+    case '\x04':
+      MemFile_ReadData(memFile,4,local_46c);
+      x_2 = local_46c[0];
+      MemFile_ReadData(memFile,4,&local_470);
+      y_2 = local_470;
+      MemFile_ReadData(memFile,4,&local_474);
+      z = local_474;
+      MemFile_ReadData(memFile,4,&local_478);
+      w = local_478;
+      Dvar_SetVec4ByName(dvarName,x_2,y_2,z,local_478);
       break;
-    case 5:
-      MemFile_ReadData(param_1,4,&local_450);
-      Dvar_SetIntByName(local_40c,local_450);
+    case '\x05':
+      MemFile_ReadData(memFile,4,&local_450);
+      Dvar_SetIntByName(dvarName,local_450);
       break;
-    case 6:
-      MemFile_ReadData(param_1,4,&local_47c);
-      Dvar_SetIntByName(local_40c,local_47c);
+    case '\x06':
+      MemFile_ReadData(memFile,4,&local_47c);
+      Dvar_SetIntByName(dvarName,local_47c);
       break;
-    case 7:
-      pcVar2 = MemFile_ReadCString(param_1);
-      Dvar_SetStringByName(local_40c,pcVar2);
+    case '\a':
+      value = MemFile_ReadCString(memFile);
+      Dvar_SetStringByName(dvarName,value);
       break;
-    case 8:
-      local_43c = 0.003921569;
-      MemFile_ReadData(param_1,1,&local_47d);
-      local_448 = (float)local_47d * local_43c;
-      MemFile_ReadData(param_1,1,&local_47e);
-      local_444 = (float)local_47e * local_43c;
-      MemFile_ReadData(param_1,1,&local_47f);
-      local_440 = (float)local_47f * local_43c;
-      MemFile_ReadData(param_1,1,&local_480);
-      local_438 = (float)local_480 * local_43c;
-      Dvar_SetColorByName(local_40c,local_448,local_444,local_440,local_438);
+    case '\b':
+      byteToFloatConversion = 0.003921569;
+      MemFile_ReadData(memFile,1,&local_47d);
+      r = (float)local_47d * byteToFloatConversion;
+      MemFile_ReadData(memFile,1,&local_47e);
+      g = (float)local_47e * byteToFloatConversion;
+      MemFile_ReadData(memFile,1,&local_47f);
+      b = (float)local_47f * byteToFloatConversion;
+      MemFile_ReadData(memFile,1,&local_480);
+      a = (float)local_480 * byteToFloatConversion;
+      Dvar_SetColorByName(dvarName,r,g,b,a);
     }
     bVar1 = true;
   }
@@ -308,16 +309,16 @@ bool __cdecl UI_Gametype_ReadDvarChunk(MemoryFile *param_1)
 
 // 0073D480  RegisterDvarIfUndefined  (ui_mp/ui_gametype_custom_mp.cpp:423)
 
-dvar_s * __cdecl RegisterDvarIfUndefined(char *param_1,int param_2)
+dvar_s * __cdecl RegisterDvarIfUndefined(char *name,int defaultValue)
 
 {
-  dvar_s *local_8;
+  dvar_s *dvar;
   
-  local_8 = Dvar_FindVar(param_1);
-  if (local_8 == (dvar_s *)0x0) {
-    local_8 = _Dvar_RegisterInt(param_1,param_2,0,1000,0,"custom class dvar");
+  dvar = Dvar_FindVar(name);
+  if (dvar == (dvar_s *)0x0) {
+    dvar = _Dvar_RegisterInt(name,defaultValue,0,1000,0,"custom class dvar");
   }
-  return local_8;
+  return dvar;
 }
 
 
@@ -341,14 +342,15 @@ void __cdecl RegisterCustomClassDvarsIfNeeded(void)
 
 // 0073D590  GetClassLoadoutForClassName  (ui_mp/ui_gametype_custom_mp.cpp:450)
 
-void __cdecl GetClassLoadoutForClassName(char *param_1,int param_2)
+void __cdecl GetClassLoadoutForClassName(char *className,int customClassSlotNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  _CustomClassData *customClass;
   
-  if ((param_2 < 0) || (9 < param_2)) {
+  if ((customClassSlotNum < 0) || (9 < customClassSlotNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp",
                              0x1c3,0,"%s");
     if (!bVar2) {
@@ -357,24 +359,24 @@ void __cdecl GetClassLoadoutForClassName(char *param_1,int param_2)
       return;
     }
   }
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"primary");
-  g_customGameModeClasses[param_2].primary = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"secondary");
-  g_customGameModeClasses[param_2].secondary = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"primarygrenade");
-  g_customGameModeClasses[param_2].primarygrenade = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"specialty1");
-  g_customGameModeClasses[param_2].specialty1 = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"specialty2");
-  g_customGameModeClasses[param_2].specialty2 = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"specialty3");
-  g_customGameModeClasses[param_2].specialty3 = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"equipment");
-  g_customGameModeClasses[param_2].equipment = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"specialgrenade");
-  g_customGameModeClasses[param_2].specialgrenade = (uchar)iVar3;
-  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(param_1,"body");
-  g_customGameModeClasses[param_2].body = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"primary");
+  g_customGameModeClasses[customClassSlotNum].primary = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"secondary");
+  g_customGameModeClasses[customClassSlotNum].secondary = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"primarygrenade");
+  g_customGameModeClasses[customClassSlotNum].primarygrenade = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"specialty1");
+  g_customGameModeClasses[customClassSlotNum].specialty1 = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"specialty2");
+  g_customGameModeClasses[customClassSlotNum].specialty2 = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"specialty3");
+  g_customGameModeClasses[customClassSlotNum].specialty3 = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"equipment");
+  g_customGameModeClasses[customClassSlotNum].equipment = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"specialgrenade");
+  g_customGameModeClasses[customClassSlotNum].specialgrenade = (uchar)iVar3;
+  iVar3 = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,"body");
+  g_customGameModeClasses[customClassSlotNum].body = (uchar)iVar3;
   return;
 }
 
@@ -384,37 +386,38 @@ void __cdecl GetClassLoadoutForClassName(char *param_1,int param_2)
 void __cdecl UI_Gametype_BuildDefaultCustomClasses(void)
 
 {
-  int local_14;
-  uint local_10;
-  int local_8;
+  int defaultItemNum;
+  int d;
+  uchar *currentItemPtr;
+  int c;
   
   RegisterCustomClassDvarsIfNeeded();
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    for (local_10 = 0; local_10 < 0x27; local_10 = local_10 + 1) {
-      local_14 = BG_UnlockablesGetActualDefaultItem(local_10);
-      if (local_14 == -1) {
-        local_14 = 0;
+  for (c = 0; c < 10; c = c + 1) {
+    for (d = 0; (uint)d < 0x27; d = d + 1) {
+      defaultItemNum = BG_UnlockablesGetActualDefaultItem(d);
+      if (defaultItemNum == -1) {
+        defaultItemNum = 0;
       }
-      *(undefined1 *)(local_8 * 0x50 + 0x98a4ffc + local_10) = (undefined1)local_14;
+      *(undefined1 *)(c * 0x50 + 0x98a4ffc + d) = (undefined1)defaultItemNum;
     }
-    _CustomClassData::SaveClassDataFromDvars(g_customGameModeClasses + local_8);
+    _CustomClassData::SaveClassDataFromDvars(g_customGameModeClasses + c);
     UI_SafeTranslateString("MPUI_CUSTOM_CLASS_NAME");
-    Com_sprintf(g_customGameModeClassDescriptions[local_8].name,0x10,"%s %d");
-    switch(local_8 % 5) {
+    Com_sprintf(g_customGameModeClassDescriptions[c].name,0x10,"%s %d");
+    switch(c % 5) {
     case 0:
-      GetClassLoadoutForClassName("CLASS_SMG",local_8);
+      GetClassLoadoutForClassName("CLASS_SMG",c);
       break;
     case 1:
-      GetClassLoadoutForClassName("CLASS_CQB",local_8);
+      GetClassLoadoutForClassName("CLASS_CQB",c);
       break;
     case 2:
-      GetClassLoadoutForClassName("CLASS_ASSAULT",local_8);
+      GetClassLoadoutForClassName("CLASS_ASSAULT",c);
       break;
     case 3:
-      GetClassLoadoutForClassName("CLASS_LMG",local_8);
+      GetClassLoadoutForClassName("CLASS_LMG",c);
       break;
     default:
-      GetClassLoadoutForClassName("CLASS_SNIPER",local_8);
+      GetClassLoadoutForClassName("CLASS_SNIPER",c);
     }
   }
   return;
@@ -426,10 +429,10 @@ void __cdecl UI_Gametype_BuildDefaultCustomClasses(void)
 void __cdecl UI_Gametype_CustomClassesReset(void)
 
 {
-  int local_8;
+  int c;
   
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    g_customGameModeClasses[local_8].isActive = 0;
+  for (c = 0; c < 10; c = c + 1) {
+    g_customGameModeClasses[c].isActive = 0;
   }
   UI_Gametype_BuildDefaultCustomClasses();
   return;
@@ -438,33 +441,33 @@ void __cdecl UI_Gametype_CustomClassesReset(void)
 
 // 0073D840  UI_Gametype_ReadCustomClassChunk  (ui_mp/ui_gametype_custom_mp.cpp:519)
 
-bool __cdecl UI_Gametype_ReadCustomClassChunk(MemoryFile *param_1)
+bool __cdecl UI_Gametype_ReadCustomClassChunk(MemoryFile *memFile)
 
 {
   bool bVar1;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int version;
+  int size;
   
-  MemFile_ReadData(param_1,4,&local_10);
-  local_c = local_10;
+  MemFile_ReadData(memFile,4,&local_10);
+  version = local_10;
   UI_Gametype_BuildDefaultCustomClasses();
   EnableMinimumCustomClasses();
-  if (local_c < 2) {
+  if (version < 2) {
     bVar1 = false;
   }
   else {
-    MemFile_ReadData(param_1,4,&local_14);
-    local_8 = local_14;
-    if ((local_c == 2) && (local_14 == 800)) {
-      MemFile_ReadData(param_1,800,g_customGameModeClasses);
+    MemFile_ReadData(memFile,4,&local_14);
+    size = local_14;
+    if ((version == 2) && (local_14 == 800)) {
+      MemFile_ReadData(memFile,800,g_customGameModeClasses);
       bVar1 = true;
     }
     else {
-      param_1->bytesUsed = param_1->bytesUsed + local_14;
-      if (param_1->bufferSize < param_1->bytesUsed) {
-        param_1->bytesUsed = param_1->bufferSize;
+      memFile->bytesUsed = memFile->bytesUsed + local_14;
+      if (memFile->bufferSize < memFile->bytesUsed) {
+        memFile->bytesUsed = memFile->bufferSize;
       }
       bVar1 = true;
     }
@@ -475,17 +478,17 @@ bool __cdecl UI_Gametype_ReadCustomClassChunk(MemoryFile *param_1)
 
 // 0073D8F0  UI_Gametype_ReadCustomClassDescriptionChunk  (ui_mp/ui_gametype_custom_mp.cpp:548)
 
-bool __cdecl UI_Gametype_ReadCustomClassDescriptionChunk(MemoryFile *param_1)
+bool __cdecl UI_Gametype_ReadCustomClassDescriptionChunk(MemoryFile *memFile)
 
 {
-  MemFile_ReadData(param_1,0xa0,g_customGameModeClassDescriptions);
+  MemFile_ReadData(memFile,0xa0,g_customGameModeClassDescriptions);
   return true;
 }
 
 
 // 0073D910  UI_Gametype_HasDvarChanged  (ui_mp/ui_gametype_custom_mp.cpp:556)
 
-bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *param_1)
+bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *dvar)
 
 {
   int iVar1;
@@ -493,16 +496,16 @@ bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *param_1)
   bool local_24;
   bool local_1c;
   
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_BOOL:
-    local_1c = (param_1->current).enabled != (param_1->reset).enabled;
+    local_1c = (dvar->current).enabled != (dvar->reset).enabled;
     break;
   case DVAR_TYPE_FLOAT:
-    local_1c = (param_1->current).value != (param_1->reset).value;
+    local_1c = (dvar->current).value != (dvar->reset).value;
     break;
   case DVAR_TYPE_FLOAT_2:
-    if (((param_1->current).value == (param_1->reset).value) &&
-       ((param_1->current).vector[1] == (param_1->reset).vector[1])) {
+    if (((dvar->current).value == (dvar->reset).value) &&
+       ((dvar->current).vector[1] == (dvar->reset).vector[1])) {
       local_24 = false;
       local_1c = local_24;
     }
@@ -512,9 +515,9 @@ bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *param_1)
     }
     break;
   case DVAR_TYPE_FLOAT_3:
-    if ((((param_1->current).value == (param_1->reset).value) &&
-        ((param_1->current).vector[1] == (param_1->reset).vector[1])) &&
-       ((param_1->current).vector[2] == (param_1->reset).vector[2])) {
+    if ((((dvar->current).value == (dvar->reset).value) &&
+        ((dvar->current).vector[1] == (dvar->reset).vector[1])) &&
+       ((dvar->current).vector[2] == (dvar->reset).vector[2])) {
       local_28 = false;
       local_1c = local_28;
     }
@@ -524,10 +527,10 @@ bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *param_1)
     }
     break;
   case DVAR_TYPE_FLOAT_4:
-    if (((((param_1->current).value == (param_1->reset).value) &&
-         ((param_1->current).vector[1] == (param_1->reset).vector[1])) &&
-        ((param_1->current).vector[2] == (param_1->reset).vector[2])) &&
-       ((param_1->current).vector[3] == (param_1->reset).vector[3])) {
+    if (((((dvar->current).value == (dvar->reset).value) &&
+         ((dvar->current).vector[1] == (dvar->reset).vector[1])) &&
+        ((dvar->current).vector[2] == (dvar->reset).vector[2])) &&
+       ((dvar->current).vector[3] == (dvar->reset).vector[3])) {
       local_1c = true;
     }
     else {
@@ -537,15 +540,15 @@ bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *param_1)
   case DVAR_TYPE_INT:
   case DVAR_TYPE_ENUM:
   case DVAR_TYPE_COLOR:
-    local_1c = (param_1->current).integer != (param_1->reset).integer;
+    local_1c = (dvar->current).integer != (dvar->reset).integer;
     break;
   case DVAR_TYPE_STRING:
-    iVar1 = I_strcmp((param_1->current).string,(param_1->reset).string);
+    iVar1 = I_strcmp((dvar->current).string,(dvar->reset).string);
     local_1c = iVar1 != 0;
     break;
   case DVAR_TYPE_INT64:
-    if (((param_1->current).integer == (param_1->reset).integer) &&
-       ((param_1->current).vector[1] == (param_1->reset).vector[1])) {
+    if (((dvar->current).integer == (dvar->reset).integer) &&
+       ((dvar->current).vector[1] == (dvar->reset).vector[1])) {
       local_1c = false;
     }
     else {
@@ -561,18 +564,19 @@ bool __cdecl UI_Gametype_HasDvarChanged(dvar_s *param_1)
 
 // 0073DB40  UI_Gametype_HasDvarChanged  (ui_mp/ui_gametype_custom_mp.cpp:596)
 
-bool __cdecl UI_Gametype_HasDvarChanged(char *param_1)
+bool __cdecl UI_Gametype_HasDvarChanged(char *dvarName)
 
 {
   bool bVar1;
-  dvar_s *pdVar2;
+  dvar_s *dvar_00;
+  dvar_s *dvar;
   
-  pdVar2 = Dvar_FindVar(param_1);
-  if (pdVar2 == (dvar_s *)0x0) {
+  dvar_00 = Dvar_FindVar(dvarName);
+  if (dvar_00 == (dvar_s *)0x0) {
     bVar1 = false;
   }
   else {
-    bVar1 = UI_Gametype_HasDvarChanged(pdVar2);
+    bVar1 = UI_Gametype_HasDvarChanged(dvar_00);
   }
   return bVar1;
 }
@@ -580,14 +584,14 @@ bool __cdecl UI_Gametype_HasDvarChanged(char *param_1)
 
 // 0073DB70  UI_Gametype_WriteDvarIfChanged  (ui_mp/ui_gametype_custom_mp.cpp:607)
 
-void __cdecl UI_Gametype_WriteDvarIfChanged(MemoryFile *param_1,char *param_2)
+void __cdecl UI_Gametype_WriteDvarIfChanged(MemoryFile *memFile,char *dvarName)
 
 {
   bool bVar1;
   
-  bVar1 = UI_Gametype_HasDvarChanged(param_2);
+  bVar1 = UI_Gametype_HasDvarChanged(dvarName);
   if (bVar1) {
-    UI_Gametype_WriteDvarChunk(param_1,param_2);
+    UI_Gametype_WriteDvarChunk(memFile,dvarName);
   }
   return;
 }
@@ -595,20 +599,22 @@ void __cdecl UI_Gametype_WriteDvarIfChanged(MemoryFile *param_1,char *param_2)
 
 // 0073DBA0  UI_Gametype_WriteDvars  (ui_mp/ui_gametype_custom_mp.cpp:617)
 
-void __cdecl UI_Gametype_WriteDvars(MemoryFile *param_1)
+void __cdecl UI_Gametype_WriteDvars(MemoryFile *memFile)
 
 {
-  char *pcVar1;
-  int local_14;
-  int local_10;
+  char *dvarName;
+  int i_2;
+  int i;
+  char *gametype;
+  int size;
   
   Dvar_GetString("ui_gametype");
-  for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
-    pcVar1 = va("scr_%s_%s");
-    UI_Gametype_WriteDvarIfChanged(param_1,pcVar1);
+  for (i = 0; i < 6; i = i + 1) {
+    dvarName = va("scr_%s_%s");
+    UI_Gametype_WriteDvarIfChanged(memFile,dvarName);
   }
-  for (local_14 = 0; local_14 < 0x5e; local_14 = local_14 + 1) {
-    UI_Gametype_WriteDvarIfChanged(param_1,GAMEMODE_DVARS[local_14]);
+  for (i_2 = 0; i_2 < 0x5e; i_2 = i_2 + 1) {
+    UI_Gametype_WriteDvarIfChanged(memFile,GAMEMODE_DVARS[i_2]);
   }
   return;
 }
@@ -619,15 +625,15 @@ void __cdecl UI_Gametype_WriteDvars(MemoryFile *param_1)
 bool __cdecl HasClassDescriptionDataChanged(void)
 
 {
-  int local_8;
+  int c;
   
-  local_8 = 0;
+  c = 0;
   while( true ) {
-    if (9 < local_8) {
+    if (9 < c) {
       return false;
     }
-    if (g_customGameModeClassDescriptions[local_8].name[0] != '\0') break;
-    local_8 = local_8 + 1;
+    if (g_customGameModeClassDescriptions[c].name[0] != '\0') break;
+    c = c + 1;
   }
   return true;
 }
@@ -635,27 +641,27 @@ bool __cdecl HasClassDescriptionDataChanged(void)
 
 // 0073DC80  UI_Gametype_WriteCustomClasses  (ui_mp/ui_gametype_custom_mp.cpp:649)
 
-void __cdecl UI_Gametype_WriteCustomClasses(MemoryFile *param_1)
+void __cdecl UI_Gametype_WriteCustomClasses(MemoryFile *memFile)
 
 {
   bool bVar1;
   
-  if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = '\x01';
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
-  MemFile_WriteInt(param_1,2);
-  MemFile_WriteInt(param_1,800);
-  MemFile_WriteData(param_1,800,g_customGameModeClasses);
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = '\x01';
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
+  MemFile_WriteInt(memFile,2);
+  MemFile_WriteInt(memFile,800);
+  MemFile_WriteData(memFile,800,g_customGameModeClasses);
   bVar1 = HasClassDescriptionDataChanged();
   if (bVar1) {
-    if (0x7ff7 < param_1->cacheBufferUsed + 1U) {
-      MemFile_WriteDataFlushInternal(param_1);
+    if (0x7ff7 < memFile->cacheBufferUsed + 1U) {
+      MemFile_WriteDataFlushInternal(memFile);
     }
-    param_1->cacheBuffer[param_1->cacheBufferUsed] = '\x03';
-    param_1->cacheBufferUsed = param_1->cacheBufferUsed + 1;
-    MemFile_WriteData(param_1,0xa0,g_customGameModeClassDescriptions);
+    memFile->cacheBuffer[memFile->cacheBufferUsed] = '\x03';
+    memFile->cacheBufferUsed = memFile->cacheBufferUsed + 1;
+    MemFile_WriteData(memFile,0xa0,g_customGameModeClassDescriptions);
   }
   return;
 }
@@ -663,32 +669,32 @@ void __cdecl UI_Gametype_WriteCustomClasses(MemoryFile *param_1)
 
 // 0073DD50  UI_Gametype_WriteHeader  (ui_mp/ui_gametype_custom_mp.cpp:665)
 
-void __cdecl UI_Gametype_WriteHeader(MemoryFile *param_1,UIGametypeFileHeader *param_2)
+void __cdecl UI_Gametype_WriteHeader(MemoryFile *memFile,UIGametypeFileHeader *header)
 
 {
   int iVar1;
   
-  param_2->version = 4;
+  header->version = 4;
   Dvar_GetString("ui_customModeEditName");
-  Com_sprintf(param_2->name,0x20,"%s");
+  Com_sprintf(header->name,0x20,"%s");
   Dvar_GetString("ui_customModeEditDesc");
-  Com_sprintf(param_2->description,0x80,"%s");
+  Com_sprintf(header->description,0x80,"%s");
   Dvar_GetString("ui_gametype");
-  Com_sprintf(param_2->baseGameType,0x20,"%s");
+  Com_sprintf(header->baseGameType,0x20,"%s");
   iVar1 = Com_RealTime((qtime_s *)0x0,true);
-  param_2->lastModifiedDateTime = iVar1;
-  MemFile_WriteInt(param_1,param_2->version);
-  MemFile_WriteCString(param_1,param_2->baseGameType);
-  MemFile_WriteCString(param_1,param_2->description);
-  MemFile_WriteInt(param_1,param_2->lastModifiedDateTime);
-  MemFile_WriteCString(param_1,param_2->name);
+  header->lastModifiedDateTime = iVar1;
+  MemFile_WriteInt(memFile,header->version);
+  MemFile_WriteCString(memFile,header->baseGameType);
+  MemFile_WriteCString(memFile,header->description);
+  MemFile_WriteInt(memFile,header->lastModifiedDateTime);
+  MemFile_WriteCString(memFile,header->name);
   return;
 }
 
 
 // 0073DE50  UI_Gametype_ReadHeader  (ui_mp/ui_gametype_custom_mp.cpp:683)
 
-void __cdecl UI_Gametype_ReadHeader(MemoryFile *param_1,UIGametypeFileHeader *param_2)
+void __cdecl UI_Gametype_ReadHeader(MemoryFile *memFile,UIGametypeFileHeader *header)
 
 {
   char *pcVar1;
@@ -696,22 +702,22 @@ void __cdecl UI_Gametype_ReadHeader(MemoryFile *param_1,UIGametypeFileHeader *pa
   int local_c;
   int local_8;
   
-  MemFile_ReadData(param_1,4,&local_8);
-  param_2->version = local_8;
+  MemFile_ReadData(memFile,4,&local_8);
+  header->version = local_8;
   iVar2 = 0x20;
-  pcVar1 = MemFile_ReadCString(param_1);
-  I_strncpyz(param_2->baseGameType,pcVar1,iVar2);
+  pcVar1 = MemFile_ReadCString(memFile);
+  I_strncpyz(header->baseGameType,pcVar1,iVar2);
   iVar2 = 0x80;
-  pcVar1 = MemFile_ReadCString(param_1);
-  I_strncpyz(param_2->description,pcVar1,iVar2);
-  param_2->lastModifiedDateTime = 0;
-  if (1 < param_2->version) {
-    MemFile_ReadData(param_1,4,&local_c);
-    param_2->lastModifiedDateTime = local_c;
-    if (2 < param_2->version) {
+  pcVar1 = MemFile_ReadCString(memFile);
+  I_strncpyz(header->description,pcVar1,iVar2);
+  header->lastModifiedDateTime = 0;
+  if (1 < header->version) {
+    MemFile_ReadData(memFile,4,&local_c);
+    header->lastModifiedDateTime = local_c;
+    if (2 < header->version) {
       iVar2 = 0x20;
-      pcVar1 = MemFile_ReadCString(param_1);
-      I_strncpyz(param_2->name,pcVar1,iVar2);
+      pcVar1 = MemFile_ReadCString(memFile);
+      I_strncpyz(header->name,pcVar1,iVar2);
     }
   }
   return;
@@ -720,21 +726,21 @@ void __cdecl UI_Gametype_ReadHeader(MemoryFile *param_1,UIGametypeFileHeader *pa
 
 // 0073DF20  UI_Gametype_WriteToMemFile  (ui_mp/ui_gametype_custom_mp.cpp:703)
 
-void __cdecl UI_Gametype_WriteToMemFile(MemoryFile *param_1,UIGametypeFileHeader *param_2)
+void __cdecl UI_Gametype_WriteToMemFile(MemoryFile *memFile,UIGametypeFileHeader *header)
 
 {
-  void *pvVar1;
-  bool bVar2;
-  bool bVar3;
+  void *buffer;
+  bool errorOnOverflow;
+  bool compress_enabled;
   
-  bVar3 = false;
-  bVar2 = false;
-  pvVar1 = Z_VirtualAlloc(0x2000,"custom_gametype",0);
-  MemFile_InitForWriting(param_1,0x2000,pvVar1,bVar2,bVar3);
-  UI_Gametype_WriteHeader(param_1,param_2);
-  UI_Gametype_WriteDvars(param_1);
-  UI_Gametype_WriteCustomClasses(param_1);
-  UI_GameVariants_WriteToMemoryFile(param_1);
+  compress_enabled = false;
+  errorOnOverflow = false;
+  buffer = Z_VirtualAlloc(0x2000,"custom_gametype",0);
+  MemFile_InitForWriting(memFile,0x2000,buffer,errorOnOverflow,compress_enabled);
+  UI_Gametype_WriteHeader(memFile,header);
+  UI_Gametype_WriteDvars(memFile);
+  UI_Gametype_WriteCustomClasses(memFile);
+  UI_GameVariants_WriteToMemoryFile(memFile);
   return;
 }
 
@@ -746,18 +752,20 @@ void __cdecl UI_Gametype_CopyDvarsToCustom(void)
 {
   char *pcVar1;
   char *pcVar2;
-  int local_14;
-  int local_10;
+  int i_2;
+  int i;
+  char *gametype;
+  int size;
   
   Dvar_GetString("ui_gametype");
-  for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
+  for (i = 0; i < 6; i = i + 1) {
     pcVar1 = va("scr_%s_%s");
     pcVar1 = Dvar_GetString(pcVar1);
     pcVar2 = va("custom_%s");
     Dvar_SetStringByName(pcVar2,pcVar1);
   }
-  for (local_14 = 0; local_14 < 0x5e; local_14 = local_14 + 1) {
-    pcVar1 = Dvar_GetVariantString(GAMEMODE_DVARS[local_14]);
+  for (i_2 = 0; i_2 < 0x5e; i_2 = i_2 + 1) {
+    pcVar1 = Dvar_GetVariantString(GAMEMODE_DVARS[i_2]);
     pcVar2 = va("custom_%s");
     Dvar_SetStringByName(pcVar2,pcVar1);
   }
@@ -772,18 +780,20 @@ void __cdecl UI_Gametype_CopyCustomToDvars(void)
 {
   char *pcVar1;
   char *pcVar2;
-  int local_14;
-  int local_10;
+  int i_2;
+  int i;
+  char *gametype;
+  int size;
   
   Dvar_GetString("ui_gametype");
-  for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
+  for (i = 0; i < 6; i = i + 1) {
     pcVar1 = va("custom_%s");
     pcVar1 = Dvar_GetString(pcVar1);
     pcVar2 = va("scr_%s_%s");
     Dvar_SetStringByName(pcVar2,pcVar1);
   }
-  for (local_14 = 0; local_14 < 0x5e; local_14 = local_14 + 1) {
-    pcVar1 = Dvar_GetVariantString(GAMEMODE_DVARS[local_14]);
+  for (i_2 = 0; i_2 < 0x5e; i_2 = i_2 + 1) {
+    pcVar1 = Dvar_GetVariantString(GAMEMODE_DVARS[i_2]);
     pcVar2 = va("custom_%s");
     Dvar_SetStringByName(pcVar2,pcVar1);
   }
@@ -793,19 +803,23 @@ void __cdecl UI_Gametype_CopyCustomToDvars(void)
 
 // 0073E150  UI_Gametype_HasAnyDvarsChanged  (ui_mp/ui_gametype_custom_mp.cpp:756)
 
-bool __cdecl UI_Gametype_HasAnyDvarsChanged(char **param_1,int param_2,bool param_3)
+bool __cdecl
+UI_Gametype_HasAnyDvarsChanged(char **dvarNameList,int dvarNameListSize,bool areGameSpecificDvars)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   char *pcVar4;
-  char *pcVar5;
-  int iVar6;
-  char *local_14;
-  int local_c;
+  char *s1;
+  int iVar5;
+  char *customDvarValue;
+  char *dvarName;
+  char *dvarValue;
+  int i;
+  char *gametype;
   
-  if ((param_1 == (char **)0x0) &&
+  if ((dvarNameList == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x2f5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -813,21 +827,21 @@ bool __cdecl UI_Gametype_HasAnyDvarsChanged(char **param_1,int param_2,bool para
     return (bool)uVar3;
   }
   Dvar_GetString("ui_gametype");
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (param_2 <= local_c) {
+    if (dvarNameListSize <= i) {
       return false;
     }
     pcVar4 = va("custom_%s");
     pcVar4 = Dvar_GetVariantString(pcVar4);
-    local_14 = param_1[local_c];
-    if (param_3) {
-      local_14 = va("scr_%s_%s");
+    dvarName = dvarNameList[i];
+    if (areGameSpecificDvars) {
+      dvarName = va("scr_%s_%s");
     }
-    pcVar5 = Dvar_GetVariantString(local_14);
-    iVar6 = I_strcmp(pcVar4,pcVar5);
-    if (iVar6 != 0) break;
-    local_c = local_c + 1;
+    s1 = Dvar_GetVariantString(dvarName);
+    iVar5 = I_strcmp(pcVar4,s1);
+    if (iVar5 != 0) break;
+    i = i + 1;
   }
   return true;
 }
@@ -838,21 +852,22 @@ bool __cdecl UI_Gametype_HasAnyDvarsChanged(char **param_1,int param_2,bool para
 void __cdecl UI_Gametype_CheckIfAnythingChanged_f(void)
 
 {
-  char *pcVar1;
-  dvar_s *pdVar2;
-  bool local_5;
+  char *dvarName;
+  dvar_s *pdVar1;
+  int size;
+  bool hasAnythingChanged;
   
-  pcVar1 = va("custom_%s");
-  pdVar2 = Dvar_FindVar(pcVar1);
-  if (pdVar2 != (dvar_s *)0x0) {
-    local_5 = UI_Gametype_HasAnyDvarsChanged(GAMEMODE_SPECIFIC_DVARS,6,true);
-    if (!local_5) {
-      local_5 = UI_Gametype_HasAnyDvarsChanged(GAMEMODE_DVARS,0x5e,false);
+  dvarName = va("custom_%s");
+  pdVar1 = Dvar_FindVar(dvarName);
+  if (pdVar1 != (dvar_s *)0x0) {
+    hasAnythingChanged = UI_Gametype_HasAnyDvarsChanged(GAMEMODE_SPECIFIC_DVARS,6,true);
+    if (!hasAnythingChanged) {
+      hasAnythingChanged = UI_Gametype_HasAnyDvarsChanged(GAMEMODE_DVARS,0x5e,false);
     }
-    if (local_5 == false) {
-      local_5 = UI_Gametype_IsDirty();
+    if (hasAnythingChanged == false) {
+      hasAnythingChanged = UI_Gametype_IsDirty();
     }
-    Dvar_SetBoolByName("ui_custom_haschanged",local_5);
+    Dvar_SetBoolByName("ui_custom_haschanged",hasAnythingChanged);
   }
   return;
 }
@@ -863,26 +878,25 @@ void __cdecl UI_Gametype_CheckIfAnythingChanged_f(void)
 void __cdecl CheckForMinimumTeamClasses(void)
 
 {
-  int local_10;
-  int local_c;
-  int local_8;
+  _CustomClassData *customClass;
+  int c;
+  int numAllies;
+  int numAxis;
   
-  local_c = 0;
-  local_8 = 0;
-  for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {
-    if (0 < g_customGameModeClasses[local_10].isActive) {
-      if ((g_customGameModeClasses[local_10].team == 2) ||
-         (g_customGameModeClasses[local_10].team == 1)) {
-        local_c = local_c + 1;
+  numAllies = 0;
+  numAxis = 0;
+  for (c = 0; c < 10; c = c + 1) {
+    if (0 < g_customGameModeClasses[c].isActive) {
+      if ((g_customGameModeClasses[c].team == 2) || (g_customGameModeClasses[c].team == 1)) {
+        numAllies = numAllies + 1;
       }
-      if ((g_customGameModeClasses[local_10].team == 3) ||
-         (g_customGameModeClasses[local_10].team == 1)) {
-        local_8 = local_8 + 1;
+      if ((g_customGameModeClasses[c].team == 3) || (g_customGameModeClasses[c].team == 1)) {
+        numAxis = numAxis + 1;
       }
     }
   }
-  if ((((local_c == 0) || (local_8 != 0)) && ((local_c != 0 || (local_8 == 0)))) &&
-     ((local_c != 0 || (local_8 != 0)))) {
+  if ((((numAllies == 0) || (numAxis != 0)) && ((numAllies != 0 || (numAxis == 0)))) &&
+     ((numAllies != 0 || (numAxis != 0)))) {
     Dvar_SetBoolByName("ui_custom_class_need_team_balance",false);
   }
   else {
@@ -898,12 +912,13 @@ void __cdecl UI_Gametype_UpdateCustomClassDvarsForClass_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
+  int classNum;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     _CustomClassData::PopulateCustomDvarsFromClassData(g_customGameModeClasses + iVar1 + -1);
     custom_class_name = Dvar_FindVar("custom_class_name");
     if (custom_class_name == (dvar_s *)0x0) {
@@ -935,19 +950,20 @@ void __cdecl UI_Gametype_UpdateClassDataFromDvars_f(void)
   int *local_3dc;
   int local_3d8;
   int *local_3d4;
-  int local_3cc [41];
+  int classNum;
+  int customClassNameCopy [41];
   uint local_328;
-  int local_324 [200];
+  int customClassCopy [200];
   
   local_328 = __security_cookie ^ (uint)&stack0xfffffffc;
   local_3d8 = 10;
-  local_3d4 = local_324;
+  local_3d4 = customClassCopy;
   while (local_3d8 = local_3d8 + -1, -1 < local_3d8) {
     *local_3d4 = -1;
     local_3d4 = local_3d4 + 0x14;
   }
   local_3e0 = 10;
-  local_3dc = local_3cc;
+  local_3dc = customClassNameCopy;
   while (local_3e0 = local_3e0 + -1, -1 < local_3e0) {
     *local_3dc = 0;
     local_3dc[1] = 0;
@@ -963,7 +979,7 @@ void __cdecl UI_Gametype_UpdateClassDataFromDvars_f(void)
   pcVar2 = Cmd_Argv(1);
   iVar1 = atoi(pcVar2);
   p_Var4 = g_customGameModeClasses;
-  piVar5 = local_324;
+  piVar5 = customClassCopy;
   for (iVar3 = 200; iVar3 != 0; iVar3 = iVar3 + -1) {
     *piVar5 = p_Var4->isActive;
     p_Var4 = (_CustomClassData *)&p_Var4->primary;
@@ -971,7 +987,7 @@ void __cdecl UI_Gametype_UpdateClassDataFromDvars_f(void)
   }
   iVar3 = 0x28;
   pcVar2 = g_customGameModeClassDescriptions[0].name;
-  piVar5 = local_3cc;
+  piVar5 = customClassNameCopy;
   for (; iVar3 != 0; iVar3 = iVar3 + -1) {
     *piVar5 = *(int *)pcVar2;
     pcVar2 = pcVar2 + 4;
@@ -983,7 +999,7 @@ void __cdecl UI_Gametype_UpdateClassDataFromDvars_f(void)
              0x10);
   iVar1 = 200;
   bVar6 = true;
-  piVar5 = local_324;
+  piVar5 = customClassCopy;
   p_Var4 = g_customGameModeClasses;
   do {
     if (iVar1 == 0) break;
@@ -995,7 +1011,7 @@ void __cdecl UI_Gametype_UpdateClassDataFromDvars_f(void)
   if (bVar6) {
     iVar1 = 0x28;
     bVar6 = true;
-    piVar5 = local_3cc;
+    piVar5 = customClassNameCopy;
     pcVar2 = g_customGameModeClassDescriptions[0].name;
     do {
       if (iVar1 == 0) break;
@@ -1019,12 +1035,13 @@ void __cdecl UI_Gametype_CreateDefaultCustomClassIfNeeded_f(void)
 
 {
   bool bVar1;
-  int local_c;
+  int c;
+  bool isDefaultClassNeeded;
   
   bVar1 = true;
-  local_c = 0;
+  c = 0;
   do {
-    if (9 < local_c) {
+    if (9 < c) {
 LAB_0073e609:
       if (bVar1) {
         g_customGameModeClasses[0].isActive = 1;
@@ -1032,11 +1049,11 @@ LAB_0073e609:
       }
       return;
     }
-    if (0 < g_customGameModeClasses[local_c].isActive) {
+    if (0 < g_customGameModeClasses[c].isActive) {
       bVar1 = false;
       goto LAB_0073e609;
     }
-    local_c = local_c + 1;
+    c = c + 1;
   } while( true );
 }
 
@@ -1046,18 +1063,20 @@ LAB_0073e609:
 void __cdecl UI_Gametype_ApplyCustomClassTeamSelections_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  int local_8;
+  char *dvarName;
+  int iVar1;
+  int team;
+  _CustomClassData *customClass;
+  int c;
   
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    pcVar1 = va("custom_class_team_%d");
-    iVar2 = Dvar_GetInt(pcVar1);
-    g_customGameModeClasses[local_8].isActive = (uint)(iVar2 != 0);
-    if (iVar2 != g_customGameModeClasses[local_8].team) {
+  for (c = 0; c < 10; c = c + 1) {
+    dvarName = va("custom_class_team_%d");
+    iVar1 = Dvar_GetInt(dvarName);
+    g_customGameModeClasses[c].isActive = (uint)(iVar1 != 0);
+    if (iVar1 != g_customGameModeClasses[c].team) {
       UI_Gametype_MarkDirty();
     }
-    g_customGameModeClasses[local_8].team = iVar2;
+    g_customGameModeClasses[c].team = iVar1;
   }
   CheckForMinimumTeamClasses();
   return;
@@ -1069,19 +1088,20 @@ void __cdecl UI_Gametype_ApplyCustomClassTeamSelections_f(void)
 void __cdecl UI_Gametype_UpdateCustomClassTeamDvars_f(void)
 
 {
-  char *pcVar1;
+  char *dvarName;
   int local_10;
-  int local_8;
+  _CustomClassData *customClass;
+  int c;
   
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    if (g_customGameModeClasses[local_8].isActive < 1) {
+  for (c = 0; c < 10; c = c + 1) {
+    if (g_customGameModeClasses[c].isActive < 1) {
       local_10 = 0;
     }
     else {
-      local_10 = g_customGameModeClasses[local_8].team;
+      local_10 = g_customGameModeClasses[c].team;
     }
-    pcVar1 = va("custom_class_team_%d");
-    Dvar_SetIntByName(pcVar1,local_10);
+    dvarName = va("custom_class_team_%d");
+    Dvar_SetIntByName(dvarName,local_10);
   }
   CheckForMinimumTeamClasses();
   return;
@@ -1090,27 +1110,27 @@ void __cdecl UI_Gametype_UpdateCustomClassTeamDvars_f(void)
 
 // 0073E730  UI_Gametype_ReadChunk  (ui_mp/ui_gametype_custom_mp.cpp:936)
 
-bool __cdecl UI_Gametype_ReadChunk(MemoryFile *param_1)
+bool __cdecl UI_Gametype_ReadChunk(MemoryFile *memFile)
 
 {
   bool bVar1;
   byte local_9;
-  uint local_8;
+  int type;
   
-  MemFile_ReadData(param_1,1,&local_9);
-  local_8 = (uint)local_9;
-  switch(local_8) {
+  MemFile_ReadData(memFile,1,&local_9);
+  type = (int)local_9;
+  switch(type) {
   case 0:
-    bVar1 = UI_Gametype_ReadDvarChunk(param_1);
+    bVar1 = UI_Gametype_ReadDvarChunk(memFile);
     break;
   case 1:
-    bVar1 = UI_Gametype_ReadCustomClassChunk(param_1);
+    bVar1 = UI_Gametype_ReadCustomClassChunk(memFile);
     break;
   case 2:
-    bVar1 = UI_GameVariants_ReadGameVariantRuleChunk(param_1);
+    bVar1 = UI_GameVariants_ReadGameVariantRuleChunk(memFile);
     break;
   case 3:
-    bVar1 = UI_Gametype_ReadCustomClassDescriptionChunk(param_1);
+    bVar1 = UI_Gametype_ReadCustomClassDescriptionChunk(memFile);
     break;
   default:
     bVar1 = false;
@@ -1121,16 +1141,16 @@ bool __cdecl UI_Gametype_ReadChunk(MemoryFile *param_1)
 
 // 0073E7C0  UI_Gametype_ReadChunks  (ui_mp/ui_gametype_custom_mp.cpp:956)
 
-bool __cdecl UI_Gametype_ReadChunks(MemoryFile *param_1)
+bool __cdecl UI_Gametype_ReadChunks(MemoryFile *memFile)
 
 {
   bool bVar1;
   
   do {
-    if (param_1->bufferSize <= param_1->bytesUsed) {
+    if (memFile->bufferSize <= memFile->bytesUsed) {
       return true;
     }
-    bVar1 = UI_Gametype_ReadChunk(param_1);
+    bVar1 = UI_Gametype_ReadChunk(memFile);
   } while (bVar1);
   Com_PrintError(0xe,"Error reading in game mode.\n");
   UI_Gametype_ShowErrorPopup("@MENU_ERROR","@CUSTOM_LOAD_ERROR");
@@ -1143,17 +1163,17 @@ bool __cdecl UI_Gametype_ReadChunks(MemoryFile *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Removing unreachable block (ram,0x0073e854) */
 
-bool __cdecl UI_Gametype_ReadFromMemFile(MemoryFile *param_1)
+bool __cdecl UI_Gametype_ReadFromMemFile(MemoryFile *memFile)
 
 {
   bool bVar1;
-  UIGametypeFileHeader local_d4;
+  UIGametypeFileHeader header;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  UI_Gametype_ReadHeader(param_1,&local_d4);
-  Dvar_SetString(g_gametype,local_d4.baseGameType);
-  bVar1 = UI_Gametype_ReadChunks(param_1);
+  UI_Gametype_ReadHeader(memFile,&header);
+  Dvar_SetString(g_gametype,header.baseGameType);
+  bVar1 = UI_Gametype_ReadChunks(memFile);
   return bVar1;
 }
 
@@ -1181,23 +1201,27 @@ void __cdecl ResetCustomClassDvars(void)
 void __cdecl UI_Gametype_ResetDvars(void)
 
 {
-  char *pcVar1;
-  dvar_s *pdVar2;
-  int local_18;
-  int local_10;
+  char *dvarName;
+  dvar_s *pdVar1;
+  dvar_s *dvar_2;
+  int i_2;
+  dvar_s *dvar;
+  int i;
+  char *gametype;
+  int size;
   
   Dvar_GetString("ui_gametype");
-  for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
-    pcVar1 = va("scr_%s_%s");
-    pdVar2 = Dvar_FindVar(pcVar1);
-    if (pdVar2 != (dvar_s *)0x0) {
-      Dvar_Reset(pdVar2,DVAR_SOURCE_INTERNAL);
+  for (i = 0; i < 6; i = i + 1) {
+    dvarName = va("scr_%s_%s");
+    pdVar1 = Dvar_FindVar(dvarName);
+    if (pdVar1 != (dvar_s *)0x0) {
+      Dvar_Reset(pdVar1,DVAR_SOURCE_INTERNAL);
     }
   }
-  for (local_18 = 0; local_18 < 0x5e; local_18 = local_18 + 1) {
-    pdVar2 = Dvar_FindVar(GAMEMODE_DVARS[local_18]);
-    if (pdVar2 != (dvar_s *)0x0) {
-      Dvar_Reset(pdVar2,DVAR_SOURCE_INTERNAL);
+  for (i_2 = 0; i_2 < 0x5e; i_2 = i_2 + 1) {
+    pdVar1 = Dvar_FindVar(GAMEMODE_DVARS[i_2]);
+    if (pdVar1 != (dvar_s *)0x0) {
+      Dvar_Reset(pdVar1,DVAR_SOURCE_INTERNAL);
     }
   }
   ResetCustomClassDvars();
@@ -1236,12 +1260,13 @@ void __cdecl UI_Gametype_SetupCustomModeNameAndDesc(void)
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_c;
-  char *local_8;
+  char *gameTypeName;
+  StringTable *gameTypeTable;
+  char *gameType;
   
   Dvar_SetString(ui_customModeName,"");
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_c);
-  if (local_c == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypeTable);
+  if (gameTypeTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp",
                              0x41c,0,"%s");
     if (!bVar2) {
@@ -1250,8 +1275,8 @@ void __cdecl UI_Gametype_SetupCustomModeNameAndDesc(void)
       return;
     }
   }
-  local_8 = Dvar_GetString("ui_gametype");
-  pcVar3 = StringTable_Lookup(local_c,0,local_8,1);
+  gameType = Dvar_GetString("ui_gametype");
+  pcVar3 = StringTable_Lookup(gameTypeTable,0,gameType,1);
   pcVar3 = UI_SafeTranslateString(pcVar3);
   Dvar_SetString(ui_customModeEditName,pcVar3);
   pcVar3 = UI_SafeTranslateString("CUSTOM_CUSTOM_GAME_MODE_CAPS");
@@ -1280,10 +1305,10 @@ bool __cdecl UI_Gametype_CanUseCustom(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int licensetype;
   
-  iVar2 = SV_GetLicenseType();
-  bVar1 = SV_IsServerRanked(iVar2);
+  licensetype = SV_GetLicenseType();
+  bVar1 = SV_IsServerRanked(licensetype);
   return (bool)('\x01' - bVar1);
 }
 
@@ -1294,11 +1319,11 @@ bool __cdecl UI_Gametype_IsUsingCustom(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int licensetype;
   bool local_8;
   
-  iVar2 = SV_GetLicenseType();
-  bVar1 = SV_IsServerRanked(iVar2);
+  licensetype = SV_GetLicenseType();
+  bVar1 = SV_IsServerRanked(licensetype);
   if (bVar1) {
     local_8 = false;
   }
@@ -1356,7 +1381,7 @@ void __cdecl UI_Gametype_RevertChanges_f(void)
 
 // 0073EC30  isValidClassSlotNum  (ui_mp/ui_gametype_custom_mp.cpp:1134)
 
-bool __cdecl isValidClassSlotNum(int param_1)
+bool __cdecl isValidClassSlotNum(int slotNum)
 
 {
   code *pcVar1;
@@ -1364,7 +1389,7 @@ bool __cdecl isValidClassSlotNum(int param_1)
   undefined1 uVar3;
   bool local_8;
   
-  if ((9 < param_1) || (param_1 < 0)) {
+  if ((9 < slotNum) || (slotNum < 0)) {
     va("Invalid index %d passsed in to custom class function");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp",
                              0x46f,0,"%s\n\t%s");
@@ -1374,7 +1399,7 @@ bool __cdecl isValidClassSlotNum(int param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1 < 10) && (-1 < param_1)) {
+  if ((slotNum < 10) && (-1 < slotNum)) {
     local_8 = true;
   }
   else {
@@ -1386,15 +1411,16 @@ bool __cdecl isValidClassSlotNum(int param_1)
 
 // 0073ECA0  GetCustomClassLoadoutItemForSlot  (ui_mp/ui_gametype_custom_mp.cpp:1142)
 
-uchar __cdecl GetCustomClassLoadoutItemForSlot(int param_1,int param_2,char *param_3)
+uchar __cdecl GetCustomClassLoadoutItemForSlot(int controllerIndex,int slotNum,char *itemName)
 
 {
   bool bVar1;
   uchar uVar2;
+  _CustomClassData *customClass;
   
-  bVar1 = isValidClassSlotNum(param_2);
+  bVar1 = isValidClassSlotNum(slotNum);
   if (bVar1) {
-    uVar2 = _CustomClassData::GetLoadoutItem(g_customGameModeClasses + param_2,param_3);
+    uVar2 = _CustomClassData::GetLoadoutItem(g_customGameModeClasses + slotNum,itemName);
   }
   else {
     uVar2 = '\0';
@@ -1405,17 +1431,19 @@ uchar __cdecl GetCustomClassLoadoutItemForSlot(int param_1,int param_2,char *par
 
 // 0073ECE0  GetCustomClassLoadoutItemForClassName  (ui_mp/ui_gametype_custom_mp.cpp:1154)
 
-uchar __cdecl GetCustomClassLoadoutItemForClassName(int param_1,char *param_2,char *param_3)
+uchar __cdecl
+GetCustomClassLoadoutItemForClassName(int controllerIndex,char *className,char *itemName)
 
 {
   bool bVar1;
   uchar uVar2;
   int iVar3;
+  int slotNum;
   
-  iVar3 = atoi(param_2);
+  iVar3 = atoi(className);
   bVar1 = isValidClassSlotNum(iVar3 + -1);
   if (bVar1) {
-    uVar2 = _CustomClassData::GetLoadoutItem(g_customGameModeClasses + iVar3 + -1,param_3);
+    uVar2 = _CustomClassData::GetLoadoutItem(g_customGameModeClasses + iVar3 + -1,itemName);
   }
   else {
     uVar2 = '\0';
@@ -1426,14 +1454,15 @@ uchar __cdecl GetCustomClassLoadoutItemForClassName(int param_1,char *param_2,ch
 
 // 0073ED30  GetCustomClassModifierForClass  (ui_mp/ui_gametype_custom_mp.cpp:1166)
 
-int __cdecl GetCustomClassModifierForClass(int param_1,int param_2,char *param_3)
+int __cdecl GetCustomClassModifierForClass(int controllerIndex,int classNum,char *itemName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  _CustomClassData *customClass;
   
-  if ((9 < param_2) || (param_2 < 0)) {
+  if ((9 < classNum) || (classNum < 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp",
                              0x48f,0,"%s");
     if (!bVar2) {
@@ -1442,9 +1471,9 @@ int __cdecl GetCustomClassModifierForClass(int param_1,int param_2,char *param_3
       return iVar3;
     }
   }
-  bVar2 = isValidClassSlotNum(param_2);
+  bVar2 = isValidClassSlotNum(classNum);
   if (bVar2) {
-    iVar3 = _CustomClassData::GetClassModifierValue(g_customGameModeClasses + param_2,param_3);
+    iVar3 = _CustomClassData::GetClassModifierValue(g_customGameModeClasses + classNum,itemName);
   }
   else {
     iVar3 = 0;
@@ -1456,16 +1485,18 @@ int __cdecl GetCustomClassModifierForClass(int param_1,int param_2,char *param_3
 // 0073EDA0  UI_Gametype_EquipCustomClassLoadoutItem  (ui_mp/ui_gametype_custom_mp.cpp:1179)
 
 void __cdecl
-UI_Gametype_EquipCustomClassLoadoutItem(int param_1,char *param_2,int param_3,char *param_4)
+UI_Gametype_EquipCustomClassLoadoutItem
+          (int controllerIndex,char *customClassName,int itemIndex,char *loadoutName)
 
 {
   bool bVar1;
   int iVar2;
+  int slotNum;
   
-  iVar2 = atoi(param_2);
+  iVar2 = atoi(customClassName);
   bVar1 = isValidClassSlotNum(iVar2 + -1);
   if (bVar1) {
-    _CustomClassData::SetLoadoutItem(g_customGameModeClasses + iVar2 + -1,param_4,param_3);
+    _CustomClassData::SetLoadoutItem(g_customGameModeClasses + iVar2 + -1,loadoutName,itemIndex);
   }
   return;
 }
@@ -1473,70 +1504,77 @@ UI_Gametype_EquipCustomClassLoadoutItem(int param_1,char *param_2,int param_3,ch
 
 // 0073EDF0  GetClassModifierValue  (ui_mp/ui_gametype_custom_mp.cpp:1190)
 
-int __thiscall _CustomClassData::GetClassModifierValue(_CustomClassData *this,char *param_1)
+int __thiscall _CustomClassData::GetClassModifierValue(_CustomClassData *this,char *modifierName)
 
 {
   int iVar1;
-  uint local_c;
+  int c;
+  char *returnVal;
   
-  local_c = 0;
+  c = 0;
   while( true ) {
-    if (8 < local_c) {
+    if (8 < (uint)c) {
       Com_PrintError(0xd,"Unknown custom class modifier %s\n");
       return -1;
     }
-    iVar1 = I_stricmp(modifierIndex[local_c].modifierName,param_1);
+    iVar1 = I_stricmp(modifierIndex[c].modifierName,modifierName);
     if (iVar1 == 0) break;
-    local_c = local_c + 1;
+    c = c + 1;
   }
-  return *(int *)((int)&this->isActive + modifierIndex[local_c].modifierOffset);
+  return *(int *)((int)&this->isActive + modifierIndex[c].modifierOffset);
 }
 
 
 // 0073EE70  GetLoadoutItem  (ui_mp/ui_gametype_custom_mp.cpp:1208)
 
-uchar __thiscall _CustomClassData::GetLoadoutItem(_CustomClassData *this,char *param_1)
+uchar __thiscall _CustomClassData::GetLoadoutItem(_CustomClassData *this,char *itemName)
 
 {
   int iVar1;
-  uint local_c;
+  char *currentItemName;
+  int i;
+  uchar *currentItemPtr;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0x26 < local_c) {
+    if (0x26 < (uint)i) {
       Com_PrintError(0xd,"Unknown custom class item name %s\n");
       return 0xff;
     }
-    iVar1 = I_stricmp(itemNames[local_c],param_1);
+    iVar1 = I_stricmp(itemNames[i],itemName);
     if (iVar1 == 0) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  return (&this->primary)[local_c];
+  return (&this->primary)[i];
 }
 
 
 // 0073EEF0  SetLoadoutItem  (ui_mp/ui_gametype_custom_mp.cpp:1225)
 
-void __thiscall _CustomClassData::SetLoadoutItem(_CustomClassData *this,char *param_1,int param_2)
+void __thiscall
+_CustomClassData::SetLoadoutItem(_CustomClassData *this,char *itemName,int itemIndex)
 
 {
   int iVar1;
-  uint local_c;
+  uchar *currentItem;
+  char *currentItemName;
+  int i;
+  uchar *currentItemPtr;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0x26 < local_c) {
+    if (0x26 < (uint)i) {
       Com_PrintError(0xd,"Unknown custom class item name %s\n");
       return;
     }
-    iVar1 = I_stricmp(itemNames[local_c],param_1);
+    iVar1 = I_stricmp(itemNames[i],itemName);
     if (iVar1 == 0) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  if ((&this->primary)[local_c] == (uchar)param_2) {
+  if ((&this->primary)[i] == (uchar)itemIndex) {
     return;
   }
-  (&this->primary)[local_c] = (uchar)param_2;
+  (&this->primary)[i] = (uchar)itemIndex;
   UI_Gametype_MarkDirty();
   return;
 }
@@ -1588,45 +1626,45 @@ void __thiscall _CustomClassData::SaveClassDataFromDvars(_CustomClassData *this)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __thiscall _CustomClassData::WriteClassToClientData(_CustomClassData *this,msg_t *param_1)
+void __thiscall _CustomClassData::WriteClassToClientData(_CustomClassData *this,msg_t *msg)
 
 {
   if (this->isActive == 0) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
-    MSG_WriteByte(param_1,(uint)this->primary);
-    MSG_WriteByte(param_1,(uint)this->primaryattachment);
-    MSG_WriteByte(param_1,(uint)this->primaryattachmenttop);
-    MSG_WriteByte(param_1,(uint)this->primaryattachmentbottom);
-    MSG_WriteByte(param_1,(uint)this->primaryattachmenttrigger);
-    MSG_WriteByte(param_1,(uint)this->primaryattachmentmuzzle);
-    MSG_WriteByte(param_1,(uint)this->primarycamo);
-    MSG_WriteByte(param_1,(uint)this->primaryreticle);
-    MSG_WriteByte(param_1,(uint)this->primaryreticlecolor);
-    MSG_WriteByte(param_1,(uint)this->primarylens);
-    MSG_WriteByte(param_1,(uint)this->primaryemblem);
-    MSG_WriteByte(param_1,(uint)this->primarytag);
-    MSG_WriteByte(param_1,(uint)this->secondary);
-    MSG_WriteByte(param_1,(uint)this->secondaryattachment);
-    MSG_WriteByte(param_1,(uint)this->secondaryattachmenttop);
-    MSG_WriteByte(param_1,(uint)this->secondaryattachmentbottom);
-    MSG_WriteByte(param_1,(uint)this->secondaryattachmenttrigger);
-    MSG_WriteByte(param_1,(uint)this->secondaryattachmentmuzzle);
-    MSG_WriteByte(param_1,(uint)this->secondarycamo);
-    MSG_WriteByte(param_1,(uint)this->secondaryreticle);
-    MSG_WriteByte(param_1,(uint)this->secondaryreticlecolor);
-    MSG_WriteByte(param_1,(uint)this->secondarylens);
-    MSG_WriteByte(param_1,(uint)this->secondaryemblem);
-    MSG_WriteByte(param_1,(uint)this->secondarytag);
-    MSG_WriteByte(param_1,(uint)this->specialty1);
-    MSG_WriteByte(param_1,(uint)this->specialty2);
-    MSG_WriteByte(param_1,(uint)this->specialty3);
-    MSG_WriteByte(param_1,(uint)this->primarygrenade);
-    MSG_WriteByte(param_1,(uint)this->specialgrenade);
-    MSG_WriteByte(param_1,(uint)this->equipment);
-    MSG_WriteByte(param_1,(uint)(byte)this->team);
+    MSG_WriteBit1(msg);
+    MSG_WriteByte(msg,(uint)this->primary);
+    MSG_WriteByte(msg,(uint)this->primaryattachment);
+    MSG_WriteByte(msg,(uint)this->primaryattachmenttop);
+    MSG_WriteByte(msg,(uint)this->primaryattachmentbottom);
+    MSG_WriteByte(msg,(uint)this->primaryattachmenttrigger);
+    MSG_WriteByte(msg,(uint)this->primaryattachmentmuzzle);
+    MSG_WriteByte(msg,(uint)this->primarycamo);
+    MSG_WriteByte(msg,(uint)this->primaryreticle);
+    MSG_WriteByte(msg,(uint)this->primaryreticlecolor);
+    MSG_WriteByte(msg,(uint)this->primarylens);
+    MSG_WriteByte(msg,(uint)this->primaryemblem);
+    MSG_WriteByte(msg,(uint)this->primarytag);
+    MSG_WriteByte(msg,(uint)this->secondary);
+    MSG_WriteByte(msg,(uint)this->secondaryattachment);
+    MSG_WriteByte(msg,(uint)this->secondaryattachmenttop);
+    MSG_WriteByte(msg,(uint)this->secondaryattachmentbottom);
+    MSG_WriteByte(msg,(uint)this->secondaryattachmenttrigger);
+    MSG_WriteByte(msg,(uint)this->secondaryattachmentmuzzle);
+    MSG_WriteByte(msg,(uint)this->secondarycamo);
+    MSG_WriteByte(msg,(uint)this->secondaryreticle);
+    MSG_WriteByte(msg,(uint)this->secondaryreticlecolor);
+    MSG_WriteByte(msg,(uint)this->secondarylens);
+    MSG_WriteByte(msg,(uint)this->secondaryemblem);
+    MSG_WriteByte(msg,(uint)this->secondarytag);
+    MSG_WriteByte(msg,(uint)this->specialty1);
+    MSG_WriteByte(msg,(uint)this->specialty2);
+    MSG_WriteByte(msg,(uint)this->specialty3);
+    MSG_WriteByte(msg,(uint)this->primarygrenade);
+    MSG_WriteByte(msg,(uint)this->specialgrenade);
+    MSG_WriteByte(msg,(uint)this->equipment);
+    MSG_WriteByte(msg,(uint)(byte)this->team);
   }
   return;
 }
@@ -1636,75 +1674,75 @@ void __thiscall _CustomClassData::WriteClassToClientData(_CustomClassData *this,
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __thiscall _CustomClassData::ReadClassFromClientData(_CustomClassData *this,msg_t *param_1)
+void __thiscall _CustomClassData::ReadClassFromClientData(_CustomClassData *this,msg_t *msg)
 
 {
   int iVar1;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   this->isActive = iVar1;
   if (this->isActive != 0) {
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primary = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryattachment = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryattachmenttop = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryattachmentbottom = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryattachmenttrigger = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryattachmentmuzzle = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primarycamo = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryreticle = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryreticlecolor = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primarylens = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primaryemblem = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primarytag = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondary = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryattachment = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryattachmenttop = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryattachmentbottom = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryattachmenttrigger = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryattachmentmuzzle = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondarycamo = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryreticle = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryreticlecolor = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondarylens = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondaryemblem = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->secondarytag = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->specialty1 = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->specialty2 = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->specialty3 = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->primarygrenade = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->specialgrenade = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->equipment = (uchar)iVar1;
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     this->team = iVar1;
   }
   return;
@@ -1715,30 +1753,30 @@ void __thiscall _CustomClassData::ReadClassFromClientData(_CustomClassData *this
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_WriteClassClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_WriteClassClientData(msg_t *msg)
 
 {
   bool bVar1;
   int iVar2;
-  int local_8;
+  int c;
   
   iVar2 = Dvar_GetInt(custom_class_mode);
   if (iVar2 == 0) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      _CustomClassData::WriteClassToClientData(g_customGameModeClasses + local_8,param_1);
+    MSG_WriteBit1(msg);
+    for (c = 0; c < 10; c = c + 1) {
+      _CustomClassData::WriteClassToClientData(g_customGameModeClasses + c,msg);
     }
   }
   bVar1 = HasClassDescriptionDataChanged();
   if (bVar1) {
-    MSG_WriteBit1(param_1);
-    MSG_WriteData(param_1,g_customGameModeClassDescriptions,0xa0);
+    MSG_WriteBit1(msg);
+    MSG_WriteData(msg,g_customGameModeClassDescriptions,0xa0);
   }
   else {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   return;
 }
@@ -1748,22 +1786,24 @@ void __cdecl UI_Gametype_Custom_WriteClassClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_ReadClassClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_ReadClassClientData(msg_t *msg)
 
 {
   int iVar1;
-  int local_10;
+  int c;
+  int isUsingCustomClassDescriptions;
+  int isUsingCustomClasses;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   Dvar_SetInt(custom_class_mode,(uint)(iVar1 != 0));
   if (iVar1 != 0) {
-    for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {
-      _CustomClassData::ReadClassFromClientData(g_customGameModeClasses + local_10,param_1);
+    for (c = 0; c < 10; c = c + 1) {
+      _CustomClassData::ReadClassFromClientData(g_customGameModeClasses + c,msg);
     }
   }
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 != 0) {
-    MSG_ReadData(param_1,g_customGameModeClassDescriptions,0xa0);
+    MSG_ReadData(msg,g_customGameModeClassDescriptions,0xa0);
   }
   return;
 }
@@ -1773,30 +1813,31 @@ void __cdecl UI_Gametype_Custom_ReadClassClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_WriteKillstreakClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_WriteKillstreakClientData(msg_t *msg)
 
 {
   int iVar1;
   dvar_s *pdVar2;
+  int customKillstreakMode;
   
   iVar1 = Dvar_GetInt(custom_killstreak_mode);
   if ((iVar1 == 1) || (iVar1 == 2)) {
-    MSG_WriteBit1(param_1);
-    MSG_WriteByte(param_1,iVar1);
+    MSG_WriteBit1(msg);
+    MSG_WriteByte(msg,iVar1);
     if (iVar1 == 2) {
       pdVar2 = Dvar_FindVar("custom_killstreak_1");
       iVar1 = atoi((pdVar2->current).string);
-      MSG_WriteByte(param_1,iVar1);
+      MSG_WriteByte(msg,iVar1);
       pdVar2 = Dvar_FindVar("custom_killstreak_2");
       iVar1 = atoi((pdVar2->current).string);
-      MSG_WriteByte(param_1,iVar1);
+      MSG_WriteByte(msg,iVar1);
       pdVar2 = Dvar_FindVar("custom_killstreak_3");
       iVar1 = atoi((pdVar2->current).string);
-      MSG_WriteByte(param_1,iVar1);
+      MSG_WriteByte(msg,iVar1);
     }
   }
   else {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   return;
 }
@@ -1806,24 +1847,26 @@ void __cdecl UI_Gametype_Custom_WriteKillstreakClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_ReadKillstreakClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_ReadKillstreakClientData(msg_t *msg)
 
 {
   int iVar1;
   char *pcVar2;
+  int customKillstreakMode;
+  int isUsingCustomKillstreaks;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 != 0) {
-    iVar1 = MSG_ReadByte(param_1);
+    iVar1 = MSG_ReadByte(msg);
     Dvar_SetInt(custom_killstreak_mode,iVar1);
     if (iVar1 == 2) {
-      MSG_ReadByte(param_1);
+      MSG_ReadByte(msg);
       pcVar2 = va("%d");
       Dvar_SetStringByName("custom_killstreak_1",pcVar2);
-      MSG_ReadByte(param_1);
+      MSG_ReadByte(msg);
       pcVar2 = va("%d");
       Dvar_SetStringByName("custom_killstreak_2",pcVar2);
-      MSG_ReadByte(param_1);
+      MSG_ReadByte(msg);
       pcVar2 = va("%d");
       Dvar_SetStringByName("custom_killstreak_3",pcVar2);
     }
@@ -1836,20 +1879,20 @@ void __cdecl UI_Gametype_Custom_ReadKillstreakClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_WritePerkDvarClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_WritePerkDvarClientData(msg_t *msg)
 
 {
   UI_Gametype_DvarsToCustomGameModeData(&g_customGameModeData);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_extraBreath);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_bulletPenetrationMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_weapSpreadMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_weapReloadMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_weapMeleeMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_weapSwitchMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_weapAdsMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_sprintMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.perk_sprintRecoveryMultiplier);
-  MSG_WriteFloat(param_1,g_customGameModeData.player_lastStandBleedoutTime);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_extraBreath);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_bulletPenetrationMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_weapSpreadMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_weapReloadMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_weapMeleeMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_weapSwitchMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_weapAdsMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_sprintMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.perk_sprintRecoveryMultiplier);
+  MSG_WriteFloat(msg,g_customGameModeData.player_lastStandBleedoutTime);
   return;
 }
 
@@ -1858,19 +1901,19 @@ void __cdecl UI_Gametype_Custom_WritePerkDvarClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_ReadPerkDvarClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_ReadPerkDvarClientData(msg_t *msg)
 
 {
-  g_customGameModeData.perk_extraBreath = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_bulletPenetrationMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_weapSpreadMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_weapReloadMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_weapMeleeMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_weapSwitchMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_weapAdsMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_sprintMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.perk_sprintRecoveryMultiplier = MSG_ReadFloat(param_1);
-  g_customGameModeData.player_lastStandBleedoutTime = MSG_ReadFloat(param_1);
+  g_customGameModeData.perk_extraBreath = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_bulletPenetrationMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_weapSpreadMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_weapReloadMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_weapMeleeMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_weapSwitchMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_weapAdsMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_sprintMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.perk_sprintRecoveryMultiplier = MSG_ReadFloat(msg);
+  g_customGameModeData.player_lastStandBleedoutTime = MSG_ReadFloat(msg);
   UI_Gametype_CustomGameModeDataToDvars();
   return;
 }
@@ -1880,17 +1923,17 @@ void __cdecl UI_Gametype_Custom_ReadPerkDvarClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_WriteClientData(msg_t *param_1)
+void __cdecl UI_Gametype_Custom_WriteClientData(msg_t *msg)
 
 {
   if ((customGameMode->current).integer == 0) {
-    MSG_WriteBit0(param_1);
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
-    UI_Gametype_Custom_WriteClassClientData(param_1);
-    UI_Gametype_Custom_WriteKillstreakClientData(param_1);
-    UI_Gametype_Custom_WritePerkDvarClientData(param_1);
+    MSG_WriteBit1(msg);
+    UI_Gametype_Custom_WriteClassClientData(msg);
+    UI_Gametype_Custom_WriteKillstreakClientData(msg);
+    UI_Gametype_Custom_WritePerkDvarClientData(msg);
   }
   return;
 }
@@ -1900,21 +1943,21 @@ void __cdecl UI_Gametype_Custom_WriteClientData(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl UI_Gametype_Custom_ReadClientData(msg_t *param_1)
+bool __cdecl UI_Gametype_Custom_ReadClientData(msg_t *msg)
 
 {
-  int iVar1;
-  bool bVar2;
+  int value;
+  bool bVar1;
   
-  iVar1 = MSG_ReadBit(param_1);
-  Dvar_SetInt(customGameMode,iVar1);
-  bVar2 = (customGameMode->current).integer != 0;
-  if (bVar2) {
-    UI_Gametype_Custom_ReadClassClientData(param_1);
-    UI_Gametype_Custom_ReadKillstreakClientData(param_1);
-    UI_Gametype_Custom_ReadPerkDvarClientData(param_1);
+  value = MSG_ReadBit(msg);
+  Dvar_SetInt(customGameMode,value);
+  bVar1 = (customGameMode->current).integer != 0;
+  if (bVar1) {
+    UI_Gametype_Custom_ReadClassClientData(msg);
+    UI_Gametype_Custom_ReadKillstreakClientData(msg);
+    UI_Gametype_Custom_ReadPerkDvarClientData(msg);
   }
-  return bVar2;
+  return bVar1;
 }
 
 
@@ -1939,7 +1982,7 @@ void __cdecl UI_Gametype_MarkDirty(void)
 
 // 0073FB60  UI_Gametype_HasPerkChangedFromDefault  (ui_mp/ui_gametype_custom_mp.cpp:1589)
 
-bool __cdecl UI_Gametype_HasPerkChangedFromDefault(int param_1)
+bool __cdecl UI_Gametype_HasPerkChangedFromDefault(int itemIndex)
 
 {
   code *pcVar1;
@@ -1951,8 +1994,9 @@ bool __cdecl UI_Gametype_HasPerkChangedFromDefault(int param_1)
   bool local_18;
   bool local_14;
   bool local_10;
+  int perkIndex;
   
-  if ((0x1d < param_1 - 0x96U) &&
+  if ((0x1d < itemIndex - 0x96U) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x637,0,
                                "perkIndex doesn\'t index CUSTOM_PERKS_COUNT\n\t%i not in [0, %i)"),
@@ -1961,7 +2005,7 @@ bool __cdecl UI_Gametype_HasPerkChangedFromDefault(int param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  switch(param_1) {
+  switch(itemIndex) {
   case 0:
   case 1:
                     /* WARNING: This code block may not be properly labeled as switch case */
@@ -2086,14 +2130,15 @@ bool __cdecl UI_Gametype_HasPerkChangedFromDefault(int param_1)
 
 // 0073FEA0  UI_Gametype_Custom_IsPerkTweakable  (ui_mp/ui_gametype_custom_mp.cpp:1645)
 
-bool __cdecl UI_Gametype_Custom_IsPerkTweakable(int param_1)
+bool __cdecl UI_Gametype_Custom_IsPerkTweakable(int itemIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  int perkIndex;
   
-  if ((0x1d < param_1 - 0x96U) &&
+  if ((0x1d < itemIndex - 0x96U) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x66f,0,
                                "perkIndex doesn\'t index CUSTOM_PERKS_COUNT\n\t%i not in [0, %i)"),
@@ -2102,7 +2147,7 @@ bool __cdecl UI_Gametype_Custom_IsPerkTweakable(int param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  switch(param_1) {
+  switch(itemIndex) {
   case 2:
   case 3:
   case 4:
@@ -2135,25 +2180,28 @@ void __cdecl UI_Gametype_Custom_ResolveNumKillsConflicts(void)
   char *pcVar2;
   int iVar3;
   int iVar4;
-  int local_18;
-  uint local_8;
+  int currentKillNum;
+  int slotToCheck;
+  int firstOtherKillNum;
+  int secondOtherKillNum;
+  int arrayIndex;
   
   Dvar_GetInt("custom_killstreak_edit_slot");
   pcVar2 = va("custom_killstreak_%d_kills");
-  local_18 = Dvar_GetInt(pcVar2);
+  currentKillNum = Dvar_GetInt(pcVar2);
   pcVar2 = va("custom_killstreak_%d_kills");
   iVar3 = Dvar_GetInt(pcVar2);
   pcVar2 = va("custom_killstreak_%d_kills");
   iVar4 = Dvar_GetInt(pcVar2);
-  local_8 = 0;
-  while ((local_18 == iVar3 || (local_18 == iVar4))) {
-    piVar1 = CustomKillstreakNums + local_8;
-    local_8 = (local_8 + 1) % 0x16;
-    local_18 = *piVar1;
+  arrayIndex = 0;
+  while ((currentKillNum == iVar3 || (currentKillNum == iVar4))) {
+    piVar1 = CustomKillstreakNums + arrayIndex;
+    arrayIndex = (arrayIndex + 1U) % 0x16;
+    currentKillNum = *piVar1;
   }
   Dvar_GetInt("custom_killstreak_edit_slot");
   pcVar2 = va("custom_killstreak_%d_kills");
-  Dvar_SetIntByName(pcVar2,local_18);
+  Dvar_SetIntByName(pcVar2,currentKillNum);
   return;
 }
 
@@ -2163,7 +2211,7 @@ void __cdecl UI_Gametype_Custom_ResolveNumKillsConflicts(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int param_1,ulong64 param_2)
+void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int controllerIndex,ulong64 param_2)
 
 {
   code *pcVar1;
@@ -2172,12 +2220,12 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int param_1,ulong64 par
   uint uVar4;
   ulong64 uVar5;
   long64 lVar6;
-  bdTag **ppbVar7;
+  int *numTags_00;
+  char *toastPopupTitle;
+  bdTag *tags_00;
+  int iVar7;
   char *pcVar8;
-  bdTag *pbVar9;
-  int iVar10;
-  char *pcVar11;
-  int iVar12;
+  int toastPopupDuration;
   char *in_stack_fffffa9c;
   char *local_558;
   int local_554;
@@ -2201,72 +2249,72 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int param_1,ulong64 par
   bdTag *local_508;
   int local_504;
   bdTag *local_500;
-  char local_4fc [260];
+  char backup [260];
   uint local_3f8;
-  char *local_3f4;
-  int local_3f0;
-  ddlState_t local_3ec;
-  int local_3dc;
-  StringTable *local_3d8;
-  bdTag *local_3d4;
-  void *local_3d0;
-  bdTag local_3cc [40];
-  uint local_8;
+  char *result;
+  int index;
+  ddlState_t state;
+  int baseGameType;
+  StringTable *gameTypesTable;
+  int numTags;
+  int metaDataSize;
+  bdTag tags [40];
+  int bitSize;
   
   local_3f8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_3d0 = (void *)0x0;
-  local_3d4 = (bdTag *)0x0;
+  metaDataSize = 0;
+  numTags = 0;
   local_504 = 0x28;
-  local_500 = local_3cc;
+  local_500 = tags;
   while (local_504 = local_504 + -1, -1 < local_504) {
     bdTag::bdTag(local_500);
     local_500 = local_500 + 1;
   }
-  iVar10 = 0x20;
-  pcVar3 = Live_ControllerIndex_GetClientName(param_1);
-  I_strncpyz(gamerTag,pcVar3,iVar10);
+  iVar7 = 0x20;
+  pcVar3 = Live_ControllerIndex_GetClientName(controllerIndex);
+  I_strncpyz(gamerTag,pcVar3,iVar7);
   memset((uchar *)metaData,'\0',0xff);
-  iVar10 = 0x28;
-  pbVar9 = local_3cc;
-  ppbVar7 = &local_3d4;
-  uVar5 = Live_GetXuid(param_1);
-  Live_FileShare_AddTag(4,uVar5,(int *)ppbVar7,pbVar9,iVar10);
-  Live_FileShare_AddTag(3,4,(int *)&local_3d4,local_3cc,0x28);
-  local_3dc = 0;
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_3d8);
-  if ((local_3d8 == (StringTable *)0x0) &&
+  iVar7 = 0x28;
+  tags_00 = tags;
+  numTags_00 = &numTags;
+  uVar5 = Live_GetXuid(controllerIndex);
+  Live_FileShare_AddTag(4,uVar5,numTags_00,tags_00,iVar7);
+  Live_FileShare_AddTag(3,4,&numTags,tags,0x28);
+  baseGameType = 0;
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if ((gameTypesTable == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x6bc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_3d8 != (StringTable *)0x0) {
-    for (local_3f0 = 0; local_3f0 < local_3d8->rowCount; local_3f0 = local_3f0 + 1) {
-      iVar10 = 0;
+  if (gameTypesTable != (StringTable *)0x0) {
+    for (index = 0; index < gameTypesTable->rowCount; index = index + 1) {
+      iVar7 = 0;
       pcVar3 = va("%d");
-      local_3f4 = StringTable_Lookup(local_3d8,4,pcVar3,iVar10);
-      if (((local_3f4 != (char *)0x0) && (*local_3f4 != '\0')) &&
-         (iVar10 = I_stricmp(local_3f4,(ui_gametype->current).string), iVar10 == 0)) {
-        local_3dc = local_3f0;
+      result = StringTable_Lookup(gameTypesTable,4,pcVar3,iVar7);
+      if (((result != (char *)0x0) && (*result != '\0')) &&
+         (iVar7 = I_stricmp(result,(ui_gametype->current).string), iVar7 == 0)) {
+        baseGameType = index;
         break;
       }
     }
-    if ((local_3f0 == local_3d8->rowCount) &&
+    if ((index == gameTypesTable->rowCount) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                  ,0x6cd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_3f0 != local_3d8->rowCount) {
-      Live_FileShare_AddTag(1,(longlong)local_3dc,(int *)&local_3d4,local_3cc,0x28);
+    if (index != gameTypesTable->rowCount) {
+      Live_FileShare_AddTag(1,(longlong)baseGameType,&numTags,tags,0x28);
     }
   }
-  iVar10 = DDL_AssociateBuffer(metaData,0xff,g_fileshareDDL);
-  if ((iVar10 == 0) &&
-     (iVar10 = DDL_FixBufferVersion(metaData,g_fileshareDDL,"ddl_mp/file_share.ddl",local_4fc,0xff),
-     iVar10 == 0)) {
+  iVar7 = DDL_AssociateBuffer(metaData,0xff,g_fileshareDDL);
+  if ((iVar7 == 0) &&
+     (iVar7 = DDL_FixBufferVersion(metaData,g_fileshareDDL,"ddl_mp/file_share.ddl",backup,0xff),
+     iVar7 == 0)) {
     Com_PrintError(0x10,"Could not read file share meta data buffer.\n");
     local_50c = 0x28;
     local_508 = (bdTag *)&stack0xfffffff4;
@@ -2276,58 +2324,58 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int param_1,ulong64 par
     }
   }
   else {
-    local_8 = DDL_GetTotalBufferBitSize(g_fileshareDDL);
-    local_3d0 = (void *)((int)(local_8 + ((int)local_8 >> 0x1f & 7U)) >> 3);
-    uVar4 = local_8 & 0x80000007;
+    bitSize = DDL_GetTotalBufferBitSize(g_fileshareDDL);
+    metaDataSize = (int)(bitSize + (bitSize >> 0x1f & 7U)) >> 3;
+    uVar4 = bitSize & 0x80000007;
     if ((int)uVar4 < 0) {
       uVar4 = (uVar4 - 1 | 0xfffffff8) + 1;
     }
     if (uVar4 != 0) {
-      local_3d0 = (void *)((int)local_3d0 + 1);
+      metaDataSize = metaDataSize + 1;
     }
-    iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,"authorName");
-    if (iVar10 != 0) {
-      pcVar11 = metaData;
-      pcVar3 = Live_ControllerIndex_GetClientName(param_1);
-      iVar10 = DDL_SetString(&local_3ec,pcVar3,pcVar11);
-      if (iVar10 != 0) {
-        iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,"authorXuid");
-        if (iVar10 != 0) {
+    iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,"authorName");
+    if (iVar7 != 0) {
+      pcVar8 = metaData;
+      pcVar3 = Live_ControllerIndex_GetClientName(controllerIndex);
+      iVar7 = DDL_SetString(&state,pcVar3,pcVar8);
+      if (iVar7 != 0) {
+        iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,"authorXuid");
+        if (iVar7 != 0) {
           pcVar3 = metaData;
-          uVar5 = Live_GetXuid(param_1);
-          iVar10 = DDL_SetInt64(&local_3ec,CONCAT44(pcVar3,(int)(uVar5 >> 0x20)),in_stack_fffffa9c);
-          if (iVar10 != 0) {
-            iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,"createTime");
-            if (iVar10 != 0) {
+          uVar5 = Live_GetXuid(controllerIndex);
+          iVar7 = DDL_SetInt64(&state,CONCAT44(pcVar3,(int)(uVar5 >> 0x20)),in_stack_fffffa9c);
+          if (iVar7 != 0) {
+            iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,"createTime");
+            if (iVar7 != 0) {
               lVar6 = _time64((long64 *)0x0);
               local_524 = (uint)lVar6;
-              iVar10 = DDL_SetInt(&local_3ec,local_524,metaData);
-              if (iVar10 != 0) {
-                iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,"name");
-                if (iVar10 != 0) {
-                  pcVar11 = metaData;
+              iVar7 = DDL_SetInt(&state,local_524,metaData);
+              if (iVar7 != 0) {
+                iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,"name");
+                if (iVar7 != 0) {
+                  pcVar8 = metaData;
                   pcVar3 = Dvar_GetString("fsSelectedFileName");
-                  iVar10 = DDL_SetString(&local_3ec,pcVar3,pcVar11);
-                  if (iVar10 != 0) {
-                    iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,"isModifiedName");
-                    if (iVar10 != 0) {
+                  iVar7 = DDL_SetString(&state,pcVar3,pcVar8);
+                  if (iVar7 != 0) {
+                    iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedName");
+                    if (iVar7 != 0) {
                       pcVar3 = metaData;
                       bVar2 = Dvar_GetBool("fsIsSelectedFileNameModified");
-                      iVar10 = DDL_SetInt(&local_3ec,(uint)bVar2,pcVar3);
-                      if (iVar10 != 0) {
-                        iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,"description");
-                        if (iVar10 != 0) {
-                          pcVar11 = metaData;
+                      iVar7 = DDL_SetInt(&state,(uint)bVar2,pcVar3);
+                      if (iVar7 != 0) {
+                        iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,"description");
+                        if (iVar7 != 0) {
+                          pcVar8 = metaData;
                           pcVar3 = Dvar_GetString("fsSelectedFileDescription");
-                          iVar10 = DDL_SetString(&local_3ec,pcVar3,pcVar11);
-                          if (iVar10 != 0) {
-                            iVar10 = DDL_MoveToName(&g_fileShareRootState,&local_3ec,
-                                                    "isModifiedDescription");
-                            if (iVar10 != 0) {
+                          iVar7 = DDL_SetString(&state,pcVar3,pcVar8);
+                          if (iVar7 != 0) {
+                            iVar7 = DDL_MoveToName(&g_fileShareRootState,&state,
+                                                   "isModifiedDescription");
+                            if (iVar7 != 0) {
                               pcVar3 = metaData;
                               bVar2 = Dvar_GetBool("fsIsSelectedFileDescriptionModified");
-                              iVar10 = DDL_SetInt(&local_3ec,(uint)bVar2,pcVar3);
-                              if (iVar10 != 0) {
+                              iVar7 = DDL_SetInt(&state,(uint)bVar2,pcVar3);
+                              if (iVar7 != 0) {
                                 local_558 = gamerTag;
                                 pcVar3 = local_558;
                                 do {
@@ -2336,19 +2384,20 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int param_1,ulong64 par
                                 } while (*local_558 != '\0');
                                 local_558 = local_558 + -0x98a54b8;
                                 LiveStorage_FileShare_WriteSummary
-                                          (param_1,CONCAT44(2,(undefined4)param_2),0x98a54b8,
-                                           local_558,0x98a53b8,local_3d0,(uint)local_3cc,local_3d4,0
-                                           ,SUB41(local_558,0));
+                                          (controllerIndex,CONCAT44(2,(undefined4)param_2),0x98a54b8
+                                           ,local_558,0x98a53b8,(void *)metaDataSize,(uint)tags,
+                                           (bdTag *)numTags,0,SUB41(local_558,0));
                                 LiveCounter_IncrementCounterValueByName
                                           ("global_customgames_created",ZEXT48(local_558) << 0x20);
                                 LiveCounter_IncrementCounterValueByName
                                           ("global_fileshare_shared",ZEXT48(local_558) << 0x20);
-                                iVar12 = 0xa8c;
+                                toastPopupDuration = 0xa8c;
                                 pcVar3 = UI_SafeTranslateString("MENU_SAVED_CAPS");
-                                pcVar8 = "";
-                                pcVar11 = "menu_mp_killstreak_select";
-                                iVar10 = Com_ControllerIndex_GetLocalClientNum(param_1);
-                                UI_OpenToastPopup(iVar10,pcVar11,pcVar8,pcVar3,iVar12);
+                                toastPopupTitle = "";
+                                pcVar8 = "menu_mp_killstreak_select";
+                                iVar7 = Com_ControllerIndex_GetLocalClientNum(controllerIndex);
+                                UI_OpenToastPopup(iVar7,pcVar8,toastPopupTitle,pcVar3,
+                                                  toastPopupDuration);
                                 Z_VirtualFree(s_fileShareBuffer,0);
                                 local_554 = 0x28;
                                 local_550 = (bdTag *)&stack0xfffffff4;
@@ -2437,7 +2486,7 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int param_1,ulong64 par
 
 // 00740A10  UI_Gametype_Custom_UploadToFileShareFailure  (ui_mp/ui_gametype_custom_mp.cpp:1833)
 
-void __cdecl UI_Gametype_Custom_UploadToFileShareFailure(int param_1)
+void __cdecl UI_Gametype_Custom_UploadToFileShareFailure(int controllerIndex)
 
 {
   Z_VirtualFree(s_fileShareBuffer,0);
@@ -2450,27 +2499,28 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareFailure(int param_1)
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl
-UI_Gametype_Custom_UploadToFileShare(int param_1,uint param_2,char *param_3,MemoryFile *param_4)
+UI_Gametype_Custom_UploadToFileShare
+          (int controllerIndex,uint fileSlot,char *fileName,MemoryFile *customGameMode)
 
 {
-  fileShareWriteFileInfo local_38;
+  fileShareWriteFileInfo writeFileInfo;
   
-  MemFile_StartSegment(param_4,-1);
-  local_38.category = 4;
-  s_fileShareBuffer = param_4->buffer;
-  local_38.fileSize = param_4->bufferSize;
-  local_38.location = FILESHARE_LOCATION_USERSTORAGE;
-  local_38.fileSlot = (ushort)param_2;
-  local_38.numTags = 0;
-  local_38.tags = (bdTag *)0x0;
-  local_38.fileName = param_3;
-  local_38.thumbData = (void *)0x0;
-  local_38.thumbDataSize = 0;
-  local_38.dataCallback = (_func___cdecl_uint_void_ptr_uint_uint *)0x0;
-  local_38.successCallback = UI_Gametype_Custom_UploadToFileShareSuccess;
-  local_38.failureCallback = UI_Gametype_Custom_UploadToFileShareFailure;
-  local_38.fileData = s_fileShareBuffer;
-  LiveStorage_FileShare_WriteFile(param_1,&local_38);
+  MemFile_StartSegment(customGameMode,-1);
+  writeFileInfo.category = 4;
+  s_fileShareBuffer = customGameMode->buffer;
+  writeFileInfo.fileSize = customGameMode->bufferSize;
+  writeFileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
+  writeFileInfo.fileSlot = (ushort)fileSlot;
+  writeFileInfo.numTags = 0;
+  writeFileInfo.tags = (bdTag *)0x0;
+  writeFileInfo.fileName = fileName;
+  writeFileInfo.thumbData = (void *)0x0;
+  writeFileInfo.thumbDataSize = 0;
+  writeFileInfo.dataCallback = (_func___cdecl_uint_void_ptr_uint_uint *)0x0;
+  writeFileInfo.successCallback = UI_Gametype_Custom_UploadToFileShareSuccess;
+  writeFileInfo.failureCallback = UI_Gametype_Custom_UploadToFileShareFailure;
+  writeFileInfo.fileData = s_fileShareBuffer;
+  LiveStorage_FileShare_WriteFile(controllerIndex,&writeFileInfo);
   return;
 }
 
@@ -2483,22 +2533,22 @@ UI_Gametype_Custom_UploadToFileShare(int param_1,uint param_2,char *param_3,Memo
 void __cdecl UI_Gametype_UploadToFileShare_f(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  char *pcVar3;
-  MemoryFile *pMVar4;
-  UIGametypeFileHeader local_80fc;
-  MemoryFile local_8034;
+  char *nptr;
+  uint fileSlot;
+  char *fileName;
+  MemoryFile *customGameMode;
+  UIGametypeFileHeader header;
+  MemoryFile memFile;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   UI_Gametype_EndChanges();
-  UI_Gametype_WriteToMemFile(&local_8034,&local_80fc);
-  pMVar4 = &local_8034;
-  pcVar3 = local_80fc.name;
-  pcVar1 = Cmd_Argv(1);
-  uVar2 = atoi(pcVar1);
-  UI_Gametype_Custom_UploadToFileShare(0,uVar2,pcVar3,pMVar4);
+  UI_Gametype_WriteToMemFile(&memFile,&header);
+  customGameMode = &memFile;
+  fileName = header.name;
+  nptr = Cmd_Argv(1);
+  fileSlot = atoi(nptr);
+  UI_Gametype_Custom_UploadToFileShare(0,fileSlot,fileName,customGameMode);
   return;
 }
 
@@ -2509,46 +2559,47 @@ void __cdecl UI_Gametype_UploadToFileShare_f(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Removing unreachable block (ram,0x00740c04) */
 
-void __cdecl UI_Gametype_FileShareDownloadComplete(dwFileShareReadFileTask *param_1)
+void __cdecl UI_Gametype_FileShareDownloadComplete(dwFileShareReadFileTask *task)
 
 {
   bool bVar1;
+  int localClientNum_00;
   int iVar2;
-  int iVar3;
-  MemoryFile local_8034;
+  int localClientNum;
+  MemoryFile memFile;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  MemFile_InitForReading(&local_8034,param_1->fileSize,param_1->buffer,false);
-  bVar1 = UI_Gametype_ReadFromMemFile(&local_8034);
+  MemFile_InitForReading(&memFile,task->fileSize,task->buffer,false);
+  bVar1 = UI_Gametype_ReadFromMemFile(&memFile);
   if (bVar1) {
     Dvar_SetInt(customGameMode,1);
     UI_Gametype_DvarsToCustomGameModeData(&g_customGameModeData);
   }
-  iVar2 = Com_ControllerIndex_GetLocalClientNum(s_fileShareControllerIndex);
-  iVar3 = Dvar_GetInt("ui_custom_gobackonupload");
-  if (iVar3 != 0) {
-    UI_CloseMenu(iVar2,"custom_game_create");
-    UI_CloseMenu(iVar2,"game_mode");
+  localClientNum_00 = Com_ControllerIndex_GetLocalClientNum(s_fileShareControllerIndex);
+  iVar2 = Dvar_GetInt("ui_custom_gobackonupload");
+  if (iVar2 != 0) {
+    UI_CloseMenu(localClientNum_00,"custom_game_create");
+    UI_CloseMenu(localClientNum_00,"game_mode");
   }
-  Z_VirtualFree(param_1->buffer,0);
+  Z_VirtualFree(task->buffer,0);
   return;
 }
 
 
 // 00740C70  UI_Gametype_FileShareDownloadFailed  (ui_mp/ui_gametype_custom_mp.cpp:1913)
 
-void __cdecl UI_Gametype_FileShareDownloadFailed(dwFileShareReadFileTask *param_1)
+void __cdecl UI_Gametype_FileShareDownloadFailed(dwFileShareReadFileTask *task)
 
 {
-  int iVar1;
-  char *pcVar2;
+  int localClientNum;
+  char *menuName;
   
   Com_PrintWarning(0xe,"downloadCustomGametype: Failed to download from file share.\n");
-  Z_VirtualFree(param_1->buffer,0);
-  pcVar2 = "menu_fileshare_error";
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(s_fileShareControllerIndex);
-  UI_OpenMenu(iVar1,pcVar2);
+  Z_VirtualFree(task->buffer,0);
+  menuName = "menu_fileshare_error";
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(s_fileShareControllerIndex);
+  UI_OpenMenu(localClientNum,menuName);
   return;
 }
 
@@ -2564,9 +2615,11 @@ void __cdecl UI_Gametype_DownloadFromFileShare_f(void)
   char *pcVar2;
   TaskRecord *pTVar3;
   long64 lVar4;
-  undefined4 local_3c;
+  TaskRecord *task;
+  int fileSize;
+  undefined4 fileId;
   undefined4 local_38;
-  fileShareReadFileInfo local_34;
+  fileShareReadFileInfo fileInfo;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
@@ -2576,20 +2629,20 @@ void __cdecl UI_Gametype_DownloadFromFileShare_f(void)
     pcVar2 = Cmd_Argv(1);
     lVar4 = I_atoi64(pcVar2);
     pcVar2 = Cmd_Argv(2);
-    local_34.fileSize = atoi(pcVar2);
-    local_3c = (undefined4)lVar4;
-    local_34.fileID._0_4_ = local_3c;
+    fileInfo.fileSize = atoi(pcVar2);
+    fileId = (undefined4)lVar4;
+    fileInfo.fileID._0_4_ = fileId;
     local_38 = (undefined4)((ulonglong)lVar4 >> 0x20);
-    local_34.fileID._4_4_ = local_38;
-    local_34.location = FILESHARE_LOCATION_USERSTORAGE;
-    local_34.buffer = Z_VirtualAlloc(0x2000,"custom_gametype",0);
-    local_34.bufferSize = 0x2000;
-    local_34.isStreamed = false;
-    local_34.successCallback = UI_Gametype_FileShareDownloadComplete;
-    local_34.failureCallback = UI_Gametype_FileShareDownloadFailed;
+    fileInfo.fileID._4_4_ = local_38;
+    fileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
+    fileInfo.buffer = Z_VirtualAlloc(0x2000,"custom_gametype",0);
+    fileInfo.bufferSize = 0x2000;
+    fileInfo.isStreamed = false;
+    fileInfo.successCallback = UI_Gametype_FileShareDownloadComplete;
+    fileInfo.failureCallback = UI_Gametype_FileShareDownloadFailed;
     s_fileShareControllerIndex = 0;
-    local_34.cacheBuffer = local_34.buffer;
-    pTVar3 = LiveStorage_FileShare_ReadFile(0,&local_34);
+    fileInfo.cacheBuffer = fileInfo.buffer;
+    pTVar3 = LiveStorage_FileShare_ReadFile(0,&fileInfo);
     if (pTVar3 == (TaskRecord *)0x0) {
       Com_Printf(0xe,
                  "downloadCustomGametype: Task not started. Confirm that the game was found in the cache.\n"
@@ -2609,13 +2662,16 @@ void __cdecl SV_GameType_DownloadFromFileshare_f(void)
 {
   int iVar1;
   fileSharePrivateData *pfVar2;
-  char *pcVar3;
-  TaskRecord *pTVar4;
-  int local_50;
-  uint local_40;
-  undefined4 local_3c;
+  char *s0;
+  TaskRecord *pTVar3;
+  int i;
+  char *gameName;
+  fileSharePrivateData *fileShareData;
+  TaskRecord *task;
+  int fileSize;
+  undefined4 fileId;
   undefined4 local_38;
-  fileShareReadFileInfo local_34;
+  fileShareReadFileInfo fileInfo;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
@@ -2627,35 +2683,35 @@ void __cdecl SV_GameType_DownloadFromFileshare_f(void)
       Com_PrintWarning(0xf,"call listcustomgametypes first\n");
     }
     else {
-      pcVar3 = Cmd_Argv(1);
-      local_3c = 0;
+      s0 = Cmd_Argv(1);
+      fileId = 0;
       local_38 = 0;
-      local_40 = 0;
-      for (local_50 = 0; local_50 < pfVar2->descriptorCount; local_50 = local_50 + 1) {
-        iVar1 = I_stricmp(pcVar3,pfVar2->descriptors[local_50].m_fileName);
+      fileSize = 0;
+      for (i = 0; i < pfVar2->descriptorCount; i = i + 1) {
+        iVar1 = I_stricmp(s0,pfVar2->descriptors[i].m_fileName);
         if (iVar1 == 0) {
-          local_3c = (undefined4)pfVar2->descriptors[local_50].m_fileID;
-          local_38 = *(undefined4 *)((int)&pfVar2->descriptors[local_50].m_fileID + 4);
-          local_40 = pfVar2->descriptors[local_50].m_fileSize;
+          fileId = (undefined4)pfVar2->descriptors[i].m_fileID;
+          local_38 = *(undefined4 *)((int)&pfVar2->descriptors[i].m_fileID + 4);
+          fileSize = pfVar2->descriptors[i].m_fileSize;
           break;
         }
       }
-      if (local_40 == 0) {
+      if (fileSize == 0) {
         Com_PrintError(0xf,"Couldn\'t find any game called %s\n");
       }
       else {
-        local_34.fileID._0_4_ = local_3c;
-        local_34.fileID._4_4_ = local_38;
-        local_34.fileSize = local_40;
-        local_34.location = FILESHARE_LOCATION_USERSTORAGE;
-        local_34.buffer = Z_VirtualAlloc(0x2000,"custom_gametype",0);
-        local_34.bufferSize = 0x2000;
-        local_34.isStreamed = false;
-        local_34.successCallback = UI_Gametype_FileShareDownloadComplete;
-        local_34.failureCallback = UI_Gametype_FileShareDownloadFailed;
-        local_34.cacheBuffer = local_34.buffer;
-        pTVar4 = LiveStorage_FileShare_ReadFile(0,&local_34);
-        if (pTVar4 == (TaskRecord *)0x0) {
+        fileInfo.fileID._0_4_ = fileId;
+        fileInfo.fileID._4_4_ = local_38;
+        fileInfo.fileSize = fileSize;
+        fileInfo.location = FILESHARE_LOCATION_USERSTORAGE;
+        fileInfo.buffer = Z_VirtualAlloc(0x2000,"custom_gametype",0);
+        fileInfo.bufferSize = 0x2000;
+        fileInfo.isStreamed = false;
+        fileInfo.successCallback = UI_Gametype_FileShareDownloadComplete;
+        fileInfo.failureCallback = UI_Gametype_FileShareDownloadFailed;
+        fileInfo.cacheBuffer = fileInfo.buffer;
+        pTVar3 = LiveStorage_FileShare_ReadFile(0,&fileInfo);
+        if (pTVar3 == (TaskRecord *)0x0) {
           Com_Printf(0xf,
                      "downloadCustomGametype: Task not started. Confirm that the game was found in the cache.\n"
                     );
@@ -2689,7 +2745,8 @@ void __cdecl UI_Gametype_CopyCustomClass_f(void)
   int iVar5;
   _CustomClassData *p_Var6;
   _CustomClassData *p_Var7;
-  int local_8;
+  int classIndexToCopy;
+  int classIndexToReplace;
   
   iVar3 = Cmd_Argc();
   if (iVar3 < 3) {
@@ -2701,7 +2758,7 @@ void __cdecl UI_Gametype_CopyCustomClass_f(void)
     pcVar4 = Cmd_Argv(1);
     iVar3 = atoi(pcVar4);
     pcVar4 = Cmd_Argv(2);
-    local_8 = atoi(pcVar4);
+    classIndexToReplace = atoi(pcVar4);
     if (iVar3 < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x800,0,"%s");
@@ -2711,7 +2768,7 @@ void __cdecl UI_Gametype_CopyCustomClass_f(void)
         return;
       }
     }
-    if (local_8 < 0) {
+    if (classIndexToReplace < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x801,0,"%s");
       if (!bVar2) {
@@ -2729,7 +2786,7 @@ void __cdecl UI_Gametype_CopyCustomClass_f(void)
         return;
       }
     }
-    if (9 < local_8) {
+    if (9 < classIndexToReplace) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp"
                                ,0x803,0,"%s");
       if (!bVar2) {
@@ -2738,23 +2795,23 @@ void __cdecl UI_Gametype_CopyCustomClass_f(void)
         return;
       }
     }
-    if (iVar3 <= local_8) {
-      local_8 = local_8 + 1;
+    if (iVar3 <= classIndexToReplace) {
+      classIndexToReplace = classIndexToReplace + 1;
     }
     p_Var6 = g_customGameModeClasses + iVar3;
-    p_Var7 = g_customGameModeClasses + local_8;
+    p_Var7 = g_customGameModeClasses + classIndexToReplace;
     for (iVar5 = 0x14; iVar5 != 0; iVar5 = iVar5 + -1) {
       p_Var7->isActive = p_Var6->isActive;
       p_Var6 = (_CustomClassData *)&p_Var6->primary;
       p_Var7 = (_CustomClassData *)&p_Var7->primary;
     }
-    *(undefined4 *)g_customGameModeClassDescriptions[local_8].name =
+    *(undefined4 *)g_customGameModeClassDescriptions[classIndexToReplace].name =
          *(undefined4 *)g_customGameModeClassDescriptions[iVar3].name;
-    *(undefined4 *)(g_customGameModeClassDescriptions[local_8].name + 4) =
+    *(undefined4 *)(g_customGameModeClassDescriptions[classIndexToReplace].name + 4) =
          *(undefined4 *)(g_customGameModeClassDescriptions[iVar3].name + 4);
-    *(undefined4 *)(g_customGameModeClassDescriptions[local_8].name + 8) =
+    *(undefined4 *)(g_customGameModeClassDescriptions[classIndexToReplace].name + 8) =
          *(undefined4 *)(g_customGameModeClassDescriptions[iVar3].name + 8);
-    *(undefined4 *)(g_customGameModeClassDescriptions[local_8].name + 0xc) =
+    *(undefined4 *)(g_customGameModeClassDescriptions[classIndexToReplace].name + 0xc) =
          *(undefined4 *)(g_customGameModeClassDescriptions[iVar3].name + 0xc);
     UI_Gametype_MarkDirty();
   }
@@ -2763,6 +2820,8 @@ void __cdecl UI_Gametype_CopyCustomClass_f(void)
 
 
 // 007410B0  UI_Gametype_Custom_Init  (ui_mp/ui_gametype_custom_mp.cpp:2067)
+
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
 void __cdecl UI_Gametype_Custom_Init(void)
 
@@ -2869,30 +2928,35 @@ void __cdecl UI_Gametype_CustomGameModeDataToDvars(void)
 
 // 007414B0  UI_Gametype_DvarsToCustomGameModeData  (ui_mp/ui_gametype_custom_mp.cpp:2134)
 
-void __cdecl UI_Gametype_DvarsToCustomGameModeData(CustomGameModeData *param_1)
+void __cdecl UI_Gametype_DvarsToCustomGameModeData(CustomGameModeData *customGameModeData)
 
 {
-  param_1->perk_extraBreath = (float)(perk_extraBreath->current).integer;
-  param_1->perk_bulletPenetrationMultiplier =
+  customGameModeData->perk_extraBreath = (float)(perk_extraBreath->current).integer;
+  customGameModeData->perk_bulletPenetrationMultiplier =
        (float)(perk_bulletPenetrationMultiplier->current).integer;
-  param_1->perk_weapSpreadMultiplier = (float)(perk_weapSpreadMultiplier->current).integer;
-  param_1->perk_weapReloadMultiplier = (float)(perk_weapReloadMultiplier->current).integer;
-  param_1->perk_weapMeleeMultiplier = (float)(perk_weapMeleeMultiplier->current).integer;
-  param_1->perk_weapSwitchMultiplier = (float)(perk_weapSwitchMultiplier->current).integer;
-  param_1->perk_weapAdsMultiplier = (float)(perk_weapAdsMultiplier->current).integer;
-  param_1->perk_sprintMultiplier = (float)(perk_sprintMultiplier->current).integer;
-  param_1->perk_sprintRecoveryMultiplier = (float)(perk_sprintRecoveryMultiplier->current).integer;
-  param_1->player_lastStandBleedoutTime = (float)(player_lastStandBleedoutTime->current).integer;
-  param_1->perk_speedMultiplier = (float)(perk_speedMultiplier->current).integer;
-  param_1->perk_flakJacket = (float)(perk_flakJacket->current).integer;
-  param_1->perk_fireproof = (float)(perk_fireproof->current).integer;
-  param_1->perk_armorPiercing = (float)(perk_armorPiercing->current).integer;
-  param_1->player_lastStandBleedoutTimeNoRevive =
+  customGameModeData->perk_weapSpreadMultiplier =
+       (float)(perk_weapSpreadMultiplier->current).integer;
+  customGameModeData->perk_weapReloadMultiplier =
+       (float)(perk_weapReloadMultiplier->current).integer;
+  customGameModeData->perk_weapMeleeMultiplier = (float)(perk_weapMeleeMultiplier->current).integer;
+  customGameModeData->perk_weapSwitchMultiplier =
+       (float)(perk_weapSwitchMultiplier->current).integer;
+  customGameModeData->perk_weapAdsMultiplier = (float)(perk_weapAdsMultiplier->current).integer;
+  customGameModeData->perk_sprintMultiplier = (float)(perk_sprintMultiplier->current).integer;
+  customGameModeData->perk_sprintRecoveryMultiplier =
+       (float)(perk_sprintRecoveryMultiplier->current).integer;
+  customGameModeData->player_lastStandBleedoutTime =
+       (float)(player_lastStandBleedoutTime->current).integer;
+  customGameModeData->perk_speedMultiplier = (float)(perk_speedMultiplier->current).integer;
+  customGameModeData->perk_flakJacket = (float)(perk_flakJacket->current).integer;
+  customGameModeData->perk_fireproof = (float)(perk_fireproof->current).integer;
+  customGameModeData->perk_armorPiercing = (float)(perk_armorPiercing->current).integer;
+  customGameModeData->player_lastStandBleedoutTimeNoRevive =
        (float)(player_lastStandBleedoutTimeNoRevive->current).integer;
-  param_1->revive_time_taken = (float)(revive_time_taken->current).integer;
-  param_1->perk_disarmExplosiveTime = (float)(perk_disarmExplosiveTime->current).integer;
-  param_1->perk_damageKickReduction = (float)(perk_damageKickReduction->current).integer;
-  param_1->perk_killstreakReduction = (perk_killstreakReduction->current).integer;
+  customGameModeData->revive_time_taken = (float)(revive_time_taken->current).integer;
+  customGameModeData->perk_disarmExplosiveTime = (float)(perk_disarmExplosiveTime->current).integer;
+  customGameModeData->perk_damageKickReduction = (float)(perk_damageKickReduction->current).integer;
+  customGameModeData->perk_killstreakReduction = (perk_killstreakReduction->current).integer;
   return;
 }
 

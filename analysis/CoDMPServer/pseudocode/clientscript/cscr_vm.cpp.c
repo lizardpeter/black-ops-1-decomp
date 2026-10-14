@@ -2,37 +2,39 @@
 
 // 008DBBF0  Scr_GetLocalVar  (clientscript/scr_vm.h:174)
 
-uint __cdecl Scr_GetLocalVar(scriptInstance_t param_1,char *param_2)
+uint __cdecl Scr_GetLocalVar(scriptInstance_t inst,char *pos)
 
 {
   undefined3 in_stack_00000005;
   
-  return gScrVmPub[_param_1].localVars[-(uint)(byte)*param_2];
+  return gScrVmPub[_inst].localVars[-(uint)(byte)*pos];
 }
 
 
 // 00B5C610  Scr_ReadInt  (clientscript/scr_vm.h:193)
 
-int __cdecl Scr_ReadInt(char **param_1)
+int __cdecl Scr_ReadInt(char **cmdBuf)
 
 {
   int iVar1;
+  uint value;
   
-  iVar1 = *(int *)*param_1;
-  *param_1 = *param_1 + 4;
+  iVar1 = *(int *)*cmdBuf;
+  *cmdBuf = *cmdBuf + 4;
   return iVar1;
 }
 
 
 // 008DBC20  Scr_ReadIntArray  (clientscript/scr_vm.h:219)
 
-int * __cdecl Scr_ReadIntArray(char **param_1,int param_2)
+int * __cdecl Scr_ReadIntArray(char **cmdBuf,int count_2)
 
 {
   int *piVar1;
+  void *result_2;
   
-  piVar1 = (int *)*param_1;
-  *param_1 = *param_1 + param_2 * 4;
+  piVar1 = (int *)*cmdBuf;
+  *cmdBuf = *cmdBuf + count_2 * 4;
   return piVar1;
 }
 
@@ -49,36 +51,37 @@ void __cdecl _dynamic_initializer_for__TRACKINST_gScrVmDebugPub__(void)
 
 // 008DBC50  Scr_ReadUnsignedShort  (clientscript/scr_vm.h:232)
 
-ushort __cdecl Scr_ReadUnsignedShort(char **param_1)
+ushort __cdecl Scr_ReadUnsignedShort(char **pos)
 
 {
   ushort uVar1;
   
-  uVar1 = *(ushort *)*param_1;
-  *param_1 = *param_1 + 2;
+  uVar1 = *(ushort *)*pos;
+  *pos = *pos + 2;
   return uVar1;
 }
 
 
 // 008DBC80  Scr_ReadCodePos  (clientscript/scr_vm.h:256)
 
-char * __cdecl Scr_ReadCodePos(scriptInstance_t param_1,char **param_2)
+char * __cdecl Scr_ReadCodePos(scriptInstance_t inst,char **pos)
 
 {
   char *pcVar1;
+  int codeOffset;
   
-  pcVar1 = *(char **)*param_2;
-  *param_2 = *param_2 + 4;
+  pcVar1 = *(char **)*pos;
+  *pos = *pos + 4;
   return pcVar1;
 }
 
 
 // 008DBBC0  RemoveRefToValue  (clientscript/scr_variable.h:463)
 
-void __cdecl RemoveRefToValue(scriptInstance_t param_1,VariableValue *param_2)
+void __cdecl RemoveRefToValue(scriptInstance_t inst,VariableValue *value)
 
 {
-  RemoveRefToValue(param_1,param_2->type,param_2->u);
+  RemoveRefToValue(inst,value->type,value->u);
   return;
 }
 
@@ -97,54 +100,54 @@ void __cdecl TRACK_scr_vm(void)
 
 // 008D1190  Scr_ClearErrorMessage  (clientscript/cscr_vm.cpp:483)
 
-void __cdecl Scr_ClearErrorMessage(scriptInstance_t param_1)
+void __cdecl Scr_ClearErrorMessage(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrVarPub[_param_1].error_message = (char *)0x0;
-  gScrVmGlob[_param_1].dialog_error_message = (char *)0x0;
-  gScrVarPub[_param_1].error_index = 0;
+  gScrVarPub[_inst].error_message = (char *)0x0;
+  gScrVmGlob[_inst].dialog_error_message = (char *)0x0;
+  gScrVarPub[_inst].error_index = 0;
   return;
 }
 
 
 // 008D12D0  Scr_VM_Init  (clientscript/cscr_vm.cpp:522)
 
-void __cdecl Scr_VM_Init(scriptInstance_t param_1)
+void __cdecl Scr_VM_Init(scriptInstance_t inst)
 
 {
   uint uVar1;
   undefined3 in_stack_00000005;
   
-  gScrVarPub[_param_1].varUsagePos = "<script init variable>";
-  gScrVmPub[_param_1].maxstack = (VariableValue *)(_param_1 * 0x4328 + 0xa05efa8);
-  gScrVmPub[_param_1].top = (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0);
-  gScrVmPub[_param_1].function_count = 0;
-  gScrVmPub[_param_1].function_frame = (function_frame_t *)(_param_1 * 0x4328 + 0xa05acb0);
-  gScrVmPub[_param_1].localVars = (uint *)(_param_1 * 0x2028 + 0xa0667e0);
-  gScrVarPub[_param_1].evaluate = false;
-  gScrVmPub[_param_1].debugCode = false;
-  Scr_ClearErrorMessage(param_1);
-  gScrVmPub[_param_1].terminal_error = false;
-  gScrVmPub[_param_1].outparamcount = 0;
-  gScrVmPub[_param_1].inparamcount = 0;
-  uVar1 = AllocValue(param_1);
-  gScrVarPub[_param_1].tempVariable = uVar1;
-  gScrVarPub[_param_1].timeArrayId = 0;
-  gScrVarPub[_param_1].pauseArrayId = 0;
-  gScrVarPub[_param_1].levelId = 0;
-  gScrVarPub[_param_1].gameId = 0;
-  gScrVarPub[_param_1].animId = 0;
-  gScrVarPub[_param_1].freeEntList = 0;
-  gScrVmPub[_param_1].stack[0].type = 7;
-  gScrVmGlob[_param_1].loading = 0;
-  gScrVmGlob[_param_1].recordPlace = false;
-  gScrVmGlob[_param_1].lastFileName = (char *)0x0;
-  gScrVmGlob[_param_1].lastLine = 0;
-  gScrVarPub[_param_1].ext_threadcount = 0;
-  gScrVarPub[_param_1].numScriptThreads = 0;
-  gScrVarPub[_param_1].varUsagePos = (char *)0x0;
+  gScrVarPub[_inst].varUsagePos = "<script init variable>";
+  gScrVmPub[_inst].maxstack = (VariableValue *)(_inst * 0x4328 + 0xa05efa8);
+  gScrVmPub[_inst].top = (VariableValue *)(_inst * 0x4328 + 0xa05afb0);
+  gScrVmPub[_inst].function_count = 0;
+  gScrVmPub[_inst].function_frame = (function_frame_t *)(_inst * 0x4328 + 0xa05acb0);
+  gScrVmPub[_inst].localVars = (uint *)(_inst * 0x2028 + 0xa0667e0);
+  gScrVarPub[_inst].evaluate = false;
+  gScrVmPub[_inst].debugCode = false;
+  Scr_ClearErrorMessage(inst);
+  gScrVmPub[_inst].terminal_error = false;
+  gScrVmPub[_inst].outparamcount = 0;
+  gScrVmPub[_inst].inparamcount = 0;
+  uVar1 = AllocValue(inst);
+  gScrVarPub[_inst].tempVariable = uVar1;
+  gScrVarPub[_inst].timeArrayId = 0;
+  gScrVarPub[_inst].pauseArrayId = 0;
+  gScrVarPub[_inst].levelId = 0;
+  gScrVarPub[_inst].gameId = 0;
+  gScrVarPub[_inst].animId = 0;
+  gScrVarPub[_inst].freeEntList = 0;
+  gScrVmPub[_inst].stack[0].type = 7;
+  gScrVmGlob[_inst].loading = 0;
+  gScrVmGlob[_inst].recordPlace = false;
+  gScrVmGlob[_inst].lastFileName = (char *)0x0;
+  gScrVmGlob[_inst].lastLine = 0;
+  gScrVarPub[_inst].ext_threadcount = 0;
+  gScrVarPub[_inst].numScriptThreads = 0;
+  gScrVarPub[_inst].varUsagePos = (char *)0x0;
   logScriptTimes =
        _Dvar_RegisterBool("logScriptTimes",false,0,"Log times for every print called from script");
   scrVmEnableScripts = _Dvar_RegisterBool("scrVmEnableScripts",true,0,"Enables script execution");
@@ -153,7 +156,7 @@ void __cdecl Scr_VM_Init(scriptInstance_t param_1)
   scrShowStrUsage =
        _Dvar_RegisterBool("scrShowStrUsage",false,0,"Displays script string usage at compile time.")
   ;
-  if (_param_1 == 0) {
+  if (_inst == 0) {
     sv_clientside =
          _Dvar_RegisterBool("sv_clientside",false,0,
                             "Used to toggle systems in script on and off on the server.");
@@ -167,14 +170,14 @@ void __cdecl Scr_VM_Init(scriptInstance_t param_1)
 
 // 008D1640  VM_Shutdown  (clientscript/cscr_vm.cpp:607)
 
-void __cdecl VM_Shutdown(scriptInstance_t param_1)
+void __cdecl VM_Shutdown(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrVarPub[_param_1].tempVariable != 0) {
-    FreeValue(param_1,gScrVarPub[_param_1].tempVariable);
-    gScrVarPub[_param_1].tempVariable = 0;
+  if (gScrVarPub[_inst].tempVariable != 0) {
+    FreeValue(inst,gScrVarPub[_inst].tempVariable);
+    gScrVarPub[_inst].tempVariable = 0;
   }
   return;
 }
@@ -182,14 +185,14 @@ void __cdecl VM_Shutdown(scriptInstance_t param_1)
 
 // 008D11D0  Scr_Init  (clientscript/cscr_vm.cpp:617)
 
-void __cdecl Scr_Init(scriptInstance_t param_1)
+void __cdecl Scr_Init(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (gScrVarPub[_param_1].bInited != false) {
+  if (gScrVarPub[_inst].bInited != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x26a,0,
                              "%s");
     if (!bVar2) {
@@ -198,31 +201,32 @@ void __cdecl Scr_Init(scriptInstance_t param_1)
       return;
     }
   }
-  Scr_InitClassMap(param_1);
-  Scr_VM_Init(param_1);
-  gScrCompilePub[_param_1].script_loading = false;
-  gScrAnimPub[_param_1].animtree_loading = false;
-  gScrCompilePub[_param_1].scriptsPos = 0;
-  gScrCompilePub[_param_1].scriptsCount = 0;
-  gScrCompilePub[_param_1].loadedscripts = 0;
-  gScrAnimPub[_param_1].animtrees = 0;
-  gScrCompilePub[_param_1].builtinMeth = 0;
-  gScrCompilePub[_param_1].builtinFunc = 0;
-  gScrVarPub[_param_1].bInited = true;
+  Scr_InitClassMap(inst);
+  Scr_VM_Init(inst);
+  gScrCompilePub[_inst].script_loading = false;
+  gScrAnimPub[_inst].animtree_loading = false;
+  gScrCompilePub[_inst].scriptsPos = 0;
+  gScrCompilePub[_inst].scriptsCount = 0;
+  gScrCompilePub[_inst].loadedscripts = 0;
+  gScrAnimPub[_inst].animtrees = 0;
+  gScrCompilePub[_inst].builtinMeth = 0;
+  gScrCompilePub[_inst].builtinFunc = 0;
+  gScrVarPub[_inst].bInited = true;
   return;
 }
 
 
 // 008D1580  Scr_Settings  (clientscript/cscr_vm.cpp:638)
 
-void __cdecl Scr_Settings(int param_1,int param_2,int param_3,scriptInstance_t param_4)
+void __cdecl
+Scr_Settings(int developer,int developer_script,int abort_on_error,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000011;
   
-  if ((param_3 != 0) && (param_1 == 0)) {
+  if ((abort_on_error != 0) && (developer == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x27f,0,
                              "%s");
     if (!bVar2) {
@@ -231,24 +235,24 @@ void __cdecl Scr_Settings(int param_1,int param_2,int param_3,scriptInstance_t p
       return;
     }
   }
-  *(bool *)(_param_4 * 0x74 + 0xa05ab86) = param_1 != 0;
-  *(bool *)(_param_4 * 0x74 + 0xa05ab87) = param_2 != 0;
-  *(bool *)(_param_4 * 0x4328 + 0xa05ac9d) = param_3 != 0;
+  *(bool *)(_inst * 0x74 + 0xa05ab86) = developer != 0;
+  *(bool *)(_inst * 0x74 + 0xa05ab87) = developer_script != 0;
+  *(bool *)(_inst * 0x4328 + 0xa05ac9d) = abort_on_error != 0;
   return;
 }
 
 
 // 008D1600  Scr_Shutdown  (clientscript/cscr_vm.cpp:648)
 
-void __cdecl Scr_Shutdown(scriptInstance_t param_1)
+void __cdecl Scr_Shutdown(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrVarPub[_param_1].bInited != false) {
-    gScrVarPub[_param_1].bInited = false;
-    VM_Shutdown(param_1);
-    Scr_ShutdownVariables(param_1);
+  if (gScrVarPub[_inst].bInited != false) {
+    gScrVarPub[_inst].bInited = false;
+    VM_Shutdown(inst);
+    Scr_ShutdownVariables(inst);
   }
   return;
 }
@@ -256,39 +260,38 @@ void __cdecl Scr_Shutdown(scriptInstance_t param_1)
 
 // 008D1680  Scr_SetLoading  (clientscript/cscr_vm.cpp:659)
 
-void __cdecl Scr_SetLoading(int param_1,scriptInstance_t param_2)
+void __cdecl Scr_SetLoading(int bLoading,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  gScrVmGlob[_param_2].loading = param_1;
+  gScrVmGlob[_inst].loading = bLoading;
   return;
 }
 
 
 // 008DD700  Scr_ErrorInternal  (clientscript/cscr_vm.cpp:665)
 
-void __cdecl Scr_ErrorInternal(scriptInstance_t param_1)
+void __cdecl Scr_ErrorInternal(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if ((gScrVarPub[_param_1].error_message == (char *)0x0) &&
+  if ((gScrVarPub[_inst].error_message == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x29a,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((gScrVarPub[_param_1].evaluate == false) && (gScrCompilePub[_param_1].script_loading == false)
-     ) {
-    if ((gScrVmPub[_param_1].function_count != 0) || (gScrVmPub[_param_1].debugCode != false)) {
+  if ((gScrVarPub[_inst].evaluate == false) && (gScrCompilePub[_inst].script_loading == false)) {
+    if ((gScrVmPub[_inst].function_count != 0) || (gScrVmPub[_inst].debugCode != false)) {
       Com_PrintMessage(6,"throwing script exception: ",0);
-      Com_PrintMessage(6,gScrVarPub[_param_1].error_message,0);
+      Com_PrintMessage(6,gScrVarPub[_inst].error_message,0);
       Com_PrintMessage(6,"\n",0);
-      if ((0x20 < (uint)g_script_error_level[_param_1]) &&
+      if ((0x20 < (uint)g_script_error_level[_inst]) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x2bf,0,
                                    "g_script_error_level[inst] doesn\'t index ARRAY_COUNT( g_script_error[inst] )\n\t%i not in [0, %i)"
@@ -300,7 +303,7 @@ void __cdecl Scr_ErrorInternal(scriptInstance_t param_1)
       _longjmp();
     }
   }
-  else if (gScrVmPub[_param_1].terminal_error == false) {
+  else if (gScrVmPub[_inst].terminal_error == false) {
     return;
   }
   Sys_Error("%s");
@@ -310,27 +313,26 @@ void __cdecl Scr_ErrorInternal(scriptInstance_t param_1)
 
 // 008D16A0  Scr_GetNumScriptThreads  (clientscript/cscr_vm.cpp:714)
 
-uint __cdecl Scr_GetNumScriptThreads(scriptInstance_t param_1)
+uint __cdecl Scr_GetNumScriptThreads(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  return gScrVarPub[_param_1].numScriptThreads;
+  return gScrVarPub[_inst].numScriptThreads;
 }
 
 
 // 008D16C0  Scr_ClearOutParams  (clientscript/cscr_vm.cpp:724)
 
-void __cdecl Scr_ClearOutParams(scriptInstance_t param_1)
+void __cdecl Scr_ClearOutParams(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  while (gScrVmPub[_param_1].outparamcount != 0) {
-    RemoveRefToValue(param_1,(&(gScrVmPub[_param_1].top)->u)[1].intValue,
-                     (gScrVmPub[_param_1].top)->u);
-    gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
-    gScrVmPub[_param_1].outparamcount = gScrVmPub[_param_1].outparamcount - 1;
+  while (gScrVmPub[_inst].outparamcount != 0) {
+    RemoveRefToValue(inst,(&(gScrVmPub[_inst].top)->u)[1].intValue,(gScrVmPub[_inst].top)->u);
+    gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+    gScrVmPub[_inst].outparamcount = gScrVmPub[_inst].outparamcount - 1;
   }
   return;
 }
@@ -338,51 +340,52 @@ void __cdecl Scr_ClearOutParams(scriptInstance_t param_1)
 
 // 008DBCB0  GetDummyObject  (clientscript/cscr_vm.cpp:735)
 
-uint __cdecl GetDummyObject(scriptInstance_t param_1)
+uint __cdecl GetDummyObject(scriptInstance_t inst)
 
 {
   uint uVar1;
   undefined3 in_stack_00000005;
   
-  ClearVariableValue(param_1,gScrVarPub[_param_1].tempVariable);
-  uVar1 = GetObject(param_1,gScrVarPub[_param_1].tempVariable);
+  ClearVariableValue(inst,gScrVarPub[_inst].tempVariable);
+  uVar1 = GetObject(inst,gScrVarPub[_inst].tempVariable);
   return uVar1;
 }
 
 
 // 008DBCF0  GetDummyFieldValue  (clientscript/cscr_vm.cpp:742)
 
-uint __cdecl GetDummyFieldValue(scriptInstance_t param_1)
+uint __cdecl GetDummyFieldValue(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  ClearVariableValue(param_1,gScrVarPub[_param_1].tempVariable);
-  return gScrVarPub[_param_1].tempVariable;
+  ClearVariableValue(inst,gScrVarPub[_inst].tempVariable);
+  return gScrVarPub[_inst].tempVariable;
 }
 
 
 // 008DBD20  VM_PrintJumpHistory  (clientscript/cscr_vm.cpp:750)
 
-void __cdecl VM_PrintJumpHistory(scriptInstance_t param_1)
+void __cdecl VM_PrintJumpHistory(scriptInstance_t inst)
 
 {
-  char *pcVar1;
+  char *codePos;
   undefined3 in_stack_00000005;
-  int local_8;
+  char *pos;
+  int index;
   
   Com_Printf(0x18,"********************************\n");
   Com_Printf(0x18,"Recent loop history (from most recent) :\n");
-  local_8 = gScrVmDebugPub[_param_1].jumpbackHistoryIndex;
+  index = gScrVmDebugPub[_inst].jumpbackHistoryIndex;
   do {
-    if (local_8 == 0) {
-      local_8 = 0x80;
+    if (index == 0) {
+      index = 0x80;
     }
-    local_8 = local_8 + -1;
-    pcVar1 = *(char **)(_param_1 * 0x120c + 0xa0642ec + local_8 * 4);
-  } while ((pcVar1 != (char *)0x0) &&
-          (Scr_PrintPrevCodePos(param_1,0x18,pcVar1,0),
-          local_8 != gScrVmDebugPub[_param_1].jumpbackHistoryIndex));
+    index = index + -1;
+    codePos = *(char **)(_inst * 0x120c + 0xa0642ec + index * 4);
+  } while ((codePos != (char *)0x0) &&
+          (Scr_PrintPrevCodePos(inst,0x18,codePos,0),
+          index != gScrVmDebugPub[_inst].jumpbackHistoryIndex));
   Com_Printf(0x18,"********************************\n");
   return;
 }
@@ -392,19 +395,19 @@ void __cdecl VM_PrintJumpHistory(scriptInstance_t param_1)
 
 /* WARNING: Type propagation algorithm not settling */
 
-uint __cdecl VM_Execute(scriptInstance_t param_1)
+uint __cdecl VM_Execute(scriptInstance_t inst)
 
 {
-  float fVar1;
-  function_frame_t *pfVar2;
-  VariableStackBuffer *pVVar3;
-  code *pcVar4;
-  undefined2 uVar5;
-  bool bVar6;
-  ushort uVar7;
-  uint uVar8;
+  function_frame_t *pfVar1;
+  VariableValue *pVVar2;
+  code *pcVar3;
+  char **ppcVar4;
+  bool bVar5;
+  ushort uVar6;
+  uint uVar7;
   int extraout_EAX;
-  VariableUnion *pVVar9;
+  VariableUnion *pVVar8;
+  uint uVar9;
   uint uVar10;
   char *pcVar11;
   int iVar12;
@@ -417,7 +420,7 @@ uint __cdecl VM_Execute(scriptInstance_t param_1)
   scr_entref_t sVar19;
   undefined3 in_stack_00000005;
   VariableUnion *pVVar20;
-  char *pcVar21;
+  char *dialogMessage;
   VariableUnion local_114;
   int local_110;
   VariableUnion local_10c;
@@ -449,1081 +452,1078 @@ uint __cdecl VM_Execute(scriptInstance_t param_1)
   int local_a0;
   VariableUnion local_9c;
   int local_98;
-  uint local_94;
-  uint local_90;
-  undefined4 local_8c;
+  uint outparamcount_2;
+  uint outparamcount;
+  undefined4 entref;
   undefined2 local_88;
-  uint local_84;
-  VariableUnion local_80;
+  uint classnum;
+  VariableUnion stackValue;
   undefined4 local_7c;
-  uint local_78;
-  VariableUnion local_74;
-  VariableUnion local_70;
-  VariableUnion local_6c;
-  uint local_68;
-  uint local_64;
-  uint local_60;
-  uint local_5c;
-  VariableUnion local_58;
-  VariableUnion local_54;
-  VariableUnion local_50;
-  VariableUnion *local_4c;
-  VariableUnion local_48;
-  float local_44;
-  float local_40;
-  uint local_3c;
-  uint local_38;
-  float local_34;
-  VariableUnion local_30;
-  uint local_2c;
-  VariableUnion local_28;
-  int local_24;
-  uint local_20;
-  VariableUnion local_1c;
-  uint local_18;
-  VariableUnion local_14;
+  uint builtinIndex;
+  uint stringValue;
+  char *currentCodePos;
+  char *tempCodePos;
+  uint stackId;
+  uint fieldValueId;
+  int waitTime;
+  int jumpOffset;
+  function_stack_t localFs;
+  uint objectId;
+  uint caseValue;
+  uint fieldName;
+  uint threadId;
+  uint currentCaseValue;
+  uint parentLocalId;
+  uint paramcount;
+  int type;
+  int entnum;
+  uint fieldValueIndex;
+  char *debugpos;
+  uint selfId;
+  VariableUnion tempValue;
   VariableUnion local_10;
-  uint local_c;
-  byte local_5;
+  uint id;
+  uchar removeCount;
   
-  g_script_error_level[_param_1] = g_script_error_level[_param_1] + 1;
-  local_58 = *(VariableUnion *)(gFs + _param_1);
-  local_54 = (VariableUnion)gFs[_param_1].localId;
-  local_50 = (VariableUnion)gFs[_param_1].localVarCount;
-  local_4c = &(gFs[_param_1].top)->u;
-  local_48 = (VariableUnion)gFs[_param_1].startTop;
+  g_script_error_level[_inst] = g_script_error_level[_inst] + 1;
+  localFs.pos = gFs[_inst].pos;
+  localFs.localId = gFs[_inst].localId;
+  localFs.localVarCount = gFs[_inst].localVarCount;
+  localFs.top = gFs[_inst].top;
+  localFs.startTop = gFs[_inst].startTop;
   do {
-    if ((0x20 < (uint)g_script_error_level[_param_1]) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+    if ((0x20 < (uint)g_script_error_level[_inst]) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x365,0,
                                  "g_script_error_level[inst] doesn\'t index ARRAY_COUNT( g_script_error[inst] )\n\t%i not in [0, %i)"
-                                ), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+                                ), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
     __setjmp3();
     if (extraout_EAX == 0) {
 LAB_008d4ec6:
-      if ((gScrVarPub[_param_1].error_message != (char *)0x0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0x36e,0,"%s\n\t(gScrVarPub[inst].error_message) = %s"), !bVar6))
+      if ((gScrVarPub[_inst].error_message != (char *)0x0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0x36e,0,"%s\n\t(gScrVarPub[inst].error_message) = %s"), !bVar5))
       {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      if ((gScrVarPub[_param_1].error_index != 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0x36f,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((gScrVarPub[_inst].error_index != 0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0x36f,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      if ((gScrVmPub[_param_1].outparamcount != 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0x370,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((gScrVmPub[_inst].outparamcount != 0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0x370,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      if ((gScrVmPub[_param_1].inparamcount != 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0x371,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((gScrVmPub[_inst].inparamcount != 0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0x371,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      gOpcode[_param_1] = (uint)(byte)*local_58.codePosValue;
-      local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+      gOpcode[_inst] = (uint)*(byte *)(char **)localFs.pos;
+      localFs.pos = (char *)((int)(char **)localFs.pos + 1);
 LAB_008d4fc6:
-      gScrVarPub[_param_1].varUsagePos = (char *)local_58;
-      switch(gOpcode[_param_1]) {
+      gScrVarPub[_inst].varUsagePos = localFs.pos;
+      switch(gOpcode[_inst]) {
       case 0:
         goto switchD_008d4ffb_caseD_0;
       case 1:
-        local_30.stringValue = GetSafeParentLocalId(param_1,local_54.stringValue);
-        Scr_KillThread(param_1,local_54.stringValue);
-        gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + -local_50.intValue;
-        local_14 = *local_4c;
-        local_10 = local_4c[1];
-        pVVar9 = local_4c + -2;
-        pVVar20 = local_4c + -1;
-        local_4c = pVVar9;
+        parentLocalId = GetSafeParentLocalId(inst,localFs.localId);
+        Scr_KillThread(inst,localFs.localId);
+        gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + -localFs.localVarCount;
+        tempValue = (localFs.top)->u;
+        local_10 = *(VariableUnion *)((int)localFs.top + 4);
+        pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+        pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+        localFs.top = (VariableValue *)pVVar8;
         if (((float)pVVar20->intValue == 1.12104e-44) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3c1,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        while ((float)local_4c[1].intValue != 9.80909e-45) {
-          RemoveRefToValue(param_1,local_4c[1].intValue,*local_4c);
-          pVVar9 = local_4c + -2;
-          pVVar20 = local_4c + -1;
-          local_4c = pVVar9;
+        while ((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 9.80909e-45) {
+          RemoveRefToValue(inst,((VariableUnion *)((int)localFs.top + 4))->intValue,(localFs.top)->u
+                          );
+          pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+          pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+          localFs.top = (VariableValue *)pVVar8;
           if (((float)pVVar20->intValue == 1.12104e-44) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x3c6,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-             !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
         }
-        gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-        gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
-        if ((float)local_30.intValue == 0.0) {
-          if ((local_4c != (VariableUnion *)local_48.intValue) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+        gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+        gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
+        if (parentLocalId == 0) {
+          if ((localFs.top != localFs.startTop) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x3cd,0,"%s\n\t(localFs.top - localFs.startTop) = %i"),
-             !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          local_4c[2] = local_14;
-          local_4c[3] = local_10;
+          *(VariableUnion *)((int)localFs.top + 8) = tempValue;
+          *(VariableUnion *)((int)localFs.top + 0xc) = local_10;
           goto LAB_008dab03;
         }
-        if (((float)local_4c[1].intValue != 9.80909e-45) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 9.80909e-45) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3d2,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        *local_4c = local_14;
-        local_4c[1] = local_10;
+        (localFs.top)->u = tempValue;
+        *(VariableUnion *)((int)localFs.top + 4) = local_10;
         goto LAB_008d51f3;
       case 2:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3d7,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3d8,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 0;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 3:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3de,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3df,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 6;
-        local_4c[2].intValue = 0;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 6;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = 0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 4:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3e6,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      999,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 6;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 6;
         VVar13.intValue._1_3_ = 0;
-        VVar13.intValue._0_1_ = *local_58.codePosValue;
-        local_4c[2] = VVar13;
-        local_4c = local_4c + 2;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        VVar13.intValue._0_1_ = *(byte *)(char **)localFs.pos;
+        *(VariableUnion *)((int)localFs.top + 8) = VVar13;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 5:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3ef,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3f0,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 6;
-        local_4c[2].intValue = -(uint)(byte)*local_58.codePosValue;
-        local_4c = local_4c + 2;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 6;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = -(uint)*(byte *)(char **)localFs.pos;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 6:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3f8,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x3f9,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 6;
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 6;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
         VVar14.intValue._2_2_ = 0;
-        VVar14.intValue._0_2_ = uVar7;
-        local_4c[2] = VVar14;
-        local_4c = local_4c + 2;
+        VVar14.intValue._0_2_ = *(ushort *)ppcVar4;
+        *(VariableUnion *)((int)localFs.top + 8) = VVar14;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 7:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x400,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x401,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 6;
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        local_4c[2].intValue = -(uint)uVar7;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 6;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = -(uint)*(ushort *)ppcVar4;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 8:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x408,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x409,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 6;
-        fVar1 = *local_58.vectorValue;
-        local_58.vectorValue = (float *)&(local_58.stackValue)->size;
-        local_4c[2].intValue = (int)fVar1;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 6;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)localFs.pos + 4);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)*ppcVar4;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 9:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x410,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x411,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 5;
-        fVar1 = *local_58.vectorValue;
-        local_58.vectorValue = (float *)&(local_58.stackValue)->size;
-        local_4c[2].intValue = (int)fVar1;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 5;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)localFs.pos + 4);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)*ppcVar4;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 10:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x418,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x419,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 2;
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 2;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
         VVar16.intValue._2_2_ = 0;
-        VVar16.intValue._0_2_ = uVar7;
-        local_4c[2] = VVar16;
-        SL_AddRefToString(local_4c[2].stringValue,param_1);
-        local_4c = local_4c + 2;
+        VVar16.intValue._0_2_ = *(ushort *)ppcVar4;
+        *(VariableUnion *)((int)localFs.top + 8) = VVar16;
+        SL_AddRefToString(((VariableUnion *)((int)localFs.top + 8))->stringValue,inst);
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0xb:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x421,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x422,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 3;
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 3;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
         VVar17.intValue._2_2_ = 0;
-        VVar17.intValue._0_2_ = uVar7;
-        local_4c[2] = VVar17;
-        SL_AddRefToString(local_4c[2].stringValue,param_1);
-        local_4c = local_4c + 2;
+        VVar17.intValue._0_2_ = *(ushort *)ppcVar4;
+        *(VariableUnion *)((int)localFs.top + 8) = VVar17;
+        SL_AddRefToString(((VariableUnion *)((int)localFs.top + 8))->stringValue,inst);
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0xc:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x42a,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x42b,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 4;
-        local_4c[2].stackValue = (VariableStackBuffer *)local_58;
-        local_4c = local_4c + 2;
-        local_58 = (VariableUnion)&(local_58.stackValue)->time;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 4;
+        ((VariableUnion *)((int)localFs.top + 8))->stackValue = (VariableStackBuffer *)localFs.pos;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)localFs.pos + 0xc);
         goto LAB_008d4ec6;
       case 0xd:
-        local_44 = (float)gScrVarPub[_param_1].levelId;
+        objectId = gScrVarPub[_inst].levelId;
         goto LAB_008d4ec6;
       case 0xe:
-        local_44 = (float)gScrVarPub[_param_1].animId;
+        objectId = gScrVarPub[_inst].animId;
         goto LAB_008d4ec6;
       case 0xf:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x43a,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x43b,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 1;
-        uVar8 = Scr_GetSelf(param_1,local_54.stringValue);
-        local_4c[2].stringValue = uVar8;
-        AddRefToObject(param_1,local_4c[2].stringValue);
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 1;
+        uVar7 = Scr_GetSelf(inst,localFs.localId);
+        ((VariableUnion *)((int)localFs.top + 8))->stringValue = uVar7;
+        AddRefToObject(inst,((VariableUnion *)((int)localFs.top + 8))->stringValue);
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x10:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x443,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x444,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 1;
-        local_4c[2] = (VariableUnion)gScrVarPub[_param_1].levelId;
-        local_4c = local_4c + 2;
-        AddRefToObject(param_1,gScrVarPub[_param_1].levelId);
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 1;
+        *(uint *)((int)localFs.top + 8) = gScrVarPub[_inst].levelId;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        AddRefToObject(inst,gScrVarPub[_inst].levelId);
         goto LAB_008d4ec6;
       case 0x11:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x44c,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x44d,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_9c = Scr_EvalVariable(param_1,gScrVarPub[_param_1].gameId);
-        local_4c[2].intValue = (int)local_9c;
-        local_4c[3].intValue = local_98;
-        local_4c = local_4c + 2;
+        _local_9c = Scr_EvalVariable(inst,gScrVarPub[_inst].gameId);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_9c;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_98;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x12:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x453,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x454,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 1;
-        local_4c[2] = (VariableUnion)gScrVarPub[_param_1].animId;
-        local_4c = local_4c + 2;
-        AddRefToObject(param_1,gScrVarPub[_param_1].animId);
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 1;
+        *(uint *)((int)localFs.top + 8) = gScrVarPub[_inst].animId;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        AddRefToObject(inst,gScrVarPub[_inst].animId);
         goto LAB_008d4ec6;
       case 0x13:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x461,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x462,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 0xb;
-        local_4c[2].intValue = (int)*local_58.vectorValue;
-        local_4c = local_4c + 2;
-        local_58 = (VariableUnion)&(local_58.stackValue)->size;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 0xb;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)*(char **)localFs.pos;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)localFs.pos + 4);
         goto LAB_008d4ec6;
       case 0x14:
-        local_20 = 0;
-        local_64 = gScrVarPub[_param_1].gameId;
+        fieldValueIndex = 0;
+        fieldValueId = gScrVarPub[_inst].gameId;
         goto LAB_008d4ec6;
       case 0x15:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x46e,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x46f,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 9;
-        local_4c[2].intValue = (int)*local_58.vectorValue;
-        local_4c = local_4c + 2;
-        local_58 = (VariableUnion)&(local_58.stackValue)->size;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 9;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)*(char **)localFs.pos;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)localFs.pos + 4);
         goto LAB_008d4ec6;
       case 0x16:
-        gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + 1;
-        local_50.vectorValue = (float *)((int)&(local_50.stackValue)->pos + 1);
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        uVar8 = GetNewVariable(param_1,local_54.stringValue,(uint)uVar7);
-        *gScrVmPub[_param_1].localVars = uVar8;
+        gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + 1;
+        localFs.localVarCount = localFs.localVarCount + 1;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        uVar7 = GetNewVariable(inst,localFs.localId,(uint)*(ushort *)ppcVar4);
+        *gScrVmPub[_inst].localVars = uVar7;
         goto LAB_008d4ec6;
       case 0x17:
-        local_5 = *local_58.codePosValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
-        gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + -(uint)local_5;
-        local_50.intValue = local_50.intValue - (uint)local_5;
-        for (; local_5 != 0; local_5 = local_5 - 1) {
-          RemoveNextVariable(param_1,local_54.stringValue);
+        removeCount = *(uchar *)(char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
+        gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + -(uint)removeCount;
+        localFs.localVarCount = localFs.localVarCount - removeCount;
+        for (; removeCount != '\0'; removeCount = removeCount + 0xff) {
+          RemoveNextVariable(inst,localFs.localId);
         }
         goto LAB_008d4ec6;
       case 0x18:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x488,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x489,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_a4 = Scr_EvalVariable(param_1,*gScrVmPub[_param_1].localVars);
-        local_4c[2].intValue = (int)local_a4;
-        local_4c[3].intValue = local_a0;
-        local_4c = local_4c + 2;
+        _local_a4 = Scr_EvalVariable(inst,*gScrVmPub[_inst].localVars);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_a4;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_a0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x19:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x48f,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x490,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_ac = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars[-1]);
-        local_4c[2].intValue = (int)local_ac;
-        local_4c[3].intValue = local_a8;
-        local_4c = local_4c + 2;
+        _local_ac = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars[-1]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_ac;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_a8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x1a:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x496,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x497,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_b4 = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars[-2]);
-        local_4c[2].intValue = (int)local_b4;
-        local_4c[3].intValue = local_b0;
-        local_4c = local_4c + 2;
+        _local_b4 = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars[-2]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_b4;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_b0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x1b:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x49d,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x49e,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_bc = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars[-3]);
-        local_4c[2].intValue = (int)local_bc;
-        local_4c[3].intValue = local_b8;
-        local_4c = local_4c + 2;
+        _local_bc = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars[-3]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_bc;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_b8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x1c:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4a4,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4a5,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_c4 = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars[-4]);
-        local_4c[2].intValue = (int)local_c4;
-        local_4c[3].intValue = local_c0;
-        local_4c = local_4c + 2;
+        _local_c4 = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars[-4]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_c4;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_c0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x1d:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4ab,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4ac,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_cc = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars[-5]);
-        local_4c[2].intValue = (int)local_cc;
-        local_4c[3].intValue = local_c8;
-        local_4c = local_4c + 2;
+        _local_cc = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars[-5]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_cc;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_c8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x1e:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4b2,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4b3,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_d4 = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars
-                                             [-(uint)(byte)*local_58.codePosValue]);
-        local_4c[2].intValue = (int)local_d4;
-        local_4c[3].intValue = local_d0;
-        local_4c = local_4c + 2;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        _local_d4 = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars
+                                          [-(uint)*(byte *)(char **)localFs.pos]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_d4;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_d0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 0x1f:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4ba,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x4bb,0,"%s\n\t(localFs.top+1 - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        _local_dc = Scr_EvalVariable(param_1,gScrVmPub[_param_1].localVars
-                                             [-(uint)(byte)*local_58.codePosValue]);
-        local_4c[2].intValue = (int)local_dc;
-        local_4c[3].intValue = local_d8;
-        local_4c = local_4c + 2;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        _local_dc = Scr_EvalVariable(inst,gScrVmPub[_inst].localVars
+                                          [-(uint)*(byte *)(char **)localFs.pos]);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_dc;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_d8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
       case 0x20:
-        Scr_EvalArray(param_1,(VariableValue *)local_4c,(VariableValue *)(local_4c + -2));
+        Scr_EvalArray(inst,localFs.top,(VariableValue *)((int)localFs.top + -8));
         goto LAB_008d4ebd;
       case 0x21:
-        local_64 = *gScrVmPub[_param_1].localVars;
+        fieldValueId = *gScrVmPub[_inst].localVars;
       case 0x23:
 switchD_008d4ffb_caseD_23:
-        local_44 = (float)Scr_EvalArrayRef(param_1,local_64);
-        if ((float)local_4c[1].intValue == 8.40779e-45) {
-          bVar6 = IsValidArrayIndex(param_1,local_4c->stringValue);
-          if (!bVar6) {
-            ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            bVar6 = false;
+        objectId = Scr_EvalArrayRef(inst,fieldValueId);
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 8.40779e-45) {
+          bVar5 = IsValidArrayIndex(inst,(uint)*(float *)localFs.top);
+          if (!bVar5) {
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            bVar5 = false;
             pcVar11 = va("array index %d out of range");
-            Scr_Error(param_1,pcVar11,bVar6);
+            Scr_Error(inst,pcVar11,bVar5);
           }
-          local_20 = GetArrayVariableIndex(param_1,(uint)local_44,local_4c->stringValue);
+          fieldValueIndex = GetArrayVariableIndex(inst,objectId,(uint)*(float *)localFs.top);
         }
-        else if ((float)local_4c[1].intValue == 2.8026e-45) {
-          local_20 = GetVariableIndexInternal(param_1,(uint)local_44,local_4c->stringValue);
-          SL_RemoveRefToString(param_1,local_4c->stringValue);
+        else if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 2.8026e-45) {
+          fieldValueIndex = GetVariableIndexInternal(inst,objectId,(uint)*(float *)localFs.top);
+          SL_RemoveRefToString(inst,(uint)*(float *)localFs.top);
         }
         else {
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("%s is not an array index");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
         }
-        local_64 = gScrVarGlob[_param_1].variableList[local_20 + 0x8000].hash.id;
-        if ((local_64 == 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x4e6,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        fieldValueId = gScrVarGlob[_inst].variableList[fieldValueIndex + 0x8000].hash.id;
+        if ((fieldValueId == 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x4e6,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
         goto LAB_008d4ebd;
       case 0x22:
-        local_64 = gScrVmPub[_param_1].localVars[-(uint)(byte)*local_58.codePosValue];
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        fieldValueId = gScrVmPub[_inst].localVars[-(uint)*(byte *)(char **)localFs.pos];
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto switchD_008d4ffb_caseD_23;
       case 0x24:
-        ClearArray(param_1,local_64,(VariableValue *)local_4c);
+        ClearArray(inst,fieldValueId,localFs.top);
         goto LAB_008d4ebd;
       case 0x25:
-        local_4c[3].intValue = 1;
-        uVar8 = Scr_AllocArray(param_1);
-        local_4c[2].stringValue = uVar8;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 1;
+        uVar7 = Scr_AllocArray(inst);
+        ((VariableUnion *)((int)localFs.top + 8))->stringValue = uVar7;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x26:
         goto switchD_008d4ffb_caseD_26;
       case 0x27:
-        local_44 = (float)gScrVarPub[_param_1].levelId;
+        objectId = gScrVarPub[_inst].levelId;
         goto LAB_008d6fc8;
       case 0x28:
-        local_44 = (float)gScrVarPub[_param_1].animId;
+        objectId = gScrVarPub[_inst].animId;
 LAB_008d6fc8:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x4fe,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x4fe,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x4ff,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x4ff,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        uVar8 = FindVariable(param_1,(uint)local_44,(uint)uVar7);
-        _local_e4 = Scr_EvalVariable(param_1,uVar8);
-        local_4c[2].intValue = (int)local_e4;
-        local_4c[3].intValue = local_e0;
-        local_4c = local_4c + 2;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        uVar7 = FindVariable(inst,objectId,(uint)*(ushort *)ppcVar4);
+        _local_e4 = Scr_EvalVariable(inst,uVar7);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_e4;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_e0;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x29:
-        local_44 = (float)Scr_GetSelf(param_1,local_54.stringValue);
-        bVar6 = IsFieldObject(param_1,(uint)local_44);
-        if (bVar6) goto switchD_008d4ffb_caseD_2a;
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x50c,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        objectId = Scr_GetSelf(inst,localFs.localId);
+        bVar5 = IsFieldObject(inst,objectId);
+        if (bVar5) goto switchD_008d4ffb_caseD_2a;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x50c,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x50d,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x50d,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c = local_4c + 2;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
 LAB_008daef4:
-        local_28.floatValue = (float)GetObjectType(param_1,local_44);
+        type = GetObjectType(inst,objectId);
 LAB_008daf07:
-        *(VariableUnion *)(gFs + _param_1) = local_58;
-        gFs[_param_1].localId = (uint)local_54;
-        gFs[_param_1].localVarCount = (uint)local_50;
-        gFs[_param_1].top = (VariableValue *)local_4c;
-        gFs[_param_1].startTop = (VariableValue *)local_48;
-        bVar6 = false;
+        gFs[_inst].pos = localFs.pos;
+        gFs[_inst].localId = localFs.localId;
+        gFs[_inst].localVarCount = localFs.localVarCount;
+        gFs[_inst].top = localFs.top;
+        gFs[_inst].startTop = localFs.startTop;
+        bVar5 = false;
         pcVar11 = va("%s is not an object");
-        Scr_Error(param_1,pcVar11,bVar6);
+        Scr_Error(inst,pcVar11,bVar5);
         goto LAB_008daf57;
       case 0x2a:
 switchD_008d4ffb_caseD_2a:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x515,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x515,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x516,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x516,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        _local_ec = Scr_FindVariableField(param_1,(uint)local_44,(uint)uVar7);
-        local_4c[2].intValue = (int)local_ec;
-        local_4c[3].intValue = local_e8;
-        local_4c = local_4c + 2;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        _local_ec = Scr_FindVariableField(inst,objectId,(uint)*(ushort *)ppcVar4);
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_ec;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_e8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x2b:
-        local_44 = (float)gScrVarPub[_param_1].levelId;
+        objectId = gScrVarPub[_inst].levelId;
         break;
       case 0x2c:
-        local_44 = (float)gScrVarPub[_param_1].animId;
+        objectId = gScrVarPub[_inst].animId;
         break;
       case 0x2d:
-        local_44 = (float)Scr_GetSelf(param_1,local_54.stringValue);
+        objectId = Scr_GetSelf(inst,localFs.localId);
         break;
       case 0x2e:
         break;
       case 0x2f:
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        ClearVariableField(param_1,(uint)local_44,(uint)uVar7,(VariableValue *)local_4c);
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        ClearVariableField(inst,objectId,(uint)*(ushort *)ppcVar4,localFs.top);
         goto LAB_008d4ec6;
       case 0x30:
-        gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + 1;
-        local_50.vectorValue = (float *)((int)&(local_50.stackValue)->pos + 1);
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        uVar8 = GetNewVariable(param_1,local_54.stringValue,(uint)uVar7);
-        *gScrVmPub[_param_1].localVars = uVar8;
+        gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + 1;
+        localFs.localVarCount = localFs.localVarCount + 1;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        uVar7 = GetNewVariable(inst,localFs.localId,(uint)*(ushort *)ppcVar4);
+        *gScrVmPub[_inst].localVars = uVar7;
       case 0x31:
-        if ((local_4c[1].intValue == 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x538,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if (local_4c[1].intValue == 8) goto LAB_008d4ec6;
-        SetVariableValue(param_1,*gScrVmPub[_param_1].localVars,(VariableValue *)local_4c);
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue == 8) goto LAB_008d4ec6;
+        SetVariableValue(inst,*gScrVmPub[_inst].localVars,localFs.top);
         goto LAB_008d4ebd;
       case 0x32:
-        if ((local_4c[1].intValue == 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x541,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if (local_4c[1].intValue == 8) {
-          local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue == 8) {
+          localFs.pos = (char *)((int)(char **)localFs.pos + 1);
           goto LAB_008d4ec6;
         }
-        SetVariableValue(param_1,gScrVmPub[_param_1].localVars[-(uint)(byte)*local_58.codePosValue],
-                         (VariableValue *)local_4c);
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        SetVariableValue(inst,gScrVmPub[_inst].localVars[-(uint)*(byte *)(char **)localFs.pos],
+                         localFs.top);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ebd;
       case 0x33:
-        if ((local_4c[1].intValue == 8) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 8) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x54c,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if (local_4c[1].intValue == 7) {
-          ClearVariableValue(param_1,gScrVmPub[_param_1].localVars
-                                     [-(uint)(byte)*local_58.codePosValue]);
-          local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue == 7) {
+          ClearVariableValue(inst,gScrVmPub[_inst].localVars[-(uint)*(byte *)(char **)localFs.pos]);
+          localFs.pos = (char *)((int)(char **)localFs.pos + 1);
           goto LAB_008d4ec6;
         }
-        SetVariableValue(param_1,gScrVmPub[_param_1].localVars[-(uint)(byte)*local_58.codePosValue],
-                         (VariableValue *)local_4c);
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        SetVariableValue(inst,gScrVmPub[_inst].localVars[-(uint)*(byte *)(char **)localFs.pos],
+                         localFs.top);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ebd;
       case 0x34:
-        if ((local_4c[1].intValue == 8) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 8) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x558,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        while ((float)local_4c[1].intValue != 9.80909e-45) {
-          RemoveRefToValue(param_1,local_4c[1].intValue,*local_4c);
-          pVVar9 = local_4c + -2;
-          pVVar20 = local_4c + -1;
-          local_4c = pVVar9;
+        while ((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 9.80909e-45) {
+          RemoveRefToValue(inst,((VariableUnion *)((int)localFs.top + 4))->intValue,(localFs.top)->u
+                          );
+          pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+          pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+          localFs.top = (VariableValue *)pVVar8;
           if (((float)pVVar20->intValue == 1.12104e-44) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x55d,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-             !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
         }
         goto LAB_008d4ec6;
       case 0x35:
-        if ((local_4c[1].intValue == 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+        if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x562,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((float)local_4c[1].intValue != 1.12104e-44) {
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"function called with too many parameters",false);
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 1.12104e-44) {
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"function called with too many parameters",false);
           goto switchD_008d4ffb_caseD_36;
         }
-        if ((0x3f37e < gScrVarPub[_param_1].numScriptValues) ||
-           (0x737e < gScrVarPub[_param_1].numScriptObjects)) {
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          if (gScrVmPub[_param_1].showError != false) {
-            Scr_DumpScriptThreads(param_1);
-            Scr_DumpScriptVariablesDefault(param_1);
-            Scr_Error(param_1,"exceeded maximum number of script variables",false);
+        if ((0x3f37e < gScrVarPub[_inst].numScriptValues) ||
+           (0x737e < gScrVarPub[_inst].numScriptObjects)) {
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          if (gScrVmPub[_inst].showError != false) {
+            Scr_DumpScriptThreads(inst);
+            Scr_DumpScriptVariablesDefault(inst);
+            Scr_Error(inst,"exceeded maximum number of script variables",false);
           }
           Sys_Error("exceeded maximum number of script variables");
         }
-        local_4c[1].intValue = 7;
+        ((VariableUnion *)((int)localFs.top + 4))->intValue = 7;
         goto LAB_008d4ec6;
       case 0x36:
 switchD_008d4ffb_caseD_36:
-        local_20 = 0;
-        local_64 = *gScrVmPub[_param_1].localVars;
+        fieldValueIndex = 0;
+        fieldValueId = *gScrVmPub[_inst].localVars;
         goto LAB_008d4ec6;
       case 0x37:
-        local_20 = 0;
-        local_64 = gScrVmPub[_param_1].localVars[-(uint)(byte)*local_58.codePosValue];
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        fieldValueIndex = 0;
+        fieldValueId = gScrVmPub[_inst].localVars[-(uint)*(byte *)(char **)localFs.pos];
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 0x38:
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        pVVar20 = local_4c;
-        uVar8 = GetVariable(param_1,gScrVarPub[_param_1].levelId,(uint)uVar7);
-        SetVariableValue(param_1,uVar8,(VariableValue *)pVVar20);
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        pVVar20 = &(localFs.top)->u;
+        uVar7 = GetVariable(inst,gScrVarPub[_inst].levelId,(uint)*(ushort *)ppcVar4);
+        SetVariableValue(inst,uVar7,(VariableValue *)pVVar20);
         goto LAB_008d4ebd;
       case 0x39:
         goto switchD_008d4ffb_caseD_39;
       case 0x3a:
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        pVVar20 = local_4c;
-        uVar8 = GetVariable(param_1,gScrVarPub[_param_1].animId,(uint)uVar7);
-        SetVariableValue(param_1,uVar8,(VariableValue *)pVVar20);
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        pVVar20 = &(localFs.top)->u;
+        uVar7 = GetVariable(inst,gScrVarPub[_inst].animId,(uint)*(ushort *)ppcVar4);
+        SetVariableValue(inst,uVar7,(VariableValue *)pVVar20);
         goto LAB_008d4ebd;
       case 0x3b:
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        local_3c = (uint)uVar7;
-        local_44 = (float)Scr_GetSelf(param_1,local_54.stringValue);
-        local_20 = Scr_GetVariableFieldIndex(param_1,(uint)local_44,local_3c);
-        local_64 = gScrVarGlob[_param_1].variableList[local_20 + 0x8000].hash.id;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        fieldName = (uint)*(ushort *)ppcVar4;
+        objectId = Scr_GetSelf(inst,localFs.localId);
+        fieldValueIndex = Scr_GetVariableFieldIndex(inst,objectId,fieldName);
+        fieldValueId = gScrVarGlob[_inst].variableList[fieldValueIndex + 0x8000].hash.id;
 switchD_008d4ffb_caseD_39:
-        if (local_20 == 0) {
-          SetVariableFieldValue(param_1,local_64,(VariableValue *)local_4c);
+        if (fieldValueIndex == 0) {
+          SetVariableFieldValue(inst,fieldValueId,localFs.top);
         }
         else {
-          if ((local_64 == 0) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x594,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+          if ((fieldValueId == 0) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x594,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          if (local_4c[1].intValue == 0) {
-            RemoveVariableValue(param_1,(uint)local_44,local_20);
+          if (((VariableUnion *)((int)localFs.top + 4))->intValue == 0) {
+            RemoveVariableValue(inst,objectId,fieldValueIndex);
           }
           else {
-            SetVariableValue(param_1,local_64,(VariableValue *)local_4c);
+            SetVariableValue(inst,fieldValueId,localFs.top);
           }
         }
         goto LAB_008d4ebd;
       case 0x3c:
-        SetVariableValue(param_1,*gScrVmPub[_param_1].localVars,(VariableValue *)local_4c);
+        SetVariableValue(inst,*gScrVmPub[_inst].localVars,localFs.top);
         goto LAB_008d4ebd;
       case 0x3d:
-        SetVariableValue(param_1,gScrVmPub[_param_1].localVars[-(uint)(byte)*local_58.codePosValue],
-                         (VariableValue *)local_4c);
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        SetVariableValue(inst,gScrVmPub[_inst].localVars[-(uint)*(byte *)(char **)localFs.pos],
+                         localFs.top);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ebd;
       case 0x3e:
       case 0x3f:
@@ -1531,87 +1531,88 @@ switchD_008d4ffb_caseD_39:
       case 0x41:
       case 0x42:
       case 0x43:
-        if ((gScrVmPub[_param_1].outparamcount != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x5b6,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((gScrVmPub[_inst].outparamcount != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x5b6,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        gScrVmPub[_param_1].outparamcount = gOpcode[_param_1] - 0x3e;
+        gScrVmPub[_inst].outparamcount = gOpcode[_inst] - 0x3e;
         goto LAB_008d7ac8;
       case 0x44:
-        if ((gScrVmPub[_param_1].outparamcount != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x5bb,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((gScrVmPub[_inst].outparamcount != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x5bb,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        gScrVmPub[_param_1].outparamcount = (uint)(byte)*local_58.codePosValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        gScrVmPub[_inst].outparamcount = (uint)*(byte *)(char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
 LAB_008d7ac8:
-        if ((gScrVmPub[_param_1].inparamcount != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x5c2,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((gScrVmPub[_inst].inparamcount != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x5c2,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        VVar15 = local_58;
-        local_1c.intValue = local_58.intValue;
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        local_78 = (uint)uVar7;
-        ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58;
-        if (gScrVmDebugPub[_param_1].func_table[local_78].breakpointCount != 0) {
-          local_90 = gScrVmPub[_param_1].outparamcount;
+        pcVar11 = localFs.pos;
+        debugpos = localFs.pos;
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        builtinIndex = (uint)*(ushort *)ppcVar4;
+        ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+        if (gScrVmDebugPub[_inst].func_table[builtinIndex].breakpointCount != 0) {
+          outparamcount = gScrVmPub[_inst].outparamcount;
           Scr_HitBuiltinBreakpoint
-                    (param_1,(VariableValue *)local_4c,VVar15.codePosValue,local_54.stringValue,
-                     gOpcode[_param_1],local_78,local_90);
-          gScrVmPub[_param_1].outparamcount = local_90;
+                    (inst,localFs.top,pcVar11,localFs.localId,gOpcode[_inst],builtinIndex,
+                     outparamcount);
+          gScrVmPub[_inst].outparamcount = outparamcount;
         }
-        gScrVmPub[_param_1].top = (VariableValue *)local_4c;
-        (**(code **)(_param_1 * 0x21038 + 0x9d16ac0 + local_78 * 4))();
+        gScrVmPub[_inst].top = localFs.top;
+        (**(code **)(_inst * 0x21038 + 0x9d16ac0 + builtinIndex * 4))();
 LAB_008d7bcf:
-        local_4c = &(gScrVmPub[_param_1].top)->u;
-        local_58 = *(VariableUnion *)gScrVmPub[_param_1].function_frame;
-        if (gScrVmPub[_param_1].outparamcount != 0) {
-          local_2c = gScrVmPub[_param_1].outparamcount;
-          gScrVmPub[_param_1].outparamcount = 0;
-          gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -local_2c;
+        localFs.top = gScrVmPub[_inst].top;
+        localFs.pos = ((gScrVmPub[_inst].function_frame)->fs).pos;
+        if (gScrVmPub[_inst].outparamcount != 0) {
+          paramcount = gScrVmPub[_inst].outparamcount;
+          gScrVmPub[_inst].outparamcount = 0;
+          gScrVmPub[_inst].top = gScrVmPub[_inst].top + -paramcount;
           do {
-            RemoveRefToValue(param_1,local_4c[1].intValue,*local_4c);
-            local_4c = local_4c + -2;
-            local_2c = local_2c - 1;
-          } while (local_2c != 0);
+            RemoveRefToValue(inst,((VariableUnion *)((int)localFs.top + 4))->intValue,
+                             (localFs.top)->u);
+            localFs.top = (VariableValue *)((int)localFs.top + -8);
+            paramcount = paramcount - 1;
+          } while (paramcount != 0);
         }
-        if (gScrVmPub[_param_1].inparamcount == 0) {
-          if ((local_4c != &(gScrVmPub[_param_1].top)->u) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x610,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+        if (gScrVmPub[_inst].inparamcount == 0) {
+          if ((&(localFs.top)->u != &(gScrVmPub[_inst].top)->u) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x610,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          local_4c[3].intValue = 0;
-          local_4c = local_4c + 2;
+          ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 0;
+          localFs.top = (VariableValue *)((int)localFs.top + 8);
         }
         else {
-          if ((gScrVmPub[_param_1].inparamcount != 1) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x609,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+          if ((gScrVmPub[_inst].inparamcount != 1) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x609,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          gScrVmPub[_param_1].inparamcount = 0;
-          if ((local_4c != &(gScrVmPub[_param_1].top)->u) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x60b,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+          gScrVmPub[_inst].inparamcount = 0;
+          if ((&(localFs.top)->u != &(gScrVmPub[_inst].top)->u) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x60b,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
         }
         goto LAB_008d4ec6;
@@ -1621,310 +1622,307 @@ LAB_008d7bcf:
       case 0x48:
       case 0x49:
       case 0x4a:
-        if ((gScrVmPub[_param_1].outparamcount != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x61d,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((gScrVmPub[_inst].outparamcount != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x61d,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        gScrVmPub[_param_1].outparamcount = gOpcode[_param_1] - 0x45;
+        gScrVmPub[_inst].outparamcount = gOpcode[_inst] - 0x45;
         goto LAB_008d7e32;
       case 0x4b:
-        if ((gScrVmPub[_param_1].outparamcount != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x622,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((gScrVmPub[_inst].outparamcount != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x622,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        gScrVmPub[_param_1].outparamcount = (uint)(byte)*local_58.codePosValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        gScrVmPub[_inst].outparamcount = (uint)*(byte *)(char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
 LAB_008d7e32:
-        if ((gScrVmPub[_param_1].inparamcount != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x629,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((gScrVmPub[_inst].inparamcount != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x629,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_1c.intValue = local_58.intValue;
-        gScrVmPub[_param_1].top = (VariableValue *)(local_4c + -2);
-        uVar7 = *(ushort *)local_58.vectorValue;
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-        local_78 = (uint)uVar7;
-        if ((float)local_4c[1].intValue == 1.4013e-45) {
-          local_44 = (float)local_4c->stringValue;
-          iVar12 = GetObjectType(param_1,(uint)local_44);
+        debugpos = localFs.pos;
+        gScrVmPub[_inst].top = (VariableValue *)((int)localFs.top + -8);
+        ppcVar4 = (char **)localFs.pos;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+        builtinIndex = (uint)*(ushort *)ppcVar4;
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.4013e-45) {
+          objectId = *(uint *)localFs.top;
+          iVar12 = GetObjectType(inst,objectId);
           if (iVar12 != 0x13) {
-            local_28.floatValue = (float)GetObjectType(param_1,local_44);
-            RemoveRefToObject(param_1,(uint)local_44);
-            gScrVarPub[_param_1].error_index = -1;
-            ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            bVar6 = false;
+            type = GetObjectType(inst,objectId);
+            RemoveRefToObject(inst,objectId);
+            gScrVarPub[_inst].error_index = -1;
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            bVar5 = false;
             pcVar11 = va("%s is not an entity");
-            Scr_Error(param_1,pcVar11,bVar6);
+            Scr_Error(inst,pcVar11,bVar5);
             goto LAB_008d8127;
           }
-          sVar19 = Scr_GetEntityIdRef((scriptInstance_t)local_fc,_param_1);
+          sVar19 = Scr_GetEntityIdRef((scriptInstance_t)local_fc,_inst);
           local_f2 = *sVar19._0_4_;
           local_ee = *(undefined2 *)(sVar19._0_4_ + 1);
-          local_8c = local_f2;
+          entref = local_f2;
           local_88 = local_ee;
-          RemoveRefToObject(param_1,(uint)local_44);
-          ((VariableUnion *)gScrVmPub[_param_1].function_frame)->codePosValue = (char *)local_58;
-          if (gScrVmGlob[_param_1].recordPlace != false) {
-            Scr_GetFileAndLine(param_1,local_58.codePosValue,&gScrVmGlob[_param_1].lastFileName,
-                               &gScrVmGlob[_param_1].lastLine);
+          RemoveRefToObject(inst,objectId);
+          ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+          if (gScrVmGlob[_inst].recordPlace != false) {
+            Scr_GetFileAndLine(inst,localFs.pos,&gScrVmGlob[_inst].lastFileName,
+                               &gScrVmGlob[_inst].lastLine);
           }
-          if (gScrVmDebugPub[_param_1].func_table[local_78].breakpointCount != 0) {
-            if ((&(gScrVmPub[_param_1].top)->u != local_4c + -2) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                         ,0x64b,0,"%s"), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+          if (gScrVmDebugPub[_inst].func_table[builtinIndex].breakpointCount != 0) {
+            if ((&(gScrVmPub[_inst].top)->u != (VariableUnion *)((int)localFs.top + -8)) &&
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                         ,0x64b,0,"%s"), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
-            local_94 = gScrVmPub[_param_1].outparamcount;
+            outparamcount_2 = gScrVmPub[_inst].outparamcount;
             Scr_HitBuiltinBreakpoint
-                      (param_1,(VariableValue *)local_4c,local_1c.codePosValue,local_54.stringValue,
-                       gOpcode[_param_1],local_78,local_94 + 1);
-            gScrVmPub[_param_1].outparamcount = local_94;
-            gScrVmPub[_param_1].top = (VariableValue *)(local_4c + -2);
+                      (inst,localFs.top,debugpos,localFs.localId,gOpcode[_inst],builtinIndex,
+                       outparamcount_2 + 1);
+            gScrVmPub[_inst].outparamcount = outparamcount_2;
+            gScrVmPub[_inst].top = (VariableValue *)((int)localFs.top + -8);
           }
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          (**(code **)(_param_1 * 0x21038 + 0x9d16ac0 + local_78 * 4))(local_8c,local_88);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          (**(code **)(_inst * 0x21038 + 0x9d16ac0 + builtinIndex * 4))(entref,local_88);
           goto LAB_008d7bcf;
         }
 LAB_008d8127:
-        local_28 = local_4c[1];
-        RemoveRefToValue(param_1,local_4c[1].intValue,(VariableUnion)*(float *)local_4c);
-        gScrVarPub[_param_1].error_index = -1;
-        ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-        gFs[_param_1].localId = (uint)local_54;
-        gFs[_param_1].localVarCount = (uint)local_50;
-        gFs[_param_1].top = (VariableValue *)local_4c;
-        gFs[_param_1].startTop = (VariableValue *)local_48;
-        bVar6 = false;
+        type = ((VariableUnion *)((int)localFs.top + 4))->intValue;
+        RemoveRefToValue(inst,((VariableUnion *)((int)localFs.top + 4))->intValue,
+                         (VariableUnion)*(float *)localFs.top);
+        gScrVarPub[_inst].error_index = -1;
+        gFs[_inst].pos = localFs.pos;
+        gFs[_inst].localId = localFs.localId;
+        gFs[_inst].localVarCount = localFs.localVarCount;
+        gFs[_inst].top = localFs.top;
+        gFs[_inst].startTop = localFs.startTop;
+        bVar5 = false;
         pcVar11 = va("%s is not an entity");
-        Scr_Error(param_1,pcVar11,bVar6);
+        Scr_Error(inst,pcVar11,bVar5);
 switchD_008d4ffb_caseD_4c:
-        iVar12 = Scr_IsInOpcodeMemory(param_1,local_58.codePosValue);
+        iVar12 = Scr_IsInOpcodeMemory(inst,localFs.pos);
         if ((iVar12 == 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x67b,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x67b,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((float)local_4c[1].intValue == 7.00649e-45) {
-          if (0.0 < local_4c->floatValue || local_4c->floatValue == 0.0) {
-            local_60 = (uint)ROUND((float)(byte)((-(_param_1 != 0) & 0x28U) + 0x14) *
-                                   local_4c->floatValue + 9.313226e-10);
-            if ((local_60 == 0) && (local_4c->floatValue != 0.0)) {
-              local_60 = 1;
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 7.00649e-45) {
+          if (0.0 < *(float *)localFs.top || *(float *)localFs.top == 0.0) {
+            waitTime = (int)ROUND((float)(byte)((-(_inst != 0) & 0x28U) + 0x14) *
+                                  *(float *)localFs.top + 9.313226e-10);
+            if ((waitTime == 0) && (*(float *)localFs.top != 0.0)) {
+              waitTime = 1;
             }
             goto LAB_008d830e;
           }
         }
         else {
-          if ((float)local_4c[1].intValue == 8.40779e-45) {
-            local_60 = ((-(uint)(_param_1 != 0) & 0x28) + 0x14) * local_4c->intValue;
+          if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 8.40779e-45) {
+            waitTime = ((-(uint)(_inst != 0) & 0x28) + 0x14) * (int)*(float *)localFs.top;
           }
           else {
-            gScrVarPub[_param_1].error_index = 2;
-            ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            bVar6 = false;
+            gScrVarPub[_inst].error_index = 2;
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            bVar5 = false;
             pcVar11 = va("type %s is not a float");
-            Scr_Error(param_1,pcVar11,bVar6);
+            Scr_Error(inst,pcVar11,bVar5);
           }
 LAB_008d830e:
-          if (local_60 < 0xffffff) {
-            if (local_60 != 0) {
-              Scr_ResetTimeout(param_1);
+          if ((uint)waitTime < 0xffffff) {
+            if (waitTime != 0) {
+              Scr_ResetTimeout(inst);
             }
-            local_60 = gScrVarPub[_param_1].time + local_60 & 0xffffff;
-            local_4c = local_4c + -2;
+            waitTime = gScrVarPub[_inst].time + waitTime & 0xffffff;
+            localFs.top = (VariableValue *)((int)localFs.top + -8);
             local_7c = 10;
-            local_80.stackValue = VM_ArchiveStack(param_1,(function_stack_t *)&local_58);
-            uVar8 = GetVariable(param_1,gScrVarPub[_param_1].timeArrayId,local_60);
-            local_c = GetArray(param_1,uVar8);
-            local_68 = GetNewObjectVariable(param_1,local_c,local_54.stringValue);
-            SetNewVariableValue(param_1,local_68,(VariableValue *)&local_80);
-            Scr_SetThreadWaitTime(param_1,local_54.stringValue,local_60);
+            stackValue.stackValue = VM_ArchiveStack(inst,&localFs);
+            uVar7 = GetVariable(inst,gScrVarPub[_inst].timeArrayId,waitTime);
+            id = GetArray(inst,uVar7);
+            stackId = GetNewObjectVariable(inst,id,localFs.localId);
+            SetNewVariableValue(inst,stackId,(VariableValue *)&stackValue);
+            Scr_SetThreadWaitTime(inst,localFs.localId,waitTime);
             goto LAB_008daaf9;
           }
-          gScrVarPub[_param_1].error_index = 2;
-          if (-1 < (int)local_60) {
-            ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            Scr_Error(param_1,"wait is too long",false);
+          gScrVarPub[_inst].error_index = 2;
+          if (-1 < waitTime) {
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            Scr_Error(inst,"wait is too long",false);
           }
         }
-        ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-        gFs[_param_1].localId = (uint)local_54;
-        gFs[_param_1].localVarCount = (uint)local_50;
-        gFs[_param_1].top = (VariableValue *)local_4c;
-        gFs[_param_1].startTop = (VariableValue *)local_48;
-        Scr_Error(param_1,"negative wait is not allowed",false);
+        gFs[_inst].pos = localFs.pos;
+        gFs[_inst].localId = localFs.localId;
+        gFs[_inst].localVarCount = localFs.localVarCount;
+        gFs[_inst].top = localFs.top;
+        gFs[_inst].startTop = localFs.startTop;
+        Scr_Error(inst,"negative wait is not allowed",false);
 switchD_008d4ffb_caseD_4d:
-        iVar12 = Scr_IsInOpcodeMemory(param_1,local_58.codePosValue);
+        iVar12 = Scr_IsInOpcodeMemory(inst,localFs.pos);
         if ((iVar12 == 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x6b0,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x6b0,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if (((gScrVarPub[_param_1].time & 0xff000000) != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x6b1,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if (((gScrVarPub[_inst].time & 0xff000000) != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x6b1,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
         local_7c = 10;
-        local_80.stackValue = VM_ArchiveStack(param_1,(function_stack_t *)&local_58);
-        uVar8 = GetVariable(param_1,gScrVarPub[_param_1].timeArrayId,gScrVarPub[_param_1].time);
-        local_c = GetArray(param_1,uVar8);
-        local_68 = GetNewObjectVariableReverse(param_1,local_c,local_54.stringValue);
-        SetNewVariableValue(param_1,local_68,(VariableValue *)&local_80);
-        Scr_SetThreadWaitTime(param_1,local_54.stringValue,gScrVarPub[_param_1].time);
+        stackValue.stackValue = VM_ArchiveStack(inst,&localFs);
+        uVar7 = GetVariable(inst,gScrVarPub[_inst].timeArrayId,gScrVarPub[_inst].time);
+        id = GetArray(inst,uVar7);
+        stackId = GetNewObjectVariableReverse(inst,id,localFs.localId);
+        SetNewVariableValue(inst,stackId,(VariableValue *)&stackValue);
+        Scr_SetThreadWaitTime(inst,localFs.localId,gScrVarPub[_inst].time);
         goto LAB_008daaf9;
       case 0x4c:
         goto switchD_008d4ffb_caseD_4c;
       case 0x4d:
         goto switchD_008d4ffb_caseD_4d;
       case 0x4e:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x6bf,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x6bf,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x6c0,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x6c0,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 8;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x4f:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x6c6,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x6c6,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x6c7,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x6c7,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 8;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
       case 0x50:
-        if (0x1e < gScrVmPub[_param_1].function_count) {
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+        if (0x1e < gScrVmPub[_inst].function_count) {
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
 switchD_008d4ffb_caseD_51:
-          if ((float)local_4c[1].intValue == 1.26117e-44) {
-            if (gScrVmPub[_param_1].function_count < 0x1f) {
-              local_18 = Scr_GetSelf(param_1,local_54.stringValue);
-              AddRefToObject(param_1,local_18);
-              local_54.stringValue = AllocChildThread(param_1,local_18,local_54.stringValue);
-              ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58
-              ;
-              local_58 = (VariableUnion)local_4c->intValue;
-              local_4c = local_4c + -2;
+          if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.26117e-44) {
+            if (gScrVmPub[_inst].function_count < 0x1f) {
+              selfId = Scr_GetSelf(inst,localFs.localId);
+              AddRefToObject(inst,selfId);
+              localFs.localId = AllocChildThread(inst,selfId,localFs.localId);
+              ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+              localFs.pos = *(char **)localFs.top;
+              localFs.top = (VariableValue *)((int)localFs.top + -8);
               goto LAB_008daa55;
             }
-            gScrVarPub[_param_1].error_index = 1;
-            ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+            gScrVarPub[_inst].error_index = 1;
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
           }
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("%s is not a function pointer");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
 switchD_008d4ffb_caseD_52:
-          if ((float)local_4c[1].intValue == 1.4013e-45) {
-            if (gScrVmPub[_param_1].function_count < 0x1f) {
-              local_54.stringValue =
-                   AllocChildThread(param_1,local_4c->stringValue,local_54.stringValue);
-              local_4c = local_4c + -2;
-              ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58
-              ;
-              local_58.codePosValue =
-                   Scr_ReadCodePos(param_1,(char **)gScrVmPub[_param_1].function_frame);
+          if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.4013e-45) {
+            if (gScrVmPub[_inst].function_count < 0x1f) {
+              localFs.localId = AllocChildThread(inst,(uint)*(float *)localFs.top,localFs.localId);
+              localFs.top = (VariableValue *)((int)localFs.top + -8);
+              ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+              localFs.pos = Scr_ReadCodePos(inst,(char **)gScrVmPub[_inst].function_frame);
               goto LAB_008daa55;
             }
-            ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
           }
 LAB_008dae80:
-          local_28 = local_4c[1];
+          type = ((VariableUnion *)((int)localFs.top + 4))->intValue;
 LAB_008daecc:
-          gScrVarPub[_param_1].error_index = 1;
+          gScrVarPub[_inst].error_index = 1;
           goto LAB_008daf07;
         }
-        local_18 = Scr_GetSelf(param_1,local_54.stringValue);
-        AddRefToObject(param_1,local_18);
-        local_54.stringValue = AllocChildThread(param_1,local_18,local_54.stringValue);
-        ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58;
-        pfVar2 = gScrVmPub[_param_1].function_frame;
-        local_58 = (VariableUnion)((VariableUnion *)(pfVar2->fs).pos)->intValue;
-        (pfVar2->fs).pos = (pfVar2->fs).pos + 4;
+        selfId = Scr_GetSelf(inst,localFs.localId);
+        AddRefToObject(inst,selfId);
+        localFs.localId = AllocChildThread(inst,selfId,localFs.localId);
+        ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+        pfVar1 = gScrVmPub[_inst].function_frame;
+        localFs.pos = *(char **)(pfVar1->fs).pos;
+        (pfVar1->fs).pos = (pfVar1->fs).pos + 4;
 LAB_008daa55:
-        ((gScrVmPub[_param_1].function_frame)->fs).localVarCount = (uint)local_50;
-        local_50.intValue = 0;
-        gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + 1;
-        gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + 1;
-        ((gScrVmPub[_param_1].function_frame)->fs).localId = (uint)local_54;
-        if (((ushort *)local_58.intValue == (ushort *)0x0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x9c0,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        ((gScrVmPub[_inst].function_frame)->fs).localVarCount = localFs.localVarCount;
+        localFs.localVarCount = 0;
+        gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + 1;
+        gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + 1;
+        ((gScrVmPub[_inst].function_frame)->fs).localId = localFs.localId;
+        if (((VariableStackBuffer *)localFs.pos == (VariableStackBuffer *)0x0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x9c0,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
         goto LAB_008d4ec6;
       case 0x51:
@@ -1932,993 +1930,985 @@ LAB_008daa55:
       case 0x52:
         goto switchD_008d4ffb_caseD_52;
       case 0x53:
-        if (local_4c[1].intValue != 9) {
-          RemoveRefToValue(param_1,(VariableValue *)local_4c);
-          local_4c = local_4c + -2;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue != 9) {
+          RemoveRefToValue(inst,localFs.top);
+          localFs.top = (VariableValue *)((int)localFs.top + -8);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("%s is not a function pointer");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
           goto switchD_008d4ffb_caseD_54;
         }
-        local_6c.stringValue = local_4c->intValue;
-        pVVar9 = local_4c + -2;
-        pVVar20 = local_4c + -1;
-        local_4c = pVVar9;
+        tempCodePos = *(char **)localFs.top;
+        pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+        pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+        localFs.top = (VariableValue *)pVVar8;
         if (pVVar20->intValue != 1) goto LAB_008daea6;
-        if (0x1e < gScrVmPub[_param_1].function_count) {
-          gScrVarPub[_param_1].error_index = 1;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)pVVar9;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+        if (0x1e < gScrVmPub[_inst].function_count) {
+          gScrVarPub[_inst].error_index = 1;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = (VariableValue *)pVVar8;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
           goto LAB_008daea6;
         }
-        local_54.stringValue = AllocChildThread(param_1,pVVar9->stringValue,local_54.stringValue);
-        local_4c = local_4c + -2;
-        ((VariableUnion *)gScrVmPub[_param_1].function_frame)->codePosValue = (char *)local_58;
-        local_58 = local_6c;
+        localFs.localId = AllocChildThread(inst,pVVar8->stringValue,localFs.localId);
+        localFs.top = (VariableValue *)((int)localFs.top + -8);
+        ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+        localFs.pos = tempCodePos;
         goto LAB_008daa55;
       case 0x54:
 switchD_008d4ffb_caseD_54:
-        if (0x1e < gScrVmPub[_param_1].function_count) {
-          gScrVarPub[_param_1].error_index = 1;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+        if (0x1e < gScrVmPub[_inst].function_count) {
+          gScrVarPub[_inst].error_index = 1;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
           goto switchD_008d4ffb_caseD_55;
         }
-        local_18 = Scr_GetSelf(param_1,local_54.stringValue);
-        AddRefToObject(param_1,local_18);
-        local_54.stringValue = AllocThread(param_1,local_18);
-        ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58;
-        ((gScrVmPub[_param_1].function_frame)->fs).startTop = (VariableValue *)local_48;
-        local_58.codePosValue = Scr_ReadCodePos(param_1,(char **)gScrVmPub[_param_1].function_frame)
-        ;
-        iVar12 = Scr_ReadInt((char **)gScrVmPub[_param_1].function_frame);
-        local_48.vectorValue = (float *)(local_4c + iVar12 * -2);
+        selfId = Scr_GetSelf(inst,localFs.localId);
+        AddRefToObject(inst,selfId);
+        localFs.localId = AllocThread(inst,selfId);
+        ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+        ((gScrVmPub[_inst].function_frame)->fs).startTop = localFs.startTop;
+        localFs.pos = Scr_ReadCodePos(inst,(char **)gScrVmPub[_inst].function_frame);
+        iVar12 = Scr_ReadInt((char **)gScrVmPub[_inst].function_frame);
+        localFs.startTop = (VariableValue *)((int)localFs.top + iVar12 * -2 * 4);
         goto LAB_008daa07;
       case 0x55:
 switchD_008d4ffb_caseD_55:
-        if ((float)local_4c[1].intValue == 1.26117e-44) {
-          if (gScrVmPub[_param_1].function_count < 0x1f) {
-            local_6c = *local_4c;
-            local_4c = local_4c + -2;
-            local_18 = Scr_GetSelf(param_1,local_54.stringValue);
-            AddRefToObject(param_1,local_18);
-            local_54.stringValue = AllocThread(param_1,local_18);
-            ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58;
-            ((gScrVmPub[_param_1].function_frame)->fs).startTop = (VariableValue *)local_48;
-            local_58 = local_6c;
-            iVar12 = Scr_ReadInt((char **)gScrVmPub[_param_1].function_frame);
-            local_48.vectorValue = (float *)(local_4c + iVar12 * -2);
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.26117e-44) {
+          if (gScrVmPub[_inst].function_count < 0x1f) {
+            tempCodePos = *(char **)localFs.top;
+            localFs.top = (VariableValue *)((int)localFs.top + -8);
+            selfId = Scr_GetSelf(inst,localFs.localId);
+            AddRefToObject(inst,selfId);
+            localFs.localId = AllocThread(inst,selfId);
+            ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+            ((gScrVmPub[_inst].function_frame)->fs).startTop = localFs.startTop;
+            localFs.pos = tempCodePos;
+            iVar12 = Scr_ReadInt((char **)gScrVmPub[_inst].function_frame);
+            localFs.startTop = (VariableValue *)((int)localFs.top + iVar12 * -2 * 4);
             goto LAB_008daa07;
           }
-          gScrVarPub[_param_1].error_index = 1;
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+          gScrVarPub[_inst].error_index = 1;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
         }
-        ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-        gFs[_param_1].localId = (uint)local_54;
-        gFs[_param_1].localVarCount = (uint)local_50;
-        gFs[_param_1].top = (VariableValue *)local_4c;
-        gFs[_param_1].startTop = (VariableValue *)local_48;
-        bVar6 = false;
+        gFs[_inst].pos = localFs.pos;
+        gFs[_inst].localId = localFs.localId;
+        gFs[_inst].localVarCount = localFs.localVarCount;
+        gFs[_inst].top = localFs.top;
+        gFs[_inst].startTop = localFs.startTop;
+        bVar5 = false;
         pcVar11 = va("%s is not a function pointer");
-        Scr_Error(param_1,pcVar11,bVar6);
+        Scr_Error(inst,pcVar11,bVar5);
       case 0x56:
-        if ((float)local_4c[1].intValue == 1.4013e-45) {
-          if (gScrVmPub[_param_1].function_count < 0x1f) {
-            local_54.stringValue = AllocThread(param_1,local_4c->stringValue);
-            local_4c = local_4c + -2;
-            ((VariableUnion *)gScrVmPub[_param_1].function_frame)->vectorValue = (float *)local_58;
-            ((gScrVmPub[_param_1].function_frame)->fs).startTop = (VariableValue *)local_48;
-            local_58.codePosValue =
-                 Scr_ReadCodePos(param_1,(char **)gScrVmPub[_param_1].function_frame);
-            iVar12 = Scr_ReadInt((char **)gScrVmPub[_param_1].function_frame);
-            local_48.vectorValue = (float *)(local_4c + iVar12 * -2);
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.4013e-45) {
+          if (gScrVmPub[_inst].function_count < 0x1f) {
+            localFs.localId = AllocThread(inst,(uint)*(float *)localFs.top);
+            localFs.top = (VariableValue *)((int)localFs.top + -8);
+            ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+            ((gScrVmPub[_inst].function_frame)->fs).startTop = localFs.startTop;
+            localFs.pos = Scr_ReadCodePos(inst,(char **)gScrVmPub[_inst].function_frame);
+            iVar12 = Scr_ReadInt((char **)gScrVmPub[_inst].function_frame);
+            localFs.startTop = (VariableValue *)((int)localFs.top + iVar12 * -2 * 4);
             goto LAB_008daa07;
           }
-          gScrVarPub[_param_1].error_index = 1;
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+          gScrVarPub[_inst].error_index = 1;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
         }
 LAB_008daea6:
-        local_28 = local_4c[1];
+        type = ((VariableUnion *)((int)localFs.top + 4))->intValue;
 LAB_008daee0:
-        gScrVarPub[_param_1].error_index = 2;
+        gScrVarPub[_inst].error_index = 2;
         goto LAB_008daf07;
       case 0x57:
-        if (local_4c[1].intValue != 9) {
-          RemoveRefToValue(param_1,(VariableValue *)local_4c);
-          local_4c = local_4c + -2;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue != 9) {
+          RemoveRefToValue(inst,localFs.top);
+          localFs.top = (VariableValue *)((int)localFs.top + -8);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("%s is not a function pointer");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
           goto switchD_008d4ffb_caseD_58;
         }
-        local_6c.stringValue = *(uint *)local_4c;
-        pVVar9 = local_4c + -2;
-        pVVar20 = local_4c + -1;
-        local_4c = pVVar9;
+        tempCodePos = *(char **)localFs.top;
+        pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+        pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+        localFs.top = (VariableValue *)pVVar8;
         if (pVVar20->intValue != 1) goto LAB_008daea6;
-        if (0x1e < gScrVmPub[_param_1].function_count) {
-          gScrVarPub[_param_1].error_index = 1;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)pVVar9;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"script stack overflow (too many embedded function calls)",false);
+        if (0x1e < gScrVmPub[_inst].function_count) {
+          gScrVarPub[_inst].error_index = 1;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = (VariableValue *)pVVar8;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"script stack overflow (too many embedded function calls)",false);
           goto LAB_008daea6;
         }
-        local_54.stringValue = AllocThread(param_1,pVVar9->stringValue);
-        local_4c = local_4c + -2;
-        ((VariableUnion *)gScrVmPub[_param_1].function_frame)->codePosValue = (char *)local_58;
-        ((gScrVmPub[_param_1].function_frame)->fs).startTop = (VariableValue *)local_48;
-        local_58 = local_6c;
-        iVar12 = Scr_ReadInt((char **)gScrVmPub[_param_1].function_frame);
-        local_48.vectorValue = (float *)(local_4c + iVar12 * -2);
+        localFs.localId = AllocThread(inst,pVVar8->stringValue);
+        localFs.top = (VariableValue *)((int)localFs.top + -8);
+        ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+        ((gScrVmPub[_inst].function_frame)->fs).startTop = localFs.startTop;
+        localFs.pos = tempCodePos;
+        iVar12 = Scr_ReadInt((char **)gScrVmPub[_inst].function_frame);
+        localFs.startTop = (VariableValue *)((int)localFs.top + iVar12 * -2 * 4);
 LAB_008daa07:
-        ((gScrVmPub[_param_1].function_frame)->fs).top = (VariableValue *)local_48;
-        (gScrVmPub[_param_1].function_frame)->topType = *(int *)&(local_48.stackValue)->size;
-        (local_48.stackValue)->size = 8;
-        (local_48.stackValue)->bufLen = 0;
-        gThreadCount[_param_1] = gThreadCount[_param_1] + 1;
+        ((gScrVmPub[_inst].function_frame)->fs).top = localFs.startTop;
+        (gScrVmPub[_inst].function_frame)->topType =
+             (int)*(VariableUnion *)((int)localFs.startTop + 4);
+        ((VariableUnion *)((int)localFs.startTop + 4))->intValue = 8;
+        gThreadCount[_inst] = gThreadCount[_inst] + 1;
         goto LAB_008daa55;
       case 0x58:
 switchD_008d4ffb_caseD_58:
-        RemoveRefToValue(param_1,(VariableValue *)local_4c);
+        RemoveRefToValue(inst,localFs.top);
         goto LAB_008d4ebd;
       case 0x59:
-        local_44 = (float)Scr_EvalFieldObject(param_1,gScrVarPub[_param_1].tempVariable,
-                                              (VariableValue *)local_4c);
+        objectId = Scr_EvalFieldObject(inst,gScrVarPub[_inst].tempVariable,localFs.top);
         goto LAB_008d4ebd;
       case 0x5a:
-        uVar8 = Scr_GetLocalVar(param_1,local_58.codePosValue);
-        local_44 = (float)Scr_EvalVariableObject(param_1,uVar8);
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        uVar7 = Scr_GetLocalVar(inst,localFs.pos);
+        objectId = Scr_EvalVariableObject(inst,uVar7);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 0x5b:
-        Scr_CastBool(param_1,(VariableValue *)local_4c);
+        Scr_CastBool(inst,localFs.top);
         goto LAB_008d4ec6;
       case 0x5c:
-        Scr_EvalBoolNot(param_1,(VariableValue *)local_4c);
+        Scr_EvalBoolNot(inst,localFs.top);
         goto LAB_008d4ec6;
       case 0x5d:
-        Scr_EvalBoolComplement(param_1,(VariableValue *)local_4c);
+        Scr_EvalBoolComplement(inst,localFs.top);
         goto LAB_008d4ec6;
       case 0x5e:
-        Scr_CastBool(param_1,(VariableValue *)local_4c);
-        if (((float)local_4c[1].intValue != 8.40779e-45) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x798,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        Scr_CastBool(inst,localFs.top);
+        if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 8.40779e-45) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x798,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        local_5c = (uint)uVar7;
-        if ((float)local_4c->intValue == 0.0) {
-          local_58.intValue = local_58.intValue + local_5c;
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        jumpOffset = (int)uVar6;
+        if (*(float *)localFs.top == 0.0) {
+          localFs.pos = (char *)((int)localFs.pos + 0xd) + (jumpOffset - 0xd);
         }
         goto LAB_008d4ebd;
       case 0x5f:
-        Scr_CastBool(param_1,(VariableValue *)local_4c);
-        if (((float)local_4c[1].intValue != 8.40779e-45) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x7a1,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        Scr_CastBool(inst,localFs.top);
+        if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 8.40779e-45) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x7a1,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        local_5c = (uint)uVar7;
-        if ((float)local_4c->intValue != 0.0) {
-          local_58.intValue = local_58.intValue + local_5c;
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        jumpOffset = (int)uVar6;
+        if (*(float *)localFs.top != 0.0) {
+          localFs.pos = (char *)((int)localFs.pos + 0xd) + (jumpOffset - 0xd);
         }
         goto LAB_008d4ebd;
       case 0x60:
-        Scr_CastBool(param_1,(VariableValue *)local_4c);
-        if (((float)local_4c[1].intValue != 8.40779e-45) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x7aa,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        Scr_CastBool(inst,localFs.top);
+        if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 8.40779e-45) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x7aa,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        local_5c = (uint)uVar7;
-        if ((float)local_4c->intValue != 0.0) goto LAB_008d4ebd;
-        local_58.stringValue = local_58.intValue + local_5c;
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        jumpOffset = (int)uVar6;
+        if (*(float *)localFs.top != 0.0) goto LAB_008d4ebd;
+        localFs.pos = (char *)((char *)((int)localFs.pos + 0xd) + (jumpOffset - 0xd));
         goto LAB_008d4ec6;
       case 0x61:
-        Scr_CastBool(param_1,(VariableValue *)local_4c);
-        if (((float)local_4c[1].intValue != 8.40779e-45) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x7b3,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        Scr_CastBool(inst,localFs.top);
+        if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 8.40779e-45) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x7b3,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        local_5c = (uint)uVar7;
-        if ((float)local_4c->intValue == 0.0) goto LAB_008d4ebd;
-        local_58.stringValue = local_58.intValue + local_5c;
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        jumpOffset = (int)uVar6;
+        if (*(float *)localFs.top == 0.0) goto LAB_008d4ebd;
+        localFs.pos = (char *)((char *)((int)localFs.pos + 0xd) + (jumpOffset - 0xd));
         goto LAB_008d4ec6;
       case 0x62:
-        local_5c = Scr_ReadInt(&local_58.codePosValue);
-        local_58.stringValue = local_58.intValue + local_5c;
+        jumpOffset = Scr_ReadInt(&localFs.pos);
+        localFs.pos = (char *)((char *)((int)localFs.pos + 0xd) + jumpOffset + -0xd);
         goto LAB_008d4ec6;
       case 99:
-        if ((0x3f37e < gScrVarPub[_param_1].numScriptValues) ||
-           (0x737e < gScrVarPub[_param_1].numScriptObjects)) {
-          if (gScrVmPub[_param_1].showError != false) {
-            Scr_DumpScriptThreads(param_1);
-            Scr_DumpScriptVariablesDefault(param_1);
-            ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            Scr_Error(param_1,"exceeded maximum number of script variables",false);
+        if ((0x3f37e < gScrVarPub[_inst].numScriptValues) ||
+           (0x737e < gScrVarPub[_inst].numScriptObjects)) {
+          if (gScrVmPub[_inst].showError != false) {
+            Scr_DumpScriptThreads(inst);
+            Scr_DumpScriptVariablesDefault(inst);
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            Scr_Error(inst,"exceeded maximum number of script variables",false);
           }
           Sys_Error("exceeded maximum number of script variables");
         }
         iVar12 = Sys_Milliseconds();
-        if (iVar12 - gScrVmGlob[_param_1].starttime < 0x9c4) {
-          ((VariableUnion *)
-          (_param_1 * 0x120c + 0xa0642ec + gScrVmDebugPub[_param_1].jumpbackHistoryIndex * 4))->
-          vectorValue = (float *)local_58;
-          gScrVmDebugPub[_param_1].jumpbackHistoryIndex =
-               (gScrVmDebugPub[_param_1].jumpbackHistoryIndex + 1U) % 0x80;
-          uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-          local_5c = (uint)uVar7;
-          local_58.stringValue = local_58.intValue - local_5c;
+        if (iVar12 - gScrVmGlob[_inst].starttime < 0x9c4) {
+          *(char **)(_inst * 0x120c + 0xa0642ec + gScrVmDebugPub[_inst].jumpbackHistoryIndex * 4) =
+               localFs.pos;
+          gScrVmDebugPub[_inst].jumpbackHistoryIndex =
+               (gScrVmDebugPub[_inst].jumpbackHistoryIndex + 1U) % 0x80;
+          uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+          jumpOffset = (int)uVar6;
+          localFs.pos = (char *)((int)localFs.pos - jumpOffset);
         }
         else {
           if ((logScriptTimes == (dvar_s *)0x0) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x7dd,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x7dd,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
           if ((logScriptTimes->current).enabled != false) {
             Sys_Milliseconds();
             Com_Printf(0x18,"EXCEED TIME: %d\n");
           }
-          if (gScrVmGlob[_param_1].loading == 0) {
+          if (gScrVmGlob[_inst].loading == 0) {
             iVar12 = CL_GetFirstActiveLocalClient();
             if (iVar12 != 0) goto LAB_008d93ec;
-            VM_PrintJumpHistory(param_1);
-            if (gScrVmPub[_param_1].showError != false) {
-              if ((gScrVmPub[_param_1].debugCode != false) &&
-                 (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                           ,0x7fe,0,"%s"), !bVar6)) {
-                pcVar4 = (code *)swi(3);
-                uVar8 = (*pcVar4)();
-                return uVar8;
+            VM_PrintJumpHistory(inst);
+            if (gScrVmPub[_inst].showError != false) {
+              if ((gScrVmPub[_inst].debugCode != false) &&
+                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                           ,0x7fe,0,"%s"), !bVar5)) {
+                pcVar3 = (code *)swi(3);
+                uVar7 = (*pcVar3)();
+                return uVar7;
               }
-              Scr_DumpScriptThreads(param_1);
-              Scr_DumpScriptVariablesDefault(param_1);
-              ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-              gFs[_param_1].localId = (uint)local_54;
-              gFs[_param_1].localVarCount = (uint)local_50;
-              gFs[_param_1].top = (VariableValue *)local_4c;
-              gFs[_param_1].startTop = (VariableValue *)local_48;
-              Scr_Error(param_1,"potential infinite loop in script",false);
+              Scr_DumpScriptThreads(inst);
+              Scr_DumpScriptVariablesDefault(inst);
+              gFs[_inst].pos = localFs.pos;
+              gFs[_inst].localId = localFs.localId;
+              gFs[_inst].localVarCount = localFs.localVarCount;
+              gFs[_inst].top = localFs.top;
+              gFs[_inst].startTop = localFs.startTop;
+              Scr_Error(inst,"potential infinite loop in script",false);
             }
-            if (gScrVmPub[_param_1].abort_on_error != false) {
-              Scr_Error(param_1,"potential infinite loop in script",false);
+            if (gScrVmPub[_inst].abort_on_error != false) {
+              Scr_Error(inst,"potential infinite loop in script",false);
               goto switchD_008d4ffb_caseD_64;
             }
             Com_PrintError(0x18,
                            "%s script runtime error: potential infinite loop in script - killing thread.\n"
                           );
-            Scr_PrintPrevCodePos(param_1,0x18,local_58.codePosValue,0);
-            Scr_ResetTimeout(param_1);
+            Scr_PrintPrevCodePos(inst,0x18,localFs.pos,0);
+            Scr_ResetTimeout(inst);
             while( true ) {
-              local_30.stringValue = GetSafeParentLocalId(param_1,local_54.stringValue);
-              Scr_KillThread(param_1,local_54.stringValue);
-              gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + -local_50.intValue;
-              if (((float)local_4c[1].intValue == 1.12104e-44) &&
-                 (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+              parentLocalId = GetSafeParentLocalId(inst,localFs.localId);
+              Scr_KillThread(inst,localFs.localId);
+              gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + -localFs.localVarCount;
+              if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.12104e-44) &&
+                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                            ,0x9ed,0,
                                            "%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-                 !bVar6)) {
-                pcVar4 = (code *)swi(3);
-                uVar8 = (*pcVar4)();
-                return uVar8;
+                 !bVar5)) {
+                pcVar3 = (code *)swi(3);
+                uVar7 = (*pcVar3)();
+                return uVar7;
               }
-              while (local_4c[1].intValue != 7) {
-                RemoveRefToValue(param_1,(VariableValue *)local_4c);
-                pVVar9 = local_4c + -2;
-                pVVar20 = local_4c + -1;
-                local_4c = pVVar9;
+              while (((VariableUnion *)((int)localFs.top + 4))->intValue != 7) {
+                RemoveRefToValue(inst,localFs.top);
+                pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+                pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+                localFs.top = (VariableValue *)pVVar8;
                 if ((pVVar20->intValue == 8) &&
-                   (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                   (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                              ,0x9f2,0,
                                              "%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-                   !bVar6)) {
-                  pcVar4 = (code *)swi(3);
-                  uVar8 = (*pcVar4)();
-                  return uVar8;
+                   !bVar5)) {
+                  pcVar3 = (code *)swi(3);
+                  uVar7 = (*pcVar3)();
+                  return uVar7;
                 }
               }
-              gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-              gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
-              if ((float)local_30.intValue == 0.0) break;
-              if ((local_4c == (VariableUnion *)local_48.intValue) &&
-                 (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                           ,0x9fd,0,"%s"), !bVar6)) {
-                pcVar4 = (code *)swi(3);
-                uVar8 = (*pcVar4)();
-                return uVar8;
+              gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+              gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
+              if (parentLocalId == 0) break;
+              if ((localFs.top == localFs.startTop) &&
+                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                           ,0x9fd,0,"%s"), !bVar5)) {
+                pcVar3 = (code *)swi(3);
+                uVar7 = (*pcVar3)();
+                return uVar7;
               }
-              RemoveRefToObject(param_1,local_54.stringValue);
-              if ((local_4c[1].intValue != 7) &&
-                 (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+              RemoveRefToObject(inst,localFs.localId);
+              if ((((VariableUnion *)((int)localFs.top + 4))->intValue != 7) &&
+                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                            ,0xa05,0,
                                            "%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-                 !bVar6)) {
-                pcVar4 = (code *)swi(3);
-                uVar8 = (*pcVar4)();
-                return uVar8;
+                 !bVar5)) {
+                pcVar3 = (code *)swi(3);
+                uVar7 = (*pcVar3)();
+                return uVar7;
               }
-              local_58 = (VariableUnion)
-                         ((VariableUnion *)gScrVmPub[_param_1].function_frame)->intValue;
-              if (((ushort *)local_58.intValue == (ushort *)0x0) &&
-                 (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                           ,0xa07,0,"%s"), !bVar6)) {
-                pcVar4 = (code *)swi(3);
-                uVar8 = (*pcVar4)();
-                return uVar8;
+              localFs.pos = ((gScrVmPub[_inst].function_frame)->fs).pos;
+              if (((VariableStackBuffer *)localFs.pos == (VariableStackBuffer *)0x0) &&
+                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                           ,0xa07,0,"%s"), !bVar5)) {
+                pcVar3 = (code *)swi(3);
+                uVar7 = (*pcVar3)();
+                return uVar7;
               }
-              local_50 = (VariableUnion)((gScrVmPub[_param_1].function_frame)->fs).localVarCount;
-              local_54.intValue = local_30.intValue;
-              local_4c = local_4c + -2;
+              localFs.localVarCount = ((gScrVmPub[_inst].function_frame)->fs).localVarCount;
+              localFs.localId = parentLocalId;
+              localFs.top = (VariableValue *)((int)localFs.top + -8);
             }
-            if ((local_4c != (VariableUnion *)local_48.intValue) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+            if ((localFs.top != localFs.startTop) &&
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0x9f9,0,"%s\n\t(localFs.top - localFs.startTop) = %i"),
-               !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+               !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
             goto LAB_008daaf9;
           }
-          if (gScrVmPub[_param_1].abort_on_error != false) {
-            gScrVmPub[_param_1].showError = true;
+          if (gScrVmPub[_inst].abort_on_error != false) {
+            gScrVmPub[_inst].showError = true;
           }
 LAB_008d93ec:
           Com_PrintWarning(0x18,"script runtime warning: potential infinite loop in script.\n");
-          Scr_PrintPrevCodePos(param_1,0x18,local_58.codePosValue,0);
-          uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-          local_5c = (uint)uVar7;
-          local_58.intValue = local_58.intValue - local_5c;
-          Scr_ResetTimeout(param_1);
+          Scr_PrintPrevCodePos(inst,0x18,localFs.pos,0);
+          uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+          jumpOffset = (int)uVar6;
+          localFs.pos = (char *)((int)localFs.pos - jumpOffset);
+          Scr_ResetTimeout(inst);
         }
         goto LAB_008d4ec6;
       case 100:
 switchD_008d4ffb_caseD_64:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x814,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x814,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x815,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x815,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        VVar18 = Scr_EvalVariableField(param_1,local_64);
+        VVar18 = Scr_EvalVariableField(inst,fieldValueId);
         local_104 = VVar18.u;
-        local_4c[2].intValue = (int)local_104;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_104;
         local_100 = (float)VVar18.type;
-        local_4c[3].intValue = (int)local_100;
-        if ((float)local_4c[3].intValue != 8.40779e-45) {
-          local_4c = local_4c + 2;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = (int)local_100;
+        if ((float)((VariableUnion *)((int)localFs.top + 0xc))->intValue != 8.40779e-45) {
+          localFs.top = (VariableValue *)((int)localFs.top + 8);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("++ must be applied to an int (applied to %s)");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
           goto switchD_008d4ffb_caseD_65;
         }
-        local_4c[2].vectorValue = (float *)((int)&(local_4c[2].stackValue)->pos + 1);
-        if ((*local_58.codePosValue != 0x39) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x81a,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        ((VariableUnion *)((int)localFs.top + 8))->vectorValue =
+             (float *)((int)&((VariableUnion *)((int)localFs.top + 8))->stackValue->pos + 1);
+        if ((*(uchar *)(char **)localFs.pos != '9') &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x81a,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
-        SetVariableFieldValue(param_1,local_64,(VariableValue *)(local_4c + 2));
-        local_4c = local_4c + 2;
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
+        SetVariableFieldValue(inst,fieldValueId,(VariableValue *)((int)localFs.top + 8));
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ebd;
       case 0x65:
 switchD_008d4ffb_caseD_65:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x825,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x825,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x826,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x826,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        VVar18 = Scr_EvalVariableField(param_1,local_64);
+        VVar18 = Scr_EvalVariableField(inst,fieldValueId);
         local_10c = VVar18.u;
-        local_4c[2].intValue = (int)local_10c;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_10c;
         local_108 = (float)VVar18.type;
-        local_4c[3].intValue = (int)local_108;
-        if ((float)local_4c[3].intValue == 8.40779e-45) {
-          local_4c[2].vectorValue = (float *)(local_4c[2].intValue + -1);
-          if ((*local_58.codePosValue != 0x39) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x82b,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = (int)local_108;
+        if ((float)((VariableUnion *)((int)localFs.top + 0xc))->intValue == 8.40779e-45) {
+          ((VariableUnion *)((int)localFs.top + 8))->vectorValue =
+               (float *)(((VariableUnion *)((int)localFs.top + 8))->intValue + -1);
+          if ((*(uchar *)(char **)localFs.pos != '9') &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x82b,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
-          SetVariableFieldValue(param_1,local_64,(VariableValue *)(local_4c + 2));
-          local_4c = local_4c + 2;
+          localFs.pos = (char *)((int)(char **)localFs.pos + 1);
+          SetVariableFieldValue(inst,fieldValueId,(VariableValue *)((int)localFs.top + 8));
+          localFs.top = (VariableValue *)((int)localFs.top + 8);
         }
         else {
-          local_4c = local_4c + 2;
-          ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+          localFs.top = (VariableValue *)((int)localFs.top + 8);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("-- must be applied to an int (applied to %s)");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
 switchD_008d4ffb_caseD_66:
-          Scr_EvalOr(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+          Scr_EvalOr(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         }
         goto LAB_008d4ebd;
       case 0x66:
         goto switchD_008d4ffb_caseD_66;
       case 0x67:
-        Scr_EvalExOr(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalExOr(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x68:
-        Scr_EvalAnd(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalAnd(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x69:
-        Scr_EvalEquality(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalEquality(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x6a:
-        Scr_EvalInequality(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalInequality(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x6b:
-        Scr_EvalLess(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalLess(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x6c:
-        Scr_EvalGreater(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalGreater(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x6d:
-        Scr_EvalLessEqual(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalLessEqual(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x6e:
-        Scr_EvalGreaterEqual(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalGreaterEqual(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x6f:
-        Scr_EvalShiftLeft(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalShiftLeft(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x70:
-        Scr_EvalShiftRight(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalShiftRight(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x71:
-        Scr_EvalPlus(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalPlus(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x72:
-        Scr_EvalMinus(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalMinus(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x73:
-        Scr_EvalMultiply(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalMultiply(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x74:
-        Scr_EvalDivide(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalDivide(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x75:
-        Scr_EvalMod(param_1,(VariableValue *)(local_4c + -2),(VariableValue *)local_4c);
+        Scr_EvalMod(inst,(VariableValue *)((int)localFs.top + -8),localFs.top);
         goto LAB_008d4ebd;
       case 0x76:
-        Scr_EvalSizeValue(param_1,(VariableValue *)local_4c);
+        Scr_EvalSizeValue(inst,localFs.top);
         goto LAB_008d4ec6;
       case 0x77:
       case 0x78:
-        iVar12 = Scr_IsInOpcodeMemory(param_1,local_58.codePosValue);
+        iVar12 = Scr_IsInOpcodeMemory(inst,localFs.pos);
         if ((iVar12 == 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x87b,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x87b,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((float)local_4c[1].intValue != 1.4013e-45) goto LAB_008daea6;
-        bVar6 = IsFieldObject(param_1,local_4c->stringValue);
-        if (!bVar6) goto LAB_008daeb3;
-        local_14.intValue = local_4c->stringValue;
-        if ((float)local_4c[-1].intValue == 2.8026e-45) {
-          local_74 = local_4c[-2];
-          local_4c = local_4c + -4;
-          iVar12 = GetObjectType(param_1,local_14.stringValue);
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 1.4013e-45)
+        goto LAB_008daea6;
+        bVar5 = IsFieldObject(inst,(uint)*(float *)localFs.top);
+        if (!bVar5) goto LAB_008daeb3;
+        tempValue.intValue = *(int *)localFs.top;
+        if ((float)((VariableUnion *)((int)localFs.top + -4))->intValue == 2.8026e-45) {
+          stringValue = ((VariableUnion *)((int)localFs.top + -8))->stringValue;
+          localFs.top = (VariableValue *)((int)localFs.top + -0x10);
+          iVar12 = GetObjectType(inst,tempValue.stringValue);
           if ((iVar12 == 0xd) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x88a,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x88a,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          iVar12 = GetObjectType(param_1,local_14.stringValue);
+          iVar12 = GetObjectType(inst,tempValue.stringValue);
           if ((iVar12 == 0xe) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x88b,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x88b,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          iVar12 = GetObjectType(param_1,local_14.stringValue);
+          iVar12 = GetObjectType(inst,tempValue.stringValue);
           if ((iVar12 == 0xf) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x88c,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x88c,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          iVar12 = GetObjectType(param_1,local_14.stringValue);
+          iVar12 = GetObjectType(inst,tempValue.stringValue);
           if ((iVar12 == 0x10) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x88d,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x88d,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          iVar12 = GetObjectType(param_1,local_14.stringValue);
+          iVar12 = GetObjectType(inst,tempValue.stringValue);
           if ((iVar12 == 0x15) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                       ,0x88e,0,"%s"), !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                       ,0x88e,0,"%s"), !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
           local_7c = 10;
-          local_80.stackValue = VM_ArchiveStack(param_1,(function_stack_t *)&local_58);
-          VVar15 = local_74;
-          uVar8 = GetVariable(param_1,local_14.stringValue,0x17ffe);
-          uVar8 = GetArray(param_1,uVar8);
-          uVar8 = GetVariable(param_1,uVar8,VVar15.stringValue);
-          local_c = GetArray(param_1,uVar8);
-          local_68 = GetNewObjectVariable(param_1,local_c,local_54.stringValue);
-          SetNewVariableValue(param_1,local_68,(VariableValue *)&local_80);
+          stackValue.stackValue = VM_ArchiveStack(inst,&localFs);
+          uVar7 = stringValue;
+          uVar10 = GetVariable(inst,tempValue.stringValue,0x17ffe);
+          uVar10 = GetArray(inst,uVar10);
+          uVar7 = GetVariable(inst,uVar10,uVar7);
+          id = GetArray(inst,uVar7);
+          stackId = GetNewObjectVariable(inst,id,localFs.localId);
+          SetNewVariableValue(inst,stackId,(VariableValue *)&stackValue);
           local_10.intValue = 1;
-          pVVar20 = &local_14;
-          VVar15 = local_54;
-          uVar8 = Scr_GetSelf(param_1,local_54.stringValue);
-          uVar8 = GetObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,uVar8);
-          uVar8 = GetArray(param_1,uVar8);
-          uVar8 = GetNewObjectVariable(param_1,uVar8,VVar15.stringValue);
-          SetNewVariableValue(param_1,uVar8,(VariableValue *)pVVar20);
-          Scr_SetThreadNotifyName(param_1,local_54.stringValue,local_74.stringValue);
+          pVVar20 = &tempValue;
+          uVar7 = localFs.localId;
+          uVar10 = Scr_GetSelf(inst,localFs.localId);
+          uVar10 = GetObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,uVar10);
+          uVar10 = GetArray(inst,uVar10);
+          uVar7 = GetNewObjectVariable(inst,uVar10,uVar7);
+          SetNewVariableValue(inst,uVar7,(VariableValue *)pVVar20);
+          Scr_SetThreadNotifyName(inst,localFs.localId,stringValue);
           goto LAB_008daaf9;
         }
-        gScrVarPub[_param_1].error_index = 3;
-        ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-        gFs[_param_1].localId = (uint)local_54;
-        gFs[_param_1].localVarCount = (uint)local_50;
-        gFs[_param_1].top = (VariableValue *)local_4c;
-        gFs[_param_1].startTop = (VariableValue *)local_48;
-        Scr_Error(param_1,"first parameter of waittill must evaluate to a string",false);
+        gScrVarPub[_inst].error_index = 3;
+        gFs[_inst].pos = localFs.pos;
+        gFs[_inst].localId = localFs.localId;
+        gFs[_inst].localVarCount = localFs.localVarCount;
+        gFs[_inst].top = localFs.top;
+        gFs[_inst].startTop = localFs.startTop;
+        Scr_Error(inst,"first parameter of waittill must evaluate to a string",false);
         goto LAB_008daeb3;
       case 0x79:
-        if (local_4c[1].intValue != 1) goto LAB_008daea6;
-        local_c = local_4c->stringValue;
-        bVar6 = IsFieldObject(param_1,local_c);
-        if (bVar6) {
-          if ((float)local_4c[-1].intValue != 2.8026e-45) {
-            gScrVarPub[_param_1].error_index = 1;
-            ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            Scr_Error(param_1,"first parameter of notify must evaluate to a string",false);
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue != 1) goto LAB_008daea6;
+        id = *(uint *)localFs.top;
+        bVar5 = IsFieldObject(inst,id);
+        if (bVar5) {
+          if ((float)((VariableUnion *)((int)localFs.top + -4))->intValue != 2.8026e-45) {
+            gScrVarPub[_inst].error_index = 1;
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            Scr_Error(inst,"first parameter of notify must evaluate to a string",false);
             goto LAB_008daeb3;
           }
-          local_74 = (VariableUnion)local_4c[-2].stringValue;
-          local_4c = local_4c + -4;
-          if (gScrVmDebugPub[_param_1].checkBreakon != 0) {
-            Scr_CheckBreakonNotify
-                      (param_1,local_c,local_74.stringValue,(VariableValue *)local_4c,
-                       local_58.codePosValue,local_54.stringValue);
+          stringValue = ((VariableUnion *)((int)localFs.top + -8))->stringValue;
+          localFs.top = (VariableValue *)((int)localFs.top + -0x10);
+          if (gScrVmDebugPub[_inst].checkBreakon != 0) {
+            Scr_CheckBreakonNotify(inst,id,stringValue,localFs.top,localFs.pos,localFs.localId);
           }
-          ((VariableUnion *)gScrVmPub[_param_1].function_frame)->codePosValue = (char *)local_58;
-          VM_Notify(param_1,local_c,local_74.stringValue,(VariableValue *)local_4c);
-          local_58 = *(VariableUnion *)gScrVmPub[_param_1].function_frame;
-          RemoveRefToObject(param_1,local_c);
-          SL_RemoveRefToString(param_1,local_74.stringValue);
-          if ((local_4c[1].intValue == 7) &&
-             (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+          ((gScrVmPub[_inst].function_frame)->fs).pos = localFs.pos;
+          VM_Notify(inst,id,stringValue,localFs.top);
+          localFs.pos = ((gScrVmPub[_inst].function_frame)->fs).pos;
+          RemoveRefToObject(inst,id);
+          SL_RemoveRefToString(inst,stringValue);
+          if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x8c6,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-             !bVar6)) {
-            pcVar4 = (code *)swi(3);
-            uVar8 = (*pcVar4)();
-            return uVar8;
+             !bVar5)) {
+            pcVar3 = (code *)swi(3);
+            uVar7 = (*pcVar3)();
+            return uVar7;
           }
-          while (local_4c[1].intValue != 8) {
-            RemoveRefToValue(param_1,(VariableValue *)local_4c);
-            pVVar9 = local_4c + -2;
-            pVVar20 = local_4c + -1;
-            local_4c = pVVar9;
+          while (((VariableUnion *)((int)localFs.top + 4))->intValue != 8) {
+            RemoveRefToValue(inst,localFs.top);
+            pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+            pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+            localFs.top = (VariableValue *)pVVar8;
             if ((pVVar20->intValue == 7) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0x8cb,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"
-                                        ), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+                                        ), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
           }
           goto LAB_008d4ebd;
         }
 LAB_008daeb3:
-        local_28.intValue = GetObjectType(param_1,local_4c->stringValue);
+        type = GetObjectType(inst,(uint)*(float *)localFs.top);
         goto LAB_008daee0;
       case 0x7a:
-        if (local_4c[1].intValue != 1) goto LAB_008dae80;
-        bVar6 = IsFieldObject(param_1,local_4c->stringValue);
-        if (bVar6) {
-          if ((float)local_4c[-1].intValue == 2.8026e-45) {
-            local_74 = local_4c[-2];
-            AddRefToObject(param_1,local_54.stringValue);
-            local_38 = AllocThread(param_1,local_54.stringValue);
-            iVar12 = GetObjectType(param_1,local_4c->stringValue);
+        if (((VariableUnion *)((int)localFs.top + 4))->intValue != 1) goto LAB_008dae80;
+        bVar5 = IsFieldObject(inst,*(uint *)localFs.top);
+        if (bVar5) {
+          if ((float)((VariableUnion *)((int)localFs.top + -4))->intValue == 2.8026e-45) {
+            stringValue = ((VariableUnion *)((int)localFs.top + -8))->stringValue;
+            AddRefToObject(inst,localFs.localId);
+            threadId = AllocThread(inst,localFs.localId);
+            iVar12 = GetObjectType(inst,(uint)*(float *)localFs.top);
             if ((iVar12 == 0xd) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                         ,0x8e8,0,"%s"), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                         ,0x8e8,0,"%s"), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
-            iVar12 = GetObjectType(param_1,local_4c->stringValue);
+            iVar12 = GetObjectType(inst,(uint)*(float *)localFs.top);
             if ((iVar12 == 0xe) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                         ,0x8e9,0,"%s"), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                         ,0x8e9,0,"%s"), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
-            iVar12 = GetObjectType(param_1,local_4c->stringValue);
+            iVar12 = GetObjectType(inst,(uint)*(float *)localFs.top);
             if ((iVar12 == 0xf) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                         ,0x8ea,0,"%s"), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                         ,0x8ea,0,"%s"), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
-            iVar12 = GetObjectType(param_1,local_4c->stringValue);
+            iVar12 = GetObjectType(inst,(uint)*(float *)localFs.top);
             if ((iVar12 == 0x10) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                         ,0x8eb,0,"%s"), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                         ,0x8eb,0,"%s"), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
-            iVar12 = GetObjectType(param_1,local_4c->stringValue);
+            iVar12 = GetObjectType(inst,(uint)*(float *)localFs.top);
             if ((iVar12 == 0x15) &&
-               (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
-                                         ,0x8ec,0,"%s"), !bVar6)) {
-              pcVar4 = (code *)swi(3);
-              uVar8 = (*pcVar4)();
-              return uVar8;
+               (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
+                                         ,0x8ec,0,"%s"), !bVar5)) {
+              pcVar3 = (code *)swi(3);
+              uVar7 = (*pcVar3)();
+              return uVar7;
             }
-            VVar15 = local_74;
-            uVar8 = local_38;
-            uVar10 = GetVariable(param_1,local_4c->stringValue,0x17ffe);
-            uVar10 = GetArray(param_1,uVar10);
-            uVar10 = GetVariable(param_1,uVar10,VVar15.stringValue);
-            uVar10 = GetArray(param_1,uVar10);
-            GetObjectVariable(param_1,uVar10,uVar8);
-            RemoveRefToObject(param_1,local_38);
+            uVar7 = stringValue;
+            uVar10 = threadId;
+            uVar9 = GetVariable(inst,(uint)*(float *)localFs.top,0x17ffe);
+            uVar9 = GetArray(inst,uVar9);
+            uVar7 = GetVariable(inst,uVar9,uVar7);
+            uVar7 = GetArray(inst,uVar7);
+            GetObjectVariable(inst,uVar7,uVar10);
+            RemoveRefToObject(inst,threadId);
             local_10.intValue = 1;
-            local_14 = *local_4c;
-            pVVar20 = &local_14;
-            uVar8 = local_38;
-            uVar10 = GetObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,
-                                       local_54.stringValue);
-            uVar10 = GetArray(param_1,uVar10);
-            uVar8 = GetNewObjectVariable(param_1,uVar10,uVar8);
-            SetNewVariableValue(param_1,uVar8,(VariableValue *)pVVar20);
-            Scr_SetThreadNotifyName(param_1,local_38,local_74.stringValue);
-            local_4c = local_4c + -4;
+            tempValue = (localFs.top)->u;
+            pVVar20 = &tempValue;
+            uVar7 = threadId;
+            uVar10 = GetObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,localFs.localId);
+            uVar10 = GetArray(inst,uVar10);
+            uVar7 = GetNewObjectVariable(inst,uVar10,uVar7);
+            SetNewVariableValue(inst,uVar7,(VariableValue *)pVVar20);
+            Scr_SetThreadNotifyName(inst,threadId,stringValue);
+            localFs.top = (VariableValue *)((int)localFs.top + -0x10);
             goto LAB_008d4ec6;
           }
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"first parameter of endon must evaluate to a string",false);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"first parameter of endon must evaluate to a string",false);
         }
-        local_28.intValue = GetObjectType(param_1,local_4c->stringValue);
+        type = GetObjectType(inst,(uint)*(float *)localFs.top);
         goto LAB_008daecc;
       case 0x7b:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x90a,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x90a,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x90b,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x90b,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_4c[3].intValue = 8;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 8;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x7c:
-        local_5c = Scr_ReadInt(&local_58.codePosValue);
-        local_58.intValue = local_58.intValue + local_5c;
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        gCaseCount[_param_1] = (uint)uVar7;
-        if ((float)local_4c[1].intValue == 2.8026e-45) {
+        jumpOffset = Scr_ReadInt(&localFs.pos);
+        localFs.pos = (char *)((int)localFs.pos + 0xd) + jumpOffset + -0xd;
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        gCaseCount[_inst] = (uint)uVar6;
+        if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 2.8026e-45) {
 LAB_008da3bc:
-          local_40 = (float)local_4c->intValue;
-          SL_RemoveRefToString(param_1,local_4c->stringValue);
+          caseValue = *(uint *)localFs.top;
+          SL_RemoveRefToString(inst,(uint)*(float *)localFs.top);
         }
-        else if ((float)local_4c[1].intValue == 8.40779e-45) {
-          bVar6 = IsValidArrayIndex(param_1,local_4c->stringValue);
-          if (!bVar6) {
-            ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-            gFs[_param_1].localId = (uint)local_54;
-            gFs[_param_1].localVarCount = (uint)local_50;
-            gFs[_param_1].top = (VariableValue *)local_4c;
-            gFs[_param_1].startTop = (VariableValue *)local_48;
-            bVar6 = false;
+        else if ((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 8.40779e-45) {
+          bVar5 = IsValidArrayIndex(inst,(uint)*(float *)localFs.top);
+          if (!bVar5) {
+            gFs[_inst].pos = localFs.pos;
+            gFs[_inst].localId = localFs.localId;
+            gFs[_inst].localVarCount = localFs.localVarCount;
+            gFs[_inst].top = localFs.top;
+            gFs[_inst].startTop = localFs.startTop;
+            bVar5 = false;
             pcVar11 = va("switch index %d out of range");
-            Scr_Error(param_1,pcVar11,bVar6);
+            Scr_Error(inst,pcVar11,bVar5);
             goto LAB_008da3bc;
           }
-          local_40 = (float)GetInternalVariableIndex(param_1,local_4c->stringValue);
+          caseValue = GetInternalVariableIndex(inst,(uint)*(float *)localFs.top);
         }
         else {
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          bVar6 = false;
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          bVar5 = false;
           pcVar11 = va("cannot switch on %s");
-          Scr_Error(param_1,pcVar11,bVar6);
+          Scr_Error(inst,pcVar11,bVar5);
         }
-        if (gCaseCount[_param_1] == 0) goto LAB_008d4ebd;
-        if ((local_40 == 0.0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x930,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if (gCaseCount[_inst] == 0) goto LAB_008d4ebd;
+        if ((caseValue == 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x930,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
         goto LAB_008da468;
       case 0x7d:
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        gCaseCount[_param_1] = (uint)uVar7;
-        Scr_ReadIntArray(&local_58.codePosValue,gCaseCount[_param_1] << 1);
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        gCaseCount[_inst] = (uint)uVar6;
+        Scr_ReadIntArray(&localFs.pos,gCaseCount[_inst] << 1);
         goto LAB_008d4ec6;
       case 0x7e:
-        local_4c = local_4c + -4;
-        Scr_CastVector(param_1,(VariableValue *)local_4c);
+        localFs.top = (VariableValue *)((int)localFs.top + -0x10);
+        Scr_CastVector(inst,localFs.top);
         goto LAB_008d4ec6;
       case 0x7f:
         goto switchD_008d4ffb_caseD_7f;
       case 0x80:
-        if ((g_script_error_level[_param_1] < 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x953,0,"%s\n\t(g_script_error_level[inst]) = %i"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((g_script_error_level[_inst] < 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x953,0,"%s\n\t(g_script_error_level[inst]) = %i"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        g_script_error_level[_param_1] = g_script_error_level[_param_1] + -1;
-        ((VariableUnion *)(gFs + _param_1))->codePosValue = (char *)local_58;
-        gFs[_param_1].localId = (uint)local_54;
-        gFs[_param_1].localVarCount = (uint)local_50;
-        gFs[_param_1].top = (VariableValue *)local_4c;
-        gFs[_param_1].startTop = (VariableValue *)local_48;
+        g_script_error_level[_inst] = g_script_error_level[_inst] + -1;
+        gFs[_inst].pos = localFs.pos;
+        gFs[_inst].localId = localFs.localId;
+        gFs[_inst].localVarCount = localFs.localVarCount;
+        gFs[_inst].top = localFs.top;
+        gFs[_inst].startTop = localFs.startTop;
         return 0;
       case 0x81:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x95d,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x95d,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x95e,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < localFs.top) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x95e,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        local_84 = Scr_ReadInt(&local_58.codePosValue);
-        local_24 = Scr_ReadInt(&local_58.codePosValue);
-        uVar8 = FindEntityId(param_1,local_24,local_84,0);
-        local_4c[2].stringValue = uVar8;
-        if (local_4c[2].intValue == 0) {
-          local_4c[3].intValue = 0;
-          local_4c = local_4c + 2;
-          *(VariableUnion *)(gFs + _param_1) = local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"unknown object",false);
+        classnum = Scr_ReadInt(&localFs.pos);
+        entnum = Scr_ReadInt(&localFs.pos);
+        uVar7 = FindEntityId(inst,entnum,classnum,0);
+        ((VariableUnion *)((int)localFs.top + 8))->stringValue = uVar7;
+        if (((VariableUnion *)((int)localFs.top + 8))->intValue == 0) {
+          ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 0;
+          localFs.top = (VariableValue *)((int)localFs.top + 8);
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"unknown object",false);
         }
         else {
-          local_4c = local_4c + 2;
+          localFs.top = (VariableValue *)((int)localFs.top + 8);
         }
         goto LAB_008da71a;
       case 0x82:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x976,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x976,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x977,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x977,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
         VVar15.intValue._2_2_ = 0;
-        VVar15.stringValue._0_2_ = uVar7;
-        local_4c[2] = VVar15;
-        local_4c = local_4c + 2;
+        VVar15.stringValue._0_2_ = uVar6;
+        *(VariableUnion *)((int)localFs.top + 8) = VVar15;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
 LAB_008da71a:
-        local_4c[1].intValue = 1;
-        AddRefToObject(param_1,local_4c->stringValue);
+        ((VariableUnion *)((int)localFs.top + 4))->intValue = 1;
+        AddRefToObject(inst,(uint)*(float *)localFs.top);
 switchD_008d4ffb_caseD_7f:
         goto LAB_008d4ec6;
       case 0x83:
-        if ((local_4c < gScrVmPub[_param_1].stack) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x97d,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((localFs.top < gScrVmPub[_inst].stack) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x97d,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].maxstack)->u < local_4c + 2) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0x97e,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].maxstack)->u < (VariableUnion *)((int)localFs.top + 8)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0x97e,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        uVar8 = FindVariable(param_1,local_54.stringValue,(uint)uVar7);
-        VVar18 = Scr_EvalVariable(param_1,uVar8);
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        uVar7 = FindVariable(inst,localFs.localId,(uint)uVar6);
+        VVar18 = Scr_EvalVariable(inst,uVar7);
         local_114 = VVar18.u;
-        local_4c[2].intValue = (int)local_114;
+        ((VariableUnion *)((int)localFs.top + 8))->intValue = (int)local_114;
         local_110 = VVar18.type;
-        local_4c[3].intValue = local_110;
-        local_4c = local_4c + 2;
+        ((VariableUnion *)((int)localFs.top + 0xc))->intValue = local_110;
+        localFs.top = (VariableValue *)((int)localFs.top + 8);
         goto LAB_008d4ec6;
       case 0x84:
-        local_20 = 0;
-        uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-        local_64 = FindVariable(param_1,local_54.stringValue,(uint)uVar7);
-        if (local_64 == 0) {
-          ((VariableUnion *)(gFs + _param_1))->vectorValue = (float *)local_58;
-          gFs[_param_1].localId = (uint)local_54;
-          gFs[_param_1].localVarCount = (uint)local_50;
-          gFs[_param_1].top = (VariableValue *)local_4c;
-          gFs[_param_1].startTop = (VariableValue *)local_48;
-          Scr_Error(param_1,"cannot create a new local variable in the debugger",false);
+        fieldValueIndex = 0;
+        uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+        fieldValueId = FindVariable(inst,localFs.localId,(uint)uVar6);
+        if (fieldValueId == 0) {
+          gFs[_inst].pos = localFs.pos;
+          gFs[_inst].localId = localFs.localId;
+          gFs[_inst].localVarCount = localFs.localVarCount;
+          gFs[_inst].top = localFs.top;
+          gFs[_inst].startTop = localFs.startTop;
+          Scr_Error(inst,"cannot create a new local variable in the debugger",false);
           goto switchD_008d4ffb_caseD_85;
         }
         goto LAB_008d4ec6;
       case 0x85:
 switchD_008d4ffb_caseD_85:
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 0x86:
-        local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+        localFs.pos = (char *)((int)(char **)localFs.pos + 1);
         goto LAB_008d4ec6;
       case 0x87:
-        if (gScrVarPub[_param_1].developer == false) goto LAB_008d4ec6;
-        iVar12 = Scr_HitBreakpoint(param_1,(VariableValue *)local_4c,local_58.codePosValue,
-                                   local_54.stringValue,0);
-        gOpcode[_param_1] = iVar12;
+        if (gScrVarPub[_inst].developer == false) goto LAB_008d4ec6;
+        iVar12 = Scr_HitBreakpoint(inst,localFs.top,localFs.pos,localFs.localId,0);
+        gOpcode[_inst] = iVar12;
         goto LAB_008d4fc6;
       case 0x88:
-        iVar12 = Scr_HitAssignmentBreakpoint
-                           (param_1,(VariableValue *)local_4c,local_58.codePosValue,
-                            local_54.stringValue,0);
-        gOpcode[_param_1] = iVar12;
+        iVar12 = Scr_HitAssignmentBreakpoint(inst,localFs.top,localFs.pos,localFs.localId,0);
+        gOpcode[_inst] = iVar12;
         goto LAB_008d4fc6;
       case 0x89:
         goto switchD_008d4ffb_caseD_89;
       default:
-        gScrVmPub[_param_1].terminal_error = true;
-        pcVar21 = (char *)0x0;
+        gScrVmPub[_inst].terminal_error = true;
+        dialogMessage = (char *)0x0;
         pcVar11 = va("CODE ERROR: unknown opcode %d");
-        RuntimeError(param_1,local_58.codePosValue,0,pcVar11,pcVar21);
+        RuntimeError(inst,localFs.pos,0,pcVar11,dialogMessage);
         goto LAB_008d4ec6;
       }
-      uVar7 = *(ushort *)local_58.vectorValue;
-      local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 2);
-      local_20 = Scr_GetVariableFieldIndex(param_1,(uint)local_44,(uint)uVar7);
-      local_64 = gScrVarGlob[_param_1].variableList[local_20 + 0x8000].hash.id;
+      ppcVar4 = (char **)localFs.pos;
+      localFs.pos = (char *)((int)(char **)localFs.pos + 2);
+      fieldValueIndex = Scr_GetVariableFieldIndex(inst,objectId,(uint)*(ushort *)ppcVar4);
+      fieldValueId = gScrVarGlob[_inst].variableList[fieldValueIndex + 0x8000].hash.id;
       goto LAB_008d4ec6;
     }
 LAB_008daf57:
     Monkey_GrabComPrints(true);
     Com_PrintMessage(6,"caught script exception\n",0);
-    switch(gOpcode[_param_1]) {
+    switch(gOpcode[_inst]) {
     case 0x21:
     case 0x22:
     case 0x23:
     case 0x24:
     case 0x84:
-      if ((gScrVarPub[_param_1].error_index < -1) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0xa3d,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((gScrVarPub[_inst].error_index < -1) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0xa3d,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      if (gScrVarPub[_param_1].error_index < 0) {
-        gScrVarPub[_param_1].error_index = 1;
+      if (gScrVarPub[_inst].error_index < 0) {
+        gScrVarPub[_inst].error_index = 1;
       }
       break;
     case 0x29:
@@ -2928,7 +2918,7 @@ LAB_008daf57:
     case 0x3b:
     case 100:
     case 0x65:
-      gScrVarPub[_param_1].error_index = 0;
+      gScrVarPub[_inst].error_index = 0;
       break;
     case 0x3e:
     case 0x3f:
@@ -2937,16 +2927,16 @@ LAB_008daf57:
     case 0x42:
     case 0x43:
     case 0x44:
-      if ((gScrVarPub[_param_1].error_index < 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0xa53,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((gScrVarPub[_inst].error_index < 0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0xa53,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      if (0 < gScrVarPub[_param_1].error_index) {
-        gScrVarPub[_param_1].error_index =
-             (gScrVmPub[_param_1].outparamcount + 1) - gScrVarPub[_param_1].error_index;
+      if (0 < gScrVarPub[_inst].error_index) {
+        gScrVarPub[_inst].error_index =
+             (gScrVmPub[_inst].outparamcount + 1) - gScrVarPub[_inst].error_index;
       }
       break;
     case 0x45:
@@ -2956,115 +2946,115 @@ LAB_008daf57:
     case 0x49:
     case 0x4a:
     case 0x4b:
-      if ((gScrVarPub[_param_1].error_index < -1) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0xa61,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((gScrVarPub[_inst].error_index < -1) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0xa61,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      if (gScrVarPub[_param_1].error_index < 1) {
-        if (gScrVarPub[_param_1].error_index < 0) {
-          gScrVarPub[_param_1].error_index = 1;
+      if (gScrVarPub[_inst].error_index < 1) {
+        if (gScrVarPub[_inst].error_index < 0) {
+          gScrVarPub[_inst].error_index = 1;
         }
       }
       else {
-        gScrVarPub[_param_1].error_index =
-             (gScrVmPub[_param_1].outparamcount + 2) - gScrVarPub[_param_1].error_index;
+        gScrVarPub[_inst].error_index =
+             (gScrVmPub[_inst].outparamcount + 2) - gScrVarPub[_inst].error_index;
       }
     }
-    RuntimeError(param_1,local_58.codePosValue,gScrVarPub[_param_1].error_index,
-                 gScrVarPub[_param_1].error_message,gScrVmGlob[_param_1].dialog_error_message);
-    Scr_ClearErrorMessage(param_1);
-    switch(gOpcode[_param_1]) {
+    RuntimeError(inst,localFs.pos,gScrVarPub[_inst].error_index,gScrVarPub[_inst].error_message,
+                 gScrVmGlob[_inst].dialog_error_message);
+    Scr_ClearErrorMessage(inst);
+    switch(gOpcode[_inst]) {
     case 0x1f:
     case 0x20:
-      RemoveRefToValue(param_1,(VariableValue *)local_4c);
-      local_4c = local_4c + -2;
-      RemoveRefToValue(param_1,(VariableValue *)local_4c);
-      local_4c[1].intValue = 0;
+      RemoveRefToValue(inst,localFs.top);
+      localFs.top = (VariableValue *)((int)localFs.top + -8);
+      RemoveRefToValue(inst,localFs.top);
+      ((VariableUnion *)((int)localFs.top + 4))->intValue = 0;
       break;
     case 0x21:
     case 0x22:
     case 0x23:
     case 0x84:
-      local_20 = 0;
-      local_64 = GetDummyFieldValue(param_1);
+      fieldValueIndex = 0;
+      fieldValueId = GetDummyFieldValue(inst);
     case 0x24:
       goto switchD_008db1a1_caseD_4c;
     case 0x26:
       goto switchD_008db1a1_caseD_26;
     case 0x29:
     case 0x2a:
-      local_4c[1].intValue = 0;
+      ((VariableUnion *)((int)localFs.top + 4))->intValue = 0;
       break;
     case 0x2d:
     case 0x2e:
-      local_20 = 0;
-      local_64 = GetDummyFieldValue(param_1);
+      fieldValueIndex = 0;
+      fieldValueId = GetDummyFieldValue(inst);
       break;
     case 0x2f:
-      if (gScrVmPub[_param_1].outparamcount != 0) {
-        if ((gScrVmPub[_param_1].outparamcount != 1) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xa95,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+      if (gScrVmPub[_inst].outparamcount != 0) {
+        if ((gScrVmPub[_inst].outparamcount != 1) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xa95,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if (((gScrVmPub[_param_1].top)->type != 0) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xa97,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if (((gScrVmPub[_inst].top)->type != 0) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xa97,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        gScrVmPub[_param_1].outparamcount = 0;
+        gScrVmPub[_inst].outparamcount = 0;
       }
       break;
     case 0x35:
-      if ((local_4c[1].intValue == 7) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+      if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xaf1,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-         !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+         !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      while (local_4c[1].intValue != 8) {
-        RemoveRefToValue(param_1,(VariableValue *)local_4c);
-        pVVar9 = local_4c + -2;
-        pVVar20 = local_4c + -1;
-        local_4c = pVVar9;
+      while (((VariableUnion *)((int)localFs.top + 4))->intValue != 8) {
+        RemoveRefToValue(inst,localFs.top);
+        pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+        pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+        localFs.top = (VariableValue *)pVVar8;
         if ((pVVar20->intValue == 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0xaf6,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"),
-           !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
       }
-      local_4c[1].intValue = 7;
+      ((VariableUnion *)((int)localFs.top + 4))->intValue = 7;
       break;
     case 0x39:
-      if (gScrVmPub[_param_1].outparamcount != 0) {
-        if ((gScrVmPub[_param_1].outparamcount != 1) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xaa4,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+      if (gScrVmPub[_inst].outparamcount != 0) {
+        if ((gScrVmPub[_inst].outparamcount != 1) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xaa4,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        if ((&(gScrVmPub[_param_1].top)->u != local_4c) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xaa6,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+        if ((&(gScrVmPub[_inst].top)->u != &(localFs.top)->u) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xaa6,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
-        RemoveRefToValue(param_1,(VariableValue *)local_4c);
-        gScrVmPub[_param_1].outparamcount = 0;
+        RemoveRefToValue(inst,localFs.top);
+        gScrVmPub[_inst].outparamcount = 0;
       }
     case 0x66:
     case 0x67:
@@ -3083,11 +3073,11 @@ LAB_008daf57:
     case 0x74:
     case 0x75:
 switchD_008db1a1_caseD_66:
-      local_4c = local_4c + -2;
+      localFs.top = (VariableValue *)((int)localFs.top + -8);
       break;
     case 0x3b:
-      RemoveRefToValue(param_1,(VariableValue *)local_4c);
-      gScrVmPub[_param_1].outparamcount = 0;
+      RemoveRefToValue(inst,localFs.top);
+      gScrVmPub[_inst].outparamcount = 0;
       goto switchD_008db1a1_caseD_66;
     case 0x3e:
     case 0x3f:
@@ -3103,280 +3093,274 @@ switchD_008db1a1_caseD_66:
     case 0x49:
     case 0x4a:
     case 0x4b:
-      Scr_ClearOutParams(param_1);
-      local_4c = &gScrVmPub[_param_1].top[1].u;
-      gScrVmPub[_param_1].top[1].type = 0;
+      Scr_ClearOutParams(inst);
+      localFs.top = gScrVmPub[_inst].top + 1;
+      gScrVmPub[_inst].top[1].type = 0;
       break;
     case 0x4c:
       goto switchD_008db1a1_caseD_4c;
     case 0x4f:
     case 0x50:
     case 0x52:
-      Scr_ReadCodePos(param_1,&local_58.codePosValue);
+      Scr_ReadCodePos(inst,&localFs.pos);
     case 0x51:
     case 0x53:
-      if ((local_4c[1].intValue == 7) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0xb03,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0xb03,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      while (local_4c[1].intValue != 8) {
-        RemoveRefToValue(param_1,(VariableValue *)local_4c);
-        pVVar9 = local_4c + -2;
-        pVVar20 = local_4c + -1;
-        local_4c = pVVar9;
+      while (((VariableUnion *)((int)localFs.top + 4))->intValue != 8) {
+        RemoveRefToValue(inst,localFs.top);
+        pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+        pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+        localFs.top = (VariableValue *)pVVar8;
         if ((pVVar20->intValue == 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xb08,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xb08,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
       }
-      local_4c[1].intValue = 0;
+      ((VariableUnion *)((int)localFs.top + 4))->intValue = 0;
       break;
     case 0x54:
     case 0x56:
-      Scr_ReadCodePos(param_1,&local_58.codePosValue);
+      Scr_ReadCodePos(inst,&localFs.pos);
     case 0x55:
     case 0x57:
-      for (local_2c = Scr_ReadInt(&local_58.codePosValue); local_2c != 0; local_2c = local_2c - 1) {
-        RemoveRefToValue(param_1,(VariableValue *)local_4c);
-        local_4c = local_4c + -2;
+      for (paramcount = Scr_ReadInt(&localFs.pos); paramcount != 0; paramcount = paramcount - 1) {
+        RemoveRefToValue(inst,localFs.top);
+        localFs.top = (VariableValue *)((int)localFs.top + -8);
       }
-      local_4c[3].intValue = 0;
-      local_4c = local_4c + 2;
+      ((VariableUnion *)((int)localFs.top + 0xc))->intValue = 0;
+      localFs.top = (VariableValue *)((int)localFs.top + 8);
       break;
     case 0x59:
-      local_44 = (float)GetDummyObject(param_1);
+      objectId = GetDummyObject(inst);
       goto switchD_008db1a1_caseD_66;
     case 0x5a:
-      local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+      localFs.pos = (char *)((int)(char **)localFs.pos + 1);
 switchD_008db1a1_caseD_26:
-      local_44 = (float)GetDummyObject(param_1);
+      objectId = GetDummyObject(inst);
       break;
     case 0x5e:
     case 0x5f:
     case 0x60:
     case 0x61:
-      Scr_ReadUnsignedShort(&local_58.codePosValue);
+      Scr_ReadUnsignedShort(&localFs.pos);
       goto switchD_008db1a1_caseD_66;
     case 99:
-      uVar7 = Scr_ReadUnsignedShort(&local_58.codePosValue);
-      local_5c = (uint)uVar7;
-      local_58.intValue = local_58.intValue - local_5c;
+      uVar6 = Scr_ReadUnsignedShort(&localFs.pos);
+      jumpOffset = (int)uVar6;
+      localFs.pos = (char *)((int)localFs.pos - jumpOffset);
       break;
     case 0x77:
-      local_58.vectorValue = (float *)((int)&(local_58.stackValue)->pos + 1);
+      localFs.pos = (char *)((int)(char **)localFs.pos + 1);
     case 0x78:
     case 0x7a:
-      RemoveRefToValue(param_1,(VariableValue *)local_4c);
-      local_4c = local_4c + -2;
+      RemoveRefToValue(inst,localFs.top);
+      localFs.top = (VariableValue *)((int)localFs.top + -8);
       goto switchD_008db1a1_caseD_4c;
     case 0x79:
-      if ((local_4c[1].intValue == 7) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0xb27,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+      if ((((VariableUnion *)((int)localFs.top + 4))->intValue == 7) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0xb27,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      while (local_4c[1].intValue != 8) {
-        RemoveRefToValue(param_1,(VariableValue *)local_4c);
-        pVVar9 = local_4c + -2;
-        pVVar20 = local_4c + -1;
-        local_4c = pVVar9;
+      while (((VariableUnion *)((int)localFs.top + 4))->intValue != 8) {
+        RemoveRefToValue(inst,localFs.top);
+        pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+        pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+        localFs.top = (VariableValue *)pVVar8;
         if ((pVVar20->intValue == 7) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xb2c,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xb2c,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
       }
       goto switchD_008db1a1_caseD_4c;
     case 0x7c:
-      if (gCaseCount[_param_1] != 0) {
+      if (gCaseCount[_inst] != 0) {
         do {
-          local_34 = (float)Scr_ReadInt(&local_58.codePosValue);
-          local_70.codePosValue = Scr_ReadCodePos(param_1,&local_58.codePosValue);
-          gCaseCount[_param_1] = gCaseCount[_param_1] + -1;
-        } while (gCaseCount[_param_1] != 0);
-        if (((local_34 == 0.0) &&
-            (local_58.codePosValue = local_70.codePosValue,
-            (ushort *)local_70.intValue == (ushort *)0x0)) &&
-           (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xb3d,0,"%s"), !bVar6)) {
-          pcVar4 = (code *)swi(3);
-          uVar8 = (*pcVar4)();
-          return uVar8;
+          currentCaseValue = Scr_ReadInt(&localFs.pos);
+          currentCodePos = Scr_ReadCodePos(inst,&localFs.pos);
+          gCaseCount[_inst] = gCaseCount[_inst] + -1;
+        } while (gCaseCount[_inst] != 0);
+        if (((currentCaseValue == 0) &&
+            (localFs.pos = currentCodePos,
+            (VariableStackBuffer *)currentCodePos == (VariableStackBuffer *)0x0)) &&
+           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xb3d,0,"%s"), !bVar5)) {
+          pcVar3 = (code *)swi(3);
+          uVar7 = (*pcVar3)();
+          return uVar7;
         }
       }
 switchD_008db1a1_caseD_4c:
-      RemoveRefToValue(param_1,(VariableValue *)local_4c);
+      RemoveRefToValue(inst,localFs.top);
       goto switchD_008db1a1_caseD_66;
     }
-    if ((gScrVmPub[_param_1].inparamcount != 0) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0xb44,0,"%s"), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+    if ((gScrVmPub[_inst].inparamcount != 0) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0xb44,0,"%s"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
-    if ((gScrVmPub[_param_1].outparamcount != 0) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0xb45,0,"%s"), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+    if ((gScrVmPub[_inst].outparamcount != 0) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0xb45,0,"%s"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
     Monkey_Error((char *)0x0);
-    if (((gScrVmPub[_param_1].showError != false) && (gScrVmPub[_param_1].debugCode == false)) &&
-       (iVar12 = Scr_IgnoreErrors(param_1), iVar12 == 0)) {
-      gScrVmPub[_param_1].showError = false;
-      GamerProfile_WriteSettings(_param_1);
-      Scr_HitBreakpoint(param_1,(VariableValue *)local_4c,local_58.codePosValue,local_54.stringValue
-                        ,0);
+    if (((gScrVmPub[_inst].showError != false) && (gScrVmPub[_inst].debugCode == false)) &&
+       (iVar12 = Scr_IgnoreErrors(inst), iVar12 == 0)) {
+      gScrVmPub[_inst].showError = false;
+      GamerProfile_WriteSettings(_inst);
+      Scr_HitBreakpoint(inst,localFs.top,localFs.pos,localFs.localId,0);
     }
   } while( true );
 switchD_008d4ffb_caseD_89:
-  iVar12 = Scr_HitAssignmentBreakpoint
-                     (param_1,(VariableValue *)local_4c,local_58.codePosValue,local_54.stringValue,1
-                     );
-  gOpcode[_param_1] = iVar12;
+  iVar12 = Scr_HitAssignmentBreakpoint(inst,localFs.top,localFs.pos,localFs.localId,1);
+  gOpcode[_inst] = iVar12;
   goto LAB_008d4fc6;
-  while (gCaseCount[_param_1] = gCaseCount[_param_1] + -1, gCaseCount[_param_1] != 0) {
+  while (gCaseCount[_inst] = gCaseCount[_inst] + -1, gCaseCount[_inst] != 0) {
 LAB_008da468:
-    local_34 = (float)Scr_ReadInt(&local_58.codePosValue);
-    local_70.codePosValue = Scr_ReadCodePos(param_1,&local_58.codePosValue);
-    if (local_34 == local_40) {
-      local_58.codePosValue = local_70.codePosValue;
-      if (((ushort *)local_70.intValue == (ushort *)0x0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0x939,0,"%s"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+    currentCaseValue = Scr_ReadInt(&localFs.pos);
+    currentCodePos = Scr_ReadCodePos(inst,&localFs.pos);
+    if (currentCaseValue == caseValue) {
+      localFs.pos = currentCodePos;
+      if (((VariableStackBuffer *)currentCodePos == (VariableStackBuffer *)0x0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0x939,0,"%s"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
       goto LAB_008d4ebd;
     }
   }
-  if (((local_34 == 0.0) &&
-      (local_58.codePosValue = local_70.codePosValue, (ushort *)local_70.intValue == (ushort *)0x0))
-     && (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                  0x943,0,"%s"), !bVar6)) {
-    pcVar4 = (code *)swi(3);
-    uVar8 = (*pcVar4)();
-    return uVar8;
+  if (((currentCaseValue == 0) &&
+      (localFs.pos = currentCodePos,
+      (VariableStackBuffer *)currentCodePos == (VariableStackBuffer *)0x0)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x943,
+                               0,"%s"), !bVar5)) {
+    pcVar3 = (code *)swi(3);
+    uVar7 = (*pcVar3)();
+    return uVar7;
   }
 LAB_008d4ebd:
-  local_4c = local_4c + -2;
+  localFs.top = (VariableValue *)((int)localFs.top + -8);
   goto LAB_008d4ec6;
 switchD_008d4ffb_caseD_26:
-  local_44 = (float)Scr_GetSelf(param_1,local_54.stringValue);
-  bVar6 = IsFieldObject(param_1,(uint)local_44);
-  if (!bVar6) goto LAB_008daef4;
+  objectId = Scr_GetSelf(inst,localFs.localId);
+  bVar5 = IsFieldObject(inst,objectId);
+  if (!bVar5) goto LAB_008daef4;
   goto LAB_008d4ec6;
 switchD_008d4ffb_caseD_0:
-  local_30.stringValue = GetSafeParentLocalId(param_1,local_54.stringValue);
-  Scr_KillThread(param_1,local_54.stringValue);
-  gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + -local_50.intValue;
-  if (((float)local_4c[1].intValue == 1.12104e-44) &&
-     (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x396,
-                               0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"), !bVar6)) {
-    pcVar4 = (code *)swi(3);
-    uVar8 = (*pcVar4)();
-    return uVar8;
+  parentLocalId = GetSafeParentLocalId(inst,localFs.localId);
+  Scr_KillThread(inst,localFs.localId);
+  gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + -localFs.localVarCount;
+  if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue == 1.12104e-44) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x396,
+                               0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"), !bVar5)) {
+    pcVar3 = (code *)swi(3);
+    uVar7 = (*pcVar3)();
+    return uVar7;
   }
-  while ((float)local_4c[1].intValue != 9.80909e-45) {
-    RemoveRefToValue(param_1,local_4c[1].intValue,*local_4c);
-    pVVar9 = local_4c + -2;
-    pVVar20 = local_4c + -1;
-    local_4c = pVVar9;
+  while ((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 9.80909e-45) {
+    RemoveRefToValue(inst,((VariableUnion *)((int)localFs.top + 4))->intValue,(localFs.top)->u);
+    pVVar8 = (VariableUnion *)((int)localFs.top + -8);
+    pVVar20 = (VariableUnion *)((int)localFs.top + -4);
+    localFs.top = (VariableValue *)pVVar8;
     if (((float)pVVar20->intValue == 1.12104e-44) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x39b,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"), !bVar6
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x39b,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"), !bVar5
        )) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
   }
-  gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-  gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
-  if ((float)local_30.intValue == 0.0) {
-    if ((local_4c != (VariableUnion *)local_48.intValue) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x3a2,0,"%s\n\t(localFs.top - localFs.startTop) = %i"), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+  gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+  gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
+  if (parentLocalId == 0) {
+    if ((localFs.top != localFs.startTop) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x3a2,0,"%s\n\t(localFs.top - localFs.startTop) = %i"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
 LAB_008daaf9:
-    (local_48.stackValue)->time = '\0';
-    (local_48.stackValue)->buf[0] = '\0';
-    *(undefined2 *)&((VariableStackBuffer *)local_48.intValue)->field_0xe = 0;
+    ((VariableUnion *)((int)localFs.startTop + 0xc))->intValue = 0;
 LAB_008dab03:
-    if (gThreadCount[_param_1] == 0) {
-      if ((g_script_error_level[_param_1] < 0) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                   0x9cf,0,"%s\n\t(g_script_error_level[inst]) = %i"), !bVar6)) {
-        pcVar4 = (code *)swi(3);
-        uVar8 = (*pcVar4)();
-        return uVar8;
+    if (gThreadCount[_inst] == 0) {
+      if ((g_script_error_level[_inst] < 0) &&
+         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                   0x9cf,0,"%s\n\t(g_script_error_level[inst]) = %i"), !bVar5)) {
+        pcVar3 = (code *)swi(3);
+        uVar7 = (*pcVar3)();
+        return uVar7;
       }
-      g_script_error_level[_param_1] = g_script_error_level[_param_1] + -1;
-      *(VariableUnion *)(gFs + _param_1) = local_58;
-      gFs[_param_1].localId = (uint)local_54;
-      gFs[_param_1].localVarCount = (uint)local_50;
-      gFs[_param_1].top = (VariableValue *)local_4c;
-      gFs[_param_1].startTop = (VariableValue *)local_48;
-      return local_54.intValue;
+      g_script_error_level[_inst] = g_script_error_level[_inst] + -1;
+      gFs[_inst].pos = localFs.pos;
+      gFs[_inst].localId = localFs.localId;
+      gFs[_inst].localVarCount = localFs.localVarCount;
+      gFs[_inst].top = localFs.top;
+      gFs[_inst].startTop = localFs.startTop;
+      return localFs.localId;
     }
-    gThreadCount[_param_1] = gThreadCount[_param_1] + -1;
-    RemoveRefToObject(param_1,local_54.stringValue);
-    pVVar20 = (VariableUnion *)gScrVmPub[_param_1].function_frame;
-    local_58 = *pVVar20;
-    local_54 = pVVar20[1];
-    local_50 = pVVar20[2];
-    pVVar3 = pVVar20[3].stackValue;
-    local_48 = pVVar20[4];
-    uVar5 = *(undefined2 *)((int)&(gScrVmPub[_param_1].function_frame)->topType + 2);
-    pVVar3->size = *(undefined2 *)&(gScrVmPub[_param_1].function_frame)->topType;
-    pVVar3->bufLen = uVar5;
-    local_4c = (VariableUnion *)&pVVar3->localId;
+    gThreadCount[_inst] = gThreadCount[_inst] + -1;
+    RemoveRefToObject(inst,localFs.localId);
+    pfVar1 = gScrVmPub[_inst].function_frame;
+    localFs.pos = (pfVar1->fs).pos;
+    localFs.localId = (pfVar1->fs).localId;
+    localFs.localVarCount = (pfVar1->fs).localVarCount;
+    pVVar2 = (pfVar1->fs).top;
+    localFs.startTop = (pfVar1->fs).startTop;
+    pVVar2->type = (gScrVmPub[_inst].function_frame)->topType;
+    localFs.top = pVVar2 + 1;
   }
   else {
-    if (((float)local_4c[1].intValue != 9.80909e-45) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x3a6,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"), !bVar6
+    if (((float)((VariableUnion *)((int)localFs.top + 4))->intValue != 9.80909e-45) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x3a6,0,"%s\n\t(localFs.top - gScrVmPub[inst].stack) = %i"), !bVar5
        )) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
-    local_4c[1].intValue = 0;
+    ((VariableUnion *)((int)localFs.top + 4))->intValue = 0;
 LAB_008d51f3:
-    if ((local_4c == (VariableUnion *)local_48.intValue) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x3a9,0,"%s"), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+    if ((localFs.top == localFs.startTop) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x3a9,0,"%s"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
-    RemoveRefToObject(param_1,local_54.stringValue);
-    local_58 = (VariableUnion)((VariableUnion *)gScrVmPub[_param_1].function_frame)->intValue;
-    if (((ushort *)local_58.intValue == (ushort *)0x0) &&
-       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x3b5,0,"%s"), !bVar6)) {
-      pcVar4 = (code *)swi(3);
-      uVar8 = (*pcVar4)();
-      return uVar8;
+    RemoveRefToObject(inst,localFs.localId);
+    localFs.pos = ((gScrVmPub[_inst].function_frame)->fs).pos;
+    if (((VariableStackBuffer *)localFs.pos == (VariableStackBuffer *)0x0) &&
+       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x3b5,0,"%s"), !bVar5)) {
+      pcVar3 = (code *)swi(3);
+      uVar7 = (*pcVar3)();
+      return uVar7;
     }
-    local_50 = (VariableUnion)((gScrVmPub[_param_1].function_frame)->fs).localVarCount;
-    local_54 = local_30;
+    localFs.localVarCount = ((gScrVmPub[_inst].function_frame)->fs).localVarCount;
+    localFs.localId = parentLocalId;
   }
   goto LAB_008d4ec6;
 }
@@ -3384,18 +3368,19 @@ LAB_008d51f3:
 
 // 008D1750  Scr_GetReturnPos  (clientscript/cscr_vm.cpp:2923)
 
-char * __cdecl Scr_GetReturnPos(scriptInstance_t param_1,uint *param_2)
+char * __cdecl Scr_GetReturnPos(scriptInstance_t inst,uint *localId)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000005;
+  char *pos;
   
-  if ((gScrVmPub[_param_1].function_count < 2) ||
-     (pcVar1 = gScrVmPub[_param_1].function_frame[-1].fs.pos, pcVar1 == &g_EndPos)) {
+  if ((gScrVmPub[_inst].function_count < 2) ||
+     (pcVar1 = gScrVmPub[_inst].function_frame[-1].fs.pos, pcVar1 == &g_EndPos)) {
     pcVar1 = (char *)0x0;
   }
   else {
-    *param_2 = gScrVmPub[_param_1].function_frame[-1].fs.localId;
+    *localId = gScrVmPub[_inst].function_frame[-1].fs.localId;
   }
   return pcVar1;
 }
@@ -3404,8 +3389,8 @@ char * __cdecl Scr_GetReturnPos(scriptInstance_t param_1,uint *param_2)
 // 008D17B0  Scr_GetNextCodepos  (clientscript/cscr_vm.cpp:2945)
 
 char * __cdecl
-Scr_GetNextCodepos(scriptInstance_t param_1,VariableValue *param_2,char *param_3,int param_4,
-                  int param_5,uint *param_6)
+Scr_GetNextCodepos(scriptInstance_t inst,VariableValue *top,char *pos,int opcode,int mode,
+                  uint *localId)
 
 {
   ushort uVar1;
@@ -3415,22 +3400,25 @@ Scr_GetNextCodepos(scriptInstance_t param_1,VariableValue *param_2,char *param_3
   char *pcVar5;
   ushort *puVar6;
   undefined3 in_stack_00000005;
-  uint local_18;
-  uint local_10;
-  VariableUnion local_c;
+  char *currentCodePos;
+  int jumpOffset;
+  uint caseValue;
+  uint currentCaseValue;
+  int caseCount;
+  VariableUnion value;
   int local_8;
   
-  *param_6 = ((gScrVmPub[_param_1].function_frame)->fs).localId;
+  *localId = ((gScrVmPub[_inst].function_frame)->fs).localId;
   do {
-    puVar6 = (ushort *)(param_3 + 1);
-    if ((gScrVarPub[_param_1].error_message != (char *)0x0) &&
+    puVar6 = (ushort *)(pos + 1);
+    if ((gScrVarPub[_inst].error_message != (char *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xb8e,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       pcVar5 = (char *)(*pcVar3)();
       return pcVar5;
     }
-    if ((param_2 == (VariableValue *)0x0) &&
+    if ((top == (VariableValue *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xb8f,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -3444,45 +3432,45 @@ Scr_GetNextCodepos(scriptInstance_t param_1,VariableValue *param_2,char *param_3
       pcVar5 = (char *)(*pcVar3)();
       return pcVar5;
     }
-    if ((gScrVarPub[_param_1].evaluate == false) &&
+    if ((gScrVarPub[_inst].evaluate == false) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xb91,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       pcVar5 = (char *)(*pcVar3)();
       return pcVar5;
     }
-    if (param_5 == 2) {
-      switch(param_4) {
+    if (mode == 2) {
+      switch(opcode) {
       case 0x4f:
       case 0x50:
       case 0x54:
 switchD_008d18c3_caseD_4f:
-        if (gScrVmPub[_param_1].function_count < 0x20) {
-          *param_6 = 0;
+        if (gScrVmPub[_inst].function_count < 0x20) {
+          *localId = 0;
           return *(char **)puVar6;
         }
         break;
       case 0x51:
       case 0x55:
 switchD_008d18c3_caseD_51:
-        if ((param_2->type == 9) && (gScrVmPub[_param_1].function_count < 0x20)) {
-          *param_6 = 0;
-          return (char *)(param_2->u).intValue;
+        if ((top->type == 9) && (gScrVmPub[_inst].function_count < 0x20)) {
+          *localId = 0;
+          return (char *)(top->u).intValue;
         }
         break;
       case 0x52:
       case 0x56:
-        if (param_2->type == 1) goto switchD_008d18c3_caseD_4f;
+        if (top->type == 1) goto switchD_008d18c3_caseD_4f;
         break;
       case 0x53:
       case 0x57:
-        if (param_2[-1].type == 1) goto switchD_008d18c3_caseD_51;
+        if (top[-1].type == 1) goto switchD_008d18c3_caseD_51;
       }
     }
-    switch(param_4) {
+    switch(opcode) {
     case 0:
     case 1:
-      pcVar5 = Scr_GetReturnPos(param_1,param_6);
+      pcVar5 = Scr_GetReturnPos(inst,localId);
       return pcVar5;
     case 2:
     case 3:
@@ -3550,7 +3538,7 @@ switchD_008d18c3_caseD_51:
     case 0x87:
     case 0x88:
     case 0x89:
-      param_3 = (char *)puVar6;
+      pos = (char *)puVar6;
       break;
     case 4:
     case 5:
@@ -3566,7 +3554,7 @@ switchD_008d18c3_caseD_51:
     case 0x77:
     case 0x85:
     case 0x86:
-      param_3 = param_3 + 2;
+      pos = pos + 2;
       break;
     case 6:
     case 7:
@@ -3582,7 +3570,7 @@ switchD_008d18c3_caseD_51:
     case 0x48:
     case 0x49:
     case 0x4a:
-      param_3 = param_3 + 3;
+      pos = pos + 3;
       break;
     case 8:
     case 0x13:
@@ -3592,10 +3580,10 @@ switchD_008d18c3_caseD_51:
     case 0x52:
     case 0x55:
     case 0x57:
-      param_3 = param_3 + 5;
+      pos = pos + 5;
       break;
     case 9:
-      param_3 = param_3 + 5;
+      pos = pos + 5;
       break;
     case 10:
     case 0xb:
@@ -3616,29 +3604,29 @@ switchD_008d18c3_caseD_51:
     case 0x82:
     case 0x83:
     case 0x84:
-      param_3 = param_3 + 3;
+      pos = pos + 3;
       break;
     case 0xc:
-      param_3 = param_3 + 0xd;
+      pos = pos + 0xd;
       break;
     case 0x44:
     case 0x4b:
-      param_3 = param_3 + 4;
+      pos = pos + 4;
       break;
     case 0x54:
     case 0x56:
     case 0x81:
-      param_3 = param_3 + 9;
+      pos = pos + 9;
       break;
     case 0x5e:
     case 0x60:
-      local_c = param_2->u;
-      local_8 = param_2->type;
-      AddRefToValue(param_1,local_8,local_c);
-      Scr_CastBool(param_1,(VariableValue *)&local_c);
+      value = top->u;
+      local_8 = top->type;
+      AddRefToValue(inst,local_8,value);
+      Scr_CastBool(inst,(VariableValue *)&value);
       uVar1 = *puVar6;
-      param_3 = param_3 + 3;
-      if (gScrVarPub[_param_1].error_message == (char *)0x0) {
+      pos = pos + 3;
+      if (gScrVarPub[_inst].error_message == (char *)0x0) {
         if ((local_8 != 6) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0xbc9,0,"%s"), !bVar4)) {
@@ -3646,21 +3634,21 @@ switchD_008d18c3_caseD_51:
           pcVar5 = (char *)(*pcVar3)();
           return pcVar5;
         }
-        if (local_c.intValue != 0) {
-          return param_3;
+        if (value.intValue != 0) {
+          return pos;
         }
-        return param_3 + uVar1;
+        return pos + uVar1;
       }
       break;
     case 0x5f:
     case 0x61:
-      local_c = param_2->u;
-      local_8 = param_2->type;
-      AddRefToValue(param_1,local_8,local_c);
-      Scr_CastBool(param_1,(VariableValue *)&local_c);
+      value = top->u;
+      local_8 = top->type;
+      AddRefToValue(inst,local_8,value);
+      Scr_CastBool(inst,(VariableValue *)&value);
       uVar1 = *puVar6;
-      param_3 = param_3 + 3;
-      if (gScrVarPub[_param_1].error_message == (char *)0x0) {
+      pos = pos + 3;
+      if (gScrVarPub[_inst].error_message == (char *)0x0) {
         if ((local_8 != 6) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0xbd9,0,"%s"), !bVar4)) {
@@ -3668,37 +3656,37 @@ switchD_008d18c3_caseD_51:
           pcVar5 = (char *)(*pcVar3)();
           return pcVar5;
         }
-        if (local_c.intValue == 0) {
-          return param_3;
+        if (value.intValue == 0) {
+          return pos;
         }
-        return param_3 + uVar1;
+        return pos + uVar1;
       }
       break;
     case 0x62:
-      return param_3 + *(int *)puVar6 + 5;
+      return pos + *(int *)puVar6 + 5;
     case 99:
-      return param_3 + (3 - (uint)*puVar6);
+      return pos + (3 - (uint)*puVar6);
     case 0x7c:
-      puVar6 = (ushort *)(param_3 + *(int *)puVar6 + 5);
-      param_3 = (char *)(puVar6 + 1);
-      local_10 = (uint)*puVar6;
-      if (param_2->type == 2) {
-        local_18 = (param_2->u).intValue;
+      puVar6 = (ushort *)(pos + *(int *)puVar6 + 5);
+      pos = (char *)(puVar6 + 1);
+      caseCount = (int)*puVar6;
+      if (top->type == 2) {
+        caseValue = (top->u).stringValue;
       }
       else {
-        if (param_2->type != 6) {
-          return (char *)(ushort *)((int)param_3 + local_10 * 4 * 2);
+        if (top->type != 6) {
+          return (char *)(ushort *)((int)pos + caseCount * 4 * 2);
         }
-        bVar4 = IsValidArrayIndex(param_1,(param_2->u).stringValue);
+        bVar4 = IsValidArrayIndex(inst,(top->u).stringValue);
         if (!bVar4) {
-          return (char *)(ushort *)((int)param_3 + local_10 * 4 * 2);
+          return (char *)(ushort *)((int)pos + caseCount * 4 * 2);
         }
-        local_18 = GetInternalVariableIndex(param_1,(param_2->u).stringValue);
+        caseValue = GetInternalVariableIndex(inst,(top->u).stringValue);
       }
-      if (local_10 == 0) {
-        return (char *)(ushort *)param_3;
+      if (caseCount == 0) {
+        return (char *)(ushort *)pos;
       }
-      if ((local_18 == 0) &&
+      if ((caseValue == 0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xc09,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
@@ -3706,20 +3694,20 @@ switchD_008d18c3_caseD_51:
         return pcVar5;
       }
       while( true ) {
-        uVar2 = *(uint *)param_3;
-        pcVar5 = *(char **)(param_3 + 4);
-        param_3 = param_3 + 8;
-        if (uVar2 == local_18) break;
-        local_10 = local_10 - 1;
-        if (local_10 == 0) {
-          if (((uVar2 == 0) && (param_3 = pcVar5, pcVar5 == (char *)0x0)) &&
+        uVar2 = *(uint *)pos;
+        pcVar5 = *(char **)(pos + 4);
+        pos = pos + 8;
+        if (uVar2 == caseValue) break;
+        caseCount = caseCount + -1;
+        if (caseCount == 0) {
+          if (((uVar2 == 0) && (pos = pcVar5, pcVar5 == (char *)0x0)) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0xc1c,0,"%s"), !bVar4)) {
             pcVar3 = (code *)swi(3);
             pcVar5 = (char *)(*pcVar3)();
             return pcVar5;
           }
-          return param_3;
+          return pos;
         }
       }
       if (pcVar5 != (char *)0x0) {
@@ -3734,23 +3722,23 @@ switchD_008d18c3_caseD_51:
       pcVar5 = (char *)(*pcVar3)();
       return pcVar5;
     case 0x7d:
-      return param_3 + (uint)*puVar6 * 8 + 3;
+      return pos + (uint)*puVar6 * 8 + 3;
     default:
       pcVar5 = va("unknown opcode %d");
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xcc5,
                                0,pcVar5);
-      param_3 = (char *)puVar6;
+      pos = (char *)puVar6;
       if (!bVar4) {
         pcVar3 = (code *)swi(3);
         pcVar5 = (char *)(*pcVar3)();
         return pcVar5;
       }
     }
-    Scr_ClearErrorMessage(param_1);
-    if (*param_3 != '9') {
-      return param_3;
+    Scr_ClearErrorMessage(inst);
+    if (*pos != '9') {
+      return pos;
     }
-    param_4 = 0x39;
+    opcode = 0x39;
   } while( true );
 }
 
@@ -3759,8 +3747,8 @@ switchD_008d18c3_caseD_51:
 
 void __cdecl
 VM_CancelNotifyInternal
-          (scriptInstance_t param_1,uint param_2,uint param_3,uint param_4,uint param_5,uint param_6
-          )
+          (scriptInstance_t inst,uint notifyListOwnerId,uint startLocalId,uint notifyListId,
+          uint notifyNameListId,uint stringValue)
 
 {
   code *pcVar1;
@@ -3768,8 +3756,8 @@ VM_CancelNotifyInternal
   ushort uVar3;
   uint uVar4;
   
-  uVar3 = Scr_GetThreadNotifyName(param_1,param_3);
-  if (param_6 != uVar3) {
+  uVar3 = Scr_GetThreadNotifyName(inst,startLocalId);
+  if (stringValue != uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xcd9,0,
                              "%s");
     if (!bVar2) {
@@ -3778,9 +3766,9 @@ VM_CancelNotifyInternal
       return;
     }
   }
-  uVar4 = FindVariable(param_1,param_2,0x17ffe);
-  uVar4 = FindObject(param_1,uVar4);
-  if (param_4 != uVar4) {
+  uVar4 = FindVariable(inst,notifyListOwnerId,0x17ffe);
+  uVar4 = FindObject(inst,uVar4);
+  if (notifyListId != uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xcda,0,
                              "%s");
     if (!bVar2) {
@@ -3789,9 +3777,9 @@ VM_CancelNotifyInternal
       return;
     }
   }
-  uVar4 = FindVariable(param_1,param_4,param_6);
-  uVar4 = FindObject(param_1,uVar4);
-  if (param_5 != uVar4) {
+  uVar4 = FindVariable(inst,notifyListId,stringValue);
+  uVar4 = FindObject(inst,uVar4);
+  if (notifyNameListId != uVar4) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xcdb,0,
                              "%s");
     if (!bVar2) {
@@ -3800,14 +3788,14 @@ VM_CancelNotifyInternal
       return;
     }
   }
-  Scr_RemoveThreadNotifyName(param_1,param_3);
-  RemoveObjectVariable(param_1,param_5,param_3);
-  uVar4 = GetArraySize(param_1,param_5);
+  Scr_RemoveThreadNotifyName(inst,startLocalId);
+  RemoveObjectVariable(inst,notifyNameListId,startLocalId);
+  uVar4 = GetArraySize(inst,notifyNameListId);
   if (uVar4 == 0) {
-    RemoveVariable(param_1,param_4,param_6);
-    uVar4 = GetArraySize(param_1,param_4);
+    RemoveVariable(inst,notifyListId,stringValue);
+    uVar4 = GetArraySize(inst,notifyListId);
     if (uVar4 == 0) {
-      RemoveVariable(param_1,param_2,0x17ffe);
+      RemoveVariable(inst,notifyListOwnerId,0x17ffe);
     }
   }
   return;
@@ -3816,21 +3804,24 @@ VM_CancelNotifyInternal
 
 // 008D1F30  VM_CancelNotify  (clientscript/cscr_vm.cpp:3308)
 
-void __cdecl VM_CancelNotify(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl VM_CancelNotify(scriptInstance_t inst,uint notifyListOwnerId,uint startLocalId)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   uint uVar4;
+  uint unsignedValue;
   uint uVar5;
-  uint uVar6;
+  uint stringValue;
+  uint notifyListId;
+  uint notifyNameListId;
   
-  uVar4 = FindVariable(param_1,param_2,0x17ffe);
-  uVar4 = FindObject(param_1,uVar4);
-  uVar3 = Scr_GetThreadNotifyName(param_1,param_3);
-  uVar5 = (uint)uVar3;
-  if (uVar5 == 0) {
+  uVar4 = FindVariable(inst,notifyListOwnerId,0x17ffe);
+  uVar4 = FindObject(inst,uVar4);
+  uVar3 = Scr_GetThreadNotifyName(inst,startLocalId);
+  unsignedValue = (uint)uVar3;
+  if (unsignedValue == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xcf3,0,
                              "%s");
     if (!bVar2) {
@@ -3839,32 +3830,33 @@ void __cdecl VM_CancelNotify(scriptInstance_t param_1,uint param_2,uint param_3)
       return;
     }
   }
-  uVar6 = FindVariable(param_1,uVar4,uVar5);
-  uVar6 = FindObject(param_1,uVar6);
-  VM_CancelNotifyInternal(param_1,param_2,param_3,uVar4,uVar6,uVar5);
+  uVar5 = FindVariable(inst,uVar4,unsignedValue);
+  uVar5 = FindObject(inst,uVar5);
+  VM_CancelNotifyInternal(inst,notifyListOwnerId,startLocalId,uVar4,uVar5,unsignedValue);
   return;
 }
 
 
 // 008DBDD0  VM_ArchiveStack  (clientscript/cscr_vm.cpp:3322)
 
-VariableStackBuffer * __cdecl VM_ArchiveStack(scriptInstance_t param_1,function_stack_t *param_2)
+VariableStackBuffer * __cdecl VM_ArchiveStack(scriptInstance_t inst,function_stack_t *stack)
 
 {
   code *pcVar1;
   bool bVar2;
   VariableStackBuffer *pVVar3;
-  uint uVar4;
+  uint numBytes;
   undefined3 in_stack_00000005;
-  VariableValue *local_18;
-  uint *local_14;
-  uint local_10;
-  uint local_c;
-  ushort local_8;
+  VariableStackBuffer *stackValue;
+  VariableValue *top;
+  char *buf;
+  uint localId;
+  int size;
+  int bufLen;
   
-  local_18 = param_2->top;
-  local_c = (int)local_18 - (int)param_2->startTop >> 3;
-  if (local_c != (local_c & 0xffff)) {
+  top = stack->top;
+  size = (int)top - (int)stack->startTop >> 3;
+  if (size != (size & 0xffffU)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd05,0,
                              "%s");
     if (!bVar2) {
@@ -3873,8 +3865,8 @@ VariableStackBuffer * __cdecl VM_ArchiveStack(scriptInstance_t param_1,function_
       return pVVar3;
     }
   }
-  uVar4 = local_c * 5 + 0xd;
-  if (uVar4 != (uVar4 & 0xffff)) {
+  numBytes = size * 5 + 0xd;
+  if (numBytes != (numBytes & 0xffff)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd07,0,
                              "%s");
     if (!bVar2) {
@@ -3883,18 +3875,18 @@ VariableStackBuffer * __cdecl VM_ArchiveStack(scriptInstance_t param_1,function_
       return pVVar3;
     }
   }
-  pVVar3 = MT_Alloc(uVar4,1,param_1);
-  gScrVarPub[_param_1].numScriptThreads = gScrVarPub[_param_1].numScriptThreads + 1;
-  local_10 = param_2->localId;
-  pVVar3->localId = local_10;
-  pVVar3->size = (ushort)local_c;
-  local_8 = (ushort)uVar4;
-  pVVar3->bufLen = local_8;
-  pVVar3->pos = param_2->pos;
-  pVVar3->time = (uchar)gScrVarPub[_param_1].time;
-  gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + -param_2->localVarCount;
-  local_14 = (uint *)(pVVar3->buf + local_c * 5);
-  if ((int)local_14 - (int)pVVar3 != uVar4) {
+  pVVar3 = MT_Alloc(numBytes,1,inst);
+  gScrVarPub[_inst].numScriptThreads = gScrVarPub[_inst].numScriptThreads + 1;
+  localId = stack->localId;
+  pVVar3->localId = localId;
+  pVVar3->size = (ushort)size;
+  bufLen._0_2_ = (ushort)numBytes;
+  pVVar3->bufLen = (ushort)bufLen;
+  pVVar3->pos = stack->pos;
+  pVVar3->time = (uchar)gScrVarPub[_inst].time;
+  gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + -stack->localVarCount;
+  buf = pVVar3->buf + size * 5;
+  if ((int)buf - (int)pVVar3 != numBytes) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd17,0,
                              "%s");
     if (!bVar2) {
@@ -3904,27 +3896,26 @@ VariableStackBuffer * __cdecl VM_ArchiveStack(scriptInstance_t param_1,function_
     }
   }
   do {
-    if (local_c == 0) {
-      gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-      gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
-      AddRefToObject(param_1,local_10);
-      param_2->localId = local_10;
+    if (size == 0) {
+      gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+      gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
+      AddRefToObject(inst,localId);
+      stack->localId = localId;
       return pVVar3;
     }
-    if (local_18->type == 7) {
-      gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-      gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
-      *(VariableUnion *)(local_14 + -1) = *(VariableUnion *)gScrVmPub[_param_1].function_frame;
-      gScrVmPub[_param_1].localVars =
-           gScrVmPub[_param_1].localVars + -((gScrVmPub[_param_1].function_frame)->fs).localVarCount
-      ;
-      local_10 = GetParentLocalId(param_1,local_10);
+    if (top->type == 7) {
+      gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+      gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
+      *(VariableUnion *)(buf + -4) = *(VariableUnion *)gScrVmPub[_inst].function_frame;
+      gScrVmPub[_inst].localVars =
+           gScrVmPub[_inst].localVars + -((gScrVmPub[_inst].function_frame)->fs).localVarCount;
+      localId = GetParentLocalId(inst,localId);
     }
     else {
-      *(VariableUnion *)(local_14 + -1) = local_18->u;
+      *(VariableUnion *)(buf + -4) = top->u;
     }
-    local_14 = (uint *)((int)local_14 + -5);
-    if ((local_18->type < 0) || (0xff < local_18->type)) {
+    buf = buf + -5;
+    if ((top->type < 0) || (0xff < top->type)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd2a,
                                0,"%s");
       if (!bVar2) {
@@ -3933,36 +3924,37 @@ VariableStackBuffer * __cdecl VM_ArchiveStack(scriptInstance_t param_1,function_
         return pVVar3;
       }
     }
-    *(char *)local_14 = (char)local_18->type;
-    local_18 = local_18 + -1;
-    local_c = local_c - 1;
+    *buf = (char)top->type;
+    top = top + -1;
+    size = size + -1;
   } while( true );
 }
 
 
 // 008E0500  Scr_AddLocalVars  (clientscript/cscr_vm.cpp:3388)
 
-int __cdecl Scr_AddLocalVars(scriptInstance_t param_1,uint param_2)
+int __cdecl Scr_AddLocalVars(scriptInstance_t inst,uint localId)
 
 {
   undefined3 in_stack_00000005;
-  int local_c;
-  uint local_8;
+  int localVarCount;
+  uint fieldIndex;
   
-  local_c = 0;
-  for (local_8 = FindLastSibling(param_1,param_2); local_8 != 0;
-      local_8 = gScrVarGlob[_param_1].variableList[local_8 + 0x8000].hash.u.prev) {
-    gScrVmPub[_param_1].localVars = gScrVmPub[_param_1].localVars + 1;
-    *gScrVmPub[_param_1].localVars = gScrVarGlob[_param_1].variableList[local_8 + 0x8000].hash.id;
-    local_c = local_c + 1;
+  localVarCount = 0;
+  for (fieldIndex = FindLastSibling(inst,localId); fieldIndex != 0;
+      fieldIndex = gScrVarGlob[_inst].variableList[fieldIndex + 0x8000].hash.u.prev) {
+    gScrVmPub[_inst].localVars = gScrVmPub[_inst].localVars + 1;
+    *gScrVmPub[_inst].localVars = gScrVarGlob[_inst].variableList[fieldIndex + 0x8000].hash.id;
+    localVarCount = localVarCount + 1;
   }
-  return local_c;
+  return localVarCount;
 }
 
 
 // 008E00F0  VM_UnarchiveStack  (clientscript/cscr_vm.cpp:3404)
 
-void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableStackBuffer *param_3)
+void __cdecl
+VM_UnarchiveStack(scriptInstance_t inst,uint startLocalId,VariableStackBuffer *stackValue)
 
 {
   code *pcVar1;
@@ -3971,13 +3963,13 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
   uint uVar4;
   undefined3 in_stack_00000005;
   char *pcVar5;
-  VariableValue *local_18;
-  char *local_14;
-  uint local_10;
-  int local_c;
-  uint local_8;
+  VariableValue *top;
+  char *buf;
+  uint localId;
+  int function_count;
+  int size;
   
-  if (gScrVmPub[_param_1].function_count != 0) {
+  if (gScrVmPub[_inst].function_count != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd53,0,
                              "%s");
     if (!bVar2) {
@@ -3986,7 +3978,7 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
       return;
     }
   }
-  if (param_3->pos == (char *)0x0) {
+  if (stackValue->pos == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd54,0,
                              "%s");
     if (!bVar2) {
@@ -3995,7 +3987,7 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
       return;
     }
   }
-  if (gFs[_param_1].startTop != (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0)) {
+  if (gFs[_inst].startTop != (VariableValue *)(_inst * 0x4328 + 0xa05afb0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xd55,0,
                              "%s");
     if (!bVar2) {
@@ -4004,21 +3996,21 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
       return;
     }
   }
-  pcVar5 = param_3->pos;
-  ((gScrVmPub[_param_1].function_frame)->fs).pos = param_3->pos;
-  gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + 1;
-  gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + 1;
-  local_8 = (uint)param_3->size;
-  local_14 = param_3->buf;
-  local_18 = gScrVmPub[_param_1].stack;
+  pcVar5 = stackValue->pos;
+  ((gScrVmPub[_inst].function_frame)->fs).pos = stackValue->pos;
+  gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + 1;
+  gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + 1;
+  size = (int)stackValue->size;
+  buf = stackValue->buf;
+  top = gScrVmPub[_inst].stack;
   do {
-    if (local_8 == 0) {
-      gFs[_param_1].pos = param_3->pos;
-      gFs[_param_1].top = local_18;
-      local_10 = param_3->localId;
-      gFs[_param_1].localId = local_10;
-      Scr_ClearWaitTime(param_1,param_2);
-      if (0x1f < gScrVmPub[_param_1].function_count) {
+    if (size == 0) {
+      gFs[_inst].pos = stackValue->pos;
+      gFs[_inst].top = top;
+      localId = stackValue->localId;
+      gFs[_inst].localId = localId;
+      Scr_ClearWaitTime(inst,startLocalId);
+      if (0x1f < gScrVmPub[_inst].function_count) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xd7d,0,"%s");
         if (!bVar2) {
@@ -4027,26 +4019,28 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
           return;
         }
       }
-      local_c = gScrVmPub[_param_1].function_count;
+      function_count = gScrVmPub[_inst].function_count;
       while( true ) {
-        *(uint *)(_param_1 * 0x4328 + 0xa05acb4 + local_c * 0x18) = local_10;
-        local_c = local_c + -1;
-        if (local_c == 0) break;
-        local_10 = GetParentLocalId(param_1,local_10);
+        *(uint *)(_inst * 0x4328 + 0xa05acb4 + function_count * 0x18) = localId;
+        function_count = function_count + -1;
+        if (function_count == 0) break;
+        localId = GetParentLocalId(inst,localId);
       }
-      local_c = 0;
-      while (local_c = local_c + 1, local_c != gScrVmPub[_param_1].function_count) {
-        iVar3 = Scr_AddLocalVars(param_1,*(uint *)(_param_1 * 0x4328 + 0xa05acb4 + local_c * 0x18));
-        *(int *)(_param_1 * 0x4328 + 0xa05acb8 + local_c * 0x18) = iVar3;
+      function_count = 0;
+      while (function_count = function_count + 1, function_count != gScrVmPub[_inst].function_count)
+      {
+        iVar3 = Scr_AddLocalVars(inst,*(uint *)(_inst * 0x4328 + 0xa05acb4 + function_count * 0x18))
+        ;
+        *(int *)(_inst * 0x4328 + 0xa05acb8 + function_count * 0x18) = iVar3;
       }
-      uVar4 = Scr_AddLocalVars(param_1,gFs[_param_1].localId);
-      gFs[_param_1].localVarCount = uVar4;
-      if (param_3->time != (uchar)gScrVarPub[_param_1].time) {
-        Scr_ResetTimeout(param_1);
+      uVar4 = Scr_AddLocalVars(inst,gFs[_inst].localId);
+      gFs[_inst].localVarCount = uVar4;
+      if (stackValue->time != (uchar)gScrVarPub[_inst].time) {
+        Scr_ResetTimeout(inst);
       }
-      gScrVarPub[_param_1].numScriptThreads = gScrVarPub[_param_1].numScriptThreads - 1;
-      MT_Free(param_3,(uint)param_3->bufLen,param_1);
-      if (gScrVmPub[_param_1].stack[0].type != 7) {
+      gScrVarPub[_inst].numScriptThreads = gScrVarPub[_inst].numScriptThreads - 1;
+      MT_Free(stackValue,(uint)stackValue->bufLen,inst);
+      if (gScrVmPub[_inst].stack[0].type != 7) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xd9a,0,"%s");
         if (!bVar2) {
@@ -4057,10 +4051,10 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
       }
       return;
     }
-    local_8 = local_8 - 1;
-    local_18[1].type = (uint)(byte)*local_14;
-    if (local_18[1].type == 7) {
-      if (0x1f < gScrVmPub[_param_1].function_count) {
+    size = size + -1;
+    top[1].type = (uint)(byte)*buf;
+    if (top[1].type == 7) {
+      if (0x1f < gScrVmPub[_inst].function_count) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xd69,0,"%s");
         if (!bVar2) {
@@ -4069,15 +4063,15 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
           return;
         }
       }
-      ((gScrVmPub[_param_1].function_frame)->fs).pos = (char *)*(VariableUnion *)(local_14 + 1);
-      gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + 1;
-      gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + 1;
+      *(VariableUnion *)gScrVmPub[_inst].function_frame = *(VariableUnion *)(buf + 1);
+      gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + 1;
+      gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + 1;
     }
     else {
-      local_18[1].u = *(VariableUnion *)(local_14 + 1);
+      top[1].u = *(VariableUnion *)(buf + 1);
     }
-    local_14 = local_14 + 5;
-    local_18 = local_18 + 1;
+    buf = buf + 5;
+    top = top + 1;
   } while( true );
 }
 
@@ -4085,99 +4079,104 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t param_1,uint param_2,VariableSta
 // 008D3A20  VM_TerminateStack  (clientscript/cscr_vm.cpp:3487)
 
 void __cdecl
-VM_TerminateStack(scriptInstance_t param_1,uint param_2,uint param_3,VariableStackBuffer *param_4)
+VM_TerminateStack(scriptInstance_t inst,uint endLocalId,uint startLocalId,
+                 VariableStackBuffer *stackValue)
 
 {
-  VariableUnion VVar1;
-  code *pcVar2;
-  uint uVar3;
-  bool bVar4;
-  uint uVar5;
+  VariableUnion u_00;
+  code *pcVar1;
+  uint uVar2;
+  bool bVar3;
+  uint uVar4;
   undefined3 in_stack_00000005;
-  uint local_24;
-  uint *local_20;
-  uint local_1c;
-  VariableUnion local_c;
+  uint stackId;
+  uint localId;
+  char *buf;
+  int size;
+  uint parentLocalId;
+  VariableUnion u;
+  uchar type;
+  VariableUnion tempValue;
   undefined4 local_8;
   
-  if ((param_3 == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xda9,
-                               0,"%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((startLocalId == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xda9,
+                               0,"%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_20 = (uint *)(param_4->buf + (uint)param_4->size * 5);
-  uVar5 = param_4->localId;
-  uVar3 = (uint)param_4->size;
+  buf = stackValue->buf + (uint)stackValue->size * 5;
+  uVar4 = stackValue->localId;
+  uVar2 = (uint)stackValue->size;
   do {
     while( true ) {
-      local_1c = uVar3;
-      local_24 = uVar5;
-      if (local_1c == 0) {
-        if ((local_24 != param_2) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xddd,0,"%s"), !bVar4)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+      size = uVar2;
+      localId = uVar4;
+      if (size == 0) {
+        if ((localId != endLocalId) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xddd,0,"%s"), !bVar3)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        if ((param_3 != local_24) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                     0xdde,0,"%s"), !bVar4)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if ((startLocalId != localId) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                     0xdde,0,"%s"), !bVar3)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        Scr_KillThread(param_1,local_24);
-        RemoveRefToObject(param_1,local_24);
-        gScrVarPub[_param_1].numScriptThreads = gScrVarPub[_param_1].numScriptThreads - 1;
-        MT_Free(param_4,(uint)param_4->bufLen,param_1);
+        Scr_KillThread(inst,localId);
+        RemoveRefToObject(inst,localId);
+        gScrVarPub[_inst].numScriptThreads = gScrVarPub[_inst].numScriptThreads - 1;
+        MT_Free(stackValue,(uint)stackValue->bufLen,inst);
         return;
       }
-      VVar1 = *(VariableUnion *)(local_20 + -1);
-      local_20 = (uint *)((int)local_20 + -5);
-      uVar3 = local_1c - 1;
-      if (*(byte *)local_20 == 7) break;
-      RemoveRefToValue(param_1,(uint)*(byte *)local_20,VVar1);
-      uVar5 = local_24;
+      u_00 = *(VariableUnion *)(buf + -4);
+      buf = buf + -5;
+      uVar2 = size + -1;
+      if (*buf == 7) break;
+      RemoveRefToValue(inst,(uint)(byte)*buf,u_00);
+      uVar4 = localId;
     }
-    uVar5 = GetParentLocalId(param_1,local_24);
-    Scr_KillThread(param_1,local_24);
-    RemoveRefToObject(param_1,local_24);
-  } while (local_24 != param_2);
-  if ((param_3 == local_24) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdc8,
-                               0,"%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+    uVar4 = GetParentLocalId(inst,localId);
+    Scr_KillThread(inst,localId);
+    RemoveRefToObject(inst,localId);
+  } while (localId != endLocalId);
+  if ((startLocalId == localId) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdc8,
+                               0,"%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  *(byte *)local_20 = 0;
-  if (((int)(uint)param_4->size < (int)local_1c) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdcd,
-                               0,"%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  *buf = 0;
+  if (((int)(uint)stackValue->size < size) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdcd,
+                               0,"%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  Scr_SetThreadWaitTime(param_1,param_3,gScrVarPub[_param_1].time);
-  if ((VVar1.intValue == 0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdd0,
-                               0,"%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  Scr_SetThreadWaitTime(inst,startLocalId,gScrVarPub[_inst].time);
+  if ((u_00.intValue == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdd0,
+                               0,"%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  param_4->pos = (char *)VVar1;
-  param_4->localId = uVar5;
-  param_4->size = (ushort)local_1c;
+  stackValue->pos = (char *)u_00;
+  stackValue->localId = uVar4;
+  stackValue->size = (ushort)size;
   local_8 = 10;
-  local_c.stackValue = param_4;
-  uVar5 = GetVariable(param_1,gScrVarPub[_param_1].timeArrayId,gScrVarPub[_param_1].time);
-  uVar5 = GetArray(param_1,uVar5);
-  uVar5 = GetNewObjectVariable(param_1,uVar5,param_3);
-  SetNewVariableValue(param_1,uVar5,(VariableValue *)&local_c);
+  tempValue.stackValue = stackValue;
+  uVar4 = GetVariable(inst,gScrVarPub[_inst].timeArrayId,gScrVarPub[_inst].time);
+  uVar4 = GetArray(inst,uVar4);
+  uVar4 = GetNewObjectVariable(inst,uVar4,startLocalId);
+  SetNewVariableValue(inst,uVar4,(VariableValue *)&tempValue);
   return;
 }
 
@@ -4186,7 +4185,7 @@ VM_TerminateStack(scriptInstance_t param_1,uint param_2,uint param_3,VariableSta
 
 char * __cdecl
 Scr_GetStackThreadPos
-          (scriptInstance_t param_1,uint param_2,VariableStackBuffer *param_3,bool param_4)
+          (scriptInstance_t inst,uint endLocalId,VariableStackBuffer *stackValue,bool killThread)
 
 {
   code *pcVar1;
@@ -4195,19 +4194,23 @@ Scr_GetStackThreadPos
   uint uVar4;
   uint uVar5;
   undefined3 in_stack_00000005;
-  char *local_24;
-  uint local_1c;
-  uint *local_18;
-  uint local_14;
+  char *pos;
+  uint startLocalId;
+  uint localId;
+  char *buf;
+  int size;
+  uint parentLocalId;
+  VariableUnion u;
+  uchar type;
   
-  if ((gScrVarPub[_param_1].developer == false) &&
+  if ((gScrVarPub[_inst].developer == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdf6,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  uVar4 = GetStartLocalId(param_1,param_2);
+  uVar4 = GetStartLocalId(inst,endLocalId);
   if ((uVar4 == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xdf9,
                                0,"%s"), !bVar2)) {
@@ -4215,26 +4218,26 @@ Scr_GetStackThreadPos
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  local_14 = (uint)param_3->size;
-  local_18 = (uint *)(param_3->buf + local_14 * 5);
-  local_24 = param_3->pos;
-  local_1c = param_3->localId;
+  size = (int)stackValue->size;
+  buf = stackValue->buf + size * 5;
+  pos = stackValue->pos;
+  localId = stackValue->localId;
   do {
     do {
-      if (local_14 == 0) {
+      if (size == 0) {
 LAB_008d2725:
-        if (param_4) {
-          Scr_DebugKillThread(param_1,local_1c,local_24);
+        if (killThread) {
+          Scr_DebugKillThread(inst,localId,pos);
         }
-        return local_24;
+        return pos;
       }
-      pcVar3 = (char *)local_18[-1];
-      local_18 = (uint *)((int)local_18 + -5);
-      local_14 = local_14 - 1;
-    } while (*(char *)local_18 != '\a');
-    uVar5 = GetParentLocalId(param_1,local_1c);
-    if (local_1c == param_2) {
-      if ((uVar4 == local_1c) &&
+      pcVar3 = *(char **)(buf + -4);
+      buf = buf + -5;
+      size = size + -1;
+    } while (*buf != '\a');
+    uVar5 = GetParentLocalId(inst,localId);
+    if (localId == endLocalId) {
+      if ((uVar4 == localId) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xe19,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -4243,11 +4246,11 @@ LAB_008d2725:
       }
       goto LAB_008d2725;
     }
-    if (param_4) {
-      Scr_DebugKillThread(param_1,local_1c,local_24);
+    if (killThread) {
+      Scr_DebugKillThread(inst,localId,pos);
     }
-    local_24 = pcVar3;
-    local_1c = uVar5;
+    pos = pcVar3;
+    localId = uVar5;
     if ((pcVar3 == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xe14,0,"%s"), !bVar2)) {
@@ -4262,127 +4265,131 @@ LAB_008d2725:
 // 008D4380  VM_TrimStack  (clientscript/cscr_vm.cpp:3621)
 
 void __cdecl
-VM_TrimStack(scriptInstance_t param_1,uint param_2,VariableStackBuffer *param_3,bool param_4)
+VM_TrimStack(scriptInstance_t inst,uint startLocalId,VariableStackBuffer *stackValue,bool fromEndon)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  undefined3 in_stack_00000005;
   VariableUnion *pVVar4;
-  uint local_24;
-  uint *local_20;
-  uint local_1c;
-  VariableUnion local_c;
+  undefined3 in_stack_00000005;
+  uint localId;
+  char *buf;
+  int size;
+  uint parentLocalId;
+  VariableUnion u;
+  uchar type;
+  VariableUnion tempValue;
   undefined4 local_8;
   
-  if ((param_2 == 0) &&
+  if ((startLocalId == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xe2e,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_1c = (uint)param_3->size;
-  local_20 = (uint *)(param_3->buf + local_1c * 5);
-  local_24 = param_3->localId;
+  size = (int)stackValue->size;
+  buf = stackValue->buf + size * 5;
+  localId = stackValue->localId;
   while( true ) {
     while( true ) {
-      if (local_1c == 0) {
-        if ((param_2 != local_24) &&
+      if (size == 0) {
+        if ((startLocalId != localId) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0xe63,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (param_4) {
-          RemoveVariable(param_1,param_2,0x17fff);
+        if (fromEndon) {
+          RemoveVariable(inst,startLocalId,0x17fff);
         }
-        Scr_KillThread(param_1,param_2);
-        RemoveRefToObject(param_1,param_2);
-        gScrVarPub[_param_1].numScriptThreads = gScrVarPub[_param_1].numScriptThreads - 1;
-        MT_Free(param_3,(uint)param_3->bufLen,param_1);
+        Scr_KillThread(inst,startLocalId);
+        RemoveRefToObject(inst,startLocalId);
+        gScrVarPub[_inst].numScriptThreads = gScrVarPub[_inst].numScriptThreads - 1;
+        MT_Free(stackValue,(uint)stackValue->bufLen,inst);
         return;
       }
-      pVVar4 = (VariableUnion *)(local_20 + -1);
-      local_20 = (uint *)((int)local_20 + -5);
-      local_1c = local_1c - 1;
-      if (*(byte *)local_20 == 7) break;
-      RemoveRefToValue(param_1,(uint)*(byte *)local_20,*pVVar4);
+      pVVar4 = (VariableUnion *)(buf + -4);
+      buf = buf + -5;
+      size = size + -1;
+      if (*buf == 7) break;
+      RemoveRefToValue(inst,(uint)(byte)*buf,*pVVar4);
     }
-    uVar3 = FindObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,local_24);
+    uVar3 = FindObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,localId);
     if (uVar3 != 0) break;
-    uVar3 = GetParentLocalId(param_1,local_24);
-    Scr_KillThread(param_1,local_24);
-    RemoveRefToObject(param_1,local_24);
-    local_24 = uVar3;
+    uVar3 = GetParentLocalId(inst,localId);
+    Scr_KillThread(inst,localId);
+    RemoveRefToObject(inst,localId);
+    localId = uVar3;
   }
-  if ((param_2 == local_24) &&
+  if ((startLocalId == localId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xe46,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_1c._0_2_ = (short)local_1c + 1;
-  param_3->localId = local_24;
-  param_3->size = (ushort)local_1c;
-  Scr_StopThread(param_1,local_24);
-  if (param_4) {
+  size._0_2_ = (short)size + 1;
+  stackValue->localId = localId;
+  stackValue->size = (ushort)size;
+  Scr_StopThread(inst,localId);
+  if (fromEndon) {
     return;
   }
-  Scr_SetThreadNotifyName(param_1,param_2,0);
-  param_3->pos = (char *)0x0;
+  Scr_SetThreadNotifyName(inst,startLocalId,0);
+  stackValue->pos = (char *)0x0;
   local_8 = 10;
-  local_c.stackValue = param_3;
-  pVVar4 = &local_c;
-  uVar3 = GetNewVariable(param_1,param_2,0x17fff);
-  SetNewVariableValue(param_1,uVar3,(VariableValue *)pVVar4);
+  tempValue.stackValue = stackValue;
+  pVVar4 = &tempValue;
+  uVar3 = GetNewVariable(inst,startLocalId,0x17fff);
+  SetNewVariableValue(inst,uVar3,(VariableValue *)pVVar4);
   return;
 }
 
 
 // 008D3760  Scr_TerminateRunningThread  (clientscript/cscr_vm.cpp:3699)
 
-void __cdecl Scr_TerminateRunningThread(scriptInstance_t param_1,uint param_2)
+void __cdecl Scr_TerminateRunningThread(scriptInstance_t inst,uint localId)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   undefined3 in_stack_00000005;
-  int local_10;
-  int local_c;
+  int function_count;
+  int topThread;
+  uint threadId;
   
-  if ((gScrVmPub[_param_1].function_count == 0) &&
+  if ((gScrVmPub[_inst].function_count == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xe78,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_10 = gScrVmPub[_param_1].function_count;
-  local_c = local_10;
-  while ((local_10 != 0 ||
+  function_count = gScrVmPub[_inst].function_count;
+  topThread = function_count;
+  while ((function_count != 0 ||
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xe7d,0,"%s"), bVar2))) {
-    uVar3 = *(uint *)(_param_1 * 0x4328 + 0xa05acb4 + local_10 * 0x18);
-    if (uVar3 == param_2) {
-      for (; local_10 <= local_c; local_c = local_c + -1) {
-        if (gScrVarPub[_param_1].developer == false) {
-          *(char **)(_param_1 * 0x4328 + 0xa05acb0 + local_c * 0x18) = &g_EndPos;
+    uVar3 = *(uint *)(_inst * 0x4328 + 0xa05acb4 + function_count * 0x18);
+    if (uVar3 == localId) {
+      for (; function_count <= topThread; topThread = topThread + -1) {
+        if (gScrVarPub[_inst].developer == false) {
+          *(char **)(_inst * 0x4328 + 0xa05acb0 + topThread * 0x18) = &g_EndPos;
         }
         else {
-          Scr_DebugTerminateThread(param_1,local_c);
+          Scr_DebugTerminateThread(inst,topThread);
         }
       }
       return;
     }
-    local_10 = local_10 + -1;
-    uVar3 = GetSafeParentLocalId(param_1,uVar3);
+    function_count = function_count + -1;
+    uVar3 = GetSafeParentLocalId(inst,uVar3);
     if (uVar3 == 0) {
-      local_c = local_10;
+      topThread = function_count;
     }
   }
   pcVar1 = (code *)swi(3);
@@ -4393,32 +4400,34 @@ void __cdecl Scr_TerminateRunningThread(scriptInstance_t param_1,uint param_2)
 
 // 008D2750  Scr_GetRunningThreadPos  (clientscript/cscr_vm.cpp:3737)
 
-char * __cdecl Scr_GetRunningThreadPos(scriptInstance_t param_1,uint param_2)
+char * __cdecl Scr_GetRunningThreadPos(scriptInstance_t inst,uint localId)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   undefined3 in_stack_00000005;
-  int local_c;
+  char *pos;
+  int function_count;
+  uint threadId;
   
-  if ((gScrVarPub[_param_1].developer == false) &&
+  if ((gScrVarPub[_inst].developer == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xe9e,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((gScrVmPub[_param_1].function_count == 0) &&
+  if ((gScrVmPub[_inst].function_count == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xea0,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  local_c = gScrVmPub[_param_1].function_count;
+  function_count = gScrVmPub[_inst].function_count;
   while( true ) {
-    if (local_c == 0) {
+    if (function_count == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xeac,
                                0,"unreachable");
       if (bVar2) {
@@ -4428,79 +4437,85 @@ char * __cdecl Scr_GetRunningThreadPos(scriptInstance_t param_1,uint param_2)
       pcVar3 = (char *)(*pcVar1)();
       return pcVar3;
     }
-    if (*(uint *)(_param_1 * 0x4328 + 0xa05acb4 + local_c * 0x18) == param_2) break;
-    local_c = local_c + -1;
+    if (*(uint *)(_inst * 0x4328 + 0xa05acb4 + function_count * 0x18) == localId) break;
+    function_count = function_count + -1;
   }
-  pcVar3 = *(char **)(_param_1 * 0x4328 + 0xa05acb0 + local_c * 0x18);
+  pcVar3 = *(char **)(_inst * 0x4328 + 0xa05acb0 + function_count * 0x18);
   return (char *)(-(uint)(pcVar3 != &g_EndPos) & (uint)pcVar3);
 }
 
 
 // 008D3890  Scr_TerminateWaitThread  (clientscript/cscr_vm.cpp:3763)
 
-void __cdecl Scr_TerminateWaitThread(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl Scr_TerminateWaitThread(scriptInstance_t inst,uint localId,uint startLocalId)
 
 {
-  VariableStackBuffer *pVVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
-  uint uVar5;
-  uint uVar6;
-  int iVar7;
-  VariableUnion *pVVar8;
+  VariableStackBuffer *stackValue_00;
+  code *pcVar1;
+  bool bVar2;
+  uint unsignedValue;
+  uint uVar3;
+  uint id_00;
+  int iVar4;
+  VariableUnion *pVVar5;
   undefined3 in_stack_00000005;
+  VariableStackBuffer *stackValue;
+  uint stackId;
+  uint time;
+  uint id;
   
-  uVar4 = Scr_GetThreadWaitTime(param_1,param_3);
-  Scr_ClearWaitTime(param_1,param_3);
-  uVar5 = FindVariable(param_1,gScrVarPub[_param_1].timeArrayId,uVar4);
-  uVar5 = FindObject(param_1,uVar5);
-  uVar6 = FindObjectVariable(param_1,uVar5,param_3);
-  if (uVar6 == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xebd,0,
+  unsignedValue = Scr_GetThreadWaitTime(inst,startLocalId);
+  Scr_ClearWaitTime(inst,startLocalId);
+  uVar3 = FindVariable(inst,gScrVarPub[_inst].timeArrayId,unsignedValue);
+  uVar3 = FindObject(inst,uVar3);
+  id_00 = FindObjectVariable(inst,uVar3,startLocalId);
+  if (id_00 == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xebd,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  iVar7 = GetValueType(param_1,uVar6);
-  if (iVar7 != 10) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xebe,0,
+  iVar4 = GetValueType(inst,id_00);
+  if (iVar4 != 10) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xebe,0,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  pVVar8 = GetVariableValueAddress(param_1,uVar6);
-  pVVar1 = pVVar8->stackValue;
-  if (gScrVarPub[_param_1].developer != false) {
-    Scr_GetStackThreadPos(param_1,param_2,pVVar1,true);
+  pVVar5 = GetVariableValueAddress(inst,id_00);
+  stackValue_00 = pVVar5->stackValue;
+  if (gScrVarPub[_inst].developer != false) {
+    Scr_GetStackThreadPos(inst,localId,stackValue_00,true);
   }
-  RemoveObjectVariable(param_1,uVar5,param_3);
-  uVar5 = GetArraySize(param_1,uVar5);
-  if ((uVar5 == 0) && (uVar4 != gScrVarPub[_param_1].time)) {
-    RemoveVariable(param_1,gScrVarPub[_param_1].timeArrayId,uVar4);
+  RemoveObjectVariable(inst,uVar3,startLocalId);
+  uVar3 = GetArraySize(inst,uVar3);
+  if ((uVar3 == 0) && (unsignedValue != gScrVarPub[_inst].time)) {
+    RemoveVariable(inst,gScrVarPub[_inst].timeArrayId,unsignedValue);
   }
-  VM_TerminateStack(param_1,param_2,param_3,pVVar1);
+  VM_TerminateStack(inst,localId,startLocalId,stackValue_00);
   return;
 }
 
 
 // 008D2860  Scr_GetWaitThreadStackId  (clientscript/cscr_vm.cpp:3792)
 
-uint __cdecl Scr_GetWaitThreadStackId(scriptInstance_t param_1,uint param_2,uint param_3)
+uint __cdecl Scr_GetWaitThreadStackId(scriptInstance_t inst,uint localId,uint startLocalId)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   undefined3 in_stack_00000005;
+  uint time;
+  uint id;
   
-  if (gScrVarPub[_param_1].developer == false) {
+  if (gScrVarPub[_inst].developer == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xed4,0,
                              "%s");
     if (!bVar2) {
@@ -4509,35 +4524,38 @@ uint __cdecl Scr_GetWaitThreadStackId(scriptInstance_t param_1,uint param_2,uint
       return uVar3;
     }
   }
-  uVar3 = Scr_GetThreadWaitTime(param_1,param_3);
-  uVar3 = FindVariable(param_1,gScrVarPub[_param_1].timeArrayId,uVar3);
-  uVar3 = FindObject(param_1,uVar3);
-  uVar3 = FindObjectVariable(param_1,uVar3,param_3);
+  uVar3 = Scr_GetThreadWaitTime(inst,startLocalId);
+  uVar3 = FindVariable(inst,gScrVarPub[_inst].timeArrayId,uVar3);
+  uVar3 = FindObject(inst,uVar3);
+  uVar3 = FindObjectVariable(inst,uVar3,startLocalId);
   return uVar3;
 }
 
 
 // 008D4610  Scr_CancelWaittill  (clientscript/cscr_vm.cpp:3806)
 
-void __cdecl Scr_CancelWaittill(scriptInstance_t param_1,uint param_2)
+void __cdecl Scr_CancelWaittill(scriptInstance_t inst,uint startLocalId)
 
 {
+  uint id;
   uint uVar1;
-  uint uVar2;
-  uint uVar3;
-  VariableUnion *pVVar4;
+  uint id_00;
+  VariableUnion *pVVar2;
   undefined3 in_stack_00000005;
+  uint selfNameId;
+  uint notifyListOwnerId;
+  uint selfId;
   
-  uVar1 = Scr_GetSelf(param_1,param_2);
-  uVar2 = FindObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,uVar1);
-  uVar2 = FindObject(param_1,uVar2);
-  uVar3 = FindObjectVariable(param_1,uVar2,param_2);
-  pVVar4 = GetVariableValueAddress(param_1,uVar3);
-  VM_CancelNotify(param_1,pVVar4->stringValue,param_2);
-  RemoveObjectVariable(param_1,uVar2,param_2);
-  uVar2 = GetArraySize(param_1,uVar2);
-  if (uVar2 == 0) {
-    RemoveObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,uVar1);
+  id = Scr_GetSelf(inst,startLocalId);
+  uVar1 = FindObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,id);
+  uVar1 = FindObject(inst,uVar1);
+  id_00 = FindObjectVariable(inst,uVar1,startLocalId);
+  pVVar2 = GetVariableValueAddress(inst,id_00);
+  VM_CancelNotify(inst,pVVar2->stringValue,startLocalId);
+  RemoveObjectVariable(inst,uVar1,startLocalId);
+  uVar1 = GetArraySize(inst,uVar1);
+  if (uVar1 == 0) {
+    RemoveObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,id);
   }
   return;
 }
@@ -4545,97 +4563,104 @@ void __cdecl Scr_CancelWaittill(scriptInstance_t param_1,uint param_2)
 
 // 008D3D10  Scr_TerminateWaittillThread  (clientscript/cscr_vm.cpp:3822)
 
-void __cdecl Scr_TerminateWaittillThread(scriptInstance_t param_1,uint param_2,uint param_3)
+void __cdecl Scr_TerminateWaittillThread(scriptInstance_t inst,uint localId,uint startLocalId)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  uint id;
   uint uVar4;
-  uint uVar5;
+  uint parentId;
+  VariableUnion *pVVar5;
   uint uVar6;
-  VariableUnion *pVVar7;
-  uint uVar8;
+  uint uVar7;
+  uint id_00;
+  int iVar8;
   uint uVar9;
-  uint uVar10;
-  int iVar11;
-  uint uVar12;
   undefined3 in_stack_00000005;
-  VariableStackBuffer *local_24;
+  VariableStackBuffer *stackValue;
+  uint stringValue;
+  uint stackId;
+  uint selfNameId;
+  uint notifyListId;
+  uint notifyNameListId;
+  uint notifyListOwnerId;
+  uint selfId;
   
-  uVar3 = Scr_GetThreadNotifyName(param_1,param_3);
-  uVar12 = (uint)uVar3;
-  if (uVar12 == 0) {
-    uVar12 = FindVariable(param_1,param_3,0x17fff);
-    if ((uVar12 == 0) &&
+  uVar3 = Scr_GetThreadNotifyName(inst,startLocalId);
+  uVar9 = (uint)uVar3;
+  if (uVar9 == 0) {
+    uVar9 = FindVariable(inst,startLocalId,0x17fff);
+    if ((uVar9 == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf12,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar11 = GetValueType(param_1,uVar12);
-    if ((iVar11 != 10) &&
+    iVar8 = GetValueType(inst,uVar9);
+    if ((iVar8 != 10) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf13,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pVVar7 = GetVariableValueAddress(param_1,uVar12);
-    local_24 = pVVar7->stackValue;
-    if (gScrVarPub[_param_1].developer != false) {
-      Scr_GetStackThreadPos(param_1,param_2,local_24,true);
+    pVVar5 = GetVariableValueAddress(inst,uVar9);
+    stackValue = pVVar5->stackValue;
+    if (gScrVarPub[_inst].developer != false) {
+      Scr_GetStackThreadPos(inst,localId,stackValue,true);
     }
-    RemoveVariable(param_1,param_3,0x17fff);
+    RemoveVariable(inst,startLocalId,0x17fff);
   }
   else {
-    uVar4 = Scr_GetSelf(param_1,param_3);
-    uVar5 = FindObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,uVar4);
-    uVar6 = FindObject(param_1,uVar5);
-    uVar5 = FindObjectVariable(param_1,uVar6,param_3);
-    pVVar7 = GetVariableValueAddress(param_1,uVar5);
-    uVar5 = pVVar7->stringValue;
-    uVar8 = FindVariable(param_1,uVar5,0x17ffe);
-    uVar8 = FindObject(param_1,uVar8);
-    uVar9 = FindVariable(param_1,uVar8,uVar12);
-    uVar9 = FindObject(param_1,uVar9);
-    uVar10 = FindObjectVariable(param_1,uVar9,param_3);
-    if ((uVar10 == 0) &&
+    id = Scr_GetSelf(inst,startLocalId);
+    uVar4 = FindObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,id);
+    parentId = FindObject(inst,uVar4);
+    uVar4 = FindObjectVariable(inst,parentId,startLocalId);
+    pVVar5 = GetVariableValueAddress(inst,uVar4);
+    uVar4 = pVVar5->stringValue;
+    uVar6 = FindVariable(inst,uVar4,0x17ffe);
+    uVar6 = FindObject(inst,uVar6);
+    uVar7 = FindVariable(inst,uVar6,uVar9);
+    uVar7 = FindObject(inst,uVar7);
+    id_00 = FindObjectVariable(inst,uVar7,startLocalId);
+    if ((id_00 == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf01,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar11 = GetValueType(param_1,uVar10);
-    if ((iVar11 != 10) &&
+    iVar8 = GetValueType(inst,id_00);
+    if ((iVar8 != 10) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf02,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pVVar7 = GetVariableValueAddress(param_1,uVar10);
-    local_24 = pVVar7->stackValue;
-    if (gScrVarPub[_param_1].developer != false) {
-      Scr_GetStackThreadPos(param_1,param_2,local_24,true);
+    pVVar5 = GetVariableValueAddress(inst,id_00);
+    stackValue = pVVar5->stackValue;
+    if (gScrVarPub[_inst].developer != false) {
+      Scr_GetStackThreadPos(inst,localId,stackValue,true);
     }
-    VM_CancelNotifyInternal(param_1,uVar5,param_3,uVar8,uVar9,uVar12);
-    RemoveObjectVariable(param_1,uVar6,param_3);
-    uVar12 = GetArraySize(param_1,uVar6);
-    if (uVar12 == 0) {
-      RemoveObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,uVar4);
+    VM_CancelNotifyInternal(inst,uVar4,startLocalId,uVar6,uVar7,uVar9);
+    RemoveObjectVariable(inst,parentId,startLocalId);
+    uVar9 = GetArraySize(inst,parentId);
+    if (uVar9 == 0) {
+      RemoveObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,id);
     }
   }
-  VM_TerminateStack(param_1,param_2,param_3,local_24);
+  VM_TerminateStack(inst,localId,startLocalId,stackValue);
   return;
 }
 
 
 // 008D2220  Scr_GetWaittillThreadStackId  (clientscript/cscr_vm.cpp:3875)
 
-uint __cdecl Scr_GetWaittillThreadStackId(scriptInstance_t param_1,uint param_2,uint param_3)
+uint __cdecl Scr_GetWaittillThreadStackId(scriptInstance_t inst,uint localId,uint startLocalId)
 
 {
   code *pcVar1;
@@ -4644,8 +4669,14 @@ uint __cdecl Scr_GetWaittillThreadStackId(scriptInstance_t param_1,uint param_2,
   uint uVar4;
   VariableUnion *pVVar5;
   undefined3 in_stack_00000005;
+  uint stringValue;
+  uint selfNameId;
+  uint notifyListId;
+  uint notifyNameListId;
+  uint notifyListOwnerId;
+  uint selfId;
   
-  if (gScrVarPub[_param_1].developer == false) {
+  if (gScrVarPub[_inst].developer == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xf2b,0,
                              "%s");
     if (!bVar2) {
@@ -4654,21 +4685,21 @@ uint __cdecl Scr_GetWaittillThreadStackId(scriptInstance_t param_1,uint param_2,
       return uVar4;
     }
   }
-  uVar3 = Scr_GetThreadNotifyName(param_1,param_3);
+  uVar3 = Scr_GetThreadNotifyName(inst,startLocalId);
   if (uVar3 == 0) {
-    uVar4 = FindVariable(param_1,param_3,0x17fff);
+    uVar4 = FindVariable(inst,startLocalId,0x17fff);
   }
   else {
-    uVar4 = Scr_GetSelf(param_1,param_3);
-    uVar4 = FindObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,uVar4);
-    uVar4 = FindObject(param_1,uVar4);
-    uVar4 = FindObjectVariable(param_1,uVar4,param_3);
-    pVVar5 = GetVariableValueAddress(param_1,uVar4);
-    uVar4 = FindVariable(param_1,pVVar5->stringValue,0x17ffe);
-    uVar4 = FindObject(param_1,uVar4);
-    uVar4 = FindVariable(param_1,uVar4,(uint)uVar3);
-    uVar4 = FindObject(param_1,uVar4);
-    uVar4 = FindObjectVariable(param_1,uVar4,param_3);
+    uVar4 = Scr_GetSelf(inst,startLocalId);
+    uVar4 = FindObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,uVar4);
+    uVar4 = FindObject(inst,uVar4);
+    uVar4 = FindObjectVariable(inst,uVar4,startLocalId);
+    pVVar5 = GetVariableValueAddress(inst,uVar4);
+    uVar4 = FindVariable(inst,pVVar5->stringValue,0x17ffe);
+    uVar4 = FindObject(inst,uVar4);
+    uVar4 = FindVariable(inst,uVar4,(uint)uVar3);
+    uVar4 = FindObject(inst,uVar4);
+    uVar4 = FindObjectVariable(inst,uVar4,startLocalId);
   }
   return uVar4;
 }
@@ -4676,7 +4707,7 @@ uint __cdecl Scr_GetWaittillThreadStackId(scriptInstance_t param_1,uint param_2,
 
 // 008D2170  Scr_IsEndonThread  (clientscript/cscr_vm.cpp:3903)
 
-bool __cdecl Scr_IsEndonThread(scriptInstance_t param_1,uint param_2)
+bool __cdecl Scr_IsEndonThread(scriptInstance_t inst,uint localId)
 
 {
   code *pcVar1;
@@ -4684,13 +4715,15 @@ bool __cdecl Scr_IsEndonThread(scriptInstance_t param_1,uint param_2)
   undefined1 uVar3;
   int iVar4;
   uint uVar5;
+  uint stackId;
+  int type;
   
-  iVar4 = GetObjectType(param_1,param_2);
+  iVar4 = GetObjectType(inst,localId);
   if (iVar4 == 0xe) {
-    uVar5 = GetStartLocalId(param_1,param_2);
-    if (uVar5 == param_2) {
-      uVar5 = Scr_GetWaittillThreadStackId(param_1,param_2,param_2);
-      iVar4 = GetValueType(param_1,uVar5);
+    uVar5 = GetStartLocalId(inst,localId);
+    if (uVar5 == localId) {
+      uVar5 = Scr_GetWaittillThreadStackId(inst,localId,localId);
+      iVar4 = GetValueType(inst,uVar5);
       if ((iVar4 != 0) && (iVar4 != 10)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf49,0,"%s");
@@ -4715,24 +4748,25 @@ bool __cdecl Scr_IsEndonThread(scriptInstance_t param_1,uint param_2)
 
 // 008D36B0  Scr_TerminateThread  (clientscript/cscr_vm.cpp:3919)
 
-void __cdecl Scr_TerminateThread(scriptInstance_t param_1,uint param_2)
+void __cdecl Scr_TerminateThread(scriptInstance_t inst,uint localId)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  int iVar4;
+  uint id;
+  int iVar3;
+  uint startLocalId;
   
-  uVar3 = GetStartLocalId(param_1,param_2);
-  iVar4 = GetObjectType(param_1,uVar3);
-  if (iVar4 == 0xd) {
-    Scr_TerminateRunningThread(param_1,param_2);
+  id = GetStartLocalId(inst,localId);
+  iVar3 = GetObjectType(inst,id);
+  if (iVar3 == 0xd) {
+    Scr_TerminateRunningThread(inst,localId);
   }
-  else if (iVar4 == 0xe) {
-    Scr_TerminateWaittillThread(param_1,param_2,uVar3);
+  else if (iVar3 == 0xe) {
+    Scr_TerminateWaittillThread(inst,localId,id);
   }
-  else if (iVar4 == 0xf) {
-    Scr_TerminateWaitThread(param_1,param_2,uVar3);
+  else if (iVar3 == 0xf) {
+    Scr_TerminateWaitThread(inst,localId,id);
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xf62,0,
@@ -4749,43 +4783,45 @@ void __cdecl Scr_TerminateThread(scriptInstance_t param_1,uint param_2)
 
 // 008D2380  Scr_GetThreadPos  (clientscript/cscr_vm.cpp:3946)
 
-char * __cdecl Scr_GetThreadPos(scriptInstance_t param_1,uint param_2)
+char * __cdecl Scr_GetThreadPos(scriptInstance_t inst,uint localId)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  VariableUnion *pVVar6;
+  uint id;
+  int iVar4;
+  VariableUnion *pVVar5;
   undefined3 in_stack_00000005;
-  uint local_c;
+  VariableStackBuffer *stackValue;
+  uint stackId;
+  uint startLocalId;
   
-  if ((gScrVarPub[_param_1].developer == false) &&
+  if ((gScrVarPub[_inst].developer == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0xf6f,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  uVar4 = GetStartLocalId(param_1,param_2);
-  iVar5 = GetObjectType(param_1,uVar4);
-  if (iVar5 == 0xd) {
-    pcVar3 = Scr_GetRunningThreadPos(param_1,param_2);
+  id = GetStartLocalId(inst,localId);
+  iVar4 = GetObjectType(inst,id);
+  if (iVar4 == 0xd) {
+    pcVar3 = Scr_GetRunningThreadPos(inst,localId);
   }
   else {
-    if (iVar5 == 0xe) {
-      local_c = Scr_GetWaittillThreadStackId(param_1,param_2,uVar4);
-      if ((local_c == 0) &&
+    if (iVar4 == 0xe) {
+      stackId = Scr_GetWaittillThreadStackId(inst,localId,id);
+      if ((stackId == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xf79,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pcVar3 = (char *)(*pcVar1)();
         return pcVar3;
       }
-      iVar5 = GetValueType(param_1,local_c);
-      if (iVar5 != 10) {
-        GetValueType(param_1,local_c);
+      iVar4 = GetValueType(inst,stackId);
+      if (iVar4 != 10) {
+        GetValueType(inst,stackId);
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf7a,0,"%s\n\t(GetValueType( inst, stackId )) = %i");
         if (!bVar2) {
@@ -4796,7 +4832,7 @@ char * __cdecl Scr_GetThreadPos(scriptInstance_t param_1,uint param_2)
       }
     }
     else {
-      if (iVar5 != 0xf) {
+      if (iVar4 != 0xf) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf84,0,"unreachable");
         if (bVar2) {
@@ -4806,17 +4842,17 @@ char * __cdecl Scr_GetThreadPos(scriptInstance_t param_1,uint param_2)
         pcVar3 = (char *)(*pcVar1)();
         return pcVar3;
       }
-      local_c = Scr_GetWaitThreadStackId(param_1,param_2,uVar4);
-      if ((local_c == 0) &&
+      stackId = Scr_GetWaitThreadStackId(inst,localId,id);
+      if ((stackId == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xf7f,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pcVar3 = (char *)(*pcVar1)();
         return pcVar3;
       }
-      iVar5 = GetValueType(param_1,local_c);
-      if (iVar5 != 10) {
-        GetValueType(param_1,local_c);
+      iVar4 = GetValueType(inst,stackId);
+      if (iVar4 != 10) {
+        GetValueType(inst,stackId);
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xf80,0,"%s\n\t(GetValueType( inst, stackId )) = %i");
         if (!bVar2) {
@@ -4826,8 +4862,8 @@ char * __cdecl Scr_GetThreadPos(scriptInstance_t param_1,uint param_2)
         }
       }
     }
-    pVVar6 = GetVariableValueAddress(param_1,local_c);
-    pcVar3 = Scr_GetStackThreadPos(param_1,param_2,pVVar6->stackValue,false);
+    pVVar5 = GetVariableValueAddress(inst,stackId);
+    pcVar3 = Scr_GetStackThreadPos(inst,localId,pVVar5->stackValue,false);
   }
   return pcVar3;
 }
@@ -4835,322 +4871,325 @@ char * __cdecl Scr_GetThreadPos(scriptInstance_t param_1,uint param_2)
 
 // 008D2BF0  VM_Notify  (clientscript/cscr_vm.cpp:3983)
 
-void __cdecl VM_Notify(scriptInstance_t param_1,uint param_2,uint param_3,VariableValue *param_4)
+void __cdecl
+VM_Notify(scriptInstance_t inst,uint notifyListOwnerId,uint stringValue,VariableValue *top)
 
 {
-  VariableUnion *pVVar1;
-  code *pcVar2;
+  code *pcVar1;
+  VariableValue *pVVar2;
   bool bVar3;
   uint uVar4;
   int iVar5;
   uint uVar6;
   VariableUnion *pVVar7;
+  VariableValue *pVVar8;
   undefined3 in_stack_00000005;
-  VariableUnion local_64;
-  uint local_60;
-  VariableUnion local_5c;
+  VariableStackBuffer *stackValue;
+  uint notifyListIndex;
+  VariableUnion tempValue2;
   int local_58;
-  VariableUnion local_54;
+  VariableUnion tempValue3;
   uint local_50;
-  uint local_4c;
-  uint local_48;
-  VariableStackBuffer *local_44;
-  VariableUnion local_40;
+  uint stackId;
+  uint startLocalId;
+  VariableStackBuffer *newStackValue;
+  VariableUnion tempValue5;
   undefined4 local_3c;
-  VariableUnion *local_38;
-  byte *local_34;
-  uint local_30;
-  uint local_2c;
-  ulong local_28;
-  uint local_24;
-  uint local_20;
-  uint local_1c;
-  int local_18;
-  bool local_11;
-  VariableUnion *local_10;
-  uint local_c;
-  uint local_8;
+  VariableValue *currentValue;
+  char *buf;
+  uint selfNameId;
+  int size;
+  int len;
+  uint notifyListId;
+  uint notifyNameListId;
+  int newSize;
+  int bufLen;
+  bool bNoStack;
+  VariableUnion *tempValue;
+  uint selfId;
+  uint notifyListEntry;
   
-  if (_param_1 == 0) {
-    if (param_3 == scr_const.death) {
-      VM_Notify(param_1,param_2,(uint)scr_const.death_or_disconnect,param_4);
+  if (_inst == 0) {
+    if (stringValue == scr_const.death) {
+      VM_Notify(inst,notifyListOwnerId,(uint)scr_const.death_or_disconnect,top);
     }
-    else if (param_3 == scr_const.disconnect) {
-      VM_Notify(param_1,param_2,(uint)scr_const.death_or_disconnect,param_4);
+    else if (stringValue == scr_const.disconnect) {
+      VM_Notify(inst,notifyListOwnerId,(uint)scr_const.death_or_disconnect,top);
     }
   }
-  local_24 = FindVariable(param_1,param_2,0x17ffe);
-  if (local_24 != 0) {
-    local_24 = FindObject(param_1,local_24);
-    if ((local_24 == 0) &&
+  notifyListId = FindVariable(inst,notifyListOwnerId,0x17ffe);
+  if (notifyListId != 0) {
+    notifyListId = FindObject(inst,notifyListId);
+    if ((notifyListId == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0xfb9,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    local_20 = FindVariable(param_1,local_24,param_3);
-    if (local_20 != 0) {
-      local_20 = FindObject(param_1,local_20);
-      if ((local_20 == 0) &&
+    notifyNameListId = FindVariable(inst,notifyListId,stringValue);
+    if (notifyNameListId != 0) {
+      notifyNameListId = FindObject(inst,notifyNameListId);
+      if ((notifyNameListId == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xfc0,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      AddRefToObject(param_1,local_20);
-      if ((gScrVarPub[_param_1].evaluate != false) &&
+      AddRefToObject(inst,notifyNameListId);
+      if ((gScrVarPub[_inst].evaluate != false) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xfc4,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      gScrVarPub[_param_1].evaluate = true;
-      local_8 = local_20;
+      gScrVarPub[_inst].evaluate = true;
+      notifyListEntry = notifyNameListId;
 LAB_008d2d7d:
-      local_20 = local_8;
-      local_60 = FindLastSibling(param_1,local_8);
+      notifyNameListId = notifyListEntry;
+      notifyListIndex = FindLastSibling(inst,notifyListEntry);
 LAB_008d2d90:
-      if (local_60 == 0) {
-        RemoveRefToObject(param_1,local_20);
-        if ((gScrVarPub[_param_1].evaluate == false) &&
+      if (notifyListIndex == 0) {
+        RemoveRefToObject(inst,notifyNameListId);
+        if ((gScrVarPub[_inst].evaluate == false) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x107f,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        gScrVarPub[_param_1].evaluate = false;
+        gScrVarPub[_inst].evaluate = false;
         return;
       }
-      local_8 = gScrVarGlob[_param_1].variableList[local_60 + 0x8000].hash.id;
-      if ((local_8 == 0) &&
+      notifyListEntry = gScrVarGlob[_inst].variableList[notifyListIndex + 0x8000].hash.id;
+      if ((notifyListEntry == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0xfd2,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      local_48 = GetVariableKeyObject(param_1,local_8);
-      local_c = Scr_GetSelf(param_1,local_48);
-      uVar4 = FindObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,local_c);
-      local_30 = FindObject(param_1,uVar4);
-      iVar5 = GetValueType(param_1,local_8);
+      startLocalId = GetVariableKeyObject(inst,notifyListEntry);
+      selfId = Scr_GetSelf(inst,startLocalId);
+      uVar4 = FindObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,selfId);
+      selfNameId = FindObject(inst,uVar4);
+      iVar5 = GetValueType(inst,notifyListEntry);
       if (iVar5 == 0) {
-        VM_CancelNotifyInternal(param_1,param_2,local_48,local_24,local_20,param_3);
-        Scr_KillEndonThread(param_1,local_48);
-        RemoveObjectVariable(param_1,local_30,local_48);
-        uVar4 = GetArraySize(param_1,local_30);
+        VM_CancelNotifyInternal
+                  (inst,notifyListOwnerId,startLocalId,notifyListId,notifyNameListId,stringValue);
+        Scr_KillEndonThread(inst,startLocalId);
+        RemoveObjectVariable(inst,selfNameId,startLocalId);
+        uVar4 = GetArraySize(inst,selfNameId);
         if (uVar4 == 0) {
-          RemoveObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,local_c);
+          RemoveObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,selfId);
         }
-        Scr_TerminateThread(param_1,local_c);
-        local_8 = local_20;
+        Scr_TerminateThread(inst,selfId);
+        notifyListEntry = notifyNameListId;
       }
       else {
-        iVar5 = GetValueType(param_1,local_8);
+        iVar5 = GetValueType(inst,notifyListEntry);
         if ((iVar5 != 10) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0xfeb,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        local_10 = GetVariableValueAddress(param_1,local_8);
-        local_64 = (VariableUnion)local_10->stackValue;
-        if ((local_64.stackValue)->pos[-1] == 'w') {
-          local_2c = (uint)*(local_64.stackValue)->pos;
-          if (((int)local_2c < 0) &&
+        tempValue = GetVariableValueAddress(inst,notifyListEntry);
+        stackValue = tempValue->stackValue;
+        if (stackValue->pos[-1] == 'w') {
+          size = (int)*stackValue->pos;
+          if ((size < 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0xff3,0,"%s"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          if (((int)(uint)(local_64.stackValue)->size < (int)local_2c) &&
+          if (((int)(uint)stackValue->size < size) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0xff4,0,"size <= stackValue->size\n\t%i, %i"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          local_34 = (byte *)((int)local_64.vectorValue +
-                             ((local_64.stackValue)->size - local_2c) * 5 + 0xd);
-          local_38 = &param_4->u;
+          buf = (char *)((int)stackValue + ((uint)stackValue->size - size) * 5 + 0xd);
+          currentValue = top;
           do {
-            if (local_2c == 0) {
+            if (size == 0) {
 LAB_008d31fe:
-              (local_64.stackValue)->pos = (local_64.stackValue)->pos + 1;
-              local_11 = true;
+              stackValue->pos = stackValue->pos + 1;
+              bNoStack = true;
               goto LAB_008d324f;
             }
-            if ((local_38[1].intValue == 7) &&
+            if ((currentValue->type == 7) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0xffb,0,"%s"), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
-            if (local_38[1].intValue == 8) {
-              local_60 = gScrVarGlob[_param_1].variableList[local_60 + 0x8000].hash.u.prev;
+            if (currentValue->type == 8) {
+              notifyListIndex =
+                   gScrVarGlob[_inst].variableList[notifyListIndex + 0x8000].hash.u.prev;
               goto LAB_008d2d90;
             }
-            local_2c = local_2c - 1;
-            local_50 = (uint)*local_34;
+            size = size + -1;
+            local_50 = (uint)(byte)*buf;
             if ((local_50 == 7) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0x1004,0,"%s"), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
             if (local_50 == 8) goto LAB_008d31fe;
-            local_54 = *(VariableUnion *)(local_34 + 1);
-            local_34 = local_34 + 5;
-            AddRefToValue(param_1,local_50,local_54);
-            local_5c = *local_38;
-            local_58 = local_38[1].intValue;
-            AddRefToValue(param_1,local_58,local_5c);
-            Scr_EvalEquality(param_1,(VariableValue *)&local_54,(VariableValue *)&local_5c);
-            if (gScrVarPub[_param_1].error_message != (char *)0x0) {
-              RuntimeError(param_1,(local_64.stackValue)->pos,
-                           ((int)*(local_64.stackValue)->pos - local_2c) + 3,
-                           gScrVarPub[_param_1].error_message,
-                           gScrVmGlob[_param_1].dialog_error_message);
-              Scr_ClearErrorMessage(param_1);
-              local_60 = gScrVarGlob[_param_1].variableList[local_60 + 0x8000].hash.u.prev;
+            tempValue3 = *(VariableUnion *)(buf + 1);
+            buf = buf + 5;
+            AddRefToValue(inst,local_50,tempValue3);
+            tempValue2 = currentValue->u;
+            local_58 = currentValue->type;
+            AddRefToValue(inst,local_58,tempValue2);
+            Scr_EvalEquality(inst,(VariableValue *)&tempValue3,(VariableValue *)&tempValue2);
+            if (gScrVarPub[_inst].error_message != (char *)0x0) {
+              RuntimeError(inst,stackValue->pos,(*stackValue->pos - size) + 3,
+                           gScrVarPub[_inst].error_message,gScrVmGlob[_inst].dialog_error_message);
+              Scr_ClearErrorMessage(inst);
+              notifyListIndex =
+                   gScrVarGlob[_inst].variableList[notifyListIndex + 0x8000].hash.u.prev;
               goto LAB_008d2d90;
             }
             if ((local_50 != 6) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0x1014,0,"%s"), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
-            if (local_54.intValue == 0) goto code_r0x008d3143;
-            local_38 = local_38 + -2;
+            if (tempValue3.intValue == 0) goto code_r0x008d3143;
+            currentValue = currentValue + -1;
           } while( true );
         }
-        if ((param_4->type == 7) &&
+        if ((top->type == 7) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x102a,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        local_11 = param_4->type == 8;
+        bNoStack = top->type == 8;
 LAB_008d324f:
         local_3c = 10;
-        uVar4 = local_48;
-        local_40 = local_64;
-        uVar6 = GetVariable(param_1,gScrVarPub[_param_1].timeArrayId,gScrVarPub[_param_1].time);
-        uVar6 = GetArray(param_1,uVar6);
-        local_4c = GetNewObjectVariable(param_1,uVar6,uVar4);
-        SetNewVariableValue(param_1,local_4c,(VariableValue *)&local_40);
-        local_10 = GetVariableValueAddress(param_1,local_4c);
-        VM_CancelNotifyInternal(param_1,param_2,local_48,local_24,local_20,param_3);
-        RemoveObjectVariable(param_1,local_30,local_48);
-        uVar4 = GetArraySize(param_1,local_30);
+        uVar4 = startLocalId;
+        tempValue5.stackValue = stackValue;
+        uVar6 = GetVariable(inst,gScrVarPub[_inst].timeArrayId,gScrVarPub[_inst].time);
+        uVar6 = GetArray(inst,uVar6);
+        stackId = GetNewObjectVariable(inst,uVar6,uVar4);
+        SetNewVariableValue(inst,stackId,(VariableValue *)&tempValue5);
+        tempValue = GetVariableValueAddress(inst,stackId);
+        VM_CancelNotifyInternal
+                  (inst,notifyListOwnerId,startLocalId,notifyListId,notifyNameListId,stringValue);
+        RemoveObjectVariable(inst,selfNameId,startLocalId);
+        uVar4 = GetArraySize(inst,selfNameId);
         if (uVar4 == 0) {
-          RemoveObjectVariable(param_1,gScrVarPub[_param_1].pauseArrayId,local_c);
+          RemoveObjectVariable(inst,gScrVarPub[_inst].pauseArrayId,selfId);
         }
-        Scr_SetThreadWaitTime(param_1,local_48,gScrVarPub[_param_1].time);
-        if (local_11 == false) {
-          if ((param_4->type == 8) &&
+        Scr_SetThreadWaitTime(inst,startLocalId,gScrVarPub[_inst].time);
+        if (bNoStack == false) {
+          if ((top->type == 8) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x1044,0,"%s\n\t(top - gScrVmPub[inst].stack) = %i"), !bVar3
              )) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          if ((param_4->type == 7) &&
+          if ((top->type == 7) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x1045,0,"%s\n\t(top - gScrVmPub[inst].stack) = %i"), !bVar3
              )) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          local_2c = (uint)(local_64.stackValue)->size;
-          local_38 = &param_4->u;
-          local_1c = local_2c;
+          size = (int)stackValue->size;
+          currentValue = top;
+          newSize = size;
           do {
-            local_1c = local_1c + 1;
-            pVVar7 = local_38 + -2;
-            pVVar1 = local_38 + -1;
-            local_38 = pVVar7;
-            if ((pVVar1->intValue == 7) &&
+            newSize = newSize + 1;
+            pVVar8 = currentValue + -1;
+            pVVar2 = currentValue + -1;
+            currentValue = pVVar8;
+            if ((pVVar2->type == 7) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0x104f,0,
                                          "%s\n\t(currentValue - gScrVmPub[inst].stack) = %i"),
                !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
-          } while (local_38[1].intValue != 8);
-          if ((((int)local_1c < 0) || (0xffff < (int)local_1c)) &&
+          } while (currentValue->type != 8);
+          if (((newSize < 0) || (0xffff < newSize)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x1052,0,"%s"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          local_28 = local_2c * 5;
-          local_18 = local_1c * 5 + 0xd;
-          iVar5 = MT_Realloc(param_1,(uint)(local_64.stackValue)->bufLen,local_18);
+          len = size * 5;
+          bufLen = newSize * 5 + 0xd;
+          iVar5 = MT_Realloc(inst,(uint)stackValue->bufLen,bufLen);
           if (iVar5 == 0) {
-            local_44 = MT_Alloc(local_18,1,param_1);
-            local_44->bufLen = (ushort)local_18;
-            local_44->pos = (char *)*local_64.vectorValue;
-            local_44->localId = (local_64.stackValue)->localId;
-            memcpy((uchar *)local_44->buf,(uchar *)(local_64.stackValue)->buf,local_28);
-            MT_Free(local_64.vectorValue,(uint)(local_64.stackValue)->bufLen,param_1);
-            local_64.stackValue = local_44;
-            local_10->stackValue = local_44;
+            newStackValue = MT_Alloc(bufLen,1,inst);
+            newStackValue->bufLen = (ushort)bufLen;
+            newStackValue->pos = stackValue->pos;
+            newStackValue->localId = stackValue->localId;
+            memcpy((uchar *)newStackValue->buf,(uchar *)stackValue->buf,len);
+            MT_Free(stackValue,(uint)stackValue->bufLen,inst);
+            stackValue = newStackValue;
+            tempValue->stackValue = newStackValue;
           }
-          (local_64.stackValue)->size = (ushort)local_1c;
-          local_34 = (byte *)((int)local_64.vectorValue + local_28 + 0xd);
-          local_1c = local_1c - local_2c;
-          if ((local_1c == 0) &&
+          stackValue->size = (ushort)newSize;
+          buf = stackValue->buf + len;
+          newSize = newSize - size;
+          if ((newSize == 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x106b,0,"%s"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
           do {
-            pVVar7 = local_38 + 2;
-            pVVar1 = local_38 + 3;
-            local_38 = pVVar7;
-            AddRefToValue(param_1,pVVar1->intValue,*pVVar7);
-            if ((0x15 < local_38[1].stringValue) &&
+            pVVar7 = &currentValue[1].u;
+            pVVar2 = currentValue + 1;
+            currentValue = (VariableValue *)pVVar7;
+            AddRefToValue(inst,pVVar2->type,*pVVar7);
+            if ((0x15 < (uint)currentValue->type) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                          ,0x1071,0,"%s"), !bVar3)) {
-              pcVar2 = (code *)swi(3);
-              (*pcVar2)();
+              pcVar1 = (code *)swi(3);
+              (*pcVar1)();
               return;
             }
-            *local_34 = *(byte *)(local_38 + 1);
-            *(VariableUnion *)(local_34 + 1) = *local_38;
-            local_34 = local_34 + 5;
-            local_1c = local_1c + -1;
-          } while (local_1c != 0);
-          if (((int)local_34 - local_64.intValue != local_18) &&
+            *buf = (char)currentValue->type;
+            *(VariableUnion *)(buf + 1) = currentValue->u;
+            buf = buf + 5;
+            newSize = newSize + -1;
+          } while (newSize != 0);
+          if (((int)buf - (int)stackValue != bufLen) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp"
                                        ,0x1079,0,"%s"), !bVar3)) {
-            pcVar2 = (code *)swi(3);
-            (*pcVar2)();
+            pcVar1 = (code *)swi(3);
+            (*pcVar1)();
             return;
           }
-          local_8 = local_20;
+          notifyListEntry = notifyNameListId;
         }
         else {
-          local_8 = local_20;
+          notifyListEntry = notifyNameListId;
         }
       }
       goto LAB_008d2d7d;
@@ -5158,7 +5197,7 @@ LAB_008d324f:
   }
   return;
 code_r0x008d3143:
-  local_60 = gScrVarGlob[_param_1].variableList[local_60 + 0x8000].hash.u.prev;
+  notifyListIndex = gScrVarGlob[_inst].variableList[notifyListIndex + 0x8000].hash.u.prev;
   goto LAB_008d2d90;
 }
 
@@ -5167,7 +5206,8 @@ code_r0x008d3143:
 
 void __cdecl
 Scr_NotifyNum_Internal
-          (scriptInstance_t param_1,int param_2,int param_3,uint param_4,uint param_5,uint param_6)
+          (scriptInstance_t inst,int clientNum,int entnum,uint classnum,uint stringValue,
+          uint paramcount)
 
 {
   char *pcVar1;
@@ -5176,16 +5216,21 @@ Scr_NotifyNum_Internal
   int iVar4;
   code *pcVar5;
   bool bVar6;
-  uint uVar7;
-  VariableValue *pVVar8;
+  uint notifyListOwnerId;
+  VariableValue *pVVar7;
   undefined3 in_stack_00000005;
+  VariableValue *top;
+  char *varUsagePos;
+  VariableValue *startTop;
+  int type;
+  uint id;
   
-  SL_CheckExists(param_1,param_5);
-  pcVar1 = gScrVarPub[_param_1].varUsagePos;
-  if (gScrVarPub[_param_1].varUsagePos == (char *)0x0) {
-    gScrVarPub[_param_1].varUsagePos = "<script notify variable>";
+  SL_CheckExists(inst,stringValue);
+  pcVar1 = gScrVarPub[_inst].varUsagePos;
+  if (gScrVarPub[_inst].varUsagePos == (char *)0x0) {
+    gScrVarPub[_inst].varUsagePos = "<script notify variable>";
   }
-  if (gScrVarPub[_param_1].timeArrayId == 0) {
+  if (gScrVarPub[_inst].timeArrayId == 0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1099,0
                              ,"%s");
     if (!bVar6) {
@@ -5194,7 +5239,7 @@ Scr_NotifyNum_Internal
       return;
     }
   }
-  if (gScrVmPub[_param_1].inparamcount < param_6) {
+  if (gScrVmPub[_inst].inparamcount < paramcount) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x109a,0
                              ,"%s");
     if (!bVar6) {
@@ -5203,17 +5248,17 @@ Scr_NotifyNum_Internal
       return;
     }
   }
-  Scr_ClearOutParams(param_1);
-  pVVar8 = gScrVmPub[_param_1].top + -param_6;
-  uVar2 = gScrVmPub[_param_1].inparamcount;
-  uVar7 = FindEntityId(param_1,param_3,param_4,param_2);
-  if (uVar7 != 0) {
-    if (gScrVmDebugPub[_param_1].checkBreakon != 0) {
-      pVVar3 = gScrVmPub[_param_1].top;
-      gScrVmPub[_param_1].inparamcount = 0;
-      Scr_CheckBreakonNotify(param_1,uVar7,param_5,gScrVmPub[_param_1].top,(char *)0x0,0);
-      gScrVmPub[_param_1].top = pVVar3;
-      if (gScrVmPub[_param_1].outparamcount != 0) {
+  Scr_ClearOutParams(inst);
+  pVVar7 = gScrVmPub[_inst].top + -paramcount;
+  uVar2 = gScrVmPub[_inst].inparamcount;
+  notifyListOwnerId = FindEntityId(inst,entnum,classnum,clientNum);
+  if (notifyListOwnerId != 0) {
+    if (gScrVmDebugPub[_inst].checkBreakon != 0) {
+      pVVar3 = gScrVmPub[_inst].top;
+      gScrVmPub[_inst].inparamcount = 0;
+      Scr_CheckBreakonNotify(inst,notifyListOwnerId,stringValue,gScrVmPub[_inst].top,(char *)0x0,0);
+      gScrVmPub[_inst].top = pVVar3;
+      if (gScrVmPub[_inst].outparamcount != 0) {
         bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x10ad,0,"%s");
         if (!bVar6) {
@@ -5223,19 +5268,18 @@ Scr_NotifyNum_Internal
         }
       }
     }
-    iVar4 = pVVar8->type;
-    pVVar8->type = 8;
-    gScrVmPub[_param_1].inparamcount = 0;
-    VM_Notify(param_1,uVar7,param_5,gScrVmPub[_param_1].top);
-    pVVar8->type = iVar4;
+    iVar4 = pVVar7->type;
+    pVVar7->type = 8;
+    gScrVmPub[_inst].inparamcount = 0;
+    VM_Notify(inst,notifyListOwnerId,stringValue,gScrVmPub[_inst].top);
+    pVVar7->type = iVar4;
   }
-  while (gScrVmPub[_param_1].top != pVVar8) {
-    RemoveRefToValue(param_1,(&(gScrVmPub[_param_1].top)->u)[1].intValue,
-                     (gScrVmPub[_param_1].top)->u);
-    gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
+  while (gScrVmPub[_inst].top != pVVar7) {
+    RemoveRefToValue(inst,(&(gScrVmPub[_inst].top)->u)[1].intValue,(gScrVmPub[_inst].top)->u);
+    gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
   }
-  gScrVmPub[_param_1].inparamcount = uVar2 - param_6;
-  if (gScrVmPub[_param_1].outparamcount != 0) {
+  gScrVmPub[_inst].inparamcount = uVar2 - paramcount;
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x10bf,0
                              ,"%s");
     if (!bVar6) {
@@ -5244,35 +5288,35 @@ Scr_NotifyNum_Internal
       return;
     }
   }
-  gScrVarPub[_param_1].varUsagePos = pcVar1;
-  SL_CheckExists(param_1,param_5);
+  gScrVarPub[_inst].varUsagePos = pcVar1;
+  SL_CheckExists(inst,stringValue);
   return;
 }
 
 
 // 008D4020  Scr_NotifyNum  (clientscript/cscr_vm.cpp:4301)
 
-void __cdecl Scr_NotifyNum(int param_1,uint param_2,uint param_3,uint param_4)
+void __cdecl Scr_NotifyNum(int entnum,uint classnum,uint stringValue,uint paramcount)
 
 {
-  Scr_NotifyNum_Internal(SCRIPTINSTANCE_SERVER,0,param_1,param_2,param_3,param_4);
+  Scr_NotifyNum_Internal(SCRIPTINSTANCE_SERVER,0,entnum,classnum,stringValue,paramcount);
   return;
 }
 
 
 // 008D4050  CScr_NotifyNum  (clientscript/cscr_vm.cpp:4306)
 
-void __cdecl CScr_NotifyNum(int param_1,int param_2,uint param_3,uint param_4,uint param_5)
+void __cdecl CScr_NotifyNum(int clientNum,int entnum,uint classnum,uint stringValue,uint paramcount)
 
 {
-  Scr_NotifyNum_Internal(SCRIPTINSTANCE_CLIENT,param_1,param_2,param_3,param_4,param_5);
+  Scr_NotifyNum_Internal(SCRIPTINSTANCE_CLIENT,clientNum,entnum,classnum,stringValue,paramcount);
   return;
 }
 
 
 // 008D4080  Scr_CancelNotifyList  (clientscript/cscr_vm.cpp:4312)
 
-void __cdecl Scr_CancelNotifyList(scriptInstance_t param_1,uint param_2)
+void __cdecl Scr_CancelNotifyList(scriptInstance_t inst,uint notifyListOwnerId)
 
 {
   VariableStackBuffer *pVVar1;
@@ -5280,17 +5324,24 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t param_1,uint param_2)
   bool bVar3;
   ushort uVar4;
   uint uVar5;
-  uint uVar6;
-  int iVar7;
-  VariableUnion *pVVar8;
-  uint uVar9;
+  uint id;
+  int iVar6;
+  VariableUnion *pVVar7;
+  uint id_00;
+  VariableStackBuffer *stackValue;
+  uint stackId;
+  uint startLocalId;
+  uint selfStartLocalId;
+  uint notifyListId;
+  uint notifyNameListId;
+  uint selfLocalId;
   
   while( true ) {
-    uVar5 = FindVariable(param_1,param_2,0x17ffe);
+    uVar5 = FindVariable(inst,notifyListOwnerId,0x17ffe);
     if (uVar5 == 0) {
       return;
     }
-    uVar5 = FindObject(param_1,uVar5);
+    uVar5 = FindObject(inst,uVar5);
     if ((uVar5 == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x10e8,0,"%s"), !bVar3)) {
@@ -5298,41 +5349,41 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t param_1,uint param_2)
       (*pcVar2)();
       return;
     }
-    uVar5 = FindFirstSibling(param_1,uVar5);
+    uVar5 = FindFirstSibling(inst,uVar5);
     if (uVar5 == 0) {
       return;
     }
-    uVar5 = FindObject(param_1,uVar5);
+    uVar5 = FindObject(inst,uVar5);
     if ((uVar5 == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x10ef,0,"%s"), !bVar3)) break;
-    uVar5 = FindFirstSibling(param_1,uVar5);
+    uVar5 = FindFirstSibling(inst,uVar5);
     if (uVar5 == 0) {
       return;
     }
-    uVar6 = GetVariableKeyObject(param_1,uVar5);
-    if ((uVar6 == 0) &&
+    id = GetVariableKeyObject(inst,uVar5);
+    if ((id == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x10f6,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    iVar7 = GetValueType(param_1,uVar5);
-    if (iVar7 == 10) {
-      pVVar8 = GetVariableValueAddress(param_1,uVar5);
-      pVVar1 = pVVar8->stackValue;
-      Scr_CancelWaittill(param_1,uVar6);
-      VM_TrimStack(param_1,uVar6,pVVar1,false);
+    iVar6 = GetValueType(inst,uVar5);
+    if (iVar6 == 10) {
+      pVVar7 = GetVariableValueAddress(inst,uVar5);
+      pVVar1 = pVVar7->stackValue;
+      Scr_CancelWaittill(inst,id);
+      VM_TrimStack(inst,id,pVVar1,false);
     }
     else {
-      AddRefToObject(param_1,uVar6);
-      Scr_CancelWaittill(param_1,uVar6);
-      uVar5 = Scr_GetSelf(param_1,uVar6);
-      uVar5 = GetStartLocalId(param_1,uVar5);
-      uVar9 = FindVariable(param_1,uVar5,0x17fff);
-      if (uVar9 != 0) {
-        uVar4 = Scr_GetThreadNotifyName(param_1,uVar5);
+      AddRefToObject(inst,id);
+      Scr_CancelWaittill(inst,id);
+      uVar5 = Scr_GetSelf(inst,id);
+      uVar5 = GetStartLocalId(inst,uVar5);
+      id_00 = FindVariable(inst,uVar5,0x17fff);
+      if (id_00 != 0) {
+        uVar4 = Scr_GetThreadNotifyName(inst,uVar5);
         if ((uVar4 != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x1109,0,"%s"), !bVar3)) {
@@ -5340,16 +5391,16 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t param_1,uint param_2)
           (*pcVar2)();
           return;
         }
-        iVar7 = GetValueType(param_1,uVar9);
-        if ((iVar7 != 10) &&
+        iVar6 = GetValueType(inst,id_00);
+        if ((iVar6 != 10) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x110a,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        pVVar8 = GetVariableValueAddress(param_1,uVar9);
-        pVVar1 = pVVar8->stackValue;
+        pVVar7 = GetVariableValueAddress(inst,id_00);
+        pVVar1 = pVVar7->stackValue;
         if ((pVVar1->pos != (char *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                      0x110c,0,"%s"), !bVar3)) {
@@ -5357,10 +5408,10 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t param_1,uint param_2)
           (*pcVar2)();
           return;
         }
-        VM_TrimStack(param_1,uVar5,pVVar1,true);
+        VM_TrimStack(inst,uVar5,pVVar1,true);
       }
-      Scr_KillEndonThread(param_1,uVar6);
-      RemoveRefToEmptyObject(param_1,uVar6);
+      Scr_KillEndonThread(inst,id);
+      RemoveRefToEmptyObject(inst,id);
     }
   }
   pcVar2 = (code *)swi(3);
@@ -5371,216 +5422,223 @@ void __cdecl Scr_CancelNotifyList(scriptInstance_t param_1,uint param_2)
 
 // 008DD390  VM_TerminateTime  (clientscript/cscr_vm.cpp:4377)
 
-void __cdecl VM_TerminateTime(scriptInstance_t param_1,uint param_2)
+void __cdecl VM_TerminateTime(scriptInstance_t inst,uint timeId)
 
 {
-  VariableStackBuffer *pVVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint uVar4;
-  uint uVar5;
-  int iVar6;
-  VariableUnion *pVVar7;
+  VariableStackBuffer *stackValue_00;
+  code *pcVar1;
+  bool bVar2;
+  uint id;
+  uint id_00;
+  int iVar3;
+  VariableUnion *pVVar4;
   undefined3 in_stack_00000005;
+  VariableStackBuffer *stackValue;
+  uint stackId;
+  uint startLocalId;
   
-  if (param_2 == 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x111e,0
+  if (timeId == 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x111e,0
                              ,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (gScrVmPub[_param_1].function_count != 0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x111f,0
+  if (gScrVmPub[_inst].function_count != 0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x111f,0
                              ,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  AddRefToObject(param_1,param_2);
+  AddRefToObject(inst,timeId);
   do {
-    uVar4 = FindFirstSibling(param_1,param_2);
-    if (uVar4 == 0) {
-      RemoveRefToObject(param_1,param_2);
+    id = FindFirstSibling(inst,timeId);
+    if (id == 0) {
+      RemoveRefToObject(inst,timeId);
       return;
     }
-    uVar5 = GetVariableKeyObject(param_1,uVar4);
-    if (uVar5 == 0) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1128
+    id_00 = GetVariableKeyObject(inst,id);
+    if (id_00 == 0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1128
                                ,0,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    iVar6 = GetValueType(param_1,uVar4);
-    if (iVar6 != 10) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x112a
+    iVar3 = GetValueType(inst,id);
+    if (iVar3 != 10) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x112a
                                ,0,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    pVVar7 = GetVariableValueAddress(param_1,uVar4);
-    pVVar1 = pVVar7->stackValue;
-    RemoveObjectVariable(param_1,param_2,uVar5);
-    Scr_ClearWaitTime(param_1,uVar5);
-    VM_TerminateStack(param_1,uVar5,uVar5,pVVar1);
+    pVVar4 = GetVariableValueAddress(inst,id);
+    stackValue_00 = pVVar4->stackValue;
+    RemoveObjectVariable(inst,timeId,id_00);
+    Scr_ClearWaitTime(inst,id_00);
+    VM_TerminateStack(inst,id_00,id_00,stackValue_00);
   } while( true );
 }
 
 
 // 008DFC90  VM_Resume  (clientscript/cscr_vm.cpp:4409)
 
-void __cdecl VM_Resume(scriptInstance_t param_1,uint param_2)
+void __cdecl VM_Resume(scriptInstance_t inst,uint timeId)
 
 {
-  VariableStackBuffer *pVVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  uint uVar5;
-  uint uVar6;
-  int iVar7;
-  VariableUnion *pVVar8;
-  DWORD DVar9;
+  VariableStackBuffer *stackValue_00;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  uint uVar4;
+  uint id;
+  int iVar5;
+  VariableUnion *pVVar6;
+  DWORD DVar7;
   undefined3 in_stack_00000005;
+  VariableStackBuffer *stackValue;
+  uint stackId;
+  PIXProfile pixProfile;
+  uint startLocalId;
   
   PIXBeginNamedEvent(-1,"VM_Resume");
-  if ((gScrVmPub[_param_1].top != (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0)) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1142
-                               ,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((gScrVmPub[_inst].top != (VariableValue *)(_inst * 0x4328 + 0xa05afb0)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1142
+                               ,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  Scr_ResetAbortDebugger(param_1);
-  Scr_ResetTimeout(param_1);
-  if ((param_2 == 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x114a
-                               ,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  Scr_ResetAbortDebugger(inst);
+  Scr_ResetTimeout(inst);
+  if ((timeId == 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x114a
+                               ,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  AddRefToObject(param_1,param_2);
-  gFs[_param_1].startTop = (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0);
-  gThreadCount[_param_1] = 0;
+  AddRefToObject(inst,timeId);
+  gFs[_inst].startTop = (VariableValue *)(_inst * 0x4328 + 0xa05afb0);
+  gThreadCount[_inst] = 0;
   while( true ) {
-    if (((gScrVarPub[_param_1].error_message != (char *)0x0) &&
-        (pcVar4 = va("%s"), pcVar4 == (char *)0x0)) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x1155,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (((gScrVarPub[_inst].error_message != (char *)0x0) &&
+        (pcVar3 = va("%s"), pcVar3 == (char *)0x0)) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x1155,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((gScrVarPub[_param_1].error_index != 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x1157,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((gScrVarPub[_inst].error_index != 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x1157,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].outparamcount != 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x1158,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((gScrVmPub[_inst].outparamcount != 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x1158,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].inparamcount != 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x1159,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((gScrVmPub[_inst].inparamcount != 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x1159,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].function_count != 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x115a,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((gScrVmPub[_inst].function_count != 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x115a,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0)) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x115b,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0)) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x115b,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if ((gFs[_param_1].startTop != (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0)) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x115c,0,"%s"), !bVar3)) break;
-    if ((gThreadCount[_param_1] != 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x115d,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if ((gFs[_inst].startTop != (VariableValue *)(_inst * 0x4328 + 0xa05afb0)) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x115c,0,"%s"), !bVar2)) break;
+    if ((gThreadCount[_inst] != 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x115d,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    uVar5 = FindFirstSibling(param_1,param_2);
-    if (uVar5 == 0) {
-      RemoveRefToObject(param_1,param_2);
-      ClearVariableValue(param_1,gScrVarPub[_param_1].tempVariable);
-      gScrVmPub[_param_1].top = (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0);
-      DVar9 = GetCurrentThreadId();
-      if ((DVar9 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    uVar4 = FindFirstSibling(inst,timeId);
+    if (uVar4 == 0) {
+      RemoveRefToObject(inst,timeId);
+      ClearVariableValue(inst,gScrVarPub[_inst].tempVariable);
+      gScrVmPub[_inst].top = (VariableValue *)(_inst * 0x4328 + 0xa05afb0);
+      DVar7 = GetCurrentThreadId();
+      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    uVar6 = GetVariableKeyObject(param_1,uVar5);
-    if ((uVar6 == 0) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x1164,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    id = GetVariableKeyObject(inst,uVar4);
+    if ((id == 0) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x1164,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    iVar7 = GetValueType(param_1,uVar5);
-    if ((iVar7 != 10) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
-                                 0x1166,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    iVar5 = GetValueType(inst,uVar4);
+    if ((iVar5 != 10) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
+                                 0x1166,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    pVVar8 = GetVariableValueAddress(param_1,uVar5);
-    pVVar1 = pVVar8->stackValue;
-    RemoveObjectVariable(param_1,param_2,uVar6);
-    VM_UnarchiveStack(param_1,uVar6,pVVar1);
-    uVar5 = VM_Execute(param_1);
-    RemoveRefToObject(param_1,uVar5);
-    RemoveRefToValue(param_1,gScrVmPub[_param_1].stack[1].type,gScrVmPub[_param_1].stack[1].u);
+    pVVar6 = GetVariableValueAddress(inst,uVar4);
+    stackValue_00 = pVVar6->stackValue;
+    RemoveObjectVariable(inst,timeId,id);
+    VM_UnarchiveStack(inst,id,stackValue_00);
+    uVar4 = VM_Execute(inst);
+    RemoveRefToObject(inst,uVar4);
+    RemoveRefToValue(inst,gScrVmPub[_inst].stack[1].type,gScrVmPub[_inst].stack[1].u);
   }
-  pcVar2 = (code *)swi(3);
-  (*pcVar2)();
+  pcVar1 = (code *)swi(3);
+  (*pcVar1)();
   return;
 }
 
 
 // 008DE570  IncInParam  (clientscript/cscr_vm.cpp:4472)
 
-void __cdecl IncInParam(scriptInstance_t param_1)
+void __cdecl IncInParam(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if (((gScrVmPub[_param_1].top < (VariableValue *)(_param_1 * 0x2028 + 0xa0667c0U)) ||
-      (gScrVmGlob + _param_1 < (scrVmGlob_t *)gScrVmPub[_param_1].top)) &&
-     ((gScrVmPub[_param_1].top < (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0) ||
-      (gScrVmPub[_param_1].maxstack < gScrVmPub[_param_1].top)))) {
+  if (((gScrVmPub[_inst].top < (VariableValue *)(_inst * 0x2028 + 0xa0667c0U)) ||
+      (gScrVmGlob + _inst < (scrVmGlob_t *)gScrVmPub[_inst].top)) &&
+     ((gScrVmPub[_inst].top < (VariableValue *)(_inst * 0x4328 + 0xa05afb0) ||
+      (gScrVmPub[_inst].maxstack < gScrVmPub[_inst].top)))) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1179,0
                              ,"%s");
     if (!bVar2) {
@@ -5589,16 +5647,16 @@ void __cdecl IncInParam(scriptInstance_t param_1)
       return;
     }
   }
-  Scr_ClearOutParams(param_1);
-  if (gScrVmPub[_param_1].top == gScrVmPub[_param_1].maxstack) {
+  Scr_ClearOutParams(inst);
+  if (gScrVmPub[_inst].top == gScrVmPub[_inst].maxstack) {
     Sys_Error("Internal script stack overflow");
   }
-  gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + 1;
-  gScrVmPub[_param_1].inparamcount = gScrVmPub[_param_1].inparamcount + 1;
-  if ((((scrVmGlob_t *)gScrVmPub[_param_1].top < gScrVmGlob + _param_1) ||
-      ((VariableValue *)(_param_1 * 0x2028 + 0xa0667d0) < gScrVmPub[_param_1].top)) &&
-     ((gScrVmPub[_param_1].top < (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0) ||
-      (gScrVmPub[_param_1].maxstack < gScrVmPub[_param_1].top)))) {
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + 1;
+  gScrVmPub[_inst].inparamcount = gScrVmPub[_inst].inparamcount + 1;
+  if ((((scrVmGlob_t *)gScrVmPub[_inst].top < gScrVmGlob + _inst) ||
+      ((VariableValue *)(_inst * 0x2028 + 0xa0667d0) < gScrVmPub[_inst].top)) &&
+     ((gScrVmPub[_inst].top < (VariableValue *)(_inst * 0x4328 + 0xa05afb0) ||
+      (gScrVmPub[_inst].maxstack < gScrVmPub[_inst].top)))) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1183,0
                              ,"%s");
     if (!bVar2) {
@@ -5613,7 +5671,7 @@ void __cdecl IncInParam(scriptInstance_t param_1)
 
 // 008D4990  VM_Execute  (clientscript/cscr_vm.cpp:4488)
 
-uint __cdecl VM_Execute(scriptInstance_t param_1,uint param_2,char *param_3,uint param_4)
+uint __cdecl VM_Execute(scriptInstance_t inst,uint localId,char *pos,uint paramcount)
 
 {
   code *pcVar1;
@@ -5621,95 +5679,93 @@ uint __cdecl VM_Execute(scriptInstance_t param_1,uint param_2,char *param_3,uint
   uint uVar3;
   undefined3 in_stack_00000005;
   uint auStack_38 [10];
-  VariableValue *local_10;
-  int local_c;
-  int local_8;
+  VariableValue *startTop;
+  int type;
+  int thread_count_backup;
   
-  if ((gScrVmPub[_param_1].inparamcount < param_4) &&
+  if ((gScrVmPub[_inst].inparamcount < paramcount) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x118e
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  Scr_ClearOutParams(param_1);
-  local_10 = gScrVmPub[_param_1].top + -param_4;
-  param_4 = gScrVmPub[_param_1].inparamcount - param_4;
-  if (gScrVmPub[_param_1].function_count < 0x1e) {
-    auStack_38[_param_1 * 5] = (uint)gFs[_param_1].pos;
-    auStack_38[_param_1 * 5 + 1] = gFs[_param_1].localId;
-    auStack_38[_param_1 * 5 + 2] = gFs[_param_1].localVarCount;
-    auStack_38[_param_1 * 5 + 3] = (uint)gFs[_param_1].top;
-    auStack_38[_param_1 * 5 + 4] = (uint)gFs[_param_1].startTop;
-    local_8 = gThreadCount[_param_1];
-    gFs[_param_1].localId = param_2;
-    gFs[_param_1].startTop = local_10;
-    if (gScrVmPub[_param_1].function_count != 0) {
-      gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + 1;
-      gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + 1;
-      ((gScrVmPub[_param_1].function_frame)->fs).localId = 0;
+  Scr_ClearOutParams(inst);
+  startTop = gScrVmPub[_inst].top + -paramcount;
+  paramcount = gScrVmPub[_inst].inparamcount - paramcount;
+  if (gScrVmPub[_inst].function_count < 0x1e) {
+    auStack_38[_inst * 5] = (uint)gFs[_inst].pos;
+    auStack_38[_inst * 5 + 1] = gFs[_inst].localId;
+    auStack_38[_inst * 5 + 2] = gFs[_inst].localVarCount;
+    auStack_38[_inst * 5 + 3] = (uint)gFs[_inst].top;
+    auStack_38[_inst * 5 + 4] = (uint)gFs[_inst].startTop;
+    thread_count_backup = gThreadCount[_inst];
+    gFs[_inst].localId = localId;
+    gFs[_inst].startTop = startTop;
+    if (gScrVmPub[_inst].function_count != 0) {
+      gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + 1;
+      gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + 1;
+      ((gScrVmPub[_inst].function_frame)->fs).localId = 0;
     }
-    ((gScrVmPub[_param_1].function_frame)->fs).pos = param_3;
-    gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + 1;
-    gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + 1;
-    ((gScrVmPub[_param_1].function_frame)->fs).localId = param_2;
-    local_c = local_10->type;
-    local_10->type = 8;
-    gScrVmPub[_param_1].inparamcount = 0;
-    gFs[_param_1].top = gScrVmPub[_param_1].top;
-    gFs[_param_1].pos = param_3;
-    gFs[_param_1].localVarCount = 0;
-    gThreadCount[_param_1] = 0;
-    param_2 = VM_Execute(param_1);
-    gFs[_param_1].pos = (char *)auStack_38[_param_1 * 5];
-    gFs[_param_1].localId = auStack_38[_param_1 * 5 + 1];
-    gFs[_param_1].localVarCount = auStack_38[_param_1 * 5 + 2];
-    gFs[_param_1].top = (VariableValue *)auStack_38[_param_1 * 5 + 3];
-    gFs[_param_1].startTop = (VariableValue *)auStack_38[_param_1 * 5 + 4];
-    gThreadCount[_param_1] = local_8;
-    local_10->type = local_c;
-    gScrVmPub[_param_1].top = local_10 + 1;
-    gScrVmPub[_param_1].inparamcount = param_4 + 1;
-    if ((gScrVmPub[_param_1].outparamcount != 0) &&
+    ((gScrVmPub[_inst].function_frame)->fs).pos = pos;
+    gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + 1;
+    gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + 1;
+    ((gScrVmPub[_inst].function_frame)->fs).localId = localId;
+    type = startTop->type;
+    startTop->type = 8;
+    gScrVmPub[_inst].inparamcount = 0;
+    gFs[_inst].top = gScrVmPub[_inst].top;
+    gFs[_inst].pos = pos;
+    gFs[_inst].localVarCount = 0;
+    gThreadCount[_inst] = 0;
+    localId = VM_Execute(inst);
+    gFs[_inst].pos = (char *)auStack_38[_inst * 5];
+    gFs[_inst].localId = auStack_38[_inst * 5 + 1];
+    gFs[_inst].localVarCount = auStack_38[_inst * 5 + 2];
+    gFs[_inst].top = (VariableValue *)auStack_38[_inst * 5 + 3];
+    gFs[_inst].startTop = (VariableValue *)auStack_38[_inst * 5 + 4];
+    gThreadCount[_inst] = thread_count_backup;
+    startTop->type = type;
+    gScrVmPub[_inst].top = startTop + 1;
+    gScrVmPub[_inst].inparamcount = paramcount + 1;
+    if ((gScrVmPub[_inst].outparamcount != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x11b9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    ClearVariableValue(param_1,gScrVarPub[_param_1].tempVariable);
-    if (gScrVmPub[_param_1].function_count != 0) {
-      gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-      gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
+    ClearVariableValue(inst,gScrVarPub[_inst].tempVariable);
+    if (gScrVmPub[_inst].function_count != 0) {
+      gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+      gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
     }
   }
   else {
-    Scr_KillThread(param_1,param_2);
-    gScrVmPub[_param_1].inparamcount = param_4 + 1;
-    if ((gScrVmPub[_param_1].outparamcount != 0) &&
+    Scr_KillThread(inst,localId);
+    gScrVmPub[_inst].inparamcount = paramcount + 1;
+    if ((gScrVmPub[_inst].outparamcount != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x11c8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    for (; param_4 != 0; param_4 = param_4 - 1) {
-      RemoveRefToValue(param_1,(&(gScrVmPub[_param_1].top)->u)[1].intValue,
-                       (gScrVmPub[_param_1].top)->u);
-      gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
+    for (; paramcount != 0; paramcount = paramcount - 1) {
+      RemoveRefToValue(inst,(&(gScrVmPub[_inst].top)->u)[1].intValue,(gScrVmPub[_inst].top)->u);
+      gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
     }
-    gScrVmPub[_param_1].top[1].type = 0;
-    gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + 1;
-    RuntimeError(param_1,param_3,0,"script stack overflow (too many embedded function calls)",
-                 (char *)0x0);
+    gScrVmPub[_inst].top[1].type = 0;
+    gScrVmPub[_inst].top = gScrVmPub[_inst].top + 1;
+    RuntimeError(inst,pos,0,"script stack overflow (too many embedded function calls)",(char *)0x0);
   }
-  return param_2;
+  return localId;
 }
 
 
 // 008D46E0  Scr_ExecThread  (clientscript/cscr_vm.cpp:4570)
 
-ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
+ushort __cdecl Scr_ExecThread(scriptInstance_t inst,int handle,uint paramcount)
 
 {
   char *pcVar1;
@@ -5717,13 +5773,15 @@ ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
   bool bVar3;
   ushort uVar4;
   uint uVar5;
-  char *pcVar6;
+  char *pos_00;
   undefined3 in_stack_00000005;
-  ushort local_8;
+  char *pos;
+  char *varUsagePos;
+  uint id;
   
-  pcVar6 = gScrVarPub[_param_1].programBuffer + param_2;
-  if (gScrVmPub[_param_1].function_count == 0) {
-    if (gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0)) {
+  pos_00 = gScrVarPub[_inst].programBuffer + handle;
+  if (gScrVmPub[_inst].function_count == 0) {
+    if (gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0)) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x11e7
                                ,0,"%s");
       if (!bVar3) {
@@ -5732,9 +5790,9 @@ ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
         return uVar4;
       }
     }
-    Scr_ResetTimeout(param_1);
+    Scr_ResetTimeout(inst);
   }
-  if (gScrVarPub[_param_1].timeArrayId == 0) {
+  if (gScrVarPub[_inst].timeArrayId == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x11ed,0
                              ,"%s");
     if (!bVar3) {
@@ -5743,7 +5801,7 @@ ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
       return uVar4;
     }
   }
-  if (param_2 == 0) {
+  if (handle == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x11ee,0
                              ,"%s");
     if (!bVar3) {
@@ -5752,25 +5810,23 @@ ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
       return uVar4;
     }
   }
-  gScrVarPub[_param_1].ext_threadcount = gScrVarPub[_param_1].ext_threadcount + 1;
-  Scr_IsInOpcodeMemory(param_1,pcVar6);
-  pcVar1 = gScrVarPub[_param_1].varUsagePos;
-  gScrVarPub[_param_1].varUsagePos = pcVar6 + 1;
-  AddRefToObject(param_1,gScrVarPub[_param_1].levelId);
-  uVar5 = AllocThread(param_1,gScrVarPub[_param_1].levelId);
-  uVar5 = VM_Execute(param_1,uVar5,pcVar6,param_3);
-  gScrVarPub[_param_1].varUsagePos = pcVar1;
-  if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_1]->extRefCount[uVar5] =
-         gScrVarDebugPub[_param_1]->extRefCount[uVar5] + 1;
+  gScrVarPub[_inst].ext_threadcount = gScrVarPub[_inst].ext_threadcount + 1;
+  Scr_IsInOpcodeMemory(inst,pos_00);
+  pcVar1 = gScrVarPub[_inst].varUsagePos;
+  gScrVarPub[_inst].varUsagePos = pos_00 + 1;
+  AddRefToObject(inst,gScrVarPub[_inst].levelId);
+  uVar5 = AllocThread(inst,gScrVarPub[_inst].levelId);
+  uVar5 = VM_Execute(inst,uVar5,pos_00,paramcount);
+  gScrVarPub[_inst].varUsagePos = pcVar1;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[uVar5] = gScrVarDebugPub[_inst]->extRefCount[uVar5] + 1;
   }
-  RemoveRefToValue(param_1,(&(gScrVmPub[_param_1].top)->u)[1].intValue,(gScrVmPub[_param_1].top)->u)
-  ;
-  (gScrVmPub[_param_1].top)->type = 0;
-  gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
-  gScrVmPub[_param_1].inparamcount = gScrVmPub[_param_1].inparamcount - 1;
-  if ((gScrVmPub[_param_1].function_count == 0) &&
-     (gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0))) {
+  RemoveRefToValue(inst,(&(gScrVmPub[_inst].top)->u)[1].intValue,(gScrVmPub[_inst].top)->u);
+  (gScrVmPub[_inst].top)->type = 0;
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+  gScrVmPub[_inst].inparamcount = gScrVmPub[_inst].inparamcount - 1;
+  if ((gScrVmPub[_inst].function_count == 0) &&
+     (gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0))) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1210,0
                              ,"%s");
     if (!bVar3) {
@@ -5779,8 +5835,8 @@ ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
       return uVar4;
     }
   }
-  local_8 = (ushort)uVar5;
-  return local_8;
+  id._0_2_ = (ushort)uVar5;
+  return (ushort)id;
 }
 
 
@@ -5788,7 +5844,8 @@ ushort __cdecl Scr_ExecThread(scriptInstance_t param_1,int param_2,uint param_3)
 
 ushort __cdecl
 Scr_ExecEntThreadNum
-          (scriptInstance_t param_1,int param_2,uint param_3,int param_4,uint param_5,uint param_6)
+          (scriptInstance_t inst,int entnum,uint classnum,int handle,uint paramcount,
+          uint localClientNum)
 
 {
   char *pcVar1;
@@ -5797,13 +5854,16 @@ Scr_ExecEntThreadNum
   ushort uVar4;
   int iVar5;
   uint uVar6;
-  char *pcVar7;
+  char *pos_00;
   undefined3 in_stack_00000005;
-  ushort local_8;
+  char *pos;
+  char *varUsagePos;
+  uint objId;
+  uint id;
   
-  pcVar7 = gScrVarPub[_param_1].programBuffer + param_4;
-  if (gScrVmPub[_param_1].function_count == 0) {
-    if (gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0)) {
+  pos_00 = gScrVarPub[_inst].programBuffer + handle;
+  if (gScrVmPub[_inst].function_count == 0) {
+    if (gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0)) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1226
                                ,0,"%s");
       if (!bVar3) {
@@ -5812,9 +5872,9 @@ Scr_ExecEntThreadNum
         return uVar4;
       }
     }
-    Scr_ResetTimeout(param_1);
+    Scr_ResetTimeout(inst);
   }
-  if (gScrVarPub[_param_1].timeArrayId == 0) {
+  if (gScrVarPub[_inst].timeArrayId == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x122c,0
                              ,"%s");
     if (!bVar3) {
@@ -5823,7 +5883,7 @@ Scr_ExecEntThreadNum
       return uVar4;
     }
   }
-  if (param_4 == 0) {
+  if (handle == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x122d,0
                              ,"%s");
     if (!bVar3) {
@@ -5832,8 +5892,8 @@ Scr_ExecEntThreadNum
       return uVar4;
     }
   }
-  gScrVarPub[_param_1].ext_threadcount = gScrVarPub[_param_1].ext_threadcount + 1;
-  iVar5 = Scr_IsInOpcodeMemory(param_1,pcVar7);
+  gScrVarPub[_inst].ext_threadcount = gScrVarPub[_inst].ext_threadcount + 1;
+  iVar5 = Scr_IsInOpcodeMemory(inst,pos_00);
   if (iVar5 == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1233,0
                              ,"%s");
@@ -5843,24 +5903,22 @@ Scr_ExecEntThreadNum
       return uVar4;
     }
   }
-  pcVar1 = gScrVarPub[_param_1].varUsagePos;
-  gScrVarPub[_param_1].varUsagePos = pcVar7 + 1;
-  uVar6 = Scr_GetEntityId(param_1,param_2,param_3,param_6 & 0xffff);
-  AddRefToObject(param_1,uVar6);
-  uVar6 = AllocThread(param_1,uVar6);
-  uVar6 = VM_Execute(param_1,uVar6,pcVar7,param_5);
-  gScrVarPub[_param_1].varUsagePos = pcVar1;
-  if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_1]->extRefCount[uVar6] =
-         gScrVarDebugPub[_param_1]->extRefCount[uVar6] + 1;
+  pcVar1 = gScrVarPub[_inst].varUsagePos;
+  gScrVarPub[_inst].varUsagePos = pos_00 + 1;
+  uVar6 = Scr_GetEntityId(inst,entnum,classnum,localClientNum & 0xffff);
+  AddRefToObject(inst,uVar6);
+  uVar6 = AllocThread(inst,uVar6);
+  uVar6 = VM_Execute(inst,uVar6,pos_00,paramcount);
+  gScrVarPub[_inst].varUsagePos = pcVar1;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[uVar6] = gScrVarDebugPub[_inst]->extRefCount[uVar6] + 1;
   }
-  RemoveRefToValue(param_1,(&(gScrVmPub[_param_1].top)->u)[1].intValue,(gScrVmPub[_param_1].top)->u)
-  ;
-  (gScrVmPub[_param_1].top)->type = 0;
-  gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
-  gScrVmPub[_param_1].inparamcount = gScrVmPub[_param_1].inparamcount - 1;
-  if ((gScrVmPub[_param_1].function_count == 0) &&
-     (gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0))) {
+  RemoveRefToValue(inst,(&(gScrVmPub[_inst].top)->u)[1].intValue,(gScrVmPub[_inst].top)->u);
+  (gScrVmPub[_inst].top)->type = 0;
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+  gScrVmPub[_inst].inparamcount = gScrVmPub[_inst].inparamcount - 1;
+  if ((gScrVmPub[_inst].function_count == 0) &&
+     (gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0))) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1250,0
                              ,"%s");
     if (!bVar3) {
@@ -5869,14 +5927,14 @@ Scr_ExecEntThreadNum
       return uVar4;
     }
   }
-  local_8 = (ushort)uVar6;
-  return local_8;
+  id._0_2_ = (ushort)uVar6;
+  return (ushort)id;
 }
 
 
 // 008DC3B0  Scr_AddExecThread  (clientscript/cscr_vm.cpp:4696)
 
-void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3)
+void __cdecl Scr_AddExecThread(scriptInstance_t inst,int handle,uint paramcount)
 
 {
   char *pcVar1;
@@ -5884,12 +5942,14 @@ void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3
   bool bVar3;
   int iVar4;
   uint uVar5;
-  char *pcVar6;
+  char *pos_00;
   undefined3 in_stack_00000005;
+  char *pos;
+  char *varUsagePos;
   
-  pcVar6 = gScrVarPub[_param_1].programBuffer + param_2;
-  if (gScrVmPub[_param_1].function_count == 0) {
-    if (gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0)) {
+  pos_00 = gScrVarPub[_inst].programBuffer + handle;
+  if (gScrVmPub[_inst].function_count == 0) {
+    if (gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0)) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1264
                                ,0,"%s");
       if (!bVar3) {
@@ -5898,9 +5958,9 @@ void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3
         return;
       }
     }
-    Scr_ResetTimeout(param_1);
+    Scr_ResetTimeout(inst);
   }
-  if (gScrVarPub[_param_1].timeArrayId == 0) {
+  if (gScrVarPub[_inst].timeArrayId == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x126a,0
                              ,"%s");
     if (!bVar3) {
@@ -5909,7 +5969,7 @@ void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3
       return;
     }
   }
-  if (param_2 == 0) {
+  if (handle == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x126b,0
                              ,"%s");
     if (!bVar3) {
@@ -5918,7 +5978,7 @@ void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3
       return;
     }
   }
-  iVar4 = Scr_IsInOpcodeMemory(param_1,pcVar6);
+  iVar4 = Scr_IsInOpcodeMemory(inst,pos_00);
   if (iVar4 == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x126d,0
                              ,"%s");
@@ -5928,17 +5988,17 @@ void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3
       return;
     }
   }
-  pcVar1 = gScrVarPub[_param_1].varUsagePos;
-  gScrVarPub[_param_1].varUsagePos = pcVar6 + 1;
-  AddRefToObject(param_1,gScrVarPub[_param_1].levelId);
-  uVar5 = AllocThread(param_1,gScrVarPub[_param_1].levelId);
-  uVar5 = VM_Execute(param_1,uVar5,pcVar6,param_3);
-  RemoveRefToObject(param_1,uVar5);
-  gScrVarPub[_param_1].varUsagePos = pcVar1;
-  gScrVmPub[_param_1].outparamcount = gScrVmPub[_param_1].outparamcount + 1;
-  gScrVmPub[_param_1].inparamcount = gScrVmPub[_param_1].inparamcount - 1;
-  if ((gScrVmPub[_param_1].function_count == 0) &&
-     (gScrVmPub[_param_1].localVars != (uint *)(_param_1 * 0x2028 + 0xa0667e0))) {
+  pcVar1 = gScrVarPub[_inst].varUsagePos;
+  gScrVarPub[_inst].varUsagePos = pos_00 + 1;
+  AddRefToObject(inst,gScrVarPub[_inst].levelId);
+  uVar5 = AllocThread(inst,gScrVarPub[_inst].levelId);
+  uVar5 = VM_Execute(inst,uVar5,pos_00,paramcount);
+  RemoveRefToObject(inst,uVar5);
+  gScrVarPub[_inst].varUsagePos = pcVar1;
+  gScrVmPub[_inst].outparamcount = gScrVmPub[_inst].outparamcount + 1;
+  gScrVmPub[_inst].inparamcount = gScrVmPub[_inst].inparamcount - 1;
+  if ((gScrVmPub[_inst].function_count == 0) &&
+     (gScrVmPub[_inst].localVars != (uint *)(_inst * 0x2028 + 0xa0667e0))) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1282,0
                              ,"%s");
     if (!bVar3) {
@@ -5953,14 +6013,14 @@ void __cdecl Scr_AddExecThread(scriptInstance_t param_1,int param_2,uint param_3
 
 // 008DC600  Scr_FreeThread  (clientscript/cscr_vm.cpp:4794)
 
-void __cdecl Scr_FreeThread(ushort param_1,scriptInstance_t param_2)
+void __cdecl Scr_FreeThread(ushort handle,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000009;
   
-  if (gScrVarPub[_param_2].timeArrayId == 0) {
+  if (gScrVarPub[_inst].timeArrayId == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12bb,0
                              ,"%s");
     if (!bVar2) {
@@ -5969,7 +6029,7 @@ void __cdecl Scr_FreeThread(ushort param_1,scriptInstance_t param_2)
       return;
     }
   }
-  if (param_1 == 0) {
+  if (handle == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12bc,0
                              ,"%s");
     if (!bVar2) {
@@ -5978,28 +6038,27 @@ void __cdecl Scr_FreeThread(ushort param_1,scriptInstance_t param_2)
       return;
     }
   }
-  if (gScrVarDebugPub[_param_2] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_2]->extRefCount[param_1] =
-         gScrVarDebugPub[_param_2]->extRefCount[param_1] - 1;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[handle] = gScrVarDebugPub[_inst]->extRefCount[handle] - 1;
   }
-  RemoveRefToObject(param_2,(uint)param_1);
-  gScrVarPub[_param_2].ext_threadcount = gScrVarPub[_param_2].ext_threadcount + -1;
+  RemoveRefToObject(inst,(uint)handle);
+  gScrVarPub[_inst].ext_threadcount = gScrVarPub[_inst].ext_threadcount + -1;
   return;
 }
 
 
 // 008DC6D0  Scr_ExecCode  (clientscript/cscr_vm.cpp:4812)
 
-void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
+void __cdecl Scr_ExecCode(scriptInstance_t inst,char *pos,uint localId)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint localId_00;
   undefined3 in_stack_00000005;
   
-  Scr_ResetTimeout(param_1);
-  if (gScrVarPub[_param_1].timeArrayId == 0) {
+  Scr_ResetTimeout(inst);
+  if (gScrVarPub[_inst].timeArrayId == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12cf,0
                              ,"%s");
     if (!bVar2) {
@@ -6008,7 +6067,7 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  if (gScrVmPub[_param_1].inparamcount != 0) {
+  if (gScrVmPub[_inst].inparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12d0,0
                              ,"%s");
     if (!bVar2) {
@@ -6017,7 +6076,7 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  if (gScrVmPub[_param_1].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12d1,0
                              ,"%s");
     if (!bVar2) {
@@ -6026,7 +6085,7 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  if (gScrVarPub[_param_1].evaluate != false) {
+  if (gScrVarPub[_inst].evaluate != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12d3,0
                              ,"%s");
     if (!bVar2) {
@@ -6035,7 +6094,7 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  if (gScrVmPub[_param_1].debugCode != false) {
+  if (gScrVmPub[_inst].debugCode != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12d5,0
                              ,"%s");
     if (!bVar2) {
@@ -6044,18 +6103,18 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  gScrVmPub[_param_1].debugCode = true;
-  if (param_3 == 0) {
-    AddRefToObject(param_1,gScrVarPub[_param_1].levelId);
-    uVar3 = AllocThread(param_1,gScrVarPub[_param_1].levelId);
-    VM_Execute(param_1,uVar3,param_2,0);
-    Scr_KillThread(param_1,uVar3);
-    RemoveRefToObject(param_1,uVar3);
+  gScrVmPub[_inst].debugCode = true;
+  if (localId == 0) {
+    AddRefToObject(inst,gScrVarPub[_inst].levelId);
+    localId_00 = AllocThread(inst,gScrVarPub[_inst].levelId);
+    VM_Execute(inst,localId_00,pos,0);
+    Scr_KillThread(inst,localId_00);
+    RemoveRefToObject(inst,localId_00);
   }
   else {
-    VM_Execute(param_1,param_3,param_2,0);
+    VM_Execute(inst,localId,pos,0);
   }
-  if (gScrVmPub[_param_1].debugCode == false) {
+  if (gScrVmPub[_inst].debugCode == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12e5,0
                              ,"%s");
     if (!bVar2) {
@@ -6064,8 +6123,8 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  gScrVmPub[_param_1].debugCode = false;
-  if (gScrVmPub[_param_1].inparamcount != 1) {
+  gScrVmPub[_inst].debugCode = false;
+  if (gScrVmPub[_inst].inparamcount != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12e8,0
                              ,"%s");
     if (!bVar2) {
@@ -6074,7 +6133,7 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  if (gScrVmPub[_param_1].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12e9,0
                              ,"%s");
     if (!bVar2) {
@@ -6083,36 +6142,37 @@ void __cdecl Scr_ExecCode(scriptInstance_t param_1,char *param_2,uint param_3)
       return;
     }
   }
-  if (gScrVmPub[_param_1].function_count != 0) {
-    gScrVmPub[_param_1].function_count = gScrVmPub[_param_1].function_count + -1;
-    gScrVmPub[_param_1].function_frame = gScrVmPub[_param_1].function_frame + -1;
+  if (gScrVmPub[_inst].function_count != 0) {
+    gScrVmPub[_inst].function_count = gScrVmPub[_inst].function_count + -1;
+    gScrVmPub[_inst].function_frame = gScrVmPub[_inst].function_frame + -1;
   }
-  gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
-  gScrVmPub[_param_1].inparamcount = 0;
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+  gScrVmPub[_inst].inparamcount = 0;
   return;
 }
 
 
 // 008DFB70  VM_SetTime  (clientscript/cscr_vm.cpp:4855)
 
-void __cdecl VM_SetTime(scriptInstance_t param_1)
+void __cdecl VM_SetTime(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   undefined3 in_stack_00000005;
+  uint id;
   
-  if (((gScrVarPub[_param_1].time & 0xff000000) != 0) &&
+  if (((gScrVarPub[_inst].time & 0xff000000) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x12fa
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((gScrVarPub[_param_1].timeArrayId != 0) &&
-     (uVar3 = FindVariable(param_1,gScrVarPub[_param_1].timeArrayId,gScrVarPub[_param_1].time),
-     uVar3 != 0)) {
+  if ((gScrVarPub[_inst].timeArrayId != 0) &&
+     (uVar3 = FindVariable(inst,gScrVarPub[_inst].timeArrayId,gScrVarPub[_inst].time), uVar3 != 0))
+  {
     if ((logScriptTimes == (dvar_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x1302,0,"%s"), !bVar2)) {
@@ -6124,9 +6184,9 @@ void __cdecl VM_SetTime(scriptInstance_t param_1)
       Sys_Milliseconds();
       Com_Printf(0x18,"SET TIME: %d\n");
     }
-    uVar3 = FindObject(param_1,uVar3);
-    VM_Resume(param_1,uVar3);
-    SafeRemoveVariable(param_1,gScrVarPub[_param_1].timeArrayId,gScrVarPub[_param_1].time);
+    uVar3 = FindObject(inst,uVar3);
+    VM_Resume(inst,uVar3);
+    SafeRemoveVariable(inst,gScrVarPub[_inst].timeArrayId,gScrVarPub[_inst].time);
   }
   return;
 }
@@ -6134,18 +6194,18 @@ void __cdecl VM_SetTime(scriptInstance_t param_1)
 
 // 008DC9E0  Scr_IsSystemInitied  (clientscript/cscr_vm.cpp:4876)
 
-bool __cdecl Scr_IsSystemInitied(scriptInstance_t param_1)
+bool __cdecl Scr_IsSystemInitied(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  return gScrVarPub[_param_1].timeArrayId != 0;
+  return gScrVarPub[_inst].timeArrayId != 0;
 }
 
 
 // 008DCA00  Scr_InitSystem  (clientscript/cscr_vm.cpp:4884)
 
-void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
+void __cdecl Scr_InitSystem(scriptInstance_t inst,int sys)
 
 {
   code *pcVar1;
@@ -6153,7 +6213,7 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
   uint uVar3;
   undefined3 in_stack_00000005;
   
-  if (param_2 != 1) {
+  if (sys != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1315,0
                              ,"%s");
     if (!bVar2) {
@@ -6162,7 +6222,7 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  if (gScrVarPub[_param_1].timeArrayId != 0) {
+  if (gScrVarPub[_inst].timeArrayId != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1316,0
                              ,"%s");
     if (!bVar2) {
@@ -6171,7 +6231,7 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  if (gScrVarPub[_param_1].ext_threadcount != 0) {
+  if (gScrVarPub[_inst].ext_threadcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1318,0
                              ,"%s");
     if (!bVar2) {
@@ -6180,7 +6240,7 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  if (gScrVarPub[_param_1].varUsagePos != (char *)0x0) {
+  if (gScrVarPub[_inst].varUsagePos != (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x131c,0
                              ,"%s");
     if (!bVar2) {
@@ -6189,14 +6249,14 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  gScrVarPub[_param_1].varUsagePos = "<script init variable>";
-  uVar3 = AllocObject(param_1);
-  gScrVarPub[_param_1].timeArrayId = uVar3;
-  if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].timeArrayId] =
-         gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].timeArrayId] + 1;
+  gScrVarPub[_inst].varUsagePos = "<script init variable>";
+  uVar3 = AllocObject(inst);
+  gScrVarPub[_inst].timeArrayId = uVar3;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].timeArrayId] =
+         gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].timeArrayId] + 1;
   }
-  if (gScrVarPub[_param_1].pauseArrayId != 0) {
+  if (gScrVarPub[_inst].pauseArrayId != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1326,0
                              ,"%s");
     if (!bVar2) {
@@ -6205,13 +6265,13 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  uVar3 = Scr_AllocArray(param_1);
-  gScrVarPub[_param_1].pauseArrayId = uVar3;
-  if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].pauseArrayId] =
-         gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].pauseArrayId] + 1;
+  uVar3 = Scr_AllocArray(inst);
+  gScrVarPub[_inst].pauseArrayId = uVar3;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].pauseArrayId] =
+         gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].pauseArrayId] + 1;
   }
-  if (gScrVarPub[_param_1].levelId != 0) {
+  if (gScrVarPub[_inst].levelId != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x132d,0
                              ,"%s");
     if (!bVar2) {
@@ -6220,13 +6280,13 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  uVar3 = AllocObject(param_1);
-  gScrVarPub[_param_1].levelId = uVar3;
-  if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].levelId] =
-         gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].levelId] + 1;
+  uVar3 = AllocObject(inst);
+  gScrVarPub[_inst].levelId = uVar3;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].levelId] =
+         gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].levelId] + 1;
   }
-  if (gScrVarPub[_param_1].animId != 0) {
+  if (gScrVarPub[_inst].animId != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1334,0
                              ,"%s");
     if (!bVar2) {
@@ -6235,13 +6295,13 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  uVar3 = AllocObject(param_1);
-  gScrVarPub[_param_1].animId = uVar3;
-  if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-    gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].animId] =
-         gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].animId] + 1;
+  uVar3 = AllocObject(inst);
+  gScrVarPub[_inst].animId = uVar3;
+  if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+    gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].animId] =
+         gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].animId] + 1;
   }
-  if (gScrVarPub[_param_1].freeEntList != 0) {
+  if (gScrVarPub[_inst].freeEntList != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x133b,0
                              ,"%s");
     if (!bVar2) {
@@ -6250,19 +6310,19 @@ void __cdecl Scr_InitSystem(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  gScrVarPub[_param_1].time = 0;
-  g_script_error_level[_param_1] = -1;
-  if (_param_1 == 0) {
-    Scr_InitDebuggerSystem(param_1);
+  gScrVarPub[_inst].time = 0;
+  g_script_error_level[_inst] = -1;
+  if (_inst == 0) {
+    Scr_InitDebuggerSystem(inst);
   }
-  gScrVarPub[_param_1].varUsagePos = (char *)0x0;
+  gScrVarPub[_inst].varUsagePos = (char *)0x0;
   return;
 }
 
 
 // 008DCD80  Scr_ShutdownSystem  (clientscript/cscr_vm.cpp:4941)
 
-void __cdecl Scr_ShutdownSystem(scriptInstance_t param_1,uchar param_2,int param_3)
+void __cdecl Scr_ShutdownSystem(scriptInstance_t inst,uchar sys,int bComplete)
 
 {
   int iVar1;
@@ -6271,33 +6331,35 @@ void __cdecl Scr_ShutdownSystem(scriptInstance_t param_1,uchar param_2,int param
   uint uVar4;
   VariableUnion *pVVar5;
   undefined3 in_stack_00000005;
-  uint local_8;
+  uint parentId;
+  int function_count;
+  uint id;
   
-  if ((param_2 != '\x01') &&
+  if ((sys != '\x01') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1352
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  gScrVarPub[_param_1].varUsagePos = "<script shutdown variable>";
-  Scr_ShutdownDebuggerSystem(param_1,0);
-  Scr_FreeEntityList(param_1);
-  if (gScrVarPub[_param_1].timeArrayId == 0) {
-    gScrVarPub[_param_1].varUsagePos = (char *)0x0;
+  gScrVarPub[_inst].varUsagePos = "<script shutdown variable>";
+  Scr_ShutdownDebuggerSystem(inst,0);
+  Scr_FreeEntityList(inst);
+  if (gScrVarPub[_inst].timeArrayId == 0) {
+    gScrVarPub[_inst].varUsagePos = (char *)0x0;
   }
   else {
-    Scr_FreeGameVariable(param_1,param_3);
-    iVar1 = gScrVmPub[_param_1].function_count;
-    gScrVmPub[_param_1].function_count = 0;
-    for (local_8 = FindFirstSibling(param_1,gScrVarPub[_param_1].timeArrayId); local_8 != 0;
-        local_8 = FindNextSibling(param_1,local_8)) {
-      uVar4 = FindObject(param_1,local_8);
-      VM_TerminateTime(param_1,uVar4);
+    Scr_FreeGameVariable(inst,bComplete);
+    iVar1 = gScrVmPub[_inst].function_count;
+    gScrVmPub[_inst].function_count = 0;
+    for (id = FindFirstSibling(inst,gScrVarPub[_inst].timeArrayId); id != 0;
+        id = FindNextSibling(inst,id)) {
+      uVar4 = FindObject(inst,id);
+      VM_TerminateTime(inst,uVar4);
     }
-    while (uVar4 = FindFirstSibling(param_1,gScrVarPub[_param_1].pauseArrayId), uVar4 != 0) {
-      uVar4 = FindObject(param_1,uVar4);
-      uVar4 = FindFirstSibling(param_1,uVar4);
+    while (uVar4 = FindFirstSibling(inst,gScrVarPub[_inst].pauseArrayId), uVar4 != 0) {
+      uVar4 = FindObject(inst,uVar4);
+      uVar4 = FindFirstSibling(inst,uVar4);
       if ((uVar4 == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x1374,0,"%s"), !bVar3)) {
@@ -6305,62 +6367,62 @@ void __cdecl Scr_ShutdownSystem(scriptInstance_t param_1,uchar param_2,int param
         (*pcVar2)();
         return;
       }
-      pVVar5 = GetVariableValueAddress(param_1,uVar4);
+      pVVar5 = GetVariableValueAddress(inst,uVar4);
       uVar4 = pVVar5->stringValue;
-      AddRefToObject(param_1,uVar4);
-      Scr_CancelNotifyList(param_1,uVar4);
-      RemoveRefToObject(param_1,uVar4);
+      AddRefToObject(inst,uVar4);
+      Scr_CancelNotifyList(inst,uVar4);
+      RemoveRefToObject(inst,uVar4);
     }
-    if ((gScrVarPub[_param_1].levelId == 0) &&
+    if ((gScrVarPub[_inst].levelId == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x137b,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    ClearObject(param_1,gScrVarPub[_param_1].levelId);
-    if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-      gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].levelId] =
-           gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].levelId] - 1;
+    ClearObject(inst,gScrVarPub[_inst].levelId);
+    if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+      gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].levelId] =
+           gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].levelId] - 1;
     }
-    RemoveRefToEmptyObject(param_1,gScrVarPub[_param_1].levelId);
-    gScrVarPub[_param_1].levelId = 0;
-    if ((gScrVarPub[_param_1].animId == 0) &&
+    RemoveRefToEmptyObject(inst,gScrVarPub[_inst].levelId);
+    gScrVarPub[_inst].levelId = 0;
+    if ((gScrVarPub[_inst].animId == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x1384,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    ClearObject(param_1,gScrVarPub[_param_1].animId);
-    if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-      gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].animId] =
-           gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].animId] - 1;
+    ClearObject(inst,gScrVarPub[_inst].animId);
+    if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+      gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].animId] =
+           gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].animId] - 1;
     }
-    RemoveRefToEmptyObject(param_1,gScrVarPub[_param_1].animId);
-    gScrVarPub[_param_1].animId = 0;
-    if ((gScrVarPub[_param_1].timeArrayId == 0) &&
+    RemoveRefToEmptyObject(inst,gScrVarPub[_inst].animId);
+    gScrVarPub[_inst].animId = 0;
+    if ((gScrVarPub[_inst].timeArrayId == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x138d,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    ClearObject(param_1,gScrVarPub[_param_1].timeArrayId);
-    if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-      gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].timeArrayId] =
-           gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].timeArrayId] - 1;
+    ClearObject(inst,gScrVarPub[_inst].timeArrayId);
+    if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+      gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].timeArrayId] =
+           gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].timeArrayId] - 1;
     }
-    RemoveRefToEmptyObject(param_1,gScrVarPub[_param_1].timeArrayId);
-    gScrVarPub[_param_1].timeArrayId = 0;
-    if ((gScrVarPub[_param_1].pauseArrayId == 0) &&
+    RemoveRefToEmptyObject(inst,gScrVarPub[_inst].timeArrayId);
+    gScrVarPub[_inst].timeArrayId = 0;
+    if ((gScrVarPub[_inst].pauseArrayId == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x1396,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    uVar4 = GetArraySize(param_1,gScrVarPub[_param_1].pauseArrayId);
+    uVar4 = GetArraySize(inst,gScrVarPub[_inst].pauseArrayId);
     if ((uVar4 != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x1397,0,"%s"), !bVar3)) {
@@ -6368,30 +6430,30 @@ void __cdecl Scr_ShutdownSystem(scriptInstance_t param_1,uchar param_2,int param
       (*pcVar2)();
       return;
     }
-    if (gScrVarDebugPub[_param_1] != (scrVarDebugPub_t *)0x0) {
-      gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].pauseArrayId] =
-           gScrVarDebugPub[_param_1]->extRefCount[gScrVarPub[_param_1].pauseArrayId] - 1;
+    if (gScrVarDebugPub[_inst] != (scrVarDebugPub_t *)0x0) {
+      gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].pauseArrayId] =
+           gScrVarDebugPub[_inst]->extRefCount[gScrVarPub[_inst].pauseArrayId] - 1;
     }
-    RemoveRefToEmptyObject(param_1,gScrVarPub[_param_1].pauseArrayId);
-    gScrVarPub[_param_1].pauseArrayId = 0;
-    if ((gScrVarPub[_param_1].freeEntList != 0) &&
+    RemoveRefToEmptyObject(inst,gScrVarPub[_inst].pauseArrayId);
+    gScrVarPub[_inst].pauseArrayId = 0;
+    if ((gScrVarPub[_inst].freeEntList != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x139f,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    Scr_FreeObjects(param_1);
-    gScrVarPub[_param_1].varUsagePos = (char *)0x0;
+    Scr_FreeObjects(inst);
+    gScrVarPub[_inst].varUsagePos = (char *)0x0;
     if (iVar1 == 0) {
-      if ((gScrVarPub[_param_1].ext_threadcount != 0) &&
+      if ((gScrVarPub[_inst].ext_threadcount != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x13aa,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      bVar3 = Scr_IsStackClear(param_1);
+      bVar3 = Scr_IsStackClear(inst);
       if ((!bVar3) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x13ac,0,"%s"), !bVar3)) {
@@ -6401,10 +6463,10 @@ void __cdecl Scr_ShutdownSystem(scriptInstance_t param_1,uchar param_2,int param
       }
     }
     else {
-      gScrVarPub[_param_1].bInited = false;
-      Scr_Init(param_1);
-      if (gScrStringDebugGlob[_param_1] != (scrStringDebugGlob_t *)0x0) {
-        gScrStringDebugGlob[_param_1]->ignoreLeaks = 1;
+      gScrVarPub[_inst].bInited = false;
+      Scr_Init(inst);
+      if (gScrStringDebugGlob[_inst] != (scrStringDebugGlob_t *)0x0) {
+        gScrStringDebugGlob[_inst]->ignoreLeaks = 1;
       }
     }
   }
@@ -6414,14 +6476,13 @@ void __cdecl Scr_ShutdownSystem(scriptInstance_t param_1,uchar param_2,int param
 
 // 008DD510  Scr_IsSystemActive  (clientscript/cscr_vm.cpp:5051)
 
-int __cdecl Scr_IsSystemActive(uchar param_1,scriptInstance_t param_2)
+int __cdecl Scr_IsSystemActive(uchar sys,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   int local_8;
   
-  if ((gScrVarPub[_param_2].timeArrayId == 0) || (gScrVarPub[_param_2].error_message != (char *)0x0)
-     ) {
+  if ((gScrVarPub[_inst].timeArrayId == 0) || (gScrVarPub[_inst].error_message != (char *)0x0)) {
     local_8 = 0;
   }
   else {
@@ -6433,158 +6494,164 @@ int __cdecl Scr_IsSystemActive(uchar param_1,scriptInstance_t param_2)
 
 // 008DD550  Scr_GetInt  (clientscript/cscr_vm.cpp:5057)
 
-int __cdecl Scr_GetInt(uint param_1,scriptInstance_t param_2)
+int __cdecl Scr_GetInt(uint index,scriptInstance_t inst)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000009;
   bool bVar2;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    if (gScrVmPub[_param_2].top[-param_1].type == 6) {
-      return gScrVmPub[_param_2].top[-param_1].u.intValue;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    if (gScrVmPub[_inst].top[-index].type == 6) {
+      return gScrVmPub[_inst].top[-index].u.intValue;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
+    gScrVarPub[_inst].error_index = index + 1;
     bVar2 = false;
     pcVar1 = va("type %s is not an int");
-    Scr_Error(param_2,pcVar1,bVar2);
+    Scr_Error(inst,pcVar1,bVar2);
   }
   bVar2 = false;
   pcVar1 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar1,bVar2);
+  Scr_Error(inst,pcVar1,bVar2);
   return 0;
 }
 
 
 // 008DD600  Scr_GetAnim  (clientscript/cscr_vm.cpp:5074)
 
-scr_anim_s __cdecl Scr_GetAnim(uint param_1,XAnimTree_s *param_2,scriptInstance_t param_3)
+scr_anim_s __cdecl Scr_GetAnim(uint index,XAnimTree_s *tree,scriptInstance_t inst)
 
 {
   char *pcVar1;
   scr_anim_s_u_0 *psVar2;
   undefined3 in_stack_0000000d;
-  bool bVar3;
+  bool force_terminal;
+  scr_anim_s anim;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_3].outparamcount) {
-    psVar2 = (scr_anim_s_u_0 *)(gScrVmPub[_param_3].top + -param_1);
+  if (index < gScrVmPub[_inst].outparamcount) {
+    psVar2 = (scr_anim_s_u_0 *)(gScrVmPub[_inst].top + -index);
     if (psVar2[1].linkPointer == (char *)0xb) {
       return (scr_anim_s)psVar2->linkPointer;
     }
     pcVar1 = va("type %s is not an anim");
-    gScrVarPub[_param_3].error_message = pcVar1;
-    RemoveRefToValue(param_3,(int)psVar2[1],(VariableUnion)*(int *)psVar2);
+    gScrVarPub[_inst].error_message = pcVar1;
+    RemoveRefToValue(inst,(int)psVar2[1],(VariableUnion)*(int *)psVar2);
     psVar2[1].linkPointer = (char *)0x0;
-    gScrVarPub[_param_3].error_index = param_1 + 1;
-    Scr_ErrorInternal(param_3);
+    gScrVarPub[_inst].error_index = index + 1;
+    Scr_ErrorInternal(inst);
   }
-  bVar3 = false;
+  force_terminal = false;
   pcVar1 = va("parameter %d does not exist");
-  Scr_Error(param_3,pcVar1,bVar3);
+  Scr_Error(inst,pcVar1,force_terminal);
   return (scr_anim_s)(scr_anim_s_u_0)0x0;
 }
 
 
 // 008DD870  Scr_GetAnimTree  (clientscript/cscr_vm.cpp:5110)
 
-scr_animtree_t __cdecl Scr_GetAnimTree(uint param_1,uint param_2,scriptInstance_t param_3)
+scr_animtree_t __cdecl Scr_GetAnimTree(uint index,uint user,scriptInstance_t inst)
 
 {
   uint uVar1;
   char *pcVar2;
   VariableValue *pVVar3;
   undefined3 in_stack_0000000d;
-  bool bVar4;
+  bool force_terminal;
+  uint i;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_3].outparamcount) {
-    pVVar3 = gScrVmPub[_param_3].top + -param_1;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    pVVar3 = gScrVmPub[_inst].top + -index;
     if (pVVar3->type == 6) {
       uVar1 = (pVVar3->u).stringValue;
-      if ((uVar1 <= *(uint *)(_param_3 * 0x41c + 0x9cf663c + param_2 * 4)) &&
-         (*(int *)(_param_3 * 0x41c + 0x9cf623c + param_2 * 0x200 + uVar1 * 4) != 0)) {
-        return (scr_animtree_t)
-               *(XAnim_s **)(_param_3 * 0x41c + 0x9cf623c + param_2 * 0x200 + uVar1 * 4);
+      if ((uVar1 <= *(uint *)(_inst * 0x41c + 0x9cf663c + user * 4)) &&
+         (*(int *)(_inst * 0x41c + 0x9cf623c + user * 0x200 + uVar1 * 4) != 0)) {
+        return (scr_animtree_t)*(XAnim_s **)(_inst * 0x41c + 0x9cf623c + user * 0x200 + uVar1 * 4);
       }
-      gScrVarPub[_param_3].error_message = "bad anim tree";
+      gScrVarPub[_inst].error_message = "bad anim tree";
     }
     else {
       pcVar2 = va("type %s is not an animtree");
-      gScrVarPub[_param_3].error_message = pcVar2;
+      gScrVarPub[_inst].error_message = pcVar2;
     }
-    RemoveRefToValue(param_3,pVVar3->type,(VariableUnion)*(uint *)&pVVar3->u);
+    RemoveRefToValue(inst,pVVar3->type,(VariableUnion)*(uint *)&pVVar3->u);
     pVVar3->type = 0;
-    gScrVarPub[_param_3].error_index = param_1 + 1;
-    Scr_ErrorInternal(param_3);
+    gScrVarPub[_inst].error_index = index + 1;
+    Scr_ErrorInternal(inst);
   }
-  bVar4 = false;
+  force_terminal = false;
   pcVar2 = va("parameter %d does not exist");
-  Scr_Error(param_3,pcVar2,bVar4);
-  return (scr_animtree_t)*(XAnim_s **)(_param_3 * 0x41c + 0x9cf623c + param_2 * 0x200);
+  Scr_Error(inst,pcVar2,force_terminal);
+  return (scr_animtree_t)*(XAnim_s **)(_inst * 0x41c + 0x9cf623c + user * 0x200);
 }
 
 
 // 008DD9D0  Scr_GetFloat  (clientscript/cscr_vm.cpp:5144)
 
-float __cdecl Scr_GetFloat(uint param_1,scriptInstance_t param_2)
+float __cdecl Scr_GetFloat(uint index,scriptInstance_t inst)
 
 {
   char *pcVar1;
   VariableValue *pVVar2;
   undefined3 in_stack_00000009;
   bool bVar3;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    pVVar2 = gScrVmPub[_param_2].top + -param_1;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    pVVar2 = gScrVmPub[_inst].top + -index;
     if (pVVar2->type == 5) {
       return (float)(pVVar2->u).intValue;
     }
     if (pVVar2->type == 6) {
       return (float)(pVVar2->u).intValue;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
+    gScrVarPub[_inst].error_index = index + 1;
     bVar3 = false;
     pcVar1 = va("type %s is not a float");
-    Scr_Error(param_2,pcVar1,bVar3);
+    Scr_Error(inst,pcVar1,bVar3);
   }
   bVar3 = false;
   pcVar1 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar1,bVar3);
+  Scr_Error(inst,pcVar1,bVar3);
   return 0.0;
 }
 
 
 // 008DDA90  Scr_GetConstString  (clientscript/cscr_vm.cpp:5164)
 
-uint __cdecl Scr_GetConstString(uint param_1,scriptInstance_t param_2)
+uint __cdecl Scr_GetConstString(uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  VariableValue *pVVar5;
+  char *error;
+  VariableValue *value_00;
   undefined3 in_stack_00000009;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    pVVar5 = gScrVmPub[_param_2].top + -param_1;
-    bVar2 = Scr_CastString(param_2,pVVar5);
+  if (index < gScrVmPub[_inst].outparamcount) {
+    value_00 = gScrVmPub[_inst].top + -index;
+    bVar2 = Scr_CastString(inst,value_00);
     if (bVar2) {
-      if ((pVVar5->type != 2) &&
+      if ((value_00->type != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x1434,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      SL_CheckExists(param_2,(pVVar5->u).stringValue);
-      return (pVVar5->u).intValue;
+      SL_CheckExists(inst,(value_00->u).stringValue);
+      return (value_00->u).intValue;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
-    Scr_ErrorInternal(param_2);
+    gScrVarPub[_inst].error_index = index + 1;
+    Scr_ErrorInternal(inst);
   }
   bVar2 = false;
-  pcVar4 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar4,bVar2);
+  error = va("parameter %d does not exist");
+  Scr_Error(inst,error,bVar2);
   return 0;
 }
 
@@ -6594,7 +6661,7 @@ uint __cdecl Scr_GetConstString(uint param_1,scriptInstance_t param_2)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl Scr_GetConstLowercaseString(uint param_1,scriptInstance_t param_2)
+uint __cdecl Scr_GetConstLowercaseString(uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -6604,84 +6671,85 @@ uint __cdecl Scr_GetConstLowercaseString(uint param_1,scriptInstance_t param_2)
   int iVar5;
   uint uVar6;
   undefined3 in_stack_00000009;
-  char local_2014 [8196];
+  char *str;
+  uint stringValue;
+  char newStr [8196];
   uint local_10;
-  int local_c;
-  VariableValue *local_8;
+  int i;
+  VariableValue *value;
   
-  local_8 = (VariableValue *)0x8ddb7d;
+  value = (VariableValue *)0x8ddb7d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    local_8 = gScrVmPub[_param_2].top + -param_1;
-    bVar2 = Scr_CastString(param_2,local_8);
+  if (index < gScrVmPub[_inst].outparamcount) {
+    value = gScrVmPub[_inst].top + -index;
+    bVar2 = Scr_CastString(inst,value);
     if (bVar2) {
-      if ((local_8->type != 2) &&
+      if ((value->type != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x1452,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      uVar3 = (local_8->u).stringValue;
-      pcVar4 = SL_ConvertToString(uVar3,param_2);
-      local_c = 0;
+      uVar3 = (value->u).stringValue;
+      pcVar4 = SL_ConvertToString(uVar3,inst);
+      i = 0;
       while( true ) {
-        iVar5 = tolower((int)pcVar4[local_c]);
-        local_2014[local_c] = (char)iVar5;
-        if (pcVar4[local_c] == '\0') break;
-        local_c = local_c + 1;
+        iVar5 = tolower((int)pcVar4[i]);
+        newStr[i] = (char)iVar5;
+        if (pcVar4[i] == '\0') break;
+        i = i + 1;
       }
-      if ((local_8->type != 2) &&
+      if ((value->type != 2) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x145d,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      uVar6 = SL_GetString(local_2014,0,param_2);
-      (local_8->u).stringValue = uVar6;
-      SL_RemoveRefToString(param_2,uVar3);
-      SL_CheckExists(param_2,(local_8->u).stringValue);
-      return (local_8->u).intValue;
+      uVar6 = SL_GetString(newStr,0,inst);
+      (value->u).stringValue = uVar6;
+      SL_RemoveRefToString(inst,uVar3);
+      SL_CheckExists(inst,(value->u).stringValue);
+      return (value->u).intValue;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
-    Scr_ErrorInternal(param_2);
+    gScrVarPub[_inst].error_index = index + 1;
+    Scr_ErrorInternal(inst);
   }
   bVar2 = false;
   pcVar4 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar4,bVar2);
+  Scr_Error(inst,pcVar4,bVar2);
   return 0;
 }
 
 
 // 008DDD40  Scr_GetString  (clientscript/cscr_vm.cpp:5230)
 
-char * __cdecl Scr_GetString(uint param_1,scriptInstance_t param_2)
+char * __cdecl Scr_GetString(uint index,scriptInstance_t inst)
 
 {
-  uint uVar1;
-  char *pcVar2;
+  uint stringValue;
+  char *pcVar1;
   
-  uVar1 = Scr_GetConstString(param_1,param_2);
-  pcVar2 = SL_ConvertToString(uVar1,param_2);
-  return pcVar2;
+  stringValue = Scr_GetConstString(index,inst);
+  pcVar1 = SL_ConvertToString(stringValue,inst);
+  return pcVar1;
 }
 
 
 // 008DDD70  Scr_GetConstStringIncludeNull  (clientscript/cscr_vm.cpp:5236)
 
-uint __cdecl Scr_GetConstStringIncludeNull(uint param_1,scriptInstance_t param_2)
+uint __cdecl Scr_GetConstStringIncludeNull(uint index,scriptInstance_t inst)
 
 {
   uint uVar1;
   undefined3 in_stack_00000009;
   
-  if ((param_1 < gScrVmPub[_param_2].outparamcount) && (gScrVmPub[_param_2].top[-param_1].type == 0)
-     ) {
+  if ((index < gScrVmPub[_inst].outparamcount) && (gScrVmPub[_inst].top[-index].type == 0)) {
     uVar1 = 0;
   }
   else {
-    uVar1 = Scr_GetConstString(param_1,param_2);
+    uVar1 = Scr_GetConstString(index,inst);
   }
   return uVar1;
 }
@@ -6689,19 +6757,20 @@ uint __cdecl Scr_GetConstStringIncludeNull(uint param_1,scriptInstance_t param_2
 
 // 008DDDC0  Scr_GetDebugString  (clientscript/cscr_vm.cpp:5253)
 
-char * __cdecl Scr_GetDebugString(uint param_1,scriptInstance_t param_2)
+char * __cdecl Scr_GetDebugString(uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  VariableValue *pVVar4;
+  VariableValue *value_00;
   undefined3 in_stack_00000009;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    pVVar4 = gScrVmPub[_param_2].top + -param_1;
-    Scr_CastDebugString(param_2,pVVar4);
-    if (pVVar4->type != 2) {
+  if (index < gScrVmPub[_inst].outparamcount) {
+    value_00 = gScrVmPub[_inst].top + -index;
+    Scr_CastDebugString(inst,value_00);
+    if (value_00->type != 2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x148c
                                ,0,"%s");
       if (!bVar2) {
@@ -6710,12 +6779,12 @@ char * __cdecl Scr_GetDebugString(uint param_1,scriptInstance_t param_2)
         return pcVar3;
       }
     }
-    pcVar3 = SL_ConvertToString((pVVar4->u).stringValue,param_2);
+    pcVar3 = SL_ConvertToString((value_00->u).stringValue,inst);
   }
   else {
     bVar2 = false;
     pcVar3 = va("parameter %d does not exist");
-    Scr_Error(param_2,pcVar3,bVar2);
+    Scr_Error(inst,pcVar3,bVar2);
     pcVar3 = (char *)0x0;
   }
   return pcVar3;
@@ -6724,76 +6793,78 @@ char * __cdecl Scr_GetDebugString(uint param_1,scriptInstance_t param_2)
 
 // 008DDE70  Scr_GetConstIString  (clientscript/cscr_vm.cpp:5269)
 
-uint __cdecl Scr_GetConstIString(uint param_1,scriptInstance_t param_2)
+uint __cdecl Scr_GetConstIString(uint index,scriptInstance_t inst)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000009;
   bool bVar2;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    if (gScrVmPub[_param_2].top[-param_1].type == 3) {
-      return gScrVmPub[_param_2].top[-param_1].u.intValue;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    if (gScrVmPub[_inst].top[-index].type == 3) {
+      return gScrVmPub[_inst].top[-index].u.intValue;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
+    gScrVarPub[_inst].error_index = index + 1;
     bVar2 = false;
     pcVar1 = va("type %s is not a localized string");
-    Scr_Error(param_2,pcVar1,bVar2);
+    Scr_Error(inst,pcVar1,bVar2);
   }
   bVar2 = false;
   pcVar1 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar1,bVar2);
+  Scr_Error(inst,pcVar1,bVar2);
   return 0;
 }
 
 
 // 008DDF20  Scr_GetIString  (clientscript/cscr_vm.cpp:5286)
 
-char * __cdecl Scr_GetIString(uint param_1,scriptInstance_t param_2)
+char * __cdecl Scr_GetIString(uint index,scriptInstance_t inst)
 
 {
-  uint uVar1;
-  char *pcVar2;
+  uint stringValue;
+  char *pcVar1;
   
-  uVar1 = Scr_GetConstIString(param_1,param_2);
-  pcVar2 = SL_ConvertToString(uVar1,param_2);
-  return pcVar2;
+  stringValue = Scr_GetConstIString(index,inst);
+  pcVar1 = SL_ConvertToString(stringValue,inst);
+  return pcVar1;
 }
 
 
 // 008DDF50  Scr_GetVector  (clientscript/cscr_vm.cpp:5292)
 
-void __cdecl Scr_GetVector(uint param_1,float *param_2,scriptInstance_t param_3)
+void __cdecl Scr_GetVector(uint index,float *vectorValue,scriptInstance_t inst)
 
 {
   float *pfVar1;
   char *pcVar2;
   undefined3 in_stack_0000000d;
   bool bVar3;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_3].outparamcount) {
-    if (gScrVmPub[_param_3].top[-param_1].type == 4) {
-      pfVar1 = gScrVmPub[_param_3].top[-param_1].u.vectorValue;
-      *param_2 = *pfVar1;
-      param_2[1] = pfVar1[1];
-      param_2[2] = pfVar1[2];
+  if (index < gScrVmPub[_inst].outparamcount) {
+    if (gScrVmPub[_inst].top[-index].type == 4) {
+      pfVar1 = gScrVmPub[_inst].top[-index].u.vectorValue;
+      *vectorValue = *pfVar1;
+      vectorValue[1] = pfVar1[1];
+      vectorValue[2] = pfVar1[2];
       return;
     }
-    gScrVarPub[_param_3].error_index = param_1 + 1;
+    gScrVarPub[_inst].error_index = index + 1;
     bVar3 = false;
     pcVar2 = va("type %s is not a vector");
-    Scr_Error(param_3,pcVar2,bVar3);
+    Scr_Error(inst,pcVar2,bVar3);
   }
   bVar3 = false;
   pcVar2 = va("parameter %d does not exist");
-  Scr_Error(param_3,pcVar2,bVar3);
+  Scr_Error(inst,pcVar2,bVar3);
   return;
 }
 
 
 // 008DE020  Scr_GetFunc  (clientscript/cscr_vm.cpp:5311)
 
-int __cdecl Scr_GetFunc(uint param_1,scriptInstance_t param_2)
+int __cdecl Scr_GetFunc(uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -6802,11 +6873,12 @@ int __cdecl Scr_GetFunc(uint param_1,scriptInstance_t param_2)
   char *pcVar4;
   VariableValue *pVVar5;
   undefined3 in_stack_00000009;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    pVVar5 = gScrVmPub[_param_2].top + -param_1;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    pVVar5 = gScrVmPub[_inst].top + -index;
     if (pVVar5->type == 9) {
-      iVar3 = Scr_IsInOpcodeMemory(param_2,(pVVar5->u).codePosValue);
+      iVar3 = Scr_IsInOpcodeMemory(inst,(pVVar5->u).codePosValue);
       if ((iVar3 == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                    0x14c7,0,"%s"), !bVar2)) {
@@ -6814,137 +6886,140 @@ int __cdecl Scr_GetFunc(uint param_1,scriptInstance_t param_2)
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      return (int)(pVVar5->u).vectorValue - (int)gScrVarPub[_param_2].programBuffer;
+      return (int)(pVVar5->u).vectorValue - (int)gScrVarPub[_inst].programBuffer;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
+    gScrVarPub[_inst].error_index = index + 1;
     bVar2 = false;
     pcVar4 = va("type %s is not a function");
-    Scr_Error(param_2,pcVar4,bVar2);
+    Scr_Error(inst,pcVar4,bVar2);
   }
   bVar2 = false;
   pcVar4 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar4,bVar2);
+  Scr_Error(inst,pcVar4,bVar2);
   return 0;
 }
 
 
 // 008DE120  Scr_GetEntityRef  (clientscript/cscr_vm.cpp:5331)
 
-scr_entref_t __cdecl Scr_GetEntityRef(uint param_1,scriptInstance_t param_2)
+scr_entref_t __cdecl Scr_GetEntityRef(uint param_1,scriptInstance_t index)
 
 {
-  uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  ushort uVar4;
-  scr_entref_t sVar5;
+  uint id_00;
+  int iVar1;
+  char *pcVar2;
+  ushort uVar3;
+  scr_entref_t sVar4;
   undefined3 in_stack_00000009;
   uint in_stack_0000000c;
-  scriptInstance_t sVar6;
-  undefined1 uVar7;
-  bool bVar8;
+  scriptInstance_t inst;
+  undefined1 force_terminal;
+  bool bVar5;
   undefined2 local_10;
+  VariableValue *value;
+  uint id;
   
-  sVar6 = (scriptInstance_t)in_stack_0000000c;
-  if (_param_2 < gScrVmPub[in_stack_0000000c].outparamcount) {
-    if (gScrVmPub[in_stack_0000000c].top[-_param_2].type == 1) {
-      uVar1 = gScrVmPub[in_stack_0000000c].top[-_param_2].u.stringValue;
-      iVar2 = GetObjectType(sVar6,uVar1);
-      if (iVar2 == 0x13) {
-        sVar5 = Scr_GetEntityIdRef(0xdc,in_stack_0000000c);
-        uVar4 = *(ushort *)(sVar5._0_4_ + 1);
-        *(undefined4 *)param_1 = *sVar5._0_4_;
-        *(ushort *)(param_1 + 4) = uVar4;
+  inst = (scriptInstance_t)in_stack_0000000c;
+  if (_index < gScrVmPub[in_stack_0000000c].outparamcount) {
+    if (gScrVmPub[in_stack_0000000c].top[-_index].type == 1) {
+      id_00 = gScrVmPub[in_stack_0000000c].top[-_index].u.stringValue;
+      iVar1 = GetObjectType(inst,id_00);
+      if (iVar1 == 0x13) {
+        sVar4 = Scr_GetEntityIdRef(0xdc,in_stack_0000000c);
+        uVar3 = *(ushort *)(sVar4._0_4_ + 1);
+        *(undefined4 *)param_1 = *sVar4._0_4_;
+        *(ushort *)(param_1 + 4) = uVar3;
         goto LAB_008de27f;
       }
-      gScrVarPub[in_stack_0000000c].error_index = _param_2 + 1;
-      uVar7 = 0;
-      GetObjectType(sVar6,uVar1);
-      pcVar3 = va("type %s is not an entity");
-      Scr_Error(sVar6,pcVar3,(bool)uVar7);
+      gScrVarPub[in_stack_0000000c].error_index = _index + 1;
+      force_terminal = 0;
+      GetObjectType(inst,id_00);
+      pcVar2 = va("type %s is not an entity");
+      Scr_Error(inst,pcVar2,(bool)force_terminal);
     }
-    gScrVarPub[in_stack_0000000c].error_index = _param_2 + 1;
-    bVar8 = false;
-    pcVar3 = va("type %s is not an entity");
-    Scr_Error(sVar6,pcVar3,bVar8);
+    gScrVarPub[in_stack_0000000c].error_index = _index + 1;
+    bVar5 = false;
+    pcVar2 = va("type %s is not an entity");
+    Scr_Error(inst,pcVar2,bVar5);
   }
-  bVar8 = false;
-  pcVar3 = va("parameter %d does not exist");
-  Scr_Error(sVar6,pcVar3,bVar8);
-  uVar4 = 0;
+  bVar5 = false;
+  pcVar2 = va("parameter %d does not exist");
+  Scr_Error(inst,pcVar2,bVar5);
+  uVar3 = 0;
   *(undefined4 *)param_1 = 0;
   *(undefined2 *)(param_1 + 4) = local_10;
 LAB_008de27f:
-  sVar5.client = uVar4;
-  sVar5._0_4_ = param_1;
-  return sVar5;
+  sVar4.client = uVar3;
+  sVar4._0_4_ = param_1;
+  return sVar4;
 }
 
 
 // 008DE290  Scr_GetObject  (clientscript/cscr_vm.cpp:5358)
 
-uint __cdecl Scr_GetObject(uint param_1,scriptInstance_t param_2)
+uint __cdecl Scr_GetObject(uint index,scriptInstance_t inst)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000009;
   bool bVar2;
+  VariableValue *value;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    if (gScrVmPub[_param_2].top[-param_1].type == 1) {
-      return gScrVmPub[_param_2].top[-param_1].u.intValue;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    if (gScrVmPub[_inst].top[-index].type == 1) {
+      return gScrVmPub[_inst].top[-index].u.intValue;
     }
-    gScrVarPub[_param_2].error_index = param_1 + 1;
+    gScrVarPub[_inst].error_index = index + 1;
     bVar2 = false;
     pcVar1 = va("type %s is not an object");
-    Scr_Error(param_2,pcVar1,bVar2);
+    Scr_Error(inst,pcVar1,bVar2);
   }
   bVar2 = false;
   pcVar1 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar1,bVar2);
+  Scr_Error(inst,pcVar1,bVar2);
   return 0;
 }
 
 
 // 008DE340  Scr_GetType  (clientscript/cscr_vm.cpp:5375)
 
-int __cdecl Scr_GetType(uint param_1,scriptInstance_t param_2)
+int __cdecl Scr_GetType(uint index,scriptInstance_t inst)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *error;
+  int iVar1;
   undefined3 in_stack_00000009;
-  bool bVar3;
+  bool force_terminal;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    iVar2 = gScrVmPub[_param_2].top[-param_1].type;
+  if (index < gScrVmPub[_inst].outparamcount) {
+    iVar1 = gScrVmPub[_inst].top[-index].type;
   }
   else {
-    bVar3 = false;
-    pcVar1 = va("parameter %d does not exist");
-    Scr_Error(param_2,pcVar1,bVar3);
-    iVar2 = 0;
+    force_terminal = false;
+    error = va("parameter %d does not exist");
+    Scr_Error(inst,error,force_terminal);
+    iVar1 = 0;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
 // 008DE3A0  Scr_GetTypeName  (clientscript/cscr_vm.cpp:5385)
 
-char * __cdecl Scr_GetTypeName(uint param_1,scriptInstance_t param_2)
+char * __cdecl Scr_GetTypeName(uint index,scriptInstance_t inst)
 
 {
   char *pcVar1;
   undefined3 in_stack_00000009;
-  bool bVar2;
+  bool force_terminal;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    pcVar1 = *(char **)(&var_typename + gScrVmPub[_param_2].top[-param_1].type * 4);
+  if (index < gScrVmPub[_inst].outparamcount) {
+    pcVar1 = *(char **)(&var_typename + gScrVmPub[_inst].top[-index].type * 4);
   }
   else {
-    bVar2 = false;
+    force_terminal = false;
     pcVar1 = va("parameter %d does not exist");
-    Scr_Error(param_2,pcVar1,bVar2);
+    Scr_Error(inst,pcVar1,force_terminal);
     pcVar1 = (char *)0x0;
   }
   return pcVar1;
@@ -6953,7 +7028,7 @@ char * __cdecl Scr_GetTypeName(uint param_1,scriptInstance_t param_2)
 
 // 008DE410  Scr_GetPointerType  (clientscript/cscr_vm.cpp:5395)
 
-int __cdecl Scr_GetPointerType(uint param_1,scriptInstance_t param_2)
+int __cdecl Scr_GetPointerType(uint index,scriptInstance_t inst)
 
 {
   int iVar1;
@@ -6961,43 +7036,43 @@ int __cdecl Scr_GetPointerType(uint param_1,scriptInstance_t param_2)
   undefined3 in_stack_00000009;
   bool bVar3;
   
-  if (param_1 < gScrVmPub[_param_2].outparamcount) {
-    if (gScrVmPub[_param_2].top[-param_1].type == 1) {
-      iVar1 = GetObjectType(param_2,gScrVmPub[_param_2].top[-param_1].u.stringValue);
+  if (index < gScrVmPub[_inst].outparamcount) {
+    if (gScrVmPub[_inst].top[-index].type == 1) {
+      iVar1 = GetObjectType(inst,gScrVmPub[_inst].top[-index].u.stringValue);
       return iVar1;
     }
     bVar3 = false;
     pcVar2 = va("type %s is not an object");
-    Scr_Error(param_2,pcVar2,bVar3);
+    Scr_Error(inst,pcVar2,bVar3);
   }
   bVar3 = false;
   pcVar2 = va("parameter %d does not exist");
-  Scr_Error(param_2,pcVar2,bVar3);
+  Scr_Error(inst,pcVar2,bVar3);
   return 0;
 }
 
 
 // 008DE4E0  Scr_GetNumParam  (clientscript/cscr_vm.cpp:5410)
 
-uint __cdecl Scr_GetNumParam(scriptInstance_t param_1)
+uint __cdecl Scr_GetNumParam(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  return gScrVmPub[_param_1].outparamcount;
+  return gScrVmPub[_inst].outparamcount;
 }
 
 
 // 008DE500  Scr_AddBool  (clientscript/cscr_vm.cpp:5416)
 
-void __cdecl Scr_AddBool(int param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddBool(int value,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000009;
   
-  if ((param_1 != 0) && (param_1 != 1)) {
+  if ((value != 0) && (value != 1)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1529,0
                              ,"%s");
     if (!bVar2) {
@@ -7006,71 +7081,71 @@ void __cdecl Scr_AddBool(int param_1,scriptInstance_t param_2)
       return;
     }
   }
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 6;
-  ((gScrVmPub[_param_2].top)->u).intValue = param_1;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 6;
+  ((gScrVmPub[_inst].top)->u).intValue = value;
   return;
 }
 
 
 // 008DE740  Scr_AddInt  (clientscript/cscr_vm.cpp:5426)
 
-void __cdecl Scr_AddInt(int param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddInt(int value,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 6;
-  ((gScrVmPub[_param_2].top)->u).intValue = param_1;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 6;
+  ((gScrVmPub[_inst].top)->u).intValue = value;
   return;
 }
 
 
 // 008DE780  Scr_AddFloat  (clientscript/cscr_vm.cpp:5434)
 
-void __cdecl Scr_AddFloat(float param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddFloat(float value,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 5;
-  ((gScrVmPub[_param_2].top)->u).floatValue = param_1;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 5;
+  ((gScrVmPub[_inst].top)->u).floatValue = value;
   return;
 }
 
 
 // 008DE7C0  Scr_AddAnim  (clientscript/cscr_vm.cpp:5442)
 
-void __cdecl Scr_AddAnim(scr_anim_s param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddAnim(scr_anim_s value,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 0xb;
-  ((scr_anim_s_u_0 *)gScrVmPub[_param_2].top)->_s_0 = (scr_anim_s_u_0_s_0)param_1.field0_0x0;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 0xb;
+  ((scr_anim_s_u_0 *)gScrVmPub[_inst].top)->_s_0 = (scr_anim_s_u_0_s_0)value.field0_0x0;
   return;
 }
 
 
 // 008DE800  Scr_AddUndefined  (clientscript/cscr_vm.cpp:5450)
 
-void __cdecl Scr_AddUndefined(scriptInstance_t param_1)
+void __cdecl Scr_AddUndefined(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  IncInParam(param_1);
-  (gScrVmPub[_param_1].top)->type = 0;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 0;
   return;
 }
 
 
 // 008DE830  Scr_AddObject  (clientscript/cscr_vm.cpp:5457)
 
-void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddObject(uint id,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -7078,7 +7153,7 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
   int iVar3;
   undefined3 in_stack_00000009;
   
-  if (param_1 == 0) {
+  if (id == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1552,0
                              ,"%s");
     if (!bVar2) {
@@ -7087,7 +7162,7 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  iVar3 = GetObjectType(param_2,param_1);
+  iVar3 = GetObjectType(inst,id);
   if (iVar3 == 0xd) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1555,0
                              ,"%s");
@@ -7097,7 +7172,7 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  iVar3 = GetObjectType(param_2,param_1);
+  iVar3 = GetObjectType(inst,id);
   if (iVar3 == 0xe) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1556,0
                              ,"%s");
@@ -7107,7 +7182,7 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  iVar3 = GetObjectType(param_2,param_1);
+  iVar3 = GetObjectType(inst,id);
   if (iVar3 == 0xf) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1557,0
                              ,"%s");
@@ -7117,7 +7192,7 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  iVar3 = GetObjectType(param_2,param_1);
+  iVar3 = GetObjectType(inst,id);
   if (iVar3 == 0x10) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1558,0
                              ,"%s");
@@ -7127,7 +7202,7 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  iVar3 = GetObjectType(param_2,param_1);
+  iVar3 = GetObjectType(inst,id);
   if (iVar3 == 0x15) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1559,0
                              ,"%s");
@@ -7137,53 +7212,55 @@ void __cdecl Scr_AddObject(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 1;
-  ((gScrVmPub[_param_2].top)->u).stringValue = param_1;
-  AddRefToObject(param_2,param_1);
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 1;
+  ((gScrVmPub[_inst].top)->u).stringValue = id;
+  AddRefToObject(inst,id);
   return;
 }
 
 
 // 008DE9E0  Scr_AddEntityNum  (clientscript/cscr_vm.cpp:5475)
 
-void __cdecl Scr_AddEntityNum(int param_1,uint param_2,scriptInstance_t param_3,int param_4)
+void __cdecl Scr_AddEntityNum(int entnum,uint classnum,scriptInstance_t inst,int clientNum)
 
 {
   char *pcVar1;
-  uint uVar2;
+  uint id;
   undefined3 in_stack_0000000d;
-  int iVar3;
+  int iVar2;
+  char *varUsagePos;
   
-  pcVar1 = gScrVarPub[_param_3].varUsagePos;
-  if (gScrVarPub[_param_3].varUsagePos == (char *)0x0) {
-    gScrVarPub[_param_3].varUsagePos = "<script entity variable>";
+  pcVar1 = gScrVarPub[_inst].varUsagePos;
+  if (gScrVarPub[_inst].varUsagePos == (char *)0x0) {
+    gScrVarPub[_inst].varUsagePos = "<script entity variable>";
   }
-  iVar3 = _param_3;
-  uVar2 = Scr_GetEntityId(param_3,param_1,param_2,param_4);
-  Scr_AddObject(uVar2,(scriptInstance_t)iVar3);
-  gScrVarPub[_param_3].varUsagePos = pcVar1;
+  iVar2 = _inst;
+  id = Scr_GetEntityId(inst,entnum,classnum,clientNum);
+  Scr_AddObject(id,(scriptInstance_t)iVar2);
+  gScrVarPub[_inst].varUsagePos = pcVar1;
   return;
 }
 
 
 // 008DEA50  Scr_AddStruct  (clientscript/cscr_vm.cpp:5501)
 
-void __cdecl Scr_AddStruct(scriptInstance_t param_1)
+void __cdecl Scr_AddStruct(scriptInstance_t inst)
 
 {
-  uint uVar1;
+  uint id_00;
+  uint id;
   
-  uVar1 = AllocObject(param_1);
-  Scr_AddObject(uVar1,param_1);
-  RemoveRefToObject(param_1,uVar1);
+  id_00 = AllocObject(inst);
+  Scr_AddObject(id_00,inst);
+  RemoveRefToObject(inst,id_00);
   return;
 }
 
 
 // 008DEA90  Scr_AddString  (clientscript/cscr_vm.cpp:5511)
 
-void __cdecl Scr_AddString(char *param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddString(char *value,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -7191,7 +7268,7 @@ void __cdecl Scr_AddString(char *param_1,scriptInstance_t param_2)
   uint uVar3;
   undefined3 in_stack_00000009;
   
-  if (param_1 == (char *)0x0) {
+  if (value == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1588,0
                              ,"%s");
     if (!bVar2) {
@@ -7200,17 +7277,17 @@ void __cdecl Scr_AddString(char *param_1,scriptInstance_t param_2)
       return;
     }
   }
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 2;
-  uVar3 = SL_GetString(param_1,0,param_2);
-  ((gScrVmPub[_param_2].top)->u).stringValue = uVar3;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 2;
+  uVar3 = SL_GetString(value,0,inst);
+  ((gScrVmPub[_inst].top)->u).stringValue = uVar3;
   return;
 }
 
 
 // 008DEB10  Scr_AddIString  (clientscript/cscr_vm.cpp:5521)
 
-void __cdecl Scr_AddIString(char *param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddIString(char *value,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -7218,7 +7295,7 @@ void __cdecl Scr_AddIString(char *param_1,scriptInstance_t param_2)
   uint uVar3;
   undefined3 in_stack_00000009;
   
-  if (param_1 == (char *)0x0) {
+  if (value == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1592,0
                              ,"%s");
     if (!bVar2) {
@@ -7227,24 +7304,24 @@ void __cdecl Scr_AddIString(char *param_1,scriptInstance_t param_2)
       return;
     }
   }
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 3;
-  uVar3 = SL_GetString(param_1,0,param_2);
-  ((gScrVmPub[_param_2].top)->u).stringValue = uVar3;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 3;
+  uVar3 = SL_GetString(value,0,inst);
+  ((gScrVmPub[_inst].top)->u).stringValue = uVar3;
   return;
 }
 
 
 // 008DEB90  Scr_AddConstString  (clientscript/cscr_vm.cpp:5531)
 
-void __cdecl Scr_AddConstString(uint param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddConstString(uint value,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000009;
   
-  if (param_1 == 0) {
+  if (value == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x159c,0
                              ,"%s");
     if (!bVar2) {
@@ -7253,49 +7330,49 @@ void __cdecl Scr_AddConstString(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 2;
-  ((gScrVmPub[_param_2].top)->u).stringValue = param_1;
-  SL_AddRefToString(param_1,param_2);
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 2;
+  ((gScrVmPub[_inst].top)->u).stringValue = value;
+  SL_AddRefToString(value,inst);
   return;
 }
 
 
 // 008DEC10  Scr_AddVector  (clientscript/cscr_vm.cpp:5542)
 
-void __cdecl Scr_AddVector(float *param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddVector(float *value,scriptInstance_t inst)
 
 {
   float *pfVar1;
   undefined3 in_stack_00000009;
   
-  IncInParam(param_2);
-  (gScrVmPub[_param_2].top)->type = 4;
-  pfVar1 = Scr_AllocVector(param_2,param_1);
-  ((gScrVmPub[_param_2].top)->u).vectorValue = pfVar1;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 4;
+  pfVar1 = Scr_AllocVector(inst,value);
+  ((gScrVmPub[_inst].top)->u).vectorValue = pfVar1;
   return;
 }
 
 
 // 008DEC60  Scr_MakeArray  (clientscript/cscr_vm.cpp:5550)
 
-void __cdecl Scr_MakeArray(scriptInstance_t param_1)
+void __cdecl Scr_MakeArray(scriptInstance_t inst)
 
 {
   uint uVar1;
   undefined3 in_stack_00000005;
   
-  IncInParam(param_1);
-  (gScrVmPub[_param_1].top)->type = 1;
-  uVar1 = Scr_AllocArray(param_1);
-  ((gScrVmPub[_param_1].top)->u).stringValue = uVar1;
+  IncInParam(inst);
+  (gScrVmPub[_inst].top)->type = 1;
+  uVar1 = Scr_AllocArray(inst);
+  ((gScrVmPub[_inst].top)->u).stringValue = uVar1;
   return;
 }
 
 
 // 008DECB0  Scr_AddArray  (clientscript/cscr_vm.cpp:5558)
 
-void __cdecl Scr_AddArray(scriptInstance_t param_1)
+void __cdecl Scr_AddArray(scriptInstance_t inst)
 
 {
   char *pcVar1;
@@ -7303,12 +7380,14 @@ void __cdecl Scr_AddArray(scriptInstance_t param_1)
   bool bVar3;
   uint uVar4;
   undefined3 in_stack_00000005;
+  char *varUsagePos;
+  uint id;
   
-  pcVar1 = gScrVarPub[_param_1].varUsagePos;
-  if (gScrVarPub[_param_1].varUsagePos == (char *)0x0) {
-    gScrVarPub[_param_1].varUsagePos = "<script array variable>";
+  pcVar1 = gScrVarPub[_inst].varUsagePos;
+  if (gScrVarPub[_inst].varUsagePos == (char *)0x0) {
+    gScrVarPub[_inst].varUsagePos = "<script array variable>";
   }
-  if (gScrVmPub[_param_1].inparamcount == 0) {
+  if (gScrVmPub[_inst].inparamcount == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x15c0,0
                              ,"%s");
     if (!bVar3) {
@@ -7317,9 +7396,9 @@ void __cdecl Scr_AddArray(scriptInstance_t param_1)
       return;
     }
   }
-  gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
-  gScrVmPub[_param_1].inparamcount = gScrVmPub[_param_1].inparamcount - 1;
-  if ((gScrVmPub[_param_1].top)->type != 1) {
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+  gScrVmPub[_inst].inparamcount = gScrVmPub[_inst].inparamcount - 1;
+  if ((gScrVmPub[_inst].top)->type != 1) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x15c3,0
                              ,"%s");
     if (!bVar3) {
@@ -7328,25 +7407,26 @@ void __cdecl Scr_AddArray(scriptInstance_t param_1)
       return;
     }
   }
-  uVar4 = GetArraySize(param_1,((gScrVmPub[_param_1].top)->u).stringValue);
-  uVar4 = GetNewArrayVariable(param_1,((gScrVmPub[_param_1].top)->u).stringValue,uVar4);
-  SetNewVariableValue(param_1,uVar4,gScrVmPub[_param_1].top + 1);
-  gScrVarPub[_param_1].varUsagePos = pcVar1;
+  uVar4 = GetArraySize(inst,((gScrVmPub[_inst].top)->u).stringValue);
+  uVar4 = GetNewArrayVariable(inst,((gScrVmPub[_inst].top)->u).stringValue,uVar4);
+  SetNewVariableValue(inst,uVar4,gScrVmPub[_inst].top + 1);
+  gScrVarPub[_inst].varUsagePos = pcVar1;
   return;
 }
 
 
 // 008DEE10  Scr_AddArrayStringIndexed  (clientscript/cscr_vm.cpp:5582)
 
-void __cdecl Scr_AddArrayStringIndexed(uint param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddArrayStringIndexed(uint stringValue,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  uint id_00;
   undefined3 in_stack_00000009;
+  uint id;
   
-  if (gScrVmPub[_param_2].inparamcount == 0) {
+  if (gScrVmPub[_inst].inparamcount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x15d1,0
                              ,"%s");
     if (!bVar2) {
@@ -7355,9 +7435,9 @@ void __cdecl Scr_AddArrayStringIndexed(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  gScrVmPub[_param_2].top = gScrVmPub[_param_2].top + -1;
-  gScrVmPub[_param_2].inparamcount = gScrVmPub[_param_2].inparamcount - 1;
-  if ((gScrVmPub[_param_2].top)->type != 1) {
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+  gScrVmPub[_inst].inparamcount = gScrVmPub[_inst].inparamcount - 1;
+  if ((gScrVmPub[_inst].top)->type != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x15d4,0
                              ,"%s");
     if (!bVar2) {
@@ -7366,22 +7446,22 @@ void __cdecl Scr_AddArrayStringIndexed(uint param_1,scriptInstance_t param_2)
       return;
     }
   }
-  uVar3 = GetNewVariable(param_2,((gScrVmPub[_param_2].top)->u).stringValue,param_1);
-  SetNewVariableValue(param_2,uVar3,gScrVmPub[_param_2].top + 1);
+  id_00 = GetNewVariable(inst,((gScrVmPub[_inst].top)->u).stringValue,stringValue);
+  SetNewVariableValue(inst,id_00,gScrVmPub[_inst].top + 1);
   return;
 }
 
 
 // 008DEF80  Scr_SetErrorMessage  (clientscript/cscr_vm.cpp:5595)
 
-void __cdecl Scr_SetErrorMessage(scriptInstance_t param_1,char *param_2)
+void __cdecl Scr_SetErrorMessage(scriptInstance_t inst,char *error)
 
 {
   undefined3 in_stack_00000005;
   
-  if (gScrVarPub[_param_1].error_message == (char *)0x0) {
-    I_strncpyz(error_message,param_2,0x400);
-    gScrVarPub[_param_1].error_message = error_message;
+  if (gScrVarPub[_inst].error_message == (char *)0x0) {
+    I_strncpyz(error_message,error,0x400);
+    gScrVarPub[_inst].error_message = error_message;
   }
   return;
 }
@@ -7389,55 +7469,55 @@ void __cdecl Scr_SetErrorMessage(scriptInstance_t param_1,char *param_2)
 
 // 008DEF20  Scr_Error  (clientscript/cscr_vm.cpp:5603)
 
-void __cdecl Scr_Error(char *param_1,bool param_2)
+void __cdecl Scr_Error(char *error,bool force_terminal)
 
 {
-  Scr_Error(SCRIPTINSTANCE_SERVER,param_1,param_2);
+  Scr_Error(SCRIPTINSTANCE_SERVER,error,force_terminal);
   return;
 }
 
 
 // 008DEF40  Scr_Error  (clientscript/cscr_vm.cpp:5609)
 
-void __cdecl Scr_Error(scriptInstance_t param_1,char *param_2,bool param_3)
+void __cdecl Scr_Error(scriptInstance_t inst,char *error,bool force_terminal)
 
 {
   undefined3 in_stack_00000005;
   
-  Scr_SetErrorMessage(param_1,param_2);
-  *(bool *)(_param_1 * 0x4328 + 0xa05ac9e) = param_3;
-  Scr_ErrorInternal(param_1);
+  Scr_SetErrorMessage(inst,error);
+  *(bool *)(_inst * 0x4328 + 0xa05ac9e) = force_terminal;
+  Scr_ErrorInternal(inst);
   return;
 }
 
 
 // 008DEFC0  Scr_TerminalError  (clientscript/cscr_vm.cpp:5626)
 
-void __cdecl Scr_TerminalError(char *param_1,scriptInstance_t param_2)
+void __cdecl Scr_TerminalError(char *error,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  Scr_DumpScriptThreads(param_2);
-  Scr_DumpScriptVariablesDefault(param_2);
-  gScrVmPub[_param_2].terminal_error = true;
-  Scr_Error(param_2,param_1,false);
+  Scr_DumpScriptThreads(inst);
+  Scr_DumpScriptVariablesDefault(inst);
+  gScrVmPub[_inst].terminal_error = true;
+  Scr_Error(inst,error,false);
   return;
 }
 
 
 // 008DF000  Scr_NeverTerminalError  (clientscript/cscr_vm.cpp:5635)
 
-void __cdecl Scr_NeverTerminalError(char *param_1,scriptInstance_t param_2)
+void __cdecl Scr_NeverTerminalError(char *error,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  if (gScrVmGlob[_param_2].loading == 0) {
-    Scr_Error(param_2,param_1,false);
+  if (gScrVmGlob[_inst].loading == 0) {
+    Scr_Error(inst,error,false);
   }
   else {
-    Scr_SetErrorMessage(param_2,param_1);
+    Scr_SetErrorMessage(inst,error);
     _longjmp();
   }
   return;
@@ -7446,14 +7526,14 @@ void __cdecl Scr_NeverTerminalError(char *param_1,scriptInstance_t param_2)
 
 // 008DF060  Scr_ParamError  (clientscript/cscr_vm.cpp:5648)
 
-void __cdecl Scr_ParamError(uint param_1,char *param_2,scriptInstance_t param_3)
+void __cdecl Scr_ParamError(uint index,char *error,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_0000000d;
   
-  if (gScrVmPub[_param_3].outparamcount <= param_1) {
+  if (gScrVmPub[_inst].outparamcount <= index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1611,0
                              ,"%s");
     if (!bVar2) {
@@ -7462,21 +7542,21 @@ void __cdecl Scr_ParamError(uint param_1,char *param_2,scriptInstance_t param_3)
       return;
     }
   }
-  gScrVarPub[_param_3].error_index = param_1 + 1;
-  Scr_Error(param_3,param_2,false);
+  gScrVarPub[_inst].error_index = index + 1;
+  Scr_Error(inst,error,false);
   return;
 }
 
 
 // 008DF0D0  Scr_ObjectError  (clientscript/cscr_vm.cpp:5656)
 
-void __cdecl Scr_ObjectError(char *param_1,scriptInstance_t param_2)
+void __cdecl Scr_ObjectError(char *error,scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000009;
   
-  gScrVarPub[_param_2].error_index = -1;
-  Scr_Error(param_2,param_1,false);
+  gScrVarPub[_inst].error_index = -1;
+  Scr_Error(inst,error,false);
   return;
 }
 
@@ -7484,17 +7564,17 @@ void __cdecl Scr_ObjectError(char *param_1,scriptInstance_t param_2)
 // 008DF100  SetEntityFieldValue  (clientscript/cscr_vm.cpp:5663)
 
 bool __cdecl
-SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort param_4,int param_5,
-                   VariableValue *param_6)
+SetEntityFieldValue(scriptInstance_t inst,uint classnum,int entnum,ushort clientNum,int offset,
+                   VariableValue *value)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   undefined3 in_stack_00000005;
-  int local_8;
+  int bSet;
   
-  if ((int)param_6 - (_param_1 * 0x4328 + 0xa05afb0) >> 3 < 1) {
+  if ((int)value - (_inst * 0x4328 + 0xa05afb0) >> 3 < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1620,0
                              ,"%s\n\t(value - gScrVmPub[inst].stack) = %i");
     if (!bVar2) {
@@ -7503,7 +7583,7 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return (bool)uVar3;
     }
   }
-  if (0 < (int)param_6 - (int)gScrVmPub[_param_1].maxstack >> 3) {
+  if (0 < (int)value - (int)gScrVmPub[_inst].maxstack >> 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1621,0
                              ,"%s\n\t(value - gScrVmPub[inst].maxstack) = %i");
     if (!bVar2) {
@@ -7512,7 +7592,7 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return (bool)uVar3;
     }
   }
-  if (gScrVmPub[_param_1].inparamcount != 0) {
+  if (gScrVmPub[_inst].inparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1622,0
                              ,"%s");
     if (!bVar2) {
@@ -7521,7 +7601,7 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return (bool)uVar3;
     }
   }
-  if (gScrVmPub[_param_1].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1623,0
                              ,"%s");
     if (!bVar2) {
@@ -7530,16 +7610,16 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return (bool)uVar3;
     }
   }
-  gScrVmPub[_param_1].outparamcount = 1;
-  gScrVmPub[_param_1].top = param_6;
-  if (_param_1 == 1) {
-    local_8 = CScr_SetObjectField(param_2,param_3,(uint)param_4,param_5);
+  gScrVmPub[_inst].outparamcount = 1;
+  gScrVmPub[_inst].top = value;
+  if (_inst == 1) {
+    bSet = CScr_SetObjectField(classnum,entnum,(uint)clientNum,offset);
   }
   else {
-    local_8 = Scr_SetObjectField(param_2,param_3,param_5);
+    bSet = Scr_SetObjectField(classnum,entnum,offset);
   }
-  if (local_8 == 0) {
-    if (gScrVmPub[_param_1].inparamcount != 0) {
+  if (bSet == 0) {
+    if (gScrVmPub[_inst].inparamcount != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1635
                                ,0,"%s");
       if (!bVar2) {
@@ -7548,7 +7628,7 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
         return (bool)uVar3;
       }
     }
-    if (gScrVmPub[_param_1].outparamcount != 1) {
+    if (gScrVmPub[_inst].outparamcount != 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1636
                                ,0,"%s");
       if (!bVar2) {
@@ -7557,11 +7637,11 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
         return (bool)uVar3;
       }
     }
-    gScrVmPub[_param_1].outparamcount = 0;
+    gScrVmPub[_inst].outparamcount = 0;
     bVar2 = false;
   }
   else {
-    if (gScrVmPub[_param_1].inparamcount != 0) {
+    if (gScrVmPub[_inst].inparamcount != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x163b
                                ,0,"%s");
       if (!bVar2) {
@@ -7570,8 +7650,8 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
         return (bool)uVar3;
       }
     }
-    if (gScrVmPub[_param_1].outparamcount != 0) {
-      if (gScrVmPub[_param_1].outparamcount != 1) {
+    if (gScrVmPub[_inst].outparamcount != 0) {
+      if (gScrVmPub[_inst].outparamcount != 1) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x163f,0,"%s");
         if (!bVar2) {
@@ -7580,10 +7660,9 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
           return (bool)uVar3;
         }
       }
-      RemoveRefToValue(param_1,(&(gScrVmPub[_param_1].top)->u)[1].intValue,
-                       (gScrVmPub[_param_1].top)->u);
-      gScrVmPub[_param_1].top = gScrVmPub[_param_1].top + -1;
-      gScrVmPub[_param_1].outparamcount = 0;
+      RemoveRefToValue(inst,(&(gScrVmPub[_inst].top)->u)[1].intValue,(gScrVmPub[_inst].top)->u);
+      gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+      gScrVmPub[_inst].outparamcount = 0;
     }
     bVar2 = true;
   }
@@ -7594,7 +7673,7 @@ SetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
 // 008DF410  GetEntityFieldValue  (clientscript/cscr_vm.cpp:5707)
 
 VariableValue __cdecl
-GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort param_4,int param_5)
+GetEntityFieldValue(scriptInstance_t inst,uint classnum,int entnum,ushort clientNum,int offset)
 
 {
   code *pcVar1;
@@ -7602,7 +7681,7 @@ GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
   VariableValue VVar3;
   undefined3 in_stack_00000005;
   
-  if (gScrVmPub[_param_1].inparamcount != 0) {
+  if (gScrVmPub[_inst].inparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x164c,0
                              ,"%s");
     if (!bVar2) {
@@ -7611,7 +7690,7 @@ GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return VVar3;
     }
   }
-  if (gScrVmPub[_param_1].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x164d,0
                              ,"%s");
     if (!bVar2) {
@@ -7620,15 +7699,15 @@ GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return VVar3;
     }
   }
-  gScrVmPub[_param_1].top = (VariableValue *)(_param_1 * 0x2028 + 0xa0667c0);
-  gScrVmGlob[_param_1].eval_stack[0].type = 0;
-  if (_param_1 == 1) {
-    CScr_GetObjectField(param_2,param_3,(uint)param_4,param_5);
+  gScrVmPub[_inst].top = (VariableValue *)(_inst * 0x2028 + 0xa0667c0);
+  gScrVmGlob[_inst].eval_stack[0].type = 0;
+  if (_inst == 1) {
+    CScr_GetObjectField(classnum,entnum,(uint)clientNum,offset);
   }
   else {
-    Scr_GetObjectField(param_2,param_3,param_5);
+    Scr_GetObjectField(classnum,entnum,offset);
   }
-  if ((gScrVmPub[_param_1].inparamcount != 0) && (gScrVmPub[_param_1].inparamcount != 1)) {
+  if ((gScrVmPub[_inst].inparamcount != 0) && (gScrVmPub[_inst].inparamcount != 1)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x165b,0
                              ,"%s");
     if (!bVar2) {
@@ -7637,7 +7716,7 @@ GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return VVar3;
     }
   }
-  if (gScrVmPub[_param_1].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x165c,0
                              ,"%s");
     if (!bVar2) {
@@ -7646,8 +7725,8 @@ GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return VVar3;
     }
   }
-  if (gScrVmPub[_param_1].top + -gScrVmPub[_param_1].inparamcount !=
-      (VariableValue *)(_param_1 * 0x2028 + 0xa0667c0)) {
+  if (gScrVmPub[_inst].top + -gScrVmPub[_inst].inparamcount !=
+      (VariableValue *)(_inst * 0x2028 + 0xa0667c0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x165d,0
                              ,"%s");
     if (!bVar2) {
@@ -7656,22 +7735,24 @@ GetEntityFieldValue(scriptInstance_t param_1,uint param_2,int param_3,ushort par
       return VVar3;
     }
   }
-  gScrVmPub[_param_1].inparamcount = 0;
-  return gScrVmGlob[_param_1].eval_stack[0];
+  gScrVmPub[_inst].inparamcount = 0;
+  return gScrVmGlob[_inst].eval_stack[0];
 }
 
 
 // 008DF600  Scr_SetStructField  (clientscript/cscr_vm.cpp:5733)
 
-void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param_3)
+void __cdecl Scr_SetStructField(uint structId,uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   undefined3 in_stack_0000000d;
+  uint fieldValueId;
+  uint fieldValueIndex;
   
-  if (gScrVmPub[_param_3].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1669,0
                              ,"%s");
     if (!bVar2) {
@@ -7680,7 +7761,7 @@ void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param
       return;
     }
   }
-  if (gScrVmPub[_param_3].inparamcount != 1) {
+  if (gScrVmPub[_inst].inparamcount != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x166a,0
                              ,"%s");
     if (!bVar2) {
@@ -7689,10 +7770,10 @@ void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param
       return;
     }
   }
-  gScrVarPub[_param_3].varUsagePos = "<radiant field variable>";
-  uVar3 = Scr_GetVariableFieldIndex(param_3,param_1,param_2);
-  uVar3 = gScrVarGlob[_param_3].variableList[uVar3 + 0x8000].hash.id;
-  if (gScrVmPub[_param_3].inparamcount != 1) {
+  gScrVarPub[_inst].varUsagePos = "<radiant field variable>";
+  uVar3 = Scr_GetVariableFieldIndex(inst,structId,index);
+  uVar3 = gScrVarGlob[_inst].variableList[uVar3 + 0x8000].hash.id;
+  if (gScrVmPub[_inst].inparamcount != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1674,0
                              ,"%s");
     if (!bVar2) {
@@ -7701,9 +7782,9 @@ void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param
       return;
     }
   }
-  gScrVmPub[_param_3].inparamcount = 0;
-  SetVariableFieldValue(param_3,uVar3,gScrVmPub[_param_3].top);
-  if (gScrVmPub[_param_3].inparamcount != 0) {
+  gScrVmPub[_inst].inparamcount = 0;
+  SetVariableFieldValue(inst,uVar3,gScrVmPub[_inst].top);
+  if (gScrVmPub[_inst].inparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x1679,0
                              ,"%s");
     if (!bVar2) {
@@ -7712,7 +7793,7 @@ void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param
       return;
     }
   }
-  if (gScrVmPub[_param_3].outparamcount != 0) {
+  if (gScrVmPub[_inst].outparamcount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x167a,0
                              ,"%s");
     if (!bVar2) {
@@ -7721,8 +7802,8 @@ void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param
       return;
     }
   }
-  gScrVmPub[_param_3].top = gScrVmPub[_param_3].top + -1;
-  gScrVarPub[_param_3].varUsagePos = (char *)0x0;
+  gScrVmPub[_inst].top = gScrVmPub[_inst].top + -1;
+  gScrVarPub[_inst].varUsagePos = (char *)0x0;
   return;
 }
 
@@ -7731,19 +7812,20 @@ void __cdecl Scr_SetStructField(uint param_1,uint param_2,scriptInstance_t param
 
 void __cdecl
 Scr_SetDynamicEntityField
-          (int param_1,uint param_2,uint param_3,scriptInstance_t param_4,int param_5)
+          (int entnum,uint classnum,uint index,scriptInstance_t inst,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  int iVar4;
+  uint id;
+  int iVar3;
   undefined3 in_stack_00000011;
+  uint entId;
   
-  gScrVarPub[_param_4].varUsagePos = "<radiant field variable>";
-  uVar3 = Scr_GetEntityId(param_4,param_1,param_2,param_5 & 0xffff);
-  iVar4 = GetObjectType(param_4,uVar3);
-  if (iVar4 != 0x13) {
+  gScrVarPub[_inst].varUsagePos = "<radiant field variable>";
+  id = Scr_GetEntityId(inst,entnum,classnum,localClientNum & 0xffff);
+  iVar3 = GetObjectType(inst,id);
+  if (iVar3 != 0x13) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x168e,0
                              ,"%s");
     if (!bVar2) {
@@ -7752,24 +7834,24 @@ Scr_SetDynamicEntityField
       return;
     }
   }
-  gScrVarPub[_param_4].varUsagePos = (char *)0x0;
-  Scr_SetStructField(uVar3,param_3,param_4);
+  gScrVarPub[_inst].varUsagePos = (char *)0x0;
+  Scr_SetStructField(id,index,inst);
   return;
 }
 
 
 // 008DF880  Scr_IncTime  (clientscript/cscr_vm.cpp:5785)
 
-void __cdecl Scr_IncTime(scriptInstance_t param_1)
+void __cdecl Scr_IncTime(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  Scr_RunCurrentThreads(param_1);
-  Scr_FreeEntityList(param_1);
-  if ((gScrVarPub[_param_1].time & 0xff000000) != 0) {
+  Scr_RunCurrentThreads(inst);
+  Scr_FreeEntityList(inst);
+  if ((gScrVarPub[_inst].time & 0xff000000) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x169d,0
                              ,"%s");
     if (!bVar2) {
@@ -7778,23 +7860,23 @@ void __cdecl Scr_IncTime(scriptInstance_t param_1)
       return;
     }
   }
-  gScrVarPub[_param_1].time = gScrVarPub[_param_1].time + 1;
-  gScrVarPub[_param_1].time = gScrVarPub[_param_1].time & 0xffffff;
-  *(bool *)(_param_1 * 0x4328 + 0xa05acac) = gScrVmPub[_param_1].abort_on_error != false;
+  gScrVarPub[_inst].time = gScrVarPub[_inst].time + 1;
+  gScrVarPub[_inst].time = gScrVarPub[_inst].time & 0xffffff;
+  *(bool *)(_inst * 0x4328 + 0xa05acac) = gScrVmPub[_inst].abort_on_error != false;
   return;
 }
 
 
 // 008DF940  Scr_DecTime  (clientscript/cscr_vm.cpp:5800)
 
-void __cdecl Scr_DecTime(scriptInstance_t param_1)
+void __cdecl Scr_DecTime(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_00000005;
   
-  if ((gScrVarPub[_param_1].time & 0xff000000) != 0) {
+  if ((gScrVarPub[_inst].time & 0xff000000) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x16a9,0
                              ,"%s");
     if (!bVar2) {
@@ -7803,15 +7885,15 @@ void __cdecl Scr_DecTime(scriptInstance_t param_1)
       return;
     }
   }
-  gScrVarPub[_param_1].time = gScrVarPub[_param_1].time - 1;
-  gScrVarPub[_param_1].time = gScrVarPub[_param_1].time & 0xffffff;
+  gScrVarPub[_inst].time = gScrVarPub[_inst].time - 1;
+  gScrVarPub[_inst].time = gScrVarPub[_inst].time & 0xffffff;
   return;
 }
 
 
 // 008DF9C0  Scr_RunCurrentThreads  (clientscript/cscr_vm.cpp:5808)
 
-void __cdecl Scr_RunCurrentThreads(scriptInstance_t param_1)
+void __cdecl Scr_RunCurrentThreads(scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -7819,54 +7901,55 @@ void __cdecl Scr_RunCurrentThreads(scriptInstance_t param_1)
   int iVar3;
   int iVar4;
   undefined3 in_stack_00000005;
+  int pre_time;
   
   if ((scrVmEnableScripts->current).enabled != false) {
     iVar3 = Sys_MillisecondsRaw();
-    if ((gScrVmPub[_param_1].function_count != 0) &&
+    if ((gScrVmPub[_inst].function_count != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x16ba,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((gScrVarPub[_param_1].error_message != (char *)0x0) &&
+    if ((gScrVarPub[_inst].error_message != (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x16bb,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((gScrVarPub[_param_1].error_index != 0) &&
+    if ((gScrVarPub[_inst].error_index != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x16bc,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].outparamcount != 0) &&
+    if ((gScrVmPub[_inst].outparamcount != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x16bd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].inparamcount != 0) &&
+    if ((gScrVmPub[_inst].inparamcount != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x16be,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((gScrVmPub[_param_1].top != (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0)) &&
+    if ((gScrVmPub[_inst].top != (VariableValue *)(_inst * 0x4328 + 0xa05afb0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                  0x16bf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    VM_SetTime(param_1);
+    VM_SetTime(inst);
     iVar4 = Sys_MillisecondsRaw();
-    gScrExecuteTime[_param_1] = (iVar4 - iVar3) + gScrExecuteTime[_param_1];
+    gScrExecuteTime[_inst] = (iVar4 - iVar3) + gScrExecuteTime[_inst];
   }
   return;
 }
@@ -7874,7 +7957,7 @@ void __cdecl Scr_RunCurrentThreads(scriptInstance_t param_1)
 
 // 008E05D0  Scr_ResetTimeout  (clientscript/cscr_vm.cpp:5843)
 
-void __cdecl Scr_ResetTimeout(scriptInstance_t param_1)
+void __cdecl Scr_ResetTimeout(scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -7883,7 +7966,7 @@ void __cdecl Scr_ResetTimeout(scriptInstance_t param_1)
   undefined3 in_stack_00000005;
   
   iVar3 = Sys_Milliseconds();
-  gScrVmGlob[_param_1].starttime = iVar3;
+  gScrVmGlob[_inst].starttime = iVar3;
   if (logScriptTimes == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",0x16d7,0
                              ,"%s");
@@ -7897,30 +7980,30 @@ void __cdecl Scr_ResetTimeout(scriptInstance_t param_1)
     Sys_Milliseconds();
     Com_Printf(0x18,"RESET TIME: %d\n");
   }
-  memset((uchar *)gScrVmDebugPub[_param_1].jumpbackHistory,'\0',0x200);
+  memset((uchar *)gScrVmDebugPub[_inst].jumpbackHistory,'\0',0x200);
   return;
 }
 
 
 // 008E0660  Scr_IsStackClear  (clientscript/cscr_vm.cpp:5860)
 
-bool __cdecl Scr_IsStackClear(scriptInstance_t param_1)
+bool __cdecl Scr_IsStackClear(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  return gScrVmPub[_param_1].top == (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0);
+  return gScrVmPub[_inst].top == (VariableValue *)(_inst * 0x4328 + 0xa05afb0);
 }
 
 
 // 008E0690  Scr_StackClear  (clientscript/cscr_vm.cpp:5872)
 
-void __cdecl Scr_StackClear(scriptInstance_t param_1)
+void __cdecl Scr_StackClear(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  gScrVmPub[_param_1].top = (VariableValue *)(_param_1 * 0x4328 + 0xa05afb0);
+  gScrVmPub[_inst].top = (VariableValue *)(_inst * 0x4328 + 0xa05afb0);
   return;
 }
 

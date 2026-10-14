@@ -4,7 +4,7 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-ushort __cdecl _putwch_nolock(wchar_t param_1)
+ushort __cdecl _putwch_nolock(wchar_t ch)
 
 {
   BOOL BVar1;
@@ -16,8 +16,8 @@ ushort __cdecl _putwch_nolock(wchar_t param_1)
   int cbMultiByte;
   LPCSTR lpDefaultChar;
   LPBOOL lpUsedDefaultChar;
-  DWORD local_14;
-  CHAR local_10 [8];
+  DWORD num_written;
+  CHAR mbc [8];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -28,10 +28,10 @@ ushort __cdecl _putwch_nolock(wchar_t param_1)
     if (_confh == -1) {
       return 0xffff;
     }
-    BVar1 = WriteConsoleW((HANDLE)_confh,&param_1,1,&local_14,(LPVOID)0x0);
+    BVar1 = WriteConsoleW((HANDLE)_confh,&ch,1,&num_written,(LPVOID)0x0);
     if (BVar1 != 0) {
       use_w = 1;
-      return param_1;
+      return ch;
     }
     if (use_w != 2) {
       return 0xffff;
@@ -45,16 +45,16 @@ ushort __cdecl _putwch_nolock(wchar_t param_1)
   lpUsedDefaultChar = (LPBOOL)0x0;
   lpDefaultChar = (LPCSTR)0x0;
   cbMultiByte = 5;
-  lpMultiByteStr = local_10;
+  lpMultiByteStr = mbc;
   cchWideChar = 1;
-  lpWideCharStr = &param_1;
+  lpWideCharStr = &ch;
   DVar2 = 0;
   CodePage = GetConsoleOutputCP();
   DVar2 = WideCharToMultiByte(CodePage,DVar2,lpWideCharStr,cchWideChar,lpMultiByteStr,cbMultiByte,
                               lpDefaultChar,lpUsedDefaultChar);
   if ((_confh != -1) &&
-     (BVar1 = WriteConsoleA((HANDLE)_confh,local_10,DVar2,&local_14,(LPVOID)0x0), BVar1 != 0)) {
-    return param_1;
+     (BVar1 = WriteConsoleA((HANDLE)_confh,mbc,DVar2,&num_written,(LPVOID)0x0), BVar1 != 0)) {
+    return ch;
   }
   return 0xffff;
 }

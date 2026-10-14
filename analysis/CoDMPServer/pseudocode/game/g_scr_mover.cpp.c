@@ -9,91 +9,92 @@
 
 int __cdecl
 ScriptMover_UpdateMove
-          (trajectory_t *param_1,float *param_2,float param_3,float param_4,float param_5,
-          float *param_6,float *param_7,float *param_8)
+          (trajectory_t *pTr,float *vCurrPos,float fSpeed,float fMidTime,float fDecelTime,
+          float *vPos1,float *vPos2,float *vPos3)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_14;
+  float fDelta;
+  float vMove;
   float local_10;
   float local_c;
-  int local_8;
+  int trDuration;
   
-  local_8 = (int)(param_4 * 1000.0);
-  if ((param_1->trType == '\b') && (0 < local_8)) {
-    param_1->trTime = level.time;
-    param_1->trDuration = local_8;
-    param_1->trBase[0] = *param_6;
-    param_1->trBase[1] = param_6[1];
-    param_1->trBase[2] = param_6[2];
-    local_14 = *param_7 - *param_6;
-    local_10 = param_7[1] - param_6[1];
-    local_c = param_7[2] - param_6[2];
-    if ((local_8 == 0) &&
+  trDuration = (int)(fMidTime * 1000.0);
+  if ((pTr->trType == '\b') && (0 < trDuration)) {
+    pTr->trTime = level.time;
+    pTr->trDuration = trDuration;
+    pTr->trBase[0] = *vPos1;
+    pTr->trBase[1] = vPos1[1];
+    pTr->trBase[2] = vPos1[2];
+    vMove = *vPos2 - *vPos1;
+    local_10 = vPos2[1] - vPos1[1];
+    local_c = vPos2[2] - vPos1[2];
+    if ((trDuration == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x26,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    fVar4 = 1000.0 / (float)local_8;
-    param_1->trDelta[0] = fVar4 * local_14;
-    param_1->trDelta[1] = fVar4 * local_10;
-    param_1->trDelta[2] = fVar4 * local_c;
-    if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+    fVar4 = 1000.0 / (float)trDuration;
+    pTr->trDelta[0] = fVar4 * vMove;
+    pTr->trDelta[1] = fVar4 * local_10;
+    pTr->trDelta[2] = fVar4 * local_c;
+    if ((((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x29,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    param_1->trType = '\x04';
+    pTr->trType = '\x04';
   }
   else {
-    if ((((param_1->trType != '\b') || (0 < local_8)) && (param_1->trType != '\x04')) ||
-       (param_5 <= 0.0)) {
-      if ((param_1->trType == '\x06') || (param_1->trType == '\r')) {
-        BG_EvaluateTrajectory(param_1,level.time,param_1->trBase);
+    if ((((pTr->trType != '\b') || (0 < trDuration)) && (pTr->trType != '\x04')) ||
+       (fDecelTime <= 0.0)) {
+      if ((pTr->trType == '\x06') || (pTr->trType == '\r')) {
+        BG_EvaluateTrajectory(pTr,level.time,pTr->trBase);
       }
       else {
-        param_1->trBase[0] = *param_8;
-        param_1->trBase[1] = param_8[1];
-        param_1->trBase[2] = param_8[2];
+        pTr->trBase[0] = *vPos3;
+        pTr->trBase[1] = vPos3[1];
+        pTr->trBase[2] = vPos3[2];
       }
-      param_1->trTime = level.time;
-      param_1->trType = '\0';
+      pTr->trTime = level.time;
+      pTr->trType = '\0';
       return 1;
     }
-    param_1->trTime = level.time;
-    param_1->trDuration = (int)(param_5 * 1000.0);
-    param_1->trBase[0] = *param_7;
-    param_1->trBase[1] = param_7[1];
-    param_1->trBase[2] = param_7[2];
-    local_14 = *param_8 - *param_7;
-    local_10 = param_8[1] - param_7[1];
-    local_c = param_8[2] - param_7[2];
-    Vec3Normalize(&local_14);
-    local_14 = param_3 * local_14;
-    local_10 = param_3 * local_10;
-    local_c = param_3 * local_c;
-    param_1->trDelta[0] = local_14;
-    param_1->trDelta[1] = local_10;
-    param_1->trDelta[2] = local_c;
-    if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+    pTr->trTime = level.time;
+    pTr->trDuration = (int)(fDecelTime * 1000.0);
+    pTr->trBase[0] = *vPos2;
+    pTr->trBase[1] = vPos2[1];
+    pTr->trBase[2] = vPos2[2];
+    vMove = *vPos3 - *vPos2;
+    local_10 = vPos3[1] - vPos2[1];
+    local_c = vPos3[2] - vPos2[2];
+    Vec3Normalize(&vMove);
+    vMove = fSpeed * vMove;
+    local_10 = fSpeed * local_10;
+    local_c = fSpeed * local_c;
+    pTr->trDelta[0] = vMove;
+    pTr->trDelta[1] = local_10;
+    pTr->trDelta[2] = local_c;
+    if ((((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x37,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    param_1->trType = '\t';
+    pTr->trType = '\t';
   }
   return 0;
 }
@@ -106,45 +107,44 @@ ScriptMover_UpdateMove
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Reached_ScriptMover(gentity_s *param_1)
+void __cdecl Reached_ScriptMover(gentity_s *pEnt)
 
 {
   int iVar1;
   float fVar2;
+  int bMoveFinished;
   
-  if (((param_1->s).lerp.pos.trType != '\0') &&
-     ((param_1->s).lerp.pos.trTime + (param_1->s).lerp.pos.trDuration <= level.time)) {
+  if (((pEnt->s).lerp.pos.trType != '\0') &&
+     ((pEnt->s).lerp.pos.trTime + (pEnt->s).lerp.pos.trDuration <= level.time)) {
     iVar1 = ScriptMover_UpdateMove
-                      (&(param_1->s).lerp.pos,(param_1->r).currentOrigin,
-                       (param_1->field36_0x21c).mover.speed,(param_1->field36_0x21c).mover.midTime,
-                       (param_1->field36_0x21c).mover.decelTime,
-                       &(param_1->field36_0x21c).trigger.exposureLerpToLighter,
-                       (param_1->field36_0x21c).trigger.exposureFeather + 1,
-                       (param_1->field36_0x21c).mover.pos3);
-    BG_EvaluateTrajectory(&(param_1->s).lerp.pos,level.time,(param_1->r).currentOrigin);
-    SV_LinkEntity(param_1);
+                      (&(pEnt->s).lerp.pos,(pEnt->r).currentOrigin,(pEnt->field36_0x21c).mover.speed
+                       ,(pEnt->field36_0x21c).mover.midTime,(pEnt->field36_0x21c).mover.decelTime,
+                       &(pEnt->field36_0x21c).trigger.exposureLerpToLighter,
+                       (pEnt->field36_0x21c).trigger.exposureFeather + 1,
+                       (pEnt->field36_0x21c).mover.pos3);
+    BG_EvaluateTrajectory(&(pEnt->s).lerp.pos,level.time,(pEnt->r).currentOrigin);
+    SV_LinkEntity(pEnt);
     if (iVar1 != 0) {
-      Scr_Notify(param_1,scr_const.movedone,0);
+      Scr_Notify(pEnt,scr_const.movedone,0);
     }
   }
-  if (((param_1->s).lerp.apos.trType != '\0') &&
-     ((param_1->s).lerp.apos.trTime + (param_1->s).lerp.apos.trDuration <= level.time)) {
+  if (((pEnt->s).lerp.apos.trType != '\0') &&
+     ((pEnt->s).lerp.apos.trTime + (pEnt->s).lerp.apos.trDuration <= level.time)) {
     iVar1 = ScriptMover_UpdateMove
-                      (&(param_1->s).lerp.apos,(param_1->r).currentAngles,
-                       (param_1->field36_0x21c).mover.aSpeed,(param_1->field36_0x21c).mover.aMidTime
-                       ,(param_1->field36_0x21c).mover.aDecelTime,
-                       (param_1->field36_0x21c).mover.apos1,(param_1->field36_0x21c).mover.apos2,
-                       (param_1->field36_0x21c).mover.apos3);
-    BG_EvaluateTrajectory(&(param_1->s).lerp.apos,level.time,(param_1->r).currentAngles);
-    SV_LinkEntity(param_1);
+                      (&(pEnt->s).lerp.apos,(pEnt->r).currentAngles,
+                       (pEnt->field36_0x21c).mover.aSpeed,(pEnt->field36_0x21c).mover.aMidTime,
+                       (pEnt->field36_0x21c).mover.aDecelTime,(pEnt->field36_0x21c).mover.apos1,
+                       (pEnt->field36_0x21c).mover.apos2,(pEnt->field36_0x21c).mover.apos3);
+    BG_EvaluateTrajectory(&(pEnt->s).lerp.apos,level.time,(pEnt->r).currentAngles);
+    SV_LinkEntity(pEnt);
     if (iVar1 != 0) {
-      fVar2 = AngleNormalize180((param_1->r).currentAngles[0]);
-      (param_1->r).currentAngles[0] = fVar2;
-      fVar2 = AngleNormalize360((param_1->r).currentAngles[1]);
-      (param_1->r).currentAngles[1] = fVar2;
-      fVar2 = AngleNormalize180((param_1->r).currentAngles[2]);
-      (param_1->r).currentAngles[2] = fVar2;
-      Scr_Notify(param_1,scr_const.rotatedone,0);
+      fVar2 = AngleNormalize180((pEnt->r).currentAngles[0]);
+      (pEnt->r).currentAngles[0] = fVar2;
+      fVar2 = AngleNormalize360((pEnt->r).currentAngles[1]);
+      (pEnt->r).currentAngles[1] = fVar2;
+      fVar2 = AngleNormalize180((pEnt->r).currentAngles[2]);
+      (pEnt->r).currentAngles[2] = fVar2;
+      Scr_Notify(pEnt,scr_const.rotatedone,0);
     }
   }
   return;
@@ -160,39 +160,41 @@ void __cdecl Reached_ScriptMover(gentity_s *param_1)
 
 void __cdecl
 ScriptMover_SetupMove
-          (trajectory_t *param_1,float *param_2,float param_3,float param_4,float param_5,
-          float *param_6,float *param_7,float *param_8,float *param_9,float *param_10,
-          float *param_11,float *param_12)
+          (trajectory_t *pTr,float *vPos,float fTotalTime,float fAccelTime,float fDecelTime,
+          float *vCurrPos,float *pfSpeed,float *pfMidTime,float *pfDecelTime,float *vPos1,
+          float *vPos2,float *vPos3)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_1c;
+  float fDist;
+  float fDelta;
+  float vMaxSpeed;
   float local_18;
   float local_14;
-  float local_10;
+  float vMove;
   float local_c;
   float local_8;
   
-  local_10 = *param_2 - *param_6;
-  local_c = param_2[1] - param_6[1];
-  local_8 = param_2[2] - param_6[2];
-  if (param_1->trType != '\0') {
-    BG_EvaluateTrajectory(param_1,level.time,param_6);
+  vMove = *vPos - *vCurrPos;
+  local_c = vPos[1] - vCurrPos[1];
+  local_8 = vPos[2] - vCurrPos[2];
+  if (pTr->trType != '\0') {
+    BG_EvaluateTrajectory(pTr,level.time,vCurrPos);
   }
-  if ((param_4 == 0.0) && (param_5 == 0.0)) {
-    param_1->trTime = level.time;
-    param_1->trDuration = (int)(param_3 * 1000.0);
-    *param_8 = param_3;
-    *param_9 = 0.0;
-    *param_12 = *param_2;
-    param_12[1] = param_2[1];
-    param_12[2] = param_2[2];
-    param_1->trBase[0] = *param_6;
-    param_1->trBase[1] = param_6[1];
-    param_1->trBase[2] = param_6[2];
-    if (param_1->trDuration == 0) {
+  if ((fAccelTime == 0.0) && (fDecelTime == 0.0)) {
+    pTr->trTime = level.time;
+    pTr->trDuration = (int)(fTotalTime * 1000.0);
+    *pfMidTime = fTotalTime;
+    *pfDecelTime = 0.0;
+    *vPos3 = *vPos;
+    vPos3[1] = vPos[1];
+    vPos3[2] = vPos[2];
+    pTr->trBase[0] = *vCurrPos;
+    pTr->trBase[1] = vCurrPos[1];
+    pTr->trBase[2] = vCurrPos[2];
+    if (pTr->trDuration == 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x8c,0,
                                "%s");
       if (!bVar2) {
@@ -201,13 +203,13 @@ ScriptMover_SetupMove
         return;
       }
     }
-    fVar3 = 1000.0 / (float)param_1->trDuration;
-    param_1->trDelta[0] = fVar3 * local_10;
-    param_1->trDelta[1] = fVar3 * local_c;
-    param_1->trDelta[2] = fVar3 * local_8;
-    if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-        (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+    fVar3 = 1000.0 / (float)pTr->trDuration;
+    pTr->trDelta[0] = fVar3 * vMove;
+    pTr->trDelta[1] = fVar3 * local_c;
+    pTr->trDelta[2] = fVar3 * local_8;
+    if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+        (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+       (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x8f,0,
                                "%s");
       if (!bVar2) {
@@ -216,14 +218,14 @@ ScriptMover_SetupMove
         return;
       }
     }
-    param_1->trType = '\x04';
-    BG_EvaluateTrajectory(param_1,level.time,param_6);
+    pTr->trType = '\x04';
+    BG_EvaluateTrajectory(pTr,level.time,vCurrPos);
   }
   else {
-    *param_8 = (param_3 - param_4) - param_5;
-    *param_9 = param_5;
-    fVar3 = Abs((phys_vec3 *)&local_10);
-    if ((param_3 * 2.0 - param_4) - param_5 == 0.0) {
+    *pfMidTime = (fTotalTime - fAccelTime) - fDecelTime;
+    *pfDecelTime = fDecelTime;
+    fVar3 = Abs((phys_vec3 *)&vMove);
+    if ((fTotalTime * 2.0 - fAccelTime) - fDecelTime == 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x9b,0,
                                "%s");
       if (!bVar2) {
@@ -232,28 +234,28 @@ ScriptMover_SetupMove
         return;
       }
     }
-    *param_7 = (fVar3 * 2.0) / ((param_3 * 2.0 - param_4) - param_5);
-    Vec3NormalizeTo(&local_10,&local_1c);
-    fVar3 = *param_7;
-    local_1c = fVar3 * local_1c;
+    *pfSpeed = (fVar3 * 2.0) / ((fTotalTime * 2.0 - fAccelTime) - fDecelTime);
+    Vec3NormalizeTo(&vMove,&vMaxSpeed);
+    fVar3 = *pfSpeed;
+    vMaxSpeed = fVar3 * vMaxSpeed;
     local_18 = fVar3 * local_18;
     local_14 = fVar3 * local_14;
-    if (param_4 == 0.0) {
-      *param_10 = *param_6;
-      param_10[1] = param_6[1];
-      param_10[2] = param_6[2];
-      if (*param_8 == 0.0) {
-        param_1->trTime = level.time;
-        param_1->trDuration = (int)(*param_9 * 1000.0);
-        param_1->trBase[0] = *param_6;
-        param_1->trBase[1] = param_6[1];
-        param_1->trBase[2] = param_6[2];
-        param_1->trDelta[0] = local_1c;
-        param_1->trDelta[1] = local_18;
-        param_1->trDelta[2] = local_14;
-        if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+    if (fAccelTime == 0.0) {
+      *vPos1 = *vCurrPos;
+      vPos1[1] = vCurrPos[1];
+      vPos1[2] = vCurrPos[2];
+      if (*pfMidTime == 0.0) {
+        pTr->trTime = level.time;
+        pTr->trDuration = (int)(*pfDecelTime * 1000.0);
+        pTr->trBase[0] = *vCurrPos;
+        pTr->trBase[1] = vCurrPos[1];
+        pTr->trBase[2] = vCurrPos[2];
+        pTr->trDelta[0] = vMaxSpeed;
+        pTr->trDelta[1] = local_18;
+        pTr->trDelta[2] = local_14;
+        if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0xc6,0
                                    ,"%s");
           if (!bVar2) {
@@ -262,19 +264,19 @@ ScriptMover_SetupMove
             return;
           }
         }
-        param_1->trType = '\t';
+        pTr->trType = '\t';
       }
       else {
-        param_1->trTime = level.time;
-        param_1->trDuration = (int)(*param_8 * 1000.0);
-        param_1->trBase[0] = *param_6;
-        param_1->trBase[1] = param_6[1];
-        param_1->trBase[2] = param_6[2];
-        local_8 = *param_8;
-        local_10 = local_8 * local_1c;
+        pTr->trTime = level.time;
+        pTr->trDuration = (int)(*pfMidTime * 1000.0);
+        pTr->trBase[0] = *vCurrPos;
+        pTr->trBase[1] = vCurrPos[1];
+        pTr->trBase[2] = vCurrPos[2];
+        local_8 = *pfMidTime;
+        vMove = local_8 * vMaxSpeed;
         local_c = local_8 * local_18;
         local_8 = local_8 * local_14;
-        if (param_1->trDuration == 0) {
+        if (pTr->trDuration == 0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0xb8,0
                                    ,"%s");
           if (!bVar2) {
@@ -283,13 +285,13 @@ ScriptMover_SetupMove
             return;
           }
         }
-        fVar3 = 1000.0 / (float)param_1->trDuration;
-        param_1->trDelta[0] = fVar3 * local_10;
-        param_1->trDelta[1] = fVar3 * local_c;
-        param_1->trDelta[2] = fVar3 * local_8;
-        if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+        fVar3 = 1000.0 / (float)pTr->trDuration;
+        pTr->trDelta[0] = fVar3 * vMove;
+        pTr->trDelta[1] = fVar3 * local_c;
+        pTr->trDelta[2] = fVar3 * local_8;
+        if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0xbb,0
                                    ,"%s");
           if (!bVar2) {
@@ -298,21 +300,21 @@ ScriptMover_SetupMove
             return;
           }
         }
-        param_1->trType = '\x04';
+        pTr->trType = '\x04';
       }
     }
     else {
-      param_1->trTime = level.time;
-      param_1->trDuration = (int)(param_4 * 1000.0);
-      param_1->trBase[0] = *param_6;
-      param_1->trBase[1] = param_6[1];
-      param_1->trBase[2] = param_6[2];
-      param_1->trDelta[0] = local_1c;
-      param_1->trDelta[1] = local_18;
-      param_1->trDelta[2] = local_14;
-      if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+      pTr->trTime = level.time;
+      pTr->trDuration = (int)(fAccelTime * 1000.0);
+      pTr->trBase[0] = *vCurrPos;
+      pTr->trBase[1] = vCurrPos[1];
+      pTr->trBase[2] = vCurrPos[2];
+      pTr->trDelta[0] = vMaxSpeed;
+      pTr->trDelta[1] = local_18;
+      pTr->trDelta[2] = local_14;
+      if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0xa7,0,
                                  "%s");
         if (!bVar2) {
@@ -321,17 +323,17 @@ ScriptMover_SetupMove
           return;
         }
       }
-      param_1->trType = '\b';
-      BG_EvaluateTrajectory(param_1,level.time + param_1->trDuration,param_10);
+      pTr->trType = '\b';
+      BG_EvaluateTrajectory(pTr,level.time + pTr->trDuration,vPos1);
     }
-    fVar3 = *param_8;
-    *param_11 = fVar3 * local_1c + *param_10;
-    param_11[1] = fVar3 * local_18 + param_10[1];
-    param_11[2] = fVar3 * local_14 + param_10[2];
-    *param_12 = *param_2;
-    param_12[1] = param_2[1];
-    param_12[2] = param_2[2];
-    BG_EvaluateTrajectory(param_1,level.time,param_6);
+    fVar3 = *pfMidTime;
+    *vPos2 = fVar3 * vMaxSpeed + *vPos1;
+    vPos2[1] = fVar3 * local_18 + vPos1[1];
+    vPos2[2] = fVar3 * local_14 + vPos1[2];
+    *vPos3 = *vPos;
+    vPos3[1] = vPos[1];
+    vPos3[2] = vPos[2];
+    BG_EvaluateTrajectory(pTr,level.time,vCurrPos);
   }
   return;
 }
@@ -346,39 +348,39 @@ ScriptMover_SetupMove
 
 void __cdecl
 ScriptMover_SetupPhysicsLaunch
-          (trajectory_t *param_1,trajectory_t *param_2,float *param_3,float *param_4)
+          (trajectory_t *pTr,trajectory_t *paTr,float *contact_point,float *initial_force)
 
 {
-  float local_1c;
+  float currPos;
   float local_18;
   float local_14;
-  float local_10;
+  float currApos;
   float local_c;
   float local_8;
   
-  if (param_1->trType == '\n') {
-    param_1->trDuration = param_1->trDuration + 1;
+  if (pTr->trType == '\n') {
+    pTr->trDuration = pTr->trDuration + 1;
   }
   else {
-    param_1->trDuration = 0;
+    pTr->trDuration = 0;
   }
-  param_1->trTime = level.time;
-  BG_EvaluateTrajectory(param_1,level.time,&local_1c);
-  BG_EvaluateTrajectory(param_2,level.time,&local_10);
-  param_1->trBase[0] = local_1c;
-  param_1->trBase[1] = local_18;
-  param_1->trBase[2] = local_14;
-  param_2->trBase[0] = local_10;
-  param_2->trBase[1] = local_c;
-  param_2->trBase[2] = local_8;
-  param_1->trDelta[0] = *param_3;
-  param_1->trDelta[1] = param_3[1];
-  param_1->trDelta[2] = param_3[2];
-  param_2->trDelta[0] = *param_4;
-  param_2->trDelta[1] = param_4[1];
-  param_2->trDelta[2] = param_4[2];
-  param_1->trType = '\n';
-  param_2->trType = '\n';
+  pTr->trTime = level.time;
+  BG_EvaluateTrajectory(pTr,level.time,&currPos);
+  BG_EvaluateTrajectory(paTr,level.time,&currApos);
+  pTr->trBase[0] = currPos;
+  pTr->trBase[1] = local_18;
+  pTr->trBase[2] = local_14;
+  paTr->trBase[0] = currApos;
+  paTr->trBase[1] = local_c;
+  paTr->trBase[2] = local_8;
+  pTr->trDelta[0] = *contact_point;
+  pTr->trDelta[1] = contact_point[1];
+  pTr->trDelta[2] = contact_point[2];
+  paTr->trDelta[0] = *initial_force;
+  paTr->trDelta[1] = initial_force[1];
+  paTr->trDelta[2] = initial_force[2];
+  pTr->trType = '\n';
+  paTr->trType = '\n';
   return;
 }
 
@@ -392,33 +394,33 @@ ScriptMover_SetupPhysicsLaunch
 
 void __cdecl
 ScriptMover_SetupMoveSpeed
-          (trajectory_t *param_1,float *param_2,float param_3,float param_4,float param_5,
-          float *param_6,float *param_7,float *param_8,float *param_9,float *param_10,
-          float *param_11,float *param_12)
+          (trajectory_t *pTr,float *vSpeed,float fTotalTime,float fAccelTime,float fDecelTime,
+          float *vCurrPos,float *pfSpeed,float *pfMidTime,float *pfDecelTime,float *vPos1,
+          float *vPos2,float *vPos3)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  trajectory_t local_28;
+  trajectory_t tr;
   
-  if (param_1->trType != '\0') {
-    BG_EvaluateTrajectory(param_1,level.time,param_6);
+  if (pTr->trType != '\0') {
+    BG_EvaluateTrajectory(pTr,level.time,vCurrPos);
   }
-  if ((param_4 == 0.0) && (param_5 == 0.0)) {
-    param_1->trTime = level.time;
-    param_1->trDuration = (int)(param_3 * 1000.0);
-    *param_8 = param_3;
-    *param_9 = 0.0;
-    param_1->trBase[0] = *param_6;
-    param_1->trBase[1] = param_6[1];
-    param_1->trBase[2] = param_6[2];
-    param_1->trDelta[0] = *param_2;
-    param_1->trDelta[1] = param_2[1];
-    param_1->trDelta[2] = param_2[2];
-    if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-        (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+  if ((fAccelTime == 0.0) && (fDecelTime == 0.0)) {
+    pTr->trTime = level.time;
+    pTr->trDuration = (int)(fTotalTime * 1000.0);
+    *pfMidTime = fTotalTime;
+    *pfDecelTime = 0.0;
+    pTr->trBase[0] = *vCurrPos;
+    pTr->trBase[1] = vCurrPos[1];
+    pTr->trBase[2] = vCurrPos[2];
+    pTr->trDelta[0] = *vSpeed;
+    pTr->trDelta[1] = vSpeed[1];
+    pTr->trDelta[2] = vSpeed[2];
+    if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+        (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+       (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x104,0,
                                "%s");
       if (!bVar2) {
@@ -427,31 +429,31 @@ ScriptMover_SetupMoveSpeed
         return;
       }
     }
-    param_1->trType = '\x04';
-    BG_EvaluateTrajectory(param_1,level.time,param_6);
-    BG_EvaluateTrajectory(param_1,level.time + param_1->trDuration,param_12);
+    pTr->trType = '\x04';
+    BG_EvaluateTrajectory(pTr,level.time,vCurrPos);
+    BG_EvaluateTrajectory(pTr,level.time + pTr->trDuration,vPos3);
   }
   else {
-    *param_8 = (param_3 - param_4) - param_5;
-    *param_9 = param_5;
-    fVar3 = Abs((phys_vec3 *)param_2);
-    *param_7 = fVar3;
-    if (param_4 == 0.0) {
-      *param_10 = *param_6;
-      param_10[1] = param_6[1];
-      param_10[2] = param_6[2];
-      if (*param_8 == 0.0) {
-        param_1->trTime = level.time;
-        param_1->trDuration = (int)(*param_9 * 1000.0);
-        param_1->trBase[0] = *param_6;
-        param_1->trBase[1] = param_6[1];
-        param_1->trBase[2] = param_6[2];
-        param_1->trDelta[0] = *param_2;
-        param_1->trDelta[1] = param_2[1];
-        param_1->trDelta[2] = param_2[2];
-        if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+    *pfMidTime = (fTotalTime - fAccelTime) - fDecelTime;
+    *pfDecelTime = fDecelTime;
+    fVar3 = Abs((phys_vec3 *)vSpeed);
+    *pfSpeed = fVar3;
+    if (fAccelTime == 0.0) {
+      *vPos1 = *vCurrPos;
+      vPos1[1] = vCurrPos[1];
+      vPos1[2] = vCurrPos[2];
+      if (*pfMidTime == 0.0) {
+        pTr->trTime = level.time;
+        pTr->trDuration = (int)(*pfDecelTime * 1000.0);
+        pTr->trBase[0] = *vCurrPos;
+        pTr->trBase[1] = vCurrPos[1];
+        pTr->trBase[2] = vCurrPos[2];
+        pTr->trDelta[0] = *vSpeed;
+        pTr->trDelta[1] = vSpeed[1];
+        pTr->trDelta[2] = vSpeed[2];
+        if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x135,
                                    0,"%s");
           if (!bVar2) {
@@ -460,20 +462,20 @@ ScriptMover_SetupMoveSpeed
             return;
           }
         }
-        param_1->trType = '\t';
+        pTr->trType = '\t';
       }
       else {
-        param_1->trTime = level.time;
-        param_1->trDuration = (int)(*param_8 * 1000.0);
-        param_1->trBase[0] = *param_6;
-        param_1->trBase[1] = param_6[1];
-        param_1->trBase[2] = param_6[2];
-        param_1->trDelta[0] = *param_2;
-        param_1->trDelta[1] = param_2[1];
-        param_1->trDelta[2] = param_2[2];
-        if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-            (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-           (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+        pTr->trTime = level.time;
+        pTr->trDuration = (int)(*pfMidTime * 1000.0);
+        pTr->trBase[0] = *vCurrPos;
+        pTr->trBase[1] = vCurrPos[1];
+        pTr->trBase[2] = vCurrPos[2];
+        pTr->trDelta[0] = *vSpeed;
+        pTr->trDelta[1] = vSpeed[1];
+        pTr->trDelta[2] = vSpeed[2];
+        if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+            (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+           (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",299,0,
                                    "%s");
           if (!bVar2) {
@@ -482,21 +484,21 @@ ScriptMover_SetupMoveSpeed
             return;
           }
         }
-        param_1->trType = '\x04';
+        pTr->trType = '\x04';
       }
     }
     else {
-      param_1->trTime = level.time;
-      param_1->trDuration = (int)(param_4 * 1000.0);
-      param_1->trBase[0] = *param_6;
-      param_1->trBase[1] = param_6[1];
-      param_1->trBase[2] = param_6[2];
-      param_1->trDelta[0] = *param_2;
-      param_1->trDelta[1] = param_2[1];
-      param_1->trDelta[2] = param_2[2];
-      if (((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) {
+      pTr->trTime = level.time;
+      pTr->trDuration = (int)(fAccelTime * 1000.0);
+      pTr->trBase[0] = *vCurrPos;
+      pTr->trBase[1] = vCurrPos[1];
+      pTr->trBase[2] = vCurrPos[2];
+      pTr->trDelta[0] = *vSpeed;
+      pTr->trDelta[1] = vSpeed[1];
+      pTr->trDelta[2] = vSpeed[2];
+      if (((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x11a,0,
                                  "%s");
         if (!bVar2) {
@@ -505,31 +507,31 @@ ScriptMover_SetupMoveSpeed
           return;
         }
       }
-      param_1->trType = '\b';
-      BG_EvaluateTrajectory(param_1,level.time + param_1->trDuration,param_10);
+      pTr->trType = '\b';
+      BG_EvaluateTrajectory(pTr,level.time + pTr->trDuration,vPos1);
     }
-    fVar3 = *param_8;
-    *param_11 = fVar3 * *param_2 + *param_10;
-    param_11[1] = fVar3 * param_2[1] + param_10[1];
-    param_11[2] = fVar3 * param_2[2] + param_10[2];
-    if (*param_9 == 0.0) {
-      *param_12 = *param_11;
-      param_12[1] = param_11[1];
-      param_12[2] = param_11[2];
+    fVar3 = *pfMidTime;
+    *vPos2 = fVar3 * *vSpeed + *vPos1;
+    vPos2[1] = fVar3 * vSpeed[1] + vPos1[1];
+    vPos2[2] = fVar3 * vSpeed[2] + vPos1[2];
+    if (*pfDecelTime == 0.0) {
+      *vPos3 = *vPos2;
+      vPos3[1] = vPos2[1];
+      vPos3[2] = vPos2[2];
     }
     else {
-      local_28.trType = '\t';
-      local_28.trTime = level.time;
-      local_28.trDuration = (int)(*param_9 * 1000.0);
-      local_28.trBase[0] = *param_11;
-      local_28.trBase[1] = param_11[1];
-      local_28.trBase[2] = param_11[2];
-      local_28.trDelta[0] = *param_2;
-      local_28.trDelta[1] = param_2[1];
-      local_28.trDelta[2] = param_2[2];
-      if (((((uint)local_28.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-          (((uint)local_28.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)local_28.trDelta[2] & 0x7f800000) == 0x7f800000)) {
+      tr.trType = '\t';
+      tr.trTime = level.time;
+      tr.trDuration = (int)(*pfDecelTime * 1000.0);
+      tr.trBase[0] = *vPos2;
+      tr.trBase[1] = vPos2[1];
+      tr.trBase[2] = vPos2[2];
+      tr.trDelta[0] = *vSpeed;
+      tr.trDelta[1] = vSpeed[1];
+      tr.trDelta[2] = vSpeed[2];
+      if (((((uint)tr.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+          (((uint)tr.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)tr.trDelta[2] & 0x7f800000) == 0x7f800000)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x147,0,
                                  "%s");
         if (!bVar2) {
@@ -538,9 +540,9 @@ ScriptMover_SetupMoveSpeed
           return;
         }
       }
-      BG_EvaluateTrajectory(&local_28,level.time + local_28.trDuration,param_12);
+      BG_EvaluateTrajectory(&tr,level.time + tr.trDuration,vPos3);
     }
-    BG_EvaluateTrajectory(param_1,level.time,param_6);
+    BG_EvaluateTrajectory(pTr,level.time,vCurrPos);
   }
   return;
 }
@@ -554,24 +556,23 @@ ScriptMover_SetupMoveSpeed
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-ScriptMover_Move(gentity_s *param_1,float *param_2,float param_3,float param_4,float param_5)
+ScriptMover_Move(gentity_s *pEnt,float *vPos,float fTotalTime,float fAccelTime,float fDecelTime)
 
 {
-  float local_10;
+  float origin;
   float local_c;
   float local_8;
   
-  local_10 = (param_1->r).currentOrigin[0];
-  local_c = (param_1->r).currentOrigin[1];
-  local_8 = (param_1->r).currentOrigin[2];
+  origin = (pEnt->r).currentOrigin[0];
+  local_c = (pEnt->r).currentOrigin[1];
+  local_8 = (pEnt->r).currentOrigin[2];
   ScriptMover_SetupMove
-            (&(param_1->s).lerp.pos,param_2,param_3,param_4,param_5,&local_10,
-             &(param_1->field36_0x21c).mover.speed,&(param_1->field36_0x21c).mover.midTime,
-             (float *)&(param_1->field36_0x21c).corpse,
-             &(param_1->field36_0x21c).trigger.exposureLerpToLighter,
-             (param_1->field36_0x21c).trigger.exposureFeather + 1,
-             (param_1->field36_0x21c).mover.pos3);
-  SV_LinkEntity(param_1);
+            (&(pEnt->s).lerp.pos,vPos,fTotalTime,fAccelTime,fDecelTime,&origin,
+             &(pEnt->field36_0x21c).mover.speed,&(pEnt->field36_0x21c).mover.midTime,
+             (float *)&(pEnt->field36_0x21c).corpse,
+             &(pEnt->field36_0x21c).trigger.exposureLerpToLighter,
+             (pEnt->field36_0x21c).trigger.exposureFeather + 1,(pEnt->field36_0x21c).mover.pos3);
+  SV_LinkEntity(pEnt);
   return;
 }
 
@@ -583,14 +584,15 @@ ScriptMover_Move(gentity_s *param_1,float *param_2,float param_3,float param_4,f
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptMover_GravityMove(gentity_s *param_1,float *param_2,float param_3)
+void __cdecl ScriptMover_GravityMove(gentity_s *mover,float *velocity,float totalTime)
 
 {
   code *pcVar1;
   bool bVar2;
-  trajectory_t *ptVar3;
+  trajectory_t *tr;
+  trajectory_t *trajectory;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (mover == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x164,0,"%s"
                             );
     if (!bVar2) {
@@ -599,9 +601,9 @@ void __cdecl ScriptMover_GravityMove(gentity_s *param_1,float *param_2,float par
       return;
     }
   }
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*velocity & 0x7f800000) == 0x7f800000) ||
+      (((uint)velocity[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)velocity[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x165,0,"%s"
                             );
     if (!bVar2) {
@@ -610,18 +612,18 @@ void __cdecl ScriptMover_GravityMove(gentity_s *param_1,float *param_2,float par
       return;
     }
   }
-  ptVar3 = &(param_1->s).lerp.pos;
-  (param_1->s).lerp.pos.trTime = level.time;
-  (param_1->s).lerp.pos.trDuration = (int)(param_3 * 1000.0);
-  (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-  (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-  (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-  (param_1->s).lerp.pos.trDelta[0] = *param_2;
-  (param_1->s).lerp.pos.trDelta[1] = param_2[1];
-  (param_1->s).lerp.pos.trDelta[2] = param_2[2];
-  if (((((uint)(param_1->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)(param_1->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)(param_1->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
+  tr = &(mover->s).lerp.pos;
+  (mover->s).lerp.pos.trTime = level.time;
+  (mover->s).lerp.pos.trDuration = (int)(totalTime * 1000.0);
+  (mover->s).lerp.pos.trBase[0] = (mover->r).currentOrigin[0];
+  (mover->s).lerp.pos.trBase[1] = (mover->r).currentOrigin[1];
+  (mover->s).lerp.pos.trBase[2] = (mover->r).currentOrigin[2];
+  (mover->s).lerp.pos.trDelta[0] = *velocity;
+  (mover->s).lerp.pos.trDelta[1] = velocity[1];
+  (mover->s).lerp.pos.trDelta[2] = velocity[2];
+  if (((((uint)(mover->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)(mover->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)(mover->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x16f,0,"%s"
                             );
     if (!bVar2) {
@@ -630,9 +632,9 @@ void __cdecl ScriptMover_GravityMove(gentity_s *param_1,float *param_2,float par
       return;
     }
   }
-  ptVar3->trType = '\x06';
-  BG_EvaluateTrajectory(ptVar3,level.time,(param_1->r).currentOrigin);
-  SV_LinkEntity(param_1);
+  tr->trType = '\x06';
+  BG_EvaluateTrajectory(tr,level.time,(mover->r).currentOrigin);
+  SV_LinkEntity(mover);
   return;
 }
 
@@ -645,22 +647,22 @@ void __cdecl ScriptMover_GravityMove(gentity_s *param_1,float *param_2,float par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-ScriptMover_Rotate(gentity_s *param_1,float *param_2,float param_3,float param_4,float param_5)
+ScriptMover_Rotate(gentity_s *pEnt,float *vRot,float fTotalTime,float fAccelTime,float fDecelTime)
 
 {
-  float local_10;
+  float angles;
   float local_c;
   float local_8;
   
-  local_10 = (param_1->r).currentAngles[0];
-  local_c = (param_1->r).currentAngles[1];
-  local_8 = (param_1->r).currentAngles[2];
+  angles = (pEnt->r).currentAngles[0];
+  local_c = (pEnt->r).currentAngles[1];
+  local_8 = (pEnt->r).currentAngles[2];
   ScriptMover_SetupMove
-            (&(param_1->s).lerp.apos,param_2,param_3,param_4,param_5,&local_10,
-             &(param_1->field36_0x21c).mover.aSpeed,&(param_1->field36_0x21c).mover.aMidTime,
-             &(param_1->field36_0x21c).mover.aDecelTime,(param_1->field36_0x21c).mover.apos1,
-             (param_1->field36_0x21c).mover.apos2,(param_1->field36_0x21c).mover.apos3);
-  SV_LinkEntity(param_1);
+            (&(pEnt->s).lerp.apos,vRot,fTotalTime,fAccelTime,fDecelTime,&angles,
+             &(pEnt->field36_0x21c).mover.aSpeed,&(pEnt->field36_0x21c).mover.aMidTime,
+             &(pEnt->field36_0x21c).mover.aDecelTime,(pEnt->field36_0x21c).mover.apos1,
+             (pEnt->field36_0x21c).mover.apos2,(pEnt->field36_0x21c).mover.apos3);
+  SV_LinkEntity(pEnt);
   return;
 }
 
@@ -673,15 +675,16 @@ ScriptMover_Rotate(gentity_s *param_1,float *param_2,float param_3,float param_4
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-ScriptMover_RotateSpeed(gentity_s *param_1,float *param_2,float param_3,float param_4,float param_5)
+ScriptMover_RotateSpeed
+          (gentity_s *pEnt,float *vRotSpeed,float fTotalTime,float fAccelTime,float fDecelTime)
 
 {
   ScriptMover_SetupMoveSpeed
-            (&(param_1->s).lerp.apos,param_2,param_3,param_4,param_5,(param_1->r).currentAngles,
-             &(param_1->field36_0x21c).mover.aSpeed,&(param_1->field36_0x21c).mover.aMidTime,
-             &(param_1->field36_0x21c).mover.aDecelTime,(param_1->field36_0x21c).mover.apos1,
-             (param_1->field36_0x21c).mover.apos2,(param_1->field36_0x21c).mover.apos3);
-  SV_LinkEntity(param_1);
+            (&(pEnt->s).lerp.apos,vRotSpeed,fTotalTime,fAccelTime,fDecelTime,(pEnt->r).currentAngles
+             ,&(pEnt->field36_0x21c).mover.aSpeed,&(pEnt->field36_0x21c).mover.aMidTime,
+             &(pEnt->field36_0x21c).mover.aDecelTime,(pEnt->field36_0x21c).mover.apos1,
+             (pEnt->field36_0x21c).mover.apos2,(pEnt->field36_0x21c).mover.apos3);
+  SV_LinkEntity(pEnt);
   return;
 }
 
@@ -693,22 +696,22 @@ ScriptMover_RotateSpeed(gentity_s *param_1,float *param_2,float param_3,float pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl InitScriptMover(gentity_s *param_1)
+void __cdecl InitScriptMover(gentity_s *pSelf)
 
 {
-  param_1->handler = '\b';
-  (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 0x10;
-  (param_1->r).svFlags = '\0';
-  (param_1->s).eType = 6;
-  (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-  (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-  (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-  (param_1->s).lerp.pos.trType = '\0';
-  (param_1->s).lerp.apos.trBase[0] = (param_1->r).currentAngles[0];
-  (param_1->s).lerp.apos.trBase[1] = (param_1->r).currentAngles[1];
-  (param_1->s).lerp.apos.trBase[2] = (param_1->r).currentAngles[2];
-  (param_1->s).lerp.apos.trType = '\0';
-  param_1->flags = param_1->flags | 0x1000;
+  pSelf->handler = '\b';
+  (pSelf->s).lerp.eFlags = (pSelf->s).lerp.eFlags | 0x10;
+  (pSelf->r).svFlags = '\0';
+  (pSelf->s).eType = 6;
+  (pSelf->s).lerp.pos.trBase[0] = (pSelf->r).currentOrigin[0];
+  (pSelf->s).lerp.pos.trBase[1] = (pSelf->r).currentOrigin[1];
+  (pSelf->s).lerp.pos.trBase[2] = (pSelf->r).currentOrigin[2];
+  (pSelf->s).lerp.pos.trType = '\0';
+  (pSelf->s).lerp.apos.trBase[0] = (pSelf->r).currentAngles[0];
+  (pSelf->s).lerp.apos.trBase[1] = (pSelf->r).currentAngles[1];
+  (pSelf->s).lerp.apos.trBase[2] = (pSelf->r).currentAngles[2];
+  (pSelf->s).lerp.apos.trType = '\0';
+  pSelf->flags = pSelf->flags | 0x1000;
   return;
 }
 
@@ -720,23 +723,23 @@ void __cdecl InitScriptMover(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_script_brushmodel(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_script_brushmodel(gentity_s *self,SpawnVar *spawnVar)
 
 {
   bool bVar1;
   
-  bVar1 = SV_SetBrushModel(param_1);
+  bVar1 = SV_SetBrushModel(self);
   if (bVar1) {
-    InitScriptMover(param_1);
-    SV_LinkEntity(param_1);
-    if ((param_1->spawnflags & 1U) != 0) {
-      param_1->flags = param_1->flags | 0x40000800;
+    InitScriptMover(self);
+    SV_LinkEntity(self);
+    if ((self->spawnflags & 1U) != 0) {
+      self->flags = self->flags | 0x40000800;
     }
   }
   else {
     Com_PrintError(1,"Killing script_brushmodel at (%f %f %f) because the brush model is invalid.\n"
                   );
-    G_FreeEntity(param_1);
+    G_FreeEntity(self);
   }
   return;
 }
@@ -749,26 +752,27 @@ void __cdecl SP_script_brushmodel(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_script_model(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_script_model(gentity_s *pSelf,SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  uint uVar4;
+  DObj *obj_00;
+  uint uVar3;
+  DObj *obj;
   
-  G_DObjUpdate(param_1);
-  InitScriptMover(param_1);
-  (param_1->r).svFlags = (param_1->r).svFlags | 4;
-  (param_1->r).contents = 0x2080;
-  pDVar3 = Com_GetServerDObj((param_1->s).number);
-  if (pDVar3 != (DObj *)0x0) {
-    uVar4 = DObjGetContents(pDVar3);
-    (param_1->r).contents = uVar4 | (param_1->r).contents;
-    DObjCalcBounds(pDVar3,(param_1->r).mins,(param_1->r).maxs);
+  G_DObjUpdate(pSelf);
+  InitScriptMover(pSelf);
+  (pSelf->r).svFlags = (pSelf->r).svFlags | 4;
+  (pSelf->r).contents = 0x2080;
+  obj_00 = Com_GetServerDObj((pSelf->s).number);
+  if (obj_00 != (DObj *)0x0) {
+    uVar3 = DObjGetContents(obj_00);
+    (pSelf->r).contents = uVar3 | (pSelf->r).contents;
+    DObjCalcBounds(obj_00,(pSelf->r).mins,(pSelf->r).maxs);
   }
-  SV_LinkEntity(param_1);
-  if (param_1->handler != '\b') {
+  SV_LinkEntity(pSelf);
+  if (pSelf->handler != '\b') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x1dc,0,"%s"
                             );
     if (!bVar2) {
@@ -777,9 +781,9 @@ void __cdecl SP_script_model(gentity_s *param_1,SpawnVar *param_2)
       return;
     }
   }
-  param_1->handler = '\t';
-  if ((param_1->spawnflags & 1U) != 0) {
-    param_1->flags = param_1->flags | 0x40000800;
+  pSelf->handler = '\t';
+  if ((pSelf->spawnflags & 1U) != 0) {
+    pSelf->flags = pSelf->flags | 0x40000800;
   }
   return;
 }
@@ -792,13 +796,13 @@ void __cdecl SP_script_model(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_script_origin(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_script_origin(gentity_s *pSelf,SpawnVar *spawnVar)
 
 {
-  InitScriptMover(param_1);
-  (param_1->r).contents = 0;
-  SV_LinkEntity(param_1);
-  (param_1->r).svFlags = (param_1->r).svFlags | 1;
+  InitScriptMover(pSelf);
+  (pSelf->r).contents = 0;
+  SV_LinkEntity(pSelf);
+  (pSelf->r).svFlags = (pSelf->r).svFlags | 1;
   return;
 }
 
@@ -810,15 +814,15 @@ void __cdecl SP_script_origin(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl GetEntity(scr_entref_t param_1)
+gentity_s * __cdecl GetEntity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   
-  if (param_1.classnum == 0) {
-    if (0x3ff < param_1.entnum) {
+  if (entref.classnum == 0) {
+    if (0x3ff < entref.entnum) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x214,0,
                                "%s");
       if (!bVar2) {
@@ -827,7 +831,7 @@ gentity_s * __cdecl GetEntity(scr_entref_t param_1)
         return pgVar3;
       }
     }
-    pgVar3 = g_entities + param_1.entnum;
+    pgVar3 = g_entities + entref.entnum;
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
@@ -839,45 +843,47 @@ gentity_s * __cdecl GetEntity(scr_entref_t param_1)
 
 // 00663290  ScriptEntCmdGetCommandTimes  (game/g_scr_mover.cpp:544)
 
-void __cdecl ScriptEntCmdGetCommandTimes(float *param_1,float *param_2,float *param_3)
+void __cdecl ScriptEntCmdGetCommandTimes(float *pfTotalTime,float *pfAccelTime,float *pfDecelTime)
 
 {
   uint uVar1;
   float fVar2;
+  float fTotalTimeRoundedUp;
+  int iNumParms;
   
   fVar2 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  *param_1 = fVar2;
-  if (*param_1 <= 0.0) {
+  *pfTotalTime = fVar2;
+  if (*pfTotalTime <= 0.0) {
     Scr_ParamError(1,"total time must be positive",SCRIPTINSTANCE_SERVER);
   }
-  if (*param_1 <= 0.001 && *param_1 != 0.001) {
-    *param_1 = 0.001;
+  if (*pfTotalTime <= 0.001 && *pfTotalTime != 0.001) {
+    *pfTotalTime = 0.001;
   }
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((int)uVar1 < 3) {
-    *param_2 = 0.0;
-    *param_3 = 0.0;
+    *pfAccelTime = 0.0;
+    *pfDecelTime = 0.0;
   }
   else {
     fVar2 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-    *param_2 = fVar2;
-    if (*param_2 <= 0.0 && *param_2 != 0.0) {
+    *pfAccelTime = fVar2;
+    if (*pfAccelTime <= 0.0 && *pfAccelTime != 0.0) {
       Scr_ParamError(2,"accel time must be nonnegative",SCRIPTINSTANCE_SERVER);
     }
     if ((int)uVar1 < 4) {
-      *param_3 = 0.0;
+      *pfDecelTime = 0.0;
     }
     else {
       fVar2 = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-      *param_3 = fVar2;
-      if (*param_3 <= 0.0 && *param_3 != 0.0) {
+      *pfDecelTime = fVar2;
+      if (*pfDecelTime <= 0.0 && *pfDecelTime != 0.0) {
         Scr_ParamError(3,"decel time must be nonnegative",SCRIPTINSTANCE_SERVER);
       }
     }
   }
-  if (*param_1 <= *param_2 + *param_3 && *param_2 + *param_3 != *param_1) {
-    if (*param_2 + *param_3 <= *param_1 * 1.0000005) {
-      *param_1 = *param_1 * 1.0000005;
+  if (*pfTotalTime <= *pfAccelTime + *pfDecelTime && *pfAccelTime + *pfDecelTime != *pfTotalTime) {
+    if (*pfAccelTime + *pfDecelTime <= *pfTotalTime * 1.0000005) {
+      *pfTotalTime = *pfTotalTime * 1.0000005;
     }
     else {
       Scr_Error("accel time plus decel time is greater than total time",false);
@@ -894,46 +900,46 @@ void __cdecl ScriptEntCmdGetCommandTimes(float *param_1,float *param_2,float *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_MoveTo(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_MoveTo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10 [3];
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float fTotalTime;
+  float fAccelTime;
+  float fDecelTime;
+  float vPos [3];
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x264,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_20 = g_entities + uVar4;
-    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar4].classname != scr_const.script_model)) &&
-        (g_entities[uVar4].classname != scr_const.script_origin)) &&
-       (g_entities[uVar4].classname != scr_const.light)) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar5);
+    uVar3 = (uint)entref.entnum;
+    pSelf = g_entities + uVar3;
+    if ((((g_entities[uVar3].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar3].classname != scr_const.script_model)) &&
+        (g_entities[uVar3].classname != scr_const.script_origin)) &&
+       (g_entities[uVar3].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_20 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  ScriptEntCmdGetCommandTimes(&local_1c,&local_18,&local_14);
-  ScriptMover_Move(local_20,local_10,local_1c,local_18,local_14);
+  Scr_GetVector(0,vPos,SCRIPTINSTANCE_SERVER);
+  ScriptEntCmdGetCommandTimes(&fTotalTime,&fAccelTime,&fDecelTime);
+  ScriptMover_Move(pSelf,vPos,fTotalTime,fAccelTime,fDecelTime);
   return;
 }
 
@@ -945,52 +951,52 @@ void __cdecl ScriptEntCmd_MoveTo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_GravityMove(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_GravityMove(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   uint uVar4;
-  scriptInstance_t sVar5;
-  float local_18;
+  scriptInstance_t inst;
+  float velocity;
   uint local_14;
   uint local_10;
-  gentity_s *local_c;
-  float local_8;
+  gentity_s *pSelf;
+  float fTotalTime;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x27d,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_c = g_entities + uVar4;
+    uVar4 = (uint)entref.entnum;
+    pSelf = g_entities + uVar4;
     if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
          (g_entities[uVar4].classname != scr_const.script_model)) &&
         (g_entities[uVar4].classname != scr_const.script_origin)) &&
        (g_entities[uVar4].classname != scr_const.light)) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,&local_18,SCRIPTINSTANCE_SERVER);
-  if (((((uint)local_18 & 0x7f800000) == 0x7f800000) || ((local_14 & 0x7f800000) == 0x7f800000)) ||
+  Scr_GetVector(0,&velocity,SCRIPTINSTANCE_SERVER);
+  if (((((uint)velocity & 0x7f800000) == 0x7f800000) || ((local_14 & 0x7f800000) == 0x7f800000)) ||
      ((local_10 & 0x7f800000) == 0x7f800000)) {
     bVar2 = false;
     pcVar3 = va("invalid velocity parameter in movegravity command: %f %f %f");
     Scr_Error(pcVar3,bVar2);
   }
-  local_8 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  ScriptMover_GravityMove(local_c,&local_18,local_8);
+  fTotalTime = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  ScriptMover_GravityMove(pSelf,&velocity,fTotalTime);
   return;
 }
 
@@ -1002,80 +1008,96 @@ void __cdecl ScriptEntCmd_GravityMove(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEnt_MoveAxis(scr_entref_t param_1,int param_2)
+void __cdecl ScriptEnt_MoveAxis(scr_entref_t entref,int iAxis)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14 [4];
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float fTotalTime;
+  float fAccelTime;
+  float fDecelTime;
+  float vPos [3];
+  float fMove;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x290,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_24 = g_entities + uVar4;
-    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar4].classname != scr_const.script_model)) &&
-        (g_entities[uVar4].classname != scr_const.script_origin)) &&
-       (g_entities[uVar4].classname != scr_const.light)) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar5);
+    uVar3 = (uint)entref.entnum;
+    pSelf = g_entities + uVar3;
+    if ((((g_entities[uVar3].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar3].classname != scr_const.script_model)) &&
+        (g_entities[uVar3].classname != scr_const.script_origin)) &&
+       (g_entities[uVar3].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_14[3] = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  ScriptEntCmdGetCommandTimes(&local_20,&local_1c,&local_18);
-  local_14[0] = (local_24->r).currentOrigin[0];
-  local_14[1] = (local_24->r).currentOrigin[1];
-  local_14[2] = (local_24->r).currentOrigin[2];
-  local_14[param_2] = local_14[param_2] + local_14[3];
-  ScriptMover_Move(local_24,local_14,local_20,local_1c,local_18);
+  fMove = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  ScriptEntCmdGetCommandTimes(&fTotalTime,&fAccelTime,&fDecelTime);
+  vPos[0] = (pSelf->r).currentOrigin[0];
+  vPos[1] = (pSelf->r).currentOrigin[1];
+  vPos[2] = (pSelf->r).currentOrigin[2];
+  vPos[iAxis] = vPos[iAxis] + fMove;
+  ScriptMover_Move(pSelf,vPos,fTotalTime,fAccelTime,fDecelTime);
   return;
 }
 
 
 // 00664380  ScriptEntCmd_MoveX  (game/g_scr_mover.cpp:683)
 
-void __cdecl ScriptEntCmd_MoveX(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_MoveX(scr_entref_t entref)
 
 {
-  ScriptEnt_MoveAxis(param_1,0);
+  ScriptEnt_MoveAxis(entref,0);
   return;
 }
 
 
 // 006643B0  ScriptEntCmd_MoveY  (game/g_scr_mover.cpp:703)
 
-void __cdecl ScriptEntCmd_MoveY(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_MoveY(scr_entref_t entref)
 
 {
-  ScriptEnt_MoveAxis(param_1,1);
+  ScriptEnt_MoveAxis(entref,1);
   return;
 }
 
 
 // 006643E0  ScriptEntCmd_MoveZ  (game/g_scr_mover.cpp:723)
 
-void __cdecl ScriptEntCmd_MoveZ(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_MoveZ(scr_entref_t entref)
 
 {
-  ScriptEnt_MoveAxis(param_1,2);
+  ScriptEnt_MoveAxis(entref,2);
   return;
 }
 
@@ -1087,52 +1109,53 @@ void __cdecl ScriptEntCmd_MoveZ(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_RotateTo(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_RotateTo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  float fVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_30;
-  float local_2c;
-  float local_28;
-  float local_24 [4];
-  float local_14 [3];
-  int local_8;
+  char *error;
+  uint uVar3;
+  float fVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float fTotalTime;
+  float fAccelTime;
+  float vDest [3];
+  float fDecelTime;
+  float vRot [3];
+  int i;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x2ef,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_30 = g_entities + uVar4;
-    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar4].classname != scr_const.script_model)) &&
-        (g_entities[uVar4].classname != scr_const.script_origin)) &&
-       (g_entities[uVar4].classname != scr_const.light)) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar6);
+    uVar3 = (uint)entref.entnum;
+    pSelf = g_entities + uVar3;
+    if ((((g_entities[uVar3].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar3].classname != scr_const.script_model)) &&
+        (g_entities[uVar3].classname != scr_const.script_origin)) &&
+       (g_entities[uVar3].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_30 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,local_24,SCRIPTINSTANCE_SERVER);
-  ScriptEntCmdGetCommandTimes(&local_2c,&local_28,local_24 + 3);
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    fVar5 = AngleNormalize180(local_24[local_8] - (local_30->r).currentAngles[local_8]);
-    local_14[local_8] = (local_30->r).currentAngles[local_8] + fVar5;
+  Scr_GetVector(0,vDest,SCRIPTINSTANCE_SERVER);
+  ScriptEntCmdGetCommandTimes(&fTotalTime,&fAccelTime,&fDecelTime);
+  for (i = 0; i < 3; i = i + 1) {
+    fVar4 = AngleNormalize180(vDest[i] - (pSelf->r).currentAngles[i]);
+    vRot[i] = (pSelf->r).currentAngles[i] + fVar4;
   }
-  ScriptMover_Rotate(local_30,local_14,local_2c,local_28,local_24[3]);
+  ScriptMover_Rotate(pSelf,vRot,fTotalTime,fAccelTime,fDecelTime);
   return;
 }
 
@@ -1144,77 +1167,75 @@ void __cdecl ScriptEntCmd_RotateTo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEnt_DevAddRotate(scr_entref_t param_1,int param_2)
+void __cdecl ScriptEnt_DevAddRotate(scr_entref_t entref,int iAxis)
 
 {
   code *pcVar1;
   float10 fVar2;
   bool bVar3;
   uint uVar4;
-  char *pcVar5;
-  float10 fVar6;
-  scriptInstance_t sVar7;
-  int local_60;
-  gentity_s *local_5c;
-  float local_58 [9];
-  float local_34;
-  float local_30 [9];
-  float local_c;
-  float local_8;
+  char *error;
+  float10 fVar5;
+  scriptInstance_t inst;
+  int i;
+  gentity_s *pSelf;
+  float axisOut [9];
+  float fDelta;
+  float axisIn [9];
+  float fCos;
+  float fSin;
   
-  if (((param_2 < 0) || (2 < param_2)) &&
+  if (((iAxis < 0) || (2 < iAxis)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x305,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x307,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_5c = g_entities + uVar4;
+    uVar4 = (uint)entref.entnum;
+    pSelf = g_entities + uVar4;
     if (((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
         (g_entities[uVar4].classname != scr_const.script_model)) &&
        ((g_entities[uVar4].classname != scr_const.script_origin &&
         (g_entities[uVar4].classname != scr_const.light)))) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      pcVar5 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar5,sVar7);
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_5c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 1) {
-    local_34 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    fVar2 = (float10)fcos((float10)(local_34 * 0.017453292));
-    fVar6 = (float10)fsin((float10)(local_34 * 0.017453292));
-    local_c = (float)fVar2;
-    local_8 = (float)fVar6;
-    AnglesToAxis((local_5c->r).currentAngles,(float (*) [3])local_30);
-    for (local_60 = 0; local_60 < 3; local_60 = local_60 + 1) {
-      local_58[param_2 * 3 + local_60] = local_30[param_2 * 3 + local_60];
-      local_58[((param_2 + 1) % 3) * 3 + local_60] =
-           local_30[((param_2 + 1) % 3) * 3 + local_60] * local_c +
-           local_30[((param_2 + 2) % 3) * 3 + local_60] * local_8;
-      local_58[((param_2 + 2) % 3) * 3 + local_60] =
-           local_30[((param_2 + 2) % 3) * 3 + local_60] * local_c -
-           local_30[((param_2 + 1) % 3) * 3 + local_60] * local_8;
+    fDelta = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+    fVar2 = (float10)fcos((float10)(fDelta * 0.017453292));
+    fVar5 = (float10)fsin((float10)(fDelta * 0.017453292));
+    fCos = (float)fVar2;
+    fSin = (float)fVar5;
+    AnglesToAxis((pSelf->r).currentAngles,(float (*) [3])axisIn);
+    for (i = 0; i < 3; i = i + 1) {
+      axisOut[iAxis * 3 + i] = axisIn[iAxis * 3 + i];
+      axisOut[((iAxis + 1) % 3) * 3 + i] =
+           axisIn[((iAxis + 1) % 3) * 3 + i] * fCos + axisIn[((iAxis + 2) % 3) * 3 + i] * fSin;
+      axisOut[((iAxis + 2) % 3) * 3 + i] =
+           axisIn[((iAxis + 2) % 3) * 3 + i] * fCos - axisIn[((iAxis + 1) % 3) * 3 + i] * fSin;
     }
-    AxisToAngles((float (*) [3])local_58,(local_5c->r).currentAngles);
-    (local_5c->s).lerp.apos.trType = '\0';
-    (local_5c->s).lerp.apos.trBase[0] = (local_5c->r).currentAngles[0];
-    (local_5c->s).lerp.apos.trBase[1] = (local_5c->r).currentAngles[1];
-    (local_5c->s).lerp.apos.trBase[2] = (local_5c->r).currentAngles[2];
-    SV_LinkEntity(local_5c);
+    AxisToAngles((float (*) [3])axisOut,(pSelf->r).currentAngles);
+    (pSelf->s).lerp.apos.trType = '\0';
+    (pSelf->s).lerp.apos.trBase[0] = (pSelf->r).currentAngles[0];
+    (pSelf->s).lerp.apos.trBase[1] = (pSelf->r).currentAngles[1];
+    (pSelf->s).lerp.apos.trBase[2] = (pSelf->r).currentAngles[2];
+    SV_LinkEntity(pSelf);
   }
   else {
     Scr_Error("ScriptEnt_ProtoAddRotate: expect exactly one parameter.",false);
@@ -1225,30 +1246,45 @@ void __cdecl ScriptEnt_DevAddRotate(scr_entref_t param_1,int param_2)
 
 // 00664670  ScriptEntCmd_DevAddPitch  (game/g_scr_mover.cpp:819)
 
-void __cdecl ScriptEntCmd_DevAddPitch(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_DevAddPitch(scr_entref_t entref)
 
 {
-  ScriptEnt_DevAddRotate(param_1,1);
+  ScriptEnt_DevAddRotate(entref,1);
   return;
 }
 
 
 // 006649A0  ScriptEntCmd_DevAddYaw  (game/g_scr_mover.cpp:838)
 
-void __cdecl ScriptEntCmd_DevAddYaw(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_DevAddYaw(scr_entref_t entref)
 
 {
-  ScriptEnt_DevAddRotate(param_1,2);
+  ScriptEnt_DevAddRotate(entref,2);
   return;
 }
 
 
 // 006649D0  ScriptEntCmd_DevAddRoll  (game/g_scr_mover.cpp:857)
 
-void __cdecl ScriptEntCmd_DevAddRoll(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_DevAddRoll(scr_entref_t entref)
 
 {
-  ScriptEnt_DevAddRotate(param_1,0);
+  ScriptEnt_DevAddRotate(entref,0);
   return;
 }
 
@@ -1260,170 +1296,185 @@ void __cdecl ScriptEntCmd_DevAddRoll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEnt_RotateAxis(scr_entref_t param_1,int param_2)
+void __cdecl ScriptEnt_RotateAxis(scr_entref_t entref,int iAxis)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14 [4];
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float fTotalTime;
+  float fAccelTime;
+  float fDecelTime;
+  float vRot [3];
+  float fMove;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x368,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_24 = g_entities + uVar4;
-    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar4].classname != scr_const.script_model)) &&
-        (g_entities[uVar4].classname != scr_const.script_origin)) &&
-       (g_entities[uVar4].classname != scr_const.light)) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar5);
+    uVar3 = (uint)entref.entnum;
+    pSelf = g_entities + uVar3;
+    if ((((g_entities[uVar3].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar3].classname != scr_const.script_model)) &&
+        (g_entities[uVar3].classname != scr_const.script_origin)) &&
+       (g_entities[uVar3].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_14[3] = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  ScriptEntCmdGetCommandTimes(&local_20,&local_1c,&local_18);
-  local_14[0] = (local_24->r).currentAngles[0];
-  local_14[1] = (local_24->r).currentAngles[1];
-  local_14[2] = (local_24->r).currentAngles[2];
-  local_14[param_2] = local_14[param_2] + local_14[3];
-  ScriptMover_Rotate(local_24,local_14,local_20,local_1c,local_18);
+  fMove = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  ScriptEntCmdGetCommandTimes(&fTotalTime,&fAccelTime,&fDecelTime);
+  vRot[0] = (pSelf->r).currentAngles[0];
+  vRot[1] = (pSelf->r).currentAngles[1];
+  vRot[2] = (pSelf->r).currentAngles[2];
+  vRot[iAxis] = vRot[iAxis] + fMove;
+  ScriptMover_Rotate(pSelf,vRot,fTotalTime,fAccelTime,fDecelTime);
   return;
 }
 
 
 // 00664B80  ScriptEntCmd_RotatePitch  (game/g_scr_mover.cpp:899)
 
-void __cdecl ScriptEntCmd_RotatePitch(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_RotatePitch(scr_entref_t entref)
 
 {
-  ScriptEnt_RotateAxis(param_1,0);
+  ScriptEnt_RotateAxis(entref,0);
   return;
 }
 
 
 // 00664BB0  ScriptEntCmd_RotateYaw  (game/g_scr_mover.cpp:919)
 
-void __cdecl ScriptEntCmd_RotateYaw(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_RotateYaw(scr_entref_t entref)
 
 {
-  ScriptEnt_RotateAxis(param_1,1);
+  ScriptEnt_RotateAxis(entref,1);
   return;
 }
 
 
 // 00664BE0  ScriptEntCmd_RotateRoll  (game/g_scr_mover.cpp:939)
 
-void __cdecl ScriptEntCmd_RotateRoll(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl ScriptEntCmd_RotateRoll(scr_entref_t entref)
 
 {
-  ScriptEnt_RotateAxis(param_1,2);
+  ScriptEnt_RotateAxis(entref,2);
   return;
 }
 
 
 // 00664C10  ScriptEntCmd_Vibrate  (game/g_scr_mover.cpp:957)
 
-/* WARNING: Type propagation algorithm not settling */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_Vibrate(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_Vibrate(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_60;
-  float local_5c;
+  char *error_00;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float impulseVector;
   float local_58;
   float local_54;
-  float local_50;
-  float local_4c;
+  float amplitude;
+  float scaledImpulseVector;
   float local_48;
   float local_44;
-  char *local_40;
-  float local_3c;
-  float local_2c;
-  float local_28;
+  char *error;
+  float time;
+  float period;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
   float local_18;
   float local_14;
   
-  local_40 = "illegal call to vibrate()\n";
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  error = "illegal call to vibrate()\n";
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x3cc,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_60 = g_entities + uVar4;
-    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar4].classname != scr_const.script_model)) &&
-        (g_entities[uVar4].classname != scr_const.script_origin)) &&
-       (g_entities[uVar4].classname != scr_const.light)) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar5);
+    uVar3 = (uint)entref.entnum;
+    pSelf = g_entities + uVar3;
+    if ((((g_entities[uVar3].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar3].classname != scr_const.script_model)) &&
+        (g_entities[uVar3].classname != scr_const.script_origin)) &&
+       (g_entities[uVar3].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error_00 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error_00,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_60 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 == 4) {
-    Scr_GetVector(0,&local_5c,SCRIPTINSTANCE_SERVER);
-    local_50 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    local_2c = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-    local_3c = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
-    Vec3Normalize(&local_5c);
-    local_4c = local_50 * local_5c;
-    local_48 = local_50 * local_58;
-    local_44 = local_50 * local_54;
-    AnglesToAxis((local_60->r).currentAngles,(float (*) [3])&local_28);
-    (local_60->field36_0x21c).item[7].ammoCount = (int)(local_60->r).currentAngles[0];
-    (local_60->field36_0x21c).item[7].clipAmmoCount = (int)(local_60->r).currentAngles[1];
-    (local_60->field36_0x21c).item[7].index = (int)(local_60->r).currentAngles[2];
-    (local_60->s).lerp.apos.trDuration = (int)(local_2c * 1000.0);
-    (local_60->s).lerp.apos.trTime = (int)(local_3c * 1000.0) + level.time;
-    (local_60->s).lerp.apos.trBase[0] = (local_60->r).currentAngles[0];
-    (local_60->s).lerp.apos.trBase[1] = (local_60->r).currentAngles[1];
-    (local_60->s).lerp.apos.trBase[2] = (local_60->r).currentAngles[2];
-    (local_60->s).lerp.apos.trDelta[0] =
-         local_28 * local_4c + local_24 * local_48 + local_20 * local_44;
-    (local_60->s).lerp.apos.trDelta[1] = 0.0;
-    (local_60->s).lerp.apos.trDelta[2] =
-         -(local_1c * local_4c + local_18 * local_48 + local_14 * local_44);
-    (local_60->s).lerp.apos.trType = '\x05';
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 == 4) {
+    Scr_GetVector(0,&impulseVector,SCRIPTINSTANCE_SERVER);
+    amplitude = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    period = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+    time = Scr_GetFloat(3,SCRIPTINSTANCE_SERVER);
+    Vec3Normalize(&impulseVector);
+    scaledImpulseVector = amplitude * impulseVector;
+    local_48 = amplitude * local_58;
+    local_44 = amplitude * local_54;
+    AnglesToAxis((pSelf->r).currentAngles,(float (*) [3])&axis);
+    (pSelf->field36_0x21c).item[7].ammoCount = (int)(pSelf->r).currentAngles[0];
+    (pSelf->field36_0x21c).item[7].clipAmmoCount = (int)(pSelf->r).currentAngles[1];
+    (pSelf->field36_0x21c).item[7].index = (int)(pSelf->r).currentAngles[2];
+    (pSelf->s).lerp.apos.trDuration = (int)(period * 1000.0);
+    (pSelf->s).lerp.apos.trTime = (int)(time * 1000.0) + level.time;
+    (pSelf->s).lerp.apos.trBase[0] = (pSelf->r).currentAngles[0];
+    (pSelf->s).lerp.apos.trBase[1] = (pSelf->r).currentAngles[1];
+    (pSelf->s).lerp.apos.trBase[2] = (pSelf->r).currentAngles[2];
+    (pSelf->s).lerp.apos.trDelta[0] =
+         axis * scaledImpulseVector + local_24 * local_48 + local_20 * local_44;
+    (pSelf->s).lerp.apos.trDelta[1] = 0.0;
+    (pSelf->s).lerp.apos.trDelta[2] =
+         -(local_1c * scaledImpulseVector + local_18 * local_48 + local_14 * local_44);
+    (pSelf->s).lerp.apos.trType = '\x05';
   }
   else {
-    Scr_Error(local_40,false);
+    Scr_Error(error,false);
   }
   return;
 }
@@ -1436,46 +1487,46 @@ void __cdecl ScriptEntCmd_Vibrate(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_RotateVelocity(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_RotateVelocity(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10 [3];
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float fTotalTime;
+  float fAccelTime;
+  float fDecelTime;
+  float vSpeed [3];
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x403,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar4 = (uint)param_1.entnum;
-    local_20 = g_entities + uVar4;
-    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar4].classname != scr_const.script_model)) &&
-        (g_entities[uVar4].classname != scr_const.script_origin)) &&
-       (g_entities[uVar4].classname != scr_const.light)) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar5);
+    uVar3 = (uint)entref.entnum;
+    pSelf = g_entities + uVar3;
+    if ((((g_entities[uVar3].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar3].classname != scr_const.script_model)) &&
+        (g_entities[uVar3].classname != scr_const.script_origin)) &&
+       (g_entities[uVar3].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_20 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  ScriptEntCmdGetCommandTimes(&local_1c,&local_18,&local_14);
-  ScriptMover_RotateSpeed(local_20,local_10,local_1c,local_18,local_14);
+  Scr_GetVector(0,vSpeed,SCRIPTINSTANCE_SERVER);
+  ScriptEntCmdGetCommandTimes(&fTotalTime,&fAccelTime,&fDecelTime);
+  ScriptMover_RotateSpeed(pSelf,vSpeed,fTotalTime,fAccelTime,fDecelTime);
   return;
 }
 
@@ -1487,20 +1538,21 @@ void __cdecl ScriptEntCmd_RotateVelocity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_SetCanDamage(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_SetCanDamage(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  gentity_s *local_10;
-  uchar local_8;
+  gentity_s *pSelf;
+  char *usage;
+  int canDamage;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar3 == 1) {
-    if (param_1.classnum == 0) {
-      if (0x3ff < param_1.entnum) {
+    if (entref.classnum == 0) {
+      if (0x3ff < entref.entnum) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x425,0,
                                  "%s");
         if (!bVar2) {
@@ -1509,15 +1561,15 @@ void __cdecl ScriptEntCmd_SetCanDamage(scr_entref_t param_1)
           return;
         }
       }
-      local_10 = g_entities + param_1.entnum;
+      pSelf = g_entities + entref.entnum;
     }
     else {
       Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-      local_10 = (gentity_s *)0x0;
+      pSelf = (gentity_s *)0x0;
     }
     iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    local_8 = (uchar)iVar4;
-    local_10->takedamage = local_8;
+    canDamage._0_1_ = (uchar)iVar4;
+    pSelf->takedamage = (uchar)canDamage;
   }
   else {
     Scr_Error("illegal call to setcandamage()\n",false);
@@ -1533,63 +1585,65 @@ void __cdecl ScriptEntCmd_SetCanDamage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_PhysicsLaunch(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_PhysicsLaunch(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  cmodel_t *pcVar4;
-  uint uVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_20;
-  float local_1c [6];
+  char *error;
+  cmodel_t *pcVar3;
+  uint uVar4;
+  scriptInstance_t inst;
+  cLeafBrushNode_s *node;
+  cmodel_t *cmod;
+  gentity_s *pSelf;
+  float contact_point [6];
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_mover.cpp",0x446,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar5 = (uint)param_1.entnum;
-    local_20 = g_entities + uVar5;
-    if ((((g_entities[uVar5].classname != scr_const.script_brushmodel) &&
-         (g_entities[uVar5].classname != scr_const.script_model)) &&
-        (g_entities[uVar5].classname != scr_const.script_origin)) &&
-       (g_entities[uVar5].classname != scr_const.light)) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
-      Scr_ObjectError(pcVar3,sVar6);
+    uVar4 = (uint)entref.entnum;
+    pSelf = g_entities + uVar4;
+    if ((((g_entities[uVar4].classname != scr_const.script_brushmodel) &&
+         (g_entities[uVar4].classname != scr_const.script_model)) &&
+        (g_entities[uVar4].classname != scr_const.script_origin)) &&
+       (g_entities[uVar4].classname != scr_const.light)) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a script_brushmodel, script_model, script_origin, or light");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_20 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar5 == 2) {
-    Scr_GetVector(0,local_1c,SCRIPTINSTANCE_SERVER);
-    Scr_GetVector(1,local_1c + 3,SCRIPTINSTANCE_SERVER);
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar4 == 2) {
+    Scr_GetVector(0,contact_point,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,contact_point + 3,SCRIPTINSTANCE_SERVER);
   }
   else {
-    local_1c[0] = 0.0;
-    local_1c[1] = 0.0;
-    local_1c[2] = 0.0;
-    local_1c[3] = 0.0;
-    local_1c[4] = 0.0;
-    local_1c[5] = 0.0;
+    contact_point[0] = 0.0;
+    contact_point[1] = 0.0;
+    contact_point[2] = 0.0;
+    contact_point[3] = 0.0;
+    contact_point[4] = 0.0;
+    contact_point[5] = 0.0;
   }
-  if ((local_20->classname == scr_const.script_brushmodel) &&
-     (pcVar4 = CM_ClipHandleToModel((int)(local_20->s).index.brushmodel),
-     cm.leafbrushNodes[(pcVar4->leaf).leafBrushNode].leafBrushCount == 0)) {
-    SL_ConvertToString((uint)local_20->targetname,SCRIPTINSTANCE_SERVER);
+  if ((pSelf->classname == scr_const.script_brushmodel) &&
+     (pcVar3 = CM_ClipHandleToModel((int)(pSelf->s).index.brushmodel),
+     cm.leafbrushNodes[(pcVar3->leaf).leafBrushNode].leafBrushCount == 0)) {
+    SL_ConvertToString((uint)pSelf->targetname,SCRIPTINSTANCE_SERVER);
     Com_PrintWarning(0x14,"WARNING: Brushmodel without brushes \'%s\' (%.1f %.1f %.1f)\n");
   }
   else {
     ScriptMover_SetupPhysicsLaunch
-              (&(local_20->s).lerp.pos,&(local_20->s).lerp.apos,local_1c,local_1c + 3);
+              (&(pSelf->s).lerp.pos,&(pSelf->s).lerp.apos,contact_point,contact_point + 3);
   }
   return;
 }
@@ -1602,25 +1656,26 @@ void __cdecl ScriptEntCmd_PhysicsLaunch(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_Solid(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_Solid(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *gEnt;
+  gentity_s *pSelf;
   
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->classname == scr_const.script_origin) {
+  gEnt = GetEntity(entref);
+  if (gEnt->classname == scr_const.script_origin) {
     Com_DPrintf(0x18,
                 "cannot use the solid/notsolid commands on a script_origin entity( number %i )\n");
   }
   else {
-    if ((pgVar1->classname == scr_const.script_model) || (pgVar1->classname == scr_const.rocket)) {
-      (pgVar1->r).contents = 0x2080;
+    if ((gEnt->classname == scr_const.script_model) || (gEnt->classname == scr_const.rocket)) {
+      (gEnt->r).contents = 0x2080;
     }
     else {
-      (pgVar1->r).contents = 1;
+      (gEnt->r).contents = 1;
     }
-    (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags & 0xfffffffe;
-    SV_LinkEntity(pgVar1);
+    (gEnt->s).lerp.eFlags = (gEnt->s).lerp.eFlags & 0xfffffffe;
+    SV_LinkEntity(gEnt);
   }
   return;
 }
@@ -1633,20 +1688,21 @@ void __cdecl ScriptEntCmd_Solid(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScriptEntCmd_NotSolid(scr_entref_t param_1)
+void __cdecl ScriptEntCmd_NotSolid(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *gEnt;
+  gentity_s *pSelf;
   
-  pgVar1 = GetEntity(param_1);
-  if (pgVar1->classname == scr_const.script_origin) {
+  gEnt = GetEntity(entref);
+  if (gEnt->classname == scr_const.script_origin) {
     Com_DPrintf(0x18,
                 "cannot use the solid/notsolid commands on a script_origin entity( number %i )\n");
   }
   else {
-    (pgVar1->r).contents = 0;
-    (pgVar1->s).lerp.eFlags = (pgVar1->s).lerp.eFlags | 1;
-    SV_LinkEntity(pgVar1);
+    (gEnt->r).contents = 0;
+    (gEnt->s).lerp.eFlags = (gEnt->s).lerp.eFlags | 1;
+    SV_LinkEntity(gEnt);
   }
   return;
 }
@@ -1654,7 +1710,7 @@ void __cdecl ScriptEntCmd_NotSolid(scr_entref_t param_1)
 
 // 00665CD0  ScriptEnt_GetMethod  (game/g_scr_mover.cpp:1221)
 
-_func___cdecl_void_scr_entref_t * __cdecl ScriptEnt_GetMethod(char **param_1)
+_func___cdecl_void_scr_entref_t * __cdecl ScriptEnt_GetMethod(char **pName)
 
 {
   byte bVar1;
@@ -1662,15 +1718,16 @@ _func___cdecl_void_scr_entref_t * __cdecl ScriptEnt_GetMethod(char **param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x11 < local_8) {
+    if (0x11 < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -1689,10 +1746,10 @@ LAB_00665d4c:
     local_1c = 0;
 LAB_00665d54:
     if (local_1c == 0) {
-      *param_1 = methods[local_8].actionString;
-      return methods[local_8].actionFunc;
+      *pName = methods[i].actionString;
+      return methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 

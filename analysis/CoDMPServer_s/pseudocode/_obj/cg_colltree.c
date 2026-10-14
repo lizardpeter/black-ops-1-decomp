@@ -7,35 +7,35 @@
 void __cdecl CG_ClearEntityCollWorld(int param_1)
 
 {
-  CgEntCollWorld **ppCVar1;
-  ushort uVar2;
+  CgEntCollWorld **dst;
+  ushort uVar1;
   int in_EAX;
-  int iVar3;
+  int iVar2;
   float *extraout_ECX;
-  ushort *puVar4;
-  float *pfVar5;
-  float *pfVar6;
+  ushort *puVar3;
+  float *dst_00;
+  float *pfVar4;
   
-  iVar3 = in_EAX * 0x401c;
-  ppCVar1 = &cgEntCollWorld + in_EAX * 0x1007;
-  memset((uchar *)ppCVar1,'\0',0x401c);
-  pfVar5 = (float *)(&cgEntCollNodes)[in_EAX];
-  pfVar6 = (float *)0x0;
-  memset((uchar *)pfVar5,'\0',0xa800);
-  CM_ModelBounds(0,pfVar5,pfVar6);
-  *(undefined2 *)(&DAT_00b54978 + iVar3) = 2;
-  uVar2 = 2;
-  puVar4 = (ushort *)(&DAT_00b549a2 + iVar3);
+  iVar2 = in_EAX * 0x401c;
+  dst = &cgEntCollWorld + in_EAX * 0x1007;
+  memset((uchar *)dst,'\0',0x401c);
+  dst_00 = (float *)(&cgEntCollNodes)[in_EAX];
+  pfVar4 = (float *)0x0;
+  memset((uchar *)dst_00,'\0',0xa800);
+  CM_ModelBounds(0,dst_00,pfVar4);
+  *(undefined2 *)(&DAT_00b54978 + iVar2) = 2;
+  uVar1 = 2;
+  puVar3 = (ushort *)(&DAT_00b549a2 + iVar2);
   do {
-    uVar2 = uVar2 + 1;
-    *puVar4 = uVar2;
-    puVar4 = puVar4 + 8;
-  } while (uVar2 < 0x3ff);
-  uVar2 = (ushort)(*extraout_ECX - (float)*ppCVar1 <=
-                  extraout_ECX[1] - *(float *)(&DAT_00b54964 + iVar3));
-  *(ushort *)(&DAT_00b54990 + iVar3) = uVar2;
-  *(float *)(&DAT_00b5498c + iVar3) =
-       (*(float *)(&DAT_00b5496c + (uint)uVar2 * 4 + iVar3) + (float)ppCVar1[uVar2]) * 0.5;
+    uVar1 = uVar1 + 1;
+    *puVar3 = uVar1;
+    puVar3 = puVar3 + 8;
+  } while (uVar1 < 0x3ff);
+  uVar1 = (ushort)(*extraout_ECX - (float)*dst <=
+                  extraout_ECX[1] - *(float *)(&DAT_00b54964 + iVar2));
+  *(ushort *)(&DAT_00b54990 + iVar2) = uVar1;
+  *(float *)(&DAT_00b5498c + iVar2) =
+       (*(float *)(&DAT_00b5496c + (uint)uVar1 * 4 + iVar2) + (float)dst[uVar1]) * 0.5;
   return;
 }
 

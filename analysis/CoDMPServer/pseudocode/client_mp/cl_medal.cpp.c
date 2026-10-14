@@ -4,20 +4,21 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl CG_GetMedalData(int param_1,medalTableColumns_t param_2)
+char * __cdecl CG_GetMedalData(int medalIndex,medalTableColumns_t column)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_1c;
-  char local_18 [8];
+  StringTable *medalTable;
+  char index [8];
   uint local_10;
-  int local_8;
+  char *medalData;
+  int medalTableRow;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  StringTable_GetAsset("mp/medalTable.csv",&local_1c);
-  if (local_1c == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/medalTable.csv",&medalTable);
+  if (medalTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_medal.cpp",0x11,0,
                              "%s");
     if (!bVar2) {
@@ -26,11 +27,11 @@ char * __cdecl CG_GetMedalData(int param_1,medalTableColumns_t param_2)
       return pcVar3;
     }
   }
-  if (local_1c == (StringTable *)0x0) {
+  if (medalTable == (StringTable *)0x0) {
     pcVar3 = (char *)0x0;
   }
   else {
-    if (999 < param_1) {
+    if (999 < medalIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_medal.cpp",0x15,0,
                                "%s");
       if (!bVar2) {
@@ -39,7 +40,7 @@ char * __cdecl CG_GetMedalData(int param_1,medalTableColumns_t param_2)
         return pcVar3;
       }
     }
-    if (param_1 < 1) {
+    if (medalIndex < 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_medal.cpp",0x16,0,
                                "%s");
       if (!bVar2) {
@@ -48,10 +49,10 @@ char * __cdecl CG_GetMedalData(int param_1,medalTableColumns_t param_2)
         return pcVar3;
       }
     }
-    if ((param_1 < 1000) && (-1 < param_1)) {
-      Com_sprintf(local_18,5,"%i");
-      local_8 = StringTable_LookupRowNumForValue(local_1c,0,local_18);
-      pcVar3 = StringTable_GetColumnValueForRow(local_1c,local_8,param_2);
+    if ((medalIndex < 1000) && (-1 < medalIndex)) {
+      Com_sprintf(index,5,"%i");
+      medalTableRow = StringTable_LookupRowNumForValue(medalTable,0,index);
+      pcVar3 = StringTable_GetColumnValueForRow(medalTable,medalTableRow,column);
     }
     else {
       pcVar3 = (char *)0x0;
@@ -63,30 +64,31 @@ char * __cdecl CG_GetMedalData(int param_1,medalTableColumns_t param_2)
 
 // 0056CC90  CG_GetMedalLocalizedXP  (client_mp/cl_medal.cpp:37)
 
-char * __cdecl CG_GetMedalLocalizedXP(float param_1,int param_2,bool param_3)
+char * __cdecl CG_GetMedalLocalizedXP(float xpScale,int medalIndex,bool teamBased)
 
 {
   char *pcVar1;
   int iVar2;
-  medalTableColumns_t local_10;
-  char *local_8;
+  medalTableColumns_t tableColumn;
+  int xpAmount;
+  char *localizedPopUpXP;
   
-  if (param_3) {
-    local_10 = MEDAL_COLUMN_XP_TEAMBASED;
+  if (teamBased) {
+    tableColumn = MEDAL_COLUMN_XP_TEAMBASED;
   }
   else {
-    local_10 = MEDAL_COLUMN_XP_FFA;
+    tableColumn = MEDAL_COLUMN_XP_FFA;
   }
-  pcVar1 = CG_GetMedalData(param_2,local_10);
+  pcVar1 = CG_GetMedalData(medalIndex,tableColumn);
   iVar2 = atoi(pcVar1);
   pcVar1 = UI_SafeTranslateString("MEDAL_XP_POPUP");
-  if ((int)((float)iVar2 * param_1) < 1) {
-    local_8 = "";
+  if ((int)((float)iVar2 * xpScale) < 1) {
+    localizedPopUpXP = "";
   }
   else {
-    local_8 = UI_ReplaceConversionInt(pcVar1,(int)((float)iVar2 * param_1));
+    localizedPopUpXP = UI_ReplaceConversionInt(pcVar1,(int)((float)iVar2 * xpScale));
   }
-  return local_8;
+  return localizedPopUpXP;
 }
 
 
@@ -94,20 +96,22 @@ char * __cdecl CG_GetMedalLocalizedXP(float param_1,int param_2,bool param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl CG_GetWagerMedalData(int param_1,wagerMedalTableColumns_t param_2)
+char * __cdecl CG_GetWagerMedalData(int wagerMedalIndex,wagerMedalTableColumns_t column)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  char local_18 [8];
+  int row;
+  int wagerMedalTableRow;
+  char index [8];
   uint local_10;
-  StringTable *local_c [2];
+  StringTable *wagerMedalTable;
+  char *wagerMedalData;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  StringTable_GetAsset("mp/medalTable.csv",local_c);
-  if (local_c[0] == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/medalTable.csv",&wagerMedalTable);
+  if (wagerMedalTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_medal.cpp",0x44,0,
                              "%s");
     if (!bVar2) {
@@ -116,11 +120,11 @@ char * __cdecl CG_GetWagerMedalData(int param_1,wagerMedalTableColumns_t param_2
       return pcVar3;
     }
   }
-  if (local_c[0] == (StringTable *)0x0) {
+  if (wagerMedalTable == (StringTable *)0x0) {
     pcVar3 = (char *)0x0;
   }
   else {
-    if (999 < param_1) {
+    if (999 < wagerMedalIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_medal.cpp",0x48,0,
                                "%s");
       if (!bVar2) {
@@ -129,7 +133,7 @@ char * __cdecl CG_GetWagerMedalData(int param_1,wagerMedalTableColumns_t param_2
         return pcVar3;
       }
     }
-    if (param_1 < 1) {
+    if (wagerMedalIndex < 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_medal.cpp",0x49,0,
                                "%s");
       if (!bVar2) {
@@ -138,10 +142,10 @@ char * __cdecl CG_GetWagerMedalData(int param_1,wagerMedalTableColumns_t param_2
         return pcVar3;
       }
     }
-    if ((param_1 < 1000) && (-1 < param_1)) {
-      Com_sprintf(local_18,5,"%i");
-      iVar4 = StringTable_LookupRowNumForValue(local_c[0],0,local_18);
-      pcVar3 = StringTable_GetColumnValueForRow(local_c[0],iVar4,param_2);
+    if ((wagerMedalIndex < 1000) && (-1 < wagerMedalIndex)) {
+      Com_sprintf(index,5,"%i");
+      row = StringTable_LookupRowNumForValue(wagerMedalTable,0,index);
+      pcVar3 = StringTable_GetColumnValueForRow(wagerMedalTable,row,column);
     }
     else {
       pcVar3 = (char *)0x0;
@@ -153,21 +157,24 @@ char * __cdecl CG_GetWagerMedalData(int param_1,wagerMedalTableColumns_t param_2
 
 // 0056CE40  CG_GetWagerMedalLocalizedCP  (client_mp/cl_medal.cpp:88)
 
-char * __cdecl CG_GetWagerMedalLocalizedCP(int param_1,bool param_2)
+char * __cdecl CG_GetWagerMedalLocalizedCP(int wagerMedalIndex,bool teamBased)
 
 {
   char *pcVar1;
   int iVar2;
   int iVar3;
-  wagerMedalTableColumns_t local_14;
+  wagerMedalTableColumns_t tableColumn;
+  int cpAmount;
+  int wagerCpAmount;
+  char *localizedPopUpCP;
   
-  if (param_2) {
-    local_14 = WAGER_MEDAL_COLUMN_CP_TEAMBASED;
+  if (teamBased) {
+    tableColumn = WAGER_MEDAL_COLUMN_CP_TEAMBASED;
   }
   else {
-    local_14 = WAGER_MEDAL_COLUMN_CP_FFA;
+    tableColumn = WAGER_MEDAL_COLUMN_CP_FFA;
   }
-  pcVar1 = CG_GetWagerMedalData(param_1,local_14);
+  pcVar1 = CG_GetWagerMedalData(wagerMedalIndex,tableColumn);
   iVar2 = atoi(pcVar1);
   pcVar1 = UI_SafeTranslateString("MEDAL_CP_POPUP");
   iVar3 = Dvar_GetInt("scr_wagerBet");

@@ -2,17 +2,17 @@
 
 // 008074A0  PlaneEqual  (xanim/xmodel_load_phys_collmap.cpp:17)
 
-bool __cdecl PlaneEqual(float *param_1,float *param_2)
+bool __cdecl PlaneEqual(float *p1,float *p2)
 
 {
   bool bVar1;
   int iVar2;
   
-  iVar2 = VecNCompareCustomEpsilon(param_1,param_2,0.001,3);
+  iVar2 = VecNCompareCustomEpsilon(p1,p2,0.001,3);
   if (iVar2 == 0) {
     bVar1 = false;
   }
-  else if (ABS(param_1[3] - param_2[3]) < 0.001) {
+  else if (ABS(p1[3] - p2[3]) < 0.001) {
     bVar1 = true;
   }
   else {
@@ -25,7 +25,7 @@ bool __cdecl PlaneEqual(float *param_1,float *param_2)
 // 00807510  RemoveDuplicateBrushPlanes  (xanim/xmodel_load_phys_collmap.cpp:29)
 
 bool __cdecl
-RemoveDuplicateBrushPlanes(float (*param_1) [4],uint *param_2,char *param_3,uint param_4)
+RemoveDuplicateBrushPlanes(float (*planes) [4],uint *sideCount,char *mapname,uint brushnum)
 
 {
   uint uVar1;
@@ -33,45 +33,45 @@ RemoveDuplicateBrushPlanes(float (*param_1) [4],uint *param_2,char *param_3,uint
   int iVar3;
   float (*pafVar4) [4];
   float (*pafVar5) [4];
-  uint local_1c;
-  float local_18;
+  uint sideIndexK;
+  float negatedNormal;
   float local_14;
   float local_10;
-  uint local_c;
-  uint local_8;
+  uint sideIndexJ;
+  uint sideIndexI;
   
-  local_8 = 1;
+  sideIndexI = 1;
 LAB_00807528:
-  if (*param_2 <= local_8) {
+  if (*sideCount <= sideIndexI) {
     return true;
   }
-  iVar3 = Vec3IsNormalized(param_1[local_8]);
+  iVar3 = Vec3IsNormalized(planes[sideIndexI]);
   if (iVar3 == 0) {
     Com_PrintWarning(0x13,"Collmap for %s, Brush %i: degenerate plane\n");
-    uVar1 = local_8;
-    while (local_1c = uVar1 + 1, local_1c < *param_2) {
-      pafVar4 = param_1 + uVar1;
-      pafVar5 = param_1 + local_1c;
+    uVar1 = sideIndexI;
+    while (sideIndexK = uVar1 + 1, sideIndexK < *sideCount) {
+      pafVar4 = planes + uVar1;
+      pafVar5 = planes + sideIndexK;
       (*pafVar4)[0] = (*pafVar5)[0];
       (*pafVar4)[1] = (*pafVar5)[1];
       (*pafVar4)[2] = (*pafVar5)[2];
       (*pafVar4)[3] = (*pafVar5)[3];
-      uVar1 = local_1c;
+      uVar1 = sideIndexK;
     }
-    *param_2 = *param_2 - 1;
-    local_8 = local_8 - 1;
+    *sideCount = *sideCount - 1;
+    sideIndexI = sideIndexI - 1;
   }
   else {
-    for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-      bVar2 = PlaneEqual(param_1[local_8],param_1[local_c]);
-      uVar1 = local_8;
+    for (sideIndexJ = 0; sideIndexJ < sideIndexI; sideIndexJ = sideIndexJ + 1) {
+      bVar2 = PlaneEqual(planes[sideIndexI],planes[sideIndexJ]);
+      uVar1 = sideIndexI;
       if (bVar2) goto LAB_00807644;
-      pafVar4 = param_1 + local_c;
-      local_18 = -(*pafVar4)[0];
+      pafVar4 = planes + sideIndexJ;
+      negatedNormal = -(*pafVar4)[0];
       local_14 = -(*pafVar4)[1];
       local_10 = -(*pafVar4)[2];
-      iVar3 = VecNCompareCustomEpsilon(param_1[local_8],&local_18,0.001,3);
-      if ((iVar3 != 0) && (param_1[local_8][3] <= -param_1[local_c][3])) {
+      iVar3 = VecNCompareCustomEpsilon(planes[sideIndexI],&negatedNormal,0.001,3);
+      if ((iVar3 != 0) && (planes[sideIndexI][3] <= -planes[sideIndexJ][3])) {
         Com_PrintWarning(0x13,"Map %s, Brush %i: mirrored plane\n");
         return false;
       }
@@ -79,65 +79,65 @@ LAB_00807528:
   }
   goto LAB_0080751f;
 LAB_00807644:
-  while (local_1c = uVar1 + 1, local_1c < *param_2) {
-    pafVar4 = param_1 + uVar1;
-    pafVar5 = param_1 + local_1c;
+  while (sideIndexK = uVar1 + 1, sideIndexK < *sideCount) {
+    pafVar4 = planes + uVar1;
+    pafVar5 = planes + sideIndexK;
     (*pafVar4)[0] = (*pafVar5)[0];
     (*pafVar4)[1] = (*pafVar5)[1];
     (*pafVar4)[2] = (*pafVar5)[2];
     (*pafVar4)[3] = (*pafVar5)[3];
-    uVar1 = local_1c;
+    uVar1 = sideIndexK;
   }
-  *param_2 = *param_2 - 1;
-  local_8 = local_8 - 1;
+  *sideCount = *sideCount - 1;
+  sideIndexI = sideIndexI - 1;
 LAB_0080751f:
-  local_8 = local_8 + 1;
+  sideIndexI = sideIndexI + 1;
   goto LAB_00807528;
 }
 
 
 // 008077F0  SnapAxialVector  (xanim/xmodel_load_phys_collmap.cpp:149)
 
-bool __cdecl SnapAxialVector(float *param_1)
+bool __cdecl SnapAxialVector(float *normal)
 
 {
-  int local_8;
+  int axis;
   
-  local_8 = 0;
+  axis = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < axis) {
       return false;
     }
-    if (ABS(param_1[local_8] - 1.0) < 1e-07) break;
-    if (ABS(param_1[local_8] - -1.0) < 1e-07) {
-      *param_1 = 0.0;
-      param_1[1] = 0.0;
-      param_1[2] = 0.0;
-      param_1[local_8] = -1.0;
+    if (ABS(normal[axis] - 1.0) < 1e-07) break;
+    if (ABS(normal[axis] - -1.0) < 1e-07) {
+      *normal = 0.0;
+      normal[1] = 0.0;
+      normal[2] = 0.0;
+      normal[axis] = -1.0;
       return true;
     }
-    local_8 = local_8 + 1;
+    axis = axis + 1;
   }
-  *param_1 = 0.0;
-  param_1[1] = 0.0;
-  param_1[2] = 0.0;
-  param_1[local_8] = 1.0;
+  *normal = 0.0;
+  normal[1] = 0.0;
+  normal[2] = 0.0;
+  normal[axis] = 1.0;
   return true;
 }
 
 
 // 00807780  SnapPlane  (xanim/xmodel_load_phys_collmap.cpp:173)
 
-void __cdecl SnapPlane(float *param_1)
+void __cdecl SnapPlane(float *plane)
 
 {
   float fVar1;
   
-  SnapAxialVector(param_1);
-  fVar1 = Q_rint(param_1[3]);
-  if (ABS(param_1[3] - fVar1) < 0.001) {
-    fVar1 = Q_rint(param_1[3]);
-    param_1[3] = fVar1;
+  SnapAxialVector(plane);
+  fVar1 = Q_rint(plane[3]);
+  if (ABS(plane[3] - fVar1) < 0.001) {
+    fVar1 = Q_rint(plane[3]);
+    plane[3] = fVar1;
   }
   return;
 }
@@ -146,27 +146,28 @@ void __cdecl SnapPlane(float *param_1)
 // 0080A4F0  AddSimplePoint  (xanim/xmodel_load_phys_collmap.cpp:182)
 
 uint __cdecl
-AddSimplePoint(float (*param_1) [4],uint param_2,uint *param_3,float *param_4,
-              SimplePlaneIntersection *param_5,int param_6,int param_7)
+AddSimplePoint(float (*planes) [4],uint planeCount,uint *planeIndex,float *xyz,
+              SimplePlaneIntersection *pts,int ptCount,int maxPtCount)
 
 {
   uint uVar1;
   float (*pafVar2) [4];
   SimplePlaneIntersection *pSVar3;
-  uint local_8;
+  float dist;
+  uint sideIndex;
   
-  local_8 = 0;
+  sideIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
-      if (param_6 < param_7) {
-        pSVar3 = param_5 + param_6;
-        pSVar3->xyz[0] = *param_4;
-        pSVar3->xyz[1] = param_4[1];
-        pSVar3->xyz[2] = param_4[2];
-        param_5[param_6].planeIndex[0] = *param_3;
-        param_5[param_6].planeIndex[1] = param_3[1];
-        param_5[param_6].planeIndex[2] = param_3[2];
-        uVar1 = param_6 + 1;
+    if (planeCount <= sideIndex) {
+      if (ptCount < maxPtCount) {
+        pSVar3 = pts + ptCount;
+        pSVar3->xyz[0] = *xyz;
+        pSVar3->xyz[1] = xyz[1];
+        pSVar3->xyz[2] = xyz[2];
+        pts[ptCount].planeIndex[0] = *planeIndex;
+        pts[ptCount].planeIndex[1] = planeIndex[1];
+        pts[ptCount].planeIndex[2] = planeIndex[2];
+        uVar1 = ptCount + 1;
       }
       else {
         Com_PrintError(0x13,
@@ -176,13 +177,14 @@ AddSimplePoint(float (*param_1) [4],uint param_2,uint *param_3,float *param_4,
       }
       return uVar1;
     }
-    if ((((local_8 != *param_3) && (local_8 != param_3[1])) && (local_8 != param_3[2])) &&
-       (pafVar2 = param_1 + local_8,
-       0.01 < ((*pafVar2)[0] * *param_4 + (*pafVar2)[1] * param_4[1] + (*pafVar2)[2] * param_4[2]) -
-              param_1[local_8][3])) break;
-    local_8 = local_8 + 1;
+    if ((((sideIndex != *planeIndex) && (sideIndex != planeIndex[1])) &&
+        (sideIndex != planeIndex[2])) &&
+       (pafVar2 = planes + sideIndex,
+       0.01 < ((*pafVar2)[0] * *xyz + (*pafVar2)[1] * xyz[1] + (*pafVar2)[2] * xyz[2]) -
+              planes[sideIndex][3])) break;
+    sideIndex = sideIndex + 1;
   }
-  return param_6;
+  return ptCount;
 }
 
 
@@ -190,49 +192,49 @@ AddSimplePoint(float (*param_1) [4],uint param_2,uint *param_3,float *param_4,
 
 uint __cdecl
 GetPlaneIntersections
-          (float (*param_1) [4],uint param_2,SimplePlaneIntersection *param_3,uint param_4)
+          (float (*planes) [4],uint planeCount,SimplePlaneIntersection *OutPts,uint maxPtCount)
 
 {
   uint uVar1;
   int iVar2;
-  float (*local_38) [4];
+  float (*plane) [4];
   float (*local_34) [4];
   float (*local_30) [4];
-  uint local_2c;
-  float local_28 [3];
-  uint local_1c;
+  uint ptCount;
+  float xyz [3];
+  uint sideIndex;
   uint local_18;
   uint local_14;
-  uint local_10;
+  uint planeIndex;
   uint local_c;
   uint local_8;
   
-  local_2c = 0;
-  for (local_1c = 0; local_1c < param_2 - 2; local_1c = local_1c + 1) {
-    local_10 = local_1c;
-    local_38 = param_1 + local_1c;
-    uVar1 = local_1c;
-    while (local_18 = uVar1 + 1, local_18 < param_2 - 1) {
+  ptCount = 0;
+  for (sideIndex = 0; sideIndex < planeCount - 2; sideIndex = sideIndex + 1) {
+    planeIndex = sideIndex;
+    plane = planes + sideIndex;
+    uVar1 = sideIndex;
+    while (local_18 = uVar1 + 1, local_18 < planeCount - 1) {
       local_c = local_18;
-      local_34 = param_1 + local_18;
-      for (local_14 = uVar1 + 2; uVar1 = local_18, local_14 < param_2; local_14 = local_14 + 1) {
+      local_34 = planes + local_18;
+      for (local_14 = uVar1 + 2; uVar1 = local_18, local_14 < planeCount; local_14 = local_14 + 1) {
         local_8 = local_14;
-        local_30 = param_1 + local_14;
-        iVar2 = IntersectPlanes((float **)&local_38,local_28);
+        local_30 = planes + local_14;
+        iVar2 = IntersectPlanes((float **)&plane,xyz);
         if (iVar2 != 0) {
-          SnapPointToIntersectingPlanes((float **)&local_38,local_28,0.25,0.01);
-          local_2c = AddSimplePoint(param_1,param_2,&local_10,local_28,param_3,local_2c,param_4);
+          SnapPointToIntersectingPlanes((float **)&plane,xyz,0.25,0.01);
+          ptCount = AddSimplePoint(planes,planeCount,&planeIndex,xyz,OutPts,ptCount,maxPtCount);
         }
       }
     }
   }
-  return local_2c;
+  return ptCount;
 }
 
 
 // 0080A640  Map_SkipOptionalArg  (xanim/xmodel_load_phys_collmap.cpp:245)
 
-void __cdecl Map_SkipOptionalArg(char **param_1,char *param_2)
+void __cdecl Map_SkipOptionalArg(char **file,char *argName)
 
 {
   byte bVar1;
@@ -240,9 +242,10 @@ void __cdecl Map_SkipOptionalArg(char **param_1,char *param_2)
   int local_18;
   byte *local_10;
   byte *local_c;
+  char *token;
   
-  local_10 = (byte *)Com_Parse(param_1);
-  local_c = (byte *)param_2;
+  local_10 = (byte *)Com_Parse(file);
+  local_c = (byte *)argName;
   do {
     bVar1 = *local_10;
     bVar2 = bVar1 < *local_c;
@@ -261,7 +264,7 @@ LAB_0080a69e:
   local_18 = 0;
 LAB_0080a6a6:
   if (local_18 == 0) {
-    Com_ParseOnLine(param_1);
+    Com_ParseOnLine(file);
   }
   else {
     Com_UngetToken();
@@ -272,7 +275,7 @@ LAB_0080a6a6:
 
 // 0080A6D0  Map_SkipNamedFlags  (xanim/xmodel_load_phys_collmap.cpp:260)
 
-bool __cdecl Map_SkipNamedFlags(char **param_1,char *param_2)
+bool __cdecl Map_SkipNamedFlags(char **file,char *key)
 
 {
   byte bVar1;
@@ -282,9 +285,11 @@ bool __cdecl Map_SkipNamedFlags(char **param_1,char *param_2)
   int local_1c;
   byte *local_14;
   byte *local_10;
+  int len;
+  char *token;
   
-  local_14 = (byte *)Com_Parse(param_1);
-  local_10 = (byte *)param_2;
+  local_14 = (byte *)Com_Parse(file);
+  local_10 = (byte *)key;
   do {
     bVar1 = *local_14;
     bVar3 = bVar1 < *local_10;
@@ -304,7 +309,7 @@ LAB_0080a72e:
 LAB_0080a736:
   if (local_1c == 0) {
     do {
-      pcVar2 = Com_ParseOnLine(param_1);
+      pcVar2 = Com_ParseOnLine(file);
       if (*pcVar2 == '\0') {
         Com_PrintError(0x13,"missing token for \'%s\' on collmap\n");
         return false;
@@ -329,22 +334,22 @@ LAB_0080a736:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetCollisionMaterial(char *param_1,collision_material_t *param_2)
+void __cdecl GetCollisionMaterial(char *name,collision_material_t *cmat)
 
 {
-  char local_414 [1028];
+  char filename [1028];
   uint local_10;
-  void *local_c;
-  int local_8;
+  MaterialRaw *mtlRaw;
+  int fileSize;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_414,"materials/%s");
-  local_8 = FS_ReadFile(local_414,&local_c);
-  if (0 < local_8) {
-    strncpy((uchar *)param_2,(uchar *)param_1,0x40);
-    param_2->cflags = *(int *)((int)local_c + 0x24);
-    param_2->sflags = *(int *)((int)local_c + 0x20);
-    FS_FreeFile(local_c);
+  sprintf(filename,"materials/%s");
+  fileSize = FS_ReadFile(filename,&mtlRaw);
+  if (0 < fileSize) {
+    strncpy((uchar *)cmat,(uchar *)name,0x40);
+    cmat->cflags = (mtlRaw->info).contents;
+    cmat->sflags = (mtlRaw->info).surfaceFlags;
+    FS_FreeFile(mtlRaw);
   }
   return;
 }
@@ -352,30 +357,30 @@ void __cdecl GetCollisionMaterial(char *param_1,collision_material_t *param_2)
 
 // 008079B0  IsAxisAligned  (xanim/xmodel_load_phys_collmap.cpp:329)
 
-int __cdecl IsAxisAligned(float *param_1)
+int __cdecl IsAxisAligned(float *normal)
 
 {
   int iVar1;
-  float local_14 [3];
-  int local_8;
+  float v [3];
+  int axis;
   
-  local_8 = 0;
+  axis = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < axis) {
       return 0;
     }
-    local_14[0] = 0.0;
-    local_14[1] = 0.0;
-    local_14[2] = 0.0;
-    local_14[local_8] = 1.0;
-    iVar1 = VecNCompareCustomEpsilon(param_1,local_14,0.001,3);
+    v[0] = 0.0;
+    v[1] = 0.0;
+    v[2] = 0.0;
+    v[axis] = 1.0;
+    iVar1 = VecNCompareCustomEpsilon(normal,v,0.001,3);
     if (iVar1 != 0) break;
-    local_14[local_8] = -1.0;
-    iVar1 = VecNCompareCustomEpsilon(param_1,local_14,0.001,3);
+    v[axis] = -1.0;
+    iVar1 = VecNCompareCustomEpsilon(normal,v,0.001,3);
     if (iVar1 != 0) {
       return 1;
     }
-    local_8 = local_8 + 1;
+    axis = axis + 1;
   }
   return 1;
 }
@@ -387,8 +392,8 @@ int __cdecl IsAxisAligned(float *param_1)
 
 bool __cdecl
 Xmodel_ParsePhysicsBrush
-          (char **param_1,char *param_2,uint param_3,PhysGeomInfo *param_4,uint param_5,
-          DObjAnimMat *param_6,_func___cdecl_void_ptr_int *param_7)
+          (char **file,char *mapname,uint brushCount,PhysGeomInfo *geom,uint boneHash,
+          DObjAnimMat *boneMat,_func___cdecl_void_ptr_int *Alloc)
 
 {
   byte bVar1;
@@ -396,14 +401,14 @@ Xmodel_ParsePhysicsBrush
   bool bVar3;
   undefined1 uVar4;
   uint uVar5;
-  byte *pbVar6;
-  collision_material_t *pcVar7;
-  adjacencyWinding_t *paVar8;
-  BrushWrapper *pBVar9;
-  int iVar10;
-  cbrushside_t *pcVar11;
-  cplane_s *pcVar12;
-  float (*pafVar13) [3];
+  byte *name;
+  collision_material_t *cmat;
+  adjacencyWinding_t *paVar6;
+  BrushWrapper *pBVar7;
+  int iVar8;
+  cbrushside_t *pcVar9;
+  cplane_s *pcVar10;
+  float (*pafVar11) [3];
   int local_6af8;
   byte *local_6af0;
   collision_material_t *local_6aec;
@@ -413,47 +418,48 @@ Xmodel_ParsePhysicsBrush
   int local_6ad0;
   byte *local_6ac8;
   byte *local_6ac4;
-  uint local_6a0c;
-  int local_6a08;
-  int local_6a04;
-  int local_69f8;
-  float local_69f0 [3];
+  uint pi;
+  int si;
+  int i;
+  int mi;
+  char *material;
+  float planepts [3];
   float local_69e4 [3];
   float local_69d8 [3];
-  uint local_69cc;
-  int local_69c8;
-  uint local_69c4;
-  uint local_69c0;
-  uint local_69bc [33];
-  float local_6938 [131];
-  SimplePlaneIntersection local_672c [1024];
-  uint local_72c;
-  uint local_728;
-  int local_724 [32];
-  uint local_6a4;
-  float local_6a0 [3];
+  uint myContents;
+  uint order;
+  uint sideCount;
+  uint dir;
+  uint cflags [33];
+  float mins [131];
+  SimplePlaneIntersection intersections [1024];
+  uint intersectionCount;
+  uint ptIndex;
+  int sflags [32];
+  uint sideIndex;
+  float maxs [3];
   adjacencyWinding_t aaStack_694 [32];
-  undefined4 local_14;
-  byte *local_10;
-  int local_c;
-  uint local_8;
+  int MAX_BRUSH_SIDES;
+  char *token;
+  int totalEdges;
+  uint axis;
   
-  local_8 = 0x80975d;
-  local_14 = 0x20;
-  if ((param_4 == (PhysGeomInfo *)0x0) &&
+  axis = 0x80975d;
+  MAX_BRUSH_SIDES = 0x20;
+  if ((geom == (PhysGeomInfo *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                ,0x16d,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_69c4 = 0;
-  Map_SkipOptionalArg(param_1,"layer");
-  bVar3 = Map_SkipNamedFlags(param_1,"contents");
-  if ((bVar3) && (bVar3 = Map_SkipNamedFlags(param_1,"toolFlags"), bVar3)) {
-    local_10 = (byte *)Com_Parse(param_1);
+  sideCount = 0;
+  Map_SkipOptionalArg(file,"layer");
+  bVar3 = Map_SkipNamedFlags(file,"contents");
+  if ((bVar3) && (bVar3 = Map_SkipNamedFlags(file,"toolFlags"), bVar3)) {
+    token = Com_Parse(file);
     local_6ac4 = (byte *)0xd12d68;
-    local_6ac8 = local_10;
+    local_6ac8 = (byte *)token;
     do {
       bVar1 = *local_6ac8;
       bVar3 = bVar1 < *local_6ac4;
@@ -472,26 +478,26 @@ LAB_00809869:
     local_6ad0 = 0;
 LAB_00809874:
     if (local_6ad0 == 0) {
-      local_10 = (byte *)Com_Parse(param_1);
-      uVar5 = SL_FindLowercaseString((char *)local_10,SCRIPTINSTANCE_SERVER);
-      if (param_5 != uVar5) {
+      token = Com_Parse(file);
+      uVar5 = SL_FindLowercaseString(token,SCRIPTINSTANCE_SERVER);
+      if (boneHash != uVar5) {
         return false;
       }
-      local_10 = (byte *)Com_Parse(param_1);
+      token = Com_Parse(file);
     }
     else {
       uVar5 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-      if (param_5 != uVar5) {
+      if (boneHash != uVar5) {
         return false;
       }
     }
     Com_UngetToken();
-    local_69cc = 0;
-    memset((uchar *)local_69bc,'\0',0x80);
-    memset((uchar *)local_724,'\0',0x80);
-    while (local_10 = (byte *)Com_Parse(param_1), *local_10 != 0) {
+    myContents = 0;
+    memset((uchar *)cflags,'\0',0x80);
+    memset((uchar *)sflags,'\0',0x80);
+    while (token = Com_Parse(file), *token != 0) {
       local_6ad8 = &s__;
-      local_6adc = local_10;
+      local_6adc = (byte *)token;
       do {
         bVar1 = *local_6adc;
         bVar3 = bVar1 < *local_6ad8;
@@ -510,149 +516,147 @@ LAB_008099aa:
       local_6ae4 = 0;
 LAB_008099b5:
       if (local_6ae4 == 0) {
-        bVar3 = RemoveDuplicateBrushPlanes
-                          ((float (*) [4])(local_6938 + 3),&local_69c4,param_2,param_3);
+        bVar3 = RemoveDuplicateBrushPlanes((float (*) [4])(mins + 3),&sideCount,mapname,brushCount);
         if (!bVar3) {
           return false;
         }
-        if (local_69c4 != 0) {
-          local_72c = GetPlaneIntersections
-                                ((float (*) [4])(local_6938 + 3),local_69c4,local_672c,0x400);
-          local_c = 0;
-          local_6938[0] = local_672c[0].xyz[0];
-          local_6938[1] = local_672c[0].xyz[1];
-          local_6938[2] = local_672c[0].xyz[2];
-          local_6a0[0] = local_672c[0].xyz[0];
-          local_6a0[1] = local_672c[0].xyz[1];
-          local_6a0[2] = local_672c[0].xyz[2];
-          for (local_728 = 1; local_728 < local_72c; local_728 = local_728 + 1) {
-            for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-              if (local_6938[local_8] < local_672c[local_728].xyz[local_8] ||
-                  local_6938[local_8] == local_672c[local_728].xyz[local_8]) {
-                if (local_6a0[local_8] <= local_672c[local_728].xyz[local_8] &&
-                    local_672c[local_728].xyz[local_8] != local_6a0[local_8]) {
-                  local_6a0[local_8] = local_672c[local_728].xyz[local_8];
+        if (sideCount != 0) {
+          intersectionCount =
+               GetPlaneIntersections((float (*) [4])(mins + 3),sideCount,intersections,0x400);
+          totalEdges = 0;
+          mins[0] = intersections[0].xyz[0];
+          mins[1] = intersections[0].xyz[1];
+          mins[2] = intersections[0].xyz[2];
+          maxs[0] = intersections[0].xyz[0];
+          maxs[1] = intersections[0].xyz[1];
+          maxs[2] = intersections[0].xyz[2];
+          for (ptIndex = 1; ptIndex < intersectionCount; ptIndex = ptIndex + 1) {
+            for (axis = 0; axis < 3; axis = axis + 1) {
+              if (mins[axis] < intersections[ptIndex].xyz[axis] ||
+                  mins[axis] == intersections[ptIndex].xyz[axis]) {
+                if (maxs[axis] <= intersections[ptIndex].xyz[axis] &&
+                    intersections[ptIndex].xyz[axis] != maxs[axis]) {
+                  maxs[axis] = intersections[ptIndex].xyz[axis];
                 }
               }
               else {
-                local_6938[local_8] = local_672c[local_728].xyz[local_8];
+                mins[axis] = intersections[ptIndex].xyz[axis];
               }
             }
           }
-          local_72c = GetPlaneIntersections
-                                ((float (*) [4])(local_6938 + 3),local_69c4,local_672c,0x400);
-          local_c = 0;
-          local_6a4 = 0;
+          intersectionCount =
+               GetPlaneIntersections((float (*) [4])(mins + 3),sideCount,intersections,0x400);
+          totalEdges = 0;
+          sideIndex = 0;
           do {
-            if (local_69c4 <= local_6a4) {
-              if (local_c == 0) {
+            if (sideCount <= sideIndex) {
+              if (totalEdges == 0) {
                 Com_UngetToken();
                 return false;
               }
-              pBVar9 = (*param_7)(0x60);
-              param_4->brush = pBVar9;
-              memset((uchar *)param_4->brush,'\0',0x60);
-              param_4->type = 2;
-              pBVar9 = param_4->brush;
-              pBVar9->mins[0] = local_6938[0];
-              pBVar9->mins[1] = local_6938[1];
-              pBVar9->mins[2] = local_6938[2];
-              pBVar9 = param_4->brush;
-              pBVar9->maxs[0] = local_6a0[0];
-              pBVar9->maxs[1] = local_6a0[1];
-              pBVar9->maxs[2] = local_6a0[2];
-              local_69c8 = 0;
-              for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-                for (local_69c0 = 0; local_69c0 < 2; local_69c0 = local_69c0 + 1) {
-                  param_4->brush->axial_cflags[local_69c0][local_8] = local_69bc[local_69c8];
-                  param_4->brush->axial_sflags[local_69c0][local_8] = local_724[local_69c8];
-                  local_69c8 = local_69c8 + 1;
+              pBVar7 = (*Alloc)(0x60);
+              geom->brush = pBVar7;
+              memset((uchar *)geom->brush,'\0',0x60);
+              geom->type = 2;
+              pBVar7 = geom->brush;
+              pBVar7->mins[0] = mins[0];
+              pBVar7->mins[1] = mins[1];
+              pBVar7->mins[2] = mins[2];
+              pBVar7 = geom->brush;
+              pBVar7->maxs[0] = maxs[0];
+              pBVar7->maxs[1] = maxs[1];
+              pBVar7->maxs[2] = maxs[2];
+              order = 0;
+              for (axis = 0; axis < 3; axis = axis + 1) {
+                for (dir = 0; dir < 2; dir = dir + 1) {
+                  geom->brush->axial_cflags[dir][axis] = cflags[order];
+                  geom->brush->axial_sflags[dir][axis] = sflags[order];
+                  order = order + 1;
                 }
               }
-              param_4->brush->numsides = local_69c4;
-              for (local_6a04 = 0; local_6a04 < 6; local_6a04 = local_6a04 + 1) {
-                iVar10 = IsAxisAligned(local_6938 + local_6a04 * 4 + 3);
-                if (iVar10 != 0) {
-                  param_4->brush->numsides = param_4->brush->numsides - 1;
+              geom->brush->numsides = sideCount;
+              for (i = 0; i < 6; i = i + 1) {
+                iVar8 = IsAxisAligned(mins + i * 4 + 3);
+                if (iVar8 != 0) {
+                  geom->brush->numsides = geom->brush->numsides - 1;
                 }
               }
-              if (param_4->brush->numsides != 0) {
-                pcVar11 = (*param_7)(param_4->brush->numsides * 0xc);
-                param_4->brush->sides = pcVar11;
-                pcVar12 = (*param_7)(param_4->brush->numsides * 0x14);
-                param_4->brush->planes = pcVar12;
-                local_6a08 = 0;
-                for (local_6a4 = 0; local_6a4 < local_69c4; local_6a4 = local_6a4 + 1) {
-                  if ((5 < local_6a4) ||
-                     (iVar10 = IsAxisAligned(local_6938 + local_6a4 * 4 + 3), iVar10 == 0)) {
-                    pcVar12 = param_4->brush->planes + local_6a08;
-                    pcVar12->normal[0] = local_6938[local_6a4 * 4 + 3];
-                    pcVar12->normal[1] = local_6938[local_6a4 * 4 + 4];
-                    pcVar12->normal[2] = local_6938[local_6a4 * 4 + 5];
-                    param_4->brush->planes[local_6a08].dist = local_6938[local_6a4 * 4 + 6];
-                    param_4->brush->sides[local_6a08].plane = param_4->brush->planes + local_6a08;
-                    param_4->brush->sides[local_6a08].cflags = local_69bc[local_6a4];
-                    param_4->brush->sides[local_6a08].sflags = local_724[local_6a4];
-                    local_6a08 = local_6a08 + 1;
+              if (geom->brush->numsides != 0) {
+                pcVar9 = (*Alloc)(geom->brush->numsides * 0xc);
+                geom->brush->sides = pcVar9;
+                pcVar10 = (*Alloc)(geom->brush->numsides * 0x14);
+                geom->brush->planes = pcVar10;
+                si = 0;
+                for (sideIndex = 0; sideIndex < sideCount; sideIndex = sideIndex + 1) {
+                  if ((5 < sideIndex) ||
+                     (iVar8 = IsAxisAligned(mins + sideIndex * 4 + 3), iVar8 == 0)) {
+                    pcVar10 = geom->brush->planes + si;
+                    pcVar10->normal[0] = mins[sideIndex * 4 + 3];
+                    pcVar10->normal[1] = mins[sideIndex * 4 + 4];
+                    pcVar10->normal[2] = mins[sideIndex * 4 + 5];
+                    geom->brush->planes[si].dist = mins[sideIndex * 4 + 6];
+                    geom->brush->sides[si].plane = geom->brush->planes + si;
+                    geom->brush->sides[si].cflags = cflags[sideIndex];
+                    geom->brush->sides[si].sflags = sflags[sideIndex];
+                    si = si + 1;
                   }
                 }
               }
-              param_4->brush->numverts = local_72c;
-              pafVar13 = (*param_7)(param_4->brush->numverts * 0xc);
-              param_4->brush->verts = pafVar13;
-              for (local_6a0c = 0; local_6a0c < param_4->brush->numverts;
-                  local_6a0c = local_6a0c + 1) {
-                pafVar13 = param_4->brush->verts + local_6a0c;
-                (*pafVar13)[0] = local_672c[local_6a0c].xyz[0];
-                (*pafVar13)[1] = local_672c[local_6a0c].xyz[1];
-                (*pafVar13)[2] = local_672c[local_6a0c].xyz[2];
+              geom->brush->numverts = intersectionCount;
+              pafVar11 = (*Alloc)(geom->brush->numverts * 0xc);
+              geom->brush->verts = pafVar11;
+              for (pi = 0; pi < geom->brush->numverts; pi = pi + 1) {
+                pafVar11 = geom->brush->verts + pi;
+                (*pafVar11)[0] = intersections[pi].xyz[0];
+                (*pafVar11)[1] = intersections[pi].xyz[1];
+                (*pafVar11)[2] = intersections[pi].xyz[2];
               }
-              param_4->brush->contents = local_69cc;
+              geom->brush->contents = myContents;
               return true;
             }
-            paVar8 = BuildBrushdAdjacencyWindingForSide
-                               (param_2,local_6938 + local_6a4 * 4 + 3,local_6a4,local_672c,
-                                local_72c,aaStack_694 + local_6a4,0xc);
-            if (paVar8 == (adjacencyWinding_t *)0x0) {
-              aaStack_694[local_6a4].numsides = 0;
+            paVar6 = BuildBrushdAdjacencyWindingForSide
+                               (mapname,mins + sideIndex * 4 + 3,sideIndex,intersections,
+                                intersectionCount,aaStack_694 + sideIndex,0xc);
+            if (paVar6 == (adjacencyWinding_t *)0x0) {
+              aaStack_694[sideIndex].numsides = 0;
             }
             else {
-              if ((aaStack_694[local_6a4].numsides < 1) &&
+              if ((aaStack_694[sideIndex].numsides < 1) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                            ,0x1f2,0,"%s"), !bVar3)) {
                 pcVar2 = (code *)swi(3);
                 uVar4 = (*pcVar2)();
                 return (bool)uVar4;
               }
-              local_c = local_c + aaStack_694[local_6a4].numsides;
+              totalEdges = totalEdges + aaStack_694[sideIndex].numsides;
             }
-            local_6a4 = local_6a4 + 1;
+            sideIndex = sideIndex + 1;
           } while( true );
         }
         return false;
       }
       Com_UngetToken();
-      if (local_69c4 == 0x20) {
+      if (sideCount == 0x20) {
         Com_PrintError(0x13,
                        "ERROR: MAX_BUILD_SIDES (%i) -- brush too many sides.  Simplify the collision geometry.\n"
                       );
         return false;
       }
-      Com_Parse1DMatrix(param_1,3,local_69f0);
-      Com_Parse1DMatrix(param_1,3,local_69e4);
-      Com_Parse1DMatrix(param_1,3,local_69d8);
-      if (param_6 != (DObjAnimMat *)0x0) {
-        InvMatrixTransformVectorQuatTrans(local_69f0,param_6,local_69f0);
-        InvMatrixTransformVectorQuatTrans(local_69e4,param_6,local_69e4);
-        InvMatrixTransformVectorQuatTrans(local_69d8,param_6,local_69d8);
+      Com_Parse1DMatrix(file,3,planepts);
+      Com_Parse1DMatrix(file,3,local_69e4);
+      Com_Parse1DMatrix(file,3,local_69d8);
+      if (boneMat != (DObjAnimMat *)0x0) {
+        InvMatrixTransformVectorQuatTrans(planepts,boneMat,planepts);
+        InvMatrixTransformVectorQuatTrans(local_69e4,boneMat,local_69e4);
+        InvMatrixTransformVectorQuatTrans(local_69d8,boneMat,local_69d8);
       }
-      PlaneFromPoints(local_6938 + local_69c4 * 4 + 3,local_69f0,local_69e4,local_69d8);
-      SnapPlane(local_6938 + local_69c4 * 4 + 3);
-      pbVar6 = (byte *)Com_Parse(param_1);
-      iVar10 = g_collision_materials_count;
-      for (local_69f8 = 0; local_69f8 < g_collision_materials_count; local_69f8 = local_69f8 + 1) {
-        local_6aec = g_collision_materials + local_69f8;
-        local_6af0 = pbVar6;
+      PlaneFromPoints(mins + sideCount * 4 + 3,planepts,local_69e4,local_69d8);
+      SnapPlane(mins + sideCount * 4 + 3);
+      name = (byte *)Com_Parse(file);
+      iVar8 = g_collision_materials_count;
+      for (mi = 0; mi < g_collision_materials_count; mi = mi + 1) {
+        local_6aec = g_collision_materials + mi;
+        local_6af0 = name;
         do {
           bVar1 = *local_6af0;
           bVar3 = bVar1 < (byte)local_6aec->name[0];
@@ -671,26 +675,26 @@ LAB_00809ba7:
         local_6af8 = 0;
 LAB_00809bb2:
         if (local_6af8 == 0) {
-          local_69bc[local_69c4] = g_collision_materials[local_69f8].cflags;
-          local_724[local_69c4] = g_collision_materials[local_69f8].sflags;
+          cflags[sideCount] = g_collision_materials[mi].cflags;
+          sflags[sideCount] = g_collision_materials[mi].sflags;
           break;
         }
       }
-      if (local_69f8 == g_collision_materials_count) {
+      if (mi == g_collision_materials_count) {
         if (g_collision_materials_count < 0x200) {
-          pcVar7 = g_collision_materials + g_collision_materials_count;
+          cmat = g_collision_materials + g_collision_materials_count;
           g_collision_materials_count = g_collision_materials_count + 1;
-          GetCollisionMaterial((char *)pbVar6,pcVar7);
-          local_69bc[local_69c4] = g_collision_materials[iVar10].cflags;
-          local_724[local_69c4] = g_collision_materials[iVar10].sflags;
+          GetCollisionMaterial((char *)name,cmat);
+          cflags[sideCount] = g_collision_materials[iVar8].cflags;
+          sflags[sideCount] = g_collision_materials[iVar8].sflags;
         }
         else {
           Com_PrintError(0x13,"Max number of collision materials exceeded %d\n");
         }
       }
-      local_69cc = local_69cc | local_69bc[local_69c4];
-      local_69c4 = local_69c4 + 1;
-      Com_SkipRestOfLine(param_1);
+      myContents = myContents | cflags[sideCount];
+      sideCount = sideCount + 1;
+      Com_SkipRestOfLine(file);
     }
   }
   return false;
@@ -699,7 +703,7 @@ LAB_00809bb2:
 
 // 0080A7E0  Xmodel_ParsePhysicsBox  (xanim/xmodel_load_phys_collmap.cpp:569)
 
-bool __cdecl Xmodel_ParsePhysicsBox(char **param_1,PhysGeomInfo *param_2)
+bool __cdecl Xmodel_ParsePhysicsBox(char **file,PhysGeomInfo *geom)
 
 {
   code *pcVar1;
@@ -708,8 +712,9 @@ bool __cdecl Xmodel_ParsePhysicsBox(char **param_1,PhysGeomInfo *param_2)
   char *pcVar4;
   int iVar5;
   float fVar6;
+  char *token;
   
-  if (param_2 == (PhysGeomInfo *)0x0) {
+  if (geom == (PhysGeomInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                              ,0x23c,0,"%s");
     if (!bVar2) {
@@ -718,40 +723,40 @@ bool __cdecl Xmodel_ParsePhysicsBox(char **param_1,PhysGeomInfo *param_2)
       return (bool)uVar3;
     }
   }
-  pcVar4 = Com_Parse(param_1);
+  pcVar4 = Com_Parse(file);
   if (*pcVar4 == '{') {
-    param_2->type = 1;
-    fVar6 = Com_ParseFloat(param_1);
-    param_2->orientation[0][0] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->orientation[0][1] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->orientation[0][2] = fVar6;
-    fVar6 = Com_ParseFloat(param_1);
-    param_2->orientation[1][0] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->orientation[1][1] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->orientation[1][2] = fVar6;
-    fVar6 = Com_ParseFloat(param_1);
-    param_2->orientation[2][0] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->orientation[2][1] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->orientation[2][2] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->offset[0] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->offset[1] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->offset[2] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->halfLengths[0] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->halfLengths[1] = fVar6;
-    fVar6 = Com_ParseFloatOnLine(param_1);
-    param_2->halfLengths[2] = fVar6;
-    iVar5 = Com_MatchToken(param_1,"}",0);
+    geom->type = 1;
+    fVar6 = Com_ParseFloat(file);
+    geom->orientation[0][0] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->orientation[0][1] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->orientation[0][2] = fVar6;
+    fVar6 = Com_ParseFloat(file);
+    geom->orientation[1][0] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->orientation[1][1] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->orientation[1][2] = fVar6;
+    fVar6 = Com_ParseFloat(file);
+    geom->orientation[2][0] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->orientation[2][1] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->orientation[2][2] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->offset[0] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->offset[1] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->offset[2] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->halfLengths[0] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->halfLengths[1] = fVar6;
+    fVar6 = Com_ParseFloatOnLine(file);
+    geom->halfLengths[2] = fVar6;
+    iVar5 = Com_MatchToken(file,"}",0);
     if (iVar5 == 0) {
       bVar2 = false;
     }
@@ -769,7 +774,7 @@ bool __cdecl Xmodel_ParsePhysicsBox(char **param_1,PhysGeomInfo *param_2)
 
 // 0080A980  Xmodel_ParsePhysicsCylinder  (xanim/xmodel_load_phys_collmap.cpp:606)
 
-bool __cdecl Xmodel_ParsePhysicsCylinder(char **param_1,PhysGeomInfo *param_2)
+bool __cdecl Xmodel_ParsePhysicsCylinder(char **file,PhysGeomInfo *geom)
 
 {
   code *pcVar1;
@@ -777,13 +782,13 @@ bool __cdecl Xmodel_ParsePhysicsCylinder(char **param_1,PhysGeomInfo *param_2)
   undefined1 uVar3;
   int iVar4;
   float fVar5;
-  float local_20 [3];
-  char *local_14;
-  float local_10;
+  float angles [3];
+  char *token;
+  float axis;
   float local_c;
   float local_8;
   
-  if (param_2 == (PhysGeomInfo *)0x0) {
+  if (geom == (PhysGeomInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                              ,0x263,0,"%s");
     if (!bVar2) {
@@ -792,29 +797,29 @@ bool __cdecl Xmodel_ParsePhysicsCylinder(char **param_1,PhysGeomInfo *param_2)
       return (bool)uVar3;
     }
   }
-  local_14 = Com_Parse(param_1);
-  if (*local_14 == '{') {
-    param_2->type = 3;
-    local_10 = Com_ParseFloat(param_1);
-    local_c = Com_ParseFloatOnLine(param_1);
-    local_8 = Com_ParseFloatOnLine(param_1);
-    fVar5 = Com_ParseFloatOnLine(param_1);
-    param_2->offset[0] = fVar5;
-    fVar5 = Com_ParseFloatOnLine(param_1);
-    param_2->offset[1] = fVar5;
-    fVar5 = Com_ParseFloatOnLine(param_1);
-    param_2->offset[2] = fVar5;
-    fVar5 = Com_ParseFloatOnLine(param_1);
-    param_2->halfLengths[0] = fVar5 * 0.5;
-    fVar5 = Com_ParseFloatOnLine(param_1);
-    param_2->halfLengths[1] = fVar5;
-    iVar4 = Com_MatchToken(param_1,"}",0);
+  token = Com_Parse(file);
+  if (*token == '{') {
+    geom->type = 3;
+    axis = Com_ParseFloat(file);
+    local_c = Com_ParseFloatOnLine(file);
+    local_8 = Com_ParseFloatOnLine(file);
+    fVar5 = Com_ParseFloatOnLine(file);
+    geom->offset[0] = fVar5;
+    fVar5 = Com_ParseFloatOnLine(file);
+    geom->offset[1] = fVar5;
+    fVar5 = Com_ParseFloatOnLine(file);
+    geom->offset[2] = fVar5;
+    fVar5 = Com_ParseFloatOnLine(file);
+    geom->halfLengths[0] = fVar5 * 0.5;
+    fVar5 = Com_ParseFloatOnLine(file);
+    geom->halfLengths[1] = fVar5;
+    iVar4 = Com_MatchToken(file,"}",0);
     if (iVar4 == 0) {
       bVar2 = false;
     }
     else {
-      vectoangles(&local_10,local_20);
-      AnglesToAxis(local_20,param_2->orientation);
+      vectoangles(&axis,angles);
+      AnglesToAxis(angles,geom->orientation);
       bVar2 = true;
     }
   }
@@ -828,7 +833,7 @@ bool __cdecl Xmodel_ParsePhysicsCylinder(char **param_1,PhysGeomInfo *param_2)
 
 // 00807A80  SkipEpair  (xanim/xmodel_load_phys_collmap.cpp:646)
 
-bool __cdecl SkipEpair(char *param_1,char **param_2)
+bool __cdecl SkipEpair(char *token,char **file)
 
 {
   uchar *puVar1;
@@ -836,14 +841,14 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
-  uchar *puVar3;
+  uchar *string;
   int extraout_EAX_02;
   int extraout_EAX_03;
   int extraout_EAX_04;
   uchar *local_18;
   char *local_8;
   
-  local_8 = param_1;
+  local_8 = token;
   pcVar2 = local_8;
   do {
     local_8 = pcVar2;
@@ -853,19 +858,19 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
     Com_PrintError(0x13,"SkipEpair: key \'%s\' ends with a \'\\\'\n");
     return false;
   }
-  strchr((uchar *)param_1,'\n');
-  if ((extraout_EAX != 0) || (strchr((uchar *)param_1,'\r'), extraout_EAX_00 != 0)) {
+  strchr((uchar *)token,'\n');
+  if ((extraout_EAX != 0) || (strchr((uchar *)token,'\r'), extraout_EAX_00 != 0)) {
     Com_PrintError(0x13,"SkipEpair: key \'%s\' contains a newline character\n");
     return false;
   }
-  strchr((uchar *)param_1,'\"');
+  strchr((uchar *)token,'\"');
   if (extraout_EAX_01 != 0) {
     Com_PrintError(0x13,"SkipEpair: key \'%s\' contains a \" character, will cause parsing errors\n"
                   );
     return false;
   }
-  puVar3 = (uchar *)Com_ParseOnLine(param_2);
-  puVar1 = puVar3;
+  string = (uchar *)Com_ParseOnLine(file);
+  puVar1 = string;
   do {
     local_18 = puVar1;
     puVar1 = local_18 + 1;
@@ -874,9 +879,9 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
     Com_PrintError(0x13,"SkipEpair: value \'%s\' ends with a \'\\\'\n");
     return false;
   }
-  strchr(puVar3,'\n');
-  if ((extraout_EAX_02 == 0) && (strchr(puVar3,'\r'), extraout_EAX_03 == 0)) {
-    strchr(puVar3,'\"');
+  strchr(string,'\n');
+  if ((extraout_EAX_02 == 0) && (strchr(string,'\r'), extraout_EAX_03 == 0)) {
+    strchr(string,'\"');
     if (extraout_EAX_04 != 0) {
       Com_PrintError(0x13,
                      "SkipEpair: value \'%s\' contains a \" character, will cause parsing errors\n")
@@ -894,31 +899,32 @@ bool __cdecl SkipEpair(char *param_1,char **param_2)
 
 // 0080AAC0  GetGeomAABB  (xanim/xmodel_load_phys_collmap.cpp:678)
 
-void __cdecl GetGeomAABB(PhysGeomInfo *param_1,float *param_2,float *param_3)
+void __cdecl GetGeomAABB(PhysGeomInfo *geom,float *mins,float *maxs)
 
 {
   BrushWrapper *pBVar1;
   code *pcVar2;
   bool bVar3;
   float fVar4;
-  float local_18;
+  float range;
   float local_14;
   float local_10;
-  uint local_c;
+  uint axisIndex;
+  float axisRange;
   
-  if (param_1->brush == (BrushWrapper *)0x0) {
-    local_18 = 0.0;
+  if (geom->brush == (BrushWrapper *)0x0) {
+    range = 0.0;
     local_14 = 0.0;
     local_10 = 0.0;
-    if (param_1->type == 1) {
-      local_18 = param_1->halfLengths[0];
-      local_14 = param_1->halfLengths[1];
-      local_10 = param_1->halfLengths[2];
+    if (geom->type == 1) {
+      range = geom->halfLengths[0];
+      local_14 = geom->halfLengths[1];
+      local_10 = geom->halfLengths[2];
     }
-    else if (param_1->type == 3) {
-      local_18 = param_1->halfLengths[0];
-      local_14 = param_1->halfLengths[1];
-      local_10 = param_1->halfLengths[1];
+    else if (geom->type == 3) {
+      range = geom->halfLengths[0];
+      local_14 = geom->halfLengths[1];
+      local_10 = geom->halfLengths[1];
     }
     else {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
@@ -929,23 +935,23 @@ void __cdecl GetGeomAABB(PhysGeomInfo *param_1,float *param_2,float *param_3)
         return;
       }
     }
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      fVar4 = ABS(param_1->orientation[0][local_c] * local_18) +
-              ABS(param_1->offset[local_c - 6] * local_14) +
-              ABS(param_1->offset[local_c - 3] * local_10);
-      param_2[local_c] = param_1->offset[local_c] - fVar4;
-      param_3[local_c] = param_1->offset[local_c] + fVar4;
+    for (axisIndex = 0; axisIndex < 3; axisIndex = axisIndex + 1) {
+      fVar4 = ABS(geom->orientation[0][axisIndex] * range) +
+              ABS(geom->offset[axisIndex - 6] * local_14) +
+              ABS(geom->offset[axisIndex - 3] * local_10);
+      mins[axisIndex] = geom->offset[axisIndex] - fVar4;
+      maxs[axisIndex] = geom->offset[axisIndex] + fVar4;
     }
   }
   else {
-    pBVar1 = param_1->brush;
-    *param_2 = pBVar1->mins[0];
-    param_2[1] = pBVar1->mins[1];
-    param_2[2] = pBVar1->mins[2];
-    pBVar1 = param_1->brush;
-    *param_3 = pBVar1->maxs[0];
-    param_3[1] = pBVar1->maxs[1];
-    param_3[2] = pBVar1->maxs[2];
+    pBVar1 = geom->brush;
+    *mins = pBVar1->mins[0];
+    mins[1] = pBVar1->mins[1];
+    mins[2] = pBVar1->mins[2];
+    pBVar1 = geom->brush;
+    *maxs = pBVar1->maxs[0];
+    maxs[1] = pBVar1->maxs[1];
+    maxs[2] = pBVar1->maxs[2];
   }
   return;
 }
@@ -953,29 +959,29 @@ void __cdecl GetGeomAABB(PhysGeomInfo *param_1,float *param_2,float *param_3)
 
 // 008083D0  AddBoneName  (xanim/xmodel_load_phys_collmap.cpp:720)
 
-bool __cdecl AddBoneName(uint *param_1,int param_2,char *param_3)
+bool __cdecl AddBoneName(uint *boneNameArray,int boneNameLen,char *boneName)
 
 {
   uint uVar1;
-  int local_8;
+  uint hash;
+  int i;
   
-  uVar1 = SL_GetLowercaseString(param_3,0,SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; (param_1[local_8] != 0xffffffff && (local_8 < param_2)); local_8 = local_8 + 1)
-  {
-    if (param_1[local_8] == uVar1) {
+  uVar1 = SL_GetLowercaseString(boneName,0,SCRIPTINSTANCE_SERVER);
+  for (i = 0; (boneNameArray[i] != 0xffffffff && (i < boneNameLen)); i = i + 1) {
+    if (boneNameArray[i] == uVar1) {
       return false;
     }
   }
-  if (local_8 < param_2) {
-    param_1[local_8] = uVar1;
+  if (i < boneNameLen) {
+    boneNameArray[i] = uVar1;
   }
-  return local_8 < param_2;
+  return i < boneNameLen;
 }
 
 
 // 00808070  Xmodel_CountPhysicsCollMaps  (xanim/xmodel_load_phys_collmap.cpp:744)
 
-uint __cdecl Xmodel_CountPhysicsCollMaps(char **param_1,char *param_2,uint *param_3,int param_4)
+uint __cdecl Xmodel_CountPhysicsCollMaps(char **file,char *name,uint *boneHashes,int boneNameLen)
 
 {
   byte bVar1;
@@ -997,9 +1003,10 @@ uint __cdecl Xmodel_CountPhysicsCollMaps(char **param_1,char *param_2,uint *para
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_c;
+  uint collMapCount;
+  char *token;
   
-  local_14 = (byte *)Com_Parse(param_1);
+  local_14 = (byte *)Com_Parse(file);
   local_10 = &s_iwmap;
   do {
     bVar1 = *local_14;
@@ -1022,14 +1029,14 @@ LAB_008080d7:
     Com_PrintError(0x13,"ERROR: \'%s\' is missing \'iwmap\' version specification\n");
     return 0;
   }
-  pcVar2 = Com_Parse(param_1);
+  pcVar2 = Com_Parse(file);
   iVar3 = atoi(pcVar2);
   if (iVar3 != 4) {
     Com_PrintError(0x13,"ERROR: \'%s\' is version \'%s\'; should be version \'%i\'\n");
     return 0;
   }
   do {
-    local_3c = (byte *)Com_Parse(param_1);
+    local_3c = (byte *)Com_Parse(file);
     if (*local_3c == 0) {
       return 0;
     }
@@ -1056,7 +1063,7 @@ LAB_008081af:
       local_38 = &s__;
       break;
     }
-    Com_SkipRestOfLine(param_1);
+    Com_SkipRestOfLine(file);
   } while( true );
   while( true ) {
     bVar1 = local_3c[1];
@@ -1077,9 +1084,9 @@ LAB_0080821a:
   local_44 = 0;
 LAB_00808222:
   if (local_44 == 0) {
-    AddBoneName(param_3,param_4,"");
-    local_c = 1;
-    while (local_64 = (byte *)Com_Parse(param_1), *local_64 != 0) {
+    AddBoneName(boneHashes,boneNameLen,"");
+    collMapCount = 1;
+    while (local_64 = (byte *)Com_Parse(file), *local_64 != 0) {
       local_4c = &s__;
       local_50 = local_64;
       do {
@@ -1100,9 +1107,9 @@ LAB_008082d2:
       local_58 = 0;
 LAB_008082da:
       if (local_58 == 0) {
-        bVar4 = AddBoneName(param_3,param_4,"");
+        bVar4 = AddBoneName(boneHashes,boneNameLen,"");
         if (bVar4) {
-          local_c = local_c + 1;
+          collMapCount = collMapCount + 1;
         }
       }
       else {
@@ -1125,15 +1132,15 @@ LAB_0080835a:
         local_6c = 0;
 LAB_00808362:
         if (local_6c == 0) {
-          pcVar2 = Com_Parse(param_1);
-          bVar4 = AddBoneName(param_3,param_4,pcVar2);
+          pcVar2 = Com_Parse(file);
+          bVar4 = AddBoneName(boneHashes,boneNameLen,pcVar2);
           if (bVar4) {
-            local_c = local_c + 1;
+            collMapCount = collMapCount + 1;
           }
-          Com_SkipBracedSection(param_1,1,0x7fffffff);
+          Com_SkipBracedSection(file,1,0x7fffffff);
         }
         else {
-          Com_SkipRestOfLine(param_1);
+          Com_SkipRestOfLine(file);
         }
       }
     }
@@ -1141,15 +1148,15 @@ LAB_00808362:
   else {
     Com_GetCurrentParseLine();
     Com_PrintError(0x13,"ERROR: ParsePhysicsCollMap: { not found, found %s on line %d");
-    local_c = 0;
+    collMapCount = 0;
   }
-  return local_c;
+  return collMapCount;
 }
 
 
 // 00808450  Xmodel_CountPhysicsCollMapGeoms  (xanim/xmodel_load_phys_collmap.cpp:817)
 
-uint __cdecl Xmodel_CountPhysicsCollMapGeoms(char **param_1,char *param_2,uint param_3)
+uint __cdecl Xmodel_CountPhysicsCollMapGeoms(char **file,char *name,uint boneHash)
 
 {
   byte bVar1;
@@ -1190,9 +1197,10 @@ uint __cdecl Xmodel_CountPhysicsCollMapGeoms(char **param_1,char *param_2,uint p
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_c;
+  uint brushCount;
+  char *token;
   
-  local_14 = (byte *)Com_Parse(param_1);
+  local_14 = (byte *)Com_Parse(file);
   local_10 = &s_iwmap;
   do {
     bVar1 = *local_14;
@@ -1215,14 +1223,14 @@ LAB_008084ba:
     Com_PrintError(0x13,"ERROR: \'%s\' is missing \'iwmap\' version specification\n");
     return 0;
   }
-  pcVar2 = Com_Parse(param_1);
+  pcVar2 = Com_Parse(file);
   iVar3 = atoi(pcVar2);
   if (iVar3 != 4) {
     Com_PrintError(0x13,"ERROR: \'%s\' is version \'%s\'; should be version \'%i\'\n");
     return 0;
   }
   do {
-    local_3c = (byte *)Com_Parse(param_1);
+    local_3c = (byte *)Com_Parse(file);
     if (*local_3c == 0) {
       return 0;
     }
@@ -1249,7 +1257,7 @@ LAB_00808592:
       local_38 = &s__;
       break;
     }
-    Com_SkipRestOfLine(param_1);
+    Com_SkipRestOfLine(file);
   } while( true );
   while( true ) {
     bVar1 = local_3c[1];
@@ -1270,9 +1278,9 @@ LAB_008085fd:
   local_44 = 0;
 LAB_00808605:
   if (local_44 == 0) {
-    local_c = 0;
+    brushCount = 0;
 LAB_00808638:
-    local_64 = (byte *)Com_Parse(param_1);
+    local_64 = (byte *)Com_Parse(file);
     if (*local_64 != 0) {
       local_4c = &s__;
       local_50 = local_64;
@@ -1294,7 +1302,7 @@ LAB_008086b1:
       local_58 = 0;
 LAB_008086b9:
       if (local_58 == 0) {
-        return local_c;
+        return brushCount;
       }
       local_60 = &s__;
       do {
@@ -1316,7 +1324,7 @@ LAB_00808714:
 LAB_0080871c:
       if (local_6c == 0) {
 LAB_0080872c:
-        local_c8 = (byte *)Com_Parse(param_1);
+        local_c8 = (byte *)Com_Parse(file);
         if (*local_c8 != 0) {
           local_74 = &s__;
           local_78 = local_c8;
@@ -1339,8 +1347,8 @@ LAB_00808794:
 LAB_0080879c:
           if (local_80 == 0) {
             uVar4 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-            if (param_3 == uVar4) {
-              local_c = local_c + 1;
+            if (boneHash == uVar4) {
+              brushCount = brushCount + 1;
             }
             goto LAB_00808638;
           }
@@ -1364,12 +1372,12 @@ LAB_00808840:
           local_94 = 0;
 LAB_0080884b:
           if (local_94 == 0) {
-            pcVar2 = Com_Parse(param_1);
+            pcVar2 = Com_Parse(file);
             uVar4 = SL_FindLowercaseString(pcVar2,SCRIPTINSTANCE_SERVER);
-            if (param_3 == uVar4) {
-              local_c = local_c + 1;
+            if (boneHash == uVar4) {
+              brushCount = brushCount + 1;
             }
-            Com_SkipBracedSection(param_1,1,0x7fffffff);
+            Com_SkipBracedSection(file,1,0x7fffffff);
             goto LAB_00808638;
           }
           local_9c = (byte *)0xcb1c84;
@@ -1438,7 +1446,7 @@ LAB_00808a71:
 LAB_00808a7c:
           if (local_d0 == 0) {
             do {
-              local_dc = (byte *)Com_Parse(param_1);
+              local_dc = (byte *)Com_Parse(file);
               if (*local_dc == 0) break;
               local_d8 = &s__;
               do {
@@ -1479,8 +1487,8 @@ LAB_00808b2f:
 
 PhysGeomList * __cdecl
 Xmodel_ParsePhysicsCollMap
-          (char **param_1,char *param_2,uint param_3,uint param_4,DObjAnimMat *param_5,
-          _func___cdecl_void_ptr_int *param_6)
+          (char **file,char *name,uint geomCount,uint boneHash,DObjAnimMat *boneMat,
+          _func___cdecl_void_ptr_int *Alloc)
 
 {
   byte bVar1;
@@ -1525,33 +1533,33 @@ Xmodel_ParsePhysicsCollMap
   int local_54;
   byte *local_4c;
   byte *local_48;
-  uint local_44;
-  float local_40;
+  uint geomIndex_2;
+  float mins;
   float local_3c;
   float local_38;
-  float local_34;
+  float geomMaxs;
   float local_30;
   float local_2c;
-  float local_28;
+  float maxs;
   float local_24;
   float local_20;
-  PhysGeomList *local_1c;
-  float local_18;
+  PhysGeomList *geomList;
+  float geomMins;
   float local_14;
   float local_10;
-  byte *local_c;
-  uint local_8;
+  char *token;
+  uint geomIndex;
   
-  if ((param_3 == 0) &&
+  if ((geomCount == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                ,0x3a1,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pPVar4 = (PhysGeomList *)(*pcVar2)();
     return pPVar4;
   }
-  local_c = (byte *)Com_Parse(param_1);
+  token = Com_Parse(file);
   local_48 = &s_iwmap;
-  local_4c = local_c;
+  local_4c = (byte *)token;
   do {
     bVar1 = *local_4c;
     bVar3 = bVar1 < *local_48;
@@ -1573,19 +1581,19 @@ LAB_00808bf6:
     Com_PrintError(0x13,"ERROR: \'%s\' is missing \'iwmap\' version specification\n");
     return (PhysGeomList *)0x0;
   }
-  local_c = (byte *)Com_Parse(param_1);
-  iVar5 = atoi((char *)local_c);
+  token = Com_Parse(file);
+  iVar5 = atoi(token);
   if (iVar5 != 4) {
     Com_PrintError(0x13,"ERROR: \'%s\' is version \'%s\'; should be version \'%i\'\n");
     return (PhysGeomList *)0x0;
   }
   do {
-    local_c = (byte *)Com_Parse(param_1);
-    if (*local_c == 0) {
+    token = Com_Parse(file);
+    if (*token == 0) {
       return (PhysGeomList *)0x0;
     }
     local_5c = &s__;
-    local_60 = local_c;
+    local_60 = (byte *)token;
     do {
       bVar1 = *local_60;
       bVar3 = bVar1 < *local_5c;
@@ -1605,10 +1613,10 @@ LAB_00808cc6:
 LAB_00808cce:
     if (local_68 == 0) {
       local_70 = &s__;
-      local_74 = local_c;
+      local_74 = (byte *)token;
       break;
     }
-    Com_SkipRestOfLine(param_1);
+    Com_SkipRestOfLine(file);
   } while( true );
   while( true ) {
     bVar1 = local_74[1];
@@ -1629,41 +1637,41 @@ LAB_00808d39:
   local_7c = 0;
 LAB_00808d41:
   if (local_7c == 0) {
-    local_1c = (*param_6)(0xc);
-    local_1c->count = 0;
-    local_1c->geoms = (PhysGeomInfo *)0x0;
-    local_1c->contents = 0;
-    local_1c->count = param_3;
-    pPVar6 = (*param_6)(param_3 * 0x44);
-    local_1c->geoms = pPVar6;
-    memset((uchar *)local_1c->geoms,'\0',param_3 * 0x44);
-    local_8 = 0;
+    geomList = (*Alloc)(0xc);
+    geomList->count = 0;
+    geomList->geoms = (PhysGeomInfo *)0x0;
+    geomList->contents = 0;
+    geomList->count = geomCount;
+    pPVar6 = (*Alloc)(geomCount * 0x44);
+    geomList->geoms = pPVar6;
+    memset((uchar *)geomList->geoms,'\0',geomCount * 0x44);
+    geomIndex = 0;
 LAB_00808dbf:
     do {
-      if (param_3 <= local_8) {
+      if (geomCount <= geomIndex) {
 LAB_008093ba:
-        if ((local_8 != param_3) &&
+        if ((geomIndex != geomCount) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                      ,0x415,0,"geomIndex == geomCount\n\t%i, %i"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           pPVar4 = (PhysGeomList *)(*pcVar2)();
           return pPVar4;
         }
-        local_40 = 3.4028235e+38;
+        mins = 3.4028235e+38;
         local_3c = 3.4028235e+38;
         local_38 = 3.4028235e+38;
-        local_28 = -3.4028235e+38;
+        maxs = -3.4028235e+38;
         local_24 = -3.4028235e+38;
         local_20 = -3.4028235e+38;
-        for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-          GetGeomAABB(local_1c->geoms + local_8,&local_18,&local_34);
-          if (local_28 - local_34 < 0.0) {
-            local_110 = local_34;
+        for (geomIndex = 0; geomIndex < geomCount; geomIndex = geomIndex + 1) {
+          GetGeomAABB(geomList->geoms + geomIndex,&geomMins,&geomMaxs);
+          if (maxs - geomMaxs < 0.0) {
+            local_110 = geomMaxs;
           }
           else {
-            local_110 = local_28;
+            local_110 = maxs;
           }
-          local_28 = local_110;
+          maxs = local_110;
           if (local_24 - local_30 < 0.0) {
             local_114 = local_30;
           }
@@ -1678,13 +1686,13 @@ LAB_008093ba:
             local_118 = local_20;
           }
           local_20 = local_118;
-          if (local_18 - local_40 < 0.0) {
-            local_11c = local_18;
+          if (geomMins - mins < 0.0) {
+            local_11c = geomMins;
           }
           else {
-            local_11c = local_40;
+            local_11c = mins;
           }
-          local_40 = local_11c;
+          mins = local_11c;
           if (local_14 - local_3c < 0.0) {
             local_120 = local_14;
           }
@@ -1700,7 +1708,7 @@ LAB_008093ba:
           }
           local_38 = local_124;
         }
-        if ((local_28 <= local_40) &&
+        if ((maxs <= mins) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                      ,0x423,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -1721,36 +1729,38 @@ LAB_008093ba:
           pPVar4 = (PhysGeomList *)(*pcVar2)();
           return pPVar4;
         }
-        local_1c->contents = 0;
-        local_44 = 0;
+        geomList->contents = 0;
+        geomIndex_2 = 0;
         while( true ) {
-          if (local_1c->count <= local_44) {
-            return local_1c;
+          if (geomList->count <= geomIndex_2) {
+            return geomList;
           }
-          if ((local_1c->geoms == (PhysGeomInfo *)0x0) &&
+          if ((geomList->geoms == (PhysGeomInfo *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                        ,0x42b,0,"%s"), !bVar3)) break;
-          if (local_1c->geoms[local_44].brush == (BrushWrapper *)0x0) {
-            if ((local_1c->geoms[local_44].type == 3) || (local_1c->geoms[local_44].type == 1)) {
-              local_1c->contents = local_1c->contents | 0x400;
+          if (geomList->geoms[geomIndex_2].brush == (BrushWrapper *)0x0) {
+            if ((geomList->geoms[geomIndex_2].type == 3) || (geomList->geoms[geomIndex_2].type == 1)
+               ) {
+              geomList->contents = geomList->contents | 0x400;
             }
           }
           else {
-            local_1c->contents = local_1c->contents | (local_1c->geoms[local_44].brush)->contents;
+            geomList->contents = geomList->contents | (geomList->geoms[geomIndex_2].brush)->contents
+            ;
           }
-          local_44 = local_44 + 1;
+          geomIndex_2 = geomIndex_2 + 1;
         }
         pcVar2 = (code *)swi(3);
         pPVar4 = (PhysGeomList *)(*pcVar2)();
         return pPVar4;
       }
-      local_c = (byte *)Com_Parse(param_1);
-      if (*local_c == 0) {
+      token = Com_Parse(file);
+      if (*token == 0) {
         Com_PrintError(0x13,"ERROR: ParsePhysicsCollMap: EOF without closing brace");
         return (PhysGeomList *)0x0;
       }
       local_84 = &s__;
-      local_88 = local_c;
+      local_88 = (byte *)token;
       do {
         bVar1 = *local_88;
         bVar3 = bVar1 < *local_84;
@@ -1770,7 +1780,7 @@ LAB_00808e5f:
 LAB_00808e6a:
       if (local_90 == 0) goto LAB_008093ba;
       local_98 = &s__;
-      local_9c = local_c;
+      local_9c = (byte *)token;
       do {
         bVar1 = *local_9c;
         bVar3 = bVar1 < *local_98;
@@ -1789,10 +1799,10 @@ LAB_00808ef5:
       local_a4 = 0;
 LAB_00808f00:
       if (local_a4 == 0) {
-        local_c = (byte *)Com_Parse(param_1);
-        if (*local_c == 0) goto LAB_008093ba;
+        token = Com_Parse(file);
+        if (*token == 0) goto LAB_008093ba;
         local_ac = &s_guid;
-        local_b0 = local_c;
+        local_b0 = (byte *)token;
         do {
           bVar1 = *local_b0;
           bVar3 = bVar1 < *local_ac;
@@ -1811,11 +1821,11 @@ LAB_00808fa8:
         local_b8 = 0;
 LAB_00808fb3:
         if (local_b8 == 0) {
-          local_c = (byte *)Com_ParseRestOfLine(param_1);
-          local_c = (byte *)Com_Parse(param_1);
+          token = Com_ParseRestOfLine(file);
+          token = Com_Parse(file);
         }
         local_c0 = (byte *)0xcb1c84;
-        local_c4 = local_c;
+        local_c4 = (byte *)token;
         do {
           bVar1 = *local_c4;
           bVar3 = bVar1 < *local_c0;
@@ -1838,7 +1848,7 @@ LAB_00809062:
           return (PhysGeomList *)0x0;
         }
         local_d4 = &s_mesh;
-        local_d8 = local_c;
+        local_d8 = (byte *)token;
         do {
           bVar1 = *local_d8;
           bVar3 = bVar1 < *local_d4;
@@ -1861,7 +1871,7 @@ LAB_0080910e:
           return (PhysGeomList *)0x0;
         }
         local_e8 = (byte *)0xd12f6c;
-        local_ec = local_c;
+        local_ec = (byte *)token;
         do {
           bVar1 = *local_ec;
           bVar3 = bVar1 < *local_e8;
@@ -1880,19 +1890,19 @@ LAB_008091af:
         local_f4 = 0;
 LAB_008091ba:
         if (local_f4 == 0) {
-          bVar3 = Xmodel_ParsePhysicsCylinder(param_1,local_1c->geoms + local_8);
+          bVar3 = Xmodel_ParsePhysicsCylinder(file,geomList->geoms + geomIndex);
           if (!bVar3) {
             return (PhysGeomList *)0x0;
           }
-          iVar5 = Com_MatchToken(param_1,"}",0);
+          iVar5 = Com_MatchToken(file,"}",0);
           if (iVar5 == 0) {
             return (PhysGeomList *)0x0;
           }
-          local_8 = local_8 + 1;
+          geomIndex = geomIndex + 1;
         }
         else {
           local_fc = (byte *)0xd12f60;
-          local_100 = local_c;
+          local_100 = (byte *)token;
           do {
             bVar1 = *local_100;
             bVar3 = bVar1 < *local_fc;
@@ -1911,39 +1921,39 @@ LAB_00809293:
           local_108 = 0;
 LAB_0080929e:
           if (local_108 == 0) {
-            bVar3 = Xmodel_ParsePhysicsBox(param_1,local_1c->geoms + local_8);
+            bVar3 = Xmodel_ParsePhysicsBox(file,geomList->geoms + geomIndex);
             if (!bVar3) {
               return (PhysGeomList *)0x0;
             }
-            iVar5 = Com_MatchToken(param_1,"}",0);
+            iVar5 = Com_MatchToken(file,"}",0);
             if (iVar5 == 0) {
               return (PhysGeomList *)0x0;
             }
-            local_8 = local_8 + 1;
+            geomIndex = geomIndex + 1;
           }
           else {
             Com_UngetToken();
             bVar3 = Xmodel_ParsePhysicsBrush
-                              (param_1,param_2,local_8,local_1c->geoms + local_8,param_4,param_5,
-                               param_6);
+                              (file,name,geomIndex,geomList->geoms + geomIndex,boneHash,boneMat,
+                               Alloc);
             if (bVar3) {
-              if ((local_1c->geoms[local_8].brush == (BrushWrapper *)0x0) &&
+              if ((geomList->geoms[geomIndex].brush == (BrushWrapper *)0x0) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                            ,0x403,1,"%s"), !bVar3)) {
                 pcVar2 = (code *)swi(3);
                 pPVar4 = (PhysGeomList *)(*pcVar2)();
                 return pPVar4;
               }
-              local_8 = local_8 + 1;
+              geomIndex = geomIndex + 1;
             }
             else {
-              Com_SkipBracedSection(param_1,1,0x7fffffff);
+              Com_SkipBracedSection(file,1,0x7fffffff);
             }
           }
         }
         goto LAB_00808dbf;
       }
-      bVar3 = SkipEpair((char *)local_c,param_1);
+      bVar3 = SkipEpair(token,file);
     } while (bVar3);
   }
   else {
@@ -1959,7 +1969,7 @@ LAB_0080929e:
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-XModel_LoadCollMap(char *param_1,_func___cdecl_void_ptr_int *param_2,XModel *param_3,char *param_4)
+XModel_LoadCollMap(char *name,_func___cdecl_void_ptr_int *Alloc,XModel *model,char *xmodelName)
 
 {
   code *pcVar1;
@@ -1968,29 +1978,29 @@ XModel_LoadCollMap(char *param_1,_func___cdecl_void_ptr_int *param_2,XModel *par
   Collmap *pCVar4;
   uint uVar5;
   PhysGeomList *pPVar6;
-  DObjAnimMat *local_6b8;
-  char local_6b4 [1028];
+  DObjAnimMat *mat;
+  char filename [1028];
   uint local_2b0;
-  uint local_2ac;
-  char *local_2a8;
-  uint local_2a4;
-  char *local_2a0;
-  int local_29c;
-  uint local_298;
-  uint local_294 [161];
-  uint local_10;
-  Collmap *local_c;
-  uint local_8;
+  uint boneIndex;
+  char *buf;
+  uint boneHash;
+  uchar *file;
+  int fileSize;
+  uint geomCount;
+  uint boneHashes [161];
+  uint collmapCount;
+  Collmap *collmap;
+  uint collIndex;
   
   local_2b0 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = Com_sprintf(local_6b4,0x400,"collmaps/%s");
+  iVar3 = Com_sprintf(filename,0x400,"collmaps/%s");
   if (iVar3 < 0) {
     Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n");
   }
   else {
-    local_29c = FS_ReadFile(local_6b4,&local_2a0);
-    if (local_29c < 0) {
-      if ((local_2a0 != (char *)0x0) &&
+    fileSize = FS_ReadFile(filename,&file);
+    if (fileSize < 0) {
+      if ((file != (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                    ,0x453,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1998,15 +2008,15 @@ XModel_LoadCollMap(char *param_1,_func___cdecl_void_ptr_int *param_2,XModel *par
         return;
       }
     }
-    else if (local_29c == 0) {
+    else if (fileSize == 0) {
       Com_PrintError(0x13,"ERROR: physics collmap \'%s\' has 0 length\n");
-      FS_FreeFile(local_2a0);
+      FS_FreeFile(file);
     }
     else {
-      memset((uchar *)local_294,0xff,0x280);
-      local_2a8 = local_2a0;
-      local_10 = Xmodel_CountPhysicsCollMaps(&local_2a8,local_6b4,local_294,0xa0);
-      if (((local_10 == 0) || (0xff < local_10)) &&
+      memset((uchar *)boneHashes,0xff,0x280);
+      buf = (char *)file;
+      collmapCount = Xmodel_CountPhysicsCollMaps(&buf,filename,boneHashes,0xa0);
+      if (((collmapCount == 0) || (0xff < collmapCount)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                    ,0x464,0,
                                    "collmapCount not in [1, static_cast< byte >( ~0 )]\n\t%i not in [%i, %i]"
@@ -2015,16 +2025,16 @@ XModel_LoadCollMap(char *param_1,_func___cdecl_void_ptr_int *param_2,XModel *par
         (*pcVar1)();
         return;
       }
-      param_3->numCollmaps = (uchar)local_10;
-      pCVar4 = (*param_2)(local_10 << 2);
-      param_3->collmaps = pCVar4;
-      memset((uchar *)param_3->collmaps,'\0',local_10 << 2);
-      for (local_2ac = 0; local_2ac < param_3->numBones; local_2ac = local_2ac + 1) {
-        (param_3->field18_0xb8).localBoneInfo[local_2ac].collmap = 0xff;
+      model->numCollmaps = (uchar)collmapCount;
+      pCVar4 = (*Alloc)(collmapCount << 2);
+      model->collmaps = pCVar4;
+      memset((uchar *)model->collmaps,'\0',collmapCount << 2);
+      for (boneIndex = 0; boneIndex < model->numBones; boneIndex = boneIndex + 1) {
+        (model->field18_0xb8).localBoneInfo[boneIndex].collmap = 0xff;
       }
-      for (local_8 = 0; local_8 < local_10; local_8 = local_8 + 1) {
-        local_2a4 = local_294[local_8];
-        if ((local_2a4 == 0xffffffff) &&
+      for (collIndex = 0; collIndex < collmapCount; collIndex = collIndex + 1) {
+        boneHash = boneHashes[collIndex];
+        if ((boneHash == 0xffffffff) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                      ,0x472,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -2032,32 +2042,32 @@ XModel_LoadCollMap(char *param_1,_func___cdecl_void_ptr_int *param_2,XModel *par
           return;
         }
         uVar5 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-        if (local_2a4 == uVar5) {
-          local_c = param_3->collmaps;
+        if (boneHash == uVar5) {
+          collmap = model->collmaps;
         }
         else {
-          local_c = param_3->collmaps + local_8;
+          collmap = model->collmaps + collIndex;
         }
-        local_2ac = 0;
+        boneIndex = 0;
         while( true ) {
           uVar5 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-          if ((local_2a4 == uVar5) || (param_3->numBones <= local_2ac)) goto LAB_00807ef7;
-          if (local_2a4 == (param_3->field5_0x8).localBoneNames[local_2ac]) break;
-          local_2ac = local_2ac + 1;
+          if ((boneHash == uVar5) || (model->numBones <= boneIndex)) goto LAB_00807ef7;
+          if (boneHash == (model->field5_0x8).localBoneNames[boneIndex]) break;
+          boneIndex = boneIndex + 1;
         }
-        (param_3->field18_0xb8).localBoneInfo[local_2ac].collmap = (uchar)local_8;
+        (model->field18_0xb8).localBoneInfo[boneIndex].collmap = (uchar)collIndex;
 LAB_00807ef7:
-        if (local_2ac == param_3->numBones) {
-          SL_ConvertToString(local_2a4,SCRIPTINSTANCE_SERVER);
+        if (boneIndex == model->numBones) {
+          SL_ConvertToString(boneHash,SCRIPTINSTANCE_SERVER);
           Com_PrintError(0x13,"ERROR: collmap %s has bone %s that doesn\'t exist in model %s\n");
         }
-        local_2a8 = local_2a0;
-        local_298 = Xmodel_CountPhysicsCollMapGeoms(&local_2a8,local_6b4,local_2a4);
-        if (local_298 != 0) {
-          local_6b8 = (DObjAnimMat *)0x0;
+        buf = (char *)file;
+        geomCount = Xmodel_CountPhysicsCollMapGeoms(&buf,filename,boneHash);
+        if (geomCount != 0) {
+          mat = (DObjAnimMat *)0x0;
           uVar5 = SL_FindLowercaseString("",SCRIPTINSTANCE_SERVER);
-          if ((local_2a4 != uVar5) && (local_2ac < param_3->numBones)) {
-            if ((param_3->numBones < local_2ac) &&
+          if ((boneHash != uVar5) && (boneIndex < model->numBones)) {
+            if ((model->numBones < boneIndex) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_phys_collmap.cpp"
                                          ,0x490,0,
                                          "boneIndex not in [0, model->numBones]\n\t%i not in [%i, %i]"
@@ -2066,15 +2076,14 @@ LAB_00807ef7:
               (*pcVar1)();
               return;
             }
-            local_6b8 = param_3->baseMat + local_2ac;
+            mat = model->baseMat + boneIndex;
           }
-          local_2a8 = local_2a0;
-          pPVar6 = Xmodel_ParsePhysicsCollMap
-                             (&local_2a8,local_6b4,local_298,local_2a4,local_6b8,param_2);
-          local_c->geomList = pPVar6;
+          buf = (char *)file;
+          pPVar6 = Xmodel_ParsePhysicsCollMap(&buf,filename,geomCount,boneHash,mat,Alloc);
+          collmap->geomList = pPVar6;
         }
       }
-      FS_FreeFile(local_2a0);
+      FS_FreeFile(file);
     }
   }
   return;

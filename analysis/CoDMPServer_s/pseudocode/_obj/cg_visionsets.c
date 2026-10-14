@@ -223,11 +223,11 @@ void __cdecl CG_VisionSetConfigString_Naked(int param_1)
   int iVar2;
   cg_s *pcVar3;
   int iVar4;
-  char *pcVar5;
-  visionSetLerpStyle_t vVar6;
+  char *nptr;
+  visionSetLerpStyle_t vVar5;
   int unaff_ESI;
   char *unaff_EDI;
-  int iVar7;
+  int iVar6;
   undefined *local_4;
   
   pcVar3 = cgArray;
@@ -246,15 +246,15 @@ void __cdecl CG_VisionSetConfigString_Naked(int param_1)
     }
     else {
       iVar4 = iVar4 + -1;
-      iVar7 = 0x40;
+      iVar6 = 0x40;
       iVar2 = 0x6f973 - iVar4;
       do {
         cVar1 = *(cg_s *)(iVar4 + 1);
         iVar4 = iVar4 + 1;
         pcVar3[iVar4 + iVar2] = cVar1;
         if (cVar1 == (cg_s)0x0) break;
-        iVar7 = iVar7 + -1;
-      } while (iVar7 != 0);
+        iVar6 = iVar6 + -1;
+      } while (iVar6 != 0);
       pcVar3[0x6f9b3] = (cg_s)0x0;
     }
   }
@@ -265,9 +265,9 @@ void __cdecl CG_VisionSetConfigString_Naked(int param_1)
     *(undefined1 *)(iVar4 + 0x408) = 0;
     *(undefined4 *)(iVar4 + 0x404) = *(undefined4 *)(iVar4 + 0x41c);
   }
-  pcVar5 = (char *)FUN_006aa5f0(&local_4,1);
-  vVar6 = atoi(pcVar5);
-  CG_VisionSetStartLerp_To(0,3,vVar6,unaff_EDI,unaff_ESI);
+  nptr = (char *)FUN_006aa5f0(&local_4,1);
+  vVar5 = atoi(nptr);
+  CG_VisionSetStartLerp_To(0,3,vVar5,unaff_EDI,unaff_ESI);
   return;
 }
 
@@ -283,11 +283,11 @@ void __cdecl CG_VisionSetConfigString_Night(int param_1)
   int iVar2;
   cg_s *pcVar3;
   int iVar4;
-  char *pcVar5;
-  visionSetLerpStyle_t vVar6;
+  char *nptr;
+  visionSetLerpStyle_t vVar5;
   int unaff_ESI;
   char *unaff_EDI;
-  int iVar7;
+  int iVar6;
   undefined *local_4;
   
   pcVar3 = cgArray;
@@ -306,15 +306,15 @@ void __cdecl CG_VisionSetConfigString_Night(int param_1)
     }
     else {
       iVar4 = iVar4 + -1;
-      iVar7 = 0x40;
+      iVar6 = 0x40;
       iVar2 = 0x6f9b3 - iVar4;
       do {
         cVar1 = *(cg_s *)(iVar4 + 1);
         iVar4 = iVar4 + 1;
         pcVar3[iVar4 + iVar2] = cVar1;
         if (cVar1 == (cg_s)0x0) break;
-        iVar7 = iVar7 + -1;
-      } while (iVar7 != 0);
+        iVar6 = iVar6 + -1;
+      } while (iVar6 != 0);
       pcVar3[0x6f9f3] = (cg_s)0x0;
     }
   }
@@ -325,9 +325,9 @@ void __cdecl CG_VisionSetConfigString_Night(int param_1)
     *(undefined1 *)(iVar4 + 0x408) = 0;
     *(undefined4 *)(iVar4 + 0x404) = *(undefined4 *)(iVar4 + 0x41c);
   }
-  pcVar5 = (char *)FUN_006aa5f0(&local_4,1);
-  vVar6 = atoi(pcVar5);
-  CG_VisionSetStartLerp_To(1,3,vVar6,unaff_EDI,unaff_ESI);
+  nptr = (char *)FUN_006aa5f0(&local_4,1);
+  vVar5 = atoi(nptr);
+  CG_VisionSetStartLerp_To(1,3,vVar5,unaff_EDI,unaff_ESI);
   return;
 }
 

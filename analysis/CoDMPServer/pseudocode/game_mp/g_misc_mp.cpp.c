@@ -8,47 +8,46 @@
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-EntinfoPosAndScale(gentity_s *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+EntinfoPosAndScale(gentity_s *self,float *source,float *pos,float *textScale,float *dist)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_10;
+  float delta;
   float local_c;
   float local_8;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0x1a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->r).absmin[0] == 0.0) || ((param_1->r).absmin[1] == 0.0)) {
-    *param_3 = (param_1->r).currentOrigin[0];
-    param_3[1] = (param_1->r).currentOrigin[1];
-    param_3[2] = (param_1->r).currentOrigin[2];
+  if (((self->r).absmin[0] == 0.0) || ((self->r).absmin[1] == 0.0)) {
+    *pos = (self->r).currentOrigin[0];
+    pos[1] = (self->r).currentOrigin[1];
+    pos[2] = (self->r).currentOrigin[2];
   }
   else {
-    *param_3 = (param_1->r).absmin[0] + (param_1->r).absmax[0];
-    param_3[1] = (param_1->r).absmin[1] + (param_1->r).absmax[1];
-    param_3[2] = (param_1->r).absmin[2] + (param_1->r).absmax[2];
-    *param_3 = *param_3 * 0.5;
-    param_3[1] = param_3[1] * 0.5;
-    param_3[2] = param_3[2] * 0.5;
+    *pos = (self->r).absmin[0] + (self->r).absmax[0];
+    pos[1] = (self->r).absmin[1] + (self->r).absmax[1];
+    pos[2] = (self->r).absmin[2] + (self->r).absmax[2];
+    *pos = *pos * 0.5;
+    pos[1] = pos[1] * 0.5;
+    pos[2] = pos[2] * 0.5;
   }
   fVar3 = G_GetEntInfoScale();
-  *param_4 = fVar3;
-  local_10 = *param_2 - (param_1->r).currentOrigin[0];
-  local_c = param_2[1] - (param_1->r).currentOrigin[1];
-  local_8 = param_2[2] - (param_1->r).currentOrigin[2];
-  fVar3 = Abs((phys_vec3 *)&local_10);
-  *param_5 = fVar3;
+  *textScale = fVar3;
+  delta = *source - (self->r).currentOrigin[0];
+  local_c = source[1] - (self->r).currentOrigin[1];
+  local_8 = source[2] - (self->r).currentOrigin[2];
+  fVar3 = Abs((phys_vec3 *)&delta);
+  *dist = fVar3;
   if (((1 < (g_entinfo->current).integer) || ((g_entinfo_maxdist->current).value <= 0.0)) ||
-     (*param_5 < (g_entinfo_maxdist->current).value ||
-      *param_5 == (g_entinfo_maxdist->current).value)) {
-    *param_4 = *param_5 * 0.0026041667 * *param_4;
+     (*dist < (g_entinfo_maxdist->current).value || *dist == (g_entinfo_maxdist->current).value)) {
+    *textScale = *dist * 0.0026041667 * *textScale;
   }
   return;
 }
@@ -61,72 +60,71 @@ EntinfoPosAndScale(gentity_s *param_1,float *param_2,float *param_3,float *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl misc_EntInfo(gentity_s *param_1,float *param_2)
+void __cdecl misc_EntInfo(gentity_s *self,float *source)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  float local_34 [3];
-  float local_28;
+  float xyz [3];
+  float mins;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
+  float dist;
+  float maxs;
   float local_14;
   float local_10;
-  char *local_c;
-  float local_8;
+  char *classname;
+  float infoScale;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0x3d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  EntinfoPosAndScale(param_1,param_2,local_34,&local_8,&local_1c);
-  if ((param_1->classname == 0) &&
+  EntinfoPosAndScale(self,source,xyz,&infoScale,&dist);
+  if ((self->classname == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0x41,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_c = SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+  classname = SL_ConvertToString((uint)self->classname,SCRIPTINSTANCE_SERVER);
   if (((g_entinfo->current).integer == 4) || ((g_entinfo->current).integer == 5)) {
     iVar4 = 0;
     pcVar3 = va("%i");
-    G_AddDebugString(local_34,color,local_8 * 0.75,pcVar3,iVar4);
+    G_AddDebugString(xyz,color,infoScale * 0.75,pcVar3,iVar4);
   }
   else {
-    if (param_1->targetname != 0) {
-      SL_ConvertToString((uint)param_1->targetname,SCRIPTINSTANCE_SERVER);
+    if (self->targetname != 0) {
+      SL_ConvertToString((uint)self->targetname,SCRIPTINSTANCE_SERVER);
     }
     iVar4 = 0;
     pcVar3 = va("%i : %s : %i : %s");
-    G_AddDebugString(local_34,color,local_8 * 0.75,pcVar3,iVar4);
+    G_AddDebugString(xyz,color,infoScale * 0.75,pcVar3,iVar4);
   }
-  pcVar3 = I_stristr(local_c,"_spawn");
-  if ((pcVar3 == (char *)0x0) && (pcVar3 = I_stristr(local_c,"_uspawn"), pcVar3 == (char *)0x0)) {
-    local_28 = (param_1->r).mins[0];
-    local_24 = (param_1->r).mins[1];
-    local_20 = (param_1->r).mins[2];
-    local_18 = (param_1->r).maxs[0];
-    local_14 = (param_1->r).maxs[1];
-    local_10 = (param_1->r).maxs[2];
+  pcVar3 = I_stristr(classname,"_spawn");
+  if ((pcVar3 == (char *)0x0) && (pcVar3 = I_stristr(classname,"_uspawn"), pcVar3 == (char *)0x0)) {
+    mins = (self->r).mins[0];
+    local_24 = (self->r).mins[1];
+    local_20 = (self->r).mins[2];
+    maxs = (self->r).maxs[0];
+    local_14 = (self->r).maxs[1];
+    local_10 = (self->r).maxs[2];
   }
   else {
-    local_28 = -16.0;
+    mins = -16.0;
     local_24 = -16.0;
     local_20 = 0.0;
-    local_18 = 16.0;
+    maxs = 16.0;
     local_14 = 16.0;
     local_10 = 72.0;
   }
-  G_DebugBox((param_1->r).currentOrigin,&local_28,&local_18,(param_1->r).currentAngles[1],
-             colorMagenta,1,0);
+  G_DebugBox((self->r).currentOrigin,&mins,&maxs,(self->r).currentAngles[1],colorMagenta,1,0);
   return;
 }
 
@@ -138,11 +136,11 @@ void __cdecl misc_EntInfo(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EntInfo_Vehicle(gentity_s *param_1,float *param_2)
+void __cdecl EntInfo_Vehicle(gentity_s *self,float *source)
 
 {
-  misc_EntInfo(param_1,param_2);
-  G_DebugBox((param_1->r).currentOrigin,(param_1->r).mins,(param_1->r).maxs,0.0,colorCyan,1,0);
+  misc_EntInfo(self,source);
+  G_DebugBox((self->r).currentOrigin,(self->r).mins,(self->r).maxs,0.0,colorCyan,1,0);
   return;
 }
 
@@ -154,19 +152,19 @@ void __cdecl EntInfo_Vehicle(gentity_s *param_1,float *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EntInfo_Item(gentity_s *param_1,float *param_2)
+void __cdecl EntInfo_Item(gentity_s *self,float *source)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  float local_2c [2];
+  char *pszText;
+  int duration_2;
+  float pos [2];
   float local_24;
-  float local_20;
-  float local_1c;
-  int local_18;
-  float local_14;
+  float textScale;
+  float dist;
+  int idx;
+  float color;
   float local_10;
   float local_c;
   float local_8;
@@ -175,33 +173,33 @@ void __cdecl EntInfo_Item(gentity_s *param_1,float *param_2)
     _S1 = _S1 | 1;
     MY_MAX_DIST_HALF = MY_MAX_DIST * 0.5;
   }
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((self == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0x6c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  EntinfoPosAndScale(param_1,param_2,local_2c,&local_20,&local_1c);
-  if (local_1c <= MY_MAX_DIST) {
-    local_14 = MY_RGB[0];
+  EntinfoPosAndScale(self,source,pos,&textScale,&dist);
+  if (dist <= MY_MAX_DIST) {
+    color = MY_RGB[0];
     local_10 = MY_RGB[1];
     local_c = MY_RGB[2];
-    if (MY_MAX_DIST_HALF <= local_1c) {
-      local_8 = 1.0 - (local_1c - MY_MAX_DIST_HALF) / MY_MAX_DIST_HALF;
+    if (MY_MAX_DIST_HALF <= dist) {
+      local_8 = 1.0 - (dist - MY_MAX_DIST_HALF) / MY_MAX_DIST_HALF;
     }
     else {
       local_8 = 1.0;
     }
     local_24 = local_24 - MY_NEXTLINE * 0.5;
-    for (local_18 = 0; local_18 < 2; local_18 = local_18 + 1) {
-      if (*(int *)(param_1->attachModelNames + local_18 * 6 + -0x32) != 0) {
-        iVar4 = 0;
-        BG_WeaponName(*(int *)(param_1->attachModelNames + local_18 * 6 + -0x32));
-        pcVar3 = va("%i: %s (%i + %i)");
-        G_AddDebugString(local_2c,&local_14,local_20 * 0.8,pcVar3,iVar4);
-        G_DebugBox((param_1->r).currentOrigin,(param_1->r).mins,(param_1->r).maxs,
-                   (param_1->r).currentAngles[1],colorRedFaded,1,0);
+    for (idx = 0; idx < 2; idx = idx + 1) {
+      if (*(int *)(self->attachModelNames + idx * 6 + -0x32) != 0) {
+        duration_2 = 0;
+        BG_WeaponName(*(int *)(self->attachModelNames + idx * 6 + -0x32));
+        pszText = va("%i: %s (%i + %i)");
+        G_AddDebugString(pos,&color,textScale * 0.8,pszText,duration_2);
+        G_DebugBox((self->r).currentOrigin,(self->r).mins,(self->r).maxs,(self->r).currentAngles[1],
+                   colorRedFaded,1,0);
         local_24 = local_24 + MY_NEXTLINE;
       }
     }
@@ -212,14 +210,19 @@ void __cdecl EntInfo_Item(gentity_s *param_1,float *param_2)
 
 // 0062D4F0  G_GetEntInfoScale  (game_mp/g_misc_mp.cpp:142)
 
+/* WARNING: Variable defined which should be unmapped: fov_x */
+
 float __cdecl G_GetEntInfoScale(void)
 
 {
   double dVar1;
-  undefined4 in_stack_fffffff0;
+  float fov_x;
+  float tanHalfFovX;
+  float tanHalfFovY;
+  float this_value;
   
   dVar1 = 0.6981316804885864;
-  __libm_sse2_tan((double)CONCAT44(in_stack_fffffff0,0x42a00000));
+  __libm_sse2_tan((double)CONCAT44(tanHalfFovX,0x42a00000));
   return (g_entinfo_scale->current).value * (float)dVar1 * 0.75 * 1.5890048;
 }
 
@@ -231,10 +234,10 @@ float __cdecl G_GetEntInfoScale(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_info_notnull(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_info_notnull(gentity_s *self,SpawnVar *spawnVar)
 
 {
-  G_SetOrigin(param_1,(param_1->r).currentOrigin);
+  G_SetOrigin(self,(self->r).currentOrigin);
   return;
 }
 
@@ -246,7 +249,7 @@ void __cdecl SP_info_notnull(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_light(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl SP_light(gentity_s *self,SpawnVar *spawnVar)
 
 {
   float fVar1;
@@ -254,17 +257,17 @@ void __cdecl SP_light(gentity_s *param_1,SpawnVar *param_2)
   bool bVar3;
   int iVar4;
   float fVar5;
-  uint local_38;
-  ComPrimaryLight *local_34;
-  float local_30;
+  int primaryLightIndex;
+  ComPrimaryLight *light;
+  float facingDir;
   float local_2c;
   float local_28;
-  float local_24 [3];
-  float local_18 [3];
-  uint local_c;
-  char *local_8;
+  float facingAngles [3];
+  float normalizedColor [3];
+  uint flags;
+  char *spawnFlags;
   
-  if (param_2->spawnVarsValid == false) {
+  if (spawnVar->spawnVarsValid == false) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0xa9,0,"%s"
                             );
     if (!bVar3) {
@@ -273,20 +276,20 @@ void __cdecl SP_light(gentity_s *param_1,SpawnVar *param_2)
       return;
     }
   }
-  iVar4 = G_SpawnInt(param_2,"pl#","0",(int *)&local_38);
+  iVar4 = G_SpawnInt(spawnVar,"pl#","0",&primaryLightIndex);
   if (iVar4 == 0) {
-    G_FreeEntity(param_1);
+    G_FreeEntity(self);
   }
   else {
-    G_SpawnString(param_2,"spawnflags",(char *)0x0,&local_8);
-    local_c = atoi(local_8);
-    if ((local_c == 0) || ((local_c & 0x10) == 0)) {
-      G_FreeEntity(param_1);
+    G_SpawnString(spawnVar,"spawnflags",(char *)0x0,&spawnFlags);
+    flags = atoi(spawnFlags);
+    if ((flags == 0) || ((flags & 0x10) == 0)) {
+      G_FreeEntity(self);
     }
     else {
-      local_34 = Com_GetPrimaryLight(local_38);
-      (param_1->s).index.brushmodel = (short)local_38;
-      if ((int)(param_1->s).index.brushmodel != local_38) {
+      light = Com_GetPrimaryLight(primaryLightIndex);
+      (self->s).index.brushmodel = (short)primaryLightIndex;
+      if ((self->s).index.brushmodel != primaryLightIndex) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0xc0,1,
                                  "self->s.index.primaryLight == primaryLightIndex\n\t%i, %i");
         if (!bVar3) {
@@ -295,31 +298,31 @@ void __cdecl SP_light(gentity_s *param_1,SpawnVar *param_2)
           return;
         }
       }
-      fVar5 = ColorNormalize(local_34->color,local_18);
-      (param_1->s).lerp.u.turret.gunAngles[1] = fVar5;
-      Byte4PackRgba(local_18,(uchar *)&(param_1->s).lerp.u);
-      (param_1->s).lerp.u.primaryLight.colorAndExp[3] = local_34->exponent;
-      (param_1->s).lerp.u.turret.gunAngles[2] = local_34->radius;
-      (param_1->s).lerp.u.turret.ownerNum = (int)local_34->cosHalfFovOuter;
-      (param_1->s).lerp.u.turret.heatVal = local_34->cosHalfFovInner;
-      local_30 = -local_34->dir[0];
-      local_2c = -local_34->dir[1];
-      local_28 = -local_34->dir[2];
-      vectoangles(&local_30,local_24);
-      G_SetAngle(param_1,local_24);
-      G_SetOrigin(param_1,local_34->origin);
-      fVar5 = local_34->radius;
-      fVar1 = local_34->radius;
-      (param_1->r).mins[0] = -local_34->radius;
-      (param_1->r).mins[1] = -fVar5;
-      (param_1->r).mins[2] = -fVar1;
-      fVar5 = local_34->radius;
-      fVar1 = local_34->radius;
-      (param_1->r).maxs[0] = local_34->radius;
-      (param_1->r).maxs[1] = fVar5;
-      (param_1->r).maxs[2] = fVar1;
-      (param_1->s).eType = 10;
-      if ((param_1->r).contents != 0) {
+      fVar5 = ColorNormalize(light->color,normalizedColor);
+      (self->s).lerp.u.turret.gunAngles[1] = fVar5;
+      Byte4PackRgba(normalizedColor,(uchar *)&(self->s).lerp.u);
+      (self->s).lerp.u.primaryLight.colorAndExp[3] = light->exponent;
+      (self->s).lerp.u.turret.gunAngles[2] = light->radius;
+      (self->s).lerp.u.turret.ownerNum = (int)light->cosHalfFovOuter;
+      (self->s).lerp.u.turret.heatVal = light->cosHalfFovInner;
+      facingDir = -light->dir[0];
+      local_2c = -light->dir[1];
+      local_28 = -light->dir[2];
+      vectoangles(&facingDir,facingAngles);
+      G_SetAngle(self,facingAngles);
+      G_SetOrigin(self,light->origin);
+      fVar5 = light->radius;
+      fVar1 = light->radius;
+      (self->r).mins[0] = -light->radius;
+      (self->r).mins[1] = -fVar5;
+      (self->r).mins[2] = -fVar1;
+      fVar5 = light->radius;
+      fVar1 = light->radius;
+      (self->r).maxs[0] = light->radius;
+      (self->r).maxs[1] = fVar5;
+      (self->r).maxs[2] = fVar1;
+      (self->s).eType = 10;
+      if ((self->r).contents != 0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0xd3,1,
                                  "%s");
         if (!bVar3) {
@@ -328,9 +331,9 @@ void __cdecl SP_light(gentity_s *param_1,SpawnVar *param_2)
           return;
         }
       }
-      param_1->handler = '\x17';
-      param_1->flags = param_1->flags | 0x1000;
-      SV_LinkEntity(param_1);
+      self->handler = '\x17';
+      self->flags = self->flags | 0x1000;
+      SV_LinkEntity(self);
     }
   }
   return;
@@ -344,15 +347,16 @@ void __cdecl SP_light(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl TeleportPlayer(gentity_s *param_1,float *param_2,float *param_3)
+void __cdecl TeleportPlayer(gentity_s *player,float *origin,float *angles)
 
 {
   uchar uVar1;
   gclient_s *pgVar2;
   code *pcVar3;
   bool bVar4;
+  int linked;
   
-  if (param_1->client == (gclient_s *)0x0) {
+  if (player->client == (gclient_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0xe5,0,"%s"
                             );
     if (!bVar4) {
@@ -361,7 +365,7 @@ void __cdecl TeleportPlayer(gentity_s *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if ((param_1->client->sess).connected == CON_DISCONNECTED) {
+  if ((player->client->sess).connected == CON_DISCONNECTED) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_misc_mp.cpp",0xe6,0,"%s"
                             );
     if (!bVar4) {
@@ -370,25 +374,25 @@ void __cdecl TeleportPlayer(gentity_s *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  uVar1 = (param_1->r).linked;
-  SV_UnlinkEntity(param_1);
-  pgVar2 = param_1->client;
-  (pgVar2->ps).origin[0] = *param_2;
-  (pgVar2->ps).origin[1] = param_2[1];
-  (pgVar2->ps).origin[2] = param_2[2];
-  (param_1->client->ps).origin[2] = (param_1->client->ps).origin[2] + 1.0;
-  (param_1->client->ps).eFlags = (param_1->client->ps).eFlags ^ 2;
-  SetClientViewAngle(param_1,param_3);
-  if (param_1->tagInfo == (tagInfo_s *)0x0) {
-    (param_1->r).currentAngles[0] = 0.0;
+  uVar1 = (player->r).linked;
+  SV_UnlinkEntity(player);
+  pgVar2 = player->client;
+  (pgVar2->ps).origin[0] = *origin;
+  (pgVar2->ps).origin[1] = origin[1];
+  (pgVar2->ps).origin[2] = origin[2];
+  (player->client->ps).origin[2] = (player->client->ps).origin[2] + 1.0;
+  (player->client->ps).eFlags = (player->client->ps).eFlags ^ 2;
+  SetClientViewAngle(player,angles);
+  if (player->tagInfo == (tagInfo_s *)0x0) {
+    (player->r).currentAngles[0] = 0.0;
   }
-  BG_PlayerStateToEntityState(&param_1->client->ps,&param_1->s,1,'\x01');
-  pgVar2 = param_1->client;
-  (param_1->r).currentOrigin[0] = (pgVar2->ps).origin[0];
-  (param_1->r).currentOrigin[1] = (pgVar2->ps).origin[1];
-  (param_1->r).currentOrigin[2] = (pgVar2->ps).origin[2];
+  BG_PlayerStateToEntityState(&player->client->ps,&player->s,1,'\x01');
+  pgVar2 = player->client;
+  (player->r).currentOrigin[0] = (pgVar2->ps).origin[0];
+  (player->r).currentOrigin[1] = (pgVar2->ps).origin[1];
+  (player->r).currentOrigin[2] = (pgVar2->ps).origin[2];
   if (uVar1 != '\0') {
-    SV_LinkEntity(param_1);
+    SV_LinkEntity(player);
   }
   return;
 }
@@ -401,15 +405,16 @@ void __cdecl TeleportPlayer(gentity_s *param_1,float *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrNotify_FaceEvent(gentity_s *param_1,ushort param_2)
+void __cdecl ScrNotify_FaceEvent(gentity_s *self,ushort face_event)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort t;
   
-  Scr_AddEntity(param_1,SCRIPTINSTANCE_SERVER);
-  Scr_AddConstString((uint)param_2,SCRIPTINSTANCE_SERVER);
-  uVar1 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.faceeventnotify,2);
-  Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+  Scr_AddEntity(self,SCRIPTINSTANCE_SERVER);
+  Scr_AddConstString((uint)face_event,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.faceeventnotify,2);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   return;
 }
 

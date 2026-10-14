@@ -455,23 +455,23 @@ uchar * _HTNet_dup(uchar *param_1)
 
 {
   undefined4 uVar1;
-  uchar *puVar2;
+  uchar *dst;
   
   if (param_1 == (uchar *)0x0) {
-    puVar2 = (uchar *)0x0;
+    dst = (uchar *)0x0;
   }
   else {
-    puVar2 = (uchar *)FUN_00bbc2b0();
-    if (puVar2 == (uchar *)0x0) {
-      puVar2 = (uchar *)0x0;
+    dst = (uchar *)FUN_00bbc2b0();
+    if (dst == (uchar *)0x0) {
+      dst = (uchar *)0x0;
     }
     else {
-      uVar1 = *(undefined4 *)puVar2;
-      memcpy(puVar2,param_1,0x60);
-      *(undefined4 *)puVar2 = uVar1;
+      uVar1 = *(undefined4 *)dst;
+      memcpy(dst,param_1,0x60);
+      *(undefined4 *)dst = uVar1;
     }
   }
-  return puVar2;
+  return dst;
 }
 
 

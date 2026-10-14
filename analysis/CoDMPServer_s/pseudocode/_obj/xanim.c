@@ -277,59 +277,59 @@ XAnim_s * __cdecl
 XAnimCreateAnimsWithValues(char *param_1,int param_2,int param_3,_func_void_ptr_int *param_4)
 
 {
-  ulong uVar1;
-  char cVar2;
-  HunkUser *pHVar3;
-  XAnim_s *pXVar4;
-  char *pcVar5;
-  char **ppcVar6;
-  bool *pbVar7;
-  undefined4 *puVar8;
-  int iVar9;
+  ulong count;
+  char cVar1;
+  HunkUser *pHVar2;
+  XAnim_s *dst;
+  char *pcVar3;
+  char **dst_00;
+  bool *dst_01;
+  undefined4 *puVar4;
+  int iVar5;
   
-  uVar1 = param_2 * 0x10 + 0x18 + param_3 * 0x14;
-  pXVar4 = (*param_4)(uVar1);
-  memset((uchar *)pXVar4,'\0',uVar1);
-  pXVar4->size = param_2;
-  pXVar4->paramSize = param_3;
+  count = param_2 * 0x10 + 0x18 + param_3 * 0x14;
+  dst = (*param_4)(count);
+  memset((uchar *)dst,'\0',count);
+  dst->size = param_2;
+  dst->paramSize = param_3;
   if (param_3 != 0) {
-    pXVar4->params = (XAnimParam *)(pXVar4->entries + param_2);
+    dst->params = (XAnimParam *)(dst->entries + param_2);
   }
   if (DAT_00c6f43b != '\0') {
-    pcVar5 = param_1;
+    pcVar3 = param_1;
     do {
-      cVar2 = *pcVar5;
-      pcVar5 = pcVar5 + 1;
-    } while (cVar2 != '\0');
-    pcVar5 = (char *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)g_DebugHunkUser * 5])
-                               (g_DebugHunkUser,pcVar5 + (1 - (int)(param_1 + 1)),4,
+      cVar1 = *pcVar3;
+      pcVar3 = pcVar3 + 1;
+    } while (cVar1 != '\0');
+    pcVar3 = (char *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)g_DebugHunkUser * 5])
+                               (g_DebugHunkUser,pcVar3 + (1 - (int)(param_1 + 1)),4,
                                 "XAnimCreateAnims");
-    iVar9 = (int)pcVar5 - (int)param_1;
+    iVar5 = (int)pcVar3 - (int)param_1;
     do {
-      cVar2 = *param_1;
-      param_1[iVar9] = cVar2;
-      pHVar3 = g_DebugHunkUser;
+      cVar1 = *param_1;
+      param_1[iVar5] = cVar1;
+      pHVar2 = g_DebugHunkUser;
       param_1 = param_1 + 1;
-    } while (cVar2 != '\0');
-    pXVar4->debugName = pcVar5;
-    ppcVar6 = (char **)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar3 * 5])
-                                 (pHVar3,param_2 * 4,4,"XAnimCreateAnims");
-    pXVar4->debugAnimNames = ppcVar6;
-    memset((uchar *)ppcVar6,'\0',param_2 * 4);
+    } while (cVar1 != '\0');
+    dst->debugName = pcVar3;
+    dst_00 = (char **)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)pHVar2 * 5])
+                                (pHVar2,param_2 * 4,4,"XAnimCreateAnims");
+    dst->debugAnimNames = dst_00;
+    memset((uchar *)dst_00,'\0',param_2 * 4);
   }
-  pbVar7 = (bool *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)g_DebugHunkUser * 5])
+  dst_01 = (bool *)(*(code *)(&PTR_Hunk_UserDefaultAlloc_00adbb4c)[*(int *)g_DebugHunkUser * 5])
                              (g_DebugHunkUser,param_2,4,"XAnimCreateAnims");
-  pXVar4->wasLoggedIfMissing = pbVar7;
-  memset(pbVar7,'\0',param_2);
-  if ((DAT_03508c18 <= pXVar4) &&
-     (pXVar4 < (XAnim_s *)((int)DAT_03508c18->entries + DAT_01f46324 + -0x18))) {
-    puVar8 = (*param_4)(9);
-    *puVar8 = pXVar4;
-    *(undefined1 *)(puVar8 + 2) = 2;
-    puVar8[1] = DAT_01f46328;
-    DAT_01f46328 = puVar8;
+  dst->wasLoggedIfMissing = dst_01;
+  memset(dst_01,'\0',param_2);
+  if ((DAT_03508c18 <= dst) &&
+     (dst < (XAnim_s *)((int)DAT_03508c18->entries + DAT_01f46324 + -0x18))) {
+    puVar4 = (*param_4)(9);
+    *puVar4 = dst;
+    *(undefined1 *)(puVar4 + 2) = 2;
+    puVar4[1] = DAT_01f46328;
+    DAT_01f46328 = puVar4;
   }
-  return pXVar4;
+  return dst;
 }
 
 
@@ -1397,21 +1397,21 @@ bool __cdecl XAnimGetParamValue(XAnim_s *param_1,uint param_2,char *param_3,floa
 {
   int iVar1;
   uint uVar2;
-  char *pcVar3;
-  int iVar4;
+  char *first;
+  int iVar3;
   
   uVar2 = 0;
   if (param_1->entries[param_2].paramCount != 0) {
-    iVar4 = (uint)(ushort)(param_1->entries[param_2].firstParamIxPlusOne - 1) * 0x14;
+    iVar3 = (uint)(ushort)(param_1->entries[param_2].firstParamIxPlusOne - 1) * 0x14;
     do {
-      pcVar3 = param_1->params->strName + iVar4;
-      iVar1 = strncmp(pcVar3,param_3,0x10);
+      first = param_1->params->strName + iVar3;
+      iVar1 = strncmp(first,param_3,0x10);
       if (iVar1 == 0) {
-        *param_4 = *(float *)(pcVar3 + 0x10);
+        *param_4 = *(float *)(first + 0x10);
         return true;
       }
       uVar2 = uVar2 + 1;
-      iVar4 = iVar4 + 0x14;
+      iVar3 = iVar3 + 0x14;
     } while (uVar2 < param_1->entries[param_2].paramCount);
   }
   return false;

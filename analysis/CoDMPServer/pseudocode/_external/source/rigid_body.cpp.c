@@ -5,7 +5,7 @@
 /* WARNING: Removing unreachable block (ram,0x00a1a469) */
 /* WARNING: Removing unreachable block (ram,0x00a1a486) */
 
-void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *param_1)
+void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *inertia)
 
 {
   float fVar1;
@@ -13,27 +13,27 @@ void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *param_1)
   code *pcVar3;
   bool bVar4;
   
-  if ((param_1->x <= 1e-06) &&
+  if ((inertia->x <= 1e-06) &&
      (bVar4 = _tlAssert("source/rigid_body.cpp",8,"inertia.GetX() > 0.000001f",""), bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_1->y <= 1e-06) &&
+  if ((inertia->y <= 1e-06) &&
      (bVar4 = _tlAssert("source/rigid_body.cpp",9,"inertia.GetY() > 0.000001f",""), bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_1->z <= 1e-06) &&
+  if ((inertia->z <= 1e-06) &&
      (bVar4 = _tlAssert("source/rigid_body.cpp",10,"inertia.GetZ() > 0.000001f",""), bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  fVar1 = param_1->y;
-  fVar2 = param_1->z;
-  (this->m_inv_inertia).x = 1.0 / param_1->x;
+  fVar1 = inertia->y;
+  fVar2 = inertia->z;
+  (this->m_inv_inertia).x = 1.0 / inertia->x;
   (this->m_inv_inertia).y = 1.0 / fVar1;
   (this->m_inv_inertia).z = 1.0 / fVar2;
   return;
@@ -45,19 +45,19 @@ void __thiscall rigid_body::set_inertia(rigid_body *this,phys_vec3 *param_1)
 /* WARNING: Removing unreachable block (ram,0x00a1a564) */
 /* WARNING: Removing unreachable block (ram,0x00a1a581) */
 
-void __thiscall rigid_body::set_mass(rigid_body *this,float param_1)
+void __thiscall rigid_body::set_mass(rigid_body *this,float mass)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 <= 1e-06) &&
+  if ((mass <= 1e-06) &&
      (bVar2 = _tlAssert("source/rigid_body.cpp",0x11,"mass > 0.000001f",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  this->m_inv_mass = 1.0 / param_1;
+  this->m_inv_mass = 1.0 / mass;
   return;
 }
 
@@ -74,24 +74,24 @@ void __thiscall rigid_body::set_mass(rigid_body *this,float param_1)
 /* WARNING: Removing unreachable block (ram,0x00a1a756) */
 
 void __thiscall
-rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *param_3,
-               phys_vec3 *param_4,phys_vec3 *param_5,int param_6)
+rigid_body::set(rigid_body *this,float mass,phys_vec3 *inertia,phys_mat44 *mat,phys_vec3 *t_vel,
+               phys_vec3 *a_vel,int stable_min_contact_count)
 
 {
-  set_mass(this,param_1);
-  set_inertia(this,param_2);
-  (this->m_mat).x.x = (param_3->x).x;
-  (this->m_mat).x.y = (param_3->x).y;
-  (this->m_mat).x.z = (param_3->x).z;
-  (this->m_mat).y.x = (param_3->y).x;
-  (this->m_mat).y.y = (param_3->y).y;
-  (this->m_mat).y.z = (param_3->y).z;
-  (this->m_mat).z.x = (param_3->z).x;
-  (this->m_mat).z.y = (param_3->z).y;
-  (this->m_mat).z.z = (param_3->z).z;
-  (this->m_mat).w.x = (param_3->w).x;
-  (this->m_mat).w.y = (param_3->w).y;
-  (this->m_mat).w.z = (param_3->w).z;
+  set_mass(this,mass);
+  set_inertia(this,inertia);
+  (this->m_mat).x.x = (mat->x).x;
+  (this->m_mat).x.y = (mat->x).y;
+  (this->m_mat).x.z = (mat->x).z;
+  (this->m_mat).y.x = (mat->y).x;
+  (this->m_mat).y.y = (mat->y).y;
+  (this->m_mat).y.z = (mat->y).z;
+  (this->m_mat).z.x = (mat->z).x;
+  (this->m_mat).z.y = (mat->z).y;
+  (this->m_mat).z.z = (mat->z).z;
+  (this->m_mat).w.x = (mat->w).x;
+  (this->m_mat).w.y = (mat->w).y;
+  (this->m_mat).w.z = (mat->w).z;
   if (((100000.0 < ABS((this->m_mat).w.x)) || (100000.0 < ABS((this->m_mat).w.y))) ||
      (100000.0 < ABS((this->m_mat).w.z))) {
     phys_exec_debug_callback(this);
@@ -107,12 +107,12 @@ rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *pa
   (this->m_moved_vec).y = ::PHYS_ZERO_VEC.y;
   (this->m_moved_vec).z = ::PHYS_ZERO_VEC.z;
   this->m_smallest_lambda = 0.0;
-  (this->m_t_vel).x = param_4->x;
-  (this->m_t_vel).y = param_4->y;
-  (this->m_t_vel).z = param_4->z;
-  (this->m_a_vel).x = param_5->x;
-  (this->m_a_vel).y = param_5->y;
-  (this->m_a_vel).z = param_5->z;
+  (this->m_t_vel).x = t_vel->x;
+  (this->m_t_vel).y = t_vel->y;
+  (this->m_t_vel).z = t_vel->z;
+  (this->m_a_vel).x = a_vel->x;
+  (this->m_a_vel).y = a_vel->y;
+  (this->m_a_vel).z = a_vel->z;
   if (((100000.0 < ABS((this->m_t_vel).x)) || (100000.0 < ABS((this->m_t_vel).y))) ||
      (100000.0 < ABS((this->m_t_vel).z))) {
     phys_exec_debug_callback(this);
@@ -121,7 +121,7 @@ rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *pa
      (100000.0 < ABS((this->m_a_vel).z))) {
     phys_exec_debug_callback(this);
   }
-  this->m_stable_min_contact_count = param_6;
+  this->m_stable_min_contact_count = stable_min_contact_count;
   (this->m_force_sum).x = ::PHYS_ZERO_VEC.x;
   (this->m_force_sum).y = ::PHYS_ZERO_VEC.y;
   (this->m_force_sum).z = ::PHYS_ZERO_VEC.z;
@@ -177,7 +177,7 @@ rigid_body::set(rigid_body *this,float param_1,phys_vec3 *param_2,phys_mat44 *pa
 /* WARNING: Removing unreachable block (ram,0x00a1ad64) */
 
 void __thiscall
-rigid_body::add_force(rigid_body *this,phys_vec3 *param_1,phys_vec3 *param_2,float param_3)
+rigid_body::add_force(rigid_body *this,phys_vec3 *force,phys_vec3 *point,float torque_mult)
 
 {
   float fVar1;
@@ -188,20 +188,20 @@ rigid_body::add_force(rigid_body *this,phys_vec3 *param_1,phys_vec3 *param_2,flo
   float fVar6;
   float fVar7;
   
-  (this->m_force_sum).x = (this->m_force_sum).x + param_1->x;
-  (this->m_force_sum).y = (this->m_force_sum).y + param_1->y;
-  (this->m_force_sum).z = (this->m_force_sum).z + param_1->z;
-  fVar5 = param_2->x - (this->m_mat).w.x;
-  fVar6 = param_2->y - (this->m_mat).w.y;
-  fVar7 = param_2->z - (this->m_mat).w.z;
-  fVar1 = param_1->x;
-  fVar2 = param_1->z;
-  fVar3 = param_1->y;
-  fVar4 = param_1->x;
+  (this->m_force_sum).x = (this->m_force_sum).x + force->x;
+  (this->m_force_sum).y = (this->m_force_sum).y + force->y;
+  (this->m_force_sum).z = (this->m_force_sum).z + force->z;
+  fVar5 = point->x - (this->m_mat).w.x;
+  fVar6 = point->y - (this->m_mat).w.y;
+  fVar7 = point->z - (this->m_mat).w.z;
+  fVar1 = force->x;
+  fVar2 = force->z;
+  fVar3 = force->y;
+  fVar4 = force->x;
   (this->m_torque_sum).x =
-       (this->m_torque_sum).x + (fVar6 * param_1->z - fVar7 * param_1->y) * param_3;
-  (this->m_torque_sum).y = (fVar1 * fVar7 - fVar5 * fVar2) * param_3 + (this->m_torque_sum).y;
-  (this->m_torque_sum).z = (this->m_torque_sum).z + param_3 * (fVar3 * fVar5 - fVar6 * fVar4);
+       (this->m_torque_sum).x + (fVar6 * force->z - fVar7 * force->y) * torque_mult;
+  (this->m_torque_sum).y = (fVar1 * fVar7 - fVar5 * fVar2) * torque_mult + (this->m_torque_sum).y;
+  (this->m_torque_sum).z = (this->m_torque_sum).z + torque_mult * (fVar3 * fVar5 - fVar6 * fVar4);
   if (((100000.0 < ABS((this->m_force_sum).x)) || (100000.0 < ABS((this->m_force_sum).y))) ||
      (100000.0 < ABS((this->m_force_sum).z))) {
     phys_exec_debug_callback(this);
@@ -219,37 +219,37 @@ rigid_body::add_force(rigid_body *this,phys_vec3 *param_1,phys_vec3 *param_2,flo
 
 // 00A1A5D0  setPosition  (<external>/projects_pc/cod/codsrc/tl/physics/source/rigid_body.cpp:86)
 
-void __thiscall user_rigid_body::setPosition(user_rigid_body *this,phys_mat44 *param_1)
+void __thiscall user_rigid_body::setPosition(user_rigid_body *this,phys_mat44 *dictator)
 
 {
-  (this->m_dictator_mat).x.x = (param_1->x).x;
+  (this->m_dictator_mat).x.x = (dictator->x).x;
   this->m_dictator = &this->m_dictator_mat;
-  (this->m_dictator_mat).x.y = (param_1->x).y;
-  (this->m_dictator_mat).x.z = (param_1->x).z;
-  (this->m_dictator_mat).y.x = (param_1->y).x;
-  (this->m_dictator_mat).y.y = (param_1->y).y;
-  (this->m_dictator_mat).y.z = (param_1->y).z;
-  (this->m_dictator_mat).z.x = (param_1->z).x;
-  (this->m_dictator_mat).z.y = (param_1->z).y;
-  (this->m_dictator_mat).z.z = (param_1->z).z;
-  (this->m_dictator_mat).w.x = (param_1->w).x;
-  (this->m_dictator_mat).w.y = (param_1->w).y;
-  (this->m_dictator_mat).w.z = (param_1->w).z;
+  (this->m_dictator_mat).x.y = (dictator->x).y;
+  (this->m_dictator_mat).x.z = (dictator->x).z;
+  (this->m_dictator_mat).y.x = (dictator->y).x;
+  (this->m_dictator_mat).y.y = (dictator->y).y;
+  (this->m_dictator_mat).y.z = (dictator->y).z;
+  (this->m_dictator_mat).z.x = (dictator->z).x;
+  (this->m_dictator_mat).z.y = (dictator->z).y;
+  (this->m_dictator_mat).z.z = (dictator->z).z;
+  (this->m_dictator_mat).w.x = (dictator->w).x;
+  (this->m_dictator_mat).w.y = (dictator->w).y;
+  (this->m_dictator_mat).w.z = (dictator->w).z;
   return;
 }
 
 
 // 00A1AF60  set  (<external>/projects_pc/cod/codsrc/tl/physics/source/rigid_body.cpp:92)
 
-void __thiscall user_rigid_body::set(user_rigid_body *this,phys_mat44 *param_1)
+void __thiscall user_rigid_body::set(user_rigid_body *this,phys_mat44 *dictator)
 
 {
-  if (param_1 == (phys_mat44 *)0x0) {
+  if (dictator == (phys_mat44 *)0x0) {
     this->m_dictator = (phys_mat44 *)&this->_padding_;
   }
   else {
-    phys_mat44::operator=((phys_mat44 *)&this->_padding_,param_1);
-    this->m_dictator = param_1;
+    phys_mat44::operator=((phys_mat44 *)&this->_padding_,dictator);
+    this->m_dictator = dictator;
   }
   if (((100000.0 < ABS((float)this->_padding_)) || (100000.0 < ABS((float)this->_padding_))) ||
      (100000.0 < ABS((float)this->_padding_))) {

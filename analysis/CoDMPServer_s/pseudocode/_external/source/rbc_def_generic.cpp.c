@@ -4,12 +4,12 @@
 
 void __thiscall
 rigid_body_constraint_point::set
-          (rigid_body_constraint_point *this,phys_vec3 *param_1,phys_vec3 *param_2)
+          (rigid_body_constraint_point *this,phys_vec3 *b2_r_loc,phys_vec3 *param_2)
 
 {
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
+  (this->m_b1_r_loc).x = b2_r_loc->x;
+  (this->m_b1_r_loc).y = b2_r_loc->y;
+  (this->m_b1_r_loc).z = b2_r_loc->z;
   (this->m_b2_r_loc).x = param_2->x;
   (this->m_b2_r_loc).y = param_2->y;
   (this->m_b2_r_loc).z = param_2->z;
@@ -21,20 +21,20 @@ rigid_body_constraint_point::set
 
 void __thiscall
 rigid_body_constraint_point::setup_constraint
-          (rigid_body_constraint_point *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_point *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
-  rigid_body *prVar1;
-  rigid_body *prVar2;
+  rigid_body *b2_r;
+  rigid_body *b1_r;
   phys_vec3 pStack_30;
   phys_vec3 pStack_20;
   
-  prVar1 = (rigid_body *)this->_padding_;
-  phys_multiply33(&pStack_30,&prVar1->m_mat,&this->m_b2_r_loc);
-  prVar2 = (rigid_body *)this->_padding_;
-  phys_multiply33(&pStack_20,&prVar2->m_mat,&this->m_b1_r_loc);
+  b2_r = (rigid_body *)this->_padding_;
+  phys_multiply33(&pStack_30,&b2_r->m_mat,&this->m_b2_r_loc);
+  b1_r = (rigid_body *)this->_padding_;
+  phys_multiply33(&pStack_20,&b1_r->m_mat,&this->m_b1_r_loc);
   pulse_sum_constraint_solver::create_point
-            (param_1,prVar2,&pStack_20,prVar1,&pStack_30,this->m_ps_cache_list,param_2,
+            (psys,b1_r,&pStack_20,b2_r,&pStack_30,this->m_ps_cache_list,delta_t,
              this->m_spring_enabled,this->m_spring_k,this->m_damp_k);
   return;
 }
@@ -49,6 +49,10 @@ rigid_body_constraint_point::epilog_vel_constraint(rigid_body_constraint_point *
   float fVar1;
   float fVar2;
   float fVar3;
+  float __formal;
+  float b;
+  float a;
+  float c;
   
   fVar1 = this->m_ps_cache_list[0].m_pulse_sum;
   fVar2 = this->m_ps_cache_list[1].m_pulse_sum;
@@ -62,9 +66,9 @@ rigid_body_constraint_point::epilog_vel_constraint(rigid_body_constraint_point *
 
 void __thiscall
 rigid_body_constraint_hinge::set
-          (rigid_body_constraint_hinge *this,phys_vec3 *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3,phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,float param_7,
-          float param_8,float param_9)
+          (rigid_body_constraint_hinge *this,phys_vec3 *b1_r_loc,phys_vec3 *b2_r_loc,
+          phys_vec3 *b1_axis_loc,phys_vec3 *b2_axis_loc,phys_vec3 *b1_ref_loc,phys_vec3 *b2_ref_loc,
+          float theta_min,float theta_max,float damp_k)
 
 {
   phys_vec3 *ppVar1;
@@ -75,22 +79,22 @@ rigid_body_constraint_hinge::set
   phys_mat44 pStack_50;
   
   this->m_flags = 0;
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
-  (this->m_b2_r_loc).x = param_2->x;
-  (this->m_b2_r_loc).y = param_2->y;
-  (this->m_b2_r_loc).z = param_2->z;
-  ppVar1 = phys_Unitize(&pStack_80,param_3);
+  (this->m_b1_r_loc).x = b1_r_loc->x;
+  (this->m_b1_r_loc).y = b1_r_loc->y;
+  (this->m_b1_r_loc).z = b1_r_loc->z;
+  (this->m_b2_r_loc).x = b2_r_loc->x;
+  (this->m_b2_r_loc).y = b2_r_loc->y;
+  (this->m_b2_r_loc).z = b2_r_loc->z;
+  ppVar1 = phys_Unitize(&pStack_80,b1_axis_loc);
   (this->m_b1_axis_loc).x = ppVar1->x;
   ppVar2 = &this->m_b1_axis_loc;
   (this->m_b1_axis_loc).y = ppVar1->y;
   (this->m_b1_axis_loc).z = ppVar1->z;
-  ppVar1 = phys_Unitize(&pStack_80,param_4);
+  ppVar1 = phys_Unitize(&pStack_80,b2_axis_loc);
   (this->m_b2_axis_loc).x = ppVar1->x;
   (this->m_b2_axis_loc).y = ppVar1->y;
   (this->m_b2_axis_loc).z = ppVar1->z;
-  ppVar1 = phys_Unitize(&pStack_80,param_5);
+  ppVar1 = phys_Unitize(&pStack_80,b1_ref_loc);
   (this->m_b1_ref_loc).x = ppVar1->x;
   (this->m_b1_ref_loc).y = ppVar1->y;
   (this->m_b1_ref_loc).z = ppVar1->z;
@@ -105,19 +109,19 @@ rigid_body_constraint_hinge::set
   (this->m_b1_a2_loc).x = pStack_80.x;
   (this->m_b1_a2_loc).y = pStack_80.y;
   (this->m_b1_a2_loc).z = pStack_80.z;
-  make_rotate(&pStack_50,&this->m_b2_axis_loc,param_7,1000.0);
-  ppVar2 = phys_multiply33(&pStack_80,&pStack_50,param_6);
+  make_rotate(&pStack_50,&this->m_b2_axis_loc,theta_min,1000.0);
+  ppVar2 = phys_multiply33(&pStack_80,&pStack_50,b2_ref_loc);
   ppVar2 = phys_Unitize(&pStack_70,ppVar2);
   (this->m_b2_ref_min_loc).x = ppVar2->x;
   (this->m_b2_ref_min_loc).y = ppVar2->y;
   (this->m_b2_ref_min_loc).z = ppVar2->z;
-  make_rotate(&pStack_50,&this->m_b2_axis_loc,param_8,1000.0);
-  ppVar2 = phys_multiply33(&pStack_70,&pStack_50,param_6);
+  make_rotate(&pStack_50,&this->m_b2_axis_loc,theta_max,1000.0);
+  ppVar2 = phys_multiply33(&pStack_70,&pStack_50,b2_ref_loc);
   ppVar2 = phys_Unitize(&pStack_60,ppVar2);
   (this->m_b2_ref_max_loc).x = ppVar2->x;
   (this->m_b2_ref_max_loc).y = ppVar2->y;
   (this->m_b2_ref_max_loc).z = ppVar2->z;
-  this->m_damp_k = param_9;
+  this->m_damp_k = damp_k;
   return;
 }
 
@@ -126,16 +130,16 @@ rigid_body_constraint_hinge::set
 
 void __thiscall
 rigid_body_constraint_hinge::setup_constraint
-          (rigid_body_constraint_hinge *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_hinge *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   rigid_body *prVar1;
-  rigid_body *prVar2;
+  rigid_body *b1_r;
+  float fVar2;
   float fVar3;
-  float fVar4;
-  pulse_sum_angular *ppVar5;
-  uint uVar6;
-  phys_mat44 *ppVar7;
+  pulse_sum_angular *ppVar4;
+  uint uVar5;
+  phys_mat44 *ppVar6;
   phys_vec3 pStack_80;
   phys_vec3 pStack_70;
   phys_vec3 pStack_60;
@@ -147,53 +151,52 @@ rigid_body_constraint_hinge::setup_constraint
   if ((this->m_flags & 0x10) == 0) {
     prVar1 = *(rigid_body **)&this->field_0x4;
     phys_multiply33(&pStack_40,&prVar1->m_mat,&this->m_b2_r_loc);
-    prVar2 = *(rigid_body **)this;
-    phys_multiply33(&pStack_30,&prVar2->m_mat,&this->m_b1_r_loc);
+    b1_r = *(rigid_body **)this;
+    phys_multiply33(&pStack_30,&b1_r->m_mat,&this->m_b1_r_loc);
     pulse_sum_constraint_solver::create_point
-              (param_1,prVar2,&pStack_30,prVar1,&pStack_40,this->m_ps_cache,param_2,false,0.0,0.0);
+              (psys,b1_r,&pStack_30,prVar1,&pStack_40,this->m_ps_cache,delta_t,false,0.0,0.0);
   }
   prVar1 = *(rigid_body **)this;
-  ppVar7 = &prVar1->m_mat;
-  phys_multiply33(&pStack_20,ppVar7,&this->m_b1_axis_loc);
+  ppVar6 = &prVar1->m_mat;
+  phys_multiply33(&pStack_20,ppVar6,&this->m_b1_axis_loc);
   phys_multiply33(&pStack_60,(phys_mat44 *)(*(int *)&this->field_0x4 + 0x30),&this->m_b2_axis_loc);
-  phys_multiply33(&pStack_30,ppVar7,&this->m_b1_a2_loc);
-  phys_multiply33(&pStack_40,ppVar7,&this->m_b1_a1_loc);
+  phys_multiply33(&pStack_30,ppVar6,&this->m_b1_a2_loc);
+  phys_multiply33(&pStack_40,ppVar6,&this->m_b1_a1_loc);
   pulse_sum_constraint_solver::create_hinge
-            (param_1,prVar1,&pStack_20,*(rigid_body **)&this->field_0x4,&pStack_60,&pStack_40,
-             &pStack_30,this->m_ps_cache + 4,param_2);
+            (psys,prVar1,&pStack_20,*(rigid_body **)&this->field_0x4,&pStack_60,&pStack_40,
+             &pStack_30,this->m_ps_cache + 4,delta_t);
   if (1e-05 < this->m_damp_k) {
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&::PHYS_ZERO_VEC,
-                        *(rigid_body **)&this->field_0x4,&::PHYS_ZERO_VEC,&pStack_60,
-                        this->m_ps_cache + 3);
-    ppVar5->m_right_side = 0.0;
-    ppVar5->m_big_dirt = 0.0;
-    ppVar5->m_cfm = 0.0;
-    fVar3 = param_2 * this->m_damp_k;
-    ppVar5->m_pulse_sum_min = -fVar3;
-    ppVar5->m_pulse_sum_max = fVar3;
+    ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&::PHYS_ZERO_VEC,*(rigid_body **)&this->field_0x4,
+                        &::PHYS_ZERO_VEC,&pStack_60,this->m_ps_cache + 3);
+    ppVar4->m_right_side = 0.0;
+    ppVar4->m_big_dirt = 0.0;
+    ppVar4->m_cfm = 0.0;
+    fVar2 = delta_t * this->m_damp_k;
+    ppVar4->m_pulse_sum_min = -fVar2;
+    ppVar4->m_pulse_sum_max = fVar2;
   }
   prVar1 = *(rigid_body **)this;
   phys_multiply33(&pStack_50,&prVar1->m_mat,&this->m_b1_ref_loc);
-  ppVar7 = (phys_mat44 *)(*(int *)&this->field_0x4 + 0x30);
-  phys_multiply33(&pStack_80,ppVar7,&this->m_b2_ref_min_loc);
-  phys_multiply33(&pStack_70,ppVar7,&this->m_b2_ref_max_loc);
-  uVar6 = this->m_flags;
-  if ((uVar6 & 8) == 0) {
+  ppVar6 = (phys_mat44 *)(*(int *)&this->field_0x4 + 0x30);
+  phys_multiply33(&pStack_80,ppVar6,&this->m_b2_ref_min_loc);
+  phys_multiply33(&pStack_70,ppVar6,&this->m_b2_ref_max_loc);
+  uVar5 = this->m_flags;
+  if ((uVar5 & 8) == 0) {
     if (pStack_60.z * (pStack_50.x * pStack_80.y - pStack_50.y * pStack_80.x) +
         (pStack_80.z * pStack_50.y - pStack_50.z * pStack_80.y) * pStack_60.x +
         pStack_60.y * (pStack_50.z * pStack_80.x - pStack_50.x * pStack_80.z) < -0.043619) {
-      uVar6 = uVar6 & 0xfffffffe;
+      uVar5 = uVar5 & 0xfffffffe;
     }
     else {
-      uVar6 = uVar6 | 1;
+      uVar5 = uVar5 | 1;
     }
-    this->m_flags = uVar6;
+    this->m_flags = uVar5;
     pStack_40.x = pStack_70.z * pStack_50.y - pStack_70.y * pStack_50.z;
     pStack_40.y = pStack_70.x * pStack_50.z - pStack_70.z * pStack_50.x;
     pStack_40.z = pStack_50.x * pStack_70.y - pStack_50.y * pStack_70.x;
-    fVar3 = pStack_40.z * pStack_60.z + pStack_40.x * pStack_60.x + pStack_40.y * pStack_60.y;
-    if (fVar3 < 0.043619 == (fVar3 == 0.043619)) {
+    fVar2 = pStack_40.z * pStack_60.z + pStack_40.x * pStack_60.x + pStack_40.y * pStack_60.y;
+    if (fVar2 < 0.043619 == (fVar2 == 0.043619)) {
       this->m_flags = this->m_flags & 0xfffffffd;
     }
     else {
@@ -201,34 +204,34 @@ rigid_body_constraint_hinge::setup_constraint
     }
   }
   else {
-    fVar4 = pStack_50.z * pStack_80.z + pStack_50.y * pStack_80.y + pStack_50.x * pStack_80.x;
-    fVar3 = pStack_50.z * pStack_70.z + pStack_70.y * pStack_50.y + pStack_70.x * pStack_50.x;
-    if (fVar3 < fVar4 == (fVar3 == fVar4)) {
-      this->m_flags = uVar6 & 0xfffffffe | 2;
+    fVar3 = pStack_50.z * pStack_80.z + pStack_50.y * pStack_80.y + pStack_50.x * pStack_80.x;
+    fVar2 = pStack_50.z * pStack_70.z + pStack_70.y * pStack_50.y + pStack_70.x * pStack_50.x;
+    if (fVar2 < fVar3 == (fVar2 == fVar3)) {
+      this->m_flags = uVar5 & 0xfffffffe | 2;
     }
     else {
-      this->m_flags = uVar6 | 1;
-      this->m_flags = uVar6 & 0xfffffffd | 1;
+      this->m_flags = uVar5 | 1;
+      this->m_flags = uVar5 & 0xfffffffd | 1;
     }
   }
   if ((this->m_flags & 1) != 0) {
     pStack_40.x = -pStack_60.x;
     pStack_40.y = -pStack_60.y;
     pStack_40.z = -pStack_60.z;
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,prVar1,&pStack_50,*(rigid_body **)&this->field_0x4,&pStack_80,
+    ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,prVar1,&pStack_50,*(rigid_body **)&this->field_0x4,&pStack_80,
                         &pStack_40,this->m_ps_cache + 6);
-    ppVar5->m_pulse_sum_min = -1e+07;
-    ppVar5->m_pulse_sum_max = 0.0;
-    pulse_sum_angular::setup_vel_uni_standard(ppVar5,param_2,5.0);
+    ppVar4->m_pulse_sum_min = -1e+07;
+    ppVar4->m_pulse_sum_max = 0.0;
+    pulse_sum_angular::setup_vel_uni_standard(ppVar4,delta_t,5.0);
   }
   if ((this->m_flags & 2) != 0) {
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&pStack_50,*(rigid_body **)&this->field_0x4,
+    ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&pStack_50,*(rigid_body **)&this->field_0x4,
                         &pStack_70,&pStack_60,this->m_ps_cache + 7);
-    ppVar5->m_pulse_sum_min = -1e+07;
-    ppVar5->m_pulse_sum_max = 0.0;
-    pulse_sum_angular::setup_vel_uni_standard(ppVar5,param_2,5.0);
+    ppVar4->m_pulse_sum_min = -1e+07;
+    ppVar4->m_pulse_sum_max = 0.0;
+    pulse_sum_angular::setup_vel_uni_standard(ppVar4,delta_t,5.0);
   }
   return;
 }
@@ -237,16 +240,18 @@ rigid_body_constraint_hinge::setup_constraint
 // 008EDB80  setup_vel_uni_standard  (<external>/projects_pc/cod/codsrc/tl/physics/include/constraint_solver/pulse_sum_angular.h:91)
 
 void __thiscall
-pulse_sum_angular::setup_vel_uni_standard(pulse_sum_angular *this,float param_1,float param_2)
+pulse_sum_angular::setup_vel_uni_standard
+          (pulse_sum_angular *this,float max_penalty_restitution_vel,float param_2)
 
 {
   float fVar1;
+  float delta_t;
   
-  if (param_1 <= 0.016666668) {
-    param_1 = 0.016666668;
+  if (max_penalty_restitution_vel <= 0.016666668) {
+    max_penalty_restitution_vel = 0.016666668;
   }
   fVar1 = get_pos(this);
-  fVar1 = -fVar1 / param_1;
+  fVar1 = -fVar1 / max_penalty_restitution_vel;
   this->m_big_dirt = fVar1;
   if (fVar1 < 0.0) {
     this->m_big_dirt = fVar1 * 0.3;
@@ -270,18 +275,18 @@ pulse_sum_angular::setup_vel_uni_standard(pulse_sum_angular *this,float param_1,
 
 void __thiscall
 rigid_body_constraint_distance::set
-          (rigid_body_constraint_distance *this,phys_vec3 *param_1,phys_vec3 *param_2,float param_3,
-          float param_4)
+          (rigid_body_constraint_distance *this,phys_vec3 *b2_r_loc,phys_vec3 *min_distance,
+          float max_distance,float param_4)
 
 {
-  (this->m_b1_r_loc).x = param_1->x;
-  (this->m_b1_r_loc).y = param_1->y;
-  (this->m_b1_r_loc).z = param_1->z;
-  (this->m_b2_r_loc).x = param_2->x;
-  (this->m_b2_r_loc).y = param_2->y;
-  (this->m_b2_r_loc).z = param_2->z;
+  (this->m_b1_r_loc).x = b2_r_loc->x;
+  (this->m_b1_r_loc).y = b2_r_loc->y;
+  (this->m_b1_r_loc).z = b2_r_loc->z;
+  (this->m_b2_r_loc).x = min_distance->x;
+  (this->m_b2_r_loc).y = min_distance->y;
+  (this->m_b2_r_loc).z = min_distance->z;
   this->m_flags = 1;
-  this->m_min_distance = param_3;
+  this->m_min_distance = max_distance;
   this->m_max_distance = param_4;
   this->m_next_max_distance = param_4;
   this->m_max_distance_vel = 0.0;
@@ -294,16 +299,17 @@ rigid_body_constraint_distance::set
 
 void __thiscall
 pulse_sum_normal::setup_vel_uni_standard_pos_adjust
-          (pulse_sum_normal *this,float param_1,float param_2,float param_3)
+          (pulse_sum_normal *this,float pos_adjust,float max_penalty_restitution_vel,float param_3)
 
 {
   float fVar1;
+  float delta_t;
   
-  if (param_1 <= 0.016666668) {
-    param_1 = 0.016666668;
+  if (pos_adjust <= 0.016666668) {
+    pos_adjust = 0.016666668;
   }
   fVar1 = get_pos(this);
-  fVar1 = -((fVar1 + param_2) / param_1);
+  fVar1 = -((fVar1 + max_penalty_restitution_vel) / pos_adjust);
   this->m_big_dirt = fVar1;
   if (fVar1 < 0.0) {
     this->m_big_dirt = fVar1 * 0.3;
@@ -327,7 +333,7 @@ pulse_sum_normal::setup_vel_uni_standard_pos_adjust
 
 void __thiscall
 rigid_body_constraint_distance::setup_constraint
-          (rigid_body_constraint_distance *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_distance *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   int iVar1;
@@ -369,7 +375,7 @@ rigid_body_constraint_distance::setup_constraint
       pStack_70.x = pStack_70.z * pStack_90.x;
       pStack_70.y = pStack_90.y * pStack_70.z;
       pStack_70.z = pStack_70.z * pStack_90.z;
-      ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+      ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
       pStack_80.x = -pStack_70.x;
       pStack_80.y = -pStack_70.y;
       pStack_80.z = -pStack_70.z;
@@ -379,17 +385,17 @@ rigid_body_constraint_distance::setup_constraint
       ppVar4->m_pulse_sum_min = -1e+07;
       ppVar4->m_pulse_sum_max = 0.0;
       pulse_sum_normal::setup_vel_uni_standard_pos_adjust
-                (ppVar4,param_2,-this->m_max_distance,1700.0);
+                (ppVar4,delta_t,-this->m_max_distance,1700.0);
       ppVar4->m_right_side = this->m_max_distance_vel + ppVar4->m_right_side;
       if (0.01 < this->m_min_distance) {
-        this_00 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+        this_00 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
         pulse_sum_normal::set
                   (this_00,*(rigid_body **)this,&pStack_50,*(rigid_body **)&this->field_0x4,
                    &pStack_60,&pStack_70,this->m_ps_cache_list + 1,&::PHYS_ZERO_VEC);
         this_00->m_pulse_sum_min = -1e+07;
         this_00->m_pulse_sum_max = 0.0;
         pulse_sum_normal::setup_vel_uni_standard_pos_adjust
-                  (this_00,param_2,this->m_min_distance,1700.0);
+                  (this_00,delta_t,this->m_min_distance,1700.0);
       }
       if (((1e-05 < this->m_damp_coef) &&
           (fVar3 = this->m_max_distance - 0.1, fVar3 = fVar3 * fVar3,
@@ -414,7 +420,7 @@ rigid_body_constraint_distance::setup_constraint
         }
         if (0.0001 < fVar7) {
           phys_vec3::operator*=(&pStack_90,1.0 / fVar7);
-          ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+          ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
           if ((this->m_flags & 2) == 0) {
             pStack_80.x = pStack_50.x;
             pStack_80.y = pStack_50.y;
@@ -436,7 +442,7 @@ rigid_body_constraint_distance::setup_constraint
           pulse_sum_normal::set
                     (ppVar4,*(rigid_body **)this,&pStack_80,*(rigid_body **)&this->field_0x4,
                      &pStack_20,&pStack_90,this->m_ps_cache_list + 2,&::PHYS_ZERO_VEC);
-          fVar7 = 1.0 / (param_2 * this->m_damp_coef);
+          fVar7 = 1.0 / (delta_t * this->m_damp_coef);
           ppVar4->m_right_side = 0.0;
           ppVar4->m_big_dirt = 0.0;
           ppVar4->m_cfm = fVar7;
@@ -487,9 +493,9 @@ pulse_sum_constraint_solver::create_pulse_sum_normal(pulse_sum_constraint_solver
 
 void __thiscall
 pulse_sum_constraint_solver::create_point
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,phys_vec3 *param_2,
-          rigid_body *param_3,phys_vec3 *param_4,pulse_sum_cache *param_5,float param_6,bool param_7
-          ,float param_8,float param_9)
+          (pulse_sum_constraint_solver *this,rigid_body *b1_r,phys_vec3 *b2,rigid_body *b2_r,
+          phys_vec3 *ps_cache,pulse_sum_cache *delta_t,float is_spring,bool spring_k,float damp_k,
+          float param_9)
 
 {
   int *piVar1;
@@ -513,8 +519,7 @@ pulse_sum_constraint_solver::create_point
   *piVar1 = *piVar1 + 1;
   *(this->m_list_pulse_sum_point).m_last_next_ptr = this_00;
   (this->m_list_pulse_sum_point).m_last_next_ptr = (pulse_sum_point **)this_00;
-  pulse_sum_point::set
-            (this_00,param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
+  pulse_sum_point::set(this_00,b1_r,b2,b2_r,ps_cache,delta_t,is_spring,spring_k,damp_k,param_9);
   return;
 }
 
@@ -523,8 +528,8 @@ pulse_sum_constraint_solver::create_point
 
 pulse_sum_angular * __thiscall
 pulse_sum_constraint_solver::create_pulse_sum_angular
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,phys_vec3 *param_2,
-          rigid_body *param_3,phys_vec3 *param_4,phys_vec3 *param_5,pulse_sum_cache *param_6)
+          (pulse_sum_constraint_solver *this,rigid_body *b1_r,phys_vec3 *b2,rigid_body *b2_r,
+          phys_vec3 *ud,phys_vec3 *ps_cache,pulse_sum_cache *param_6)
 
 {
   int *piVar1;
@@ -549,7 +554,7 @@ pulse_sum_constraint_solver::create_pulse_sum_angular
   *piVar1 = *piVar1 + 1;
   *(this->m_list_pulse_sum_angular).m_last_next_ptr = this_00;
   (this->m_list_pulse_sum_angular).m_last_next_ptr = (pulse_sum_angular **)this_00;
-  pulse_sum_angular::set(this_00,param_1,param_2,param_3,param_4,param_5,param_6);
+  pulse_sum_angular::set(this_00,b1_r,b2,b2_r,ud,ps_cache,param_6);
   return this_00;
 }
 
@@ -561,6 +566,8 @@ rigid_body_constraint_distance::outer_prolog_update
           (rigid_body_constraint_distance *this,float param_1)
 
 {
+  float delta_t;
+  
   this->m_max_distance_vel = (this->m_next_max_distance - this->m_max_distance) / param_1;
   return;
 }
@@ -572,6 +579,8 @@ void __thiscall
 rigid_body_constraint_distance::inner_update(rigid_body_constraint_distance *this,float param_1)
 
 {
+  float delta_t;
+  
   this->m_max_distance = this->m_max_distance_vel * param_1 + this->m_max_distance;
   return;
 }
@@ -581,16 +590,15 @@ rigid_body_constraint_distance::inner_update(rigid_body_constraint_distance *thi
 
 void __thiscall
 pulse_sum_constraint_solver::create_hinge
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,phys_vec3 *param_2,
-          rigid_body *param_3,phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,
-          pulse_sum_cache *param_7,float param_8)
+          (pulse_sum_constraint_solver *this,rigid_body *b1_axis,phys_vec3 *b2,rigid_body *b2_axis,
+          phys_vec3 *a1,phys_vec3 *a2,phys_vec3 *ps_cache,pulse_sum_cache *delta_t,float param_8)
 
 {
   pulse_sum_angular *ppVar1;
   float fVar2;
   float fVar3;
   
-  ppVar1 = create_pulse_sum_angular(this,param_1,param_2,param_3,param_4,param_5,param_7);
+  ppVar1 = create_pulse_sum_angular(this,b1_axis,b2,b2_axis,a1,a2,delta_t);
   ppVar1->m_pulse_sum_min = -1e+07;
   ppVar1->m_pulse_sum_max = 1e+07;
   fVar3 = param_8;
@@ -601,7 +609,7 @@ pulse_sum_constraint_solver::create_hinge
   ppVar1->m_big_dirt = (-0.5 / fVar3) * fVar2;
   ppVar1->m_right_side = 0.0;
   ppVar1->m_cfm = 0.0;
-  ppVar1 = create_pulse_sum_angular(this,param_1,param_2,param_3,param_4,param_6,param_7 + 1);
+  ppVar1 = create_pulse_sum_angular(this,b1_axis,b2,b2_axis,a1,ps_cache,delta_t + 1);
   ppVar1->m_pulse_sum_min = -1e+07;
   ppVar1->m_pulse_sum_max = 1e+07;
   if (param_8 <= 0.016666668) {
@@ -622,6 +630,8 @@ rigid_body_constraint_distance::outer_epilog_update
           (rigid_body_constraint_distance *this,float param_1)
 
 {
+  float __formal;
+  
   this->m_max_distance = this->m_next_max_distance;
   return;
 }
@@ -631,17 +641,17 @@ rigid_body_constraint_distance::outer_epilog_update
 
 void __thiscall
 rigid_body_constraint_angular_actuator::setup_constraint
-          (rigid_body_constraint_angular_actuator *this,pulse_sum_constraint_solver *param_1,
-          float param_2)
+          (rigid_body_constraint_angular_actuator *this,pulse_sum_constraint_solver *psys,
+          float delta_t)
 
 {
   int iVar1;
-  rigid_body *prVar2;
-  float fVar3;
-  phys_vec3 *ppVar4;
-  pulse_sum_angular *ppVar5;
+  rigid_body *b1_r;
+  float fVar2;
+  phys_vec3 *ppVar3;
+  pulse_sum_angular *ppVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
   double adStack_70 [2];
   float fStack_60;
   float fStack_5c;
@@ -650,50 +660,50 @@ rigid_body_constraint_angular_actuator::setup_constraint
   
   if (this->m_enabled != false) {
     iVar1 = *(int *)&this->field_0x4;
-    fVar7 = this->m_power * param_2 * this->m_power_scale;
+    fVar6 = this->m_power * delta_t * this->m_power_scale;
     phys_multiply_mat(&pStack_50,(phys_mat44 *)(*(int *)this + 0x30),&this->m_target_mat);
-    prVar2 = *(rigid_body **)this;
-    ppVar4 = phys_multiply33((phys_vec3 *)adStack_70,&prVar2->m_mat,&this->m_a_vel);
-    fStack_60 = ppVar4->x;
-    fStack_5c = ppVar4->y;
-    fStack_58 = ppVar4->z;
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,prVar2,&pStack_50.x,*(rigid_body **)&this->field_0x4,
+    b1_r = *(rigid_body **)this;
+    ppVar3 = phys_multiply33((phys_vec3 *)adStack_70,&b1_r->m_mat,&this->m_a_vel);
+    fStack_60 = ppVar3->x;
+    fStack_5c = ppVar3->y;
+    fStack_58 = ppVar3->z;
+    ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,b1_r,&pStack_50.x,*(rigid_body **)&this->field_0x4,
                         (phys_vec3 *)(iVar1 + 0x30),&pStack_50.y,this->m_ps_cache_list);
-    fVar3 = -fVar7;
-    ppVar5->m_pulse_sum_min = fVar3;
-    ppVar5->m_pulse_sum_max = fVar7;
-    adStack_70[0] = (double)(-1.0 / param_2);
-    fVar6 = pulse_sum_angular::get_pos(ppVar5);
-    ppVar5->m_big_dirt = fVar6 * (float)adStack_70[0];
-    ppVar5->m_right_side = 0.0;
-    ppVar5->m_cfm = 0.0;
-    ppVar5->m_denom = ppVar5->m_denom + 0.0;
-    ppVar5->m_right_side =
+    fVar2 = -fVar6;
+    ppVar4->m_pulse_sum_min = fVar2;
+    ppVar4->m_pulse_sum_max = fVar6;
+    adStack_70[0] = (double)(-1.0 / delta_t);
+    fVar5 = pulse_sum_angular::get_pos(ppVar4);
+    ppVar4->m_big_dirt = fVar5 * (float)adStack_70[0];
+    ppVar4->m_right_side = 0.0;
+    ppVar4->m_cfm = 0.0;
+    ppVar4->m_denom = ppVar4->m_denom + 0.0;
+    ppVar4->m_right_side =
          -(pStack_50.y.z * fStack_58 + pStack_50.y.x * fStack_60 + pStack_50.y.y * fStack_5c) + 0.0;
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&pStack_50.y,*(rigid_body **)&this->field_0x4,
+    ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&pStack_50.y,*(rigid_body **)&this->field_0x4,
                         (phys_vec3 *)(iVar1 + 0x40),&pStack_50.z,this->m_ps_cache_list + 1);
-    ppVar5->m_pulse_sum_min = fVar3;
-    ppVar5->m_pulse_sum_max = fVar7;
-    fVar6 = pulse_sum_angular::get_pos(ppVar5);
-    ppVar5->m_big_dirt = fVar6 * (float)adStack_70[0];
-    ppVar5->m_right_side = 0.0;
-    ppVar5->m_cfm = 0.0;
-    ppVar5->m_denom = ppVar5->m_denom + 0.0;
-    ppVar5->m_right_side =
+    ppVar4->m_pulse_sum_min = fVar2;
+    ppVar4->m_pulse_sum_max = fVar6;
+    fVar5 = pulse_sum_angular::get_pos(ppVar4);
+    ppVar4->m_big_dirt = fVar5 * (float)adStack_70[0];
+    ppVar4->m_right_side = 0.0;
+    ppVar4->m_cfm = 0.0;
+    ppVar4->m_denom = ppVar4->m_denom + 0.0;
+    ppVar4->m_right_side =
          -(pStack_50.z.z * fStack_58 + pStack_50.z.y * fStack_5c + pStack_50.z.x * fStack_60) + 0.0;
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                       (param_1,*(rigid_body **)this,&pStack_50.z,*(rigid_body **)&this->field_0x4,
+    ppVar4 = pulse_sum_constraint_solver::create_pulse_sum_angular
+                       (psys,*(rigid_body **)this,&pStack_50.z,*(rigid_body **)&this->field_0x4,
                         (phys_vec3 *)(iVar1 + 0x50),&pStack_50.x,this->m_ps_cache_list + 2);
-    ppVar5->m_pulse_sum_min = fVar3;
-    ppVar5->m_pulse_sum_max = fVar7;
-    fVar7 = pulse_sum_angular::get_pos(ppVar5);
-    ppVar5->m_big_dirt = fVar7 * (float)adStack_70[0];
-    ppVar5->m_right_side = 0.0;
-    ppVar5->m_cfm = 0.0;
-    ppVar5->m_denom = ppVar5->m_denom + 0.0;
-    ppVar5->m_right_side =
+    ppVar4->m_pulse_sum_min = fVar2;
+    ppVar4->m_pulse_sum_max = fVar6;
+    fVar6 = pulse_sum_angular::get_pos(ppVar4);
+    ppVar4->m_big_dirt = fVar6 * (float)adStack_70[0];
+    ppVar4->m_right_side = 0.0;
+    ppVar4->m_cfm = 0.0;
+    ppVar4->m_denom = ppVar4->m_denom + 0.0;
+    ppVar4->m_right_side =
          -(pStack_50.x.z * fStack_58 + pStack_50.x.x * fStack_60 + pStack_50.x.y * fStack_5c) + 0.0;
   }
   return;
@@ -703,12 +713,12 @@ rigid_body_constraint_angular_actuator::setup_constraint
 // 008EC690  sub_pos  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body_internal.h:224)
 
 phys_vec3 * __cdecl
-rbint::sub_pos(phys_vec3 *__return_storage_ptr__,rigid_body *param_1,phys_vec3 *param_2)
+rbint::sub_pos(phys_vec3 *__return_storage_ptr__,rigid_body *p,phys_vec3 *param_2)
 
 {
-  __return_storage_ptr__->x = param_2->x - (param_1->m_mat).w.x;
-  __return_storage_ptr__->y = param_2->y - (param_1->m_mat).w.y;
-  __return_storage_ptr__->z = param_2->z - (param_1->m_mat).w.z;
+  __return_storage_ptr__->x = param_2->x - (p->m_mat).w.x;
+  __return_storage_ptr__->y = param_2->y - (p->m_mat).w.y;
+  __return_storage_ptr__->z = param_2->z - (p->m_mat).w.z;
   return __return_storage_ptr__;
 }
 
@@ -717,35 +727,35 @@ rbint::sub_pos(phys_vec3 *__return_storage_ptr__,rigid_body *param_1,phys_vec3 *
 
 void __thiscall
 rigid_body_constraint_angular_actuator::set
-          (rigid_body_constraint_angular_actuator *this,float param_1,phys_mat44 *param_2)
+          (rigid_body_constraint_angular_actuator *this,float power,phys_mat44 *target_mat)
 
 {
-  this->m_power = param_1;
+  this->m_power = power;
   this->m_power_scale = 1.0;
-  (this->m_target_mat).x.x = (param_2->x).x;
-  (this->m_target_mat).x.y = (param_2->x).y;
-  (this->m_target_mat).x.z = (param_2->x).z;
-  (this->m_target_mat).y.x = (param_2->y).x;
-  (this->m_target_mat).y.y = (param_2->y).y;
-  (this->m_target_mat).y.z = (param_2->y).z;
-  (this->m_target_mat).z.x = (param_2->z).x;
-  (this->m_target_mat).z.y = (param_2->z).y;
-  (this->m_target_mat).z.z = (param_2->z).z;
-  (this->m_target_mat).w.x = (param_2->w).x;
-  (this->m_target_mat).w.y = (param_2->w).y;
-  (this->m_target_mat).w.z = (param_2->w).z;
-  (this->m_next_target_mat).x.x = (param_2->x).x;
-  (this->m_next_target_mat).x.y = (param_2->x).y;
-  (this->m_next_target_mat).x.z = (param_2->x).z;
-  (this->m_next_target_mat).y.x = (param_2->y).x;
-  (this->m_next_target_mat).y.y = (param_2->y).y;
-  (this->m_next_target_mat).y.z = (param_2->y).z;
-  (this->m_next_target_mat).z.x = (param_2->z).x;
-  (this->m_next_target_mat).z.y = (param_2->z).y;
-  (this->m_next_target_mat).z.z = (param_2->z).z;
-  (this->m_next_target_mat).w.x = (param_2->w).x;
-  (this->m_next_target_mat).w.y = (param_2->w).y;
-  (this->m_next_target_mat).w.z = (param_2->w).z;
+  (this->m_target_mat).x.x = (target_mat->x).x;
+  (this->m_target_mat).x.y = (target_mat->x).y;
+  (this->m_target_mat).x.z = (target_mat->x).z;
+  (this->m_target_mat).y.x = (target_mat->y).x;
+  (this->m_target_mat).y.y = (target_mat->y).y;
+  (this->m_target_mat).y.z = (target_mat->y).z;
+  (this->m_target_mat).z.x = (target_mat->z).x;
+  (this->m_target_mat).z.y = (target_mat->z).y;
+  (this->m_target_mat).z.z = (target_mat->z).z;
+  (this->m_target_mat).w.x = (target_mat->w).x;
+  (this->m_target_mat).w.y = (target_mat->w).y;
+  (this->m_target_mat).w.z = (target_mat->w).z;
+  (this->m_next_target_mat).x.x = (target_mat->x).x;
+  (this->m_next_target_mat).x.y = (target_mat->x).y;
+  (this->m_next_target_mat).x.z = (target_mat->x).z;
+  (this->m_next_target_mat).y.x = (target_mat->y).x;
+  (this->m_next_target_mat).y.y = (target_mat->y).y;
+  (this->m_next_target_mat).y.z = (target_mat->y).z;
+  (this->m_next_target_mat).z.x = (target_mat->z).x;
+  (this->m_next_target_mat).z.y = (target_mat->z).y;
+  (this->m_next_target_mat).z.z = (target_mat->z).z;
+  (this->m_next_target_mat).w.x = (target_mat->w).x;
+  (this->m_next_target_mat).w.y = (target_mat->w).y;
+  (this->m_next_target_mat).w.z = (target_mat->w).z;
   (this->m_a_vel).x = 0.0;
   (this->m_a_vel).y = 0.0;
   (this->m_a_vel).z = 0.0;
@@ -758,7 +768,7 @@ rigid_body_constraint_angular_actuator::set
 
 void __thiscall
 rigid_body_constraint_angular_actuator::outer_prolog_update
-          (rigid_body_constraint_angular_actuator *this,float param_1)
+          (rigid_body_constraint_angular_actuator *this,float delta_t)
 
 {
   phys_vec3 pStack_20;
@@ -770,7 +780,7 @@ rigid_body_constraint_angular_actuator::outer_prolog_update
   (this->m_next_target_mat).w.y = 0.0;
   (this->m_next_target_mat).w.z = 0.0;
   nuge::calc_velocities
-            (&this->m_target_mat,&this->m_next_target_mat,param_1,&pStack_20,&this->m_a_vel);
+            (&this->m_target_mat,&this->m_next_target_mat,delta_t,&pStack_20,&this->m_a_vel);
   return;
 }
 
@@ -779,12 +789,12 @@ rigid_body_constraint_angular_actuator::outer_prolog_update
 
 void __thiscall
 rigid_body_constraint_angular_actuator::inner_update
-          (rigid_body_constraint_angular_actuator *this,float param_1)
+          (rigid_body_constraint_angular_actuator *this,float delta_t)
 
 {
   phys_mat44 pStack_50;
   
-  make_rotate(&pStack_50,&this->m_a_vel,param_1,1000.0);
+  make_rotate(&pStack_50,&this->m_a_vel,delta_t,1000.0);
   phys_multiply_mat(&this->m_target_mat,&pStack_50,&this->m_target_mat);
   return;
 }
@@ -797,6 +807,8 @@ rigid_body_constraint_angular_actuator::outer_epilog_update
           (rigid_body_constraint_angular_actuator *this,float param_1)
 
 {
+  float __formal;
+  
   (this->m_target_mat).x.x = (this->m_next_target_mat).x.x;
   (this->m_target_mat).x.y = (this->m_next_target_mat).x.y;
   (this->m_target_mat).x.z = (this->m_next_target_mat).x.z;
@@ -827,31 +839,31 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 void __thiscall
 rigid_body_constraint_upright::setup_constraint
-          (rigid_body_constraint_upright *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_upright *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   phys_mat44 *ppVar1;
-  rigid_body *prVar2;
+  rigid_body *b1_r;
   pulse_sum_angular *this_00;
-  float fVar3;
+  float fVar2;
   phys_vec3 pStack_30;
   phys_vec3 pStack_20;
   
   if (this->m_enabled != false) {
-    prVar2 = *(rigid_body **)this;
-    ppVar1 = &prVar2->m_mat;
+    b1_r = *(rigid_body **)this;
+    ppVar1 = &b1_r->m_mat;
     phys_multiply33(&pStack_30,ppVar1,&this->m_b1_forward_axis_loc);
     phys_multiply33(&pStack_20,ppVar1,&this->m_b1_lean_axis_loc);
     this_00 = pulse_sum_constraint_solver::create_pulse_sum_angular
-                        (param_1,prVar2,&pStack_20,*(rigid_body **)&this->field_0x4,
+                        (psys,b1_r,&pStack_20,*(rigid_body **)&this->field_0x4,
                          &this->m_b2_up_axis_loc,&pStack_30,this->m_ps_cache_list);
     this_00->m_pulse_sum_min = -1e+07;
     this_00->m_pulse_sum_max = 1e+07;
-    if (param_2 <= 0.016666668) {
-      param_2 = 0.016666668;
+    if (delta_t <= 0.016666668) {
+      delta_t = 0.016666668;
     }
-    fVar3 = pulse_sum_angular::get_pos(this_00);
-    this_00->m_big_dirt = (-0.5 / param_2) * fVar3;
+    fVar2 = pulse_sum_angular::get_pos(this_00);
+    this_00->m_big_dirt = (-0.5 / delta_t) * fVar2;
     this_00->m_right_side = 0.0;
     this_00->m_cfm = 0.0;
   }
@@ -861,7 +873,7 @@ rigid_body_constraint_upright::setup_constraint
 
 // 008EC540  construct_orth_ud  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:295)
 
-phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1)
+phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec3 *ud)
 
 {
   float fVar1;
@@ -871,20 +883,20 @@ phys_vec3 * __cdecl construct_orth_ud(phys_vec3 *__return_storage_ptr__,phys_vec
   float fStack_2c;
   
   __return_storage_ptr__->x = 0.0;
-  __return_storage_ptr__->y = param_1->z;
-  __return_storage_ptr__->z = -param_1->y;
+  __return_storage_ptr__->y = ud->z;
+  __return_storage_ptr__->z = -ud->y;
   _CIsqrt();
   fStack_2c = (float)extraout_ST0;
   if (fStack_2c < 0.0001) {
-    fVar1 = param_1->x;
-    __return_storage_ptr__->x = -param_1->z;
+    fVar1 = ud->x;
+    __return_storage_ptr__->x = -ud->z;
     __return_storage_ptr__->y = 0.0;
     __return_storage_ptr__->z = fVar1;
     _CIsqrt();
     fStack_2c = (float)extraout_ST0_00;
     if (fStack_2c < 0.0001) {
-      fVar1 = param_1->x;
-      __return_storage_ptr__->x = param_1->y;
+      fVar1 = ud->x;
+      __return_storage_ptr__->x = ud->y;
       __return_storage_ptr__->y = -fVar1;
       __return_storage_ptr__->z = 0.0;
       _CIsqrt();
@@ -907,6 +919,7 @@ rigid_body_constraint_upright::epilog_vel_constraint
 
 {
   float fVar1;
+  float delta_t;
   
   if (this->m_enabled != false) {
     fVar1 = calc_current_lean_angle(this);
@@ -956,7 +969,7 @@ rigid_body_constraint_upright::calc_current_lean_angle(rigid_body_constraint_upr
 
 phys_vec3 * __thiscall
 rigid_body_constraint_upright::calc_b1_lean_axis_loc
-          (rigid_body_constraint_upright *this,phys_vec3 *__return_storage_ptr__,float param_1)
+          (rigid_body_constraint_upright *this,phys_vec3 *__return_storage_ptr__,float lean_angle)
 
 {
   float fVar1;
@@ -989,7 +1002,8 @@ rigid_body_constraint_upright::calc_b1_lean_axis_loc
 
 void __thiscall
 rigid_body_constraint_upright::update_lean_axis
-          (rigid_body_constraint_upright *this,phys_vec3 *param_1,phys_vec3 *param_2)
+          (rigid_body_constraint_upright *this,phys_vec3 *b1_lean_center,phys_vec3 *b1_lean_axis_loc
+          )
 
 {
   int iVar1;
@@ -1000,9 +1014,9 @@ rigid_body_constraint_upright::update_lean_axis
   phys_vec3 pStack_60;
   phys_mat44 pStack_50;
   
-  (this->m_b1_lean_axis_loc).x = param_2->x;
-  (this->m_b1_lean_axis_loc).y = param_2->y;
-  (this->m_b1_lean_axis_loc).z = param_2->z;
+  (this->m_b1_lean_axis_loc).x = b1_lean_axis_loc->x;
+  (this->m_b1_lean_axis_loc).y = b1_lean_axis_loc->y;
+  (this->m_b1_lean_axis_loc).z = b1_lean_axis_loc->z;
   if (this->m_enabled != false) {
     iVar1 = *(int *)this;
     phys_multiply33(&pStack_60,(phys_mat44 *)(iVar1 + 0x30),&this->m_b1_forward_axis_loc);
@@ -1025,10 +1039,10 @@ rigid_body_constraint_upright::update_lean_axis
       pStack_70.z = fVar2 * pStack_70.z;
       phys_multiply33(&pStack_60,(phys_mat44 *)(iVar1 + 0x30),&this->m_b1_lean_axis_loc);
       make_rotate(&pStack_50,&pStack_60,&pStack_70);
-      ppVar3 = phys_multiply33(&pStack_70,&pStack_50,param_1);
-      pStack_60.x = param_1->x - ppVar3->x;
-      pStack_60.y = param_1->y - ppVar3->y;
-      pStack_60.z = param_1->z - ppVar3->z;
+      ppVar3 = phys_multiply33(&pStack_70,&pStack_50,b1_lean_center);
+      pStack_60.x = b1_lean_center->x - ppVar3->x;
+      pStack_60.y = b1_lean_center->y - ppVar3->y;
+      pStack_60.z = b1_lean_center->z - ppVar3->z;
       pStack_50.w.x = pStack_60.x;
       pStack_50.w.y = pStack_60.y;
       pStack_50.w.z = pStack_60.z;

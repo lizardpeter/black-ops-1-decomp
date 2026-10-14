@@ -2,55 +2,55 @@
 
 // 00C15E36  _strnicmp_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strnicmp.c:51)
 
-int __cdecl _strnicmp_l(char *param_1,char *param_2,uint param_3,localeinfo_struct *param_4)
+int __cdecl _strnicmp_l(char *dst,char *src,uint count,localeinfo_struct *plocinfo)
 
 {
   int *piVar1;
   int iVar2;
   int extraout_EAX;
   int iVar3;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  if (param_3 == 0) {
+  if (count == 0) {
     iVar2 = 0;
   }
   else {
-    _LocaleUpdate::_LocaleUpdate(&local_14,param_4);
-    if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {
+    _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+    if ((dst == (char *)0x0) || (src == (char *)0x0)) {
       piVar1 = _errno();
       *piVar1 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-      if (local_14.updated != false) {
-        (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       iVar2 = 0x7fffffff;
     }
-    else if (param_3 < 0x80000000) {
-      if ((local_14.localeinfo.locinfo)->lc_handle[2] == 0) {
-        __ascii_strnicmp((uchar *)param_1,(uchar *)param_2,param_3);
+    else if (count < 0x80000000) {
+      if ((_loc_update.localeinfo.locinfo)->lc_handle[2] == 0) {
+        __ascii_strnicmp((uchar *)dst,(uchar *)src,count);
         iVar2 = extraout_EAX;
       }
       else {
         do {
-          iVar2 = _tolower_l((uint)(byte)*param_1,&local_14.localeinfo);
-          param_1 = param_1 + 1;
-          iVar3 = _tolower_l((uint)(byte)*param_2,&local_14.localeinfo);
-          param_2 = param_2 + 1;
-          param_3 = param_3 - 1;
-          if ((param_3 == 0) || (iVar2 == 0)) break;
+          iVar2 = _tolower_l((uint)(byte)*dst,&_loc_update.localeinfo);
+          dst = dst + 1;
+          iVar3 = _tolower_l((uint)(byte)*src,&_loc_update.localeinfo);
+          src = src + 1;
+          count = count - 1;
+          if ((count == 0) || (iVar2 == 0)) break;
         } while (iVar2 == iVar3);
         iVar2 = iVar2 - iVar3;
       }
-      if (local_14.updated != false) {
-        (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
     }
     else {
       piVar1 = _errno();
       *piVar1 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-      if (local_14.updated != false) {
-        (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       iVar2 = 0x7fffffff;
     }
@@ -61,7 +61,7 @@ int __cdecl _strnicmp_l(char *param_1,char *param_2,uint param_3,localeinfo_stru
 
 // 00C15F28  _strnicmp  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/strnicmp.c:125)
 
-int __cdecl _strnicmp(char *param_1,char *param_2,uint param_3)
+int __cdecl _strnicmp(char *dst,char *src,uint count)
 
 {
   int *piVar1;
@@ -69,8 +69,8 @@ int __cdecl _strnicmp(char *param_1,char *param_2,uint param_3)
   int extraout_EAX;
   
   if (__locale_changed == 0) {
-    if (((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) && (param_3 < 0x80000000)) {
-      __ascii_strnicmp((uchar *)param_1,(uchar *)param_2,param_3);
+    if (((dst != (char *)0x0) && (src != (char *)0x0)) && (count < 0x80000000)) {
+      __ascii_strnicmp((uchar *)dst,(uchar *)src,count);
       return extraout_EAX;
     }
     piVar1 = _errno();
@@ -79,7 +79,7 @@ int __cdecl _strnicmp(char *param_1,char *param_2,uint param_3)
     iVar2 = 0x7fffffff;
   }
   else {
-    iVar2 = _strnicmp_l(param_1,param_2,param_3,(localeinfo_struct *)0x0);
+    iVar2 = _strnicmp_l(dst,src,count,(localeinfo_struct *)0x0);
   }
   return iVar2;
 }

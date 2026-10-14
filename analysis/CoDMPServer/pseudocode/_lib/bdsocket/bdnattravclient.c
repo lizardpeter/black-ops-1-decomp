@@ -486,13 +486,13 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
   bool bVar2;
   bdAddr *pbVar3;
   bdAddr *pbVar4;
-  bdSequenceNumber *pbVar5;
-  int iVar6;
+  bdSequenceNumber *rhs;
+  int iVar5;
+  bdNATTypeDiscoveryClientState bVar6;
   bdNATTypeDiscoveryClientState bVar7;
-  bdNATTypeDiscoveryClientState bVar8;
-  char *pcVar9;
-  uchar *puVar10;
-  uint uVar11;
+  char *pcVar8;
+  uchar *puVar9;
+  uint uVar10;
   char local_614 [24];
   undefined4 local_5fc;
   int local_5f8;
@@ -571,20 +571,20 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
                  "bdNATTravClient::receiveFrom",0xec,"Received NAT Trav reply.");
     local_568 = bdGetHostByName::getStatus((bdGetHostByName *)param_2);
     local_56c = 10;
-    puVar10 = local_560;
+    puVar9 = local_560;
     pbVar3 = bdNATTraversalPacket::getAddrDest(param_2);
     pbVar4 = bdCommonAddr::getPublicAddr((bdCommonAddr *)param_2);
-    local_561 = doHMac(this,local_568,pbVar4,pbVar3,puVar10);
+    local_561 = doHMac(this,local_568,pbVar4,pbVar3,puVar9);
     if ((bool)local_561) {
-      pbVar5 = bdSequenceNumberStore::getLastSequenceNumber((bdSequenceNumberStore *)param_2);
-      iVar6 = memcmp(local_560,pbVar5,local_56c);
-      if (iVar6 == 0) {
+      rhs = bdSequenceNumberStore::getLastSequenceNumber((bdSequenceNumberStore *)param_2);
+      iVar5 = memcmp(local_560,rhs,local_56c);
+      if (iVar5 == 0) {
         local_570 = 0x16;
         bdAddr::toString(param_1,local_5d0,0x16);
-        uVar11 = 0x16;
-        pcVar9 = local_5b8;
+        uVar10 = 0x16;
+        pcVar8 = local_5b8;
         pbVar3 = bdNATTraversalPacket::getAddrDest(param_2);
-        bdAddr::toString(pbVar3,pcVar9,uVar11);
+        bdAddr::toString(pbVar3,pcVar8,uVar10);
         bdLogMessage(BD_LOG_INFO,"info/","bdSocket/nat",
                      "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdNAT\\bdNATTravClient.cpp"
                      ,"bdNATTravClient::receiveFrom",0xfd,"discovered addr for %s: %s");
@@ -621,9 +621,9 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
     break;
   case '\r':
     this_00 = (bdNATTypeDiscoveryClient *)(this->m_localCommonAddr).m_ptr;
-    bVar7 = bdGetHostByName::getStatus((bdGetHostByName *)param_2);
-    bVar8 = bdNATTypeDiscoveryClient::getStatus(this_00);
-    if (bVar7 == bVar8) {
+    bVar6 = bdGetHostByName::getStatus((bdGetHostByName *)param_2);
+    bVar7 = bdNATTypeDiscoveryClient::getStatus(this_00);
+    if (bVar6 == bVar7) {
       bdAddr::bdAddr(&local_5d8,param_1);
       local_8 = 3;
       bdNATTraversalPacket::setType(param_2,'\f');

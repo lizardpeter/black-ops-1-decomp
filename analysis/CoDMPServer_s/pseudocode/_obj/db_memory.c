@@ -9,55 +9,55 @@
 void __cdecl DB_AllocXBlocks(uint *param_1,char *param_2,XBlock *param_3,uint param_4,int param_5)
 
 {
-  uint uVar1;
-  float fVar2;
+  uint size;
+  float fVar1;
   int in_EAX;
-  void *pvVar3;
+  void *pvVar2;
   char *unaff_EBX;
-  uint uVar4;
+  uint uVar3;
   uint unaff_EBP;
   uint unaff_ESI;
   uint unaff_EDI;
+  float fVar4;
   float fVar5;
-  float fVar6;
   
+  fVar4 = 0.0;
   fVar5 = 0.0;
-  fVar6 = 0.0;
-  uVar4 = 0;
+  uVar3 = 0;
   do {
-    uVar1 = *(uint *)(in_EAX + uVar4);
-    if (uVar1 != 0) {
-      fVar2 = (float)(int)uVar1;
-      if ((int)uVar1 < 0) {
-        fVar2 = fVar2 + 4.2949673e+09;
+    size = *(uint *)(in_EAX + uVar3);
+    if (size != 0) {
+      fVar1 = (float)(int)size;
+      if ((int)size < 0) {
+        fVar1 = fVar1 + 4.2949673e+09;
       }
-      fVar5 = fVar2 + fVar6;
-      if ((*(uint *)(&DAT_00ae3fd4 + uVar4) < 2) && ((param_4 & 0x40000000) != 0)) {
-        pvVar3 = malloc(uVar1);
-        if (pvVar3 == (void *)0x0) {
+      fVar4 = fVar1 + fVar5;
+      if ((*(uint *)(&DAT_00ae3fd4 + uVar3) < 2) && ((param_4 & 0x40000000) != 0)) {
+        pvVar2 = malloc(size);
+        if (pvVar2 == (void *)0x0) {
                     /* WARNING: Subroutine does not return */
           FUN_00699280();
         }
-        Com_Memset(pvVar3,0,uVar1);
+        Com_Memset(pvVar2,0,size);
       }
       else {
-        pvVar3 = PMem_AllocNamed((uint)param_3,unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX,
-                                 (EMemTrack)fVar5);
+        pvVar2 = PMem_AllocNamed((uint)param_3,unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX,
+                                 (EMemTrack)fVar4);
       }
-      if (pvVar3 == (void *)0x0) {
+      if (pvVar2 == (void *)0x0) {
         Com_Error(ERR_DROP,
                   "Could not allocate %.2f MB of type \'%s\' for zone \'%s\' needed an additional %.2f MB"
-                  ,(double)(fVar2 * 9.536743e-07),*(undefined4 *)((int)&PTR_s_temp_00ae409c + uVar4)
+                  ,(double)(fVar1 * 9.536743e-07),*(undefined4 *)((int)&PTR_s_temp_00ae409c + uVar3)
                   ,param_1,(double)((float)_DAT_01fd73cc * 9.536743e-07));
       }
-      *(uint *)(param_2 + 4) = uVar1;
-      *(void **)param_2 = pvVar3;
-      fVar6 = fVar5;
+      *(uint *)(param_2 + 4) = size;
+      *(void **)param_2 = pvVar2;
+      fVar5 = fVar4;
     }
-    uVar4 = uVar4 + 4;
+    uVar3 = uVar3 + 4;
     param_2 = param_2 + 8;
-  } while (uVar4 < 0x1c);
-  Com_Printf(0x10,"used %0.2f MB memory in DB alloc\n",(double)(fVar5 * 9.536743e-07));
+  } while (uVar3 < 0x1c);
+  Com_Printf(0x10,"used %0.2f MB memory in DB alloc\n",(double)(fVar4 * 9.536743e-07));
   return;
 }
 
@@ -69,20 +69,20 @@ void __cdecl DB_AllocXBlocks(uint *param_1,char *param_2,XBlock *param_3,uint pa
 void __cdecl DB_FreeXBlocks(XBlock *param_1,int param_2)
 
 {
-  void *pvVar1;
-  uint uVar2;
+  void *pBlock;
+  uint uVar1;
   int unaff_EDI;
   
-  uVar2 = 0;
+  uVar1 = 0;
   do {
     if ((((uint)param_1 & 0x40000000) != 0) &&
-       (pvVar1 = *(void **)(unaff_EDI + uVar2 * 8), pvVar1 != (void *)0x0)) {
-      free(pvVar1);
+       (pBlock = *(void **)(unaff_EDI + uVar1 * 8), pBlock != (void *)0x0)) {
+      free(pBlock);
     }
-    *(undefined4 *)(unaff_EDI + uVar2 * 8) = 0;
-    *(undefined4 *)(unaff_EDI + 4 + uVar2 * 8) = 0;
-    uVar2 = uVar2 + 1;
-  } while (uVar2 < 7);
+    *(undefined4 *)(unaff_EDI + uVar1 * 8) = 0;
+    *(undefined4 *)(unaff_EDI + 4 + uVar1 * 8) = 0;
+    uVar1 = uVar1 + 1;
+  } while (uVar1 < 7);
   return;
 }
 

@@ -2,13 +2,13 @@
 
 // 00AF86C0  AssertUninitializedRenderTarget  (gfx_d3d/r_rendertarget.cpp:782)
 
-void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
+void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *renderTarget)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxRenderTarget *)0x0) {
+  if (renderTarget == (GfxRenderTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x30f,
                              0,"%s");
     if (!bVar2) {
@@ -17,7 +17,7 @@ void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
       return;
     }
   }
-  if (param_1->image != (GfxImage *)0x0) {
+  if (renderTarget->image != (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x310,
                              0,"%s");
     if (!bVar2) {
@@ -26,7 +26,7 @@ void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
       return;
     }
   }
-  if ((param_1->surface).color != (IDirect3DSurface9 *)0x0) {
+  if ((renderTarget->surface).color != (IDirect3DSurface9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x312,
                              0,"%s");
     if (!bVar2) {
@@ -35,7 +35,7 @@ void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
       return;
     }
   }
-  if ((param_1->surface).depthStencil != (IDirect3DSurface9 *)0x0) {
+  if ((renderTarget->surface).depthStencil != (IDirect3DSurface9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x313,
                              0,"%s");
     if (!bVar2) {
@@ -44,7 +44,7 @@ void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
       return;
     }
   }
-  if (param_1->width != 0) {
+  if (renderTarget->width != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x315,
                              0,"%s");
     if (!bVar2) {
@@ -53,7 +53,7 @@ void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
       return;
     }
   }
-  if (param_1->height != 0) {
+  if (renderTarget->height != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x316,
                              0,"%s");
     if (!bVar2) {
@@ -68,12 +68,12 @@ void __cdecl AssertUninitializedRenderTarget(GfxRenderTarget *param_1)
 
 // 00AF9160  R_DescribeFormat  (gfx_d3d/r_rendertarget.cpp:974)
 
-char * __cdecl R_DescribeFormat(_D3DFORMAT param_1)
+char * __cdecl R_DescribeFormat(_D3DFORMAT format)
 
 {
   char *pcVar1;
   
-  switch(param_1) {
+  switch(format) {
   case D3DFMT_A8R8G8B8:
   case D3DFMT_A8B8G8R8:
     pcVar1 = "24-bit color with 8-bit alpha";
@@ -106,18 +106,21 @@ char * __cdecl R_DescribeFormat(_D3DFORMAT param_1)
 
 // 00AF8300  R_IsDepthStencilFormatOk  (gfx_d3d/r_rendertarget.cpp:1010)
 
-bool __cdecl R_IsDepthStencilFormatOk(_D3DFORMAT param_1,_D3DFORMAT param_2)
+bool __cdecl R_IsDepthStencilFormatOk(_D3DFORMAT renderTargetFormat,_D3DFORMAT depthStencilFormat)
 
 {
   bool bVar1;
   int iVar2;
+  HRESULT hr;
   
-  iVar2 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,2,1,param_2);
+  iVar2 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,2,1,depthStencilFormat)
+  ;
   if (iVar2 < 0) {
     bVar1 = false;
   }
   else {
-    iVar2 = (**(code **)((int)*dx.d3d9 + 0x30))(dx.d3d9,dx.adapterIndex,1,0x16,param_1,param_2);
+    iVar2 = (**(code **)((int)*dx.d3d9 + 0x30))
+                      (dx.d3d9,dx.adapterIndex,1,0x16,renderTargetFormat,depthStencilFormat);
     if (iVar2 < 0) {
       bVar1 = false;
     }
@@ -131,13 +134,13 @@ bool __cdecl R_IsDepthStencilFormatOk(_D3DFORMAT param_1,_D3DFORMAT param_2)
 
 // 00AF82D0  R_GetDepthStencilFormat  (gfx_d3d/r_rendertarget.cpp:1026)
 
-_D3DFORMAT __cdecl R_GetDepthStencilFormat(_D3DFORMAT param_1)
+_D3DFORMAT __cdecl R_GetDepthStencilFormat(_D3DFORMAT renderTargetFormat)
 
 {
   bool bVar1;
   _D3DFORMAT _Var2;
   
-  bVar1 = R_IsDepthStencilFormatOk(param_1,D3DFMT_D24FS8);
+  bVar1 = R_IsDepthStencilFormatOk(renderTargetFormat,D3DFMT_D24FS8);
   if (bVar1) {
     _Var2 = D3DFMT_D24FS8;
   }
@@ -150,18 +153,19 @@ _D3DFORMAT __cdecl R_GetDepthStencilFormat(_D3DFORMAT param_1)
 
 // 00AF8AC0  R_GetFrameBufferDepthStencilRes  (gfx_d3d/r_rendertarget.cpp:1054)
 
-void __cdecl R_GetFrameBufferDepthStencilRes(int *param_1,int *param_2)
+void __cdecl R_GetFrameBufferDepthStencilRes(int *depthStencilWidth,int *depthStencilHeight)
 
 {
-  *param_1 = vidConfig.displayWidth;
-  *param_2 = vidConfig.displayHeight;
+  *depthStencilWidth = vidConfig.displayWidth;
+  *depthStencilHeight = vidConfig.displayHeight;
   return;
 }
 
 
 // 00AF88E0  R_GetFullScreenRes  (gfx_d3d/r_rendertarget.cpp:1080)
 
-void __cdecl R_GetFullScreenRes(FullscreenType param_1,int *param_2,int *param_3)
+void __cdecl
+R_GetFullScreenRes(FullscreenType screenType,int *fullscreenWidth,int *fullscreenHeight)
 
 {
   code *pcVar1;
@@ -169,8 +173,8 @@ void __cdecl R_GetFullScreenRes(FullscreenType param_1,int *param_2,int *param_3
   uint local_c;
   uint local_8;
   
-  if (((param_1 != FULLSCREEN_DISPLAY) && (param_1 != FULLSCREEN_MIXED)) &&
-     (param_1 != FULLSCREEN_SCENE)) {
+  if (((screenType != FULLSCREEN_DISPLAY) && (screenType != FULLSCREEN_MIXED)) &&
+     (screenType != FULLSCREEN_SCENE)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x454,
                              0,"%s\n\t(screenType) = %i");
     if (!bVar2) {
@@ -179,27 +183,27 @@ void __cdecl R_GetFullScreenRes(FullscreenType param_1,int *param_2,int *param_3
       return;
     }
   }
-  if (param_1 == FULLSCREEN_DISPLAY) {
+  if (screenType == FULLSCREEN_DISPLAY) {
     local_8 = vidConfig.displayWidth;
   }
   else {
     local_8 = vidConfig.sceneWidth;
   }
-  *param_2 = local_8;
-  if (param_1 == FULLSCREEN_SCENE) {
+  *fullscreenWidth = local_8;
+  if (screenType == FULLSCREEN_SCENE) {
     local_c = vidConfig.sceneHeight;
   }
   else {
     local_c = vidConfig.displayHeight;
   }
-  *param_3 = local_c;
+  *fullscreenHeight = local_c;
   return;
 }
 
 
 // 00AF8600  R_ShareRenderTarget  (gfx_d3d/r_rendertarget.cpp:1116)
 
-void __cdecl R_ShareRenderTarget(uchar param_1,uchar param_2)
+void __cdecl R_ShareRenderTarget(uchar idFrom,uchar idTo)
 
 {
   ushort uVar1;
@@ -207,9 +211,9 @@ void __cdecl R_ShareRenderTarget(uchar param_1,uchar param_2)
   uint uVar3;
   uint uVar4;
   
-  AssertUninitializedRenderTarget(gfxRenderTargets + param_2);
-  uVar3 = (uint)param_1;
-  uVar4 = (uint)param_2;
+  AssertUninitializedRenderTarget(gfxRenderTargets + idTo);
+  uVar3 = (uint)idFrom;
+  uVar4 = (uint)idTo;
   gfxRenderTargets[uVar4].image = gfxRenderTargets[uVar3].image;
   gfxRenderTargets[uVar4].surface.color = gfxRenderTargets[uVar3].surface.color;
   gfxRenderTargets[uVar4].surface.depthStencil = gfxRenderTargets[uVar3].surface.depthStencil;
@@ -219,13 +223,13 @@ void __cdecl R_ShareRenderTarget(uchar param_1,uchar param_2)
   uVar2 = *(undefined3 *)&gfxRenderTargets[uVar3].field_0x11;
   gfxRenderTargets[uVar4].cleared = gfxRenderTargets[uVar3].cleared;
   *(undefined3 *)&gfxRenderTargets[uVar4].field_0x11 = uVar2;
-  if (gfxRenderTargets[param_2].surface.color != (IDirect3DSurface9 *)0x0) {
-    (**(code **)((int)*gfxRenderTargets[param_2].surface.color + 4))
-              (gfxRenderTargets[param_2].surface.color);
+  if (gfxRenderTargets[idTo].surface.color != (IDirect3DSurface9 *)0x0) {
+    (**(code **)((int)*gfxRenderTargets[idTo].surface.color + 4))
+              (gfxRenderTargets[idTo].surface.color);
   }
-  if (gfxRenderTargets[param_2].surface.depthStencil != (IDirect3DSurface9 *)0x0) {
-    (**(code **)((int)*gfxRenderTargets[param_2].surface.depthStencil + 4))
-              (gfxRenderTargets[param_2].surface.depthStencil);
+  if (gfxRenderTargets[idTo].surface.depthStencil != (IDirect3DSurface9 *)0x0) {
+    (**(code **)((int)*gfxRenderTargets[idTo].surface.depthStencil + 4))
+              (gfxRenderTargets[idTo].surface.depthStencil);
   }
   return;
 }
@@ -233,23 +237,25 @@ void __cdecl R_ShareRenderTarget(uchar param_1,uchar param_2)
 
 // 00AF8970  R_AssignSingleSampleDepthStencilSurface  (gfx_d3d/r_rendertarget.cpp:1137)
 
-IDirect3DSurface9 * __cdecl R_AssignSingleSampleDepthStencilSurface(FullscreenType param_1)
+IDirect3DSurface9 * __cdecl R_AssignSingleSampleDepthStencilSurface(FullscreenType screenType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
-  IDirect3DSurface9 *pIVar5;
-  int local_c;
-  int local_8;
+  int hr_00;
+  IDirect3DSurface9 *pIVar4;
+  int semaphore;
+  HRESULT hr;
+  int depthStencilWidth;
+  int depthStencilHeight;
   
   if ((dx.singleSampleDepthStencilSurface == (IDirect3DSurface9 *)0x0) &&
      (dx.multiSampleType == D3DMULTISAMPLE_NONE)) {
     dx.singleSampleDepthStencilSurface = gfxRenderTargets[2].surface.depthStencil;
   }
   if (dx.singleSampleDepthStencilSurface == (IDirect3DSurface9 *)0x0) {
-    R_GetFrameBufferDepthStencilRes(&local_c,&local_8);
+    R_GetFrameBufferDepthStencilRes(&depthStencilWidth,&depthStencilHeight);
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -257,14 +263,15 @@ IDirect3DSurface9 * __cdecl R_AssignSingleSampleDepthStencilSurface(FullscreenTy
                  );
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*dx.device + 0x74))
-                      (dx.device,local_c,local_8,dx.depthStencilFormat,0,0,0,0xa853420,0);
+    hr_00 = (**(code **)((int)*dx.device + 0x74))
+                      (dx.device,depthStencilWidth,depthStencilHeight,dx.depthStencilFormat,0,0,0,
+                       0xa853420,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (iVar4 < 0) {
+    if (hr_00 < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(iVar4);
+      R_ErrorDescription(hr_00);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp (%i) dx.device->CreateDepthStencilSurface( depthStencilWidth, depthStencilHeight, dx.depthStencilFormat, D3DMULTISAMPLE_NONE, 0, 0, &dx.singleSampleDepthStencilSurface, 0 ) failed: %s\n"
                );
@@ -273,8 +280,8 @@ IDirect3DSurface9 * __cdecl R_AssignSingleSampleDepthStencilSurface(FullscreenTy
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                  0x493,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
-      pIVar5 = (IDirect3DSurface9 *)(*pcVar1)();
-      return pIVar5;
+      pIVar4 = (IDirect3DSurface9 *)(*pcVar1)();
+      return pIVar4;
     }
   }
   else {
@@ -286,26 +293,26 @@ IDirect3DSurface9 * __cdecl R_AssignSingleSampleDepthStencilSurface(FullscreenTy
 
 // 00AF8C50  R_AssignImageToRenderTargetDepthStencil  (gfx_d3d/r_rendertarget.cpp:1236)
 
-void __cdecl R_AssignImageToRenderTargetDepthStencil(GfxRenderTarget *param_1,GfxImage *param_2)
+void __cdecl R_AssignImageToRenderTargetDepthStencil(GfxRenderTarget *renderTarget,GfxImage *image)
 
 {
   IDirect3DSurface9 *pIVar1;
   
-  pIVar1 = Image_GetSurface(param_2);
-  (param_1->surface).depthStencil = pIVar1;
+  pIVar1 = Image_GetSurface(image);
+  (renderTarget->surface).depthStencil = pIVar1;
   return;
 }
 
 
 // 00AF8C70  R_AssignImageToRenderTargetColor  (gfx_d3d/r_rendertarget.cpp:1245)
 
-void __cdecl R_AssignImageToRenderTargetColor(GfxRenderTarget *param_1,GfxImage *param_2)
+void __cdecl R_AssignImageToRenderTargetColor(GfxRenderTarget *renderTarget,GfxImage *image)
 
 {
   IDirect3DSurface9 *pIVar1;
   
-  pIVar1 = Image_GetSurface(param_2);
-  (param_1->surface).color = pIVar1;
+  pIVar1 = Image_GetSurface(image);
+  (renderTarget->surface).color = pIVar1;
   return;
 }
 
@@ -314,17 +321,18 @@ void __cdecl R_AssignImageToRenderTargetColor(GfxRenderTarget *param_1,GfxImage 
 
 void __cdecl
 R_InitRenderTargetImage
-          (int param_1,ushort param_2,ushort param_3,_D3DFORMAT param_4,RenderTargetUsage param_5,
-          GfxRenderTarget *param_6,uint param_7)
+          (int imageProgType,ushort width,ushort height,_D3DFORMAT format,RenderTargetUsage usage,
+          GfxRenderTarget *renderTarget,uint allocFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   GfxImage *pGVar4;
+  int renderTargetId;
   
-  AssertUninitializedRenderTarget(param_6);
-  if (param_2 == 0) {
+  AssertUninitializedRenderTarget(renderTarget);
+  if (width == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x534,
                              0,"%s\n\t(width) = %i");
     if (!bVar2) {
@@ -333,7 +341,7 @@ R_InitRenderTargetImage
       return;
     }
   }
-  if (param_3 == 0) {
+  if (height == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x535,
                              0,"%s\n\t(height) = %i");
     if (!bVar2) {
@@ -342,7 +350,7 @@ R_InitRenderTargetImage
       return;
     }
   }
-  uVar3 = (int)&param_6[-0x90d869].surface / 0x14;
+  uVar3 = (int)&renderTarget[-0x90d869].surface / 0x14;
   if (0x2b < uVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x538,
                              0,
@@ -354,9 +362,9 @@ R_InitRenderTargetImage
       return;
     }
   }
-  pGVar4 = Image_AllocProg(param_1,'\x06','\0');
-  param_6->image = pGVar4;
-  if (param_6->image == (GfxImage *)0x0) {
+  pGVar4 = Image_AllocProg(imageProgType,'\x06','\0');
+  renderTarget->image = pGVar4;
+  if (renderTarget->image == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x53b,
                              1,"%s");
     if (!bVar2) {
@@ -365,16 +373,16 @@ R_InitRenderTargetImage
       return;
     }
   }
-  Image_SetupRenderTarget(param_6->image,param_2,param_3,param_4,s_renderTargetNames[uVar3],param_7)
-  ;
-  if (param_5 == RENDERTARGET_USAGE_DEPTH) {
-    R_AssignImageToRenderTargetDepthStencil(param_6,param_6->image);
+  Image_SetupRenderTarget
+            (renderTarget->image,width,height,format,s_renderTargetNames[uVar3],allocFlags);
+  if (usage == RENDERTARGET_USAGE_DEPTH) {
+    R_AssignImageToRenderTargetDepthStencil(renderTarget,renderTarget->image);
   }
   else {
-    R_AssignImageToRenderTargetColor(param_6,param_6->image);
+    R_AssignImageToRenderTargetColor(renderTarget,renderTarget->image);
   }
-  param_6->width = param_2;
-  param_6->height = param_3;
+  renderTarget->width = width;
+  renderTarget->height = height;
   return;
 }
 
@@ -383,12 +391,12 @@ R_InitRenderTargetImage
 
 void __cdecl
 R_InitAndTrackRenderTargetImage
-          (int param_1,ushort param_2,ushort param_3,_D3DFORMAT param_4,RenderTargetUsage param_5,
-          GfxRenderTarget *param_6)
+          (int imageProgType,ushort width,ushort height,_D3DFORMAT format,RenderTargetUsage usage,
+          GfxRenderTarget *renderTarget)
 
 {
-  R_InitRenderTargetImage(param_1,param_2,param_3,param_4,param_5,param_6,2);
-  Image_TrackTexture(param_6->image,3,param_4,(uint)param_2,(uint)param_3,1);
+  R_InitRenderTargetImage(imageProgType,width,height,format,usage,renderTarget,2);
+  Image_TrackTexture(renderTarget->image,3,format,(uint)width,(uint)height,1);
   return;
 }
 
@@ -397,28 +405,32 @@ R_InitAndTrackRenderTargetImage
 
 void __cdecl
 R_InitSizedRenderTargetImage
-          (int param_1,int param_2,int param_3,int param_4,_D3DFORMAT param_5,
-          RenderTargetUsage param_6,GfxRenderTarget *param_7,uint param_8)
+          (int imageProgType,int fullscreenWidth,int fullscreenHeight,int picmip,_D3DFORMAT format,
+          RenderTargetUsage usage,GfxRenderTarget *renderTarget,uint allocFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
   int local_24;
   int local_20;
+  int semaphore;
+  HRESULT hr;
+  ushort width;
+  ushort height;
   
-  local_20 = param_2 >> ((byte)param_4 & 0x1f);
+  local_20 = fullscreenWidth >> ((byte)picmip & 0x1f);
   if (local_20 < 2) {
     local_20 = 1;
   }
-  local_24 = param_3 >> ((byte)param_4 & 0x1f);
+  local_24 = fullscreenHeight >> ((byte)picmip & 0x1f);
   if (local_24 < 2) {
     local_24 = 1;
   }
-  R_InitRenderTargetImage(param_1,(ushort)local_20,(ushort)local_24,param_5,param_6,param_7,param_8)
-  ;
-  if (param_6 == RENDERTARGET_USAGE_RENDER_SHARE_SCENE) {
+  R_InitRenderTargetImage
+            (imageProgType,(ushort)local_20,(ushort)local_24,format,usage,renderTarget,allocFlags);
+  if (usage == RENDERTARGET_USAGE_RENDER_SHARE_SCENE) {
     if ((gfxRenderTargets[3].surface.depthStencil == (IDirect3DSurface9 *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                  0x56e,0,"%s"), !bVar2)) {
@@ -426,8 +438,9 @@ R_InitSizedRenderTargetImage
       (*pcVar1)();
       return;
     }
-    (param_7->surface).depthStencil = gfxRenderTargets[3].surface.depthStencil;
-    (**(code **)((int)*(param_7->surface).depthStencil + 4))((param_7->surface).depthStencil);
+    (renderTarget->surface).depthStencil = gfxRenderTargets[3].surface.depthStencil;
+    (**(code **)((int)*(renderTarget->surface).depthStencil + 4))
+              ((renderTarget->surface).depthStencil);
     if ((gfxRenderTargets[3].surface.color == (IDirect3DSurface9 *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                  0x572,0,"%s"), !bVar2)) {
@@ -435,10 +448,10 @@ R_InitSizedRenderTargetImage
       (*pcVar1)();
       return;
     }
-    (param_7->surface).color = gfxRenderTargets[3].surface.color;
-    (**(code **)((int)*(param_7->surface).color + 4))((param_7->surface).color);
+    (renderTarget->surface).color = gfxRenderTargets[3].surface.color;
+    (**(code **)((int)*(renderTarget->surface).color + 4))((renderTarget->surface).color);
   }
-  else if (param_6 == RENDERTARGET_USAGE_RENDER) {
+  else if (usage == RENDERTARGET_USAGE_RENDER) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -446,15 +459,15 @@ R_InitSizedRenderTargetImage
                  );
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*dx.device + 0x74))
-                      (dx.device,param_2,param_3,dx.depthStencilFormat,0,0,0,
-                       &(param_7->surface).depthStencil,0);
+    hr_00 = (**(code **)((int)*dx.device + 0x74))
+                      (dx.device,fullscreenWidth,fullscreenHeight,dx.depthStencilFormat,0,0,0,
+                       &(renderTarget->surface).depthStencil,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (iVar4 < 0) {
+    if (hr_00 < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(iVar4);
+      R_ErrorDescription(hr_00);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp (%i) dx.device->CreateDepthStencilSurface( fullscreenWidth, fullscreenHeight, dx.depthStencilFormat, D3DMULTISAMPLE_NONE, 0, 0, &renderTarget->surface.depthStencil, 0 ) failed: %s\n"
                );
@@ -468,8 +481,8 @@ R_InitSizedRenderTargetImage
 
 void __cdecl
 R_InitFullscreenRenderTargetImage
-          (int param_1,FullscreenType param_2,int param_3,_D3DFORMAT param_4,
-          RenderTargetUsage param_5,GfxRenderTarget *param_6)
+          (int imageProgType,FullscreenType screenType,int picmip,_D3DFORMAT format,
+          RenderTargetUsage usage,GfxRenderTarget *renderTarget)
 
 {
   code *pcVar1;
@@ -477,22 +490,25 @@ R_InitFullscreenRenderTargetImage
   IDirect3DSurface9 *pIVar3;
   int local_24;
   int local_20;
-  int local_c;
-  int local_8;
+  ushort width;
+  ushort height;
+  int fullscreenWidth;
+  int fullscreenHeight;
   
-  local_c = 0;
-  local_8 = 0;
-  R_GetFullScreenRes(param_2,&local_c,&local_8);
-  local_20 = local_c >> ((byte)param_3 & 0x1f);
+  fullscreenWidth = 0;
+  fullscreenHeight = 0;
+  R_GetFullScreenRes(screenType,&fullscreenWidth,&fullscreenHeight);
+  local_20 = fullscreenWidth >> ((byte)picmip & 0x1f);
   if (local_20 < 2) {
     local_20 = 1;
   }
-  local_24 = local_8 >> ((byte)param_3 & 0x1f);
+  local_24 = fullscreenHeight >> ((byte)picmip & 0x1f);
   if (local_24 < 2) {
     local_24 = 1;
   }
-  R_InitRenderTargetImage(param_1,(ushort)local_20,(ushort)local_24,param_4,param_5,param_6,2);
-  if (param_5 == RENDERTARGET_USAGE_RENDER_SHARE_SCENE) {
+  R_InitRenderTargetImage
+            (imageProgType,(ushort)local_20,(ushort)local_24,format,usage,renderTarget,2);
+  if (usage == RENDERTARGET_USAGE_RENDER_SHARE_SCENE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x5c7,
                              0,"RENDERTARGET_USAGE_RENDER_SHARE_SCENE only implemented for XBOX");
     if (!bVar2) {
@@ -501,21 +517,26 @@ R_InitFullscreenRenderTargetImage
       return;
     }
   }
-  else if (param_5 == RENDERTARGET_USAGE_RENDER) {
-    pIVar3 = R_AssignSingleSampleDepthStencilSurface(param_2);
-    (param_6->surface).depthStencil = pIVar3;
+  else if (usage == RENDERTARGET_USAGE_RENDER) {
+    pIVar3 = R_AssignSingleSampleDepthStencilSurface(screenType);
+    (renderTarget->surface).depthStencil = pIVar3;
   }
-  Image_TrackFullscreenTexture(param_6->image,local_c,local_8,param_3,param_4);
+  Image_TrackFullscreenTexture(renderTarget->image,fullscreenWidth,fullscreenHeight,picmip,format);
   return;
 }
 
 
 // 00AF8C90  R_InitRenderTargetImage_Composite  (gfx_d3d/r_rendertarget.cpp:1609)
 
-void __cdecl R_InitRenderTargetImage_Composite(int param_1,GfxRenderTarget *param_2)
+void __cdecl R_InitRenderTargetImage_Composite(int imageProgType,GfxRenderTarget *renderTarget)
 
 {
-  R_InitRenderTargetImage(param_1,0x100,0x100,D3DFMT_A8R8G8B8,RENDERTARGET_USAGE_RENDER,param_2,2);
+  ushort width;
+  ushort height;
+  _D3DFORMAT format;
+  
+  R_InitRenderTargetImage
+            (imageProgType,0x100,0x100,D3DFMT_A8R8G8B8,RENDERTARGET_USAGE_RENDER,renderTarget,2);
   return;
 }
 
@@ -524,34 +545,40 @@ void __cdecl R_InitRenderTargetImage_Composite(int param_1,GfxRenderTarget *para
 
 void __cdecl
 R_InitShadowmapRenderTarget
-          (int param_1,ushort param_2,ushort param_3,GfxRenderTarget *param_4,
-          ShadowmapRTTiling param_5)
+          (int imageProgType,ushort tileRes,ushort tileRowCount,GfxRenderTarget *renderTarget,
+          ShadowmapRTTiling tilingMethond)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  ushort local_10;
-  ushort local_8;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  ushort tileGridSize;
+  ushort totalHeight;
+  RenderTargetUsage usage;
+  ushort totalWidth;
   
-  AssertUninitializedRenderTarget(param_4);
-  if (param_5 == SHADOWMAP_RT_TILE_VERTICAL) {
-    local_8 = param_2;
+  AssertUninitializedRenderTarget(renderTarget);
+  if (tilingMethond == SHADOWMAP_RT_TILE_VERTICAL) {
+    totalWidth = tileRes;
   }
   else {
-    param_3 = param_3 / 2;
-    local_8 = param_2 * param_3;
+    tileRowCount = tileRowCount / 2;
+    totalWidth = tileRes * tileRowCount;
   }
-  local_10 = param_2 * param_3;
-  if (((local_8 & local_8 - 1) != 0) &&
+  totalHeight = tileRes * tileRowCount;
+  if (((totalWidth & totalWidth - 1) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                0x68a,0,"%s\n\t(totalWidth) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_10 & local_10 - 1) != 0) &&
+  if (((totalHeight & totalHeight - 1) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                0x68b,0,"%s\n\t(totalHeight) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -560,7 +587,8 @@ R_InitShadowmapRenderTarget
   }
   bVar2 = gfxMetrics.shadowmapBuildTechType != '\x02';
   R_InitAndTrackRenderTargetImage
-            (param_1,local_8,local_10,gfxMetrics.shadowmapFormatPrimary,(uint)bVar2,param_4);
+            (imageProgType,totalWidth,totalHeight,gfxMetrics.shadowmapFormatPrimary,(uint)bVar2,
+             renderTarget);
   if (bVar2 == RENDERTARGET_USAGE_DEPTH) {
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -570,8 +598,8 @@ R_InitShadowmapRenderTarget
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
     iVar4 = (**(code **)((int)*dx.device + 0x70))
-                      (dx.device,local_8,local_10,gfxMetrics.shadowmapFormatSecondary,0,0,0,
-                       &param_4->surface,0);
+                      (dx.device,totalWidth,totalHeight,gfxMetrics.shadowmapFormatSecondary,0,0,0,
+                       &renderTarget->surface,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -592,8 +620,8 @@ R_InitShadowmapRenderTarget
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
     iVar4 = (**(code **)((int)*dx.device + 0x74))
-                      (dx.device,local_8,local_10,gfxMetrics.shadowmapFormatSecondary,0,0,0,
-                       &(param_4->surface).depthStencil,0);
+                      (dx.device,totalWidth,totalHeight,gfxMetrics.shadowmapFormatSecondary,0,0,0,
+                       &(renderTarget->surface).depthStencil,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -611,41 +639,43 @@ R_InitShadowmapRenderTarget
 
 // 00AF9230  R_InitFrameBufferRenderTarget_Win32  (gfx_d3d/r_rendertarget.cpp:1796)
 
-void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *param_1)
+void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *renderTarget)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int hr_00;
+  int semaphore_3;
+  HRESULT hr_3;
+  int depthStencilWidth;
+  int depthStencilHeight;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
   
-  if ((param_1 == (GfxRenderTarget *)0x0) &&
+  if ((renderTarget == (GfxRenderTarget *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                0x707,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->width = (ushort)vidConfig.displayWidth;
-  param_1->height = (ushort)vidConfig.displayHeight;
+  renderTarget->width = (ushort)vidConfig.displayWidth;
+  renderTarget->height = (ushort)vidConfig.displayHeight;
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("dx.device->GetSwapChain( 0, &dx.windows[0].swapChain )\n");
   }
-  local_c = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  local_8 = (**(code **)((int)*dx.device + 0x38))(dx.device,0,0xa853434);
-  if (local_c != 0) {
+  semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+  hr = (**(code **)((int)*dx.device + 0x38))(dx.device,0,0xa853434);
+  if (semaphore != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (local_8 < 0) {
+  if (hr < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(local_8);
+    R_ErrorDescription(hr);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp (%i) dx.device->GetSwapChain( 0, &dx.windows[0].swapChain ) failed: %s\n"
              );
@@ -656,19 +686,19 @@ void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *param_1)
                "dx.device->GetBackBuffer( 0, 0, D3DBACKBUFFER_TYPE_MONO, &renderTarget->surface.color )\n"
                );
   }
-  local_14 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  local_10 = (**(code **)((int)*dx.device + 0x48))(dx.device,0,0,0,&param_1->surface);
-  if (local_14 != 0) {
+  semaphore_2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+  hr_2 = (**(code **)((int)*dx.device + 0x48))(dx.device,0,0,0,&renderTarget->surface);
+  if (semaphore_2 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (local_10 < 0) {
+  if (hr_2 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(local_10);
+    R_ErrorDescription(hr_2);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp (%i) dx.device->GetBackBuffer( 0, 0, D3DBACKBUFFER_TYPE_MONO, &renderTarget->surface.color ) failed: %s\n"
              );
   }
-  if (((param_1->surface).color == (IDirect3DSurface9 *)0x0) &&
+  if (((renderTarget->surface).color == (IDirect3DSurface9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                0x711,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -676,7 +706,7 @@ void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *param_1)
     return;
   }
   if (g_allocateMinimalResources == false) {
-    R_GetFrameBufferDepthStencilRes(&local_1c,&local_18);
+    R_GetFrameBufferDepthStencilRes(&depthStencilWidth,&depthStencilHeight);
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint(
@@ -684,22 +714,23 @@ void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *param_1)
                  );
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*dx.device + 0x74))
-                      (dx.device,local_1c,local_18,dx.depthStencilFormat,dx.multiSampleType,
-                       dx.multiSampleQuality,0,&(param_1->surface).depthStencil,0);
+    hr_00 = (**(code **)((int)*dx.device + 0x74))
+                      (dx.device,depthStencilWidth,depthStencilHeight,dx.depthStencilFormat,
+                       dx.multiSampleType,dx.multiSampleQuality,0,
+                       &(renderTarget->surface).depthStencil,0);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (iVar4 < 0) {
+    if (hr_00 < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(iVar4);
+      R_ErrorDescription(hr_00);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp (%i) dx.device->CreateDepthStencilSurface( depthStencilWidth, depthStencilHeight, dx.depthStencilFormat, dx.multiSampleType, dx.multiSampleQuality, 0, &renderTarget->surface.depthStencil, 0 ) failed: %s\n"
                );
     }
   }
   else {
-    (param_1->surface).depthStencil = (IDirect3DSurface9 *)0x0;
+    (renderTarget->surface).depthStencil = (IDirect3DSurface9 *)0x0;
   }
   return;
 }
@@ -713,7 +744,7 @@ _D3DFORMAT __cdecl R_InitFrameBufferRenderTarget(void)
   code *pcVar1;
   bool bVar2;
   _D3DFORMAT _Var3;
-  _D3DFORMAT local_24 [8];
+  _D3DFORMAT surfaceDesc [8];
   
   if ((r_reflectionProbeGenerate->current).enabled == false) {
     R_InitFrameBufferRenderTarget_Win32(gfxRenderTargets + 2);
@@ -721,19 +752,20 @@ _D3DFORMAT __cdecl R_InitFrameBufferRenderTarget(void)
     R_DescribeFormat(D3DFMT_A8R8G8B8);
     Com_Printf(8,"Requested frame buffer to be %s\n");
     (**(code **)((int)*gfxRenderTargets[2].surface.color + 0x30))
-              (gfxRenderTargets[2].surface.color,local_24);
-    if ((local_24[0] == D3DFMT_UNKNOWN) &&
+              (gfxRenderTargets[2].surface.color,surfaceDesc);
+    if ((surfaceDesc[0] == D3DFMT_UNKNOWN) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                  0x7ef,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       _Var3 = (*pcVar1)();
       return _Var3;
     }
-    R_DescribeFormat(local_24[0]);
+    R_DescribeFormat(surfaceDesc[0]);
     Com_Printf(8,"DirectX returned a frame buffer that is %s\n");
     if (g_allocateMinimalResources == false) {
       R_InitFullscreenRenderTargetImage
-                (9,FULLSCREEN_SCENE,0,local_24[0],RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 6);
+                (9,FULLSCREEN_SCENE,0,surfaceDesc[0],RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 6)
+      ;
     }
   }
   else {
@@ -741,15 +773,15 @@ _D3DFORMAT __cdecl R_InitFrameBufferRenderTarget(void)
     R_DescribeFormat(D3DFMT_A8R8G8B8);
     Com_Printf(8,"Requested frame buffer to be %s\n");
     (**(code **)((int)*gfxRenderTargets[0x12].surface.color + 0x30))
-              (gfxRenderTargets[0x12].surface.color,local_24);
-    if ((local_24[0] == D3DFMT_UNKNOWN) &&
+              (gfxRenderTargets[0x12].surface.color,surfaceDesc);
+    if ((surfaceDesc[0] == D3DFMT_UNKNOWN) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",
                                  0x7e1,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       _Var3 = (*pcVar1)();
       return _Var3;
     }
-    R_DescribeFormat(local_24[0]);
+    R_DescribeFormat(surfaceDesc[0]);
     Com_Printf(8,"DirectX returned a frame buffer that is %s\n");
     if (g_allocateMinimalResources == false) {
       R_InitFullscreenRenderTargetImage
@@ -757,14 +789,14 @@ _D3DFORMAT __cdecl R_InitFrameBufferRenderTarget(void)
                  gfxRenderTargets + 6);
     }
   }
-  return local_24[0];
+  return surfaceDesc[0];
 }
 
 
 // 00AF9630  R_ShareRenderTarget_ReplaceColor  (gfx_d3d/r_rendertarget.cpp:4415)
 
 void __cdecl
-R_ShareRenderTarget_ReplaceColor(uchar param_1,uchar param_2,IDirect3DSurface9 *param_3)
+R_ShareRenderTarget_ReplaceColor(uchar idFrom,uchar idTo,IDirect3DSurface9 *colorSurface)
 
 {
   code *pcVar1;
@@ -773,8 +805,9 @@ R_ShareRenderTarget_ReplaceColor(uchar param_1,uchar param_2,IDirect3DSurface9 *
   bool bVar4;
   uint uVar5;
   uint uVar6;
+  GfxRenderTarget *renderTarget;
   
-  uVar5 = (uint)param_2;
+  uVar5 = (uint)idTo;
   if (gfxRenderTargets + uVar5 == (GfxRenderTarget *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rendertarget.cpp",0x1145
                              ,0,"%s");
@@ -829,8 +862,8 @@ R_ShareRenderTarget_ReplaceColor(uchar param_1,uchar param_2,IDirect3DSurface9 *
       return;
     }
   }
-  uVar6 = (uint)param_1;
-  uVar5 = (uint)param_2;
+  uVar6 = (uint)idFrom;
+  uVar5 = (uint)idTo;
   gfxRenderTargets[uVar5].image = gfxRenderTargets[uVar6].image;
   gfxRenderTargets[uVar5].surface.color = gfxRenderTargets[uVar6].surface.color;
   gfxRenderTargets[uVar5].surface.depthStencil = gfxRenderTargets[uVar6].surface.depthStencil;
@@ -840,12 +873,12 @@ R_ShareRenderTarget_ReplaceColor(uchar param_1,uchar param_2,IDirect3DSurface9 *
   uVar3 = *(undefined3 *)&gfxRenderTargets[uVar6].field_0x11;
   gfxRenderTargets[uVar5].cleared = gfxRenderTargets[uVar6].cleared;
   *(undefined3 *)&gfxRenderTargets[uVar5].field_0x11 = uVar3;
-  gfxRenderTargets[param_2].surface.color = param_3;
-  (**(code **)((int)*gfxRenderTargets[param_2].surface.color + 4))
-            (gfxRenderTargets[param_2].surface.color);
-  if (gfxRenderTargets[param_2].surface.depthStencil != (IDirect3DSurface9 *)0x0) {
-    (**(code **)((int)*gfxRenderTargets[param_2].surface.depthStencil + 4))
-              (gfxRenderTargets[param_2].surface.depthStencil);
+  gfxRenderTargets[idTo].surface.color = colorSurface;
+  (**(code **)((int)*gfxRenderTargets[idTo].surface.color + 4))
+            (gfxRenderTargets[idTo].surface.color);
+  if (gfxRenderTargets[idTo].surface.depthStencil != (IDirect3DSurface9 *)0x0) {
+    (**(code **)((int)*gfxRenderTargets[idTo].surface.depthStencil + 4))
+              (gfxRenderTargets[idTo].surface.depthStencil);
   }
   return;
 }
@@ -853,30 +886,32 @@ R_ShareRenderTarget_ReplaceColor(uchar param_1,uchar param_2,IDirect3DSurface9 *
 
 // 00AF9500  R_InitSceneNullRenderTarget_PC  (gfx_d3d/r_rendertarget.cpp:4442)
 
+/* WARNING: Variable defined which should be unmapped: nullFormat */
+
 void __cdecl R_InitSceneNullRenderTarget_PC(void)
 
 {
-  IDirect3DSurface9 *local_10;
-  int local_c;
-  undefined4 local_8;
+  _D3DFORMAT nullFormat;
+  IDirect3DSurface9 *nullTextureSurface;
+  HRESULT hr;
+  _D3DFORMAT adapterFormat;
   
-  local_8 = 0x16;
-  local_10 = (IDirect3DSurface9 *)0x0;
+  adapterFormat = D3DFMT_X8R8G8B8;
+  nullTextureSurface = (IDirect3DSurface9 *)0x0;
   dx.supportsSceneNullRenderTarget = false;
   if ((((dx.vendorId != 0x1002) && ((r_allow_null_rt->current).enabled != false)) &&
-      (local_c = (**(code **)((int)*dx.d3d9 + 0x28))
-                           (dx.d3d9,dx.adapterIndex,1,0x16,1,1,0x4c4c554e,0x4c4c554e), local_c == 0)
-      ) && (local_c = (**(code **)((int)*dx.d3d9 + 0x30))
-                                (dx.d3d9,dx.adapterIndex,1,0x16,0x4c4c554e,dx.depthStencilFormat),
-           local_c == 0)) {
+      (hr = (**(code **)((int)*dx.d3d9 + 0x28))
+                      (dx.d3d9,dx.adapterIndex,1,0x16,1,1,0x4c4c554e,0x4c4c554e), hr == 0)) &&
+     (hr = (**(code **)((int)*dx.d3d9 + 0x30))
+                     (dx.d3d9,dx.adapterIndex,1,0x16,0x4c4c554e,dx.depthStencilFormat), hr == 0)) {
     R_AssertDXDeviceOwnership();
-    local_c = (**(code **)((int)*dx.device + 0x70))
-                        (dx.device,gfxRenderTargets[3].width,gfxRenderTargets[3].height,0x4c4c554e,
-                         dx.multiSampleType,dx.multiSampleQuality,0,&local_10,0);
-    if (local_c == 0) {
+    hr = (**(code **)((int)*dx.device + 0x70))
+                   (dx.device,gfxRenderTargets[3].width,gfxRenderTargets[3].height,0x4c4c554e,
+                    dx.multiSampleType,dx.multiSampleQuality,0,&nullTextureSurface,0);
+    if (hr == 0) {
       dx.supportsSceneNullRenderTarget = true;
-      R_ShareRenderTarget_ReplaceColor('\x03','\x04',local_10);
-      (**(code **)((int)*local_10 + 8))(local_10);
+      R_ShareRenderTarget_ReplaceColor('\x03','\x04',nullTextureSurface);
+      (**(code **)((int)*nullTextureSurface + 8))(nullTextureSurface);
     }
   }
   return;
@@ -891,52 +926,54 @@ void __cdecl R_InitIntZRenderTarget_PC(void)
 
 {
   int iVar1;
-  undefined4 local_514;
+  GfxImage *image;
+  GfxRenderTarget *rt;
+  undefined4 driverVersion;
   uint local_510;
-  char local_481;
-  undefined4 local_480;
-  undefined4 local_47c;
-  undefined4 local_478;
-  undefined1 local_474 [1056];
+  uchar stereoEnabled;
+  NVDX_ObjectHandle__ *hNvDepthTexture;
+  ulong acceptableDriver;
+  uint mipCount;
+  undefined1 adapterId [1056];
   uint local_54;
   int local_4c;
   uint local_24;
-  uint local_20;
-  uint local_1c;
-  undefined4 local_18;
-  undefined4 local_14;
-  undefined4 local_10;
-  GfxTexture local_c;
-  undefined4 local_8;
+  uint width;
+  uint height;
+  _D3DFORMAT FOURCC_INTZ;
+  ulong usage;
+  _D3DFORMAT FOURCC_RESZ;
+  IDirect3DTexture9 *depthTexture;
+  _D3DPOOL memPool;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = 0x5a544e49;
-  local_10 = 0x5a534552;
-  local_20 = vidConfig.sceneWidth;
-  local_1c = vidConfig.sceneHeight;
-  local_14 = 2;
-  local_8 = 0;
-  local_478 = 1;
-  local_c.basemap = (IDirect3DBaseTexture9 *)0x0;
+  FOURCC_INTZ = 0x5a544e49;
+  FOURCC_RESZ = 0x5a534552;
+  width = vidConfig.sceneWidth;
+  height = vidConfig.sceneHeight;
+  usage = 2;
+  memPool = D3DPOOL_DEFAULT;
+  mipCount = 1;
+  depthTexture = (IDirect3DTexture9 *)0x0;
   dx.supportsIntZ = false;
   if ((r_allow_intz->current).enabled == false) {
     dx.supportsIntZ = false;
     return;
   }
-  iVar1 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,dx.adapterIndex,0,local_474);
+  iVar1 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,dx.adapterIndex,0,adapterId);
   if (iVar1 != 0) {
     return;
   }
   if ((local_4c == 0x10de) && (dx.nvInitialized != false)) {
-    local_47c = 0xb1f40;
+    acceptableDriver = 0xb1f40;
     if (local_54 < 0xb1f40) {
       return;
     }
-    local_481 = '\0';
-    iVar1 = _NvAPI_Stereo_IsEnabled(&local_481);
-    if ((iVar1 == 0) && (local_481 != '\0')) {
-      local_514 = 0x1008c;
-      iVar1 = _NvAPI_GetDisplayDriverVersion(0,&local_514);
+    stereoEnabled = '\0';
+    iVar1 = _NvAPI_Stereo_IsEnabled(&stereoEnabled);
+    if ((iVar1 == 0) && (stereoEnabled != '\0')) {
+      driverVersion = 0x1008c;
+      iVar1 = _NvAPI_GetDisplayDriverVersion(0,&driverVersion);
       if (iVar1 != 0) {
         return;
       }
@@ -946,18 +983,18 @@ void __cdecl R_InitIntZRenderTarget_PC(void)
     }
     R_AssertDXDeviceOwnership();
     iVar1 = (**(code **)((int)*dx.device + 0x5c))
-                      (dx.device,local_20,local_1c,1,2,local_18,0,&local_c,0);
+                      (dx.device,width,height,1,2,FOURCC_INTZ,0,&depthTexture,0);
     if (iVar1 != 0) {
       return;
     }
-    iVar1 = _NvAPI_D3D9_GetTextureHandle(local_c.basemap,&local_480);
+    iVar1 = _NvAPI_D3D9_GetTextureHandle(depthTexture,&hNvDepthTexture);
     if (iVar1 != 0) {
-      (**(code **)((int)*local_c.basemap + 8))(local_c.basemap);
+      (**(code **)((int)*depthTexture + 8))(depthTexture);
       return;
     }
-    iVar1 = _NvAPI_D3D9_StretchRect(dx.device,local_480,0,local_480,0,1);
+    iVar1 = _NvAPI_D3D9_StretchRect(dx.device,hNvDepthTexture,0,hNvDepthTexture,0,1);
     if (iVar1 != 0) {
-      (**(code **)((int)*local_c.basemap + 8))(local_c.basemap);
+      (**(code **)((int)*depthTexture + 8))(depthTexture);
       return;
     }
     dx.nvDepthBufferHandle = (void *)0x0;
@@ -965,17 +1002,17 @@ void __cdecl R_InitIntZRenderTarget_PC(void)
     dx.supportsIntZ = true;
   }
   if ((local_4c == 0x1002) || (local_4c == 0x8086)) {
-    iVar1 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,2,3,local_18);
+    iVar1 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,2,3,FOURCC_INTZ);
     if (iVar1 != 0) {
       return;
     }
-    iVar1 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,1,1,local_10);
+    iVar1 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,1,1,FOURCC_RESZ);
     if (iVar1 != 0) {
       return;
     }
     R_AssertDXDeviceOwnership();
     iVar1 = (**(code **)((int)*dx.device + 0x5c))
-                      (dx.device,local_20,local_1c,1,2,local_18,0,&local_c,0);
+                      (dx.device,width,height,1,2,FOURCC_INTZ,0,&depthTexture,0);
     if (iVar1 != 0) {
       return;
     }
@@ -983,13 +1020,13 @@ void __cdecl R_InitIntZRenderTarget_PC(void)
   }
   if (dx.supportsIntZ != false) {
     gfxRenderTargets[7].image = Image_AllocProg(2,'\x06','\0');
-    (gfxRenderTargets[7].image)->texture = local_c;
-    (gfxRenderTargets[7].image)->width = (ushort)local_20;
-    (gfxRenderTargets[7].image)->height = (ushort)local_1c;
+    ((gfxRenderTargets[7].image)->texture).map = depthTexture;
+    (gfxRenderTargets[7].image)->width = (ushort)width;
+    (gfxRenderTargets[7].image)->height = (ushort)height;
     (gfxRenderTargets[7].image)->depth = 1;
     (gfxRenderTargets[7].image)->mapType = '\x03';
-    gfxRenderTargets[7].width = (ushort)local_20;
-    gfxRenderTargets[7].height = (ushort)local_1c;
+    gfxRenderTargets[7].width = (ushort)width;
+    gfxRenderTargets[7].height = (ushort)height;
     Com_Printf(8,"INTZ format supported\n");
   }
   return;
@@ -1001,9 +1038,10 @@ void __cdecl R_InitIntZRenderTarget_PC(void)
 void __cdecl R_InitRenderTargets_PC(void)
 
 {
-  _D3DFORMAT _Var1;
+  _D3DFORMAT format;
+  _D3DFORMAT backBufferFormat;
   
-  _Var1 = R_InitFrameBufferRenderTarget();
+  format = R_InitFrameBufferRenderTarget();
   if ((r_reflectionProbeGenerate->current).enabled != false) {
     R_InitFullscreenRenderTargetImage
               (0xe,FULLSCREEN_SCENE,0,D3DFMT_A16B16G16R16F,RENDERTARGET_USAGE_RENDER,
@@ -1026,7 +1064,7 @@ void __cdecl R_InitRenderTargets_PC(void)
     }
     R_ShareRenderTarget('\x06','\x05');
     R_InitFullscreenRenderTargetImage
-              (10,FULLSCREEN_SCENE,0,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 1);
+              (10,FULLSCREEN_SCENE,0,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 1);
     R_InitSceneNullRenderTarget_PC();
     dx.sunShadowPartitionRes = 0x400;
     if ((dx.nvStereoHandle != (void *)0x0) && (vidConfig.displayWidth < 0x401)) {
@@ -1037,17 +1075,17 @@ void __cdecl R_InitRenderTargets_PC(void)
                SHADOWMAP_RT_TILE_VERTICAL);
     R_InitShadowmapRenderTarget(1,0x200,4,gfxRenderTargets + 0xf,SHADOWMAP_RT_TILE_VERTICAL);
     R_InitFullscreenRenderTargetImage
-              (5,FULLSCREEN_SCENE,2,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0xc);
+              (5,FULLSCREEN_SCENE,2,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0xc);
     R_InitFullscreenRenderTargetImage
-              (6,FULLSCREEN_SCENE,2,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0xd);
+              (6,FULLSCREEN_SCENE,2,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0xd);
     R_InitFullscreenRenderTargetImage
-              (3,FULLSCREEN_SCENE,2,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 10);
+              (3,FULLSCREEN_SCENE,2,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 10);
     R_InitFullscreenRenderTargetImage
-              (4,FULLSCREEN_SCENE,2,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0xb);
+              (4,FULLSCREEN_SCENE,2,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0xb);
     R_InitFullscreenRenderTargetImage
-              (7,FULLSCREEN_SCENE,2,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 8);
+              (7,FULLSCREEN_SCENE,2,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 8);
     R_InitFullscreenRenderTargetImage
-              (8,FULLSCREEN_SCENE,2,_Var1,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 9);
+              (8,FULLSCREEN_SCENE,2,format,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 9);
     R_InitFullscreenRenderTargetImage
               (0x17,FULLSCREEN_SCENE,1,D3DFMT_A16B16G16R16,RENDERTARGET_USAGE_RENDER,
                gfxRenderTargets + 0x19);
@@ -1086,37 +1124,37 @@ void __cdecl R_InitRenderTargets(void)
 
 // 00AF9BA0  R_ShutDownSingleRenderTarget  (gfx_d3d/r_rendertarget.cpp:6385)
 
-void __cdecl R_ShutDownSingleRenderTarget(GfxRenderTarget *param_1)
+void __cdecl R_ShutDownSingleRenderTarget(GfxRenderTarget *rt)
 
 {
   bool bVar1;
   
   bVar1 = Sys_IsRenderThread();
   if (bVar1) {
-    if ((param_1->surface).color != (IDirect3DSurface9 *)0x0) {
-      (**(code **)((int)*(param_1->surface).color + 8))((param_1->surface).color);
+    if ((rt->surface).color != (IDirect3DSurface9 *)0x0) {
+      (**(code **)((int)*(rt->surface).color + 8))((rt->surface).color);
     }
-    if ((param_1->surface).depthStencil != (IDirect3DSurface9 *)0x0) {
-      (**(code **)((int)*(param_1->surface).depthStencil + 8))((param_1->surface).depthStencil);
+    if ((rt->surface).depthStencil != (IDirect3DSurface9 *)0x0) {
+      (**(code **)((int)*(rt->surface).depthStencil + 8))((rt->surface).depthStencil);
     }
   }
   else {
-    if ((param_1->surface).color != (IDirect3DSurface9 *)0x0) {
-      RB_Resource_Release((IUnknown *)(param_1->surface).color);
+    if ((rt->surface).color != (IDirect3DSurface9 *)0x0) {
+      RB_Resource_Release((IUnknown *)(rt->surface).color);
     }
-    if ((param_1->surface).depthStencil != (IDirect3DSurface9 *)0x0) {
-      RB_Resource_Release((IUnknown *)(param_1->surface).depthStencil);
+    if ((rt->surface).depthStencil != (IDirect3DSurface9 *)0x0) {
+      RB_Resource_Release((IUnknown *)(rt->surface).depthStencil);
     }
   }
-  if (param_1->image != (GfxImage *)0x0) {
-    Image_Release(param_1->image);
+  if (rt->image != (GfxImage *)0x0) {
+    Image_Release(rt->image);
   }
-  param_1->image = (GfxImage *)0x0;
-  (param_1->surface).color = (IDirect3DSurface9 *)0x0;
-  (param_1->surface).depthStencil = (IDirect3DSurface9 *)0x0;
-  param_1->width = 0;
-  param_1->height = 0;
-  *(undefined4 *)&param_1->cleared = 0;
+  rt->image = (GfxImage *)0x0;
+  (rt->surface).color = (IDirect3DSurface9 *)0x0;
+  (rt->surface).depthStencil = (IDirect3DSurface9 *)0x0;
+  rt->width = 0;
+  rt->height = 0;
+  *(undefined4 *)&rt->cleared = 0;
   return;
 }
 
@@ -1126,10 +1164,10 @@ void __cdecl R_ShutDownSingleRenderTarget(GfxRenderTarget *param_1)
 void __cdecl R_ShutdownRenderTargets(void)
 
 {
-  int local_8;
+  int renderTargetId;
   
-  for (local_8 = 0; local_8 < 0x2c; local_8 = local_8 + 1) {
-    R_ShutDownSingleRenderTarget(gfxRenderTargets + local_8);
+  for (renderTargetId = 0; renderTargetId < 0x2c; renderTargetId = renderTargetId + 1) {
+    R_ShutDownSingleRenderTarget(gfxRenderTargets + renderTargetId);
   }
   dx.singleSampleDepthStencilSurface = (IDirect3DSurface9 *)0x0;
   return;
@@ -1138,10 +1176,10 @@ void __cdecl R_ShutdownRenderTargets(void)
 
 // 00AF9C50  R_RenderTargetName  (gfx_d3d/r_rendertarget.cpp:6425)
 
-char * __cdecl R_RenderTargetName(uchar param_1)
+char * __cdecl R_RenderTargetName(uchar renderTargetId)
 
 {
-  return s_renderTargetNames[param_1];
+  return s_renderTargetNames[renderTargetId];
 }
 
 
@@ -1160,25 +1198,24 @@ void __cdecl R_CheckExtraCamTargets(void)
 
 // 00AF9CA0  R_InitExtraCamRenderTargets  (gfx_d3d/r_rendertarget.cpp:6478)
 
-void __cdecl R_InitExtraCamRenderTargets(uint param_1,uint param_2,int param_3)
+void __cdecl R_InitExtraCamRenderTargets(uint width,uint height,int location)
 
 {
-  _D3DFORMAT local_28 [8];
-  _D3DFORMAT local_8;
+  _D3DFORMAT surfaceDesc [8];
+  _D3DFORMAT backBufferFormat;
   
   g_extraCamSettings.enabled = true;
-  g_extraCamSettings.width = param_1;
-  g_extraCamSettings.height = param_2;
-  g_extraCamSettings.location = param_3;
+  g_extraCamSettings.width = width;
+  g_extraCamSettings.height = height;
+  g_extraCamSettings.location = location;
   (**(code **)((int)*gfxRenderTargets[2].surface.color + 0x30))
-            (gfxRenderTargets[2].surface.color,local_28);
-  local_8 = local_28[0];
+            (gfxRenderTargets[2].surface.color,surfaceDesc);
+  backBufferFormat = surfaceDesc[0];
   R_InitSizedRenderTargetImage
-            (0x14,param_1,param_2,0,local_28[0],RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0x16,2)
+            (0x14,width,height,0,surfaceDesc[0],RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0x16,2)
   ;
   R_InitSizedRenderTargetImage
-            (0x15,param_1,param_2,0,D3DFMT_R32F,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0x17,2)
-  ;
+            (0x15,width,height,0,D3DFMT_R32F,RENDERTARGET_USAGE_RENDER,gfxRenderTargets + 0x17,2);
   return;
 }
 
@@ -1197,19 +1234,21 @@ void __cdecl R_ShutdownExtraCamRenderTargets(void)
 
 // 00AF9F60  R_InitUI3DRenderTarget  (gfx_d3d/r_rendertarget.cpp:6540)
 
-void __cdecl R_InitUI3DRenderTarget(ushort param_1,ushort param_2,int param_3,bool param_4)
+void __cdecl
+R_InitUI3DRenderTarget(ushort width,ushort height,int location,bool allocatePingPongBuffer)
 
 {
   int iVar1;
+  int semaphore;
   
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   R_InitSizedRenderTargetImage
-            (0x12,(uint)param_1,(uint)param_2,0,D3DFMT_A8R8G8B8,RENDERTARGET_USAGE_RENDER,
-             gfxRenderTargets + 0x14,(-(uint)(param_3 != 1) & 0xfffffffe) + 2);
-  if (param_4) {
+            (0x12,(uint)width,(uint)height,0,D3DFMT_A8R8G8B8,RENDERTARGET_USAGE_RENDER,
+             gfxRenderTargets + 0x14,(-(uint)(location != 1) & 0xfffffffe) + 2);
+  if (allocatePingPongBuffer) {
     R_InitSizedRenderTargetImage
-              (0x13,(uint)param_1,(uint)param_2,0,D3DFMT_A8R8G8B8,RENDERTARGET_USAGE_RENDER,
-               gfxRenderTargets + 0x15,(-(uint)(param_3 != 1) & 0xfffffffe) + 2);
+              (0x13,(uint)width,(uint)height,0,D3DFMT_A8R8G8B8,RENDERTARGET_USAGE_RENDER,
+               gfxRenderTargets + 0x15,(-(uint)(location != 1) & 0xfffffffe) + 2);
   }
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
@@ -1220,10 +1259,10 @@ void __cdecl R_InitUI3DRenderTarget(ushort param_1,ushort param_2,int param_3,bo
 
 // 00AF9FF0  R_ShutdownUI3DRenderTarget  (gfx_d3d/r_rendertarget.cpp:6549)
 
-void __cdecl R_ShutdownUI3DRenderTarget(bool param_1)
+void __cdecl R_ShutdownUI3DRenderTarget(bool freePingPongBuffer)
 
 {
-  if (param_1) {
+  if (freePingPongBuffer) {
     R_ShutDownSingleRenderTarget(gfxRenderTargets + 0x15);
   }
   R_ShutDownSingleRenderTarget(gfxRenderTargets + 0x14);

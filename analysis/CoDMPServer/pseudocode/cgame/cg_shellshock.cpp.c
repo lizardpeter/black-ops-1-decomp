@@ -2,15 +2,17 @@
 
 // 00503B70  CubicInterpolate  (cgame/cg_shellshock.cpp:164)
 
-float __cdecl
-CubicInterpolate(float param_1,float param_2,float param_3,float param_4,float param_5)
+float __cdecl CubicInterpolate(float t,float x0,float x1,float x2,float x3)
 
 {
   float fVar1;
+  float c;
+  float d;
+  float b;
+  float a;
   
-  fVar1 = ((param_5 - param_4) + param_3) - param_2;
-  return ((param_1 * fVar1 + ((param_2 - param_3) - fVar1)) * param_1 + (param_4 - param_2)) *
-         param_1 + param_3;
+  fVar1 = ((x3 - x2) + x1) - x0;
+  return ((t * fVar1 + ((x0 - x1) - fVar1)) * t + (x2 - x0)) * t + x1;
 }
 
 
@@ -21,29 +23,29 @@ CubicInterpolate(float param_1,float param_2,float param_3,float param_4,float p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PerturbCamera(cg_s *param_1)
+void __cdecl CG_PerturbCamera(cg_s *cgameGlob)
 
 {
-  float local_4c;
+  float rot;
   float local_48;
   float local_44;
   float local_40 [3];
   float local_34 [12];
   
-  if (((param_1->shellshock).viewDelta[0] != 0.0) || ((param_1->shellshock).viewDelta[1] != 0.0)) {
-    local_4c = 1.0;
-    local_48 = (param_1->shellshock).viewDelta[0];
-    local_44 = (param_1->shellshock).viewDelta[1];
+  if (((cgameGlob->shellshock).viewDelta[0] != 0.0) || ((cgameGlob->shellshock).viewDelta[1] != 0.0)
+     ) {
+    rot = 1.0;
+    local_48 = (cgameGlob->shellshock).viewDelta[0];
+    local_44 = (cgameGlob->shellshock).viewDelta[1];
     local_34[0] = 0.0;
     local_34[1] = 0.0;
     local_34[2] = 1.0;
-    Vec3Normalize(&local_4c);
-    Vec3Cross(local_34,&local_4c,local_40);
+    Vec3Normalize(&rot);
+    Vec3Cross(local_34,&rot,local_40);
     Vec3Normalize(local_40);
-    Vec3Cross(&local_4c,local_40,local_34);
-    Vec3PackNormAxis((param_1->refdef).viewaxis,(float (*) [3])(local_34 + 3));
-    MatrixMultiply((float (*) [3])&local_4c,(float (*) [3])(local_34 + 3),(param_1->refdef).viewaxis
-                  );
+    Vec3Cross(&rot,local_40,local_34);
+    Vec3PackNormAxis((cgameGlob->refdef).viewaxis,(float (*) [3])(local_34 + 3));
+    MatrixMultiply((float (*) [3])&rot,(float (*) [3])(local_34 + 3),(cgameGlob->refdef).viewaxis);
   }
   return;
 }
@@ -51,19 +53,26 @@ void __cdecl CG_PerturbCamera(cg_s *param_1)
 
 // 00502FF0  SaveScreenToBuffer  (cgame/cg_shellshock.cpp:237)
 
-void __cdecl SaveScreenToBuffer(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl SaveScreenToBuffer(int localClientNum)
 
 {
   int iVar1;
   ClientViewParams *pCVar2;
+  ClientViewParams *view;
+  int activeClientCount;
   
   iVar1 = CL_LocalClient_GetActiveCount();
   if (iVar1 < 2) {
-    CG_SaveScreen(param_1);
+    CG_SaveScreen(localClientNum);
   }
   else {
-    pCVar2 = CG_GetLocalClientViewParams(param_1);
-    CG_SaveScreenSection(pCVar2->x,pCVar2->y,pCVar2->width,pCVar2->height,param_1);
+    pCVar2 = CG_GetLocalClientViewParams(localClientNum);
+    CG_SaveScreenSection(pCVar2->x,pCVar2->y,pCVar2->width,pCVar2->height,localClientNum);
   }
   return;
 }
@@ -78,38 +87,42 @@ void __cdecl SaveScreenToBuffer(int param_1)
 
 int __cdecl
 CG_DrawShellShockSavedScreenBlendBlurred
-          (int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+          (int localClientNum,shellshock_parms_t *parms,int start,int duration)
 
 {
   cg_s *pcVar1;
   int iVar2;
   ClientViewParams *pCVar3;
-  int local_8;
+  int dt;
+  cg_s *cgameGlob;
+  ClientViewParams *view;
+  int screenBlendTime;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  if ((param_3 == 0) || (param_4 < 1)) {
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  if ((start == 0) || (duration < 1)) {
     (pcVar1->shellshock).hasSavedScreen = 0;
     iVar2 = 0;
   }
   else {
-    iVar2 = (param_3 + param_4) - pcVar1->time;
+    iVar2 = (start + duration) - pcVar1->time;
     if (iVar2 < 1) {
       (pcVar1->shellshock).hasSavedScreen = 0;
       iVar2 = 0;
     }
     else {
-      local_8 = (param_2->screenBlend).blurredEffectTime;
-      if (iVar2 < (param_2->screenBlend).blurredFadeTime) {
-        local_8 = (int)ROUND((float)local_8 *
-                             ((float)iVar2 / (float)(param_2->screenBlend).blurredFadeTime) +
-                             9.313226e-10);
+      screenBlendTime = (parms->screenBlend).blurredEffectTime;
+      if (iVar2 < (parms->screenBlend).blurredFadeTime) {
+        screenBlendTime =
+             (int)ROUND((float)screenBlendTime *
+                        ((float)iVar2 / (float)(parms->screenBlend).blurredFadeTime) + 9.313226e-10)
+        ;
       }
       if ((pcVar1->shellshock).hasSavedScreen != 0) {
-        pCVar3 = CG_GetLocalClientViewParams(param_1);
+        pCVar3 = CG_GetLocalClientViewParams(localClientNum);
         CG_BlendSavedScreenShockBlurred
-                  (local_8,pCVar3->x,pCVar3->y,pCVar3->width,pCVar3->height,param_1);
+                  (screenBlendTime,pCVar3->x,pCVar3->y,pCVar3->width,pCVar3->height,localClientNum);
       }
-      SaveScreenToBuffer(param_1);
+      SaveScreenToBuffer(localClientNum);
       (pcVar1->shellshock).hasSavedScreen = 1;
       iVar2 = 1;
     }
@@ -120,12 +133,14 @@ CG_DrawShellShockSavedScreenBlendBlurred
 
 // 005031E0  BlendSmooth  (cgame/cg_shellshock.cpp:310)
 
-float __cdecl BlendSmooth(float param_1)
+float __cdecl BlendSmooth(float percent)
 
 {
   float10 fVar1;
+  float cos;
+  float sin;
   
-  fVar1 = (float10)((param_1 - 0.5) * 3.1415927);
+  fVar1 = (float10)((percent - 0.5) * 3.1415927);
   fcos(fVar1);
   fVar1 = (float10)fsin(fVar1);
   return ((float)fVar1 + 1.0) * 0.5;
@@ -141,7 +156,7 @@ float __cdecl BlendSmooth(float param_1)
 
 int __cdecl
 CG_DrawShellShockSavedScreenBlendFlashed
-          (int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+          (int localClientNum,shellshock_parms_t *parms,int start,int duration)
 
 {
   cg_s *pcVar1;
@@ -149,44 +164,47 @@ CG_DrawShellShockSavedScreenBlendFlashed
   ClientViewParams *pCVar3;
   float fVar4;
   float fVar5;
-  float local_10;
-  float local_8;
+  int dt;
+  cg_s *cgameGlob;
+  float whiteFactor;
+  ClientViewParams *view;
+  float grabFactor;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  if ((param_3 == 0) || (param_4 < 1)) {
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  if ((start == 0) || (duration < 1)) {
     (pcVar1->shellshock).hasSavedScreen = 0;
     iVar2 = 0;
   }
   else {
-    iVar2 = (param_3 + param_4) - pcVar1->time;
+    iVar2 = (start + duration) - pcVar1->time;
     if (iVar2 < 1) {
       (pcVar1->shellshock).hasSavedScreen = 0;
       iVar2 = 0;
     }
     else {
-      local_10 = (float)(param_2->screenBlend).flashWhiteFadeTime;
-      local_8 = (float)(param_2->screenBlend).flashShotFadeTime;
-      if (local_10 <= (float)iVar2) {
-        local_10 = 1.0;
+      fVar4 = (float)(parms->screenBlend).flashWhiteFadeTime;
+      fVar5 = (float)(parms->screenBlend).flashShotFadeTime;
+      if (fVar4 <= (float)iVar2) {
+        whiteFactor = 1.0;
       }
       else {
-        local_10 = (float)iVar2 / local_10;
+        whiteFactor = (float)iVar2 / fVar4;
       }
-      if (local_8 <= (float)iVar2) {
-        local_8 = 1.0;
+      if (fVar5 <= (float)iVar2) {
+        grabFactor = 1.0;
       }
       else {
-        local_8 = (float)iVar2 / local_8;
+        grabFactor = (float)iVar2 / fVar5;
       }
-      fVar4 = BlendSmooth(local_10);
-      fVar5 = BlendSmooth(local_8);
+      fVar4 = BlendSmooth(whiteFactor);
+      fVar5 = BlendSmooth(grabFactor);
       if ((pcVar1->shellshock).hasSavedScreen == 0) {
-        SaveScreenToBuffer(param_1);
+        SaveScreenToBuffer(localClientNum);
       }
       else {
-        pCVar3 = CG_GetLocalClientViewParams(param_1);
+        pCVar3 = CG_GetLocalClientViewParams(localClientNum);
         CG_BlendSavedScreenShockFlashed
-                  (param_1,fVar4,fVar5,pCVar3->x,pCVar3->y,pCVar3->width,pCVar3->height);
+                  (localClientNum,fVar4,fVar5,pCVar3->x,pCVar3->y,pCVar3->width,pCVar3->height);
       }
       (pcVar1->shellshock).hasSavedScreen = 1;
       iVar2 = 1;
@@ -203,16 +221,17 @@ CG_DrawShellShockSavedScreenBlendFlashed
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EndShellShockSound(int param_1)
+void __cdecl EndShellShockSound(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
   SND_SetSnapshot(SND_SNAPSHOT_SHELLSHOCK,"default",0.0,1.0);
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if ((pcVar1->shellshock).loopEndTime != 0) {
     (pcVar1->shellshock).loopEndTime = 0;
-    CG_PlaySound(param_1,0x3ff,vec3_origin,0,false,1.0,
+    CG_PlaySound(localClientNum,0x3ff,vec3_origin,0,false,1.0,
                  (((pcVar1->shellshock).parms)->sound).endAbort);
   }
   return;
@@ -226,14 +245,15 @@ void __cdecl EndShellShockSound(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EndShellShockLookControl(int param_1)
+void __cdecl EndShellShockLookControl(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   (pcVar1->shellshock).sensitivity = 1.0;
-  CL_CapTurnRate(param_1,0.0,0.0);
+  CL_CapTurnRate(localClientNum,0.0,0.0);
   return;
 }
 
@@ -245,12 +265,13 @@ void __cdecl EndShellShockLookControl(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EndShellShockCamera(int param_1)
+void __cdecl EndShellShockCamera(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   (pcVar1->shellshock).viewDelta[0] = 0.0;
   (pcVar1->shellshock).viewDelta[1] = 0.0;
   return;
@@ -264,12 +285,13 @@ void __cdecl EndShellShockCamera(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl EndShellShockScreen(int param_1)
+void __cdecl EndShellShockScreen(int localClientNum)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   (pcVar1->shellshock).hasSavedScreen = 0;
   return;
 }
@@ -277,13 +299,18 @@ void __cdecl EndShellShockScreen(int param_1)
 
 // 00503230  EndShellShock  (cgame/cg_shellshock.cpp:428)
 
-void __cdecl EndShellShock(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl EndShellShock(int localClientNum)
 
 {
-  EndShellShockSound(param_1);
-  EndShellShockLookControl(param_1);
-  EndShellShockCamera(param_1);
-  EndShellShockScreen(param_1);
+  EndShellShockSound(localClientNum);
+  EndShellShockLookControl(localClientNum);
+  EndShellShockCamera(localClientNum);
+  EndShellShockScreen(localClientNum);
   return;
 }
 
@@ -295,18 +322,23 @@ void __cdecl EndShellShock(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl UpdateShellShockSound(int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+void __cdecl
+UpdateShellShockSound(int localClientNum,shellshock_parms_t *parms,int time,int duration)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   cg_s *pcVar4;
-  SndEntHandle SVar5;
-  int iVar6;
+  SndEntHandle entHandle;
+  int fademsec;
+  bool shellshockActive;
+  int dt;
+  cg_s *cgameGlob;
+  SndEntHandle sndEnt;
   
   bVar2 = false;
-  if (param_2 == (shellshock_parms_t *)0x0) {
+  if (parms == (shellshock_parms_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x1c4,0,
                              "%s");
     if (!bVar3) {
@@ -315,7 +347,7 @@ void __cdecl UpdateShellShockSound(int param_1,shellshock_parms_t *param_2,int p
       return;
     }
   }
-  if (param_3 < 0) {
+  if (time < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x1c5,0,
                              "%s");
     if (!bVar3) {
@@ -324,7 +356,7 @@ void __cdecl UpdateShellShockSound(int param_1,shellshock_parms_t *param_2,int p
       return;
     }
   }
-  if (param_4 < 0) {
+  if (duration < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x1c6,0,
                              "%s");
     if (!bVar3) {
@@ -333,45 +365,45 @@ void __cdecl UpdateShellShockSound(int param_1,shellshock_parms_t *param_2,int p
       return;
     }
   }
-  if ((param_2->sound).affect == false) {
+  if ((parms->sound).affect == false) {
     SND_DeactivateEnvironmentEffects(2,0);
   }
   else {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
-    iVar6 = (param_4 + (param_2->sound).modEndDelay + (param_2->sound).fadeOutTime) - param_3;
-    if (param_3 < (param_2->sound).fadeInTime) {
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    fademsec = (duration + (parms->sound).modEndDelay + (parms->sound).fadeOutTime) - time;
+    if (time < (parms->sound).fadeInTime) {
       SND_SetEnvironmentEffects
-                (2,(param_2->sound).roomtype,(param_2->sound).drylevel,(param_2->sound).wetlevel,
-                 (param_2->sound).fadeInTime - param_3);
-      SND_SetSnapshot(SND_SNAPSHOT_SHELLSHOCK,(param_2->sound).snapshot,0.0,1.0);
+                (2,(parms->sound).roomtype,(parms->sound).drylevel,(parms->sound).wetlevel,
+                 (parms->sound).fadeInTime - time);
+      SND_SetSnapshot(SND_SNAPSHOT_SHELLSHOCK,(parms->sound).snapshot,0.0,1.0);
       bVar2 = true;
     }
-    else if ((param_2->sound).fadeOutTime < iVar6) {
+    else if ((parms->sound).fadeOutTime < fademsec) {
       SND_SetEnvironmentEffects
-                (2,(param_2->sound).roomtype,(param_2->sound).drylevel,(param_2->sound).wetlevel,0);
-      SND_SetSnapshot(SND_SNAPSHOT_SHELLSHOCK,(param_2->sound).snapshot,0.0,1.0);
+                (2,(parms->sound).roomtype,(parms->sound).drylevel,(parms->sound).wetlevel,0);
+      SND_SetSnapshot(SND_SNAPSHOT_SHELLSHOCK,(parms->sound).snapshot,0.0,1.0);
       bVar2 = true;
     }
-    else if ((-1 < iVar6) && (iVar6 < (param_2->sound).fadeOutTime)) {
-      SND_DeactivateEnvironmentEffects(2,iVar6);
+    else if ((-1 < fademsec) && (fademsec < (parms->sound).fadeOutTime)) {
+      SND_DeactivateEnvironmentEffects(2,fademsec);
       SND_SetSnapshot(SND_SNAPSHOT_SHELLSHOCK,"default",0.0,1.0);
     }
-    SVar5 = CG_SndEntHandle(param_1,pcVar4->clientNum);
+    entHandle = CG_SndEntHandle(localClientNum,pcVar4->clientNum);
     if ((pcVar4->shellshockSoundActive == 0) || (!bVar2)) {
-      if ((pcVar4->shellshockSoundActive == 0) && ((bVar2 && ((param_2->sound).loop[0] != '\0')))) {
-        SND_Play((param_2->sound).loop,(param_2->sound).fadeInTime,1.0,SVar5,(float *)0x0,
+      if ((pcVar4->shellshockSoundActive == 0) && ((bVar2 && ((parms->sound).loop[0] != '\0')))) {
+        SND_Play((parms->sound).loop,(parms->sound).fadeInTime,1.0,entHandle,(float *)0x0,
                  (float *)0x0,false);
         pcVar4->shellshockSoundActive = 1;
       }
       else if ((pcVar4->shellshockSoundActive != 0) && (!bVar2)) {
-        SND_Play((param_2->sound).loop,-(param_2->sound).fadeOutTime,1.0,SVar5,(float *)0x0,
+        SND_Play((parms->sound).loop,-(parms->sound).fadeOutTime,1.0,entHandle,(float *)0x0,
                  (float *)0x0,false);
-        SND_Play((param_2->sound).end,0,1.0,SVar5,(float *)0x0,(float *)0x0,false);
+        SND_Play((parms->sound).end,0,1.0,entHandle,(float *)0x0,(float *)0x0,false);
         pcVar4->shellshockSoundActive = 0;
       }
     }
     else {
-      SND_Play((param_2->sound).loop,0,1.0,SVar5,(float *)0x0,(float *)0x0,false);
+      SND_Play((parms->sound).loop,0,1.0,entHandle,(float *)0x0,(float *)0x0,false);
     }
   }
   return;
@@ -386,60 +418,60 @@ void __cdecl UpdateShellShockSound(int param_1,shellshock_parms_t *param_2,int p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-UpdateShellShockLookControl(int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+UpdateShellShockLookControl(int localClientNum,shellshock_parms_t *parms,int time,int duration)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  float local_c;
+  float fade;
+  cg_s *cgameGlob;
   
-  if ((param_2 == (shellshock_parms_t *)0x0) &&
+  if ((parms == (shellshock_parms_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x204,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 0) &&
+  if ((time < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x205,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 < 0) &&
+  if ((duration < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x206,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->lookControl).affect == false) {
-    EndShellShockLookControl(param_1);
+  if ((parms->lookControl).affect == false) {
+    EndShellShockLookControl(localClientNum);
   }
   else {
-    if (param_4 - param_3 < (param_2->lookControl).fadeTime) {
-      if (param_4 == param_3 || param_4 - param_3 < 0) {
-        EndShellShockLookControl(param_1);
+    if (duration - time < (parms->lookControl).fadeTime) {
+      if (duration == time || duration - time < 0) {
+        EndShellShockLookControl(localClientNum);
         return;
       }
-      local_c = ((float)(param_4 - param_3) * 1.0) / (float)(param_2->lookControl).fadeTime;
+      fade = ((float)(duration - time) * 1.0) / (float)(parms->lookControl).fadeTime;
     }
     else {
-      local_c = 1.0;
+      fade = 1.0;
     }
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    if (local_c == 1.0) {
-      (pcVar3->shellshock).sensitivity = (param_2->lookControl).mouseSensitivity;
-      CL_CapTurnRate(param_1,(param_2->lookControl).maxPitchSpeed,(param_2->lookControl).maxYawSpeed
-                    );
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+    if (fade == 1.0) {
+      (pcVar3->shellshock).sensitivity = (parms->lookControl).mouseSensitivity;
+      CL_CapTurnRate(localClientNum,(parms->lookControl).maxPitchSpeed,
+                     (parms->lookControl).maxYawSpeed);
     }
     else {
-      (pcVar3->shellshock).sensitivity =
-           ((param_2->lookControl).mouseSensitivity - 1.0) * local_c + 1.0;
-      CL_CapTurnRate(param_1,(param_2->lookControl).maxPitchSpeed / local_c,
-                     (param_2->lookControl).maxYawSpeed / local_c);
+      (pcVar3->shellshock).sensitivity = ((parms->lookControl).mouseSensitivity - 1.0) * fade + 1.0;
+      CL_CapTurnRate(localClientNum,(parms->lookControl).maxPitchSpeed / fade,
+                     (parms->lookControl).maxYawSpeed / fade);
     }
   }
   return;
@@ -453,7 +485,8 @@ UpdateShellShockLookControl(int param_1,shellshock_parms_t *param_2,int param_3,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl UpdateShellShockCamera(int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+void __cdecl
+UpdateShellShockCamera(int localClientNum,shellshock_parms_t *parms,int time,int duration)
 
 {
   code *pcVar1;
@@ -464,15 +497,21 @@ void __cdecl UpdateShellShockCamera(int param_1,shellshock_parms_t *param_2,int 
   float fVar6;
   float fVar7;
   float fVar8;
-  float local_8;
+  int dt;
+  float t;
+  cg_s *cgameGlob;
+  float radius;
+  int index;
+  int base;
+  float scale;
   
-  iVar3 = param_4 - param_3;
+  iVar3 = duration - time;
   if (iVar3 < 1) {
-    EndShellShockCamera(param_1);
+    EndShellShockCamera(localClientNum);
   }
   else {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
-    if (param_2 == (shellshock_parms_t *)0x0) {
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+    if (parms == (shellshock_parms_t *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x245,0
                                ,"%s");
       if (!bVar2) {
@@ -481,15 +520,15 @@ void __cdecl UpdateShellShockCamera(int param_1,shellshock_parms_t *param_2,int 
         return;
       }
     }
-    local_8 = 1.0;
-    if (iVar3 < (param_2->view).fadeTime) {
-      local_8 = (float)iVar3 / (float)(param_2->view).fadeTime;
+    scale = 1.0;
+    if (iVar3 < (parms->view).fadeTime) {
+      scale = (float)iVar3 / (float)(parms->view).fadeTime;
     }
-    fVar6 = (param_2->view).kickRadius * (3.0 - local_8 * 2.0) * local_8 * local_8;
-    fVar7 = (float)param_3 * (param_2->view).kickRate;
+    fVar6 = (parms->view).kickRadius * (3.0 - scale * 2.0) * scale * scale;
+    fVar7 = (float)time * (parms->view).kickRate;
     iVar3 = (int)ROUND(fVar7 - 0.5);
     fVar7 = fVar7 - (float)iVar3;
-    uVar5 = param_4 * 0x3d + iVar3 & 0x7f;
+    uVar5 = duration * 0x3d + iVar3 & 0x7f;
     fVar8 = CubicInterpolate(fVar7,cg_perturbations[uVar5][0],cg_perturbations[uVar5 + 1][0],
                              cg_perturbations[uVar5 + 2][0],cg_perturbations[uVar5 + 3][0]);
     (pcVar4->shellshock).viewDelta[0] = fVar8 * fVar6;
@@ -509,36 +548,37 @@ void __cdecl UpdateShellShockCamera(int param_1,shellshock_parms_t *param_2,int 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-UpdateShellShockVisionSet(int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+UpdateShellShockVisionSet(int localClientNum,shellshock_parms_t *parms,int time,int duration)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
+  cg_s *cgameGlob;
   
-  if ((param_2 == (shellshock_parms_t *)0x0) &&
+  if ((parms == (shellshock_parms_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x25b,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 0) &&
+  if ((time < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x25c,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 < 0) &&
+  if ((duration < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_shellshock.cpp",0x25d,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if ((param_2->visionSet).name[0] == '\0') {
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  if ((parms->visionSet).name[0] == '\0') {
     if ((pcVar3->shellshock).visionSetStarted != 0) {
       (pcVar3->shellshock).visionSetStarted = 0;
       CG_VisionSetStartLerp_To
@@ -546,17 +586,17 @@ UpdateShellShockVisionSet(int param_1,shellshock_parms_t *param_2,int param_3,in
                  pcVar3->visionNameTvguided,3000);
     }
   }
-  else if ((param_3 < param_4) && ((pcVar3->shellshock).visionSetStarted == 0)) {
+  else if ((time < duration) && ((pcVar3->shellshock).visionSetStarted == 0)) {
     (pcVar3->shellshock).visionSetStarted = 1;
     CG_VisionSetStartLerp_To
               (pcVar3->localClientNum,VISIONSETMODE_NAKED,VISIONSETLERP_TO_SMOOTH,
-               (param_2->visionSet).name,(param_2->visionSet).inTime);
+               (parms->visionSet).name,(parms->visionSet).inTime);
   }
-  else if ((param_4 <= param_3) && ((pcVar3->shellshock).visionSetStarted != 0)) {
+  else if ((duration <= time) && ((pcVar3->shellshock).visionSetStarted != 0)) {
     (pcVar3->shellshock).visionSetStarted = 0;
     CG_VisionSetStartLerp_To
               (pcVar3->localClientNum,VISIONSETMODE_NAKED,VISIONSETLERP_TO_SMOOTH,
-               pcVar3->visionNameTvguided,(param_2->visionSet).outTime);
+               pcVar3->visionNameTvguided,(parms->visionSet).outTime);
   }
   return;
 }
@@ -569,33 +609,36 @@ UpdateShellShockVisionSet(int param_1,shellshock_parms_t *param_2,int param_3,in
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateShellShock(int param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+void __cdecl
+CG_UpdateShellShock(int localClientNum,shellshock_parms_t *parms,int start,int duration)
 
 {
   bool bVar1;
   bool bVar2;
   cg_s *pcVar3;
-  int iVar4;
+  int time_00;
+  bool killcamEntityEnabled;
+  int time;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  iVar4 = pcVar3->time - param_3;
-  if ((param_3 == 0) || (iVar4 < 0)) {
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  time_00 = pcVar3->time - start;
+  if ((start == 0) || (time_00 < 0)) {
     SND_DeactivateEnvironmentEffects(2,0);
-    EndShellShock(param_1);
+    EndShellShock(localClientNum);
   }
   else {
-    bVar1 = CG_KillCamEntityEnabled(param_1);
-    UpdateShellShockSound(param_1,param_2,iVar4,param_4);
+    bVar1 = CG_KillCamEntityEnabled(localClientNum);
+    UpdateShellShockSound(localClientNum,parms,time_00,duration);
     bVar2 = Demo_IsThirdPersonCamera();
     if (((!bVar2) && (bVar2 = Demo_IsMovieCamera(), !bVar2)) && (!bVar1)) {
-      UpdateShellShockLookControl(param_1,param_2,iVar4,param_4);
-      UpdateShellShockCamera(param_1,param_2,iVar4,param_4);
-      UpdateShellShockVisionSet(param_1,param_2,iVar4,param_4);
+      UpdateShellShockLookControl(localClientNum,parms,time_00,duration);
+      UpdateShellShockCamera(localClientNum,parms,time_00,duration);
+      UpdateShellShockVisionSet(localClientNum,parms,time_00,duration);
       return;
     }
-    EndShellShockLookControl(param_1);
-    EndShellShockCamera(param_1);
-    EndShellShockScreen(param_1);
+    EndShellShockLookControl(localClientNum);
+    EndShellShockCamera(localClientNum);
+    EndShellShockScreen(localClientNum);
   }
   return;
 }
@@ -608,12 +651,12 @@ void __cdecl CG_UpdateShellShock(int param_1,shellshock_parms_t *param_2,int par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_StartShellShock(cg_s *param_1,shellshock_parms_t *param_2,int param_3,int param_4)
+void __cdecl CG_StartShellShock(cg_s *cgameGlob,shellshock_parms_t *parms,int start,int duration)
 
 {
-  (param_1->shellshock).parms = param_2;
-  (param_1->shellshock).startTime = param_3;
-  (param_1->shellshock).duration = param_4;
+  (cgameGlob->shellshock).parms = parms;
+  (cgameGlob->shellshock).startTime = start;
+  (cgameGlob->shellshock).duration = duration;
   return;
 }
 
@@ -625,13 +668,15 @@ void __cdecl CG_StartShellShock(cg_s *param_1,shellshock_parms_t *param_2,int pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_Flashbanged(int param_1)
+bool __cdecl CG_Flashbanged(int localClientNum)
 
 {
   bool bVar1;
   cg_s *pcVar2;
+  int dt;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   if (((pcVar2->shellshock).startTime + (pcVar2->shellshock).duration) - pcVar2->time < 1) {
     bVar1 = false;
   }
@@ -654,7 +699,7 @@ bool __cdecl CG_Flashbanged(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_Flared(int param_1)
+bool __cdecl CG_Flared(int localClientNum)
 
 {
   float *pfVar1;
@@ -663,8 +708,9 @@ bool __cdecl CG_Flared(int param_1)
   cg_s *pcVar4;
   uint extraout_EAX;
   uint extraout_EDX;
+  cg_s *cgameGlob;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
   psVar2 = pcVar4->snap;
   _allshl();
   if ((extraout_EAX & (psVar2->ps).perks[0]) == 0 && (extraout_EDX & (psVar2->ps).perks[1]) == 0) {

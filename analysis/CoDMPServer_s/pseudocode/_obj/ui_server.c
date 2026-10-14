@@ -583,8 +583,8 @@ void __cdecl UI_AddServerToFavoritesList(char *param_1,char *param_2)
 void __cdecl UI_RemoveServerFromFavoritesList(int param_1)
 
 {
-  char *pcVar1;
-  ulong64 uVar2;
+  char *nptr;
+  ulong64 uVar1;
   char *in_stack_fffffbfc;
   char *in_stack_fffffc00;
   int in_stack_fffffc04;
@@ -592,9 +592,9 @@ void __cdecl UI_RemoveServerFromFavoritesList(int param_1)
   if ((-1 < DAT_01ec7fe4) && (DAT_01ec7fe4 < DAT_01edb868)) {
     LAN_GetServerInfo((int)&stack0xfffffbfc,(int)in_stack_fffffbfc,in_stack_fffffc00,
                       in_stack_fffffc04);
-    pcVar1 = Info_ValueForKey("dwuserid",in_stack_fffffbfc);
-    uVar2 = _strtoui64(pcVar1,(char **)0x0,0x10);
-    Live_DeleteFavourite(uVar2);
+    nptr = Info_ValueForKey("dwuserid",in_stack_fffffbfc);
+    uVar1 = _strtoui64(nptr,(char **)0x0,0x10);
+    Live_DeleteFavourite(uVar1);
   }
   return;
 }
@@ -614,17 +614,17 @@ UI_DrawServerRefreshDate
   char cVar2;
   float *in_EAX;
   int iVar3;
+  uchar *str1;
   uchar *puVar4;
-  uchar *puVar5;
   int extraout_EAX;
-  char *pcVar6;
+  char *pcVar5;
   int unaff_EBP;
   char *unaff_ESI;
-  int iVar7;
+  int iVar6;
   float *unaff_EDI;
-  int iVar8;
-  float10 fVar9;
-  float fVar10;
+  int iVar7;
+  float10 fVar8;
+  float fVar9;
   float local_468;
   int local_464;
   float local_460 [4];
@@ -639,42 +639,41 @@ UI_DrawServerRefreshDate
   
   if (DAT_01ec7fe0 == 0) {
     va("ui_lastServerRefresh_%i",(ui_netSource->current).integer);
-    pcVar6 = Dvar_GetVariantString((char *)unaff_EDI);
-    if (pcVar6 == (char *)0x0) {
+    pcVar5 = Dvar_GetVariantString((char *)unaff_EDI);
+    if (pcVar5 == (char *)0x0) {
       local_440[0] = '\0';
     }
     else {
-      pcVar6 = pcVar6 + -1;
-      iVar8 = 0x40;
-      iVar3 = -1 - (int)pcVar6;
+      pcVar5 = pcVar5 + -1;
+      iVar7 = 0x40;
+      iVar3 = -1 - (int)pcVar5;
       do {
-        cVar2 = pcVar6[1];
-        pcVar6 = pcVar6 + 1;
-        pcVar6[(int)(local_440 + iVar3)] = cVar2;
+        cVar2 = pcVar5[1];
+        pcVar5 = pcVar5 + 1;
+        pcVar5[(int)(local_440 + iVar3)] = cVar2;
         if (cVar2 == '\0') break;
-        iVar8 = iVar8 + -1;
-      } while (iVar8 != 0);
+        iVar7 = iVar7 + -1;
+      } while (iVar7 != 0);
       local_401 = 0;
     }
-    pcVar6 = UI_SafeTranslateString((char *)unaff_EDI);
-    pcVar6 = UI_ReplaceConversionString(pcVar6,local_440);
+    pcVar5 = UI_SafeTranslateString((char *)unaff_EDI);
+    pcVar5 = UI_ReplaceConversionString(pcVar5,local_440);
   }
   else {
     local_450 = *in_EAX * 0.8;
     local_44c = in_EAX[1] * 0.8;
     local_448 = in_EAX[2] * 0.8;
     local_444 = in_EAX[3] * 0.8;
-    fVar9 = (float10)sinf((float)(DAT_01eb5020 / 0x4b));
-    local_468 = (float)((fVar9 + (float10)1.0) * (float10)0.5);
+    fVar8 = (float10)sinf((float)(DAT_01eb5020 / 0x4b));
+    local_468 = (float)((fVar8 + (float10)1.0) * (float10)0.5);
     iVar3 = 0;
     do {
-      iVar8 = iVar3 * 4 - (int)local_460;
-      fVar10 = *(float *)((int)in_EAX + (int)local_460 + iVar8);
-      fVar10 = (*(float *)((int)&stack0x00000000 * 2 + iVar8 + -0x8b0) - fVar10) * local_468 +
-               fVar10;
-      local_460[iVar3] = fVar10;
-      if (0.0 <= fVar10) {
-        if (1.0 < fVar10) {
+      iVar7 = iVar3 * 4 - (int)local_460;
+      fVar9 = *(float *)((int)in_EAX + (int)local_460 + iVar7);
+      fVar9 = (*(float *)((int)&stack0x00000000 * 2 + iVar7 + -0x8b0) - fVar9) * local_468 + fVar9;
+      local_460[iVar3] = fVar9;
+      if (0.0 <= fVar9) {
+        if (1.0 < fVar9) {
           local_460[iVar3] = 1.0;
         }
       }
@@ -685,40 +684,40 @@ UI_DrawServerRefreshDate
     } while (iVar3 < 4);
     if (DAT_03556a84 == 0) {
       iVar3 = CL_GetServerCount((int)unaff_EDI);
-      puVar4 = (uchar *)UI_SafeTranslateString((char *)unaff_EDI);
-      if (puVar4 == (uchar *)0x0) {
+      str1 = (uchar *)UI_SafeTranslateString((char *)unaff_EDI);
+      if (str1 == (uchar *)0x0) {
         local_400[0] = '\0';
       }
       else {
-        puVar5 = puVar4 + -1;
-        iVar7 = 0x400;
-        iVar8 = -1 - (int)puVar5;
+        puVar4 = str1 + -1;
+        iVar6 = 0x400;
+        iVar7 = -1 - (int)puVar4;
         do {
-          uVar1 = puVar5[1];
-          puVar5 = puVar5 + 1;
-          puVar5[(int)(local_400 + iVar8)] = uVar1;
+          uVar1 = puVar4[1];
+          puVar4 = puVar4 + 1;
+          puVar4[(int)(local_400 + iVar7)] = uVar1;
           if (uVar1 == '\0') break;
-          iVar7 = iVar7 + -1;
-        } while (iVar7 != 0);
+          iVar6 = iVar6 + -1;
+        } while (iVar6 != 0);
         local_1 = 0;
       }
-      strstr(puVar4,(uchar *)"&&1");
+      strstr(str1,(uchar *)"&&1");
       if (extraout_EAX != 0) {
-        builtin_memcpy(local_400 + (extraout_EAX - (int)puVar4) + 3,"/&&2",4);
+        builtin_memcpy(local_400 + (extraout_EAX - (int)str1) + 3,"/&&2",4);
         I_strncpyz((char *)unaff_EDI,unaff_ESI,unaff_EBP);
       }
       local_468 = DAT_03556a7c;
       local_464 = iVar3;
-      pcVar6 = UI_ReplaceConversionInts((char *)local_400,2,(int *)&local_468);
+      pcVar5 = UI_ReplaceConversionInts((char *)local_400,2,(int *)&local_468);
       in_EAX = local_460;
     }
     else {
       Dvar_GetBool((char *)unaff_EDI);
-      pcVar6 = UI_SafeTranslateString((char *)unaff_EDI);
+      pcVar5 = UI_SafeTranslateString((char *)unaff_EDI);
       in_EAX = local_460;
     }
   }
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x1e),pcVar6,0x7fffffff,param_3,
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x1e),pcVar5,0x7fffffff,param_3,
               *(float *)param_2,*(float *)(param_2 + 4),(int)param_4,(int)in_EAX,(float)param_5,
               unaff_EDI,(int)unaff_ESI);
   return;

@@ -222,23 +222,23 @@ int __cdecl DL_BeginDownload(char *param_1,char *param_2,int param_3)
 
 {
   char cVar1;
-  char *pcVar2;
-  int iVar3;
-  uchar *puVar4;
-  char *pcVar5;
+  char *dst;
+  int iVar2;
+  uchar *puVar3;
+  char *pBlock;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
-  undefined4 uVar6;
-  char *pcVar7;
-  char *pcVar8;
-  void *pvVar9;
-  void *pvVar10;
+  undefined4 uVar4;
+  char *pcVar5;
+  char *pcVar6;
+  void *pBlock_00;
+  void *pBlock_01;
   char *extraout_EAX_01;
   char *unaff_ESI;
   char *unaff_EDI;
-  char *pcVar11;
-  char *pcVar12;
-  char *pcVar13;
+  char *pcVar7;
+  char *pcVar8;
+  char *pcVar9;
   char *local_10;
   
   local_10 = (char *)0x0;
@@ -251,92 +251,92 @@ int __cdecl DL_BeginDownload(char *param_1,char *param_2,int param_3)
     return 0;
   }
   DL_InitDownload();
-  pcVar2 = (char *)_HTParse("",0x10);
-  iVar3 = _stricmp(pcVar2,"ftp");
-  if (iVar3 != 0) {
+  dst = (char *)_HTParse("",0x10);
+  iVar2 = _stricmp(dst,"ftp");
+  if (iVar2 != 0) {
     DAT_00ac1548 = 30000;
   }
   else {
     DAT_00ac1548 = 0xffffffff;
   }
-  DAT_035074d4 = (uint)(iVar3 == 0);
+  DAT_035074d4 = (uint)(iVar2 == 0);
   DAT_035074d8 = _HTRequest_new();
-  iVar3 = _stricmp(pcVar2,"http");
-  if (iVar3 == 0) {
-    puVar4 = (uchar *)_HTParse("",8);
-    pcVar5 = (char *)_HTParse("",5);
-    strchr(puVar4,'@');
+  iVar2 = _stricmp(dst,"http");
+  if (iVar2 == 0) {
+    puVar3 = (uchar *)_HTParse("",8);
+    pBlock = (char *)_HTParse("",5);
+    strchr(puVar3,'@');
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
-      strchr(puVar4,':');
+      strchr(puVar3,':');
       local_10 = extraout_EAX_00;
       if (extraout_EAX_00 != (undefined1 *)0x0) {
         *extraout_EAX_00 = 0;
         local_10 = extraout_EAX_00 + 1;
         _HTUnEscape(local_10);
       }
-      _HTUnEscape(puVar4);
-      uVar6 = _HTBasic_new();
-      _HTSACopy(puVar4);
+      _HTUnEscape(puVar3);
+      uVar4 = _HTBasic_new();
+      _HTSACopy(puVar3);
       _HTSACopy(local_10);
-      basic_credentials(DAT_035074d8,uVar6);
-      _HTBasic_delete(uVar6);
-      pcVar12 = extraout_EAX + 1;
-      pcVar7 = pcVar12;
+      basic_credentials(DAT_035074d8,uVar4);
+      _HTBasic_delete(uVar4);
+      pcVar8 = extraout_EAX + 1;
+      pcVar5 = pcVar8;
       do {
-        cVar1 = *pcVar7;
-        pcVar7 = pcVar7 + 1;
-        pcVar8 = pcVar5;
+        cVar1 = *pcVar5;
+        pcVar5 = pcVar5 + 1;
+        pcVar6 = pBlock;
       } while (cVar1 != '\0');
       do {
-        cVar1 = *pcVar8;
-        pcVar8 = pcVar8 + 1;
+        cVar1 = *pcVar6;
+        pcVar6 = pcVar6 + 1;
       } while (cVar1 != '\0');
-      pcVar7 = (char *)_HTMemory_malloc();
-      pcVar11 = "http://%s%s";
-      pcVar8 = pcVar7;
-      pcVar13 = pcVar5;
-      sprintf(pcVar7,"http://%s%s");
-      Com_DPrintf(0xa4f37c,(char *)puVar4,local_10,pcVar7,pcVar8,pcVar11,pcVar12,pcVar13);
-      if (puVar4 != (uchar *)0x0) {
-        free(puVar4);
+      pcVar5 = (char *)_HTMemory_malloc();
+      pcVar7 = "http://%s%s";
+      pcVar6 = pcVar5;
+      pcVar9 = pBlock;
+      sprintf(pcVar5,"http://%s%s");
+      Com_DPrintf(0xa4f37c,(char *)puVar3,local_10,pcVar5,pcVar6,pcVar7,pcVar8,pcVar9);
+      if (puVar3 != (uchar *)0x0) {
+        free(puVar3);
       }
-      if (pcVar5 != (char *)0x0) {
-        free(pcVar5);
+      if (pBlock != (char *)0x0) {
+        free(pBlock);
       }
       goto LAB_005efdc3;
     }
   }
   _HTSACopy(param_2);
-  pcVar7 = local_10;
+  pcVar5 = local_10;
 LAB_005efdc3:
-  if (pcVar2 != (char *)0x0) {
-    free(pcVar2);
+  if (dst != (char *)0x0) {
+    free(dst);
   }
   FS_CreatePath(unaff_EDI);
-  iVar3 = _HTLoadToFile(pcVar7);
-  if (iVar3 == 1) {
-    if (pcVar7 != (char *)0x0) {
-      free(pcVar7);
+  iVar2 = _HTLoadToFile(pcVar5);
+  if (iVar2 == 1) {
+    if (pcVar5 != (char *)0x0) {
+      free(pcVar5);
     }
-    pvVar9 = (void *)_HTParse("",0x10);
-    puVar4 = (uchar *)_HTParse("",8);
-    pvVar10 = (void *)_HTParse("",5);
-    strchr(puVar4,'@');
+    pBlock_00 = (void *)_HTParse("",0x10);
+    puVar3 = (uchar *)_HTParse("",8);
+    pBlock_01 = (void *)_HTParse("",5);
+    strchr(puVar3,'@');
     if (extraout_EAX_01 == (char *)0x0) {
       Com_sprintf(param_2,(int)unaff_EDI,unaff_ESI);
     }
     else {
-      Com_sprintf("%s://*:*%s%s",(int)pvVar9,extraout_EAX_01,pvVar10);
+      Com_sprintf("%s://*:*%s%s",(int)pBlock_00,extraout_EAX_01,pBlock_01);
     }
-    if (pvVar10 != (void *)0x0) {
-      free(pvVar10);
+    if (pBlock_01 != (void *)0x0) {
+      free(pBlock_01);
     }
-    if (puVar4 != (uchar *)0x0) {
-      free(puVar4);
+    if (puVar3 != (uchar *)0x0) {
+      free(puVar3);
     }
-    if (pvVar9 != (void *)0x0) {
-      free(pvVar9);
+    if (pBlock_00 != (void *)0x0) {
+      free(pBlock_00);
     }
     if (DAT_035074d4 != 0) {
       DAT_00ac1548 = 30000;
@@ -346,8 +346,8 @@ LAB_005efdc3:
     return 1;
   }
   Com_DPrintf(0xa4f398,unaff_EDI);
-  if (pcVar7 != (char *)0x0) {
-    free(pcVar7);
+  if (pcVar5 != (char *)0x0) {
+    free(pcVar5);
   }
   _HTProfile_delete();
   return 0;

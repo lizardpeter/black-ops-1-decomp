@@ -20,80 +20,82 @@ void __cdecl Flame_Class_Drips_Init(void)
 
 // 0088AE20  Flame_Class_Drips_Alloc  (flame/flame_class_drips.cpp:51)
 
-flameDrips_t * __cdecl Flame_Class_Drips_Alloc(bool param_1)
+flameDrips_t * __cdecl Flame_Class_Drips_Alloc(bool is_server)
 
 {
-  flameDrips_t *local_8;
+  flameDrips_t *freeDrips;
   
-  if (param_1) {
-    local_8 = sv_flameDripsFree;
+  if (is_server) {
+    freeDrips = sv_flameDripsFree;
   }
   else {
-    local_8 = flameDripsFree;
+    freeDrips = flameDripsFree;
   }
-  if (local_8 == (flameDrips_t *)0x0) {
-    local_8 = (flameDrips_t *)0x0;
+  if (freeDrips == (flameDrips_t *)0x0) {
+    freeDrips = (flameDrips_t *)0x0;
   }
-  else if (param_1) {
+  else if (is_server) {
     Flame_List_Move_Global
-              (&local_8->gen,(flameGeneric_s **)&sv_flameDripsFree,
+              (&freeDrips->gen,(flameGeneric_s **)&sv_flameDripsFree,
                (flameGeneric_s **)&sv_flameDripsUsed);
   }
   else {
     Flame_List_Move_Global
-              (&local_8->gen,(flameGeneric_s **)&flameDripsFree,(flameGeneric_s **)&flameDripsUsed);
+              (&freeDrips->gen,(flameGeneric_s **)&flameDripsFree,(flameGeneric_s **)&flameDripsUsed
+              );
     g_DripsCount = g_DripsCount + 1;
     if (g_DripsCountWaterMark < g_DripsCount) {
       g_DripsCountWaterMark = g_DripsCount;
     }
   }
-  return local_8;
+  return freeDrips;
 }
 
 
 // 0088AEB0  Flame_Class_Drips_Free  (flame/flame_class_drips.cpp:87)
 
-void __cdecl Flame_Class_Drips_Free(bool param_1,flameDrips_t *param_2)
+void __cdecl Flame_Class_Drips_Free(bool is_server,flameDrips_t *fire)
 
 {
-  if (param_2->flameRend != (flameRender_s *)0x0) {
-    Flame_List_Sub_Local(&param_2->gen,&param_2->flameRend->dripsList);
+  if (fire->flameRend != (flameRender_s *)0x0) {
+    Flame_List_Sub_Local(&fire->gen,&fire->flameRend->dripsList);
   }
-  if (param_1) {
+  if (is_server) {
     Flame_List_Move_Global
-              (&param_2->gen,(flameGeneric_s **)&sv_flameDripsUsed,
+              (&fire->gen,(flameGeneric_s **)&sv_flameDripsUsed,
                (flameGeneric_s **)&sv_flameDripsFree);
   }
   else {
     Flame_List_Move_Global
-              (&param_2->gen,(flameGeneric_s **)&flameDripsUsed,(flameGeneric_s **)&flameDripsFree);
+              (&fire->gen,(flameGeneric_s **)&flameDripsUsed,(flameGeneric_s **)&flameDripsFree);
     g_DripsCount = g_DripsCount + -1;
   }
-  Flame_Item_Init(&param_2->gen,100);
+  Flame_Item_Init(&fire->gen,100);
   return;
 }
 
 
 // 0088AF30  Flame_Class_Drips_Free_If_Stream  (flame/flame_class_drips.cpp:114)
 
-void __cdecl Flame_Class_Drips_Free_If_Stream(bool param_1,flameStream_s *param_2)
+void __cdecl Flame_Class_Drips_Free_If_Stream(bool is_server,flameStream_s *stream)
 
 {
   flameDrips_t *pfVar1;
-  flameDrips_t *local_8;
+  flameDrips_t *next;
+  flameDrips_t *trav;
   
-  if (param_1) {
-    local_8 = sv_flameDripsUsed;
-    pfVar1 = local_8;
+  if (is_server) {
+    trav = sv_flameDripsUsed;
+    pfVar1 = trav;
   }
   else {
-    local_8 = flameDripsUsed;
-    pfVar1 = local_8;
+    trav = flameDripsUsed;
+    pfVar1 = trav;
   }
-  while (local_8 = pfVar1, local_8 != (flameDrips_t *)0x0) {
-    pfVar1 = (flameDrips_t *)(local_8->gen).listGlobal.next;
-    if ((local_8->gen).stream == param_2) {
-      Flame_Class_Drips_Free(param_1,local_8);
+  while (trav = pfVar1, trav != (flameDrips_t *)0x0) {
+    pfVar1 = (flameDrips_t *)(trav->gen).listGlobal.next;
+    if ((trav->gen).stream == stream) {
+      Flame_Class_Drips_Free(is_server,trav);
     }
   }
   return;
@@ -102,37 +104,38 @@ void __cdecl Flame_Class_Drips_Free_If_Stream(bool param_1,flameStream_s *param_
 
 // 0088AF90  Flame_Class_Drips_Age  (flame/flame_class_drips.cpp:160)
 
-void __cdecl Flame_Class_Drips_Age(bool param_1,int param_2,int param_3)
+void __cdecl Flame_Class_Drips_Age(bool is_server,int time,int localClientNum)
 
 {
   flameDrips_t *pfVar1;
   phys_static_array<flameGeneric_s_*,1000> *local_14;
-  flameDrips_t *local_8;
+  flameDrips_t *next;
+  flameDrips_t *trav;
   
-  if (param_1) {
-    local_8 = sv_flameDripsUsed;
-    pfVar1 = local_8;
+  if (is_server) {
+    trav = sv_flameDripsUsed;
+    pfVar1 = trav;
   }
   else {
-    local_8 = flameDripsUsed;
-    pfVar1 = local_8;
+    trav = flameDripsUsed;
+    pfVar1 = trav;
   }
-  while (local_8 = pfVar1, local_8 != (flameDrips_t *)0x0) {
-    pfVar1 = (flameDrips_t *)(local_8->gen).listGlobal.next;
-    if ((local_8->gen).age.lastUpdateTime < (local_8->gen).age.endTime) {
-      if (param_1) {
+  while (trav = pfVar1, trav != (flameDrips_t *)0x0) {
+    pfVar1 = (flameDrips_t *)(trav->gen).listGlobal.next;
+    if ((trav->gen).age.lastUpdateTime < (trav->gen).age.endTime) {
+      if (is_server) {
         local_14 = &sv_flames;
       }
       else {
         local_14 = &cl_flames;
       }
-      Flame_Phys_Update_Item_Drip(&local_8->gen,param_2,local_14);
+      Flame_Phys_Update_Item_Drip(&trav->gen,time,local_14);
     }
-    if ((local_8->gen).age.endTime <= (local_8->gen).age.lastUpdateTime) {
-      Flame_Class_Drips_Free(param_1,local_8);
+    if ((trav->gen).age.endTime <= (trav->gen).age.lastUpdateTime) {
+      Flame_Class_Drips_Free(is_server,trav);
     }
   }
-  Flame_Phys_Update_Items(param_1,param_3);
+  Flame_Phys_Update_Items(is_server,localClientNum);
   return;
 }
 
@@ -140,7 +143,7 @@ void __cdecl Flame_Class_Drips_Age(bool param_1,int param_2,int param_3)
 // 0088B040  Flame_Class_Drips_Spawn  (flame/flame_class_drips.cpp:211)
 
 flameDrips_t * __cdecl
-Flame_Class_Drips_Spawn(bool param_1,flameChunk_s *param_2,int param_3,float param_4)
+Flame_Class_Drips_Spawn(bool is_server,flameChunk_s *fromChunk,int curTime,float minLifeFrac)
 
 {
   flameTable *pfVar1;
@@ -151,74 +154,80 @@ Flame_Class_Drips_Spawn(bool param_1,flameChunk_s *param_2,int param_3,float par
   float fVar6;
   float fVar7;
   float local_48;
-  flameRender_s *local_24;
+  flameDrips_t *fire;
+  flameGeneric_s *gen;
+  flameRender_s *flameRend;
+  float lifeFrac;
+  flameTable *flameVars;
+  float speed;
+  float lifetime;
   
-  local_24 = (flameRender_s *)0x0;
-  if ((param_2 == (flameChunk_s *)0x0) &&
+  flameRend = (flameRender_s *)0x0;
+  if ((fromChunk == (flameChunk_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_drips.cpp",
                                0xdd,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pfVar4 = (flameDrips_t *)(*pcVar2)();
     return pfVar4;
   }
-  if ((param_2 == (flameChunk_s *)0x0) || ((param_2->gen).stream == (flameStream_s *)0x0)) {
+  if ((fromChunk == (flameChunk_s *)0x0) || ((fromChunk->gen).stream == (flameStream_s *)0x0)) {
     pfVar4 = (flameDrips_t *)0x0;
   }
   else {
-    pfVar4 = Flame_Class_Drips_Alloc(param_1);
+    pfVar4 = Flame_Class_Drips_Alloc(is_server);
     if (pfVar4 == (flameDrips_t *)0x0) {
       pfVar4 = (flameDrips_t *)0x0;
     }
     else {
-      pfVar1 = ((param_2->gen).stream)->flameVars;
-      if (!param_1) {
-        local_24 = ((param_2->gen).stream)->renderList->flameRend;
+      pfVar1 = ((fromChunk->gen).stream)->flameVars;
+      if (!is_server) {
+        flameRend = ((fromChunk->gen).stream)->renderList->flameRend;
       }
       (pfVar4->gen).type = 4;
-      (pfVar4->gen).stream = (param_2->gen).stream;
-      local_48 = (float)((param_2->gen).age.lastUpdateTime - (param_2->gen).age.startTime) /
-                 (float)((param_2->gen).age.endTime - (param_2->gen).age.startTime);
-      if (local_48 <= param_4) {
-        local_48 = param_4;
+      (pfVar4->gen).stream = (fromChunk->gen).stream;
+      local_48 = (float)((fromChunk->gen).age.lastUpdateTime - (fromChunk->gen).age.startTime) /
+                 (float)((fromChunk->gen).age.endTime - (fromChunk->gen).age.startTime);
+      if (local_48 <= minLifeFrac) {
+        local_48 = minLifeFrac;
       }
-      fVar5 = Flame_Random(param_1);
+      fVar5 = Flame_Random(is_server);
       fVar5 = fVar5 * pfVar1->flameVar_dripsLifeRand + pfVar1->flameVar_dripsLife;
-      (pfVar4->gen).age.startTime = param_3 - (int)(local_48 * fVar5 * 1000.0);
+      (pfVar4->gen).age.startTime = curTime - (int)(local_48 * fVar5 * 1000.0);
       (pfVar4->gen).age.endTime = (int)(fVar5 * 1000.0) + (pfVar4->gen).age.startTime;
-      (pfVar4->gen).age.lastUpdateTime = param_3;
+      (pfVar4->gen).age.lastUpdateTime = curTime;
       (pfVar4->gen).size.current =
-           (param_2->gen).size.current * pfVar1->flameVar_dripsStartSizeScale;
+           (fromChunk->gen).size.current * pfVar1->flameVar_dripsStartSizeScale;
       (pfVar4->gen).size.rate = 1.0;
-      (pfVar4->gen).phys.origin[0] = (param_2->gen).phys.origin[0];
-      (pfVar4->gen).phys.origin[1] = (param_2->gen).phys.origin[1];
-      (pfVar4->gen).phys.origin[2] = (param_2->gen).phys.origin[2];
+      (pfVar4->gen).phys.origin[0] = (fromChunk->gen).phys.origin[0];
+      (pfVar4->gen).phys.origin[1] = (fromChunk->gen).phys.origin[1];
+      (pfVar4->gen).phys.origin[2] = (fromChunk->gen).phys.origin[2];
       fVar5 = pfVar1->flameVar_dripsSpeedScaleRand;
-      fVar6 = Flame_Random(param_1);
+      fVar6 = Flame_Random(is_server);
       fVar5 = (fVar6 * pfVar1->flameVar_dripsSpeedScaleRand + (1.0 - fVar5)) *
               pfVar1->flameVar_dripsSpeedScale;
-      (pfVar4->gen).phys.velocity[0] = fVar5 * (param_2->gen).phys.velocity[0];
-      (pfVar4->gen).phys.velocity[1] = fVar5 * (param_2->gen).phys.velocity[1];
-      (pfVar4->gen).phys.velocity[2] = fVar5 * (param_2->gen).phys.velocity[2];
+      (pfVar4->gen).phys.velocity[0] = fVar5 * (fromChunk->gen).phys.velocity[0];
+      (pfVar4->gen).phys.velocity[1] = fVar5 * (fromChunk->gen).phys.velocity[1];
+      (pfVar4->gen).phys.velocity[2] = fVar5 * (fromChunk->gen).phys.velocity[2];
       fVar5 = (pfVar4->gen).phys.velocity[1];
       fVar6 = (pfVar4->gen).phys.velocity[0];
-      fVar7 = Flame_CRandom(param_1);
+      fVar7 = Flame_CRandom(is_server);
       fVar7 = fVar7 * pfVar1->flameVar_dripsVelocityAddSideways;
       (pfVar4->gen).phys.velocity[0] = fVar7 * fVar5 + (pfVar4->gen).phys.velocity[0];
       (pfVar4->gen).phys.velocity[1] = fVar7 * fVar6 + (pfVar4->gen).phys.velocity[1];
       (pfVar4->gen).phys.velocity[2] = fVar7 * 0.0 + (pfVar4->gen).phys.velocity[2];
-      fVar5 = Flame_Random(param_1);
+      fVar5 = Flame_Random(is_server);
       (pfVar4->gen).phys.velocity[2] =
            fVar5 * pfVar1->flameVar_dripsVelocityAddZRand + pfVar1->flameVar_dripsVelocityAddZ +
            (pfVar4->gen).phys.velocity[2];
       fVar5 = Flame_CalcInvStartSpeed
-                        ((param_2->gen).phys.invStartSpeed,pfVar1->flameVar_dripsSpeedScale);
+                        ((fromChunk->gen).phys.invStartSpeed,pfVar1->flameVar_dripsSpeedScale);
       (pfVar4->gen).phys.invStartSpeed = fVar5;
       (pfVar4->gen).phys.gravity = pfVar1->flameVar_dripsGravity;
-      (pfVar4->gen).phys.rotation = (param_2->gen).phys.rotation;
-      fVar5 = Flame_CRandom(param_1);
+      (pfVar4->gen).phys.rotation = (fromChunk->gen).phys.rotation;
+      fVar5 = Flame_CRandom(is_server);
       (pfVar4->gen).phys.rotVel = fVar5 * pfVar1->flameVar_dripsMaxRotVel;
-      pfVar4->flameRend = local_24;
-      if (!param_1) {
+      pfVar4->flameRend = flameRend;
+      if (!is_server) {
         Flame_List_Add_Local(&pfVar4->gen,&pfVar4->flameRend->dripsList);
       }
     }
@@ -307,32 +316,32 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Flame_Class_Drips_Render_Item(int param_1,flameDrips_t *param_2)
+void __cdecl Flame_Class_Drips_Render_Item(int localClientNum,flameDrips_t *fire)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_74 [3];
-  float local_68 [9];
+  float fwd [3];
+  float points [9];
   float local_44;
   float local_40;
-  float local_3c;
+  float start;
   float local_38;
   float local_34;
-  float local_30;
+  float end;
   float local_2c;
   float local_28;
-  float local_24 [2];
+  float angles [2];
   float local_1c;
-  float local_18;
+  float down;
   float local_14;
   float local_10;
-  int local_c;
-  cg_s *local_8;
+  int i;
+  cg_s *clientGlobals;
   
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (local_8 == (cg_s *)0x0) {
+  clientGlobals = CG_GetLocalClientGlobals(localClientNum);
+  if (clientGlobals == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_drips.cpp",0x131
                              ,0,"%s\n\t%s");
     if (!bVar2) {
@@ -342,39 +351,39 @@ void __cdecl Flame_Class_Drips_Render_Item(int param_1,flameDrips_t *param_2)
     }
   }
   if (0 < (flame_debug_render->current).integer) {
-    local_68[0] = -1.0;
-    local_68[1] = -1.0;
-    local_68[2] = 1.0;
-    local_68[3] = -1.0;
-    local_68[4] = 1.0;
-    local_68[5] = 1.0;
-    local_68[6] = -1.0;
-    local_68[7] = 1.0;
-    AxisToAngles((local_8->refdef).viewaxis,local_24);
-    local_1c = (param_2->gen).phys.rotation;
-    AngleVectors(local_24,local_74,local_68 + 8,&local_18);
-    fVar3 = (param_2->gen).size.current * 0.5;
-    local_68[8] = fVar3 * local_68[8];
+    points[0] = -1.0;
+    points[1] = -1.0;
+    points[2] = 1.0;
+    points[3] = -1.0;
+    points[4] = 1.0;
+    points[5] = 1.0;
+    points[6] = -1.0;
+    points[7] = 1.0;
+    AxisToAngles((clientGlobals->refdef).viewaxis,angles);
+    local_1c = (fire->gen).phys.rotation;
+    AngleVectors(angles,fwd,points + 8,&down);
+    fVar3 = (fire->gen).size.current * 0.5;
+    points[8] = fVar3 * points[8];
     local_44 = fVar3 * local_44;
     local_40 = fVar3 * local_40;
-    fVar3 = (param_2->gen).size.current * -0.5;
-    local_18 = fVar3 * local_18;
+    fVar3 = (fire->gen).size.current * -0.5;
+    down = fVar3 * down;
     local_14 = fVar3 * local_14;
     local_10 = fVar3 * local_10;
-    local_3c = local_68[7] * local_18 + local_68[6] * local_68[8] + (param_2->gen).phys.origin[0];
-    local_38 = local_68[7] * local_14 + local_68[6] * local_44 + (param_2->gen).phys.origin[1];
-    local_34 = local_68[7] * local_10 + local_68[6] * local_40 + (param_2->gen).phys.origin[2];
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      fVar3 = local_68[local_c * 2];
-      local_30 = fVar3 * local_68[8] + (param_2->gen).phys.origin[0];
-      local_2c = fVar3 * local_44 + (param_2->gen).phys.origin[1];
-      local_28 = fVar3 * local_40 + (param_2->gen).phys.origin[2];
-      fVar3 = local_68[local_c * 2 + 1];
-      local_30 = fVar3 * local_18 + local_30;
+    start = points[7] * down + points[6] * points[8] + (fire->gen).phys.origin[0];
+    local_38 = points[7] * local_14 + points[6] * local_44 + (fire->gen).phys.origin[1];
+    local_34 = points[7] * local_10 + points[6] * local_40 + (fire->gen).phys.origin[2];
+    for (i = 0; i < 4; i = i + 1) {
+      fVar3 = points[i * 2];
+      end = fVar3 * points[8] + (fire->gen).phys.origin[0];
+      local_2c = fVar3 * local_44 + (fire->gen).phys.origin[1];
+      local_28 = fVar3 * local_40 + (fire->gen).phys.origin[2];
+      fVar3 = points[i * 2 + 1];
+      end = fVar3 * down + end;
       local_2c = fVar3 * local_14 + local_2c;
       local_28 = fVar3 * local_10 + local_28;
-      G_DebugLineWithDuration(&local_3c,&local_30,colorMagenta,1,1);
-      local_3c = local_30;
+      G_DebugLineWithDuration(&start,&end,colorMagenta,1,1);
+      start = end;
       local_38 = local_2c;
       local_34 = local_28;
     }
@@ -385,16 +394,21 @@ void __cdecl Flame_Class_Drips_Render_Item(int param_1,flameDrips_t *param_2)
 
 // 0088B710  Flame_Class_Drips_Render_All  (flame/flame_class_drips.cpp:357)
 
-void __cdecl Flame_Class_Drips_Render_All(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Class_Drips_Render_All(int localClientNum)
 
 {
-  flameDrips_t *local_8;
+  flameDrips_t *fire;
   
   if (0 < (flame_debug_render->current).integer) {
-    for (local_8 = flameDripsUsed; local_8 != (flameDrips_t *)0x0;
-        local_8 = (flameDrips_t *)(local_8->gen).listGlobal.next) {
+    for (fire = flameDripsUsed; fire != (flameDrips_t *)0x0;
+        fire = (flameDrips_t *)(fire->gen).listGlobal.next) {
       if (0 < (flame_debug_render->current).integer) {
-        Flame_Class_Drips_Render_Item(param_1,local_8);
+        Flame_Class_Drips_Render_Item(localClientNum,fire);
       }
     }
   }
@@ -409,34 +423,37 @@ void __cdecl Flame_Class_Drips_Render_All(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Flame_Class_Drips_Render_Local_List(int param_1,flameDrips_t *param_2)
+void __cdecl Flame_Class_Drips_Render_Local_List(int localClientNum,flameDrips_t *start)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  flameDrips_t *local_3fc;
-  flameGeneric_s *local_3f4 [251];
-  int local_8;
+  cg_s *clientGlobals_00;
+  flameDrips_t *fire;
+  cg_s *clientGlobals;
+  flameGeneric_s *renderList [251];
+  int count;
   
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  if ((pcVar3 == (cg_s *)0x0) &&
+  clientGlobals_00 = CG_GetLocalClientGlobals(localClientNum);
+  if ((clientGlobals_00 == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_drips.cpp",
                                0x188,0,"%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2 == (flameDrips_t *)0x0) || ((param_2->gen).stream != (flameStream_s *)0x0)) &&
-     ((param_2 == (flameDrips_t *)0x0 || (bVar2 = CL_IsLastActiveLocalClient(param_1), bVar2)))) {
-    local_8 = 0;
-    for (local_3fc = param_2; (local_8 < 0xfa && (local_3fc != (flameDrips_t *)0x0));
-        local_3fc = (flameDrips_t *)(local_3fc->gen).listLocal.next) {
-      local_3f4[local_8] = &local_3fc->gen;
-      local_8 = local_8 + 1;
+  if (((start == (flameDrips_t *)0x0) || ((start->gen).stream != (flameStream_s *)0x0)) &&
+     ((start == (flameDrips_t *)0x0 || (bVar2 = CL_IsLastActiveLocalClient(localClientNum), bVar2)))
+     ) {
+    count = 0;
+    for (fire = start; (count < 0xfa && (fire != (flameDrips_t *)0x0));
+        fire = (flameDrips_t *)(fire->gen).listLocal.next) {
+      renderList[count] = &fire->gen;
+      count = count + 1;
     }
-    if (1 < local_8) {
-      Flame_Render_Sprites(pcVar3,((param_2->gen).stream)->flameVars->drips,local_3f4,local_8);
+    if (1 < count) {
+      Flame_Render_Sprites
+                (clientGlobals_00,((start->gen).stream)->flameVars->drips,renderList,count);
     }
   }
   return;

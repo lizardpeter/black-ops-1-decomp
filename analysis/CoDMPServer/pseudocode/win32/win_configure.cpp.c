@@ -11,10 +11,11 @@ int __cdecl Sys_SystemMemoryMB(void)
   HWND pHVar3;
   int iVar4;
   UINT UVar5;
-  int local_70;
-  _MEMORYSTATUS local_68;
-  FARPROC local_48;
-  undefined4 local_44 [2];
+  int sysMB;
+  HINSTANCE__ *hm;
+  _MEMORYSTATUS status;
+  FARPROC MemStatEx;
+  undefined4 statusEx [2];
   undefined4 local_3c;
   uint local_38;
   uint local_14;
@@ -22,10 +23,10 @@ int __cdecl Sys_SystemMemoryMB(void)
   
   hModule = GetModuleHandleA("kernel32.dll");
   if ((hModule == (HMODULE)0x0) ||
-     (local_48 = GetProcAddress(hModule,"GlobalMemoryStatusEx"), local_48 == (FARPROC)0x0)) {
-    local_68.dwLength = 0x20;
-    GlobalMemoryStatus(&local_68);
-    if (local_68.dwAvailVirtual < 0x8000000) {
+     (MemStatEx = GetProcAddress(hModule,"GlobalMemoryStatusEx"), MemStatEx == (FARPROC)0x0)) {
+    status.dwLength = 0x20;
+    GlobalMemoryStatus(&status);
+    if (status.dwAvailVirtual < 0x8000000) {
       UVar5 = 0x34;
       pcVar1 = Win_LocalizeRef("WIN_LOW_MEMORY_TITLE");
       pcVar2 = Win_LocalizeRef("WIN_LOW_MEMORY_BODY");
@@ -37,14 +38,14 @@ int __cdecl Sys_SystemMemoryMB(void)
         exit(0);
       }
     }
-    local_70 = (int)ROUND((float)local_68.dwTotalPhys * 9.536743e-07 + 0.5);
-    if (((float)local_70 * 1048576.0 < (float)local_68.dwTotalPhys) || (0x400 < local_70)) {
-      local_70 = 0x400;
+    sysMB = (int)ROUND((float)status.dwTotalPhys * 9.536743e-07 + 0.5);
+    if (((float)sysMB * 1048576.0 < (float)status.dwTotalPhys) || (0x400 < sysMB)) {
+      sysMB = 0x400;
     }
   }
   else {
-    local_44[0] = 0x40;
-    (*local_48)(local_44);
+    statusEx[0] = 0x40;
+    (*MemStatEx)(statusEx);
     if ((local_10 == 0) && (local_14 < 0x8000000)) {
       UVar5 = 0x34;
       pcVar1 = Win_LocalizeRef("WIN_LOW_MEMORY_TITLE");
@@ -57,16 +58,16 @@ int __cdecl Sys_SystemMemoryMB(void)
         exit(0);
       }
     }
-    local_70 = (int)ROUND((float)((-(float10)(longlong)(((ulonglong)local_38 & 0x80000000) << 0x20)
-                                  + (float10)(CONCAT44(local_38,local_3c) & 0x7fffffffffffffff)) *
-                                 (float10)9.536743e-07) + 0.5);
-    if (((float10)local_70 * (float10)1048576.0 <
+    sysMB = (int)ROUND((float)((-(float10)(longlong)(((ulonglong)local_38 & 0x80000000) << 0x20) +
+                               (float10)(CONCAT44(local_38,local_3c) & 0x7fffffffffffffff)) *
+                              (float10)9.536743e-07) + 0.5);
+    if (((float10)sysMB * (float10)1048576.0 <
          -(float10)(longlong)(((ulonglong)local_38 & 0x80000000) << 0x20) +
-         (float10)(CONCAT44(local_38,local_3c) & 0x7fffffffffffffff)) || (0x400 < local_70)) {
-      local_70 = 0x400;
+         (float10)(CONCAT44(local_38,local_3c) & 0x7fffffffffffffff)) || (0x400 < sysMB)) {
+      sysMB = 0x400;
     }
   }
-  return local_70;
+  return sysMB;
 }
 
 
@@ -74,7 +75,7 @@ int __cdecl Sys_SystemMemoryMB(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Sys_DetectVideoCard(int param_1,char *param_2)
+void __cdecl Sys_DetectVideoCard(int descLimit,char *description)
 
 {
   char cVar1;
@@ -84,25 +85,27 @@ void __cdecl Sys_DetectVideoCard(int param_1,char *param_2)
   int iVar5;
   char *local_46c;
   char *local_468;
-  undefined1 local_45c [512];
+  HRESULT hr;
+  IDirect3D9 *d3d9;
+  undefined1 id [512];
   char local_25c [596];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 != 0x200) &&
+  if ((descLimit != 0x200) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_configure.cpp",0x55,0,
                                "%s\n\t(descLimit) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  builtin_strncpy(param_2,"Unknown video card",0x13);
+  builtin_strncpy(description,"Unknown video card",0x13);
   piVar4 = (int *)_Direct3DCreate9_4(0x20);
   if (piVar4 != (int *)0x0) {
-    iVar5 = (**(code **)(*piVar4 + 0x14))(piVar4,0,0,local_45c);
+    iVar5 = (**(code **)(*piVar4 + 0x14))(piVar4,0,0,id);
     if (-1 < iVar5) {
       local_468 = local_25c;
-      local_46c = param_2;
+      local_46c = description;
       do {
         cVar1 = *local_468;
         *local_46c = cVar1;
@@ -118,20 +121,20 @@ void __cdecl Sys_DetectVideoCard(int param_1,char *param_2)
 
 // 007D6BF0  Sys_CopyCpuidString  (win32/win_configure.cpp:113)
 
-void __cdecl Sys_CopyCpuidString(char *param_1,char *param_2,uint param_3)
+void __cdecl Sys_CopyCpuidString(char *dest,char *source,uint maxLen)
 
 {
-  uint local_c;
-  int local_8;
+  uint from;
+  uint to;
   
-  for (local_c = 0; (local_c < param_3 && (param_2[local_c] == ' ')); local_c = local_c + 1) {
+  for (from = 0; (from < maxLen && (source[from] == ' ')); from = from + 1) {
   }
-  local_8 = 0;
-  for (; (local_c < param_3 && (param_2[local_c] != '\0')); local_c = local_c + 1) {
-    param_1[local_8] = param_2[local_c];
-    local_8 = local_8 + 1;
+  to = 0;
+  for (; (from < maxLen && (source[from] != '\0')); from = from + 1) {
+    dest[to] = source[from];
+    to = to + 1;
   }
-  param_1[local_8] = '\0';
+  dest[to] = '\0';
   return;
 }
 
@@ -145,7 +148,7 @@ void __cdecl Sys_CopyCpuidString(char *param_1,char *param_2,uint param_3)
 /* WARNING: Removing unreachable block (ram,0x007d6a0a) */
 /* WARNING: Removing unreachable block (ram,0x007d69fa) */
 
-void __cdecl Sys_DetectCpuVendorAndName(char *param_1,char *param_2)
+void __cdecl Sys_DetectCpuVendorAndName(char *vendor,char *name)
 
 {
   byte bVar1;
@@ -157,6 +160,7 @@ void __cdecl Sys_DetectCpuVendorAndName(char *param_1,char *param_2)
   undefined4 uVar7;
   undefined2 uVar8;
   bool bVar9;
+  uint maxCpuidArg;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -270,6 +274,7 @@ bool __cdecl Sys_SupportsSSE(void)
 
 {
   undefined1 uVar1;
+  bool rval;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -286,28 +291,28 @@ bool __cdecl Sys_SupportsSSE(void)
 
 // 007D7120  Sys_AddApicIdIfUnique  (win32/win_configure.cpp:251)
 
-uint __cdecl Sys_AddApicIdIfUnique(uint param_1,uint *param_2,uint param_3)
+uint __cdecl Sys_AddApicIdIfUnique(uint apicId,uint *existingApicId,uint existingCount)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  uint local_8;
+  uint existingIter;
   
-  local_8 = 0;
+  existingIter = 0;
   while( true ) {
-    if (param_3 <= local_8) {
-      param_2[param_3] = param_1;
-      return param_3 + 1;
+    if (existingCount <= existingIter) {
+      existingApicId[existingCount] = apicId;
+      return existingCount + 1;
     }
-    if ((0x1f < local_8) &&
+    if ((0x1f < existingIter) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_configure.cpp",0x100
                                  ,0,"existingIter doesn\'t index 32\n\t%i not in [0, %i)"), !bVar2))
     break;
-    if (param_2[local_8] == param_1) {
-      return param_3;
+    if (existingApicId[existingIter] == apicId) {
+      return existingCount;
     }
-    local_8 = local_8 + 1;
+    existingIter = existingIter + 1;
   }
   pcVar1 = (code *)swi(3);
   uVar3 = (*pcVar1)();
@@ -319,7 +324,7 @@ uint __cdecl Sys_AddApicIdIfUnique(uint param_1,uint *param_2,uint param_3)
 
 /* WARNING: Removing unreachable block (ram,0x007d6e72) */
 
-void __cdecl Sys_GetPhysicalCpuCount(SysInfo *param_1)
+void __cdecl Sys_GetPhysicalCpuCount(SysInfo *sysInfo)
 
 {
   byte bVar1;
@@ -327,6 +332,16 @@ void __cdecl Sys_GetPhysicalCpuCount(SysInfo *param_1)
   int local_d8;
   char *local_d0;
   byte *local_cc;
+  uint regEdx;
+  uint regEax;
+  uint regEbx;
+  void *process;
+  uint apicId;
+  uint logicalPerPhysical;
+  ulong systemAffinityMask;
+  uint logicalIdMask;
+  ulong processAffinityMask;
+  ulong testAffinityMask;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -335,9 +350,9 @@ void __cdecl Sys_GetPhysicalCpuCount(SysInfo *param_1)
   puStack_c = &__ehhandler__Sys_GetPhysicalCpuCount__YAXPAUSysInfo___Z;
   local_10 = ExceptionList;
   ExceptionList = &local_10;
-  param_1->physicalCpuCount = param_1->logicalCpuCount;
+  sysInfo->physicalCpuCount = sysInfo->logicalCpuCount;
   local_cc = (byte *)0xd0ccc8;
-  local_d0 = param_1->cpuVendor;
+  local_d0 = sysInfo->cpuVendor;
   do {
     bVar1 = *local_d0;
     bVar2 = bVar1 < *local_cc;
@@ -377,16 +392,29 @@ double __cdecl Sys_BenchmarkGHz(void)
   int nPriority;
   uint uVar3;
   uint uVar4;
-  uint local_34;
+  int holdrand;
+  uint c;
+  float initialY;
+  float z;
+  double msec;
+  float k;
+  uint b;
+  int priority;
+  uint minTime;
   uint local_30;
-  uint local_28;
+  uint attempt;
+  uint a;
+  float x;
+  float y;
+  void *thread;
+  float initialX;
   
   hThread = GetCurrentThread();
   nPriority = GetThreadPriority(hThread);
   SetThreadPriority(hThread,0xf);
-  local_34 = 0xffffffff;
+  minTime = 0xffffffff;
   local_30 = 0xffffffff;
-  for (local_28 = 0; local_28 < 1000; local_28 = local_28 + 1) {
+  for (attempt = 0; attempt < 1000; attempt = attempt + 1) {
     Sleep(0);
     uVar1 = rdtsc();
     uVar3 = 0;
@@ -397,30 +425,31 @@ double __cdecl Sys_BenchmarkGHz(void)
     uVar3 = (uint)uVar2 - (uint)uVar1;
     uVar4 = ((int)((ulonglong)uVar2 >> 0x20) - (int)((ulonglong)uVar1 >> 0x20)) -
             (uint)((uint)uVar2 < (uint)uVar1);
-    if ((uVar4 <= local_30) && ((local_30 != uVar4 || (uVar3 < local_34)))) {
-      local_34 = uVar3;
+    if ((uVar4 <= local_30) && ((local_30 != uVar4 || (uVar3 < minTime)))) {
+      minTime = uVar3;
       local_30 = uVar4;
     }
   }
   SetThreadPriority(hThread,nPriority);
   return 0.1010328 /
          ((-(double)(longlong)(((ulonglong)local_30 & 0x80000000) << 0x20) +
-          (double)(CONCAT44(local_30,local_34) & 0x7fffffffffffffff)) * msecPerRawTimerTick);
+          (double)(CONCAT44(local_30,minTime) & 0x7fffffffffffffff)) * msecPerRawTimerTick);
 }
 
 
 // 007D6CF0  Sys_SetAutoConfigureGHz  (win32/win_configure.cpp:488)
 
-void __cdecl Sys_SetAutoConfigureGHz(SysInfo *param_1)
+void __cdecl Sys_SetAutoConfigureGHz(SysInfo *sysInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   double dVar3;
-  double local_c;
+  double benchmarkGHz;
+  double multiCpuFactor;
   
-  Sys_GetPhysicalCpuCount(param_1);
-  if (param_1->physicalCpuCount < 1) {
+  Sys_GetPhysicalCpuCount(sysInfo);
+  if (sysInfo->physicalCpuCount < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_configure.cpp",0x1ed,0,
                              "sysInfo->physicalCpuCount >= 1\n\t%i, %i");
     if (!bVar2) {
@@ -429,17 +458,17 @@ void __cdecl Sys_SetAutoConfigureGHz(SysInfo *param_1)
       return;
     }
   }
-  if (param_1->physicalCpuCount == 1) {
-    local_c = 1.0;
+  if (sysInfo->physicalCpuCount == 1) {
+    multiCpuFactor = 1.0;
   }
-  else if (param_1->physicalCpuCount == 2) {
-    local_c = 1.75;
+  else if (sysInfo->physicalCpuCount == 2) {
+    multiCpuFactor = 1.75;
   }
   else {
-    local_c = 2.0;
+    multiCpuFactor = 2.0;
   }
   dVar3 = Sys_BenchmarkGHz();
-  param_1->configureGHz = dVar3 * local_c;
+  sysInfo->configureGHz = dVar3 * multiCpuFactor;
   return;
 }
 

@@ -2,14 +2,14 @@
 
 // 009CE7B0  CL_LocalClient_IsActive  (client/splitscreen.cpp:52)
 
-bool __cdecl CL_LocalClient_IsActive(int param_1)
+bool __cdecl CL_LocalClient_IsActive(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\splitscreen.cpp",0x35,0,
                              "%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -24,14 +24,14 @@ bool __cdecl CL_LocalClient_IsActive(int param_1)
 
 // 009CE7F0  CL_LocalClient_IsFirstActive  (client/splitscreen.cpp:63)
 
-bool __cdecl CL_LocalClient_IsFirstActive(int param_1)
+bool __cdecl CL_LocalClient_IsFirstActive(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\splitscreen.cpp",0x40,0,
                              "%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -51,13 +51,13 @@ bool __cdecl CL_AllLocalClientsDisconnected(void)
 {
   bool bVar1;
   int iVar2;
-  int local_8;
+  int client;
   
   iVar2 = UI_IsFullscreen(0);
   if (iVar2 == 0) {
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      bVar1 = CL_LocalClient_IsActive(local_8);
-      if ((bVar1) && (3 < (int)clientUIActives[local_8].connectionState)) {
+    for (client = 0; client < 1; client = client + 1) {
+      bVar1 = CL_LocalClient_IsActive(client);
+      if ((bVar1) && (3 < (int)clientUIActives[client].connectionState)) {
         return false;
       }
     }
@@ -72,16 +72,16 @@ bool __cdecl CL_AnyLocalClientStateActive(void)
 
 {
   bool bVar1;
-  int local_8;
+  int localClientNum;
   
-  local_8 = 0;
+  localClientNum = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < localClientNum) {
       return false;
     }
-    bVar1 = CL_LocalClient_IsActive(local_8);
-    if ((bVar1) && (clientUIActives[local_8].connectionState == CA_ACTIVE)) break;
-    local_8 = local_8 + 1;
+    bVar1 = CL_LocalClient_IsActive(localClientNum);
+    if ((bVar1) && (clientUIActives[localClientNum].connectionState == CA_ACTIVE)) break;
+    localClientNum = localClientNum + 1;
   }
   return true;
 }
@@ -93,16 +93,16 @@ bool __cdecl CL_AnyLocalClientChallenging(void)
 
 {
   bool bVar1;
-  int local_8;
+  int localClientNum;
   
-  local_8 = 0;
+  localClientNum = 0;
   while( true ) {
-    if (0 < local_8) {
+    if (0 < localClientNum) {
       return false;
     }
-    bVar1 = CL_LocalClient_IsActive(local_8);
-    if ((bVar1) && (clientUIActives[local_8].connectionState == CA_CHALLENGING)) break;
-    local_8 = local_8 + 1;
+    bVar1 = CL_LocalClient_IsActive(localClientNum);
+    if ((bVar1) && (clientUIActives[localClientNum].connectionState == CA_CHALLENGING)) break;
+    localClientNum = localClientNum + 1;
   }
   return true;
 }
@@ -113,11 +113,11 @@ bool __cdecl CL_AnyLocalClientChallenging(void)
 void __cdecl CL_LocalClients_SetAllUsedActive(void)
 
 {
-  undefined4 local_8;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    Com_LocalClient_IsBeingUsed(local_8);
-    GamerProfile_WriteSettings(local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    Com_LocalClient_IsBeingUsed(localClientNum);
+    GamerProfile_WriteSettings(localClientNum);
   }
   return;
 }
@@ -125,14 +125,14 @@ void __cdecl CL_LocalClients_SetAllUsedActive(void)
 
 // 009CE970  CL_LocalActiveIndexFromClientNum  (client/splitscreen.cpp:373)
 
-int __cdecl CL_LocalActiveIndexFromClientNum(int param_1)
+int __cdecl CL_LocalActiveIndexFromClientNum(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((localClientNum < 0) || (0 < localClientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client\\splitscreen.cpp",0x18a,0,
                              "%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -147,7 +147,7 @@ int __cdecl CL_LocalActiveIndexFromClientNum(int param_1)
 
 // 009CE9B0  CL_ControllerIndex_GetUsername  (client/splitscreen.cpp:402)
 
-char * __cdecl CL_ControllerIndex_GetUsername(int param_1)
+char * __cdecl CL_ControllerIndex_GetUsername(int controllerIndex)
 
 {
   return (char *)(name->current).integer;

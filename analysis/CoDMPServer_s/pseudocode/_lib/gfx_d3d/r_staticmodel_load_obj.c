@@ -5,24 +5,25 @@
 void __cdecl R_AllocStaticModels(GfxAabbTree *param_1)
 
 {
-  ushort *puVar1;
-  GfxAabbTree *pGVar2;
+  ushort *dst;
+  GfxAabbTree *pGVar1;
   int unaff_EDI;
-  int iVar3;
+  int iVar2;
+  GfxAabbTree *tree;
   
   if (param_1->smodelIndexCount != 0) {
-    puVar1 = Hunk_AllocAlignInternal((uint)param_1->smodelIndexCount * 2,unaff_EDI);
-    memcpy((uchar *)puVar1,(uchar *)param_1->smodelIndexes,(uint)param_1->smodelIndexCount * 2);
-    param_1->smodelIndexes = puVar1;
+    dst = Hunk_AllocAlignInternal((uint)param_1->smodelIndexCount * 2,unaff_EDI);
+    memcpy((uchar *)dst,(uchar *)param_1->smodelIndexes,(uint)param_1->smodelIndexCount * 2);
+    param_1->smodelIndexes = dst;
   }
-  pGVar2 = (GfxAabbTree *)((int)param_1->mins + param_1->childrenOffset);
-  iVar3 = 0;
+  pGVar1 = (GfxAabbTree *)((int)param_1->mins + param_1->childrenOffset);
+  iVar2 = 0;
   if (param_1->childCount != 0) {
     do {
-      R_AllocStaticModels(pGVar2);
-      iVar3 = iVar3 + 1;
-      pGVar2 = pGVar2 + 1;
-    } while (iVar3 < (int)(uint)param_1->childCount);
+      R_AllocStaticModels(pGVar1);
+      iVar2 = iVar2 + 1;
+      pGVar1 = pGVar1 + 1;
+    } while (iVar2 < (int)(uint)param_1->childCount);
   }
   return;
 }
@@ -30,7 +31,7 @@ void __cdecl R_AllocStaticModels(GfxAabbTree *param_1)
 
 // 00865010  R_SortGfxAabbTree  (gfx_d3d/r_staticmodel_load_obj.cpp:100)
 
-void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
+void __cdecl R_SortGfxAabbTree(GfxWorld *tree,GfxAabbTree *param_2)
 
 {
   ushort uVar1;
@@ -53,6 +54,7 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
   float fVar17;
   float fVar18;
   float fVar19;
+  GfxWorld *world;
   GfxWorld *pGVar20;
   GfxWorld *pGVar21;
   float fStack_4c;
@@ -75,7 +77,7 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
       iVar4 = 0;
       if (pGVar12->childCount != 0) {
         do {
-          R_SortGfxAabbTree(param_1,pGVar9);
+          R_SortGfxAabbTree(tree,pGVar9);
           iVar4 = iVar4 + 1;
           pGVar9 = pGVar9 + 1;
         } while (iVar4 < (int)(uint)pGVar12->childCount);
@@ -90,7 +92,7 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
     afStack_34[2] = -3.4028235e+38;
     if (pGVar12->smodelIndexCount != 0) {
       param_2 = (GfxAabbTree *)(uint)pGVar12->smodelIndexCount;
-      pGVar2 = (param_1->dpvs).smodelInsts;
+      pGVar2 = (tree->dpvs).smodelInsts;
       puVar11 = pGVar12->smodelIndexes;
       do {
         pGVar3 = pGVar2 + *puVar11;
@@ -132,37 +134,36 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
     fVar16 = afStack_34[3];
     fVar17 = afStack_34[2];
     fVar18 = afStack_34[1];
-    pGVar20 = param_1;
+    pGVar20 = tree;
     fStack_48 = afStack_34[1];
     fStack_44 = afStack_34[2];
     fStack_40 = afStack_34[3];
     fStack_3c = afStack_34[4];
     fStack_38 = afStack_34[5];
     afStack_34[6] = fStack_4c;
-    iVar4 = R_SortGfxAabbTreeChildren(param_1,&fStack_40,&fStack_4c,(ushort *)(uint)uVar1,unaff_EDI)
-    ;
+    iVar4 = R_SortGfxAabbTreeChildren(tree,&fStack_40,&fStack_4c,(ushort *)(uint)uVar1,unaff_EDI);
     puVar11 = (ushort *)((int)(uint)uVar1 - iVar4);
     fStack_4c = afStack_34[0];
     fStack_40 = afStack_34[6];
     fVar19 = afStack_34[0];
-    pGVar21 = param_1;
+    pGVar21 = tree;
     fStack_48 = fVar18;
     fStack_44 = fVar17;
     fStack_3c = fVar14;
     fStack_38 = fVar13;
     aiStack_10[0] = iVar4;
-    iVar5 = R_SortGfxAabbTreeChildren(param_1,&fStack_40,&fStack_4c,puVar11,(int)pGVar20);
+    iVar5 = R_SortGfxAabbTreeChildren(tree,&fStack_40,&fStack_4c,puVar11,(int)pGVar20);
     puVar11 = (ushort *)((int)puVar11 - iVar5);
     fStack_48 = fStack_18;
     fVar15 = fStack_18;
-    pGVar20 = param_1;
+    pGVar20 = tree;
     fStack_4c = fVar19;
     fStack_44 = fVar17;
     fStack_40 = fVar16;
     fStack_3c = fVar14;
     fStack_38 = fVar13;
     aiStack_10[1] = iVar5;
-    aiStack_10[2] = R_SortGfxAabbTreeChildren(param_1,&fStack_40,&fStack_4c,puVar11,(int)pGVar21);
+    aiStack_10[2] = R_SortGfxAabbTreeChildren(tree,&fStack_40,&fStack_4c,puVar11,(int)pGVar21);
     puVar11 = (ushort *)((int)puVar11 - aiStack_10[2]);
     fStack_4c = fVar19;
     fStack_48 = fVar18;
@@ -170,8 +171,8 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
     fStack_40 = fVar16;
     fStack_3c = fVar15;
     fStack_38 = fVar13;
-    puStack_4 = (ushort *)
-                R_SortGfxAabbTreeChildren(param_1,&fStack_40,&fStack_4c,puVar11,(int)pGVar20);
+    puStack_4 = (ushort *)R_SortGfxAabbTreeChildren(tree,&fStack_40,&fStack_4c,puVar11,(int)pGVar20)
+    ;
     iVar4 = (uint)(puStack_4 != (ushort *)0x0) + (uint)(aiStack_10[2] != 0) + (uint)(iVar5 != 0) +
             (uint)(iVar4 != 0);
     if (iVar4 == 0) {
@@ -208,7 +209,7 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
         pGVar12->childCount = pGVar12->childCount + 1;
         pGVar9->smodelIndexCount = (ushort)iVar4;
         pGVar9->smodelIndexes = puVar11;
-        R_SortGfxAabbTree(param_1,pGVar9);
+        R_SortGfxAabbTree(tree,pGVar9);
         puVar11 = puVar11 + iVar4;
         uVar10 = uVar10 - iVar4;
       }
@@ -231,68 +232,70 @@ void __cdecl R_SortGfxAabbTree(GfxWorld *param_1,GfxAabbTree *param_2)
 
 void __cdecl
 R_FilterStaticModelIntoCells_r
-          (GfxWorld *param_1,mnode_t *param_2,GfxStaticModelInst *param_3,float *param_4,
-          float *param_5)
+          (GfxWorld *world,mnode_t *node,GfxStaticModelInst *smodelInst,float *mins,float *maxs)
 
 {
   cplane_s *pcVar1;
-  float fVar2;
-  float fVar3;
+  mnode_t *pmVar2;
+  byte bVar3;
   int iVar4;
   uint uVar5;
   int unaff_EBX;
   GfxStaticModelInst *unaff_ESI;
   GfxWorld *unaff_EDI;
   mnode_t *pmVar6;
-  float afStack_38 [4];
+  mnode_t *rightNode;
+  float fStack_34;
+  float fStack_30;
+  float fStack_2c;
   float fStack_28;
   float fStack_24;
-  float afStack_20 [4];
-  float fStack_10;
-  float fStack_c;
+  mnode_t *pmStack_20;
+  float fStack_1c;
+  float fStack_18;
+  float afStack_14 [4];
   
-  afStack_38[3] = *param_4;
-  fStack_28 = param_4[1];
-  fStack_24 = param_4[2];
-  afStack_38[0] = *param_5;
-  afStack_38[1] = param_5[1];
-  afStack_38[2] = param_5[2];
-  uVar5 = (uint)param_2->cellIndex;
-  iVar4 = uVar5 - (param_1->dpvsPlanes).cellCount;
+  fStack_2c = *mins;
+  fStack_28 = mins[1];
+  fStack_24 = mins[2];
+  rightNode = (mnode_t *)*maxs;
+  fStack_34 = maxs[1];
+  fStack_30 = maxs[2];
+  uVar5 = (uint)node->cellIndex;
+  iVar4 = uVar5 - (world->dpvsPlanes).cellCount;
   while (-1 < iVar4 + -1) {
-    pcVar1 = (param_1->dpvsPlanes).planes + iVar4 + -1;
-    iVar4 = BoxOnPlaneSide(afStack_38 + 3,afStack_38,pcVar1);
+    pcVar1 = (world->dpvsPlanes).planes + iVar4 + -1;
+    iVar4 = BoxOnPlaneSide(&fStack_2c,(float *)&rightNode,pcVar1);
     if (iVar4 == 3) {
-      pmVar6 = (mnode_t *)(&param_2->cellIndex + param_2->rightChildOffset);
+      pmVar6 = (mnode_t *)(&node->cellIndex + node->rightChildOffset);
       if (pcVar1->type < 3) {
-        uVar5 = (uint)pcVar1->type;
-        fVar2 = pcVar1->dist;
-        afStack_20[3] = afStack_38[3];
-        fStack_10 = fStack_28;
-        fStack_c = fStack_24;
-        afStack_20[0] = afStack_38[0];
-        afStack_20[1] = afStack_38[1];
-        afStack_20[2] = afStack_38[2];
-        fVar3 = afStack_38[uVar5];
-        afStack_20[uVar5 + 3] = fVar2;
-        afStack_20[uVar5] = fVar2;
-        if (fVar2 < fVar3) {
-          R_FilterStaticModelIntoCells_r(param_1,param_2 + 1,param_3,afStack_20 + 3,afStack_38);
+        bVar3 = pcVar1->type;
+        pmVar2 = (mnode_t *)pcVar1->dist;
+        afStack_14[0] = fStack_2c;
+        afStack_14[1] = fStack_28;
+        afStack_14[2] = fStack_24;
+        pmStack_20 = rightNode;
+        fStack_1c = fStack_34;
+        fStack_18 = fStack_30;
+        afStack_14[bVar3] = (float)pmVar2;
+        (&pmStack_20)[bVar3] = pmVar2;
+        if ((float)pmVar2 < (float)(&rightNode)[bVar3]) {
+          R_FilterStaticModelIntoCells_r(world,node + 1,smodelInst,afStack_14,(float *)&rightNode);
         }
-        afStack_38[0] = afStack_20[0];
-        afStack_38[1] = afStack_20[1];
-        afStack_38[2] = afStack_20[2];
+        rightNode = pmStack_20;
+        fStack_34 = fStack_1c;
+        fStack_30 = fStack_18;
       }
       else {
-        R_FilterStaticModelIntoCells_r(param_1,param_2 + 1,param_3,afStack_38 + 3,afStack_38);
+        R_FilterStaticModelIntoCells_r(world,node + 1,smodelInst,&fStack_2c,(float *)&rightNode);
       }
     }
     else {
-      pmVar6 = (mnode_t *)(&param_2[1].cellIndex + (param_2->rightChildOffset - 2) * (iVar4 + -1));
+      pmVar6 = (mnode_t *)(&node[1].cellIndex + (node->rightChildOffset - 2) * (iVar4 + -1));
     }
     uVar5 = (uint)pmVar6->cellIndex;
-    param_2 = pmVar6;
-    iVar4 = uVar5 - (param_1->dpvsPlanes).cellCount;
+    node = pmVar6;
+    iVar4 = uVar5 - (world->dpvsPlanes).cellCount;
   }
   if (uVar5 != 0) {
     R_AddStaticModelToCell(unaff_EDI,unaff_ESI,unaff_EBX);
@@ -315,6 +318,7 @@ R_SetStaticModelReflectionProbe
   GfxWorld *unaff_ESI;
   float *unaff_EDI;
   float *pfVar3;
+  GfxStaticModelDrawInst *smodelDrawInst;
   
   pfVar3 = (float *)((*in_EAX + in_EAX[3]) * 0.5);
   iVar1 = R_CellForPoint((GfxWorld *)&stack0xfffffff4,(float *)unaff_EBX);
@@ -332,7 +336,7 @@ R_SetStaticModelReflectionProbe
 // 00865C90  R_CreateStaticModel  (gfx_d3d/r_staticmodel_load_obj.cpp:675)
 
 void __cdecl
-R_CreateStaticModel(XModel *param_1,float *param_2,float (*param_3) [3],float param_4,
+R_CreateStaticModel(XModel *origin,float *scale,float (*smodelInst) [3],float staticModelFlags,
                    GfxStaticModelDrawInst *param_5,GfxStaticModelInst *param_6,uint param_7)
 
 {
@@ -344,13 +348,14 @@ R_CreateStaticModel(XModel *param_1,float *param_2,float (*param_3) [3],float pa
   float *unaff_ESI;
   XModel *unaff_EDI;
   float fVar4;
+  XModel *model;
   
-  fVar3 = *param_2;
-  unaff_ESI[0xe] = (float)param_1;
+  fVar3 = *scale;
+  unaff_ESI[0xe] = (float)origin;
   unaff_ESI[1] = fVar3;
-  unaff_ESI[2] = param_2[1];
-  pfVar1 = (float *)((int)param_4 + 0xc);
-  unaff_ESI[3] = param_2[2];
+  unaff_ESI[2] = scale[1];
+  pfVar1 = (float *)((int)staticModelFlags + 0xc);
+  unaff_ESI[3] = scale[2];
   unaff_ESI[4] = *in_EAX;
   unaff_ESI[5] = in_EAX[1];
   unaff_ESI[6] = in_EAX[2];
@@ -360,20 +365,23 @@ R_CreateStaticModel(XModel *param_1,float *param_2,float (*param_3) [3],float pa
   unaff_ESI[10] = in_EAX[6];
   unaff_ESI[0xb] = in_EAX[7];
   unaff_ESI[0xc] = in_EAX[8];
-  unaff_ESI[0xd] = (float)param_3;
-  R_GetXModelBounds((XModel *)param_4,pfVar1,(float *)unaff_EDI,unaff_EBP);
-  fVar3 = *param_2;
-  *(float *)param_4 = *(float *)param_4 * (float)param_3 + fVar3;
-  fVar2 = param_2[1];
-  *(float *)((int)param_4 + 4) = *(float *)((int)param_4 + 4) * (float)param_3 + fVar2;
-  fVar4 = param_2[2];
-  *(float *)((int)param_4 + 8) = (float)param_3 * *(float *)((int)param_4 + 8) + fVar4;
-  *pfVar1 = *pfVar1 * (float)param_3 + fVar3;
-  *(float *)((int)param_4 + 0x10) = *(float *)((int)param_4 + 0x10) * (float)param_3 + fVar2;
-  fVar4 = *(float *)((int)param_4 + 0x14) * (float)param_3 + fVar4;
-  *(float *)((int)param_4 + 0x14) = fVar4;
+  unaff_ESI[0xd] = (float)smodelInst;
+  R_GetXModelBounds((XModel *)staticModelFlags,pfVar1,(float *)unaff_EDI,unaff_EBP);
+  fVar3 = *scale;
+  *(float *)staticModelFlags = *(float *)staticModelFlags * (float)smodelInst + fVar3;
+  fVar2 = scale[1];
+  *(float *)((int)staticModelFlags + 4) =
+       *(float *)((int)staticModelFlags + 4) * (float)smodelInst + fVar2;
+  fVar4 = scale[2];
+  *(float *)((int)staticModelFlags + 8) =
+       (float)smodelInst * *(float *)((int)staticModelFlags + 8) + fVar4;
+  *pfVar1 = *pfVar1 * (float)smodelInst + fVar3;
+  *(float *)((int)staticModelFlags + 0x10) =
+       *(float *)((int)staticModelFlags + 0x10) * (float)smodelInst + fVar2;
+  fVar4 = *(float *)((int)staticModelFlags + 0x14) * (float)smodelInst + fVar4;
+  *(float *)((int)staticModelFlags + 0x14) = fVar4;
   XModelGetLodOutDist(unaff_EDI);
-  *unaff_ESI = fVar4 * (float)param_3;
+  *unaff_ESI = fVar4 * (float)smodelInst;
   *(undefined1 *)((int)unaff_ESI + 0x4a) = 0;
   unaff_ESI[0xf] = (float)param_5;
   return;

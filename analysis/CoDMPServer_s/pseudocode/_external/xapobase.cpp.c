@@ -2,54 +2,56 @@
 
 // 0097B996  XAPOAllocateWaveFormatExtensibleCopy  (<external>/bt/193462/audio/xaudio2/leap/xapo/source/base/xapobase.cpp:98)
 
-tWAVEFORMATEX * __cdecl XAPOAllocateWaveFormatExtensibleCopy(tWAVEFORMATEX *param_1)
+tWAVEFORMATEX * __cdecl XAPOAllocateWaveFormatExtensibleCopy(tWAVEFORMATEX *pSourceFormat)
 
 {
   SIZE_T cb;
-  tWAVEFORMATEX *ptVar1;
-  uint uVar2;
-  ulong uVar3;
+  tWAVEFORMATEX *dst;
+  uint count;
+  ulong uVar1;
+  uint nSrcByteSize;
   
-  cb = XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(param_1,FmtWriteSize);
+  cb = XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(pSourceFormat,FmtWriteSize);
   if (cb < 0x28) {
     cb = 0x28;
   }
-  ptVar1 = CoTaskMemAlloc(cb);
-  if (ptVar1 != (tWAVEFORMATEX *)0x0) {
-    uVar2 = XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(param_1,FmtReadSize);
-    memcpy((uchar *)ptVar1,(uchar *)param_1,uVar2);
-    memset((uchar *)((int)&ptVar1->wFormatTag + uVar2),'\0',cb - uVar2);
-    if (param_1->wFormatTag != 0xfffe) {
-      ptVar1[1].wFormatTag = param_1->wBitsPerSample;
-      uVar3 = XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(param_1,1);
-      ptVar1->wFormatTag = 0xfffe;
-      *(ulong *)&ptVar1[1].nChannels = uVar3;
-      ptVar1->cbSize = 0x16;
-      *(uint *)((int)&ptVar1[1].nSamplesPerSec + 2) = (uint)param_1->wFormatTag;
-      *(undefined4 *)((int)&ptVar1[1].nAvgBytesPerSec + 2) = 0x100000;
-      *(undefined4 *)&ptVar1[1].wBitsPerSample = 0xaa000080;
-      *(undefined4 *)(ptVar1 + 2) = 0x719b3800;
+  dst = CoTaskMemAlloc(cb);
+  if (dst != (tWAVEFORMATEX *)0x0) {
+    count = XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(pSourceFormat,FmtReadSize);
+    memcpy((uchar *)dst,(uchar *)pSourceFormat,count);
+    memset((uchar *)((int)&dst->wFormatTag + count),'\0',cb - count);
+    if (pSourceFormat->wFormatTag != 0xfffe) {
+      dst[1].wFormatTag = pSourceFormat->wBitsPerSample;
+      uVar1 = XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(pSourceFormat,1);
+      dst->wFormatTag = 0xfffe;
+      *(ulong *)&dst[1].nChannels = uVar1;
+      dst->cbSize = 0x16;
+      *(uint *)((int)&dst[1].nSamplesPerSec + 2) = (uint)pSourceFormat->wFormatTag;
+      *(undefined4 *)((int)&dst[1].nAvgBytesPerSec + 2) = 0x100000;
+      *(undefined4 *)&dst[1].wBitsPerSample = 0xaa000080;
+      *(undefined4 *)(dst + 2) = 0x719b3800;
     }
   }
-  return ptVar1;
+  return dst;
 }
 
 
 // 0097B25A  GetWaveFormatSize  (<external>/bt/193462/audio/shared/wavehlp.cpp:116)
 
-uint __cdecl XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(tWAVEFORMATEX *param_1,WaveFmtSize param_2)
+uint __cdecl
+XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(tWAVEFORMATEX *pFormatSource,WaveFmtSize nAccess)
 
 {
   uint uVar1;
   
-  if (param_1->wFormatTag == 0x165) {
+  if (pFormatSource->wFormatTag == 0x165) {
     uVar1 = 0x20;
   }
-  else if (param_1->wFormatTag == 1) {
-    uVar1 = (uint)(param_2 != FmtReadSize) * 2 + 0x10;
+  else if (pFormatSource->wFormatTag == 1) {
+    uVar1 = (uint)(nAccess != FmtReadSize) * 2 + 0x10;
   }
   else {
-    uVar1 = param_1->cbSize + 0x12;
+    uVar1 = pFormatSource->cbSize + 0x12;
   }
   return uVar1;
 }
@@ -57,10 +59,11 @@ uint __cdecl XAPOBaseWaveHlpNameSpace::GetWaveFormatSize(tWAVEFORMATEX *param_1,
 
 // 0097BA38  CXAPOBase  (<external>/bt/193462/audio/xaudio2/leap/xapo/source/base/xapobase.cpp:154)
 
-CXAPOBase * __thiscall CXAPOBase::CXAPOBase(CXAPOBase *this,XAPO_REGISTRATION_PROPERTIES *param_1)
+CXAPOBase * __thiscall
+CXAPOBase::CXAPOBase(CXAPOBase *this,XAPO_REGISTRATION_PROPERTIES *pRegistrationProperties)
 
 {
-  this->m_pRegistrationProperties = param_1;
+  this->m_pRegistrationProperties = pRegistrationProperties;
   this->m_pfnMatrixMixFunction = (void *)0x0;
   this->m_pfl32MatrixCoefficients = (float *)0x0;
   this->m_nSrcFormatType = 7;
@@ -86,13 +89,13 @@ void __thiscall CXAPOBase::~CXAPOBase(CXAPOBase *this)
 
 // 0097B4B4  ChannelsSpecifiedInMask<unsigned_short>  (<external>/bt/193462/audio/shared/wavehlp.h:197)
 
-ushort __cdecl XAPOBaseWaveHlpNameSpace::ChannelsSpecifiedInMask<unsigned_short>(ushort param_1)
+ushort __cdecl XAPOBaseWaveHlpNameSpace::ChannelsSpecifiedInMask<unsigned_short>(ushort x)
 
 {
   ushort uVar1;
   
   uVar1 = 0;
-  for (; param_1 != 0; param_1 = param_1 & param_1 - 1) {
+  for (; x != 0; x = x & x - 1) {
     uVar1 = uVar1 + 1;
   }
   return uVar1;
@@ -101,13 +104,13 @@ ushort __cdecl XAPOBaseWaveHlpNameSpace::ChannelsSpecifiedInMask<unsigned_short>
 
 // 0097B4CF  ChannelsSpecifiedInMask<unsigned_long>  (<external>/bt/193462/audio/shared/wavehlp.h:197)
 
-ushort __cdecl XAPOBaseWaveHlpNameSpace::ChannelsSpecifiedInMask<unsigned_long>(ulong param_1)
+ushort __cdecl XAPOBaseWaveHlpNameSpace::ChannelsSpecifiedInMask<unsigned_long>(ulong x)
 
 {
   ushort uVar1;
   
   uVar1 = 0;
-  for (; param_1 != 0; param_1 = param_1 & param_1 - 1) {
+  for (; x != 0; x = x & x - 1) {
     uVar1 = uVar1 + 1;
   }
   return uVar1;
@@ -117,124 +120,126 @@ ushort __cdecl XAPOBaseWaveHlpNameSpace::ChannelsSpecifiedInMask<unsigned_long>(
 // 0097B46C  GetRegistrationProperties  (<external>/bt/193462/audio/xaudio2/leap/xapo/source/base/xapobase.cpp:215)
 
 int __thiscall
-CXAPOBase::GetRegistrationProperties(CXAPOBase *this,XAPO_REGISTRATION_PROPERTIES **param_1)
+CXAPOBase::GetRegistrationProperties(CXAPOBase *this,XAPO_REGISTRATION_PROPERTIES **this)
 
 {
-  uchar *puVar1;
-  int iVar2;
+  uchar *dst;
+  int iVar1;
   undefined4 *in_stack_00000008;
   
-  puVar1 = CoTaskMemAlloc(0x42c);
-  iVar2 = (-(uint)(puVar1 != (uchar *)0x0) & 0x7ff8fff2) + 0x8007000e;
-  if (-1 < iVar2) {
-    memcpy(puVar1,(uchar *)param_1[1],0x42c);
-    *in_stack_00000008 = puVar1;
+  dst = CoTaskMemAlloc(0x42c);
+  iVar1 = (-(uint)(dst != (uchar *)0x0) & 0x7ff8fff2) + 0x8007000e;
+  if (-1 < iVar1) {
+    memcpy(dst,(uchar *)this[1],0x42c);
+    *in_stack_00000008 = dst;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
 // 0097BA64  ValidateFormatDefault  (<external>/bt/193462/audio/xaudio2/leap/xapo/source/base/xapobase.cpp:259)
 
-undefined4 __thiscall
-CXAPOBase::ValidateFormatDefault(CXAPOBase *this,tWAVEFORMATEX *param_1,int param_2)
+HRESULT __thiscall
+CXAPOBase::ValidateFormatDefault(CXAPOBase *this,tWAVEFORMATEX *pFormat,int fOverwrite)
 
 {
   ushort uVar1;
   int iVar2;
   ulong uVar3;
-  undefined4 local_8;
+  HRESULT hr;
   
-  local_8 = 0;
-  iVar2 = XAPOBaseWaveHlpNameSpace::IsValidWaveFormat(param_1);
+  hr = 0;
+  iVar2 = XAPOBaseWaveHlpNameSpace::IsValidWaveFormat(pFormat);
   if (iVar2 == 0) {
     return 0x80070057;
   }
-  uVar1 = XAPOBaseWaveHlpNameSpace::TagFromWaveFormat(param_1);
-  if ((uVar1 != 3) && (local_8 = 0x88970001, param_2 != 0)) {
-    if (param_1->wFormatTag == 0xfffe) {
-      *(undefined4 *)((int)&param_1[1].nSamplesPerSec + 2) = 3;
-      *(undefined4 *)((int)&param_1[1].nAvgBytesPerSec + 2) = 0x100000;
-      *(undefined4 *)&param_1[1].wBitsPerSample = 0xaa000080;
-      *(undefined4 *)(param_1 + 2) = 0x719b3800;
+  uVar1 = XAPOBaseWaveHlpNameSpace::TagFromWaveFormat(pFormat);
+  if ((uVar1 != 3) && (hr = -0x7768ffff, fOverwrite != 0)) {
+    if (pFormat->wFormatTag == 0xfffe) {
+      *(undefined4 *)((int)&pFormat[1].nSamplesPerSec + 2) = 3;
+      *(undefined4 *)((int)&pFormat[1].nAvgBytesPerSec + 2) = 0x100000;
+      *(undefined4 *)&pFormat[1].wBitsPerSample = 0xaa000080;
+      *(undefined4 *)(pFormat + 2) = 0x719b3800;
     }
     else {
-      param_1->wFormatTag = 3;
+      pFormat->wFormatTag = 3;
     }
   }
-  if (param_1->nChannels == 0) {
-    local_8 = 0x88970001;
-    if (param_2 == 0) goto LAB_0097bafc;
+  if (pFormat->nChannels == 0) {
+    hr = -0x7768ffff;
+    if (fOverwrite == 0) goto LAB_0097bafc;
     uVar1 = 1;
   }
   else {
-    if ((param_1->nChannels < 0x41) || (local_8 = 0x88970001, param_2 == 0)) goto LAB_0097bafc;
+    if ((pFormat->nChannels < 0x41) || (hr = -0x7768ffff, fOverwrite == 0)) goto LAB_0097bafc;
     uVar1 = 0x40;
   }
-  local_8 = 0x88970001;
-  param_1->nChannels = uVar1;
+  hr = -0x7768ffff;
+  pFormat->nChannels = uVar1;
 LAB_0097bafc:
   uVar3 = 1000;
-  if (((param_1->nSamplesPerSec < 1000) || (uVar3 = 200000, 200000 < param_1->nSamplesPerSec)) &&
-     (local_8 = 0x88970001, param_2 != 0)) {
-    param_1->nSamplesPerSec = uVar3;
+  if (((pFormat->nSamplesPerSec < 1000) || (uVar3 = 200000, 200000 < pFormat->nSamplesPerSec)) &&
+     (hr = -0x7768ffff, fOverwrite != 0)) {
+    pFormat->nSamplesPerSec = uVar3;
   }
-  if ((param_1->wBitsPerSample != 0x20) && (local_8 = 0x88970001, param_2 != 0)) {
-    param_1->wBitsPerSample = 0x20;
+  if ((pFormat->wBitsPerSample != 0x20) && (hr = -0x7768ffff, fOverwrite != 0)) {
+    pFormat->wBitsPerSample = 0x20;
   }
-  if (((param_1->wFormatTag == 0xfffe) && (param_1[1].wFormatTag != 0x20)) &&
-     (local_8 = 0x88970001, param_2 != 0)) {
-    param_1[1].wFormatTag = 0x20;
+  if (((pFormat->wFormatTag == 0xfffe) && (pFormat[1].wFormatTag != 0x20)) &&
+     (hr = -0x7768ffff, fOverwrite != 0)) {
+    pFormat[1].wFormatTag = 0x20;
   }
-  return local_8;
+  return hr;
 }
 
 
 // 0097BB59  ValidateFormatPair  (<external>/bt/193462/audio/xaudio2/leap/xapo/source/base/xapobase.cpp:359)
 
-undefined4 __thiscall
+HRESULT __thiscall
 CXAPOBase::ValidateFormatPair
-          (CXAPOBase *this,tWAVEFORMATEX *param_1,tWAVEFORMATEX *param_2,int param_3)
+          (CXAPOBase *this,tWAVEFORMATEX *pSupportedFormat,tWAVEFORMATEX *pRequestedFormat,
+          int fOverwrite)
 
 {
   ushort uVar1;
-  undefined4 local_8;
+  HRESULT hr;
   
-  local_8 = 0;
+  hr = 0;
   if ((((this->m_pRegistrationProperties->Flags & 1) != 0) &&
-      (param_2->nChannels != param_1->nChannels)) && (local_8 = 0x88970001, param_3 != 0)) {
-    param_2->nChannels = param_1->nChannels;
+      (pRequestedFormat->nChannels != pSupportedFormat->nChannels)) &&
+     (hr = -0x7768ffff, fOverwrite != 0)) {
+    pRequestedFormat->nChannels = pSupportedFormat->nChannels;
   }
   if ((((this->m_pRegistrationProperties->Flags & 2) != 0) &&
-      (param_2->nSamplesPerSec != param_1->nSamplesPerSec)) && (local_8 = 0x88970001, param_3 != 0))
-  {
-    param_2->nSamplesPerSec = param_1->nSamplesPerSec;
+      (pRequestedFormat->nSamplesPerSec != pSupportedFormat->nSamplesPerSec)) &&
+     (hr = -0x7768ffff, fOverwrite != 0)) {
+    pRequestedFormat->nSamplesPerSec = pSupportedFormat->nSamplesPerSec;
   }
   if ((this->m_pRegistrationProperties->Flags & 4) != 0) {
-    if ((param_2->wBitsPerSample != param_1->wBitsPerSample) && (local_8 = 0x88970001, param_3 != 0)
-       ) {
-      param_2->wBitsPerSample = param_1->wBitsPerSample;
+    if ((pRequestedFormat->wBitsPerSample != pSupportedFormat->wBitsPerSample) &&
+       (hr = -0x7768ffff, fOverwrite != 0)) {
+      pRequestedFormat->wBitsPerSample = pSupportedFormat->wBitsPerSample;
     }
-    if (param_1->wFormatTag == 0xfffe) {
-      if (param_2->wFormatTag != 0xfffe) {
-        if (param_2->wBitsPerSample == param_1[1].wFormatTag) {
-          return local_8;
+    if (pSupportedFormat->wFormatTag == 0xfffe) {
+      if (pRequestedFormat->wFormatTag != 0xfffe) {
+        if (pRequestedFormat->wBitsPerSample == pSupportedFormat[1].wFormatTag) {
+          return hr;
         }
         return 0x88970001;
       }
-      uVar1 = param_1[1].wFormatTag;
+      uVar1 = pSupportedFormat[1].wFormatTag;
     }
     else {
-      if (param_2->wFormatTag != 0xfffe) {
-        return local_8;
+      if (pRequestedFormat->wFormatTag != 0xfffe) {
+        return hr;
       }
-      uVar1 = param_1->wBitsPerSample;
+      uVar1 = pSupportedFormat->wBitsPerSample;
     }
-    if ((param_2[1].wFormatTag != uVar1) && (local_8 = 0x88970001, param_3 != 0)) {
-      param_2[1].wFormatTag = uVar1;
+    if ((pRequestedFormat[1].wFormatTag != uVar1) && (hr = -0x7768ffff, fOverwrite != 0)) {
+      pRequestedFormat[1].wFormatTag = uVar1;
     }
   }
-  return local_8;
+  return hr;
 }
 
 
@@ -242,19 +247,20 @@ CXAPOBase::ValidateFormatPair
 
 int __thiscall
 CXAPOBase::IsInputFormatSupported
-          (CXAPOBase *this,tWAVEFORMATEX *param_1,tWAVEFORMATEX *param_2,tWAVEFORMATEX **param_3)
+          (CXAPOBase *this,tWAVEFORMATEX *this_2,tWAVEFORMATEX *pInputFormat,
+          tWAVEFORMATEX **pRequestedOutputFormat)
 
 {
   int iVar1;
   int iVar2;
   undefined4 *in_stack_00000010;
-  uint local_8;
+  int fOverwrite_2;
   
-  iVar1 = (**(code **)(*(int *)param_1 + 0x34))(param_2,0);
+  iVar1 = (**(code **)(*(int *)this_2 + 0x34))(pInputFormat,0);
   if (iVar1 < 0) {
     return 0x80070057;
   }
-  iVar2 = XAPOBaseWaveHlpNameSpace::IsValidWaveFormat((tWAVEFORMATEX *)param_3);
+  iVar2 = XAPOBaseWaveHlpNameSpace::IsValidWaveFormat((tWAVEFORMATEX *)pRequestedOutputFormat);
   if (iVar2 == 0) {
     iVar1 = -0x7ff8ffa9;
   }
@@ -262,46 +268,51 @@ CXAPOBase::IsInputFormatSupported
     return iVar1;
   }
   if (in_stack_00000010 != (undefined4 *)0x0) {
-    param_3 = (tWAVEFORMATEX **)XAPOAllocateWaveFormatExtensibleCopy((tWAVEFORMATEX *)param_3);
-    iVar1 = (-(uint)((tWAVEFORMATEX *)param_3 != (tWAVEFORMATEX *)0x0) & 0x7ff8fff2) + 0x8007000e;
+    pRequestedOutputFormat =
+         (tWAVEFORMATEX **)
+         XAPOAllocateWaveFormatExtensibleCopy((tWAVEFORMATEX *)pRequestedOutputFormat);
+    iVar1 = (-(uint)((tWAVEFORMATEX *)pRequestedOutputFormat != (tWAVEFORMATEX *)0x0) & 0x7ff8fff2)
+            + 0x8007000e;
   }
-  local_8 = (uint)(in_stack_00000010 != (undefined4 *)0x0);
-  if (((iVar1 < 0) || (iVar1 = (**(code **)(*(int *)param_1 + 0x34))(param_3,local_8), iVar1 < 0))
-     || (iVar1 = ValidateFormatPair((CXAPOBase *)param_1,param_2,(tWAVEFORMATEX *)param_3,local_8),
-        iVar1 < 0)) {
-    if (local_8 == 0) {
+  fOverwrite_2 = (int)(in_stack_00000010 != (undefined4 *)0x0);
+  if (((iVar1 < 0) ||
+      (iVar1 = (**(code **)(*(int *)this_2 + 0x34))(pRequestedOutputFormat,fOverwrite_2), iVar1 < 0)
+      ) || (iVar1 = ValidateFormatPair((CXAPOBase *)this_2,pInputFormat,
+                                       (tWAVEFORMATEX *)pRequestedOutputFormat,fOverwrite_2),
+           iVar1 < 0)) {
+    if (fOverwrite_2 == 0) {
       return iVar1;
     }
-    if ((tWAVEFORMATEX *)param_3 == (tWAVEFORMATEX *)0x0) {
+    if ((tWAVEFORMATEX *)pRequestedOutputFormat == (tWAVEFORMATEX *)0x0) {
       return iVar1;
     }
     if (iVar1 == -0x7768ffff) {
-      *in_stack_00000010 = param_3;
+      *in_stack_00000010 = pRequestedOutputFormat;
       return 0x88970001;
     }
   }
-  else if (local_8 == 0) {
+  else if (fOverwrite_2 == 0) {
     return iVar1;
   }
-  CoTaskMemFree(param_3);
+  CoTaskMemFree(pRequestedOutputFormat);
   return iVar1;
 }
 
 
 // 0097B292  TagFromWaveFormat  (<external>/bt/193462/audio/shared/wavehlp.cpp:514)
 
-ushort __cdecl XAPOBaseWaveHlpNameSpace::TagFromWaveFormat(tWAVEFORMATEX *param_1)
+ushort __cdecl XAPOBaseWaveHlpNameSpace::TagFromWaveFormat(tWAVEFORMATEX *pFormat)
 
 {
   ushort uVar1;
   int iVar2;
   
-  uVar1 = param_1->wFormatTag;
+  uVar1 = pFormat->wFormatTag;
   if (uVar1 == 0xfffe) {
-    iVar2 = memcmp((void *)((int)&param_1[1].nAvgBytesPerSec + 2),
+    iVar2 = memcmp((void *)((int)&pFormat[1].nAvgBytesPerSec + 2),
                    &g_guidWaveFormatExtensibleBase.Data2,0xc);
     if (iVar2 == 0) {
-      uVar1 = *(ushort *)((int)&param_1[1].nSamplesPerSec + 2);
+      uVar1 = *(ushort *)((int)&pFormat[1].nSamplesPerSec + 2);
     }
     else {
       uVar1 = 0;
@@ -314,7 +325,7 @@ ushort __cdecl XAPOBaseWaveHlpNameSpace::TagFromWaveFormat(tWAVEFORMATEX *param_
 // 0097B543  ChannelMaskFromWaveFormat  (<external>/bt/193462/audio/shared/wavehlp.cpp:588)
 
 ulong __cdecl
-XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(tWAVEFORMATEX *param_1,int param_2)
+XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(tWAVEFORMATEX *pFormat,int bGenerateIfNecessary)
 
 {
   ushort uVar1;
@@ -322,12 +333,12 @@ XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(tWAVEFORMATEX *param_1,int p
   ushort *puVar3;
   uint uVar4;
   
-  uVar1 = param_1->wFormatTag;
+  uVar1 = pFormat->wFormatTag;
   uVar2 = 0;
   if (uVar1 == 0x165) {
-    uVar4 = (uint)(ushort)param_1->nAvgBytesPerSec;
+    uVar4 = (uint)(ushort)pFormat->nAvgBytesPerSec;
     if (uVar4 != 0) {
-      puVar3 = &param_1[1].nBlockAlign;
+      puVar3 = &pFormat[1].nBlockAlign;
       do {
         uVar2 = uVar2 | *puVar3 & 0xff | (uint)(*puVar3 >> 8);
         puVar3 = puVar3 + 10;
@@ -336,17 +347,17 @@ XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(tWAVEFORMATEX *param_1,int p
     }
   }
   else if ((uVar1 == 0x166) || (uVar1 == 0xfffe)) {
-    uVar2 = *(ulong *)&param_1[1].nChannels;
+    uVar2 = *(ulong *)&pFormat[1].nChannels;
   }
   else {
-    uVar4 = (uint)param_1->nChannels;
+    uVar4 = (uint)pFormat->nChannels;
     if (uVar4 == 1) {
       uVar2 = 4;
     }
     else if (uVar4 == 2) {
       uVar2 = 3;
     }
-    else if (param_2 != 0) {
+    else if (bGenerateIfNecessary != 0) {
       uVar2 = GetPseudoChannelMask(uVar4);
     }
   }
@@ -356,14 +367,14 @@ XAPOBaseWaveHlpNameSpace::ChannelMaskFromWaveFormat(tWAVEFORMATEX *param_1,int p
 
 // 0097B2CC  GetPseudoChannelMask  (<external>/bt/193462/audio/shared/wavehlp.cpp:651)
 
-ulong __cdecl XAPOBaseWaveHlpNameSpace::GetPseudoChannelMask(ulong param_1)
+ulong __cdecl XAPOBaseWaveHlpNameSpace::GetPseudoChannelMask(ulong nChannels)
 
 {
   ulong uVar1;
   
   uVar1 = 0;
-  if (param_1 - 1 < 8) {
-    uVar1 = (&_confh)[param_1];
+  if (nChannels - 1 < 8) {
+    uVar1 = (&_confh)[nChannels];
   }
   return uVar1;
 }
@@ -491,6 +502,7 @@ int __cdecl XAPOBaseWaveHlpNameSpace::IsValidXmaWaveFormat(tWAVEFORMATEX *param_
   int in_EAX;
   byte *pbVar4;
   uint uVar5;
+  ulong dwSampleRate;
   uint local_8;
   
   if (*(ushort *)(in_EAX + 0x10) < 0x20) {
@@ -589,25 +601,25 @@ int __cdecl XAPOBaseWaveHlpNameSpace::IsValidXma2WaveFormat(tWAVEFORMATEX *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl XAPOBaseWaveHlpNameSpace::IsValidWaveFormat(tWAVEFORMATEX *param_1)
+int __cdecl XAPOBaseWaveHlpNameSpace::IsValidWaveFormat(tWAVEFORMATEX *pFormat)
 
 {
   ushort uVar1;
   ushort uVar2;
   uint uVar3;
   tWAVEFORMATEX *ptVar4;
-  uint local_4c;
-  char local_48 [64];
+  int bValid;
+  char szFormat [64];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c = 1;
-  if ((param_1->wFormatTag != 0x165) &&
-     (local_4c = (uint)(param_1->nChannels != 0), param_1->nSamplesPerSec == 0)) {
-    local_4c = 0;
+  bValid = 1;
+  if ((pFormat->wFormatTag != 0x165) &&
+     (bValid = (int)(pFormat->nChannels != 0), pFormat->nSamplesPerSec == 0)) {
+    bValid = 0;
   }
-  ptVar4 = param_1;
-  uVar1 = TagFromWaveFormat(param_1);
+  ptVar4 = pFormat;
+  uVar1 = TagFromWaveFormat(pFormat);
   if (uVar1 == 1) {
     uVar3 = IsValidPcmWaveFormat(ptVar4);
   }
@@ -620,14 +632,14 @@ int __cdecl XAPOBaseWaveHlpNameSpace::IsValidWaveFormat(tWAVEFORMATEX *param_1)
   else {
     if (uVar1 < 0x161) goto LAB_0097b93d;
     if (uVar1 < 0x163) {
-      uVar3 = (uint)(param_1->wBitsPerSample == 0x10);
-      if ((param_1->wFormatTag == 0xfffe) && (param_1[1].wFormatTag != 0x10)) {
+      uVar3 = (uint)(pFormat->wBitsPerSample == 0x10);
+      if ((pFormat->wFormatTag == 0xfffe) && (pFormat[1].wFormatTag != 0x10)) {
         uVar3 = 0;
       }
-      if (param_1->nBlockAlign == 0) {
+      if (pFormat->nBlockAlign == 0) {
         uVar3 = 0;
       }
-      if (param_1->nAvgBytesPerSec == 0) {
+      if (pFormat->nAvgBytesPerSec == 0) {
         uVar3 = 0;
       }
     }
@@ -640,38 +652,39 @@ int __cdecl XAPOBaseWaveHlpNameSpace::IsValidWaveFormat(tWAVEFORMATEX *param_1)
     }
   }
   if (uVar3 == 0) {
-    local_4c = 0;
+    bValid = 0;
   }
 LAB_0097b93d:
-  uVar1 = param_1->wFormatTag;
+  uVar1 = pFormat->wFormatTag;
   if ((uVar1 == 0xfffe) &&
-     ((param_1->cbSize < 0x16 ||
-      ((*(ulong *)&param_1[1].nChannels != 0 &&
-       (uVar2 = ChannelsSpecifiedInMask<unsigned_long>(*(ulong *)&param_1[1].nChannels),
-       uVar2 != param_1->nChannels)))))) {
-    local_4c = 0;
+     ((pFormat->cbSize < 0x16 ||
+      ((*(ulong *)&pFormat[1].nChannels != 0 &&
+       (uVar2 = ChannelsSpecifiedInMask<unsigned_long>(*(ulong *)&pFormat[1].nChannels),
+       uVar2 != pFormat->nChannels)))))) {
+    bValid = 0;
   }
-  if ((local_4c == 0) && (uVar1 != 0x165)) {
-    PrintWaveFormatDetails(param_1,local_48,0x40);
+  if ((bValid == 0) && (uVar1 != 0x165)) {
+    PrintWaveFormatDetails(pFormat,szFormat,0x40);
   }
-  return local_4c;
+  return bValid;
 }
 
 
 // 0097B6F4  PrintWaveFormatDetails  (<external>/bt/193462/audio/shared/wavehlp.cpp:1370)
 
 void __cdecl
-XAPOBaseWaveHlpNameSpace::PrintWaveFormatDetails(tWAVEFORMATEX *param_1,char *param_2,uint param_3)
+XAPOBaseWaveHlpNameSpace::PrintWaveFormatDetails
+          (tWAVEFORMATEX *pFormat,char *pOutputString,uint nOutputStringSize)
 
 {
   ushort uVar1;
   
-  uVar1 = TagFromWaveFormat(param_1);
+  uVar1 = TagFromWaveFormat(pFormat);
   if (uVar1 == 0x165) {
-    StringCbPrintfA(param_2,param_3,"XMA1");
+    StringCbPrintfA(pOutputString,nOutputStringSize,"XMA1");
   }
   else {
-    StringCbPrintfA(param_2,param_3,"%luk%s%s");
+    StringCbPrintfA(pOutputString,nOutputStringSize,"%luk%s%s");
   }
   return;
 }
@@ -679,29 +692,29 @@ XAPOBaseWaveHlpNameSpace::PrintWaveFormatDetails(tWAVEFORMATEX *param_1,char *pa
 
 // 0097B4E9  StringCbPrintfA  (<external>/temp/193462/public.x86fre/internal/win7platformsdk/inc/strsafe.h:4767)
 
-int __cdecl StringCbPrintfA(char *param_1,uint param_2,char *param_3)
+int __cdecl StringCbPrintfA(char *pszDest,uint cbDest,char *pszFormat)
 
 {
-  uint uVar1;
-  int iVar2;
-  uint uVar3;
+  uint count;
+  int iVar1;
+  uint uVar2;
   
-  iVar2 = 0;
-  if ((param_2 == 0) || (0x7fffffff < param_2)) {
-    iVar2 = -0x7ff8ffa9;
+  iVar1 = 0;
+  if ((cbDest == 0) || (0x7fffffff < cbDest)) {
+    iVar1 = -0x7ff8ffa9;
   }
-  if (-1 < iVar2) {
-    uVar1 = param_2 - 1;
-    iVar2 = 0;
-    uVar3 = _vsnprintf(param_1,uVar1,param_3,&stack0x00000010);
-    if (((int)uVar3 < 0) || (uVar1 < uVar3)) {
-      param_1[uVar1] = '\0';
-      iVar2 = -0x7ff8ff86;
+  if (-1 < iVar1) {
+    count = cbDest - 1;
+    iVar1 = 0;
+    uVar2 = _vsnprintf(pszDest,count,pszFormat,&stack0x00000010);
+    if (((int)uVar2 < 0) || (count < uVar2)) {
+      pszDest[count] = '\0';
+      iVar1 = -0x7ff8ff86;
     }
-    else if (uVar3 == uVar1) {
-      param_1[uVar1] = '\0';
+    else if (uVar2 == count) {
+      pszDest[count] = '\0';
     }
   }
-  return iVar2;
+  return iVar1;
 }
 

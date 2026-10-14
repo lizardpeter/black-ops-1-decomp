@@ -5,7 +5,7 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _fstat64i32(int param_1,_stat64i32 *param_2)
+int __cdecl _fstat64i32(int fildes,_stat64i32 *buf)
 
 {
   _stat64i32 *p_Var1;
@@ -21,36 +21,37 @@ int __cdecl _fstat64i32(int param_1,_stat64i32 *param_2)
   _BY_HANDLE_FILE_INFORMATION _Stack_70;
   _SYSTEMTIME _Stack_3c;
   _FILETIME _Stack_2c;
-  int iStack_20;
+  int _Expr_val;
+  int retval;
   undefined4 uStack_c;
   undefined *puStack_8;
   
-  p_Var1 = param_2;
+  p_Var1 = buf;
   puStack_8 = &DAT_00ab93f0;
   uStack_c = 0x974e56;
-  iStack_20 = 0;
-  if (param_2 == (_stat64i32 *)0x0) {
+  retval = 0;
+  if (buf == (_stat64i32 *)0x0) {
     puVar2 = __doserrno();
     *puVar2 = 0;
     piVar3 = _errno();
     *piVar3 = 0x16;
     goto LAB_00974e7b;
   }
-  memset((uchar *)param_2,'\0',0x30);
-  if (param_1 == -2) {
+  memset((uchar *)buf,'\0',0x30);
+  if (fildes == -2) {
     puVar2 = __doserrno();
     *puVar2 = 0;
     piVar3 = _errno();
     *piVar3 = 9;
     return -1;
   }
-  if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-    param_2 = (_stat64i32 *)(&__pioinfo + (param_1 >> 5) * 4);
-    iVar9 = (param_1 & 0x1fU) * 0x40;
-    if ((*(byte *)(param_2->st_dev + 4 + iVar9) & 1) != 0) {
-      __lock_fhandle(param_1);
+  if ((-1 < fildes) && ((uint)fildes < (uint)_nhandle)) {
+    buf = (_stat64i32 *)(&__pioinfo + (fildes >> 5) * 4);
+    iVar9 = (fildes & 0x1fU) * 0x40;
+    if ((*(byte *)(buf->st_dev + 4 + iVar9) & 1) != 0) {
+      __lock_fhandle(fildes);
       puStack_8 = (undefined *)0x0;
-      puVar4 = (undefined4 *)(param_2->st_dev + iVar9);
+      puVar4 = (undefined4 *)(buf->st_dev + iVar9);
       if ((*(byte *)(puVar4 + 1) & 1) == 0) {
 LAB_00974f12:
         piVar3 = _errno();
@@ -71,8 +72,8 @@ LAB_00974f12:
             uVar8 = 0x1000;
           }
           p_Var1->st_mode = uVar8;
-          p_Var1->st_dev = param_1;
-          p_Var1->st_rdev = param_1;
+          p_Var1->st_dev = fildes;
+          p_Var1->st_rdev = fildes;
           p_Var1->st_nlink = 1;
           p_Var1->st_ino = 0;
           p_Var1->st_gid = 0;
@@ -87,9 +88,9 @@ LAB_00974f12:
             p_Var1->st_size = 0;
           }
           else {
-            BVar7 = PeekNamedPipe(*(HANDLE *)(param_2->st_dev + iVar9),(LPVOID)0x0,0,(LPDWORD)0x0,
-                                  (LPDWORD)&param_2,(LPDWORD)0x0);
-            p_Var1->st_size = -(uint)(BVar7 != 0) & (uint)param_2;
+            BVar7 = PeekNamedPipe(*(HANDLE *)(buf->st_dev + iVar9),(LPVOID)0x0,0,(LPDWORD)0x0,
+                                  (LPDWORD)&buf,(LPDWORD)0x0);
+            p_Var1->st_size = -(uint)(BVar7 != 0) & (uint)buf;
           }
           goto LAB_00974f21;
         }
@@ -98,7 +99,7 @@ LAB_00974f12:
         p_Var1->st_uid = 0;
         p_Var1->st_ino = 0;
         p_Var1->st_nlink = 1;
-        BVar7 = GetFileInformationByHandle(*(HANDLE *)(param_2->st_dev + iVar9),&_Stack_70);
+        BVar7 = GetFileInformationByHandle(*(HANDLE *)(buf->st_dev + iVar9),&_Stack_70);
         if (BVar7 != 0) {
           if (((byte)_Stack_70.dwFileAttributes & 1) == 0) {
             uVar8 = p_Var1->st_mode | 0x1b6;
@@ -162,11 +163,11 @@ LAB_00974f5a:
         _dosmaperr(DVar5);
       }
 LAB_00974f1d:
-      iStack_20 = -1;
+      retval = -1;
 LAB_00974f21:
       puStack_8 = (undefined *)0xfffffffe;
       FUN_00975197();
-      return iStack_20;
+      return retval;
     }
   }
   puVar2 = __doserrno();

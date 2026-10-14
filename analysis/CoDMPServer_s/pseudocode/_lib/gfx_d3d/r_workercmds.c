@@ -8,6 +8,7 @@ int __cdecl r_dpvs_entityCallback(jqBatch *param_1)
 
 {
   uint *puVar1;
+  jqBatch *batch;
   
   puVar1 = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -28,18 +29,19 @@ int __cdecl r_dpvs_entityCallback(jqBatch *param_1)
 int __cdecl r_model_skinCallback(jqBatch *param_1)
 
 {
-  uint *puVar1;
+  uint *data;
+  jqBatch *batch;
   
-  puVar1 = param_1->ParamData + 2;
+  data = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
-    puVar1 = param_1->Input;
+    data = param_1->Input;
   }
   if ((*frontEndDataOut->dynamicBufferCurrentFrame != 0) &&
      (*frontEndDataOut->dynamicBufferCurrentFrame < frontEndDataOut->frameCount)) {
     return 1;
   }
   *frontEndDataOut->dynamicBufferCurrentFrame = frontEndDataOut->frameCount;
-  R_SkinXModelCmd(puVar1);
+  R_SkinXModelCmd(data);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
     jqFreeBatchData(param_1->Input);
   }
@@ -58,6 +60,7 @@ int __cdecl r_dpvs_staticCallback(jqBatch *param_1)
   int iVar2;
   uint *puVar3;
   DpvsStaticCellCmd *unaff_EDI;
+  jqBatch *batch;
   
   puVar3 = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -84,6 +87,7 @@ int __cdecl r_dpvs_dynmodelCallback(jqBatch *param_1)
 
 {
   void *unaff_ESI;
+  jqBatch *batch;
   
   R_AddCellDynModelSurfacesInFrustumCmd(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -101,6 +105,7 @@ int __cdecl r_dpvs_sceneentCallback(jqBatch *param_1)
 
 {
   void *unaff_ESI;
+  jqBatch *batch;
   
   R_AddCellSceneEntSurfacesInFrustumCmd(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -118,6 +123,7 @@ int __cdecl r_dpvs_dynbrushCallback(jqBatch *param_1)
 
 {
   void *unaff_ESI;
+  jqBatch *batch;
   
   R_AddCellDynBrushSurfacesInFrustumCmd(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -135,6 +141,7 @@ int __cdecl r_waterCallback(jqBatch *param_1)
 
 {
   void *unaff_ESI;
+  jqBatch *batch;
   
   LOCK();
   UNLOCK();
@@ -163,6 +170,7 @@ int __cdecl r_water_simCallback(jqBatch *param_1)
   jqBatch *pjVar2;
   int iVar3;
   void *unaff_EDI;
+  jqBatch *batch;
   
   pjVar2 = param_1;
   pIVar1 = frontEndDataOut->endFence;
@@ -187,6 +195,7 @@ int __cdecl r_spot_shadow_entCallback(jqBatch *param_1)
 
 {
   void *unaff_ESI;
+  jqBatch *batch;
   
   R_AddSpotShadowEntCmd(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -198,6 +207,7 @@ int __cdecl r_spot_shadow_entCallback(jqBatch *param_1)
 
 // 0083E260  fx_updateCallback  (gfx_d3d/r_workercmds.cpp:619)
 
+/* WARNING: Variable defined which should be unmapped: batch */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 int __cdecl fx_updateCallback(jqBatch *param_1)
@@ -206,7 +216,7 @@ int __cdecl fx_updateCallback(jqBatch *param_1)
   uint *puVar1;
   bool unaff_SI;
   int unaff_EDI;
-  int unaff_retaddr;
+  jqBatch *batch;
   
   puVar1 = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -214,7 +224,7 @@ int __cdecl fx_updateCallback(jqBatch *param_1)
   }
   if ((fx_enable->current).enabled != false) {
     FX_UpdateBatch((FxSystem *)&DAT_00000001,*(FxSystem **)(*(int *)(*puVar1 + 0x35c) + 0x18),
-                   *(int *)(*(int *)(*puVar1 + 0x35c) + 0x1c),unaff_SI,unaff_EDI,unaff_retaddr);
+                   *(int *)(*(int *)(*puVar1 + 0x35c) + 0x1c),unaff_SI,unaff_EDI,(int)batch);
   }
   SetEvent(DAT_01da4984);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -226,6 +236,7 @@ int __cdecl fx_updateCallback(jqBatch *param_1)
 
 // 0083E2D0  fx_update_remainingCallback  (gfx_d3d/r_workercmds.cpp:632)
 
+/* WARNING: Variable defined which should be unmapped: batch */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 int __cdecl fx_update_remainingCallback(jqBatch *param_1)
@@ -235,7 +246,7 @@ int __cdecl fx_update_remainingCallback(jqBatch *param_1)
   int unaff_ESI;
   uint *puVar2;
   undefined1 unaff_DI;
-  int unaff_retaddr;
+  jqBatch *batch;
   
   puVar2 = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -247,8 +258,7 @@ int __cdecl fx_update_remainingCallback(jqBatch *param_1)
   }
   if ((fx_enable->current).enabled != false) {
     FX_UpdateBatch((FxSystem *)0x0,*(FxSystem **)(*(int *)(*puVar2 + 0x35c) + 0x18),
-                   *(int *)(*(int *)(*puVar2 + 0x35c) + 0x1c),(bool)unaff_DI,unaff_ESI,unaff_retaddr
-                  );
+                   *(int *)(*(int *)(*puVar2 + 0x35c) + 0x1c),(bool)unaff_DI,unaff_ESI,(int)batch);
   }
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
     jqFreeBatchData(param_1->Input);
@@ -265,17 +275,18 @@ int __cdecl fx_update_remaining_ppuCallback(jqBatch *param_1)
 
 {
   bool bVar1;
-  FxCmd *pFVar2;
+  FxCmd *cmd;
+  jqBatch *batch;
   
-  pFVar2 = (FxCmd *)(param_1->ParamData + 2);
+  cmd = (FxCmd *)(param_1->ParamData + 2);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
-    pFVar2 = param_1->Input;
+    cmd = param_1->Input;
   }
   bVar1 = jqPoll(&fx_update_remainingModule.Group);
   if (bVar1) {
     return 1;
   }
-  R_ProcessCmd_UpdateFxRemaining(pFVar2);
+  R_ProcessCmd_UpdateFxRemaining(cmd);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
     jqFreeBatchData(param_1->Input);
   }
@@ -292,6 +303,7 @@ int __cdecl fx_drawCallback(jqBatch *param_1)
 {
   DWORD DVar1;
   FxGenerateVertsCmd *unaff_EDI;
+  jqBatch *batch;
   
   if ((*frontEndDataOut->dynamicBufferCurrentFrame != 0) &&
      (*frontEndDataOut->dynamicBufferCurrentFrame < frontEndDataOut->frameCount)) {
@@ -319,6 +331,7 @@ int __cdecl dobj_skelCallback(jqBatch *param_1)
   jqBatch *pjVar1;
   uint *puVar2;
   int unaff_ESI;
+  jqBatch *batch;
   
   pjVar1 = param_1;
   puVar2 = param_1->ParamData + 2;
@@ -343,6 +356,7 @@ int __cdecl dobj_skinCallback(jqBatch *param_1)
 
 {
   void *unaff_ESI;
+  jqBatch *batch;
   
   R_SkinGfxEntityCmd(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -360,6 +374,7 @@ int __cdecl r_model_lightingCallback(jqBatch *param_1)
 
 {
   CalcLightingCmd *unaff_ESI;
+  jqBatch *batch;
   
   R_CalcModelLightingCmd(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -377,6 +392,7 @@ int __cdecl r_add_sceneentCallback(jqBatch *param_1)
 
 {
   GfxViewInfo *unaff_ESI;
+  jqBatch *batch;
   
   R_AddAllSceneEntSurfacesCamera(unaff_ESI);
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -397,6 +413,7 @@ int __cdecl fx_marks_drawCallback(jqBatch *param_1)
   int unaff_ESI;
   GfxLight *unaff_EDI;
   uint *puVar2;
+  jqBatch *batch;
   
   puVar2 = param_1->ParamData + 2;
   if (0x54 < *(uint *)(param_1->ParamData[0] + 4)) {
@@ -427,6 +444,7 @@ int __cdecl fx_update_spotCallback(jqBatch *param_1)
 
 {
   FxCmd *unaff_ESI;
+  jqBatch *batch;
   
   FX_UpdateSpotLight(unaff_ESI);
   SetEvent(_DAT_01da497c);
@@ -445,6 +463,7 @@ int __cdecl r_skin_cached_staticmodelCallback(jqBatch *param_1)
 
 {
   SkinCachedStaticModelCmd *unaff_ESI;
+  jqBatch *batch;
   
   if ((*frontEndDataOut->dynamicBufferCurrentFrame != 0) &&
      (*frontEndDataOut->dynamicBufferCurrentFrame < frontEndDataOut->frameCount)) {

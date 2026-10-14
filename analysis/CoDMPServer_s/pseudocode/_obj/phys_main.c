@@ -1855,17 +1855,17 @@ Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float par
                 float param_7,float param_8)
 
 {
-  rigid_body *prVar1;
-  rigid_body *prVar2;
+  rigid_body *b2;
+  rigid_body *no_error;
   undefined4 *in_EAX;
   rigid_body_constraint_ragdoll *this;
   undefined4 *in_ECX;
+  float fVar1;
+  float fVar2;
   float fVar3;
   float fVar4;
   float fVar5;
   float fVar6;
-  float fVar7;
-  float fVar8;
   phys_vec3 local_70;
   phys_vec3 local_60;
   phys_vec3 local_50;
@@ -1873,46 +1873,40 @@ Phys_CreateHinge(int param_1,int param_2,float *param_3,float *param_4,float par
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  prVar1 = (rigid_body *)*in_EAX;
-  prVar2 = (rigid_body *)*in_ECX;
-  this = phys_sys::create_rbc_ragdoll(prVar1,prVar2,1);
+  b2 = (rigid_body *)*in_EAX;
+  no_error = (rigid_body *)*in_ECX;
+  this = phys_sys::create_rbc_ragdoll(b2,no_error,1);
   if (this == (rigid_body_constraint_ragdoll *)0x0) {
     Com_PrintWarning(0x14,"Physics: Out of hinge joints (%d max)\n",0x100);
     return 0;
   }
-  fVar3 = *(float *)param_1 - (prVar1->m_mat).w.x;
-  fVar6 = *(float *)(param_1 + 4) - (prVar1->m_mat).w.y;
-  fVar7 = *(float *)(param_1 + 8) - (prVar1->m_mat).w.z;
-  local_60.x = (prVar1->m_mat).x.z * fVar7 + (prVar1->m_mat).x.y * fVar6 +
-               (prVar1->m_mat).x.x * fVar3;
-  local_60.y = (prVar1->m_mat).y.z * fVar7 + (prVar1->m_mat).y.y * fVar6 +
-               (prVar1->m_mat).y.x * fVar3;
-  local_60.z = (prVar1->m_mat).z.z * fVar7 + (prVar1->m_mat).z.y * fVar6 +
-               fVar3 * (prVar1->m_mat).z.x;
-  fVar4 = *(float *)param_1 - (prVar2->m_mat).w.x;
-  fVar8 = *(float *)(param_1 + 4) - (prVar2->m_mat).w.y;
-  fVar5 = *(float *)(param_1 + 8) - (prVar2->m_mat).w.z;
-  fVar3 = *(float *)(param_2 + 8);
-  fVar6 = *(float *)param_2;
-  fVar7 = *(float *)(param_2 + 4);
-  local_70.x = (prVar2->m_mat).x.z * fVar5 + (prVar2->m_mat).x.y * fVar8 +
-               (prVar2->m_mat).x.x * fVar4;
-  local_70.y = (prVar2->m_mat).y.z * fVar5 + (prVar2->m_mat).y.y * fVar8 +
-               (prVar2->m_mat).y.x * fVar4;
-  local_70.z = (prVar2->m_mat).z.z * fVar5 + (prVar2->m_mat).z.y * fVar8 +
-               (prVar2->m_mat).z.x * fVar4;
-  local_20.x = (prVar1->m_mat).x.z * fVar3 + (prVar1->m_mat).x.y * fVar7 +
-               (prVar1->m_mat).x.x * fVar6;
-  local_20.y = (prVar1->m_mat).y.z * fVar3 + (prVar1->m_mat).y.y * fVar7 +
-               fVar6 * (prVar1->m_mat).y.x;
-  local_20.z = (prVar1->m_mat).z.z * fVar3 + (prVar1->m_mat).z.y * fVar7 +
-               (prVar1->m_mat).z.x * fVar6;
-  local_30.x = (prVar2->m_mat).x.z * fVar3 + (prVar2->m_mat).x.y * fVar7 +
-               (prVar2->m_mat).x.x * fVar6;
-  local_30.y = (prVar2->m_mat).y.z * fVar3 + (prVar2->m_mat).y.y * fVar7 +
-               (prVar2->m_mat).y.x * fVar6;
-  local_30.z = (prVar2->m_mat).z.z * fVar3 + (prVar2->m_mat).z.y * fVar7 +
-               (prVar2->m_mat).z.x * fVar6;
+  fVar1 = *(float *)param_1 - (b2->m_mat).w.x;
+  fVar4 = *(float *)(param_1 + 4) - (b2->m_mat).w.y;
+  fVar5 = *(float *)(param_1 + 8) - (b2->m_mat).w.z;
+  local_60.x = (b2->m_mat).x.z * fVar5 + (b2->m_mat).x.y * fVar4 + (b2->m_mat).x.x * fVar1;
+  local_60.y = (b2->m_mat).y.z * fVar5 + (b2->m_mat).y.y * fVar4 + (b2->m_mat).y.x * fVar1;
+  local_60.z = (b2->m_mat).z.z * fVar5 + (b2->m_mat).z.y * fVar4 + fVar1 * (b2->m_mat).z.x;
+  fVar2 = *(float *)param_1 - (no_error->m_mat).w.x;
+  fVar6 = *(float *)(param_1 + 4) - (no_error->m_mat).w.y;
+  fVar3 = *(float *)(param_1 + 8) - (no_error->m_mat).w.z;
+  fVar1 = *(float *)(param_2 + 8);
+  fVar4 = *(float *)param_2;
+  fVar5 = *(float *)(param_2 + 4);
+  local_70.x = (no_error->m_mat).x.z * fVar3 + (no_error->m_mat).x.y * fVar6 +
+               (no_error->m_mat).x.x * fVar2;
+  local_70.y = (no_error->m_mat).y.z * fVar3 + (no_error->m_mat).y.y * fVar6 +
+               (no_error->m_mat).y.x * fVar2;
+  local_70.z = (no_error->m_mat).z.z * fVar3 + (no_error->m_mat).z.y * fVar6 +
+               (no_error->m_mat).z.x * fVar2;
+  local_20.x = (b2->m_mat).x.z * fVar1 + (b2->m_mat).x.y * fVar5 + (b2->m_mat).x.x * fVar4;
+  local_20.y = (b2->m_mat).y.z * fVar1 + (b2->m_mat).y.y * fVar5 + fVar4 * (b2->m_mat).y.x;
+  local_20.z = (b2->m_mat).z.z * fVar1 + (b2->m_mat).z.y * fVar5 + (b2->m_mat).z.x * fVar4;
+  local_30.x = (no_error->m_mat).x.z * fVar1 + (no_error->m_mat).x.y * fVar5 +
+               (no_error->m_mat).x.x * fVar4;
+  local_30.y = (no_error->m_mat).y.z * fVar1 + (no_error->m_mat).y.y * fVar5 +
+               (no_error->m_mat).y.x * fVar4;
+  local_30.z = (no_error->m_mat).z.z * fVar1 + (no_error->m_mat).z.y * fVar5 +
+               (no_error->m_mat).z.x * fVar4;
   local_40.x = 1.0;
   local_40.y = 0.0;
   local_40.z = 0.0;
@@ -1939,18 +1933,18 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float *para
 {
   float fVar1;
   float fVar2;
-  rigid_body *prVar3;
-  rigid_body *prVar4;
+  rigid_body *b2;
+  rigid_body *no_error;
   undefined4 *in_EAX;
   undefined4 *in_ECX;
-  phys_mat44 *ppVar5;
-  int iVar6;
+  phys_mat44 *ppVar3;
+  int iVar4;
+  float fVar5;
+  float fVar6;
   float fVar7;
   float fVar8;
   float fVar9;
   float fVar10;
-  float fVar11;
-  float fVar12;
   float local_d8;
   float local_d4;
   phys_vec3 local_d0;
@@ -1963,58 +1957,50 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float *para
   phys_vec3 local_30;
   phys_vec3 local_20;
   
-  prVar3 = (rigid_body *)*in_EAX;
-  prVar4 = (rigid_body *)*in_ECX;
-  local_a4 = phys_sys::create_rbc_ragdoll(prVar3,prVar4,1);
+  b2 = (rigid_body *)*in_EAX;
+  no_error = (rigid_body *)*in_ECX;
+  local_a4 = phys_sys::create_rbc_ragdoll(b2,no_error,1);
   if (local_a4 != (rigid_body_constraint_ragdoll *)0x0) {
-    fVar12 = *(float *)(param_1 + 4) - (prVar3->m_mat).w.y;
-    fVar11 = *(float *)(param_1 + 8) - (prVar3->m_mat).w.z;
-    ppVar5 = &prVar3->m_mat;
-    fVar7 = *(float *)param_1 - (prVar3->m_mat).w.x;
-    local_c0.x = (prVar3->m_mat).x.z * fVar11 + (prVar3->m_mat).x.y * fVar12 + (ppVar5->x).x * fVar7
-    ;
-    local_50.y = (prVar3->m_mat).y.z * fVar11 + (prVar3->m_mat).y.y * fVar12 +
-                 (prVar3->m_mat).y.x * fVar7;
-    local_50.z = (prVar3->m_mat).z.z * fVar11 + (prVar3->m_mat).z.y * fVar12 +
-                 fVar7 * (prVar3->m_mat).z.x;
-    fVar8 = *(float *)param_1 - (prVar4->m_mat).w.x;
-    fVar7 = *param_3;
-    fVar11 = param_3[1];
-    fVar12 = param_3[2];
+    fVar10 = *(float *)(param_1 + 4) - (b2->m_mat).w.y;
+    fVar9 = *(float *)(param_1 + 8) - (b2->m_mat).w.z;
+    ppVar3 = &b2->m_mat;
+    fVar5 = *(float *)param_1 - (b2->m_mat).w.x;
+    local_c0.x = (b2->m_mat).x.z * fVar9 + (b2->m_mat).x.y * fVar10 + (ppVar3->x).x * fVar5;
+    local_50.y = (b2->m_mat).y.z * fVar9 + (b2->m_mat).y.y * fVar10 + (b2->m_mat).y.x * fVar5;
+    local_50.z = (b2->m_mat).z.z * fVar9 + (b2->m_mat).z.y * fVar10 + fVar5 * (b2->m_mat).z.x;
+    fVar6 = *(float *)param_1 - (no_error->m_mat).w.x;
+    fVar5 = *param_3;
+    fVar9 = param_3[1];
+    fVar10 = param_3[2];
     fVar1 = param_3[3];
     fVar2 = param_3[4];
-    fVar9 = *(float *)(param_1 + 4) - (prVar4->m_mat).w.y;
-    fVar10 = *(float *)(param_1 + 8) - (prVar4->m_mat).w.z;
-    local_20.x = (prVar4->m_mat).x.z * fVar10 + (prVar4->m_mat).x.y * fVar9 +
-                 fVar8 * (prVar4->m_mat).x.x;
-    local_20.y = (prVar4->m_mat).y.z * fVar10 + (prVar4->m_mat).y.y * fVar9 +
-                 fVar8 * (prVar4->m_mat).y.x;
-    local_20.z = (prVar4->m_mat).z.z * fVar10 + (prVar4->m_mat).z.y * fVar9 +
-                 (prVar4->m_mat).z.x * fVar8;
-    local_40.x = (prVar3->m_mat).x.z * fVar12 + (prVar3->m_mat).x.y * fVar11 + (ppVar5->x).x * fVar7
-    ;
-    local_c0.y = (prVar3->m_mat).y.z * fVar12 + (prVar3->m_mat).y.y * fVar11 +
-                 (prVar3->m_mat).y.x * fVar7;
-    local_40.z = (prVar3->m_mat).z.z * fVar12 + (prVar3->m_mat).z.y * fVar11 +
-                 (prVar3->m_mat).z.x * fVar7;
-    local_30.x = (prVar4->m_mat).x.z * fVar12 + (prVar4->m_mat).x.y * fVar11 +
-                 (prVar4->m_mat).x.x * fVar7;
-    local_30.y = (prVar4->m_mat).y.z * fVar12 + (prVar4->m_mat).y.y * fVar11 +
-                 (prVar4->m_mat).y.x * fVar7;
-    fVar8 = param_3[5];
-    local_30.z = (prVar4->m_mat).z.z * fVar12 + (prVar4->m_mat).z.y * fVar11 +
-                 (prVar4->m_mat).z.x * fVar7;
-    local_d0.x = (prVar3->m_mat).x.z * fVar8 + (prVar3->m_mat).x.y * fVar2 + (ppVar5->x).x * fVar1;
-    local_d0.y = (prVar3->m_mat).y.z * fVar8 + (prVar3->m_mat).y.y * fVar2 +
-                 (prVar3->m_mat).y.x * fVar1;
-    local_d0.z = (prVar3->m_mat).z.z * fVar8 + (prVar3->m_mat).z.y * fVar2 +
-                 (prVar3->m_mat).z.x * fVar1;
-    local_a0.x = (prVar4->m_mat).x.z * fVar8 + (prVar4->m_mat).x.y * fVar2 +
-                 (prVar4->m_mat).x.x * fVar1;
-    local_a0.y = (prVar4->m_mat).y.z * fVar8 + (prVar4->m_mat).y.y * fVar2 +
-                 (prVar4->m_mat).y.x * fVar1;
-    local_a0.z = (prVar4->m_mat).z.z * fVar8 + (prVar4->m_mat).z.y * fVar2 +
-                 (prVar4->m_mat).z.x * fVar1;
+    fVar7 = *(float *)(param_1 + 4) - (no_error->m_mat).w.y;
+    fVar8 = *(float *)(param_1 + 8) - (no_error->m_mat).w.z;
+    local_20.x = (no_error->m_mat).x.z * fVar8 + (no_error->m_mat).x.y * fVar7 +
+                 fVar6 * (no_error->m_mat).x.x;
+    local_20.y = (no_error->m_mat).y.z * fVar8 + (no_error->m_mat).y.y * fVar7 +
+                 fVar6 * (no_error->m_mat).y.x;
+    local_20.z = (no_error->m_mat).z.z * fVar8 + (no_error->m_mat).z.y * fVar7 +
+                 (no_error->m_mat).z.x * fVar6;
+    local_40.x = (b2->m_mat).x.z * fVar10 + (b2->m_mat).x.y * fVar9 + (ppVar3->x).x * fVar5;
+    local_c0.y = (b2->m_mat).y.z * fVar10 + (b2->m_mat).y.y * fVar9 + (b2->m_mat).y.x * fVar5;
+    local_40.z = (b2->m_mat).z.z * fVar10 + (b2->m_mat).z.y * fVar9 + (b2->m_mat).z.x * fVar5;
+    local_30.x = (no_error->m_mat).x.z * fVar10 + (no_error->m_mat).x.y * fVar9 +
+                 (no_error->m_mat).x.x * fVar5;
+    local_30.y = (no_error->m_mat).y.z * fVar10 + (no_error->m_mat).y.y * fVar9 +
+                 (no_error->m_mat).y.x * fVar5;
+    fVar6 = param_3[5];
+    local_30.z = (no_error->m_mat).z.z * fVar10 + (no_error->m_mat).z.y * fVar9 +
+                 (no_error->m_mat).z.x * fVar5;
+    local_d0.x = (b2->m_mat).x.z * fVar6 + (b2->m_mat).x.y * fVar2 + (ppVar3->x).x * fVar1;
+    local_d0.y = (b2->m_mat).y.z * fVar6 + (b2->m_mat).y.y * fVar2 + (b2->m_mat).y.x * fVar1;
+    local_d0.z = (b2->m_mat).z.z * fVar6 + (b2->m_mat).z.y * fVar2 + (b2->m_mat).z.x * fVar1;
+    local_a0.x = (no_error->m_mat).x.z * fVar6 + (no_error->m_mat).x.y * fVar2 +
+                 (no_error->m_mat).x.x * fVar1;
+    local_a0.y = (no_error->m_mat).y.z * fVar6 + (no_error->m_mat).y.y * fVar2 +
+                 (no_error->m_mat).y.x * fVar1;
+    local_a0.z = (no_error->m_mat).z.z * fVar6 + (no_error->m_mat).z.y * fVar2 +
+                 (no_error->m_mat).z.x * fVar1;
     local_50.x = local_c0.x;
     local_40.y = local_c0.y;
     rigid_body_constraint_ragdoll::set(local_a4,&local_50,&local_20);
@@ -2034,28 +2020,28 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float *para
     local_a0.z = -local_d0.z;
     rigid_body_constraint_ragdoll::set_swivel
               (local_a4,&local_40,&local_30,&local_a0,&local_c0,local_d8,local_d4);
-    iVar6 = 1;
+    iVar4 = 1;
     if (1 < param_2) {
       do {
-        fVar7 = param_5[iVar6];
-        fVar11 = *(float *)(param_4 + iVar6 * 4);
+        fVar5 = param_5[iVar4];
+        fVar9 = *(float *)(param_4 + iVar4 * 4);
         local_90.x.y = param_3[1];
         local_90.x.z = param_3[2];
         local_90.x.x = *param_3;
-        local_c0.x = (prVar3->m_mat).x.z * local_90.x.z + (prVar3->m_mat).x.y * local_90.x.y +
-                     (ppVar5->x).x * local_90.x.x;
-        local_c0.y = (prVar3->m_mat).y.z * local_90.x.z + (prVar3->m_mat).y.y * local_90.x.y +
-                     local_90.x.x * (prVar3->m_mat).y.x;
-        local_c0.z = (prVar3->m_mat).z.z * local_90.x.z + (prVar3->m_mat).z.y * local_90.x.y +
-                     local_90.x.x * (prVar3->m_mat).z.x;
+        local_c0.x = (b2->m_mat).x.z * local_90.x.z + (b2->m_mat).x.y * local_90.x.y +
+                     (ppVar3->x).x * local_90.x.x;
+        local_c0.y = (b2->m_mat).y.z * local_90.x.z + (b2->m_mat).y.y * local_90.x.y +
+                     local_90.x.x * (b2->m_mat).y.x;
+        local_c0.z = (b2->m_mat).z.z * local_90.x.z + (b2->m_mat).z.y * local_90.x.y +
+                     local_90.x.x * (b2->m_mat).z.x;
         local_90.y.x = param_3[3];
         local_90.y.y = param_3[4];
         local_90.y.z = param_3[5];
         local_90.z.x = param_3[6];
         local_90.z.y = param_3[7];
         local_90.z.z = param_3[8];
-        phys_inv_multiply_mat(&local_90,ppVar5,&local_90);
-        if (iVar6 == 1) {
+        phys_inv_multiply_mat(&local_90,ppVar3,&local_90);
+        if (iVar4 == 1) {
           local_d0.x = local_90.y.x;
           local_d0.y = local_90.y.y;
           local_d0.z = local_90.y.z;
@@ -2065,10 +2051,10 @@ Phys_CreateSwivel(int param_1,int param_2,float *param_3,int param_4,float *para
           local_d0.y = local_90.z.y;
           local_d0.z = local_90.z.z;
         }
-        make_rotate(&local_90,&local_d0,fVar11 + fVar7,DAT_00af3690);
-        rigid_body_constraint_ragdoll::add_joint_limit(local_a4,&local_c0,(fVar7 - fVar11) * 0.5);
-        iVar6 = iVar6 + 1;
-      } while (iVar6 < param_2);
+        make_rotate(&local_90,&local_d0,fVar9 + fVar5,DAT_00af3690);
+        rigid_body_constraint_ragdoll::add_joint_limit(local_a4,&local_c0,(fVar5 - fVar9) * 0.5);
+        iVar4 = iVar4 + 1;
+      } while (iVar4 < param_2);
     }
     return (int)local_a4;
   }
@@ -2174,17 +2160,17 @@ void __thiscall phys_free_list<PhysObjUserData>::remove_all(phys_free_list<PhysO
 {
   int *piVar1;
   int iVar2;
-  undefined *puVar3;
+  undefined *size;
   
   if ((undefined **)PTR_physGlob_00aeeaac != &physGlob) {
     do {
-      puVar3 = PTR_physGlob_00aeeaac;
+      size = PTR_physGlob_00aeeaac;
       DAT_00aeeab0 = DAT_00aeeab0 + -1;
       piVar1 = *(int **)(PTR_physGlob_00aeeaac + 4);
       iVar2 = *(int *)PTR_physGlob_00aeeaac;
       *(int **)(iVar2 + 4) = piVar1;
       *piVar1 = iVar2;
-      PMM_FREE(puVar3,0x140,0x10);
+      PMM_FREE(size,0x140,0x10);
     } while ((undefined **)PTR_physGlob_00aeeaac != &physGlob);
   }
   return;
@@ -2200,17 +2186,17 @@ void __thiscall phys_free_list<RagdollBody>::remove_all(phys_free_list<RagdollBo
 {
   int *piVar1;
   int iVar2;
-  undefined *puVar3;
+  undefined *size;
   
   if ((undefined **)PTR_g_ragdoll_body_pool_00aeeb3c != &g_ragdoll_body_pool) {
     do {
-      puVar3 = PTR_g_ragdoll_body_pool_00aeeb3c;
+      size = PTR_g_ragdoll_body_pool_00aeeb3c;
       DAT_00aeeb40 = DAT_00aeeb40 + -1;
       piVar1 = *(int **)(PTR_g_ragdoll_body_pool_00aeeb3c + 4);
       iVar2 = *(int *)PTR_g_ragdoll_body_pool_00aeeb3c;
       *(int **)(iVar2 + 4) = piVar1;
       *piVar1 = iVar2;
-      PMM_FREE(puVar3,0xa2c,4);
+      PMM_FREE(size,0xa2c,4);
     } while ((undefined **)PTR_g_ragdoll_body_pool_00aeeb3c != &g_ragdoll_body_pool);
   }
   return;
@@ -2227,17 +2213,17 @@ void __thiscall phys_free_list<VehicleParameter>::remove_all(phys_free_list<Vehi
 {
   int *piVar1;
   int iVar2;
-  undefined *puVar3;
+  undefined *size;
   
   if ((undefined **)PTR_g_VehicleParameters_00aeeb24 != &g_VehicleParameters) {
     do {
-      puVar3 = PTR_g_VehicleParameters_00aeeb24;
+      size = PTR_g_VehicleParameters_00aeeb24;
       _DAT_00aeeb28 = _DAT_00aeeb28 + -1;
       piVar1 = *(int **)(PTR_g_VehicleParameters_00aeeb24 + 4);
       iVar2 = *(int *)PTR_g_VehicleParameters_00aeeb24;
       *(int **)(iVar2 + 4) = piVar1;
       *piVar1 = iVar2;
-      PMM_FREE(puVar3,300,4);
+      PMM_FREE(size,300,4);
     } while ((undefined **)PTR_g_VehicleParameters_00aeeb24 != &g_VehicleParameters);
   }
   return;
@@ -2254,17 +2240,17 @@ void __thiscall phys_free_list<NitrousVehicle>::remove_all(phys_free_list<Nitrou
 {
   int *piVar1;
   int iVar2;
-  undefined *puVar3;
+  undefined *size;
   
   if ((undefined **)PTR_g_rb_vehicle_list_00aeeb30 != &g_rb_vehicle_list) {
     do {
-      puVar3 = PTR_g_rb_vehicle_list_00aeeb30;
+      size = PTR_g_rb_vehicle_list_00aeeb30;
       _DAT_00aeeb34 = _DAT_00aeeb34 + -1;
       piVar1 = *(int **)(PTR_g_rb_vehicle_list_00aeeb30 + 4);
       iVar2 = *(int *)PTR_g_rb_vehicle_list_00aeeb30;
       *(int **)(iVar2 + 4) = piVar1;
       *piVar1 = iVar2;
-      PMM_FREE(puVar3,0x450,0x10);
+      PMM_FREE(size,0x450,0x10);
     } while ((undefined **)PTR_g_rb_vehicle_list_00aeeb30 != &g_rb_vehicle_list);
   }
   return;

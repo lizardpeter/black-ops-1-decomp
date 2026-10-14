@@ -22,7 +22,7 @@ void __cdecl _dynamic_initializer_for__TRACKINST_g_FM_BurnData__(void)
 
 // 0041C770  AddBurnCell  (bgame/bg_fire.cpp:128)
 
-void __cdecl AddBurnCell(float *param_1)
+void __cdecl AddBurnCell(float *pos)
 
 {
   int iVar1;
@@ -34,54 +34,55 @@ void __cdecl AddBurnCell(float *param_1)
   int local_60;
   int local_5c;
   int local_58;
-  int local_8;
+  int volume;
+  int i;
   
-  iVar2 = (int)*param_1;
-  iVar1 = (int)param_1[1];
-  iVar3 = (int)param_1[2];
+  iVar2 = (int)*pos;
+  iVar1 = (int)pos[1];
+  iVar3 = (int)pos[2];
   if (g_FM_BurnDataActiveCount != 0x1000) {
-    for (local_8 = 0; local_8 < g_FM_BurnDataActiveCount; local_8 = local_8 + 1) {
-      if ((((g_FM_BurnData[local_8].min[0] <= iVar2) && (iVar2 < g_FM_BurnData[local_8].max[0])) &&
-          (g_FM_BurnData[local_8].min[1] <= iVar1)) &&
-         (((iVar1 < g_FM_BurnData[local_8].max[1] && (g_FM_BurnData[local_8].min[2] <= iVar3)) &&
-          (iVar3 < g_FM_BurnData[local_8].max[2])))) {
+    for (i = 0; i < g_FM_BurnDataActiveCount; i = i + 1) {
+      if ((((g_FM_BurnData[i].min[0] <= iVar2) && (iVar2 < g_FM_BurnData[i].max[0])) &&
+          (g_FM_BurnData[i].min[1] <= iVar1)) &&
+         (((iVar1 < g_FM_BurnData[i].max[1] && (g_FM_BurnData[i].min[2] <= iVar3)) &&
+          (iVar3 < g_FM_BurnData[i].max[2])))) {
         return;
       }
     }
-    for (local_8 = 0; local_8 < g_FM_BurnDataActiveCount; local_8 = local_8 + 1) {
+    for (i = 0; i < g_FM_BurnDataActiveCount; i = i + 1) {
       local_58 = iVar2 + 0x20;
-      if (local_58 <= g_FM_BurnData[local_8].max[0]) {
-        local_58 = g_FM_BurnData[local_8].max[0];
+      if (local_58 <= g_FM_BurnData[i].max[0]) {
+        local_58 = g_FM_BurnData[i].max[0];
       }
       local_5c = iVar1 + 0x20;
-      if (local_5c <= g_FM_BurnData[local_8].max[1]) {
-        local_5c = g_FM_BurnData[local_8].max[1];
+      if (local_5c <= g_FM_BurnData[i].max[1]) {
+        local_5c = g_FM_BurnData[i].max[1];
       }
       local_60 = iVar3 + 0x20;
-      if (local_60 <= g_FM_BurnData[local_8].max[2]) {
-        local_60 = g_FM_BurnData[local_8].max[2];
+      if (local_60 <= g_FM_BurnData[i].max[2]) {
+        local_60 = g_FM_BurnData[i].max[2];
       }
       local_64 = iVar2;
-      if (g_FM_BurnData[local_8].min[0] <= iVar2) {
-        local_64 = g_FM_BurnData[local_8].min[0];
+      if (g_FM_BurnData[i].min[0] <= iVar2) {
+        local_64 = g_FM_BurnData[i].min[0];
       }
       local_68 = iVar1;
-      if (g_FM_BurnData[local_8].min[1] <= iVar1) {
-        local_68 = g_FM_BurnData[local_8].min[1];
+      if (g_FM_BurnData[i].min[1] <= iVar1) {
+        local_68 = g_FM_BurnData[i].min[1];
       }
       local_6c = iVar3;
-      if (g_FM_BurnData[local_8].min[2] <= iVar3) {
-        local_6c = g_FM_BurnData[local_8].min[2];
+      if (g_FM_BurnData[i].min[2] <= iVar3) {
+        local_6c = g_FM_BurnData[i].min[2];
       }
       if ((local_58 - local_64) * (local_5c - local_68) * (local_60 - local_6c) ==
-          g_FM_BurnData[local_8].volume + 0x8000) {
-        g_FM_BurnData[local_8].volume = g_FM_BurnData[local_8].volume + 0x8000;
-        g_FM_BurnData[local_8].max[0] = local_58;
-        g_FM_BurnData[local_8].max[1] = local_5c;
-        g_FM_BurnData[local_8].max[2] = local_60;
-        g_FM_BurnData[local_8].min[0] = local_64;
-        g_FM_BurnData[local_8].min[1] = local_68;
-        g_FM_BurnData[local_8].min[2] = local_6c;
+          g_FM_BurnData[i].volume + 0x8000) {
+        g_FM_BurnData[i].volume = g_FM_BurnData[i].volume + 0x8000;
+        g_FM_BurnData[i].max[0] = local_58;
+        g_FM_BurnData[i].max[1] = local_5c;
+        g_FM_BurnData[i].max[2] = local_60;
+        g_FM_BurnData[i].min[0] = local_64;
+        g_FM_BurnData[i].min[1] = local_68;
+        g_FM_BurnData[i].min[2] = local_6c;
         return;
       }
     }
@@ -100,102 +101,108 @@ void __cdecl AddBurnCell(float *param_1)
 
 // 0041BA20  HalfFromFloat  (bgame/bg_fire.cpp:203)
 
-ushort __cdecl HalfFromFloat(float param_1)
+ushort __cdecl HalfFromFloat(float floatIn)
 
 {
   code *pcVar1;
-  bool bVar2;
-  ushort uVar3;
-  int iVar4;
-  uint uVar5;
-  ushort local_8;
+  ushort uVar2;
+  bool bVar3;
+  ushort uVar4;
+  int iVar5;
+  uint uVar6;
+  int a;
+  int m;
+  int e;
+  int s;
+  uint res;
   
-  local_8 = (ushort)((uint)param_1 >> 0x10) & 0x8000;
-  iVar4 = ((uint)param_1 >> 0x17 & 0xff) - 0x70;
-  uVar5 = (uint)param_1 & 0x7fffff;
-  if (iVar4 < 1) {
-    if (iVar4 < -10) {
-      local_8 = 0;
+  uVar4 = (ushort)((uint)floatIn >> 0x10) & 0x8000;
+  iVar5 = ((uint)floatIn >> 0x17 & 0xff) - 0x70;
+  uVar6 = (uint)floatIn & 0x7fffff;
+  if (iVar5 < 1) {
+    if (iVar5 < -10) {
+      res._0_2_ = 0;
     }
     else {
-      local_8 = (ushort)(((int)(uVar5 | 0x800000) >> (1U - (char)iVar4 & 0x1f)) >> 0xd) | local_8;
+      res._0_2_ = (ushort)(((int)(uVar6 | 0x800000) >> (1U - (char)iVar5 & 0x1f)) >> 0xd) | uVar4;
     }
   }
   else {
-    uVar3 = (ushort)((int)uVar5 >> 0xd);
-    if (iVar4 == 0x8f) {
-      if (uVar5 == 0) {
-        local_8 = local_8 | 0x7c00;
+    uVar2 = (ushort)((int)uVar6 >> 0xd);
+    if (iVar5 == 0x8f) {
+      if (uVar6 == 0) {
+        res._0_2_ = uVar4 | 0x7c00;
       }
       else {
-        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_fire.cpp",0xeb,0,
+        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_fire.cpp",0xeb,0,
                                  "%s\n\t(floatIn) = %g");
-        if (!bVar2) {
+        if (!bVar3) {
           pcVar1 = (code *)swi(3);
-          uVar3 = (*pcVar1)();
-          return uVar3;
+          uVar4 = (*pcVar1)();
+          return uVar4;
         }
-        local_8 = local_8 | 0x7c00 | uVar3 | (ushort)((int)uVar5 >> 0xd == 0);
+        res._0_2_ = uVar4 | 0x7c00 | uVar2 | (ushort)((int)uVar6 >> 0xd == 0);
       }
     }
-    else if (iVar4 < 0x1f) {
-      local_8 = (short)iVar4 * 0x400 | local_8 | uVar3;
+    else if (iVar5 < 0x1f) {
+      res._0_2_ = (short)iVar5 * 0x400 | uVar4 | uVar2;
     }
     else {
-      local_8 = local_8 | 0x7c00;
+      res._0_2_ = uVar4 | 0x7c00;
     }
   }
-  return local_8;
+  return (ushort)res;
 }
 
 
 // 0041CAE0  MemFile_WriteInt  (universal/memfile.h:204)
 
-void __cdecl MemFile_WriteInt(MemoryFile *param_1,int param_2)
+void __cdecl MemFile_WriteInt(MemoryFile *memFile,int value)
 
 {
-  if (0x7ff7 < param_1->cacheBufferUsed + 4U) {
-    MemFile_WriteDataFlushInternal(param_1);
+  if (0x7ff7 < memFile->cacheBufferUsed + 4U) {
+    MemFile_WriteDataFlushInternal(memFile);
   }
-  param_1->cacheBuffer[param_1->cacheBufferUsed] = (uchar)param_2;
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 1] = (uchar)((uint)param_2 >> 8);
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 2] = (uchar)((uint)param_2 >> 0x10);
-  param_1->cacheBuffer[param_1->cacheBufferUsed + 3] = (uchar)((uint)param_2 >> 0x18);
-  param_1->cacheBufferUsed = param_1->cacheBufferUsed + 4;
+  memFile->cacheBuffer[memFile->cacheBufferUsed] = (uchar)value;
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 1] = (uchar)((uint)value >> 8);
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 2] = (uchar)((uint)value >> 0x10);
+  memFile->cacheBuffer[memFile->cacheBufferUsed + 3] = (uchar)((uint)value >> 0x18);
+  memFile->cacheBufferUsed = memFile->cacheBufferUsed + 4;
   return;
 }
 
 
 // 0041BB90  FloatFromHalf  (bgame/bg_fire.cpp:258)
 
-float __cdecl FloatFromHalf(ushort param_1)
+float __cdecl FloatFromHalf(ushort halfIn)
 
 {
   int iVar1;
-  uint local_14;
-  uint local_10;
+  int m;
+  int e;
+  int s;
   
-  iVar1 = (int)(uint)param_1 >> 0xf;
-  local_10 = (int)(uint)param_1 >> 10 & 0x1f;
-  local_14 = param_1 & 0x3ff;
-  if (local_10 == 0) {
-    local_10 = 0;
-    if ((param_1 & 0x3ff) == 0) {
+  iVar1 = (int)(uint)halfIn >> 0xf;
+  e = (int)(uint)halfIn >> 10 & 0x1f;
+  m = halfIn & 0x3ff;
+  if (e == 0) {
+    e = 0;
+    if ((halfIn & 0x3ff) == 0) {
       return (float)(iVar1 << 0x1f);
     }
-    for (; (local_14 & 0x400) == 0; local_14 = local_14 << 1) {
-      local_10 = local_10 + -1;
+    for (; (m & 0x400U) == 0; m = m << 1) {
+      e = e + -1;
     }
-    local_10 = local_10 + 1;
-    local_14 = local_14 & 0xfffffbff;
+    e = e + 1;
+    m = m & 0xfffffbff;
   }
-  else if (local_10 == 0x1f) {
-    if ((param_1 & 0x3ff) == 0) {
+  else if (e == 0x1f) {
+    if ((halfIn & 0x3ff) == 0) {
       return (float)(iVar1 << 0x1f | 0x7f800000);
     }
-    return (float)(iVar1 << 0x1f | 0x7f800000U | local_14 << 0xd);
+    return (float)(iVar1 << 0x1f | 0x7f800000U | m << 0xd);
   }
-  return (float)(iVar1 << 0x1f | (local_10 + 0x70) * 0x800000 | local_14 << 0xd);
+  return (float)(iVar1 << 0x1f | (e + 0x70) * 0x800000 | m << 0xd);
 }
 
 
@@ -204,6 +211,8 @@ float __cdecl FloatFromHalf(ushort param_1)
 void __cdecl BG_Flame_RegisterDvars(void)
 
 {
+  ushort defaultDvarFlags;
+  
   fire_audio_repeat_duration =
        _Dvar_RegisterInt("fire_audio_repeat_duration",0x5dc,0,10000,0x1000,
                          "The duration in msec in between player fire hurt sounds");
@@ -238,23 +247,23 @@ void __cdecl BG_InitFire(void)
 
 {
   FxEffectDef *pFVar1;
-  char local_10c [256];
+  char fx_name [256];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   gLastBurnParticleSpawnTime = 0;
   if (!gFireInited) {
     gFireInited = true;
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      sprintf(local_10c,"misc/fx_fire_manager%i_1sec");
-      pFVar1 = FX_Register(local_10c);
-      g_FM_fx_flamethrower_effect[local_8] = pFVar1;
+    for (i = 0; i < 3; i = i + 1) {
+      sprintf(fx_name,"misc/fx_fire_manager%i_1sec");
+      pFVar1 = FX_Register(fx_name);
+      g_FM_fx_flamethrower_effect[i] = pFVar1;
     }
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      sprintf(local_10c,"misc/fx_fire_fthrow_vert_short_2sec");
-      pFVar1 = FX_Register(local_10c);
-      g_FM_fx_wall_effect[local_8] = pFVar1;
+    for (i = 0; i < 1; i = i + 1) {
+      sprintf(fx_name,"misc/fx_fire_fthrow_vert_short_2sec");
+      pFVar1 = FX_Register(fx_name);
+      g_FM_fx_wall_effect[i] = pFVar1;
     }
   }
   BG_ResetFire();
@@ -288,13 +297,14 @@ void __cdecl BG_ResetFire(void)
 
 // 0041B440  TerrainScorch_AllowSurfacesCallback  (bgame/bg_fire.cpp:400)
 
-int __cdecl TerrainScorch_AllowSurfacesCallback(int param_1,void *param_2)
+int __cdecl TerrainScorch_AllowSurfacesCallback(int surfIndex,void *__formal)
 
 {
   Material *pMVar1;
   int local_c;
+  Material *materialHandle;
   
-  pMVar1 = ((rgp.world)->dpvs).surfaces[param_1].material;
+  pMVar1 = ((rgp.world)->dpvs).surfaces[surfIndex].material;
   if ((((pMVar1->info).gameFlags & 4) == 0) && ((pMVar1->stateFlags & 4) == 0)) {
     local_c = 1;
   }
@@ -309,10 +319,10 @@ int __cdecl TerrainScorch_AllowSurfacesCallback(int param_1,void *param_2)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl TerrainScorch(float *param_1,bool param_2)
+void __cdecl TerrainScorch(float *loresCellPos,bool instant)
 
 {
-  ushort *puVar1;
+  GfxStream2Vertex *pGVar1;
   code *pcVar2;
   bool bVar3;
   ushort uVar4;
@@ -322,95 +332,105 @@ void __cdecl TerrainScorch(float *param_1,bool param_2)
   float fVar8;
   float local_10b8;
   float local_10b4;
-  float local_1094;
-  int local_1078;
-  int local_1074;
-  uint local_1070;
-  GfxSurface **local_1060;
-  uchar *local_105c;
-  float local_1058;
+  float curBurnPercent;
+  float oldBurnStartTime;
+  float burndownDuration;
+  float curBurnAmt;
+  float burnStartTime;
+  float newBurnTarg;
+  float oldBurnTarg;
+  GfxStream2Vertex *s2Vert;
+  ushort vertIndex;
+  float distSq;
+  float ratio;
+  int pointIndex;
+  int triIndex;
+  uint surfIndex;
+  GfxSurface **surfacesArray;
+  uchar *stream2Ptr;
+  float boxMax;
   float local_1054;
   float local_1050;
-  undefined4 local_104c;
-  uint local_1048 [2];
-  ushort *local_1040;
-  GfxSurface *local_103c [1025];
-  uint local_38;
-  float local_34;
+  float queryRadius;
+  uint surfCount;
+  float queryHalfHeight;
+  ushort *indices;
+  GfxSurface *surfaces [1025];
+  uint stream2ByteSize;
+  float boxMin;
   float local_30;
   float local_2c;
-  float local_28;
-  _func___cdecl_int_int_void_ptr *local_24;
-  undefined4 local_20;
+  float curGameTimeSecs;
+  _func___cdecl_int_int_void_ptr *allowSurf;
+  undefined4 min;
   undefined4 local_1c;
   undefined4 local_18;
-  GfxWorldVertex *local_14;
-  float local_10;
-  GfxSurface *local_c;
-  uchar *local_8;
+  GfxWorldVertex *triVerts0;
+  float queryRadiusSq;
+  srfTriangles_t *triSurf;
+  GfxStream2Vertex *stream2Verts;
   
-  local_8 = (uchar *)0x41b4ad;
-  local_24 = TerrainScorch_AllowSurfacesCallback;
-  local_38 = 0;
-  local_105c = R_VertexStream2_Lock(&local_38);
-  if (local_105c != (uchar *)0x0) {
-    local_104c = 0x43700000;
-    local_1048[1] = 0x42c00000;
-    local_20 = 0xc3700000;
+  stream2Verts = (GfxStream2Vertex *)0x41b4ad;
+  allowSurf = TerrainScorch_AllowSurfacesCallback;
+  stream2ByteSize = 0;
+  stream2Ptr = R_VertexStream2_Lock(&stream2ByteSize);
+  if (stream2Ptr != (uchar *)0x0) {
+    queryRadius = 240.0;
+    queryHalfHeight = 96.0;
+    min = 0xc3700000;
     local_1c = 0xc3700000;
     local_18 = 0xc2c00000;
-    local_10 = 57600.0;
-    local_1058 = *param_1 + 240.0;
-    local_1054 = param_1[1] + 240.0;
-    local_1050 = param_1[2] + 96.0;
-    local_34 = *param_1 + -240.0;
-    local_30 = param_1[1] + -240.0;
-    local_2c = param_1[2] + -96.0;
+    queryRadiusSq = 57600.0;
+    boxMax = *loresCellPos + 240.0;
+    local_1054 = loresCellPos[1] + 240.0;
+    local_1050 = loresCellPos[2] + 96.0;
+    boxMin = *loresCellPos + -240.0;
+    local_30 = loresCellPos[1] + -240.0;
+    local_2c = loresCellPos[2] + -96.0;
     iVar5 = G_GetTime();
-    local_28 = (float)iVar5 * 0.001;
-    local_1060 = local_103c;
-    R_BoxSurfaces(&local_34,&local_1058,&local_24,(void *)0x0,&local_1060,0x400,local_1048,1);
-    for (local_1070 = 0; local_1070 < local_1048[0]; local_1070 = local_1070 + 1) {
-      local_c = local_103c[local_1070];
-      if (-1 < (local_c->tris).stream2ByteOffset) {
-        if ((local_38 <= (uint)(local_c->tris).stream2ByteOffset) &&
+    curGameTimeSecs = (float)iVar5 * 0.001;
+    surfacesArray = surfaces;
+    R_BoxSurfaces(&boxMin,&boxMax,&allowSurf,(void *)0x0,&surfacesArray,0x400,&surfCount,1);
+    for (surfIndex = 0; surfIndex < surfCount; surfIndex = surfIndex + 1) {
+      triSurf = &surfaces[surfIndex]->tris;
+      if (-1 < (((GfxSurface *)triSurf)->tris).stream2ByteOffset) {
+        if ((stream2ByteSize <= (uint)(((GfxSurface *)triSurf)->tris).stream2ByteOffset) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_fire.cpp",0x1d1,0
                                      ,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_8 = local_105c + (local_c->tris).stream2ByteOffset;
-        local_14 = (g_worldDraw->vd).vertices + (local_c->tris).firstVertex;
-        local_1040 = g_worldDraw->indices + (local_c->tris).baseIndex;
-        for (local_1074 = 0; local_1074 < (int)(uint)(local_c->tris).triCount;
-            local_1074 = local_1074 + 1) {
-          for (local_1078 = 0; local_1078 < 3; local_1078 = local_1078 + 1) {
-            uVar4 = local_1040[local_1078];
-            if (((local_c->tris).vertexCount <= uVar4) &&
+        stream2Verts = (GfxStream2Vertex *)(stream2Ptr + triSurf->stream2ByteOffset);
+        triVerts0 = (g_worldDraw->vd).vertices + triSurf->firstVertex;
+        indices = g_worldDraw->indices + triSurf->baseIndex;
+        for (triIndex = 0; triIndex < (int)(uint)triSurf->triCount; triIndex = triIndex + 1) {
+          for (pointIndex = 0; pointIndex < 3; pointIndex = pointIndex + 1) {
+            uVar4 = indices[pointIndex];
+            if ((triSurf->vertexCount <= uVar4) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_fire.cpp",
                                          0x1e1,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            fVar6 = Vec3DistanceSq(local_14[uVar4].xyz,param_1);
-            if (fVar6 <= local_10) {
-              fVar6 = fVar6 / local_10;
-              puVar1 = (ushort *)(local_8 + (uint)uVar4 * 4);
-              if (param_2) {
+            fVar6 = Vec3DistanceSq(triVerts0[uVar4].xyz,loresCellPos);
+            if (fVar6 <= queryRadiusSq) {
+              fVar6 = fVar6 / queryRadiusSq;
+              pGVar1 = stream2Verts + uVar4;
+              if (instant) {
                 uVar4 = HalfFromFloat(1.0);
-                *puVar1 = uVar4;
+                pGVar1->x = uVar4;
                 uVar4 = HalfFromFloat(1.0);
-                puVar1[1] = uVar4;
+                pGVar1->y = uVar4;
               }
               else {
-                fVar7 = FloatFromHalf(puVar1[1]);
+                fVar7 = FloatFromHalf(pGVar1->y);
                 fVar6 = 1.0 - fVar6;
                 if (fVar7 < fVar6) {
                   if (1e-05 <= fVar7) {
-                    fVar8 = FloatFromHalf(*puVar1);
-                    fVar8 = (local_28 - fVar8) / 3.0;
+                    fVar8 = FloatFromHalf(pGVar1->x);
+                    fVar8 = (curGameTimeSecs - fVar8) / 3.0;
                     local_10b4 = fVar8;
                     if (0.0 <= fVar8 - 1.0) {
                       local_10b4 = 1.0;
@@ -421,20 +441,20 @@ void __cdecl TerrainScorch(float *param_1,bool param_2)
                     else {
                       local_10b8 = 0.0;
                     }
-                    local_1094 = local_28 - ((local_10b8 * fVar7) / fVar6) * 3.0;
+                    burnStartTime = curGameTimeSecs - ((local_10b8 * fVar7) / fVar6) * 3.0;
                   }
                   else {
-                    local_1094 = local_28;
+                    burnStartTime = curGameTimeSecs;
                   }
-                  uVar4 = HalfFromFloat(local_1094);
-                  *puVar1 = uVar4;
+                  uVar4 = HalfFromFloat(burnStartTime);
+                  pGVar1->x = uVar4;
                   uVar4 = HalfFromFloat(fVar6);
-                  puVar1[1] = uVar4;
+                  pGVar1->y = uVar4;
                 }
               }
             }
           }
-          local_1040 = local_1040 + 3;
+          indices = indices + 3;
         }
       }
     }
@@ -446,7 +466,7 @@ void __cdecl TerrainScorch(float *param_1,bool param_2)
 
 // 0041BC80  CG_UpdateFire  (bgame/bg_fire.cpp:547)
 
-void __cdecl CG_UpdateFire(int param_1)
+void __cdecl CG_UpdateFire(int localClientNum)
 
 {
   int iVar1;
@@ -458,59 +478,60 @@ void __cdecl CG_UpdateFire(int param_1)
   int local_64;
   int local_60;
   int local_5c;
-  int local_8;
+  int volume;
+  int cur_time;
+  int i;
   
   iVar1 = Sys_Milliseconds();
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     return;
   }
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    if ((g_FM_ActiveCells[local_8].is_active != false) &&
-       (g_FM_ActiveCells[local_8].endtime < iVar1)) {
-      g_FM_ActiveCells[local_8].is_active = false;
+  for (i = 0; i < 0x100; i = i + 1) {
+    if ((g_FM_ActiveCells[i].is_active != false) && (g_FM_ActiveCells[i].endtime < iVar1)) {
+      g_FM_ActiveCells[i].is_active = false;
     }
   }
   if (g_FM_BurnDataActiveCount <= g_FM_BurnDataLastScanIndex) {
     g_FM_BurnDataLastScanIndex = 0;
   }
-  local_8 = 0;
+  i = 0;
   do {
-    if (g_FM_BurnDataActiveCount <= local_8) goto LAB_0041bfa7;
-    if (local_8 != g_FM_BurnDataLastScanIndex) {
+    if (g_FM_BurnDataActiveCount <= i) goto LAB_0041bfa7;
+    if (i != g_FM_BurnDataLastScanIndex) {
       local_5c = g_FM_BurnData[g_FM_BurnDataLastScanIndex].max[0];
-      if (local_5c <= g_FM_BurnData[local_8].max[0]) {
-        local_5c = g_FM_BurnData[local_8].max[0];
+      if (local_5c <= g_FM_BurnData[i].max[0]) {
+        local_5c = g_FM_BurnData[i].max[0];
       }
       local_60 = g_FM_BurnData[g_FM_BurnDataLastScanIndex].max[1];
-      if (local_60 <= g_FM_BurnData[local_8].max[1]) {
-        local_60 = g_FM_BurnData[local_8].max[1];
+      if (local_60 <= g_FM_BurnData[i].max[1]) {
+        local_60 = g_FM_BurnData[i].max[1];
       }
       local_64 = g_FM_BurnData[g_FM_BurnDataLastScanIndex].max[2];
-      if (local_64 <= g_FM_BurnData[local_8].max[2]) {
-        local_64 = g_FM_BurnData[local_8].max[2];
+      if (local_64 <= g_FM_BurnData[i].max[2]) {
+        local_64 = g_FM_BurnData[i].max[2];
       }
       local_68 = g_FM_BurnData[g_FM_BurnDataLastScanIndex].min[0];
-      if (g_FM_BurnData[local_8].min[0] <= local_68) {
-        local_68 = g_FM_BurnData[local_8].min[0];
+      if (g_FM_BurnData[i].min[0] <= local_68) {
+        local_68 = g_FM_BurnData[i].min[0];
       }
       local_6c = g_FM_BurnData[g_FM_BurnDataLastScanIndex].min[1];
-      if (g_FM_BurnData[local_8].min[1] <= local_6c) {
-        local_6c = g_FM_BurnData[local_8].min[1];
+      if (g_FM_BurnData[i].min[1] <= local_6c) {
+        local_6c = g_FM_BurnData[i].min[1];
       }
       local_70 = g_FM_BurnData[g_FM_BurnDataLastScanIndex].min[2];
-      if (g_FM_BurnData[local_8].min[2] <= local_70) {
-        local_70 = g_FM_BurnData[local_8].min[2];
+      if (g_FM_BurnData[i].min[2] <= local_70) {
+        local_70 = g_FM_BurnData[i].min[2];
       }
       if ((local_5c - local_68) * (local_60 - local_6c) * (local_64 - local_70) ==
-          g_FM_BurnData[local_8].volume + g_FM_BurnData[g_FM_BurnDataLastScanIndex].volume) {
-        g_FM_BurnData[local_8].volume =
-             g_FM_BurnData[local_8].volume + g_FM_BurnData[g_FM_BurnDataLastScanIndex].volume;
-        g_FM_BurnData[local_8].max[0] = local_5c;
-        g_FM_BurnData[local_8].max[1] = local_60;
-        g_FM_BurnData[local_8].max[2] = local_64;
-        g_FM_BurnData[local_8].min[0] = local_68;
-        g_FM_BurnData[local_8].min[1] = local_6c;
-        g_FM_BurnData[local_8].min[2] = local_70;
+          g_FM_BurnData[i].volume + g_FM_BurnData[g_FM_BurnDataLastScanIndex].volume) {
+        g_FM_BurnData[i].volume =
+             g_FM_BurnData[i].volume + g_FM_BurnData[g_FM_BurnDataLastScanIndex].volume;
+        g_FM_BurnData[i].max[0] = local_5c;
+        g_FM_BurnData[i].max[1] = local_60;
+        g_FM_BurnData[i].max[2] = local_64;
+        g_FM_BurnData[i].min[0] = local_68;
+        g_FM_BurnData[i].min[1] = local_6c;
+        g_FM_BurnData[i].min[2] = local_70;
         if (g_FM_BurnDataLastScanIndex != g_FM_BurnDataActiveCount + -1) {
           p_Var2 = g_FM_BurnData + g_FM_BurnDataActiveCount + -1;
           p_Var3 = g_FM_BurnData + g_FM_BurnDataLastScanIndex;
@@ -522,55 +543,55 @@ void __cdecl CG_UpdateFire(int param_1)
         }
         g_FM_BurnDataActiveCount = g_FM_BurnDataActiveCount + -1;
 LAB_0041bfa7:
-        if (local_8 < g_FM_BurnDataActiveCount) {
+        if (i < g_FM_BurnDataActiveCount) {
           return;
         }
         g_FM_BurnDataLastScanIndex = g_FM_BurnDataLastScanIndex + 1;
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0041BFD0  CG_RenderFire  (bgame/bg_fire.cpp:602)
 
-void __cdecl CG_RenderFire(int param_1)
+void __cdecl CG_RenderFire(int localClientNum)
 
 {
-  float local_3c;
+  float origin;
   float local_38;
   float local_34;
-  float local_30 [4];
+  float mins [4];
   float local_20;
   float local_1c;
-  float local_18;
+  float color;
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
   if ((fire_debug != (dvar_s *)0x0) && ((fire_debug->current).enabled != false)) {
-    local_18 = 1.0;
+    color = 1.0;
     local_14 = 1.0;
     local_10 = 1.0;
     local_c = 1.0;
-    local_30[0] = 0.0;
-    local_30[1] = 0.0;
-    local_30[2] = 0.0;
-    for (local_8 = 0; local_8 < g_FM_BurnDataActiveCount; local_8 = local_8 + 1) {
-      local_30[3] = (float)(g_FM_BurnData[local_8].max[0] - g_FM_BurnData[local_8].min[0]);
-      local_20 = (float)(g_FM_BurnData[local_8].max[1] - g_FM_BurnData[local_8].min[1]);
-      local_1c = (float)(g_FM_BurnData[local_8].max[2] - g_FM_BurnData[local_8].min[2]);
-      local_3c = (float)g_FM_BurnData[local_8].min[0];
-      local_38 = (float)g_FM_BurnData[local_8].min[1];
-      local_34 = (float)g_FM_BurnData[local_8].min[2];
-      G_DebugBox(&local_3c,local_30,local_30 + 3,0.0,&local_18,1,0);
+    mins[0] = 0.0;
+    mins[1] = 0.0;
+    mins[2] = 0.0;
+    for (i = 0; i < g_FM_BurnDataActiveCount; i = i + 1) {
+      mins[3] = (float)(g_FM_BurnData[i].max[0] - g_FM_BurnData[i].min[0]);
+      local_20 = (float)(g_FM_BurnData[i].max[1] - g_FM_BurnData[i].min[1]);
+      local_1c = (float)(g_FM_BurnData[i].max[2] - g_FM_BurnData[i].min[2]);
+      origin = (float)g_FM_BurnData[i].min[0];
+      local_38 = (float)g_FM_BurnData[i].min[1];
+      local_34 = (float)g_FM_BurnData[i].min[2];
+      G_DebugBox(&origin,mins,mins + 3,0.0,&color,1,0);
     }
-    for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-      if (g_FM_ActiveCells[local_8].is_active != false) {
-        G_DebugStar(g_FM_ActiveCells[local_8].pos,colorRed,0);
+    for (i = 0; i < 0x100; i = i + 1) {
+      if (g_FM_ActiveCells[i].is_active != false) {
+        G_DebugStar(g_FM_ActiveCells[i].pos,colorRed,0);
       }
     }
   }
@@ -580,12 +601,12 @@ void __cdecl CG_RenderFire(int param_1)
 
 // 0041C190  GetFoliageBurnRadius  (bgame/bg_fire.cpp:637)
 
-float __cdecl GetFoliageBurnRadius(TerrainFireSource param_1)
+float __cdecl GetFoliageBurnRadius(TerrainFireSource fireSrc)
 
 {
   float fVar1;
   
-  if (param_1 == TFS_FLAMETHROWER) {
+  if (fireSrc == TFS_FLAMETHROWER) {
     fVar1 = 60.0;
   }
   else {
@@ -603,15 +624,18 @@ float __cdecl GetFoliageBurnRadius(TerrainFireSource param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_SetFireToWall(int param_1,float *param_2,int *param_3,int param_4,TerrainFireSource param_5)
+CG_SetFireToWall(int localClientNum,float *pos,int *models,int models_count,
+                TerrainFireSource fireSrc)
 
 {
   cg_s *pcVar1;
-  float fVar2;
-  float *pfVar3;
-  bool bVar4;
-  float (*pafVar5) [3];
-  float local_28;
+  float rad;
+  float *origin;
+  bool instant;
+  float (*axis_00) [3];
+  int fxIndex;
+  int curTime;
+  float axis;
   float local_24;
   float local_20;
   undefined4 local_1c;
@@ -621,7 +645,7 @@ CG_SetFireToWall(int param_1,float *param_2,int *param_3,int param_4,TerrainFire
   undefined4 local_c;
   undefined4 local_8;
   
-  local_28 = 0.0;
+  axis = 0.0;
   local_24 = 0.0;
   local_20 = 1.0;
   local_1c = 0;
@@ -631,17 +655,17 @@ CG_SetFireToWall(int param_1,float *param_2,int *param_3,int param_4,TerrainFire
   local_c = 0;
   local_8 = 0;
   rand();
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
   if (500 < pcVar1->time - gLastBurnParticleSpawnTime) {
-    pafVar5 = (float (*) [3])&local_28;
+    axis_00 = (float (*) [3])&axis;
     gLastBurnParticleSpawnTime = pcVar1->time;
-    pfVar3 = param_2;
-    pcVar1 = CG_GetLocalClientGlobals(param_1);
-    FX_PlayOrientedEffect(param_1,g_FM_fx_wall_effect[0],pcVar1->time,pfVar3,pafVar5);
+    origin = pos;
+    pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+    FX_PlayOrientedEffect(localClientNum,g_FM_fx_wall_effect[0],pcVar1->time,origin,axis_00);
   }
-  bVar4 = false;
-  fVar2 = GetFoliageBurnRadius(param_5);
-  R_FoliageNotifyBurn(param_2,fVar2,param_3,param_4,bVar4);
+  instant = false;
+  rad = GetFoliageBurnRadius(fireSrc);
+  R_FoliageNotifyBurn(pos,rad,models,models_count,instant);
   return;
 }
 
@@ -654,40 +678,41 @@ CG_SetFireToWall(int param_1,float *param_2,int *param_3,int param_4,TerrainFire
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_SetFireToTerrain(float *param_1,float param_2,int param_3,int param_4,float param_5,int *param_6,
-                   int param_7,TerrainFireSource param_8)
+CG_SetFireToTerrain(float *pos,float radius,int fireStarterClientNum,int weaponUsed,float pSpread,
+                   int *models,int models_count,TerrainFireSource fireSrc)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
+  int iVar3;
+  cg_s *pcVar4;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
   float10 extraout_ST0_01;
   float10 extraout_ST0_02;
   float10 extraout_ST0_03;
   float10 extraout_ST0_04;
-  float fVar4;
-  float *pfVar5;
+  float fVar5;
+  float *origin;
   ulonglong uVar6;
-  float (*pafVar7) [3];
-  int local_68;
-  float local_64;
+  float (*axis_00) [3];
+  int localClientNum;
+  float cell_pos;
   float local_60;
   float local_5c;
-  float local_58;
+  float inv_dim;
   float local_54;
   float local_50;
-  int local_4c;
-  int local_48;
-  float local_44;
+  int cur_time;
+  int fxIndex;
+  float dim;
   float local_40;
   float local_3c;
-  float local_38;
+  float cell_pos2;
   float local_34;
   float local_30;
-  int local_2c;
-  float local_28;
+  int i;
+  float axis;
   float local_24;
   float local_20;
   undefined4 local_1c;
@@ -697,55 +722,55 @@ CG_SetFireToTerrain(float *param_1,float param_2,int param_3,int param_4,float p
   undefined4 local_c;
   undefined4 local_8;
   
-  local_44 = 32.0;
+  dim = 32.0;
   local_40 = 32.0;
   local_3c = 32.0;
-  local_58 = 0.03125;
+  inv_dim = 0.03125;
   local_54 = 0.03125;
   local_50 = 0.03125;
-  local_4c = Sys_Milliseconds();
-  local_64 = *param_1 * local_58;
-  local_60 = param_1[1] * local_54;
-  local_5c = param_1[2] * local_50;
+  cur_time = Sys_Milliseconds();
+  cell_pos = *pos * inv_dim;
+  local_60 = pos[1] * local_54;
+  local_5c = pos[2] * local_50;
   floor();
-  local_64 = (float)extraout_ST0;
+  cell_pos = (float)extraout_ST0;
   floor();
   local_60 = (float)extraout_ST0_00;
   floor();
   local_5c = (float)extraout_ST0_01;
-  for (local_2c = 0; local_2c < 0x100; local_2c = local_2c + 1) {
-    if (g_FM_ActiveCells[local_2c].is_active != false) {
-      local_38 = g_FM_ActiveCells[local_2c].pos[0] * local_58;
-      local_34 = g_FM_ActiveCells[local_2c].pos[1] * local_54;
-      local_30 = g_FM_ActiveCells[local_2c].pos[2] * local_50;
+  for (i = 0; i < 0x100; i = i + 1) {
+    if (g_FM_ActiveCells[i].is_active != false) {
+      cell_pos2 = g_FM_ActiveCells[i].pos[0] * inv_dim;
+      local_34 = g_FM_ActiveCells[i].pos[1] * local_54;
+      local_30 = g_FM_ActiveCells[i].pos[2] * local_50;
       floor();
-      local_38 = (float)extraout_ST0_02;
+      cell_pos2 = (float)extraout_ST0_02;
       floor();
       local_34 = (float)extraout_ST0_03;
       floor();
       local_30 = (float)extraout_ST0_04;
-      fVar4 = Vec3DistanceSq(&local_64,&local_38);
-      if (fVar4 < 1.0) {
-        g_FM_ActiveCells[local_2c].pos[0] = *param_1;
-        g_FM_ActiveCells[local_2c].pos[1] = param_1[1];
-        g_FM_ActiveCells[local_2c].pos[2] = param_1[2];
-        g_FM_ActiveCells[local_2c].endtime = (int)((fire_burn_time->current).string + local_4c);
+      fVar5 = Vec3DistanceSq(&cell_pos,&cell_pos2);
+      if (fVar5 < 1.0) {
+        g_FM_ActiveCells[i].pos[0] = *pos;
+        g_FM_ActiveCells[i].pos[1] = pos[1];
+        g_FM_ActiveCells[i].pos[2] = pos[2];
+        g_FM_ActiveCells[i].endtime = (int)((fire_burn_time->current).string + cur_time);
         return;
       }
     }
   }
-  local_64 = local_64 * local_44;
+  cell_pos = cell_pos * dim;
   local_60 = local_60 * local_40;
   local_5c = local_5c * local_3c;
-  local_2c = 0;
+  i = 0;
   do {
-    if (0xff < local_2c) {
+    if (0xff < i) {
 LAB_0041c60e:
-      AddBurnCell(&local_64);
-      uVar6 = (ulonglong)(uint)param_7;
-      fVar4 = GetFoliageBurnRadius(param_8);
-      R_FoliageNotifyBurn(param_1,fVar4,param_6,(int)uVar6,SUB81(uVar6 >> 0x20,0));
-      local_28 = 0.0;
+      AddBurnCell(&cell_pos);
+      uVar6 = (ulonglong)(uint)models_count;
+      fVar5 = GetFoliageBurnRadius(fireSrc);
+      R_FoliageNotifyBurn(pos,fVar5,models,(int)uVar6,SUB81(uVar6 >> 0x20,0));
+      axis = 0.0;
       local_24 = 0.0;
       local_20 = 1.0;
       local_1c = 0;
@@ -754,37 +779,38 @@ LAB_0041c60e:
       local_10 = 1.0;
       local_c = 0;
       local_8 = 0;
-      local_48 = rand();
-      local_48 = local_48 % 3;
-      if ((g_FM_fx_flamethrower_effect[local_48] == (FxEffectDef *)0x0) &&
+      iVar3 = rand();
+      fxIndex = iVar3 % 3;
+      if ((g_FM_fx_flamethrower_effect[fxIndex] == (FxEffectDef *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_fire.cpp",0x300,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      for (local_68 = 0; local_68 < 1; local_68 = local_68 + 1) {
-        bVar2 = CL_LocalClient_IsActive(local_68);
-        if ((bVar2) && (param_8 == TFS_FLAMETHROWER)) {
-          pafVar7 = (float (*) [3])&local_28;
-          pfVar5 = param_1;
-          pcVar3 = CG_GetLocalClientGlobals(local_68);
+      for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+        bVar2 = CL_LocalClient_IsActive(localClientNum);
+        if ((bVar2) && (fireSrc == TFS_FLAMETHROWER)) {
+          axis_00 = (float (*) [3])&axis;
+          origin = pos;
+          pcVar4 = CG_GetLocalClientGlobals(localClientNum);
           FX_PlayOrientedEffect
-                    (local_68,g_FM_fx_flamethrower_effect[local_48],pcVar3->time,pfVar5,pafVar7);
+                    (localClientNum,g_FM_fx_flamethrower_effect[fxIndex],pcVar4->time,origin,axis_00
+                    );
         }
       }
-      TerrainScorch(param_1,false);
+      TerrainScorch(pos,false);
       return;
     }
-    if (g_FM_ActiveCells[local_2c].is_active == false) {
-      g_FM_ActiveCells[local_2c].pos[0] = *param_1;
-      g_FM_ActiveCells[local_2c].pos[1] = param_1[1];
-      g_FM_ActiveCells[local_2c].pos[2] = param_1[2];
-      g_FM_ActiveCells[local_2c].is_active = true;
-      g_FM_ActiveCells[local_2c].endtime = (int)((fire_burn_time->current).string + local_4c);
+    if (g_FM_ActiveCells[i].is_active == false) {
+      g_FM_ActiveCells[i].pos[0] = *pos;
+      g_FM_ActiveCells[i].pos[1] = pos[1];
+      g_FM_ActiveCells[i].pos[2] = pos[2];
+      g_FM_ActiveCells[i].is_active = true;
+      g_FM_ActiveCells[i].endtime = (int)((fire_burn_time->current).string + cur_time);
       goto LAB_0041c60e;
     }
-    local_2c = local_2c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -817,7 +843,7 @@ void __cdecl Sync_VisualBurn_To_FM_State(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_GenerateFireSounds(int param_1)
+void __cdecl CG_GenerateFireSounds(int localClientNum)
 
 {
   snapshot_s *psVar1;
@@ -827,19 +853,20 @@ void __cdecl CG_GenerateFireSounds(int param_1)
   float local_94;
   float local_8c;
   float local_78;
-  uint local_60;
-  float local_58;
+  uint j;
+  cg_s *cgameGlob;
+  float toCell;
   float local_54;
   float local_50;
   float afStack_4c [8];
-  float local_2c;
-  float local_28;
-  float local_24;
-  uint local_20;
-  float local_1c;
+  float angle;
+  float distanceAttenuation;
+  float distance;
+  uint i;
+  float playerPosition;
   float local_18;
   float local_14;
-  float local_10;
+  float soundPosition;
   float local_c;
   float local_8;
   
@@ -874,23 +901,23 @@ void __cdecl CG_GenerateFireSounds(int param_1)
     SOUND_DIRECTIONS[7][1] = 1.0;
     SOUND_DIRECTIONS[7][2] = 0.0;
   }
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   if (pcVar2->nextSnap != (snapshot_s *)0x0) {
     psVar1 = pcVar2->nextSnap;
-    local_1c = (psVar1->ps).origin[0];
+    playerPosition = (psVar1->ps).origin[0];
     local_18 = (psVar1->ps).origin[1];
     local_14 = (psVar1->ps).origin[2];
-    for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-      afStack_4c[local_60] = 0.0;
+    for (j = 0; j < 8; j = j + 1) {
+      afStack_4c[j] = 0.0;
     }
-    for (local_20 = 0; local_20 < 0x100; local_20 = local_20 + 1) {
-      if (g_FM_ActiveCells[local_20].is_active != false) {
-        local_58 = g_FM_ActiveCells[local_20].pos[0] - local_1c;
-        local_54 = g_FM_ActiveCells[local_20].pos[1] - local_18;
-        local_50 = g_FM_ActiveCells[local_20].pos[2] - local_14;
-        local_24 = Vec3Normalize(&local_58);
-        if (local_24 <= 500.0) {
-          fVar3 = local_24 / 500.0;
+    for (i = 0; i < 0x100; i = i + 1) {
+      if (g_FM_ActiveCells[i].is_active != false) {
+        toCell = g_FM_ActiveCells[i].pos[0] - playerPosition;
+        local_54 = g_FM_ActiveCells[i].pos[1] - local_18;
+        local_50 = g_FM_ActiveCells[i].pos[2] - local_14;
+        distance = Vec3Normalize(&toCell);
+        if (distance <= 500.0) {
+          fVar3 = distance / 500.0;
           local_78 = fVar3;
           if (0.0 <= fVar3 - 1.0) {
             local_78 = 1.0;
@@ -901,23 +928,22 @@ void __cdecl CG_GenerateFireSounds(int param_1)
           else {
             local_94 = 0.0;
           }
-          local_28 = (1.0 - local_94) * (1.0 - local_94);
-          for (local_60 = 0; local_60 < 8; local_60 = local_60 + 1) {
-            local_2c = local_58 * SOUND_DIRECTIONS[local_60][0] +
-                       local_54 * SOUND_DIRECTIONS[local_60][1] +
-                       local_50 * SOUND_DIRECTIONS[local_60][2];
-            if (0.0 <= local_2c) {
-              afStack_4c[local_60] = local_2c * local_28 + afStack_4c[local_60];
+          distanceAttenuation = (1.0 - local_94) * (1.0 - local_94);
+          for (j = 0; j < 8; j = j + 1) {
+            angle = toCell * SOUND_DIRECTIONS[j][0] + local_54 * SOUND_DIRECTIONS[j][1] +
+                    local_50 * SOUND_DIRECTIONS[j][2];
+            if (0.0 <= angle) {
+              afStack_4c[j] = angle * distanceAttenuation + afStack_4c[j];
             }
           }
         }
       }
     }
-    for (local_20 = 0; local_20 < 8; local_20 = local_20 + 1) {
-      local_10 = SOUND_DIRECTIONS[local_20][0] * 128.0 + local_1c;
-      local_c = SOUND_DIRECTIONS[local_20][1] * 128.0 + local_18;
-      local_8 = SOUND_DIRECTIONS[local_20][2] * 128.0 + local_14 + 16.0;
-      fVar3 = afStack_4c[local_20] / 4.0;
+    for (i = 0; i < 8; i = i + 1) {
+      soundPosition = SOUND_DIRECTIONS[i][0] * 128.0 + playerPosition;
+      local_c = SOUND_DIRECTIONS[i][1] * 128.0 + local_18;
+      local_8 = SOUND_DIRECTIONS[i][2] * 128.0 + local_14 + 16.0;
+      fVar3 = afStack_4c[i] / 4.0;
       local_8c = fVar3;
       if (0.0 <= fVar3 - 1.0) {
         local_8c = 1.0;
@@ -928,7 +954,7 @@ void __cdecl CG_GenerateFireSounds(int param_1)
       else {
         local_98 = 0.0;
       }
-      CG_FireManagerUpdate(param_1,local_20,&local_10,local_98);
+      CG_FireManagerUpdate(localClientNum,i,&soundPosition,local_98);
     }
   }
   return;

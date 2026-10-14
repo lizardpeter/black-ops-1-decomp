@@ -2,14 +2,14 @@
 
 // 00802FE0  XModel_PhysPresetPrecache  (xanim/xmodel_load_obj.cpp:41)
 
-PhysPreset * __cdecl XModel_PhysPresetPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2)
+PhysPreset * __cdecl XModel_PhysPresetPrecache(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysPreset *pPVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x2a,0,
                              "%s");
     if (!bVar2) {
@@ -18,7 +18,7 @@ PhysPreset * __cdecl XModel_PhysPresetPrecache(char *param_1,_func___cdecl_void_
       return pPVar3;
     }
   }
-  pPVar3 = PhysPresetPrecache(param_1,param_2);
+  pPVar3 = PhysPresetPrecache(name,Alloc);
   return pPVar3;
 }
 
@@ -26,14 +26,14 @@ PhysPreset * __cdecl XModel_PhysPresetPrecache(char *param_1,_func___cdecl_void_
 // 00803020  XModel_PhysConstraintsPrecache  (xanim/xmodel_load_obj.cpp:48)
 
 PhysConstraints * __cdecl
-XModel_PhysConstraintsPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2)
+XModel_PhysConstraintsPrecache(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   code *pcVar1;
   bool bVar2;
   PhysConstraints *pPVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x31,0,
                              "%s");
     if (!bVar2) {
@@ -42,14 +42,14 @@ XModel_PhysConstraintsPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2
       return pPVar3;
     }
   }
-  pPVar3 = PhysConstraintsPrecache(param_1,param_2);
+  pPVar3 = PhysConstraintsPrecache(name,Alloc);
   return pPVar3;
 }
 
 
 // 00805710  ConsumeQuatNoSwap  (xanim/xmodel_load_obj.cpp:56)
 
-void __cdecl ConsumeQuatNoSwap(uchar **param_1,short *param_2)
+void __cdecl ConsumeQuatNoSwap(uchar **pos,short *out)
 
 {
   short sVar1;
@@ -58,19 +58,19 @@ void __cdecl ConsumeQuatNoSwap(uchar **param_1,short *param_2)
   int extraout_EAX;
   int local_30;
   short local_c;
+  int temp;
   
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  *param_2 = sVar1;
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  param_2[1] = sVar1;
-  sVar1 = *(short *)*param_1;
-  *param_1 = *param_1 + 2;
-  param_2[2] = sVar1;
-  if (0x3fff0001 -
-      ((int)*param_2 * (int)*param_2 + (int)param_2[1] * (int)param_2[1] +
-      (int)param_2[2] * (int)param_2[2]) < 1) {
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  *out = sVar1;
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  out[1] = sVar1;
+  sVar1 = *(short *)*pos;
+  *pos = *pos + 2;
+  out[2] = sVar1;
+  if (0x3fff0001 - ((int)*out * (int)*out + (int)out[1] * (int)out[1] + (int)out[2] * (int)out[2]) <
+      1) {
     local_30 = 0;
   }
   else {
@@ -88,64 +88,64 @@ void __cdecl ConsumeQuatNoSwap(uchar **param_1,short *param_2)
       return;
     }
   }
-  param_2[3] = local_c;
+  out[3] = local_c;
   return;
 }
 
 
 // 00805850  XModelCalcBasePose  (xanim/xmodel_load_obj.cpp:84)
 
-void __cdecl XModelCalcBasePose(XModelPartsLoad *param_1)
+void __cdecl XModelCalcBasePose(XModelPartsLoad *modelParts)
 
 {
   byte bVar1;
   float fVar2;
-  float *local_28;
-  short *local_24;
-  byte *local_20;
-  uint local_1c;
-  float local_18;
+  int numBones;
+  float *trans;
+  short *quats;
+  uchar *parentList;
+  int i;
+  float tempQuat;
   float local_14;
   float local_10;
   float local_c;
-  DObjAnimMat *local_8;
+  DObjAnimMat *quatTrans;
   
-  local_20 = param_1->parentList;
-  bVar1 = param_1->numBones;
-  local_24 = param_1->quats;
-  local_28 = param_1->trans;
-  local_8 = param_1->baseMat;
-  for (local_1c = (uint)param_1->numRootBones; local_1c != 0; local_1c = local_1c - 1) {
-    local_8->quat[0] = 0.0;
-    local_8->quat[1] = 0.0;
-    local_8->quat[2] = 0.0;
-    local_8->quat[3] = 1.0;
-    local_8->trans[0] = 0.0;
-    local_8->trans[1] = 0.0;
-    local_8->trans[2] = 0.0;
-    local_8->transWeight = 2.0;
-    local_8 = local_8 + 1;
+  parentList = modelParts->parentList;
+  bVar1 = modelParts->numBones;
+  quats = modelParts->quats;
+  trans = modelParts->trans;
+  quatTrans = modelParts->baseMat;
+  for (i = (int)modelParts->numRootBones; i != 0; i = i + -1) {
+    quatTrans->quat[0] = 0.0;
+    quatTrans->quat[1] = 0.0;
+    quatTrans->quat[2] = 0.0;
+    quatTrans->quat[3] = 1.0;
+    quatTrans->trans[0] = 0.0;
+    quatTrans->trans[1] = 0.0;
+    quatTrans->trans[2] = 0.0;
+    quatTrans->transWeight = 2.0;
+    quatTrans = quatTrans + 1;
   }
-  for (local_1c = (uint)bVar1 - (uint)param_1->numRootBones; local_1c != 0; local_1c = local_1c + -1
-      ) {
-    local_18 = (float)(int)*local_24 * 3.051851e-05;
-    local_14 = (float)(int)local_24[1] * 3.051851e-05;
-    local_10 = (float)(int)local_24[2] * 3.051851e-05;
-    local_c = (float)(int)local_24[3] * 3.051851e-05;
-    QuatMultiply(&local_18,local_8[-(uint)*local_20].quat,local_8->quat);
-    fVar2 = Vec4LengthSq(local_8->quat);
+  for (i = (uint)bVar1 - (uint)modelParts->numRootBones; i != 0; i = i + -1) {
+    tempQuat = (float)(int)*quats * 3.051851e-05;
+    local_14 = (float)(int)quats[1] * 3.051851e-05;
+    local_10 = (float)(int)quats[2] * 3.051851e-05;
+    local_c = (float)(int)quats[3] * 3.051851e-05;
+    QuatMultiply(&tempQuat,quatTrans[-(uint)*parentList].quat,quatTrans->quat);
+    fVar2 = Vec4LengthSq(quatTrans->quat);
     if (fVar2 == 0.0) {
-      local_8->quat[3] = 1.0;
-      local_8->transWeight = 2.0;
+      quatTrans->quat[3] = 1.0;
+      quatTrans->transWeight = 2.0;
     }
     else {
-      local_8->transWeight = 2.0 / fVar2;
+      quatTrans->transWeight = 2.0 / fVar2;
     }
-    MatrixTransformVectorQuatTrans(local_28,local_8 + -(uint)*local_20,local_8->trans);
-    local_24 = local_24 + 4;
-    local_28 = local_28 + 3;
-    local_8 = local_8 + 1;
-    local_20 = local_20 + 1;
+    MatrixTransformVectorQuatTrans(trans,quatTrans + -(uint)*parentList,quatTrans->trans);
+    quats = quats + 4;
+    trans = trans + 3;
+    quatTrans = quatTrans + 1;
+    parentList = parentList + 1;
   }
   return;
 }
@@ -153,7 +153,7 @@ void __cdecl XModelCalcBasePose(XModelPartsLoad *param_1)
 
 // 00803060  FS_GetModTime  (xanim/xmodel_load_obj.cpp:126)
 
-long64 __cdecl FS_GetModTime(char *param_1,bool param_2)
+long64 __cdecl FS_GetModTime(char *qpath,bool useSearchPath)
 
 {
   return 0;
@@ -167,11 +167,11 @@ long64 __cdecl FS_GetModTime(char *param_1,bool param_2)
 /* WARNING: Removing unreachable block (ram,0x008054aa) */
 
 XModelPartsLoad * __cdecl
-XModelPartsLoadFile(XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *param_3,
-                   long64 *param_4)
+XModelPartsLoadFile(XModel *model,char *name,_func___cdecl_void_ptr_int *Alloc,
+                   long64 *xmodelModifiedTime)
 
 {
-  byte bVar1;
+  uchar uVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
@@ -182,48 +182,49 @@ XModelPartsLoadFile(XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *pa
   uchar *puVar9;
   uint uVar10;
   long64 lVar11;
-  float *local_bc;
-  byte *local_b8;
-  float *local_94;
-  uint local_90;
-  char local_8c [64];
+  uchar *local_bc;
+  uchar *local_b8;
+  uchar *pos;
+  int numBones;
+  char filename [64];
   uint local_4c;
-  uint local_48;
-  short local_44;
-  short *local_40;
-  float *local_3c;
-  short local_38;
-  byte *local_34;
-  uint local_30;
-  short *local_2c;
-  int local_28;
-  byte *local_24;
-  uint local_20;
-  undefined8 local_1c;
-  uint local_14;
-  XModelPartsLoad *local_10;
-  char local_9;
-  ushort *local_8;
+  int numRootBones;
+  short numChildBones;
+  uchar *buf;
+  float *trans;
+  short version;
+  int len;
+  int size;
+  short *quats;
+  int fileSize;
+  uchar *parentList;
+  int index;
+  undefined8 xmodelPartsModifyTime;
+  int i;
+  XModelPartsLoad *modelParts;
+  bool useBones;
+  ushort *boneNames;
   
   local_4c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar4 = Com_sprintf(local_8c,0x40,"xmodelparts/%s");
+  iVar4 = Com_sprintf(filename,0x40,"xmodelparts/%s");
   if (iVar4 < 0) {
     Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n");
-    local_10 = (XModelPartsLoad *)0x0;
+    modelParts = (XModelPartsLoad *)0x0;
   }
   else {
-    local_28 = FS_ReadFile(local_8c,&local_40);
-    lVar11 = FS_GetModTime(local_8c,true);
-    local_1c._4_4_ = (int)((ulonglong)lVar11 >> 0x20);
-    if ((*(int *)((int)param_4 + 4) <= local_1c._4_4_) &&
-       ((local_1c._0_4_ = (uint)lVar11, *(int *)((int)param_4 + 4) < local_1c._4_4_ ||
-        ((uint)*param_4 < (uint)local_1c)))) {
-      *(uint *)param_4 = (uint)local_1c;
-      *(int *)((int)param_4 + 4) = local_1c._4_4_;
+    fileSize = FS_ReadFile(filename,&buf);
+    lVar11 = FS_GetModTime(filename,true);
+    xmodelPartsModifyTime._4_4_ = (int)((ulonglong)lVar11 >> 0x20);
+    if ((*(int *)((int)xmodelModifiedTime + 4) <= xmodelPartsModifyTime._4_4_) &&
+       ((xmodelPartsModifyTime._0_4_ = (uint)lVar11,
+        *(int *)((int)xmodelModifiedTime + 4) < xmodelPartsModifyTime._4_4_ ||
+        ((uint)*xmodelModifiedTime < (uint)xmodelPartsModifyTime)))) {
+      *(uint *)xmodelModifiedTime = (uint)xmodelPartsModifyTime;
+      *(int *)((int)xmodelModifiedTime + 4) = xmodelPartsModifyTime._4_4_;
     }
-    local_1c = lVar11;
-    if (local_28 < 0) {
-      if ((local_40 != (short *)0x0) &&
+    xmodelPartsModifyTime = lVar11;
+    if (fileSize < 0) {
+      if ((buf != (uchar *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0xa3,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -231,154 +232,154 @@ XModelPartsLoadFile(XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *pa
         return pXVar5;
       }
       Com_PrintError(0x13,"ERROR: xmodelparts \'%s\' not found\n");
-      local_10 = (XModelPartsLoad *)0x0;
+      modelParts = (XModelPartsLoad *)0x0;
     }
-    else if (local_28 == 0) {
+    else if (fileSize == 0) {
       Com_PrintError(0x13,"ERROR: xmodelparts \'%s\' has 0 length\n");
-      FS_FreeFile(local_40);
-      local_10 = (XModelPartsLoad *)0x0;
+      FS_FreeFile(buf);
+      modelParts = (XModelPartsLoad *)0x0;
     }
     else {
-      if ((local_40 == (short *)0x0) &&
+      if ((buf == (uchar *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0xaf,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         pXVar5 = (XModelPartsLoad *)(*pcVar2)();
         return pXVar5;
       }
-      local_38 = *local_40;
-      local_94 = (float *)(local_40 + 1);
-      if (local_38 == 0x3e) {
-        local_44 = *(short *)local_94;
-        local_94 = (float *)(local_40 + 3);
-        local_48 = (uint)local_40[2];
-        local_90 = (int)local_44 + local_48;
-        local_30 = local_90 * 2;
-        local_8 = (*param_3)(local_30);
-        param_1->memUsage = param_1->memUsage + local_30;
-        if ((int)local_90 < 0xa0) {
-          local_30 = (uint)local_44;
-          if (local_30 == 0) {
-            local_b8 = (byte *)0x0;
+      version = *(short *)buf;
+      pos = buf + 2;
+      if (version == 0x3e) {
+        numChildBones = *(short *)pos;
+        pos = buf + 6;
+        numRootBones = (int)*(short *)(buf + 4);
+        numBones = numChildBones + numRootBones;
+        size = numBones * 2;
+        boneNames = (*Alloc)(size);
+        model->memUsage = model->memUsage + size;
+        if (numBones < 0xa0) {
+          size = (int)numChildBones;
+          if (size == 0) {
+            local_b8 = (uchar *)0x0;
           }
           else {
-            local_b8 = (*param_3)(local_30);
+            local_b8 = (*Alloc)(size);
           }
-          local_24 = local_b8;
-          param_1->memUsage = param_1->memUsage + local_30;
-          local_30 = 0x1c;
-          local_10 = (*param_3)(0x1c);
-          param_1->memUsage = param_1->memUsage + local_30;
-          local_10->parentList = local_24;
-          local_10->boneNames = local_8;
-          local_30 = local_90 << 5;
-          pDVar6 = (*param_3)(local_30);
-          local_10->baseMat = pDVar6;
-          param_1->memUsage = param_1->memUsage + local_30;
-          if (local_44 == 0) {
-            local_10->quats = (short *)0x0;
-            local_10->trans = (float *)0x0;
+          parentList = local_b8;
+          model->memUsage = model->memUsage + size;
+          size = 0x1c;
+          modelParts = (*Alloc)(0x1c);
+          model->memUsage = model->memUsage + size;
+          modelParts->parentList = parentList;
+          modelParts->boneNames = boneNames;
+          size = numBones << 5;
+          pDVar6 = (*Alloc)(size);
+          modelParts->baseMat = pDVar6;
+          model->memUsage = model->memUsage + size;
+          if (numChildBones == 0) {
+            modelParts->quats = (short *)0x0;
+            modelParts->trans = (float *)0x0;
           }
           else {
-            local_30 = (int)local_44 << 3;
-            psVar7 = (*param_3)(local_30);
-            local_10->quats = psVar7;
-            param_1->memUsage = param_1->memUsage + local_30;
-            local_30 = (int)local_44 << 4;
-            pfVar8 = (*param_3)(local_30);
-            local_10->trans = pfVar8;
-            param_1->memUsage = param_1->memUsage + local_30;
+            size = (int)numChildBones << 3;
+            psVar7 = (*Alloc)(size);
+            modelParts->quats = psVar7;
+            model->memUsage = model->memUsage + size;
+            size = (int)numChildBones << 4;
+            pfVar8 = (*Alloc)(size);
+            modelParts->trans = pfVar8;
+            model->memUsage = model->memUsage + size;
           }
-          local_30 = local_90;
-          puVar9 = (*param_3)(local_90);
-          local_10->partClassification = puVar9;
-          param_1->memUsage = param_1->memUsage + local_30;
-          local_10->numBones = (uchar)local_90;
-          if ((local_10->numBones != local_90) &&
+          size = numBones;
+          puVar9 = (*Alloc)(numBones);
+          modelParts->partClassification = puVar9;
+          model->memUsage = model->memUsage + size;
+          modelParts->numBones = (uchar)numBones;
+          if (((uint)modelParts->numBones != numBones) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                        ,0xee,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             pXVar5 = (XModelPartsLoad *)(*pcVar2)();
             return pXVar5;
           }
-          local_10->numRootBones = (uchar)local_48;
-          if ((local_10->numRootBones != local_48) &&
+          modelParts->numRootBones = (uchar)numRootBones;
+          if (((uint)modelParts->numRootBones != numRootBones) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                        ,0xf1,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             pXVar5 = (XModelPartsLoad *)(*pcVar2)();
             return pXVar5;
           }
-          local_2c = local_10->quats;
-          local_3c = local_10->trans;
-          for (local_14 = local_48; (int)local_14 < (int)local_90; local_14 = local_14 + 1) {
-            local_20 = (uint)*(byte *)local_94;
-            local_94 = (float *)((int)local_94 + 1);
-            if (((int)local_14 <= (int)local_20) &&
+          quats = modelParts->quats;
+          trans = modelParts->trans;
+          for (i = numRootBones; i < numBones; i = i + 1) {
+            index = (int)*pos;
+            pos = pos + 1;
+            if ((i <= index) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                          ,0xfc,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               pXVar5 = (XModelPartsLoad *)(*pcVar2)();
               return pXVar5;
             }
-            *local_24 = (char)local_14 - (char)local_20;
-            if ((local_14 - local_20 != (uint)*local_24) &&
+            *parentList = (char)i - (char)index;
+            if ((i - index != (uint)*parentList) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                          ,0xfe,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               pXVar5 = (XModelPartsLoad *)(*pcVar2)();
               return pXVar5;
             }
-            *local_3c = *local_94;
-            pfVar8 = local_94 + 2;
-            local_3c[1] = local_94[1];
-            local_94 = local_94 + 3;
-            local_3c[2] = *pfVar8;
-            ConsumeQuatNoSwap((uchar **)&local_94,local_2c);
-            local_2c = local_2c + 4;
-            local_3c = local_3c + 3;
-            local_24 = local_24 + 1;
+            *trans = *(float *)pos;
+            pfVar8 = (float *)(pos + 8);
+            trans[1] = *(float *)(pos + 4);
+            pos = pos + 0xc;
+            trans[2] = *pfVar8;
+            ConsumeQuatNoSwap(&pos,quats);
+            quats = quats + 4;
+            trans = trans + 3;
+            parentList = parentList + 1;
           }
-          for (local_14 = 0; (int)local_14 < (int)local_90; local_14 = local_14 + 1) {
-            local_bc = local_94;
+          for (i = 0; i < numBones; i = i + 1) {
+            local_bc = pos;
             do {
-              bVar1 = *(byte *)local_bc;
-              local_bc = (float *)((int)local_bc + 1);
-            } while (bVar1 != 0);
-            local_34 = (byte *)((int)local_bc + (1 - (int)((int)local_94 + 1)));
-            uVar10 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,(char *)local_94,0,(uint)local_34,10);
-            local_8[local_14] = (ushort)uVar10;
-            local_94 = (float *)((int)local_94 + (int)local_34);
+              uVar1 = *local_bc;
+              local_bc = local_bc + 1;
+            } while (uVar1 != '\0');
+            len = (int)(local_bc + (1 - (int)(pos + 1)));
+            uVar10 = SL_GetStringOfSize(SCRIPTINSTANCE_SERVER,(char *)pos,0,len,10);
+            boneNames[i] = (ushort)uVar10;
+            pos = pos + len;
           }
-          memcpy(local_10->partClassification,(uchar *)local_94,local_90);
-          local_9 = *(byte *)((int)local_94 + local_90) != 0;
-          local_94 = (float *)((byte *)((int)local_94 + local_90) + 1);
-          FS_FreeFile(local_40);
-          XModelCalcBasePose(local_10);
-          if (local_9 == '\0') {
-            memset((uchar *)local_10->trans,'\0',(int)local_44 << 4);
+          memcpy(modelParts->partClassification,pos,numBones);
+          useBones = pos[numBones] != '\0';
+          pos = pos + numBones + 1;
+          FS_FreeFile(buf);
+          XModelCalcBasePose(modelParts);
+          if (useBones == false) {
+            memset((uchar *)modelParts->trans,'\0',(int)numChildBones << 4);
           }
         }
         else {
-          FS_FreeFile(local_40);
+          FS_FreeFile(buf);
           Com_PrintError(0x13,"ERROR: xmodel \'%s\' has more than %d bones\n");
-          local_10 = (XModelPartsLoad *)0x0;
+          modelParts = (XModelPartsLoad *)0x0;
         }
       }
       else {
-        FS_FreeFile(local_40);
+        FS_FreeFile(buf);
         Com_PrintError(0x13,"ERROR: xmodelparts \'%s\' out of date (version %d, expecting %d).\n");
-        local_10 = (XModelPartsLoad *)0x0;
+        modelParts = (XModelPartsLoad *)0x0;
       }
     }
   }
-  return local_10;
+  return modelParts;
 }
 
 
 // 00804480  XModelLoadConfigFile  (xanim/xmodel_load_obj.cpp:290)
 
-bool __cdecl XModelLoadConfigFile(char *param_1,uchar **param_2,XModelConfig *param_3)
+bool __cdecl XModelLoadConfigFile(char *name,uchar **pos,XModelConfig *config)
 
 {
   uchar uVar1;
@@ -400,103 +401,104 @@ bool __cdecl XModelLoadConfigFile(char *param_1,uchar **param_2,XModelConfig *pa
   uchar *local_4c;
   char *local_40;
   uchar *local_3c;
-  int local_8;
+  short version;
+  int i;
   
-  sVar2 = *(short *)*param_2;
-  *param_2 = *param_2 + 2;
+  sVar2 = *(short *)*pos;
+  *pos = *pos + 2;
   if (sVar2 == 0x3e) {
-    uVar3 = *(uint *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->flags = uVar3;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->mins[0] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->mins[1] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->mins[2] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->maxs[0] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->maxs[1] = fVar4;
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->maxs[2] = fVar4;
-    local_3c = *param_2;
-    local_40 = param_3->collMapFilename;
+    uVar3 = *(uint *)*pos;
+    *pos = *pos + 4;
+    config->flags = uVar3;
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->mins[0] = fVar4;
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->mins[1] = fVar4;
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->mins[2] = fVar4;
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->maxs[0] = fVar4;
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->maxs[1] = fVar4;
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->maxs[2] = fVar4;
+    local_3c = *pos;
+    local_40 = config->collMapFilename;
     do {
       uVar1 = *local_3c;
       *local_40 = uVar1;
       local_3c = local_3c + 1;
       local_40 = local_40 + 1;
     } while (uVar1 != '\0');
-    local_4c = *param_2;
+    local_4c = *pos;
     puVar7 = local_4c + 1;
     do {
       uVar1 = *local_4c;
       local_4c = local_4c + 1;
     } while (uVar1 != '\0');
-    *param_2 = *param_2 + (int)(local_4c + (1 - (int)puVar7));
-    local_5c = *param_2;
-    local_60 = param_3->physicsPresetFilename;
+    *pos = *pos + (int)(local_4c + (1 - (int)puVar7));
+    local_5c = *pos;
+    local_60 = config->physicsPresetFilename;
     do {
       uVar1 = *local_5c;
       *local_60 = uVar1;
       local_5c = local_5c + 1;
       local_60 = local_60 + 1;
     } while (uVar1 != '\0');
-    local_6c = *param_2;
+    local_6c = *pos;
     puVar7 = local_6c + 1;
     do {
       uVar1 = *local_6c;
       local_6c = local_6c + 1;
     } while (uVar1 != '\0');
-    *param_2 = *param_2 + (int)(local_6c + (1 - (int)puVar7));
-    local_7c = *param_2;
-    local_80 = param_3->physicsConstraintsFilename;
+    *pos = *pos + (int)(local_6c + (1 - (int)puVar7));
+    local_7c = *pos;
+    local_80 = config->physicsConstraintsFilename;
     do {
       uVar1 = *local_7c;
       *local_80 = uVar1;
       local_7c = local_7c + 1;
       local_80 = local_80 + 1;
     } while (uVar1 != '\0');
-    local_8c = *param_2;
+    local_8c = *pos;
     puVar7 = local_8c + 1;
     do {
       uVar1 = *local_8c;
       local_8c = local_8c + 1;
     } while (uVar1 != '\0');
-    *param_2 = *param_2 + (int)(local_8c + (1 - (int)puVar7));
-    fVar4 = *(float *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->bakeLightmapScale = fVar4;
-    for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-      fVar4 = *(float *)*param_2;
-      *param_2 = *param_2 + 4;
-      param_3->entries[local_8].dist = fVar4;
-      local_9c = *param_2;
-      local_a0 = param_3->entries + local_8;
+    *pos = *pos + (int)(local_8c + (1 - (int)puVar7));
+    fVar4 = *(float *)*pos;
+    *pos = *pos + 4;
+    config->bakeLightmapScale = fVar4;
+    for (i = 0; i < 4; i = i + 1) {
+      fVar4 = *(float *)*pos;
+      *pos = *pos + 4;
+      config->entries[i].dist = fVar4;
+      local_9c = *pos;
+      local_a0 = config->entries + i;
       do {
         uVar1 = *local_9c;
         local_a0->filename[0] = uVar1;
         local_9c = local_9c + 1;
         local_a0 = (XModelConfigEntry *)(local_a0->filename + 1);
       } while (uVar1 != '\0');
-      local_ac = *param_2;
+      local_ac = *pos;
       puVar7 = local_ac + 1;
       do {
         uVar1 = *local_ac;
         local_ac = local_ac + 1;
       } while (uVar1 != '\0');
-      *param_2 = *param_2 + (int)(local_ac + (1 - (int)puVar7));
+      *pos = *pos + (int)(local_ac + (1 - (int)puVar7));
     }
-    iVar5 = *(int *)*param_2;
-    *param_2 = *param_2 + 4;
-    param_3->collLod = iVar5;
+    iVar5 = *(int *)*pos;
+    *pos = *pos + 4;
+    config->collLod = iVar5;
     bVar6 = true;
   }
   else {
@@ -510,8 +512,7 @@ bool __cdecl XModelLoadConfigFile(char *param_1,uchar **param_2,XModelConfig *pa
 // 00804900  XModelLoadCollData  (xanim/xmodel_load_obj.cpp:338)
 
 void __cdecl
-XModelLoadCollData(uchar **param_1,XModel *param_2,_func___cdecl_void_ptr_int *param_3,char *param_4
-                  )
+XModelLoadCollData(uchar **pos,XModel *model,_func___cdecl_void_ptr_int *AllocColl,char *name)
 
 {
   int iVar1;
@@ -524,29 +525,29 @@ XModelLoadCollData(uchar **param_1,XModel *param_2,_func___cdecl_void_ptr_int *p
   XModelCollSurf_s *pXVar8;
   XModelCollTri_s *pXVar9;
   float fVar10;
-  int local_38;
-  phys_vec3 local_34;
-  XModelCollTri_s *local_24;
-  XModelCollSurf_s *local_20;
-  float local_1c;
+  int j;
+  phys_vec3 plane;
+  XModelCollTri_s *tri;
+  XModelCollSurf_s *surf;
+  float tvec;
   float local_18;
   float local_14;
   float local_10;
-  int local_c;
-  int local_8;
+  int i;
+  int numCollTris;
   
-  if ((param_2->contents != 0) &&
+  if ((model->contents != 0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x15d
                                ,0,"%s"), !bVar7)) {
     pcVar6 = (code *)swi(3);
     (*pcVar6)();
     return;
   }
-  iVar1 = *(int *)*param_1;
-  *param_1 = *param_1 + 4;
-  param_2->numCollSurfs = iVar1;
-  if (param_2->numCollSurfs == 0) {
-    if ((param_2->collSurfs != (XModelCollSurf_s *)0x0) &&
+  iVar1 = *(int *)*pos;
+  *pos = *pos + 4;
+  model->numCollSurfs = iVar1;
+  if (model->numCollSurfs == 0) {
+    if ((model->collSurfs != (XModelCollSurf_s *)0x0) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                  0x161,0,"%s"), !bVar7)) {
       pcVar6 = (code *)swi(3);
@@ -555,32 +556,32 @@ XModelLoadCollData(uchar **param_1,XModel *param_2,_func___cdecl_void_ptr_int *p
     }
   }
   else {
-    pXVar8 = (*param_3)(param_2->numCollSurfs * 0x2c);
-    param_2->collSurfs = pXVar8;
-    for (local_c = 0; local_c < param_2->numCollSurfs; local_c = local_c + 1) {
-      local_20 = param_2->collSurfs + local_c;
-      local_8 = *(int *)*param_1;
-      *param_1 = *param_1 + 4;
-      if ((local_8 == 0) &&
+    pXVar8 = (*AllocColl)(model->numCollSurfs * 0x2c);
+    model->collSurfs = pXVar8;
+    for (i = 0; i < model->numCollSurfs; i = i + 1) {
+      surf = model->collSurfs + i;
+      numCollTris = *(int *)*pos;
+      *pos = *pos + 4;
+      if ((numCollTris == 0) &&
          (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x16c,0,"%s"), !bVar7)) {
         pcVar6 = (code *)swi(3);
         (*pcVar6)();
         return;
       }
-      local_20->numCollTris = local_8;
-      pXVar9 = (*param_3)(local_20->numCollTris * 0x30);
-      local_20->collTris = pXVar9;
-      for (local_38 = 0; local_38 < local_8; local_38 = local_38 + 1) {
-        local_34.x = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_34.y = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_34.z = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_34.w = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        fVar10 = Abs(&local_34);
+      surf->numCollTris = numCollTris;
+      pXVar9 = (*AllocColl)(surf->numCollTris * 0x30);
+      surf->collTris = pXVar9;
+      for (j = 0; j < numCollTris; j = j + 1) {
+        plane.x = *(float *)*pos;
+        *pos = *pos + 4;
+        plane.y = *(float *)*pos;
+        *pos = *pos + 4;
+        plane.z = *(float *)*pos;
+        *pos = *pos + 4;
+        plane.w = *(float *)*pos;
+        *pos = *pos + 4;
+        fVar10 = Abs(&plane);
         if ((0.01 <= ABS(fVar10 - 1.0)) &&
            (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                      ,0x17a,0,"%s\n\t(name) = %s"), !bVar7)) {
@@ -588,71 +589,71 @@ XModelLoadCollData(uchar **param_1,XModel *param_2,_func___cdecl_void_ptr_int *p
           (*pcVar6)();
           return;
         }
-        fVar10 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        fVar2 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        fVar3 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        fVar4 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_1c = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_18 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_14 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_10 = *(float *)*param_1;
-        *param_1 = *param_1 + 4;
-        local_24 = local_20->collTris + local_38;
-        local_24->plane[0] = local_34.x;
-        local_24->plane[1] = local_34.y;
-        local_24->plane[2] = local_34.z;
-        local_24->plane[3] = local_34.w;
-        local_24->svec[0] = fVar10;
-        local_24->svec[1] = fVar2;
-        local_24->svec[2] = fVar3;
-        local_24->svec[3] = fVar4;
-        local_24->tvec[0] = local_1c;
-        local_24->tvec[1] = local_18;
-        local_24->tvec[2] = local_14;
-        local_24->tvec[3] = local_10;
+        fVar10 = *(float *)*pos;
+        *pos = *pos + 4;
+        fVar2 = *(float *)*pos;
+        *pos = *pos + 4;
+        fVar3 = *(float *)*pos;
+        *pos = *pos + 4;
+        fVar4 = *(float *)*pos;
+        *pos = *pos + 4;
+        tvec = *(float *)*pos;
+        *pos = *pos + 4;
+        local_18 = *(float *)*pos;
+        *pos = *pos + 4;
+        local_14 = *(float *)*pos;
+        *pos = *pos + 4;
+        local_10 = *(float *)*pos;
+        *pos = *pos + 4;
+        tri = surf->collTris + j;
+        tri->plane[0] = plane.x;
+        tri->plane[1] = plane.y;
+        tri->plane[2] = plane.z;
+        tri->plane[3] = plane.w;
+        tri->svec[0] = fVar10;
+        tri->svec[1] = fVar2;
+        tri->svec[2] = fVar3;
+        tri->svec[3] = fVar4;
+        tri->tvec[0] = tvec;
+        tri->tvec[1] = local_18;
+        tri->tvec[2] = local_14;
+        tri->tvec[3] = local_10;
       }
-      fVar10 = *(float *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->mins[0] = fVar10 - 0.001;
-      fVar10 = *(float *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->mins[1] = fVar10 - 0.001;
-      fVar10 = *(float *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->mins[2] = fVar10 - 0.001;
-      fVar10 = *(float *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->maxs[0] = fVar10 + 0.001;
-      fVar10 = *(float *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->maxs[1] = fVar10 + 0.001;
-      fVar10 = *(float *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->maxs[2] = fVar10 + 0.001;
-      iVar1 = *(int *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->boneIdx = iVar1;
-      uVar5 = *(uint *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->contents = uVar5 & 0xdffffffb;
-      if (((local_20->contents != 0) && (local_20->boneIdx < 0)) &&
+      fVar10 = *(float *)*pos;
+      *pos = *pos + 4;
+      surf->mins[0] = fVar10 - 0.001;
+      fVar10 = *(float *)*pos;
+      *pos = *pos + 4;
+      surf->mins[1] = fVar10 - 0.001;
+      fVar10 = *(float *)*pos;
+      *pos = *pos + 4;
+      surf->mins[2] = fVar10 - 0.001;
+      fVar10 = *(float *)*pos;
+      *pos = *pos + 4;
+      surf->maxs[0] = fVar10 + 0.001;
+      fVar10 = *(float *)*pos;
+      *pos = *pos + 4;
+      surf->maxs[1] = fVar10 + 0.001;
+      fVar10 = *(float *)*pos;
+      *pos = *pos + 4;
+      surf->maxs[2] = fVar10 + 0.001;
+      iVar1 = *(int *)*pos;
+      *pos = *pos + 4;
+      surf->boneIdx = iVar1;
+      uVar5 = *(uint *)*pos;
+      *pos = *pos + 4;
+      surf->contents = uVar5 & 0xdffffffb;
+      if (((surf->contents != 0) && (surf->boneIdx < 0)) &&
          (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x199,0,"%s"), !bVar7)) {
         pcVar6 = (code *)swi(3);
         (*pcVar6)();
         return;
       }
-      iVar1 = *(int *)*param_1;
-      *param_1 = *param_1 + 4;
-      local_20->surfFlags = iVar1;
-      param_2->contents = param_2->contents | local_20->contents;
+      iVar1 = *(int *)*pos;
+      *pos = *pos + 4;
+      surf->surfFlags = iVar1;
+      model->contents = model->contents | surf->contents;
     }
   }
   return;
@@ -662,40 +663,41 @@ XModelLoadCollData(uchar **param_1,XModel *param_2,_func___cdecl_void_ptr_int *p
 // 00804F40  XModelPartsPrecache  (xanim/xmodel_load_obj.cpp:419)
 
 XModelPartsLoad * __cdecl
-XModelPartsPrecache(XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *param_3,
-                   long64 *param_4)
+XModelPartsPrecache(XModel *model,char *name,_func___cdecl_void_ptr_int *Alloc,
+                   long64 *xmodelModifiedTime)
 
 {
-  XModelPartsLoad *pXVar1;
+  XModelPartsLoad *modelParts_00;
+  XModelPartsLoad *modelParts;
   
-  pXVar1 = XModelPartsFindData(param_2);
-  if (pXVar1 == (XModelPartsLoad *)0x0) {
-    pXVar1 = XModelPartsLoadFile(param_1,param_2,param_3,param_4);
-    if (pXVar1 == (XModelPartsLoad *)0x0) {
+  modelParts_00 = XModelPartsFindData(name);
+  if (modelParts_00 == (XModelPartsLoad *)0x0) {
+    modelParts_00 = XModelPartsLoadFile(model,name,Alloc,xmodelModifiedTime);
+    if (modelParts_00 == (XModelPartsLoad *)0x0) {
       Com_PrintError(0x13,"ERROR: Cannot find xmodelparts \'%s\'.\n");
-      pXVar1 = (XModelPartsLoad *)0x0;
+      modelParts_00 = (XModelPartsLoad *)0x0;
     }
     else {
-      XModelPartsSetData(param_2,pXVar1,param_3);
+      XModelPartsSetData(name,modelParts_00,Alloc);
     }
   }
-  return pXVar1;
+  return modelParts_00;
 }
 
 
 // 00803070  XModelCopyXModelParts  (xanim/xmodel_load_obj.cpp:438)
 
-void __cdecl XModelCopyXModelParts(XModelPartsLoad *param_1,XModel *param_2)
+void __cdecl XModelCopyXModelParts(XModelPartsLoad *modelParts,XModel *model)
 
 {
-  param_2->numBones = param_1->numBones;
-  param_2->numRootBones = param_1->numRootBones;
-  param_2->field5_0x8 = (XModel_u_8)param_1->boneNames;
-  param_2->field6_0xc = (XModel_u_12)param_1->parentList;
-  param_2->field7_0x10 = (XModel_u_16)param_1->quats;
-  param_2->field8_0x14 = (XModel_u_20)param_1->trans;
-  param_2->partClassification = param_1->partClassification;
-  param_2->baseMat = param_1->baseMat;
+  model->numBones = modelParts->numBones;
+  model->numRootBones = modelParts->numRootBones;
+  model->field5_0x8 = (XModel_u_8)modelParts->boneNames;
+  model->field6_0xc = (XModel_u_12)modelParts->parentList;
+  model->field7_0x10 = (XModel_u_16)modelParts->quats;
+  model->field8_0x14 = (XModel_u_20)modelParts->trans;
+  model->partClassification = modelParts->partClassification;
+  model->baseMat = modelParts->baseMat;
   return;
 }
 
@@ -715,8 +717,8 @@ bool __cdecl XModelAllowLoadMesh(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 XModel * __cdecl
-XModelLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_void_ptr_int *param_3
-              ,long64 *param_4)
+XModelLoadFile(char *name,_func___cdecl_void_ptr_int *Alloc,_func___cdecl_void_ptr_int *AllocColl,
+              long64 *xmodelModifiedTime)
 
 {
   byte bVar1;
@@ -738,25 +740,25 @@ XModelLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_v
   float local_20b4;
   float local_20b0;
   int local_20a8;
-  float *local_20a0;
+  byte *local_20a0;
   byte *local_209c;
-  float *local_208c;
-  float *local_207c;
+  uchar *local_208c;
+  uchar *local_207c;
   float local_2074;
-  char local_2034 [512];
-  float local_1e34;
-  float local_1e30;
-  float local_1e2c;
+  char filename_2 [512];
+  float area;
+  float computedDist;
+  float diag;
   float local_1e28;
   float local_1e24;
-  float *local_1e20;
-  int local_1e1c;
-  uint local_1e18;
-  char local_1e14 [68];
-  float local_1dd0;
+  uchar *pos;
+  int j;
+  int numBones;
+  char filename [68];
+  float delta;
   float local_1dcc;
   float local_1dc8;
-  float local_1dc4;
+  float axes;
   float local_1dc0;
   float local_1dbc;
   undefined4 local_1db8;
@@ -765,42 +767,42 @@ XModelLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_v
   undefined4 local_1dac;
   undefined4 local_1da8;
   float local_1da4;
-  uint local_1da0;
-  XModel *local_1d9c;
-  XBoneInfo *local_1d98;
-  float *local_1d94;
-  XModelLodInfo *local_1d90;
-  float *local_1d8c;
-  int local_1d88;
-  char *local_1d84;
-  int local_1d80;
-  char local_1d7c [260];
-  float (*local_1c78) [3];
-  XModelSurfs local_1c74;
-  XBoneInfo *local_1c5c;
-  int local_1c58;
-  float *local_1c54;
-  uint local_1c50;
-  XModelConfig local_1c4c;
+  int surfIndex;
+  XModel *model;
+  float *mins;
+  uchar *buf;
+  XModelLodInfo *modelLodInfo;
+  float *offset;
+  int size;
+  char *materialNamePrefix;
+  int fileSize;
+  char materialName [260];
+  float *maxs;
+  XModelSurfs modelSurf;
+  XBoneInfo *boneInfo;
+  int i;
+  uchar *lodPos;
+  int numsurfs;
+  XModelConfig config;
   uint local_10;
-  XModelPartsLoad *local_c;
-  float *local_8;
+  XModelPartsLoad *modelParts;
+  char *surfName;
   
-  local_8 = (float *)0x80338d;
+  surfName = (char *)0x80338d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar7 = Com_IsLegacyXModelName(param_1);
+  iVar7 = Com_IsLegacyXModelName(name);
   if (iVar7 == 0) {
-    iVar7 = Com_sprintf(local_1e14,0x40,"xmodel/%s");
+    iVar7 = Com_sprintf(filename,0x40,"xmodel/%s");
     if (iVar7 < 0) {
       Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n");
-      local_1d9c = (XModel *)0x0;
+      model = (XModel *)0x0;
     }
     else {
-      local_1d80 = FS_ReadFile(local_1e14,&local_1d94);
-      lVar16 = FS_GetModTime(local_1e14,true);
-      *param_4 = lVar16;
-      if (local_1d80 < 0) {
-        if ((local_1d94 != (float *)0x0) &&
+      fileSize = FS_ReadFile(filename,&buf);
+      lVar16 = FS_GetModTime(filename,true);
+      *xmodelModifiedTime = lVar16;
+      if (fileSize < 0) {
+        if ((buf != (uchar *)0x0) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                      ,0x203,0,"%s"), !bVar5)) {
           pcVar3 = (code *)swi(3);
@@ -808,158 +810,156 @@ XModelLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_v
           return pXVar8;
         }
         Com_PrintError(0x13,"ERROR: xmodel \'%s\' not found\n");
-        local_1d9c = (XModel *)0x0;
+        model = (XModel *)0x0;
       }
-      else if (local_1d80 == 0) {
+      else if (fileSize == 0) {
         Com_PrintError(0x13,"ERROR: xmodel \'%s\' has 0 length\n");
-        FS_FreeFile(local_1d94);
-        local_1d9c = (XModel *)0x0;
+        FS_FreeFile(buf);
+        model = (XModel *)0x0;
       }
       else {
-        local_1e20 = local_1d94;
-        bVar5 = XModelLoadConfigFile(param_1,(uchar **)&local_1e20,&local_1c4c);
+        pos = buf;
+        bVar5 = XModelLoadConfigFile(name,&pos,&config);
         if (bVar5) {
-          local_1d88 = 0xfc;
-          local_1d9c = (*param_2)(0xfc);
-          local_1d9c->memUsage = local_1d88;
-          local_1d9c->flags = local_1c4c.flags;
-          XModelLoadCollData((uchar **)&local_1e20,local_1d9c,param_3,param_1);
-          local_1d9c->numLods = 0;
-          local_1c54 = local_1e20;
-          local_1c50 = 0;
-          for (local_1c58 = 0; local_1c58 < 4; local_1c58 = local_1c58 + 1) {
-            local_1d90 = local_1d9c->lodInfo + local_1c58;
-            if (local_1c4c.entries[local_1c58].filename[0] != '\0') {
-              if ((local_1c58 != local_1d9c->numLods) &&
+          size = 0xfc;
+          model = (*Alloc)(0xfc);
+          model->memUsage = size;
+          model->flags = config.flags;
+          XModelLoadCollData(&pos,model,AllocColl,name);
+          model->numLods = 0;
+          lodPos = pos;
+          numsurfs = 0;
+          for (i = 0; i < 4; i = i + 1) {
+            modelLodInfo = model->lodInfo + i;
+            if (config.entries[i].filename[0] != '\0') {
+              if ((i != model->numLods) &&
                  (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                            ,0x231,0,"%s"), !bVar5)) {
                 pcVar3 = (code *)swi(3);
                 pXVar8 = (XModel *)(*pcVar3)();
                 return pXVar8;
               }
-              local_1d9c->numLods = local_1d9c->numLods + 1;
-              uVar2 = *(ushort *)local_1e20;
-              local_1e20 = (float *)((int)local_1e20 + 2);
-              local_1d90->numsurfs = uVar2;
-              local_1c50 = local_1d90->numsurfs + local_1c50;
-              for (local_1e1c = 0; local_1e1c < (int)(uint)local_1d90->numsurfs;
-                  local_1e1c = local_1e1c + 1) {
-                local_8 = local_1e20;
-                local_207c = local_1e20;
+              model->numLods = model->numLods + 1;
+              uVar2 = *(ushort *)pos;
+              pos = pos + 2;
+              modelLodInfo->numsurfs = uVar2;
+              numsurfs = (uint)modelLodInfo->numsurfs + numsurfs;
+              for (j = 0; j < (int)(uint)modelLodInfo->numsurfs; j = j + 1) {
+                surfName = (char *)pos;
+                local_207c = pos;
                 do {
-                  bVar1 = *(byte *)local_207c;
-                  local_207c = (float *)((int)local_207c + 1);
-                } while (bVar1 != 0);
-                local_1e20 = local_207c;
+                  uVar6 = *local_207c;
+                  local_207c = local_207c + 1;
+                } while (uVar6 != '\0');
+                pos = local_207c;
               }
             }
-            local_1d90->dist = local_1c4c.entries[local_1c58].dist;
+            modelLodInfo->dist = config.entries[i].dist;
           }
-          if ((local_1d9c->numLods == 0) &&
+          if ((model->numLods == 0) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                        ,0x240,0,"%s"), !bVar5)) {
             pcVar3 = (code *)swi(3);
             pXVar8 = (XModel *)(*pcVar3)();
             return pXVar8;
           }
-          local_1d9c->flags = local_1d9c->flags & 0xfff7ffff;
-          local_c = XModelPartsPrecache(local_1d9c,(char *)&local_1c4c,param_2,param_4);
-          if (local_c == (XModelPartsLoad *)0x0) {
-            FS_FreeFile(local_1d94);
-            local_1d9c = (XModel *)0x0;
+          model->flags = model->flags & 0xfff7ffff;
+          modelParts = XModelPartsPrecache(model,(char *)&config,Alloc,xmodelModifiedTime);
+          if (modelParts == (XModelPartsLoad *)0x0) {
+            FS_FreeFile(buf);
+            model = (XModel *)0x0;
           }
           else {
-            XModelCopyXModelParts(local_c,local_1d9c);
-            local_1e18 = (uint)local_1d9c->numBones;
-            local_1d88 = local_1e18 * 0x2c;
-            local_1c5c = (*param_2)(local_1d88);
-            local_1d9c->memUsage = local_1d9c->memUsage + local_1d88;
-            for (local_1c58 = 0; local_1c58 < (int)local_1e18; local_1c58 = local_1c58 + 1) {
-              local_1d98 = local_1c5c + local_1c58;
-              local_1d98->bounds[0][0] = *local_1e20;
-              local_1d98->bounds[0][1] = local_1e20[1];
-              local_1d98->bounds[0][2] = local_1e20[2];
-              pafVar4 = local_1c5c[local_1c58].bounds;
-              local_1c78 = pafVar4 + 1;
-              (*local_1c78)[0] = local_1e20[3];
-              pfVar14 = local_1e20 + 5;
-              pafVar4[1][1] = local_1e20[4];
-              local_1e20 = local_1e20 + 6;
+            XModelCopyXModelParts(modelParts,model);
+            numBones = (int)model->numBones;
+            size = numBones * 0x2c;
+            boneInfo = (*Alloc)(size);
+            model->memUsage = model->memUsage + size;
+            for (i = 0; i < numBones; i = i + 1) {
+              mins = (float *)(boneInfo + i);
+              ((XBoneInfo *)mins)->bounds[0][0] = *(float *)pos;
+              ((XBoneInfo *)mins)->bounds[0][1] = *(float *)(pos + 4);
+              ((XBoneInfo *)mins)->bounds[0][2] = *(float *)(pos + 8);
+              pafVar4 = boneInfo[i].bounds;
+              maxs = pafVar4[1];
+              (*(float (*) [3])maxs)[0] = *(float *)(pos + 0xc);
+              pfVar14 = (float *)(pos + 0x14);
+              pafVar4[1][1] = *(float *)(pos + 0x10);
+              pos = pos + 0x18;
               pafVar4[1][2] = *pfVar14;
-              local_1d8c = local_1c5c[local_1c58].offset;
-              *local_1d8c = (local_1d98->bounds[0][0] + (*local_1c78)[0]) * 0.5;
-              local_1d8c[1] = (local_1d98->bounds[0][1] + pafVar4[1][1]) * 0.5;
-              local_1d8c[2] = (local_1d98->bounds[0][2] + pafVar4[1][2]) * 0.5;
-              local_1dd0 = (*local_1c78)[0] - *local_1d8c;
-              local_1dcc = pafVar4[1][1] - local_1d8c[1];
-              local_1dc8 = pafVar4[1][2] - local_1d8c[2];
-              local_1c5c[local_1c58].radiusSquared =
-                   local_1dd0 * local_1dd0 + local_1dcc * local_1dcc + local_1dc8 * local_1dc8;
+              offset = boneInfo[i].offset;
+              *offset = (((XBoneInfo *)mins)->bounds[0][0] + (*(float (*) [3])maxs)[0]) * 0.5;
+              offset[1] = (((XBoneInfo *)mins)->bounds[0][1] + pafVar4[1][1]) * 0.5;
+              offset[2] = (((XBoneInfo *)mins)->bounds[0][2] + pafVar4[1][2]) * 0.5;
+              delta = (*(float (*) [3])maxs)[0] - *offset;
+              local_1dcc = pafVar4[1][1] - offset[1];
+              local_1dc8 = pafVar4[1][2] - offset[2];
+              boneInfo[i].radiusSquared =
+                   delta * delta + local_1dcc * local_1dcc + local_1dc8 * local_1dc8;
             }
-            (local_1d9c->field18_0xb8).localBoneInfo = local_1c5c;
-            local_1d9c->lodRampType = '\0';
+            (model->field18_0xb8).localBoneInfo = boneInfo;
+            model->lodRampType = '\0';
             bVar5 = XModelAllowLoadMesh();
             if (bVar5) {
-              local_1e20 = local_1c54;
-              if ((local_1c4c.entries[0].filename[0] == '\0') &&
+              pos = lodPos;
+              if ((config.entries[0].filename[0] == '\0') &&
                  (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                            ,0x26f,0,"%s"), !bVar5)) {
                 pcVar3 = (code *)swi(3);
                 pXVar8 = (XModel *)(*pcVar3)();
                 return pXVar8;
               }
-              local_1d9c->numsurfs = (uchar)local_1c50;
-              if ((local_1d9c->numsurfs != local_1c50) &&
+              model->numsurfs = (uchar)numsurfs;
+              if (((uint)model->numsurfs != numsurfs) &&
                  (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                            ,0x272,0,"%s"), !bVar5)) {
                 pcVar3 = (code *)swi(3);
                 pXVar8 = (XModel *)(*pcVar3)();
                 return pXVar8;
               }
-              pXVar9 = (*param_2)(local_1c50 * 0x44);
-              local_1d9c->surfs = pXVar9;
-              ppMVar10 = (*param_2)(local_1c50 << 2);
-              local_1d9c->materialHandles = ppMVar10;
-              local_1da0 = 0;
-              for (local_1c58 = 0; local_1c58 < 4; local_1c58 = local_1c58 + 1) {
-                local_1d90 = local_1d9c->lodInfo + local_1c58;
-                if (local_1c4c.entries[local_1c58].filename[0] != '\0') {
-                  local_1e20 = (float *)((int)local_1e20 + 2);
-                  iVar7 = XModelSurfsPrecache(local_1d9c,local_1c4c.entries[local_1c58].filename,
-                                              param_2,local_1d90->numsurfs,param_1,&local_1c74,
-                                              param_4);
+              pXVar9 = (*Alloc)(numsurfs * 0x44);
+              model->surfs = pXVar9;
+              ppMVar10 = (*Alloc)(numsurfs << 2);
+              model->materialHandles = ppMVar10;
+              surfIndex = 0;
+              for (i = 0; i < 4; i = i + 1) {
+                modelLodInfo = model->lodInfo + i;
+                if (config.entries[i].filename[0] != '\0') {
+                  pos = pos + 2;
+                  iVar7 = XModelSurfsPrecache(model,config.entries[i].filename,Alloc,
+                                              modelLodInfo->numsurfs,name,&modelSurf,
+                                              xmodelModifiedTime);
                   if (iVar7 == 0) {
-                    FS_FreeFile(local_1d94);
+                    FS_FreeFile(buf);
                     return (XModel *)0x0;
                   }
-                  local_1d90->partBits[0] = local_1c74.partBits[0];
-                  local_1d90->partBits[1] = local_1c74.partBits[1];
-                  local_1d90->partBits[2] = local_1c74.partBits[2];
-                  local_1d90->partBits[3] = local_1c74.partBits[3];
-                  local_1d90->partBits[4] = local_1c74.partBits[4];
-                  local_1d90->surfIndex = (ushort)local_1da0;
-                  if ((local_1d90->surfIndex != local_1da0) &&
+                  modelLodInfo->partBits[0] = modelSurf.partBits[0];
+                  modelLodInfo->partBits[1] = modelSurf.partBits[1];
+                  modelLodInfo->partBits[2] = modelSurf.partBits[2];
+                  modelLodInfo->partBits[3] = modelSurf.partBits[3];
+                  modelLodInfo->partBits[4] = modelSurf.partBits[4];
+                  modelLodInfo->surfIndex = (ushort)surfIndex;
+                  if (((uint)modelLodInfo->surfIndex != surfIndex) &&
                      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                                ,0x28f,0,"%s"), !bVar5)) {
                     pcVar3 = (code *)swi(3);
                     pXVar8 = (XModel *)(*pcVar3)();
                     return pXVar8;
                   }
-                  uVar6 = truncate_cast<unsigned_char>(local_1c58);
-                  local_1d90->lod = uVar6;
-                  local_1d90->smcIndexPlusOne = '\0';
-                  for (local_1e1c = 0; local_1e1c < (int)(uint)local_1d90->numsurfs;
-                      local_1e1c = local_1e1c + 1) {
-                    local_8 = local_1e20;
-                    local_208c = local_1e20;
+                  uVar6 = truncate_cast<unsigned_char>(i);
+                  modelLodInfo->lod = uVar6;
+                  modelLodInfo->smcIndexPlusOne = '\0';
+                  for (j = 0; j < (int)(uint)modelLodInfo->numsurfs; j = j + 1) {
+                    surfName = (char *)pos;
+                    local_208c = pos;
                     do {
-                      bVar1 = *(byte *)local_208c;
-                      local_208c = (float *)((int)local_208c + 1);
-                    } while (bVar1 != 0);
+                      uVar6 = *local_208c;
+                      local_208c = local_208c + 1;
+                    } while (uVar6 != '\0');
                     local_209c = (byte *)0xca2068;
-                    local_20a0 = local_1e20;
+                    local_20a0 = pos;
                     do {
-                      bVar1 = *(byte *)local_20a0;
+                      bVar1 = *local_20a0;
                       bVar5 = bVar1 < *local_209c;
                       if (bVar1 != *local_209c) {
 LAB_00803e46:
@@ -967,27 +967,27 @@ LAB_00803e46:
                         goto LAB_00803e51;
                       }
                       if (bVar1 == 0) break;
-                      bVar1 = *(byte *)((int)local_20a0 + 1);
+                      bVar1 = local_20a0[1];
                       bVar5 = bVar1 < local_209c[1];
                       if (bVar1 != local_209c[1]) goto LAB_00803e46;
-                      local_20a0 = (float *)((int)local_20a0 + 2);
+                      local_20a0 = local_20a0 + 2;
                       local_209c = local_209c + 2;
                     } while (bVar1 != 0);
                     local_20a8 = 0;
 LAB_00803e51:
                     if (local_20a8 == 0) {
-                      local_8 = (float *)0xcad210;
+                      surfName = "$default3d";
                     }
-                    local_1d84 = "mc/";
-                    local_1e20 = local_208c;
-                    Com_sprintf(local_1d7c,0x100,"%s%s");
-                    pMVar11 = Material_RegisterHandle(local_1d7c,8);
-                    local_1d9c->materialHandles[local_1da0] = pMVar11;
-                    if ((local_1c74.surfs[local_1e1c].flags & 0x80) != 0) {
-                      local_1d9c->lodRampType = '\x01';
+                    materialNamePrefix = "mc/";
+                    pos = local_208c;
+                    Com_sprintf(materialName,0x100,"%s%s");
+                    pMVar11 = Material_RegisterHandle(materialName,8);
+                    model->materialHandles[surfIndex] = pMVar11;
+                    if ((modelSurf.surfs[j].flags & 0x80) != 0) {
+                      model->lodRampType = '\x01';
                     }
-                    pXVar9 = local_1c74.surfs + local_1e1c;
-                    pXVar15 = local_1d9c->surfs + local_1da0;
+                    pXVar9 = modelSurf.surfs + j;
+                    pXVar15 = model->surfs + surfIndex;
                     for (iVar7 = 0x11; iVar7 != 0; iVar7 = iVar7 + -1) {
                       uVar6 = pXVar9->vertListCount;
                       uVar2 = pXVar9->flags;
@@ -997,18 +997,18 @@ LAB_00803e51:
                       pXVar9 = (XSurface *)&pXVar9->vertCount;
                       pXVar15 = (XSurface *)&pXVar15->vertCount;
                     }
-                    local_1da0 = local_1da0 + 1;
+                    surfIndex = surfIndex + 1;
                   }
                 }
               }
-              if ((local_1da0 != local_1c50) &&
+              if ((surfIndex != numsurfs) &&
                  (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                            ,0x2da,0,"%s"), !bVar5)) {
                 pcVar3 = (code *)swi(3);
                 pXVar8 = (XModel *)(*pcVar3)();
                 return pXVar8;
               }
-              local_1dc4 = 1.0;
+              axes = 1.0;
               local_1dc0 = 0.0;
               local_1dbc = 0.0;
               local_1db8 = 0;
@@ -1017,23 +1017,22 @@ LAB_00803e51:
               local_1dac = 0;
               local_1da8 = 0;
               local_1da4 = 1.0;
-              R_GetXModelBounds(local_1d9c,(float (*) [3])&local_1dc4,local_1d9c->mins,
-                                local_1d9c->maxs);
+              R_GetXModelBounds(model,(float (*) [3])&axes,model->mins,model->maxs);
             }
-            for (local_1c58 = 0; local_1c58 < local_1d9c->numLods; local_1c58 = local_1c58 + 1) {
-              local_1d90 = local_1d9c->lodInfo + local_1c58;
-              local_1e2c = local_1d9c->maxs[0] - local_1d9c->mins[0];
-              local_1e28 = local_1d9c->maxs[1] - local_1d9c->mins[1];
-              local_1e24 = local_1d9c->maxs[2] - local_1d9c->mins[2];
+            for (i = 0; i < model->numLods; i = i + 1) {
+              modelLodInfo = model->lodInfo + i;
+              diag = model->maxs[0] - model->mins[0];
+              local_1e28 = model->maxs[1] - model->mins[1];
+              local_1e24 = model->maxs[2] - model->mins[2];
               local_2074 = local_1e28 * local_1e24;
-              if (0.0 <= local_1e2c * local_1e28 - local_2074) {
-                local_2074 = local_1e2c * local_1e28;
+              if (0.0 <= diag * local_1e28 - local_2074) {
+                local_2074 = diag * local_1e28;
               }
-              local_20b0 = local_1e2c * local_1e24;
+              local_20b0 = diag * local_1e24;
               if (0.0 <= local_2074 - local_20b0) {
                 local_20b0 = local_2074;
               }
-              local_1e34 = local_20b0;
+              area = local_20b0;
               if ((local_20b0 < 0.0) &&
                  (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                            ,0x2ea,0,"%s"), !bVar5)) {
@@ -1041,90 +1040,91 @@ LAB_00803e51:
                 pXVar8 = (XModel *)(*pcVar3)();
                 return pXVar8;
               }
-              local_1e30 = SQRT(local_1e34) * 128.0 * 1.57;
-              if (local_1d90->dist == 0.0) {
-                local_1d9c->flags = local_1d9c->flags | 0x80000;
-                if (local_1c58 == 0) {
-                  local_1d90->dist = local_1e30;
+              computedDist = SQRT(area) * 128.0 * 1.57;
+              if (modelLodInfo->dist == 0.0) {
+                model->flags = model->flags | 0x80000;
+                if (i == 0) {
+                  modelLodInfo->dist = computedDist;
                 }
                 else {
-                  local_20b4 = local_1d9c->lodInfo[local_1c58 + -1].dist;
-                  if (0.0 <= local_1e30 - local_20b4) {
-                    local_20b4 = local_1e30;
+                  local_20b4 = model->lodInfo[i + -1].dist;
+                  if (0.0 <= computedDist - local_20b4) {
+                    local_20b4 = computedDist;
                   }
-                  local_1d90->dist = local_20b4;
+                  modelLodInfo->dist = local_20b4;
                 }
               }
             }
-            FS_FreeFile(local_1d94);
-            if ((local_1c4c.maxs[0] < 0.0) &&
+            FS_FreeFile(buf);
+            if ((config.maxs[0] < 0.0) &&
                (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                          ,0x314,0,"%s"), !bVar5)) {
               pcVar3 = (code *)swi(3);
               pXVar8 = (XModel *)(*pcVar3)();
               return pXVar8;
             }
-            local_1d9c->radius = local_1c4c.maxs[0];
-            local_1d9c->collLod = (short)local_1c4c.collLod;
-            if ((local_1d9c->numLods <= local_1d9c->collLod) &&
+            model->radius = config.maxs[0];
+            model->collLod = (short)config.collLod;
+            if ((model->numLods <= model->collLod) &&
                (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                          ,0x319,0,"%s"), !bVar5)) {
               pcVar3 = (code *)swi(3);
               pXVar8 = (XModel *)(*pcVar3)();
               return pXVar8;
             }
-            if (local_1c4c.physicsPresetFilename[0] != '\0') {
-              pPVar12 = XModel_PhysPresetPrecache(local_1c4c.physicsPresetFilename,param_2);
-              local_1d9c->physPreset = pPVar12;
+            if (config.physicsPresetFilename[0] != '\0') {
+              pPVar12 = XModel_PhysPresetPrecache(config.physicsPresetFilename,Alloc);
+              model->physPreset = pPVar12;
             }
-            if (local_1c4c.physicsConstraintsFilename[0] != '\0') {
-              pPVar13 = XModel_PhysConstraintsPrecache
-                                  (local_1c4c.physicsConstraintsFilename,param_2);
-              local_1d9c->physConstraints = pPVar13;
+            if (config.physicsConstraintsFilename[0] != '\0') {
+              pPVar13 = XModel_PhysConstraintsPrecache(config.physicsConstraintsFilename,Alloc);
+              model->physConstraints = pPVar13;
             }
-            if (local_1c4c.collMapFilename[0] == '\0') {
-              iVar7 = Com_sprintf(local_2034,0x200,"%s.map");
+            if (config.collMapFilename[0] == '\0') {
+              iVar7 = Com_sprintf(filename_2,0x200,"%s.map");
               if (0 < iVar7) {
-                XModel_LoadCollMap(local_2034,param_2,local_1d9c,param_1);
+                XModel_LoadCollMap(filename_2,Alloc,model,name);
               }
             }
             else {
-              XModel_LoadCollMap(local_1c4c.collMapFilename,param_2,local_1d9c,param_1);
+              XModel_LoadCollMap(config.collMapFilename,Alloc,model,name);
             }
           }
         }
         else {
-          FS_FreeFile(local_1d94);
-          local_1d9c = (XModel *)0x0;
+          FS_FreeFile(buf);
+          model = (XModel *)0x0;
         }
       }
     }
   }
   else {
     Com_PrintError(0x13,"ERROR: Remove xmodel prefix from model name \'%s\'\n");
-    local_1d9c = (XModel *)0x0;
+    model = (XModel *)0x0;
   }
-  return local_1d9c;
+  return model;
 }
 
 
 // 00806830  XModelReadSurfaces  (xanim/xmodel_load_obj.cpp:821)
 
 void __cdecl
-XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param_4,int param_5,
-                  uchar **param_6,_func___cdecl_void_ptr_int *param_7)
+XModelReadSurfaces(XModel *model,char *name,XModelSurfs *modelSurfs,int *modelPartBits,int surfCount
+                  ,uchar **pos,_func___cdecl_void_ptr_int *AllocMesh)
 
 {
   XSurface *pXVar1;
   code *pcVar2;
   bool bVar3;
-  XSurface *pXVar4;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_c;
+  XSurface *surface;
+  int j;
+  int surfIndex;
+  int baseVertIndex;
+  XSurface *xsurf;
+  int baseTriIndex;
+  XSurface *surfs;
   
-  pXVar1 = param_3->surfs;
+  pXVar1 = modelSurfs->surfs;
   if (pXVar1 == (XSurface *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x33f,0
                              ,"%s");
@@ -1134,7 +1134,7 @@ XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param
       return;
     }
   }
-  if (param_4 == (int *)0x0) {
+  if (modelPartBits == (int *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x340,0
                              ,"%s");
     if (!bVar3) {
@@ -1143,7 +1143,7 @@ XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param
       return;
     }
   }
-  if (param_5 < 1) {
+  if (surfCount < 1) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x341,0
                              ,"%s");
     if (!bVar3) {
@@ -1152,7 +1152,7 @@ XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param
       return;
     }
   }
-  if (param_6 == (uchar **)0x0) {
+  if (pos == (uchar **)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x342,0
                              ,"%s");
     if (!bVar3) {
@@ -1161,7 +1161,7 @@ XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param
       return;
     }
   }
-  if (*param_6 == (uchar *)0x0) {
+  if (*pos == (uchar *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x343,0
                              ,"%s");
     if (!bVar3) {
@@ -1170,25 +1170,25 @@ XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param
       return;
     }
   }
-  local_c = 0;
-  local_14 = 0;
-  for (local_18 = 0; local_18 < param_5; local_18 = local_18 + 1) {
-    pXVar4 = pXVar1 + local_18;
-    XModelReadSurface(param_1,param_6,param_7,pXVar4,local_18,param_2);
-    for (local_1c = 0; local_1c < 5; local_1c = local_1c + 1) {
-      param_4[local_1c] = param_4[local_1c] | pXVar4->partBits[local_1c];
+  baseTriIndex = 0;
+  baseVertIndex = 0;
+  for (surfIndex = 0; surfIndex < surfCount; surfIndex = surfIndex + 1) {
+    surface = pXVar1 + surfIndex;
+    XModelReadSurface(model,pos,AllocMesh,surface,surfIndex,name);
+    for (j = 0; j < 5; j = j + 1) {
+      modelPartBits[j] = modelPartBits[j] | surface->partBits[j];
     }
-    pXVar4->baseTriIndex = (ushort)local_c;
-    pXVar4->baseVertIndex = (ushort)local_14;
-    local_c = (uint)pXVar4->triCount + local_c;
-    local_14 = (uint)pXVar4->vertCount + local_14;
+    surface->baseTriIndex = (ushort)baseTriIndex;
+    surface->baseVertIndex = (ushort)baseVertIndex;
+    baseTriIndex = (uint)surface->triCount + baseTriIndex;
+    baseVertIndex = (uint)surface->vertCount + baseVertIndex;
   }
-  if (0xffff < local_c) {
+  if (0xffff < baseTriIndex) {
     Com_PrintError(0x13,
                    "%d indicies in xmodel \'%s\' exceeds maximum of %d, model will not render correctly on all platforms\n"
                   );
   }
-  if (0xffff < local_14) {
+  if (0xffff < baseVertIndex) {
     Com_PrintError(0x13,
                    "%d vertices in xmodel \'%s\' exceeds maximum of %d, model will not render correctly on all platforms\n"
                   );
@@ -1199,17 +1199,17 @@ XModelReadSurfaces(XModel *param_1,char *param_2,XModelSurfs *param_3,int *param
 
 // 008062F0  BoxMaxDimension  (xanim/xmodel_load_obj.cpp:882)
 
-float __cdecl BoxMaxDimension(float *param_1,float *param_2)
+float __cdecl BoxMaxDimension(float *mins,float *maxs)
 
 {
   float local_18;
   float local_14;
   
-  local_14 = param_2[1] - param_1[1];
-  if (0.0 <= (*param_2 - *param_1) - local_14) {
-    local_14 = *param_2 - *param_1;
+  local_14 = maxs[1] - mins[1];
+  if (0.0 <= (*maxs - *mins) - local_14) {
+    local_14 = *maxs - *mins;
   }
-  local_18 = param_2[2] - param_1[2];
+  local_18 = maxs[2] - mins[2];
   if (0.0 <= local_14 - local_18) {
     local_18 = local_14;
   }
@@ -1219,18 +1219,18 @@ float __cdecl BoxMaxDimension(float *param_1,float *param_2)
 
 // 00806400  Material_IncludesImage  (xanim/xmodel_load_obj.cpp:889)
 
-bool __cdecl Material_IncludesImage(Material *param_1,GfxImage *param_2)
+bool __cdecl Material_IncludesImage(Material *mat,GfxImage *image)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if ((int)(uint)param_1->textureCount <= local_8) {
+    if ((int)(uint)mat->textureCount <= i) {
       return false;
     }
-    if (param_1->textureTable[local_8].u.image == param_2) break;
-    local_8 = local_8 + 1;
+    if (mat->textureTable[i].u.image == image) break;
+    i = i + 1;
   }
   return true;
 }
@@ -1238,15 +1238,15 @@ bool __cdecl Material_IncludesImage(Material *param_1,GfxImage *param_2)
 
 // 00806390  Material_FirstIncludesSecond  (xanim/xmodel_load_obj.cpp:898)
 
-bool __cdecl Material_FirstIncludesSecond(Material *param_1,Material *param_2)
+bool __cdecl Material_FirstIncludesSecond(Material *mat1,Material *mat2)
 
 {
   bool bVar1;
-  int local_8;
+  int i;
   
-  if (param_1 != param_2) {
-    for (local_8 = 0; local_8 < (int)(uint)param_2->textureCount; local_8 = local_8 + 1) {
-      bVar1 = Material_IncludesImage(param_1,param_2->textureTable[local_8].u.image);
+  if (mat1 != mat2) {
+    for (i = 0; i < (int)(uint)mat2->textureCount; i = i + 1) {
+      bVar1 = Material_IncludesImage(mat1,mat2->textureTable[i].u.image);
       if (!bVar1) {
         return false;
       }
@@ -1258,59 +1258,69 @@ bool __cdecl Material_FirstIncludesSecond(Material *param_1,Material *param_2)
 
 // 00806450  XModelGetSurfaceVertexPos  (xanim/xmodel_load_obj.cpp:912)
 
-void __cdecl XModelGetSurfaceVertexPos(XSurface *param_1,int param_2,float *param_3)
+void __cdecl XModelGetSurfaceVertexPos(XSurface *surface,int vertIndex,float *out)
 
 {
   GfxPackedVertex *pGVar1;
   
-  pGVar1 = param_1->verts0 + param_2;
-  *param_3 = pGVar1->xyz[0];
-  param_3[1] = pGVar1->xyz[1];
-  param_3[2] = pGVar1->xyz[2];
+  pGVar1 = surface->verts0 + vertIndex;
+  *out = pGVar1->xyz[0];
+  out[1] = pGVar1->xyz[1];
+  out[2] = pGVar1->xyz[2];
   return;
 }
 
 
 // 00806490  XModelGetSurfaceTexCoords  (xanim/xmodel_load_obj.cpp:931)
 
-void __cdecl XModelGetSurfaceTexCoords(XSurface *param_1,int param_2,float *param_3)
+void __cdecl XModelGetSurfaceTexCoords(XSurface *surface,int vertIndex,float *out)
 
 {
-  Vec2UnpackTexCoords(param_1->verts0[param_2].texCoord,param_3);
+  Vec2UnpackTexCoords(surface->verts0[vertIndex].texCoord,out);
   return;
 }
 
 
 // 00805AB0  XModelGenerateHighMipVolume  (xanim/xmodel_load_obj.cpp:958)
 
-void __cdecl XModelGenerateHighMipVolume(XModel *param_1)
+void __cdecl XModelGenerateHighMipVolume(XModel *model)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
   XModelHighMipBounds *pXVar4;
-  XModelHighMipBounds *pXVar5;
-  int iVar6;
+  XModelHighMipBounds *v1;
+  int iVar5;
+  float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
   float local_150;
   float local_14c;
   uint local_148;
-  int local_100;
-  int local_fc;
-  int local_ec;
-  float local_e8;
+  float REL_SIZE_THRESHOLD;
+  float newRadius;
+  float radiusJ;
+  float dist;
+  XModelHighMipBounds *boundsJ;
+  float radius;
+  XModelHighMipBounds *bounds_2;
+  int surfJ;
+  int surfI;
+  int vertIndex;
+  float coverage;
+  float area;
+  int triCorner;
+  float fakeTexCoord;
   float local_e4;
   undefined4 local_e0;
   float local_dc;
   float local_d8;
   undefined4 local_d4;
-  float local_d0 [6];
+  float triPos [6];
   float local_b8 [3];
-  float local_ac;
-  float local_a8;
+  float width;
+  float fakePos;
   float local_a4;
   float local_a0;
   undefined4 local_9c;
@@ -1319,39 +1329,39 @@ void __cdecl XModelGenerateHighMipVolume(XModel *param_1)
   float local_90;
   undefined4 local_8c;
   undefined4 local_88;
-  float local_84;
-  float local_80;
-  float local_7c [6];
-  float local_64;
-  float local_60;
-  int local_5c;
-  uint local_58;
-  uint local_54;
-  Material *local_50;
-  uint local_4c;
-  float local_48 [3];
-  float local_3c;
-  XModelHighMipBounds *local_38;
-  float local_34 [3];
-  XSurface *local_28;
-  float local_24 [2];
-  int local_1c;
-  int local_18;
-  Material **local_14;
-  XSurface *local_10;
-  int local_c;
-  int local_8;
+  float radiusForTexture;
+  float cumulativeCoverage;
+  float triTexCoord [6];
+  float cumulativeArea;
+  float uvmax;
+  int triangleIndex;
+  uint maxFilterState;
+  int texIter;
+  Material *material;
+  uint filterState;
+  float surfBoundBoxMins [3];
+  float radiusForModel;
+  XModelHighMipBounds *bounds;
+  float surfBoundBoxMaxs [3];
+  XSurface *surface;
+  float texSize [2];
+  int lod;
+  int surfCount;
+  Material **materials;
+  XSurface *surfaces;
+  int surfIter;
+  int surfCountPrevLods;
   
-  local_18 = 0;
-  local_8 = 0;
-  pXVar4 = Hunk_Alloc((uint)param_1->numsurfs << 4,"XModelGenerateHighMipVolume",0x16);
-  (param_1->streamInfo).highMipBounds = pXVar4;
-  for (local_1c = 0; local_1c < 4; local_1c = local_1c + 1) {
-    local_18 = XModelGetSurfaces(param_1,&local_10,local_1c);
-    local_14 = XModelGetSkins(param_1,local_1c);
-    for (local_c = 0; local_c != local_18; local_c = local_c + 1) {
-      local_58 = 1;
-      if (((uint)param_1->numsurfs <= (uint)(local_8 + local_c)) &&
+  surfCount = 0;
+  surfCountPrevLods = 0;
+  pXVar4 = Hunk_Alloc((uint)model->numsurfs << 4,"XModelGenerateHighMipVolume",0x16);
+  (model->streamInfo).highMipBounds = pXVar4;
+  for (lod = 0; lod < 4; lod = lod + 1) {
+    surfCount = XModelGetSurfaces(model,&surfaces,lod);
+    materials = XModelGetSkins(model,lod);
+    for (surfIter = 0; surfIter != surfCount; surfIter = surfIter + 1) {
+      maxFilterState = 1;
+      if (((uint)model->numsurfs <= (uint)(surfCountPrevLods + surfIter)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x3e0,0,
                                    "surfCountPrevLods+surfIter doesn\'t index model->numsurfs\n\t%i not in [0, %i)"
@@ -1360,126 +1370,127 @@ void __cdecl XModelGenerateHighMipVolume(XModel *param_1)
         (*pcVar2)();
         return;
       }
-      local_38 = (param_1->streamInfo).highMipBounds + local_8 + local_c;
-      local_28 = local_10 + local_c;
-      if ((local_28 == (XSurface *)0x0) &&
+      bounds = (model->streamInfo).highMipBounds + surfCountPrevLods + surfIter;
+      surface = surfaces + surfIter;
+      if ((surface == (XSurface *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x3e6,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_50 = local_14[local_c];
-      if ((local_50 == (Material *)0x0) &&
+      material = materials[surfIter];
+      if ((material == (Material *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x3e9,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      ClearBounds(local_48,local_34);
-      local_3c = 0.0;
-      for (local_54 = 0; local_54 != local_50->textureCount; local_54 = local_54 + 1) {
-        local_80 = 0.0;
-        local_64 = 0.0;
-        local_84 = 0.0;
-        bVar3 = R_StreamGetMaterialTextureSize(local_50,local_54,local_24,&local_4c);
+      ClearBounds(surfBoundBoxMins,surfBoundBoxMaxs);
+      radiusForModel = 0.0;
+      for (texIter = 0; texIter != (uint)material->textureCount; texIter = texIter + 1) {
+        cumulativeCoverage = 0.0;
+        cumulativeArea = 0.0;
+        radiusForTexture = 0.0;
+        bVar3 = R_StreamGetMaterialTextureSize(material,texIter,texSize,&filterState);
         if (bVar3) {
-          if ((int)local_58 < (int)local_4c) {
-            local_148 = local_4c;
+          if ((int)maxFilterState < (int)filterState) {
+            local_148 = filterState;
           }
           else {
-            local_148 = local_58;
+            local_148 = maxFilterState;
           }
-          local_58 = local_148;
-          for (local_5c = 0; local_5c < (int)(uint)local_28->triCount; local_5c = local_5c + 2) {
-            for (local_ec = 0; local_ec != 3; local_ec = local_ec + 1) {
-              uVar1 = local_28->triIndices[local_5c * 3 + local_ec];
-              XModelGetSurfaceVertexPos(local_28,(uint)uVar1,local_d0 + local_ec * 3);
-              XModelGetSurfaceTexCoords(local_28,(uint)uVar1,local_7c + local_ec * 2);
+          maxFilterState = local_148;
+          for (triangleIndex = 0; triangleIndex < (int)(uint)surface->triCount;
+              triangleIndex = triangleIndex + 2) {
+            for (triCorner = 0; triCorner != 3; triCorner = triCorner + 1) {
+              uVar1 = surface->triIndices[triangleIndex * 3 + triCorner];
+              XModelGetSurfaceVertexPos(surface,(uint)uVar1,triPos + triCorner * 3);
+              XModelGetSurfaceTexCoords(surface,(uint)uVar1,triTexCoord + triCorner * 2);
             }
-            fVar7 = R_CalculateTriangleArea2D((float (*) [2])local_7c);
-            fVar8 = R_CalculateTriangleArea3D((float (*) [3])local_d0);
-            if ((0.0 < fVar7) && (0.0 < fVar8)) {
-              AddPointToBounds(local_d0,local_48,local_34);
-              AddPointToBounds(local_d0 + 3,local_48,local_34);
-              AddPointToBounds(local_b8,local_48,local_34);
-              local_80 = local_80 + fVar7;
-              local_64 = local_64 + fVar8;
+            fVar6 = R_CalculateTriangleArea2D((float (*) [2])triTexCoord);
+            fVar7 = R_CalculateTriangleArea3D((float (*) [3])triPos);
+            if ((0.0 < fVar6) && (0.0 < fVar7)) {
+              AddPointToBounds(triPos,surfBoundBoxMins,surfBoundBoxMaxs);
+              AddPointToBounds(triPos + 3,surfBoundBoxMins,surfBoundBoxMaxs);
+              AddPointToBounds(local_b8,surfBoundBoxMins,surfBoundBoxMaxs);
+              cumulativeCoverage = cumulativeCoverage + fVar6;
+              cumulativeArea = cumulativeArea + fVar7;
             }
           }
-          local_dc = SQRT(local_80);
-          local_ac = SQRT(local_64);
-          local_a8 = 0.0;
+          local_dc = SQRT(cumulativeCoverage);
+          width = SQRT(cumulativeArea);
+          fakePos = 0.0;
           local_a4 = 0.0;
           local_a0 = 0.0;
           local_9c = 0;
           local_94 = 0;
           local_8c = 0;
           local_88 = 0;
-          local_e8 = 0.0;
+          fakeTexCoord = 0.0;
           local_e4 = 0.0;
           local_e0 = 0;
           local_d4 = 0;
           local_d8 = local_dc;
-          local_98 = local_ac;
-          local_90 = local_ac;
-          local_60 = local_dc;
+          local_98 = width;
+          local_90 = width;
+          uvmax = local_dc;
           bVar3 = R_CalculateTriangleTopMipAabb
-                            ((float (*) [3])&local_a8,(float (*) [2])&local_e8,local_24,2,
-                             (float *)0x0,(float *)0x0,&local_84);
+                            ((float (*) [3])&fakePos,(float (*) [2])&fakeTexCoord,texSize,2,
+                             (float *)0x0,(float *)0x0,&radiusForTexture);
           if (bVar3) {
-            if (local_3c - local_84 < 0.0) {
-              local_14c = local_84;
+            if (radiusForModel - radiusForTexture < 0.0) {
+              local_14c = radiusForTexture;
             }
             else {
-              local_14c = local_3c;
+              local_14c = radiusForModel;
             }
-            local_3c = local_14c;
+            radiusForModel = local_14c;
           }
         }
       }
-      fVar7 = BoxMaxDimension(local_48,local_34);
-      local_3c = fVar7 * 0.5 + local_3c;
-      local_38->himipRadiusSq = local_3c * local_3c;
-      Vec3Lerp(local_48,local_34,0.5,local_38->center);
+      fVar6 = BoxMaxDimension(surfBoundBoxMins,surfBoundBoxMaxs);
+      radiusForModel = fVar6 * 0.5 + radiusForModel;
+      bounds->himipRadiusSq = radiusForModel * radiusForModel;
+      Vec3Lerp(surfBoundBoxMins,surfBoundBoxMaxs,0.5,bounds->center);
     }
-    local_8 = local_8 + local_18;
+    surfCountPrevLods = surfCountPrevLods + surfCount;
   }
-  local_fc = 1;
+  surfI = 1;
   do {
-    if ((int)(uint)param_1->numsurfs <= local_fc) {
+    if ((int)(uint)model->numsurfs <= surfI) {
       return;
     }
-    for (local_100 = 0; local_100 < local_fc; local_100 = local_100 + 1) {
-      pXVar4 = (param_1->streamInfo).highMipBounds + local_fc;
+    for (surfJ = 0; surfJ < surfI; surfJ = surfJ + 1) {
+      pXVar4 = (model->streamInfo).highMipBounds + surfI;
       bVar3 = Material_FirstIncludesSecond
-                        (param_1->materialHandles[local_100],param_1->materialHandles[local_fc]);
+                        (model->materialHandles[surfJ],model->materialHandles[surfI]);
       if (bVar3) {
-        pXVar5 = (param_1->streamInfo).highMipBounds + local_100;
-        fVar9 = Vec3Distance(pXVar5->center,pXVar4->center);
-        fVar7 = SQRT(pXVar4->himipRadiusSq);
-        fVar8 = SQRT(pXVar5->himipRadiusSq);
-        if (fVar8 < fVar9 + fVar7) {
-          if (fVar7 < fVar9 + fVar8) {
-            fVar9 = (fVar7 + fVar9 + fVar8) / 2.0;
-            local_150 = fVar8;
-            if (0.0 <= fVar7 - fVar8) {
-              local_150 = fVar7;
+        v1 = (model->streamInfo).highMipBounds + surfJ;
+        fVar8 = Vec3Distance(v1->center,pXVar4->center);
+        fVar6 = SQRT(pXVar4->himipRadiusSq);
+        fVar7 = SQRT(v1->himipRadiusSq);
+        if (fVar7 < fVar8 + fVar6) {
+          if (fVar6 < fVar8 + fVar7) {
+            fVar8 = (fVar6 + fVar8 + fVar7) / 2.0;
+            local_150 = fVar7;
+            if (0.0 <= fVar6 - fVar7) {
+              local_150 = fVar6;
             }
-            if (1.05 < fVar9 / local_150) goto LAB_00806032;
-            pXVar5->himipRadiusSq = fVar9 * fVar9;
-            iVar6 = VecNCompareCustomEpsilon(pXVar4->center,pXVar5->center,0.001,3);
-            if (iVar6 == 0) {
-              Vec3Lerp(pXVar4->center,pXVar5->center,
-                       (fVar9 - fVar7) / (((fVar9 - fVar7) + fVar9) - fVar8),pXVar5->center);
+            if (1.05 < fVar8 / local_150) goto LAB_00806032;
+            v1->himipRadiusSq = fVar8 * fVar8;
+            iVar5 = VecNCompareCustomEpsilon(pXVar4->center,v1->center,0.001,3);
+            if (iVar5 == 0) {
+              Vec3Lerp(pXVar4->center,v1->center,
+                       (fVar8 - fVar6) / (((fVar8 - fVar6) + fVar8) - fVar7),v1->center);
             }
           }
           else {
-            pXVar5->himipRadiusSq = pXVar4->himipRadiusSq;
-            pXVar5->center[0] = pXVar4->center[0];
-            pXVar5->center[1] = pXVar4->center[1];
-            pXVar5->center[2] = pXVar4->center[2];
+            v1->himipRadiusSq = pXVar4->himipRadiusSq;
+            v1->center[0] = pXVar4->center[0];
+            v1->center[1] = pXVar4->center[1];
+            v1->center[2] = pXVar4->center[2];
           }
         }
         pXVar4->himipRadiusSq = 0.0;
@@ -1487,7 +1498,7 @@ void __cdecl XModelGenerateHighMipVolume(XModel *param_1)
       }
 LAB_00806032:
     }
-    local_fc = local_fc + 1;
+    surfI = surfI + 1;
   } while( true );
 }
 
@@ -1498,8 +1509,8 @@ LAB_00806032:
 
 XModelSurfs * __cdecl
 R_XModelSurfsLoadFile
-          (XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *param_3,short param_4,
-          char *param_5,long64 *param_6)
+          (XModel *model,char *name,_func___cdecl_void_ptr_int *Alloc,short modelNumsurfs,
+          char *modelName,long64 *xmodelModifiedTime)
 
 {
   code *pcVar1;
@@ -1507,36 +1518,37 @@ R_XModelSurfsLoadFile
   int iVar3;
   XModelSurfs *pXVar4;
   long64 lVar5;
-  short *local_70;
-  char local_6c [64];
+  uchar *pos;
+  char filename [64];
   uint local_2c;
-  short *local_28;
-  short local_24;
-  XModelSurfs *local_20;
-  int local_1c;
-  int local_18;
-  undefined8 local_14;
-  short local_8;
+  uchar *buf;
+  short version;
+  XModelSurfs *modelSurfs;
+  int size;
+  int fileSize;
+  undefined8 xmodelSurfsModifyTime;
+  short numsurfs;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = Com_sprintf(local_6c,0x40,"xmodelsurfs/%s");
+  iVar3 = Com_sprintf(filename,0x40,"xmodelsurfs/%s");
   if (iVar3 < 0) {
     Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n");
-    local_20 = (XModelSurfs *)0x0;
+    modelSurfs = (XModelSurfs *)0x0;
   }
   else {
-    local_18 = FS_ReadFile(local_6c,&local_28);
-    lVar5 = FS_GetModTime(local_6c,true);
-    local_14._4_4_ = (int)((ulonglong)lVar5 >> 0x20);
-    if ((*(int *)((int)param_6 + 4) <= local_14._4_4_) &&
-       ((local_14._0_4_ = (uint)lVar5, *(int *)((int)param_6 + 4) < local_14._4_4_ ||
-        ((uint)*param_6 < (uint)local_14)))) {
-      *(uint *)param_6 = (uint)local_14;
-      *(int *)((int)param_6 + 4) = local_14._4_4_;
+    fileSize = FS_ReadFile(filename,&buf);
+    lVar5 = FS_GetModTime(filename,true);
+    xmodelSurfsModifyTime._4_4_ = (int)((ulonglong)lVar5 >> 0x20);
+    if ((*(int *)((int)xmodelModifiedTime + 4) <= xmodelSurfsModifyTime._4_4_) &&
+       ((xmodelSurfsModifyTime._0_4_ = (uint)lVar5,
+        *(int *)((int)xmodelModifiedTime + 4) < xmodelSurfsModifyTime._4_4_ ||
+        ((uint)*xmodelModifiedTime < (uint)xmodelSurfsModifyTime)))) {
+      *(uint *)xmodelModifiedTime = (uint)xmodelSurfsModifyTime;
+      *(int *)((int)xmodelModifiedTime + 4) = xmodelSurfsModifyTime._4_4_;
     }
-    local_14 = lVar5;
-    if (local_18 < 0) {
-      if ((local_28 != (short *)0x0) &&
+    xmodelSurfsModifyTime = lVar5;
+    if (fileSize < 0) {
+      if ((buf != (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x479,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1544,35 +1556,35 @@ R_XModelSurfsLoadFile
         return pXVar4;
       }
       Com_PrintError(0x13,"ERROR: xmodelsurf \'%s\' not found\n");
-      local_20 = (XModelSurfs *)0x0;
+      modelSurfs = (XModelSurfs *)0x0;
     }
-    else if (local_18 == 0) {
+    else if (fileSize == 0) {
       Com_PrintError(0x13,"ERROR: xmodelsurf \'%s\' has 0 length\n");
-      FS_FreeFile(local_28);
-      local_20 = (XModelSurfs *)0x0;
+      FS_FreeFile(buf);
+      modelSurfs = (XModelSurfs *)0x0;
     }
     else {
-      if ((local_28 == (short *)0x0) &&
+      if ((buf == (uchar *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x485,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         pXVar4 = (XModelSurfs *)(*pcVar1)();
         return pXVar4;
       }
-      local_24 = *local_28;
-      local_70 = local_28 + 1;
-      if (local_24 == 0x3e) {
-        local_8 = *local_70;
-        local_70 = local_28 + 2;
-        if (local_8 == param_4) {
-          local_1c = param_4 * 0x44 + 0x18;
-          local_20 = (*param_3)(local_1c);
-          param_1->memUsage = param_1->memUsage + local_1c;
-          local_20->surfs = (XSurface *)(local_20 + 1);
-          XModelReadSurfaces(param_1,param_2,local_20,local_20->partBits,(int)param_4,
-                             (uchar **)&local_70,param_3);
-          FS_FreeFile(local_28);
-          if ((local_20 == (XModelSurfs *)0x0) &&
+      version = *(short *)buf;
+      pos = buf + 2;
+      if (version == 0x3e) {
+        numsurfs = *(short *)pos;
+        pos = buf + 4;
+        if (numsurfs == modelNumsurfs) {
+          size = modelNumsurfs * 0x44 + 0x18;
+          modelSurfs = (*Alloc)(size);
+          model->memUsage = model->memUsage + size;
+          modelSurfs->surfs = (XSurface *)(modelSurfs + 1);
+          XModelReadSurfaces(model,name,modelSurfs,modelSurfs->partBits,(int)modelNumsurfs,&pos,
+                             Alloc);
+          FS_FreeFile(buf);
+          if ((modelSurfs == (XModelSurfs *)0x0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                        ,0x4a2,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
@@ -1581,59 +1593,60 @@ R_XModelSurfsLoadFile
           }
         }
         else {
-          FS_FreeFile(local_28);
+          FS_FreeFile(buf);
           Com_PrintError(0x13,
                          "ERROR: File conflict (between non-iwd and iwd file) on xmodelsurfs \'%s\' for xmodel \'%s\'.\nRename the export file to fix.\n"
                         );
-          local_20 = (XModelSurfs *)0x0;
+          modelSurfs = (XModelSurfs *)0x0;
         }
       }
       else {
-        FS_FreeFile(local_28);
+        FS_FreeFile(buf);
         Com_PrintError(0x13,"ERROR: xmodelsurfs \'%s\' out of date (version %d, expecting %d).\n");
-        local_20 = (XModelSurfs *)0x0;
+        modelSurfs = (XModelSurfs *)0x0;
       }
     }
   }
-  return local_20;
+  return modelSurfs;
 }
 
 
 // 008064C0  XModelSurfsPrecache  (xanim/xmodel_load_obj.cpp:1192)
 
 int __cdecl
-XModelSurfsPrecache(XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *param_3,short param_4,
-                   char *param_5,XModelSurfs *param_6,long64 *param_7)
+XModelSurfsPrecache(XModel *model,char *name,_func___cdecl_void_ptr_int *Alloc,short modelNumsurfs,
+                   char *modelName,XModelSurfs *outModelSurfs,long64 *xmodelModifiedTime)
 
 {
   XModelSurfs *pXVar1;
   int iVar2;
+  XModelSurfs *modelSurfs;
   
-  pXVar1 = XModelSurfsFindData(param_2);
+  pXVar1 = XModelSurfsFindData(name);
   if (pXVar1 == (XModelSurfs *)0x0) {
-    pXVar1 = R_XModelSurfsLoadFile(param_1,param_2,param_3,param_4,param_5,param_7);
+    pXVar1 = R_XModelSurfsLoadFile(model,name,Alloc,modelNumsurfs,modelName,xmodelModifiedTime);
     if (pXVar1 == (XModelSurfs *)0x0) {
       Com_PrintError(0x13,"ERROR: Cannot find \'xmodelsurfs \'%s\'.\n");
       iVar2 = 0;
     }
     else {
-      XModelSurfsSetData(param_2,pXVar1,param_3);
-      param_6->surfs = pXVar1->surfs;
-      param_6->partBits[0] = pXVar1->partBits[0];
-      param_6->partBits[1] = pXVar1->partBits[1];
-      param_6->partBits[2] = pXVar1->partBits[2];
-      param_6->partBits[3] = pXVar1->partBits[3];
-      param_6->partBits[4] = pXVar1->partBits[4];
+      XModelSurfsSetData(name,pXVar1,Alloc);
+      outModelSurfs->surfs = pXVar1->surfs;
+      outModelSurfs->partBits[0] = pXVar1->partBits[0];
+      outModelSurfs->partBits[1] = pXVar1->partBits[1];
+      outModelSurfs->partBits[2] = pXVar1->partBits[2];
+      outModelSurfs->partBits[3] = pXVar1->partBits[3];
+      outModelSurfs->partBits[4] = pXVar1->partBits[4];
       iVar2 = 1;
     }
   }
   else {
-    param_6->surfs = pXVar1->surfs;
-    param_6->partBits[0] = pXVar1->partBits[0];
-    param_6->partBits[1] = pXVar1->partBits[1];
-    param_6->partBits[2] = pXVar1->partBits[2];
-    param_6->partBits[3] = pXVar1->partBits[3];
-    param_6->partBits[4] = pXVar1->partBits[4];
+    outModelSurfs->surfs = pXVar1->surfs;
+    outModelSurfs->partBits[0] = pXVar1->partBits[0];
+    outModelSurfs->partBits[1] = pXVar1->partBits[1];
+    outModelSurfs->partBits[2] = pXVar1->partBits[2];
+    outModelSurfs->partBits[3] = pXVar1->partBits[3];
+    outModelSurfs->partBits[4] = pXVar1->partBits[4];
     iVar2 = 1;
   }
   return iVar2;
@@ -1642,29 +1655,31 @@ XModelSurfsPrecache(XModel *param_1,char *param_2,_func___cdecl_void_ptr_int *pa
 
 // 008030E0  R_GetXModelBounds  (xanim/xmodel_load_obj.cpp:1215)
 
-void __cdecl R_GetXModelBounds(XModel *param_1,float (*param_2) [3],float *param_3,float *param_4)
+void __cdecl R_GetXModelBounds(XModel *model,float (*axes) [3],float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  int local_20;
-  XSurface *local_1c;
-  int local_18;
-  XSurface *local_14;
-  int local_10;
-  int local_c;
-  float *local_8;
+  float coord;
+  int surfaceCount;
+  int axisIndex;
+  XSurface *surfaces;
+  int index;
+  XSurface *xsurf;
+  int vertCount;
+  int vertIndex;
+  float *vert;
   
-  *param_3 = 3.4028235e+38;
-  param_3[1] = 3.4028235e+38;
-  param_3[2] = 3.4028235e+38;
-  *param_4 = -3.4028235e+38;
-  param_4[1] = -3.4028235e+38;
-  param_4[2] = -3.4028235e+38;
-  iVar3 = XModelGetSurfaces(param_1,&local_1c,0);
-  if (local_1c == (XSurface *)0x0) {
+  *mins = 3.4028235e+38;
+  mins[1] = 3.4028235e+38;
+  mins[2] = 3.4028235e+38;
+  *maxs = -3.4028235e+38;
+  maxs[1] = -3.4028235e+38;
+  maxs[2] = -3.4028235e+38;
+  iVar3 = XModelGetSurfaces(model,&surfaces,0);
+  if (surfaces == (XSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x4ce,0
                              ,"%s");
     if (!bVar2) {
@@ -1673,7 +1688,7 @@ void __cdecl R_GetXModelBounds(XModel *param_1,float (*param_2) [3],float *param
       return;
     }
   }
-  local_8 = Hunk_AllocateTempMemory(0x60000,"R_GetXModelBounds");
+  vert = Hunk_AllocateTempMemory(0x60000,"R_GetXModelBounds");
   if (iVar3 < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x4d2,0
                              ,"%s");
@@ -1683,16 +1698,16 @@ void __cdecl R_GetXModelBounds(XModel *param_1,float (*param_2) [3],float *param
       return;
     }
   }
-  local_18 = 0;
+  index = 0;
   do {
-    if (iVar3 <= local_18) {
-      Hunk_FreeTempMemory(local_8);
+    if (iVar3 <= index) {
+      Hunk_FreeTempMemory(vert);
       return;
     }
-    local_14 = local_1c + local_18;
-    local_10 = XSurfaceGetNumVerts(local_14);
-    XSurfaceGetVerts(local_14,local_8,(float *)0x0,(float *)0x0);
-    if (local_10 < 1) {
+    xsurf = surfaces + index;
+    vertCount = XSurfaceGetNumVerts(xsurf);
+    XSurfaceGetVerts(xsurf,vert,(float *)0x0,(float *)0x0);
+    if (vertCount < 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x4d9
                                ,0,"%s");
       if (!bVar2) {
@@ -1701,20 +1716,20 @@ void __cdecl R_GetXModelBounds(XModel *param_1,float (*param_2) [3],float *param
         return;
       }
     }
-    for (local_c = 0; local_c < local_10; local_c = local_c + 1) {
-      for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-        fVar4 = local_8[local_c * 3] * (*param_2)[local_20] +
-                local_8[local_c * 3 + 1] * param_2[1][local_20] +
-                local_8[local_c * 3 + 2] * param_2[2][local_20];
-        if (fVar4 < param_3[local_20]) {
-          param_3[local_20] = fVar4;
+    for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
+      for (axisIndex = 0; axisIndex < 3; axisIndex = axisIndex + 1) {
+        fVar4 = vert[vertIndex * 3] * (*axes)[axisIndex] +
+                vert[vertIndex * 3 + 1] * axes[1][axisIndex] +
+                vert[vertIndex * 3 + 2] * axes[2][axisIndex];
+        if (fVar4 < mins[axisIndex]) {
+          mins[axisIndex] = fVar4;
         }
-        if (param_4[local_20] <= fVar4 && fVar4 != param_4[local_20]) {
-          param_4[local_20] = fVar4;
+        if (maxs[axisIndex] <= fVar4 && fVar4 != maxs[axisIndex]) {
+          maxs[axisIndex] = fVar4;
         }
       }
     }
-    local_18 = local_18 + 1;
+    index = index + 1;
   } while( true );
 }
 
@@ -1722,29 +1737,29 @@ void __cdecl R_GetXModelBounds(XModel *param_1,float (*param_2) [3],float *param
 // 00803340  XModelLoad  (xanim/xmodel_load_obj.cpp:1369)
 
 XModel * __cdecl
-XModelLoad(char *param_1,_func___cdecl_void_ptr_int *param_2,_func___cdecl_void_ptr_int *param_3)
+XModelLoad(char *name,_func___cdecl_void_ptr_int *Alloc,_func___cdecl_void_ptr_int *AllocColl)
 
 {
-  long64 local_14;
-  XModel *local_8;
+  long64 xmodelModifiedTime;
+  XModel *model;
   
-  local_8 = XModelLoadFile(param_1,param_2,param_3,&local_14);
-  if (local_8 == (XModel *)0x0) {
-    local_8 = (XModel *)0x0;
+  model = XModelLoadFile(name,Alloc,AllocColl,&xmodelModifiedTime);
+  if (model == (XModel *)0x0) {
+    model = (XModel *)0x0;
   }
   else {
-    XModelGenerateHighMipVolume(local_8);
+    XModelGenerateHighMipVolume(model);
   }
-  return local_8;
+  return model;
 }
 
 
 // 00806A30  XModelGetFlags  (xanim/xmodel_load_obj.cpp:1402)
 
-uint __cdecl XModelGetFlags(XModel *param_1)
+uint __cdecl XModelGetFlags(XModel *model)
 
 {
-  return param_1->flags;
+  return model->flags;
 }
 
 
@@ -1752,12 +1767,12 @@ uint __cdecl XModelGetFlags(XModel *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-XModelPieces * __cdecl XModelPiecesLoadFile(char *param_1,_func___cdecl_void_ptr_int *param_2)
+XModelPieces * __cdecl XModelPiecesLoadFile(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
-  char cVar1;
+  uchar uVar1;
   code *pcVar2;
-  short *psVar3;
+  uchar *puVar3;
   bool bVar4;
   int iVar5;
   XModelPieces *pXVar6;
@@ -1765,30 +1780,31 @@ XModelPieces * __cdecl XModelPiecesLoadFile(char *param_1,_func___cdecl_void_ptr
   XModelPiece *pXVar8;
   XModel *pXVar9;
   float *pfVar10;
-  char *local_d8;
-  float *local_d4;
-  float *local_c4;
-  int local_a4;
-  float *local_a0;
-  char local_9c [64];
-  char local_5c [64];
+  uchar *local_d8;
+  uchar *local_d4;
+  uchar *local_c4;
+  XModelPiece *piece;
+  int pieceIndex;
+  uchar *pos;
+  char filename [64];
+  uchar piecename [64];
   uint local_1c;
-  short *local_18;
-  int local_14;
-  XModelPieces *local_10;
-  char *local_c;
-  int local_8;
+  uchar *buf;
+  int version;
+  XModelPieces *xmodelPieces;
+  int len;
+  int fileSize;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar5 = Com_sprintf(local_9c,0x40,"xmodelpieces/%s");
+  iVar5 = Com_sprintf(filename,0x40,"xmodelpieces/%s");
   if (iVar5 < 0) {
     Com_PrintError(0x13,"ERROR: filename \'%s\' too long\n");
-    local_10 = (XModelPieces *)0x0;
+    xmodelPieces = (XModelPieces *)0x0;
   }
   else {
-    local_8 = FS_ReadFile(local_9c,&local_18);
-    if (local_8 < 0) {
-      if ((local_18 != (short *)0x0) &&
+    fileSize = FS_ReadFile(filename,&buf);
+    if (fileSize < 0) {
+      if ((buf != (uchar *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x593,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -1796,117 +1812,118 @@ XModelPieces * __cdecl XModelPiecesLoadFile(char *param_1,_func___cdecl_void_ptr
         return pXVar6;
       }
       Com_PrintError(0x13,"ERROR: xmodelpieces \'%s\' not found\n");
-      local_10 = (XModelPieces *)0x0;
+      xmodelPieces = (XModelPieces *)0x0;
     }
-    else if (local_8 == 0) {
+    else if (fileSize == 0) {
       Com_PrintError(0x13,"ERROR: xmodelpieces \'%s\' has 0 length\n");
-      FS_FreeFile(local_18);
-      local_10 = (XModelPieces *)0x0;
+      FS_FreeFile(buf);
+      xmodelPieces = (XModelPieces *)0x0;
     }
     else {
-      if ((local_18 == (short *)0x0) &&
+      if ((buf == (uchar *)0x0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",
                                    0x59f,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         pXVar6 = (XModelPieces *)(*pcVar2)();
         return pXVar6;
       }
-      psVar3 = local_18;
-      psVar7 = local_18 + 1;
-      local_14 = (int)*local_18;
-      if (local_14 == 1) {
-        local_10 = (*param_2)(0xc);
-        if ((local_10 == (XModelPieces *)0x0) &&
+      puVar3 = buf;
+      psVar7 = (short *)(buf + 2);
+      version = (int)*(short *)buf;
+      if (version == 1) {
+        xmodelPieces = (*Alloc)(0xc);
+        if ((xmodelPieces == (XModelPieces *)0x0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp"
                                      ,0x5ab,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           pXVar6 = (XModelPieces *)(*pcVar2)();
           return pXVar6;
         }
-        local_a0 = (float *)(psVar3 + 2);
-        local_10->numpieces = (int)*psVar7;
-        pXVar8 = (*param_2)(local_10->numpieces << 4);
-        local_10->pieces = pXVar8;
-        for (local_a4 = 0; local_a4 < local_10->numpieces; local_a4 = local_a4 + 1) {
-          pXVar8 = local_10->pieces + local_a4;
-          local_c4 = local_a0;
+        pos = puVar3 + 4;
+        xmodelPieces->numpieces = (int)*psVar7;
+        pXVar8 = (*Alloc)(xmodelPieces->numpieces << 4);
+        xmodelPieces->pieces = pXVar8;
+        for (pieceIndex = 0; pieceIndex < xmodelPieces->numpieces; pieceIndex = pieceIndex + 1) {
+          pXVar8 = xmodelPieces->pieces + pieceIndex;
+          local_c4 = pos;
           do {
-            cVar1 = *(char *)local_c4;
-            local_c4 = (float *)((int)local_c4 + 1);
-          } while (cVar1 != '\0');
-          local_c = (char *)((int)local_c4 + (1 - (int)((int)local_a0 + 1)));
-          if (0x40 < (int)local_c) {
+            uVar1 = *local_c4;
+            local_c4 = local_c4 + 1;
+          } while (uVar1 != '\0');
+          len = (int)(local_c4 + (1 - (int)(pos + 1)));
+          if (0x40 < len) {
             Com_PrintError(0x13,"ERROR: piecename \'%s\' too long\n");
-            FS_FreeFile(local_18);
+            FS_FreeFile(buf);
             return (XModelPieces *)0x0;
           }
-          local_d4 = local_a0;
-          local_d8 = local_5c;
+          local_d4 = pos;
+          local_d8 = piecename;
           do {
-            cVar1 = *(char *)local_d4;
-            *local_d8 = cVar1;
-            local_d4 = (float *)((int)local_d4 + 1);
+            uVar1 = *local_d4;
+            *local_d8 = uVar1;
+            local_d4 = local_d4 + 1;
             local_d8 = local_d8 + 1;
-          } while (cVar1 != '\0');
-          pfVar10 = (float *)((int)local_a0 + (int)local_c);
-          pXVar9 = R_RegisterModel(local_5c);
+          } while (uVar1 != '\0');
+          pfVar10 = (float *)(pos + len);
+          pXVar9 = R_RegisterModel((char *)piecename);
           pXVar8->model = pXVar9;
           if (pXVar8->model == (XModel *)0x0) {
             Com_PrintError(1,"ERROR: xmodel piece \'%s\' missing from pieces model \'s%\'\n");
-            FS_FreeFile(local_18);
+            FS_FreeFile(buf);
             return (XModelPieces *)0x0;
           }
           pXVar8->offset[0] = *pfVar10;
           pXVar8->offset[1] = pfVar10[1];
-          local_a0 = pfVar10 + 3;
+          pos = (uchar *)(pfVar10 + 3);
           pXVar8->offset[2] = pfVar10[2];
         }
-        FS_FreeFile(local_18);
+        FS_FreeFile(buf);
       }
       else {
-        FS_FreeFile(local_18);
+        FS_FreeFile(buf);
         Com_PrintError(0x13,"ERROR: xmodelpieces \'%s\' out of date (version %d, expecting %d).\n");
-        local_10 = (XModelPieces *)0x0;
+        xmodelPieces = (XModelPieces *)0x0;
       }
     }
   }
-  return local_10;
+  return xmodelPieces;
 }
 
 
 // 00806E70  XModelPiecesPrecache  (xanim/xmodel_load_obj.cpp:1494)
 
-XModelPieces * __cdecl XModelPiecesPrecache(char *param_1,_func___cdecl_void_ptr_int *param_2)
+XModelPieces * __cdecl XModelPiecesPrecache(char *name,_func___cdecl_void_ptr_int *Alloc)
 
 {
   code *pcVar1;
   bool bVar2;
   XModelPieces *pXVar3;
   char *pcVar4;
+  XModelPieces *xmodelPieces;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x5d9
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pXVar3 = (XModelPieces *)(*pcVar1)();
     return pXVar3;
   }
-  if ((*param_1 == '\0') &&
+  if ((*name == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x5da
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pXVar3 = (XModelPieces *)(*pcVar1)();
     return pXVar3;
   }
-  pXVar3 = Hunk_FindDataForFile(0xb,param_1);
+  pXVar3 = Hunk_FindDataForFile(0xb,name);
   if (pXVar3 == (XModelPieces *)0x0) {
-    pXVar3 = XModelPiecesLoadFile(param_1,param_2);
+    pXVar3 = XModelPiecesLoadFile(name,Alloc);
     if (pXVar3 == (XModelPieces *)0x0) {
       Com_PrintError(0x14,"ERROR: Cannot find xmodel pieces \'%s\'.\n");
       pXVar3 = (XModelPieces *)0x0;
     }
     else {
-      pcVar4 = Hunk_SetDataForFile(0xb,param_1,pXVar3,param_2);
+      pcVar4 = Hunk_SetDataForFile(0xb,name,pXVar3,Alloc);
       pXVar3->name = pcVar4;
     }
   }
@@ -1916,8 +1933,7 @@ XModelPieces * __cdecl XModelPiecesPrecache(char *param_1,_func___cdecl_void_ptr
 
 // 00806F40  XModelGetStaticBounds  (xanim/xmodel_load_obj.cpp:1530)
 
-int __cdecl
-XModelGetStaticBounds(XModel *param_1,float (*param_2) [3],float *param_3,float *param_4)
+int __cdecl XModelGetStaticBounds(XModel *model,float (*axis) [3],float *mins,float *maxs)
 
 {
   XModelCollSurf_s *pXVar1;
@@ -1927,16 +1943,17 @@ XModelGetStaticBounds(XModel *param_1,float (*param_2) [3],float *param_3,float 
   float local_38;
   float local_34;
   float local_30;
-  int local_2c;
-  uint local_28;
-  float local_20 [3];
-  int local_14;
-  float local_10;
+  int j;
+  int k;
+  XModelCollSurf_s *csurf;
+  float rotated [3];
+  int i;
+  float corner;
   float local_c;
   float local_8;
   
-  if (param_1->numCollSurfs == 0) {
-    if (param_1->contents != 0) {
+  if (model->numCollSurfs == 0) {
+    if (model->contents != 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x602
                                ,0,"%s");
       if (!bVar3) {
@@ -1948,44 +1965,43 @@ XModelGetStaticBounds(XModel *param_1,float (*param_2) [3],float *param_3,float 
     iVar4 = 0;
   }
   else {
-    *param_3 = 3.4028235e+38;
-    param_3[1] = 3.4028235e+38;
-    param_3[2] = 3.4028235e+38;
-    *param_4 = -3.4028235e+38;
-    param_4[1] = -3.4028235e+38;
-    param_4[2] = -3.4028235e+38;
-    for (local_14 = 0; iVar4 = local_14, local_14 < param_1->numCollSurfs; local_14 = local_14 + 1)
-    {
-      pXVar1 = param_1->collSurfs;
-      for (local_28 = 0; (int)local_28 < 8; local_28 = local_28 + 1) {
-        if ((local_28 & 1) == 0) {
+    *mins = 3.4028235e+38;
+    mins[1] = 3.4028235e+38;
+    mins[2] = 3.4028235e+38;
+    *maxs = -3.4028235e+38;
+    maxs[1] = -3.4028235e+38;
+    maxs[2] = -3.4028235e+38;
+    for (i = 0; iVar4 = i, i < model->numCollSurfs; i = i + 1) {
+      pXVar1 = model->collSurfs;
+      for (k = 0; k < 8; k = k + 1) {
+        if ((k & 1U) == 0) {
           local_30 = pXVar1[iVar4].maxs[0];
         }
         else {
           local_30 = pXVar1[iVar4].mins[0];
         }
-        local_10 = local_30;
-        if ((local_28 & 2) == 0) {
+        corner = local_30;
+        if ((k & 2U) == 0) {
           local_34 = pXVar1[iVar4].maxs[1];
         }
         else {
           local_34 = pXVar1[iVar4].mins[1];
         }
         local_c = local_34;
-        if ((local_28 & 4) == 0) {
+        if ((k & 4U) == 0) {
           local_38 = pXVar1[iVar4].maxs[2];
         }
         else {
           local_38 = pXVar1[iVar4].mins[2];
         }
         local_8 = local_38;
-        MatrixTransformVector(&local_10,param_2,local_20);
-        for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-          if (local_20[local_2c] <= param_3[local_2c] && param_3[local_2c] != local_20[local_2c]) {
-            param_3[local_2c] = local_20[local_2c];
+        MatrixTransformVector(&corner,axis,rotated);
+        for (j = 0; j < 3; j = j + 1) {
+          if (rotated[j] <= mins[j] && mins[j] != rotated[j]) {
+            mins[j] = rotated[j];
           }
-          if (param_4[local_2c] <= local_20[local_2c] && local_20[local_2c] != param_4[local_2c]) {
-            param_4[local_2c] = local_20[local_2c];
+          if (maxs[j] <= rotated[j] && rotated[j] != maxs[j]) {
+            maxs[j] = rotated[j];
           }
         }
       }
@@ -1998,29 +2014,28 @@ XModelGetStaticBounds(XModel *param_1,float (*param_2) [3],float *param_3,float 
 
 // 00807150  XModelGetStaticBoundsExact  (xanim/xmodel_load_obj.cpp:1572)
 
-int __cdecl
-XModelGetStaticBoundsExact(XModel *param_1,float (*param_2) [3],float *param_3,float *param_4)
+int __cdecl XModelGetStaticBoundsExact(XModel *model,float (*axis) [3],float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_40;
-  float local_3c [3];
-  int local_30;
-  int local_2c;
-  ushort *local_28;
-  uint local_24;
-  XRigidVertList *local_20;
-  int local_1c;
-  uint local_18;
-  XSurface *local_14;
-  int local_10;
-  int local_c;
-  XSurface *local_8;
+  int j;
+  float rotated [3];
+  int vi;
+  int ti;
+  ushort *triIndices;
+  int triCount;
+  XRigidVertList *vertList;
+  int vli;
+  int vertListCount;
+  XSurface *surf;
+  int si;
+  int nsurfs;
+  XSurface *surfaces;
   
-  if (param_1->numCollSurfs == 0) {
-    if (param_1->contents != 0) {
+  if (model->numCollSurfs == 0) {
+    if (model->contents != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x627
                                ,0,"%s");
       if (!bVar2) {
@@ -2032,35 +2047,33 @@ XModelGetStaticBoundsExact(XModel *param_1,float (*param_2) [3],float *param_3,f
     iVar3 = 0;
   }
   else {
-    *param_3 = 3.4028235e+38;
-    param_3[1] = 3.4028235e+38;
-    param_3[2] = 3.4028235e+38;
-    *param_4 = -3.4028235e+38;
-    param_4[1] = -3.4028235e+38;
-    param_4[2] = -3.4028235e+38;
-    local_c = XModelGetSurfaces(param_1,&local_8,(int)param_1->collLod);
-    for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-      local_14 = local_8 + local_10;
-      local_18 = (uint)local_14->vertListCount;
-      for (local_1c = 0; local_1c < (int)local_18; local_1c = local_1c + 1) {
-        local_20 = local_14->vertList + local_1c;
-        local_24 = (uint)local_20->triCount;
-        local_28 = local_14->triIndices + (uint)local_20->triOffset * 3;
-        for (local_2c = 0; local_2c < (int)local_24; local_2c = local_2c + 1) {
-          for (local_30 = 0; local_30 < 3; local_30 = local_30 + 1) {
-            MatrixTransformVector(local_14->verts0[local_28[local_30]].xyz,param_2,local_3c);
-            for (local_40 = 0; local_40 < 3; local_40 = local_40 + 1) {
-              if (local_3c[local_40] <= param_3[local_40] && param_3[local_40] != local_3c[local_40]
-                 ) {
-                param_3[local_40] = local_3c[local_40];
+    *mins = 3.4028235e+38;
+    mins[1] = 3.4028235e+38;
+    mins[2] = 3.4028235e+38;
+    *maxs = -3.4028235e+38;
+    maxs[1] = -3.4028235e+38;
+    maxs[2] = -3.4028235e+38;
+    nsurfs = XModelGetSurfaces(model,&surfaces,(int)model->collLod);
+    for (si = 0; si < nsurfs; si = si + 1) {
+      surf = surfaces + si;
+      vertListCount = (int)surf->vertListCount;
+      for (vli = 0; vli < vertListCount; vli = vli + 1) {
+        vertList = surf->vertList + vli;
+        triCount = (int)vertList->triCount;
+        triIndices = surf->triIndices + (uint)vertList->triOffset * 3;
+        for (ti = 0; ti < triCount; ti = ti + 1) {
+          for (vi = 0; vi < 3; vi = vi + 1) {
+            MatrixTransformVector(surf->verts0[triIndices[vi]].xyz,axis,rotated);
+            for (j = 0; j < 3; j = j + 1) {
+              if (rotated[j] <= mins[j] && mins[j] != rotated[j]) {
+                mins[j] = rotated[j];
               }
-              if (param_4[local_40] <= local_3c[local_40] && local_3c[local_40] != param_4[local_40]
-                 ) {
-                param_4[local_40] = local_3c[local_40];
+              if (maxs[j] <= rotated[j] && rotated[j] != maxs[j]) {
+                maxs[j] = rotated[j];
               }
             }
           }
-          local_28 = local_28 + 3;
+          triIndices = triIndices + 3;
         }
       }
     }
@@ -2072,17 +2085,17 @@ XModelGetStaticBoundsExact(XModel *param_1,float (*param_2) [3],float *param_3,f
 
 // 00807380  XModelGetStaticBounds  (xanim/xmodel_load_obj.cpp:1660)
 
-int __cdecl XModelGetStaticBounds(XModel *param_1,float *param_2,float *param_3)
+int __cdecl XModelGetStaticBounds(XModel *model,float *mins,float *maxs)
 
 {
   XModelCollSurf_s *pXVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int local_8;
+  int i;
   
-  if (param_1->numCollSurfs == 0) {
-    if (param_1->contents != 0) {
+  if (model->numCollSurfs == 0) {
+    if (model->contents != 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel_load_obj.cpp",0x67f
                                ,0,"%s");
       if (!bVar3) {
@@ -2094,17 +2107,17 @@ int __cdecl XModelGetStaticBounds(XModel *param_1,float *param_2,float *param_3)
     iVar4 = 0;
   }
   else {
-    pXVar1 = param_1->collSurfs;
-    *param_2 = pXVar1->mins[0];
-    param_2[1] = pXVar1->mins[1];
-    param_2[2] = pXVar1->mins[2];
-    pXVar1 = param_1->collSurfs;
-    *param_3 = pXVar1->maxs[0];
-    param_3[1] = pXVar1->maxs[1];
-    param_3[2] = pXVar1->maxs[2];
-    for (local_8 = 1; local_8 < param_1->numCollSurfs; local_8 = local_8 + 1) {
-      Vec3Min(param_2,param_1->collSurfs[local_8].mins,param_2);
-      Vec3Max(param_3,param_1->collSurfs[local_8].maxs,param_3);
+    pXVar1 = model->collSurfs;
+    *mins = pXVar1->mins[0];
+    mins[1] = pXVar1->mins[1];
+    mins[2] = pXVar1->mins[2];
+    pXVar1 = model->collSurfs;
+    *maxs = pXVar1->maxs[0];
+    maxs[1] = pXVar1->maxs[1];
+    maxs[2] = pXVar1->maxs[2];
+    for (i = 1; i < model->numCollSurfs; i = i + 1) {
+      Vec3Min(mins,model->collSurfs[i].mins,mins);
+      Vec3Max(maxs,model->collSurfs[i].maxs,maxs);
     }
     iVar4 = 1;
   }

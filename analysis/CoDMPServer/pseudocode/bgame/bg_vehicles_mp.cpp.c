@@ -2,9 +2,9 @@
 
 // 0044F080  BG_VehiclesGetSlotTagName  (bgame/bg_vehicles_mp.cpp:12)
 
-ushort __cdecl BG_VehiclesGetSlotTagName(int param_1)
+ushort __cdecl BG_VehiclesGetSlotTagName(int seatIndex)
 
 {
-  return *s_seatTags[param_1];
+  return *s_seatTags[seatIndex];
 }
 

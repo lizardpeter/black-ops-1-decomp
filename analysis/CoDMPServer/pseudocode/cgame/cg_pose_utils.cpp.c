@@ -2,13 +2,13 @@
 
 // 004DF230  CG_UsedDObjCalcPose  (cgame/cg_pose_utils.cpp:10)
 
-void __cdecl CG_UsedDObjCalcPose(cpose_t *param_1)
+void __cdecl CG_UsedDObjCalcPose(cpose_t *pose)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (cpose_t *)0x0) &&
+  if ((pose == (cpose_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_pose_utils.cpp",0xb,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -16,8 +16,8 @@ void __cdecl CG_UsedDObjCalcPose(cpose_t *param_1)
     return;
   }
   LOCK();
-  if (param_1->cullIn == 0) {
-    param_1->cullIn = 1;
+  if (pose->cullIn == 0) {
+    pose->cullIn = 1;
   }
   UNLOCK();
   return;
@@ -26,13 +26,13 @@ void __cdecl CG_UsedDObjCalcPose(cpose_t *param_1)
 
 // 004DF280  CG_CullIn  (cgame/cg_pose_utils.cpp:23)
 
-void __cdecl CG_CullIn(cpose_t *param_1)
+void __cdecl CG_CullIn(cpose_t *pose)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (cpose_t *)0x0) {
+  if (pose == (cpose_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_pose_utils.cpp",0x18,0,
                              "%s");
     if (!bVar2) {
@@ -41,7 +41,7 @@ void __cdecl CG_CullIn(cpose_t *param_1)
       return;
     }
   }
-  param_1->cullIn = 2;
+  pose->cullIn = 2;
   return;
 }
 

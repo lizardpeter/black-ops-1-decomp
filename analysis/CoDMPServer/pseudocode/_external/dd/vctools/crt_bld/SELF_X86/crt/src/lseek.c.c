@@ -5,37 +5,38 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-long __cdecl _lseek(int param_1,long param_2,int param_3)
+long __cdecl _lseek(int fh,long pos,int mthd)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
-  long local_20;
+  int _Expr_val;
+  int r;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar3 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) != 0) {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+    if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+      iVar3 = (fh & 0x1fU) * 0x40;
+      if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) != 0) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
           puVar1 = __doserrno();
           *puVar1 = 0;
-          local_20 = -1;
+          r = -1;
         }
         else {
-          local_20 = _lseek_nolock(param_1,param_2,param_3);
+          r = _lseek_nolock(fh,pos,mthd);
         }
         FUN_00c23185();
-        return local_20;
+        return r;
       }
     }
     puVar1 = __doserrno();
@@ -50,35 +51,35 @@ long __cdecl _lseek(int param_1,long param_2,int param_3)
 
 // 00C2303E  _lseek_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/lseek.c:94)
 
-long __cdecl _lseek_nolock(int param_1,long param_2,int param_3)
+long __cdecl _lseek_nolock(int fh,long pos,int mthd)
 
 {
   byte *pbVar1;
   HANDLE hFile;
   int *piVar2;
   DWORD DVar3;
-  ulong uVar4;
+  ulong oserrno;
   
-  hFile = (HANDLE)_get_osfhandle(param_1);
+  hFile = (HANDLE)_get_osfhandle(fh);
   if (hFile == (HANDLE)0xffffffff) {
     piVar2 = _errno();
     *piVar2 = 9;
     DVar3 = 0xffffffff;
   }
   else {
-    DVar3 = SetFilePointer(hFile,param_2,(PLONG)0x0,param_3);
+    DVar3 = SetFilePointer(hFile,pos,(PLONG)0x0,mthd);
     if (DVar3 == 0xffffffff) {
-      uVar4 = GetLastError();
+      oserrno = GetLastError();
     }
     else {
-      uVar4 = 0;
+      oserrno = 0;
     }
-    if (uVar4 == 0) {
-      pbVar1 = (byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + (param_1 & 0x1fU) * 0x40);
+    if (oserrno == 0) {
+      pbVar1 = (byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + (fh & 0x1fU) * 0x40);
       *pbVar1 = *pbVar1 & 0xfd;
     }
     else {
-      _dosmaperr(uVar4);
+      _dosmaperr(oserrno);
       DVar3 = 0xffffffff;
     }
   }

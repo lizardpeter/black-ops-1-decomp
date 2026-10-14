@@ -423,10 +423,10 @@ void __cdecl SVC_StatusScoreBoard(undefined4 *param_1)
   char *pcVar3;
   char *pcVar4;
   uchar **ppuVar5;
-  char *pcVar6;
-  int iVar7;
+  char *count;
+  int iVar6;
   uint unaff_ESI;
-  int *piVar8;
+  int *piVar7;
   void *unaff_EDI;
   int iStack_4454;
   char acStack_4450 [32];
@@ -440,15 +440,15 @@ void __cdecl SVC_StatusScoreBoard(undefined4 *param_1)
   uStack_4 = 0x61542a;
   memset((uchar *)&tempServerMsgBuf,'\0',0x10000);
   memset((uchar *)&nStack_4030,'\0',0x4000);
-  iVar7 = 0;
-  pcVar6 = (char *)0x0;
+  iVar6 = 0;
+  count = (char *)0x0;
   if (0 < (com_maxclients->current).integer) {
     iStack_4454 = 0;
     do {
-      piVar8 = (int *)(iStack_4454 + DAT_01e5d49c);
-      pcVar3 = pcVar6;
-      if (2 < *piVar8) {
-        if ((char)piVar8[0x1564] == '\0') {
+      piVar7 = (int *)(iStack_4454 + DAT_01e5d49c);
+      pcVar3 = count;
+      if (2 < *piVar7) {
+        if ((char)piVar7[0x1564] == '\0') {
           _snprintf(acStack_4450,0x20,"%s");
         }
         else {
@@ -456,40 +456,40 @@ void __cdecl SVC_StatusScoreBoard(undefined4 *param_1)
         }
         if (gameInitialized == 0) {
           Com_sprintf("%i %i %i %i %i %i %i %s\n",3,
-                      (char *)(*(int *)((((int)piVar8 - DAT_01e5d49c) / 0x7c2e8) * 0x2a28 + 0x281c +
-                                       _level) + 1),0,0,0,piVar8[0x1274d],acStack_4450);
+                      (char *)(*(int *)((((int)piVar7 - DAT_01e5d49c) / 0x7c2e8) * 0x2a28 + 0x281c +
+                                       _level) + 1),0,0,0,piVar7[0x1274d],acStack_4450);
         }
         else {
-          iVar2 = (((int)piVar8 - DAT_01e5d49c) / 0x7c2e8) * 0x2a28 + _level;
+          iVar2 = (((int)piVar7 - DAT_01e5d49c) / 0x7c2e8) * 0x2a28 + _level;
           Com_sprintf("%i %i %i %i %i %i %i %s\n",*(int *)(iVar2 + 0x27bc),
                       (char *)(*(int *)(iVar2 + 0x281c) + 1),*(undefined4 *)(iVar2 + 0x2864),
                       *(undefined4 *)(iVar2 + 0x2868),*(undefined4 *)(iVar2 + 0x286c),
-                      *(undefined4 *)(iVar2 + 0x2870),piVar8[0x1274d],acStack_4450);
+                      *(undefined4 *)(iVar2 + 0x2870),piVar7[0x1274d],acStack_4450);
         }
         pcVar3 = acStack_4430;
         do {
           cVar1 = *pcVar3;
           pcVar3 = pcVar3 + 1;
         } while (cVar1 != '\0');
-        pcVar3 = pcVar3 + ((int)pcVar6 - (int)(acStack_4430 + 1));
+        pcVar3 = pcVar3 + ((int)count - (int)(acStack_4430 + 1));
         if (0xffff < (int)pcVar3) break;
         pcVar4 = acStack_4430;
-        iVar2 = (int)pcVar6 - (int)pcVar4;
+        iVar2 = (int)count - (int)pcVar4;
         do {
           cVar1 = *pcVar4;
           pcVar4[(int)&tempServerMsgBuf + iVar2] = cVar1;
           pcVar4 = pcVar4 + 1;
         } while (cVar1 != '\0');
       }
-      iVar7 = iVar7 + 1;
+      iVar6 = iVar6 + 1;
       iStack_4454 = iStack_4454 + 0x7c2e8;
-      pcVar6 = pcVar3;
-    } while (iVar7 < (com_maxclients->current).integer);
+      count = pcVar3;
+    } while (iVar6 < (com_maxclients->current).integer);
   }
   uStack_402f = *param_1;
   uStack_402b = param_1[1];
   nStack_4030 = (netadr_t)0x7;
-  memcpy(auStack_4027,(uchar *)&tempServerMsgBuf,(ulong)pcVar6);
+  memcpy(auStack_4027,(uchar *)&tempServerMsgBuf,(ulong)count);
   ppuVar5 = &tempServerMsgBuf;
   do {
     cVar1 = *(char *)ppuVar5;

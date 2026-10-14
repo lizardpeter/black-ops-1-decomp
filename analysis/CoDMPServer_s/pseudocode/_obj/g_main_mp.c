@@ -1304,10 +1304,10 @@ void __cdecl CalculateRanks(void)
   int iVar1;
   int iVar2;
   int iVar3;
-  uint uVar4;
+  uint num;
   
   iVar1 = 0;
-  uVar4 = 0;
+  num = 0;
   iVar3 = 0;
   DAT_01c5a6c8 = 0;
   DAT_01c5a750 = 0;
@@ -1315,10 +1315,10 @@ void __cdecl CalculateRanks(void)
   if (0 < DAT_01c57844) {
     do {
       if (*(int *)(iVar1 + 0x2700 + iVar2) != 0) {
-        (&DAT_01c5a6cc)[uVar4] = iVar3;
-        uVar4 = DAT_01c5a6c8 + 1;
+        (&DAT_01c5a6cc)[num] = iVar3;
+        num = DAT_01c5a6c8 + 1;
         iVar2 = _level;
-        DAT_01c5a6c8 = uVar4;
+        DAT_01c5a6c8 = num;
         if ((*(int *)(iVar1 + 0x27bc + _level) != 3) && (*(int *)(iVar1 + 0x2700 + _level) == 2)) {
           DAT_01c5a750 = DAT_01c5a750 + 1;
         }
@@ -1327,7 +1327,7 @@ void __cdecl CalculateRanks(void)
       iVar1 = iVar1 + 0x2a28;
     } while (iVar3 < DAT_01c57844);
   }
-  qsort(&DAT_01c5a6cc,uVar4,4,FUN_00573c10);
+  qsort(&DAT_01c5a6cc,num,4,FUN_00573c10);
   iVar2 = 0;
   if (0 < (int)DAT_01c5a6c8) {
     do {

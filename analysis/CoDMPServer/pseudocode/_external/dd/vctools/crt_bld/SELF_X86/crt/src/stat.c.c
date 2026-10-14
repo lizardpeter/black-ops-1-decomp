@@ -2,41 +2,41 @@
 
 // 00C29B01  __dtoxmode  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/stat.c:71)
 
-ushort __cdecl __dtoxmode(int param_1,char *param_2)
+ushort __cdecl __dtoxmode(int attr,char *name)
 
 {
   char cVar1;
-  uchar *puVar2;
-  int iVar3;
-  char *pcVar4;
-  uint uVar5;
+  uchar *s1;
+  int iVar2;
+  char *pcVar3;
+  uint uVar4;
   
-  pcVar4 = param_2;
-  if (param_2[1] == ':') {
-    pcVar4 = param_2 + 2;
+  pcVar3 = name;
+  if (name[1] == ':') {
+    pcVar3 = name + 2;
   }
-  cVar1 = *pcVar4;
-  if ((((cVar1 == '\\') || (cVar1 == '/')) && (pcVar4[1] == '\0')) ||
-     (((param_1 & 0x10U) != 0 || (uVar5 = 0x8000, cVar1 == '\0')))) {
-    uVar5 = 0x4040;
+  cVar1 = *pcVar3;
+  if ((((cVar1 == '\\') || (cVar1 == '/')) && (pcVar3[1] == '\0')) ||
+     (((attr & 0x10U) != 0 || (uVar4 = 0x8000, cVar1 == '\0')))) {
+    uVar4 = 0x4040;
   }
-  uVar5 = uVar5 | ~((param_1 & 0xffU) << 7) & 0x80 | 0x100;
-  puVar2 = _mbsrchr((uchar *)param_2,0x2e);
-  if (puVar2 != (uchar *)0x0) {
-    iVar3 = _mbsicmp(puVar2,".exe");
-    if (iVar3 != 0) {
-      iVar3 = _mbsicmp(puVar2,(uchar *)".cmd");
-      if (iVar3 != 0) {
-        iVar3 = _mbsicmp(puVar2,(uchar *)".bat");
-        if (iVar3 != 0) {
-          iVar3 = _mbsicmp(puVar2,(uchar *)".com");
-          if (iVar3 != 0) goto LAB_00c29ba6;
+  uVar4 = uVar4 | ~((attr & 0xffU) << 7) & 0x80 | 0x100;
+  s1 = _mbsrchr((uchar *)name,0x2e);
+  if (s1 != (uchar *)0x0) {
+    iVar2 = _mbsicmp(s1,".exe");
+    if (iVar2 != 0) {
+      iVar2 = _mbsicmp(s1,(uchar *)".cmd");
+      if (iVar2 != 0) {
+        iVar2 = _mbsicmp(s1,(uchar *)".bat");
+        if (iVar2 != 0) {
+          iVar2 = _mbsicmp(s1,(uchar *)".com");
+          if (iVar2 != 0) goto LAB_00c29ba6;
         }
       }
     }
-    uVar5 = uVar5 | 0x40;
+    uVar4 = uVar4 | 0x40;
   }
 LAB_00c29ba6:
-  return (ushort)(uVar5 >> 6) & 7 | (ushort)uVar5 | (ushort)(uVar5 >> 3) & 0x38;
+  return (ushort)(uVar4 >> 6) & 7 | (ushort)uVar4 | (ushort)(uVar4 >> 3) & 0x38;
 }
 

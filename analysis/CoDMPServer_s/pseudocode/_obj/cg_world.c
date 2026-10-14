@@ -1066,11 +1066,11 @@ CG_SightTracePoint(int *param_1,float *param_2,float *param_3,int param_4,trace_
   int iVar2;
   int iVar3;
   float *unaff_EBP;
-  uint uVar4;
+  uint num;
   trace_t *unaff_ESI;
   cbrush_t *unaff_EDI;
+  float fVar4;
   float fVar5;
-  float fVar6;
   undefined4 *local_168;
   int local_164;
   float local_160;
@@ -1133,9 +1133,9 @@ CG_SightTracePoint(int *param_1,float *param_2,float *param_3,int param_4,trace_
 LAB_004d7ebc:
     return *param_1 != 0;
   }
-  fVar6 = 1.0;
-  fVar5 = 0.0;
-  uVar4 = 0;
+  fVar5 = 1.0;
+  fVar4 = 0.0;
+  num = 0;
   local_164 = 0;
   if (0 < num_occlusion_overrides) {
     local_168 = &DAT_01c7d308;
@@ -1146,23 +1146,23 @@ LAB_004d7ebc:
       local_154 = (float)local_168[1];
       local_150 = (float)local_168[2];
       local_14c = (float)local_168[3];
-      local_148 = fVar6;
-      local_144 = fVar5;
+      local_148 = fVar5;
+      local_144 = fVar4;
       iVar3 = intersect_extents_aabb
                         ((TraceExtents *)&local_134,&local_154,unaff_EDI->mins,(float *)unaff_ESI,
                          unaff_EBP);
       if (iVar3 != 0) {
-        local_104[uVar4 * 2] = local_144;
-        local_104[uVar4 * 2 + 1] = local_148;
-        uVar4 = uVar4 + 1;
-        if (uVar4 == 0x20) break;
+        local_104[num * 2] = local_144;
+        local_104[num * 2 + 1] = local_148;
+        num = num + 1;
+        if (num == 0x20) break;
       }
       local_168 = local_168 + 6;
       local_164 = local_164 + 1;
     } while (local_164 < num_occlusion_overrides);
-    if (0 < (int)uVar4) {
-      qsort(local_104,uVar4,8,FUN_004d7a30);
-      fVar5 = 0.0;
+    if (0 < (int)num) {
+      qsort(local_104,num,8,FUN_004d7a30);
+      fVar4 = 0.0;
       local_140 = *param_3 - *param_2;
       local_13c = param_3[1] - param_2[1];
       local_138 = param_3[2] - param_2[2];
@@ -1171,31 +1171,31 @@ LAB_004d7ebc:
       local_154 = local_140;
       local_150 = local_13c;
       local_14c = local_138;
-      if (0 < (int)uVar4) {
+      if (0 < (int)num) {
         do {
-          fVar6 = local_104[iVar3 * 2];
-          if (fVar5 < fVar6) {
-            local_160 = local_140 * fVar5 + *param_2;
-            local_15c = local_13c * fVar5 + param_2[1];
-            local_140 = local_140 * fVar6 + *param_2;
-            local_158 = local_138 * fVar5 + param_2[2];
-            local_13c = local_13c * fVar6 + param_2[1];
-            local_138 = local_138 * fVar6 + param_2[2];
+          fVar5 = local_104[iVar3 * 2];
+          if (fVar4 < fVar5) {
+            local_160 = local_140 * fVar4 + *param_2;
+            local_15c = local_13c * fVar4 + param_2[1];
+            local_140 = local_140 * fVar5 + *param_2;
+            local_158 = local_138 * fVar4 + param_2[2];
+            local_13c = local_13c * fVar5 + param_2[1];
+            local_138 = local_138 * fVar5 + param_2[2];
             bVar1 = CG_SightTracePointInternal
                               (param_1,&local_160,&local_140,(int)unaff_EDI,unaff_ESI);
             local_140 = local_154;
             local_13c = local_150;
             local_138 = local_14c;
             if (bVar1) {
-              *(float *)(param_4 + 0x10) = (fVar6 - fVar5) * *(float *)(param_4 + 0x10) + fVar5;
+              *(float *)(param_4 + 0x10) = (fVar5 - fVar4) * *(float *)(param_4 + 0x10) + fVar4;
               return true;
             }
           }
-          fVar5 = local_104[iVar3 * 2 + 1];
+          fVar4 = local_104[iVar3 * 2 + 1];
           iVar3 = iVar3 + 1;
-        } while (iVar3 < (int)uVar4);
-        local_168 = (undefined4 *)fVar5;
-        if (1.0 <= fVar5) goto LAB_004d7ebc;
+        } while (iVar3 < (int)num);
+        local_168 = (undefined4 *)fVar4;
+        if (1.0 <= fVar4) goto LAB_004d7ebc;
       }
       local_160 = local_140 * (float)local_168 + *param_2;
       local_15c = local_13c * (float)local_168 + param_2[1];

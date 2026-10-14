@@ -2,35 +2,35 @@
 
 // 00B2FD80  XSurfaceOptimizeRigid  (gfx_d3d/r_xsurface_optimize.cpp:16)
 
-void __cdecl XSurfaceOptimizeRigid(XModel *param_1,XSurface *param_2)
+void __cdecl XSurfaceOptimizeRigid(XModel *model,XSurface *surface)
 
 {
   code *pcVar1;
   bool bVar2;
-  IDirect3DVertexBuffer9 *local_14;
-  int local_10;
-  uchar *local_c;
-  ulong local_8;
+  IDirect3DVertexBuffer9 *vb;
+  HRESULT hr;
+  void *vertexBuffer;
+  int vertexBytes;
   
-  if (((param_2->flags & 0x80) != 0) &&
+  if (((surface->flags & 0x80) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp"
                                ,0x16,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->vb0 == (IDirect3DVertexBuffer9 *)0x0) {
-    local_8 = (uint)param_2->vertCount << 5;
-    local_10 = (**(code **)((int)*dx.device + 0x68))(dx.device,local_8,8,0,0,&local_14,0);
-    if (-1 < local_10) {
-      local_10 = (**(code **)((int)*local_14 + 0x2c))(local_14,0,0,&local_c,0);
-      if (local_10 < 0) {
-        (**(code **)((int)*local_14 + 8))(local_14);
+  if (surface->vb0 == (IDirect3DVertexBuffer9 *)0x0) {
+    vertexBytes = (uint)surface->vertCount << 5;
+    hr = (**(code **)((int)*dx.device + 0x68))(dx.device,vertexBytes,8,0,0,&vb,0);
+    if (-1 < hr) {
+      hr = (**(code **)((int)*vb + 0x2c))(vb,0,0,&vertexBuffer,0);
+      if (hr < 0) {
+        (**(code **)((int)*vb + 8))(vb);
       }
       else {
-        param_2->vb0 = local_14;
-        memcpy(local_c,(uchar *)param_2->verts0,local_8);
-        R_FinishStaticVertexBuffer(local_14);
+        surface->vb0 = vb;
+        memcpy(vertexBuffer,(uchar *)surface->verts0,vertexBytes);
+        R_FinishStaticVertexBuffer(vb);
       }
     }
   }
@@ -40,13 +40,13 @@ void __cdecl XSurfaceOptimizeRigid(XModel *param_1,XSurface *param_2)
 
 // 00B2FFC0  XSurfaceUnoptimizeRigid  (gfx_d3d/r_xsurface_optimize.cpp:55)
 
-void __cdecl XSurfaceUnoptimizeRigid(XSurface *param_1)
+void __cdecl XSurfaceUnoptimizeRigid(XSurface *surf)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1->flags & 0x80) != 0) {
+  if ((surf->flags & 0x80) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp",
                              0x38,0,"%s");
     if (!bVar2) {
@@ -55,7 +55,7 @@ void __cdecl XSurfaceUnoptimizeRigid(XSurface *param_1)
       return;
     }
   }
-  if (param_1->vb0 == (IDirect3DVertexBuffer9 *)0x0) {
+  if (surf->vb0 == (IDirect3DVertexBuffer9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp",
                              0x39,0,"%s");
     if (!bVar2) {
@@ -64,52 +64,55 @@ void __cdecl XSurfaceUnoptimizeRigid(XSurface *param_1)
       return;
     }
   }
-  R_FreeStaticVertexBuffer(param_1->vb0);
-  param_1->vb0 = (IDirect3DVertexBuffer9 *)0x0;
+  R_FreeStaticVertexBuffer(surf->vb0);
+  surf->vb0 = (IDirect3DVertexBuffer9 *)0x0;
   return;
 }
 
 
 // 00B2FC70  XSurfaceOptimize  (gfx_d3d/r_xsurface_optimize.cpp:64)
 
-void __cdecl XSurfaceOptimize(XModel *param_1,XSurface *param_2)
+void __cdecl XSurfaceOptimize(XModel *model,XSurface *surf)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  uint uVar4;
-  void *pvVar5;
-  int iVar6;
+  uint sizeInBytes;
+  void *dest;
+  int count;
+  void *indexBuffer;
+  int rawIndexBytes;
+  int indexBytes;
   
-  if (param_2->indexBuffer == (IDirect3DIndexBuffer9 *)0x0) {
-    if ((param_2->triIndices == (ushort *)0x0) &&
+  if (surf->indexBuffer == (IDirect3DIndexBuffer9 *)0x0) {
+    if ((surf->triIndices == (ushort *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp"
                                  ,0x47,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    uVar1 = param_2->triCount;
-    iVar6 = (uint)uVar1 * 6;
-    uVar4 = iVar6 + 0x1fU & 0xffffffe0;
-    if ((0x200000 < uVar4) &&
+    uVar1 = surf->triCount;
+    count = (uint)uVar1 * 6;
+    sizeInBytes = count + 0x1fU & 0xffffffe0;
+    if ((0x200000 < sizeInBytes) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp"
                                  ,0x4b,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pvVar5 = R_AllocStaticIndexBuffer(&param_2->indexBuffer,uVar4,1,"XSurfaceOptimize");
-    if (pvVar5 == (void *)0x0) {
+    dest = R_AllocStaticIndexBuffer(&surf->indexBuffer,sizeInBytes,1,"XSurfaceOptimize");
+    if (dest == (void *)0x0) {
       return;
     }
-    Com_Memcpy(pvVar5,param_2->triIndices,iVar6);
-    memset((uchar *)((int)pvVar5 + iVar6),'\0',uVar4 + (uint)uVar1 * -6);
-    R_FinishStaticIndexBuffer(param_2->indexBuffer);
+    Com_Memcpy(dest,surf->triIndices,count);
+    memset((uchar *)((int)dest + count),'\0',sizeInBytes + (uint)uVar1 * -6);
+    R_FinishStaticIndexBuffer(surf->indexBuffer);
   }
-  if ((param_2->flags & 0x80) == 0) {
-    XSurfaceOptimizeRigid(param_1,param_2);
+  if ((surf->flags & 0x80) == 0) {
+    XSurfaceOptimizeRigid(model,surf);
   }
   return;
 }
@@ -117,15 +120,15 @@ void __cdecl XSurfaceOptimize(XModel *param_1,XSurface *param_2)
 
 // 00B2FF70  XSurfaceUnoptimize  (gfx_d3d/r_xsurface_optimize.cpp:95)
 
-void __cdecl XSurfaceUnoptimize(XSurface *param_1)
+void __cdecl XSurfaceUnoptimize(XSurface *surf)
 
 {
-  if (param_1->indexBuffer != (IDirect3DIndexBuffer9 *)0x0) {
-    R_FreeStaticIndexBuffer(param_1->indexBuffer);
-    param_1->indexBuffer = (IDirect3DIndexBuffer9 *)0x0;
+  if (surf->indexBuffer != (IDirect3DIndexBuffer9 *)0x0) {
+    R_FreeStaticIndexBuffer(surf->indexBuffer);
+    surf->indexBuffer = (IDirect3DIndexBuffer9 *)0x0;
   }
-  if (((param_1->flags & 0x80) == 0) && (param_1->vb0 != (IDirect3DVertexBuffer9 *)0x0)) {
-    XSurfaceUnoptimizeRigid(param_1);
+  if (((surf->flags & 0x80) == 0) && (surf->vb0 != (IDirect3DVertexBuffer9 *)0x0)) {
+    XSurfaceUnoptimizeRigid(surf);
   }
   return;
 }
@@ -133,24 +136,24 @@ void __cdecl XSurfaceUnoptimize(XSurface *param_1)
 
 // 00B2FB60  XModelOptimizeCallback  (gfx_d3d/r_xsurface_optimize.cpp:112)
 
-void __cdecl XModelOptimizeCallback(void *param_1)
+void __cdecl XModelOptimizeCallback(void *data)
 
 {
-  _XModelOptimize(param_1);
+  _XModelOptimize(data);
   return;
 }
 
 
 // 00B2FB80  XModelOptimize  (gfx_d3d/r_xsurface_optimize.cpp:117)
 
-void __cdecl XModelOptimize(XModel *param_1)
+void __cdecl XModelOptimize(XModel *model)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  iVar3 = XModelBad(param_1);
+  iVar3 = XModelBad(model);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp",
                              0x76,0,"%s");
@@ -162,10 +165,10 @@ void __cdecl XModelOptimize(XModel *param_1)
   }
   bVar2 = Sys_IsRenderThread();
   if (bVar2) {
-    _XModelOptimize(param_1);
+    _XModelOptimize(model);
   }
   else {
-    RB_Resource_CallbackParam(XModelOptimizeCallback,param_1);
+    RB_Resource_CallbackParam(XModelOptimizeCallback,model);
     RB_Resource_Flush();
   }
   return;
@@ -174,20 +177,22 @@ void __cdecl XModelOptimize(XModel *param_1)
 
 // 00B2FBF0  _XModelOptimize  (gfx_d3d/r_xsurface_optimize.cpp:135)
 
-void __cdecl _XModelOptimize(XModel *param_1)
+void __cdecl _XModelOptimize(XModel *model)
 
 {
   int iVar1;
   int iVar2;
-  int local_18;
-  int local_14;
-  XSurface *local_8;
+  int lodIndex;
+  int surfIndex;
+  int surfCount;
+  int lodCount;
+  XSurface *surfaces;
   
-  iVar1 = XModelGetNumLods(param_1);
-  for (local_18 = 0; local_18 < iVar1; local_18 = local_18 + 1) {
-    iVar2 = XModelGetSurfaces(param_1,&local_8,local_18);
-    for (local_14 = 0; local_14 < iVar2; local_14 = local_14 + 1) {
-      XSurfaceOptimize(param_1,local_8 + local_14);
+  iVar1 = XModelGetNumLods(model);
+  for (lodIndex = 0; lodIndex < iVar1; lodIndex = lodIndex + 1) {
+    iVar2 = XModelGetSurfaces(model,&surfaces,lodIndex);
+    for (surfIndex = 0; surfIndex < iVar2; surfIndex = surfIndex + 1) {
+      XSurfaceOptimize(model,surfaces + surfIndex);
     }
   }
   return;
@@ -196,30 +201,32 @@ void __cdecl _XModelOptimize(XModel *param_1)
 
 // 00B2FE70  XModelUnoptimizeCallback  (gfx_d3d/r_xsurface_optimize.cpp:157)
 
-void __cdecl XModelUnoptimizeCallback(void *param_1)
+void __cdecl XModelUnoptimizeCallback(void *data)
 
 {
-  XModelUnoptimize(param_1);
+  XModelUnoptimize(data);
   return;
 }
 
 
 // 00B2FE90  XModelUnoptimize  (gfx_d3d/r_xsurface_optimize.cpp:163)
 
-void __cdecl XModelUnoptimize(XModel *param_1)
+void __cdecl XModelUnoptimize(XModel *model)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int local_18;
-  int local_14;
-  XSurface *local_8;
+  int lodIndex;
+  int surfIndex;
+  int surfCount;
+  int lodCount;
+  XSurface *surfaces;
   
   bVar2 = Sys_IsRenderThread();
   if (bVar2) {
-    iVar3 = XModelBad(param_1);
+    iVar3 = XModelBad(model);
     if (iVar3 != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_optimize.cpp"
                                ,0xb3,0,"%s");
@@ -229,16 +236,16 @@ void __cdecl XModelUnoptimize(XModel *param_1)
         return;
       }
     }
-    iVar3 = XModelGetNumLods(param_1);
-    for (local_18 = 0; local_18 < iVar3; local_18 = local_18 + 1) {
-      iVar4 = XModelGetSurfaces(param_1,&local_8,local_18);
-      for (local_14 = 0; local_14 < iVar4; local_14 = local_14 + 1) {
-        XSurfaceUnoptimize(local_8 + local_14);
+    iVar3 = XModelGetNumLods(model);
+    for (lodIndex = 0; lodIndex < iVar3; lodIndex = lodIndex + 1) {
+      iVar4 = XModelGetSurfaces(model,&surfaces,lodIndex);
+      for (surfIndex = 0; surfIndex < iVar4; surfIndex = surfIndex + 1) {
+        XSurfaceUnoptimize(surfaces + surfIndex);
       }
     }
   }
   else {
-    RB_Resource_CallbackParam(XModelUnoptimizeCallback,param_1);
+    RB_Resource_CallbackParam(XModelUnoptimizeCallback,model);
     RB_Resource_Flush();
   }
   return;

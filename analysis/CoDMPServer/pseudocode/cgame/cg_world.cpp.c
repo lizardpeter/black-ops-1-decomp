@@ -4,11 +4,11 @@
 
 void __cdecl
 phys_calc_world_aabb
-          (phys_vec3 *param_1,phys_vec3 *param_2,phys_mat44 *param_3,phys_vec3 *param_4,
-          phys_vec3 *param_5)
+          (phys_vec3 *local_center,phys_vec3 *local_half_aabb_dims,phys_mat44 *local_to_world_xform,
+          phys_vec3 *aabb_min,phys_vec3 *aabb_max)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *a_2;
   phys_vec3 local_d0;
   float local_c0;
   float local_bc;
@@ -23,37 +23,39 @@ phys_calc_world_aabb
   phys_vec3 local_60;
   phys_mat44 local_50;
   
-  phys_transpose(&local_50,param_3);
+  phys_transpose(&local_50,local_to_world_xform);
   local_64 = phys_AbsValue(&local_60,&local_50.z);
-  local_68 = local_64->x * param_2->x + local_64->y * param_2->y + local_64->z * param_2->z;
+  local_68 = local_64->x * local_half_aabb_dims->x + local_64->y * local_half_aabb_dims->y +
+             local_64->z * local_half_aabb_dims->z;
   local_84 = phys_AbsValue(&local_80,&local_50.y);
-  local_88 = local_84->x * param_2->x + local_84->y * param_2->y + local_84->z * param_2->z;
-  ppVar1 = phys_AbsValue(&local_a0,&local_50.x);
-  local_c0 = Vec3Dot(&ppVar1->x,&param_2->x);
+  local_88 = local_84->x * local_half_aabb_dims->x + local_84->y * local_half_aabb_dims->y +
+             local_84->z * local_half_aabb_dims->z;
+  a_2 = phys_AbsValue(&local_a0,&local_50.x);
+  local_c0 = Vec3Dot(&a_2->x,&local_half_aabb_dims->x);
   local_bc = local_88;
   local_b8 = local_68;
   local_a4 = local_c0;
-  phys_full_multiply(&local_d0,param_3,param_1);
-  param_4->x = local_d0.x - local_c0;
-  param_4->y = local_d0.y - local_bc;
-  param_4->z = local_d0.z - local_b8;
-  param_5->x = local_d0.x + local_c0;
-  param_5->y = local_d0.y + local_bc;
-  param_5->z = local_d0.z + local_b8;
+  phys_full_multiply(&local_d0,local_to_world_xform,local_center);
+  aabb_min->x = local_d0.x - local_c0;
+  aabb_min->y = local_d0.y - local_bc;
+  aabb_min->z = local_d0.z - local_b8;
+  aabb_max->x = local_d0.x + local_c0;
+  aabb_max->y = local_d0.y + local_bc;
+  aabb_max->z = local_d0.z + local_b8;
   return;
 }
 
 
 // 0053F7F0  operator[]<int>  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:34)
 
-float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int param_1)
+float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int i)
 
 {
   code *pcVar1;
   bool bVar2;
   float *pfVar3;
   
-  if ((param_1 < 0) || (2 < param_1)) {
+  if ((i < 0) || (2 < i)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x22,
                       "i >= 0 && i < 3","");
     if (bVar2) {
@@ -62,7 +64,7 @@ float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int param_1)
       return pfVar3;
     }
   }
-  return &this->x + param_1;
+  return &this->x + i;
 }
 
 
@@ -73,15 +75,16 @@ float * __thiscall phys_vec3::operator[]<int>(phys_vec3 *this,int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_GetEntityBModelContents(centity_s *param_1)
+int __cdecl CG_GetEntityBModelContents(centity_s *cent)
 
 {
   short sVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
+  entityState_s *es;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x2a,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -89,7 +92,7 @@ int __cdecl CG_GetEntityBModelContents(centity_s *param_1)
       return iVar4;
     }
   }
-  if ((param_1->nextState).solid == 0) {
+  if ((cent->nextState).solid == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x2d,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -97,11 +100,11 @@ int __cdecl CG_GetEntityBModelContents(centity_s *param_1)
       return iVar4;
     }
   }
-  if ((param_1->nextState).solid == 0xffffff) {
-    iVar4 = CM_ContentsOfModel((int)(param_1->nextState).index.brushmodel);
+  if ((cent->nextState).solid == 0xffffff) {
+    iVar4 = CM_ContentsOfModel((int)(cent->nextState).index.brushmodel);
   }
   else {
-    sVar1 = (param_1->nextState).eType;
+    sVar1 = (cent->nextState).eType;
     if (sVar1 == 1) {
       iVar4 = 0x2000000;
     }
@@ -127,8 +130,7 @@ int __cdecl CG_GetEntityBModelContents(centity_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_GetEntityBModelBounds
-          (centity_s *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+CG_GetEntityBModelBounds(centity_s *cent,float *mins,float *maxs,float *absMins,float *absMaxs)
 
 {
   code *pcVar1;
@@ -170,7 +172,7 @@ CG_GetEntityBModelBounds
   uint local_18;
   entityState_s *local_14;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x4b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -178,7 +180,7 @@ CG_GetEntityBModelBounds
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x4c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -186,7 +188,7 @@ CG_GetEntityBModelBounds
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x4d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -194,8 +196,8 @@ CG_GetEntityBModelBounds
       return;
     }
   }
-  local_14 = &param_1->nextState;
-  if ((param_1->nextState).solid == 0) {
+  local_14 = &cent->nextState;
+  if ((cent->nextState).solid == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x50,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -204,22 +206,22 @@ CG_GetEntityBModelBounds
     }
   }
   if (local_14->solid == 0xffffff) {
-    CM_ModelBounds((int)(local_14->index).brushmodel,param_2,param_3);
+    CM_ModelBounds((int)(local_14->index).brushmodel,mins,maxs);
   }
   else {
     local_18 = local_14->solid & 0xff;
     local_1c = (local_14->solid >> 8 & 0xffU) - 1;
     local_20 = (local_14->solid >> 0x10 & 0xffU) - 0x20;
-    param_2[1] = -(float)local_18 + 1.0;
-    *param_2 = param_2[1];
-    param_3[1] = (float)local_18 - 1.0;
-    *param_3 = param_3[1];
-    param_2[2] = -(float)local_1c + 1.0;
-    param_3[2] = (float)local_20 - 1.0;
+    mins[1] = -(float)local_18 + 1.0;
+    *mins = mins[1];
+    maxs[1] = (float)local_18 - 1.0;
+    *maxs = maxs[1];
+    mins[2] = -(float)local_1c + 1.0;
+    maxs[2] = (float)local_20 - 1.0;
   }
-  if (param_4 != (float *)0x0) {
-    Phys_Vec3ToNitrousVec(param_2,&local_30);
-    Phys_Vec3ToNitrousVec(param_3,&local_40);
+  if (absMins != (float *)0x0) {
+    Phys_Vec3ToNitrousVec(mins,&local_30);
+    Phys_Vec3ToNitrousVec(maxs,&local_40);
     local_60 = local_40.x - local_30.x;
     local_5c = local_40.y - local_30.y;
     local_58 = local_40.z - local_30.z;
@@ -250,12 +252,12 @@ CG_GetEntityBModelBounds
     local_4c = local_58;
     local_48 = local_5c;
     local_44 = local_60;
-    AnglesToAxis((param_1->pose).angles,(float (*) [3])local_104);
+    AnglesToAxis((cent->pose).angles,(float (*) [3])local_104);
     Phys_AxisToNitrousMat((float (*) [3])local_104,&local_150);
-    Phys_Vec3ToNitrousVec((param_1->pose).origin,&local_150.w);
+    Phys_Vec3ToNitrousVec((cent->pose).origin,&local_150.w);
     phys_calc_world_aabb(&local_e0,&local_90,&local_150,&local_170,&local_160);
-    Phys_NitrousVecToVec3(&local_170,param_4);
-    Phys_NitrousVecToVec3(&local_160,param_5);
+    Phys_NitrousVecToVec3(&local_170,absMins);
+    Phys_NitrousVecToVec3(&local_160,absMaxs);
   }
   return;
 }
@@ -263,15 +265,15 @@ CG_GetEntityBModelBounds
 
 // 00539C50  phys_AbsValue  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:107)
 
-phys_vec3 * __cdecl phys_AbsValue(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1)
+phys_vec3 * __cdecl phys_AbsValue(phys_vec3 *__return_storage_ptr__,phys_vec3 *a)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = param_1->z;
-  fVar2 = param_1->y;
-  __return_storage_ptr__->x = ABS(param_1->x);
+  fVar1 = a->z;
+  fVar2 = a->y;
+  __return_storage_ptr__->x = ABS(a->x);
   __return_storage_ptr__->y = ABS(fVar2);
   __return_storage_ptr__->z = ABS(fVar1);
   return __return_storage_ptr__;
@@ -287,14 +289,13 @@ phys_vec3 * __cdecl phys_AbsValue(phys_vec3 *__return_storage_ptr__,phys_vec3 *p
 
 void __cdecl
 CG_GetEntityDobjBounds
-          (centity_s *param_1,DObj *param_2,float *param_3,float *param_4,float *param_5,
-          float *param_6)
+          (centity_s *cent,DObj *dobj,float *mins,float *maxs,float *absMins,float *absMaxs)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x91,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -302,7 +303,7 @@ CG_GetEntityDobjBounds
       return;
     }
   }
-  if (param_2 == (DObj *)0x0) {
+  if (dobj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x92,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -310,7 +311,7 @@ CG_GetEntityDobjBounds
       return;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x93,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -318,7 +319,7 @@ CG_GetEntityDobjBounds
       return;
     }
   }
-  if (param_4 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x94,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -326,7 +327,7 @@ CG_GetEntityDobjBounds
       return;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (absMins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x95,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -334,7 +335,7 @@ CG_GetEntityDobjBounds
       return;
     }
   }
-  if (param_6 == (float *)0x0) {
+  if (absMaxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x96,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -342,13 +343,13 @@ CG_GetEntityDobjBounds
       return;
     }
   }
-  DObjGetBounds(param_2,param_3,param_4);
-  *param_5 = (param_1->pose).origin[0] + *param_3;
-  param_5[1] = (param_1->pose).origin[1] + param_3[1];
-  param_5[2] = (param_1->pose).origin[2] + param_3[2];
-  *param_6 = (param_1->pose).origin[0] + *param_4;
-  param_6[1] = (param_1->pose).origin[1] + param_4[1];
-  param_6[2] = (param_1->pose).origin[2] + param_4[2];
+  DObjGetBounds(dobj,mins,maxs);
+  *absMins = (cent->pose).origin[0] + *mins;
+  absMins[1] = (cent->pose).origin[1] + mins[1];
+  absMins[2] = (cent->pose).origin[2] + mins[2];
+  *absMaxs = (cent->pose).origin[0] + *maxs;
+  absMaxs[1] = (cent->pose).origin[1] + maxs[1];
+  absMaxs[2] = (cent->pose).origin[2] + maxs[2];
   return;
 }
 
@@ -360,32 +361,33 @@ CG_GetEntityDobjBounds
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_GetEntityDObjContents(centity_s *param_1,DObj *param_2)
+int __cdecl CG_GetEntityDObjContents(centity_s *cent,DObj *dobj)
 
 {
-  uint local_8;
+  int hasCollMap;
+  int contents;
   
-  local_8 = DObjGetContents(param_2);
-  if (((param_1->nextState).eType == 1) || ((param_1->nextState).eType == 2)) {
-    local_8 = local_8 | 0x2000000;
+  contents = DObjGetContents(dobj);
+  if (((cent->nextState).eType == 1) || ((cent->nextState).eType == 2)) {
+    contents = contents | 0x2000000;
   }
-  else if (((param_1->nextState).eType == 0xe) || ((param_1->nextState).eType == 0x10)) {
-    local_8 = local_8 | 0x800000;
+  else if (((cent->nextState).eType == 0xe) || ((cent->nextState).eType == 0x10)) {
+    contents = contents | 0x800000;
   }
-  else if (((param_1->nextState).eType == 0x11) || ((param_1->nextState).eType == 0x13)) {
-    local_8 = local_8 | 0x8000;
+  else if (((cent->nextState).eType == 0x11) || ((cent->nextState).eType == 0x13)) {
+    contents = contents | 0x8000;
   }
   else {
-    DObjHasCollmap(param_2);
+    DObjHasCollmap(dobj);
   }
-  return local_8;
+  return contents;
 }
 
 
 // 00539CE0  phys_full_multiply  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:179)
 
 phys_vec3 * __cdecl
-phys_full_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_vec3 *param_2)
+phys_full_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *mat,phys_vec3 *v)
 
 {
   float fVar1;
@@ -396,8 +398,8 @@ phys_full_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_ve
   phys_vec3 local_30;
   phys_vec3 *local_14;
   
-  local_14 = &param_1->w;
-  ppVar5 = phys_multiply33(&local_30,param_1,param_2);
+  local_14 = &mat->w;
+  ppVar5 = phys_multiply33(&local_30,mat,v);
   fVar1 = ppVar5->y;
   fVar2 = local_14->y;
   fVar3 = ppVar5->z;
@@ -416,7 +418,7 @@ phys_full_multiply(phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,phys_ve
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_EntityNeedsLinked(int param_1,int param_2)
+bool __cdecl CG_EntityNeedsLinked(int localClientNum,int entIndex)
 
 {
   code *pcVar1;
@@ -424,8 +426,10 @@ bool __cdecl CG_EntityNeedsLinked(int param_1,int param_2)
   undefined1 uVar3;
   centity_s *pcVar4;
   DObj *pDVar5;
+  centity_s *cent;
+  entityState_s *es;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0xbc,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -435,7 +439,7 @@ bool __cdecl CG_EntityNeedsLinked(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  if (0x5ff < (uint)param_2) {
+  if (0x5ff < (uint)entIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0xbd,0,
                              "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -444,9 +448,9 @@ bool __cdecl CG_EntityNeedsLinked(int param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  pcVar4 = CG_GetEntity(param_1,param_2);
+  pcVar4 = CG_GetEntity(localClientNum,entIndex);
   if ((pcVar4->nextState).solid == 0) {
-    pDVar5 = Com_GetClientDObj(param_2,param_1);
+    pDVar5 = Com_GetClientDObj(entIndex,localClientNum);
     if (pDVar5 == (DObj *)0x0) {
       bVar2 = false;
     }
@@ -463,10 +467,10 @@ bool __cdecl CG_EntityNeedsLinked(int param_1,int param_2)
 
 // 0053A760  CG_UnlinkEntity  (cgame/cg_world.cpp:205)
 
-void __cdecl CG_UnlinkEntity(int param_1,int param_2)
+void __cdecl CG_UnlinkEntity(int localClientNum,int entIndex)
 
 {
-  CG_UnlinkEntityColl(param_1,param_2);
+  CG_UnlinkEntityColl(localClientNum,entIndex);
   return;
 }
 
@@ -478,97 +482,97 @@ void __cdecl CG_UnlinkEntity(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CalcWorldBounds(centity_s *param_1,DObj *param_2)
+void __cdecl CG_CalcWorldBounds(centity_s *cent,DObj *dobj)
 
 {
   undefined4 local_b4;
   undefined4 local_b0;
   float local_ac;
   uint local_a8;
-  uint local_64;
-  float local_60 [9];
-  float local_3c;
+  int k;
+  float xform [9];
+  float mins;
   undefined4 local_38;
   undefined4 local_34;
-  int local_30;
-  uint local_2c;
-  float local_28;
+  int hasCollMap;
+  int character;
+  float maxs;
   undefined4 local_24;
   undefined4 local_20;
-  float local_1c [3];
-  float local_10;
+  float xformed_v [3];
+  float v;
   undefined4 local_c;
   undefined4 local_8;
   
-  local_30 = DObjHasCollmap(param_2);
-  if (((param_1->nextState).surfType == '\a') && (local_30 == 0)) {
+  hasCollMap = DObjHasCollmap(dobj);
+  if (((cent->nextState).surfType == '\a') && (hasCollMap == 0)) {
     local_a8 = 1;
   }
   else {
     local_a8 = 0;
   }
-  local_2c = (uint)((param_1->nextState).eType == 0x13) |
-             (uint)((param_1->nextState).eType == 0x11) |
-             ((param_1->nextState).eType == 2 || (param_1->nextState).eType == 1) | local_a8;
-  if ((param_1->pose).isRagdoll == '\0') {
-    if (local_2c == 0) {
-      AnglesToAxis((param_1->pose).angles,(float (*) [3])local_60);
-      DObjCalcBounds(param_2,&local_3c,&local_28);
-      (param_1->pose).absmin[0] = 3.4028235e+38;
-      (param_1->pose).absmin[1] = 3.4028235e+38;
-      (param_1->pose).absmin[2] = 3.4028235e+38;
-      (param_1->pose).absmax[0] = -3.4028235e+38;
-      (param_1->pose).absmax[1] = -3.4028235e+38;
-      (param_1->pose).absmax[2] = -3.4028235e+38;
-      for (local_64 = 0; (int)local_64 < 8; local_64 = local_64 + 1) {
-        if ((local_64 & 1) == 0) {
-          local_ac = local_28;
+  character = (uint)((cent->nextState).eType == 0x13) |
+              (uint)((cent->nextState).eType == 0x11) |
+              ((cent->nextState).eType == 2 || (cent->nextState).eType == 1) | local_a8;
+  if ((cent->pose).isRagdoll == '\0') {
+    if (character == 0) {
+      AnglesToAxis((cent->pose).angles,(float (*) [3])xform);
+      DObjCalcBounds(dobj,&mins,&maxs);
+      (cent->pose).absmin[0] = 3.4028235e+38;
+      (cent->pose).absmin[1] = 3.4028235e+38;
+      (cent->pose).absmin[2] = 3.4028235e+38;
+      (cent->pose).absmax[0] = -3.4028235e+38;
+      (cent->pose).absmax[1] = -3.4028235e+38;
+      (cent->pose).absmax[2] = -3.4028235e+38;
+      for (k = 0; k < 8; k = k + 1) {
+        if ((k & 1U) == 0) {
+          local_ac = maxs;
         }
         else {
-          local_ac = local_3c;
+          local_ac = mins;
         }
-        local_10 = local_ac;
-        if ((local_64 & 2) == 0) {
+        v = local_ac;
+        if ((k & 2U) == 0) {
           local_b0 = local_24;
         }
         else {
           local_b0 = local_38;
         }
         local_c = local_b0;
-        if ((local_64 & 4) == 0) {
+        if ((k & 4U) == 0) {
           local_b4 = local_20;
         }
         else {
           local_b4 = local_34;
         }
         local_8 = local_b4;
-        MatrixTransformVector(&local_10,(float (*) [3])local_60,local_1c);
-        Vec3Min((param_1->pose).absmin,local_1c,(param_1->pose).absmin);
-        Vec3Max((param_1->pose).absmax,local_1c,(param_1->pose).absmax);
+        MatrixTransformVector(&v,(float (*) [3])xform,xformed_v);
+        Vec3Min((cent->pose).absmin,xformed_v,(cent->pose).absmin);
+        Vec3Max((cent->pose).absmax,xformed_v,(cent->pose).absmax);
       }
-      (param_1->pose).absmin[0] = (param_1->pose).absmin[0] + (param_1->pose).origin[0];
-      (param_1->pose).absmin[1] = (param_1->pose).absmin[1] + (param_1->pose).origin[1];
-      (param_1->pose).absmin[2] = (param_1->pose).absmin[2] + (param_1->pose).origin[2];
-      (param_1->pose).absmax[0] = (param_1->pose).absmax[0] + (param_1->pose).origin[0];
-      (param_1->pose).absmax[1] = (param_1->pose).absmax[1] + (param_1->pose).origin[1];
-      (param_1->pose).absmax[2] = (param_1->pose).absmax[2] + (param_1->pose).origin[2];
+      (cent->pose).absmin[0] = (cent->pose).absmin[0] + (cent->pose).origin[0];
+      (cent->pose).absmin[1] = (cent->pose).absmin[1] + (cent->pose).origin[1];
+      (cent->pose).absmin[2] = (cent->pose).absmin[2] + (cent->pose).origin[2];
+      (cent->pose).absmax[0] = (cent->pose).absmax[0] + (cent->pose).origin[0];
+      (cent->pose).absmax[1] = (cent->pose).absmax[1] + (cent->pose).origin[1];
+      (cent->pose).absmax[2] = (cent->pose).absmax[2] + (cent->pose).origin[2];
     }
     else {
-      (param_1->pose).absmin[0] = (param_1->pose).origin[0] + actorLocationalMins[0];
-      (param_1->pose).absmin[1] = (param_1->pose).origin[1] + actorLocationalMins[1];
-      (param_1->pose).absmin[2] = (param_1->pose).origin[2] + actorLocationalMins[2];
-      (param_1->pose).absmax[0] = (param_1->pose).origin[0] + actorLocationalMaxs[0];
-      (param_1->pose).absmax[1] = (param_1->pose).origin[1] + actorLocationalMaxs[1];
-      (param_1->pose).absmax[2] = (param_1->pose).origin[2] + actorLocationalMaxs[2];
+      (cent->pose).absmin[0] = (cent->pose).origin[0] + actorLocationalMins[0];
+      (cent->pose).absmin[1] = (cent->pose).origin[1] + actorLocationalMins[1];
+      (cent->pose).absmin[2] = (cent->pose).origin[2] + actorLocationalMins[2];
+      (cent->pose).absmax[0] = (cent->pose).origin[0] + actorLocationalMaxs[0];
+      (cent->pose).absmax[1] = (cent->pose).origin[1] + actorLocationalMaxs[1];
+      (cent->pose).absmax[2] = (cent->pose).origin[2] + actorLocationalMaxs[2];
     }
   }
   else {
-    (param_1->pose).absmin[0] = (param_1->pose).origin[0] + actorLocationalMinsBig[0];
-    (param_1->pose).absmin[1] = (param_1->pose).origin[1] + actorLocationalMinsBig[1];
-    (param_1->pose).absmin[2] = (param_1->pose).origin[2] + actorLocationalMinsBig[2];
-    (param_1->pose).absmax[0] = (param_1->pose).origin[0] + actorLocationalMaxsBig[0];
-    (param_1->pose).absmax[1] = (param_1->pose).origin[1] + actorLocationalMaxsBig[1];
-    (param_1->pose).absmax[2] = (param_1->pose).origin[2] + actorLocationalMaxsBig[2];
+    (cent->pose).absmin[0] = (cent->pose).origin[0] + actorLocationalMinsBig[0];
+    (cent->pose).absmin[1] = (cent->pose).origin[1] + actorLocationalMinsBig[1];
+    (cent->pose).absmin[2] = (cent->pose).origin[2] + actorLocationalMinsBig[2];
+    (cent->pose).absmax[0] = (cent->pose).origin[0] + actorLocationalMaxsBig[0];
+    (cent->pose).absmax[1] = (cent->pose).origin[1] + actorLocationalMaxsBig[1];
+    (cent->pose).absmax[2] = (cent->pose).origin[2] + actorLocationalMaxsBig[2];
   }
   return;
 }
@@ -581,18 +585,19 @@ void __cdecl CG_CalcWorldBounds(centity_s *param_1,DObj *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_LinkEntity(int param_1,int param_2)
+void __cdecl CG_LinkEntity(int localClientNum,int entIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  float local_24 [3];
-  centity_s *local_18;
-  entityState_s *local_14;
-  float local_10 [3];
+  DObj *dobj_00;
+  DObj *dobj;
+  float mins [3];
+  centity_s *cent;
+  entityState_s *es;
+  float maxs [3];
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x10e,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -602,7 +607,7 @@ void __cdecl CG_LinkEntity(int param_1,int param_2)
       return;
     }
   }
-  if (0x5ff < (uint)param_2) {
+  if (0x5ff < (uint)entIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x10f,0,
                              "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -611,22 +616,21 @@ void __cdecl CG_LinkEntity(int param_1,int param_2)
       return;
     }
   }
-  local_18 = CG_GetEntity(param_1,param_2);
-  local_14 = &local_18->nextState;
-  pDVar3 = Com_GetClientDObj(param_2,param_1);
-  if (pDVar3 == (DObj *)0x0) {
-    if (local_14->solid == 0) {
-      CG_UnlinkEntity(param_1,param_2);
+  cent = CG_GetEntity(localClientNum,entIndex);
+  es = &cent->nextState;
+  dobj_00 = Com_GetClientDObj(entIndex,localClientNum);
+  if (dobj_00 == (DObj *)0x0) {
+    if (es->solid == 0) {
+      CG_UnlinkEntity(localClientNum,entIndex);
     }
     else {
-      CG_GetEntityBModelBounds
-                (local_18,local_24,local_10,(local_18->pose).absmin,(local_18->pose).absmax);
-      CG_LinkEntityColl(param_1,param_2,(local_18->pose).absmin,(local_18->pose).absmax);
+      CG_GetEntityBModelBounds(cent,mins,maxs,(cent->pose).absmin,(cent->pose).absmax);
+      CG_LinkEntityColl(localClientNum,entIndex,(cent->pose).absmin,(cent->pose).absmax);
     }
   }
   else {
-    CG_CalcWorldBounds(local_18,pDVar3);
-    CG_LinkEntityColl(param_1,param_2,(local_18->pose).absmin,(local_18->pose).absmax);
+    CG_CalcWorldBounds(cent,dobj_00);
+    CG_LinkEntityColl(localClientNum,entIndex,(cent->pose).absmin,(cent->pose).absmax);
   }
   return;
 }
@@ -712,40 +716,44 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ClipMoveToEntity(moveclip_t *param_1,int param_2,trace_t *param_3)
+void __cdecl CG_ClipMoveToEntity(moveclip_t *clip,int entIndex,trace_t *results)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  PhysGeomList *pPVar4;
-  uint uVar5;
+  PhysGeomList *geoms_00;
+  uint contents_00;
   DObj *local_9c;
-  float local_54 [3];
-  float local_48;
+  DObj *dobj;
+  PhysGeomList *geoms;
+  int contents;
+  DObj *dobjEA;
+  float mins [3];
+  float absMaxs;
   float local_44;
   float local_40;
-  centity_s *local_3c;
-  int local_38;
-  entityState_s *local_34;
-  float local_30;
+  centity_s *cent;
+  int localClientNum;
+  entityState_s *es;
+  float angles;
   float local_2c;
   float local_28;
-  float local_24 [3];
-  uint local_18;
-  float local_14;
-  float local_10;
+  float maxs [3];
+  uint cmodel;
+  float oldFraction;
+  float absMins;
   float local_c;
   float local_8;
   
-  if ((param_1 == (moveclip_t *)0x0) &&
+  if ((clip == (moveclip_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x13d,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x13e,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -753,119 +761,119 @@ void __cdecl CG_ClipMoveToEntity(moveclip_t *param_1,int param_2,trace_t *param_
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x13f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 < 0x400) {
-    local_38 = cgCollWorldLocalClientNum;
-    local_3c = CG_GetEntity(cgCollWorldLocalClientNum,param_2);
-    local_34 = &local_3c->nextState;
-    if (((local_3c->nextState).eType != 4) && (((local_3c->nextState).lerp.eFlags & 1U) == 0)) {
-      if ((param_2 == param_1->passEntityNum) &&
+  if (entIndex < 0x400) {
+    localClientNum = cgCollWorldLocalClientNum;
+    cent = CG_GetEntity(cgCollWorldLocalClientNum,entIndex);
+    es = &cent->nextState;
+    if (((cent->nextState).eType != 4) && (((cent->nextState).lerp.eFlags & 1U) == 0)) {
+      if ((entIndex == clip->passEntityNum) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x150,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      bVar2 = BG_ClipMoveToDobj(local_34);
+      bVar2 = BG_ClipMoveToDobj(es);
       if (bVar2) {
-        local_9c = Com_GetClientDObj(param_2,local_38);
+        local_9c = Com_GetClientDObj(entIndex,localClientNum);
       }
       else {
         local_9c = (DObj *)0x0;
       }
       if (local_9c == (DObj *)0x0) {
-        if ((local_34->solid != 0) &&
-           (((local_34->solid != 0xffffff || (((local_34->lerp).eFlags & 1U) == 0)) &&
-            (uVar5 = CG_GetEntityBModelContents(local_3c), (uVar5 & param_1->contentmask) != 0)))) {
-          local_10 = (local_3c->pose).absmin[0] + param_1->mins[0];
-          local_c = (local_3c->pose).absmin[1] + param_1->mins[1];
-          local_8 = (local_3c->pose).absmin[2] + param_1->mins[2];
-          local_48 = (local_3c->pose).absmax[0] + param_1->maxs[0];
-          local_44 = (local_3c->pose).absmax[1] + param_1->maxs[1];
-          local_40 = (local_3c->pose).absmax[2] + param_1->maxs[2];
-          iVar3 = intersect_extents_aabb(&param_1->extents,&local_10,&local_48,param_3->fraction);
+        if ((es->solid != 0) &&
+           (((es->solid != 0xffffff || (((es->lerp).eFlags & 1U) == 0)) &&
+            (contents_00 = CG_GetEntityBModelContents(cent), (contents_00 & clip->contentmask) != 0)
+            ))) {
+          absMins = (cent->pose).absmin[0] + clip->mins[0];
+          local_c = (cent->pose).absmin[1] + clip->mins[1];
+          local_8 = (cent->pose).absmin[2] + clip->mins[2];
+          absMaxs = (cent->pose).absmax[0] + clip->maxs[0];
+          local_44 = (cent->pose).absmax[1] + clip->maxs[1];
+          local_40 = (cent->pose).absmax[2] + clip->maxs[2];
+          iVar3 = intersect_extents_aabb(&clip->extents,&absMins,&absMaxs,results->fraction);
           if (iVar3 != 0) {
-            if (local_34->solid == 0xffffff) {
-              local_18 = (uint)(local_34->index).brushmodel;
-              local_30 = (local_3c->pose).angles[0];
-              local_2c = (local_3c->pose).angles[1];
-              local_28 = (local_3c->pose).angles[2];
+            if (es->solid == 0xffffff) {
+              cmodel = (uint)(es->index).brushmodel;
+              angles = (cent->pose).angles[0];
+              local_2c = (cent->pose).angles[1];
+              local_28 = (cent->pose).angles[2];
             }
             else {
-              local_10 = (local_3c->pose).absmin[0];
-              local_c = (local_3c->pose).absmin[1];
-              local_8 = (local_3c->pose).absmin[2];
-              local_48 = (local_3c->pose).absmax[0];
-              local_44 = (local_3c->pose).absmax[1];
-              local_40 = (local_3c->pose).absmax[2];
-              CG_GetEntityBModelBounds(local_3c,local_54,local_24,(float *)0x0,(float *)0x0);
-              local_18 = CM_TempBoxModel(local_54,local_24,uVar5);
-              local_30 = 0.0;
+              absMins = (cent->pose).absmin[0];
+              local_c = (cent->pose).absmin[1];
+              local_8 = (cent->pose).absmin[2];
+              absMaxs = (cent->pose).absmax[0];
+              local_44 = (cent->pose).absmax[1];
+              local_40 = (cent->pose).absmax[2];
+              CG_GetEntityBModelBounds(cent,mins,maxs,(float *)0x0,(float *)0x0);
+              cmodel = CM_TempBoxModel(mins,maxs,contents_00);
+              angles = 0.0;
               local_2c = 0.0;
               local_28 = 0.0;
             }
-            local_14 = param_3->fraction;
+            oldFraction = results->fraction;
             CM_TransformedBoxTrace
-                      (param_3,(float *)&param_1->extents,(float *)&(param_1->extents).end,
-                       param_1->mins,param_1->maxs,local_18,param_1->contentmask,
-                       (local_3c->pose).origin,&local_30);
-            if (param_3->fraction < local_14) {
-              param_3->modelIndex = 0;
-              param_3->partName = 0;
-              param_3->partGroup = 0;
-              param_3->boneIndex = 0xfe;
-              iVar3 = local_34->number;
-              if ((param_3 == (trace_t *)0x0) &&
+                      (results,(float *)&clip->extents,(float *)&(clip->extents).end,clip->mins,
+                       clip->maxs,cmodel,clip->contentmask,(cent->pose).origin,&angles);
+            if (results->fraction < oldFraction) {
+              results->modelIndex = 0;
+              results->partName = 0;
+              results->partGroup = 0;
+              results->boneIndex = 0xfe;
+              iVar3 = es->number;
+              if ((results == (trace_t *)0x0) &&
                  (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                            ,0xaf,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              param_3->hitType = TRACE_HITTYPE_ENTITY;
-              param_3->hitId = (ushort)iVar3;
+              results->hitType = TRACE_HITTYPE_ENTITY;
+              results->hitId = (ushort)iVar3;
             }
           }
         }
       }
       else {
         iVar3 = DObjHasCollmap(local_9c);
-        if ((iVar3 != 0) && (iVar3 = DObjHasContents(local_9c,param_1->contentmask), iVar3 != 0)) {
-          local_10 = (local_3c->pose).absmin[0] + param_1->mins[0];
-          local_c = (local_3c->pose).absmin[1] + param_1->mins[1];
-          local_8 = (local_3c->pose).absmin[2] + param_1->mins[2];
-          local_48 = (local_3c->pose).absmax[0] + param_1->maxs[0];
-          local_44 = (local_3c->pose).absmax[1] + param_1->maxs[1];
-          local_40 = (local_3c->pose).absmax[2] + param_1->maxs[2];
-          iVar3 = intersect_extents_aabb(&param_1->extents,&local_10,&local_48,param_3->fraction);
-          if ((iVar3 != 0) && (pPVar4 = DObjGetCollmap(local_9c), pPVar4 != (PhysGeomList *)0x0)) {
-            local_18 = CM_TempBrushModel(pPVar4);
-            local_14 = param_3->fraction;
+        if ((iVar3 != 0) && (iVar3 = DObjHasContents(local_9c,clip->contentmask), iVar3 != 0)) {
+          absMins = (cent->pose).absmin[0] + clip->mins[0];
+          local_c = (cent->pose).absmin[1] + clip->mins[1];
+          local_8 = (cent->pose).absmin[2] + clip->mins[2];
+          absMaxs = (cent->pose).absmax[0] + clip->maxs[0];
+          local_44 = (cent->pose).absmax[1] + clip->maxs[1];
+          local_40 = (cent->pose).absmax[2] + clip->maxs[2];
+          iVar3 = intersect_extents_aabb(&clip->extents,&absMins,&absMaxs,results->fraction);
+          if ((iVar3 != 0) && (geoms_00 = DObjGetCollmap(local_9c), geoms_00 != (PhysGeomList *)0x0)
+             ) {
+            cmodel = CM_TempBrushModel(geoms_00);
+            oldFraction = results->fraction;
             CM_TransformedBoxTrace
-                      (param_3,(float *)&param_1->extents,(float *)&(param_1->extents).end,
-                       param_1->mins,param_1->maxs,local_18,param_1->contentmask,
-                       (local_3c->pose).origin,(local_3c->pose).angles);
-            if (param_3->fraction < local_14) {
-              param_3->modelIndex = 0;
-              param_3->partName = 0;
-              param_3->partGroup = 0;
-              param_3->boneIndex = 0xfe;
-              iVar3 = local_34->number;
-              if ((param_3 == (trace_t *)0x0) &&
+                      (results,(float *)&clip->extents,(float *)&(clip->extents).end,clip->mins,
+                       clip->maxs,cmodel,clip->contentmask,(cent->pose).origin,(cent->pose).angles);
+            if (results->fraction < oldFraction) {
+              results->modelIndex = 0;
+              results->partName = 0;
+              results->partGroup = 0;
+              results->boneIndex = 0xfe;
+              iVar3 = es->number;
+              if ((results == (trace_t *)0x0) &&
                  (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                            ,0xaf,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              param_3->hitType = TRACE_HITTYPE_ENTITY;
-              param_3->hitId = (ushort)iVar3;
+              results->hitType = TRACE_HITTYPE_ENTITY;
+              results->hitId = (ushort)iVar3;
             }
           }
         }
@@ -917,39 +925,39 @@ void __cdecl CG_ClipMoveToEntity(moveclip_t *param_1,int param_2,trace_t *param_
 /* WARNING: Removing unreachable block (ram,0x0053a2ca) */
 /* WARNING: Removing unreachable block (ram,0x0053a2ea) */
 
-void __cdecl phys_transpose(phys_mat44 *param_1,phys_mat44 *param_2)
+void __cdecl phys_transpose(phys_mat44 *dest,phys_mat44 *source)
 
 {
   float fVar1;
   float *pfVar2;
   float *pfVar3;
   
-  if (param_1 == param_2) {
-    pfVar2 = phys_vec3::operator[]<int>(&param_1->x,1);
+  if (dest == source) {
+    pfVar2 = phys_vec3::operator[]<int>(&dest->x,1);
     fVar1 = *pfVar2;
-    *pfVar2 = (param_1->y).x;
-    (param_1->y).x = fVar1;
-    pfVar2 = phys_vec3::operator[]<int>(&param_1->z,0);
-    pfVar3 = phys_vec3::operator[]<int>(&param_1->x,2);
+    *pfVar2 = (dest->y).x;
+    (dest->y).x = fVar1;
+    pfVar2 = phys_vec3::operator[]<int>(&dest->z,0);
+    pfVar3 = phys_vec3::operator[]<int>(&dest->x,2);
     fVar1 = *pfVar3;
     *pfVar3 = *pfVar2;
     *pfVar2 = fVar1;
-    pfVar2 = phys_vec3::operator[]<int>(&param_1->z,1);
-    pfVar3 = phys_vec3::operator[]<int>(&param_1->y,2);
+    pfVar2 = phys_vec3::operator[]<int>(&dest->z,1);
+    pfVar3 = phys_vec3::operator[]<int>(&dest->y,2);
     fVar1 = *pfVar3;
     *pfVar3 = *pfVar2;
     *pfVar2 = fVar1;
   }
   else {
-    (param_1->x).x = (param_2->x).x;
-    (param_1->x).y = (param_2->y).x;
-    (param_1->x).z = (param_2->z).x;
-    (param_1->y).x = (param_2->x).y;
-    (param_1->y).y = (param_2->y).y;
-    (param_1->y).z = (param_2->z).y;
-    (param_1->z).x = (param_2->x).z;
-    (param_1->z).y = (param_2->y).z;
-    (param_1->z).z = (param_2->z).z;
+    (dest->x).x = (source->x).x;
+    (dest->x).y = (source->y).x;
+    (dest->x).z = (source->z).x;
+    (dest->y).x = (source->x).y;
+    (dest->y).y = (source->y).y;
+    (dest->y).z = (source->z).y;
+    (dest->z).x = (source->x).z;
+    (dest->z).y = (source->y).z;
+    (dest->z).z = (source->z).z;
   }
   return;
 }
@@ -957,10 +965,10 @@ void __cdecl phys_transpose(phys_mat44 *param_1,phys_mat44 *param_2)
 
 // 00539C20  Vec3Dot  (universal/com_vector.h:363)
 
-float __cdecl Vec3Dot(float *param_1,float *param_2)
+float __cdecl Vec3Dot(float *a_2,float *b_2)
 
 {
-  return param_1[2] * param_2[2] + param_1[1] * param_2[1] + *param_1 * *param_2;
+  return a_2[2] * b_2[2] + a_2[1] * b_2[1] + *a_2 * *b_2;
 }
 
 
@@ -986,9 +994,13 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 0053CDB0  CG_ClipMoveToEntities_r  (cgame/cg_world.cpp:427)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-CG_ClipMoveToEntities_r
-          (moveclip_t *param_1,ushort param_2,float *param_3,float *param_4,trace_t *param_5)
+CG_ClipMoveToEntities_r(moveclip_t *clip,ushort sectorIndex,float *p1,float *p2,trace_t *results)
 
 {
   float *pfVar1;
@@ -1004,49 +1016,57 @@ CG_ClipMoveToEntities_r
   float local_8c;
   float local_88;
   float local_84;
-  uint local_54;
-  ushort local_48;
-  float local_40;
-  float local_30;
-  float local_24 [4];
-  float local_14;
+  CgEntCollNode *node;
+  CgEntCollSector *sector;
+  int side;
+  float diff;
+  float t;
+  ushort listIndex;
+  float t1;
+  float frac;
+  int localClientNum;
+  float offset;
+  float t2;
+  float frac2;
+  float absDiff;
+  float invDist;
+  float p [4];
+  float mid;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_1 == (moveclip_t *)0x0) &&
+  if ((clip == (moveclip_t *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x1bb,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*p1 & 0x7f800000) == 0x7f800000) || (((uint)p1[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)p1[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x1bc,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*p2 & 0x7f800000) == 0x7f800000) || (((uint)p2[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)p2[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x1bd,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_5 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x1be,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((1.0 < param_5->fraction) &&
+  if ((1.0 < results->fraction) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x1bf,0,
                                "%s\n\t(results->fraction) = %g"), !bVar6)) {
     pcVar4 = (code *)swi(3);
@@ -1054,12 +1074,12 @@ CG_ClipMoveToEntities_r
     return;
   }
   iVar5 = cgCollWorldLocalClientNum;
-  local_24[0] = *param_3;
-  local_24[1] = param_3[1];
-  local_24[2] = param_3[2];
-  local_24[3] = param_3[3];
+  p[0] = *p1;
+  p[1] = p1[1];
+  p[2] = p1[2];
+  p[3] = p1[3];
   while( true ) {
-    if (param_2 == 0) {
+    if (sectorIndex == 0) {
       return;
     }
     if ((iVar5 != 0) &&
@@ -1071,19 +1091,19 @@ CG_ClipMoveToEntities_r
       (*pcVar4)();
       return;
     }
-    if ((param_2 == 0) &&
+    if ((sectorIndex == 0) &&
        (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h",
                                  100,0,"%s"), !bVar6)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    if ((0x3ff < param_2) &&
+    if ((0x3ff < sectorIndex) &&
        (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h",
                                  0x65,0,"%s\n\t(sectorIndex) = %i"), !bVar6)) break;
-    pfVar1 = (float *)(iVar5 * 0x401c + 0xe87bbc + (uint)param_2 * 0x10);
-    for (local_48 = *(ushort *)(pfVar1 + 3); local_48 != 0;
-        local_48 = pCVar3[local_48 - 1].nextEntInSector) {
+    pfVar1 = (float *)(iVar5 * 0x401c + 0xe87bbc + (uint)sectorIndex * 0x10);
+    for (listIndex = *(ushort *)(pfVar1 + 3); listIndex != 0;
+        listIndex = pCVar3[listIndex - 1].nextEntInSector) {
       if ((iVar5 != 0) &&
          (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h"
                                    ,0x6c,0,
@@ -1093,7 +1113,7 @@ CG_ClipMoveToEntities_r
         (*pcVar4)();
         return;
       }
-      if ((0x5ff < local_48 - 1) &&
+      if ((0x5ff < listIndex - 1) &&
          (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h"
                                    ,0x6d,0,
                                    "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
@@ -1103,25 +1123,25 @@ CG_ClipMoveToEntities_r
         return;
       }
       pCVar3 = cgEntCollNodes[iVar5];
-      if (local_48 - 1 != param_1->passEntityNum) {
-        CG_ClipMoveToEntity(param_1,local_48 - 1,param_5);
-        if (param_5->allsolid != false) {
+      if (listIndex - 1 != clip->passEntityNum) {
+        CG_ClipMoveToEntity(clip,listIndex - 1,results);
+        if (results->allsolid != false) {
           return;
         }
-        if (param_5->fraction == 0.0) {
+        if (results->fraction == 0.0) {
           return;
         }
       }
     }
-    local_8c = local_24[*(ushort *)(pfVar1 + 1)] - *pfVar1;
-    fVar7 = param_4[*(ushort *)(pfVar1 + 1)] - *pfVar1;
-    fVar2 = param_1->outerSize[*(ushort *)(pfVar1 + 1)];
+    local_8c = p[*(ushort *)(pfVar1 + 1)] - *pfVar1;
+    fVar7 = p2[*(ushort *)(pfVar1 + 1)] - *pfVar1;
+    fVar2 = clip->outerSize[*(ushort *)(pfVar1 + 1)];
     local_84 = fVar7;
     if (0.0 <= fVar7 - local_8c) {
       local_84 = local_8c;
     }
     if (fVar2 <= local_84) {
-      param_2 = *(ushort *)(pfVar1 + 2);
+      sectorIndex = *(ushort *)(pfVar1 + 2);
     }
     else {
       local_88 = fVar7;
@@ -1129,67 +1149,66 @@ CG_ClipMoveToEntities_r
         local_88 = local_8c;
       }
       if (-fVar2 < local_88) {
-        if (param_5->fraction <= local_24[3]) {
+        if (results->fraction <= p[3]) {
           return;
         }
         fVar7 = fVar7 - local_8c;
         if (fVar7 == 0.0) {
-          local_40 = 1.0;
-          local_30 = 0.0;
-          local_54 = 0;
+          frac = 1.0;
+          frac2 = 0.0;
+          side = 0;
         }
         else {
           if (0.0 <= fVar7) {
             local_8c = -local_8c;
           }
-          local_40 = (local_8c + fVar2) * (1.0 / ABS(fVar7));
-          local_30 = (local_8c - fVar2) * (1.0 / ABS(fVar7));
+          frac = (local_8c + fVar2) * (1.0 / ABS(fVar7));
+          frac2 = (local_8c - fVar2) * (1.0 / ABS(fVar7));
           local_90 = (uint)(0.0 <= fVar7);
-          local_54 = local_90;
+          side = local_90;
         }
-        if ((local_40 < 0.0) &&
+        if ((frac < 0.0) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x200,
                                      0,"%s"), !bVar6)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if (1.0 - local_40 < 0.0) {
+        if (1.0 - frac < 0.0) {
           local_94 = 1.0;
         }
         else {
-          local_94 = local_40;
+          local_94 = frac;
         }
-        local_14 = (*param_4 - local_24[0]) * local_94 + local_24[0];
-        local_10 = (param_4[1] - local_24[1]) * local_94 + local_24[1];
-        local_c = (param_4[2] - local_24[2]) * local_94 + local_24[2];
-        local_8 = (param_4[3] - local_24[3]) * local_94 + local_24[3];
-        CG_ClipMoveToEntities_r
-                  (param_1,*(ushort *)((int)pfVar1 + local_54 * 2 + 8),local_24,&local_14,param_5);
-        if (param_5->fraction == 0.0) {
+        mid = (*p2 - p[0]) * local_94 + p[0];
+        local_10 = (p2[1] - p[1]) * local_94 + p[1];
+        local_c = (p2[2] - p[2]) * local_94 + p[2];
+        local_8 = (p2[3] - p[3]) * local_94 + p[3];
+        CG_ClipMoveToEntities_r(clip,*(ushort *)((int)pfVar1 + side * 2 + 8),p,&mid,results);
+        if (results->fraction == 0.0) {
           return;
         }
-        if ((1.0 < local_30) &&
+        if ((1.0 < frac2) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x20c,
                                      0,"%s\n\t(frac2) = %g"), !bVar6)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        if (local_30 - 0.0 < 0.0) {
+        if (frac2 - 0.0 < 0.0) {
           local_98 = 0.0;
         }
         else {
-          local_98 = local_30;
+          local_98 = frac2;
         }
-        local_24[0] = (*param_4 - local_24[0]) * local_98 + local_24[0];
-        local_24[1] = (param_4[1] - local_24[1]) * local_98 + local_24[1];
-        local_24[2] = (param_4[2] - local_24[2]) * local_98 + local_24[2];
-        local_24[3] = (param_4[3] - local_24[3]) * local_98 + local_24[3];
-        param_2 = *(ushort *)((int)pfVar1 + (1 - local_54) * 2 + 8);
+        p[0] = (*p2 - p[0]) * local_98 + p[0];
+        p[1] = (p2[1] - p[1]) * local_98 + p[1];
+        p[2] = (p2[2] - p[2]) * local_98 + p[2];
+        p[3] = (p2[3] - p[3]) * local_98 + p[3];
+        sectorIndex = *(ushort *)((int)pfVar1 + (1 - side) * 2 + 8);
       }
       else {
-        param_2 = *(ushort *)((int)pfVar1 + 10);
+        sectorIndex = *(ushort *)((int)pfVar1 + 10);
       }
     }
   }
@@ -1201,59 +1220,60 @@ CG_ClipMoveToEntities_r
 
 // 0053CBE0  CG_ClipMoveToEntities  (cgame/cg_world.cpp:537)
 
-void __cdecl CG_ClipMoveToEntities(moveclip_t *param_1,trace_t *param_2)
+void __cdecl CG_ClipMoveToEntities(moveclip_t *clip,trace_t *results)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float local_24;
+  PIXProfile pixProfile;
+  float start;
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float end;
   float local_10;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"cg_clipmovetoentities");
-  if ((param_1 == (moveclip_t *)0x0) &&
+  if ((clip == (moveclip_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x21f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x220,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->fraction <= 0.0) &&
+  if ((results->fraction <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x221,0,
                                "%s\n\t(results->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((1.0 < param_2->fraction) &&
+  if ((1.0 < results->fraction) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x222,0,
                                "%s\n\t(results->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = (param_1->extents).start.vec.v[0];
-  local_20 = (param_1->extents).start.vec.v[1];
-  local_1c = (param_1->extents).start.vec.v[2];
-  local_14 = (param_1->extents).end.vec.v[0];
-  local_10 = (param_1->extents).end.vec.v[1];
-  local_c = (param_1->extents).end.vec.v[2];
+  start = (clip->extents).start.vec.v[0];
+  local_20 = (clip->extents).start.vec.v[1];
+  local_1c = (clip->extents).start.vec.v[2];
+  end = (clip->extents).end.vec.v[0];
+  local_10 = (clip->extents).end.vec.v[1];
+  local_c = (clip->extents).end.vec.v[2];
   local_18 = 0;
-  local_8 = param_2->fraction;
-  CG_ClipMoveToEntities_r(param_1,1,&local_24,&local_14,param_2);
+  local_8 = results->fraction;
+  CG_ClipMoveToEntities_r(clip,1,&start,&end,results);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1269,7 +1289,7 @@ void __cdecl CG_ClipMoveToEntities(moveclip_t *param_1,trace_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *param_3)
+void __cdecl CG_PointTraceToEntity(pointtrace_t *clip,int entIndex,trace_t *results)
 
 {
   code *pcVar1;
@@ -1277,52 +1297,60 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
   DWORD DVar3;
   int iVar4;
   char *pcVar5;
-  PhysGeomList *pPVar6;
+  PhysGeomList *geoms_00;
   DObj *local_1ec;
   byte local_1e4;
   DObj *local_1e0;
-  float local_cc;
+  DObj *dobj_2;
+  PhysGeomList *geoms;
+  DObj *dobjEA_2;
+  PIXProfile pixProfile_5;
+  float angles;
   float local_c8;
   float local_c4;
-  uint local_c0;
-  float local_bc;
-  DObj *local_b4;
-  float local_ac;
+  uint cmodel;
+  float oldFraction;
+  PIXProfile pixProfile_4;
+  PIXProfile pixProfile_3;
+  DObj *dobj;
+  PIXProfile pixProfile_2;
+  float localStart;
   float local_a8;
   float local_a4;
-  cg_s *local_a0;
-  DObjTrace_s local_9c;
-  float local_7c;
+  cg_s *cgameGlob;
+  DObjTrace_s objTrace;
+  float localEnd;
   float local_78;
   float local_74;
-  byte local_6d;
-  int local_6c;
-  IgnoreEntParams *local_68;
-  uint local_64;
-  DObj *local_60;
-  float local_58 [3];
-  float local_4c;
+  bool character;
+  int hasCollMap;
+  IgnoreEntParams *ignoreEntParams;
+  int contents;
+  DObj *dobjEA;
+  PIXProfile pixProfile;
+  float mins [3];
+  float absMaxs;
   float local_48;
   float local_44;
-  int local_40;
-  centity_s *local_3c;
-  centity_s *local_38;
-  entityState_s *local_34;
-  float local_30 [3];
-  int local_24 [5];
-  float local_10;
+  int localClientNum;
+  centity_s *centEA;
+  centity_s *cent;
+  entityState_s *es;
+  float maxs [3];
+  int partBits [5];
+  float absMins;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"CG_PointTraceToEntity");
-  if ((param_1 == (pointtrace_t *)0x0) &&
+  if ((clip == (pointtrace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x23d,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x23e,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -1330,20 +1358,20 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x23f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_64 = 0;
-  local_40 = cgCollWorldLocalClientNum;
-  local_3c = CG_GetEntity(cgCollWorldLocalClientNum,param_2);
-  local_38 = local_3c;
-  if ((param_1->ignoreEntParams != (IgnoreEntParams *)0x0) &&
-     (local_68 = param_1->ignoreEntParams, local_68->baseEntity != 0x3ff)) {
-    if ((local_68->ignoreSelf != false) && (param_2 == local_68->baseEntity)) {
+  contents = 0;
+  localClientNum = cgCollWorldLocalClientNum;
+  centEA = CG_GetEntity(cgCollWorldLocalClientNum,entIndex);
+  cent = centEA;
+  if ((clip->ignoreEntParams != (IgnoreEntParams *)0x0) &&
+     (ignoreEntParams = clip->ignoreEntParams, ignoreEntParams->baseEntity != 0x3ff)) {
+    if ((ignoreEntParams->ignoreSelf != false) && (entIndex == ignoreEntParams->baseEntity)) {
       DVar3 = GetCurrentThreadId();
       if (DVar3 != (DWORD)g_DXDeviceThread) {
         return;
@@ -1354,7 +1382,7 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    if ((local_68->ignoreParent != false) && (param_2 == local_68->parentEntity)) {
+    if ((ignoreEntParams->ignoreParent != false) && (entIndex == ignoreEntParams->parentEntity)) {
       DVar3 = GetCurrentThreadId();
       if (DVar3 != (DWORD)g_DXDeviceThread) {
         return;
@@ -1366,23 +1394,23 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       return;
     }
   }
-  local_34 = &local_3c->nextState;
-  if (((param_1->ignoreEntParams != (IgnoreEntParams *)0x0) &&
-      (param_2 == param_1->ignoreEntParams->baseEntity)) &&
+  es = &centEA->nextState;
+  if (((clip->ignoreEntParams != (IgnoreEntParams *)0x0) &&
+      (entIndex == clip->ignoreEntParams->baseEntity)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x25a,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->bLocational == 0) {
+  if (clip->bLocational == 0) {
     local_1e0 = (DObj *)0x0;
   }
   else {
-    local_1e0 = Com_GetClientDObj(param_2,local_40);
+    local_1e0 = Com_GetClientDObj(entIndex,localClientNum);
   }
-  local_60 = local_1e0;
-  if ((local_34->solid == 0) && (local_1e0 == (DObj *)0x0)) {
+  dobjEA = local_1e0;
+  if ((es->solid == 0) && (local_1e0 == (DObj *)0x0)) {
     DVar3 = GetCurrentThreadId();
     if (DVar3 != (DWORD)g_DXDeviceThread) {
       return;
@@ -1395,14 +1423,14 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
   }
   if (local_1e0 == (DObj *)0x0) {
     PIXBeginNamedEvent(-1,"non_dobj");
-    if ((local_34->solid == 0) &&
+    if ((es->solid == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x2b3,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((local_34->solid == 0xffffff) && (((local_34->lerp).eFlags & 1U) != 0)) {
+    if ((es->solid == 0xffffff) && (((es->lerp).eFlags & 1U) != 0)) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1417,8 +1445,8 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    local_64 = CG_GetEntityBModelContents(local_38);
-    if ((local_64 & param_1->contentmask) == 0) {
+    contents = CG_GetEntityBModelContents(cent);
+    if ((contents & clip->contentmask) == 0) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1434,8 +1462,7 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       return;
     }
     iVar4 = intersect_extents_aabb
-                      (&param_1->extents,(local_38->pose).absmin,(local_38->pose).absmax,
-                       param_3->fraction);
+                      (&clip->extents,(cent->pose).absmin,(cent->pose).absmax,results->fraction);
     if (iVar4 == 0) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1451,29 +1478,29 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    if (local_34->solid == 0xffffff) {
-      local_c0 = (uint)(local_34->index).brushmodel;
-      local_cc = (local_38->pose).angles[0];
-      local_c8 = (local_38->pose).angles[1];
-      local_c4 = (local_38->pose).angles[2];
+    if (es->solid == 0xffffff) {
+      cmodel = (uint)(es->index).brushmodel;
+      angles = (cent->pose).angles[0];
+      local_c8 = (cent->pose).angles[1];
+      local_c4 = (cent->pose).angles[2];
     }
     else {
-      if (((local_38->nextState).eType == 6) || ((local_38->nextState).eType == 0xe)) {
-        local_1ec = Com_GetClientDObj(param_2,local_40);
+      if (((cent->nextState).eType == 6) || ((cent->nextState).eType == 0xe)) {
+        local_1ec = Com_GetClientDObj(entIndex,localClientNum);
       }
       else {
         local_1ec = (DObj *)0x0;
       }
       if (local_1ec == (DObj *)0x0) {
-        local_10 = (local_38->pose).absmin[0];
-        local_c = (local_38->pose).absmin[1];
-        local_8 = (local_38->pose).absmin[2];
-        local_4c = (local_38->pose).absmax[0];
-        local_48 = (local_38->pose).absmax[1];
-        local_44 = (local_38->pose).absmax[2];
-        CG_GetEntityBModelBounds(local_38,local_58,local_30,(float *)0x0,(float *)0x0);
-        local_c0 = CM_TempBoxModel(local_58,local_30,local_64);
-        local_cc = 0.0;
+        absMins = (cent->pose).absmin[0];
+        local_c = (cent->pose).absmin[1];
+        local_8 = (cent->pose).absmin[2];
+        absMaxs = (cent->pose).absmax[0];
+        local_48 = (cent->pose).absmax[1];
+        local_44 = (cent->pose).absmax[2];
+        CG_GetEntityBModelBounds(cent,mins,maxs,(float *)0x0,(float *)0x0);
+        cmodel = CM_TempBoxModel(mins,maxs,contents);
+        angles = 0.0;
         local_c8 = 0.0;
         local_c4 = 0.0;
       }
@@ -1494,8 +1521,8 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
           _D3DPERF_EndEvent_0();
           return;
         }
-        pPVar6 = DObjGetCollmap(local_1ec);
-        if (pPVar6 == (PhysGeomList *)0x0) {
+        geoms_00 = DObjGetCollmap(local_1ec);
+        if (geoms_00 == (PhysGeomList *)0x0) {
           DVar3 = GetCurrentThreadId();
           if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -1510,17 +1537,17 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
           _D3DPERF_EndEvent_0();
           return;
         }
-        local_c0 = CM_TempBrushModel(pPVar6);
-        local_cc = (local_38->pose).angles[0];
-        local_c8 = (local_38->pose).angles[1];
-        local_c4 = (local_38->pose).angles[2];
+        cmodel = CM_TempBrushModel(geoms_00);
+        angles = (cent->pose).angles[0];
+        local_c8 = (cent->pose).angles[1];
+        local_c4 = (cent->pose).angles[2];
       }
     }
-    local_bc = param_3->fraction;
+    oldFraction = results->fraction;
     CM_TransformedBoxTrace
-              (param_3,(float *)param_1,(float *)&(param_1->extents).end,vec3_origin,vec3_origin,
-               local_c0,param_1->contentmask,(local_38->pose).origin,&local_cc);
-    if (local_bc <= param_3->fraction) {
+              (results,(float *)clip,(float *)&(clip->extents).end,vec3_origin,vec3_origin,cmodel,
+               clip->contentmask,(cent->pose).origin,&angles);
+    if (oldFraction <= results->fraction) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1535,43 +1562,42 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    param_3->modelIndex = 0;
-    param_3->partName = 0;
-    param_3->partGroup = 0;
-    param_3->boneIndex = 0xfe;
+    results->modelIndex = 0;
+    results->partName = 0;
+    results->partGroup = 0;
+    results->boneIndex = 0xfe;
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    local_b4 = local_1e0;
     PIXBeginNamedEvent(-1,"dobj");
-    local_6d = 0;
-    local_6c = DObjHasCollmap(local_b4);
-    if (((local_38->nextState).surfType == '\a') && (local_6c == 0)) {
+    character = false;
+    hasCollMap = DObjHasCollmap(local_1e0);
+    if (((cent->nextState).surfType == '\a') && (hasCollMap == 0)) {
       local_1e4 = 1;
     }
     else {
       local_1e4 = 0;
     }
-    local_6d = local_6d | 1U - ((local_38->nextState).eType != 1) | (local_38->nextState).eType == 2
-               | (local_38->nextState).eType == 0x11 | (local_38->nextState).eType == 0x13 |
-               local_1e4;
-    if ((local_38->pose).isRagdoll != '\0') {
-      local_6d = 1;
+    character = (bool)(character | 1U - ((cent->nextState).eType != 1) |
+                       (cent->nextState).eType == 2 | (cent->nextState).eType == 0x11 |
+                       (cent->nextState).eType == 0x13 | local_1e4);
+    if ((cent->pose).isRagdoll != '\0') {
+      character = true;
     }
-    local_64 = DObjGetContents(local_b4);
-    local_10 = (local_38->pose).absmin[0];
-    local_c = (local_38->pose).absmin[1];
-    local_8 = (local_38->pose).absmin[2];
-    local_4c = (local_38->pose).absmax[0];
-    local_48 = (local_38->pose).absmax[1];
-    local_44 = (local_38->pose).absmax[2];
-    if (local_6d != 0) {
-      local_64 = 0x8000;
+    contents = DObjGetContents(local_1e0);
+    absMins = (cent->pose).absmin[0];
+    local_c = (cent->pose).absmin[1];
+    local_8 = (cent->pose).absmin[2];
+    absMaxs = (cent->pose).absmax[0];
+    local_48 = (cent->pose).absmax[1];
+    local_44 = (cent->pose).absmax[2];
+    if (character != false) {
+      contents = 0x8000;
     }
-    if ((local_64 & param_1->contentmask) == 0) {
+    if ((contents & clip->contentmask) == 0) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1586,7 +1612,7 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    iVar4 = intersect_extents_aabb(&param_1->extents,&local_10,&local_4c,param_3->fraction);
+    iVar4 = intersect_extents_aabb(&clip->extents,&absMins,&absMaxs,results->fraction);
     if (iVar4 == 0) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1602,39 +1628,39 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    local_a0 = CG_GetLocalClientGlobals(local_40);
-    local_ac = (param_1->extents).start.vec.v[0];
-    local_a8 = (param_1->extents).start.vec.v[1];
-    local_a4 = (param_1->extents).start.vec.v[2];
-    local_7c = (param_1->extents).end.vec.v[0];
-    local_78 = (param_1->extents).end.vec.v[1];
-    local_74 = (param_1->extents).end.vec.v[2];
-    local_9c.fraction = param_3->fraction;
-    if (local_6d == 0) {
-      DObjGetName(local_b4);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    localStart = (clip->extents).start.vec.v[0];
+    local_a8 = (clip->extents).start.vec.v[1];
+    local_a4 = (clip->extents).start.vec.v[2];
+    localEnd = (clip->extents).end.vec.v[0];
+    local_78 = (clip->extents).end.vec.v[1];
+    local_74 = (clip->extents).end.vec.v[2];
+    objTrace.fraction = results->fraction;
+    if (character == false) {
+      DObjGetName(local_1e0);
       pcVar5 = va("non_char: %s");
       PIXBeginNamedEvent(-1,pcVar5);
-      DObjGeomTracelinePartBits(local_b4,param_1->contentmask,local_24);
-      CG_DObjCalcPose(&local_3c->pose,local_b4,local_24);
-      DObjGeomTraceline(local_b4,&local_ac,&local_7c,param_1->contentmask,&local_9c);
+      DObjGeomTracelinePartBits(local_1e0,clip->contentmask,partBits);
+      CG_DObjCalcPose(&centEA->pose,local_1e0,partBits);
+      DObjGeomTraceline(local_1e0,&localStart,&localEnd,clip->contentmask,&objTrace);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      DObjGetName(local_b4);
+      DObjGetName(local_1e0);
       pcVar5 = va("char: %s");
       PIXBeginNamedEvent(-1,pcVar5);
-      DObjTracelinePartBits(local_b4,local_24);
-      CG_DObjCalcPose(&local_3c->pose,local_b4,local_24);
-      DObjTraceline(local_b4,&local_ac,&local_7c,param_1->priorityMap,&local_9c);
+      DObjTracelinePartBits(local_1e0,partBits);
+      CG_DObjCalcPose(&centEA->pose,local_1e0,partBits);
+      DObjTraceline(local_1e0,&localStart,&localEnd,clip->priorityMap,&objTrace);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
-    if (param_3->fraction <= local_9c.fraction) {
+    if (results->fraction <= objTrace.fraction) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1649,32 +1675,32 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
       _D3DPERF_EndEvent_0();
       return;
     }
-    param_3->fraction = local_9c.fraction;
-    param_3->sflags = local_9c.sflags;
-    param_3->modelIndex = local_9c.modelIndex;
-    param_3->partName = local_9c.partName;
-    param_3->partGroup = local_9c.partGroup;
-    param_3->boneIndex = (ushort)local_9c.localBoneIndex;
-    (param_3->normal).vec.v[0] = local_9c.normal[0];
-    (param_3->normal).vec.v[1] = local_9c.normal[1];
-    (param_3->normal).vec.v[2] = local_9c.normal[2];
-    param_3->walkable = 0.7 <= (param_3->normal).vec.v[2];
+    results->fraction = objTrace.fraction;
+    results->sflags = objTrace.sflags;
+    results->modelIndex = objTrace.modelIndex;
+    results->partName = objTrace.partName;
+    results->partGroup = objTrace.partGroup;
+    results->boneIndex = (ushort)objTrace.localBoneIndex;
+    (results->normal).vec.v[0] = objTrace.normal[0];
+    (results->normal).vec.v[1] = objTrace.normal[1];
+    (results->normal).vec.v[2] = objTrace.normal[2];
+    results->walkable = 0.7 <= (results->normal).vec.v[2];
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  iVar4 = local_34->number;
-  if ((param_3 == (trace_t *)0x0) &&
+  iVar4 = es->number;
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h",
                                0xaf,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_3->hitType = TRACE_HITTYPE_ENTITY;
-  param_3->hitId = (ushort)iVar4;
-  param_3->cflags = local_64;
+  results->hitType = TRACE_HITTYPE_ENTITY;
+  results->hitId = (ushort)iVar4;
+  results->cflags = contents;
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1685,9 +1711,14 @@ void __cdecl CG_PointTraceToEntity(pointtrace_t *param_1,int param_2,trace_t *pa
 
 // 0053BED0  CG_PointTraceToEntities_r  (cgame/cg_world.cpp:754)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
 CG_PointTraceToEntities_r
-          (pointtrace_t *param_1,ushort param_2,float *param_3,float *param_4,trace_t *param_5)
+          (pointtrace_t *clip,ushort sectorIndex,float *p1,float *p2,trace_t *results)
 
 {
   float *pfVar1;
@@ -1702,42 +1733,50 @@ CG_PointTraceToEntities_r
   uint local_60;
   uint local_5c;
   float local_58;
-  ushort local_3c;
-  float local_24 [4];
-  float local_14;
+  CgEntCollSector *sector;
+  CgEntCollNode *node;
+  int side;
+  ushort listIndex;
+  float t1;
+  float frac;
+  int localClientNum;
+  int ignoreEntParamsBaseEntity;
+  float t2;
+  float p [4];
+  float mid;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_1 == (pointtrace_t *)0x0) &&
+  if ((clip == (pointtrace_t *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x2fd,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((p1 == (float *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x2fe,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((p2 == (float *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x2ff,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_5 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x300,0,"%s"
                               ), !bVar6)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((1.0 < param_5->fraction) &&
+  if ((1.0 < results->fraction) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x301,0,
                                "%s\n\t(results->fraction) = %g"), !bVar6)) {
     pcVar4 = (code *)swi(3);
@@ -1745,13 +1784,13 @@ CG_PointTraceToEntities_r
     return;
   }
   iVar5 = cgCollWorldLocalClientNum;
-  local_24[0] = *param_3;
-  local_24[1] = param_3[1];
-  local_24[2] = param_3[2];
-  local_24[3] = param_3[3];
-  iVar2 = param_1->ignoreEntParams->baseEntity;
+  p[0] = *p1;
+  p[1] = p1[1];
+  p[2] = p1[2];
+  p[3] = p1[3];
+  iVar2 = clip->ignoreEntParams->baseEntity;
   while( true ) {
-    if (param_2 == 0) {
+    if (sectorIndex == 0) {
       return;
     }
     if ((iVar5 != 0) &&
@@ -1763,20 +1802,20 @@ CG_PointTraceToEntities_r
       (*pcVar4)();
       return;
     }
-    if ((param_2 == 0) &&
+    if ((sectorIndex == 0) &&
        (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h",
                                  100,0,"%s"), !bVar6)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    if ((0x3ff < param_2) &&
+    if ((0x3ff < sectorIndex) &&
        (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h",
                                  0x65,0,"%s\n\t(sectorIndex) = %i"), !bVar6)) break;
-    pfVar1 = (float *)(iVar5 * 0x401c + 0xe87bbc + (uint)param_2 * 0x10);
-    local_3c = *(ushort *)(pfVar1 + 3);
-    while (local_3c != 0) {
-      uVar8 = local_3c - 1;
+    pfVar1 = (float *)(iVar5 * 0x401c + 0xe87bbc + (uint)sectorIndex * 0x10);
+    listIndex = *(ushort *)(pfVar1 + 3);
+    while (listIndex != 0) {
+      uVar8 = listIndex - 1;
       if ((iVar5 != 0) &&
          (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h"
                                    ,0x6c,0,
@@ -1796,26 +1835,26 @@ CG_PointTraceToEntities_r
         return;
       }
       pCVar3 = cgEntCollNodes[iVar5];
-      if (((local_3c - 1 != iVar2) &&
+      if (((listIndex - 1 != iVar2) &&
           (iVar7 = intersect_extents_aabb
-                             (&param_1->extents,pCVar3[uVar8].linkMins,pCVar3[uVar8].linkMaxs,
-                              param_5->fraction), iVar7 != 0)) &&
-         (CG_PointTraceToEntity(param_1,local_3c - 1,param_5), param_5->fraction == 0.0)) {
+                             (&clip->extents,pCVar3[uVar8].linkMins,pCVar3[uVar8].linkMaxs,
+                              results->fraction), iVar7 != 0)) &&
+         (CG_PointTraceToEntity(clip,listIndex - 1,results), results->fraction == 0.0)) {
         return;
       }
-      local_3c = pCVar3[uVar8].nextEntInSector;
+      listIndex = pCVar3[uVar8].nextEntInSector;
     }
-    fVar9 = local_24[*(ushort *)(pfVar1 + 1)] - *pfVar1;
-    local_58 = param_4[*(ushort *)(pfVar1 + 1)] - *pfVar1;
+    fVar9 = p[*(ushort *)(pfVar1 + 1)] - *pfVar1;
+    local_58 = p2[*(ushort *)(pfVar1 + 1)] - *pfVar1;
     if (0.0 <= fVar9 * local_58) {
       if (0.0 <= local_58 - fVar9) {
         local_58 = fVar9;
       }
       local_5c = (uint)(local_58 < 0.0);
-      param_2 = *(ushort *)((int)pfVar1 + local_5c * 2 + 8);
+      sectorIndex = *(ushort *)((int)pfVar1 + local_5c * 2 + 8);
     }
     else {
-      if (param_5->fraction <= local_24[3]) {
+      if (results->fraction <= p[3]) {
         return;
       }
       fVar9 = fVar9 / (fVar9 - local_58);
@@ -1833,21 +1872,20 @@ CG_PointTraceToEntities_r
         (*pcVar4)();
         return;
       }
-      local_14 = (*param_4 - local_24[0]) * fVar9 + local_24[0];
-      local_10 = (param_4[1] - local_24[1]) * fVar9 + local_24[1];
-      local_c = (param_4[2] - local_24[2]) * fVar9 + local_24[2];
-      local_8 = (param_4[3] - local_24[3]) * fVar9 + local_24[3];
+      mid = (*p2 - p[0]) * fVar9 + p[0];
+      local_10 = (p2[1] - p[1]) * fVar9 + p[1];
+      local_c = (p2[2] - p[2]) * fVar9 + p[2];
+      local_8 = (p2[3] - p[3]) * fVar9 + p[3];
       local_60 = (uint)(0.0 <= local_58);
-      CG_PointTraceToEntities_r
-                (param_1,*(ushort *)((int)pfVar1 + local_60 * 2 + 8),local_24,&local_14,param_5);
-      if (param_5->fraction == 0.0) {
+      CG_PointTraceToEntities_r(clip,*(ushort *)((int)pfVar1 + local_60 * 2 + 8),p,&mid,results);
+      if (results->fraction == 0.0) {
         return;
       }
-      param_2 = *(ushort *)((int)pfVar1 + (1 - local_60) * 2 + 8);
-      local_24[0] = local_14;
-      local_24[1] = local_10;
-      local_24[2] = local_c;
-      local_24[3] = local_8;
+      sectorIndex = *(ushort *)((int)pfVar1 + (1 - local_60) * 2 + 8);
+      p[0] = mid;
+      p[1] = local_10;
+      p[2] = local_c;
+      p[3] = local_8;
     }
   }
   pcVar4 = (code *)swi(3);
@@ -1858,59 +1896,60 @@ CG_PointTraceToEntities_r
 
 // 0053BD10  CG_PointTraceToEntities  (cgame/cg_world.cpp:832)
 
-void __cdecl CG_PointTraceToEntities(pointtrace_t *param_1,trace_t *param_2)
+void __cdecl CG_PointTraceToEntities(pointtrace_t *clip,trace_t *results)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float local_24;
+  PIXProfile pixProfile;
+  float start;
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float end;
   float local_10;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"cg_pointtracetoentities");
-  if ((param_1 == (pointtrace_t *)0x0) &&
+  if ((clip == (pointtrace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x347,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x348,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->fraction <= 0.0) &&
+  if ((results->fraction <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x349,0,
                                "%s\n\t(results->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((1.0 < param_2->fraction) &&
+  if ((1.0 < results->fraction) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x34a,0,
                                "%s\n\t(results->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = (param_1->extents).start.vec.v[0];
-  local_20 = (param_1->extents).start.vec.v[1];
-  local_1c = (param_1->extents).start.vec.v[2];
-  local_14 = (param_1->extents).end.vec.v[0];
-  local_10 = (param_1->extents).end.vec.v[1];
-  local_c = (param_1->extents).end.vec.v[2];
+  start = (clip->extents).start.vec.v[0];
+  local_20 = (clip->extents).start.vec.v[1];
+  local_1c = (clip->extents).start.vec.v[2];
+  end = (clip->extents).end.vec.v[0];
+  local_10 = (clip->extents).end.vec.v[1];
+  local_c = (clip->extents).end.vec.v[2];
   local_18 = 0;
-  local_8 = param_2->fraction;
-  CG_PointTraceToEntities_r(param_1,1,&local_24,&local_14,param_2);
+  local_8 = results->fraction;
+  CG_PointTraceToEntities_r(clip,1,&start,&end,results);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1924,161 +1963,158 @@ void __cdecl CG_PointTraceToEntities(pointtrace_t *param_1,trace_t *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-CG_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-               int param_6,int param_7,col_context_t *param_8)
+CG_TraceCapsule(trace_t *results,float *start,float *mins,float *maxs,float *end,int passEntityNum,
+               int contentMask,col_context_t *context)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  moveclip_t local_7c;
+  float fVar4;
+  float fVar5;
+  float fVar6;
+  moveclip_t clip;
   uint local_18;
-  float local_10;
-  float local_c;
-  float local_8;
+  PIXProfile pixProfile;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"CG_TraceCapsule");
-  if ((param_1 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x35f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*param_4 < *param_3) &&
+  if ((*maxs < *mins) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4[1] < param_3[1]) &&
+  if ((maxs[1] < mins[1]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4[2] < param_3[2]) &&
+  if ((maxs[2] < mins[2]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*mins & 0x7f800000) == 0x7f800000) || (((uint)mins[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)mins[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*maxs & 0x7f800000) == 0x7f800000) || (((uint)maxs[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)maxs[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x360,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x361,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_5 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x362,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  CM_BoxTrace(param_1,param_2,param_5,param_3,param_4,param_7,param_8);
-  if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+  CM_BoxTrace(results,start,end,mins,maxs,contentMask,context);
+  if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x366,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
+  if (results->fraction == 1.0) {
+    if ((results == (trace_t *)0x0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
+    results->hitType = TRACE_HITTYPE_NONE;
+    results->hitId = 0;
   }
   else {
-    if ((param_1 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  if (param_1->fraction == 0.0) {
+  if (results->fraction == 0.0) {
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    TraceExtents::TraceExtents(&local_7c.extents);
-    local_7c.contentmask = param_7;
-    local_7c.passEntityNum = param_6;
-    local_7c.passOwnerNum = -1;
-    local_7c.maxs[0] = (*param_4 - *param_3) * 0.5;
-    local_7c.maxs[1] = (param_4[1] - param_3[1]) * 0.5;
-    local_7c.maxs[2] = (param_4[2] - param_3[2]) * 0.5;
-    local_7c.mins[0] = local_7c.maxs[0] * -1.0;
-    local_7c.mins[1] = local_7c.maxs[1] * -1.0;
-    local_7c.mins[2] = local_7c.maxs[2] * -1.0;
-    local_7c.outerSize[0] = local_7c.maxs[0] + 1.0;
-    local_7c.outerSize[1] = local_7c.maxs[1] + 1.0;
-    local_7c.outerSize[2] = local_7c.maxs[2] + 1.0;
-    local_10 = (*param_4 + *param_3) * 0.5;
-    local_c = (param_4[1] + param_3[1]) * 0.5;
-    local_8 = (param_4[2] + param_3[2]) * 0.5;
-    local_7c.extents.start.vec.v[0] = *param_2 + local_10;
-    local_7c.extents.start.vec.v[1] = param_2[1] + local_c;
-    local_7c.extents.start.vec.v[2] = param_2[2] + local_8;
-    local_7c.extents.end.vec.v[0] = *param_5 + local_10;
-    local_7c.extents.end.vec.v[1] = param_5[1] + local_c;
-    local_7c.extents.end.vec.v[2] = param_5[2] + local_8;
-    CM_CalcTraceExtents(&local_7c.extents);
-    CG_ClipMoveToEntities(&local_7c,param_1);
-    GlassCl_ClipMoveTrace(&local_7c,param_1);
+    TraceExtents::TraceExtents(&clip.extents);
+    clip.contentmask = contentMask;
+    clip.passEntityNum = passEntityNum;
+    clip.passOwnerNum = -1;
+    clip.maxs[0] = (*maxs - *mins) * 0.5;
+    clip.maxs[1] = (maxs[1] - mins[1]) * 0.5;
+    clip.maxs[2] = (maxs[2] - mins[2]) * 0.5;
+    clip.mins[0] = clip.maxs[0] * -1.0;
+    clip.mins[1] = clip.maxs[1] * -1.0;
+    clip.mins[2] = clip.maxs[2] * -1.0;
+    clip.outerSize[0] = clip.maxs[0] + 1.0;
+    clip.outerSize[1] = clip.maxs[1] + 1.0;
+    clip.outerSize[2] = clip.maxs[2] + 1.0;
+    fVar4 = (*maxs + *mins) * 0.5;
+    fVar5 = (maxs[1] + mins[1]) * 0.5;
+    fVar6 = (maxs[2] + mins[2]) * 0.5;
+    clip.extents.start.vec.v[0] = *start + fVar4;
+    clip.extents.start.vec.v[1] = start[1] + fVar5;
+    clip.extents.start.vec.v[2] = start[2] + fVar6;
+    clip.extents.end.vec.v[0] = *end + fVar4;
+    clip.extents.end.vec.v[1] = end[1] + fVar5;
+    clip.extents.end.vec.v[2] = end[2] + fVar6;
+    CM_CalcTraceExtents(&clip.extents);
+    CG_ClipMoveToEntities(&clip,results);
+    GlassCl_ClipMoveTrace(&clip,results);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -2093,16 +2129,16 @@ CG_TraceCapsule(trace_t *param_1,float *param_2,float *param_3,float *param_4,fl
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-CG_TracePoint(trace_t *param_1,float *param_2,float *param_3,int param_4,int param_5,bool param_6,
-             bool param_7,bool param_8,col_context_t *param_9)
+CG_TracePoint(trace_t *results,float *start,float *end,int passEntityNum,int contentMask,
+             bool locational,bool staticModels,bool checkRopes,col_context_t *context)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
   IgnoreEntParams *local_ac;
-  float local_68 [3];
-  float4 local_5c;
+  float _end [3];
+  float4 clip;
   float local_4c;
   float local_48;
   float local_44;
@@ -2111,76 +2147,75 @@ CG_TracePoint(trace_t *param_1,float *param_2,float *param_3,int param_4,int par
   uint local_24;
   uchar_0_ *local_20;
   uint local_18;
-  IgnoreEntParams local_14;
+  IgnoreEntParams ignoreEntParams;
+  PIXProfile pixProfile;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"CG_TracePoint");
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x39b,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x39c,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  CM_BoxTrace(param_1,param_2,param_3,vec3_origin,vec3_origin,param_5,param_9);
-  if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+  CM_BoxTrace(results,start,end,vec3_origin,vec3_origin,contentMask,context);
+  if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x3a0,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
+  if (results->fraction == 1.0) {
+    if ((results == (trace_t *)0x0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
+    results->hitType = TRACE_HITTYPE_NONE;
+    results->hitId = 0;
   }
   else {
-    if ((param_1 == (trace_t *)0x0) &&
+    if ((results == (trace_t *)0x0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\../qcommon/cm_public.h"
                                  ,0xaf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
   }
-  if (param_1->fraction == 0.0) {
+  if (results->fraction == 0.0) {
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    TraceExtents::TraceExtents((TraceExtents *)&local_5c);
-    if (param_7) {
-      CM_PointTraceStaticModels(param_1,param_2,param_3,param_5);
-      if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+    TraceExtents::TraceExtents((TraceExtents *)&clip);
+    if (staticModels) {
+      CM_PointTraceStaticModels(results,start,end,contentMask);
+      if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x3b0,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (param_1->fraction == 0.0) {
+      if (results->fraction == 0.0) {
         DVar3 = GetCurrentThreadId();
         if (DVar3 != (DWORD)g_DXDeviceThread) {
           return;
@@ -2192,34 +2227,34 @@ CG_TracePoint(trace_t *param_1,float *param_2,float *param_3,int param_4,int par
         return;
       }
     }
-    local_14.baseEntity = param_4;
-    local_14.parentEntity = -1;
-    local_14.ignoreSelf = true;
-    local_14.ignoreParent = false;
-    local_14.ignoreChildren = false;
-    local_14.ignoreSiblings = false;
-    local_5c.v[0] = *param_2;
-    local_5c.v[1] = param_2[1];
-    local_5c.v[2] = param_2[2];
-    local_4c = *param_3;
-    local_48 = param_3[1];
-    local_44 = param_3[2];
-    CM_CalcTraceExtents((TraceExtents *)&local_5c);
-    if (param_9->ignoreEntParams == (IgnoreEntParams *)0x0) {
-      local_ac = &local_14;
+    ignoreEntParams.baseEntity = passEntityNum;
+    ignoreEntParams.parentEntity = -1;
+    ignoreEntParams.ignoreSelf = true;
+    ignoreEntParams.ignoreParent = false;
+    ignoreEntParams.ignoreChildren = false;
+    ignoreEntParams.ignoreSiblings = false;
+    clip.v[0] = *start;
+    clip.v[1] = start[1];
+    clip.v[2] = start[2];
+    local_4c = *end;
+    local_48 = end[1];
+    local_44 = end[2];
+    CM_CalcTraceExtents((TraceExtents *)&clip);
+    if (context->ignoreEntParams == (IgnoreEntParams *)0x0) {
+      local_ac = &ignoreEntParams;
     }
     else {
-      local_ac = param_9->ignoreEntParams;
+      local_ac = context->ignoreEntParams;
     }
     local_2c = local_ac;
-    local_28 = param_5;
-    local_24 = (uint)param_6;
+    local_28 = contentMask;
+    local_24 = (uint)locational;
     local_20 = &bulletPriorityMap;
-    CG_PointTraceToEntities((pointtrace_t *)&local_5c,param_1);
-    if (param_8) {
-      Vec3Lerp(param_2,param_3,param_1->fraction,local_68);
-      Rope_Trace(param_2,local_68);
-      GlassCl_TracePoint((pointtrace_t *)&local_5c,param_1);
+    CG_PointTraceToEntities((pointtrace_t *)&clip,results);
+    if (checkRopes) {
+      Vec3Lerp(start,end,results->fraction,_end);
+      Rope_Trace(start,_end);
+      GlassCl_TracePoint((pointtrace_t *)&clip,results);
     }
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2233,21 +2268,21 @@ CG_TracePoint(trace_t *param_1,float *param_2,float *param_3,int param_4,int par
 // 0053DC90  CG_LocationalTrace  (cgame/cg_world.cpp:983)
 
 void __cdecl
-CG_LocationalTrace(trace_t *param_1,float *param_2,float *param_3,int param_4,int param_5,
-                  bool param_6,col_context_t *param_7)
+CG_LocationalTrace(trace_t *results,float *start,float *end,int passEntityNum,int contentMask,
+                  bool checkRopes,col_context_t *context)
 
 {
   col_context_t *local_34;
-  col_context_t local_2c;
+  col_context_t tempContext;
   
-  col_context_t::col_context_t(&local_2c,param_5);
-  if (param_7 == (col_context_t *)0x0) {
-    local_34 = &local_2c;
+  col_context_t::col_context_t(&tempContext,contentMask);
+  if (context == (col_context_t *)0x0) {
+    local_34 = &tempContext;
   }
   else {
-    local_34 = param_7;
+    local_34 = context;
   }
-  CG_TracePoint(param_1,param_2,param_3,param_4,param_5,true,true,param_6,local_34);
+  CG_TracePoint(results,start,end,passEntityNum,contentMask,true,true,checkRopes,local_34);
   return;
 }
 
@@ -2259,60 +2294,64 @@ CG_LocationalTrace(trace_t *param_1,float *param_2,float *param_3,int param_4,in
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_EntityInArea(int param_1,float *param_2,float *param_3,int param_4)
+bool __cdecl CG_EntityInArea(int entIndex,float *mins,float *maxs,int contentMask)
 
 {
   code *pcVar1;
-  int iVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  centity_s *pcVar5;
-  DObj *pDVar6;
-  uint uVar7;
+  int localClientNum_00;
+  bool bVar2;
+  undefined1 uVar3;
+  centity_s *cent_00;
+  DObj *dobj_00;
+  uint uVar4;
+  int contents;
+  DObj *dobj;
+  centity_s *cent;
+  int localClientNum;
   
-  if ((0x5ff < (uint)param_1) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x3ef,0,
+  if ((0x5ff < (uint)entIndex) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x3ef,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
-     !bVar3)) {
+     !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar4 = (*pcVar1)();
-    return (bool)uVar4;
+    uVar3 = (*pcVar1)();
+    return (bool)uVar3;
   }
-  iVar2 = cgCollWorldLocalClientNum;
-  pcVar5 = CG_GetEntity(cgCollWorldLocalClientNum,param_1);
-  pDVar6 = Com_GetClientDObj(param_1,iVar2);
-  if (pDVar6 == (DObj *)0x0) {
-    if ((((pcVar5->nextState).solid == 0xffffff) && ((pcVar5->nextState).eType != 0xe)) &&
-       ((pcVar5->nextState).eType != 0x10)) {
-      if (((((pcVar5->pose).absmax[0] < *param_2) || ((pcVar5->pose).absmax[1] < param_2[1])) ||
-          (((pcVar5->pose).absmax[2] < param_2[2] ||
-           ((*param_3 < (pcVar5->pose).absmin[0] || (param_3[1] < (pcVar5->pose).absmin[1])))))) ||
-         (param_3[2] < (pcVar5->pose).absmin[2])) {
-        bVar3 = false;
+  localClientNum_00 = cgCollWorldLocalClientNum;
+  cent_00 = CG_GetEntity(cgCollWorldLocalClientNum,entIndex);
+  dobj_00 = Com_GetClientDObj(entIndex,localClientNum_00);
+  if (dobj_00 == (DObj *)0x0) {
+    if ((((cent_00->nextState).solid == 0xffffff) && ((cent_00->nextState).eType != 0xe)) &&
+       ((cent_00->nextState).eType != 0x10)) {
+      if (((((cent_00->pose).absmax[0] < *mins) || ((cent_00->pose).absmax[1] < mins[1])) ||
+          (((cent_00->pose).absmax[2] < mins[2] ||
+           ((*maxs < (cent_00->pose).absmin[0] || (maxs[1] < (cent_00->pose).absmin[1])))))) ||
+         (maxs[2] < (cent_00->pose).absmin[2])) {
+        bVar2 = false;
       }
       else {
-        bVar3 = true;
+        bVar2 = true;
       }
-      if (bVar3) {
+      if (bVar2) {
         return true;
       }
     }
   }
   else {
-    uVar7 = CG_GetEntityDObjContents(pcVar5,pDVar6);
-    if ((uVar7 & param_4) == 0) {
+    uVar4 = CG_GetEntityDObjContents(cent_00,dobj_00);
+    if ((uVar4 & contentMask) == 0) {
       return false;
     }
-    if ((((((pcVar5->pose).absmax[0] < *param_2) || ((pcVar5->pose).absmax[1] < param_2[1])) ||
-         ((pcVar5->pose).absmax[2] < param_2[2])) ||
-        ((*param_3 < (pcVar5->pose).absmin[0] || (param_3[1] < (pcVar5->pose).absmin[1])))) ||
-       (param_3[2] < (pcVar5->pose).absmin[2])) {
-      bVar3 = false;
+    if ((((((cent_00->pose).absmax[0] < *mins) || ((cent_00->pose).absmax[1] < mins[1])) ||
+         ((cent_00->pose).absmax[2] < mins[2])) ||
+        ((*maxs < (cent_00->pose).absmin[0] || (maxs[1] < (cent_00->pose).absmin[1])))) ||
+       (maxs[2] < (cent_00->pose).absmin[2])) {
+      bVar2 = false;
     }
     else {
-      bVar3 = true;
+      bVar2 = true;
     }
-    if (bVar3) {
+    if (bVar2) {
       return true;
     }
   }
@@ -2322,7 +2361,12 @@ bool __cdecl CG_EntityInArea(int param_1,float *param_2,float *param_3,int param
 
 // 0053E1B0  CG_AreaEntities_r  (cgame/cg_world.cpp:1035)
 
-void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_AreaEntities_r(ushort sectorIndex,CEntityAreaParms *areaParms)
 
 {
   float *pfVar1;
@@ -2330,10 +2374,14 @@ void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
   code *pcVar3;
   int iVar4;
   bool bVar5;
-  ushort local_10;
+  CgEntCollNode *node;
+  CgEntCollSector *sector;
+  ushort listIndex;
+  int localClientNum;
+  ushort nextSectorIndex;
   
   iVar4 = cgCollWorldLocalClientNum;
-  if ((param_2 == (CEntityAreaParms *)0x0) &&
+  if ((areaParms == (CEntityAreaParms *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x412,0,"%s"
                               ), iVar4 = cgCollWorldLocalClientNum, !bVar5)) {
     pcVar3 = (code *)swi(3);
@@ -2341,7 +2389,7 @@ void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
     return;
   }
   while( true ) {
-    if (param_1 == 0) {
+    if (sectorIndex == 0) {
       return;
     }
     if ((iVar4 != 0) &&
@@ -2353,19 +2401,19 @@ void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
       (*pcVar3)();
       return;
     }
-    if ((param_1 == 0) &&
+    if ((sectorIndex == 0) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h",
                                  100,0,"%s"), !bVar5)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((0x3ff < param_1) &&
+    if ((0x3ff < sectorIndex) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h",
                                  0x65,0,"%s\n\t(sectorIndex) = %i"), !bVar5)) break;
-    pfVar1 = (float *)(iVar4 * 0x401c + 0xe87bbc + (uint)param_1 * 0x10);
-    for (local_10 = *(ushort *)(pfVar1 + 3); local_10 != 0;
-        local_10 = pCVar2[local_10 - 1].nextEntInSector) {
+    pfVar1 = (float *)(iVar4 * 0x401c + 0xe87bbc + (uint)sectorIndex * 0x10);
+    for (listIndex = *(ushort *)(pfVar1 + 3); listIndex != 0;
+        listIndex = pCVar2[listIndex - 1].nextEntInSector) {
       if ((iVar4 != 0) &&
          (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h"
                                    ,0x6c,0,
@@ -2375,7 +2423,7 @@ void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
         (*pcVar3)();
         return;
       }
-      if ((0x5ff < local_10 - 1) &&
+      if ((0x5ff < listIndex - 1) &&
          (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame/cg_colltree.h"
                                    ,0x6d,0,
                                    "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
@@ -2385,29 +2433,29 @@ void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
         return;
       }
       pCVar2 = cgEntCollNodes[iVar4];
-      bVar5 = CG_EntityInArea(local_10 - 1,param_2->mins,param_2->maxs,param_2->contentMask);
+      bVar5 = CG_EntityInArea(listIndex - 1,areaParms->mins,areaParms->maxs,areaParms->contentMask);
       if (bVar5) {
-        if (param_2->count == param_2->maxCount) {
+        if (areaParms->count == areaParms->maxCount) {
           return;
         }
-        param_2->list[param_2->count] = local_10 - 1;
-        param_2->count = param_2->count + 1;
+        areaParms->list[areaParms->count] = listIndex - 1;
+        areaParms->count = areaParms->count + 1;
       }
     }
-    if (param_2->maxs[*(ushort *)(pfVar1 + 1)] < *pfVar1 ||
-        param_2->maxs[*(ushort *)(pfVar1 + 1)] == *pfVar1) {
-      if (*pfVar1 <= param_2->mins[*(ushort *)(pfVar1 + 1)]) {
+    if (areaParms->maxs[*(ushort *)(pfVar1 + 1)] < *pfVar1 ||
+        areaParms->maxs[*(ushort *)(pfVar1 + 1)] == *pfVar1) {
+      if (*pfVar1 <= areaParms->mins[*(ushort *)(pfVar1 + 1)]) {
         return;
       }
-      param_1 = *(ushort *)((int)pfVar1 + 10);
+      sectorIndex = *(ushort *)((int)pfVar1 + 10);
     }
-    else if (*pfVar1 < param_2->mins[*(ushort *)(pfVar1 + 1)] ||
-             *pfVar1 == param_2->mins[*(ushort *)(pfVar1 + 1)]) {
-      param_1 = *(ushort *)(pfVar1 + 2);
+    else if (*pfVar1 < areaParms->mins[*(ushort *)(pfVar1 + 1)] ||
+             *pfVar1 == areaParms->mins[*(ushort *)(pfVar1 + 1)]) {
+      sectorIndex = *(ushort *)(pfVar1 + 2);
     }
     else {
-      param_1 = *(ushort *)((int)pfVar1 + 10);
-      CG_AreaEntities_r(*(ushort *)(pfVar1 + 2),param_2);
+      sectorIndex = *(ushort *)((int)pfVar1 + 10);
+      CG_AreaEntities_r(*(ushort *)(pfVar1 + 2),areaParms);
     }
   }
   pcVar3 = (code *)swi(3);
@@ -2418,91 +2466,90 @@ void __cdecl CG_AreaEntities_r(ushort param_1,CEntityAreaParms *param_2)
 
 // 0053E650  CG_AreaEntities  (cgame/cg_world.cpp:1093)
 
-int __cdecl CG_AreaEntities(float *param_1,float *param_2,int *param_3,int param_4,int param_5)
+int __cdecl CG_AreaEntities(float *mins,float *maxs,int *entityList,int maxEntities,int contentMask)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   DWORD DVar4;
-  CEntityAreaParms local_20;
+  CEntityAreaParms areaParms;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"CG_AreaEntities");
-  if ((param_1 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((*param_2 < *param_1) &&
+  if ((*maxs < *mins) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2[1] < param_1[1]) &&
+  if ((maxs[1] < mins[1]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2[2] < param_1[2]) &&
+  if ((maxs[2] < mins[2]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*mins & 0x7f800000) == 0x7f800000) || (((uint)mins[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)mins[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*maxs & 0x7f800000) == 0x7f800000) || (((uint)maxs[1] & 0x7f800000) == 0x7f800000))
+      || (((uint)maxs[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x449,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_4 < 1) &&
+  if ((maxEntities < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x44a,0,
                                "%s\n\t(maxEntities) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (int *)0x0) &&
+  if ((entityList == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",1099,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_20.mins = param_1;
-  local_20.maxs = param_2;
-  local_20.contentMask = param_5;
-  local_20.list = param_3;
-  local_20.maxCount = param_4;
-  local_20.count = 0;
-  CG_AreaEntities_r(1,&local_20);
-  iVar3 = local_20.count;
+  areaParms.mins = mins;
+  areaParms.maxs = maxs;
+  areaParms.contentMask = contentMask;
+  areaParms.list = entityList;
+  areaParms.maxCount = maxEntities;
+  areaParms.count = 0;
+  CG_AreaEntities_r(1,&areaParms);
+  iVar3 = areaParms.count;
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -2515,15 +2562,14 @@ int __cdecl CG_AreaEntities(float *param_1,float *param_2,int *param_3,int param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl
-CG_SightTracePointInternal(int *param_1,float *param_2,float *param_3,int param_4,trace_t *param_5)
+bool __cdecl CG_SightTracePointInternal(int *hitNum,float *start,float *end,int mask,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  float4 local_ec;
+  float4 tw;
   float local_dc;
   float local_d8;
   float local_d4;
@@ -2555,10 +2601,9 @@ CG_SightTracePointInternal(int *param_1,float *param_2,float *param_3,int param_
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  traceWork_t::traceWork_t((traceWork_t *)&local_ec);
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  traceWork_t::traceWork_t((traceWork_t *)&tw);
+  if (((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000))
+     || (((uint)start[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x463,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2566,9 +2611,8 @@ CG_SightTracePointInternal(int *param_1,float *param_2,float *param_3,int param_
       return (bool)uVar3;
     }
   }
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)end[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x464,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2584,28 +2628,28 @@ CG_SightTracePointInternal(int *param_1,float *param_2,float *param_3,int param_
       return (bool)uVar3;
     }
   }
-  param_5->fraction = 1.0;
-  param_5->startsolid = false;
-  param_5->allsolid = false;
-  local_34 = param_4;
+  trace->fraction = 1.0;
+  trace->startsolid = false;
+  trace->allsolid = false;
+  local_34 = mask;
   local_ac = 0.0;
   local_a8 = 0.0;
   local_a4 = 0.0;
-  local_6c.v[0] = *param_2;
-  local_6c.v[1] = param_2[1];
-  local_6c.v[2] = param_2[2];
-  local_5c[0]._0_4_ = *param_3;
-  local_5c[0]._4_4_ = param_3[1];
-  local_5c[0]._8_4_ = param_3[2];
+  local_6c.v[0] = *start;
+  local_6c.v[1] = start[1];
+  local_6c.v[2] = start[2];
+  local_5c[0]._0_4_ = *end;
+  local_5c[0]._4_4_ = end[1];
+  local_5c[0]._8_4_ = end[2];
   local_dc = local_6c.v[0] * 0.5 + (float)local_5c[0]._0_4_ * 0.5;
   local_d8 = local_6c.v[1] * 0.5 + (float)local_5c[0]._4_4_ * 0.5;
   local_d4 = local_6c.v[2] * 0.5 + (float)local_5c[0]._8_4_ * 0.5;
-  local_ec.v[0] = (float)local_5c[0]._0_4_ - local_6c.v[0];
-  local_ec.v[1] = (float)local_5c[0]._4_4_ - local_6c.v[1];
-  local_ec.v[2] = (float)local_5c[0]._8_4_ - local_6c.v[2];
-  local_cc = local_ec.v[0] * 0.5;
-  local_c8 = local_ec.v[1] * 0.5;
-  local_c4 = local_ec.v[2] * 0.5;
+  tw.v[0] = (float)local_5c[0]._0_4_ - local_6c.v[0];
+  tw.v[1] = (float)local_5c[0]._4_4_ - local_6c.v[1];
+  tw.v[2] = (float)local_5c[0]._8_4_ - local_6c.v[2];
+  local_cc = tw.v[0] * 0.5;
+  local_c8 = tw.v[1] * 0.5;
+  local_c4 = tw.v[2] * 0.5;
   local_7c = 0.0;
   local_78 = 0.0;
   local_74 = 0.0;
@@ -2613,8 +2657,7 @@ CG_SightTracePointInternal(int *param_1,float *param_2,float *param_3,int param_
   fStack_b8 = ABS(local_c8);
   fStack_b4 = ABS(local_c4);
   CM_CalcTraceExtents((TraceExtents *)&local_6c);
-  local_38 = local_ec.v[0] * local_ec.v[0] + local_ec.v[1] * local_ec.v[1] +
-             local_ec.v[2] * local_ec.v[2];
+  local_38 = tw.v[0] * tw.v[0] + tw.v[1] * tw.v[1] + tw.v[2] * tw.v[2];
   local_3c = SQRT(local_38);
   Vec3Min(local_6c.v,local_5c[0].v,local_9c);
   Vec3Max(local_6c.v,local_5c[0].v,local_8c);
@@ -2624,22 +2667,24 @@ CG_SightTracePointInternal(int *param_1,float *param_2,float *param_3,int param_
   local_24 = 0;
   local_28 = 0;
   CM_GetTraceThreadInfo(&local_20);
-  if (*param_1 == 0) {
-    iVar4 = CM_SightTraceThroughTree((traceWork_t *)&local_ec,0,local_6c.v,local_5c[0].v,param_5);
-    *param_1 = iVar4;
+  if (*hitNum == 0) {
+    iVar4 = CM_SightTraceThroughTree((traceWork_t *)&tw,0,local_6c.v,local_5c[0].v,trace);
+    *hitNum = iVar4;
   }
-  return *param_1 != 0;
+  return *hitNum != 0;
 }
 
 
 // 0053F670  cmpr  (cgame/cg_world.cpp:1167)
 
-int __cdecl cmpr(void *param_1,void *param_2)
+int __cdecl cmpr(void *e0,void *e1)
 
 {
   undefined4 local_10;
+  float x0;
+  float x1;
   
-  if (*(float *)param_1 <= *(float *)param_2) {
+  if (*(float *)e0 <= *(float *)e1) {
     local_10 = -1;
   }
   else {
@@ -2653,8 +2698,7 @@ int __cdecl cmpr(void *param_1,void *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl
-CG_SightTracePoint(int *param_1,float *param_2,float *param_3,int param_4,trace_t *param_5)
+bool __cdecl CG_SightTracePoint(int *hitNum,float *start,float *end,int mask,trace_t *trace)
 
 {
   float fVar1;
@@ -2663,112 +2707,112 @@ CG_SightTracePoint(int *param_1,float *param_2,float *param_3,int param_4,trace_
   float fVar4;
   float fVar5;
   float fVar6;
-  int local_198;
-  float local_184;
-  float local_180;
+  int i_2;
+  float t0_2;
+  float t1_2;
+  float p1;
   float local_17c;
   float local_178;
-  float local_174;
+  float p0;
   float local_170;
   float local_16c;
-  float local_168;
-  float local_164;
-  float local_160;
+  float t0;
+  float t1;
+  float mx;
   float local_15c;
   float local_158;
-  float local_154;
+  float mn;
   float local_150;
   float local_14c;
-  int local_148;
-  float local_144 [64];
-  uint local_44;
-  cbrush_t *local_40;
-  float4 local_3c;
+  int i;
+  float intervals [64];
+  int nintervals;
+  cbrush_t *brush;
+  float4 extents;
   float local_2c;
   float local_28;
   float local_24;
   uint local_c;
-  int local_8;
+  int oldHitNum;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  TraceExtents::TraceExtents((TraceExtents *)&local_3c);
-  local_3c.v[0] = *param_2;
-  local_3c.v[1] = param_2[1];
-  local_3c.v[2] = param_2[2];
-  local_2c = *param_3;
-  local_28 = param_3[1];
-  local_24 = param_3[2];
-  CM_CalcTraceExtents((TraceExtents *)&local_3c);
-  local_8 = *param_1;
-  *param_1 = 0;
-  if ((0 < local_8) && (local_8 = local_8 + -1, local_8 < (int)(uint)cm.numBrushes)) {
-    local_40 = cm.brushes + local_8;
-    iVar3 = CM_SightTracePointThroughBrush((TraceExtents *)&local_3c,local_40);
+  TraceExtents::TraceExtents((TraceExtents *)&extents);
+  extents.v[0] = *start;
+  extents.v[1] = start[1];
+  extents.v[2] = start[2];
+  local_2c = *end;
+  local_28 = end[1];
+  local_24 = end[2];
+  CM_CalcTraceExtents((TraceExtents *)&extents);
+  oldHitNum = *hitNum;
+  *hitNum = 0;
+  if ((0 < oldHitNum) && (oldHitNum = oldHitNum + -1, oldHitNum < (int)(uint)cm.numBrushes)) {
+    brush = cm.brushes + oldHitNum;
+    iVar3 = CM_SightTracePointThroughBrush((TraceExtents *)&extents,brush);
     if (iVar3 != 0) {
-      *param_1 = local_8 + 1;
+      *hitNum = oldHitNum + 1;
     }
   }
-  if (*param_1 == 0) {
-    local_44 = 0;
-    for (local_148 = 0; local_148 < num_occlusion_overrides; local_148 = local_148 + 1) {
-      local_154 = occlusion_overrides[local_148][0][0];
-      local_150 = occlusion_overrides[local_148][0][1];
-      local_14c = occlusion_overrides[local_148][0][2];
-      local_160 = occlusion_overrides[local_148][1][0];
-      local_15c = occlusion_overrides[local_148][1][1];
-      local_158 = occlusion_overrides[local_148][1][2];
-      local_168 = 0.0;
-      local_164 = 1.0;
-      iVar3 = intersect_extents_aabb
-                        ((TraceExtents *)&local_3c,&local_154,&local_160,&local_168,&local_164);
+  if (*hitNum == 0) {
+    nintervals = 0;
+    for (i = 0; i < num_occlusion_overrides; i = i + 1) {
+      mn = occlusion_overrides[i][0][0];
+      local_150 = occlusion_overrides[i][0][1];
+      local_14c = occlusion_overrides[i][0][2];
+      mx = occlusion_overrides[i][1][0];
+      local_15c = occlusion_overrides[i][1][1];
+      local_158 = occlusion_overrides[i][1][2];
+      t0 = 0.0;
+      t1 = 1.0;
+      iVar3 = intersect_extents_aabb((TraceExtents *)&extents,&mn,&mx,&t0,&t1);
       if (iVar3 != 0) {
-        local_144[local_44 * 2] = local_168;
-        local_144[local_44 * 2 + 1] = local_164;
-        local_44 = local_44 + 1;
-        if (local_44 == 0x20) break;
+        intervals[nintervals * 2] = t0;
+        intervals[nintervals * 2 + 1] = t1;
+        nintervals = nintervals + 1;
+        if (nintervals == 0x20) break;
       }
     }
-    if ((int)local_44 < 1) {
-      bVar2 = CG_SightTracePointInternal(param_1,param_2,param_3,param_4,param_5);
+    if (nintervals < 1) {
+      bVar2 = CG_SightTracePointInternal(hitNum,start,end,mask,trace);
       return bVar2;
     }
-    qsort(local_144,local_44,8,cmpr);
-    local_184 = 0.0;
-    fVar4 = *param_3 - *param_2;
-    fVar5 = param_3[1] - param_2[1];
-    fVar6 = param_3[2] - param_2[2];
-    for (local_198 = 0; local_198 < (int)local_44; local_198 = local_198 + 1) {
-      fVar1 = local_144[local_198 * 2];
-      if (local_184 < fVar1) {
-        local_174 = local_184 * fVar4 + *param_2;
-        local_170 = local_184 * fVar5 + param_2[1];
-        local_16c = local_184 * fVar6 + param_2[2];
-        local_180 = fVar1 * fVar4 + *param_2;
-        local_17c = fVar1 * fVar5 + param_2[1];
-        local_178 = fVar1 * fVar6 + param_2[2];
-        bVar2 = CG_SightTracePointInternal(param_1,&local_174,&local_180,param_4,param_5);
+    qsort(intervals,nintervals,8,cmpr);
+    t1_2 = 0.0;
+    fVar4 = *end - *start;
+    fVar5 = end[1] - start[1];
+    fVar6 = end[2] - start[2];
+    for (i_2 = 0; i_2 < nintervals; i_2 = i_2 + 1) {
+      fVar1 = intervals[i_2 * 2];
+      if (t1_2 < fVar1) {
+        p0 = t1_2 * fVar4 + *start;
+        local_170 = t1_2 * fVar5 + start[1];
+        local_16c = t1_2 * fVar6 + start[2];
+        p1 = fVar1 * fVar4 + *start;
+        local_17c = fVar1 * fVar5 + start[1];
+        local_178 = fVar1 * fVar6 + start[2];
+        bVar2 = CG_SightTracePointInternal(hitNum,&p0,&p1,mask,trace);
         if (bVar2) {
-          param_5->fraction = (fVar1 - local_184) * param_5->fraction + local_184;
+          trace->fraction = (fVar1 - t1_2) * trace->fraction + t1_2;
           return true;
         }
       }
-      local_184 = local_144[local_198 * 2 + 1];
+      t1_2 = intervals[i_2 * 2 + 1];
     }
-    if (local_184 < 1.0) {
-      local_174 = local_184 * fVar4 + *param_2;
-      local_170 = local_184 * fVar5 + param_2[1];
-      local_16c = local_184 * fVar6 + param_2[2];
-      local_180 = fVar4 * 1.0 + *param_2;
-      local_17c = fVar5 * 1.0 + param_2[1];
-      local_178 = fVar6 * 1.0 + param_2[2];
-      bVar2 = CG_SightTracePointInternal(param_1,&local_174,&local_180,param_4,param_5);
+    if (t1_2 < 1.0) {
+      p0 = t1_2 * fVar4 + *start;
+      local_170 = t1_2 * fVar5 + start[1];
+      local_16c = t1_2 * fVar6 + start[2];
+      p1 = fVar4 * 1.0 + *start;
+      local_17c = fVar5 * 1.0 + start[1];
+      local_178 = fVar6 * 1.0 + start[2];
+      bVar2 = CG_SightTracePointInternal(hitNum,&p0,&p1,mask,trace);
       if (bVar2) {
-        param_5->fraction = (1.0 - local_184) * param_5->fraction + local_184;
+        trace->fraction = (1.0 - t1_2) * trace->fraction + t1_2;
         return true;
       }
     }
   }
-  return *param_1 != 0;
+  return *hitNum != 0;
 }
 
 
@@ -2780,43 +2824,49 @@ CG_SightTracePoint(int *param_1,float *param_2,float *param_3,int param_4,trace_
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-CG_GetEntityBoneInfo(int param_1,int param_2,float *param_3,float (*param_4) [3],char **param_5)
+CG_GetEntityBoneInfo(int entID,int boneIndex,float *bonePos,float (*boneAxis) [3],char **boneName)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObj *pDVar3;
-  centity_s *pcVar4;
-  int iVar5;
-  XModel *pXVar6;
-  ushort *puVar7;
-  char *pcVar8;
-  int local_1c;
-  int local_c;
+  DObj *obj;
+  centity_s *pose;
+  int iVar3;
+  XModel *model_00;
+  ushort *puVar4;
+  char *pcVar5;
+  DObj *dobj;
+  int boneBase;
+  XModel *model;
+  int localClientNum;
+  centity_s *cent;
+  int modelIndex;
+  ushort *boneNames;
   
-  iVar5 = cgCollWorldLocalClientNum;
-  pDVar3 = Com_GetClientDObj(param_1,cgCollWorldLocalClientNum);
-  pcVar4 = CG_GetEntity(iVar5,param_1);
-  if (pDVar3 != (DObj *)0x0) {
-    local_1c = 0;
-    for (local_c = 0; (local_1c <= param_2 && (iVar5 = DObjGetNumModels(pDVar3), local_c < iVar5));
-        local_c = local_c + 1) {
-      pXVar6 = DObjGetModel(pDVar3,local_c);
-      if (param_2 - local_1c < (int)(uint)pXVar6->numBones) {
-        CG_DObjGetWorldBoneMatrix(&pcVar4->pose,pDVar3,param_2,param_4,param_3);
-        puVar7 = XModelBoneNames(pXVar6);
-        if ((puVar7 == (ushort *)0x0) &&
+  iVar3 = cgCollWorldLocalClientNum;
+  obj = Com_GetClientDObj(entID,cgCollWorldLocalClientNum);
+  pose = CG_GetEntity(iVar3,entID);
+  if (obj != (DObj *)0x0) {
+    boneBase = 0;
+    for (modelIndex = 0;
+        (boneBase <= boneIndex && (iVar3 = DObjGetNumModels(obj), modelIndex < iVar3));
+        modelIndex = modelIndex + 1) {
+      model_00 = DObjGetModel(obj,modelIndex);
+      if (boneIndex - boneBase < (int)(uint)model_00->numBones) {
+        CG_DObjGetWorldBoneMatrix(&pose->pose,obj,boneIndex,boneAxis,bonePos);
+        puVar4 = XModelBoneNames(model_00);
+        if ((puVar4 == (ushort *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_world.cpp",0x506,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
-          iVar5 = (*pcVar1)();
-          return iVar5;
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
-        pcVar8 = SL_ConvertToString((uint)puVar7[param_2 - local_1c],SCRIPTINSTANCE_SERVER);
-        *param_5 = pcVar8;
+        pcVar5 = SL_ConvertToString((uint)puVar4[boneIndex - boneBase],SCRIPTINSTANCE_SERVER);
+        *boneName = pcVar5;
         return 1;
       }
-      local_1c = (uint)pXVar6->numBones + local_1c;
+      boneBase = (uint)model_00->numBones + boneBase;
     }
   }
   return 0;

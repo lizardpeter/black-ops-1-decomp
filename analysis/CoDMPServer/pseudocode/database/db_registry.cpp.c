@@ -2,24 +2,24 @@
 
 // 0058EAC0  Sys_LockWrite  (qcommon/threads_interlock.h:85)
 
-void __cdecl Sys_LockWrite(FastCriticalSection *param_1)
+void __cdecl Sys_LockWrite(FastCriticalSection *critSect)
 
 {
   int iVar1;
   long *plVar2;
   
   do {
-    if (param_1->readCount == 0) {
-      plVar2 = &param_1->writeCount;
+    if (critSect->readCount == 0) {
+      plVar2 = &critSect->writeCount;
       LOCK();
       iVar1 = *plVar2;
       *plVar2 = *plVar2 + 1;
       UNLOCK();
-      if ((iVar1 == 0) && (param_1->readCount == 0)) {
+      if ((iVar1 == 0) && (critSect->readCount == 0)) {
         return;
       }
       LOCK();
-      param_1->writeCount = param_1->writeCount + -1;
+      critSect->writeCount = critSect->writeCount + -1;
       UNLOCK();
     }
     NET_Sleep(0);
@@ -29,13 +29,13 @@ void __cdecl Sys_LockWrite(FastCriticalSection *param_1)
 
 // 0058EB10  Sys_UnlockWrite  (qcommon/threads_interlock.h:124)
 
-void __cdecl Sys_UnlockWrite(FastCriticalSection *param_1)
+void __cdecl Sys_UnlockWrite(FastCriticalSection *critSect)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->writeCount < 1) {
+  if (critSect->writeCount < 1) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/threads_interlock.h"
                              ,0x7e,0,"%s");
     if (!bVar2) {
@@ -45,7 +45,7 @@ void __cdecl Sys_UnlockWrite(FastCriticalSection *param_1)
     }
   }
   LOCK();
-  param_1->writeCount = param_1->writeCount + -1;
+  critSect->writeCount = critSect->writeCount + -1;
   UNLOCK();
   return;
 }
@@ -165,13 +165,13 @@ void __cdecl TRACK_db_registry(void)
 
 // 0058CB10  DB_InitSingleton  (database/db_registry.cpp:657)
 
-void __cdecl DB_InitSingleton(void *param_1,int param_2)
+void __cdecl DB_InitSingleton(void *pool,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 != 1) {
+  if (size != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x292,0,
                              "%s\n\t(size) = %i");
     if (!bVar2) {
@@ -186,304 +186,322 @@ void __cdecl DB_InitSingleton(void *param_1,int param_2)
 
 // 00595130  DB_InitPool<PhysPreset>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<PhysPreset>(void *param_1,int param_2)
+void __cdecl DB_InitPool<PhysPreset>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<PhysPreset,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x54 + 4) = (int)param_1 + (local_8 + 1) * 0x54 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x54 + 4) = (int)pool + (i + 1) * 0x54 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x54 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x54 + 4) = 0;
   return;
 }
 
 
 // 005951A0  DB_InitPool<PhysConstraints>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<PhysConstraints>(void *param_1,int param_2)
+void __cdecl DB_InitPool<PhysConstraints>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<PhysConstraints,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0xa88 + 4) = (int)param_1 + (local_8 + 1) * 0xa88 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0xa88 + 4) = (int)pool + (i + 1) * 0xa88 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0xa88 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0xa88 + 4) = 0;
   return;
 }
 
 
 // 00595220  DB_InitPool<DestructibleDef>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<DestructibleDef>(void *param_1,int param_2)
+void __cdecl DB_InitPool<DestructibleDef>(void *pool_2,int size_2)
 
 {
-  int local_8;
+  XAssetPool<Font_s,1> *castPool_2;
+  int i_2;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x18 + 4) = (int)param_1 + (local_8 + 1) * 0x18 + 4;
+  *(int *)pool_2 = (int)pool_2 + 4;
+  for (i_2 = 0; i_2 < size_2 + -1; i_2 = i_2 + 1) {
+    *(int *)((int)pool_2 + i_2 * 0x18 + 4) = (int)pool_2 + (i_2 + 1) * 0x18 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x18 + 4) = 0;
+  *(undefined4 *)((int)pool_2 + (size_2 + -1) * 0x18 + 4) = 0;
   return;
 }
 
 
 // 00595290  DB_InitPool<XAnimParts>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<XAnimParts>(void *param_1,int param_2)
+void __cdecl DB_InitPool<XAnimParts>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<XAnimParts,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x68 + 4) = (int)param_1 + (local_8 + 1) * 0x68 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x68 + 4) = (int)pool + (i + 1) * 0x68 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x68 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x68 + 4) = 0;
   return;
 }
 
 
 // 00595300  DB_InitPool<XModel>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<XModel>(void *param_1,int param_2)
+void __cdecl DB_InitPool<XModel>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<XModel,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0xfc + 4) = (int)param_1 + (local_8 + 1) * 0xfc + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0xfc + 4) = (int)pool + (i + 1) * 0xfc + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0xfc + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0xfc + 4) = 0;
   return;
 }
 
 
 // 00595380  DB_InitPool<Material>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<Material>(void *param_1,int param_2)
+void __cdecl DB_InitPool<Material>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<Material,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 8;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0xc0 + 8) = (int)param_1 + (local_8 + 1) * 0xc0 + 8;
+  *(int *)pool = (int)pool + 8;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0xc0 + 8) = (int)pool + (i + 1) * 0xc0 + 8;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0xc0 + 8) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0xc0 + 8) = 0;
   return;
 }
 
 
 // 00595400  DB_InitPool<MaterialTechniqueSet>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<MaterialTechniqueSet>(void *param_1,int param_2)
+void __cdecl DB_InitPool<MaterialTechniqueSet>(void *pool,int size)
 
 {
-  int local_8;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x210 + 4) = (int)param_1 + (local_8 + 1) * 0x210 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x210 + 4) = (int)pool + (i + 1) * 0x210 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x210 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x210 + 4) = 0;
   return;
 }
 
 
 // 00595480  DB_InitPool<GfxImage>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<GfxImage>(void *param_1,int param_2)
+void __cdecl DB_InitPool<GfxImage>(void *pool_2,int size_2)
 
 {
-  int local_8;
+  XAssetPool<SndDriverGlobals,1> *castPool_2;
+  int i_2;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x34 + 4) = (int)param_1 + (local_8 + 1) * 0x34 + 4;
+  *(int *)pool_2 = (int)pool_2 + 4;
+  for (i_2 = 0; i_2 < size_2 + -1; i_2 = i_2 + 1) {
+    *(int *)((int)pool_2 + i_2 * 0x34 + 4) = (int)pool_2 + (i_2 + 1) * 0x34 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x34 + 4) = 0;
+  *(undefined4 *)((int)pool_2 + (size_2 + -1) * 0x34 + 4) = 0;
   return;
 }
 
 
 // 005954F0  DB_InitPool<SndPatch>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<SndPatch>(void *param_1,int param_2)
+void __cdecl DB_InitPool<SndPatch>(void *pool_2,int size_2)
 
 {
-  int local_8;
+  XAssetPool<StringTable,1> *castPool_2;
+  int i_2;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x14 + 4) = (int)param_1 + (local_8 + 1) * 0x14 + 4;
+  *(int *)pool_2 = (int)pool_2 + 4;
+  for (i_2 = 0; i_2 < size_2 + -1; i_2 = i_2 + 1) {
+    *(int *)((int)pool_2 + i_2 * 0x14 + 4) = (int)pool_2 + (i_2 + 1) * 0x14 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x14 + 4) = 0;
+  *(undefined4 *)((int)pool_2 + (size_2 + -1) * 0x14 + 4) = 0;
   return;
 }
 
 
 // 00595560  DB_InitPool<XModelPieces>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<XModelPieces>(void *param_1,int param_2)
+void __cdecl DB_InitPool<XModelPieces>(void *pool_4,int size_4)
 
 {
-  int local_8;
+  XAssetPool<RawFile,1> *castPool_4;
+  int i_4;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0xc + 4) = (int)param_1 + (local_8 + 1) * 0xc + 4;
+  *(int *)pool_4 = (int)pool_4 + 4;
+  for (i_4 = 0; i_4 < size_4 + -1; i_4 = i_4 + 1) {
+    *(int *)((int)pool_4 + i_4 * 0xc + 4) = (int)pool_4 + (i_4 + 1) * 0xc + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0xc + 4) = 0;
+  *(undefined4 *)((int)pool_4 + (size_4 + -1) * 0xc + 4) = 0;
   return;
 }
 
 
 // 005955D0  DB_InitPool<GfxLightDef>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<GfxLightDef>(void *param_1,int param_2)
+void __cdecl DB_InitPool<GfxLightDef>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<GfxLightDef,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x10 + 4) = (int)param_1 + (local_8 + 1) * 0x10 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x10 + 4) = (int)pool + (i + 1) * 0x10 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x10 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x10 + 4) = 0;
   return;
 }
 
 
 // 00595640  DB_InitPool<menuDef_t>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<menuDef_t>(void *param_1,int param_2)
+void __cdecl DB_InitPool<menuDef_t>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<menuDef_t,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 8;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 400 + 8) = (int)param_1 + (local_8 + 1) * 400 + 8;
+  *(int *)pool = (int)pool + 8;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 400 + 8) = (int)pool + (i + 1) * 400 + 8;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 400 + 8) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 400 + 8) = 0;
   return;
 }
 
 
 // 005956C0  DB_InitPool<WeaponVariantDef>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<WeaponVariantDef>(void *param_1,int param_2)
+void __cdecl DB_InitPool<WeaponVariantDef>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<WeaponVariantDef,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0xe4 + 4) = (int)param_1 + (local_8 + 1) * 0xe4 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0xe4 + 4) = (int)pool + (i + 1) * 0xe4 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0xe4 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0xe4 + 4) = 0;
   return;
 }
 
 
 // 00595740  DB_InitPool<FxEffectDef>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<FxEffectDef>(void *param_1,int param_2)
+void __cdecl DB_InitPool<FxEffectDef>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<FxEffectDef,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x3c + 4) = (int)param_1 + (local_8 + 1) * 0x3c + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x3c + 4) = (int)pool + (i + 1) * 0x3c + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x3c + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x3c + 4) = 0;
   return;
 }
 
 
 // 005957B0  DB_InitPool<LocalizeEntry>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<LocalizeEntry>(void *param_1,int param_2)
+void __cdecl DB_InitPool<LocalizeEntry>(void *pool_2,int size_2)
 
 {
-  int local_8;
+  XAssetPool<FxImpactTable,1> *castPool_2;
+  int i_2;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 8 + 4) = (int)param_1 + local_8 * 8 + 0xc;
+  *(int *)pool_2 = (int)pool_2 + 4;
+  for (i_2 = 0; i_2 < size_2 + -1; i_2 = i_2 + 1) {
+    *(int *)((int)pool_2 + i_2 * 8 + 4) = (int)pool_2 + i_2 * 8 + 0xc;
   }
-  *(undefined4 *)((int)param_1 + param_2 * 8 + -4) = 0;
+  *(undefined4 *)((int)pool_2 + size_2 * 8 + -4) = 0;
   return;
 }
 
 
 // 00595810  DB_InitPool<SndBank>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<SndBank>(void *param_1,int param_2)
+void __cdecl DB_InitPool<SndBank>(void *pool_2,int size_2)
 
 {
-  int local_8;
+  XAssetPool<XGlobals,1> *castPool_2;
+  int i_2;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x28 + 4) = (int)param_1 + (local_8 + 1) * 0x28 + 4;
+  *(int *)pool_2 = (int)pool_2 + 4;
+  for (i_2 = 0; i_2 < size_2 + -1; i_2 = i_2 + 1) {
+    *(int *)((int)pool_2 + i_2 * 0x28 + 4) = (int)pool_2 + (i_2 + 1) * 0x28 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x28 + 4) = 0;
+  *(undefined4 *)((int)pool_2 + (size_2 + -1) * 0x28 + 4) = 0;
   return;
 }
 
 
 // 00595880  DB_InitPool<PackIndex>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<PackIndex>(void *param_1,int param_2)
+void __cdecl DB_InitPool<PackIndex>(void *pool_2,int size_2)
 
 {
-  int local_8;
+  XAssetPool<ddlDef_t,1> *castPool_2;
+  int i_2;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x1c + 4) = (int)param_1 + (local_8 + 1) * 0x1c + 4;
+  *(int *)pool_2 = (int)pool_2 + 4;
+  for (i_2 = 0; i_2 < size_2 + -1; i_2 = i_2 + 1) {
+    *(int *)((int)pool_2 + i_2 * 0x1c + 4) = (int)pool_2 + (i_2 + 1) * 0x1c + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x1c + 4) = 0;
+  *(undefined4 *)((int)pool_2 + (size_2 + -1) * 0x1c + 4) = 0;
   return;
 }
 
 
 // 005958F0  DB_InitPool<Glasses>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<Glasses>(void *param_1,int param_2)
+void __cdecl DB_InitPool<Glasses>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<Glasses,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x38 + 4) = (int)param_1 + (local_8 + 1) * 0x38 + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x38 + 4) = (int)pool + (i + 1) * 0x38 + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x38 + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x38 + 4) = 0;
   return;
 }
 
 
 // 00595960  DB_InitPool<EmblemSet>  (database/db_registry.cpp:681)
 
-void __cdecl DB_InitPool<EmblemSet>(void *param_1,int param_2)
+void __cdecl DB_InitPool<EmblemSet>(void *pool,int size)
 
 {
-  int local_8;
+  XAssetPool<EmblemSet,1> *castPool;
+  int i;
   
-  *(int *)param_1 = (int)param_1 + 4;
-  for (local_8 = 0; local_8 < param_2 + -1; local_8 = local_8 + 1) {
-    *(int *)((int)param_1 + local_8 * 0x2c + 4) = (int)param_1 + (local_8 + 1) * 0x2c + 4;
+  *(int *)pool = (int)pool + 4;
+  for (i = 0; i < size + -1; i = i + 1) {
+    *(int *)((int)pool + i * 0x2c + 4) = (int)pool + (i + 1) * 0x2c + 4;
   }
-  *(undefined4 *)((int)param_1 + (param_2 + -1) * 0x2c + 4) = 0;
+  *(undefined4 *)((int)pool + (size + -1) * 0x2c + 4) = 0;
   return;
 }
 
@@ -492,19 +510,22 @@ void __cdecl DB_InitPool<EmblemSet>(void *param_1,int param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetHeader __cdecl DB_AllocXAsset<Material>(void *param_1)
+XAssetHeader __cdecl DB_AllocXAsset<Material>(void *pool_28)
 
 {
-  XModelPieces *local_c;
+  XAssetPoolEntry<EmblemSet> *freeHead_28;
+  XAssetHeader header_28;
+  XAssetPool<EmblemSet,1> *castPool_28;
   
-  local_c = *(XModelPieces **)param_1;
-  if (local_c == (XModelPieces *)0x0) {
-    local_c = (XModelPieces *)0x0;
+                    /* WARNING: Load size is inaccurate */
+  header_28.data = *pool_28;
+  if (header_28.xmodelPieces == (XModelPieces *)0x0) {
+    header_28.xmodelPieces = (XModelPieces *)0x0;
   }
   else {
-    *(char **)param_1 = local_c->name;
+    *(char **)pool_28 = (header_28.xmodelPieces)->name;
   }
-  return (XAssetHeader)local_c;
+  return (XAssetHeader)header_28.xmodelPieces;
 }
 
 
@@ -514,159 +535,177 @@ XAssetHeader __cdecl DB_AllocXAsset<Material>(void *param_1)
 /* WARNING: Removing unreachable block (ram,0x00595a57) */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeXAssetHeader<Material>(void *param_1,XAssetHeader param_2)
+void __cdecl DB_FreeXAssetHeader<Material>(void *pool_28,XAssetHeader header_28)
 
 {
   char *pcVar1;
+  XAssetPoolEntry<EmblemSet> *freeHead_28;
+  XAssetPool<EmblemSet,1> *castPool_28;
+  XAssetPoolEntry<EmblemSet> *oldFreeHead_28;
   
-  pcVar1 = *(char **)param_1;
-  *(XAssetHeader *)param_1 = param_2;
-  (param_2.xmodelPieces)->name = pcVar1;
+  pcVar1 = *(char **)pool_28;
+  *(XAssetHeader *)pool_28 = header_28;
+  (header_28.xmodelPieces)->name = pcVar1;
   return;
 }
 
 
 // 0058CB70  Load_PhysPresetAsset  (database/db_registry.cpp:736)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_PhysPresetAsset(PhysPreset **param_1)
+void __cdecl Load_PhysPresetAsset(PhysPreset **physPreset)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_PHYSPRESET,*param_1);
-  *param_1 = (PhysPreset *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_PHYSPRESET,*physPreset);
+  *physPreset = (PhysPreset *)XVar1;
   return;
 }
 
 
 // 0058CBA0  Mark_PhysPresetAsset  (database/db_registry.cpp:745)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_PhysPresetAsset(PhysPreset *param_1)
+void __cdecl Mark_PhysPresetAsset(PhysPreset *physPreset)
 
 {
-  DB_GetXAsset(ASSET_TYPE_PHYSPRESET,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_PHYSPRESET,(XAssetHeader)physPreset);
   return;
 }
 
 
 // 0058CBC0  Load_PhysConstraintsAsset  (database/db_registry.cpp:757)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_PhysConstraintsAsset(PhysConstraints **param_1)
+void __cdecl Load_PhysConstraintsAsset(PhysConstraints **physConstraints)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_PHYSCONSTRAINTS,*param_1);
-  *param_1 = (PhysConstraints *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_PHYSCONSTRAINTS,*physConstraints);
+  *physConstraints = (PhysConstraints *)XVar1;
   return;
 }
 
 
 // 0058CBF0  Mark_PhysConstraintsAsset  (database/db_registry.cpp:766)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_PhysConstraintsAsset(PhysConstraints *param_1)
+void __cdecl Mark_PhysConstraintsAsset(PhysConstraints *physConstraints)
 
 {
-  DB_GetXAsset(ASSET_TYPE_PHYSCONSTRAINTS,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_PHYSCONSTRAINTS,(XAssetHeader)physConstraints);
   return;
 }
 
 
 // 0058CC10  Load_DestructibleDefAsset  (database/db_registry.cpp:778)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_DestructibleDefAsset(DestructibleDef **param_1)
+void __cdecl Load_DestructibleDefAsset(DestructibleDef **destructibleDef)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_DESTRUCTIBLEDEF,*param_1);
-  *param_1 = (DestructibleDef *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_DESTRUCTIBLEDEF,*destructibleDef);
+  *destructibleDef = (DestructibleDef *)XVar1;
   return;
 }
 
 
 // 0058CC40  Mark_DestructibleDefAsset  (database/db_registry.cpp:787)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_DestructibleDefAsset(DestructibleDef *param_1)
+void __cdecl Mark_DestructibleDefAsset(DestructibleDef *destructibleDef)
 
 {
-  DB_GetXAsset(ASSET_TYPE_DESTRUCTIBLEDEF,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_DESTRUCTIBLEDEF,(XAssetHeader)destructibleDef);
   return;
 }
 
 
 // 0058CC60  Load_XAnimPartsAsset  (database/db_registry.cpp:798)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_XAnimPartsAsset(XAnimParts **param_1)
+void __cdecl Load_XAnimPartsAsset(XAnimParts **parts)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_XANIMPARTS,*param_1);
-  *param_1 = (XAnimParts *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_XANIMPARTS,*parts);
+  *parts = (XAnimParts *)XVar1;
   return;
 }
 
 
 // 0058CC90  Mark_XAnimPartsAsset  (database/db_registry.cpp:807)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_XAnimPartsAsset(XAnimParts *param_1)
+void __cdecl Mark_XAnimPartsAsset(XAnimParts *parts)
 
 {
-  DB_GetXAsset(ASSET_TYPE_XANIMPARTS,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_XANIMPARTS,(XAssetHeader)parts);
   return;
 }
 
 
 // 0058CCB0  Load_XModelAsset  (database/db_registry.cpp:819)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_XModelAsset(XModel **param_1)
+void __cdecl Load_XModelAsset(XModel **model)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_XMODEL,*param_1);
-  *param_1 = (XModel *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_XMODEL,*model);
+  *model = (XModel *)XVar1;
   return;
 }
 
 
 // 0058CCE0  Mark_XModelAsset  (database/db_registry.cpp:828)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_XModelAsset(XModel *param_1)
+void __cdecl Mark_XModelAsset(XModel *model)
 
 {
-  DB_GetXAsset(ASSET_TYPE_XMODEL,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_XMODEL,(XAssetHeader)model);
   return;
 }
 
@@ -675,98 +714,107 @@ void __cdecl Mark_XModelAsset(XModel *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveXModel(XAssetHeader param_1)
+void __cdecl DB_RemoveXModel(XAssetHeader header)
 
 {
-  XModelReleaseResources(param_1.model);
+  XModelReleaseResources(header.model);
   return;
 }
 
 
 // 0058CD20  Load_MaterialAsset  (database/db_registry.cpp:848)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_MaterialAsset(Material **param_1)
+void __cdecl Load_MaterialAsset(Material **material)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_MATERIAL,*param_1);
-  *param_1 = (Material *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_MATERIAL,*material);
+  *material = (Material *)XVar1;
   return;
 }
 
 
 // 0058CD50  Mark_MaterialAsset  (database/db_registry.cpp:861)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_MaterialAsset(Material *param_1)
+void __cdecl Mark_MaterialAsset(Material *material)
 
 {
-  DB_GetXAsset(ASSET_TYPE_MATERIAL,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_MATERIAL,(XAssetHeader)material);
   return;
 }
 
 
 // 0058CD70  Load_MaterialTechniqueSetAsset  (database/db_registry.cpp:923)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_MaterialTechniqueSetAsset(MaterialTechniqueSet **param_1)
+void __cdecl Load_MaterialTechniqueSetAsset(MaterialTechniqueSet **techniqueSet)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_TECHNIQUE_SET,*param_1);
-  *param_1 = (MaterialTechniqueSet *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_TECHNIQUE_SET,*techniqueSet);
+  *techniqueSet = (MaterialTechniqueSet *)XVar1;
   return;
 }
 
 
 // 0058CDA0  Mark_MaterialTechniqueSetAsset  (database/db_registry.cpp:935)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_MaterialTechniqueSetAsset(MaterialTechniqueSet *param_1)
+void __cdecl Mark_MaterialTechniqueSetAsset(MaterialTechniqueSet *techniqueSet)
 
 {
-  DB_GetXAsset(ASSET_TYPE_TECHNIQUE_SET,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_TECHNIQUE_SET,(XAssetHeader)techniqueSet);
   return;
 }
 
 
 // 0058CDE0  Load_GfxImageAsset  (database/db_registry.cpp:984)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_GfxImageAsset(GfxImage **param_1)
+void __cdecl Load_GfxImageAsset(GfxImage **image)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
   RB_Resource_Flush();
-  XVar1 = DB_AddXAsset(ASSET_TYPE_IMAGE,*param_1);
-  *param_1 = (GfxImage *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_IMAGE,*image);
+  *image = (GfxImage *)XVar1;
   return;
 }
 
 
 // 0058CE10  Mark_GfxImageAsset  (database/db_registry.cpp:1025)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_GfxImageAsset(GfxImage *param_1)
+void __cdecl Mark_GfxImageAsset(GfxImage *image)
 
 {
-  DB_GetXAsset(ASSET_TYPE_IMAGE,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_IMAGE,(XAssetHeader)image);
   return;
 }
 
@@ -775,71 +823,77 @@ void __cdecl Mark_GfxImageAsset(GfxImage *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveImage(XAssetHeader param_1)
+void __cdecl DB_RemoveImage(XAssetHeader header)
 
 {
-  DB_RemoveGfxImage(param_1);
-  Image_Release(param_1.image);
+  DB_RemoveGfxImage(header);
+  Image_Release(header.image);
   return;
 }
 
 
 // 0058CE50  Load_SndBankAsset  (database/db_registry.cpp:1048)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_SndBankAsset(SndBank **param_1)
+void __cdecl Load_SndBankAsset(SndBank **sound)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_SOUND,*param_1);
-  *param_1 = (SndBank *)XVar1;
-  SND_AddBank(*param_1);
+  XVar1 = DB_AddXAsset(ASSET_TYPE_SOUND,*sound);
+  *sound = (SndBank *)XVar1;
+  SND_AddBank(*sound);
   return;
 }
 
 
 // 0058CE90  Mark_SndBankAsset  (database/db_registry.cpp:1057)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_SndBankAsset(SndBank *param_1)
+void __cdecl Mark_SndBankAsset(SndBank *sound)
 
 {
-  DB_GetXAsset(ASSET_TYPE_SOUND,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_SOUND,(XAssetHeader)sound);
   return;
 }
 
 
 // 0058CEB0  Load_SndPatchAsset  (database/db_registry.cpp:1065)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_SndPatchAsset(SndPatch **param_1)
+void __cdecl Load_SndPatchAsset(SndPatch **soundPatch)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_SOUND_PATCH,*param_1);
-  *param_1 = (SndPatch *)XVar1;
-  SND_AddPatch(*param_1);
+  XVar1 = DB_AddXAsset(ASSET_TYPE_SOUND_PATCH,*soundPatch);
+  *soundPatch = (SndPatch *)XVar1;
+  SND_AddPatch(*soundPatch);
   return;
 }
 
 
 // 0058CEF0  Mark_SndPatchAsset  (database/db_registry.cpp:1075)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_SndPatchAsset(SndPatch *param_1)
+void __cdecl Mark_SndPatchAsset(SndPatch *soundPatch)
 
 {
-  DB_GetXAsset(ASSET_TYPE_SOUND_PATCH,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_SOUND_PATCH,(XAssetHeader)soundPatch);
   return;
 }
 
@@ -848,10 +902,10 @@ void __cdecl Mark_SndPatchAsset(SndPatch *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveSound(XAssetHeader param_1)
+void __cdecl DB_RemoveSound(XAssetHeader header)
 
 {
-  SND_RemoveBank(param_1.sound);
+  SND_RemoveBank(header.sound);
   return;
 }
 
@@ -860,39 +914,42 @@ void __cdecl DB_RemoveSound(XAssetHeader param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveSoundPatch(XAssetHeader param_1)
+void __cdecl DB_RemoveSoundPatch(XAssetHeader header)
 
 {
-  SND_RemovePatch(param_1.soundPatch);
+  SND_RemovePatch(header.soundPatch);
   return;
 }
 
 
 // 0058CF50  Load_ClipMapAsset  (database/db_registry.cpp:1096)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_ClipMapAsset(clipMap_t **param_1)
+void __cdecl Load_ClipMapAsset(clipMap_t **clipMap)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_CLIPMAP_PVS,*param_1);
-  *param_1 = (clipMap_t *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_CLIPMAP_PVS,*clipMap);
+  *clipMap = (clipMap_t *)XVar1;
   return;
 }
 
 
 // 0058CF80  Mark_ClipMapAsset  (database/db_registry.cpp:1109)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_ClipMapAsset(clipMap_t *param_1)
+void __cdecl Mark_ClipMapAsset(clipMap_t *clipMap)
 
 {
-  DB_GetXAsset(ASSET_TYPE_CLIPMAP_PVS,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_CLIPMAP_PVS,(XAssetHeader)clipMap);
   return;
 }
 
@@ -901,7 +958,7 @@ void __cdecl Mark_ClipMapAsset(clipMap_t *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveClipMap(XAssetHeader param_1)
+void __cdecl DB_RemoveClipMap(XAssetHeader header)
 
 {
   CM_Unload();
@@ -911,29 +968,32 @@ void __cdecl DB_RemoveClipMap(XAssetHeader param_1)
 
 // 0058CFB0  Load_ComWorldAsset  (database/db_registry.cpp:1131)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_ComWorldAsset(ComWorld **param_1)
+void __cdecl Load_ComWorldAsset(ComWorld **comWorld)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_COMWORLD,*param_1);
-  *param_1 = (ComWorld *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_COMWORLD,*comWorld);
+  *comWorld = (ComWorld *)XVar1;
   return;
 }
 
 
 // 0058CFE0  Mark_ComWorldAsset  (database/db_registry.cpp:1140)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_ComWorldAsset(ComWorld *param_1)
+void __cdecl Mark_ComWorldAsset(ComWorld *comWorld)
 
 {
-  DB_GetXAsset(ASSET_TYPE_COMWORLD,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_COMWORLD,(XAssetHeader)comWorld);
   return;
 }
 
@@ -942,7 +1002,7 @@ void __cdecl Mark_ComWorldAsset(ComWorld *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveComWorld(XAssetHeader param_1)
+void __cdecl DB_RemoveComWorld(XAssetHeader header)
 
 {
   Com_UnloadWorld();
@@ -955,13 +1015,14 @@ void __cdecl DB_RemoveComWorld(XAssetHeader param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_GameWorldSpAsset(GameWorldSp **param_1)
+void __cdecl Load_GameWorldSpAsset(GameWorldSp **gameWorldSp)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_GAMEWORLD_SP,*param_1);
-  *param_1 = (GameWorldSp *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_GAMEWORLD_SP,*gameWorldSp);
+  *gameWorldSp = (GameWorldSp *)XVar1;
   return;
 }
 
@@ -971,10 +1032,12 @@ void __cdecl Load_GameWorldSpAsset(GameWorldSp **param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_GameWorldSpAsset(GameWorldSp *param_1)
+void __cdecl Mark_GameWorldSpAsset(GameWorldSp *gameWorldSp)
 
 {
-  DB_GetXAsset(ASSET_TYPE_GAMEWORLD_SP,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_GAMEWORLD_SP,(XAssetHeader)gameWorldSp);
   return;
 }
 
@@ -984,13 +1047,14 @@ void __cdecl Mark_GameWorldSpAsset(GameWorldSp *param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_GameWorldMpAsset(GameWorldMp **param_1)
+void __cdecl Load_GameWorldMpAsset(GameWorldMp **gameWorldMp)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_GAMEWORLD_MP,*param_1);
-  *param_1 = (GameWorldMp *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_GAMEWORLD_MP,*gameWorldMp);
+  *gameWorldMp = (GameWorldMp *)XVar1;
   return;
 }
 
@@ -1000,97 +1064,108 @@ void __cdecl Load_GameWorldMpAsset(GameWorldMp **param_1)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_GameWorldMpAsset(GameWorldMp *param_1)
+void __cdecl Mark_GameWorldMpAsset(GameWorldMp *gameWorldMp)
 
 {
-  DB_GetXAsset(ASSET_TYPE_GAMEWORLD_MP,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_GAMEWORLD_MP,(XAssetHeader)gameWorldMp);
   return;
 }
 
 
 // 0058D0B0  Load_MapEntsAsset  (database/db_registry.cpp:1197)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_MapEntsAsset(MapEnts **param_1)
+void __cdecl Load_MapEntsAsset(MapEnts **mapEnts)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_MAP_ENTS,*param_1);
-  *param_1 = (MapEnts *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_MAP_ENTS,*mapEnts);
+  *mapEnts = (MapEnts *)XVar1;
   return;
 }
 
 
 // 0058D0E0  Mark_MapEntsAsset  (database/db_registry.cpp:1206)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_MapEntsAsset(MapEnts *param_1)
+void __cdecl Mark_MapEntsAsset(MapEnts *mapEnts)
 
 {
-  DB_GetXAsset(ASSET_TYPE_MAP_ENTS,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_MAP_ENTS,(XAssetHeader)mapEnts);
   return;
 }
 
 
 // 0058D100  Load_DDLAsset  (database/db_registry.cpp:1217)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_DDLAsset(ddlRoot_t **param_1)
+void __cdecl Load_DDLAsset(ddlRoot_t **ddlRoot)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_DDL,*param_1);
-  *param_1 = (ddlRoot_t *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_DDL,*ddlRoot);
+  *ddlRoot = (ddlRoot_t *)XVar1;
   return;
 }
 
 
 // 0058D130  Mark_DDLAsset  (database/db_registry.cpp:1225)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_DDLAsset(ddlRoot_t *param_1)
+void __cdecl Mark_DDLAsset(ddlRoot_t *ddlRoot)
 
 {
-  DB_GetXAsset(ASSET_TYPE_DDL,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_DDL,(XAssetHeader)ddlRoot);
   return;
 }
 
 
 // 0058D150  Load_GfxWorldAsset  (database/db_registry.cpp:1236)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_GfxWorldAsset(GfxWorld **param_1)
+void __cdecl Load_GfxWorldAsset(GfxWorld **gfxWorld)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_GFXWORLD,*param_1);
-  *param_1 = (GfxWorld *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_GFXWORLD,*gfxWorld);
+  *gfxWorld = (GfxWorld *)XVar1;
   return;
 }
 
 
 // 0058D180  Mark_GfxWorldAsset  (database/db_registry.cpp:1245)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_GfxWorldAsset(GfxWorld *param_1)
+void __cdecl Mark_GfxWorldAsset(GfxWorld *gfxWorld)
 
 {
-  DB_GetXAsset(ASSET_TYPE_GFXWORLD,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_GFXWORLD,(XAssetHeader)gfxWorld);
   return;
 }
 
@@ -1099,7 +1174,7 @@ void __cdecl Mark_GfxWorldAsset(GfxWorld *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveGfxWorld(XAssetHeader param_1)
+void __cdecl DB_RemoveGfxWorld(XAssetHeader header)
 
 {
   R_UnloadWorld();
@@ -1109,110 +1184,120 @@ void __cdecl DB_RemoveGfxWorld(XAssetHeader param_1)
 
 // 0058D1B0  Load_LightDefAsset  (database/db_registry.cpp:1263)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_LightDefAsset(GfxLightDef **param_1)
+void __cdecl Load_LightDefAsset(GfxLightDef **lightDef)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_LIGHT_DEF,*param_1);
-  *param_1 = (GfxLightDef *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_LIGHT_DEF,*lightDef);
+  *lightDef = (GfxLightDef *)XVar1;
   return;
 }
 
 
 // 0058D1E0  Mark_LightDefAsset  (database/db_registry.cpp:1272)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_LightDefAsset(GfxLightDef *param_1)
+void __cdecl Mark_LightDefAsset(GfxLightDef *lightDef)
 
 {
-  DB_GetXAsset(ASSET_TYPE_LIGHT_DEF,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_LIGHT_DEF,(XAssetHeader)lightDef);
   return;
 }
 
 
 // 0058D200  Load_FontAsset  (database/db_registry.cpp:1284)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_FontAsset(Font_s **param_1)
+void __cdecl Load_FontAsset(Font_s **font)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_FONT,*param_1);
-  *param_1 = (Font_s *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_FONT,*font);
+  *font = (Font_s *)XVar1;
   return;
 }
 
 
 // 0058D230  Mark_FontAsset  (database/db_registry.cpp:1293)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_FontAsset(Font_s *param_1)
+void __cdecl Mark_FontAsset(Font_s *font)
 
 {
-  DB_GetXAsset(ASSET_TYPE_FONT,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_FONT,(XAssetHeader)font);
   return;
 }
 
 
 // 0058D250  Load_MenuListAsset  (database/db_registry.cpp:1305)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_MenuListAsset(MenuList **param_1)
+void __cdecl Load_MenuListAsset(MenuList **menuList)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_MENULIST,*param_1);
-  *param_1 = (MenuList *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_MENULIST,*menuList);
+  *menuList = (MenuList *)XVar1;
   return;
 }
 
 
 // 0058D280  Mark_MenuListAsset  (database/db_registry.cpp:1314)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_MenuListAsset(MenuList *param_1)
+void __cdecl Mark_MenuListAsset(MenuList *menuList)
 
 {
-  DB_GetXAsset(ASSET_TYPE_MENULIST,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_MENULIST,(XAssetHeader)menuList);
   return;
 }
 
 
 // 0058D2A0  Load_MenuAsset  (database/db_registry.cpp:1326)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_MenuAsset(menuDef_t **param_1)
+void __cdecl Load_MenuAsset(menuDef_t **menu)
 
 {
+  XAssetHeader header_00;
   XAssetHeader XVar1;
-  XAssetHeader XVar2;
-  int local_8;
+  XAssetHeader header;
+  int i;
   
-  XVar1.menu = *param_1;
-  XVar2 = DB_AddXAsset(ASSET_TYPE_MENU,XVar1);
-  *param_1 = (menuDef_t *)XVar2;
-  for (local_8 = 0; local_8 < (XVar1.model)->numCollSurfs; local_8 = local_8 + 1) {
+  header_00.menu = *menu;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_MENU,header_00);
+  *menu = (menuDef_t *)XVar1;
+  for (i = 0; i < (header_00.model)->numCollSurfs; i = i + 1) {
     *(menuDef_t **)
-     (*(int *)((int)(XVar1.techniqueSet)->techniques[0x60]->passArray + local_8 * 4 + -8) + 0xc4) =
-         *param_1;
+     (*(int *)((int)(header_00.techniqueSet)->techniques[0x60]->passArray + i * 4 + -8) + 0xc4) =
+         *menu;
   }
   return;
 }
@@ -1220,27 +1305,30 @@ void __cdecl Load_MenuAsset(menuDef_t **param_1)
 
 // 0058D310  Mark_MenuAsset  (database/db_registry.cpp:1339)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_MenuAsset(menuDef_t *param_1)
+void __cdecl Mark_MenuAsset(menuDef_t *menu)
 
 {
-  DB_GetXAsset(ASSET_TYPE_MENU,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_MENU,(XAssetHeader)menu);
   return;
 }
 
 
 // 0058D460  DB_RemoveWindowFocus  (database/db_registry.cpp:1348)
 
-void __cdecl DB_RemoveWindowFocus(windowDef_t *param_1)
+void __cdecl DB_RemoveWindowFocus(windowDef_t *window)
 
 {
   bool bVar1;
+  uint i;
   
   bVar1 = false;
   while (!bVar1) {
-    param_1->dynamicFlags[0] = param_1->dynamicFlags[0] & 0xfffffffd;
+    window->dynamicFlags[0] = window->dynamicFlags[0] & 0xfffffffd;
     bVar1 = true;
   }
   return;
@@ -1251,45 +1339,49 @@ void __cdecl DB_RemoveWindowFocus(windowDef_t *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_DynamicCloneMenu(XAssetHeader param_1,XAssetHeader param_2,DBCloneMethod param_3)
+void __cdecl DB_DynamicCloneMenu(XAssetHeader from,XAssetHeader to,DBCloneMethod cloneMethod)
 
 {
   byte bVar1;
-  windowDef_t *pwVar2;
-  int *piVar3;
-  bool bVar4;
+  windowDef_t *window;
+  int *piVar2;
+  bool bVar3;
   int local_2c;
   byte *local_24;
   byte *local_20;
-  int local_18;
-  int local_14;
+  windowDef_t *toWindow;
+  int toIndex;
+  int fromIndex;
+  menuDef_t *fromMenu;
+  windowDef_t *fromWindow;
+  menuDef_t *toMenu;
   
-  (param_1.parts)->randomDataByte = (param_2.parts)->randomDataByte;
-  local_18 = 0;
+  (from.parts)->randomDataByte = (to.parts)->randomDataByte;
+  toIndex = 0;
   do {
-    if ((param_1.model)->numCollSurfs <= local_18) {
+    if ((from.model)->numCollSurfs <= toIndex) {
       return;
     }
-    pwVar2 = *(windowDef_t **)
-              ((int)(param_1.techniqueSet)->techniques[0x60]->passArray + local_18 * 4 + -8);
-    if (pwVar2->name != (char *)0x0) {
-      for (local_14 = 0; local_14 < (param_2.model)->numCollSurfs; local_14 = local_14 + 1) {
-        piVar3 = *(int **)((int)(param_2.techniqueSet)->techniques[0x60]->passArray +
-                          local_14 * 4 + -8);
-        if (*piVar3 != 0) {
-          local_20 = (byte *)pwVar2->name;
-          local_24 = (byte *)*piVar3;
+    window = *(windowDef_t **)
+              ((int)(from.techniqueSet)->techniques[0x60]->passArray + toIndex * 4 + -8);
+    if (window->name != (char *)0x0) {
+      for (fromIndex = 0; fromIndex < (to.model)->numCollSurfs; fromIndex = fromIndex + 1) {
+        piVar2 = *(int **)((int)(to.techniqueSet)->techniques[0x60]->passArray + fromIndex * 4 + -8)
+        ;
+        if (*piVar2 != 0) {
+          local_20 = (byte *)window->name;
+          local_24 = (byte *)*piVar2;
           do {
             bVar1 = *local_24;
-            bVar4 = bVar1 < *local_20;
+            bVar3 = bVar1 < *local_20;
             if (bVar1 != *local_20) {
 LAB_0058d41d:
-              local_2c = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
+              local_2c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
               goto LAB_0058d425;
             }
             if (bVar1 == 0) break;
             bVar1 = local_24[1];
-            bVar4 = bVar1 < local_20[1];
+            bVar3 = bVar1 < local_20[1];
             if (bVar1 != local_20[1]) goto LAB_0058d41d;
             local_24 = local_24 + 2;
             local_20 = local_20 + 2;
@@ -1297,130 +1389,142 @@ LAB_0058d41d:
           local_2c = 0;
 LAB_0058d425:
           if (local_2c == 0) {
-            pwVar2->dynamicFlags[0] = piVar3[0x15];
+            window->dynamicFlags[0] = piVar2[0x15];
             break;
           }
         }
       }
     }
-    DB_RemoveWindowFocus(pwVar2);
-    local_18 = local_18 + 1;
+    DB_RemoveWindowFocus(window);
+    toIndex = toIndex + 1;
   } while( true );
 }
 
 
 // 0058D4A0  Load_LocalizeEntryAsset  (database/db_registry.cpp:1398)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_LocalizeEntryAsset(LocalizeEntry **param_1)
+void __cdecl Load_LocalizeEntryAsset(LocalizeEntry **localize)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_LOCALIZE_ENTRY,*param_1);
-  *param_1 = (LocalizeEntry *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_LOCALIZE_ENTRY,*localize);
+  *localize = (LocalizeEntry *)XVar1;
   return;
 }
 
 
 // 0058D4D0  Mark_LocalizeEntryAsset  (database/db_registry.cpp:1407)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_LocalizeEntryAsset(LocalizeEntry *param_1)
+void __cdecl Mark_LocalizeEntryAsset(LocalizeEntry *localize)
 
 {
-  DB_GetXAsset(ASSET_TYPE_LOCALIZE_ENTRY,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_LOCALIZE_ENTRY,(XAssetHeader)localize);
   return;
 }
 
 
 // 0058D4F0  Load_WeaponVariantDefAsset  (database/db_registry.cpp:1419)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_WeaponVariantDefAsset(WeaponVariantDef **param_1)
+void __cdecl Load_WeaponVariantDefAsset(WeaponVariantDef **weapon)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_WEAPON,*param_1);
-  *param_1 = (WeaponVariantDef *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_WEAPON,*weapon);
+  *weapon = (WeaponVariantDef *)XVar1;
   return;
 }
 
 
 // 0058D520  Mark_WeaponVariantDefAsset  (database/db_registry.cpp:1428)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *param_1)
+void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon)
 
 {
-  DB_GetXAsset(ASSET_TYPE_WEAPON,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_WEAPON,(XAssetHeader)weapon);
   return;
 }
 
 
 // 0058D540  Load_SndDriverGlobalsAsset  (database/db_registry.cpp:1448)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_SndDriverGlobalsAsset(SndDriverGlobals **param_1)
+void __cdecl Load_SndDriverGlobalsAsset(SndDriverGlobals **sndDriverGlobals)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_SNDDRIVER_GLOBALS,*param_1);
-  *param_1 = (SndDriverGlobals *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_SNDDRIVER_GLOBALS,*sndDriverGlobals);
+  *sndDriverGlobals = (SndDriverGlobals *)XVar1;
   return;
 }
 
 
 // 0058D570  Mark_SndDriverGlobalsAsset  (database/db_registry.cpp:1457)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_SndDriverGlobalsAsset(SndDriverGlobals *param_1)
+void __cdecl Mark_SndDriverGlobalsAsset(SndDriverGlobals *sndDriverGlobals)
 
 {
-  DB_GetXAsset(ASSET_TYPE_SNDDRIVER_GLOBALS,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_SNDDRIVER_GLOBALS,(XAssetHeader)sndDriverGlobals);
   return;
 }
 
 
 // 0058D590  Load_FxEffectDefAsset  (database/db_registry.cpp:1469)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_FxEffectDefAsset(FxEffectDef **param_1)
+void __cdecl Load_FxEffectDefAsset(FxEffectDef **fx)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_FX,*param_1);
-  *param_1 = (FxEffectDef *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_FX,*fx);
+  *fx = (FxEffectDef *)XVar1;
   return;
 }
 
 
 // 0058D5C0  Mark_FxEffectDefAsset  (database/db_registry.cpp:1478)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_FxEffectDefAsset(FxEffectDef *param_1)
+void __cdecl Mark_FxEffectDefAsset(FxEffectDef *fx)
 
 {
-  DB_GetXAsset(ASSET_TYPE_FX,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_FX,(XAssetHeader)fx);
   return;
 }
 
@@ -1432,14 +1536,15 @@ void __cdecl Mark_FxEffectDefAsset(FxEffectDef *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Load_FxEffectDefFromName(char **param_1)
+void __cdecl Load_FxEffectDefFromName(char **name)
 
 {
   XAssetHeader XVar1;
+  FxEffectDefRef *ref;
   
-  if (*param_1 != (char *)0x0) {
-    XVar1 = DB_FindXAssetHeader(ASSET_TYPE_FX,*param_1,true,-1);
-    *param_1 = (char *)XVar1;
+  if (*name != (char *)0x0) {
+    XVar1 = DB_FindXAssetHeader(ASSET_TYPE_FX,*name,true,-1);
+    *name = (char *)XVar1;
   }
   return;
 }
@@ -1447,203 +1552,224 @@ void __cdecl Load_FxEffectDefFromName(char **param_1)
 
 // 0058D650  Load_FxImpactTableAsset  (database/db_registry.cpp:1503)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_FxImpactTableAsset(FxImpactTable **param_1)
+void __cdecl Load_FxImpactTableAsset(FxImpactTable **impactFx)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_IMPACT_FX,*param_1);
-  *param_1 = (FxImpactTable *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_IMPACT_FX,*impactFx);
+  *impactFx = (FxImpactTable *)XVar1;
   return;
 }
 
 
 // 0058D680  Mark_FxImpactTableAsset  (database/db_registry.cpp:1512)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_FxImpactTableAsset(FxImpactTable *param_1)
+void __cdecl Mark_FxImpactTableAsset(FxImpactTable *impactFx)
 
 {
-  DB_GetXAsset(ASSET_TYPE_IMPACT_FX,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_IMPACT_FX,(XAssetHeader)impactFx);
   return;
 }
 
 
 // 0058D6A0  Load_RawFileAsset  (database/db_registry.cpp:1524)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_RawFileAsset(RawFile **param_1)
+void __cdecl Load_RawFileAsset(RawFile **rawfile)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_RAWFILE,*param_1);
-  *param_1 = (RawFile *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_RAWFILE,*rawfile);
+  *rawfile = (RawFile *)XVar1;
   return;
 }
 
 
 // 0058D6D0  Mark_RawFileAsset  (database/db_registry.cpp:1533)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_RawFileAsset(RawFile *param_1)
+void __cdecl Mark_RawFileAsset(RawFile *rawfile)
 
 {
-  DB_GetXAsset(ASSET_TYPE_RAWFILE,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_RAWFILE,(XAssetHeader)rawfile);
   return;
 }
 
 
 // 0058D6F0  Load_StringTableAsset  (database/db_registry.cpp:1545)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_StringTableAsset(StringTable **param_1)
+void __cdecl Load_StringTableAsset(StringTable **stringTable)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_STRINGTABLE,*param_1);
-  *param_1 = (StringTable *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_STRINGTABLE,*stringTable);
+  *stringTable = (StringTable *)XVar1;
   return;
 }
 
 
 // 0058D720  Mark_StringTableAsset  (database/db_registry.cpp:1554)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_StringTableAsset(StringTable *param_1)
+void __cdecl Mark_StringTableAsset(StringTable *stringTable)
 
 {
-  DB_GetXAsset(ASSET_TYPE_STRINGTABLE,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_STRINGTABLE,(XAssetHeader)stringTable);
   return;
 }
 
 
 // 0058D740  Load_PackIndexAsset  (database/db_registry.cpp:1569)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_PackIndexAsset(PackIndex **param_1)
+void __cdecl Load_PackIndexAsset(PackIndex **packIndex)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_PACK_INDEX,*param_1);
-  *param_1 = (PackIndex *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_PACK_INDEX,*packIndex);
+  *packIndex = (PackIndex *)XVar1;
   return;
 }
 
 
 // 0058D770  Mark_PackIndexAsset  (database/db_registry.cpp:1579)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_PackIndexAsset(PackIndex *param_1)
+void __cdecl Mark_PackIndexAsset(PackIndex *packIndex)
 
 {
-  DB_GetXAsset(ASSET_TYPE_PACK_INDEX,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_PACK_INDEX,(XAssetHeader)packIndex);
   return;
 }
 
 
 // 0058D790  Load_XGlobalsAsset  (database/db_registry.cpp:1591)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_XGlobalsAsset(XGlobals **param_1)
+void __cdecl Load_XGlobalsAsset(XGlobals **xGlobals)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_XGLOBALS,*param_1);
-  *param_1 = (XGlobals *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_XGLOBALS,*xGlobals);
+  *xGlobals = (XGlobals *)XVar1;
   return;
 }
 
 
 // 0058D7C0  Mark_XGlobalsAsset  (database/db_registry.cpp:1600)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_XGlobalsAsset(XGlobals *param_1)
+void __cdecl Mark_XGlobalsAsset(XGlobals *xGlobals)
 
 {
-  DB_GetXAsset(ASSET_TYPE_XGLOBALS,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_XGLOBALS,(XAssetHeader)xGlobals);
   return;
 }
 
 
 // 0058D7E0  Load_GlassesAsset  (database/db_registry.cpp:1612)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_GlassesAsset(Glasses **param_1)
+void __cdecl Load_GlassesAsset(Glasses **glasses)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_GLASSES,*param_1);
-  *param_1 = (Glasses *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_GLASSES,*glasses);
+  *glasses = (Glasses *)XVar1;
   return;
 }
 
 
 // 0058D810  Mark_GlassesAsset  (database/db_registry.cpp:1621)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_GlassesAsset(Glasses *param_1)
+void __cdecl Mark_GlassesAsset(Glasses *glasses)
 
 {
-  DB_GetXAsset(ASSET_TYPE_GLASSES,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_GLASSES,(XAssetHeader)glasses);
   return;
 }
 
 
 // 0058D830  Load_EmblemSetAsset  (database/db_registry.cpp:1652)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Load_EmblemSetAsset(EmblemSet **param_1)
+void __cdecl Load_EmblemSetAsset(EmblemSet **emblemSet)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = DB_AddXAsset(ASSET_TYPE_EMBLEMSET,*param_1);
-  *param_1 = (EmblemSet *)XVar1;
+  XVar1 = DB_AddXAsset(ASSET_TYPE_EMBLEMSET,*emblemSet);
+  *emblemSet = (EmblemSet *)XVar1;
   return;
 }
 
 
 // 0058D860  Mark_EmblemSetAsset  (database/db_registry.cpp:1661)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl Mark_EmblemSetAsset(EmblemSet *param_1)
+void __cdecl Mark_EmblemSetAsset(EmblemSet *emblemSet)
 
 {
-  DB_GetXAsset(ASSET_TYPE_EMBLEMSET,(XAssetHeader)param_1);
+  XAssetHeader header;
+  
+  DB_GetXAsset(ASSET_TYPE_EMBLEMSET,(XAssetHeader)emblemSet);
   return;
 }
 
@@ -1652,13 +1778,13 @@ void __cdecl Mark_EmblemSetAsset(EmblemSet *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetHeader __cdecl DB_AllocMaterial(void *param_1)
+XAssetHeader __cdecl DB_AllocMaterial(void *pool)
 
 {
   XAssetHeader XVar1;
   
   Material_DirtySort();
-  XVar1 = DB_AllocXAsset<Material>(param_1);
+  XVar1 = DB_AllocXAsset<Material>(pool);
   return (XAssetHeader)XVar1.xmodelPieces;
 }
 
@@ -1667,11 +1793,11 @@ XAssetHeader __cdecl DB_AllocMaterial(void *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeMaterial(void *param_1,XAssetHeader param_2)
+void __cdecl DB_FreeMaterial(void *pool,XAssetHeader header)
 
 {
   Material_DirtySort();
-  DB_FreeXAssetHeader<Material>(param_1,param_2);
+  DB_FreeXAssetHeader<Material>(pool,header);
   return;
 }
 
@@ -1680,11 +1806,11 @@ void __cdecl DB_FreeMaterial(void *param_1,XAssetHeader param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveGfxImage(XAssetHeader param_1)
+void __cdecl DB_RemoveGfxImage(XAssetHeader header)
 
 {
-  R_Stream_ReleaseImage(param_1.image,true,false);
-  (param_1.parts)->boneCount[3] = '\0';
+  R_Stream_ReleaseImage(header.image,true,false);
+  (header.parts)->boneCount[3] = '\0';
   return;
 }
 
@@ -1693,11 +1819,11 @@ void __cdecl DB_RemoveGfxImage(XAssetHeader param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeGfxImage(void *param_1,XAssetHeader param_2)
+void __cdecl DB_FreeGfxImage(void *pool,XAssetHeader header)
 
 {
-  DB_RemoveGfxImage(param_2);
-  DB_FreeXAssetHeader<Material>(param_1,param_2);
+  DB_RemoveGfxImage(header);
+  DB_FreeXAssetHeader<Material>(pool,header);
   return;
 }
 
@@ -1706,11 +1832,11 @@ void __cdecl DB_FreeGfxImage(void *param_1,XAssetHeader param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeMenu(void *param_1,XAssetHeader param_2)
+void __cdecl DB_FreeMenu(void *pool,XAssetHeader header)
 
 {
-  Menus_RemoveMenu(param_2);
-  DB_FreeXAssetHeader<Material>(param_1,param_2);
+  Menus_RemoveMenu(header);
+  DB_FreeXAssetHeader<Material>(pool,header);
   return;
 }
 
@@ -1719,28 +1845,29 @@ void __cdecl DB_FreeMenu(void *param_1,XAssetHeader param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeXGlobals(void *param_1,XAssetHeader param_2)
+void __cdecl DB_FreeXGlobals(void *pool,XAssetHeader header)
 
 {
-  DB_FreeXAssetHeader<Material>(param_1,param_2);
+  DB_FreeXAssetHeader<Material>(pool,header);
   return;
 }
 
 
 // 0058EE50  DB_CompareReorderEntries  (database/db_registry.cpp:2217)
 
-bool __cdecl DB_CompareReorderEntries(DBReorderAssetEntry *param_1,DBReorderAssetEntry *param_2)
+bool __cdecl DB_CompareReorderEntries(DBReorderAssetEntry *e0,DBReorderAssetEntry *e1)
 
 {
   int iVar1;
   bool bVar2;
+  int comparison;
   
-  if (param_1->sequence == param_2->sequence) {
-    if (param_1->type == 0x2b) {
-      if (param_2->type == 0x2b) {
-        iVar1 = _stricmp(param_1->typeString,param_2->typeString);
+  if (e0->sequence == e1->sequence) {
+    if (e0->type == 0x2b) {
+      if (e1->type == 0x2b) {
+        iVar1 = _stricmp(e0->typeString,e1->typeString);
         if (iVar1 == 0) {
-          iVar1 = _stricmp(param_1->assetName,param_2->assetName);
+          iVar1 = _stricmp(e0->assetName,e1->assetName);
           bVar2 = iVar1 < 0;
         }
         else {
@@ -1751,33 +1878,33 @@ bool __cdecl DB_CompareReorderEntries(DBReorderAssetEntry *param_1,DBReorderAsse
         bVar2 = true;
       }
     }
-    else if (param_2->type == 0x2b) {
+    else if (e1->type == 0x2b) {
       bVar2 = false;
     }
-    else if (param_1->type == param_2->type) {
-      iVar1 = _stricmp(param_1->assetName,param_2->assetName);
+    else if (e0->type == e1->type) {
+      iVar1 = _stricmp(e0->assetName,e1->assetName);
       bVar2 = iVar1 < 0;
     }
     else {
-      if (param_1->sequence == 0xffffffff) {
-        if (param_1->type == 9) {
+      if (e0->sequence == 0xffffffff) {
+        if (e0->type == 9) {
           return true;
         }
-        if (param_2->type == 9) {
+        if (e1->type == 9) {
           return false;
         }
-        if (param_1->type == 0x17) {
+        if (e0->type == 0x17) {
           return true;
         }
-        if (param_2->type == 0x17) {
+        if (e1->type == 0x17) {
           return false;
         }
       }
-      bVar2 = param_1->type < param_2->type;
+      bVar2 = e0->type < e1->type;
     }
   }
   else {
-    bVar2 = param_1->sequence < param_2->sequence;
+    bVar2 = e0->sequence < e1->sequence;
   }
   return bVar2;
 }
@@ -1789,13 +1916,14 @@ void __cdecl DB_SetReorderIncludeSequence(void)
 
 {
   int iVar1;
-  uint local_8;
+  DBReorderAssetEntry *entry;
+  uint entryIter;
   
-  for (local_8 = 0; local_8 < s_dbReorder.entryCount; local_8 = local_8 + 1) {
-    if (s_dbReorder.entries[local_8].type == 0x2b) {
-      iVar1 = I_strnicmp(s_dbReorder.entries[local_8].typeString,"include",7);
+  for (entryIter = 0; entryIter < s_dbReorder.entryCount; entryIter = entryIter + 1) {
+    if (s_dbReorder.entries[entryIter].type == 0x2b) {
+      iVar1 = I_strnicmp(s_dbReorder.entries[entryIter].typeString,"include",7);
       if (iVar1 == 0) {
-        s_dbReorder.entries[local_8].sequence = s_dbReorder.sequenceForIncludes;
+        s_dbReorder.entries[entryIter].sequence = s_dbReorder.sequenceForIncludes;
       }
     }
   }
@@ -1813,22 +1941,25 @@ void __cdecl DB_EndReorderZone(void)
   bool bVar1;
   uint uVar2;
   HANDLE hObject;
-  DWORD local_418;
-  DWORD local_410;
-  char local_40c [256];
-  char local_30c [512];
-  char local_10c [256];
+  DBReorderAssetEntry *entry;
+  bool wroteBlank;
+  ulong bytes;
+  void *file;
+  DWORD written;
+  char csvName [256];
+  char line [512];
+  char bakName [256];
   uint local_c;
-  uint local_8;
+  uint entryIter;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (s_dbReorder.entryCount != 0) {
     s_dbReorder.alreadyFinished = true;
-    Com_sprintf(local_40c,0x100,"..\\share\\zone_source\\%s.csv");
-    Com_sprintf(local_10c,0x100,"%s.bak");
-    DeleteFileA(local_10c);
-    rename(local_40c,local_10c);
-    hObject = CreateFileA(local_40c,0x40000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,0,(HANDLE)0x0);
+    Com_sprintf(csvName,0x100,"..\\share\\zone_source\\%s.csv");
+    Com_sprintf(bakName,0x100,"%s.bak");
+    DeleteFileA(bakName);
+    rename(csvName,bakName);
+    hObject = CreateFileA(csvName,0x40000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,0,(HANDLE)0x0);
     if (hObject != (HANDLE)0xffffffff) {
       bVar1 = false;
       DB_SetReorderIncludeSequence();
@@ -1836,9 +1967,10 @@ void __cdecl DB_EndReorderZone(void)
       _Sort<DBReorderAssetEntry_*,int,bool_(__cdecl*)(DBReorderAssetEntry_const_&,DBReorderAssetEntry_const_&)>
                 (s_dbReorder.entries,s_dbReorder.entries + s_dbReorder.entryCount,
                  (int)(s_dbReorder.entryCount * 0x10) >> 4,DB_CompareReorderEntries);
-      for (local_8 = 0; uVar2 = local_8, local_8 < s_dbReorder.entryCount; local_8 = local_8 + 1) {
-        if ((!bVar1) && (s_dbReorder.entries[local_8].sequence == 0xffffffff)) {
-          switch(s_dbReorder.entries[local_8].type) {
+      for (entryIter = 0; uVar2 = entryIter, entryIter < s_dbReorder.entryCount;
+          entryIter = entryIter + 1) {
+        if ((!bVar1) && (s_dbReorder.entries[entryIter].sequence == 0xffffffff)) {
+          switch(s_dbReorder.entries[entryIter].type) {
           case 9:
           case 0xb:
           case 0xc:
@@ -1847,19 +1979,19 @@ void __cdecl DB_EndReorderZone(void)
             break;
           default:
             bVar1 = true;
-            WriteFile(hObject,"\r\n",2,&local_410,(LPOVERLAPPED)0x0);
+            WriteFile(hObject,"\r\n",2,&written,(LPOVERLAPPED)0x0);
           }
         }
         if (s_dbReorder.entries[uVar2].type == 0x18) {
-          local_418 = Com_sprintf(local_30c,0x200,"%s,%s%s\r\n");
+          bytes = Com_sprintf(line,0x200,"%s,%s%s\r\n");
         }
         else if (s_dbReorder.entries[uVar2].type == 9) {
-          local_418 = Com_sprintf(local_30c,0x200,"%s,%s,%s,%s\r\n");
+          bytes = Com_sprintf(line,0x200,"%s,%s,%s,%s\r\n");
         }
         else {
-          local_418 = Com_sprintf(local_30c,0x200,"%s,%s\r\n");
+          bytes = Com_sprintf(line,0x200,"%s,%s\r\n");
         }
-        WriteFile(hObject,local_30c,local_418,&local_410,(LPOVERLAPPED)0x0);
+        WriteFile(hObject,line,bytes,&written,(LPOVERLAPPED)0x0);
       }
       CloseHandle(hObject);
     }
@@ -1870,7 +2002,7 @@ void __cdecl DB_EndReorderZone(void)
 
 // 00593130  DB_AddReorderAsset  (database/db_registry.cpp:2337)
 
-void __cdecl DB_AddReorderAsset(char *param_1,char *param_2)
+void __cdecl DB_AddReorderAsset(char *typeString,char *assetName)
 
 {
   code *pcVar1;
@@ -1881,16 +2013,17 @@ void __cdecl DB_AddReorderAsset(char *param_1,char *param_2)
   char *pcVar6;
   DBReorderAssetEntry *pDVar7;
   char *local_14;
-  int local_c;
-  uint local_8;
+  DBReorderAssetEntry *entry;
+  int type;
+  uint entryIter;
   
-  local_c = 0;
-  while ((local_c < 0x2b &&
-         (iVar5 = _stricmp(param_1,*(char **)(&g_assetNames + local_c * 4)), iVar5 != 0))) {
-    local_c = local_c + 1;
+  type = 0;
+  while ((type < 0x2b &&
+         (iVar5 = _stricmp(typeString,*(char **)(&g_assetNames + type * 4)), iVar5 != 0))) {
+    type = type + 1;
   }
-  if (local_c == 0x18) {
-    iVar5 = _strnicmp(param_2,"mp/",3);
+  if (type == 0x18) {
+    iVar5 = _strnicmp(assetName,"mp/",3);
     if ((iVar5 != 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x92e,0,"%s"), !bVar4)) {
@@ -1898,27 +2031,27 @@ void __cdecl DB_AddReorderAsset(char *param_1,char *param_2)
       (*pcVar1)();
       return;
     }
-    param_2 = param_2 + 3;
+    assetName = assetName + 3;
   }
-  local_8 = 0;
+  entryIter = 0;
   while( true ) {
     uVar3 = s_dbReorder.entryCount;
-    if (s_dbReorder.entryCount <= local_8) {
+    if (s_dbReorder.entryCount <= entryIter) {
       pDVar7 = s_dbReorder.entries + s_dbReorder.entryCount;
       pDVar2 = s_dbReorder.entries + s_dbReorder.entryCount;
       s_dbReorder.entryCount = s_dbReorder.entryCount + 1;
-      pDVar2->type = local_c;
-      if (local_c < 0x2b) {
-        local_14 = *(char **)(&g_assetNames + local_c * 4);
+      pDVar2->type = type;
+      if (type < 0x2b) {
+        local_14 = *(char **)(&g_assetNames + type * 4);
       }
       else {
-        local_14 = _strdup(param_1);
+        local_14 = _strdup(typeString);
       }
       s_dbReorder.entries[uVar3].typeString = local_14;
-      pcVar6 = _strdup(param_2);
+      pcVar6 = _strdup(assetName);
       s_dbReorder.entries[uVar3].assetName = pcVar6;
       if ((s_dbReorder.entries[uVar3].type == 0x2b) &&
-         (iVar5 = I_stricmp(param_1,"ignore"), iVar5 == 0)) {
+         (iVar5 = I_stricmp(typeString,"ignore"), iVar5 == 0)) {
         pDVar7->sequence = 0;
       }
       else if ((s_dbReorder.entries[uVar3].type == 0xb) || (s_dbReorder.entries[uVar3].type == 0xc))
@@ -1930,10 +2063,10 @@ void __cdecl DB_AddReorderAsset(char *param_1,char *param_2)
       }
       return;
     }
-    if (((s_dbReorder.entries[local_8].type == local_c) &&
-        (iVar5 = _stricmp(s_dbReorder.entries[local_8].assetName,param_2), iVar5 == 0)) &&
-       (iVar5 = _stricmp(s_dbReorder.entries[local_8].typeString,param_1), iVar5 == 0)) break;
-    local_8 = local_8 + 1;
+    if (((s_dbReorder.entries[entryIter].type == type) &&
+        (iVar5 = _stricmp(s_dbReorder.entries[entryIter].assetName,assetName), iVar5 == 0)) &&
+       (iVar5 = _stricmp(s_dbReorder.entries[entryIter].typeString,typeString), iVar5 == 0)) break;
+    entryIter = entryIter + 1;
   }
   return;
 }
@@ -1944,15 +2077,16 @@ void __cdecl DB_AddReorderAsset(char *param_1,char *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl DB_RegisterAllReorderAssetsOfType(int param_1,XAssetEntry *param_2)
+bool __cdecl DB_RegisterAllReorderAssetsOfType(int type,XAssetEntry *assetEntry)
 
 {
   bool bVar1;
   int iVar2;
-  uint local_8;
+  DBReorderAssetEntry *entry;
+  uint entryIter;
   
-  if ((param_2 != (XAssetEntry *)0x0) &&
-     (iVar2 = _stricmp(g_zoneNames[param_2->zoneIndex].name,s_dbReorder.zoneName), iVar2 != 0)) {
+  if ((assetEntry != (XAssetEntry *)0x0) &&
+     (iVar2 = _stricmp(g_zoneNames[assetEntry->zoneIndex].name,s_dbReorder.zoneName), iVar2 != 0)) {
     return false;
   }
   bVar1 = Sys_IsDatabaseThread();
@@ -1961,10 +2095,10 @@ bool __cdecl DB_RegisterAllReorderAssetsOfType(int param_1,XAssetEntry *param_2)
   }
   else {
     Sys_LockWrite(&s_dbReorder.critSect);
-    for (local_8 = 0; local_8 < s_dbReorder.entryCount; local_8 = local_8 + 1) {
-      if ((s_dbReorder.entries[local_8].type == param_1) &&
-         (s_dbReorder.entries[local_8].sequence == 0xffffffff)) {
-        s_dbReorder.entries[local_8].sequence = s_dbReorder.sequence;
+    for (entryIter = 0; entryIter < s_dbReorder.entryCount; entryIter = entryIter + 1) {
+      if ((s_dbReorder.entries[entryIter].type == type) &&
+         (s_dbReorder.entries[entryIter].sequence == 0xffffffff)) {
+        s_dbReorder.entries[entryIter].sequence = s_dbReorder.sequence;
       }
     }
     s_dbReorder.sequence = s_dbReorder.sequence + 2;
@@ -1983,43 +2117,45 @@ bool __cdecl DB_RegisterAllReorderAssetsOfType(int param_1,XAssetEntry *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RegisteredReorderAsset(int param_1,char *param_2,XAssetEntry *param_3)
+void __cdecl DB_RegisteredReorderAsset(int type,char *assetName,XAssetEntry *assetEntry)
 
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  DBReorderAssetEntry *pDVar4;
-  uint local_8;
+  char *s0;
+  DBReorderAssetEntry *pDVar3;
+  DBReorderAssetEntry *entry;
+  char *extension;
+  uint entryIter;
   
   if (s_dbReorder.entryCount != 0) {
-    if (param_1 == 0x17) {
+    if (type == 0x17) {
       if ((!s_dbReorder.loadedLocalization) &&
-         (bVar1 = DB_RegisterAllReorderAssetsOfType(0x17,param_3), bVar1)) {
+         (bVar1 = DB_RegisterAllReorderAssetsOfType(0x17,assetEntry), bVar1)) {
         s_dbReorder.loadedLocalization = true;
       }
     }
-    else if (param_1 == 9) {
+    else if (type == 9) {
       if ((!s_dbReorder.loadedSound) &&
-         (bVar1 = DB_RegisterAllReorderAssetsOfType(9,param_3), bVar1)) {
+         (bVar1 = DB_RegisterAllReorderAssetsOfType(9,assetEntry), bVar1)) {
         s_dbReorder.loadedSound = true;
       }
     }
     else if (((s_dbReorder.lastEntry == (DBReorderAssetEntry *)0x0) ||
-             ((s_dbReorder.lastEntry)->type != param_1)) ||
-            (iVar2 = _stricmp((s_dbReorder.lastEntry)->assetName,param_2), iVar2 != 0)) {
+             ((s_dbReorder.lastEntry)->type != type)) ||
+            (iVar2 = _stricmp((s_dbReorder.lastEntry)->assetName,assetName), iVar2 != 0)) {
       Sys_LockWrite(&s_dbReorder.critSect);
       s_dbReorder.lastEntry = (DBReorderAssetEntry *)0x0;
-      for (local_8 = 0; local_8 < s_dbReorder.entryCount; local_8 = local_8 + 1) {
-        pDVar4 = s_dbReorder.entries + local_8;
-        if ((s_dbReorder.entries[local_8].type == param_1) &&
-           (iVar2 = _stricmp(s_dbReorder.entries[local_8].assetName,param_2), iVar2 == 0)) {
-          s_dbReorder.lastEntry = pDVar4;
-          if (pDVar4->sequence == 0xffffffff) {
-            pDVar4->sequence = s_dbReorder.sequence;
-            if (s_dbReorder.entries[local_8].type == 0x24) {
-              pcVar3 = Com_GetExtensionSubString(param_2);
-              iVar2 = I_stricmp(pcVar3,".gsc");
+      for (entryIter = 0; entryIter < s_dbReorder.entryCount; entryIter = entryIter + 1) {
+        pDVar3 = s_dbReorder.entries + entryIter;
+        if ((s_dbReorder.entries[entryIter].type == type) &&
+           (iVar2 = _stricmp(s_dbReorder.entries[entryIter].assetName,assetName), iVar2 == 0)) {
+          s_dbReorder.lastEntry = pDVar3;
+          if (pDVar3->sequence == 0xffffffff) {
+            pDVar3->sequence = s_dbReorder.sequence;
+            if (s_dbReorder.entries[entryIter].type == 0x24) {
+              s0 = Com_GetExtensionSubString(assetName);
+              iVar2 = I_stricmp(s0,".gsc");
               if (iVar2 == 0) {
                 s_dbReorder.sequenceForIncludes = s_dbReorder.sequence + 1;
               }
@@ -2041,44 +2177,45 @@ void __cdecl DB_RegisteredReorderAsset(int param_1,char *param_2,XAssetEntry *pa
 
 // 005932F0  DB_NextZoneCsvToken  (database/db_registry.cpp:2457)
 
-bool __cdecl DB_NextZoneCsvToken(char **param_1,char *param_2,uint param_3,bool param_4)
+bool __cdecl DB_NextZoneCsvToken(char **parse,char *token,uint tokenSize,bool allowNewLine)
 
 {
   bool bVar1;
   int iVar2;
-  uint local_10;
-  char *local_8;
+  uint used;
+  bool isSkippingLeadingSpaces;
+  char *scan;
   
-  local_8 = *param_1;
-  if (*local_8 == '\n') {
-    if (!param_4) {
+  scan = *parse;
+  if (*scan == '\n') {
+    if (!allowNewLine) {
       return false;
     }
-    for (; *local_8 == '\n'; local_8 = local_8 + 1) {
+    for (; *scan == '\n'; scan = scan + 1) {
     }
   }
-  if (*local_8 == '\0') {
-    *param_1 = local_8;
+  if (*scan == '\0') {
+    *parse = scan;
     bVar1 = false;
   }
   else {
-    if (*local_8 == ',') {
-      local_8 = local_8 + 1;
+    if (*scan == ',') {
+      scan = scan + 1;
     }
-    local_10 = 0;
+    used = 0;
     bVar1 = true;
-    for (; ((*local_8 != '\0' && (*local_8 != '\n')) && (*local_8 != ',')); local_8 = local_8 + 1) {
-      if (((!bVar1) || (iVar2 = isspace((int)*local_8), iVar2 == 0)) &&
-         (bVar1 = false, local_10 < param_3 - 1)) {
-        param_2[local_10] = *local_8;
-        local_10 = local_10 + 1;
+    for (; ((*scan != '\0' && (*scan != '\n')) && (*scan != ',')); scan = scan + 1) {
+      if (((!bVar1) || (iVar2 = isspace((int)*scan), iVar2 == 0)) &&
+         (bVar1 = false, used < tokenSize - 1)) {
+        token[used] = *scan;
+        used = used + 1;
       }
     }
-    while ((local_10 != 0 && (iVar2 = isspace((int)param_2[local_10 - 1]), iVar2 != 0))) {
-      local_10 = local_10 - 1;
+    while ((used != 0 && (iVar2 = isspace((int)token[used - 1]), iVar2 != 0))) {
+      used = used - 1;
     }
-    param_2[local_10] = '\0';
-    *param_1 = local_8;
+    token[used] = '\0';
+    *parse = scan;
     bVar1 = true;
   }
   return bVar1;
@@ -2089,7 +2226,7 @@ bool __cdecl DB_NextZoneCsvToken(char **param_1,char *param_2,uint param_3,bool 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DB_BeginReorderZone(char *param_1)
+void __cdecl DB_BeginReorderZone(char *zoneName)
 
 {
   char cVar1;
@@ -2097,23 +2234,25 @@ void __cdecl DB_BeginReorderZone(char *param_1)
   bool bVar3;
   char *local_258;
   char *local_254;
-  char *local_250;
-  char local_248 [32];
-  DWORD local_228;
-  HANDLE local_224;
-  int local_220;
-  char local_21c [256];
-  char local_11c [256];
+  char *from;
+  DBReorderAssetEntry *entry;
+  char assetType [32];
+  ulong size;
+  void *file;
+  int success;
+  char assetName [256];
+  char csvName [256];
   uint local_1c;
-  char *local_18;
-  char *local_14;
-  char *local_10;
-  DWORD local_c;
-  uint local_8;
+  char *parse;
+  char *csv;
+  char *to;
+  ulong read;
+  uint entryIter;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; uVar2 = local_8, local_8 < s_dbReorder.entryCount; local_8 = local_8 + 1) {
-    free(s_dbReorder.entries[local_8].assetName);
+  for (entryIter = 0; uVar2 = entryIter, entryIter < s_dbReorder.entryCount;
+      entryIter = entryIter + 1) {
+    free(s_dbReorder.entries[entryIter].assetName);
     if (s_dbReorder.entries[uVar2].type == 0x2b) {
       free(s_dbReorder.entries[uVar2].typeString);
     }
@@ -2125,7 +2264,7 @@ void __cdecl DB_BeginReorderZone(char *param_1)
   s_dbReorder.loadedSound = false;
   s_dbReorder.loadedLocalization = false;
   s_dbReorder.lastEntry = (DBReorderAssetEntry *)0x0;
-  local_254 = param_1;
+  local_254 = zoneName;
   local_258 = s_dbReorder.zoneName;
   do {
     cVar1 = *local_254;
@@ -2134,42 +2273,42 @@ void __cdecl DB_BeginReorderZone(char *param_1)
     local_258 = local_258 + 1;
   } while (cVar1 != '\0');
   Sys_LockWrite(&s_dbReorder.critSect);
-  Com_sprintf(local_11c,0x100,"..\\share\\zone_source\\%s.csv");
-  local_224 = CreateFileA(local_11c,0x80000000,0,(LPSECURITY_ATTRIBUTES)0x0,3,0,(HANDLE)0x0);
-  if (local_224 == (HANDLE)0xffffffff) {
+  Com_sprintf(csvName,0x100,"..\\share\\zone_source\\%s.csv");
+  file = CreateFileA(csvName,0x80000000,0,(LPSECURITY_ATTRIBUTES)0x0,3,0,(HANDLE)0x0);
+  if (file == (HANDLE)0xffffffff) {
     Sys_UnlockWrite(&s_dbReorder.critSect);
   }
   else {
-    local_228 = GetFileSize(local_224,(LPDWORD)0x0);
-    local_14 = malloc(local_228 + 1);
-    local_220 = ReadFile(local_224,local_14,local_228,&local_c,(LPOVERLAPPED)0x0);
-    CloseHandle(local_224);
-    if ((local_220 == 0) || (local_c != local_228)) {
-      free(local_14);
+    size = GetFileSize(file,(LPDWORD)0x0);
+    csv = malloc(size + 1);
+    success = ReadFile(file,csv,size,&read,(LPOVERLAPPED)0x0);
+    CloseHandle(file);
+    if ((success == 0) || (read != size)) {
+      free(csv);
       Sys_UnlockWrite(&s_dbReorder.critSect);
     }
     else {
-      local_14[local_228] = '\0';
-      local_10 = local_14;
-      for (local_250 = local_14; *local_250 != '\0'; local_250 = local_250 + 1) {
-        if (*local_250 != '\r') {
-          *local_10 = *local_250;
-          local_10 = local_10 + 1;
+      csv[size] = '\0';
+      to = csv;
+      for (from = csv; *from != '\0'; from = from + 1) {
+        if (*from != '\r') {
+          *to = *from;
+          to = to + 1;
         }
       }
-      *local_10 = '\0';
-      local_18 = local_14;
-      while (bVar3 = DB_NextZoneCsvToken(&local_18,local_248,0x20,true), bVar3) {
-        bVar3 = DB_NextZoneCsvToken(&local_18,local_21c,0x100,false);
-        if (((bVar3) && (local_248[0] != '\0')) && (local_21c[0] != '\0')) {
-          DB_AddReorderAsset(local_248,local_21c);
+      *to = '\0';
+      parse = csv;
+      while (bVar3 = DB_NextZoneCsvToken(&parse,assetType,0x20,true), bVar3) {
+        bVar3 = DB_NextZoneCsvToken(&parse,assetName,0x100,false);
+        if (((bVar3) && (assetType[0] != '\0')) && (assetName[0] != '\0')) {
+          DB_AddReorderAsset(assetType,assetName);
         }
-        for (; (*local_18 != '\0' && (*local_18 != '\n')); local_18 = local_18 + 1) {
+        for (; (*parse != '\0' && (*parse != '\n')); parse = parse + 1) {
         }
-        if (*local_18 == '\0') break;
-        local_18 = local_18 + 1;
+        if (*parse == '\0') break;
+        parse = parse + 1;
       }
-      free(local_14);
+      free(csv);
       Sys_UnlockWrite(&s_dbReorder.critSect);
     }
   }
@@ -2181,11 +2320,11 @@ void __cdecl DB_BeginReorderZone(char *param_1)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl DB_InitPoolHeader(XAssetType param_1,int param_2)
+void __cdecl DB_InitPoolHeader(XAssetType type,int size)
 
 {
-  if (DB_XAssetPool[param_1] != (void *)0x0) {
-    (*DB_InitPoolHeaderHandler[param_1])(DB_XAssetPool[param_1],g_poolSize[param_1]);
+  if (DB_XAssetPool[type] != (void *)0x0) {
+    (*DB_InitPoolHeaderHandler[type])(DB_XAssetPool[type],g_poolSize[type]);
   }
   return;
 }
@@ -2194,11 +2333,14 @@ void __cdecl DB_InitPoolHeader(XAssetType param_1,int param_2)
 // 0058DC60  DB_PrintAssetName  (database/db_registry.cpp:2602)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl DB_PrintAssetName(XAssetHeader param_1,void *param_2)
+void __cdecl DB_PrintAssetName(XAssetHeader header,void *data)
 
 {
-  DB_GetXAssetHeaderName(*(int *)param_2,&param_1);
+  XAssetType type;
+  
+  DB_GetXAssetHeaderName(*(int *)data,&header);
   Com_Printf(0,"%s\n");
   return;
 }
@@ -2219,19 +2361,19 @@ void __cdecl DB_MarkAssetTypeUsageDirty(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_GetAssetTypeUsageInfo(XAssetType param_1,char **param_2,int *param_3,int *param_4)
+void __cdecl DB_GetAssetTypeUsageInfo(XAssetType assetType,char **outName,int *outUsed,int *outPool)
 
 {
   int iVar1;
   
-  if (s_usageUpToDate[param_1] == false) {
-    s_usageUpToDate[param_1] = true;
-    iVar1 = DB_GetAllXAssetOfType(param_1,(XAssetHeader *)0x0,0);
-    s_usageCounts[param_1] = iVar1;
+  if (s_usageUpToDate[assetType] == false) {
+    s_usageUpToDate[assetType] = true;
+    iVar1 = DB_GetAllXAssetOfType(assetType,(XAssetHeader *)0x0,0);
+    s_usageCounts[assetType] = iVar1;
   }
-  *param_3 = s_usageCounts[param_1];
-  *param_4 = g_poolSize[param_1];
-  *param_2 = *(char **)(&g_assetNames + param_1 * 4);
+  *outUsed = s_usageCounts[assetType];
+  *outPool = g_poolSize[assetType];
+  *outName = *(char **)(&g_assetNames + assetType * 4);
   return;
 }
 
@@ -2241,30 +2383,33 @@ void __cdecl DB_GetAssetTypeUsageInfo(XAssetType param_1,char **param_2,int *par
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_PrintXAssetsForType_FastFile(XAssetType param_1,void *param_2,bool param_3)
+void __cdecl DB_PrintXAssetsForType_FastFile(XAssetType type,void *inData,bool includeOverride)
 
 {
   ushort uVar1;
   int iVar2;
-  uint local_18;
-  uint local_14;
-  uint local_8;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *overrideAssetEntry;
+  XAssetEntry *assetEntry;
+  uint overrideAssetEntryIndex;
   
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  for (local_18 = 0; local_18 < 0x8000; local_18 = local_18 + 1) {
-    uVar1 = db_hashTable[local_18];
-    while (local_14 = (uint)uVar1, local_14 != 0) {
-      iVar2 = local_14 * 0x10;
-      if (g_assetEntryPool[local_14].entry.asset.type == param_1) {
-        DB_GetXAssetHeaderName(param_1,(XAssetHeader *)((int)g_assetEntryPool + iVar2 + 4));
+  for (hash = 0; hash < 0x8000; hash = hash + 1) {
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      iVar2 = assetEntryIndex * 0x10;
+      if (g_assetEntryPool[assetEntryIndex].entry.asset.type == type) {
+        DB_GetXAssetHeaderName(type,(XAssetHeader *)((int)g_assetEntryPool + iVar2 + 4));
         Com_Printf(0,"\'%s\',\'%s\'\n");
-        if (param_3) {
+        if (includeOverride) {
           uVar1 = *(ushort *)((int)g_assetEntryPool + iVar2 + 0xc);
-          while (local_8 = (uint)uVar1, local_8 != 0) {
+          while (overrideAssetEntryIndex = (uint)uVar1, overrideAssetEntryIndex != 0) {
             DB_GetXAssetHeaderName
-                      (param_1,(XAssetHeader *)((int)g_assetEntryPool + local_8 * 0x10 + 4));
+                      (type,(XAssetHeader *)
+                            ((int)g_assetEntryPool + overrideAssetEntryIndex * 0x10 + 4));
             Com_Printf(0,"\'%s\',\'%s\'\n");
-            uVar1 = *(ushort *)((int)g_assetEntryPool + local_8 * 0x10 + 0xc);
+            uVar1 = *(ushort *)((int)g_assetEntryPool + overrideAssetEntryIndex * 0x10 + 0xc);
           }
         }
       }
@@ -2283,15 +2428,15 @@ void __cdecl DB_PrintXAssetsForType_FastFile(XAssetType param_1,void *param_2,bo
 
 void __cdecl
 DB_PrintXAssetsForType
-          (XAssetType param_1,_func___cdecl_void_XAssetHeader_void_ptr *param_2,void *param_3,
-          bool param_4)
+          (XAssetType type,_func___cdecl_void_XAssetHeader_void_ptr *func,void *inData,
+          bool includeOverride)
 
 {
   if ((useFastFile->current).enabled == false) {
-    DB_EnumXAssets(param_1,param_2,&param_3,param_4);
+    DB_EnumXAssets(type,func,&inData,includeOverride);
   }
   else {
-    DB_PrintXAssetsForType_FastFile(param_1,&param_3,param_4);
+    DB_PrintXAssetsForType_FastFile(type,&inData,includeOverride);
   }
   return;
 }
@@ -2302,16 +2447,17 @@ DB_PrintXAssetsForType
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetHeader __cdecl DB_AllocXAssetHeader(XAssetType param_1)
+XAssetHeader __cdecl DB_AllocXAssetHeader(XAssetType type)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
-  XVar1 = (*DB_AllocXAssetHeaderHandler[param_1])(DB_XAssetPool[param_1]);
+  XVar1 = (*DB_AllocXAssetHeaderHandler[type])(DB_XAssetPool[type]);
   if (XVar1.xmodelPieces == (XModelPieces *)0x0) {
     Sys_LeaveCriticalSection(CRITSECT_DBHASH);
     Com_PrintError(1,"Exceeded limit of %d \'%s\' assets.\n");
-    DB_PrintXAssetsForType(param_1,DB_PrintAssetName,&param_1,true);
+    DB_PrintXAssetsForType(type,DB_PrintAssetName,&type,true);
     Com_Error(ERR_DROP,"Exceeded limit of %d \'%s\' assets.\n");
   }
   return (XAssetHeader)XVar1.xmodelPieces;
@@ -2323,23 +2469,24 @@ XAssetHeader __cdecl DB_AllocXAssetHeader(XAssetType param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeXAssetHeader(XAssetType param_1,XAssetHeader param_2)
+void __cdecl DB_FreeXAssetHeader(XAssetType type,XAssetHeader header)
 
 {
-  (*DB_FreeXAssetHeaderHandler[param_1])(DB_XAssetPool[param_1],param_2);
+  (*DB_FreeXAssetHeaderHandler[type])(DB_XAssetPool[type],header);
   return;
 }
 
 
 // 0058DB70  DB_AllocTempImage  (database/db_registry.cpp:2696)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
 GfxImage * __cdecl DB_AllocTempImage(void)
 
 {
   XAssetHeader XVar1;
+  XAssetHeader header;
   
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
   XVar1 = DB_AllocXAssetHeader(ASSET_TYPE_IMAGE);
@@ -2357,7 +2504,7 @@ GfxImage * __cdecl DB_AllocTempImage(void)
 /* WARNING: Removing unreachable block (ram,0x0058f14c) */
 /* WARNING: Removing unreachable block (ram,0x0058f151) */
 
-void __cdecl DB_Sleep(int param_1)
+void __cdecl DB_Sleep(int msec)
 
 {
   sysEvent_t *psVar1;
@@ -2368,6 +2515,7 @@ void __cdecl DB_Sleep(int param_1)
   int local_14;
   int local_10;
   void *local_c;
+  bool uiKeyCatchActive;
   
   R_BeginRemoteScreenUpdate();
   psVar1 = Sys_GetEvent(&local_3c);
@@ -2377,7 +2525,7 @@ void __cdecl DB_Sleep(int param_1)
   local_14 = psVar1->evValue2;
   local_10 = psVar1->evPtrLength;
   local_c = psVar1->evPtr;
-  NET_Sleep(param_1);
+  NET_Sleep(msec);
   R_EndRemoteScreenUpdate((_func___cdecl_void *)0x0);
   return;
 }
@@ -2391,20 +2539,19 @@ void __cdecl DB_Sleep(int param_1)
 void __cdecl DB_Init(void)
 
 {
-  XAssetType local_c;
-  uint local_8;
+  int type;
+  uint i;
   
   db_xassetdebug = _Dvar_RegisterBool("db_xassetdebug",false,0,"debug assets loading");
   db_xassetdebugtype =
        _Dvar_RegisterInt("db_xassetdebugtype",-1,-2,0x2b,0,
                          "debug assets loading type: -1 all; indexes start at 0");
-  for (local_c = ASSET_TYPE_XMODELPIECES; (int)local_c < 0x2b;
-      local_c = local_c + ASSET_TYPE_PHYSPRESET) {
-    DB_InitPoolHeader(local_c,g_poolSize[local_c]);
+  for (type = 0; type < 0x2b; type = type + 1) {
+    DB_InitPoolHeader(type,g_poolSize[type]);
   }
   g_freeAssetEntryHead = g_assetEntryPool + 1;
-  for (local_8 = 1; local_8 < 0x7fff; local_8 = local_8 + 1) {
-    g_assetEntryPool[local_8].next = g_assetEntryPool + local_8 + 1;
+  for (i = 1; i < 0x7fff; i = i + 1) {
+    g_assetEntryPool[i].next = g_assetEntryPool + i + 1;
   }
   g_assetEntryPool[0x7fff].entry.asset.type = ASSET_TYPE_XMODELPIECES;
   return;
@@ -2416,11 +2563,13 @@ void __cdecl DB_Init(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetEntry * __cdecl DB_AllocXAssetEntry(XAssetType param_1,uint param_2)
+XAssetEntry * __cdecl DB_AllocXAssetEntry(XAssetType type,uint zoneIndex)
 
 {
   XAssetEntryPoolEntry *pXVar1;
   XAssetHeader XVar2;
+  XAssetEntryPoolEntry *freeHead;
+  XAssetEntry *assetEntry;
   
   pXVar1 = (XAssetEntryPoolEntry *)(XAssetEntryPoolEntry *)&g_freeAssetEntryHead->next;
   if (g_freeAssetEntryHead == (XAssetEntryPoolEntry *)0x0) {
@@ -2432,10 +2581,10 @@ XAssetEntry * __cdecl DB_AllocXAssetEntry(XAssetType param_1,uint param_2)
     XAssetEntryHighWaterMark = XAssetEntryHighCount;
   }
   g_freeAssetEntryHead = pXVar1->next;
-  (pXVar1->entry).asset.type = param_1;
-  XVar2 = DB_AllocXAssetHeader(param_1);
+  (pXVar1->entry).asset.type = type;
+  XVar2 = DB_AllocXAssetHeader(type);
   (pXVar1->entry).asset.header = XVar2;
-  (pXVar1->entry).zoneIndex = (uchar)param_2;
+  (pXVar1->entry).zoneIndex = (uchar)zoneIndex;
   (pXVar1->entry).inuse = false;
   (pXVar1->entry).nextHash = 0;
   (pXVar1->entry).nextOverride = 0;
@@ -2450,16 +2599,18 @@ XAssetEntry * __cdecl DB_AllocXAssetEntry(XAssetType param_1,uint param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_FreeXAssetEntry(XAssetEntry *param_1)
+void __cdecl DB_FreeXAssetEntry(XAssetEntry *assetEntry)
 
 {
   XAssetEntryPoolEntry *pXVar1;
+  XAssetEntryPoolEntry *freeHead;
+  XAssetEntryPoolEntry *oldFreeHead;
   
-  DB_FreeXAssetHeader((param_1->asset).type,(param_1->asset).header);
+  DB_FreeXAssetHeader((assetEntry->asset).type,(assetEntry->asset).header);
   pXVar1 = g_freeAssetEntryHead;
   XAssetEntryHighCount = XAssetEntryHighCount + -1;
-  g_freeAssetEntryHead = (XAssetEntryPoolEntry *)param_1;
-  (param_1->asset).type = (XAssetType)pXVar1;
+  g_freeAssetEntryHead = (XAssetEntryPoolEntry *)assetEntry;
+  (assetEntry->asset).type = (XAssetType)pXVar1;
   return;
 }
 
@@ -2468,22 +2619,22 @@ void __cdecl DB_FreeXAssetEntry(XAssetEntry *param_1)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-uint __cdecl DB_HashForName(char *param_1,XAssetType param_2)
+uint __cdecl DB_HashForName(char *name,XAssetType type)
 
 {
-  char *local_10;
-  XAssetType local_c;
-  int local_8;
+  char *pos;
+  uint hash;
+  int c;
   
-  local_c = param_2;
-  for (local_10 = param_1; *local_10 != '\0'; local_10 = local_10 + 1) {
-    local_8 = tolower((int)*local_10);
-    if (local_8 == 0x5c) {
-      local_8 = 0x2f;
+  hash = type;
+  for (pos = name; *pos != '\0'; pos = pos + 1) {
+    c = tolower((int)*pos);
+    if (c == 0x5c) {
+      c = 0x2f;
     }
-    local_c = local_c * 0x1003f + local_8;
+    hash = hash * 0x1003f + c;
   }
-  return local_c;
+  return hash;
 }
 
 
@@ -2492,17 +2643,17 @@ uint __cdecl DB_HashForName(char *param_1,XAssetType param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl DB_LogMissingAsset(XAssetType param_1,char *param_2)
+void __cdecl DB_LogMissingAsset(XAssetType type,char *name)
 
 {
   char cVar1;
   char *local_414;
-  char local_40c;
+  char msg;
   undefined1 auStack_40b [1027];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  switch(param_1) {
+  switch(type) {
   case ASSET_TYPE_SOUND:
   case ASSET_TYPE_MENU:
   case ASSET_TYPE_LOCALIZE_ENTRY:
@@ -2510,10 +2661,10 @@ void __cdecl DB_LogMissingAsset(XAssetType param_1,char *param_2)
   case ASSET_TYPE_XGLOBALS:
     return;
   default:
-    Com_sprintf(&local_40c,0x400,"%s,%s\n");
+    Com_sprintf(&msg,0x400,"%s,%s\n");
     break;
   case ASSET_TYPE_WEAPON:
-    Com_sprintf(&local_40c,0x400,"%s,mp/%s\n");
+    Com_sprintf(&msg,0x400,"%s,mp/%s\n");
   }
   Sys_EnterCriticalSection(CRITSECT_MISSING_ASSET);
   if (g_missingAssetFile == 0) {
@@ -2526,12 +2677,12 @@ void __cdecl DB_LogMissingAsset(XAssetType param_1,char *param_2)
     com_missingAssetOpenFailed = 1;
   }
   else {
-    local_414 = &local_40c;
+    local_414 = &msg;
     do {
       cVar1 = *local_414;
       local_414 = local_414 + 1;
     } while (cVar1 != '\0');
-    FS_Write(&local_40c,(int)local_414 - (int)auStack_40b,g_missingAssetFile);
+    FS_Write(&msg,(int)local_414 - (int)auStack_40b,g_missingAssetFile);
     FS_FCloseFile(g_missingAssetFile);
   }
   Sys_LeaveCriticalSection(CRITSECT_MISSING_ASSET);
@@ -2546,27 +2697,30 @@ void __cdecl DB_LogMissingAsset(XAssetType param_1,char *param_2)
 
 void __cdecl
 DB_EnumXAssets_FastFile
-          (XAssetType param_1,_func___cdecl_void_XAssetHeader_void_ptr *param_2,void *param_3,
-          bool param_4)
+          (XAssetType type,_func___cdecl_void_XAssetHeader_void_ptr *func,void *inData,
+          bool includeOverride)
 
 {
   ushort uVar1;
   int iVar2;
-  uint local_18;
-  uint local_14;
-  uint local_8;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *overrideAssetEntry;
+  XAssetEntry *assetEntry;
+  uint overrideAssetEntryIndex;
   
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  for (local_18 = 0; local_18 < 0x8000; local_18 = local_18 + 1) {
-    uVar1 = db_hashTable[local_18];
-    while (local_14 = (uint)uVar1, local_14 != 0) {
-      iVar2 = local_14 * 0x10;
-      if ((g_assetEntryPool[local_14].entry.asset.type == param_1) &&
-         ((*param_2)(*(XAssetHeader *)((int)g_assetEntryPool + iVar2 + 4),param_3), param_4)) {
+  for (hash = 0; hash < 0x8000; hash = hash + 1) {
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      iVar2 = assetEntryIndex * 0x10;
+      if ((g_assetEntryPool[assetEntryIndex].entry.asset.type == type) &&
+         ((*func)(*(XAssetHeader *)((int)g_assetEntryPool + iVar2 + 4),inData), includeOverride)) {
         uVar1 = *(ushort *)((int)g_assetEntryPool + iVar2 + 0xc);
-        while (local_8 = (uint)uVar1, local_8 != 0) {
-          (*param_2)(*(XAssetHeader *)((int)g_assetEntryPool + local_8 * 0x10 + 4),param_3);
-          uVar1 = *(ushort *)((int)g_assetEntryPool + local_8 * 0x10 + 0xc);
+        while (overrideAssetEntryIndex = (uint)uVar1, overrideAssetEntryIndex != 0) {
+          (*func)(*(XAssetHeader *)((int)g_assetEntryPool + overrideAssetEntryIndex * 0x10 + 4),
+                  inData);
+          uVar1 = *(ushort *)((int)g_assetEntryPool + overrideAssetEntryIndex * 0x10 + 0xc);
         }
       }
       uVar1 = *(ushort *)((int)g_assetEntryPool + iVar2 + 10);
@@ -2585,12 +2739,12 @@ DB_EnumXAssets_FastFile
 void __cdecl DB_LoadDelayedImages(void)
 
 {
-  uint local_8;
+  uint copyIter;
   
   DB_EnumXAssets(ASSET_TYPE_IMAGE,R_DelayLoadImage,(void *)0x0,false);
-  for (local_8 = 0; local_8 < g_copyInfoCount; local_8 = local_8 + 1) {
-    if ((g_copyInfo[local_8]->asset).type == ASSET_TYPE_IMAGE) {
-      R_DelayLoadImage((g_copyInfo[local_8]->asset).header,(void *)0x0);
+  for (copyIter = 0; copyIter < g_copyInfoCount; copyIter = copyIter + 1) {
+    if ((g_copyInfo[copyIter]->asset).type == ASSET_TYPE_IMAGE) {
+      R_DelayLoadImage((g_copyInfo[copyIter]->asset).header,(void *)0x0);
     }
   }
   return;
@@ -2602,14 +2756,15 @@ void __cdecl DB_LoadDelayedImages(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_CloneXAssetInternal(XAsset *param_1,XAsset *param_2)
+void __cdecl DB_CloneXAssetInternal(XAsset *from,XAsset *to)
 
 {
   code *pcVar1;
   bool bVar2;
-  ulong uVar3;
+  ulong count;
+  uint size;
   
-  if (param_1->type != param_2->type) {
+  if (from->type != to->type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xbe8,0,
                              "%s");
     if (!bVar2) {
@@ -2618,8 +2773,8 @@ void __cdecl DB_CloneXAssetInternal(XAsset *param_1,XAsset *param_2)
       return;
     }
   }
-  uVar3 = DB_GetXAssetTypeSize(param_1->type);
-  memcpy((uchar *)(param_2->header).xmodelPieces,(uchar *)(param_1->header).xmodelPieces,uVar3);
+  count = DB_GetXAssetTypeSize(from->type);
+  memcpy((uchar *)(to->header).xmodelPieces,(uchar *)(from->header).xmodelPieces,count);
   return;
 }
 
@@ -2630,15 +2785,14 @@ void __cdecl DB_CloneXAssetInternal(XAsset *param_1,XAsset *param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 bool __cdecl
-DB_DynamicCloneXAsset
-          (XAssetHeader param_1,XAssetHeader param_2,XAssetType param_3,DBCloneMethod param_4)
+DB_DynamicCloneXAsset(XAssetHeader from,XAssetHeader to,XAssetType type,DBCloneMethod cloneMethod)
 
 {
   _func___cdecl_void_XAssetHeader_XAssetHeader_DBCloneMethod *p_Var1;
   
-  p_Var1 = DB_DynamicCloneXAssetHandler[param_3];
+  p_Var1 = DB_DynamicCloneXAssetHandler[type];
   if (p_Var1 != (_func___cdecl_void_XAssetHeader_XAssetHeader_DBCloneMethod *)0x0) {
-    (*DB_DynamicCloneXAssetHandler[param_3])(param_1,param_2,param_4);
+    (*DB_DynamicCloneXAssetHandler[type])(from,to,cloneMethod);
   }
   return p_Var1 != (_func___cdecl_void_XAssetHeader_XAssetHeader_DBCloneMethod *)0x0;
 }
@@ -2649,13 +2803,13 @@ DB_DynamicCloneXAsset
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_CloneXAsset(XAsset *param_1,XAsset *param_2,DBCloneMethod param_3)
+void __cdecl DB_CloneXAsset(XAsset *from,XAsset *to,DBCloneMethod cloneMethod)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->type != param_2->type) {
+  if (from->type != to->type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xbfd,0,
                              "%s");
     if (!bVar2) {
@@ -2664,8 +2818,8 @@ void __cdecl DB_CloneXAsset(XAsset *param_1,XAsset *param_2,DBCloneMethod param_
       return;
     }
   }
-  DB_DynamicCloneXAsset(param_1->header,param_2->header,param_2->type,param_3);
-  DB_CloneXAssetInternal(param_1,param_2);
+  DB_DynamicCloneXAsset(from->header,to->header,to->type,cloneMethod);
+  DB_CloneXAssetInternal(from,to);
   return;
 }
 
@@ -2675,11 +2829,11 @@ void __cdecl DB_CloneXAsset(XAsset *param_1,XAsset *param_2,DBCloneMethod param_
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_CloneXAssetEntry(XAssetEntry *param_1,XAssetEntry *param_2,DBCloneMethod param_3)
+void __cdecl DB_CloneXAssetEntry(XAssetEntry *from,XAssetEntry *to,DBCloneMethod cloneMethod)
 
 {
-  DB_CloneXAsset(&param_1->asset,&param_2->asset,param_3);
-  param_2->zoneIndex = param_1->zoneIndex;
+  DB_CloneXAsset(&from->asset,&to->asset,cloneMethod);
+  to->zoneIndex = from->zoneIndex;
   return;
 }
 
@@ -2692,7 +2846,7 @@ void __cdecl DB_CloneXAssetEntry(XAssetEntry *param_1,XAssetEntry *param_2,DBClo
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_SwapXAsset(XAsset *param_1,XAsset *param_2)
+void __cdecl DB_SwapXAsset(XAsset *from,XAsset *to)
 
 {
   code *pcVar1;
@@ -2700,12 +2854,12 @@ void __cdecl DB_SwapXAsset(XAsset *param_1,XAsset *param_2)
   bool bVar3;
   undefined1 *local_18;
   uint local_14;
-  XAssetType local_10;
+  XAssetType asset;
   undefined1 *local_c;
-  int local_8;
+  uint size;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->type != param_2->type) {
+  if (from->type != to->type) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xc0e,0,
                              "%s");
     if (!bVar3) {
@@ -2714,24 +2868,24 @@ void __cdecl DB_SwapXAsset(XAsset *param_1,XAsset *param_2)
       return;
     }
   }
-  DB_DynamicCloneXAsset(param_1->header,param_2->header,param_2->type,DB_CLONE_SWAP);
-  local_8 = DB_GetXAssetTypeSize(param_1->type);
-  iVar2 = -local_8;
+  DB_DynamicCloneXAsset(from->header,to->header,to->type,DB_CLONE_SWAP);
+  size = DB_GetXAssetTypeSize(from->type);
+  iVar2 = -size;
   local_18 = (undefined1 *)((int)&local_18 + iVar2);
   local_c = (undefined1 *)((int)&local_18 + iVar2);
-  local_10 = param_1->type;
-  *(XAssetType **)(&stack0xffffffe4 + iVar2) = &local_10;
-  *(XAsset **)(&stack0xffffffe0 + iVar2) = param_2;
+  asset = from->type;
+  *(XAssetType **)(&stack0xffffffe4 + iVar2) = &asset;
+  *(XAsset **)(&stack0xffffffe0 + iVar2) = to;
   *(undefined4 *)(&stack0xffffffdc + iVar2) = 0x590a67;
   DB_CloneXAssetInternal
             (*(XAsset **)(&stack0xffffffe0 + iVar2),*(XAsset **)(&stack0xffffffe4 + iVar2));
-  *(XAsset **)(&stack0xffffffe4 + iVar2) = param_2;
-  *(XAsset **)(&stack0xffffffe0 + iVar2) = param_1;
+  *(XAsset **)(&stack0xffffffe4 + iVar2) = to;
+  *(XAsset **)(&stack0xffffffe0 + iVar2) = from;
   *(undefined4 *)(&stack0xffffffdc + iVar2) = 0x590a77;
   DB_CloneXAssetInternal
             (*(XAsset **)(&stack0xffffffe0 + iVar2),*(XAsset **)(&stack0xffffffe4 + iVar2));
-  *(XAsset **)(&stack0xffffffe4 + iVar2) = param_1;
-  *(XAssetType **)(&stack0xffffffe0 + iVar2) = &local_10;
+  *(XAsset **)(&stack0xffffffe4 + iVar2) = from;
+  *(XAssetType **)(&stack0xffffffe0 + iVar2) = &asset;
   *(undefined4 *)(&stack0xffffffdc + iVar2) = 0x590a87;
   DB_CloneXAssetInternal
             (*(XAsset **)(&stack0xffffffe0 + iVar2),*(XAsset **)(&stack0xffffffe4 + iVar2));
@@ -2744,59 +2898,59 @@ void __cdecl DB_SwapXAsset(XAsset *param_1,XAsset *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_DelayedCloneXAsset(XAssetEntry *param_1)
+void __cdecl DB_DelayedCloneXAsset(XAssetEntry *newEntry)
 
 {
   char *pcVar1;
   char *pcVar2;
   int iVar3;
-  uint local_8;
+  uint i;
   
   if (g_sync == 0) {
     if (0xbff < g_copyInfoCount) {
       Com_Printf(0,"g_copyInfo exceeded: too many asset overrides in one call to DB_LoadXAssets.\n")
       ;
-      for (local_8 = 0; local_8 < 0xc00; local_8 = local_8 + 1) {
-        DB_GetXAssetName(&g_copyInfo[local_8]->asset);
-        DB_GetXAssetTypeName((g_copyInfo[local_8]->asset).type);
+      for (i = 0; i < 0xc00; i = i + 1) {
+        DB_GetXAssetName(&g_copyInfo[i]->asset);
+        DB_GetXAssetTypeName((g_copyInfo[i]->asset).type);
         Com_Printf(0,"\'%s\',\'%s\'\n");
       }
       Sys_Error("g_copyInfo exceeded");
     }
     if ((db_xassetdebug->current).enabled == false) goto LAB_00590c76;
     if (((db_xassetdebugtype->current).integer != -1) &&
-       ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+       ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
       pcVar1 = Dvar_GetString("db_xassetdebugname");
       if (*pcVar1 == '\0') goto LAB_00590c76;
       pcVar1 = Dvar_GetString("db_xassetdebugname");
-      pcVar2 = DB_GetXAssetName(&param_1->asset);
+      pcVar2 = DB_GetXAssetName(&newEntry->asset);
       iVar3 = I_stricmp(pcVar2,pcVar1);
       if (iVar3 != 0) goto LAB_00590c76;
     }
-    DB_GetXAssetName(&param_1->asset);
-    DB_GetXAssetTypeName((param_1->asset).type);
+    DB_GetXAssetName(&newEntry->asset);
+    DB_GetXAssetTypeName((newEntry->asset).type);
     Com_Printf(0x10,"DB_DelayedCloneXAsset: postponed load asset: \'%s\',\'%s\' from fastfile %s\n")
     ;
 LAB_00590c76:
-    g_copyInfo[g_copyInfoCount] = param_1;
+    g_copyInfo[g_copyInfoCount] = newEntry;
     g_copyInfoCount = g_copyInfoCount + 1;
     return;
   }
   if ((db_xassetdebug->current).enabled == false) goto LAB_00590b43;
   if (((db_xassetdebugtype->current).integer != -1) &&
-     ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+     ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
     pcVar1 = Dvar_GetString("db_xassetdebugname");
     if (*pcVar1 == '\0') goto LAB_00590b43;
     pcVar1 = Dvar_GetString("db_xassetdebugname");
-    pcVar2 = DB_GetXAssetName(&param_1->asset);
+    pcVar2 = DB_GetXAssetName(&newEntry->asset);
     iVar3 = I_stricmp(pcVar2,pcVar1);
     if (iVar3 != 0) goto LAB_00590b43;
   }
-  DB_GetXAssetName(&param_1->asset);
-  DB_GetXAssetTypeName((param_1->asset).type);
+  DB_GetXAssetName(&newEntry->asset);
+  DB_GetXAssetTypeName((newEntry->asset).type);
   Com_Printf(0x10,"DB_DelayedCloneXAsset: g_sync forced load asset: \'%s\',\'%s\'\n");
 LAB_00590b43:
-  DB_LinkXAssetEntry(param_1,1);
+  DB_LinkXAssetEntry(newEntry,1);
   return;
 }
 
@@ -2806,34 +2960,36 @@ LAB_00590b43:
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetEntry * __cdecl DB_FindXAssetEntry(XAssetType param_1,char *param_2)
+XAssetEntry * __cdecl DB_FindXAssetEntry(XAssetType type,char *name)
 
 {
   ushort uVar1;
   uint uVar2;
-  char *pcVar3;
-  int iVar4;
-  XAssetEntryPoolEntry *pXVar5;
-  char *pcVar6;
-  uint local_c;
+  char *s0;
+  int iVar3;
+  XAssetEntryPoolEntry *asset;
+  char *s1;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *assetEntry;
   
-  uVar2 = DB_HashForName(param_2,param_1);
+  uVar2 = DB_HashForName(name,type);
   uVar1 = db_hashTable[uVar2 % 0x8000];
   do {
-    local_c = (uint)uVar1;
-    if (local_c == 0) {
+    assetEntryIndex = (uint)uVar1;
+    if (assetEntryIndex == 0) {
       return (XAssetEntry *)0x0;
     }
-    pXVar5 = g_assetEntryPool + local_c;
-    if ((pXVar5->entry).asset.type == param_1) {
-      pcVar6 = param_2;
-      pcVar3 = DB_GetXAssetName(&(pXVar5->entry).asset);
-      iVar4 = I_stricmp(pcVar3,pcVar6);
-      if (iVar4 == 0) {
-        return (XAssetEntry *)pXVar5;
+    asset = g_assetEntryPool + assetEntryIndex;
+    if ((asset->entry).asset.type == type) {
+      s1 = name;
+      s0 = DB_GetXAssetName(&(asset->entry).asset);
+      iVar3 = I_stricmp(s0,s1);
+      if (iVar3 == 0) {
+        return (XAssetEntry *)asset;
       }
     }
-    uVar1 = *(ushort *)((int)g_assetEntryPool + local_c * 0x10 + 10);
+    uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
   } while( true );
 }
 
@@ -2843,39 +2999,42 @@ XAssetEntry * __cdecl DB_FindXAssetEntry(XAssetType param_1,char *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetHeader __cdecl DB_FindXAssetDefaultHeaderInternal(XAssetType param_1)
+XAssetHeader __cdecl DB_FindXAssetDefaultHeaderInternal(XAssetType type)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  uint uVar3;
-  char *pcVar4;
-  int iVar5;
-  char *pcVar6;
-  uint local_10;
-  XAssetEntryPoolEntry *local_8;
+  char *name_00;
+  uint uVar2;
+  char *s0;
+  int iVar3;
+  char *s1;
+  XAssetHeader header;
+  uint hash;
+  uint assetEntryIndex;
+  char *name;
+  XAssetEntry *assetEntry;
   
-  pcVar2 = g_defaultAssetName[param_1];
-  uVar3 = DB_HashForName(pcVar2,param_1);
-  uVar1 = db_hashTable[uVar3 % 0x8000];
+  name_00 = g_defaultAssetName[type];
+  uVar2 = DB_HashForName(name_00,type);
+  uVar1 = db_hashTable[uVar2 % 0x8000];
   do {
-    local_10 = (uint)uVar1;
-    if (local_10 == 0) {
+    assetEntryIndex = (uint)uVar1;
+    if (assetEntryIndex == 0) {
       return (XAssetHeader)((XAssetHeader)0x0).xmodelPieces;
     }
-    local_8 = g_assetEntryPool + local_10;
-    if ((local_8->entry).asset.type == param_1) {
-      pcVar6 = pcVar2;
-      pcVar4 = DB_GetXAssetName(&(local_8->entry).asset);
-      iVar5 = I_stricmp(pcVar4,pcVar6);
-      if (iVar5 == 0) {
-        for (; (local_8->entry).nextOverride != 0;
-            local_8 = g_assetEntryPool + (local_8->entry).nextOverride) {
+    assetEntry = (XAssetEntry *)(g_assetEntryPool + assetEntryIndex);
+    if ((assetEntry->asset).type == type) {
+      s1 = name_00;
+      s0 = DB_GetXAssetName((XAsset *)assetEntry);
+      iVar3 = I_stricmp(s0,s1);
+      if (iVar3 == 0) {
+        for (; assetEntry->nextOverride != 0;
+            assetEntry = (XAssetEntry *)(g_assetEntryPool + assetEntry->nextOverride)) {
         }
-        return (XAssetHeader)(local_8->entry).asset.header.xmodelPieces;
+        return (XAssetHeader)(assetEntry->asset).header.xmodelPieces;
       }
     }
-    uVar1 = *(ushort *)((int)g_assetEntryPool + local_10 * 0x10 + 10);
+    uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
   } while( true );
 }
 
@@ -2885,63 +3044,64 @@ XAssetHeader __cdecl DB_FindXAssetDefaultHeaderInternal(XAssetType param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetEntry * __cdecl DB_CreateDefaultEntry(XAssetType param_1,char *param_2)
+XAssetEntry * __cdecl DB_CreateDefaultEntry(XAssetType type,char *name)
 
 {
   uint uVar1;
   char *pcVar2;
   int iVar3;
-  scriptInstance_t sVar4;
-  XAsset local_10;
-  XAssetEntry *local_8;
+  scriptInstance_t inst;
+  uint hash;
+  XAsset asset;
+  XAssetEntry *newEntry;
   
-  local_10.header = DB_FindXAssetDefaultHeaderInternal(param_1);
-  if (local_10.header.xmodelPieces == (XModelPieces *)0x0) {
+  asset.header = DB_FindXAssetDefaultHeaderInternal(type);
+  if (asset.header.xmodelPieces == (XModelPieces *)0x0) {
     Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-    if ((param_1 == ASSET_TYPE_CLIPMAP) || (param_1 == ASSET_TYPE_CLIPMAP_PVS)) {
+    if ((type == ASSET_TYPE_CLIPMAP) || (type == ASSET_TYPE_CLIPMAP_PVS)) {
       Com_Error(ERR_DROP,
                 "Couldn\'t find the bsp for this map.  Please build the fast file associated with %s and try again."
                );
     }
     else {
-      DB_GetXAssetTypeName(param_1);
+      DB_GetXAssetTypeName(type);
       Com_Error(ERR_DROP,
                 "Could not load default asset \'%s\' for asset type \'%s\'.\nTried to load asset \'%s\'."
                );
     }
   }
-  local_10.type = param_1;
+  asset.type = type;
   g_defaultAssetCount = g_defaultAssetCount + 1;
-  local_8 = DB_AllocXAssetEntry(param_1,0);
-  DB_CloneXAssetInternal(&local_10,&local_8->asset);
-  uVar1 = DB_HashForName(param_2,param_1);
-  local_8->nextHash = db_hashTable[uVar1 % 0x8000];
-  db_hashTable[uVar1 % 0x8000] = (ushort)((int)&local_8[-0x2ef6bc].zoneIndex >> 4);
-  sVar4 = SCRIPTINSTANCE_SERVER;
-  uVar1 = SL_GetString(param_2,4,SCRIPTINSTANCE_SERVER);
-  pcVar2 = SL_ConvertToString(uVar1,sVar4);
-  DB_SetXAssetName(&local_8->asset,pcVar2);
-  local_8->inuse = true;
+  newEntry = DB_AllocXAssetEntry(type,0);
+  DB_CloneXAssetInternal(&asset,&newEntry->asset);
+  uVar1 = DB_HashForName(name,type);
+  newEntry->nextHash = db_hashTable[uVar1 % 0x8000];
+  db_hashTable[uVar1 % 0x8000] = (ushort)((int)&newEntry[-0x2ef6bc].zoneIndex >> 4);
+  inst = SCRIPTINSTANCE_SERVER;
+  uVar1 = SL_GetString(name,4,SCRIPTINSTANCE_SERVER);
+  pcVar2 = SL_ConvertToString(uVar1,inst);
+  DB_SetXAssetName(&newEntry->asset,pcVar2);
+  newEntry->inuse = true;
   if ((db_xassetdebug->current).enabled == false) {
-    return local_8;
+    return newEntry;
   }
   if (((db_xassetdebugtype->current).integer != -1) &&
-     ((db_xassetdebugtype->current).integer != param_1)) {
+     ((db_xassetdebugtype->current).integer != type)) {
     pcVar2 = Dvar_GetString("db_xassetdebugname");
     if (*pcVar2 == '\0') {
-      return local_8;
+      return newEntry;
     }
     pcVar2 = Dvar_GetString("db_xassetdebugname");
-    iVar3 = I_stricmp(param_2,pcVar2);
+    iVar3 = I_stricmp(name,pcVar2);
     if (iVar3 != 0) {
-      return local_8;
+      return newEntry;
     }
   }
-  DB_GetXAssetName(&local_10);
-  DB_GetXAssetTypeName(local_10.type);
+  DB_GetXAssetName(&asset);
+  DB_GetXAssetTypeName(asset.type);
   Com_Printf(0x10,
              "DB_CreateDefaultEntry: used default asset: \'%s\',\'%s\' for asset name: \'%s\'\n");
-  return local_8;
+  return newEntry;
 }
 
 
@@ -2956,29 +3116,32 @@ void __cdecl DB_ListDefaultEntries_f(void)
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  XAssetEntryPoolEntry *pXVar4;
-  uint local_18;
-  uint local_14;
-  int local_c;
+  XAssetEntryPoolEntry *asset;
+  uint nextAssetEntryIndex;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *assetEntry;
+  uint defaultAssetCount;
+  uint defaultAssetsSize;
   
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  local_c = g_defaultAssetCount;
-  for (local_18 = 0; local_18 < 0x8000; local_18 = local_18 + 1) {
-    uVar1 = db_hashTable[local_18];
-    while (local_14 = (uint)uVar1, local_14 != 0) {
-      pXVar4 = g_assetEntryPool + local_14;
-      uVar1 = *(ushort *)((int)g_assetEntryPool + local_14 * 0x10 + 10);
-      if (*(char *)((int)g_assetEntryPool + local_14 * 0x10 + 8) == '\0') {
-        local_c = local_c + -1;
-        DB_GetXAssetName(&(pXVar4->entry).asset);
-        DB_GetXAssetTypeName((pXVar4->entry).asset.type);
+  defaultAssetCount = g_defaultAssetCount;
+  for (hash = 0; hash < 0x8000; hash = hash + 1) {
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      asset = g_assetEntryPool + assetEntryIndex;
+      uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
+      if (*(char *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 8) == '\0') {
+        defaultAssetCount = defaultAssetCount - 1;
+        DB_GetXAssetName(&(asset->entry).asset);
+        DB_GetXAssetTypeName((asset->entry).asset.type);
         Com_Printf(0x10,"%s,%s\n");
-        DB_GetXAssetTypeSize((pXVar4->entry).asset.type);
+        DB_GetXAssetTypeSize((asset->entry).asset.type);
       }
     }
   }
   Com_Printf(0x10,"Total default assets %d, size %d\n");
-  if ((local_c != 0) &&
+  if ((defaultAssetCount != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xcc7,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -2995,39 +3158,44 @@ void __cdecl DB_ListDefaultEntries_f(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_ListAssetPool(XAssetType param_1)
+void __cdecl DB_ListAssetPool(XAssetType type)
 
 {
   ushort uVar1;
   ushort uVar2;
-  XAssetEntryPoolEntry *pXVar3;
-  uint local_20;
-  uint local_18;
-  uint local_8;
+  XAssetEntryPoolEntry *asset;
+  uint nextAssetEntryIndex;
+  uint hash;
+  uint assetPoolSize;
+  uint assetEntryIndex;
+  XAssetEntry *overrideAssetEntry;
+  uint assetPoolCount;
+  XAssetEntry *assetEntry;
+  uint overrideAssetEntryIndex;
   
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  DB_GetXAssetTypeName(param_1);
+  DB_GetXAssetTypeName(type);
   Com_Printf(0x10,"Listing assets in %s pool.\n");
-  for (local_20 = 0; local_20 < 0x8000; local_20 = local_20 + 1) {
-    uVar1 = db_hashTable[local_20];
-    while (local_18 = (uint)uVar1, local_18 != 0) {
-      pXVar3 = g_assetEntryPool + local_18;
-      uVar1 = *(ushort *)((int)g_assetEntryPool + local_18 * 0x10 + 10);
-      if ((pXVar3->entry).asset.type == param_1) {
-        DB_GetXAssetName(&(pXVar3->entry).asset);
+  for (hash = 0; hash < 0x8000; hash = hash + 1) {
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      asset = g_assetEntryPool + assetEntryIndex;
+      uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
+      if ((asset->entry).asset.type == type) {
+        DB_GetXAssetName(&(asset->entry).asset);
         Com_Printf(0x10,"%s,%s\n");
-        DB_GetXAssetTypeSize((pXVar3->entry).asset.type);
-        uVar2 = *(ushort *)((int)g_assetEntryPool + local_18 * 0x10 + 0xc);
-        while (local_8 = (uint)uVar2, local_8 != 0) {
-          DB_GetXAssetName(&g_assetEntryPool[local_8].entry.asset);
+        DB_GetXAssetTypeSize((asset->entry).asset.type);
+        uVar2 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 0xc);
+        while (overrideAssetEntryIndex = (uint)uVar2, overrideAssetEntryIndex != 0) {
+          DB_GetXAssetName(&g_assetEntryPool[overrideAssetEntryIndex].entry.asset);
           Com_Printf(0x10,"%s,%s\n");
-          DB_GetXAssetTypeSize(g_assetEntryPool[local_8].entry.asset.type);
-          uVar2 = *(ushort *)((int)g_assetEntryPool + local_8 * 0x10 + 0xc);
+          DB_GetXAssetTypeSize(g_assetEntryPool[overrideAssetEntryIndex].entry.asset.type);
+          uVar2 = *(ushort *)((int)g_assetEntryPool + overrideAssetEntryIndex * 0x10 + 0xc);
         }
       }
     }
   }
-  DB_GetXAssetTypeName(param_1);
+  DB_GetXAssetTypeName(type);
   Com_Printf(0x10,"Total of %d assets in %s pool, size %d\n");
   Sys_LeaveCriticalSection(CRITSECT_DBHASH);
   return;
@@ -3037,27 +3205,30 @@ void __cdecl DB_ListAssetPool(XAssetType param_1)
 // 00591F80  DB_ListAssetPool_f  (database/db_registry.cpp:3323)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl DB_ListAssetPool_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  XAssetType XVar3;
-  int local_10;
+  char *nptr;
+  XAssetType type_00;
+  int i;
+  XAssetType type;
+  int argc;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 2) {
     Com_Printf(0,"listassetpool <poolnumber>: lists all the assets in the specified pool\n");
-    for (local_10 = 0; local_10 < 0x2b; local_10 = local_10 + 1) {
-      DB_GetXAssetTypeName(local_10);
+    for (i = 0; i < 0x2b; i = i + 1) {
+      DB_GetXAssetTypeName(i);
       Com_Printf(0,"%d %s\n");
     }
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    XVar3 = atoi(pcVar2);
-    DB_ListAssetPool(XVar3);
+    nptr = Cmd_Argv(1);
+    type_00 = atoi(nptr);
+    DB_ListAssetPool(type_00);
   }
   return;
 }
@@ -3071,17 +3242,17 @@ void __cdecl DB_ListAssetPool_f(void)
 void __cdecl DB_DumpMaterialList_f(void)
 
 {
-  undefined4 local_8;
+  XAssetType type;
   
-  local_8 = 6;
-  DB_PrintXAssetsForType(ASSET_TYPE_MATERIAL,DB_PrintAssetName,&local_8,true);
+  type = ASSET_TYPE_MATERIAL;
+  DB_PrintXAssetsForType(ASSET_TYPE_MATERIAL,DB_PrintAssetName,&type,true);
   return;
 }
 
 
 // 0058F640  IsConfigFile  (database/db_registry.cpp:3353)
 
-bool __cdecl IsConfigFile(char *param_1)
+bool __cdecl IsConfigFile(char *name)
 
 {
   code *pcVar1;
@@ -3089,7 +3260,7 @@ bool __cdecl IsConfigFile(char *param_1)
   undefined1 uVar3;
   int extraout_EAX;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xd1a,0,
                              "%s");
     if (!bVar2) {
@@ -3098,7 +3269,7 @@ bool __cdecl IsConfigFile(char *param_1)
       return (bool)uVar3;
     }
   }
-  strstr((uchar *)param_1,(uchar *)".cfg");
+  strstr((uchar *)name,(uchar *)".cfg");
   return extraout_EAX != 0;
 }
 
@@ -3107,20 +3278,20 @@ bool __cdecl IsConfigFile(char *param_1)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl PrintWaitedError(XAssetType param_1,char *param_2,int param_3)
+void __cdecl PrintWaitedError(XAssetType type,char *name,int waitedMsec)
 
 {
   bool bVar1;
   
-  if (100 < param_3) {
-    if (param_1 == ASSET_TYPE_SOUND) {
+  if (100 < waitedMsec) {
+    if (type == ASSET_TYPE_SOUND) {
       Com_Printf(10,"Waited %i msec for missing asset \"%s\".\n");
     }
     else {
       Com_PrintError(1,"Waited %i msec for missing asset \"%s\".\n");
     }
   }
-  switch(param_1) {
+  switch(type) {
   case ASSET_TYPE_XANIMPARTS:
     Com_PrintWarning(10,"Could not load %s \"%s\".\n");
     break;
@@ -3137,7 +3308,7 @@ void __cdecl PrintWaitedError(XAssetType param_1,char *param_2,int param_3)
     }
     break;
   case ASSET_TYPE_RAWFILE:
-    bVar1 = IsConfigFile(param_2);
+    bVar1 = IsConfigFile(name);
     if (bVar1) {
       return;
     }
@@ -3153,31 +3324,33 @@ void __cdecl PrintWaitedError(XAssetType param_1,char *param_2,int param_3)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl DB_FindXAssetNameFromHash(XAssetType param_1,uint param_2)
+char * __cdecl DB_FindXAssetNameFromHash(XAssetType type,uint hash)
 
 {
   ushort uVar1;
-  char *pcVar2;
-  uint uVar3;
-  uint local_10;
+  char *name_00;
+  uint uVar2;
+  uint assetEntryIndex;
+  char *name;
+  XAssetEntry *assetEntry;
   
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  uVar1 = db_hashTable[param_2 % 0x8000];
+  uVar1 = db_hashTable[hash % 0x8000];
   do {
-    local_10 = (uint)uVar1;
-    if (local_10 == 0) {
+    assetEntryIndex = (uint)uVar1;
+    if (assetEntryIndex == 0) {
       Sys_LeaveCriticalSection(CRITSECT_DBHASH);
       return (char *)0x0;
     }
-    if (g_assetEntryPool[local_10].entry.asset.type == param_1) {
-      pcVar2 = DB_GetXAssetName(&g_assetEntryPool[local_10].entry.asset);
-      uVar3 = DB_HashForName(pcVar2,param_1);
-      if (uVar3 == param_2) {
+    if (g_assetEntryPool[assetEntryIndex].entry.asset.type == type) {
+      name_00 = DB_GetXAssetName(&g_assetEntryPool[assetEntryIndex].entry.asset);
+      uVar2 = DB_HashForName(name_00,type);
+      if (uVar2 == hash) {
         Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-        return pcVar2;
+        return name_00;
       }
     }
-    uVar1 = *(ushort *)((int)g_assetEntryPool + local_10 * 0x10 + 10);
+    uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
   } while( true );
 }
 
@@ -3188,7 +3361,8 @@ char * __cdecl DB_FindXAssetNameFromHash(XAssetType param_1,uint param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetHeader __cdecl DB_FindXAssetHeader(XAssetType param_1,char *param_2,bool param_3,int param_4)
+XAssetHeader __cdecl
+DB_FindXAssetHeader(XAssetType type,char *name,bool errorIfMissing,int waitTime)
 
 {
   char cVar1;
@@ -3209,15 +3383,21 @@ XAssetHeader __cdecl DB_FindXAssetHeader(XAssetType param_1,char *param_2,bool p
   char *local_a4;
   char *local_94;
   char *local_84;
-  char *local_70;
-  int local_60;
-  char local_5c [64];
+  int waitedTime;
+  int suspendedThread;
+  int semaphore;
+  char *basename;
+  int elen;
+  int len;
+  XAssetHeader header;
+  int start;
+  char so_name [64];
   uint local_1c;
-  char *local_18;
-  int local_14;
-  XAssetEntry *local_10;
-  XAssetEntry *local_c;
-  char *local_8;
+  char *so_prefix;
+  int use_so_name;
+  XAssetEntry *assetEntry;
+  XAssetEntry *newEntry;
+  char *bspext;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (((useFastFile->current).enabled == false) &&
@@ -3227,86 +3407,86 @@ XAssetHeader __cdecl DB_FindXAssetHeader(XAssetType param_1,char *param_2,bool p
     XVar4.xmodelPieces = (XModelPieces *)(*pcVar2)();
     return (XAssetHeader)XVar4.xmodelPieces;
   }
-  local_60 = 0;
-  local_18 = "maps/so_";
-  local_8 = ".d3dbsp";
-  local_14 = 0;
+  start = 0;
+  so_prefix = "maps/so_";
+  bspext = ".d3dbsp";
+  use_so_name = 0;
   local_84 = "maps/so_";
   pcVar7 = local_84;
   do {
     local_84 = pcVar7;
     pcVar7 = local_84 + 1;
   } while (*local_84 != '\0');
-  iVar5 = I_strncmp("maps/so_",param_2,(int)(local_84 + -0xca2488));
+  iVar5 = I_strncmp("maps/so_",name,(int)(local_84 + -0xca2488));
   if (iVar5 == 0) {
-    local_94 = param_2;
+    local_94 = name;
     do {
       cVar1 = *local_94;
       local_94 = local_94 + 1;
     } while (cVar1 != '\0');
-    local_a4 = local_8;
+    local_a4 = bspext;
     do {
       cVar1 = *local_a4;
       local_a4 = local_a4 + 1;
     } while (cVar1 != '\0');
-    if ((int)local_a4 - (int)(local_8 + 1) < (int)local_94 - (int)(param_2 + 1)) {
-      local_b4 = local_8;
+    if ((int)local_a4 - (int)(bspext + 1) < (int)local_94 - (int)(name + 1)) {
+      local_b4 = bspext;
       do {
         cVar1 = *local_b4;
         local_b4 = local_b4 + 1;
       } while (cVar1 != '\0');
-      iVar5 = I_strncmp(local_8,param_2 + (((int)local_94 - (int)(param_2 + 1)) -
-                                          ((int)local_a4 - (int)(local_8 + 1))),
-                        (int)local_b4 - (int)(local_8 + 1));
+      iVar5 = I_strncmp(bspext,name + (((int)local_94 - (int)(name + 1)) -
+                                      ((int)local_a4 - (int)(bspext + 1))),
+                        (int)local_b4 - (int)(bspext + 1));
       if (iVar5 == 0) {
-        local_c4 = local_18;
+        local_c4 = so_prefix;
         do {
           cVar1 = *local_c4;
           local_c4 = local_c4 + 1;
         } while (cVar1 != '\0');
-        for (local_70 = param_2 + ((int)local_c4 - (int)(local_18 + 1));
-            (*local_70 != '\0' && (*local_70 != '_')); local_70 = local_70 + 1) {
+        for (basename = name + ((int)local_c4 - (int)(so_prefix + 1));
+            (*basename != '\0' && (*basename != '_')); basename = basename + 1) {
         }
-        if (*local_70 == '\0') {
+        if (*basename == '\0') {
           Com_PrintError(1,"Bad specop level name\n");
         }
-        iVar5 = I_strncmp("_mp_",local_70,4);
+        iVar5 = I_strncmp("_mp_",basename,4);
         if (iVar5 == 0) {
-          Com_sprintf(local_5c,0x40,"maps/mp/%s");
+          Com_sprintf(so_name,0x40,"maps/mp/%s");
         }
         else {
-          Com_sprintf(local_5c,0x40,"maps/%s");
+          Com_sprintf(so_name,0x40,"maps/%s");
         }
-        local_14 = 1;
+        use_so_name = 1;
       }
     }
   }
 LAB_0058e44c:
   do {
     Sys_EnterCriticalSection(CRITSECT_DBHASH);
-    if (local_14 == 0) {
-      local_d4 = param_2;
+    if (use_so_name == 0) {
+      local_d4 = name;
     }
     else {
-      local_d4 = local_5c;
+      local_d4 = so_name;
     }
-    local_10 = DB_FindXAssetEntry(param_1,local_d4);
+    assetEntry = DB_FindXAssetEntry(type,local_d4);
     Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-    if (local_14 == 0) {
-      local_d8 = param_2;
+    if (use_so_name == 0) {
+      local_d8 = name;
     }
     else {
-      local_d8 = local_5c;
+      local_d8 = so_name;
     }
-    DB_RegisteredReorderAsset(param_1,local_d8,local_10);
-    if ((local_10 != (XAssetEntry *)0x0) &&
-       ((local_10->zoneIndex != '\0' || (iVar5 = Sys_IsDatabaseReady2(), iVar5 != 0))))
+    DB_RegisteredReorderAsset(type,local_d8,assetEntry);
+    if ((assetEntry != (XAssetEntry *)0x0) &&
+       ((assetEntry->zoneIndex != '\0' || (iVar5 = Sys_IsDatabaseReady2(), iVar5 != 0))))
     goto LAB_0058e4e3;
     bVar3 = Sys_IsDatabaseThread();
     if (bVar3) goto LAB_0058e6c0;
-    if (local_60 == 0) {
+    if (start == 0) {
       ProfLoad_Begin("Wait for fastfile asset");
-      local_60 = Sys_Milliseconds();
+      start = Sys_Milliseconds();
       iVar5 = Sys_IsDatabaseReady2();
       if (iVar5 != 0) goto LAB_0058e44c;
       bVar3 = Sys_IsMainThread();
@@ -3347,37 +3527,37 @@ LAB_0058e44c:
     else {
       DB_PostLoadXZone();
     }
-    if ((param_4 != -1) && (iVar5 = Sys_Milliseconds(), param_4 <= iVar5 - local_60)) break;
+    if ((waitTime != -1) && (iVar5 = Sys_Milliseconds(), waitTime <= iVar5 - start)) break;
   } while( true );
   ProfLoad_End();
 LAB_0058e6c0:
-  if (local_10 != (XAssetEntry *)0x0) {
+  if (assetEntry != (XAssetEntry *)0x0) {
 LAB_0058e4e3:
-    if (((local_10->asset).header.xmodelPieces == (XModelPieces *)0x0) &&
+    if (((assetEntry->asset).header.xmodelPieces == (XModelPieces *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0xd9d,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       XVar4.xmodelPieces = (XModelPieces *)(*pcVar2)();
       return (XAssetHeader)XVar4.xmodelPieces;
     }
-    local_10->inuse = true;
-    if (local_60 != 0) {
+    assetEntry->inuse = true;
+    if (start != 0) {
       Sys_Milliseconds();
       Com_Printf(10,"Waited %i msec for asset \'%s\' of type \'%s\'.\n");
       ProfLoad_End();
     }
-    return (XAssetHeader)(local_10->asset).header.xmodelPieces;
+    return (XAssetHeader)(assetEntry->asset).header.xmodelPieces;
   }
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  if (local_14 == 0) {
-    local_e0 = param_2;
+  if (use_so_name == 0) {
+    local_e0 = name;
   }
   else {
-    local_e0 = local_5c;
+    local_e0 = so_name;
   }
-  local_10 = DB_FindXAssetEntry(param_1,local_e0);
-  if (local_10 != (XAssetEntry *)0x0) {
-    if (((local_10->asset).header.xmodelPieces == (XModelPieces *)0x0) &&
+  assetEntry = DB_FindXAssetEntry(type,local_e0);
+  if (assetEntry != (XAssetEntry *)0x0) {
+    if (((assetEntry->asset).header.xmodelPieces == (XModelPieces *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0xdfd,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -3387,27 +3567,27 @@ LAB_0058e4e3:
     Sys_LeaveCriticalSection(CRITSECT_DBHASH);
     goto LAB_0058e4e3;
   }
-  if (((param_3) && (param_1 != ASSET_TYPE_XANIMPARTS)) &&
+  if (((errorIfMissing) && (type != ASSET_TYPE_XANIMPARTS)) &&
      ((com_developer->current).enabled != false)) {
-    if (local_14 == 0) {
-      local_e4 = param_2;
+    if (use_so_name == 0) {
+      local_e4 = name;
     }
     else {
-      local_e4 = local_5c;
+      local_e4 = so_name;
     }
-    DB_LogMissingAsset(param_1,local_e4);
+    DB_LogMissingAsset(type,local_e4);
   }
-  if ((local_60 != 0) && (param_3)) {
-    if (local_14 == 0) {
-      local_e8 = param_2;
+  if ((start != 0) && (errorIfMissing)) {
+    if (use_so_name == 0) {
+      local_e8 = name;
     }
     else {
-      local_e8 = local_5c;
+      local_e8 = so_name;
     }
     iVar5 = Sys_Milliseconds();
-    PrintWaitedError(param_1,local_e8,iVar5 - local_60);
+    PrintWaitedError(type,local_e8,iVar5 - start);
   }
-  switch(param_1) {
+  switch(type) {
   case ASSET_TYPE_LOCALIZE_ENTRY:
   case ASSET_TYPE_RAWFILE:
   case ASSET_TYPE_XGLOBALS:
@@ -3418,22 +3598,22 @@ LAB_0058e4e3:
   if ((db_xassetdebug == (dvar_s *)0x0) || ((db_xassetdebug->current).enabled == false))
   goto LAB_0058e8a4;
   if (((db_xassetdebugtype->current).integer != -1) &&
-     ((db_xassetdebugtype->current).integer != param_1)) {
+     ((db_xassetdebugtype->current).integer != type)) {
     pcVar7 = Dvar_GetString("db_xassetdebugname");
     if (*pcVar7 == '\0') goto LAB_0058e8a4;
     pcVar7 = Dvar_GetString("db_xassetdebugname");
-    iVar5 = I_stricmp(param_2,pcVar7);
+    iVar5 = I_stricmp(name,pcVar7);
     if (iVar5 != 0) goto LAB_0058e8a4;
   }
-  DB_GetXAssetTypeName(param_1);
+  DB_GetXAssetTypeName(type);
   Com_Printf(0x10,"***db_xassetdebug:***\nDB_FindXAssetHeader: missing asset: \'%s\',\'%s\'\n");
 LAB_0058e8a4:
-  if (local_14 != 0) {
-    param_2 = local_5c;
+  if (use_so_name != 0) {
+    name = so_name;
   }
-  local_c = DB_CreateDefaultEntry(param_1,param_2);
+  newEntry = DB_CreateDefaultEntry(type,name);
   Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-  return (XAssetHeader)(local_c->asset).header.xmodelPieces;
+  return (XAssetHeader)(newEntry->asset).header.xmodelPieces;
 }
 
 
@@ -3464,10 +3644,10 @@ void __cdecl DB_Update(void)
 
 // 0058F6E0  DB_SetInitializing  (database/db_registry.cpp:3662)
 
-void __cdecl DB_SetInitializing(bool param_1)
+void __cdecl DB_SetInitializing(bool inUse)
 
 {
-  g_initializing = param_1;
+  g_initializing = inUse;
   return;
 }
 
@@ -3486,7 +3666,7 @@ bool __cdecl DB_GetInitializing(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl DB_IsXAssetDefault(XAssetType param_1,char *param_2)
+bool __cdecl DB_IsXAssetDefault(XAssetType type,char *name)
 
 {
   ushort uVar1;
@@ -3494,17 +3674,19 @@ bool __cdecl DB_IsXAssetDefault(XAssetType param_1,char *param_2)
   bool bVar3;
   undefined1 uVar4;
   uint uVar5;
-  char *pcVar6;
-  int iVar7;
-  char *pcVar8;
-  uint local_c;
+  char *s0;
+  int iVar6;
+  char *s1;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *assetEntry;
   
-  uVar5 = DB_HashForName(param_2,param_1);
+  uVar5 = DB_HashForName(name,type);
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
   uVar1 = db_hashTable[uVar5 % 0x8000];
   do {
-    local_c = (uint)uVar1;
-    if (local_c == 0) {
+    assetEntryIndex = (uint)uVar1;
+    if (assetEntryIndex == 0) {
       Sys_LeaveCriticalSection(CRITSECT_DBHASH);
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xe71,
                                0,"unreachable");
@@ -3515,16 +3697,17 @@ bool __cdecl DB_IsXAssetDefault(XAssetType param_1,char *param_2)
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    if (g_assetEntryPool[local_c].entry.asset.type == param_1) {
-      pcVar8 = param_2;
-      pcVar6 = DB_GetXAssetName(&g_assetEntryPool[local_c].entry.asset);
-      iVar7 = I_stricmp(pcVar6,pcVar8);
-      if (iVar7 == 0) {
+    if (g_assetEntryPool[assetEntryIndex].entry.asset.type == type) {
+      s1 = name;
+      s0 = DB_GetXAssetName(&g_assetEntryPool[assetEntryIndex].entry.asset);
+      iVar6 = I_stricmp(s0,s1);
+      if (iVar6 == 0) {
         Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-        return (bool)('\x01' - (*(char *)((int)g_assetEntryPool + local_c * 0x10 + 8) != '\0'));
+        return (bool)('\x01' - (*(char *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 8) !=
+                               '\0'));
       }
     }
-    uVar1 = *(ushort *)((int)g_assetEntryPool + local_c * 0x10 + 10);
+    uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
   } while( true );
 }
 
@@ -3534,43 +3717,45 @@ bool __cdecl DB_IsXAssetDefault(XAssetType param_1,char *param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl DB_GetAllXAssetOfType_FastFile(XAssetType param_1,XAssetHeader *param_2,int param_3)
+int __cdecl DB_GetAllXAssetOfType_FastFile(XAssetType type,XAssetHeader *assets,int maxCount)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uint local_14;
-  uint local_10;
-  int local_c;
+  uint hash;
+  uint assetEntryIndex;
+  int assetCount;
+  XAssetEntry *assetEntry;
   
-  local_c = 0;
+  assetCount = 0;
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  local_14 = 0;
+  hash = 0;
   do {
-    if (0x7fff < local_14) {
+    if (0x7fff < hash) {
       Sys_LeaveCriticalSection(CRITSECT_DBHASH);
-      return local_c;
+      return assetCount;
     }
-    uVar1 = db_hashTable[local_14];
-    while (local_10 = (uint)uVar1, local_10 != 0) {
-      if (g_assetEntryPool[local_10].entry.asset.type == param_1) {
-        if (param_2 != (XAssetHeader *)0x0) {
-          if ((param_3 <= local_c) &&
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      if (g_assetEntryPool[assetEntryIndex].entry.asset.type == type) {
+        if (assets != (XAssetHeader *)0x0) {
+          if ((maxCount <= assetCount) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp"
                                        ,0xe8e,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             iVar4 = (*pcVar2)();
             return iVar4;
           }
-          param_2[local_c] = *(XAssetHeader *)((int)g_assetEntryPool + local_10 * 0x10 + 4);
+          assets[assetCount] = *(XAssetHeader *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 4)
+          ;
         }
-        local_c = local_c + 1;
+        assetCount = assetCount + 1;
       }
-      uVar1 = *(ushort *)((int)g_assetEntryPool + local_10 * 0x10 + 10);
+      uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
     }
-    local_14 = local_14 + 1;
+    hash = hash + 1;
   } while( true );
 }
 
@@ -3583,6 +3768,7 @@ void __cdecl DB_BeginRecoverLostDevice(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int semaphore;
   
   bVar2 = Sys_IsRenderThread();
   if (!bVar2) {
@@ -3695,22 +3881,22 @@ void __cdecl DB_SyncLostDevice(void)
 
 // 0058FA30  DB_GetZonePriority  (database/db_registry.cpp:3795)
 
-int __cdecl DB_GetZonePriority(int param_1)
+int __cdecl DB_GetZonePriority(int zone)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 < 0x2001) {
-    if (param_1 == 0x2000) {
+  if (zone < 0x2001) {
+    if (zone == 0x2000) {
       return 4;
     }
-    if (param_1 < 0x41) {
-      if (param_1 == 0x40) {
+    if (zone < 0x41) {
+      if (zone == 0x40) {
         return 0x3d;
       }
-      switch(param_1) {
+      switch(zone) {
       case 1:
         return 0x33;
       case 2:
@@ -3725,75 +3911,75 @@ int __cdecl DB_GetZonePriority(int param_1)
         return 9;
       }
     }
-    else if (param_1 < 0x401) {
-      if (param_1 == 0x400) {
+    else if (zone < 0x401) {
+      if (zone == 0x400) {
         return 0x3c;
       }
-      if (param_1 == 0x80) {
+      if (zone == 0x80) {
         return 0xb;
       }
-      if (param_1 == 0x100) {
+      if (zone == 0x100) {
         return 0x34;
       }
-      if (param_1 == 0x200) {
+      if (zone == 0x200) {
         return 2;
       }
     }
     else {
-      if (param_1 == 0x800) {
+      if (zone == 0x800) {
         return 10;
       }
-      if (param_1 == 0x1000) {
+      if (zone == 0x1000) {
         return 0x36;
       }
     }
   }
-  else if (param_1 < 0x200001) {
-    if (param_1 == 0x200000) {
+  else if (zone < 0x200001) {
+    if (zone == 0x200000) {
       return 0xc;
     }
-    if (param_1 < 0x20001) {
-      if (param_1 == 0x20000) {
+    if (zone < 0x20001) {
+      if (zone == 0x20000) {
         return 6;
       }
-      if (param_1 == 0x4000) {
+      if (zone == 0x4000) {
         return 0x37;
       }
-      if (param_1 == 0x8000) {
+      if (zone == 0x8000) {
         return 5;
       }
-      if (param_1 == 0x10000) {
+      if (zone == 0x10000) {
         return 0x38;
       }
     }
     else {
-      if (param_1 == 0x40000) {
+      if (zone == 0x40000) {
         return 0x39;
       }
-      if (param_1 == 0x80000) {
+      if (zone == 0x80000) {
         return 7;
       }
     }
   }
-  else if (param_1 < 0x2000001) {
-    if (param_1 == 0x2000000) {
+  else if (zone < 0x2000001) {
+    if (zone == 0x2000000) {
       return 8;
     }
-    if (param_1 == 0x400000) {
+    if (zone == 0x400000) {
       return 0x3e;
     }
-    if (param_1 == 0x800000) {
+    if (zone == 0x800000) {
       return 3;
     }
-    if (param_1 == 0x1000000) {
+    if (zone == 0x1000000) {
       return 0x35;
     }
   }
   else {
-    if (param_1 == 0x4000000) {
+    if (zone == 0x4000000) {
       return 0x3a;
     }
-    if (param_1 == 0x10000000) {
+    if (zone == 0x10000000) {
       return 0x32;
     }
   }
@@ -3812,15 +3998,17 @@ int __cdecl DB_GetZonePriority(int param_1)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-int __cdecl DB_OverrideAsset(uint param_1,uint param_2,XAssetType param_3)
+int __cdecl DB_OverrideAsset(uint newZoneIndex,uint existingZoneIndex,XAssetType type)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
+  int newPriority;
+  int existingPriority;
   
-  if (param_1 == 0) {
+  if (newZoneIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xf19,0,
                              "%s");
     if (!bVar2) {
@@ -3829,7 +4017,7 @@ int __cdecl DB_OverrideAsset(uint param_1,uint param_2,XAssetType param_3)
       return iVar3;
     }
   }
-  if (param_2 == 0) {
+  if (existingZoneIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xf1a,0,
                              "%s");
     if (!bVar2) {
@@ -3838,8 +4026,8 @@ int __cdecl DB_OverrideAsset(uint param_1,uint param_2,XAssetType param_3)
       return iVar3;
     }
   }
-  iVar3 = DB_GetZonePriority(g_zoneNames[param_1].flags & 0x17ffffff);
-  iVar4 = DB_GetZonePriority(g_zoneNames[param_2].flags & 0x17ffffff);
+  iVar3 = DB_GetZonePriority(g_zoneNames[newZoneIndex].flags & 0x17ffffff);
+  iVar4 = DB_GetZonePriority(g_zoneNames[existingZoneIndex].flags & 0x17ffffff);
   return (uint)(iVar4 <= iVar3);
 }
 
@@ -3849,7 +4037,7 @@ int __cdecl DB_OverrideAsset(uint param_1,uint param_2,XAssetType param_3)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetEntry * __cdecl DB_LinkXAssetEntry(XAssetEntry *param_1,int param_2)
+XAssetEntry * __cdecl DB_LinkXAssetEntry(XAssetEntry *newEntry,int allowOverride)
 
 {
   ushort uVar1;
@@ -3861,90 +4049,92 @@ XAssetEntry * __cdecl DB_LinkXAssetEntry(XAssetEntry *param_1,int param_2)
   uint uVar7;
   char *pcVar8;
   XAssetEntry *pXVar9;
-  XAssetEntryPoolEntry *pXVar10;
-  XAssetType XVar11;
-  XAssetEntryPoolEntry *local_30;
-  uint local_28;
-  XAsset local_20;
-  uint local_18;
-  char *local_14;
-  uchar local_d;
-  XAssetType local_c;
-  ushort *local_8;
+  XAssetEntryPoolEntry *asset_00;
+  XAssetType type_00;
+  XAssetEntry *existingEntry;
+  uint hash;
+  uint existingEntryIndex;
+  XAssetEntry *overrideAssetEntry;
+  XAsset asset;
+  int isStubAsset;
+  char *name;
+  uchar zoneIndex;
+  XAssetType type;
+  ushort *pOverrideAssetEntryIndex;
   
-  local_14 = DB_GetXAssetName(&param_1->asset);
+  name = DB_GetXAssetName(&newEntry->asset);
   if ((db_xassetdebug->current).enabled != false) {
     if (((db_xassetdebugtype->current).integer == -1) ||
-       ((db_xassetdebugtype->current).integer == (param_1->asset).type)) {
+       ((db_xassetdebugtype->current).integer == (newEntry->asset).type)) {
 LAB_0058fe61:
-      DB_GetXAssetTypeName((param_1->asset).type);
+      DB_GetXAssetTypeName((newEntry->asset).type);
       Com_Printf(0x10,"***db_xassetdebug:***\nDB_LinkXAssetEntry: link asset: \'%s\',\'%s\'\n");
     }
     else {
       pcVar4 = Dvar_GetString("db_xassetdebugname");
       if (*pcVar4 != '\0') {
         pcVar4 = Dvar_GetString("db_xassetdebugname");
-        iVar5 = I_stricmp(local_14,pcVar4);
+        iVar5 = I_stricmp(name,pcVar4);
         if (iVar5 == 0) goto LAB_0058fe61;
       }
     }
   }
-  local_18 = (uint)(*local_14 == ',');
-  if (local_18 != 0) {
-    local_14 = local_14 + 1;
+  isStubAsset = (int)(*name == ',');
+  if (isStubAsset != 0) {
+    name = name + 1;
   }
-  local_c = (param_1->asset).type;
-  uVar6 = DB_HashForName(local_14,local_c);
+  type = (newEntry->asset).type;
+  uVar6 = DB_HashForName(name,type);
   uVar1 = db_hashTable[uVar6 % 0x8000];
-  while (local_28 = (uint)uVar1, local_28 != 0) {
-    pXVar10 = g_assetEntryPool + local_28;
-    if ((pXVar10->entry).asset.type == local_c) {
-      XVar11 = local_c;
-      pcVar4 = DB_GetXAssetName(&(pXVar10->entry).asset);
-      uVar7 = DB_HashForName(pcVar4,XVar11);
+  while (existingEntryIndex = (uint)uVar1, existingEntryIndex != 0) {
+    asset_00 = g_assetEntryPool + existingEntryIndex;
+    if ((asset_00->entry).asset.type == type) {
+      type_00 = type;
+      pcVar4 = DB_GetXAssetName(&(asset_00->entry).asset);
+      uVar7 = DB_HashForName(pcVar4,type_00);
       if (uVar6 == uVar7) {
-        pcVar4 = local_14;
-        pcVar8 = DB_GetXAssetName(&(pXVar10->entry).asset);
+        pcVar4 = name;
+        pcVar8 = DB_GetXAssetName(&(asset_00->entry).asset);
         iVar5 = I_stricmp(pcVar8,pcVar4);
         if (iVar5 != 0) break;
       }
     }
-    uVar1 = *(ushort *)((int)g_assetEntryPool + local_28 * 0x10 + 10);
+    uVar1 = *(ushort *)((int)g_assetEntryPool + existingEntryIndex * 0x10 + 10);
   }
-  local_30 = (XAssetEntryPoolEntry *)0x0;
+  existingEntry = (XAssetEntry *)0x0;
   uVar1 = db_hashTable[uVar6 % 0x8000];
-  while (local_28 = (uint)uVar1, local_28 != 0) {
-    local_30 = g_assetEntryPool + local_28;
-    if ((local_30->entry).asset.type == local_c) {
-      pcVar4 = local_14;
-      pcVar8 = DB_GetXAssetName(&(local_30->entry).asset);
+  while (existingEntryIndex = (uint)uVar1, existingEntryIndex != 0) {
+    existingEntry = (XAssetEntry *)(g_assetEntryPool + existingEntryIndex);
+    if ((existingEntry->asset).type == type) {
+      pcVar4 = name;
+      pcVar8 = DB_GetXAssetName((XAsset *)existingEntry);
       iVar5 = I_stricmp(pcVar8,pcVar4);
       if (iVar5 == 0) {
         if ((db_xassetdebug->current).enabled == false) break;
         if (((db_xassetdebugtype->current).integer != -1) &&
-           ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+           ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
           pcVar4 = Dvar_GetString("db_xassetdebugname");
           if (*pcVar4 == '\0') break;
           pcVar4 = Dvar_GetString("db_xassetdebugname");
-          iVar5 = I_stricmp(local_14,pcVar4);
+          iVar5 = I_stricmp(name,pcVar4);
           if (iVar5 != 0) break;
         }
-        DB_GetXAssetTypeName((param_1->asset).type);
+        DB_GetXAssetTypeName((newEntry->asset).type);
         Com_Printf(0x10,
                    "DB_LinkXAssetEntry: existing asset: \'%s\',\'%s\' loaded from fastfile: \'%s\'\n"
                   );
         break;
       }
     }
-    uVar1 = *(ushort *)((int)g_assetEntryPool + local_28 * 0x10 + 10);
+    uVar1 = *(ushort *)((int)g_assetEntryPool + existingEntryIndex * 0x10 + 10);
   }
-  if (param_2 == 0) {
-    if (local_18 != 0) {
-      if (local_28 == 0) {
-        pXVar9 = DB_CreateDefaultEntry(local_c,local_14);
+  if (allowOverride == 0) {
+    if (isStubAsset != 0) {
+      if (existingEntryIndex == 0) {
+        pXVar9 = DB_CreateDefaultEntry(type,name);
         return pXVar9;
       }
-      if ((local_30 == (XAssetEntryPoolEntry *)0x0) &&
+      if ((existingEntry == (XAssetEntry *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                    0xf64,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -3952,90 +4142,90 @@ LAB_0058fe61:
         return pXVar9;
       }
       if ((db_xassetdebug->current).enabled == false) {
-        return (XAssetEntry *)local_30;
+        return existingEntry;
       }
       if (((db_xassetdebugtype->current).integer != -1) &&
-         ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+         ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
         pcVar4 = Dvar_GetString("db_xassetdebugname");
         if (*pcVar4 == '\0') {
-          return (XAssetEntry *)local_30;
+          return existingEntry;
         }
         pcVar4 = Dvar_GetString("db_xassetdebugname");
-        iVar5 = I_stricmp(local_14,pcVar4);
+        iVar5 = I_stricmp(name,pcVar4);
         if (iVar5 != 0) {
-          return (XAssetEntry *)local_30;
+          return existingEntry;
         }
       }
-      DB_GetXAssetTypeName((param_1->asset).type);
+      DB_GetXAssetTypeName((newEntry->asset).type);
       Com_Printf(0x10,
                  "DB_LinkXAssetEntry: stub asset: \'%s\',\'%s\' already exists. Using existingEntry\n"
                 );
-      return (XAssetEntry *)local_30;
+      return existingEntry;
     }
-    local_20.type = (param_1->asset).type;
-    local_20.header = (param_1->asset).header;
-    param_1 = DB_AllocXAssetEntry(local_20.type,g_zoneIndex);
-    DB_CloneXAssetInternal(&local_20,&param_1->asset);
+    asset.type = (newEntry->asset).type;
+    asset.header = (newEntry->asset).header;
+    newEntry = DB_AllocXAssetEntry(asset.type,g_zoneIndex);
+    DB_CloneXAssetInternal(&asset,&newEntry->asset);
   }
-  else if ((local_18 != 0) &&
+  else if ((isStubAsset != 0) &&
           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                     0xf78,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pXVar9 = (XAssetEntry *)(*pcVar2)();
     return pXVar9;
   }
-  if (local_28 == 0) {
+  if (existingEntryIndex == 0) {
     if ((db_xassetdebug->current).enabled == false) goto LAB_00590248;
     if (((db_xassetdebugtype->current).integer != -1) &&
-       ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+       ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
       pcVar4 = Dvar_GetString("db_xassetdebugname");
       if (*pcVar4 == '\0') goto LAB_00590248;
       pcVar4 = Dvar_GetString("db_xassetdebugname");
-      iVar5 = I_stricmp(local_14,pcVar4);
+      iVar5 = I_stricmp(name,pcVar4);
       if (iVar5 != 0) goto LAB_00590248;
     }
-    DB_GetXAssetTypeName((param_1->asset).type);
+    DB_GetXAssetTypeName((newEntry->asset).type);
     Com_Printf(0x10,"DB_LinkXAssetEntry: created new asset: \'%s\',\'%s\'\n");
 LAB_00590248:
-    param_1->nextHash = db_hashTable[uVar6 % 0x8000];
-    db_hashTable[uVar6 % 0x8000] = (ushort)((int)&param_1[-0x2ef6bc].zoneIndex >> 4);
+    newEntry->nextHash = db_hashTable[uVar6 % 0x8000];
+    db_hashTable[uVar6 % 0x8000] = (ushort)((int)&newEntry[-0x2ef6bc].zoneIndex >> 4);
     if ((db_xassetdebug->current).enabled == false) {
-      return param_1;
+      return newEntry;
     }
     if (((db_xassetdebugtype->current).integer != -1) &&
-       ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+       ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
       pcVar4 = Dvar_GetString("db_xassetdebugname");
       if (*pcVar4 == '\0') {
-        return param_1;
+        return newEntry;
       }
       pcVar4 = Dvar_GetString("db_xassetdebugname");
-      iVar5 = I_stricmp(local_14,pcVar4);
+      iVar5 = I_stricmp(name,pcVar4);
       if (iVar5 != 0) {
-        return param_1;
+        return newEntry;
       }
     }
-    DB_GetXAssetTypeName((param_1->asset).type);
+    DB_GetXAssetTypeName((newEntry->asset).type);
     Com_Printf(0x10,
                "DB_LinkXAssetEntry: return new asset: \'%s\',\'%s\' loaded from fastfile: \'%s\'\n")
     ;
-    return param_1;
+    return newEntry;
   }
-  if ((local_30 == (XAssetEntryPoolEntry *)0x0) &&
+  if ((existingEntry == (XAssetEntry *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xf8d,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pXVar9 = (XAssetEntry *)(*pcVar2)();
     return pXVar9;
   }
-  if ((local_30->entry).zoneIndex == '\0') {
-    if ((*g_defaultAssetName[local_c] == '\0') &&
+  if (existingEntry->zoneIndex == '\0') {
+    if ((*g_defaultAssetName[type] == '\0') &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0xfc1,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pXVar9 = (XAssetEntry *)(*pcVar2)();
       return pXVar9;
     }
-    if (((local_30->entry).nextOverride != 0) &&
+    if ((existingEntry->nextOverride != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0xfc2,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -4049,90 +4239,90 @@ LAB_00590248:
       pXVar9 = (XAssetEntry *)(*pcVar2)();
       return pXVar9;
     }
-    if (param_2 != 0) {
+    if (allowOverride != 0) {
       if ((db_xassetdebug->current).enabled == false) goto LAB_00590618;
       if (((db_xassetdebugtype->current).integer != -1) &&
-         ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+         ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
         pcVar4 = Dvar_GetString("db_xassetdebugname");
         if (*pcVar4 == '\0') goto LAB_00590618;
         pcVar4 = Dvar_GetString("db_xassetdebugname");
-        iVar5 = I_stricmp(local_14,pcVar4);
+        iVar5 = I_stricmp(name,pcVar4);
         if (iVar5 != 0) goto LAB_00590618;
       }
-      DB_GetXAssetTypeName((param_1->asset).type);
+      DB_GetXAssetTypeName((newEntry->asset).type);
       Com_Printf(0x10,"DB_LinkXAssetEntry: replacing default asset in asset: \'%s\',\'%s\'\n");
 LAB_00590618:
       g_defaultAssetCount = g_defaultAssetCount + -1;
-      if ((local_30->entry).inuse != false) {
-        varXAsset = &(local_30->entry).asset;
+      if (existingEntry->inuse != false) {
+        varXAsset = &existingEntry->asset;
         Mark_XAsset();
       }
-      DB_CloneXAssetEntry(param_1,&local_30->entry,DB_CLONE_FROM_DEFAULT);
-      DB_FreeXAssetEntry(param_1);
-      return (XAssetEntry *)local_30;
+      DB_CloneXAssetEntry(newEntry,existingEntry,DB_CLONE_FROM_DEFAULT);
+      DB_FreeXAssetEntry(newEntry);
+      return existingEntry;
     }
   }
   else {
-    if (((local_30->entry).zoneIndex == param_1->zoneIndex) &&
+    if ((existingEntry->zoneIndex == newEntry->zoneIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0xf92,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       pXVar9 = (XAssetEntry *)(*pcVar2)();
       return pXVar9;
     }
-    if (((*g_defaultAssetName[local_c] == '\0') && (local_c != ASSET_TYPE_RAWFILE)) &&
-       (local_c != ASSET_TYPE_MAP_ENTS)) {
+    if (((*g_defaultAssetName[type] == '\0') && (type != ASSET_TYPE_RAWFILE)) &&
+       (type != ASSET_TYPE_MAP_ENTS)) {
       Sys_LeaveCriticalSection(CRITSECT_DBHASH);
       Com_Error(ERR_DROP,"Attempting to override asset \'%s\' from zone \'%s\' with zone \'%s\'");
     }
-    iVar5 = DB_OverrideAsset((uint)param_1->zoneIndex,(uint)(local_30->entry).zoneIndex,local_c);
+    iVar5 = DB_OverrideAsset((uint)newEntry->zoneIndex,(uint)existingEntry->zoneIndex,type);
     if (iVar5 == 0) {
-      local_8 = &(local_30->entry).nextOverride;
-      while (*local_8 != 0) {
-        uVar1 = *local_8;
-        iVar5 = DB_OverrideAsset((uint)param_1->zoneIndex,
+      pOverrideAssetEntryIndex = &existingEntry->nextOverride;
+      while (*pOverrideAssetEntryIndex != 0) {
+        uVar1 = *pOverrideAssetEntryIndex;
+        iVar5 = DB_OverrideAsset((uint)newEntry->zoneIndex,
                                  (uint)*(byte *)((int)g_assetEntryPool + (uint)uVar1 * 0x10 + 8),
-                                 local_c);
+                                 type);
         if (iVar5 != 0) break;
-        local_8 = (ushort *)((int)g_assetEntryPool + (uint)uVar1 * 0x10 + 0xc);
+        pOverrideAssetEntryIndex = (ushort *)((int)g_assetEntryPool + (uint)uVar1 * 0x10 + 0xc);
       }
       if ((db_xassetdebug->current).enabled == false) goto LAB_005904cf;
       if (((db_xassetdebugtype->current).integer != -1) &&
-         ((db_xassetdebugtype->current).integer != (param_1->asset).type)) {
+         ((db_xassetdebugtype->current).integer != (newEntry->asset).type)) {
         pcVar4 = Dvar_GetString("db_xassetdebugname");
         if (*pcVar4 == '\0') goto LAB_005904cf;
         pcVar4 = Dvar_GetString("db_xassetdebugname");
-        iVar5 = I_stricmp(local_14,pcVar4);
+        iVar5 = I_stricmp(name,pcVar4);
         if (iVar5 != 0) goto LAB_005904cf;
       }
       Com_Printf(0x10,
                  "DB_LinkXAssetEntry: keep existing asset, and put new in its override position\n");
 LAB_005904cf:
-      param_1->nextOverride = *local_8;
-      *local_8 = (ushort)((int)&param_1[-0x2ef6bc].zoneIndex >> 4);
-      return (XAssetEntry *)local_30;
+      newEntry->nextOverride = *pOverrideAssetEntryIndex;
+      *pOverrideAssetEntryIndex = (ushort)((int)&newEntry[-0x2ef6bc].zoneIndex >> 4);
+      return existingEntry;
     }
   }
-  if (param_2 == 0) {
-    DB_DelayedCloneXAsset(param_1);
+  if (allowOverride == 0) {
+    DB_DelayedCloneXAsset(newEntry);
     goto LAB_005907a6;
   }
-  if (((local_30->entry).zoneIndex == '\0') &&
+  if ((existingEntry->zoneIndex == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0xfdd,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pXVar9 = (XAssetEntry *)(*pcVar2)();
     return pXVar9;
   }
-  if ((local_30->entry).inuse != false) {
-    varXAsset = &(local_30->entry).asset;
+  if (existingEntry->inuse != false) {
+    varXAsset = &existingEntry->asset;
     Mark_XAsset();
   }
   if ((db_xassetdebug->current).enabled != false) {
     if (((db_xassetdebugtype->current).integer == -1) ||
-       ((db_xassetdebugtype->current).integer == (param_1->asset).type)) {
+       ((db_xassetdebugtype->current).integer == (newEntry->asset).type)) {
 LAB_00590717:
-      DB_GetXAssetTypeName((param_1->asset).type);
+      DB_GetXAssetTypeName((newEntry->asset).type);
       Com_Printf(0x10,
                  "DB_LinkXAssetEntry: swapping existing asset: \'%s\',\'%s\' with new asset loaded from fastfile: \'%s\'\n"
                 );
@@ -4141,36 +4331,36 @@ LAB_00590717:
       pcVar4 = Dvar_GetString("db_xassetdebugname");
       if (*pcVar4 != '\0') {
         pcVar4 = Dvar_GetString("db_xassetdebugname");
-        iVar5 = I_stricmp(local_14,pcVar4);
+        iVar5 = I_stricmp(name,pcVar4);
         if (iVar5 == 0) goto LAB_00590717;
       }
     }
   }
-  param_1->nextOverride = (local_30->entry).nextOverride;
-  (local_30->entry).nextOverride = (ushort)((int)&param_1[-0x2ef6bc].zoneIndex >> 4);
-  DB_SwapXAsset(&param_1->asset,&(local_30->entry).asset);
-  local_d = (local_30->entry).zoneIndex;
-  (local_30->entry).zoneIndex = param_1->zoneIndex;
-  param_1->zoneIndex = local_d;
+  newEntry->nextOverride = existingEntry->nextOverride;
+  existingEntry->nextOverride = (ushort)((int)&newEntry[-0x2ef6bc].zoneIndex >> 4);
+  DB_SwapXAsset(&newEntry->asset,&existingEntry->asset);
+  zoneIndex = existingEntry->zoneIndex;
+  existingEntry->zoneIndex = newEntry->zoneIndex;
+  newEntry->zoneIndex = zoneIndex;
 LAB_005907a6:
   if ((db_xassetdebug->current).enabled == false) {
-    return (XAssetEntry *)local_30;
+    return existingEntry;
   }
   if (((db_xassetdebugtype->current).integer != -1) &&
-     ((db_xassetdebugtype->current).integer != (local_30->entry).asset.type)) {
+     ((db_xassetdebugtype->current).integer != (existingEntry->asset).type)) {
     pcVar4 = Dvar_GetString("db_xassetdebugname");
     if (*pcVar4 == '\0') {
-      return (XAssetEntry *)local_30;
+      return existingEntry;
     }
     pcVar4 = Dvar_GetString("db_xassetdebugname");
-    iVar5 = I_stricmp(local_14,pcVar4);
+    iVar5 = I_stricmp(name,pcVar4);
     if (iVar5 != 0) {
-      return (XAssetEntry *)local_30;
+      return existingEntry;
     }
   }
-  DB_GetXAssetTypeName((local_30->entry).asset.type);
+  DB_GetXAssetTypeName((existingEntry->asset).type);
   Com_Printf(0x10,"DB_LinkXAssetEntry: return asset: \'%s\',\'%s\' loaded from fastfile: \'%s\'\n");
-  return (XAssetEntry *)local_30;
+  return existingEntry;
 }
 
 
@@ -4179,16 +4369,17 @@ LAB_005907a6:
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-XAssetHeader __cdecl DB_AddXAsset(XAssetType param_1,XAssetHeader param_2)
+XAssetHeader __cdecl DB_AddXAsset(XAssetType type,XAssetHeader header)
 
 {
   XAssetEntry *pXVar1;
-  XAssetEntry local_14;
+  XAssetEntry *existingEntry;
+  XAssetEntry newEntry;
   
-  local_14.asset.type = param_1;
-  local_14.asset.header = param_2;
+  newEntry.asset.type = type;
+  newEntry.asset.header = header;
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  pXVar1 = DB_LinkXAssetEntry(&local_14,0);
+  pXVar1 = DB_LinkXAssetEntry(&newEntry,0);
   Sys_LeaveCriticalSection(CRITSECT_DBHASH);
   DB_SyncLostDevice();
   return (XAssetHeader)(pXVar1->asset).header.xmodelPieces;
@@ -4197,7 +4388,7 @@ XAssetHeader __cdecl DB_AddXAsset(XAssetType param_1,XAssetHeader param_2)
 
 // 00594570  DB_EnableInUseCache  (database/db_registry.cpp:4141)
 
-void __cdecl DB_EnableInUseCache(ushort *param_1)
+void __cdecl DB_EnableInUseCache(ushort *data)
 
 {
   code *pcVar1;
@@ -4215,9 +4406,9 @@ void __cdecl DB_EnableInUseCache(ushort *param_1)
   s_inuseCacheEnabled = true;
   s_inuseCacheHits = 0;
   s_inuseCacheMisses = 0;
-  s_inuseCache = param_1;
-  param_1[0] = 0xffff;
-  param_1[1] = 0xffff;
+  s_inuseCache = data;
+  data[0] = 0xffff;
+  data[1] = 0xffff;
   return;
 }
 
@@ -4250,7 +4441,7 @@ void __cdecl DB_DisableInUseCache(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_GetXAsset(XAssetType param_1,XAssetHeader param_2)
+void __cdecl DB_GetXAsset(XAssetType type,XAssetHeader header)
 
 {
   ushort uVar1;
@@ -4258,40 +4449,41 @@ void __cdecl DB_GetXAsset(XAssetType param_1,XAssetHeader param_2)
   bool bVar3;
   uint uVar4;
   int iVar5;
-  uint local_18;
-  XAsset local_14;
-  char *local_c;
-  XAssetEntryPoolEntry *local_8;
+  uint hash;
+  uint assetEntryIndex;
+  XAsset asset;
+  char *name;
+  XAssetEntry *assetEntry;
   
   if ((s_inuseCacheEnabled) &&
-     ((uint)s_inuseCache[(uint)param_2.xmodelPieces >> 2 & 0x1fff] ==
-      (uint)param_2.xmodelPieces >> 0x10)) {
+     ((uint)s_inuseCache[(uint)header.xmodelPieces >> 2 & 0x1fff] ==
+      (uint)header.xmodelPieces >> 0x10)) {
     s_inuseCacheHits = s_inuseCacheHits + 1;
   }
   else {
     s_inuseCacheMisses = s_inuseCacheMisses + 1;
-    local_14.type = param_1;
-    local_14.header = param_2;
-    local_c = DB_GetXAssetName(&local_14);
-    uVar4 = DB_HashForName(local_c,param_1);
+    asset.type = type;
+    asset.header = header;
+    name = DB_GetXAssetName(&asset);
+    uVar4 = DB_HashForName(name,type);
     uVar1 = db_hashTable[uVar4 % 0x8000];
-    while (local_18 = (uint)uVar1, local_18 != 0) {
-      if ((local_18 == 0) &&
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      if ((assetEntryIndex == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                    0x105c,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      iVar5 = local_18 * 0x10;
-      local_8 = g_assetEntryPool + local_18;
-      if (((local_8->entry).asset.type == param_1) &&
-         (*(XModelPieces **)((int)g_assetEntryPool + iVar5 + 4) == param_2.xmodelPieces)) {
+      iVar5 = assetEntryIndex * 0x10;
+      assetEntry = (XAssetEntry *)(g_assetEntryPool + assetEntryIndex);
+      if (((assetEntry->asset).type == type) &&
+         (*(XModelPieces **)((int)g_assetEntryPool + iVar5 + 4) == header.xmodelPieces)) {
         *(undefined1 *)((int)g_assetEntryPool + iVar5 + 9) = 1;
         if (s_inuseCacheEnabled == false) {
           return;
         }
-        s_inuseCache[(uint)param_2.xmodelPieces >> 2 & 0x1fff] = param_2._2_2_;
+        s_inuseCache[(uint)header.xmodelPieces >> 2 & 0x1fff] = header._2_2_;
         return;
       }
       uVar1 = *(ushort *)((int)g_assetEntryPool + iVar5 + 10);
@@ -4306,20 +4498,21 @@ void __cdecl DB_GetXAsset(XAssetType param_1,XAssetHeader param_2)
 bool __cdecl DB_IsUsingGermanPaths(void)
 
 {
+  char *s0;
   char *pcVar1;
-  char *pcVar2;
-  int iVar3;
+  int iVar2;
+  char *lang;
   
   if (loc_language == (dvar_s *)0x0) {
-    pcVar1 = Win_GetLanguage();
-    pcVar2 = SEH_GetLanguageName(4);
-    iVar3 = I_stricmp(pcVar1,pcVar2);
-    if (iVar3 == 0) {
+    s0 = Win_GetLanguage();
+    pcVar1 = SEH_GetLanguageName(4);
+    iVar2 = I_stricmp(s0,pcVar1);
+    if (iVar2 == 0) {
       return true;
     }
-    pcVar2 = SEH_GetLanguageName(3);
-    iVar3 = I_stricmp(pcVar1,pcVar2);
-    if (iVar3 == 0) {
+    pcVar1 = SEH_GetLanguageName(3);
+    iVar2 = I_stricmp(s0,pcVar1);
+    if (iVar2 == 0) {
       return true;
     }
   }
@@ -4332,57 +4525,60 @@ bool __cdecl DB_IsUsingGermanPaths(void)
 
 // 00590EA0  DB_BuildOSPath  (database/db_registry.cpp:4266)
 
-void __cdecl DB_BuildOSPath(char *param_1,char *param_2,int param_3,char *param_4)
+void __cdecl DB_BuildOSPath(char *zoneName,char *ext,int size,char *filename)
 
 {
   bool bVar1;
-  int iVar2;
+  int iLanguage;
+  char *languageName;
   
   if (loc_language == (dvar_s *)0x0) {
     Win_GetLanguage();
   }
   else {
-    iVar2 = SEH_GetCurrentLanguage();
-    SEH_GetLanguageName(iVar2);
+    iLanguage = SEH_GetCurrentLanguage();
+    SEH_GetLanguageName(iLanguage);
   }
   bVar1 = DB_IsUsingGermanPaths();
   if (bVar1) {
     SEH_GetLanguageName(3);
   }
   Sys_DefaultInstallPath();
-  Com_sprintf(param_4,param_3,"%s\\zone\\%s\\%s%s");
+  Com_sprintf(filename,size,"%s\\zone\\%s\\%s%s");
   return;
 }
 
 
 // 00590FA0  DB_BuildOSPath_Unlocalized  (database/db_registry.cpp:4303)
 
-void __cdecl DB_BuildOSPath_Unlocalized(char *param_1,char *param_2,int param_3,char *param_4)
+void __cdecl DB_BuildOSPath_Unlocalized(char *zoneName,char *ext,int size,char *filename)
 
 {
   Sys_DefaultInstallPath();
-  Com_sprintf(param_4,param_3,"%s\\zone\\Common\\%s%s");
+  Com_sprintf(filename,size,"%s\\zone\\Common\\%s%s");
   return;
 }
 
 
 // 005935A0  DB_BuildOSPath_FromSource  (database/db_registry.cpp:4358)
 
-void __cdecl DB_BuildOSPath_FromSource(char *param_1,FF_DIR param_2,int param_3,char *param_4)
+void __cdecl DB_BuildOSPath_FromSource(char *zoneName,FF_DIR source,int size,char *filename)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  char *basepath_2;
+  char *basepath;
   
-  if (param_2 == FFD_DEFAULT) {
-    DB_BuildOSPath_Unlocalized(param_1,".ff",param_3,param_4);
-    DVar3 = GetFileAttributesA(param_4);
+  if (source == FFD_DEFAULT) {
+    DB_BuildOSPath_Unlocalized(zoneName,".ff",size,filename);
+    DVar3 = GetFileAttributesA(filename);
     if (DVar3 == 0xffffffff) {
-      DB_BuildOSPath(param_1,".ff",param_3,param_4);
+      DB_BuildOSPath(zoneName,".ff",size,filename);
     }
   }
-  else if (param_2 == FFD_MOD_DIR) {
+  else if (source == FFD_MOD_DIR) {
     if ((fs_gameDirVar == (dvar_s *)0x0) || (*(fs_gameDirVar->current).string == '\0')) {
       bVar2 = false;
     }
@@ -4396,10 +4592,10 @@ void __cdecl DB_BuildOSPath_FromSource(char *param_1,FF_DIR param_2,int param_3,
       (*pcVar1)();
       return;
     }
-    Com_sprintf(param_4,param_3,"%s\\%s\\%s.ff");
+    Com_sprintf(filename,size,"%s\\%s\\%s.ff");
   }
-  else if (param_2 == FFD_USER_MAP) {
-    Com_sprintf(param_4,param_3,"%s\\%s\\%s\\%s.ff");
+  else if (source == FFD_USER_MAP) {
+    Com_sprintf(filename,size,"%s\\%s\\%s\\%s.ff");
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1121,1
@@ -4416,79 +4612,82 @@ void __cdecl DB_BuildOSPath_FromSource(char *param_1,FF_DIR param_2,int param_3,
 
 // 00593700  DB_BuildOSPath_ForUsermap  (database/db_registry.cpp:4390)
 
-void __cdecl DB_BuildOSPath_ForUsermap(char *param_1,int param_2,char *param_3)
+void __cdecl DB_BuildOSPath_ForUsermap(char *zoneName,int size,char *filename)
 
 {
-  Com_sprintf(param_3,param_2,"%s\\%s\\%s.ff");
+  char *basepath;
+  
+  Com_sprintf(filename,size,"%s\\%s\\%s.ff");
   return;
 }
 
 
 // 00593410  DB_GetZoneAllocType  (database/db_registry.cpp:4400)
 
-int __cdecl DB_GetZoneAllocType(int param_1)
+int __cdecl DB_GetZoneAllocType(int zoneFlags)
 
 {
-  return (uint)(0xfffff < param_1);
+  return (uint)(0xfffff < zoneFlags);
 }
 
 
 // 005921E0  DB_LoadXZone  (database/db_registry.cpp:4409)
 
-void __cdecl DB_LoadXZone(XZoneInfo *param_1,uint param_2)
+void __cdecl DB_LoadXZone(XZoneInfo *zoneInfo,uint zoneCount)
 
 {
-  char *pcVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint local_10;
-  uint local_8;
+  char *src;
+  code *pcVar1;
+  bool bVar2;
+  uint j;
+  char *zoneName;
+  uint zoneInfoCount;
   
   if (g_zoneCount == 0x20) {
     Com_Error(ERR_DROP,"Max zone count exceeded");
   }
   if ((g_zoneInfoCount != 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1141
-                               ,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1141
+                               ,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   if ((g_loadingAssets != 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1142
-                               ,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1142
+                               ,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  local_8 = 0;
-  local_10 = 0;
+  zoneInfoCount = 0;
+  j = 0;
   do {
-    if (param_2 <= local_10) {
-      if (local_8 != 0) {
-        g_loadingAssets = local_8;
+    if (zoneCount <= j) {
+      if (zoneInfoCount != 0) {
+        g_loadingAssets = zoneInfoCount;
         Sys_WakeDatabase2();
         Sys_WakeDatabase();
-        g_zoneInfoCount = local_8;
+        g_zoneInfoCount = zoneInfoCount;
         Sys_NotifyDatabase();
       }
       return;
     }
-    pcVar1 = param_1[local_10].name;
-    if (pcVar1 != (char *)0x0) {
-      if ((0x1f < local_8) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
-                                   0x114a,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    src = zoneInfo[j].name;
+    if (src != (char *)0x0) {
+      if ((0x1f < zoneInfoCount) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
+                                   0x114a,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      I_strncpyz(g_zoneInfo[local_8].name,pcVar1,0x40);
+      I_strncpyz(g_zoneInfo[zoneInfoCount].name,src,0x40);
       Com_Printf(0x10,"Adding fastfile \'%s\' to queue\n");
-      g_zoneInfo[local_8].flags = param_1[local_10].allocFlags;
-      local_8 = local_8 + 1;
+      g_zoneInfo[zoneInfoCount].flags = zoneInfo[j].allocFlags;
+      zoneInfoCount = zoneInfoCount + 1;
     }
-    local_10 = local_10 + 1;
+    j = j + 1;
   } while( true );
 }
 
@@ -4504,8 +4703,8 @@ void __cdecl DB_PostLoadXZone(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_c;
-  int local_8;
+  uint i;
+  int remoteScreenUpdateNesting;
   
   bVar2 = Sys_IsMainThread();
   if (((!bVar2) && (bVar2 = Sys_IsRenderThread(), !bVar2)) &&
@@ -4537,24 +4736,24 @@ void __cdecl DB_PostLoadXZone(void)
       Sys_DatabaseCompleted2();
     }
     else {
-      local_8 = 0;
+      remoteScreenUpdateNesting = 0;
       bVar2 = Sys_IsMainThread();
       if (bVar2) {
         g_mainThreadBlocked = g_mainThreadBlocked + 1;
-        local_8 = R_PopRemoteScreenUpdate();
+        remoteScreenUpdateNesting = R_PopRemoteScreenUpdate();
         g_mainThreadBlocked = g_mainThreadBlocked - 1;
         if (g_copyInfoCount == 0) {
-          R_PushRemoteScreenUpdate(local_8);
+          R_PushRemoteScreenUpdate(remoteScreenUpdateNesting);
           return;
         }
       }
       DB_ArchiveAssets();
       Sys_EnterCriticalSection(CRITSECT_DBHASH);
-      for (local_c = 0; local_c < g_copyInfoCount; local_c = local_c + 1) {
-        DB_GetXAssetName(&g_copyInfo[local_c]->asset);
-        DB_GetXAssetTypeName((g_copyInfo[local_c]->asset).type);
+      for (i = 0; i < g_copyInfoCount; i = i + 1) {
+        DB_GetXAssetName(&g_copyInfo[i]->asset);
+        DB_GetXAssetTypeName((g_copyInfo[i]->asset).type);
         Com_Printf(0x10,"Redundant asset: \'%s\',\'%s\'\n");
-        DB_LinkXAssetEntry(g_copyInfo[local_c],1);
+        DB_LinkXAssetEntry(g_copyInfo[i],1);
       }
       g_copyInfoCount = 0;
       Sys_LeaveCriticalSection(CRITSECT_DBHASH);
@@ -4562,7 +4761,7 @@ void __cdecl DB_PostLoadXZone(void)
       DB_UnarchiveAssets();
       bVar2 = Sys_IsMainThread();
       if (bVar2) {
-        R_PushRemoteScreenUpdate(local_8);
+        R_PushRemoteScreenUpdate(remoteScreenUpdateNesting);
       }
       Sys_DatabaseCompleted2();
     }
@@ -4573,28 +4772,33 @@ void __cdecl DB_PostLoadXZone(void)
 
 // 005911B0  DB_UpdateDebugZone  (database/db_registry.cpp:4535)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl DB_UpdateDebugZone(void)
 
 {
   bool bVar1;
-  XZoneInfo local_1c;
+  XZoneInfo zoneInfo;
   char *local_10;
   undefined4 local_c;
   undefined4 local_8;
   
   if (g_debugZoneName[0] != '\0') {
-    local_1c.name = (char *)0x0;
-    local_1c.allocFlags = 0;
-    local_1c.freeFlags = 0;
+    zoneInfo.name = (char *)0x0;
+    zoneInfo.allocFlags = 0;
+    zoneInfo.freeFlags = 0;
     local_c = 0;
     local_8 = 0;
     local_10 = g_debugZoneName;
     Com_SyncThreads();
-    local_1c.allocFlags = 0;
-    local_1c.freeFlags = 0x400000;
+    zoneInfo.allocFlags = 0;
+    zoneInfo.freeFlags = 0x400000;
     local_c = 0x400000;
     local_8 = 0;
-    DB_LoadXAssets(&local_1c,2,1);
+    DB_LoadXAssets(&zoneInfo,2,1);
     CG_VisionSetMyChanges();
     bVar1 = CL_AllLocalClientsDisconnected();
     if (!bVar1) {
@@ -4611,18 +4815,20 @@ void __cdecl DB_UpdateDebugZone(void)
 void __cdecl DB_LoadZone_f(void)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *src;
+  int destsize;
   
-  iVar2 = 0x40;
-  pcVar1 = Cmd_Argv(1);
-  I_strncpyz(g_debugZoneName,pcVar1,iVar2);
+  destsize = 0x40;
+  src = Cmd_Argv(1);
+  I_strncpyz(g_debugZoneName,src,destsize);
   DB_UpdateDebugZone();
   return;
 }
 
 
 // 00591230  DB_SyncXAssets  (database/db_registry.cpp:4572)
+
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl DB_SyncXAssets(void)
 
@@ -4654,40 +4860,40 @@ void __cdecl DB_SyncXAssets(void)
 
 // 005912A0  DB_IsZoneLoaded  (database/db_registry.cpp:4598)
 
-bool __cdecl DB_IsZoneLoaded(char *param_1)
+bool __cdecl DB_IsZoneLoaded(char *name)
 
 {
   int iVar1;
-  uint local_8;
+  uint i;
   
-  local_8 = 1;
+  i = 1;
   while( true ) {
-    if (0x20 < local_8) {
+    if (0x20 < i) {
       return false;
     }
-    if ((g_zoneNames[local_8].name[0] != '\0') &&
-       (iVar1 = I_stricmp(g_zoneNames[local_8].name,param_1), iVar1 == 0)) break;
-    local_8 = local_8 + 1;
+    if ((g_zoneNames[i].name[0] != '\0') &&
+       (iVar1 = I_stricmp(g_zoneNames[i].name,name), iVar1 == 0)) break;
+    i = i + 1;
   }
-  return g_zoneNames[local_8].loaded;
+  return g_zoneNames[i].loaded;
 }
 
 
 // 00591300  DB_IsZoneTypeLoaded  (database/db_registry.cpp:4608)
 
-bool __cdecl DB_IsZoneTypeLoaded(int param_1)
+bool __cdecl DB_IsZoneTypeLoaded(int zoneType)
 
 {
-  uint local_8;
+  uint i;
   
-  local_8 = 1;
+  i = 1;
   while( true ) {
-    if (0x20 < local_8) {
+    if (0x20 < i) {
       return false;
     }
-    if (((g_zoneNames[local_8].name[0] != '\0') && (g_zoneNames[local_8].flags == param_1)) &&
-       (g_zoneNames[local_8].loaded != false)) break;
-    local_8 = local_8 + 1;
+    if (((g_zoneNames[i].name[0] != '\0') && (g_zoneNames[i].flags == zoneType)) &&
+       (g_zoneNames[i].loaded != false)) break;
+    i = i + 1;
   }
   return true;
 }
@@ -4696,43 +4902,46 @@ bool __cdecl DB_IsZoneTypeLoaded(int param_1)
 // 00591360  DB_LoadXAssets  (database/db_registry.cpp:4628)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_LoadXAssets(XZoneInfo *param_1,uint param_2,int param_3)
+void __cdecl DB_LoadXAssets(XZoneInfo *zoneInfo,uint zoneCount,int sync)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  char *pcVar3;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  char *pszLanguageName;
   XZoneInfo *pXVar4;
-  int iVar5;
-  int *piVar6;
-  int local_328;
-  uint local_324;
-  undefined4 local_320;
-  XZoneInfo local_31c [10];
+  uint uVar5;
+  int *piLanguageIndex;
+  int language;
+  uint i_2;
+  int maxZones;
+  XZoneInfo locZoneInfo [10];
   char acStack_2a4 [644];
   uint local_20;
-  uint local_1c;
-  XZone *local_18;
-  uint local_14;
-  char local_d;
-  int local_c;
-  uint local_8;
+  uint count;
+  XZone *zone;
+  uint j;
+  bool unloadedZone;
+  int i;
+  int zoneFreeFlags;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar2 = Sys_IsMainThread();
-  if (((!bVar2) && (bVar2 = Sys_IsRenderThread(), !bVar2)) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x121f
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    (*pcVar1)();
+  bVar3 = Sys_IsMainThread();
+  if (((!bVar3) && (bVar3 = Sys_IsRenderThread(), !bVar3)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x121f
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  if ((param_2 == 0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1223
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    (*pcVar1)();
+  if ((zoneCount == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1223
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
   if (g_zoneInited == false) {
@@ -4748,194 +4957,188 @@ void __cdecl DB_LoadXAssets(XZoneInfo *param_1,uint param_2,int param_3)
               ("dumpmateriallist",DB_DumpMaterialList_f,(cmd_function_s *)&DB_DumpMaterialList_f_VAR
               );
   }
-  if (param_3 != 0) {
+  if (sync != 0) {
     R_StreamPushSyncDisable();
   }
-  local_d = '\0';
+  unloadedZone = false;
   DB_SyncXAssets();
   if ((g_archiveBuf != false) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1245
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    (*pcVar1)();
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1245
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {
-    if ((param_1[local_14].allocFlags & 0x40000000U) == 0) {
-      if ((param_1[local_14].allocFlags == 0) || ((param_1[local_14].freeFlags & 0x80000000U) != 0))
-      {
-        if ((param_1[local_14].allocFlags == 0) &&
-           ((param_1[local_14].freeFlags & 0x80000000U) == 0)) {
-          if (param_1[local_14].freeFlags < 0x100001) {
-            param_1[local_14].freeFlags =
-                 ~(param_1[local_14].freeFlags - 1U) & 0xfffff | param_1[local_14].freeFlags;
+  for (j = 0; j < zoneCount; j = j + 1) {
+    if ((zoneInfo[j].allocFlags & 0x40000000U) == 0) {
+      if ((zoneInfo[j].allocFlags == 0) || ((zoneInfo[j].freeFlags & 0x80000000U) != 0)) {
+        if ((zoneInfo[j].allocFlags == 0) && ((zoneInfo[j].freeFlags & 0x80000000U) == 0)) {
+          if (zoneInfo[j].freeFlags < 0x100001) {
+            zoneInfo[j].freeFlags = ~(zoneInfo[j].freeFlags - 1U) & 0xfffff | zoneInfo[j].freeFlags;
           }
           else {
-            param_1[local_14].freeFlags =
-                 param_1[local_14].freeFlags - 1U & 0x7e00000 | param_1[local_14].freeFlags;
+            zoneInfo[j].freeFlags = zoneInfo[j].freeFlags - 1U & 0x7e00000 | zoneInfo[j].freeFlags;
           }
         }
       }
-      else if (param_1[local_14].allocFlags < 0x100001) {
-        param_1[local_14].freeFlags =
-             ~(param_1[local_14].allocFlags - 1U) & 0xfffff | param_1[local_14].allocFlags;
+      else if (zoneInfo[j].allocFlags < 0x100001) {
+        zoneInfo[j].freeFlags = ~(zoneInfo[j].allocFlags - 1U) & 0xfffff | zoneInfo[j].allocFlags;
       }
       else {
-        param_1[local_14].freeFlags =
-             param_1[local_14].allocFlags - 1U & 0x7e00000 | param_1[local_14].allocFlags;
+        zoneInfo[j].freeFlags = zoneInfo[j].allocFlags - 1U & 0x7e00000 | zoneInfo[j].allocFlags;
       }
-      local_8 = param_1[local_14].freeFlags & 0x7fffffff;
-      local_c = g_zoneCount;
-      while (local_c = local_c + -1, -1 < local_c) {
-        local_18 = g_zones + local_c;
-        if ((g_zones[local_c].flags & local_8) != 0) {
-          if (local_d == '\0') {
-            local_d = '\x01';
+      zoneFreeFlags = zoneInfo[j].freeFlags & 0x7fffffff;
+      i = g_zoneCount;
+      while (i = i + -1, -1 < i) {
+        zone = g_zones + i;
+        if ((g_zones[i].flags & zoneFreeFlags) != 0) {
+          if (unloadedZone == false) {
+            unloadedZone = true;
             DB_SyncExternalAssets();
             DB_ArchiveAssets();
             Sys_EnterCriticalSection(CRITSECT_DBHASH);
           }
-          DB_UnloadXZone(local_18,true);
+          DB_UnloadXZone(zone,true);
         }
       }
     }
   }
-  if (local_d != '\0') {
+  if (unloadedZone != false) {
     DB_FreeUnusedResources();
-    for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x40000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x80000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x10000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x20000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x4000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x8000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x1000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x2000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x100);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x200);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x400);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x800);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x40);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x80);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x10);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x20);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,4);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,8);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,2);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x400000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x200000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x1000000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x800000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x4000000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x2000000);
-      DB_UnloadXAssetsMemoryForZone(param_1[local_14].freeFlags,0x10000000);
+    for (j = 0; j < zoneCount; j = j + 1) {
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x40000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x80000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x10000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x20000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x4000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x8000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x1000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x2000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x100);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x200);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x400);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x800);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x40);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x80);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x10);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x20);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,4);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,8);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,2);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x400000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x200000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x1000000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x800000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x4000000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x2000000);
+      DB_UnloadXAssetsMemoryForZone(zoneInfo[j].freeFlags,0x10000000);
     }
     Sys_LeaveCriticalSection(CRITSECT_DBHASH);
     DB_UnarchiveAssets();
   }
-  if (param_3 != 0) {
+  if (sync != 0) {
     DB_ArchiveAssets();
   }
-  local_320 = 10;
-  if ((9 < param_2 << 1) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x12af
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    (*pcVar1)();
+  maxZones = 10;
+  if ((9 < zoneCount << 1) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x12af
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  local_1c = 0;
-  local_324 = 0;
+  count = 0;
+  i_2 = 0;
   do {
-    if (param_2 <= local_324) {
-      DB_LoadXZone(local_31c,local_1c);
-      if (param_3 != 0) {
+    if (zoneCount <= i_2) {
+      DB_LoadXZone(locZoneInfo,count);
+      if (sync != 0) {
         if ((g_copyInfoCount != 0) &&
-           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
-                                     0x12fa,0,"%s"), !bVar2)) {
-          pcVar1 = (code *)swi(3);
-          (*pcVar1)();
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
+                                     0x12fa,0,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
         Sys_SyncDatabase();
         DB_UnarchiveAssets();
       }
-      if (param_3 != 0) {
+      if (sync != 0) {
         R_StreamPopSyncDisable();
       }
       return;
     }
-    iVar5 = param_1[local_324].allocFlags;
-    if (iVar5 < 0x1001) {
-      if (iVar5 == 0x1000) {
-        local_31c[local_1c].allocFlags = 0x2000;
+    iVar1 = zoneInfo[i_2].allocFlags;
+    if (iVar1 < 0x1001) {
+      if (iVar1 == 0x1000) {
+        locZoneInfo[count].allocFlags = 0x2000;
       }
-      else if (iVar5 < 0x41) {
-        if (iVar5 == 0x40) {
-          local_31c[local_1c].allocFlags = 0x80;
+      else if (iVar1 < 0x41) {
+        if (iVar1 == 0x40) {
+          locZoneInfo[count].allocFlags = 0x80;
         }
-        else if (iVar5 == 1) {
-          local_31c[local_1c].allocFlags = 2;
+        else if (iVar1 == 1) {
+          locZoneInfo[count].allocFlags = 2;
         }
-        else if (iVar5 == 4) {
-          local_31c[local_1c].allocFlags = 8;
+        else if (iVar1 == 4) {
+          locZoneInfo[count].allocFlags = 8;
         }
         else {
-          if (iVar5 != 0x10) goto LAB_005919d8;
-          local_31c[local_1c].allocFlags = 0x20;
+          if (iVar1 != 0x10) goto LAB_005919d8;
+          locZoneInfo[count].allocFlags = 0x20;
         }
       }
-      else if (iVar5 == 0x100) {
-        local_31c[local_1c].allocFlags = 0x200;
+      else if (iVar1 == 0x100) {
+        locZoneInfo[count].allocFlags = 0x200;
       }
       else {
-        if (iVar5 != 0x400) goto LAB_005919d8;
-        local_31c[local_1c].allocFlags = 0x800;
+        if (iVar1 != 0x400) goto LAB_005919d8;
+        locZoneInfo[count].allocFlags = 0x800;
       }
 LAB_00591c13:
-      piVar6 = &local_328;
-      pcVar3 = Win_GetLanguage();
-      SEH_GetLanguageIndexForName(pcVar3,piVar6);
-      SEH_GetLanguageNameAbbr(local_328);
-      Com_sprintf(acStack_2a4 + local_1c * 0x40,0x40,"%s%s");
-      local_31c[local_1c].name = acStack_2a4 + local_1c * 0x40;
-      local_31c[local_1c].freeFlags = 0;
-      iVar5 = local_1c + 1;
-      pXVar4 = param_1 + local_324;
-      local_1c = iVar5;
-      local_31c[iVar5].name = pXVar4->name;
-      local_31c[iVar5].allocFlags = pXVar4->allocFlags;
-      local_31c[iVar5].freeFlags = pXVar4->freeFlags;
-      local_1c = local_1c + 1;
+      piLanguageIndex = &language;
+      pszLanguageName = Win_GetLanguage();
+      SEH_GetLanguageIndexForName(pszLanguageName,piLanguageIndex);
+      SEH_GetLanguageNameAbbr(language);
+      Com_sprintf(acStack_2a4 + count * 0x40,0x40,"%s%s");
+      locZoneInfo[count].name = acStack_2a4 + count * 0x40;
+      locZoneInfo[count].freeFlags = 0;
+      uVar5 = count + 1;
+      pXVar4 = zoneInfo + i_2;
+      count = uVar5;
+      locZoneInfo[uVar5].name = pXVar4->name;
+      locZoneInfo[uVar5].allocFlags = pXVar4->allocFlags;
+      locZoneInfo[uVar5].freeFlags = pXVar4->freeFlags;
+      count = count + 1;
     }
     else {
-      if (iVar5 < 0x400001) {
-        if (iVar5 == 0x400000) {
-          local_31c[local_1c].allocFlags = 0x200000;
+      if (iVar1 < 0x400001) {
+        if (iVar1 == 0x400000) {
+          locZoneInfo[count].allocFlags = 0x200000;
         }
-        else if (iVar5 == 0x4000) {
-          local_31c[local_1c].allocFlags = 0x8000;
+        else if (iVar1 == 0x4000) {
+          locZoneInfo[count].allocFlags = 0x8000;
         }
-        else if (iVar5 == 0x10000) {
-          local_31c[local_1c].allocFlags = 0x20000;
+        else if (iVar1 == 0x10000) {
+          locZoneInfo[count].allocFlags = 0x20000;
         }
         else {
-          if (iVar5 != 0x40000) goto LAB_005919d8;
-          local_31c[local_1c].allocFlags = 0x80000;
+          if (iVar1 != 0x40000) goto LAB_005919d8;
+          locZoneInfo[count].allocFlags = 0x80000;
         }
         goto LAB_00591c13;
       }
-      if (iVar5 == 0x1000000) {
-        local_31c[local_1c].allocFlags = 0x800000;
+      if (iVar1 == 0x1000000) {
+        locZoneInfo[count].allocFlags = 0x800000;
         goto LAB_00591c13;
       }
-      if (iVar5 == 0x4000000) {
-        local_31c[local_1c].allocFlags = 0x2000000;
+      if (iVar1 == 0x4000000) {
+        locZoneInfo[count].allocFlags = 0x2000000;
         goto LAB_00591c13;
       }
     }
 LAB_005919d8:
-    local_324 = local_324 + 1;
+    i_2 = i_2 + 1;
   } while( true );
 }
 
@@ -4944,15 +5147,15 @@ LAB_005919d8:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DB_ModXFileHandle(char *param_1,void **param_2,FF_DIR *param_3)
+void __cdecl DB_ModXFileHandle(char *zoneName,void **zoneFile,FF_DIR *zoneDir)
 
 {
   bool bVar1;
   int iVar2;
   HANDLE pvVar3;
-  char *pcVar4;
-  char *pcVar5;
-  char local_10c [260];
+  char *zoneName_00;
+  char *filename_00;
+  char filename [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -4962,13 +5165,12 @@ void __cdecl DB_ModXFileHandle(char *param_1,void **param_2,FF_DIR *param_3)
   else {
     bVar1 = true;
   }
-  if ((bVar1) && (iVar2 = I_stricmp(param_1,"mod"), iVar2 == 0)) {
-    DB_BuildOSPath_FromSource(param_1,FFD_MOD_DIR,0x100,local_10c);
-    pvVar3 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0)
-    ;
-    *param_2 = pvVar3;
-    if (*param_2 != (void *)0xffffffff) {
-      *param_3 = FFD_MOD_DIR;
+  if ((bVar1) && (iVar2 = I_stricmp(zoneName,"mod"), iVar2 == 0)) {
+    DB_BuildOSPath_FromSource(zoneName,FFD_MOD_DIR,0x100,filename);
+    pvVar3 = CreateFileA(filename,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0);
+    *zoneFile = pvVar3;
+    if (*zoneFile != (void *)0xffffffff) {
+      *zoneDir = FFD_MOD_DIR;
     }
   }
   else {
@@ -4979,16 +5181,16 @@ void __cdecl DB_ModXFileHandle(char *param_1,void **param_2,FF_DIR *param_3)
       bVar1 = true;
     }
     if (bVar1) {
-      pcVar5 = local_10c;
+      filename_00 = filename;
       iVar2 = 0x100;
       Dvar_GetString("fs_usermapDir");
-      pcVar4 = va("%s\\%s");
-      DB_BuildOSPath_ForUsermap(pcVar4,iVar2,pcVar5);
-      pvVar3 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,
-                           (HANDLE)0x0);
-      *param_2 = pvVar3;
-      if (*param_2 != (void *)0xffffffff) {
-        *param_3 = FFD_USER_MAP;
+      zoneName_00 = va("%s\\%s");
+      DB_BuildOSPath_ForUsermap(zoneName_00,iVar2,filename_00);
+      pvVar3 = CreateFileA(filename,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0
+                          );
+      *zoneFile = pvVar3;
+      if (*zoneFile != (void *)0xffffffff) {
+        *zoneDir = FFD_USER_MAP;
       }
     }
   }
@@ -5000,71 +5202,73 @@ void __cdecl DB_ModXFileHandle(char *param_1,void **param_2,FF_DIR *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl DB_TryLoadXFileInternal(char *param_1,int param_2)
+int __cdecl DB_TryLoadXFileInternal(char *zoneName,int zoneFlags)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
-  XZone *pXVar4;
-  int iVar5;
+  XZone *dst;
+  int iVar4;
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
-  char *pcVar6;
-  DWORD DVar7;
-  int iVar8;
+  char *s1;
+  DWORD DVar5;
+  int iVar6;
   int local_150;
   XZoneName *local_148;
   byte *local_144;
   int local_13c;
   XZoneName *local_134;
   byte *local_130;
-  FF_DIR local_120;
-  uchar local_11c [260];
+  int startWaitingTime;
+  XZone *zone;
+  FF_DIR zoneDir;
+  uchar filename [260];
   uint local_18;
-  XZoneName *local_14;
-  char local_d;
-  uint local_c;
-  void *local_8;
+  char *fixedZoneName;
+  bool succeeded;
+  uint i;
+  void *zoneFile;
   
-  iVar5 = g_zoneCount;
+  iVar4 = g_zoneCount;
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_120 = FFD_DEFAULT;
-  pXVar4 = g_zones + g_zoneCount;
-  memset((uchar *)pXVar4,'\0',0x40);
+  zoneDir = FFD_DEFAULT;
+  dst = g_zones + g_zoneCount;
+  memset((uchar *)dst,'\0',0x40);
   if ((g_zoneInfoCount != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x13db
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  local_8 = (void *)0xffffffff;
-  if ((param_2 & 0x2aaaaaaU) == 0) {
-    DB_BuildOSPath_Unlocalized(param_1,".ff",0x100,(char *)local_11c);
-    DVar7 = GetFileAttributesA((LPCSTR)local_11c);
-    if (DVar7 == 0xffffffff) {
-      DB_BuildOSPath(param_1,".ff",0x100,(char *)local_11c);
+  zoneFile = (void *)0xffffffff;
+  if ((zoneFlags & 0x2aaaaaaU) == 0) {
+    DB_BuildOSPath_Unlocalized(zoneName,".ff",0x100,(char *)filename);
+    DVar5 = GetFileAttributesA((LPCSTR)filename);
+    if (DVar5 == 0xffffffff) {
+      DB_BuildOSPath(zoneName,".ff",0x100,(char *)filename);
     }
   }
   else {
-    DB_BuildOSPath(param_1,".ff",0x100,(char *)local_11c);
+    DB_BuildOSPath(zoneName,".ff",0x100,(char *)filename);
   }
-  local_8 = CreateFileA((LPCSTR)local_11c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,
-                        (HANDLE)0x0);
-  if (local_8 == (HANDLE)0xffffffff) {
-    DB_ModXFileHandle(param_1,&local_8,&local_120);
+  zoneFile = CreateFileA((LPCSTR)filename,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,
+                         (HANDLE)0x0);
+  if (zoneFile == (HANDLE)0xffffffff) {
+    DB_ModXFileHandle(zoneName,&zoneFile,&zoneDir);
   }
-  if (local_8 == (HANDLE)0xffffffff) {
-    strstr(local_11c,"_load");
-    if (((extraout_EAX == 0) && (strstr(local_11c,(uchar *)"_patch"), extraout_EAX_00 == 0)) &&
-       (strstr(local_11c,(uchar *)"default"), extraout_EAX_01 == 0)) {
+  if (zoneFile == (void *)0xffffffff) {
+    strstr(filename,"_load");
+    if (((extraout_EAX == 0) && (strstr(filename,(uchar *)"_patch"), extraout_EAX_00 == 0)) &&
+       (strstr(filename,(uchar *)"default"), extraout_EAX_01 == 0)) {
       if (loc_language != (dvar_s *)0x0) {
-        iVar5 = 3;
-        pcVar6 = SEH_GetLanguageNameAbbr((loc_language->current).integer);
-        iVar5 = I_strnicmp((char *)local_11c,pcVar6,iVar5);
-        if (iVar5 != 0) {
+        iVar4 = 3;
+        s1 = SEH_GetLanguageNameAbbr((loc_language->current).integer);
+        iVar4 = I_strnicmp((char *)filename,s1,iVar4);
+        if (iVar4 != 0) {
           Com_PrintWarning(10,"WARNING: Could not find zone \'%s\'\n");
           return 0;
         }
@@ -5074,13 +5278,13 @@ int __cdecl DB_TryLoadXFileInternal(char *param_1,int param_2)
       return 0;
     }
     Com_PrintWarning(10,"WARNING: Could not find zone \'%s\'\n");
-    iVar5 = 0;
+    iVar4 = 0;
   }
   else {
     g_zoneIndex = 0;
-    for (local_c = 1; local_c < 0x21; local_c = local_c + 1) {
-      if (g_zoneNames[local_c].name[0] == '\0') {
-        g_zoneIndex = local_c;
+    for (i = 1; i < 0x21; i = i + 1) {
+      if (g_zoneNames[i].name[0] == '\0') {
+        g_zoneIndex = i;
         break;
       }
     }
@@ -5088,39 +5292,39 @@ int __cdecl DB_TryLoadXFileInternal(char *param_1,int param_2)
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x144e,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    if ((*param_1 == '\0') &&
+    if ((*zoneName == '\0') &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x144f,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    local_14 = g_zoneNames + g_zoneIndex;
-    if ((local_14->name[0] != '\0') &&
+    fixedZoneName = g_zoneNames[g_zoneIndex].name;
+    if ((((XZoneName *)fixedZoneName)->name[0] != '\0') &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x1452,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     g_zoneNames[g_zoneIndex].loaded = false;
-    I_strncpyz(local_14->name,param_1,0x50);
-    g_zoneNames[g_zoneIndex].flags = param_2;
-    DVar7 = GetFileSize(local_8,(LPDWORD)0x0);
-    g_zoneNames[g_zoneIndex].fileSize = DVar7;
-    g_zoneNames[g_zoneIndex].dir = local_120;
-    pXVar4->index = (ushort)g_zoneIndex;
-    g_zones[iVar5].flags = param_2;
-    memset((uchar *)g_zones[iVar5].blocks,'\0',0x38);
+    I_strncpyz(fixedZoneName,zoneName,0x50);
+    g_zoneNames[g_zoneIndex].flags = zoneFlags;
+    DVar5 = GetFileSize(zoneFile,(LPDWORD)0x0);
+    g_zoneNames[g_zoneIndex].fileSize = DVar5;
+    g_zoneNames[g_zoneIndex].dir = zoneDir;
+    dst->index = (ushort)g_zoneIndex;
+    g_zones[iVar4].flags = zoneFlags;
+    memset((uchar *)g_zones[iVar4].blocks,'\0',0x38);
     if ((g_loadingZone != false) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x1461,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     if ((_S1 & 1) == 0) {
       _S1 = _S1 | 1;
@@ -5128,9 +5332,9 @@ int __cdecl DB_TryLoadXFileInternal(char *param_1,int param_2)
                                ("zone_reorder","",0,
                                 "Set to the name of the fast file you want to reorder");
     }
-    iVar8 = _stricmp((zone_reorder->current).string,param_1);
-    if (iVar8 == 0) {
-      DB_BeginReorderZone(param_1);
+    iVar6 = _stricmp((zone_reorder->current).string,zoneName);
+    if (iVar6 == 0) {
+      DB_BeginReorderZone(zoneName);
     }
     g_zoneCount = g_zoneCount + 1;
     g_loadingZone = true;
@@ -5138,7 +5342,7 @@ int __cdecl DB_TryLoadXFileInternal(char *param_1,int param_2)
       NET_Sleep(0x19);
     }
     g_mayRecoverLostAssets = false;
-    g_zoneAllocType = DB_GetZoneAllocType(param_2);
+    g_zoneAllocType = DB_GetZoneAllocType(zoneFlags);
     if ((g_zoneAllocType == 1) && (g_initializing != false)) {
       Sys_Milliseconds();
       Com_Printf(0,"Waiting for $init to finish.  There may be assets missing from code_post_gfx.\n"
@@ -5149,23 +5353,23 @@ int __cdecl DB_TryLoadXFileInternal(char *param_1,int param_2)
       Sys_Milliseconds();
       Com_Printf(0x10,"Waited %d ms for $init to finish.\n");
     }
-    if ((param_2 & 0x40000000U) == 0) {
-      PMem_BeginAlloc(local_14->name,g_zoneAllocType,TRACK_FASTFILE);
+    if ((zoneFlags & 0x40000000U) == 0) {
+      PMem_BeginAlloc(fixedZoneName,g_zoneAllocType,TRACK_FASTFILE);
     }
-    if ((param_2 & 0x8000U) == 0) {
-      DB_ResetZoneSize((uint)((param_2 & 0x4000U) != 0));
+    if ((zoneFlags & 0x8000U) == 0) {
+      DB_ResetZoneSize((uint)((zoneFlags & 0x4000U) != 0));
     }
-    if ((pXVar4 == (XZone *)0x0) &&
+    if ((dst == (XZone *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x148c,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     skipLoadingMaterialsHack = -1;
     if (((dx.vendorId == 0x1002) && (dx.d3d9 != (IDirect3D9 *)0x0)) &&
-       (iVar8 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,0x100000,3,0x72),
-       iVar8 != 0)) {
+       (iVar6 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,dx.adapterIndex,1,0x16,0x100000,3,0x72),
+       iVar6 != 0)) {
       Com_Printf(8,"Detected ATI card that doesn\'t support vertex textures.");
       local_130 = (byte *)0xca3024;
       local_134 = g_zoneNames + g_zoneIndex;
@@ -5214,27 +5418,27 @@ LAB_00592ce2:
         }
       }
     }
-    local_d = DB_LoadXFile((char *)local_11c,local_8,g_zoneNames[g_zoneIndex].name,
-                           g_zones[iVar5].blocks,(_func___cdecl_void *)0x0,g_fileBuf,g_zoneAllocType
-                           ,param_2);
-    if ((param_2 & 0x40000000U) == 0) {
+    succeeded = DB_LoadXFile((char *)filename,zoneFile,g_zoneNames[g_zoneIndex].name,
+                             g_zones[iVar4].blocks,(_func___cdecl_void *)0x0,g_fileBuf,
+                             g_zoneAllocType,zoneFlags);
+    if ((zoneFlags & 0x40000000U) == 0) {
       PMem_EndAlloc(g_zoneNames[g_zoneIndex].name,g_zoneAllocType);
     }
-    if (local_d != '\0') {
+    if (succeeded != false) {
       g_zoneNames[g_zoneIndex].loaded = true;
     }
     if ((g_loadingZone == false) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x14aa,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     g_loadingZone = false;
     g_mayRecoverLostAssets = true;
-    iVar5 = 1;
+    iVar4 = 1;
   }
-  return iVar5;
+  return iVar4;
 }
 
 
@@ -5248,7 +5452,9 @@ void __cdecl DB_TryLoadXFile(void)
   bool bVar3;
   int iVar4;
   int extraout_EAX;
-  uint local_10;
+  uint j;
+  bool isCodeZone;
+  uint zoneInfoCount;
   
   uVar2 = g_zoneInfoCount;
   if (g_zoneInfoCount == 0) {
@@ -5269,16 +5475,16 @@ void __cdecl DB_TryLoadXFile(void)
       (*pcVar1)();
       return;
     }
-    for (local_10 = 0; local_10 < uVar2; local_10 = local_10 + 1) {
-      iVar4 = DB_TryLoadXFileInternal(g_zoneInfo[local_10].name,g_zoneInfo[local_10].flags);
+    for (j = 0; j < uVar2; j = j + 1) {
+      iVar4 = DB_TryLoadXFileInternal(g_zoneInfo[j].name,g_zoneInfo[j].flags);
       if (iVar4 == 0) {
-        strstr((uchar *)(g_zoneInfo + local_10),(uchar *)"_xpatch");
+        strstr((uchar *)(g_zoneInfo + j),(uchar *)"_xpatch");
         if (extraout_EAX == 0) {
           g_loadingAssets = g_loadingAssets - 1;
         }
         else {
-          sprintf(g_zoneInfo[local_10].name,"default_mp");
-          iVar4 = DB_TryLoadXFileInternal(g_zoneInfo[local_10].name,g_zoneInfo[local_10].flags);
+          sprintf(g_zoneInfo[j].name,"default_mp");
+          iVar4 = DB_TryLoadXFileInternal(g_zoneInfo[j].name,g_zoneInfo[j].flags);
           if (iVar4 == 0) {
             g_loadingAssets = g_loadingAssets - 1;
           }
@@ -5310,14 +5516,14 @@ void __cdecl DB_TryLoadXFile(void)
 
 // 005923B0  DB_Thread  (database/db_registry.cpp:5382)
 
-void __cdecl DB_Thread(uint param_1)
+void __cdecl DB_Thread(uint threadContext)
 
 {
   code *pcVar1;
   bool bVar2;
   int extraout_EAX;
   
-  if (param_1 != 0xd) {
+  if (threadContext != 0xd) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1507,0
                              ,"threadContext == THREAD_CONTEXT_DATABASE\n\t%i, %i");
     if (!bVar2) {
@@ -5360,11 +5566,11 @@ void __cdecl DB_InitThread(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_RemoveXAsset(XAsset *param_1)
+void __cdecl DB_RemoveXAsset(XAsset *asset)
 
 {
-  if (DB_RemoveXAssetHandler[param_1->type] != (_func___cdecl_void_XAssetHeader *)0x0) {
-    (*DB_RemoveXAssetHandler[param_1->type])(param_1->header);
+  if (DB_RemoveXAssetHandler[asset->type] != (_func___cdecl_void_XAssetHeader *)0x0) {
+    (*DB_RemoveXAssetHandler[asset->type])(asset->header);
   }
   return;
 }
@@ -5375,7 +5581,7 @@ void __cdecl DB_RemoveXAsset(XAsset *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_UnloadXZoneInternal(uint param_1,bool param_2)
+void __cdecl DB_UnloadXZoneInternal(uint zoneIndex,bool createDefault)
 
 {
   ushort uVar1;
@@ -5383,17 +5589,19 @@ void __cdecl DB_UnloadXZoneInternal(uint param_1,bool param_2)
   bool bVar3;
   char *pcVar4;
   char *pcVar5;
-  XAssetEntryPoolEntry *pXVar6;
-  int iVar7;
-  uint local_2c;
-  ushort *local_28;
-  XAsset local_1c;
-  char *local_14;
-  XAssetEntryPoolEntry *local_10;
-  ushort *local_c;
-  uint local_8;
+  XAssetEntryPoolEntry *from;
+  int iVar6;
+  uint hash;
+  ushort *pAssetEntryIndex;
+  XAssetEntry *overrideAssetEntry;
+  uint assetEntryIndex;
+  XAsset asset;
+  char *name;
+  XAssetEntry *assetEntry;
+  ushort *pOverrideAssetEntryIndex;
+  uint overrideAssetEntryIndex;
   
-  if ((param_1 == 0) &&
+  if ((zoneIndex == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x153c
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -5402,179 +5610,182 @@ void __cdecl DB_UnloadXZoneInternal(uint param_1,bool param_2)
   }
   R_StreamPushSyncDisable();
   Com_Printf(0x10,"Unloading assets from fastfile \'%s\' ");
-  if (param_2) {
+  if (createDefault) {
     Com_Printf(0x10,"and creating default assets stubs\n");
   }
   else {
     Com_Printf(0x10,"and deleting all assets\n");
   }
-  local_2c = 0;
+  hash = 0;
   do {
-    if (0x7fff < local_2c) {
+    if (0x7fff < hash) {
       R_StreamPopSyncDisable();
       return;
     }
-    local_28 = db_hashTable + local_2c;
-    while (*local_28 != 0) {
-      iVar7 = (uint)*local_28 * 0x10;
-      local_10 = g_assetEntryPool + *local_28;
-      if (*(byte *)((int)g_assetEntryPool + iVar7 + 8) == param_1) {
-        if ((*(char *)((int)g_assetEntryPool + iVar7 + 9) != '\0') && (param_2)) {
-          varXAsset = (XAsset *)local_10;
+    pAssetEntryIndex = db_hashTable + hash;
+    while (*pAssetEntryIndex != 0) {
+      iVar6 = (uint)*pAssetEntryIndex * 0x10;
+      assetEntry = (XAssetEntry *)(g_assetEntryPool + *pAssetEntryIndex);
+      if (*(byte *)((int)g_assetEntryPool + iVar6 + 8) == zoneIndex) {
+        if ((*(char *)((int)g_assetEntryPool + iVar6 + 9) != '\0') && (createDefault)) {
+          varXAsset = (XAsset *)assetEntry;
           Mark_XAsset();
         }
         if ((db_xassetdebug->current).enabled != false) {
           if (((db_xassetdebugtype->current).integer == -1) ||
-             ((db_xassetdebugtype->current).integer == (local_10->entry).asset.type)) {
+             ((db_xassetdebugtype->current).integer == (assetEntry->asset).type)) {
 LAB_005938c5:
-            DB_GetXAssetName(&(local_10->entry).asset);
-            DB_GetXAssetTypeName((local_10->entry).asset.type);
+            DB_GetXAssetName(&assetEntry->asset);
+            DB_GetXAssetTypeName((assetEntry->asset).type);
             Com_Printf(0x10,"DB_UnloadXZoneInternal: removing asset: \'%s\',\'%s\'\n");
           }
           else {
             pcVar4 = Dvar_GetString("db_xassetdebugname");
             if (*pcVar4 != '\0') {
               pcVar4 = Dvar_GetString("db_xassetdebugname");
-              pcVar5 = DB_GetXAssetName(&(local_10->entry).asset);
-              iVar7 = I_stricmp(pcVar5,pcVar4);
-              if (iVar7 == 0) goto LAB_005938c5;
+              pcVar5 = DB_GetXAssetName(&assetEntry->asset);
+              iVar6 = I_stricmp(pcVar5,pcVar4);
+              if (iVar6 == 0) goto LAB_005938c5;
             }
           }
         }
-        DB_RemoveXAsset(&(local_10->entry).asset);
-        local_8 = (uint)(local_10->entry).nextOverride;
-        if (local_8 != 0) {
-          iVar7 = local_8 * 0x10;
-          pXVar6 = g_assetEntryPool + local_8;
-          DB_CloneXAssetEntry(&pXVar6->entry,&local_10->entry,DB_CLONE_NORMAL);
-          (local_10->entry).nextOverride = *(ushort *)((int)g_assetEntryPool + iVar7 + 0xc);
-          DB_FreeXAssetEntry(&pXVar6->entry);
+        DB_RemoveXAsset(&assetEntry->asset);
+        overrideAssetEntryIndex = (uint)assetEntry->nextOverride;
+        if (overrideAssetEntryIndex != 0) {
+          iVar6 = overrideAssetEntryIndex * 0x10;
+          from = g_assetEntryPool + overrideAssetEntryIndex;
+          DB_CloneXAssetEntry(&from->entry,assetEntry,DB_CLONE_NORMAL);
+          assetEntry->nextOverride = *(ushort *)((int)g_assetEntryPool + iVar6 + 0xc);
+          DB_FreeXAssetEntry(&from->entry);
           if ((db_xassetdebug->current).enabled != false) {
             if (((db_xassetdebugtype->current).integer == -1) ||
-               ((db_xassetdebugtype->current).integer == (local_10->entry).asset.type)) {
+               ((db_xassetdebugtype->current).integer == (assetEntry->asset).type)) {
 LAB_00593b92:
-              DB_GetXAssetName(&(local_10->entry).asset);
-              DB_GetXAssetTypeName((local_10->entry).asset.type);
+              DB_GetXAssetName(&assetEntry->asset);
+              DB_GetXAssetTypeName((assetEntry->asset).type);
               Com_Printf(0x10,"DB_UnloadXZoneInternal: reverted to asset: \'%s\',\'%s\' from %s\n");
             }
             else {
               pcVar4 = Dvar_GetString("db_xassetdebugname");
               if (*pcVar4 != '\0') {
                 pcVar4 = Dvar_GetString("db_xassetdebugname");
-                pcVar5 = DB_GetXAssetName(&(local_10->entry).asset);
-                iVar7 = I_stricmp(pcVar5,pcVar4);
-                if (iVar7 == 0) goto LAB_00593b92;
+                pcVar5 = DB_GetXAssetName(&assetEntry->asset);
+                iVar6 = I_stricmp(pcVar5,pcVar4);
+                if (iVar6 == 0) goto LAB_00593b92;
               }
             }
           }
           goto LAB_00593bce;
         }
-        if (param_2) {
-          local_1c.type = (local_10->entry).asset.type;
-          local_1c.header = DB_FindXAssetDefaultHeaderInternal(local_1c.type);
-          if (local_1c.header.xmodelPieces != (XModelPieces *)0x0) {
+        if (createDefault) {
+          asset.type = (assetEntry->asset).type;
+          asset.header = DB_FindXAssetDefaultHeaderInternal(asset.type);
+          if (asset.header.xmodelPieces != (XModelPieces *)0x0) {
             g_defaultAssetCount = g_defaultAssetCount + 1;
-            (local_10->entry).zoneIndex = '\0';
-            local_14 = DB_GetXAssetName(&(local_10->entry).asset);
-            DB_CloneXAssetInternal(&local_1c,&(local_10->entry).asset);
-            DB_SetXAssetName(&(local_10->entry).asset,local_14);
+            assetEntry->zoneIndex = '\0';
+            name = DB_GetXAssetName(&assetEntry->asset);
+            DB_CloneXAssetInternal(&asset,&assetEntry->asset);
+            DB_SetXAssetName(&assetEntry->asset,name);
             if ((db_xassetdebug->current).enabled != false) {
               if (((db_xassetdebugtype->current).integer == -1) ||
-                 ((db_xassetdebugtype->current).integer == (local_10->entry).asset.type)) {
+                 ((db_xassetdebugtype->current).integer == (assetEntry->asset).type)) {
 LAB_00593abe:
-                DB_GetXAssetName(&(local_10->entry).asset);
-                DB_GetXAssetTypeName((local_10->entry).asset.type);
+                DB_GetXAssetName(&assetEntry->asset);
+                DB_GetXAssetTypeName((assetEntry->asset).type);
                 Com_Printf(0x10,"DB_UnloadXZoneInternal: using default for asset: \'%s\',\'%s\'\n");
               }
               else {
                 pcVar4 = Dvar_GetString("db_xassetdebugname");
                 if (*pcVar4 != '\0') {
                   pcVar4 = Dvar_GetString("db_xassetdebugname");
-                  pcVar5 = DB_GetXAssetName(&(local_10->entry).asset);
-                  iVar7 = I_stricmp(pcVar5,pcVar4);
-                  if (iVar7 == 0) goto LAB_00593abe;
+                  pcVar5 = DB_GetXAssetName(&assetEntry->asset);
+                  iVar6 = I_stricmp(pcVar5,pcVar4);
+                  if (iVar6 == 0) goto LAB_00593abe;
                 }
               }
             }
             goto LAB_00593bce;
           }
-          if (((local_10->entry).nextOverride != 0) &&
+          if ((assetEntry->nextOverride != 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp"
                                        ,0x156e,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          *local_28 = (local_10->entry).nextHash;
-          DB_FreeXAssetEntry(&local_10->entry);
-          if (*g_defaultAssetName[local_1c.type] != '\0') {
+          *pAssetEntryIndex = assetEntry->nextHash;
+          DB_FreeXAssetEntry(assetEntry);
+          if (*g_defaultAssetName[asset.type] != '\0') {
             Sys_LeaveCriticalSection(CRITSECT_DBHASH);
             Sys_Error("Could not load default asset for asset type \'%s\'");
           }
         }
         else {
-          if (((local_10->entry).nextOverride != 0) &&
+          if ((assetEntry->nextOverride != 0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp"
                                        ,0x1563,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          *local_28 = (local_10->entry).nextHash;
-          DB_FreeXAssetEntry(&local_10->entry);
+          *pAssetEntryIndex = assetEntry->nextHash;
+          DB_FreeXAssetEntry(assetEntry);
         }
       }
       else {
 LAB_00593bce:
-        local_c = &(local_10->entry).nextOverride;
-        while (*local_c != 0) {
-          uVar1 = *local_c;
-          iVar7 = (uint)uVar1 * 0x10;
-          if ((*(char *)((int)g_assetEntryPool + iVar7 + 9) != '\0') &&
+        pOverrideAssetEntryIndex = &assetEntry->nextOverride;
+        while (*pOverrideAssetEntryIndex != 0) {
+          uVar1 = *pOverrideAssetEntryIndex;
+          iVar6 = (uint)uVar1 * 0x10;
+          if ((*(char *)((int)g_assetEntryPool + iVar6 + 9) != '\0') &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp"
                                        ,0x159a,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if (*(byte *)((int)g_assetEntryPool + iVar7 + 8) == param_1) {
+          if (*(byte *)((int)g_assetEntryPool + iVar6 + 8) == zoneIndex) {
             DB_RemoveXAsset(&g_assetEntryPool[uVar1].entry.asset);
-            *local_c = *(ushort *)((int)g_assetEntryPool + iVar7 + 0xc);
+            *pOverrideAssetEntryIndex = *(ushort *)((int)g_assetEntryPool + iVar6 + 0xc);
             DB_FreeXAssetEntry(&g_assetEntryPool[uVar1].entry);
           }
           else {
-            local_c = (ushort *)((int)g_assetEntryPool + iVar7 + 0xc);
+            pOverrideAssetEntryIndex = (ushort *)((int)g_assetEntryPool + iVar6 + 0xc);
           }
         }
-        local_28 = &(local_10->entry).nextHash;
+        pAssetEntryIndex = &assetEntry->nextHash;
       }
     }
-    local_2c = local_2c + 1;
+    hash = hash + 1;
   } while( true );
 }
 
 
 // 00593740  DB_UnloadXZone  (database/db_registry.cpp:5554)
 
-void __cdecl DB_UnloadXZone(XZone *param_1,bool param_2)
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+void __cdecl DB_UnloadXZone(XZone *zone,bool createDefault)
 
 {
-  DB_UnloadXZoneInternal((uint)param_1->index,param_2);
+  DB_UnloadXZoneInternal((uint)zone->index,createDefault);
   return;
 }
 
 
 // 00593E10  DB_UnloadXZoneMemory  (database/db_registry.cpp:5560)
 
-void __cdecl DB_UnloadXZoneMemory(XZone *param_1)
+void __cdecl DB_UnloadXZoneMemory(XZone *zone)
 
 {
-  DB_FreeXBlocks(param_1->blocks,param_1->flags);
+  DB_FreeXBlocks(zone->blocks,zone->flags);
   Com_Printf(0x10,"Unloaded fastfile \'%s\'\n");
-  if ((param_1->flags & 0x40000000U) == 0) {
-    PMem_Free(g_zoneNames[param_1->index].name);
+  if ((zone->flags & 0x40000000U) == 0) {
+    PMem_Free(g_zoneNames[zone->index].name);
   }
-  g_zoneNames[param_1->index].name[0] = '\0';
+  g_zoneNames[zone->index].name[0] = '\0';
   return;
 }
 
@@ -5591,12 +5802,14 @@ void __cdecl DB_FreeDefaultEntries(void)
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  uint local_10;
-  uint local_c;
+  uint nextAssetEntryIndex;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *assetEntry;
   
-  local_10 = 0;
+  hash = 0;
   do {
-    if (0x7fff < local_10) {
+    if (0x7fff < hash) {
       if (g_defaultAssetCount != 0) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                  0x15e1,0,"%s");
@@ -5608,9 +5821,9 @@ void __cdecl DB_FreeDefaultEntries(void)
       }
       return;
     }
-    uVar1 = db_hashTable[local_10];
-    while (local_c = (uint)uVar1, local_c != 0) {
-      iVar4 = local_c * 0x10;
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      iVar4 = assetEntryIndex * 0x10;
       uVar1 = *(ushort *)((int)g_assetEntryPool + iVar4 + 10);
       if (*(char *)((int)g_assetEntryPool + iVar4 + 8) != '\0') {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
@@ -5640,10 +5853,10 @@ void __cdecl DB_FreeDefaultEntries(void)
         }
       }
       g_defaultAssetCount = g_defaultAssetCount + -1;
-      DB_FreeXAssetEntry(&g_assetEntryPool[local_c].entry);
+      DB_FreeXAssetEntry(&g_assetEntryPool[assetEntryIndex].entry);
     }
-    db_hashTable[local_10] = 0;
-    local_10 = local_10 + 1;
+    db_hashTable[hash] = 0;
+    hash = hash + 1;
   } while( true );
 }
 
@@ -5659,8 +5872,9 @@ void __cdecl DB_ReleaseXAssets(void)
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  uint local_10;
-  uint local_c;
+  uint hash;
+  uint assetEntryIndex;
+  XAssetEntry *assetEntry;
   
   bVar3 = Sys_IsMainThread();
   if (!bVar3) {
@@ -5673,11 +5887,11 @@ void __cdecl DB_ReleaseXAssets(void)
     }
   }
   Sys_SyncDatabase();
-  for (local_10 = 0; local_10 < 0x8000; local_10 = local_10 + 1) {
-    uVar1 = db_hashTable[local_10];
-    while (local_c = (uint)uVar1, local_c != 0) {
-      *(undefined1 *)((int)g_assetEntryPool + local_c * 0x10 + 9) = 0;
-      uVar1 = *(ushort *)((int)g_assetEntryPool + local_c * 0x10 + 10);
+  for (hash = 0; hash < 0x8000; hash = hash + 1) {
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      *(undefined1 *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 9) = 0;
+      uVar1 = *(ushort *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 10);
     }
   }
   return;
@@ -5686,23 +5900,26 @@ void __cdecl DB_ReleaseXAssets(void)
 
 // 00593D60  DB_ShutdownXAssets  (database/db_registry.cpp:5629)
 
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl DB_ShutdownXAssets(void)
 
 {
-  int local_8;
+  int i;
   
   DB_SyncXAssets();
   DB_SyncExternalAssets();
   Sys_EnterCriticalSection(CRITSECT_DBHASH);
-  local_8 = g_zoneCount;
-  while (local_8 = local_8 + -1, -1 < local_8) {
-    DB_UnloadXZone(g_zones + local_8,false);
+  i = g_zoneCount;
+  while (i = i + -1, -1 < i) {
+    DB_UnloadXZone(g_zones + i,false);
   }
   DB_FreeDefaultEntries();
   DB_FreeUnusedResources();
-  local_8 = g_zoneCount;
-  while (local_8 = local_8 + -1, -1 < local_8) {
-    DB_UnloadXZoneMemory(g_zones + local_8);
+  i = g_zoneCount;
+  while (i = i + -1, -1 < i) {
+    DB_UnloadXZoneMemory(g_zones + i);
   }
   g_zoneCount = 0;
   DB_ResetMinimumFastFileLoaded();
@@ -5713,7 +5930,7 @@ void __cdecl DB_ShutdownXAssets(void)
 
 // 00594040  DB_UnloadXAssetsMemory  (database/db_registry.cpp:5657)
 
-void __cdecl DB_UnloadXAssetsMemory(XZone *param_1)
+void __cdecl DB_UnloadXAssetsMemory(XZone *zone)
 
 {
   code *pcVar1;
@@ -5722,16 +5939,16 @@ void __cdecl DB_UnloadXAssetsMemory(XZone *param_1)
   int iVar4;
   XZone *pXVar5;
   XZone *pXVar6;
-  int local_8;
+  int zoneIter;
   
-  local_8 = 0;
+  zoneIter = 0;
   do {
-    if (param_1 == g_zones + local_8) {
-      DB_UnloadXZoneMemory(param_1);
+    if (zone == g_zones + zoneIter) {
+      DB_UnloadXZoneMemory(zone);
       g_zoneCount = g_zoneCount + -1;
-      for (; local_8 < g_zoneCount; local_8 = local_8 + 1) {
-        pXVar5 = g_zones + local_8 + 1;
-        pXVar6 = g_zones + local_8;
+      for (; zoneIter < g_zoneCount; zoneIter = zoneIter + 1) {
+        pXVar5 = g_zones + zoneIter + 1;
+        pXVar6 = g_zones + zoneIter;
         for (iVar4 = 0x10; iVar4 != 0; iVar4 = iVar4 + -1) {
           uVar2 = *(undefined2 *)&pXVar5->field_0x2;
           pXVar6->index = pXVar5->index;
@@ -5742,7 +5959,7 @@ void __cdecl DB_UnloadXAssetsMemory(XZone *param_1)
       }
       return;
     }
-    if (g_zoneCount <= local_8) {
+    if (g_zoneCount <= zoneIter) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x161d
                                ,0,"%s");
       if (!bVar3) {
@@ -5751,23 +5968,23 @@ void __cdecl DB_UnloadXAssetsMemory(XZone *param_1)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    zoneIter = zoneIter + 1;
   } while( true );
 }
 
 
 // 00593FE0  DB_UnloadXAssetsMemoryForZone  (database/db_registry.cpp:5672)
 
-void __cdecl DB_UnloadXAssetsMemoryForZone(int param_1,int param_2)
+void __cdecl DB_UnloadXAssetsMemoryForZone(int zoneFreeFlags,int zoneFreeBit)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = g_zoneCount;
-  if ((param_1 & param_2) != 0) {
-    while (local_8 = local_8 + -1, -1 < local_8) {
-      if ((g_zones[local_8].flags & param_2) != 0) {
-        DB_UnloadXAssetsMemory(g_zones + local_8);
+  i = g_zoneCount;
+  if ((zoneFreeFlags & zoneFreeBit) != 0) {
+    while (i = i + -1, -1 < i) {
+      if ((g_zones[i].flags & zoneFreeBit) != 0) {
+        DB_UnloadXAssetsMemory(g_zones + i);
       }
     }
   }
@@ -5780,20 +5997,21 @@ void __cdecl DB_UnloadXAssetsMemoryForZone(int param_1,int param_2)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DB_ReplaceXAsset(XAssetType param_1,char *param_2,char *param_3)
+void __cdecl DB_ReplaceXAsset(XAssetType type,char *original,char *replacement)
 
 {
-  char *pcVar1;
-  XAsset local_14;
-  XAsset local_c;
+  char *name;
+  char *originalName;
+  XAsset replacementAsset;
+  XAsset originalAsset;
   
-  local_c.type = param_1;
-  local_c.header = DB_FindXAssetHeader(param_1,param_2,true,-1);
-  pcVar1 = DB_GetXAssetName(&local_c);
-  local_14.type = param_1;
-  local_14.header = DB_FindXAssetHeader(param_1,param_3,true,-1);
-  DB_CloneXAsset(&local_14,&local_c,DB_CLONE_NORMAL);
-  DB_SetXAssetName(&local_c,pcVar1);
+  originalAsset.type = type;
+  originalAsset.header = DB_FindXAssetHeader(type,original,true,-1);
+  name = DB_GetXAssetName(&originalAsset);
+  replacementAsset.type = type;
+  replacementAsset.header = DB_FindXAssetHeader(type,replacement,true,-1);
+  DB_CloneXAsset(&replacementAsset,&originalAsset,DB_CLONE_NORMAL);
+  DB_SetXAssetName(&originalAsset,name);
   return;
 }
 
@@ -5802,10 +6020,10 @@ void __cdecl DB_ReplaceXAsset(XAssetType param_1,char *param_2,char *param_3)
 
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl DB_ReplaceModel(char *param_1,char *param_2)
+void __cdecl DB_ReplaceModel(char *original,char *replacement)
 
 {
-  DB_ReplaceXAsset(ASSET_TYPE_XMODEL,param_1,param_2);
+  DB_ReplaceXAsset(ASSET_TYPE_XMODEL,original,replacement);
   return;
 }
 
@@ -5816,6 +6034,7 @@ void __cdecl DB_SyncExternalAssetsInternal(void)
 
 {
   int iVar1;
+  int semaphore;
   
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   RB_UnbindAllImages();
@@ -5838,19 +6057,19 @@ void __cdecl DB_SyncExternalAssets(void)
 
 {
   bool bVar1;
-  int local_8;
+  int depth;
   
-  local_8 = 0;
+  depth = 0;
   bVar1 = Sys_IsMainThread();
   if (bVar1) {
-    local_8 = R_PopRemoteScreenUpdate();
+    depth = R_PopRemoteScreenUpdate();
   }
   R_SyncRenderThread();
   Sys_IsRenderThread();
   DB_SyncExternalAssetsInternal();
   bVar1 = Sys_IsMainThread();
   if (bVar1) {
-    R_PushRemoteScreenUpdate(local_8);
+    R_PushRemoteScreenUpdate(depth);
   }
   return;
 }
@@ -5858,26 +6077,28 @@ void __cdecl DB_SyncExternalAssets(void)
 
 // 00594260  DB_ArchiveAssets  (database/db_registry.cpp:5762)
 
+/* WARNING: Variable defined which should be unmapped: depth */
+
 void __cdecl DB_ArchiveAssets(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int depth;
   
   if (!g_archiveBuf) {
     g_archiveBuf = true;
-    iVar2 = 0;
+    depth = 0;
     bVar1 = Sys_IsMainThread();
     if (bVar1) {
-      iVar2 = R_PopRemoteScreenUpdate();
+      depth = R_PopRemoteScreenUpdate();
     }
     R_ClearAllStaticModelCacheRefs();
-    GamerProfile_WriteSettings(iVar2);
+    GamerProfile_WriteSettings(depth);
     DB_SaveDObjs();
     DB_RestartEffects_Begin();
     bVar1 = Sys_IsMainThread();
     if (bVar1) {
-      R_PushRemoteScreenUpdate(iVar2);
+      R_PushRemoteScreenUpdate(depth);
     }
   }
   return;
@@ -5897,50 +6118,50 @@ void __cdecl DB_FreeUnusedResources(void)
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
-  uint uVar4;
-  char *pcVar5;
-  char *pcVar6;
-  int iVar7;
-  scriptInstance_t sVar8;
-  ushort local_8024 [16386];
+  uint stringValue;
+  char *pcVar4;
+  char *s0;
+  int iVar5;
+  scriptInstance_t inst;
+  ushort cacheData [16386];
   uint local_20;
-  uint local_1c;
-  ushort *local_18;
-  uint local_14;
-  char *local_10;
-  char *local_c;
-  XAssetEntryPoolEntry *local_8;
+  uint hash;
+  ushort *pAssetEntryIndex;
+  uint assetEntryIndex;
+  char *newName;
+  char *name;
+  XAssetEntry *assetEntry;
   
-  local_8 = (XAssetEntryPoolEntry *)0x5942dd;
+  assetEntry = (XAssetEntry *)0x5942dd;
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
   SL_TransferSystem(4,8,SCRIPTINSTANCE_SERVER);
-  DB_EnableInUseCache(local_8024);
-  for (local_1c = 0; local_1c < 0x8000; local_1c = local_1c + 1) {
-    uVar1 = db_hashTable[local_1c];
-    while (local_14 = (uint)uVar1, local_14 != 0) {
-      local_8 = g_assetEntryPool + local_14;
-      if (*(char *)((int)g_assetEntryPool + local_14 * 0x10 + 8) != '\0') {
-        varXAsset = (XAsset *)local_8;
+  DB_EnableInUseCache(cacheData);
+  for (hash = 0; hash < 0x8000; hash = hash + 1) {
+    uVar1 = db_hashTable[hash];
+    while (assetEntryIndex = (uint)uVar1, assetEntryIndex != 0) {
+      assetEntry = (XAssetEntry *)(g_assetEntryPool + assetEntryIndex);
+      if (*(char *)((int)g_assetEntryPool + assetEntryIndex * 0x10 + 8) != '\0') {
+        varXAsset = (XAsset *)assetEntry;
         Mark_XAsset();
       }
-      uVar1 = (local_8->entry).nextHash;
+      uVar1 = assetEntry->nextHash;
     }
   }
   DB_DisableInUseCache();
-  local_1c = 0;
+  hash = 0;
   do {
-    if (0x7fff < local_1c) {
+    if (0x7fff < hash) {
       SL_ShutdownSystem(SCRIPTINSTANCE_SERVER,8);
       return;
     }
-    local_18 = db_hashTable + local_1c;
-    while (*local_18 != 0) {
-      local_14 = (uint)*local_18;
-      iVar7 = local_14 * 0x10;
-      local_8 = g_assetEntryPool + local_14;
-      if (*(char *)((int)g_assetEntryPool + iVar7 + 8) == '\0') {
-        if (*(char *)((int)g_assetEntryPool + iVar7 + 9) == '\0') {
-          if (*(short *)((int)g_assetEntryPool + iVar7 + 0xc) != 0) {
+    pAssetEntryIndex = db_hashTable + hash;
+    while (*pAssetEntryIndex != 0) {
+      assetEntryIndex = (uint)*pAssetEntryIndex;
+      iVar5 = assetEntryIndex * 0x10;
+      assetEntry = (XAssetEntry *)(g_assetEntryPool + assetEntryIndex);
+      if (*(char *)((int)g_assetEntryPool + iVar5 + 8) == '\0') {
+        if (*(char *)((int)g_assetEntryPool + iVar5 + 9) == '\0') {
+          if (*(short *)((int)g_assetEntryPool + iVar5 + 0xc) != 0) {
             bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                      0x16d7,0,"%s");
             if (!bVar3) {
@@ -5949,7 +6170,7 @@ void __cdecl DB_FreeUnusedResources(void)
               return;
             }
           }
-          *local_18 = (local_8->entry).nextHash;
+          *pAssetEntryIndex = assetEntry->nextHash;
           if (g_defaultAssetCount == 0) {
             bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
                                      0x16d9,0,"%s");
@@ -5962,38 +6183,38 @@ void __cdecl DB_FreeUnusedResources(void)
           g_defaultAssetCount = g_defaultAssetCount + -1;
           if ((db_xassetdebug->current).enabled != false) {
             if (((db_xassetdebugtype->current).integer == -1) ||
-               ((db_xassetdebugtype->current).integer == (local_8->entry).asset.type)) {
+               ((db_xassetdebugtype->current).integer == (assetEntry->asset).type)) {
 LAB_00594511:
-              DB_GetXAssetName(&(local_8->entry).asset);
-              DB_GetXAssetTypeName((local_8->entry).asset.type);
+              DB_GetXAssetName(&assetEntry->asset);
+              DB_GetXAssetTypeName((assetEntry->asset).type);
               Com_Printf(0x10,"DB_FreeUnusedResources: freed asset: \'%s\',\'%s\'\n");
             }
             else {
-              pcVar5 = Dvar_GetString("db_xassetdebugname");
-              if (*pcVar5 != '\0') {
-                pcVar5 = Dvar_GetString("db_xassetdebugname");
-                pcVar6 = DB_GetXAssetName(&(local_8->entry).asset);
-                iVar7 = I_stricmp(pcVar6,pcVar5);
-                if (iVar7 == 0) goto LAB_00594511;
+              pcVar4 = Dvar_GetString("db_xassetdebugname");
+              if (*pcVar4 != '\0') {
+                pcVar4 = Dvar_GetString("db_xassetdebugname");
+                s0 = DB_GetXAssetName(&assetEntry->asset);
+                iVar5 = I_stricmp(s0,pcVar4);
+                if (iVar5 == 0) goto LAB_00594511;
               }
             }
           }
-          DB_FreeXAssetEntry(&local_8->entry);
+          DB_FreeXAssetEntry(assetEntry);
         }
         else {
-          local_c = DB_GetXAssetName(&(local_8->entry).asset);
-          sVar8 = SCRIPTINSTANCE_SERVER;
-          uVar4 = SL_GetString(local_c,4,SCRIPTINSTANCE_SERVER);
-          local_10 = SL_ConvertToString(uVar4,sVar8);
-          DB_SetXAssetName(&(local_8->entry).asset,local_10);
-          local_18 = &(local_8->entry).nextHash;
+          name = DB_GetXAssetName((XAsset *)assetEntry);
+          inst = SCRIPTINSTANCE_SERVER;
+          stringValue = SL_GetString(name,4,SCRIPTINSTANCE_SERVER);
+          newName = SL_ConvertToString(stringValue,inst);
+          DB_SetXAssetName(&assetEntry->asset,newName);
+          pAssetEntryIndex = &assetEntry->nextHash;
         }
       }
       else {
-        local_18 = (ushort *)((int)g_assetEntryPool + iVar7 + 10);
+        pAssetEntryIndex = (ushort *)((int)g_assetEntryPool + iVar5 + 10);
       }
     }
-    local_1c = local_1c + 1;
+    hash = hash + 1;
   } while( true );
 }
 
@@ -6095,14 +6316,16 @@ void __cdecl DB_Cleanup(void)
 /* WARNING: Removing unreachable block (ram,0x00594764) */
 /* WARNING: Removing unreachable block (ram,0x00594789) */
 
-uint __cdecl DB_GetImageIndex(GfxImage *param_1)
+uint __cdecl DB_GetImageIndex(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  XAssetPoolEntry<GfxImage> *entry;
+  uint index;
   
-  uVar3 = (int)&param_1[-0xee630].mapType / 0x34;
+  uVar3 = (int)&image[-0xee630].mapType / 0x34;
   if ((0x107f < uVar3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1739
                                ,0,
@@ -6118,14 +6341,14 @@ uint __cdecl DB_GetImageIndex(GfxImage *param_1)
 
 // 005947E0  DB_GetImageAtIndex  (database/db_registry.cpp:5950)
 
-GfxImage * __cdecl DB_GetImageAtIndex(uint param_1)
+GfxImage * __cdecl DB_GetImageAtIndex(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
   
-  if (0x107f < param_1) {
+  if (0x107f < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x173f,0
                              ,
                              "index doesn\'t index ARRAY_COUNT( g_GfxImagePool.entries )\n\t%i not in [0, %i)"
@@ -6136,7 +6359,7 @@ GfxImage * __cdecl DB_GetImageAtIndex(uint param_1)
       return pGVar3;
     }
   }
-  return (GfxImage *)(g_GfxImagePool.entries + param_1);
+  return (GfxImage *)(g_GfxImagePool.entries + index);
 }
 
 
@@ -6145,14 +6368,16 @@ GfxImage * __cdecl DB_GetImageAtIndex(uint param_1)
 /* WARNING: Removing unreachable block (ram,0x00594844) */
 /* WARNING: Removing unreachable block (ram,0x00594869) */
 
-uint __cdecl DB_GetMaterialIndex(Material *param_1)
+uint __cdecl DB_GetMaterialIndex(Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  XAssetPoolEntry<Material> *entry;
+  uint index;
   
-  uVar3 = (int)(param_1[-0x40d7b].stateBitsEntry + 0x50) / 0xc0;
+  uVar3 = (int)(material[-0x40d7b].stateBitsEntry + 0x50) / 0xc0;
   if ((0xfff < uVar3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1752
                                ,0,
@@ -6168,14 +6393,14 @@ uint __cdecl DB_GetMaterialIndex(Material *param_1)
 
 // 005948C0  DB_GetMaterialAtIndex  (database/db_registry.cpp:5976)
 
-Material * __cdecl DB_GetMaterialAtIndex(uint param_1)
+Material * __cdecl DB_GetMaterialAtIndex(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
   
-  if (0xfff < param_1) {
+  if (0xfff < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1759,0
                              ,
                              "index doesn\'t index ARRAY_COUNT( g_MaterialPool.entries )\n\t%i not in [0, %i)"
@@ -6186,7 +6411,7 @@ Material * __cdecl DB_GetMaterialAtIndex(uint param_1)
       return pMVar3;
     }
   }
-  return (Material *)(g_MaterialPool.entries + param_1);
+  return (Material *)(g_MaterialPool.entries + index);
 }
 
 
@@ -6195,14 +6420,16 @@ Material * __cdecl DB_GetMaterialAtIndex(uint param_1)
 /* WARNING: Removing unreachable block (ram,0x00594924) */
 /* WARNING: Removing unreachable block (ram,0x00594949) */
 
-uint __cdecl DB_GetXModelIndex(XModel *param_1)
+uint __cdecl DB_GetXModelIndex(XModel *model)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  XAssetPoolEntry<XModel> *entry;
+  uint index;
   
-  uVar3 = (int)&param_1[-0x2f76f].field7_0x10 / 0xfc;
+  uVar3 = (int)&model[-0x2f76f].field7_0x10 / 0xfc;
   if ((999 < uVar3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x1766
                                ,0,
@@ -6218,14 +6445,14 @@ uint __cdecl DB_GetXModelIndex(XModel *param_1)
 
 // 005949A0  DB_GetXModelAtIndex  (database/db_registry.cpp:5996)
 
-XModel * __cdecl DB_GetXModelAtIndex(uint param_1)
+XModel * __cdecl DB_GetXModelAtIndex(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   XModel *pXVar3;
   
-  if (999 < param_1) {
+  if (999 < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x176d,0
                              ,
                              "index doesn\'t index ARRAY_COUNT( g_XModelPool.entries )\n\t%i not in [0, %i)"
@@ -6236,7 +6463,7 @@ XModel * __cdecl DB_GetXModelAtIndex(uint param_1)
       return pXVar3;
     }
   }
-  return (XModel *)(g_XModelPool.entries + param_1);
+  return (XModel *)(g_XModelPool.entries + index);
 }
 
 
@@ -6247,25 +6474,27 @@ XModel * __cdecl DB_GetXModelAtIndex(uint param_1)
 char * __cdecl DB_ReferencedFFChecksums(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  int local_20;
-  char local_18 [16];
+  char *s1;
+  int iVar1;
+  int localizedPrefixLen;
+  int i;
+  int BUFFER_SIZE;
+  char zoneSizeStr [16];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   g_zoneNameList[0] = '\0';
-  for (local_20 = 0; local_20 < 0x20; local_20 = local_20 + 1) {
-    if (g_zoneNames[local_20].name[0] != '\0') {
-      iVar2 = 3;
-      pcVar1 = SEH_GetLanguageNameAbbr((loc_language->current).integer);
-      iVar2 = I_strncmp(g_zoneNames[local_20].name,pcVar1,iVar2);
-      if (iVar2 != 0) {
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (g_zoneNames[i].name[0] != '\0') {
+      iVar1 = 3;
+      s1 = SEH_GetLanguageNameAbbr((loc_language->current).integer);
+      iVar1 = I_strncmp(g_zoneNames[i].name,s1,iVar1);
+      if (iVar1 != 0) {
         if (g_zoneNameList[0] != '\0') {
           I_strncat(g_zoneNameList,0x820," ");
         }
-        _itoa(g_zoneNames[local_20].fileSize,local_18,10);
-        I_strncat(g_zoneNameList,0x820,local_18);
+        _itoa(g_zoneNames[i].fileSize,zoneSizeStr,10);
+        I_strncat(g_zoneNameList,0x820,zoneSizeStr);
       }
     }
   }
@@ -6280,30 +6509,32 @@ char * __cdecl DB_ReferencedFFNameList(void)
 {
   char *pcVar1;
   int iVar2;
-  int local_c;
+  int localizedPrefixLen;
+  int i;
+  int BUFFER_SIZE;
   
   g_zoneNameList[0] = '\0';
-  for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-    if (g_zoneNames[local_c].name[0] != '\0') {
+  for (i = 0; i < 0x20; i = i + 1) {
+    if (g_zoneNames[i].name[0] != '\0') {
       iVar2 = 3;
       pcVar1 = SEH_GetLanguageNameAbbr((loc_language->current).integer);
-      iVar2 = I_strncmp(g_zoneNames[local_c].name,pcVar1,iVar2);
+      iVar2 = I_strncmp(g_zoneNames[i].name,pcVar1,iVar2);
       if (iVar2 != 0) {
         if (g_zoneNameList[0] != '\0') {
           I_strncat(g_zoneNameList,0x820," ");
         }
-        if (g_zoneNames[local_c].dir == FFD_MOD_DIR) {
+        if (g_zoneNames[i].dir == FFD_MOD_DIR) {
           I_strncat(g_zoneNameList,0x820,(fs_gameDirVar->current).string);
           I_strncat(g_zoneNameList,0x820,"/");
         }
-        else if (g_zoneNames[local_c].dir == FFD_USER_MAP) {
+        else if (g_zoneNames[i].dir == FFD_USER_MAP) {
           I_strncat(g_zoneNameList,0x820,"usermaps");
           I_strncat(g_zoneNameList,0x820,"/");
           pcVar1 = Dvar_GetString("fs_usermapdir");
           I_strncat(g_zoneNameList,0x820,pcVar1);
           I_strncat(g_zoneNameList,0x820,"/");
         }
-        I_strncat(g_zoneNameList,0x820,g_zoneNames[local_c].name);
+        I_strncat(g_zoneNameList,0x820,g_zoneNames[i].name);
       }
     }
   }
@@ -6315,30 +6546,30 @@ char * __cdecl DB_ReferencedFFNameList(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl DB_FileSize(char *param_1,FF_DIR param_2)
+int __cdecl DB_FileSize(char *zoneName,FF_DIR source)
 
 {
-  char local_114 [260];
+  char filename [260];
   uint local_10;
-  DWORD local_c;
-  HANDLE local_8;
+  int size;
+  void *zoneFile;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == FFD_USER_MAP) {
-    DB_BuildOSPath_ForUsermap(param_1,0x100,local_114);
+  if (source == FFD_USER_MAP) {
+    DB_BuildOSPath_ForUsermap(zoneName,0x100,filename);
   }
   else {
-    DB_BuildOSPath_FromSource(param_1,param_2,0x100,local_114);
+    DB_BuildOSPath_FromSource(zoneName,source,0x100,filename);
   }
-  local_8 = CreateFileA(local_114,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0);
-  if (local_8 == (HANDLE)0xffffffff) {
-    local_c = 0;
+  zoneFile = CreateFileA(filename,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0);
+  if (zoneFile == (HANDLE)0xffffffff) {
+    size = 0;
   }
   else {
-    local_c = GetFileSize(local_8,(LPDWORD)0x0);
-    CloseHandle(local_8);
+    size = GetFileSize(zoneFile,(LPDWORD)0x0);
+    CloseHandle(zoneFile);
   }
-  return local_c;
+  return size;
 }
 
 
@@ -6346,20 +6577,20 @@ int __cdecl DB_FileSize(char *param_1,FF_DIR param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl DB_FileExists(char *param_1,FF_DIR param_2)
+bool __cdecl DB_FileExists(char *zoneName,FF_DIR source)
 
 {
   bool bVar1;
-  char local_10c [256];
+  char filename [256];
   uint local_c;
-  HANDLE local_8;
+  void *zoneFile;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  DB_BuildOSPath_FromSource(param_1,param_2,0x100,local_10c);
-  local_8 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0);
-  bVar1 = local_8 != (HANDLE)0xffffffff;
+  DB_BuildOSPath_FromSource(zoneName,source,0x100,filename);
+  zoneFile = CreateFileA(filename,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0);
+  bVar1 = zoneFile != (HANDLE)0xffffffff;
   if (bVar1) {
-    CloseHandle(local_8);
+    CloseHandle(zoneFile);
   }
   return bVar1;
 }
@@ -6373,9 +6604,9 @@ bool __cdecl DB_ModFileExists(void)
 
 {
   bool bVar1;
-  char local_10c [256];
+  char filename [256];
   uint local_c;
-  HANDLE local_8;
+  void *zoneFile;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((fs_gameDirVar == (dvar_s *)0x0) || (*(fs_gameDirVar->current).string == '\0')) {
@@ -6385,14 +6616,14 @@ bool __cdecl DB_ModFileExists(void)
     bVar1 = true;
   }
   if (bVar1) {
-    DB_BuildOSPath_FromSource("mod",FFD_MOD_DIR,0x100,local_10c);
-    local_8 = CreateFileA(local_10c,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0
-                         );
-    if (local_8 == (HANDLE)0xffffffff) {
+    DB_BuildOSPath_FromSource("mod",FFD_MOD_DIR,0x100,filename);
+    zoneFile = CreateFileA(filename,0x80000000,1,(LPSECURITY_ATTRIBUTES)0x0,3,0x60000000,(HANDLE)0x0
+                          );
+    if (zoneFile == (HANDLE)0xffffffff) {
       bVar1 = false;
     }
     else {
-      CloseHandle(local_8);
+      CloseHandle(zoneFile);
       bVar1 = true;
     }
   }
@@ -6405,17 +6636,17 @@ bool __cdecl DB_ModFileExists(void)
 
 // 00594E60  DB_AddUserMapDir  (database/db_registry.cpp:6214)
 
-void __cdecl DB_AddUserMapDir(char *param_1)
+void __cdecl DB_AddUserMapDir(char *zoneName)
 
 {
   bool bVar1;
-  char *pcVar2;
+  char *pszGameFolder;
   
-  bVar1 = DB_FileExists(param_1,FFD_DEFAULT);
-  if ((!bVar1) && (bVar1 = DB_FileExists(param_1,FFD_USER_MAP), bVar1)) {
-    Dvar_SetStringByName("fs_usermapdir",param_1);
-    pcVar2 = va("%s/%s");
-    FS_AddUserMapDirIWDs(pcVar2);
+  bVar1 = DB_FileExists(zoneName,FFD_DEFAULT);
+  if ((!bVar1) && (bVar1 = DB_FileExists(zoneName,FFD_USER_MAP), bVar1)) {
+    Dvar_SetStringByName("fs_usermapdir",zoneName);
+    pszGameFolder = va("%s/%s");
+    FS_AddUserMapDirIWDs(pszGameFolder);
     return;
   }
   Dvar_SetStringByName("fs_usermapdir","");
@@ -6433,14 +6664,14 @@ void __cdecl DB_AddUserMapDir(char *param_1)
 void __cdecl DB_LoadFastFilesForPC(void)
 
 {
-  XZoneInfo local_54 [6];
-  undefined4 local_8;
+  XZoneInfo zoneInfo [6];
+  uint zoneCount;
   
-  local_54[0].freeFlags = 0;
-  local_54[0].allocFlags = 0x100;
-  local_54[0].name = "common_mp";
-  local_8 = 1;
-  DB_LoadXAssets(local_54,1,0);
+  zoneInfo[0].freeFlags = 0;
+  zoneInfo[0].allocFlags = 0x100;
+  zoneInfo[0].name = "common_mp";
+  zoneCount = 1;
+  DB_LoadXAssets(zoneInfo,1,0);
   return;
 }
 
@@ -6452,33 +6683,33 @@ void __cdecl DB_LoadGraphicsAssetsForPC(void)
 {
   code *pcVar1;
   bool bVar2;
-  XZoneInfo local_54;
+  XZoneInfo zoneInfo;
   char *pcStack_48;
   undefined4 uStack_44;
   undefined4 uStack_40;
-  uint local_8;
+  uint zoneCount;
   
-  local_54.name = "code_post_gfx_mp";
-  local_54.allocFlags = 1;
-  local_54.freeFlags = -0x80000000;
-  local_8 = 1;
-  DB_LoadXAssets(&local_54,1,0);
+  zoneInfo.name = "code_post_gfx_mp";
+  zoneInfo.allocFlags = 1;
+  zoneInfo.freeFlags = -0x80000000;
+  zoneCount = 1;
+  DB_LoadXAssets(&zoneInfo,1,0);
   DB_SyncXAssets();
-  local_54.name = "dev_mp";
-  local_54.allocFlags = 4;
-  local_54.freeFlags = 0;
+  zoneInfo.name = "dev_mp";
+  zoneInfo.allocFlags = 4;
+  zoneInfo.freeFlags = 0;
   pcStack_48 = "patch_mp";
   uStack_44 = 0x10;
   uStack_40 = 0;
-  local_8 = 2;
+  zoneCount = 2;
   bVar2 = DB_ModFileExists();
   if (bVar2) {
-    (&local_54)[local_8].name = "mod";
-    (&local_54)[local_8].allocFlags = 0x40;
-    (&local_54)[local_8].freeFlags = 0;
-    local_8 = local_8 + 1;
+    (&zoneInfo)[zoneCount].name = "mod";
+    (&zoneInfo)[zoneCount].allocFlags = 0x40;
+    (&zoneInfo)[zoneCount].freeFlags = 0;
+    zoneCount = zoneCount + 1;
   }
-  if (6 < local_8) {
+  if (6 < zoneCount) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",0x18a0,0
                              ,"%s");
     if (!bVar2) {
@@ -6487,7 +6718,7 @@ void __cdecl DB_LoadGraphicsAssetsForPC(void)
       return;
     }
   }
-  DB_LoadXAssets(&local_54,local_8,0);
+  DB_LoadXAssets(&zoneInfo,zoneCount,0);
   return;
 }
 

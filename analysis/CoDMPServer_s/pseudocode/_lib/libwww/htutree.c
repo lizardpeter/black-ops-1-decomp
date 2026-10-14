@@ -49,26 +49,26 @@ undefined4 _HTUTree_deleteNode(int param_1,undefined4 param_2)
 
 {
   int iVar1;
-  undefined4 *puVar2;
+  undefined4 *pBlock;
   
   if (param_1 == 0) {
     return 0;
   }
   iVar1 = FUN_0089f690();
   if (iVar1 == 0) {
-    puVar2 = (undefined4 *)FUN_0089f760(param_2);
+    pBlock = (undefined4 *)FUN_0089f760(param_2);
   }
   else {
-    puVar2 = *(undefined4 **)(iVar1 + 8);
+    pBlock = *(undefined4 **)(iVar1 + 8);
   }
   FUN_0089f640();
-  if (puVar2 != (undefined4 *)0x0) {
+  if (pBlock != (undefined4 *)0x0) {
     _HTList_removeObject();
-    if ((void *)*puVar2 != (void *)0x0) {
-      free((void *)*puVar2);
+    if ((void *)*pBlock != (void *)0x0) {
+      free((void *)*pBlock);
     }
-    *puVar2 = 0;
-    free(puVar2);
+    *pBlock = 0;
+    free(pBlock);
   }
   return 1;
 }
@@ -141,32 +141,32 @@ undefined4 _HTUTree_deleteAll(void)
 
 {
   void *pvVar1;
-  void *pvVar2;
-  int iVar3;
-  int *piVar4;
-  void *pvVar5;
+  void *pBlock;
+  int iVar2;
+  int *piVar3;
+  void *pBlock_00;
   
   if (DAT_03547814 != (void *)0x0) {
-    iVar3 = 0;
-    pvVar5 = DAT_03547814;
+    iVar2 = 0;
+    pBlock_00 = DAT_03547814;
     do {
-      piVar4 = *(int **)(iVar3 + (int)pvVar5);
-      if (piVar4 != (int *)0x0) {
-        while ((piVar4 = (int *)piVar4[1], pvVar5 = DAT_03547814, piVar4 != (int *)0x0 &&
-               (*piVar4 != 0))) {
+      piVar3 = *(int **)(iVar2 + (int)pBlock_00);
+      if (piVar3 != (int *)0x0) {
+        while ((piVar3 = (int *)piVar3[1], pBlock_00 = DAT_03547814, piVar3 != (int *)0x0 &&
+               (*piVar3 != 0))) {
           FUN_0089f8e0();
         }
       }
-      pvVar2 = *(void **)(iVar3 + (int)pvVar5);
-      while (pvVar2 != (void *)0x0) {
-        pvVar1 = *(void **)((int)pvVar2 + 4);
-        free(pvVar2);
-        pvVar2 = pvVar1;
+      pBlock = *(void **)(iVar2 + (int)pBlock_00);
+      while (pBlock != (void *)0x0) {
+        pvVar1 = *(void **)((int)pBlock + 4);
+        free(pBlock);
+        pBlock = pvVar1;
       }
-      iVar3 = iVar3 + 4;
-    } while (iVar3 < 0x194);
-    if (pvVar5 != (void *)0x0) {
-      free(pvVar5);
+      iVar2 = iVar2 + 4;
+    } while (iVar2 < 0x194);
+    if (pBlock_00 != (void *)0x0) {
+      free(pBlock_00);
     }
     DAT_03547814 = (void *)0x0;
     return 1;

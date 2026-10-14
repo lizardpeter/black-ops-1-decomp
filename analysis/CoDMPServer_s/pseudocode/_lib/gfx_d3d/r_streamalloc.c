@@ -5,20 +5,20 @@
 void __cdecl R_StreamAlloc_InitTempImages(void)
 
 {
-  GfxImage *pGVar1;
-  bool *pbVar2;
+  GfxImage *dst;
+  bool *pbVar1;
   
   if (!s_allocGlob.tempImagesInit) {
-    pbVar2 = &s_allocGlob.tempImages[0].alloced;
+    pbVar1 = &s_allocGlob.tempImages[0].alloced;
     do {
       EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6e48);
-      pGVar1 = (GfxImage *)FUN_00515c70(8);
+      dst = (GfxImage *)FUN_00515c70(8);
       LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_020c6e48);
-      ((StreamTempImage *)(pbVar2 + -4))->image = pGVar1;
-      memset((uchar *)pGVar1,'\0',0x34);
-      *pbVar2 = false;
-      pbVar2 = pbVar2 + 8;
-    } while ((int)pbVar2 < 0x2d7ff74);
+      ((StreamTempImage *)(pbVar1 + -4))->image = dst;
+      memset((uchar *)dst,'\0',0x34);
+      *pbVar1 = false;
+      pbVar1 = pbVar1 + 8;
+    } while ((int)pbVar1 < 0x2d7ff74);
     s_allocGlob.tempImagesInit = true;
   }
   return;
@@ -27,6 +27,8 @@ void __cdecl R_StreamAlloc_InitTempImages(void)
 
 // 0082ACF0  R_StreamAlloc_SetupTempImage  (gfx_d3d/r_streamalloc.cpp:1764)
 
+/* WARNING: Variable defined which should be unmapped: format */
+
 GfxImage * __cdecl
 R_StreamAlloc_SetupTempImage(_D3DFORMAT param_1,bool param_2,int param_3,int param_4,int param_5)
 
@@ -34,6 +36,7 @@ R_StreamAlloc_SetupTempImage(_D3DFORMAT param_1,bool param_2,int param_3,int par
   GfxImage *pGVar1;
   int iVar2;
   FastCriticalSection *unaff_ESI;
+  _D3DFORMAT format;
   
   Sys_LockWrite(unaff_ESI);
   iVar2 = 0;
@@ -70,6 +73,7 @@ void __cdecl R_StreamAlloc_ReleaseTempImage(GfxImage *param_1)
 {
   GfxImage *unaff_EDI;
   int iVar1;
+  GfxImage *image;
   
   Sys_LockWrite((FastCriticalSection *)unaff_EDI);
   iVar1 = 0;
@@ -93,6 +97,8 @@ void __cdecl R_StreamAlloc_ReleaseTempImage(GfxImage *param_1)
 
 // 0082AEB0  R_StreamAlloc_Flush  (gfx_d3d/r_streamalloc.cpp:1930)
 
+/* WARNING: Variable defined which should be unmapped: useBits */
+
 void __cdecl R_StreamAlloc_Flush(void)
 
 {
@@ -101,6 +107,7 @@ void __cdecl R_StreamAlloc_Flush(void)
   uint *puVar3;
   uint uVar4;
   int iVar5;
+  uint useBits;
   
   iVar5 = 0;
   puVar3 = streamFrontendGlob.imageUseBits;

@@ -2,11 +2,11 @@
 
 // 00B10B80  RB_TouchImage  (gfx_d3d/rb_imagetouch.cpp:14)
 
-void __cdecl RB_TouchImage(GfxImage *param_1)
+void __cdecl RB_TouchImage(GfxImage *image)
 
 {
-  if (param_1->mapType == '\x03') {
-    R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,param_1);
+  if (image->mapType == '\x03') {
+    R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,image);
     R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
     RB_DrawStretchPic(rgp.feedbackReplaceMaterial,0.0,0.0,8.0,8.0,0.0,0.0,1.0,1.0,0xffffffff,
                       GFX_PRIM_STATS_CODE);
@@ -18,15 +18,16 @@ void __cdecl RB_TouchImage(GfxImage *param_1)
 
 // 00B10C10  RB_CompareTouchImages  (gfx_d3d/rb_imagetouch.cpp:28)
 
-int __cdecl RB_CompareTouchImages(void *param_1,void *param_2)
+int __cdecl RB_CompareTouchImages(void *e0,void *e1)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
+  int comparison;
   
-  iVar1 = *(int *)param_1;
-  iVar2 = *(int *)param_2;
+  iVar1 = *(int *)e0;
+  iVar2 = *(int *)e1;
   if (*(char *)(iVar2 + 5) == '\0') {
     iVar3 = -1;
   }
@@ -55,8 +56,15 @@ void __cdecl RB_TouchAllImages(void)
   int iVar2;
   int iVar3;
   int iVar4;
-  uint local_4218;
-  ImageList local_420c;
+  int semaphore_3;
+  HRESULT hr_2;
+  int semaphore_2;
+  HRESULT hr;
+  bool wasInScene;
+  uint imageIndex;
+  int semaphore;
+  int touchTotal;
+  ImageList imageList;
   undefined4 uStack_8;
   
   uStack_8 = 0xb108fd;
@@ -83,12 +91,12 @@ void __cdecl RB_TouchAllImages(void)
   if (tess.indexCount != 0) {
     RB_EndTessSurface();
   }
-  R_GetImageList(&local_420c);
-  qsort(local_420c.image,local_420c.count,4,RB_CompareTouchImages);
-  local_4218 = 0;
-  while ((local_4218 < local_420c.count && (local_420c.image[local_4218]->semantic != '\0'))) {
-    RB_TouchImage(local_420c.image[local_4218]);
-    local_4218 = local_4218 + 1;
+  R_GetImageList(&imageList);
+  qsort(imageList.image,imageList.count,4,RB_CompareTouchImages);
+  imageIndex = 0;
+  while ((imageIndex < imageList.count && (imageList.image[imageIndex]->semantic != '\0'))) {
+    RB_TouchImage(imageList.image[imageIndex]);
+    imageIndex = imageIndex + 1;
   }
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,(GfxImage *)0x0);
   if (bVar1 == false) {

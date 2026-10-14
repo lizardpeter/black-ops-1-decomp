@@ -152,10 +152,10 @@ void __cdecl R_SetDefaultLitTechTypes(void)
 
 // 00B04920  R_ForceLitTechType  (gfx_d3d/r_draw_method.cpp:191)
 
-void __cdecl R_ForceLitTechType(uchar param_1)
+void __cdecl R_ForceLitTechType(uchar litTechType)
 
 {
-  memset((uchar *)gfxDrawMethod.litTechType,param_1,0x1c0);
+  memset((uchar *)gfxDrawMethod.litTechType,litTechType,0x1c0);
   return;
 }
 
@@ -191,7 +191,7 @@ void __cdecl R_InitDrawMethod(void)
 
 // 00B04940  R_UpdateDrawMethod  (gfx_d3d/r_draw_method.cpp:223)
 
-void __cdecl R_UpdateDrawMethod(GfxBackEndData *param_1,GfxViewInfo *param_2)
+void __cdecl R_UpdateDrawMethod(GfxBackEndData *data,GfxViewInfo *viewInfo)
 
 {
   byte bVar1;
@@ -199,10 +199,15 @@ void __cdecl R_UpdateDrawMethod(GfxBackEndData *param_1,GfxViewInfo *param_2)
   byte bVar3;
   bool bVar4;
   int iVar5;
-  uint local_10;
-  uint local_c;
+  GfxFadeType fadeType;
+  bool canChar;
+  GfxTechCharredType charType;
+  bool canFade;
+  uint primaryLightIndex;
+  uint surfType;
+  uint lightType;
   
-  if (0xff < param_1->shadowableLightCount) {
+  if (0xff < data->shadowableLightCount) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_method.cpp",0xe8,0,
                              "%s\n\t(data->shadowableLightCount) = %i");
     if (!bVar4) {
@@ -211,31 +216,32 @@ void __cdecl R_UpdateDrawMethod(GfxBackEndData *param_1,GfxViewInfo *param_2)
       return;
     }
   }
-  for (local_10 = 0; local_10 < param_1->shadowableLightCount; local_10 = local_10 + 1) {
-    bVar1 = param_1->shadowableLights[local_10].type;
-    iVar5 = Com_BitCheckAssert(param_1->shadowableLightHasShadowMap,local_10,0x20);
+  for (primaryLightIndex = 0; primaryLightIndex < data->shadowableLightCount;
+      primaryLightIndex = primaryLightIndex + 1) {
+    bVar1 = data->shadowableLights[primaryLightIndex].type;
+    iVar5 = Com_BitCheckAssert(data->shadowableLightHasShadowMap,primaryLightIndex,0x20);
     iVar5 = (-(uint)(iVar5 != 0) & 3) + (uint)bVar1;
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      if (((local_c == 0) || (local_c == 1)) || (local_c == 6)) {
+    for (surfType = 0; surfType < 0x10; surfType = surfType + 1) {
+      if (((surfType == 0) || (surfType == 1)) || (surfType == 6)) {
         bVar1 = 1;
       }
       else {
         bVar1 = 0;
       }
-      if (((local_c == 9) || (local_c == 7)) || (local_c == 2)) {
+      if (((surfType == 9) || (surfType == 7)) || (surfType == 2)) {
         bVar3 = 1;
       }
       else {
         bVar3 = 0;
       }
-      param_1->primaryLightTechType[local_c][0][0][local_10] =
-           *(uchar *)(local_c * 0x1c + 0xb50ef2e + iVar5 * 4);
-      param_1->primaryLightTechType[local_c][0][1][local_10] =
-           *(uchar *)(local_c * 0x1c + 0xb50ef2e + iVar5 * 4 + (uint)bVar3);
-      param_1->primaryLightTechType[local_c][1][0][local_10] =
-           *(uchar *)(local_c * 0x1c + 0xb50ef2e + iVar5 * 4 + (uint)bVar1 * 2);
-      param_1->primaryLightTechType[local_c][1][1][local_10] =
-           *(uchar *)(local_c * 0x1c + 0xb50ef2e + iVar5 * 4 + (uint)bVar1 * 2 + (uint)bVar3);
+      data->primaryLightTechType[surfType][0][0][primaryLightIndex] =
+           *(uchar *)(surfType * 0x1c + 0xb50ef2e + iVar5 * 4);
+      data->primaryLightTechType[surfType][0][1][primaryLightIndex] =
+           *(uchar *)(surfType * 0x1c + 0xb50ef2e + iVar5 * 4 + (uint)bVar3);
+      data->primaryLightTechType[surfType][1][0][primaryLightIndex] =
+           *(uchar *)(surfType * 0x1c + 0xb50ef2e + iVar5 * 4 + (uint)bVar1 * 2);
+      data->primaryLightTechType[surfType][1][1][primaryLightIndex] =
+           *(uchar *)(surfType * 0x1c + 0xb50ef2e + iVar5 * 4 + (uint)bVar1 * 2 + (uint)bVar3);
     }
   }
   return;

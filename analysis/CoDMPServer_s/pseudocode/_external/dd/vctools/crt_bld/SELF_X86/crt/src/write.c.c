@@ -5,37 +5,38 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _write(int param_1,void *param_2,uint param_3)
+int __cdecl _write(int fh,void *buf,uint cnt)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
-  int iStack_20;
+  int _Expr_val;
+  int r;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
   }
   else {
-    if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-      iVar3 = (param_1 & 0x1fU) * 0x40;
-      if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) != 0) {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+    if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+      iVar3 = (fh & 0x1fU) * 0x40;
+      if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) != 0) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
           puVar1 = __doserrno();
           *puVar1 = 0;
-          iStack_20 = -1;
+          r = -1;
         }
         else {
-          iStack_20 = _write_nolock(param_1,param_2,param_3);
+          r = _write_nolock(fh,buf,cnt);
         }
         FUN_0096d0e1();
-        return iStack_20;
+        return r;
       }
     }
     puVar1 = __doserrno();
@@ -52,52 +53,51 @@ int __cdecl _write(int param_1,void *param_2,uint param_3)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Type propagation algorithm not settling */
 
-int __cdecl _write_nolock(int param_1,void *param_2,uint param_3)
+int __cdecl _write_nolock(int fh,void *buf,uint cnt)
 
 {
   WCHAR WVar1;
-  wchar_t wVar2;
+  ushort uVar2;
   ulong *puVar3;
   int *piVar4;
   int iVar5;
   _tiddata *p_Var6;
   BOOL BVar7;
   DWORD nNumberOfBytesToWrite;
-  uint uVar8;
-  char cVar9;
-  WCHAR *pWVar10;
-  char *pcVar11;
-  int unaff_EDI;
+  WCHAR *pWVar8;
+  uint uVar9;
+  char cVar10;
+  ushort *puVar11;
   int iVar12;
-  WCHAR *pWVar13;
-  ushort uVar14;
-  UINT UStack_1ae8;
-  uint uStack_1ae4;
-  char cStack_1add;
+  int unaff_EDI;
+  int iVar13;
+  ushort *puVar14;
+  ulong dwMode;
+  int isCLocale;
+  char tmode;
   int *piStack_1adc;
-  char *pcStack_1ad8;
-  int iStack_1ad4;
-  WCHAR *pWStack_1ad0;
-  char *pcStack_1acc;
-  WCHAR *pWStack_1ac8;
-  DWORD DStack_1ac4;
-  WCHAR *pWStack_1ac0;
-  WCHAR aWStack_1abc [852];
+  int written_2;
+  int lfcount;
+  ushort *puStack_1ad0;
+  int charcount;
+  int written;
+  ulong dosretval;
+  ushort *pu;
+  ushort auStack_1abc [852];
   CHAR aCStack_1414 [3416];
   WCHAR aWStack_6bc [854];
   undefined2 uStack_10;
   uint uStack_8;
   
   uStack_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pWStack_1ad0 = param_2;
-  pcStack_1acc = (char *)0x0;
-  iStack_1ad4 = 0;
-  if (param_3 == 0) {
+  puStack_1ad0 = buf;
+  charcount = 0;
+  lfcount = 0;
+  if (cnt == 0) {
     return 0;
   }
-  if (param_2 == (void *)0x0) {
+  if (buf == (void *)0x0) {
     puVar3 = __doserrno();
     *puVar3 = 0;
     piVar4 = _errno();
@@ -105,12 +105,12 @@ int __cdecl _write_nolock(int param_1,void *param_2,uint param_3)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  piVar4 = (int *)(&__pioinfo + (param_1 >> 5) * 4);
-  iVar12 = (param_1 & 0x1fU) * 0x40;
-  cVar9 = (char)(*(char *)(*piVar4 + iVar12 + 0x24) * '\x02') >> 1;
-  cStack_1add = cVar9;
+  piVar4 = (int *)(&__pioinfo + (fh >> 5) * 4);
+  iVar13 = (fh & 0x1fU) * 0x40;
+  cVar10 = (char)(*(char *)(*piVar4 + iVar13 + 0x24) * '\x02') >> 1;
+  tmode = cVar10;
   piStack_1adc = piVar4;
-  if (((cVar9 == '\x02') || (cVar9 == '\x01')) && ((~param_3 & 1) == 0)) {
+  if (((cVar10 == '\x02') || (cVar10 == '\x01')) && ((~cnt & 1) == 0)) {
     puVar3 = __doserrno();
     *puVar3 = 0;
     piVar4 = _errno();
@@ -118,236 +118,234 @@ int __cdecl _write_nolock(int param_1,void *param_2,uint param_3)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  if ((*(byte *)(*piVar4 + iVar12 + 4) & 0x20) != 0) {
-    _lseeki64_nolock(param_1,0x200000000,unaff_EDI);
+  if ((*(byte *)(*piVar4 + iVar13 + 4) & 0x20) != 0) {
+    _lseeki64_nolock(fh,0x200000000,unaff_EDI);
   }
-  iVar5 = _isatty(param_1);
-  if ((iVar5 == 0) || ((*(byte *)(iVar12 + 4 + *piVar4) & 0x80) == 0)) {
+  iVar5 = _isatty(fh);
+  if ((iVar5 == 0) || ((*(byte *)(iVar13 + 4 + *piVar4) & 0x80) == 0)) {
 LAB_0096cc73:
-    if ((*(byte *)((undefined4 *)(*piVar4 + iVar12) + 1) & 0x80) == 0) {
-      BVar7 = WriteFile(*(HANDLE *)(*piVar4 + iVar12),pWStack_1ad0,param_3,(LPDWORD)&pcStack_1ad8,
+    if ((*(byte *)((undefined4 *)(*piVar4 + iVar13) + 1) & 0x80) == 0) {
+      BVar7 = WriteFile(*(HANDLE *)(*piVar4 + iVar13),puStack_1ad0,cnt,(LPDWORD)&written_2,
                         (LPOVERLAPPED)0x0);
       if (BVar7 == 0) {
 LAB_0096cf73:
-        DStack_1ac4 = GetLastError();
+        dosretval = GetLastError();
       }
       else {
-        DStack_1ac4 = 0;
-        pcStack_1acc = pcStack_1ad8;
+        dosretval = 0;
+        charcount = written_2;
       }
     }
     else {
-      DStack_1ac4 = 0;
-      if (cVar9 == '\0') {
-        pWStack_1ac8 = pWStack_1ad0;
-        if (param_3 == 0) goto LAB_0096cfc4;
+      dosretval = 0;
+      if (cVar10 == '\0') {
+        written = (int)puStack_1ad0;
+        if (cnt == 0) goto LAB_0096cfc4;
         do {
-          pWStack_1ac0 = (WCHAR *)0x0;
-          uVar8 = (int)pWStack_1ac8 - (int)pWStack_1ad0;
-          pWVar10 = aWStack_1abc;
+          pu = (ushort *)0x0;
+          uVar9 = written - (int)puStack_1ad0;
+          puVar11 = auStack_1abc;
           do {
-            if (param_3 <= uVar8) break;
-            pWVar13 = (WCHAR *)((int)pWStack_1ac8 + 1);
-            WVar1 = *pWStack_1ac8;
-            uVar8 = uVar8 + 1;
-            if ((char)WVar1 == '\n') {
-              iStack_1ad4 = iStack_1ad4 + 1;
-              *(char *)pWVar10 = '\r';
-              pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-              pWStack_1ac0 = (WCHAR *)((int)pWStack_1ac0 + 1);
+            if (cnt <= uVar9) break;
+            iVar5 = written + 1;
+            cVar10 = *(char *)written;
+            uVar9 = uVar9 + 1;
+            if (cVar10 == '\n') {
+              lfcount = lfcount + 1;
+              *(char *)puVar11 = '\r';
+              puVar11 = (ushort *)((int)puVar11 + 1);
+              pu = (ushort *)((int)pu + 1);
             }
-            *(char *)pWVar10 = (char)WVar1;
-            pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-            pWStack_1ac0 = (WCHAR *)((int)pWStack_1ac0 + 1);
-            pWStack_1ac8 = pWVar13;
-          } while (pWStack_1ac0 < (WCHAR *)0x13ff);
-          BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piVar4),aWStack_1abc,
-                            (int)pWVar10 - (int)aWStack_1abc,(LPDWORD)&pcStack_1ad8,
-                            (LPOVERLAPPED)0x0);
+            *(char *)puVar11 = cVar10;
+            puVar11 = (ushort *)((int)puVar11 + 1);
+            pu = (ushort *)((int)pu + 1);
+            written = iVar5;
+          } while (pu < (ushort *)0x13ff);
+          BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piVar4),auStack_1abc,
+                            (int)puVar11 - (int)auStack_1abc,(LPDWORD)&written_2,(LPOVERLAPPED)0x0);
           if (BVar7 == 0) goto LAB_0096cf73;
-          pcStack_1acc = pcStack_1acc + (int)pcStack_1ad8;
-        } while (((int)pWVar10 - (int)aWStack_1abc <= (int)pcStack_1ad8) &&
-                (piVar4 = piStack_1adc, (uint)((int)pWStack_1ac8 - (int)pWStack_1ad0) < param_3));
+          charcount = charcount + written_2;
+        } while (((int)puVar11 - (int)auStack_1abc <= written_2) &&
+                (piVar4 = piStack_1adc, (uint)(written - (int)puStack_1ad0) < cnt));
       }
       else {
-        pWStack_1ac0 = pWStack_1ad0;
-        if (cVar9 == '\x02') {
-          if (param_3 == 0) goto LAB_0096cfc4;
+        pu = puStack_1ad0;
+        if (cVar10 == '\x02') {
+          if (cnt == 0) goto LAB_0096cfc4;
           do {
-            pWStack_1ac8 = (WCHAR *)0x0;
-            uVar8 = (int)pWStack_1ac0 - (int)pWStack_1ad0;
-            pWVar10 = aWStack_1abc;
+            written = 0;
+            uVar9 = (int)pu - (int)puStack_1ad0;
+            puVar11 = auStack_1abc;
             do {
-              if (param_3 <= uVar8) break;
-              pWVar13 = pWStack_1ac0 + 1;
-              WVar1 = *pWStack_1ac0;
-              uVar8 = uVar8 + 2;
-              if (WVar1 == L'\n') {
-                iStack_1ad4 = iStack_1ad4 + 2;
-                *pWVar10 = L'\r';
-                pWVar10 = pWVar10 + 1;
-                pWStack_1ac8 = pWStack_1ac8 + 1;
+              if (cnt <= uVar9) break;
+              puVar14 = pu + 1;
+              uVar2 = *pu;
+              uVar9 = uVar9 + 2;
+              if (uVar2 == 10) {
+                lfcount = lfcount + 2;
+                *puVar11 = 0xd;
+                puVar11 = puVar11 + 1;
+                written = written + 2;
               }
-              pWStack_1ac8 = pWStack_1ac8 + 1;
-              *pWVar10 = WVar1;
-              pWVar10 = pWVar10 + 1;
-              pWStack_1ac0 = pWVar13;
-            } while (pWStack_1ac8 < (WCHAR *)0x13fe);
-            BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piVar4),aWStack_1abc,
-                              (int)pWVar10 - (int)aWStack_1abc,(LPDWORD)&pcStack_1ad8,
-                              (LPOVERLAPPED)0x0);
+              written = written + 2;
+              *puVar11 = uVar2;
+              puVar11 = puVar11 + 1;
+              pu = puVar14;
+            } while ((uint)written < 0x13fe);
+            BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piVar4),auStack_1abc,
+                              (int)puVar11 - (int)auStack_1abc,(LPDWORD)&written_2,(LPOVERLAPPED)0x0
+                             );
             if (BVar7 == 0) goto LAB_0096cf73;
-            pcStack_1acc = pcStack_1acc + (int)pcStack_1ad8;
-          } while (((int)pWVar10 - (int)aWStack_1abc <= (int)pcStack_1ad8) &&
-                  (piVar4 = piStack_1adc, (uint)((int)pWStack_1ac0 - (int)pWStack_1ad0) < param_3));
+            charcount = charcount + written_2;
+          } while (((int)puVar11 - (int)auStack_1abc <= written_2) &&
+                  (piVar4 = piStack_1adc, (uint)((int)pu - (int)puStack_1ad0) < cnt));
         }
         else {
-          if (param_3 == 0) goto LAB_0096cfc4;
+          if (cnt == 0) goto LAB_0096cfc4;
           do {
-            pWStack_1ac8 = (WCHAR *)0x0;
-            uVar8 = (int)pWStack_1ac0 - (int)pWStack_1ad0;
-            pWVar10 = aWStack_6bc;
+            written = 0;
+            uVar9 = (int)pu - (int)puStack_1ad0;
+            pWVar8 = aWStack_6bc;
             do {
-              if (param_3 <= uVar8) break;
-              WVar1 = *pWStack_1ac0;
-              pWStack_1ac0 = pWStack_1ac0 + 1;
-              uVar8 = uVar8 + 2;
+              if (cnt <= uVar9) break;
+              WVar1 = *pu;
+              pu = pu + 1;
+              uVar9 = uVar9 + 2;
               if (WVar1 == L'\n') {
-                *pWVar10 = L'\r';
-                pWVar10 = pWVar10 + 1;
-                pWStack_1ac8 = pWStack_1ac8 + 1;
+                *pWVar8 = L'\r';
+                pWVar8 = pWVar8 + 1;
+                written = written + 2;
               }
-              pWStack_1ac8 = pWStack_1ac8 + 1;
-              *pWVar10 = WVar1;
-              pWVar10 = pWVar10 + 1;
-            } while (pWStack_1ac8 < (WCHAR *)0x6a8);
-            pcVar11 = (char *)0x0;
-            iVar5 = WideCharToMultiByte(0xfde9,0,aWStack_6bc,((int)pWVar10 - (int)aWStack_6bc) / 2,
+              written = written + 2;
+              *pWVar8 = WVar1;
+              pWVar8 = pWVar8 + 1;
+            } while ((uint)written < 0x6a8);
+            iVar12 = 0;
+            iVar5 = WideCharToMultiByte(0xfde9,0,aWStack_6bc,((int)pWVar8 - (int)aWStack_6bc) / 2,
                                         aCStack_1414,0xd55,(LPCSTR)0x0,(LPBOOL)0x0);
             if (iVar5 == 0) goto LAB_0096cf73;
             do {
-              BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piStack_1adc),aCStack_1414 + (int)pcVar11,
-                                iVar5 - (int)pcVar11,(LPDWORD)&pcStack_1ad8,(LPOVERLAPPED)0x0);
+              BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piStack_1adc),aCStack_1414 + iVar12,
+                                iVar5 - iVar12,(LPDWORD)&written_2,(LPOVERLAPPED)0x0);
               if (BVar7 == 0) {
-                DStack_1ac4 = GetLastError();
+                dosretval = GetLastError();
                 break;
               }
-              pcVar11 = pcVar11 + (int)pcStack_1ad8;
-            } while ((int)pcVar11 < iVar5);
-          } while ((iVar5 <= (int)pcVar11) &&
-                  (pcStack_1acc = (char *)((int)pWStack_1ac0 - (int)pWStack_1ad0),
-                  pcStack_1acc < param_3));
+              iVar12 = iVar12 + written_2;
+            } while (iVar12 < iVar5);
+          } while ((iVar5 <= iVar12) &&
+                  (charcount = (int)pu - (int)puStack_1ad0, (uint)charcount < cnt));
         }
       }
     }
 LAB_0096cf7f:
-    if (pcStack_1acc != (char *)0x0) {
-      return (int)pcStack_1acc - iStack_1ad4;
+    if (charcount != 0) {
+      return charcount - lfcount;
     }
   }
   else {
     p_Var6 = _getptd();
-    uStack_1ae4 = (uint)(p_Var6->ptlocinfo->lc_handle[2] == 0);
-    BVar7 = GetConsoleMode(*(HANDLE *)(iVar12 + *piVar4),&UStack_1ae8);
-    if ((BVar7 == 0) || ((uStack_1ae4 != 0 && (cVar9 == '\0')))) goto LAB_0096cc73;
-    UStack_1ae8 = GetConsoleCP();
-    pWStack_1ac8 = (WCHAR *)0x0;
-    if (param_3 != 0) {
-      pWStack_1ac0 = (WCHAR *)0x0;
-      pWVar10 = pWStack_1ad0;
+    isCLocale = (int)(p_Var6->ptlocinfo->lc_handle[2] == 0);
+    BVar7 = GetConsoleMode(*(HANDLE *)(iVar13 + *piVar4),&dwMode);
+    if ((BVar7 == 0) || ((isCLocale != 0 && (cVar10 == '\0')))) goto LAB_0096cc73;
+    dwMode = GetConsoleCP();
+    written = 0;
+    if (cnt != 0) {
+      pu = (ushort *)0x0;
+      puVar11 = puStack_1ad0;
       do {
         piVar4 = piStack_1adc;
-        if (cStack_1add == '\0') {
-          cVar9 = (char)*pWVar10;
-          uStack_1ae4 = (uint)(cVar9 == '\n');
-          iVar5 = *piStack_1adc + iVar12;
+        if (tmode == '\0') {
+          cVar10 = (char)*puVar11;
+          isCLocale = (int)(cVar10 == '\n');
+          iVar5 = *piStack_1adc + iVar13;
           if (*(int *)(iVar5 + 0x38) == 0) {
-            iVar5 = isleadbyte(CONCAT22(cVar9 >> 7,(short)cVar9));
+            iVar5 = isleadbyte(CONCAT22(cVar10 >> 7,(short)cVar10));
             if (iVar5 == 0) {
-              uVar14 = 1;
-              pWVar13 = pWVar10;
+              uVar2 = 1;
+              puVar14 = puVar11;
               goto LAB_0096cada;
             }
-            if ((char *)((int)pWStack_1ad0 + (param_3 - (int)pWVar10)) < (char *)0x2) {
-              pcStack_1acc = pcStack_1acc + 1;
-              *(char *)(iVar12 + 0x34 + *piVar4) = (char)*pWVar10;
-              *(undefined4 *)(iVar12 + 0x38 + *piVar4) = 1;
+            if ((char *)((int)puStack_1ad0 + (cnt - (int)puVar11)) < (char *)0x2) {
+              charcount = charcount + 1;
+              *(char *)(iVar13 + 0x34 + *piVar4) = (char)*puVar11;
+              *(undefined4 *)(iVar13 + 0x38 + *piVar4) = 1;
               break;
             }
-            iVar5 = mbtowc((wchar_t *)&DStack_1ac4,(char *)pWVar10,2);
+            iVar5 = mbtowc((wchar_t *)&dosretval,(char *)puVar11,2);
             if (iVar5 == -1) break;
-            pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-            pWStack_1ac0 = (WCHAR *)((int)pWStack_1ac0 + 1);
+            puVar11 = (ushort *)((int)puVar11 + 1);
+            pu = (ushort *)((int)pu + 1);
           }
           else {
             uStack_10._0_1_ = *(CHAR *)(iVar5 + 0x34);
             *(undefined4 *)(iVar5 + 0x38) = 0;
-            uVar14 = 2;
-            pWVar13 = &uStack_10;
-            uStack_10._1_1_ = cVar9;
+            uVar2 = 2;
+            puVar14 = &uStack_10;
+            uStack_10._1_1_ = cVar10;
 LAB_0096cada:
-            iVar5 = mbtowc((wchar_t *)&DStack_1ac4,(char *)pWVar13,(uint)uVar14);
+            iVar5 = mbtowc((wchar_t *)&dosretval,(char *)puVar14,(uint)uVar2);
             if (iVar5 == -1) break;
           }
-          pWVar10 = (WCHAR *)((int)pWVar10 + 1);
-          pWStack_1ac0 = (WCHAR *)((int)pWStack_1ac0 + 1);
+          puVar11 = (ushort *)((int)puVar11 + 1);
+          pu = (ushort *)((int)pu + 1);
           nNumberOfBytesToWrite =
-               WideCharToMultiByte(UStack_1ae8,0,(LPCWSTR)&DStack_1ac4,1,(LPSTR)&uStack_10,5,
-                                   (LPCSTR)0x0,(LPBOOL)0x0);
+               WideCharToMultiByte(dwMode,0,(LPCWSTR)&dosretval,1,(LPSTR)&uStack_10,5,(LPCSTR)0x0,
+                                   (LPBOOL)0x0);
           if (nNumberOfBytesToWrite == 0) break;
-          BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piStack_1adc),&uStack_10,nNumberOfBytesToWrite,
-                            (LPDWORD)&pWStack_1ac8,(LPOVERLAPPED)0x0);
+          BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piStack_1adc),&uStack_10,nNumberOfBytesToWrite,
+                            (LPDWORD)&written,(LPOVERLAPPED)0x0);
           if (BVar7 == 0) goto LAB_0096cf73;
-          pcStack_1acc = (char *)((int)pWStack_1ac0 + iStack_1ad4);
-          if ((int)pWStack_1ac8 < (int)nNumberOfBytesToWrite) break;
-          if (uStack_1ae4 != 0) {
+          charcount = (int)pu + lfcount;
+          if (written < (int)nNumberOfBytesToWrite) break;
+          if (isCLocale != 0) {
             uStack_10._0_1_ = '\r';
-            BVar7 = WriteFile(*(HANDLE *)(iVar12 + *piStack_1adc),&uStack_10,1,
-                              (LPDWORD)&pWStack_1ac8,(LPOVERLAPPED)0x0);
+            BVar7 = WriteFile(*(HANDLE *)(iVar13 + *piStack_1adc),&uStack_10,1,(LPDWORD)&written,
+                              (LPOVERLAPPED)0x0);
             if (BVar7 == 0) goto LAB_0096cf73;
-            if ((int)pWStack_1ac8 < 1) break;
-            iStack_1ad4 = iStack_1ad4 + 1;
-            pcStack_1acc = pcStack_1acc + 1;
+            if (written < 1) break;
+            lfcount = lfcount + 1;
+            charcount = charcount + 1;
           }
         }
         else {
-          if ((cStack_1add == '\x01') || (cStack_1add == '\x02')) {
-            DStack_1ac4 = (DWORD)(ushort)*pWVar10;
-            uStack_1ae4 = (uint)(*pWVar10 == L'\n');
-            pWVar10 = pWVar10 + 1;
-            pWStack_1ac0 = pWStack_1ac0 + 1;
+          if ((tmode == '\x01') || (tmode == '\x02')) {
+            dosretval = (ulong)*puVar11;
+            isCLocale = (int)(*puVar11 == 10);
+            puVar11 = puVar11 + 1;
+            pu = pu + 1;
           }
-          if ((cStack_1add == '\x01') || (cStack_1add == '\x02')) {
-            wVar2 = _putwch_nolock((wchar_t)DStack_1ac4);
-            if (wVar2 != (wchar_t)DStack_1ac4) goto LAB_0096cf73;
-            pcStack_1acc = pcStack_1acc + 2;
-            if (uStack_1ae4 != 0) {
-              DStack_1ac4 = 0xd;
-              wVar2 = _putwch_nolock(L'\r');
-              if (wVar2 != (wchar_t)DStack_1ac4) goto LAB_0096cf73;
-              pcStack_1acc = pcStack_1acc + 1;
-              iStack_1ad4 = iStack_1ad4 + 1;
+          if ((tmode == '\x01') || (tmode == '\x02')) {
+            uVar2 = _putwch_nolock((wchar_t)dosretval);
+            if (uVar2 != (ushort)dosretval) goto LAB_0096cf73;
+            charcount = charcount + 2;
+            if (isCLocale != 0) {
+              dosretval = 0xd;
+              uVar2 = _putwch_nolock(L'\r');
+              if (uVar2 != (ushort)dosretval) goto LAB_0096cf73;
+              charcount = charcount + 1;
+              lfcount = lfcount + 1;
             }
           }
         }
-      } while (pWStack_1ac0 < param_3);
+      } while (pu < cnt);
       goto LAB_0096cf7f;
     }
   }
   piVar4 = piStack_1adc;
-  if (DStack_1ac4 != 0) {
-    if (DStack_1ac4 == 5) {
+  if (dosretval != 0) {
+    if (dosretval == 5) {
       piVar4 = _errno();
       *piVar4 = 9;
       puVar3 = __doserrno();
       *puVar3 = 5;
       return -1;
     }
-    _dosmaperr(DStack_1ac4);
+    _dosmaperr(dosretval);
     return -1;
   }
 LAB_0096cfc4:
-  if (((*(byte *)(iVar12 + 4 + *piVar4) & 0x40) != 0) && ((char)*pWStack_1ad0 == '\x1a')) {
+  if (((*(byte *)(iVar13 + 4 + *piVar4) & 0x40) != 0) && ((char)*puStack_1ad0 == '\x1a')) {
     return 0;
   }
   piVar4 = _errno();

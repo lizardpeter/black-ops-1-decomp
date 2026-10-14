@@ -2,14 +2,14 @@
 
 // 006B40F0  CM_InitStaticModel  (qcommon/cm_staticmodel_load_obj.cpp:17)
 
-void __cdecl CM_InitStaticModel(cStaticModel_s *param_1,float *param_2,float *param_3,float param_4)
+void __cdecl CM_InitStaticModel(cStaticModel_s *staticModel,float *origin,float *angles,float scale)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_28;
+  float axis;
   float local_24;
   float local_20;
   float local_1c;
@@ -19,81 +19,82 @@ void __cdecl CM_InitStaticModel(cStaticModel_s *param_1,float *param_2,float *pa
   float local_c;
   float local_8;
   
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+       (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                ,0x14,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*angles & 0x7f800000) == 0x7f800000) ||
+       (((uint)angles[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)angles[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                ,0x15,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((uint)param_4 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)scale & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                ,0x16,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->origin[0] = *param_2;
-  param_1->origin[1] = param_2[1];
-  param_1->origin[2] = param_2[2];
-  AnglesToAxis(param_3,(float (*) [3])&local_28);
-  MatrixTranspose((float (*) [3])&local_28,param_1->invScaledAxis);
-  fVar4 = 1.0 / param_4;
-  param_1->invScaledAxis[0][0] = fVar4 * param_1->invScaledAxis[0][0];
-  param_1->invScaledAxis[0][1] = fVar4 * param_1->invScaledAxis[0][1];
-  param_1->invScaledAxis[0][2] = fVar4 * param_1->invScaledAxis[0][2];
-  fVar4 = 1.0 / param_4;
-  param_1->invScaledAxis[1][0] = fVar4 * param_1->invScaledAxis[1][0];
-  param_1->invScaledAxis[1][1] = fVar4 * param_1->invScaledAxis[1][1];
-  param_1->invScaledAxis[1][2] = fVar4 * param_1->invScaledAxis[1][2];
-  fVar4 = 1.0 / param_4;
-  param_1->invScaledAxis[2][0] = fVar4 * param_1->invScaledAxis[2][0];
-  param_1->invScaledAxis[2][1] = fVar4 * param_1->invScaledAxis[2][1];
-  param_1->invScaledAxis[2][2] = fVar4 * param_1->invScaledAxis[2][2];
-  local_28 = param_4 * local_28;
-  local_24 = param_4 * local_24;
-  local_20 = param_4 * local_20;
-  local_1c = param_4 * local_1c;
-  local_18 = param_4 * local_18;
-  local_14 = param_4 * local_14;
-  local_10 = param_4 * local_10;
-  local_c = param_4 * local_c;
-  local_8 = param_4 * local_8;
+  staticModel->origin[0] = *origin;
+  staticModel->origin[1] = origin[1];
+  staticModel->origin[2] = origin[2];
+  AnglesToAxis(angles,(float (*) [3])&axis);
+  MatrixTranspose((float (*) [3])&axis,staticModel->invScaledAxis);
+  fVar4 = 1.0 / scale;
+  staticModel->invScaledAxis[0][0] = fVar4 * staticModel->invScaledAxis[0][0];
+  staticModel->invScaledAxis[0][1] = fVar4 * staticModel->invScaledAxis[0][1];
+  staticModel->invScaledAxis[0][2] = fVar4 * staticModel->invScaledAxis[0][2];
+  fVar4 = 1.0 / scale;
+  staticModel->invScaledAxis[1][0] = fVar4 * staticModel->invScaledAxis[1][0];
+  staticModel->invScaledAxis[1][1] = fVar4 * staticModel->invScaledAxis[1][1];
+  staticModel->invScaledAxis[1][2] = fVar4 * staticModel->invScaledAxis[1][2];
+  fVar4 = 1.0 / scale;
+  staticModel->invScaledAxis[2][0] = fVar4 * staticModel->invScaledAxis[2][0];
+  staticModel->invScaledAxis[2][1] = fVar4 * staticModel->invScaledAxis[2][1];
+  staticModel->invScaledAxis[2][2] = fVar4 * staticModel->invScaledAxis[2][2];
+  axis = scale * axis;
+  local_24 = scale * local_24;
+  local_20 = scale * local_20;
+  local_1c = scale * local_1c;
+  local_18 = scale * local_18;
+  local_14 = scale * local_14;
+  local_10 = scale * local_10;
+  local_c = scale * local_c;
+  local_8 = scale * local_8;
   iVar3 = XModelGetStaticBoundsExact
-                    (param_1->xmodel,(float (*) [3])&local_28,param_1->absmin,param_1->absmax);
+                    (staticModel->xmodel,(float (*) [3])&axis,staticModel->absmin,
+                     staticModel->absmax);
   if (iVar3 != 0) {
-    param_1->absmin[0] = param_1->absmin[0] + *param_2;
-    param_1->absmin[1] = param_1->absmin[1] + param_2[1];
-    param_1->absmin[2] = param_1->absmin[2] + param_2[2];
-    param_1->absmax[0] = param_1->absmax[0] + *param_2;
-    param_1->absmax[1] = param_1->absmax[1] + param_2[1];
-    param_1->absmax[2] = param_1->absmax[2] + param_2[2];
-    if ((param_1->absmax[0] - param_1->absmin[0] < 0.0) &&
+    staticModel->absmin[0] = staticModel->absmin[0] + *origin;
+    staticModel->absmin[1] = staticModel->absmin[1] + origin[1];
+    staticModel->absmin[2] = staticModel->absmin[2] + origin[2];
+    staticModel->absmax[0] = staticModel->absmax[0] + *origin;
+    staticModel->absmax[1] = staticModel->absmax[1] + origin[1];
+    staticModel->absmax[2] = staticModel->absmax[2] + origin[2];
+    if ((staticModel->absmax[0] - staticModel->absmin[0] < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                  ,0x30,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->absmax[1] - param_1->absmin[1] < 0.0) &&
+    if ((staticModel->absmax[1] - staticModel->absmin[1] < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                  ,0x31,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->absmax[2] - param_1->absmin[2] < 0.0) &&
+    if ((staticModel->absmax[2] - staticModel->absmin[2] < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                  ,0x32,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -108,18 +109,18 @@ void __cdecl CM_InitStaticModel(cStaticModel_s *param_1,float *param_2,float *pa
 // 006B3EC0  CM_CreateStaticModel  (qcommon/cm_staticmodel_load_obj.cpp:60)
 
 bool __cdecl
-CM_CreateStaticModel
-          (cStaticModel_s *param_1,char *param_2,float *param_3,float *param_4,float param_5)
+CM_CreateStaticModel(cStaticModel_s *staticModel,char *name,float *origin,float *angles,float scale)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   XModel *pXVar4;
+  XModel *model;
   
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+      (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)origin[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                              ,0x3f,0,"%s");
     if (!bVar2) {
@@ -128,9 +129,9 @@ CM_CreateStaticModel
       return (bool)uVar3;
     }
   }
-  if (((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*angles & 0x7f800000) == 0x7f800000) ||
+      (((uint)angles[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)angles[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                              ,0x40,0,"%s");
     if (!bVar2) {
@@ -139,7 +140,7 @@ CM_CreateStaticModel
       return (bool)uVar3;
     }
   }
-  if (((uint)param_5 & 0x7f800000) == 0x7f800000) {
+  if (((uint)scale & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                              ,0x41,0,"%s");
     if (!bVar2) {
@@ -148,13 +149,13 @@ CM_CreateStaticModel
       return (bool)uVar3;
     }
   }
-  if ((param_2 == (char *)0x0) || (*param_2 == '\0')) {
+  if ((name == (char *)0x0) || (*name == '\0')) {
     Com_Error(ERR_DROP,"\x15Missing model name at %.0f %.0f %.0f");
   }
-  if (param_5 == 0.0) {
+  if (scale == 0.0) {
     Com_Error(ERR_DROP,"\x15Static model [%s] has scale of 0.0");
   }
-  pXVar4 = CM_XModelPrecache(param_2);
+  pXVar4 = CM_XModelPrecache(name);
   if (pXVar4 == (XModel *)0x0) {
     bVar2 = false;
   }
@@ -162,8 +163,8 @@ CM_CreateStaticModel
     bVar2 = false;
   }
   else {
-    param_1->xmodel = pXVar4;
-    CM_InitStaticModel(param_1,param_3,param_4,param_5);
+    staticModel->xmodel = pXVar4;
+    CM_InitStaticModel(staticModel,origin,angles,scale);
     bVar2 = true;
   }
   return bVar2;
@@ -186,22 +187,22 @@ void __cdecl CM_LoadStaticModels(void)
   char *local_110;
   char *local_104;
   char *local_100;
-  uint local_fc;
-  float local_f8 [3];
-  char local_ec [64];
-  float local_ac [3];
-  int local_a0;
-  char local_9c [68];
-  char *local_58;
-  char *local_54;
-  float local_50;
-  char local_4c [7];
+  uint numStaticModels;
+  float origin [3];
+  char modelName [64];
+  float angles [3];
+  int bMiscModel;
+  char key [68];
+  char *ptr;
+  char *token;
+  float scale;
+  char value [7];
   char local_45 [61];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58 = Com_EntityString((int *)0x0);
-  if ((local_58 == (char *)0x0) &&
+  ptr = Com_EntityString((int *)0x0);
+  if ((ptr == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                ,0x6a,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -210,14 +211,14 @@ void __cdecl CM_LoadStaticModels(void)
   }
   cm.numStaticModels = 0;
   cm.staticModelList = (cStaticModel_s *)0x0;
-  local_fc = 0;
+  numStaticModels = 0;
   do {
-    local_54 = Com_Parse(&local_58);
-    if ((local_58 == (char *)0x0) || (*local_54 != '{')) {
-      if (local_fc != 0) {
-        cm.staticModelList = CM_Hunk_Alloc(local_fc * 0x50,"CM_CreateStaticModel",0x1c);
-        local_58 = Com_EntityString((int *)0x0);
-        if ((local_58 == (char *)0x0) &&
+    token = Com_Parse(&ptr);
+    if ((ptr == (char *)0x0) || (*token != '{')) {
+      if (numStaticModels != 0) {
+        cm.staticModelList = CM_Hunk_Alloc(numStaticModels * 0x50,"CM_CreateStaticModel",0x1c);
+        ptr = Com_EntityString((int *)0x0);
+        if ((ptr == (char *)0x0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                      ,0x98,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
@@ -225,35 +226,35 @@ void __cdecl CM_LoadStaticModels(void)
           return;
         }
         ProfLoad_Begin("Create static model collision");
-        while ((local_54 = Com_Parse(&local_58), local_58 != (char *)0x0 && (*local_54 == '{'))) {
-          local_ec[0] = '\0';
-          local_f8[2] = 0.0;
-          local_f8[1] = 0.0;
-          local_f8[0] = 0.0;
-          local_ac[2] = 0.0;
-          local_ac[1] = 0.0;
-          local_ac[0] = 0.0;
-          local_50 = 1.0;
-          local_a0 = 0;
-          while ((local_54 = Com_Parse(&local_58), local_58 != (char *)0x0 && (*local_54 != '}'))) {
-            I_strncpyz(local_9c,local_54,0x40);
-            local_54 = Com_Parse(&local_58);
-            if (local_58 == (char *)0x0) break;
-            I_strncpyz(local_4c,local_54,0x40);
-            iVar4 = I_stricmp(local_9c,"classname");
+        while ((token = Com_Parse(&ptr), ptr != (char *)0x0 && (*token == '{'))) {
+          modelName[0] = '\0';
+          origin[2] = 0.0;
+          origin[1] = 0.0;
+          origin[0] = 0.0;
+          angles[2] = 0.0;
+          angles[1] = 0.0;
+          angles[0] = 0.0;
+          scale = 1.0;
+          bMiscModel = 0;
+          while ((token = Com_Parse(&ptr), ptr != (char *)0x0 && (*token != '}'))) {
+            I_strncpyz(key,token,0x40);
+            token = Com_Parse(&ptr);
+            if (ptr == (char *)0x0) break;
+            I_strncpyz(value,token,0x40);
+            iVar4 = I_stricmp(key,"classname");
             if (iVar4 == 0) {
-              iVar4 = I_stricmp(local_4c,"misc_model");
+              iVar4 = I_stricmp(value,"misc_model");
               if (iVar4 == 0) {
-                local_a0 = 1;
+                bMiscModel = 1;
               }
             }
             else {
-              iVar4 = I_stricmp(local_9c,"model");
+              iVar4 = I_stricmp(key,"model");
               if (iVar4 == 0) {
-                iVar4 = Com_IsLegacyXModelName(local_4c);
+                iVar4 = Com_IsLegacyXModelName(value);
                 if (iVar4 == 0) {
-                  local_110 = local_4c;
-                  local_114 = local_ec;
+                  local_110 = value;
+                  local_114 = modelName;
                   do {
                     cVar1 = *local_110;
                     *local_114 = cVar1;
@@ -263,7 +264,7 @@ void __cdecl CM_LoadStaticModels(void)
                 }
                 else {
                   local_100 = local_45;
-                  local_104 = local_ec;
+                  local_104 = modelName;
                   do {
                     cVar1 = *local_100;
                     *local_104 = cVar1;
@@ -273,28 +274,28 @@ void __cdecl CM_LoadStaticModels(void)
                 }
               }
               else {
-                iVar4 = I_stricmp(local_9c,"origin");
+                iVar4 = I_stricmp(key,"origin");
                 if (iVar4 == 0) {
-                  sscanf(local_4c,"%f %f %f");
+                  sscanf(value,"%f %f %f");
                 }
                 else {
-                  iVar4 = I_stricmp(local_9c,"angles");
+                  iVar4 = I_stricmp(key,"angles");
                   if (iVar4 == 0) {
-                    sscanf(local_4c,"%f %f %f");
+                    sscanf(value,"%f %f %f");
                   }
                   else {
-                    iVar4 = I_stricmp(local_9c,"modelscale");
+                    iVar4 = I_stricmp(key,"modelscale");
                     if (iVar4 == 0) {
-                      dVar5 = atof(local_4c);
-                      local_50 = (float)dVar5;
+                      dVar5 = atof(value);
+                      scale = (float)dVar5;
                     }
                   }
                 }
               }
             }
           }
-          if (local_a0 != 0) {
-            if ((local_fc <= cm.numStaticModels) &&
+          if (bMiscModel != 0) {
+            if ((numStaticModels <= cm.numStaticModels) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_staticmodel_load_obj.cpp"
                                          ,0xd5,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
@@ -302,8 +303,8 @@ void __cdecl CM_LoadStaticModels(void)
               return;
             }
             bVar3 = CM_CreateStaticModel
-                              (cm.staticModelList + cm.numStaticModels,local_ec,local_f8,local_ac,
-                               local_50);
+                              (cm.staticModelList + cm.numStaticModels,modelName,origin,angles,scale
+                              );
             if (bVar3) {
               cm.numStaticModels = cm.numStaticModels + 1;
             }
@@ -313,14 +314,14 @@ void __cdecl CM_LoadStaticModels(void)
       }
       return;
     }
-    while ((local_54 = Com_Parse(&local_58), local_58 != (char *)0x0 && (*local_54 != '}'))) {
-      I_strncpyz(local_9c,local_54,0x40);
-      local_54 = Com_Parse(&local_58);
-      if (local_58 == (char *)0x0) break;
-      I_strncpyz(local_4c,local_54,0x40);
-      iVar4 = I_stricmp(local_9c,"classname");
-      if ((iVar4 == 0) && (iVar4 = I_stricmp(local_4c,"misc_model"), iVar4 == 0)) {
-        local_fc = local_fc + 1;
+    while ((token = Com_Parse(&ptr), ptr != (char *)0x0 && (*token != '}'))) {
+      I_strncpyz(key,token,0x40);
+      token = Com_Parse(&ptr);
+      if (ptr == (char *)0x0) break;
+      I_strncpyz(value,token,0x40);
+      iVar4 = I_stricmp(key,"classname");
+      if ((iVar4 == 0) && (iVar4 = I_stricmp(value,"misc_model"), iVar4 == 0)) {
+        numStaticModels = numStaticModels + 1;
       }
     }
   } while( true );

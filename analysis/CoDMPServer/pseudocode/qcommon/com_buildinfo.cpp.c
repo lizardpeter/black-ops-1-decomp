@@ -35,12 +35,12 @@ char * __cdecl Com_GetBuildDisplayName(void)
 char * __cdecl Com_GetBuildOfficialNameR(void)
 
 {
-  char *pcVar1;
-  char *pcVar2;
+  char *dst;
+  char *src;
   
-  pcVar2 = "japanese";
-  pcVar1 = Win_GetLanguage();
-  _stricmp(pcVar1,pcVar2);
+  src = "japanese";
+  dst = Win_GetLanguage();
+  _stricmp(dst,src);
   return s_Call_of_Duty___BlackOps;
 }
 
@@ -52,11 +52,11 @@ char * __cdecl Com_GetBuildDisplayNameR(void)
 {
   char *pcVar1;
   int iVar2;
-  char *pcVar3;
+  char *src;
   
-  pcVar3 = "japanese";
+  src = "japanese";
   pcVar1 = Win_GetLanguage();
-  iVar2 = _stricmp(pcVar1,pcVar3);
+  iVar2 = _stricmp(pcVar1,src);
   if (iVar2 == 0) {
     pcVar1 = "Call of Duty(R) Multiplayer - Release";
   }

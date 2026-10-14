@@ -2,35 +2,35 @@
 
 // 008C1A20  TempMemoryReset  (clientscript/cscr_tempmemory.cpp:32)
 
-void __cdecl TempMemoryReset(HunkUser *param_1)
+void __cdecl TempMemoryReset(HunkUser *user)
 
 {
-  *(HunkUser **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2070) = param_1;
+  *(HunkUser **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2070) = user;
   return;
 }
 
 
 // 008C1A40  TempMalloc  (clientscript/cscr_tempmemory.cpp:38)
 
-char * __cdecl TempMalloc(int param_1)
+char * __cdecl TempMalloc(int len_3)
 
 {
   char *pcVar1;
   
   pcVar1 = Hunk_UserAlloc(*(HunkUser **)
                            (*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2070),
-                          param_1,1,(char *)0x0);
+                          len_3,1,(char *)0x0);
   return pcVar1;
 }
 
 
 // 008C1A70  TempMemorySetPos  (clientscript/cscr_tempmemory.cpp:77)
 
-void __cdecl TempMemorySetPos(char *param_1)
+void __cdecl TempMemorySetPos(char *pos)
 
 {
   Hunk_UserSetPos(*(HunkUser **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 0x2070)
-                  ,param_1);
+                  ,pos);
   return;
 }
 

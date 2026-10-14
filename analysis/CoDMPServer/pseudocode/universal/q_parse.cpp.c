@@ -57,19 +57,19 @@ ParseThreadInfo * __cdecl Com_GetParseThreadInfo(void)
 
 // 007CFC20  Com_InitParseInfo  (universal/q_parse.cpp:139)
 
-void __cdecl Com_InitParseInfo(parseInfo_t *param_1)
+void __cdecl Com_InitParseInfo(parseInfo_t *pi)
 
 {
-  param_1->lines = 1;
-  param_1->ungetToken = false;
-  param_1->spaceDelimited = true;
-  param_1->keepStringQuotes = false;
-  param_1->csv = false;
-  param_1->negativeNumbers = false;
-  param_1->errorPrefix = "";
-  param_1->warningPrefix = "";
-  param_1->backup_lines = 0;
-  param_1->backup_text = (char *)0x0;
+  pi->lines = 1;
+  pi->ungetToken = false;
+  pi->spaceDelimited = true;
+  pi->keepStringQuotes = false;
+  pi->csv = false;
+  pi->negativeNumbers = false;
+  pi->errorPrefix = "";
+  pi->warningPrefix = "";
+  pi->backup_lines = 0;
+  pi->backup_text = (char *)0x0;
   return;
 }
 
@@ -79,10 +79,10 @@ void __cdecl Com_InitParseInfo(parseInfo_t *param_1)
 void __cdecl Com_InitParse(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    Com_InitParseInfo(g_parse[local_8].parseInfo);
+  for (i = 0; i < 4; i = i + 1) {
+    Com_InitParseInfo(g_parse[i].parseInfo);
   }
   return;
 }
@@ -90,17 +90,19 @@ void __cdecl Com_InitParse(void)
 
 // 007CFCA0  Com_BeginParseSession  (universal/q_parse.cpp:175)
 
-void __cdecl Com_BeginParseSession(char *param_1)
+void __cdecl Com_BeginParseSession(char *filename)
 
 {
   int iVar1;
   ParseThreadInfo *pPVar2;
-  int local_8;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
+  int i;
   
   pPVar2 = Com_GetParseThreadInfo();
   if (pPVar2->parseInfoNum == 0xf) {
     Com_Printf(0x18,"Already parsing:\n");
-    for (local_8 = 0; local_8 < pPVar2->parseInfoNum; local_8 = local_8 + 1) {
+    for (i = 0; i < pPVar2->parseInfoNum; i = i + 1) {
       Com_Printf(0x18,"%i. %s\n");
     }
     Com_Error(ERR_FATAL,"\x15Com_BeginParseSession: session overflow trying to parse %s\n");
@@ -108,7 +110,7 @@ void __cdecl Com_BeginParseSession(char *param_1)
   pPVar2->parseInfoNum = pPVar2->parseInfoNum + 1;
   iVar1 = pPVar2->parseInfoNum;
   Com_InitParseInfo(pPVar2->parseInfo + iVar1);
-  pPVar2->parseInfo[iVar1].parseFile = param_1;
+  pPVar2->parseInfo[iVar1].parseFile = filename;
   return;
 }
 
@@ -119,6 +121,7 @@ void __cdecl Com_EndParseSession(void)
 
 {
   ParseThreadInfo *pPVar1;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   if (pPVar1->parseInfoNum == 0) {
@@ -135,6 +138,7 @@ void __cdecl Com_ResetParseSessions(void)
 
 {
   ParseThreadInfo *pPVar1;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   pPVar1->parseInfoNum = 0;
@@ -144,52 +148,60 @@ void __cdecl Com_ResetParseSessions(void)
 
 // 007CFE50  Com_SetSpaceDelimited  (universal/q_parse.cpp:224)
 
-void __cdecl Com_SetSpaceDelimited(int param_1)
+void __cdecl Com_SetSpaceDelimited(int spaceDelimited)
 
 {
   ParseThreadInfo *pPVar1;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
-  pPVar1->parseInfo[pPVar1->parseInfoNum].spaceDelimited = param_1 != 0;
+  pPVar1->parseInfo[pPVar1->parseInfoNum].spaceDelimited = spaceDelimited != 0;
   return;
 }
 
 
 // 007CFE90  Com_SetKeepStringQuotes  (universal/q_parse.cpp:236)
 
-void __cdecl Com_SetKeepStringQuotes(int param_1)
+void __cdecl Com_SetKeepStringQuotes(int keepStringQuotes)
 
 {
   ParseThreadInfo *pPVar1;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
-  pPVar1->parseInfo[pPVar1->parseInfoNum].keepStringQuotes = param_1 != 0;
+  pPVar1->parseInfo[pPVar1->parseInfoNum].keepStringQuotes = keepStringQuotes != 0;
   return;
 }
 
 
 // 007CFED0  Com_SetCSV  (universal/q_parse.cpp:248)
 
-void __cdecl Com_SetCSV(int param_1)
+void __cdecl Com_SetCSV(int csv)
 
 {
   ParseThreadInfo *pPVar1;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
-  pPVar1->parseInfo[pPVar1->parseInfoNum].csv = param_1 != 0;
+  pPVar1->parseInfo[pPVar1->parseInfoNum].csv = csv != 0;
   return;
 }
 
 
 // 007CFF10  Com_SetParseNegativeNumbers  (universal/q_parse.cpp:260)
 
-void __cdecl Com_SetParseNegativeNumbers(int param_1)
+void __cdecl Com_SetParseNegativeNumbers(int negativeNumbers)
 
 {
   ParseThreadInfo *pPVar1;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
-  pPVar1->parseInfo[pPVar1->parseInfoNum].negativeNumbers = param_1 != 0;
+  pPVar1->parseInfo[pPVar1->parseInfoNum].negativeNumbers = negativeNumbers != 0;
   return;
 }
 
@@ -200,6 +212,8 @@ int __cdecl Com_GetCurrentParseLine(void)
 
 {
   ParseThreadInfo *pPVar1;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   return pPVar1->parseInfo[pPVar1->parseInfoNum].lines;
@@ -208,17 +222,19 @@ int __cdecl Com_GetCurrentParseLine(void)
 
 // 007CFF80  Com_SetScriptErrorPrefix  (universal/q_parse.cpp:289)
 
-void __cdecl Com_SetScriptErrorPrefix(char *param_1)
+void __cdecl Com_SetScriptErrorPrefix(char *prefix)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   ParseThreadInfo *pPVar4;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar4 = Com_GetParseThreadInfo();
   iVar1 = pPVar4->parseInfoNum;
-  if (param_1 == (char *)0x0) {
+  if (prefix == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x128,0,
                              "%s");
     if (!bVar3) {
@@ -236,7 +252,7 @@ void __cdecl Com_SetScriptErrorPrefix(char *param_1)
       return;
     }
   }
-  pPVar4->parseInfo[iVar1].errorPrefix = param_1;
+  pPVar4->parseInfo[iVar1].errorPrefix = prefix;
   return;
 }
 
@@ -251,6 +267,8 @@ char * __cdecl Com_GetScriptErrorPrefix(void)
   bool bVar3;
   ParseThreadInfo *pPVar4;
   char *pcVar5;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar4 = Com_GetParseThreadInfo();
   iVar1 = pPVar4->parseInfoNum;
@@ -269,17 +287,19 @@ char * __cdecl Com_GetScriptErrorPrefix(void)
 
 // 007D0090  Com_SetScriptWarningPrefix  (universal/q_parse.cpp:314)
 
-void __cdecl Com_SetScriptWarningPrefix(char *param_1)
+void __cdecl Com_SetScriptWarningPrefix(char *prefix)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   ParseThreadInfo *pPVar4;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar4 = Com_GetParseThreadInfo();
   iVar1 = pPVar4->parseInfoNum;
-  if (param_1 == (char *)0x0) {
+  if (prefix == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x141,0,
                              "%s");
     if (!bVar3) {
@@ -297,7 +317,7 @@ void __cdecl Com_SetScriptWarningPrefix(char *param_1)
       return;
     }
   }
-  pPVar4->parseInfo[iVar1].warningPrefix = param_1;
+  pPVar4->parseInfo[iVar1].warningPrefix = prefix;
   return;
 }
 
@@ -312,6 +332,8 @@ char * __cdecl Com_GetScriptWarningPrefix(void)
   bool bVar3;
   ParseThreadInfo *pPVar4;
   char *pcVar5;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar4 = Com_GetParseThreadInfo();
   iVar1 = pPVar4->parseInfoNum;
@@ -333,23 +355,23 @@ char * __cdecl Com_GetScriptWarningPrefix(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_ScriptErrorDrop(char *param_1)
+void __cdecl Com_ScriptErrorDrop(char *msg)
 
 {
-  char local_1014 [4096];
+  char string [4096];
   uint local_14;
-  char *local_10;
-  parseInfo_t *local_c;
-  ParseThreadInfo *local_8;
+  char *argptr;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
-  local_8 = (ParseThreadInfo *)0x7d01ad;
+  parse = (ParseThreadInfo *)0x7d01ad;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Com_GetParseThreadInfo();
-  local_c = local_8->parseInfo + local_8->parseInfoNum;
-  local_10 = &stack0x00000008;
-  _vsnprintf(local_1014,0x1000,param_1,local_10);
-  local_10 = (char *)0x0;
-  if (local_8->parseInfoNum == 0) {
+  parse = Com_GetParseThreadInfo();
+  pi = parse->parseInfo + parse->parseInfoNum;
+  argptr = &stack0x00000008;
+  _vsnprintf(string,0x1000,msg,argptr);
+  argptr = (char *)0x0;
+  if (parse->parseInfoNum == 0) {
     Com_Error(ERR_DROP,"\x15%s");
   }
   else {
@@ -364,23 +386,23 @@ void __cdecl Com_ScriptErrorDrop(char *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_ScriptError(char *param_1)
+void __cdecl Com_ScriptError(char *msg)
 
 {
-  char local_1014 [4096];
+  char string [4096];
   uint local_14;
-  char *local_10;
-  parseInfo_t *local_c;
-  ParseThreadInfo *local_8;
+  char *argptr;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
-  local_8 = (ParseThreadInfo *)0x7d027d;
+  parse = (ParseThreadInfo *)0x7d027d;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Com_GetParseThreadInfo();
-  local_c = local_8->parseInfo + local_8->parseInfoNum;
-  local_10 = &stack0x00000008;
-  _vsnprintf(local_1014,0x1000,param_1,local_10);
-  local_10 = (char *)0x0;
-  if (local_8->parseInfoNum == 0) {
+  parse = Com_GetParseThreadInfo();
+  pi = parse->parseInfo + parse->parseInfoNum;
+  argptr = &stack0x00000008;
+  _vsnprintf(string,0x1000,msg,argptr);
+  argptr = (char *)0x0;
+  if (parse->parseInfoNum == 0) {
     Com_PrintError(0x18,"%s");
   }
   else {
@@ -395,23 +417,23 @@ void __cdecl Com_ScriptError(char *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_ScriptWarning(char *param_1)
+void __cdecl Com_ScriptWarning(char *msg)
 
 {
-  char local_1014 [4096];
+  char string [4096];
   uint local_14;
-  char *local_10;
-  parseInfo_t *local_c;
-  ParseThreadInfo *local_8;
+  char *argptr;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
-  local_8 = (ParseThreadInfo *)0x7d034d;
+  parse = (ParseThreadInfo *)0x7d034d;
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Com_GetParseThreadInfo();
-  local_c = local_8->parseInfo + local_8->parseInfoNum;
-  local_10 = &stack0x00000008;
-  _vsnprintf(local_1014,0x1000,param_1,local_10);
-  local_10 = (char *)0x0;
-  if (local_8->parseInfoNum == 0) {
+  parse = Com_GetParseThreadInfo();
+  pi = parse->parseInfo + parse->parseInfoNum;
+  argptr = &stack0x00000008;
+  _vsnprintf(string,0x1000,msg,argptr);
+  argptr = (char *)0x0;
+  if (parse->parseInfoNum == 0) {
     Com_PrintWarning(0x18,"%s");
   }
   else {
@@ -428,6 +450,8 @@ void __cdecl Com_UngetToken(void)
 {
   int iVar1;
   ParseThreadInfo *pPVar2;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar2 = Com_GetParseThreadInfo();
   iVar1 = pPVar2->parseInfoNum;
@@ -442,17 +466,19 @@ void __cdecl Com_UngetToken(void)
 
 // 007D0470  Com_ParseSetMark  (universal/q_parse.cpp:428)
 
-void __cdecl Com_ParseSetMark(char **param_1,com_parse_mark_t *param_2)
+void __cdecl Com_ParseSetMark(char **text,com_parse_mark_t *mark)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   ParseThreadInfo *pPVar4;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar4 = Com_GetParseThreadInfo();
   iVar1 = pPVar4->parseInfoNum;
-  if (param_1 == (char **)0x0) {
+  if (text == (char **)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x1b3,0,
                              "%s");
     if (!bVar3) {
@@ -461,7 +487,7 @@ void __cdecl Com_ParseSetMark(char **param_1,com_parse_mark_t *param_2)
       return;
     }
   }
-  if (param_2 == (com_parse_mark_t *)0x0) {
+  if (mark == (com_parse_mark_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x1b4,0,
                              "%s");
     if (!bVar3) {
@@ -470,28 +496,30 @@ void __cdecl Com_ParseSetMark(char **param_1,com_parse_mark_t *param_2)
       return;
     }
   }
-  param_2->lines = pPVar4->parseInfo[iVar1].lines;
-  param_2->text = *param_1;
-  param_2->ungetToken = (uint)pPVar4->parseInfo[iVar1].ungetToken;
-  param_2->backup_lines = pPVar4->parseInfo[iVar1].backup_lines;
-  param_2->backup_text = pPVar4->parseInfo[iVar1].backup_text;
+  mark->lines = pPVar4->parseInfo[iVar1].lines;
+  mark->text = *text;
+  mark->ungetToken = (uint)pPVar4->parseInfo[iVar1].ungetToken;
+  mark->backup_lines = pPVar4->parseInfo[iVar1].backup_lines;
+  mark->backup_text = pPVar4->parseInfo[iVar1].backup_text;
   return;
 }
 
 
 // 007D0540  Com_ParseReturnToMark  (universal/q_parse.cpp:452)
 
-void __cdecl Com_ParseReturnToMark(char **param_1,com_parse_mark_t *param_2)
+void __cdecl Com_ParseReturnToMark(char **text,com_parse_mark_t *mark)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   ParseThreadInfo *pPVar4;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar4 = Com_GetParseThreadInfo();
   iVar1 = pPVar4->parseInfoNum;
-  if (param_1 == (char **)0x0) {
+  if (text == (char **)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x1cb,0,
                              "%s");
     if (!bVar3) {
@@ -500,7 +528,7 @@ void __cdecl Com_ParseReturnToMark(char **param_1,com_parse_mark_t *param_2)
       return;
     }
   }
-  if (param_2 == (com_parse_mark_t *)0x0) {
+  if (mark == (com_parse_mark_t *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x1cc,0,
                              "%s");
     if (!bVar3) {
@@ -509,33 +537,34 @@ void __cdecl Com_ParseReturnToMark(char **param_1,com_parse_mark_t *param_2)
       return;
     }
   }
-  pPVar4->parseInfo[iVar1].lines = param_2->lines;
-  *param_1 = param_2->text;
-  pPVar4->parseInfo[iVar1].ungetToken = param_2->ungetToken != 0;
-  pPVar4->parseInfo[iVar1].backup_lines = param_2->backup_lines;
-  pPVar4->parseInfo[iVar1].backup_text = param_2->backup_text;
+  pPVar4->parseInfo[iVar1].lines = mark->lines;
+  *text = mark->text;
+  pPVar4->parseInfo[iVar1].ungetToken = mark->ungetToken != 0;
+  pPVar4->parseInfo[iVar1].backup_lines = mark->backup_lines;
+  pPVar4->parseInfo[iVar1].backup_text = mark->backup_text;
   return;
 }
 
 
 // 007D0FE0  SkipWhitespace  (universal/q_parse.cpp:471)
 
-char * __cdecl SkipWhitespace(char *param_1,int *param_2)
+char * __cdecl SkipWhitespace(char *data,int *newLines)
 
 {
   char cVar1;
+  int c;
   
-  *param_2 = 0;
+  *newLines = 0;
   while( true ) {
-    cVar1 = *param_1;
+    cVar1 = *data;
     if (' ' < cVar1) {
-      return param_1;
+      return data;
     }
     if (cVar1 == '\0') break;
     if (cVar1 == '\n') {
-      *param_2 = *param_2 + 1;
+      *newLines = *newLines + 1;
     }
-    param_1 = param_1 + 1;
+    data = data + 1;
   }
   return (char *)0x0;
 }
@@ -545,52 +574,53 @@ char * __cdecl SkipWhitespace(char *param_1,int *param_2)
 
 /* WARNING: Removing unreachable block (ram,0x007d0756) */
 
-int __cdecl Com_Compress(char *param_1)
+int __cdecl Com_Compress(char *data_p)
 
 {
   char cVar1;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  int ws;
+  char c;
+  char *datai;
+  int size;
+  char *datao;
   
-  local_c = 0;
-  local_8 = param_1;
-  local_10 = param_1;
-  if (param_1 != (char *)0x0) {
-    while (cVar1 = *local_10, cVar1 != '\0') {
+  size = 0;
+  datao = data_p;
+  datai = data_p;
+  if (data_p != (char *)0x0) {
+    while (cVar1 = *datai, cVar1 != '\0') {
       if ((cVar1 == '\r') || (cVar1 == '\n')) {
-        *local_8 = cVar1;
-        local_8 = local_8 + 1;
-        local_c = local_c + 1;
-        local_10 = local_10 + 1;
+        *datao = cVar1;
+        datao = datao + 1;
+        size = size + 1;
+        datai = datai + 1;
       }
-      else if ((cVar1 == '/') && (local_10[1] == '/')) {
-        for (; (*local_10 != '\0' && (*local_10 != '\n')); local_10 = local_10 + 1) {
+      else if ((cVar1 == '/') && (datai[1] == '/')) {
+        for (; (*datai != '\0' && (*datai != '\n')); datai = datai + 1) {
         }
       }
-      else if ((cVar1 == '/') && (local_10[1] == '*')) {
-        for (; (*local_10 != '\0' && ((*local_10 != '*' || (local_10[1] != '/'))));
-            local_10 = local_10 + 1) {
-          if (*local_10 == '\n') {
-            *local_8 = '\n';
-            local_8 = local_8 + 1;
-            local_c = local_c + 1;
+      else if ((cVar1 == '/') && (datai[1] == '*')) {
+        for (; (*datai != '\0' && ((*datai != '*' || (datai[1] != '/')))); datai = datai + 1) {
+          if (*datai == '\n') {
+            *datao = '\n';
+            datao = datao + 1;
+            size = size + 1;
           }
         }
-        if (*local_10 != '\0') {
-          local_10 = local_10 + 2;
+        if (*datai != '\0') {
+          datai = datai + 2;
         }
       }
       else {
-        *local_8 = cVar1;
-        local_8 = local_8 + 1;
-        local_c = local_c + 1;
-        local_10 = local_10 + 1;
+        *datao = cVar1;
+        datao = datao + 1;
+        size = size + 1;
+        datai = datai + 1;
       }
     }
   }
-  *local_8 = '\0';
-  return local_c;
+  *datao = '\0';
+  return size;
 }
 
 
@@ -600,6 +630,7 @@ char * __cdecl Com_GetLastTokenPos(void)
 
 {
   ParseThreadInfo *pPVar1;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   return pPVar1->tokenPos;
@@ -608,345 +639,347 @@ char * __cdecl Com_GetLastTokenPos(void)
 
 // 007D1030  Com_ParseCSV  (universal/q_parse.cpp:588)
 
-char * __cdecl Com_ParseCSV(char **param_1,int param_2)
+char * __cdecl Com_ParseCSV(char **data_p,int allowLineBreaks)
 
 {
   ParseThreadInfo *pPVar1;
   parseInfo_t *ppVar2;
   char *local_18;
-  char *local_14;
-  uint local_10;
+  char *data;
+  uint len;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   ppVar2 = pPVar1->parseInfo + pPVar1->parseInfoNum;
-  local_14 = *param_1;
-  local_10 = 0;
+  data = *data_p;
+  len = 0;
   ppVar2->token[0] = '\0';
-  if (param_2 == 0) {
-    if (*local_14 == '\r') {
+  if (allowLineBreaks == 0) {
+    if (*data == '\r') {
       return ppVar2->token;
     }
-    if (*local_14 == '\n') {
+    if (*data == '\n') {
       return ppVar2->token;
     }
   }
   else {
-    for (; (*local_14 == '\r' || (*local_14 == '\n')); local_14 = local_14 + 1) {
+    for (; (*data == '\r' || (*data == '\n')); data = data + 1) {
     }
   }
   pPVar1->prevTokenPos = pPVar1->tokenPos;
-  pPVar1->tokenPos = local_14;
-  while (((*local_14 != '\0' && (*local_14 != ',')) && (*local_14 != '\n'))) {
-    if (*local_14 == '\r') {
-      local_14 = local_14 + 1;
+  pPVar1->tokenPos = data;
+  while (((*data != '\0' && (*data != ',')) && (*data != '\n'))) {
+    if (*data == '\r') {
+      data = data + 1;
     }
     else {
-      if (*local_14 == '\"') {
-        local_14 = local_14 + 1;
+      if (*data == '\"') {
+        data = data + 1;
         while( true ) {
-          for (; *local_14 != '\"'; local_14 = local_14 + 1) {
-            if (local_10 < 0x3ff) {
-              ppVar2->token[local_10] = *local_14;
-              local_10 = local_10 + 1;
+          for (; *data != '\"'; data = data + 1) {
+            if (len < 0x3ff) {
+              ppVar2->token[len] = *data;
+              len = len + 1;
             }
           }
-          if (local_14[1] != '\"') break;
-          if (local_10 < 0x3ff) {
-            ppVar2->token[local_10] = '\"';
-            local_10 = local_10 + 1;
+          if (data[1] != '\"') break;
+          if (len < 0x3ff) {
+            ppVar2->token[len] = '\"';
+            len = len + 1;
           }
-          local_14 = local_14 + 2;
+          data = data + 2;
         }
       }
-      else if (local_10 < 0x3ff) {
-        ppVar2->token[local_10] = *local_14;
-        local_10 = local_10 + 1;
+      else if (len < 0x3ff) {
+        ppVar2->token[len] = *data;
+        len = len + 1;
       }
-      local_14 = local_14 + 1;
+      data = data + 1;
     }
   }
-  if ((*local_14 != '\0') && (*local_14 != '\n')) {
-    local_14 = local_14 + 1;
+  if ((*data != '\0') && (*data != '\n')) {
+    data = data + 1;
   }
-  if ((*local_14 == '\0') && (local_10 == 0)) {
+  if ((*data == '\0') && (len == 0)) {
     local_18 = (char *)0x0;
   }
   else {
-    local_18 = local_14;
+    local_18 = data;
   }
-  *param_1 = local_18;
-  ppVar2->token[local_10] = '\0';
+  *data_p = local_18;
+  ppVar2->token[len] = '\0';
   return ppVar2->token;
 }
 
 
 // 007D0840  Com_ParseExt  (universal/q_parse.cpp:690)
 
-char * __cdecl Com_ParseExt(char **param_1,int param_2)
+char * __cdecl Com_ParseExt(char **data_p,int allowLineBreaks)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *pcVar4;
-  ulong uVar5;
+  ulong count;
   char *local_30;
-  ulong local_28;
-  char local_1d;
-  int local_1c;
-  char *local_18;
-  char **local_14;
-  int local_10;
-  parseInfo_t *local_c;
-  ParseThreadInfo *local_8;
+  int j;
+  int l;
+  char c;
+  int newLines;
+  char *data;
+  char **punc;
+  int len;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
-  local_8 = Com_GetParseThreadInfo();
-  local_c = local_8->parseInfo + local_8->parseInfoNum;
-  if ((param_1 == (char **)0x0) &&
+  parse = Com_GetParseThreadInfo();
+  pi = parse->parseInfo + parse->parseInfoNum;
+  if ((data_p == (char **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_parse.cpp",0x2be,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  local_18 = *param_1;
-  local_10 = 0;
-  local_c->token[0] = '\0';
-  local_c->tokenType = PARSE_TOKEN_UNKNOWN;
-  if (local_18 == (char *)0x0) {
-    *param_1 = (char *)0x0;
+  data = *data_p;
+  len = 0;
+  pi->token[0] = '\0';
+  pi->tokenType = PARSE_TOKEN_UNKNOWN;
+  if (data == (char *)0x0) {
+    *data_p = (char *)0x0;
   }
   else {
-    local_c->backup_lines = local_c->lines;
-    local_c->backup_text = *param_1;
-    if (local_c->csv == false) {
-      while (local_18 = SkipWhitespace(local_18,&local_1c), local_18 != (char *)0x0) {
-        if ((0 < local_1c) && (param_2 == 0)) {
-          return local_c->token;
+    pi->backup_lines = pi->lines;
+    pi->backup_text = *data_p;
+    if (pi->csv == false) {
+      while (data = SkipWhitespace(data,&newLines), data != (char *)0x0) {
+        if ((0 < newLines) && (allowLineBreaks == 0)) {
+          return pi->token;
         }
-        local_c->lines = local_c->lines + local_1c;
-        local_1d = *local_18;
-        if ((local_1d == '/') && (local_18[1] == '/')) {
-          for (; (*local_18 != '\0' && (*local_18 != '\n')); local_18 = local_18 + 1) {
+        pi->lines = pi->lines + newLines;
+        c = *data;
+        if ((c == '/') && (data[1] == '/')) {
+          for (; (*data != '\0' && (*data != '\n')); data = data + 1) {
           }
         }
         else {
-          if ((local_1d != '/') || (local_18[1] != '*')) {
-            local_8->prevTokenPos = local_8->tokenPos;
-            local_8->tokenPos = local_18;
-            if (local_1d == '\"') {
-              if (local_c->keepStringQuotes != false) {
-                local_c->token[local_10] = '\"';
-                local_10 = local_10 + 1;
+          if ((c != '/') || (data[1] != '*')) {
+            parse->prevTokenPos = parse->tokenPos;
+            parse->tokenPos = data;
+            if (c == '\"') {
+              if (pi->keepStringQuotes != false) {
+                pi->token[len] = '\"';
+                len = len + 1;
               }
-              local_18 = local_18 + 1;
+              data = data + 1;
               do {
-                local_1d = *local_18;
-                pcVar4 = local_18 + 1;
-                if ((local_1d == '\\') && ((*pcVar4 == '\"' || (*pcVar4 == '\\')))) {
-                  local_1d = *pcVar4;
-                  local_18 = local_18 + 2;
+                c = *data;
+                pcVar4 = data + 1;
+                if ((c == '\\') && ((*pcVar4 == '\"' || (*pcVar4 == '\\')))) {
+                  c = *pcVar4;
+                  data = data + 2;
                 }
                 else {
-                  if ((local_1d == '\"') || (local_1d == '\0')) {
-                    if (local_c->keepStringQuotes != false) {
-                      local_c->token[local_10] = '\"';
-                      local_10 = local_10 + 1;
+                  if ((c == '\"') || (c == '\0')) {
+                    if (pi->keepStringQuotes != false) {
+                      pi->token[len] = '\"';
+                      len = len + 1;
                     }
-                    local_c->token[local_10] = '\0';
-                    *param_1 = pcVar4;
-                    local_c->tokenType = PARSE_TOKEN_STRING;
-                    return local_c->token;
+                    pi->token[len] = '\0';
+                    *data_p = pcVar4;
+                    pi->tokenType = PARSE_TOKEN_STRING;
+                    return pi->token;
                   }
-                  local_18 = pcVar4;
+                  data = pcVar4;
                   if (*pcVar4 == '\n') {
-                    local_c->lines = local_c->lines + 1;
+                    pi->lines = pi->lines + 1;
                   }
                 }
-                if (local_10 < 0x3ff) {
-                  local_c->token[local_10] = local_1d;
-                  local_10 = local_10 + 1;
+                if (len < 0x3ff) {
+                  pi->token[len] = c;
+                  len = len + 1;
                 }
               } while( true );
             }
-            if (local_1d == -1) {
-              local_18 = local_18 + 1;
+            if (c == -1) {
+              data = data + 1;
               while( true ) {
-                cVar1 = *local_18;
-                local_18 = local_18 + 1;
+                cVar1 = *data;
+                data = data + 1;
                 if ((cVar1 == -1) || (cVar1 == '\0')) break;
-                if (local_10 < 0x3ff) {
-                  local_c->token[local_10] = cVar1;
-                  local_10 = local_10 + 1;
+                if (len < 0x3ff) {
+                  pi->token[len] = cVar1;
+                  len = len + 1;
                 }
               }
-              local_c->token[local_10] = '\0';
-              *param_1 = local_18;
-              local_c->tokenType = PARSE_TOKEN_HASH;
-              return local_c->token;
+              pi->token[len] = '\0';
+              *data_p = data;
+              pi->tokenType = PARSE_TOKEN_HASH;
+              return pi->token;
             }
-            if (local_c->spaceDelimited == false) {
-              pcVar4 = local_18;
-              if ((((local_1d < '0') || ('9' < local_1d)) &&
-                  ((local_c->negativeNumbers == false ||
-                   (((local_1d != '-' || (local_18[1] < '0')) || ('9' < local_18[1])))))) &&
-                 (((local_1d != '.' || (local_18[1] < '0')) || ('9' < local_18[1])))) {
-                if ((((local_1d < 'a') || ('z' < local_1d)) &&
-                    ((local_1d < 'A' || ('Z' < local_1d)))) &&
-                   (((local_1d != '_' && (local_1d != '/')) && (local_1d != '\\')))) {
-                  local_c->tokenType = PARSE_TOKEN_PUNCTUATION;
-                  local_14 = punctuation;
+            if (pi->spaceDelimited == false) {
+              pcVar4 = data;
+              if ((((c < '0') || ('9' < c)) &&
+                  ((pi->negativeNumbers == false ||
+                   (((c != '-' || (data[1] < '0')) || ('9' < data[1])))))) &&
+                 (((c != '.' || (data[1] < '0')) || ('9' < data[1])))) {
+                if ((((c < 'a') || ('z' < c)) && ((c < 'A' || ('Z' < c)))) &&
+                   (((c != '_' && (c != '/')) && (c != '\\')))) {
+                  pi->tokenType = PARSE_TOKEN_PUNCTUATION;
+                  punc = punctuation;
                   while( true ) {
-                    if (*local_14 == (char *)0x0) {
-                      local_c->token[0] = *local_18;
-                      local_c->token[1] = '\0';
-                      *param_1 = local_18 + 1;
-                      return local_c->token;
+                    if (*punc == (char *)0x0) {
+                      pi->token[0] = *data;
+                      pi->token[1] = '\0';
+                      *data_p = data + 1;
+                      return pi->token;
                     }
-                    local_30 = *local_14;
+                    local_30 = *punc;
                     pcVar4 = local_30 + 1;
                     do {
                       cVar1 = *local_30;
                       local_30 = local_30 + 1;
                     } while (cVar1 != '\0');
-                    uVar5 = (int)local_30 - (int)pcVar4;
-                    for (local_28 = 0;
-                        ((int)local_28 < (int)uVar5 && (local_18[local_28] == (*local_14)[local_28])
-                        ); local_28 = local_28 + 1) {
+                    count = (int)local_30 - (int)pcVar4;
+                    for (j = 0; (j < (int)count && (data[j] == (*punc)[j])); j = j + 1) {
                     }
-                    if (local_28 == uVar5) break;
-                    local_14 = local_14 + 1;
+                    if (j == count) break;
+                    punc = punc + 1;
                   }
-                  memcpy((uchar *)local_c,(uchar *)*local_14,uVar5);
-                  *(undefined1 *)((int)local_c + uVar5) = 0;
-                  *param_1 = local_18 + uVar5;
-                  return local_c->token;
+                  memcpy((uchar *)pi,(uchar *)*punc,count);
+                  *(undefined1 *)((int)pi + count) = 0;
+                  *data_p = data + count;
+                  return pi->token;
                 }
                 do {
-                  if (local_10 < 0x3ff) {
-                    local_c->token[local_10] = local_1d;
-                    local_10 = local_10 + 1;
+                  if (len < 0x3ff) {
+                    pi->token[len] = c;
+                    len = len + 1;
                   }
-                  local_18 = local_18 + 1;
-                  local_1d = *local_18;
-                } while (((('`' < local_1d) && (local_1d < '{')) ||
-                         ((('@' < local_1d && (local_1d < '[')) || (local_1d == '_')))) ||
-                        (('/' < local_1d && (local_1d < ':'))));
-                if (local_10 == 0x400) {
-                  local_10 = 0;
+                  data = data + 1;
+                  c = *data;
+                } while (((('`' < c) && (c < '{')) || ((('@' < c && (c < '[')) || (c == '_')))) ||
+                        (('/' < c && (c < ':'))));
+                if (len == 0x400) {
+                  len = 0;
                 }
-                local_c->token[local_10] = '\0';
-                local_c->tokenType = PARSE_TOKEN_NAME;
-                *param_1 = local_18;
-                return local_c->token;
+                pi->token[len] = '\0';
+                pi->tokenType = PARSE_TOKEN_NAME;
+                *data_p = data;
+                return pi->token;
               }
               do {
-                local_18 = pcVar4;
-                if (local_10 < 0x3ff) {
-                  local_c->token[local_10] = local_1d;
-                  local_10 = local_10 + 1;
+                data = pcVar4;
+                if (len < 0x3ff) {
+                  pi->token[len] = c;
+                  len = len + 1;
                 }
-                pcVar4 = local_18 + 1;
-                local_1d = *pcVar4;
-              } while ((('/' < local_1d) && (local_1d < ':')) || (local_1d == '.'));
-              if ((local_1d == 'e') || (local_1d == 'E')) {
-                if (local_10 < 0x3ff) {
-                  local_c->token[local_10] = local_1d;
-                  local_10 = local_10 + 1;
+                pcVar4 = data + 1;
+                c = *pcVar4;
+              } while ((('/' < c) && (c < ':')) || (c == '.'));
+              if ((c == 'e') || (c == 'E')) {
+                if (len < 0x3ff) {
+                  pi->token[len] = c;
+                  len = len + 1;
                 }
-                local_1d = local_18[2];
-                if ((local_1d == '-') || (pcVar4 = local_18 + 2, local_1d == '+')) {
-                  if (local_10 < 0x3ff) {
-                    local_c->token[local_10] = local_1d;
-                    local_10 = local_10 + 1;
+                c = data[2];
+                if ((c == '-') || (pcVar4 = data + 2, c == '+')) {
+                  if (len < 0x3ff) {
+                    pi->token[len] = c;
+                    len = len + 1;
                   }
-                  local_1d = local_18[3];
-                  pcVar4 = local_18 + 3;
+                  c = data[3];
+                  pcVar4 = data + 3;
                 }
                 do {
-                  local_18 = pcVar4;
-                  if (local_10 < 0x3ff) {
-                    local_c->token[local_10] = local_1d;
-                    local_10 = local_10 + 1;
+                  data = pcVar4;
+                  if (len < 0x3ff) {
+                    pi->token[len] = c;
+                    len = len + 1;
                   }
-                  pcVar4 = local_18 + 1;
-                  local_1d = *pcVar4;
-                } while (('/' < local_1d) && (local_1d < ':'));
+                  pcVar4 = data + 1;
+                  c = *pcVar4;
+                } while (('/' < c) && (c < ':'));
               }
-              local_18 = pcVar4;
-              if (local_10 == 0x400) {
-                local_10 = 0;
+              data = pcVar4;
+              if (len == 0x400) {
+                len = 0;
               }
-              local_c->token[local_10] = '\0';
-              local_c->tokenType = PARSE_TOKEN_NUMBER;
-              *param_1 = local_18;
-              return local_c->token;
+              pi->token[len] = '\0';
+              pi->tokenType = PARSE_TOKEN_NUMBER;
+              *data_p = data;
+              return pi->token;
             }
             do {
-              if (local_10 < 0x3ff) {
-                local_c->token[local_10] = local_1d;
-                local_10 = local_10 + 1;
+              if (len < 0x3ff) {
+                pi->token[len] = c;
+                len = len + 1;
               }
-              local_18 = local_18 + 1;
-              local_1d = *local_18;
-            } while (' ' < local_1d);
-            if (local_10 == 0x400) {
-              local_10 = 0;
+              data = data + 1;
+              c = *data;
+            } while (' ' < c);
+            if (len == 0x400) {
+              len = 0;
             }
-            local_c->token[local_10] = '\0';
-            *param_1 = local_18;
-            return local_c->token;
+            pi->token[len] = '\0';
+            *data_p = data;
+            return pi->token;
           }
-          for (; (*local_18 != '\0' && ((*local_18 != '*' || (local_18[1] != '/'))));
-              local_18 = local_18 + 1) {
-            if (*local_18 == '\n') {
-              local_c->lines = local_c->lines + 1;
+          for (; (*data != '\0' && ((*data != '*' || (data[1] != '/')))); data = data + 1) {
+            if (*data == '\n') {
+              pi->lines = pi->lines + 1;
             }
           }
-          if (*local_18 != '\0') {
-            local_18 = local_18 + 2;
+          if (*data != '\0') {
+            data = data + 2;
           }
         }
       }
-      *param_1 = (char *)0x0;
+      *data_p = (char *)0x0;
     }
     else {
-      local_c = (parseInfo_t *)Com_ParseCSV(param_1,param_2);
+      pi = (parseInfo_t *)Com_ParseCSV(data_p,allowLineBreaks);
     }
   }
-  return local_c->token;
+  return pi->token;
 }
 
 
 // 007D07D0  Com_Parse  (universal/q_parse.cpp:997)
 
-char * __cdecl Com_Parse(char **param_1)
+char * __cdecl Com_Parse(char **data_p)
 
 {
   int iVar1;
   ParseThreadInfo *pPVar2;
   char *pcVar3;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar2 = Com_GetParseThreadInfo();
   iVar1 = pPVar2->parseInfoNum;
   if (pPVar2->parseInfo[iVar1].ungetToken != false) {
     pPVar2->parseInfo[iVar1].ungetToken = false;
-    *param_1 = pPVar2->parseInfo[iVar1].backup_text;
+    *data_p = pPVar2->parseInfo[iVar1].backup_text;
     pPVar2->parseInfo[iVar1].lines = pPVar2->parseInfo[iVar1].backup_lines;
   }
-  pcVar3 = Com_ParseExt(param_1,1);
+  pcVar3 = Com_ParseExt(data_p,1);
   return pcVar3;
 }
 
 
 // 007D1220  Com_ParseOnLine  (universal/q_parse.cpp:1020)
 
-char * __cdecl Com_ParseOnLine(char **param_1)
+char * __cdecl Com_ParseOnLine(char **data_p)
 
 {
   ParseThreadInfo *pPVar1;
   char *pcVar2;
   parseInfo_t *ppVar3;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   ppVar3 = pPVar1->parseInfo + pPVar1->parseInfoNum;
@@ -955,10 +988,10 @@ char * __cdecl Com_ParseOnLine(char **param_1)
     if (ppVar3->spaceDelimited == false) {
       return ppVar3->token;
     }
-    *param_1 = ppVar3->backup_text;
+    *data_p = ppVar3->backup_text;
     ppVar3->lines = ppVar3->backup_lines;
   }
-  pcVar2 = Com_ParseExt(param_1,0);
+  pcVar2 = Com_ParseExt(data_p,0);
   return pcVar2;
 }
 
@@ -969,6 +1002,8 @@ ParseTokenType __cdecl Com_GetTokenType(void)
 
 {
   ParseThreadInfo *pPVar1;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
   
   pPVar1 = Com_GetParseThreadInfo();
   return pPVar1->parseInfo[pPVar1->parseInfoNum].tokenType;
@@ -977,7 +1012,7 @@ ParseTokenType __cdecl Com_GetTokenType(void)
 
 // 007D12D0  Com_MatchToken  (universal/q_parse.cpp:1056)
 
-int __cdecl Com_MatchToken(char **param_1,char *param_2,int param_3)
+int __cdecl Com_MatchToken(char **buf_p,char *match,int warning)
 
 {
   byte bVar1;
@@ -986,9 +1021,10 @@ int __cdecl Com_MatchToken(char **param_1,char *param_2,int param_3)
   int local_18;
   byte *local_10;
   byte *local_c;
+  char *token;
   
-  local_10 = (byte *)Com_Parse(param_1);
-  local_c = (byte *)param_2;
+  local_10 = (byte *)Com_Parse(buf_p);
+  local_c = (byte *)match;
   do {
     bVar1 = *local_10;
     bVar3 = bVar1 < *local_c;
@@ -1010,7 +1046,7 @@ LAB_007d1336:
     iVar2 = 1;
   }
   else {
-    if (param_3 == 0) {
+    if (warning == 0) {
       Com_ScriptErrorDrop("MatchToken: got \'%s\', expected \'%s\'\n");
     }
     else {
@@ -1024,56 +1060,60 @@ LAB_007d1336:
 
 // 007D1390  Com_SkipBracedSection  (universal/q_parse.cpp:1081)
 
-int __cdecl Com_SkipBracedSection(char **param_1,uint param_2,int param_3)
+int __cdecl Com_SkipBracedSection(char **program,uint startDepth,int iMaxNesting)
 
 {
   char *pcVar1;
-  uint local_10;
-  int local_c;
+  int depth;
+  int bNestingExceeded;
+  char *token;
   
-  local_c = 0;
-  local_10 = param_2;
+  bNestingExceeded = 0;
+  depth = startDepth;
   do {
-    pcVar1 = Com_Parse(param_1);
+    pcVar1 = Com_Parse(program);
     if (pcVar1[1] == '\0') {
       if (*pcVar1 == '{') {
-        if (local_10 == param_3) {
-          local_c = 1;
+        if (depth == iMaxNesting) {
+          bNestingExceeded = 1;
         }
         else {
-          local_10 = local_10 + 1;
+          depth = depth + 1;
         }
       }
       else if (*pcVar1 == '}') {
-        local_10 = local_10 - 1;
+        depth = depth + -1;
       }
     }
-  } while ((local_10 != 0) && (*param_1 != (char *)0x0));
-  return local_c;
+  } while ((depth != 0) && (*program != (char *)0x0));
+  return bNestingExceeded;
 }
 
 
 // 007D1410  Com_SkipRestOfLine  (universal/q_parse.cpp:1116)
 
-void __cdecl Com_SkipRestOfLine(char **param_1)
+void __cdecl Com_SkipRestOfLine(char **data)
 
 {
   char cVar1;
   ParseThreadInfo *pPVar2;
-  char *local_8;
+  int c;
+  parseInfo_t *pi;
+  ParseThreadInfo *parse;
+  char *p;
   
   pPVar2 = Com_GetParseThreadInfo();
-  local_8 = *param_1;
-  if (local_8 != (char *)0x0) {
+  p = *data;
+  if (p != (char *)0x0) {
     do {
-      cVar1 = *local_8;
+      cVar1 = *p;
       if (cVar1 == '\0') goto LAB_007d147a;
-      local_8 = local_8 + 1;
+      p = p + 1;
     } while (cVar1 != '\n');
     pPVar2->parseInfo[pPVar2->parseInfoNum].lines =
          pPVar2->parseInfo[pPVar2->parseInfoNum].lines + 1;
 LAB_007d147a:
-    *param_1 = local_8;
+    *data = p;
   }
   return;
 }
@@ -1081,107 +1121,114 @@ LAB_007d147a:
 
 // 007D1490  Com_GetArgCountOnLine  (universal/q_parse.cpp:1142)
 
-int __cdecl Com_GetArgCountOnLine(char **param_1)
+int __cdecl Com_GetArgCountOnLine(char **data_p)
 
 {
-  com_parse_mark_t local_20;
-  char *local_c;
-  int local_8;
+  com_parse_mark_t mark;
+  char *token;
+  int count;
   
-  Com_ParseSetMark(param_1,&local_20);
-  local_8 = 0;
+  Com_ParseSetMark(data_p,&mark);
+  count = 0;
   while( true ) {
-    local_c = Com_ParseOnLine(param_1);
-    if (*local_c == '\0') break;
-    local_8 = local_8 + 1;
+    token = Com_ParseOnLine(data_p);
+    if (*token == '\0') break;
+    count = count + 1;
   }
-  Com_ParseReturnToMark(param_1,&local_20);
-  return local_8;
+  Com_ParseReturnToMark(data_p,&mark);
+  return count;
 }
 
 
 // 007D14F0  Com_ParseRestOfLine  (universal/q_parse.cpp:1172)
 
-char * __cdecl Com_ParseRestOfLine(char **param_1)
+char * __cdecl Com_ParseRestOfLine(char **data_p)
 
 {
   ParseThreadInfo *pPVar1;
-  char *pcVar2;
-  char *pcVar3;
+  char *dest;
+  char *src;
+  ParseThreadInfo *parse;
+  char *token;
+  char *line;
   
   pPVar1 = Com_GetParseThreadInfo();
-  pcVar2 = pPVar1->line;
-  *pcVar2 = '\0';
+  dest = pPVar1->line;
+  *dest = '\0';
   while( true ) {
-    pcVar3 = Com_ParseOnLine(param_1);
-    if (*pcVar3 == '\0') break;
-    if (*pcVar2 != '\0') {
-      I_strncat(pcVar2,0x400," ");
+    src = Com_ParseOnLine(data_p);
+    if (*src == '\0') break;
+    if (*dest != '\0') {
+      I_strncat(dest,0x400," ");
     }
-    I_strncat(pcVar2,0x400,pcVar3);
+    I_strncat(dest,0x400,src);
   }
-  return pcVar2;
+  return dest;
 }
 
 
 // 007D1570  Com_ParseFloat  (universal/q_parse.cpp:1196)
 
-float __cdecl Com_ParseFloat(char **param_1)
+float __cdecl Com_ParseFloat(char **buf_p)
 
 {
-  char *pcVar1;
-  double dVar2;
+  char *nptr;
+  double dVar1;
+  char *token;
   
-  pcVar1 = Com_Parse(param_1);
-  dVar2 = atof(pcVar1);
-  return (float)dVar2;
+  nptr = Com_Parse(buf_p);
+  dVar1 = atof(nptr);
+  return (float)dVar1;
 }
 
 
 // 007D15A0  Com_ParseFloatOnLine  (universal/q_parse.cpp:1205)
 
-float __cdecl Com_ParseFloatOnLine(char **param_1)
+float __cdecl Com_ParseFloatOnLine(char **buf_p)
 
 {
-  char *pcVar1;
-  double dVar2;
+  char *nptr;
+  double dVar1;
+  char *token;
   
-  pcVar1 = Com_ParseOnLine(param_1);
-  dVar2 = atof(pcVar1);
-  return (float)dVar2;
+  nptr = Com_ParseOnLine(buf_p);
+  dVar1 = atof(nptr);
+  return (float)dVar1;
 }
 
 
 // 007D15D0  Com_ParseInt  (universal/q_parse.cpp:1214)
 
-int __cdecl Com_ParseInt(char **param_1)
+int __cdecl Com_ParseInt(char **buf_p)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
+  char *token;
   
-  pcVar1 = Com_Parse(param_1);
-  iVar2 = atoi(pcVar1);
-  return iVar2;
+  nptr = Com_Parse(buf_p);
+  iVar1 = atoi(nptr);
+  return iVar1;
 }
 
 
 // 007D1600  Com_Parse1DMatrix  (universal/q_parse.cpp:1232)
 
-void __cdecl Com_Parse1DMatrix(char **param_1,int param_2,float *param_3)
+void __cdecl Com_Parse1DMatrix(char **buf_p,int x,float *m)
 
 {
-  char *pcVar1;
-  double dVar2;
-  int local_8;
+  char *nptr;
+  double dVar1;
+  char *token;
+  int i;
   
-  Com_MatchToken(param_1,"(",0);
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    pcVar1 = Com_Parse(param_1);
-    dVar2 = atof(pcVar1);
-    param_3[local_8] = (float)dVar2;
+  Com_MatchToken(buf_p,"(",0);
+  for (i = 0; i < x; i = i + 1) {
+    nptr = Com_Parse(buf_p);
+    dVar1 = atof(nptr);
+    m[i] = (float)dVar1;
   }
-  Com_MatchToken(param_1,")",0);
+  Com_MatchToken(buf_p,")",0);
   return;
 }
 

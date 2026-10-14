@@ -2,7 +2,7 @@
 
 // 0095DE1E  _dosmaperr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c:110)
 
-void __cdecl _dosmaperr(ulong param_1)
+void __cdecl _dosmaperr(ulong oserrno)
 
 {
   ulong *puVar1;
@@ -10,8 +10,8 @@ void __cdecl _dosmaperr(ulong param_1)
   int *piVar3;
   
   puVar1 = __doserrno();
-  *puVar1 = param_1;
-  iVar2 = _get_errno_from_oserr(param_1);
+  *puVar1 = oserrno;
+  iVar2 = _get_errno_from_oserr(oserrno);
   piVar3 = _errno();
   *piVar3 = iVar2;
   return;
@@ -20,22 +20,22 @@ void __cdecl _dosmaperr(ulong param_1)
 
 // 0095DDB6  _get_errno_from_oserr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dosmap.c:119)
 
-int __cdecl _get_errno_from_oserr(ulong param_1)
+int __cdecl _get_errno_from_oserr(ulong oserrno)
 
 {
   uint uVar1;
   
   uVar1 = 0;
   do {
-    if (param_1 == errtable[uVar1].oscode) {
+    if (oserrno == errtable[uVar1].oscode) {
       return errtable[uVar1].errnocode;
     }
     uVar1 = uVar1 + 1;
   } while (uVar1 < 0x2d);
-  if (param_1 - 0x13 < 0x12) {
+  if (oserrno - 0x13 < 0x12) {
     return 0xd;
   }
-  return (-(uint)(0xe < param_1 - 0xbc) & 0xe) + 8;
+  return (-(uint)(0xe < oserrno - 0xbc) & 0xe) + 8;
 }
 
 

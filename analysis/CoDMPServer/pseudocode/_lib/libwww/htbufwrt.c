@@ -115,12 +115,12 @@ int FUN_00bd9f30(int param_1,uchar *param_2,ulong param_3)
 {
   int iVar1;
   uint uVar2;
-  ulong uVar3;
+  ulong count;
   
   do {
     while( true ) {
-      uVar3 = (*(int *)(param_1 + 0x1c) + *(int *)(param_1 + 0xc)) - *(int *)(param_1 + 0x18);
-      if ((int)param_3 <= (int)uVar3) {
+      count = (*(int *)(param_1 + 0x1c) + *(int *)(param_1 + 0xc)) - *(int *)(param_1 + 0x18);
+      if ((int)param_3 <= (int)count) {
         memcpy(*(uchar **)(param_1 + 0x18),param_2,param_3);
         *(ulong *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) + param_3;
         iVar1 = *(int *)(param_1 + 0x18) - *(int *)(param_1 + 0x1c);
@@ -136,11 +136,11 @@ int FUN_00bd9f30(int param_1,uchar *param_2,ulong param_3)
         }
         return 0;
       }
-      if (uVar3 != 0) {
-        memcpy(*(uchar **)(param_1 + 0x18),param_2,uVar3);
-        param_2 = param_2 + uVar3;
-        param_3 = param_3 - uVar3;
-        *(ulong *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) + uVar3;
+      if (count != 0) {
+        memcpy(*(uchar **)(param_1 + 0x18),param_2,count);
+        param_2 = param_2 + count;
+        param_3 = param_3 - count;
+        *(ulong *)(param_1 + 0x18) = *(int *)(param_1 + 0x18) + count;
       }
       uVar2 = bdPlatformTiming::getLoResTimeStamp();
       *(uint *)(param_1 + 0x20) = uVar2;

@@ -4,7 +4,7 @@
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl CL_AllocSkelMemory(uint param_1)
+char * __cdecl CL_AllocSkelMemory(uint size)
 
 {
   long *plVar1;
@@ -14,15 +14,17 @@ char * __cdecl CL_AllocSkelMemory(uint param_1)
   int iVar5;
   int iVar6;
   uint uVar7;
+  char *result;
+  int skelMemPos;
   
-  if ((param_1 == 0) &&
+  if ((size == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_pose_mp.cpp",0x21,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  uVar7 = param_1 + 0xf & 0xfffffff0;
+  uVar7 = size + 0xf & 0xfffffff0;
   if ((0x3fff0 < uVar7) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_pose_mp.cpp",0x24,0
                                ,"%s"), !bVar3)) {
@@ -82,7 +84,7 @@ int __cdecl CL_GetSkelTimeStamp(void)
 
 // 00573020  CL_DObjCreateSkelForBones  (client_mp/cl_pose_mp.cpp:87)
 
-int __cdecl CL_DObjCreateSkelForBones(DObj *param_1,int *param_2,DObjAnimMat **param_3)
+int __cdecl CL_DObjCreateSkelForBones(DObj *obj,int *partBits,DObjAnimMat **pMatOut)
 
 {
   code *pcVar1;
@@ -90,9 +92,12 @@ int __cdecl CL_DObjCreateSkelForBones(DObj *param_1,int *param_2,DObjAnimMat **p
   int iVar3;
   int iVar4;
   DObjAnimMat *pDVar5;
-  uint uVar6;
+  uint size;
+  char *buf;
+  int len;
+  int timeStamp;
   
-  if (param_1 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_pose_mp.cpp",0x5f,0,
                              "%s");
     if (!bVar2) {
@@ -102,12 +107,12 @@ int __cdecl CL_DObjCreateSkelForBones(DObj *param_1,int *param_2,DObjAnimMat **p
     }
   }
   iVar3 = CL_GetSkelTimeStamp();
-  iVar4 = DObjSkelExists(param_1,iVar3);
+  iVar4 = DObjSkelExists(obj,iVar3);
   if (iVar4 == 0) {
-    uVar6 = DObjGetAllocSkelSize(param_1);
-    pDVar5 = (DObjAnimMat *)CL_AllocSkelMemory(uVar6);
+    size = DObjGetAllocSkelSize(obj);
+    pDVar5 = (DObjAnimMat *)CL_AllocSkelMemory(size);
     if (pDVar5 == (DObjAnimMat *)0x0) {
-      *param_3 = (DObjAnimMat *)0x0;
+      *pMatOut = (DObjAnimMat *)0x0;
       if (warnCount != iVar3) {
         warnCount = iVar3;
         Com_PrintWarning(0xe,"WARNING: CL_SKEL_MEMORY_SIZE exceeded - not calculating skeleton\n");
@@ -115,15 +120,15 @@ int __cdecl CL_DObjCreateSkelForBones(DObj *param_1,int *param_2,DObjAnimMat **p
       iVar3 = 1;
     }
     else {
-      *param_3 = pDVar5;
-      DObjCreateSkel(param_1,(char *)pDVar5,iVar3);
+      *pMatOut = pDVar5;
+      DObjCreateSkel(obj,(char *)pDVar5,iVar3);
       iVar3 = 0;
     }
   }
   else {
-    pDVar5 = I_dmaGetDObjSkel(param_1);
-    *param_3 = pDVar5;
-    iVar3 = DObjSkelAreBonesUpToDate(param_1,param_2);
+    pDVar5 = I_dmaGetDObjSkel(obj);
+    *pMatOut = pDVar5;
+    iVar3 = DObjSkelAreBonesUpToDate(obj,partBits);
   }
   return iVar3;
 }

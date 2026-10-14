@@ -2,8 +2,7 @@
 
 // 00C2684C  __loctotime64_t  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/dtoxtm64.c:47)
 
-long64 __cdecl
-__loctotime64_t(int param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7)
+long64 __cdecl __loctotime64_t(int yr,int mo,int dy,int hr,int mn,int sc,int dstflag)
 
 {
   uint uVar1;
@@ -17,20 +16,19 @@ __loctotime64_t(int param_1,int param_2,int param_3,int param_4,int param_5,int 
   int extraout_EDX_00;
   uint uVar6;
   bool bVar7;
-  tm local_38;
+  tm tb;
   int local_14;
-  uint local_10;
-  int local_c;
-  uint local_8;
+  long dstbias;
+  int daylight;
+  long timezone;
   
-  iVar2 = param_1;
-  uVar6 = param_1 - 0x76c;
-  local_c = 0;
-  local_10 = 0;
-  local_8 = 0;
-  if (((((int)uVar6 < 0x46) || (0x44c < (int)uVar6)) || (0xb < param_2 - 1U)) ||
-     (((0x17 < (uint)param_4 || (0x3b < (uint)param_5)) || ((0x3b < (uint)param_6 || (param_3 < 1)))
-      ))) {
+  iVar2 = yr;
+  uVar6 = yr - 0x76c;
+  daylight = 0;
+  dstbias = 0;
+  timezone = 0;
+  if (((((int)uVar6 < 0x46) || (0x44c < (int)uVar6)) || (0xb < mo - 1U)) ||
+     (((0x17 < (uint)hr || (0x3b < (uint)mn)) || ((0x3b < (uint)sc || (dy < 1)))))) {
 LAB_00c26aa2:
     piVar3 = _errno();
     *piVar3 = 0x16;
@@ -38,24 +36,24 @@ LAB_00c26aa2:
     iVar2 = -1;
   }
   else {
-    if (*(int *)(&_days + param_2 * 4) - _lpdays[param_2 + 0xc] < param_3) {
+    if (*(int *)(&_days + mo * 4) - _lpdays[mo + 0xc] < dy) {
       uVar1 = uVar6 & 0x80000003;
       bVar7 = uVar1 == 0;
       if ((int)uVar1 < 0) {
         bVar7 = (uVar1 - 1 | 0xfffffffc) == 0xffffffff;
       }
-      if ((((!bVar7) || ((int)uVar6 % 100 == 0)) && (param_1 % 400 != 0)) ||
-         ((param_2 != 2 || (0x1d < param_3)))) goto LAB_00c26aa2;
+      if ((((!bVar7) || ((int)uVar6 % 100 == 0)) && (yr % 400 != 0)) || ((mo != 2 || (0x1d < dy))))
+      goto LAB_00c26aa2;
     }
-    iVar4 = _lpdays[param_2 + 0xc] + param_3;
+    iVar4 = _lpdays[mo + 0xc] + dy;
     uVar1 = uVar6 & 0x80000003;
     bVar7 = uVar1 == 0;
     if ((int)uVar1 < 0) {
       bVar7 = (uVar1 - 1 | 0xfffffffc) == 0xffffffff;
     }
-    if ((((bVar7) && ((int)uVar6 % 100 != 0)) ||
-        (iVar5 = param_1 % 400, param_1 = iVar4, iVar5 == 0)) && (param_1 = iVar4, 2 < param_2)) {
-      param_1 = iVar4 + 1;
+    if ((((bVar7) && ((int)uVar6 % 100 != 0)) || (iVar5 = yr % 400, yr = iVar4, iVar5 == 0)) &&
+       (yr = iVar4, 2 < mo)) {
+      yr = iVar4 + 1;
     }
     iVar4 = iVar2 + -0x76d;
     uVar1 = ((iVar2 + -0x641) / 400 - iVar4 / 100) + -0x11 +
@@ -67,32 +65,32 @@ LAB_00c26aa2:
     _allmul();
     _allmul();
     __tzset();
-    iVar2 = _get_daylight(&local_c);
+    iVar2 = _get_daylight(&daylight);
     if (iVar2 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    iVar2 = _get_dstbias((long *)&local_10);
+    iVar2 = _get_dstbias(&dstbias);
     if (iVar2 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    iVar2 = _get_timezone((long *)&local_8);
+    iVar2 = _get_timezone(&timezone);
     if (iVar2 != 0) {
       _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     }
-    uVar1 = extraout_EAX_00 + param_6 + local_8;
-    local_38.tm_yday = param_1;
-    iVar2 = extraout_EDX_00 + (param_6 >> 0x1f) + (uint)CARRY4(extraout_EAX_00,param_6) +
-            ((int)local_8 >> 0x1f) + (uint)CARRY4(extraout_EAX_00 + param_6,local_8);
-    local_38.tm_mon = param_2 + -1;
-    local_38.tm_hour = param_4;
-    local_38.tm_min = param_5;
-    local_38.tm_sec = param_6;
-    if ((param_7 == 1) ||
-       (((param_7 == -1 && (local_c != 0)) &&
-        (local_38.tm_year = uVar6, iVar4 = _isindst(&local_38), iVar4 != 0)))) {
-      bVar7 = CARRY4(uVar1,local_10);
-      uVar1 = uVar1 + local_10;
-      iVar2 = iVar2 + ((int)local_10 >> 0x1f) + (uint)bVar7;
+    uVar1 = extraout_EAX_00 + sc + timezone;
+    tb.tm_yday = yr;
+    iVar2 = extraout_EDX_00 + (sc >> 0x1f) + (uint)CARRY4(extraout_EAX_00,sc) + (timezone >> 0x1f) +
+            (uint)CARRY4(extraout_EAX_00 + sc,timezone);
+    tb.tm_mon = mo + -1;
+    tb.tm_hour = hr;
+    tb.tm_min = mn;
+    tb.tm_sec = sc;
+    if ((dstflag == 1) ||
+       (((dstflag == -1 && (daylight != 0)) &&
+        (tb.tm_year = uVar6, iVar4 = _isindst(&tb), iVar4 != 0)))) {
+      bVar7 = CARRY4(uVar1,dstbias);
+      uVar1 = uVar1 + dstbias;
+      iVar2 = iVar2 + (dstbias >> 0x1f) + (uint)bVar7;
     }
   }
   return CONCAT44(iVar2,uVar1);

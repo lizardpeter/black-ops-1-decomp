@@ -14,7 +14,7 @@ void __cdecl TRACK_cg_main(void)
 
 // 004BF880  CG_irand  (cgame/cg_main.cpp:45)
 
-int __cdecl CG_irand(int param_1,int param_2)
+int __cdecl CG_irand(int min,int max)
 
 {
   code *pcVar1;
@@ -33,7 +33,7 @@ int __cdecl CG_irand(int param_1,int param_2)
   undefined4 uVar11;
   undefined4 uVar12;
   
-  if ((param_2 < param_1) &&
+  if ((max < min) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0x2e,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -42,21 +42,21 @@ int __cdecl CG_irand(int param_1,int param_2)
   }
   iVar3 = rand();
   iVar7 = iVar3 >> 0x1f;
-  iVar4 = param_2 - param_1;
+  iVar4 = max - min;
   iVar8 = iVar4 >> 0x1f;
   _allmul();
   uVar12 = 0;
   uVar11 = 0x7fff;
   uVar10 = extraout_EDX;
   _alldiv();
-  iVar9 = param_1 >> 0x1f;
-  uVar5 = param_1 + extraout_EAX;
-  iVar6 = extraout_EDX_00 + iVar9 + (uint)CARRY4(param_1,extraout_EAX);
-  if ((iVar9 <= iVar6) && ((iVar9 < iVar6 || ((uint)param_1 <= uVar5)))) {
-    if (iVar6 < param_2 >> 0x1f) {
+  iVar9 = min >> 0x1f;
+  uVar5 = min + extraout_EAX;
+  iVar6 = extraout_EDX_00 + iVar9 + (uint)CARRY4(min,extraout_EAX);
+  if ((iVar9 <= iVar6) && ((iVar9 < iVar6 || ((uint)min <= uVar5)))) {
+    if (iVar6 < max >> 0x1f) {
       return uVar5;
     }
-    if ((iVar6 <= param_2 >> 0x1f) && (uVar5 <= (uint)param_2)) {
+    if ((iVar6 <= max >> 0x1f) && (uVar5 <= (uint)max)) {
       return uVar5;
     }
   }
@@ -73,7 +73,7 @@ int __cdecl CG_irand(int param_1,int param_2)
 
 // 004BF970  CG_flrand  (cgame/cg_main.cpp:56)
 
-float __cdecl CG_flrand(float param_1,float param_2)
+float __cdecl CG_flrand(float min,float max)
 
 {
   code *pcVar1;
@@ -81,10 +81,11 @@ float __cdecl CG_flrand(float param_1,float param_2)
   int iVar3;
   float10 fVar4;
   float fVar5;
+  float result;
   
   iVar3 = rand();
-  fVar5 = ((param_2 - param_1) * (float)iVar3) / 32767.0 + param_1;
-  if ((fVar5 < param_1) || (param_2 < fVar5)) {
+  fVar5 = ((max - min) * (float)iVar3) / 32767.0 + min;
+  if ((fVar5 < min) || (max < fVar5)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0x40,0,
                              "%s\n\t(result) = %g");
     if (!bVar2) {
@@ -152,12 +153,12 @@ void __cdecl CG_ResetClientInitializationState(void)
 
 // 004BFA40  CG_GetWeaponIndexForName  (cgame/cg_main.cpp:94)
 
-uint __cdecl CG_GetWeaponIndexForName(char *param_1)
+uint __cdecl CG_GetWeaponIndexForName(char *name)
 
 {
   uint uVar1;
   
-  uVar1 = BG_GetWeaponIndexForName(param_1);
+  uVar1 = BG_GetWeaponIndexForName(name);
   return uVar1;
 }
 
@@ -168,33 +169,33 @@ uint __cdecl CG_GetWeaponIndexForName(char *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_RegisterVehicle(char *param_1,short param_2)
+void __cdecl CG_RegisterVehicle(char *name,short index)
 
 {
   char cVar1;
   int iVar2;
-  uint uVar3;
-  double dVar4;
+  uint src;
+  double dVar3;
   undefined4 in_stack_ffffbf90;
-  vehicle_info_t *pvVar5;
+  vehicle_info_t *pvVar4;
   vehicle_info_t *local_4068;
   char *local_4064;
-  int local_405c;
-  int local_4058;
-  char local_4054 [64];
-  char *local_4014;
-  vehicle_info_t *local_4010;
-  char local_400c [16388];
+  int k;
+  int i;
+  char fileName [64];
+  char *buffer;
+  vehicle_info_t *info;
+  char loadBuffer [16388];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 != (char *)0x0) && (*param_1 != '\0')) {
-    sprintf(local_4054,"vehicles/%s");
-    local_4014 = Com_LoadInfoString(local_4054,"vehicle file","VEHICLEFILE",local_400c);
-    local_4010 = bg_vehicleInfos + param_2;
-    memset((uchar *)local_4010,'\0',0x1dd8);
-    local_4064 = param_1;
-    local_4068 = local_4010;
+  if ((name != (char *)0x0) && (*name != '\0')) {
+    sprintf(fileName,"vehicles/%s");
+    buffer = Com_LoadInfoString(fileName,"vehicle file","VEHICLEFILE",loadBuffer);
+    info = bg_vehicleInfos + index;
+    memset((uchar *)info,'\0',0x1dd8);
+    local_4064 = name;
+    local_4068 = info;
     do {
       cVar1 = *local_4064;
       in_stack_ffffbf90 = CONCAT13(cVar1,(int3)in_stack_ffffbf90);
@@ -202,22 +203,22 @@ void __cdecl CG_RegisterVehicle(char *param_1,short param_2)
       local_4064 = local_4064 + 1;
       local_4068 = (vehicle_info_t *)(local_4068->name + 1);
     } while (cVar1 != '\0');
-    pvVar5 = local_4010;
+    pvVar4 = info;
     iVar2 = ParseConfigStringToStruct
-                      ((uchar *)local_4010,(cspField_t *)&s_vehicleFields,0x159,local_4014,0x19,
+                      ((uchar *)info,(cspField_t *)&s_vehicleFields,0x159,buffer,0x19,
                        VEH_ParseSpecificField,VEH_Strcpy);
     if (iVar2 == 0) {
       Com_Error(ERR_DROP,"\x15Cannot parse vehicle on client: %s\n");
     }
     else {
-      for (local_4058 = 0; local_4058 < 4; local_4058 = local_4058 + 1) {
-        dVar4 = (double)(local_4010->mantleAngles[local_4058] * 0.5 * 0.017453292);
-        __libm_sse2_cos((double)CONCAT44(pvVar5,in_stack_ffffbf90));
-        local_4010->mantleAngles[local_4058] = (float)dVar4;
+      for (i = 0; i < 4; i = i + 1) {
+        dVar3 = (double)(info->mantleAngles[i] * 0.5 * 0.017453292);
+        __libm_sse2_cos((double)CONCAT44(pvVar4,in_stack_ffffbf90));
+        info->mantleAngles[i] = (float)dVar3;
       }
-      for (local_405c = 0; local_405c < 4; local_405c = local_405c + 1) {
-        uVar3 = CG_GetWeaponIndexForName(local_4010->gunnerWeapon[local_405c]);
-        AssignToSmallerType<unsigned_short>(local_4010->gunnerWeaponIndex + local_405c,uVar3);
+      for (k = 0; k < 4; k = k + 1) {
+        src = CG_GetWeaponIndexForName(info->gunnerWeapon[k]);
+        AssignToSmallerType<unsigned_short>(info->gunnerWeaponIndex + k,src);
       }
       bg_numVehicleInfos = bg_numVehicleInfos + 1;
     }
@@ -230,14 +231,15 @@ void __cdecl CG_RegisterVehicle(char *param_1,short param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CG_RegisterVehicleMaterial(short param_1)
+void __cdecl CG_RegisterVehicleMaterial(short index)
 
 {
   code *pcVar1;
   bool bVar2;
   Material *pMVar3;
+  vehicle_info_t *info;
   
-  if (bg_numVehicleInfos <= param_1) {
+  if (bg_numVehicleInfos <= index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0x90,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -245,30 +247,33 @@ void __cdecl CG_RegisterVehicleMaterial(short param_1)
       return;
     }
   }
-  pMVar3 = Material_RegisterHandle(bg_vehicleInfos[param_1].compassIcon,7);
-  bg_vehicleInfos[param_1].compassIconMaterial = pMVar3;
+  pMVar3 = Material_RegisterHandle(bg_vehicleInfos[index].compassIcon,7);
+  bg_vehicleInfos[index].compassIconMaterial = pMVar3;
   return;
 }
 
 
 // 004BFD10  CG_Veh_Init  (cgame/cg_main.cpp:152)
 
-void __cdecl CG_Veh_Init(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl CG_Veh_Init(int localClientNum)
 
 {
-  char *pcVar1;
-  undefined2 local_c;
-  undefined4 local_8;
+  char *name_00;
+  char *name;
+  short j;
+  int i;
   
-  local_8 = 0xc4c;
-  local_c = 0;
-  while ((local_8 < 0xc6c && (local_c < 0x20))) {
-    pcVar1 = CL_GetConfigString(local_8);
-    if (*pcVar1 != '\0') {
-      CG_RegisterVehicle(pcVar1,local_c);
-      local_c = local_c + 1;
+  i = 0xc4c;
+  j = 0;
+  while ((i < 0xc6c && (j < 0x20))) {
+    name_00 = CL_GetConfigString(i);
+    if (*name_00 != '\0') {
+      CG_RegisterVehicle(name_00,j);
+      j = j + 1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return;
 }
@@ -276,13 +281,16 @@ void __cdecl CG_Veh_Init(int param_1)
 
 // 004BFD80  CG_Veh_RegisterMaterials  (cgame/cg_main.cpp:168)
 
-void __cdecl CG_Veh_RegisterMaterials(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl CG_Veh_RegisterMaterials(int localClientNum)
 
 {
-  short sVar1;
+  short index_00;
+  short index;
   
-  for (sVar1 = 0; sVar1 < bg_numVehicleInfos; sVar1 = sVar1 + 1) {
-    CG_RegisterVehicleMaterial(sVar1);
+  for (index_00 = 0; index_00 < bg_numVehicleInfos; index_00 = index_00 + 1) {
+    CG_RegisterVehicleMaterial(index_00);
   }
   return;
 }
@@ -291,24 +299,28 @@ void __cdecl CG_Veh_RegisterMaterials(int param_1)
 // 004BFDC0  CG_VehicleUpdateField  (cgame/cg_main.cpp:180)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_VehicleUpdateField(char *param_1,char *param_2)
+bool __cdecl CG_VehicleUpdateField(char *vehicleInfoName,char *keyValue)
 
 {
   bool bVar1;
   int iVar2;
-  int local_8;
+  vehicle_info_t *info;
+  int i;
   
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
+  if ((vehicleInfoName == (char *)0x0) || (*vehicleInfoName == '\0')) {
     bVar1 = false;
   }
   else {
-    for (local_8 = 0; local_8 < bg_numVehicleInfos; local_8 = local_8 + 1) {
-      iVar2 = I_stricmp(param_1,bg_vehicleInfos[local_8].name);
+    for (i = 0; i < bg_numVehicleInfos; i = i + 1) {
+      iVar2 = I_stricmp(vehicleInfoName,bg_vehicleInfos[i].name);
       if (iVar2 == 0) {
         ParseConfigStringToStruct
-                  ((uchar *)(bg_vehicleInfos + local_8),(cspField_t *)&s_vehicleFields,0x159,param_2
-                   ,0x19,VEH_ParseSpecificField,VEH_Strcpy);
+                  ((uchar *)(bg_vehicleInfos + i),(cspField_t *)&s_vehicleFields,0x159,keyValue,0x19
+                   ,VEH_ParseSpecificField,VEH_Strcpy);
       }
     }
     CG_UpdateVehicleBindings(0);
@@ -322,39 +334,40 @@ bool __cdecl CG_VehicleUpdateField(char *param_1,char *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl CG_IsVehicleRemoteControl(int param_1)
+bool __cdecl CG_IsVehicleRemoteControl(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   vehicle_info_t *pvVar4;
+  vehicle_info_t *info;
   
-  if ((param_1 < 0) &&
+  if ((index < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0xcf,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((0x1f < param_1) &&
+  if ((0x1f < index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0xd0,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  pvVar4 = CG_GetVehicleInfo(param_1);
+  pvVar4 = CG_GetVehicleInfo(index);
   return pvVar4->remoteControl != 0;
 }
 
 
 // 004BFEE0  CG_UpdateUIDeviceContexts  (cgame/cg_main.cpp:219)
 
-void __cdecl CG_UpdateUIDeviceContexts(int param_1,int param_2)
+void __cdecl CG_UpdateUIDeviceContexts(int localClientNum,int time)
 
 {
-  cgDC[param_1].realTime = param_2;
+  cgDC[localClientNum].realTime = time;
   return;
 }
 
@@ -378,11 +391,11 @@ float __cdecl CG_GetDefaultFovForView(void)
 
 // 004BFF30  CG_UpdateFov  (cgame/cg_main.cpp:245)
 
-void __cdecl CG_UpdateFov(float param_1)
+void __cdecl CG_UpdateFov(float value)
 
 {
-  if ((cg_fov->current).value != param_1) {
-    Dvar_SetFloat(cg_fov,param_1);
+  if ((cg_fov->current).value != value) {
+    Dvar_SetFloat(cg_fov,value);
   }
   return;
 }
@@ -390,17 +403,17 @@ void __cdecl CG_UpdateFov(float param_1)
 
 // 004BFF60  CG_SetThirdPerson  (cgame/cg_main.cpp:253)
 
-void __cdecl CG_SetThirdPerson(int param_1)
+void __cdecl CG_SetThirdPerson(int value)
 
 {
-  float fVar1;
+  float value_00;
   
-  if ((cg_thirdPerson->current).integer != param_1) {
-    Dvar_SetInt(cg_thirdPerson,param_1);
-    Dvar_SetBoolByName("cg_spectateThirdPerson",0 < param_1);
+  if ((cg_thirdPerson->current).integer != value) {
+    Dvar_SetInt(cg_thirdPerson,value);
+    Dvar_SetBoolByName("cg_spectateThirdPerson",0 < value);
   }
-  fVar1 = CG_GetDefaultFovForView();
-  CG_UpdateFov(fVar1);
+  value_00 = CG_GetDefaultFovForView();
+  CG_UpdateFov(value_00);
   return;
 }
 
@@ -412,12 +425,13 @@ void __cdecl CG_SetThirdPerson(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_IsEntWalkable(int param_1,int param_2)
+int __cdecl CG_IsEntWalkable(int localClientNum,int entityNum)
 
 {
   centity_s *pcVar1;
+  centity_s *cent;
   
-  pcVar1 = CG_GetEntity(param_1,param_2);
+  pcVar1 = CG_GetEntity(localClientNum,entityNum);
   return (uint)((pcVar1->nextState).eType != 1);
 }
 
@@ -426,96 +440,97 @@ int __cdecl CG_IsEntWalkable(int param_1,int param_2)
 
 int __cdecl
 CScriptMover_UpdateMove
-          (trajectory_t *param_1,float *param_2,float param_3,float param_4,float param_5,
-          float *param_6,float *param_7,float *param_8)
+          (trajectory_t *pTr,float *vCurrPos,float fSpeed,float fMidTime,float fDecelTime,
+          float *vPos1,float *vPos2,float *vPos3)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_14;
+  float fDelta;
+  float vMove;
   float local_10;
   float local_c;
-  int local_8;
+  int trDuration;
   
-  local_8 = (int)(param_4 * 1000.0);
-  if ((param_1->trType == '\b') && (0 < local_8)) {
-    param_1->trTime =
-         *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4);
-    param_1->trDuration = local_8;
-    param_1->trBase[0] = *param_6;
-    param_1->trBase[1] = param_6[1];
-    param_1->trBase[2] = param_6[2];
-    local_14 = *param_7 - *param_6;
-    local_10 = param_7[1] - param_6[1];
-    local_c = param_7[2] - param_6[2];
-    if ((local_8 == 0) &&
+  trDuration = (int)(fMidTime * 1000.0);
+  if ((pTr->trType == '\b') && (0 < trDuration)) {
+    pTr->trTime = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
+                          4);
+    pTr->trDuration = trDuration;
+    pTr->trBase[0] = *vPos1;
+    pTr->trBase[1] = vPos1[1];
+    pTr->trBase[2] = vPos1[2];
+    vMove = *vPos2 - *vPos1;
+    local_10 = vPos2[1] - vPos1[1];
+    local_c = vPos2[2] - vPos1[2];
+    if ((trDuration == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0x139,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    fVar4 = 1000.0 / (float)local_8;
-    param_1->trDelta[0] = fVar4 * local_14;
-    param_1->trDelta[1] = fVar4 * local_10;
-    param_1->trDelta[2] = fVar4 * local_c;
-    if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+    fVar4 = 1000.0 / (float)trDuration;
+    pTr->trDelta[0] = fVar4 * vMove;
+    pTr->trDelta[1] = fVar4 * local_10;
+    pTr->trDelta[2] = fVar4 * local_c;
+    if ((((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0x13c,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    param_1->trType = '\x04';
+    pTr->trType = '\x04';
   }
   else {
-    if ((((param_1->trType != '\b') || (0 < local_8)) && (param_1->trType != '\x04')) ||
-       (param_5 <= 0.0)) {
-      if ((param_1->trType == '\x06') || (param_1->trType == '\r')) {
+    if ((((pTr->trType != '\b') || (0 < trDuration)) && (pTr->trType != '\x04')) ||
+       (fDecelTime <= 0.0)) {
+      if ((pTr->trType == '\x06') || (pTr->trType == '\r')) {
         BG_EvaluateTrajectory
-                  (param_1,*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
-                                                     _tls_index * 4) + 8) + 4),param_1->trBase);
+                  (pTr,*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 4),pTr->trBase);
       }
       else {
-        param_1->trBase[0] = *param_8;
-        param_1->trBase[1] = param_8[1];
-        param_1->trBase[2] = param_8[2];
+        pTr->trBase[0] = *vPos3;
+        pTr->trBase[1] = vPos3[1];
+        pTr->trBase[2] = vPos3[2];
       }
-      param_1->trTime =
-           *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4);
-      param_1->trType = '\0';
+      pTr->trTime = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
+                            + 4);
+      pTr->trType = '\0';
       return 1;
     }
-    param_1->trTime =
-         *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4);
-    param_1->trDuration = (int)(param_5 * 1000.0);
-    param_1->trBase[0] = *param_7;
-    param_1->trBase[1] = param_7[1];
-    param_1->trBase[2] = param_7[2];
-    local_14 = *param_8 - *param_7;
-    local_10 = param_8[1] - param_7[1];
-    local_c = param_8[2] - param_7[2];
-    Vec3Normalize(&local_14);
-    local_14 = param_3 * local_14;
-    local_10 = param_3 * local_10;
-    local_c = param_3 * local_c;
-    param_1->trDelta[0] = local_14;
-    param_1->trDelta[1] = local_10;
-    param_1->trDelta[2] = local_c;
-    if ((((((uint)param_1->trDelta[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_1->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_1->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+    pTr->trTime = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
+                          4);
+    pTr->trDuration = (int)(fDecelTime * 1000.0);
+    pTr->trBase[0] = *vPos2;
+    pTr->trBase[1] = vPos2[1];
+    pTr->trBase[2] = vPos2[2];
+    vMove = *vPos3 - *vPos2;
+    local_10 = vPos3[1] - vPos2[1];
+    local_c = vPos3[2] - vPos2[2];
+    Vec3Normalize(&vMove);
+    vMove = fSpeed * vMove;
+    local_10 = fSpeed * local_10;
+    local_c = fSpeed * local_c;
+    pTr->trDelta[0] = vMove;
+    pTr->trDelta[1] = local_10;
+    pTr->trDelta[2] = local_c;
+    if ((((((uint)pTr->trDelta[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)pTr->trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)pTr->trDelta[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_main.cpp",0x14a,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    param_1->trType = '\t';
+    pTr->trType = '\t';
   }
   return 0;
 }

@@ -6,7 +6,7 @@
 /* WARNING: Heritage AFTER dead removal. Example location: s0xffffff78 : 0x005c4752 */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) [3])
+void __cdecl Float4x4ForViewer(vector4 *mtx,float *origin3,float (*axis3) [3])
 
 {
   float fVar1;
@@ -79,11 +79,11 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
   float *local_b8;
   float *local_b4;
   float (*local_b0) [3];
-  float local_ac;
+  float origin;
   float local_a8;
   float local_a4;
   undefined4 local_a0;
-  float local_9c;
+  float tAxis;
   float local_98;
   float local_94;
   undefined4 local_90;
@@ -99,7 +99,7 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
   undefined4 local_68;
   undefined4 local_64;
   float local_60;
-  float local_4c [4];
+  float axis [4];
   undefined4 local_3c;
   undefined4 local_38;
   undefined4 local_34;
@@ -115,22 +115,22 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
   uVar11 = g_swizzleYZXW.u[1];
   uVar10 = g_swizzleYZXW.u[0];
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_ac = *param_2;
-  local_a8 = param_2[1];
-  local_a4 = param_2[2];
+  origin = *origin3;
+  local_a8 = origin3[1];
+  local_a4 = origin3[2];
   local_a0 = 0;
-  local_b0 = param_3;
-  local_9c = (*param_3)[0];
-  local_98 = (*param_3)[1];
-  local_94 = (*param_3)[2];
+  local_b0 = axis3;
+  tAxis = (*axis3)[0];
+  local_98 = (*axis3)[1];
+  local_94 = (*axis3)[2];
   local_90 = 0;
-  local_8c = param_3[1][0];
-  local_88 = param_3[1][1];
-  local_84 = param_3[1][2];
+  local_8c = axis3[1][0];
+  local_88 = axis3[1][1];
+  local_84 = axis3[1][2];
   local_80 = 0;
-  local_7c = param_3[2][0];
-  local_78 = param_3[2][1];
-  local_74 = param_3[2][2];
+  local_7c = axis3[2][0];
+  local_78 = axis3[2][1];
+  local_74 = axis3[2][2];
   local_70 = 0;
   local_6c = 0;
   local_68 = 0;
@@ -138,71 +138,66 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
   local_60 = 1.0;
   local_b8 = &local_8c;
   local_b4 = &local_8c;
-  local_fc[0] = (*param_3)[0];
-  local_fc[1] = -param_3[1][0];
-  local_fc[2] = param_3[2][0];
+  local_fc[0] = (*axis3)[0];
+  local_fc[1] = -axis3[1][0];
+  local_fc[2] = axis3[2][0];
   local_fc[3] = 0.0;
-  local_fc[4] = (*param_3)[1];
-  local_e8 = -param_3[1][1];
-  local_e4 = param_3[2][1];
+  local_fc[4] = (*axis3)[1];
+  local_e8 = -axis3[1][1];
+  local_e4 = axis3[2][1];
   local_e0 = 0;
-  local_dc = (*param_3)[2];
-  local_d8 = -param_3[1][2];
-  local_d4 = param_3[2][2];
+  local_dc = (*axis3)[2];
+  local_d8 = -axis3[1][2];
+  local_d4 = axis3[2][2];
   local_d0 = 0;
   local_cc = 0;
   local_c8 = 0x80000000;
   local_c4 = 0;
   local_c0 = 1.0;
   pfVar15 = local_fc;
-  pfVar16 = local_4c;
+  pfVar16 = axis;
   for (iVar14 = 0x10; iVar14 != 0; iVar14 = iVar14 + -1) {
     *pfVar16 = *pfVar15;
     pfVar15 = pfVar15 + 1;
     pfVar16 = pfVar16 + 1;
   }
-  local_134 = local_4c[0];
-  local_130 = local_4c[1];
-  local_12c = local_4c[2];
-  local_128 = local_4c[3];
-  local_124 = local_4c[0];
-  local_120 = local_4c[1];
-  local_11c = local_4c[2];
-  local_118 = local_4c[3];
+  local_134 = axis[0];
+  local_130 = axis[1];
+  local_12c = axis[2];
+  local_128 = axis[3];
+  local_124 = axis[0];
+  local_120 = axis[1];
+  local_11c = axis[2];
+  local_118 = axis[3];
   local_114 = g_swizzleYZXW.v[0];
   local_110 = g_swizzleYZXW.v[1];
   local_10c = g_swizzleYZXW.v[2];
   local_108 = g_swizzleYZXW.v[3];
-  local_100 = param_1;
-  *(undefined1 *)&param_1->_padding_ =
-       *(undefined1 *)((int)&local_134 + (g_swizzleYZXW.u[0] >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  local_100 = mtx;
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_134 + (g_swizzleYZXW.u[0] >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar10 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar10 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar10 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_134 + ((uint)uVar11 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar10 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_134 + ((uint)uVar11 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar11 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar11 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar11 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_134 + ((uint)uVar12 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar11 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_134 + ((uint)uVar12 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar12 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar12 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar12 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_134 + ((uint)uVar13 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar12 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_134 + ((uint)uVar13 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar13 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_134 + ((uint)uVar13 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar13 & 0xff))
-  ;
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_134 + (uVar13 & 0xff));
   uVar13 = g_swizzleYZXW.v[3];
   uVar12 = g_swizzleYZXW.v[2];
   uVar11 = g_swizzleYZXW.v[1];
@@ -219,36 +214,31 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
   local_148 = g_swizzleYZXW.v[1];
   local_144 = g_swizzleYZXW.v[2];
   local_140 = g_swizzleYZXW.v[3];
-  local_138 = &param_1->_padding_;
-  *(undefined1 *)&param_1->_padding_ =
-       *(undefined1 *)((int)&local_16c + (g_swizzleYZXW.u[0] >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  local_138 = &mtx->_padding_;
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_16c + (g_swizzleYZXW.u[0] >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar10 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar10 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar10 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_16c + ((uint)uVar11 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar10 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_16c + ((uint)uVar11 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar11 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar11 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar11 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_16c + ((uint)uVar12 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar11 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_16c + ((uint)uVar12 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar12 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar12 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar12 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_16c + ((uint)uVar13 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar12 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_16c + ((uint)uVar13 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar13 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_16c + ((uint)uVar13 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar13 & 0xff))
-  ;
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_16c + (uVar13 & 0xff));
   uVar13 = g_swizzleYZXW.v[3];
   uVar12 = g_swizzleYZXW.v[2];
   uVar11 = g_swizzleYZXW.v[1];
@@ -265,58 +255,53 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
   local_180 = g_swizzleYZXW.v[1];
   local_17c = g_swizzleYZXW.v[2];
   local_178 = g_swizzleYZXW.v[3];
-  local_170 = &param_1->_padding_;
-  *(undefined1 *)&param_1->_padding_ =
-       *(undefined1 *)((int)&local_1a4 + (g_swizzleYZXW.u[0] >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  local_170 = &mtx->_padding_;
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_1a4 + (g_swizzleYZXW.u[0] >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar10 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar10 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar10 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_1a4 + ((uint)uVar11 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar10 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_1a4 + ((uint)uVar11 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar11 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar11 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar11 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_1a4 + ((uint)uVar12 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar11 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_1a4 + ((uint)uVar12 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar12 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar12 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar12 & 0xff))
-  ;
-  *(undefined1 *)&param_1->_padding_ = *(undefined1 *)((int)&local_1a4 + ((uint)uVar13 >> 0x18));
-  *(undefined1 *)((int)&param_1->_padding_ + 1) =
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar12 & 0xff));
+  *(undefined1 *)&mtx->_padding_ = *(undefined1 *)((int)&local_1a4 + ((uint)uVar13 >> 0x18));
+  *(undefined1 *)((int)&mtx->_padding_ + 1) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar13 >> 0x10 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 2) =
+  *(undefined1 *)((int)&mtx->_padding_ + 2) =
        *(undefined1 *)((int)&local_1a4 + ((uint)uVar13 >> 8 & 0xff));
-  *(undefined1 *)((int)&param_1->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar13 & 0xff))
-  ;
-  (param_1->w).v[0] = (float)0;
-  (param_1->w).v[1] = (float)0;
-  (param_1->w).v[2] = (float)0;
-  (param_1->w).v[3] = (float)0x3f800000;
-  fVar1 = (param_1->w).v[1];
-  fVar2 = (float)param_1->_padding_;
-  fVar3 = (float)param_1->_padding_;
-  fVar4 = (float)param_1->_padding_;
-  fVar5 = (param_1->w).v[2];
-  fVar6 = (float)param_1->_padding_;
-  fVar7 = (float)param_1->_padding_;
-  fVar8 = (float)param_1->_padding_;
-  fVar9 = (param_1->w).v[3];
-  (param_1->w).v[0] =
-       -(local_ac * (float)param_1->_padding_ + local_a8 * (float)param_1->_padding_ +
-         local_a4 * (float)param_1->_padding_ + (param_1->w).v[0]) + (float)0;
-  (param_1->w).v[1] =
-       -(local_ac * (float)param_1->_padding_ + local_a8 * (float)param_1->_padding_ +
-         local_a4 * (float)param_1->_padding_ + fVar1) + (float)0;
-  (param_1->w).v[2] = -(local_ac * fVar2 + local_a8 * fVar3 + local_a4 * fVar4 + fVar5) + (float)0;
-  (param_1->w).v[3] =
-       -(local_ac * fVar6 + local_a8 * fVar7 + local_a4 * fVar8 + fVar9) + (float)0x40000000;
+  *(undefined1 *)((int)&mtx->_padding_ + 3) = *(undefined1 *)((int)&local_1a4 + (uVar13 & 0xff));
+  (mtx->w).v[0] = (float)0;
+  (mtx->w).v[1] = (float)0;
+  (mtx->w).v[2] = (float)0;
+  (mtx->w).v[3] = (float)0x3f800000;
+  fVar1 = (mtx->w).v[1];
+  fVar2 = (float)mtx->_padding_;
+  fVar3 = (float)mtx->_padding_;
+  fVar4 = (float)mtx->_padding_;
+  fVar5 = (mtx->w).v[2];
+  fVar6 = (float)mtx->_padding_;
+  fVar7 = (float)mtx->_padding_;
+  fVar8 = (float)mtx->_padding_;
+  fVar9 = (mtx->w).v[3];
+  (mtx->w).v[0] =
+       -(origin * (float)mtx->_padding_ + local_a8 * (float)mtx->_padding_ +
+         local_a4 * (float)mtx->_padding_ + (mtx->w).v[0]) + (float)0;
+  (mtx->w).v[1] =
+       -(origin * (float)mtx->_padding_ + local_a8 * (float)mtx->_padding_ +
+         local_a4 * (float)mtx->_padding_ + fVar1) + (float)0;
+  (mtx->w).v[2] = -(origin * fVar2 + local_a8 * fVar3 + local_a4 * fVar4 + fVar5) + (float)0;
+  (mtx->w).v[3] =
+       -(origin * fVar6 + local_a8 * fVar7 + local_a4 * fVar8 + fVar9) + (float)0x40000000;
   return;
 }
 
@@ -326,39 +311,41 @@ void __cdecl Float4x4ForViewer(vector4 *param_1,float *param_2,float (*param_3) 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-Float4x4InfinitePerspectiveMatrix(vector4 *param_1,float param_2,float param_3,float param_4)
+Float4x4InfinitePerspectiveMatrix(vector4 *mtx,float tanHalfFovX,float tanHalfFovY,float zNear)
 
 {
-  param_1->_padding_ = (int)(0.9995117 / param_2);
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = (int)(0.9995117 / param_3);
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0;
-  param_1->_padding_ = 0x3f7fe000;
-  param_1->_padding_ = (int)1.0;
-  (param_1->w).v[0] = 0.0;
-  (param_1->w).v[1] = 0.0;
-  (param_1->w).v[2] = -param_4 * 0.9995117;
-  (param_1->w).v[3] = 0.0;
+  float invLedgeScale;
+  
+  mtx->_padding_ = (int)(0.9995117 / tanHalfFovX);
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0;
+  mtx->_padding_ = (int)(0.9995117 / tanHalfFovY);
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0;
+  mtx->_padding_ = 0x3f7fe000;
+  mtx->_padding_ = (int)1.0;
+  (mtx->w).v[0] = 0.0;
+  (mtx->w).v[1] = 0.0;
+  (mtx->w).v[2] = -zNear * 0.9995117;
+  (mtx->w).v[3] = 0.0;
   return;
 }
 
 
 // 005C62B0  I_fres  (universal/com_math.h:139)
 
-float __cdecl I_fres(float param_1)
+float __cdecl I_fres(float val)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 == 0.0) {
+  if (val == 0.0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x8c,0,"%s")
     ;
     if (!bVar2) {
@@ -367,7 +354,7 @@ float __cdecl I_fres(float param_1)
       return (float)fVar3;
     }
   }
-  return 1.0 / param_1;
+  return 1.0 / val;
 }
 
 
@@ -379,98 +366,98 @@ float __cdecl I_fres(float param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CreateClipMatrix(vector4 *param_1,float *param_2,float (*param_3) [3])
+void __cdecl CreateClipMatrix(vector4 *clipMtx,float *vieworg,float (*viewaxis) [3])
 
 {
   int iVar1;
   cg_s *pcVar2;
-  float fVar3;
-  float fVar4;
-  vector4 local_8c;
-  vector4 local_4c;
+  float tanHalfFovY;
+  float zNear;
+  vector4 viewMtx;
+  vector4 projMtx;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Float4x4ForViewer(&local_8c,param_2,param_3);
-  fVar4 = 1.0;
+  Float4x4ForViewer(&viewMtx,vieworg,viewaxis);
+  zNear = 1.0;
   iVar1 = R_GetLocalClientNum();
   pcVar2 = CG_GetLocalClientGlobals(iVar1);
-  fVar3 = (pcVar2->refdef).tanHalfFovY;
+  tanHalfFovY = (pcVar2->refdef).tanHalfFovY;
   iVar1 = R_GetLocalClientNum();
   pcVar2 = CG_GetLocalClientGlobals(iVar1);
-  Float4x4InfinitePerspectiveMatrix(&local_4c,(pcVar2->refdef).tanHalfFovX,fVar3,fVar4);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[0]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[1]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[2]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[3]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[0]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[1]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[2]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[3]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[0]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[1]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[2]);
-  param_1->_padding_ =
-       (int)((float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-             (float)local_8c._padding_ * (float)local_4c._padding_ +
-            (float)local_8c._padding_ * local_4c.w.v[3]);
-  (param_1->w).v[0] =
-       local_8c.w.v[0] * (float)local_4c._padding_ + local_8c.w.v[1] * (float)local_4c._padding_ +
-       local_8c.w.v[2] * (float)local_4c._padding_ + local_8c.w.v[3] * local_4c.w.v[0];
-  (param_1->w).v[1] =
-       local_8c.w.v[0] * (float)local_4c._padding_ + local_8c.w.v[1] * (float)local_4c._padding_ +
-       local_8c.w.v[2] * (float)local_4c._padding_ + local_8c.w.v[3] * local_4c.w.v[1];
-  (param_1->w).v[2] =
-       local_8c.w.v[0] * (float)local_4c._padding_ + local_8c.w.v[1] * (float)local_4c._padding_ +
-       local_8c.w.v[2] * (float)local_4c._padding_ + local_8c.w.v[3] * local_4c.w.v[2];
-  (param_1->w).v[3] =
-       local_8c.w.v[0] * (float)local_4c._padding_ + local_8c.w.v[1] * (float)local_4c._padding_ +
-       local_8c.w.v[2] * (float)local_4c._padding_ + local_8c.w.v[3] * local_4c.w.v[3];
+  Float4x4InfinitePerspectiveMatrix(&projMtx,(pcVar2->refdef).tanHalfFovX,tanHalfFovY,zNear);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[0]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[1]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[2]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[3]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[0]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[1]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[2]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[3]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[0]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[1]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[2]);
+  clipMtx->_padding_ =
+       (int)((float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+             (float)viewMtx._padding_ * (float)projMtx._padding_ +
+            (float)viewMtx._padding_ * projMtx.w.v[3]);
+  (clipMtx->w).v[0] =
+       viewMtx.w.v[0] * (float)projMtx._padding_ + viewMtx.w.v[1] * (float)projMtx._padding_ +
+       viewMtx.w.v[2] * (float)projMtx._padding_ + viewMtx.w.v[3] * projMtx.w.v[0];
+  (clipMtx->w).v[1] =
+       viewMtx.w.v[0] * (float)projMtx._padding_ + viewMtx.w.v[1] * (float)projMtx._padding_ +
+       viewMtx.w.v[2] * (float)projMtx._padding_ + viewMtx.w.v[3] * projMtx.w.v[1];
+  (clipMtx->w).v[2] =
+       viewMtx.w.v[0] * (float)projMtx._padding_ + viewMtx.w.v[1] * (float)projMtx._padding_ +
+       viewMtx.w.v[2] * (float)projMtx._padding_ + viewMtx.w.v[3] * projMtx.w.v[2];
+  (clipMtx->w).v[3] =
+       viewMtx.w.v[0] * (float)projMtx._padding_ + viewMtx.w.v[1] * (float)projMtx._padding_ +
+       viewMtx.w.v[2] * (float)projMtx._padding_ + viewMtx.w.v[3] * projMtx.w.v[3];
   return;
 }
 
@@ -479,7 +466,7 @@ void __cdecl CreateClipMatrix(vector4 *param_1,float *param_2,float (*param_3) [
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Vec4HomogenousClipZW(float4 *param_1,float4 *param_2,float4 *param_3)
+bool __cdecl Vec4HomogenousClipZW(float4 *pt0,float4 *pt1,float4 *coeffZW)
 
 {
   uint uVar1;
@@ -502,11 +489,12 @@ bool __cdecl Vec4HomogenousClipZW(float4 *param_1,float4 *param_2,float4 *param_
   uint local_b0;
   uint local_ac;
   uint local_a8;
+  uint cmp;
   
-  fVar5 = param_3->v[0] * param_1->v[0] + param_3->v[1] * param_1->v[1] +
-          param_3->v[2] * param_1->v[2] + param_3->v[3] * param_1->v[3];
-  fVar6 = param_3->v[0] * param_2->v[0] + param_3->v[1] * param_2->v[1] +
-          param_3->v[2] * param_2->v[2] + param_3->v[3] * param_2->v[3];
+  fVar5 = coeffZW->v[0] * pt0->v[0] + coeffZW->v[1] * pt0->v[1] + coeffZW->v[2] * pt0->v[2] +
+          coeffZW->v[3] * pt0->v[3];
+  fVar6 = coeffZW->v[0] * pt1->v[0] + coeffZW->v[1] * pt1->v[1] + coeffZW->v[2] * pt1->v[2] +
+          coeffZW->v[3] * pt1->v[3];
   if (0.0 <= fVar5) {
     local_a8 = 0;
     local_ac = 0;
@@ -555,30 +543,22 @@ bool __cdecl Vec4HomogenousClipZW(float4 *param_1,float4 *param_2,float4 *param_
   else {
     local_d4 = I_fres(fVar5 - fVar6);
   }
-  fVar6 = fVar5 * local_c8 * (param_2->v[0] - param_1->v[0]) + param_1->v[0];
-  fVar7 = fVar5 * local_cc * (param_2->v[1] - param_1->v[1]) + param_1->v[1];
-  fVar8 = fVar5 * local_d0 * (param_2->v[2] - param_1->v[2]) + param_1->v[2];
-  fVar5 = fVar5 * local_d4 * (param_2->v[3] - param_1->v[3]) + param_1->v[3];
-  uVar1 = param_2->u[0];
-  uVar2 = param_2->u[1];
-  uVar3 = param_2->u[2];
-  uVar4 = param_2->u[3];
-  param_1->u[0] =
-       ~local_a8 & param_1->u[0] | local_a8 & (~local_b8 & (uint)fVar6 | local_b8 & param_1->u[0]);
-  param_1->u[1] =
-       ~local_ac & param_1->u[1] | local_ac & (~local_bc & (uint)fVar7 | local_bc & param_1->u[1]);
-  param_1->u[2] =
-       ~local_b0 & param_1->u[2] | local_b0 & (~local_c0 & (uint)fVar8 | local_c0 & param_1->u[2]);
-  param_1->u[3] =
-       ~local_b4 & param_1->u[3] | local_b4 & (~local_c4 & (uint)fVar5 | local_c4 & param_1->u[3]);
-  param_2->u[0] =
-       ~local_a8 & (~local_b8 & uVar1 | local_b8 & (uint)fVar6) | local_a8 & param_2->u[0];
-  param_2->u[1] =
-       ~local_ac & (~local_bc & uVar2 | local_bc & (uint)fVar7) | local_ac & param_2->u[1];
-  param_2->u[2] =
-       ~local_b0 & (~local_c0 & uVar3 | local_c0 & (uint)fVar8) | local_b0 & param_2->u[2];
-  param_2->u[3] =
-       ~local_b4 & (~local_c4 & uVar4 | local_c4 & (uint)fVar5) | local_b4 & param_2->u[3];
+  fVar6 = fVar5 * local_c8 * (pt1->v[0] - pt0->v[0]) + pt0->v[0];
+  fVar7 = fVar5 * local_cc * (pt1->v[1] - pt0->v[1]) + pt0->v[1];
+  fVar8 = fVar5 * local_d0 * (pt1->v[2] - pt0->v[2]) + pt0->v[2];
+  fVar5 = fVar5 * local_d4 * (pt1->v[3] - pt0->v[3]) + pt0->v[3];
+  uVar1 = pt1->u[0];
+  uVar2 = pt1->u[1];
+  uVar3 = pt1->u[2];
+  uVar4 = pt1->u[3];
+  pt0->u[0] = ~local_a8 & pt0->u[0] | local_a8 & (~local_b8 & (uint)fVar6 | local_b8 & pt0->u[0]);
+  pt0->u[1] = ~local_ac & pt0->u[1] | local_ac & (~local_bc & (uint)fVar7 | local_bc & pt0->u[1]);
+  pt0->u[2] = ~local_b0 & pt0->u[2] | local_b0 & (~local_c0 & (uint)fVar8 | local_c0 & pt0->u[2]);
+  pt0->u[3] = ~local_b4 & pt0->u[3] | local_b4 & (~local_c4 & (uint)fVar5 | local_c4 & pt0->u[3]);
+  pt1->u[0] = ~local_a8 & (~local_b8 & uVar1 | local_b8 & (uint)fVar6) | local_a8 & pt1->u[0];
+  pt1->u[1] = ~local_ac & (~local_bc & uVar2 | local_bc & (uint)fVar7) | local_ac & pt1->u[1];
+  pt1->u[2] = ~local_b0 & (~local_c0 & uVar3 | local_c0 & (uint)fVar8) | local_b0 & pt1->u[2];
+  pt1->u[3] = ~local_b4 & (~local_c4 & uVar4 | local_c4 & (uint)fVar5) | local_b4 & pt1->u[3];
   return (local_a8 & local_b8) == 0;
 }
 
@@ -587,26 +567,26 @@ bool __cdecl Vec4HomogenousClipZW(float4 *param_1,float4 *param_2,float4 *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Vec4HomogenousClipBothZ(float4 *param_1,float4 *param_2)
+bool __cdecl Vec4HomogenousClipBothZ(float4 *pt0,float4 *pt1)
 
 {
   bool bVar1;
-  float4 local_28;
-  float4 local_18;
+  float4 coeffZGtW;
+  float4 coeffZLt0;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18.v[0] = 0.0;
-  local_18.v[1] = 0.0;
-  local_18.v[2] = 1.0;
-  local_18.v[3] = 0.0;
-  local_28.v[0] = 0.0;
-  local_28.v[1] = 0.0;
-  local_28.u[2] = 0xbf800000;
-  local_28.v[3] = 1.0;
-  bVar1 = Vec4HomogenousClipZW(param_1,param_2,&local_18);
+  coeffZLt0.v[0] = 0.0;
+  coeffZLt0.v[1] = 0.0;
+  coeffZLt0.v[2] = 1.0;
+  coeffZLt0.v[3] = 0.0;
+  coeffZGtW.v[0] = 0.0;
+  coeffZGtW.v[1] = 0.0;
+  coeffZGtW.u[2] = 0xbf800000;
+  coeffZGtW.v[3] = 1.0;
+  bVar1 = Vec4HomogenousClipZW(pt0,pt1,&coeffZLt0);
   if (bVar1) {
-    bVar1 = Vec4HomogenousClipZW(param_1,param_2,&local_28);
+    bVar1 = Vec4HomogenousClipZW(pt0,pt1,&coeffZGtW);
     if (bVar1) {
       bVar1 = true;
     }
@@ -627,7 +607,8 @@ bool __cdecl Vec4HomogenousClipBothZ(float4 *param_1,float4 *param_2)
 
 bool __cdecl
 FX_GenerateBeam_GetFlatDelta
-          (vector4 *param_1,vector4 *param_2,float4 *param_3,float4 *param_4,float4 *param_5)
+          (vector4 *clipMtx,vector4 *invClipMtx,float4 *beamWorldBegin,float4 *beamWorldEnd,
+          float4 *outFlatDelta)
 
 {
   code *pcVar1;
@@ -681,38 +662,38 @@ FX_GenerateBeam_GetFlatDelta
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  local_24 = param_3->v[0] + (float)0;
-  local_20 = param_3->v[1] + (float)0;
-  local_1c = param_3->v[2] + (float)0;
-  local_18 = param_3->v[3] + (float)0x3f800000;
-  local_34 = param_4->v[0] + (float)0;
-  local_30 = param_4->v[1] + (float)0;
-  local_2c = param_4->v[2] + (float)0;
-  local_28 = param_4->v[3] + (float)0x3f800000;
+  local_24 = beamWorldBegin->v[0] + (float)0;
+  local_20 = beamWorldBegin->v[1] + (float)0;
+  local_1c = beamWorldBegin->v[2] + (float)0;
+  local_18 = beamWorldBegin->v[3] + (float)0x3f800000;
+  local_34 = beamWorldEnd->v[0] + (float)0;
+  local_30 = beamWorldEnd->v[1] + (float)0;
+  local_2c = beamWorldEnd->v[2] + (float)0;
+  local_28 = beamWorldEnd->v[3] + (float)0x3f800000;
   local_54.v[0] =
-       local_24 * (float)param_1->_padding_ + local_20 * (float)param_1->_padding_ +
-       local_1c * (float)param_1->_padding_ + local_18 * (param_1->w).v[0];
+       local_24 * (float)clipMtx->_padding_ + local_20 * (float)clipMtx->_padding_ +
+       local_1c * (float)clipMtx->_padding_ + local_18 * (clipMtx->w).v[0];
   local_54.v[1] =
-       local_24 * (float)param_1->_padding_ + local_20 * (float)param_1->_padding_ +
-       local_1c * (float)param_1->_padding_ + local_18 * (param_1->w).v[1];
+       local_24 * (float)clipMtx->_padding_ + local_20 * (float)clipMtx->_padding_ +
+       local_1c * (float)clipMtx->_padding_ + local_18 * (clipMtx->w).v[1];
   local_54.v[2] =
-       local_24 * (float)param_1->_padding_ + local_20 * (float)param_1->_padding_ +
-       local_1c * (float)param_1->_padding_ + local_18 * (param_1->w).v[2];
+       local_24 * (float)clipMtx->_padding_ + local_20 * (float)clipMtx->_padding_ +
+       local_1c * (float)clipMtx->_padding_ + local_18 * (clipMtx->w).v[2];
   local_54.v[3] =
-       local_24 * (float)param_1->_padding_ + local_20 * (float)param_1->_padding_ +
-       local_1c * (float)param_1->_padding_ + local_18 * (param_1->w).v[3];
+       local_24 * (float)clipMtx->_padding_ + local_20 * (float)clipMtx->_padding_ +
+       local_1c * (float)clipMtx->_padding_ + local_18 * (clipMtx->w).v[3];
   local_74.v[0] =
-       local_34 * (float)param_1->_padding_ + local_30 * (float)param_1->_padding_ +
-       local_2c * (float)param_1->_padding_ + local_28 * (param_1->w).v[0];
+       local_34 * (float)clipMtx->_padding_ + local_30 * (float)clipMtx->_padding_ +
+       local_2c * (float)clipMtx->_padding_ + local_28 * (clipMtx->w).v[0];
   local_74.v[1] =
-       local_34 * (float)param_1->_padding_ + local_30 * (float)param_1->_padding_ +
-       local_2c * (float)param_1->_padding_ + local_28 * (param_1->w).v[1];
+       local_34 * (float)clipMtx->_padding_ + local_30 * (float)clipMtx->_padding_ +
+       local_2c * (float)clipMtx->_padding_ + local_28 * (clipMtx->w).v[1];
   local_74.v[2] =
-       local_34 * (float)param_1->_padding_ + local_30 * (float)param_1->_padding_ +
-       local_2c * (float)param_1->_padding_ + local_28 * (param_1->w).v[2];
+       local_34 * (float)clipMtx->_padding_ + local_30 * (float)clipMtx->_padding_ +
+       local_2c * (float)clipMtx->_padding_ + local_28 * (clipMtx->w).v[2];
   local_74.v[3] =
-       local_34 * (float)param_1->_padding_ + local_30 * (float)param_1->_padding_ +
-       local_2c * (float)param_1->_padding_ + local_28 * (param_1->w).v[3];
+       local_34 * (float)clipMtx->_padding_ + local_30 * (float)clipMtx->_padding_ +
+       local_2c * (float)clipMtx->_padding_ + local_28 * (clipMtx->w).v[3];
   local_64 = local_74.v[0];
   local_60 = local_74.v[1];
   local_5c = local_74.v[2];
@@ -755,34 +736,36 @@ FX_GenerateBeam_GetFlatDelta
     local_a8 = (float)((uint)(local_98 - local_84) & g_keepXYW.u[1]);
     local_a4 = (float)((uint)(local_94 - local_80) & g_keepXYW.u[2]);
     local_a0 = (float)((uint)(1.0 - local_7c) & g_keepXYW.u[3]);
-    local_cc = local_ac * (float)param_2->_padding_ + local_a8 * (float)param_2->_padding_ +
-               local_a4 * (float)param_2->_padding_ + local_a0 * (param_2->w).v[0];
-    local_c8 = local_ac * (float)param_2->_padding_ + local_a8 * (float)param_2->_padding_ +
-               local_a4 * (float)param_2->_padding_ + local_a0 * (param_2->w).v[1];
-    local_c4 = local_ac * (float)param_2->_padding_ + local_a8 * (float)param_2->_padding_ +
-               local_a4 * (float)param_2->_padding_ + local_a0 * (param_2->w).v[2];
-    local_c0 = local_ac * (float)param_2->_padding_ + local_a8 * (float)param_2->_padding_ +
-               local_a4 * (float)param_2->_padding_ + local_a0 * (param_2->w).v[3];
-    param_5->u[0] = (uint)local_cc & g_keepXYZ.u[0];
-    param_5->u[1] = (uint)local_c8 & g_keepXYZ.u[1];
-    param_5->u[2] = (uint)local_c4 & g_keepXYZ.u[2];
-    param_5->u[3] = (uint)local_c0 & g_keepXYZ.u[3];
-    local_e0 = param_5->v[0];
-    local_dc = param_5->v[1];
-    local_d8 = param_5->v[2];
-    local_d4 = param_5->v[3];
+    local_cc = local_ac * (float)invClipMtx->_padding_ + local_a8 * (float)invClipMtx->_padding_ +
+               local_a4 * (float)invClipMtx->_padding_ + local_a0 * (invClipMtx->w).v[0];
+    local_c8 = local_ac * (float)invClipMtx->_padding_ + local_a8 * (float)invClipMtx->_padding_ +
+               local_a4 * (float)invClipMtx->_padding_ + local_a0 * (invClipMtx->w).v[1];
+    local_c4 = local_ac * (float)invClipMtx->_padding_ + local_a8 * (float)invClipMtx->_padding_ +
+               local_a4 * (float)invClipMtx->_padding_ + local_a0 * (invClipMtx->w).v[2];
+    local_c0 = local_ac * (float)invClipMtx->_padding_ + local_a8 * (float)invClipMtx->_padding_ +
+               local_a4 * (float)invClipMtx->_padding_ + local_a0 * (invClipMtx->w).v[3];
+    outFlatDelta->u[0] = (uint)local_cc & g_keepXYZ.u[0];
+    outFlatDelta->u[1] = (uint)local_c8 & g_keepXYZ.u[1];
+    outFlatDelta->u[2] = (uint)local_c4 & g_keepXYZ.u[2];
+    outFlatDelta->u[3] = (uint)local_c0 & g_keepXYZ.u[3];
+    local_e0 = outFlatDelta->v[0];
+    local_dc = outFlatDelta->v[1];
+    local_d8 = outFlatDelta->v[2];
+    local_d4 = outFlatDelta->v[3];
     local_bc = local_cc;
     local_b8 = local_c8;
     local_b4 = local_c4;
     local_b0 = local_c0;
     fVar4 = Vec4LengthSq(&local_e0);
     if (2e-06 <= fVar4) {
-      fVar4 = 1.0 / SQRT(param_5->v[0] * param_5->v[0] + param_5->v[1] * param_5->v[1] +
-                         param_5->v[2] * param_5->v[2] + param_5->v[3] * param_5->v[3]);
-      param_5->v[0] = param_5->v[0] * fVar4;
-      param_5->v[1] = param_5->v[1] * fVar4;
-      param_5->v[2] = param_5->v[2] * fVar4;
-      param_5->v[3] = param_5->v[3] * fVar4;
+      fVar4 = 1.0 / SQRT(outFlatDelta->v[0] * outFlatDelta->v[0] +
+                         outFlatDelta->v[1] * outFlatDelta->v[1] +
+                         outFlatDelta->v[2] * outFlatDelta->v[2] +
+                         outFlatDelta->v[3] * outFlatDelta->v[3]);
+      outFlatDelta->v[0] = outFlatDelta->v[0] * fVar4;
+      outFlatDelta->v[1] = outFlatDelta->v[1] * fVar4;
+      outFlatDelta->v[2] = outFlatDelta->v[2] * fVar4;
+      outFlatDelta->v[3] = outFlatDelta->v[3] * fVar4;
       bVar2 = true;
     }
     else {
@@ -802,7 +785,7 @@ FX_GenerateBeam_GetFlatDelta
 /* WARNING: Removing unreachable block (ram,0x005c1e70) */
 /* WARNING: Removing unreachable block (ram,0x005c1e95) */
 
-void __cdecl FX_Beam_GenerateVerts(FxGenerateVertsCmd *param_1)
+void __cdecl FX_Beam_GenerateVerts(FxGenerateVertsCmd *cmd)
 
 {
   code *pcVar1;
@@ -812,13 +795,11 @@ void __cdecl FX_Beam_GenerateVerts(FxGenerateVertsCmd *param_1)
   undefined4 uVar5;
   GfxPackedVertex *pGVar6;
   bool bVar7;
-  ushort uVar8;
   int extraout_EAX;
   int extraout_EAX_00;
-  short sVar9;
-  short sVar10;
-  int iVar11;
-  float fVar12;
+  short sVar8;
+  int iVar9;
+  float fVar10;
   uint local_664;
   uint local_660;
   uint local_65c;
@@ -880,7 +861,7 @@ void __cdecl FX_Beam_GenerateVerts(FxGenerateVertsCmd *param_1)
   float local_324;
   float local_320;
   float local_31c;
-  float (*local_314) [4];
+  float4 *local_314;
   float local_310;
   float local_2f4;
   float *local_2f0;
@@ -899,300 +880,307 @@ void __cdecl FX_Beam_GenerateVerts(FxGenerateVertsCmd *param_1)
   uint local_2bc;
   uint local_2b8;
   uint local_2b4;
-  GfxPackedVertex *local_2b0;
-  MaterialInfo local_2ac;
-  int local_27c;
-  float local_278;
-  GfxPackedVertex *local_274;
-  int local_270;
-  float4 *local_26c;
-  GfxPackedVertex *local_268;
-  float local_264;
+  GfxPackedVertex *perp_verts;
+  MaterialInfo mtlInfo_2;
+  int atlasIndex_2;
+  int row_2;
+  float step_2;
+  GfxPackedVertex *basePerp_verts;
+  int col_2;
+  float4 *wiggleVec;
+  GfxPackedVertex *vert2;
+  float scaledWiggle;
   float local_260;
   float local_25c;
   float local_258;
-  int local_254;
-  float local_250;
+  int dim;
+  float basePos;
   float local_24c;
   float local_248;
   float local_244;
-  float local_240;
-  float local_23c;
+  float lerpedRadius;
+  float wiggleYs;
   float local_238;
   float local_234;
   float local_230;
-  GfxPackedVertex *local_22c;
-  float local_228;
-  float local_224;
+  GfxPackedVertex *vert1;
+  float alpha;
+  float wiggleXs;
   float local_220;
   float local_21c;
   float local_218;
-  MaterialInfo local_214;
-  int local_1e8;
-  float local_1e4;
-  int local_1e0;
-  float local_1dc;
-  uint local_1d8;
-  float local_1d4;
-  undefined4 local_1d0;
-  int local_1cc;
-  r_double_index_t *local_1c8;
-  r_double_index_t *local_1c4;
-  float4 local_1c0;
-  uint local_1b0;
-  uint local_1ac;
-  int local_1a8;
-  float local_1a4;
-  float local_1a0;
-  float local_19c;
-  float local_198;
-  float (*local_194) [4];
-  FxBeam *local_190;
-  float local_18c;
-  float4 local_188;
-  float local_178;
+  MaterialInfo mtlInfo;
+  int atlasIndex;
+  int row;
+  float step;
+  int col;
+  float endRadius;
+  int perpSegCount;
+  float perp_sMin;
+  r_double_index_t workingIndex;
+  int indexPairIter;
+  r_double_index_t *baseIndices;
+  r_double_index_t *perp_indices;
+  float4 flatDelta;
+  int segIter;
+  int perp_indexCount;
+  int perp_vertexCount;
+  float t1;
+  float s1;
+  float s2;
+  float perp_tLen;
+  float4 *baseArgs;
+  FxBeam *beam;
+  float tMin;
+  float4 beamWorldEnd;
+  float vertPos;
   float local_174;
   float local_170;
   float local_16c;
-  GfxColor local_168;
-  float local_164;
-  float local_160;
-  int local_15c;
-  float local_158;
-  short local_154;
-  int local_150;
-  uint local_14c;
-  GfxPackedVertex *local_148;
-  float local_144;
+  GfxColor endColor;
+  float beginRadius;
+  float wiggleDist;
+  int vertexCount;
+  float sMin;
+  ushort offset;
+  int segCount;
+  int indexCount;
+  GfxPackedVertex *verts;
+  float beamDot;
   float local_140;
   float local_13c;
   float local_138;
-  float local_134;
-  r_double_index_t *local_130;
-  ushort local_12c [2];
-  float4 local_128;
-  GfxColor local_118;
-  float local_114;
-  uint local_10c;
-  float local_108;
-  float local_104;
-  float local_100;
+  float t2;
+  r_double_index_t *indices;
+  ushort perp_baseVertex;
+  float4 beamWorldBegin;
+  GfxColor beginColor;
+  float perp_sLen;
+  I_spuDmaSave dma_save;
+  GfxColor lerpedColor;
+  float sLen;
+  float perp_tMin;
+  float tpos0;
   float local_fc;
   float local_f8;
   float local_f4;
-  float local_f0;
+  float normDelta;
   float local_ec;
   float local_e8;
   float local_e4;
-  uint local_e0;
-  float local_dc;
-  ushort local_d8 [2];
-  float local_d4;
+  uint argOffset;
+  float tLen;
+  ushort baseVertex;
+  float perpFlatDelta;
   float local_d0;
   float local_cc;
   float local_c8;
-  float (*local_c4) [4];
-  GfxPackedVertex *local_c0;
-  float local_bc;
+  float4 *args;
+  GfxPackedVertex *baseVerts;
+  float tpos1;
   float local_b8;
   float local_b4;
   float local_b0;
-  FxBeamInfo *local_ac;
-  float local_a4;
+  FxBeamInfo *beamInfo;
+  SpuDmaBuffer argsOutBuf;
+  float viewAxis;
   float local_a0;
   float local_9c;
   undefined4 local_98;
-  vector4 local_94;
-  int local_54;
-  float *local_50;
-  vector4 local_4c;
+  vector4 clipMtx;
+  int beamIter;
+  float *segVerts;
+  vector4 invClipMtx;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50 = (float *)0x0;
-  if ((param_1 == (FxGenerateVertsCmd *)0x0) &&
+  segVerts = (float *)0x0;
+  if ((cmd == (FxGenerateVertsCmd *)0x0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_beam.cpp",0x133,0
                                ,"%s"), !bVar7)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->beamInfo == (FxBeamInfo *)0x0) &&
+  if ((cmd->beamInfo == (FxBeamInfo *)0x0) &&
      (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_beam.cpp",0x134,0
                                ,"%s"), !bVar7)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_ac = param_1->beamInfo;
-  CreateClipMatrix(&local_94,param_1->vieworg,param_1->viewaxis);
-  MatrixInverse44((float *)&local_94,(float *)&local_4c);
-  local_2e4 = param_1->viewaxis;
-  local_a4 = (*local_2e4)[0];
-  local_a0 = param_1->viewaxis[0][1];
-  local_9c = param_1->viewaxis[0][2];
+  beamInfo = cmd->beamInfo;
+  CreateClipMatrix(&clipMtx,cmd->vieworg,cmd->viewaxis);
+  MatrixInverse44((float *)&clipMtx,(float *)&invClipMtx);
+  local_2e4 = cmd->viewaxis;
+  viewAxis = (*local_2e4)[0];
+  local_a0 = cmd->viewaxis[0][1];
+  local_9c = cmd->viewaxis[0][2];
   local_98 = 0;
-  local_54 = 0;
+  beamIter = 0;
   do {
-    if (local_54 == local_ac->beamCount) {
+    if (beamIter == beamInfo->beamCount) {
       return;
     }
-    local_1ac = 0;
-    local_1a8 = 0;
-    local_158 = 0.0;
-    local_108 = 1.0;
-    local_18c = 0.0;
-    local_dc = 1.0;
-    local_1d4 = 0.0;
-    local_114 = 1.0;
-    local_104 = 0.0;
-    local_198 = 1.0;
-    local_1c4 = (r_double_index_t *)0x0;
-    local_12c[0] = 0;
-    local_190 = local_ac->beams + local_54;
-    local_164 = local_190->beginRadius;
-    local_1dc = local_190->endRadius;
-    local_150 = local_190->segmentCount;
-    local_1d8 = local_190->perpSegmentCount;
-    local_1c0.v[0] = (float)0;
-    local_1c0.v[1] = (float)0;
-    local_1c0.v[2] = (float)0;
-    local_1c0.v[3] = (float)0;
-    local_128.v[0] = local_190->begin[0];
-    local_128.v[1] = local_190->begin[1];
-    local_128.v[2] = local_190->begin[2];
-    local_128.v[3] = 0.0;
-    local_2e8 = local_190->end;
-    local_188.v[0] = *local_2e8;
-    local_188.v[1] = local_190->end[1];
-    local_188.v[2] = local_190->end[2];
-    local_188.v[3] = 0.0;
-    local_14c = (local_150 * 2 + 2) * 3;
-    local_15c = local_150 * 2 + 4;
-    if (local_190->segmentVerts != (float *)0x0) {
-      local_50 = local_190->segmentVerts;
+    perp_indexCount = 0;
+    perp_vertexCount = 0;
+    sMin = 0.0;
+    sLen = 1.0;
+    tMin = 0.0;
+    tLen = 1.0;
+    perp_sMin = 0.0;
+    perp_sLen = 1.0;
+    perp_tMin = 0.0;
+    perp_tLen = 1.0;
+    perp_indices = (r_double_index_t *)0x0;
+    perp_baseVertex = 0;
+    beam = beamInfo->beams + beamIter;
+    beginRadius = beam->beginRadius;
+    endRadius = beam->endRadius;
+    segCount = beam->segmentCount;
+    perpSegCount = beam->perpSegmentCount;
+    flatDelta.v[0] = (float)0;
+    flatDelta.v[1] = (float)0;
+    flatDelta.v[2] = (float)0;
+    flatDelta.v[3] = (float)0;
+    beamWorldBegin.v[0] = beam->begin[0];
+    beamWorldBegin.v[1] = beam->begin[1];
+    beamWorldBegin.v[2] = beam->begin[2];
+    beamWorldBegin.v[3] = 0.0;
+    local_2e8 = beam->end;
+    beamWorldEnd.v[0] = *local_2e8;
+    beamWorldEnd.v[1] = beam->end[1];
+    beamWorldEnd.v[2] = beam->end[2];
+    beamWorldEnd.v[3] = 0.0;
+    indexCount = (segCount * 2 + 2) * 3;
+    vertexCount = segCount * 2 + 4;
+    if (beam->segmentVerts != (float *)0x0) {
+      segVerts = beam->segmentVerts;
     }
-    if ((local_190->flags & 8U) == 0) {
-      bVar7 = FX_GenerateBeam_GetFlatDelta(&local_94,&local_4c,&local_128,&local_188,&local_1c0);
+    if ((beam->flags & 8U) == 0) {
+      bVar7 = FX_GenerateBeam_GetFlatDelta
+                        (&clipMtx,&invClipMtx,&beamWorldBegin,&beamWorldEnd,&flatDelta);
       if (bVar7) goto LAB_005c0d4e;
     }
     else {
-      if ((local_50 == (float *)0x0) &&
+      if ((segVerts == (float *)0x0) &&
          (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_beam.cpp",
                                    0x17e,0,"%s"), !bVar7)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_128.v[0] = *local_50;
-      local_128.v[1] = local_50[1];
-      local_128.v[2] = local_50[2];
-      local_128.v[3] = 0.0;
-      local_2ec = local_50 + (local_150 / 3) * 3;
-      local_188.v[0] = *local_2ec;
-      local_188.v[1] = local_2ec[1];
-      local_188.v[2] = local_2ec[2];
-      local_188.v[3] = 0.0;
-      bVar7 = FX_GenerateBeam_GetFlatDelta(&local_94,&local_4c,&local_128,&local_188,&local_1c0);
+      beamWorldBegin.v[0] = *segVerts;
+      beamWorldBegin.v[1] = segVerts[1];
+      beamWorldBegin.v[2] = segVerts[2];
+      beamWorldBegin.v[3] = 0.0;
+      local_2ec = segVerts + (segCount / 3) * 3;
+      beamWorldEnd.v[0] = *local_2ec;
+      beamWorldEnd.v[1] = local_2ec[1];
+      beamWorldEnd.v[2] = local_2ec[2];
+      beamWorldEnd.v[3] = 0.0;
+      bVar7 = FX_GenerateBeam_GetFlatDelta
+                        (&clipMtx,&invClipMtx,&beamWorldBegin,&beamWorldEnd,&flatDelta);
       if (bVar7) {
-        local_128.v[0] = local_190->begin[0];
-        local_128.v[1] = local_190->begin[1];
-        local_128.v[2] = local_190->begin[2];
-        local_128.v[3] = 0.0;
-        local_2f0 = local_190->end;
-        local_188.v[0] = *local_2f0;
-        local_188.v[1] = local_190->end[1];
-        local_188.v[2] = local_190->end[2];
-        local_188.v[3] = 0.0;
+        beamWorldBegin.v[0] = beam->begin[0];
+        beamWorldBegin.v[1] = beam->begin[1];
+        beamWorldBegin.v[2] = beam->begin[2];
+        beamWorldBegin.v[3] = 0.0;
+        local_2f0 = beam->end;
+        beamWorldEnd.v[0] = *local_2f0;
+        beamWorldEnd.v[1] = beam->end[1];
+        beamWorldEnd.v[2] = beam->end[2];
+        beamWorldEnd.v[3] = 0.0;
 LAB_005c0d4e:
-        bVar7 = R_ReserveCodeMeshIndices(local_14c,&local_1c8);
+        bVar7 = R_ReserveCodeMeshIndices(indexCount,&baseIndices);
         if (!bVar7) {
           return;
         }
-        bVar7 = R_ReserveCodeMeshVerts(local_15c,local_d8);
+        bVar7 = R_ReserveCodeMeshVerts(vertexCount,&baseVertex);
         if (!bVar7) {
           return;
         }
-        bVar7 = R_ReserveCodeMeshArgs(2,&local_e0);
+        bVar7 = R_ReserveCodeMeshArgs(2,&argOffset);
         if (!bVar7) {
           return;
         }
-        local_130 = local_1c8;
-        local_1d0 = CONCAT22(local_d8[0] + 2,local_d8[0]);
-        *(undefined4 *)local_1c8->value = local_1d0;
-        local_1cc = 1;
-        sVar9 = local_d8[0] + 1;
-        for (local_1b0 = 0; local_1b0 != local_150; local_1b0 = local_1b0 + 1) {
-          sVar10 = (short)(local_1b0 << 1);
-          local_1d0 = CONCAT22(local_d8[0] + 2 + sVar10,sVar9);
-          *(undefined4 *)local_1c8[local_1cc].value = local_1d0;
-          local_1d0 = CONCAT22(local_d8[0] + 1 + sVar10,local_d8[0] + 4 + sVar10);
-          *(undefined4 *)local_1c8[local_1cc + 1].value = local_1d0;
-          local_1d0 = CONCAT22(local_d8[0] + 4 + sVar10,local_d8[0] + 1 + sVar10);
-          *(undefined4 *)local_1c8[local_1cc + 2].value = local_1d0;
-          local_1cc = local_1cc + 3;
-          sVar9 = local_d8[0] + 3 + sVar10;
+        indices = baseIndices;
+        workingIndex.value[1] = baseVertex + 2;
+        workingIndex.value[0] = baseVertex;
+        *(r_double_index_t *)baseIndices->value = workingIndex;
+        indexPairIter = 1;
+        workingIndex.value[0] = baseVertex + 1;
+        for (segIter = 0; segIter != segCount; segIter = segIter + 1) {
+          sVar8 = (short)(segIter << 1);
+          workingIndex.value[1] = baseVertex + 2 + sVar8;
+          *&baseIndices[indexPairIter].value = workingIndex.value;
+          workingIndex.value[1] = baseVertex + 1 + sVar8;
+          workingIndex.value[0] = baseVertex + 4 + sVar8;
+          *&baseIndices[indexPairIter + 1].value = workingIndex.value;
+          workingIndex.value[1] = baseVertex + 4 + sVar8;
+          workingIndex.value[0] = baseVertex + 1 + sVar8;
+          *&baseIndices[indexPairIter + 2].value = workingIndex.value;
+          indexPairIter = indexPairIter + 3;
+          workingIndex.value[0] = baseVertex + 3 + sVar8;
         }
-        local_154 = (short)local_150 * 2 + -2;
-        local_1d0 = CONCAT22(local_d8[0] + 3 + local_154,sVar9);
-        *(undefined4 *)local_1c8[local_1cc].value = local_1d0;
-        local_1cc = local_1cc + 1;
-        uVar8 = local_d8[0] + 5 + local_154;
-        local_1d0 = CONCAT22(uVar8,local_d8[0] + 4 + local_154);
-        *(undefined4 *)local_1c8[local_1cc].value = local_1d0;
-        if (((uint)uVar8 != (local_d8[0] - 1) + local_15c) &&
+        offset = (short)segCount * 2 - 2;
+        workingIndex.value[1] = baseVertex + 3 + offset;
+        *&baseIndices[indexPairIter].value = workingIndex.value;
+        workingIndex.value[1] = baseVertex + 5 + offset;
+        workingIndex.value[0] = baseVertex + 4 + offset;
+        *&baseIndices[indexPairIter + 1].value = workingIndex.value;
+        if (((uint)workingIndex.value[1] != (baseVertex - 1) + vertexCount) &&
            (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_beam.cpp",
                                      0x1b6,0,"%s"), !bVar7)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_1cc = local_1cc + 1;
-        if ((local_1cc != (int)local_14c / 2) &&
+        if ((indexPairIter + 2 != indexCount / 2) &&
            (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_beam.cpp",
                                      0x1b9,0,"%s"), !bVar7)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        Material_GetInfo(local_190->material,&local_214);
-        if ((1 < local_214.textureAtlasColumnCount) || (1 < local_214.textureAtlasRowCount)) {
-          local_2f4 = (float)((uint)local_214.textureAtlasColumnCount *
-                             (uint)local_214.textureAtlasRowCount) * local_190->animFrac;
+        Material_GetInfo(beam->material,&mtlInfo);
+        if ((1 < mtlInfo.textureAtlasColumnCount) || (1 < mtlInfo.textureAtlasRowCount)) {
+          local_2f4 = (float)((uint)mtlInfo.textureAtlasColumnCount *
+                             (uint)mtlInfo.textureAtlasRowCount) * beam->animFrac;
           floor();
           _ftol2_sse();
-          local_1e8 = extraout_EAX / (int)(uint)local_214.textureAtlasColumnCount;
-          local_1e0 = extraout_EAX % (int)(uint)local_214.textureAtlasColumnCount;
-          local_108 = 1.0 / (float)local_214.textureAtlasColumnCount;
-          local_158 = (float)local_1e0 * local_108;
-          local_1e4 = 1.0 / (float)local_214.textureAtlasRowCount;
-          local_18c = (float)local_1e8 * local_1e4;
-          local_dc = local_1e4;
+          row = extraout_EAX / (int)(uint)mtlInfo.textureAtlasColumnCount;
+          col = extraout_EAX % (int)(uint)mtlInfo.textureAtlasColumnCount;
+          sLen = 1.0 / (float)mtlInfo.textureAtlasColumnCount;
+          sMin = (float)col * sLen;
+          step = 1.0 / (float)mtlInfo.textureAtlasRowCount;
+          tMin = (float)row * step;
+          tLen = step;
         }
-        local_194 = R_GetCodeMeshArgs(local_e0);
-        local_c0 = R_GetCodeMeshVerts(local_d8[0]);
-        Vec3Cross(local_1c0.v,&local_a4,&local_d4);
+        baseArgs = (float4 *)R_GetCodeMeshArgs(argOffset);
+        baseVerts = R_GetCodeMeshVerts(baseVertex);
+        Vec3Cross(flatDelta.v,&viewAxis,&perpFlatDelta);
         local_c8 = 0.0;
-        Vec3NormalizeTo(&local_d4,&local_d4);
+        Vec3NormalizeTo(&perpFlatDelta,&perpFlatDelta);
         local_c8 = 0.0;
-        local_f0 = local_188.v[0] - local_128.v[0];
-        local_ec = local_188.v[1] - local_128.v[1];
-        local_e8 = local_188.v[2] - local_128.v[2];
-        local_e4 = local_188.v[3] - local_128.v[3];
-        Vec3NormalizeTo(&local_f0,&local_f0);
+        normDelta = beamWorldEnd.v[0] - beamWorldBegin.v[0];
+        local_ec = beamWorldEnd.v[1] - beamWorldBegin.v[1];
+        local_e8 = beamWorldEnd.v[2] - beamWorldBegin.v[2];
+        local_e4 = beamWorldEnd.v[3] - beamWorldBegin.v[3];
+        Vec3NormalizeTo(&normDelta,&normDelta);
         uVar5 = g_swizzleXYZA.v[3];
         uVar4 = g_swizzleXYZA.v[2];
         uVar3 = g_swizzleXYZA.v[1];
         uVar2 = g_swizzleXYZA.v[0];
         local_e4 = 0.0;
-        local_310 = local_128.v[0] * local_f0 + local_128.v[1] * local_ec +
-                    local_128.v[2] * local_e8;
-        local_144 = -local_310;
+        local_310 = beamWorldBegin.v[0] * normDelta + beamWorldBegin.v[1] * local_ec +
+                    beamWorldBegin.v[2] * local_e8;
+        beamDot = -local_310;
         local_140 = -local_310;
         local_13c = -local_310;
         local_138 = -local_310;
-        local_c4 = local_194;
-        local_348 = local_f0;
+        args = baseArgs;
+        local_348 = normDelta;
         local_344 = local_ec;
         local_340 = local_e8;
         local_33c = 0;
@@ -1204,61 +1192,61 @@ LAB_005c0d4e:
         local_324 = g_swizzleXYZA.v[1];
         local_320 = g_swizzleXYZA.v[2];
         local_31c = g_swizzleXYZA.v[3];
-        local_314 = local_194;
-        *(undefined1 *)*local_194 = *(undefined1 *)((int)&local_348 + (g_swizzleXYZA.u[0] >> 0x18));
-        *(undefined1 *)((int)*local_194 + 1) =
+        local_314 = baseArgs;
+        *(undefined1 *)baseArgs = *(undefined1 *)((int)&local_348 + (g_swizzleXYZA.u[0] >> 0x18));
+        *(undefined1 *)((int)baseArgs + 1) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar2 >> 0x10 & 0xff));
-        *(undefined1 *)((int)*local_194 + 2) =
+        *(undefined1 *)((int)baseArgs + 2) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar2 >> 8 & 0xff));
-        *(undefined1 *)((int)*local_194 + 3) = *(undefined1 *)((int)&local_348 + (uVar2 & 0xff));
-        *(undefined1 *)(*local_194 + 1) = *(undefined1 *)((int)&local_348 + ((uint)uVar3 >> 0x18));
-        *(undefined1 *)((int)*local_194 + 5) =
+        *(undefined1 *)((int)baseArgs + 3) = *(undefined1 *)((int)&local_348 + (uVar2 & 0xff));
+        *(undefined1 *)(baseArgs->v + 1) = *(undefined1 *)((int)&local_348 + ((uint)uVar3 >> 0x18));
+        *(undefined1 *)((int)baseArgs + 5) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar3 >> 0x10 & 0xff));
-        *(undefined1 *)((int)*local_194 + 6) =
+        *(undefined1 *)((int)baseArgs + 6) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar3 >> 8 & 0xff));
-        *(undefined1 *)((int)*local_194 + 7) = *(undefined1 *)((int)&local_348 + (uVar3 & 0xff));
-        *(undefined1 *)(*local_194 + 2) = *(undefined1 *)((int)&local_348 + ((uint)uVar4 >> 0x18));
-        *(undefined1 *)((int)*local_194 + 9) =
+        *(undefined1 *)((int)baseArgs + 7) = *(undefined1 *)((int)&local_348 + (uVar3 & 0xff));
+        *(undefined1 *)(baseArgs->v + 2) = *(undefined1 *)((int)&local_348 + ((uint)uVar4 >> 0x18));
+        *(undefined1 *)((int)baseArgs + 9) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar4 >> 0x10 & 0xff));
-        *(undefined1 *)((int)*local_194 + 10) =
+        *(undefined1 *)((int)baseArgs + 10) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar4 >> 8 & 0xff));
-        *(undefined1 *)((int)*local_194 + 0xb) = *(undefined1 *)((int)&local_348 + (uVar4 & 0xff));
-        *(undefined1 *)(*local_194 + 3) = *(undefined1 *)((int)&local_348 + ((uint)uVar5 >> 0x18));
-        *(undefined1 *)((int)*local_194 + 0xd) =
+        *(undefined1 *)((int)baseArgs + 0xb) = *(undefined1 *)((int)&local_348 + (uVar4 & 0xff));
+        *(undefined1 *)(baseArgs->v + 3) = *(undefined1 *)((int)&local_348 + ((uint)uVar5 >> 0x18));
+        *(undefined1 *)((int)baseArgs + 0xd) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar5 >> 0x10 & 0xff));
-        *(undefined1 *)((int)*local_194 + 0xe) =
+        *(undefined1 *)((int)baseArgs + 0xe) =
              *(undefined1 *)((int)&local_348 + ((uint)uVar5 >> 8 & 0xff));
-        *(undefined1 *)((int)*local_194 + 0xf) = *(undefined1 *)((int)&local_348 + (uVar5 & 0xff));
-        local_194[1][0] = (float)0;
-        local_194[1][1] = (float)0;
-        local_194[1][2] = (float)0;
-        local_194[1][3] = (float)0x3f800000;
-        local_194[1][0] = local_194[1][0] + local_128.v[0];
-        local_194[1][1] = local_194[1][1] + local_128.v[1];
-        local_194[1][2] = local_194[1][2] + local_128.v[2];
-        local_194[1][3] = local_194[1][3] + local_128.v[3];
-        local_118 = local_190->beginColor;
-        local_168 = local_190->endColor;
-        local_178 = local_1c0.v[0] * 0.0 + local_128.v[0];
-        local_174 = local_1c0.v[1] * 0.0 + local_128.v[1];
-        local_170 = local_1c0.v[2] * 0.0 + local_128.v[2];
-        local_16c = local_1c0.v[3] * 0.0 + local_128.v[3];
-        local_c0->xyz[0] = local_178;
-        local_c0->xyz[1] = local_174;
-        local_c0->xyz[2] = local_170;
-        local_c0->color = local_118;
-        local_c0->binormalSign = 1.0;
-        (local_c0->normal).packed = 0x3ffe7f7f;
-        (local_c0->tangent).packed = 0x3f7f7ffe;
-        (local_c0->texCoord).packed = 0;
-        if ((local_190->flags & 1U) == 0) {
-          if ((local_190->flags & 2U) == 0) {
-            (local_c0->texCoord).packed = 0;
+        *(undefined1 *)((int)baseArgs + 0xf) = *(undefined1 *)((int)&local_348 + (uVar5 & 0xff));
+        baseArgs[1].v[0] = (float)0;
+        *(undefined4 *)((int)baseArgs + 0x14) = 0;
+        *(undefined4 *)((int)baseArgs + 0x18) = 0;
+        *(undefined4 *)((int)baseArgs + 0x1c) = 0x3f800000;
+        baseArgs[1].v[0] = baseArgs[1].v[0] + beamWorldBegin.v[0];
+        *(float *)((int)baseArgs + 0x14) = *(float *)((int)baseArgs + 0x14) + beamWorldBegin.v[1];
+        *(float *)((int)baseArgs + 0x18) = *(float *)((int)baseArgs + 0x18) + beamWorldBegin.v[2];
+        *(float *)((int)baseArgs + 0x1c) = *(float *)((int)baseArgs + 0x1c) + beamWorldBegin.v[3];
+        beginColor = beam->beginColor;
+        endColor = beam->endColor;
+        vertPos = flatDelta.v[0] * 0.0 + beamWorldBegin.v[0];
+        local_174 = flatDelta.v[1] * 0.0 + beamWorldBegin.v[1];
+        local_170 = flatDelta.v[2] * 0.0 + beamWorldBegin.v[2];
+        local_16c = flatDelta.v[3] * 0.0 + beamWorldBegin.v[3];
+        baseVerts->xyz[0] = vertPos;
+        baseVerts->xyz[1] = local_174;
+        baseVerts->xyz[2] = local_170;
+        baseVerts->color = beginColor;
+        baseVerts->binormalSign = 1.0;
+        (baseVerts->normal).packed = 0x3ffe7f7f;
+        (baseVerts->tangent).packed = 0x3f7f7ffe;
+        (baseVerts->texCoord).packed = 0;
+        if ((beam->flags & 1U) == 0) {
+          if ((beam->flags & 2U) == 0) {
+            (baseVerts->texCoord).packed = 0;
           }
           else {
-            local_1a0 = local_108 * 0.5 + local_158;
-            local_1a4 = local_18c + local_dc;
-            local_3a4 = (int)((int)local_1a0 << 1 ^ 0x80000000U) >> 0xe;
+            s1 = sLen * 0.5 + sMin;
+            t1 = tMin + tLen;
+            local_3a4 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_3a4) {
               local_3a4 = 0x3fff;
             }
@@ -1268,7 +1256,7 @@ LAB_005c0d4e:
             else {
               local_60c = local_3a4;
             }
-            local_3b8 = (int)((int)local_1a4 << 1 ^ 0x80000000U) >> 0xe;
+            local_3b8 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_3b8) {
               local_3b8 = 0x3fff;
             }
@@ -1278,15 +1266,15 @@ LAB_005c0d4e:
             else {
               local_610 = local_3b8;
             }
-            local_2b8 = ((int)local_1a0 >> 0x10 & 0xc000U | local_60c & 0x3fff) * 0x10000 +
-                        ((int)local_1a4 >> 0x10 & 0xc000U | local_610 & 0x3fff);
-            (local_c0->texCoord).packed = local_2b8;
+            local_2b8 = ((int)s1 >> 0x10 & 0xc000U | local_60c & 0x3fff) * 0x10000 +
+                        ((int)t1 >> 0x10 & 0xc000U | local_610 & 0x3fff);
+            (baseVerts->texCoord).packed = local_2b8;
           }
         }
         else {
-          local_1a0 = local_158;
-          local_1a4 = local_dc * 0.5 + local_18c;
-          local_370 = (int)((int)local_158 << 1 ^ 0x80000000U) >> 0xe;
+          s1 = sMin;
+          t1 = tLen * 0.5 + tMin;
+          local_370 = (int)((int)sMin << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_370) {
             local_370 = 0x3fff;
           }
@@ -1296,7 +1284,7 @@ LAB_005c0d4e:
           else {
             local_604 = local_370;
           }
-          local_384 = (int)((int)local_1a4 << 1 ^ 0x80000000U) >> 0xe;
+          local_384 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_384) {
             local_384 = 0x3fff;
           }
@@ -1306,99 +1294,98 @@ LAB_005c0d4e:
           else {
             local_608 = local_384;
           }
-          local_2b4 = ((int)local_158 >> 0x10 & 0xc000U | local_604 & 0x3fff) * 0x10000 +
-                      ((int)local_1a4 >> 0x10 & 0xc000U | local_608 & 0x3fff);
-          (local_c0->texCoord).packed = local_2b4;
+          local_2b4 = ((int)sMin >> 0x10 & 0xc000U | local_604 & 0x3fff) * 0x10000 +
+                      ((int)t1 >> 0x10 & 0xc000U | local_608 & 0x3fff);
+          (baseVerts->texCoord).packed = local_2b4;
         }
-        local_148 = local_c0 + 1;
-        local_160 = local_190->wiggleDist;
-        local_10c = 0xffffffff;
-        for (local_1b0 = 0; pGVar6 = local_148, (int)local_1b0 <= local_150;
-            local_1b0 = local_1b0 + 1) {
-          local_228 = (float)(int)local_1b0 / (float)local_150;
-          iVar11 = (local_1b0 % 8) * 0x10;
-          local_26c = wiggle + local_1b0 % 8;
-          local_264 = local_160 * wiggle[local_1b0 % 8].v[0];
-          local_260 = local_160 * *(float *)((int)wiggle + iVar11 + 4);
-          local_25c = local_160 * *(float *)((int)wiggle + iVar11 + 8);
-          local_258 = local_160 * *(float *)((int)wiggle + iVar11 + 0xc);
-          local_224 = local_264;
-          local_220 = local_264;
-          local_21c = local_264;
-          local_218 = local_264;
-          local_23c = local_260;
+        verts = baseVerts + 1;
+        wiggleDist = beam->wiggleDist;
+        lerpedColor.packed = 0xffffffff;
+        for (segIter = 0; pGVar6 = verts, segIter <= segCount; segIter = segIter + 1) {
+          alpha = (float)segIter / (float)segCount;
+          iVar9 = ((uint)segIter % 8) * 0x10;
+          wiggleVec = wiggle + (uint)segIter % 8;
+          scaledWiggle = wiggleDist * wiggle[(uint)segIter % 8].v[0];
+          local_260 = wiggleDist * *(float *)((int)wiggle + iVar9 + 4);
+          local_25c = wiggleDist * *(float *)((int)wiggle + iVar9 + 8);
+          local_258 = wiggleDist * *(float *)((int)wiggle + iVar9 + 0xc);
+          wiggleXs = scaledWiggle;
+          local_220 = scaledWiggle;
+          local_21c = scaledWiggle;
+          local_218 = scaledWiggle;
+          wiggleYs = local_260;
           local_238 = local_260;
           local_234 = local_260;
           local_230 = local_260;
-          for (local_254 = 0; local_254 != 4; local_254 = local_254 + 1) {
-            local_3c4 = (int)((float)local_118.array[local_254] +
-                             (float)(int)((uint)local_168.array[local_254] -
-                                         (uint)local_118.array[local_254]) * local_228);
+          for (dim = 0; dim != 4; dim = dim + 1) {
+            local_3c4 = (int)((float)beginColor.array[dim] +
+                             (float)(int)((uint)endColor.array[dim] - (uint)beginColor.array[dim]) *
+                             alpha);
             if (local_3c4 < 0) {
               local_3c4 = 0;
             }
             else if (0xff < local_3c4) {
               local_3c4 = 0xff;
             }
-            *(undefined1 *)((int)&local_10c + local_254) = (undefined1)local_3c4;
+            lerpedColor.array[dim] = (uchar)local_3c4;
           }
-          local_240 = (local_1dc - local_164) * local_228 + local_164;
-          if (local_50 == (float *)0x0) {
-            local_250 = local_228 * (local_188.v[0] - local_128.v[0]) + local_128.v[0];
-            local_24c = local_228 * (local_188.v[1] - local_128.v[1]) + local_128.v[1];
-            local_248 = local_228 * (local_188.v[2] - local_128.v[2]) + local_128.v[2];
-            local_244 = local_228 * (local_188.v[3] - local_128.v[3]) + local_128.v[3];
+          lerpedRadius = (endRadius - beginRadius) * alpha + beginRadius;
+          if (segVerts == (float *)0x0) {
+            basePos = alpha * (beamWorldEnd.v[0] - beamWorldBegin.v[0]) + beamWorldBegin.v[0];
+            local_24c = alpha * (beamWorldEnd.v[1] - beamWorldBegin.v[1]) + beamWorldBegin.v[1];
+            local_248 = alpha * (beamWorldEnd.v[2] - beamWorldBegin.v[2]) + beamWorldBegin.v[2];
+            local_244 = alpha * (beamWorldEnd.v[3] - beamWorldBegin.v[3]) + beamWorldBegin.v[3];
           }
           else {
-            local_250 = *local_50;
-            local_24c = local_50[1];
-            local_248 = local_50[2];
+            basePos = *segVerts;
+            local_24c = segVerts[1];
+            local_248 = segVerts[2];
             local_244 = 0.0;
-            local_50 = local_50 + 3;
+            segVerts = segVerts + 3;
           }
-          local_250 = local_260 * local_1c0.v[0] + local_264 * local_d4 + local_250;
-          local_24c = local_260 * local_1c0.v[1] + local_264 * local_d0 + local_24c;
-          local_248 = local_260 * local_1c0.v[2] + local_264 * local_cc + local_248;
-          local_244 = local_260 * local_1c0.v[3] + local_264 * local_c8 + local_244;
-          fVar12 = -local_240;
-          local_100 = fVar12 * local_d4 + local_250;
-          local_fc = fVar12 * local_d0 + local_24c;
-          local_f8 = fVar12 * local_cc + local_248;
-          local_f4 = fVar12 * local_c8 + local_244;
-          local_bc = local_240 * local_d4 + local_250;
-          local_b8 = local_240 * local_d0 + local_24c;
-          local_b4 = local_240 * local_cc + local_248;
-          local_b0 = local_240 * local_c8 + local_244;
-          local_22c = local_148;
-          local_148->xyz[0] = local_100;
-          local_148->xyz[1] = local_fc;
-          local_148->xyz[2] = local_f8;
-          (local_148->color).packed = local_10c;
-          local_148->binormalSign = 1.0;
-          (local_148->normal).packed = 0x3ffe7f7f;
-          (local_148->tangent).packed = 0x3f7f7ffe;
-          (local_148->texCoord).packed = 0x3c00;
-          local_148[1].xyz[0] = local_bc;
-          local_148[1].xyz[1] = local_b8;
-          local_148[1].xyz[2] = local_b4;
-          local_268 = local_148 + 1;
-          local_148[1].color.packed = local_10c;
-          local_148[1].binormalSign = 1.0;
-          local_148[1].normal.packed = 0x3ffe7f7f;
-          local_148[1].tangent.packed = 0x3f7f7ffe;
-          local_148[1].texCoord.packed = 0x3c000000;
-          local_148 = local_148 + 2;
-          if ((local_190->flags & 1U) == 0) {
-            if ((local_190->flags & 2U) == 0) {
+          basePos = local_260 * flatDelta.v[0] + scaledWiggle * perpFlatDelta + basePos;
+          local_24c = local_260 * flatDelta.v[1] + scaledWiggle * local_d0 + local_24c;
+          local_248 = local_260 * flatDelta.v[2] + scaledWiggle * local_cc + local_248;
+          local_244 = local_260 * flatDelta.v[3] + scaledWiggle * local_c8 + local_244;
+          fVar10 = -lerpedRadius;
+          tpos0 = fVar10 * perpFlatDelta + basePos;
+          local_fc = fVar10 * local_d0 + local_24c;
+          local_f8 = fVar10 * local_cc + local_248;
+          local_f4 = fVar10 * local_c8 + local_244;
+          tpos1 = lerpedRadius * perpFlatDelta + basePos;
+          local_b8 = lerpedRadius * local_d0 + local_24c;
+          local_b4 = lerpedRadius * local_cc + local_248;
+          local_b0 = lerpedRadius * local_c8 + local_244;
+          vert1 = verts;
+          verts->xyz[0] = tpos0;
+          verts->xyz[1] = local_fc;
+          verts->xyz[2] = local_f8;
+          verts->color = lerpedColor;
+          verts->binormalSign = 1.0;
+          (verts->normal).packed = 0x3ffe7f7f;
+          (verts->tangent).packed = 0x3f7f7ffe;
+          (verts->texCoord).packed = 0x3c00;
+          verts[1].xyz[0] = tpos1;
+          verts[1].xyz[1] = local_b8;
+          verts[1].xyz[2] = local_b4;
+          vert2 = verts + 1;
+          verts[1].color = lerpedColor;
+          verts[1].binormalSign = 1.0;
+          verts[1].normal.packed = 0x3ffe7f7f;
+          verts[1].tangent.packed = 0x3f7f7ffe;
+          verts[1].texCoord.packed = 0x3c000000;
+          verts = verts + 2;
+          if ((beam->flags & 1U) == 0) {
+            if ((beam->flags & 2U) == 0) {
               (pGVar6->texCoord).packed = 0x3c00;
               pGVar6[1].texCoord.packed = 0x3c000000;
             }
             else {
-              local_1a0 = local_158;
-              local_19c = local_158 + local_108;
-              local_1a4 = (1.0 - (float)(int)local_1b0 / (float)local_150) * local_dc + local_18c;
-              local_134 = local_1a4;
-              local_460 = (int)((int)local_158 << 1 ^ 0x80000000U) >> 0xe;
+              s1 = sMin;
+              s2 = sMin + sLen;
+              t1 = (1.0 - (float)segIter / (float)segCount) * tLen + tMin;
+              t2 = t1;
+              local_460 = (int)((int)sMin << 1 ^ 0x80000000U) >> 0xe;
               if (0x3ffe < (int)local_460) {
                 local_460 = 0x3fff;
               }
@@ -1408,7 +1395,7 @@ LAB_005c0d4e:
               else {
                 local_624 = local_460;
               }
-              local_474 = (int)((int)local_1a4 << 1 ^ 0x80000000U) >> 0xe;
+              local_474 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
               if (0x3ffe < (int)local_474) {
                 local_474 = 0x3fff;
               }
@@ -1418,10 +1405,10 @@ LAB_005c0d4e:
               else {
                 local_628 = local_474;
               }
-              local_2c4 = ((int)local_158 >> 0x10 & 0xc000U | local_624 & 0x3fff) * 0x10000 +
-                          ((int)local_1a4 >> 0x10 & 0xc000U | local_628 & 0x3fff);
+              local_2c4 = ((int)sMin >> 0x10 & 0xc000U | local_624 & 0x3fff) * 0x10000 +
+                          ((int)t1 >> 0x10 & 0xc000U | local_628 & 0x3fff);
               (pGVar6->texCoord).packed = local_2c4;
-              local_494 = (int)((int)local_19c << 1 ^ 0x80000000U) >> 0xe;
+              local_494 = (int)((int)s2 << 1 ^ 0x80000000U) >> 0xe;
               if (0x3ffe < (int)local_494) {
                 local_494 = 0x3fff;
               }
@@ -1431,7 +1418,7 @@ LAB_005c0d4e:
               else {
                 local_62c = local_494;
               }
-              local_4a8 = (int)((int)local_1a4 << 1 ^ 0x80000000U) >> 0xe;
+              local_4a8 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
               if (0x3ffe < (int)local_4a8) {
                 local_4a8 = 0x3fff;
               }
@@ -1441,17 +1428,17 @@ LAB_005c0d4e:
               else {
                 local_630 = local_4a8;
               }
-              local_2c8 = ((int)local_19c >> 0x10 & 0xc000U | local_62c & 0x3fff) * 0x10000 +
-                          ((int)local_1a4 >> 0x10 & 0xc000U | local_630 & 0x3fff);
+              local_2c8 = ((int)s2 >> 0x10 & 0xc000U | local_62c & 0x3fff) * 0x10000 +
+                          ((int)t1 >> 0x10 & 0xc000U | local_630 & 0x3fff);
               pGVar6[1].texCoord.packed = local_2c8;
             }
           }
           else {
-            local_1a0 = ((float)(int)local_1b0 * local_108) / (float)local_150 + local_158;
-            local_19c = local_1a0;
-            local_1a4 = local_18c;
-            local_134 = local_18c + local_dc;
-            local_3f8 = (int)((int)local_1a0 << 1 ^ 0x80000000U) >> 0xe;
+            s1 = ((float)segIter * sLen) / (float)segCount + sMin;
+            s2 = s1;
+            t1 = tMin;
+            t2 = tMin + tLen;
+            local_3f8 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_3f8) {
               local_3f8 = 0x3fff;
             }
@@ -1461,7 +1448,7 @@ LAB_005c0d4e:
             else {
               local_614 = local_3f8;
             }
-            local_40c = (int)((int)local_18c << 1 ^ 0x80000000U) >> 0xe;
+            local_40c = (int)((int)tMin << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_40c) {
               local_40c = 0x3fff;
             }
@@ -1471,10 +1458,10 @@ LAB_005c0d4e:
             else {
               local_618 = local_40c;
             }
-            local_2bc = ((int)local_1a0 >> 0x10 & 0xc000U | local_614 & 0x3fff) * 0x10000 +
-                        ((int)local_18c >> 0x10 & 0xc000U | local_618 & 0x3fff);
+            local_2bc = ((int)s1 >> 0x10 & 0xc000U | local_614 & 0x3fff) * 0x10000 +
+                        ((int)tMin >> 0x10 & 0xc000U | local_618 & 0x3fff);
             (pGVar6->texCoord).packed = local_2bc;
-            local_42c = (int)((int)local_1a0 << 1 ^ 0x80000000U) >> 0xe;
+            local_42c = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_42c) {
               local_42c = 0x3fff;
             }
@@ -1484,7 +1471,7 @@ LAB_005c0d4e:
             else {
               local_61c = local_42c;
             }
-            local_440 = (int)((int)local_134 << 1 ^ 0x80000000U) >> 0xe;
+            local_440 = (int)((int)t2 << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_440) {
               local_440 = 0x3fff;
             }
@@ -1494,31 +1481,31 @@ LAB_005c0d4e:
             else {
               local_620 = local_440;
             }
-            local_2c0 = ((int)local_1a0 >> 0x10 & 0xc000U | local_61c & 0x3fff) * 0x10000 +
-                        ((int)local_134 >> 0x10 & 0xc000U | local_620 & 0x3fff);
+            local_2c0 = ((int)s1 >> 0x10 & 0xc000U | local_61c & 0x3fff) * 0x10000 +
+                        ((int)t2 >> 0x10 & 0xc000U | local_620 & 0x3fff);
             pGVar6[1].texCoord.packed = local_2c0;
           }
         }
-        local_100 = local_1c0.v[0] * 0.0 + local_188.v[0];
-        local_fc = local_1c0.v[1] * 0.0 + local_188.v[1];
-        local_f8 = local_1c0.v[2] * 0.0 + local_188.v[2];
-        local_f4 = local_1c0.v[3] * 0.0 + local_188.v[3];
-        local_148->xyz[0] = local_100;
-        local_148->xyz[1] = local_fc;
-        local_148->xyz[2] = local_f8;
-        local_148->color = local_168;
-        local_148->binormalSign = 1.0;
-        (local_148->normal).packed = 0x3ffe7f7f;
-        (local_148->tangent).packed = 0x3f7f7ffe;
-        (local_148->texCoord).packed = 0x3c003c00;
-        if ((local_190->flags & 1U) == 0) {
-          if ((local_190->flags & 2U) == 0) {
-            (local_148->texCoord).packed = 0x3c003c00;
+        tpos0 = flatDelta.v[0] * 0.0 + beamWorldEnd.v[0];
+        local_fc = flatDelta.v[1] * 0.0 + beamWorldEnd.v[1];
+        local_f8 = flatDelta.v[2] * 0.0 + beamWorldEnd.v[2];
+        local_f4 = flatDelta.v[3] * 0.0 + beamWorldEnd.v[3];
+        verts->xyz[0] = tpos0;
+        verts->xyz[1] = local_fc;
+        verts->xyz[2] = local_f8;
+        verts->color = endColor;
+        verts->binormalSign = 1.0;
+        (verts->normal).packed = 0x3ffe7f7f;
+        (verts->tangent).packed = 0x3f7f7ffe;
+        (verts->texCoord).packed = 0x3c003c00;
+        if ((beam->flags & 1U) == 0) {
+          if ((beam->flags & 2U) == 0) {
+            (verts->texCoord).packed = 0x3c003c00;
           }
           else {
-            local_1a0 = local_108 * 0.5 + local_158;
-            local_1a4 = local_18c;
-            local_4fc = (int)((int)local_1a0 << 1 ^ 0x80000000U) >> 0xe;
+            s1 = sLen * 0.5 + sMin;
+            t1 = tMin;
+            local_4fc = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_4fc) {
               local_4fc = 0x3fff;
             }
@@ -1528,7 +1515,7 @@ LAB_005c0d4e:
             else {
               local_63c = local_4fc;
             }
-            local_510 = (int)((int)local_18c << 1 ^ 0x80000000U) >> 0xe;
+            local_510 = (int)((int)tMin << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_510) {
               local_510 = 0x3fff;
             }
@@ -1538,15 +1525,15 @@ LAB_005c0d4e:
             else {
               local_640 = local_510;
             }
-            local_2d0 = ((int)local_1a0 >> 0x10 & 0xc000U | local_63c & 0x3fff) * 0x10000 +
-                        ((int)local_18c >> 0x10 & 0xc000U | local_640 & 0x3fff);
-            (local_148->texCoord).packed = local_2d0;
+            local_2d0 = ((int)s1 >> 0x10 & 0xc000U | local_63c & 0x3fff) * 0x10000 +
+                        ((int)tMin >> 0x10 & 0xc000U | local_640 & 0x3fff);
+            (verts->texCoord).packed = local_2d0;
           }
         }
         else {
-          local_1a0 = local_158 + local_108;
-          local_1a4 = local_dc * 0.5 + local_18c;
-          local_4c8 = (int)((int)local_1a0 << 1 ^ 0x80000000U) >> 0xe;
+          s1 = sMin + sLen;
+          t1 = tLen * 0.5 + tMin;
+          local_4c8 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_4c8) {
             local_4c8 = 0x3fff;
           }
@@ -1556,7 +1543,7 @@ LAB_005c0d4e:
           else {
             local_634 = local_4c8;
           }
-          local_4dc = (int)((int)local_1a4 << 1 ^ 0x80000000U) >> 0xe;
+          local_4dc = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_4dc) {
             local_4dc = 0x3fff;
           }
@@ -1566,100 +1553,103 @@ LAB_005c0d4e:
           else {
             local_638 = local_4dc;
           }
-          local_2cc = ((int)local_1a0 >> 0x10 & 0xc000U | local_634 & 0x3fff) * 0x10000 +
-                      ((int)local_1a4 >> 0x10 & 0xc000U | local_638 & 0x3fff);
-          (local_148->texCoord).packed = local_2cc;
+          local_2cc = ((int)s1 >> 0x10 & 0xc000U | local_634 & 0x3fff) * 0x10000 +
+                      ((int)t1 >> 0x10 & 0xc000U | local_638 & 0x3fff);
+          (verts->texCoord).packed = local_2cc;
         }
-        R_AddCodeMeshDrawSurf(local_190->material,local_1c8,local_14c,local_e0,2,"Beam",0xd);
-        if ((local_190->flags & 4U) != 0) {
-          if ((local_1d8 != 1) &&
+        R_AddCodeMeshDrawSurf(beam->material,baseIndices,indexCount,argOffset,2,"Beam",0xd);
+        if ((beam->flags & 4U) != 0) {
+          if ((perpSegCount != 1) &&
              (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_beam.cpp"
                                        ,0x2b8,0,"%s"), !bVar7)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          local_1ac = local_1d8 * 6;
-          local_1a8 = local_1d8 << 2;
-          bVar7 = R_ReserveCodeMeshIndices(local_1ac,&local_1c4);
+          perp_indexCount = perpSegCount * 6;
+          perp_vertexCount = perpSegCount << 2;
+          bVar7 = R_ReserveCodeMeshIndices(perp_indexCount,&perp_indices);
           if (!bVar7) {
             return;
           }
-          bVar7 = R_ReserveCodeMeshVerts(local_1a8,local_12c);
+          bVar7 = R_ReserveCodeMeshVerts(perp_vertexCount,&perp_baseVertex);
           if (!bVar7) {
             return;
           }
-          bVar7 = R_ReserveCodeMeshArgs(2,&local_e0);
+          bVar7 = R_ReserveCodeMeshArgs(2,&argOffset);
           if (!bVar7) {
             return;
           }
-          local_1cc = 0;
-          for (local_1b0 = 0; local_1b0 != local_1d8; local_1b0 = local_1b0 + 1) {
-            local_154 = (short)(local_1b0 << 2);
-            local_1d0 = CONCAT22(local_12c[0] + 2 + local_154,local_12c[0] + local_154);
-            *(undefined4 *)local_1c4[local_1cc].value = local_1d0;
-            local_1d0 = CONCAT22(local_12c[0] + local_154,local_12c[0] + 1 + local_154);
-            *(undefined4 *)local_1c4[local_1cc + 1].value = local_1d0;
-            local_1d0 = CONCAT22(local_12c[0] + 3 + local_154,local_12c[0] + 1 + local_154);
-            *(undefined4 *)local_1c4[local_1cc + 2].value = local_1d0;
-            local_1cc = local_1cc + 3;
+          indexPairIter = 0;
+          for (segIter = 0; segIter != perpSegCount; segIter = segIter + 1) {
+            offset = (ushort)(segIter << 2);
+            workingIndex.value[1] = perp_baseVertex + 2 + offset;
+            workingIndex.value[0] = perp_baseVertex + offset;
+            *&perp_indices[indexPairIter].value = workingIndex.value;
+            workingIndex.value[1] = perp_baseVertex + offset;
+            workingIndex.value[0] = perp_baseVertex + 1 + offset;
+            *&perp_indices[indexPairIter + 1].value = workingIndex.value;
+            workingIndex.value[1] = perp_baseVertex + 3 + offset;
+            workingIndex.value[0] = perp_baseVertex + 1 + offset;
+            *&perp_indices[indexPairIter + 2].value = workingIndex.value;
+            indexPairIter = indexPairIter + 3;
           }
-          Material_GetInfo(local_190->material2,&local_2ac);
-          if ((1 < local_2ac.textureAtlasColumnCount) || (1 < local_2ac.textureAtlasRowCount)) {
+          Material_GetInfo(beam->material2,&mtlInfo_2);
+          if ((1 < mtlInfo_2.textureAtlasColumnCount) || (1 < mtlInfo_2.textureAtlasRowCount)) {
             floor();
             _ftol2_sse();
-            local_27c = extraout_EAX_00 / (int)(uint)local_2ac.textureAtlasColumnCount;
-            local_270 = extraout_EAX_00 % (int)(uint)local_2ac.textureAtlasColumnCount;
-            local_114 = 1.0 / (float)local_2ac.textureAtlasColumnCount;
-            local_1d4 = (float)local_270 * local_114;
-            local_278 = 1.0 / (float)local_2ac.textureAtlasRowCount;
-            local_104 = (float)local_27c * local_278;
-            local_198 = local_278;
+            row_2 = extraout_EAX_00 / (int)(uint)mtlInfo_2.textureAtlasColumnCount;
+            col_2 = extraout_EAX_00 % (int)(uint)mtlInfo_2.textureAtlasColumnCount;
+            perp_sLen = 1.0 / (float)mtlInfo_2.textureAtlasColumnCount;
+            perp_sMin = (float)col_2 * perp_sLen;
+            step_2 = 1.0 / (float)mtlInfo_2.textureAtlasRowCount;
+            perp_tMin = (float)row_2 * step_2;
+            perp_tLen = step_2;
           }
-          local_2b0 = R_GetCodeMeshVerts(local_12c[0]);
-          fVar12 = -local_164;
-          local_2b0->xyz[0] = fVar12 * local_d4 + local_128.v[0];
-          local_2b0->xyz[1] = fVar12 * local_d0 + local_128.v[1];
-          local_2b0->xyz[2] = fVar12 * local_cc + local_128.v[2];
-          local_2b0[1].xyz[0] = local_164 * local_d4 + local_128.v[0];
-          local_2b0[1].xyz[1] = local_164 * local_d0 + local_128.v[1];
-          local_2b0[1].xyz[2] = local_164 * local_cc + local_128.v[2];
-          fVar12 = -local_164;
-          local_100 = fVar12 * local_1c0.v[0] + local_128.v[0];
-          local_fc = fVar12 * local_1c0.v[1] + local_128.v[1];
-          local_f8 = fVar12 * local_1c0.v[2] + local_128.v[2];
-          local_f4 = fVar12 * local_1c0.v[3] + local_128.v[3];
-          local_bc = local_164 * local_1c0.v[0] + local_128.v[0];
-          local_b8 = local_164 * local_1c0.v[1] + local_128.v[1];
-          local_b4 = local_164 * local_1c0.v[2] + local_128.v[2];
-          local_b0 = local_164 * local_1c0.v[3] + local_128.v[3];
-          local_2b0[2].xyz[0] = local_100;
-          local_2b0[2].xyz[1] = local_fc;
-          local_2b0[2].xyz[2] = local_f8;
-          local_2b0[3].xyz[0] = local_bc;
-          local_2b0[3].xyz[1] = local_b8;
-          local_2b0[3].xyz[2] = local_b4;
-          local_2b0->color = local_118;
-          local_2b0[1].color = local_118;
-          local_2b0[2].color = local_118;
-          local_2b0[3].color = local_118;
-          local_2b0->binormalSign = 1.0;
-          (local_2b0->normal).packed = 0x3ffe7f7f;
-          (local_2b0->tangent).packed = 0x3f7f7ffe;
-          local_2b0[1].binormalSign = 1.0;
-          local_2b0[1].normal.packed = 0x3ffe7f7f;
-          local_2b0[1].tangent.packed = 0x3f7f7ffe;
-          local_2b0[2].binormalSign = 1.0;
-          local_2b0[2].normal.packed = 0x3ffe7f7f;
-          local_2b0[2].tangent.packed = 0x3f7f7ffe;
-          local_2b0[3].binormalSign = 1.0;
-          local_2b0[3].normal.packed = 0x3ffe7f7f;
-          local_2b0[3].tangent.packed = 0x3f7f7ffe;
-          local_1a0 = local_1d4;
-          local_19c = local_1d4 + local_114;
-          local_1a4 = local_104;
-          local_134 = local_104 + local_198;
-          local_548 = (int)((int)local_1d4 << 1 ^ 0x80000000U) >> 0xe;
+          perp_verts = R_GetCodeMeshVerts(perp_baseVertex);
+          fVar10 = -beginRadius;
+          perp_verts->xyz[0] = fVar10 * perpFlatDelta + beamWorldBegin.v[0];
+          perp_verts->xyz[1] = fVar10 * local_d0 + beamWorldBegin.v[1];
+          perp_verts->xyz[2] = fVar10 * local_cc + beamWorldBegin.v[2];
+          perp_verts[1].xyz[0] = beginRadius * perpFlatDelta + beamWorldBegin.v[0];
+          perp_verts[1].xyz[1] = beginRadius * local_d0 + beamWorldBegin.v[1];
+          perp_verts[1].xyz[2] = beginRadius * local_cc + beamWorldBegin.v[2];
+          fVar10 = -beginRadius;
+          tpos0 = fVar10 * flatDelta.v[0] + beamWorldBegin.v[0];
+          local_fc = fVar10 * flatDelta.v[1] + beamWorldBegin.v[1];
+          local_f8 = fVar10 * flatDelta.v[2] + beamWorldBegin.v[2];
+          local_f4 = fVar10 * flatDelta.v[3] + beamWorldBegin.v[3];
+          tpos1 = beginRadius * flatDelta.v[0] + beamWorldBegin.v[0];
+          local_b8 = beginRadius * flatDelta.v[1] + beamWorldBegin.v[1];
+          local_b4 = beginRadius * flatDelta.v[2] + beamWorldBegin.v[2];
+          local_b0 = beginRadius * flatDelta.v[3] + beamWorldBegin.v[3];
+          perp_verts[2].xyz[0] = tpos0;
+          perp_verts[2].xyz[1] = local_fc;
+          perp_verts[2].xyz[2] = local_f8;
+          perp_verts[3].xyz[0] = tpos1;
+          perp_verts[3].xyz[1] = local_b8;
+          perp_verts[3].xyz[2] = local_b4;
+          perp_verts->color = beginColor;
+          perp_verts[1].color = beginColor;
+          perp_verts[2].color = beginColor;
+          perp_verts[3].color = beginColor;
+          perp_verts->binormalSign = 1.0;
+          (perp_verts->normal).packed = 0x3ffe7f7f;
+          (perp_verts->tangent).packed = 0x3f7f7ffe;
+          perp_verts[1].binormalSign = 1.0;
+          perp_verts[1].normal.packed = 0x3ffe7f7f;
+          perp_verts[1].tangent.packed = 0x3f7f7ffe;
+          perp_verts[2].binormalSign = 1.0;
+          perp_verts[2].normal.packed = 0x3ffe7f7f;
+          perp_verts[2].tangent.packed = 0x3f7f7ffe;
+          perp_verts[3].binormalSign = 1.0;
+          perp_verts[3].normal.packed = 0x3ffe7f7f;
+          perp_verts[3].tangent.packed = 0x3f7f7ffe;
+          s1 = perp_sMin;
+          s2 = perp_sMin + perp_sLen;
+          t1 = perp_tMin;
+          t2 = perp_tMin + perp_tLen;
+          local_548 = (int)((int)perp_sMin << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_548) {
             local_548 = 0x3fff;
           }
@@ -1669,7 +1659,7 @@ LAB_005c0d4e:
           else {
             local_648 = local_548;
           }
-          local_55c = (int)((int)local_104 << 1 ^ 0x80000000U) >> 0xe;
+          local_55c = (int)((int)perp_tMin << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_55c) {
             local_55c = 0x3fff;
           }
@@ -1679,10 +1669,10 @@ LAB_005c0d4e:
           else {
             local_64c = local_55c;
           }
-          local_2d4 = ((int)local_1d4 >> 0x10 & 0xc000U | local_648 & 0x3fff) * 0x10000 +
-                      ((int)local_104 >> 0x10 & 0xc000U | local_64c & 0x3fff);
-          (local_2b0->texCoord).packed = local_2d4;
-          local_57c = (int)((int)local_19c << 1 ^ 0x80000000U) >> 0xe;
+          local_2d4 = ((int)perp_sMin >> 0x10 & 0xc000U | local_648 & 0x3fff) * 0x10000 +
+                      ((int)perp_tMin >> 0x10 & 0xc000U | local_64c & 0x3fff);
+          (perp_verts->texCoord).packed = local_2d4;
+          local_57c = (int)((int)s2 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_57c) {
             local_57c = 0x3fff;
           }
@@ -1692,7 +1682,7 @@ LAB_005c0d4e:
           else {
             local_650 = local_57c;
           }
-          local_590 = (int)((int)local_134 << 1 ^ 0x80000000U) >> 0xe;
+          local_590 = (int)((int)t2 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_590) {
             local_590 = 0x3fff;
           }
@@ -1702,10 +1692,10 @@ LAB_005c0d4e:
           else {
             local_654 = local_590;
           }
-          local_2d8 = ((int)local_19c >> 0x10 & 0xc000U | local_650 & 0x3fff) * 0x10000 +
-                      ((int)local_134 >> 0x10 & 0xc000U | local_654 & 0x3fff);
-          local_2b0[1].texCoord.packed = local_2d8;
-          local_5b0 = (int)((int)local_1d4 << 1 ^ 0x80000000U) >> 0xe;
+          local_2d8 = ((int)s2 >> 0x10 & 0xc000U | local_650 & 0x3fff) * 0x10000 +
+                      ((int)t2 >> 0x10 & 0xc000U | local_654 & 0x3fff);
+          perp_verts[1].texCoord.packed = local_2d8;
+          local_5b0 = (int)((int)perp_sMin << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_5b0) {
             local_5b0 = 0x3fff;
           }
@@ -1715,7 +1705,7 @@ LAB_005c0d4e:
           else {
             local_658 = local_5b0;
           }
-          local_5c4 = (int)((int)local_134 << 1 ^ 0x80000000U) >> 0xe;
+          local_5c4 = (int)((int)t2 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_5c4) {
             local_5c4 = 0x3fff;
           }
@@ -1725,10 +1715,10 @@ LAB_005c0d4e:
           else {
             local_65c = local_5c4;
           }
-          local_2dc = ((int)local_1d4 >> 0x10 & 0xc000U | local_658 & 0x3fff) * 0x10000 +
-                      ((int)local_134 >> 0x10 & 0xc000U | local_65c & 0x3fff);
-          local_2b0[2].texCoord.packed = local_2dc;
-          local_5e4 = (int)((int)local_19c << 1 ^ 0x80000000U) >> 0xe;
+          local_2dc = ((int)perp_sMin >> 0x10 & 0xc000U | local_658 & 0x3fff) * 0x10000 +
+                      ((int)t2 >> 0x10 & 0xc000U | local_65c & 0x3fff);
+          perp_verts[2].texCoord.packed = local_2dc;
+          local_5e4 = (int)((int)s2 << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_5e4) {
             local_5e4 = 0x3fff;
           }
@@ -1738,7 +1728,7 @@ LAB_005c0d4e:
           else {
             local_660 = local_5e4;
           }
-          local_5f8 = (int)((int)local_104 << 1 ^ 0x80000000U) >> 0xe;
+          local_5f8 = (int)((int)perp_tMin << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_5f8) {
             local_5f8 = 0x3fff;
           }
@@ -1748,15 +1738,16 @@ LAB_005c0d4e:
           else {
             local_664 = local_5f8;
           }
-          local_2e0 = ((int)local_19c >> 0x10 & 0xc000U | local_660 & 0x3fff) * 0x10000 +
-                      ((int)local_104 >> 0x10 & 0xc000U | local_664 & 0x3fff);
-          local_2b0[3].texCoord.packed = local_2e0;
-          local_274 = local_2b0;
-          R_AddCodeMeshDrawSurf(local_190->material2,local_1c4,local_1ac,local_e0,2,"Beam",0xd);
+          local_2e0 = ((int)s2 >> 0x10 & 0xc000U | local_660 & 0x3fff) * 0x10000 +
+                      ((int)perp_tMin >> 0x10 & 0xc000U | local_664 & 0x3fff);
+          perp_verts[3].texCoord.packed = local_2e0;
+          basePerp_verts = perp_verts;
+          R_AddCodeMeshDrawSurf(beam->material2,perp_indices,perp_indexCount,argOffset,2,"Beam",0xd)
+          ;
         }
       }
     }
-    local_54 = local_54 + 1;
+    beamIter = beamIter + 1;
   } while( true );
 }
 
@@ -1773,7 +1764,7 @@ void __cdecl FX_Beam_Begin(void)
 
 // 005C6310  FX_Beam_Add  (EffectsCore/fx_beam.cpp:814)
 
-void __cdecl FX_Beam_Add(FxBeam *param_1)
+void __cdecl FX_Beam_Add(FxBeam *beam)
 
 {
   int iVar1;
@@ -1786,8 +1777,8 @@ void __cdecl FX_Beam_Add(FxBeam *param_1)
   else {
     pFVar2 = g_beamInfo.beams + g_beamInfo.beamCount;
     for (iVar1 = 0x12; iVar1 != 0; iVar1 = iVar1 + -1) {
-      pFVar2->begin[0] = param_1->begin[0];
-      param_1 = (FxBeam *)(param_1->begin + 1);
+      pFVar2->begin[0] = beam->begin[0];
+      beam = (FxBeam *)(beam->begin + 1);
       pFVar2 = (FxBeam *)(pFVar2->begin + 1);
     }
     g_beamInfo.beamCount = g_beamInfo.beamCount + 1;

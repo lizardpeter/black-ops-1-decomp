@@ -2,7 +2,7 @@
 
 // 00AC76B0  R_CheckVertexDataOverflow  (gfx_d3d/r_shade.h:28)
 
-void __cdecl R_CheckVertexDataOverflow(int param_1)
+void __cdecl R_CheckVertexDataOverflow(int dataSize)
 
 {
   code *pcVar1;
@@ -16,7 +16,7 @@ void __cdecl R_CheckVertexDataOverflow(int param_1)
       return;
     }
   }
-  if ((param_1 < 1) || ((gfxBuf.dynamicVertexBuffer)->total < param_1)) {
+  if ((dataSize < 1) || ((gfxBuf.dynamicVertexBuffer)->total < dataSize)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.h",0x1e,0,
                              "%s\n\t(dataSize) = %i");
     if (!bVar2) {
@@ -25,7 +25,7 @@ void __cdecl R_CheckVertexDataOverflow(int param_1)
       return;
     }
   }
-  if ((gfxBuf.dynamicVertexBuffer)->total < (gfxBuf.dynamicVertexBuffer)->used + param_1) {
+  if ((gfxBuf.dynamicVertexBuffer)->total < (gfxBuf.dynamicVertexBuffer)->used + dataSize) {
     (gfxBuf.dynamicVertexBuffer)->used = 0;
   }
   return;
@@ -84,37 +84,42 @@ void __cdecl RB_ClearVertexDecl(void)
 
 // 00AC6BC0  R_BeginPixMaterial  (gfx_d3d/rb_shade.cpp:79)
 
-void __cdecl R_BeginPixMaterial(GfxCmdBufState *param_1)
+void __cdecl R_BeginPixMaterial(GfxCmdBufState *state)
 
 {
   Material *pMVar1;
   MaterialTechnique *pMVar2;
+  MaterialTechnique *technique;
+  Material *material;
+  bool sameMaterial;
+  IDirect3DDevice9 *device;
+  bool sameTechnique;
   
   if ((r_pix_material->current).enabled == false) {
-    param_1->pixMaterial = (Material *)0x0;
-    param_1->pixTechnique = (MaterialTechnique *)0x0;
+    state->pixMaterial = (Material *)0x0;
+    state->pixTechnique = (MaterialTechnique *)0x0;
   }
   else {
-    pMVar1 = param_1->material;
-    pMVar2 = param_1->technique;
-    if (param_1->pixMaterial != pMVar1) {
-      if (param_1->pixTechnique != (MaterialTechnique *)0x0) {
+    pMVar1 = state->material;
+    pMVar2 = state->technique;
+    if (state->pixMaterial != pMVar1) {
+      if (state->pixTechnique != (MaterialTechnique *)0x0) {
         PIXEndNamedEvent();
-        param_1->pixTechnique = (MaterialTechnique *)0x0;
+        state->pixTechnique = (MaterialTechnique *)0x0;
       }
-      if (param_1->pixMaterial != (Material *)0x0) {
+      if (state->pixMaterial != (Material *)0x0) {
         PIXEndNamedEvent();
       }
       PIXBeginNamedEvent(-1,(pMVar1->info).name);
     }
-    if (param_1->pixTechnique != pMVar2) {
-      if (param_1->pixTechnique != (MaterialTechnique *)0x0) {
+    if (state->pixTechnique != pMVar2) {
+      if (state->pixTechnique != (MaterialTechnique *)0x0) {
         PIXEndNamedEvent();
       }
       PIXBeginNamedEvent(-1,pMVar2->name);
     }
-    param_1->pixMaterial = pMVar1;
-    param_1->pixTechnique = pMVar2;
+    state->pixMaterial = pMVar1;
+    state->pixTechnique = pMVar2;
   }
   return;
 }
@@ -122,17 +127,19 @@ void __cdecl R_BeginPixMaterial(GfxCmdBufState *param_1)
 
 // 00AC6D40  R_EndPixMaterialInternal  (gfx_d3d/rb_shade.cpp:140)
 
-void __cdecl R_EndPixMaterialInternal(GfxCmdBufState *param_1)
+void __cdecl R_EndPixMaterialInternal(GfxCmdBufState *state)
 
 {
-  if (param_1->pixTechnique != (MaterialTechnique *)0x0) {
+  IDirect3DDevice9 *device;
+  
+  if (state->pixTechnique != (MaterialTechnique *)0x0) {
     PIXEndNamedEvent();
   }
-  if (param_1->pixMaterial != (Material *)0x0) {
+  if (state->pixMaterial != (Material *)0x0) {
     PIXEndNamedEvent();
   }
-  param_1->pixTechnique = (MaterialTechnique *)0x0;
-  param_1->pixMaterial = (Material *)0x0;
+  state->pixTechnique = (MaterialTechnique *)0x0;
+  state->pixMaterial = (Material *)0x0;
   return;
 }
 
@@ -154,11 +161,11 @@ void __cdecl PIXEndNamedEvent(void)
 
 // 00AC6D20  R_EndPixMaterial  (gfx_d3d/rb_shade.cpp:156)
 
-void __cdecl R_EndPixMaterial(GfxCmdBufState *param_1)
+void __cdecl R_EndPixMaterial(GfxCmdBufState *state)
 
 {
-  if (param_1->pixCombine == 0) {
-    R_EndPixMaterialInternal(param_1);
+  if (state->pixCombine == 0) {
+    R_EndPixMaterialInternal(state);
   }
   return;
 }
@@ -166,16 +173,17 @@ void __cdecl R_EndPixMaterial(GfxCmdBufState *param_1)
 
 // 00AC6DA0  R_SetPixPrimarySortKey  (gfx_d3d/rb_shade.cpp:164)
 
-void __cdecl R_SetPixPrimarySortKey(GfxCmdBufState *param_1,uint param_2)
+void __cdecl R_SetPixPrimarySortKey(GfxCmdBufState *state,uint primarySortKey)
 
 {
-  char *pcVar1;
+  char *Name;
+  IDirect3DDevice9 *device;
   
-  if (param_1->pixPrimarySortKey != param_2) {
-    R_EndPixMaterialInternal(param_1);
-    param_1->pixPrimarySortKey = param_2;
-    pcVar1 = va("key: %d");
-    PIXSetMarker(-1,pcVar1);
+  if (state->pixPrimarySortKey != primarySortKey) {
+    R_EndPixMaterialInternal(state);
+    state->pixPrimarySortKey = primarySortKey;
+    Name = va("key: %d");
+    PIXSetMarker(-1,Name);
   }
   return;
 }
@@ -183,13 +191,13 @@ void __cdecl R_SetPixPrimarySortKey(GfxCmdBufState *param_1,uint param_2)
 
 // 00AC6E00  R_BeginPixMaterials  (gfx_d3d/rb_shade.cpp:186)
 
-void __cdecl R_BeginPixMaterials(GfxCmdBufState *param_1)
+void __cdecl R_BeginPixMaterials(GfxCmdBufState *state)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->pixCombine != 0) {
+  if (state->pixCombine != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xbb,0,"%s")
     ;
     if (!bVar2) {
@@ -198,7 +206,7 @@ void __cdecl R_BeginPixMaterials(GfxCmdBufState *param_1)
       return;
     }
   }
-  if (param_1->pixMaterial != (Material *)0x0) {
+  if (state->pixMaterial != (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xbc,0,"%s")
     ;
     if (!bVar2) {
@@ -207,7 +215,7 @@ void __cdecl R_BeginPixMaterials(GfxCmdBufState *param_1)
       return;
     }
   }
-  if (param_1->pixTechnique != (MaterialTechnique *)0x0) {
+  if (state->pixTechnique != (MaterialTechnique *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xbd,0,"%s")
     ;
     if (!bVar2) {
@@ -216,21 +224,21 @@ void __cdecl R_BeginPixMaterials(GfxCmdBufState *param_1)
       return;
     }
   }
-  param_1->pixCombine = 1;
-  param_1->pixPrimarySortKey = 0xffffffff;
+  state->pixCombine = 1;
+  state->pixPrimarySortKey = 0xffffffff;
   return;
 }
 
 
 // 00AC6EC0  R_EndPixMaterials  (gfx_d3d/rb_shade.cpp:196)
 
-void __cdecl R_EndPixMaterials(GfxCmdBufState *param_1)
+void __cdecl R_EndPixMaterials(GfxCmdBufState *state)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->pixCombine == 0) {
+  if (state->pixCombine == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xc5,0,"%s")
     ;
     if (!bVar2) {
@@ -239,124 +247,128 @@ void __cdecl R_EndPixMaterials(GfxCmdBufState *param_1)
       return;
     }
   }
-  if (param_1->pixTechnique != (MaterialTechnique *)0x0) {
+  if (state->pixTechnique != (MaterialTechnique *)0x0) {
     PIXEndNamedEvent();
   }
-  if (param_1->pixMaterial != (Material *)0x0) {
+  if (state->pixMaterial != (Material *)0x0) {
     PIXEndNamedEvent();
   }
-  param_1->pixTechnique = (MaterialTechnique *)0x0;
-  param_1->pixMaterial = (Material *)0x0;
-  param_1->pixCombine = 0;
+  state->pixTechnique = (MaterialTechnique *)0x0;
+  state->pixMaterial = (Material *)0x0;
+  state->pixCombine = 0;
   return;
 }
 
 
 // 00AC7420  R_DrawTessTechnique  (gfx_d3d/rb_shade.cpp:213)
 
-void __cdecl R_DrawTessTechnique(GfxCmdBufContext param_1,GfxDrawPrimArgs *param_2)
+void __cdecl R_DrawTessTechnique(GfxCmdBufContext context,GfxDrawPrimArgs *args)
 
 {
   MaterialTechnique *pMVar1;
-  IDirect3DVertexBuffer9 *pIVar2;
-  code *pcVar3;
+  IDirect3DVertexBuffer9 *vb_00;
+  code *pcVar2;
+  bool bVar3;
   bool bVar4;
-  bool bVar5;
-  char *pcVar6;
-  uint uVar7;
-  uint local_8;
+  char *text;
+  uint vertexOffset_00;
+  MaterialTechnique *technique;
+  IDirect3DVertexBuffer9 *vb;
+  int vertexOffset;
+  bool isPixelCostEnabled;
+  uint passIndex;
   
   if ((dx.d3d9 == (IDirect3D9 *)0x0) || (dx.device == (IDirect3DDevice9 *)0x0)) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xe2,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xe2,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if ((param_1.field0_0x0._s_0.state)->material == (Material *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xe3,0,"%s")
+  if ((context.field0_0x0._s_0.state)->material == (Material *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xe3,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  pMVar1 = (param_1.field0_0x0._s_0.state)->technique;
+  pMVar1 = (context.field0_0x0._s_0.state)->technique;
   if (pMVar1 == (MaterialTechnique *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xf7,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0xf7,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  R_BeginPixMaterial(param_1.field0_0x0._s_0.state);
+  R_BeginPixMaterial(context.field0_0x0._s_0.state);
   if ((r_logFile->current).integer != 0) {
-    pcVar6 = va("\n---------- R_DrawTechnique( %s ) ----------\n");
-    RB_LogPrint(pcVar6);
+    text = va("\n---------- R_DrawTechnique( %s ) ----------\n");
+    RB_LogPrint(text);
   }
-  bVar4 = pixelCostMode != GFX_PIXEL_COST_MODE_OFF;
-  if (bVar4) {
-    R_PixelCost_BeginSurface(param_1);
+  bVar3 = pixelCostMode != GFX_PIXEL_COST_MODE_OFF;
+  if (bVar3) {
+    R_PixelCost_BeginSurface(context);
   }
-  if (((param_1.field0_0x0._s_0.state)->prim).vertDeclType != VERTDECL_GENERIC) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x108,1,
+  if (((context.field0_0x0._s_0.state)->prim).vertDeclType != VERTDECL_GENERIC) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x108,1,
                              "%s\n\t(context.state->prim.vertDeclType) = %i");
-    if (!bVar5) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar4) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
   R_CheckVertexDataOverflow(tess.vertexCount << 5);
-  uVar7 = R_SetVertexData(param_1.field0_0x0._s_0.state,&tess,tess.vertexCount,0x20);
-  local_8 = 0;
+  vertexOffset_00 = R_SetVertexData(context.field0_0x0._s_0.state,&tess,tess.vertexCount,0x20);
+  passIndex = 0;
   do {
-    if (pMVar1->passCount <= local_8) {
-      if (bVar4) {
-        R_PixelCost_EndSurface(param_1);
+    if (pMVar1->passCount <= passIndex) {
+      if (bVar3) {
+        R_PixelCost_EndSurface(context);
       }
       if ((r_logFile->current).integer != 0) {
         RB_LogPrint("\n");
       }
-      R_EndPixMaterial(param_1.field0_0x0._s_0.state);
+      R_EndPixMaterial(context.field0_0x0._s_0.state);
       return;
     }
-    R_SetupPass(param_1,local_8);
-    R_UpdateVertexDecl(param_1.field0_0x0._s_0.state);
-    R_SetupPassPixelShaderArgs(param_1);
-    pIVar2 = (gfxBuf.dynamicVertexBuffer)->buffer;
-    if (pIVar2 == (IDirect3DVertexBuffer9 *)0x0) {
-      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x117,0,
+    R_SetupPass(context,passIndex);
+    R_UpdateVertexDecl(context.field0_0x0._s_0.state);
+    R_SetupPassPixelShaderArgs(context);
+    vb_00 = (gfxBuf.dynamicVertexBuffer)->buffer;
+    if (vb_00 == (IDirect3DVertexBuffer9 *)0x0) {
+      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x117,0,
                                "%s");
-      if (!bVar5) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+      if (!bVar4) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
     }
-    R_SetStreamSource(&(param_1.field0_0x0._s_0.state)->prim,pIVar2,uVar7,0x20);
-    R_SetupPassPerObjectArgs(param_1);
-    R_SetupPassPerPrimArgs(param_1);
-    R_DrawIndexedPrimitive(&(param_1.field0_0x0._s_0.state)->prim,param_2);
-    local_8 = local_8 + 1;
+    R_SetStreamSource(&(context.field0_0x0._s_0.state)->prim,vb_00,vertexOffset_00,0x20);
+    R_SetupPassPerObjectArgs(context);
+    R_SetupPassPerPrimArgs(context);
+    R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,args);
+    passIndex = passIndex + 1;
   } while( true );
 }
 
 
 // 00AC6F60  RB_SetTessTechnique  (gfx_d3d/rb_shade.cpp:318)
 
-void __cdecl RB_SetTessTechnique(Material *param_1,uchar param_2)
+void __cdecl RB_SetTessTechnique(Material *material,uchar techType)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x13f,0,"%s"
                             );
     if (!bVar2) {
@@ -365,11 +377,11 @@ void __cdecl RB_SetTessTechnique(Material *param_1,uchar param_2)
       return;
     }
   }
-  if ((gfxCmdBufState.origMaterial != param_1) || (gfxCmdBufState.origTechType != param_2)) {
+  if ((gfxCmdBufState.origMaterial != material) || (gfxCmdBufState.origTechType != techType)) {
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
     }
-    RB_BeginSurface(param_1,param_2);
+    RB_BeginSurface(material,techType);
   }
   return;
 }
@@ -377,12 +389,12 @@ void __cdecl RB_SetTessTechnique(Material *param_1,uchar param_2)
 
 // 00AC6FD0  RB_BeginSurface  (gfx_d3d/rb_shade.cpp:334)
 
-void __cdecl RB_BeginSurface(Material *param_1,uchar param_2)
+void __cdecl RB_BeginSurface(Material *material,uchar techType)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *text;
   
   if (tess.indexCount != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x150,0,
@@ -402,7 +414,7 @@ void __cdecl RB_BeginSurface(Material *param_1,uchar param_2)
       return;
     }
   }
-  if (param_1 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x153,0,"%s"
                             );
     if (!bVar2) {
@@ -421,19 +433,19 @@ void __cdecl RB_BeginSurface(Material *param_1,uchar param_2)
     }
   }
   if ((r_logFile->current).integer != 0) {
-    RB_LogTechniqueType(param_2);
-    pcVar3 = va("---------- RB_BeginSurface( %s, %s )\n");
-    RB_LogPrint(pcVar3);
+    RB_LogTechniqueType(techType);
+    text = va("---------- RB_BeginSurface( %s, %s )\n");
+    RB_LogPrint(text);
   }
   tess.firstVertex = 0;
   tess.lastVertex = 0;
-  gfxCmdBufState.material = param_1;
-  gfxCmdBufState.techType = param_2;
+  gfxCmdBufState.material = material;
+  gfxCmdBufState.techType = techType;
   gfxCmdBufState.prim.vertDeclType = VERTDECL_GENERIC;
-  gfxCmdBufState.origMaterial = param_1;
-  gfxCmdBufState.origTechType = param_2;
+  gfxCmdBufState.origMaterial = material;
+  gfxCmdBufState.origTechType = techType;
   if (2 < (int)pixelCostMode) {
-    gfxCmdBufState.material = R_PixelCost_GetAccumulationMaterial(param_1);
+    gfxCmdBufState.material = R_PixelCost_GetAccumulationMaterial(material);
     gfxCmdBufState.techType = '\x04';
   }
   gfxCmdBufState.technique = Material_GetTechnique(gfxCmdBufState.material,gfxCmdBufState.techType);
@@ -524,9 +536,9 @@ void __cdecl RB_DrawTessSurface(void)
 {
   code *pcVar1;
   bool bVar2;
-  GfxViewport local_30;
-  GfxViewport local_20;
-  GfxDrawPrimArgs local_10;
+  GfxViewport scissor;
+  GfxViewport viewport;
+  GfxDrawPrimArgs args;
   
   if (tess.indexCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",0x1db,0,"%s"
@@ -538,19 +550,19 @@ void __cdecl RB_DrawTessSurface(void)
     }
   }
   if (gfxCmdBufSourceState.viewportIsDirty != false) {
-    R_GetViewport((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&local_20);
-    R_SetViewport(&gfxCmdBufState,&local_20);
-    R_UpdateViewport((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&local_20);
-    bVar2 = R_GetScissor((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&local_30);
+    R_GetViewport((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewport);
+    R_SetViewport(&gfxCmdBufState,&viewport);
+    R_UpdateViewport((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewport);
+    bVar2 = R_GetScissor((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&scissor);
     if (bVar2) {
-      R_SetScissor(&gfxCmdBufState,&local_30);
+      R_SetScissor(&gfxCmdBufState,&scissor);
     }
     else {
       R_ClearScissor(&gfxCmdBufState);
     }
   }
-  local_10.vertexCount = tess.vertexCount;
-  local_10.triCount = tess.indexCount / 3;
+  args.vertexCount = tess.vertexCount;
+  args.triCount = tess.indexCount / 3;
   if (gfxCmdBufState.prim.vertDeclType != VERTDECL_GENERIC) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_shade.cpp",499,1,
                              "%s\n\t(gfxCmdBufState.prim.vertDeclType) = %i");
@@ -560,8 +572,8 @@ void __cdecl RB_DrawTessSurface(void)
       return;
     }
   }
-  local_10.baseIndex = R_SetIndexData(&gfxCmdBufState.prim,tess.indices,tess.indexCount / 3);
-  R_DrawTessTechnique((GfxCmdBufContext)0xb473fe00b472550,&local_10);
+  args.baseIndex = R_SetIndexData(&gfxCmdBufState.prim,tess.indices,tess.indexCount / 3);
+  R_DrawTessTechnique((GfxCmdBufContext)0xb473fe00b472550,&args);
   tess.indexCount = 0;
   tess.vertexCount = 0;
   return;
@@ -586,6 +598,7 @@ void __cdecl RB_TessOverflow(void)
 
 {
   GfxPrimStats *pGVar1;
+  GfxPrimStats *primStats;
   
   pGVar1 = gfxCmdBufState.prim.primStats;
   RB_EndTessSurface();
@@ -597,16 +610,18 @@ void __cdecl RB_TessOverflow(void)
 
 // 00AC6810  R_HW_SetPixelShader  (gfx_d3d/r_setstate_d3d.h:661)
 
-void __cdecl R_HW_SetPixelShader(IDirect3DDevice9 *param_1,MaterialPixelShader *param_2)
+void __cdecl R_HW_SetPixelShader(IDirect3DDevice9 *device,MaterialPixelShader *mtlShader)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
   IDirect3DPixelShader9 *local_10;
+  int semaphore;
+  HRESULT hr;
   
-  if ((param_1 == (IDirect3DDevice9 *)0x0) &&
+  if ((device == (IDirect3DDevice9 *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h",0x296,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -618,19 +633,19 @@ void __cdecl R_HW_SetPixelShader(IDirect3DDevice9 *param_1,MaterialPixelShader *
     RB_LogPrint("device->SetPixelShader( mtlShader ? mtlShader->prog.ps : 0 )\n");
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  if (param_2 == (MaterialPixelShader *)0x0) {
+  if (mtlShader == (MaterialPixelShader *)0x0) {
     local_10 = (IDirect3DPixelShader9 *)0x0;
   }
   else {
-    local_10 = (param_2->prog).ps;
+    local_10 = (mtlShader->prog).ps;
   }
-  iVar4 = (**(code **)((int)*param_1 + 0x1ac))(param_1,local_10);
+  hr_00 = (**(code **)((int)*device + 0x1ac))(device,local_10);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar4 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar4);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetPixelShader( mtlShader ? mtlShader->prog.ps : 0 ) failed: %s\n"
              );
@@ -641,16 +656,18 @@ void __cdecl R_HW_SetPixelShader(IDirect3DDevice9 *param_1,MaterialPixelShader *
 
 // 00AC6940  R_HW_SetVertexShader  (gfx_d3d/r_setstate_d3d.h:668)
 
-void __cdecl R_HW_SetVertexShader(IDirect3DDevice9 *param_1,MaterialVertexShader *param_2)
+void __cdecl R_HW_SetVertexShader(IDirect3DDevice9 *device,MaterialVertexShader *mtlShader)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
   IDirect3DVertexShader9 *local_10;
+  int semaphore;
+  HRESULT hr;
   
-  if ((param_1 == (IDirect3DDevice9 *)0x0) &&
+  if ((device == (IDirect3DDevice9 *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h",0x29d,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -662,19 +679,19 @@ void __cdecl R_HW_SetVertexShader(IDirect3DDevice9 *param_1,MaterialVertexShader
     RB_LogPrint("device->SetVertexShader( mtlShader ? mtlShader->prog.vs : 0 )\n");
   }
   iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  if (param_2 == (MaterialVertexShader *)0x0) {
+  if (mtlShader == (MaterialVertexShader *)0x0) {
     local_10 = (IDirect3DVertexShader9 *)0x0;
   }
   else {
-    local_10 = (param_2->prog).vs;
+    local_10 = (mtlShader->prog).vs;
   }
-  iVar4 = (**(code **)((int)*param_1 + 0x170))(param_1,local_10);
+  hr_00 = (**(code **)((int)*device + 0x170))(device,local_10);
   if (iVar3 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar4 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar4);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetVertexShader( mtlShader ? mtlShader->prog.vs : 0 ) failed: %s\n"
              );
@@ -686,21 +703,21 @@ void __cdecl R_HW_SetVertexShader(IDirect3DDevice9 *param_1,MaterialVertexShader
 // 00AC7740  R_SetStreamSource  (gfx_d3d/r_state.h:1900)
 
 void __cdecl
-R_SetStreamSource(GfxCmdBufPrimState *param_1,IDirect3DVertexBuffer9 *param_2,uint param_3,
-                 uint param_4)
+R_SetStreamSource(GfxCmdBufPrimState *primState,IDirect3DVertexBuffer9 *vb,uint vertexOffset,
+                 uint vertexStride)
 
 {
-  if (((param_1->streams[0].vb != param_2) || (param_1->streams[0].offset != param_3)) ||
-     (param_1->streams[0].stride != param_4)) {
-    R_ChangeStreamSource(param_1,0,param_2,param_3,param_4);
+  if (((primState->streams[0].vb != vb) || (primState->streams[0].offset != vertexOffset)) ||
+     (primState->streams[0].stride != vertexStride)) {
+    R_ChangeStreamSource(primState,0,vb,vertexOffset,vertexStride);
   }
-  if (((param_1->streams[1].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-      (param_1->streams[1].offset != 0)) || (param_1->streams[1].stride != 0)) {
-    R_ChangeStreamSource(param_1,1,(IDirect3DVertexBuffer9 *)0x0,0,0);
+  if (((primState->streams[1].vb != (IDirect3DVertexBuffer9 *)0x0) ||
+      (primState->streams[1].offset != 0)) || (primState->streams[1].stride != 0)) {
+    R_ChangeStreamSource(primState,1,(IDirect3DVertexBuffer9 *)0x0,0,0);
   }
-  if (((param_1->streams[2].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-      (param_1->streams[2].offset != 0)) || (param_1->streams[2].stride != 0)) {
-    R_ChangeStreamSource(param_1,2,(IDirect3DVertexBuffer9 *)0x0,0,0);
+  if (((primState->streams[2].vb != (IDirect3DVertexBuffer9 *)0x0) ||
+      (primState->streams[2].offset != 0)) || (primState->streams[2].stride != 0)) {
+    R_ChangeStreamSource(primState,2,(IDirect3DVertexBuffer9 *)0x0,0,0);
   }
   return;
 }
@@ -708,24 +725,28 @@ R_SetStreamSource(GfxCmdBufPrimState *param_1,IDirect3DVertexBuffer9 *param_2,ui
 
 // 00AC6A90  R_SetVertexDecl  (gfx_d3d/r_state.h:1939)
 
-void __cdecl R_SetVertexDecl(GfxCmdBufPrimState *param_1,MaterialVertexDeclaration *param_2)
+void __cdecl R_SetVertexDecl(GfxCmdBufPrimState *primState,MaterialVertexDeclaration *vertexDecl)
 
 {
   IDirect3DDevice9 *pIVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
   IDirect3DVertexDeclaration9 *local_18;
+  int semaphore;
+  HRESULT hr;
+  IDirect3DVertexDeclaration9 *decl;
+  IDirect3DDevice9 *device;
   
-  if (param_2 == (MaterialVertexDeclaration *)0x0) {
+  if (vertexDecl == (MaterialVertexDeclaration *)0x0) {
     local_18 = (IDirect3DVertexDeclaration9 *)0x0;
   }
   else {
-    local_18 = (param_2->routing).decl[param_1->vertDeclType];
+    local_18 = (vertexDecl->routing).decl[primState->vertDeclType];
   }
-  if (param_1->vertexDecl != local_18) {
-    pIVar1 = (param_1->field0_0x0).device;
+  if (primState->vertexDecl != local_18) {
+    pIVar1 = (primState->field0_0x0).device;
     if ((pIVar1 == (IDirect3DDevice9 *)0x0) &&
        (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x79d,0,
                                  "%s"), !bVar3)) {
@@ -739,19 +760,19 @@ void __cdecl R_SetVertexDecl(GfxCmdBufPrimState *param_1,MaterialVertexDeclarati
         RB_LogPrint("device->SetVertexDeclaration( decl )\n");
       }
       iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-      iVar5 = (**(code **)((int)*pIVar1 + 0x15c))(pIVar1,local_18);
+      hr_00 = (**(code **)((int)*pIVar1 + 0x15c))(pIVar1,local_18);
       if (iVar4 != 0) {
         R_ReleaseDXDeviceOwnership();
       }
-      if (iVar5 < 0) {
+      if (hr_00 < 0) {
         g_disableRendering = g_disableRendering + 1;
-        R_ErrorDescription(iVar5);
+        R_ErrorDescription(hr_00);
         Com_Error(ERR_FATAL,
                   "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h (%i) device->SetVertexDeclaration( decl ) failed: %s\n"
                  );
       }
     }
-    param_1->vertexDecl = local_18;
+    primState->vertexDecl = local_18;
   }
   return;
 }

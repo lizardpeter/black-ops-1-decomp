@@ -14,22 +14,22 @@ exception * __thiscall std::exception::exception(exception *this)
 
 // 0095F1D5  exception  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp:77)
 
-exception * __thiscall std::exception::exception(exception *this,char **param_1)
+exception * __thiscall std::exception::exception(exception *this,char **what)
 
 {
   int extraout_EAX;
-  char *pcVar1;
+  char *_Dst;
   
   this->_padding_ = (int)vftable;
-  if ((uchar *)*param_1 == (uchar *)0x0) {
+  if ((uchar *)*what == (uchar *)0x0) {
     this->_m_what = (char *)0x0;
   }
   else {
-    strlen((uchar *)*param_1);
-    pcVar1 = malloc(extraout_EAX + 1U);
-    this->_m_what = pcVar1;
-    if (pcVar1 != (char *)0x0) {
-      strcpy_s(pcVar1,extraout_EAX + 1U,*param_1);
+    strlen((uchar *)*what);
+    _Dst = malloc(extraout_EAX + 1U);
+    this->_m_what = _Dst;
+    if (_Dst != (char *)0x0) {
+      strcpy_s(_Dst,extraout_EAX + 1U,*what);
     }
   }
   this->_m_doFree = 1;
@@ -39,13 +39,13 @@ exception * __thiscall std::exception::exception(exception *this,char **param_1)
 
 // 0095F228  exception  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp:98)
 
-exception * __thiscall std::exception::exception(exception *this,char **param_1,int param_2)
+exception * __thiscall std::exception::exception(exception *this,char **what,int __formal)
 
 {
   char *pcVar1;
   
   this->_padding_ = (int)vftable;
-  pcVar1 = *param_1;
+  pcVar1 = *what;
   this->_m_doFree = 0;
   this->_m_what = pcVar1;
   return this;
@@ -54,30 +54,30 @@ exception * __thiscall std::exception::exception(exception *this,char **param_1,
 
 // 0095F245  exception  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/stdexcpt.cpp:107)
 
-exception * __thiscall std::exception::exception(exception *this,exception *param_1)
+exception * __thiscall std::exception::exception(exception *this,exception *that)
 
 {
   int iVar1;
-  uchar *puVar2;
+  uchar *buf;
   int extraout_EAX;
-  char *pcVar3;
+  char *_Dst;
   
   this->_padding_ = (int)vftable;
-  iVar1 = param_1->_m_doFree;
+  iVar1 = that->_m_doFree;
   this->_m_doFree = iVar1;
-  puVar2 = (uchar *)param_1->_m_what;
+  buf = (uchar *)that->_m_what;
   if (iVar1 == 0) {
-    this->_m_what = (char *)puVar2;
+    this->_m_what = (char *)buf;
   }
-  else if (puVar2 == (uchar *)0x0) {
+  else if (buf == (uchar *)0x0) {
     this->_m_what = (char *)0x0;
   }
   else {
-    strlen(puVar2);
-    pcVar3 = malloc(extraout_EAX + 1U);
-    this->_m_what = pcVar3;
-    if (pcVar3 != (char *)0x0) {
-      strcpy_s(pcVar3,extraout_EAX + 1U,param_1->_m_what);
+    strlen(buf);
+    _Dst = malloc(extraout_EAX + 1U);
+    this->_m_what = _Dst;
+    if (_Dst != (char *)0x0) {
+      strcpy_s(_Dst,extraout_EAX + 1U,that->_m_what);
     }
   }
   return this;

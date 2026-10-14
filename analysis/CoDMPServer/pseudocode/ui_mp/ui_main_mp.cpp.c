@@ -2,10 +2,10 @@
 
 // 007D1BC0  Ragdoll_HandleBody  (ragdoll/ragdoll_controller.cpp:26)
 
-RagdollBody * __cdecl Ragdoll_HandleBody(int param_1)
+RagdollBody * __cdecl Ragdoll_HandleBody(int pose)
 
 {
-  return (RagdollBody *)param_1;
+  return (RagdollBody *)pose;
 }
 
 
@@ -92,18 +92,18 @@ void __cdecl UI_Project_AssetCache(void)
 
 // 0074CD00  UI_Project_Refresh  (ui_mp/ui_main_mp.cpp:327)
 
-void __cdecl UI_Project_Refresh(int param_1)
+void __cdecl UI_Project_Refresh(int localClientNum)
 
 {
   bool bVar1;
   int iVar2;
   
-  UI_SetShaderTime(param_1);
+  UI_SetShaderTime(localClientNum);
   iVar2 = Com_LocalClients_GetPrimary();
-  if (param_1 == iVar2) {
-    bVar1 = Key_IsCatcherActive(param_1,0x80);
+  if (localClientNum == iVar2) {
+    bVar1 = Key_IsCatcherActive(localClientNum,0x80);
     if (bVar1) {
-      UI_EmblemUpdate(param_1);
+      UI_EmblemUpdate(localClientNum);
     }
   }
   return;
@@ -112,13 +112,13 @@ void __cdecl UI_Project_Refresh(int param_1)
 
 // 0074CD40  UI_Project_Shutdown  (ui_mp/ui_main_mp.cpp:340)
 
-void __cdecl UI_Project_Shutdown(int param_1)
+void __cdecl UI_Project_Shutdown(int localClientNum)
 
 {
   bool bVar1;
   
-  Key_ClearStates(param_1);
-  bVar1 = CL_LocalClient_IsFirstActive(param_1);
+  Key_ClearStates(localClientNum);
+  bVar1 = CL_LocalClient_IsFirstActive(localClientNum);
   if (bVar1) {
     UI_ViewerShutdown();
   }
@@ -133,45 +133,45 @@ void __cdecl UI_Project_Shutdown(int param_1)
 void __cdecl UI_UpdateListboxPos_f(void)
 
 {
-  itemDef_s *piVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  int local_70;
-  char local_64 [68];
+  itemDef_s *item_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  int i;
+  int max;
+  itemDef_s *item;
+  char menuName [68];
   uint local_20;
-  undefined4 local_1c;
-  uiInfo_s *local_18;
-  listBoxDef_s *local_14;
-  menuDef_t *local_10;
-  int local_c;
-  int local_8;
+  int controllerIndex;
+  uiInfo_s *uiInfo;
+  listBoxDef_s *listPtr;
+  menuDef_t *menu;
+  int viewmax;
+  int contextIndex;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_1c = 0;
-  local_8 = Com_ControllerIndex_GetUIContextIndex(0);
-  Cmd_ArgsBuffer(1,local_64,0x40);
-  local_18 = UI_UIContext_GetInfo(local_8);
-  iVar4 = Menu_Count(&local_18->uiDC);
-  if ((iVar4 != 0) &&
-     (local_10 = Menus_FindByName(&local_18->uiDC,local_64), local_10 != (menuDef_t *)0x0)) {
-    for (local_70 = 0; local_70 < local_10->itemCount; local_70 = local_70 + 1) {
-      iVar4 = Item_IsVisible(0,local_8,local_10->items[local_70]);
-      if ((((iVar4 != 0) &&
-           (bVar3 = Window_HasFocus(local_8,&local_10->items[local_70]->window), bVar3)) &&
-          (piVar1 = local_10->items[local_70], piVar1 != (itemDef_s *)0x0)) &&
-         (piVar1->dataType == 4)) {
-        local_14 = Item_GetListBoxDef(piVar1);
-        if ((local_14 == (listBoxDef_s *)0x0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",
-                                     0x187,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+  controllerIndex = 0;
+  contextIndex = Com_ControllerIndex_GetUIContextIndex(0);
+  Cmd_ArgsBuffer(1,menuName,0x40);
+  uiInfo = UI_UIContext_GetInfo(contextIndex);
+  iVar3 = Menu_Count(&uiInfo->uiDC);
+  if ((iVar3 != 0) && (menu = Menus_FindByName(&uiInfo->uiDC,menuName), menu != (menuDef_t *)0x0)) {
+    for (i = 0; i < menu->itemCount; i = i + 1) {
+      iVar3 = Item_IsVisible(0,contextIndex,menu->items[i]);
+      if ((((iVar3 != 0) && (bVar2 = Window_HasFocus(contextIndex,&menu->items[i]->window), bVar2))
+          && (item_00 = menu->items[i], item_00 != (itemDef_s *)0x0)) && (item_00->dataType == 4)) {
+        listPtr = Item_GetListBoxDef(item_00);
+        if ((listPtr == (listBoxDef_s *)0x0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",
+                                     0x187,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        iVar4 = Item_ListBox_MaxScroll(0,local_8,piVar1);
-        local_c = Item_ListBox_Viewmax(0,local_8,piVar1);
-        Item_ListBox_SetCursorPos(0,local_8,piVar1,iVar4,local_c,local_14->cursorPos[local_8],true);
+        iVar3 = Item_ListBox_MaxScroll(0,contextIndex,item_00);
+        viewmax = Item_ListBox_Viewmax(0,contextIndex,item_00);
+        Item_ListBox_SetCursorPos
+                  (0,contextIndex,item_00,iVar3,viewmax,listPtr->cursorPos[contextIndex],true);
         return;
       }
     }
@@ -185,29 +185,29 @@ void __cdecl UI_UpdateListboxPos_f(void)
 void __cdecl UI_KeyClearStates_f(void)
 
 {
-  int iVar1;
+  int localClientNum;
   
-  iVar1 = Com_ControllerIndex_GetLocalClientNum(0);
-  Key_ClearStates(iVar1);
+  localClientNum = Com_ControllerIndex_GetLocalClientNum(0);
+  Key_ClearStates(localClientNum);
   return;
 }
 
 
 // 0074CF50  UI_SetMap  (ui_mp/ui_main_mp.cpp:420)
 
-void __cdecl UI_SetMap(char *param_1,char *param_2)
+void __cdecl UI_SetMap(char *mapname,char *gametype)
 
 {
   bool bVar1;
-  char *pcVar2;
+  char *filename;
   
-  I_strncpyz(g_mapname,param_1,0x40);
-  I_strncpyz(s_gametype,param_2,0x40);
-  g_showLoadingScreenMenu = *param_1 != '\0';
-  if (*param_1 != '\0') {
+  I_strncpyz(g_mapname,mapname,0x40);
+  I_strncpyz(s_gametype,gametype,0x40);
+  g_showLoadingScreenMenu = *mapname != '\0';
+  if (*mapname != '\0') {
     bVar1 = G_ExitAfterToolComplete();
     if (!bVar1) {
-      Dvar_SetStringByName("ui_mapname",param_1);
+      Dvar_SetStringByName("ui_mapname",mapname);
       g_showLoadingScreenMenu = true;
       goto LAB_0074cfc1;
     }
@@ -215,8 +215,8 @@ void __cdecl UI_SetMap(char *param_1,char *param_2)
   g_showLoadingScreenMenu = false;
 LAB_0074cfc1:
   if (((useFastFile->current).enabled == false) && (g_mapname[0] != '\0')) {
-    pcVar2 = va("maps/mp/%s.csv");
-    UI_MapLoadInfo(pcVar2);
+    filename = va("maps/mp/%s.csv");
+    UI_MapLoadInfo(filename);
   }
   return;
 }
@@ -224,56 +224,54 @@ LAB_0074cfc1:
 
 // 0074D010  UI_DrawLineGraphSegment  (ui_mp/ui_main_mp.cpp:449)
 
-void __cdecl UI_DrawLineGraphSegment(int param_1,float *param_2,float *param_3,rectDef_s *param_4)
+void __cdecl UI_DrawLineGraphSegment(int contextIndex,float *p1,float *p2,rectDef_s *graphRect)
 
 {
   GfxQuadVertex *pGVar1;
-  float local_2c;
-  ScreenPlacement *local_28;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float p2y;
+  ScreenPlacement *scrPlace;
+  GfxQuadVertex *quad;
+  float p1x;
+  float p2x;
+  float x;
+  float y;
+  float p1y;
+  float h;
+  float w;
   
-  local_28 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  local_20 = *param_2;
-  local_10 = param_2[1];
-  local_1c = *param_3;
-  local_2c = param_3[1];
-  local_18 = param_4->x;
-  local_14 = param_4->y;
-  local_8 = param_4->w;
-  local_c = param_4->h;
-  ScrPlace_ApplyRect(local_28,&local_20,&local_10,&local_8,&local_c,param_4->horzAlign,
-                     param_4->vertAlign);
-  ScrPlace_ApplyRect(local_28,&local_1c,&local_2c,&local_8,&local_c,param_4->horzAlign,
-                     param_4->vertAlign);
-  local_8 = param_4->w;
-  local_c = param_4->h;
-  ScrPlace_ApplyRect(local_28,&local_18,&local_14,&local_8,&local_c,param_4->horzAlign,
-                     param_4->vertAlign);
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  p1x = *p1;
+  p1y = p1[1];
+  p2x = *p2;
+  p2y = p2[1];
+  x = graphRect->x;
+  y = graphRect->y;
+  w = graphRect->w;
+  h = graphRect->h;
+  ScrPlace_ApplyRect(scrPlace,&p1x,&p1y,&w,&h,graphRect->horzAlign,graphRect->vertAlign);
+  ScrPlace_ApplyRect(scrPlace,&p2x,&p2y,&w,&h,graphRect->horzAlign,graphRect->vertAlign);
+  w = graphRect->w;
+  h = graphRect->h;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,graphRect->horzAlign,graphRect->vertAlign);
   pGVar1 = R_AddCmdDrawQuadList2D(DAT_098b4b90,1);
-  pGVar1->xy[0] = local_20;
-  pGVar1->xy[1] = local_10;
-  pGVar1->st[0] = (local_20 - local_18) / local_8;
-  pGVar1->st[1] = (local_10 - local_14) / local_c;
+  pGVar1->xy[0] = p1x;
+  pGVar1->xy[1] = p1y;
+  pGVar1->st[0] = (p1x - x) / w;
+  pGVar1->st[1] = (p1y - y) / h;
   (pGVar1->color).packed = 0xffffffff;
-  pGVar1[3].xy[0] = local_1c;
-  pGVar1[3].xy[1] = local_2c;
-  pGVar1[3].st[0] = (local_1c - local_18) / local_8;
-  pGVar1[3].st[1] = (local_2c - local_14) / local_c;
+  pGVar1[3].xy[0] = p2x;
+  pGVar1[3].xy[1] = p2y;
+  pGVar1[3].st[0] = (p2x - x) / w;
+  pGVar1[3].st[1] = (p2y - y) / h;
   pGVar1[3].color.packed = 0xffffffff;
-  pGVar1[1].xy[0] = local_20;
-  pGVar1[1].xy[1] = local_14 + local_c;
-  pGVar1[1].st[0] = (local_20 - local_18) / local_8;
+  pGVar1[1].xy[0] = p1x;
+  pGVar1[1].xy[1] = y + h;
+  pGVar1[1].st[0] = (p1x - x) / w;
   pGVar1[1].st[1] = 1.0;
   pGVar1[1].color.packed = 0xffffffff;
-  pGVar1[2].xy[0] = local_1c;
-  pGVar1[2].xy[1] = local_14 + local_c;
-  pGVar1[2].st[0] = (local_1c - local_18) / local_8;
+  pGVar1[2].xy[0] = p2x;
+  pGVar1[2].xy[1] = y + h;
+  pGVar1[2].st[0] = (p2x - x) / w;
   pGVar1[2].st[1] = 1.0;
   pGVar1[2].color.packed = 0xffffffff;
   return;
@@ -282,31 +280,30 @@ void __cdecl UI_DrawLineGraphSegment(int param_1,float *param_2,float *param_3,r
 
 // 0074E210  UI_DrawBlurMaterial  (ui_mp/ui_main_mp.cpp:574)
 
-void __cdecl UI_DrawBlurMaterial(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawBlurMaterial(int contextIndex,rectDef_s *rect,float *color)
 
 {
   ushort uVar1;
-  float *pfVar2;
-  float local_18;
+  float *vec;
+  float shaderConstants;
   int local_14;
   undefined4 local_10;
   undefined4 local_c;
-  float local_8;
+  float intensity;
   
-  local_18 = param_3[3];
-  local_8 = local_18;
-  if (0.0 < local_18) {
+  shaderConstants = color[3];
+  intensity = shaderConstants;
+  if (0.0 < shaderConstants) {
     local_14 = (ui_blurDarkenAmount->current).integer;
     local_10 = 0;
     local_c = 0;
-    pfVar2 = &local_18;
+    vec = &shaderConstants;
     uVar1 = GetCodeConst_GenericParam0();
-    CL_SetCustomConstant((uint)uVar1,pfVar2);
-    R_UI3D_SetBlurRadius(local_8 * (ui_blurAmount->current).value);
-    param_3[3] = 1.0;
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,
-                     DAT_098b4b8c);
+    CL_SetCustomConstant((uint)uVar1,vec);
+    R_UI3D_SetBlurRadius(intensity * (ui_blurAmount->current).value);
+    color[3] = 1.0;
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,DAT_098b4b8c);
   }
   else {
     R_UI3D_SetBlurRadius(0.0);
@@ -318,124 +315,121 @@ void __cdecl UI_DrawBlurMaterial(int param_1,rectDef_s *param_2,float *param_3)
 // 0074E320  UI_DrawCombatRecordPieChart  (ui_mp/ui_main_mp.cpp:590)
 
 void __cdecl
-UI_DrawCombatRecordPieChart(int param_1,rectDef_s *param_2,float *param_3,char *param_4)
+UI_DrawCombatRecordPieChart(int contextIndex,rectDef_s *rect,float *color,char *dvarName)
 
 {
-  bool bVar1;
-  ushort uVar2;
-  int iVar3;
+  bool forFriend;
+  ushort uVar1;
+  int iVar2;
   int extraout_EAX;
-  Material *pMVar4;
-  double dVar5;
-  sortedItemParams_t sVar6;
-  float *pfVar7;
+  Material *pMVar3;
+  double dVar4;
+  sortedItemParams_t param_00;
+  float *pfVar5;
   undefined4 in_stack_ffffff60;
-  float local_80;
+  float pt1;
   float local_7c;
-  float local_78;
+  float param;
   float local_74;
   undefined4 local_70;
   undefined4 local_6c;
-  float local_68 [4];
-  int local_58;
-  int local_54;
-  int local_50;
-  float local_4c;
+  float lineColor [4];
+  int totalItemTypes;
+  int totalItems;
+  int pieChartType;
+  float pt2;
   float local_48;
-  int local_44;
-  float local_40 [12];
+  int i;
+  float pieColors [12];
   int aiStack_10 [3];
   
-  iVar3 = Dvar_GetInt(param_4);
+  iVar2 = Dvar_GetInt(dvarName);
   currIndex = 0;
   startIndex = 0;
   endIndex = 0;
-  local_58 = 0;
-  local_54 = 0;
-  local_50 = iVar3;
-  if (iVar3 != 0) {
-    if (iVar3 == 1) {
+  totalItemTypes = 0;
+  totalItems = 0;
+  pieChartType = iVar2;
+  if (iVar2 != 0) {
+    if (iVar2 == 1) {
       startIndex = 3;
       endIndex = 6;
       goto LAB_0074e3d2;
     }
-    if (iVar3 != 2) goto LAB_0074e3d2;
+    if (iVar2 != 2) goto LAB_0074e3d2;
   }
   startIndex = 0;
   endIndex = 3;
 LAB_0074e3d2:
   for (; startIndex < endIndex; startIndex = startIndex + 1) {
-    sVar6 = SORT_KEY;
-    bVar1 = Dvar_GetBool("ui_showFriendsCombatRecord");
-    LiveCombatRecord_GetSortedItemData(startIndex,bVar1,sVar6);
+    param_00 = SORT_KEY;
+    forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend,param_00);
     _ftol2_sse();
     aiStack_10[currIndex] = extraout_EAX;
     if (aiStack_10[currIndex] == 0) break;
-    local_58 = local_58 + 1;
-    local_54 = local_54 + aiStack_10[currIndex];
+    totalItemTypes = totalItemTypes + 1;
+    totalItems = totalItems + aiStack_10[currIndex];
     currIndex = currIndex + 1;
   }
-  local_80 = 0.0;
+  pt1 = 0.0;
   local_7c = 0.0;
-  local_4c = 0.0;
+  pt2 = 0.0;
   local_48 = 0.0;
   local_70 = 0;
   local_6c = 0;
-  local_40[0] = 0.96;
-  local_40[1] = 0.58;
-  local_40[2] = 0.11;
-  local_40[3] = 1.0;
-  local_40[4] = 0.17;
-  local_40[5] = 0.17;
-  local_40[6] = 0.17;
-  local_40[7] = 1.0;
-  local_40[8] = 0.57;
-  local_40[9] = 0.57;
-  local_40[10] = 0.57;
-  local_40[0xb] = 1.0;
-  local_78 = 0.0;
+  pieColors[0] = 0.96;
+  pieColors[1] = 0.58;
+  pieColors[2] = 0.11;
+  pieColors[3] = 1.0;
+  pieColors[4] = 0.17;
+  pieColors[5] = 0.17;
+  pieColors[6] = 0.17;
+  pieColors[7] = 1.0;
+  pieColors[8] = 0.57;
+  pieColors[9] = 0.57;
+  pieColors[10] = 0.57;
+  pieColors[0xb] = 1.0;
+  param = 0.0;
   local_74 = 6.2831855;
-  local_68[0] = 0.0;
-  local_68[1] = 0.0;
-  local_68[2] = 0.0;
-  local_68[3] = 0.8;
-  pfVar7 = &local_78;
-  uVar2 = GetCodeConst_GenericParam0();
-  CL_SetCustomConstant((uint)uVar2,pfVar7);
-  pMVar4 = Material_RegisterHandle("piechart",3);
-  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                   param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,local_40,pMVar4);
-  local_78 = 4.712389 - ((float)aiStack_10[1] / (float)local_54) * 6.2831855;
-  for (local_44 = 1; local_44 < local_58; local_44 = local_44 + 1) {
-    local_74 = ((float)aiStack_10[local_44] / (float)local_54) * 6.2831855;
-    pfVar7 = &local_78;
-    uVar2 = GetCodeConst_GenericParam0();
-    CL_SetCustomConstant((uint)uVar2,pfVar7);
-    pMVar4 = Material_RegisterHandle("piechart",3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,
-                     local_40 + local_44 * 4,pMVar4);
-    local_80 = param_2->w / 2.0 + param_2->x;
-    local_7c = param_2->h / 2.0 + param_2->y;
-    dVar5 = (double)local_78;
-    __libm_sse2_cos((double)CONCAT44(in_stack_ffffff60,iVar3));
-    local_4c = param_2->w / 2.0 + param_2->x + (param_2->w / 2.0) * (float)dVar5;
-    dVar5 = (double)local_78;
-    __libm_sse2_sin((double)CONCAT44(in_stack_ffffff60,iVar3));
-    local_48 = (param_2->h / 2.0 + param_2->y) - (param_2->h / 2.0) * (float)dVar5;
-    UI_DrawPrettyLine(param_1,&local_80,&local_4c,1.0,param_2->horzAlign,param_2->vertAlign,local_68
-                     );
-    local_78 = local_78 + local_74;
+  lineColor[0] = 0.0;
+  lineColor[1] = 0.0;
+  lineColor[2] = 0.0;
+  lineColor[3] = 0.8;
+  pfVar5 = &param;
+  uVar1 = GetCodeConst_GenericParam0();
+  CL_SetCustomConstant((uint)uVar1,pfVar5);
+  pMVar3 = Material_RegisterHandle("piechart",3);
+  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,rect->w,
+                   rect->h,rect->horzAlign,rect->vertAlign,pieColors,pMVar3);
+  param = 4.712389 - ((float)aiStack_10[1] / (float)totalItems) * 6.2831855;
+  for (i = 1; i < totalItemTypes; i = i + 1) {
+    local_74 = ((float)aiStack_10[i] / (float)totalItems) * 6.2831855;
+    pfVar5 = &param;
+    uVar1 = GetCodeConst_GenericParam0();
+    CL_SetCustomConstant((uint)uVar1,pfVar5);
+    pMVar3 = Material_RegisterHandle("piechart",3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,pieColors + i * 4,pMVar3);
+    pt1 = rect->w / 2.0 + rect->x;
+    local_7c = rect->h / 2.0 + rect->y;
+    dVar4 = (double)param;
+    __libm_sse2_cos((double)CONCAT44(in_stack_ffffff60,iVar2));
+    pt2 = rect->w / 2.0 + rect->x + (rect->w / 2.0) * (float)dVar4;
+    dVar4 = (double)param;
+    __libm_sse2_sin((double)CONCAT44(in_stack_ffffff60,iVar2));
+    local_48 = (rect->h / 2.0 + rect->y) - (rect->h / 2.0) * (float)dVar4;
+    UI_DrawPrettyLine(contextIndex,&pt1,&pt2,1.0,rect->horzAlign,rect->vertAlign,lineColor);
+    param = param + local_74;
   }
-  if (1 < local_58) {
-    dVar5 = (double)local_78;
-    __libm_sse2_cos((double)CONCAT44(in_stack_ffffff60,iVar3));
-    local_4c = param_2->w / 2.0 + param_2->x + (param_2->w / 2.0) * (float)dVar5;
-    dVar5 = (double)local_78;
-    __libm_sse2_sin((double)CONCAT44(in_stack_ffffff60,iVar3));
-    local_48 = (param_2->h / 2.0 + param_2->y) - (param_2->h / 2.0) * (float)dVar5;
-    UI_DrawPrettyLine(param_1,&local_80,&local_4c,1.0,param_2->horzAlign,param_2->vertAlign,local_68
-                     );
+  if (1 < totalItemTypes) {
+    dVar4 = (double)param;
+    __libm_sse2_cos((double)CONCAT44(in_stack_ffffff60,iVar2));
+    pt2 = rect->w / 2.0 + rect->x + (rect->w / 2.0) * (float)dVar4;
+    dVar4 = (double)param;
+    __libm_sse2_sin((double)CONCAT44(in_stack_ffffff60,iVar2));
+    local_48 = (rect->h / 2.0 + rect->y) - (rect->h / 2.0) * (float)dVar4;
+    UI_DrawPrettyLine(contextIndex,&pt1,&pt2,1.0,rect->horzAlign,rect->vertAlign,lineColor);
   }
   return;
 }
@@ -444,157 +438,155 @@ LAB_0074e3d2:
 // 0074E910  UI_DrawCombatRecordLineGraph  (ui_mp/ui_main_mp.cpp:668)
 
 void __cdecl
-UI_DrawCombatRecordLineGraph(int param_1,rectDef_s *param_2,float *param_3,char *param_4)
+UI_DrawCombatRecordLineGraph(int contextIndex,rectDef_s *rect,float *color,char *dvarName)
 
 {
   int extraout_EAX;
   Material *pMVar1;
   float fVar2;
-  float local_c4;
-  float local_c0 [6];
-  int local_a8;
-  float local_a4;
-  float local_a0;
+  float maxKDRatioValue;
+  float white [6];
+  int maxValues;
+  float midpoint;
+  float green;
   undefined4 local_9c;
   undefined4 local_98;
   undefined4 local_94;
-  int local_90;
-  float local_8c;
-  float local_88;
+  int numRecentValues;
+  float separation;
+  float red;
   undefined4 local_84;
   undefined4 local_80;
   undefined4 local_7c;
-  float local_78;
-  int local_74;
-  bool local_6d;
-  int local_6c;
-  float local_68 [11];
-  float local_3c;
+  float currY;
+  int startIndex;
+  bool forFriend;
+  int currGraph;
+  int currIndex;
+  float afStack_64 [10];
+  float pt2;
   float local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
+  float startpoint;
+  float nextY;
+  float dotColor;
   undefined4 local_28;
   undefined4 local_24;
   undefined4 local_20;
-  float local_1c;
-  float local_18;
-  float local_14 [4];
+  float halfHeight;
+  float dotDimension;
+  float gray [4];
   
-  local_6d = Dvar_GetBool("ui_showFriendsCombatRecord");
-  local_6c = Dvar_GetInt(param_4);
-  local_a8 = 0;
-  local_74 = 0;
-  if (local_6c == 1) {
-    local_a8 = 10;
-    local_74 = 0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  currGraph = Dvar_GetInt(dvarName);
+  maxValues = 0;
+  startIndex = 0;
+  if (currGraph == 1) {
+    maxValues = 10;
+    startIndex = 0;
   }
-  else if (local_6c == 3) {
-    local_a8 = 5;
-    local_74 = 1;
+  else if (currGraph == 3) {
+    maxValues = 5;
+    startIndex = 1;
   }
-  local_90 = 0;
-  local_c4 = 0.0;
-  for (local_68[0] = 0.0; (int)local_68[0] < local_a8; local_68[0] = (float)((int)local_68[0] + 1))
-  {
-    LiveCombatRecord_GetSortedItemData(local_74,local_6d,ITEM_INDEX);
+  numRecentValues = 0;
+  maxKDRatioValue = 0.0;
+  for (currIndex = 0; currIndex < maxValues; currIndex = currIndex + 1) {
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend,ITEM_INDEX);
     _ftol2_sse();
     if (extraout_EAX == 0) break;
-    fVar2 = LiveCombatRecord_GetSortedItemData(local_74,local_6d,SORT_KEY);
-    local_68[(int)local_68[0] + 1] = fVar2;
-    if (local_c4 < local_68[(int)local_68[0] + 1]) {
-      local_c4 = local_68[(int)local_68[0] + 1];
+    fVar2 = LiveCombatRecord_GetSortedItemData(startIndex,forFriend,SORT_KEY);
+    afStack_64[currIndex] = fVar2;
+    if (maxKDRatioValue < afStack_64[currIndex]) {
+      maxKDRatioValue = afStack_64[currIndex];
     }
-    local_90 = local_90 + 1;
-    local_74 = local_74 + 1;
+    numRecentValues = numRecentValues + 1;
+    startIndex = startIndex + 1;
   }
-  if (1 < local_90) {
-    local_34 = param_2->y;
-    local_a4 = param_2->h / 2.0 + param_2->y;
-    local_1c = param_2->h / 2.0;
-    local_30 = 0.0;
-    local_18 = param_2->h / 11.5;
-    local_8c = param_2->w / (float)(local_a8 + -1);
-    local_14[0] = 1.0;
-    local_14[1] = 1.0;
-    local_14[2] = 1.0;
-    local_14[3] = 0.1;
-    local_c0[0] = 1.0;
-    local_c0[1] = 1.0;
-    local_c0[2] = 1.0;
-    local_c0[3] = 1.0;
-    local_88 = 0.73;
+  if (1 < numRecentValues) {
+    startpoint = rect->y;
+    midpoint = rect->h / 2.0 + rect->y;
+    halfHeight = rect->h / 2.0;
+    nextY = 0.0;
+    dotDimension = rect->h / 11.5;
+    separation = rect->w / (float)(maxValues + -1);
+    gray[0] = 1.0;
+    gray[1] = 1.0;
+    gray[2] = 1.0;
+    gray[3] = 0.1;
+    white[0] = 1.0;
+    white[1] = 1.0;
+    white[2] = 1.0;
+    white[3] = 1.0;
+    red = 0.73;
     local_84 = 0x3e428f5c;
     local_80 = 0x3e428f5c;
     local_7c = 0x3f800000;
-    local_a0 = 0.42;
+    green = 0.42;
     local_9c = 0x3f2e147b;
     local_98 = 0x3eeb851f;
     local_94 = 0x3f800000;
-    local_2c = 0.42;
+    dotColor = 0.42;
     local_28 = 0x3f2e147b;
     local_24 = 0x3eeb851f;
     local_20 = 0x3f800000;
-    local_c0[4] = 0.0;
-    local_c0[5] = 0.0;
-    local_3c = 0.0;
+    white[4] = 0.0;
+    white[5] = 0.0;
+    pt2 = 0.0;
     local_38 = 0.0;
-    local_78 = local_a4;
-    for (local_74 = 0; local_74 < local_a8; local_74 = local_74 + 1) {
+    currY = midpoint;
+    for (startIndex = 0; startIndex < maxValues; startIndex = startIndex + 1) {
       pMVar1 = Material_RegisterHandle("white",3);
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                       (float)local_74 * local_8c + param_2->x,param_2->y,1.0,param_2->h,
-                       param_2->horzAlign,param_2->vertAlign,local_14,pMVar1);
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       (float)startIndex * separation + rect->x,rect->y,1.0,rect->h,rect->horzAlign,
+                       rect->vertAlign,gray,pMVar1);
     }
-    local_74 = 0;
-    for (local_68[0] = (float)(local_90 + -1); -1 < (int)local_68[0];
-        local_68[0] = (float)((int)local_68[0] + -1)) {
-      if (1.0 <= local_68[(int)local_68[0] + 1]) {
-        if (2.0 < local_c4) {
-          local_78 = (local_34 + local_1c) -
-                     ((local_68[(int)local_68[0] + 1] - 1.0) / (local_c4 - 1.0)) * local_1c;
+    startIndex = 0;
+    for (currIndex = numRecentValues + -1; -1 < currIndex; currIndex = currIndex + -1) {
+      if (1.0 <= afStack_64[currIndex]) {
+        if (2.0 < maxKDRatioValue) {
+          currY = (startpoint + halfHeight) -
+                  ((afStack_64[currIndex] - 1.0) / (maxKDRatioValue - 1.0)) * halfHeight;
         }
         else {
-          local_78 = local_34 + (2.0 - local_68[(int)local_68[0] + 1]) * local_1c;
+          currY = startpoint + (2.0 - afStack_64[currIndex]) * halfHeight;
         }
-        local_2c = local_a0;
+        dotColor = green;
         local_28 = local_9c;
         local_24 = local_98;
         local_20 = local_94;
       }
       else {
-        local_78 = local_a4 + (1.0 - local_68[(int)local_68[0] + 1]) * local_1c;
-        local_2c = local_88;
+        currY = midpoint + (1.0 - afStack_64[currIndex]) * halfHeight;
+        dotColor = red;
         local_28 = local_84;
         local_24 = local_80;
         local_20 = local_7c;
       }
-      if (1.0 <= local_68[(int)local_68[0]]) {
-        if (2.0 < local_c4) {
-          local_30 = (local_34 + local_1c) -
-                     ((local_68[(int)local_68[0]] - 1.0) / (local_c4 - 1.0)) * local_1c;
+      if (1.0 <= afStack_64[currIndex + -1]) {
+        if (2.0 < maxKDRatioValue) {
+          nextY = (startpoint + halfHeight) -
+                  ((afStack_64[currIndex + -1] - 1.0) / (maxKDRatioValue - 1.0)) * halfHeight;
         }
         else {
-          local_30 = local_34 + (2.0 - local_68[(int)local_68[0]]) * local_1c;
+          nextY = startpoint + (2.0 - afStack_64[currIndex + -1]) * halfHeight;
         }
       }
       else {
-        local_30 = local_a4 + (1.0 - local_68[(int)local_68[0]]) * local_1c;
+        nextY = midpoint + (1.0 - afStack_64[currIndex + -1]) * halfHeight;
       }
-      if (local_74 < local_90 + -1) {
-        local_c0[4] = (float)local_74 * local_8c + param_2->x;
-        local_c0[5] = local_78;
-        local_3c = (float)(local_74 + 1) * local_8c + param_2->x;
-        local_38 = local_30;
-        UI_DrawPrettyLine(param_1,local_c0 + 4,&local_3c,1.0,param_2->horzAlign,param_2->vertAlign,
-                          local_c0);
+      if (startIndex < numRecentValues + -1) {
+        white[4] = (float)startIndex * separation + rect->x;
+        white[5] = currY;
+        pt2 = (float)(startIndex + 1) * separation + rect->x;
+        local_38 = nextY;
+        UI_DrawPrettyLine(contextIndex,white + 4,&pt2,1.0,rect->horzAlign,rect->vertAlign,white);
       }
       pMVar1 = Material_RegisterHandle("white",3);
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                       ((float)local_74 * local_8c + param_2->x) - local_18 / 2.0,
-                       local_78 - local_18 / 2.0,local_18,local_18,param_2->horzAlign,
-                       param_2->vertAlign,&local_2c,pMVar1);
-      local_74 = local_74 + 1;
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       ((float)startIndex * separation + rect->x) - dotDimension / 2.0,
+                       currY - dotDimension / 2.0,dotDimension,dotDimension,rect->horzAlign,
+                       rect->vertAlign,&dotColor,pMVar1);
+      startIndex = startIndex + 1;
     }
   }
   return;
@@ -605,32 +597,31 @@ UI_DrawCombatRecordLineGraph(int param_1,rectDef_s *param_2,float *param_3,char 
 
 void __cdecl
 UI_DrawCombatRecordHistogram
-          (int param_1,rectDef_s *param_2,float *param_3,char *param_4,float *param_5)
+          (int contextIndex,rectDef_s *rect,float *color,char *dvarName,float *samples)
 
 {
-  float local_28;
+  float pt1;
   float local_24;
-  float local_20;
-  float local_1c;
+  float separation;
+  float lineColor;
   float local_18;
   float local_14;
   float local_10;
-  float local_c;
+  float pt2;
   float local_8;
   
-  local_1c = 1.0;
+  lineColor = 1.0;
   local_18 = 1.0;
   local_14 = 1.0;
   local_10 = 0.2;
-  local_20 = param_2->w / 10.0;
-  if ((param_2->w != 0.0) && (param_2->h != 0.0)) {
-    local_28 = param_2->x;
-    local_24 = (param_2->y + param_2->h) - *param_5 * param_2->h;
-    local_c = param_2->x + local_20;
-    local_8 = (param_2->y + param_2->h) - param_5[1] * param_2->h;
-    UI_DrawLineGraphSegment(param_1,&local_28,&local_c,param_2);
-    UI_DrawPrettyLine(param_1,&local_28,&local_c,2.0,param_2->horzAlign,param_2->vertAlign,&local_1c
-                     );
+  separation = rect->w / 10.0;
+  if ((rect->w != 0.0) && (rect->h != 0.0)) {
+    pt1 = rect->x;
+    local_24 = (rect->y + rect->h) - *samples * rect->h;
+    pt2 = rect->x + separation;
+    local_8 = (rect->y + rect->h) - samples[1] * rect->h;
+    UI_DrawLineGraphSegment(contextIndex,&pt1,&pt2,rect);
+    UI_DrawPrettyLine(contextIndex,&pt1,&pt2,2.0,rect->horzAlign,rect->vertAlign,&lineColor);
   }
   return;
 }
@@ -640,75 +631,76 @@ UI_DrawCombatRecordHistogram
 
 void __cdecl
 UI_DrawCombatRecordBarGraph
-          (int param_1,rectDef_s *param_2,rectDef_s *param_3,float *param_4,char *param_5)
+          (int contextIndex,rectDef_s *rect,rectDef_s *parentRect,float *color,char *dvarName)
 
 {
   int extraout_EAX;
   uint extraout_EAX_00;
-  Material *pMVar1;
-  uint uVar2;
-  float local_78 [4];
-  int local_68;
+  Material *material;
+  uint uVar1;
+  float barColorRed [4];
+  int maxEarnings;
   uint auStack_64 [10];
-  int local_3c;
-  float local_38;
-  float local_34;
-  int local_30;
-  float local_2c;
-  bool local_25;
-  float local_24;
-  int local_20;
-  float local_1c [5];
-  float *local_8;
+  int numRecentValues;
+  float separation;
+  float currY;
+  int startIndex;
+  float barWidth;
+  bool forFriend;
+  float midPoint;
+  int currIndex;
+  float barColorGreen [4];
+  float barHeight;
+  float *barColor;
   
-  local_25 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  local_3c = 0;
-  local_68 = 0;
-  local_30 = 0;
-  for (local_20 = 0; local_20 < 10; local_20 = local_20 + 1) {
-    LiveCombatRecord_GetSortedItemData(local_20,local_25,ITEM_INDEX);
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  numRecentValues = 0;
+  maxEarnings = 0;
+  startIndex = 0;
+  for (currIndex = 0; currIndex < 10; currIndex = currIndex + 1) {
+    LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
     _ftol2_sse();
     if (extraout_EAX == 0) break;
-    LiveCombatRecord_GetSortedItemData(local_20,local_25,PARAM1);
+    LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
     _ftol2_sse();
-    auStack_64[local_20] = extraout_EAX_00;
-    local_3c = local_3c + 1;
-    uVar2 = (int)auStack_64[local_20] >> 0x1f;
-    if (local_68 < (int)((auStack_64[local_20] ^ uVar2) - uVar2)) {
-      uVar2 = (int)auStack_64[local_20] >> 0x1f;
-      local_68 = (auStack_64[local_20] ^ uVar2) - uVar2;
+    auStack_64[currIndex] = extraout_EAX_00;
+    numRecentValues = numRecentValues + 1;
+    uVar1 = (int)auStack_64[currIndex] >> 0x1f;
+    if (maxEarnings < (int)((auStack_64[currIndex] ^ uVar1) - uVar1)) {
+      uVar1 = (int)auStack_64[currIndex] >> 0x1f;
+      maxEarnings = (auStack_64[currIndex] ^ uVar1) - uVar1;
     }
   }
-  if (local_68 != 0) {
-    local_78[0] = 0.73;
-    local_78[1] = 0.19;
-    local_78[2] = 0.19;
-    local_78[3] = 1.0;
-    local_1c[0] = 0.42;
-    local_1c[1] = 0.68;
-    local_1c[2] = 0.46;
-    local_1c[3] = 1.0;
-    local_34 = 0.0;
-    local_24 = param_2->h / 2.0 + param_2->y;
-    local_1c[4] = 0.0;
-    local_2c = (param_2->w / 10.0) * 0.6666667;
-    local_38 = param_2->w / 10.0;
-    local_30 = 0;
-    for (local_20 = local_3c + -1; -1 < local_20; local_20 = local_20 + -1) {
-      local_1c[4] = (ABS((float)(int)auStack_64[local_20]) / (float)local_68) * (param_2->h / 2.0);
-      if ((int)auStack_64[local_20] < 1) {
-        local_34 = local_24;
-        local_8 = local_78;
+  if (maxEarnings != 0) {
+    barColorRed[0] = 0.73;
+    barColorRed[1] = 0.19;
+    barColorRed[2] = 0.19;
+    barColorRed[3] = 1.0;
+    barColorGreen[0] = 0.42;
+    barColorGreen[1] = 0.68;
+    barColorGreen[2] = 0.46;
+    barColorGreen[3] = 1.0;
+    currY = 0.0;
+    midPoint = rect->h / 2.0 + rect->y;
+    barHeight = 0.0;
+    barWidth = (rect->w / 10.0) * 0.6666667;
+    separation = rect->w / 10.0;
+    startIndex = 0;
+    for (currIndex = numRecentValues + -1; -1 < currIndex; currIndex = currIndex + -1) {
+      barHeight = (ABS((float)(int)auStack_64[currIndex]) / (float)maxEarnings) * (rect->h / 2.0);
+      if ((int)auStack_64[currIndex] < 1) {
+        currY = midPoint;
+        barColor = barColorRed;
       }
       else {
-        local_34 = local_24 - local_1c[4];
-        local_8 = local_1c;
+        currY = midPoint - barHeight;
+        barColor = barColorGreen;
       }
-      pMVar1 = Material_RegisterHandle("white",3);
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                       (float)local_30 * local_38 + param_2->x,local_34,local_2c,local_1c[4],
-                       param_2->horzAlign,param_2->vertAlign,local_8,pMVar1);
-      local_30 = local_30 + 1;
+      material = Material_RegisterHandle("white",3);
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       (float)startIndex * separation + rect->x,currY,barWidth,barHeight,
+                       rect->horzAlign,rect->vertAlign,barColor,material);
+      startIndex = startIndex + 1;
     }
   }
   return;
@@ -719,165 +711,173 @@ UI_DrawCombatRecordBarGraph
 
 void __cdecl
 UI_DrawCombatRecordHorizontalBarGraph
-          (int param_1,int param_2,rectDef_s *param_3,rectDef_s *param_4,float *param_5,
-          char *param_6)
+          (int localClientNum,int contextIndex,rectDef_s *rect,rectDef_s *parentRect,float *color,
+          char *dvarName)
 
 {
   int iVar1;
   Material *pMVar2;
   int local_6c;
-  int local_68;
-  float local_64;
+  int i;
+  float white;
   float local_60;
   float local_5c;
   float local_58;
-  int local_54;
-  int local_50;
-  float local_4c [10];
-  undefined1 local_21;
-  int local_20;
-  float local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  undefined4 local_c;
-  float local_8;
+  int graphType;
+  int controllerIndex;
+  float green [4];
+  float redBarWidth;
+  float red [4];
+  float greenBarWidth;
+  bool forFriend;
+  int power;
+  float barHeight;
+  int greenBarValue;
+  int redBarValue;
+  int firstDigit;
+  int numGridLines;
+  float maxValue;
   
-  local_54 = Dvar_GetInt(param_6);
-  local_50 = Com_LocalClient_GetControllerIndex(param_1);
-  local_4c[9] = 0.0;
-  local_4c[4] = 0.0;
-  local_1c = param_3->h / 10.0;
-  local_18 = 0;
-  local_14 = 0;
-  local_10 = 0;
-  local_20 = 1;
-  local_8 = 0.0;
-  local_21 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  if (local_54 == 0x10) {
-    if ((bool)local_21) {
-      LiveStats_GetIntOtherPlayerStatByKey(local_50,&local_18,MP_PLAYERSTATSKEY_LIFETIME_EARNINGS);
-      LiveStats_GetIntOtherPlayerStatByKey(local_50,&local_14,MP_PLAYERSTATSKEY_LIFETIME_BUYIN);
+  graphType = Dvar_GetInt(dvarName);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  greenBarWidth = 0.0;
+  redBarWidth = 0.0;
+  barHeight = rect->h / 10.0;
+  greenBarValue = 0;
+  redBarValue = 0;
+  firstDigit = 0;
+  power = 1;
+  maxValue = 0.0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  if (graphType == 0x10) {
+    if (forFriend) {
+      LiveStats_GetIntOtherPlayerStatByKey
+                (controllerIndex,&greenBarValue,MP_PLAYERSTATSKEY_LIFETIME_EARNINGS);
+      LiveStats_GetIntOtherPlayerStatByKey
+                (controllerIndex,&redBarValue,MP_PLAYERSTATSKEY_LIFETIME_BUYIN);
     }
     else {
-      LiveStats_GetIntPlayerStatByKey(local_50,&local_18,MP_PLAYERSTATSKEY_LIFETIME_EARNINGS);
-      LiveStats_GetIntPlayerStatByKey(local_50,&local_14,MP_PLAYERSTATSKEY_LIFETIME_BUYIN);
+      LiveStats_GetIntPlayerStatByKey
+                (controllerIndex,&greenBarValue,MP_PLAYERSTATSKEY_LIFETIME_EARNINGS);
+      LiveStats_GetIntPlayerStatByKey(controllerIndex,&redBarValue,MP_PLAYERSTATSKEY_LIFETIME_BUYIN)
+      ;
     }
   }
-  else if (local_54 == 0x11) {
-    if ((bool)local_21) {
-      LiveStats_GetIntOtherPlayerStatByKey(local_50,&local_18,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED)
-      ;
-      LiveStats_GetIntOtherPlayerStatByKey(local_50,&local_14,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED)
-      ;
+  else if (graphType == 0x11) {
+    if (forFriend) {
+      LiveStats_GetIntOtherPlayerStatByKey
+                (controllerIndex,&greenBarValue,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
+      LiveStats_GetIntOtherPlayerStatByKey
+                (controllerIndex,&redBarValue,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
     }
     else {
-      LiveStats_GetIntPlayerStatByKey(local_50,&local_18,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
-      LiveStats_GetIntPlayerStatByKey(local_50,&local_14,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
+      LiveStats_GetIntPlayerStatByKey
+                (controllerIndex,&greenBarValue,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
+      LiveStats_GetIntPlayerStatByKey
+                (controllerIndex,&redBarValue,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
     }
-    iVar1 = LiveContracts_GetNumContractsInProgress(local_50);
-    local_14 = local_14 - (iVar1 + local_18);
+    iVar1 = LiveContracts_GetNumContractsInProgress(controllerIndex);
+    redBarValue = redBarValue - (iVar1 + greenBarValue);
   }
-  if (local_18 < local_14) {
-    local_6c = local_14;
+  if (greenBarValue < redBarValue) {
+    local_6c = redBarValue;
   }
   else {
-    local_6c = local_18;
+    local_6c = greenBarValue;
   }
-  for (local_10 = local_6c; 10 < local_10; local_10 = local_10 / 10) {
-    local_20 = local_20 * 10;
+  for (firstDigit = local_6c; 10 < firstDigit; firstDigit = firstDigit / 10) {
+    power = power * 10;
   }
-  local_8 = (float)((local_10 + 1) * local_20);
-  local_4c[9] = (((float)local_18 / local_8) * param_3->w) / 2.0;
-  local_4c[4] = (((float)local_14 / local_8) * param_3->w) / 2.0;
-  local_4c[0] = 0.42;
-  local_4c[1] = 0.68;
-  local_4c[2] = 0.46;
-  local_4c[3] = 1.0;
-  local_4c[5] = 0.73;
-  local_4c[6] = 0.19;
-  local_4c[7] = 0.19;
-  local_4c[8] = 1.0;
-  local_64 = 1.0;
+  maxValue = (float)((firstDigit + 1) * power);
+  greenBarWidth = (((float)greenBarValue / maxValue) * rect->w) / 2.0;
+  redBarWidth = (((float)redBarValue / maxValue) * rect->w) / 2.0;
+  green[0] = 0.42;
+  green[1] = 0.68;
+  green[2] = 0.46;
+  green[3] = 1.0;
+  red[0] = 0.73;
+  red[1] = 0.19;
+  red[2] = 0.19;
+  red[3] = 1.0;
+  white = 1.0;
   local_60 = 1.0;
   local_5c = 1.0;
   local_58 = 0.2;
-  local_c = 0x11;
-  for (local_68 = 0; local_68 < 0x11; local_68 = local_68 + 1) {
+  numGridLines = 0x11;
+  for (i = 0; i < 0x11; i = i + 1) {
     pMVar2 = Material_RegisterHandle("white",3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                     ((float)local_68 * param_3->w) / 16.0 + param_3->x,
-                     param_3->h / 4.0 + param_3->y,1.0,param_3->h / 2.0,param_3->horzAlign,
-                     param_3->vertAlign,&local_64,pMVar2);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                     ((float)i * rect->w) / 16.0 + rect->x,rect->h / 4.0 + rect->y,1.0,rect->h / 2.0
+                     ,rect->horzAlign,rect->vertAlign,&white,pMVar2);
   }
   pMVar2 = Material_RegisterHandle("white",3);
-  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                   (param_3->w / 2.0 - local_4c[4]) + param_3->x,
-                   (param_3->h / 2.0 + param_3->y) - local_1c / 2.0,local_4c[4],local_1c,
-                   param_3->horzAlign,param_3->vertAlign,local_4c + 5,pMVar2);
+  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                   (rect->w / 2.0 - redBarWidth) + rect->x,
+                   (rect->h / 2.0 + rect->y) - barHeight / 2.0,redBarWidth,barHeight,rect->horzAlign
+                   ,rect->vertAlign,red,pMVar2);
   pMVar2 = Material_RegisterHandle("white",3);
-  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_3->w / 2.0 + param_3->x
-                   ,(param_3->h / 2.0 + param_3->y) - local_1c / 2.0,local_4c[9],local_1c,
-                   param_3->horzAlign,param_3->vertAlign,local_4c,pMVar2);
+  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->w / 2.0 + rect->x,
+                   (rect->h / 2.0 + rect->y) - barHeight / 2.0,greenBarWidth,barHeight,
+                   rect->horzAlign,rect->vertAlign,green,pMVar2);
   return;
 }
 
 
 // 0074F8B0  UI_DrawCombatRecordHitLocHeatMap  (ui_mp/ui_main_mp.cpp:916)
 
-void __cdecl UI_DrawCombatRecordHitLocHeatMap(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawCombatRecordHitLocHeatMap(int contextIndex,rectDef_s *rect,float *color)
 
 {
   Material *pMVar1;
   float fVar2;
-  float local_d8;
-  float local_d4 [24];
+  float maxCriticalHitCount;
+  float red [24];
   float afStack_74 [20];
-  bool local_21;
-  hitLocation_t local_20;
-  float local_1c;
-  char *local_18;
-  float local_14 [4];
+  bool forFriend;
+  int currIndex;
+  float maxhitCount;
+  char *hitlocImage;
+  float yellow [4];
   
-  local_20 = 0;
-  local_1c = 0.0;
-  local_d8 = 0.0;
-  local_21 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  for (local_20 = 0; (int)local_20 < 0x13; local_20 = local_20 + 1) {
-    fVar2 = LiveCombatRecord_GetSortedItemData(local_20,local_21,PARAM1);
-    local_d4[local_20 + 4] = fVar2;
-    fVar2 = LiveCombatRecord_GetSortedItemData(local_20,local_21,PARAM2);
-    afStack_74[local_20] = fVar2;
-    if ((local_d4[local_20 + 4] != 0.0) && (local_d8 < local_d4[local_20 + 4])) {
-      local_d8 = local_d4[local_20 + 4];
+  currIndex = 0;
+  maxhitCount = 0.0;
+  maxCriticalHitCount = 0.0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  for (currIndex = 0; currIndex < 0x13; currIndex = currIndex + 1) {
+    fVar2 = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
+    red[currIndex + 4] = fVar2;
+    fVar2 = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM2);
+    afStack_74[currIndex] = fVar2;
+    if ((red[currIndex + 4] != 0.0) && (maxCriticalHitCount < red[currIndex + 4])) {
+      maxCriticalHitCount = red[currIndex + 4];
     }
-    if ((afStack_74[local_20] != 0.0) && (local_1c < afStack_74[local_20])) {
-      local_1c = afStack_74[local_20];
+    if ((afStack_74[currIndex] != 0.0) && (maxhitCount < afStack_74[currIndex])) {
+      maxhitCount = afStack_74[currIndex];
     }
   }
-  for (local_20 = 0; (int)local_20 < 0x13; local_20 = local_20 + 1) {
-    local_d4[local_20 + 4] = local_d4[local_20 + 4] / local_d8;
-    afStack_74[local_20] = afStack_74[local_20] / local_1c;
+  for (currIndex = 0; currIndex < 0x13; currIndex = currIndex + 1) {
+    red[currIndex + 4] = red[currIndex + 4] / maxCriticalHitCount;
+    afStack_74[currIndex] = afStack_74[currIndex] / maxhitCount;
   }
-  local_d4[0] = 0.73;
-  local_d4[1] = 0.19;
-  local_d4[2] = 0.19;
-  local_d4[3] = 1.0;
-  local_14[0] = 0.96;
-  local_14[1] = 0.58;
-  local_14[2] = 0.11;
-  local_14[3] = 1.0;
-  local_18 = (char *)0x0;
-  for (local_20 = HITLOC_HELMET; (int)local_20 < 0x12; local_20 = local_20 + HITLOC_HELMET) {
-    local_18 = LiveCombatRecord_GetHitLocationImageRef(local_20);
-    local_d4[3] = local_d4[local_20 + HITLOC_TORSO_UPR];
-    local_14[3] = afStack_74[local_20];
-    pMVar1 = Material_RegisterHandle(local_18,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,local_14,pMVar1);
-    pMVar1 = Material_RegisterHandle(local_18,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,local_d4,pMVar1);
+  red[0] = 0.73;
+  red[1] = 0.19;
+  red[2] = 0.19;
+  red[3] = 1.0;
+  yellow[0] = 0.96;
+  yellow[1] = 0.58;
+  yellow[2] = 0.11;
+  yellow[3] = 1.0;
+  hitlocImage = (char *)0x0;
+  for (currIndex = 1; currIndex < 0x12; currIndex = currIndex + 1) {
+    hitlocImage = LiveCombatRecord_GetHitLocationImageRef(currIndex);
+    red[3] = red[currIndex + 4];
+    yellow[3] = afStack_74[currIndex];
+    pMVar1 = Material_RegisterHandle(hitlocImage,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,yellow,pMVar1);
+    pMVar1 = Material_RegisterHandle(hitlocImage,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,red,pMVar1);
   }
   return;
 }
@@ -886,32 +886,35 @@ void __cdecl UI_DrawCombatRecordHitLocHeatMap(int param_1,rectDef_s *param_2,flo
 // 00750E10  UI_DrawPlaylistName  (ui_mp/ui_main_mp.cpp:967)
 
 void __cdecl
-UI_DrawPlaylistName(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,float *param_5,
-                   float param_6,int param_7,float param_8,float param_9,int param_10)
+UI_DrawPlaylistName(int localClientNum,int contextIndex,rectDef_s *rect,Font_s *font,float *color,
+                   float textScale,int style,float text_x,float text_y,int textAlignMode)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
-  char *pcVar5;
-  rectDef_s local_1c;
+  int controllerIndex_00;
+  int playlistId;
+  char *text;
+  int controllerIndex;
+  char *name;
+  int textHeight;
+  rectDef_s textRect;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  if ((iVar3 == -1) &&
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if ((controllerIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x3cd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar4 = Playlist_GetPlaylistIdForNum(iVar3,(playlist->current).integer);
-  pcVar5 = Playlist_GetPlaylistName(iVar3,iVar4);
-  if ((pcVar5 != (char *)0x0) && (*pcVar5 != '\0')) {
-    UI_TextHeight(param_4,param_6);
-    UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),pcVar5,param_3,param_4,
-                       param_3->x + param_8,param_3->y + param_9,param_6,param_5,param_7,param_10,
-                       &local_1c);
+  playlistId = Playlist_GetPlaylistIdForNum(controllerIndex_00,(playlist->current).integer);
+  text = Playlist_GetPlaylistName(controllerIndex_00,playlistId);
+  if ((text != (char *)0x0) && (*text != '\0')) {
+    UI_TextHeight(font,textScale);
+    UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,rect,font,
+                       rect->x + text_x,rect->y + text_y,textScale,color,style,textAlignMode,
+                       &textRect);
   }
   return;
 }
@@ -920,20 +923,23 @@ UI_DrawPlaylistName(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,f
 // 00750F00  UI_DrawCategoryName  (ui_mp/ui_main_mp.cpp:984)
 
 void __cdecl
-UI_DrawCategoryName(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,float *param_5,
-                   float param_6,int param_7,float param_8,float param_9,int param_10)
+UI_DrawCategoryName(int localClientNum,int contextIndex,rectDef_s *rect,Font_s *font,float *color,
+                   float textScale,int style,float text_x,float text_y,int textAlignMode)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
-  char *pcVar5;
-  int local_28;
-  rectDef_s local_1c;
+  int controllerIndex_00;
+  int categoryId;
+  char *text;
+  int controllerIndex;
+  int currentCategory;
+  char *name;
+  int textHeight;
+  rectDef_s textRect;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  if ((iVar3 == -1) &&
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  if ((controllerIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x3de,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -941,18 +947,18 @@ UI_DrawCategoryName(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,f
     return;
   }
   if ((xblive_wagermatch->current).enabled == false) {
-    local_28 = (category->current).integer;
+    currentCategory = (category->current).integer;
   }
   else {
-    local_28 = (wagerCategory->current).integer;
+    currentCategory = (wagerCategory->current).integer;
   }
-  iVar4 = Playlist_GetCategoryIdForNum(local_28);
-  pcVar5 = Playlist_GetCategoryLocalizedName(iVar3,iVar4);
-  if ((pcVar5 != (char *)0x0) && (*pcVar5 != '\0')) {
-    UI_TextHeight(param_4,param_6);
-    UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),pcVar5,param_3,param_4,
-                       param_3->x + param_8,param_3->y + param_9,param_6,param_5,param_7,param_10,
-                       &local_1c);
+  categoryId = Playlist_GetCategoryIdForNum(currentCategory);
+  text = Playlist_GetCategoryLocalizedName(controllerIndex_00,categoryId);
+  if ((text != (char *)0x0) && (*text != '\0')) {
+    UI_TextHeight(font,textScale);
+    UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,rect,font,
+                       rect->x + text_x,rect->y + text_y,textScale,color,style,textAlignMode,
+                       &textRect);
   }
   return;
 }
@@ -960,43 +966,44 @@ UI_DrawCategoryName(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,f
 
 // 0074D280  UI_GetGameTypeOnMapName  (ui_mp/ui_main_mp.cpp:1009)
 
-void __cdecl UI_GetGameTypeOnMapName(char *param_1,char *param_2,char *param_3)
+void __cdecl UI_GetGameTypeOnMapName(char *outputString,char *inputMapName,char *inputGameType)
 
 {
-  char *pcVar1;
-  ConversionArguments local_2c;
+  char *sourceString;
+  char *gametypeOnMap;
+  ConversionArguments convArgs;
   
-  pcVar1 = UI_SafeTranslateString("MPUI_GAMETYPE_ON_MAP");
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 2;
-  local_2c.args[0] = UI_GetGameTypeName(param_3,false);
-  local_2c.args[1] = UI_GetMapName(param_2,false);
-  UI_ReplaceConversions(pcVar1,&local_2c,param_1,4);
+  sourceString = UI_SafeTranslateString("MPUI_GAMETYPE_ON_MAP");
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 2;
+  convArgs.args[0] = UI_GetGameTypeName(inputGameType,false);
+  convArgs.args[1] = UI_GetMapName(inputMapName,false);
+  UI_ReplaceConversions(sourceString,&convArgs,outputString,4);
   return;
 }
 
 
 // 0074D300  UI_GetMapName  (ui_mp/ui_main_mp.cpp:1023)
 
-char * __cdecl UI_GetMapName(char *param_1,bool param_2)
+char * __cdecl UI_GetMapName(char *inputMapName,bool returnStringRef)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_c;
-  char *local_8;
+  StringTable *mapTable;
+  char *mapName;
   
-  StringTable_GetAsset("mp/mapsTable.csv",&local_c);
-  if (local_c == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/mapsTable.csv",&mapTable);
+  if (mapTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x404,0,"%s"
                             );
     if (!bVar2) {
@@ -1005,30 +1012,30 @@ char * __cdecl UI_GetMapName(char *param_1,bool param_2)
       return pcVar3;
     }
   }
-  if (param_2) {
-    local_8 = StringTable_Lookup(local_c,0,param_1,3);
+  if (returnStringRef) {
+    mapName = StringTable_Lookup(mapTable,0,inputMapName,3);
   }
   else {
-    pcVar3 = StringTable_Lookup(local_c,0,param_1,3);
-    local_8 = UI_SafeTranslateString(pcVar3);
+    pcVar3 = StringTable_Lookup(mapTable,0,inputMapName,3);
+    mapName = UI_SafeTranslateString(pcVar3);
   }
-  return local_8;
+  return mapName;
 }
 
 
 // 0074D390  UI_GetGameTypeName  (ui_mp/ui_main_mp.cpp:1039)
 
-char * __cdecl UI_GetGameTypeName(char *param_1,bool param_2)
+char * __cdecl UI_GetGameTypeName(char *inputGameType,bool returnStringRef)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  char *local_c;
-  StringTable *local_8;
+  char *gameTypeName;
+  StringTable *gameTypeTable;
   
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_8);
-  if (local_8 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypeTable);
+  if (gameTypeTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x414,0,"%s"
                             );
     if (!bVar2) {
@@ -1037,30 +1044,30 @@ char * __cdecl UI_GetGameTypeName(char *param_1,bool param_2)
       return pcVar3;
     }
   }
-  if (param_2) {
-    local_c = StringTable_Lookup(local_8,0,param_1,1);
+  if (returnStringRef) {
+    gameTypeName = StringTable_Lookup(gameTypeTable,0,inputGameType,1);
   }
   else {
-    pcVar3 = StringTable_Lookup(local_8,0,param_1,1);
-    local_c = UI_SafeTranslateString(pcVar3);
+    pcVar3 = StringTable_Lookup(gameTypeTable,0,inputGameType,1);
+    gameTypeName = UI_SafeTranslateString(pcVar3);
   }
-  return local_c;
+  return gameTypeName;
 }
 
 
 // 0074FC90  UI_GetOverlayMapNameFromIndex  (ui_mp/ui_main_mp.cpp:1056)
 
-char * __cdecl UI_GetOverlayMapNameFromIndex(int param_1)
+char * __cdecl UI_GetOverlayMapNameFromIndex(int mapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  StringTable *local_8;
+  int valueColumn;
+  StringTable *mapTable;
   
-  StringTable_GetAsset("mp/mapsTable.csv",&local_8);
-  if (local_8 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/mapsTable.csv",&mapTable);
+  if (mapTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x423,0,"%s"
                             );
     if (!bVar2) {
@@ -1069,9 +1076,9 @@ char * __cdecl UI_GetOverlayMapNameFromIndex(int param_1)
       return pcVar3;
     }
   }
-  iVar4 = 7;
+  valueColumn = 7;
   pcVar3 = va("%d");
-  pcVar3 = StringTable_Lookup(local_8,5,pcVar3,iVar4);
+  pcVar3 = StringTable_Lookup(mapTable,5,pcVar3,valueColumn);
   return pcVar3;
 }
 
@@ -1082,31 +1089,31 @@ char * __cdecl UI_GetOverlayMapNameFromIndex(int param_1)
 
 void __cdecl
 UI_DrawGameTypeOnMapName
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float *param_4,float param_5,int param_6)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float *color,float textScale,int style)
 
 {
   char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  float fVar4;
-  float fVar5;
-  int iVar6;
-  int iVar7;
-  char local_40c [1028];
+  char *inputMapName;
+  int maxChars;
+  float x;
+  float y;
+  int horzAlign;
+  int vertAlign;
+  char outputString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   pcVar1 = Dvar_GetString("ui_gametype");
-  pcVar2 = Dvar_GetString("ui_mapname");
-  UI_GetGameTypeOnMapName(local_40c,pcVar2,pcVar1);
-  iVar7 = param_2->vertAlign;
-  iVar6 = param_2->horzAlign;
-  fVar5 = param_2->y;
-  fVar4 = param_2->x;
-  iVar3 = 0x7fffffff;
+  inputMapName = Dvar_GetString("ui_mapname");
+  UI_GetGameTypeOnMapName(outputString,inputMapName,pcVar1);
+  vertAlign = rect->vertAlign;
+  horzAlign = rect->horzAlign;
+  y = rect->y;
+  x = rect->x;
+  maxChars = 0x7fffffff;
   pcVar1 = va("%s");
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,iVar3,param_3,fVar4,fVar5,
-              iVar6,iVar7,param_5,param_4,param_6);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar1,maxChars,font,x,y,
+              horzAlign,vertAlign,textScale,color,style);
   return;
 }
 
@@ -1116,57 +1123,57 @@ UI_DrawGameTypeOnMapName
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-UI_DrawWagerTier(int param_1,rectDef_s *param_2,Font_s *param_3,float *param_4,float param_5,
-                int param_6,float param_7,float param_8,int param_9)
+UI_DrawWagerTier(int localClientNum,rectDef_s *rect,Font_s *font,float *color,float textScale,
+                int style,float text_x,float text_y,int textAlignMode)
 
 {
-  char *pcVar1;
-  float fVar2;
-  float fVar3;
-  rectDef_s *prVar4;
-  char local_45c [1024];
-  char local_5c [8];
-  char local_54 [8];
+  char *text;
+  float y;
+  float x;
+  rectDef_s *textRect_00;
+  char outputString [1024];
+  char currentTierString [8];
+  char numTiersString [8];
   uint local_4c;
-  ConversionArguments local_48;
-  char *local_20;
-  rectDef_s local_1c;
+  ConversionArguments convArgs;
+  char *wagerTierString;
+  rectDef_s textRect;
   
   local_4c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_20 = UI_SafeTranslateString("MPUI_WAGERMATCH_TIER");
+  wagerTierString = UI_SafeTranslateString("MPUI_WAGERMATCH_TIER");
   Dvar_GetInt("scr_wagerTier");
-  Com_sprintf(local_5c,5,"%i");
-  Com_sprintf(local_54,5,"%i");
-  local_48.args[2] = (char *)0x0;
-  local_48.args[3] = (char *)0x0;
-  local_48.args[4] = (char *)0x0;
-  local_48.args[5] = (char *)0x0;
-  local_48.args[6] = (char *)0x0;
-  local_48.args[7] = (char *)0x0;
-  local_48.args[8] = (char *)0x0;
-  local_48.argCount = 2;
-  local_48.args[0] = local_5c;
-  local_48.args[1] = local_54;
-  UI_ReplaceConversions(local_20,&local_48,local_45c,0x400);
-  prVar4 = &local_1c;
-  fVar2 = param_2->y + param_8;
-  fVar3 = param_2->x + param_7;
-  pcVar1 = va("%s");
-  UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,param_2,param_3,
-                     fVar3,fVar2,param_5,param_4,param_6,param_9,prVar4);
+  Com_sprintf(currentTierString,5,"%i");
+  Com_sprintf(numTiersString,5,"%i");
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 2;
+  convArgs.args[0] = currentTierString;
+  convArgs.args[1] = numTiersString;
+  UI_ReplaceConversions(wagerTierString,&convArgs,outputString,0x400);
+  textRect_00 = &textRect;
+  y = rect->y + text_y;
+  x = rect->x + text_x;
+  text = va("%s");
+  UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,rect,font,x,y,
+                     textScale,color,style,textAlignMode,textRect_00);
   return;
 }
 
 
 // 0074D420  UI_GetOffsetForTextureCoords  (ui_mp/ui_main_mp.cpp:1126)
 
-uint __cdecl UI_GetOffsetForTextureCoords(uint param_1,uint param_2,GfxImage *param_3,uint param_4)
+uint __cdecl UI_GetOffsetForTextureCoords(uint xPos,uint yPos,GfxImage *img,uint bytesPerPixel)
 
 {
   RagdollBody *pRVar1;
   
-  pRVar1 = Ragdoll_HandleBody(param_3->width * param_2 + param_1);
-  return (int)pRVar1 * param_4;
+  pRVar1 = Ragdoll_HandleBody(img->width * yPos + xPos);
+  return (int)pRVar1 * bytesPerPixel;
 }
 
 
@@ -1174,7 +1181,7 @@ uint __cdecl UI_GetOffsetForTextureCoords(uint param_1,uint param_2,GfxImage *pa
 
 void __cdecl
 UI_GenerateHeatMapTextureInternal
-          (GfxImage *param_1,uchar *param_2,int param_3,ulong64 param_4,dvar_s *param_5)
+          (GfxImage *img,uchar *heatmap,int heatmapSize,ulong64 param_4,dvar_s *param_5)
 
 {
   uchar uVar1;
@@ -1185,14 +1192,18 @@ UI_GenerateHeatMapTextureInternal
   int iVar6;
   uchar *puVar7;
   int in_stack_00000010;
-  uint local_18;
-  uint local_10;
-  int local_c;
-  uchar local_7;
-  uchar local_6;
-  uchar local_5;
+  uint offset;
+  uchar *pixel;
+  uchar alpha;
+  int xPos;
+  int yOffset;
+  int yPos_2;
+  int yPos;
+  uchar green;
+  uchar blue;
+  uchar red;
   
-  if (param_1 == (GfxImage *)0x0) {
+  if (img == (GfxImage *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x476,0,"%s"
                             );
     if (!bVar4) {
@@ -1201,35 +1212,35 @@ UI_GenerateHeatMapTextureInternal
       return;
     }
   }
-  if ((((param_1 != (GfxImage *)0x0) && (1 < param_1->width)) && (1 < param_1->height)) &&
-     (iVar6 = (uint)param_1->width * (uint)param_1->height, iVar6 - param_3 == 0 || iVar6 < param_3)
+  if ((((img != (GfxImage *)0x0) && (1 < img->width)) && (1 < img->height)) &&
+     (iVar6 = (uint)img->width * (uint)img->height, iVar6 - heatmapSize == 0 || iVar6 < heatmapSize)
      ) {
     if (in_stack_00000010 == 0 && (int)param_4 == 0) {
-      for (local_c = 0; local_c < (int)(uint)param_1->height; local_c = local_c + 1) {
-        memset(param_1->pixels + (uint)param_1->width * local_c * 4,'\0',(uint)param_1->width << 2);
+      for (yPos = 0; yPos < (int)(uint)img->height; yPos = yPos + 1) {
+        memset(img->pixels + (uint)img->width * yPos * 4,'\0',(uint)img->width << 2);
       }
     }
     if (param_4._4_4_ == 0) {
-      local_5 = 0xff;
-      local_7 = 0xff;
-      local_6 = 0xff;
+      red = 0xff;
+      green = 0xff;
+      blue = 0xff;
     }
     else {
-      local_5 = *(uchar *)(param_4._4_4_ + 0x18);
-      local_7 = *(uchar *)(param_4._4_4_ + 0x19);
-      local_6 = *(uchar *)(param_4._4_4_ + 0x1a);
+      red = *(uchar *)(param_4._4_4_ + 0x18);
+      green = *(uchar *)(param_4._4_4_ + 0x19);
+      blue = *(uchar *)(param_4._4_4_ + 0x1a);
     }
-    for (local_10 = 0; (int)local_10 < (int)(uint)param_1->height; local_10 = local_10 + 1) {
-      uVar2 = param_1->width;
-      for (local_18 = 0; (int)local_18 < (int)(uint)param_1->width; local_18 = local_18 + 1) {
-        uVar1 = param_2[uVar2 * local_10 + local_18];
+    for (yPos_2 = 0; yPos_2 < (int)(uint)img->height; yPos_2 = yPos_2 + 1) {
+      uVar2 = img->width;
+      for (xPos = 0; xPos < (int)(uint)img->width; xPos = xPos + 1) {
+        uVar1 = heatmap[(uint)uVar2 * yPos_2 + xPos];
         if (((in_stack_00000010 != 0 || (int)param_4 != 0) && (uVar1 == 0xff)) ||
            ((in_stack_00000010 == 0 && (int)param_4 == 0 && (uVar1 != '\0')))) {
-          uVar5 = UI_GetOffsetForTextureCoords(local_18,local_10,param_1,4);
-          puVar7 = param_1->pixels + uVar5;
-          *puVar7 = local_6;
-          puVar7[1] = local_7;
-          puVar7[2] = local_5;
+          uVar5 = UI_GetOffsetForTextureCoords(xPos,yPos_2,img,4);
+          puVar7 = img->pixels + uVar5;
+          *puVar7 = blue;
+          puVar7[1] = green;
+          puVar7[2] = red;
           puVar7[3] = uVar1;
         }
       }
@@ -1241,106 +1252,108 @@ UI_GenerateHeatMapTextureInternal
 
 // 0074D440  UI_GenerateHeatMapTextureCallback  (ui_mp/ui_main_mp.cpp:1232)
 
-void __cdecl UI_GenerateHeatMapTextureCallback(void *param_1)
+void __cdecl UI_GenerateHeatMapTextureCallback(void *param)
 
 {
-  undefined1 local_10 [4];
+  undefined1 lock [4];
   uchar *local_c;
-  undefined4 *local_8;
+  GfxImage *img;
   
-  local_8 = param_1;
-  (**(code **)(**(int **)param_1 + 0x4c))(*(undefined4 *)param_1,0,local_10,0,0x2000);
-  memcpy(local_c,(uchar *)local_8[8],
-         (uint)*(ushort *)(local_8 + 5) * (uint)*(ushort *)((int)local_8 + 0x16) * 4);
-  (**(code **)(*(int *)*local_8 + 0x50))(*local_8,0);
-  Z_VirtualFree((void *)local_8[8],0x13);
-  local_8[8] = 0;
+  img = param;
+  (**(code **)(**(int **)param + 0x4c))(*(undefined4 *)param,0,lock,0,0x2000);
+  memcpy(local_c,img->pixels,(uint)img->width * (uint)img->height * 4);
+  (**(code **)((int)*(img->texture).basemap + 0x50))((img->texture).basemap,0);
+  Z_VirtualFree(img->pixels,0x13);
+  img->pixels = (uchar *)0x0;
   return;
 }
 
 
 // 0074D4D0  UI_GenerateHeatMapTexture  (ui_mp/ui_main_mp.cpp:1247)
 
-void __cdecl UI_GenerateHeatMapTexture(int param_1)
+/* WARNING: Variable defined which should be unmapped: pixels */
+
+void __cdecl UI_GenerateHeatMapTexture(int controllerIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   dvar_s *pdVar3;
-  char *pcVar4;
-  LargeLocal local_1c;
-  uchar *local_14;
-  GfxImage *local_10;
-  undefined8 local_c;
+  char *str;
+  uchar *pixels;
+  LargeLocal heatmap_large_local;
+  uchar *heatmap;
+  GfxImage *img;
+  undefined8 xuid;
   
-  LargeLocal::LargeLocal(&local_1c,0x10000);
-  local_14 = LargeLocal::GetBuf(&local_1c);
-  local_10 = Image_Register("heatmap",'\0',3);
-  pdVar3 = Z_VirtualAlloc((uint)local_10->width * (uint)local_10->height * 4,
-                          "UI_GenerateHeatMapTexture",0x13);
-  local_10->pixels = (uchar *)pdVar3;
-  if ((local_10 == (GfxImage *)0x0) &&
+  LargeLocal::LargeLocal(&heatmap_large_local,0x10000);
+  heatmap = LargeLocal::GetBuf(&heatmap_large_local);
+  img = Image_Register("heatmap",'\0',3);
+  pdVar3 = Z_VirtualAlloc((uint)img->width * (uint)img->height * 4,"UI_GenerateHeatMapTexture",0x13)
+  ;
+  img->pixels = (uchar *)pdVar3;
+  if ((img == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x4ea,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x10000 < (uint)local_10->width * (uint)local_10->height) &&
+  if ((0x10000 < (uint)img->width * (uint)img->height) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x4eb,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_10->width < 2) && (local_10->height < 2)) {
-    LargeLocal::~LargeLocal(&local_1c);
+  if ((img->width < 2) && (img->height < 2)) {
+    LargeLocal::~LargeLocal(&heatmap_large_local);
     return;
   }
-  local_c = 0;
-  MatchRecord_GenerateHeatMapData(local_14,0x10000,(uint)local_10->width,(uint)local_10->height,0);
-  UI_GenerateHeatMapTextureInternal
-            (local_10,local_14,0x10000,CONCAT44(ui_heatMapColor,local_c._4_4_),pdVar3);
+  xuid = 0;
+  MatchRecord_GenerateHeatMapData(heatmap,0x10000,(uint)img->width,(uint)img->height,0);
+  UI_GenerateHeatMapTextureInternal(img,heatmap,0x10000,CONCAT44(ui_heatMapColor,xuid._4_4_),pdVar3)
+  ;
   bVar2 = Dvar_GetBool("ui_showFriendsCombatRecord");
   if ((bVar2) || (bVar2 = Dvar_GetBool("ui_playercardOpen"), bVar2)) {
-    pcVar4 = Dvar_GetString("selectedPlayerXuid");
-    local_c = I_atoi64(pcVar4);
+    str = Dvar_GetString("selectedPlayerXuid");
+    xuid = I_atoi64(str);
   }
   else {
-    local_c = Live_GetXuid(param_1);
+    xuid = Live_GetXuid(controllerIndex);
   }
-  MatchRecord_GenerateHeatMapData
-            (local_14,0x10000,(uint)local_10->width,(uint)local_10->height,local_c);
+  MatchRecord_GenerateHeatMapData(heatmap,0x10000,(uint)img->width,(uint)img->height,xuid);
   UI_GenerateHeatMapTextureInternal
-            (local_10,local_14,0x10000,CONCAT44(ui_heatMapColorForPlayer,local_c._4_4_),pdVar3);
-  RB_Resource_CallbackParam(UI_GenerateHeatMapTextureCallback,local_10);
-  LargeLocal::~LargeLocal(&local_1c);
+            (img,heatmap,0x10000,CONCAT44(ui_heatMapColorForPlayer,xuid._4_4_),pdVar3);
+  RB_Resource_CallbackParam(UI_GenerateHeatMapTextureCallback,img);
+  LargeLocal::~LargeLocal(&heatmap_large_local);
   return;
 }
 
 
 // 0074FBA0  UI_DrawHeatMap  (ui_mp/ui_main_mp.cpp:1330)
 
-void __cdecl UI_DrawHeatMap(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawHeatMap(int contextIndex,rectDef_s *rect,float *color)
 
 {
   bool bVar1;
   byte bVar2;
-  char *pcVar3;
-  Material *pMVar4;
-  int iVar5;
+  char *name;
+  Material *pMVar3;
+  int imageTrack;
+  Material *material;
   
   bVar1 = MatchRecord_IsHeatMapDataGenerated();
   if (bVar1) {
-    iVar5 = 3;
+    imageTrack = 3;
     bVar2 = MatchRecord_GetMapIndex();
-    pcVar3 = UI_GetOverlayMapNameFromIndex((uint)bVar2);
-    pMVar4 = Material_RegisterHandle(pcVar3,iVar5);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,pMVar4);
-    pMVar4 = Material_RegisterHandle("heatmap_default",3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,pMVar4);
+    name = UI_GetOverlayMapNameFromIndex((uint)bVar2);
+    pMVar3 = Material_RegisterHandle(name,imageTrack);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,pMVar3);
+    pMVar3 = Material_RegisterHandle("heatmap_default",3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,pMVar3);
   }
   return;
 }
@@ -1350,73 +1363,73 @@ void __cdecl UI_DrawHeatMap(int param_1,rectDef_s *param_2,float *param_3)
 
 void __cdecl
 UI_DrawCombatRecordLineGraphGameTypes
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float *param_4,float param_5,int param_6)
+          (int contextIndex,rectDef_s *rect,Font_s *font,float *color,float textScale,int style)
 
 {
   int iVar1;
   int extraout_EAX;
   undefined4 extraout_EAX_00;
   char *pcVar2;
-  float fVar3;
-  int iVar4;
-  Font_s *pFVar5;
-  float fVar6;
-  int iVar7;
-  float fVar8;
-  float *pfVar9;
-  int iVar10;
-  int local_44;
+  float x;
+  int maxChars;
+  Font_s *font_00;
+  float y;
+  int horzAlign;
+  float scale;
+  float *color_00;
+  int style_00;
+  int maxValues;
   undefined4 auStack_40 [10];
-  int local_18;
-  float local_14;
-  int local_10;
-  bool local_9;
-  int local_8;
+  int numRecentValues;
+  float separation;
+  int startIndex;
+  bool forFriend;
+  int currIndex;
   
-  local_44 = 0;
-  local_8 = 0;
-  local_18 = 0;
-  local_10 = 0;
-  local_9 = Dvar_GetBool("ui_showFriendsCombatRecord");
+  maxValues = 0;
+  currIndex = 0;
+  numRecentValues = 0;
+  startIndex = 0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
   iVar1 = Dvar_GetInt("ui_combatCurrViewNum");
   if (iVar1 == 1) {
-    local_44 = 10;
-    local_10 = 0;
+    maxValues = 10;
+    startIndex = 0;
   }
   else {
     iVar1 = Dvar_GetInt("ui_combatCurrViewNum");
     if (iVar1 == 3) {
-      local_44 = 5;
-      local_10 = 1;
+      maxValues = 5;
+      startIndex = 1;
     }
   }
-  for (local_8 = 0; local_8 < local_44; local_8 = local_8 + 1) {
-    LiveCombatRecord_GetSortedItemData(local_10,local_9,ITEM_INDEX);
+  for (currIndex = 0; currIndex < maxValues; currIndex = currIndex + 1) {
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend,ITEM_INDEX);
     _ftol2_sse();
     if (extraout_EAX == 0) break;
-    LiveCombatRecord_GetSortedItemData(local_10,local_9,PARAM2);
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend,PARAM2);
     _ftol2_sse();
-    auStack_40[local_8] = extraout_EAX_00;
-    local_18 = local_18 + 1;
-    local_10 = local_10 + 1;
+    auStack_40[currIndex] = extraout_EAX_00;
+    numRecentValues = numRecentValues + 1;
+    startIndex = startIndex + 1;
   }
-  local_14 = param_2->w / (float)(local_44 + -1);
-  local_10 = 0;
-  for (local_8 = local_18 + -1; -1 < local_8; local_8 = local_8 + -1) {
-    iVar1 = param_2->vertAlign;
-    iVar7 = param_2->horzAlign;
-    fVar6 = param_2->y;
-    fVar3 = ((float)local_10 * local_14 + param_2->x) - 15.0;
-    iVar4 = 0x7fffffff;
-    pFVar5 = param_3;
-    fVar8 = param_5;
-    pfVar9 = param_4;
-    iVar10 = param_6;
+  separation = rect->w / (float)(maxValues + -1);
+  startIndex = 0;
+  for (currIndex = numRecentValues + -1; -1 < currIndex; currIndex = currIndex + -1) {
+    iVar1 = rect->vertAlign;
+    horzAlign = rect->horzAlign;
+    y = rect->y;
+    x = ((float)startIndex * separation + rect->x) - 15.0;
+    maxChars = 0x7fffffff;
+    font_00 = font;
+    scale = textScale;
+    color_00 = color;
+    style_00 = style;
     pcVar2 = va("MPUI_%s_SHORT_CAPS");
     pcVar2 = UI_SafeTranslateString(pcVar2);
-    UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar2,iVar4,pFVar5,fVar3,fVar6,
-                iVar7,iVar1,fVar8,pfVar9,iVar10);
-    local_10 = local_10 + 1;
+    UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),pcVar2,maxChars,font_00,x,y
+                ,horzAlign,iVar1,scale,color_00,style_00);
+    startIndex = startIndex + 1;
   }
   return;
 }
@@ -1426,72 +1439,74 @@ UI_DrawCombatRecordLineGraphGameTypes
 
 void __cdecl
 UI_DrawCombatRecordLineGraphValues
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float *param_4,float param_5,int param_6)
+          (int contextIndex,rectDef_s *rect,Font_s *font,float *color,float textScale,int style)
 
 {
-  bool bVar1;
-  int iVar2;
+  bool forFriend_00;
+  int iVar1;
   int extraout_EAX;
-  char *pcVar3;
-  float fVar4;
-  float fVar5;
-  int iVar6;
-  Font_s *pFVar7;
-  float fVar8;
-  int iVar9;
-  float fVar10;
-  float *pfVar11;
-  int iVar12;
-  int local_44;
-  int local_40;
-  int local_38;
-  int local_30;
+  char *pcVar2;
+  float x;
+  float fVar3;
+  int maxChars;
+  Font_s *font_00;
+  float y;
+  int horzAlign;
+  float scale;
+  float *color_00;
+  int style_00;
+  int maxValues;
+  int numRecentValues;
+  float separation;
+  int startIndex;
+  bool forFriend;
+  int currIndex;
   float afStack_2c [10];
   
-  local_44 = 0;
-  local_40 = 0;
-  local_38 = 0;
-  bVar1 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  iVar2 = Dvar_GetInt("ui_combatCurrViewNum");
-  if (iVar2 == 1) {
-    local_44 = 10;
-    local_38 = 0;
+  maxValues = 0;
+  numRecentValues = 0;
+  startIndex = 0;
+  forFriend_00 = Dvar_GetBool("ui_showFriendsCombatRecord");
+  iVar1 = Dvar_GetInt("ui_combatCurrViewNum");
+  if (iVar1 == 1) {
+    maxValues = 10;
+    startIndex = 0;
   }
   else {
-    iVar2 = Dvar_GetInt("ui_combatCurrViewNum");
-    if (iVar2 == 3) {
-      local_44 = 5;
-      local_38 = 1;
+    iVar1 = Dvar_GetInt("ui_combatCurrViewNum");
+    if (iVar1 == 3) {
+      maxValues = 5;
+      startIndex = 1;
     }
   }
-  for (local_30 = 0; local_30 < local_44; local_30 = local_30 + 1) {
-    LiveCombatRecord_GetSortedItemData(local_38,bVar1,ITEM_INDEX);
+  for (currIndex = 0; currIndex < maxValues; currIndex = currIndex + 1) {
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend_00,ITEM_INDEX);
     _ftol2_sse();
     if (extraout_EAX == 0) break;
-    fVar5 = LiveCombatRecord_GetSortedItemData(local_38,bVar1,SORT_KEY);
-    afStack_2c[local_30] = fVar5;
-    local_40 = local_40 + 1;
-    local_38 = local_38 + 1;
+    fVar3 = LiveCombatRecord_GetSortedItemData(startIndex,forFriend_00,SORT_KEY);
+    afStack_2c[currIndex] = fVar3;
+    numRecentValues = numRecentValues + 1;
+    startIndex = startIndex + 1;
   }
-  if (1 < local_40) {
-    fVar5 = param_2->w;
-    local_38 = 0;
-    while (local_30 = local_40 + -1, -1 < local_30) {
-      iVar2 = param_2->vertAlign;
-      iVar9 = param_2->horzAlign;
-      fVar8 = param_2->y;
-      fVar4 = ((float)local_38 * (fVar5 / (float)(local_44 + -1)) + param_2->x) - 10.0;
-      iVar6 = 0x7fffffff;
-      pFVar7 = param_3;
-      fVar10 = param_5;
-      pfVar11 = param_4;
-      iVar12 = param_6;
-      pcVar3 = va("%.2f");
-      pcVar3 = UI_SafeTranslateString(pcVar3);
-      UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar3,iVar6,pFVar7,fVar4,
-                  fVar8,iVar9,iVar2,fVar10,pfVar11,iVar12);
-      local_38 = local_38 + 1;
-      local_40 = local_30;
+  if (1 < numRecentValues) {
+    fVar3 = rect->w;
+    startIndex = 0;
+    while (currIndex = numRecentValues + -1, -1 < currIndex) {
+      iVar1 = rect->vertAlign;
+      horzAlign = rect->horzAlign;
+      y = rect->y;
+      x = ((float)startIndex * (fVar3 / (float)(maxValues + -1)) + rect->x) - 10.0;
+      maxChars = 0x7fffffff;
+      font_00 = font;
+      scale = textScale;
+      color_00 = color;
+      style_00 = style;
+      pcVar2 = va("%.2f");
+      pcVar2 = UI_SafeTranslateString(pcVar2);
+      UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),pcVar2,maxChars,font_00,x
+                  ,y,horzAlign,iVar1,scale,color_00,style_00);
+      startIndex = startIndex + 1;
+      numRecentValues = currIndex;
     }
   }
   return;
@@ -1500,240 +1515,259 @@ UI_DrawCombatRecordLineGraphValues
 
 // 0074FD00  UI_DrawAttributeBar  (ui_mp/ui_main_mp.cpp:1547)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
 void __cdecl
-UI_DrawAttributeBar(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,char *param_5)
+UI_DrawAttributeBar(int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,
+                   char *dvarName)
 
 {
   int iVar1;
-  ExpressionStatement *pEVar2;
+  ExpressionStatement *statement;
+  int valueColumn;
+  char *pcVar2;
   int iVar3;
-  char *pcVar4;
-  int iVar5;
-  int iVar6;
-  int iVar7;
-  bool bVar8;
-  int iVar9;
-  char *pcVar10;
+  int iVar4;
+  int attachmentNum;
+  bool bVar5;
+  float fVar6;
+  int comparisonColumn2;
+  char *pcVar7;
   int local_98;
-  int local_94;
-  eAttachmentPoint local_90;
-  float local_84;
-  int local_80;
-  float local_70;
-  float local_64 [4];
-  char local_51;
-  char *local_50;
-  float local_4c;
+  int i;
+  int currAttachPoint;
+  int attributeColumn;
+  bool selectingWeapon;
+  float remainingPartOfLastBlock;
+  int currentWeaponIndex;
+  bool selectingAttachments;
+  int equippedAttachmentNum;
+  int controllerIndex;
+  float attachmentEffectXpos;
+  float maxNormalizedAttributeValue;
+  ownerDrawDef_s *ownerDraw;
+  float barColorFilled [4];
+  bool arrowDrawn;
+  char *currentWeaponRef;
+  float attachmentEffectColor;
   float local_48;
   float local_44;
   float local_40;
-  int local_3c;
-  float local_38;
-  StringTable *local_34;
-  float local_30;
-  float local_2c;
-  int local_28;
-  float local_24;
+  int currBlock;
+  float attachmentEffectOnAttribute;
+  StringTable *attributesTable;
+  float partitionWidth;
+  float attributeValue;
+  int numPartitions;
+  float arrowColor;
   float local_20;
   float local_1c;
   float local_18;
-  float local_14 [4];
+  float barColorEmpty [4];
   
-  local_2c = 0.0;
-  local_38 = 0.0;
-  local_70 = 0.0;
-  local_84 = 0.0;
-  local_64[0] = 0.96;
-  local_64[1] = 0.58;
-  local_64[2] = 0.11;
-  local_64[3] = 1.0;
-  local_4c = 0.96;
+  attributeValue = 0.0;
+  attachmentEffectOnAttribute = 0.0;
+  attachmentEffectXpos = 0.0;
+  remainingPartOfLastBlock = 0.0;
+  barColorFilled[0] = 0.96;
+  barColorFilled[1] = 0.58;
+  barColorFilled[2] = 0.11;
+  barColorFilled[3] = 1.0;
+  attachmentEffectColor = 0.96;
   local_48 = 0.58;
   local_44 = 0.11;
   local_40 = 1.0;
-  local_24 = 0.96;
+  arrowColor = 0.96;
   local_20 = 0.58;
   local_1c = 0.11;
   local_18 = 1.0;
-  local_14[0] = 0.96;
-  local_14[1] = 0.58;
-  local_14[2] = 0.11;
-  local_14[3] = 0.2;
-  StringTable_GetAsset("mp/attributesTable.csv",&local_34);
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  pEVar2 = &Item_GetOwnerDrawDef(param_3)->dataExp;
-  if (pEVar2 != (ExpressionStatement *)0x0) {
-    local_51 = '\0';
-    iVar3 = GetExpressionInt(param_1,param_3,pEVar2);
-    pcVar10 = "attachments";
-    pcVar4 = Dvar_GetString("ui_inside_popup");
-    iVar5 = I_stricmp(pcVar4,pcVar10);
-    pcVar10 = "select_weapon";
-    pcVar4 = Dvar_GetString("ui_inside_popup");
-    iVar6 = I_stricmp(pcVar4,pcVar10);
-    bVar8 = iVar6 == 0;
-    if (bVar8) {
-      local_80 = DAT_098c38f8;
+  barColorEmpty[0] = 0.96;
+  barColorEmpty[1] = 0.58;
+  barColorEmpty[2] = 0.11;
+  barColorEmpty[3] = 0.2;
+  StringTable_GetAsset("mp/attributesTable.csv",&attributesTable);
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  statement = &Item_GetOwnerDrawDef(item)->dataExp;
+  if (statement != (ExpressionStatement *)0x0) {
+    arrowDrawn = false;
+    valueColumn = GetExpressionInt(localClientNum,item,statement);
+    pcVar7 = "attachments";
+    pcVar2 = Dvar_GetString("ui_inside_popup");
+    iVar3 = I_stricmp(pcVar2,pcVar7);
+    pcVar7 = "select_weapon";
+    pcVar2 = Dvar_GetString("ui_inside_popup");
+    iVar4 = I_stricmp(pcVar2,pcVar7);
+    bVar5 = iVar4 == 0;
+    if (bVar5) {
+      currentWeaponIndex = DAT_098c38f8;
     }
     else {
-      pcVar4 = Dvar_GetString("selected_loadout_slot");
-      pcVar10 = Dvar_GetString("ui_custom_name");
-      local_80 = BG_UnlockablesGetEquippedItemInSlot(iVar1,pcVar10,pcVar4);
+      pcVar2 = Dvar_GetString("selected_loadout_slot");
+      pcVar7 = Dvar_GetString("ui_custom_name");
+      currentWeaponIndex = BG_UnlockablesGetEquippedItemInSlot(iVar1,pcVar7,pcVar2);
     }
-    local_50 = BG_UnlockablesGetItemRef(local_80);
-    pcVar4 = StringTable_Lookup(local_34,1,local_50,iVar3);
-    iVar6 = atoi(pcVar4);
-    local_2c = (float)iVar6 / 10.0;
-    if ((!bVar8) && (iVar5 != 0)) {
-      for (local_90 = ATTACHMENT_POINT_FIRST; (int)local_90 < 5;
-          local_90 = local_90 + ATTACHMENT_POINT_FIRST) {
-        BG_GetAttachmentPointName(local_90);
+    currentWeaponRef = BG_UnlockablesGetItemRef(currentWeaponIndex);
+    pcVar2 = StringTable_Lookup(attributesTable,1,currentWeaponRef,valueColumn);
+    iVar4 = atoi(pcVar2);
+    attributeValue = (float)iVar4 / 10.0;
+    if ((!bVar5) && (iVar3 != 0)) {
+      for (currAttachPoint = 1; currAttachPoint < 5; currAttachPoint = currAttachPoint + 1) {
+        BG_GetAttachmentPointName(currAttachPoint);
         Dvar_GetString("selected_loadout_slot");
-        pcVar4 = va("%sattachment%s");
-        pcVar10 = Dvar_GetString("ui_custom_name");
-        iVar7 = BG_UnlockablesGetEquippedItemInSlot(iVar1,pcVar10,pcVar4);
-        iVar9 = 9;
-        pcVar4 = local_50;
-        iVar6 = iVar3;
-        pcVar10 = BG_UnlockablesGetItemAttachmentRef(local_80,iVar7);
-        pcVar4 = StringTable_Lookup(local_34,1,pcVar10,iVar9,pcVar4,iVar6);
-        iVar6 = atoi(pcVar4);
-        local_38 = (float)iVar6 / 10.0 + local_38;
+        pcVar2 = va("%sattachment%s");
+        pcVar7 = Dvar_GetString("ui_custom_name");
+        attachmentNum = BG_UnlockablesGetEquippedItemInSlot(iVar1,pcVar7,pcVar2);
+        comparisonColumn2 = 9;
+        pcVar2 = currentWeaponRef;
+        iVar4 = valueColumn;
+        pcVar7 = BG_UnlockablesGetItemAttachmentRef(currentWeaponIndex,attachmentNum);
+        pcVar2 = StringTable_Lookup(attributesTable,1,pcVar7,comparisonColumn2,pcVar2,iVar4);
+        iVar4 = atoi(pcVar2);
+        attachmentEffectOnAttribute = (float)iVar4 / 10.0 + attachmentEffectOnAttribute;
       }
     }
-    if ((!bVar8) && (iVar5 == 0)) {
+    if ((!bVar5) && (iVar3 == 0)) {
       iVar1 = 9;
-      pcVar4 = local_50;
-      pcVar10 = BG_UnlockablesGetItemAttachmentRef(local_80,DAT_098c3910);
-      pcVar4 = StringTable_Lookup(local_34,1,pcVar10,iVar1,pcVar4,iVar3);
-      iVar1 = atoi(pcVar4);
-      local_38 = (float)iVar1 / 10.0;
+      pcVar2 = currentWeaponRef;
+      pcVar7 = BG_UnlockablesGetItemAttachmentRef(currentWeaponIndex,DAT_098c3910);
+      pcVar2 = StringTable_Lookup(attributesTable,1,pcVar7,iVar1,pcVar2,valueColumn);
+      iVar1 = atoi(pcVar2);
+      attachmentEffectOnAttribute = (float)iVar1 / 10.0;
     }
-    if (0.0 <= local_38) {
-      if (0.0 < local_38) {
-        local_4c = newUIGreen[0];
+    if (0.0 <= attachmentEffectOnAttribute) {
+      if (0.0 < attachmentEffectOnAttribute) {
+        attachmentEffectColor = newUIGreen[0];
         local_48 = newUIGreen[1];
         local_44 = newUIGreen[2];
         local_40 = newUIGreen[3];
-        local_24 = newUIGreen[0];
+        arrowColor = newUIGreen[0];
         local_20 = newUIGreen[1];
         local_1c = newUIGreen[2];
         local_18 = newUIGreen[3];
       }
     }
     else {
-      local_2c = local_2c + local_38;
-      local_4c = newUIRed[0];
+      attributeValue = attributeValue + attachmentEffectOnAttribute;
+      attachmentEffectColor = newUIRed[0];
       local_48 = newUIRed[1];
       local_44 = newUIRed[2];
       local_40 = newUIRed[3];
     }
-    local_98 = Dvar_GetInt(param_5);
+    local_98 = Dvar_GetInt(dvarName);
     if (local_98 < 1) {
       local_98 = 1;
     }
-    local_28 = local_98;
-    local_30 = param_4->w / (float)local_98;
-    for (local_94 = 0; local_94 < local_28; local_94 = local_94 + 1) {
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                       (float)local_94 * local_30 + (float)local_94 + param_4->x,param_4->y,local_30
-                       ,param_4->h,param_4->horzAlign,param_4->vertAlign,local_14,DAT_098b4b78);
-      if ((float)(local_94 + 1) <= local_2c) {
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                         (float)local_94 * local_30 + (float)local_94 + param_4->x,param_4->y,
-                         local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,local_64,
-                         DAT_098b4b78);
+    numPartitions = local_98;
+    partitionWidth = rect->w / (float)local_98;
+    for (i = 0; i < numPartitions; i = i + 1) {
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       (float)i * partitionWidth + (float)i + rect->x,rect->y,partitionWidth,rect->h
+                       ,rect->horzAlign,rect->vertAlign,barColorEmpty,DAT_098b4b78);
+      if ((float)(i + 1) <= attributeValue) {
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         (float)i * partitionWidth + (float)i + rect->x,rect->y,partitionWidth,
+                         rect->h,rect->horzAlign,rect->vertAlign,barColorFilled,DAT_098b4b78);
       }
     }
-    local_3c = 0;
-    while (0.0 < local_2c) {
-      if (1.0 <= local_2c) {
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                         (float)local_3c * local_30 + (float)local_3c + param_4->x,param_4->y,
-                         local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,local_64,
+    currBlock = 0;
+    while (0.0 < attributeValue) {
+      if (1.0 <= attributeValue) {
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         (float)currBlock * partitionWidth + (float)currBlock + rect->x,rect->y,
+                         partitionWidth,rect->h,rect->horzAlign,rect->vertAlign,barColorFilled,
                          DAT_098b4b78);
-        local_2c = local_2c - 1.0;
-        local_3c = local_3c + 1;
+        attributeValue = attributeValue - 1.0;
+        currBlock = currBlock + 1;
       }
-      if ((local_2c == 0.0) &&
-         (local_70 = (float)local_3c * local_30 + (float)local_3c + param_4->x, local_38 == 0.0)) {
+      if ((attributeValue == 0.0) &&
+         (attachmentEffectXpos = (float)currBlock * partitionWidth + (float)currBlock + rect->x,
+         attachmentEffectOnAttribute == 0.0)) {
         UI_DrawHandlePicRotated
-                  ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                   ((float)local_3c * local_30 + (float)(local_3c + -1) + param_4->x +
-                   local_2c * local_30) - 3.0,param_4->y + param_4->h,7.0,7.0,param_4->horzAlign,
-                   param_4->vertAlign,&local_24,-90.0,DAT_098b4b74);
+                  ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                   ((float)currBlock * partitionWidth + (float)(currBlock + -1) + rect->x +
+                   attributeValue * partitionWidth) - 3.0,rect->y + rect->h,7.0,7.0,rect->horzAlign,
+                   rect->vertAlign,&arrowColor,-90.0,DAT_098b4b74);
         return;
       }
-      if (local_2c < 1.0) {
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                         (float)local_3c * local_30 + (float)local_3c + param_4->x,param_4->y,
-                         local_2c * local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,
-                         local_64,DAT_098b4b78);
-        local_70 = (float)local_3c * local_30 + (float)local_3c + param_4->x + local_2c * local_30;
-        if (local_38 <= 0.0) {
+      if (attributeValue < 1.0) {
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         (float)currBlock * partitionWidth + (float)currBlock + rect->x,rect->y,
+                         attributeValue * partitionWidth,rect->h,rect->horzAlign,rect->vertAlign,
+                         barColorFilled,DAT_098b4b78);
+        attachmentEffectXpos =
+             (float)currBlock * partitionWidth + (float)currBlock + rect->x +
+             attributeValue * partitionWidth;
+        if (attachmentEffectOnAttribute <= 0.0) {
           UI_DrawHandlePicRotated
-                    ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                     (((float)local_3c * local_30 + (float)local_3c + param_4->x +
-                      local_2c * local_30) - 3.0) - 1.0,param_4->y + param_4->h,7.0,7.0,
-                     param_4->horzAlign,param_4->vertAlign,&local_24,-90.0,DAT_098b4b74);
-          local_51 = '\x01';
+                    ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                     (((float)currBlock * partitionWidth + (float)currBlock + rect->x +
+                      attributeValue * partitionWidth) - 3.0) - 1.0,rect->y + rect->h,7.0,7.0,
+                     rect->horzAlign,rect->vertAlign,&arrowColor,-90.0,DAT_098b4b74);
+          arrowDrawn = true;
         }
-        local_84 = 1.0 - local_2c;
-        local_2c = 0.0;
+        remainingPartOfLastBlock = 1.0 - attributeValue;
+        attributeValue = 0.0;
       }
     }
-    if (((local_38 != 0.0) && (local_70 != 0.0)) && (local_84 != 0.0)) {
-      local_38 = ABS(local_38);
-      if (local_84 < local_38) {
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),local_70,param_4->y,
-                         local_84 * local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,
-                         &local_4c,DAT_098b4b78);
-        local_38 = local_38 - local_84;
-        local_70 = local_84 * local_30 + 1.0 + local_70;
-        local_3c = 0;
-        while (0.0 < local_38) {
-          if (1.0 <= local_38) {
-            UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                             (float)local_3c * local_30 + (float)local_3c + local_70,param_4->y,
-                             local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,&local_4c,
-                             DAT_098b4b78);
-            local_38 = local_38 - 1.0;
-            local_3c = local_3c + 1;
+    if (((attachmentEffectOnAttribute != 0.0) && (attachmentEffectXpos != 0.0)) &&
+       (remainingPartOfLastBlock != 0.0)) {
+      attachmentEffectOnAttribute = ABS(attachmentEffectOnAttribute);
+      if (remainingPartOfLastBlock < attachmentEffectOnAttribute) {
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         attachmentEffectXpos,rect->y,remainingPartOfLastBlock * partitionWidth,
+                         rect->h,rect->horzAlign,rect->vertAlign,&attachmentEffectColor,DAT_098b4b78
+                        );
+        attachmentEffectOnAttribute = attachmentEffectOnAttribute - remainingPartOfLastBlock;
+        fVar6 = remainingPartOfLastBlock * partitionWidth + 1.0 + attachmentEffectXpos;
+        currBlock = 0;
+        while (0.0 < attachmentEffectOnAttribute) {
+          if (1.0 <= attachmentEffectOnAttribute) {
+            UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                             (float)currBlock * partitionWidth + (float)currBlock + fVar6,rect->y,
+                             partitionWidth,rect->h,rect->horzAlign,rect->vertAlign,
+                             &attachmentEffectColor,DAT_098b4b78);
+            attachmentEffectOnAttribute = attachmentEffectOnAttribute - 1.0;
+            currBlock = currBlock + 1;
           }
-          if ((local_38 == 0.0) && (local_51 == '\0')) {
+          if ((attachmentEffectOnAttribute == 0.0) && (arrowDrawn == false)) {
             UI_DrawHandlePicRotated
-                      ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                       (((float)local_3c * local_30 + (float)local_3c + local_70 +
-                        local_38 * local_30) - 3.0) - 1.0,param_4->y + param_4->h,7.0,7.0,
-                       param_4->horzAlign,param_4->vertAlign,&local_24,-90.0,DAT_098b4b74);
+                      ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       (((float)currBlock * partitionWidth + (float)currBlock + fVar6 +
+                        attachmentEffectOnAttribute * partitionWidth) - 3.0) - 1.0,rect->y + rect->h
+                       ,7.0,7.0,rect->horzAlign,rect->vertAlign,&arrowColor,-90.0,DAT_098b4b74);
           }
-          if (local_38 < 1.0) {
-            UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                             (float)local_3c * local_30 + (float)local_3c + local_70,param_4->y,
-                             local_38 * local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,
-                             &local_4c,DAT_098b4b78);
-            if (local_51 == '\0') {
+          if (attachmentEffectOnAttribute < 1.0) {
+            UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                             (float)currBlock * partitionWidth + (float)currBlock + fVar6,rect->y,
+                             attachmentEffectOnAttribute * partitionWidth,rect->h,rect->horzAlign,
+                             rect->vertAlign,&attachmentEffectColor,DAT_098b4b78);
+            if (arrowDrawn == false) {
               UI_DrawHandlePicRotated
-                        ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                         (((float)local_3c * local_30 + (float)local_3c + local_70 +
-                          local_38 * local_30) - 3.0) - 1.0,param_4->y + param_4->h,7.0,7.0,
-                         param_4->horzAlign,param_4->vertAlign,&local_24,-90.0,DAT_098b4b74);
+                        ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         (((float)currBlock * partitionWidth + (float)currBlock + fVar6 +
+                          attachmentEffectOnAttribute * partitionWidth) - 3.0) - 1.0,
+                         rect->y + rect->h,7.0,7.0,rect->horzAlign,rect->vertAlign,&arrowColor,-90.0
+                         ,DAT_098b4b74);
             }
-            local_38 = 0.0;
+            attachmentEffectOnAttribute = 0.0;
           }
         }
       }
       else {
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),local_70,param_4->y,
-                         local_38 * local_30,param_4->h,param_4->horzAlign,param_4->vertAlign,
-                         &local_4c,DAT_098b4b78);
-        if (local_51 == '\0') {
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         attachmentEffectXpos,rect->y,attachmentEffectOnAttribute * partitionWidth,
+                         rect->h,rect->horzAlign,rect->vertAlign,&attachmentEffectColor,DAT_098b4b78
+                        );
+        if (arrowDrawn == false) {
           UI_DrawHandlePicRotated
-                    ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                     ((local_38 * local_30 + local_70) - 3.0) - 1.0,param_4->y + param_4->h,7.0,7.0,
-                     param_4->horzAlign,param_4->vertAlign,&local_24,-90.0,DAT_098b4b74);
+                    ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                     ((attachmentEffectOnAttribute * partitionWidth + attachmentEffectXpos) - 3.0) -
+                     1.0,rect->y + rect->h,7.0,7.0,rect->horzAlign,rect->vertAlign,&arrowColor,-90.0
+                     ,DAT_098b4b74);
         }
       }
     }
@@ -1746,7 +1780,7 @@ UI_DrawAttributeBar(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_
 
 void __cdecl
 UI_DrawStatsMilestonesFeederProgressBar
-          (int param_1,int param_2,rectDef_s *param_3,int param_4,int param_5)
+          (int controllerIndex,int contextIndex,rectDef_s *rect,int index,int type)
 
 {
   bool bVar1;
@@ -1758,33 +1792,34 @@ UI_DrawStatsMilestonesFeederProgressBar
   float10 extraout_ST0_04;
   float10 extraout_ST0_05;
   float10 extraout_ST0_06;
-  int local_34;
-  challengeInfo_t *local_30;
-  float local_2c [5];
-  float local_18;
-  float local_14 [4];
+  int i;
+  challengeInfo_t *challenge;
+  float barColorFilled [4];
+  float partitionWidth;
+  float attributeValue;
+  float barColorEmpty [4];
   
-  local_14[0] = 0.96;
-  local_14[1] = 0.58;
-  local_14[2] = 0.11;
-  local_14[3] = 0.2;
-  local_2c[0] = 0.96;
-  local_2c[1] = 0.58;
-  local_2c[2] = 0.11;
-  local_2c[3] = 1.0;
-  bVar1 = LiveStats_GetChallengeInfo(&local_30,param_4,param_5);
+  barColorEmpty[0] = 0.96;
+  barColorEmpty[1] = 0.58;
+  barColorEmpty[2] = 0.11;
+  barColorEmpty[3] = 0.2;
+  barColorFilled[0] = 0.96;
+  barColorFilled[1] = 0.58;
+  barColorFilled[2] = 0.11;
+  barColorFilled[3] = 1.0;
+  bVar1 = LiveStats_GetChallengeInfo(&challenge,index,type);
   if (bVar1) {
-    local_18 = (float)(local_30->currentValue * 6) / (float)local_30->targetValue;
-    local_2c[4] = param_3->w / 6.0;
-    for (local_34 = 0; local_34 < 6; local_34 = local_34 + 1) {
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                       (float)local_34 * local_2c[4] + param_3->x,param_3->y,local_2c[4] - 1.0,
-                       param_3->h,param_3->horzAlign,param_3->vertAlign,local_14,DAT_098b4b78);
+    attributeValue = (float)(challenge->currentValue * 6) / (float)challenge->targetValue;
+    partitionWidth = rect->w / 6.0;
+    for (i = 0; i < 6; i = i + 1) {
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       (float)i * partitionWidth + rect->x,rect->y,partitionWidth - 1.0,rect->h,
+                       rect->horzAlign,rect->vertAlign,barColorEmpty,DAT_098b4b78);
       floor();
-      if ((float)(local_34 + 1) <= (float)extraout_ST0) {
-        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                         (float)local_34 * local_2c[4] + param_3->x,param_3->y,local_2c[4] - 1.0,
-                         param_3->h,param_3->horzAlign,param_3->vertAlign,local_2c,DAT_098b4b78);
+      if ((float)(i + 1) <= (float)extraout_ST0) {
+        UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                         (float)i * partitionWidth + rect->x,rect->y,partitionWidth - 1.0,rect->h,
+                         rect->horzAlign,rect->vertAlign,barColorFilled,DAT_098b4b78);
       }
     }
     ceil();
@@ -1795,24 +1830,24 @@ UI_DrawStatsMilestonesFeederProgressBar
       if ((float)extraout_ST0_04 == (float)extraout_ST0_05) {
         floor();
         UI_DrawHandlePicRotated
-                  ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                   (((float)extraout_ST0_06 * local_2c[4] + param_3->x) - 3.0) - 2.0,
-                   param_3->y + param_3->h,7.0,7.0,param_3->horzAlign,param_3->vertAlign,local_2c,
-                   -90.0,DAT_098b4b74);
+                  ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                   (((float)extraout_ST0_06 * partitionWidth + rect->x) - 3.0) - 2.0,
+                   rect->y + rect->h,7.0,7.0,rect->horzAlign,rect->vertAlign,barColorFilled,-90.0,
+                   DAT_098b4b74);
       }
     }
     else {
       floor();
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                       (float)extraout_ST0_02 * local_2c[4] + param_3->x,param_3->y,
-                       local_2c[4] / 2.0,param_3->h,param_3->horzAlign,param_3->vertAlign,local_2c,
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                       (float)extraout_ST0_02 * partitionWidth + rect->x,rect->y,
+                       partitionWidth / 2.0,rect->h,rect->horzAlign,rect->vertAlign,barColorFilled,
                        DAT_098b4b78);
       floor();
       UI_DrawHandlePicRotated
-                ((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),
-                 ((float)extraout_ST0_03 * local_2c[4] + param_3->x + local_2c[4] / 2.0) - 3.0,
-                 param_3->y + param_3->h,7.0,7.0,param_3->horzAlign,param_3->vertAlign,local_2c,
-                 -90.0,DAT_098b4b74);
+                ((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),
+                 ((float)extraout_ST0_03 * partitionWidth + rect->x + partitionWidth / 2.0) - 3.0,
+                 rect->y + rect->h,7.0,7.0,rect->horzAlign,rect->vertAlign,barColorFilled,-90.0,
+                 DAT_098b4b74);
     }
   }
   return;
@@ -1822,25 +1857,28 @@ UI_DrawStatsMilestonesFeederProgressBar
 // 00750A60  UI_DrawReticlePreview  (ui_mp/ui_main_mp.cpp:1764)
 
 void __cdecl
-UI_DrawReticlePreview(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
+UI_DrawReticlePreview
+          (int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,float *color)
 
 {
   bool bVar1;
-  ExpressionStatement *pEVar2;
-  Material *pMVar3;
-  char *local_1c;
-  int local_18;
-  float local_14 [3];
+  ExpressionStatement *statement;
+  Material *material;
+  ownerDrawDef_s *ownerDraw;
+  char *reticleMaterial;
+  int reticleColorIndex;
+  float reticleColor [3];
   float local_8;
   
-  pEVar2 = &Item_GetOwnerDrawDef(param_3)->dataExp;
-  if (((pEVar2 != (ExpressionStatement *)0x0) &&
-      (bVar1 = GetExpressionStringInt(param_1,param_3,pEVar2,&local_1c,&local_18), bVar1)) &&
-     (bVar1 = CG_GetWeaponOptionReticleColor(local_18,local_14), bVar1)) {
+  statement = &Item_GetOwnerDrawDef(item)->dataExp;
+  if (((statement != (ExpressionStatement *)0x0) &&
+      (bVar1 = GetExpressionStringInt
+                         (localClientNum,item,statement,&reticleMaterial,&reticleColorIndex), bVar1)
+      ) && (bVar1 = CG_GetWeaponOptionReticleColor(reticleColorIndex,reticleColor), bVar1)) {
     local_8 = 1.0;
-    pMVar3 = Material_RegisterHandle(local_1c,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_4->x,param_4->y,
-                     param_4->w,param_4->h,param_4->horzAlign,param_4->vertAlign,local_14,pMVar3);
+    material = Material_RegisterHandle(reticleMaterial,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,reticleColor,material);
   }
   return;
 }
@@ -1849,25 +1887,26 @@ UI_DrawReticlePreview(int param_1,int param_2,itemDef_s *param_3,rectDef_s *para
 // 00750B30  UI_DrawLensPreview  (ui_mp/ui_main_mp.cpp:1785)
 
 void __cdecl
-UI_DrawLensPreview(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4,float *param_5)
+UI_DrawLensPreview(int localClientNum,int contextIndex,itemDef_s *item,rectDef_s *rect,float *color)
 
 {
   bool bVar1;
-  Material *pMVar2;
-  float local_20 [3];
+  Material *material;
+  float lensColor [3];
   float local_14;
-  ExpressionStatement *local_10;
-  int local_c;
-  char *local_8;
+  ownerDrawDef_s *ownerDraw;
+  int lensColorIndex;
+  char *lensMaterial;
   
-  local_10 = &Item_GetOwnerDrawDef(param_3)->dataExp;
-  if (((local_10 != (ExpressionStatement *)0x0) &&
-      (bVar1 = GetExpressionStringInt(param_1,param_3,local_10,&local_8,&local_c), bVar1)) &&
-     (bVar1 = CG_GetWeaponOptionLensColor(local_c,local_20), bVar1)) {
-    local_14 = param_5[3];
-    pMVar2 = Material_RegisterHandle(local_8,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_4->x,param_4->y,
-                     param_4->w,param_4->h,param_4->horzAlign,param_4->vertAlign,local_20,pMVar2);
+  ownerDraw = Item_GetOwnerDrawDef(item);
+  if (((&ownerDraw->dataExp != (ExpressionStatement *)0x0) &&
+      (bVar1 = GetExpressionStringInt
+                         (localClientNum,item,&ownerDraw->dataExp,&lensMaterial,&lensColorIndex),
+      bVar1)) && (bVar1 = CG_GetWeaponOptionLensColor(lensColorIndex,lensColor), bVar1)) {
+    local_14 = color[3];
+    material = Material_RegisterHandle(lensMaterial,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,lensColor,material);
   }
   return;
 }
@@ -1877,111 +1916,113 @@ UI_DrawLensPreview(int param_1,int param_2,itemDef_s *param_3,rectDef_s *param_4
 
 void __cdecl
 UI_Project_OwnerDraw
-          (int param_1,itemDef_s *param_2,float param_3,float param_4,float param_5,float param_6,
-          int param_7,int param_8,int param_9,int param_10,float *param_11,Material *param_12,
-          rectDef_s param_13,char *param_14)
+          (int localClientNum,itemDef_s *item,float x,float y,float w,float h,int horzAlign,
+          int vertAlign,int ownerDraw,int ownerDrawFlags,float *color,Material *material,
+          rectDef_s parentRect,char *dvarName)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
-  rectDef_s *prVar5;
-  rectDef_s local_24;
-  float local_c;
+  int contextIndex_00;
+  int localClientNum_00;
+  rectDef_s *rect_00;
+  int contextIndex;
+  rectDef_s rect;
+  float histSamples;
   float local_8;
   
-  local_c = 0.0;
+  histSamples = 0.0;
   local_8 = 0.0;
-  local_24.x = param_3;
-  local_24.y = param_4;
-  local_24.w = param_5;
-  local_24.h = param_6;
-  local_24.horzAlign = param_7;
-  local_24.vertAlign = param_8;
-  iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-  if ((iVar3 == -1) &&
+  rect.x = x;
+  rect.y = y;
+  rect.w = w;
+  rect.h = h;
+  rect.horzAlign = horzAlign;
+  rect.vertAlign = vertAlign;
+  contextIndex_00 = Com_LocalClient_GetUIContextIndex(localClientNum);
+  if ((contextIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0x71a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_9 == 0x156) {
-    if ((((param_2->typeData).imageDef)->materialExp).filename != (char *)0x0) {
-      local_c = GetExpressionFloat(param_1,param_2,
-                                   (ExpressionStatement *)(param_2->typeData).textDef);
+  if (ownerDraw == 0x156) {
+    if ((((item->typeData).imageDef)->materialExp).filename != (char *)0x0) {
+      histSamples = GetExpressionFloat(localClientNum,item,
+                                       (ExpressionStatement *)(item->typeData).textDef);
     }
-    if ((param_2->forecolorAExp).filename != (char *)0x0) {
-      local_8 = GetExpressionFloat(param_1,param_2,&param_2->forecolorAExp);
+    if ((item->forecolorAExp).filename != (char *)0x0) {
+      local_8 = GetExpressionFloat(localClientNum,item,&item->forecolorAExp);
     }
   }
-  if (param_9 < 0x182) {
-    if (param_9 == 0x181) {
-      prVar5 = &local_24;
-      iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-      Live_FileShare_MyRatingOwnerdraw(iVar4,iVar3,prVar5,param_2,param_11);
+  if (ownerDraw < 0x182) {
+    if (ownerDraw == 0x181) {
+      rect_00 = &rect;
+      localClientNum_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+      Live_FileShare_MyRatingOwnerdraw(localClientNum_00,contextIndex_00,rect_00,item,color);
     }
     else {
-      switch(param_9) {
+      switch(ownerDraw) {
       case 0x83:
-        GamerProfile_WriteSettings(iVar3);
+        GamerProfile_WriteSettings(contextIndex_00);
         break;
       case 0x85:
-        UI_DrawBlurMaterial(iVar3,&local_24,param_11);
+        UI_DrawBlurMaterial(contextIndex_00,&rect,color);
         break;
       case 0xd0:
-        UI_DrawReticlePreview(param_1,iVar3,param_2,&local_24,param_11);
+        UI_DrawReticlePreview(localClientNum,contextIndex_00,item,&rect,color);
         break;
       case 0xd1:
-        UI_DrawLensPreview(param_1,iVar3,param_2,&local_24,param_11);
+        UI_DrawLensPreview(localClientNum,contextIndex_00,item,&rect,color);
         break;
       case 0x135:
         break;
       case 0x14e:
-        UI_DrawHeatMap(iVar3,&local_24,param_11);
+        UI_DrawHeatMap(contextIndex_00,&rect,color);
         break;
       case 0x154:
-        UI_DrawCombatRecordPieChart(iVar3,&local_24,param_11,param_14);
+        UI_DrawCombatRecordPieChart(contextIndex_00,&rect,color,dvarName);
         break;
       case 0x155:
-        UI_DrawCombatRecordLineGraph(iVar3,&local_24,param_11,param_14);
+        UI_DrawCombatRecordLineGraph(contextIndex_00,&rect,color,dvarName);
         break;
       case 0x156:
-        UI_DrawCombatRecordHistogram(iVar3,&local_24,param_11,param_14,&local_c);
+        UI_DrawCombatRecordHistogram(contextIndex_00,&rect,color,dvarName,&histSamples);
         break;
       case 0x157:
-        UI_DrawCombatRecordBarGraph(iVar3,&local_24,&param_13,param_11,param_14);
+        UI_DrawCombatRecordBarGraph(contextIndex_00,&rect,&parentRect,color,dvarName);
         break;
       case 0x158:
-        UI_DrawCombatRecordHorizontalBarGraph(param_1,iVar3,&local_24,&param_13,param_11,param_14);
+        UI_DrawCombatRecordHorizontalBarGraph
+                  (localClientNum,contextIndex_00,&rect,&parentRect,color,dvarName);
         break;
       case 0x15b:
-        UI_DrawCombatRecordHitLocHeatMap(iVar3,&local_24,param_11);
+        UI_DrawCombatRecordHitLocHeatMap(contextIndex_00,&rect,color);
         break;
       case 0x166:
         break;
       case 0x167:
         break;
       case 0x169:
-        Live_FileShare_RatingOwnerdraw(iVar3,&local_24,param_2,param_11);
+        Live_FileShare_RatingOwnerdraw(contextIndex_00,&rect,item,color);
         break;
       case 0x16a:
-        Live_FileShare_SubmitRatingOwnerdraw(iVar3,&local_24,param_2,param_11);
+        Live_FileShare_SubmitRatingOwnerdraw(contextIndex_00,&rect,item,color);
         break;
       case 0x16b:
-        Live_FileShare_AvgSubmitRatingOwnerdraw(iVar3,&local_24,param_2,param_11);
+        Live_FileShare_AvgSubmitRatingOwnerdraw(contextIndex_00,&rect,item,color);
         break;
       case 0x16c:
-        UI_ScreenshotDraw(param_1,iVar3,&local_24,param_11);
+        UI_ScreenshotDraw(localClientNum,contextIndex_00,&rect,color);
         break;
       case 0x17d:
-        UI_DrawAttributeBar(param_1,iVar3,param_2,&local_24,param_14);
+        UI_DrawAttributeBar(localClientNum,contextIndex_00,item,&rect,dvarName);
       }
     }
   }
-  else if (param_9 == 0x183) {
-    Live_FileShare_PrivateRatingOwnerdraw(iVar3,&local_24,param_2,param_11);
+  else if (ownerDraw == 0x183) {
+    Live_FileShare_PrivateRatingOwnerdraw(contextIndex_00,&rect,item,color);
   }
   return;
 }
@@ -1991,41 +2032,40 @@ UI_Project_OwnerDraw
 
 void __cdecl
 UI_Project_OwnerDrawText
-          (int param_1,int param_2,itemDef_s *param_3,float param_4,float param_5,float param_6,
-          float param_7,int param_8,int param_9,float param_10,float param_11,int param_12,
-          int param_13,int param_14,Font_s *param_15,float param_16,float *param_17,
-          Material *param_18,int param_19,rectDef_s param_20,int param_21,char *param_22)
+          (int localClientNum,int contextIndex,itemDef_s *item,float x,float y,float w,float h,
+          int horzAlign,int vertAlign,float text_x,float text_y,int ownerDraw,int ownerDrawFlags,
+          int align,Font_s *font,float scale,float *color,Material *material,int textStyle,
+          rectDef_s parentRect,int textAlignMode,char *text)
 
 {
-  rectDef_s local_1c;
+  rectDef_s rect;
   
-  local_1c.x = param_4 + param_10;
-  local_1c.y = param_5 + param_11;
-  local_1c.w = param_6;
-  local_1c.h = param_7;
-  local_1c.horzAlign = param_8;
-  local_1c.vertAlign = param_9;
-  switch(param_12) {
+  rect.x = x + text_x;
+  rect.y = y + text_y;
+  rect.w = w;
+  rect.h = h;
+  rect.horzAlign = horzAlign;
+  rect.vertAlign = vertAlign;
+  switch(ownerDraw) {
   case 0x112:
-    UI_DrawPlaylistName(param_1,param_2,&local_1c,param_15,param_17,param_16,param_19,param_10,
-                        param_11,param_21);
+    UI_DrawPlaylistName(localClientNum,contextIndex,&rect,font,color,scale,textStyle,text_x,text_y,
+                        textAlignMode);
     break;
   case 0x117:
-    UI_DrawCategoryName(param_1,param_2,&local_1c,param_15,param_17,param_16,param_19,param_10,
-                        param_11,param_21);
+    UI_DrawCategoryName(localClientNum,contextIndex,&rect,font,color,scale,textStyle,text_x,text_y,
+                        textAlignMode);
     break;
   case 0x11b:
-    UI_DrawGameTypeOnMapName(param_2,&local_1c,param_15,param_17,param_16,param_19);
+    UI_DrawGameTypeOnMapName(contextIndex,&rect,font,color,scale,textStyle);
     break;
   case 0x13a:
-    UI_DrawWagerTier(param_2,&local_1c,param_15,param_17,param_16,param_19,param_10,param_11,
-                     param_21);
+    UI_DrawWagerTier(contextIndex,&rect,font,color,scale,textStyle,text_x,text_y,textAlignMode);
     break;
   case 0x159:
-    UI_DrawCombatRecordLineGraphValues(param_2,&local_1c,param_15,param_17,param_16,param_19);
+    UI_DrawCombatRecordLineGraphValues(contextIndex,&rect,font,color,scale,textStyle);
     break;
   case 0x15a:
-    UI_DrawCombatRecordLineGraphGameTypes(param_2,&local_1c,param_15,param_17,param_16,param_19);
+    UI_DrawCombatRecordLineGraphGameTypes(contextIndex,&rect,font,color,scale,textStyle);
   }
   return;
 }
@@ -2033,24 +2073,27 @@ UI_Project_OwnerDrawText
 
 // 007517F0  UI_RunMenuScript_StartListenServer  (ui_mp/ui_main_mp.cpp:1983)
 
-void __cdecl UI_RunMenuScript_StartListenServer(int param_1,int param_2)
+/* WARNING: Variable defined which should be unmapped: map */
+
+void __cdecl UI_RunMenuScript_StartListenServer(int localClientNum,int contextIndex)
 
 {
   char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char *local_8;
+  char *value_00;
+  int iVar2;
+  char *map;
+  char *value;
   
   pcVar1 = Dvar_GetString("ui_gametype");
   Dvar_SetStringByName("g_gametype",pcVar1);
   pcVar1 = Dvar_GetString("ui_mapname");
-  pcVar2 = Dvar_GetString("sv_mapRotation");
-  Dvar_SetStringByName("sv_mapRotationCurrent",pcVar2);
-  local_8 = UI_GetMapRotationToken();
-  while (local_8 != (char *)0x0) {
-    iVar3 = I_strcmp(local_8,pcVar1);
-    if (iVar3 == 0) break;
-    local_8 = UI_GetMapRotationToken();
+  value_00 = Dvar_GetString("sv_mapRotation");
+  Dvar_SetStringByName("sv_mapRotationCurrent",value_00);
+  value = UI_GetMapRotationToken();
+  while (value != (char *)0x0) {
+    iVar2 = I_strcmp(value,pcVar1);
+    if (iVar2 == 0) break;
+    value = UI_GetMapRotationToken();
   }
   GamerProfile_WriteSettings((int)pcVar1);
   pcVar1 = va("wait ; wait ; map %s\n");
@@ -2061,40 +2104,43 @@ void __cdecl UI_RunMenuScript_StartListenServer(int param_1,int param_2)
 
 // 00751890  UI_RunMenuScript_StartServer  (ui_mp/ui_main_mp.cpp:2001)
 
-void __cdecl UI_RunMenuScript_StartServer(int param_1,int param_2)
+/* WARNING: Variable defined which should be unmapped: map */
+
+void __cdecl UI_RunMenuScript_StartServer(int localClientNum,int contextIndex)
 
 {
   char *pcVar1;
   int iVar2;
-  DvarSetSource DVar3;
-  ushort uVar4;
-  char *local_8;
+  DvarSetSource source;
+  ushort flags;
+  char *map;
+  char *value;
   
   CG_SetThirdPerson(0);
-  uVar4 = 0;
-  DVar3 = DVAR_SOURCE_EXTERNAL;
+  flags = 0;
+  source = DVAR_SOURCE_EXTERNAL;
   pcVar1 = va("%i");
-  Dvar_SetFromStringByNameFromSource("dedicated",pcVar1,DVar3,uVar4);
+  Dvar_SetFromStringByNameFromSource("dedicated",pcVar1,source,flags);
   Dvar_SetStringByName("g_gametype",&DAT_098b5438 + (ui_netGameType->current).integer * 0x74);
   pcVar1 = &DAT_098b9e68 + (ui_currentNetMap->current).integer * 0x130;
   Dvar_SetString(sv_mapRotationCurrent,(sv_mapRotation->current).string);
-  local_8 = UI_GetMapRotationToken();
-  while (local_8 != (char *)0x0) {
-    iVar2 = I_strcmp(local_8,pcVar1);
+  value = UI_GetMapRotationToken();
+  while (value != (char *)0x0) {
+    iVar2 = I_strcmp(value,pcVar1);
     if (iVar2 == 0) break;
-    local_8 = UI_GetMapRotationToken();
+    value = UI_GetMapRotationToken();
   }
   GamerProfile_WriteSettings((int)pcVar1);
   GamerProfile_WriteSettings((int)pcVar1);
   pcVar1 = va("wait ; wait ; map %s\n");
-  Cbuf_AddText(param_1,pcVar1);
+  Cbuf_AddText(localClientNum,pcVar1);
   return;
 }
 
 
 // 00751970  UI_RunMenuScript_ResetServerSettings  (ui_mp/ui_main_mp.cpp:2058)
 
-void __cdecl UI_RunMenuScript_ResetServerSettings(int param_1)
+void __cdecl UI_RunMenuScript_ResetServerSettings(int contextIndex)
 
 {
   Dvar_SetIntByName("ui_netGameType",0);
@@ -2108,33 +2154,34 @@ void __cdecl UI_RunMenuScript_ResetServerSettings(int param_1)
 
 // 00751A00  UI_RunMenuScript_WagerWarning  (ui_mp/ui_main_mp.cpp:2126)
 
-void __cdecl UI_RunMenuScript_WagerWarning(int param_1,int param_2)
+void __cdecl UI_RunMenuScript_WagerWarning(int localClientNum,int contextIndex)
 
 {
-  uiInfo_s *puVar1;
-  char *pcVar2;
-  int iVar3;
-  int *piVar4;
-  int local_c;
-  int local_8;
+  uiInfo_s *dc;
+  char *pcVar1;
+  int controllerIndex;
+  int *outInt;
+  uiInfo_s *uiInfo;
+  int codpoints;
+  int wagerbet;
   
-  puVar1 = UI_UIContext_GetInfo(param_2);
-  local_c = 0;
+  dc = UI_UIContext_GetInfo(contextIndex);
+  codpoints = 0;
   LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4),info,
                     0x400);
-  pcVar2 = Info_ValueForKey(info,"wagerbet");
-  local_8 = atoi(pcVar2);
-  Dvar_SetIntByName("ui_wagerbet",local_8);
-  if (local_8 != 0) {
-    pcVar2 = "CODPOINTS";
-    piVar4 = &local_c;
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-    LiveStats_GetIntPlayerStat(iVar3,piVar4,pcVar2);
-    if (local_c < local_8) {
-      Menus_OpenByName(param_1,&puVar1->uiDC,"WagerDeadBeat");
+  pcVar1 = Info_ValueForKey(info,"wagerbet");
+  wagerbet = atoi(pcVar1);
+  Dvar_SetIntByName("ui_wagerbet",wagerbet);
+  if (wagerbet != 0) {
+    pcVar1 = "CODPOINTS";
+    outInt = &codpoints;
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    LiveStats_GetIntPlayerStat(controllerIndex,outInt,pcVar1);
+    if (codpoints < wagerbet) {
+      Menus_OpenByName(localClientNum,&dc->uiDC,"WagerDeadBeat");
     }
     else {
-      Menus_OpenByName(param_1,&puVar1->uiDC,"WagerConfirmation");
+      Menus_OpenByName(localClientNum,&dc->uiDC,"WagerConfirmation");
     }
   }
   return;
@@ -2143,44 +2190,47 @@ void __cdecl UI_RunMenuScript_WagerWarning(int param_1,int param_2)
 
 // 00751AD0  UI_RunMenuScript_JoinServer  (ui_mp/ui_main_mp.cpp:2155)
 
-void __cdecl UI_RunMenuScript_JoinServer(int param_1,int param_2)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
+void __cdecl UI_RunMenuScript_JoinServer(int localClientNum,int contextIndex)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  int *local_14;
-  serverInfo_t *local_10;
-  uiInfo_s *local_c;
-  int local_8;
+  char *nptr;
+  int iVar2;
+  int *count;
+  serverInfo_t *servers;
+  uiInfo_s *uiInfo;
+  int wasFromInvite;
   
-  local_8 = Dvar_GetInt("ui_joiningwagerfrominvite");
-  if (local_8 == 0) {
-    local_c = UI_UIContext_GetInfo(param_2);
+  wasFromInvite = Dvar_GetInt("ui_joiningwagerfrominvite");
+  if (wasFromInvite == 0) {
+    uiInfo = UI_UIContext_GetInfo(contextIndex);
     CG_SetThirdPerson(0);
-    UI_UpdateDisplayServers(param_1,local_c);
+    UI_UpdateDisplayServers(localClientNum,uiInfo);
     LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4),
                       info,0x400);
-    pcVar2 = Info_ValueForKey(info,"pswrd");
-    iVar3 = atoi(pcVar2);
-    if ((iVar3 != 0) && (bVar1 = Menu_IsMenuOpenAndVisible(param_2,"join_password_popmenu"), !bVar1)
-       ) {
-      Menus_OpenByName(param_1,&local_c->uiDC,"join_password_popmenu");
+    nptr = Info_ValueForKey(info,"pswrd");
+    iVar2 = atoi(nptr);
+    if ((iVar2 != 0) &&
+       (bVar1 = Menu_IsMenuOpenAndVisible(contextIndex,"join_password_popmenu"), !bVar1)) {
+      Menus_OpenByName(localClientNum,&uiInfo->uiDC,"join_password_popmenu");
       return;
     }
     if ((-1 < DAT_098c3d94) && (DAT_098c3d94 < DAT_098d7618)) {
-      local_10 = (serverInfo_t *)0x0;
-      bVar1 = CL_GetServerList((ui_netSource->current).integer,&local_10,&local_14);
+      servers = (serverInfo_t *)0x0;
+      bVar1 = CL_GetServerList((ui_netSource->current).integer,&servers,&count);
       if ((bVar1) &&
-         ((local_10 != (serverInfo_t *)0x0 &&
-          (*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) < *local_14)))) {
+         ((servers != (serverInfo_t *)0x0 && (*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) < *count)))
+         ) {
         CL_Connect((serverInfo_t *)
-                   (*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) * 0x178 + (int)local_10));
+                   (*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) * 0x178 + (int)servers));
       }
       Dvar_SetStringByName
                 ("ui_mapname",
-                 (char *)((int)local_10 + *(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) * 0x178 + 0x9d)
-                );
+                 (char *)((int)servers + *(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) * 0x178 + 0x9d))
+      ;
     }
   }
   else {
@@ -2193,23 +2243,24 @@ void __cdecl UI_RunMenuScript_JoinServer(int param_1,int param_2)
 
 // 00751C60  UI_RunMenuScript_RefreshServer  (ui_mp/ui_main_mp.cpp:2240)
 
-void __cdecl UI_RunMenuScript_RefreshServer(int param_1,int param_2)
+void __cdecl UI_RunMenuScript_RefreshServer(int localClientNum,int contextIndex)
 
 {
   bool bVar1;
-  uiInfo_s *puVar2;
-  serverInfo_t *local_c;
-  int *local_8;
+  uiInfo_s *uiInfo_00;
+  uiInfo_s *uiInfo;
+  serverInfo_t *servers;
+  int *count;
   
   if (DAT_098c3d90 == 0) {
-    puVar2 = UI_UIContext_GetInfo(param_2);
-    local_c = (serverInfo_t *)0x0;
-    UI_UpdateDisplayServers(param_1,puVar2);
-    bVar1 = CL_GetServerList((ui_netSource->current).integer,&local_c,&local_8);
-    if ((((bVar1) && (local_c != (serverInfo_t *)0x0)) && (-1 < DAT_098c3d94)) &&
+    uiInfo_00 = UI_UIContext_GetInfo(contextIndex);
+    servers = (serverInfo_t *)0x0;
+    UI_UpdateDisplayServers(localClientNum,uiInfo_00);
+    bVar1 = CL_GetServerList((ui_netSource->current).integer,&servers,&count);
+    if ((((bVar1) && (servers != (serverInfo_t *)0x0)) && (-1 < DAT_098c3d94)) &&
        (DAT_098c3d94 < DAT_098d7618)) {
       CL_RawPingServer((serverInfo_t *)
-                       (*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) * 0x178 + (int)local_c),'\x02');
+                       (*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4) * 0x178 + (int)servers),'\x02');
     }
   }
   return;
@@ -2220,25 +2271,25 @@ void __cdecl UI_RunMenuScript_RefreshServer(int param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl UI_RunMenuScript_CreateFavorites(int param_1,int param_2)
+void __cdecl UI_RunMenuScript_CreateFavorites(int localClientNum,int contextIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
-  char local_48 [32];
-  char local_28 [32];
+  char *src;
+  int destsize;
+  char addr [32];
+  char name [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((ui_netSource->current).integer == 3) {
-    local_48[0] = '\0';
-    local_28[0] = '\0';
-    I_strncpyz(local_28,"default",0x20);
-    iVar2 = 0x20;
-    pcVar1 = Dvar_GetVariantString("ui_favoriteAddress");
-    I_strncpyz(local_48,pcVar1,iVar2);
-    UI_AddServerToFavoritesList(local_28,local_48);
-    UI_StartServerRefresh(param_1,param_2,1);
+    addr[0] = '\0';
+    name[0] = '\0';
+    I_strncpyz(name,"default",0x20);
+    destsize = 0x20;
+    src = Dvar_GetVariantString("ui_favoriteAddress");
+    I_strncpyz(addr,src,destsize);
+    UI_AddServerToFavoritesList(name,addr);
+    UI_StartServerRefresh(localClientNum,contextIndex,1);
   }
   return;
 }
@@ -2248,12 +2299,13 @@ void __cdecl UI_RunMenuScript_CreateFavorites(int param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl UI_RunMenuScript_CreateFavoriteInGame(int param_1,int param_2)
+void __cdecl UI_RunMenuScript_CreateFavoriteInGame(int localClientNum,int contextIndex)
 
 {
   clientConnection_t *pcVar1;
+  clientConnection_t *clc;
   
-  pcVar1 = CL_GetLocalClientConnection(param_1);
+  pcVar1 = CL_GetLocalClientConnection(localClientNum);
   if (pcVar1 != (clientConnection_t *)0x0) {
     Live_AddFavourite_Ingame(0,CONCAT44(cls.serveruid._4_4_,(undefined4)cls.serveruid));
   }
@@ -2263,79 +2315,83 @@ void __cdecl UI_RunMenuScript_CreateFavoriteInGame(int param_1,int param_2)
 
 // 00751580  UI_Project_RunMenuScript  (ui_mp/ui_main_mp.cpp:2296)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
 void __cdecl
-UI_Project_RunMenuScript(int param_1,int param_2,char *param_3,char **param_4,char *param_5)
+UI_Project_RunMenuScript
+          (int localClientNum,int contextIndex,char *name,char **args,char *actualScript)
 
 {
   int iVar1;
   connstate_t cVar2;
-  uiInfo_s *puVar3;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  UI_UIContext_GetInfo(param_2);
-  iVar1 = I_stricmp(param_3,"StartServer");
+  UI_UIContext_GetInfo(contextIndex);
+  iVar1 = I_stricmp(name,"StartServer");
   if (iVar1 == 0) {
-    UI_RunMenuScript_StartServer(param_1,param_2);
+    UI_RunMenuScript_StartServer(localClientNum,contextIndex);
   }
   else {
-    iVar1 = I_stricmp(param_3,"StartListenServer");
+    iVar1 = I_stricmp(name,"StartListenServer");
     if (iVar1 == 0) {
-      UI_RunMenuScript_StartListenServer(param_1,param_2);
+      UI_RunMenuScript_StartListenServer(localClientNum,contextIndex);
     }
     else {
-      iVar1 = I_stricmp(param_3,"resetServerSettings");
+      iVar1 = I_stricmp(name,"resetServerSettings");
       if (iVar1 == 0) {
-        UI_RunMenuScript_ResetServerSettings(param_2);
+        UI_RunMenuScript_ResetServerSettings(contextIndex);
       }
       else {
-        iVar1 = I_stricmp(param_3,"loadGameInfo");
+        iVar1 = I_stricmp(name,"loadGameInfo");
         if (iVar1 == 0) {
           UI_GetGameTypesList();
         }
         else {
-          iVar1 = I_stricmp(param_3,"clearError");
+          iVar1 = I_stricmp(name,"clearError");
           if (iVar1 == 0) {
             Dvar_SetStringByName("com_errorMessage","");
             Dvar_SetBoolByName("com_isNotice",false);
-            cVar2 = CL_GetLocalClientConnectionState(param_1);
+            cVar2 = CL_GetLocalClientConnectionState(localClientNum);
             if (0 < (int)cVar2) {
-              Key_RemoveCatcher(param_1,-0x11);
+              Key_RemoveCatcher(localClientNum,-0x11);
             }
           }
           else {
-            iVar1 = I_stricmp(param_3,"ClearMods");
+            iVar1 = I_stricmp(name,"ClearMods");
             if (iVar1 == 0) {
               UI_ClearMods();
             }
             else {
-              iVar1 = I_stricmp(param_3,"WagerWarning");
+              iVar1 = I_stricmp(name,"WagerWarning");
               if (iVar1 == 0) {
-                UI_RunMenuScript_WagerWarning(param_1,param_2);
+                UI_RunMenuScript_WagerWarning(localClientNum,contextIndex);
               }
               else {
-                iVar1 = I_stricmp(param_3,"JoinServer");
+                iVar1 = I_stricmp(name,"JoinServer");
                 if (iVar1 == 0) {
-                  UI_RunMenuScript_JoinServer(param_1,param_2);
+                  UI_RunMenuScript_JoinServer(localClientNum,contextIndex);
                 }
                 else {
-                  iVar1 = I_stricmp(param_3,"JoinReserved");
+                  iVar1 = I_stricmp(name,"JoinReserved");
                   if (iVar1 == 0) {
-                    puVar3 = UI_UIContext_GetInfo(param_2);
-                    Menus_OpenByName(param_1,&puVar3->uiDC,"join_password_popmenu");
+                    dc = UI_UIContext_GetInfo(contextIndex);
+                    Menus_OpenByName(localClientNum,&dc->uiDC,"join_password_popmenu");
                   }
                   else {
-                    iVar1 = I_stricmp(param_3,"RefreshServer");
+                    iVar1 = I_stricmp(name,"RefreshServer");
                     if (iVar1 == 0) {
-                      UI_RunMenuScript_RefreshServer(param_1,param_2);
+                      UI_RunMenuScript_RefreshServer(localClientNum,contextIndex);
                     }
                     else {
-                      iVar1 = I_stricmp(param_3,"createFavorite");
+                      iVar1 = I_stricmp(name,"createFavorite");
                       if (iVar1 == 0) {
-                        UI_RunMenuScript_CreateFavorites(param_1,param_2);
+                        UI_RunMenuScript_CreateFavorites(localClientNum,contextIndex);
                       }
                       else {
-                        iVar1 = I_stricmp(param_3,"createFavoriteInGame");
+                        iVar1 = I_stricmp(name,"createFavoriteInGame");
                         if (iVar1 == 0) {
-                          UI_RunMenuScript_CreateFavoriteInGame(param_1,param_2);
+                          UI_RunMenuScript_CreateFavoriteInGame(localClientNum,contextIndex);
                         }
                         else {
                           Com_Printf(0xd,"unknown UI script %s in block:\n%s\n");
@@ -2368,196 +2424,203 @@ void __cdecl UI_Project_InitOnceForAllClients(void)
 
 // 00751DF0  UI_SetActiveMenu  (ui_mp/ui_main_mp.cpp:2594)
 
-int __cdecl UI_SetActiveMenu(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+int __cdecl UI_SetActiveMenu(int localClientNum,int menu)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
-  uiInfo_s *puVar4;
-  int iVar5;
-  menuDef_t *pmVar6;
-  char *pcVar7;
+  uiInfo_s *dc;
+  int iVar4;
+  menuDef_t *pmVar5;
+  char *pcVar6;
   char *local_54;
   char *local_44;
   char *local_34;
   char *local_24;
   char *local_14;
+  uiInfo_s *uiInfo;
+  char *buf;
   
-  puVar4 = UI_GetInfo(param_1);
-  iVar5 = Menu_Count(&puVar4->uiDC);
-  if (iVar5 < 1) {
-    iVar5 = 0;
+  dc = UI_GetInfo(localClientNum);
+  iVar4 = Menu_Count(&dc->uiDC);
+  if (iVar4 < 1) {
+    iVar4 = 0;
   }
   else {
-    if ((param_2 == 6) &&
+    if ((menu == 6) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0xa31,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    puVar4->currentMenuType = param_2;
-    switch(param_2) {
+    dc->currentMenuType = menu;
+    switch(menu) {
     case 0:
-      Key_RemoveCatcher(param_1,-0x11);
+      Key_RemoveCatcher(localClientNum,-0x11);
       Dvar_SetIntByName("cl_paused",0);
-      Menus_CloseAll(param_1,&puVar4->uiDC);
-      iVar5 = 1;
+      Menus_CloseAll(localClientNum,&dc->uiDC);
+      iVar4 = 1;
       break;
     case 1:
-      Key_SetCatcher(param_1,0x10);
-      Menus_OpenByName(param_1,&puVar4->uiDC,"main");
-      pcVar7 = Dvar_GetString("com_errorMessage");
-      local_14 = pcVar7;
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_OpenByName(localClientNum,&dc->uiDC,"main");
+      pcVar6 = Dvar_GetString("com_errorMessage");
+      local_14 = pcVar6;
       do {
         cVar1 = *local_14;
         local_14 = local_14 + 1;
       } while (cVar1 != '\0');
-      if ((local_14 != pcVar7 + 1) && (iVar5 = I_stricmp(pcVar7,";"), iVar5 != 0)) {
-        Menus_OpenByName(param_1,&puVar4->uiDC,"error_popmenu");
+      if ((local_14 != pcVar6 + 1) && (iVar4 = I_stricmp(pcVar6,";"), iVar4 != 0)) {
+        Menus_OpenByName(localClientNum,&dc->uiDC,"error_popmenu");
       }
-      Menus_CloseAllBehindMain(param_1,&puVar4->uiDC);
+      Menus_CloseAllBehindMain(localClientNum,&dc->uiDC);
       SND_FadeIn();
-      iVar5 = 1;
+      iVar4 = 1;
       break;
     case 2:
-      Key_SetCatcher(param_1,0x10);
-      Menus_CloseAll(param_1,&puVar4->uiDC);
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_CloseAll(localClientNum,&dc->uiDC);
       bVar3 = Demo_IsPlaying();
       if (bVar3) {
         bVar3 = Demo_IsRenderingMovie();
         if (bVar3) {
-          pcVar7 = va("demo_stop 1\n");
-          Cbuf_AddText(param_1,pcVar7);
-          iVar5 = 1;
+          pcVar6 = va("demo_stop 1\n");
+          Cbuf_AddText(localClientNum,pcVar6);
+          iVar4 = 1;
         }
         else {
           bVar3 = Demo_IsClipPreviewRunning();
           if (bVar3) {
-            Demo_RestoreUIStateAfterPreview(param_1);
+            Demo_RestoreUIStateAfterPreview(localClientNum);
           }
           else {
-            Menus_OpenByName(param_1,&puVar4->uiDC,"demo_ingame");
+            Menus_OpenByName(localClientNum,&dc->uiDC,"demo_ingame");
           }
-          iVar5 = 1;
+          iVar4 = 1;
         }
       }
       else {
-        pcVar7 = CG_ScriptMainMenu(param_1);
-        iVar5 = Menus_OpenByName(param_1,&puVar4->uiDC,pcVar7);
-        if (iVar5 == 0) {
-          Menus_OpenByName(param_1,&puVar4->uiDC,"main");
-          Menus_CloseAllBehindMain(param_1,&puVar4->uiDC);
+        pcVar6 = CG_ScriptMainMenu(localClientNum);
+        iVar4 = Menus_OpenByName(localClientNum,&dc->uiDC,pcVar6);
+        if (iVar4 == 0) {
+          Menus_OpenByName(localClientNum,&dc->uiDC,"main");
+          Menus_CloseAllBehindMain(localClientNum,&dc->uiDC);
         }
-        iVar5 = 1;
+        iVar4 = 1;
       }
       break;
     case 3:
-      Key_ClearStates(param_1);
-      pcVar7 = Dvar_GetString("com_errorMessage");
-      if ((*pcVar7 == '\0') &&
+      Key_ClearStates(localClientNum);
+      pcVar6 = Dvar_GetString("com_errorMessage");
+      if ((*pcVar6 == '\0') &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_main_mp.cpp",0xb4f,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
-        iVar5 = (*pcVar2)();
-        return iVar5;
+        iVar4 = (*pcVar2)();
+        return iVar4;
       }
-      Key_SetCatcher(param_1,0x10);
-      Menus_CloseAll(param_1,&puVar4->uiDC);
-      Menus_OpenByName(param_1,&puVar4->uiDC,"pregame_loaderror_mp");
-      iVar5 = 1;
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_CloseAll(localClientNum,&dc->uiDC);
+      Menus_OpenByName(localClientNum,&dc->uiDC,"pregame_loaderror_mp");
+      iVar4 = 1;
       break;
     default:
-      iVar5 = 0;
+      iVar4 = 0;
       break;
     case 5:
-      pmVar6 = Menus_FindByName(&puVar4->uiDC,"quickmessage");
-      if (pmVar6 == (menuDef_t *)0x0) {
-        iVar5 = 0;
+      pmVar5 = Menus_FindByName(&dc->uiDC,"quickmessage");
+      if (pmVar5 == (menuDef_t *)0x0) {
+        iVar4 = 0;
       }
       else {
-        (puVar4->uiDC).cursor.x = 639.0;
-        (puVar4->uiDC).cursor.y = 479.0;
-        UI_SetSystemCursorPos(&puVar4->uiDC,639.0,479.0);
-        Key_SetCatcher(param_1,0x10);
-        CL_LocalClient_SetCUIFlag(param_1,0x40);
-        Menus_CloseAll(param_1,&puVar4->uiDC);
-        Menus_OpenByName(param_1,&puVar4->uiDC,"quickmessage");
-        iVar5 = 1;
+        (dc->uiDC).cursor.x = 639.0;
+        (dc->uiDC).cursor.y = 479.0;
+        UI_SetSystemCursorPos(&dc->uiDC,639.0,479.0);
+        Key_SetCatcher(localClientNum,0x10);
+        CL_LocalClient_SetCUIFlag(localClientNum,0x40);
+        Menus_CloseAll(localClientNum,&dc->uiDC);
+        Menus_OpenByName(localClientNum,&dc->uiDC,"quickmessage");
+        iVar4 = 1;
       }
       break;
     case 7:
-      Key_SetCatcher(param_1,0x10);
-      Menus_CloseAll(param_1,&puVar4->uiDC);
-      Menus_OpenByName(param_1,&puVar4->uiDC,"scoreboard");
-      pcVar7 = Dvar_GetString("com_errorMessage");
-      local_24 = pcVar7;
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_CloseAll(localClientNum,&dc->uiDC);
+      Menus_OpenByName(localClientNum,&dc->uiDC,"scoreboard");
+      pcVar6 = Dvar_GetString("com_errorMessage");
+      local_24 = pcVar6;
       do {
         cVar1 = *local_24;
         local_24 = local_24 + 1;
       } while (cVar1 != '\0');
-      if ((local_24 != pcVar7 + 1) && (iVar5 = I_stricmp(pcVar7,";"), iVar5 != 0)) {
-        Menus_OpenByName(param_1,&puVar4->uiDC,"error_popmenu");
+      if ((local_24 != pcVar6 + 1) && (iVar4 = I_stricmp(pcVar6,";"), iVar4 != 0)) {
+        Menus_OpenByName(localClientNum,&dc->uiDC,"error_popmenu");
       }
-      iVar5 = 1;
+      iVar4 = 1;
       break;
     case 8:
-      Key_SetCatcher(param_1,0x10);
-      Menus_OpenByName(param_1,&puVar4->uiDC,"menu_playercard");
-      pcVar7 = Dvar_GetString("com_errorMessage");
-      local_34 = pcVar7;
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_OpenByName(localClientNum,&dc->uiDC,"menu_playercard");
+      pcVar6 = Dvar_GetString("com_errorMessage");
+      local_34 = pcVar6;
       do {
         cVar1 = *local_34;
         local_34 = local_34 + 1;
       } while (cVar1 != '\0');
-      if ((local_34 != pcVar7 + 1) && (iVar5 = I_stricmp(pcVar7,";"), iVar5 != 0)) {
-        Menus_OpenByName(param_1,&puVar4->uiDC,"error_popmenu");
+      if ((local_34 != pcVar6 + 1) && (iVar4 = I_stricmp(pcVar6,";"), iVar4 != 0)) {
+        Menus_OpenByName(localClientNum,&dc->uiDC,"error_popmenu");
       }
-      iVar5 = 1;
+      iVar4 = 1;
       break;
     case 9:
-      Key_SetCatcher(param_1,0x10);
-      Menus_OpenByName(param_1,&puVar4->uiDC,"unmute_error_popup_live");
-      pcVar7 = Dvar_GetString("com_errorMessage");
-      local_44 = pcVar7;
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_OpenByName(localClientNum,&dc->uiDC,"unmute_error_popup_live");
+      pcVar6 = Dvar_GetString("com_errorMessage");
+      local_44 = pcVar6;
       do {
         cVar1 = *local_44;
         local_44 = local_44 + 1;
       } while (cVar1 != '\0');
-      if ((local_44 != pcVar7 + 1) && (iVar5 = I_stricmp(pcVar7,";"), iVar5 != 0)) {
-        Menus_OpenByName(param_1,&puVar4->uiDC,"error_popmenu");
+      if ((local_44 != pcVar6 + 1) && (iVar4 = I_stricmp(pcVar6,";"), iVar4 != 0)) {
+        Menus_OpenByName(localClientNum,&dc->uiDC,"error_popmenu");
       }
-      iVar5 = 1;
+      iVar4 = 1;
       break;
     case 10:
-      Key_SetCatcher(param_1,0x10);
-      Menus_CloseAll(param_1,&puVar4->uiDC);
-      Menus_OpenByName(param_1,&puVar4->uiDC,"endofgame");
-      pcVar7 = Dvar_GetString("com_errorMessage");
-      local_54 = pcVar7;
+      Key_SetCatcher(localClientNum,0x10);
+      Menus_CloseAll(localClientNum,&dc->uiDC);
+      Menus_OpenByName(localClientNum,&dc->uiDC,"endofgame");
+      pcVar6 = Dvar_GetString("com_errorMessage");
+      local_54 = pcVar6;
       do {
         cVar1 = *local_54;
         local_54 = local_54 + 1;
       } while (cVar1 != '\0');
-      if ((local_54 != pcVar7 + 1) && (iVar5 = I_stricmp(pcVar7,";"), iVar5 != 0)) {
-        Menus_OpenByName(param_1,&puVar4->uiDC,"error_popmenu");
+      if ((local_54 != pcVar6 + 1) && (iVar4 = I_stricmp(pcVar6,";"), iVar4 != 0)) {
+        Menus_OpenByName(localClientNum,&dc->uiDC,"error_popmenu");
       }
-      iVar5 = 1;
+      iVar4 = 1;
     }
   }
-  return iVar5;
+  return iVar4;
 }
 
 
 // 00752400  UI_TranslateIntegerToOrdinal  (ui_mp/ui_main_mp.cpp:2923)
 
-char * __cdecl UI_TranslateIntegerToOrdinal(int param_1)
+char * __cdecl UI_TranslateIntegerToOrdinal(int integer)
 
 {
   char *pcVar1;
   
-  switch(param_1) {
+  switch(integer) {
   case 1:
     pcVar1 = UI_SafeTranslateString("MP_1ST");
     break;
@@ -2604,17 +2667,19 @@ char * __cdecl UI_TranslateIntegerToOrdinal(int param_1)
 
 // 00752540  UI_Popup  (ui_mp/ui_main_mp.cpp:2970)
 
-int __cdecl UI_Popup(int param_1,char *param_2)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+
+int __cdecl UI_Popup(int localClientNum,char *menu)
 
 {
   bool bVar1;
   int iVar2;
   
-  bVar1 = CL_AllowPopup(param_1);
-  if ((bVar1) && (iVar2 = UI_IsFullscreen(param_1), iVar2 == 0)) {
-    iVar2 = I_stricmp(param_2,"UIMENU_WM_QUICKMESSAGE");
+  bVar1 = CL_AllowPopup(localClientNum);
+  if ((bVar1) && (iVar2 = UI_IsFullscreen(localClientNum), iVar2 == 0)) {
+    iVar2 = I_stricmp(menu,"UIMENU_WM_QUICKMESSAGE");
     if (iVar2 == 0) {
-      UI_SetActiveMenu(param_1,5);
+      UI_SetActiveMenu(localClientNum,5);
     }
     return 1;
   }
@@ -2633,46 +2698,46 @@ bool __cdecl UI_ShouldDrawCrosshair(void)
 
 // 007525B0  UI_GetGameTypeDisplayNameCaps  (ui_mp/ui_main_mp.cpp:2991)
 
-char * __cdecl UI_GetGameTypeDisplayNameCaps(char *param_1)
+char * __cdecl UI_GetGameTypeDisplayNameCaps(char *pszGameType)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b5434 <= local_8) {
-      return param_1;
+    if (DAT_098b5434 <= i) {
+      return pszGameType;
     }
-    iVar1 = I_stricmp(param_1,&DAT_098b5438 + local_8 * 0x74);
+    iVar1 = I_stricmp(pszGameType,&DAT_098b5438 + i * 0x74);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pcVar2 = UI_SafeTranslateString(&DAT_098b5484 + local_8 * 0x74);
+  pcVar2 = UI_SafeTranslateString(&DAT_098b5484 + i * 0x74);
   return pcVar2;
 }
 
 
 // 00752610  UI_GetMapDisplayNameCaps  (ui_mp/ui_main_mp.cpp:3005)
 
-char * __cdecl UI_GetMapDisplayNameCaps(char *param_1)
+char * __cdecl UI_GetMapDisplayNameCaps(char *pszMap)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b9e44 <= local_8) {
-      return param_1;
+    if (DAT_098b9e44 <= i) {
+      return pszMap;
     }
-    iVar1 = I_stricmp(param_1,&DAT_098b9e68 + local_8 * 0x130);
+    iVar1 = I_stricmp(pszMap,&DAT_098b9e68 + i * 0x130);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pcVar2 = UI_SafeTranslateString(&DAT_098b9e80 + local_8 * 0x130);
+  pcVar2 = UI_SafeTranslateString(&DAT_098b9e80 + i * 0x130);
   return pcVar2;
 }
 
@@ -2680,45 +2745,47 @@ char * __cdecl UI_GetMapDisplayNameCaps(char *param_1)
 // 00752680  UI_DrawConnectScreen  (ui_mp/ui_main_mp.cpp:3021)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl UI_DrawConnectScreen(int param_1)
+void __cdecl UI_DrawConnectScreen(int localClientNum)
 
 {
   bool bVar1;
   char *pcVar2;
   int iVar3;
   float fVar4;
-  int local_828;
-  int local_824;
-  char *local_820;
-  char local_819;
-  char *local_818;
-  uiClientState_s local_814;
+  int endTime;
+  int startTime;
+  char *translation;
+  bool displayConnectionInfo;
+  char *s;
+  uiClientState_s cstate;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_819 = '\x01';
-  CL_GetClientState(param_1,&local_814);
+  displayConnectionInfo = true;
+  CL_GetClientState(localClientNum,&cstate);
   Dvar_SetStringByName("ls_gametype","");
   Dvar_SetStringByName("ls_mapname","");
   if (g_mapname[0] != '\0') {
-    local_820 = UI_GetGameTypeDisplayNameCaps(s_gametype);
-    Dvar_SetStringByName("ls_gametype",local_820);
-    local_820 = UI_GetMapDisplayNameCaps(g_mapname);
-    Dvar_SetStringByName("ls_mapname",local_820);
-    local_819 = '\0';
+    translation = UI_GetGameTypeDisplayNameCaps(s_gametype);
+    Dvar_SetStringByName("ls_gametype",translation);
+    translation = UI_GetMapDisplayNameCaps(g_mapname);
+    Dvar_SetStringByName("ls_mapname",translation);
+    displayConnectionInfo = false;
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      bVar1 = Live_FileShare_Theater_GetName(&local_820);
+      bVar1 = Live_FileShare_Theater_GetName(&translation);
       if (bVar1) {
-        Dvar_SetStringByName("ls_demotitle",local_820);
+        Dvar_SetStringByName("ls_demotitle",translation);
       }
       else {
         pcVar2 = Demo_GetTitleName();
         Dvar_SetStringByName("ls_demotitle",pcVar2);
       }
-      Demo_GetStartAndEndTime(&local_824,&local_828);
-      Dvar_SetIntByName("ls_demoduration",(local_828 - local_824) / 1000);
+      Demo_GetStartAndEndTime(&startTime,&endTime);
+      Dvar_SetIntByName("ls_demoduration",(endTime - startTime) / 1000);
       bVar1 = Demo_IsClipPlaying();
       if (bVar1) {
         pcVar2 = Demo_GetAuthor();
@@ -2728,68 +2795,68 @@ void __cdecl UI_DrawConnectScreen(int param_1)
         Dvar_SetStringByName("ls_demoauthor","");
       }
     }
-    iVar3 = I_stricmp(local_814.servername,"localhost");
+    iVar3 = I_stricmp(cstate.servername,"localhost");
     if (iVar3 == 0) {
-      local_819 = '\0';
+      displayConnectionInfo = false;
     }
     fVar4 = DB_GetLoadedFraction();
     if (1.0 <= fVar4) {
-      local_819 = '\x01';
+      displayConnectionInfo = true;
     }
-    local_818 = (char *)0x0;
-    switch(local_814.connState) {
+    s = (char *)0x0;
+    switch(cstate.connState) {
     case CA_CONNECTING:
-      if (local_819 != '\0') {
-        local_818 = UI_SafeTranslateString("EXE_AWAITINGCONNECTION");
-        local_818 = UI_ReplaceConversionInt(local_818,local_814.connectPacketCount);
+      if (displayConnectionInfo != false) {
+        s = UI_SafeTranslateString("EXE_AWAITINGCONNECTION");
+        s = UI_ReplaceConversionInt(s,cstate.connectPacketCount);
       }
       break;
     case CA_CHALLENGING:
-      if (local_819 != '\0') {
-        local_818 = UI_SafeTranslateString("EXE_AWAITINGCHALLENGE");
-        local_818 = UI_ReplaceConversionInt(local_818,local_814.connectPacketCount);
+      if (displayConnectionInfo != false) {
+        s = UI_SafeTranslateString("EXE_AWAITINGCHALLENGE");
+        s = UI_ReplaceConversionInt(s,cstate.connectPacketCount);
       }
       break;
     case CA_CONNECTED:
-      if (local_819 != '\0') {
-        local_818 = UI_SafeTranslateString("EXE_AWAITINGGAMESTATE");
+      if (displayConnectionInfo != false) {
+        s = UI_SafeTranslateString("EXE_AWAITINGGAMESTATE");
       }
       break;
     case CA_SENDINGSTATS:
-      if (local_819 != '\0') {
-        local_818 = UI_SafeTranslateString("EXE_UPLOADINGSTATS");
+      if (displayConnectionInfo != false) {
+        s = UI_SafeTranslateString("EXE_UPLOADINGSTATS");
       }
       break;
     case CA_LOADING:
     case CA_PRIMED:
-      if (local_819 != '\0') {
-        local_818 = UI_SafeTranslateString("EXE_AWAITINGHOST");
+      if (displayConnectionInfo != false) {
+        s = UI_SafeTranslateString("EXE_AWAITINGHOST");
       }
     }
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
       bVar1 = Demo_IsPlaybackInited();
       if (bVar1) {
-        local_818 = UI_SafeTranslateString("EXE_SYNCHRONIZING");
+        s = UI_SafeTranslateString("EXE_SYNCHRONIZING");
       }
       else {
         bVar1 = Demo_IsClipPlaying();
         if (bVar1) {
-          local_818 = UI_SafeTranslateString("EXE_LOADING_CLIP");
+          s = UI_SafeTranslateString("EXE_LOADING_CLIP");
         }
         else {
-          local_818 = UI_SafeTranslateString("EXE_LOADING_FILM");
+          s = UI_SafeTranslateString("EXE_LOADING_FILM");
         }
       }
     }
-    if (local_818 == (char *)0x0) {
+    if (s == (char *)0x0) {
       Dvar_SetStringByName("ls_status","");
     }
     else {
-      Dvar_SetStringByName("ls_status",local_818);
+      Dvar_SetStringByName("ls_status",s);
     }
   }
-  CG_DrawInformation(param_1);
+  CG_DrawInformation(localClientNum);
   return;
 }
 

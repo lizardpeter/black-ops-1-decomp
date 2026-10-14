@@ -2,31 +2,31 @@
 
 // 0095F5CB  memcpy_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/memcpy_s.c:47)
 
-int __cdecl memcpy_s(void *param_1,uint param_2,void *param_3,uint param_4)
+int __cdecl memcpy_s(void *dst,uint sizeInBytes,void *src,uint count)
 
 {
   int iVar1;
   int *piVar2;
   
-  if (param_4 == 0) {
+  if (count == 0) {
 LAB_0095f5db:
     iVar1 = 0;
   }
   else {
-    if (param_1 == (void *)0x0) {
+    if (dst == (void *)0x0) {
 LAB_0095f5e4:
       piVar2 = _errno();
       iVar1 = 0x16;
       *piVar2 = 0x16;
     }
     else {
-      if ((param_3 != (void *)0x0) && (param_4 <= param_2)) {
-        memcpy(param_1,param_3,param_4);
+      if ((src != (void *)0x0) && (count <= sizeInBytes)) {
+        memcpy(dst,src,count);
         goto LAB_0095f5db;
       }
-      memset(param_1,'\0',param_2);
-      if (param_3 == (void *)0x0) goto LAB_0095f5e4;
-      if (param_4 <= param_2) {
+      memset(dst,'\0',sizeInBytes);
+      if (src == (void *)0x0) goto LAB_0095f5e4;
+      if (count <= sizeInBytes) {
         return 0x16;
       }
       piVar2 = _errno();

@@ -36,7 +36,9 @@ float __cdecl crandom(void)
 
 // 007A7E40  GaussianRandom  (universal/com_math.cpp:168)
 
-void __cdecl GaussianRandom(float *param_1,float *param_2)
+/* WARNING: Variable defined which should be unmapped: x */
+
+void __cdecl GaussianRandom(float *f0,float *f1)
 
 {
   code *pcVar1;
@@ -45,9 +47,12 @@ void __cdecl GaussianRandom(float *param_1,float *param_2)
   double dVar4;
   float fVar5;
   float fVar6;
-  undefined4 in_stack_ffffffec;
+  undefined4 local_14;
+  float x;
+  float y;
+  float w;
   
-  if (param_1 == (float *)0x0) {
+  if (f0 == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xad,0,
                              "%s");
     if (!bVar2) {
@@ -56,7 +61,7 @@ void __cdecl GaussianRandom(float *param_1,float *param_2)
       return;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (f1 == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xae,0,
                              "%s");
     if (!bVar2) {
@@ -71,84 +76,91 @@ void __cdecl GaussianRandom(float *param_1,float *param_2)
     fVar3 = fVar5 * fVar5 + fVar6 * fVar6;
   } while (1.0 < fVar3);
   dVar4 = (double)fVar3;
-  __libm_sse2_log((double)CONCAT44(fVar5,in_stack_ffffffec));
+  __libm_sse2_log((double)CONCAT44(fVar5,local_14));
   fVar3 = SQRT(((float)dVar4 * -2.0) / fVar3);
-  *param_1 = fVar5 * fVar3;
-  *param_2 = fVar6 * fVar3;
+  *f0 = fVar5 * fVar3;
+  *f1 = fVar6 * fVar3;
   return;
 }
 
 
 // 007A7F30  RandWithSeed  (universal/com_math.cpp:190)
 
-int __cdecl RandWithSeed(int *param_1)
+int __cdecl RandWithSeed(int *seed)
 
 {
-  *param_1 = *param_1 * 0x41c64e6d + 0x3039;
-  return (uint)((int)(*param_1 + (*param_1 >> 0x1f & 0xffffU)) >> 0x10) % 0x8000;
+  *seed = *seed * 0x41c64e6d + 0x3039;
+  return (uint)((int)(*seed + (*seed >> 0x1f & 0xffffU)) >> 0x10) % 0x8000;
 }
 
 
 // 007A7F70  randomhash  (universal/com_math.cpp:197)
 
-float __cdecl randomhash(int param_1)
+float __cdecl randomhash(int value)
 
 {
   int iVar1;
   
-  iVar1 = RandWithSeed(&param_1);
+  iVar1 = RandWithSeed(&value);
   return (float)iVar1 / 32768.0;
 }
 
 
 // 007A7F90  PointInCircleFromUniformDeviates  (universal/com_math.cpp:204)
 
-void __cdecl PointInCircleFromUniformDeviates(float param_1,float param_2,float *param_3)
+void __cdecl PointInCircleFromUniformDeviates(float radiusDeviate,float yawDeviate,float *point)
 
 {
   float10 fVar1;
   float10 fVar2;
+  float r;
+  float rSq;
+  float yaw;
+  float sinYaw;
+  float cosYaw;
   
-  fVar1 = (float10)fcos((float10)(param_2 * 6.2831855));
-  fVar2 = (float10)fsin((float10)(param_2 * 6.2831855));
-  *param_3 = SQRT(param_1) * (float)fVar1;
-  param_3[1] = SQRT(param_1) * (float)fVar2;
+  fVar1 = (float10)fcos((float10)(yawDeviate * 6.2831855));
+  fVar2 = (float10)fsin((float10)(yawDeviate * 6.2831855));
+  *point = SQRT(radiusDeviate) * (float)fVar1;
+  point[1] = SQRT(radiusDeviate) * (float)fVar2;
   return;
 }
 
 
 // 007A8010  LinearTrack  (universal/com_math.cpp:379)
 
-float __cdecl LinearTrack(float param_1,float param_2,float param_3,float param_4)
+float __cdecl LinearTrack(float tgt,float cur,float rate,float deltaTime)
 
 {
   float fVar1;
-  float local_8;
+  float err;
+  float step;
   
-  fVar1 = param_1 - param_2;
+  fVar1 = tgt - cur;
   if (fVar1 <= 0.0) {
-    param_3 = -param_3;
+    rate = -rate;
   }
-  local_8 = param_3 * param_4;
-  if ((0.001 < ABS(fVar1)) && (ABS(local_8) <= ABS(fVar1))) {
-    param_1 = param_2 + local_8;
+  step = rate * deltaTime;
+  if ((0.001 < ABS(fVar1)) && (ABS(step) <= ABS(fVar1))) {
+    tgt = cur + step;
   }
-  return param_1;
+  return tgt;
 }
 
 
 // 007A80B0  LinearTrackAngle  (universal/com_math.cpp:406)
 
-float __cdecl LinearTrackAngle(float param_1,float param_2,float param_3,float param_4)
+float __cdecl LinearTrackAngle(float tgt,float cur,float rate,float deltaTime)
 
 {
   float fVar1;
+  float angle;
   
-  for (; 180.0 < param_1 - param_2; param_1 = param_1 - 360.0) {
+  for (; 180.0 < tgt - cur; tgt = tgt - 360.0) {
   }
-  for (; param_1 - param_2 < -180.0; param_1 = param_1 + 360.0) {
+  for (; tgt - cur < -180.0; tgt = tgt + 360.0) {
   }
-  fVar1 = LinearTrack(param_1,param_2,param_3,param_4);
+  fVar1 = LinearTrack(tgt,cur,rate,deltaTime);
   fVar1 = AngleNormalize180(fVar1);
   return fVar1;
 }
@@ -156,33 +168,36 @@ float __cdecl LinearTrackAngle(float param_1,float param_2,float param_3,float p
 
 // 007A8150  DiffTrack  (universal/com_math.cpp:425)
 
-float __cdecl DiffTrack(float param_1,float param_2,float param_3,float param_4)
+float __cdecl DiffTrack(float tgt,float cur,float rate,float deltaTime)
 
 {
   float fVar1;
   float fVar2;
+  float err;
+  float step;
   
-  fVar1 = param_1 - param_2;
-  fVar2 = param_3 * fVar1 * param_4;
+  fVar1 = tgt - cur;
+  fVar2 = rate * fVar1 * deltaTime;
   if ((0.001 < ABS(fVar1)) && (ABS(fVar2) <= ABS(fVar1))) {
-    param_1 = param_2 + fVar2;
+    tgt = cur + fVar2;
   }
-  return param_1;
+  return tgt;
 }
 
 
 // 007A81D0  DiffTrackAngle  (universal/com_math.cpp:448)
 
-float __cdecl DiffTrackAngle(float param_1,float param_2,float param_3,float param_4)
+float __cdecl DiffTrackAngle(float tgt,float cur,float rate,float deltaTime)
 
 {
   float fVar1;
+  float angle;
   
-  for (; 180.0 < param_1 - param_2; param_1 = param_1 - 360.0) {
+  for (; 180.0 < tgt - cur; tgt = tgt - 360.0) {
   }
-  for (; param_1 - param_2 < -180.0; param_1 = param_1 + 360.0) {
+  for (; tgt - cur < -180.0; tgt = tgt + 360.0) {
   }
-  fVar1 = DiffTrack(param_1,param_2,param_3,param_4);
+  fVar1 = DiffTrack(tgt,cur,rate,deltaTime);
   fVar1 = AngleNormalize180(fVar1);
   return fVar1;
 }
@@ -190,18 +205,19 @@ float __cdecl DiffTrackAngle(float param_1,float param_2,float param_3,float par
 
 // 007A8270  GraphGetValueFromFraction  (universal/com_math.cpp:462)
 
-float __cdecl GraphGetValueFromFraction(int param_1,float (*param_2) [2],float param_3)
+float __cdecl GraphGetValueFromFraction(int knotCount,float (*knots) [2],float fraction)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  float local_10;
-  int local_8;
+  float result;
+  float adjustedFrac;
+  int knotIndex;
   
-  local_10 = -1.0;
-  if (param_2 == (float (*) [2])0x0) {
+  result = -1.0;
+  if (knots == (float (*) [2])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1d3,0,
                              "%s");
     if (!bVar2) {
@@ -210,7 +226,7 @@ float __cdecl GraphGetValueFromFraction(int param_1,float (*param_2) [2],float p
       return (float)fVar3;
     }
   }
-  if (param_1 < 2) {
+  if (knotCount < 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1d4,0,
                              "%s\n\t(knotCount) = %i");
     if (!bVar2) {
@@ -219,7 +235,7 @@ float __cdecl GraphGetValueFromFraction(int param_1,float (*param_2) [2],float p
       return (float)fVar3;
     }
   }
-  if ((param_3 < 0.0) || (1.0 < param_3)) {
+  if ((fraction < 0.0) || (1.0 < fraction)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1d5,0,
                              "%s\n\t(fraction) = %g");
     if (!bVar2) {
@@ -228,7 +244,7 @@ float __cdecl GraphGetValueFromFraction(int param_1,float (*param_2) [2],float p
       return (float)fVar3;
     }
   }
-  if (param_2[param_1 + -1][0] != 1.0) {
+  if (knots[knotCount + -1][0] != 1.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1d6,0,
                              "%s\n\t(knots[knotCount - 1][0]) = %g");
     if (!bVar2) {
@@ -237,11 +253,11 @@ float __cdecl GraphGetValueFromFraction(int param_1,float (*param_2) [2],float p
       return (float)fVar3;
     }
   }
-  local_8 = 1;
+  knotIndex = 1;
   do {
-    if (param_1 <= local_8) {
+    if (knotCount <= knotIndex) {
 LAB_007a853e:
-      if ((local_10 < 0.0) || (1.0 < local_10)) {
+      if ((result < 0.0) || (1.0 < result)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1e7,
                                  0,"%s\n\t(result) = %g");
         if (!bVar2) {
@@ -250,11 +266,11 @@ LAB_007a853e:
           return (float)fVar3;
         }
       }
-      return local_10;
+      return result;
     }
-    if (param_3 <= param_2[local_8][0]) {
-      fVar4 = (param_3 - param_2[local_8 + -1][0]) /
-              (param_2[local_8][0] - param_2[local_8 + -1][0]);
+    if (fraction <= knots[knotIndex][0]) {
+      fVar4 = (fraction - knots[knotIndex + -1][0]) /
+              (knots[knotIndex][0] - knots[knotIndex + -1][0]);
       if ((fVar4 < 0.0) || (1.0 < fVar4)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1de,
                                  0,"%s\n\t(adjustedFrac) = %g");
@@ -264,7 +280,7 @@ LAB_007a853e:
           return (float)fVar3;
         }
       }
-      if ((param_2[local_8 + -1][1] < 0.0) || (1.0 < param_2[local_8 + -1][1])) {
+      if ((knots[knotIndex + -1][1] < 0.0) || (1.0 < knots[knotIndex + -1][1])) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1df,
                                  0,"%s\n\t(knots[knotIndex - 1][1]) = %g");
         if (!bVar2) {
@@ -273,7 +289,7 @@ LAB_007a853e:
           return (float)fVar3;
         }
       }
-      if ((param_2[local_8][1] < 0.0) || (1.0 < param_2[local_8][1])) {
+      if ((knots[knotIndex][1] < 0.0) || (1.0 < knots[knotIndex][1])) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x1e0,
                                  0,"%s\n\t(knots[knotIndex][1]) = %g");
         if (!bVar2) {
@@ -282,26 +298,28 @@ LAB_007a853e:
           return (float)fVar3;
         }
       }
-      local_10 = (param_2[local_8][1] - param_2[local_8 + -1][1]) * fVar4 + param_2[local_8 + -1][1]
-      ;
+      result = (knots[knotIndex][1] - knots[knotIndex + -1][1]) * fVar4 + knots[knotIndex + -1][1];
       goto LAB_007a853e;
     }
-    local_8 = local_8 + 1;
+    knotIndex = knotIndex + 1;
   } while( true );
 }
 
 
 // 007A85A0  Q_acos  (universal/com_math.cpp:522)
 
-float __cdecl Q_acos(float param_1)
+/* WARNING: Variable defined which should be unmapped: angle */
+
+float __cdecl Q_acos(float c)
 
 {
   undefined4 in_ECX;
   undefined4 unaff_EBP;
   float fVar1;
   double dVar2;
+  float angle;
   
-  dVar2 = (double)param_1;
+  dVar2 = (double)c;
   __libm_sse2_acos((double)CONCAT44(unaff_EBP,in_ECX));
   fVar1 = (float)dVar2;
   if (fVar1 <= 3.1415927) {
@@ -318,83 +336,83 @@ float __cdecl Q_acos(float param_1)
 
 // 007A85F0  ClampChar  (universal/com_math.cpp:544)
 
-schar __cdecl ClampChar(int param_1)
+schar __cdecl ClampChar(int i)
 
 {
-  if (param_1 < -0x80) {
-    param_1._0_1_ = -0x80;
+  if (i < -0x80) {
+    i._0_1_ = -0x80;
   }
-  else if (param_1 < 0x80) {
+  else if (i < 0x80) {
   }
   else {
-    param_1._0_1_ = '\x7f';
+    i._0_1_ = '\x7f';
   }
-  return (schar)param_1;
+  return (schar)i;
 }
 
 
 // 007A8610  ClampShort  (universal/com_math.cpp:560)
 
-short __cdecl ClampShort(int param_1)
+short __cdecl ClampShort(int i)
 
 {
-  if (param_1 < -0x8000) {
-    param_1._0_2_ = -0x8000;
+  if (i < -0x8000) {
+    i._0_2_ = -0x8000;
   }
-  else if (param_1 < 0x8000) {
+  else if (i < 0x8000) {
   }
   else {
-    param_1._0_2_ = 0x7fff;
+    i._0_2_ = 0x7fff;
   }
-  return (short)param_1;
+  return (short)i;
 }
 
 
 // 007A8640  DirToByte  (universal/com_math.cpp:577)
 
-uchar __cdecl DirToByte(float *param_1)
+uchar __cdecl DirToByte(float *dir)
 
 {
   uint uVar1;
   float fVar2;
-  byte local_a;
-  byte local_9;
-  float local_8;
+  float d;
+  uchar best;
+  uchar i;
+  float bestd;
   
-  if (param_1 == (float *)0x0) {
-    local_a = 0;
+  if (dir == (float *)0x0) {
+    best = '\0';
   }
   else {
-    local_8 = 0.0;
-    local_a = 0;
-    for (local_9 = 0; local_9 < 0xa2; local_9 = local_9 + 1) {
-      uVar1 = (uint)local_9;
-      fVar2 = *param_1 * bytedirs[uVar1][0] + param_1[1] * bytedirs[uVar1][1] +
-              param_1[2] * bytedirs[uVar1][2];
-      if (local_8 < fVar2) {
-        local_a = local_9;
-        local_8 = fVar2;
+    bestd = 0.0;
+    best = '\0';
+    for (i = '\0'; i < 0xa2; i = i + '\x01') {
+      uVar1 = (uint)i;
+      fVar2 = *dir * bytedirs[uVar1][0] + dir[1] * bytedirs[uVar1][1] + dir[2] * bytedirs[uVar1][2];
+      if (bestd < fVar2) {
+        best = i;
+        bestd = fVar2;
       }
     }
   }
-  return local_a;
+  return best;
 }
 
 
 // 007A86F0  ByteToDir  (universal/com_math.cpp:605)
 
-void __cdecl ByteToDir(int param_1,float *param_2)
+void __cdecl ByteToDir(int b,float *dir)
 
 {
-  if ((param_1 < 0) || (0xa1 < param_1)) {
-    *param_2 = 0.0;
-    param_2[1] = 0.0;
-    param_2[2] = 0.0;
+  if ((b < 0) || (0xa1 < b)) {
+    *dir = 0.0;
+    dir[1] = 0.0;
+    dir[2] = 0.0;
   }
   else {
-    *param_2 = bytedirs[param_1][0];
-    param_2[1] = bytedirs[param_1][1];
-    param_2[2] = bytedirs[param_1][2];
+    *dir = bytedirs[b][0];
+    dir[1] = bytedirs[b][1];
+    dir[2] = bytedirs[b][2];
   }
   return;
 }
@@ -402,19 +420,18 @@ void __cdecl ByteToDir(int param_1,float *param_2)
 
 // 007A8770  VecNCompareCustomEpsilon  (universal/com_math.cpp:616)
 
-int __cdecl VecNCompareCustomEpsilon(float *param_1,float *param_2,float param_3,int param_4)
+int __cdecl VecNCompareCustomEpsilon(float *v0,float *v1,float epsilon,int coordCount)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_4 <= local_8) {
+    if (coordCount <= i) {
       return 1;
     }
-    if (param_3 * param_3 <
-        (param_1[local_8] - param_2[local_8]) * (param_1[local_8] - param_2[local_8])) break;
-    local_8 = local_8 + 1;
+    if (epsilon * epsilon < (v0[i] - v1[i]) * (v0[i] - v1[i])) break;
+    i = i + 1;
   }
   return 0;
 }
@@ -422,41 +439,41 @@ int __cdecl VecNCompareCustomEpsilon(float *param_1,float *param_2,float param_3
 
 // 007A87E0  Vec3ProjectionCoords  (universal/com_math.cpp:670)
 
-void __cdecl Vec3ProjectionCoords(float *param_1,int *param_2,int *param_3)
+void __cdecl Vec3ProjectionCoords(float *dir,int *xCoord,int *yCoord)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = param_1[1] * param_1[1];
-  fVar2 = param_1[2] * param_1[2];
-  if ((fVar2 < *param_1 * *param_1) || (fVar2 < fVar1)) {
-    if ((fVar1 < *param_1 * *param_1) || (fVar1 < fVar2)) {
-      if (*param_1 <= 0.0) {
-        *param_2 = 2;
-        *param_3 = 1;
+  fVar1 = dir[1] * dir[1];
+  fVar2 = dir[2] * dir[2];
+  if ((fVar2 < *dir * *dir) || (fVar2 < fVar1)) {
+    if ((fVar1 < *dir * *dir) || (fVar1 < fVar2)) {
+      if (*dir <= 0.0) {
+        *xCoord = 2;
+        *yCoord = 1;
       }
       else {
-        *param_2 = 1;
-        *param_3 = 2;
+        *xCoord = 1;
+        *yCoord = 2;
       }
     }
-    else if (param_1[1] <= 0.0) {
-      *param_2 = 0;
-      *param_3 = 2;
+    else if (dir[1] <= 0.0) {
+      *xCoord = 0;
+      *yCoord = 2;
     }
     else {
-      *param_2 = 2;
-      *param_3 = 0;
+      *xCoord = 2;
+      *yCoord = 0;
     }
   }
-  else if (param_1[2] <= 0.0) {
-    *param_2 = 1;
-    *param_3 = 0;
+  else if (dir[2] <= 0.0) {
+    *xCoord = 1;
+    *yCoord = 0;
   }
   else {
-    *param_2 = 0;
-    *param_3 = 1;
+    *xCoord = 0;
+    *yCoord = 1;
   }
   return;
 }
@@ -464,7 +481,7 @@ void __cdecl Vec3ProjectionCoords(float *param_1,int *param_2,int *param_3)
 
 // 007A8900  RotatePointAroundVector  (universal/com_math.cpp:723)
 
-void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_3,float param_4)
+void __cdecl RotatePointAroundVector(float *dst,float *dir,float *point,float degrees)
 
 {
   code *pcVar1;
@@ -474,17 +491,17 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
   float *pfVar5;
   float *pfVar6;
   float10 fVar7;
-  float local_e4 [4];
+  float m [4];
   undefined4 local_d4;
   float local_d0;
   float local_cc;
   undefined4 local_c8;
   float local_c4;
-  float local_c0;
-  float local_bc;
+  float rad;
+  float vr;
   float local_b8;
   float local_b4;
-  float local_b0;
+  float zrot;
   float local_ac;
   float local_a8;
   float local_a4;
@@ -493,21 +510,21 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
   undefined4 local_98;
   undefined4 local_94;
   float local_90;
-  float local_8c [9];
-  float local_68;
+  float rot [9];
+  float vf;
   float local_64;
   float local_60;
-  float local_5c;
+  float vup;
   undefined4 local_58;
   undefined4 local_54;
-  int local_50;
-  float local_4c [9];
-  float local_28 [5];
+  int i;
+  float tmpmat [9];
+  float im [5];
   undefined4 local_14;
   float local_10;
   float local_c;
   
-  if (((*param_2 == 0.0) && (param_2[1] == 0.0)) && (param_2[2] == 0.0)) {
+  if (((*dir == 0.0) && (dir[1] == 0.0)) && (dir[2] == 0.0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x2dd,0,
                              "%s");
     if (!bVar3) {
@@ -516,32 +533,32 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
       return;
     }
   }
-  local_68 = *param_2;
-  local_64 = param_2[1];
-  local_60 = param_2[2];
-  PerpendicularVector(param_2,&local_bc);
-  Vec3Cross(&local_bc,&local_68,&local_5c);
-  local_e4[0] = local_bc;
-  local_e4[3] = local_b8;
+  vf = *dir;
+  local_64 = dir[1];
+  local_60 = dir[2];
+  PerpendicularVector(dir,&vr);
+  Vec3Cross(&vr,&vf,&vup);
+  m[0] = vr;
+  m[3] = local_b8;
   local_cc = local_b4;
-  local_e4[1] = local_5c;
+  m[1] = vup;
   local_d4 = local_58;
   local_c8 = local_54;
-  local_e4[2] = local_68;
+  m[2] = vf;
   local_d0 = local_64;
   local_c4 = local_60;
-  pfVar5 = local_e4;
-  pfVar6 = local_28;
+  pfVar5 = m;
+  pfVar6 = im;
   for (iVar4 = 9; iVar4 != 0; iVar4 = iVar4 + -1) {
     *pfVar6 = *pfVar5;
     pfVar5 = pfVar5 + 1;
     pfVar6 = pfVar6 + 1;
   }
-  local_28[1] = local_b8;
-  local_28[2] = local_b4;
-  local_28[3] = local_5c;
+  im[1] = local_b8;
+  im[2] = local_b4;
+  im[3] = vup;
   local_14 = local_54;
-  local_10 = local_68;
+  local_10 = vf;
   local_c = local_64;
   local_ac = 0.0;
   local_a8 = 0.0;
@@ -551,9 +568,9 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
   local_94 = 0;
   local_90 = 1.0;
   local_a0 = 1.0;
-  local_b0 = 1.0;
-  local_c0 = param_4 * 0.017453292;
-  if (((uint)local_c0 & 0x7f800000) == 0x7f800000) {
+  zrot = 1.0;
+  rad = degrees * 0.017453292;
+  if (((uint)rad & 0x7f800000) == 0x7f800000) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x300,0,
                              "%s");
     if (!bVar3) {
@@ -562,9 +579,9 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
       return;
     }
   }
-  fVar2 = (float10)fcos((float10)local_c0);
-  fVar7 = (float10)fsin((float10)local_c0);
-  local_b0 = (float)fVar2;
+  fVar2 = (float10)fcos((float10)rad);
+  fVar7 = (float10)fsin((float10)rad);
+  zrot = (float)fVar2;
   local_ac = (float)fVar7;
   if (((uint)local_ac & 0x7f800000) == 0x7f800000) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x304,0,
@@ -575,7 +592,7 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
       return;
     }
   }
-  if (((uint)local_b0 & 0x7f800000) == 0x7f800000) {
+  if (((uint)zrot & 0x7f800000) == 0x7f800000) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x305,0,
                              "%s");
     if (!bVar3) {
@@ -585,13 +602,11 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
     }
   }
   local_a4 = -local_ac;
-  local_a0 = local_b0;
-  MatrixMultiply((float (*) [3])local_e4,(float (*) [3])&local_b0,(float (*) [3])local_4c);
-  MatrixMultiply((float (*) [3])local_4c,(float (*) [3])local_28,(float (*) [3])local_8c);
-  for (local_50 = 0; local_50 < 3; local_50 = local_50 + 1) {
-    param_1[local_50] =
-         local_8c[local_50 * 3] * *param_3 + local_8c[local_50 * 3 + 1] * param_3[1] +
-         local_8c[local_50 * 3 + 2] * param_3[2];
+  local_a0 = zrot;
+  MatrixMultiply((float (*) [3])m,(float (*) [3])&zrot,(float (*) [3])tmpmat);
+  MatrixMultiply((float (*) [3])tmpmat,(float (*) [3])im,(float (*) [3])rot);
+  for (i = 0; i < 3; i = i + 1) {
+    dst[i] = rot[i * 3] * *point + rot[i * 3 + 1] * point[1] + rot[i * 3 + 2] * point[2];
   }
   return;
 }
@@ -599,49 +614,52 @@ void __cdecl RotatePointAroundVector(float *param_1,float *param_2,float *param_
 
 // 007A8D10  Vec3Basis_RightHanded  (universal/com_math.cpp:815)
 
-void __cdecl Vec3Basis_RightHanded(float *param_1,float *param_2,float *param_3)
+void __cdecl Vec3Basis_RightHanded(float *forward,float *left,float *up)
 
 {
-  PerpendicularVector(param_1,param_3);
-  Vec3Cross(param_3,param_1,param_2);
+  PerpendicularVector(forward,up);
+  Vec3Cross(up,forward,left);
   return;
 }
 
 
 // 007A8D40  vectoyaw  (universal/com_math.cpp:826)
 
-float __cdecl vectoyaw(float *param_1)
+/* WARNING: Variable defined which should be unmapped: yaw */
+
+float __cdecl vectoyaw(float *vec)
 
 {
-  double dVar1;
+  float fVar1;
+  double dVar2;
   undefined4 in_stack_ffffffec;
-  float fVar2;
-  undefined4 in_stack_fffffff8;
   float fVar3;
+  float yaw;
   
-  if ((param_1[1] == 0.0) && (*param_1 == 0.0)) {
-    fVar3 = 0.0;
+  if ((vec[1] == 0.0) && (*vec == 0.0)) {
+    yaw = 0.0;
   }
   else {
-    dVar1 = (double)param_1[1];
-    __libm_sse2_atan2((double)CONCAT44(param_1[1],in_stack_ffffffec),
-                      (double)CONCAT44(in_stack_fffffff8,*param_1));
-    fVar3 = ((float)dVar1 * 180.0) / 3.1415927;
-    if (fVar3 < 0.0) {
-      fVar2 = 360.0;
+    dVar2 = (double)vec[1];
+    __libm_sse2_atan2((double)CONCAT44(vec[1],in_stack_ffffffec),(double)CONCAT44(yaw,*vec));
+    fVar1 = ((float)dVar2 * 180.0) / 3.1415927;
+    if (fVar1 < 0.0) {
+      fVar3 = 360.0;
     }
     else {
-      fVar2 = 0.0;
+      fVar3 = 0.0;
     }
-    fVar3 = fVar3 + fVar2;
+    yaw = fVar1 + fVar3;
   }
-  return fVar3;
+  return yaw;
 }
 
 
 // 007A8E00  vectosignedyaw  (universal/com_math.cpp:848)
 
-float __cdecl vectosignedyaw(float *param_1)
+/* WARNING: Variable defined which should be unmapped: yaw */
+
+float __cdecl vectosignedyaw(float *vec)
 
 {
   code *pcVar1;
@@ -649,18 +667,16 @@ float __cdecl vectosignedyaw(float *param_1)
   undefined4 unaff_EBP;
   float10 fVar3;
   double dVar4;
-  undefined4 in_stack_fffffff8;
-  float fVar5;
+  float yaw;
   
-  if ((param_1[1] == 0.0) && (*param_1 == 0.0)) {
-    fVar5 = 0.0;
+  if ((vec[1] == 0.0) && (*vec == 0.0)) {
+    yaw = 0.0;
   }
   else {
-    dVar4 = (double)param_1[1];
-    __libm_sse2_atan2((double)CONCAT44(*param_1,param_1[1]),
-                      (double)CONCAT44(unaff_EBP,in_stack_fffffff8));
-    fVar5 = ((float)dVar4 * 180.0) / 3.1415927;
-    if (fVar5 < -180.0) {
+    dVar4 = (double)vec[1];
+    __libm_sse2_atan2((double)CONCAT44(*vec,vec[1]),(double)CONCAT44(unaff_EBP,yaw));
+    yaw = ((float)dVar4 * 180.0) / 3.1415927;
+    if (yaw < -180.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x35b,0,
                                "%s");
       if (!bVar2) {
@@ -669,7 +685,7 @@ float __cdecl vectosignedyaw(float *param_1)
         return (float)fVar3;
       }
     }
-    if (180.0 < fVar5) {
+    if (180.0 < yaw) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x35c,0,
                                "%s");
       if (!bVar2) {
@@ -679,13 +695,13 @@ float __cdecl vectosignedyaw(float *param_1)
       }
     }
   }
-  return fVar5;
+  return yaw;
 }
 
 
 // 007A8F00  vectopitch  (universal/com_math.cpp:872)
 
-float __cdecl vectopitch(float *param_1)
+float __cdecl vectopitch(float *vec)
 
 {
   double dVar1;
@@ -695,8 +711,8 @@ float __cdecl vectopitch(float *param_1)
   float local_18;
   float local_14;
   
-  if ((param_1[1] == 0.0) && (*param_1 == 0.0)) {
-    if (-param_1[2] < 0.0) {
+  if ((vec[1] == 0.0) && (*vec == 0.0)) {
+    if (-vec[2] < 0.0) {
       local_14 = 270.0;
     }
     else {
@@ -705,8 +721,8 @@ float __cdecl vectopitch(float *param_1)
     local_18 = local_14;
   }
   else {
-    dVar1 = (double)param_1[2];
-    __libm_sse2_atan2(in_stack_ffffffd0,(double)CONCAT44(param_1[2],in_stack_ffffffd8));
+    dVar1 = (double)vec[2];
+    __libm_sse2_atan2(in_stack_ffffffd0,(double)CONCAT44(vec[2],in_stack_ffffffd8));
     local_18 = ((float)dVar1 * -180.0) / 3.1415927;
     if (local_18 < 0.0) {
       fVar2 = 360.0;
@@ -722,7 +738,7 @@ float __cdecl vectopitch(float *param_1)
 
 // 007A9030  vectoangles  (universal/com_math.cpp:896)
 
-void __cdecl vectoangles(float *param_1,float *param_2)
+void __cdecl vectoangles(float *vec,float *angles)
 
 {
   double dVar1;
@@ -735,9 +751,9 @@ void __cdecl vectoangles(float *param_1,float *param_2)
   float local_18;
   float local_14;
   
-  if ((param_1[1] == 0.0) && (*param_1 == 0.0)) {
+  if ((vec[1] == 0.0) && (*vec == 0.0)) {
     local_14 = 0.0;
-    if (-param_1[2] < 0.0) {
+    if (-vec[2] < 0.0) {
       local_18 = 270.0;
     }
     else {
@@ -746,7 +762,7 @@ void __cdecl vectoangles(float *param_1,float *param_2)
     local_1c = local_18;
   }
   else {
-    dVar1 = (double)param_1[1];
+    dVar1 = (double)vec[1];
     __libm_sse2_atan2(in_stack_ffffffc0,(double)CONCAT44(in_stack_ffffffcc,in_stack_ffffffc8));
     local_14 = ((float)dVar1 * 180.0) / 3.1415927;
     if (local_14 < 0.0) {
@@ -756,8 +772,8 @@ void __cdecl vectoangles(float *param_1,float *param_2)
       local_28 = 0.0;
     }
     local_14 = local_14 + local_28;
-    dVar1 = (double)param_1[2];
-    __libm_sse2_atan2(in_stack_ffffffc0,(double)CONCAT44(param_1[2],in_stack_ffffffc8));
+    dVar1 = (double)vec[2];
+    __libm_sse2_atan2(in_stack_ffffffc0,(double)CONCAT44(vec[2],in_stack_ffffffc8));
     local_1c = ((float)dVar1 * -180.0) / 3.1415927;
     if (local_1c < 0.0) {
       fVar2 = 360.0;
@@ -767,45 +783,48 @@ void __cdecl vectoangles(float *param_1,float *param_2)
     }
     local_1c = local_1c + fVar2;
   }
-  *param_2 = local_1c;
-  param_2[1] = local_14;
-  param_2[2] = 0.0;
+  *angles = local_1c;
+  angles[1] = local_14;
+  angles[2] = 0.0;
   return;
 }
 
 
 // 007A9210  UnitQuatToAngles  (universal/com_math.cpp:921)
 
-void __cdecl UnitQuatToAngles(float *param_1,float *param_2)
+void __cdecl UnitQuatToAngles(float *quat,float *angles)
 
 {
-  float local_28 [9];
+  float axis [9];
   
-  UnitQuatToAxis(param_1,(float (*) [3])local_28);
-  AxisToAngles((float (*) [3])local_28,param_2);
+  UnitQuatToAxis(quat,(float (*) [3])axis);
+  AxisToAngles((float (*) [3])axis,angles);
   return;
 }
 
 
 // 007A9240  YawVectors  (universal/com_math.cpp:934)
 
-void __cdecl YawVectors(float param_1,float *param_2,float *param_3)
+void __cdecl YawVectors(float yaw,float *forward,float *right)
 
 {
   float10 fVar1;
   float10 fVar2;
+  float cy;
+  float angle;
+  float sy;
   
-  fVar1 = (float10)fcos((float10)(param_1 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(param_1 * 0.017453292));
-  if (param_2 != (float *)0x0) {
-    *param_2 = (float)fVar1;
-    param_2[1] = (float)fVar2;
-    param_2[2] = 0.0;
+  fVar1 = (float10)fcos((float10)(yaw * 0.017453292));
+  fVar2 = (float10)fsin((float10)(yaw * 0.017453292));
+  if (forward != (float *)0x0) {
+    *forward = (float)fVar1;
+    forward[1] = (float)fVar2;
+    forward[2] = 0.0;
   }
-  if (param_3 != (float *)0x0) {
-    *param_3 = (float)fVar2;
-    param_3[1] = -(float)fVar1;
-    param_3[2] = 0.0;
+  if (right != (float *)0x0) {
+    *right = (float)fVar2;
+    right[1] = -(float)fVar1;
+    right[2] = 0.0;
   }
   return;
 }
@@ -813,21 +832,24 @@ void __cdecl YawVectors(float param_1,float *param_2,float *param_3)
 
 // 007A92E0  YawVectors2D  (universal/com_math.cpp:959)
 
-void __cdecl YawVectors2D(float param_1,float *param_2,float *param_3)
+void __cdecl YawVectors2D(float yaw,float *forward,float *right)
 
 {
   float10 fVar1;
   float10 fVar2;
+  float cy;
+  float angle;
+  float sy;
   
-  fVar1 = (float10)fcos((float10)(param_1 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(param_1 * 0.017453292));
-  if (param_2 != (float *)0x0) {
-    *param_2 = (float)fVar1;
-    param_2[1] = (float)fVar2;
+  fVar1 = (float10)fcos((float10)(yaw * 0.017453292));
+  fVar2 = (float10)fsin((float10)(yaw * 0.017453292));
+  if (forward != (float *)0x0) {
+    *forward = (float)fVar1;
+    forward[1] = (float)fVar2;
   }
-  if (param_3 != (float *)0x0) {
-    *param_3 = (float)fVar2;
-    param_3[1] = -(float)fVar1;
+  if (right != (float *)0x0) {
+    *right = (float)fVar2;
+    right[1] = -(float)fVar1;
   }
   return;
 }
@@ -835,7 +857,7 @@ void __cdecl YawVectors2D(float param_1,float *param_2,float *param_3)
 
 // 007A9360  PerpendicularVector  (universal/com_math.cpp:987)
 
-void __cdecl PerpendicularVector(float *param_1,float *param_2)
+void __cdecl PerpendicularVector(float *src,float *dst)
 
 {
   code *pcVar1;
@@ -843,12 +865,13 @@ void __cdecl PerpendicularVector(float *param_1,float *param_2)
   int iVar3;
   float fVar4;
   uint local_30;
-  uint local_18;
-  float local_10 [3];
+  int pos;
+  float d;
+  float srcSq [3];
   
-  iVar3 = Vec3IsNormalized(param_1);
+  iVar3 = Vec3IsNormalized(src);
   if (iVar3 == 0) {
-    Abs((phys_vec3 *)param_1);
+    Abs((phys_vec3 *)src);
     va("(%g %g %g) len %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x3e0,0,
                              "%s\n\t%s");
@@ -858,27 +881,27 @@ void __cdecl PerpendicularVector(float *param_1,float *param_2)
       return;
     }
   }
-  local_10[0] = *param_1 * *param_1;
-  local_10[1] = param_1[1] * param_1[1];
-  local_10[2] = param_1[2] * param_1[2];
-  local_30 = (uint)(param_1[1] * param_1[1] < *param_1 * *param_1);
-  local_18 = local_30;
-  if (local_10[2] < local_10[local_30]) {
-    local_18 = 2;
+  srcSq[0] = *src * *src;
+  srcSq[1] = src[1] * src[1];
+  srcSq[2] = src[2] * src[2];
+  local_30 = (uint)(src[1] * src[1] < *src * *src);
+  pos = local_30;
+  if (srcSq[2] < srcSq[local_30]) {
+    pos = 2;
   }
-  fVar4 = -param_1[local_18];
-  *param_2 = fVar4 * *param_1;
-  param_2[1] = fVar4 * param_1[1];
-  param_2[2] = fVar4 * param_1[2];
-  param_2[local_18] = param_2[local_18] + 1.0;
-  Vec3Normalize(param_2);
+  fVar4 = -src[pos];
+  *dst = fVar4 * *src;
+  dst[1] = fVar4 * src[1];
+  dst[2] = fVar4 * src[2];
+  dst[pos] = dst[pos] + 1.0;
+  Vec3Normalize(dst);
   return;
 }
 
 
 // 007A94E0  PointToLineDistSq  (universal/com_math.cpp:1068)
 
-float __cdecl PointToLineDistSq(float *param_1,float *param_2,float *param_3)
+float __cdecl PointToLineDistSq(float *point,float *start,float *end)
 
 {
   float fVar1;
@@ -894,16 +917,18 @@ float __cdecl PointToLineDistSq(float *param_1,float *param_2,float *param_3)
   float fVar11;
   float fVar12;
   float fVar13;
+  float segDot;
+  float ptToLineDot;
   
-  fVar7 = *param_3 - *param_2;
-  fVar8 = param_3[1] - param_2[1];
-  fVar9 = param_3[2] - param_2[2];
-  fVar10 = *param_1;
-  fVar11 = *param_2;
-  fVar12 = param_1[1];
-  fVar1 = param_2[1];
-  fVar2 = param_1[2];
-  fVar3 = param_2[2];
+  fVar7 = *end - *start;
+  fVar8 = end[1] - start[1];
+  fVar9 = end[2] - start[2];
+  fVar10 = *point;
+  fVar11 = *start;
+  fVar12 = point[1];
+  fVar1 = start[1];
+  fVar2 = point[2];
+  fVar3 = start[2];
   fVar13 = fVar7 * fVar7 + fVar8 * fVar8 + fVar9 * fVar9;
   if (fVar13 == 0.0) {
     bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x43a,0,
@@ -925,7 +950,7 @@ float __cdecl PointToLineDistSq(float *param_1,float *param_2,float *param_3)
 
 // 007A9660  PointToLineDistSq2D  (universal/com_math.cpp:1094)
 
-float __cdecl PointToLineDistSq2D(float *param_1,float *param_2,float *param_3)
+float __cdecl PointToLineDistSq2D(float *point,float *start,float *end)
 
 {
   float fVar1;
@@ -938,13 +963,15 @@ float __cdecl PointToLineDistSq2D(float *param_1,float *param_2,float *param_3)
   float fVar8;
   float fVar9;
   float fVar10;
+  float segDot;
+  float ptToLineDot;
   
-  fVar6 = *param_3 - *param_2;
-  fVar7 = param_3[1] - param_2[1];
-  fVar8 = *param_1;
-  fVar9 = *param_2;
-  fVar1 = param_1[1];
-  fVar2 = param_2[1];
+  fVar6 = *end - *start;
+  fVar7 = end[1] - start[1];
+  fVar8 = *point;
+  fVar9 = *start;
+  fVar1 = point[1];
+  fVar2 = start[1];
   fVar10 = fVar6 * fVar6 + fVar7 * fVar7;
   if (fVar10 == 0.0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x454,0,
@@ -964,7 +991,7 @@ float __cdecl PointToLineDistSq2D(float *param_1,float *param_2,float *param_3)
 
 // 007A9780  BoxInPlanes  (universal/com_math.cpp:1180)
 
-int __cdecl BoxInPlanes(float (*param_1) [4],uint param_2,float *param_3,float *param_4)
+int __cdecl BoxInPlanes(float (*planes) [4],uint numPlanes,float *mins,float *maxs)
 
 {
   float (*pafVar1) [4];
@@ -976,65 +1003,66 @@ int __cdecl BoxInPlanes(float (*param_1) [4],uint param_2,float *param_3,float *
   float local_1c;
   float local_18;
   float local_14;
-  uint local_8;
+  float inside;
+  uint planeIndex;
   
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (numPlanes <= planeIndex) {
       return 1;
     }
-    pafVar1 = param_1 + local_8;
-    if ((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_3[2] +
-        (*pafVar1)[3] < 0.0) {
+    pafVar1 = planes + planeIndex;
+    if ((*pafVar1)[0] * *mins + (*pafVar1)[1] * mins[1] + (*pafVar1)[2] * mins[2] + (*pafVar1)[3] <
+        0.0) {
       local_14 = 1.0;
     }
     else {
       local_14 = 0.0;
     }
-    if ((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_4[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *mins + (*pafVar1)[1] * mins[1] + (*pafVar1)[2] * maxs[2] + (*pafVar1)[3] <
+        0.0) {
       local_18 = 1.0;
     }
     else {
       local_18 = 0.0;
     }
-    if ((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_4[1] + (*pafVar1)[2] * param_3[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *mins + (*pafVar1)[1] * maxs[1] + (*pafVar1)[2] * mins[2] + (*pafVar1)[3] <
+        0.0) {
       local_1c = 1.0;
     }
     else {
       local_1c = 0.0;
     }
-    if ((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_4[1] + (*pafVar1)[2] * param_4[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *mins + (*pafVar1)[1] * maxs[1] + (*pafVar1)[2] * maxs[2] + (*pafVar1)[3] <
+        0.0) {
       local_20 = 1.0;
     }
     else {
       local_20 = 0.0;
     }
-    if ((*pafVar1)[0] * *param_4 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_3[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *maxs + (*pafVar1)[1] * mins[1] + (*pafVar1)[2] * mins[2] + (*pafVar1)[3] <
+        0.0) {
       local_24 = 1.0;
     }
     else {
       local_24 = 0.0;
     }
-    if ((*pafVar1)[0] * *param_4 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_4[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *maxs + (*pafVar1)[1] * mins[1] + (*pafVar1)[2] * maxs[2] + (*pafVar1)[3] <
+        0.0) {
       local_28 = 1.0;
     }
     else {
       local_28 = 0.0;
     }
-    if ((*pafVar1)[0] * *param_4 + (*pafVar1)[1] * param_4[1] + (*pafVar1)[2] * param_3[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *maxs + (*pafVar1)[1] * maxs[1] + (*pafVar1)[2] * mins[2] + (*pafVar1)[3] <
+        0.0) {
       local_2c = 1.0;
     }
     else {
       local_2c = 0.0;
     }
-    if ((*pafVar1)[0] * *param_4 + (*pafVar1)[1] * param_4[1] + (*pafVar1)[2] * param_4[2] +
-        (*pafVar1)[3] < 0.0) {
+    if ((*pafVar1)[0] * *maxs + (*pafVar1)[1] * maxs[1] + (*pafVar1)[2] * maxs[2] + (*pafVar1)[3] <
+        0.0) {
       local_30 = 1.0;
     }
     else {
@@ -1042,7 +1070,7 @@ int __cdecl BoxInPlanes(float (*param_1) [4],uint param_2,float *param_3,float *
     }
     if (local_14 + 0.0 + local_18 + local_1c + local_20 + local_24 + local_28 + local_2c + local_30
         == 0.0) break;
-    local_8 = local_8 + 1;
+    planeIndex = planeIndex + 1;
   }
   return 0;
 }
@@ -1050,21 +1078,21 @@ int __cdecl BoxInPlanes(float (*param_1) [4],uint param_2,float *param_3,float *
 
 // 007A9B80  SphereInPlanes  (universal/com_math.cpp:1204)
 
-int __cdecl SphereInPlanes(float (*param_1) [4],uint param_2,float *param_3,float param_4)
+int __cdecl SphereInPlanes(float (*planes) [4],uint numPlanes,float *center,float radius)
 
 {
   float (*pafVar1) [4];
-  uint local_8;
+  uint planeIndex;
   
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (numPlanes <= planeIndex) {
       return 1;
     }
-    pafVar1 = param_1 + local_8;
-    if (0.0 < ((*pafVar1)[0] * *param_3 + (*pafVar1)[1] * param_3[1] + (*pafVar1)[2] * param_3[2] +
-              (*pafVar1)[3]) - param_4) break;
-    local_8 = local_8 + 1;
+    pafVar1 = planes + planeIndex;
+    if (0.0 < ((*pafVar1)[0] * *center + (*pafVar1)[1] * center[1] + (*pafVar1)[2] * center[2] +
+              (*pafVar1)[3]) - radius) break;
+    planeIndex = planeIndex + 1;
   }
   return 0;
 }
@@ -1072,13 +1100,13 @@ int __cdecl SphereInPlanes(float (*param_1) [4],uint param_2,float *param_3,floa
 
 // 007A9C10  MatrixIdentity33  (universal/com_math.cpp:1226)
 
-void __cdecl MatrixIdentity33(float (*param_1) [3])
+void __cdecl MatrixIdentity33(float (*out) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (float (*) [3])0x0) {
+  if (out == (float (*) [3])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x4cb,0,
                              "%s");
     if (!bVar2) {
@@ -1087,25 +1115,25 @@ void __cdecl MatrixIdentity33(float (*param_1) [3])
       return;
     }
   }
-  (*param_1)[0] = 0.0;
-  (*param_1)[1] = 0.0;
-  (*param_1)[2] = 0.0;
-  param_1[1][0] = 0.0;
-  param_1[1][1] = 0.0;
-  param_1[1][2] = 0.0;
-  param_1[2][0] = 0.0;
-  param_1[2][1] = 0.0;
-  param_1[2][2] = 0.0;
-  (*param_1)[0] = 1.0;
-  param_1[1][1] = 1.0;
-  param_1[2][2] = 1.0;
+  (*out)[0] = 0.0;
+  (*out)[1] = 0.0;
+  (*out)[2] = 0.0;
+  out[1][0] = 0.0;
+  out[1][1] = 0.0;
+  out[1][2] = 0.0;
+  out[2][0] = 0.0;
+  out[2][1] = 0.0;
+  out[2][2] = 0.0;
+  (*out)[0] = 1.0;
+  out[1][1] = 1.0;
+  out[2][2] = 1.0;
   return;
 }
 
 
 // 007A9C90  MatrixIdentity44  (universal/com_math.cpp:1235)
 
-void __cdecl MatrixIdentity44(float (*param_1) [4])
+void __cdecl MatrixIdentity44(float (*out) [4])
 
 {
   code *pcVar1;
@@ -1113,7 +1141,7 @@ void __cdecl MatrixIdentity44(float (*param_1) [4])
   int iVar3;
   float *pfVar4;
   
-  if (param_1 == (float (*) [4])0x0) {
+  if (out == (float (*) [4])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x4d4,0,
                              "%s");
     if (!bVar2) {
@@ -1125,9 +1153,9 @@ void __cdecl MatrixIdentity44(float (*param_1) [4])
   iVar3 = 0x10;
   pfVar4 = identityMatrix44[0];
   for (; iVar3 != 0; iVar3 = iVar3 + -1) {
-    (*param_1)[0] = *pfVar4;
+    (*out)[0] = *pfVar4;
     pfVar4 = pfVar4 + 1;
-    param_1 = (float (*) [4])((int)param_1 + 4);
+    out = (float (*) [4])((int)out + 4);
   }
   return;
 }
@@ -1135,92 +1163,75 @@ void __cdecl MatrixIdentity44(float (*param_1) [4])
 
 // 007A9CE0  MatrixMultiply  (universal/com_math.cpp:1269)
 
-void __cdecl MatrixMultiply(float (*param_1) [3],float (*param_2) [3],float (*param_3) [3])
+void __cdecl MatrixMultiply(float (*in1) [3],float (*in2) [3],float (*out) [3])
 
 {
-  (*param_3)[0] =
-       (*param_1)[0] * (*param_2)[0] + (*param_1)[1] * param_2[1][0] + (*param_1)[2] * param_2[2][0]
-  ;
-  (*param_3)[1] =
-       (*param_1)[0] * (*param_2)[1] + (*param_1)[1] * param_2[1][1] + (*param_1)[2] * param_2[2][1]
-  ;
-  (*param_3)[2] =
-       (*param_1)[0] * (*param_2)[2] + (*param_1)[1] * param_2[1][2] + (*param_1)[2] * param_2[2][2]
-  ;
-  param_3[1][0] =
-       param_1[1][0] * (*param_2)[0] + param_1[1][1] * param_2[1][0] + param_1[1][2] * param_2[2][0]
-  ;
-  param_3[1][1] =
-       param_1[1][0] * (*param_2)[1] + param_1[1][1] * param_2[1][1] + param_1[1][2] * param_2[2][1]
-  ;
-  param_3[1][2] =
-       param_1[1][0] * (*param_2)[2] + param_1[1][1] * param_2[1][2] + param_1[1][2] * param_2[2][2]
-  ;
-  param_3[2][0] =
-       param_1[2][0] * (*param_2)[0] + param_1[2][1] * param_2[1][0] + param_1[2][2] * param_2[2][0]
-  ;
-  param_3[2][1] =
-       param_1[2][0] * (*param_2)[1] + param_1[2][1] * param_2[1][1] + param_1[2][2] * param_2[2][1]
-  ;
-  param_3[2][2] =
-       param_1[2][0] * (*param_2)[2] + param_1[2][1] * param_2[1][2] + param_1[2][2] * param_2[2][2]
-  ;
+  (*out)[0] = (*in1)[0] * (*in2)[0] + (*in1)[1] * in2[1][0] + (*in1)[2] * in2[2][0];
+  (*out)[1] = (*in1)[0] * (*in2)[1] + (*in1)[1] * in2[1][1] + (*in1)[2] * in2[2][1];
+  (*out)[2] = (*in1)[0] * (*in2)[2] + (*in1)[1] * in2[1][2] + (*in1)[2] * in2[2][2];
+  out[1][0] = in1[1][0] * (*in2)[0] + in1[1][1] * in2[1][0] + in1[1][2] * in2[2][0];
+  out[1][1] = in1[1][0] * (*in2)[1] + in1[1][1] * in2[1][1] + in1[1][2] * in2[2][1];
+  out[1][2] = in1[1][0] * (*in2)[2] + in1[1][1] * in2[1][2] + in1[1][2] * in2[2][2];
+  out[2][0] = in1[2][0] * (*in2)[0] + in1[2][1] * in2[1][0] + in1[2][2] * in2[2][0];
+  out[2][1] = in1[2][0] * (*in2)[1] + in1[2][1] * in2[1][1] + in1[2][2] * in2[2][1];
+  out[2][2] = in1[2][0] * (*in2)[2] + in1[2][1] * in2[1][2] + in1[2][2] * in2[2][2];
   return;
 }
 
 
 // 007A9F20  MatrixVecMultiply  (universal/com_math.cpp:1289)
 
-void __cdecl MatrixVecMultiply(float (*param_1) [3],float *param_2,float *param_3)
+void __cdecl MatrixVecMultiply(float (*mulMat) [3],float *mulVec,float *solution)
 
 {
-  *param_3 = (*param_1)[0] * *param_2 + (*param_1)[1] * param_2[1] + (*param_1)[2] * param_2[2];
-  param_3[1] = param_1[1][0] * *param_2 + param_1[1][1] * param_2[1] + param_1[1][2] * param_2[2];
-  param_3[2] = param_1[2][0] * *param_2 + param_1[2][1] * param_2[1] + param_1[2][2] * param_2[2];
+  *solution = (*mulMat)[0] * *mulVec + (*mulMat)[1] * mulVec[1] + (*mulMat)[2] * mulVec[2];
+  solution[1] = mulMat[1][0] * *mulVec + mulMat[1][1] * mulVec[1] + mulMat[1][2] * mulVec[2];
+  solution[2] = mulMat[2][0] * *mulVec + mulMat[2][1] * mulVec[1] + mulMat[2][2] * mulVec[2];
   return;
 }
 
 
 // 007A9FE0  MatrixVecMultiply  (universal/com_math.cpp:1301)
 
-void __cdecl MatrixVecMultiply(float (*param_1) [4],float *param_2,float *param_3)
+void __cdecl MatrixVecMultiply(float (*mulMat) [4],float *mulVec,float *solution)
 
 {
-  *param_3 = (*param_1)[0] * *param_2 + (*param_1)[1] * param_2[1] + (*param_1)[2] * param_2[2] +
-             (*param_1)[3] * param_2[3];
-  param_3[1] = param_1[1][0] * *param_2 + param_1[1][1] * param_2[1] + param_1[1][2] * param_2[2] +
-               param_1[1][3] * param_2[3];
-  param_3[2] = param_1[2][0] * *param_2 + param_1[2][1] * param_2[1] + param_1[2][2] * param_2[2] +
-               param_1[2][3] * param_2[3];
-  param_3[3] = param_1[3][0] * *param_2 + param_1[3][1] * param_2[1] + param_1[3][2] * param_2[2] +
-               param_1[3][3] * param_2[3];
+  *solution = (*mulMat)[0] * *mulVec + (*mulMat)[1] * mulVec[1] + (*mulMat)[2] * mulVec[2] +
+              (*mulMat)[3] * mulVec[3];
+  solution[1] = mulMat[1][0] * *mulVec + mulMat[1][1] * mulVec[1] + mulMat[1][2] * mulVec[2] +
+                mulMat[1][3] * mulVec[3];
+  solution[2] = mulMat[2][0] * *mulVec + mulMat[2][1] * mulVec[1] + mulMat[2][2] * mulVec[2] +
+                mulMat[2][3] * mulVec[3];
+  solution[3] = mulMat[3][0] * *mulVec + mulMat[3][1] * mulVec[1] + mulMat[3][2] * mulVec[2] +
+                mulMat[3][3] * mulVec[3];
   return;
 }
 
 
 // 007AA130  MatrixVecMultiplyProject  (universal/com_math.cpp:1314)
 
-void __cdecl MatrixVecMultiplyProject(float (*param_1) [4],float *param_2,float *param_3)
+void __cdecl MatrixVecMultiplyProject(float (*mulMat) [4],float *mulVec,float *solution)
 
 {
-  float local_28;
+  float ret;
   float local_24;
   float local_20;
   float local_1c;
-  float local_18;
+  float mul;
   float local_14;
   float local_10;
   float local_c;
+  float invW;
   
-  local_18 = *param_2;
-  local_14 = param_2[1];
-  local_10 = param_2[2];
+  mul = *mulVec;
+  local_14 = mulVec[1];
+  local_10 = mulVec[2];
   local_c = 1.0;
-  MatrixVecMultiply(param_1,&local_18,&local_28);
+  MatrixVecMultiply(mulMat,&mul,&ret);
   local_1c = 1.0 / local_1c;
-  *param_3 = local_28 * local_1c;
-  param_3[1] = local_24 * local_1c;
-  param_3[2] = local_20 * local_1c;
+  *solution = ret * local_1c;
+  solution[1] = local_24 * local_1c;
+  solution[2] = local_20 * local_1c;
   return;
 }
 
@@ -1229,7 +1240,7 @@ void __cdecl MatrixVecMultiplyProject(float (*param_1) [4],float *param_2,float 
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-void __cdecl MatrixMultiplyEquals(float (*param_1) [3],float (*param_2) [3])
+void __cdecl MatrixMultiplyEquals(float (*in) [3],float (*out) [3])
 
 {
   float fVar1;
@@ -1269,70 +1280,64 @@ void __cdecl MatrixMultiplyEquals(float (*param_1) [3],float (*param_2) [3])
   float fVar35;
   float fVar36;
   
-  fVar1 = (*param_1)[0];
-  fVar2 = (*param_2)[0];
-  fVar3 = (*param_1)[1];
-  fVar4 = param_2[1][0];
-  fVar5 = (*param_1)[2];
-  fVar6 = param_2[2][0];
-  fVar7 = (*param_1)[0];
-  fVar8 = (*param_2)[1];
-  fVar9 = (*param_1)[1];
-  fVar10 = param_2[1][1];
-  fVar11 = (*param_1)[2];
-  fVar12 = param_2[2][1];
-  fVar13 = (*param_1)[0];
-  fVar14 = (*param_2)[2];
-  fVar15 = (*param_1)[1];
-  fVar16 = param_2[1][2];
-  fVar17 = (*param_1)[2];
-  fVar18 = param_2[2][2];
-  fVar19 = param_1[1][0];
-  fVar20 = (*param_2)[0];
-  fVar21 = param_1[1][1];
-  fVar22 = param_2[1][0];
-  fVar23 = param_1[1][2];
-  fVar24 = param_2[2][0];
-  fVar25 = param_1[1][0];
-  fVar26 = (*param_2)[1];
-  fVar27 = param_1[1][1];
-  fVar28 = param_2[1][1];
-  fVar29 = param_1[1][2];
-  fVar30 = param_2[2][1];
-  fVar31 = param_1[1][0];
-  fVar32 = (*param_2)[2];
-  fVar33 = param_1[1][1];
-  fVar34 = param_2[1][2];
-  fVar35 = param_1[1][2];
-  fVar36 = param_2[2][2];
-  param_2[2][0] =
-       param_1[2][0] * (*param_2)[0] + param_1[2][1] * param_2[1][0] + param_1[2][2] * param_2[2][0]
-  ;
-  param_2[2][1] =
-       param_1[2][0] * (*param_2)[1] + param_1[2][1] * param_2[1][1] + param_1[2][2] * param_2[2][1]
-  ;
-  param_2[2][2] =
-       param_1[2][0] * (*param_2)[2] + param_1[2][1] * param_2[1][2] + param_1[2][2] * param_2[2][2]
-  ;
-  (*param_2)[0] = fVar1 * fVar2 + fVar3 * fVar4 + fVar5 * fVar6;
-  (*param_2)[1] = fVar7 * fVar8 + fVar9 * fVar10 + fVar11 * fVar12;
-  (*param_2)[2] = fVar13 * fVar14 + fVar15 * fVar16 + fVar17 * fVar18;
-  param_2[1][0] = fVar19 * fVar20 + fVar21 * fVar22 + fVar23 * fVar24;
-  param_2[1][1] = fVar25 * fVar26 + fVar27 * fVar28 + fVar29 * fVar30;
-  param_2[1][2] = fVar31 * fVar32 + fVar33 * fVar34 + fVar35 * fVar36;
+  fVar1 = (*in)[0];
+  fVar2 = (*out)[0];
+  fVar3 = (*in)[1];
+  fVar4 = out[1][0];
+  fVar5 = (*in)[2];
+  fVar6 = out[2][0];
+  fVar7 = (*in)[0];
+  fVar8 = (*out)[1];
+  fVar9 = (*in)[1];
+  fVar10 = out[1][1];
+  fVar11 = (*in)[2];
+  fVar12 = out[2][1];
+  fVar13 = (*in)[0];
+  fVar14 = (*out)[2];
+  fVar15 = (*in)[1];
+  fVar16 = out[1][2];
+  fVar17 = (*in)[2];
+  fVar18 = out[2][2];
+  fVar19 = in[1][0];
+  fVar20 = (*out)[0];
+  fVar21 = in[1][1];
+  fVar22 = out[1][0];
+  fVar23 = in[1][2];
+  fVar24 = out[2][0];
+  fVar25 = in[1][0];
+  fVar26 = (*out)[1];
+  fVar27 = in[1][1];
+  fVar28 = out[1][1];
+  fVar29 = in[1][2];
+  fVar30 = out[2][1];
+  fVar31 = in[1][0];
+  fVar32 = (*out)[2];
+  fVar33 = in[1][1];
+  fVar34 = out[1][2];
+  fVar35 = in[1][2];
+  fVar36 = out[2][2];
+  out[2][0] = in[2][0] * (*out)[0] + in[2][1] * out[1][0] + in[2][2] * out[2][0];
+  out[2][1] = in[2][0] * (*out)[1] + in[2][1] * out[1][1] + in[2][2] * out[2][1];
+  out[2][2] = in[2][0] * (*out)[2] + in[2][1] * out[1][2] + in[2][2] * out[2][2];
+  (*out)[0] = fVar1 * fVar2 + fVar3 * fVar4 + fVar5 * fVar6;
+  (*out)[1] = fVar7 * fVar8 + fVar9 * fVar10 + fVar11 * fVar12;
+  (*out)[2] = fVar13 * fVar14 + fVar15 * fVar16 + fVar17 * fVar18;
+  out[1][0] = fVar19 * fVar20 + fVar21 * fVar22 + fVar23 * fVar24;
+  out[1][1] = fVar25 * fVar26 + fVar27 * fVar28 + fVar29 * fVar30;
+  out[1][2] = fVar31 * fVar32 + fVar33 * fVar34 + fVar35 * fVar36;
   return;
 }
 
 
 // 007AA460  MatrixMultiply43  (universal/com_math.cpp:1448)
 
-void __cdecl MatrixMultiply43(float (*param_1) [3],float (*param_2) [3],float (*param_3) [3])
+void __cdecl MatrixMultiply43(float (*in1) [3],float (*in2) [3],float (*out) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x5a9,0,
                              "%s");
     if (!bVar2) {
@@ -1341,7 +1346,7 @@ void __cdecl MatrixMultiply43(float (*param_1) [3],float (*param_2) [3],float (*
       return;
     }
   }
-  if (param_2 == param_3) {
+  if (in2 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x5aa,0,
                              "%s");
     if (!bVar2) {
@@ -1350,55 +1355,31 @@ void __cdecl MatrixMultiply43(float (*param_1) [3],float (*param_2) [3],float (*
       return;
     }
   }
-  (*param_3)[0] =
-       (*param_1)[0] * (*param_2)[0] + (*param_1)[1] * param_2[1][0] + (*param_1)[2] * param_2[2][0]
-  ;
-  param_3[1][0] =
-       param_1[1][0] * (*param_2)[0] + param_1[1][1] * param_2[1][0] + param_1[1][2] * param_2[2][0]
-  ;
-  param_3[2][0] =
-       param_1[2][0] * (*param_2)[0] + param_1[2][1] * param_2[1][0] + param_1[2][2] * param_2[2][0]
-  ;
-  (*param_3)[1] =
-       (*param_1)[0] * (*param_2)[1] + (*param_1)[1] * param_2[1][1] + (*param_1)[2] * param_2[2][1]
-  ;
-  param_3[1][1] =
-       param_1[1][0] * (*param_2)[1] + param_1[1][1] * param_2[1][1] + param_1[1][2] * param_2[2][1]
-  ;
-  param_3[2][1] =
-       param_1[2][0] * (*param_2)[1] + param_1[2][1] * param_2[1][1] + param_1[2][2] * param_2[2][1]
-  ;
-  (*param_3)[2] =
-       (*param_1)[0] * (*param_2)[2] + (*param_1)[1] * param_2[1][2] + (*param_1)[2] * param_2[2][2]
-  ;
-  param_3[1][2] =
-       param_1[1][0] * (*param_2)[2] + param_1[1][1] * param_2[1][2] + param_1[1][2] * param_2[2][2]
-  ;
-  param_3[2][2] =
-       param_1[2][0] * (*param_2)[2] + param_1[2][1] * param_2[1][2] + param_1[2][2] * param_2[2][2]
-  ;
-  param_3[3][0] =
-       param_1[3][0] * (*param_2)[0] + param_1[3][1] * param_2[1][0] + param_1[3][2] * param_2[2][0]
-       + param_2[3][0];
-  param_3[3][1] =
-       param_1[3][0] * (*param_2)[1] + param_1[3][1] * param_2[1][1] + param_1[3][2] * param_2[2][1]
-       + param_2[3][1];
-  param_3[3][2] =
-       param_1[3][0] * (*param_2)[2] + param_1[3][1] * param_2[1][2] + param_1[3][2] * param_2[2][2]
-       + param_2[3][2];
+  (*out)[0] = (*in1)[0] * (*in2)[0] + (*in1)[1] * in2[1][0] + (*in1)[2] * in2[2][0];
+  out[1][0] = in1[1][0] * (*in2)[0] + in1[1][1] * in2[1][0] + in1[1][2] * in2[2][0];
+  out[2][0] = in1[2][0] * (*in2)[0] + in1[2][1] * in2[1][0] + in1[2][2] * in2[2][0];
+  (*out)[1] = (*in1)[0] * (*in2)[1] + (*in1)[1] * in2[1][1] + (*in1)[2] * in2[2][1];
+  out[1][1] = in1[1][0] * (*in2)[1] + in1[1][1] * in2[1][1] + in1[1][2] * in2[2][1];
+  out[2][1] = in1[2][0] * (*in2)[1] + in1[2][1] * in2[1][1] + in1[2][2] * in2[2][1];
+  (*out)[2] = (*in1)[0] * (*in2)[2] + (*in1)[1] * in2[1][2] + (*in1)[2] * in2[2][2];
+  out[1][2] = in1[1][0] * (*in2)[2] + in1[1][1] * in2[1][2] + in1[1][2] * in2[2][2];
+  out[2][2] = in1[2][0] * (*in2)[2] + in1[2][1] * in2[1][2] + in1[2][2] * in2[2][2];
+  out[3][0] = in1[3][0] * (*in2)[0] + in1[3][1] * in2[1][0] + in1[3][2] * in2[2][0] + in2[3][0];
+  out[3][1] = in1[3][0] * (*in2)[1] + in1[3][1] * in2[1][1] + in1[3][2] * in2[2][1] + in2[3][1];
+  out[3][2] = in1[3][0] * (*in2)[2] + in1[3][1] * in2[1][2] + in1[3][2] * in2[2][2] + in2[3][2];
   return;
 }
 
 
 // 007AA7E0  MatrixMultiply44  (universal/com_math.cpp:1487)
 
-void __cdecl MatrixMultiply44(float (*param_1) [4],float (*param_2) [4],float (*param_3) [4])
+void __cdecl MatrixMultiply44(float (*in1) [4],float (*in2) [4],float (*out) [4])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x5d0,0,
                              "%s");
     if (!bVar2) {
@@ -1407,7 +1388,7 @@ void __cdecl MatrixMultiply44(float (*param_1) [4],float (*param_2) [4],float (*
       return;
     }
   }
-  if (param_2 == param_3) {
+  if (in2 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x5d1,0,
                              "%s");
     if (!bVar2) {
@@ -1416,67 +1397,51 @@ void __cdecl MatrixMultiply44(float (*param_1) [4],float (*param_2) [4],float (*
       return;
     }
   }
-  (*param_3)[0] =
-       (*param_1)[0] * (*param_2)[0] + (*param_1)[1] * param_2[1][0] + (*param_1)[2] * param_2[2][0]
-       + (*param_1)[3] * param_2[3][0];
-  (*param_3)[1] =
-       (*param_1)[0] * (*param_2)[1] + (*param_1)[1] * param_2[1][1] + (*param_1)[2] * param_2[2][1]
-       + (*param_1)[3] * param_2[3][1];
-  (*param_3)[2] =
-       (*param_1)[0] * (*param_2)[2] + (*param_1)[1] * param_2[1][2] + (*param_1)[2] * param_2[2][2]
-       + (*param_1)[3] * param_2[3][2];
-  (*param_3)[3] =
-       (*param_1)[0] * (*param_2)[3] + (*param_1)[1] * param_2[1][3] + (*param_1)[2] * param_2[2][3]
-       + (*param_1)[3] * param_2[3][3];
-  param_3[1][0] =
-       param_1[1][0] * (*param_2)[0] + param_1[1][1] * param_2[1][0] + param_1[1][2] * param_2[2][0]
-       + param_1[1][3] * param_2[3][0];
-  param_3[1][1] =
-       param_1[1][0] * (*param_2)[1] + param_1[1][1] * param_2[1][1] + param_1[1][2] * param_2[2][1]
-       + param_1[1][3] * param_2[3][1];
-  param_3[1][2] =
-       param_1[1][0] * (*param_2)[2] + param_1[1][1] * param_2[1][2] + param_1[1][2] * param_2[2][2]
-       + param_1[1][3] * param_2[3][2];
-  param_3[1][3] =
-       param_1[1][0] * (*param_2)[3] + param_1[1][1] * param_2[1][3] + param_1[1][2] * param_2[2][3]
-       + param_1[1][3] * param_2[3][3];
-  param_3[2][0] =
-       param_1[2][0] * (*param_2)[0] + param_1[2][1] * param_2[1][0] + param_1[2][2] * param_2[2][0]
-       + param_1[2][3] * param_2[3][0];
-  param_3[2][1] =
-       param_1[2][0] * (*param_2)[1] + param_1[2][1] * param_2[1][1] + param_1[2][2] * param_2[2][1]
-       + param_1[2][3] * param_2[3][1];
-  param_3[2][2] =
-       param_1[2][0] * (*param_2)[2] + param_1[2][1] * param_2[1][2] + param_1[2][2] * param_2[2][2]
-       + param_1[2][3] * param_2[3][2];
-  param_3[2][3] =
-       param_1[2][0] * (*param_2)[3] + param_1[2][1] * param_2[1][3] + param_1[2][2] * param_2[2][3]
-       + param_1[2][3] * param_2[3][3];
-  param_3[3][0] =
-       param_1[3][0] * (*param_2)[0] + param_1[3][1] * param_2[1][0] + param_1[3][2] * param_2[2][0]
-       + param_1[3][3] * param_2[3][0];
-  param_3[3][1] =
-       param_1[3][0] * (*param_2)[1] + param_1[3][1] * param_2[1][1] + param_1[3][2] * param_2[2][1]
-       + param_1[3][3] * param_2[3][1];
-  param_3[3][2] =
-       param_1[3][0] * (*param_2)[2] + param_1[3][1] * param_2[1][2] + param_1[3][2] * param_2[2][2]
-       + param_1[3][3] * param_2[3][2];
-  param_3[3][3] =
-       param_1[3][0] * (*param_2)[3] + param_1[3][1] * param_2[1][3] + param_1[3][2] * param_2[2][3]
-       + param_1[3][3] * param_2[3][3];
+  (*out)[0] = (*in1)[0] * (*in2)[0] + (*in1)[1] * in2[1][0] + (*in1)[2] * in2[2][0] +
+              (*in1)[3] * in2[3][0];
+  (*out)[1] = (*in1)[0] * (*in2)[1] + (*in1)[1] * in2[1][1] + (*in1)[2] * in2[2][1] +
+              (*in1)[3] * in2[3][1];
+  (*out)[2] = (*in1)[0] * (*in2)[2] + (*in1)[1] * in2[1][2] + (*in1)[2] * in2[2][2] +
+              (*in1)[3] * in2[3][2];
+  (*out)[3] = (*in1)[0] * (*in2)[3] + (*in1)[1] * in2[1][3] + (*in1)[2] * in2[2][3] +
+              (*in1)[3] * in2[3][3];
+  out[1][0] = in1[1][0] * (*in2)[0] + in1[1][1] * in2[1][0] + in1[1][2] * in2[2][0] +
+              in1[1][3] * in2[3][0];
+  out[1][1] = in1[1][0] * (*in2)[1] + in1[1][1] * in2[1][1] + in1[1][2] * in2[2][1] +
+              in1[1][3] * in2[3][1];
+  out[1][2] = in1[1][0] * (*in2)[2] + in1[1][1] * in2[1][2] + in1[1][2] * in2[2][2] +
+              in1[1][3] * in2[3][2];
+  out[1][3] = in1[1][0] * (*in2)[3] + in1[1][1] * in2[1][3] + in1[1][2] * in2[2][3] +
+              in1[1][3] * in2[3][3];
+  out[2][0] = in1[2][0] * (*in2)[0] + in1[2][1] * in2[1][0] + in1[2][2] * in2[2][0] +
+              in1[2][3] * in2[3][0];
+  out[2][1] = in1[2][0] * (*in2)[1] + in1[2][1] * in2[1][1] + in1[2][2] * in2[2][1] +
+              in1[2][3] * in2[3][1];
+  out[2][2] = in1[2][0] * (*in2)[2] + in1[2][1] * in2[1][2] + in1[2][2] * in2[2][2] +
+              in1[2][3] * in2[3][2];
+  out[2][3] = in1[2][0] * (*in2)[3] + in1[2][1] * in2[1][3] + in1[2][2] * in2[2][3] +
+              in1[2][3] * in2[3][3];
+  out[3][0] = in1[3][0] * (*in2)[0] + in1[3][1] * in2[1][0] + in1[3][2] * in2[2][0] +
+              in1[3][3] * in2[3][0];
+  out[3][1] = in1[3][0] * (*in2)[1] + in1[3][1] * in2[1][1] + in1[3][2] * in2[2][1] +
+              in1[3][3] * in2[3][1];
+  out[3][2] = in1[3][0] * (*in2)[2] + in1[3][1] * in2[1][2] + in1[3][2] * in2[2][2] +
+              in1[3][3] * in2[3][2];
+  out[3][3] = in1[3][0] * (*in2)[3] + in1[3][1] * in2[1][3] + in1[3][2] * in2[2][3] +
+              in1[3][3] * in2[3][3];
   return;
 }
 
 
 // 007AAD80  MatrixTranspose  (universal/com_math.cpp:1519)
 
-void __cdecl MatrixTranspose(float (*param_1) [3],float (*param_2) [3])
+void __cdecl MatrixTranspose(float (*in) [3],float (*out) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_2) {
+  if (in == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x5f0,0,
                              "%s");
     if (!bVar2) {
@@ -1485,28 +1450,28 @@ void __cdecl MatrixTranspose(float (*param_1) [3],float (*param_2) [3])
       return;
     }
   }
-  (*param_2)[0] = (*param_1)[0];
-  (*param_2)[1] = param_1[1][0];
-  (*param_2)[2] = param_1[2][0];
-  param_2[1][0] = (*param_1)[1];
-  param_2[1][1] = param_1[1][1];
-  param_2[1][2] = param_1[2][1];
-  param_2[2][0] = (*param_1)[2];
-  param_2[2][1] = param_1[1][2];
-  param_2[2][2] = param_1[2][2];
+  (*out)[0] = (*in)[0];
+  (*out)[1] = in[1][0];
+  (*out)[2] = in[2][0];
+  out[1][0] = (*in)[1];
+  out[1][1] = in[1][1];
+  out[1][2] = in[2][1];
+  out[2][0] = (*in)[2];
+  out[2][1] = in[1][2];
+  out[2][2] = in[2][2];
   return;
 }
 
 
 // 007AAE20  MatrixTranspose44  (universal/com_math.cpp:1547)
 
-void __cdecl MatrixTranspose44(float *param_1,float *param_2)
+void __cdecl MatrixTranspose44(float *in,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_2) {
+  if (in == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x60c,0,
                              "%s");
     if (!bVar2) {
@@ -1515,36 +1480,37 @@ void __cdecl MatrixTranspose44(float *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = *param_1;
-  param_2[1] = param_1[4];
-  param_2[2] = param_1[8];
-  param_2[3] = param_1[0xc];
-  param_2[4] = param_1[1];
-  param_2[5] = param_1[5];
-  param_2[6] = param_1[9];
-  param_2[7] = param_1[0xd];
-  param_2[8] = param_1[2];
-  param_2[9] = param_1[6];
-  param_2[10] = param_1[10];
-  param_2[0xb] = param_1[0xe];
-  param_2[0xc] = param_1[3];
-  param_2[0xd] = param_1[7];
-  param_2[0xe] = param_1[0xb];
-  param_2[0xf] = param_1[0xf];
+  *out = *in;
+  out[1] = in[4];
+  out[2] = in[8];
+  out[3] = in[0xc];
+  out[4] = in[1];
+  out[5] = in[5];
+  out[6] = in[9];
+  out[7] = in[0xd];
+  out[8] = in[2];
+  out[9] = in[6];
+  out[10] = in[10];
+  out[0xb] = in[0xe];
+  out[0xc] = in[3];
+  out[0xd] = in[7];
+  out[0xe] = in[0xb];
+  out[0xf] = in[0xf];
   return;
 }
 
 
 // 007AAF20  MatrixInverse  (universal/com_math.cpp:1575)
 
-void __cdecl MatrixInverse(float (*param_1) [3],float (*param_2) [3])
+void __cdecl MatrixInverse(float (*in) [3],float (*out) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float det;
   
-  if (param_1 == param_2) {
+  if (in == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x62a,0,
                              "%s");
     if (!bVar2) {
@@ -1553,9 +1519,9 @@ void __cdecl MatrixInverse(float (*param_1) [3],float (*param_2) [3])
       return;
     }
   }
-  fVar3 = ((param_1[2][2] * param_1[1][1] - param_1[2][1] * param_1[1][2]) * (*param_1)[0] -
-          (param_1[2][2] * (*param_1)[1] - param_1[2][1] * (*param_1)[2]) * param_1[1][0]) +
-          (param_1[1][2] * (*param_1)[1] - param_1[1][1] * (*param_1)[2]) * param_1[2][0];
+  fVar3 = ((in[2][2] * in[1][1] - in[2][1] * in[1][2]) * (*in)[0] -
+          (in[2][2] * (*in)[1] - in[2][1] * (*in)[2]) * in[1][0]) +
+          (in[1][2] * (*in)[1] - in[1][1] * (*in)[2]) * in[2][0];
   if (fVar3 == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x62e,0,
                              "%s");
@@ -1566,40 +1532,40 @@ void __cdecl MatrixInverse(float (*param_1) [3],float (*param_2) [3])
     }
   }
   fVar3 = 1.0 / fVar3;
-  (*param_2)[0] = (param_1[2][2] * param_1[1][1] - param_1[2][1] * param_1[1][2]) * fVar3;
-  (*param_2)[1] = -(param_1[2][2] * (*param_1)[1] - param_1[2][1] * (*param_1)[2]) * fVar3;
-  (*param_2)[2] = (param_1[1][2] * (*param_1)[1] - param_1[1][1] * (*param_1)[2]) * fVar3;
-  param_2[1][0] = -(param_1[2][2] * param_1[1][0] - param_1[2][0] * param_1[1][2]) * fVar3;
-  param_2[1][1] = (param_1[2][2] * (*param_1)[0] - param_1[2][0] * (*param_1)[2]) * fVar3;
-  param_2[1][2] = -(param_1[1][2] * (*param_1)[0] - param_1[1][0] * (*param_1)[2]) * fVar3;
-  param_2[2][0] = (param_1[2][1] * param_1[1][0] - param_1[2][0] * param_1[1][1]) * fVar3;
-  param_2[2][1] = -(param_1[2][1] * (*param_1)[0] - param_1[2][0] * (*param_1)[1]) * fVar3;
-  param_2[2][2] = (param_1[1][1] * (*param_1)[0] - param_1[1][0] * (*param_1)[1]) * fVar3;
+  (*out)[0] = (in[2][2] * in[1][1] - in[2][1] * in[1][2]) * fVar3;
+  (*out)[1] = -(in[2][2] * (*in)[1] - in[2][1] * (*in)[2]) * fVar3;
+  (*out)[2] = (in[1][2] * (*in)[1] - in[1][1] * (*in)[2]) * fVar3;
+  out[1][0] = -(in[2][2] * in[1][0] - in[2][0] * in[1][2]) * fVar3;
+  out[1][1] = (in[2][2] * (*in)[0] - in[2][0] * (*in)[2]) * fVar3;
+  out[1][2] = -(in[1][2] * (*in)[0] - in[1][0] * (*in)[2]) * fVar3;
+  out[2][0] = (in[2][1] * in[1][0] - in[2][0] * in[1][1]) * fVar3;
+  out[2][1] = -(in[2][1] * (*in)[0] - in[2][0] * (*in)[1]) * fVar3;
+  out[2][2] = (in[1][1] * (*in)[0] - in[1][0] * (*in)[1]) * fVar3;
   return;
 }
 
 
 // 007AB200  MatrixInverseOrthogonal43  (universal/com_math.cpp:1605)
 
-void __cdecl MatrixInverseOrthogonal43(float (*param_1) [3],float (*param_2) [3])
+void __cdecl MatrixInverseOrthogonal43(float (*in) [3],float (*out) [3])
 
 {
-  float local_10;
+  float origin;
   float local_c;
   float local_8;
   
-  MatrixTranspose(param_1,param_2);
-  local_10 = 0.0 - param_1[3][0];
-  local_c = 0.0 - param_1[3][1];
-  local_8 = 0.0 - param_1[3][2];
-  MatrixTransformVector(&local_10,param_2,param_2[3]);
+  MatrixTranspose(in,out);
+  origin = 0.0 - in[3][0];
+  local_c = 0.0 - in[3][1];
+  local_8 = 0.0 - in[3][2];
+  MatrixTransformVector(&origin,out,out[3]);
   return;
 }
 
 
 // 007AB280  MatrixInverse44  (universal/com_math.cpp:1634)
 
-void __cdecl MatrixInverse44(float *param_1,float *param_2)
+void __cdecl MatrixInverse44(float *mat,float *dst)
 
 {
   code *pcVar1;
@@ -1616,12 +1582,12 @@ void __cdecl MatrixInverse44(float *param_1,float *param_2)
   float fVar12;
   float fVar13;
   float fVar14;
-  float local_7c [4];
+  float src [4];
   float local_6c [4];
   float local_5c [4];
   float local_4c [4];
-  float local_3c;
-  float local_38;
+  float det;
+  float tmp;
   float local_34;
   float local_30;
   float local_2c;
@@ -1633,9 +1599,9 @@ void __cdecl MatrixInverse44(float *param_1,float *param_2)
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
-  if (param_1 == param_2) {
+  if (mat == dst) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x668,0,
                              "%s");
     if (!bVar2) {
@@ -1644,11 +1610,11 @@ void __cdecl MatrixInverse44(float *param_1,float *param_2)
       return;
     }
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    local_7c[local_8] = param_1[local_8 * 4];
-    local_6c[local_8] = param_1[local_8 * 4 + 1];
-    local_5c[local_8] = param_1[local_8 * 4 + 2];
-    local_4c[local_8] = param_1[local_8 * 4 + 3];
+  for (i = 0; i < 4; i = i + 1) {
+    src[i] = mat[i * 4];
+    local_6c[i] = mat[i * 4 + 1];
+    local_5c[i] = mat[i * 4 + 2];
+    local_4c[i] = mat[i * 4 + 3];
   }
   fVar3 = local_5c[2] * local_4c[3];
   fVar4 = local_5c[3] * local_4c[2];
@@ -1662,61 +1628,52 @@ void __cdecl MatrixInverse44(float *param_1,float *param_2)
   fVar12 = local_5c[2] * local_4c[0];
   fVar13 = local_5c[0] * local_4c[1];
   fVar14 = local_5c[1] * local_4c[0];
-  *param_2 = fVar3 * local_6c[1] + fVar6 * local_6c[2] + fVar7 * local_6c[3];
-  *param_2 = *param_2 - (fVar4 * local_6c[1] + fVar5 * local_6c[2] + fVar8 * local_6c[3]);
-  param_2[1] = fVar4 * local_6c[0] + fVar9 * local_6c[2] + fVar12 * local_6c[3];
-  param_2[1] = param_2[1] - (fVar3 * local_6c[0] + fVar10 * local_6c[2] + fVar11 * local_6c[3]);
-  param_2[2] = fVar5 * local_6c[0] + fVar10 * local_6c[1] + fVar13 * local_6c[3];
-  param_2[2] = param_2[2] - (fVar6 * local_6c[0] + fVar9 * local_6c[1] + fVar14 * local_6c[3]);
-  param_2[3] = fVar8 * local_6c[0] + fVar11 * local_6c[1] + fVar14 * local_6c[2];
-  param_2[3] = param_2[3] - (fVar7 * local_6c[0] + fVar12 * local_6c[1] + fVar13 * local_6c[2]);
-  param_2[4] = fVar4 * local_7c[1] + fVar5 * local_7c[2] + fVar8 * local_7c[3];
-  param_2[4] = param_2[4] - (fVar3 * local_7c[1] + fVar6 * local_7c[2] + fVar7 * local_7c[3]);
-  param_2[5] = fVar3 * local_7c[0] + fVar10 * local_7c[2] + fVar11 * local_7c[3];
-  param_2[5] = param_2[5] - (fVar4 * local_7c[0] + fVar9 * local_7c[2] + fVar12 * local_7c[3]);
-  param_2[6] = fVar6 * local_7c[0] + fVar9 * local_7c[1] + fVar14 * local_7c[3];
-  param_2[6] = param_2[6] - (fVar5 * local_7c[0] + fVar10 * local_7c[1] + fVar13 * local_7c[3]);
-  param_2[7] = fVar7 * local_7c[0] + fVar12 * local_7c[1] + fVar13 * local_7c[2];
-  param_2[7] = param_2[7] - (fVar8 * local_7c[0] + fVar11 * local_7c[1] + fVar14 * local_7c[2]);
-  local_38 = local_7c[2] * local_6c[3];
-  local_34 = local_7c[3] * local_6c[2];
-  local_30 = local_7c[1] * local_6c[3];
-  local_2c = local_7c[3] * local_6c[1];
-  local_28 = local_7c[1] * local_6c[2];
-  local_24 = local_7c[2] * local_6c[1];
-  local_20 = local_7c[0] * local_6c[3];
-  local_1c = local_7c[3] * local_6c[0];
-  local_18 = local_7c[0] * local_6c[2];
-  local_14 = local_7c[2] * local_6c[0];
-  local_10 = local_7c[0] * local_6c[1];
-  local_c = local_7c[1] * local_6c[0];
-  param_2[8] = local_38 * local_4c[1] + local_2c * local_4c[2] + local_28 * local_4c[3];
-  param_2[8] = param_2[8] -
-               (local_34 * local_4c[1] + local_30 * local_4c[2] + local_24 * local_4c[3]);
-  param_2[9] = local_34 * local_4c[0] + local_20 * local_4c[2] + local_14 * local_4c[3];
-  param_2[9] = param_2[9] -
-               (local_38 * local_4c[0] + local_1c * local_4c[2] + local_18 * local_4c[3]);
-  param_2[10] = local_30 * local_4c[0] + local_1c * local_4c[1] + local_10 * local_4c[3];
-  param_2[10] = param_2[10] -
-                (local_2c * local_4c[0] + local_20 * local_4c[1] + local_c * local_4c[3]);
-  param_2[0xb] = local_24 * local_4c[0] + local_18 * local_4c[1] + local_c * local_4c[2];
-  param_2[0xb] = param_2[0xb] -
-                 (local_28 * local_4c[0] + local_14 * local_4c[1] + local_10 * local_4c[2]);
-  param_2[0xc] = local_30 * local_5c[2] + local_24 * local_5c[3] + local_34 * local_5c[1];
-  param_2[0xc] = param_2[0xc] -
-                 (local_28 * local_5c[3] + local_38 * local_5c[1] + local_2c * local_5c[2]);
-  param_2[0xd] = local_18 * local_5c[3] + local_38 * local_5c[0] + local_1c * local_5c[2];
-  param_2[0xd] = param_2[0xd] -
-                 (local_20 * local_5c[2] + local_14 * local_5c[3] + local_34 * local_5c[0]);
-  param_2[0xe] = local_20 * local_5c[1] + local_c * local_5c[3] + local_2c * local_5c[0];
-  param_2[0xe] = param_2[0xe] -
-                 (local_10 * local_5c[3] + local_30 * local_5c[0] + local_1c * local_5c[1]);
-  param_2[0xf] = local_10 * local_5c[2] + local_28 * local_5c[0] + local_14 * local_5c[1];
-  param_2[0xf] = param_2[0xf] -
-                 (local_18 * local_5c[1] + local_c * local_5c[2] + local_24 * local_5c[0]);
-  local_3c = local_7c[0] * *param_2 + local_7c[1] * param_2[1] + local_7c[2] * param_2[2] +
-             local_7c[3] * param_2[3];
-  if (local_3c == 0.0) {
+  *dst = fVar3 * local_6c[1] + fVar6 * local_6c[2] + fVar7 * local_6c[3];
+  *dst = *dst - (fVar4 * local_6c[1] + fVar5 * local_6c[2] + fVar8 * local_6c[3]);
+  dst[1] = fVar4 * local_6c[0] + fVar9 * local_6c[2] + fVar12 * local_6c[3];
+  dst[1] = dst[1] - (fVar3 * local_6c[0] + fVar10 * local_6c[2] + fVar11 * local_6c[3]);
+  dst[2] = fVar5 * local_6c[0] + fVar10 * local_6c[1] + fVar13 * local_6c[3];
+  dst[2] = dst[2] - (fVar6 * local_6c[0] + fVar9 * local_6c[1] + fVar14 * local_6c[3]);
+  dst[3] = fVar8 * local_6c[0] + fVar11 * local_6c[1] + fVar14 * local_6c[2];
+  dst[3] = dst[3] - (fVar7 * local_6c[0] + fVar12 * local_6c[1] + fVar13 * local_6c[2]);
+  dst[4] = fVar4 * src[1] + fVar5 * src[2] + fVar8 * src[3];
+  dst[4] = dst[4] - (fVar3 * src[1] + fVar6 * src[2] + fVar7 * src[3]);
+  dst[5] = fVar3 * src[0] + fVar10 * src[2] + fVar11 * src[3];
+  dst[5] = dst[5] - (fVar4 * src[0] + fVar9 * src[2] + fVar12 * src[3]);
+  dst[6] = fVar6 * src[0] + fVar9 * src[1] + fVar14 * src[3];
+  dst[6] = dst[6] - (fVar5 * src[0] + fVar10 * src[1] + fVar13 * src[3]);
+  dst[7] = fVar7 * src[0] + fVar12 * src[1] + fVar13 * src[2];
+  dst[7] = dst[7] - (fVar8 * src[0] + fVar11 * src[1] + fVar14 * src[2]);
+  tmp = src[2] * local_6c[3];
+  local_34 = src[3] * local_6c[2];
+  local_30 = src[1] * local_6c[3];
+  local_2c = src[3] * local_6c[1];
+  local_28 = src[1] * local_6c[2];
+  local_24 = src[2] * local_6c[1];
+  local_20 = src[0] * local_6c[3];
+  local_1c = src[3] * local_6c[0];
+  local_18 = src[0] * local_6c[2];
+  local_14 = src[2] * local_6c[0];
+  local_10 = src[0] * local_6c[1];
+  local_c = src[1] * local_6c[0];
+  dst[8] = tmp * local_4c[1] + local_2c * local_4c[2] + local_28 * local_4c[3];
+  dst[8] = dst[8] - (local_34 * local_4c[1] + local_30 * local_4c[2] + local_24 * local_4c[3]);
+  dst[9] = local_34 * local_4c[0] + local_20 * local_4c[2] + local_14 * local_4c[3];
+  dst[9] = dst[9] - (tmp * local_4c[0] + local_1c * local_4c[2] + local_18 * local_4c[3]);
+  dst[10] = local_30 * local_4c[0] + local_1c * local_4c[1] + local_10 * local_4c[3];
+  dst[10] = dst[10] - (local_2c * local_4c[0] + local_20 * local_4c[1] + local_c * local_4c[3]);
+  dst[0xb] = local_24 * local_4c[0] + local_18 * local_4c[1] + local_c * local_4c[2];
+  dst[0xb] = dst[0xb] - (local_28 * local_4c[0] + local_14 * local_4c[1] + local_10 * local_4c[2]);
+  dst[0xc] = local_30 * local_5c[2] + local_24 * local_5c[3] + local_34 * local_5c[1];
+  dst[0xc] = dst[0xc] - (local_28 * local_5c[3] + tmp * local_5c[1] + local_2c * local_5c[2]);
+  dst[0xd] = local_18 * local_5c[3] + tmp * local_5c[0] + local_1c * local_5c[2];
+  dst[0xd] = dst[0xd] - (local_20 * local_5c[2] + local_14 * local_5c[3] + local_34 * local_5c[0]);
+  dst[0xe] = local_20 * local_5c[1] + local_c * local_5c[3] + local_2c * local_5c[0];
+  dst[0xe] = dst[0xe] - (local_10 * local_5c[3] + local_30 * local_5c[0] + local_1c * local_5c[1]);
+  dst[0xf] = local_10 * local_5c[2] + local_28 * local_5c[0] + local_14 * local_5c[1];
+  dst[0xf] = dst[0xf] - (local_18 * local_5c[1] + local_c * local_5c[2] + local_24 * local_5c[0]);
+  det = src[0] * *dst + src[1] * dst[1] + src[2] * dst[2] + src[3] * dst[3];
+  if (det == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x6b3,0,
                              "%s");
     if (!bVar2) {
@@ -1725,8 +1682,8 @@ void __cdecl MatrixInverse44(float *param_1,float *param_2)
       return;
     }
   }
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    param_2[local_8] = param_2[local_8] * (1.0 / local_3c);
+  for (i = 0; i < 0x10; i = i + 1) {
+    dst[i] = dst[i] * (1.0 / det);
   }
   return;
 }
@@ -1734,13 +1691,13 @@ void __cdecl MatrixInverse44(float *param_1,float *param_2)
 
 // 007ABBD0  MatrixTransformVector44  (universal/com_math.cpp:1741)
 
-void __cdecl MatrixTransformVector44(float *param_1,float (*param_2) [4],float *param_3)
+void __cdecl MatrixTransformVector44(float *vec,float (*mat) [4],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (vec == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x6ce,0,
                              "%s");
     if (!bVar2) {
@@ -1749,27 +1706,23 @@ void __cdecl MatrixTransformVector44(float *param_1,float (*param_2) [4],float *
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * param_2[1][0] + param_1[2] * param_2[2][0] +
-             param_1[3] * param_2[3][0];
-  param_3[1] = *param_1 * (*param_2)[1] + param_1[1] * param_2[1][1] + param_1[2] * param_2[2][1] +
-               param_1[3] * param_2[3][1];
-  param_3[2] = *param_1 * (*param_2)[2] + param_1[1] * param_2[1][2] + param_1[2] * param_2[2][2] +
-               param_1[3] * param_2[3][2];
-  param_3[3] = *param_1 * (*param_2)[3] + param_1[1] * param_2[1][3] + param_1[2] * param_2[2][3] +
-               param_1[3] * param_2[3][3];
+  *out = *vec * (*mat)[0] + vec[1] * mat[1][0] + vec[2] * mat[2][0] + vec[3] * mat[3][0];
+  out[1] = *vec * (*mat)[1] + vec[1] * mat[1][1] + vec[2] * mat[2][1] + vec[3] * mat[3][1];
+  out[2] = *vec * (*mat)[2] + vec[1] * mat[1][2] + vec[2] * mat[2][2] + vec[3] * mat[3][2];
+  out[3] = *vec * (*mat)[3] + vec[1] * mat[1][3] + vec[2] * mat[2][3] + vec[3] * mat[3][3];
   return;
 }
 
 
 // 007ABD50  MatrixTransformVector43  (universal/com_math.cpp:1751)
 
-void __cdecl MatrixTransformVector43(float *param_1,float (*param_2) [3],float *param_3)
+void __cdecl MatrixTransformVector43(float *in1,float (*in2) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x6d8,0,
                              "%s");
     if (!bVar2) {
@@ -1778,19 +1731,16 @@ void __cdecl MatrixTransformVector43(float *param_1,float (*param_2) [3],float *
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * param_2[1][0] + param_1[2] * param_2[2][0] +
-             param_2[3][0];
-  param_3[1] = *param_1 * (*param_2)[1] + param_1[1] * param_2[1][1] + param_1[2] * param_2[2][1] +
-               param_2[3][1];
-  param_3[2] = *param_1 * (*param_2)[2] + param_1[1] * param_2[1][2] + param_1[2] * param_2[2][2] +
-               param_2[3][2];
+  *out = *in1 * (*in2)[0] + in1[1] * in2[1][0] + in1[2] * in2[2][0] + in2[3][0];
+  out[1] = *in1 * (*in2)[1] + in1[1] * in2[1][1] + in1[2] * in2[2][1] + in2[3][1];
+  out[2] = *in1 * (*in2)[2] + in1[1] * in2[1][2] + in1[2] * in2[2][2] + in2[3][2];
   return;
 }
 
 
 // 007ABE60  MatrixTransposeTransformVector43  (universal/com_math.cpp:1759)
 
-void __cdecl MatrixTransposeTransformVector43(float *param_1,float (*param_2) [3],float *param_3)
+void __cdecl MatrixTransposeTransformVector43(float *in1,float (*in2) [3],float *out)
 
 {
   code *pcVar1;
@@ -1799,7 +1749,7 @@ void __cdecl MatrixTransposeTransformVector43(float *param_1,float (*param_2) [3
   float fVar4;
   float fVar5;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x6e2,0,
                              "%s");
     if (!bVar2) {
@@ -1808,19 +1758,19 @@ void __cdecl MatrixTransposeTransformVector43(float *param_1,float (*param_2) [3
       return;
     }
   }
-  fVar3 = *param_1 - param_2[3][0];
-  fVar4 = param_1[1] - param_2[3][1];
-  fVar5 = param_1[2] - param_2[3][2];
-  *param_3 = (*param_2)[0] * fVar3 + (*param_2)[1] * fVar4 + (*param_2)[2] * fVar5;
-  param_3[1] = param_2[1][0] * fVar3 + param_2[1][1] * fVar4 + param_2[1][2] * fVar5;
-  param_3[2] = param_2[2][0] * fVar3 + param_2[2][1] * fVar4 + param_2[2][2] * fVar5;
+  fVar3 = *in1 - in2[3][0];
+  fVar4 = in1[1] - in2[3][1];
+  fVar5 = in1[2] - in2[3][2];
+  *out = (*in2)[0] * fVar3 + (*in2)[1] * fVar4 + (*in2)[2] * fVar5;
+  out[1] = in2[1][0] * fVar3 + in2[1][1] * fVar4 + in2[1][2] * fVar5;
+  out[2] = in2[2][0] * fVar3 + in2[2][1] * fVar4 + in2[2][2] * fVar5;
   return;
 }
 
 
 // 007ABF90  MatrixTransformVector43Equals  (universal/com_math.cpp:1770)
 
-void __cdecl MatrixTransformVector43Equals(float *param_1,float *param_2)
+void __cdecl MatrixTransformVector43Equals(float *out,float *in)
 
 {
   float fVar1;
@@ -1835,46 +1785,48 @@ void __cdecl MatrixTransformVector43Equals(float *param_1,float *param_2)
   float fVar10;
   float fVar11;
   
-  fVar1 = *param_2;
-  fVar2 = param_2[3];
-  fVar3 = param_1[2];
-  fVar4 = param_2[6];
-  fVar5 = param_2[9];
-  fVar6 = *param_1;
-  fVar7 = param_2[1];
-  fVar8 = param_2[4];
-  fVar9 = param_1[2];
-  fVar10 = param_2[7];
-  fVar11 = param_2[10];
-  param_1[2] = *param_1 * param_2[2] + param_1[1] * param_2[5] + param_1[2] * param_2[8] +
-               param_2[0xb];
-  *param_1 = *param_1 * fVar1 + param_1[1] * fVar2 + fVar3 * fVar4 + fVar5;
-  param_1[1] = fVar6 * fVar7 + param_1[1] * fVar8 + fVar9 * fVar10 + fVar11;
+  fVar1 = *in;
+  fVar2 = in[3];
+  fVar3 = out[2];
+  fVar4 = in[6];
+  fVar5 = in[9];
+  fVar6 = *out;
+  fVar7 = in[1];
+  fVar8 = in[4];
+  fVar9 = out[2];
+  fVar10 = in[7];
+  fVar11 = in[10];
+  out[2] = *out * in[2] + out[1] * in[5] + out[2] * in[8] + in[0xb];
+  *out = *out * fVar1 + out[1] * fVar2 + fVar3 * fVar4 + fVar5;
+  out[1] = fVar6 * fVar7 + out[1] * fVar8 + fVar9 * fVar10 + fVar11;
   return;
 }
 
 
 // 007AC090  VectorAngleMultiply  (universal/com_math.cpp:1782)
 
-void __cdecl VectorAngleMultiply(float *param_1,float param_2)
+void __cdecl VectorAngleMultiply(float *vec,float angle)
 
 {
   float fVar1;
   float10 fVar2;
   float10 fVar3;
+  float temp;
+  float x;
+  float y;
   
-  fVar2 = (float10)fcos((float10)(param_2 * 0.017453292));
-  fVar3 = (float10)fsin((float10)(param_2 * 0.017453292));
-  fVar1 = param_1[1];
-  param_1[1] = param_1[1] * (float)fVar2 + *param_1 * (float)fVar3;
-  *param_1 = *param_1 * (float)fVar2 - fVar1 * (float)fVar3;
+  fVar2 = (float10)fcos((float10)(angle * 0.017453292));
+  fVar3 = (float10)fsin((float10)(angle * 0.017453292));
+  fVar1 = vec[1];
+  vec[1] = vec[1] * (float)fVar2 + *vec * (float)fVar3;
+  *vec = *vec * (float)fVar2 - fVar1 * (float)fVar3;
   return;
 }
 
 
 // 007AC120  UnitQuatToAxis  (universal/com_math.cpp:1795)
 
-void __cdecl UnitQuatToAxis(float *param_1,float (*param_2) [3])
+void __cdecl UnitQuatToAxis(float *quat,float (*axis) [3])
 
 {
   float fVar1;
@@ -1891,8 +1843,20 @@ void __cdecl UnitQuatToAxis(float *param_1,float (*param_2) [3])
   float fVar12;
   float fVar13;
   float fVar14;
+  float yy;
+  float xy;
+  float scaledZ;
+  float zz;
+  float zw;
+  float scaledX;
+  float scaledY;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
   
-  iVar10 = Vec4IsNormalized(param_1);
+  iVar10 = Vec4IsNormalized(quat);
   if (iVar10 == 0) {
     va("%g %g %g %g");
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x707,0,
@@ -1903,40 +1867,40 @@ void __cdecl UnitQuatToAxis(float *param_1,float (*param_2) [3])
       return;
     }
   }
-  fVar11 = *param_1 + *param_1;
-  fVar1 = *param_1;
-  fVar2 = param_1[1];
-  fVar3 = param_1[2];
-  fVar4 = param_1[3];
-  fVar12 = param_1[1] + param_1[1];
-  fVar5 = param_1[1];
-  fVar6 = param_1[2];
-  fVar7 = param_1[3];
-  fVar13 = (param_1[2] + param_1[2]) * param_1[3];
-  fVar14 = (param_1[2] + param_1[2]) * param_1[2];
-  (*param_2)[0] = 1.0 - (fVar12 * fVar5 + fVar14);
-  (*param_2)[1] = fVar11 * fVar2 + fVar13;
-  (*param_2)[2] = fVar11 * fVar3 - fVar12 * fVar7;
-  param_2[1][0] = fVar11 * fVar2 - fVar13;
-  param_2[1][1] = 1.0 - (fVar11 * fVar1 + fVar14);
-  param_2[1][2] = fVar12 * fVar6 + fVar11 * fVar4;
-  param_2[2][0] = fVar11 * fVar3 + fVar12 * fVar7;
-  param_2[2][1] = fVar12 * fVar6 - fVar11 * fVar4;
-  param_2[2][2] = 1.0 - (fVar11 * fVar1 + fVar12 * fVar5);
+  fVar11 = *quat + *quat;
+  fVar1 = *quat;
+  fVar2 = quat[1];
+  fVar3 = quat[2];
+  fVar4 = quat[3];
+  fVar12 = quat[1] + quat[1];
+  fVar5 = quat[1];
+  fVar6 = quat[2];
+  fVar7 = quat[3];
+  fVar13 = (quat[2] + quat[2]) * quat[3];
+  fVar14 = (quat[2] + quat[2]) * quat[2];
+  (*axis)[0] = 1.0 - (fVar12 * fVar5 + fVar14);
+  (*axis)[1] = fVar11 * fVar2 + fVar13;
+  (*axis)[2] = fVar11 * fVar3 - fVar12 * fVar7;
+  axis[1][0] = fVar11 * fVar2 - fVar13;
+  axis[1][1] = 1.0 - (fVar11 * fVar1 + fVar14);
+  axis[1][2] = fVar12 * fVar6 + fVar11 * fVar4;
+  axis[2][0] = fVar11 * fVar3 + fVar12 * fVar7;
+  axis[2][1] = fVar12 * fVar6 - fVar11 * fVar4;
+  axis[2][2] = 1.0 - (fVar11 * fVar1 + fVar12 * fVar5);
   return;
 }
 
 
 // 007AC350  UnitQuatToForward  (universal/com_math.cpp:1830)
 
-void __cdecl UnitQuatToForward(float *param_1,float *param_2)
+void __cdecl UnitQuatToForward(float *quat,float *forward)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  iVar3 = Vec4IsNormalized(param_1);
+  iVar3 = Vec4IsNormalized(quat);
   if (iVar3 == 0) {
     va("%g %g %g %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x727,0,
@@ -1947,62 +1911,65 @@ void __cdecl UnitQuatToForward(float *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = 1.0 - (param_1[1] * param_1[1] + param_1[2] * param_1[2]) * 2.0;
-  param_2[1] = (*param_1 * param_1[1] + param_1[2] * param_1[3]) * 2.0;
-  param_2[2] = (*param_1 * param_1[2] - param_1[1] * param_1[3]) * 2.0;
+  *forward = 1.0 - (quat[1] * quat[1] + quat[2] * quat[2]) * 2.0;
+  forward[1] = (*quat * quat[1] + quat[2] * quat[3]) * 2.0;
+  forward[2] = (*quat * quat[2] - quat[1] * quat[3]) * 2.0;
   return;
 }
 
 
 // 007AC480  QuatSlerp  (universal/com_math.cpp:1839)
 
-void __cdecl QuatSlerp(float *param_1,float *param_2,float param_3,float *param_4)
+/* WARNING: Variable defined which should be unmapped: theta */
+
+void __cdecl QuatSlerp(float *from,float *to,float frac,float *result)
 
 {
   bool bVar1;
   float fVar2;
-  double dVar3;
-  undefined4 in_stack_ffffffe4;
-  undefined4 in_stack_ffffffe8;
-  float local_14;
-  float local_10;
-  float local_c;
+  float fVar3;
+  double dVar4;
+  float theta;
+  float sinTheta;
+  float scaleTo;
+  float scaleFrom;
+  float dot;
+  bool dotWasNeg;
   
-  local_c = *param_1 * *param_2 + param_1[1] * param_2[1] + param_1[2] * param_2[2] +
-            param_1[3] * param_2[3];
-  bVar1 = 0.0 <= local_c;
+  dot = *from * *to + from[1] * to[1] + from[2] * to[2] + from[3] * to[3];
+  bVar1 = 0.0 <= dot;
   if (!bVar1) {
-    local_c = local_c * -1.0;
+    dot = dot * -1.0;
   }
-  if (local_c <= 0.95) {
-    dVar3 = (double)local_c;
-    __libm_sse2_acos((double)CONCAT44(in_stack_ffffffe8,in_stack_ffffffe4));
-    fVar2 = (float)dVar3;
-    dVar3 = (double)fVar2;
-    __libm_sse2_sin((double)CONCAT44(in_stack_ffffffe8,fVar2));
-    local_14 = (float)dVar3;
-    dVar3 = (double)((1.0 - param_3) * fVar2);
-    __libm_sse2_sin((double)CONCAT44(local_14,fVar2));
-    local_10 = (float)dVar3 / local_14;
-    dVar3 = (double)(param_3 * fVar2);
-    __libm_sse2_sin((double)CONCAT44(local_14,fVar2));
-    local_14 = (float)dVar3 / local_14;
+  if (dot <= 0.95) {
+    dVar4 = (double)dot;
+    __libm_sse2_acos((double)CONCAT44(sinTheta,theta));
+    fVar2 = (float)dVar4;
+    dVar4 = (double)fVar2;
+    __libm_sse2_sin((double)CONCAT44(sinTheta,fVar2));
+    fVar3 = (float)dVar4;
+    dVar4 = (double)((1.0 - frac) * fVar2);
+    __libm_sse2_sin((double)CONCAT44(fVar3,fVar2));
+    scaleFrom = (float)dVar4 / fVar3;
+    dVar4 = (double)(frac * fVar2);
+    __libm_sse2_sin((double)CONCAT44(fVar3,fVar2));
+    scaleTo = (float)dVar4 / fVar3;
   }
   else {
-    local_10 = 1.0 - param_3;
-    local_14 = param_3;
+    scaleFrom = 1.0 - frac;
+    scaleTo = frac;
   }
   if (bVar1) {
-    *param_4 = local_10 * *param_1 + local_14 * *param_2;
-    param_4[1] = local_10 * param_1[1] + local_14 * param_2[1];
-    param_4[2] = local_10 * param_1[2] + local_14 * param_2[2];
-    param_4[3] = local_10 * param_1[3] + local_14 * param_2[3];
+    *result = scaleFrom * *from + scaleTo * *to;
+    result[1] = scaleFrom * from[1] + scaleTo * to[1];
+    result[2] = scaleFrom * from[2] + scaleTo * to[2];
+    result[3] = scaleFrom * from[3] + scaleTo * to[3];
   }
   else {
-    *param_4 = local_10 * *param_1 + local_14 * *param_2 * -1.0;
-    param_4[1] = local_10 * param_1[1] + local_14 * param_2[1] * -1.0;
-    param_4[2] = local_10 * param_1[2] + local_14 * param_2[2] * -1.0;
-    param_4[3] = local_10 * param_1[3] + local_14 * param_2[3] * -1.0;
+    *result = scaleFrom * *from + scaleTo * *to * -1.0;
+    result[1] = scaleFrom * from[1] + scaleTo * to[1] * -1.0;
+    result[2] = scaleFrom * from[2] + scaleTo * to[2] * -1.0;
+    result[3] = scaleFrom * from[3] + scaleTo * to[3] * -1.0;
   }
   return;
 }
@@ -2010,55 +1977,65 @@ void __cdecl QuatSlerp(float *param_1,float *param_2,float param_3,float *param_
 
 // 007AC700  RotationToYaw  (universal/com_math.cpp:1953)
 
-float __cdecl RotationToYaw(float *param_1)
+/* WARNING: Variable defined which should be unmapped: r */
+/* WARNING: Variable defined which should be unmapped: yaw */
+
+float __cdecl RotationToYaw(float *rot)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  float10 fVar3;
-  float fVar4;
-  float fVar5;
+  float fVar1;
+  float fVar2;
+  code *pcVar3;
+  bool bVar4;
+  float10 fVar5;
   float fVar6;
-  double dVar7;
-  undefined4 in_stack_fffffff4;
+  float fVar7;
+  double dVar8;
+  float r;
+  float yaw;
+  float zz;
   
-  fVar4 = *param_1 * *param_1;
-  fVar5 = param_1[1] * param_1[1] + fVar4;
-  if (fVar5 == 0.0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x7a8,0,
+  fVar1 = *rot;
+  fVar2 = *rot;
+  fVar6 = rot[1] * rot[1] + fVar1 * fVar2;
+  if (fVar6 == 0.0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x7a8,0,
                              "%s");
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      fVar3 = (float10)(*pcVar1)();
-      return (float)fVar3;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      fVar5 = (float10)(*pcVar3)();
+      return (float)fVar5;
     }
   }
-  fVar6 = *param_1 * param_1[1] * (2.0 / fVar5);
-  dVar7 = (double)fVar6;
-  __libm_sse2_atan2((double)CONCAT44(2.0 / fVar5,fVar6),(double)CONCAT44(fVar4,in_stack_fffffff4));
-  return (float)dVar7 * 57.295776;
+  fVar6 = 2.0 / fVar6;
+  fVar7 = *rot * rot[1] * fVar6;
+  dVar8 = (double)fVar7;
+  __libm_sse2_atan2((double)CONCAT44(fVar6,fVar7),(double)CONCAT44(fVar1 * fVar2,yaw));
+  return (float)dVar8 * 57.295776;
 }
 
 
 // 007AC7E0  MatrixRotationZ  (universal/com_math.cpp:2018)
 
-void __cdecl MatrixRotationZ(float (*param_1) [3],float param_2)
+void __cdecl MatrixRotationZ(float (*mat) [3],float degree)
 
 {
   float10 fVar1;
   float10 fVar2;
+  float c;
+  float s;
   
-  fVar1 = (float10)fcos((float10)(param_2 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(param_2 * 0.017453292));
-  (*param_1)[0] = (float)fVar1;
-  (*param_1)[1] = -(float)fVar2;
-  (*param_1)[2] = 0.0;
-  param_1[1][0] = (float)fVar2;
-  param_1[1][1] = (float)fVar1;
-  param_1[1][2] = 0.0;
-  param_1[2][0] = 0.0;
-  param_1[2][1] = 0.0;
-  param_1[2][2] = 1.0;
+  fVar1 = (float10)fcos((float10)(degree * 0.017453292));
+  fVar2 = (float10)fsin((float10)(degree * 0.017453292));
+  (*mat)[0] = (float)fVar1;
+  (*mat)[1] = -(float)fVar2;
+  (*mat)[2] = 0.0;
+  mat[1][0] = (float)fVar2;
+  mat[1][1] = (float)fVar1;
+  mat[1][2] = 0.0;
+  mat[2][0] = 0.0;
+  mat[2][1] = 0.0;
+  mat[2][2] = 1.0;
   return;
 }
 
@@ -2066,14 +2043,13 @@ void __cdecl MatrixRotationZ(float (*param_1) [3],float param_2)
 // 007AC8B0  FinitePerspectiveMatrix  (universal/com_math.cpp:2036)
 
 void __cdecl
-FinitePerspectiveMatrix
-          (float param_1,float param_2,float param_3,float param_4,float (*param_5) [4])
+FinitePerspectiveMatrix(float tanHalfFovX,float tanHalfFovY,float zNear,float zFar,float (*mtx) [4])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_5 == (float (*) [4])0x0) {
+  if (mtx == (float (*) [4])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x7f5,0,
                              "%s");
     if (!bVar2) {
@@ -2082,7 +2058,7 @@ FinitePerspectiveMatrix
       return;
     }
   }
-  if (param_3 <= 0.0) {
+  if (zNear <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x7f6,0,
                              "zNear > 0.0f\n\t%g, %g");
     if (!bVar2) {
@@ -2091,7 +2067,7 @@ FinitePerspectiveMatrix
       return;
     }
   }
-  if (param_4 <= param_3) {
+  if (zFar <= zNear) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x7f7,0,
                              "zFar > zNear\n\t%g, %g");
     if (!bVar2) {
@@ -2100,19 +2076,19 @@ FinitePerspectiveMatrix
       return;
     }
   }
-  memset((uchar *)param_5,'\0',0x40);
-  (*param_5)[0] = 1.0 / param_1;
-  param_5[1][1] = 1.0 / param_2;
-  param_5[2][2] = -param_4 / (param_3 - param_4);
-  param_5[2][3] = 1.0;
-  param_5[3][2] = (param_3 * param_4) / (param_3 - param_4);
+  memset((uchar *)mtx,'\0',0x40);
+  (*mtx)[0] = 1.0 / tanHalfFovX;
+  mtx[1][1] = 1.0 / tanHalfFovY;
+  mtx[2][2] = -zFar / (zNear - zFar);
+  mtx[2][3] = 1.0;
+  mtx[3][2] = (zNear * zFar) / (zNear - zFar);
   return;
 }
 
 
 // 007ACA00  SpotLightViewMatrix  (universal/com_math.cpp:2061)
 
-void __cdecl SpotLightViewMatrix(float *param_1,float param_2,float (*param_3) [4])
+void __cdecl SpotLightViewMatrix(float *direction,float rotation,float (*mtx) [4])
 
 {
   double dVar1;
@@ -2150,9 +2126,9 @@ void __cdecl SpotLightViewMatrix(float *param_1,float param_2,float (*param_3) [
   undefined4 local_18;
   undefined4 local_14;
   
-  local_34 = -*param_1;
-  local_30 = -param_1[1];
-  local_2c = -param_1[2];
+  local_34 = -*direction;
+  local_30 = -direction[1];
+  local_2c = -direction[2];
   PerpendicularVector(&local_34,&local_1c);
   Vec3Cross(&local_1c,&local_34,&local_28);
   local_80 = -local_28;
@@ -2172,9 +2148,9 @@ void __cdecl SpotLightViewMatrix(float *param_1,float param_2,float (*param_3) [
   local_54 = 0;
   local_44 = 0x3f800000;
   memset((uchar *)&local_c0,'\0',0x40);
-  dVar1 = (double)param_2;
+  dVar1 = (double)rotation;
   __libm_sse2_sin(in_stack_ffffff30);
-  dVar2 = (double)param_2;
+  dVar2 = (double)rotation;
   __libm_sse2_cos(in_stack_ffffff30);
   local_c0 = (float)dVar2;
   local_bc = -(float)dVar1;
@@ -2182,15 +2158,14 @@ void __cdecl SpotLightViewMatrix(float *param_1,float param_2,float (*param_3) [
   local_84 = 0x3f800000;
   local_b0 = (float)dVar1;
   local_ac = local_c0;
-  MatrixMultiply44((float (*) [4])&local_80,(float (*) [4])&local_c0,param_3);
+  MatrixMultiply44((float (*) [4])&local_80,(float (*) [4])&local_c0,mtx);
   return;
 }
 
 
 // 007ACC10  SpotLightViewMatrixDir3  (universal/com_math.cpp:2107)
 
-void __cdecl
-SpotLightViewMatrixDir3(float *param_1,float *param_2,float *param_3,float (*param_4) [4])
+void __cdecl SpotLightViewMatrixDir3(float *dirx,float *diry,float *dirz,float (*mtx) [4])
 
 {
   double dVar1;
@@ -2228,17 +2203,17 @@ SpotLightViewMatrixDir3(float *param_1,float *param_2,float *param_3,float (*par
   float local_14;
   
   local_14 = 3.1415927;
-  local_78 = *param_1;
-  local_68 = param_1[1];
-  local_58 = param_1[2];
+  local_78 = *dirx;
+  local_68 = dirx[1];
+  local_58 = dirx[2];
   local_3c = local_2c;
-  local_80 = *param_2;
-  local_70 = param_2[1];
-  local_60 = param_2[2];
+  local_80 = *diry;
+  local_70 = diry[1];
+  local_60 = diry[2];
   local_40 = local_20;
-  local_7c = *param_3;
-  local_6c = param_3[1];
-  local_5c = param_3[2];
+  local_7c = *dirz;
+  local_6c = dirz[1];
+  local_5c = dirz[2];
   local_50 = 0;
   local_4c = 0;
   local_48 = 0;
@@ -2260,35 +2235,37 @@ SpotLightViewMatrixDir3(float *param_1,float *param_2,float *param_3,float (*par
   local_84 = 0x3f800000;
   local_b0 = (float)dVar1;
   local_ac = local_c0;
-  MatrixMultiply44((float (*) [4])&local_80,(float (*) [4])&local_c0,param_4);
+  MatrixMultiply44((float (*) [4])&local_80,(float (*) [4])&local_c0,mtx);
   return;
 }
 
 
 // 007ACE30  SpotLightProjectionMatrix  (universal/com_math.cpp:2201)
 
-void __cdecl
-SpotLightProjectionMatrix(float param_1,float param_2,float param_3,float (*param_4) [4])
+void __cdecl SpotLightProjectionMatrix(float cosFov,float zNear,float zFar,float (*mtx) [4])
 
 {
   float fVar1;
   float fVar2;
   float local_14;
+  float nearPlane;
+  float Q;
+  float cotanFov;
   
-  memset((uchar *)param_4,'\0',0x40);
-  if (0.001 <= param_2) {
-    local_14 = param_2;
+  memset((uchar *)mtx,'\0',0x40);
+  if (0.001 <= zNear) {
+    local_14 = zNear;
   }
   else {
     local_14 = 0.001;
   }
-  fVar1 = param_3 / (param_3 - local_14);
-  fVar2 = 1.0 / (SQRT(1.0 - param_1 * param_1) / param_1);
-  (*param_4)[0] = fVar2;
-  param_4[1][1] = fVar2;
-  param_4[2][2] = fVar1;
-  param_4[2][3] = 1.0;
-  param_4[3][2] = -fVar1 * local_14;
+  fVar1 = zFar / (zFar - local_14);
+  fVar2 = 1.0 / (SQRT(1.0 - cosFov * cosFov) / cosFov);
+  (*mtx)[0] = fVar2;
+  mtx[1][1] = fVar2;
+  mtx[2][2] = fVar1;
+  mtx[2][3] = 1.0;
+  mtx[3][2] = -fVar1 * local_14;
   return;
 }
 
@@ -2296,13 +2273,14 @@ SpotLightProjectionMatrix(float param_1,float param_2,float param_3,float (*para
 // 007ACF20  InfinitePerspectiveMatrix  (universal/com_math.cpp:2299)
 
 void __cdecl
-InfinitePerspectiveMatrix(float param_1,float param_2,float param_3,float (*param_4) [4])
+InfinitePerspectiveMatrix(float tanHalfFovX,float tanHalfFovY,float zNear,float (*mtx) [4])
 
 {
   code *pcVar1;
   bool bVar2;
+  float invLedgeScale;
   
-  if (param_4 == (float (*) [4])0x0) {
+  if (mtx == (float (*) [4])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x900,0,
                              "%s");
     if (!bVar2) {
@@ -2311,7 +2289,7 @@ InfinitePerspectiveMatrix(float param_1,float param_2,float param_3,float (*para
       return;
     }
   }
-  if (param_3 <= 0.0) {
+  if (zNear <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x901,0,
                              "%s");
     if (!bVar2) {
@@ -2320,25 +2298,25 @@ InfinitePerspectiveMatrix(float param_1,float param_2,float param_3,float (*para
       return;
     }
   }
-  memset((uchar *)param_4,'\0',0x40);
-  (*param_4)[0] = 0.9995117 / param_1;
-  param_4[1][1] = 0.9995117 / param_2;
-  param_4[2][2] = 0.9995117;
-  param_4[2][3] = 1.0;
-  param_4[3][2] = -param_3 * 0.9995117;
+  memset((uchar *)mtx,'\0',0x40);
+  (*mtx)[0] = 0.9995117 / tanHalfFovX;
+  mtx[1][1] = 0.9995117 / tanHalfFovY;
+  mtx[2][2] = 0.9995117;
+  mtx[2][3] = 1.0;
+  mtx[3][2] = -zNear * 0.9995117;
   return;
 }
 
 
 // 007AD000  MatrixForViewer  (universal/com_math.cpp:2352)
 
-void __cdecl MatrixForViewer(float *param_1,float (*param_2) [3],float (*param_3) [4])
+void __cdecl MatrixForViewer(float *origin,float (*axis) [3],float (*mtx) [4])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == (float (*) [4])0x0) {
+  if (mtx == (float (*) [4])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x931,0,
                              "%s");
     if (!bVar2) {
@@ -2347,7 +2325,7 @@ void __cdecl MatrixForViewer(float *param_1,float (*param_2) [3],float (*param_3
       return;
     }
   }
-  if (param_1 == (float *)0x0) {
+  if (origin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x932,0,
                              "%s");
     if (!bVar2) {
@@ -2356,7 +2334,7 @@ void __cdecl MatrixForViewer(float *param_1,float (*param_2) [3],float (*param_3
       return;
     }
   }
-  if (param_2 == (float (*) [3])0x0) {
+  if (axis == (float (*) [3])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x933,0,
                              "%s");
     if (!bVar2) {
@@ -2365,56 +2343,56 @@ void __cdecl MatrixForViewer(float *param_1,float (*param_2) [3],float (*param_3
       return;
     }
   }
-  (*param_3)[0] = -param_2[1][0];
-  param_3[1][0] = -param_2[1][1];
-  param_3[2][0] = -param_2[1][2];
-  param_3[3][0] =
-       -(*param_1 * (*param_3)[0] + param_1[1] * param_3[1][0] + param_1[2] * param_3[2][0]);
-  (*param_3)[1] = param_2[2][0];
-  param_3[1][1] = param_2[2][1];
-  param_3[2][1] = param_2[2][2];
-  param_3[3][1] =
-       -(*param_1 * (*param_3)[1] + param_1[1] * param_3[1][1] + param_1[2] * param_3[2][1]);
-  (*param_3)[2] = (*param_2)[0];
-  param_3[1][2] = (*param_2)[1];
-  param_3[2][2] = (*param_2)[2];
-  param_3[3][2] =
-       -(*param_1 * (*param_3)[2] + param_1[1] * param_3[1][2] + param_1[2] * param_3[2][2]);
-  (*param_3)[3] = 0.0;
-  param_3[1][3] = 0.0;
-  param_3[2][3] = 0.0;
-  param_3[3][3] = 1.0;
+  (*mtx)[0] = -axis[1][0];
+  mtx[1][0] = -axis[1][1];
+  mtx[2][0] = -axis[1][2];
+  mtx[3][0] = -(*origin * (*mtx)[0] + origin[1] * mtx[1][0] + origin[2] * mtx[2][0]);
+  (*mtx)[1] = axis[2][0];
+  mtx[1][1] = axis[2][1];
+  mtx[2][1] = axis[2][2];
+  mtx[3][1] = -(*origin * (*mtx)[1] + origin[1] * mtx[1][1] + origin[2] * mtx[2][1]);
+  (*mtx)[2] = (*axis)[0];
+  mtx[1][2] = (*axis)[1];
+  mtx[2][2] = (*axis)[2];
+  mtx[3][2] = -(*origin * (*mtx)[2] + origin[1] * mtx[1][2] + origin[2] * mtx[2][2]);
+  (*mtx)[3] = 0.0;
+  mtx[1][3] = 0.0;
+  mtx[2][3] = 0.0;
+  mtx[3][3] = 1.0;
   return;
 }
 
 
 // 007AD230  AnglesSubtract  (universal/com_math.cpp:2380)
 
-void __cdecl AnglesSubtract(float *param_1,float *param_2,float *param_3)
+void __cdecl AnglesSubtract(float *v1,float *v2,float *v3)
 
 {
   float fVar1;
   
-  fVar1 = AngleNormalize180(*param_1 - *param_2);
-  *param_3 = fVar1;
-  fVar1 = AngleNormalize180(param_1[1] - param_2[1]);
-  param_3[1] = fVar1;
-  fVar1 = AngleNormalize180(param_1[2] - param_2[2]);
-  param_3[2] = fVar1;
+  fVar1 = AngleNormalize180(*v1 - *v2);
+  *v3 = fVar1;
+  fVar1 = AngleNormalize180(v1[1] - v2[1]);
+  v3[1] = fVar1;
+  fVar1 = AngleNormalize180(v1[2] - v2[2]);
+  v3[2] = fVar1;
   return;
 }
 
 
 // 007AD2E0  AngleNormalize360  (universal/com_math.cpp:2397)
 
-float __cdecl AngleNormalize360(float param_1)
+float __cdecl AngleNormalize360(float angle)
 
 {
   float10 extraout_ST0;
   float local_18;
+  float scaledAngle;
+  float result;
+  float result2;
   
   floor();
-  local_18 = (param_1 * 0.0027777778 - (float)extraout_ST0) * 360.0;
+  local_18 = (angle * 0.0027777778 - (float)extraout_ST0) * 360.0;
   if (0.0 <= local_18 - 360.0) {
     local_18 = local_18 - 360.0;
   }
@@ -2424,24 +2402,24 @@ float __cdecl AngleNormalize360(float param_1)
 
 // 007AD360  AngleDelta  (universal/com_math.cpp:2419)
 
-float __cdecl AngleDelta(float param_1,float param_2)
+float __cdecl AngleDelta(float angle1,float angle2)
 
 {
   float fVar1;
   
-  fVar1 = AngleNormalize180(param_1 - param_2);
+  fVar1 = AngleNormalize180(angle1 - angle2);
   return fVar1;
 }
 
 
 // 007AD380  RadiusFromBounds  (universal/com_math.cpp:2424)
 
-float __cdecl RadiusFromBounds(float *param_1,float *param_2)
+float __cdecl RadiusFromBounds(float *mins,float *maxs)
 
 {
   float10 extraout_ST0;
   
-  RadiusFromBoundsSq(param_1,param_2);
+  RadiusFromBoundsSq(mins,maxs);
   _CIsqrt();
   return (float)extraout_ST0;
 }
@@ -2449,12 +2427,12 @@ float __cdecl RadiusFromBounds(float *param_1,float *param_2)
 
 // 007AD3B0  RadiusFromBounds2D  (universal/com_math.cpp:2429)
 
-float __cdecl RadiusFromBounds2D(float *param_1,float *param_2)
+float __cdecl RadiusFromBounds2D(float *mins,float *maxs)
 
 {
   float10 extraout_ST0;
   
-  RadiusFromBounds2DSq(param_1,param_2);
+  RadiusFromBounds2DSq(mins,maxs);
   _CIsqrt();
   return (float)extraout_ST0;
 }
@@ -2462,66 +2440,70 @@ float __cdecl RadiusFromBounds2D(float *param_1,float *param_2)
 
 // 007AD3E0  RadiusFromBoundsSq  (universal/com_math.cpp:2434)
 
-float __cdecl RadiusFromBoundsSq(float *param_1,float *param_2)
+float __cdecl RadiusFromBoundsSq(float *mins,float *maxs)
 
 {
   float local_28;
-  int local_18;
-  float local_14 [4];
+  float b;
+  int i;
+  float corner [3];
+  float a;
   
-  for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
-    local_28 = ABS(param_2[local_18]);
-    if (local_28 < ABS(param_1[local_18])) {
-      local_28 = ABS(param_1[local_18]);
+  for (i = 0; i < 3; i = i + 1) {
+    local_28 = ABS(maxs[i]);
+    if (local_28 < ABS(mins[i])) {
+      local_28 = ABS(mins[i]);
     }
-    local_14[local_18] = local_28;
+    corner[i] = local_28;
   }
-  return local_14[0] * local_14[0] + local_14[1] * local_14[1] + local_14[2] * local_14[2];
+  return corner[0] * corner[0] + corner[1] * corner[1] + corner[2] * corner[2];
 }
 
 
 // 007AD490  RadiusFromBounds2DSq  (universal/com_math.cpp:2450)
 
-float __cdecl RadiusFromBounds2DSq(float *param_1,float *param_2)
+float __cdecl RadiusFromBounds2DSq(float *mins,float *maxs)
 
 {
   float local_24;
-  int local_14;
-  float local_10 [3];
+  float b;
+  int i;
+  float corner [2];
+  float a;
   
-  for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
-    local_24 = ABS(param_2[local_14]);
-    if (local_24 < ABS(param_1[local_14])) {
-      local_24 = ABS(param_1[local_14]);
+  for (i = 0; i < 2; i = i + 1) {
+    local_24 = ABS(maxs[i]);
+    if (local_24 < ABS(mins[i])) {
+      local_24 = ABS(mins[i]);
     }
-    local_10[local_14] = local_24;
+    corner[i] = local_24;
   }
-  return local_10[0] * local_10[0] + local_10[1] * local_10[1];
+  return corner[0] * corner[0] + corner[1] * corner[1];
 }
 
 
 // 007AD540  ExtendBounds  (universal/com_math.cpp:2466)
 
-void __cdecl ExtendBounds(float *param_1,float *param_2,float *param_3)
+void __cdecl ExtendBounds(float *mins,float *maxs,float *offset)
 
 {
-  if (*param_3 <= 0.0) {
-    *param_1 = *param_1 + *param_3;
+  if (*offset <= 0.0) {
+    *mins = *mins + *offset;
   }
   else {
-    *param_2 = *param_2 + *param_3;
+    *maxs = *maxs + *offset;
   }
-  if (param_3[1] <= 0.0) {
-    param_1[1] = param_1[1] + param_3[1];
-  }
-  else {
-    param_2[1] = param_2[1] + param_3[1];
-  }
-  if (param_3[2] <= 0.0) {
-    param_1[2] = param_1[2] + param_3[2];
+  if (offset[1] <= 0.0) {
+    mins[1] = mins[1] + offset[1];
   }
   else {
-    param_2[2] = param_2[2] + param_3[2];
+    maxs[1] = maxs[1] + offset[1];
+  }
+  if (offset[2] <= 0.0) {
+    mins[2] = mins[2] + offset[2];
+  }
+  else {
+    maxs[2] = maxs[2] + offset[2];
   }
   return;
 }
@@ -2529,43 +2511,45 @@ void __cdecl ExtendBounds(float *param_1,float *param_2,float *param_3)
 
 // 007AD610  ExpandBoundsToWidth  (universal/com_math.cpp:2484)
 
-void __cdecl ExpandBoundsToWidth(float *param_1,float *param_2)
+void __cdecl ExpandBoundsToWidth(float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float local_1c;
+  float diff;
+  float width;
   
-  if ((*param_2 < *param_1) &&
+  if ((*maxs < *mins) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x9b9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2[1] < param_1[1]) &&
+  if ((maxs[1] < mins[1]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x9ba,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2[2] < param_1[2]) &&
+  if ((maxs[2] < mins[2]) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0x9bb,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_1c = param_2[1] - param_1[1];
-  if (0.0 <= (*param_2 - *param_1) - local_1c) {
-    local_1c = *param_2 - *param_1;
+  local_1c = maxs[1] - mins[1];
+  if (0.0 <= (*maxs - *mins) - local_1c) {
+    local_1c = *maxs - *mins;
   }
-  if (param_2[2] - param_1[2] < local_1c) {
-    fVar3 = (local_1c - (param_2[2] - param_1[2])) * 0.5;
-    param_1[2] = param_1[2] - fVar3;
-    param_2[2] = param_2[2] + fVar3;
+  if (maxs[2] - mins[2] < local_1c) {
+    fVar3 = (local_1c - (maxs[2] - mins[2])) * 0.5;
+    mins[2] = mins[2] - fVar3;
+    maxs[2] = maxs[2] + fVar3;
   }
   return;
 }
@@ -2573,28 +2557,28 @@ void __cdecl ExpandBoundsToWidth(float *param_1,float *param_2)
 
 // 007AD780  ClearBounds  (universal/com_math.cpp:2533)
 
-void __cdecl ClearBounds(float *param_1,float *param_2)
+void __cdecl ClearBounds(float *mins,float *maxs)
 
 {
-  *param_1 = 131072.0;
-  param_1[1] = 131072.0;
-  param_1[2] = 131072.0;
-  *param_2 = -131072.0;
-  param_2[1] = -131072.0;
-  param_2[2] = -131072.0;
+  *mins = 131072.0;
+  mins[1] = 131072.0;
+  mins[2] = 131072.0;
+  *maxs = -131072.0;
+  maxs[1] = -131072.0;
+  maxs[2] = -131072.0;
   return;
 }
 
 
 // 007AD7F0  IsClearedBounds  (universal/com_math.cpp:2540)
 
-bool __cdecl IsClearedBounds(float *param_1,float *param_2)
+bool __cdecl IsClearedBounds(float *mins,float *maxs)
 
 {
   bool bVar1;
   
-  if (((*param_1 == 131072.0) && (param_1[1] == 131072.0)) && (param_1[2] == 131072.0)) {
-    if (((*param_2 == -131072.0) && (param_2[1] == -131072.0)) && (param_2[2] == -131072.0)) {
+  if (((*mins == 131072.0) && (mins[1] == 131072.0)) && (mins[2] == 131072.0)) {
+    if (((*maxs == -131072.0) && (maxs[1] == -131072.0)) && (maxs[2] == -131072.0)) {
       bVar1 = true;
     }
     else {
@@ -2610,39 +2594,39 @@ bool __cdecl IsClearedBounds(float *param_1,float *param_2)
 
 // 007AD880  ClearBounds2D  (universal/com_math.cpp:2552)
 
-void __cdecl ClearBounds2D(float *param_1,float *param_2)
+void __cdecl ClearBounds2D(float *mins,float *maxs)
 
 {
-  *param_1 = 131072.0;
-  param_1[1] = 131072.0;
-  *param_2 = -131072.0;
-  param_2[1] = -131072.0;
+  *mins = 131072.0;
+  mins[1] = 131072.0;
+  *maxs = -131072.0;
+  maxs[1] = -131072.0;
   return;
 }
 
 
 // 007AD8D0  AddPointToBounds  (universal/com_math.cpp:2559)
 
-void __cdecl AddPointToBounds(float *param_1,float *param_2,float *param_3)
+void __cdecl AddPointToBounds(float *v,float *mins,float *maxs)
 
 {
-  if (*param_1 <= *param_2 && *param_2 != *param_1) {
-    *param_2 = *param_1;
+  if (*v <= *mins && *mins != *v) {
+    *mins = *v;
   }
-  if (*param_3 <= *param_1 && *param_1 != *param_3) {
-    *param_3 = *param_1;
+  if (*maxs <= *v && *v != *maxs) {
+    *maxs = *v;
   }
-  if (param_1[1] <= param_2[1] && param_2[1] != param_1[1]) {
-    param_2[1] = param_1[1];
+  if (v[1] <= mins[1] && mins[1] != v[1]) {
+    mins[1] = v[1];
   }
-  if (param_3[1] <= param_1[1] && param_1[1] != param_3[1]) {
-    param_3[1] = param_1[1];
+  if (maxs[1] <= v[1] && v[1] != maxs[1]) {
+    maxs[1] = v[1];
   }
-  if (param_1[2] <= param_2[2] && param_2[2] != param_1[2]) {
-    param_2[2] = param_1[2];
+  if (v[2] <= mins[2] && mins[2] != v[2]) {
+    mins[2] = v[2];
   }
-  if (param_3[2] <= param_1[2] && param_1[2] != param_3[2]) {
-    param_3[2] = param_1[2];
+  if (maxs[2] <= v[2] && v[2] != maxs[2]) {
+    maxs[2] = v[2];
   }
   return;
 }
@@ -2650,20 +2634,20 @@ void __cdecl AddPointToBounds(float *param_1,float *param_2,float *param_3)
 
 // 007AD980  AddPointToBounds2D  (universal/com_math.cpp:2578)
 
-void __cdecl AddPointToBounds2D(float *param_1,float *param_2,float *param_3)
+void __cdecl AddPointToBounds2D(float *v,float *mins,float *maxs)
 
 {
-  if (*param_1 <= *param_2 && *param_2 != *param_1) {
-    *param_2 = *param_1;
+  if (*v <= *mins && *mins != *v) {
+    *mins = *v;
   }
-  if (*param_3 <= *param_1 && *param_1 != *param_3) {
-    *param_3 = *param_1;
+  if (*maxs <= *v && *v != *maxs) {
+    *maxs = *v;
   }
-  if (param_1[1] <= param_2[1] && param_2[1] != param_1[1]) {
-    param_2[1] = param_1[1];
+  if (v[1] <= mins[1] && mins[1] != v[1]) {
+    mins[1] = v[1];
   }
-  if (param_3[1] <= param_1[1] && param_1[1] != param_3[1]) {
-    param_3[1] = param_1[1];
+  if (maxs[1] <= v[1] && v[1] != maxs[1]) {
+    maxs[1] = v[1];
   }
   return;
 }
@@ -2671,14 +2655,14 @@ void __cdecl AddPointToBounds2D(float *param_1,float *param_2,float *param_3)
 
 // 007ADA00  PointInBounds  (universal/com_math.cpp:2592)
 
-int __cdecl PointInBounds(float *param_1,float *param_2,float *param_3)
+int __cdecl PointInBounds(float *v,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (float *)0x0) {
+  if (v == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xa21,0,
                              "%s");
     if (!bVar2) {
@@ -2687,7 +2671,7 @@ int __cdecl PointInBounds(float *param_1,float *param_2,float *param_3)
       return iVar3;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xa22,0,
                              "%s");
     if (!bVar2) {
@@ -2696,7 +2680,7 @@ int __cdecl PointInBounds(float *param_1,float *param_2,float *param_3)
       return iVar3;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xa23,0,
                              "%s");
     if (!bVar2) {
@@ -2705,16 +2689,13 @@ int __cdecl PointInBounds(float *param_1,float *param_2,float *param_3)
       return iVar3;
     }
   }
-  if ((*param_1 <= *param_2 && *param_2 != *param_1) ||
-     (*param_3 <= *param_1 && *param_1 != *param_3)) {
+  if ((*v <= *mins && *mins != *v) || (*maxs <= *v && *v != *maxs)) {
     iVar3 = 0;
   }
-  else if ((param_1[1] <= param_2[1] && param_2[1] != param_1[1]) ||
-          (param_3[1] <= param_1[1] && param_1[1] != param_3[1])) {
+  else if ((v[1] <= mins[1] && mins[1] != v[1]) || (maxs[1] <= v[1] && v[1] != maxs[1])) {
     iVar3 = 0;
   }
-  else if ((param_1[2] <= param_2[2] && param_2[2] != param_1[2]) ||
-          (param_3[2] <= param_1[2] && param_1[2] != param_3[2])) {
+  else if ((v[2] <= mins[2] && mins[2] != v[2]) || (maxs[2] <= v[2] && v[2] != maxs[2])) {
     iVar3 = 0;
   }
   else {
@@ -2726,14 +2707,14 @@ int __cdecl PointInBounds(float *param_1,float *param_2,float *param_3)
 
 // 007ADB00  PointInBounds2D  (universal/com_math.cpp:2608)
 
-int __cdecl PointInBounds2D(float *param_1,float *param_2,float *param_3)
+int __cdecl PointInBounds2D(float *v,float *mins,float *maxs)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (float *)0x0) {
+  if (v == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xa31,0,
                              "%s");
     if (!bVar2) {
@@ -2742,7 +2723,7 @@ int __cdecl PointInBounds2D(float *param_1,float *param_2,float *param_3)
       return iVar3;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xa32,0,
                              "%s");
     if (!bVar2) {
@@ -2751,7 +2732,7 @@ int __cdecl PointInBounds2D(float *param_1,float *param_2,float *param_3)
       return iVar3;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xa33,0,
                              "%s");
     if (!bVar2) {
@@ -2760,12 +2741,10 @@ int __cdecl PointInBounds2D(float *param_1,float *param_2,float *param_3)
       return iVar3;
     }
   }
-  if ((*param_1 <= *param_2 && *param_2 != *param_1) ||
-     (*param_3 <= *param_1 && *param_1 != *param_3)) {
+  if ((*v <= *mins && *mins != *v) || (*maxs <= *v && *v != *maxs)) {
     iVar3 = 0;
   }
-  else if ((param_1[1] <= param_2[1] && param_2[1] != param_1[1]) ||
-          (param_3[1] <= param_1[1] && param_1[1] != param_3[1])) {
+  else if ((v[1] <= mins[1] && mins[1] != v[1]) || (maxs[1] <= v[1] && v[1] != maxs[1])) {
     iVar3 = 0;
   }
   else {
@@ -2777,21 +2756,20 @@ int __cdecl PointInBounds2D(float *param_1,float *param_2,float *param_3)
 
 // 007ADBE0  BoundsOverlap  (universal/com_math.cpp:2622)
 
-int __cdecl BoundsOverlap(float *param_1,float *param_2,float *param_3,float *param_4)
+int __cdecl BoundsOverlap(float *mins0,float *maxs0,float *mins1,float *maxs1)
 
 {
   int iVar1;
   
-  if ((*param_4 <= *param_1 && *param_1 != *param_4) ||
-     (*param_2 <= *param_3 && *param_3 != *param_2)) {
+  if ((*maxs1 <= *mins0 && *mins0 != *maxs1) || (*maxs0 <= *mins1 && *mins1 != *maxs0)) {
     iVar1 = 0;
   }
-  else if ((param_4[1] <= param_1[1] && param_1[1] != param_4[1]) ||
-          (param_2[1] <= param_3[1] && param_3[1] != param_2[1])) {
+  else if ((maxs1[1] <= mins0[1] && mins0[1] != maxs1[1]) ||
+          (maxs0[1] <= mins1[1] && mins1[1] != maxs0[1])) {
     iVar1 = 0;
   }
-  else if ((param_4[2] <= param_1[2] && param_1[2] != param_4[2]) ||
-          (param_2[2] <= param_3[2] && param_3[2] != param_2[2])) {
+  else if ((maxs1[2] <= mins0[2] && mins0[2] != maxs1[2]) ||
+          (maxs0[2] <= mins1[2] && mins1[2] != maxs0[2])) {
     iVar1 = 0;
   }
   else {
@@ -2803,26 +2781,26 @@ int __cdecl BoundsOverlap(float *param_1,float *param_2,float *param_3,float *pa
 
 // 007ADC60  ExpandBounds  (universal/com_math.cpp:2662)
 
-void __cdecl ExpandBounds(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl ExpandBounds(float *addedmins,float *addedmaxs,float *mins,float *maxs)
 
 {
-  if (*param_1 <= *param_3 && *param_3 != *param_1) {
-    *param_3 = *param_1;
+  if (*addedmins <= *mins && *mins != *addedmins) {
+    *mins = *addedmins;
   }
-  if (*param_4 <= *param_2 && *param_2 != *param_4) {
-    *param_4 = *param_2;
+  if (*maxs <= *addedmaxs && *addedmaxs != *maxs) {
+    *maxs = *addedmaxs;
   }
-  if (param_1[1] <= param_3[1] && param_3[1] != param_1[1]) {
-    param_3[1] = param_1[1];
+  if (addedmins[1] <= mins[1] && mins[1] != addedmins[1]) {
+    mins[1] = addedmins[1];
   }
-  if (param_4[1] <= param_2[1] && param_2[1] != param_4[1]) {
-    param_4[1] = param_2[1];
+  if (maxs[1] <= addedmaxs[1] && addedmaxs[1] != maxs[1]) {
+    maxs[1] = addedmaxs[1];
   }
-  if (param_1[2] <= param_3[2] && param_3[2] != param_1[2]) {
-    param_3[2] = param_1[2];
+  if (addedmins[2] <= mins[2] && mins[2] != addedmins[2]) {
+    mins[2] = addedmins[2];
   }
-  if (param_4[2] <= param_2[2] && param_2[2] != param_4[2]) {
-    param_4[2] = param_2[2];
+  if (maxs[2] <= addedmaxs[2] && addedmaxs[2] != maxs[2]) {
+    maxs[2] = addedmaxs[2];
   }
   return;
 }
@@ -2830,20 +2808,20 @@ void __cdecl ExpandBounds(float *param_1,float *param_2,float *param_3,float *pa
 
 // 007ADD10  ExpandBounds2D  (universal/com_math.cpp:2680)
 
-void __cdecl ExpandBounds2D(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl ExpandBounds2D(float *addedmins,float *addedmaxs,float *mins,float *maxs)
 
 {
-  if (*param_1 <= *param_3 && *param_3 != *param_1) {
-    *param_3 = *param_1;
+  if (*addedmins <= *mins && *mins != *addedmins) {
+    *mins = *addedmins;
   }
-  if (*param_4 <= *param_2 && *param_2 != *param_4) {
-    *param_4 = *param_2;
+  if (*maxs <= *addedmaxs && *addedmaxs != *maxs) {
+    *maxs = *addedmaxs;
   }
-  if (param_1[1] <= param_3[1] && param_3[1] != param_1[1]) {
-    param_3[1] = param_1[1];
+  if (addedmins[1] <= mins[1] && mins[1] != addedmins[1]) {
+    mins[1] = addedmins[1];
   }
-  if (param_4[1] <= param_2[1] && param_2[1] != param_4[1]) {
-    param_4[1] = param_2[1];
+  if (maxs[1] <= addedmaxs[1] && addedmaxs[1] != maxs[1]) {
+    maxs[1] = addedmaxs[1];
   }
   return;
 }
@@ -2852,30 +2830,36 @@ void __cdecl ExpandBounds2D(float *param_1,float *param_2,float *param_3,float *
 // 007ADD90  GetRotatedBounds  (universal/com_math.cpp:2699)
 
 void __cdecl
-GetRotatedBounds(float (*param_1) [3],float *param_2,float (*param_3) [3],float (*param_4) [3])
+GetRotatedBounds(float (*baseBounds) [3],float *origin,float (*axis) [3],float (*rotatedBounds) [3])
 
 {
   uint uVar1;
-  int local_c;
+  int axisIndex;
+  int offset;
   
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    (*param_4)[local_c] = param_2[local_c];
-    param_4[1][local_c] = param_2[local_c];
-    uVar1 = (-1 < (int)(*param_3)[local_c]) - 1 & 0xc;
-    (*param_4)[local_c] =
-         *(float *)((int)*param_1 + uVar1) * (*param_3)[local_c] + (*param_4)[local_c];
-    param_4[1][local_c] =
-         *(float *)((int)param_1 + (0xc - uVar1)) * (*param_3)[local_c] + param_4[1][local_c];
-    uVar1 = (-1 < (int)param_3[1][local_c]) - 1 & 0xc;
-    (*param_4)[local_c] =
-         *(float *)((int)*param_1 + uVar1 + 4) * param_3[1][local_c] + (*param_4)[local_c];
-    param_4[1][local_c] =
-         *(float *)((int)param_1 + (0x10 - uVar1)) * param_3[1][local_c] + param_4[1][local_c];
-    uVar1 = (-1 < (int)param_3[2][local_c]) - 1 & 0xc;
-    (*param_4)[local_c] =
-         *(float *)((int)*param_1 + uVar1 + 8) * param_3[2][local_c] + (*param_4)[local_c];
-    param_4[1][local_c] =
-         *(float *)((int)param_1 + (0x14 - uVar1)) * param_3[2][local_c] + param_4[1][local_c];
+  for (axisIndex = 0; axisIndex < 3; axisIndex = axisIndex + 1) {
+    (*rotatedBounds)[axisIndex] = origin[axisIndex];
+    rotatedBounds[1][axisIndex] = origin[axisIndex];
+    uVar1 = (-1 < (int)(*axis)[axisIndex]) - 1 & 0xc;
+    (*rotatedBounds)[axisIndex] =
+         *(float *)((int)*baseBounds + uVar1) * (*axis)[axisIndex] + (*rotatedBounds)[axisIndex];
+    rotatedBounds[1][axisIndex] =
+         *(float *)((int)baseBounds + (0xc - uVar1)) * (*axis)[axisIndex] +
+         rotatedBounds[1][axisIndex];
+    uVar1 = (-1 < (int)axis[1][axisIndex]) - 1 & 0xc;
+    (*rotatedBounds)[axisIndex] =
+         *(float *)((int)*baseBounds + uVar1 + 4) * axis[1][axisIndex] + (*rotatedBounds)[axisIndex]
+    ;
+    rotatedBounds[1][axisIndex] =
+         *(float *)((int)baseBounds + (0x10 - uVar1)) * axis[1][axisIndex] +
+         rotatedBounds[1][axisIndex];
+    uVar1 = (-1 < (int)axis[2][axisIndex]) - 1 & 0xc;
+    (*rotatedBounds)[axisIndex] =
+         *(float *)((int)*baseBounds + uVar1 + 8) * axis[2][axisIndex] + (*rotatedBounds)[axisIndex]
+    ;
+    rotatedBounds[1][axisIndex] =
+         *(float *)((int)baseBounds + (0x14 - uVar1)) * axis[2][axisIndex] +
+         rotatedBounds[1][axisIndex];
   }
   return;
 }
@@ -2883,31 +2867,31 @@ GetRotatedBounds(float (*param_1) [3],float *param_2,float (*param_3) [3],float 
 
 // 007ADF60  AxisClear  (universal/com_math.cpp:2729)
 
-void __cdecl AxisClear(float (*param_1) [3])
+void __cdecl AxisClear(float (*axis) [3])
 
 {
-  (*param_1)[0] = 1.0;
-  (*param_1)[1] = 0.0;
-  (*param_1)[2] = 0.0;
-  param_1[1][0] = 0.0;
-  param_1[1][1] = 1.0;
-  param_1[1][2] = 0.0;
-  param_1[2][0] = 0.0;
-  param_1[2][1] = 0.0;
-  param_1[2][2] = 1.0;
+  (*axis)[0] = 1.0;
+  (*axis)[1] = 0.0;
+  (*axis)[2] = 0.0;
+  axis[1][0] = 0.0;
+  axis[1][1] = 1.0;
+  axis[1][2] = 0.0;
+  axis[2][0] = 0.0;
+  axis[2][1] = 0.0;
+  axis[2][2] = 1.0;
   return;
 }
 
 
 // 007AE000  AxisTranspose  (universal/com_math.cpp:2749)
 
-void __cdecl AxisTranspose(float (*param_1) [3],float (*param_2) [3])
+void __cdecl AxisTranspose(float (*in) [3],float (*out) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_2) {
+  if (in == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xabe,0,
                              "%s");
     if (!bVar2) {
@@ -2916,77 +2900,81 @@ void __cdecl AxisTranspose(float (*param_1) [3],float (*param_2) [3])
       return;
     }
   }
-  (*param_2)[0] = (*param_1)[0];
-  (*param_2)[1] = param_1[1][0];
-  (*param_2)[2] = param_1[2][0];
-  param_2[1][0] = (*param_1)[1];
-  param_2[1][1] = param_1[1][1];
-  param_2[1][2] = param_1[2][1];
-  param_2[2][0] = (*param_1)[2];
-  param_2[2][1] = param_1[1][2];
-  param_2[2][2] = param_1[2][2];
+  (*out)[0] = (*in)[0];
+  (*out)[1] = in[1][0];
+  (*out)[2] = in[2][0];
+  out[1][0] = (*in)[1];
+  out[1][1] = in[1][1];
+  out[1][2] = in[2][1];
+  out[2][0] = (*in)[2];
+  out[2][1] = in[1][2];
+  out[2][2] = in[2][2];
   return;
 }
 
 
 // 007AE0A0  AxisTransformVec3  (universal/com_math.cpp:2773)
 
-void __cdecl AxisTransformVec3(float (*param_1) [3],float *param_2,float *param_3)
+void __cdecl AxisTransformVec3(float (*axes) [3],float *vec,float *out)
 
 {
-  *param_3 = *param_2 * (*param_1)[0] + param_2[1] * param_1[1][0] + param_2[2] * param_1[2][0];
-  param_3[1] = *param_2 * (*param_1)[1] + param_2[1] * param_1[1][1] + param_2[2] * param_1[2][1];
-  param_3[2] = *param_2 * (*param_1)[2] + param_2[1] * param_1[1][2] + param_2[2] * param_1[2][2];
+  *out = *vec * (*axes)[0] + vec[1] * axes[1][0] + vec[2] * axes[2][0];
+  out[1] = *vec * (*axes)[1] + vec[1] * axes[1][1] + vec[2] * axes[2][1];
+  out[2] = *vec * (*axes)[2] + vec[1] * axes[1][2] + vec[2] * axes[2][2];
   return;
 }
 
 
 // 007AE160  YawToAxis  (universal/com_math.cpp:2780)
 
-void __cdecl YawToAxis(float param_1,float (*param_2) [3])
+void __cdecl YawToAxis(float yaw,float (*axis) [3])
 
 {
-  float local_10;
+  float right;
   float local_c;
   float local_8;
   
-  YawVectors(param_1,*param_2,&local_10);
-  param_2[2][0] = 0.0;
-  param_2[2][1] = 0.0;
-  param_2[2][2] = 1.0;
-  param_2[1][0] = 0.0 - local_10;
-  param_2[1][1] = 0.0 - local_c;
-  param_2[1][2] = 0.0 - local_8;
+  YawVectors(yaw,*axis,&right);
+  axis[2][0] = 0.0;
+  axis[2][1] = 0.0;
+  axis[2][2] = 1.0;
+  axis[1][0] = 0.0 - right;
+  axis[1][1] = 0.0 - local_c;
+  axis[1][2] = 0.0 - local_8;
   return;
 }
 
 
 // 007AE200  AxisToAngles  (universal/com_math.cpp:2799)
 
-void __cdecl AxisToAngles(float (*param_1) [3],float *param_2)
+void __cdecl AxisToAngles(float (*axis) [3],float *angles)
 
 {
   float10 fVar1;
   float10 fVar2;
   float fVar3;
   float local_3c;
-  float local_20;
+  float rad;
+  float right;
   float local_1c;
   float local_18;
-  float local_14;
+  float temp;
+  float pitch;
+  float fCos;
+  float fSin;
   
-  vectoangles(*param_1,param_2);
-  fVar1 = (float10)fcos((float10)(-param_2[1] * 0.017453292));
-  fVar2 = (float10)fsin((float10)(-param_2[1] * 0.017453292));
-  local_14 = (float)fVar1 * param_1[1][0] - (float)fVar2 * param_1[1][1];
-  local_1c = (float)fVar2 * param_1[1][0] + (float)fVar1 * param_1[1][1];
-  fVar1 = (float10)fcos((float10)(-*param_2 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(-*param_2 * 0.017453292));
-  local_20 = (float)fVar2 * param_1[1][2] + (float)fVar1 * local_14;
-  local_18 = (float)fVar1 * param_1[1][2] - (float)fVar2 * local_14;
-  fVar3 = vectosignedpitch(&local_20);
+  vectoangles(*axis,angles);
+  fVar1 = (float10)fcos((float10)(-angles[1] * 0.017453292));
+  fVar2 = (float10)fsin((float10)(-angles[1] * 0.017453292));
+  temp = (float)fVar1 * axis[1][0] - (float)fVar2 * axis[1][1];
+  local_1c = (float)fVar2 * axis[1][0] + (float)fVar1 * axis[1][1];
+  fVar1 = (float10)fcos((float10)(-*angles * 0.017453292));
+  fVar2 = (float10)fsin((float10)(-*angles * 0.017453292));
+  right = (float)fVar2 * axis[1][2] + (float)fVar1 * temp;
+  local_18 = (float)fVar1 * axis[1][2] - (float)fVar2 * temp;
+  fVar3 = vectosignedpitch(&right);
   if (0.0 <= local_1c) {
-    param_2[2] = -fVar3;
+    angles[2] = -fVar3;
   }
   else {
     if (0.0 <= fVar3) {
@@ -2995,7 +2983,7 @@ void __cdecl AxisToAngles(float (*param_1) [3],float *param_2)
     else {
       local_3c = 180.0;
     }
-    param_2[2] = fVar3 + local_3c;
+    angles[2] = fVar3 + local_3c;
   }
   return;
 }
@@ -3003,32 +2991,36 @@ void __cdecl AxisToAngles(float (*param_1) [3],float *param_2)
 
 // 007AE3B0  Axis4ToAngles  (universal/com_math.cpp:2842)
 
-void __cdecl Axis4ToAngles(float (*param_1) [4],float *param_2)
+void __cdecl Axis4ToAngles(float (*axis) [4],float *angles)
 
 {
   float10 fVar1;
   float10 fVar2;
   float fVar3;
   float local_40;
-  float local_24;
+  float rad;
+  float right;
   float local_20;
   float local_1c;
   float local_18;
-  float local_14;
+  float temp;
+  float pitch;
+  float fCos;
+  float fSin;
   
-  vectoangles(*param_1,param_2);
-  local_18 = param_1[1][3];
-  fVar1 = (float10)fcos((float10)(-param_2[1] * 0.017453292));
-  fVar2 = (float10)fsin((float10)(-param_2[1] * 0.017453292));
-  local_14 = (float)fVar1 * param_1[1][0] - (float)fVar2 * param_1[1][1];
-  local_20 = (float)fVar2 * param_1[1][0] + (float)fVar1 * param_1[1][1];
-  fVar1 = (float10)fcos((float10)(-*param_2 * 0.017453292));
-  fVar2 = (float10)fsin((float10)(-*param_2 * 0.017453292));
-  local_24 = (float)fVar2 * param_1[1][2] + (float)fVar1 * local_14;
-  local_1c = (float)fVar1 * param_1[1][2] - (float)fVar2 * local_14;
-  fVar3 = vectosignedpitch(&local_24);
+  vectoangles(*axis,angles);
+  local_18 = axis[1][3];
+  fVar1 = (float10)fcos((float10)(-angles[1] * 0.017453292));
+  fVar2 = (float10)fsin((float10)(-angles[1] * 0.017453292));
+  temp = (float)fVar1 * axis[1][0] - (float)fVar2 * axis[1][1];
+  local_20 = (float)fVar2 * axis[1][0] + (float)fVar1 * axis[1][1];
+  fVar1 = (float10)fcos((float10)(-*angles * 0.017453292));
+  fVar2 = (float10)fsin((float10)(-*angles * 0.017453292));
+  right = (float)fVar2 * axis[1][2] + (float)fVar1 * temp;
+  local_1c = (float)fVar1 * axis[1][2] - (float)fVar2 * temp;
+  fVar3 = vectosignedpitch(&right);
   if (0.0 <= local_20) {
-    param_2[2] = -fVar3;
+    angles[2] = -fVar3;
   }
   else {
     if (0.0 <= fVar3) {
@@ -3037,7 +3029,7 @@ void __cdecl Axis4ToAngles(float (*param_1) [4],float *param_2)
     else {
       local_40 = 180.0;
     }
-    param_2[2] = fVar3 + local_40;
+    angles[2] = fVar3 + local_40;
   }
   return;
 }
@@ -3045,28 +3037,29 @@ void __cdecl Axis4ToAngles(float (*param_1) [4],float *param_2)
 
 // 007AE560  IntersectPlanes  (universal/com_math.cpp:2885)
 
-int __cdecl IntersectPlanes(float **param_1,float *param_2)
+int __cdecl IntersectPlanes(float **plane,float *xyz)
 
 {
   bool bVar1;
   float fVar2;
+  double invDeterminant;
+  double determinant;
   
-  fVar2 = (param_1[1][1] * param_1[2][2] - param_1[2][1] * param_1[1][2]) * **param_1 +
-          (param_1[2][1] * (*param_1)[2] - (*param_1)[1] * param_1[2][2]) * *param_1[1] +
-          ((*param_1)[1] * param_1[1][2] - param_1[1][1] * (*param_1)[2]) * *param_1[2];
+  fVar2 = (plane[1][1] * plane[2][2] - plane[2][1] * plane[1][2]) * **plane +
+          (plane[2][1] * (*plane)[2] - (*plane)[1] * plane[2][2]) * *plane[1] +
+          ((*plane)[1] * plane[1][2] - plane[1][1] * (*plane)[2]) * *plane[2];
   bVar1 = 0.001 <= ABS(fVar2);
   if (bVar1) {
     fVar2 = 1.0 / fVar2;
-    *param_2 = ((param_1[1][1] * param_1[2][2] - param_1[2][1] * param_1[1][2]) * (*param_1)[3] +
-                (param_1[2][1] * (*param_1)[2] - (*param_1)[1] * param_1[2][2]) * param_1[1][3] +
-               ((*param_1)[1] * param_1[1][2] - param_1[1][1] * (*param_1)[2]) * param_1[2][3]) *
-               fVar2;
-    param_2[1] = ((param_1[1][2] * *param_1[2] - param_1[2][2] * *param_1[1]) * (*param_1)[3] +
-                  (param_1[2][2] * **param_1 - (*param_1)[2] * *param_1[2]) * param_1[1][3] +
-                 ((*param_1)[2] * *param_1[1] - param_1[1][2] * **param_1) * param_1[2][3]) * fVar2;
-    param_2[2] = ((*param_1[1] * param_1[2][1] - *param_1[2] * param_1[1][1]) * (*param_1)[3] +
-                  (*param_1[2] * (*param_1)[1] - **param_1 * param_1[2][1]) * param_1[1][3] +
-                 (**param_1 * param_1[1][1] - *param_1[1] * (*param_1)[1]) * param_1[2][3]) * fVar2;
+    *xyz = ((plane[1][1] * plane[2][2] - plane[2][1] * plane[1][2]) * (*plane)[3] +
+            (plane[2][1] * (*plane)[2] - (*plane)[1] * plane[2][2]) * plane[1][3] +
+           ((*plane)[1] * plane[1][2] - plane[1][1] * (*plane)[2]) * plane[2][3]) * fVar2;
+    xyz[1] = ((plane[1][2] * *plane[2] - plane[2][2] * *plane[1]) * (*plane)[3] +
+              (plane[2][2] * **plane - (*plane)[2] * *plane[2]) * plane[1][3] +
+             ((*plane)[2] * *plane[1] - plane[1][2] * **plane) * plane[2][3]) * fVar2;
+    xyz[2] = ((*plane[1] * plane[2][1] - *plane[2] * plane[1][1]) * (*plane)[3] +
+              (*plane[2] * (*plane)[1] - **plane * plane[2][1]) * plane[1][3] +
+             (**plane * plane[1][1] - *plane[1] * (*plane)[1]) * plane[2][3]) * fVar2;
   }
   return (uint)bVar1;
 }
@@ -3075,54 +3068,57 @@ int __cdecl IntersectPlanes(float **param_1,float *param_2)
 // 007AE930  SnapPointToIntersectingPlanes  (universal/com_math.cpp:2917)
 
 void __cdecl
-SnapPointToIntersectingPlanes(float **param_1,float *param_2,float param_3,float param_4)
+SnapPointToIntersectingPlanes(float **planes,float *xyz,float snapGrid,float snapEpsilon)
 
 {
   float *pfVar1;
   bool bVar2;
   float fVar3;
-  float local_2c [4];
-  float local_1c;
-  float local_14;
-  int local_c;
-  int local_8;
+  float snapped [3];
+  float baseError;
+  float maxBaseError;
+  float snapError;
+  float maxSnapError;
+  float rounded;
+  int axis;
+  int planeIndex;
   
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    fVar3 = (float)(int)ROUND(param_2[local_c] / param_3 + 9.313226e-10) * param_3;
-    if (param_4 <= ABS(fVar3 - param_2[local_c])) {
-      local_2c[local_c] = param_2[local_c];
+  for (axis = 0; axis < 3; axis = axis + 1) {
+    fVar3 = (float)(int)ROUND(xyz[axis] / snapGrid + 9.313226e-10) * snapGrid;
+    if (snapEpsilon <= ABS(fVar3 - xyz[axis])) {
+      snapped[axis] = xyz[axis];
     }
     else {
-      local_2c[local_c] = fVar3;
+      snapped[axis] = fVar3;
     }
   }
-  if (((local_2c[0] == *param_2) && (local_2c[1] == param_2[1])) && (local_2c[2] == param_2[2])) {
+  if (((snapped[0] == *xyz) && (snapped[1] == xyz[1])) && (snapped[2] == xyz[2])) {
     bVar2 = true;
   }
   else {
     bVar2 = false;
   }
   if (!bVar2) {
-    local_14 = 0.0;
-    local_1c = param_4;
-    for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-      pfVar1 = param_1[local_8];
-      fVar3 = ABS((*pfVar1 * local_2c[0] + pfVar1[1] * local_2c[1] + pfVar1[2] * local_2c[2]) -
-                  param_1[local_8][3]);
-      if (local_14 < fVar3) {
-        local_14 = fVar3;
+    maxSnapError = 0.0;
+    maxBaseError = snapEpsilon;
+    for (planeIndex = 0; planeIndex < 3; planeIndex = planeIndex + 1) {
+      pfVar1 = planes[planeIndex];
+      fVar3 = ABS((*pfVar1 * snapped[0] + pfVar1[1] * snapped[1] + pfVar1[2] * snapped[2]) -
+                  planes[planeIndex][3]);
+      if (maxSnapError < fVar3) {
+        maxSnapError = fVar3;
       }
-      pfVar1 = param_1[local_8];
-      fVar3 = ABS((*pfVar1 * *param_2 + pfVar1[1] * param_2[1] + pfVar1[2] * param_2[2]) -
-                  param_1[local_8][3]);
-      if (local_1c < fVar3) {
-        local_1c = fVar3;
+      pfVar1 = planes[planeIndex];
+      fVar3 = ABS((*pfVar1 * *xyz + pfVar1[1] * xyz[1] + pfVar1[2] * xyz[2]) - planes[planeIndex][3]
+                 );
+      if (maxBaseError < fVar3) {
+        maxBaseError = fVar3;
       }
     }
-    if (local_14 < local_1c) {
-      *param_2 = local_2c[0];
-      param_2[1] = local_2c[1];
-      param_2[2] = local_2c[2];
+    if (maxSnapError < maxBaseError) {
+      *xyz = snapped[0];
+      xyz[1] = snapped[1];
+      xyz[2] = snapped[2];
     }
   }
   return;
@@ -3132,25 +3128,24 @@ SnapPointToIntersectingPlanes(float **param_1,float *param_2,float param_3,float
 // 007AEBB0  ProjectedWindingContainsCoplanarPoint  (universal/com_math.cpp:3001)
 
 int __cdecl
-ProjectedWindingContainsCoplanarPoint
-          (float (*param_1) [3],int param_2,int param_3,int param_4,float *param_5)
+ProjectedWindingContainsCoplanarPoint(float (*verts) [3],int vertCount,int x,int y,float *point)
 
 {
-  int local_14;
-  int local_10;
+  float projectionDist;
+  int vertIndex;
+  int vertIndexPrev;
   
-  local_10 = param_2 + -1;
-  local_14 = 0;
+  vertIndexPrev = vertCount + -1;
+  vertIndex = 0;
   while( true ) {
-    if (param_2 <= local_14) {
+    if (vertCount <= vertIndex) {
       return 1;
     }
-    if ((param_5[param_3] - param_1[local_10][param_3]) *
-        (param_1[local_14][param_4] - param_1[local_10][param_4]) +
-        (param_5[param_4] - param_1[local_10][param_4]) *
-        (param_1[local_10][param_3] - param_1[local_14][param_3]) < 0.0) break;
-    local_10 = local_14;
-    local_14 = local_14 + 1;
+    if ((point[x] - verts[vertIndexPrev][x]) * (verts[vertIndex][y] - verts[vertIndexPrev][y]) +
+        (point[y] - verts[vertIndexPrev][y]) * (verts[vertIndexPrev][x] - verts[vertIndex][x]) < 0.0
+       ) break;
+    vertIndexPrev = vertIndex;
+    vertIndex = vertIndex + 1;
   }
   return 0;
 }
@@ -3158,68 +3153,71 @@ ProjectedWindingContainsCoplanarPoint
 
 // 007AECC0  PlaneFromPoints  (universal/com_math.cpp:3096)
 
-int __cdecl PlaneFromPoints(float *param_1,float *param_2,float *param_3,float *param_4)
+int __cdecl PlaneFromPoints(float *plane,float *v0,float *v1,float *v2)
 
 {
-  float local_24;
+  float fVar1;
+  float v2_v0;
   float local_20;
   float local_1c;
-  float local_18;
+  float v1_v0;
   float local_14;
   float local_10;
-  float local_8;
+  float length;
+  float lengthSq;
   
-  local_18 = *param_3 - *param_2;
-  local_14 = param_3[1] - param_2[1];
-  local_10 = param_3[2] - param_2[2];
-  local_24 = *param_4 - *param_2;
-  local_20 = param_4[1] - param_2[1];
-  local_1c = param_4[2] - param_2[2];
-  Vec3Cross(&local_24,&local_18,param_1);
-  local_8 = *param_1 * *param_1 + param_1[1] * param_1[1] + param_1[2] * param_1[2];
-  if (local_8 < 2.0) {
-    if (local_8 == 0.0) {
+  v1_v0 = *v1 - *v0;
+  local_14 = v1[1] - v0[1];
+  local_10 = v1[2] - v0[2];
+  v2_v0 = *v2 - *v0;
+  local_20 = v2[1] - v0[1];
+  local_1c = v2[2] - v0[2];
+  Vec3Cross(&v2_v0,&v1_v0,plane);
+  lengthSq = *plane * *plane + plane[1] * plane[1] + plane[2] * plane[2];
+  if (lengthSq < 2.0) {
+    if (lengthSq == 0.0) {
       return 0;
     }
-    if (local_8 <=
-        (local_24 * local_24 + local_20 * local_20 + local_1c * local_1c) *
-        (local_18 * local_18 + local_14 * local_14 + local_10 * local_10) * 1.0000001e-06) {
-      local_18 = *param_4 - *param_3;
-      local_14 = param_4[1] - param_3[1];
-      local_10 = param_4[2] - param_3[2];
-      local_24 = *param_2 - *param_3;
-      local_20 = param_2[1] - param_3[1];
-      local_1c = param_2[2] - param_3[2];
-      Vec3Cross(&local_24,&local_18,param_1);
-      if (local_8 <=
-          (local_24 * local_24 + local_20 * local_20 + local_1c * local_1c) *
-          (local_18 * local_18 + local_14 * local_14 + local_10 * local_10) * 1.0000001e-06) {
+    if (lengthSq <=
+        (v2_v0 * v2_v0 + local_20 * local_20 + local_1c * local_1c) *
+        (v1_v0 * v1_v0 + local_14 * local_14 + local_10 * local_10) * 1.0000001e-06) {
+      v1_v0 = *v2 - *v1;
+      local_14 = v2[1] - v1[1];
+      local_10 = v2[2] - v1[2];
+      v2_v0 = *v0 - *v1;
+      local_20 = v0[1] - v1[1];
+      local_1c = v0[2] - v1[2];
+      Vec3Cross(&v2_v0,&v1_v0,plane);
+      if (lengthSq <=
+          (v2_v0 * v2_v0 + local_20 * local_20 + local_1c * local_1c) *
+          (v1_v0 * v1_v0 + local_14 * local_14 + local_10 * local_10) * 1.0000001e-06) {
         return 0;
       }
     }
   }
-  local_8 = SQRT(local_8);
-  *param_1 = *param_1 / local_8;
-  param_1[1] = param_1[1] / local_8;
-  param_1[2] = param_1[2] / local_8;
-  param_1[3] = *param_2 * *param_1 + param_2[1] * param_1[1] + param_2[2] * param_1[2];
+  fVar1 = SQRT(lengthSq);
+  *plane = *plane / fVar1;
+  plane[1] = plane[1] / fVar1;
+  plane[2] = plane[2] / fVar1;
+  plane[3] = *v0 * *plane + v0[1] * plane[1] + v0[2] * plane[2];
   return 1;
 }
 
 
 // 007AEFB0  ProjectPointOnPlane  (universal/com_math.cpp:3135)
 
-void __cdecl ProjectPointOnPlane(float *param_1,float *param_2,float *param_3)
+void __cdecl ProjectPointOnPlane(float *p,float *normal,float *dst)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
+  float d;
   
-  iVar3 = Vec3IsNormalized(param_2);
+  iVar3 = Vec3IsNormalized(normal);
   if (iVar3 == 0) {
-    Abs((phys_vec3 *)param_2);
+    Abs((phys_vec3 *)normal);
     va("(%g %g %g) len %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xc42,0,
                              "%s\n\t%s");
@@ -3229,36 +3227,36 @@ void __cdecl ProjectPointOnPlane(float *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  fVar4 = -(*param_2 * *param_1 + param_2[1] * param_1[1] + param_2[2] * param_1[2]);
-  *param_3 = fVar4 * *param_2 + *param_1;
-  param_3[1] = fVar4 * param_2[1] + param_1[1];
-  param_3[2] = fVar4 * param_2[2] + param_1[2];
+  fVar4 = -(*normal * *p + normal[1] * p[1] + normal[2] * p[2]);
+  *dst = fVar4 * *normal + *p;
+  dst[1] = fVar4 * normal[1] + p[1];
+  dst[2] = fVar4 * normal[2] + p[2];
   return;
 }
 
 
 // 007AF0E0  SetPlaneSignbits  (universal/com_math.cpp:3152)
 
-void __cdecl SetPlaneSignbits(cplane_s *param_1)
+void __cdecl SetPlaneSignbits(cplane_s *out)
 
 {
-  int local_c;
-  byte local_5;
+  int j;
+  uchar bits;
   
-  local_5 = 0;
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    if (param_1->normal[local_c] <= 0.0 && param_1->normal[local_c] != 0.0) {
-      local_5 = local_5 | (byte)(1 << ((byte)local_c & 0x1f));
+  bits = '\0';
+  for (j = 0; j < 3; j = j + 1) {
+    if (out->normal[j] <= 0.0 && out->normal[j] != 0.0) {
+      bits = bits | (byte)(1 << ((byte)j & 0x1f));
     }
   }
-  param_1->signbits = local_5;
+  out->signbits = bits;
   return;
 }
 
 
 // 007AF140  BoxOnPlaneSide  (universal/com_math.cpp:3220)
 
-int __cdecl BoxOnPlaneSide(float *param_1,float *param_2,cplane_s *param_3)
+int __cdecl BoxOnPlaneSide(float *emins,float *emaxs,cplane_s *p)
 
 {
   code *pcVar1;
@@ -3275,10 +3273,10 @@ int __cdecl BoxOnPlaneSide(float *param_1,float *param_2,cplane_s *param_3)
     Ljmptab[6] = (int)&LAB_007af2f7;
     Ljmptab[7] = (int)&LAB_007af327;
   }
-  if (param_3->signbits < 8) {
+  if (p->signbits < 8) {
                     /* WARNING: Jumptable at 0x007af1c1 did not pass sanity check. */
                     /* WARNING: Treating indirect jump as call */
-    iVar2 = (*(code *)Ljmptab[param_3->signbits])();
+    iVar2 = (*(code *)Ljmptab[p->signbits])();
     return iVar2;
   }
   pcVar1 = (code *)swi(3);
@@ -3290,51 +3288,51 @@ int __cdecl BoxOnPlaneSide(float *param_1,float *param_2,cplane_s *param_3)
 // 007AF3A0  IsPosInsideArc  (universal/com_math.cpp:3466)
 
 int __cdecl
-IsPosInsideArc(float *param_1,float param_2,float *param_3,float param_4,float param_5,float param_6
-              ,float param_7)
+IsPosInsideArc(float *pos,float posRadius,float *arcOrigin,float arcRadius,float arcAngle0,
+              float arcAngle1,float arcHalfHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_1c;
+  float originDelta;
   float local_18;
   float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float distDelta;
+  float posYaw;
+  float adjustedDistDelta;
   
-  if ((param_1 == (float *)0x0) &&
+  if ((pos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xd90,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((arcOrigin == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xd91,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_1c = *param_1 - *param_3;
-  local_18 = param_1[1] - param_3[1];
-  local_14 = param_1[2] - param_3[2];
-  local_10 = Vec2Normalize(&local_1c);
-  local_8 = local_10 - param_2;
-  if (((local_8 * local_8 <= param_4 * param_4) &&
-      (param_3[2] - param_7 < param_1[2] || param_3[2] - param_7 == param_1[2])) &&
-     (param_1[2] <= param_3[2] + param_7)) {
-    local_c = vectoyaw(&local_1c);
-    fVar4 = AngleNormalize360(local_c);
-    if (param_6 <= param_5) {
-      if ((fVar4 < param_6) || (param_5 < fVar4)) {
+  originDelta = *pos - *arcOrigin;
+  local_18 = pos[1] - arcOrigin[1];
+  local_14 = pos[2] - arcOrigin[2];
+  distDelta = Vec2Normalize(&originDelta);
+  adjustedDistDelta = distDelta - posRadius;
+  if (((adjustedDistDelta * adjustedDistDelta <= arcRadius * arcRadius) &&
+      (arcOrigin[2] - arcHalfHeight < pos[2] || arcOrigin[2] - arcHalfHeight == pos[2])) &&
+     (pos[2] <= arcOrigin[2] + arcHalfHeight)) {
+    posYaw = vectoyaw(&originDelta);
+    fVar4 = AngleNormalize360(posYaw);
+    if (arcAngle1 <= arcAngle0) {
+      if ((fVar4 < arcAngle1) || (arcAngle0 < fVar4)) {
         return 1;
       }
     }
-    else if ((fVar4 < param_6) && (param_5 < fVar4)) {
+    else if ((fVar4 < arcAngle1) && (arcAngle0 < fVar4)) {
       return 1;
     }
   }
@@ -3344,38 +3342,42 @@ IsPosInsideArc(float *param_1,float param_2,float *param_3,float param_4,float p
 
 // 007AF520  BoxDistSqrdExceeds  (universal/com_math.cpp:3510)
 
-int __cdecl BoxDistSqrdExceeds(float *param_1,float *param_2,float *param_3,float param_4)
+int __cdecl BoxDistSqrdExceeds(float *absmin,float *absmax,float *org,float fogOpaqueDistSqrd)
 
 {
   uint local_34;
   float local_30;
-  float local_28 [7];
-  int local_c;
+  float minsSqrd;
+  float mins [3];
+  float total;
+  float maxs [3];
+  int i;
+  float maxsSqrd;
   
-  local_28[0] = *param_1 - *param_3;
-  local_28[1] = param_1[1] - param_3[1];
-  local_28[2] = param_1[2] - param_3[2];
-  local_28[4] = *param_2 - *param_3;
-  local_28[5] = param_2[1] - param_3[1];
-  local_28[6] = param_2[2] - param_3[2];
-  local_28[3] = 0.0;
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    if (0.0 < local_28[local_c] * local_28[local_c + 4]) {
-      local_30 = local_28[local_c] * local_28[local_c];
-      if (local_28[local_c + 4] * local_28[local_c + 4] < local_30) {
-        local_30 = local_28[local_c + 4] * local_28[local_c + 4];
+  mins[0] = *absmin - *org;
+  mins[1] = absmin[1] - org[1];
+  mins[2] = absmin[2] - org[2];
+  maxs[0] = *absmax - *org;
+  maxs[1] = absmax[1] - org[1];
+  maxs[2] = absmax[2] - org[2];
+  total = 0.0;
+  for (i = 0; i < 3; i = i + 1) {
+    if (0.0 < mins[i] * maxs[i]) {
+      local_30 = mins[i] * mins[i];
+      if (maxs[i] * maxs[i] < local_30) {
+        local_30 = maxs[i] * maxs[i];
       }
-      local_28[3] = local_28[3] + local_30;
+      total = total + local_30;
     }
   }
-  local_34 = (uint)(param_4 < local_28[3]);
+  local_34 = (uint)(fogOpaqueDistSqrd < total);
   return local_34;
 }
 
 
 // 007AF670  Q_rint  (universal/com_math.cpp:3545)
 
-float __cdecl Q_rint(float param_1)
+float __cdecl Q_rint(float in)
 
 {
   float10 extraout_ST0;
@@ -3387,38 +3389,39 @@ float __cdecl Q_rint(float param_1)
 
 // 007AF6A0  ColorNormalize  (universal/com_math.cpp:3555)
 
-float __cdecl ColorNormalize(float *param_1,float *param_2)
+float __cdecl ColorNormalize(float *in,float *out)
 
 {
   float fVar1;
-  float local_c;
+  float max;
+  float scale;
   
-  local_c = *param_1;
-  if (local_c < param_1[1]) {
-    local_c = param_1[1];
+  max = *in;
+  if (max < in[1]) {
+    max = in[1];
   }
-  if (local_c < param_1[2]) {
-    local_c = param_1[2];
+  if (max < in[2]) {
+    max = in[2];
   }
-  if (local_c == 0.0) {
-    param_2[2] = 1.0;
-    param_2[1] = 1.0;
-    *param_2 = 1.0;
-    local_c = 0.0;
+  if (max == 0.0) {
+    out[2] = 1.0;
+    out[1] = 1.0;
+    *out = 1.0;
+    max = 0.0;
   }
   else {
-    fVar1 = 1.0 / local_c;
-    *param_2 = fVar1 * *param_1;
-    param_2[1] = fVar1 * param_1[1];
-    param_2[2] = fVar1 * param_1[2];
+    fVar1 = 1.0 / max;
+    *out = fVar1 * *in;
+    out[1] = fVar1 * in[1];
+    out[2] = fVar1 * in[2];
   }
-  return local_c;
+  return max;
 }
 
 
 // 007AF790  ColorSRGBtoLinear  (universal/com_math.cpp:3582)
 
-void __cdecl ColorSRGBtoLinear(float *param_1,float *param_2)
+void __cdecl ColorSRGBtoLinear(float *in,float *out)
 
 {
   float fVar1;
@@ -3430,43 +3433,43 @@ void __cdecl ColorSRGBtoLinear(float *param_1,float *param_2)
   undefined4 in_stack_ffffffec;
   undefined4 in_stack_fffffff0;
   
-  if (*param_1 <= 0.04045) {
-    fVar1 = *param_1 / 12.92;
+  if (*in <= 0.04045) {
+    fVar1 = *in / 12.92;
   }
   else {
-    dVar4 = (double)((*param_1 + 0.055) / 1.055);
+    dVar4 = (double)((*in + 0.055) / 1.055);
     __libm_sse2_pow((double)CONCAT44(in_stack_ffffffe8,in_stack_ffffffe4),
                     (double)CONCAT44(in_stack_fffffff0,in_stack_ffffffec));
     fVar1 = (float)dVar4;
   }
-  *param_2 = fVar1;
-  if (param_1[1] <= 0.04045) {
-    fVar2 = param_1[1] / 12.92;
+  *out = fVar1;
+  if (in[1] <= 0.04045) {
+    fVar2 = in[1] / 12.92;
   }
   else {
-    dVar4 = (double)((param_1[1] + 0.055) / 1.055);
+    dVar4 = (double)((in[1] + 0.055) / 1.055);
     __libm_sse2_pow((double)CONCAT44(in_stack_ffffffe8,in_stack_ffffffe4),
                     (double)CONCAT44(in_stack_fffffff0,fVar1));
     fVar2 = (float)dVar4;
   }
-  param_2[1] = fVar2;
-  if (param_1[2] <= 0.04045) {
-    fVar1 = param_1[2] / 12.92;
+  out[1] = fVar2;
+  if (in[2] <= 0.04045) {
+    fVar1 = in[2] / 12.92;
   }
   else {
-    fVar3 = (param_1[2] + 0.055) / 1.055;
+    fVar3 = (in[2] + 0.055) / 1.055;
     dVar4 = (double)fVar3;
     __libm_sse2_pow((double)CONCAT44(fVar2,in_stack_ffffffe4),(double)CONCAT44(fVar3,fVar1));
     fVar1 = (float)dVar4;
   }
-  param_2[2] = fVar1;
+  out[2] = fVar1;
   return;
 }
 
 
 // 007AF8E0  PitchForYawOnNormal  (universal/com_math.cpp:3672)
 
-float __cdecl PitchForYawOnNormal(float param_1,float *param_2)
+float __cdecl PitchForYawOnNormal(float fYaw,float *normal)
 
 {
   code *pcVar1;
@@ -3474,11 +3477,11 @@ float __cdecl PitchForYawOnNormal(float param_1,float *param_2)
   bool bVar3;
   float10 fVar4;
   float10 extraout_ST0;
-  float local_10;
+  float forward;
   float local_c;
   float local_8;
   
-  if (((*param_2 == 0.0) && (param_2[1] == 0.0)) && (param_2[2] == 0.0)) {
+  if (((*normal == 0.0) && (normal[1] == 0.0)) && (normal[2] == 0.0)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xe5b,0,
                              "%s");
     if (!bVar3) {
@@ -3487,12 +3490,12 @@ float __cdecl PitchForYawOnNormal(float param_1,float *param_2)
       return (float)fVar4;
     }
   }
-  YawVectors(param_1,&local_10,(float *)0x0);
-  if (param_2[2] == 0.0) {
+  YawVectors(fYaw,&forward,(float *)0x0);
+  if (normal[2] == 0.0) {
     fVar2 = 270.0;
   }
   else {
-    local_8 = (*param_2 * local_10 + param_2[1] * local_c) / param_2[2];
+    local_8 = (*normal * forward + normal[1] * local_c) / normal[2];
     _CIatan();
     fVar2 = ((float)extraout_ST0 * 180.0) / 3.1415927;
   }
@@ -3502,15 +3505,15 @@ float __cdecl PitchForYawOnNormal(float param_1,float *param_2)
 
 // 007AF9D0  NearestPitchAndYawOnPlane  (universal/com_math.cpp:3701)
 
-void __cdecl NearestPitchAndYawOnPlane(float *param_1,float *param_2,float *param_3)
+void __cdecl NearestPitchAndYawOnPlane(float *angles,float *normal,float *result)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_1c [3];
-  float local_10 [3];
+  float projected [3];
+  float forward [3];
   
-  if (((*param_2 == 0.0) && (param_2[1] == 0.0)) && (param_2[2] == 0.0)) {
+  if (((*normal == 0.0) && (normal[1] == 0.0)) && (normal[2] == 0.0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xe79,0,
                              "%s");
     if (!bVar2) {
@@ -3519,36 +3522,38 @@ void __cdecl NearestPitchAndYawOnPlane(float *param_1,float *param_2,float *para
       return;
     }
   }
-  AngleVectors(param_1,local_10,(float *)0x0,(float *)0x0);
-  ProjectPointOnPlane(local_10,param_2,local_1c);
-  vectoangles(local_1c,param_3);
+  AngleVectors(angles,forward,(float *)0x0,(float *)0x0);
+  ProjectPointOnPlane(forward,normal,projected);
+  vectoangles(projected,result);
   return;
 }
 
 
 // 007AFA80  Rand_Init  (universal/com_math.cpp:3723)
 
-void __cdecl Rand_Init(int param_1)
+void __cdecl Rand_Init(int seed)
 
 {
-  holdrand = param_1;
+  holdrand = seed;
   return;
 }
 
 
 // 007AFA90  flrand  (universal/com_math.cpp:3729)
 
-float __cdecl flrand(float param_1,float param_2)
+float __cdecl flrand(float min,float max)
 
 {
+  float result;
+  
   holdrand = holdrand * 0x343fd + 0x269ec3;
-  return ((param_2 - param_1) * (float)(holdrand >> 0x11)) / 32768.0 + param_1;
+  return ((max - min) * (float)(holdrand >> 0x11)) / 32768.0 + min;
 }
 
 
 // 007AFAF0  irand  (universal/com_math.cpp:3741)
 
-int __cdecl irand(int param_1,int param_2)
+int __cdecl irand(int min,int max)
 
 {
   int extraout_EAX;
@@ -3556,19 +3561,20 @@ int __cdecl irand(int param_1,int param_2)
   holdrand = holdrand * 0x343fd + 0x269ec3;
   _allmul();
   _allshr();
-  return param_1 + extraout_EAX;
+  return min + extraout_EAX;
 }
 
 
 // 007AFB70  AxisToQuat  (universal/com_math.cpp:3753)
 
-void __cdecl AxisToQuat(float (*param_1) [3],float *param_2)
+void __cdecl AxisToQuat(float (*mat) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_4c [4];
+  float invLength;
+  float test [4];
   float local_3c;
   float local_38;
   float local_34;
@@ -3581,33 +3587,33 @@ void __cdecl AxisToQuat(float (*param_1) [3],float *param_2)
   float local_18;
   float local_14;
   float local_10;
-  int local_c;
-  float local_8;
+  int best;
+  float testSizeSq;
   
-  local_4c[0] = param_1[1][2] - param_1[2][1];
-  local_4c[1] = param_1[2][0] - (*param_1)[2];
-  local_4c[2] = (*param_1)[1] - param_1[1][0];
-  local_4c[3] = (*param_1)[0] + param_1[1][1] + param_1[2][2] + 1.0;
-  local_8 = Vec4LengthSq(local_4c);
-  if (local_8 < 1.0) {
-    local_3c = param_1[2][0] + (*param_1)[2];
-    local_38 = param_1[2][1] + param_1[1][2];
-    local_34 = ((param_1[2][2] - param_1[1][1]) - (*param_1)[0]) + 1.0;
-    local_30 = local_4c[2];
-    local_8 = Vec4LengthSq(local_4c + 4);
-    if (local_8 < 1.0) {
-      local_2c = (((*param_1)[0] - param_1[1][1]) - param_1[2][2]) + 1.0;
-      local_28 = param_1[1][0] + (*param_1)[1];
+  test[0] = mat[1][2] - mat[2][1];
+  test[1] = mat[2][0] - (*mat)[2];
+  test[2] = (*mat)[1] - mat[1][0];
+  test[3] = (*mat)[0] + mat[1][1] + mat[2][2] + 1.0;
+  testSizeSq = Vec4LengthSq(test);
+  if (testSizeSq < 1.0) {
+    local_3c = mat[2][0] + (*mat)[2];
+    local_38 = mat[2][1] + mat[1][2];
+    local_34 = ((mat[2][2] - mat[1][1]) - (*mat)[0]) + 1.0;
+    local_30 = test[2];
+    testSizeSq = Vec4LengthSq(test + 4);
+    if (testSizeSq < 1.0) {
+      local_2c = (((*mat)[0] - mat[1][1]) - mat[2][2]) + 1.0;
+      local_28 = mat[1][0] + (*mat)[1];
       local_24 = local_3c;
-      local_20 = local_4c[0];
-      local_8 = Vec4LengthSq(&local_2c);
-      if (local_8 < 1.0) {
+      local_20 = test[0];
+      testSizeSq = Vec4LengthSq(&local_2c);
+      if (testSizeSq < 1.0) {
         local_1c = local_28;
-        local_18 = ((param_1[1][1] - (*param_1)[0]) - param_1[2][2]) + 1.0;
+        local_18 = ((mat[1][1] - (*mat)[0]) - mat[2][2]) + 1.0;
         local_14 = local_38;
-        local_10 = local_4c[1];
-        local_8 = Vec4LengthSq(&local_1c);
-        if (local_8 < 1.0) {
+        local_10 = test[1];
+        testSizeSq = Vec4LengthSq(&local_1c);
+        if (testSizeSq < 1.0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",
                                    0xed9,0,"%s\n\t(testSizeSq) = %g");
           if (!bVar2) {
@@ -3616,20 +3622,20 @@ void __cdecl AxisToQuat(float (*param_1) [3],float *param_2)
             return;
           }
         }
-        local_c = 3;
+        best = 3;
       }
       else {
-        local_c = 2;
+        best = 2;
       }
     }
     else {
-      local_c = 1;
+      best = 1;
     }
   }
   else {
-    local_c = 0;
+    best = 0;
   }
-  if (local_8 == 0.0) {
+  if (testSizeSq == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xede,0,
                              "%s");
     if (!bVar2) {
@@ -3638,30 +3644,31 @@ void __cdecl AxisToQuat(float (*param_1) [3],float *param_2)
       return;
     }
   }
-  fVar3 = 1.0 / SQRT(local_8);
-  *param_2 = fVar3 * local_4c[local_c * 4];
-  param_2[1] = fVar3 * local_4c[local_c * 4 + 1];
-  param_2[2] = fVar3 * local_4c[local_c * 4 + 2];
-  param_2[3] = fVar3 * local_4c[local_c * 4 + 3];
+  fVar3 = 1.0 / SQRT(testSizeSq);
+  *out = fVar3 * test[best * 4];
+  out[1] = fVar3 * test[best * 4 + 1];
+  out[2] = fVar3 * test[best * 4 + 2];
+  out[3] = fVar3 * test[best * 4 + 3];
   return;
 }
 
 
 // 007AFE60  QuatLerp  (universal/com_math.cpp:3813)
 
-void __cdecl QuatLerp(float *param_1,float *param_2,float param_3,float *param_4)
+void __cdecl QuatLerp(float *qa,float *qb,float frac,float *out)
 
 {
-  if (*param_1 * *param_2 + param_1[1] * param_2[1] + param_1[2] * param_2[2] +
-      param_1[3] * param_2[3] < 0.0) {
-    *param_4 = -*param_2;
-    param_4[1] = -param_2[1];
-    param_4[2] = -param_2[2];
-    param_4[3] = -param_2[3];
-    Vec4Lerp(param_1,param_4,param_3,param_4);
+  float dot;
+  
+  if (*qa * *qb + qa[1] * qb[1] + qa[2] * qb[2] + qa[3] * qb[3] < 0.0) {
+    *out = -*qb;
+    out[1] = -qb[1];
+    out[2] = -qb[2];
+    out[3] = -qb[3];
+    Vec4Lerp(qa,out,frac,out);
   }
   else {
-    Vec4Lerp(param_1,param_2,param_3,param_4);
+    Vec4Lerp(qa,qb,frac,out);
   }
   return;
 }
@@ -3670,7 +3677,7 @@ void __cdecl QuatLerp(float *param_1,float *param_2,float param_3,float *param_4
 // 007AFF60  CullBoxFromCone  (universal/com_math.cpp:3914)
 
 bool __cdecl
-CullBoxFromCone(float *param_1,float *param_2,float param_3,float *param_4,float *param_5)
+CullBoxFromCone(float *coneOrg,float *coneDir,float cosHalfFov,float *boxCenter,float *boxHalfSize)
 
 {
   code *pcVar1;
@@ -3685,8 +3692,14 @@ CullBoxFromCone(float *param_1,float *param_2,float param_3,float *param_4,float
   float local_68;
   float local_64;
   float local_60;
+  float cosHalfFovSq;
+  float dist;
+  float sinHalfFovSq;
+  float scaledSepDist;
+  float scale;
+  float perpLenSq;
   
-  if (param_3 < 0.0) {
+  if (cosHalfFov < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xf56,0,
                              "%s");
     if (!bVar2) {
@@ -3695,43 +3708,43 @@ CullBoxFromCone(float *param_1,float *param_2,float param_3,float *param_4,float
       return (bool)uVar3;
     }
   }
-  if (*param_2 < 0.0) {
+  if (*coneDir < 0.0) {
     local_60 = -1.0;
   }
   else {
     local_60 = 1.0;
   }
-  fVar5 = (*param_4 - *param_1) - *param_5 * local_60;
-  if (param_2[1] < 0.0) {
+  fVar5 = (*boxCenter - *coneOrg) - *boxHalfSize * local_60;
+  if (coneDir[1] < 0.0) {
     local_64 = -1.0;
   }
   else {
     local_64 = 1.0;
   }
-  fVar6 = (param_4[1] - param_1[1]) - param_5[1] * local_64;
-  if (param_2[2] < 0.0) {
+  fVar6 = (boxCenter[1] - coneOrg[1]) - boxHalfSize[1] * local_64;
+  if (coneDir[2] < 0.0) {
     local_68 = -1.0;
   }
   else {
     local_68 = 1.0;
   }
-  fVar7 = (param_4[2] - param_1[2]) - param_5[2] * local_68;
-  fVar8 = fVar5 * *param_2 + fVar6 * param_2[1] + fVar7 * param_2[2];
+  fVar7 = (boxCenter[2] - coneOrg[2]) - boxHalfSize[2] * local_68;
+  fVar8 = fVar5 * *coneDir + fVar6 * coneDir[1] + fVar7 * coneDir[2];
   if (fVar8 < 0.0) {
     fVar4 = -fVar8;
-    fVar5 = fVar4 * *param_2 + fVar5;
-    fVar6 = fVar4 * param_2[1] + fVar6;
-    fVar7 = fVar4 * param_2[2] + fVar7;
+    fVar5 = fVar4 * *coneDir + fVar5;
+    fVar6 = fVar4 * coneDir[1] + fVar6;
+    fVar7 = fVar4 * coneDir[2] + fVar7;
     fVar9 = fVar5 * fVar5 + fVar6 * fVar6 + fVar7 * fVar7;
-    fVar4 = 1.0 - param_3 * param_3;
-    if (fVar8 * fVar8 * fVar4 < fVar9 * param_3 * param_3) {
-      fVar8 = param_3 / SQRT(fVar4 * fVar9);
-      fVar5 = fVar8 * fVar5 + *param_2;
-      fVar6 = fVar8 * fVar6 + param_2[1];
-      fVar7 = fVar8 * fVar7 + param_2[2];
-      if ((((fVar5 * (*param_4 - *param_1) + fVar6 * (param_4[1] - param_1[1]) +
-            fVar7 * (param_4[2] - param_1[2])) - ABS(*param_5 * fVar5)) - ABS(param_5[1] * fVar6)) -
-          ABS(param_5[2] * fVar7) < 0.0) {
+    fVar4 = 1.0 - cosHalfFov * cosHalfFov;
+    if (fVar8 * fVar8 * fVar4 < fVar9 * cosHalfFov * cosHalfFov) {
+      fVar8 = cosHalfFov / SQRT(fVar4 * fVar9);
+      fVar5 = fVar8 * fVar5 + *coneDir;
+      fVar6 = fVar8 * fVar6 + coneDir[1];
+      fVar7 = fVar8 * fVar7 + coneDir[2];
+      if ((((fVar5 * (*boxCenter - *coneOrg) + fVar6 * (boxCenter[1] - coneOrg[1]) +
+            fVar7 * (boxCenter[2] - coneOrg[2])) - ABS(*boxHalfSize * fVar5)) -
+          ABS(boxHalfSize[1] * fVar6)) - ABS(boxHalfSize[2] * fVar7) < 0.0) {
         bVar2 = false;
       }
       else {
@@ -3751,26 +3764,26 @@ CullBoxFromCone(float *param_1,float *param_2,float param_3,float *param_4,float
 
 // 007B02F0  CullBoxFromSphere  (universal/com_math.cpp:3970)
 
-bool __cdecl CullBoxFromSphere(float *param_1,float param_2,float *param_3,float *param_4)
+bool __cdecl CullBoxFromSphere(float *sphereOrg,float radius,float *boxCenter,float *boxHalfSize)
 
 {
   float local_40;
   float local_3c;
   float local_38;
   
-  local_38 = ABS(*param_1 - *param_3) - *param_4;
+  local_38 = ABS(*sphereOrg - *boxCenter) - *boxHalfSize;
   if (local_38 - 0.0 < 0.0) {
     local_38 = 0.0;
   }
-  local_3c = ABS(param_1[1] - param_3[1]) - param_4[1];
+  local_3c = ABS(sphereOrg[1] - boxCenter[1]) - boxHalfSize[1];
   if (local_3c - 0.0 < 0.0) {
     local_3c = 0.0;
   }
-  local_40 = ABS(param_1[2] - param_3[2]) - param_4[2];
+  local_40 = ABS(sphereOrg[2] - boxCenter[2]) - boxHalfSize[2];
   if (local_40 - 0.0 < 0.0) {
     local_40 = 0.0;
   }
-  return param_2 * param_2 < local_38 * local_38 + local_3c * local_3c + local_40 * local_40;
+  return radius * radius < local_38 * local_38 + local_3c * local_3c + local_40 * local_40;
 }
 
 
@@ -3778,7 +3791,8 @@ bool __cdecl CullBoxFromSphere(float *param_1,float param_2,float *param_3,float
 
 bool __cdecl
 CullBoxFromConicSectionOfSphere
-          (float *param_1,float *param_2,float param_3,float param_4,float *param_5,float *param_6)
+          (float *coneOrg,float *coneDir,float cosHalfFov,float radius,float *boxCenter,
+          float *boxHalfSize)
 
 {
   code *pcVar1;
@@ -3799,66 +3813,72 @@ CullBoxFromConicSectionOfSphere
   float local_98;
   float local_94;
   float local_90;
+  float cosHalfFovSq;
+  float dist;
+  float sinHalfFovSq;
+  float scaledSepDist;
+  float scale;
+  float perpLenSq;
   
-  if ((param_3 < 0.0) &&
+  if ((cosHalfFov < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",3999,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  fVar4 = *param_5 - *param_1;
-  fVar5 = param_5[1] - param_1[1];
-  fVar6 = param_5[2] - param_1[2];
-  local_90 = ABS(fVar4) - *param_6;
+  fVar4 = *boxCenter - *coneOrg;
+  fVar5 = boxCenter[1] - coneOrg[1];
+  fVar6 = boxCenter[2] - coneOrg[2];
+  local_90 = ABS(fVar4) - *boxHalfSize;
   if (local_90 - 0.0 < 0.0) {
     local_90 = 0.0;
   }
-  local_94 = ABS(fVar5) - param_6[1];
+  local_94 = ABS(fVar5) - boxHalfSize[1];
   if (local_94 - 0.0 < 0.0) {
     local_94 = 0.0;
   }
-  local_98 = ABS(fVar6) - param_6[2];
+  local_98 = ABS(fVar6) - boxHalfSize[2];
   if (local_98 - 0.0 < 0.0) {
     local_98 = 0.0;
   }
-  if (local_90 * local_90 + local_94 * local_94 + local_98 * local_98 <= param_4 * param_4) {
-    if (*param_2 < 0.0) {
+  if (local_90 * local_90 + local_94 * local_94 + local_98 * local_98 <= radius * radius) {
+    if (*coneDir < 0.0) {
       local_9c = -1.0;
     }
     else {
       local_9c = 1.0;
     }
-    fVar8 = fVar4 - *param_6 * local_9c;
-    if (param_2[1] < 0.0) {
+    fVar8 = fVar4 - *boxHalfSize * local_9c;
+    if (coneDir[1] < 0.0) {
       local_a0 = -1.0;
     }
     else {
       local_a0 = 1.0;
     }
-    fVar9 = fVar5 - param_6[1] * local_a0;
-    if (param_2[2] < 0.0) {
+    fVar9 = fVar5 - boxHalfSize[1] * local_a0;
+    if (coneDir[2] < 0.0) {
       local_a4 = -1.0;
     }
     else {
       local_a4 = 1.0;
     }
-    fVar10 = fVar6 - param_6[2] * local_a4;
-    fVar11 = fVar8 * *param_2 + fVar9 * param_2[1] + fVar10 * param_2[2];
+    fVar10 = fVar6 - boxHalfSize[2] * local_a4;
+    fVar11 = fVar8 * *coneDir + fVar9 * coneDir[1] + fVar10 * coneDir[2];
     if (fVar11 < 0.0) {
       fVar7 = -fVar11;
-      fVar8 = fVar7 * *param_2 + fVar8;
-      fVar9 = fVar7 * param_2[1] + fVar9;
-      fVar10 = fVar7 * param_2[2] + fVar10;
+      fVar8 = fVar7 * *coneDir + fVar8;
+      fVar9 = fVar7 * coneDir[1] + fVar9;
+      fVar10 = fVar7 * coneDir[2] + fVar10;
       fVar12 = fVar8 * fVar8 + fVar9 * fVar9 + fVar10 * fVar10;
-      fVar7 = 1.0 - param_3 * param_3;
-      if (fVar11 * fVar11 * fVar7 < fVar12 * param_3 * param_3) {
-        fVar11 = param_3 / SQRT(fVar7 * fVar12);
-        fVar8 = fVar11 * fVar8 + *param_2;
-        fVar9 = fVar11 * fVar9 + param_2[1];
-        fVar10 = fVar11 * fVar10 + param_2[2];
-        if ((((fVar8 * fVar4 + fVar9 * fVar5 + fVar10 * fVar6) - ABS(*param_6 * fVar8)) -
-            ABS(param_6[1] * fVar9)) - ABS(param_6[2] * fVar10) < 0.0) {
+      fVar7 = 1.0 - cosHalfFov * cosHalfFov;
+      if (fVar11 * fVar11 * fVar7 < fVar12 * cosHalfFov * cosHalfFov) {
+        fVar11 = cosHalfFov / SQRT(fVar7 * fVar12);
+        fVar8 = fVar11 * fVar8 + *coneDir;
+        fVar9 = fVar11 * fVar9 + coneDir[1];
+        fVar10 = fVar11 * fVar10 + coneDir[2];
+        if ((((fVar8 * fVar4 + fVar9 * fVar5 + fVar10 * fVar6) - ABS(*boxHalfSize * fVar8)) -
+            ABS(boxHalfSize[1] * fVar9)) - ABS(boxHalfSize[2] * fVar10) < 0.0) {
           bVar2 = false;
         }
         else {
@@ -3883,7 +3903,7 @@ CullBoxFromConicSectionOfSphere
 // 007B09D0  CullSphereFromCone  (universal/com_math.cpp:4052)
 
 bool __cdecl
-CullSphereFromCone(float *param_1,float *param_2,float param_3,float *param_4,float param_5)
+CullSphereFromCone(float *coneOrg,float *coneDir,float cosHalfFov,float *sphereCenter,float radius)
 
 {
   code *pcVar1;
@@ -3893,8 +3913,13 @@ CullSphereFromCone(float *param_1,float *param_2,float param_3,float *param_4,fl
   float fVar5;
   float fVar6;
   float fVar7;
+  float cosHalfFovSq;
+  float dist;
+  float discriminant;
+  float sinHalfFovSq;
+  float perpLenSq;
   
-  if (param_3 < 0.0) {
+  if (cosHalfFov < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.cpp",0xfdd,0,
                              "%s");
     if (!bVar2) {
@@ -3903,15 +3928,15 @@ CullSphereFromCone(float *param_1,float *param_2,float param_3,float *param_4,fl
       return (bool)uVar3;
     }
   }
-  fVar7 = (*param_4 - *param_1) * *param_2 + (param_4[1] - param_1[1]) * param_2[1] +
-          (param_4[2] - param_1[2]) * param_2[2];
-  if (fVar7 < param_5) {
+  fVar7 = (*sphereCenter - *coneOrg) * *coneDir + (sphereCenter[1] - coneOrg[1]) * coneDir[1] +
+          (sphereCenter[2] - coneOrg[2]) * coneDir[2];
+  if (fVar7 < radius) {
     fVar4 = -fVar7;
-    fVar5 = fVar4 * *param_2 + (*param_4 - *param_1);
-    fVar6 = fVar4 * param_2[1] + (param_4[1] - param_1[1]);
-    fVar4 = fVar4 * param_2[2] + (param_4[2] - param_1[2]);
-    fVar7 = SQRT(1.0 - param_3 * param_3) * fVar7 - param_5;
-    if ((fVar5 * fVar5 + fVar6 * fVar6 + fVar4 * fVar4) * param_3 * param_3 < fVar7 * fVar7) {
+    fVar5 = fVar4 * *coneDir + (*sphereCenter - *coneOrg);
+    fVar6 = fVar4 * coneDir[1] + (sphereCenter[1] - coneOrg[1]);
+    fVar4 = fVar4 * coneDir[2] + (sphereCenter[2] - coneOrg[2]);
+    fVar7 = SQRT(1.0 - cosHalfFov * cosHalfFov) * fVar7 - radius;
+    if ((fVar5 * fVar5 + fVar6 * fVar6 + fVar4 * fVar4) * cosHalfFov * cosHalfFov < fVar7 * fVar7) {
       bVar2 = false;
     }
     else {
@@ -3927,18 +3952,25 @@ CullSphereFromCone(float *param_1,float *param_2,float param_3,float *param_4,fl
 
 // 007B1080  colorTempToXYZ  (universal/com_math.cpp:4341)
 
-void __cdecl colorTempToXYZ(float param_1,float *param_2)
+void __cdecl colorTempToXYZ(float colorTemp,float *XYZ)
 
 {
   double dVar1;
   double dVar2;
   double local_54;
   double local_4c;
-  double local_3c;
-  double local_34;
+  double t;
+  double yd;
+  double xd;
+  double t3;
+  double t2;
+  double xd2;
+  double xd3;
+  float x;
+  float y;
   
-  if (1650.0 <= param_1) {
-    local_4c = (double)param_1;
+  if (1650.0 <= colorTemp) {
+    local_4c = (double)colorTemp;
   }
   else {
     local_4c = 1650.0;
@@ -3953,38 +3985,38 @@ void __cdecl colorTempToXYZ(float param_1,float *param_2)
   dVar2 = local_54 * local_54 * local_54;
   if (4000.0 <= local_54) {
     if (7000.0 <= local_54) {
-      local_34 = -2006400000.0000002 / dVar2 + 1901800.0 / dVar1 + 247.48000000000002 / local_54 +
-                 0.23704;
+      xd = -2006400000.0000002 / dVar2 + 1901800.0 / dVar1 + 247.48000000000002 / local_54 + 0.23704
+      ;
     }
     else {
-      local_34 = -4607000000.0 / dVar2 + 2967800.0 / dVar1 + 99.11 / local_54 + 0.244063;
+      xd = -4607000000.0 / dVar2 + 2967800.0 / dVar1 + 99.11 / local_54 + 0.244063;
     }
   }
   else {
-    local_34 = (-266123900.00000003 / dVar2 - 234358.0 / dVar1) + 877.6956 / local_54 + 0.17991;
+    xd = (-266123900.00000003 / dVar2 - 234358.0 / dVar1) + 877.6956 / local_54 + 0.17991;
   }
-  dVar1 = local_34 * local_34;
-  dVar2 = local_34 * local_34 * local_34;
+  dVar1 = xd * xd;
+  dVar2 = xd * xd * xd;
   if (4000.0 <= local_54) {
-    local_3c = (dVar1 * -3.0 + local_34 * 2.87) - 0.275;
+    yd = (dVar1 * -3.0 + xd * 2.87) - 0.275;
   }
-  else if ((0.50338 < local_34) || (local_54 <= 2222.0)) {
-    local_3c = ((dVar2 * -1.1063814 - dVar1 * 1.3481102) + local_34 * 2.18555832) - 0.20219683;
+  else if ((0.50338 < xd) || (local_54 <= 2222.0)) {
+    yd = ((dVar2 * -1.1063814 - dVar1 * 1.3481102) + xd * 2.18555832) - 0.20219683;
   }
   else {
-    local_3c = ((dVar2 * -0.9549476 - dVar1 * 1.37418593) + local_34 * 2.09137015) - 0.16748867;
+    yd = ((dVar2 * -0.9549476 - dVar1 * 1.37418593) + xd * 2.09137015) - 0.16748867;
   }
-  *param_2 = (float)local_34;
-  param_2[1] = (float)local_3c;
-  param_2[2] = (1.0 - (float)local_34) - (float)local_3c;
-  param_2[3] = 1.0;
+  *XYZ = (float)xd;
+  XYZ[1] = (float)yd;
+  XYZ[2] = (1.0 - (float)xd) - (float)yd;
+  XYZ[3] = 1.0;
   return;
 }
 
 
 // 007B0B70  colorTempMatrix  (universal/com_math.cpp:4414)
 
-void __cdecl colorTempMatrix(float (*param_1) [4],float param_2)
+void __cdecl colorTempMatrix(float (*finalMatrix) [4],float colorTemp)
 
 {
   float10 extraout_ST0;
@@ -4024,7 +4056,7 @@ void __cdecl colorTempMatrix(float (*param_1) [4],float param_2)
   float local_20 [7];
   
   colorTempToXYZ(6500.0,local_20);
-  colorTempToXYZ(param_2,local_30);
+  colorTempToXYZ(colorTemp,local_30);
   MatrixTransformVector44(local_20,bradfordMA,&local_40);
   MatrixTransformVector44(local_30,bradfordMA,&local_50);
   local_90 = local_50 / local_40;
@@ -4046,41 +4078,41 @@ void __cdecl colorTempMatrix(float (*param_1) [4],float param_2)
   MatrixMultiply44(bradfordMA,(float (*) [4])&local_90,(float (*) [4])local_d0);
   MatrixMultiply44((float (*) [4])local_d0,bradfordMI,(float (*) [4])local_110);
   MatrixMultiply44(sRGBtoXYZ,(float (*) [4])local_110,(float (*) [4])local_d0);
-  MatrixMultiply44((float (*) [4])local_d0,XYZtosRGB,param_1);
-  (*param_1)[0] = (*param_1)[0] + 0.00048828125;
+  MatrixMultiply44((float (*) [4])local_d0,XYZtosRGB,finalMatrix);
+  (*finalMatrix)[0] = (*finalMatrix)[0] + 0.00048828125;
   floor();
-  (*param_1)[0] = (float)extraout_ST0 / 1024.0;
-  (*param_1)[1] = (*param_1)[1] + 0.00048828125;
+  (*finalMatrix)[0] = (float)extraout_ST0 / 1024.0;
+  (*finalMatrix)[1] = (*finalMatrix)[1] + 0.00048828125;
   floor();
-  (*param_1)[1] = (float)extraout_ST0_00 / 1024.0;
-  (*param_1)[2] = (*param_1)[2] + 0.00048828125;
+  (*finalMatrix)[1] = (float)extraout_ST0_00 / 1024.0;
+  (*finalMatrix)[2] = (*finalMatrix)[2] + 0.00048828125;
   floor();
-  (*param_1)[2] = (float)extraout_ST0_01 / 1024.0;
-  param_1[1][0] = param_1[1][0] + 0.00048828125;
+  (*finalMatrix)[2] = (float)extraout_ST0_01 / 1024.0;
+  finalMatrix[1][0] = finalMatrix[1][0] + 0.00048828125;
   floor();
-  param_1[1][0] = (float)extraout_ST0_02 / 1024.0;
-  param_1[1][1] = param_1[1][1] + 0.00048828125;
+  finalMatrix[1][0] = (float)extraout_ST0_02 / 1024.0;
+  finalMatrix[1][1] = finalMatrix[1][1] + 0.00048828125;
   floor();
-  param_1[1][1] = (float)extraout_ST0_03 / 1024.0;
-  param_1[1][2] = param_1[1][2] + 0.00048828125;
+  finalMatrix[1][1] = (float)extraout_ST0_03 / 1024.0;
+  finalMatrix[1][2] = finalMatrix[1][2] + 0.00048828125;
   floor();
-  param_1[1][2] = (float)extraout_ST0_04 / 1024.0;
-  param_1[2][0] = param_1[2][0] + 0.00048828125;
+  finalMatrix[1][2] = (float)extraout_ST0_04 / 1024.0;
+  finalMatrix[2][0] = finalMatrix[2][0] + 0.00048828125;
   floor();
-  param_1[2][0] = (float)extraout_ST0_05 / 1024.0;
-  param_1[2][1] = param_1[2][1] + 0.00048828125;
+  finalMatrix[2][0] = (float)extraout_ST0_05 / 1024.0;
+  finalMatrix[2][1] = finalMatrix[2][1] + 0.00048828125;
   floor();
-  param_1[2][1] = (float)extraout_ST0_06 / 1024.0;
-  param_1[2][2] = param_1[2][2] + 0.00048828125;
+  finalMatrix[2][1] = (float)extraout_ST0_06 / 1024.0;
+  finalMatrix[2][2] = finalMatrix[2][2] + 0.00048828125;
   floor();
-  param_1[2][2] = (float)extraout_ST0_07 / 1024.0;
+  finalMatrix[2][2] = (float)extraout_ST0_07 / 1024.0;
   return;
 }
 
 
 // 007B1340  colorHueMatrix  (universal/com_math.cpp:4486)
 
-void __cdecl colorHueMatrix(float (*param_1) [4],float param_2)
+void __cdecl colorHueMatrix(float (*finalMatrix) [4],float hue)
 
 {
   float10 extraout_ST0;
@@ -4178,10 +4210,10 @@ void __cdecl colorHueMatrix(float (*param_1) [4],float param_2)
   local_5c = 0;
   local_58 = 0;
   local_54 = 0x3f800000;
-  dVar1 = (double)(param_2 * 0.0174532);
+  dVar1 = (double)(hue * 0.0174532);
   __libm_sse2_sin(in_stack_fffffe90);
   local_94 = (float)dVar1;
-  dVar1 = (double)(param_2 * 0.0174532);
+  dVar1 = (double)(hue * 0.0174532);
   __libm_sse2_cos(in_stack_fffffe90);
   local_e0 = (float)dVar1;
   local_dc = local_94;
@@ -4201,66 +4233,69 @@ void __cdecl colorHueMatrix(float (*param_1) [4],float param_2)
   local_cc = local_e0;
   local_98 = local_e0;
   MatrixMultiply44((float (*) [4])&local_50,(float (*) [4])&local_e0,(float (*) [4])local_120);
-  MatrixMultiply44((float (*) [4])local_120,(float (*) [4])&local_90,param_1);
-  (*param_1)[0] = (*param_1)[0] + 0.00048828125;
+  MatrixMultiply44((float (*) [4])local_120,(float (*) [4])&local_90,finalMatrix);
+  (*finalMatrix)[0] = (*finalMatrix)[0] + 0.00048828125;
   floor();
-  (*param_1)[0] = (float)extraout_ST0 / 1024.0;
-  (*param_1)[1] = (*param_1)[1] + 0.00048828125;
+  (*finalMatrix)[0] = (float)extraout_ST0 / 1024.0;
+  (*finalMatrix)[1] = (*finalMatrix)[1] + 0.00048828125;
   floor();
-  (*param_1)[1] = (float)extraout_ST0_00 / 1024.0;
-  (*param_1)[2] = (*param_1)[2] + 0.00048828125;
+  (*finalMatrix)[1] = (float)extraout_ST0_00 / 1024.0;
+  (*finalMatrix)[2] = (*finalMatrix)[2] + 0.00048828125;
   floor();
-  (*param_1)[2] = (float)extraout_ST0_01 / 1024.0;
-  param_1[1][0] = param_1[1][0] + 0.00048828125;
+  (*finalMatrix)[2] = (float)extraout_ST0_01 / 1024.0;
+  finalMatrix[1][0] = finalMatrix[1][0] + 0.00048828125;
   floor();
-  param_1[1][0] = (float)extraout_ST0_02 / 1024.0;
-  param_1[1][1] = param_1[1][1] + 0.00048828125;
+  finalMatrix[1][0] = (float)extraout_ST0_02 / 1024.0;
+  finalMatrix[1][1] = finalMatrix[1][1] + 0.00048828125;
   floor();
-  param_1[1][1] = (float)extraout_ST0_03 / 1024.0;
-  param_1[1][2] = param_1[1][2] + 0.00048828125;
+  finalMatrix[1][1] = (float)extraout_ST0_03 / 1024.0;
+  finalMatrix[1][2] = finalMatrix[1][2] + 0.00048828125;
   floor();
-  param_1[1][2] = (float)extraout_ST0_04 / 1024.0;
-  param_1[2][0] = param_1[2][0] + 0.00048828125;
+  finalMatrix[1][2] = (float)extraout_ST0_04 / 1024.0;
+  finalMatrix[2][0] = finalMatrix[2][0] + 0.00048828125;
   floor();
-  param_1[2][0] = (float)extraout_ST0_05 / 1024.0;
-  param_1[2][1] = param_1[2][1] + 0.00048828125;
+  finalMatrix[2][0] = (float)extraout_ST0_05 / 1024.0;
+  finalMatrix[2][1] = finalMatrix[2][1] + 0.00048828125;
   floor();
-  param_1[2][1] = (float)extraout_ST0_06 / 1024.0;
-  param_1[2][2] = param_1[2][2] + 0.00048828125;
+  finalMatrix[2][1] = (float)extraout_ST0_06 / 1024.0;
+  finalMatrix[2][2] = finalMatrix[2][2] + 0.00048828125;
   floor();
-  param_1[2][2] = (float)extraout_ST0_07 / 1024.0;
+  finalMatrix[2][2] = (float)extraout_ST0_07 / 1024.0;
   return;
 }
 
 
 // 007B1A00  colorSaturationMatrix  (universal/com_math.cpp:4524)
 
-void __cdecl colorSaturationMatrix(float (*param_1) [4],float param_2)
+void __cdecl colorSaturationMatrix(float (*finalMatrix) [4],float saturation)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
+  float r;
+  float g;
+  float b;
   
-  fVar1 = (1.0 - param_2) * 0.25;
-  fVar2 = (1.0 - param_2) * 0.5;
-  fVar3 = (1.0 - param_2) * 0.25;
-  (*param_1)[0] = fVar1 + param_2;
-  (*param_1)[1] = fVar1;
-  (*param_1)[2] = fVar1;
-  (*param_1)[3] = 0.0;
-  param_1[1][0] = fVar2;
-  param_1[1][1] = fVar2 + param_2;
-  param_1[1][2] = fVar2;
-  param_1[1][3] = 0.0;
-  param_1[2][0] = fVar3;
-  param_1[2][1] = fVar3;
-  param_1[2][2] = fVar3 + param_2;
-  param_1[3][3] = 0.0;
-  param_1[3][0] = 0.0;
-  param_1[3][1] = 0.0;
-  param_1[3][2] = 0.0;
-  param_1[3][3] = 1.0;
+  fVar1 = (1.0 - saturation) * 0.25;
+  fVar2 = (1.0 - saturation) * 0.5;
+  fVar3 = (1.0 - saturation) * 0.25;
+  (*finalMatrix)[0] = fVar1 + saturation;
+  (*finalMatrix)[1] = fVar1;
+  (*finalMatrix)[2] = fVar1;
+  (*finalMatrix)[3] = 0.0;
+  finalMatrix[1][0] = fVar2;
+  finalMatrix[1][1] = fVar2 + saturation;
+  finalMatrix[1][2] = fVar2;
+  finalMatrix[1][3] = 0.0;
+  finalMatrix[2][0] = fVar3;
+  finalMatrix[2][1] = fVar3;
+  finalMatrix[2][2] = fVar3 + saturation;
+  finalMatrix[3][3] = 0.0;
+  finalMatrix[3][0] = 0.0;
+  finalMatrix[3][1] = 0.0;
+  finalMatrix[3][2] = 0.0;
+  finalMatrix[3][3] = 1.0;
   return;
 }
 

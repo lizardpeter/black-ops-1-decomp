@@ -2,10 +2,10 @@
 
 // 00968A32  _heap_init  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/heapinit.c:167)
 
-int __cdecl _heap_init(int param_1)
+int __cdecl _heap_init(int mtflag)
 
 {
-  _crtheap = HeapCreate((uint)(param_1 == 0),0x1000,0);
+  _crtheap = HeapCreate((uint)(mtflag == 0),0x1000,0);
   if (_crtheap == (HANDLE)0x0) {
     return 0;
   }

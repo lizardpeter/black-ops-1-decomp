@@ -2,50 +2,50 @@
 
 // 00950B00  Snd_StreamBufferInit  (sound/snd_stream.cpp:185)
 
-void __cdecl Snd_StreamBufferInit(snd_buffer *param_1,char *param_2)
+void __cdecl Snd_StreamBufferInit(snd_buffer *buffer,char *data)
 
 {
-  memset((uchar *)param_1,'\0',0x118);
-  param_1->filename[0] = '\0';
-  param_1->data = param_2;
-  param_1->reference_count = 0;
-  param_1->file_size = 0;
+  memset((uchar *)buffer,'\0',0x118);
+  buffer->filename[0] = '\0';
+  buffer->data = data;
+  buffer->reference_count = 0;
+  buffer->file_size = 0;
   return;
 }
 
 
 // 00950B40  Snd_StreamReset  (sound/snd_stream.cpp:201)
 
-void __cdecl Snd_StreamReset(snd_stream *param_1)
+void __cdecl Snd_StreamReset(snd_stream *stream)
 
 {
   LONG local_1c [5];
-  uint local_8;
+  uint i;
   
-  tlAtomicMutex::Lock(&param_1->mutex);
-  param_1->filename[0] = '\0';
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    param_1->window_return[local_8] = (char *)0x0;
+  tlAtomicMutex::Lock(&stream->mutex);
+  stream->filename[0] = '\0';
+  for (i = 0; i < 3; i = i + 1) {
+    stream->window_return[i] = (char *)0x0;
   }
-  param_1->head = 0x830;
-  param_1->read = 0;
-  param_1->buffers[0] = (snd_buffer *)0x0;
-  param_1->buffers[1] = (snd_buffer *)0x0;
-  param_1->buffer_references[0] = 0;
-  param_1->buffer_references[1] = 0;
-  param_1->windows_in_use = 0;
-  param_1->looping = false;
-  param_1->error = false;
-  param_1->head_at_eof = false;
-  param_1->in_use = false;
-  param_1->have_header = false;
-  param_1->stream_length = 0;
-  (param_1->mutex).LockCount = (param_1->mutex).LockCount + -1;
-  if ((param_1->mutex).LockCount == 0) {
+  stream->head = 0x830;
+  stream->read = 0;
+  stream->buffers[0] = (snd_buffer *)0x0;
+  stream->buffers[1] = (snd_buffer *)0x0;
+  stream->buffer_references[0] = 0;
+  stream->buffer_references[1] = 0;
+  stream->windows_in_use = 0;
+  stream->looping = false;
+  stream->error = false;
+  stream->head_at_eof = false;
+  stream->in_use = false;
+  stream->have_header = false;
+  stream->stream_length = 0;
+  (stream->mutex).LockCount = (stream->mutex).LockCount + -1;
+  if ((stream->mutex).LockCount == 0) {
     local_1c[0] = 0;
     InterlockedExchange(local_1c,0);
-    *(undefined4 *)&(param_1->mutex).ThreadId = 0;
-    *(undefined4 *)((int)&(param_1->mutex).ThreadId + 4) = 0;
+    *(undefined4 *)&(stream->mutex).ThreadId = 0;
+    *(undefined4 *)((int)&(stream->mutex).ThreadId + 4) = 0;
   }
   return;
 }
@@ -60,8 +60,8 @@ void __cdecl Snd_StreamInit(void)
   code *pcVar2;
   snd_stream *psVar3;
   bool bVar4;
-  uint local_c;
-  uint local_8;
+  uint i_2;
+  uint i;
   
   bVar4 = Sys_IsMainThread();
   if (!bVar4) {
@@ -89,16 +89,16 @@ void __cdecl Snd_StreamInit(void)
     psVar3->filename[2] = '\0';
     psVar3->filename[3] = '\0';
   }
-  for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-    ptVar1 = &g_snd_streams[local_8].mutex;
+  for (i = 0; i < 10; i = i + 1) {
+    ptVar1 = &g_snd_streams[i].mutex;
     ptVar1->ThisPtr = ptVar1;
     *(undefined4 *)&ptVar1->ThreadId = 0;
     *(undefined4 *)((int)&ptVar1->ThreadId + 4) = 0;
     ptVar1->LockCount = 0;
-    Snd_StreamReset(g_snd_streams + local_8);
+    Snd_StreamReset(g_snd_streams + i);
   }
-  for (local_c = 0; local_c < 0x14; local_c = local_c + 1) {
-    Snd_StreamBufferInit(g_snd_buffers + local_c,g_snd_stream_buffer + local_c * 0x83000);
+  for (i_2 = 0; i_2 < 0x14; i_2 = i_2 + 1) {
+    Snd_StreamBufferInit(g_snd_buffers + i_2,g_snd_stream_buffer + i_2 * 0x83000);
   }
   g_snd_stream_time = 0;
   memset((uchar *)g_snd_stream_files,'\0',0xb40);
@@ -109,9 +109,11 @@ void __cdecl Snd_StreamInit(void)
 
 // 009514D0  test  (sound/snd_utils.h:242)
 
-void __thiscall scoped_performance_error::test(scoped_performance_error *this,char *param_1)
+void __thiscall scoped_performance_error::test(scoped_performance_error *this,char *__formal)
 
 {
+  float time;
+  
   tlPcGetTick();
   return;
 }
@@ -128,26 +130,26 @@ void __cdecl Snd_StreamFini(void)
   tlAtomicMutex *ptVar1;
   code *pcVar2;
   bool bVar3;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint i_3;
+  uint i_2;
+  uint i;
   
   if (g_snd_streams != (snd_stream *)0x0) {
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      if ((g_snd_streams[local_8].in_use != false) &&
+    for (i = 0; i < 10; i = i + 1) {
+      if ((g_snd_streams[i].in_use != false) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x125,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      ptVar1 = &g_snd_streams[local_8].mutex;
+      ptVar1 = &g_snd_streams[i].mutex;
       *(undefined4 *)&ptVar1->ThreadId = 0;
       *(undefined4 *)((int)&ptVar1->ThreadId + 4) = 0;
       ptVar1->ThisPtr = (tlAtomicMutex *)0x0;
     }
-    for (local_c = 0; local_c < 0x14; local_c = local_c + 1) {
-      if ((g_snd_buffers[local_c].reference_count != 0) &&
+    for (i_2 = 0; i_2 < 0x14; i_2 = i_2 + 1) {
+      if ((g_snd_buffers[i_2].reference_count != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",299,0,
                                    "%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -155,10 +157,10 @@ void __cdecl Snd_StreamFini(void)
         return;
       }
     }
-    for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {
-      if (g_snd_stream_files[local_10].handle != 0) {
-        Snd_FileClose(g_snd_stream_files + local_10);
-        g_snd_stream_files[local_10].handle = 0;
+    for (i_3 = 0; i_3 < 10; i_3 = i_3 + 1) {
+      if (g_snd_stream_files[i_3].handle != 0) {
+        Snd_FileClose(g_snd_stream_files + i_3);
+        g_snd_stream_files[i_3].handle = 0;
       }
     }
   }
@@ -174,22 +176,22 @@ void __cdecl SND_StreamCloseFiles(void)
   tlAtomicMutex *ptVar1;
   int iVar2;
   LONG local_24 [5];
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint i_3;
+  uint i_2;
+  uint i;
   
   iVar2 = SND_Active();
   if (iVar2 != 0) {
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      tlAtomicMutex::Lock(&g_snd_streams[local_8].mutex);
+    for (i = 0; i < 10; i = i + 1) {
+      tlAtomicMutex::Lock(&g_snd_streams[i].mutex);
     }
-    for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-      if (g_snd_stream_files[local_c].handle != 0) {
-        Snd_FileClose(g_snd_stream_files + local_c);
+    for (i_2 = 0; i_2 < 10; i_2 = i_2 + 1) {
+      if (g_snd_stream_files[i_2].handle != 0) {
+        Snd_FileClose(g_snd_stream_files + i_2);
       }
     }
-    for (local_10 = 0; local_10 < 10; local_10 = local_10 + 1) {
-      ptVar1 = &g_snd_streams[local_10].mutex;
+    for (i_3 = 0; i_3 < 10; i_3 = i_3 + 1) {
+      ptVar1 = &g_snd_streams[i_3].mutex;
       ptVar1->LockCount = ptVar1->LockCount + -1;
       if (ptVar1->LockCount == 0) {
         local_24[0] = 0;
@@ -209,7 +211,7 @@ void __cdecl SND_StreamCloseFiles(void)
 /* WARNING: Removing unreachable block (ram,0x009511a5) */
 /* WARNING: Removing unreachable block (ram,0x009511ca) */
 
-void __cdecl Snd_StreamOpen(uint param_1,char *param_2,bool param_3,uint param_4,char *param_5)
+void __cdecl Snd_StreamOpen(uint index,char *filename,bool looping,uint prime_size,char *prime_data)
 
 {
   code *pcVar1;
@@ -217,12 +219,12 @@ void __cdecl Snd_StreamOpen(uint param_1,char *param_2,bool param_3,uint param_4
   bool bVar3;
   tlAtomicMutex *ptVar4;
   LONG local_38 [5];
-  scoped_performance_error local_24;
-  snd_stream *local_8;
+  scoped_performance_error pe;
+  snd_stream *s;
   
-  local_24.threshold = 0.0003000000142492354;
-  local_24.what = "Snd_StreamOpen";
-  local_24.start = tlPcGetTick();
+  pe.threshold = 0.0003000000142492354;
+  pe.what = "Snd_StreamOpen";
+  pe.start = tlPcGetTick();
   if ((g_snd_streams == (snd_stream *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x15d,0,
                                "%s"), !bVar3)) {
@@ -230,89 +232,90 @@ void __cdecl Snd_StreamOpen(uint param_1,char *param_2,bool param_3,uint param_4
     (*pcVar1)();
     return;
   }
-  if ((9 < param_1) &&
+  if ((9 < index) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x15f,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = g_snd_streams + param_1;
-  if ((local_8->in_use != false) &&
+  s = g_snd_streams + index;
+  if ((s->in_use != false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x164,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_8->head != 0x830) &&
+  if ((s->head != 0x830) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x165,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_8->buffers[0] != (snd_buffer *)0x0) &&
+  if ((s->buffers[0] != (snd_buffer *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x166,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_8->buffers[1] != (snd_buffer *)0x0) &&
+  if ((s->buffers[1] != (snd_buffer *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x167,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_8->error != false) &&
+  if ((s->error != false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x168,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((param_4 == 0) || (param_5 == (char *)0x0)) && ((param_5 != (char *)0x0 || (param_4 != 0))))
-     && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x169,0
-                                  ,"%s"), !bVar3)) {
+  if ((((prime_size == 0) || (prime_data == (char *)0x0)) &&
+      ((prime_data != (char *)0x0 || (prime_size != 0)))) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x169,0,
+                               "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  tlAtomicMutex::Lock(&local_8->mutex);
-  strncpy((uchar *)local_8,(uchar *)param_2,0x104);
-  local_8->prime_size = param_4;
-  local_8->looping = param_3;
-  local_8->in_use = true;
-  local_8->prime_data = param_5;
-  if (local_8->prime_size != 0) {
-    if ((local_8->prime_size < 0x831) &&
+  tlAtomicMutex::Lock(&s->mutex);
+  strncpy((uchar *)s,(uchar *)filename,0x104);
+  s->prime_size = prime_size;
+  s->looping = looping;
+  s->in_use = true;
+  s->prime_data = prime_data;
+  if (s->prime_size != 0) {
+    if ((s->prime_size < 0x831) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x17f,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    Snd_StreamLoadHeader(local_8,local_8->prime_data,param_2,0);
-    if (local_8->error != false) {
-      local_8->error = false;
-      local_8->have_header = false;
-      local_8->prime_data = (char *)0x0;
-      local_8->prime_size = 0;
+    Snd_StreamLoadHeader(s,s->prime_data,filename,0);
+    if (s->error != false) {
+      s->error = false;
+      s->have_header = false;
+      s->prime_data = (char *)0x0;
+      s->prime_size = 0;
     }
   }
   Sys_WakeStream();
-  psVar2 = local_8;
-  ptVar4 = &local_8->mutex;
-  (local_8->mutex).LockCount = (local_8->mutex).LockCount + -1;
-  if ((local_8->mutex).LockCount == 0) {
+  psVar2 = s;
+  ptVar4 = &s->mutex;
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_38[0] = 0;
     InterlockedExchange(local_38,0);
     *(undefined4 *)&ptVar4->ThreadId = 0;
     *(undefined4 *)((int)&(psVar2->mutex).ThreadId + 4) = 0;
   }
-  scoped_performance_error::test(&local_24,"");
+  scoped_performance_error::test(&pe,"");
   return;
 }
 
@@ -323,7 +326,7 @@ void __cdecl Snd_StreamOpen(uint param_1,char *param_2,bool param_3,uint param_4
 /* WARNING: Removing unreachable block (ram,0x009515b5) */
 /* WARNING: Removing unreachable block (ram,0x009515da) */
 
-void __cdecl Snd_StreamClose(uint param_1)
+void __cdecl Snd_StreamClose(uint index)
 
 {
   code *pcVar1;
@@ -333,77 +336,75 @@ void __cdecl Snd_StreamClose(uint param_1)
   LONG local_40;
   int *local_3c;
   int *local_38;
-  scoped_performance_error local_24;
-  snd_stream *local_8;
+  scoped_performance_error pe;
+  snd_stream *s;
   
-  local_24.threshold = 0.0003000000142492354;
-  local_24.what = "Snd_StreamClose";
-  local_24.start = tlPcGetTick();
-  if ((9 < param_1) &&
+  pe.threshold = 0.0003000000142492354;
+  pe.what = "Snd_StreamClose";
+  pe.start = tlPcGetTick();
+  if ((9 < index) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x19c,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = g_snd_streams + param_1;
-  if ((local_8->in_use == false) &&
+  s = g_snd_streams + index;
+  if ((s->in_use == false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1a0,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  tlAtomicMutex::Lock(&local_8->mutex);
-  Snd_StreamReleaseProcess(param_1);
-  if ((local_8->windows_in_use != 0) &&
+  tlAtomicMutex::Lock(&s->mutex);
+  Snd_StreamReleaseProcess(index);
+  if ((s->windows_in_use != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1a6,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_8->buffers[0] != (snd_buffer *)0x0) {
-    local_38 = &local_8->buffers[0]->reference_count;
+  if (s->buffers[0] != (snd_buffer *)0x0) {
+    local_38 = &s->buffers[0]->reference_count;
     LOCK();
     *local_38 = *local_38 + -1;
     UNLOCK();
-    if (((local_8->buffers[0]->reference_count < 0) ||
-        (10 < (uint)local_8->buffers[0]->reference_count)) &&
+    if (((s->buffers[0]->reference_count < 0) || (10 < (uint)s->buffers[0]->reference_count)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1ab,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8->buffers[0] = (snd_buffer *)0x0;
+    s->buffers[0] = (snd_buffer *)0x0;
   }
-  if (local_8->buffers[1] != (snd_buffer *)0x0) {
-    local_3c = &local_8->buffers[1]->reference_count;
+  if (s->buffers[1] != (snd_buffer *)0x0) {
+    local_3c = &s->buffers[1]->reference_count;
     LOCK();
     *local_3c = *local_3c + -1;
     UNLOCK();
-    if (((local_8->buffers[1]->reference_count < 0) ||
-        (10 < (uint)local_8->buffers[1]->reference_count)) &&
+    if (((s->buffers[1]->reference_count < 0) || (10 < (uint)s->buffers[1]->reference_count)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1b2,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8->buffers[1] = (snd_buffer *)0x0;
+    s->buffers[1] = (snd_buffer *)0x0;
   }
-  Snd_StreamReset(local_8);
-  psVar2 = local_8;
-  ptVar4 = &local_8->mutex;
-  (local_8->mutex).LockCount = (local_8->mutex).LockCount + -1;
-  if ((local_8->mutex).LockCount == 0) {
+  Snd_StreamReset(s);
+  psVar2 = s;
+  ptVar4 = &s->mutex;
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_40 = 0;
     InterlockedExchange(&local_40,0);
     *(undefined4 *)&ptVar4->ThreadId = 0;
     *(undefined4 *)((int)&(psVar2->mutex).ThreadId + 4) = 0;
   }
-  scoped_performance_error::test(&local_24,"");
+  scoped_performance_error::test(&pe,"");
   return;
 }
 
@@ -413,7 +414,7 @@ void __cdecl Snd_StreamClose(uint param_1)
 /* WARNING: Removing unreachable block (ram,0x0095181e) */
 /* WARNING: Removing unreachable block (ram,0x00951843) */
 
-snd_stream_status __cdecl Snd_StreamStatus(uint param_1)
+snd_stream_status __cdecl Snd_StreamStatus(uint index)
 
 {
   code *pcVar1;
@@ -423,65 +424,65 @@ snd_stream_status __cdecl Snd_StreamStatus(uint param_1)
   tlAtomicMutex *ptVar5;
   LONG local_3c [5];
   snd_stream_status local_28;
-  scoped_performance_error local_24;
-  snd_stream_status local_c;
-  snd_stream *local_8;
+  scoped_performance_error pe;
+  snd_stream_status status;
+  snd_stream *s;
   
-  local_24.threshold = 0.0003000000142492354;
-  local_24.what = "Snd_StreamStatus";
-  local_24.start = tlPcGetTick();
-  if ((9 < param_1) &&
+  pe.threshold = 0.0003000000142492354;
+  pe.what = "Snd_StreamStatus";
+  pe.start = tlPcGetTick();
+  if ((9 < index) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1c3,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     sVar4 = (*pcVar1)();
     return sVar4;
   }
-  local_8 = g_snd_streams + param_1;
-  local_c = SND_STREAM_OK;
-  tlAtomicMutex::Lock(&local_8->mutex);
-  psVar2 = local_8;
-  if (local_8->in_use == false) {
-    local_c = SND_STREAM_UNUSED;
+  s = g_snd_streams + index;
+  status = SND_STREAM_OK;
+  tlAtomicMutex::Lock(&s->mutex);
+  psVar2 = s;
+  if (s->in_use == false) {
+    status = SND_STREAM_UNUSED;
   }
-  else if (local_8->error == false) {
-    if (local_8->head_at_eof == false) {
-      if (((local_8->buffers[0] == (snd_buffer *)0x0) && (local_8->buffers[1] == (snd_buffer *)0x0))
-         && ((local_8->prime_data == (char *)0x0 || (local_8->prime_size <= local_8->head)))) {
-        local_c = SND_STREAM_STARVING;
+  else if (s->error == false) {
+    if (s->head_at_eof == false) {
+      if (((s->buffers[0] == (snd_buffer *)0x0) && (s->buffers[1] == (snd_buffer *)0x0)) &&
+         ((s->prime_data == (char *)0x0 || (s->prime_size <= s->head)))) {
+        status = SND_STREAM_STARVING;
       }
     }
     else {
-      local_c = SND_STREAM_EOF;
+      status = SND_STREAM_EOF;
     }
   }
   else {
-    local_c = SND_STREAM_ERROR;
+    status = SND_STREAM_ERROR;
   }
-  ptVar5 = &local_8->mutex;
-  (local_8->mutex).LockCount = (local_8->mutex).LockCount + -1;
-  if ((local_8->mutex).LockCount == 0) {
+  ptVar5 = &s->mutex;
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_3c[0] = 0;
     InterlockedExchange(local_3c,0);
     *(undefined4 *)&ptVar5->ThreadId = 0;
     *(undefined4 *)((int)&(psVar2->mutex).ThreadId + 4) = 0;
   }
-  local_28 = local_c;
-  scoped_performance_error::test(&local_24,"");
+  local_28 = status;
+  scoped_performance_error::test(&pe,"");
   return local_28;
 }
 
 
 // 00951980  Snd_StreamGetHeader  (sound/snd_stream.cpp:505)
 
-snd_asset * __cdecl Snd_StreamGetHeader(uint param_1)
+snd_asset * __cdecl Snd_StreamGetHeader(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_asset *psVar3;
   
-  if (9 < param_1) {
+  if (9 < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1fa,0,"%s"
                             );
     if (!bVar2) {
@@ -490,7 +491,7 @@ snd_asset * __cdecl Snd_StreamGetHeader(uint param_1)
       return psVar3;
     }
   }
-  if (g_snd_streams[param_1].in_use == false) {
+  if (g_snd_streams[index].in_use == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x1fb,0,"%s"
                             );
     if (!bVar2) {
@@ -499,11 +500,11 @@ snd_asset * __cdecl Snd_StreamGetHeader(uint param_1)
       return psVar3;
     }
   }
-  if (g_snd_streams[param_1].have_header == false) {
+  if (g_snd_streams[index].have_header == false) {
     psVar3 = (snd_asset *)0x0;
   }
   else {
-    psVar3 = &g_snd_streams[param_1].header;
+    psVar3 = &g_snd_streams[index].header;
   }
   return psVar3;
 }
@@ -511,7 +512,7 @@ snd_asset * __cdecl Snd_StreamGetHeader(uint param_1)
 
 // 00951A30  Snd_StarvationError  (sound/snd_stream.cpp:522)
 
-void __cdecl Snd_StarvationError(snd_stream *param_1)
+void __cdecl Snd_StarvationError(snd_stream *stream)
 
 {
   Sys_WakeStream();
@@ -521,13 +522,13 @@ void __cdecl Snd_StarvationError(snd_stream *param_1)
 
 // 009526C0  Snd_StreamIsInBufferStrict  (sound/snd_stream.cpp:529)
 
-bool __cdecl Snd_StreamIsInBufferStrict(snd_buffer *param_1,uint param_2)
+bool __cdecl Snd_StreamIsInBufferStrict(snd_buffer *buffer,uint offset_in_file)
 
 {
   bool local_8;
   
-  if ((param_2 < param_1->offset_in_file) ||
-     (param_1->offset_in_file + param_1->data_size <= param_2)) {
+  if ((offset_in_file < buffer->offset_in_file) ||
+     (buffer->offset_in_file + buffer->data_size <= offset_in_file)) {
     local_8 = false;
   }
   else {
@@ -539,34 +540,38 @@ bool __cdecl Snd_StreamIsInBufferStrict(snd_buffer *param_1,uint param_2)
 
 // 00952700  Snd_StreamIsInBuffer  (sound/snd_stream.cpp:536)
 
-bool __cdecl Snd_StreamIsInBuffer(snd_buffer *param_1,uint param_2,uint param_3,bool param_4)
+bool __cdecl
+Snd_StreamIsInBuffer(snd_buffer *buffer,uint offset_in_file,uint stream_length,bool looping)
 
 {
   uint uVar1;
-  bool local_5;
+  uint eos;
+  bool result;
   
-  local_5 = Snd_StreamIsInBufferStrict(param_1,param_2);
-  if ((((param_4) && (!local_5)) && (0x106000 < param_3)) &&
-     ((uVar1 = param_3 - param_1->offset_in_file, uVar1 < 0x83000 && (param_2 < 0x83000 - uVar1))))
-  {
-    local_5 = true;
+  result = Snd_StreamIsInBufferStrict(buffer,offset_in_file);
+  if ((((looping) && (!result)) && (0x106000 < stream_length)) &&
+     ((uVar1 = stream_length - buffer->offset_in_file, uVar1 < 0x83000 &&
+      (offset_in_file < 0x83000 - uVar1)))) {
+    result = true;
   }
-  return local_5;
+  return result;
 }
 
 
 // 00952770  Snd_StreamGetWindow  (sound/snd_stream.cpp:555)
 
 void __cdecl
-Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,uint *param_5,
-                   char **param_6)
+Snd_StreamGetWindow(snd_buffer *buffer,uint offset_in_file,uint stream_length,bool looping,
+                   uint *size,char **data)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  uint eos;
+  uint offset_in_buffer;
   
-  bVar2 = Snd_StreamIsInBuffer(param_1,param_2,param_3,param_4);
+  bVar2 = Snd_StreamIsInBuffer(buffer,offset_in_file,stream_length,looping);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x22c,0,"%s"
                             );
@@ -576,7 +581,7 @@ Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,u
       return;
     }
   }
-  if (param_5 == (uint *)0x0) {
+  if (size == (uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x22d,0,"%s"
                             );
     if (!bVar2) {
@@ -585,7 +590,7 @@ Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,u
       return;
     }
   }
-  if (param_6 == (char **)0x0) {
+  if (data == (char **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x22e,0,"%s"
                             );
     if (!bVar2) {
@@ -594,14 +599,14 @@ Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,u
       return;
     }
   }
-  bVar2 = Snd_StreamIsInBufferStrict(param_1,param_2);
+  bVar2 = Snd_StreamIsInBufferStrict(buffer,offset_in_file);
   if (bVar2) {
-    iVar3 = param_2 - param_1->offset_in_file;
-    *param_6 = param_1->data + iVar3;
-    *param_5 = param_1->data_size - iVar3;
+    iVar3 = offset_in_file - buffer->offset_in_file;
+    *data = buffer->data + iVar3;
+    *size = buffer->data_size - iVar3;
   }
   else {
-    if (!param_4) {
+    if (!looping) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x23b,0,
                                "%s");
       if (!bVar2) {
@@ -610,8 +615,8 @@ Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,u
         return;
       }
     }
-    *param_6 = param_1->data + param_2 + (param_3 - param_1->offset_in_file) + -0x830;
-    if (param_1->data + 0x83000 <= *param_6) {
+    *data = buffer->data + offset_in_file + (stream_length - buffer->offset_in_file) + -0x830;
+    if (buffer->data + 0x83000 <= *data) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x23e,0,
                                "%s");
       if (!bVar2) {
@@ -620,10 +625,10 @@ Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,u
         return;
       }
     }
-    *param_5 = (uint)(param_1->data + (0x83000 - (int)*param_6));
+    *size = (uint)(buffer->data + (0x83000 - (int)*data));
   }
-  if (0x10600 < *param_5) {
-    *param_5 = 0x10600;
+  if (0x10600 < *size) {
+    *size = 0x10600;
   }
   return;
 }
@@ -634,7 +639,7 @@ Snd_StreamGetWindow(snd_buffer *param_1,uint param_2,uint param_3,bool param_4,u
 /* WARNING: Removing unreachable block (ram,0x00951a6e) */
 /* WARNING: Removing unreachable block (ram,0x00951a93) */
 
-uint __cdecl Snd_StreamGetFreeWindows(uint param_1)
+uint __cdecl Snd_StreamGetFreeWindows(uint index)
 
 {
   code *pcVar1;
@@ -644,22 +649,22 @@ uint __cdecl Snd_StreamGetFreeWindows(uint param_1)
   tlAtomicMutex *ptVar5;
   LONG local_3c [5];
   uint local_28;
-  scoped_performance_error local_24;
-  snd_stream *local_c;
-  uint local_8;
+  scoped_performance_error pe;
+  snd_stream *s;
+  uint count;
   
-  local_24.threshold = 9.999999747378752e-05;
-  local_24.what = "Snd_StreamGetFreeWindows";
-  local_24.start = tlPcGetTick();
-  if ((9 < param_1) &&
+  pe.threshold = 9.999999747378752e-05;
+  pe.what = "Snd_StreamGetFreeWindows";
+  pe.start = tlPcGetTick();
+  if ((9 < index) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x24d,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return uVar4;
   }
-  local_c = g_snd_streams + param_1;
-  if ((local_c->in_use == false) &&
+  s = g_snd_streams + index;
+  if ((s->in_use == false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x251,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -667,21 +672,21 @@ uint __cdecl Snd_StreamGetFreeWindows(uint param_1)
     return uVar4;
   }
   do {
-    bVar3 = tlAtomicMutex::TryLock(&local_c->mutex);
+    bVar3 = tlAtomicMutex::TryLock(&s->mutex);
   } while (!bVar3);
-  Snd_StreamReleaseProcess(param_1);
-  psVar2 = local_c;
-  local_8 = 3 - local_c->windows_in_use;
-  ptVar5 = &local_c->mutex;
-  (local_c->mutex).LockCount = (local_c->mutex).LockCount + -1;
-  if ((local_c->mutex).LockCount == 0) {
+  Snd_StreamReleaseProcess(index);
+  psVar2 = s;
+  count = 3 - s->windows_in_use;
+  ptVar5 = &s->mutex;
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_3c[0] = 0;
     InterlockedExchange(local_3c,0);
     *(undefined4 *)&ptVar5->ThreadId = 0;
     *(undefined4 *)((int)&(psVar2->mutex).ThreadId + 4) = 0;
   }
-  local_28 = local_8;
-  scoped_performance_error::test(&local_24,"");
+  local_28 = count;
+  scoped_performance_error::test(&pe,"");
   return local_28;
 }
 
@@ -694,8 +699,7 @@ uint __cdecl Snd_StreamGetFreeWindows(uint param_1)
 /* WARNING: Removing unreachable block (ram,0x0095252f) */
 /* WARNING: Removing unreachable block (ram,0x00952614) */
 
-snd_stream_status __cdecl
-Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
+snd_stream_status __cdecl Snd_StreamAcquireWindow(uint index,uint *size,uint *position,char **data)
 
 {
   code *pcVar1;
@@ -708,81 +712,78 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
   LONG local_60 [4];
   uint local_50;
   snd_stream_status local_30;
-  uint local_2c;
-  uint local_28;
-  scoped_performance_error local_24;
-  snd_stream_status local_c;
-  snd_stream *local_8;
+  uint tail_size;
+  uint base_size;
+  scoped_performance_error pe;
+  snd_stream_status status;
+  snd_stream *s;
   
-  local_24.threshold = 9.999999747378752e-05;
-  local_24.what = "Snd_StreamAcquireWindow";
-  local_24.start = tlPcGetTick();
-  if ((9 < param_1) &&
+  pe.threshold = 9.999999747378752e-05;
+  pe.what = "Snd_StreamAcquireWindow";
+  pe.start = tlPcGetTick();
+  if ((9 < index) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x267,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     sVar4 = (*pcVar1)();
     return sVar4;
   }
-  local_8 = g_snd_streams + param_1;
-  if ((local_8->in_use == false) &&
+  s = g_snd_streams + index;
+  if ((s->in_use == false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x26b,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     sVar4 = (*pcVar1)();
     return sVar4;
   }
-  local_c = SND_STREAM_OK;
+  status = SND_STREAM_OK;
   do {
-    bVar3 = tlAtomicMutex::TryLock(&local_8->mutex);
+    bVar3 = tlAtomicMutex::TryLock(&s->mutex);
   } while (!bVar3);
-  scoped_performance_error::test(&local_24,"lock");
-  Snd_StreamReleaseProcess(param_1);
-  *param_2 = 0;
-  *param_4 = (char *)0x0;
-  *param_3 = 0;
-  if (local_8->error == false) {
-    if (local_8->head_at_eof == false) {
-      if ((local_8->buffers[0] == (snd_buffer *)0x0) ||
-         (bVar3 = Snd_StreamIsInBufferStrict(local_8->buffers[0],local_8->head), !bVar3)) {
-        if ((local_8->buffers[1] == (snd_buffer *)0x0) ||
-           (bVar3 = Snd_StreamIsInBufferStrict(local_8->buffers[1],local_8->head), !bVar3)) {
-          if ((local_8->buffers[0] == (snd_buffer *)0x0) ||
-             (bVar3 = Snd_StreamIsInBuffer
-                                (local_8->buffers[0],local_8->head,local_8->stream_length,
-                                 local_8->looping), !bVar3)) {
-            if ((local_8->buffers[1] == (snd_buffer *)0x0) ||
-               (bVar3 = Snd_StreamIsInBuffer
-                                  (local_8->buffers[1],local_8->head,local_8->stream_length,
-                                   local_8->looping), !bVar3)) {
-              if ((local_8->prime_data == (char *)0x0) || (local_8->prime_size <= local_8->head)) {
-                Snd_StarvationError(local_8);
-                local_c = SND_STREAM_STARVING;
+  scoped_performance_error::test(&pe,"lock");
+  Snd_StreamReleaseProcess(index);
+  *size = 0;
+  *data = (char *)0x0;
+  *position = 0;
+  if (s->error == false) {
+    if (s->head_at_eof == false) {
+      if ((s->buffers[0] == (snd_buffer *)0x0) ||
+         (bVar3 = Snd_StreamIsInBufferStrict(s->buffers[0],s->head), !bVar3)) {
+        if ((s->buffers[1] == (snd_buffer *)0x0) ||
+           (bVar3 = Snd_StreamIsInBufferStrict(s->buffers[1],s->head), !bVar3)) {
+          if ((s->buffers[0] == (snd_buffer *)0x0) ||
+             (bVar3 = Snd_StreamIsInBuffer(s->buffers[0],s->head,s->stream_length,s->looping),
+             !bVar3)) {
+            if ((s->buffers[1] == (snd_buffer *)0x0) ||
+               (bVar3 = Snd_StreamIsInBuffer(s->buffers[1],s->head,s->stream_length,s->looping),
+               !bVar3)) {
+              if ((s->prime_data == (char *)0x0) || (s->prime_size <= s->head)) {
+                Snd_StarvationError(s);
+                status = SND_STREAM_STARVING;
               }
               else {
-                local_50 = local_8->prime_size - local_8->head;
+                local_50 = s->prime_size - s->head;
                 local_80 = local_50;
                 if (0x10600 < (int)local_50) {
                   local_80 = 0x10600;
                 }
-                *param_2 = local_80;
-                *param_4 = local_8->prime_data + local_8->head;
+                *size = local_80;
+                *data = s->prime_data + s->head;
                 LOCK();
-                local_8->windows_in_use = local_8->windows_in_use + 1;
+                s->windows_in_use = s->windows_in_use + 1;
                 UNLOCK();
               }
             }
             else {
-              *param_3 = local_8->head - 0x830;
-              Snd_StreamGetWindow(local_8->buffers[1],local_8->head,local_8->stream_length,
-                                  local_8->looping,param_2,param_4);
+              *position = s->head - 0x830;
+              Snd_StreamGetWindow(s->buffers[1],s->head,s->stream_length,s->looping,size,data);
               LOCK();
-              local_8->buffer_references[1] = local_8->buffer_references[1] + 1;
+              s->buffer_references[1] = s->buffer_references[1] + 1;
               UNLOCK();
               LOCK();
-              local_8->windows_in_use = local_8->windows_in_use + 1;
+              s->windows_in_use = s->windows_in_use + 1;
               UNLOCK();
-              if (((3 < local_8->windows_in_use) || (local_8->windows_in_use < 0)) &&
+              if (((3 < s->windows_in_use) || (s->windows_in_use < 0)) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp"
                                            ,0x2a0,0,"%s\n\t(s->windows_in_use) = %i"), !bVar3)) {
                 pcVar1 = (code *)swi(3);
@@ -792,16 +793,15 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
             }
           }
           else {
-            *param_3 = local_8->head - 0x830;
-            Snd_StreamGetWindow(local_8->buffers[0],local_8->head,local_8->stream_length,
-                                local_8->looping,param_2,param_4);
+            *position = s->head - 0x830;
+            Snd_StreamGetWindow(s->buffers[0],s->head,s->stream_length,s->looping,size,data);
             LOCK();
-            local_8->buffer_references[0] = local_8->buffer_references[0] + 1;
+            s->buffer_references[0] = s->buffer_references[0] + 1;
             UNLOCK();
             LOCK();
-            local_8->windows_in_use = local_8->windows_in_use + 1;
+            s->windows_in_use = s->windows_in_use + 1;
             UNLOCK();
-            if (((3 < local_8->windows_in_use) || (local_8->windows_in_use < 0)) &&
+            if (((3 < s->windows_in_use) || (s->windows_in_use < 0)) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
                                          0x298,0,"%s\n\t(s->windows_in_use) = %i"), !bVar3)) {
               pcVar1 = (code *)swi(3);
@@ -811,16 +811,15 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
           }
         }
         else {
-          *param_3 = local_8->head - 0x830;
-          Snd_StreamGetWindow(local_8->buffers[1],local_8->head,local_8->stream_length,
-                              local_8->looping,param_2,param_4);
+          *position = s->head - 0x830;
+          Snd_StreamGetWindow(s->buffers[1],s->head,s->stream_length,s->looping,size,data);
           LOCK();
-          local_8->buffer_references[1] = local_8->buffer_references[1] + 1;
+          s->buffer_references[1] = s->buffer_references[1] + 1;
           UNLOCK();
           LOCK();
-          local_8->windows_in_use = local_8->windows_in_use + 1;
+          s->windows_in_use = s->windows_in_use + 1;
           UNLOCK();
-          if (((3 < local_8->windows_in_use) || (local_8->windows_in_use < 0)) &&
+          if (((3 < s->windows_in_use) || (s->windows_in_use < 0)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
                                        0x290,0,"%s\n\t(s->windows_in_use) = %i"), !bVar3)) {
             pcVar1 = (code *)swi(3);
@@ -830,16 +829,15 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
         }
       }
       else {
-        *param_3 = local_8->head - 0x830;
-        Snd_StreamGetWindow(local_8->buffers[0],local_8->head,local_8->stream_length,
-                            local_8->looping,param_2,param_4);
+        *position = s->head - 0x830;
+        Snd_StreamGetWindow(s->buffers[0],s->head,s->stream_length,s->looping,size,data);
         LOCK();
-        local_8->buffer_references[0] = local_8->buffer_references[0] + 1;
+        s->buffer_references[0] = s->buffer_references[0] + 1;
         UNLOCK();
         LOCK();
-        local_8->windows_in_use = local_8->windows_in_use + 1;
+        s->windows_in_use = s->windows_in_use + 1;
         UNLOCK();
-        if (((3 < local_8->windows_in_use) || (local_8->windows_in_use < 0)) &&
+        if (((3 < s->windows_in_use) || (s->windows_in_use < 0)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
                                      0x288,0,"%s\n\t(s->windows_in_use) = %i"), !bVar3)) {
           pcVar1 = (code *)swi(3);
@@ -849,29 +847,29 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
       }
     }
     else {
-      local_c = SND_STREAM_EOF;
+      status = SND_STREAM_EOF;
     }
   }
   else {
-    local_c = SND_STREAM_ERROR;
+    status = SND_STREAM_ERROR;
   }
-  if (((local_8->have_header == false) &&
-      ((local_8->buffers[0] != (snd_buffer *)0x0 || (local_8->buffers[1] != (snd_buffer *)0x0)))) &&
+  if (((s->have_header == false) &&
+      ((s->buffers[0] != (snd_buffer *)0x0 || (s->buffers[1] != (snd_buffer *)0x0)))) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2b0,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     sVar4 = (*pcVar1)();
     return sVar4;
   }
-  if (((local_c == SND_STREAM_OK) && (local_8->have_header == false)) &&
+  if (((status == SND_STREAM_OK) && (s->have_header == false)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2b4,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     sVar4 = (*pcVar1)();
     return sVar4;
   }
-  if ((local_8->have_header != false) && (local_8->buffers[0] != (snd_buffer *)0x0)) {
-    iVar5 = _stricmp(local_8->filename,local_8->buffers[0]->filename);
+  if ((s->have_header != false) && (s->buffers[0] != (snd_buffer *)0x0)) {
+    iVar5 = _stricmp(s->filename,s->buffers[0]->filename);
     if ((iVar5 != 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2b9,0,
                                  "%s"), !bVar3)) {
@@ -879,16 +877,16 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
       sVar4 = (*pcVar1)();
       return sVar4;
     }
-    if (((local_8->buffers[0] != (snd_buffer *)0x0) &&
-        (iVar5 = _stricmp(local_8->filename,local_8->buffers[0]->filename), iVar5 != 0)) &&
+    if (((s->buffers[0] != (snd_buffer *)0x0) &&
+        (iVar5 = _stricmp(s->filename,s->buffers[0]->filename), iVar5 != 0)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",699,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       sVar4 = (*pcVar1)();
       return sVar4;
     }
-    if (local_8->looping == false) {
-      if (((local_8->header).data_size + 0x830 != local_8->buffers[0]->file_size) &&
+    if (s->looping == false) {
+      if (((s->header).data_size + 0x830 != s->buffers[0]->file_size) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2bf,
                                    0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -896,8 +894,8 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
         return sVar4;
       }
     }
-    else if ((local_8->header).data_size + 0x830 < 0x106001) {
-      if (((local_8->header).data_size + 0x830 != local_8->buffers[0]->file_size) &&
+    else if ((s->header).data_size + 0x830 < 0x106001) {
+      if (((s->header).data_size + 0x830 != s->buffers[0]->file_size) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2c3,
                                    0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -906,16 +904,16 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
       }
     }
     else {
-      if ((local_8->buffers[0]->file_size % 0x83000 != 0) &&
+      if ((s->buffers[0]->file_size % 0x83000 != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2c7,
                                    0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         sVar4 = (*pcVar1)();
         return sVar4;
       }
-      local_28 = (local_8->header).data_size + 0x830;
-      local_2c = (0x83000 - local_28 % 0x83000) % 0x83000;
-      if ((local_28 + local_2c != local_8->buffers[0]->file_size) &&
+      base_size = (s->header).data_size + 0x830;
+      tail_size = (0x83000 - base_size % 0x83000) % 0x83000;
+      if ((base_size + tail_size != s->buffers[0]->file_size) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2ca,
                                    0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -924,22 +922,22 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
       }
     }
   }
-  if (*param_2 != 0) {
-    local_8->head = local_8->head + *param_2;
-    if (local_8->stream_length <= local_8->head) {
-      if (local_8->looping == false) {
-        local_8->head_at_eof = true;
+  if (*size != 0) {
+    s->head = s->head + *size;
+    if (s->stream_length <= s->head) {
+      if (s->looping == false) {
+        s->head_at_eof = true;
       }
       else {
-        if (local_8->stream_length < local_8->head) {
-          *param_2 = *param_2 - (local_8->head - local_8->stream_length);
-          local_8->head = local_8->stream_length;
+        if (s->stream_length < s->head) {
+          *size = *size - (s->head - s->stream_length);
+          s->head = s->stream_length;
         }
-        local_8->head = (local_8->head + 0x830) - local_8->stream_length;
+        s->head = (s->head + 0x830) - s->stream_length;
         Sys_WakeStream();
       }
     }
-    if ((local_8->stream_length < local_8->head) &&
+    if ((s->stream_length < s->head) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x2ec,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
@@ -947,55 +945,55 @@ Snd_StreamAcquireWindow(uint param_1,uint *param_2,uint *param_3,char **param_4)
       return sVar4;
     }
   }
-  scoped_performance_error::test(&local_24,"data");
-  psVar2 = local_8;
-  ptVar6 = &local_8->mutex;
-  (local_8->mutex).LockCount = (local_8->mutex).LockCount + -1;
-  if ((local_8->mutex).LockCount == 0) {
+  scoped_performance_error::test(&pe,"data");
+  psVar2 = s;
+  ptVar6 = &s->mutex;
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_60[0] = 0;
     InterlockedExchange(local_60,0);
     *(undefined4 *)&ptVar6->ThreadId = 0;
     *(undefined4 *)((int)&(psVar2->mutex).ThreadId + 4) = 0;
   }
-  scoped_performance_error::test(&local_24,"unlock");
-  local_30 = local_c;
-  scoped_performance_error::test(&local_24,"");
+  scoped_performance_error::test(&pe,"unlock");
+  local_30 = status;
+  scoped_performance_error::test(&pe,"");
   return local_30;
 }
 
 
 // 00952920  Snd_StreamReleaseWindow  (sound/snd_stream.cpp:767)
 
-void __cdecl Snd_StreamReleaseWindow(uint param_1,char *param_2)
+void __cdecl Snd_StreamReleaseWindow(uint index,char *data)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint local_8;
+  uint i;
   
-  if ((9 < param_1) &&
+  if ((9 < index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x300,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (2 < local_8) {
+    if (2 < i) {
       Com_PrintError(9,"ran out of window return buffers\n");
       return;
     }
     LOCK();
-    pcVar3 = g_snd_streams[param_1].window_return[local_8];
+    pcVar3 = g_snd_streams[index].window_return[i];
     if (pcVar3 == (char *)0x0) {
-      g_snd_streams[param_1].window_return[local_8] = param_2;
+      g_snd_streams[index].window_return[i] = data;
       pcVar3 = (char *)0x0;
     }
     UNLOCK();
     if (pcVar3 == (char *)0x0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   Sys_WakeStream();
   return;
@@ -1006,7 +1004,7 @@ void __cdecl Snd_StreamReleaseWindow(uint param_1,char *param_2)
 
 /* WARNING: Removing unreachable block (ram,0x00952c46) */
 
-void __cdecl Snd_StreamReleaseWindowWork(uint param_1,char *param_2)
+void __cdecl Snd_StreamReleaseWindowWork(uint index,char *data)
 
 {
   code *pcVar1;
@@ -1014,9 +1012,11 @@ void __cdecl Snd_StreamReleaseWindowWork(uint param_1,char *param_2)
   bool bVar3;
   bool bVar4;
   int *piVar5;
-  uint local_10;
+  uint i;
+  bool valid;
+  snd_stream *s;
   
-  if ((9 < param_1) &&
+  if ((9 < index) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x311,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -1024,88 +1024,86 @@ void __cdecl Snd_StreamReleaseWindowWork(uint param_1,char *param_2)
     return;
   }
   psVar2 = g_snd_streams;
-  if (g_snd_streams[param_1].in_use != false) {
-    if ((g_snd_streams[param_1].in_use == false) &&
+  if (g_snd_streams[index].in_use != false) {
+    if ((g_snd_streams[index].in_use == false) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x317,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((3 < psVar2[param_1].buffer_references[0]) || (psVar2[param_1].buffer_references[0] < 0))
-       && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x319
-                                    ,0,"%s\n\t(s->buffer_references[0]) = %i"), !bVar3)) {
+    if (((3 < psVar2[index].buffer_references[0]) || (psVar2[index].buffer_references[0] < 0)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x319,0,
+                                 "%s\n\t(s->buffer_references[0]) = %i"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((3 < psVar2[param_1].buffer_references[1]) || (psVar2[param_1].buffer_references[1] < 0))
-       && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x31a
-                                    ,0,"%s\n\t(s->buffer_references[1]) = %i"), !bVar3)) {
+    if (((3 < psVar2[index].buffer_references[1]) || (psVar2[index].buffer_references[1] < 0)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x31a,0,
+                                 "%s\n\t(s->buffer_references[1]) = %i"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
     bVar3 = false;
-    if ((psVar2[param_1].prime_data < param_2) &&
-       (param_2 < psVar2[param_1].prime_data + psVar2[param_1].prime_size)) {
+    if ((psVar2[index].prime_data < data) &&
+       (data < psVar2[index].prime_data + psVar2[index].prime_size)) {
       LOCK();
-      psVar2[param_1].windows_in_use = psVar2[param_1].windows_in_use + -1;
+      psVar2[index].windows_in_use = psVar2[index].windows_in_use + -1;
       UNLOCK();
       Sys_WakeStream();
     }
     else {
-      for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-        if (((psVar2[param_1].buffers[local_10] != (snd_buffer *)0x0) &&
-            (psVar2[param_1].buffers[local_10]->data <= param_2)) &&
-           ((int)param_2 - (int)psVar2[param_1].buffers[local_10]->data < 0x83000)) {
+      for (i = 0; i < 2; i = i + 1) {
+        if (((psVar2[index].buffers[i] != (snd_buffer *)0x0) &&
+            (psVar2[index].buffers[i]->data <= data)) &&
+           ((int)data - (int)psVar2[index].buffers[i]->data < 0x83000)) {
           LOCK();
-          psVar2[param_1].buffer_references[local_10] =
-               psVar2[param_1].buffer_references[local_10] + -1;
+          psVar2[index].buffer_references[i] = psVar2[index].buffer_references[i] + -1;
           UNLOCK();
           LOCK();
-          psVar2[param_1].windows_in_use = psVar2[param_1].windows_in_use + -1;
+          psVar2[index].windows_in_use = psVar2[index].windows_in_use + -1;
           UNLOCK();
-          if (((3 < psVar2[param_1].windows_in_use) || (psVar2[param_1].windows_in_use < 0)) &&
+          if (((3 < psVar2[index].windows_in_use) || (psVar2[index].windows_in_use < 0)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
                                        0x333,0,"%s\n\t(s->windows_in_use) = %i"), !bVar3)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          if (((psVar2[param_1].buffer_references[local_10] == 0) &&
-              (0x106000 < psVar2[param_1].stream_length)) &&
-             (bVar3 = Snd_StreamIsInBufferStrict
-                                (psVar2[param_1].buffers[local_10],psVar2[param_1].head), !bVar3)) {
-            piVar5 = &psVar2[param_1].buffers[local_10]->reference_count;
+          if (((psVar2[index].buffer_references[i] == 0) && (0x106000 < psVar2[index].stream_length)
+              ) && (bVar3 = Snd_StreamIsInBufferStrict(psVar2[index].buffers[i],psVar2[index].head),
+                   !bVar3)) {
+            piVar5 = &psVar2[index].buffers[i]->reference_count;
             LOCK();
             *piVar5 = *piVar5 + -1;
             UNLOCK();
-            if (((psVar2[param_1].buffers[local_10]->reference_count < 0) ||
-                (10 < (uint)psVar2[param_1].buffers[local_10]->reference_count)) &&
+            if (((psVar2[index].buffers[i]->reference_count < 0) ||
+                (10 < (uint)psVar2[index].buffers[i]->reference_count)) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
                                          0x33a,0,"%s"), !bVar3)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            psVar2[param_1].buffers[local_10] = (snd_buffer *)0x0;
+            psVar2[index].buffers[i] = (snd_buffer *)0x0;
             Sys_WakeStream();
           }
           bVar3 = true;
           break;
         }
       }
-      if (((3 < psVar2[param_1].buffer_references[0]) || (psVar2[param_1].buffer_references[0] < 0))
-         && (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
-                                      0x344,0,"%s\n\t(s->buffer_references[0]) = %i"), !bVar4)) {
+      if (((3 < psVar2[index].buffer_references[0]) || (psVar2[index].buffer_references[0] < 0)) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x344,
+                                   0,"%s\n\t(s->buffer_references[0]) = %i"), !bVar4)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (((3 < psVar2[param_1].buffer_references[1]) || (psVar2[param_1].buffer_references[1] < 0))
-         && (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
-                                      0x345,0,"%s\n\t(s->buffer_references[1]) = %i"), !bVar4)) {
+      if (((3 < psVar2[index].buffer_references[1]) || (psVar2[index].buffer_references[1] < 0)) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x345,
+                                   0,"%s\n\t(s->buffer_references[1]) = %i"), !bVar4)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
@@ -1125,28 +1123,29 @@ void __cdecl Snd_StreamReleaseWindowWork(uint param_1,char *param_2)
 
 // 00952DC0  Snd_StreamReleaseProcess  (sound/snd_stream.cpp:845)
 
-void __cdecl Snd_StreamReleaseProcess(uint param_1)
+void __cdecl Snd_StreamReleaseProcess(uint index)
 
 {
-  char *pcVar1;
-  code *pcVar2;
-  bool bVar3;
-  uint local_8;
+  char *data_00;
+  code *pcVar1;
+  bool bVar2;
+  char *data;
+  uint i;
   
-  if (9 < param_1) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x34e,0,"%s"
+  if (9 < index) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x34e,0,"%s"
                             );
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    pcVar1 = g_snd_streams[param_1].window_return[local_8];
-    if (pcVar1 != (char *)0x0) {
-      g_snd_streams[param_1].window_return[local_8] = (char *)0x0;
-      Snd_StreamReleaseWindowWork(param_1,pcVar1);
+  for (i = 0; i < 3; i = i + 1) {
+    data_00 = g_snd_streams[index].window_return[i];
+    if (data_00 != (char *)0x0) {
+      g_snd_streams[index].window_return[i] = (char *)0x0;
+      Snd_StreamReleaseWindowWork(index,data_00);
     }
   }
   return;
@@ -1155,7 +1154,7 @@ void __cdecl Snd_StreamReleaseProcess(uint param_1)
 
 // 00952E60  Snd_StreamLoadHeader  (sound/snd_stream.cpp:956)
 
-void __cdecl Snd_StreamLoadHeader(snd_stream *param_1,char *param_2,char *param_3,uint param_4)
+void __cdecl Snd_StreamLoadHeader(snd_stream *s,char *data,char *filename,uint file_size)
 
 {
   code *pcVar1;
@@ -1163,9 +1162,9 @@ void __cdecl Snd_StreamLoadHeader(snd_stream *param_1,char *param_2,char *param_
   int iVar3;
   uint *puVar4;
   snd_asset *psVar5;
-  uint local_8;
+  uint size;
   
-  if (param_1->have_header != false) {
+  if (s->have_header != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x3bd,0,"%s"
                             );
     if (!bVar2) {
@@ -1174,19 +1173,18 @@ void __cdecl Snd_StreamLoadHeader(snd_stream *param_1,char *param_2,char *param_
       return;
     }
   }
-  puVar4 = (uint *)param_2;
-  psVar5 = &param_1->header;
+  puVar4 = (uint *)data;
+  psVar5 = &s->header;
   for (iVar3 = 0xe; iVar3 != 0; iVar3 = iVar3 + -1) {
     psVar5->version = *puVar4;
     puVar4 = puVar4 + 1;
     psVar5 = (snd_asset *)&psVar5->frame_count;
   }
-  (param_1->header).seek_table = (uint *)(param_2 + 0x38);
-  param_1->have_header = true;
-  if (param_1->looping ==
-      (((param_1->header).flags & SND_ASSET_FLAG_LOOPING) != SND_ASSET_FLAG_DEFAULT)) {
-    if ((param_1->header).version == 1) {
-      if ((param_1->header).header_size != 0x830) {
+  (s->header).seek_table = (uint *)(data + 0x38);
+  s->have_header = true;
+  if (s->looping == (((s->header).flags & SND_ASSET_FLAG_LOOPING) != SND_ASSET_FLAG_DEFAULT)) {
+    if ((s->header).version == 1) {
+      if ((s->header).header_size != 0x830) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x3d1,0,
                                  "%s");
         if (!bVar2) {
@@ -1195,26 +1193,26 @@ void __cdecl Snd_StreamLoadHeader(snd_stream *param_1,char *param_2,char *param_
           return;
         }
       }
-      local_8 = (param_1->header).data_size + 0x830;
-      if ((param_1->looping != false) && (0x106000 < (param_1->header).data_size)) {
-        local_8 = (0x83000 - local_8 % 0x83000) % 0x83000 + local_8;
+      size = (s->header).data_size + 0x830;
+      if ((s->looping != false) && (0x106000 < (s->header).data_size)) {
+        size = (0x83000 - size % 0x83000) % 0x83000 + size;
       }
-      if (((param_4 == 0) || (local_8 == param_4)) || (param_1->error != false)) {
-        param_1->stream_length = (param_1->header).data_size + 0x830;
+      if (((file_size == 0) || (size == file_size)) || (s->error != false)) {
+        s->stream_length = (s->header).data_size + 0x830;
       }
       else {
         Com_PrintError(9,"### Invalid file (incorrect length) %s\n");
-        param_1->error = true;
+        s->error = true;
       }
     }
     else {
       Com_PrintError(9,"### Invalid file (bad header) %s\n");
-      param_1->error = true;
+      s->error = true;
     }
   }
   else {
     Com_PrintError(9,"### Invalid file (incorrect loop) %s\n");
-    param_1->error = true;
+    s->error = true;
   }
   return;
 }
@@ -1222,116 +1220,112 @@ void __cdecl Snd_StreamLoadHeader(snd_stream *param_1,char *param_2,char *param_
 
 // 009536D0  Snd_StreamGetRequest  (sound/snd_stream.cpp:999)
 
-void __cdecl Snd_StreamGetRequest(snd_stream *param_1,snd_stream_request *param_2)
+void __cdecl Snd_StreamGetRequest(snd_stream *s,snd_stream_request *r)
 
 {
   uint local_74;
-  char local_70;
-  char local_6c;
+  bool local_70;
+  bool local_6c;
   uint local_68;
-  char local_64;
-  char local_60;
-  char local_5c;
+  bool local_64;
+  bool local_60;
+  bool local_5c;
   LONG local_54 [8];
-  scoped_performance_error local_34;
-  int local_18;
-  int local_14;
-  char local_f;
-  char local_e;
-  char local_d;
-  uint local_c;
-  char local_6;
-  char local_5;
+  scoped_performance_error pe;
+  int b1need;
+  int b0need;
+  bool need;
+  bool loaded1;
+  bool valid;
+  uint offset;
+  bool active;
+  bool loaded0;
   
-  tlAtomicMutex::Lock(&param_1->mutex);
-  Snd_StreamReleaseProcess(((int)param_1 - (int)g_snd_streams) / 400);
-  if ((param_1->in_use == false) || (param_1->error != false)) {
-    local_5c = '\0';
+  tlAtomicMutex::Lock(&s->mutex);
+  Snd_StreamReleaseProcess(((int)s - (int)g_snd_streams) / 400);
+  if ((s->in_use == false) || (s->error != false)) {
+    local_5c = false;
   }
   else {
-    local_5c = '\x01';
+    local_5c = true;
   }
-  local_6 = local_5c;
-  if ((param_1->buffers[0] == (snd_buffer *)0x0) || (param_1->buffers[1] == (snd_buffer *)0x0)) {
-    local_60 = '\x01';
-  }
-  else {
-    local_60 = '\0';
-  }
-  local_f = local_60;
-  if (((param_1->read < param_1->stream_length) || (param_1->stream_length == 0)) ||
-     (param_1->looping != false)) {
-    local_64 = '\x01';
+  active = local_5c;
+  if ((s->buffers[0] == (snd_buffer *)0x0) || (s->buffers[1] == (snd_buffer *)0x0)) {
+    local_60 = true;
   }
   else {
-    local_64 = '\0';
+    local_60 = false;
   }
-  local_d = local_64;
-  if (param_1->read < param_1->stream_length) {
-    local_68 = param_1->read;
+  need = local_60;
+  if (((s->read < s->stream_length) || (s->stream_length == 0)) || (s->looping != false)) {
+    local_64 = true;
+  }
+  else {
+    local_64 = false;
+  }
+  valid = local_64;
+  if (s->read < s->stream_length) {
+    local_68 = s->read;
   }
   else {
     local_68 = 0;
   }
-  local_c = local_68;
-  if ((param_1->buffers[0] == (snd_buffer *)0x0) ||
-     (param_1->buffers[0]->offset_in_file != local_68)) {
-    local_6c = '\0';
+  offset = local_68;
+  if ((s->buffers[0] == (snd_buffer *)0x0) || (s->buffers[0]->offset_in_file != local_68)) {
+    local_6c = false;
   }
   else {
-    local_6c = '\x01';
+    local_6c = true;
   }
-  local_5 = local_6c;
-  if ((param_1->buffers[1] == (snd_buffer *)0x0) ||
-     (param_1->buffers[1]->offset_in_file != local_68)) {
-    local_70 = '\0';
+  loaded0 = local_6c;
+  if ((s->buffers[1] == (snd_buffer *)0x0) || (s->buffers[1]->offset_in_file != local_68)) {
+    local_70 = false;
   }
   else {
-    local_70 = '\x01';
+    local_70 = true;
   }
-  local_e = local_70;
-  if ((((local_5c != '\0') && (local_60 != '\0')) && (local_64 != '\0')) &&
-     ((local_6c == '\0' && (local_70 == '\0')))) {
-    local_34.threshold = 0.0003000000142492354;
-    local_34.what = "Snd_StreamSetRequest_if1";
-    local_34.start = tlPcGetTick();
-    strncpy((uchar *)param_2,(uchar *)param_1,0x104);
-    if (param_1->read < param_1->stream_length) {
-      local_74 = param_1->read;
+  loaded1 = local_70;
+  if ((((local_5c != false) && (local_60 != false)) && (local_64 != false)) &&
+     ((local_6c == false && (local_70 == false)))) {
+    pe.threshold = 0.0003000000142492354;
+    pe.what = "Snd_StreamSetRequest_if1";
+    pe.start = tlPcGetTick();
+    strncpy((uchar *)r,(uchar *)s,0x104);
+    if (s->read < s->stream_length) {
+      local_74 = s->read;
     }
     else {
       local_74 = 0;
     }
-    param_2->start_of_read = local_74;
-    param_2->buffer = (snd_buffer *)0x0;
-    param_2->need = 1;
-    local_14 = 1;
-    if ((param_1->buffers[0] != (snd_buffer *)0x0) &&
-       (param_1->buffers[0]->offset_in_file < param_1->head)) {
-      local_14 = param_1->head - param_1->buffers[0]->offset_in_file;
+    r->start_of_read = local_74;
+    r->buffer = (snd_buffer *)0x0;
+    r->need = 1;
+    b0need = 1;
+    if ((s->buffers[0] != (snd_buffer *)0x0) && (s->buffers[0]->offset_in_file < s->head)) {
+      b0need = s->head - s->buffers[0]->offset_in_file;
     }
-    if (param_2->need < local_14) {
-      param_2->need = local_14;
+    if (r->need < b0need) {
+      r->need = b0need;
     }
-    local_18 = 1;
-    if (param_1->buffers[1] != (snd_buffer *)0x0) {
-      local_18 = param_1->head - param_1->buffers[1]->offset_in_file;
+    b1need = 1;
+    if (s->buffers[1] != (snd_buffer *)0x0) {
+      b1need = s->head - s->buffers[1]->offset_in_file;
     }
-    if (param_2->need < local_18) {
-      param_2->need = local_18;
+    if (r->need < b1need) {
+      r->need = b1need;
     }
-    if (((param_1->buffers[0] == (snd_buffer *)0x0) && (param_1->buffers[1] == (snd_buffer *)0x0))
-       && (param_1->prime_data != (char *)0x0)) {
-      param_2->need = 0x106000;
+    if (((s->buffers[0] == (snd_buffer *)0x0) && (s->buffers[1] == (snd_buffer *)0x0)) &&
+       (s->prime_data != (char *)0x0)) {
+      r->need = 0x106000;
     }
-    scoped_performance_error::test(&local_34,"");
+    scoped_performance_error::test(&pe,"");
   }
-  (param_1->mutex).LockCount = (param_1->mutex).LockCount + -1;
-  if ((param_1->mutex).LockCount == 0) {
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_54[0] = 0;
     InterlockedExchange(local_54,0);
-    *(undefined4 *)&(param_1->mutex).ThreadId = 0;
-    *(undefined4 *)((int)&(param_1->mutex).ThreadId + 4) = 0;
+    *(undefined4 *)&(s->mutex).ThreadId = 0;
+    *(undefined4 *)((int)&(s->mutex).ThreadId + 4) = 0;
   }
   return;
 }
@@ -1339,7 +1333,7 @@ void __cdecl Snd_StreamGetRequest(snd_stream *param_1,snd_stream_request *param_
 
 // 00953A30  Snd_StreamSetRequest  (sound/snd_stream.cpp:1045)
 
-bool __cdecl Snd_StreamSetRequest(snd_stream *param_1,snd_stream_request *param_2)
+bool __cdecl Snd_StreamSetRequest(snd_stream *s,snd_stream_request *r)
 
 {
   code *pcVar1;
@@ -1349,17 +1343,17 @@ bool __cdecl Snd_StreamSetRequest(snd_stream *param_1,snd_stream_request *param_
   uint local_74;
   LONG local_60 [8];
   undefined1 local_3d;
-  scoped_performance_error local_3c;
-  scoped_performance_error local_24;
-  undefined1 local_7;
-  undefined1 local_6;
-  char local_5;
+  scoped_performance_error pe_2;
+  scoped_performance_error pe;
+  bool same_offset;
+  bool used_buffer;
+  bool same_file;
   
-  local_24.threshold = 0.0003000000142492354;
-  local_24.what = "Snd_StreamSetRequest";
-  local_24.start = tlPcGetTick();
-  tlAtomicMutex::Lock(&param_1->mutex);
-  if (param_2->buffer == (snd_buffer *)0x0) {
+  pe.threshold = 0.0003000000142492354;
+  pe.what = "Snd_StreamSetRequest";
+  pe.start = tlPcGetTick();
+  tlAtomicMutex::Lock(&s->mutex);
+  if (r->buffer == (snd_buffer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x41a,0,"%s"
                             );
     if (!bVar2) {
@@ -1368,22 +1362,22 @@ bool __cdecl Snd_StreamSetRequest(snd_stream *param_1,snd_stream_request *param_
       return (bool)uVar3;
     }
   }
-  local_6 = 0;
-  iVar4 = _stricmp(param_2->buffer->filename,param_1->filename);
-  local_5 = '\x01' - (iVar4 != 0);
-  if (param_1->read < param_1->stream_length) {
-    local_74 = param_1->read;
+  used_buffer = false;
+  iVar4 = _stricmp(r->buffer->filename,s->filename);
+  same_file = (bool)('\x01' - (iVar4 != 0));
+  if (s->read < s->stream_length) {
+    local_74 = s->read;
   }
   else {
     local_74 = 0;
   }
-  local_7 = param_2->start_of_read == local_74;
-  if ((local_5 != '\0') && ((bool)local_7)) {
-    local_6 = 1;
-    local_3c.threshold = 0.0003000000142492354;
-    local_3c.what = "Snd_StreamSetRequest_if1";
-    local_3c.start = tlPcGetTick();
-    if (param_1->in_use == false) {
+  same_offset = r->start_of_read == local_74;
+  if ((same_file != false) && (same_offset)) {
+    used_buffer = true;
+    pe_2.threshold = 0.0003000000142492354;
+    pe_2.what = "Snd_StreamSetRequest_if1";
+    pe_2.start = tlPcGetTick();
+    if (s->in_use == false) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x427,0,
                                "%s");
       if (!bVar2) {
@@ -1392,7 +1386,7 @@ bool __cdecl Snd_StreamSetRequest(snd_stream *param_1,snd_stream_request *param_
         return (bool)uVar3;
       }
     }
-    if ((param_1->buffers[0] != (snd_buffer *)0x0) && (param_1->buffers[1] != (snd_buffer *)0x0)) {
+    if ((s->buffers[0] != (snd_buffer *)0x0) && (s->buffers[1] != (snd_buffer *)0x0)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x429,0,
                                "%s");
       if (!bVar2) {
@@ -1401,36 +1395,34 @@ bool __cdecl Snd_StreamSetRequest(snd_stream *param_1,snd_stream_request *param_
         return (bool)uVar3;
       }
     }
-    if (param_1->buffers[0] == (snd_buffer *)0x0) {
-      param_1->buffers[0] = param_2->buffer;
+    if (s->buffers[0] == (snd_buffer *)0x0) {
+      s->buffers[0] = r->buffer;
     }
     else {
-      param_1->buffers[1] = param_2->buffer;
+      s->buffers[1] = r->buffer;
     }
-    param_1->read = param_2->buffer->offset_in_file + param_2->buffer->data_size;
-    if ((param_1->have_header == false) && (param_1->prime_size == 0)) {
-      Snd_StreamLoadHeader
-                (param_1,param_2->buffer->data,param_2->buffer->filename,param_2->buffer->file_size)
-      ;
+    s->read = r->buffer->offset_in_file + r->buffer->data_size;
+    if ((s->have_header == false) && (s->prime_size == 0)) {
+      Snd_StreamLoadHeader(s,r->buffer->data,r->buffer->filename,r->buffer->file_size);
     }
-    scoped_performance_error::test(&local_3c,"");
+    scoped_performance_error::test(&pe_2,"");
   }
-  (param_1->mutex).LockCount = (param_1->mutex).LockCount + -1;
-  if ((param_1->mutex).LockCount == 0) {
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_60[0] = 0;
     InterlockedExchange(local_60,0);
-    *(undefined4 *)&(param_1->mutex).ThreadId = 0;
-    *(undefined4 *)((int)&(param_1->mutex).ThreadId + 4) = 0;
+    *(undefined4 *)&(s->mutex).ThreadId = 0;
+    *(undefined4 *)((int)&(s->mutex).ThreadId + 4) = 0;
   }
-  local_3d = local_6;
-  scoped_performance_error::test(&local_24,"");
+  local_3d = used_buffer;
+  scoped_performance_error::test(&pe,"");
   return (bool)local_3d;
 }
 
 
 // 00953020  Snd_StreamSetError  (sound/snd_stream.cpp:1087)
 
-void __cdecl Snd_StreamSetError(snd_stream *param_1,snd_stream_request *param_2)
+void __cdecl Snd_StreamSetError(snd_stream *s,snd_stream_request *r)
 
 {
   code *pcVar1;
@@ -1438,11 +1430,11 @@ void __cdecl Snd_StreamSetError(snd_stream *param_1,snd_stream_request *param_2)
   int iVar3;
   uint local_24;
   LONG local_1c [5];
-  undefined1 local_6;
-  char local_5;
+  bool same_offset;
+  bool same_file;
   
-  tlAtomicMutex::Lock(&param_1->mutex);
-  if (param_2->buffer != (snd_buffer *)0x0) {
+  tlAtomicMutex::Lock(&s->mutex);
+  if (r->buffer != (snd_buffer *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x442,0,"%s"
                             );
     if (!bVar2) {
@@ -1451,24 +1443,24 @@ void __cdecl Snd_StreamSetError(snd_stream *param_1,snd_stream_request *param_2)
       return;
     }
   }
-  iVar3 = _stricmp(param_2->filename,param_1->filename);
-  local_5 = '\x01' - (iVar3 != 0);
-  if (param_1->read < param_1->stream_length) {
-    local_24 = param_1->read;
+  iVar3 = _stricmp(r->filename,s->filename);
+  same_file = (bool)('\x01' - (iVar3 != 0));
+  if (s->read < s->stream_length) {
+    local_24 = s->read;
   }
   else {
     local_24 = 0;
   }
-  local_6 = param_2->start_of_read == local_24;
-  if ((local_5 != '\0') && ((bool)local_6)) {
-    param_1->error = true;
+  same_offset = r->start_of_read == local_24;
+  if ((same_file != false) && (same_offset)) {
+    s->error = true;
   }
-  (param_1->mutex).LockCount = (param_1->mutex).LockCount + -1;
-  if ((param_1->mutex).LockCount == 0) {
+  (s->mutex).LockCount = (s->mutex).LockCount + -1;
+  if ((s->mutex).LockCount == 0) {
     local_1c[0] = 0;
     InterlockedExchange(local_1c,0);
-    *(undefined4 *)&(param_1->mutex).ThreadId = 0;
-    *(undefined4 *)((int)&(param_1->mutex).ThreadId + 4) = 0;
+    *(undefined4 *)&(s->mutex).ThreadId = 0;
+    *(undefined4 *)((int)&(s->mutex).ThreadId + 4) = 0;
   }
   return;
 }
@@ -1476,29 +1468,30 @@ void __cdecl Snd_StreamSetError(snd_stream *param_1,snd_stream_request *param_2)
 
 // 00953CC0  Snd_FindBuffer  (sound/snd_stream.cpp:1106)
 
-snd_buffer * __cdecl Snd_FindBuffer(char *param_1,uint param_2)
+snd_buffer * __cdecl Snd_FindBuffer(char *filename,uint offset)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   snd_buffer *psVar4;
-  uint local_20;
-  scoped_performance_error local_1c;
+  snd_buffer *buffer;
+  uint i;
+  scoped_performance_error pe;
   
-  local_1c.threshold = 0.0003000000142492354;
-  local_1c.what = "Snd_FindBuffer";
-  local_1c.start = tlPcGetTick();
-  local_20 = 0;
+  pe.threshold = 0.0003000000142492354;
+  pe.what = "Snd_FindBuffer";
+  pe.start = tlPcGetTick();
+  i = 0;
   while( true ) {
-    if (0x13 < local_20) {
-      scoped_performance_error::test(&local_1c,"");
+    if (0x13 < i) {
+      scoped_performance_error::test(&pe,"");
       return (snd_buffer *)0x0;
     }
-    psVar4 = g_snd_buffers + local_20;
-    iVar3 = _stricmp(param_1,psVar4->filename);
-    if ((iVar3 == 0) && (psVar4->offset_in_file == param_2)) break;
-    local_20 = local_20 + 1;
+    psVar4 = g_snd_buffers + i;
+    iVar3 = _stricmp(filename,psVar4->filename);
+    if ((iVar3 == 0) && (psVar4->offset_in_file == offset)) break;
+    i = i + 1;
   }
   if ((psVar4->file_size == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x45b,0,
@@ -1517,7 +1510,7 @@ snd_buffer * __cdecl Snd_FindBuffer(char *param_1,uint param_2)
     psVar4 = (snd_buffer *)(*pcVar1)();
     return psVar4;
   }
-  scoped_performance_error::test(&local_1c,"");
+  scoped_performance_error::test(&pe,"");
   return psVar4;
 }
 
@@ -1532,12 +1525,12 @@ void __thiscall tlAtomicMutex::Lock(tlAtomicMutex *this)
   int iVar3;
   LONG local_14;
   tlAtomicMutex *local_10;
-  DWORD local_c;
+  DWORD CurThread;
   undefined4 local_8;
   
-  local_c = GetCurrentThreadId();
+  CurThread = GetCurrentThreadId();
   local_8 = 0;
-  if (((DWORD)this->ThreadId == local_c) && (*(int *)((int)&this->ThreadId + 4) == 0)) {
+  if (((DWORD)this->ThreadId == CurThread) && (*(int *)((int)&this->ThreadId + 4) == 0)) {
     this->LockCount = this->LockCount + 1;
   }
   else {
@@ -1548,7 +1541,7 @@ void __thiscall tlAtomicMutex::Lock(tlAtomicMutex *this)
       LOCK();
       uVar1 = local_10->ThreadId;
       if (uVar1 == 0) {
-        local_10->ThreadId = CONCAT44(local_8,local_c);
+        local_10->ThreadId = CONCAT44(local_8,CurThread);
       }
       else {
         iVar3 = (int)(uVar1 >> 0x20);
@@ -1572,34 +1565,37 @@ void __thiscall tlAtomicMutex::Lock(tlAtomicMutex *this)
 /* WARNING: Removing unreachable block (ram,0x009531f4) */
 /* WARNING: Removing unreachable block (ram,0x009531eb) */
 
-bool __cdecl Snd_LoadBuffer(uint param_1,char *param_2,uint param_3)
+bool __cdecl Snd_LoadBuffer(uint streamIndex,char *filename,uint offset)
 
 {
   bool bVar1;
-  uint local_10;
-  snd_buffer *local_c;
-  uint local_8;
+  snd_buffer *b_2;
+  uint i_2;
+  snd_buffer *b;
+  uint i;
+  snd_buffer *free_buffer;
+  uint largest_file_size;
   
-  local_c = (snd_buffer *)0x0;
-  local_8 = 0;
-  for (local_10 = 0; local_10 < 0x14; local_10 = local_10 + 1) {
-    if (g_snd_buffers[local_10].reference_count == 0) {
-      if (g_snd_buffers[local_10].filename[0] == '\0') {
-        local_c = g_snd_buffers + local_10;
-        local_8 = 0xffffffff;
+  free_buffer = (snd_buffer *)0x0;
+  largest_file_size = 0;
+  for (i = 0; i < 0x14; i = i + 1) {
+    if (g_snd_buffers[i].reference_count == 0) {
+      if (g_snd_buffers[i].filename[0] == '\0') {
+        free_buffer = g_snd_buffers + i;
+        largest_file_size = 0xffffffff;
       }
-      if (local_8 < g_snd_buffers[local_10].file_size) {
-        local_c = g_snd_buffers + local_10;
-        local_8 = g_snd_buffers[local_10].file_size;
+      if (largest_file_size < g_snd_buffers[i].file_size) {
+        free_buffer = g_snd_buffers + i;
+        largest_file_size = g_snd_buffers[i].file_size;
       }
     }
   }
-  if (local_c == (snd_buffer *)0x0) {
+  if (free_buffer == (snd_buffer *)0x0) {
     Com_PrintError(9,"### Could not find a free streaming buffer\n");
     bVar1 = false;
   }
   else {
-    bVar1 = Snd_ReadBuffer(param_2,param_3,0x83000,local_c);
+    bVar1 = Snd_ReadBuffer(filename,offset,0x83000,free_buffer);
   }
   return bVar1;
 }
@@ -1616,12 +1612,12 @@ bool __thiscall tlAtomicMutex::TryLock(tlAtomicMutex *this)
   int iVar4;
   LONG local_14;
   tlAtomicMutex *local_10;
-  DWORD local_c;
+  DWORD CurThread;
   undefined4 local_8;
   
-  local_c = GetCurrentThreadId();
+  CurThread = GetCurrentThreadId();
   local_8 = 0;
-  if (((DWORD)this->ThreadId == local_c) && (*(int *)((int)&this->ThreadId + 4) == 0)) {
+  if (((DWORD)this->ThreadId == CurThread) && (*(int *)((int)&this->ThreadId + 4) == 0)) {
     this->LockCount = this->LockCount + 1;
     bVar2 = true;
   }
@@ -1632,7 +1628,7 @@ bool __thiscall tlAtomicMutex::TryLock(tlAtomicMutex *this)
     LOCK();
     uVar1 = local_10->ThreadId;
     if (uVar1 == 0) {
-      local_10->ThreadId = (ulonglong)local_c;
+      local_10->ThreadId = (ulonglong)CurThread;
     }
     else {
       iVar4 = (int)(uVar1 >> 0x20);
@@ -1669,15 +1665,17 @@ void __cdecl Snd_StreamUpdate(void)
 {
   code *pcVar1;
   bool bVar2;
-  snd_stream *psVar3;
-  snd_buffer *psVar4;
-  int *piVar5;
-  uint local_ac8;
-  uint local_ac0;
-  uint local_abc;
-  int local_ab4;
-  int local_ab0;
-  snd_stream_request local_aac [10];
+  snd_stream *s_00;
+  snd_buffer *psVar3;
+  int *piVar4;
+  uint i_2;
+  snd_stream *s;
+  uint i;
+  int greatest_need_index;
+  int request_count;
+  int greatest_need;
+  uint have_work;
+  snd_stream_request requests [10];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1685,26 +1683,26 @@ void __cdecl Snd_StreamUpdate(void)
     if (g_snd.init == 0) {
       return;
     }
-    local_ab0 = 0;
-    memset((uchar *)local_aac,'\0',0xaa0);
-    for (local_ac0 = 0; local_ac0 < 10; local_ac0 = local_ac0 + 1) {
-      psVar3 = g_snd_streams + local_ac0;
-      Snd_StreamGetRequest(psVar3,local_aac + local_ac0);
-      if (local_aac[local_ac0].filename[0] != '\0') {
-        psVar4 = Snd_FindBuffer(local_aac[local_ac0].filename,local_aac[local_ac0].start_of_read);
-        local_aac[local_ac0].buffer = psVar4;
-        if (local_aac[local_ac0].buffer == (snd_buffer *)0x0) {
-          local_ab0 = local_ab0 + 1;
+    have_work = 0;
+    memset((uchar *)requests,'\0',0xaa0);
+    for (i = 0; i < 10; i = i + 1) {
+      s_00 = g_snd_streams + i;
+      Snd_StreamGetRequest(s_00,requests + i);
+      if (requests[i].filename[0] != '\0') {
+        psVar3 = Snd_FindBuffer(requests[i].filename,requests[i].start_of_read);
+        requests[i].buffer = psVar3;
+        if (requests[i].buffer == (snd_buffer *)0x0) {
+          have_work = have_work + 1;
         }
         else {
-          bVar2 = Snd_StreamSetRequest(psVar3,local_aac + local_ac0);
+          bVar2 = Snd_StreamSetRequest(s_00,requests + i);
           if (!bVar2) {
-            piVar5 = &(local_aac[local_ac0].buffer)->reference_count;
+            piVar4 = &(requests[i].buffer)->reference_count;
             LOCK();
-            *piVar5 = *piVar5 + -1;
+            *piVar4 = *piVar4 + -1;
             UNLOCK();
-            if ((((local_aac[local_ac0].buffer)->reference_count < 0) ||
-                (10 < (uint)(local_aac[local_ac0].buffer)->reference_count)) &&
+            if ((((requests[i].buffer)->reference_count < 0) ||
+                (10 < (uint)(requests[i].buffer)->reference_count)) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",
                                          0x4b0,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
@@ -1712,28 +1710,28 @@ void __cdecl Snd_StreamUpdate(void)
               return;
             }
           }
-          memset((uchar *)(local_aac + local_ac0),'\0',0x110);
+          memset((uchar *)(requests + i),'\0',0x110);
         }
       }
     }
-    if (local_ab0 == 0) {
+    if (have_work == 0) {
       return;
     }
-    local_ab4 = -1;
-    local_abc = 0xffffffff;
-    for (local_ac8 = 0; local_ac8 < 10; local_ac8 = local_ac8 + 1) {
-      if ((local_aac[local_ac8].filename[0] != '\0') && (local_ab4 < local_aac[local_ac8].need)) {
-        local_ab4 = local_aac[local_ac8].need;
-        local_abc = local_ac8;
+    greatest_need = -1;
+    greatest_need_index = -1;
+    for (i_2 = 0; i_2 < 10; i_2 = i_2 + 1) {
+      if ((requests[i_2].filename[0] != '\0') && (greatest_need < requests[i_2].need)) {
+        greatest_need = requests[i_2].need;
+        greatest_need_index = i_2;
       }
     }
-    if (((int)local_abc < 0) &&
+    if ((greatest_need_index < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x4d2,0,
                                  "%s"), !bVar2)) break;
-    bVar2 = Snd_LoadBuffer(local_abc,local_aac[local_abc].filename,
-                           local_aac[local_abc].start_of_read);
+    bVar2 = Snd_LoadBuffer(greatest_need_index,requests[greatest_need_index].filename,
+                           requests[greatest_need_index].start_of_read);
     if (!bVar2) {
-      Snd_StreamSetError(g_snd_streams + local_abc,local_aac + local_abc);
+      Snd_StreamSetError(g_snd_streams + greatest_need_index,requests + greatest_need_index);
     }
   }
   pcVar1 = (code *)swi(3);
@@ -1744,21 +1742,21 @@ void __cdecl Snd_StreamUpdate(void)
 
 // 009541A0  Snd_FileOpen  (sound/snd_stream.cpp:1255)
 
-bool __cdecl Snd_FileOpen(char *param_1,snd_stream_file *param_2)
+bool __cdecl Snd_FileOpen(char *filename,snd_stream_file *file)
 
 {
   uint uVar1;
   bool bVar2;
   
-  param_2->shared = false;
-  *(undefined4 *)&param_2->base_offset = 0;
-  *(undefined4 *)((int)&param_2->base_offset + 4) = 0;
-  param_2->handle = 0;
-  FS_FOpenFileRead(param_1,&param_2->handle);
-  bVar2 = param_2->handle != 0;
+  file->shared = false;
+  *(undefined4 *)&file->base_offset = 0;
+  *(undefined4 *)((int)&file->base_offset + 4) = 0;
+  file->handle = 0;
+  FS_FOpenFileRead(filename,&file->handle);
+  bVar2 = file->handle != 0;
   if (bVar2) {
-    uVar1 = FS_filelength(param_2->handle);
-    param_2->size = uVar1;
+    uVar1 = FS_filelength(file->handle);
+    file->size = uVar1;
   }
   return bVar2;
 }
@@ -1766,36 +1764,36 @@ bool __cdecl Snd_FileOpen(char *param_1,snd_stream_file *param_2)
 
 // 00953E00  Snd_FileClose  (sound/snd_stream.cpp:1273)
 
-bool __cdecl Snd_FileClose(snd_stream_file *param_1)
+bool __cdecl Snd_FileClose(snd_stream_file *file)
 
 {
-  if (param_1->shared == false) {
-    FS_FCloseFile(param_1->handle);
+  if (file->shared == false) {
+    FS_FCloseFile(file->handle);
   }
-  param_1->handle = 0;
-  param_1->filename[0] = '\0';
-  param_1->age = 0;
-  param_1->shared = false;
-  *(undefined4 *)&param_1->base_offset = 0;
-  *(undefined4 *)((int)&param_1->base_offset + 4) = 0;
+  file->handle = 0;
+  file->filename[0] = '\0';
+  file->age = 0;
+  file->shared = false;
+  *(undefined4 *)&file->base_offset = 0;
+  *(undefined4 *)((int)&file->base_offset + 4) = 0;
   return true;
 }
 
 
 // 00954220  Snd_FileRead  (sound/snd_stream.cpp:1291)
 
-bool __cdecl Snd_FileRead(snd_stream_file *param_1,uint param_2,uint param_3,void *param_4)
+bool __cdecl Snd_FileRead(snd_stream_file *file,uint offset,uint size,void *data)
 
 {
   uint uVar1;
   
-  FS_Seek(param_1->handle,(int)param_1->base_offset + param_2,2);
-  uVar1 = FS_Read(param_4,param_3,param_1->handle);
-  if (uVar1 != param_3) {
+  FS_Seek(file->handle,(int)file->base_offset + offset,2);
+  uVar1 = FS_Read(data,size,file->handle);
+  if (uVar1 != size) {
     GetLastError();
     Com_PrintError(9,"### could not read file %s, error: %08.8X\n");
   }
-  return uVar1 == param_3;
+  return uVar1 == size;
 }
 
 
@@ -1803,7 +1801,7 @@ bool __cdecl Snd_FileRead(snd_stream_file *param_1,uint param_2,uint param_3,voi
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Snd_ReadBuffer(char *param_1,uint param_2,uint param_3,snd_buffer *param_4)
+bool __cdecl Snd_ReadBuffer(char *filename,uint start_offset,uint size,snd_buffer *buffer)
 
 {
   code *pcVar1;
@@ -1811,72 +1809,70 @@ bool __cdecl Snd_ReadBuffer(char *param_1,uint param_2,uint param_3,snd_buffer *
   undefined1 uVar3;
   int iVar4;
   uint local_13c;
-  int local_12c;
-  snd_stream_file *local_128;
-  char local_124 [260];
+  int i_2;
+  char *c;
+  char os_filename [260];
   uint local_20;
-  uint local_1c;
-  uint local_18;
-  int local_14;
-  snd_stream_file *local_10;
-  uint local_c;
-  snd_stream_file *local_8;
+  uint i;
+  uint read_size;
+  int oldest_age;
+  snd_stream_file *file;
+  int oldest;
+  snd_stream_file *free_file;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (snd_stream_file *)0x0;
-  local_10 = (snd_stream_file *)0x0;
-  local_c = 0;
-  local_14 = g_snd_stream_files[0].age;
-  for (local_1c = 0; local_1c < 10; local_1c = local_1c + 1) {
-    if (g_snd_stream_files[local_1c].handle == 0) {
-      local_8 = g_snd_stream_files + local_1c;
+  free_file = (snd_stream_file *)0x0;
+  file = (snd_stream_file *)0x0;
+  oldest = 0;
+  oldest_age = g_snd_stream_files[0].age;
+  for (i = 0; i < 10; i = i + 1) {
+    if (g_snd_stream_files[i].handle == 0) {
+      free_file = g_snd_stream_files + i;
     }
     else {
-      iVar4 = _stricmp(g_snd_stream_files[local_1c].filename,param_1);
+      iVar4 = _stricmp(g_snd_stream_files[i].filename,filename);
       if (iVar4 == 0) {
-        local_10 = g_snd_stream_files + local_1c;
+        file = g_snd_stream_files + i;
         break;
       }
     }
-    if (g_snd_stream_files[local_1c].age < local_14) {
-      local_c = local_1c;
-      local_14 = g_snd_stream_files[local_1c].age;
+    if (g_snd_stream_files[i].age < oldest_age) {
+      oldest = i;
+      oldest_age = g_snd_stream_files[i].age;
     }
   }
-  if ((local_10 == (snd_stream_file *)0x0) && (local_8 == (snd_stream_file *)0x0)) {
-    local_8 = g_snd_stream_files + local_c;
-    Snd_FileClose(local_8);
+  if ((file == (snd_stream_file *)0x0) && (free_file == (snd_stream_file *)0x0)) {
+    free_file = g_snd_stream_files + oldest;
+    Snd_FileClose(free_file);
   }
-  if (local_10 == (snd_stream_file *)0x0) {
-    I_strncpyz(local_8->filename,param_1,0x104);
-    for (local_128 = local_8; local_128->filename[0] != '\0';
-        local_128 = (snd_stream_file *)(local_128->filename + 1)) {
-      iVar4 = tolower((int)local_128->filename[0]);
-      local_128->filename[0] = (char)iVar4;
+  if (file == (snd_stream_file *)0x0) {
+    I_strncpyz(free_file->filename,filename,0x104);
+    for (c = free_file->filename; *c != '\0'; c = c + 1) {
+      iVar4 = tolower((int)*c);
+      *c = (char)iVar4;
     }
-    for (local_12c = 0; (local_10 == (snd_stream_file *)0x0 && (local_12c < 2));
-        local_12c = local_12c + 1) {
-      if (local_12c == 0) {
-        local_12c = 1;
+    for (i_2 = 0; (file == (snd_stream_file *)0x0 && (i_2 < 2)); i_2 = i_2 + 1) {
+      if (i_2 == 0) {
+        i_2 = 1;
 LAB_0095402a:
-        Com_sprintf(local_124,0x100,"%s");
+        Com_sprintf(os_filename,0x100,"%s");
       }
-      else if (local_12c == 1) goto LAB_0095402a;
-      bVar2 = Snd_FileOpen(local_124,local_8);
+      else if (i_2 == 1) goto LAB_0095402a;
+      bVar2 = Snd_FileOpen(os_filename,free_file);
       if (bVar2) {
-        local_10 = local_8;
+        file = free_file;
       }
     }
-    if (local_10 == (snd_stream_file *)0x0) {
+    if (file == (snd_stream_file *)0x0) {
       Com_PrintError(9,"### Could not open streaming sound %s\n");
       return false;
     }
   }
-  local_13c = local_10->size - param_2;
+  local_13c = file->size - start_offset;
   if (0x83000 < (int)local_13c) {
     local_13c = 0x83000;
   }
-  local_18 = local_13c;
+  read_size = local_13c;
   if ((local_13c == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_stream.cpp",0x582,0,
                                "%s"), !bVar2)) {
@@ -1884,17 +1880,17 @@ LAB_0095402a:
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  bVar2 = Snd_FileRead(local_10,param_2,local_18,param_4->data);
+  bVar2 = Snd_FileRead(file,start_offset,read_size,buffer->data);
   if (bVar2) {
     LOCK();
     UNLOCK();
     iVar4 = g_snd_stream_time + 1;
     g_snd_stream_time = g_snd_stream_time + 1;
-    local_10->age = iVar4;
-    strncpy((uchar *)param_4->filename,(uchar *)param_1,0x104);
-    param_4->offset_in_file = param_2;
-    param_4->data_size = local_18;
-    param_4->file_size = local_10->size;
+    file->age = iVar4;
+    strncpy((uchar *)buffer->filename,(uchar *)filename,0x104);
+    buffer->offset_in_file = start_offset;
+    buffer->data_size = read_size;
+    buffer->file_size = file->size;
   }
   return bVar2;
 }

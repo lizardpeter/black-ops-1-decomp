@@ -2,7 +2,7 @@
 
 // 00B638B0  alloc_funny_pointers  (jpeg-6/jdmainct.c:161)
 
-void __cdecl alloc_funny_pointers(jpeg_decompress_struct *param_1)
+void __cdecl alloc_funny_pointers(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_main_controller *pjVar1;
@@ -10,27 +10,29 @@ void __cdecl alloc_funny_pointers(jpeg_decompress_struct *param_1)
   _func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *p_Var3;
   int iVar4;
   void *pvVar5;
-  int local_10;
-  jpeg_component_info *local_c;
+  my_main_controller *main_;
+  int rgroup;
+  uchar **xbuf;
+  int ci;
+  jpeg_component_info *compptr;
+  int M;
   
-  pjVar1 = param_1->main;
-  iVar2 = param_1->min_DCT_scaled_size;
-  p_Var3 = (*param_1->mem->alloc_small)
-                     ((jpeg_common_struct *)param_1,1,param_1->num_components << 3);
+  pjVar1 = cinfo->main;
+  iVar2 = cinfo->min_DCT_scaled_size;
+  p_Var3 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,cinfo->num_components << 3);
   pjVar1[7].start_pass = p_Var3;
   pjVar1[7].process_data =
        (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)
-       (pjVar1[7].start_pass + param_1->num_components * 4);
-  local_10 = 0;
-  local_c = param_1->comp_info;
-  for (; local_10 < param_1->num_components; local_10 = local_10 + 1) {
-    iVar4 = (local_c->v_samp_factor * local_c->DCT_scaled_size) / param_1->min_DCT_scaled_size;
-    pvVar5 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,(iVar2 + 4) * iVar4 * 8);
+       (pjVar1[7].start_pass + cinfo->num_components * 4);
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    iVar4 = (compptr->v_samp_factor * compptr->DCT_scaled_size) / cinfo->min_DCT_scaled_size;
+    pvVar5 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,(iVar2 + 4) * iVar4 * 8);
     pvVar5 = (void *)((int)pvVar5 + iVar4 * 4);
-    *(void **)(pjVar1[7].start_pass + local_10 * 4) = pvVar5;
-    *(void **)(pjVar1[7].process_data + local_10 * 4) =
-         (void *)((int)pvVar5 + (iVar2 + 4) * iVar4 * 4);
-    local_c = local_c + 1;
+    *(void **)(pjVar1[7].start_pass + ci * 4) = pvVar5;
+    *(void **)(pjVar1[7].process_data + ci * 4) = (void *)((int)pvVar5 + (iVar2 + 4) * iVar4 * 4);
+    compptr = compptr + 1;
   }
   return;
 }
@@ -38,7 +40,7 @@ void __cdecl alloc_funny_pointers(jpeg_decompress_struct *param_1)
 
 // 00B63A90  make_funny_pointers  (jpeg-6/jdmainct.c:202)
 
-void __cdecl make_funny_pointers(jpeg_decompress_struct *param_1)
+void __cdecl make_funny_pointers(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_main_controller *pjVar1;
@@ -47,33 +49,39 @@ void __cdecl make_funny_pointers(jpeg_decompress_struct *param_1)
   int iVar4;
   _func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *p_Var5;
   int iVar6;
-  int local_14;
-  jpeg_component_info *local_10;
-  int local_c;
+  my_main_controller *main_;
+  uchar **xbuf0;
+  uchar **xbuf1;
+  int rgroup;
+  uchar **buf;
+  int ci;
+  jpeg_component_info *compptr;
+  int i;
+  int M;
   
-  pjVar1 = param_1->main;
-  iVar2 = param_1->min_DCT_scaled_size;
-  local_14 = 0;
-  local_10 = param_1->comp_info;
-  for (; local_14 < param_1->num_components; local_14 = local_14 + 1) {
-    iVar6 = (local_10->v_samp_factor * local_10->DCT_scaled_size) / param_1->min_DCT_scaled_size;
-    puVar3 = *(undefined4 **)(pjVar1[7].start_pass + local_14 * 4);
-    iVar4 = *(int *)(pjVar1[7].process_data + local_14 * 4);
-    p_Var5 = (&pjVar1[1].start_pass)[local_14];
-    for (local_c = 0; local_c < (iVar2 + 2) * iVar6; local_c = local_c + 1) {
-      *(undefined4 *)(iVar4 + local_c * 4) = *(undefined4 *)(p_Var5 + local_c * 4);
-      puVar3[local_c] = *(undefined4 *)(iVar4 + local_c * 4);
+  pjVar1 = cinfo->main;
+  iVar2 = cinfo->min_DCT_scaled_size;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    iVar6 = (compptr->v_samp_factor * compptr->DCT_scaled_size) / cinfo->min_DCT_scaled_size;
+    puVar3 = *(undefined4 **)(pjVar1[7].start_pass + ci * 4);
+    iVar4 = *(int *)(pjVar1[7].process_data + ci * 4);
+    p_Var5 = (&pjVar1[1].start_pass)[ci];
+    for (i = 0; i < (iVar2 + 2) * iVar6; i = i + 1) {
+      *(undefined4 *)(iVar4 + i * 4) = *(undefined4 *)(p_Var5 + i * 4);
+      puVar3[i] = *(undefined4 *)(iVar4 + i * 4);
     }
-    for (local_c = 0; local_c < iVar6 * 2; local_c = local_c + 1) {
-      *(undefined4 *)(iVar4 + ((iVar2 + -2) * iVar6 + local_c) * 4) =
-           *(undefined4 *)(p_Var5 + (iVar6 * iVar2 + local_c) * 4);
-      *(undefined4 *)(iVar4 + (iVar6 * iVar2 + local_c) * 4) =
-           *(undefined4 *)(p_Var5 + ((iVar2 + -2) * iVar6 + local_c) * 4);
+    for (i = 0; i < iVar6 * 2; i = i + 1) {
+      *(undefined4 *)(iVar4 + ((iVar2 + -2) * iVar6 + i) * 4) =
+           *(undefined4 *)(p_Var5 + (iVar6 * iVar2 + i) * 4);
+      *(undefined4 *)(iVar4 + (iVar6 * iVar2 + i) * 4) =
+           *(undefined4 *)(p_Var5 + ((iVar2 + -2) * iVar6 + i) * 4);
     }
-    for (local_c = 0; local_c < iVar6; local_c = local_c + 1) {
-      puVar3[local_c - iVar6] = *puVar3;
+    for (i = 0; i < iVar6; i = i + 1) {
+      puVar3[i - iVar6] = *puVar3;
     }
-    local_10 = local_10 + 1;
+    compptr = compptr + 1;
   }
   return;
 }
@@ -81,7 +89,7 @@ void __cdecl make_funny_pointers(jpeg_decompress_struct *param_1)
 
 // 00B63EA0  set_wraparound_pointers  (jpeg-6/jdmainct.c:242)
 
-void __cdecl set_wraparound_pointers(jpeg_decompress_struct *param_1)
+void __cdecl set_wraparound_pointers(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_main_controller *pjVar1;
@@ -89,29 +97,32 @@ void __cdecl set_wraparound_pointers(jpeg_decompress_struct *param_1)
   int iVar3;
   int iVar4;
   int iVar5;
-  int local_14;
-  jpeg_component_info *local_10;
-  int local_c;
+  my_main_controller *main_;
+  uchar **xbuf0;
+  uchar **xbuf1;
+  int rgroup;
+  int ci;
+  jpeg_component_info *compptr;
+  int i;
+  int M;
   
-  pjVar1 = param_1->main;
-  iVar2 = param_1->min_DCT_scaled_size;
-  local_14 = 0;
-  local_10 = param_1->comp_info;
-  for (; local_14 < param_1->num_components; local_14 = local_14 + 1) {
-    iVar5 = (local_10->v_samp_factor * local_10->DCT_scaled_size) / param_1->min_DCT_scaled_size;
-    iVar3 = *(int *)(pjVar1[7].start_pass + local_14 * 4);
-    iVar4 = *(int *)(pjVar1[7].process_data + local_14 * 4);
-    for (local_c = 0; local_c < iVar5; local_c = local_c + 1) {
-      *(undefined4 *)(iVar3 + (local_c - iVar5) * 4) =
-           *(undefined4 *)(iVar3 + ((iVar2 + 1) * iVar5 + local_c) * 4);
-      *(undefined4 *)(iVar4 + (local_c - iVar5) * 4) =
-           *(undefined4 *)(iVar4 + ((iVar2 + 1) * iVar5 + local_c) * 4);
-      *(undefined4 *)(iVar3 + ((iVar2 + 2) * iVar5 + local_c) * 4) =
-           *(undefined4 *)(iVar3 + local_c * 4);
-      *(undefined4 *)(iVar4 + ((iVar2 + 2) * iVar5 + local_c) * 4) =
-           *(undefined4 *)(iVar4 + local_c * 4);
+  pjVar1 = cinfo->main;
+  iVar2 = cinfo->min_DCT_scaled_size;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    iVar5 = (compptr->v_samp_factor * compptr->DCT_scaled_size) / cinfo->min_DCT_scaled_size;
+    iVar3 = *(int *)(pjVar1[7].start_pass + ci * 4);
+    iVar4 = *(int *)(pjVar1[7].process_data + ci * 4);
+    for (i = 0; i < iVar5; i = i + 1) {
+      *(undefined4 *)(iVar3 + (i - iVar5) * 4) =
+           *(undefined4 *)(iVar3 + ((iVar2 + 1) * iVar5 + i) * 4);
+      *(undefined4 *)(iVar4 + (i - iVar5) * 4) =
+           *(undefined4 *)(iVar4 + ((iVar2 + 1) * iVar5 + i) * 4);
+      *(undefined4 *)(iVar3 + ((iVar2 + 2) * iVar5 + i) * 4) = *(undefined4 *)(iVar3 + i * 4);
+      *(undefined4 *)(iVar4 + ((iVar2 + 2) * iVar5 + i) * 4) = *(undefined4 *)(iVar4 + i * 4);
     }
-    local_10 = local_10 + 1;
+    compptr = compptr + 1;
   }
   return;
 }
@@ -119,38 +130,42 @@ void __cdecl set_wraparound_pointers(jpeg_decompress_struct *param_1)
 
 // 00B63FD0  set_bottom_pointers  (jpeg-6/jdmainct.c:271)
 
-void __cdecl set_bottom_pointers(jpeg_decompress_struct *param_1)
+void __cdecl set_bottom_pointers(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_d_main_controller *pjVar1;
   int iVar2;
   int iVar3;
   uint uVar4;
-  int local_14;
-  jpeg_component_info *local_10;
-  int local_c;
-  uint local_8;
+  my_main_controller *main_;
+  int rgroup;
+  uchar **xbuf;
+  int iMCUheight;
+  int ci;
+  jpeg_component_info *compptr;
+  int i;
+  int rows_left;
   
-  pjVar1 = param_1->main;
-  local_14 = 0;
-  local_10 = param_1->comp_info;
-  for (; local_14 < param_1->num_components; local_14 = local_14 + 1) {
-    uVar4 = local_10->v_samp_factor * local_10->DCT_scaled_size;
-    iVar3 = (int)uVar4 / param_1->min_DCT_scaled_size;
-    local_8 = local_10->downsampled_height % uVar4;
-    if (local_8 == 0) {
-      local_8 = uVar4;
+  pjVar1 = cinfo->main;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    uVar4 = compptr->v_samp_factor * compptr->DCT_scaled_size;
+    iVar3 = (int)uVar4 / cinfo->min_DCT_scaled_size;
+    rows_left = compptr->downsampled_height % uVar4;
+    if (rows_left == 0) {
+      rows_left = uVar4;
     }
-    if (local_14 == 0) {
+    if (ci == 0) {
       pjVar1[9].start_pass =
            (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)
-           ((int)(local_8 - 1) / iVar3 + 1);
+           ((rows_left + -1) / iVar3 + 1);
     }
-    iVar2 = *(int *)((&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass] + local_14 * 4);
-    for (local_c = 0; local_c < iVar3 * 2; local_c = local_c + 1) {
-      *(undefined4 *)(iVar2 + (local_8 + local_c) * 4) = *(undefined4 *)(iVar2 + -4 + local_8 * 4);
+    iVar2 = *(int *)((&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass] + ci * 4);
+    for (i = 0; i < iVar3 * 2; i = i + 1) {
+      *(undefined4 *)(iVar2 + (rows_left + i) * 4) = *(undefined4 *)(iVar2 + -4 + rows_left * 4);
     }
-    local_10 = local_10 + 1;
+    compptr = compptr + 1;
   }
   return;
 }
@@ -158,19 +173,20 @@ void __cdecl set_bottom_pointers(jpeg_decompress_struct *param_1)
 
 // 00B639D0  start_pass_main  (jpeg-6/jdmainct.c:308)
 
-void __cdecl start_pass_main(jpeg_decompress_struct *param_1,J_BUF_MODE param_2)
+void __cdecl start_pass_main(jpeg_decompress_struct *cinfo,J_BUF_MODE pass_mode)
 
 {
   jpeg_d_main_controller *pjVar1;
+  my_main_controller *main_;
   
-  pjVar1 = param_1->main;
-  if (param_2 == JBUF_PASS_THRU) {
-    if (param_1->upsample->need_context_rows == '\0') {
+  pjVar1 = cinfo->main;
+  if (pass_mode == JBUF_PASS_THRU) {
+    if (cinfo->upsample->need_context_rows == '\0') {
       pjVar1->process_data = process_data_simple_main;
     }
     else {
       pjVar1->process_data = process_data_context_main;
-      make_funny_pointers(param_1);
+      make_funny_pointers(cinfo);
       pjVar1[8].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)0x0;
       pjVar1[8].process_data =
            (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x0;
@@ -181,12 +197,12 @@ void __cdecl start_pass_main(jpeg_decompress_struct *param_1,J_BUF_MODE param_2)
     pjVar1[6].process_data =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x0;
   }
-  else if (param_2 == JBUF_CRANK_DEST) {
+  else if (pass_mode == JBUF_CRANK_DEST) {
     pjVar1->process_data = process_data_crank_post;
   }
   else {
-    param_1->err->msg_code = 4;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 4;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
   return;
 }
@@ -195,26 +211,29 @@ void __cdecl start_pass_main(jpeg_decompress_struct *param_1,J_BUF_MODE param_2)
 // 00B63C10  process_data_simple_main  (jpeg-6/jdmainct.c:348)
 
 void __cdecl
-process_data_simple_main(jpeg_decompress_struct *param_1,uchar **param_2,uint *param_3,uint param_4)
+process_data_simple_main
+          (jpeg_decompress_struct *cinfo,uchar **output_buf,uint *out_row_ctr,uint out_rows_avail)
 
 {
   jpeg_d_main_controller *pjVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *p_Var2;
   int iVar3;
+  my_main_controller *main_;
+  uint rowgroups_avail;
   
-  pjVar1 = param_1->main;
+  pjVar1 = cinfo->main;
   if (*(char *)&pjVar1[6].start_pass == '\0') {
-    iVar3 = (*param_1->coef->decompress_data)(param_1,(uchar ***)(pjVar1 + 1));
+    iVar3 = (*cinfo->coef->decompress_data)(cinfo,(uchar ***)(pjVar1 + 1));
     if (iVar3 == 0) {
       return;
     }
     *(undefined1 *)&pjVar1[6].start_pass = 1;
   }
   p_Var2 = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)
-           param_1->min_DCT_scaled_size;
-  (*param_1->post->post_process_data)
-            (param_1,(uchar ***)(pjVar1 + 1),(uint *)&pjVar1[6].process_data,(uint)p_Var2,param_2,
-             param_3,param_4);
+           cinfo->min_DCT_scaled_size;
+  (*cinfo->post->post_process_data)
+            (cinfo,(uchar ***)(pjVar1 + 1),(uint *)&pjVar1[6].process_data,(uint)p_Var2,output_buf,
+             out_row_ctr,out_rows_avail);
   if (p_Var2 <= pjVar1[6].process_data) {
     *(undefined1 *)&pjVar1[6].start_pass = 0;
     pjVar1[6].process_data =
@@ -228,17 +247,18 @@ process_data_simple_main(jpeg_decompress_struct *param_1,uchar **param_2,uint *p
 
 void __cdecl
 process_data_context_main
-          (jpeg_decompress_struct *param_1,uchar **param_2,uint *param_3,uint param_4)
+          (jpeg_decompress_struct *cinfo,uchar **output_buf,uint *out_row_ctr,uint out_rows_avail)
 
 {
   jpeg_d_main_controller *pjVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *p_Var2;
   int iVar3;
+  my_main_controller *main_;
   
-  pjVar1 = param_1->main;
+  pjVar1 = cinfo->main;
   if (*(char *)&pjVar1[6].start_pass == '\0') {
-    iVar3 = (*param_1->coef->decompress_data)
-                      (param_1,(uchar ***)(&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass]);
+    iVar3 = (*cinfo->coef->decompress_data)
+                      (cinfo,(uchar ***)(&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass]);
     if (iVar3 == 0) {
       return;
     }
@@ -253,39 +273,41 @@ process_data_context_main
                   &DAT_00000002) {
       return;
     }
-    (*param_1->post->post_process_data)
-              (param_1,(uchar ***)(&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass],
-               (uint *)&pjVar1[6].process_data,(uint)pjVar1[9].start_pass,param_2,param_3,param_4);
+    (*cinfo->post->post_process_data)
+              (cinfo,(uchar ***)(&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass],
+               (uint *)&pjVar1[6].process_data,(uint)pjVar1[9].start_pass,output_buf,out_row_ctr,
+               out_rows_avail);
     if (pjVar1[6].process_data < pjVar1[9].start_pass) {
       return;
     }
     pjVar1[8].process_data =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x0;
-    if (param_4 <= *param_3) {
+    if (out_rows_avail <= *out_row_ctr) {
       return;
     }
   }
   pjVar1[6].process_data =
        (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)0x0;
   pjVar1[9].start_pass =
-       (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)
-       (param_1->min_DCT_scaled_size + -1);
+       (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)(cinfo->min_DCT_scaled_size + -1)
+  ;
   if (pjVar1[9].process_data ==
       (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)
-      param_1->total_iMCU_rows) {
-    set_bottom_pointers(param_1);
+      cinfo->total_iMCU_rows) {
+    set_bottom_pointers(cinfo);
   }
   pjVar1[8].process_data =
        (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)&DAT_00000001;
 LAB_00b63def:
-  (*param_1->post->post_process_data)
-            (param_1,(uchar ***)(&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass],
-             (uint *)&pjVar1[6].process_data,(uint)pjVar1[9].start_pass,param_2,param_3,param_4);
+  (*cinfo->post->post_process_data)
+            (cinfo,(uchar ***)(&pjVar1[7].start_pass)[(int)pjVar1[8].start_pass],
+             (uint *)&pjVar1[6].process_data,(uint)pjVar1[9].start_pass,output_buf,out_row_ctr,
+             out_rows_avail);
   if (pjVar1[9].start_pass <= pjVar1[6].process_data) {
     if (pjVar1[9].process_data ==
         (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)&DAT_00000001)
     {
-      set_wraparound_pointers(param_1);
+      set_wraparound_pointers(cinfo);
     }
     pjVar1[8].start_pass =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)
@@ -293,10 +315,10 @@ LAB_00b63def:
     *(undefined1 *)&pjVar1[6].start_pass = 0;
     pjVar1[6].process_data =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)
-         (param_1->min_DCT_scaled_size + 1);
+         (cinfo->min_DCT_scaled_size + 1);
     pjVar1[9].start_pass =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)
-         (param_1->min_DCT_scaled_size + 2);
+         (cinfo->min_DCT_scaled_size + 2);
     pjVar1[8].process_data =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uint_ptr_uint *)&DAT_00000002;
   }
@@ -307,54 +329,58 @@ LAB_00b63def:
 // 00B640C0  process_data_crank_post  (jpeg-6/jdmainct.c:462)
 
 void __cdecl
-process_data_crank_post(jpeg_decompress_struct *param_1,uchar **param_2,uint *param_3,uint param_4)
+process_data_crank_post
+          (jpeg_decompress_struct *cinfo,uchar **output_buf,uint *out_row_ctr,uint out_rows_avail)
 
 {
-  (*param_1->post->post_process_data)(param_1,(uchar ***)0x0,(uint *)0x0,0,param_2,param_3,param_4);
+  (*cinfo->post->post_process_data)
+            (cinfo,(uchar ***)0x0,(uint *)0x0,0,output_buf,out_row_ctr,out_rows_avail);
   return;
 }
 
 
 // 00B63760  jinit_d_main_controller  (jpeg-6/jdmainct.c:477)
 
-void __cdecl jinit_d_main_controller(jpeg_decompress_struct *param_1,uchar param_2)
+void __cdecl jinit_d_main_controller(jpeg_decompress_struct *cinfo,uchar need_full_buffer)
 
 {
   jpeg_d_main_controller *pjVar1;
   uchar **ppuVar2;
-  int local_14;
-  int local_c;
-  jpeg_component_info *local_8;
+  my_main_controller *main_;
+  int ngroups;
+  int rgroup;
+  int ci;
+  jpeg_component_info *compptr;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x50);
-  param_1->main = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x50);
+  cinfo->main = pjVar1;
   pjVar1->start_pass = start_pass_main;
-  if (param_2 != '\0') {
-    param_1->err->msg_code = 4;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (need_full_buffer != '\0') {
+    cinfo->err->msg_code = 4;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_1->upsample->need_context_rows == '\0') {
-    local_14 = param_1->min_DCT_scaled_size;
+  if (cinfo->upsample->need_context_rows == '\0') {
+    ngroups = cinfo->min_DCT_scaled_size;
   }
   else {
-    if (param_1->min_DCT_scaled_size < 2) {
-      param_1->err->msg_code = 0x2f;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->min_DCT_scaled_size < 2) {
+      cinfo->err->msg_code = 0x2f;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    alloc_funny_pointers(param_1);
-    local_14 = param_1->min_DCT_scaled_size + 2;
+    alloc_funny_pointers(cinfo);
+    ngroups = cinfo->min_DCT_scaled_size + 2;
   }
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    ppuVar2 = (*param_1->mem->alloc_sarray)
-                        ((jpeg_common_struct *)param_1,1,
-                         local_8->width_in_blocks * local_8->DCT_scaled_size,
-                         ((local_8->v_samp_factor * local_8->DCT_scaled_size) /
-                         param_1->min_DCT_scaled_size) * local_14);
-    (&pjVar1[1].start_pass)[local_c] =
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    ppuVar2 = (*cinfo->mem->alloc_sarray)
+                        ((jpeg_common_struct *)cinfo,1,
+                         compptr->width_in_blocks * compptr->DCT_scaled_size,
+                         ((compptr->v_samp_factor * compptr->DCT_scaled_size) /
+                         cinfo->min_DCT_scaled_size) * ngroups);
+    (&pjVar1[1].start_pass)[ci] =
          (_func___cdecl_void_jpeg_decompress_struct_ptr_J_BUF_MODE *)ppuVar2;
-    local_8 = local_8 + 1;
+    compptr = compptr + 1;
   }
   return;
 }

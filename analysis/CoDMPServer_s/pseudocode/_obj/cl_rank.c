@@ -68,7 +68,7 @@ int __cdecl CL_GetMaxXP(void)
 
 {
   code *pcVar1;
-  char *pcVar2;
+  char *nptr;
   int iStack_4;
   
   if (_DAT_04fad6b0 == 0) {
@@ -79,11 +79,11 @@ int __cdecl CL_GetMaxXP(void)
     (*pcVar1)("mp/rankTable.csv",&iStack_4);
     if ((((*(int *)(iStack_4 + 4) < 8) || (*(int *)(iStack_4 + 8) <= _DAT_00c8a588)) ||
         (_DAT_00c8a588 < 0)) ||
-       (pcVar2 = *(char **)(*(int *)(iStack_4 + 0xc) + 0x38 +
-                           *(int *)(iStack_4 + 4) * _DAT_00c8a588 * 8), pcVar2 == (char *)0x0)) {
-      pcVar2 = "";
+       (nptr = *(char **)(*(int *)(iStack_4 + 0xc) + 0x38 +
+                         *(int *)(iStack_4 + 4) * _DAT_00c8a588 * 8), nptr == (char *)0x0)) {
+      nptr = "";
     }
-    _DAT_04fad6b0 = atoi(pcVar2);
+    _DAT_04fad6b0 = atoi(nptr);
   }
   return _DAT_04fad6b0;
 }
@@ -98,8 +98,8 @@ int __cdecl CL_GetMaxPrestige(void)
 
 {
   code *pcVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   char *unaff_ESI;
   int iStack_4;
   
@@ -115,16 +115,16 @@ int __cdecl CL_GetMaxPrestige(void)
     Com_PrintError(0xd,"Unable to find the lookup table in the fastfile, aborting lookup\n");
   }
   else {
-    iVar3 = StringTable_LookupRowNumForValue((StringTable *)0x0,0xa3123c,unaff_ESI);
-    if ((((1 < *(int *)(iStack_4 + 4)) && (iVar3 < *(int *)(iStack_4 + 8))) && (-1 < iVar3)) &&
-       (pcVar2 = *(char **)(*(int *)(iStack_4 + 0xc) + 8 + *(int *)(iStack_4 + 4) * iVar3 * 8),
-       pcVar2 != (char *)0x0)) goto LAB_004fe1a5;
+    iVar2 = StringTable_LookupRowNumForValue((StringTable *)0x0,0xa3123c,unaff_ESI);
+    if ((((1 < *(int *)(iStack_4 + 4)) && (iVar2 < *(int *)(iStack_4 + 8))) && (-1 < iVar2)) &&
+       (nptr = *(char **)(*(int *)(iStack_4 + 0xc) + 8 + *(int *)(iStack_4 + 4) * iVar2 * 8),
+       nptr != (char *)0x0)) goto LAB_004fe1a5;
   }
-  pcVar2 = "";
+  nptr = "";
 LAB_004fe1a5:
-  iVar3 = atoi(pcVar2);
-  _DAT_04fad6b4 = iVar3;
-  return iVar3;
+  iVar2 = atoi(nptr);
+  _DAT_04fad6b4 = iVar2;
+  return iVar2;
 }
 
 

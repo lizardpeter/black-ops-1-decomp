@@ -2,12 +2,12 @@
 
 // 00979F20  _chsize_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/chsize.c:82)
 
-int __cdecl _chsize_nolock(int param_1,long64 param_2)
+int __cdecl _chsize_nolock(int filedes,long64 param_2)
 
 {
   int iVar1;
   HANDLE pvVar2;
-  LPVOID lpMem;
+  LPVOID buf;
   int *piVar3;
   int iVar4;
   uint uVar5;
@@ -23,14 +23,16 @@ int __cdecl _chsize_nolock(int param_1,long64 param_2)
   uint in_stack_00000008;
   DWORD DVar14;
   SIZE_T dwBytes;
-  uint local_14;
+  uint retval;
   uint local_10;
+  int oldmode;
+  char *bl;
   
-  local_14 = 0;
+  retval = 0;
   local_10 = 0;
-  uVar12 = _lseeki64_nolock(param_1,0x100000000,unaff_EDI);
+  uVar12 = _lseeki64_nolock(filedes,0x100000000,unaff_EDI);
   if (uVar12 == 0xffffffffffffffff) goto LAB_00979fa8;
-  lVar13 = _lseeki64_nolock(param_1,0x200000000,unaff_EDI);
+  lVar13 = _lseeki64_nolock(filedes,0x200000000,unaff_EDI);
   iVar4 = (int)((ulonglong)lVar13 >> 0x20);
   if (lVar13 == -1) goto LAB_00979fa8;
   uVar8 = in_stack_00000008 - (uint)lVar13;
@@ -40,13 +42,13 @@ int __cdecl _chsize_nolock(int param_1,long64 param_2)
   if ((iVar9 < 0) ||
      ((iVar9 == 0 || SBORROW4((int)param_2,iVar4) != SBORROW4(iVar1,uVar5) && (uVar8 == 0)))) {
     if ((iVar9 < 1) && (iVar9 < 0)) {
-      lVar13 = _lseeki64_nolock(param_1,param_2 & 0xffffffff,unaff_EDI);
+      lVar13 = _lseeki64_nolock(filedes,param_2 & 0xffffffff,unaff_EDI);
       if (lVar13 == -1) goto LAB_00979fa8;
-      pvVar2 = (HANDLE)_get_osfhandle(param_1);
+      pvVar2 = (HANDLE)_get_osfhandle(filedes);
       BVar7 = SetEndOfFile(pvVar2);
-      local_14 = (BVar7 != 0) - 1;
-      local_10 = (int)local_14 >> 0x1f;
-      if ((local_14 & local_10) == 0xffffffff) {
+      retval = (BVar7 != 0) - 1;
+      local_10 = (int)retval >> 0x1f;
+      if ((retval & local_10) == 0xffffffff) {
         piVar3 = _errno();
         *piVar3 = 0xd;
         puVar6 = __doserrno();
@@ -60,19 +62,19 @@ int __cdecl _chsize_nolock(int param_1,long64 param_2)
     dwBytes = 0x1000;
     DVar14 = 8;
     pvVar2 = GetProcessHeap();
-    lpMem = HeapAlloc(pvVar2,DVar14,dwBytes);
-    if (lpMem == (LPVOID)0x0) {
+    buf = HeapAlloc(pvVar2,DVar14,dwBytes);
+    if (buf == (LPVOID)0x0) {
       piVar3 = _errno();
       *piVar3 = 0xc;
       goto LAB_00979fa8;
     }
-    iVar4 = _setmode_nolock(param_1,0x8000);
+    iVar4 = _setmode_nolock(filedes,0x8000);
     while( true ) {
       uVar5 = uVar8;
       if ((-1 < iVar9) && ((0 < iVar9 || (0xfff < uVar8)))) {
         uVar5 = 0x1000;
       }
-      uVar5 = _write_nolock(param_1,lpMem,uVar5);
+      uVar5 = _write_nolock(filedes,buf,uVar5);
       if (uVar5 == 0xffffffff) break;
       bVar10 = uVar8 < uVar5;
       uVar8 = uVar8 - uVar5;
@@ -87,17 +89,17 @@ int __cdecl _chsize_nolock(int param_1,long64 param_2)
       piVar3 = _errno();
       *piVar3 = 0xd;
     }
-    local_14 = 0xffffffff;
+    retval = 0xffffffff;
     local_10 = 0xffffffff;
 LAB_00979ffa:
-    _setmode_nolock(param_1,iVar4);
+    _setmode_nolock(filedes,iVar4);
     DVar14 = 0;
     pvVar2 = GetProcessHeap();
-    HeapFree(pvVar2,DVar14,lpMem);
+    HeapFree(pvVar2,DVar14,buf);
 LAB_0097a0a6:
-    if ((local_14 & local_10) == 0xffffffff) goto LAB_00979fa8;
+    if ((retval & local_10) == 0xffffffff) goto LAB_00979fa8;
   }
-  lVar13 = _lseeki64_nolock(param_1,uVar12 >> 0x20,unaff_EDI);
+  lVar13 = _lseeki64_nolock(filedes,uVar12 >> 0x20,unaff_EDI);
   if (lVar13 != -1) {
     return 0;
   }

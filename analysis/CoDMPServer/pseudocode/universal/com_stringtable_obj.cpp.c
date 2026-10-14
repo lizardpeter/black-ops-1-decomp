@@ -2,31 +2,31 @@
 
 // 007B65B0  StringTable_HashString  (universal/com_stringtable_obj.cpp:18)
 
-int __cdecl StringTable_HashString(char *param_1)
+int __cdecl StringTable_HashString(char *string)
 
 {
   int iVar1;
   
-  iVar1 = Com_HashString(param_1,0);
+  iVar1 = Com_HashString(string,0);
   return iVar1;
 }
 
 
 // 007B6AE0  StringTable_Alloc  (universal/com_stringtable_obj.cpp:28)
 
-void * __cdecl StringTable_Alloc(int param_1)
+void * __cdecl StringTable_Alloc(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"StringTable",0xb);
+  pvVar1 = Hunk_Alloc(size,"StringTable",0xb);
   return pvVar1;
 }
 
 
 // 007B6B00  CellCompare  (universal/com_stringtable_obj.cpp:39)
 
-int __cdecl CellCompare(void *param_1,void *param_2)
+int __cdecl CellCompare(void *a,void *b)
 
 {
   short sVar1;
@@ -34,9 +34,14 @@ int __cdecl CellCompare(void *param_1,void *param_2)
   code *pcVar3;
   bool bVar4;
   int iVar5;
+  int diff;
+  short cellIndexB;
+  short cellIndexA;
+  int columnB;
+  int columnA;
   
-  sVar1 = *(short *)param_1;
-  sVar2 = *(short *)param_2;
+  sVar1 = *(short *)a;
+  sVar2 = *(short *)b;
   if ((s_sortTable == (StringTable *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                ,0x2b,0,"%s"), !bVar4)) {
@@ -68,86 +73,88 @@ int __cdecl CellCompare(void *param_1,void *param_2)
 
 // 007B65D0  StringTable_ParseFileIntoTable  (universal/com_stringtable_obj.cpp:58)
 
-void __cdecl StringTable_ParseFileIntoTable(char *param_1,StringTable *param_2)
+void __cdecl StringTable_ParseFileIntoTable(char *filename,StringTable *table)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
+  char *filebuf;
   char *pcVar4;
-  char *pcVar5;
-  StringTableCell *pSVar6;
-  short *psVar7;
-  int iVar8;
+  StringTableCell *pSVar5;
+  short *psVar6;
+  int iVar7;
   char *local_30;
-  int local_24;
-  char *local_20;
-  int local_1c;
-  char *local_18;
-  char *local_14;
-  uint local_10;
-  char *local_c;
-  uint local_8;
+  int columns;
+  char *buffer;
+  int rowCount;
+  char *parse;
+  int idx;
+  char *stringRef;
+  int filenameLen;
+  int valueCount;
+  char *token;
+  int nextValue;
   
-  if (*param_1 != '\0') {
-    param_2->columnCount = 0;
-    param_2->rowCount = 0;
-    pcVar4 = Com_LoadRawTextFile(param_1);
-    if (pcVar4 == (char *)0x0) {
+  if (*filename != '\0') {
+    table->columnCount = 0;
+    table->rowCount = 0;
+    filebuf = Com_LoadRawTextFile(filename);
+    if (filebuf == (char *)0x0) {
       Com_PrintWarning(0x10,"missing stringTable %s\n");
     }
-    local_8 = 0;
-    local_30 = param_1;
+    nextValue = 0;
+    local_30 = filename;
     do {
       cVar1 = *local_30;
       local_30 = local_30 + 1;
     } while (cVar1 != '\0');
-    local_14 = local_30 + (1 - (int)(param_1 + 1));
-    pcVar5 = StringTable_Alloc((int)local_14);
-    param_2->name = pcVar5;
-    I_strncpyz(param_2->name,param_1,(int)local_14);
-    local_20 = pcVar4;
-    Com_BeginParseSession(param_1);
+    filenameLen = (int)(local_30 + (1 - (int)(filename + 1)));
+    pcVar4 = StringTable_Alloc(filenameLen);
+    table->name = pcVar4;
+    I_strncpyz(table->name,filename,filenameLen);
+    parse = filebuf;
+    Com_BeginParseSession(filename);
     Com_SetCSV(1);
-    local_24 = 0;
-    while (local_c = Com_Parse(&local_20), local_20 != (char *)0x0) {
-      if (*local_c != '\0') {
-        if (*local_c != '#') {
-          iVar8 = Com_GetArgCountOnLine(&local_20);
-          if (param_2->columnCount < iVar8 + 1) {
-            param_2->columnCount = iVar8 + 1;
+    rowCount = 0;
+    while (token = Com_Parse(&parse), parse != (char *)0x0) {
+      if (*token != '\0') {
+        if (*token != '#') {
+          iVar7 = Com_GetArgCountOnLine(&parse);
+          if (table->columnCount < iVar7 + 1) {
+            table->columnCount = iVar7 + 1;
           }
-          local_24 = local_24 + 1;
+          rowCount = rowCount + 1;
         }
-        Com_SkipRestOfLine(&local_20);
+        Com_SkipRestOfLine(&parse);
       }
     }
-    local_10 = local_24 * param_2->columnCount;
-    if (local_10 == 0) {
-      local_10 = 1;
+    valueCount = rowCount * table->columnCount;
+    if (valueCount == 0) {
+      valueCount = 1;
     }
     Com_EndParseSession();
-    if ((param_2->values != (StringTableCell *)0x0) &&
+    if ((table->values != (StringTableCell *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                  ,0x75,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pSVar6 = StringTable_Alloc(local_10 << 3);
-    param_2->values = pSVar6;
-    psVar7 = StringTable_Alloc(local_10 << 1);
-    param_2->cellIndex = psVar7;
-    for (local_1c = 0; local_1c < (int)local_10; local_1c = local_1c + 1) {
-      param_2->cellIndex[local_1c] = (short)local_1c;
+    pSVar5 = StringTable_Alloc(valueCount << 3);
+    table->values = pSVar5;
+    psVar6 = StringTable_Alloc(valueCount << 1);
+    table->cellIndex = psVar6;
+    for (idx = 0; idx < valueCount; idx = idx + 1) {
+      table->cellIndex[idx] = (short)idx;
     }
-    local_20 = pcVar4;
-    Com_BeginParseSession(param_1);
+    parse = filebuf;
+    Com_BeginParseSession(filename);
     Com_SetCSV(1);
-    while (local_c = Com_Parse(&local_20), local_20 != (char *)0x0) {
-      if (*local_c != '\0') {
-        if (*local_c != '#') {
-          if ((local_10 <= local_8) &&
+    while (token = Com_Parse(&parse), parse != (char *)0x0) {
+      if (*token != '\0') {
+        if (*token != '#') {
+          if (((uint)valueCount <= (uint)nextValue) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                        ,0x8a,0,
                                        "nextValue doesn\'t index valueCount\n\t%i not in [0, %i)"),
@@ -156,31 +163,31 @@ void __cdecl StringTable_ParseFileIntoTable(char *param_1,StringTable *param_2)
             (*pcVar2)();
             return;
           }
-          pcVar5 = String_Alloc(local_c);
-          param_2->values[local_8].string = pcVar5;
-          iVar8 = StringTable_HashString(local_c);
-          param_2->values[local_8].hash = iVar8;
-          local_8 = local_8 + 1;
-          if (((param_2->columnCount != 1) && ((int)local_8 % param_2->columnCount != 1)) &&
+          pcVar4 = String_Alloc(token);
+          table->values[nextValue].string = pcVar4;
+          iVar7 = StringTable_HashString(token);
+          table->values[nextValue].hash = iVar7;
+          nextValue = nextValue + 1;
+          if (((table->columnCount != 1) && (nextValue % table->columnCount != 1)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                        ,0x8f,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          for (; (int)local_8 % param_2->columnCount != 0; local_8 = local_8 + 1) {
-            local_c = Com_ParseOnLine(&local_20);
-            if (*local_c == '\\') {
-              local_c = local_c + 1;
+          for (; nextValue % table->columnCount != 0; nextValue = nextValue + 1) {
+            token = Com_ParseOnLine(&parse);
+            if (*token == '\\') {
+              token = token + 1;
             }
-            if (*local_c == '@') {
-              local_18 = local_c + 1;
-              local_c = SE_GetString_LoadObj(local_18);
-              if (local_c == (char *)0x0) {
+            if (*token == '@') {
+              stringRef = token + 1;
+              token = SE_GetString_LoadObj(stringRef);
+              if (token == (char *)0x0) {
                 Com_Error(ERR_DROP,"Couldn\'t find localization entry for \'%s\' in file %s\n");
               }
             }
-            if ((local_10 <= local_8) &&
+            if (((uint)valueCount <= (uint)nextValue) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                          ,0x9e,0,
                                          "nextValue doesn\'t index valueCount\n\t%i not in [0, %i)")
@@ -189,33 +196,33 @@ void __cdecl StringTable_ParseFileIntoTable(char *param_1,StringTable *param_2)
               (*pcVar2)();
               return;
             }
-            pcVar5 = String_Alloc(local_c);
-            param_2->values[local_8].string = pcVar5;
-            iVar8 = StringTable_HashString(local_c);
-            param_2->values[local_8].hash = iVar8;
+            pcVar4 = String_Alloc(token);
+            table->values[nextValue].string = pcVar4;
+            iVar7 = StringTable_HashString(token);
+            table->values[nextValue].hash = iVar7;
           }
-          param_2->rowCount = param_2->rowCount + 1;
+          table->rowCount = table->rowCount + 1;
         }
-        Com_SkipRestOfLine(&local_20);
+        Com_SkipRestOfLine(&parse);
       }
     }
-    if ((param_2->rowCount != local_24) &&
+    if ((table->rowCount != rowCount) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                  ,0xa9,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (((param_2->columnCount * param_2->rowCount - local_10 != 0) && (local_10 != 1)) &&
+    if (((table->columnCount * table->rowCount - valueCount != 0) && (valueCount != 1)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
                                  ,0xaa,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (0x4000 < param_2->columnCount * param_2->rowCount) {
-      pcVar5 = va("CSV file %s has too many elements: %i (max is %i)");
-      Com_PrintWarning(10,pcVar5);
+    if (0x4000 < table->columnCount * table->rowCount) {
+      pcVar4 = va("CSV file %s has too many elements: %i (max is %i)");
+      Com_PrintWarning(10,pcVar4);
     }
     if ((s_sortTable != (StringTable *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_stringtable_obj.cpp"
@@ -224,12 +231,12 @@ void __cdecl StringTable_ParseFileIntoTable(char *param_1,StringTable *param_2)
       (*pcVar2)();
       return;
     }
-    s_sortTable = param_2;
-    qsort(param_2->cellIndex,local_10,2,CellCompare);
+    s_sortTable = table;
+    qsort(table->cellIndex,valueCount,2,CellCompare);
     s_sortTable = (StringTable *)0x0;
     Com_EndParseSession();
-    if (pcVar4 != (char *)0x0) {
-      Com_UnloadRawTextFile(pcVar4);
+    if (filebuf != (char *)0x0) {
+      Com_UnloadRawTextFile(filebuf);
     }
   }
   return;
@@ -238,12 +245,13 @@ void __cdecl StringTable_ParseFileIntoTable(char *param_1,StringTable *param_2)
 
 // 007B6C20  StringTable_GetAsset_LoadObj  (universal/com_stringtable_obj.cpp:187)
 
-void __cdecl StringTable_GetAsset_LoadObj(char *param_1,StringTable **param_2)
+void __cdecl StringTable_GetAsset_LoadObj(char *filename,StringTable **tablePtr)
 
 {
   StringTable *pSVar1;
+  StringTable *table;
   
-  pSVar1 = Hunk_FindDataForFile(0xc,param_1);
+  pSVar1 = Hunk_FindDataForFile(0xc,filename);
   if (pSVar1 == (StringTable *)0x0) {
     pSVar1 = StringTable_Alloc(0x14);
     pSVar1->name = (char *)0x0;
@@ -251,12 +259,12 @@ void __cdecl StringTable_GetAsset_LoadObj(char *param_1,StringTable **param_2)
     pSVar1->rowCount = 0;
     pSVar1->values = (StringTableCell *)0x0;
     pSVar1->cellIndex = (short *)0x0;
-    StringTable_ParseFileIntoTable(param_1,pSVar1);
-    Hunk_SetDataForFile(0xc,param_1,pSVar1,StringTable_Alloc);
-    *param_2 = pSVar1;
+    StringTable_ParseFileIntoTable(filename,pSVar1);
+    Hunk_SetDataForFile(0xc,filename,pSVar1,StringTable_Alloc);
+    *tablePtr = pSVar1;
   }
   else {
-    *param_2 = pSVar1;
+    *tablePtr = pSVar1;
   }
   return;
 }

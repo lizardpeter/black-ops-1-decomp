@@ -4,22 +4,23 @@
 
 void __cdecl
 R_CalculateMinimalAabbForSpheres
-          (float (*param_1) [3],float *param_2,int param_3,float *param_4,float *param_5)
+          (float (*sphereCenters) [3],float *sphereRadii,int sphereCount,float *outMins,
+          float *outMaxs)
 
 {
   float fVar1;
-  int local_c;
-  int local_8;
+  int dimIter;
+  int sphereIter;
   
-  ClearBounds(param_4,param_5);
-  for (local_8 = 0; local_8 != param_3; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c != 3; local_c = local_c + 1) {
-      if (param_1[local_8][local_c] - param_2[local_8] < param_4[local_c]) {
-        param_4[local_c] = param_1[local_8][local_c] - param_2[local_8];
+  ClearBounds(outMins,outMaxs);
+  for (sphereIter = 0; sphereIter != sphereCount; sphereIter = sphereIter + 1) {
+    for (dimIter = 0; dimIter != 3; dimIter = dimIter + 1) {
+      if (sphereCenters[sphereIter][dimIter] - sphereRadii[sphereIter] < outMins[dimIter]) {
+        outMins[dimIter] = sphereCenters[sphereIter][dimIter] - sphereRadii[sphereIter];
       }
-      fVar1 = param_1[local_8][local_c] + param_2[local_8];
-      if (param_5[local_c] <= fVar1 && fVar1 != param_5[local_c]) {
-        param_5[local_c] = param_1[local_8][local_c] + param_2[local_8];
+      fVar1 = sphereCenters[sphereIter][dimIter] + sphereRadii[sphereIter];
+      if (outMaxs[dimIter] <= fVar1 && fVar1 != outMaxs[dimIter]) {
+        outMaxs[dimIter] = sphereCenters[sphereIter][dimIter] + sphereRadii[sphereIter];
       }
     }
   }
@@ -31,15 +32,15 @@ R_CalculateMinimalAabbForSpheres
 
 bool __cdecl
 R_CalculateTriangleTextureGradient
-          (float (*param_1) [3],float (*param_2) [2],float (*param_3) [3],float *param_4)
+          (float (*pos) [3],float (*texCoord) [2],float (*outTexGradient) [3],float *outNormal)
 
 {
   bool bVar1;
-  float local_6c [9];
-  float local_48 [4];
+  float inputMatrixInv [9];
+  float outputValues [4];
   float local_38;
-  int local_30;
-  float local_2c;
+  int texCoordDim;
+  float inputMatrix;
   float local_28;
   float local_24;
   float local_20;
@@ -48,33 +49,33 @@ R_CalculateTriangleTextureGradient
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int xyzDim;
   
-  local_2c = param_1[1][0] - (*param_1)[0];
-  local_28 = param_1[1][1] - (*param_1)[1];
-  local_24 = param_1[1][2] - (*param_1)[2];
-  local_20 = param_1[2][0] - (*param_1)[0];
-  local_1c = param_1[2][1] - (*param_1)[1];
-  local_18 = param_1[2][2] - (*param_1)[2];
-  Vec3Cross(&local_20,&local_2c,param_4);
-  if (*param_4 * *param_4 + param_4[1] * param_4[1] + param_4[2] * param_4[2] == 0.0) {
+  inputMatrix = pos[1][0] - (*pos)[0];
+  local_28 = pos[1][1] - (*pos)[1];
+  local_24 = pos[1][2] - (*pos)[2];
+  local_20 = pos[2][0] - (*pos)[0];
+  local_1c = pos[2][1] - (*pos)[1];
+  local_18 = pos[2][2] - (*pos)[2];
+  Vec3Cross(&local_20,&inputMatrix,outNormal);
+  if (*outNormal * *outNormal + outNormal[1] * outNormal[1] + outNormal[2] * outNormal[2] == 0.0) {
     bVar1 = false;
   }
   else {
-    Vec3Normalize(param_4);
-    local_14 = *param_4;
-    local_10 = param_4[1];
-    local_c = param_4[2];
-    local_48[0] = param_2[1][0] - (*param_2)[0];
-    local_48[1] = param_2[1][1] - (*param_2)[1];
-    local_48[3] = param_2[2][0] - (*param_2)[0];
-    local_38 = param_2[2][1] - (*param_2)[1];
-    MatrixInverse((float (*) [3])&local_2c,(float (*) [3])local_6c);
-    for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-      for (local_30 = 0; local_30 != 2; local_30 = local_30 + 1) {
-        param_3[local_30][local_8] =
-             local_6c[local_8 * 3] * local_48[local_30] +
-             local_6c[local_8 * 3 + 1] * local_48[local_30 + 3];
+    Vec3Normalize(outNormal);
+    local_14 = *outNormal;
+    local_10 = outNormal[1];
+    local_c = outNormal[2];
+    outputValues[0] = texCoord[1][0] - (*texCoord)[0];
+    outputValues[1] = texCoord[1][1] - (*texCoord)[1];
+    outputValues[3] = texCoord[2][0] - (*texCoord)[0];
+    local_38 = texCoord[2][1] - (*texCoord)[1];
+    MatrixInverse((float (*) [3])&inputMatrix,(float (*) [3])inputMatrixInv);
+    for (xyzDim = 0; xyzDim != 3; xyzDim = xyzDim + 1) {
+      for (texCoordDim = 0; texCoordDim != 2; texCoordDim = texCoordDim + 1) {
+        outTexGradient[texCoordDim][xyzDim] =
+             inputMatrixInv[xyzDim * 3] * outputValues[texCoordDim] +
+             inputMatrixInv[xyzDim * 3 + 1] * outputValues[texCoordDim + 3];
       }
     }
     bVar1 = true;
@@ -85,7 +86,7 @@ R_CalculateTriangleTextureGradient
 
 // 00AEA430  R_CalculateTexelDensityFromGradient  (gfx_d3d/r_stream_util.cpp:80)
 
-float __cdecl R_CalculateTexelDensityFromGradient(float (*param_1) [3],float *param_2)
+float __cdecl R_CalculateTexelDensityFromGradient(float (*texGradient) [3],float *textureSize)
 
 {
   float10 extraout_ST0;
@@ -95,10 +96,10 @@ float __cdecl R_CalculateTexelDensityFromGradient(float (*param_1) [3],float *pa
   float fVar1;
   float fVar2;
   
-  fVar1 = ((*param_1)[0] * (*param_1)[0] + (*param_1)[1] * (*param_1)[1] +
-          (*param_1)[2] * (*param_1)[2]) * *param_2 * *param_2;
-  fVar2 = (param_1[1][0] * param_1[1][0] + param_1[1][1] * param_1[1][1] +
-          param_1[1][2] * param_1[1][2]) * param_2[1] * param_2[1];
+  fVar1 = ((*texGradient)[0] * (*texGradient)[0] + (*texGradient)[1] * (*texGradient)[1] +
+          (*texGradient)[2] * (*texGradient)[2]) * *textureSize * *textureSize;
+  fVar2 = (texGradient[1][0] * texGradient[1][0] + texGradient[1][1] * texGradient[1][1] +
+          texGradient[1][2] * texGradient[1][2]) * textureSize[1] * textureSize[1];
   if (1e-06 <= fVar2) {
     if (1e-06 <= fVar1) {
       if (fVar2 <= fVar1) {
@@ -125,34 +126,34 @@ float __cdecl R_CalculateTexelDensityFromGradient(float (*param_1) [3],float *pa
 
 // 00AE9AA0  R_CalculateTriangleArea2D  (gfx_d3d/r_stream_util.cpp:99)
 
-float __cdecl R_CalculateTriangleArea2D(float (*param_1) [2])
+float __cdecl R_CalculateTriangleArea2D(float (*texCoord) [2])
 
 {
   bool bVar1;
   float10 extraout_ST0;
   
-  if (((*param_1)[0] == param_1[1][0]) && ((*param_1)[1] == param_1[1][1])) {
+  if (((*texCoord)[0] == texCoord[1][0]) && ((*texCoord)[1] == texCoord[1][1])) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
   if (!bVar1) {
-    if (((*param_1)[0] == param_1[2][0]) && ((*param_1)[1] == param_1[2][1])) {
+    if (((*texCoord)[0] == texCoord[2][0]) && ((*texCoord)[1] == texCoord[2][1])) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
     if (!bVar1) {
-      if ((param_1[1][0] == param_1[2][0]) && (param_1[1][1] == param_1[2][1])) {
+      if ((texCoord[1][0] == texCoord[2][0]) && (texCoord[1][1] == texCoord[2][1])) {
         bVar1 = true;
       }
       else {
         bVar1 = false;
       }
       if (!bVar1) {
-        PointToLineDistSq2D(*param_1,param_1[1],param_1[2]);
+        PointToLineDistSq2D(*texCoord,texCoord[1],texCoord[2]);
         _CIsqrt();
         return (float)extraout_ST0 * 0.5;
       }
@@ -164,38 +165,38 @@ float __cdecl R_CalculateTriangleArea2D(float (*param_1) [2])
 
 // 00AE9C20  R_CalculateTriangleArea3D  (gfx_d3d/r_stream_util.cpp:111)
 
-float __cdecl R_CalculateTriangleArea3D(float (*param_1) [3])
+float __cdecl R_CalculateTriangleArea3D(float (*texCoord) [3])
 
 {
   bool bVar1;
   float10 extraout_ST0;
   
-  if ((((*param_1)[0] == param_1[1][0]) && ((*param_1)[1] == param_1[1][1])) &&
-     ((*param_1)[2] == param_1[1][2])) {
+  if ((((*texCoord)[0] == texCoord[1][0]) && ((*texCoord)[1] == texCoord[1][1])) &&
+     ((*texCoord)[2] == texCoord[1][2])) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
   if (!bVar1) {
-    if ((((*param_1)[0] == param_1[2][0]) && ((*param_1)[1] == param_1[2][1])) &&
-       ((*param_1)[2] == param_1[2][2])) {
+    if ((((*texCoord)[0] == texCoord[2][0]) && ((*texCoord)[1] == texCoord[2][1])) &&
+       ((*texCoord)[2] == texCoord[2][2])) {
       bVar1 = true;
     }
     else {
       bVar1 = false;
     }
     if (!bVar1) {
-      if (((param_1[1][0] == param_1[2][0]) && (param_1[1][1] == param_1[2][1])) &&
-         (param_1[1][2] == param_1[2][2])) {
+      if (((texCoord[1][0] == texCoord[2][0]) && (texCoord[1][1] == texCoord[2][1])) &&
+         (texCoord[1][2] == texCoord[2][2])) {
         bVar1 = true;
       }
       else {
         bVar1 = false;
       }
       if (!bVar1) {
-        PointToLineDistSq(*param_1,param_1[1],param_1[2]);
-        Vec3DistanceSq(param_1[1],param_1[2]);
+        PointToLineDistSq(*texCoord,texCoord[1],texCoord[2]);
+        Vec3DistanceSq(texCoord[1],texCoord[2]);
         _CIsqrt();
         return (float)extraout_ST0 * 0.5;
       }
@@ -209,79 +210,83 @@ float __cdecl R_CalculateTriangleArea3D(float (*param_1) [3])
 
 bool __cdecl
 R_CalculateTriangleTopMipAabb
-          (float (*param_1) [3],float (*param_2) [2],float *param_3,uint param_4,float *param_5,
-          float *param_6,float *param_7)
+          (float (*pos) [3],float (*texCoord) [2],float *textureSize,uint filterState,float *outMins
+          ,float *outMaxs,float *outRadius)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   float (*pafVar4) [3];
-  int local_6c;
-  float local_60;
+  int triCorner;
+  float MAGIC_DISTANCE_NUMBER;
+  uint filterState_MipMapMasked;
+  float normal;
   float local_5c;
   float local_58;
-  uint local_54;
-  float local_50;
+  uint filterState_FilterMasked;
+  float viewSphereRadii;
   float local_4c;
   float local_48;
-  float local_44;
-  float local_40 [9];
-  float local_1c;
+  float MAX_RADIUS;
+  float viewSphereCenters [9];
+  float texGradient;
   float local_18;
   float local_14;
   float local_10;
   float local_c;
   float local_8;
   
-  local_44 = 700035.7;
-  bVar2 = R_CalculateTriangleTextureGradient(param_1,param_2,(float (*) [3])&local_1c,&local_60);
+  MAX_RADIUS = 700035.7;
+  bVar2 = R_CalculateTriangleTextureGradient(pos,texCoord,(float (*) [3])&texGradient,&normal);
   if (bVar2) {
-    if ((0.0 < local_1c * local_1c + local_18 * local_18 + local_14 * local_14) ||
+    if ((0.0 < texGradient * texGradient + local_18 * local_18 + local_14 * local_14) ||
        (0.0 < local_10 * local_10 + local_c * local_c + local_8 * local_8)) {
-      local_50 = R_CalculateTexelDensityFromGradient((float (*) [3])&local_1c,param_3);
-      local_50 = local_50 * 800.0;
-      local_54 = param_4 & 7;
-      if ((local_54 == 3) || (local_54 == 4)) {
-        if (local_54 == 4) {
-          local_50 = local_50 * 4.0;
+      viewSphereRadii = R_CalculateTexelDensityFromGradient((float (*) [3])&texGradient,textureSize)
+      ;
+      viewSphereRadii = viewSphereRadii * 800.0;
+      filterState_FilterMasked = filterState & 7;
+      if ((filterState_FilterMasked == 3) || (filterState_FilterMasked == 4)) {
+        if (filterState_FilterMasked == 4) {
+          viewSphereRadii = viewSphereRadii * 4.0;
         }
         else {
-          local_50 = local_50 * 2.0;
+          viewSphereRadii = viewSphereRadii * 2.0;
         }
-        for (local_6c = 0; local_6c != 3; local_6c = local_6c + 1) {
-          pafVar4 = param_1 + local_6c;
-          local_40[local_6c * 3] = (*pafVar4)[0];
-          local_40[local_6c * 3 + 1] = (*pafVar4)[1];
-          local_40[local_6c * 3 + 2] = (*pafVar4)[2];
+        for (triCorner = 0; triCorner != 3; triCorner = triCorner + 1) {
+          pafVar4 = pos + triCorner;
+          viewSphereCenters[triCorner * 3] = (*pafVar4)[0];
+          viewSphereCenters[triCorner * 3 + 1] = (*pafVar4)[1];
+          viewSphereCenters[triCorner * 3 + 2] = (*pafVar4)[2];
         }
       }
       else {
-        if ((param_4 & 0x18) == 8) {
-          local_50 = local_50 * 0.5;
+        if ((filterState & 0x18) == 8) {
+          viewSphereRadii = viewSphereRadii * 0.5;
         }
-        for (local_6c = 0; local_6c != 3; local_6c = local_6c + 1) {
-          pafVar4 = param_1 + local_6c;
-          local_40[local_6c * 3] = local_50 * local_60 + (*pafVar4)[0];
-          local_40[local_6c * 3 + 1] = local_50 * local_5c + (*pafVar4)[1];
-          local_40[local_6c * 3 + 2] = local_50 * local_58 + (*pafVar4)[2];
+        for (triCorner = 0; triCorner != 3; triCorner = triCorner + 1) {
+          pafVar4 = pos + triCorner;
+          viewSphereCenters[triCorner * 3] = viewSphereRadii * normal + (*pafVar4)[0];
+          viewSphereCenters[triCorner * 3 + 1] = viewSphereRadii * local_5c + (*pafVar4)[1];
+          viewSphereCenters[triCorner * 3 + 2] = viewSphereRadii * local_58 + (*pafVar4)[2];
         }
       }
-      if (local_44 < local_50) {
-        local_50 = local_44;
+      if (MAX_RADIUS < viewSphereRadii) {
+        viewSphereRadii = MAX_RADIUS;
       }
-      *param_7 = local_50;
-      local_4c = local_50;
-      local_48 = local_50;
-      if (param_5 != (float *)0x0) {
-        if ((param_6 == (float *)0x0) &&
+      *outRadius = viewSphereRadii;
+      local_4c = viewSphereRadii;
+      local_48 = viewSphereRadii;
+      if (outMins != (float *)0x0) {
+        if ((outMaxs == (float *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream_util.cpp"
                                      ,199,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        R_CalculateMinimalAabbForSpheres((float (*) [3])local_40,&local_50,3,param_5,param_6);
+        R_CalculateMinimalAabbForSpheres
+                  ((float (*) [3])viewSphereCenters,&viewSphereRadii,3,outMins,outMaxs);
       }
       bVar2 = true;
     }
@@ -299,7 +304,7 @@ R_CalculateTriangleTopMipAabb
 // 00AEA560  R_StreamGetMaterialTextureSize  (gfx_d3d/r_stream_util.cpp:216)
 
 bool __cdecl
-R_StreamGetMaterialTextureSize(Material *param_1,int param_2,float *param_3,uint *param_4)
+R_StreamGetMaterialTextureSize(Material *material,int texIndex,float *texSize,uint *filterState)
 
 {
   MaterialTextureDef *pMVar1;
@@ -307,8 +312,10 @@ R_StreamGetMaterialTextureSize(Material *param_1,int param_2,float *param_3,uint
   code *pcVar3;
   bool bVar4;
   undefined1 uVar5;
+  GfxImage *image;
+  MaterialTextureDef *texDef;
   
-  if ((param_2 < 0) || ((int)(uint)param_1->textureCount <= param_2)) {
+  if ((texIndex < 0) || ((int)(uint)material->textureCount <= texIndex)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream_util.cpp",0xdc,0,
                              "%s\n\t(texIndex) = %i");
     if (!bVar4) {
@@ -317,12 +324,12 @@ R_StreamGetMaterialTextureSize(Material *param_1,int param_2,float *param_3,uint
       return (bool)uVar5;
     }
   }
-  pMVar1 = param_1->textureTable;
-  if ((pMVar1[param_2].semantic == '\v') || ((pMVar1[param_2].u.image)->streaming == '\0')) {
+  pMVar1 = material->textureTable;
+  if ((pMVar1[texIndex].semantic == '\v') || ((pMVar1[texIndex].u.image)->streaming == '\0')) {
     bVar4 = false;
   }
   else {
-    if (pMVar1[param_2].u.image == (GfxImage *)0x0) {
+    if (pMVar1[texIndex].u.image == (GfxImage *)0x0) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream_util.cpp",0xe2,
                                0,"%s");
       if (!bVar4) {
@@ -331,10 +338,10 @@ R_StreamGetMaterialTextureSize(Material *param_1,int param_2,float *param_3,uint
         return (bool)uVar5;
       }
     }
-    pGVar2 = pMVar1[param_2].u.image;
-    *param_3 = (float)pGVar2->width * 1.0;
-    param_3[1] = (float)pGVar2->height * 1.0;
-    *param_4 = pMVar1[param_2].samplerState & 0x1f;
+    pGVar2 = pMVar1[texIndex].u.image;
+    *texSize = (float)pGVar2->width * 1.0;
+    texSize[1] = (float)pGVar2->height * 1.0;
+    *filterState = pMVar1[texIndex].samplerState & 0x1f;
     bVar4 = true;
   }
   return bVar4;

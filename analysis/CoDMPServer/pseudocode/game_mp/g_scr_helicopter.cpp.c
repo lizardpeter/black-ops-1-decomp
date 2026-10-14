@@ -7,13 +7,14 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CMD_Heli_FreeHelicopter(scr_entref_t param_1)
+void __cdecl CMD_Heli_FreeHelicopter(scr_entref_t entref)
 
 {
-  gentity_s *pgVar1;
+  gentity_s *ent_00;
+  gentity_s *ent;
   
-  pgVar1 = GScr_GetVehicle(param_1);
-  G_FreeVehicle(pgVar1);
+  ent_00 = GScr_GetVehicle(entref);
+  G_FreeVehicle(ent_00);
   return;
 }
 
@@ -25,15 +26,16 @@ void __cdecl CMD_Heli_FreeHelicopter(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CMD_Heli_SetDamageStage(scr_entref_t param_1)
+void __cdecl CMD_Heli_SetDamageStage(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
-  int iVar2;
+  int src;
+  gentity_s *ent;
   
-  pgVar1 = GScr_GetVehicle(param_1);
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  AssignToSmallerType<unsigned_char>(&(pgVar1->s).un1.scale,iVar2);
+  pgVar1 = GScr_GetVehicle(entref);
+  src = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  AssignToSmallerType<unsigned_char>(&(pgVar1->s).un1.scale,src);
   return;
 }
 
@@ -45,13 +47,14 @@ void __cdecl CMD_Heli_SetDamageStage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CMD_Heli_SetHeliHeightLock(scr_entref_t param_1)
+void __cdecl CMD_Heli_SetHeliHeightLock(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   int iVar2;
+  gentity_s *ent;
   
-  pgVar1 = GScr_GetVehicle(param_1);
+  pgVar1 = GScr_GetVehicle(entref);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar2 == 0) {
     pgVar1->scr_vehicle->flags = pgVar1->scr_vehicle->flags & 0xfffffdff;
@@ -70,68 +73,67 @@ void __cdecl CMD_Heli_SetHeliHeightLock(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CMD_Heli_IsInsideHeliHeightLock(scr_entref_t param_1)
+void __cdecl CMD_Heli_IsInsideHeliHeightLock(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  float fVar3;
   float local_50;
   float local_4c;
   float local_48;
-  float local_28;
+  float shortest_distance;
+  float meshMaxs;
   float local_24;
   float local_20;
-  float local_1c;
+  float meshMins;
   float local_18;
   float local_14;
-  int local_10;
-  gentity_s *local_c;
-  vehicle_physic_t *local_8;
+  int i;
+  gentity_s *ent;
+  float *heliOrigin;
   
-  local_c = GScr_GetVehicle(param_1);
-  if ((local_c == (gentity_s *)0x0) &&
+  ent = GScr_GetVehicle(entref);
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",
                                0x58,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_c->scr_vehicle == (scr_vehicle_s *)0x0) &&
+  if ((ent->scr_vehicle == (scr_vehicle_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",
                                0x59,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = &local_c->scr_vehicle->phys;
-  local_10 = 0;
+  heliOrigin = (ent->scr_vehicle->phys).origin;
+  i = 0;
   while( true ) {
-    if (num_heli_height_lock_patches <= local_10) {
+    if (num_heli_height_lock_patches <= i) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
       return;
     }
-    CM_ModelBounds(heli_height_lock_patches[local_10].brushmodel,&local_1c,&local_28);
-    local_1c = local_1c + heli_height_lock_patches[local_10].origin[0];
-    local_18 = local_18 + heli_height_lock_patches[local_10].origin[1];
-    local_14 = local_14 + heli_height_lock_patches[local_10].origin[2];
-    local_28 = local_28 + heli_height_lock_patches[local_10].origin[0];
-    local_24 = local_24 + heli_height_lock_patches[local_10].origin[1];
-    local_20 = local_20 + heli_height_lock_patches[local_10].origin[2];
-    if ((((local_1c <= local_8->origin[0]) && (local_8->origin[0] <= local_28)) &&
-        (local_18 <= local_8->origin[1])) && (local_8->origin[1] <= local_24)) break;
-    local_10 = local_10 + 1;
+    CM_ModelBounds(heli_height_lock_patches[i].brushmodel,&meshMins,&meshMaxs);
+    meshMins = meshMins + heli_height_lock_patches[i].origin[0];
+    local_18 = local_18 + heli_height_lock_patches[i].origin[1];
+    local_14 = local_14 + heli_height_lock_patches[i].origin[2];
+    meshMaxs = meshMaxs + heli_height_lock_patches[i].origin[0];
+    local_24 = local_24 + heli_height_lock_patches[i].origin[1];
+    local_20 = local_20 + heli_height_lock_patches[i].origin[2];
+    if ((((meshMins <= *heliOrigin) && (*heliOrigin <= meshMaxs)) && (local_18 <= heliOrigin[1])) &&
+       (heliOrigin[1] <= local_24)) break;
+    i = i + 1;
   }
-  fVar3 = local_8->origin[0] - local_1c;
-  local_48 = local_28 - local_8->origin[0];
-  if (0.0 <= local_48 - fVar3) {
-    local_48 = fVar3;
+  local_48 = meshMaxs - *heliOrigin;
+  if (0.0 <= local_48 - (*heliOrigin - meshMins)) {
+    local_48 = *heliOrigin - meshMins;
   }
-  local_4c = local_8->origin[1] - local_18;
+  local_4c = heliOrigin[1] - local_18;
   if (0.0 <= local_4c - local_48) {
     local_4c = local_48;
   }
-  local_50 = local_24 - local_8->origin[1];
+  local_50 = local_24 - heliOrigin[1];
   if (0.0 <= local_50 - local_4c) {
     local_50 = local_4c;
   }
@@ -142,7 +144,7 @@ void __cdecl CMD_Heli_IsInsideHeliHeightLock(scr_entref_t param_1)
 
 // 00640B30  Helicopter_GetMethod  (game_mp/g_scr_helicopter.cpp:159)
 
-_func___cdecl_void_scr_entref_t * __cdecl Helicopter_GetMethod(char **param_1)
+_func___cdecl_void_scr_entref_t * __cdecl Helicopter_GetMethod(char **pName)
 
 {
   byte bVar1;
@@ -150,15 +152,16 @@ _func___cdecl_void_scr_entref_t * __cdecl Helicopter_GetMethod(char **param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x1a < local_8) {
+    if (0x1a < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)s_methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)s_methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -177,10 +180,10 @@ LAB_00640bac:
     local_1c = 0;
 LAB_00640bb4:
     if (local_1c == 0) {
-      *param_1 = s_methods[local_8].actionString;
-      return s_methods[local_8].actionFunc;
+      *pName = s_methods[i].actionString;
+      return s_methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -192,35 +195,35 @@ LAB_00640bb4:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Heli_InitFirstThink(gentity_s *param_1)
+void __cdecl Heli_InitFirstThink(gentity_s *pSelf)
 
 {
-  float local_20 [2];
+  float pos [2];
   float local_18;
-  vehicle_physic_t *local_14;
-  vehicle_info_t *local_10;
-  scr_vehicle_s *local_c;
-  int local_8;
+  vehicle_physic_t *phys;
+  vehicle_info_t *info;
+  scr_vehicle_s *veh;
+  int wheelIndex;
   
-  local_c = param_1->scr_vehicle;
-  local_14 = &local_c->phys;
-  local_10 = BG_GetVehicleInfo((int)local_c->infoIdx);
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    if (-1 < (local_c->boneIndex).wheel[local_8]) {
-      G_DObjGetWorldBoneIndexPos(param_1,(local_c->boneIndex).wheel[local_8],local_20);
-      local_14->wheelZPos[local_8] = local_18;
+  veh = pSelf->scr_vehicle;
+  phys = &veh->phys;
+  info = BG_GetVehicleInfo((int)veh->infoIdx);
+  for (wheelIndex = 0; wheelIndex < 6; wheelIndex = wheelIndex + 1) {
+    if (-1 < (veh->boneIndex).wheel[wheelIndex]) {
+      G_DObjGetWorldBoneIndexPos(pSelf,(veh->boneIndex).wheel[wheelIndex],pos);
+      phys->wheelZPos[wheelIndex] = local_18;
     }
   }
-  VEH_SetPosition(param_1,local_14->origin,local_14->vel,local_14->angles);
-  local_14->prevOrigin[0] = local_14->origin[0];
-  local_14->prevOrigin[1] = local_14->origin[1];
-  local_14->prevOrigin[2] = local_14->origin[2];
-  local_14->prevAngles[0] = local_14->angles[0];
-  local_14->prevAngles[1] = local_14->angles[1];
-  local_14->prevAngles[2] = local_14->angles[2];
-  param_1->health = 99999;
-  param_1->handler = '\x19';
-  param_1->nextthink = level.time + 0x32;
+  VEH_SetPosition(pSelf,phys->origin,phys->vel,phys->angles);
+  phys->prevOrigin[0] = phys->origin[0];
+  phys->prevOrigin[1] = phys->origin[1];
+  phys->prevOrigin[2] = phys->origin[2];
+  phys->prevAngles[0] = phys->angles[0];
+  phys->prevAngles[1] = phys->angles[1];
+  phys->prevAngles[2] = phys->angles[2];
+  pSelf->health = 99999;
+  pSelf->handler = '\x19';
+  pSelf->nextthink = level.time + 0x32;
   return;
 }
 
@@ -232,7 +235,8 @@ void __cdecl Heli_InitFirstThink(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param_3,char *param_4)
+void __cdecl
+G_SpawnHelicopter(gentity_s *ent,gentity_s *owner,char *vehicleInfoName,char *modelName)
 
 {
   scr_vehicle_s *psVar1;
@@ -241,12 +245,17 @@ void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param
   bool bVar4;
   int iVar5;
   uint uVar6;
+  vehicle_physic_t *phys;
+  scr_vehicle_s *veh;
+  int team;
+  float radius;
+  int ownerIndex;
   
-  G_SetModel(param_1,param_4);
-  G_SpawnVehicle(param_1,param_3,1);
-  param_1->clipmask = 0x800400;
-  (param_1->s).eType = 0xc;
-  psVar1 = param_1->scr_vehicle;
+  G_SetModel(ent,modelName);
+  G_SpawnVehicle(ent,vehicleInfoName,1);
+  ent->clipmask = 0x800400;
+  (ent->s).eType = 0xc;
+  psVar1 = ent->scr_vehicle;
   bg_vehicleInfos[psVar1->infoIdx].type = 6;
   psVar1->targetEnt = 0x3ff;
   iVar5 = EntHandle::isDefined(&psVar1->lookAtEnt);
@@ -265,7 +274,7 @@ void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param
   (psVar1->phys).maxs[0] = 50.0;
   (psVar1->phys).maxs[1] = 50.0;
   (psVar1->phys).maxs[2] = 50.0;
-  if (param_2->client == (gclient_s *)0x0) {
+  if (owner->client == (gclient_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",0xf5
                              ,0,"%s");
     if (!bVar4) {
@@ -274,7 +283,7 @@ void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param
       return;
     }
   }
-  tVar2 = (param_2->client->sess).cs.team;
+  tVar2 = (owner->client->sess).cs.team;
   if (TEAM_SPECTATOR < tVar2) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",0xf8
                              ,0,"team doesn\'t index (1 << 2)\n\t%i not in [0, %i)");
@@ -284,7 +293,7 @@ void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param
       return;
     }
   }
-  uVar6 = ((int)param_2->client - (int)level.clients) / 0x29e0;
+  uVar6 = ((int)owner->client - (int)level.clients) / 0x29e0;
   if ((uint)level.maxclients <= uVar6) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",0xfa
                              ,0,"ownerIndex doesn\'t index level.maxclients\n\t%i not in [0, %i)");
@@ -294,11 +303,11 @@ void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param
       return;
     }
   }
-  AssignToSmallerType<unsigned_char>(&(param_1->s).faction.iHeadIconTeam,uVar6 << 2 | tVar2);
-  param_1->handler = '\x19';
-  param_1->nextthink = level.time + 0x32;
-  (param_1->r).svFlags = (param_1->r).svFlags | 0x10;
-  Heli_InitFirstThink(param_1);
+  AssignToSmallerType<unsigned_char>(&(ent->s).faction.iHeadIconTeam,uVar6 << 2 | tVar2);
+  ent->handler = '\x19';
+  ent->nextthink = level.time + 0x32;
+  (ent->r).svFlags = (ent->r).svFlags | 0x10;
+  Heli_InitFirstThink(ent);
   return;
 }
 
@@ -311,16 +320,17 @@ void __cdecl G_SpawnHelicopter(gentity_s *param_1,gentity_s *param_2,char *param
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Helicopter_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4,int param_5,
-               float *param_6,hitLocation_t param_7,int param_8)
+Helicopter_Pain(gentity_s *pSelf,gentity_s *pAttacker,int damage,float *point,int mod,float *dir,
+               hitLocation_t hitLoc,int weaponIdx)
 
 {
   WeaponDef *pWVar1;
+  WeaponDef *weapDef;
   
-  if (((param_2 != (gentity_s *)0x0) && ((param_2->s).weapon != 0)) &&
-     ((pWVar1 = BG_GetWeaponDef((uint)(param_2->s).weapon), pWVar1->weapType == WEAPTYPE_PROJECTILE
-      || (pWVar1->weapType == WEAPTYPE_GRENADE)))) {
-    VEH_JoltBody(param_1,param_6,1.0,0.0,0.0);
+  if (((pAttacker != (gentity_s *)0x0) && ((pAttacker->s).weapon != 0)) &&
+     ((pWVar1 = BG_GetWeaponDef((uint)(pAttacker->s).weapon),
+      pWVar1->weapType == WEAPTYPE_PROJECTILE || (pWVar1->weapType == WEAPTYPE_GRENADE)))) {
+    VEH_JoltBody(pSelf,dir,1.0,0.0,0.0);
   }
   return;
 }
@@ -334,16 +344,17 @@ Helicopter_Pain(gentity_s *param_1,gentity_s *param_2,int param_3,float *param_4
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Helicopter_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int param_4,int param_5,
-              int param_6,float *param_7,hitLocation_t param_8,int param_9)
+Helicopter_Die(gentity_s *pSelf,gentity_s *pInflictor,gentity_s *pAttacker,int damage,int mod,
+              int weapon,float *dir,hitLocation_t hitLoc,int psTimeOffset)
 
 {
   WeaponDef *pWVar1;
+  WeaponDef *weapDef;
   
-  if ((param_3 != (gentity_s *)0x0) && ((param_3->s).weapon != 0)) {
-    pWVar1 = BG_GetWeaponDef((uint)(param_3->s).weapon);
+  if ((pAttacker != (gentity_s *)0x0) && ((pAttacker->s).weapon != 0)) {
+    pWVar1 = BG_GetWeaponDef((uint)(pAttacker->s).weapon);
     if ((pWVar1->weapType == WEAPTYPE_PROJECTILE) || (pWVar1->weapType == WEAPTYPE_GRENADE)) {
-      VEH_JoltBody(param_1,param_7,1.0,0.0,0.0);
+      VEH_JoltBody(pSelf,dir,1.0,0.0,0.0);
     }
   }
   return;
@@ -357,19 +368,19 @@ Helicopter_Die(gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,int para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Helicopter_Controller(gentity_s *param_1,int *param_2)
+void __cdecl Helicopter_Controller(gentity_s *pSelf,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_34 [3];
-  DObj *local_28;
-  scr_vehicle_s *local_24;
-  float local_20 [5];
+  float barrelAngles [3];
+  DObj *obj;
+  scr_vehicle_s *veh;
+  float bodyAngles [5];
   undefined4 local_c;
-  int local_8;
+  int i;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (pSelf == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",
                              0x137,0,"%s");
     if (!bVar2) {
@@ -378,7 +389,7 @@ void __cdecl Helicopter_Controller(gentity_s *param_1,int *param_2)
       return;
     }
   }
-  if (param_1->scr_vehicle == (scr_vehicle_s *)0x0) {
+  if (pSelf->scr_vehicle == (scr_vehicle_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",
                              0x138,0,"%s");
     if (!bVar2) {
@@ -387,9 +398,9 @@ void __cdecl Helicopter_Controller(gentity_s *param_1,int *param_2)
       return;
     }
   }
-  local_24 = param_1->scr_vehicle;
-  local_28 = Com_GetServerDObj((param_1->s).number);
-  if (local_28 == (DObj *)0x0) {
+  veh = pSelf->scr_vehicle;
+  obj = Com_GetServerDObj((pSelf->s).number);
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_scr_helicopter.cpp",
                              0x13c,0,"%s");
     if (!bVar2) {
@@ -398,48 +409,46 @@ void __cdecl Helicopter_Controller(gentity_s *param_1,int *param_2)
       return;
     }
   }
-  if (local_24->nitrousVehicle == (NitrousVehicle *)0x0) {
-    local_20[0] = (float)(int)(param_1->s).lerp.u.vehicle.field3_0x18.throttle * 0.005493164;
-    local_20[2] = (param_1->s).lerp.u.turret.gunAngles[1];
+  if (veh->nitrousVehicle == (NitrousVehicle *)0x0) {
+    bodyAngles[0] = (float)(int)(pSelf->s).lerp.u.vehicle.field3_0x18.throttle * 0.005493164;
+    bodyAngles[2] = (pSelf->s).lerp.u.turret.gunAngles[1];
   }
   else {
-    local_20[0] = 0.0;
-    local_20[2] = 0.0;
+    bodyAngles[0] = 0.0;
+    bodyAngles[2] = 0.0;
   }
-  local_20[1] = 0.0;
-  if (-1 < (local_24->boneIndex).body) {
-    DObjSetLocalBoneIndex(local_28,param_2,(local_24->boneIndex).body,vec3_origin,local_20);
+  bodyAngles[1] = 0.0;
+  if (-1 < (veh->boneIndex).body) {
+    DObjSetLocalBoneIndex(obj,partBits,(veh->boneIndex).body,vec3_origin,bodyAngles);
   }
-  local_20[4] = (float)(int)(param_1->s).lerp.u.vehicle.gunYaw * 0.005493164;
-  local_20[3] = 0.0;
+  bodyAngles[4] = (float)(int)(pSelf->s).lerp.u.vehicle.gunYaw * 0.005493164;
+  bodyAngles[3] = 0.0;
   local_c = 0;
-  local_34[0] = (float)(int)(param_1->s).lerp.u.vehicle.gunPitch * 0.005493164;
-  local_34[1] = 0.0;
-  local_34[2] = 0.0;
-  if (-1 < (local_24->boneIndex).turret) {
-    DObjSetLocalBoneIndex(local_28,param_2,(local_24->boneIndex).turret,vec3_origin,local_20 + 3);
+  barrelAngles[0] = (float)(int)(pSelf->s).lerp.u.vehicle.gunPitch * 0.005493164;
+  barrelAngles[1] = 0.0;
+  barrelAngles[2] = 0.0;
+  if (-1 < (veh->boneIndex).turret) {
+    DObjSetLocalBoneIndex(obj,partBits,(veh->boneIndex).turret,vec3_origin,bodyAngles + 3);
   }
-  if (-1 < (local_24->boneIndex).barrel) {
-    DObjSetLocalBoneIndex(local_28,param_2,(local_24->boneIndex).barrel,vec3_origin,local_34);
+  if (-1 < (veh->boneIndex).barrel) {
+    DObjSetLocalBoneIndex(obj,partBits,(veh->boneIndex).barrel,vec3_origin,barrelAngles);
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    local_20[4] = (float)(int)*(short *)((int)(&(param_1->s).lerp.apos + 1) + local_8 * 4 + 10) *
-                  0.005493164;
-    local_20[3] = 0.0;
+  for (i = 0; i < 4; i = i + 1) {
+    bodyAngles[4] =
+         (float)(int)*(short *)((int)(&(pSelf->s).lerp.apos + 1) + i * 4 + 10) * 0.005493164;
+    bodyAngles[3] = 0.0;
     local_c = 0;
-    local_34[0] = (float)(int)*(short *)((int)(&(param_1->s).lerp.apos + 1) + local_8 * 4 + 8) *
-                  0.005493164;
-    local_34[1] = 0.0;
-    local_34[2] = 0.0;
-    if (-1 < (local_24->boneIndex).gunnerTags[local_8].turret) {
+    barrelAngles[0] =
+         (float)(int)*(short *)((int)(&(pSelf->s).lerp.apos + 1) + i * 4 + 8) * 0.005493164;
+    barrelAngles[1] = 0.0;
+    barrelAngles[2] = 0.0;
+    if (-1 < (veh->boneIndex).gunnerTags[i].turret) {
       DObjSetLocalBoneIndex
-                (local_28,param_2,(local_24->boneIndex).gunnerTags[local_8].turret,vec3_origin,
-                 local_20 + 3);
+                (obj,partBits,(veh->boneIndex).gunnerTags[i].turret,vec3_origin,bodyAngles + 3);
     }
-    if (-1 < (local_24->boneIndex).gunnerTags[local_8].barrel) {
+    if (-1 < (veh->boneIndex).gunnerTags[i].barrel) {
       DObjSetLocalBoneIndex
-                (local_28,param_2,(local_24->boneIndex).gunnerTags[local_8].barrel,vec3_origin,
-                 local_34);
+                (obj,partBits,(veh->boneIndex).gunnerTags[i].barrel,vec3_origin,barrelAngles);
     }
   }
   return;
@@ -453,11 +462,11 @@ void __cdecl Helicopter_Controller(gentity_s *param_1,int *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Helicopter_Think(gentity_s *param_1)
+void __cdecl Helicopter_Think(gentity_s *ent)
 
 {
-  Scr_Vehicle_Think(param_1);
-  param_1->nextthink = level.time + 0x32;
+  Scr_Vehicle_Think(ent);
+  ent->nextthink = level.time + 0x32;
   return;
 }
 

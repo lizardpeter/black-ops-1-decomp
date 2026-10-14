@@ -13,7 +13,7 @@ void __cdecl _dynamic_initializer_for__pbsv__(void)
 
 // 008976D0  PbSvAddEvent  (punkbuster/pbsv.cpp:46)
 
-void __cdecl PbSvAddEvent(int param_1,int param_2,int param_3,char *param_4)
+void __cdecl PbSvAddEvent(int event,int clientIndex,int datalen,char *data)
 
 {
   char *pcVar1;
@@ -31,7 +31,7 @@ void __cdecl PbSvAddEvent(int param_1,int param_2,int param_3,char *param_4)
       return;
     }
   }
-  (*pbsv.m_AddPbEvent)(&pbsv,param_1,param_2,param_3,param_4,0);
+  (*pbsv.m_AddPbEvent)(&pbsv,event,clientIndex,datalen,data,0);
   return;
 }
 
@@ -50,7 +50,7 @@ void __cdecl PbServerProcessEvents(void)
 
 /* WARNING: Removing unreachable block (ram,0x008983c2) */
 
-void __cdecl PbServerCompleteCommand(char *param_1,int param_2)
+void __cdecl PbServerCompleteCommand(char *buf,int buflen)
 
 {
   char *pcVar1;
@@ -68,18 +68,18 @@ void __cdecl PbServerCompleteCommand(char *param_1,int param_2)
       return;
     }
   }
-  (*pbsv.m_AddPbEvent)(&pbsv,0x33,-1,param_2,param_1,0);
+  (*pbsv.m_AddPbEvent)(&pbsv,0x33,-1,buflen,buf,0);
   return;
 }
 
 
 // 008983F0  PbPassConnectString  (punkbuster/pbsv.cpp:91)
 
-void __cdecl PbPassConnectString(char *param_1,char *param_2)
+void __cdecl PbPassConnectString(char *fromAddr,char *connectString)
 
 {
   if (pbsv.m_PassConnectString != (_func___cdecl_char_ptr_void_ptr_char_ptr_char_ptr *)0x0) {
-    (*pbsv.m_PassConnectString)(&pbsv,param_1,param_2);
+    (*pbsv.m_PassConnectString)(&pbsv,fromAddr,connectString);
   }
   return;
 }
@@ -87,7 +87,7 @@ void __cdecl PbPassConnectString(char *param_1,char *param_2)
 
 // 00898420  PbAuthClient  (punkbuster/pbsv.cpp:97)
 
-char * __cdecl PbAuthClient(char *param_1,int param_2,char *param_3)
+char * __cdecl PbAuthClient(char *fromAddr,int cl_pb,char *cl_guid)
 
 {
   char *pcVar1;
@@ -96,7 +96,7 @@ char * __cdecl PbAuthClient(char *param_1,int param_2,char *param_3)
     pcVar1 = (char *)0x0;
   }
   else {
-    pcVar1 = (*pbsv.m_AuthClient)(&pbsv,param_1,param_2,param_3);
+    pcVar1 = (*pbsv.m_AuthClient)(&pbsv,fromAddr,cl_pb,cl_guid);
   }
   return pcVar1;
 }
@@ -104,40 +104,46 @@ char * __cdecl PbAuthClient(char *param_1,int param_2,char *param_3)
 
 // 00897FD0  PbCopyFile  (punkbuster/pbcommon.h:103)
 
-int __cdecl PbCopyFile(char *param_1,char *param_2,long param_3)
+int __cdecl PbCopyFile(char *sfn,char *tfn,long sizeLimit)
 
 {
-  _iobuf *p_Var1;
-  _iobuf *p_Var2;
-  uint uVar3;
-  void *pvVar4;
-  uint uVar5;
-  int local_8;
+  _iobuf *stream;
+  _iobuf *stream_00;
+  uint size;
+  void *buffer;
+  uint uVar1;
+  long rb;
+  long wb;
+  char *buf;
+  long siz;
+  _iobuf *ft;
+  _iobuf *fs;
+  int success;
   
-  p_Var1 = fopen(param_1,"rb");
-  local_8 = 0;
-  if (p_Var1 != (_iobuf *)0x0) {
-    p_Var2 = fopen(param_2,"wb");
-    if (p_Var2 != (_iobuf *)0x0) {
-      fseek(p_Var1,0,2);
-      uVar3 = ftell(p_Var1);
-      if ((0 < (int)uVar3) && ((param_3 == 0 || ((int)uVar3 < param_3)))) {
-        pvVar4 = operator_new(uVar3);
-        if (pvVar4 != (void *)0x0) {
-          fseek(p_Var1,0,0);
-          uVar5 = fread(pvVar4,1,uVar3,p_Var1);
-          uVar5 = fwrite(pvVar4,1,uVar5,p_Var2);
-          operator_delete(pvVar4);
-          if (uVar5 == uVar3) {
-            local_8 = 1;
+  stream = fopen(sfn,"rb");
+  success = 0;
+  if (stream != (_iobuf *)0x0) {
+    stream_00 = fopen(tfn,"wb");
+    if (stream_00 != (_iobuf *)0x0) {
+      fseek(stream,0,2);
+      size = ftell(stream);
+      if ((0 < (int)size) && ((sizeLimit == 0 || ((int)size < sizeLimit)))) {
+        buffer = operator_new(size);
+        if (buffer != (void *)0x0) {
+          fseek(stream,0,0);
+          uVar1 = fread(buffer,1,size,stream);
+          uVar1 = fwrite(buffer,1,uVar1,stream_00);
+          operator_delete(buffer);
+          if (uVar1 == size) {
+            success = 1;
           }
         }
       }
-      fclose(p_Var2);
+      fclose(stream_00);
     }
-    fclose(p_Var1);
+    fclose(stream);
   }
-  return local_8;
+  return success;
 }
 
 
@@ -170,7 +176,7 @@ void __cdecl DisablePbSv(void)
 
 // 008984E0  PbCaptureConsoleOutput  (punkbuster/pbsv.cpp:121)
 
-void __cdecl PbCaptureConsoleOutput(char *param_1,int param_2)
+void __cdecl PbCaptureConsoleOutput(char *msg,int msglen)
 
 {
   char cVar1;
@@ -178,10 +184,11 @@ void __cdecl PbCaptureConsoleOutput(char *param_1,int param_2)
   char *local_2c;
   char *local_1c;
   char *local_c;
+  int sl;
   
-  PbClientTrapConsole(param_1,param_2);
+  PbClientTrapConsole(msg,msglen);
   if (pbsv.m_TrapConsole != (_func___cdecl_void_void_ptr_char_ptr_int *)0x0) {
-    (*pbsv.m_TrapConsole)(&pbsv,param_1,param_2);
+    (*pbsv.m_TrapConsole)(&pbsv,msg,msglen);
   }
   if (g_ConsoleCaptureBuf != (char *)0x0) {
     local_c = g_ConsoleCaptureBuf;
@@ -189,14 +196,14 @@ void __cdecl PbCaptureConsoleOutput(char *param_1,int param_2)
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    local_1c = param_1;
+    local_1c = msg;
     do {
       cVar1 = *local_1c;
       local_1c = local_1c + 1;
     } while (cVar1 != '\0');
-    if ((int)(local_1c + (((int)local_c - (int)(g_ConsoleCaptureBuf + 1)) - (int)(param_1 + 1))) <
+    if ((int)(local_1c + (((int)local_c - (int)(g_ConsoleCaptureBuf + 1)) - (int)(msg + 1))) <
         g_ConsoleCaptureBufLen) {
-      local_2c = param_1;
+      local_2c = msg;
       local_30 = g_ConsoleCaptureBuf + ((int)local_c - (int)(g_ConsoleCaptureBuf + 1));
       do {
         cVar1 = *local_2c;
@@ -214,7 +221,7 @@ void __cdecl PbCaptureConsoleOutput(char *param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __thiscall stPbSv::copyIfNotExists(stPbSv *this,char *param_1,char *param_2)
+void __thiscall stPbSv::copyIfNotExists(stPbSv *this,char *fn,char *basepath)
 
 {
   char cVar1;
@@ -229,22 +236,22 @@ void __thiscall stPbSv::copyIfNotExists(stPbSv *this,char *param_1,char *param_2
   char *local_43c;
   char *local_438;
   char cStack_40d;
-  char local_40c [511];
+  char fromFn [511];
   char cStack_20d;
-  char local_20c [512];
+  char toFn [512];
   uint local_c;
-  _iobuf *local_8;
+  _iobuf *f;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   local_438 = this->m_cwd;
-  local_43c = local_20c;
+  local_43c = toFn;
   do {
     cVar1 = *local_438;
     *local_43c = cVar1;
     local_438 = local_438 + 1;
     local_43c = local_43c + 1;
   } while (cVar1 != '\0');
-  local_448 = param_1;
+  local_448 = fn;
   do {
     cVar1 = *local_448;
     local_448 = local_448 + 1;
@@ -254,29 +261,29 @@ void __thiscall stPbSv::copyIfNotExists(stPbSv *this,char *param_1,char *param_2
     pcVar3 = local_45c + 1;
     local_45c = local_45c + 1;
   } while (*pcVar3 != '\0');
-  pcVar3 = param_1;
-  for (uVar2 = (uint)((int)local_448 - (int)param_1) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+  pcVar3 = fn;
+  for (uVar2 = (uint)((int)local_448 - (int)fn) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
     *(undefined4 *)local_45c = *(undefined4 *)pcVar3;
     pcVar3 = pcVar3 + 4;
     local_45c = local_45c + 4;
   }
-  for (uVar2 = (int)local_448 - (int)param_1 & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
+  for (uVar2 = (int)local_448 - (int)fn & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
     *local_45c = *pcVar3;
     pcVar3 = pcVar3 + 1;
     local_45c = local_45c + 1;
   }
-  local_8 = fopen(local_20c,"rb");
-  if (local_8 == (_iobuf *)0x0) {
-    local_464 = param_2;
-    local_468 = local_40c;
-    local_8 = (_iobuf *)0x0;
+  f = fopen(toFn,"rb");
+  if (f == (_iobuf *)0x0) {
+    local_464 = basepath;
+    local_468 = fromFn;
+    f = (_iobuf *)0x0;
     do {
       cVar1 = *local_464;
       *local_468 = cVar1;
       local_464 = local_464 + 1;
       local_468 = local_468 + 1;
     } while (cVar1 != '\0');
-    local_474 = param_1;
+    local_474 = fn;
     do {
       cVar1 = *local_474;
       local_474 = local_474 + 1;
@@ -286,21 +293,21 @@ void __thiscall stPbSv::copyIfNotExists(stPbSv *this,char *param_1,char *param_2
       pcVar3 = local_488 + 1;
       local_488 = local_488 + 1;
     } while (*pcVar3 != '\0');
-    pcVar3 = param_1;
-    for (uVar2 = (uint)((int)local_474 - (int)param_1) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+    pcVar3 = fn;
+    for (uVar2 = (uint)((int)local_474 - (int)fn) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
       *(undefined4 *)local_488 = *(undefined4 *)pcVar3;
       pcVar3 = pcVar3 + 4;
       local_488 = local_488 + 4;
     }
-    for (uVar2 = (int)local_474 - (int)param_1 & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
+    for (uVar2 = (int)local_474 - (int)fn & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
       *local_488 = *pcVar3;
       pcVar3 = pcVar3 + 1;
       local_488 = local_488 + 1;
     }
-    PbCopyFile(local_40c,local_20c,0);
+    PbCopyFile(fromFn,toFn,0);
   }
   else {
-    fclose(local_8);
+    fclose(f);
   }
   return;
 }
@@ -353,7 +360,7 @@ void __thiscall stPbSv::getHomePath(stPbSv *this)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __thiscall stPbSv::makefn(stPbSv *this,char *param_1,char *param_2)
+char * __thiscall stPbSv::makefn(stPbSv *this,char *buf,char *fn)
 
 {
   char cVar1;
@@ -368,7 +375,7 @@ char * __thiscall stPbSv::makefn(stPbSv *this,char *param_1,char *param_2)
   char *local_db4;
   char *local_da4;
   char cStack_115;
-  char local_114 [4];
+  char basepath [4];
   char acStack_110 [264];
   uint local_8;
   
@@ -376,11 +383,11 @@ char * __thiscall stPbSv::makefn(stPbSv *this,char *param_1,char *param_2)
   if (this->m_cwd[0] == '\0') {
     getHomePath(this);
     if (this->m_GameQuery != (_func___cdecl_char_ptr_int_char_ptr *)0x0) {
-      local_114[0] = 'f';
+      basepath[0] = 'f';
       builtin_strncpy(acStack_110,"asepath",8);
-      (*this->m_GameQuery)(0x67,local_114);
+      (*this->m_GameQuery)(0x67,basepath);
     }
-    pcVar4 = local_114;
+    pcVar4 = basepath;
     do {
       local_da4 = pcVar4;
       pcVar4 = local_da4 + 1;
@@ -400,44 +407,44 @@ char * __thiscall stPbSv::makefn(stPbSv *this,char *param_1,char *param_2)
       local_dbc = local_dbc + 1;
     } while (*pcVar4 != '\0');
     *(char (*) [4])local_dbc = (char  [4])0x5c6270;
-    iVar2 = _stricmp(local_114,this->m_cwd);
-    if (((iVar2 != 0) && (local_114[0] != '\0')) && (this->m_cwd[0] != '\0')) {
+    iVar2 = _stricmp(basepath,this->m_cwd);
+    if (((iVar2 != 0) && (basepath[0] != '\0')) && (this->m_cwd[0] != '\0')) {
       _mkdir(this->m_cwd);
-      copyIfNotExists(this,"pbsv.dll",local_114);
-      copyIfNotExists(this,"pbcl.dll",local_114);
-      copyIfNotExists(this,"pbag.dll",local_114);
+      copyIfNotExists(this,"pbsv.dll",basepath);
+      copyIfNotExists(this,"pbcl.dll",basepath);
+      copyIfNotExists(this,"pbag.dll",basepath);
     }
   }
   local_dc4 = this->m_cwd;
-  local_dc8 = param_1;
+  local_dc8 = buf;
   do {
     cVar1 = *local_dc4;
     *local_dc8 = cVar1;
     local_dc4 = local_dc4 + 1;
     local_dc8 = local_dc8 + 1;
   } while (cVar1 != '\0');
-  local_dd4 = param_2;
+  local_dd4 = fn;
   do {
     cVar1 = *local_dd4;
     local_dd4 = local_dd4 + 1;
   } while (cVar1 != '\0');
-  local_de8 = param_1 + -1;
+  local_de8 = buf + -1;
   do {
     pcVar4 = local_de8 + 1;
     local_de8 = local_de8 + 1;
   } while (*pcVar4 != '\0');
-  pcVar4 = param_2;
-  for (uVar3 = (uint)((int)local_dd4 - (int)param_2) >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
+  pcVar4 = fn;
+  for (uVar3 = (uint)((int)local_dd4 - (int)fn) >> 2; uVar3 != 0; uVar3 = uVar3 - 1) {
     *(undefined4 *)local_de8 = *(undefined4 *)pcVar4;
     pcVar4 = pcVar4 + 4;
     local_de8 = local_de8 + 4;
   }
-  for (uVar3 = (int)local_dd4 - (int)param_2 & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
+  for (uVar3 = (int)local_dd4 - (int)fn & 3; uVar3 != 0; uVar3 = uVar3 - 1) {
     *local_de8 = *pcVar4;
     pcVar4 = pcVar4 + 1;
     local_de8 = local_de8 + 1;
   }
-  return param_1;
+  return buf;
 }
 
 
@@ -472,35 +479,35 @@ char * __thiscall stPbSv::LoadServerDll(stPbSv *this)
   _func___cdecl_char_ptr_void_ptr_int *p_Var3;
   _func___cdecl_char_ptr_void_ptr_int_int_int_char_ptr_int *p_Var4;
   char *pcVar5;
-  char local_414 [516];
-  _iobuf *local_210;
-  char local_20c [516];
+  char fn [516];
+  _iobuf *f;
+  char extrafn [516];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (this->m_SvInstance == (void *)0x0) {
     UnloadServerDll(this);
     pcVar5 = "rb";
-    pcVar1 = makefn(this,local_414,"pbsvnew.dll");
-    local_210 = fopen(pcVar1,pcVar5);
-    if (local_210 != (_iobuf *)0x0) {
-      fclose(local_210);
-      pcVar1 = makefn(this,local_414,"pbsvold.dll");
+    pcVar1 = makefn(this,fn,"pbsvnew.dll");
+    f = fopen(pcVar1,pcVar5);
+    if (f != (_iobuf *)0x0) {
+      fclose(f);
+      pcVar1 = makefn(this,fn,"pbsvold.dll");
       _chmod(pcVar1,0x180);
-      pcVar1 = makefn(this,local_414,"pbsvold.dll");
+      pcVar1 = makefn(this,fn,"pbsvold.dll");
       ::remove(pcVar1);
-      pcVar1 = makefn(this,local_20c,"pbsvold.dll");
-      pcVar5 = makefn(this,local_414,"pbsv.dll");
+      pcVar1 = makefn(this,extrafn,"pbsvold.dll");
+      pcVar5 = makefn(this,fn,"pbsv.dll");
       rename(pcVar5,pcVar1);
-      pcVar1 = makefn(this,local_414,"pbsv.dll");
+      pcVar1 = makefn(this,fn,"pbsv.dll");
       _chmod(pcVar1,0x180);
-      pcVar1 = makefn(this,local_414,"pbsv.dll");
+      pcVar1 = makefn(this,fn,"pbsv.dll");
       ::remove(pcVar1);
-      pcVar1 = makefn(this,local_20c,"pbsv.dll");
-      pcVar5 = makefn(this,local_414,"pbsvnew.dll");
+      pcVar1 = makefn(this,extrafn,"pbsv.dll");
+      pcVar5 = makefn(this,fn,"pbsvnew.dll");
       rename(pcVar5,pcVar1);
     }
-    pcVar1 = makefn(this,local_414,"pbsv.dll");
+    pcVar1 = makefn(this,fn,"pbsv.dll");
     pHVar2 = LoadLibraryA(pcVar1);
     this->m_SvInstance = pHVar2;
     if (this->m_SvInstance == (void *)0x0) {
@@ -534,7 +541,7 @@ char * __thiscall stPbSv::LoadServerDll(stPbSv *this)
 
 /* WARNING: Removing unreachable block (ram,0x008982e8) */
 
-char * __thiscall stPbSv::ProcessPbEvents(stPbSv *this,int param_1)
+char * __thiscall stPbSv::ProcessPbEvents(stPbSv *this,int TickLimit)
 
 {
   char *pcVar1;
@@ -544,7 +551,7 @@ char * __thiscall stPbSv::ProcessPbEvents(stPbSv *this,int param_1)
   }
   if (this->m_SvInstance != (void *)0x0) {
     if (this->m_ReloadServer == 0) {
-      pcVar1 = (*this->m_ProcessPbEvents)(this,param_1);
+      pcVar1 = (*this->m_ProcessPbEvents)(this,TickLimit);
       return pcVar1;
     }
     UnloadServerDll(this);

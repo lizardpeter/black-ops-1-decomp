@@ -203,11 +203,11 @@ void __cdecl FX_DrawSpriteElems(FxSystem *param_1,int param_2,FxReflectParams *p
 {
   ushort uVar1;
   FxEffectContainer *pFVar2;
-  r_double_index_t *prVar3;
+  r_double_index_t *argOffset;
   FxSystem *in_EAX;
-  uint uVar4;
-  long *plVar5;
-  int iVar6;
+  uint uVar3;
+  long *plVar4;
+  int iVar5;
   FxSystem *unaff_EDI;
   int local_810;
   ushort auStack_808 [1026];
@@ -219,10 +219,10 @@ void __cdecl FX_DrawSpriteElems(FxSystem *param_1,int param_2,FxReflectParams *p
   (in_EAX->sprite).material = (Material *)0x0;
   local_810 = 0;
   FX_BeginIteratingOverEffects_Cooperative(unaff_EDI);
-  uVar4 = in_EAX->shared->firstActiveEffect;
-  if (uVar4 != in_EAX->shared->firstNewEffect) {
+  uVar3 = in_EAX->shared->firstActiveEffect;
+  if (uVar3 != in_EAX->shared->firstNewEffect) {
     do {
-      uVar1 = in_EAX->shared->allEffectHandles[uVar4 & 0x3ff];
+      uVar1 = in_EAX->shared->allEffectHandles[uVar3 & 0x3ff];
       pFVar2 = in_EAX->effects;
       FUN_0053a4a0();
       FUN_0053a660();
@@ -230,28 +230,28 @@ void __cdecl FX_DrawSpriteElems(FxSystem *param_1,int param_2,FxReflectParams *p
         auStack_808[local_810] = uVar1;
         local_810 = local_810 + 1;
       }
-      uVar4 = uVar4 + 1;
-    } while (uVar4 != in_EAX->shared->firstNewEffect);
-    if ((0 < local_810) && (iVar6 = 0, 0 < local_810)) {
+      uVar3 = uVar3 + 1;
+    } while (uVar3 != in_EAX->shared->firstNewEffect);
+    if ((0 < local_810) && (iVar5 = 0, 0 < local_810)) {
       do {
-        FUN_0053a400((in_EAX->effects->effect).firstElemHandle + (uint)auStack_808[iVar6] * 2 + -2,
+        FUN_0053a400((in_EAX->effects->effect).firstElemHandle + (uint)auStack_808[iVar5] * 2 + -2,
                      param_1);
-        iVar6 = iVar6 + 1;
-      } while (iVar6 < local_810);
+        iVar5 = iVar5 + 1;
+      } while (iVar5 < local_810);
     }
   }
-  plVar5 = &in_EAX->shared->iteratorCount;
+  plVar4 = &in_EAX->shared->iteratorCount;
   LOCK();
-  iVar6 = *plVar5 + -1;
-  *plVar5 = iVar6;
+  iVar5 = *plVar4 + -1;
+  *plVar4 = iVar5;
   UNLOCK();
-  if (iVar6 == 0) {
+  if (iVar5 == 0) {
     FX_RunGarbageCollectionAndPrioritySort(in_EAX);
   }
-  prVar3 = (r_double_index_t *)(in_EAX->sprite).indexCount;
-  if (prVar3 != (r_double_index_t *)0x0) {
+  argOffset = (r_double_index_t *)(in_EAX->sprite).indexCount;
+  if (argOffset != (r_double_index_t *)0x0) {
     R_AddCodeMeshDrawSurf
-              ((Material *)(in_EAX->sprite).indices,prVar3,0,0,(uint)(in_EAX->sprite).name,
+              ((Material *)(in_EAX->sprite).indices,argOffset,0,0,(uint)(in_EAX->sprite).name,
                (char *)((-(uint)(*(char *)param_2 != '\0') & 3) + 0xd),(uint)unaff_EDI);
     (in_EAX->sprite).indexCount = 0;
     (in_EAX->sprite).indices = (r_double_index_t *)0x0;

@@ -4,20 +4,20 @@
 
 void __cdecl
 jpeg_screenshot_set_frame_info
-          (int param_1,int param_2,int param_3,int param_4,int param_5,float param_6,float param_7,
-          int param_8,float param_9,float param_10)
+          (int width,int height,int row,int col,int tiles,float tileX,float tileY,int yOffset,
+          float yAspect,float progress)
 
 {
-  hiResRGB2YUV.width = param_1;
-  hiResRGB2YUV.height = param_2;
-  hiResRGB2YUV.row = param_3;
-  hiResRGB2YUV.col = param_4;
-  hiResRGB2YUV.tiles = param_5;
-  hiResRGB2YUV.tileX = param_6;
-  hiResRGB2YUV.tileY = param_7;
-  hiResRGB2YUV.yOffset = param_8;
-  hiResRGB2YUV.progress = param_10;
-  hiResRGB2YUV.yAspect = param_9;
+  hiResRGB2YUV.width = width;
+  hiResRGB2YUV.height = height;
+  hiResRGB2YUV.row = row;
+  hiResRGB2YUV.col = col;
+  hiResRGB2YUV.tiles = tiles;
+  hiResRGB2YUV.tileX = tileX;
+  hiResRGB2YUV.tileY = tileY;
+  hiResRGB2YUV.yOffset = yOffset;
+  hiResRGB2YUV.progress = progress;
+  hiResRGB2YUV.yAspect = yAspect;
   return;
 }
 
@@ -26,107 +26,101 @@ jpeg_screenshot_set_frame_info
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uchar * __cdecl jpeg_screenshot_chunk(uchar *param_1,jpeg_encode *param_2)
+uchar * __cdecl jpeg_screenshot_chunk(uchar *out,jpeg_encode *encode)
 
 {
   uchar *puVar1;
-  int local_1ac;
-  int local_1a8;
-  int local_1a4;
-  int local_1a0;
-  uchar local_19c [64];
-  uchar local_15c [64];
-  uchar local_11c [8];
+  int x_2;
+  int y_2;
+  int x;
+  int y;
+  uchar u8x8 [64];
+  uchar v8x8 [64];
+  uchar y16x16 [8];
   uchar local_114 [120];
   uchar local_9c [8];
   uchar local_94 [120];
   uint local_1c;
-  int local_18;
-  uchar *local_14;
-  int local_10;
-  uchar *local_c;
-  uchar *local_8;
+  int xx;
+  uchar *inU;
+  int width;
+  uchar *inV;
+  uchar *inY;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   RB_Resource_Callback(yuv_encode_frame);
   RB_Resource_Flush();
-  yuv_get_buffers(&local_8,&local_14,&local_c);
-  local_10 = hiResRGB2YUV.width;
-  for (local_18 = 0; local_18 < local_10; local_18 = local_18 + 0x10) {
-    for (local_1a0 = 0; local_1a0 < 0x10; local_1a0 = local_1a0 + 1) {
-      for (local_1a4 = 0; local_1a4 < 0x10; local_1a4 = local_1a4 + 1) {
-        local_11c[local_1a0 * 0x10 + local_1a4] =
-             local_8[local_1a0 * local_10 + local_18 + local_1a4];
+  yuv_get_buffers(&inY,&inU,&inV);
+  width = hiResRGB2YUV.width;
+  for (xx = 0; xx < width; xx = xx + 0x10) {
+    for (y = 0; y < 0x10; y = y + 1) {
+      for (x = 0; x < 0x10; x = x + 1) {
+        y16x16[y * 0x10 + x] = inY[y * width + xx + x];
       }
     }
-    for (local_1a8 = 0; local_1a8 < 8; local_1a8 = local_1a8 + 1) {
-      for (local_1ac = 0; local_1ac < 8; local_1ac = local_1ac + 1) {
-        local_19c[local_1ac + local_1a8 * 8] =
-             local_14[(local_1a8 * local_10 + local_18) / 2 + local_1ac];
-        local_15c[local_1ac + local_1a8 * 8] =
-             local_c[(local_1a8 * local_10 + local_18) / 2 + local_1ac];
+    for (y_2 = 0; y_2 < 8; y_2 = y_2 + 1) {
+      for (x_2 = 0; x_2 < 8; x_2 = x_2 + 1) {
+        u8x8[x_2 + y_2 * 8] = inU[(y_2 * width + xx) / 2 + x_2];
+        v8x8[x_2 + y_2 * 8] = inV[(y_2 * width + xx) / 2 + x_2];
       }
     }
-    puVar1 = jpeg_encode::do_block
-                       (param_2,param_1,local_11c,0x10,&param_2->jpeg_encode_block_state_y);
-    puVar1 = jpeg_encode::do_block
-                       (param_2,puVar1,local_114,0x10,&param_2->jpeg_encode_block_state_y);
-    puVar1 = jpeg_encode::do_block(param_2,puVar1,local_9c,0x10,&param_2->jpeg_encode_block_state_y)
-    ;
-    puVar1 = jpeg_encode::do_block(param_2,puVar1,local_94,0x10,&param_2->jpeg_encode_block_state_y)
-    ;
-    puVar1 = jpeg_encode::do_block(param_2,puVar1,local_19c,8,&param_2->jpeg_encode_block_state_u);
-    param_1 = jpeg_encode::do_block(param_2,puVar1,local_15c,8,&param_2->jpeg_encode_block_state_v);
+    puVar1 = jpeg_encode::do_block(encode,out,y16x16,0x10,&encode->jpeg_encode_block_state_y);
+    puVar1 = jpeg_encode::do_block(encode,puVar1,local_114,0x10,&encode->jpeg_encode_block_state_y);
+    puVar1 = jpeg_encode::do_block(encode,puVar1,local_9c,0x10,&encode->jpeg_encode_block_state_y);
+    puVar1 = jpeg_encode::do_block(encode,puVar1,local_94,0x10,&encode->jpeg_encode_block_state_y);
+    puVar1 = jpeg_encode::do_block(encode,puVar1,u8x8,8,&encode->jpeg_encode_block_state_u);
+    out = jpeg_encode::do_block(encode,puVar1,v8x8,8,&encode->jpeg_encode_block_state_v);
   }
-  return param_1;
+  return out;
 }
 
 
 // 009B3110  jpeg_screenshot_tile  (mjpeg/jpeg_screenshot.cpp:337)
 
-void __cdecl jpeg_screenshot_tile(uchar *param_1,uchar *param_2,uchar *param_3)
+void __cdecl jpeg_screenshot_tile(uchar *outY,uchar *outU,uchar *outV)
 
 {
   int iVar1;
   int iVar2;
-  int local_2c;
-  int local_28;
-  uchar *local_20;
-  ulong local_1c;
-  int local_18;
-  uchar *local_14;
-  int local_10;
-  uchar *local_c;
-  int local_8;
+  int y_2;
+  int y;
+  int tiles;
+  uchar *inU;
+  int width;
+  int height;
+  uchar *inV;
+  int row;
+  uchar *inY;
+  int col;
   
   RB_Resource_Callback(yuv_encode_frame);
   RB_Resource_Flush();
-  yuv_get_buffers(&local_c,&local_20,&local_14);
+  yuv_get_buffers(&inY,&inU,&inV);
   iVar1 = hiResRGB2YUV.tiles;
-  local_1c = hiResRGB2YUV.width;
-  local_18 = hiResRGB2YUV.height;
-  local_8 = hiResRGB2YUV.row;
-  local_10 = hiResRGB2YUV.col;
-  param_1 = param_1 + hiResRGB2YUV.col * hiResRGB2YUV.tiles * hiResRGB2YUV.width *
-                      hiResRGB2YUV.height + hiResRGB2YUV.row * hiResRGB2YUV.width;
+  width = hiResRGB2YUV.width;
+  height = hiResRGB2YUV.height;
+  col = hiResRGB2YUV.row;
+  row = hiResRGB2YUV.col;
+  outY = outY + hiResRGB2YUV.col * hiResRGB2YUV.tiles * hiResRGB2YUV.width * hiResRGB2YUV.height +
+                hiResRGB2YUV.row * hiResRGB2YUV.width;
   iVar2 = hiResRGB2YUV.col * hiResRGB2YUV.tiles * hiResRGB2YUV.width * hiResRGB2YUV.height;
-  param_2 = param_2 + ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2) +
-                      (hiResRGB2YUV.row * hiResRGB2YUV.width) / 2;
+  outU = outU + ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2) +
+                (hiResRGB2YUV.row * hiResRGB2YUV.width) / 2;
   iVar2 = hiResRGB2YUV.col * hiResRGB2YUV.tiles * hiResRGB2YUV.width * hiResRGB2YUV.height;
-  param_3 = param_3 + ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2) +
-                      (hiResRGB2YUV.row * hiResRGB2YUV.width) / 2;
-  for (local_28 = 0; local_28 < local_18; local_28 = local_28 + 1) {
-    memcpy(param_1,local_c,local_1c);
-    param_1 = param_1 + iVar1 * local_1c;
-    local_c = local_c + local_1c;
+  outV = outV + ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2) +
+                (hiResRGB2YUV.row * hiResRGB2YUV.width) / 2;
+  for (y = 0; y < height; y = y + 1) {
+    memcpy(outY,inY,width);
+    outY = outY + iVar1 * width;
+    inY = inY + width;
   }
-  for (local_2c = 0; local_2c < local_18 / 2; local_2c = local_2c + 1) {
-    memcpy(param_2,local_20,(int)local_1c / 2);
-    param_2 = param_2 + (int)(iVar1 * local_1c) / 2;
-    local_20 = local_20 + (int)local_1c / 2;
-    memcpy(param_3,local_14,(int)local_1c / 2);
-    param_3 = param_3 + (int)(iVar1 * local_1c) / 2;
-    local_14 = local_14 + (int)local_1c / 2;
+  for (y_2 = 0; y_2 < height / 2; y_2 = y_2 + 1) {
+    memcpy(outU,inU,width / 2);
+    outU = outU + (iVar1 * width) / 2;
+    inU = inU + width / 2;
+    memcpy(outV,inV,width / 2);
+    outV = outV + (iVar1 * width) / 2;
+    inV = inV + width / 2;
   }
   return;
 }
@@ -137,61 +131,53 @@ void __cdecl jpeg_screenshot_tile(uchar *param_1,uchar *param_2,uchar *param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 uchar * __cdecl
-jpeg_screenshot_row(uchar *param_1,uchar *param_2,uchar *param_3,uchar *param_4,int param_5,
-                   jpeg_encode *param_6)
+jpeg_screenshot_row(uchar *out,uchar *inY,uchar *inU,uchar *inV,int row,jpeg_encode *encode)
 
 {
   int iVar1;
   int iVar2;
   uchar *puVar3;
   int iVar4;
-  int local_1a4;
-  int local_1a0;
-  int local_19c;
-  int local_198;
-  uchar local_194 [64];
-  uchar local_154 [64];
-  uchar local_114 [8];
+  int x_2;
+  int y_2;
+  int x;
+  int y;
+  uchar u8x8 [64];
+  uchar v8x8 [64];
+  uchar y16x16 [8];
   uchar local_10c [120];
   uchar local_94 [8];
   uchar local_8c [124];
   uint local_10;
-  int local_c;
-  int local_8;
+  int xx;
+  int width;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = hiResRGB2YUV.width * hiResRGB2YUV.tiles;
-  iVar4 = local_8 * param_5;
-  iVar1 = local_8 * param_5;
-  iVar2 = local_8 * param_5;
-  for (local_c = 0; local_c < local_8; local_c = local_c + 0x10) {
-    for (local_198 = 0; local_198 < 0x10; local_198 = local_198 + 1) {
-      for (local_19c = 0; local_19c < 0x10; local_19c = local_19c + 1) {
-        local_114[local_198 * 0x10 + local_19c] =
-             param_2[local_198 * local_8 + local_c + local_19c + iVar4];
+  width = hiResRGB2YUV.width * hiResRGB2YUV.tiles;
+  iVar4 = width * row;
+  iVar1 = width * row;
+  iVar2 = width * row;
+  for (xx = 0; xx < width; xx = xx + 0x10) {
+    for (y = 0; y < 0x10; y = y + 1) {
+      for (x = 0; x < 0x10; x = x + 1) {
+        y16x16[y * 0x10 + x] = inY[y * width + xx + x + iVar4];
       }
     }
-    for (local_1a0 = 0; local_1a0 < 8; local_1a0 = local_1a0 + 1) {
-      for (local_1a4 = 0; local_1a4 < 8; local_1a4 = local_1a4 + 1) {
-        local_194[local_1a4 + local_1a0 * 8] =
-             param_3[(local_1a0 * local_8 + local_c) / 2 + local_1a4 +
-                     ((int)(iVar1 + (iVar1 >> 0x1f & 3U)) >> 2)];
-        local_154[local_1a4 + local_1a0 * 8] =
-             param_4[(local_1a0 * local_8 + local_c) / 2 + local_1a4 +
-                     ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2)];
+    for (y_2 = 0; y_2 < 8; y_2 = y_2 + 1) {
+      for (x_2 = 0; x_2 < 8; x_2 = x_2 + 1) {
+        u8x8[x_2 + y_2 * 8] =
+             inU[(y_2 * width + xx) / 2 + x_2 + ((int)(iVar1 + (iVar1 >> 0x1f & 3U)) >> 2)];
+        v8x8[x_2 + y_2 * 8] =
+             inV[(y_2 * width + xx) / 2 + x_2 + ((int)(iVar2 + (iVar2 >> 0x1f & 3U)) >> 2)];
       }
     }
-    puVar3 = jpeg_encode::do_block
-                       (param_6,param_1,local_114,0x10,&param_6->jpeg_encode_block_state_y);
-    puVar3 = jpeg_encode::do_block
-                       (param_6,puVar3,local_10c,0x10,&param_6->jpeg_encode_block_state_y);
-    puVar3 = jpeg_encode::do_block(param_6,puVar3,local_94,0x10,&param_6->jpeg_encode_block_state_y)
-    ;
-    puVar3 = jpeg_encode::do_block(param_6,puVar3,local_8c,0x10,&param_6->jpeg_encode_block_state_y)
-    ;
-    puVar3 = jpeg_encode::do_block(param_6,puVar3,local_194,8,&param_6->jpeg_encode_block_state_u);
-    param_1 = jpeg_encode::do_block(param_6,puVar3,local_154,8,&param_6->jpeg_encode_block_state_v);
+    puVar3 = jpeg_encode::do_block(encode,out,y16x16,0x10,&encode->jpeg_encode_block_state_y);
+    puVar3 = jpeg_encode::do_block(encode,puVar3,local_10c,0x10,&encode->jpeg_encode_block_state_y);
+    puVar3 = jpeg_encode::do_block(encode,puVar3,local_94,0x10,&encode->jpeg_encode_block_state_y);
+    puVar3 = jpeg_encode::do_block(encode,puVar3,local_8c,0x10,&encode->jpeg_encode_block_state_y);
+    puVar3 = jpeg_encode::do_block(encode,puVar3,u8x8,8,&encode->jpeg_encode_block_state_u);
+    out = jpeg_encode::do_block(encode,puVar3,v8x8,8,&encode->jpeg_encode_block_state_v);
   }
-  return param_1;
+  return out;
 }
 

@@ -3,15 +3,16 @@
 // 007CD6B0  Hunk_UserDebugInit  (universal/mem_userhunk.cpp:108)
 
 HunkUser * __cdecl
-Hunk_UserDebugInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong param_4,
-                  void *param_5,char *param_6,int param_7)
+Hunk_UserDebugInit(void *buffer,int size,HU_ALLOCATION_SCHEME scheme,ulong flags,
+                  void *scheme_specific_data,char *name,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   HunkUser *pHVar3;
+  HunkUserDebug *user;
   
-  if (param_3 != HU_SCHEME_DEBUG) {
+  if (scheme != HU_SCHEME_DEBUG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x6d,0
                              ,"%s");
     if (!bVar2) {
@@ -30,41 +31,44 @@ Hunk_UserDebugInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong 
       return pHVar3;
     }
   }
-  *(undefined4 *)param_1 = 0;
-  *(undefined4 *)((int)param_1 + 4) = 0;
-  *(undefined4 *)((int)param_1 + 8) = 0;
-  *(undefined4 *)((int)param_1 + 0xc) = 0;
-  *(undefined4 *)((int)param_1 + 0x10) = 0;
-  pHVar3 = Hunk_FirstFitInit((void *)((int)param_1 + 0x14),param_2 + -0x14,HU_SCHEME_FIRSTFIT,
-                             param_4,(void *)0x0,param_6,param_7);
-  *(HunkUser **)((int)param_1 + 0x10) = pHVar3;
-  *(HU_ALLOCATION_SCHEME *)param_1 = param_3;
-  *(ulong *)((int)param_1 + 4) = param_4;
-  *(char **)((int)param_1 + 8) = param_6;
-  *(int *)((int)param_1 + 0xc) = param_7;
-  return param_1;
+  *(undefined4 *)buffer = 0;
+  *(undefined4 *)((int)buffer + 4) = 0;
+  *(undefined4 *)((int)buffer + 8) = 0;
+  *(undefined4 *)((int)buffer + 0xc) = 0;
+  *(undefined4 *)((int)buffer + 0x10) = 0;
+  pHVar3 = Hunk_FirstFitInit((void *)((int)buffer + 0x14),size + -0x14,HU_SCHEME_FIRSTFIT,flags,
+                             (void *)0x0,name,type);
+  *(HunkUser **)((int)buffer + 0x10) = pHVar3;
+  *(HU_ALLOCATION_SCHEME *)buffer = scheme;
+  *(ulong *)((int)buffer + 4) = flags;
+  *(char **)((int)buffer + 8) = name;
+  *(int *)((int)buffer + 0xc) = type;
+  return buffer;
 }
 
 
 // 007CD780  Hunk_UserDebugReset  (universal/mem_userhunk.cpp:126)
 
-void __cdecl Hunk_UserDebugReset(HunkUser *param_1)
+void __cdecl Hunk_UserDebugReset(HunkUser *_user)
 
 {
-  Hunk_FirstFitReset((HunkUser *)param_1[1].scheme);
+  HunkUserDebug *user;
+  
+  Hunk_FirstFitReset((HunkUser *)_user[1].scheme);
   return;
 }
 
 
 // 007CD7A0  Hunk_UserDebugDestroy  (universal/mem_userhunk.cpp:133)
 
-void __cdecl Hunk_UserDebugDestroy(HunkUser *param_1)
+void __cdecl Hunk_UserDebugDestroy(HunkUser *_user)
 
 {
   code *pcVar1;
   bool bVar2;
+  HunkUserDebug *user;
   
-  if (param_1->scheme != HU_SCHEME_DEBUG) {
+  if (_user->scheme != HU_SCHEME_DEBUG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x88,0
                              ,"%s");
     if (!bVar2) {
@@ -83,21 +87,22 @@ void __cdecl Hunk_UserDebugDestroy(HunkUser *param_1)
       return;
     }
   }
-  Z_VirtualFree(param_1,param_1->type);
+  Z_VirtualFree(_user,_user->type);
   return;
 }
 
 
 // 007CD830  Hunk_UserDebugAlloc  (universal/mem_userhunk.cpp:152)
 
-void * __cdecl Hunk_UserDebugAlloc(HunkUser *param_1,int param_2,int param_3,char *param_4)
+void * __cdecl Hunk_UserDebugAlloc(HunkUser *_user,int size,int alignment,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
+  HunkUserDebug *user;
   
-  if (param_1 == (HunkUser *)0x0) {
+  if (_user == (HunkUser *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x9b,0
                              ,"%s");
     if (!bVar2) {
@@ -106,7 +111,7 @@ void * __cdecl Hunk_UserDebugAlloc(HunkUser *param_1,int param_2,int param_3,cha
       return pvVar3;
     }
   }
-  if (param_1->scheme != HU_SCHEME_DEBUG) {
+  if (_user->scheme != HU_SCHEME_DEBUG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x9c,0
                              ,"%s");
     if (!bVar2) {
@@ -125,7 +130,7 @@ void * __cdecl Hunk_UserDebugAlloc(HunkUser *param_1,int param_2,int param_3,cha
       return pvVar3;
     }
   }
-  if ((param_3 - 1U & param_3) != 0) {
+  if ((alignment - 1U & alignment) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x9e,0
                              ,"%s");
     if (!bVar2) {
@@ -134,7 +139,7 @@ void * __cdecl Hunk_UserDebugAlloc(HunkUser *param_1,int param_2,int param_3,cha
       return pvVar3;
     }
   }
-  if (0x1000 < param_3) {
+  if (0x1000 < alignment) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x9f,0
                              ,"%s");
     if (!bVar2) {
@@ -143,20 +148,21 @@ void * __cdecl Hunk_UserDebugAlloc(HunkUser *param_1,int param_2,int param_3,cha
       return pvVar3;
     }
   }
-  pvVar3 = Hunk_FirstFitAlloc((HunkUser *)param_1[1].scheme,param_2,param_3,param_4);
+  pvVar3 = Hunk_FirstFitAlloc((HunkUser *)_user[1].scheme,size,alignment,name);
   return pvVar3;
 }
 
 
 // 007CD950  Hunk_UserDebugFree  (universal/mem_userhunk.cpp:165)
 
-void __cdecl Hunk_UserDebugFree(HunkUser *param_1,void *param_2)
+void __cdecl Hunk_UserDebugFree(HunkUser *_user,void *ptr)
 
 {
   code *pcVar1;
   bool bVar2;
+  HunkUserDebug *user;
   
-  if (param_1->scheme != HU_SCHEME_DEBUG) {
+  if (_user->scheme != HU_SCHEME_DEBUG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0xa8,0
                              ,"%s");
     if (!bVar2) {
@@ -175,7 +181,7 @@ void __cdecl Hunk_UserDebugFree(HunkUser *param_1,void *param_2)
       return;
     }
   }
-  Hunk_FirstFitFree((HunkUser *)param_1[1].scheme,param_2);
+  Hunk_FirstFitFree((HunkUser *)_user[1].scheme,ptr);
   return;
 }
 
@@ -184,15 +190,16 @@ void __cdecl Hunk_UserDebugFree(HunkUser *param_1,void *param_2)
 
 HunkUser * __cdecl
 Hunk_UserDefaultInit
-          (void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong param_4,void *param_5,
-          char *param_6,int param_7)
+          (void *buffer,int size,HU_ALLOCATION_SCHEME scheme,ulong flags,void *scheme_specific_data,
+          char *name,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   HunkUser *pHVar3;
+  HunkUserDefault *user;
   
-  if (param_3 != HU_SCHEME_DEFAULT) {
+  if (scheme != HU_SCHEME_DEFAULT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0xb3,0
                              ,"%s");
     if (!bVar2) {
@@ -201,11 +208,11 @@ Hunk_UserDefaultInit
       return pHVar3;
     }
   }
-  memset(param_1,'\0',0x2c);
-  *(int *)((int)param_1 + 0x1c) = (int)param_1 + param_2;
-  *(int *)((int)param_1 + 0x20) = (int)param_1 + 0x28;
-  *(uint *)((int)param_1 + 0x20) = *(int *)((int)param_1 + 0x20) + 0x1fU & 0xffffffe0;
-  if ((*(uint *)((int)param_1 + 0x20) & 0x1f) != 0) {
+  memset(buffer,'\0',0x2c);
+  *(int *)((int)buffer + 0x1c) = (int)buffer + size;
+  *(int *)((int)buffer + 0x20) = (int)buffer + 0x28;
+  *(uint *)((int)buffer + 0x20) = *(int *)((int)buffer + 0x20) + 0x1fU & 0xffffffe0;
+  if ((*(uint *)((int)buffer + 0x20) & 0x1f) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0xbb,0
                              ,"%s\n\t(user->pos) = %i");
     if (!bVar2) {
@@ -214,19 +221,19 @@ Hunk_UserDefaultInit
       return pHVar3;
     }
   }
-  if ((param_4 & 2) == 0) {
-    *(uint *)((int)param_1 + 0x24) = *(int *)((int)param_1 + 0x20) + 0xfffU & 0xfffff000;
+  if ((flags & 2) == 0) {
+    *(uint *)((int)buffer + 0x24) = *(int *)((int)buffer + 0x20) + 0xfffU & 0xfffff000;
   }
   else {
-    *(int *)((int)param_1 + 0x24) = *(int *)((int)param_1 + 0x20) + param_2;
+    *(int *)((int)buffer + 0x24) = *(int *)((int)buffer + 0x20) + size;
   }
-  *(int *)((int)param_1 + 0x18) = param_2;
-  *(void **)((int)param_1 + 0x10) = param_1;
-  *(HU_ALLOCATION_SCHEME *)param_1 = param_3;
-  *(ulong *)((int)param_1 + 4) = param_4;
-  *(char **)((int)param_1 + 8) = param_6;
-  *(int *)((int)param_1 + 0xc) = param_7;
-  if (*(int *)((int)param_1 + 0x14) != 0) {
+  *(int *)((int)buffer + 0x18) = size;
+  *(void **)((int)buffer + 0x10) = buffer;
+  *(HU_ALLOCATION_SCHEME *)buffer = scheme;
+  *(ulong *)((int)buffer + 4) = flags;
+  *(char **)((int)buffer + 8) = name;
+  *(int *)((int)buffer + 0xc) = type;
+  if (*(int *)((int)buffer + 0x14) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",200,0,
                              "%s");
     if (!bVar2) {
@@ -235,20 +242,22 @@ Hunk_UserDefaultInit
       return pHVar3;
     }
   }
-  return param_1;
+  return buffer;
 }
 
 
 // 007CDB30  Hunk_UserDefaultReset  (universal/mem_userhunk.cpp:206)
 
-void __cdecl Hunk_UserDefaultReset(HunkUser *param_1)
+void __cdecl Hunk_UserDefaultReset(HunkUser *_user)
 
 {
   code *pcVar1;
   bool bVar2;
-  void *pvVar3;
+  void *ptr;
+  int pos;
+  HunkUserDefault *user;
   
-  if (param_1->scheme != HU_SCHEME_DEFAULT) {
+  if (_user->scheme != HU_SCHEME_DEFAULT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0xd2,0
                              ,"%s");
     if (!bVar2) {
@@ -257,15 +266,15 @@ void __cdecl Hunk_UserDefaultReset(HunkUser *param_1)
       return;
     }
   }
-  if (param_1[1].flags != 0) {
-    Hunk_UserDefaultDestroy((HunkUser *)param_1[1].flags);
-    param_1[1].scheme = (HU_ALLOCATION_SCHEME)param_1;
-    param_1[1].flags = 0;
+  if (_user[1].flags != 0) {
+    Hunk_UserDefaultDestroy((HunkUser *)_user[1].flags);
+    _user[1].scheme = (HU_ALLOCATION_SCHEME)_user;
+    _user[1].flags = 0;
   }
-  if ((param_1->flags & 2) == 0) {
-    pvVar3 = (void *)((uint)((int)&param_1[0x102].flags + 3U) & 0xfffff000);
-    if (pvVar3 != (void *)(param_1[2].scheme + 0xfff & 0xfffff000)) {
-      if ((void *)param_1[2].scheme == pvVar3 || (int)param_1[2].scheme - (int)pvVar3 < 0) {
+  if ((_user->flags & 2) == 0) {
+    ptr = (void *)((uint)((int)&_user[0x102].flags + 3U) & 0xfffff000);
+    if (ptr != (void *)(_user[2].scheme + 0xfff & 0xfffff000)) {
+      if ((void *)_user[2].scheme == ptr || (int)_user[2].scheme - (int)ptr < 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                  0xe5,0,"%s");
         if (!bVar2) {
@@ -274,15 +283,15 @@ void __cdecl Hunk_UserDefaultReset(HunkUser *param_1)
           return;
         }
       }
-      Z_VirtualDecommit(pvVar3,param_1[2].scheme - (int)pvVar3,param_1->type);
+      Z_VirtualDecommit(ptr,_user[2].scheme - (int)ptr,_user->type);
     }
-    param_1[2].scheme = (HU_ALLOCATION_SCHEME)&param_1[2].name;
-    param_1[2].flags = param_1[2].scheme + 0xfff & 0xfffff000;
-    memset((uchar *)&param_1[2].name,'\0',0xfd8);
+    _user[2].scheme = (HU_ALLOCATION_SCHEME)&_user[2].name;
+    _user[2].flags = _user[2].scheme + 0xfff & 0xfffff000;
+    memset((uchar *)&_user[2].name,'\0',0xfd8);
   }
   else {
-    param_1[2].scheme = (HU_ALLOCATION_SCHEME)&param_1[2].name;
-    param_1[2].flags = (ulong)(param_1[1].name + param_1[2].scheme);
+    _user[2].scheme = (HU_ALLOCATION_SCHEME)&_user[2].name;
+    _user[2].flags = (ulong)(_user[1].name + _user[2].scheme);
   }
   return;
 }
@@ -290,15 +299,17 @@ void __cdecl Hunk_UserDefaultReset(HunkUser *param_1)
 
 // 007CDC80  Hunk_UserDefaultDestroy  (universal/mem_userhunk.cpp:241)
 
-void __cdecl Hunk_UserDefaultDestroy(HunkUser *param_1)
+void __cdecl Hunk_UserDefaultDestroy(HunkUser *_user)
 
 {
-  void *pvVar1;
+  HunkUserDefault *pHVar1;
   code *pcVar2;
   bool bVar3;
-  void *local_c;
+  HunkUserDefault *user;
+  HunkUserDefault *current;
+  HunkUserDefault *newCurrent;
   
-  if (param_1->scheme != HU_SCHEME_DEFAULT) {
+  if (_user->scheme != HU_SCHEME_DEFAULT) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0xfb,0
                              ,"%s");
     if (!bVar3) {
@@ -307,17 +318,17 @@ void __cdecl Hunk_UserDefaultDestroy(HunkUser *param_1)
       return;
     }
   }
-  if ((param_1->flags & 8) != 0) {
-    track_userhunk_freerange(&param_1[2].name,(uint)param_1[1].name);
+  if ((_user->flags & 8) != 0) {
+    track_userhunk_freerange(&_user[2].name,(uint)_user[1].name);
   }
-  if ((param_1->flags & 2) == 0) {
-    local_c = (void *)param_1[1].flags;
-    while (local_c != (void *)0x0) {
-      pvVar1 = *(void **)((int)local_c + 0x14);
-      Z_VirtualFree(local_c,param_1->type);
-      local_c = pvVar1;
+  if ((_user->flags & 2) == 0) {
+    current = (HunkUserDefault *)_user[1].flags;
+    while (current != (HunkUserDefault *)0x0) {
+      pHVar1 = current->next;
+      Z_VirtualFree(current,_user->type);
+      current = pHVar1;
     }
-    Z_VirtualFree(param_1,param_1->type);
+    Z_VirtualFree(_user,_user->type);
   }
   return;
 }
@@ -325,34 +336,39 @@ void __cdecl Hunk_UserDefaultDestroy(HunkUser *param_1)
 
 // 007CDD40  Hunk_UserDefaultAlloc  (universal/mem_userhunk.cpp:281)
 
-void * __cdecl Hunk_UserDefaultAlloc(HunkUser *param_1,int param_2,int param_3,char *param_4)
+void * __cdecl Hunk_UserDefaultAlloc(HunkUser *_user,int size,int alignment,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
-  HunkUser *pHVar4;
+  HunkUserDefault *pHVar4;
+  uint size_00;
   uint uVar5;
-  uint uVar6;
   char *local_24;
-  void *local_14;
-  HunkUser *local_c;
+  long range;
+  int newPos;
+  long pos;
+  long result;
+  HunkUserDefault *user;
+  HunkUserDefault *current;
+  HunkUserDefault *newCurrent;
   
-  if ((param_1 == (HunkUser *)0x0) &&
+  if ((_user == (HunkUser *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                0x120,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  if ((param_1->scheme != HU_SCHEME_DEFAULT) &&
+  if ((_user->scheme != HU_SCHEME_DEFAULT) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                0x121,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  if (param_1[1].name + -0x28 < (uint)param_2) {
+  if (_user[1].name + -0x28 < (uint)size) {
     va("size: %d, maxSize: %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x122,
                              0,"%s\n\t%s");
@@ -362,82 +378,84 @@ void * __cdecl Hunk_UserDefaultAlloc(HunkUser *param_1,int param_2,int param_3,c
       return pvVar3;
     }
   }
-  if (((param_3 - 1U & param_3) != 0) &&
+  if (((alignment - 1U & alignment) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                0x123,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  if ((0x1000 < param_3) &&
+  if ((0x1000 < alignment) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                0x124,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pvVar3 = (void *)(*pcVar1)();
     return pvVar3;
   }
-  local_c = (HunkUser *)param_1[1].scheme;
+  current = (HunkUserDefault *)_user[1].scheme;
   while( true ) {
-    local_14 = (void *)local_c[2].scheme;
-    if ((int)local_14 % param_3 != 0) {
-      local_14 = (void *)((int)local_14 + (param_3 - 1U) & ~(param_3 - 1U));
+    result = current->pos;
+    if (result % alignment != 0) {
+      result = result + (alignment - 1U) & ~(alignment - 1U);
     }
-    if ((int)local_14 + param_2 <= local_c[1].type) break;
-    if (((param_1->flags & 4) != 0) || ((param_1->flags & 2) != 0)) {
+    if (result + size <= current->end) break;
+    if (((_user->flags & 4) != 0) || ((_user->flags & 2) != 0)) {
       Com_Error(ERR_FATAL,"Hunk_UserAlloc: out of memory");
     }
-    pHVar4 = Hunk_UserCreate((int)param_1[1].name,param_1->scheme,param_1->flags,(void *)0x0,
-                             param_1->name,param_1->type);
-    param_1[1].scheme = (HU_ALLOCATION_SCHEME)pHVar4;
-    local_c[1].flags = (ulong)pHVar4;
-    local_c = pHVar4;
+    pHVar4 = (HunkUserDefault *)
+             Hunk_UserCreate((int)_user[1].name,_user->scheme,_user->flags,(void *)0x0,_user->name,
+                             _user->type);
+    _user[1].scheme = (HU_ALLOCATION_SCHEME)pHVar4;
+    current->next = pHVar4;
+    current = pHVar4;
   }
-  local_c[2].scheme = (int)local_14 + param_2;
-  if ((int)local_c[2].flags < (int)local_c[2].scheme) {
-    uVar5 = (local_c[2].scheme + 0x1000 & 0xfffff000) - local_c[2].flags;
-    if (((int)uVar5 < 1) &&
+  current->pos = result + size;
+  if (current->locked < current->pos) {
+    size_00 = (current->pos + 0x1000U & 0xfffff000) - current->locked;
+    if (((int)size_00 < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                  0x143,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pvVar3 = (void *)(*pcVar1)();
       return pvVar3;
     }
-    uVar6 = uVar5 & 0x80000fff;
-    if ((int)uVar6 < 0) {
-      uVar6 = (uVar6 - 1 | 0xfffff000) + 1;
+    uVar5 = size_00 & 0x80000fff;
+    if ((int)uVar5 < 0) {
+      uVar5 = (uVar5 - 1 | 0xfffff000) + 1;
     }
-    if ((uVar6 != 0) &&
+    if ((uVar5 != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",
                                  0x144,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pvVar3 = (void *)(*pcVar1)();
       return pvVar3;
     }
-    Z_VirtualCommit((void *)local_c[2].flags,uVar5,param_1->type);
-    local_c[2].flags = local_c[2].flags + uVar5;
+    Z_VirtualCommit((void *)current->locked,size_00,_user->type);
+    current->locked = current->locked + size_00;
   }
-  if ((param_1->flags & 8) != 0) {
-    if (param_4 == (char *)0x0) {
-      local_24 = param_1->name;
+  if ((_user->flags & 8) != 0) {
+    if (name == (char *)0x0) {
+      local_24 = _user->name;
     }
     else {
-      local_24 = param_4;
+      local_24 = name;
     }
-    track_userhunk_alloc(param_2,(int)local_14,local_24,param_1->type);
+    track_userhunk_alloc(size,result,local_24,_user->type);
   }
-  return local_14;
+  return (void *)result;
 }
 
 
 // 007CE030  Hunk_UserDefaultFree  (universal/mem_userhunk.cpp:340)
 
-void __cdecl Hunk_UserDefaultFree(HunkUser *param_1,void *param_2)
+void __cdecl Hunk_UserDefaultFree(HunkUser *user,void *ptr)
 
 {
   code *pcVar1;
   bool bVar2;
+  HunkUserDefault *dbgDefUser;
   
-  if (param_1->scheme != HU_SCHEME_DEFAULT) {
+  if (user->scheme != HU_SCHEME_DEFAULT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x155,
                              0,"%s");
     if (!bVar2) {
@@ -446,8 +464,8 @@ void __cdecl Hunk_UserDefaultFree(HunkUser *param_1,void *param_2)
       return;
     }
   }
-  if ((param_1->flags & 8) != 0) {
-    track_userhunk_free(param_2);
+  if ((user->flags & 8) != 0) {
+    track_userhunk_free(ptr);
   }
   return;
 }
@@ -503,15 +521,15 @@ void __cdecl Hunk_UserShutdown(void)
 
 HunkUser * __cdecl
 Hunk_UserCreateFromBuffer
-          (void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong param_4,void *param_5,
-          char *param_6,int param_7)
+          (void *buffer,int size,HU_ALLOCATION_SCHEME scheme,ulong flags,void *scheme_specific_data,
+          char *name,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   HunkUser *pHVar3;
   
-  if (param_3 == HU_SCHEME_DEBUG) {
+  if (scheme == HU_SCHEME_DEBUG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x176,
                              0,"%s");
     if (!bVar2) {
@@ -520,8 +538,8 @@ Hunk_UserCreateFromBuffer
       return pHVar3;
     }
   }
-  pHVar3 = (*g_HunkUserAllocationSchemeMap[param_3].Init)
-                     (param_1,param_2,param_3,param_4 | 2,param_5,param_6,param_7);
+  pHVar3 = (*g_HunkUserAllocationSchemeMap[scheme].Init)
+                     (buffer,size,scheme,flags | 2,scheme_specific_data,name,type);
   return pHVar3;
 }
 
@@ -529,17 +547,17 @@ Hunk_UserCreateFromBuffer
 // 007CE1B0  Hunk_UserCreate  (universal/mem_userhunk.cpp:379)
 
 HunkUser * __cdecl
-Hunk_UserCreate(int param_1,HU_ALLOCATION_SCHEME param_2,ulong param_3,void *param_4,char *param_5,
-               int param_6)
+Hunk_UserCreate(int size,HU_ALLOCATION_SCHEME scheme,ulong flags,void *scheme_specific_data,
+               char *name,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   HunkUser *pHVar3;
   uint uVar4;
-  void *local_8;
+  void *buffer;
   
-  if ((param_3 & 2) != 0) {
+  if ((flags & 2) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x17d,
                              0,"%s");
     if (!bVar2) {
@@ -548,7 +566,7 @@ Hunk_UserCreate(int param_1,HU_ALLOCATION_SCHEME param_2,ulong param_3,void *par
       return pHVar3;
     }
   }
-  if ((param_2 != HU_SCHEME_DEFAULT) && (param_2 != HU_SCHEME_DEBUG)) {
+  if ((scheme != HU_SCHEME_DEFAULT) && (scheme != HU_SCHEME_DEBUG)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x17e,
                              0,"%s");
     if (!bVar2) {
@@ -557,7 +575,7 @@ Hunk_UserCreate(int param_1,HU_ALLOCATION_SCHEME param_2,ulong param_3,void *par
       return pHVar3;
     }
   }
-  uVar4 = param_1 & 0x80000fff;
+  uVar4 = size & 0x80000fff;
   if ((int)uVar4 < 0) {
     uVar4 = (uVar4 - 1 | 0xfffff000) + 1;
   }
@@ -570,72 +588,73 @@ Hunk_UserCreate(int param_1,HU_ALLOCATION_SCHEME param_2,ulong param_3,void *par
       return pHVar3;
     }
   }
-  if (param_2 == HU_SCHEME_DEBUG) {
-    local_8 = Z_VirtualReserve(param_1,param_5);
-    Z_VirtualCommit(local_8,param_1,param_6);
-    param_3 = param_3 | 2;
+  if (scheme == HU_SCHEME_DEBUG) {
+    buffer = Z_VirtualReserve(size,name);
+    Z_VirtualCommit(buffer,size,type);
+    flags = flags | 2;
   }
   else {
-    local_8 = Z_VirtualReserve(param_1,param_5);
-    Z_VirtualCommit(local_8,0x2c,param_6);
+    buffer = Z_VirtualReserve(size,name);
+    Z_VirtualCommit(buffer,0x2c,type);
   }
-  pHVar3 = (*g_HunkUserAllocationSchemeMap[param_2].Init)
-                     (local_8,param_1,param_2,param_3,param_4,param_5,param_6);
+  pHVar3 = (*g_HunkUserAllocationSchemeMap[scheme].Init)
+                     (buffer,size,scheme,flags,scheme_specific_data,name,type);
   return pHVar3;
 }
 
 
 // 007CE2F0  Hunk_UserAlloc  (universal/mem_userhunk.cpp:423)
 
-void * __cdecl Hunk_UserAlloc(HunkUser *param_1,int param_2,int param_3,char *param_4)
+void * __cdecl Hunk_UserAlloc(HunkUser *user,int size,int alignment,char *name)
 
 {
   void *pvVar1;
   
-  pvVar1 = (*g_HunkUserAllocationSchemeMap[param_1->scheme].Alloc)(param_1,param_2,param_3,param_4);
+  pvVar1 = (*g_HunkUserAllocationSchemeMap[user->scheme].Alloc)(user,size,alignment,name);
   return pvVar1;
 }
 
 
 // 007CE320  Hunk_UserFree  (universal/mem_userhunk.cpp:428)
 
-void __cdecl Hunk_UserFree(HunkUser *param_1,void *param_2)
+void __cdecl Hunk_UserFree(HunkUser *user,void *ptr)
 
 {
-  (*g_HunkUserAllocationSchemeMap[param_1->scheme].Free)(param_1,param_2);
+  (*g_HunkUserAllocationSchemeMap[user->scheme].Free)(user,ptr);
   return;
 }
 
 
 // 007CE340  Hunk_UserReset  (universal/mem_userhunk.cpp:433)
 
-void __cdecl Hunk_UserReset(HunkUser *param_1)
+void __cdecl Hunk_UserReset(HunkUser *user)
 
 {
-  (*g_HunkUserAllocationSchemeMap[param_1->scheme].Reset)(param_1);
+  (*g_HunkUserAllocationSchemeMap[user->scheme].Reset)(user);
   return;
 }
 
 
 // 007CE360  Hunk_UserDestroy  (universal/mem_userhunk.cpp:438)
 
-void __cdecl Hunk_UserDestroy(HunkUser *param_1)
+void __cdecl Hunk_UserDestroy(HunkUser *user)
 
 {
-  (*g_HunkUserAllocationSchemeMap[param_1->scheme].Destroy)(param_1);
+  (*g_HunkUserAllocationSchemeMap[user->scheme].Destroy)(user);
   return;
 }
 
 
 // 007CE380  Hunk_UserSetPos  (universal/mem_userhunk.cpp:443)
 
-void __cdecl Hunk_UserSetPos(HunkUser *param_1,void *param_2)
+void __cdecl Hunk_UserSetPos(HunkUser *_user,void *pos)
 
 {
   code *pcVar1;
   bool bVar2;
+  HunkUserDefault *user;
   
-  if (param_1->scheme != HU_SCHEME_DEFAULT) {
+  if (_user->scheme != HU_SCHEME_DEFAULT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x1be,
                              0,"%s");
     if (!bVar2) {
@@ -644,7 +663,7 @@ void __cdecl Hunk_UserSetPos(HunkUser *param_1,void *param_2)
       return;
     }
   }
-  if ((param_1->flags & 4) == 0) {
+  if ((_user->flags & 4) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x1bf,
                              0,"%s");
     if (!bVar2) {
@@ -653,7 +672,7 @@ void __cdecl Hunk_UserSetPos(HunkUser *param_1,void *param_2)
       return;
     }
   }
-  if (param_2 < &param_1[2].name) {
+  if (pos < &_user[2].name) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x1c0,
                              0,"%s");
     if (!bVar2) {
@@ -662,7 +681,7 @@ void __cdecl Hunk_UserSetPos(HunkUser *param_1,void *param_2)
       return;
     }
   }
-  if ((int)param_1[2].scheme < (int)param_2) {
+  if ((int)_user[2].scheme < (int)pos) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_userhunk.cpp",0x1c1,
                              0,"%s");
     if (!bVar2) {
@@ -671,14 +690,14 @@ void __cdecl Hunk_UserSetPos(HunkUser *param_1,void *param_2)
       return;
     }
   }
-  param_1[2].scheme = (HU_ALLOCATION_SCHEME)param_2;
+  _user[2].scheme = (HU_ALLOCATION_SCHEME)pos;
   return;
 }
 
 
 // 007CE460  Hunk_CopyString  (universal/mem_userhunk.cpp:455)
 
-char * __cdecl Hunk_CopyString(HunkUser *param_1,char *param_2)
+char * __cdecl Hunk_CopyString(HunkUser *user,char *in)
 
 {
   char cVar1;
@@ -686,14 +705,15 @@ char * __cdecl Hunk_CopyString(HunkUser *param_1,char *param_2)
   char *local_20;
   char *local_1c;
   char *local_c;
+  char *out;
   
-  local_c = param_2;
+  local_c = in;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  pcVar2 = Hunk_UserAlloc(param_1,(int)(local_c + (1 - (int)(param_2 + 1))),1,(char *)0x0);
-  local_1c = param_2;
+  pcVar2 = Hunk_UserAlloc(user,(int)(local_c + (1 - (int)(in + 1))),1,(char *)0x0);
+  local_1c = in;
   local_20 = pcVar2;
   do {
     cVar1 = *local_1c;

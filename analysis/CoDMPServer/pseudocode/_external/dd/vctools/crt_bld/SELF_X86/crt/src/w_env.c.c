@@ -6,31 +6,31 @@ void * __cdecl __crtGetEnvironmentStringsW(void)
 
 {
   WCHAR WVar1;
-  LPWCH pWVar2;
+  LPWCH src;
+  WCHAR *pWVar2;
   WCHAR *pWVar3;
-  WCHAR *pWVar4;
-  uint uVar5;
-  uchar *puVar6;
+  uint cb;
+  uchar *dst;
   
-  pWVar2 = GetEnvironmentStringsW();
-  if (pWVar2 != (LPWCH)0x0) {
-    WVar1 = *pWVar2;
-    pWVar4 = pWVar2;
+  src = GetEnvironmentStringsW();
+  if (src != (LPWCH)0x0) {
+    WVar1 = *src;
+    pWVar3 = src;
     while (WVar1 != L'\0') {
       do {
-        pWVar3 = pWVar4;
-        pWVar4 = pWVar3 + 1;
-      } while (*pWVar4 != L'\0');
-      pWVar4 = pWVar3 + 2;
-      WVar1 = *pWVar4;
+        pWVar2 = pWVar3;
+        pWVar3 = pWVar2 + 1;
+      } while (*pWVar3 != L'\0');
+      pWVar3 = pWVar2 + 2;
+      WVar1 = *pWVar3;
     }
-    uVar5 = (int)pWVar4 + (2 - (int)pWVar2);
-    puVar6 = _malloc_crt(uVar5);
-    if (puVar6 != (uchar *)0x0) {
-      memcpy(puVar6,(uchar *)pWVar2,uVar5);
+    cb = (int)pWVar3 + (2 - (int)src);
+    dst = _malloc_crt(cb);
+    if (dst != (uchar *)0x0) {
+      memcpy(dst,(uchar *)src,cb);
     }
-    FreeEnvironmentStringsW(pWVar2);
-    return puVar6;
+    FreeEnvironmentStringsW(src);
+    return dst;
   }
   return (void *)0x0;
 }

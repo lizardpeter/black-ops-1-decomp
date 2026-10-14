@@ -63,33 +63,35 @@ void __cdecl _dynamic_initializer_for__s_serverCounters__(void)
 
 TaskRecord * __cdecl
 LiveCounter_IncrementCounters
-          (TaskDefinition *param_1,int param_2,bdCounterValue *param_3,uint param_4)
+          (TaskDefinition *definition,int controllerIndex,bdCounterValue *counterIncrements,
+          uint numEntries)
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_10;
-  TaskRecord *local_c;
-  bdCounter *local_8;
+  TaskRecord *task;
+  bdCounter *counter;
   
-  local_8 = dwGetCounter(param_2);
-  if (local_8 == (bdCounter *)0x0) {
-    local_c = (TaskRecord *)0x0;
+  counter = dwGetCounter(controllerIndex);
+  if (counter == (bdCounter *)0x0) {
+    task = (TaskRecord *)0x0;
   }
   else {
-    local_c = TaskManager2_TaskGetInProgress(param_1);
-    if (local_c == (TaskRecord *)0x0) {
-      local_c = TaskManager2_CreateTask(param_1,param_2,(TaskRecord *)0x0,0);
-      bVar1 = bdCounter::incrementCounters(local_8,(bdCounterValue *)&local_10,(uint)param_3);
+    task = TaskManager2_TaskGetInProgress(definition);
+    if (task == (TaskRecord *)0x0) {
+      task = TaskManager2_CreateTask(definition,controllerIndex,(TaskRecord *)0x0,0);
+      other_3 = bdCounter::incrementCounters
+                          (counter,(bdCounterValue *)&local_10,(uint)counterIncrements);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_c->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-      s_numEntriesUploaded = param_4;
-      local_c->payload = &s_numEntriesUploaded;
-      TaskManager2_StartTask(local_c);
+      s_numEntriesUploaded = numEntries;
+      task->payload = &s_numEntriesUploaded;
+      TaskManager2_StartTask(task);
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -99,31 +101,32 @@ LiveCounter_IncrementCounters
 
 TaskRecord * __cdecl
 LiveCounter_GetCounterTotals
-          (TaskDefinition *param_1,int param_2,bdCounterValue *param_3,uint param_4)
+          (TaskDefinition *definition,int controllerIndex,bdCounterValue *results,uint numCounterIDs
+          )
 
 {
-  bdReference<bdRemoteTask> bVar1;
+  bdReference<bdRemoteTask> other_3;
   bdReference<bdByteBuffer> local_10;
-  TaskRecord *local_c;
-  bdCounter *local_8;
+  TaskRecord *task;
+  bdCounter *counter;
   
-  local_8 = dwGetCounter(param_2);
-  if (local_8 == (bdCounter *)0x0) {
-    local_c = (TaskRecord *)0x0;
+  counter = dwGetCounter(controllerIndex);
+  if (counter == (bdCounter *)0x0) {
+    task = (TaskRecord *)0x0;
   }
   else {
-    local_c = TaskManager2_TaskGetInProgress(param_1);
-    if (local_c == (TaskRecord *)0x0) {
-      local_c = TaskManager2_CreateTask(param_1,param_2,(TaskRecord *)0x0,0);
-      bVar1 = bdCounter::getCounterTotals(local_8,(bdCounterValue *)&local_10,(uint)param_3);
+    task = TaskManager2_TaskGetInProgress(definition);
+    if (task == (TaskRecord *)0x0) {
+      task = TaskManager2_CreateTask(definition,controllerIndex,(TaskRecord *)0x0,0);
+      other_3 = bdCounter::getCounterTotals(counter,(bdCounterValue *)&local_10,(uint)results);
       bdReference<bdAddrHandle>::operator=
-                ((bdReference<bdAddrHandle> *)&local_c->remoteTask,
-                 (bdReference<bdAddrHandle> *)bVar1.m_ptr);
+                ((bdReference<bdAddrHandle> *)&task->remoteTask,
+                 (bdReference<bdAddrHandle> *)other_3.m_ptr);
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_10);
-      TaskManager2_StartTask(local_c);
+      TaskManager2_StartTask(task);
     }
   }
-  return local_c;
+  return task;
 }
 
 
@@ -131,35 +134,36 @@ LiveCounter_GetCounterTotals
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveCounter_UploadAllCounters(int param_1)
+TaskRecord * __cdecl LiveCounter_UploadAllCounters(int controllerIndex)
 
 {
   TaskRecord *pTVar1;
-  int local_10;
-  int local_c;
-  uint local_8;
+  int i_2;
+  int i;
+  int uploadCount;
   
-  local_8 = 0;
-  for (local_c = 0; local_c < s_serverCountersTotal; local_c = local_c + 1) {
-    if (((int)s_localCounters[local_c].m_counterValue != 0) ||
-       (*(int *)((int)&s_localCounters[local_c].m_counterValue + 4) != 0)) {
-      s_uploadCounters[local_8].m_counterID = s_localCounters[local_c].m_counterID;
-      *(int *)&s_uploadCounters[local_8].m_counterValue =
-           (int)s_localCounters[local_c].m_counterValue;
-      *(undefined4 *)((int)&s_uploadCounters[local_8].m_counterValue + 4) =
-           *(undefined4 *)((int)&s_localCounters[local_c].m_counterValue + 4);
-      local_8 = local_8 + 1;
+  uploadCount = 0;
+  for (i = 0; i < s_serverCountersTotal; i = i + 1) {
+    if (((int)s_localCounters[i].m_counterValue != 0) ||
+       (*(int *)((int)&s_localCounters[i].m_counterValue + 4) != 0)) {
+      s_uploadCounters[uploadCount].m_counterID = s_localCounters[i].m_counterID;
+      *(int *)&s_uploadCounters[uploadCount].m_counterValue = (int)s_localCounters[i].m_counterValue
+      ;
+      *(undefined4 *)((int)&s_uploadCounters[uploadCount].m_counterValue + 4) =
+           *(undefined4 *)((int)&s_localCounters[i].m_counterValue + 4);
+      uploadCount = uploadCount + 1;
     }
   }
-  if (local_8 == 0) {
+  if (uploadCount == 0) {
     pTVar1 = (TaskRecord *)0x0;
   }
   else {
-    for (local_10 = 0; local_10 < s_serverCountersTotal; local_10 = local_10 + 1) {
-      *(undefined4 *)&s_localCounters[local_10].m_counterValue = 0;
-      *(undefined4 *)((int)&s_localCounters[local_10].m_counterValue + 4) = 0;
+    for (i_2 = 0; i_2 < s_serverCountersTotal; i_2 = i_2 + 1) {
+      *(undefined4 *)&s_localCounters[i_2].m_counterValue = 0;
+      *(undefined4 *)((int)&s_localCounters[i_2].m_counterValue + 4) = 0;
     }
-    pTVar1 = LiveCounter_IncrementCounters(task_uploadAllCounters,param_1,s_uploadCounters,local_8);
+    pTVar1 = LiveCounter_IncrementCounters
+                       (task_uploadAllCounters,controllerIndex,s_uploadCounters,uploadCount);
   }
   return pTVar1;
 }
@@ -169,7 +173,7 @@ TaskRecord * __cdecl LiveCounter_UploadAllCounters(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveCounter_UploadAllCountersComplete(TaskRecord *param_1)
+void __cdecl LiveCounter_UploadAllCountersComplete(TaskRecord *task)
 
 {
   Com_Printf(0x10,"Upload global counters.\n");
@@ -181,7 +185,7 @@ void __cdecl LiveCounter_UploadAllCountersComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveCounter_UploadAllCountersFailure(TaskRecord *param_1)
+void __cdecl LiveCounter_UploadAllCountersFailure(TaskRecord *task)
 
 {
   uint uVar1;
@@ -189,33 +193,34 @@ void __cdecl LiveCounter_UploadAllCountersFailure(TaskRecord *param_1)
   int iVar3;
   long64 lVar4;
   int iVar5;
-  int local_10;
-  int local_c;
+  int j;
+  int i;
+  int triedToUploadCount;
   
-  iVar5 = *(int *)param_1->payload;
-  local_c = 0;
+  iVar5 = *(int *)task->payload;
+  i = 0;
   do {
-    if (iVar5 <= local_c) {
+    if (iVar5 <= i) {
       s_countersReadyForUpload = true;
       iVar5 = Sys_Milliseconds();
       s_nextCounterUploadTime = iVar5 + (counterUploadInterval->current).integer * 60000;
       Com_PrintError(0x10,"Failed to upload global counters.\n");
       return;
     }
-    for (local_10 = 0; local_10 < s_serverCountersTotal; local_10 = local_10 + 1) {
-      if (s_localCounters[local_10].m_counterID == s_uploadCounters[local_c].m_counterID) {
-        uVar1 = (uint)s_localCounters[local_10].m_counterValue;
-        lVar4 = s_uploadCounters[local_c].m_counterValue;
-        iVar2 = *(int *)((int)&s_localCounters[local_10].m_counterValue + 4);
-        iVar3 = *(int *)((int)&s_uploadCounters[local_c].m_counterValue + 4);
-        *(uint *)&s_localCounters[local_10].m_counterValue =
-             uVar1 + (int)s_uploadCounters[local_c].m_counterValue;
-        *(uint *)((int)&s_localCounters[local_10].m_counterValue + 4) =
+    for (j = 0; j < s_serverCountersTotal; j = j + 1) {
+      if (s_localCounters[j].m_counterID == s_uploadCounters[i].m_counterID) {
+        uVar1 = (uint)s_localCounters[j].m_counterValue;
+        lVar4 = s_uploadCounters[i].m_counterValue;
+        iVar2 = *(int *)((int)&s_localCounters[j].m_counterValue + 4);
+        iVar3 = *(int *)((int)&s_uploadCounters[i].m_counterValue + 4);
+        *(uint *)&s_localCounters[j].m_counterValue =
+             uVar1 + (int)s_uploadCounters[i].m_counterValue;
+        *(uint *)((int)&s_localCounters[j].m_counterValue + 4) =
              iVar2 + iVar3 + (uint)CARRY4(uVar1,(uint)lVar4);
         break;
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -224,13 +229,14 @@ void __cdecl LiveCounter_UploadAllCountersFailure(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-TaskRecord * __cdecl LiveCounter_DownloadAllCounters(int param_1)
+TaskRecord * __cdecl LiveCounter_DownloadAllCounters(int controllerIndex)
 
 {
   TaskRecord *pTVar1;
   
   pTVar1 = LiveCounter_GetCounterTotals
-                     (task_downloadAllCounters,param_1,s_serverCounters,s_serverCountersTotal);
+                     (task_downloadAllCounters,controllerIndex,s_serverCounters,
+                      s_serverCountersTotal);
   return pTVar1;
 }
 
@@ -239,7 +245,7 @@ TaskRecord * __cdecl LiveCounter_DownloadAllCounters(int param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveCounter_DownloadAllCountersComplete(TaskRecord *param_1)
+void __cdecl LiveCounter_DownloadAllCountersComplete(TaskRecord *task)
 
 {
   Com_Printf(0x10,"Downloaded all global counters.\n");
@@ -251,7 +257,7 @@ void __cdecl LiveCounter_DownloadAllCountersComplete(TaskRecord *param_1)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveCounter_DownloadAllCountersFailure(TaskRecord *param_1)
+void __cdecl LiveCounter_DownloadAllCountersFailure(TaskRecord *task)
 
 {
   Com_PrintError(0x10,"Failed to download all global counters.\n");
@@ -265,22 +271,25 @@ void __cdecl LiveCounter_IncrementCounter_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  char *pcVar3;
-  int iVar4;
+  char *counterType_00;
+  char *nptr;
+  int counterID;
   undefined4 in_stack_ffffffd8;
+  char *counterType;
+  int counterId;
+  int increment;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    pcVar2 = Cmd_Argv(1);
-    pcVar3 = Cmd_Argv(2);
-    iVar1 = atoi(pcVar3);
-    iVar4 = LiveCounter_CounterStringToID(pcVar2);
-    if (iVar4 == -1) {
+    counterType_00 = Cmd_Argv(1);
+    nptr = Cmd_Argv(2);
+    iVar1 = atoi(nptr);
+    counterID = LiveCounter_CounterStringToID(counterType_00);
+    if (counterID == -1) {
       Com_PrintError(0x10,"Invalid counter string id: %s\n");
     }
     else {
-      LiveCounter_IncrementCounterValue(iVar4,CONCAT44(in_stack_ffffffd8,iVar1 >> 0x1f));
+      LiveCounter_IncrementCounterValue(counterID,CONCAT44(in_stack_ffffffd8,iVar1 >> 0x1f));
     }
   }
   else {
@@ -294,24 +303,27 @@ void __cdecl LiveCounter_IncrementCounter_f(void)
 
 // 0095CFC0  LiveCounter_IncrementCounterValueByName  (live/live_counter.cpp:193)
 
-void __cdecl LiveCounter_IncrementCounterValueByName(char *param_1,ulong64 param_2)
+/* WARNING: Variable defined which should be unmapped: counterID */
+
+void __cdecl LiveCounter_IncrementCounterValueByName(char *counterType,ulong64 param_2)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int counterID_00;
+  int counterID;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((counterType == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_counter.cpp",0xc4,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 != (char *)0x0) {
-    iVar3 = LiveCounter_CounterStringToID(param_1);
-    if (iVar3 != -1) {
-      LiveCounter_IncrementCounterValue(iVar3,CONCAT44(iVar3,(undefined4)param_2));
+  if (counterType != (char *)0x0) {
+    counterID_00 = LiveCounter_CounterStringToID(counterType);
+    if (counterID_00 != -1) {
+      LiveCounter_IncrementCounterValue(counterID_00,CONCAT44(counterID_00,(undefined4)param_2));
     }
   }
   return;
@@ -320,7 +332,7 @@ void __cdecl LiveCounter_IncrementCounterValueByName(char *param_1,ulong64 param
 
 // 0095D030  LiveCounter_IncrementCounterValue  (live/live_counter.cpp:211)
 
-void __cdecl LiveCounter_IncrementCounterValue(int param_1,long64 param_2)
+void __cdecl LiveCounter_IncrementCounterValue(int counterID,long64 param_2)
 
 {
   uint uVar1;
@@ -328,22 +340,23 @@ void __cdecl LiveCounter_IncrementCounterValue(int param_1,long64 param_2)
   bool bVar3;
   int iVar4;
   uint in_stack_00000008;
-  int local_8;
+  int end;
+  int i;
   
   if ((s_countersInit) && (in_stack_00000008 != 0 || (int)param_2 != 0)) {
-    if ((param_1 == 0) &&
+    if ((counterID == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_counter.cpp",0xda,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    for (local_8 = 0; local_8 < 0x640; local_8 = local_8 + 1) {
-      if (s_localCounters[local_8].m_counterID == param_1) {
-        uVar1 = (uint)s_localCounters[local_8].m_counterValue;
-        iVar4 = *(int *)((int)&s_localCounters[local_8].m_counterValue + 4);
-        *(uint *)&s_localCounters[local_8].m_counterValue = uVar1 + in_stack_00000008;
-        *(uint *)((int)&s_localCounters[local_8].m_counterValue + 4) =
+    for (i = 0; i < 0x640; i = i + 1) {
+      if (s_localCounters[i].m_counterID == counterID) {
+        uVar1 = (uint)s_localCounters[i].m_counterValue;
+        iVar4 = *(int *)((int)&s_localCounters[i].m_counterValue + 4);
+        *(uint *)&s_localCounters[i].m_counterValue = uVar1 + in_stack_00000008;
+        *(uint *)((int)&s_localCounters[i].m_counterValue + 4) =
              iVar4 + (int)param_2 + (uint)CARRY4(uVar1,in_stack_00000008);
         if (s_countersReadyForUpload != false) {
           return;
@@ -361,7 +374,7 @@ void __cdecl LiveCounter_IncrementCounterValue(int param_1,long64 param_2)
 
 // 0095D120  LiveCounter_GetCounterTotalValue  (live/live_counter.cpp:239)
 
-long64 __cdecl LiveCounter_GetCounterTotalValue(int param_1)
+long64 __cdecl LiveCounter_GetCounterTotalValue(int counterID)
 
 {
   undefined4 uVar1;
@@ -369,8 +382,8 @@ long64 __cdecl LiveCounter_GetCounterTotalValue(int param_1)
   
   if (s_countersInit) {
     s_countersRequested = true;
-    uVar1 = (undefined4)s_serverCounters[param_1].m_counterValue;
-    uVar2 = *(undefined4 *)((int)&s_serverCounters[param_1].m_counterValue + 4);
+    uVar1 = (undefined4)s_serverCounters[counterID].m_counterValue;
+    uVar2 = *(undefined4 *)((int)&s_serverCounters[counterID].m_counterValue + 4);
   }
   else {
     uVar1 = 0;
@@ -382,18 +395,19 @@ long64 __cdecl LiveCounter_GetCounterTotalValue(int param_1)
 
 // 0095D150  LiveCounter_CounterStringToID  (live/live_counter.cpp:249)
 
-int __cdecl LiveCounter_CounterStringToID(char *param_1)
+int __cdecl LiveCounter_CounterStringToID(char *counterType)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  char *pcVar5;
+  char *nptr;
   char *local_10;
-  StringTable *local_8;
+  char *counterID;
+  StringTable *table;
   
-  if (param_1 == (char *)0x0) {
+  if (counterType == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_counter.cpp",0xfa,0,"%s"
                             );
     if (!bVar3) {
@@ -402,29 +416,29 @@ int __cdecl LiveCounter_CounterStringToID(char *param_1)
       return iVar4;
     }
   }
-  if (param_1 == (char *)0x0) {
+  if (counterType == (char *)0x0) {
     iVar4 = -1;
   }
   else {
-    StringTable_GetAsset("mp/globalcounters.csv",&local_8);
-    if (local_8 == (StringTable *)0x0) {
+    StringTable_GetAsset("mp/globalcounters.csv",&table);
+    if (table == (StringTable *)0x0) {
       Com_PrintError(0x10,
                      "Could not find global counter value as string table \'%s\' could not be found.\n"
                     );
       iVar4 = -1;
     }
     else {
-      pcVar5 = StringTable_Lookup(local_8,1,param_1,0);
-      local_10 = pcVar5;
+      nptr = StringTable_Lookup(table,1,counterType,0);
+      local_10 = nptr;
       do {
         cVar1 = *local_10;
         local_10 = local_10 + 1;
       } while (cVar1 != '\0');
-      if (local_10 == pcVar5 + 1) {
+      if (local_10 == nptr + 1) {
         iVar4 = -1;
       }
       else {
-        iVar4 = atoi(pcVar5);
+        iVar4 = atoi(nptr);
       }
     }
   }
@@ -437,9 +451,9 @@ int __cdecl LiveCounter_CounterStringToID(char *param_1)
 void __cdecl LiveCounter_Dump_f(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 100; local_8 = local_8 + 1) {
+  for (i = 0; i < 100; i = i + 1) {
     Com_Printf(0,"%d: %llu\n");
   }
   return;
@@ -451,39 +465,41 @@ void __cdecl LiveCounter_Dump_f(void)
 void __cdecl LiveCounter_SetupCounters(void)
 
 {
-  char *pcVar1;
-  uint uVar2;
-  int local_10;
-  StringTable *local_c;
-  int local_8;
+  char *nptr;
+  uint uVar1;
+  int counterID;
+  char *counter;
+  int i;
+  StringTable *table;
+  int rowCount;
   
-  StringTable_GetAsset("mp/globalcounters.csv",&local_c);
-  if (local_c == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/globalcounters.csv",&table);
+  if (table == (StringTable *)0x0) {
     Com_PrintError(0x10,
                    "Could not find global counter value as string table \'%s\' could not be found.\n"
                   );
     s_countersInit = false;
   }
-  local_8 = StringTable_RowCount(local_c);
-  if ((local_8 == 0) || (s_serverCountersTotal <= local_8)) {
+  rowCount = StringTable_RowCount(table);
+  if ((rowCount == 0) || (s_serverCountersTotal <= rowCount)) {
     Com_PrintError(0x10,"Global counter string table \'%s\' had no values.\n");
     s_countersInit = false;
   }
-  for (local_10 = 0; local_10 < local_8; local_10 = local_10 + 1) {
-    pcVar1 = StringTable_GetColumnValueForRow(local_c,local_10,0);
-    uVar2 = atoi(pcVar1);
-    if (uVar2 == 0) {
+  for (i = 0; i < rowCount; i = i + 1) {
+    nptr = StringTable_GetColumnValueForRow(table,i,0);
+    uVar1 = atoi(nptr);
+    if (uVar1 == 0) {
       Com_PrintError(0x10,"Global counter string table \'%s\' has an invalid value: %s.\n");
     }
     else {
-      s_localCounters[local_10].m_counterID = uVar2;
-      s_serverCounters[local_10].m_counterID = uVar2;
-      *(undefined4 *)&s_localCounters[local_10].m_counterValue = 0;
-      *(undefined4 *)((int)&s_localCounters[local_10].m_counterValue + 4) = 0;
-      *(undefined4 *)&s_uploadCounters[local_10].m_counterValue = 0;
-      *(undefined4 *)((int)&s_uploadCounters[local_10].m_counterValue + 4) = 0;
-      *(undefined4 *)&s_serverCounters[local_10].m_counterValue = 0xffffffff;
-      *(undefined4 *)((int)&s_serverCounters[local_10].m_counterValue + 4) = 0xffffffff;
+      s_localCounters[i].m_counterID = uVar1;
+      s_serverCounters[i].m_counterID = uVar1;
+      *(undefined4 *)&s_localCounters[i].m_counterValue = 0;
+      *(undefined4 *)((int)&s_localCounters[i].m_counterValue + 4) = 0;
+      *(undefined4 *)&s_uploadCounters[i].m_counterValue = 0;
+      *(undefined4 *)((int)&s_uploadCounters[i].m_counterValue + 4) = 0;
+      *(undefined4 *)&s_serverCounters[i].m_counterValue = 0xffffffff;
+      *(undefined4 *)((int)&s_serverCounters[i].m_counterValue + 4) = 0xffffffff;
     }
   }
   s_countersInit = true;
@@ -495,24 +511,24 @@ void __cdecl LiveCounter_SetupCounters(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl LiveCounter_Update(int param_1)
+void __cdecl LiveCounter_Update(int controllerIndex)
 
 {
   DWOnlineStatus DVar1;
   int iVar2;
   TaskRecord *pTVar3;
   
-  if ((s_countersInit) && (DVar1 = dwGetLogOnStatus(param_1), DVar1 == DW_LIVE_CONNECTED)) {
+  if ((s_countersInit) && (DVar1 = dwGetLogOnStatus(controllerIndex), DVar1 == DW_LIVE_CONNECTED)) {
     iVar2 = Sys_Milliseconds();
     if ((s_nextCounterDownloadTime < iVar2) && (s_countersRequested == true)) {
       s_countersRequested = false;
-      LiveCounter_DownloadAllCounters(param_1);
+      LiveCounter_DownloadAllCounters(controllerIndex);
       iVar2 = Sys_Milliseconds();
       s_nextCounterDownloadTime = iVar2 + (counterDownloadInterval->current).integer * 60000;
     }
     if ((s_countersReadyForUpload == true) &&
        (iVar2 = Sys_Milliseconds(), s_nextCounterUploadTime < iVar2)) {
-      pTVar3 = LiveCounter_UploadAllCounters(param_1);
+      pTVar3 = LiveCounter_UploadAllCounters(controllerIndex);
       if (pTVar3 == (TaskRecord *)0x0) {
         iVar2 = Sys_Milliseconds();
         s_nextCounterUploadTime = iVar2 + (counterUploadInterval->current).integer * 60000;

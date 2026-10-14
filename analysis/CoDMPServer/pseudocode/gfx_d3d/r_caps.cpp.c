@@ -2,22 +2,22 @@
 
 // 00B08A70  R_RespondToMissingCaps  (gfx_d3d/r_caps.cpp:137)
 
-void __cdecl R_RespondToMissingCaps(DxCapsResponse param_1,char *param_2)
+void __cdecl R_RespondToMissingCaps(DxCapsResponse response,char *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  code *local_8;
+  char *fmt;
+  code *Printf;
   
-  if (param_1 == DX_CAPS_RESPONSE_WARN) {
-    local_8 = Com_PrintWarning;
+  if (response == DX_CAPS_RESPONSE_WARN) {
+    Printf = Com_PrintWarning;
   }
   else {
-    local_8 = Com_Printf;
+    Printf = Com_Printf;
   }
-  (*local_8)(8,"Video card or driver %s.\n",param_2);
-  switch(param_1) {
+  (*Printf)(8,"Video card or driver %s.\n",msg);
+  switch(response) {
   case DX_CAPS_RESPONSE_QUIT:
     Com_Error(ERR_FATAL,"Video card or driver %s.\n");
     break;
@@ -28,9 +28,8 @@ void __cdecl R_RespondToMissingCaps(DxCapsResponse param_1,char *param_2)
     Com_Error(ERR_FATAL,"Shader model 3.0 not available.\n");
     break;
   default:
-    pcVar3 = va("unhandled response %i");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_caps.cpp",0xa1,1,pcVar3)
-    ;
+    fmt = va("unhandled response %i");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_caps.cpp",0xa1,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -43,25 +42,27 @@ void __cdecl R_RespondToMissingCaps(DxCapsResponse param_1,char *param_2)
 
 // 00B08950  R_CheckDxCaps  (gfx_d3d/r_caps.cpp:167)
 
-void __cdecl R_CheckDxCaps(_D3DCAPS9 *param_1)
+void __cdecl R_CheckDxCaps(_D3DCAPS9 *caps)
 
 {
   uint uVar1;
-  uint local_c;
+  ulong integer;
+  int checkIndex;
+  ulong bits;
   
-  for (local_c = 0; local_c < 0x21; local_c = local_c + 1) {
-    uVar1 = *(uint *)((int)&param_1->DeviceType + s_capsCheckBits[local_c].offset);
-    if (((s_capsCheckBits[local_c].clearBits == 0) ||
-        ((~uVar1 & s_capsCheckBits[local_c].clearBits) != 0)) &&
-       ((s_capsCheckBits[local_c].setBits == 0 || ((uVar1 & s_capsCheckBits[local_c].setBits) != 0))
-       )) {
-      R_RespondToMissingCaps(s_capsCheckBits[local_c].response,s_capsCheckBits[local_c].msg);
+  for (checkIndex = 0; (uint)checkIndex < 0x21; checkIndex = checkIndex + 1) {
+    uVar1 = *(uint *)((int)&caps->DeviceType + s_capsCheckBits[checkIndex].offset);
+    if (((s_capsCheckBits[checkIndex].clearBits == 0) ||
+        ((~uVar1 & s_capsCheckBits[checkIndex].clearBits) != 0)) &&
+       ((s_capsCheckBits[checkIndex].setBits == 0 ||
+        ((uVar1 & s_capsCheckBits[checkIndex].setBits) != 0)))) {
+      R_RespondToMissingCaps(s_capsCheckBits[checkIndex].response,s_capsCheckBits[checkIndex].msg);
     }
   }
-  for (local_c = 0; local_c < 10; local_c = local_c + 1) {
-    uVar1 = *(uint *)((int)&param_1->DeviceType + s_capsCheckInt[local_c].offset);
-    if ((uVar1 < s_capsCheckInt[local_c].min) || (s_capsCheckInt[local_c].max < uVar1)) {
-      R_RespondToMissingCaps(s_capsCheckInt[local_c].response,s_capsCheckInt[local_c].msg);
+  for (checkIndex = 0; (uint)checkIndex < 10; checkIndex = checkIndex + 1) {
+    uVar1 = *(uint *)((int)&caps->DeviceType + s_capsCheckInt[checkIndex].offset);
+    if ((uVar1 < s_capsCheckInt[checkIndex].min) || (s_capsCheckInt[checkIndex].max < uVar1)) {
+      R_RespondToMissingCaps(s_capsCheckInt[checkIndex].response,s_capsCheckInt[checkIndex].msg);
     }
   }
   return;

@@ -2,14 +2,14 @@
 
 // 00ABC420  R_DebugAlloc  (gfx_d3d/r_debug_alloc.cpp:21)
 
-void __cdecl R_DebugAlloc(void **param_1,int param_2,char *param_3)
+void __cdecl R_DebugAlloc(void **memPtr,int size,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_1 == (void **)0x0) {
+  if (memPtr == (void **)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_debug_alloc.cpp",0x16,0,
                              "%s");
     if (!bVar2) {
@@ -18,7 +18,7 @@ void __cdecl R_DebugAlloc(void **param_1,int param_2,char *param_3)
       return;
     }
   }
-  if (*param_1 != (void *)0x0) {
+  if (*memPtr != (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_debug_alloc.cpp",0x17,0,
                              "%s");
     if (!bVar2) {
@@ -27,7 +27,7 @@ void __cdecl R_DebugAlloc(void **param_1,int param_2,char *param_3)
       return;
     }
   }
-  if (param_2 < 1) {
+  if (size < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_debug_alloc.cpp",0x18,0,
                              "%s");
     if (!bVar2) {
@@ -36,7 +36,7 @@ void __cdecl R_DebugAlloc(void **param_1,int param_2,char *param_3)
       return;
     }
   }
-  if ((param_2 & 3U) != 0) {
+  if ((size & 3U) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_debug_alloc.cpp",0x19,0,
                              "%s");
     if (!bVar2) {
@@ -45,9 +45,9 @@ void __cdecl R_DebugAlloc(void **param_1,int param_2,char *param_3)
       return;
     }
   }
-  pvVar3 = Z_TryVirtualAlloc(param_2,param_3,0);
-  *param_1 = pvVar3;
-  if (*param_1 == (void *)0x0) {
+  pvVar3 = Z_TryVirtualAlloc(size,name,0);
+  *memPtr = pvVar3;
+  if (*memPtr == (void *)0x0) {
     R_WarnOncePerFrame(R_WARN_DEBUG_ALLOC);
   }
   return;
@@ -56,12 +56,12 @@ void __cdecl R_DebugAlloc(void **param_1,int param_2,char *param_3)
 
 // 00ABC500  R_DebugFree  (gfx_d3d/r_debug_alloc.cpp:67)
 
-void __cdecl R_DebugFree(void **param_1)
+void __cdecl R_DebugFree(void **dataPtr)
 
 {
-  if (*param_1 != (void *)0x0) {
-    Z_VirtualFree(*param_1,0);
-    *param_1 = (void *)0x0;
+  if (*dataPtr != (void *)0x0) {
+    Z_VirtualFree(*dataPtr,0);
+    *dataPtr = (void *)0x0;
   }
   return;
 }

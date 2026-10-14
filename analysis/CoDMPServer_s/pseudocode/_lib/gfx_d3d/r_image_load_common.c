@@ -4,7 +4,7 @@
 
 void __cdecl
 Image_TrackFullscreenTexture
-          (GfxImage *param_1,int param_2,int param_3,int param_4,_D3DFORMAT param_5)
+          (GfxImage *fullscreenWidth,int fullscreenHeight,int picmip,int format,_D3DFORMAT param_5)
 
 {
   int *piVar1;
@@ -13,25 +13,26 @@ Image_TrackFullscreenTexture
   int iVar3;
   uint unaff_EDI;
   uint uVar4;
+  GfxImage *image;
   
   iVar3 = 0;
   do {
-    uVar2 = param_2;
+    uVar2 = fullscreenHeight;
     if (iVar3 == 1) {
       uVar2 = 0x280;
     }
-    uVar2 = uVar2 >> ((byte)param_4 & 0x1f);
+    uVar2 = uVar2 >> ((byte)format & 0x1f);
     uVar4 = 1;
     if (1 < (int)uVar2) {
       uVar4 = uVar2 & 0xffff;
     }
     uVar2 = Image_GetCardMemoryAmount(3,param_5,uVar4,unaff_EDI,unaff_ESI);
-    if ((((useFastFile->current).enabled == false) && (1 < param_1->track)) && (param_1->track != 4)
-       ) {
+    if ((((useFastFile->current).enabled == false) && (1 < fullscreenWidth->track)) &&
+       (fullscreenWidth->track != 4)) {
       piVar1 = imageGlobals.totalMemory.platform + iVar3;
-      *piVar1 = *piVar1 + (uVar2 - (param_1->cardMemory).platform[iVar3]);
+      *piVar1 = *piVar1 + (uVar2 - (fullscreenWidth->cardMemory).platform[iVar3]);
     }
-    (param_1->cardMemory).platform[iVar3] = uVar2;
+    (fullscreenWidth->cardMemory).platform[iVar3] = uVar2;
     iVar3 = iVar3 + 1;
   } while (iVar3 < 2);
   return;
@@ -41,8 +42,8 @@ Image_TrackFullscreenTexture
 // 008676A0  Image_TrackTexture  (gfx_d3d/r_image_load_common.cpp:101)
 
 void __cdecl
-Image_TrackTexture(GfxImage *param_1,int param_2,_D3DFORMAT param_3,int param_4,int param_5,
-                  int param_6)
+Image_TrackTexture(GfxImage *imageFlags,int format,_D3DFORMAT width,int height,int depth,int param_6
+                  )
 
 {
   int *piVar1;
@@ -52,21 +53,22 @@ Image_TrackTexture(GfxImage *param_1,int param_2,_D3DFORMAT param_3,int param_4,
   uint unaff_ESI;
   uint unaff_EDI;
   int iVar5;
+  GfxImage *image;
   
   iVar5 = 0;
-  pCVar4 = &param_1->cardMemory;
+  pCVar4 = &imageFlags->cardMemory;
   do {
-    uVar3 = param_4;
-    if ((param_2 & 1U) == 0) {
-      uVar2 = param_4 >> ((param_1->picmip).platform[iVar5] & 0x1f);
+    uVar3 = height;
+    if ((format & 1U) == 0) {
+      uVar2 = height >> ((imageFlags->picmip).platform[iVar5] & 0x1f);
       uVar3 = 1;
       if (1 < (int)uVar2) {
         uVar3 = uVar2;
       }
     }
-    uVar3 = Image_GetCardMemoryAmount(param_2,param_3,uVar3,unaff_EDI,unaff_ESI);
-    if ((((useFastFile->current).enabled == false) && (1 < param_1->track)) && (param_1->track != 4)
-       ) {
+    uVar3 = Image_GetCardMemoryAmount(format,width,uVar3,unaff_EDI,unaff_ESI);
+    if ((((useFastFile->current).enabled == false) && (1 < imageFlags->track)) &&
+       (imageFlags->track != 4)) {
       piVar1 = imageGlobals.totalMemory.platform + iVar5;
       *piVar1 = *piVar1 + (uVar3 - pCVar4->platform[0]);
     }
@@ -81,17 +83,18 @@ Image_TrackTexture(GfxImage *param_1,int param_2,_D3DFORMAT param_3,int param_4,
 // 00867770  Image_GetCardMemoryAmountForMipLevel  (gfx_d3d/r_image_load_common.cpp:145)
 
 uint __cdecl
-Image_GetCardMemoryAmountForMipLevel(_D3DFORMAT param_1,uint param_2,uint param_3,uint param_4)
+Image_GetCardMemoryAmountForMipLevel(_D3DFORMAT mipWidth,uint param_2,uint param_3,uint param_4)
 
 {
   int in_ECX;
   int in_EDX;
+  _D3DFORMAT format;
   
-  if ((int)param_1 < 0x31545845) {
-    if (param_1 == D3DFMT_DXT1) {
+  if ((int)mipWidth < 0x31545845) {
+    if (mipWidth == D3DFMT_DXT1) {
       return (param_2 + 3 >> 2) * (in_EDX + 3U >> 2) * in_ECX * 8;
     }
-    switch(param_1) {
+    switch(mipWidth) {
     case D3DFMT_A8R8G8B8:
     case D3DFMT_X8R8G8B8:
     case D3DFMT_A8B8G8R8:
@@ -112,7 +115,7 @@ Image_GetCardMemoryAmountForMipLevel(_D3DFORMAT param_1,uint param_2,uint param_
       return param_2 * in_EDX * in_ECX * 8;
     }
   }
-  else if ((param_1 == D3DFMT_DXT3) || (param_1 == D3DFMT_DXT5)) {
+  else if ((mipWidth == D3DFMT_DXT3) || (mipWidth == D3DFMT_DXT5)) {
     return (param_2 + 3 >> 2) * (in_EDX + 3U >> 2) * in_ECX * 0x10;
   }
   return 0;
@@ -122,7 +125,7 @@ Image_GetCardMemoryAmountForMipLevel(_D3DFORMAT param_1,uint param_2,uint param_
 // 00867880  Image_GetCardMemoryAmount  (gfx_d3d/r_image_load_common.cpp:278)
 
 uint __cdecl
-Image_GetCardMemoryAmount(uint param_1,_D3DFORMAT param_2,uint param_3,uint param_4,uint param_5)
+Image_GetCardMemoryAmount(uint format,_D3DFORMAT width,uint param_3,uint param_4,uint param_5)
 
 {
   uint in_EAX;
@@ -132,9 +135,10 @@ Image_GetCardMemoryAmount(uint param_1,_D3DFORMAT param_2,uint param_3,uint para
   int extraout_ECX_00;
   uint unaff_ESI;
   uint unaff_EDI;
+  uint imageFlags;
   
-  uVar1 = Image_GetCardMemoryAmountForMipLevel(param_2,param_3,unaff_EDI,unaff_ESI);
-  if ((param_1 & 2) == 0) {
+  uVar1 = Image_GetCardMemoryAmountForMipLevel(width,param_3,unaff_EDI,unaff_ESI);
+  if ((format & 2) == 0) {
     uVar2 = param_3 + in_EAX + extraout_ECX;
     while (3 < uVar2) {
       param_3 = param_3 >> 1;
@@ -145,12 +149,12 @@ Image_GetCardMemoryAmount(uint param_1,_D3DFORMAT param_2,uint param_3,uint para
       if (in_EAX < 2) {
         in_EAX = 1;
       }
-      uVar2 = Image_GetCardMemoryAmountForMipLevel(param_2,param_3,unaff_EDI,unaff_ESI);
+      uVar2 = Image_GetCardMemoryAmountForMipLevel(width,param_3,unaff_EDI,unaff_ESI);
       uVar1 = uVar1 + uVar2;
       uVar2 = param_3 + in_EAX + extraout_ECX_00;
     }
   }
-  if ((param_1 & 4) != 0) {
+  if ((format & 4) != 0) {
     return uVar1 * 6;
   }
   return uVar1;
@@ -159,43 +163,47 @@ Image_GetCardMemoryAmount(uint param_1,_D3DFORMAT param_2,uint param_3,uint para
 
 // 00867CB0  Image_Setup  (gfx_d3d/r_image_load_common.cpp:1500)
 
+/* WARNING: Variable defined which should be unmapped: name */
+
 void __cdecl
-Image_Setup(GfxImage *param_1,int param_2,int param_3,int param_4,int param_5,_D3DFORMAT param_6,
-           char *param_7,uint param_8)
+Image_Setup(GfxImage *depth,int imageFlags,int imageFormat,int param_4,int param_5,
+           _D3DFORMAT param_6,char *param_7,uint param_8)
 
 {
   dvar_s *pdVar1;
   int in_EAX;
-  GfxImage *pGVar2;
+  GfxImage *imageFormat_00;
   GfxImage *in_ECX;
   _D3DFORMAT unaff_EBX;
   _D3DFORMAT unaff_EBP;
   _D3DFORMAT unaff_ESI;
   int unaff_EDI;
-  ushort uVar3;
-  ushort uVar4;
+  GfxImage *image;
+  ushort imageFormat_01;
+  ushort uVar2;
+  char *name;
   
-  param_1->depth = (ushort)param_2;
+  depth->depth = (ushort)imageFlags;
   pdVar1 = r_loadForRenderer;
-  param_1->width = (ushort)in_ECX;
-  param_1->height = (ushort)in_EAX;
-  pGVar2 = (GfxImage *)((uint)param_3 >> 1 & 1);
+  depth->width = (ushort)in_ECX;
+  depth->height = (ushort)in_EAX;
+  imageFormat_00 = (GfxImage *)((uint)imageFormat >> 1 & 1);
   if ((pdVar1->current).enabled != false) {
-    uVar4 = (ushort)param_4;
-    if ((param_3 & 4U) == 0) {
-      uVar3 = (ushort)pGVar2;
-      if ((param_3 & 8U) == 0) {
-        Image_Create2DTexture_PC(in_ECX,uVar3,uVar4,unaff_EDI,unaff_ESI,unaff_EBP);
+    uVar2 = (ushort)param_4;
+    if ((imageFormat & 4U) == 0) {
+      imageFormat_01 = (ushort)imageFormat_00;
+      if ((imageFormat & 8U) == 0) {
+        Image_Create2DTexture_PC(in_ECX,imageFormat_01,uVar2,unaff_EDI,unaff_ESI,unaff_EBP);
       }
       else {
         Image_Create3DTexture_PC
-                  (param_1,uVar3,uVar4,(ushort)unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
+                  (depth,imageFormat_01,uVar2,(ushort)unaff_EDI,unaff_ESI,unaff_EBP,unaff_EBX);
       }
     }
     else {
-      Image_CreateCubeTexture_PC(pGVar2,uVar4,unaff_EDI,unaff_ESI);
+      Image_CreateCubeTexture_PC(imageFormat_00,uVar2,unaff_EDI,unaff_ESI);
     }
-    Image_TrackTexture(param_1,param_3,param_4,(int)in_ECX,in_EAX,param_2);
+    Image_TrackTexture(depth,imageFormat,param_4,(int)in_ECX,in_EAX,imageFlags);
   }
   return;
 }

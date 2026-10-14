@@ -2,39 +2,43 @@
 
 // 00994920  Init  (glass/glass_allocator.cpp:41)
 
-void __thiscall SmallAllocator::Init(SmallAllocator *this,void *param_1,uint param_2,uint param_3)
+void __thiscall SmallAllocator::Init(SmallAllocator *this,void *buffer,uint bs,uint nb)
 
 {
-  uint local_c;
-  int *local_8;
+  uint i;
+  char *ptr;
   
-  this->memory = param_1;
-  this->blockSize = param_2;
-  this->numBlocks = param_3;
+  this->memory = buffer;
+  this->blockSize = bs;
+  this->numBlocks = nb;
   this->numUsed = 0;
   this->maxUsed = 0;
   this->freeHead = this->memory;
-  local_8 = this->memory;
-  for (local_c = 0; local_c < this->numBlocks - 1; local_c = local_c + 1) {
-    *local_8 = (int)local_8 + this->blockSize;
-    local_8 = (int *)((int)local_8 + this->blockSize);
+  ptr = this->memory;
+  for (i = 0; i < this->numBlocks - 1; i = i + 1) {
+    *(char **)ptr = ptr + this->blockSize;
+    ptr = ptr + this->blockSize;
   }
-  *local_8 = 0;
+  ptr[0] = '\0';
+  ptr[1] = '\0';
+  ptr[2] = '\0';
+  ptr[3] = '\0';
   return;
 }
 
 
 // 009949C0  Allocate  (glass/glass_allocator.cpp:58)
 
-void * __thiscall SmallAllocator::Allocate(SmallAllocator *this,uint param_1)
+void * __thiscall SmallAllocator::Allocate(SmallAllocator *this,uint size)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   uint local_18;
+  void *ret;
   
-  if ((this->blockSize < param_1) &&
+  if ((this->blockSize < size) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x3b,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -62,13 +66,13 @@ void * __thiscall SmallAllocator::Allocate(SmallAllocator *this,uint param_1)
 
 // 00994A90  Free  (glass/glass_allocator.cpp:72)
 
-void __thiscall SmallAllocator::Free(SmallAllocator *this,void *param_1,uint param_2)
+void __thiscall SmallAllocator::Free(SmallAllocator *this,void *ptr,uint num)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 != 1) {
+  if (num != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x49,0,
                              "%s");
     if (!bVar2) {
@@ -77,7 +81,7 @@ void __thiscall SmallAllocator::Free(SmallAllocator *this,void *param_1,uint par
       return;
     }
   }
-  bVar2 = IsValidPointer(this,param_1);
+  bVar2 = IsValidPointer(this,ptr);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x4a,0,
                              "%s");
@@ -97,21 +101,21 @@ void __thiscall SmallAllocator::Free(SmallAllocator *this,void *param_1,uint par
     }
   }
   this->numUsed = this->numUsed - 1;
-  *(void **)param_1 = this->freeHead;
-  this->freeHead = param_1;
+  *(void **)ptr = this->freeHead;
+  this->freeHead = ptr;
   return;
 }
 
 
 // 00994B50  IsValidPointer  (glass/glass_allocator.cpp:83)
 
-bool __thiscall SmallAllocator::IsValidPointer(SmallAllocator *this,void *param_1)
+bool __thiscall SmallAllocator::IsValidPointer(SmallAllocator *this,void *ptr)
 
 {
   bool local_c;
   
-  if (((param_1 < this->memory) || ((uint)((int)param_1 - (int)this->memory) % this->blockSize != 0)
-      ) || (this->blockSize * this->numBlocks <= (uint)((int)param_1 - (int)this->memory))) {
+  if (((ptr < this->memory) || ((uint)((int)ptr - (int)this->memory) % this->blockSize != 0)) ||
+     (this->blockSize * this->numBlocks <= (uint)((int)ptr - (int)this->memory))) {
     local_c = false;
   }
   else {
@@ -140,30 +144,28 @@ void __thiscall Allocator::Memory::Init(Memory *this)
 bool __thiscall Allocator::Memory::MakeFree(Memory *this)
 
 {
-  Memory *local_c;
-  Memory *local_8;
+  Memory *p;
+  Memory *n;
   
-  for (local_8 = this->next; (local_8 != (Memory *)0x0 && (local_8->nextFree == (Memory *)0x0));
-      local_8 = local_8->next) {
+  for (n = this->next; (n != (Memory *)0x0 && (n->nextFree == (Memory *)0x0)); n = n->next) {
   }
-  if (local_8 == (Memory *)0x0) {
-    for (local_c = this->prev; (local_c != (Memory *)0x0 && (local_c->nextFree == (Memory *)0x0));
-        local_c = local_c->prev) {
+  if (n == (Memory *)0x0) {
+    for (p = this->prev; (p != (Memory *)0x0 && (p->nextFree == (Memory *)0x0)); p = p->prev) {
     }
-    if (local_c == (Memory *)0x0) {
+    if (p == (Memory *)0x0) {
       return false;
     }
-    this->prevFree = local_c;
-    this->nextFree = local_c->nextFree;
-    local_c->nextFree = this;
+    this->prevFree = p;
+    this->nextFree = p->nextFree;
+    p->nextFree = this;
     if (this->nextFree != (Memory *)0x0) {
       this->nextFree->prevFree = this;
     }
   }
   else {
-    this->nextFree = local_8;
-    this->prevFree = local_8->prevFree;
-    local_8->prevFree = this;
+    this->nextFree = n;
+    this->prevFree = n->prevFree;
+    n->prevFree = this;
     if (this->prevFree != (Memory *)0x0) {
       this->prevFree->nextFree = this;
     }
@@ -174,19 +176,20 @@ bool __thiscall Allocator::Memory::MakeFree(Memory *this)
 
 // 00994CC0  Init  (glass/glass_allocator.cpp:147)
 
-void __thiscall Allocator::Init(Allocator *this,void *param_1,int param_2)
+void __thiscall Allocator::Init(Allocator *this,void *buf,int size)
 
 {
   void *pvVar1;
   Memory *pMVar2;
   Memory *pMVar3;
   int iVar4;
+  void *end;
   
-  this->buffer = param_1;
+  this->buffer = buf;
   pvVar1 = this->buffer;
   this->head = (Memory *)((int)this->buffer + 0xfU & 0xfffffff0);
   Memory::Init(this->head);
-  this->tail = (Memory *)((int)pvVar1 + param_2 + -0x15 & 0xfffffff0);
+  this->tail = (Memory *)((int)pvVar1 + size + -0x15 & 0xfffffff0);
   Memory::Init(this->tail);
   FreeAll(this);
   pMVar2 = this->tail;
@@ -217,7 +220,7 @@ void __thiscall Allocator::FreeAll(Allocator *this)
 
 // 00994E10  Allocate  (glass/glass_allocator.cpp:176)
 
-void * __thiscall Allocator::Allocate(Allocator *this,int param_1,void *param_2)
+void * __thiscall Allocator::Allocate(Allocator *this,int size,void *userData)
 
 {
   Memory *pMVar1;
@@ -226,74 +229,74 @@ void * __thiscall Allocator::Allocate(Allocator *this,int param_1,void *param_2)
   bool bVar4;
   void *pvVar5;
   int iVar6;
-  uint uVar7;
+  uint size_00;
   int local_34;
   int local_30;
   int local_2c;
   int local_28;
   int local_24;
-  Memory *local_c;
-  Memory *local_8;
+  Memory *free;
+  Memory *bestFit;
   
   if (this->freeHead != this->tail) {
-    local_8 = (Memory *)0x0;
-    uVar7 = param_1 + 0x1fU & 0xfffffff0;
-    for (local_c = this->freeHead; local_c != this->tail; local_c = local_c->nextFree) {
-      if (local_c->next == (Memory *)0x0) {
+    bestFit = (Memory *)0x0;
+    size_00 = size + 0x1fU & 0xfffffff0;
+    for (free = this->freeHead; free != this->tail; free = free->nextFree) {
+      if (free->next == (Memory *)0x0) {
         local_24 = 0;
       }
       else {
-        local_24 = (int)local_c->next - (int)local_c;
+        local_24 = (int)free->next - (int)free;
       }
-      if ((int)uVar7 <= local_24) {
-        if (local_8 != (Memory *)0x0) {
-          if (local_c->next == (Memory *)0x0) {
+      if ((int)size_00 <= local_24) {
+        if (bestFit != (Memory *)0x0) {
+          if (free->next == (Memory *)0x0) {
             local_28 = 0;
           }
           else {
-            local_28 = (int)local_c->next - (int)local_c;
+            local_28 = (int)free->next - (int)free;
           }
-          if (local_8->next == (Memory *)0x0) {
+          if (bestFit->next == (Memory *)0x0) {
             local_2c = 0;
           }
           else {
-            local_2c = (int)local_8->next - (int)local_8;
+            local_2c = (int)bestFit->next - (int)bestFit;
           }
           if (local_2c <= local_28) goto LAB_00994e5b;
         }
-        local_8 = local_c;
+        bestFit = free;
       }
 LAB_00994e5b:
     }
-    if (local_8 != (Memory *)0x0) {
-      if (local_8->next == (Memory *)0x0) {
+    if (bestFit != (Memory *)0x0) {
+      if (bestFit->next == (Memory *)0x0) {
         local_30 = 0;
       }
       else {
-        local_30 = (int)local_8->next - (int)local_8;
+        local_30 = (int)bestFit->next - (int)bestFit;
       }
-      if ((int)uVar7 < local_30) {
-        Split(this,local_8,uVar7);
+      if ((int)size_00 < local_30) {
+        Split(this,bestFit,size_00);
       }
-      local_8->userData = param_2;
-      if (local_8->prevFree == (Memory *)0x0) {
-        if ((this->freeHead != local_8) &&
+      bestFit->userData = userData;
+      if (bestFit->prevFree == (Memory *)0x0) {
+        if ((this->freeHead != bestFit) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp"
                                      ,0xce,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           pvVar5 = (void *)(*pcVar3)();
           return pvVar5;
         }
-        this->freeHead = local_8->nextFree;
+        this->freeHead = bestFit->nextFree;
       }
       else {
-        local_8->prevFree->nextFree = local_8->nextFree;
+        bestFit->prevFree->nextFree = bestFit->nextFree;
       }
-      if (local_8->nextFree != (Memory *)0x0) {
-        local_8->nextFree->prevFree = local_8->prevFree;
+      if (bestFit->nextFree != (Memory *)0x0) {
+        bestFit->nextFree->prevFree = bestFit->prevFree;
       }
-      local_8->nextFree = (Memory *)0x0;
-      local_8->prevFree = (Memory *)0x0;
+      bestFit->nextFree = (Memory *)0x0;
+      bestFit->prevFree = (Memory *)0x0;
       pMVar1 = this->tail;
       pMVar2 = this->head;
       iVar6 = GetFree(this);
@@ -302,7 +305,7 @@ LAB_00994e5b:
         local_34 = this->maxUsed;
       }
       this->maxUsed = local_34;
-      return &local_8->prevFree;
+      return &bestFit->prevFree;
     }
   }
   return (void *)0x0;
@@ -311,16 +314,16 @@ LAB_00994e5b:
 
 // 00995020  Free  (glass/glass_allocator.cpp:228)
 
-void __thiscall Allocator::Free(Allocator *this,void *param_1)
+void __thiscall Allocator::Free(Allocator *this,void *ptr)
 
 {
   code *pcVar1;
   bool bVar2;
-  Memory *local_8;
+  Memory *mem;
   
-  if (param_1 != (void *)0x0) {
-    local_8 = (Memory *)((int)param_1 + -0x10);
-    if (*(int *)((int)param_1 + -4) != 0) {
+  if (ptr != (void *)0x0) {
+    mem = (Memory *)((int)ptr + -0x10);
+    if (*(int *)((int)ptr + -4) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0xe9,
                                0,"%s");
       if (!bVar2) {
@@ -330,12 +333,12 @@ void __thiscall Allocator::Free(Allocator *this,void *param_1)
       }
     }
     if (this->freeHead == this->tail) {
-      *(undefined4 *)param_1 = 0;
-      *(Memory **)((int)param_1 + -4) = this->tail;
-      this->freeHead = local_8;
+      *(undefined4 *)ptr = 0;
+      *(Memory **)((int)ptr + -4) = this->tail;
+      this->freeHead = mem;
     }
     else {
-      bVar2 = Memory::MakeFree(local_8);
+      bVar2 = Memory::MakeFree(mem);
       if (!bVar2) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",
                                  0xfa,0,"couldn\'t find a free Memory block!?!?!?");
@@ -345,16 +348,15 @@ void __thiscall Allocator::Free(Allocator *this,void *param_1)
           return;
         }
       }
-      if (*(int *)param_1 == 0) {
-        this->freeHead = local_8;
+      if (*(int *)ptr == 0) {
+        this->freeHead = mem;
       }
     }
-    for (; (local_8->prev != (Memory *)0x0 && (local_8->prev == local_8->prevFree));
-        local_8 = local_8->prev) {
+    for (; (mem->prev != (Memory *)0x0 && (mem->prev == mem->prevFree)); mem = mem->prev) {
     }
-    while ((local_8->nextFree != (Memory *)0x0 &&
-           ((local_8->nextFree == local_8->next && (local_8->next != this->tail))))) {
-      Merge(this,local_8,local_8->next);
+    while ((mem->nextFree != (Memory *)0x0 &&
+           ((mem->nextFree == mem->next && (mem->next != this->tail))))) {
+      Merge(this,mem,mem->next);
     }
   }
   return;
@@ -363,18 +365,18 @@ void __thiscall Allocator::Free(Allocator *this,void *param_1)
 
 // 00995150  GetMemorySize  (glass/glass_allocator.cpp:271)
 
-int __thiscall Allocator::GetMemorySize(Allocator *this,void *param_1)
+int __thiscall Allocator::GetMemorySize(Allocator *this,void *ptr)
 
 {
   int *piVar1;
   undefined4 local_14;
   undefined4 local_10;
   
-  if (param_1 == (void *)0x0) {
+  if (ptr == (void *)0x0) {
     local_14 = -1;
   }
   else {
-    piVar1 = (int *)((int)param_1 + -0x10);
+    piVar1 = (int *)((int)ptr + -0x10);
     if (*piVar1 == 0) {
       local_10 = 0;
     }
@@ -389,7 +391,7 @@ int __thiscall Allocator::GetMemorySize(Allocator *this,void *param_1)
 
 // 009951A0  Split  (glass/glass_allocator.cpp:276)
 
-void __thiscall Allocator::Split(Allocator *this,Memory *param_1,int param_2)
+void __thiscall Allocator::Split(Allocator *this,Memory *mem,int size)
 
 {
   code *pcVar1;
@@ -398,7 +400,7 @@ void __thiscall Allocator::Split(Allocator *this,Memory *param_1,int param_2)
   int iVar4;
   int local_14;
   
-  if (param_1->nextFree == (Memory *)0x0) {
+  if (mem->nextFree == (Memory *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x115,0
                              ,"%s");
     if (!bVar2) {
@@ -407,13 +409,13 @@ void __thiscall Allocator::Split(Allocator *this,Memory *param_1,int param_2)
       return;
     }
   }
-  if (param_1->next == (Memory *)0x0) {
+  if (mem->next == (Memory *)0x0) {
     iVar4 = 0;
   }
   else {
-    iVar4 = (int)param_1->next - (int)param_1;
+    iVar4 = (int)mem->next - (int)mem;
   }
-  if (iVar4 <= param_2) {
+  if (iVar4 <= size) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x116,0
                              ,"%s");
     if (!bVar2) {
@@ -422,27 +424,27 @@ void __thiscall Allocator::Split(Allocator *this,Memory *param_1,int param_2)
       return;
     }
   }
-  if (param_1->next == (Memory *)0x0) {
+  if (mem->next == (Memory *)0x0) {
     local_14 = 0;
   }
   else {
-    local_14 = (int)param_1->next - (int)param_1;
+    local_14 = (int)mem->next - (int)mem;
   }
-  if (0x20 < local_14 - param_2) {
-    pMVar3 = (Memory *)((int)&param_1->next + param_2);
+  if (0x20 < local_14 - size) {
+    pMVar3 = (Memory *)((int)&mem->next + size);
     pMVar3->userData = (void *)0x0;
-    pMVar3->next = param_1->next;
-    pMVar3->prev = param_1;
-    pMVar3->nextFree = param_1->nextFree;
-    pMVar3->prevFree = param_1;
+    pMVar3->next = mem->next;
+    pMVar3->prev = mem;
+    pMVar3->nextFree = mem->nextFree;
+    pMVar3->prevFree = mem;
     if (pMVar3->next != (Memory *)0x0) {
       pMVar3->next->prev = pMVar3;
     }
     if (pMVar3->nextFree != (Memory *)0x0) {
       pMVar3->nextFree->prevFree = pMVar3;
     }
-    param_1->next = pMVar3;
-    param_1->nextFree = pMVar3;
+    mem->next = pMVar3;
+    mem->nextFree = pMVar3;
   }
   return;
 }
@@ -450,14 +452,14 @@ void __thiscall Allocator::Split(Allocator *this,Memory *param_1,int param_2)
 
 // 009952D0  Merge  (glass/glass_allocator.cpp:302)
 
-void __thiscall Allocator::Merge(Allocator *this,Memory *param_1,Memory *param_2)
+void __thiscall Allocator::Merge(Allocator *this,Memory *mem1,Memory *mem2)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 != this->tail) {
-    if (param_1->nextFree == (Memory *)0x0) {
+  if (mem2 != this->tail) {
+    if (mem1->nextFree == (Memory *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x131
                                ,0,"%s");
       if (!bVar2) {
@@ -466,7 +468,7 @@ void __thiscall Allocator::Merge(Allocator *this,Memory *param_1,Memory *param_2
         return;
       }
     }
-    if (param_2->nextFree == (Memory *)0x0) {
+    if (mem2->nextFree == (Memory *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x132
                                ,0,"%s");
       if (!bVar2) {
@@ -475,7 +477,7 @@ void __thiscall Allocator::Merge(Allocator *this,Memory *param_1,Memory *param_2
         return;
       }
     }
-    if (&param_2->prevFree <= &param_1->prevFree) {
+    if (&mem2->prevFree <= &mem1->prevFree) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x133
                                ,0,"%s");
       if (!bVar2) {
@@ -484,7 +486,7 @@ void __thiscall Allocator::Merge(Allocator *this,Memory *param_1,Memory *param_2
         return;
       }
     }
-    if (param_1->next != param_2) {
+    if (mem1->next != mem2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x134
                                ,0,"%s");
       if (!bVar2) {
@@ -493,13 +495,13 @@ void __thiscall Allocator::Merge(Allocator *this,Memory *param_1,Memory *param_2
         return;
       }
     }
-    param_1->next = param_2->next;
-    param_1->nextFree = param_2->nextFree;
-    if (param_1->next != (Memory *)0x0) {
-      param_1->next->prev = param_1;
+    mem1->next = mem2->next;
+    mem1->nextFree = mem2->nextFree;
+    if (mem1->next != (Memory *)0x0) {
+      mem1->next->prev = mem1;
     }
-    if (param_1->nextFree != (Memory *)0x0) {
-      param_1->nextFree->prevFree = param_1;
+    if (mem1->nextFree != (Memory *)0x0) {
+      mem1->nextFree->prevFree = mem1;
     }
   }
   return;
@@ -508,15 +510,14 @@ void __thiscall Allocator::Merge(Allocator *this,Memory *param_1,Memory *param_2
 
 // 00995410  Defrag  (glass/glass_allocator.cpp:398)
 
-int __thiscall Allocator::Defrag(Allocator *this,_func___cdecl_void_void_ptr *param_1,int param_2)
+int __thiscall Allocator::Defrag(Allocator *this,_func___cdecl_void_void_ptr *func,int count)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  while (((0 < param_2 && (this->freeHead != this->tail)) && (this->freeHead->next != this->tail)))
-  {
+  while (((0 < count && (this->freeHead != this->tail)) && (this->freeHead->next != this->tail))) {
     if (this->freeHead->next->nextFree != (Memory *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_allocator.cpp",0x191
                                ,0,"%s");
@@ -527,11 +528,11 @@ int __thiscall Allocator::Defrag(Allocator *this,_func___cdecl_void_void_ptr *pa
       }
     }
     if (this->freeHead->next->userData != (void *)0x0) {
-      (*param_1)(this->freeHead->next->userData);
+      (*func)(this->freeHead->next->userData);
     }
-    param_2 = param_2 + -1;
+    count = count + -1;
   }
-  return param_2;
+  return count;
 }
 
 
@@ -541,20 +542,20 @@ int __thiscall Allocator::GetFree(Allocator *this)
 
 {
   int local_14;
-  Memory *local_c;
-  int local_8;
+  Memory *mem;
+  int free;
   
-  local_8 = 0;
-  for (local_c = this->freeHead; local_c != (Memory *)0x0; local_c = local_c->nextFree) {
-    if (local_c->next == (Memory *)0x0) {
+  free = 0;
+  for (mem = this->freeHead; mem != (Memory *)0x0; mem = mem->nextFree) {
+    if (mem->next == (Memory *)0x0) {
       local_14 = 0;
     }
     else {
-      local_14 = (int)local_c->next - (int)local_c;
+      local_14 = (int)mem->next - (int)mem;
     }
-    local_8 = local_8 + local_14;
+    free = free + local_14;
   }
-  return local_8;
+  return free;
 }
 
 
@@ -565,25 +566,25 @@ int __thiscall Allocator::GetLargestFree(Allocator *this)
 {
   int local_18;
   int local_10;
-  Memory *local_c;
-  int local_8;
+  Memory *mem;
+  int largest;
   
-  local_8 = 0;
-  for (local_c = this->freeHead; local_c != (Memory *)0x0; local_c = local_c->nextFree) {
-    if (local_c->next == (Memory *)0x0) {
+  largest = 0;
+  for (mem = this->freeHead; mem != (Memory *)0x0; mem = mem->nextFree) {
+    if (mem->next == (Memory *)0x0) {
       local_10 = 0;
     }
     else {
-      local_10 = (int)local_c->next - (int)local_c;
+      local_10 = (int)mem->next - (int)mem;
     }
-    if (local_8 < local_10) {
+    if (largest < local_10) {
       local_18 = local_10;
     }
     else {
-      local_18 = local_8;
+      local_18 = largest;
     }
-    local_8 = local_18;
+    largest = local_18;
   }
-  return local_8;
+  return largest;
 }
 

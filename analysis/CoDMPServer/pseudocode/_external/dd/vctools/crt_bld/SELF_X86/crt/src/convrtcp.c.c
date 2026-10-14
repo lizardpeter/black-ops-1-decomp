@@ -4,22 +4,22 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl __ansicp(int param_1)
+int __cdecl __ansicp(int lcid)
 
 {
   int iVar1;
-  CHAR local_10 [6];
+  CHAR ch [6];
   undefined1 local_a;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   local_a = 0;
-  iVar1 = GetLocaleInfoA(param_1,0x1004,local_10,6);
+  iVar1 = GetLocaleInfoA(lcid,0x1004,ch,6);
   if (iVar1 == 0) {
     iVar1 = -1;
   }
   else {
-    iVar1 = atol(local_10);
+    iVar1 = atol(ch);
   }
   return iVar1;
 }
@@ -31,98 +31,100 @@ int __cdecl __ansicp(int param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 char * __cdecl
-__convertcp(int param_1,int param_2,char *param_3,int *param_4,char *param_5,int param_6)
+__convertcp(int fromCP,int toCP,char *lpSrcStr,int *pcchSrc,char *lpDestStr,int cchDest)
 
 {
-  uint uVar1;
+  uint size;
   uint cbMultiByte;
-  bool bVar2;
-  BOOL BVar3;
+  bool bVar1;
+  BOOL BVar2;
   int extraout_EAX;
-  undefined4 *puVar4;
-  int iVar5;
-  uint cchWideChar;
-  bool bVar6;
-  LPSTR local_24;
-  LPCWSTR local_20;
-  _cpinfo local_1c;
+  undefined4 *puVar3;
+  int iVar4;
+  uint size_00;
+  bool bVar5;
+  int sb;
+  int cchSrc;
+  char *cbuffer;
+  ushort *wbuffer;
+  _cpinfo cpi;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  cbMultiByte = *param_4;
-  local_24 = (LPSTR)0x0;
-  bVar2 = false;
-  if (param_1 == param_2) {
+  cbMultiByte = *pcchSrc;
+  cbuffer = (char *)0x0;
+  bVar1 = false;
+  if (fromCP == toCP) {
     return (char *)0x0;
   }
-  BVar3 = GetCPInfo(param_1,&local_1c);
-  if ((((BVar3 == 0) || (local_1c.MaxCharSize != 1)) ||
-      (BVar3 = GetCPInfo(param_2,&local_1c), BVar3 == 0)) || (local_1c.MaxCharSize != 1)) {
-    cchWideChar = MultiByteToWideChar(param_1,1,param_3,cbMultiByte,(LPWSTR)0x0,0);
-    bVar6 = false;
-    if (cchWideChar == 0) {
+  BVar2 = GetCPInfo(fromCP,&cpi);
+  if ((((BVar2 == 0) || (cpi.MaxCharSize != 1)) || (BVar2 = GetCPInfo(toCP,&cpi), BVar2 == 0)) ||
+     (cpi.MaxCharSize != 1)) {
+    size_00 = MultiByteToWideChar(fromCP,1,lpSrcStr,cbMultiByte,(LPWSTR)0x0,0);
+    bVar5 = false;
+    if (size_00 == 0) {
       return (char *)0x0;
     }
   }
   else {
-    bVar2 = true;
-    cchWideChar = cbMultiByte;
+    bVar1 = true;
+    size_00 = cbMultiByte;
     if (cbMultiByte == 0xffffffff) {
-      strlen((uchar *)param_3);
-      cchWideChar = extraout_EAX + 1;
+      strlen((uchar *)lpSrcStr);
+      size_00 = extraout_EAX + 1;
     }
-    bVar6 = cchWideChar == 0;
+    bVar5 = size_00 == 0;
   }
-  if ((bVar6 || (int)cchWideChar < 0) || (0x7ffffff0 < cchWideChar)) {
-    local_20 = (LPCWSTR)0x0;
+  if ((bVar5 || (int)size_00 < 0) || (0x7ffffff0 < size_00)) {
+    wbuffer = (ushort *)0x0;
   }
   else {
-    uVar1 = cchWideChar * 2 + 8;
-    if (uVar1 < 0x401) {
-      puVar4 = (undefined4 *)&stack0xffffffbc;
-      local_20 = (LPCWSTR)&stack0xffffffbc;
+    size = size_00 * 2 + 8;
+    if (size < 0x401) {
+      puVar3 = (undefined4 *)&stack0xffffffbc;
+      wbuffer = (ushort *)&stack0xffffffbc;
       if (&stack0x00000000 == (undefined1 *)0x44) goto LAB_00c2b886;
     }
     else {
-      puVar4 = malloc(uVar1);
-      local_20 = (LPCWSTR)0x0;
-      if (puVar4 == (undefined4 *)0x0) goto LAB_00c2b886;
-      *puVar4 = 0xdddd;
+      puVar3 = malloc(size);
+      wbuffer = (ushort *)0x0;
+      if (puVar3 == (undefined4 *)0x0) goto LAB_00c2b886;
+      *puVar3 = 0xdddd;
     }
-    local_20 = (LPCWSTR)(puVar4 + 2);
+    wbuffer = (ushort *)(puVar3 + 2);
   }
 LAB_00c2b886:
-  if (local_20 == (LPCWSTR)0x0) {
+  if (wbuffer == (ushort *)0x0) {
     return (char *)0x0;
   }
-  memset((uchar *)local_20,'\0',cchWideChar * 2);
-  iVar5 = MultiByteToWideChar(param_1,1,param_3,cbMultiByte,local_20,cchWideChar);
-  if (iVar5 != 0) {
-    if (param_5 == (char *)0x0) {
-      if (((bVar2) ||
-          (cchWideChar = WideCharToMultiByte(param_2,0,local_20,cchWideChar,(LPSTR)0x0,0,(LPCSTR)0x0
-                                             ,(LPBOOL)0x0), cchWideChar != 0)) &&
-         (local_24 = _calloc_crt(1,cchWideChar), local_24 != (LPSTR)0x0)) {
-        iVar5 = WideCharToMultiByte(param_2,0,local_20,cchWideChar,local_24,cchWideChar,(LPCSTR)0x0,
+  memset((uchar *)wbuffer,'\0',size_00 * 2);
+  iVar4 = MultiByteToWideChar(fromCP,1,lpSrcStr,cbMultiByte,(LPWSTR)wbuffer,size_00);
+  if (iVar4 != 0) {
+    if (lpDestStr == (char *)0x0) {
+      if (((bVar1) ||
+          (size_00 = WideCharToMultiByte(toCP,0,(LPCWSTR)wbuffer,size_00,(LPSTR)0x0,0,(LPCSTR)0x0,
+                                         (LPBOOL)0x0), size_00 != 0)) &&
+         (cbuffer = _calloc_crt(1,size_00), cbuffer != (LPSTR)0x0)) {
+        iVar4 = WideCharToMultiByte(toCP,0,(LPCWSTR)wbuffer,size_00,cbuffer,size_00,(LPCSTR)0x0,
                                     (LPBOOL)0x0);
-        if (iVar5 == 0) {
-          free(local_24);
-          local_24 = (LPSTR)0x0;
+        if (iVar4 == 0) {
+          free(cbuffer);
+          cbuffer = (char *)0x0;
         }
         else if (cbMultiByte != 0xffffffff) {
-          *param_4 = iVar5;
+          *pcchSrc = iVar4;
         }
       }
     }
     else {
-      iVar5 = WideCharToMultiByte(param_2,0,local_20,cchWideChar,param_5,param_6,(LPCSTR)0x0,
+      iVar4 = WideCharToMultiByte(toCP,0,(LPCWSTR)wbuffer,size_00,lpDestStr,cchDest,(LPCSTR)0x0,
                                   (LPBOOL)0x0);
-      if (iVar5 != 0) {
-        local_24 = param_5;
+      if (iVar4 != 0) {
+        cbuffer = lpDestStr;
       }
     }
   }
-  _freea(local_20);
-  return local_24;
+  _freea(wbuffer);
+  return cbuffer;
 }
 

@@ -3,7 +3,8 @@
 // 0097E010  CSteamAchievements  (live/live_steam_achievements.cpp:172)
 
 CSteamAchievements * __thiscall
-CSteamAchievements::CSteamAchievements(CSteamAchievements *this,Achievement_t *param_1,int param_2)
+CSteamAchievements::CSteamAchievements
+          (CSteamAchievements *this,Achievement_t *Achievements,int NumAchievements)
 
 {
   CCallback<CSteamAchievements,UserStatsReceived_t,0> *this_00;
@@ -53,8 +54,8 @@ CSteamAchievements::CSteamAchievements(CSteamAchievements *this,Achievement_t *p
   uVar2 = (**(code **)(*piVar1 + 0x24))();
   *(undefined4 *)&this->m_iAppID = uVar2;
   *(undefined4 *)((int)&this->m_iAppID + 4) = 0;
-  this->m_pAchievements = param_1;
-  this->m_iNumAchievements = param_2;
+  this->m_pAchievements = Achievements;
+  this->m_iNumAchievements = NumAchievements;
   RequestStats(this);
   return this;
 }
@@ -112,14 +113,14 @@ bool __thiscall CSteamAchievements::RequestStats(CSteamAchievements *this)
 
 // 0097E290  SetAchievement  (live/live_steam_achievements.cpp:200)
 
-void __thiscall CSteamAchievements::SetAchievement(CSteamAchievements *this,char *param_1)
+void __thiscall CSteamAchievements::SetAchievement(CSteamAchievements *this,char *ID)
 
 {
   int *piVar1;
   
   if (this->m_bInitialized != false) {
     piVar1 = (int *)SteamUserStats();
-    (**(code **)(*piVar1 + 0x1c))(param_1);
+    (**(code **)(*piVar1 + 0x1c))(ID);
     this->m_needStatsStored = true;
   }
   return;
@@ -133,6 +134,7 @@ void __thiscall CSteamAchievements::StoreStats(CSteamAchievements *this)
 {
   char cVar1;
   int *piVar2;
+  bool result;
   
   if (this->m_needStatsStored != false) {
     piVar2 = (int *)SteamUserStats();
@@ -150,6 +152,7 @@ void __thiscall CSteamAchievements::ResetStats(CSteamAchievements *this)
 {
   char cVar1;
   int *piVar2;
+  bool result;
   
   piVar2 = (int *)SteamUserStats();
   cVar1 = (**(code **)(*piVar2 + 0x4c))(1);
@@ -167,29 +170,28 @@ void __thiscall CSteamAchievements::ResetStats(CSteamAchievements *this)
 // 0097E370  OnUserStatsReceived  (live/live_steam_achievements.cpp:237)
 
 void __thiscall
-CSteamAchievements::OnUserStatsReceived(CSteamAchievements *this,UserStatsReceived_t *param_1)
+CSteamAchievements::OnUserStatsReceived(CSteamAchievements *this,UserStatsReceived_t *pCallback)
 
 {
   Achievement_t *pAVar1;
   int *piVar2;
-  int local_8;
+  int iAch;
   
-  if (((int)this->m_iAppID == (int)param_1->m_nGameID) &&
-     (*(int *)((int)&this->m_iAppID + 4) == *(int *)((int)&param_1->m_nGameID + 4))) {
-    if (param_1->m_eResult == k_EResultOK) {
+  if (((int)this->m_iAppID == (int)pCallback->m_nGameID) &&
+     (*(int *)((int)&this->m_iAppID + 4) == *(int *)((int)&pCallback->m_nGameID + 4))) {
+    if (pCallback->m_eResult == k_EResultOK) {
       Com_DPrintf(0x17,"STEAM: Received stats and achievements from Steam\n");
       this->m_bInitialized = true;
-      for (local_8 = 0; local_8 < this->m_iNumAchievements; local_8 = local_8 + 1) {
+      for (iAch = 0; iAch < this->m_iNumAchievements; iAch = iAch + 1) {
         pAVar1 = this->m_pAchievements;
         piVar2 = (int *)SteamUserStats();
-        (**(code **)(*piVar2 + 0x18))
-                  (pAVar1[local_8].m_pchAchievementID,&pAVar1[local_8].m_bAchieved);
+        (**(code **)(*piVar2 + 0x18))(pAVar1[iAch].m_pchAchievementID,&pAVar1[iAch].m_bAchieved);
         piVar2 = (int *)SteamUserStats();
-        (**(code **)(*piVar2 + 0x30))(pAVar1[local_8].m_pchAchievementID,"name");
-        _snprintf(pAVar1[local_8].m_rgchName,0x80,"%s");
+        (**(code **)(*piVar2 + 0x30))(pAVar1[iAch].m_pchAchievementID,"name");
+        _snprintf(pAVar1[iAch].m_rgchName,0x80,"%s");
         piVar2 = (int *)SteamUserStats();
-        (**(code **)(*piVar2 + 0x30))(pAVar1[local_8].m_pchAchievementID,"desc");
-        _snprintf(pAVar1[local_8].m_rgchDescription,0x100,"%s");
+        (**(code **)(*piVar2 + 0x30))(pAVar1[iAch].m_pchAchievementID,"desc");
+        _snprintf(pAVar1[iAch].m_rgchDescription,0x100,"%s");
       }
     }
     else {
@@ -203,12 +205,12 @@ CSteamAchievements::OnUserStatsReceived(CSteamAchievements *this,UserStatsReceiv
 // 0097E4D0  OnUserStatsStored  (live/live_steam_achievements.cpp:268)
 
 void __thiscall
-CSteamAchievements::OnUserStatsStored(CSteamAchievements *this,UserStatsStored_t *param_1)
+CSteamAchievements::OnUserStatsStored(CSteamAchievements *this,UserStatsStored_t *pCallback)
 
 {
-  if (((int)this->m_iAppID == (int)param_1->m_nGameID) &&
-     (*(int *)((int)&this->m_iAppID + 4) == *(int *)((int)&param_1->m_nGameID + 4))) {
-    if (param_1->m_eResult == k_EResultOK) {
+  if (((int)this->m_iAppID == (int)pCallback->m_nGameID) &&
+     (*(int *)((int)&this->m_iAppID + 4) == *(int *)((int)&pCallback->m_nGameID + 4))) {
+    if (pCallback->m_eResult == k_EResultOK) {
       Com_DPrintf(0x17,"STEAM: Stored stats for Steam\n");
     }
     else {
@@ -225,16 +227,16 @@ CSteamAchievements::OnUserStatsStored(CSteamAchievements *this,UserStatsStored_t
 
 void __thiscall
 CCallback<CSteamAchievements,UserStatsReceived_t,0>::Register
-          (CCallback<CSteamAchievements,UserStatsReceived_t,0> *this,CSteamAchievements *param_1,
-          pmf_4e17555f param_2)
+          (CCallback<CSteamAchievements,UserStatsReceived_t,0> *this,CSteamAchievements *pObj,
+          pmf_4e17555f func)
 
 {
-  if ((param_1 != (CSteamAchievements *)0x0) && (param_2 != (pmf_4e17555f)0x0)) {
+  if ((pObj != (CSteamAchievements *)0x0) && (func != (pmf_4e17555f)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x44d);
   }
   return;
@@ -247,16 +249,16 @@ CCallback<CSteamAchievements,UserStatsReceived_t,0>::Register
 
 void __thiscall
 CCallback<CSteamAchievements,UserStatsStored_t,0>::Register
-          (CCallback<CSteamAchievements,UserStatsStored_t,0> *this,CSteamAchievements *param_1,
-          pmf_12d53be1 param_2)
+          (CCallback<CSteamAchievements,UserStatsStored_t,0> *this,CSteamAchievements *pObj,
+          pmf_12d53be1 func)
 
 {
-  if ((param_1 != (CSteamAchievements *)0x0) && (param_2 != (pmf_12d53be1)0x0)) {
+  if ((pObj != (CSteamAchievements *)0x0) && (func != (pmf_12d53be1)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x44e);
   }
   return;
@@ -269,16 +271,16 @@ CCallback<CSteamAchievements,UserStatsStored_t,0>::Register
 
 void __thiscall
 CCallback<CSteamAchievements,UserAchievementStored_t,0>::Register
-          (CCallback<CSteamAchievements,UserAchievementStored_t,0> *this,CSteamAchievements *param_1
-          ,pmf_2a8d4171 param_2)
+          (CCallback<CSteamAchievements,UserAchievementStored_t,0> *this,CSteamAchievements *pObj,
+          pmf_2a8d4171 func)
 
 {
-  if ((param_1 != (CSteamAchievements *)0x0) && (param_2 != (pmf_2a8d4171)0x0)) {
+  if ((pObj != (CSteamAchievements *)0x0) && (func != (pmf_2a8d4171)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x44f);
   }
   return;
@@ -288,11 +290,11 @@ CCallback<CSteamAchievements,UserAchievementStored_t,0>::Register
 // 0097E540  OnAchievementStored  (live/live_steam_achievements.cpp:284)
 
 void __thiscall
-CSteamAchievements::OnAchievementStored(CSteamAchievements *this,UserAchievementStored_t *param_1)
+CSteamAchievements::OnAchievementStored(CSteamAchievements *this,UserAchievementStored_t *pCallback)
 
 {
-  if (((int)this->m_iAppID == (int)param_1->m_nGameID) &&
-     (*(int *)((int)&this->m_iAppID + 4) == *(int *)((int)&param_1->m_nGameID + 4))) {
+  if (((int)this->m_iAppID == (int)pCallback->m_nGameID) &&
+     (*(int *)((int)&this->m_iAppID + 4) == *(int *)((int)&pCallback->m_nGameID + 4))) {
     Com_DPrintf(0x17,"STEAM: Stored Achievement for Steam\n");
   }
   return;
@@ -305,15 +307,15 @@ void __cdecl LiveSteam_GiveAchievement_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *achievementName;
   
   iVar1 = Cmd_Argc();
   if (iVar1 != 2) {
     Cmd_Argv(0);
     Com_Printf(0,"Usage: %s <achievement name>\n");
   }
-  pcVar2 = Cmd_Argv(1);
-  LiveSteam_GiveAchievement(pcVar2);
+  achievementName = Cmd_Argv(1);
+  LiveSteam_GiveAchievement(achievementName);
   return;
 }
 
@@ -335,6 +337,7 @@ void __cdecl LiveSteam_Achievements_Init(void)
 {
   CSteamAchievements *this;
   CSteamAchievements *local_10;
+  int numAchievements;
   
   this = operator_new(0x58);
   if (this == (CSteamAchievements *)0x0) {
@@ -381,13 +384,13 @@ CCallback<CSteamAchievements,UserStatsStored_t,0>::GetCallbackSizeBytes
 void __cdecl LiveSteam_Achievements_Shutdown(void)
 
 {
-  CSteamAchievements *pCVar1;
+  CSteamAchievements *p;
   
-  pCVar1 = g_liveSteamAchievements;
+  p = g_liveSteamAchievements;
   if ((g_liveSteamAchievements != (CSteamAchievements *)0x0) &&
      (g_liveSteamAchievements != (CSteamAchievements *)0x0)) {
     CSteamAchievements::~CSteamAchievements(g_liveSteamAchievements);
-    operator_delete(pCVar1);
+    operator_delete(p);
   }
   return;
 }
@@ -407,11 +410,11 @@ void __cdecl LiveSteam_Achievements_Frame(void)
 
 // 0097E6F0  LiveSteam_GiveAchievement  (live/live_steam_achievements.cpp:334)
 
-void __cdecl LiveSteam_GiveAchievement(char *param_1)
+void __cdecl LiveSteam_GiveAchievement(char *achievementName)
 
 {
   if (g_liveSteamAchievements != (CSteamAchievements *)0x0) {
-    CSteamAchievements::SetAchievement(g_liveSteamAchievements,param_1);
+    CSteamAchievements::SetAchievement(g_liveSteamAchievements,achievementName);
   }
   return;
 }

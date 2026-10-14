@@ -2,7 +2,7 @@
 
 // 0098EC67  __libm_sse2_asin  (line unknown)
 
-double __cdecl __libm_sse2_asin(double param_1)
+double __cdecl __libm_sse2_asin(double x)
 
 {
   uint uVar1;

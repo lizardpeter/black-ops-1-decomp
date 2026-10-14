@@ -8,16 +8,17 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_Netchan_OutgoingSequenceIncremented(client_t *param_1,netchan_t *param_2)
+void __cdecl SV_Netchan_OutgoingSequenceIncremented(client_t *client,netchan_t *chan)
 
 {
-  clientSnapshot_t *pcVar1;
+  clientSnapshot_t *dst;
+  clientSnapshot_t *frame;
   
-  pcVar1 = param_1->frames + (param_2->outgoingSequence & 0x1f);
-  memset((uchar *)pcVar1,'\0',0x26cc);
-  pcVar1->matchState = svs.nextSnapshotMatchStates;
-  pcVar1->first_entity = svs.nextSnapshotEntities;
-  pcVar1->first_client = svs.nextSnapshotClients;
+  dst = client->frames + (chan->outgoingSequence & 0x1f);
+  memset((uchar *)dst,'\0',0x26cc);
+  dst->matchState = svs.nextSnapshotMatchStates;
+  dst->first_entity = svs.nextSnapshotEntities;
+  dst->first_client = svs.nextSnapshotClients;
   return;
 }
 
@@ -30,14 +31,15 @@ void __cdecl SV_Netchan_OutgoingSequenceIncremented(client_t *param_1,netchan_t 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_Netchan_TransmitNextFragment(client_t *param_1,netchan_t *param_2)
+bool __cdecl SV_Netchan_TransmitNextFragment(client_t *client,netchan_t *chan)
 
 {
   bool bVar1;
+  bool res;
   
-  bVar1 = Netchan_TransmitNextFragment(param_2);
-  if (param_2->unsentFragments == 0) {
-    SV_Netchan_OutgoingSequenceIncremented(param_1,param_2);
+  bVar1 = Netchan_TransmitNextFragment(chan);
+  if (chan->unsentFragments == 0) {
+    SV_Netchan_OutgoingSequenceIncremented(client,chan);
   }
   return bVar1;
 }
@@ -51,14 +53,15 @@ bool __cdecl SV_Netchan_TransmitNextFragment(client_t *param_1,netchan_t *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_Netchan_Transmit(client_t *param_1,uchar *param_2,int param_3,bool param_4)
+bool __cdecl SV_Netchan_Transmit(client_t *client,uchar *data,int length,bool reliable)
 
 {
   bool bVar1;
+  bool res;
   
-  bVar1 = Netchan_Transmit(&(param_1->header).netchan,param_3,param_2,param_4);
-  if ((param_1->header).netchan.unsentFragments == 0) {
-    SV_Netchan_OutgoingSequenceIncremented(param_1,&(param_1->header).netchan);
+  bVar1 = Netchan_Transmit(&(client->header).netchan,length,data,reliable);
+  if ((client->header).netchan.unsentFragments == 0) {
+    SV_Netchan_OutgoingSequenceIncremented(client,&(client->header).netchan);
   }
   return bVar1;
 }
@@ -72,12 +75,12 @@ bool __cdecl SV_Netchan_Transmit(client_t *param_1,uchar *param_2,int param_3,bo
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_Netchan_AddOOBProfilePacket(int param_1)
+void __cdecl SV_Netchan_AddOOBProfilePacket(int iLength)
 
 {
   if ((net_profile->current).integer != 0) {
     NetProf_PrepProfiling(&svs.OOBProf);
-    NetProf_AddPacket(&svs.OOBProf.send,param_1,0);
+    NetProf_AddPacket(&svs.OOBProf.send,iLength,0);
   }
   return;
 }

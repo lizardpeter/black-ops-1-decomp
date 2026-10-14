@@ -2,22 +2,22 @@
 
 // 00814B10  zcalloc  (zlib/zutil.cpp:336)
 
-uchar * __cdecl zcalloc(uchar *param_1,uint param_2,uint param_3)
+uchar * __cdecl zcalloc(uchar *opaque,uint items,uint size)
 
 {
   uchar *puVar1;
   
-  puVar1 = Z_Malloc(param_2 * param_3,"zcalloc",0xb);
+  puVar1 = Z_Malloc(items * size,"zcalloc",0xb);
   return puVar1;
 }
 
 
 // 00814B30  zcfree  (zlib/zutil.cpp:347)
 
-void __cdecl zcfree(uchar *param_1,uchar *param_2)
+void __cdecl zcfree(uchar *opaque,uchar *ptr)
 
 {
-  Z_Free(param_2,0xb);
+  Z_Free(ptr,0xb);
   return;
 }
 

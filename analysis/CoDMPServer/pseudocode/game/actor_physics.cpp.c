@@ -25,19 +25,19 @@ void __cdecl TRACK_actor_physics(void)
 
 // 00912870  AIPhys_AddTouchEnt  (game/actor_physics.cpp:70)
 
-void __cdecl AIPhys_AddTouchEnt(actor_physics_t *param_1,int param_2)
+void __cdecl AIPhys_AddTouchEnt(actor_physics_t *pPhys,int entityNum)
 
 {
-  int local_8;
+  int i;
   
-  if ((param_2 != 0x3fe) && (param_1->iNumTouch != 0x20)) {
-    for (local_8 = 0; local_8 < param_1->iNumTouch; local_8 = local_8 + 1) {
-      if (param_1->iTouchEnts[local_8] == param_2) {
+  if ((entityNum != 0x3fe) && (pPhys->iNumTouch != 0x20)) {
+    for (i = 0; i < pPhys->iNumTouch; i = i + 1) {
+      if (pPhys->iTouchEnts[i] == entityNum) {
         return;
       }
     }
-    param_1->iTouchEnts[param_1->iNumTouch] = param_2;
-    param_1->iNumTouch = param_1->iNumTouch + 1;
+    pPhys->iTouchEnts[pPhys->iNumTouch] = entityNum;
+    pPhys->iNumTouch = pPhys->iNumTouch + 1;
   }
   return;
 }
@@ -46,28 +46,30 @@ void __cdecl AIPhys_AddTouchEnt(actor_physics_t *param_1,int param_2)
 // 00913170  AIPhys_ClipVelocity  (game/actor_physics.cpp:107)
 
 void __cdecl
-AIPhys_ClipVelocity(float *param_1,float *param_2,bool param_3,float *param_4,float param_5)
+AIPhys_ClipVelocity(float *in,float *normal,bool isWalkable,float *out,float overbounce)
 
 {
-  int local_c;
-  float local_8;
+  float fVar1;
+  float change;
+  int i;
+  float backoff;
   
-  if ((!param_3) || (*param_1 * *param_1 + param_1[1] * param_1[1] < param_1[2] * param_1[2])) {
-    local_8 = *param_1 * *param_2 + param_1[1] * param_2[1] + param_1[2] * param_2[2];
-    if (0.0 <= local_8) {
-      local_8 = local_8 / param_5;
+  if ((!isWalkable) || (*in * *in + in[1] * in[1] < in[2] * in[2])) {
+    fVar1 = *in * *normal + in[1] * normal[1] + in[2] * normal[2];
+    if (0.0 <= fVar1) {
+      backoff = fVar1 / overbounce;
     }
     else {
-      local_8 = local_8 * param_5;
+      backoff = fVar1 * overbounce;
     }
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      param_4[local_c] = param_1[local_c] - param_2[local_c] * local_8;
+    for (i = 0; i < 3; i = i + 1) {
+      out[i] = in[i] - normal[i] * backoff;
     }
   }
   else {
-    param_4[2] = -*param_1 * *param_2 - param_1[1] * param_2[1];
-    *param_4 = *param_1 * param_2[2];
-    param_4[1] = param_1[1] * param_2[2];
+    out[2] = -*in * *normal - in[1] * normal[1];
+    *out = *in * normal[2];
+    out[1] = in[1] * normal[2];
   }
   return;
 }
@@ -88,17 +90,17 @@ colgeom_visitor_inlined_t<200>::colgeom_visitor_inlined_t<200>(colgeom_visitor_i
 
 // 009128E0  setup_gjkcc_input  (game/actor_physics.cpp:153)
 
-void __cdecl setup_gjkcc_input(actor_physics_t *param_1,gjkcc_input_t *param_2)
+void __cdecl setup_gjkcc_input(actor_physics_t *pPhys,gjkcc_input_t *gjkcc_in)
 
 {
-  param_2->gjkcc_id = (uint)param_1;
-  param_2->is_server_thread = true;
-  param_2->proximity_data = &param_1->proximity_data;
-  param_2->proximity_mask = 0x2838013;
-  param_2->m_ent_num = param_1->iEntNum;
-  param_2->m_gjk_query_flags = 3;
-  param_2->m_gjk_cg = (gjk_base_t *)0x0;
-  param_2->m_mat = (phys_mat44 *)0x0;
+  gjkcc_in->gjkcc_id = (uint)pPhys;
+  gjkcc_in->is_server_thread = true;
+  gjkcc_in->proximity_data = &pPhys->proximity_data;
+  gjkcc_in->proximity_mask = 0x2838013;
+  gjkcc_in->m_ent_num = pPhys->iEntNum;
+  gjkcc_in->m_gjk_query_flags = 3;
+  gjkcc_in->m_gjk_cg = (gjk_base_t *)0x0;
+  gjkcc_in->m_mat = (phys_mat44 *)0x0;
   return;
 }
 
@@ -106,40 +108,39 @@ void __cdecl setup_gjkcc_input(actor_physics_t *param_1,gjkcc_input_t *param_2)
 // 00912940  ai_physics_trace  (game/actor_physics.cpp:173)
 
 void __cdecl
-ai_physics_trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-                int param_6,int param_7,actor_physics_t *param_8)
+ai_physics_trace(trace_t *trace,float *start,float *mins,float *maxs,float *end,int passEntityNum,
+                int contentmask,actor_physics_t *pPhys)
 
 {
-  col_context_t local_50;
-  gjkcc_input_t local_28;
-  gjkcc_input_t *local_8;
+  col_context_t context;
+  gjkcc_input_t gjkcc_in_2;
+  gjkcc_input_t *gjkcc_in;
   
   if ((phys_ai_collision_mode->current).integer == 1) {
-    if (param_8 == (actor_physics_t *)0x0) {
-      local_28.gjkcc_id = 0;
-      local_28.is_server_thread = true;
-      local_28.proximity_data = (colgeom_visitor_inlined_t<200> *)0x0;
-      local_28.proximity_mask = 0;
-      local_28.m_ent_num = -1;
-      local_28.m_gjk_query_flags = 3;
-      local_28.m_gjk_cg = (gjk_base_t *)0x0;
-      local_28.m_mat = (phys_mat44 *)0x0;
-      gjkcc_prolog(&local_28,param_2);
-      gjk_player_trace(&local_28,param_1,param_2,param_3,param_4,param_5,param_6,param_7);
-      gjkcc_epilog(&local_28,param_2);
+    if (pPhys == (actor_physics_t *)0x0) {
+      gjkcc_in_2.gjkcc_id = 0;
+      gjkcc_in_2.is_server_thread = true;
+      gjkcc_in_2.proximity_data = (colgeom_visitor_inlined_t<200> *)0x0;
+      gjkcc_in_2.proximity_mask = 0;
+      gjkcc_in_2.m_ent_num = -1;
+      gjkcc_in_2.m_gjk_query_flags = 3;
+      gjkcc_in_2.m_gjk_cg = (gjk_base_t *)0x0;
+      gjkcc_in_2.m_mat = (phys_mat44 *)0x0;
+      gjkcc_prolog(&gjkcc_in_2,start);
+      gjk_player_trace(&gjkcc_in_2,trace,start,mins,maxs,end,passEntityNum,contentmask);
+      gjkcc_epilog(&gjkcc_in_2,start);
     }
     else {
-      local_8 = param_8->m_gjkcc_input;
-      gjk_player_trace(local_8,param_1,param_2,param_3,param_4,param_5,param_6,param_7);
+      gjkcc_in = pPhys->m_gjkcc_input;
+      gjk_player_trace(gjkcc_in,trace,start,mins,maxs,end,passEntityNum,contentmask);
     }
   }
   else {
-    col_context_t::col_context_t(&local_50);
-    colgeom_visitor_inlined_t<200>::update
-              (&param_8->proximity_data,param_2,param_5,param_3,param_4,0x2838013);
-    local_50.prims = (param_8->proximity_data).prims;
-    local_50.nprims = (param_8->proximity_data).nprims;
-    G_TraceCapsule(param_1,param_2,param_3,param_4,param_5,param_6,param_7,&local_50);
+    col_context_t::col_context_t(&context);
+    colgeom_visitor_inlined_t<200>::update(&pPhys->proximity_data,start,end,mins,maxs,0x2838013);
+    context.prims = (pPhys->proximity_data).prims;
+    context.nprims = (pPhys->proximity_data).nprims;
+    G_TraceCapsule(trace,start,mins,maxs,end,passEntityNum,contentmask,&context);
   }
   return;
 }
@@ -150,30 +151,30 @@ ai_physics_trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,f
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __thiscall
-ai_gjk_slide_move_input_t::custom_process
-          (ai_gjk_slide_move_input_t *this,gjk_trace_output_t *param_1)
+ai_gjk_slide_move_input_t::custom_process(ai_gjk_slide_move_input_t *this,gjk_trace_output_t *gto)
 
 {
   ushort uVar1;
   ushort uVar2;
-  float4 local_40 [3];
+  ushort EntID;
+  float4 trace [3];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   this->m_pPhys->bDeflected = '\x01';
-  local_40[0].v[0] = 0.0;
-  local_40[0].v[1] = 0.0;
-  local_40[0].v[2] = 0.0;
-  local_40[0].v[3] = 0.0;
-  fill_results_type_and_id(param_1,(trace_t *)local_40);
-  uVar1 = Trace_GetEntityHitId((trace_t *)local_40);
-  uVar2 = Trace_GetEntityHitId((trace_t *)local_40);
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  fill_results_type_and_id(gto,(trace_t *)trace);
+  uVar1 = Trace_GetEntityHitId((trace_t *)trace);
+  uVar2 = Trace_GetEntityHitId((trace_t *)trace);
   AIPhys_AddTouchEnt(this->m_pPhys,(uint)uVar2);
   if ((this->m_pPhys->iHitEntnum == 0x3ff) &&
-     (((param_1->m_hit_normal).x != 0.0 || ((param_1->m_hit_normal).y != 0.0)))) {
+     (((gto->m_hit_normal).x != 0.0 || ((gto->m_hit_normal).y != 0.0)))) {
     this->m_pPhys->iHitEntnum = (uint)uVar1;
-    Phys_NitrousVecToVec3(&param_1->m_hit_point,this->m_pPhys->vHitOrigin);
-    Phys_NitrousVecToVec3(&param_1->m_hit_normal,this->m_pPhys->vHitNormal);
+    Phys_NitrousVecToVec3(&gto->m_hit_point,this->m_pPhys->vHitOrigin);
+    Phys_NitrousVecToVec3(&gto->m_hit_normal,this->m_pPhys->vHitNormal);
   }
   return;
 }
@@ -182,21 +183,20 @@ ai_gjk_slide_move_input_t::custom_process
 // 00912A90  setup_ai_gjk_slide_move_input  (game/actor_physics.cpp:251)
 
 void __cdecl
-setup_ai_gjk_slide_move_input
-          (actor_physics_t *param_1,ai_gjk_slide_move_input_t *param_2,int param_3)
+setup_ai_gjk_slide_move_input(actor_physics_t *pPhys,ai_gjk_slide_move_input_t *input,int gravity)
 
 {
-  param_2->_padding_ = param_1->iEntNum;
-  *(undefined1 *)&param_2->_padding_ = 0;
-  param_2->_padding_ = (int)g_apl.fFrameTime;
-  param_2->_padding_ = (int)param_1->fGravity;
-  param_2->_padding_ = param_3;
-  param_2->_padding_ = (int)param_1->vMaxs;
-  param_2->_padding_ = (int)param_1->vMins;
-  param_2->_padding_ = (int)param_1;
-  param_2->_padding_ = g_apl.iTraceMask;
-  param_2->_padding_ = (int)param_1->vVelocity;
-  param_2->m_pPhys = param_1;
+  input->_padding_ = pPhys->iEntNum;
+  *(undefined1 *)&input->_padding_ = 0;
+  input->_padding_ = (int)g_apl.fFrameTime;
+  input->_padding_ = (int)pPhys->fGravity;
+  input->_padding_ = gravity;
+  input->_padding_ = (int)pPhys->vMaxs;
+  input->_padding_ = (int)pPhys->vMins;
+  input->_padding_ = (int)pPhys;
+  input->_padding_ = g_apl.iTraceMask;
+  input->_padding_ = (int)pPhys->vVelocity;
+  input->m_pPhys = pPhys;
   return;
 }
 
@@ -229,256 +229,254 @@ void __cdecl _dynamic_initializer_for__PHYS_X_VEC__(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-SlideMoveResult __cdecl AIPhys_SlideMove(actor_physics_t *param_1,int param_2,int param_3)
+SlideMoveResult __cdecl AIPhys_SlideMove(actor_physics_t *pPhys,int gravity,int zonly)
 
 {
-  uint uVar1;
-  ushort uVar2;
-  int iVar3;
-  SlideMoveResult SVar4;
-  ai_gjk_slide_move_input_t local_144;
-  gjk_slide_move_output_t local_110;
-  gjkcc_input_t *local_f4;
-  int local_f0;
-  float local_ec;
-  float local_e8;
-  float local_e4;
+  ushort uVar1;
+  int iVar2;
+  SlideMoveResult SVar3;
+  ai_gjk_slide_move_input_t input;
+  int retv;
+  gjk_slide_move_output_t output;
+  gjkcc_input_t *gjkcc_in;
+  int j;
+  float d;
+  float fInto;
+  float vDir;
   float local_e0;
   float local_dc;
-  int local_d8;
-  float local_d4;
-  float local_d0 [15];
-  float local_94;
+  int k;
+  float fTimeLeft;
+  float planes [15];
+  float vEnd;
   float local_90;
   float local_8c;
-  float local_88;
+  float vEndVelocity;
   float local_84;
   float local_80;
-  float local_7c;
+  float vEndClipVelocity;
   float local_78;
   float local_74;
-  int local_70;
-  float4 local_6c;
+  int iBumpCount;
+  float4 trace;
   float local_5c;
   char local_41;
   char local_40;
-  float local_34;
+  float vClipVelocity;
   float local_30;
   float local_2c;
-  int local_28;
-  int local_24;
-  uint local_20;
-  float local_1c;
+  int iMaxBumps;
+  int i;
+  int iNumPlanes;
+  float vPrimalVelocity;
   float local_18;
   float local_14;
-  char local_10 [8];
+  char isWalkable [8];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((phys_ai_collision_mode->current).integer == 1) {
-    local_144._padding_ = (int)ai_gjk_slide_move_input_t::vftable;
-    setup_ai_gjk_slide_move_input(param_1,&local_144,param_2);
-    local_f4 = param_1->m_gjkcc_input;
-    iVar3 = gjk_slide_move(local_f4,(gjk_slide_move_input_t *)&local_144,&local_110);
-    param_1->bStuck = '\0';
-    param_1->vOrigin[0] = local_110.new_position[0];
-    param_1->vOrigin[1] = local_110.new_position[1];
-    param_1->vOrigin[2] = local_110.new_position[2];
-    param_1->vVelocity[0] = local_110.new_velocity[0];
-    param_1->vVelocity[1] = local_110.new_velocity[1];
-    param_1->vVelocity[2] = local_110.new_velocity[2];
-    if (iVar3 == 0) {
-      SVar4 = SLIDEMOVE_COMPLETE;
+    input._padding_ = (int)ai_gjk_slide_move_input_t::vftable;
+    setup_ai_gjk_slide_move_input(pPhys,&input,gravity);
+    gjkcc_in = pPhys->m_gjkcc_input;
+    iVar2 = gjk_slide_move(gjkcc_in,(gjk_slide_move_input_t *)&input,&output);
+    pPhys->bStuck = '\0';
+    pPhys->vOrigin[0] = output.new_position[0];
+    pPhys->vOrigin[1] = output.new_position[1];
+    pPhys->vOrigin[2] = output.new_position[2];
+    pPhys->vVelocity[0] = output.new_velocity[0];
+    pPhys->vVelocity[1] = output.new_velocity[1];
+    pPhys->vVelocity[2] = output.new_velocity[2];
+    if (iVar2 == 0) {
+      SVar3 = SLIDEMOVE_COMPLETE;
     }
     else {
-      SVar4 = SLIDEMOVE_CLIPPED;
+      SVar3 = SLIDEMOVE_CLIPPED;
     }
   }
   else {
-    local_6c.v[0] = 0.0;
-    local_6c.v[1] = 0.0;
-    local_6c.v[2] = 0.0;
-    local_6c.v[3] = 0.0;
-    local_28 = 4;
-    local_1c = param_1->vVelocity[0];
-    local_18 = param_1->vVelocity[1];
-    local_14 = param_1->vVelocity[2];
-    local_88 = param_1->vVelocity[0];
-    local_84 = param_1->vVelocity[1];
-    local_80 = param_1->vVelocity[2];
-    if (param_2 != 0) {
-      local_80 = local_80 - param_1->fGravity * g_apl.fFrameTime;
-      param_1->vVelocity[2] = (param_1->vVelocity[2] + local_80) * 0.5;
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    iMaxBumps = 4;
+    vPrimalVelocity = pPhys->vVelocity[0];
+    local_18 = pPhys->vVelocity[1];
+    local_14 = pPhys->vVelocity[2];
+    vEndVelocity = pPhys->vVelocity[0];
+    local_84 = pPhys->vVelocity[1];
+    local_80 = pPhys->vVelocity[2];
+    if (gravity != 0) {
+      local_80 = local_80 - pPhys->fGravity * g_apl.fFrameTime;
+      pPhys->vVelocity[2] = (pPhys->vVelocity[2] + local_80) * 0.5;
       local_14 = local_80;
-      if ((g_apl.bGroundPlane != 0) && (param_3 == 0)) {
-        AIPhys_ClipVelocity(param_1->vVelocity,(float *)&g_apl.groundTrace,
-                            g_apl.groundTrace.walkable,param_1->vVelocity,1.001);
+      if ((g_apl.bGroundPlane != 0) && (zonly == 0)) {
+        AIPhys_ClipVelocity(pPhys->vVelocity,(float *)&g_apl.groundTrace,g_apl.groundTrace.walkable,
+                            pPhys->vVelocity,1.001);
       }
     }
-    local_d4 = g_apl.fFrameTime;
+    fTimeLeft = g_apl.fFrameTime;
     if (g_apl.bGroundPlane != 0) {
-      local_d0[0] = g_apl.groundTrace.normal.vec.v[0];
-      local_d0[1] = g_apl.groundTrace.normal.vec.v[1];
-      local_d0[2] = g_apl.groundTrace.normal.vec.v[2];
-      local_10[0] = g_apl.groundTrace.walkable;
+      planes[0] = g_apl.groundTrace.normal.vec.v[0];
+      planes[1] = g_apl.groundTrace.normal.vec.v[1];
+      planes[2] = g_apl.groundTrace.normal.vec.v[2];
+      isWalkable[0] = g_apl.groundTrace.walkable;
     }
-    local_20 = (uint)(g_apl.bGroundPlane != 0);
-    Vec3NormalizeTo(param_1->vVelocity,local_d0 + local_20 * 3);
-    local_10[local_20] = 0.7 < param_1->vVelocity[2];
-    local_20 = local_20 + 1;
-    for (local_70 = 0; local_70 < local_28; local_70 = local_70 + 1) {
-      local_94 = local_d4 * param_1->vVelocity[0] + param_1->vOrigin[0];
-      local_90 = local_d4 * param_1->vVelocity[1] + param_1->vOrigin[1];
-      local_8c = local_d4 * param_1->vVelocity[2] + param_1->vOrigin[2];
-      ai_physics_trace((trace_t *)&local_6c,param_1->vOrigin,param_1->vMins,param_1->vMaxs,&local_94
-                       ,param_1->iEntNum,g_apl.iTraceMask,param_1);
+    iNumPlanes = (int)(g_apl.bGroundPlane != 0);
+    Vec3NormalizeTo(pPhys->vVelocity,planes + iNumPlanes * 3);
+    isWalkable[iNumPlanes] = 0.7 < pPhys->vVelocity[2];
+    iNumPlanes = iNumPlanes + 1;
+    for (iBumpCount = 0; iBumpCount < iMaxBumps; iBumpCount = iBumpCount + 1) {
+      vEnd = fTimeLeft * pPhys->vVelocity[0] + pPhys->vOrigin[0];
+      local_90 = fTimeLeft * pPhys->vVelocity[1] + pPhys->vOrigin[1];
+      local_8c = fTimeLeft * pPhys->vVelocity[2] + pPhys->vOrigin[2];
+      ai_physics_trace((trace_t *)&trace,pPhys->vOrigin,pPhys->vMins,pPhys->vMaxs,&vEnd,
+                       pPhys->iEntNum,g_apl.iTraceMask,pPhys);
       if (local_5c <= 0.0) {
         if (local_41 != '\0') {
-          param_1->vVelocity[2] = 0.0;
-          if ((local_70 == 0) && (g_apl.groundTrace.startsolid != false)) {
+          pPhys->vVelocity[2] = 0.0;
+          if ((iBumpCount == 0) && (g_apl.groundTrace.startsolid != false)) {
             return SLIDEMOVE_FAIL;
           }
-          if (param_1->iHitEntnum == 0x3ff) {
-            uVar2 = Trace_GetEntityHitId((trace_t *)&local_6c);
-            param_1->iHitEntnum = (uint)uVar2;
-            param_1->vHitOrigin[0] = param_1->vOrigin[0];
-            param_1->vHitOrigin[1] = param_1->vOrigin[1];
-            param_1->bStuck = '\x01';
+          if (pPhys->iHitEntnum == 0x3ff) {
+            uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+            pPhys->iHitEntnum = (uint)uVar1;
+            pPhys->vHitOrigin[0] = pPhys->vOrigin[0];
+            pPhys->vHitOrigin[1] = pPhys->vOrigin[1];
+            pPhys->bStuck = '\x01';
           }
           return SLIDEMOVE_CLIPPED;
         }
       }
       else {
-        Vec3Lerp(param_1->vOrigin,&local_94,local_5c,param_1->vOrigin);
+        Vec3Lerp(pPhys->vOrigin,&vEnd,local_5c,pPhys->vOrigin);
         if (local_5c == 1.0) break;
       }
-      param_1->bDeflected = '\x01';
-      if (((local_40 == '\0') && (param_1->iHitEntnum == 0x3ff)) &&
-         ((local_6c.v[0] != 0.0 || (local_6c.v[1] != 0.0)))) {
-        uVar2 = Trace_GetEntityHitId((trace_t *)&local_6c);
-        param_1->iHitEntnum = (uint)uVar2;
-        param_1->vHitOrigin[0] = param_1->vOrigin[0];
-        param_1->vHitOrigin[1] = param_1->vOrigin[1];
-        param_1->vHitNormal[0] = local_6c.v[0];
-        param_1->vHitNormal[1] = local_6c.v[1];
-        param_1->bStuck = '\0';
+      pPhys->bDeflected = '\x01';
+      if (((local_40 == '\0') && (pPhys->iHitEntnum == 0x3ff)) &&
+         ((trace.v[0] != 0.0 || (trace.v[1] != 0.0)))) {
+        uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+        pPhys->iHitEntnum = (uint)uVar1;
+        pPhys->vHitOrigin[0] = pPhys->vOrigin[0];
+        pPhys->vHitOrigin[1] = pPhys->vOrigin[1];
+        pPhys->vHitNormal[0] = trace.v[0];
+        pPhys->vHitNormal[1] = trace.v[1];
+        pPhys->bStuck = '\0';
       }
-      uVar2 = Trace_GetEntityHitId((trace_t *)&local_6c);
-      AIPhys_AddTouchEnt(param_1,(uint)uVar2);
-      local_d4 = local_d4 - local_d4 * local_5c;
-      if (4 < (int)local_20) {
-        param_1->vVelocity[0] = 0.0;
-        param_1->vVelocity[1] = 0.0;
-        param_1->vVelocity[2] = 0.0;
+      uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+      AIPhys_AddTouchEnt(pPhys,(uint)uVar1);
+      fTimeLeft = fTimeLeft - fTimeLeft * local_5c;
+      if (4 < iNumPlanes) {
+        pPhys->vVelocity[0] = 0.0;
+        pPhys->vVelocity[1] = 0.0;
+        pPhys->vVelocity[2] = 0.0;
         return SLIDEMOVE_CLIPPED;
       }
-      for (local_24 = 0; local_24 < (int)local_20; local_24 = local_24 + 1) {
-        if (0.99 < local_6c.v[0] * local_d0[local_24 * 3] +
-                   local_6c.v[1] * local_d0[local_24 * 3 + 1] +
-                   local_6c.v[2] * local_d0[local_24 * 3 + 2]) {
-          if (((local_5c == 0.0) && (param_1->iHitEntnum == 0x3ff)) &&
-             ((local_6c.v[0] != 0.0 || (local_6c.v[1] != 0.0)))) {
-            uVar2 = Trace_GetEntityHitId((trace_t *)&local_6c);
-            param_1->iHitEntnum = (uint)uVar2;
-            param_1->vHitOrigin[0] = param_1->vOrigin[0];
-            param_1->vHitOrigin[1] = param_1->vOrigin[1];
-            param_1->vHitNormal[0] = local_6c.v[0];
-            param_1->vHitNormal[1] = local_6c.v[1];
-            param_1->bStuck = '\0';
+      for (i = 0; i < iNumPlanes; i = i + 1) {
+        if (0.99 < trace.v[0] * planes[i * 3] + trace.v[1] * planes[i * 3 + 1] +
+                   trace.v[2] * planes[i * 3 + 2]) {
+          if (((local_5c == 0.0) && (pPhys->iHitEntnum == 0x3ff)) &&
+             ((trace.v[0] != 0.0 || (trace.v[1] != 0.0)))) {
+            uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+            pPhys->iHitEntnum = (uint)uVar1;
+            pPhys->vHitOrigin[0] = pPhys->vOrigin[0];
+            pPhys->vHitOrigin[1] = pPhys->vOrigin[1];
+            pPhys->vHitNormal[0] = trace.v[0];
+            pPhys->vHitNormal[1] = trace.v[1];
+            pPhys->bStuck = '\0';
           }
-          param_1->vVelocity[0] = local_6c.v[0] + param_1->vVelocity[0];
-          param_1->vVelocity[1] = local_6c.v[1] + param_1->vVelocity[1];
-          param_1->vVelocity[2] = local_6c.v[2] + param_1->vVelocity[2];
+          pPhys->vVelocity[0] = trace.v[0] + pPhys->vVelocity[0];
+          pPhys->vVelocity[1] = trace.v[1] + pPhys->vVelocity[1];
+          pPhys->vVelocity[2] = trace.v[2] + pPhys->vVelocity[2];
           break;
         }
       }
-      uVar1 = local_20;
-      if ((int)local_20 <= local_24) {
-        local_d0[local_20 * 3] = local_6c.v[0];
-        local_d0[uVar1 * 3 + 1] = local_6c.v[1];
-        local_d0[uVar1 * 3 + 2] = local_6c.v[2];
-        local_10[local_20] = local_40;
-        local_20 = local_20 + 1;
-        local_24 = 0;
+      iVar2 = iNumPlanes;
+      if (iNumPlanes <= i) {
+        planes[iNumPlanes * 3] = trace.v[0];
+        planes[iVar2 * 3 + 1] = trace.v[1];
+        planes[iVar2 * 3 + 2] = trace.v[2];
+        isWalkable[iNumPlanes] = local_40;
+        iNumPlanes = iNumPlanes + 1;
+        i = 0;
 LAB_009142ac:
-        if (local_24 < (int)local_20) {
-          local_e8 = param_1->vVelocity[0] * local_d0[local_24 * 3] +
-                     param_1->vVelocity[1] * local_d0[local_24 * 3 + 1] +
-                     param_1->vVelocity[2] * local_d0[local_24 * 3 + 2];
-          if (0.1 <= local_e8) goto LAB_009142a3;
-          if (g_apl.fImpactSpeed < -local_e8) {
-            g_apl.fImpactSpeed = -local_e8;
+        if (i < iNumPlanes) {
+          fInto = pPhys->vVelocity[0] * planes[i * 3] + pPhys->vVelocity[1] * planes[i * 3 + 1] +
+                  pPhys->vVelocity[2] * planes[i * 3 + 2];
+          if (0.1 <= fInto) goto LAB_009142a3;
+          if (g_apl.fImpactSpeed < -fInto) {
+            g_apl.fImpactSpeed = -fInto;
           }
-          AIPhys_ClipVelocity(param_1->vVelocity,local_d0 + local_24 * 3,(bool)local_10[local_24],
-                              &local_34,1.001);
-          AIPhys_ClipVelocity(&local_88,local_d0 + local_24 * 3,(bool)local_10[local_24],&local_7c,
+          AIPhys_ClipVelocity(pPhys->vVelocity,planes + i * 3,(bool)isWalkable[i],&vClipVelocity,
                               1.001);
-          for (local_f0 = 0; local_f0 < (int)local_20; local_f0 = local_f0 + 1) {
-            if ((local_f0 != local_24) &&
-               (local_34 * local_d0[local_f0 * 3] + local_30 * local_d0[local_f0 * 3 + 1] +
-                local_2c * local_d0[local_f0 * 3 + 2] < 0.1)) {
-              AIPhys_ClipVelocity(&local_34,local_d0 + local_f0 * 3,(bool)local_10[local_f0],
-                                  &local_34,1.001);
-              AIPhys_ClipVelocity(&local_7c,local_d0 + local_f0 * 3,(bool)local_10[local_f0],
-                                  &local_7c,1.001);
-              if (local_34 * local_d0[local_24 * 3] + local_30 * local_d0[local_24 * 3 + 1] +
-                  local_2c * local_d0[local_24 * 3 + 2] < 0.0) {
-                Vec3Cross(local_d0 + local_24 * 3,local_d0 + local_f0 * 3,&local_e4);
-                Vec3Normalize(&local_e4);
-                local_ec = local_e4 * param_1->vVelocity[0] + local_e0 * param_1->vVelocity[1] +
-                           local_dc * param_1->vVelocity[2];
-                local_34 = local_ec * local_e4;
-                local_30 = local_ec * local_e0;
-                local_2c = local_ec * local_dc;
-                Vec3Cross(local_d0 + local_24 * 3,local_d0 + local_f0 * 3,&local_e4);
-                Vec3Normalize(&local_e4);
-                local_ec = local_e4 * local_88 + local_e0 * local_84 + local_dc * local_80;
-                local_7c = local_ec * local_e4;
-                local_78 = local_ec * local_e0;
-                local_74 = local_ec * local_dc;
-                for (local_d8 = 0; local_d8 < (int)local_20; local_d8 = local_d8 + 1) {
-                  if (((local_d8 != local_24) && (local_d8 != local_f0)) &&
-                     (local_34 * local_d0[local_d8 * 3] + local_30 * local_d0[local_d8 * 3 + 1] +
-                      local_2c * local_d0[local_d8 * 3 + 2] < 0.1)) {
-                    param_1->vVelocity[0] = 0.0;
-                    param_1->vVelocity[1] = 0.0;
-                    param_1->vVelocity[2] = 0.0;
+          AIPhys_ClipVelocity(&vEndVelocity,planes + i * 3,(bool)isWalkable[i],&vEndClipVelocity,
+                              1.001);
+          for (j = 0; j < iNumPlanes; j = j + 1) {
+            if ((j != i) &&
+               (vClipVelocity * planes[j * 3] + local_30 * planes[j * 3 + 1] +
+                local_2c * planes[j * 3 + 2] < 0.1)) {
+              AIPhys_ClipVelocity(&vClipVelocity,planes + j * 3,(bool)isWalkable[j],&vClipVelocity,
+                                  1.001);
+              AIPhys_ClipVelocity(&vEndClipVelocity,planes + j * 3,(bool)isWalkable[j],
+                                  &vEndClipVelocity,1.001);
+              if (vClipVelocity * planes[i * 3] + local_30 * planes[i * 3 + 1] +
+                  local_2c * planes[i * 3 + 2] < 0.0) {
+                Vec3Cross(planes + i * 3,planes + j * 3,&vDir);
+                Vec3Normalize(&vDir);
+                d = vDir * pPhys->vVelocity[0] + local_e0 * pPhys->vVelocity[1] +
+                    local_dc * pPhys->vVelocity[2];
+                vClipVelocity = d * vDir;
+                local_30 = d * local_e0;
+                local_2c = d * local_dc;
+                Vec3Cross(planes + i * 3,planes + j * 3,&vDir);
+                Vec3Normalize(&vDir);
+                d = vDir * vEndVelocity + local_e0 * local_84 + local_dc * local_80;
+                vEndClipVelocity = d * vDir;
+                local_78 = d * local_e0;
+                local_74 = d * local_dc;
+                for (k = 0; k < iNumPlanes; k = k + 1) {
+                  if (((k != i) && (k != j)) &&
+                     (vClipVelocity * planes[k * 3] + local_30 * planes[k * 3 + 1] +
+                      local_2c * planes[k * 3 + 2] < 0.1)) {
+                    pPhys->vVelocity[0] = 0.0;
+                    pPhys->vVelocity[1] = 0.0;
+                    pPhys->vVelocity[2] = 0.0;
                     return SLIDEMOVE_CLIPPED;
                   }
                 }
               }
             }
           }
-          if (param_1->iHitEntnum == 0x3ff) {
-            local_e4 = local_34 - param_1->vVelocity[0];
-            local_e0 = local_30 - param_1->vVelocity[1];
-            uVar2 = Trace_GetEntityHitId((trace_t *)&local_6c);
-            param_1->iHitEntnum = (uint)uVar2;
-            param_1->vHitOrigin[0] = param_1->vOrigin[0];
-            param_1->vHitOrigin[1] = param_1->vOrigin[1];
-            param_1->vHitNormal[0] = local_e4;
-            param_1->vHitNormal[1] = local_e0;
-            param_1->bStuck = '\0';
+          if (pPhys->iHitEntnum == 0x3ff) {
+            vDir = vClipVelocity - pPhys->vVelocity[0];
+            local_e0 = local_30 - pPhys->vVelocity[1];
+            uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+            pPhys->iHitEntnum = (uint)uVar1;
+            pPhys->vHitOrigin[0] = pPhys->vOrigin[0];
+            pPhys->vHitOrigin[1] = pPhys->vOrigin[1];
+            pPhys->vHitNormal[0] = vDir;
+            pPhys->vHitNormal[1] = local_e0;
+            pPhys->bStuck = '\0';
           }
-          param_1->vVelocity[0] = local_34;
-          param_1->vVelocity[1] = local_30;
-          param_1->vVelocity[2] = local_2c;
-          local_88 = local_7c;
+          pPhys->vVelocity[0] = vClipVelocity;
+          pPhys->vVelocity[1] = local_30;
+          pPhys->vVelocity[2] = local_2c;
+          vEndVelocity = vEndClipVelocity;
           local_84 = local_78;
           local_80 = local_74;
         }
       }
     }
-    if (param_2 != 0) {
-      param_1->vVelocity[0] = local_88;
-      param_1->vVelocity[1] = local_84;
-      param_1->vVelocity[2] = local_80;
+    if (gravity != 0) {
+      pPhys->vVelocity[0] = vEndVelocity;
+      pPhys->vVelocity[1] = local_84;
+      pPhys->vVelocity[2] = local_80;
     }
-    SVar4 = (SlideMoveResult)(local_70 != 0);
+    SVar3 = (SlideMoveResult)(iBumpCount != 0);
   }
-  return SVar4;
+  return SVar3;
 LAB_009142a3:
-  local_24 = local_24 + 1;
+  i = i + 1;
   goto LAB_009142ac;
 }
 
@@ -556,7 +554,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl AIPhys_StepSlideMove(actor_physics_t *param_1,int param_2,int param_3)
+int __cdecl AIPhys_StepSlideMove(actor_physics_t *pPhys,int gravity,int zonly)
 
 {
   code *pcVar1;
@@ -568,101 +566,103 @@ int __cdecl AIPhys_StepSlideMove(actor_physics_t *param_1,int param_2,int param_
   float fVar7;
   float local_960;
   uint local_95c;
-  float local_8bc [26];
-  actor_physics_t local_854;
-  SlideMoveResult local_84;
-  float local_80;
-  float local_7c;
+  float ndiff1_sq;
+  float ndiff2_sq;
+  float localPhys [26];
+  actor_physics_t phys;
+  SlideMoveResult moveResult;
+  float stepheight;
+  float start_o;
   float local_78;
   float local_74;
-  float4 local_70;
+  float4 trace;
   float local_60;
   char local_46;
   char local_45;
   bool local_44;
   uint local_38;
-  float local_34;
+  float endpos;
   float local_30;
   float local_2c;
-  float local_28;
+  float start_v;
   float local_24;
   float local_20;
-  float local_1c;
+  float up;
   float local_18;
   float local_14;
-  float local_10;
+  float down;
   float local_c;
   float local_8;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_70.v[0] = 0.0;
-  local_70.v[1] = 0.0;
-  local_70.v[2] = 0.0;
-  local_70.v[3] = 0.0;
-  colgeom_visitor_inlined_t<200>::colgeom_visitor_inlined_t<200>(&local_854.proximity_data);
-  local_8bc[3] = 0.0;
-  local_8bc[4] = 0.0;
-  local_8bc[5] = 0.0;
-  local_8bc[6] = 0.0;
-  local_7c = param_1->vOrigin[0];
-  local_78 = param_1->vOrigin[1];
-  local_74 = param_1->vOrigin[2];
-  local_28 = param_1->vVelocity[0];
-  local_24 = param_1->vVelocity[1];
-  local_20 = param_1->vVelocity[2];
-  local_84 = AIPhys_SlideMove(param_1,param_2,param_3);
-  if (local_84 == SLIDEMOVE_COMPLETE) {
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  colgeom_visitor_inlined_t<200>::colgeom_visitor_inlined_t<200>(&phys.proximity_data);
+  localPhys[3] = 0.0;
+  localPhys[4] = 0.0;
+  localPhys[5] = 0.0;
+  localPhys[6] = 0.0;
+  start_o = pPhys->vOrigin[0];
+  local_78 = pPhys->vOrigin[1];
+  local_74 = pPhys->vOrigin[2];
+  start_v = pPhys->vVelocity[0];
+  local_24 = pPhys->vVelocity[1];
+  local_20 = pPhys->vVelocity[2];
+  moveResult = AIPhys_SlideMove(pPhys,gravity,zonly);
+  if (moveResult == SLIDEMOVE_COMPLETE) {
     local_95c = 1;
   }
-  else if (local_84 == SLIDEMOVE_FAIL) {
+  else if (moveResult == SLIDEMOVE_FAIL) {
     local_95c = 0;
   }
   else {
-    if ((local_84 != SLIDEMOVE_CLIPPED) &&
+    if ((moveResult != SLIDEMOVE_CLIPPED) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_physics.cpp",0x236,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_80 = g_apl.stepheight;
-    if ((0.0 < param_1->vVelocity[2]) && (g_apl.bIsWalking == 0)) {
-      local_10 = local_7c;
+    stepheight = g_apl.stepheight;
+    if ((0.0 < pPhys->vVelocity[2]) && (g_apl.bIsWalking == 0)) {
+      down = start_o;
       local_c = local_78;
       local_8 = local_74 - g_apl.stepheight;
-      ai_physics_trace((trace_t *)&local_70,&local_7c,param_1->vMins,param_1->vMaxs,&local_10,
-                       param_1->iEntNum,g_apl.iTraceMask,param_1);
+      ai_physics_trace((trace_t *)&trace,&start_o,pPhys->vMins,pPhys->vMaxs,&down,pPhys->iEntNum,
+                       g_apl.iTraceMask,pPhys);
       if ((local_60 == 1.0) || (local_44 == false)) {
         return 1;
       }
     }
-    local_1c = local_7c;
+    up = start_o;
     local_18 = local_78;
-    local_14 = local_74 + local_80;
-    ai_physics_trace((trace_t *)&local_70,&local_7c,param_1->vMins,param_1->vMaxs,&local_1c,
-                     param_1->iEntNum,g_apl.iTraceMask,param_1);
+    local_14 = local_74 + stepheight;
+    ai_physics_trace((trace_t *)&trace,&start_o,pPhys->vMins,pPhys->vMaxs,&up,pPhys->iEntNum,
+                     g_apl.iTraceMask,pPhys);
     if (local_46 == '\0') {
-      actor_physics_t::operator=(&local_854,param_1);
+      actor_physics_t::operator=(&phys,pPhys);
       paVar4 = &g_apl;
-      pfVar5 = local_8bc;
+      pfVar5 = localPhys;
       for (iVar3 = 0x1a; iVar3 != 0; iVar3 = iVar3 + -1) {
         *pfVar5 = paVar4->fFrameTime;
         paVar4 = (actor_physics_local_t *)&paVar4->bIsWalking;
         pfVar5 = pfVar5 + 1;
       }
-      param_1->iHitEntnum = 0x3ff;
+      pPhys->iHitEntnum = 0x3ff;
       g_apl.bGroundPlane = 0;
-      Vec3Lerp(&local_7c,&local_1c,local_60,&local_34);
-      param_1->vOrigin[0] = local_34;
-      param_1->vOrigin[1] = local_30;
-      param_1->vOrigin[2] = local_2c;
-      param_1->vVelocity[0] = local_28;
-      param_1->vVelocity[1] = local_24;
-      param_1->vVelocity[2] = local_20;
-      local_84 = AIPhys_SlideMove(param_1,param_2,param_3);
-      if (local_84 == SLIDEMOVE_FAIL) {
-        actor_physics_t::operator=(param_1,&local_854);
-        pfVar5 = local_8bc;
+      Vec3Lerp(&start_o,&up,local_60,&endpos);
+      pPhys->vOrigin[0] = endpos;
+      pPhys->vOrigin[1] = local_30;
+      pPhys->vOrigin[2] = local_2c;
+      pPhys->vVelocity[0] = start_v;
+      pPhys->vVelocity[1] = local_24;
+      pPhys->vVelocity[2] = local_20;
+      moveResult = AIPhys_SlideMove(pPhys,gravity,zonly);
+      if (moveResult == SLIDEMOVE_FAIL) {
+        actor_physics_t::operator=(pPhys,&phys);
+        pfVar5 = localPhys;
         paVar4 = &g_apl;
         for (iVar3 = 0x1a; iVar3 != 0; iVar3 = iVar3 + -1) {
           paVar4->fFrameTime = *pfVar5;
@@ -672,27 +672,26 @@ int __cdecl AIPhys_StepSlideMove(actor_physics_t *param_1,int param_2,int param_
         local_95c = 1;
       }
       else {
-        fVar6 = g_apl.fFrameTime * local_28 + local_7c;
+        fVar6 = g_apl.fFrameTime * start_v + start_o;
         fVar7 = g_apl.fFrameTime * local_24 + local_78;
-        local_854.vOrigin[0] = fVar6 - local_854.vOrigin[0];
-        local_854.vOrigin[1] = fVar7 - local_854.vOrigin[1];
-        fVar6 = fVar6 - param_1->vOrigin[0];
-        fVar7 = fVar7 - param_1->vOrigin[1];
+        phys.vOrigin[0] = fVar6 - phys.vOrigin[0];
+        phys.vOrigin[1] = fVar7 - phys.vOrigin[1];
+        fVar6 = fVar6 - pPhys->vOrigin[0];
+        fVar7 = fVar7 - pPhys->vOrigin[1];
         if (fVar6 * fVar6 + fVar7 * fVar7 <=
-            local_854.vOrigin[0] * local_854.vOrigin[0] +
-            local_854.vOrigin[1] * local_854.vOrigin[1]) {
-          local_10 = param_1->vOrigin[0];
-          local_c = param_1->vOrigin[1];
-          local_8 = (local_74 - local_2c) + param_1->vOrigin[2];
-          ai_physics_trace((trace_t *)&local_70,param_1->vOrigin,param_1->vMins,param_1->vMaxs,
-                           &local_10,param_1->iEntNum,g_apl.iTraceMask,param_1);
+            phys.vOrigin[0] * phys.vOrigin[0] + phys.vOrigin[1] * phys.vOrigin[1]) {
+          down = pPhys->vOrigin[0];
+          local_c = pPhys->vOrigin[1];
+          local_8 = (local_74 - local_2c) + pPhys->vOrigin[2];
+          ai_physics_trace((trace_t *)&trace,pPhys->vOrigin,pPhys->vMins,pPhys->vMaxs,&down,
+                           pPhys->iEntNum,g_apl.iTraceMask,pPhys);
           if (local_45 == '\0') {
-            Vec3Lerp(param_1->vOrigin,&local_10,local_60,param_1->vOrigin);
+            Vec3Lerp(pPhys->vOrigin,&down,local_60,pPhys->vOrigin);
           }
           if (local_60 < 1.0) {
-            if (local_70.v[2] < 0.3) {
-              actor_physics_t::operator=(param_1,&local_854);
-              pfVar5 = local_8bc;
+            if (trace.v[2] < 0.3) {
+              actor_physics_t::operator=(pPhys,&phys);
+              pfVar5 = localPhys;
               paVar4 = &g_apl;
               for (iVar3 = 0x1a; iVar3 != 0; iVar3 = iVar3 + -1) {
                 paVar4->fFrameTime = *pfVar5;
@@ -701,22 +700,22 @@ int __cdecl AIPhys_StepSlideMove(actor_physics_t *param_1,int param_2,int param_
               }
               return 1;
             }
-            AIPhys_ClipVelocity(param_1->vVelocity,local_70.v,local_44,param_1->vVelocity,1.001);
-            if (local_74 - local_854.vOrigin[2] < 0.0) {
-              local_960 = local_854.vOrigin[2];
+            AIPhys_ClipVelocity(pPhys->vVelocity,trace.v,local_44,pPhys->vVelocity,1.001);
+            if (local_74 - phys.vOrigin[2] < 0.0) {
+              local_960 = phys.vOrigin[2];
             }
             else {
               local_960 = local_74;
             }
-            if (local_960 + 0.1 < param_1->vOrigin[2]) {
-              param_1->iHitEntnum = 0x3ff;
+            if (local_960 + 0.1 < pPhys->vOrigin[2]) {
+              pPhys->iHitEntnum = 0x3ff;
             }
           }
           local_95c = 1;
         }
         else {
-          actor_physics_t::operator=(param_1,&local_854);
-          pfVar5 = local_8bc;
+          actor_physics_t::operator=(pPhys,&phys);
+          pfVar5 = localPhys;
           paVar4 = &g_apl;
           for (iVar3 = 0x1a; iVar3 != 0; iVar3 = iVar3 + -1) {
             paVar4->fFrameTime = *pfVar5;
@@ -737,51 +736,51 @@ int __cdecl AIPhys_StepSlideMove(actor_physics_t *param_1,int param_2,int param_
 
 // 00913120  AIPhys_AirMove  (game/actor_physics.cpp:662)
 
-int __cdecl AIPhys_AirMove(actor_physics_t *param_1)
+int __cdecl AIPhys_AirMove(actor_physics_t *pPhys)
 
 {
   int iVar1;
   
   if (g_apl.bGroundPlane != 0) {
-    AIPhys_ClipVelocity(param_1->vVelocity,(float *)&g_apl.groundTrace,g_apl.groundTrace.walkable,
-                        param_1->vVelocity,1.001);
+    AIPhys_ClipVelocity(pPhys->vVelocity,(float *)&g_apl.groundTrace,g_apl.groundTrace.walkable,
+                        pPhys->vVelocity,1.001);
   }
-  iVar1 = AIPhys_StepSlideMove(param_1,1,0);
+  iVar1 = AIPhys_StepSlideMove(pPhys,1,0);
   return iVar1;
 }
 
 
 // 00914EB0  AIPhys_WalkMove  (game/actor_physics.cpp:684)
 
-int __cdecl AIPhys_WalkMove(actor_physics_t *param_1)
+int __cdecl AIPhys_WalkMove(actor_physics_t *pPhys)
 
 {
   float fVar1;
   int iVar2;
   float fVar3;
   float fVar4;
+  float vel;
   
   fVar3 = 1.0 / g_apl.fFrameTime;
-  param_1->vVelocity[0] = fVar3 * param_1->vWishDelta[0];
-  param_1->vVelocity[1] = fVar3 * param_1->vWishDelta[1];
-  param_1->vVelocity[2] = 0.0;
-  fVar4 = Vec2Length(param_1->vVelocity);
-  fVar3 = param_1->vVelocity[0];
-  fVar1 = param_1->vVelocity[1];
-  AIPhys_ClipVelocity(param_1->vVelocity,(float *)&g_apl.groundTrace,g_apl.groundTrace.walkable,
-                      param_1->vVelocity,1.001);
-  if (0.0 < param_1->vVelocity[0] * fVar3 + param_1->vVelocity[1] * fVar1) {
-    Vec3Normalize(param_1->vVelocity);
-    param_1->vVelocity[0] = fVar4 * param_1->vVelocity[0];
-    param_1->vVelocity[1] = fVar4 * param_1->vVelocity[1];
-    param_1->vVelocity[2] = fVar4 * param_1->vVelocity[2];
+  pPhys->vVelocity[0] = fVar3 * pPhys->vWishDelta[0];
+  pPhys->vVelocity[1] = fVar3 * pPhys->vWishDelta[1];
+  pPhys->vVelocity[2] = 0.0;
+  fVar4 = Vec2Length(pPhys->vVelocity);
+  fVar3 = pPhys->vVelocity[0];
+  fVar1 = pPhys->vVelocity[1];
+  AIPhys_ClipVelocity(pPhys->vVelocity,(float *)&g_apl.groundTrace,g_apl.groundTrace.walkable,
+                      pPhys->vVelocity,1.001);
+  if (0.0 < pPhys->vVelocity[0] * fVar3 + pPhys->vVelocity[1] * fVar1) {
+    Vec3Normalize(pPhys->vVelocity);
+    pPhys->vVelocity[0] = fVar4 * pPhys->vVelocity[0];
+    pPhys->vVelocity[1] = fVar4 * pPhys->vVelocity[1];
+    pPhys->vVelocity[2] = fVar4 * pPhys->vVelocity[2];
   }
-  if (((param_1->vVelocity[0] == 0.0) && (param_1->vVelocity[1] == 0.0)) &&
-     (g_apl.bGroundPlane != 0)) {
+  if (((pPhys->vVelocity[0] == 0.0) && (pPhys->vVelocity[1] == 0.0)) && (g_apl.bGroundPlane != 0)) {
     iVar2 = 1;
   }
   else {
-    iVar2 = AIPhys_StepSlideMove(param_1,0,0);
+    iVar2 = AIPhys_StepSlideMove(pPhys,0,0);
   }
   return iVar2;
 }
@@ -789,45 +788,45 @@ int __cdecl AIPhys_WalkMove(actor_physics_t *param_1)
 
 // 00915060  AIPhys_ZOnlyPhysicsMove  (game/actor_physics.cpp:714)
 
-int __cdecl AIPhys_ZOnlyPhysicsMove(actor_physics_t *param_1)
+int __cdecl AIPhys_ZOnlyPhysicsMove(actor_physics_t *pPhys)
 
 {
   int iVar1;
   float fVar2;
   
   fVar2 = 1.0 / g_apl.fFrameTime;
-  param_1->vVelocity[0] = fVar2 * param_1->vWishDelta[0];
-  param_1->vVelocity[1] = fVar2 * param_1->vWishDelta[1];
-  param_1->vVelocity[2] = 0.0;
-  iVar1 = AIPhys_StepSlideMove(param_1,1,1);
+  pPhys->vVelocity[0] = fVar2 * pPhys->vWishDelta[0];
+  pPhys->vVelocity[1] = fVar2 * pPhys->vWishDelta[1];
+  pPhys->vVelocity[2] = 0.0;
+  iVar1 = AIPhys_StepSlideMove(pPhys,1,1);
   return iVar1;
 }
 
 
 // 009150E0  AIPhys_NoClipMove  (game/actor_physics.cpp:731)
 
-void __cdecl AIPhys_NoClipMove(actor_physics_t *param_1)
+void __cdecl AIPhys_NoClipMove(actor_physics_t *pPhys)
 
 {
-  param_1->vOrigin[0] = param_1->vOrigin[0] + param_1->vWishDelta[0];
-  param_1->vOrigin[1] = param_1->vOrigin[1] + param_1->vWishDelta[1];
-  param_1->vOrigin[2] = param_1->vOrigin[2] + param_1->vWishDelta[2];
+  pPhys->vOrigin[0] = pPhys->vOrigin[0] + pPhys->vWishDelta[0];
+  pPhys->vOrigin[1] = pPhys->vOrigin[1] + pPhys->vWishDelta[1];
+  pPhys->vOrigin[2] = pPhys->vOrigin[2] + pPhys->vWishDelta[2];
   return;
 }
 
 
 // 00915140  AIPhys_NoGravityMove  (game/actor_physics.cpp:759)
 
-void __cdecl AIPhys_NoGravityMove(actor_physics_t *param_1)
+void __cdecl AIPhys_NoGravityMove(actor_physics_t *pPhys)
 
 {
   float fVar1;
   
   fVar1 = 1.0 / g_apl.fFrameTime;
-  param_1->vVelocity[0] = fVar1 * param_1->vWishDelta[0];
-  param_1->vVelocity[1] = fVar1 * param_1->vWishDelta[1];
-  param_1->vVelocity[2] = fVar1 * param_1->vWishDelta[2];
-  AIPhys_SlideMove(param_1,0,1);
+  pPhys->vVelocity[0] = fVar1 * pPhys->vWishDelta[0];
+  pPhys->vVelocity[1] = fVar1 * pPhys->vWishDelta[1];
+  pPhys->vVelocity[2] = fVar1 * pPhys->vWishDelta[2];
+  AIPhys_SlideMove(pPhys,0,1);
   return;
 }
 
@@ -835,8 +834,12 @@ void __cdecl AIPhys_NoGravityMove(actor_physics_t *param_1)
 // 009151C0  AIPhys_GroundTrace  (game/actor_physics.cpp:776)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
+void __cdecl AIPhys_GroundTrace(actor_physics_t *pPhys)
 
 {
   ushort uVar1;
@@ -844,62 +847,63 @@ void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
   float4 *pfVar3;
   trace_t *ptVar4;
   float local_88;
-  char local_81;
-  float local_74;
+  bool local_81;
+  float start;
   float local_70;
   float local_6c;
-  float local_68;
+  float end;
   float local_64;
   float local_60;
-  char local_59;
-  float local_58 [2];
+  bool use_big_trace;
+  float endpos [2];
   float local_50;
-  float4 local_4c;
+  float4 trace;
   float local_3c;
   uint local_34;
   char local_21;
   char local_20;
   uint local_14;
-  float local_10;
-  char local_9;
-  gjkcc_input_t *local_8;
+  float first_hit_time;
+  bool last_ground_entity_was_a_mover;
+  gjkcc_input_t *gjkcc_in;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c.v[0] = 0.0;
-  local_4c.v[1] = 0.0;
-  local_4c.v[2] = 0.0;
-  local_4c.v[3] = 0.0;
-  local_9 = entity_is_a_mover((uint)param_1->groundEntNum);
-  local_74 = param_1->vOrigin[0];
-  local_70 = param_1->vOrigin[1];
-  local_68 = param_1->vOrigin[0];
-  local_64 = param_1->vOrigin[1];
-  local_6c = param_1->vOrigin[2] + 0.25;
-  if (((bool)local_9) || ((param_1->vVelocity[2] <= 0.0 && (param_1->groundEntNum != 0x3ff)))) {
-    local_81 = '\x01';
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  last_ground_entity_was_a_mover = entity_is_a_mover((uint)pPhys->groundEntNum);
+  start = pPhys->vOrigin[0];
+  local_70 = pPhys->vOrigin[1];
+  end = pPhys->vOrigin[0];
+  local_64 = pPhys->vOrigin[1];
+  local_6c = pPhys->vOrigin[2] + 0.25;
+  if ((last_ground_entity_was_a_mover) ||
+     ((pPhys->vVelocity[2] <= 0.0 && (pPhys->groundEntNum != 0x3ff)))) {
+    local_81 = true;
   }
   else {
-    local_81 = '\0';
+    local_81 = false;
   }
-  local_59 = local_81;
-  if (local_81 == '\0') {
+  use_big_trace = local_81;
+  if (local_81 == false) {
     local_88 = 0.25;
   }
   else {
     local_88 = g_apl.stepheight;
   }
-  local_60 = param_1->vOrigin[2] - local_88;
-  local_8 = param_1->m_gjkcc_input;
-  local_10 = 1.0;
+  local_60 = pPhys->vOrigin[2] - local_88;
+  gjkcc_in = pPhys->m_gjkcc_input;
+  first_hit_time = 1.0;
   if ((phys_ai_collision_mode->current).integer == 1) {
-    PM_gjk_ground_trace(local_8,(trace_t *)&local_4c,&local_74,param_1->vMins,param_1->vMaxs,
-                        &local_68,param_1->iEntNum,g_apl.iTraceMask,&local_10);
+    PM_gjk_ground_trace(gjkcc_in,(trace_t *)&trace,&start,pPhys->vMins,pPhys->vMaxs,&end,
+                        pPhys->iEntNum,g_apl.iTraceMask,&first_hit_time);
   }
   else {
-    ai_physics_trace((trace_t *)&local_4c,&local_74,param_1->vMins,param_1->vMaxs,&local_68,
-                     param_1->iEntNum,g_apl.iTraceMask,param_1);
+    ai_physics_trace((trace_t *)&trace,&start,pPhys->vMins,pPhys->vMaxs,&end,pPhys->iEntNum,
+                     g_apl.iTraceMask,pPhys);
   }
-  pfVar3 = &local_4c;
+  pfVar3 = &trace;
   ptVar4 = &g_apl.groundTrace;
   for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {
     (ptVar4->normal).vec.v[0] = pfVar3->v[0];
@@ -908,18 +912,18 @@ void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
   }
   if (local_21 != '\0') {
     if ((local_34 & 0x2000000) != 0) {
-      uVar1 = Trace_GetEntityHitId((trace_t *)&local_4c);
-      AIPhys_AddTouchEnt(param_1,(uint)uVar1);
+      uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+      AIPhys_AddTouchEnt(pPhys,(uint)uVar1);
       g_apl.iTraceMask = g_apl.iTraceMask & 0xfdffffff;
       if ((phys_ai_collision_mode->current).integer == 1) {
-        PM_gjk_ground_trace(local_8,(trace_t *)&local_4c,&local_74,param_1->vMins,param_1->vMaxs,
-                            &local_68,param_1->iEntNum,g_apl.iTraceMask,&local_10);
+        PM_gjk_ground_trace(gjkcc_in,(trace_t *)&trace,&start,pPhys->vMins,pPhys->vMaxs,&end,
+                            pPhys->iEntNum,g_apl.iTraceMask,&first_hit_time);
       }
       else {
-        ai_physics_trace((trace_t *)&local_4c,&local_74,param_1->vMins,param_1->vMaxs,&local_68,
-                         param_1->iEntNum,g_apl.iTraceMask,param_1);
+        ai_physics_trace((trace_t *)&trace,&start,pPhys->vMins,pPhys->vMaxs,&end,pPhys->iEntNum,
+                         g_apl.iTraceMask,pPhys);
       }
-      pfVar3 = &local_4c;
+      pfVar3 = &trace;
       ptVar4 = &g_apl.groundTrace;
       for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {
         (ptVar4->normal).vec.v[0] = pfVar3->v[0];
@@ -928,18 +932,18 @@ void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
       }
     }
     if (local_21 != '\0') {
-      local_74 = param_1->vOrigin[0];
-      local_70 = param_1->vOrigin[1];
-      local_6c = param_1->vOrigin[2];
+      start = pPhys->vOrigin[0];
+      local_70 = pPhys->vOrigin[1];
+      local_6c = pPhys->vOrigin[2];
       if ((phys_ai_collision_mode->current).integer == 1) {
-        PM_gjk_ground_trace(local_8,(trace_t *)&local_4c,&local_74,param_1->vMins,param_1->vMaxs,
-                            &local_68,param_1->iEntNum,g_apl.iTraceMask,&local_10);
+        PM_gjk_ground_trace(gjkcc_in,(trace_t *)&trace,&start,pPhys->vMins,pPhys->vMaxs,&end,
+                            pPhys->iEntNum,g_apl.iTraceMask,&first_hit_time);
       }
       else {
-        ai_physics_trace((trace_t *)&local_4c,&local_74,param_1->vMins,param_1->vMaxs,&local_68,
-                         param_1->iEntNum,g_apl.iTraceMask,param_1);
+        ai_physics_trace((trace_t *)&trace,&start,pPhys->vMins,pPhys->vMaxs,&end,pPhys->iEntNum,
+                         g_apl.iTraceMask,pPhys);
       }
-      pfVar3 = &local_4c;
+      pfVar3 = &trace;
       ptVar4 = &g_apl.groundTrace;
       for (iVar2 = 0xe; iVar2 != 0; iVar2 = iVar2 + -1) {
         (ptVar4->normal).vec.v[0] = pfVar3->v[0];
@@ -947,8 +951,8 @@ void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
         ptVar4 = (trace_t *)((int)&(ptVar4->normal).vec + 4);
       }
       if (local_21 != '\0') {
-        uVar1 = Trace_GetEntityHitId((trace_t *)&local_4c);
-        param_1->groundEntNum = uVar1;
+        uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+        pPhys->groundEntNum = uVar1;
         g_apl.bIsWalking = 1;
         g_apl.bGroundPlane = 0;
         return;
@@ -956,47 +960,48 @@ void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
     }
   }
   if (local_3c == 1.0) {
-    param_1->groundEntNum = 0x3ff;
+    pPhys->groundEntNum = 0x3ff;
     g_apl.bGroundPlane = 0;
     g_apl.bIsWalking = 0;
   }
-  else if (((param_1->vVelocity[2] <= 0.0) ||
-           (param_1->vVelocity[0] * local_4c.v[0] + param_1->vVelocity[1] * local_4c.v[1] +
-            param_1->vVelocity[2] * local_4c.v[2] <= 10.0)) || (local_9 != '\0')) {
+  else if (((pPhys->vVelocity[2] <= 0.0) ||
+           (pPhys->vVelocity[0] * trace.v[0] + pPhys->vVelocity[1] * trace.v[1] +
+            pPhys->vVelocity[2] * trace.v[2] <= 10.0)) || (last_ground_entity_was_a_mover != false))
+  {
     if (local_20 == '\0') {
-      param_1->groundEntNum = 0x3ff;
+      pPhys->groundEntNum = 0x3ff;
       g_apl.bGroundPlane = 1;
       g_apl.bIsWalking = 0;
-      if ((param_1->iHitEntnum == 0x3ff) && ((local_4c.v[0] != 0.0 || (local_4c.v[1] != 0.0)))) {
-        uVar1 = Trace_GetEntityHitId((trace_t *)&local_4c);
-        param_1->iHitEntnum = (uint)uVar1;
-        param_1->vHitOrigin[0] = param_1->vOrigin[0];
-        param_1->vHitOrigin[1] = param_1->vOrigin[1];
-        param_1->vHitNormal[0] = local_4c.v[0];
-        param_1->vHitNormal[1] = local_4c.v[1];
-        param_1->bStuck = '\0';
+      if ((pPhys->iHitEntnum == 0x3ff) && ((trace.v[0] != 0.0 || (trace.v[1] != 0.0)))) {
+        uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+        pPhys->iHitEntnum = (uint)uVar1;
+        pPhys->vHitOrigin[0] = pPhys->vOrigin[0];
+        pPhys->vHitOrigin[1] = pPhys->vOrigin[1];
+        pPhys->vHitNormal[0] = trace.v[0];
+        pPhys->vHitNormal[1] = trace.v[1];
+        pPhys->bStuck = '\0';
       }
     }
     else {
       if ((phys_ai_collision_mode->current).integer == 1) {
-        Vec3Lerp(&local_74,&local_68,local_10,local_58);
+        Vec3Lerp(&start,&end,first_hit_time,endpos);
       }
       else {
-        Vec3Lerp(&local_74,&local_68,local_3c,local_58);
+        Vec3Lerp(&start,&end,local_3c,endpos);
       }
-      if ((local_50 < param_1->vOrigin[2]) ||
-         (param_1->ePhysicsType == AIPHYS_ZONLY_PHYSICS_RELATIVE)) {
-        param_1->vOrigin[2] = local_50;
+      if ((local_50 < pPhys->vOrigin[2]) || (pPhys->ePhysicsType == AIPHYS_ZONLY_PHYSICS_RELATIVE))
+      {
+        pPhys->vOrigin[2] = local_50;
       }
       g_apl.bGroundPlane = 1;
       g_apl.bIsWalking = 1;
-      uVar1 = Trace_GetEntityHitId((trace_t *)&local_4c);
-      param_1->groundEntNum = uVar1;
-      AIPhys_AddTouchEnt(param_1,(uint)param_1->groundEntNum);
+      uVar1 = Trace_GetEntityHitId((trace_t *)&trace);
+      pPhys->groundEntNum = uVar1;
+      AIPhys_AddTouchEnt(pPhys,(uint)pPhys->groundEntNum);
     }
   }
   else {
-    param_1->groundEntNum = 0x3ff;
+    pPhys->groundEntNum = 0x3ff;
     g_apl.bGroundPlane = 0;
     g_apl.bIsWalking = 0;
   }
@@ -1011,7 +1016,7 @@ void __cdecl AIPhys_GroundTrace(actor_physics_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AIPhys_Footsteps(actor_physics_t *param_1)
+void __cdecl AIPhys_Footsteps(actor_physics_t *pPhys)
 
 {
   int iVar1;
@@ -1021,16 +1026,18 @@ void __cdecl AIPhys_Footsteps(actor_physics_t *param_1)
   team_t tVar5;
   float *in_stack_ffffffe0;
   float in_stack_ffffffe4;
+  gentity_s *ent;
+  int iOldFootstepTimer;
   
-  iVar1 = param_1->iFootstepTimer;
-  param_1->iFootstepTimer = 0;
-  if ((param_1->groundEntNum != 0x3ff) &&
-     ((((param_1->ePhysicsType == AIPHYS_NORMAL_ABSOLUTE ||
-        (param_1->ePhysicsType == AIPHYS_NORMAL_RELATIVE)) ||
-       (param_1->ePhysicsType == AIPHYS_ZONLY_PHYSICS_RELATIVE)) &&
-      (param_1->iFootstepTimer = iVar1 + param_1->iMsec, pgVar3 = level.gentities,
-      499 < param_1->iFootstepTimer)))) {
-    iVar1 = param_1->iEntNum;
+  iVar1 = pPhys->iFootstepTimer;
+  pPhys->iFootstepTimer = 0;
+  if ((pPhys->groundEntNum != 0x3ff) &&
+     ((((pPhys->ePhysicsType == AIPHYS_NORMAL_ABSOLUTE ||
+        (pPhys->ePhysicsType == AIPHYS_NORMAL_RELATIVE)) ||
+       (pPhys->ePhysicsType == AIPHYS_ZONLY_PHYSICS_RELATIVE)) &&
+      (pPhys->iFootstepTimer = iVar1 + pPhys->iMsec, pgVar3 = level.gentities,
+      499 < pPhys->iFootstepTimer)))) {
+    iVar1 = pPhys->iEntNum;
     if ((level.gentities[iVar1].r.inuse == '\0') &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_physics.cpp",0x3a7,
                                  0,"%s"), !bVar4)) {
@@ -1054,9 +1061,9 @@ void __cdecl AIPhys_Footsteps(actor_physics_t *param_1)
     }
     tVar5 = Sentient_EnemyTeam((pgVar3[iVar1].sentient)->eTeam);
     Actor_BroadcastPointEvent
-              ((gentity_s *)(1 << ((byte)tVar5 & 0x1f)),(ai_event_t)param_1,0,in_stack_ffffffe0,
+              ((gentity_s *)(1 << ((byte)tVar5 & 0x1f)),(ai_event_t)pPhys,0,in_stack_ffffffe0,
                in_stack_ffffffe4);
-    param_1->iFootstepTimer = param_1->iFootstepTimer % 500;
+    pPhys->iFootstepTimer = pPhys->iFootstepTimer % 500;
   }
   return;
 }
@@ -1070,35 +1077,38 @@ void __cdecl AIPhys_Footsteps(actor_physics_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AIPhys_FoliageSounds(actor_physics_t *param_1)
+void __cdecl AIPhys_FoliageSounds(actor_physics_t *pPhys)
 
 {
   code *pcVar1;
   bool bVar2;
-  col_context_t local_98;
-  int local_70;
-  float local_6c;
-  phys_vec3 local_68;
-  float4 local_58 [2];
+  col_context_t context;
+  int iInterval;
+  float fSpeedFrac;
+  float vVel;
+  float local_64;
+  float local_60;
+  float xyspeed;
+  float4 trace [2];
   char local_2d;
   uint local_20;
-  float local_1c;
+  float vMins;
   float local_18;
   float local_14;
-  float local_10;
+  float vMaxs;
   float local_c;
   float local_8;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58[0].v[0] = 0.0;
-  local_58[0].v[1] = 0.0;
-  local_58[0].v[2] = 0.0;
-  local_58[0].v[3] = 0.0;
-  local_68.x = param_1->vVelocity[0];
-  local_68.y = param_1->vVelocity[1];
-  local_68.z = 0.0;
-  local_68.w = Abs(&local_68);
-  if ((bg_foliagesnd_minspeed->current).value <= local_68.w) {
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  vVel = pPhys->vVelocity[0];
+  local_64 = pPhys->vVelocity[1];
+  local_60 = 0.0;
+  xyspeed = Abs((phys_vec3 *)&stack0xffffff98);
+  if ((bg_foliagesnd_minspeed->current).value <= xyspeed) {
     if (((bg_foliagesnd_maxspeed->current).value - (bg_foliagesnd_minspeed->current).value <= 0.0)
        && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_physics.cpp",
                                     0x3d1,1,"%s"), !bVar2)) {
@@ -1106,38 +1116,38 @@ void __cdecl AIPhys_FoliageSounds(actor_physics_t *param_1)
       (*pcVar1)();
       return;
     }
-    local_6c = (local_68.w - (bg_foliagesnd_minspeed->current).value) /
-               ((bg_foliagesnd_maxspeed->current).value - (bg_foliagesnd_minspeed->current).value);
-    if (1.0 < local_6c) {
-      local_6c = 1.0;
+    fSpeedFrac = (xyspeed - (bg_foliagesnd_minspeed->current).value) /
+                 ((bg_foliagesnd_maxspeed->current).value - (bg_foliagesnd_minspeed->current).value)
+    ;
+    if (1.0 < fSpeedFrac) {
+      fSpeedFrac = 1.0;
     }
-    local_70 = (int)((float)((int)(bg_foliagesnd_fastinterval->current).string -
-                            (bg_foliagesnd_slowinterval->current).integer) * local_6c +
-                    (float)(bg_foliagesnd_slowinterval->current).integer);
-    if (param_1->foliageSoundTime + local_70 < level.time) {
-      local_1c = param_1->vMins[0] * 0.75;
-      local_18 = param_1->vMins[1] * 0.75;
-      local_14 = param_1->vMins[2] * 0.75;
-      local_10 = param_1->vMaxs[0] * 0.75;
-      local_c = param_1->vMaxs[1] * 0.75;
-      local_8 = param_1->vMaxs[2] * 0.9;
+    iInterval = (int)((float)((int)(bg_foliagesnd_fastinterval->current).string -
+                             (bg_foliagesnd_slowinterval->current).integer) * fSpeedFrac +
+                     (float)(bg_foliagesnd_slowinterval->current).integer);
+    if (pPhys->foliageSoundTime + iInterval < level.time) {
+      vMins = pPhys->vMins[0] * 0.75;
+      local_18 = pPhys->vMins[1] * 0.75;
+      local_14 = pPhys->vMins[2] * 0.75;
+      vMaxs = pPhys->vMaxs[0] * 0.75;
+      local_c = pPhys->vMaxs[1] * 0.75;
+      local_8 = pPhys->vMaxs[2] * 0.9;
       colgeom_visitor_inlined_t<200>::update
-                (&param_1->proximity_data,param_1->vOrigin,param_1->vOrigin,&local_1c,&local_10,
-                 0x2838013);
-      col_context_t::col_context_t(&local_98);
-      local_98.prims = (param_1->proximity_data).prims;
-      local_98.nprims = (param_1->proximity_data).nprims;
-      G_TraceCapsule((trace_t *)local_58,param_1->vOrigin,&local_1c,&local_10,param_1->vOrigin,
-                     param_1->iEntNum,2,&local_98);
+                (&pPhys->proximity_data,pPhys->vOrigin,pPhys->vOrigin,&vMins,&vMaxs,0x2838013);
+      col_context_t::col_context_t(&context);
+      context.prims = (pPhys->proximity_data).prims;
+      context.nprims = (pPhys->proximity_data).nprims;
+      G_TraceCapsule((trace_t *)trace,pPhys->vOrigin,&vMins,&vMaxs,pPhys->vOrigin,pPhys->iEntNum,2,
+                     &context);
       if (local_2d != '\0') {
-        G_AddEvent(g_entities + param_1->iEntNum,1,0);
-        param_1->foliageSoundTime = level.time;
+        G_AddEvent(g_entities + pPhys->iEntNum,1,0);
+        pPhys->foliageSoundTime = level.time;
       }
     }
   }
-  else if ((int)((bg_foliagesnd_resetinterval->current).string + param_1->foliageSoundTime) <
+  else if ((int)((bg_foliagesnd_resetinterval->current).string + pPhys->foliageSoundTime) <
            level.time) {
-    param_1->foliageSoundTime = 0;
+    pPhys->foliageSoundTime = 0;
   }
   return;
 }
@@ -1145,7 +1155,7 @@ void __cdecl AIPhys_FoliageSounds(actor_physics_t *param_1)
 
 // 00912E40  Actor_Physics_1  (game/actor_physics.cpp:1012)
 
-int __cdecl Actor_Physics_1(actor_physics_t *param_1)
+int __cdecl Actor_Physics_1(actor_physics_t *pPhys)
 
 {
   code *pcVar1;
@@ -1153,92 +1163,94 @@ int __cdecl Actor_Physics_1(actor_physics_t *param_1)
   int iVar3;
   DWORD DVar4;
   int local_10;
-  int local_8;
+  PIXProfile pixProfile;
+  int bSuccess;
   
   PIXBeginNamedEvent(-1,"Actor_Physics");
-  g_pPhys = param_1;
-  param_1->iHitEntnum = 0x3ff;
-  param_1->iNumTouch = 0;
-  param_1->bDeflected = '\0';
+  g_pPhys = pPhys;
+  pPhys->iHitEntnum = 0x3ff;
+  pPhys->iNumTouch = 0;
+  pPhys->bDeflected = '\0';
   memset((uchar *)&g_apl,'\0',0x68);
-  g_apl.iTraceMask = param_1->iTraceMask;
-  g_apl.vPrevOrigin[0] = param_1->vOrigin[0];
-  g_apl.vPrevOrigin[1] = param_1->vOrigin[1];
-  g_apl.vPrevOrigin[2] = param_1->vOrigin[2];
-  g_apl.vPrevVelocity[0] = param_1->vVelocity[0];
-  g_apl.vPrevVelocity[1] = param_1->vVelocity[1];
-  g_apl.vPrevVelocity[2] = param_1->vVelocity[2];
-  g_apl.fFrameTime = (float)param_1->iMsec * 0.001;
-  if ((param_1->iMsec < 1) &&
+  g_apl.iTraceMask = pPhys->iTraceMask;
+  g_apl.vPrevOrigin[0] = pPhys->vOrigin[0];
+  g_apl.vPrevOrigin[1] = pPhys->vOrigin[1];
+  g_apl.vPrevOrigin[2] = pPhys->vOrigin[2];
+  g_apl.vPrevVelocity[0] = pPhys->vVelocity[0];
+  g_apl.vPrevVelocity[1] = pPhys->vVelocity[1];
+  g_apl.vPrevVelocity[2] = pPhys->vVelocity[2];
+  g_apl.fFrameTime = (float)pPhys->iMsec * 0.001;
+  if ((pPhys->iMsec < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_physics.cpp",0x40f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_1->prone == false) {
+  if (pPhys->prone == false) {
     g_apl.stepheight = 18.0;
   }
   else {
     g_apl.stepheight = 10.0;
   }
-  param_1->bHasGroundPlane = 0;
-  param_1->groundplaneSlope = 0.0;
-  if (param_1->ePhysicsType == AIPHYS_NOCLIP) {
-    AIPhys_NoClipMove(param_1);
+  pPhys->bHasGroundPlane = 0;
+  pPhys->groundplaneSlope = 0.0;
+  if (pPhys->ePhysicsType == AIPHYS_NOCLIP) {
+    AIPhys_NoClipMove(pPhys);
     local_10 = 1;
     DVar4 = GetCurrentThreadId();
-    local_8 = local_10;
+    bSuccess = local_10;
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (param_1->ePhysicsType == AIPHYS_NOGRAVITY) {
-    AIPhys_NoGravityMove(param_1);
+  else if (pPhys->ePhysicsType == AIPHYS_NOGRAVITY) {
+    AIPhys_NoGravityMove(pPhys);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    local_8 = 1;
+    bSuccess = 1;
   }
   else {
-    AIPhys_GroundTrace(param_1);
-    if (param_1->ePhysicsType == AIPHYS_ZONLY_PHYSICS_RELATIVE) {
-      local_8 = AIPhys_ZOnlyPhysicsMove(param_1);
+    AIPhys_GroundTrace(pPhys);
+    if (pPhys->ePhysicsType == AIPHYS_ZONLY_PHYSICS_RELATIVE) {
+      bSuccess = AIPhys_ZOnlyPhysicsMove(pPhys);
     }
     else if (g_apl.bIsWalking == 0) {
-      local_8 = AIPhys_AirMove(param_1);
+      bSuccess = AIPhys_AirMove(pPhys);
     }
     else {
-      local_8 = AIPhys_WalkMove(param_1);
+      bSuccess = AIPhys_WalkMove(pPhys);
     }
     if ((g_apl.bGroundPlane == 0) || (g_apl.groundTrace.normal.vec.v[2] < 0.3)) {
-      param_1->iSurfaceType = 0;
+      pPhys->iSurfaceType = 0;
     }
     else {
-      param_1->bHasGroundPlane = 1;
-      param_1->groundplaneSlope = g_apl.groundTrace.normal.vec.v[2];
-      param_1->iSurfaceType = (int)(g_apl.groundTrace.sflags & 0x3f00000U) >> 0x14;
+      pPhys->bHasGroundPlane = 1;
+      pPhys->groundplaneSlope = g_apl.groundTrace.normal.vec.v[2];
+      pPhys->iSurfaceType = (int)(g_apl.groundTrace.sflags & 0x3f00000U) >> 0x14;
     }
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  return local_8;
+  return bSuccess;
 }
 
 
 // 00915780  Actor_Physics  (game/actor_physics.cpp:1127)
 
-int __cdecl Actor_Physics(actor_physics_t *param_1)
+int __cdecl Actor_Physics(actor_physics_t *pPhys)
 
 {
   int iVar1;
+  int retv;
   
-  iVar1 = Actor_Physics_1(param_1);
+  iVar1 = Actor_Physics_1(pPhys);
   if ((render_actor_collision->current).integer == 1) {
-    render_gjkcc_collision(&param_1->vMins,&param_1->vMaxs,param_1->vOrigin);
+    render_gjkcc_collision(&pPhys->vMins,&pPhys->vMaxs,pPhys->vOrigin);
   }
   return iVar1;
 }
@@ -1246,32 +1258,38 @@ int __cdecl Actor_Physics(actor_physics_t *param_1)
 
 // 009157C0  Actor_Physics_z  (game/actor_physics.cpp:1141)
 
-int __cdecl Actor_Physics_z(actor_physics_t *param_1)
+int __cdecl Actor_Physics_z(actor_physics_t *pPhys)
 
 {
   int iVar1;
-  gjkcc_input_t local_24;
+  int retv;
+  gjkcc_input_t gjkcc_in;
   
-  setup_gjkcc_input(param_1,&local_24);
-  param_1->m_gjkcc_input = &local_24;
-  gjkcc_prolog(&local_24,param_1->vOrigin);
-  iVar1 = Actor_Physics(param_1);
-  gjkcc_epilog(&local_24,param_1->vOrigin);
-  param_1->m_gjkcc_input = (gjkcc_input_t *)0x0;
+  setup_gjkcc_input(pPhys,&gjkcc_in);
+  pPhys->m_gjkcc_input = &gjkcc_in;
+  gjkcc_prolog(&gjkcc_in,pPhys->vOrigin);
+  iVar1 = Actor_Physics(pPhys);
+  gjkcc_epilog(&gjkcc_in,pPhys->vOrigin);
+  pPhys->m_gjkcc_input = (gjkcc_input_t *)0x0;
   return iVar1;
 }
 
 
 // 00915830  Actor_PostPhysics  (game/actor_physics.cpp:1158)
 
-void __cdecl Actor_PostPhysics(actor_physics_t *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Actor_PostPhysics(actor_physics_t *pPhys)
 
 {
-  g_pPhys = param_1;
-  if (param_1->bIsAlive != 0) {
-    AIPhys_Footsteps(param_1);
+  g_pPhys = pPhys;
+  if (pPhys->bIsAlive != 0) {
+    AIPhys_Footsteps(pPhys);
   }
-  AIPhys_FoliageSounds(param_1);
+  AIPhys_FoliageSounds(pPhys);
   return;
 }
 
@@ -1279,61 +1297,61 @@ void __cdecl Actor_PostPhysics(actor_physics_t *param_1)
 // 00914A90  operator=  (line unknown)
 
 actor_physics_t * __thiscall
-actor_physics_t::operator=(actor_physics_t *this,actor_physics_t *param_1)
+actor_physics_t::operator=(actor_physics_t *this,actor_physics_t *__that)
 
 {
-  uint local_24;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint _S9;
+  uint _S8;
+  uint _S7;
+  uint _S6;
+  uint _S5;
+  uint _S4;
+  uint _S3;
+  uint _S2;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    this->vOrigin[local_8] = param_1->vOrigin[local_8];
+  for (_S2 = 0; _S2 < 3; _S2 = _S2 + 1) {
+    this->vOrigin[_S2] = __that->vOrigin[_S2];
   }
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    this->vVelocity[local_c] = param_1->vVelocity[local_c];
+  for (_S3 = 0; _S3 < 3; _S3 = _S3 + 1) {
+    this->vVelocity[_S3] = __that->vVelocity[_S3];
   }
-  this->groundEntNum = param_1->groundEntNum;
-  this->iFootstepTimer = param_1->iFootstepTimer;
-  this->bHasGroundPlane = param_1->bHasGroundPlane;
-  this->groundplaneSlope = param_1->groundplaneSlope;
-  this->iSurfaceType = param_1->iSurfaceType;
-  for (local_10 = 0; local_10 < 3; local_10 = local_10 + 1) {
-    this->vWishDelta[local_10] = param_1->vWishDelta[local_10];
+  this->groundEntNum = __that->groundEntNum;
+  this->iFootstepTimer = __that->iFootstepTimer;
+  this->bHasGroundPlane = __that->bHasGroundPlane;
+  this->groundplaneSlope = __that->groundplaneSlope;
+  this->iSurfaceType = __that->iSurfaceType;
+  for (_S4 = 0; _S4 < 3; _S4 = _S4 + 1) {
+    this->vWishDelta[_S4] = __that->vWishDelta[_S4];
   }
-  this->bIsAlive = param_1->bIsAlive;
-  this->iEntNum = param_1->iEntNum;
-  this->ePhysicsType = param_1->ePhysicsType;
-  this->fGravity = param_1->fGravity;
-  this->iMsec = param_1->iMsec;
-  for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-    this->vMins[local_14] = param_1->vMins[local_14];
+  this->bIsAlive = __that->bIsAlive;
+  this->iEntNum = __that->iEntNum;
+  this->ePhysicsType = __that->ePhysicsType;
+  this->fGravity = __that->fGravity;
+  this->iMsec = __that->iMsec;
+  for (_S5 = 0; _S5 < 3; _S5 = _S5 + 1) {
+    this->vMins[_S5] = __that->vMins[_S5];
   }
-  for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
-    this->vMaxs[local_18] = param_1->vMaxs[local_18];
+  for (_S6 = 0; _S6 < 3; _S6 = _S6 + 1) {
+    this->vMaxs[_S6] = __that->vMaxs[_S6];
   }
-  this->prone = param_1->prone;
-  this->iTraceMask = param_1->iTraceMask;
-  this->foliageSoundTime = param_1->foliageSoundTime;
-  this->iNumTouch = param_1->iNumTouch;
-  for (local_1c = 0; local_1c < 0x20; local_1c = local_1c + 1) {
-    this->iTouchEnts[local_1c] = param_1->iTouchEnts[local_1c];
+  this->prone = __that->prone;
+  this->iTraceMask = __that->iTraceMask;
+  this->foliageSoundTime = __that->foliageSoundTime;
+  this->iNumTouch = __that->iNumTouch;
+  for (_S7 = 0; _S7 < 0x20; _S7 = _S7 + 1) {
+    this->iTouchEnts[_S7] = __that->iTouchEnts[_S7];
   }
-  this->iHitEntnum = param_1->iHitEntnum;
-  for (local_20 = 0; local_20 < 3; local_20 = local_20 + 1) {
-    this->vHitOrigin[local_20] = param_1->vHitOrigin[local_20];
+  this->iHitEntnum = __that->iHitEntnum;
+  for (_S8 = 0; _S8 < 3; _S8 = _S8 + 1) {
+    this->vHitOrigin[_S8] = __that->vHitOrigin[_S8];
   }
-  for (local_24 = 0; local_24 < 3; local_24 = local_24 + 1) {
-    this->vHitNormal[local_24] = param_1->vHitNormal[local_24];
+  for (_S9 = 0; _S9 < 3; _S9 = _S9 + 1) {
+    this->vHitNormal[_S9] = __that->vHitNormal[_S9];
   }
-  this->bStuck = param_1->bStuck;
-  this->bDeflected = param_1->bDeflected;
-  this->m_gjkcc_input = param_1->m_gjkcc_input;
-  colgeom_visitor_inlined_t<200>::operator=(&this->proximity_data,&param_1->proximity_data);
+  this->bStuck = __that->bStuck;
+  this->bDeflected = __that->bDeflected;
+  this->m_gjkcc_input = __that->m_gjkcc_input;
+  colgeom_visitor_inlined_t<200>::operator=(&this->proximity_data,&__that->proximity_data);
   return this;
 }
 
@@ -1342,19 +1360,19 @@ actor_physics_t::operator=(actor_physics_t *this,actor_physics_t *param_1)
 
 colgeom_visitor_inlined_t<200> * __thiscall
 colgeom_visitor_inlined_t<200>::operator=
-          (colgeom_visitor_inlined_t<200> *this,colgeom_visitor_inlined_t<200> *param_1)
+          (colgeom_visitor_inlined_t<200> *this,colgeom_visitor_inlined_t<200> *__that)
 
 {
   col_prim_t_u_4 cVar1;
-  uint local_8;
+  uint _S10;
   
-  colgeom_visitor_t::operator=((colgeom_visitor_t *)this,(colgeom_visitor_t *)param_1);
-  this->nprims = param_1->nprims;
-  this->overflow = param_1->overflow;
-  for (local_8 = 0; local_8 < 200; local_8 = local_8 + 1) {
-    cVar1 = param_1->prims[local_8].field1_0x4;
-    this->prims[local_8].type = param_1->prims[local_8].type;
-    this->prims[local_8].field1_0x4 = cVar1;
+  colgeom_visitor_t::operator=((colgeom_visitor_t *)this,(colgeom_visitor_t *)__that);
+  this->nprims = __that->nprims;
+  this->overflow = __that->overflow;
+  for (_S10 = 0; _S10 < 200; _S10 = _S10 + 1) {
+    cVar1 = __that->prims[_S10].field1_0x4;
+    this->prims[_S10].type = __that->prims[_S10].type;
+    this->prims[_S10].field1_0x4 = cVar1;
   }
   return this;
 }
@@ -1363,36 +1381,36 @@ colgeom_visitor_inlined_t<200>::operator=
 // 00914DB0  operator=  (line unknown)
 
 colgeom_visitor_t * __thiscall
-colgeom_visitor_t::operator=(colgeom_visitor_t *this,colgeom_visitor_t *param_1)
+colgeom_visitor_t::operator=(colgeom_visitor_t *this,colgeom_visitor_t *__that)
 
 {
-  (this->m_mn).vec.v[0] = (param_1->m_mn).vec.v[0];
-  (this->m_mn).vec.v[1] = (param_1->m_mn).vec.v[1];
-  (this->m_mn).vec.v[2] = (param_1->m_mn).vec.v[2];
-  (this->m_mn).vec.v[3] = (param_1->m_mn).vec.v[3];
-  (this->m_mx).vec.v[0] = (param_1->m_mx).vec.v[0];
-  (this->m_mx).vec.v[1] = (param_1->m_mx).vec.v[1];
-  (this->m_mx).vec.v[2] = (param_1->m_mx).vec.v[2];
-  (this->m_mx).vec.v[3] = (param_1->m_mx).vec.v[3];
-  (this->m_p0).vec.v[0] = (param_1->m_p0).vec.v[0];
-  (this->m_p0).vec.v[1] = (param_1->m_p0).vec.v[1];
-  (this->m_p0).vec.v[2] = (param_1->m_p0).vec.v[2];
-  (this->m_p0).vec.v[3] = (param_1->m_p0).vec.v[3];
-  (this->m_p1).vec.v[0] = (param_1->m_p1).vec.v[0];
-  (this->m_p1).vec.v[1] = (param_1->m_p1).vec.v[1];
-  (this->m_p1).vec.v[2] = (param_1->m_p1).vec.v[2];
-  (this->m_p1).vec.v[3] = (param_1->m_p1).vec.v[3];
-  (this->m_delta).vec.v[0] = (param_1->m_delta).vec.v[0];
-  (this->m_delta).vec.v[1] = (param_1->m_delta).vec.v[1];
-  (this->m_delta).vec.v[2] = (param_1->m_delta).vec.v[2];
-  (this->m_delta).vec.v[3] = (param_1->m_delta).vec.v[3];
-  (this->m_rvec).vec.v[0] = (param_1->m_rvec).vec.v[0];
-  (this->m_rvec).vec.v[1] = (param_1->m_rvec).vec.v[1];
-  (this->m_rvec).vec.v[2] = (param_1->m_rvec).vec.v[2];
-  (this->m_rvec).vec.v[3] = (param_1->m_rvec).vec.v[3];
-  this->m_radius = param_1->m_radius;
-  this->m_mask = param_1->m_mask;
-  this->m_threadInfo = param_1->m_threadInfo;
+  (this->m_mn).vec.v[0] = (__that->m_mn).vec.v[0];
+  (this->m_mn).vec.v[1] = (__that->m_mn).vec.v[1];
+  (this->m_mn).vec.v[2] = (__that->m_mn).vec.v[2];
+  (this->m_mn).vec.v[3] = (__that->m_mn).vec.v[3];
+  (this->m_mx).vec.v[0] = (__that->m_mx).vec.v[0];
+  (this->m_mx).vec.v[1] = (__that->m_mx).vec.v[1];
+  (this->m_mx).vec.v[2] = (__that->m_mx).vec.v[2];
+  (this->m_mx).vec.v[3] = (__that->m_mx).vec.v[3];
+  (this->m_p0).vec.v[0] = (__that->m_p0).vec.v[0];
+  (this->m_p0).vec.v[1] = (__that->m_p0).vec.v[1];
+  (this->m_p0).vec.v[2] = (__that->m_p0).vec.v[2];
+  (this->m_p0).vec.v[3] = (__that->m_p0).vec.v[3];
+  (this->m_p1).vec.v[0] = (__that->m_p1).vec.v[0];
+  (this->m_p1).vec.v[1] = (__that->m_p1).vec.v[1];
+  (this->m_p1).vec.v[2] = (__that->m_p1).vec.v[2];
+  (this->m_p1).vec.v[3] = (__that->m_p1).vec.v[3];
+  (this->m_delta).vec.v[0] = (__that->m_delta).vec.v[0];
+  (this->m_delta).vec.v[1] = (__that->m_delta).vec.v[1];
+  (this->m_delta).vec.v[2] = (__that->m_delta).vec.v[2];
+  (this->m_delta).vec.v[3] = (__that->m_delta).vec.v[3];
+  (this->m_rvec).vec.v[0] = (__that->m_rvec).vec.v[0];
+  (this->m_rvec).vec.v[1] = (__that->m_rvec).vec.v[1];
+  (this->m_rvec).vec.v[2] = (__that->m_rvec).vec.v[2];
+  (this->m_rvec).vec.v[3] = (__that->m_rvec).vec.v[3];
+  this->m_radius = __that->m_radius;
+  this->m_mask = __that->m_mask;
+  this->m_threadInfo = __that->m_threadInfo;
   return this;
 }
 

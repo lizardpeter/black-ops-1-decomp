@@ -2,100 +2,112 @@
 
 // 007B5120  FloatPack9S  (universal/com_pack.cpp:27)
 
-uint __cdecl FloatPack9S(float param_1)
+uint __cdecl FloatPack9S(float unitFloat)
 
 {
-  return (uint)((param_1 - -49344.754) / 16448.252) & 0x1ff;
+  float packedValue;
+  
+  return (uint)((unitFloat - -49344.754) / 16448.252) & 0x1ff;
 }
 
 
 // 007B5150  FloatPack10S  (universal/com_pack.cpp:36)
 
-uint __cdecl FloatPack10S(float param_1)
+uint __cdecl FloatPack10S(float unitFloat)
 
 {
-  return (uint)((param_1 - -24624.094) / 8208.031) & 0x3ff;
+  float packedValue;
+  
+  return (uint)((unitFloat - -24624.094) / 8208.031) & 0x3ff;
 }
 
 
 // 007B4C20  Vec3PackUnitVec  (universal/com_pack.cpp:117)
 
-PackedUnitVec __cdecl Vec3PackUnitVec(float *param_1)
+/* WARNING: Variable defined which should be unmapped: out */
+
+PackedUnitVec __cdecl Vec3PackUnitVec(float *unitVec)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
+  PackedUnitVec PVar3;
   uint uVar4;
-  float fVar5;
-  PackedUnitVec PVar6;
-  PackedUnitVec local_34;
-  float local_28;
+  uint uVar5;
+  float fVar6;
+  float dirError;
+  PackedUnitVec out;
+  PackedUnitVec testEncoding;
+  float decodeScale;
+  float encodeScale;
+  float normalized;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
+  float bestLenError;
+  float bestDirError;
+  float lenError;
+  float decoded;
   float local_c;
   float local_8;
   
-  Vec3NormalizeTo(param_1,&local_28);
-  PVar6.packed = 0;
-  local_18 = 3.4028235e+38;
-  local_1c = 3.4028235e+38;
-  local_34._3_1_ = 0;
+  Vec3NormalizeTo(unitVec,&normalized);
+  out.packed = 0;
+  bestDirError = 3.4028235e+38;
+  bestLenError = 3.4028235e+38;
+  testEncoding._3_1_ = 0;
   while( true ) {
-    fVar5 = 32385.0 / ((float)local_34._3_1_ - -192.0);
-    uVar3 = (uint)(local_24 * fVar5 + 127.5);
-    local_34.array[1] = (char)uVar3;
-    local_34.array[0] = (char)(int)(local_28 * fVar5 + 127.5);
-    uVar4 = (uint)(local_20 * fVar5 + 127.5);
-    local_34.array[2] = (char)uVar4;
-    local_8 = ((float)local_34._3_1_ - -192.0) / 32385.0;
-    local_10 = ((float)((ushort)local_34._0_2_ & 0xff) - 127.0) * local_8;
-    local_c = ((float)(uVar3 & 0xff) - 127.0) * local_8;
-    local_8 = ((float)(uVar4 & 0xff) - 127.0) * local_8;
-    fVar5 = Vec3Normalize(&local_10);
-    local_14 = ABS(fVar5 - 1.0);
-    if ((local_14 < 0.001) &&
-       (((fVar5 = ABS((local_10 * local_28 + local_c * local_24 + local_8 * local_20) - 1.0),
-         fVar5 < local_18 || ((local_18 == fVar5 && (local_14 < local_1c)))) &&
-        (PVar6 = local_34, local_1c = local_14, local_18 = fVar5, local_14 + fVar5 == 0.0)))) break;
-    local_34.array[3] = local_34._3_1_ + 1;
-    if (local_34.array[3] == 0) {
-      if ((PVar6.packed == 0) &&
+    fVar6 = 32385.0 / ((float)testEncoding._3_1_ - -192.0);
+    uVar4 = (uint)(local_24 * fVar6 + 127.5);
+    testEncoding.array[1] = (char)uVar4;
+    testEncoding.array[0] = (char)(int)(normalized * fVar6 + 127.5);
+    uVar5 = (uint)(local_20 * fVar6 + 127.5);
+    testEncoding.array[2] = (char)uVar5;
+    local_8 = ((float)testEncoding._3_1_ - -192.0) / 32385.0;
+    decoded = ((float)((ushort)testEncoding._0_2_ & 0xff) - 127.0) * local_8;
+    local_c = ((float)(uVar4 & 0xff) - 127.0) * local_8;
+    local_8 = ((float)(uVar5 & 0xff) - 127.0) * local_8;
+    fVar6 = Vec3Normalize(&decoded);
+    lenError = ABS(fVar6 - 1.0);
+    if ((lenError < 0.001) &&
+       (((fVar6 = ABS((decoded * normalized + local_c * local_24 + local_8 * local_20) - 1.0),
+         fVar6 < bestDirError || ((bestDirError == fVar6 && (lenError < bestLenError)))) &&
+        (out.packed = testEncoding.packed, bestLenError = lenError, bestDirError = fVar6,
+        lenError + fVar6 == 0.0)))) break;
+    testEncoding.array[3] = testEncoding._3_1_ + 1;
+    if (testEncoding.array[3] == 0) {
+      if ((out.packed == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_pack.cpp",0xa3
                                    ,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        PVar6.packed = (*pcVar1)();
-        return (PackedUnitVec)PVar6.packed;
+        PVar3.packed = (*pcVar1)();
+        return (PackedUnitVec)PVar3.packed;
       }
-      return (PackedUnitVec)PVar6.packed;
+      return (PackedUnitVec)out.packed;
     }
   }
-  return (PackedUnitVec)local_34.packed;
+  return (PackedUnitVec)testEncoding.packed;
 }
 
 
 // 007B4E60  Vec3UnpackUnitVec  (universal/com_pack.cpp:193)
 
-void __cdecl Vec3UnpackUnitVec(PackedUnitVec param_1,float *param_2)
+void __cdecl Vec3UnpackUnitVec(PackedUnitVec in,float *out)
 
 {
   float fVar1;
+  float decodeScale;
   
-  fVar1 = ((float)(param_1.packed >> 0x18) - -192.0) / 32385.0;
-  *param_2 = ((float)(param_1.packed & 0xff) - 127.0) * fVar1;
-  param_2[1] = ((float)(param_1.packed >> 8 & 0xff) - 127.0) * fVar1;
-  param_2[2] = ((float)(param_1.packed >> 0x10 & 0xff) - 127.0) * fVar1;
+  fVar1 = ((float)(in.packed >> 0x18) - -192.0) / 32385.0;
+  *out = ((float)(in.packed & 0xff) - 127.0) * fVar1;
+  out[1] = ((float)(in.packed >> 8 & 0xff) - 127.0) * fVar1;
+  out[2] = ((float)(in.packed >> 0x10 & 0xff) - 127.0) * fVar1;
   return;
 }
 
 
 // 007B4EE0  Vec4PackQuat  (universal/com_pack.cpp:205)
 
-uint __cdecl Vec4PackQuat(float *param_1)
+uint __cdecl Vec4PackQuat(float *in)
 
 {
   float fVar1;
@@ -109,28 +121,33 @@ uint __cdecl Vec4PackQuat(float *param_1)
   float fVar9;
   uint local_60;
   float local_5c;
-  uint local_38;
-  uint local_24;
-  float local_18 [4];
-  float local_8;
+  uint z;
+  float sign;
+  uint rotateIndex;
+  uint maxIndex;
+  uint i;
+  uint x;
+  uint y;
+  float value [4];
+  float maxValue;
   
-  local_18[0] = *param_1;
-  local_18[1] = param_1[1];
-  local_18[2] = param_1[2];
-  local_18[3] = param_1[3];
-  Vec4Normalize(local_18);
-  local_8 = -1.0;
-  local_38 = 0;
-  for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-    if (local_8 < ABS(local_18[local_24])) {
-      local_8 = ABS(local_18[local_24]);
-      local_38 = local_24;
+  value[0] = *in;
+  value[1] = in[1];
+  value[2] = in[2];
+  value[3] = in[3];
+  Vec4Normalize(value);
+  maxValue = -1.0;
+  maxIndex = 0;
+  for (i = 0; i < 4; i = i + 1) {
+    if (maxValue < ABS(value[i])) {
+      maxValue = ABS(value[i]);
+      maxIndex = i;
     }
   }
-  fVar9 = local_18[local_38];
-  fVar1 = local_18[local_38 + 1 & 3];
-  fVar2 = local_18[local_38 + 2 & 3];
-  fVar3 = local_18[local_38 + 3 & 3];
+  fVar9 = value[maxIndex];
+  fVar1 = value[maxIndex + 1 & 3];
+  fVar2 = value[maxIndex + 2 & 3];
+  fVar3 = value[maxIndex + 3 & 3];
   if ((fVar9 == 0.0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_pack.cpp",0xed,0,
                                "%s"), !bVar5)) {
@@ -149,21 +166,22 @@ uint __cdecl Vec4PackQuat(float *param_1)
   uVar7 = FloatPack10S(fVar9 * fVar2);
   uVar8 = FloatPack10S(fVar9 * fVar3);
   local_60 = (uint)(local_5c < 0.0);
-  return uVar7 << 9 | uVar6 | uVar8 << 0x13 | (3 - local_38 & 3) << 0x1d | local_60 << 0x1f;
+  return uVar7 << 9 | uVar6 | uVar8 << 0x13 | (3 - maxIndex & 3) << 0x1d | local_60 << 0x1f;
 }
 
 
 // 007B5180  Vec2PackTexCoords  (universal/com_pack.cpp:341)
 
-PackedTexCoords __cdecl Vec2PackTexCoords(float *param_1)
+PackedTexCoords __cdecl Vec2PackTexCoords(float *in)
 
 {
   uint local_40;
   uint local_3c;
   uint local_34;
   uint local_20;
+  PackedTexCoords out;
   
-  local_20 = (int)((int)*param_1 << 1 ^ 0x80000000U) >> 0xe;
+  local_20 = (int)((int)*in << 1 ^ 0x80000000U) >> 0xe;
   if (0x3ffe < (int)local_20) {
     local_20 = 0x3fff;
   }
@@ -173,7 +191,7 @@ PackedTexCoords __cdecl Vec2PackTexCoords(float *param_1)
   else {
     local_3c = local_20;
   }
-  local_34 = (int)((int)param_1[1] << 1 ^ 0x80000000U) >> 0xe;
+  local_34 = (int)((int)in[1] << 1 ^ 0x80000000U) >> 0xe;
   if (0x3ffe < (int)local_34) {
     local_34 = 0x3fff;
   }
@@ -184,21 +202,21 @@ PackedTexCoords __cdecl Vec2PackTexCoords(float *param_1)
     local_40 = local_34;
   }
   return (PackedTexCoords)
-         (((int)*param_1 >> 0x10 & 0xc000U | local_3c & 0x3fff) * 0x10000 +
-         ((int)param_1[1] >> 0x10 & 0xc000U | local_40 & 0x3fff));
+         (((int)*in >> 0x10 & 0xc000U | local_3c & 0x3fff) * 0x10000 +
+         ((int)in[1] >> 0x10 & 0xc000U | local_40 & 0x3fff));
 }
 
 
 // 007B52B0  Vec2UnpackTexCoords  (universal/com_pack.cpp:354)
 
-void __cdecl Vec2UnpackTexCoords(PackedTexCoords param_1,float *param_2)
+void __cdecl Vec2UnpackTexCoords(PackedTexCoords in,float *out)
 
 {
   uint uVar1;
   float local_24;
   float local_14;
   
-  uVar1 = param_1.packed >> 0x10;
+  uVar1 = in.packed >> 0x10;
   if (uVar1 == 0) {
     local_14 = 0.0;
   }
@@ -206,34 +224,34 @@ void __cdecl Vec2UnpackTexCoords(PackedTexCoords param_1,float *param_2)
     local_14 = (float)(((uVar1 & 0x3fff) * 0x4000 - (~(uVar1 << 0xe) & 0x10000000) ^ 0x80000000) >>
                        1 | (uVar1 & 0x8000) << 0x10);
   }
-  *param_2 = local_14;
-  if ((param_1.packed & 0xffff) == 0) {
+  *out = local_14;
+  if ((in.packed & 0xffff) == 0) {
     local_24 = 0.0;
   }
   else {
-    local_24 = (float)(((param_1.packed & 0x3fff) * 0x4000 -
-                        (~((param_1.packed & 0xffff) << 0xe) & 0x10000000) ^ 0x80000000) >> 1 |
-                      (param_1.packed & 0x8000) << 0x10);
+    local_24 = (float)(((in.packed & 0x3fff) * 0x4000 -
+                        (~((in.packed & 0xffff) << 0xe) & 0x10000000) ^ 0x80000000) >> 1 |
+                      (in.packed & 0x8000) << 0x10);
   }
-  param_2[1] = local_24;
+  out[1] = local_24;
   return;
 }
 
 
 // 007B53C0  Vec3PackNormAxis  (universal/com_pack.cpp:377)
 
-void __cdecl Vec3PackNormAxis(float (*param_1) [3],float (*param_2) [3])
+void __cdecl Vec3PackNormAxis(float (*in) [3],float (*out) [3])
 
 {
-  (*param_2)[0] = (*param_1)[0];
-  (*param_2)[1] = (*param_1)[1];
-  (*param_2)[2] = (*param_1)[2];
-  param_2[1][0] = param_1[1][0];
-  param_2[1][1] = param_1[1][1];
-  param_2[1][2] = param_1[1][2];
-  param_2[2][0] = param_1[2][0];
-  param_2[2][1] = param_1[2][1];
-  param_2[2][2] = param_1[2][2];
+  (*out)[0] = (*in)[0];
+  (*out)[1] = (*in)[1];
+  (*out)[2] = (*in)[2];
+  out[1][0] = in[1][0];
+  out[1][1] = in[1][1];
+  out[1][2] = in[1][2];
+  out[2][0] = in[2][0];
+  out[2][1] = in[2][1];
+  out[2][2] = in[2][2];
   return;
 }
 

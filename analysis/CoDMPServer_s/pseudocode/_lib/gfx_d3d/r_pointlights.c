@@ -2,6 +2,8 @@
 
 // 00863920  GenerateLightGridBasisDirs  (gfx_d3d/r_pointlights.cpp:20)
 
+/* WARNING: Variable defined which should be unmapped: z */
+
 void __cdecl GenerateLightGridBasisDirs(void)
 
 {
@@ -14,6 +16,7 @@ void __cdecl GenerateLightGridBasisDirs(void)
   float fVar7;
   float fVar8;
   float fVar9;
+  int z;
   int local_14;
   
   iVar1 = 0;
@@ -64,6 +67,7 @@ GatherIncidentEnergyInSpaceForLightFromDir(float *param_1,float *param_2,float (
   int in_ECX;
   float *pfVar5;
   float fVar6;
+  float *energy;
   
   fVar1 = in_EAX[2];
   fVar2 = in_EAX[1];
@@ -160,6 +164,8 @@ EvaluateHeroLightForGrid(GfxHeroLight *param_1,float *param_2,float *param_3,flo
   float fVar8;
   float fVar9;
   float fVar10;
+  float *attenuatedColor;
+  float dist;
   
   fVar9 = *(float *)(unaff_ESI + 0x20) - in_EAX[1];
   fVar6 = *(float *)(unaff_ESI + 0x24) - in_EAX[2];
@@ -224,6 +230,8 @@ EvaluateHeroLightForGrid(GfxHeroLight *param_1,float *param_2,float *param_3,flo
 
 // 00863F20  R_AdjustLightColorSamples  (gfx_d3d/r_pointlights.cpp:163)
 
+/* WARNING: Variable defined which should be unmapped: biasedContrast */
+
 void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *param_1)
 
 {
@@ -232,6 +240,7 @@ void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *param_1)
   int in_EDX;
   float10 fVar3;
   float fVar4;
+  float biasedContrast;
   
   fVar4 = (r_lightGridIntensity->current).value;
   pfVar1 = (float *)(in_EDX + 0x18);
@@ -283,7 +292,7 @@ void __cdecl R_AdjustLightColorSamples(GfxDecodedLightGridColors *param_1)
 
 // 00864110  R_AddHeroOnlyLightsToGridColors  (gfx_d3d/r_pointlights.cpp:209)
 
-void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *param_1,float *param_2)
+void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *heroPos,float *param_2)
 
 {
   float fVar1;
@@ -298,6 +307,8 @@ void __cdecl R_AddHeroOnlyLightsToGridColors(GfxDecodedLightGridColors *param_1,
   int iVar9;
   GfxDecodedLightGridColors *unaff_ESI;
   GfxDecodedLightGridColors *unaff_EDI;
+  GfxDecodedLightGridColors *packed;
+  bool foundAny;
   GfxHeroLight aGStack_330 [2];
   uchar auStack_2a4 [676];
   

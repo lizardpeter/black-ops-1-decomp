@@ -11,14 +11,14 @@ bool __cdecl Com_IsBspLoaded(void)
 
 // 006CACF0  Com_GetBspLumpCountForVersion  (qcommon/com_bsp_load_obj.cpp:46)
 
-uint __cdecl Com_GetBspLumpCountForVersion(int param_1)
+uint __cdecl Com_GetBspLumpCountForVersion(int version)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   
-  if ((param_1 < 6) || (0x12 < param_1)) {
+  if ((version < 6) || (0x12 < version)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",0x42
                              ,0,"version not in [OLDEST_BSP_VERSION, 18]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -27,21 +27,21 @@ uint __cdecl Com_GetBspLumpCountForVersion(int param_1)
       return uVar3;
     }
   }
-  return (uint)connectionString[param_1 + 8];
+  return (uint)connectionString[version + 8];
 }
 
 
 // 006CAD40  Com_ValidateBspLumpData  (qcommon/com_bsp_load_obj.cpp:73)
 
 void * __cdecl
-Com_ValidateBspLumpData(LumpType param_1,uint param_2,uint param_3,uint param_4,uint *param_5)
+Com_ValidateBspLumpData(LumpType type,uint offset,uint length,uint elemSize,uint *count)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   
-  if (param_5 == (uint *)0x0) {
+  if (count == (uint *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",0x4a
                              ,0,"%s");
     if (!bVar2) {
@@ -50,19 +50,19 @@ Com_ValidateBspLumpData(LumpType param_1,uint param_2,uint param_3,uint param_4,
       return pvVar3;
     }
   }
-  if (param_3 == 0) {
-    *param_5 = 0;
+  if (length == 0) {
+    *count = 0;
     pvVar3 = (void *)0x0;
   }
   else {
-    if (comBspGlob.fileSize < param_2 + param_3) {
+    if (comBspGlob.fileSize < offset + length) {
       Com_Error(ERR_DROP,"\x15LoadMap: lump %i extends past end of file");
     }
-    *param_5 = param_3 / param_4;
-    if (*param_5 * param_4 - param_3 != 0) {
+    *count = length / elemSize;
+    if (*count * elemSize - length != 0) {
       Com_Error(ERR_DROP,"\x15LoadMap: lump %i has funny size");
     }
-    pvVar3 = (void *)((int)(comBspGlob.header)->chunks + (param_2 - 0xc));
+    pvVar3 = (void *)((int)(comBspGlob.header)->chunks + (offset - 0xc));
   }
   return pvVar3;
 }
@@ -70,7 +70,7 @@ Com_ValidateBspLumpData(LumpType param_1,uint param_2,uint param_3,uint param_4,
 
 // 006CABC0  Com_GetBspLump  (qcommon/com_bsp_load_obj.cpp:94)
 
-void * __cdecl Com_GetBspLump(LumpType param_1,uint param_2,uint *param_3)
+void * __cdecl Com_GetBspLump(LumpType type,uint elemSize,uint *count)
 
 {
   uint *puVar1;
@@ -79,8 +79,10 @@ void * __cdecl Com_GetBspLump(LumpType param_1,uint param_2,uint *param_3)
   bool bVar4;
   void *pvVar5;
   LumpType LVar6;
-  uint local_14;
-  uint local_10;
+  uint chunkIter;
+  uint offset;
+  BspChunk *chunk;
+  BspLump *lump;
   
   bVar4 = Com_IsBspLoaded();
   if ((!bVar4) &&
@@ -92,26 +94,26 @@ void * __cdecl Com_GetBspLump(LumpType param_1,uint param_2,uint *param_3)
   }
   if ((comBspGlob.header)->version < 0x13) {
     LVar6 = Com_GetBspLumpCountForVersion((comBspGlob.header)->version);
-    if (param_1 < LVar6) {
-      puVar1 = &(comBspGlob.header)->chunks[param_1 - LUMP_LIGHTBYTES].length;
-      pvVar5 = Com_ValidateBspLumpData(param_1,puVar1[1],*puVar1,param_2,param_3);
+    if (type < LVar6) {
+      puVar1 = &(comBspGlob.header)->chunks[type - LUMP_LIGHTBYTES].length;
+      pvVar5 = Com_ValidateBspLumpData(type,puVar1[1],*puVar1,elemSize,count);
     }
     else {
-      *param_3 = 0;
+      *count = 0;
       pvVar5 = (void *)0x0;
     }
   }
   else {
-    local_10 = (comBspGlob.header)->chunkCount * 8 + 0xc;
-    for (local_14 = 0; local_14 < (comBspGlob.header)->chunkCount; local_14 = local_14 + 1) {
-      pBVar2 = (comBspGlob.header)->chunks + local_14;
-      if (pBVar2->type == param_1) {
-        pvVar5 = Com_ValidateBspLumpData(param_1,local_10,pBVar2->length,param_2,param_3);
+    offset = (comBspGlob.header)->chunkCount * 8 + 0xc;
+    for (chunkIter = 0; chunkIter < (comBspGlob.header)->chunkCount; chunkIter = chunkIter + 1) {
+      pBVar2 = (comBspGlob.header)->chunks + chunkIter;
+      if (pBVar2->type == type) {
+        pvVar5 = Com_ValidateBspLumpData(type,offset,pBVar2->length,elemSize,count);
         return pvVar5;
       }
-      local_10 = (pBVar2->length + 3 & 0xfffffffc) + local_10;
+      offset = (pBVar2->length + 3 & 0xfffffffc) + offset;
     }
-    *param_3 = 0;
+    *count = 0;
     pvVar5 = (void *)0x0;
   }
   return pvVar5;
@@ -121,66 +123,66 @@ void * __cdecl Com_GetBspLump(LumpType param_1,uint param_2,uint *param_3)
 // 006CB0A0  Com_ReadLumpOutOfBspAtOffset  (qcommon/com_bsp_load_obj.cpp:129)
 
 void * __cdecl
-Com_ReadLumpOutOfBspAtOffset
-          (int param_1,LumpType param_2,uint param_3,uint param_4,uint param_5,uint *param_6)
+Com_ReadLumpOutOfBspAtOffset(int h,LumpType type,uint offset,uint length,uint elemSize,uint *count)
 
 {
-  void *pvVar1;
-  uint uVar2;
+  void *buffer;
+  uint uVar1;
+  void *data;
   
-  if (param_4 == 0) {
-    pvVar1 = (void *)0x0;
+  if (length == 0) {
+    buffer = (void *)0x0;
   }
   else {
-    if (param_4 % param_5 != 0) {
+    if (length % elemSize != 0) {
       Com_Error(ERR_DROP,"\x15LoadMap: lump %i has funny size");
     }
-    FS_Seek(param_1,param_3,2);
-    pvVar1 = Hunk_AllocateTempMemoryHigh(param_4,"Com_ReadLumpOutOfBsp");
-    uVar2 = FS_Read(pvVar1,param_4,param_1);
-    if (uVar2 == param_4) {
-      *param_6 = param_4 / param_5;
+    FS_Seek(h,offset,2);
+    buffer = Hunk_AllocateTempMemoryHigh(length,"Com_ReadLumpOutOfBsp");
+    uVar1 = FS_Read(buffer,length,h);
+    if (uVar1 == length) {
+      *count = length / elemSize;
     }
     else {
-      pvVar1 = (void *)0x0;
+      buffer = (void *)0x0;
     }
   }
-  return pvVar1;
+  return buffer;
 }
 
 
 // 006CAF30  Com_ReadLumpOutOfBsp  (qcommon/com_bsp_load_obj.cpp:149)
 
-void * __cdecl Com_ReadLumpOutOfBsp(int param_1,LumpType param_2,uint param_3,uint *param_4)
+void * __cdecl Com_ReadLumpOutOfBsp(int h,LumpType type,uint elemSize,uint *count)
 
 {
   int iVar1;
   void *pvVar2;
   LumpType LVar3;
-  int local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
-  uint local_1c;
-  LumpType local_18;
+  uint ident;
+  uint chunkIter;
+  uint chunkCount;
+  uint version;
+  uint offset;
+  LumpType chunk;
   uint local_14;
-  uint local_10;
+  uint lump;
   uint local_c;
-  int local_8;
+  int readSize;
   
-  *param_4 = 0;
-  iVar1 = FS_Read(&local_2c,4,param_1);
-  if ((iVar1 == 4) && (local_2c == 0x50534249)) {
-    iVar1 = FS_Read(&local_20,4,param_1);
+  *count = 0;
+  iVar1 = FS_Read(&ident,4,h);
+  if ((iVar1 == 4) && (ident == 0x50534249)) {
+    iVar1 = FS_Read(&version,4,h);
     if (iVar1 == 4) {
-      if (local_20 < 0x13) {
-        LVar3 = Com_GetBspLumpCountForVersion(local_20);
-        if (param_2 < LVar3) {
-          local_8 = param_2 << 3;
-          FS_Seek(param_1,local_8,0);
-          iVar1 = FS_Read(&local_10,8,param_1);
+      if (version < 0x13) {
+        LVar3 = Com_GetBspLumpCountForVersion(version);
+        if (type < LVar3) {
+          readSize = type << 3;
+          FS_Seek(h,readSize,0);
+          iVar1 = FS_Read(&lump,8,h);
           if (iVar1 == 8) {
-            pvVar2 = Com_ReadLumpOutOfBspAtOffset(param_1,param_2,local_c,local_10,param_3,param_4);
+            pvVar2 = Com_ReadLumpOutOfBspAtOffset(h,type,local_c,lump,elemSize,count);
           }
           else {
             pvVar2 = (void *)0x0;
@@ -191,20 +193,19 @@ void * __cdecl Com_ReadLumpOutOfBsp(int param_1,LumpType param_2,uint param_3,ui
         }
       }
       else {
-        iVar1 = FS_Read(&local_24,4,param_1);
+        iVar1 = FS_Read(&chunkCount,4,h);
         if (iVar1 == 4) {
-          local_1c = local_24 * 8 + 0xc;
-          for (local_28 = 0; local_28 < local_24; local_28 = local_28 + 1) {
-            iVar1 = FS_Read(&local_18,8,param_1);
+          offset = chunkCount * 8 + 0xc;
+          for (chunkIter = 0; chunkIter < chunkCount; chunkIter = chunkIter + 1) {
+            iVar1 = FS_Read(&chunk,8,h);
             if (iVar1 != 8) {
               return (void *)0x0;
             }
-            if (local_18 == param_2) {
-              pvVar2 = Com_ReadLumpOutOfBspAtOffset
-                                 (param_1,param_2,local_1c,local_14,param_3,param_4);
+            if (chunk == type) {
+              pvVar2 = Com_ReadLumpOutOfBspAtOffset(h,type,offset,local_14,elemSize,count);
               return pvVar2;
             }
-            local_1c = (local_14 + 3 & 0xfffffffc) + local_1c;
+            offset = (local_14 + 3 & 0xfffffffc) + offset;
           }
           pvVar2 = (void *)0x0;
         }
@@ -228,17 +229,17 @@ void * __cdecl Com_ReadLumpOutOfBsp(int param_1,LumpType param_2,uint param_3,ui
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void * __cdecl Com_LoadBspLump(char *param_1,LumpType param_2,uint param_3,uint *param_4)
+void * __cdecl Com_LoadBspLump(char *mapname,LumpType type,uint elemSize,uint *count)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
   int extraout_EAX;
-  char local_114 [260];
+  char filename [260];
   uint local_10;
-  int local_c;
-  int local_8;
+  int fileSize;
+  int h;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((comBspGlob.loadedLumpData != (void *)0x0) &&
@@ -250,7 +251,7 @@ void * __cdecl Com_LoadBspLump(char *param_1,LumpType param_2,uint param_3,uint 
   }
   bVar2 = Com_IsBspLoaded();
   if (bVar2) {
-    strstr((uchar *)&comBspGlob,(uchar *)param_1);
+    strstr((uchar *)&comBspGlob,(uchar *)mapname);
     if (extraout_EAX == 0) {
       va("%s, %s");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
@@ -261,27 +262,27 @@ void * __cdecl Com_LoadBspLump(char *param_1,LumpType param_2,uint param_3,uint 
         return pvVar3;
       }
     }
-    comBspGlob.loadedLumpData = Com_GetBspLump(param_2,param_3,param_4);
+    comBspGlob.loadedLumpData = Com_GetBspLump(type,elemSize,count);
   }
   else {
-    Com_GetBspFilename(local_114,0x100,param_1);
-    local_c = FS_FOpenFileRead(local_114,&local_8);
-    if (local_c < 0) {
-      *param_4 = 0;
+    Com_GetBspFilename(filename,0x100,mapname);
+    fileSize = FS_FOpenFileRead(filename,&h);
+    if (fileSize < 0) {
+      *count = 0;
       return (void *)0x0;
     }
     Hunk_CheckTempMemoryHighClear();
-    comBspGlob.loadedLumpData = Com_ReadLumpOutOfBsp(local_8,param_2,param_3,param_4);
-    FS_FCloseFile(local_8);
+    comBspGlob.loadedLumpData = Com_ReadLumpOutOfBsp(h,type,elemSize,count);
+    FS_FCloseFile(h);
   }
-  comBspGlob.loadedLumpType = param_2;
+  comBspGlob.loadedLumpType = type;
   return comBspGlob.loadedLumpData;
 }
 
 
 // 006CB130  Com_UnloadBspLump  (qcommon/com_bsp_load_obj.cpp:239)
 
-void __cdecl Com_UnloadBspLump(LumpType param_1)
+void __cdecl Com_UnloadBspLump(LumpType type)
 
 {
   code *pcVar1;
@@ -296,7 +297,7 @@ void __cdecl Com_UnloadBspLump(LumpType param_1)
       return;
     }
   }
-  if (comBspGlob.loadedLumpType != param_1) {
+  if (comBspGlob.loadedLumpType != type) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",0xf1
                              ,1,"comBspGlob.loadedLumpType == type\n\t%i, %i");
     if (!bVar2) {
@@ -316,13 +317,13 @@ void __cdecl Com_UnloadBspLump(LumpType param_1)
 
 // 006CB1C0  Com_BspHasLump  (qcommon/com_bsp_load_obj.cpp:251)
 
-bool __cdecl Com_BspHasLump(LumpType param_1)
+bool __cdecl Com_BspHasLump(LumpType type)
 
 {
-  uint local_8;
+  uint count;
   
-  Com_GetBspLump(param_1,1,&local_8);
-  return local_8 != 0;
+  Com_GetBspLump(type,1,&count);
+  return count != 0;
 }
 
 
@@ -374,7 +375,7 @@ uint __cdecl Com_GetBspChecksum(void)
 
 // 006CB2C0  Com_CheckVersionLumpCountError  (qcommon/com_bsp_load_obj.cpp:276)
 
-bool __cdecl Com_CheckVersionLumpCountError(int param_1)
+bool __cdecl Com_CheckVersionLumpCountError(int version)
 
 {
   code *pcVar1;
@@ -382,7 +383,7 @@ bool __cdecl Com_CheckVersionLumpCountError(int param_1)
   undefined1 uVar3;
   uint uVar4;
   
-  if (((param_1 < 6) || (0x2d < param_1)) &&
+  if (((version < 6) || (0x2d < version)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                                0x115,0,
                                "version not in [OLDEST_BSP_VERSION, BSP_VERSION]\n\t%i not in [%i, %i]"
@@ -392,7 +393,7 @@ bool __cdecl Com_CheckVersionLumpCountError(int param_1)
     return (bool)uVar3;
   }
   if ((comBspGlob.header)->version < 0x13) {
-    uVar4 = Com_GetBspLumpCountForVersion(param_1);
+    uVar4 = Com_GetBspLumpCountForVersion(version);
     if (comBspGlob.fileSize < uVar4 * 8 + 8) {
       return true;
     }
@@ -430,7 +431,7 @@ bool __cdecl Com_BspError(void)
 
 // 006CB350  Com_LoadBsp  (qcommon/com_bsp_load_obj.cpp:307)
 
-void __cdecl Com_LoadBsp(char *param_1)
+void __cdecl Com_LoadBsp(char *filename)
 
 {
   char cVar1;
@@ -439,9 +440,11 @@ void __cdecl Com_LoadBsp(char *param_1)
   char *pcVar4;
   uint uVar5;
   char *local_1c;
-  int local_8;
+  uint bytesRead;
+  uint len;
+  int h;
   
-  if (param_1 == (char *)0x0) {
+  if (filename == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                              0x138,0,"%s");
     if (!bVar3) {
@@ -470,14 +473,14 @@ void __cdecl Com_LoadBsp(char *param_1)
     }
   }
   ProfLoad_Begin("Load bsp file");
-  comBspGlob.fileSize = FS_FOpenFileRead(param_1,&local_8);
-  if (local_8 == 0) {
+  comBspGlob.fileSize = FS_FOpenFileRead(filename,&h);
+  if (h == 0) {
     pcVar4 = va("EXE_ERR_COULDNT_LOAD\x15%s");
     Com_Error(ERR_DROP,pcVar4);
   }
   comBspGlob.header = Z_MallocGarbage(comBspGlob.fileSize,"Com_LoadBsp",0xb);
-  uVar5 = FS_Read(comBspGlob.header,comBspGlob.fileSize,local_8);
-  FS_FCloseFile(local_8);
+  uVar5 = FS_Read(comBspGlob.header,comBspGlob.fileSize,h);
+  FS_FCloseFile(h);
   if (uVar5 != comBspGlob.fileSize) {
     Z_Free(comBspGlob.header,0xb);
     pcVar4 = va("EXE_ERR_COULDNT_LOAD\x15%s");
@@ -494,12 +497,12 @@ void __cdecl Com_LoadBsp(char *param_1)
     Com_Error(ERR_DROP,pcVar4);
   }
   ProfLoad_End();
-  local_1c = param_1;
+  local_1c = filename;
   do {
     cVar1 = *local_1c;
     local_1c = local_1c + 1;
   } while (cVar1 != '\0');
-  if (0x3f < (uint)((int)local_1c - (int)(param_1 + 1))) {
+  if (0x3f < (uint)((int)local_1c - (int)(filename + 1))) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                              0x159,0,"%s\n\t(len) = %i");
     if (!bVar3) {
@@ -508,7 +511,7 @@ void __cdecl Com_LoadBsp(char *param_1)
       return;
     }
   }
-  memcpy((uchar *)&comBspGlob,(uchar *)param_1,((int)local_1c - (int)(param_1 + 1)) + 1);
+  memcpy((uchar *)&comBspGlob,(uchar *)filename,((int)local_1c - (int)(filename + 1)) + 1);
   bVar3 = Com_IsBspLoaded();
   if (!bVar3) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
@@ -525,14 +528,14 @@ void __cdecl Com_LoadBsp(char *param_1)
 
 // 006CCAC0  truncate_cast<unsigned_char>  (universal/assertive.h:334)
 
-uchar __cdecl truncate_cast<unsigned_char>(int param_1)
+uchar __cdecl truncate_cast<unsigned_char>(int i)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   
-  if (param_1 != (param_1 & 0xffU)) {
+  if (i != (i & 0xffU)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../universal/assertive.h",
                              0x14f,0,"i == static_cast< Type >( i )\n\t%i, %i");
     if (!bVar2) {
@@ -541,7 +544,7 @@ uchar __cdecl truncate_cast<unsigned_char>(int param_1)
       return uVar3;
     }
   }
-  return (uchar)param_1;
+  return (uchar)i;
 }
 
 
@@ -620,13 +623,14 @@ void __cdecl Com_CleanupBsp(void)
 
 // 006CB710  Com_EntityString  (qcommon/com_bsp_load_obj.cpp:381)
 
-char * __cdecl Com_EntityString(int *param_1)
+char * __cdecl Com_EntityString(int *numEntityChars)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint local_8;
+  char *entityString;
+  uint count;
   
   bVar2 = Com_IsBspLoaded();
   if (!bVar2) {
@@ -638,9 +642,9 @@ char * __cdecl Com_EntityString(int *param_1)
       return pcVar3;
     }
   }
-  pcVar3 = Com_GetBspLump(LUMP_ENTITIES,1,&local_8);
-  if (param_1 != (int *)0x0) {
-    *param_1 = local_8;
+  pcVar3 = Com_GetBspLump(LUMP_ENTITIES,1,&count);
+  if (numEntityChars != (int *)0x0) {
+    *numEntityChars = count;
   }
   return pcVar3;
 }
@@ -650,7 +654,7 @@ char * __cdecl Com_EntityString(int *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLumpBehavior param_4)
+void __cdecl Com_SaveLump(LumpType type,void *newLump,uint size,ComSaveLumpBehavior behavior)
 
 {
   char cVar1;
@@ -658,20 +662,20 @@ void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLum
   bool bVar3;
   char *local_534;
   <unnamed_type_comBspGlob> *local_530;
-  char local_52c [68];
+  char savedName [68];
   uint local_4e8;
-  uint local_4e4;
-  undefined1 local_4e0 [4];
-  undefined4 local_4dc;
+  uint chunkIter;
+  undefined1 zero [4];
+  undefined4 newHeader;
   undefined4 local_4d8;
   uint local_4d4;
   LumpType aLStack_4d0 [202];
-  int local_1a8;
-  BspChunk *local_1a4;
-  char local_19d;
+  uint offset;
+  BspChunk *chunk;
+  bool isNewChunk;
   int aiStack_19c [100];
-  int local_c;
-  uint local_8;
+  int h;
+  uint zeroCount;
   
   local_4e8 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar3 = Com_IsBspLoaded();
@@ -698,31 +702,31 @@ void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLum
     (*pcVar2)();
     return;
   }
-  local_4dc = 0x50534249;
+  newHeader = 0x50534249;
   local_4d8 = 0x2d;
   local_4d4 = 0;
-  local_19d = '\x01';
-  local_1a8 = (comBspGlob.header)->chunkCount * 8 + 0xc;
-  for (local_4e4 = 0; local_4e4 < (comBspGlob.header)->chunkCount; local_4e4 = local_4e4 + 1) {
-    local_1a4 = (comBspGlob.header)->chunks + local_4e4;
-    if (local_1a4->type == param_1) {
-      local_19d = '\0';
-      if (param_3 != 0) {
-        aLStack_4d0[local_4d4 * 2] = param_1;
-        aLStack_4d0[local_4d4 * 2 + 1] = param_3;
-        aiStack_19c[local_4d4] = (int)param_2;
+  isNewChunk = true;
+  offset = (comBspGlob.header)->chunkCount * 8 + 0xc;
+  for (chunkIter = 0; chunkIter < (comBspGlob.header)->chunkCount; chunkIter = chunkIter + 1) {
+    chunk = (comBspGlob.header)->chunks + chunkIter;
+    if (chunk->type == type) {
+      isNewChunk = false;
+      if (size != 0) {
+        aLStack_4d0[local_4d4 * 2] = type;
+        aLStack_4d0[local_4d4 * 2 + 1] = size;
+        aiStack_19c[local_4d4] = (int)newLump;
         local_4d4 = local_4d4 + 1;
       }
     }
     else {
-      aLStack_4d0[local_4d4 * 2] = local_1a4->type;
-      aLStack_4d0[local_4d4 * 2 + 1] = local_1a4->length;
-      aiStack_19c[local_4d4] = (int)(comBspGlob.header)->chunks + local_1a8 + -0xc;
+      aLStack_4d0[local_4d4 * 2] = chunk->type;
+      aLStack_4d0[local_4d4 * 2 + 1] = chunk->length;
+      aiStack_19c[local_4d4] = (int)(comBspGlob.header)->chunks + (offset - 0xc);
       local_4d4 = local_4d4 + 1;
     }
-    local_1a8 = (local_1a4->length + 3 & 0xfffffffc) + local_1a8;
+    offset = (chunk->length + 3 & 0xfffffffc) + offset;
   }
-  if ((local_19d != '\0') && (param_3 != 0)) {
+  if ((isNewChunk != false) && (size != 0)) {
     if ((99 < local_4d4) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                                  0x1bc,0,
@@ -732,30 +736,30 @@ void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLum
       (*pcVar2)();
       return;
     }
-    aLStack_4d0[local_4d4 * 2] = param_1;
-    aLStack_4d0[local_4d4 * 2 + 1] = param_3;
-    aiStack_19c[local_4d4] = (int)param_2;
+    aLStack_4d0[local_4d4 * 2] = type;
+    aLStack_4d0[local_4d4 * 2 + 1] = size;
+    aiStack_19c[local_4d4] = (int)newLump;
     local_4d4 = local_4d4 + 1;
   }
-  local_c = FS_OpenFileOverwrite(comBspGlob.name);
-  if (local_c == 0) {
+  h = FS_OpenFileOverwrite(comBspGlob.name);
+  if (h == 0) {
     Com_Error(ERR_DROP,"Failed to open file %s for writing");
   }
   else {
-    FS_Write(&local_4dc,local_4d4 * 8 + 0xc,local_c);
-    for (local_4e4 = 0; local_4e4 < local_4d4; local_4e4 = local_4e4 + 1) {
-      FS_Write((void *)aiStack_19c[local_4e4],aLStack_4d0[local_4e4 * 2 + 1],local_c);
-      local_8 = -aLStack_4d0[local_4e4 * 2 + 1] & 3;
-      if (local_8 != 0) {
-        FS_Write(local_4e0,local_8,local_c);
+    FS_Write(&newHeader,local_4d4 * 8 + 0xc,h);
+    for (chunkIter = 0; chunkIter < local_4d4; chunkIter = chunkIter + 1) {
+      FS_Write((void *)aiStack_19c[chunkIter],aLStack_4d0[chunkIter * 2 + 1],h);
+      zeroCount = -aLStack_4d0[chunkIter * 2 + 1] & 3;
+      if (zeroCount != 0) {
+        FS_Write(zero,zeroCount,h);
       }
     }
-    FS_FCloseFile(local_c);
-    if (param_4 == COM_SAVE_LUMP_AND_CLOSE) {
+    FS_FCloseFile(h);
+    if (behavior == COM_SAVE_LUMP_AND_CLOSE) {
       Com_UnloadBsp();
     }
     else {
-      if ((param_4 != COM_SAVE_LUMP_AND_REOPEN) &&
+      if ((behavior != COM_SAVE_LUMP_AND_REOPEN) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp"
                                    ,0x1d9,1,"%s\n\t(behavior) = %i"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -763,7 +767,7 @@ void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLum
         return;
       }
       local_530 = &comBspGlob;
-      local_534 = local_52c;
+      local_534 = savedName;
       do {
         cVar1 = local_530->name[0];
         *local_534 = cVar1;
@@ -771,7 +775,7 @@ void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLum
         local_534 = local_534 + 1;
       } while (cVar1 != '\0');
       Com_UnloadBsp();
-      Com_LoadBsp(local_52c);
+      Com_LoadBsp(savedName);
     }
   }
   return;
@@ -780,38 +784,42 @@ void __cdecl Com_SaveLump(LumpType param_1,void *param_2,uint param_3,ComSaveLum
 
 // 006CBD90  Byte4CopyBgraToVertexColor  (universal/com_color.h:441)
 
-void __cdecl Byte4CopyBgraToVertexColor(uchar *param_1,uchar *param_2)
+void __cdecl Byte4CopyBgraToVertexColor(uchar *rgbaFrom,uchar *nativeTo)
 
 {
-  *(uint *)param_2 =
-       (uint)param_1[2] << 0x10 | (uint)param_1[1] << 8 | (uint)*param_1 | (uint)param_1[3] << 0x18;
+  *(uint *)nativeTo =
+       (uint)rgbaFrom[2] << 0x10 | (uint)rgbaFrom[1] << 8 | (uint)*rgbaFrom |
+       (uint)rgbaFrom[3] << 0x18;
   return;
 }
 
 
 // 006CBBA0  Com_GetHunkStringCopy  (qcommon/com_bsp_load_obj.cpp:483)
 
-char * __cdecl Com_GetHunkStringCopy(char *param_1)
+char * __cdecl Com_GetHunkStringCopy(char *string)
 
 {
   char cVar1;
-  uchar *puVar2;
+  uchar *dst;
   char *local_10;
+  uint bytesNeeded;
+  char *hunkCopy;
   
-  local_10 = param_1;
+  local_10 = string;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  puVar2 = Hunk_AllocAlign((int)(local_10 + (1 - (int)(param_1 + 1))),1,"Com_GetLightDefName",0xe);
-  memcpy(puVar2,(uchar *)param_1,(ulong)(local_10 + (1 - (int)(param_1 + 1))));
-  return (char *)puVar2;
+  dst = Hunk_AllocAlign((int)(local_10 + (1 - (int)(string + 1))),1,"Com_GetLightDefName",0xe);
+  memcpy(dst,(uchar *)string,(ulong)(local_10 + (1 - (int)(string + 1))));
+  return (char *)dst;
 }
 
 
 // 006CC6B0  Com_GetLightDefName  (qcommon/com_bsp_load_obj.cpp:495)
 
-char * __cdecl Com_GetLightDefName(char *param_1,ComPrimaryLight *param_2,uint param_3)
+char * __cdecl
+Com_GetLightDefName(char *defName,ComPrimaryLight *primaryLights,uint primaryLightCount)
 
 {
   byte bVar1;
@@ -821,17 +829,18 @@ char * __cdecl Com_GetLightDefName(char *param_1,ComPrimaryLight *param_2,uint p
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_c;
+  uint primaryLightIndex;
+  char *existingDefName;
   
-  local_c = 0;
+  primaryLightIndex = 0;
   do {
-    if (param_3 <= local_c) {
-      pcVar3 = Com_GetHunkStringCopy(param_1);
+    if (primaryLightCount <= primaryLightIndex) {
+      pcVar3 = Com_GetHunkStringCopy(defName);
       return pcVar3;
     }
-    pbVar2 = (byte *)param_2[local_c].defName;
+    pbVar2 = (byte *)primaryLights[primaryLightIndex].defName;
     if (pbVar2 != (byte *)0x0) {
-      local_14 = (byte *)param_1;
+      local_14 = (byte *)defName;
       local_10 = pbVar2;
       do {
         bVar1 = *local_14;
@@ -854,7 +863,7 @@ LAB_006cc741:
         return (char *)pbVar2;
       }
     }
-    local_c = local_c + 1;
+    primaryLightIndex = primaryLightIndex + 1;
   } while( true );
 }
 
@@ -891,50 +900,50 @@ void __cdecl Com_LoadPrimaryLights_Version16(void)
   uchar uVar1;
   void *pvVar2;
   char *pcVar3;
-  ComPrimaryLight *local_18;
-  uint local_10;
-  void *local_c;
-  uint local_8;
+  ComPrimaryLight *out;
+  uint diskLightCount;
+  void *in;
+  uint lightIndex;
   
-  pvVar2 = Com_GetBspLump(LUMP_PRIMARY_LIGHTS,0x60,&local_10);
-  if (local_10 < 2) {
+  pvVar2 = Com_GetBspLump(LUMP_PRIMARY_LIGHTS,0x60,&diskLightCount);
+  if (diskLightCount < 2) {
     Com_Error(ERR_DROP,"no primary lights in bsp\n");
   }
-  comWorld.primaryLightCount = local_10;
-  comWorld.primaryLights = Hunk_Alloc(local_10 * 0xdc,"Com_LoadPrimaryLights",0xe);
-  local_18 = comWorld.primaryLights;
-  local_c = pvVar2;
-  for (local_8 = 0; local_8 < local_10; local_8 = local_8 + 1) {
-    local_18->type = *(uchar *)((int)local_c + 3);
-    local_18->canUseShadowMap = '\0';
-    local_18->cullDist = 1000;
-    uVar1 = truncate_cast<unsigned_char>(*(int *)((int)local_c + 0x34));
-    local_18->exponent = uVar1;
-    local_18->priority = '\0';
-    local_18->color[0] = *(float *)((int)local_c + 4);
-    local_18->color[1] = *(float *)((int)local_c + 8);
-    local_18->color[2] = *(float *)((int)local_c + 0xc);
-    local_18->dir[0] = *(float *)((int)local_c + 0x10);
-    local_18->dir[1] = *(float *)((int)local_c + 0x14);
-    local_18->dir[2] = *(float *)((int)local_c + 0x18);
-    local_18->origin[0] = *(float *)((int)local_c + 0x1c);
-    local_18->origin[1] = *(float *)((int)local_c + 0x20);
-    local_18->origin[2] = *(float *)((int)local_c + 0x24);
-    local_18->radius = *(float *)((int)local_c + 0x28);
-    local_18->cosHalfFovOuter = *(float *)((int)local_c + 0x2c);
-    local_18->cosHalfFovInner = *(float *)((int)local_c + 0x30);
-    local_18->cosHalfFovExpanded = local_18->cosHalfFovOuter;
-    local_18->rotationLimit = 1.0;
-    local_18->translationLimit = 0.0;
-    if ((*(char *)((int)local_c + 3) == '\0') || (*(char *)((int)local_c + 3) == '\x01')) {
-      local_18->defName = (char *)0x0;
+  comWorld.primaryLightCount = diskLightCount;
+  comWorld.primaryLights = Hunk_Alloc(diskLightCount * 0xdc,"Com_LoadPrimaryLights",0xe);
+  out = comWorld.primaryLights;
+  in = pvVar2;
+  for (lightIndex = 0; lightIndex < diskLightCount; lightIndex = lightIndex + 1) {
+    out->type = *(uchar *)((int)in + 3);
+    out->canUseShadowMap = '\0';
+    out->cullDist = 1000;
+    uVar1 = truncate_cast<unsigned_char>(*(int *)((int)in + 0x34));
+    out->exponent = uVar1;
+    out->priority = '\0';
+    out->color[0] = *(float *)((int)in + 4);
+    out->color[1] = *(float *)((int)in + 8);
+    out->color[2] = *(float *)((int)in + 0xc);
+    out->dir[0] = *(float *)((int)in + 0x10);
+    out->dir[1] = *(float *)((int)in + 0x14);
+    out->dir[2] = *(float *)((int)in + 0x18);
+    out->origin[0] = *(float *)((int)in + 0x1c);
+    out->origin[1] = *(float *)((int)in + 0x20);
+    out->origin[2] = *(float *)((int)in + 0x24);
+    out->radius = *(float *)((int)in + 0x28);
+    out->cosHalfFovOuter = *(float *)((int)in + 0x2c);
+    out->cosHalfFovInner = *(float *)((int)in + 0x30);
+    out->cosHalfFovExpanded = out->cosHalfFovOuter;
+    out->rotationLimit = 1.0;
+    out->translationLimit = 0.0;
+    if ((*(char *)((int)in + 3) == '\0') || (*(char *)((int)in + 3) == '\x01')) {
+      out->defName = (char *)0x0;
     }
     else {
-      pcVar3 = Com_GetLightDefName((char *)((int)local_c + 0x38),comWorld.primaryLights,local_8);
-      local_18->defName = pcVar3;
+      pcVar3 = Com_GetLightDefName((char *)((int)in + 0x38),comWorld.primaryLights,lightIndex);
+      out->defName = pcVar3;
     }
-    local_c = (void *)((int)local_c + 0x60);
-    local_18 = local_18 + 1;
+    in = (void *)((int)in + 0x60);
+    out = out + 1;
   }
   return;
 }
@@ -946,13 +955,14 @@ void __cdecl Com_LoadPrimaryLights(void)
 
 {
   uchar uVar1;
-  uchar *puVar2;
+  DiskPrimaryLight *pDVar2;
   char *pcVar3;
   float fVar4;
-  ComPrimaryLight *local_18;
-  uint local_10;
-  uchar *local_c;
-  uint local_8;
+  ComPrimaryLight *out;
+  DiskPrimaryLight *diskLights;
+  uint diskLightCount;
+  DiskPrimaryLight *in;
+  uint lightIndex;
   
   if ((comBspGlob.header)->version < 0xf) {
     Com_LoadPrimaryLights_Version14();
@@ -961,99 +971,95 @@ void __cdecl Com_LoadPrimaryLights(void)
     Com_LoadPrimaryLights_Version16();
   }
   else {
-    puVar2 = Com_GetBspLump(LUMP_PRIMARY_LIGHTS,0x10c,&local_10);
-    if (local_10 < 2) {
+    pDVar2 = Com_GetBspLump(LUMP_PRIMARY_LIGHTS,0x10c,&diskLightCount);
+    if (diskLightCount < 2) {
       Com_Error(ERR_DROP,"no primary lights in bsp\n");
     }
-    comWorld.primaryLightCount = local_10;
-    comWorld.primaryLights = Hunk_Alloc(local_10 * 0xdc,"Com_LoadPrimaryLights",0xe);
-    local_18 = comWorld.primaryLights;
-    local_c = puVar2;
-    for (local_8 = 0; local_8 < local_10; local_8 = local_8 + 1) {
-      local_18->type = *local_c;
-      local_18->canUseShadowMap = local_c[1];
-      local_18->cullDist = *(short *)(local_c + 2);
-      uVar1 = truncate_cast<unsigned_char>(*(int *)(local_c + 0x78));
-      local_18->exponent = uVar1;
-      local_18->priority = local_c[4];
-      local_18->color[0] = *(float *)(local_c + 0x20);
-      local_18->color[1] = *(float *)(local_c + 0x24);
-      local_18->color[2] = *(float *)(local_c + 0x28);
-      local_18->dir[0] = *(float *)(local_c + 8);
-      local_18->dir[1] = *(float *)(local_c + 0xc);
-      local_18->dir[2] = *(float *)(local_c + 0x10);
-      local_18->origin[0] = *(float *)(local_c + 0x14);
-      local_18->origin[1] = *(float *)(local_c + 0x18);
-      local_18->origin[2] = *(float *)(local_c + 0x1c);
-      local_18->radius = *(float *)(local_c + 100);
-      local_18->cosHalfFovOuter = *(float *)(local_c + 0x70);
-      local_18->cosHalfFovInner = *(float *)(local_c + 0x74);
-      local_18->rotationLimit = *(float *)(local_c + 0x7c);
-      local_18->translationLimit = *(float *)(local_c + 0x80);
-      if ((*local_c == '\0') || (*local_c == '\x01')) {
-        local_18->defName = (char *)0x0;
-        local_18->cosHalfFovExpanded = *(float *)(local_c + 0x70);
+    comWorld.primaryLightCount = diskLightCount;
+    comWorld.primaryLights = Hunk_Alloc(diskLightCount * 0xdc,"Com_LoadPrimaryLights",0xe);
+    out = comWorld.primaryLights;
+    in = pDVar2;
+    for (lightIndex = 0; lightIndex < diskLightCount; lightIndex = lightIndex + 1) {
+      out->type = in->type;
+      out->canUseShadowMap = in->canUseShadowMap;
+      out->cullDist = in->cullDist;
+      uVar1 = truncate_cast<unsigned_char>(in->exponent);
+      out->exponent = uVar1;
+      out->priority = in->priority;
+      out->color[0] = in->color[0];
+      out->color[1] = in->color[1];
+      out->color[2] = in->color[2];
+      out->dir[0] = in->dir[0];
+      out->dir[1] = in->dir[1];
+      out->dir[2] = in->dir[2];
+      out->origin[0] = in->origin[0];
+      out->origin[1] = in->origin[1];
+      out->origin[2] = in->origin[2];
+      out->radius = in->radius;
+      out->cosHalfFovOuter = in->cosHalfFovOuter;
+      out->cosHalfFovInner = in->cosHalfFovInner;
+      out->rotationLimit = in->rotationLimit;
+      out->translationLimit = in->translationLimit;
+      if ((in->type == '\0') || (in->type == '\x01')) {
+        out->defName = (char *)0x0;
+        out->cosHalfFovExpanded = in->cosHalfFovOuter;
       }
       else {
-        pcVar3 = Com_GetLightDefName((char *)(local_c + 0xcc),comWorld.primaryLights,local_8);
-        local_18->defName = pcVar3;
-        if (local_18->cosHalfFovInner <= local_18->cosHalfFovOuter) {
-          local_18->cosHalfFovInner = local_18->cosHalfFovOuter * 0.75 + 0.25;
+        pcVar3 = Com_GetLightDefName(in->defName,comWorld.primaryLights,lightIndex);
+        out->defName = pcVar3;
+        if (out->cosHalfFovInner <= out->cosHalfFovOuter) {
+          out->cosHalfFovInner = out->cosHalfFovOuter * 0.75 + 0.25;
         }
-        if (local_18->rotationLimit == 1.0) {
-          local_18->cosHalfFovExpanded = local_18->cosHalfFovOuter;
+        if (out->rotationLimit == 1.0) {
+          out->cosHalfFovExpanded = out->cosHalfFovOuter;
         }
-        else if (-local_18->cosHalfFovOuter < local_18->rotationLimit) {
-          fVar4 = CosOfSumOfArcCos(local_18->cosHalfFovOuter,local_18->rotationLimit);
-          local_18->cosHalfFovExpanded = fVar4;
+        else if (-out->cosHalfFovOuter < out->rotationLimit) {
+          fVar4 = CosOfSumOfArcCos(out->cosHalfFovOuter,out->rotationLimit);
+          out->cosHalfFovExpanded = fVar4;
         }
         else {
-          local_18->cosHalfFovExpanded = -1.0;
+          out->cosHalfFovExpanded = -1.0;
         }
       }
-      local_18->diffuseColor[0] = *(float *)(local_c + 0x20);
-      local_18->diffuseColor[1] = *(float *)(local_c + 0x24);
-      local_18->diffuseColor[2] = *(float *)(local_c + 0x28);
-      local_18->diffuseColor[3] = 0.0;
-      local_18->specularColor[0] = *(float *)(local_c + 0x2c);
-      local_18->specularColor[1] = *(float *)(local_c + 0x30);
-      local_18->specularColor[2] = *(float *)(local_c + 0x34);
-      local_18->specularColor[3] = 0.0;
-      local_18->attenuation[0] = *(float *)(local_c + 0x38);
-      local_18->attenuation[1] = *(float *)(local_c + 0x3c);
-      local_18->attenuation[2] = *(float *)(local_c + 0x40);
-      local_18->attenuation[3] = 0.0;
-      local_18->falloff[0] = *(float *)(local_c + 0x60);
-      local_18->falloff[1] = *(float *)(local_c + 100);
-      local_18->falloff[2] =
-           (*(float *)(local_c + 100) - *(float *)(local_c + 0x60)) * *(float *)(local_c + 0x68) +
-           *(float *)(local_c + 0x60);
-      local_18->falloff[3] =
-           (*(float *)(local_c + 100) - *(float *)(local_c + 0x60)) * *(float *)(local_c + 0x6c) +
-           *(float *)(local_c + 0x60);
-      local_18->angle[0] = *(float *)(local_c + 0x44);
-      local_18->angle[1] = *(float *)(local_c + 0x48);
-      local_18->angle[2] = *(float *)(local_c + 0x4c);
-      local_18->angle[3] = *(float *)(local_c + 0x84);
-      local_18->mipDistance = *(float *)(local_c + 0x88);
-      local_18->aAbB[0] = *(float *)(local_c + 0x8c);
-      local_18->aAbB[1] = *(float *)(local_c + 0x90);
-      local_18->aAbB[2] = *(float *)(local_c + 0x94);
-      local_18->aAbB[3] = *(float *)(local_c + 0x98);
-      local_18->cookieControl0[0] = *(float *)(local_c + 0x9c);
-      local_18->cookieControl0[1] = *(float *)(local_c + 0xa0);
-      local_18->cookieControl0[2] = *(float *)(local_c + 0xa4);
-      local_18->cookieControl0[3] = *(float *)(local_c + 0xa8);
-      local_18->cookieControl1[0] = *(float *)(local_c + 0xac);
-      local_18->cookieControl1[1] = *(float *)(local_c + 0xb0);
-      local_18->cookieControl1[2] = *(float *)(local_c + 0xb4);
-      local_18->cookieControl1[3] = *(float *)(local_c + 0xb8);
-      local_18->cookieControl2[0] = *(float *)(local_c + 0xbc);
-      local_18->cookieControl2[1] = *(float *)(local_c + 0xc0);
-      local_18->cookieControl2[2] = *(float *)(local_c + 0xc4);
-      local_18->cookieControl2[3] = *(float *)(local_c + 200);
-      local_c = local_c + 0x10c;
-      local_18 = local_18 + 1;
+      out->diffuseColor[0] = in->color[0];
+      out->diffuseColor[1] = in->color[1];
+      out->diffuseColor[2] = in->color[2];
+      out->diffuseColor[3] = 0.0;
+      out->specularColor[0] = in->specularcolor[0];
+      out->specularColor[1] = in->specularcolor[1];
+      out->specularColor[2] = in->specularcolor[2];
+      out->specularColor[3] = 0.0;
+      out->attenuation[0] = in->attenuation[0];
+      out->attenuation[1] = in->attenuation[1];
+      out->attenuation[2] = in->attenuation[2];
+      out->attenuation[3] = 0.0;
+      out->falloff[0] = in->cutOn;
+      out->falloff[1] = in->radius;
+      out->falloff[2] = (in->radius - in->cutOn) * in->nearEdge + in->cutOn;
+      out->falloff[3] = (in->radius - in->cutOn) * in->farEdge + in->cutOn;
+      out->angle[0] = in->angle[0];
+      out->angle[1] = in->angle[1];
+      out->angle[2] = in->angle[2];
+      out->angle[3] = in->roundness;
+      out->mipDistance = in->mipDistance;
+      out->aAbB[0] = in->aAbB[0];
+      out->aAbB[1] = in->aAbB[1];
+      out->aAbB[2] = in->aAbB[2];
+      out->aAbB[3] = in->aAbB[3];
+      out->cookieControl0[0] = in->cookieControl0[0];
+      out->cookieControl0[1] = in->cookieControl0[1];
+      out->cookieControl0[2] = in->cookieControl0[2];
+      out->cookieControl0[3] = in->cookieControl0[3];
+      out->cookieControl1[0] = in->cookieControl1[0];
+      out->cookieControl1[1] = in->cookieControl1[1];
+      out->cookieControl1[2] = in->cookieControl1[2];
+      out->cookieControl1[3] = in->cookieControl1[3];
+      out->cookieControl2[0] = in->cookieControl2[0];
+      out->cookieControl2[1] = in->cookieControl2[1];
+      out->cookieControl2[2] = in->cookieControl2[2];
+      out->cookieControl2[3] = in->cookieControl2[3];
+      in = in + 1;
+      out = out + 1;
     }
   }
   return;
@@ -1062,21 +1068,23 @@ void __cdecl Com_LoadPrimaryLights(void)
 
 // 006CC020  Com_BurnableCellSort  (qcommon/com_bsp_load_obj.cpp:673)
 
-int __cdecl Com_BurnableCellSort(void *param_1,void *param_2)
+int __cdecl Com_BurnableCellSort(void *va,void *vb)
 
 {
   int iVar1;
+  ComBurnableCell *b;
+  ComBurnableCell *a;
   
-  if (*(int *)((int)param_1 + 4) < *(int *)((int)param_2 + 4)) {
+  if (*(int *)((int)va + 4) < *(int *)((int)vb + 4)) {
     iVar1 = -1;
   }
-  else if (*(int *)((int)param_2 + 4) < *(int *)((int)param_1 + 4)) {
+  else if (*(int *)((int)vb + 4) < *(int *)((int)va + 4)) {
     iVar1 = 1;
   }
-  else if (*(int *)param_1 < *(int *)param_2) {
+  else if (*(int *)va < *(int *)vb) {
     iVar1 = -1;
   }
-  else if (*(int *)param_2 < *(int *)param_1) {
+  else if (*(int *)vb < *(int *)va) {
     iVar1 = 1;
   }
   else {
@@ -1097,19 +1105,23 @@ void __cdecl Com_LoadWaterData(void)
   bool bVar4;
   int *piVar5;
   void *pvVar6;
-  uint local_14;
-  uint local_8;
+  ComWaterCell *out;
+  DiskWaterCell *in;
+  uint n;
+  DiskWaterHeader *diskHeader;
+  DiskWaterCell *diskCells;
+  uint count;
   
   if (0x1a < (comBspGlob.header)->version) {
-    piVar5 = Com_GetBspLump(LUMP_WATERHEADER,0x14,&local_8);
-    if ((1 < local_8) &&
+    piVar5 = Com_GetBspLump(LUMP_WATERHEADER,0x14,&count);
+    if ((1 < count) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                                  0x2b5,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (local_8 == 0) {
+    if (count == 0) {
       comWorld.numWaterCells = 0;
       comWorld.waterCells = (ComWaterCell *)0x0;
       comWorld.waterHeader.minx = 0;
@@ -1122,12 +1134,12 @@ void __cdecl Com_LoadWaterData(void)
       comWorld.waterHeader.maxx = piVar5[2];
       comWorld.waterHeader.miny = piVar5[1];
       comWorld.waterHeader.maxy = piVar5[3];
-      pvVar6 = Com_GetBspLump(LUMP_WATERCELLS,8,&local_8);
-      comWorld.numWaterCells = local_8;
-      comWorld.waterCells = Hunk_Alloc(local_8 << 3,"CMod_LoadWaterData",0xe);
-      for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 1) {
-        psVar1 = (short *)((int)pvVar6 + local_14 * 8);
-        pCVar2 = comWorld.waterCells + local_14;
+      pvVar6 = Com_GetBspLump(LUMP_WATERCELLS,8,&count);
+      comWorld.numWaterCells = count;
+      comWorld.waterCells = Hunk_Alloc(count << 3,"CMod_LoadWaterData",0xe);
+      for (n = 0; n < count; n = n + 1) {
+        psVar1 = (short *)((int)pvVar6 + n * 8);
+        pCVar2 = comWorld.waterCells + n;
         pCVar2->flooroffset = (char)psVar1[1];
         pCVar2->waterheight = *psVar1;
         pCVar2->shoredist = *(uchar *)((int)psVar1 + 3);
@@ -1141,10 +1153,10 @@ void __cdecl Com_LoadWaterData(void)
 
 // 006CC090  Com_PackBurnableSample  (qcommon/com_bsp_load_obj.cpp:728)
 
-void __cdecl Com_PackBurnableSample(DiskBurnableSample *param_1,ComBurnableSample *param_2)
+void __cdecl Com_PackBurnableSample(DiskBurnableSample *in,ComBurnableSample *out)
 
 {
-  param_2->state = param_1->state;
+  out->state = in->state;
   return;
 }
 
@@ -1161,22 +1173,27 @@ void __cdecl Com_LoadBurnableData(void)
   void *pvVar5;
   ComBurnableSample *pCVar6;
   ComBurnableCell *pCVar7;
-  int local_2c;
-  uint local_1c;
-  int *local_10;
-  uint local_c;
-  uint local_8;
+  int x;
+  DiskBurnableBlock *block;
+  int dataBytes;
+  ComBurnableCell *out;
+  uint n;
+  DiskBurnableHeader *diskHeader;
+  DiskBurnableBlock *blocks;
+  DiskBurnableCell *in;
+  uint blockCount;
+  uint count;
   
   if (0x17 < (comBspGlob.header)->version) {
-    piVar4 = Com_GetBspLump(LUMP_BURNABLEHEADER,0x10,&local_8);
-    if ((1 < local_8) &&
+    piVar4 = Com_GetBspLump(LUMP_BURNABLEHEADER,0x10,&count);
+    if ((1 < count) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                                  0x2e6,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (local_8 == 0) {
+    if (count == 0) {
       comWorld.numBurnableCells = 0;
       comWorld.burnableCells = (ComBurnableCell *)0x0;
       comWorld.burnableHeader.minx = 0;
@@ -1189,30 +1206,29 @@ void __cdecl Com_LoadBurnableData(void)
       comWorld.burnableHeader.maxx = piVar4[2];
       comWorld.burnableHeader.miny = piVar4[1];
       comWorld.burnableHeader.maxy = piVar4[3];
-      local_10 = Com_GetBspLump(LUMP_BURNABLECELLS,0x10,&local_8);
-      comWorld.numBurnableCells = local_8;
-      comWorld.burnableCells = Hunk_Alloc(local_8 * 0xc,"CMod_LoadBurnableData",0xe);
-      pvVar5 = Com_GetBspLump(LUMP_BURNABLECELLDATA,0x20,&local_c);
-      for (local_1c = 0; local_1c < local_8; local_1c = local_1c + 1) {
-        pCVar7 = comWorld.burnableCells + local_1c;
-        pCVar7->x = *local_10;
-        pCVar7->y = local_10[1];
-        if (((local_10[3] < 0) || ((int)local_c <= local_10[3])) &&
+      in = Com_GetBspLump(LUMP_BURNABLECELLS,0x10,&count);
+      comWorld.numBurnableCells = count;
+      comWorld.burnableCells = Hunk_Alloc(count * 0xc,"CMod_LoadBurnableData",0xe);
+      pvVar5 = Com_GetBspLump(LUMP_BURNABLECELLDATA,0x20,&blockCount);
+      for (n = 0; n < count; n = n + 1) {
+        pCVar7 = comWorld.burnableCells + n;
+        pCVar7->x = in->x;
+        pCVar7->y = in->y;
+        if (((in->dataIndex < 0) || ((int)blockCount <= in->dataIndex)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp"
                                      ,0x304,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        iVar1 = local_10[3];
+        iVar1 = in->dataIndex;
         pCVar6 = Hunk_Alloc(0x20,"CMod_LoadBurnableData",0xe);
         pCVar7->data = pCVar6;
-        for (local_2c = 0; local_2c < 0x20; local_2c = local_2c + 1) {
+        for (x = 0; x < 0x20; x = x + 1) {
           Com_PackBurnableSample
-                    ((DiskBurnableSample *)((int)pvVar5 + local_2c + iVar1 * 0x20),
-                     pCVar7->data + local_2c);
+                    ((DiskBurnableSample *)((int)pvVar5 + x + iVar1 * 0x20),pCVar7->data + x);
         }
-        local_10 = local_10 + 4;
+        in = in + 1;
       }
       qsort(comWorld.burnableCells,comWorld.numBurnableCells,0xc,Com_BurnableCellSort);
     }
@@ -1223,7 +1239,7 @@ void __cdecl Com_LoadBurnableData(void)
 
 // 006CC0E0  Com_LoadWorld_LoadObj  (qcommon/com_bsp_load_obj.cpp:793)
 
-void __cdecl Com_LoadWorld_LoadObj(char *param_1)
+void __cdecl Com_LoadWorld_LoadObj(char *name)
 
 {
   code *pcVar1;
@@ -1242,7 +1258,7 @@ void __cdecl Com_LoadWorld_LoadObj(char *param_1)
   Com_LoadPrimaryLights();
   Com_LoadWaterData();
   Com_LoadBurnableData();
-  comWorld.name = Com_GetHunkStringCopy(param_1);
+  comWorld.name = Com_GetHunkStringCopy(name);
   comWorld.isInUse = 1;
   return;
 }
@@ -1253,14 +1269,15 @@ void __cdecl Com_LoadWorld_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Com_LoadWorld_FastFile(char *param_1)
+void __cdecl Com_LoadWorld_FastFile(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   XAssetHeader XVar3;
+  ComWorld *asset;
   
-  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_COMWORLD,param_1,true,-1);
+  XVar3 = DB_FindXAssetHeader(ASSET_TYPE_COMWORLD,name,true,-1);
   if ((ComWorld *)XVar3.xmodelPieces != &comWorld) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\com_bsp_load_obj.cpp",
                              0x32d,0,"%s");
@@ -1285,7 +1302,7 @@ void __cdecl Com_LoadWorld_FastFile(char *param_1)
 
 // 006CC0A0  Com_LoadWorld  (qcommon/com_bsp_load_obj.cpp:820)
 
-void __cdecl Com_LoadWorld(char *param_1)
+void __cdecl Com_LoadWorld(char *name)
 
 {
   code *local_c;
@@ -1296,7 +1313,7 @@ void __cdecl Com_LoadWorld(char *param_1)
   else {
     local_c = Com_LoadWorld_FastFile;
   }
-  (*local_c)(param_1);
+  (*local_c)(name);
   return;
 }
 

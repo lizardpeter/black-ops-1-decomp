@@ -361,9 +361,9 @@ void __cdecl SpectatorThink(gentity_s *param_1,usercmd_s *param_2)
   int iVar1;
   int iVar2;
   int iVar3;
-  pmove_t *ppVar4;
+  pmove_t *dst;
   gentity_s *unaff_EDI;
-  undefined4 *puVar5;
+  undefined4 *puVar4;
   
   iVar1 = *(int *)(param_1 + 0x144);
   *(undefined4 *)(iVar1 + 0x28f4) = *(undefined4 *)(iVar1 + 0x28ec);
@@ -375,7 +375,7 @@ void __cdecl SpectatorThink(gentity_s *param_1,usercmd_s *param_2)
   *(uint *)(iVar1 + 0x2904) =
        *(uint *)(iVar1 + 0x2904) | ~*(uint *)(iVar1 + 0x28f4) & *(uint *)(iVar1 + 0x2708);
   iVar3 = (uint)*(byte *)(iVar1 + 0x130) * 0x910;
-  ppVar4 = (pmove_t *)(&g_pmove + (uint)*(byte *)(iVar1 + 0x130) * 0x244);
+  dst = (pmove_t *)(&g_pmove + (uint)*(byte *)(iVar1 + 0x130) * 0x244);
   if ((((*(int *)(iVar1 + 0x26ec) < 0) && ((~(*(uint *)(iVar1 + 0x27b0) >> 4) & 1) != 0)) &&
       (-1 < *(int *)(iVar1 + 0x28e0))) &&
      (((byte)((byte)((uint)*(undefined4 *)(iVar1 + 0x28f4) >> 0x18) ^
@@ -390,18 +390,18 @@ void __cdecl SpectatorThink(gentity_s *param_1,usercmd_s *param_2)
   if ((*(byte *)(iVar1 + 0x14) & 2) == 0) {
     *(undefined4 *)(iVar1 + 4) = 4;
     *(uint *)(iVar1 + 0x80) = -(uint)((~(byte)(*(uint *)(iVar1 + 0x27b0) >> 4) & 1) != 0) & 400;
-    memset((uchar *)ppVar4,'\0',600);
+    memset((uchar *)dst,'\0',600);
     *(undefined4 *)(&DAT_049633b0 + iVar3) = 0xffffffff;
-    *(int *)ppVar4 = iVar1;
-    puVar5 = (undefined4 *)(&DAT_04963164 + iVar3);
+    *(int *)dst = iVar1;
+    puVar4 = (undefined4 *)(&DAT_04963164 + iVar3);
     for (iVar2 = 0xd; iVar2 != 0; iVar2 = iVar2 + -1) {
-      *puVar5 = *(undefined4 *)param_2;
+      *puVar4 = *(undefined4 *)param_2;
       param_2 = param_2 + 4;
-      puVar5 = puVar5 + 1;
+      puVar4 = puVar4 + 1;
     }
     *(undefined4 *)(&DAT_049631cc + iVar3) = 0x800811;
     (&DAT_049633ac)[iVar3] = 1;
-    Pmove(ppVar4);
+    Pmove(dst);
     *(undefined4 *)(param_1 + 0x124) = *(undefined4 *)(iVar1 + 0x24);
     *(undefined4 *)(param_1 + 0x128) = *(undefined4 *)(iVar1 + 0x28);
     *(undefined4 *)(param_1 + 300) = *(undefined4 *)(iVar1 + 0x2c);
@@ -1123,16 +1123,16 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
   int iVar8;
   undefined1 unaff_BP;
   int iVar9;
-  pmove_t *ppVar10;
+  pmove_t *dst;
   float *unaff_ESI;
-  int *piVar11;
+  int *piVar10;
   gclient_s *unaff_EDI;
-  undefined4 *puVar12;
-  int *piVar13;
+  undefined4 *puVar11;
+  int *piVar12;
+  float fVar13;
   float fVar14;
-  float fVar15;
-  short sVar16;
-  uchar uVar17;
+  short sVar15;
+  uchar uVar16;
   uint local_124 [2];
   float local_11c;
   float local_118;
@@ -1154,7 +1154,7 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
   
   piVar1 = *(int **)(param_1 + 0x144);
   iVar9 = (uint)*(byte *)(piVar1 + 0x4c) * 0x910;
-  ppVar10 = (pmove_t *)(&g_pmove + (uint)*(byte *)(piVar1 + 0x4c) * 0x244);
+  dst = (pmove_t *)(&g_pmove + (uint)*(byte *)(piVar1 + 0x4c) * 0x244);
   if (piVar1[0x9c0] == 2) {
     if (DAT_01c57f4c + 200 < *(int *)param_2) {
       *(int *)param_2 = DAT_01c57f4c + 200;
@@ -1224,11 +1224,11 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
             this = pbVar6;
             do {
               if (*(uint *)this != 0) {
-                fVar15 = DAT_01c5a2b0 * ((float)(int)(char)param_2[0x30] + 128.0) * 0.003921569;
-                fVar14 = DAT_01c5a2b4 * ((float)(int)(char)param_2[0x31] + 128.0) * 0.003921569;
+                fVar14 = DAT_01c5a2b0 * ((float)(int)(char)param_2[0x30] + 128.0) * 0.003921569;
+                fVar13 = DAT_01c5a2b4 * ((float)(int)(char)param_2[0x31] + 128.0) * 0.003921569;
                 this = (bitarray<51> *)(*(uint *)pbVar6 >> 0xf);
-                local_11c = (DAT_01c5a2bc * fVar15 + _DAT_01c5a2a8) - DAT_01c5a2b8 * fVar14;
-                local_118 = (DAT_01c5a2ac - DAT_01c5a2b8 * fVar15) - DAT_01c5a2bc * fVar14;
+                local_11c = (DAT_01c5a2bc * fVar14 + _DAT_01c5a2a8) - DAT_01c5a2b8 * fVar13;
+                local_118 = (DAT_01c5a2ac - DAT_01c5a2b8 * fVar14) - DAT_01c5a2bc * fVar13;
                 local_114 = 0.0;
                 if (((uint)this & 1) != 0) {
                   Scr_AddInt((uint)(byte)param_2[0x32] * 2,(scriptInstance_t)unaff_EDI);
@@ -1271,21 +1271,21 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
             } while (iVar8 != 0);
           }
           local_124[0] = (uint)*(ushort *)(piVar1 + 0x3a);
-          memset((uchar *)ppVar10,'\0',600);
+          memset((uchar *)dst,'\0',600);
           *(undefined4 *)(&DAT_049633b0 + iVar9) = 0xffffffff;
-          *(int **)ppVar10 = piVar1;
-          puVar12 = (undefined4 *)(&DAT_04963164 + iVar9);
+          *(int **)dst = piVar1;
+          puVar11 = (undefined4 *)(&DAT_04963164 + iVar9);
           for (iVar4 = 0xd; iVar4 != 0; iVar4 = iVar4 + -1) {
-            *puVar12 = *(undefined4 *)param_2;
+            *puVar11 = *(undefined4 *)param_2;
             param_2 = param_2 + 4;
-            puVar12 = puVar12 + 1;
+            puVar11 = puVar11 + 1;
           }
-          piVar11 = piVar1 + 0x9ce;
-          piVar13 = (int *)(&DAT_04963198 + iVar9);
+          piVar10 = piVar1 + 0x9ce;
+          piVar12 = (int *)(&DAT_04963198 + iVar9);
           for (iVar4 = 0xd; local_f8 = DAT_01c57f4c, iVar4 != 0; iVar4 = iVar4 + -1) {
-            *piVar13 = *piVar11;
-            piVar11 = piVar11 + 1;
-            piVar13 = piVar13 + 1;
+            *piVar12 = *piVar10;
+            piVar10 = piVar10 + 1;
+            piVar12 = piVar12 + 1;
           }
           iVar4 = piVar1[1];
           (&DAT_049633ac)[iVar9] = 1;
@@ -1304,12 +1304,12 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
           if (bVar3) {
             if (((onlinegame == (dvar_s *)0x0) || ((onlinegame->current).enabled == false)) ||
                (bVar3 = Com_GameMode_IsPrivateOnlineGame(), bVar3)) {
-              fVar14 = (perk_speedMultiplier->current).value;
+              fVar13 = (perk_speedMultiplier->current).value;
             }
             else {
-              fVar14 = 1.07;
+              fVar13 = 1.07;
             }
-            piVar1[0x20] = (int)((float)iVar4 * fVar14);
+            piVar1[0x20] = (int)((float)iVar4 * fVar13);
           }
           BG_CalculateViewMovementAngles((viewState_t *)unaff_EDI,unaff_ESI,(bool)unaff_BP);
           local_10c = (float)piVar1[0x60] + local_11c;
@@ -1334,7 +1334,7 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
             MatrixMultiply((float *)&local_100,(float *)unaff_EDI,unaff_ESI);
             AxisToAngles((float *)unaff_EDI,unaff_ESI);
           }
-          uVar17 = (uchar)unaff_ESI;
+          uVar16 = (uchar)unaff_ESI;
           piVar1[0xa43] = (int)local_10c;
           piVar1[0xa44] = (int)local_108;
           bVar3 = Player_IsPlayerUsingTurretNearby(param_1);
@@ -1344,7 +1344,7 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
           else {
             piVar1[0x141] = piVar1[0x141] & 0xfffffdff;
           }
-          Pmove(ppVar10);
+          Pmove(dst);
           if ((&DAT_04963380)[iVar9] != '\0') {
             FUN_005503a0(iVar9 + 0x4963384,*(undefined4 *)(&DAT_04963390 + iVar9));
           }
@@ -1358,13 +1358,13 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
           }
           if ((g_smoothClients->current).enabled == false) {
             BG_PlayerStateToEntityState
-                      ((playerState_s *)param_1,(entityState_s *)&DAT_00000001,(int)unaff_EDI,uVar17
+                      ((playerState_s *)param_1,(entityState_s *)&DAT_00000001,(int)unaff_EDI,uVar16
                       );
-            sVar16 = (short)unaff_EDI;
+            sVar15 = (short)unaff_EDI;
           }
           else {
             FUN_00550360();
-            sVar16 = (short)unaff_EDI;
+            sVar15 = (short)unaff_EDI;
           }
           if ((((piVar1[0x38] & 0x4000U) == 0) || (piVar1[0x120] < 1)) || (4 < piVar1[0x120])) {
             *(undefined4 *)(param_1 + 0x124) = *(undefined4 *)(param_1 + 0x18);
@@ -1390,7 +1390,7 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
             *(undefined4 *)(param_1 + 0x40) = *(undefined4 *)(param_1 + 0x134);
             *(undefined4 *)(param_1 + 0x44) = *(undefined4 *)(param_1 + 0x138);
           }
-          ClientEvents(param_1,sVar16);
+          ClientEvents(param_1,sVar15);
           SV_LinkEntity(param_1);
           *(int *)(param_1 + 0x124) = piVar1[9];
           *(int *)(param_1 + 0x128) = piVar1[10];
@@ -1404,7 +1404,7 @@ void __cdecl ClientThink_real(gentity_s *param_1,usercmd_s *param_2)
             *(undefined4 *)(param_1 + 0x138) = 0;
             *(int *)(param_1 + 0x134) = piVar1[0x61];
           }
-          ClientImpacts(param_1,ppVar10);
+          ClientImpacts(param_1,dst);
           FUN_0054f0b0();
           if ((short)piVar1[0x3a] != (short)local_124[0]) {
             *(int *)(param_1 + 0x178) = DAT_01c57f4c;
@@ -1563,16 +1563,16 @@ void __cdecl IntermissionClientEndFrame(gentity_s *param_1)
 void __cdecl SpectatorClientEndFrame(gentity_s *param_1)
 
 {
-  gclient_s *pgVar1;
+  gclient_s *dst;
+  uint uVar1;
   uint uVar2;
   uint uVar3;
-  uint uVar4;
+  int iVar4;
   int iVar5;
   int iVar6;
   int iVar7;
-  int iVar8;
+  uint uVar8;
   uint uVar9;
-  uint uVar10;
   int *unaff_EBP;
   int *unaff_ESI;
   float *unaff_EDI;
@@ -1589,102 +1589,102 @@ void __cdecl SpectatorClientEndFrame(gentity_s *param_1)
   param_1[0xe2] = (gentity_s)((byte)param_1[0xe2] & 0xfd | 1);
   param_1[0x15f] = (gentity_s)0x0;
   *(undefined4 *)(param_1 + 0x108) = 0;
-  pgVar1 = *(gclient_s **)(param_1 + 0x144);
-  *(uint *)(pgVar1 + 0x14) = *(uint *)(pgVar1 + 0x14) & 0xfffffffb;
+  dst = *(gclient_s **)(param_1 + 0x144);
+  *(uint *)(dst + 0x14) = *(uint *)(dst + 0x14) & 0xfffffffb;
   *(undefined2 *)(param_1 + 0xbe) = 5;
-  iVar8 = *(int *)(pgVar1 + 0x26ec);
-  uVar10 = -(int)local_2768 & 0x7f;
-  *(undefined4 *)(pgVar1 + 0x17c) = 0;
-  *(undefined4 *)(pgVar1 + 0x290c) = 0;
-  *(undefined4 *)(pgVar1 + 0x2910) = 0;
-  if (-1 < iVar8) {
-    *(int *)(pgVar1 + 0x28e0) = iVar8;
-    iVar5 = SV_GetEarliestArchivedClientInfoTime();
+  iVar7 = *(int *)(dst + 0x26ec);
+  uVar9 = -(int)local_2768 & 0x7f;
+  *(undefined4 *)(dst + 0x17c) = 0;
+  *(undefined4 *)(dst + 0x290c) = 0;
+  *(undefined4 *)(dst + 0x2910) = 0;
+  if (-1 < iVar7) {
+    *(int *)(dst + 0x28e0) = iVar7;
+    iVar4 = SV_GetEarliestArchivedClientInfoTime();
 LAB_00551fa5:
     do {
-      if (*(int *)(pgVar1 + 0x26f8) < 0) {
-        *(undefined4 *)(pgVar1 + 0x26f8) = 0;
+      if (*(int *)(dst + 0x26f8) < 0) {
+        *(undefined4 *)(dst + 0x26f8) = 0;
       }
-      if (iVar5 + -1000 < *(int *)(pgVar1 + 0x26f8) - *(int *)(pgVar1 + 0x2890)) {
-        *(int *)(pgVar1 + 0x26f8) = *(int *)(pgVar1 + 0x2890) + -1000 + iVar5;
+      if (iVar4 + -1000 < *(int *)(dst + 0x26f8) - *(int *)(dst + 0x2890)) {
+        *(int *)(dst + 0x26f8) = *(int *)(dst + 0x2890) + -1000 + iVar4;
       }
-      iVar6 = SV_GetArchivedClientInfo
-                        (iVar8,&local_2840,local_2844,local_2848,unaff_EDI,unaff_ESI,unaff_EBP);
-      if (iVar6 != 0) {
-        if (*(int *)(pgVar1 + 0x26f0) == -1) {
-          *(undefined4 *)((int)aiStack_1ba8 + uVar10) = 0x3ff;
+      iVar5 = SV_GetArchivedClientInfo
+                        (iVar7,&local_2840,local_2844,local_2848,unaff_EDI,unaff_ESI,unaff_EBP);
+      if (iVar5 != 0) {
+        if (*(int *)(dst + 0x26f0) == -1) {
+          *(undefined4 *)((int)aiStack_1ba8 + uVar9) = 0x3ff;
         }
         else {
-          *(int *)((int)aiStack_1ba8 + uVar10) = *(int *)(pgVar1 + 0x26f0);
+          *(int *)((int)aiStack_1ba8 + uVar9) = *(int *)(dst + 0x26f0);
         }
-        *(undefined4 *)((int)aiStack_1ba8 + uVar10 + 4) = *(undefined4 *)(pgVar1 + 0x26f4);
-        if ((*(uint *)(pgVar1 + 0x27b0) & 1 << (local_283c & 0x1f)) == 0) goto LAB_0055213b;
+        *(undefined4 *)((int)aiStack_1ba8 + uVar9 + 4) = *(undefined4 *)(dst + 0x26f4);
+        if ((*(uint *)(dst + 0x27b0) & 1 << (local_283c & 0x1f)) == 0) goto LAB_0055213b;
       }
-      if (*(int *)(pgVar1 + 0x26f8) < 1) goto LAB_00552097;
-      if (-1 < *(int *)(pgVar1 + 0x26f0)) {
-        iVar6 = *(int *)(pgVar1 + 0x26f4);
-        iVar7 = *(int *)param_1;
-        if ((-1 < iVar6) && (iVar6 < 0x20)) {
-          iVar7 = iVar6;
+      if (*(int *)(dst + 0x26f8) < 1) goto LAB_00552097;
+      if (-1 < *(int *)(dst + 0x26f0)) {
+        iVar5 = *(int *)(dst + 0x26f4);
+        iVar6 = *(int *)param_1;
+        if ((-1 < iVar5) && (iVar5 < 0x20)) {
+          iVar6 = iVar5;
         }
-        if (iVar8 != iVar7) {
-          *(int *)(pgVar1 + 0x28e0) = iVar7;
-          iVar8 = iVar7;
+        if (iVar7 != iVar6) {
+          *(int *)(dst + 0x28e0) = iVar6;
+          iVar7 = iVar6;
           goto LAB_00551fa5;
         }
       }
-      *(int *)(pgVar1 + 0x26f8) = *(int *)(pgVar1 + 0x26f8) + -0x32;
+      *(int *)(dst + 0x26f8) = *(int *)(dst + 0x26f8) + -0x32;
     } while( true );
   }
 LAB_005520b9:
-  if ((*(int *)(pgVar1 + 0x28e0) < 0) && ((~(*(uint *)(pgVar1 + 0x27b0) >> 4) & 1) == 0)) {
+  if ((*(int *)(dst + 0x28e0) < 0) && ((~(*(uint *)(dst + 0x27b0) >> 4) & 1) == 0)) {
     Cmd_FollowCycle_f(param_1,(int)unaff_EDI);
   }
-  if (-1 < *(int *)(pgVar1 + 0x28e0)) {
-    iVar8 = SV_GetArchivedClientInfo
-                      (*(int *)(pgVar1 + 0x28e0),&local_2840,local_2844,local_2848,unaff_EDI,
-                       unaff_ESI,unaff_EBP);
-    if ((iVar8 != 0) && ((*(uint *)(pgVar1 + 0x27b0) & 1 << (local_283c & 0x1f)) == 0)) {
+  if (-1 < *(int *)(dst + 0x28e0)) {
+    iVar7 = SV_GetArchivedClientInfo
+                      (*(int *)(dst + 0x28e0),&local_2840,local_2844,local_2848,unaff_EDI,unaff_ESI,
+                       unaff_EBP);
+    if ((iVar7 != 0) && ((*(uint *)(dst + 0x27b0) & 1 << (local_283c & 0x1f)) == 0)) {
 LAB_0055213b:
-      uVar2 = *(uint *)((int)auStack_2688 + uVar10);
-      uVar3 = *(uint *)(pgVar1 + 0xe0);
-      uVar4 = *(uint *)((int)auStack_2688 + uVar10);
-      memcpy((uchar *)pgVar1,local_2768 + uVar10,0x26e8);
-      HudElem_UpdateClient(pgVar1,*(int *)param_1,2);
-      if ((*(int *)(pgVar1 + 0x26f8) != 0) && (-1 < *(int *)(pgVar1 + 0x26f0))) {
+      uVar1 = *(uint *)((int)auStack_2688 + uVar9);
+      uVar2 = *(uint *)(dst + 0xe0);
+      uVar3 = *(uint *)((int)auStack_2688 + uVar9);
+      memcpy((uchar *)dst,local_2768 + uVar9,0x26e8);
+      HudElem_UpdateClient(dst,*(int *)param_1,2);
+      if ((*(int *)(dst + 0x26f8) != 0) && (-1 < *(int *)(dst + 0x26f0))) {
         FUN_0056c550();
       }
-      uVar10 = *(uint *)(pgVar1 + 0x14);
-      uVar9 = uVar10 & 0xfffffffb;
-      *(uint *)(pgVar1 + 0xe0) = (uVar2 ^ uVar3) & 0x100000 ^ uVar4;
-      *(uint *)(pgVar1 + 0x14) = uVar9 | 2;
-      if (*(int *)(pgVar1 + 0x26ec) < 0) {
-        *(uint *)(pgVar1 + 0x14) = uVar9 | 10;
-        if ((~(*(uint *)(pgVar1 + 0x27b0) >> 4) & 1) != 0) {
-          *(uint *)(pgVar1 + 0x14) = uVar9 | 0x1a;
+      uVar9 = *(uint *)(dst + 0x14);
+      uVar8 = uVar9 & 0xfffffffb;
+      *(uint *)(dst + 0xe0) = (uVar1 ^ uVar2) & 0x100000 ^ uVar3;
+      *(uint *)(dst + 0x14) = uVar8 | 2;
+      if (*(int *)(dst + 0x26ec) < 0) {
+        *(uint *)(dst + 0x14) = uVar8 | 10;
+        if ((~(*(uint *)(dst + 0x27b0) >> 4) & 1) != 0) {
+          *(uint *)(dst + 0x14) = uVar8 | 0x1a;
           return;
         }
-        *(uint *)(pgVar1 + 0x14) = uVar10 & 0xffffffeb | 10;
+        *(uint *)(dst + 0x14) = uVar9 & 0xffffffeb | 10;
         return;
       }
-      *(uint *)(pgVar1 + 0x14) = uVar10 & 0xffffffe3 | 2;
+      *(uint *)(dst + 0x14) = uVar9 & 0xffffffe3 | 2;
       return;
     }
   }
   StopFollowing(param_1);
-  uVar10 = *(uint *)(pgVar1 + 0x27b0);
-  *(uint *)(pgVar1 + 0x14) = *(uint *)(pgVar1 + 0x14) & 0xffffffef;
-  if (((~(uVar10 >> 2) & 1) == 0) && (((~(uVar10 >> 1) & 1) == 0 && ((~uVar10 & 1) == 0)))) {
-    *(uint *)(pgVar1 + 0x14) = *(uint *)(pgVar1 + 0x14) & 0xfffffff7;
+  uVar9 = *(uint *)(dst + 0x27b0);
+  *(uint *)(dst + 0x14) = *(uint *)(dst + 0x14) & 0xffffffef;
+  if (((~(uVar9 >> 2) & 1) == 0) && (((~(uVar9 >> 1) & 1) == 0 && ((~uVar9 & 1) == 0)))) {
+    *(uint *)(dst + 0x14) = *(uint *)(dst + 0x14) & 0xfffffff7;
     return;
   }
-  *(uint *)(pgVar1 + 0x14) = *(uint *)(pgVar1 + 0x14) | 8;
+  *(uint *)(dst + 0x14) = *(uint *)(dst + 0x14) | 8;
   return;
 LAB_00552097:
-  *(undefined4 *)(pgVar1 + 0x26ec) = 0xffffffff;
-  *(undefined4 *)(pgVar1 + 0x26f0) = 0xffffffff;
-  *(uint *)(pgVar1 + 0x26f4) = (uint)(byte)param_1[0xd5];
-  *(undefined4 *)(pgVar1 + 0x28e0) = 0xffffffff;
+  *(undefined4 *)(dst + 0x26ec) = 0xffffffff;
+  *(undefined4 *)(dst + 0x26f0) = 0xffffffff;
+  *(uint *)(dst + 0x26f4) = (uint)(byte)param_1[0xd5];
+  *(undefined4 *)(dst + 0x28e0) = 0xffffffff;
   goto LAB_005520b9;
 }
 

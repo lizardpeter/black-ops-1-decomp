@@ -2,18 +2,21 @@
 
 // 008634B0  RB_SunShadowMaps  (gfx_d3d/rb_sunshadow.cpp:124)
 
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
+
 void __cdecl RB_SunShadowMaps(GfxBackEndData *param_1,GfxViewInfo *param_2)
 
 {
   uint unaff_ESI;
   int iVar1;
   GfxViewInfo *unaff_EDI;
-  GfxCmdBuf *in_stack_fffffff8;
+  GfxCmdBuf cmdBuf;
+  GfxBackEndData *data;
   
   if (pixelCostMode == GFX_PIXEL_COST_MODE_OFF) {
     iVar1 = 0;
     do {
-      R_DrawSunShadowMap(unaff_EDI,unaff_ESI,in_stack_fffffff8);
+      R_DrawSunShadowMap(unaff_EDI,unaff_ESI,(GfxCmdBuf *)cmdBuf.device);
       iVar1 = iVar1 + 1;
     } while (iVar1 < 2);
   }

@@ -2,108 +2,108 @@
 
 // 009502E0  SND_RvDelayInit  (sound/snd_radverb.cpp:16)
 
-void __cdecl SND_RvDelayInit(snd_rv_state *param_1,uint param_2)
+void __cdecl SND_RvDelayInit(snd_rv_state *state,uint values)
 
 {
-  param_1->lateReflectionDelayBase[0][2] = 0;
-  param_1->lateReflectionDelayBase[0][3] = 0;
-  param_1->lateReflectionDelayBase[1][2] = 0;
-  param_1->lateReflectionDelayBase[1][3] = 0;
-  param_1->lateReflectionDelayBase[2][0] = 0;
-  param_1->lateReflectionDelayBase[2][1] = 0;
-  param_1->lateReflectionDelayBase[3][0] = 0;
-  param_1->lateReflectionDelayBase[3][1] = 0;
-  if (param_2 != 0) {
-    param_1->earlyReflectionDelayBase[0][0] = 0x24b;
-    param_1->earlyReflectionDelayBase[0][1] = 0x59f;
-    param_1->earlyReflectionDelayBase[0][2] = 0x55d;
-    param_1->earlyReflectionDelayBase[0][3] = 0x283;
-    param_1->earlyReflectionDelayBase[1][0] = 0x5d5;
-    param_1->earlyReflectionDelayBase[1][1] = 0x175;
-    param_1->earlyReflectionDelayBase[1][2] = 0x38f;
-    param_1->earlyReflectionDelayBase[1][3] = 0x443;
-    param_1->earlyReflectionDelayBase[2][0] = 0x4b1;
-    param_1->earlyReflectionDelayBase[2][1] = 0x305;
-    param_1->earlyReflectionDelayBase[2][2] = 0x209;
-    param_1->earlyReflectionDelayBase[2][3] = 0x665;
-    param_1->earlyReflectionDelayBase[3][0] = 0x3e5;
-    param_1->earlyReflectionDelayBase[3][1] = 0x511;
-    param_1->earlyReflectionDelayBase[3][2] = 0x62b;
-    param_1->earlyReflectionDelayBase[3][3] = 0x1b7;
-    param_1->lateReflectionDelayBase[0][0] = 0x125;
-    param_1->lateReflectionDelayBase[0][1] = 0x1df;
-    param_1->lateReflectionDelayBase[1][0] = 0x41b;
-    param_1->lateReflectionDelayBase[1][1] = 0x4d5;
-    param_1->lateReflectionDelayBase[2][2] = 0x491;
-    param_1->lateReflectionDelayBase[2][3] = 0x67f;
-    param_1->lateReflectionDelayBase[3][2] = 0x71;
-    param_1->lateReflectionDelayBase[3][3] = 0x25f;
+  state->lateReflectionDelayBase[0][2] = 0;
+  state->lateReflectionDelayBase[0][3] = 0;
+  state->lateReflectionDelayBase[1][2] = 0;
+  state->lateReflectionDelayBase[1][3] = 0;
+  state->lateReflectionDelayBase[2][0] = 0;
+  state->lateReflectionDelayBase[2][1] = 0;
+  state->lateReflectionDelayBase[3][0] = 0;
+  state->lateReflectionDelayBase[3][1] = 0;
+  if (values != 0) {
+    state->earlyReflectionDelayBase[0][0] = 0x24b;
+    state->earlyReflectionDelayBase[0][1] = 0x59f;
+    state->earlyReflectionDelayBase[0][2] = 0x55d;
+    state->earlyReflectionDelayBase[0][3] = 0x283;
+    state->earlyReflectionDelayBase[1][0] = 0x5d5;
+    state->earlyReflectionDelayBase[1][1] = 0x175;
+    state->earlyReflectionDelayBase[1][2] = 0x38f;
+    state->earlyReflectionDelayBase[1][3] = 0x443;
+    state->earlyReflectionDelayBase[2][0] = 0x4b1;
+    state->earlyReflectionDelayBase[2][1] = 0x305;
+    state->earlyReflectionDelayBase[2][2] = 0x209;
+    state->earlyReflectionDelayBase[2][3] = 0x665;
+    state->earlyReflectionDelayBase[3][0] = 0x3e5;
+    state->earlyReflectionDelayBase[3][1] = 0x511;
+    state->earlyReflectionDelayBase[3][2] = 0x62b;
+    state->earlyReflectionDelayBase[3][3] = 0x1b7;
+    state->lateReflectionDelayBase[0][0] = 0x125;
+    state->lateReflectionDelayBase[0][1] = 0x1df;
+    state->lateReflectionDelayBase[1][0] = 0x41b;
+    state->lateReflectionDelayBase[1][1] = 0x4d5;
+    state->lateReflectionDelayBase[2][2] = 0x491;
+    state->lateReflectionDelayBase[2][3] = 0x67f;
+    state->lateReflectionDelayBase[3][2] = 0x71;
+    state->lateReflectionDelayBase[3][3] = 0x25f;
     return;
   }
-  param_1->earlyReflectionDelayBase[0][0] = 0x3ad;
-  param_1->earlyReflectionDelayBase[0][1] = 0x95;
-  param_1->earlyReflectionDelayBase[0][2] = 0x2a1;
-  param_1->earlyReflectionDelayBase[0][3] = 0x115;
-  param_1->earlyReflectionDelayBase[1][0] = 0xd3;
-  param_1->earlyReflectionDelayBase[1][1] = 0x31d;
-  param_1->earlyReflectionDelayBase[1][2] = 0x1a5;
-  param_1->earlyReflectionDelayBase[1][3] = 0x241;
-  param_1->earlyReflectionDelayBase[2][0] = 0x2ef;
-  param_1->earlyReflectionDelayBase[2][1] = 0x15d;
-  param_1->earlyReflectionDelayBase[2][2] = 0x3f1;
-  param_1->earlyReflectionDelayBase[2][3] = 0xad;
-  param_1->earlyReflectionDelayBase[3][0] = 499;
-  param_1->earlyReflectionDelayBase[3][1] = 0x265;
-  param_1->earlyReflectionDelayBase[3][2] = 0xef;
-  param_1->earlyReflectionDelayBase[3][3] = 0x36d;
-  param_1->lateReflectionDelayBase[0][0] = 0x44f;
-  param_1->lateReflectionDelayBase[0][1] = 0x503;
-  param_1->lateReflectionDelayBase[1][0] = 0x59f;
-  param_1->lateReflectionDelayBase[1][1] = 0x653;
-  param_1->lateReflectionDelayBase[2][2] = 0x6df;
-  param_1->lateReflectionDelayBase[2][3] = 0x79d;
-  param_1->lateReflectionDelayBase[3][2] = 0x2ef;
-  param_1->lateReflectionDelayBase[3][3] = 0x3ad;
+  state->earlyReflectionDelayBase[0][0] = 0x3ad;
+  state->earlyReflectionDelayBase[0][1] = 0x95;
+  state->earlyReflectionDelayBase[0][2] = 0x2a1;
+  state->earlyReflectionDelayBase[0][3] = 0x115;
+  state->earlyReflectionDelayBase[1][0] = 0xd3;
+  state->earlyReflectionDelayBase[1][1] = 0x31d;
+  state->earlyReflectionDelayBase[1][2] = 0x1a5;
+  state->earlyReflectionDelayBase[1][3] = 0x241;
+  state->earlyReflectionDelayBase[2][0] = 0x2ef;
+  state->earlyReflectionDelayBase[2][1] = 0x15d;
+  state->earlyReflectionDelayBase[2][2] = 0x3f1;
+  state->earlyReflectionDelayBase[2][3] = 0xad;
+  state->earlyReflectionDelayBase[3][0] = 499;
+  state->earlyReflectionDelayBase[3][1] = 0x265;
+  state->earlyReflectionDelayBase[3][2] = 0xef;
+  state->earlyReflectionDelayBase[3][3] = 0x36d;
+  state->lateReflectionDelayBase[0][0] = 0x44f;
+  state->lateReflectionDelayBase[0][1] = 0x503;
+  state->lateReflectionDelayBase[1][0] = 0x59f;
+  state->lateReflectionDelayBase[1][1] = 0x653;
+  state->lateReflectionDelayBase[2][2] = 0x6df;
+  state->lateReflectionDelayBase[2][3] = 0x79d;
+  state->lateReflectionDelayBase[3][2] = 0x2ef;
+  state->lateReflectionDelayBase[3][3] = 0x3ad;
   return;
 }
 
 
 // 0094F8B0  SND_RvParamsDefault  (sound/snd_radverb.cpp:92)
 
-void __cdecl SND_RvParamsDefault(snd_rv_params *param_1)
+void __cdecl SND_RvParamsDefault(snd_rv_params *params)
 
 {
-  param_1->earlySize = 1.0;
-  param_1->lateSize = 1.0;
-  param_1->earlyGain = 1.0;
-  param_1->lateGain = 1.0;
-  param_1->smoothing = 0.5;
-  param_1->diffusion = 0.5;
-  param_1->dryGain = 0.0;
-  param_1->earlyTime = 0.8;
-  param_1->lateTime = 0.8;
-  param_1->earlyLpf = 0.0;
-  param_1->lateGainProx[0] = 1.0;
-  param_1->lateGainProx[1] = 1.0;
-  param_1->lateGainProx[2] = 1.0;
-  param_1->lateGainProx[3] = 1.0;
-  param_1->returnGain = 1.0;
-  param_1->lateLpf = 0.0;
-  param_1->inputLpf = 0.0;
-  param_1->dampLpf = 0.0;
-  param_1->wallReflect[0] = 0.5;
-  param_1->wallReflect[1] = 0.5;
-  param_1->wallReflect[2] = 0.5;
-  param_1->wallReflect[3] = 0.5;
-  param_1->frameRate = 48000.0;
-  param_1->delayMatrix = 0;
+  params->earlySize = 1.0;
+  params->lateSize = 1.0;
+  params->earlyGain = 1.0;
+  params->lateGain = 1.0;
+  params->smoothing = 0.5;
+  params->diffusion = 0.5;
+  params->dryGain = 0.0;
+  params->earlyTime = 0.8;
+  params->lateTime = 0.8;
+  params->earlyLpf = 0.0;
+  params->lateGainProx[0] = 1.0;
+  params->lateGainProx[1] = 1.0;
+  params->lateGainProx[2] = 1.0;
+  params->lateGainProx[3] = 1.0;
+  params->returnGain = 1.0;
+  params->lateLpf = 0.0;
+  params->inputLpf = 0.0;
+  params->dampLpf = 0.0;
+  params->wallReflect[0] = 0.5;
+  params->wallReflect[1] = 0.5;
+  params->wallReflect[2] = 0.5;
+  params->wallReflect[3] = 0.5;
+  params->frameRate = 48000.0;
+  params->delayMatrix = 0;
   return;
 }
 
 
 // 0094F960  SND_RvValidateRange  (sound/snd_radverb.cpp:121)
 
-float __cdecl SND_RvValidateRange(float param_1,float param_2,float param_3)
+float __cdecl SND_RvValidateRange(float value,float min,float max)
 
 {
   code *pcVar1;
@@ -112,7 +112,7 @@ float __cdecl SND_RvValidateRange(float param_1,float param_2,float param_3)
   float10 fVar4;
   float fVar5;
   
-  iVar3 = IS_NAN(param_1);
+  iVar3 = IS_NAN(value);
   if ((iVar3 != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0x7a,0,
                                "%s"), !bVar2)) {
@@ -120,28 +120,28 @@ float __cdecl SND_RvValidateRange(float param_1,float param_2,float param_3)
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  if ((param_1 < param_2) &&
+  if ((value < min) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0x7b,0,
                                "%s\n\t(value) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  if ((param_3 < param_1) &&
+  if ((max < value) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0x7c,0,
                                "%s\n\t(value) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar4 = (float10)(*pcVar1)();
     return (float)fVar4;
   }
-  fVar5 = I_fclamp(param_1,param_2,param_3);
+  fVar5 = I_fclamp(value,min,max);
   return fVar5;
 }
 
 
 // 0094FA30  SND_RvParamsValidate  (sound/snd_radverb.cpp:130)
 
-void __cdecl SND_RvParamsValidate(snd_rv_params *param_1)
+void __cdecl SND_RvParamsValidate(snd_rv_params *params)
 
 {
   code *pcVar1;
@@ -150,17 +150,17 @@ void __cdecl SND_RvParamsValidate(snd_rv_params *param_1)
   float *pfVar4;
   float fVar5;
   
-  fVar5 = SND_RvValidateRange(param_1->smoothing,0.0,1.0);
-  param_1->smoothing = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->earlyTime,0.0,1.0);
-  param_1->earlyTime = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->lateTime,0.0,1.0);
-  param_1->lateTime = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->earlyGain,0.0,4.0);
-  param_1->earlyGain = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->lateGain,0.0,4.0);
-  param_1->lateGain = fVar5;
-  pfVar4 = param_1->lateGainProx;
+  fVar5 = SND_RvValidateRange(params->smoothing,0.0,1.0);
+  params->smoothing = fVar5;
+  fVar5 = SND_RvValidateRange(params->earlyTime,0.0,1.0);
+  params->earlyTime = fVar5;
+  fVar5 = SND_RvValidateRange(params->lateTime,0.0,1.0);
+  params->lateTime = fVar5;
+  fVar5 = SND_RvValidateRange(params->earlyGain,0.0,4.0);
+  params->earlyGain = fVar5;
+  fVar5 = SND_RvValidateRange(params->lateGain,0.0,4.0);
+  params->lateGain = fVar5;
+  pfVar4 = params->lateGainProx;
   iVar3 = 4;
   do {
     fVar5 = SND_RvValidateRange(*pfVar4,0.0,4.0);
@@ -168,17 +168,17 @@ void __cdecl SND_RvParamsValidate(snd_rv_params *param_1)
     pfVar4 = pfVar4 + 1;
     iVar3 = iVar3 + -1;
   } while (iVar3 != 0);
-  fVar5 = SND_RvValidateRange(param_1->returnGain,0.0,4.0);
-  param_1->returnGain = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->earlyLpf,0.0,1.0);
-  param_1->earlyLpf = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->lateLpf,0.0,1.0);
-  param_1->lateLpf = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->inputLpf,0.0,1.0);
-  param_1->inputLpf = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->dampLpf,0.0,1.0);
-  param_1->dampLpf = fVar5;
-  pfVar4 = param_1->wallReflect;
+  fVar5 = SND_RvValidateRange(params->returnGain,0.0,4.0);
+  params->returnGain = fVar5;
+  fVar5 = SND_RvValidateRange(params->earlyLpf,0.0,1.0);
+  params->earlyLpf = fVar5;
+  fVar5 = SND_RvValidateRange(params->lateLpf,0.0,1.0);
+  params->lateLpf = fVar5;
+  fVar5 = SND_RvValidateRange(params->inputLpf,0.0,1.0);
+  params->inputLpf = fVar5;
+  fVar5 = SND_RvValidateRange(params->dampLpf,0.0,1.0);
+  params->dampLpf = fVar5;
+  pfVar4 = params->wallReflect;
   iVar3 = 4;
   do {
     fVar5 = SND_RvValidateRange(*pfVar4,0.0,1.0);
@@ -186,15 +186,15 @@ void __cdecl SND_RvParamsValidate(snd_rv_params *param_1)
     pfVar4 = pfVar4 + 1;
     iVar3 = iVar3 + -1;
   } while (iVar3 != 0);
-  fVar5 = SND_RvValidateRange(param_1->dryGain,0.0,1.0);
-  param_1->dryGain = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->earlySize,0.1,16.0);
-  param_1->earlySize = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->lateSize,0.1,16.0);
-  param_1->lateSize = fVar5;
-  fVar5 = SND_RvValidateRange(param_1->diffusion,0.0,1.0);
-  param_1->diffusion = fVar5;
-  iVar3 = IS_NAN(param_1->angle);
+  fVar5 = SND_RvValidateRange(params->dryGain,0.0,1.0);
+  params->dryGain = fVar5;
+  fVar5 = SND_RvValidateRange(params->earlySize,0.1,16.0);
+  params->earlySize = fVar5;
+  fVar5 = SND_RvValidateRange(params->lateSize,0.1,16.0);
+  params->lateSize = fVar5;
+  fVar5 = SND_RvValidateRange(params->diffusion,0.0,1.0);
+  params->diffusion = fVar5;
+  iVar3 = IS_NAN(params->angle);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0x99,0,"%s"
                             );
@@ -210,213 +210,213 @@ void __cdecl SND_RvParamsValidate(snd_rv_params *param_1)
 
 // 0094FC70  SND_RvFrameParam  (sound/snd_radverb.cpp:160)
 
-void __cdecl SND_RvFrameParam(snd_rv_params *param_1,snd_rv_state *param_2,uint param_3)
+void __cdecl SND_RvFrameParam(snd_rv_params *params,snd_rv_state *state,uint frameCount)
 
 {
   int iVar1;
   code *pcVar2;
   snd_rv_params *psVar3;
-  snd_rv_state *psVar4;
-  bool bVar5;
-  int iVar6;
-  float *pfVar7;
-  uint uVar8;
-  uint (*pauVar9) [4];
+  snd_rv_state *state_00;
+  bool bVar4;
+  int iVar5;
+  float *pfVar6;
+  uint uVar7;
+  uint (*pauVar8) [4];
+  float fVar9;
   float fVar10;
-  float fVar11;
-  float local_14 [2];
+  float coef [2];
   undefined8 local_c;
   
-  psVar4 = param_2;
-  psVar3 = param_1;
-  SND_RvParamsValidate(param_1);
-  (param_2->params).frameRate = param_1->frameRate;
-  if (param_1->frameRate <= 1000.0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xa5,0,"%s"
+  state_00 = state;
+  psVar3 = params;
+  SND_RvParamsValidate(params);
+  (state->params).frameRate = params->frameRate;
+  if (params->frameRate <= 1000.0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xa5,0,"%s"
                             );
-    if (!bVar5) {
+    if (!bVar4) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
-  if (100000.0 < param_1->frameRate || param_1->frameRate == 100000.0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xa6,0,"%s"
+  if (100000.0 < params->frameRate || params->frameRate == 100000.0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xa6,0,"%s"
                             );
-    if (!bVar5) {
+    if (!bVar4) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
-  fVar11 = (float)(int)param_3;
-  if ((int)param_3 < 0) {
-    fVar11 = fVar11 + 4.2949673e+09;
+  fVar10 = (float)(int)frameCount;
+  if ((int)frameCount < 0) {
+    fVar10 = fVar10 + 4.2949673e+09;
   }
-  fVar11 = (1.0 - param_1->smoothing) / ((param_1->frameRate / fVar11) * 0.1);
-  iVar6 = IS_NAN(fVar11);
-  if (iVar6 != 0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xaa,0,"%s"
+  fVar10 = (1.0 - params->smoothing) / ((params->frameRate / fVar10) * 0.1);
+  iVar5 = IS_NAN(fVar10);
+  if (iVar5 != 0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xaa,0,"%s"
                             );
-    if (!bVar5) {
+    if (!bVar4) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
-  fVar10 = I_flerp((param_2->params).earlyTime,param_1->earlyTime,fVar11);
-  (param_2->params).earlyTime = fVar10;
-  fVar10 = I_flerp((param_2->params).lateTime,param_1->lateTime,fVar11);
-  (param_2->params).lateTime = fVar10;
-  fVar10 = I_flerp((param_2->params).earlyGain,param_1->earlyGain,fVar11);
-  (param_2->params).earlyGain = fVar10;
-  fVar10 = I_flerp((param_2->params).lateGain,param_1->lateGain,fVar11);
-  (param_2->params).lateGain = fVar10;
-  (param_2->params).lateGainProx[0] = param_1->lateGainProx[0] * (param_2->params).lateGain;
-  (param_2->params).lateGainProx[1] = param_1->lateGainProx[1] * (param_2->params).lateGain;
-  (param_2->params).lateGainProx[2] = param_1->lateGainProx[2] * (param_2->params).lateGain;
-  (param_2->params).lateGainProx[3] = param_1->lateGainProx[3] * (param_2->params).lateGain;
-  fVar10 = I_flerp((param_2->params).returnGain,param_1->returnGain,fVar11);
-  (param_2->params).returnGain = fVar10;
-  fVar10 = I_flerp((param_2->params).earlyLpf,param_1->earlyLpf,fVar11);
-  (param_2->params).earlyLpf = fVar10;
-  fVar10 = I_flerp((param_2->params).lateLpf,param_1->lateLpf,fVar11);
-  (param_2->params).lateLpf = fVar10;
-  fVar10 = I_flerp((param_2->params).inputLpf,param_1->inputLpf,fVar11);
-  (param_2->params).inputLpf = fVar10;
-  fVar10 = I_flerp((param_2->params).dampLpf,param_1->dampLpf,fVar11);
-  (param_2->params).dampLpf = fVar10;
-  pfVar7 = (param_2->params).wallReflect;
-  param_3 = 4;
-  param_2 = (snd_rv_state *)param_1->wallReflect;
+  fVar9 = I_flerp((state->params).earlyTime,params->earlyTime,fVar10);
+  (state->params).earlyTime = fVar9;
+  fVar9 = I_flerp((state->params).lateTime,params->lateTime,fVar10);
+  (state->params).lateTime = fVar9;
+  fVar9 = I_flerp((state->params).earlyGain,params->earlyGain,fVar10);
+  (state->params).earlyGain = fVar9;
+  fVar9 = I_flerp((state->params).lateGain,params->lateGain,fVar10);
+  (state->params).lateGain = fVar9;
+  (state->params).lateGainProx[0] = params->lateGainProx[0] * (state->params).lateGain;
+  (state->params).lateGainProx[1] = params->lateGainProx[1] * (state->params).lateGain;
+  (state->params).lateGainProx[2] = params->lateGainProx[2] * (state->params).lateGain;
+  (state->params).lateGainProx[3] = params->lateGainProx[3] * (state->params).lateGain;
+  fVar9 = I_flerp((state->params).returnGain,params->returnGain,fVar10);
+  (state->params).returnGain = fVar9;
+  fVar9 = I_flerp((state->params).earlyLpf,params->earlyLpf,fVar10);
+  (state->params).earlyLpf = fVar9;
+  fVar9 = I_flerp((state->params).lateLpf,params->lateLpf,fVar10);
+  (state->params).lateLpf = fVar9;
+  fVar9 = I_flerp((state->params).inputLpf,params->inputLpf,fVar10);
+  (state->params).inputLpf = fVar9;
+  fVar9 = I_flerp((state->params).dampLpf,params->dampLpf,fVar10);
+  (state->params).dampLpf = fVar9;
+  pfVar6 = (state->params).wallReflect;
+  frameCount = 4;
+  state = (snd_rv_state *)params->wallReflect;
   do {
-    fVar10 = I_flerp(*pfVar7,param_2->delayLine[0],fVar11);
-    param_2 = (snd_rv_state *)(param_2->delayLine + 1);
-    *pfVar7 = fVar10;
-    pfVar7 = pfVar7 + 1;
-    param_3 = param_3 - 1;
-  } while (param_3 != 0);
-  fVar10 = I_flerp((psVar4->params).dryGain,param_1->dryGain,fVar11);
-  (psVar4->params).dryGain = fVar10;
-  fVar10 = I_flerp((psVar4->params).diffusion,param_1->diffusion,fVar11);
-  (psVar4->params).diffusion = fVar10;
-  fVar10 = I_flerp((psVar4->params).earlySize,param_1->earlySize,fVar11);
-  (psVar4->params).earlySize = fVar10;
-  fVar11 = I_flerp((psVar4->params).lateSize,param_1->lateSize,fVar11);
-  (psVar4->params).lateSize = fVar11;
-  uVar8 = param_1->delayMatrix;
-  (psVar4->params).delayMatrix = uVar8;
-  SND_RvDelayInit(psVar4,uVar8);
-  fVar11 = (psVar4->params).diffusion * 1.5707964;
-  fVar10 = cosf(fVar11);
-  fVar11 = sinf(fVar11);
-  iVar6 = IS_NAN(fVar10);
-  if (iVar6 != 0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xcd,0,"%s"
+    fVar9 = I_flerp(*pfVar6,state->delayLine[0],fVar10);
+    state = (snd_rv_state *)(state->delayLine + 1);
+    *pfVar6 = fVar9;
+    pfVar6 = pfVar6 + 1;
+    frameCount = frameCount - 1;
+  } while (frameCount != 0);
+  fVar9 = I_flerp((state_00->params).dryGain,params->dryGain,fVar10);
+  (state_00->params).dryGain = fVar9;
+  fVar9 = I_flerp((state_00->params).diffusion,params->diffusion,fVar10);
+  (state_00->params).diffusion = fVar9;
+  fVar9 = I_flerp((state_00->params).earlySize,params->earlySize,fVar10);
+  (state_00->params).earlySize = fVar9;
+  fVar10 = I_flerp((state_00->params).lateSize,params->lateSize,fVar10);
+  (state_00->params).lateSize = fVar10;
+  uVar7 = params->delayMatrix;
+  (state_00->params).delayMatrix = uVar7;
+  SND_RvDelayInit(state_00,uVar7);
+  fVar10 = (state_00->params).diffusion * 1.5707964;
+  fVar9 = cosf(fVar10);
+  fVar10 = sinf(fVar10);
+  iVar5 = IS_NAN(fVar9);
+  if (iVar5 != 0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xcd,0,"%s"
                             );
-    if (!bVar5) {
+    if (!bVar4) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
-  iVar6 = IS_NAN(fVar11);
-  if (iVar6 != 0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xce,0,"%s"
+  iVar5 = IS_NAN(fVar10);
+  if (iVar5 != 0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xce,0,"%s"
                             );
-    if (!bVar5) {
+    if (!bVar4) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
   }
-  psVar4->lateReflectionCoefs[0][0] = fVar10;
-  psVar4->lateReflectionCoefs[0][1] = fVar11;
-  psVar4->lateReflectionCoefs[1][0] = fVar11;
-  param_1 = (snd_rv_params *)(psVar4->params).wallReflect;
-  psVar4->lateReflectionCoefs[1][1] = -fVar10;
-  psVar4->lateReflectionCoefs[2][2] = -fVar10;
-  psVar4->lateReflectionCoefs[2][3] = fVar11;
-  psVar4->lateReflectionCoefs[3][2] = fVar11;
-  psVar4->lateReflectionCoefs[3][3] = fVar10;
-  uVar8 = 0;
+  state_00->lateReflectionCoefs[0][0] = fVar9;
+  state_00->lateReflectionCoefs[0][1] = fVar10;
+  state_00->lateReflectionCoefs[1][0] = fVar10;
+  params = (snd_rv_params *)(state_00->params).wallReflect;
+  state_00->lateReflectionCoefs[1][1] = -fVar9;
+  state_00->lateReflectionCoefs[2][2] = -fVar9;
+  state_00->lateReflectionCoefs[2][3] = fVar10;
+  state_00->lateReflectionCoefs[3][2] = fVar10;
+  state_00->lateReflectionCoefs[3][3] = fVar9;
+  uVar7 = 0;
   do {
-    fVar11 = (float)(int)uVar8;
-    if ((int)uVar8 < 0) {
-      fVar11 = fVar11 + 4.2949673e+09;
+    fVar10 = (float)(int)uVar7;
+    if ((int)uVar7 < 0) {
+      fVar10 = fVar10 + 4.2949673e+09;
     }
-    fVar11 = I_fmax(0.0,fVar11 * (param_1->frameRate - 1.0) * 0.35355338 + 0.70710677);
-    local_14[uVar8] = fVar11;
-    iVar6 = IS_NAN(fVar11);
-    if (iVar6 != 0) {
-      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xde,0,
+    fVar10 = I_fmax(0.0,fVar10 * (params->frameRate - 1.0) * 0.35355338 + 0.70710677);
+    coef[uVar7] = fVar10;
+    iVar5 = IS_NAN(fVar10);
+    if (iVar5 != 0) {
+      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xde,0,
                                "%s");
-      if (!bVar5) {
+      if (!bVar4) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
     }
-    param_1 = (snd_rv_params *)&param_1->smoothing;
-    uVar8 = uVar8 + 1;
-  } while (uVar8 < 4);
-  psVar4->earlyReflectionCoefs[0][0] = local_14[0];
-  psVar4->earlyReflectionCoefs[0][1] = local_c._4_4_;
-  psVar4->earlyReflectionCoefs[0][2] = (float)local_c;
-  psVar4->earlyReflectionCoefs[0][3] = local_14[1];
-  psVar4->earlyReflectionCoefs[1][0] = local_c._4_4_;
-  psVar4->earlyReflectionCoefs[1][1] = local_14[0];
-  psVar4->earlyReflectionCoefs[1][2] = local_14[1];
-  psVar4->earlyReflectionCoefs[1][3] = (float)local_c;
-  psVar4->earlyReflectionCoefs[2][0] = (float)local_c;
-  psVar4->earlyReflectionCoefs[2][1] = local_14[1];
-  psVar4->earlyReflectionCoefs[2][2] = local_14[0];
-  psVar4->earlyReflectionCoefs[2][3] = local_c._4_4_;
-  psVar4->earlyReflectionCoefs[3][0] = local_14[1];
-  psVar4->earlyReflectionCoefs[3][1] = (float)local_c;
-  psVar4->earlyReflectionCoefs[3][2] = local_c._4_4_;
-  psVar4->earlyReflectionCoefs[3][3] = local_14[0];
-  pauVar9 = psVar4->earlyReflectionDelays;
-  param_2 = (snd_rv_state *)&DAT_00000004;
+    params = (snd_rv_params *)&params->smoothing;
+    uVar7 = uVar7 + 1;
+  } while (uVar7 < 4);
+  state_00->earlyReflectionCoefs[0][0] = coef[0];
+  state_00->earlyReflectionCoefs[0][1] = local_c._4_4_;
+  state_00->earlyReflectionCoefs[0][2] = (float)local_c;
+  state_00->earlyReflectionCoefs[0][3] = coef[1];
+  state_00->earlyReflectionCoefs[1][0] = local_c._4_4_;
+  state_00->earlyReflectionCoefs[1][1] = coef[0];
+  state_00->earlyReflectionCoefs[1][2] = coef[1];
+  state_00->earlyReflectionCoefs[1][3] = (float)local_c;
+  state_00->earlyReflectionCoefs[2][0] = (float)local_c;
+  state_00->earlyReflectionCoefs[2][1] = coef[1];
+  state_00->earlyReflectionCoefs[2][2] = coef[0];
+  state_00->earlyReflectionCoefs[2][3] = local_c._4_4_;
+  state_00->earlyReflectionCoefs[3][0] = coef[1];
+  state_00->earlyReflectionCoefs[3][1] = (float)local_c;
+  state_00->earlyReflectionCoefs[3][2] = local_c._4_4_;
+  state_00->earlyReflectionCoefs[3][3] = coef[0];
+  pauVar8 = state_00->earlyReflectionDelays;
+  state = (snd_rv_state *)&DAT_00000004;
   do {
-    iVar6 = 4;
+    iVar5 = 4;
     do {
-      fVar11 = (float)*(int *)((int)(pauVar9 + 0x16) + 4);
-      if (*(int *)((int)(pauVar9 + 0x16) + 4) < 0) {
-        fVar11 = fVar11 + 4.2949673e+09;
+      fVar10 = (float)*(int *)((int)(pauVar8 + 0x16) + 4);
+      if (*(int *)((int)(pauVar8 + 0x16) + 4) < 0) {
+        fVar10 = fVar10 + 4.2949673e+09;
       }
-      iVar1 = *(int *)((int)(pauVar9 + 0x1a) + 4);
-      local_c._0_4_ = (float)(longlong)ROUND(fVar11 * psVar3->earlySize);
-      (*pauVar9)[0] = (uint)(float)local_c;
-      fVar11 = (float)*(int *)((int)(pauVar9 + 0x1a) + 4);
+      iVar1 = *(int *)((int)(pauVar8 + 0x1a) + 4);
+      local_c._0_4_ = (float)(longlong)ROUND(fVar10 * psVar3->earlySize);
+      (*pauVar8)[0] = (uint)(float)local_c;
+      fVar10 = (float)*(int *)((int)(pauVar8 + 0x1a) + 4);
       if (iVar1 < 0) {
-        fVar11 = fVar11 + 4.2949673e+09;
+        fVar10 = fVar10 + 4.2949673e+09;
       }
-      local_c = (longlong)ROUND(fVar11 * psVar3->lateSize);
-      pauVar9[8][0] = (uint)(float)local_c;
-      if (0x7fff < (*pauVar9)[0]) {
-        bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xfc,0,
+      local_c = (longlong)ROUND(fVar10 * psVar3->lateSize);
+      pauVar8[8][0] = (uint)(float)local_c;
+      if (0x7fff < (*pauVar8)[0]) {
+        bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xfc,0,
                                  "%s");
-        if (!bVar5) {
+        if (!bVar4) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
       }
-      if (0x7fff < pauVar9[8][0]) {
-        bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xfd,0,
+      if (0x7fff < pauVar8[8][0]) {
+        bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_radverb.cpp",0xfd,0,
                                  "%s");
-        if (!bVar5) {
+        if (!bVar4) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
       }
-      pauVar9 = (uint (*) [4])(*pauVar9 + 1);
-      iVar6 = iVar6 + -1;
-    } while (iVar6 != 0);
-    param_2 = (snd_rv_state *)&param_2[-1].field_0x8027f;
-  } while (param_2 != (snd_rv_state *)0x0);
+      pauVar8 = (uint (*) [4])(*pauVar8 + 1);
+      iVar5 = iVar5 + -1;
+    } while (iVar5 != 0);
+    state = (snd_rv_state *)&state[-1].field_0x8027f;
+  } while (state != (snd_rv_state *)0x0);
   return;
 }
 
@@ -424,9 +424,8 @@ void __cdecl SND_RvFrameParam(snd_rv_params *param_1,snd_rv_state *param_2,uint 
 // 00950510  SND_RvFrame  (sound/snd_radverb.cpp:281)
 
 void __cdecl
-SND_RvFrame(snd_rv_params *param_1,snd_rv_state *param_2,uint param_3,float *param_4,float *param_5,
-           float *param_6,float *param_7,float *param_8,float *param_9,float *param_10,
-           float *param_11)
+SND_RvFrame(snd_rv_params *params,snd_rv_state *state,uint count,float *inLF,float *inRF,float *inLS
+           ,float *inRS,float *outLF,float *outRF,float *outLS,float *outRS)
 
 {
   float fVar1;
@@ -452,10 +451,10 @@ SND_RvFrame(snd_rv_params *param_1,snd_rv_state *param_2,uint param_3,float *par
   float fVar21;
   float fVar22;
   
-  uVar2 = param_3;
-  SND_RvFrameParam(param_1,param_2,param_3);
-  pfVar8 = param_2->earlyLpfState;
-  param_3 = 4;
+  uVar2 = count;
+  SND_RvFrameParam(params,state,count);
+  pfVar8 = state->earlyLpfState;
+  count = 4;
   do {
     iVar7 = IS_NAN(pfVar8[-4]);
     if (iVar7 != 0) {
@@ -498,30 +497,30 @@ SND_RvFrame(snd_rv_params *param_1,snd_rv_state *param_2,uint param_3,float *par
       }
     }
     pfVar8 = pfVar8 + 1;
-    param_3 = param_3 - 1;
-  } while (param_3 != 0);
+    count = count - 1;
+  } while (count != 0);
   if (uVar2 != 0) {
-    iVar7 = (int)param_6 - (int)param_10;
-    iVar9 = (int)param_5 - (int)param_10;
-    iVar10 = (int)param_9 - (int)param_10;
-    iVar11 = (int)param_7 - (int)param_10;
-    iVar12 = (int)param_11 - (int)param_10;
-    iVar13 = (int)param_4 - (int)param_10;
-    iVar14 = (int)param_8 - (int)param_10;
-    param_5 = (float *)uVar2;
-    pfVar8 = param_10;
+    iVar7 = (int)inLS - (int)outLS;
+    iVar9 = (int)inRF - (int)outLS;
+    iVar10 = (int)outRF - (int)outLS;
+    iVar11 = (int)inRS - (int)outLS;
+    iVar12 = (int)outRS - (int)outLS;
+    iVar13 = (int)inLF - (int)outLS;
+    iVar14 = (int)outLF - (int)outLS;
+    inRF = (float *)uVar2;
+    pfVar8 = outLS;
     do {
-      param_10 = param_2->dampLpfState;
-      pafVar15 = param_2->earlyReflectionCoefs;
-      param_6 = (float *)&DAT_00000004;
+      outLS = state->dampLpfState;
+      pafVar15 = state->earlyReflectionCoefs;
+      inLS = (float *)&DAT_00000004;
       do {
-        uVar2 = param_2->delayIndex;
+        uVar2 = state->delayIndex;
         fVar21 = 0.0;
         fVar22 = 0.0;
         fVar19 = 0.0;
         fVar20 = 0.0;
-        param_3 = 2;
-        psVar16 = param_2;
+        count = 2;
+        psVar16 = state;
         do {
           iVar17 = uVar2 - (*(uint (*) [4])(pafVar15 + 4))[0];
           if (iVar17 < 0) {
@@ -546,83 +545,74 @@ SND_RvFrame(snd_rv_params *param_1,snd_rv_state *param_2,uint param_3,float *par
           pafVar5 = pafVar15 + 8;
           pafVar15 = (float (*) [4])(*pafVar15 + 2);
           psVar16 = (snd_rv_state *)(psVar16->delayLine + 0x10000);
-          param_3 = param_3 - 1;
+          count = count - 1;
           fVar19 = pfVar4[iVar18 + 0x8000] * (*pafVar5)[1] + fVar19;
-        } while (param_3 != 0);
-        fVar1 = (param_2->params).earlyLpf;
-        param_10[-8] = (1.0 - fVar1) * (param_2->params).earlyTime * (fVar20 + fVar22) +
-                       fVar1 * param_10[-8];
-        fVar20 = (param_2->params).dampLpf;
-        *param_10 = (1.0 - fVar20) * (param_2->params).lateTime * (fVar19 + fVar21) +
-                    fVar20 * *param_10;
-        param_10 = param_10 + 1;
-        param_6 = (float *)((int)param_6 + -1);
-      } while (param_6 != (float *)0x0);
+        } while (count != 0);
+        fVar1 = (state->params).earlyLpf;
+        outLS[-8] = (1.0 - fVar1) * (state->params).earlyTime * (fVar20 + fVar22) +
+                    fVar1 * outLS[-8];
+        fVar20 = (state->params).dampLpf;
+        *outLS = (1.0 - fVar20) * (state->params).lateTime * (fVar19 + fVar21) + fVar20 * *outLS;
+        outLS = outLS + 1;
+        inLS = (float *)((int)inLS + -1);
+      } while (inLS != (float *)0x0);
       *(float *)(iVar14 + (int)pfVar8) =
-           (param_2->dampLpfState[1] + param_2->dampLpfState[0]) * 0.70710677;
+           (state->dampLpfState[1] + state->dampLpfState[0]) * 0.70710677;
       *(float *)(iVar12 + (int)pfVar8) =
-           (param_2->dampLpfState[0] - param_2->dampLpfState[1]) * 0.70710677;
+           (state->dampLpfState[0] - state->dampLpfState[1]) * 0.70710677;
       *(float *)(iVar10 + (int)pfVar8) =
-           (param_2->dampLpfState[3] - param_2->dampLpfState[2]) * 0.70710677;
-      *pfVar8 = (param_2->dampLpfState[3] + param_2->dampLpfState[2]) * 0.70710677;
-      fVar19 = (param_2->params).inputLpf;
-      fVar19 = (1.0 - fVar19) * *(float *)(iVar7 + (int)pfVar8) + fVar19 * param_2->inputLpfState[0]
-      ;
-      param_2->inputLpfState[0] = fVar19;
-      param_2->delayLine[param_2->delayIndex] = fVar19 + *pfVar8;
-      fVar19 = (param_2->params).lateLpf;
-      fVar19 = (1.0 - fVar19) * *pfVar8 + fVar19 * param_2->lateLpfState[0];
-      param_2->lateLpfState[0] = fVar19;
-      *pfVar8 = (param_2->inputLpfState[0] * (param_2->params).dryGain +
-                 fVar19 * (param_2->params).lateGainProx[0] +
-                (param_2->params).earlyGain * param_2->earlyLpfState[0]) *
-                (param_2->params).returnGain;
-      fVar19 = (param_2->params).inputLpf;
-      fVar19 = (1.0 - fVar19) * *(float *)(iVar9 + (int)pfVar8) + fVar19 * param_2->inputLpfState[1]
-      ;
-      param_2->inputLpfState[1] = fVar19;
-      param_2->delayLine[param_2->delayIndex + 0x8000] = fVar19 + *(float *)(iVar10 + (int)pfVar8);
-      fVar19 = (param_2->params).lateLpf;
-      fVar20 = (1.0 - fVar19) * *(float *)(iVar10 + (int)pfVar8) + fVar19 * param_2->lateLpfState[1]
-      ;
-      fVar19 = (param_2->params).lateGainProx[1];
-      param_2->lateLpfState[1] = fVar20;
+           (state->dampLpfState[3] - state->dampLpfState[2]) * 0.70710677;
+      *pfVar8 = (state->dampLpfState[3] + state->dampLpfState[2]) * 0.70710677;
+      fVar19 = (state->params).inputLpf;
+      fVar19 = (1.0 - fVar19) * *(float *)(iVar7 + (int)pfVar8) + fVar19 * state->inputLpfState[0];
+      state->inputLpfState[0] = fVar19;
+      state->delayLine[state->delayIndex] = fVar19 + *pfVar8;
+      fVar19 = (state->params).lateLpf;
+      fVar19 = (1.0 - fVar19) * *pfVar8 + fVar19 * state->lateLpfState[0];
+      state->lateLpfState[0] = fVar19;
+      *pfVar8 = (state->inputLpfState[0] * (state->params).dryGain +
+                 fVar19 * (state->params).lateGainProx[0] +
+                (state->params).earlyGain * state->earlyLpfState[0]) * (state->params).returnGain;
+      fVar19 = (state->params).inputLpf;
+      fVar19 = (1.0 - fVar19) * *(float *)(iVar9 + (int)pfVar8) + fVar19 * state->inputLpfState[1];
+      state->inputLpfState[1] = fVar19;
+      state->delayLine[state->delayIndex + 0x8000] = fVar19 + *(float *)(iVar10 + (int)pfVar8);
+      fVar19 = (state->params).lateLpf;
+      fVar20 = (1.0 - fVar19) * *(float *)(iVar10 + (int)pfVar8) + fVar19 * state->lateLpfState[1];
+      fVar19 = (state->params).lateGainProx[1];
+      state->lateLpfState[1] = fVar20;
       *(float *)(iVar10 + (int)pfVar8) =
-           (fVar19 * fVar20 + param_2->inputLpfState[1] * (param_2->params).dryGain +
-           (param_2->params).earlyGain * param_2->earlyLpfState[1]) * (param_2->params).returnGain;
-      fVar19 = (param_2->params).inputLpf;
-      fVar19 = (1.0 - fVar19) * *(float *)(iVar11 + (int)pfVar8) +
-               fVar19 * param_2->inputLpfState[2];
-      param_2->inputLpfState[2] = fVar19;
-      param_2->delayLine[param_2->delayIndex + 0x10000] = fVar19 + *(float *)(iVar12 + (int)pfVar8);
-      fVar19 = (param_2->params).lateLpf;
-      fVar19 = (1.0 - fVar19) * *(float *)(iVar12 + (int)pfVar8) + fVar19 * param_2->lateLpfState[2]
-      ;
-      param_2->lateLpfState[2] = fVar19;
+           (fVar19 * fVar20 + state->inputLpfState[1] * (state->params).dryGain +
+           (state->params).earlyGain * state->earlyLpfState[1]) * (state->params).returnGain;
+      fVar19 = (state->params).inputLpf;
+      fVar19 = (1.0 - fVar19) * *(float *)(iVar11 + (int)pfVar8) + fVar19 * state->inputLpfState[2];
+      state->inputLpfState[2] = fVar19;
+      state->delayLine[state->delayIndex + 0x10000] = fVar19 + *(float *)(iVar12 + (int)pfVar8);
+      fVar19 = (state->params).lateLpf;
+      fVar19 = (1.0 - fVar19) * *(float *)(iVar12 + (int)pfVar8) + fVar19 * state->lateLpfState[2];
+      state->lateLpfState[2] = fVar19;
       *(float *)(iVar12 + (int)pfVar8) =
-           (param_2->inputLpfState[2] * (param_2->params).dryGain +
-            param_2->earlyLpfState[2] * (param_2->params).earlyGain +
-           fVar19 * (param_2->params).lateGainProx[2]) * (param_2->params).returnGain;
-      fVar19 = (param_2->params).inputLpf;
-      fVar19 = (1.0 - fVar19) * *(float *)(iVar13 + (int)pfVar8) +
-               fVar19 * param_2->inputLpfState[3];
-      param_2->inputLpfState[3] = fVar19;
-      param_2->delayLine[param_2->delayIndex + 0x18000] = fVar19 + *(float *)(iVar14 + (int)pfVar8);
-      fVar19 = (param_2->params).lateLpf;
-      fVar20 = (1.0 - fVar19) * *(float *)(iVar14 + (int)pfVar8) + fVar19 * param_2->lateLpfState[3]
-      ;
-      fVar19 = (param_2->params).lateGainProx[3];
-      param_2->lateLpfState[3] = fVar20;
+           (state->inputLpfState[2] * (state->params).dryGain +
+            state->earlyLpfState[2] * (state->params).earlyGain +
+           fVar19 * (state->params).lateGainProx[2]) * (state->params).returnGain;
+      fVar19 = (state->params).inputLpf;
+      fVar19 = (1.0 - fVar19) * *(float *)(iVar13 + (int)pfVar8) + fVar19 * state->inputLpfState[3];
+      state->inputLpfState[3] = fVar19;
+      state->delayLine[state->delayIndex + 0x18000] = fVar19 + *(float *)(iVar14 + (int)pfVar8);
+      fVar19 = (state->params).lateLpf;
+      fVar20 = (1.0 - fVar19) * *(float *)(iVar14 + (int)pfVar8) + fVar19 * state->lateLpfState[3];
+      fVar19 = (state->params).lateGainProx[3];
+      state->lateLpfState[3] = fVar20;
       *(float *)(iVar14 + (int)pfVar8) =
-           (fVar19 * fVar20 + (param_2->params).earlyGain * param_2->earlyLpfState[3] +
-           param_2->inputLpfState[3] * (param_2->params).dryGain) * (param_2->params).returnGain;
-      param_2->delayIndex = param_2->delayIndex + 1;
-      if (0x7fff < param_2->delayIndex) {
-        param_2->delayIndex = 0;
+           (fVar19 * fVar20 + (state->params).earlyGain * state->earlyLpfState[3] +
+           state->inputLpfState[3] * (state->params).dryGain) * (state->params).returnGain;
+      state->delayIndex = state->delayIndex + 1;
+      if (0x7fff < state->delayIndex) {
+        state->delayIndex = 0;
       }
       pfVar8 = pfVar8 + 1;
-      param_5 = (float *)((int)param_5 + -1);
-    } while (param_5 != (float *)0x0);
+      inRF = (float *)((int)inRF + -1);
+    } while (inRF != (float *)0x0);
   }
   return;
 }
@@ -630,9 +620,9 @@ SND_RvFrame(snd_rv_params *param_1,snd_rv_state *param_2,uint param_3,float *par
 
 // 009502C0  I_flerp  (universal/com_math.h:532)
 
-float __cdecl I_flerp(float param_1,float param_2,float param_3)
+float __cdecl I_flerp(float a,float b,float w)
 
 {
-  return param_2 * param_3 + (1.0 - param_3) * param_1;
+  return b * w + (1.0 - w) * a;
 }
 

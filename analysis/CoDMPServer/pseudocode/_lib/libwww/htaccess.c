@@ -36,44 +36,44 @@ undefined4 _HTLoadToFile(int param_1,int param_2,uchar *param_3)
 {
   int iVar1;
   code *pcVar2;
-  _iobuf *p_Var3;
+  _iobuf *stream;
   undefined4 extraout_EAX;
-  char *pcVar4;
-  undefined4 uVar5;
+  char *pcVar3;
+  undefined4 uVar4;
   
   if (((param_1 == 0) || (param_3 == (uchar *)0x0)) || (param_2 == 0)) {
-    uVar5 = 0;
+    uVar4 = 0;
   }
   else {
-    uVar5 = 0;
+    uVar4 = 0;
     iVar1 = _access((char *)param_3,0);
     if (((iVar1 != -1) && (pcVar2 = (code *)_HTAlert_find(0x20000), pcVar2 != (code *)0x0)) &&
-       (iVar1 = (*pcVar2)(param_2,0x20000,9,0,0,0,pcVar2,uVar5), iVar1 != 1)) {
+       (iVar1 = (*pcVar2)(param_2,0x20000,9,0,0,0,pcVar2,uVar4), iVar1 != 1)) {
       return 0;
     }
-    p_Var3 = fopen((char *)param_3,"wb");
-    if (p_Var3 == (_iobuf *)0x0) {
-      pcVar4 = "HTLoadToFile";
+    stream = fopen((char *)param_3,"wb");
+    if (stream == (_iobuf *)0x0) {
+      pcVar3 = "HTLoadToFile";
       strlen(param_3);
-      _HTRequest_addError(param_2,1,0,0x35,param_3,extraout_EAX,pcVar4);
-      uVar5 = 0;
+      _HTRequest_addError(param_2,1,0,0x35,param_3,extraout_EAX,pcVar3);
+      uVar4 = 0;
     }
     else {
-      uVar5 = _HTAtom_for("*/*");
-      _HTRequest_setOutputFormat(param_2,uVar5);
-      uVar5 = _HTFWriter_new(param_2,p_Var3,0);
-      _HTRequest_setOutputStream(param_2,uVar5);
+      uVar4 = _HTAtom_for("*/*");
+      _HTRequest_setOutputFormat(param_2,uVar4);
+      uVar4 = _HTFWriter_new(param_2,stream,0);
+      _HTRequest_setOutputStream(param_2,uVar4);
       iVar1 = _HTLoadAbsolute(param_1,param_2);
       if (iVar1 == 0) {
-        fclose(p_Var3);
-        uVar5 = 0;
+        fclose(stream);
+        uVar4 = 0;
       }
       else {
-        uVar5 = 1;
+        uVar4 = 1;
       }
     }
   }
-  return uVar5;
+  return uVar4;
 }
 
 

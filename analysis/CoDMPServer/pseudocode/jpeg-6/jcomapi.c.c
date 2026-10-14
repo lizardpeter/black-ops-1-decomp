@@ -2,21 +2,21 @@
 
 // 00B57410  jpeg_abort  (jpeg-6/jcomapi.c:30)
 
-void __cdecl jpeg_abort(jpeg_common_struct *param_1)
+void __cdecl jpeg_abort(jpeg_common_struct *cinfo)
 
 {
-  int local_8;
+  int pool;
   
-  if (param_1->mem != (jpeg_memory_mgr *)0x0) {
-    for (local_8 = 1; 0 < local_8; local_8 = local_8 + -1) {
-      (*param_1->mem->free_pool)(param_1,local_8);
+  if (cinfo->mem != (jpeg_memory_mgr *)0x0) {
+    for (pool = 1; 0 < pool; pool = pool + -1) {
+      (*cinfo->mem->free_pool)(cinfo,pool);
     }
-    if (param_1->is_decompressor == '\0') {
-      param_1->global_state = 100;
+    if (cinfo->is_decompressor == '\0') {
+      cinfo->global_state = 100;
     }
     else {
-      param_1->global_state = 200;
-      param_1[8].global_state = 0;
+      cinfo->global_state = 200;
+      cinfo[8].global_state = 0;
     }
   }
   return;
@@ -25,26 +25,27 @@ void __cdecl jpeg_abort(jpeg_common_struct *param_1)
 
 // 00B57490  jpeg_destroy  (jpeg-6/jcomapi.c:70)
 
-void __cdecl jpeg_destroy(jpeg_common_struct *param_1)
+void __cdecl jpeg_destroy(jpeg_common_struct *cinfo)
 
 {
-  if (param_1->mem != (jpeg_memory_mgr *)0x0) {
-    (*param_1->mem->self_destruct)(param_1);
+  if (cinfo->mem != (jpeg_memory_mgr *)0x0) {
+    (*cinfo->mem->self_destruct)(cinfo);
   }
-  param_1->mem = (jpeg_memory_mgr *)0x0;
-  param_1->global_state = 0;
+  cinfo->mem = (jpeg_memory_mgr *)0x0;
+  cinfo->global_state = 0;
   return;
 }
 
 
 // 00B574D0  jpeg_alloc_quant_table  (jpeg-6/jcomapi.c:87)
 
-JQUANT_TBL * __cdecl jpeg_alloc_quant_table(jpeg_common_struct *param_1)
+JQUANT_TBL * __cdecl jpeg_alloc_quant_table(jpeg_common_struct *cinfo)
 
 {
   JQUANT_TBL *pJVar1;
+  JQUANT_TBL *tbl;
   
-  pJVar1 = (*param_1->mem->alloc_small)(param_1,0,0x82);
+  pJVar1 = (*cinfo->mem->alloc_small)(cinfo,0,0x82);
   pJVar1->sent_table = '\0';
   return pJVar1;
 }
@@ -52,12 +53,13 @@ JQUANT_TBL * __cdecl jpeg_alloc_quant_table(jpeg_common_struct *param_1)
 
 // 00B57500  jpeg_alloc_huff_table  (jpeg-6/jcomapi.c:99)
 
-JHUFF_TBL * __cdecl jpeg_alloc_huff_table(jpeg_common_struct *param_1)
+JHUFF_TBL * __cdecl jpeg_alloc_huff_table(jpeg_common_struct *cinfo)
 
 {
   JHUFF_TBL *pJVar1;
+  JHUFF_TBL *tbl;
   
-  pJVar1 = (*param_1->mem->alloc_small)(param_1,0,0x112);
+  pJVar1 = (*cinfo->mem->alloc_small)(cinfo,0,0x112);
   pJVar1->sent_table = '\0';
   return pJVar1;
 }

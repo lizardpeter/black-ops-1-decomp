@@ -61,48 +61,48 @@ void __cdecl _mtdeletelocks(void)
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _mtinitlocknum(int param_1)
+int __cdecl _mtinitlocknum(int locknum)
 
 {
   <unnamed_tag_00006684> *p<Var1;
-  _RTL_CRITICAL_SECTION *p_Var2;
-  int *piVar3;
-  int iVar4;
-  int local_20;
+  _RTL_CRITICAL_SECTION *lpCriticalSection;
+  int *piVar2;
+  int iVar3;
+  int retval;
   
-  iVar4 = 1;
-  local_20 = 1;
+  iVar3 = 1;
+  retval = 1;
   if (_crtheap != (void *)0x0) {
-    p<Var1 = _locktable + param_1;
+    p<Var1 = _locktable + locknum;
     if (p<Var1->lock == (_RTL_CRITICAL_SECTION *)0x0) {
-      p_Var2 = _malloc_crt(0x18);
-      if (p_Var2 == (_RTL_CRITICAL_SECTION *)0x0) {
-        piVar3 = _errno();
-        *piVar3 = 0xc;
-        iVar4 = 0;
+      lpCriticalSection = _malloc_crt(0x18);
+      if (lpCriticalSection == (_RTL_CRITICAL_SECTION *)0x0) {
+        piVar2 = _errno();
+        *piVar2 = 0xc;
+        iVar3 = 0;
       }
       else {
         _lock(10);
         if (p<Var1->lock == (_RTL_CRITICAL_SECTION *)0x0) {
-          iVar4 = __crtInitCritSecAndSpinCount(p_Var2,4000);
-          if (iVar4 == 0) {
-            free(p_Var2);
-            piVar3 = _errno();
-            *piVar3 = 0xc;
-            local_20 = 0;
+          iVar3 = __crtInitCritSecAndSpinCount(lpCriticalSection,4000);
+          if (iVar3 == 0) {
+            free(lpCriticalSection);
+            piVar2 = _errno();
+            *piVar2 = 0xc;
+            retval = 0;
           }
           else {
-            p<Var1->lock = p_Var2;
+            p<Var1->lock = lpCriticalSection;
           }
         }
         else {
-          free(p_Var2);
+          free(lpCriticalSection);
         }
         FUN_00968bd5();
-        iVar4 = local_20;
+        iVar3 = retval;
       }
     }
-    return iVar4;
+    return iVar3;
   }
   _FF_MSGBANNER();
   _NMSG_WRITE(0x1e);
@@ -113,28 +113,28 @@ int __cdecl _mtinitlocknum(int param_1)
 
 // 00968BDE  _lock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c:333)
 
-void __cdecl _lock(int param_1)
+void __cdecl _lock(int locknum)
 
 {
   int iVar1;
   
-  if (_locktable[param_1].lock == (_RTL_CRITICAL_SECTION *)0x0) {
-    iVar1 = _mtinitlocknum(param_1);
+  if (_locktable[locknum].lock == (_RTL_CRITICAL_SECTION *)0x0) {
+    iVar1 = _mtinitlocknum(locknum);
     if (iVar1 == 0) {
       _amsg_exit(0x11);
     }
   }
-  EnterCriticalSection((LPCRITICAL_SECTION)_locktable[param_1].lock);
+  EnterCriticalSection((LPCRITICAL_SECTION)_locktable[locknum].lock);
   return;
 }
 
 
 // 00968B04  _unlock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mlock.c:371)
 
-void __cdecl _unlock(int param_1)
+void __cdecl _unlock(int locknum)
 
 {
-  LeaveCriticalSection((LPCRITICAL_SECTION)_locktable[param_1].lock);
+  LeaveCriticalSection((LPCRITICAL_SECTION)_locktable[locknum].lock);
   return;
 }
 

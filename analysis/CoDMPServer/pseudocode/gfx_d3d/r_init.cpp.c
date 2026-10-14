@@ -5,17 +5,18 @@
 IDirect3DQuery9 * __cdecl RB_HW_AllocOcclusionQuery(void)
 
 {
-  int iVar1;
-  IDirect3DQuery9 *local_8;
+  int hr_00;
+  HRESULT hr;
+  IDirect3DQuery9 *query;
   
   R_AssertDXDeviceOwnership();
-  iVar1 = (**(code **)((int)*dx.device + 0x1d8))(dx.device,9,&local_8);
-  if (iVar1 < 0) {
-    R_ErrorDescription(iVar1);
+  hr_00 = (**(code **)((int)*dx.device + 0x1d8))(dx.device,9,&query);
+  if (hr_00 < 0) {
+    R_ErrorDescription(hr_00);
     Com_Printf(8,"Occlusion query creation failed: %s (0x%08x)\n");
-    local_8 = (IDirect3DQuery9 *)0x0;
+    query = (IDirect3DQuery9 *)0x0;
   }
-  return local_8;
+  return query;
 }
 
 
@@ -34,7 +35,7 @@ void __cdecl TRACK_r_init(void)
 
 // 00A4E680  R_FatalInitError  (gfx_d3d/r_init.cpp:229)
 
-void __cdecl R_FatalInitError(char *param_1)
+void __cdecl R_FatalInitError(char *msg)
 
 {
   Com_Printf(8,
@@ -54,13 +55,13 @@ void __cdecl R_FatalInitError(char *param_1)
 
 // 00A4E6D0  R_FatalLockError  (gfx_d3d/r_init.cpp:249)
 
-void __cdecl R_FatalLockError(T_HRESULT param_1)
+void __cdecl R_FatalLockError(T_HRESULT hr)
 
 {
   Com_Printf(8,
              "********** DirectX failed a call to lock a vertex buffer or an index buffer **********\n"
             );
-  R_ErrorDescription(param_1);
+  R_ErrorDescription(hr);
   Com_Printf(8,"********** error information:  %s\n");
   Sys_DirectXFatalError();
   return;
@@ -69,35 +70,36 @@ void __cdecl R_FatalLockError(T_HRESULT param_1)
 
 // 00A4E710  R_ErrorDescription  (gfx_d3d/r_init.cpp:268)
 
-char * __cdecl R_ErrorDescription(T_HRESULT param_1)
+char * __cdecl R_ErrorDescription(T_HRESULT hr)
 
 {
   char *pcVar1;
   
-  pcVar1 = DXGetErrorDescriptionA(param_1);
+  pcVar1 = DXGetErrorDescriptionA(hr);
   return pcVar1;
 }
 
 
 // 00A4F050  R_SetupAntiAliasing  (gfx_d3d/r_init.cpp:288)
 
-void __cdecl R_SetupAntiAliasing(GfxWindowParms *param_1)
+void __cdecl R_SetupAntiAliasing(GfxWindowParms *wndParms)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  _D3DMULTISAMPLE_TYPE local_10;
-  undefined1 local_8 [4];
+  int multiSampleCount;
+  HRESULT hr;
+  undefined1 qualityLevels [4];
   
-  if ((param_1 == (GfxWindowParms *)0x0) &&
+  if ((wndParms == (GfxWindowParms *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x127,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->aaSamples < 1) || (0x10 < param_1->aaSamples)) &&
+  if (((wndParms->aaSamples < 1) || (0x10 < wndParms->aaSamples)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x135,0,
                                "wndParms->aaSamples not in [1, 16]\n\t%i not in [%i, %i]"), !bVar2))
   {
@@ -106,22 +108,23 @@ void __cdecl R_SetupAntiAliasing(GfxWindowParms *param_1)
     return;
   }
   if ((r_reflectionProbeGenerate->current).enabled == false) {
-    local_10 = param_1->aaSamples;
+    multiSampleCount = wndParms->aaSamples;
   }
   else {
-    local_10 = D3DMULTISAMPLE_NONMASKABLE;
+    multiSampleCount = 1;
   }
   while( true ) {
-    if ((int)local_10 < 2) {
+    if (multiSampleCount < 2) {
       dx.multiSampleType = D3DMULTISAMPLE_NONE;
       dx.multiSampleQuality = 0;
       return;
     }
-    dx.multiSampleType = local_10;
+    dx.multiSampleType = multiSampleCount;
     iVar3 = (**(code **)((int)*dx.d3d9 + 0x2c))
-                      (dx.d3d9,0,1,0x15,param_1->fullscreen == false,local_10,local_8);
+                      (dx.d3d9,0,1,0x15,wndParms->fullscreen == false,multiSampleCount,qualityLevels
+                      );
     if (-1 < iVar3) break;
-    local_10 = local_10 - D3DMULTISAMPLE_NONMASKABLE;
+    multiSampleCount = multiSampleCount + -1;
   }
   Com_Printf(8,"Using %ix anti-aliasing\n");
   dx.multiSampleQuality = 0;
@@ -131,13 +134,13 @@ void __cdecl R_SetupAntiAliasing(GfxWindowParms *param_1)
 
 // 00A4EED0  R_SetD3DPresentParameters  (gfx_d3d/r_init.cpp:388)
 
-void __cdecl R_SetD3DPresentParameters(_D3DPRESENT_PARAMETERS_ *param_1,GfxWindowParms *param_2)
+void __cdecl R_SetD3DPresentParameters(_D3DPRESENT_PARAMETERS_ *d3dpp,GfxWindowParms *wndParms)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (_D3DPRESENT_PARAMETERS_ *)0x0) {
+  if (d3dpp == (_D3DPRESENT_PARAMETERS_ *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x185,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -145,7 +148,7 @@ void __cdecl R_SetD3DPresentParameters(_D3DPRESENT_PARAMETERS_ *param_1,GfxWindo
       return;
     }
   }
-  if (param_2 == (GfxWindowParms *)0x0) {
+  if (wndParms == (GfxWindowParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x186,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -153,20 +156,20 @@ void __cdecl R_SetD3DPresentParameters(_D3DPRESENT_PARAMETERS_ *param_1,GfxWindo
       return;
     }
   }
-  R_SetupAntiAliasing(param_2);
-  memset((uchar *)param_1,'\0',0x38);
-  param_1->BackBufferHeight = param_2->displayHeight;
-  param_1->BackBufferWidth = param_2->displayWidth;
-  param_1->BackBufferFormat = D3DFMT_A8R8G8B8;
-  param_1->BackBufferCount = 1;
-  param_1->MultiSampleType = dx.multiSampleType;
-  param_1->MultiSampleQuality = dx.multiSampleQuality;
-  param_1->SwapEffect = D3DSWAPEFFECT_DISCARD;
-  param_1->EnableAutoDepthStencil = 0;
-  param_1->AutoDepthStencilFormat = dx.depthStencilFormat;
-  param_1->PresentationInterval =
+  R_SetupAntiAliasing(wndParms);
+  memset((uchar *)d3dpp,'\0',0x38);
+  d3dpp->BackBufferHeight = wndParms->displayHeight;
+  d3dpp->BackBufferWidth = wndParms->displayWidth;
+  d3dpp->BackBufferFormat = D3DFMT_A8R8G8B8;
+  d3dpp->BackBufferCount = 1;
+  d3dpp->MultiSampleType = dx.multiSampleType;
+  d3dpp->MultiSampleQuality = dx.multiSampleQuality;
+  d3dpp->SwapEffect = D3DSWAPEFFECT_DISCARD;
+  d3dpp->EnableAutoDepthStencil = 0;
+  d3dpp->AutoDepthStencilFormat = dx.depthStencilFormat;
+  d3dpp->PresentationInterval =
        (-(uint)((r_vsync->current).enabled != false) & 0x80000001) + 0x80000000;
-  if (param_2->hwnd == (HWND__ *)0x0) {
+  if (wndParms->hwnd == (HWND__ *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x1a9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -174,15 +177,15 @@ void __cdecl R_SetD3DPresentParameters(_D3DPRESENT_PARAMETERS_ *param_1,GfxWindo
       return;
     }
   }
-  param_1->hDeviceWindow = param_2->hwnd;
-  param_1->Flags = 0;
-  if (param_2->fullscreen == false) {
-    param_1->Windowed = 1;
-    param_1->FullScreen_RefreshRateInHz = 0;
+  d3dpp->hDeviceWindow = wndParms->hwnd;
+  d3dpp->Flags = 0;
+  if (wndParms->fullscreen == false) {
+    d3dpp->Windowed = 1;
+    d3dpp->FullScreen_RefreshRateInHz = 0;
   }
   else {
-    param_1->Windowed = 0;
-    param_1->FullScreen_RefreshRateInHz = param_2->hz;
+    d3dpp->Windowed = 0;
+    d3dpp->FullScreen_RefreshRateInHz = wndParms->hz;
   }
   return;
 }
@@ -190,24 +193,24 @@ void __cdecl R_SetD3DPresentParameters(_D3DPRESENT_PARAMETERS_ *param_1,GfxWindo
 
 // 00A4F2F0  R_GetMonitorDimensions  (gfx_d3d/r_init.cpp:446)
 
-bool __cdecl R_GetMonitorDimensions(int *param_1,int *param_2)
+bool __cdecl R_GetMonitorDimensions(int *width,int *height)
 
 {
   bool bVar1;
   BOOL BVar2;
   int iVar3;
-  tagMONITORINFO local_30;
-  HMONITOR local_8;
+  tagMONITORINFO mi;
+  HMONITOR__ *adapterMonitor;
   
-  local_8 = (HMONITOR)(**(code **)((int)*dx.d3d9 + 0x3c))(dx.d3d9,dx.adapterIndex);
-  local_30.cbSize = 0x28;
-  BVar2 = GetMonitorInfoA(local_8,&local_30);
+  adapterMonitor = (HMONITOR__ *)(**(code **)((int)*dx.d3d9 + 0x3c))(dx.d3d9,dx.adapterIndex);
+  mi.cbSize = 0x28;
+  BVar2 = GetMonitorInfoA((HMONITOR)adapterMonitor,&mi);
   if (BVar2 == 0) {
     iVar3 = GetSystemMetrics(0);
-    *param_1 = iVar3;
+    *width = iVar3;
     iVar3 = GetSystemMetrics(1);
-    *param_2 = iVar3;
-    if ((*param_1 < 1) || (*param_2 < 1)) {
+    *height = iVar3;
+    if ((*width < 1) || (*height < 1)) {
       bVar1 = false;
     }
     else {
@@ -215,8 +218,8 @@ bool __cdecl R_GetMonitorDimensions(int *param_1,int *param_2)
     }
   }
   else {
-    *param_1 = local_30.rcMonitor.right - local_30.rcMonitor.left;
-    *param_2 = local_30.rcMonitor.bottom - local_30.rcMonitor.top;
+    *width = mi.rcMonitor.right - mi.rcMonitor.left;
+    *height = mi.rcMonitor.bottom - mi.rcMonitor.top;
     bVar1 = true;
   }
   return bVar1;
@@ -225,16 +228,18 @@ bool __cdecl R_GetMonitorDimensions(int *param_1,int *param_2)
 
 // 00A4F6D0  R_StoreWindowSettings  (gfx_d3d/r_init.cpp:469)
 
-void __cdecl R_StoreWindowSettings(GfxWindowParms *param_1)
+void __cdecl R_StoreWindowSettings(GfxWindowParms *wndParms)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
+  char *fmt;
   bool local_40;
-  uint local_14;
-  uint local_10;
+  int monitorHeight;
+  int monitorWidth;
+  GfxAspectRatio aspectRatio;
+  int aspectHeight;
   
   if ((r_aspectRatio == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x1dc,0,"%s"
@@ -243,21 +248,21 @@ void __cdecl R_StoreWindowSettings(GfxWindowParms *param_1)
     (*pcVar2)();
     return;
   }
-  vidConfig.sceneWidth = param_1->sceneWidth;
-  vidConfig.sceneHeight = param_1->sceneHeight;
-  vidConfig.displayWidth = param_1->displayWidth;
-  vidConfig.displayHeight = param_1->displayHeight;
-  vidConfig.displayFrequency = param_1->hz;
-  vidConfig.isFullscreen = (int)param_1->fullscreen;
+  vidConfig.sceneWidth = wndParms->sceneWidth;
+  vidConfig.sceneHeight = wndParms->sceneHeight;
+  vidConfig.displayWidth = wndParms->displayWidth;
+  vidConfig.displayHeight = wndParms->displayHeight;
+  vidConfig.displayFrequency = wndParms->hz;
+  vidConfig.isFullscreen = (int)wndParms->fullscreen;
   switch((r_aspectRatio->current).integer) {
   case 0:
-    local_14 = vidConfig.displayHeight;
-    local_10 = vidConfig.displayWidth;
+    monitorHeight = vidConfig.displayHeight;
+    monitorWidth = vidConfig.displayWidth;
     if ((vidConfig.isFullscreen != 0) && (dx.adapterNativeIsValid != false)) {
-      local_10 = dx.adapterNativeWidth;
-      local_14 = dx.adapterNativeHeight;
+      monitorWidth = dx.adapterNativeWidth;
+      monitorHeight = dx.adapterNativeHeight;
     }
-    iVar1 = (int)ROUND(((float)(int)local_14 * 16.0) / (float)(int)local_10 + 9.313226e-10);
+    iVar1 = (int)ROUND(((float)monitorHeight * 16.0) / (float)monitorWidth + 9.313226e-10);
     if (iVar1 == 10) {
       vidConfig.aspectRatioWindow = 1.6;
     }
@@ -278,9 +283,8 @@ void __cdecl R_StoreWindowSettings(GfxWindowParms *param_1)
     vidConfig.aspectRatioWindow = 1.7777778;
     break;
   default:
-    pcVar4 = va("unhandled case, aspectRatio = %i\n");
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x209,1,pcVar4
-                            );
+    fmt = va("unhandled case, aspectRatio = %i\n");
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x209,1,fmt);
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
@@ -319,14 +323,15 @@ void __cdecl R_StoreWindowSettings(GfxWindowParms *param_1)
 
 // 00A50240  R_GetDirect3DCaps  (gfx_d3d/r_init.cpp:601)
 
-void __cdecl R_GetDirect3DCaps(uint param_1,_D3DCAPS9 *param_2)
+void __cdecl R_GetDirect3DCaps(uint adapterIndex,_D3DCAPS9 *caps)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  char *pcVar4;
-  int local_8;
+  int hr_00;
+  char *msg;
+  HRESULT hr;
+  int attempt;
   
   if ((dx.d3d9 == (IDirect3D9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x25e,0,"%s"
@@ -335,47 +340,48 @@ void __cdecl R_GetDirect3DCaps(uint param_1,_D3DCAPS9 *param_2)
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  attempt = 0;
   do {
-    iVar3 = (**(code **)((int)*dx.d3d9 + 0x38))(dx.d3d9,param_1,1,param_2);
-    if (-1 < iVar3) {
+    hr_00 = (**(code **)((int)*dx.d3d9 + 0x38))(dx.d3d9,adapterIndex,1,caps);
+    if (-1 < hr_00) {
       return;
     }
     Sleep(100);
-    local_8 = local_8 + 1;
-  } while (local_8 != 0x14);
-  R_ErrorDescription(iVar3);
-  pcVar4 = va("GetDeviceCaps failed: %s");
-  R_FatalInitError(pcVar4);
+    attempt = attempt + 1;
+  } while (attempt != 0x14);
+  R_ErrorDescription(hr_00);
+  msg = va("GetDeviceCaps failed: %s");
+  R_FatalInitError(msg);
   return;
 }
 
 
 // 00A502F0  R_PickRenderer  (gfx_d3d/r_init.cpp:631)
 
-void __cdecl R_PickRenderer(_D3DCAPS9 *param_1)
+void __cdecl R_PickRenderer(_D3DCAPS9 *caps)
 
 {
   Com_Printf(8,"Pixel shader version is %i.%i\n");
   Com_Printf(8,"Vertex shader version is %i.%i\n");
-  R_CheckDxCaps(param_1);
+  R_CheckDxCaps(caps);
   return;
 }
 
 
 // 00A503A0  R_CheckTransparencyMsaa  (gfx_d3d/r_init.cpp:644)
 
-bool __cdecl R_CheckTransparencyMsaa(uint param_1)
+bool __cdecl R_CheckTransparencyMsaa(uint adapterIndex)
 
 {
   bool bVar1;
   int iVar2;
+  _D3DFORMAT format;
   
   if ((r_aaSamples->current).integer == 1) {
     bVar1 = false;
   }
   else {
-    iVar2 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,param_1,1,0x16,0,1,0x41415353);
+    iVar2 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,adapterIndex,1,0x16,0,1,0x41415353);
     if (iVar2 == 0) {
       bVar1 = true;
     }
@@ -389,33 +395,37 @@ bool __cdecl R_CheckTransparencyMsaa(uint param_1)
 
 // 00A503F0  R_SetShadowmapFormats_DX  (gfx_d3d/r_init.cpp:662)
 
-void __cdecl R_SetShadowmapFormats_DX(uint param_1)
+/* WARNING: Variable defined which should be unmapped: colorFormat */
+/* WARNING: Variable defined which should be unmapped: nullFormat */
+
+void __cdecl R_SetShadowmapFormats_DX(uint adapterIndex)
 
 {
   _D3DFORMAT _Var1;
-  bool bVar2;
-  int iVar3;
-  _D3DFORMAT _Var4;
-  undefined4 uVar5;
-  uint local_2c;
-  _D3DFORMAT local_24 [8];
+  _D3DFORMAT _Var2;
+  bool bVar3;
+  int iVar4;
+  _D3DFORMAT colorFormat;
+  _D3DFORMAT nullFormat;
+  int formatIndex;
+  _D3DFORMAT depthFormat;
+  _D3DFORMAT formats [8];
   
-  uVar5 = 0x4c4c554e;
-  local_24[0] = D3DFMT_D24S8;
-  local_24[1] = 0x17;
-  local_24[2] = 0x4b;
-  local_24[3] = 0x17;
-  local_24[4] = 0x4b;
-  local_24[5] = 0x16;
-  local_24[6] = 0x4b;
-  local_24[7] = 0x15;
-  bVar2 = NV_UseShadowNullColorRenderTarget();
-  if (bVar2) {
-    local_24[0] = 0x4c4c554e;
+  formats[0] = D3DFMT_D24S8;
+  formats[1] = 0x17;
+  formats[2] = 0x4b;
+  formats[3] = 0x17;
+  formats[4] = 0x4b;
+  formats[5] = 0x16;
+  formats[6] = 0x4b;
+  formats[7] = 0x15;
+  bVar3 = NV_UseShadowNullColorRenderTarget();
+  if (bVar3) {
+    formats[0] = 0x4c4c554e;
   }
-  local_2c = 0;
+  formatIndex = 0;
   while( true ) {
-    if (3 < local_2c) {
+    if (3 < (uint)formatIndex) {
       gfxMetrics.shadowmapFormatPrimary = D3DFMT_R32F;
       gfxMetrics.shadowmapFormatSecondary = D3DFMT_D24X8;
       gfxMetrics.shadowmapBuildTechType = '\x03';
@@ -425,22 +435,24 @@ void __cdecl R_SetShadowmapFormats_DX(uint param_1)
       Dvar_SetBoolByName("ui_showShadowOptions",false);
       return;
     }
-    _Var1 = local_24[local_2c * 2];
-    _Var4 = local_24[local_2c * 2 + 1];
-    bVar2 = NV_UseShadowNullColorRenderTarget();
-    if ((((!bVar2) || (_Var4 != 0x4c4c554e)) ||
-        (iVar3 = (**(code **)((int)*dx.d3d9 + 0x28))
-                           (dx.d3d9,param_1,1,0x16,1,1,0x4c4c554e,0x4c4c554e,uVar5), iVar3 == 0)) &&
-       ((iVar3 = (**(code **)((int)*dx.d3d9 + 0x30))(dx.d3d9,param_1,1,0x16,_Var4,_Var1), iVar3 == 0
-        && (iVar3 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,param_1,1,0x16,2,3,_Var1),
-           iVar3 == 0)))) break;
-    local_2c = local_2c + 1;
+    _Var1 = formats[formatIndex * 2];
+    _Var2 = formats[formatIndex * 2 + 1];
+    bVar3 = NV_UseShadowNullColorRenderTarget();
+    if ((((!bVar3) || (_Var2 != 0x4c4c554e)) ||
+        (iVar4 = (**(code **)((int)*dx.d3d9 + 0x28))
+                           (dx.d3d9,adapterIndex,1,0x16,1,1,0x4c4c554e,0x4c4c554e,0x4c4c554e),
+        iVar4 == 0)) &&
+       ((iVar4 = (**(code **)((int)*dx.d3d9 + 0x30))(dx.d3d9,adapterIndex,1,0x16,_Var2,_Var1),
+        iVar4 == 0 &&
+        (iVar4 = (**(code **)((int)*dx.d3d9 + 0x28))(dx.d3d9,adapterIndex,1,0x16,2,3,_Var1),
+        iVar4 == 0)))) break;
+    formatIndex = formatIndex + 1;
   }
   gfxMetrics.shadowmapBuildTechType = '\x02';
   gfxMetrics.hasHardwareShadowmap = true;
   gfxMetrics.shadowmapSamplerState = 'b';
   gfxMetrics.shadowmapFormatPrimary = _Var1;
-  gfxMetrics.shadowmapFormatSecondary = _Var4;
+  gfxMetrics.shadowmapFormatSecondary = _Var2;
   Dvar_SetBoolByName("ui_showShadowOptions",true);
   return;
 }
@@ -453,38 +465,38 @@ void __cdecl R_SetShadowmapFormats_DX(uint param_1)
 /* WARNING: Removing unreachable block (ram,0x00a50129) */
 /* WARNING: Removing unreachable block (ram,0x00a50155) */
 
-void __cdecl R_StoreDirect3DCaps(uint param_1)
+void __cdecl R_StoreDirect3DCaps(uint adapterIndex)
 
 {
   ulong local_13c;
   uint local_138;
-  _D3DCAPS9 local_134;
+  _D3DCAPS9 caps;
   
-  R_GetDirect3DCaps(param_1,&local_134);
-  R_PickRenderer(&local_134);
-  if ((int)local_134.MaxTextureHeight < (int)local_134.MaxTextureWidth) {
-    local_138 = local_134.MaxTextureHeight;
+  R_GetDirect3DCaps(adapterIndex,&caps);
+  R_PickRenderer(&caps);
+  if ((int)caps.MaxTextureHeight < (int)caps.MaxTextureWidth) {
+    local_138 = caps.MaxTextureHeight;
   }
   else {
-    local_138 = local_134.MaxTextureWidth;
+    local_138 = caps.MaxTextureWidth;
   }
-  vidConfig.deviceSupportsGamma = (local_134.Caps2 & 0x20000) != 0;
+  vidConfig.deviceSupportsGamma = (caps.Caps2 & 0x20000) != 0;
   vidConfig.maxTextureMaps = 0x10;
   vidConfig.maxTextureSize = local_138;
-  if ((int)local_134.MaxUserClipPlanes < 6) {
-    local_13c = local_134.MaxUserClipPlanes;
+  if ((int)caps.MaxUserClipPlanes < 6) {
+    local_13c = caps.MaxUserClipPlanes;
   }
   else {
     local_13c = 6;
   }
   gfxMetrics.maxClipPlanes = local_13c;
-  gfxMetrics.hasAnisotropicMinFilter = (local_134.TextureFilterCaps & 0x400) != 0;
-  gfxMetrics.hasAnisotropicMagFilter = (local_134.TextureFilterCaps & 0x4000000) != 0;
-  gfxMetrics.maxAnisotropy = local_134.MaxAnisotropy;
-  gfxMetrics.slopeScaleDepthBias = (local_134.RasterCaps & 0x2000000) != 0;
-  gfxMetrics.canMipCubemaps = (local_134.TextureCaps & 0x10000) != 0;
-  gfxMetrics.hasTransparencyMsaa = R_CheckTransparencyMsaa(param_1);
-  R_SetShadowmapFormats_DX(param_1);
+  gfxMetrics.hasAnisotropicMinFilter = (caps.TextureFilterCaps & 0x400) != 0;
+  gfxMetrics.hasAnisotropicMagFilter = (caps.TextureFilterCaps & 0x4000000) != 0;
+  gfxMetrics.maxAnisotropy = caps.MaxAnisotropy;
+  gfxMetrics.slopeScaleDepthBias = (caps.RasterCaps & 0x2000000) != 0;
+  gfxMetrics.canMipCubemaps = (caps.TextureCaps & 0x10000) != 0;
+  gfxMetrics.hasTransparencyMsaa = R_CheckTransparencyMsaa(adapterIndex);
+  R_SetShadowmapFormats_DX(adapterIndex);
   return;
 }
 
@@ -501,7 +513,7 @@ void __cdecl R_InitGamma(void)
 
 // 00A4E770  R_CalcGammaRamp  (gfx_d3d/r_init.cpp:1074)
 
-void __cdecl R_CalcGammaRamp(GfxGammaRamp *param_1)
+void __cdecl R_CalcGammaRamp(GfxGammaRamp *gammaRamp)
 
 {
   float fVar1;
@@ -515,10 +527,12 @@ void __cdecl R_CalcGammaRamp(GfxGammaRamp *param_1)
   float in_stack_ffffffdc;
   int in_stack_ffffffe0;
   undefined4 in_stack_ffffffe4;
-  ushort local_14;
-  ushort local_10;
+  ushort adjustedColorValue;
+  ushort colorTableIndex;
+  float exponent;
+  float unitScaleValue;
   
-  if (param_1 == (GfxGammaRamp *)0x0) {
+  if (gammaRamp == (GfxGammaRamp *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x467,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -537,16 +551,16 @@ void __cdecl R_CalcGammaRamp(GfxGammaRamp *param_1)
   }
   iVar3 = CONCAT22(in_stack_ffffffda,in_stack_ffffffd8);
   fVar1 = (r_gamma->current).value;
-  local_10 = 0;
+  colorTableIndex = 0;
   do {
-    if (0xff < local_10) {
+    if (0xff < colorTableIndex) {
       return;
     }
     if (1.0 / fVar1 == 1.0) {
-      local_14 = local_10 * 0x101;
+      adjustedColorValue = colorTableIndex * 0x101;
     }
     else {
-      dVar6 = (double)((float)local_10 / 255.0);
+      dVar6 = (double)((float)colorTableIndex / 255.0);
       __libm_sse2_pow((double)CONCAT44(in_stack_ffffffdc,iVar3),
                       (double)CONCAT44(in_stack_ffffffe4,in_stack_ffffffe0));
       fVar5 = (float)dVar6;
@@ -562,11 +576,11 @@ void __cdecl R_CalcGammaRamp(GfxGammaRamp *param_1)
       in_stack_ffffffdc = fVar5 * 65535.0;
       in_stack_ffffffe4 = 0;
       in_stack_ffffffe0 = (int)ROUND(in_stack_ffffffdc + 9.313226e-10);
-      local_14 = (ushort)in_stack_ffffffe0;
+      adjustedColorValue = (ushort)in_stack_ffffffe0;
       iVar3 = in_stack_ffffffe0;
     }
-    param_1->entries[local_10] = local_14;
-    local_10 = local_10 + 1;
+    gammaRamp->entries[colorTableIndex] = adjustedColorValue;
+    colorTableIndex = colorTableIndex + 1;
   } while( true );
 }
 
@@ -578,13 +592,13 @@ void __cdecl R_CalcGammaRamp(GfxGammaRamp *param_1)
 void __cdecl R_SetColorMappings(void)
 
 {
-  GfxGammaRamp local_20c;
+  GfxGammaRamp gammaRamp;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (vidConfig.deviceSupportsGamma) {
-    R_CalcGammaRamp(&local_20c);
-    RB_SetGammaRamp(&local_20c);
+    R_CalcGammaRamp(&gammaRamp);
+    RB_SetGammaRamp(&gammaRamp);
   }
   return;
 }
@@ -592,7 +606,7 @@ void __cdecl R_SetColorMappings(void)
 
 // 00A4E970  SetGfxConfig  (gfx_d3d/r_init.cpp:1191)
 
-void __cdecl SetGfxConfig(GfxConfiguration *param_1)
+void __cdecl SetGfxConfig(GfxConfiguration *config)
 
 {
   code *pcVar1;
@@ -600,7 +614,7 @@ void __cdecl SetGfxConfig(GfxConfiguration *param_1)
   int iVar3;
   GfxConfiguration *pGVar4;
   
-  if (param_1 == (GfxConfiguration *)0x0) {
+  if (config == (GfxConfiguration *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x4a8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -608,7 +622,7 @@ void __cdecl SetGfxConfig(GfxConfiguration *param_1)
       return;
     }
   }
-  if ((param_1->maxClientViews == 0) || (4 < param_1->maxClientViews)) {
+  if ((config->maxClientViews == 0) || (4 < config->maxClientViews)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x4a9,0,
                              "config->maxClientViews not in [1, GFX_MAX_CLIENT_VIEWS]\n\t%i not in [%i, %i]"
                             );
@@ -618,7 +632,7 @@ void __cdecl SetGfxConfig(GfxConfiguration *param_1)
       return;
     }
   }
-  if (param_1->critSectCount != 0x4b) {
+  if (config->critSectCount != 0x4b) {
     va("%d != %d");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x4ab,0,
                              "%s\n\t%s");
@@ -630,8 +644,8 @@ void __cdecl SetGfxConfig(GfxConfiguration *param_1)
   }
   pGVar4 = &gfxCfg;
   for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-    pGVar4->maxClientViews = param_1->maxClientViews;
-    param_1 = (GfxConfiguration *)&param_1->entCount;
+    pGVar4->maxClientViews = config->maxClientViews;
+    config = (GfxConfiguration *)&config->entCount;
     pGVar4 = (GfxConfiguration *)&pGVar4->entCount;
   }
   return;
@@ -650,10 +664,10 @@ void __cdecl R_UnloadGraphicsAssets(void)
 
 // 00A4E920  R_MakeDedicated  (gfx_d3d/r_init.cpp:1210)
 
-void __cdecl R_MakeDedicated(GfxConfiguration *param_1)
+void __cdecl R_MakeDedicated(GfxConfiguration *config)
 
 {
-  SetGfxConfig(param_1);
+  SetGfxConfig(config);
   if (r_loadForRenderer == (dvar_s *)0x0) {
     R_RegisterDvars();
   }
@@ -685,7 +699,7 @@ void __cdecl R_InitSystems(void)
 
 // 00A50F40  R_FinishAttachingToWindow  (gfx_d3d/r_init.cpp:1254)
 
-void __cdecl R_FinishAttachingToWindow(GfxWindowParms *param_1)
+void __cdecl R_FinishAttachingToWindow(GfxWindowParms *wndParms)
 
 {
   code *pcVar1;
@@ -708,9 +722,9 @@ void __cdecl R_FinishAttachingToWindow(GfxWindowParms *param_1)
       return;
     }
   }
-  dx.windows[dx.windowCount].hwnd = param_1->hwnd;
-  dx.windows[dx.windowCount].width = param_1->displayWidth;
-  dx.windows[dx.windowCount].height = param_1->displayHeight;
+  dx.windows[dx.windowCount].hwnd = wndParms->hwnd;
+  dx.windows[dx.windowCount].width = wndParms->displayWidth;
+  dx.windows[dx.windowCount].height = wndParms->displayHeight;
   dx.windowCount = dx.windowCount + 1;
   return;
 }
@@ -723,10 +737,12 @@ bool __cdecl R_CreateForInitOrReset(void)
 {
   bool bVar1;
   int iVar2;
-  int iVar3;
-  IDirect3DQuery9 *pIVar4;
-  int local_14;
-  uint local_c;
+  int hr_00;
+  IDirect3DQuery9 *pIVar3;
+  int gpuIdx;
+  HRESULT hr;
+  uint fenceIter;
+  int semaphore;
   
   Com_Printf(8,"Initializing render targets...\n");
   R_InitRenderTargets();
@@ -747,17 +763,17 @@ bool __cdecl R_CreateForInitOrReset(void)
   Com_Printf(8,"Creating Direct3D queries...\n");
   dx.nextFence = 0;
   iVar2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar3 = (**(code **)((int)*dx.device + 0x1d8))(dx.device,8,0xa853440);
-  if (iVar3 < 0) {
-    R_ErrorDescription(iVar3);
+  hr_00 = (**(code **)((int)*dx.device + 0x1d8))(dx.device,8,0xa853440);
+  if (hr_00 < 0) {
+    R_ErrorDescription(hr_00);
     Com_Printf(8,"Event query creation failed: %s (0x%08x)\n");
     bVar1 = false;
   }
   else {
-    for (local_c = 0; local_c < 8; local_c = local_c + 1) {
-      (**(code **)((int)*dx.device + 0x1d8))(dx.device,8,local_c * 4 + 0xa8533e4);
-      if (iVar3 < 0) {
-        R_ErrorDescription(iVar3);
+    for (fenceIter = 0; fenceIter < 8; fenceIter = fenceIter + 1) {
+      (**(code **)((int)*dx.device + 0x1d8))(dx.device,8,fenceIter * 4 + 0xa8533e4);
+      if (hr_00 < 0) {
+        R_ErrorDescription(hr_00);
         Com_Printf(8,"Event query creation failed: %s (0x%08x)\n");
         return false;
       }
@@ -769,9 +785,9 @@ bool __cdecl R_CreateForInitOrReset(void)
       RB_AllocSunSpriteQueries();
       RB_AllocCoronaSpriteQueries();
       RB_AllocSuperFlareQueries();
-      for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
-        pIVar4 = RB_HW_AllocOcclusionQuery();
-        gfxAssets.pixelCountQuery[local_14] = pIVar4;
+      for (gpuIdx = 0; gpuIdx < 4; gpuIdx = gpuIdx + 1) {
+        pIVar3 = RB_HW_AllocOcclusionQuery();
+        gfxAssets.pixelCountQuery[gpuIdx] = pIVar3;
       }
     }
     bVar1 = true;
@@ -790,19 +806,24 @@ void __cdecl R_ReleaseForShutdownOrReset(void)
   IDirect3DQuery9 *pIVar3;
   bool bVar4;
   int iVar5;
-  int local_24;
-  int local_20;
-  uint local_10;
-  int local_8;
+  IDirect3DQuery9 *varCopy_4;
+  int gpuIdx_2;
+  int gpuIdx;
+  IDirect3DQuery9 *varCopy_3;
+  IDirect3DQuery9 *varCopy_2;
+  IDirect3DSwapChain9 *varCopy;
+  uint fenceIter;
+  int semaphore;
+  int windowIndex;
   
   iVar5 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  for (local_8 = 0; local_8 < dx.windowCount; local_8 = local_8 + 1) {
+  for (windowIndex = 0; windowIndex < dx.windowCount; windowIndex = windowIndex + 1) {
     do {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("dx.windows[windowIndex].swapChain->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)dx.windows[local_8].swapChain;
-      dx.windows[local_8].swapChain = (IDirect3DSwapChain9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)dx.windows[windowIndex].swapChain;
+      dx.windows[windowIndex].swapChain = (IDirect3DSwapChain9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"dx.windows[windowIndex].swapChain",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x55e);
@@ -835,36 +856,36 @@ void __cdecl R_ReleaseForShutdownOrReset(void)
                "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x570);
     pIVar3 = (IDirect3DQuery9 *)alwaysfails;
   }
-  for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
-    pIVar3 = dx.fencePool[local_10];
+  for (fenceIter = 0; fenceIter < 8; fenceIter = fenceIter + 1) {
+    pIVar3 = dx.fencePool[fenceIter];
     while (pIVar3 != (IDirect3DQuery9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("dx.fencePool[fenceIter]->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)dx.fencePool[local_10];
-      dx.fencePool[local_10] = (IDirect3DQuery9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)dx.fencePool[fenceIter];
+      dx.fencePool[fenceIter] = (IDirect3DQuery9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"dx.fencePool[fenceIter]",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x576);
       pIVar3 = (IDirect3DQuery9 *)alwaysfails;
     }
   }
-  for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
-    if (dx.swapFence[local_20] != (IDirect3DQuery9 *)0x0) {
-      dx.swapFence[local_20] = (IDirect3DQuery9 *)0x0;
+  for (gpuIdx = 0; gpuIdx < 4; gpuIdx = gpuIdx + 1) {
+    if (dx.swapFence[gpuIdx] != (IDirect3DQuery9 *)0x0) {
+      dx.swapFence[gpuIdx] = (IDirect3DQuery9 *)0x0;
     }
   }
   RB_FreeSuperFlareQueries();
   RB_FreeSunSpriteQueries();
   RB_FreeCoronaSpriteQueries();
-  for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-    pIVar3 = gfxAssets.pixelCountQuery[local_24];
+  for (gpuIdx_2 = 0; gpuIdx_2 < 4; gpuIdx_2 = gpuIdx_2 + 1) {
+    pIVar3 = gfxAssets.pixelCountQuery[gpuIdx_2];
     while (pIVar3 != (IDirect3DQuery9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("gfxAssets.pixelCountQuery[gpuIdx]->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)gfxAssets.pixelCountQuery[local_24];
-      gfxAssets.pixelCountQuery[local_24] = (IDirect3DQuery9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)gfxAssets.pixelCountQuery[gpuIdx_2];
+      gfxAssets.pixelCountQuery[gpuIdx_2] = (IDirect3DQuery9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"gfxAssets.pixelCountQuery[gpuIdx]",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x592);
@@ -880,153 +901,161 @@ void __cdecl R_ReleaseForShutdownOrReset(void)
 
 // 00A50920  R_CompareDisplayModes  (gfx_d3d/r_init.cpp:1439)
 
-int __cdecl R_CompareDisplayModes(void *param_1,void *param_2)
+int __cdecl R_CompareDisplayModes(void *e0,void *e1)
 
 {
-  undefined4 local_10;
+  int delta;
   
-  local_10 = *(int *)param_1 - *(int *)param_2;
-  if ((local_10 == 0) &&
-     (local_10 = *(int *)((int)param_1 + 4) - *(int *)((int)param_2 + 4), local_10 == 0)) {
-    local_10 = *(int *)((int)param_1 + 8) - *(int *)((int)param_2 + 8);
+  delta = *(int *)e0 - *(int *)e1;
+  if ((delta == 0) && (delta = *(int *)((int)e0 + 4) - *(int *)((int)e1 + 4), delta == 0)) {
+    delta = *(int *)((int)e0 + 8) - *(int *)((int)e1 + 8);
   }
-  return local_10;
+  return delta;
 }
 
 
 // 00A50970  R_AddValidRefreshRate  (gfx_d3d/r_init.cpp:1457)
 
-int __cdecl R_AddValidRefreshRate(int param_1,int param_2,int *param_3)
+int __cdecl R_AddValidRefreshRate(int refreshRate,int rateCount,int *availableRefreshRates)
 
 {
-  int local_8;
+  int rateIndex;
   
-  local_8 = 0;
+  rateIndex = 0;
   while( true ) {
-    if (param_2 <= local_8) {
-      for (local_8 = param_2; (0 < local_8 && (param_1 < param_3[local_8 + -1]));
-          local_8 = local_8 + -1) {
-        param_3[local_8] = param_3[local_8 + -1];
+    if (rateCount <= rateIndex) {
+      for (rateIndex = rateCount;
+          (0 < rateIndex && (refreshRate < availableRefreshRates[rateIndex + -1]));
+          rateIndex = rateIndex + -1) {
+        availableRefreshRates[rateIndex] = availableRefreshRates[rateIndex + -1];
       }
-      param_3[local_8] = param_1;
-      return param_2 + 1;
+      availableRefreshRates[rateIndex] = refreshRate;
+      return rateCount + 1;
     }
-    if (param_3[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (availableRefreshRates[rateIndex] == refreshRate) break;
+    rateIndex = rateIndex + 1;
   }
-  return param_2;
+  return rateCount;
 }
 
 
 // 00A50A00  R_CompareRefreshRates  (gfx_d3d/r_init.cpp:1477)
 
-int __cdecl R_CompareRefreshRates(void *param_1,void *param_2)
+int __cdecl R_CompareRefreshRates(void *e0,void *e1)
 
 {
-  return *(int *)param_1 - *(int *)param_2;
+  return *(int *)e0 - *(int *)e1;
 }
 
 
 // 00A50A10  R_AddValidResolution  (gfx_d3d/r_init.cpp:1482)
 
-int __cdecl R_AddValidResolution(int param_1,int param_2,int param_3,int (*param_4) [2])
+int __cdecl
+R_AddValidResolution(int width,int height,int resolutionCount,int (*availableResolutions) [2])
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_3 < 0) &&
+  if ((resolutionCount < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x5cb,0,
                                "%s\n\t(resolutionCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((param_3 < 1) || (param_4[param_3 + -1][0] != param_1)) ||
-      (param_4[param_3 + -1][1] != param_2)) && ((799 < param_1 && (599 < param_2)))) {
-    param_4[param_3][0] = param_1;
-    param_4[param_3][1] = param_2;
-    param_3 = param_3 + 1;
+  if ((((resolutionCount < 1) || (availableResolutions[resolutionCount + -1][0] != width)) ||
+      (availableResolutions[resolutionCount + -1][1] != height)) &&
+     ((799 < width && (599 < height)))) {
+    availableResolutions[resolutionCount][0] = width;
+    availableResolutions[resolutionCount][1] = height;
+    resolutionCount = resolutionCount + 1;
   }
-  return param_3;
+  return resolutionCount;
 }
 
 
 // 00A505A0  R_EnumDisplayModes  (gfx_d3d/r_init.cpp:1501)
 
-void __cdecl R_EnumDisplayModes(uint param_1)
+void __cdecl R_EnumDisplayModes(uint adapterIndex)
 
 {
-  char *pcVar1;
-  int iVar2;
-  uint local_c34;
-  int local_c30;
-  int local_c2c [513];
-  int local_428;
-  uint local_424;
-  uint local_420;
-  int local_41c;
-  int local_418;
-  int local_414 [257];
-  char *local_10;
-  int local_c;
-  int local_8;
+  char *msg;
+  int iVar1;
+  int refreshRateCount;
+  int resolutionCount;
+  int availableResolutions [513];
+  HRESULT hr;
+  uint modeCountReported;
+  uint modeIndex;
+  int resolutionIndex;
+  int defaultRefreshRateIndex;
+  int availableRefreshRates [257];
+  char *modeText;
+  int refreshRateIndex;
+  int defaultResolutionIndex;
   
-  local_424 = (**(code **)((int)*dx.d3d9 + 0x18))(dx.d3d9,param_1,0x16);
+  modeCountReported = (**(code **)((int)*dx.d3d9 + 0x18))(dx.d3d9,adapterIndex,0x16);
   dx.displayModeCount = 0;
-  local_420 = 0;
-  while ((local_420 < local_424 && (dx.displayModeCount < 0x100))) {
-    local_428 = (**(code **)((int)*dx.d3d9 + 0x1c))
-                          (dx.d3d9,param_1,0x16,local_420,dx.displayModeCount * 0x10 + 0xa8507dc);
-    if (-1 < local_428) {
+  modeIndex = 0;
+  while ((modeIndex < modeCountReported && (dx.displayModeCount < 0x100))) {
+    hr = (**(code **)((int)*dx.d3d9 + 0x1c))
+                   (dx.d3d9,adapterIndex,0x16,modeIndex,dx.displayModeCount * 0x10 + 0xa8507dc);
+    if (-1 < hr) {
       if (dx.displayModes[dx.displayModeCount].RefreshRate == 0) {
         dx.displayModes[dx.displayModeCount].RefreshRate = 0x3c;
       }
       dx.displayModeCount = dx.displayModeCount + 1;
     }
-    local_420 = local_420 + 1;
+    modeIndex = modeIndex + 1;
   }
   qsort(dx.displayModes,dx.displayModeCount,0x10,R_CompareDisplayModes);
-  local_c30 = 0;
-  local_c34 = 0;
-  for (local_420 = 0; local_420 < dx.displayModeCount; local_420 = local_420 + 1) {
-    local_c30 = R_AddValidResolution
-                          (dx.displayModes[local_420].Width,dx.displayModes[local_420].Height,
-                           local_c30,(int (*) [2])local_c2c);
-    local_c34 = R_AddValidRefreshRate(dx.displayModes[local_420].RefreshRate,local_c34,local_414);
+  resolutionCount = 0;
+  refreshRateCount = 0;
+  for (modeIndex = 0; modeIndex < dx.displayModeCount; modeIndex = modeIndex + 1) {
+    resolutionCount =
+         R_AddValidResolution
+                   (dx.displayModes[modeIndex].Width,dx.displayModes[modeIndex].Height,
+                    resolutionCount,(int (*) [2])availableResolutions);
+    refreshRateCount =
+         R_AddValidRefreshRate
+                   (dx.displayModes[modeIndex].RefreshRate,refreshRateCount,availableRefreshRates);
   }
-  local_10 = dx.modeText;
-  if (local_c30 == 0) {
-    pcVar1 = va("No valid resolutions of %i x %i or above found");
-    R_FatalInitError(pcVar1);
+  modeText = dx.modeText;
+  if (resolutionCount == 0) {
+    msg = va("No valid resolutions of %i x %i or above found");
+    R_FatalInitError(msg);
   }
-  local_8 = 0;
-  for (local_41c = 0; local_41c < local_c30; local_41c = local_41c + 1) {
-    dx.resolutionNameTable[local_41c] = local_10;
-    iVar2 = sprintf(local_10,"%ix%i");
-    local_10 = local_10 + iVar2 + 1;
-    if ((local_c2c[local_8 * 2] < 0x280) || (local_c2c[local_8 * 2 + 1] < 0x1e0)) {
-      local_8 = local_41c;
+  defaultResolutionIndex = 0;
+  for (resolutionIndex = 0; resolutionIndex < resolutionCount; resolutionIndex = resolutionIndex + 1
+      ) {
+    dx.resolutionNameTable[resolutionIndex] = modeText;
+    iVar1 = sprintf(modeText,"%ix%i");
+    modeText = modeText + iVar1 + 1;
+    if ((availableResolutions[defaultResolutionIndex * 2] < 0x280) ||
+       (availableResolutions[defaultResolutionIndex * 2 + 1] < 0x1e0)) {
+      defaultResolutionIndex = resolutionIndex;
     }
   }
-  dx.resolutionNameTable[local_41c] = (char *)0x0;
-  r_mode = _Dvar_RegisterEnum("r_mode",dx.resolutionNameTable,local_8,0x21,
+  dx.resolutionNameTable[resolutionIndex] = (char *)0x0;
+  r_mode = _Dvar_RegisterEnum("r_mode",dx.resolutionNameTable,defaultResolutionIndex,0x21,
                               "Direct X resolution mode");
-  qsort(local_414,local_c34,4,R_CompareRefreshRates);
-  local_418 = 0;
-  for (local_c = 0; local_c < (int)local_c34; local_c = local_c + 1) {
-    dx.refreshRateNameTable[local_c] = local_10;
-    iVar2 = sprintf(local_10,"%i Hz");
-    local_10 = local_10 + iVar2 + 1;
-    if (local_414[local_418] < 0x3c) {
-      local_418 = local_c;
+  qsort(availableRefreshRates,refreshRateCount,4,R_CompareRefreshRates);
+  defaultRefreshRateIndex = 0;
+  for (refreshRateIndex = 0; refreshRateIndex < refreshRateCount;
+      refreshRateIndex = refreshRateIndex + 1) {
+    dx.refreshRateNameTable[refreshRateIndex] = modeText;
+    iVar1 = sprintf(modeText,"%i Hz");
+    modeText = modeText + iVar1 + 1;
+    if (availableRefreshRates[defaultRefreshRateIndex] < 0x3c) {
+      defaultRefreshRateIndex = refreshRateIndex;
     }
   }
-  dx.refreshRateNameTable[local_c] = (char *)0x0;
+  dx.refreshRateNameTable[refreshRateIndex] = (char *)0x0;
   r_displayRefresh =
-       _Dvar_RegisterEnum("r_displayRefresh",dx.refreshRateNameTable,local_418,0x221,"Refresh rate")
-  ;
+       _Dvar_RegisterEnum("r_displayRefresh",dx.refreshRateNameTable,defaultRefreshRateIndex,0x221,
+                          "Refresh rate");
   return;
 }
 
@@ -1041,31 +1070,32 @@ _D3DDEVTYPE __cdecl R_GetDeviceType(void)
   uint uVar1;
   int iVar2;
   int extraout_EAX;
-  undefined1 local_45c [512];
+  HRESULT hr;
+  undefined1 id [512];
   uchar local_25c [592];
   uint local_c;
-  uint local_8;
+  uint Adapter;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   dx.adapterIndex = 0;
-  local_8 = 0;
+  Adapter = 0;
   while( true ) {
     uVar1 = (**(code **)((int)*dx.d3d9 + 0x10))(dx.d3d9);
-    if (uVar1 <= local_8) {
+    if (uVar1 <= Adapter) {
       return D3DDEVTYPE_HAL;
     }
-    iVar2 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,local_8,0,local_45c);
+    iVar2 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,Adapter,0,id);
     if ((-1 < iVar2) && (strstr(local_25c,(uchar *)"PerfHUD"), extraout_EAX != 0)) break;
-    local_8 = local_8 + 1;
+    Adapter = Adapter + 1;
   }
-  dx.adapterIndex = local_8;
+  dx.adapterIndex = Adapter;
   return D3DDEVTYPE_REF;
 }
 
 
 // 00A4F170  R_CreateDeviceInternal  (gfx_d3d/r_init.cpp:1604)
 
-int __cdecl R_CreateDeviceInternal(HWND__ *param_1,ulong param_2,_D3DPRESENT_PARAMETERS_ *param_3)
+HRESULT __cdecl R_CreateDeviceInternal(HWND__ *hwnd,ulong behavior,_D3DPRESENT_PARAMETERS_ *d3dpp)
 
 {
   _D3DDEVTYPE _Var1;
@@ -1074,67 +1104,70 @@ int __cdecl R_CreateDeviceInternal(HWND__ *param_1,ulong param_2,_D3DPRESENT_PAR
   ulong uVar4;
   _D3DPRESENT_PARAMETERS_ *p_Var5;
   undefined4 uVar6;
-  char local_25 [5];
-  int local_20;
+  uchar res;
+  HRESULT getModeSuccessCode;
+  int getModeResult;
   int local_1c;
-  int local_10;
-  int local_c;
-  int local_8;
+  NvAPI_Status status;
+  HRESULT hr;
+  int attempt;
   
   Com_Printf(8,"Creating Direct3D device...\n");
-  local_8 = 0;
+  attempt = 0;
   do {
     dx.adapterNativeIsValid = R_GetMonitorDimensions(&dx.adapterNativeWidth,&dx.adapterNativeHeight)
     ;
-    param_3->hDeviceWindow = (HWND__ *)0x0;
+    d3dpp->hDeviceWindow = (HWND__ *)0x0;
     uVar6 = 0xa8507a0;
-    pHVar3 = param_1;
-    uVar4 = param_2;
-    p_Var5 = param_3;
+    pHVar3 = hwnd;
+    uVar4 = behavior;
+    p_Var5 = d3dpp;
     _Var1 = R_GetDeviceType();
-    local_c = (**(code **)((int)*dx.d3d9 + 0x40))
-                        (dx.d3d9,dx.adapterIndex,_Var1,pHVar3,uVar4,p_Var5,uVar6);
-    if (-1 < local_c) {
+    hr = (**(code **)((int)*dx.d3d9 + 0x40))
+                   (dx.d3d9,dx.adapterIndex,_Var1,pHVar3,uVar4,p_Var5,uVar6);
+    if (-1 < hr) {
       dx.nvStereoActivated = false;
       dx.nvStereoHandle = (void *)0x0;
-      local_10 = _NvAPI_Stereo_CreateHandleFromIUnknown(dx.device,0xa8507c4);
-      if (local_10 == 0) {
-        _NvAPI_Stereo_IsActivated(dx.nvStereoHandle,local_25);
-        dx.nvStereoActivated = local_25[0] != '\0';
+      status = _NvAPI_Stereo_CreateHandleFromIUnknown(dx.device,0xa8507c4);
+      if (status == NVAPI_OK) {
+        _NvAPI_Stereo_IsActivated(dx.nvStereoHandle,&res);
+        dx.nvStereoActivated = res != '\0';
       }
-      iVar2 = (**(code **)((int)*dx.d3d9 + 0x20))(dx.d3d9,dx.adapterIndex,&local_20);
+      iVar2 = (**(code **)((int)*dx.d3d9 + 0x20))(dx.d3d9,dx.adapterIndex,&getModeResult);
       if (-1 < iVar2) {
-        dx.adapterFullscreenWidth = local_20;
+        dx.adapterFullscreenWidth = getModeResult;
         dx.adapterFullscreenHeight = local_1c;
-        return local_c;
+        return hr;
       }
-      dx.adapterFullscreenWidth = param_3->BackBufferWidth;
-      dx.adapterFullscreenHeight = param_3->BackBufferHeight;
-      return local_c;
+      dx.adapterFullscreenWidth = d3dpp->BackBufferWidth;
+      dx.adapterFullscreenHeight = d3dpp->BackBufferHeight;
+      return hr;
     }
     Sleep(100);
-    if (local_c != -0x7789f798) {
-      local_8 = local_8 + 1;
+    if (hr != -0x7789f798) {
+      attempt = attempt + 1;
     }
-  } while (local_8 != 0x14);
+  } while (attempt != 0x14);
   if (dx.adapterIndex != 0) {
     dx.adapterIndex = 0;
-    local_c = R_CreateDeviceInternal(param_1,param_2,param_3);
+    hr = R_CreateDeviceInternal(hwnd,behavior,d3dpp);
   }
-  return local_c;
+  return hr;
 }
 
 
 // 00A50CD0  R_MonitorEnumCallback  (gfx_d3d/r_init.cpp:1676)
 
-int __cdecl R_MonitorEnumCallback(HMONITOR__ *param_1,HDC__ *param_2,tagRECT *param_3,long param_4)
+int __cdecl R_MonitorEnumCallback(HMONITOR__ *monitorHandle,HDC__ *hdc,tagRECT *rect,long userData)
 
 {
-  *(int *)param_4 = *(int *)param_4 + -1;
-  if (*(int *)param_4 == 0) {
-    *(HMONITOR__ **)(param_4 + 4) = param_1;
+  GfxEnumMonitors *enumData;
+  
+  *(int *)userData = *(int *)userData + -1;
+  if (*(int *)userData == 0) {
+    *(HMONITOR__ **)(userData + 4) = monitorHandle;
   }
-  return (uint)(*(int *)param_4 != 0);
+  return (uint)(*(int *)userData != 0);
 }
 
 
@@ -1148,14 +1181,14 @@ HMONITOR__ * __cdecl R_ChooseMonitor(void)
   int iVar2;
   int iVar3;
   HMONITOR pHVar4;
-  int local_c;
+  int enumData;
   HMONITOR__ *local_8;
   
   bVar1 = Dvar_GetBool("r_fullscreen");
   if (bVar1) {
-    local_c = (r_monitor->current).integer;
+    enumData = (r_monitor->current).integer;
     local_8 = (HMONITOR__ *)0x0;
-    EnumDisplayMonitors((HDC)0x0,(LPCRECT)0x0,R_MonitorEnumCallback,(LPARAM)&local_c);
+    EnumDisplayMonitors((HDC)0x0,(LPCRECT)0x0,R_MonitorEnumCallback,(LPARAM)&enumData);
     if (local_8 != (HMONITOR__ *)0x0) {
       return local_8;
     }
@@ -1185,24 +1218,28 @@ uint __cdecl R_ChooseAdapter(void)
   int local_484;
   byte *local_47c;
   byte *local_478;
-  uint local_474;
-  uint local_46c;
-  undefined1 local_45c [512];
+  uint foundAdapterIndex;
+  HRESULT hr;
+  uint adapterIndex;
+  HMONITOR__ *desiredMonitor;
+  uint adapterCount;
+  HMONITOR__ *adapterMonitor;
+  undefined1 id [512];
   byte local_25c [596];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   pHVar2 = R_ChooseMonitor();
-  local_474 = 0;
+  foundAdapterIndex = 0;
   uVar3 = (**(code **)((int)*dx.d3d9 + 0x10))(dx.d3d9);
-  local_46c = 0;
+  adapterIndex = 0;
   do {
-    if (uVar3 <= local_46c) {
-      return local_474;
+    if (uVar3 <= adapterIndex) {
+      return foundAdapterIndex;
     }
     if (pHVar2 == (HMONITOR__ *)0x0) {
 LAB_00a50b63:
-      iVar5 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,local_46c,0,local_45c);
+      iVar5 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,adapterIndex,0,id);
       if (-1 < iVar5) {
         local_478 = (byte *)0xd6b008;
         local_47c = local_25c;
@@ -1224,18 +1261,18 @@ LAB_00a50c0d:
         local_484 = 0;
 LAB_00a50c18:
         if (local_484 == 0) {
-          return local_46c;
+          return adapterIndex;
         }
       }
     }
     else {
-      pHVar4 = (HMONITOR__ *)(**(code **)((int)*dx.d3d9 + 0x3c))(dx.d3d9,local_46c);
+      pHVar4 = (HMONITOR__ *)(**(code **)((int)*dx.d3d9 + 0x3c))(dx.d3d9,adapterIndex);
       if (pHVar4 == pHVar2) {
-        local_474 = local_46c;
+        foundAdapterIndex = adapterIndex;
         goto LAB_00a50b63;
       }
     }
-    local_46c = local_46c + 1;
+    adapterIndex = adapterIndex + 1;
   } while( true );
 }
 
@@ -1251,10 +1288,11 @@ bool __cdecl R_PreCreateWindow(void)
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  undefined1 local_45c [1064];
+  NvAPI_Status status;
+  undefined1 adapterId [1064];
   ulong local_34;
   uint local_c;
-  int local_8;
+  HRESULT hr;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (dx.d3d9 == (IDirect3D9 *)0x0) {
@@ -1278,8 +1316,8 @@ bool __cdecl R_PreCreateWindow(void)
   R_StoreDirect3DCaps(dx.adapterIndex);
   R_EnumDisplayModes(dx.adapterIndex);
   dx.nvInitialized = false;
-  local_8 = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,dx.adapterIndex,0,local_45c);
-  if ((local_8 == 0) && (dx.vendorId = local_34, local_34 == 0x10de)) {
+  hr = (**(code **)((int)*dx.d3d9 + 0x14))(dx.d3d9,dx.adapterIndex,0,adapterId);
+  if ((hr == 0) && (dx.vendorId = local_34, local_34 == 0x10de)) {
     iVar4 = _NvAPI_Initialize();
     dx.nvInitialized = iVar4 == 0;
   }
@@ -1307,19 +1345,19 @@ void __cdecl R_UpdateGpuSyncType(void)
 
 // 00A4ED50  R_CreateDevice  (gfx_d3d/r_init.cpp:2000)
 
-bool __cdecl R_CreateDevice(GfxWindowParms *param_1)
+bool __cdecl R_CreateDevice(GfxWindowParms *wndParms)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  _D3DPRESENT_PARAMETERS_ local_48;
-  HWND__ *local_10;
-  int local_c;
-  ulong local_8;
+  _D3DPRESENT_PARAMETERS_ d3dpp;
+  HWND__ *hwnd;
+  HRESULT hr;
+  ulong behavior;
   
-  local_10 = (HWND__ *)0x0;
-  if (param_1 == (GfxWindowParms *)0x0) {
+  hwnd = (HWND__ *)0x0;
+  if (wndParms == (GfxWindowParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x7d6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1335,7 +1373,7 @@ bool __cdecl R_CreateDevice(GfxWindowParms *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->hwnd == (HWND__ *)0x0) {
+  if (wndParms->hwnd == (HWND__ *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x7d9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1343,7 +1381,7 @@ bool __cdecl R_CreateDevice(GfxWindowParms *param_1)
       return (bool)uVar3;
     }
   }
-  local_10 = param_1->hwnd;
+  hwnd = wndParms->hwnd;
   if (dx.device != (IDirect3DDevice9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x7e1,0,"%s");
     if (!bVar2) {
@@ -1353,14 +1391,14 @@ bool __cdecl R_CreateDevice(GfxWindowParms *param_1)
     }
   }
   dx.depthStencilFormat = R_GetDepthStencilFormat(D3DFMT_A8R8G8B8);
-  R_SetD3DPresentParameters(&local_48,param_1);
-  local_8 = 0x40;
+  R_SetD3DPresentParameters(&d3dpp,wndParms);
+  behavior = 0x40;
   if ((r_multithreaded_device->current).enabled != false) {
-    local_8 = 0x44;
+    behavior = 0x44;
   }
-  local_c = R_CreateDeviceInternal(local_10,local_8,&local_48);
-  if (local_c < 0) {
-    R_ErrorDescription(local_c);
+  hr = R_CreateDeviceInternal(hwnd,behavior,&d3dpp);
+  if (hr < 0) {
+    R_ErrorDescription(hr);
     Com_Printf(8,"Couldn\'t create a Direct3D device: %s\n");
     bVar2 = false;
   }
@@ -1382,20 +1420,22 @@ bool __cdecl R_CreateDevice(GfxWindowParms *param_1)
 
 // 00A50D60  R_InitHardware  (gfx_d3d/r_init.cpp:2084)
 
-bool __cdecl R_InitHardware(GfxWindowParms *param_1)
+bool __cdecl R_InitHardware(GfxWindowParms *wndParms)
 
 {
   bool bVar1;
   int iVar2;
   int in_stack_ffffffc0;
   uint local_3c;
-  int local_2c;
-  undefined4 local_28 [2];
+  int semaphore_3;
+  int semaphore_2;
+  int count;
+  undefined4 sliState [2];
   uint local_20;
-  int local_c;
-  char local_5;
+  int semaphore;
+  bool failed;
   
-  bVar1 = R_CreateDevice(param_1);
+  bVar1 = R_CreateDevice(wndParms);
   if (bVar1) {
     if ((useFastFile->current).enabled != false) {
       DB_LoadGraphicsAssetsForPC();
@@ -1404,8 +1444,8 @@ bool __cdecl R_InitHardware(GfxWindowParms *param_1)
     dx.gpuCount = 1;
     if ((r_multiGpu->current).enabled != false) {
       if ((dx.vendorId == 0x10de) && (dx.nvInitialized != false)) {
-        local_28[0] = 0x1001c;
-        iVar2 = _NvAPI_D3D_GetCurrentSLIState(dx.device,local_28);
+        sliState[0] = 0x1001c;
+        iVar2 = _NvAPI_D3D_GetCurrentSLIState(dx.device,sliState);
         if (iVar2 == 0) {
           if (local_20 < 4) {
             local_3c = local_20;
@@ -1417,29 +1457,29 @@ bool __cdecl R_InitHardware(GfxWindowParms *param_1)
         }
       }
       if (dx.vendorId == 0x1002) {
-        local_2c = AtiQueryMgpuCount();
-        if (local_2c < 1) {
-          local_2c = 1;
+        count = AtiQueryMgpuCount();
+        if (count < 1) {
+          count = 1;
         }
-        dx.gpuCount = local_2c;
-        in_stack_ffffffc0 = local_2c;
-        if (3 < local_2c) {
+        dx.gpuCount = count;
+        in_stack_ffffffc0 = count;
+        if (3 < count) {
           dx.gpuCount = 4;
           in_stack_ffffffc0 = dx.gpuCount;
         }
       }
     }
     Com_Printf(8,"Using %d GPU(s).\n");
-    R_StoreWindowSettings(param_1);
+    R_StoreWindowSettings(wndParms);
     RB_InitSceneViewport();
     GamerProfile_WriteSettings(in_stack_ffffffc0);
-    local_c = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+    semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
     bVar1 = R_CreateForInitOrReset();
-    local_5 = '\x01' - bVar1;
-    if (local_c != 0) {
+    failed = (bool)('\x01' - bVar1);
+    if (semaphore != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (local_5 == '\0') {
+    if (failed == false) {
       Com_Printf(8,"Setting initial state...\n");
       iVar2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
       RB_SetInitialState();
@@ -1454,7 +1494,7 @@ bool __cdecl R_InitHardware(GfxWindowParms *param_1)
         R_ReleaseDXDeviceOwnership();
       }
       GamerProfile_WriteSettings(in_stack_ffffffc0);
-      R_FinishAttachingToWindow(param_1);
+      R_FinishAttachingToWindow(wndParms);
       bVar1 = true;
     }
     else {
@@ -1470,7 +1510,7 @@ bool __cdecl R_InitHardware(GfxWindowParms *param_1)
 
 // 00A51220  R_CreateWindow  (gfx_d3d/r_init.cpp:2224)
 
-bool __cdecl R_CreateWindow(GfxWindowParms *param_1)
+bool __cdecl R_CreateWindow(GfxWindowParms *wndParms)
 
 {
   code *pcVar1;
@@ -1485,11 +1525,12 @@ bool __cdecl R_CreateWindow(GfxWindowParms *param_1)
   HWND pHVar4;
   HMENU hMenu;
   LPVOID lpParam;
-  DWORD local_20;
-  DWORD local_1c;
-  tagRECT local_14;
+  ulong exStyle;
+  ulong style;
+  HINSTANCE__ *hinst;
+  tagRECT rc;
   
-  if (param_1 == (GfxWindowParms *)0x0) {
+  if (wndParms == (GfxWindowParms *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x8b6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1497,7 +1538,7 @@ bool __cdecl R_CreateWindow(GfxWindowParms *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->hwnd != (HWND__ *)0x0) {
+  if (wndParms->hwnd != (HWND__ *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x8b7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1505,41 +1546,41 @@ bool __cdecl R_CreateWindow(GfxWindowParms *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->fullscreen == false) {
+  if (wndParms->fullscreen == false) {
     Com_Printf(8,"Attempting %i x %i window at (%i, %i)\n");
-    local_20 = 0;
-    local_1c = 0x10c80000;
+    exStyle = 0;
+    style = 0x10c80000;
   }
   else {
     Com_Printf(8,"Attempting %i x %i fullscreen with 32 bpp at %i hz\n");
-    local_20 = 8;
-    local_1c = 0x80000000;
+    exStyle = 8;
+    style = 0x80000000;
   }
-  local_14.left = 0;
-  local_14.right = param_1->displayWidth;
-  local_14.top = 0;
-  local_14.bottom = param_1->displayHeight;
-  AdjustWindowRectEx(&local_14,local_1c,0,local_20);
+  rc.left = 0;
+  rc.right = wndParms->displayWidth;
+  rc.top = 0;
+  rc.bottom = wndParms->displayHeight;
+  AdjustWindowRectEx(&rc,style,0,exStyle);
   hInstance = GetModuleHandleA((LPCSTR)0x0);
   lpParam = (LPVOID)0x0;
   hMenu = (HMENU)0x0;
   pHVar4 = (HWND)0x0;
-  nHeight = local_14.bottom - local_14.top;
-  nWidth = local_14.right - local_14.left;
-  Y = param_1->y;
-  X = param_1->x;
+  nHeight = rc.bottom - rc.top;
+  nWidth = rc.right - rc.left;
+  Y = wndParms->y;
+  X = wndParms->x;
   lpWindowName = Com_GetBuildOfficialNameR();
-  pHVar4 = CreateWindowExA(local_20,"CoDBlackOps",lpWindowName,local_1c,X,Y,nWidth,nHeight,pHVar4,
-                           hMenu,hInstance,lpParam);
-  param_1->hwnd = (HWND__ *)pHVar4;
-  if (param_1->hwnd == (HWND__ *)0x0) {
+  pHVar4 = CreateWindowExA(exStyle,"CoDBlackOps",lpWindowName,style,X,Y,nWidth,nHeight,pHVar4,hMenu,
+                           hInstance,lpParam);
+  wndParms->hwnd = (HWND__ *)pHVar4;
+  if (wndParms->hwnd == (HWND__ *)0x0) {
     Com_Printf(8,"Couldn\'t create a window.\n");
     bVar2 = false;
   }
   else {
-    if (param_1->fullscreen == false) {
-      SetWindowPos((HWND)param_1->hwnd,(HWND)0xfffffffe,0,0,0,0,3);
-      SetFocus((HWND)param_1->hwnd);
+    if (wndParms->fullscreen == false) {
+      SetWindowPos((HWND)wndParms->hwnd,(HWND)0xfffffffe,0,0,0,0,3);
+      SetFocus((HWND)wndParms->hwnd);
     }
     Com_Printf(8,"Game window successfully created.\n");
     bVar2 = true;
@@ -1550,17 +1591,17 @@ bool __cdecl R_CreateWindow(GfxWindowParms *param_1)
 
 // 00A50D10  R_CreateGameWindow  (gfx_d3d/r_init.cpp:2272)
 
-bool __cdecl R_CreateGameWindow(GfxWindowParms *param_1)
+bool __cdecl R_CreateGameWindow(GfxWindowParms *wndParms)
 
 {
   bool bVar1;
   
-  bVar1 = R_CreateWindow(param_1);
+  bVar1 = R_CreateWindow(wndParms);
   if (bVar1) {
-    bVar1 = R_InitHardware(param_1);
+    bVar1 = R_InitHardware(wndParms);
     if (bVar1) {
       dx.targetWindowIndex = 0;
-      ShowWindow((HWND)param_1->hwnd,5);
+      ShowWindow((HWND)wndParms->hwnd,5);
       bVar1 = true;
     }
     else {
@@ -1576,54 +1617,53 @@ bool __cdecl R_CreateGameWindow(GfxWindowParms *param_1)
 
 // 00A4FB40  R_ClosestRefreshRateForMode  (gfx_d3d/r_init.cpp:2297)
 
-int __cdecl R_ClosestRefreshRateForMode(uint param_1,uint param_2,int param_3)
+int __cdecl R_ClosestRefreshRateForMode(uint width,uint height,int refreshRate)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  int local_14;
-  int local_10;
-  int local_c;
+  int top;
+  int bot;
+  int comparison;
+  int mid;
   
-  local_10 = 0;
-  local_14 = dx.displayModeCount - 1;
-  while (local_10 <= local_14) {
-    iVar3 = (local_14 + local_10) / 2;
-    local_c = dx.displayModes[iVar3].Width - param_1;
-    if (((local_c == 0) && (local_c = dx.displayModes[iVar3].Height - param_2, local_c == 0)) &&
-       (local_c = dx.displayModes[iVar3].RefreshRate - param_3, local_c == 0)) {
-      return param_3;
+  bot = 0;
+  top = dx.displayModeCount - 1;
+  while (bot <= top) {
+    iVar3 = (top + bot) / 2;
+    comparison = dx.displayModes[iVar3].Width - width;
+    if (((comparison == 0) && (comparison = dx.displayModes[iVar3].Height - height, comparison == 0)
+        ) && (comparison = dx.displayModes[iVar3].RefreshRate - refreshRate, comparison == 0)) {
+      return refreshRate;
     }
-    if (local_c < 0) {
-      local_10 = iVar3 + 1;
+    if (comparison < 0) {
+      bot = iVar3 + 1;
     }
     else {
-      local_14 = iVar3 + -1;
+      top = iVar3 + -1;
     }
   }
-  if ((local_14 < 0) &&
+  if ((top < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x917,0,
                                "%s\n\t(top) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((local_14 != local_10 + -1) &&
+  if ((top != bot + -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x918,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((dx.displayModes[local_14].Width == param_1) && (dx.displayModes[local_14].Height == param_2))
-  {
-    uVar4 = dx.displayModes[local_14].RefreshRate;
+  if ((dx.displayModes[top].Width == width) && (dx.displayModes[top].Height == height)) {
+    uVar4 = dx.displayModes[top].RefreshRate;
   }
   else {
-    if ((dx.displayModes[local_10].Width != param_1) ||
-       (dx.displayModes[local_10].Height != param_2)) {
+    if ((dx.displayModes[bot].Width != width) || (dx.displayModes[bot].Height != height)) {
       va("%i = (%i %i), %i = (%i %i), want (%i %i)");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0x91b,0,
                                "%s\n\t%s");
@@ -1633,7 +1673,7 @@ int __cdecl R_ClosestRefreshRateForMode(uint param_1,uint param_2,int param_3)
         return iVar3;
       }
     }
-    uVar4 = dx.displayModes[local_10].RefreshRate;
+    uVar4 = dx.displayModes[bot].RefreshRate;
   }
   return uVar4;
 }
@@ -1641,18 +1681,19 @@ int __cdecl R_ClosestRefreshRateForMode(uint param_1,uint param_2,int param_3)
 
 // 00A4FD10  R_SetCustomResolution  (gfx_d3d/r_init.cpp:2340)
 
-bool __cdecl R_SetCustomResolution(GfxWindowParms *param_1)
+bool __cdecl R_SetCustomResolution(GfxWindowParms *wndParms)
 
 {
   bool bVar1;
   int iVar2;
-  int local_c;
-  int local_8;
+  int monitorHeight;
+  int monitorWidth;
   
   iVar2 = sscanf((r_customMode->current).string,"%ix%i");
   if (iVar2 == 2) {
-    bVar1 = R_GetMonitorDimensions(&local_8,&local_c);
-    if ((bVar1) && ((local_8 < param_1->displayWidth || (local_c < param_1->displayHeight)))) {
+    bVar1 = R_GetMonitorDimensions(&monitorWidth,&monitorHeight);
+    if ((bVar1) &&
+       ((monitorWidth < wndParms->displayWidth || (monitorHeight < wndParms->displayHeight)))) {
       bVar1 = false;
     }
     else {
@@ -1668,58 +1709,60 @@ bool __cdecl R_SetCustomResolution(GfxWindowParms *param_1)
 
 // 00A4F9C0  R_SetWndParms  (gfx_d3d/r_init.cpp:2357)
 
-void __cdecl R_SetWndParms(GfxWindowParms *param_1)
+void __cdecl R_SetWndParms(GfxWindowParms *wndParms)
 
 {
   bool bVar1;
   char *pcVar2;
   int iVar3;
-  int local_c;
+  char *resolutionString;
+  int refreshRate;
+  char *refreshRateString;
   
   bVar1 = Dvar_GetBool("r_fullscreen");
-  param_1->fullscreen = bVar1;
-  if (param_1->fullscreen == false) {
-    bVar1 = R_SetCustomResolution(param_1);
+  wndParms->fullscreen = bVar1;
+  if (wndParms->fullscreen == false) {
+    bVar1 = R_SetCustomResolution(wndParms);
     if (bVar1) goto LAB_00a4fa27;
   }
   pcVar2 = Dvar_EnumToString(r_mode);
   sscanf(pcVar2,"%ix%i");
 LAB_00a4fa27:
-  if (param_1->fullscreen == false) {
+  if (wndParms->fullscreen == false) {
     if (dx.adapterNativeIsValid == false) {
       dx.adapterNativeIsValid =
            R_GetMonitorDimensions(&dx.adapterNativeWidth,&dx.adapterNativeHeight);
     }
-    if ((dx.adapterNativeWidth < param_1->displayWidth) ||
-       (dx.adapterNativeHeight < param_1->displayHeight)) {
-      param_1->displayWidth = dx.adapterNativeWidth;
-      param_1->displayHeight = dx.adapterNativeHeight;
+    if ((dx.adapterNativeWidth < wndParms->displayWidth) ||
+       (dx.adapterNativeHeight < wndParms->displayHeight)) {
+      wndParms->displayWidth = dx.adapterNativeWidth;
+      wndParms->displayHeight = dx.adapterNativeHeight;
     }
   }
-  param_1->sceneWidth = param_1->displayWidth;
-  param_1->sceneHeight = param_1->displayHeight;
-  if (param_1->fullscreen == false) {
-    param_1->hz = 0x3c;
+  wndParms->sceneWidth = wndParms->displayWidth;
+  wndParms->sceneHeight = wndParms->displayHeight;
+  if (wndParms->fullscreen == false) {
+    wndParms->hz = 0x3c;
   }
   else {
     pcVar2 = Dvar_EnumToString(r_displayRefresh);
     sscanf(pcVar2,"%i Hz");
-    iVar3 = R_ClosestRefreshRateForMode(param_1->displayWidth,param_1->displayHeight,local_c);
-    param_1->hz = iVar3;
+    iVar3 = R_ClosestRefreshRateForMode(wndParms->displayWidth,wndParms->displayHeight,refreshRate);
+    wndParms->hz = iVar3;
   }
   iVar3 = Dvar_GetInt("vid_xpos");
-  param_1->x = iVar3;
+  wndParms->x = iVar3;
   iVar3 = Dvar_GetInt("vid_ypos");
-  param_1->y = iVar3;
-  param_1->hwnd = (HWND__ *)0x0;
-  param_1->aaSamples = (r_aaSamples->current).integer;
+  wndParms->y = iVar3;
+  wndParms->hwnd = (HWND__ *)0x0;
+  wndParms->aaSamples = (r_aaSamples->current).integer;
   return;
 }
 
 
 // 00A513E0  R_ReduceWindowSettings  (gfx_d3d/r_init.cpp:2682)
 
-bool __cdecl R_ReduceWindowSettings(GfxWindowParms *param_1)
+bool __cdecl R_ReduceWindowSettings(GfxWindowParms *wndParms)
 
 {
   bool bVar1;
@@ -1780,10 +1823,11 @@ void __cdecl R_ResizeWindow(void)
   code *pcVar1;
   HWND__ *hWnd;
   bool bVar2;
-  DWORD local_44;
-  char *local_40;
-  GfxWindowParms local_3c;
-  tagRECT local_14;
+  HWND__ *hwnd;
+  ulong exStyle;
+  ulong style;
+  GfxWindowParms wndParms;
+  tagRECT rc;
   
   Dvar_MakeLatchedValueCurrent(r_aspectRatio);
   Dvar_MakeLatchedValueCurrent(r_mode);
@@ -1792,8 +1836,8 @@ void __cdecl R_ResizeWindow(void)
   Dvar_MakeLatchedValueCurrent(r_vsync);
   Dvar_MakeLatchedValueCurrent(r_fullscreen);
   Dvar_MakeLatchedValueCurrent(r_displayRefresh);
-  R_SetWndParms(&local_3c);
-  R_StoreWindowSettings(&local_3c);
+  R_SetWndParms(&wndParms);
+  R_StoreWindowSettings(&wndParms);
   hWnd = dx.windows[0].hwnd;
   if (dx.windows[0].hwnd == (HWND__ *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0xab3,0,"%s");
@@ -1803,26 +1847,26 @@ void __cdecl R_ResizeWindow(void)
       return;
     }
   }
-  R_SetWndParms(&local_3c);
-  dx.windows[0].width = local_3c.displayWidth;
-  dx.windows[0].height = local_3c.displayHeight;
-  if (local_3c.fullscreen == false) {
-    local_44 = 0;
-    local_40 = "s updated for the overhead names";
+  R_SetWndParms(&wndParms);
+  dx.windows[0].width = wndParms.displayWidth;
+  dx.windows[0].height = wndParms.displayHeight;
+  if (wndParms.fullscreen == false) {
+    exStyle = 0;
+    style = (int)"How often the head tag is updated for the overhead names" + 0x18;
   }
   else {
-    local_44 = 8;
-    local_40 = (char *)0x80000000;
+    exStyle = 8;
+    style = 0x80000000;
   }
-  local_14.left = 0;
-  local_14.right = local_3c.displayWidth;
-  local_14.top = 0;
-  local_14.bottom = local_3c.displayHeight;
-  AdjustWindowRectEx(&local_14,(DWORD)local_40,0,local_44);
-  SetWindowLongA((HWND)hWnd,-0x10,(LONG)local_40);
-  SetWindowPos((HWND)hWnd,(HWND)((local_3c.fullscreen != false) - 2),local_3c.x,local_3c.y,
-               local_14.right - local_14.left,local_14.bottom - local_14.top,0x60);
-  if (local_3c.fullscreen == false) {
+  rc.left = 0;
+  rc.right = wndParms.displayWidth;
+  rc.top = 0;
+  rc.bottom = wndParms.displayHeight;
+  AdjustWindowRectEx(&rc,style,0,exStyle);
+  SetWindowLongA((HWND)hWnd,-0x10,style);
+  SetWindowPos((HWND)hWnd,(HWND)((wndParms.fullscreen != false) - 2),wndParms.x,wndParms.y,
+               rc.right - rc.left,rc.bottom - rc.top,0x60);
+  if (wndParms.fullscreen == false) {
     Com_Printf(8,"Resizing %i x %i window at (%i, %i)\n");
   }
   else {
@@ -1839,7 +1883,8 @@ void __cdecl R_InitGraphicsApi(void)
 {
   code *pcVar1;
   bool bVar2;
-  GfxWindowParms local_2c;
+  bool createWindow;
+  GfxWindowParms wndParms;
   
   if (((dx.device != (IDirect3DDevice9 *)0x0) != (dx.d3d9 != (IDirect3D9 *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0xadc,0,"%s"
@@ -1851,10 +1896,10 @@ void __cdecl R_InitGraphicsApi(void)
   if (dx.device == (IDirect3DDevice9 *)0x0) {
     R_PreCreateWindow();
     while( true ) {
-      R_SetWndParms(&local_2c);
-      bVar2 = R_CreateGameWindow(&local_2c);
+      R_SetWndParms(&wndParms);
+      bVar2 = R_CreateGameWindow(&wndParms);
       if (bVar2) break;
-      bVar2 = R_ReduceWindowSettings(&local_2c);
+      bVar2 = R_ReduceWindowSettings(&wndParms);
       if (!bVar2) {
         R_FatalInitError("Couldn\'t initialize renderer");
       }
@@ -1879,10 +1924,10 @@ void __cdecl R_AllocateMinimalResources(void)
 
 // 00A4FD90  R_SetIsMultiplayer  (gfx_d3d/r_init.cpp:2823)
 
-void __cdecl R_SetIsMultiplayer(bool param_1)
+void __cdecl R_SetIsMultiplayer(bool isMp)
 
 {
-  r_glob.isMultiplayer = param_1;
+  r_glob.isMultiplayer = isMp;
   return;
 }
 
@@ -2018,6 +2063,7 @@ void __cdecl R_Init(void)
 
 {
   int iVar1;
+  int semaphore;
   
   Com_Printf(8,"----- R_Init -----\n");
   r_glob.remoteScreenLastSceneResolveTarget = '\0';
@@ -2057,10 +2103,11 @@ void __cdecl R_ShutdownStreams(void)
 
 // 00A515C0  R_ShutdownInternal  (gfx_d3d/r_init.cpp:3291)
 
-void __cdecl R_ShutdownInternal(int param_1)
+void __cdecl R_ShutdownInternal(int destroyWindow)
 
 {
   int iVar1;
+  int semaphore;
   
   if (rg.registered) {
     R_SyncRenderThread();
@@ -2105,7 +2152,7 @@ void __cdecl R_ShutdownInternal(int param_1)
 
 // 00A51810  R_Shutdown  (gfx_d3d/r_init.cpp:3387)
 
-void __cdecl R_Shutdown(int param_1)
+void __cdecl R_Shutdown(int destroyWindow)
 
 {
   code *pcVar1;
@@ -2121,7 +2168,7 @@ void __cdecl R_Shutdown(int param_1)
       return;
     }
   }
-  g_destroy_window = param_1;
+  g_destroy_window = destroyWindow;
   Sys_SetD3DShutdownEvent();
   while( true ) {
     iVar3 = Sys_QueryD3DShutdownEvent();
@@ -2195,7 +2242,7 @@ void __cdecl R_BeginRegistrationInternal(void)
 
 // 00A51980  R_BeginRegistration  (gfx_d3d/r_init.cpp:3449)
 
-void __cdecl R_BeginRegistration(vidConfig_t *param_1)
+void __cdecl R_BeginRegistration(vidConfig_t *vidConfigOut)
 
 {
   code *pcVar1;
@@ -2210,7 +2257,7 @@ void __cdecl R_BeginRegistration(vidConfig_t *param_1)
     if (iVar3 == 0) break;
     NET_Sleep(0);
   }
-  if (param_1 == (vidConfig_t *)0x0) {
+  if (vidConfigOut == (vidConfig_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0xda3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2220,9 +2267,9 @@ void __cdecl R_BeginRegistration(vidConfig_t *param_1)
   }
   pvVar4 = &vidConfig;
   for (iVar3 = 0xe; iVar3 != 0; iVar3 = iVar3 + -1) {
-    param_1->sceneWidth = pvVar4->sceneWidth;
+    vidConfigOut->sceneWidth = pvVar4->sceneWidth;
     pvVar4 = (vidConfig_t *)&pvVar4->sceneHeight;
-    param_1 = (vidConfig_t *)&param_1->sceneHeight;
+    vidConfigOut = (vidConfig_t *)&vidConfigOut->sceneHeight;
   }
   if (r_glob.startedRenderThread != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp",0xda7,0,"%s");
@@ -2266,17 +2313,17 @@ void __cdecl R_EndRegistration(void)
 
 // 00A51A80  R_TrackStatistics  (gfx_d3d/r_init.cpp:3520)
 
-void __cdecl R_TrackStatistics(trStatistics_t *param_1)
+void __cdecl R_TrackStatistics(trStatistics_t *stats)
 
 {
-  rg.globalstats = param_1;
+  rg.globalstats = stats;
   return;
 }
 
 
 // 00A51A90  R_SyncGpu  (gfx_d3d/r_init.cpp:3559)
 
-void __cdecl R_SyncGpu(_func___cdecl_int_ulong64 *param_1)
+void __cdecl R_SyncGpu(_func___cdecl_int_ulong64 *WorkCallback)
 
 {
   R_FinishGpuFence();
@@ -2286,21 +2333,21 @@ void __cdecl R_SyncGpu(_func___cdecl_int_ulong64 *param_1)
 
 // 00A51AA0  R_UpdateTeamColors  (gfx_d3d/r_init.cpp:3705)
 
-void __cdecl R_UpdateTeamColors(float *param_1,float *param_2)
+void __cdecl R_UpdateTeamColors(float *color_allies,float *color_axis)
 
 {
-  Byte4PackRgba(param_1,rg.color_allies.array);
-  Byte4PackRgba(param_2,rg.color_axis.array);
+  Byte4PackRgba(color_allies,rg.color_allies.array);
+  Byte4PackRgba(color_axis,rg.color_axis.array);
   return;
 }
 
 
 // 00A51AD0  R_ConfigureRenderer  (gfx_d3d/r_init.cpp:3711)
 
-void __cdecl R_ConfigureRenderer(GfxConfiguration *param_1)
+void __cdecl R_ConfigureRenderer(GfxConfiguration *config)
 
 {
-  SetGfxConfig(param_1);
+  SetGfxConfig(config);
   R_InitRenderCommands();
   return;
 }
@@ -2312,41 +2359,41 @@ bool __cdecl R_ResetDevice(void)
 
 {
   bool bVar1;
-  _D3DPRESENT_PARAMETERS_ local_78;
-  int local_40;
-  GfxWindowParms local_3c;
-  tagRECT local_14;
+  _D3DPRESENT_PARAMETERS_ d3dpp;
+  HRESULT hr;
+  GfxWindowParms wndParms;
+  tagRECT rc;
   
-  local_3c.hwnd = dx.windows[0].hwnd;
-  local_3c.x = 0;
-  local_3c.y = 0;
-  local_3c.displayWidth = dx.windows[0].width;
-  local_3c.displayHeight = dx.windows[0].height;
-  local_3c.sceneWidth = dx.windows[0].width;
-  local_3c.sceneHeight = dx.windows[0].height;
-  local_3c.hz = vidConfig.displayFrequency;
-  local_3c.fullscreen = vidConfig.isFullscreen != 0;
-  local_3c.aaSamples = (r_aaSamples->current).integer;
-  R_SetD3DPresentParameters(&local_78,&local_3c);
-  if (local_78.Windowed == 0) {
+  wndParms.hwnd = dx.windows[0].hwnd;
+  wndParms.x = 0;
+  wndParms.y = 0;
+  wndParms.displayWidth = dx.windows[0].width;
+  wndParms.displayHeight = dx.windows[0].height;
+  wndParms.sceneWidth = dx.windows[0].width;
+  wndParms.sceneHeight = dx.windows[0].height;
+  wndParms.hz = vidConfig.displayFrequency;
+  wndParms.fullscreen = vidConfig.isFullscreen != 0;
+  wndParms.aaSamples = (r_aaSamples->current).integer;
+  R_SetD3DPresentParameters(&d3dpp,&wndParms);
+  if (d3dpp.Windowed == 0) {
     Com_Printf(8,"Resetting %i x %i fullscreen.\n");
   }
   else {
     Com_Printf(8,"Resetting %i x %i window.\n");
   }
-  local_40 = (**(code **)((int)*dx.device + 0x40))(dx.device,&local_78);
-  if (local_40 == 0) {
-    if (local_3c.fullscreen == false) {
-      local_14.left = 0;
-      local_14.right = local_3c.displayWidth;
-      local_14.top = 0;
-      local_14.bottom = local_3c.displayHeight;
-      AdjustWindowRectEx(&local_14,0xc80000,0,0);
-      SetWindowPos((HWND)local_3c.hwnd,(HWND)0xfffffffe,local_3c.x,local_3c.y,
-                   local_14.right - local_14.left,local_14.bottom - local_14.top,0x62);
+  hr = (**(code **)((int)*dx.device + 0x40))(dx.device,&d3dpp);
+  if (hr == 0) {
+    if (wndParms.fullscreen == false) {
+      rc.left = 0;
+      rc.right = wndParms.displayWidth;
+      rc.top = 0;
+      rc.bottom = wndParms.displayHeight;
+      AdjustWindowRectEx(&rc,0xc80000,0,0);
+      SetWindowPos((HWND)wndParms.hwnd,(HWND)0xfffffffe,wndParms.x,wndParms.y,rc.right - rc.left,
+                   rc.bottom - rc.top,0x62);
     }
     else {
-      SetWindowPos((HWND)local_3c.hwnd,(HWND)0xffffffff,0,0,0,0,3);
+      SetWindowPos((HWND)wndParms.hwnd,(HWND)0xffffffff,0,0,0,0,3);
     }
     bVar1 = R_CreateForInitOrReset();
     if (!bVar1) {
@@ -2374,6 +2421,9 @@ bool __cdecl R_ReleaseLostDeviceAssets2(void)
 {
   int iVar1;
   int iVar2;
+  int semaphore_3;
+  int semaphore_2;
+  int semaphore;
   
   iVar1 = R_ReleaseDXDeviceOwnership();
   while (iVar2 = R_FinishedFrontendWorkerCmds(), iVar2 == 0) {
@@ -2465,7 +2515,9 @@ void __cdecl R_ComErrorCleanup(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -2483,13 +2535,13 @@ void __cdecl R_ComErrorCleanup(void)
       RB_LogPrint("dx.device->EndScene()\n");
     }
     iVar3 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar4 = (**(code **)((int)*dx.device + 0xa8))(dx.device);
+    hr_00 = (**(code **)((int)*dx.device + 0xa8))(dx.device);
     if (iVar3 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (iVar4 < 0) {
+    if (hr_00 < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(iVar4);
+      R_ErrorDescription(hr_00);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_init.cpp (%i) dx.device->EndScene() failed: %s\n"
                );

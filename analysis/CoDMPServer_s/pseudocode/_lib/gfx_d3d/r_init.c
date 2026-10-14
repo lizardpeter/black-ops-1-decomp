@@ -5,6 +5,8 @@
 void __cdecl R_FatalInitError(char *param_1)
 
 {
+  char *msg;
+  
   Com_Printf(8,
              "********** DirectX returned an unrecoverable error code during initialization  **********\n"
             );
@@ -26,6 +28,7 @@ void __cdecl R_FatalLockError(T_HRESULT param_1)
 
 {
   char *pcVar1;
+  HRESULT hr;
   
   Com_Printf(8,
              "********** DirectX failed a call to lock a vertex buffer or an index buffer **********\n"
@@ -43,6 +46,7 @@ void __cdecl R_SetColorMappings(void)
 
 {
   GfxGammaRamp *in_stack_fffffdf8;
+  GfxGammaRamp gammaRamp;
   
   if (vidConfig.deviceSupportsGamma) {
     R_CalcGammaRamp(in_stack_fffffdf8);
@@ -218,11 +222,7 @@ void __cdecl R_ResizeWindow(void)
   GfxWindowParms *unaff_EDI;
   undefined *dwStyle;
   tagRECT tStack_40;
-  char cStack_28;
-  int iStack_24;
-  int iStack_20;
-  int iStack_14;
-  int iStack_10;
+  GfxWindowParms wndParms;
   
   FUN_0069f980(r_aspectRatio,(r_aspectRatio->latched).integer64,
                *(undefined8 *)((int)&r_aspectRatio->latched + 8),0);
@@ -240,9 +240,9 @@ void __cdecl R_ResizeWindow(void)
   R_StoreWindowSettings(unaff_EDI);
   hWnd = dx.windows[0].hwnd;
   R_SetWndParms(unaff_EDI);
-  dx.windows[0].width = iStack_14;
-  dx.windows[0].height = iStack_10;
-  if (cStack_28 == '\0') {
+  dx.windows[0].width = wndParms.sceneHeight;
+  dx.windows[0].height = wndParms.displayWidth;
+  if ((char)wndParms.hz == '\0') {
     dwExStyle = 0;
     dwStyle = &DAT_00c80000;
   }
@@ -250,15 +250,15 @@ void __cdecl R_ResizeWindow(void)
     dwExStyle = 8;
     dwStyle = (undefined *)0x80000000;
   }
-  tStack_40.right = iStack_14;
+  tStack_40.right = wndParms.sceneHeight;
   tStack_40.left = 0;
   tStack_40.top = 0;
-  tStack_40.bottom = iStack_10;
+  tStack_40.bottom = wndParms.displayWidth;
   AdjustWindowRectEx(&tStack_40,(DWORD)dwStyle,0,dwExStyle);
   SetWindowLongA((HWND)hWnd,-0x10,(LONG)dwStyle);
-  SetWindowPos((HWND)hWnd,(HWND)((cStack_28 != '\0') - 2),iStack_24,iStack_20,
+  SetWindowPos((HWND)hWnd,(HWND)(((char)wndParms.hz != '\0') - 2),wndParms._8_4_,wndParms.x,
                tStack_40.right - tStack_40.left,tStack_40.bottom - tStack_40.top,0x60);
-  if (cStack_28 != '\0') {
+  if ((char)wndParms.hz != '\0') {
     Com_Printf(8,"Resizing %i x %i fullscreen at (%i, %i)\n");
     return;
   }
@@ -298,6 +298,7 @@ void __cdecl R_BeginRegistration(vidConfig_t *param_1)
   DWORD DVar1;
   int iVar2;
   vidConfig_t *pvVar3;
+  vidConfig_t *vidConfigOut;
   
   SetEvent(_DAT_01da4978);
   DVar1 = WaitForSingleObject(_DAT_01da4978,0);

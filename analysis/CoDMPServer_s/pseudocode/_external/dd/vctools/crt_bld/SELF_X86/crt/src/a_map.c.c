@@ -7,8 +7,8 @@
 
 int __cdecl
 __crtLCMapStringA_stat
-          (localeinfo_struct *param_1,ulong param_2,ulong param_3,char *param_4,int param_5,
-          char *param_6,int param_7,int param_8,int param_9)
+          (localeinfo_struct *Locale,ulong dwMapFlags,ulong lpSrcStr,char *cchSrc,int lpDestStr,
+          char *cchDest,int code_page,int bError,int param_9)
 
 {
   uint uVar1;
@@ -18,14 +18,15 @@ __crtLCMapStringA_stat
   char *pcVar5;
   uint uVar6;
   undefined4 *puVar7;
-  LPCWSTR lpDestStr;
-  uchar *lpDestStr_00;
+  LPCWSTR lpDestStr_00;
+  uchar *dst;
   int *in_ECX;
   char *pcVar8;
   LPSTR lpMultiByteStr;
-  char *pcStack_14;
-  LPCWSTR pWStack_10;
-  uint uStack_c;
+  int AnsiCP;
+  char *cbuffer2;
+  char *cbuffer;
+  int buff_size;
   uint uStack_8;
   
   uStack_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -41,9 +42,9 @@ __crtLCMapStringA_stat
       f_use = 1;
     }
   }
-  pcVar5 = (char *)param_3;
-  pcVar8 = param_4;
-  if (0 < (int)param_4) {
+  pcVar5 = (char *)lpSrcStr;
+  pcVar8 = cchSrc;
+  if (0 < (int)cchSrc) {
     do {
       pcVar8 = pcVar8 + -1;
       if (*pcVar5 == '\0') goto LAB_00966bf0;
@@ -51,79 +52,78 @@ __crtLCMapStringA_stat
     } while (pcVar8 != (char *)0x0);
     pcVar8 = (char *)0xffffffff;
 LAB_00966bf0:
-    pcVar5 = param_4 + -(int)pcVar8;
-    bVar2 = (int)(pcVar5 + -1) < (int)param_4;
-    param_4 = pcVar5 + -1;
+    pcVar5 = cchSrc + -(int)pcVar8;
+    bVar2 = (int)(pcVar5 + -1) < (int)cchSrc;
+    cchSrc = pcVar5 + -1;
     if (bVar2) {
-      param_4 = pcVar5;
+      cchSrc = pcVar5;
     }
   }
   if ((f_use == 2) || (f_use == 0)) {
-    pWStack_10 = (LPCWSTR)0x0;
-    pcStack_14 = (char *)0x0;
-    if (param_1 == (localeinfo_struct *)0x0) {
-      param_1 = *(localeinfo_struct **)(*in_ECX + 0x14);
+    cbuffer = (char *)0x0;
+    cbuffer2 = (char *)0x0;
+    if (Locale == (localeinfo_struct *)0x0) {
+      Locale = *(localeinfo_struct **)(*in_ECX + 0x14);
     }
-    if (param_7 == 0) {
-      param_7 = *(int *)(*in_ECX + 4);
+    if (code_page == 0) {
+      code_page = *(int *)(*in_ECX + 4);
     }
-    iVar3 = __ansicp((int)param_1);
+    iVar3 = __ansicp((int)Locale);
     if (iVar3 == -1) {
       return 0;
     }
-    if (iVar3 == param_7) {
-      uVar6 = LCMapStringA((LCID)param_1,param_2,(LPCSTR)param_3,(int)param_4,(LPSTR)param_5,
-                           (int)param_6);
+    if (iVar3 == code_page) {
+      uVar6 = LCMapStringA((LCID)Locale,dwMapFlags,(LPCSTR)lpSrcStr,(int)cchSrc,(LPSTR)lpDestStr,
+                           (int)cchDest);
       goto LAB_00966eef;
     }
-    pWStack_10 = (LPCWSTR)__convertcp(param_7,iVar3,(char *)param_3,(int *)&param_4,(char *)0x0,0);
-    if (pWStack_10 == (LPCWSTR)0x0) {
+    cbuffer = __convertcp(code_page,iVar3,(char *)lpSrcStr,(int *)&cchSrc,(char *)0x0,0);
+    if (cbuffer == (char *)0x0) {
       return 0;
     }
-    uStack_c = LCMapStringA((LCID)param_1,param_2,(LPCSTR)pWStack_10,(int)param_4,(LPSTR)0x0,0);
-    if (uStack_c != 0) {
-      if (((int)uStack_c < 1) || (0xffffffe0 < uStack_c)) {
-        lpDestStr_00 = (uchar *)0x0;
+    buff_size = LCMapStringA((LCID)Locale,dwMapFlags,cbuffer,(int)cchSrc,(LPSTR)0x0,0);
+    if (buff_size != 0) {
+      if ((buff_size < 1) || (0xffffffe0 < (uint)buff_size)) {
+        dst = (uchar *)0x0;
       }
-      else if (uStack_c + 8 < 0x401) {
+      else if (buff_size + 8U < 0x401) {
         if (&stack0x00000000 == &DAT_00000024) goto LAB_00966e31;
-        lpDestStr_00 = &stack0xffffffe4;
+        dst = &stack0xffffffe4;
       }
       else {
-        lpDestStr_00 = malloc(uStack_c + 8);
-        if (lpDestStr_00 != (uchar *)0x0) {
-          lpDestStr_00[0] = 0xdd;
-          lpDestStr_00[1] = 0xdd;
-          lpDestStr_00[2] = '\0';
-          lpDestStr_00[3] = '\0';
-          lpDestStr_00 = lpDestStr_00 + 8;
+        dst = malloc(buff_size + 8U);
+        if (dst != (uchar *)0x0) {
+          dst[0] = 0xdd;
+          dst[1] = 0xdd;
+          dst[2] = '\0';
+          dst[3] = '\0';
+          dst = dst + 8;
         }
       }
-      if (lpDestStr_00 != (uchar *)0x0) {
-        memset(lpDestStr_00,'\0',uStack_c);
-        uStack_c = LCMapStringA((LCID)param_1,param_2,(LPCSTR)pWStack_10,(int)param_4,
-                                (LPSTR)lpDestStr_00,uStack_c);
-        if (uStack_c == 0) {
+      if (dst != (uchar *)0x0) {
+        memset(dst,'\0',buff_size);
+        buff_size = LCMapStringA((LCID)Locale,dwMapFlags,cbuffer,(int)cchSrc,(LPSTR)dst,buff_size);
+        if (buff_size == 0) {
           uVar6 = 0;
         }
         else {
-          pcStack_14 = __convertcp(iVar3,param_7,(char *)lpDestStr_00,(int *)&uStack_c,
-                                   (char *)param_5,(int)param_6);
-          uVar6 = -(uint)(pcStack_14 != (char *)0x0) & uStack_c;
+          cbuffer2 = __convertcp(iVar3,code_page,(char *)dst,&buff_size,(char *)lpDestStr,
+                                 (int)cchDest);
+          uVar6 = -(uint)(cbuffer2 != (char *)0x0) & buff_size;
         }
-        _freea(lpDestStr_00);
+        _freea(dst);
         goto LAB_00966eef;
       }
     }
 LAB_00966e31:
     uVar6 = 0;
 LAB_00966eef:
-    if (pWStack_10 != (LPCWSTR)0x0) {
-      free(pWStack_10);
+    if (cbuffer != (char *)0x0) {
+      free(cbuffer);
     }
-    if (pcStack_14 != (char *)0x0) {
-      if ((char *)param_5 != pcStack_14) {
-        free(pcStack_14);
+    if (cbuffer2 != (char *)0x0) {
+      if ((char *)lpDestStr != cbuffer2) {
+        free(cbuffer2);
         return uVar6;
       }
       return uVar6;
@@ -133,106 +133,107 @@ LAB_00966eef:
   if (f_use != 1) {
     return 0;
   }
-  uStack_c = 0;
-  if (param_7 == 0) {
-    param_7 = *(int *)(*in_ECX + 4);
+  buff_size = 0;
+  if (code_page == 0) {
+    code_page = *(int *)(*in_ECX + 4);
   }
-  uVar6 = MultiByteToWideChar(param_7,(uint)(param_8 != 0) * 8 + 1,(LPCSTR)param_3,(int)param_4,
+  uVar6 = MultiByteToWideChar(code_page,(uint)(bError != 0) * 8 + 1,(LPCSTR)lpSrcStr,(int)cchSrc,
                               (LPWSTR)0x0,0);
   if (uVar6 == 0) {
     return 0;
   }
   if (((int)uVar6 < 1) || (0xffffffe0 / uVar6 < 2)) {
-    pWStack_10 = (LPCWSTR)0x0;
+    cbuffer = (char *)0x0;
   }
   else {
     uVar1 = uVar6 * 2 + 8;
     if (uVar1 < 0x401) {
       puVar7 = (undefined4 *)&stack0xffffffdc;
-      pWStack_10 = (LPCWSTR)&stack0xffffffdc;
+      cbuffer = &stack0xffffffdc;
       if (&stack0x00000000 != &DAT_00000024) {
 LAB_00966c98:
-        pWStack_10 = (LPCWSTR)(puVar7 + 2);
+        cbuffer = (char *)(puVar7 + 2);
       }
     }
     else {
       puVar7 = malloc(uVar1);
-      pWStack_10 = (LPCWSTR)0x0;
+      cbuffer = (char *)0x0;
       if (puVar7 != (undefined4 *)0x0) {
         *puVar7 = 0xdddd;
         goto LAB_00966c98;
       }
     }
   }
-  if (pWStack_10 == (LPCWSTR)0x0) {
+  if (cbuffer == (char *)0x0) {
     return 0;
   }
-  iVar3 = MultiByteToWideChar(param_7,1,(LPCSTR)param_3,(int)param_4,pWStack_10,uVar6);
+  iVar3 = MultiByteToWideChar(code_page,1,(LPCSTR)lpSrcStr,(int)cchSrc,(LPWSTR)cbuffer,uVar6);
   if ((iVar3 != 0) &&
-     (uStack_c = LCMapStringW((LCID)param_1,param_2,pWStack_10,uVar6,(LPWSTR)0x0,0), uStack_c != 0))
-  {
-    if ((param_2 & 0x400) == 0) {
-      if (((int)uStack_c < 1) || (0xffffffe0 / uStack_c < 2)) {
-        lpDestStr = (LPCWSTR)0x0;
+     (buff_size = LCMapStringW((LCID)Locale,dwMapFlags,(LPCWSTR)cbuffer,uVar6,(LPWSTR)0x0,0),
+     buff_size != 0)) {
+    if ((dwMapFlags & 0x400) == 0) {
+      if ((buff_size < 1) || (0xffffffe0U / (uint)buff_size < 2)) {
+        lpDestStr_00 = (LPCWSTR)0x0;
       }
       else {
-        uVar1 = uStack_c * 2 + 8;
+        uVar1 = buff_size * 2 + 8;
         if (uVar1 < 0x401) {
           if (&stack0x00000000 == &DAT_00000024) goto LAB_00966da8;
-          lpDestStr = (LPCWSTR)&stack0xffffffe4;
+          lpDestStr_00 = (LPCWSTR)&stack0xffffffe4;
         }
         else {
-          lpDestStr = malloc(uVar1);
-          if (lpDestStr != (LPCWSTR)0x0) {
-            lpDestStr[0] = L'\xdddd';
-            lpDestStr[1] = L'\0';
-            lpDestStr = lpDestStr + 4;
+          lpDestStr_00 = malloc(uVar1);
+          if (lpDestStr_00 != (LPCWSTR)0x0) {
+            lpDestStr_00[0] = L'\xdddd';
+            lpDestStr_00[1] = L'\0';
+            lpDestStr_00 = lpDestStr_00 + 4;
           }
         }
       }
-      if (lpDestStr != (LPCWSTR)0x0) {
-        iVar3 = LCMapStringW((LCID)param_1,param_2,pWStack_10,uVar6,lpDestStr,uStack_c);
+      if (lpDestStr_00 != (LPCWSTR)0x0) {
+        iVar3 = LCMapStringW((LCID)Locale,dwMapFlags,(LPCWSTR)cbuffer,uVar6,lpDestStr_00,buff_size);
         if (iVar3 != 0) {
-          lpMultiByteStr = (LPSTR)param_5;
-          pcVar5 = param_6;
-          if (param_6 == (char *)0x0) {
+          lpMultiByteStr = (LPSTR)lpDestStr;
+          pcVar5 = cchDest;
+          if (cchDest == (char *)0x0) {
             lpMultiByteStr = (LPSTR)0x0;
             pcVar5 = (char *)0x0;
           }
-          uStack_c = WideCharToMultiByte(param_7,0,lpDestStr,uStack_c,lpMultiByteStr,(int)pcVar5,
-                                         (LPCSTR)0x0,(LPBOOL)0x0);
+          buff_size = WideCharToMultiByte(code_page,0,lpDestStr_00,buff_size,lpMultiByteStr,
+                                          (int)pcVar5,(LPCSTR)0x0,(LPBOOL)0x0);
         }
-        _freea(lpDestStr);
+        _freea(lpDestStr_00);
       }
     }
-    else if ((param_6 != (char *)0x0) && ((int)uStack_c <= (int)param_6)) {
-      LCMapStringW((LCID)param_1,param_2,pWStack_10,uVar6,(LPWSTR)param_5,(int)param_6);
+    else if ((cchDest != (char *)0x0) && (buff_size <= (int)cchDest)) {
+      LCMapStringW((LCID)Locale,dwMapFlags,(LPCWSTR)cbuffer,uVar6,(LPWSTR)lpDestStr,(int)cchDest);
     }
   }
 LAB_00966da8:
-  _freea(pWStack_10);
-  return uStack_c;
+  _freea(cbuffer);
+  return buff_size;
 }
 
 
 // 00966F24  __crtLCMapStringA  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/a_map.c:363)
 
+/* WARNING: Variable defined which should be unmapped: _loc_update */
+
 int __cdecl
-__crtLCMapStringA(localeinfo_struct *param_1,ulong param_2,ulong param_3,char *param_4,int param_5,
-                 char *param_6,int param_7,int param_8,int param_9)
+__crtLCMapStringA(localeinfo_struct *plocinfo,ulong Locale,ulong dwMapFlags,char *lpSrcStr,
+                 int cchSrc,char *lpDestStr,int cchDest,int code_page,int bError)
 
 {
   int iVar1;
-  threadlocaleinfostruct *in_stack_ffffffec;
-  _tiddata *p_Stack_c;
-  bool bStack_8;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate((_LocaleUpdate *)&stack0xffffffec,param_1);
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
   iVar1 = __crtLCMapStringA_stat
-                    ((localeinfo_struct *)param_2,param_3,(ulong)param_4,(char *)param_5,
-                     (int)param_6,(char *)param_7,param_8,param_9,(int)in_stack_ffffffec);
-  if (bStack_8 != false) {
-    p_Stack_c->_ownlocale = p_Stack_c->_ownlocale & 0xfffffffd;
+                    ((localeinfo_struct *)Locale,dwMapFlags,(ulong)lpSrcStr,(char *)cchSrc,
+                     (int)lpDestStr,(char *)cchDest,code_page,bError,
+                     (int)_loc_update.localeinfo.locinfo);
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return iVar1;
 }

@@ -2,7 +2,7 @@
 
 // 0096A888  _malloc_crt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c:39)
 
-void * __cdecl _malloc_crt(uint param_1)
+void * __cdecl _malloc_crt(uint cb)
 
 {
   void *pvVar1;
@@ -10,7 +10,7 @@ void * __cdecl _malloc_crt(uint param_1)
   
   dwMilliseconds = 0;
   while( true ) {
-    pvVar1 = malloc(param_1);
+    pvVar1 = malloc(cb);
     if (pvVar1 != (void *)0x0) {
       return pvVar1;
     }
@@ -30,7 +30,7 @@ void * __cdecl _malloc_crt(uint param_1)
 
 // 0096A8CD  _calloc_crt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c:54)
 
-void * __cdecl _calloc_crt(uint param_1,uint param_2)
+void * __cdecl _calloc_crt(uint count,uint size)
 
 {
   void *pvVar1;
@@ -38,7 +38,7 @@ void * __cdecl _calloc_crt(uint param_1,uint param_2)
   
   dwMilliseconds = 0;
   while( true ) {
-    pvVar1 = _calloc_impl(param_1,param_2,(int *)0x0);
+    pvVar1 = _calloc_impl(count,size,(int *)0x0);
     if (pvVar1 != (void *)0x0) {
       return pvVar1;
     }
@@ -58,7 +58,7 @@ void * __cdecl _calloc_crt(uint param_1,uint param_2)
 
 // 0096A919  _realloc_crt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c:71)
 
-void * __cdecl _realloc_crt(void *param_1,uint param_2)
+void * __cdecl _realloc_crt(void *ptr,uint size)
 
 {
   void *pvVar1;
@@ -66,11 +66,11 @@ void * __cdecl _realloc_crt(void *param_1,uint param_2)
   
   dwMilliseconds = 0;
   do {
-    pvVar1 = realloc(param_1,param_2);
+    pvVar1 = realloc(ptr,size);
     if (pvVar1 != (void *)0x0) {
       return pvVar1;
     }
-    if (param_2 == 0) {
+    if (size == 0) {
       return (void *)0x0;
     }
     if (_maxwait == 0) {
@@ -88,7 +88,7 @@ void * __cdecl _realloc_crt(void *param_1,uint param_2)
 
 // 0096A967  _recalloc_crt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/crtheap.c:86)
 
-void * __cdecl _recalloc_crt(void *param_1,uint param_2,uint param_3)
+void * __cdecl _recalloc_crt(void *ptr,uint count,uint size)
 
 {
   void *pvVar1;
@@ -96,11 +96,11 @@ void * __cdecl _recalloc_crt(void *param_1,uint param_2,uint param_3)
   
   dwMilliseconds = 0;
   do {
-    pvVar1 = _recalloc(param_1,param_2,param_3);
+    pvVar1 = _recalloc(ptr,count,size);
     if (pvVar1 != (void *)0x0) {
       return pvVar1;
     }
-    if (param_3 == 0) {
+    if (size == 0) {
       return (void *)0x0;
     }
     if (_maxwait == 0) {

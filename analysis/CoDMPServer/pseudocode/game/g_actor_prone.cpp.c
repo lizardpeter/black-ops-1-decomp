@@ -7,13 +7,13 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_InitActorProneInfo(actor_s *param_1)
+void __cdecl G_InitActorProneInfo(actor_s *actor)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (actor == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_actor_prone.cpp",0x41,0,
                              "%s");
     if (!bVar2) {
@@ -22,15 +22,15 @@ void __cdecl G_InitActorProneInfo(actor_s *param_1)
       return;
     }
   }
-  (param_1->ProneInfo).bCorpseOrientation = false;
-  (param_1->ProneInfo).orientPitch = false;
-  (param_1->ProneInfo).prone = false;
-  (param_1->ProneInfo).field_0x3 = 0;
-  (param_1->ProneInfo).iProneTime = 0;
-  (param_1->ProneInfo).iProneTrans = 0;
-  (param_1->ProneInfo).fBodyHeight = 0.0;
-  (param_1->ProneInfo).field6_0x10.fTorsoPitch = 0.0;
-  (param_1->ProneInfo).field7_0x14.fWaistPitch = 0.0;
+  (actor->ProneInfo).bCorpseOrientation = false;
+  (actor->ProneInfo).orientPitch = false;
+  (actor->ProneInfo).prone = false;
+  (actor->ProneInfo).field_0x3 = 0;
+  (actor->ProneInfo).iProneTime = 0;
+  (actor->ProneInfo).iProneTrans = 0;
+  (actor->ProneInfo).fBodyHeight = 0.0;
+  (actor->ProneInfo).field6_0x10.fTorsoPitch = 0.0;
+  (actor->ProneInfo).field7_0x14.fWaistPitch = 0.0;
   return;
 }
 

@@ -18,15 +18,15 @@ void __cdecl _dynamic_initializer_for__TRACKINST_botInfos__(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsThrowingGrenade(bot_info_t *param_1,client_t *param_2)
+bool __cdecl Bot_IsThrowingGrenade(bot_info_t *botInfo,client_t *bot)
 
 {
   bool local_8;
   
-  if ((((uint)param_1[1].path.pts[0].fDir2D[1] & 0x400) == 0) &&
-     (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x800) == 0)) {
-    if (((param_2->gentity->client->ps).weaponstate < 0x14) ||
-       (0x19 < (param_2->gentity->client->ps).weaponstate)) {
+  if ((((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x400) == 0) &&
+     (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x800) == 0)) {
+    if (((bot->gentity->client->ps).weaponstate < 0x14) ||
+       (0x19 < (bot->gentity->client->ps).weaponstate)) {
       local_8 = false;
     }
     else {
@@ -48,19 +48,20 @@ bool __cdecl Bot_IsThrowingGrenade(bot_info_t *param_1,client_t *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsEnemyHuman(gentity_s *param_1)
+bool __cdecl Bot_IsEnemyHuman(gentity_s *enemy)
 
 {
   bool bVar1;
+  client_t *cl;
   
-  if ((param_1 == (gentity_s *)0x0) || (param_1->client == (gclient_s *)0x0)) {
+  if ((enemy == (gentity_s *)0x0) || (enemy->client == (gclient_s *)0x0)) {
     bVar1 = false;
   }
   else {
     bVar1 = true;
   }
   if (bVar1) {
-    bVar1 = *(int *)((int)svs.clients + (param_1->s).number * 0x84d00 + 0x63910) == 0;
+    bVar1 = *(int *)((int)svs.clients + (enemy->s).number * 0x84d00 + 0x63910) == 0;
   }
   else {
     bVar1 = false;
@@ -77,13 +78,14 @@ bool __cdecl Bot_IsEnemyHuman(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsInLastStand(client_t *param_1)
+bool __cdecl Bot_IsInLastStand(client_t *bot)
 
 {
   playerState_s *ppVar1;
   bool local_c;
+  playerState_s *ps;
   
-  ppVar1 = G_GetPlayerState((param_1->gentity->s).number);
+  ppVar1 = G_GetPlayerState((bot->gentity->s).number);
   if (((ppVar1->pm_type == 6) || (ppVar1->pm_type == 7)) || (ppVar1->pm_type == 8)) {
     local_c = true;
   }
@@ -102,22 +104,23 @@ bool __cdecl Bot_IsInLastStand(client_t *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsMovingFoward(bot_info_t *param_1,client_t *param_2,playerState_s *param_3)
+bool __cdecl Bot_IsMovingFoward(bot_info_t *botInfo,client_t *bot,playerState_s *ps)
 
 {
   bool bVar1;
   DWORD DVar2;
   bool local_16;
-  float local_14;
+  PIXProfile pixProfile;
+  float vForward;
   float local_10;
   float local_c;
-  float local_8;
+  float vDot;
   
   PIXBeginNamedEvent(-1,"Bot_IsMovingFoward");
-  if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x10) == 0) {
-    if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x100) == 0) {
-      if (((param_3->pm_flags & 4U) == 0) && ((param_3->pm_flags & 0x4000U) == 0)) {
-        bVar1 = Bot_IsThrowingGrenade(param_1,param_2);
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x10) == 0) {
+    if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x100) == 0) {
+      if (((ps->pm_flags & 4U) == 0) && ((ps->pm_flags & 0x4000U) == 0)) {
+        bVar1 = Bot_IsThrowingGrenade(botInfo,bot);
         if (bVar1) {
           DVar2 = GetCurrentThreadId();
           if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -126,10 +129,10 @@ bool __cdecl Bot_IsMovingFoward(bot_info_t *param_1,client_t *param_2,playerStat
           local_16 = true;
         }
         else {
-          AngleVectors(param_3->viewangles,&local_14,(float *)0x0,(float *)0x0);
-          local_8 = param_3->velocity[0] * local_14 + param_3->velocity[1] * local_10 +
-                    param_3->velocity[2] * local_c;
-          local_16 = 1.0 < ABS(local_8);
+          AngleVectors(ps->viewangles,&vForward,(float *)0x0,(float *)0x0);
+          vDot = ps->velocity[0] * vForward + ps->velocity[1] * local_10 + ps->velocity[2] * local_c
+          ;
+          local_16 = 1.0 < ABS(vDot);
           DVar2 = GetCurrentThreadId();
           if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -171,18 +174,18 @@ bool __cdecl Bot_IsMovingFoward(bot_info_t *param_1,client_t *param_2,playerStat
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_RandomInput(bot_info_t *param_1,usercmd_s *param_2)
+void __cdecl Bot_RandomInput(bot_info_t *botInfo,usercmd_s *cmd)
 
 {
   int iVar1;
   
-  if ((param_1->threat).strafeEndTime <= svs.time) {
+  if ((botInfo->threat).strafeEndTime <= svs.time) {
     iVar1 = irand(0,6);
-    param_2->forwardmove = forward[iVar1];
+    cmd->forwardmove = forward[iVar1];
     iVar1 = irand(0,9);
-    param_2->rightmove = right[iVar1];
+    cmd->rightmove = right[iVar1];
     iVar1 = irand((sv_botMinStrafeTime->current).integer,(sv_botMaxStrafeTime->current).integer);
-    (param_1->threat).strafeEndTime = iVar1 + svs.time;
+    (botInfo->threat).strafeEndTime = iVar1 + svs.time;
   }
   return;
 }
@@ -190,20 +193,20 @@ void __cdecl Bot_RandomInput(bot_info_t *param_1,usercmd_s *param_2)
 
 // 006FBE30  Bot_RandomStrafe  (server_mp/sv_bot_mp.cpp:455)
 
-void __cdecl Bot_RandomStrafe(playerState_s *param_1,usercmd_s *param_2)
+void __cdecl Bot_RandomStrafe(playerState_s *ps,usercmd_s *cmd)
 
 {
   int iVar1;
   
   iVar1 = irand(0,5);
-  param_2->forwardmove = forward[iVar1];
-  if (param_1->fWeaponPosFrac < 1.0) {
+  cmd->forwardmove = forward[iVar1];
+  if (ps->fWeaponPosFrac < 1.0) {
     iVar1 = irand(0,4);
-    param_2->rightmove = right[iVar1];
+    cmd->rightmove = right[iVar1];
   }
   else {
     iVar1 = irand(0,2);
-    param_2->rightmove = rightAds[iVar1];
+    cmd->rightmove = rightAds[iVar1];
   }
   return;
 }
@@ -218,79 +221,78 @@ void __cdecl Bot_RandomStrafe(playerState_s *param_1,usercmd_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_GetStrafeInput(client_t *param_1,bot_info_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_GetStrafeInput(client_t *bot,bot_info_t *botInfo,usercmd_s *cmd)
 
 {
   gentity_s *pgVar1;
   bool bVar2;
+  playerState_s *ps_00;
   DWORD DVar3;
   int iVar4;
   float fVar5;
-  char local_a4;
-  col_context_t local_8c;
-  float local_64 [2];
+  col_context_t context;
+  float vEnd [2];
   float local_5c;
-  float4 local_58;
+  float4 trace;
   float local_48;
   char local_2e;
   char local_2d;
   uint local_20;
-  float local_1c;
+  float vStart;
   float local_18;
   float local_14;
-  char local_d;
-  playerState_s *local_c;
-  float local_8;
+  PIXProfile pixProfile;
+  bool checkStrafe;
+  playerState_s *ps;
+  float distSq;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"Bot_GetStrafeInput");
-  local_c = G_GetPlayerState((param_1->gentity->s).number);
-  if (((uint)param_2[1].path.pts[0].fDir2D[1] & 0x40) != 0) {
-    local_58.v[0] = 0.0;
-    local_58.v[1] = 0.0;
-    local_58.v[2] = 0.0;
-    local_58.v[3] = 0.0;
-    pgVar1 = param_1->gentity;
-    local_1c = (pgVar1->r).currentOrigin[0];
+  ps_00 = G_GetPlayerState((bot->gentity->s).number);
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x40) != 0) {
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    pgVar1 = bot->gentity;
+    vStart = (pgVar1->r).currentOrigin[0];
     local_18 = (pgVar1->r).currentOrigin[1];
     local_14 = (pgVar1->r).currentOrigin[2];
-    Bot_PredictPosition(param_1->gentity,local_c,local_64);
-    local_14 = local_c->viewHeightCurrent * 0.5 + local_14;
-    local_5c = local_c->viewHeightCurrent * 0.5 + local_5c;
-    col_context_t::col_context_t(&local_8c);
-    G_TraceCapsule((trace_t *)&local_58,&local_1c,(param_1->gentity->r).mins,
-                   (param_1->gentity->r).maxs,local_64,(param_1->gentity->s).number,0x2820011,
-                   &local_8c);
+    Bot_PredictPosition(bot->gentity,ps_00,vEnd);
+    local_14 = ps_00->viewHeightCurrent * 0.5 + local_14;
+    local_5c = ps_00->viewHeightCurrent * 0.5 + local_5c;
+    col_context_t::col_context_t(&context);
+    G_TraceCapsule((trace_t *)&trace,&vStart,(bot->gentity->r).mins,(bot->gentity->r).maxs,vEnd,
+                   (bot->gentity->s).number,0x2820011,&context);
     if (((local_2d != '\0') || (local_2e != '\0')) || (local_48 != 1.0)) {
-      Bot_RandomStrafe(local_c,param_3);
+      Bot_RandomStrafe(ps_00,cmd);
     }
   }
-  if ((param_2->pitchEndTime != 0) ||
-     (bVar2 = Bot_IsInRangeOfEnemy(param_1,(param_2->threat).enemy,&local_8), bVar2)) {
-    if ((param_2->pitchEndTime == 0) &&
-       ((((uint)param_2[1].path.pts[0].fDir2D[1] & 0x20) != 0 ||
-        ((param_2->threat).strafeEndTime <= svs.time)))) {
-      local_a4 = '\x01';
+  if ((botInfo->pitchEndTime != 0) ||
+     (bVar2 = Bot_IsInRangeOfEnemy(bot,(botInfo->threat).enemy,&distSq), bVar2)) {
+    if ((botInfo->pitchEndTime == 0) &&
+       ((((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x20) != 0 ||
+        ((botInfo->threat).strafeEndTime <= svs.time)))) {
+      bVar2 = true;
     }
     else {
-      local_a4 = '\0';
+      bVar2 = false;
     }
-    local_d = local_a4;
-    if (local_a4 != '\0') {
+    if (bVar2) {
       fVar5 = random();
       if ((sv_botStrafeChance->current).value <= fVar5) {
-        param_3->forwardmove = '\0';
-        param_3->rightmove = '\0';
-        *(ushort *)(param_2[1].path.pts[0].fDir2D + 1) =
-             *(ushort *)(param_2[1].path.pts[0].fDir2D + 1) & 0xffbf;
+        cmd->forwardmove = '\0';
+        cmd->rightmove = '\0';
+        *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+             *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xffbf;
       }
       else {
-        Bot_RandomStrafe(local_c,param_3);
-        *(ushort *)(param_2[1].path.pts[0].fDir2D + 1) =
-             *(ushort *)(param_2[1].path.pts[0].fDir2D + 1) | 0x40;
+        Bot_RandomStrafe(ps_00,cmd);
+        *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+             *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x40;
       }
       iVar4 = irand((sv_botMinStrafeTime->current).integer,(sv_botMaxStrafeTime->current).integer);
-      (param_2->threat).strafeEndTime = iVar4 + svs.time;
+      (botInfo->threat).strafeEndTime = iVar4 + svs.time;
     }
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -309,13 +311,13 @@ void __cdecl Bot_GetStrafeInput(client_t *param_1,bot_info_t *param_2,usercmd_s 
 
 // 006FECE0  Vec3Rotate  (universal/com_vector.h:524)
 
-void __cdecl Vec3Rotate(float *param_1,float (*param_2) [3],float *param_3)
+void __cdecl Vec3Rotate(float *in,float (*matrix) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in == out) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_vector.h",0x20d,0,
                              "%s");
     if (!bVar2) {
@@ -324,9 +326,9 @@ void __cdecl Vec3Rotate(float *param_1,float (*param_2) [3],float *param_3)
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * (*param_2)[1] + param_1[2] * (*param_2)[2];
-  param_3[1] = *param_1 * param_2[1][0] + param_1[1] * param_2[1][1] + param_1[2] * param_2[1][2];
-  param_3[2] = *param_1 * param_2[2][0] + param_1[1] * param_2[2][1] + param_1[2] * param_2[2][2];
+  *out = *in * (*matrix)[0] + in[1] * (*matrix)[1] + in[2] * (*matrix)[2];
+  out[1] = *in * matrix[1][0] + in[1] * matrix[1][1] + in[2] * matrix[1][2];
+  out[2] = *in * matrix[2][0] + in[1] * matrix[2][1] + in[2] * matrix[2][2];
   return;
 }
 
@@ -335,17 +337,17 @@ void __cdecl Vec3Rotate(float *param_1,float (*param_2) [3],float *param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Bot_StrafeOnPath(playerState_s *param_1,path_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_StrafeOnPath(playerState_s *ps,path_t *path,usercmd_s *cmd)
 
 {
-  float local_34;
+  float vDir;
   float local_30;
-  float local_28 [9];
+  float axis [9];
   
-  AnglesToAxis(param_1->viewangles,(float (*) [3])local_28);
-  Vec3Rotate(param_2->lookaheadDir,(float (*) [3])local_28,&local_34);
-  param_3->forwardmove = (schar)(int)(local_34 * 127.0);
-  param_3->rightmove = (schar)(int)(local_30 * -127.0);
+  AnglesToAxis(ps->viewangles,(float (*) [3])axis);
+  Vec3Rotate(path->lookaheadDir,(float (*) [3])axis,&vDir);
+  cmd->forwardmove = (schar)(int)(vDir * 127.0);
+  cmd->rightmove = (schar)(int)(local_30 * -127.0);
   return;
 }
 
@@ -358,11 +360,11 @@ void __cdecl Bot_StrafeOnPath(playerState_s *param_1,path_t *param_2,usercmd_s *
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateTimedAction(int *param_1)
+void __cdecl Bot_UpdateTimedAction(int *timedAction)
 
 {
-  if (*param_1 <= svs.time) {
-    *param_1 = 0;
+  if (*timedAction <= svs.time) {
+    *timedAction = 0;
   }
   return;
 }
@@ -377,18 +379,18 @@ void __cdecl Bot_UpdateTimedAction(int *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Bot_SetTimedAction(int param_1,int *param_2,dvar_s *param_3,dvar_s *param_4,usercmd_s *param_5,
-                  usercmd_s *param_6)
+Bot_SetTimedAction(int button,int *timedAction,dvar_s *minTime,dvar_s *maxTime,usercmd_s *cmd,
+                  usercmd_s *lastCmd)
 
 {
   bool bVar1;
   int iVar2;
   
-  bitarray<51>::setBit(&param_5->button_bits,param_1);
-  bVar1 = bitarray<51>::testBit(&param_6->button_bits,param_1);
+  bitarray<51>::setBit(&cmd->button_bits,button);
+  bVar1 = bitarray<51>::testBit(&lastCmd->button_bits,button);
   if (!bVar1) {
-    iVar2 = irand((param_3->current).integer,(param_4->current).integer);
-    *param_2 = iVar2 + svs.time;
+    iVar2 = irand((minTime->current).integer,(maxTime->current).integer);
+    *timedAction = iVar2 + svs.time;
   }
   return;
 }
@@ -398,7 +400,7 @@ Bot_SetTimedAction(int param_1,int *param_2,dvar_s *param_3,dvar_s *param_4,user
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Bot_PointInGoal(float *param_1,path_t *param_2,float param_3)
+bool __cdecl Bot_PointInGoal(float *point,path_t *path,float goalRadius)
 
 {
   bool bVar1;
@@ -406,13 +408,14 @@ bool __cdecl Bot_PointInGoal(float *param_1,path_t *param_2,float param_3)
   float fVar3;
   path_t *in_stack_ffffffdc;
   bool local_6;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_PointInGoal");
-  if (param_3 == 0.0) {
-    param_3 = (sv_botGoalRadius->current).value;
+  if (goalRadius == 0.0) {
+    goalRadius = (sv_botGoalRadius->current).value;
   }
   bVar1 = Path_Exists(in_stack_ffffffdc);
-  if ((!bVar1) || (fVar3 = Vec3DistanceSq(param_1,(float *)param_2), param_3 * param_3 <= fVar3)) {
+  if ((!bVar1) || (fVar3 = Vec3DistanceSq(point,(float *)path), goalRadius * goalRadius <= fVar3)) {
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -433,12 +436,12 @@ bool __cdecl Bot_PointInGoal(float *param_1,path_t *param_2,float param_3)
 // 006FC7F0  Bot_PathValid  (server_mp/sv_bot_mp.cpp:577)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_PathValid(gentity_s *param_1,path_t *param_2)
+bool __cdecl Bot_PathValid(gentity_s *bot,path_t *path)
 
 {
   code *pcVar1;
@@ -449,61 +452,62 @@ bool __cdecl Bot_PathValid(gentity_s *param_1,path_t *param_2)
   pathnode_t *ppVar6;
   path_t *in_stack_ffffff28;
   bool local_a1;
-  col_context_t local_9c;
-  pathnode_t *local_70;
-  float local_6c;
+  pathnode_t *node;
+  col_context_t context;
+  PIXProfile pixProfile;
+  pathnode_t *mantleEnd;
+  float vEnd;
   float local_68;
   float local_64;
-  pmove_t_0_ *local_60;
-  int local_5c;
-  float4 local_58;
+  pmove_t *pm;
+  int traverseCount;
+  float4 trace;
   uint local_40;
   uint local_20;
-  pathnode_t *local_1c;
-  int local_18;
-  playerState_s *local_14;
-  float local_10;
+  pathnode_t *mantleStart;
+  int i;
+  playerState_s *ps;
+  float vStart;
   float local_c;
   float local_8;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"Bot_PathValid");
-  local_58.v[0] = 0.0;
-  local_58.v[1] = 0.0;
-  local_58.v[2] = 0.0;
-  local_58.v[3] = 0.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
   bVar3 = Path_Exists(in_stack_ffffff28);
   if (bVar3) {
     bVar3 = Path_HasNegotiationNode(in_stack_ffffff28);
     if (bVar3) {
-      local_5c = 0;
-      local_18 = (int)param_2->wPathLen;
+      traverseCount = 0;
+      i = (int)path->wPathLen;
       do {
         do {
-          iVar2 = local_18;
-          local_18 = iVar2 + -1;
-          if (local_18 < 0) {
-            if ((param_2->wNegotiationStartNode + -1 < 0) &&
+          iVar2 = i;
+          i = iVar2 + -1;
+          if (i < 0) {
+            if ((path->wNegotiationStartNode + -1 < 0) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp"
                                          ,0x26e,0,"%s"), !bVar3)) {
               pcVar1 = (code *)swi(3);
               uVar4 = (*pcVar1)();
               return (bool)uVar4;
             }
-            local_60 = &g_pmove + (param_1->s).number * 0x910;
-            local_14 = G_GetPlayerState((param_1->s).number);
-            local_1c = Path_GetNegotiationNode(in_stack_ffffff28);
-            local_70 = Path_ConvertIndexToNode
-                                 (param_2->pts[param_2->wNegotiationStartNode + -1].iNodeNum);
-            local_10 = (local_1c->constant).vOrigin[0];
-            local_c = (local_1c->constant).vOrigin[1];
-            local_8 = (local_1c->constant).vOrigin[2] + 8.0;
-            local_6c = (local_70->constant).vOrigin[0];
-            local_68 = (local_70->constant).vOrigin[1];
-            local_64 = (local_70->constant).vOrigin[2] + 8.0;
-            col_context_t::col_context_t(&local_9c);
-            G_TraceCapsule((trace_t *)&local_58,&local_10,(param_1->r).mins,(param_1->r).maxs,
-                           &local_6c,(param_1->s).number,0x1000000,&local_9c);
+            pm = (pmove_t *)(&g_pmove + (bot->s).number * 0x910);
+            ps = G_GetPlayerState((bot->s).number);
+            mantleStart = Path_GetNegotiationNode(in_stack_ffffff28);
+            ppVar6 = Path_ConvertIndexToNode(path->pts[path->wNegotiationStartNode + -1].iNodeNum);
+            vStart = (mantleStart->constant).vOrigin[0];
+            local_c = (mantleStart->constant).vOrigin[1];
+            local_8 = (mantleStart->constant).vOrigin[2] + 8.0;
+            vEnd = (ppVar6->constant).vOrigin[0];
+            local_68 = (ppVar6->constant).vOrigin[1];
+            local_64 = (ppVar6->constant).vOrigin[2] + 8.0;
+            col_context_t::col_context_t(&context);
+            G_TraceCapsule((trace_t *)&trace,&vStart,(bot->r).mins,(bot->r).maxs,&vEnd,
+                           (bot->s).number,0x1000000,&context);
             if ((local_40 & 0x1000000) != 0) {
               DVar5 = GetCurrentThreadId();
               if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -517,12 +521,12 @@ bool __cdecl Bot_PathValid(gentity_s *param_1,path_t *param_2)
             }
             return false;
           }
-        } while (param_2->pts[iVar2 + -1].iNodeNum < 0);
-        ppVar6 = Path_ConvertIndexToNode(param_2->pts[iVar2 + -1].iNodeNum);
+        } while (path->pts[iVar2 + -1].iNodeNum < 0);
+        ppVar6 = Path_ConvertIndexToNode(path->pts[iVar2 + -1].iNodeNum);
         if ((ppVar6->constant).type == NODE_NEGOTIATION_BEGIN) {
-          local_5c = local_5c + 1;
+          traverseCount = traverseCount + 1;
         }
-      } while (local_5c < 2);
+      } while (traverseCount < 2);
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -556,33 +560,34 @@ bool __cdecl Bot_PathValid(gentity_s *param_1,path_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_GetPathToGoal(client_t *param_1,float *param_2,path_t *param_3,bool param_4)
+bool __cdecl Bot_GetPathToGoal(client_t *bot,float *goal,path_t *path,bool allowMantle)
 
 {
   bool bVar1;
   DWORD DVar2;
-  path_t *ppVar3;
-  float *pfVar4;
+  path_t *vStartPos;
+  float *pfVar3;
   path_t *in_stack_fffffff0;
   int in_stack_fffffff4;
+  PIXProfile pixProfile;
   
-  pfVar4 = (float *)0xffffffff;
-  ppVar3 = (path_t *)0x6fc732;
+  pfVar3 = (float *)0xffffffff;
+  vStartPos = (path_t *)0x6fc732;
   PIXBeginNamedEvent(-1,"Bot_GetPathToGoal");
   Path_Begin(in_stack_fffffff0);
-  if (param_4) {
-    ppVar3 = (path_t *)(param_1->gentity->r).currentOrigin;
-    pfVar4 = param_2;
-    Path_FindPath(ppVar3,(team_t)param_2,(float *)&DAT_00000001,(float *)in_stack_fffffff0,
+  if (allowMantle) {
+    vStartPos = (path_t *)(bot->gentity->r).currentOrigin;
+    pfVar3 = goal;
+    Path_FindPath(vStartPos,(team_t)goal,(float *)&DAT_00000001,(float *)in_stack_fffffff0,
                   in_stack_fffffff4);
   }
-  bVar1 = Bot_PathValid(param_1->gentity,param_3);
+  bVar1 = Bot_PathValid(bot->gentity,path);
   if (!bVar1) {
-    Path_Begin(ppVar3);
-    Path_FindPath((path_t *)(param_1->gentity->r).currentOrigin,(team_t)param_2,(float *)0x0,
-                  (float *)ppVar3,(int)pfVar4);
+    Path_Begin(vStartPos);
+    Path_FindPath((path_t *)(bot->gentity->r).currentOrigin,(team_t)goal,(float *)0x0,
+                  (float *)vStartPos,(int)pfVar3);
   }
-  bVar1 = Path_Exists(ppVar3);
+  bVar1 = Path_Exists(vStartPos);
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -599,7 +604,7 @@ bool __cdecl Bot_GetPathToGoal(client_t *param_1,float *param_2,path_t *param_3,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_t *param_3)
+bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *botInfo,client_t *bot,path_t *path)
 
 {
   bool bVar1;
@@ -607,24 +612,25 @@ bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_
   float fVar3;
   path_t *in_stack_ffffff6c;
   bool local_25;
-  float local_24;
+  float goal;
   float local_20;
   float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
+  float start_z;
+  float diff;
+  float distSq;
+  float end_z;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_IsAtNegotiationNode");
-  if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x80) == 0) {
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x80) == 0) {
     bVar1 = Path_Exists(in_stack_ffffff6c);
     if (bVar1) {
       bVar1 = Path_HasNegotiationNode(in_stack_ffffff6c);
       if (bVar1) {
-        if (param_3->lookaheadNextNode == param_3->wNegotiationStartNode) {
-          if (param_3->fLookaheadDistToNextNode <= 1e-06) {
-            fVar3 = Vec3DistanceSq((param_2->gentity->r).currentOrigin,
-                                   param_3->pts[param_3->wNegotiationStartNode].vOrigPoint);
+        if (path->lookaheadNextNode == path->wNegotiationStartNode) {
+          if (path->fLookaheadDistToNextNode <= 1e-06) {
+            fVar3 = Vec3DistanceSq((bot->gentity->r).currentOrigin,
+                                   path->pts[path->wNegotiationStartNode].vOrigPoint);
             if (256.0 <= fVar3) {
               DVar2 = GetCurrentThreadId();
               if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -633,12 +639,12 @@ bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_
               local_25 = false;
             }
             else {
-              *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                   *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x80;
-              *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                   *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x100;
-              *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                   *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x200;
+              *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                   *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x80;
+              *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                   *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x100;
+              *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                   *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x200;
               DVar2 = GetCurrentThreadId();
               if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
@@ -678,7 +684,7 @@ bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_
       local_25 = false;
     }
   }
-  else if (param_3->wNegotiationStartNode + -1 < 0) {
+  else if (path->wNegotiationStartNode + -1 < 0) {
     local_25 = true;
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -686,13 +692,13 @@ bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_
     }
   }
   else {
-    local_18 = param_3->pts[param_3->wNegotiationStartNode].vOrigPoint[2];
-    local_c = param_3->pts[param_3->wNegotiationStartNode + -1].vOrigPoint[2];
-    local_14 = local_c - local_18;
-    local_10 = Vec3DistanceSq((param_2->gentity->r).currentOrigin,
-                              param_3->pts[param_3->wNegotiationStartNode + -1].vOrigPoint);
-    if (((-24.0 <= local_14) || (4096.0 <= local_10)) ||
-       (5.0 <= ABS(local_c - (param_2->gentity->r).currentOrigin[2]))) {
+    start_z = path->pts[path->wNegotiationStartNode].vOrigPoint[2];
+    end_z = path->pts[path->wNegotiationStartNode + -1].vOrigPoint[2];
+    diff = end_z - start_z;
+    distSq = Vec3DistanceSq((bot->gentity->r).currentOrigin,
+                            path->pts[path->wNegotiationStartNode + -1].vOrigPoint);
+    if (((-24.0 <= diff) || (4096.0 <= distSq)) ||
+       (5.0 <= ABS(end_z - (bot->gentity->r).currentOrigin[2]))) {
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -700,16 +706,16 @@ bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_
       local_25 = true;
     }
     else {
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xff7f;
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfeff;
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfdff;
-      local_24 = param_3->pts[0].vOrigPoint[0];
-      local_20 = param_3->pts[0].vOrigPoint[1];
-      local_1c = param_3->pts[0].vOrigPoint[2];
-      Bot_GetPathToGoal(param_2,&local_24,param_3,false);
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xff7f;
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfeff;
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfdff;
+      goal = path->pts[0].vOrigPoint[0];
+      local_20 = path->pts[0].vOrigPoint[1];
+      local_1c = path->pts[0].vOrigPoint[2];
+      Bot_GetPathToGoal(bot,&goal,path,false);
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -723,25 +729,25 @@ bool __cdecl Bot_IsAtNegotiationNode(bot_info_t *param_1,client_t *param_2,path_
 
 // 006F9CB0  Com_HashString  (universal/q_shared.h:719)
 
-int __cdecl Com_HashString(char *param_1,int param_2)
+int __cdecl Com_HashString(char *fname,int len)
 
 {
   int iVar1;
-  int local_10;
-  int local_8;
+  long hash;
+  int letter;
+  int i;
   
-  if (param_1 == (char *)0x0) {
-    local_10 = 0;
+  if (fname == (char *)0x0) {
+    hash = 0;
   }
   else {
-    local_10 = 0x1505;
-    for (local_8 = 0; (param_1[local_8] != '\0' && ((param_2 == 0 || (local_8 < param_2))));
-        local_8 = local_8 + 1) {
-      iVar1 = tolower((int)param_1[local_8]);
-      local_10 = local_10 * 0x21 + iVar1;
+    hash = 0x1505;
+    for (i = 0; (fname[i] != '\0' && ((len == 0 || (i < len)))); i = i + 1) {
+      iVar1 = tolower((int)fname[i]);
+      hash = hash * 0x21 + iVar1;
     }
   }
-  return local_10;
+  return hash;
 }
 
 
@@ -753,22 +759,23 @@ int __cdecl Com_HashString(char *param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsFacingEnemy(client_t *param_1,gentity_s *param_2,float *param_3)
+bool __cdecl Bot_IsFacingEnemy(client_t *bot,gentity_s *enemy,float *dot)
 
 {
   gentity_s *pgVar1;
   DWORD DVar2;
   bool local_22;
-  float local_20;
+  PIXProfile pixProfile;
+  float vForward;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
+  float distSq;
+  float vDelta;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"Bot_IsFacingEnemy");
-  if (param_2 == (gentity_s *)0x0) {
+  if (enemy == (gentity_s *)0x0) {
     local_22 = false;
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -776,24 +783,24 @@ bool __cdecl Bot_IsFacingEnemy(client_t *param_1,gentity_s *param_2,float *param
     }
   }
   else {
-    pgVar1 = param_1->gentity;
-    local_10 = (param_2->r).currentOrigin[0] - (pgVar1->r).currentOrigin[0];
-    local_c = (param_2->r).currentOrigin[1] - (pgVar1->r).currentOrigin[1];
-    local_8 = (param_2->r).currentOrigin[2] - (pgVar1->r).currentOrigin[2];
-    Vec3Normalize(&local_10);
-    AngleVectors((param_1->gentity->client->ps).viewangles,&local_20,(float *)0x0,(float *)0x0);
-    Vec3Normalize(&local_20);
-    *param_3 = local_20 * local_10 + local_1c * local_c + local_18 * local_8;
-    local_14 = Vec3DistanceSq((param_1->gentity->r).currentOrigin,(param_2->r).currentOrigin);
-    if (3025.0 <= local_14) {
-      local_22 = g_botFovCos < *param_3;
+    pgVar1 = bot->gentity;
+    vDelta = (enemy->r).currentOrigin[0] - (pgVar1->r).currentOrigin[0];
+    local_c = (enemy->r).currentOrigin[1] - (pgVar1->r).currentOrigin[1];
+    local_8 = (enemy->r).currentOrigin[2] - (pgVar1->r).currentOrigin[2];
+    Vec3Normalize(&vDelta);
+    AngleVectors((bot->gentity->client->ps).viewangles,&vForward,(float *)0x0,(float *)0x0);
+    Vec3Normalize(&vForward);
+    *dot = vForward * vDelta + local_1c * local_c + local_18 * local_8;
+    distSq = Vec3DistanceSq((bot->gentity->r).currentOrigin,(enemy->r).currentOrigin);
+    if (3025.0 <= distSq) {
+      local_22 = g_botFovCos < *dot;
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      local_22 = 0.7 < *param_3;
+      local_22 = 0.7 < *dot;
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -812,16 +819,19 @@ bool __cdecl Bot_IsFacingEnemy(client_t *param_1,gentity_s *param_2,float *param
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsInRangeOfEnemy(client_t *param_1,gentity_s *param_2,float *param_3)
+bool __cdecl Bot_IsInRangeOfEnemy(client_t *bot,gentity_s *enemy,float *distSq)
 
 {
   DWORD DVar1;
   WeaponDef *pWVar2;
   float fVar3;
   bool local_e;
+  PIXProfile pixProfile;
+  WeaponDef *weapDef;
+  float weapRangeSq;
   
   PIXBeginNamedEvent(-1,"Bot_IsInRangeOfEnemy");
-  if (param_2 == (gentity_s *)0x0) {
+  if (enemy == (gentity_s *)0x0) {
     local_e = false;
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -829,9 +839,9 @@ bool __cdecl Bot_IsInRangeOfEnemy(client_t *param_1,gentity_s *param_2,float *pa
     }
   }
   else {
-    fVar3 = Vec3DistanceSq((param_1->gentity->r).currentOrigin,(param_2->r).currentOrigin);
-    *param_3 = fVar3;
-    if ((param_1->gentity->client->ps).weapon == 0) {
+    fVar3 = Vec3DistanceSq((bot->gentity->r).currentOrigin,(enemy->r).currentOrigin);
+    *distSq = fVar3;
+    if ((bot->gentity->client->ps).weapon == 0) {
       DVar1 = GetCurrentThreadId();
       if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -839,9 +849,9 @@ bool __cdecl Bot_IsInRangeOfEnemy(client_t *param_1,gentity_s *param_2,float *pa
       local_e = true;
     }
     else {
-      pWVar2 = BG_GetWeaponDef((uint)(param_1->gentity->client->ps).weapon);
+      pWVar2 = BG_GetWeaponDef((uint)(bot->gentity->client->ps).weapon);
       fVar3 = pWVar2->fMinDamageRange * pWVar2->fMinDamageRange;
-      local_e = *param_3 <= fVar3 && fVar3 != *param_3;
+      local_e = *distSq <= fVar3 && fVar3 != *distSq;
       DVar1 = GetCurrentThreadId();
       if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -860,39 +870,41 @@ bool __cdecl Bot_IsInRangeOfEnemy(client_t *param_1,gentity_s *param_2,float *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateSight(bot_info_t *param_1,client_t *param_2)
+void __cdecl Bot_UpdateSight(bot_info_t *botInfo,client_t *bot)
 
 {
   float *pfVar1;
   gentity_s *pgVar2;
-  bool bVar3;
-  DWORD DVar4;
-  col_context_t local_48;
-  char local_1d;
-  float local_1c;
+  int iVar3;
+  bool bVar4;
+  DWORD DVar5;
+  col_context_t context;
+  PIXProfile pixProfile;
+  bool hadSight;
+  float enemyOrigin;
   float local_18;
   float local_14;
-  float local_10;
+  float botOrigin;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateSight");
-  col_context_t::col_context_t(&local_48);
-  if ((param_1->threat).enemy == (gentity_s *)0x0) {
-    param_1->pitchEndTime = -1;
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  col_context_t::col_context_t(&context);
+  if ((botInfo->threat).enemy == (gentity_s *)0x0) {
+    botInfo->pitchEndTime = -1;
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    pfVar1 = &(param_1->threat).distSq;
+    pfVar1 = &(botInfo->threat).distSq;
     if (3025.0 < *pfVar1 || *pfVar1 == 3025.0) {
-      pfVar1 = &(param_1->threat).dot;
+      pfVar1 = &(botInfo->threat).dot;
       if (*pfVar1 <= g_botFovCos && g_botFovCos != *pfVar1) {
-        param_1->pitchEndTime = -1;
-        DVar4 = GetCurrentThreadId();
-        if (DVar4 != (DWORD)g_DXDeviceThread) {
+        botInfo->pitchEndTime = -1;
+        DVar5 = GetCurrentThreadId();
+        if (DVar5 != (DWORD)g_DXDeviceThread) {
           return;
         }
         if (g_DXDeviceThread._4_4_ != 0) {
@@ -903,11 +915,11 @@ void __cdecl Bot_UpdateSight(bot_info_t *param_1,client_t *param_2)
       }
     }
     else {
-      pfVar1 = &(param_1->threat).dot;
+      pfVar1 = &(botInfo->threat).dot;
       if (*pfVar1 <= 0.7 && *pfVar1 != 0.7) {
-        param_1->pitchEndTime = -1;
-        DVar4 = GetCurrentThreadId();
-        if (DVar4 != (DWORD)g_DXDeviceThread) {
+        botInfo->pitchEndTime = -1;
+        DVar5 = GetCurrentThreadId();
+        if (DVar5 != (DWORD)g_DXDeviceThread) {
           return;
         }
         if (g_DXDeviceThread._4_4_ != 0) {
@@ -917,76 +929,76 @@ void __cdecl Bot_UpdateSight(bot_info_t *param_1,client_t *param_2)
         return;
       }
     }
-    pgVar2 = param_2->gentity;
-    local_10 = (pgVar2->r).currentOrigin[0];
+    pgVar2 = bot->gentity;
+    botOrigin = (pgVar2->r).currentOrigin[0];
     local_c = (pgVar2->r).currentOrigin[1];
-    local_8 = (pgVar2->r).currentOrigin[2] + (param_2->gentity->client->ps).viewHeightCurrent;
-    pgVar2 = (param_1->threat).enemy;
-    local_1c = (pgVar2->r).currentOrigin[0];
+    local_8 = (pgVar2->r).currentOrigin[2] + (bot->gentity->client->ps).viewHeightCurrent;
+    pgVar2 = (botInfo->threat).enemy;
+    enemyOrigin = (pgVar2->r).currentOrigin[0];
     local_18 = (pgVar2->r).currentOrigin[1];
     local_14 = (pgVar2->r).currentOrigin[2];
-    pgVar2 = (param_1->threat).enemy;
+    pgVar2 = (botInfo->threat).enemy;
     if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->client == (gclient_s *)0x0)) {
-      bVar3 = false;
+      bVar4 = false;
     }
     else {
-      bVar3 = true;
+      bVar4 = true;
     }
-    if (bVar3) {
-      local_14 = local_14 + (((param_1->threat).enemy)->client->ps).viewHeightCurrent;
-      if (((((param_1->threat).enemy)->client->ps).eFlags & 0x4000U) == 0) {
-        AddLeanToPosition(&local_1c,(((param_1->threat).enemy)->client->ps).viewangles[1],
-                          (((param_1->threat).enemy)->client->ps).leanf,16.0,20.0);
+    if (bVar4) {
+      local_14 = local_14 + (((botInfo->threat).enemy)->client->ps).viewHeightCurrent;
+      if (((((botInfo->threat).enemy)->client->ps).eFlags & 0x4000U) == 0) {
+        AddLeanToPosition(&enemyOrigin,(((botInfo->threat).enemy)->client->ps).viewangles[1],
+                          (((botInfo->threat).enemy)->client->ps).leanf,16.0,20.0);
       }
     }
     else {
-      local_14 = (((param_1->threat).enemy)->r).maxs[2] / 2.0 + local_14;
+      local_14 = (((botInfo->threat).enemy)->r).maxs[2] / 2.0 + local_14;
     }
-    local_48.passEntityNum0 = (param_2->gentity->s).number;
-    local_48.passEntityNum1 = (((param_1->threat).enemy)->s).number;
-    local_48.mask = 0x2818001;
-    pgVar2 = (param_1->threat).enemy;
+    context.passEntityNum0 = (bot->gentity->s).number;
+    context.passEntityNum1 = (((botInfo->threat).enemy)->s).number;
+    context.mask = 0x2818001;
+    pgVar2 = (botInfo->threat).enemy;
     if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->scr_vehicle == (scr_vehicle_s *)0x0)) {
-      bVar3 = false;
+      bVar4 = false;
     }
     else {
-      bVar3 = true;
+      bVar4 = true;
     }
-    if (bVar3) {
-      local_48.mask = 0x2808001;
+    if (bVar4) {
+      context.mask = 0x2808001;
     }
-    local_1d = param_1->pitchEndTime == 0;
-    SV_SightTracePoint(&param_1->pitchEndTime,&local_10,&local_1c,&local_48);
-    if ((local_1d == '\0') && (param_1->pitchEndTime == 0)) {
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x20;
+    iVar3 = botInfo->pitchEndTime;
+    SV_SightTracePoint(&botInfo->pitchEndTime,&botOrigin,&enemyOrigin,&context);
+    if ((iVar3 == 0) || (botInfo->pitchEndTime != 0)) {
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xffdf;
     }
     else {
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xffdf;
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x20;
     }
-    if (param_1->pitchEndTime == 0) {
-      (param_1->threat).lastSightTime = svs.time;
+    if (botInfo->pitchEndTime == 0) {
+      (botInfo->threat).lastSightTime = svs.time;
     }
-    else if ((param_1->threat).lastSightTime != 0) {
-      if (svs.time - (param_1->threat).lastSightTime < 1000) {
-        pgVar2 = (param_1->threat).enemy;
-        (param_1->threat).lastOrigin[0] = (pgVar2->r).currentOrigin[0];
-        (param_1->threat).lastOrigin[1] = (pgVar2->r).currentOrigin[1];
-        (param_1->threat).lastOrigin[2] = (pgVar2->r).currentOrigin[2];
+    else if ((botInfo->threat).lastSightTime != 0) {
+      if (svs.time - (botInfo->threat).lastSightTime < 1000) {
+        pgVar2 = (botInfo->threat).enemy;
+        (botInfo->threat).lastOrigin[0] = (pgVar2->r).currentOrigin[0];
+        (botInfo->threat).lastOrigin[1] = (pgVar2->r).currentOrigin[1];
+        (botInfo->threat).lastOrigin[2] = (pgVar2->r).currentOrigin[2];
       }
-      if ((svs.time - (param_1->threat).lastSightTime < 0x65) ||
-         ((float)param_1->weapon * (float)param_1->weapon +
-          (float)param_1->sightHitNum * (float)param_1->sightHitNum +
-          (float)param_1->attackerEnt * (float)param_1->attackerEnt < 1e-12)) {
-        pgVar2 = (param_1->threat).enemy;
-        param_1->weapon = (int)(pgVar2->r).currentOrigin[0];
-        param_1->sightHitNum = (int)(pgVar2->r).currentOrigin[1];
-        param_1->attackerEnt = (gentity_s *)(pgVar2->r).currentOrigin[2];
+      if ((svs.time - (botInfo->threat).lastSightTime < 0x65) ||
+         ((float)botInfo->weapon * (float)botInfo->weapon +
+          (float)botInfo->sightHitNum * (float)botInfo->sightHitNum +
+          (float)botInfo->attackerEnt * (float)botInfo->attackerEnt < 1e-12)) {
+        pgVar2 = (botInfo->threat).enemy;
+        botInfo->weapon = (int)(pgVar2->r).currentOrigin[0];
+        botInfo->sightHitNum = (int)(pgVar2->r).currentOrigin[1];
+        botInfo->attackerEnt = (gentity_s *)(pgVar2->r).currentOrigin[2];
       }
     }
-    DVar4 = GetCurrentThreadId();
-    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -1001,17 +1013,17 @@ void __cdecl Bot_UpdateSight(bot_info_t *param_1,client_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_ClearThreat(bot_info_t *param_1)
+void __cdecl Bot_ClearThreat(bot_info_t *botInfo)
 
 {
-  memset((uchar *)&param_1->threat,'\0',0x38);
-  param_1->crouchEndTime = 0;
-  *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-       *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffe;
-  *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-       *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xffbf;
-  *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-       *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xffdf;
+  memset((uchar *)&botInfo->threat,'\0',0x38);
+  botInfo->crouchEndTime = 0;
+  *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+       *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffe;
+  *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+       *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xffbf;
+  *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+       *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xffdf;
   return;
 }
 
@@ -1024,7 +1036,7 @@ void __cdecl Bot_ClearThreat(bot_info_t *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateBestThreat(bot_info_t *param_1,bot_threat_t *param_2,int param_3)
+void __cdecl Bot_UpdateBestThreat(bot_info_t *botInfo,bot_threat_t *threats,int numThreats)
 
 {
   float fVar1;
@@ -1037,56 +1049,61 @@ void __cdecl Bot_UpdateBestThreat(bot_info_t *param_1,bot_threat_t *param_2,int 
   int iVar8;
   float fVar9;
   float fVar10;
-  bot_threat_t *local_18;
-  int local_10;
+  bot_threat_t *bestThreat;
+  bool veryClose;
+  bool betterAngle;
+  bool closer;
+  int i;
+  bot_threat_t *threat;
+  bool human;
   
-  local_18 = &param_1->threat;
-  for (local_10 = 0; pbVar7 = local_18, local_10 < param_3; local_10 = local_10 + 1) {
-    pbVar7 = (bot_threat_t *)(local_10 * 0x38 + (int)param_2);
-    pbVar5 = local_18;
+  bestThreat = &botInfo->threat;
+  for (i = 0; pbVar7 = bestThreat, i < numThreats; i = i + 1) {
+    pbVar7 = (bot_threat_t *)(i * 0x38 + (int)threats);
+    pbVar5 = bestThreat;
     if (pbVar7->enemy != (gentity_s *)0x0) {
-      if (local_18->enemy == (gentity_s *)0x0) break;
-      if (local_18->enemy != pbVar7->enemy) {
-        bVar4 = 1.0 - (param_1->threat).dot <= 1.0 - pbVar7->dot;
-        fVar10 = (param_1->threat).distSq;
+      if (bestThreat->enemy == (gentity_s *)0x0) break;
+      if (bestThreat->enemy != pbVar7->enemy) {
+        bVar4 = 1.0 - (botInfo->threat).dot <= 1.0 - pbVar7->dot;
+        fVar10 = (botInfo->threat).distSq;
         bVar2 = fVar10 == pbVar7->distSq;
         bVar3 = fVar10 < pbVar7->distSq;
         fVar9 = (sv_botCloseDistance->current).value * (sv_botCloseDistance->current).value;
         fVar10 = pbVar7->distSq;
         fVar1 = pbVar7->distSq;
-        bVar6 = Bot_IsEnemyHuman((param_1->threat).enemy);
+        bVar6 = Bot_IsEnemyHuman((botInfo->threat).enemy);
         if (fVar1 <= fVar9 && fVar9 != fVar10) break;
-        if ((((((local_18->acquireTime != 0) && (500 < svs.time - local_18->acquireTime)) &&
+        if ((((((bestThreat->acquireTime != 0) && (500 < svs.time - bestThreat->acquireTime)) &&
               ((pbVar5 = pbVar7, bVar3 || bVar2 || (bVar4)))) &&
              ((!bVar6 || (fVar10 = random(), 0.75 <= fVar10)))) &&
             ((bVar3 || bVar2 || (fVar10 = random(), 0.5 <= fVar10)))) &&
            ((bVar4 || (fVar10 = random(), 0.5 <= fVar10)))) {
-          local_18->acquireTime = svs.time;
-          pbVar5 = local_18;
+          bestThreat->acquireTime = svs.time;
+          pbVar5 = bestThreat;
         }
       }
     }
-    local_18 = pbVar5;
+    bestThreat = pbVar5;
   }
-  local_18 = pbVar7;
-  if (local_18 == (bot_threat_t *)0x0) {
-    *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffe;
+  bestThreat = pbVar7;
+  if (bestThreat == (bot_threat_t *)0x0) {
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffe;
   }
-  else if (local_18 == &param_1->threat) {
-    *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffe;
+  else if (bestThreat == &botInfo->threat) {
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffe;
   }
   else {
-    pbVar7 = &param_1->threat;
+    pbVar7 = &botInfo->threat;
     for (iVar8 = 0xe; iVar8 != 0; iVar8 = iVar8 + -1) {
-      pbVar7->enemy = local_18->enemy;
-      local_18 = (bot_threat_t *)&local_18->dot;
+      pbVar7->enemy = bestThreat->enemy;
+      bestThreat = (bot_threat_t *)&bestThreat->dot;
       pbVar7 = (bot_threat_t *)&pbVar7->dot;
     }
-    (param_1->threat).acquireTime = svs.time;
-    *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 1;
+    (botInfo->threat).acquireTime = svs.time;
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 1;
   }
   return;
 }
@@ -1100,53 +1117,54 @@ void __cdecl Bot_UpdateBestThreat(bot_info_t *param_1,bot_threat_t *param_2,int 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_ThreatSightCheck(client_t *param_1,gentity_s *param_2,float param_3)
+bool __cdecl Bot_ThreatSightCheck(client_t *bot,gentity_s *enemy,float fovDot)
 
 {
   gentity_s *pgVar1;
   bool bVar2;
   DWORD DVar3;
   bool local_4d;
-  col_context_t local_4c;
-  float local_20;
+  col_context_t context;
+  PIXProfile pixProfile;
+  float enemyOrigin;
   float local_1c;
   float local_18;
-  float local_14;
+  float botOrigin;
   float local_10;
   float local_c;
-  int local_8;
+  int hitNum;
   
   PIXBeginNamedEvent(-1,"Bot_ThreatSightCheck");
-  col_context_t::col_context_t(&local_4c);
-  if (g_botFovCos <= param_3) {
-    pgVar1 = param_1->gentity;
-    local_14 = (pgVar1->r).currentOrigin[0];
+  col_context_t::col_context_t(&context);
+  if (g_botFovCos <= fovDot) {
+    pgVar1 = bot->gentity;
+    botOrigin = (pgVar1->r).currentOrigin[0];
     local_10 = (pgVar1->r).currentOrigin[1];
-    local_c = (pgVar1->r).currentOrigin[2] + (param_1->gentity->client->ps).viewHeightCurrent;
-    local_20 = (param_2->r).currentOrigin[0];
-    local_1c = (param_2->r).currentOrigin[1];
-    local_18 = (param_2->r).currentOrigin[2];
-    if ((param_2 == (gentity_s *)0x0) || (param_2->client == (gclient_s *)0x0)) {
+    local_c = (pgVar1->r).currentOrigin[2] + (bot->gentity->client->ps).viewHeightCurrent;
+    enemyOrigin = (enemy->r).currentOrigin[0];
+    local_1c = (enemy->r).currentOrigin[1];
+    local_18 = (enemy->r).currentOrigin[2];
+    if ((enemy == (gentity_s *)0x0) || (enemy->client == (gclient_s *)0x0)) {
       bVar2 = false;
     }
     else {
       bVar2 = true;
     }
     if (bVar2) {
-      local_18 = local_18 + (param_2->client->ps).viewHeightCurrent;
-      if (((param_2->client->ps).eFlags & 0x4000U) == 0) {
-        AddLeanToPosition(&local_20,(param_2->client->ps).viewangles[1],(param_2->client->ps).leanf,
+      local_18 = local_18 + (enemy->client->ps).viewHeightCurrent;
+      if (((enemy->client->ps).eFlags & 0x4000U) == 0) {
+        AddLeanToPosition(&enemyOrigin,(enemy->client->ps).viewangles[1],(enemy->client->ps).leanf,
                           16.0,20.0);
       }
     }
     else {
-      local_18 = (param_2->r).maxs[2] / 2.0 + local_18;
+      local_18 = (enemy->r).maxs[2] / 2.0 + local_18;
     }
-    local_4c.passEntityNum0 = (param_1->gentity->s).number;
-    local_4c.passEntityNum1 = (param_2->s).number;
-    local_4c.mask = 0x2818011;
-    SV_SightTracePoint(&local_8,&local_14,&local_20,&local_4c);
-    local_4d = local_8 == 0;
+    context.passEntityNum0 = (bot->gentity->s).number;
+    context.passEntityNum1 = (enemy->s).number;
+    context.mask = 0x2818011;
+    SV_SightTracePoint(&hitNum,&botOrigin,&enemyOrigin,&context);
+    local_4d = hitNum == 0;
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -1171,7 +1189,7 @@ bool __cdecl Bot_ThreatSightCheck(client_t *param_1,gentity_s *param_2,float par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateThreat(bot_info_t *param_1,client_t *param_2)
+void __cdecl Bot_UpdateThreat(bot_info_t *botInfo,client_t *bot)
 
 {
   float *pfVar1;
@@ -1183,78 +1201,80 @@ void __cdecl Bot_UpdateThreat(bot_info_t *param_1,client_t *param_2)
   int iVar7;
   float fVar8;
   path_t *in_stack_fffff894;
-  bot_threat_t local_71c [40];
-  client_t *local_18;
-  int local_14;
-  playerState_s *local_10;
-  undefined4 *local_c;
-  team_t local_8;
+  int enemyTeam;
+  PIXProfile pixProfile;
+  bot_threat_t threats [40];
+  client_t *enemy;
+  int i;
+  playerState_s *ps;
+  bot_threat_t *threat;
+  int botTeam;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateThreat");
-  local_8 = (param_2->gentity->client->sess).cs.team;
-  local_10 = G_GetPlayerState((param_2->gentity->s).number);
-  if (local_8 == TEAM_SPECTATOR) {
-    Bot_ClearThreat(param_1);
+  botTeam = (bot->gentity->client->sess).cs.team;
+  ps = G_GetPlayerState((bot->gentity->s).number);
+  if (botTeam == 3) {
+    Bot_ClearThreat(botInfo);
     DVar6 = GetCurrentThreadId();
     if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    memset((uchar *)local_71c,'\0',0x700);
+    memset((uchar *)threats,'\0',0x700);
     if ((((sv_botsIgnoreHumans->current).enabled != false) &&
-        ((param_1->threat).enemy != (gentity_s *)0x0)) &&
-       (bVar5 = Bot_IsEnemyHuman((param_1->threat).enemy), bVar5)) {
-      Bot_ClearThreat(param_1);
+        ((botInfo->threat).enemy != (gentity_s *)0x0)) &&
+       (bVar5 = Bot_IsEnemyHuman((botInfo->threat).enemy), bVar5)) {
+      Bot_ClearThreat(botInfo);
     }
-    if ((param_1->threat).enemy != (gentity_s *)0x0) {
-      pgVar2 = (param_1->threat).enemy;
+    if ((botInfo->threat).enemy != (gentity_s *)0x0) {
+      pgVar2 = (botInfo->threat).enemy;
       if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->client == (gclient_s *)0x0)) {
         bVar5 = false;
       }
       else {
         bVar5 = true;
       }
-      if ((bVar5) && ((((param_1->threat).enemy)->client->flags & 1U) != 0)) {
-        Bot_ClearThreat(param_1);
+      if ((bVar5) && ((((botInfo->threat).enemy)->client->flags & 1U) != 0)) {
+        Bot_ClearThreat(botInfo);
       }
     }
-    if ((param_1->threat).enemy != (gentity_s *)0x0) {
-      if (((param_1->pitchEndTime == 0) || ((param_1->threat).lastSightTime != 0)) ||
-         (svs.time - (param_1->threat).acquireTime < 0x2711)) {
-        if (((param_1->pitchEndTime != 0) && ((param_1->threat).lastSightTime != 0)) &&
-           (10000 < svs.time - (param_1->threat).lastSightTime)) {
-          Bot_ClearThreat(param_1);
+    if ((botInfo->threat).enemy != (gentity_s *)0x0) {
+      if (((botInfo->pitchEndTime == 0) || ((botInfo->threat).lastSightTime != 0)) ||
+         (svs.time - (botInfo->threat).acquireTime < 0x2711)) {
+        if (((botInfo->pitchEndTime != 0) && ((botInfo->threat).lastSightTime != 0)) &&
+           (10000 < svs.time - (botInfo->threat).lastSightTime)) {
+          Bot_ClearThreat(botInfo);
         }
       }
       else {
-        Bot_ClearThreat(param_1);
+        Bot_ClearThreat(botInfo);
       }
     }
-    if ((local_10->damageCount != 0) && ((param_1->threat).deathEndTime != 0)) {
-      (param_1->threat).deathEndTime = svs.time;
+    if ((ps->damageCount != 0) && ((botInfo->threat).deathEndTime != 0)) {
+      (botInfo->threat).deathEndTime = svs.time;
     }
-    if ((((param_1->threat).enemy != (gentity_s *)0x0) && ((param_1->threat).deathEndTime != 0)) &&
-       ((param_1->threat).deathEndTime <= svs.time)) {
-      Bot_ClearThreat(param_1);
+    if ((((botInfo->threat).enemy != (gentity_s *)0x0) && ((botInfo->threat).deathEndTime != 0)) &&
+       ((botInfo->threat).deathEndTime <= svs.time)) {
+      Bot_ClearThreat(botInfo);
       Path_Clear(in_stack_fffff894);
     }
-    if ((((param_1->threat).enemy == (gentity_s *)0x0) || ((param_1->threat).deathEndTime != 0)) ||
-       (0 < ((param_1->threat).enemy)->health)) {
-      if (((param_1->threat).enemy != (gentity_s *)0x0) && (0 < ((param_1->threat).enemy)->health))
+    if ((((botInfo->threat).enemy == (gentity_s *)0x0) || ((botInfo->threat).deathEndTime != 0)) ||
+       (0 < ((botInfo->threat).enemy)->health)) {
+      if (((botInfo->threat).enemy != (gentity_s *)0x0) && (0 < ((botInfo->threat).enemy)->health))
       {
-        Bot_IsFacingEnemy(param_2,(param_1->threat).enemy,&(param_1->threat).dot);
-        Bot_IsInRangeOfEnemy(param_2,(param_1->threat).enemy,&(param_1->threat).distSq);
+        Bot_IsFacingEnemy(bot,(botInfo->threat).enemy,&(botInfo->threat).dot);
+        Bot_IsInRangeOfEnemy(bot,(botInfo->threat).enemy,&(botInfo->threat).distSq);
       }
-      if (((uint)param_1[1].path.pts[0].fDir2D[1] & 8) == 0) {
-        if ((((param_1->threat).enemy == (gentity_s *)0x0) ||
-            (((param_1->threat).enemy)->health < 1)) ||
+      if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 8) == 0) {
+        if ((((botInfo->threat).enemy == (gentity_s *)0x0) ||
+            (((botInfo->threat).enemy)->health < 1)) ||
            (fVar8 = (sv_botCloseDistance->current).value * (sv_botCloseDistance->current).value,
-           pfVar1 = &(param_1->threat).distSq, fVar8 < *pfVar1 || fVar8 == *pfVar1)) {
-          if (((param_1->threat).enemy == (gentity_s *)0x0) ||
-             (bVar5 = Bot_IsInLastStand(param_2), !bVar5)) {
-            if ((param_1->pitchEndTime != 0) && (local_10->damageCount != 0)) {
-              piVar3 = (int *)param_1->crouchEndTime;
+           pfVar1 = &(botInfo->threat).distSq, fVar8 < *pfVar1 || fVar8 == *pfVar1)) {
+          if (((botInfo->threat).enemy == (gentity_s *)0x0) ||
+             (bVar5 = Bot_IsInLastStand(bot), !bVar5)) {
+            if ((botInfo->pitchEndTime != 0) && (ps->damageCount != 0)) {
+              piVar3 = (int *)botInfo->crouchEndTime;
               if ((((piVar3 == (int *)0x0) || (*piVar3 == 0x3ff)) || (*piVar3 == 0x3fe)) ||
                  ((char)piVar3[0x3a] == '\0')) {
                 bVar5 = false;
@@ -1262,13 +1282,13 @@ void __cdecl Bot_UpdateThreat(bot_info_t *param_1,client_t *param_2)
               else {
                 bVar5 = true;
               }
-              if ((bVar5) && ((param_1->threat).enemy != (gentity_s *)param_1->crouchEndTime)) {
-                (param_1->threat).enemy = (gentity_s *)param_1->crouchEndTime;
-                Bot_IsFacingEnemy(param_2,(param_1->threat).enemy,&(param_1->threat).dot);
-                Bot_IsInRangeOfEnemy(param_2,(param_1->threat).enemy,&(param_1->threat).distSq);
-                (param_1->threat).acquireTime = svs.time;
-                *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                     *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 1;
+              if ((bVar5) && ((botInfo->threat).enemy != (gentity_s *)botInfo->crouchEndTime)) {
+                (botInfo->threat).enemy = (gentity_s *)botInfo->crouchEndTime;
+                Bot_IsFacingEnemy(bot,(botInfo->threat).enemy,&(botInfo->threat).dot);
+                Bot_IsInRangeOfEnemy(bot,(botInfo->threat).enemy,&(botInfo->threat).distSq);
+                (botInfo->threat).acquireTime = svs.time;
+                *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                     *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 1;
                 DVar6 = GetCurrentThreadId();
                 if (DVar6 != (DWORD)g_DXDeviceThread) {
                   return;
@@ -1279,30 +1299,27 @@ void __cdecl Bot_UpdateThreat(bot_info_t *param_1,client_t *param_2)
                 _D3DPERF_EndEvent_0();
                 return;
               }
-              param_1->crouchEndTime = 0;
+              botInfo->crouchEndTime = 0;
             }
-            local_18 = svs.clients;
-            for (local_14 = 0; local_14 < (com_maxclients->current).integer; local_14 = local_14 + 1
-                ) {
-              if ((((((local_18 != param_2) && ((local_18->header).state == 5)) &&
-                    (0 < local_18->gentity->health)) &&
-                   ((local_18->gentity->client->flags & 1U) == 0)) &&
-                  (((sv_botsIgnoreHumans->current).enabled == false ||
-                   (local_18->bIsTestClient != 0)))) &&
-                 ((tVar4 = (local_18->gentity->client->sess).cs.team, tVar4 != TEAM_SPECTATOR &&
-                  ((local_8 == TEAM_BAD || (tVar4 != local_8)))))) {
-                iVar7 = (local_18->gentity->s).number * 0x38;
-                local_c = (undefined4 *)((int)local_71c + iVar7);
-                Bot_IsFacingEnemy(param_2,local_18->gentity,(float *)((int)local_71c + iVar7 + 4));
-                bVar5 = Bot_ThreatSightCheck(param_2,local_18->gentity,(float)local_c[1]);
+            enemy = svs.clients;
+            for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+              if ((((((enemy != bot) && ((enemy->header).state == 5)) &&
+                    (0 < enemy->gentity->health)) && ((enemy->gentity->client->flags & 1U) == 0)) &&
+                  (((sv_botsIgnoreHumans->current).enabled == false || (enemy->bIsTestClient != 0)))
+                  ) && ((tVar4 = (enemy->gentity->client->sess).cs.team, tVar4 != TEAM_SPECTATOR &&
+                        ((botTeam == 0 || (tVar4 != botTeam)))))) {
+                iVar7 = (enemy->gentity->s).number * 0x38;
+                threat = (bot_threat_t *)((int)threats + iVar7);
+                Bot_IsFacingEnemy(bot,enemy->gentity,(float *)((int)threats + iVar7 + 4));
+                bVar5 = Bot_ThreatSightCheck(bot,enemy->gentity,threat->dot);
                 if (bVar5) {
-                  Bot_IsInRangeOfEnemy(param_2,local_18->gentity,(float *)(local_c + 2));
-                  *local_c = local_18->gentity;
+                  Bot_IsInRangeOfEnemy(bot,enemy->gentity,&threat->distSq);
+                  threat->enemy = enemy->gentity;
                 }
               }
-              local_18 = (client_t *)(local_18[1].userinfo + 0x3d8);
+              enemy = (client_t *)(enemy[1].userinfo + 0x3d8);
             }
-            Bot_UpdateBestThreat(param_1,local_71c,0x20);
+            Bot_UpdateBestThreat(botInfo,threats,0x20);
             DVar6 = GetCurrentThreadId();
             if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
@@ -1331,7 +1348,7 @@ void __cdecl Bot_UpdateThreat(bot_info_t *param_1,client_t *param_2)
     }
     else {
       iVar7 = irand((sv_botMinDeathTime->current).integer,(sv_botMaxDeathTime->current).integer);
-      (param_1->threat).deathEndTime = iVar7 + svs.time;
+      (botInfo->threat).deathEndTime = iVar7 + svs.time;
       DVar6 = GetCurrentThreadId();
       if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1350,24 +1367,27 @@ void __cdecl Bot_UpdateThreat(bot_info_t *param_1,client_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateWeapon(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateWeapon(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   gentity_s *pgVar1;
   bool bVar2;
-  playerState_s *ppVar3;
-  DWORD DVar4;
-  WeaponDef *pWVar5;
-  int iVar6;
-  int local_1c;
-  int local_18;
-  int local_14;
+  playerState_s *ps_00;
+  DWORD DVar3;
+  WeaponDef *pWVar4;
+  int iVar5;
+  int i_3;
+  int i_2;
+  int i;
+  PIXProfile pixProfile;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateWeapon");
-  ppVar3 = G_GetPlayerState((param_2->gentity->s).number);
-  if (ppVar3->weaponstate != 0) {
-    DVar4 = GetCurrentThreadId();
-    if (DVar4 != (DWORD)g_DXDeviceThread) {
+  ps_00 = G_GetPlayerState((bot->gentity->s).number);
+  if (ps_00->weaponstate != 0) {
+    DVar3 = GetCurrentThreadId();
+    if (DVar3 != (DWORD)g_DXDeviceThread) {
       return;
     }
     if (g_DXDeviceThread._4_4_ != 0) {
@@ -1376,10 +1396,10 @@ void __cdecl Bot_UpdateWeapon(bot_info_t *param_1,client_t *param_2,usercmd_s *p
     _D3DPERF_EndEvent_0();
     return;
   }
-  if (param_1->adsEndTime != 0) {
-    param_3->weapon = (ushort)param_1->adsEndTime;
+  if (botInfo->adsEndTime != 0) {
+    cmd->weapon = (ushort)botInfo->adsEndTime;
   }
-  pgVar1 = (param_1->threat).enemy;
+  pgVar1 = (botInfo->threat).enemy;
   if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->pTurretInfo == (TurretInfo *)0x0)) {
     bVar2 = false;
   }
@@ -1387,7 +1407,7 @@ void __cdecl Bot_UpdateWeapon(bot_info_t *param_1,client_t *param_2,usercmd_s *p
     bVar2 = true;
   }
   if (!bVar2) {
-    pgVar1 = (param_1->threat).enemy;
+    pgVar1 = (botInfo->threat).enemy;
     if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->scr_vehicle == (scr_vehicle_s *)0x0)) {
       bVar2 = false;
     }
@@ -1396,52 +1416,51 @@ void __cdecl Bot_UpdateWeapon(bot_info_t *param_1,client_t *param_2,usercmd_s *p
     }
     if (!bVar2) goto LAB_006fb4ef;
   }
-  pWVar5 = BG_GetWeaponDef(param_1->adsEndTime);
-  if (pWVar5->weapType != WEAPTYPE_PROJECTILE) {
-    for (local_14 = 0; local_14 < 0xf; local_14 = local_14 + 1) {
-      if ((((((ppVar3->heldWeapons[local_14].weapon != 0) &&
-             (ppVar3->heldWeapons[local_14].weapon != (uint)param_3->weapon)) &&
-            (iVar6 = BG_WeaponAmmo(ppVar3,ppVar3->heldWeapons[local_14].weapon), iVar6 != 0)) &&
-           ((pWVar5 = BG_GetWeaponDef(ppVar3->heldWeapons[local_14].weapon),
-            pWVar5->weapType != WEAPTYPE_BOMB && (pWVar5->weapClass != WEAPCLASS_PISTOL)))) &&
-          (pWVar5->weapClass != WEAPCLASS_TURRET)) && (pWVar5->weapType == WEAPTYPE_PROJECTILE)) {
-        param_3->weapon = (ushort)ppVar3->heldWeapons[local_14].weapon;
+  pWVar4 = BG_GetWeaponDef(botInfo->adsEndTime);
+  if (pWVar4->weapType != WEAPTYPE_PROJECTILE) {
+    for (i = 0; i < 0xf; i = i + 1) {
+      if ((((((ps_00->heldWeapons[i].weapon != 0) &&
+             (ps_00->heldWeapons[i].weapon != (uint)cmd->weapon)) &&
+            (iVar5 = BG_WeaponAmmo(ps_00,ps_00->heldWeapons[i].weapon), iVar5 != 0)) &&
+           ((pWVar4 = BG_GetWeaponDef(ps_00->heldWeapons[i].weapon),
+            pWVar4->weapType != WEAPTYPE_BOMB && (pWVar4->weapClass != WEAPCLASS_PISTOL)))) &&
+          (pWVar4->weapClass != WEAPCLASS_TURRET)) && (pWVar4->weapType == WEAPTYPE_PROJECTILE)) {
+        cmd->weapon = (ushort)ps_00->heldWeapons[i].weapon;
         break;
       }
     }
   }
 LAB_006fb4ef:
-  if (((param_3->weapon == 0) ||
-      (iVar6 = BG_PlayerHasWeapon(ppVar3,(uint)param_3->weapon), iVar6 == 0)) ||
-     (iVar6 = BG_WeaponAmmo(ppVar3,(uint)param_3->weapon), iVar6 == 0)) {
-    for (local_18 = 0; local_18 < 0xf; local_18 = local_18 + 1) {
-      if (((((ppVar3->heldWeapons[local_18].weapon != 0) &&
-            (ppVar3->heldWeapons[local_18].weapon != (uint)param_3->weapon)) &&
-           (iVar6 = BG_WeaponAmmo(ppVar3,ppVar3->heldWeapons[local_18].weapon), iVar6 != 0)) &&
-          ((pWVar5 = BG_GetWeaponDef(ppVar3->heldWeapons[local_18].weapon),
-           pWVar5->requireLockonToFire == false && (pWVar5->weapType != WEAPTYPE_BOMB)))) &&
-         ((pWVar5->weapClass != WEAPCLASS_TURRET &&
-          ((pWVar5->weapType == WEAPTYPE_BULLET || (pWVar5->weapType == WEAPTYPE_PROJECTILE)))))) {
-        param_3->weapon = (ushort)ppVar3->heldWeapons[local_18].weapon;
+  if (((cmd->weapon == 0) || (iVar5 = BG_PlayerHasWeapon(ps_00,(uint)cmd->weapon), iVar5 == 0)) ||
+     (iVar5 = BG_WeaponAmmo(ps_00,(uint)cmd->weapon), iVar5 == 0)) {
+    for (i_2 = 0; i_2 < 0xf; i_2 = i_2 + 1) {
+      if (((((ps_00->heldWeapons[i_2].weapon != 0) &&
+            (ps_00->heldWeapons[i_2].weapon != (uint)cmd->weapon)) &&
+           (iVar5 = BG_WeaponAmmo(ps_00,ps_00->heldWeapons[i_2].weapon), iVar5 != 0)) &&
+          ((pWVar4 = BG_GetWeaponDef(ps_00->heldWeapons[i_2].weapon),
+           pWVar4->requireLockonToFire == false && (pWVar4->weapType != WEAPTYPE_BOMB)))) &&
+         ((pWVar4->weapClass != WEAPCLASS_TURRET &&
+          ((pWVar4->weapType == WEAPTYPE_BULLET || (pWVar4->weapType == WEAPTYPE_PROJECTILE)))))) {
+        cmd->weapon = (ushort)ps_00->heldWeapons[i_2].weapon;
         break;
       }
     }
   }
-  if (param_3->weapon == 0) {
-    for (local_1c = 0; local_1c < 0xf; local_1c = local_1c + 1) {
-      if ((((ppVar3->heldWeapons[local_1c].weapon != 0) &&
-           (ppVar3->heldWeapons[local_1c].weapon != (uint)param_3->weapon)) &&
-          (pWVar5 = BG_GetWeaponDef(ppVar3->heldWeapons[local_1c].weapon),
-          pWVar5->weapType != WEAPTYPE_BOMB)) &&
-         ((pWVar5->weapClass != WEAPCLASS_TURRET &&
-          ((pWVar5->weapType == WEAPTYPE_BULLET || (pWVar5->weapType == WEAPTYPE_PROJECTILE)))))) {
-        param_3->weapon = (ushort)ppVar3->heldWeapons[local_1c].weapon;
+  if (cmd->weapon == 0) {
+    for (i_3 = 0; i_3 < 0xf; i_3 = i_3 + 1) {
+      if ((((ps_00->heldWeapons[i_3].weapon != 0) &&
+           (ps_00->heldWeapons[i_3].weapon != (uint)cmd->weapon)) &&
+          (pWVar4 = BG_GetWeaponDef(ps_00->heldWeapons[i_3].weapon),
+          pWVar4->weapType != WEAPTYPE_BOMB)) &&
+         ((pWVar4->weapClass != WEAPCLASS_TURRET &&
+          ((pWVar4->weapType == WEAPTYPE_BULLET || (pWVar4->weapType == WEAPTYPE_PROJECTILE)))))) {
+        cmd->weapon = (ushort)ps_00->heldWeapons[i_3].weapon;
         break;
       }
     }
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1450,25 +1469,28 @@ LAB_006fb4ef:
 
 // 006FE330  Bot_UpdatePitch  (server_mp/sv_bot_mp.cpp:1383)
 
-float __cdecl Bot_UpdatePitch(float param_1,float param_2,bool param_3)
+float __cdecl Bot_UpdatePitch(float currentPitch,float targetPitch,bool forceSlow)
 
 {
   DWORD DVar1;
   float fVar2;
   float local_2c;
-  float local_14;
+  float rate;
+  float diff;
+  PIXProfile pixProfile;
+  float rateadj;
   
   PIXBeginNamedEvent(-1,"Bot_UpdatePitch");
-  local_14 = (sv_botPitchSpeed->current).value;
-  if (param_3) {
-    local_14 = (sv_botPitchSpeedAds->current).value;
+  rate = (sv_botPitchSpeed->current).value;
+  if (forceSlow) {
+    rate = (sv_botPitchSpeedAds->current).value;
   }
-  fVar2 = AngleNormalize180(param_2 - param_1);
-  local_2c = local_14 - -(ABS(fVar2) / 180.0) * local_14;
-  if (0.0 <= local_2c - local_14) {
-    local_2c = local_14;
+  fVar2 = AngleNormalize180(targetPitch - currentPitch);
+  local_2c = rate - -(ABS(fVar2) / 180.0) * rate;
+  if (0.0 <= local_2c - rate) {
+    local_2c = rate;
   }
-  fVar2 = DiffTrackAngle(param_2,param_1,local_2c,0.05);
+  fVar2 = DiffTrackAngle(targetPitch,currentPitch,local_2c,0.05);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1484,45 +1506,48 @@ float __cdecl Bot_UpdatePitch(float param_1,float param_2,bool param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl Bot_UpdateYaw(float param_1,float param_2,bool param_3,bot_info_t *param_4)
+float __cdecl Bot_UpdateYaw(float currentYaw,float targetYaw,bool forceSlow,bot_info_t *botInfo)
 
 {
   DWORD DVar1;
   float fVar2;
   float local_30;
   float local_2c;
-  float local_10;
+  float rateadj;
+  float rate;
+  float diff;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateYaw");
-  local_10 = (sv_botYawSpeed->current).value;
-  if (param_3) {
-    local_10 = (sv_botYawSpeedAds->current).value;
+  rate = (sv_botYawSpeed->current).value;
+  if (forceSlow) {
+    rate = (sv_botYawSpeedAds->current).value;
   }
-  fVar2 = AngleNormalize180(param_2 - param_1);
+  fVar2 = AngleNormalize180(targetYaw - currentYaw);
   fVar2 = ABS(fVar2);
   if (fVar2 < 100.0) {
-    local_30 = local_10 - -(fVar2 / 180.0) * local_10;
-    if (0.0 <= local_30 - local_10) {
-      local_30 = local_10;
+    local_30 = rate - -(fVar2 / 180.0) * rate;
+    if (0.0 <= local_30 - rate) {
+      local_30 = rate;
     }
-    local_10 = local_30;
+    rate = local_30;
   }
   else {
-    local_2c = local_10 - (fVar2 / 180.0) * local_10;
+    local_2c = rate - (fVar2 / 180.0) * rate;
     if (0.0 <= 1.0 - local_2c) {
       local_2c = 1.0;
     }
-    local_10 = local_2c;
+    rate = local_2c;
   }
   if (fVar2 < 50.0) {
-    *(ushort *)(param_4[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_4[1].path.pts[0].fDir2D + 1) & 0xffef;
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xffef;
   }
   else {
-    *(ushort *)(param_4[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_4[1].path.pts[0].fDir2D + 1) | 0x10;
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x10;
   }
-  fVar2 = DiffTrackAngle(param_2,param_1,local_10,0.05);
+  fVar2 = DiffTrackAngle(targetYaw,currentYaw,rate,0.05);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1539,16 +1564,17 @@ float __cdecl Bot_UpdateYaw(float param_1,float param_2,bool param_3,bot_info_t 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_UpdateScriptGoal(bot_info_t *param_1,client_t *param_2)
+bool __cdecl Bot_UpdateScriptGoal(bot_info_t *botInfo,client_t *bot)
 
 {
   bool bVar1;
   DWORD DVar2;
   path_t *in_stack_ffffffcc;
   bool local_6;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateScriptGoal");
-  if (((uint)param_1[1].path.pts[0].fDir2D[1] & 4) == 0) {
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 4) == 0) {
     local_6 = false;
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1556,10 +1582,10 @@ bool __cdecl Bot_UpdateScriptGoal(bot_info_t *param_1,client_t *param_2)
     }
   }
   else {
-    bVar1 = Bot_PointInGoal((param_2->gentity->r).currentOrigin,&param_1->path,
-                            param_1[1].path.pts[0].fDir2D[0]);
+    bVar1 = Bot_PointInGoal((bot->gentity->r).currentOrigin,&botInfo->path,
+                            botInfo[1].path.pts[0].fDir2D[0]);
     if (bVar1) {
-      Scr_Notify(param_2->gentity,scr_const.goal,0);
+      Scr_Notify(bot->gentity,scr_const.goal,0);
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1569,8 +1595,8 @@ bool __cdecl Bot_UpdateScriptGoal(bot_info_t *param_1,client_t *param_2)
     else {
       bVar1 = Path_Exists(in_stack_ffffffcc);
       if ((bVar1) &&
-         (bVar1 = Bot_PointInGoal((float *)(param_1 + 1),&param_1->path,
-                                  param_1[1].path.pts[0].fDir2D[0]), bVar1)) {
+         (bVar1 = Bot_PointInGoal((float *)(botInfo + 1),&botInfo->path,
+                                  botInfo[1].path.pts[0].fDir2D[0]), bVar1)) {
         DVar2 = GetCurrentThreadId();
         if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
@@ -1578,7 +1604,7 @@ bool __cdecl Bot_UpdateScriptGoal(bot_info_t *param_1,client_t *param_2)
         local_6 = true;
       }
       else {
-        bVar1 = Bot_GetPathToGoal(param_2,(float *)(param_1 + 1),&param_1->path,true);
+        bVar1 = Bot_GetPathToGoal(bot,(float *)(botInfo + 1),&botInfo->path,true);
         if (bVar1) {
           DVar2 = GetCurrentThreadId();
           if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1587,8 +1613,8 @@ bool __cdecl Bot_UpdateScriptGoal(bot_info_t *param_1,client_t *param_2)
           local_6 = true;
         }
         else {
-          Scr_Notify(param_2->gentity,scr_const.bad_path,0);
-          SV_BotClearScriptGoal(param_2);
+          Scr_Notify(bot->gentity,scr_const.bad_path,0);
+          SV_BotClearScriptGoal(bot);
           DVar2 = GetCurrentThreadId();
           if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -1610,7 +1636,7 @@ bool __cdecl Bot_UpdateScriptGoal(bot_info_t *param_1,client_t *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *param_1,client_t *param_2)
+bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *botInfo,client_t *bot)
 
 {
   gentity_s *pgVar1;
@@ -1618,26 +1644,27 @@ bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *param_1,client_t *param_2)
   DWORD DVar3;
   path_t *ppVar4;
   bool local_6;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateScriptEnemy");
-  if (((uint)param_1[1].path.pts[0].fDir2D[1] & 8) == 0) {
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 8) == 0) {
     local_6 = false;
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (((param_1->threat).enemy == (gentity_s *)0x0) ||
-          ((((param_1->threat).enemy)->r).inuse == '\0')) {
-    SV_BotClearScriptEnemy(param_2);
+  else if (((botInfo->threat).enemy == (gentity_s *)0x0) ||
+          ((((botInfo->threat).enemy)->r).inuse == '\0')) {
+    SV_BotClearScriptEnemy(bot);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     local_6 = false;
   }
-  else if (((param_1->threat).enemy)->health < 1) {
-    SV_BotClearScriptEnemy(param_2);
+  else if (((botInfo->threat).enemy)->health < 1) {
+    SV_BotClearScriptEnemy(bot);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -1645,7 +1672,7 @@ bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *param_1,client_t *param_2)
     local_6 = false;
   }
   else {
-    pgVar1 = (param_1->threat).enemy;
+    pgVar1 = (botInfo->threat).enemy;
     if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->scr_vehicle == (scr_vehicle_s *)0x0)) {
       ppVar4 = (path_t *)0x0;
     }
@@ -1653,8 +1680,8 @@ bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *param_1,client_t *param_2)
       ppVar4 = (path_t *)&DAT_00000001;
     }
     if ((char)ppVar4 == '\0') {
-      bVar2 = Bot_GetPathToGoal(param_2,(((param_1->threat).enemy)->r).currentOrigin,&param_1->path,
-                                true);
+      bVar2 = Bot_GetPathToGoal(bot,(((botInfo->threat).enemy)->r).currentOrigin,&botInfo->path,true
+                               );
       if (bVar2) {
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1663,8 +1690,8 @@ bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *param_1,client_t *param_2)
         local_6 = true;
       }
       else {
-        Scr_Notify(param_2->gentity,scr_const.bad_path,0);
-        SV_BotClearScriptEnemy(param_2);
+        Scr_Notify(bot->gentity,scr_const.bad_path,0);
+        SV_BotClearScriptEnemy(bot);
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
@@ -1687,25 +1714,29 @@ bool __cdecl Bot_UpdateScriptEnemy(bot_info_t *param_1,client_t *param_2)
 
 // 006FBEA0  Bot_UpdatePath  (server_mp/sv_bot_mp.cpp:1511)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdatePath(bot_info_t *param_1,client_t *param_2)
+void __cdecl Bot_UpdatePath(bot_info_t *botInfo,client_t *bot)
 
 {
   bool bVar1;
   DWORD DVar2;
-  playerState_s *ppVar3;
-  int iVar4;
-  pathnode_t *ppVar5;
+  playerState_s *ps_00;
+  int iVar3;
+  pathnode_t *ppVar4;
   path_t *in_stack_ffffffac;
+  pathnode_t *node;
+  int nodeNum;
+  PIXProfile pixProfile;
+  playerState_s *ps;
   
   PIXBeginNamedEvent(-1,"Bot_UpdatePath");
-  if ((param_1->pitchEndTime == 0) || (bVar1 = Bot_UpdateScriptGoal(param_1,param_2), !bVar1)) {
-    bVar1 = Bot_UpdateScriptEnemy(param_1,param_2);
+  if ((botInfo->pitchEndTime == 0) || (bVar1 = Bot_UpdateScriptGoal(botInfo,bot), !bVar1)) {
+    bVar1 = Bot_UpdateScriptEnemy(botInfo,bot);
     if (bVar1) {
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1713,58 +1744,58 @@ void __cdecl Bot_UpdatePath(bot_info_t *param_1,client_t *param_2)
       }
     }
     else {
-      bVar1 = Bot_IsInLastStand(param_2);
+      bVar1 = Bot_IsInLastStand(bot);
       if (bVar1) {
         DVar2 = GetCurrentThreadId();
         if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
-      else if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x80) == 0) {
-        ppVar3 = G_GetPlayerState(((int)param_2 - (int)svs.clients) / 0x84d00);
-        if (((ppVar3->pm_flags & 4U) == 0) && ((ppVar3->pm_flags & 0x4000U) == 0)) {
-          if (((((uint)param_1[1].path.pts[0].fDir2D[1] & 2) == 0) ||
-              (bVar1 = Bot_IsAtNegotiationNode(param_1,param_2,&param_1->path), bVar1)) ||
-             (bVar1 = Bot_IsMovingFoward(param_1,param_2,ppVar3), bVar1)) {
-            param_1->scriptGoal[2] = (float)svs.time;
+      else if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x80) == 0) {
+        ps_00 = G_GetPlayerState(((int)bot - (int)svs.clients) / 0x84d00);
+        if (((ps_00->pm_flags & 4U) == 0) && ((ps_00->pm_flags & 0x4000U) == 0)) {
+          if (((((uint)botInfo[1].path.pts[0].fDir2D[1] & 2) == 0) ||
+              (bVar1 = Bot_IsAtNegotiationNode(botInfo,bot,&botInfo->path), bVar1)) ||
+             (bVar1 = Bot_IsMovingFoward(botInfo,bot,ps_00), bVar1)) {
+            botInfo->scriptGoal[2] = (float)svs.time;
           }
-          else if (((param_1->pitchEndTime == 0) || (bVar1 = Path_Exists(in_stack_ffffffac), !bVar1)
-                   ) || (1999 < svs.time - (int)param_1->scriptGoal[2])) {
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffd;
+          else if (((botInfo->pitchEndTime == 0) || (bVar1 = Path_Exists(in_stack_ffffffac), !bVar1)
+                   ) || (1999 < svs.time - (int)botInfo->scriptGoal[2])) {
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffd;
             Path_Clear(in_stack_ffffffac);
           }
-          bVar1 = Bot_PointInGoal((param_2->gentity->r).currentOrigin,&param_1->path,0.0);
+          bVar1 = Bot_PointInGoal((bot->gentity->r).currentOrigin,&botInfo->path,0.0);
           if (bVar1) {
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffd;
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffd;
             Path_Clear(in_stack_ffffffac);
-            if ((param_1->threat).enemy != (gentity_s *)0x0) {
-              *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                   *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 1;
+            if ((botInfo->threat).enemy != (gentity_s *)0x0) {
+              *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                   *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 1;
             }
           }
-          if ((param_1->pitchEndTime == 0) && (((uint)param_1[1].path.pts[0].fDir2D[1] & 2) != 0)) {
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffd;
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 1;
+          if ((botInfo->pitchEndTime == 0) && (((uint)botInfo[1].path.pts[0].fDir2D[1] & 2) != 0)) {
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffd;
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 1;
             Path_Clear(in_stack_ffffffac);
           }
-          if (((uint)param_1[1].path.pts[0].fDir2D[1] & 1) == 0) {
-            if (((param_1->threat).enemy == (gentity_s *)0x0) ||
-               (bVar1 = Bot_PointInGoal((((param_1->threat).enemy)->r).currentOrigin,&param_1->path,
+          if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 1) == 0) {
+            if (((botInfo->threat).enemy == (gentity_s *)0x0) ||
+               (bVar1 = Bot_PointInGoal((((botInfo->threat).enemy)->r).currentOrigin,&botInfo->path,
                                         0.0), bVar1)) {
               bVar1 = Path_Exists(in_stack_ffffffac);
               if ((!bVar1) && (gameWorldMp.path.nodeCount != 0)) {
-                iVar4 = irand(0,gameWorldMp.path.nodeCount);
-                ppVar5 = gameWorldMp.path.nodes + iVar4;
-                if (((ppVar5->constant).type == NODE_PATHNODE) &&
-                   ((ppVar5->constant).script_noteworthy == 0)) {
-                  *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                       *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 2;
-                  param_1->scriptGoal[2] = (float)svs.time;
-                  Bot_GetPathToGoal(param_2,(ppVar5->constant).vOrigin,&param_1->path,true);
+                iVar3 = irand(0,gameWorldMp.path.nodeCount);
+                ppVar4 = gameWorldMp.path.nodes + iVar3;
+                if (((ppVar4->constant).type == NODE_PATHNODE) &&
+                   ((ppVar4->constant).script_noteworthy == 0)) {
+                  *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                       *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 2;
+                  botInfo->scriptGoal[2] = (float)svs.time;
+                  Bot_GetPathToGoal(bot,(ppVar4->constant).vOrigin,&botInfo->path,true);
                 }
               }
               DVar2 = GetCurrentThreadId();
@@ -1773,10 +1804,10 @@ void __cdecl Bot_UpdatePath(bot_info_t *param_1,client_t *param_2)
               }
             }
             else {
-              Bot_GetPathToGoal(param_2,(((param_1->threat).enemy)->r).currentOrigin,&param_1->path,
-                                true);
-              *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                   *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffd;
+              Bot_GetPathToGoal(bot,(((botInfo->threat).enemy)->r).currentOrigin,&botInfo->path,true
+                               );
+              *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                   *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffd;
               DVar2 = GetCurrentThreadId();
               if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
@@ -1784,12 +1815,11 @@ void __cdecl Bot_UpdatePath(bot_info_t *param_1,client_t *param_2)
             }
           }
           else {
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffd;
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfffe;
-            Bot_GetPathToGoal(param_2,(((param_1->threat).enemy)->r).currentOrigin,&param_1->path,
-                              true);
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffd;
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfffe;
+            Bot_GetPathToGoal(bot,(((botInfo->threat).enemy)->r).currentOrigin,&botInfo->path,true);
             DVar2 = GetCurrentThreadId();
             if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
@@ -1829,19 +1859,19 @@ void __cdecl Bot_UpdatePath(bot_info_t *param_1,client_t *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_PredictPosition(gentity_s *param_1,playerState_s *param_2,float *param_3)
+void __cdecl Bot_PredictPosition(gentity_s *ent,playerState_s *ps,float *vPos)
 
 {
   code *pcVar1;
   bool bVar2;
-  trajectory_t local_28;
+  trajectory_t tr;
   
-  local_28.trBase[0] = (param_1->r).currentOrigin[0];
-  local_28.trBase[1] = (param_1->r).currentOrigin[1];
-  local_28.trBase[2] = (param_1->r).currentOrigin[2];
-  if (((((uint)local_28.trBase[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)local_28.trBase[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)local_28.trBase[2] & 0x7f800000) == 0x7f800000)) {
+  tr.trBase[0] = (ent->r).currentOrigin[0];
+  tr.trBase[1] = (ent->r).currentOrigin[1];
+  tr.trBase[2] = (ent->r).currentOrigin[2];
+  if (((((uint)tr.trBase[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)tr.trBase[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)tr.trBase[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0x652,0,
                              "%s");
     if (!bVar2) {
@@ -1850,12 +1880,12 @@ void __cdecl Bot_PredictPosition(gentity_s *param_1,playerState_s *param_2,float
       return;
     }
   }
-  local_28.trDelta[0] = param_2->velocity[0];
-  local_28.trDelta[1] = param_2->velocity[1];
-  local_28.trDelta[2] = param_2->velocity[2];
-  if (((((uint)local_28.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-      (((uint)local_28.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)local_28.trDelta[2] & 0x7f800000) == 0x7f800000)) {
+  tr.trDelta[0] = ps->velocity[0];
+  tr.trDelta[1] = ps->velocity[1];
+  tr.trDelta[2] = ps->velocity[2];
+  if (((((uint)tr.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+      (((uint)tr.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)tr.trDelta[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0x655,0,
                              "%s");
     if (!bVar2) {
@@ -1864,23 +1894,22 @@ void __cdecl Bot_PredictPosition(gentity_s *param_1,playerState_s *param_2,float
       return;
     }
   }
-  local_28.trTime = svs.time;
-  local_28.trType = '\x03';
-  BG_EvaluateTrajectory(&local_28,(sv_botTargetLeadBias->current).integer * 0x32 + svs.time,param_3)
-  ;
+  tr.trTime = svs.time;
+  tr.trType = '\x03';
+  BG_EvaluateTrajectory(&tr,(sv_botTargetLeadBias->current).integer * 0x32 + svs.time,vPos);
   return;
 }
 
 
 // 006FD650  Bot_UpdateDirection  (server_mp/sv_bot_mp.cpp:1630)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateDirection(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   gentity_s *pgVar1;
@@ -1892,32 +1921,38 @@ void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s
   path_t *ppVar7;
   path_t *in_stack_fffffef8;
   int in_stack_fffffefc;
-  float local_4c;
+  float diff;
+  pathnode_t *node;
+  int num;
+  float angle;
+  float head;
+  PIXProfile pixProfile;
+  float dir;
   float local_48;
   float local_44;
-  bool local_3d;
-  float local_3c;
-  float local_38;
-  float local_34;
+  bool ads;
+  float yaw;
+  float pitch;
+  float enemyOrigin;
   float local_30;
   float local_2c;
-  float local_28;
+  float botOrigin;
   float local_24;
   float local_20;
-  float local_1c;
+  float viewAngles;
   float local_18;
   float local_14;
-  playerState_s *local_10;
-  WeaponDef *local_c;
-  playerState_s *local_8;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  playerState_s *enemyPs;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateDirection");
-  local_10 = G_GetPlayerState((param_2->gentity->s).number);
-  local_c = BG_GetWeaponDef((uint)local_10->weapon);
-  if (((param_1->threat).enemy != (gentity_s *)0x0) && ((param_1->threat).deathEndTime != 0)) {
-    param_3->angles[0] = (param_2->lastUsercmd).angles[0];
-    param_3->angles[1] = (param_2->lastUsercmd).angles[1];
-    param_3->angles[2] = 0;
+  ps = G_GetPlayerState((bot->gentity->s).number);
+  weapDef = BG_GetWeaponDef((uint)ps->weapon);
+  if (((botInfo->threat).enemy != (gentity_s *)0x0) && ((botInfo->threat).deathEndTime != 0)) {
+    cmd->angles[0] = (bot->lastUsercmd).angles[0];
+    cmd->angles[1] = (bot->lastUsercmd).angles[1];
+    cmd->angles[2] = 0;
     DVar3 = GetCurrentThreadId();
     if (DVar3 != (DWORD)g_DXDeviceThread) {
       return;
@@ -1928,12 +1963,11 @@ void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s
     _D3DPERF_EndEvent_0();
     return;
   }
-  if (((param_1->pitchEndTime == 0) &&
-      (bVar2 = bitarray<51>::testBit(&param_3->button_bits,0xb), bVar2)) &&
-     (local_10->fWeaponPosFrac <= 1.0 && local_10->fWeaponPosFrac != 1.0)) {
-    param_3->angles[0] = (param_2->lastUsercmd).angles[0];
-    param_3->angles[1] = (param_2->lastUsercmd).angles[1];
-    param_3->angles[2] = 0;
+  if (((botInfo->pitchEndTime == 0) && (bVar2 = bitarray<51>::testBit(&cmd->button_bits,0xb), bVar2)
+      ) && (ps->fWeaponPosFrac <= 1.0 && ps->fWeaponPosFrac != 1.0)) {
+    cmd->angles[0] = (bot->lastUsercmd).angles[0];
+    cmd->angles[1] = (bot->lastUsercmd).angles[1];
+    cmd->angles[2] = 0;
     DVar3 = GetCurrentThreadId();
     if (DVar3 != (DWORD)g_DXDeviceThread) {
       return;
@@ -1944,10 +1978,10 @@ void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s
     _D3DPERF_EndEvent_0();
     return;
   }
-  if (param_1->pitchEndTime == 0) {
-    Bot_PredictPosition(param_2->gentity,local_10,&local_28);
-    local_20 = local_20 + local_10->viewHeightCurrent;
-    pgVar1 = (param_1->threat).enemy;
+  if (botInfo->pitchEndTime == 0) {
+    Bot_PredictPosition(bot->gentity,ps,&botOrigin);
+    local_20 = local_20 + ps->viewHeightCurrent;
+    pgVar1 = (botInfo->threat).enemy;
     if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->client == (gclient_s *)0x0)) {
       bVar2 = false;
     }
@@ -1955,80 +1989,80 @@ void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s
       bVar2 = true;
     }
     if (bVar2) {
-      local_8 = G_GetPlayerState((((param_1->threat).enemy)->s).number);
-      Bot_PredictPosition((param_1->threat).enemy,local_8,&local_34);
-      if ((local_8->eFlags & 0x4000U) == 0) {
-        AddLeanToPosition(&local_34,local_8->viewangles[1],local_8->leanf,16.0,20.0);
+      enemyPs = G_GetPlayerState((((botInfo->threat).enemy)->s).number);
+      Bot_PredictPosition((botInfo->threat).enemy,enemyPs,&enemyOrigin);
+      if ((enemyPs->eFlags & 0x4000U) == 0) {
+        AddLeanToPosition(&enemyOrigin,enemyPs->viewangles[1],enemyPs->leanf,16.0,20.0);
       }
-      fVar5 = local_2c + local_8->viewHeightCurrent;
-      fVar6 = Vec3DistanceSq(&local_28,&local_34);
-      if (fVar6 < local_c->fMaxDamageRange * local_c->fMaxDamageRange) {
-        local_2c = local_8->viewHeightCurrent / 3.0 + local_2c;
+      fVar5 = local_2c + enemyPs->viewHeightCurrent;
+      fVar6 = Vec3DistanceSq(&botOrigin,&enemyOrigin);
+      if (fVar6 < weapDef->fMaxDamageRange * weapDef->fMaxDamageRange) {
+        local_2c = enemyPs->viewHeightCurrent / 3.0 + local_2c;
       }
       local_2c = flrand(local_2c,fVar5);
     }
     else {
-      pgVar1 = (param_1->threat).enemy;
-      local_34 = (pgVar1->r).currentOrigin[0];
+      pgVar1 = (botInfo->threat).enemy;
+      enemyOrigin = (pgVar1->r).currentOrigin[0];
       local_30 = (pgVar1->r).currentOrigin[1];
       local_2c = (pgVar1->r).currentOrigin[2] + 15.0;
     }
-    pgVar1 = (param_1->threat).enemy;
+    pgVar1 = (botInfo->threat).enemy;
     if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->pTurretInfo == (TurretInfo *)0x0)) {
       bVar2 = false;
     }
     else {
       bVar2 = true;
     }
-    if ((bVar2) && (local_c->weapType == WEAPTYPE_PROJECTILE)) {
-      local_2c = (((param_1->threat).enemy)->r).currentOrigin[2];
+    if ((bVar2) && (weapDef->weapType == WEAPTYPE_PROJECTILE)) {
+      local_2c = (((botInfo->threat).enemy)->r).currentOrigin[2];
     }
-    local_4c = local_34 - local_28;
+    dir = enemyOrigin - botOrigin;
     local_48 = local_30 - local_24;
     local_44 = local_2c - local_20;
-    Vec3Normalize(&local_4c);
-    vectoangles(&local_4c,&local_1c);
-    bVar2 = Bot_IsThrowingGrenade(param_1,param_2);
+    Vec3Normalize(&dir);
+    vectoangles(&dir,&viewAngles);
+    bVar2 = Bot_IsThrowingGrenade(botInfo,bot);
     if ((!bVar2) &&
-       ((((uint)param_1[1].path.pts[0].fDir2D[1] & 0x20) != 0 || (param_1->weaponDelayEndTime == 0))
+       ((((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x20) != 0 || (botInfo->weaponDelayEndTime == 0))
        )) {
-      *(float *)&param_1->flags = local_1c;
+      *(float *)&botInfo->flags = viewAngles;
       iVar4 = irand((sv_botMinPitchTime->current).integer,(sv_botMaxPitchTime->current).integer);
-      param_1->weaponDelayEndTime = iVar4 + svs.time;
+      botInfo->weaponDelayEndTime = iVar4 + svs.time;
     }
-    local_1c = *(float *)&param_1->flags;
+    viewAngles = *(float *)&botInfo->flags;
   }
   else {
-    bVar2 = Bot_IsThrowingGrenade(param_1,param_2);
+    bVar2 = Bot_IsThrowingGrenade(botInfo,bot);
     if (bVar2) {
-      local_1c = local_10->viewangles[0];
-      local_18 = local_10->viewangles[1];
-      local_14 = local_10->viewangles[2];
-      if ((param_1->threat).enemy != (gentity_s *)0x0) {
-        if (((param_1->pitchEndTime == 0) || ((param_1->threat).lastSightTime == 0)) ||
-           (4999 < svs.time - (param_1->threat).lastSightTime)) {
+      viewAngles = ps->viewangles[0];
+      local_18 = ps->viewangles[1];
+      local_14 = ps->viewangles[2];
+      if ((botInfo->threat).enemy != (gentity_s *)0x0) {
+        if (((botInfo->pitchEndTime == 0) || ((botInfo->threat).lastSightTime == 0)) ||
+           (4999 < svs.time - (botInfo->threat).lastSightTime)) {
           bVar2 = false;
         }
         else {
           bVar2 = true;
         }
         if (bVar2) {
-          pgVar1 = param_2->gentity;
-          local_4c = (float)param_1->weapon - (pgVar1->r).currentOrigin[0];
-          local_48 = (float)param_1->sightHitNum - (pgVar1->r).currentOrigin[1];
-          local_44 = (float)param_1->attackerEnt - (pgVar1->r).currentOrigin[2];
-          Vec3Normalize(&local_4c);
-          vectoangles(&local_4c,&local_1c);
+          pgVar1 = bot->gentity;
+          dir = (float)botInfo->weapon - (pgVar1->r).currentOrigin[0];
+          local_48 = (float)botInfo->sightHitNum - (pgVar1->r).currentOrigin[1];
+          local_44 = (float)botInfo->attackerEnt - (pgVar1->r).currentOrigin[2];
+          Vec3Normalize(&dir);
+          vectoangles(&dir,&viewAngles);
         }
       }
-      local_1c = *(float *)&param_1->flags;
+      viewAngles = *(float *)&botInfo->flags;
     }
     else {
-      bVar2 = Bot_IsInLastStand(param_2);
+      bVar2 = Bot_IsInLastStand(bot);
       if (bVar2) {
-        param_3->angles[0] = (param_2->lastUsercmd).angles[0];
-        param_3->angles[1] = (param_2->lastUsercmd).angles[1];
-        param_3->angles[2] = 0;
+        cmd->angles[0] = (bot->lastUsercmd).angles[0];
+        cmd->angles[1] = (bot->lastUsercmd).angles[1];
+        cmd->angles[2] = 0;
         DVar3 = GetCurrentThreadId();
         if (DVar3 != (DWORD)g_DXDeviceThread) {
           return;
@@ -2040,10 +2074,10 @@ void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s
         return;
       }
       bVar2 = Path_Exists(in_stack_fffffef8);
-      if ((bVar2) || ((param_1->threat).enemy == (gentity_s *)0x0)) {
-        if ((param_1->threat).enemy != (gentity_s *)0x0) {
-          if (((param_1->pitchEndTime == 0) || ((param_1->threat).lastSightTime == 0)) ||
-             (4999 < svs.time - (param_1->threat).lastSightTime)) {
+      if ((bVar2) || ((botInfo->threat).enemy == (gentity_s *)0x0)) {
+        if ((botInfo->threat).enemy != (gentity_s *)0x0) {
+          if (((botInfo->pitchEndTime == 0) || ((botInfo->threat).lastSightTime == 0)) ||
+             (4999 < svs.time - (botInfo->threat).lastSightTime)) {
             in_stack_fffffefc = 0;
           }
           else {
@@ -2052,92 +2086,89 @@ void __cdecl Bot_UpdateDirection(bot_info_t *param_1,client_t *param_2,usercmd_s
           if ((char)in_stack_fffffefc != '\0') {
             Path_UpdateLookahead
                       ((path_t *)0x0,(float *)0x0,0,1,(int)in_stack_fffffef8,in_stack_fffffefc);
-            pgVar1 = param_2->gentity;
-            local_28 = (pgVar1->r).currentOrigin[0];
+            pgVar1 = bot->gentity;
+            botOrigin = (pgVar1->r).currentOrigin[0];
             local_24 = (pgVar1->r).currentOrigin[1];
-            local_20 = (pgVar1->r).currentOrigin[2] + local_10->viewHeightCurrent;
-            fVar5 = Vec3DistanceSq((param_2->gentity->r).currentOrigin,(param_1->threat).lastOrigin)
-            ;
+            local_20 = (pgVar1->r).currentOrigin[2] + ps->viewHeightCurrent;
+            fVar5 = Vec3DistanceSq((bot->gentity->r).currentOrigin,(botInfo->threat).lastOrigin);
             if (fVar5 < 4096.0) {
-              (param_1->threat).lastSightTime = 0;
+              (botInfo->threat).lastSightTime = 0;
             }
-            local_34 = (param_1->threat).lastOrigin[0];
-            local_30 = (param_1->threat).lastOrigin[1];
-            local_2c = (param_1->threat).lastOrigin[2] + 40.0;
-            local_4c = local_34 - local_28;
+            enemyOrigin = (botInfo->threat).lastOrigin[0];
+            local_30 = (botInfo->threat).lastOrigin[1];
+            local_2c = (botInfo->threat).lastOrigin[2] + 40.0;
+            dir = enemyOrigin - botOrigin;
             local_48 = local_30 - local_24;
             local_44 = local_2c - local_20;
-            Vec3Normalize(&local_4c);
-            vectoangles(&local_4c,&local_1c);
+            Vec3Normalize(&dir);
+            vectoangles(&dir,&viewAngles);
             goto LAB_006fe114;
           }
         }
         ppVar7 = (path_t *)0x0;
         Path_UpdateLookahead
                   ((path_t *)0x0,(float *)0x0,0,1,(int)in_stack_fffffef8,in_stack_fffffefc);
-        vectoangles((param_1->path).lookaheadDir,&local_1c);
-        bVar2 = Bot_IsAtNegotiationNode(param_1,param_2,&param_1->path);
+        vectoangles((botInfo->path).lookaheadDir,&viewAngles);
+        bVar2 = Bot_IsAtNegotiationNode(botInfo,bot,&botInfo->path);
         if (bVar2) {
           vectoangles(gameWorldMp.path.nodes
-                      [(param_1->path).pts[(param_1->path).lookaheadNextNode].iNodeNum].constant.
-                      forward,&local_1c);
+                      [(botInfo->path).pts[(botInfo->path).lookaheadNextNode].iNodeNum].constant.
+                      forward,&viewAngles);
         }
-        fVar5 = AngleNormalize180(local_1c);
+        fVar5 = AngleNormalize180(viewAngles);
         if (75.0 <= ABS(fVar5)) {
           Path_Clear(ppVar7);
         }
-        if ((ABS(fVar5) <= 5.0) && (local_10->fWeaponPosFrac <= 1e-06)) {
-          if ((ABS(local_10->viewangles[0] - *(float *)&param_1->flags) <= 0.5) ||
-             ((sv_botPitchDown->current).value <= ABS(*(float *)&param_1->flags) &&
-              ABS(*(float *)&param_1->flags) != (sv_botPitchDown->current).value)) {
+        if ((ABS(fVar5) <= 5.0) && (ps->fWeaponPosFrac <= 1e-06)) {
+          if ((ABS(ps->viewangles[0] - *(float *)&botInfo->flags) <= 0.5) ||
+             ((sv_botPitchDown->current).value <= ABS(*(float *)&botInfo->flags) &&
+              ABS(*(float *)&botInfo->flags) != (sv_botPitchDown->current).value)) {
             fVar5 = flrand((sv_botPitchUp->current).value,(sv_botPitchDown->current).value);
-            *(float *)&param_1->flags = fVar5;
+            *(float *)&botInfo->flags = fVar5;
           }
-          local_1c = *(float *)&param_1->flags;
+          viewAngles = *(float *)&botInfo->flags;
         }
       }
       else {
-        pgVar1 = param_2->gentity;
-        local_28 = (pgVar1->r).currentOrigin[0];
+        pgVar1 = bot->gentity;
+        botOrigin = (pgVar1->r).currentOrigin[0];
         local_24 = (pgVar1->r).currentOrigin[1];
-        local_20 = (pgVar1->r).currentOrigin[2] + local_10->viewHeightCurrent;
-        pgVar1 = (param_1->threat).enemy;
-        local_34 = (pgVar1->r).currentOrigin[0];
+        local_20 = (pgVar1->r).currentOrigin[2] + ps->viewHeightCurrent;
+        pgVar1 = (botInfo->threat).enemy;
+        enemyOrigin = (pgVar1->r).currentOrigin[0];
         local_30 = (pgVar1->r).currentOrigin[1];
         local_2c = (pgVar1->r).currentOrigin[2];
-        local_4c = local_34 - local_28;
+        dir = enemyOrigin - botOrigin;
         local_48 = local_30 - local_24;
         local_44 = local_2c - local_20;
-        Vec3Normalize(&local_4c);
-        vectoangles(&local_4c,&local_1c);
+        Vec3Normalize(&dir);
+        vectoangles(&dir,&viewAngles);
       }
     }
   }
 LAB_006fe114:
-  local_3d = 0.0 < local_10->fWeaponPosFrac;
-  local_3c = Bot_UpdateYaw(local_10->viewangles[1],local_18,local_3d,param_1);
-  local_38 = Bot_UpdatePitch(local_10->viewangles[0],local_1c,local_3d);
-  if ((local_10->pm_flags & 0x8000U) != 0) {
-    local_38 = local_10->viewangles[0];
+  ads = 0.0 < ps->fWeaponPosFrac;
+  yaw = Bot_UpdateYaw(ps->viewangles[1],local_18,ads,botInfo);
+  pitch = Bot_UpdatePitch(ps->viewangles[0],viewAngles,ads);
+  if ((ps->pm_flags & 0x8000U) != 0) {
+    pitch = ps->viewangles[0];
   }
-  bVar2 = Bot_IsAtNegotiationNode(param_1,param_2,&param_1->path);
+  bVar2 = Bot_IsAtNegotiationNode(botInfo,bot,&botInfo->path);
   if (bVar2) {
-    fVar5 = AngleNormalize180(local_3c - local_18);
+    fVar5 = AngleNormalize180(yaw - local_18);
     if ((5.0 <= fVar5) || (fVar5 <= -5.0)) {
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x100;
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x100;
     }
     else {
-      *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-           *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfeff;
-      local_3c = local_18;
+      *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+           *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfeff;
+      yaw = local_18;
     }
   }
-  param_3->angles[0] =
-       (int)((local_38 - (param_2->gentity->client->ps).delta_angles[0]) * 182.04445) & 0xffff;
-  param_3->angles[1] =
-       (int)((local_3c - (param_2->gentity->client->ps).delta_angles[1]) * 182.04445) & 0xffff;
-  param_3->angles[2] = (int)((param_2->gentity->client->ps).delta_angles[2] * 182.04445) & 0xffff;
+  cmd->angles[0] = (int)((pitch - (bot->gentity->client->ps).delta_angles[0]) * 182.04445) & 0xffff;
+  cmd->angles[1] = (int)((yaw - (bot->gentity->client->ps).delta_angles[1]) * 182.04445) & 0xffff;
+  cmd->angles[2] = (int)((bot->gentity->client->ps).delta_angles[2] * 182.04445) & 0xffff;
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -2154,51 +2185,53 @@ LAB_006fe114:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateStance(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateStance(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   float *pfVar1;
   bool bVar2;
-  playerState_s *ppVar3;
-  DWORD DVar4;
-  float fVar5;
+  playerState_s *ps_00;
+  DWORD DVar3;
+  float fVar4;
   path_t *in_stack_ffffffec;
+  PIXProfile pixProfile;
+  playerState_s *ps;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateStance");
   bVar2 = Path_Exists(in_stack_ffffffec);
-  if ((((bVar2) && (bVar2 = Bot_IsAtNegotiationNode(param_1,param_2,&param_1->path), !bVar2)) &&
-      (pfVar1 = &(param_1->path).fLookaheadDist,
+  if ((((bVar2) && (bVar2 = Bot_IsAtNegotiationNode(botInfo,bot,&botInfo->path), !bVar2)) &&
+      (pfVar1 = &(botInfo->path).fLookaheadDist,
       *pfVar1 <= (sv_botCrouchDistance->current).value &&
-      (sv_botCrouchDistance->current).value != *pfVar1)) && (fVar5 = random(), fVar5 < 0.05)) {
-    if ((int)param_1->scriptGoal[2] <= svs.time) {
-      Bot_SetTimedAction(9,(int *)&param_1->targetPitch,sv_botMinCrouchTime,sv_botMaxCrouchTime,
-                         param_3,&param_2->lastUsercmd);
+      (sv_botCrouchDistance->current).value != *pfVar1)) && (fVar4 = random(), fVar4 < 0.05)) {
+    if ((int)botInfo->scriptGoal[2] <= svs.time) {
+      Bot_SetTimedAction(9,(int *)&botInfo->targetPitch,sv_botMinCrouchTime,sv_botMaxCrouchTime,cmd,
+                         &bot->lastUsercmd);
     }
-    fVar5 = random();
-    if (fVar5 < 0.2) {
-      Bot_SetTimedAction(0xb,&param_1->useButtonEndTime,sv_botMinAdsTime,sv_botMaxAdsTime,param_3,
-                         &param_2->lastUsercmd);
+    fVar4 = random();
+    if (fVar4 < 0.2) {
+      Bot_SetTimedAction(0xb,&botInfo->useButtonEndTime,sv_botMinAdsTime,sv_botMaxAdsTime,cmd,
+                         &bot->lastUsercmd);
     }
   }
-  if (param_1->targetPitch == 0.0) {
-    bitarray<51>::resetBit(&param_3->button_bits,9);
-    bitarray<51>::resetBit(&param_3->button_bits,8);
+  if (botInfo->targetPitch == 0.0) {
+    bitarray<51>::resetBit(&cmd->button_bits,9);
+    bitarray<51>::resetBit(&cmd->button_bits,8);
   }
   else {
-    bitarray<51>::setBit(&param_3->button_bits,9);
-    bitarray<51>::resetBit(&param_3->button_bits,8);
+    bitarray<51>::setBit(&cmd->button_bits,9);
+    bitarray<51>::resetBit(&cmd->button_bits,8);
   }
-  ppVar3 = G_GetPlayerState(((int)param_2 - (int)svs.clients) / 0x84d00);
-  if ((((param_1->pitchEndTime != 0) && (bVar2 = Bot_IsMovingFoward(param_1,param_2,ppVar3), !bVar2)
-       ) && ((bVar2 = Bot_IsAtNegotiationNode(param_1,param_2,&param_1->path), !bVar2 &&
-             ((bVar2 = Path_Exists(in_stack_ffffffec), bVar2 &&
-              (bVar2 = Bot_PointInGoal((param_2->gentity->r).currentOrigin,&param_1->path,0.0),
-              !bVar2)))))) && (0xf9 < svs.time - (int)param_1->scriptGoal[2])) {
-    Bot_SetTimedAction(9,(int *)&param_1->targetPitch,sv_botMinCrouchTime,sv_botMaxCrouchTime,
-                       param_3,&param_2->lastUsercmd);
+  ps_00 = G_GetPlayerState(((int)bot - (int)svs.clients) / 0x84d00);
+  if ((((botInfo->pitchEndTime != 0) && (bVar2 = Bot_IsMovingFoward(botInfo,bot,ps_00), !bVar2)) &&
+      ((bVar2 = Bot_IsAtNegotiationNode(botInfo,bot,&botInfo->path), !bVar2 &&
+       ((bVar2 = Path_Exists(in_stack_ffffffec), bVar2 &&
+        (bVar2 = Bot_PointInGoal((bot->gentity->r).currentOrigin,&botInfo->path,0.0), !bVar2))))))
+     && (0xf9 < svs.time - (int)botInfo->scriptGoal[2])) {
+    Bot_SetTimedAction(9,(int *)&botInfo->targetPitch,sv_botMinCrouchTime,sv_botMaxCrouchTime,cmd,
+                       &bot->lastUsercmd);
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -2214,22 +2247,24 @@ void __cdecl Bot_UpdateStance(bot_info_t *param_1,client_t *param_2,usercmd_s *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateSprint(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateSprint(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   bool bVar1;
   DWORD DVar2;
   float fVar3;
   path_t *in_stack_ffffffa0;
-  float local_1c;
+  float diff;
+  PIXProfile pixProfile;
+  float angles;
   float local_18;
-  WeaponDef *local_10;
-  playerState_s *local_c;
-  float local_8;
+  WeaponDef *weapDef;
+  playerState_s *ps;
+  float distSq;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateSprint");
-  local_c = G_GetPlayerState((param_2->gentity->s).number);
-  bVar1 = bitarray<51>::testBit(&param_3->button_bits,0xb);
+  ps = G_GetPlayerState((bot->gentity->s).number);
+  bVar1 = bitarray<51>::testBit(&cmd->button_bits,0xb);
   if (bVar1) {
     DVar2 = GetCurrentThreadId();
     if (DVar2 != (DWORD)g_DXDeviceThread) {
@@ -2241,10 +2276,9 @@ void __cdecl Bot_UpdateSprint(bot_info_t *param_1,client_t *param_2,usercmd_s *p
     _D3DPERF_EndEvent_0();
     return;
   }
-  if (((((local_c->weaponstate == 10) || (local_c->weaponstate == 0xc)) ||
-       (local_c->weaponstate == 0xe)) ||
-      ((local_c->weaponstate == 0xd || (local_c->weaponstate == 0xb)))) ||
-     ((local_c->weaponstate == 0xf || (local_c->weaponstate == 0x10)))) {
+  if (((((ps->weaponstate == 10) || (ps->weaponstate == 0xc)) || (ps->weaponstate == 0xe)) ||
+      ((ps->weaponstate == 0xd || (ps->weaponstate == 0xb)))) ||
+     ((ps->weaponstate == 0xf || (ps->weaponstate == 0x10)))) {
     DVar2 = GetCurrentThreadId();
     if (DVar2 != (DWORD)g_DXDeviceThread) {
       return;
@@ -2255,19 +2289,19 @@ void __cdecl Bot_UpdateSprint(bot_info_t *param_1,client_t *param_2,usercmd_s *p
     _D3DPERF_EndEvent_0();
     return;
   }
-  local_10 = BG_GetWeaponDef((uint)local_c->weapon);
-  if (param_1->pitchEndTime == 0) {
-    if ((local_10->bDualWield == false) && (local_10->impactType != IMPACT_TYPE_SHOTGUN)) {
+  weapDef = BG_GetWeaponDef((uint)ps->weapon);
+  if (botInfo->pitchEndTime == 0) {
+    if ((weapDef->bDualWield == false) && (weapDef->impactType != IMPACT_TYPE_SHOTGUN)) {
       in_stack_ffffffa0 = (path_t *)0x0;
     }
     else {
       in_stack_ffffffa0 = (path_t *)&DAT_00000001;
     }
     if (((char)in_stack_ffffffa0 != '\0') &&
-       (bVar1 = Bot_IsInRangeOfEnemy(param_2,(param_1->threat).enemy,&local_8), !bVar1))
+       (bVar1 = Bot_IsInRangeOfEnemy(bot,(botInfo->threat).enemy,&distSq), !bVar1))
     goto LAB_006ff238;
   }
-  if (param_1->pitchEndTime == 0) {
+  if (botInfo->pitchEndTime == 0) {
     DVar2 = GetCurrentThreadId();
     if (DVar2 != (DWORD)g_DXDeviceThread) {
       return;
@@ -2279,17 +2313,17 @@ void __cdecl Bot_UpdateSprint(bot_info_t *param_1,client_t *param_2,usercmd_s *p
     return;
   }
 LAB_006ff238:
-  if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x10) == 0) {
-    vectoangles((param_1->path).lookaheadDir,&local_1c);
-    AngleNormalize180(local_c->viewangles[1] - local_18);
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x10) == 0) {
+    vectoangles((botInfo->path).lookaheadDir,&angles);
+    AngleNormalize180(ps->viewangles[1] - local_18);
     bVar1 = Path_Exists(in_stack_ffffffa0);
-    if (((bVar1) && ((sv_botSprintDistance->current).value <= (param_1->path).fLookaheadDist)) &&
-       ((int)param_1->scriptGoal[2] <= svs.time)) {
-      bitarray<51>::setBit(&param_3->button_bits,1);
+    if (((bVar1) && ((sv_botSprintDistance->current).value <= (botInfo->path).fLookaheadDist)) &&
+       ((int)botInfo->scriptGoal[2] <= svs.time)) {
+      bitarray<51>::setBit(&cmd->button_bits,1);
     }
-    if ((((local_c->pm_flags & 0x8000U) != 0) && (1 < local_c->damageCount)) &&
+    if ((((ps->pm_flags & 0x8000U) != 0) && (1 < ps->damageCount)) &&
        (fVar3 = random(), fVar3 < 0.3)) {
-      bitarray<51>::setBit(&param_3->button_bits,0x2c);
+      bitarray<51>::setBit(&cmd->button_bits,0x2c);
     }
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2314,75 +2348,77 @@ LAB_006ff238:
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateMantle(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateMantle(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   bool bVar1;
-  playerState_s *ppVar2;
-  DWORD DVar3;
+  playerState_s *ps_00;
+  DWORD DVar2;
+  PIXProfile pixProfile;
+  playerState_s *ps;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateMantle");
-  ppVar2 = G_GetPlayerState((param_2->gentity->s).number);
-  if (((ppVar2->pm_flags & 4U) == 0) && ((ppVar2->pm_flags & 0x4000U) == 0)) {
-    bVar1 = Bot_IsAtNegotiationNode(param_1,param_2,&param_1->path);
+  ps_00 = G_GetPlayerState((bot->gentity->s).number);
+  if (((ps_00->pm_flags & 4U) == 0) && ((ps_00->pm_flags & 0x4000U) == 0)) {
+    bVar1 = Bot_IsAtNegotiationNode(botInfo,bot,&botInfo->path);
     if (bVar1) {
-      if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x100) == 0) {
-        param_3->forwardmove = '\x7f';
-        param_3->rightmove = '\0';
-        bitarray<51>::resetBit(&param_3->button_bits,9);
-        bitarray<51>::resetBit(&param_3->button_bits,8);
-        if (((ppVar2->mantleState).flags & 0x10U) == 0) {
-          if ((((param_2->lastUsercmd).forwardmove < '\x01') ||
-              (bVar1 = Bot_IsMovingFoward(param_1,param_2,ppVar2), bVar1)) ||
-             (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x200) == 0)) {
-            if ((('\0' < (param_2->lastUsercmd).forwardmove) &&
-                (bVar1 = Bot_IsMovingFoward(param_1,param_2,ppVar2), !bVar1)) &&
-               (ppVar2->weaponstate == 0)) {
-              bitarray<51>::setBit(&param_3->button_bits,10);
+      if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x100) == 0) {
+        cmd->forwardmove = '\x7f';
+        cmd->rightmove = '\0';
+        bitarray<51>::resetBit(&cmd->button_bits,9);
+        bitarray<51>::resetBit(&cmd->button_bits,8);
+        if (((ps_00->mantleState).flags & 0x10U) == 0) {
+          if ((((bot->lastUsercmd).forwardmove < '\x01') ||
+              (bVar1 = Bot_IsMovingFoward(botInfo,bot,ps_00), bVar1)) ||
+             (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x200) == 0)) {
+            if ((('\0' < (bot->lastUsercmd).forwardmove) &&
+                (bVar1 = Bot_IsMovingFoward(botInfo,bot,ps_00), !bVar1)) &&
+               (ps_00->weaponstate == 0)) {
+              bitarray<51>::setBit(&cmd->button_bits,10);
             }
           }
           else {
-            *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                 *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfdff;
-            bitarray<51>::setBit(&param_3->button_bits,2);
+            *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                 *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfdff;
+            bitarray<51>::setBit(&cmd->button_bits,2);
           }
         }
         else {
-          bitarray<51>::setBit(&param_3->button_bits,10);
+          bitarray<51>::setBit(&cmd->button_bits,10);
         }
-        DVar3 = GetCurrentThreadId();
-        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        DVar2 = GetCurrentThreadId();
+        if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
-        param_3->forwardmove = '\0';
-        param_3->rightmove = '\0';
-        DVar3 = GetCurrentThreadId();
-        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        cmd->forwardmove = '\0';
+        cmd->rightmove = '\0';
+        DVar2 = GetCurrentThreadId();
+        if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
     }
     else {
-      DVar3 = GetCurrentThreadId();
-      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar2 = GetCurrentThreadId();
+      if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
   }
   else {
-    param_3->forwardmove = '\x7f';
-    param_3->rightmove = '\0';
-    (param_1->path).wNegotiationStartNode = 0;
-    *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xff7f;
-    *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfeff;
-    *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-         *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfdff;
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    cmd->forwardmove = '\x7f';
+    cmd->rightmove = '\0';
+    (botInfo->path).wNegotiationStartNode = 0;
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xff7f;
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfeff;
+    *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+         *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfdff;
+    DVar2 = GetCurrentThreadId();
+    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -2392,30 +2428,34 @@ void __cdecl Bot_UpdateMantle(bot_info_t *param_1,client_t *param_2,usercmd_s *p
 
 // 006FE8C0  Bot_UpdateSpeed  (server_mp/sv_bot_mp.cpp:1981)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateSpeed(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateSpeed(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   bool bVar1;
-  playerState_s *ppVar2;
-  WeaponDef *pWVar3;
-  WeaponVariantDef *pWVar4;
-  int iVar5;
-  DWORD DVar6;
+  playerState_s *ps_00;
+  WeaponDef *pWVar2;
+  WeaponVariantDef *pWVar3;
+  int iVar4;
+  DWORD DVar5;
   path_t *in_stack_ffffffd8;
+  PIXProfile pixProfile;
+  WeaponVariantDef *weapVariantDef;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateSpeed");
-  ppVar2 = G_GetPlayerState((param_2->gentity->s).number);
-  pWVar3 = BG_GetWeaponDef((uint)ppVar2->weapon);
-  pWVar4 = BG_GetWeaponVariantDef((uint)ppVar2->weapon);
-  if ((param_1->pitchEndTime == 0) &&
-     (iVar5 = BG_WeaponAmmo(ppVar2,(uint)ppVar2->weapon), iVar5 != 0)) {
-    if ((pWVar3->bDualWield == false) && (pWVar3->impactType != IMPACT_TYPE_SHOTGUN)) {
+  ps_00 = G_GetPlayerState((bot->gentity->s).number);
+  pWVar2 = BG_GetWeaponDef((uint)ps_00->weapon);
+  pWVar3 = BG_GetWeaponVariantDef((uint)ps_00->weapon);
+  if ((botInfo->pitchEndTime == 0) && (iVar4 = BG_WeaponAmmo(ps_00,(uint)ps_00->weapon), iVar4 != 0)
+     ) {
+    if ((pWVar2->bDualWield == false) && (pWVar2->impactType != IMPACT_TYPE_SHOTGUN)) {
       bVar1 = false;
     }
     else {
@@ -2423,76 +2463,76 @@ void __cdecl Bot_UpdateSpeed(bot_info_t *param_1,client_t *param_2,usercmd_s *pa
     }
     if ((!bVar1) &&
        ((sv_botCloseDistance->current).value * (sv_botCloseDistance->current).value <
-        (param_1->threat).distSq)) {
-      Bot_SetTimedAction(0xb,&param_1->useButtonEndTime,sv_botMinAdsTime,sv_botMaxAdsTime,param_3,
-                         &param_2->lastUsercmd);
+        (botInfo->threat).distSq)) {
+      Bot_SetTimedAction(0xb,&botInfo->useButtonEndTime,sv_botMinAdsTime,sv_botMaxAdsTime,cmd,
+                         &bot->lastUsercmd);
     }
-    if (pWVar3->fMinDamageRange * pWVar3->fMinDamageRange < (param_1->threat).distSq) {
-      param_3->forwardmove = '\x7f';
+    if (pWVar2->fMinDamageRange * pWVar2->fMinDamageRange < (botInfo->threat).distSq) {
+      cmd->forwardmove = '\x7f';
     }
   }
-  else if ((((uint)param_1[1].path.pts[0].fDir2D[1] & 4) == 0) ||
-          (bVar1 = Bot_PointInGoal((param_2->gentity->r).currentOrigin,&param_1->path,
-                                   param_1[1].path.pts[0].fDir2D[0]), !bVar1)) {
-    param_3->forwardmove = '\x7f';
-    param_3->rightmove = '\0';
+  else if ((((uint)botInfo[1].path.pts[0].fDir2D[1] & 4) == 0) ||
+          (bVar1 = Bot_PointInGoal((bot->gentity->r).currentOrigin,&botInfo->path,
+                                   botInfo[1].path.pts[0].fDir2D[0]), !bVar1)) {
+    cmd->forwardmove = '\x7f';
+    cmd->rightmove = '\0';
   }
   else {
-    param_3->forwardmove = '\0';
-    param_3->rightmove = '\0';
+    cmd->forwardmove = '\0';
+    cmd->rightmove = '\0';
   }
-  if (param_1->useButtonEndTime != 0) {
-    bitarray<51>::setBit(&param_3->button_bits,0xb);
+  if (botInfo->useButtonEndTime != 0) {
+    bitarray<51>::setBit(&cmd->button_bits,0xb);
   }
-  if ((pWVar4->overlayMaterial != (Material *)0x0) &&
-     (bVar1 = bitarray<51>::testBit(&param_3->button_bits,0xb), bVar1)) {
-    param_3->forwardmove = '\0';
-    param_3->rightmove = '\0';
+  if ((pWVar3->overlayMaterial != (Material *)0x0) &&
+     (bVar1 = bitarray<51>::testBit(&cmd->button_bits,0xb), bVar1)) {
+    cmd->forwardmove = '\0';
+    cmd->rightmove = '\0';
   }
-  Bot_UpdateSprint(param_1,param_2,param_3);
-  Bot_UpdateStance(param_1,param_2,param_3);
-  bVar1 = Bot_IsInLastStand(param_2);
+  Bot_UpdateSprint(botInfo,bot,cmd);
+  Bot_UpdateStance(botInfo,bot,cmd);
+  bVar1 = Bot_IsInLastStand(bot);
   if (bVar1) {
-    param_3->forwardmove = '\0';
-    param_3->rightmove = '\0';
+    cmd->forwardmove = '\0';
+    cmd->rightmove = '\0';
   }
-  if (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x10) != 0) {
-    param_3->forwardmove = '\0';
-    param_3->rightmove = '\0';
-    bitarray<51>::resetBit(&param_3->button_bits,1);
+  if (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x10) != 0) {
+    cmd->forwardmove = '\0';
+    cmd->rightmove = '\0';
+    bitarray<51>::resetBit(&cmd->button_bits,1);
   }
-  if (param_1->pitchEndTime == 0) {
-    if ((pWVar3->bDualWield == false) && (pWVar3->impactType != IMPACT_TYPE_SHOTGUN)) {
+  if (botInfo->pitchEndTime == 0) {
+    if ((pWVar2->bDualWield == false) && (pWVar2->impactType != IMPACT_TYPE_SHOTGUN)) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
-    if ((bVar1) && (pWVar3->fMaxDamageRange * pWVar3->fMaxDamageRange < (param_1->threat).distSq)) {
+    if ((bVar1) && (pWVar2->fMaxDamageRange * pWVar2->fMaxDamageRange < (botInfo->threat).distSq)) {
       bVar1 = Path_Exists(in_stack_ffffffd8);
       if (bVar1) {
-        Bot_StrafeOnPath(ppVar2,&param_1->path,param_3);
+        Bot_StrafeOnPath(ps_00,&botInfo->path,cmd);
       }
       else {
-        param_3->forwardmove = '\x7f';
-        param_3->rightmove = '\0';
+        cmd->forwardmove = '\x7f';
+        cmd->rightmove = '\0';
       }
     }
   }
-  if ((param_1->threat).enemy != (gentity_s *)0x0) {
-    if (((param_1->pitchEndTime == 0) || ((param_1->threat).lastSightTime == 0)) ||
-       (4999 < svs.time - (param_1->threat).lastSightTime)) {
+  if ((botInfo->threat).enemy != (gentity_s *)0x0) {
+    if (((botInfo->pitchEndTime == 0) || ((botInfo->threat).lastSightTime == 0)) ||
+       (4999 < svs.time - (botInfo->threat).lastSightTime)) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
     if (bVar1) {
-      Bot_StrafeOnPath(ppVar2,&param_1->path,param_3);
+      Bot_StrafeOnPath(ps_00,&botInfo->path,cmd);
     }
   }
-  DVar6 = GetCurrentThreadId();
-  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar5 = GetCurrentThreadId();
+  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -2507,14 +2547,16 @@ void __cdecl Bot_UpdateSpeed(bot_info_t *param_1,client_t *param_2,usercmd_s *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_IsFlashbanged(client_t *param_1)
+bool __cdecl Bot_IsFlashbanged(client_t *bot)
 
 {
   playerState_s *ppVar1;
   shellshock_parms_t *psVar2;
   bool bVar3;
+  shellshock_parms_t *shockParms;
+  playerState_s *ps;
   
-  ppVar1 = G_GetPlayerState((param_1->gentity->s).number);
+  ppVar1 = G_GetPlayerState((bot->gentity->s).number);
   if (((ppVar1->pm_flags & 0x10000U) == 0) ||
      (ppVar1->shellshockTime + ppVar1->shellshockDuration <= svs.time)) {
     bVar3 = false;
@@ -2535,56 +2577,57 @@ bool __cdecl Bot_IsFlashbanged(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateMovement(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateMovement(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   gentity_s *pgVar1;
   bool bVar2;
   DWORD DVar3;
   path_t *in_stack_ffffffc0;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateMovement");
   if ((sv_botsAllowMovement->current).enabled == false) {
-    param_3->forwardmove = '\0';
-    param_3->rightmove = '\0';
+    cmd->forwardmove = '\0';
+    cmd->rightmove = '\0';
     if (-1 < (sv_botForceYaw->current).integer) {
-      param_3->angles[1] =
+      cmd->angles[1] =
            (int)(((float)(sv_botForceYaw->current).integer -
-                 (param_2->gentity->client->ps).delta_angles[1]) * 182.04445) & 0xffff;
+                 (bot->gentity->client->ps).delta_angles[1]) * 182.04445) & 0xffff;
     }
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if ((((param_2->gentity->client->ps).pm_flags & 4U) == 0) &&
-          (((param_2->gentity->client->ps).pm_flags & 0x4000U) == 0)) {
-    bVar2 = Bot_IsFlashbanged(param_2);
+  else if ((((bot->gentity->client->ps).pm_flags & 4U) == 0) &&
+          (((bot->gentity->client->ps).pm_flags & 0x4000U) == 0)) {
+    bVar2 = Bot_IsFlashbanged(bot);
     if (bVar2) {
-      Bot_RandomInput(param_1,param_3);
+      Bot_RandomInput(botInfo,cmd);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      Bot_GetStrafeInput(param_2,param_1,param_3);
-      Bot_UpdatePath(param_1,param_2);
+      Bot_GetStrafeInput(bot,botInfo,cmd);
+      Bot_UpdatePath(botInfo,bot);
       bVar2 = Path_Exists(in_stack_ffffffc0);
-      if (((bVar2) || ((param_1->threat).enemy == (gentity_s *)0x0)) || (param_1->pitchEndTime == 0)
+      if (((bVar2) || ((botInfo->threat).enemy == (gentity_s *)0x0)) || (botInfo->pitchEndTime == 0)
          ) {
         bVar2 = Path_Exists(in_stack_ffffffc0);
-        if ((bVar2) || (param_1->pitchEndTime == 0)) {
-          Bot_UpdateDirection(param_1,param_2,param_3);
-          Bot_UpdateSpeed(param_1,param_2,param_3);
-          Bot_UpdateMantle(param_1,param_2,param_3);
+        if ((bVar2) || (botInfo->pitchEndTime == 0)) {
+          Bot_UpdateDirection(botInfo,bot,cmd);
+          Bot_UpdateSpeed(botInfo,bot,cmd);
+          Bot_UpdateMantle(botInfo,bot,cmd);
           DVar3 = GetCurrentThreadId();
           if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else {
-          Bot_RandomInput(param_1,param_3);
+          Bot_RandomInput(botInfo,cmd);
           DVar3 = GetCurrentThreadId();
           if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -2592,8 +2635,8 @@ void __cdecl Bot_UpdateMovement(bot_info_t *param_1,client_t *param_2,usercmd_s 
         }
       }
       else {
-        Bot_UpdateDirection(param_1,param_2,param_3);
-        pgVar1 = (param_1->threat).enemy;
+        Bot_UpdateDirection(botInfo,bot,cmd);
+        pgVar1 = (botInfo->threat).enemy;
         if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->client == (gclient_s *)0x0)) {
           bVar2 = false;
         }
@@ -2601,11 +2644,11 @@ void __cdecl Bot_UpdateMovement(bot_info_t *param_1,client_t *param_2,usercmd_s 
           bVar2 = true;
         }
         if (bVar2) {
-          Bot_RandomInput(param_1,param_3);
+          Bot_RandomInput(botInfo,cmd);
         }
         else {
-          param_3->forwardmove = '\0';
-          param_3->rightmove = '\0';
+          cmd->forwardmove = '\0';
+          cmd->rightmove = '\0';
         }
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2615,7 +2658,7 @@ void __cdecl Bot_UpdateMovement(bot_info_t *param_1,client_t *param_2,usercmd_s 
     }
   }
   else {
-    Bot_UpdateMantle(param_1,param_2,param_3);
+    Bot_UpdateMantle(botInfo,bot,cmd);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -2633,44 +2676,49 @@ void __cdecl Bot_UpdateMovement(bot_info_t *param_1,client_t *param_2,usercmd_s 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateReload(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateReload(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
-  playerState_s *ppVar1;
-  int iVar2;
-  WeaponDef *pWVar3;
-  DWORD DVar4;
-  float fVar5;
+  playerState_s *ps_00;
+  int iVar1;
+  WeaponDef *pWVar2;
+  DWORD DVar3;
+  float fVar4;
   int local_40;
   int local_3c;
+  int maxClip;
+  PIXProfile pixProfile;
+  int curClip;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateReload");
-  ppVar1 = G_GetPlayerState((param_2->gentity->s).number);
-  if (((ppVar1->weapon != 0) && (ppVar1->weaponstate == 0)) &&
-     (iVar2 = BG_WeaponIsClipOnly((uint)ppVar1->weapon), iVar2 == 0)) {
-    pWVar3 = BG_GetWeaponDef((uint)ppVar1->weapon);
-    local_3c = BG_GetAmmoInClip(ppVar1,(uint)ppVar1->weapon);
+  ps_00 = G_GetPlayerState((bot->gentity->s).number);
+  if (((ps_00->weapon != 0) && (ps_00->weaponstate == 0)) &&
+     (iVar1 = BG_WeaponIsClipOnly((uint)ps_00->weapon), iVar1 == 0)) {
+    pWVar2 = BG_GetWeaponDef((uint)ps_00->weapon);
+    local_3c = BG_GetAmmoInClip(ps_00,(uint)ps_00->weapon);
     if (999 < local_3c) {
       local_3c = 999;
     }
-    local_40 = BG_GetClipSize((uint)ppVar1->weapon);
+    local_40 = BG_GetClipSize((uint)ps_00->weapon);
     if (999 < local_40) {
       local_40 = 999;
     }
-    if ((float)local_3c <= (float)local_40 * pWVar3->lowAmmoWarningThreshold) {
-      if (param_1->pitchEndTime == 0) {
-        fVar5 = random();
-        if (fVar5 < 0.1) {
-          bitarray<51>::setBit(&param_3->button_bits,5);
+    if ((float)local_3c <= (float)local_40 * pWVar2->lowAmmoWarningThreshold) {
+      if (botInfo->pitchEndTime == 0) {
+        fVar4 = random();
+        if (fVar4 < 0.1) {
+          bitarray<51>::setBit(&cmd->button_bits,5);
         }
       }
       else {
-        bitarray<51>::setBit(&param_3->button_bits,5);
+        bitarray<51>::setBit(&cmd->button_bits,5);
       }
     }
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -2685,12 +2733,13 @@ void __cdecl Bot_UpdateReload(bot_info_t *param_1,client_t *param_2,usercmd_s *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateGlassSmash(client_t *param_1,usercmd_s *param_2)
+void __cdecl Bot_UpdateGlassSmash(client_t *bot,usercmd_s *cmd)
 
 {
-  if ((svs.time % 1000 == 0) &&
-     (*(int *)(&DAT_03cbf0ac + (param_1->gentity->s).number * 0x910) != 0)) {
-    bitarray<51>::setBit(&param_2->button_bits,2);
+  pmove_t *pm;
+  
+  if ((svs.time % 1000 == 0) && (*(int *)(&DAT_03cbf0ac + (bot->gentity->s).number * 0x910) != 0)) {
+    bitarray<51>::setBit(&cmd->button_bits,2);
   }
   return;
 }
@@ -2704,13 +2753,15 @@ void __cdecl Bot_UpdateGlassSmash(client_t *param_1,usercmd_s *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_UpdateMelee(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+bool __cdecl Bot_UpdateMelee(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   float *pfVar1;
   DWORD DVar2;
   float fVar3;
   bool local_d;
+  float MELEE_DISTANCE;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateMelee");
   if ((sv_botsPressMeleeBtn->current).enabled == false) {
@@ -2720,8 +2771,8 @@ bool __cdecl Bot_UpdateMelee(bot_info_t *param_1,client_t *param_2,usercmd_s *pa
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (param_1->pitchEndTime == 0) {
-    pfVar1 = &(param_1->threat).distSq;
+  else if (botInfo->pitchEndTime == 0) {
+    pfVar1 = &(botInfo->threat).distSq;
     if ((1600.0 < *pfVar1 || *pfVar1 == 1600.0) || (fVar3 = random(), 0.75 <= fVar3)) {
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2730,7 +2781,7 @@ bool __cdecl Bot_UpdateMelee(bot_info_t *param_1,client_t *param_2,usercmd_s *pa
       local_d = false;
     }
     else {
-      bitarray<51>::setBit(&param_3->button_bits,2);
+      bitarray<51>::setBit(&cmd->button_bits,2);
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -2757,45 +2808,46 @@ bool __cdecl Bot_UpdateMelee(bot_info_t *param_1,client_t *param_2,usercmd_s *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_GrenadeSightTrace(client_t *param_1,float param_2,float param_3)
+bool __cdecl Bot_GrenadeSightTrace(client_t *bot,float projectileSpeed,float throwPitch)
 
 {
   gentity_s *pgVar1;
   int iVar2;
   DWORD DVar3;
   bool local_69;
-  col_context_t local_68;
-  float local_3c;
+  col_context_t context;
+  PIXProfile pixProfile;
+  float vEnd;
   float local_38;
   float local_34;
-  int local_30;
-  float local_2c;
+  int hit;
+  float angles;
   float local_28;
   float local_24;
-  float local_20;
+  float vForward;
   float local_1c;
   float local_18;
-  playerState_s *local_14;
-  float local_10;
+  playerState_s *ps;
+  float vStart;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"Bot_GrenadeSightTrace");
-  col_context_t::col_context_t(&local_68);
-  local_14 = G_GetPlayerState((param_1->gentity->s).number);
-  local_28 = local_14->viewangles[1];
-  local_24 = local_14->viewangles[2];
-  pgVar1 = param_1->gentity;
-  local_10 = (pgVar1->r).currentOrigin[0];
+  col_context_t::col_context_t(&context);
+  ps = G_GetPlayerState((bot->gentity->s).number);
+  local_28 = ps->viewangles[1];
+  local_24 = ps->viewangles[2];
+  pgVar1 = bot->gentity;
+  vStart = (pgVar1->r).currentOrigin[0];
   local_c = (pgVar1->r).currentOrigin[1];
-  local_2c = param_3;
-  local_8 = (pgVar1->r).currentOrigin[2] + local_14->viewHeightCurrent;
-  AngleVectors(&local_2c,&local_20,(float *)0x0,(float *)0x0);
-  local_3c = local_20 * 384.0 + local_10;
+  angles = throwPitch;
+  local_8 = (pgVar1->r).currentOrigin[2] + ps->viewHeightCurrent;
+  AngleVectors(&angles,&vForward,(float *)0x0,(float *)0x0);
+  vEnd = vForward * 384.0 + vStart;
   local_38 = local_1c * 384.0 + local_c;
   local_34 = local_18 * 384.0 + local_8;
-  local_68.mask = 1;
-  iVar2 = SV_SightTracePoint(&local_30,&local_10,&local_3c,&local_68);
+  context.mask = 1;
+  iVar2 = SV_SightTracePoint(&hit,&vStart,&vEnd,&context);
   if (iVar2 == 0) {
     local_69 = false;
     DVar3 = GetCurrentThreadId();
@@ -2817,7 +2869,7 @@ bool __cdecl Bot_GrenadeSightTrace(client_t *param_1,float param_2,float param_3
 // 00700650  Bot_GrenadeInRange  (server_mp/sv_bot_mp.cpp:2272)
 
 bool __cdecl
-Bot_GrenadeInRange(float param_1,float param_2,float *param_3,WeaponDef *param_4,float *param_5)
+Bot_GrenadeInRange(float range,float height,float *angles,WeaponDef *weapDef,float *outPitch)
 
 {
   DWORD DVar1;
@@ -2825,31 +2877,32 @@ Bot_GrenadeInRange(float param_1,float param_2,float *param_3,WeaponDef *param_4
   undefined4 in_stack_ffffff84;
   undefined4 in_stack_ffffff88;
   bool local_46;
-  float local_38;
+  PIXProfile pixProfile;
+  float forwardHoriz;
   undefined4 local_34;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
+  float g;
+  float denominator;
+  float launchSpeedSq;
+  float vForward;
   undefined4 local_1c;
-  float local_14;
-  float local_10 [3];
+  float numerator;
+  float vUp [3];
   
   PIXBeginNamedEvent(-1,"Bot_GrenadeInRange");
-  AngleVectors(param_3,&local_20,(float *)0x0,local_10);
-  if (param_4->iProjectileSpeedForward != 0) {
-    local_38 = local_20;
+  AngleVectors(angles,&vForward,(float *)0x0,vUp);
+  if (weapDef->iProjectileSpeedForward != 0) {
+    forwardHoriz = vForward;
     local_34 = local_1c;
-    Vec2NormalizeFast(&local_38);
+    Vec2NormalizeFast(&forwardHoriz);
   }
-  local_24 = (float)param_4->iProjectileSpeed * (float)param_4->iProjectileSpeed;
-  local_2c = (bg_gravity->current).value;
-  local_14 = local_24 -
-             SQRT(local_24 * local_24 -
-                  (param_1 * param_1 * local_2c + param_2 * 2.0 * local_24) * local_2c);
-  local_28 = local_2c * param_1;
-  if (local_28 == 0.0) {
-    *param_5 = 0.0;
+  launchSpeedSq = (float)weapDef->iProjectileSpeed * (float)weapDef->iProjectileSpeed;
+  g = (bg_gravity->current).value;
+  numerator = launchSpeedSq -
+              SQRT(launchSpeedSq * launchSpeedSq -
+                   (range * range * g + height * 2.0 * launchSpeedSq) * g);
+  denominator = g * range;
+  if (denominator == 0.0) {
+    *outPitch = 0.0;
     local_46 = false;
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2857,11 +2910,11 @@ Bot_GrenadeInRange(float param_1,float param_2,float *param_3,WeaponDef *param_4
     }
   }
   else {
-    dVar2 = (double)(local_14 / local_28);
+    dVar2 = (double)(numerator / denominator);
     __libm_sse2_atan((double)CONCAT44(in_stack_ffffff88,in_stack_ffffff84));
-    *param_5 = (float)dVar2;
-    if (((uint)*param_5 & 0x7f800000) == 0x7f800000) {
-      *param_5 = 0.0;
+    *outPitch = (float)dVar2;
+    if (((uint)*outPitch & 0x7f800000) == 0x7f800000) {
+      *outPitch = 0.0;
       DVar1 = GetCurrentThreadId();
       if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -2869,7 +2922,7 @@ Bot_GrenadeInRange(float param_1,float param_2,float *param_3,WeaponDef *param_4
       local_46 = false;
     }
     else {
-      *param_5 = *param_5 * 57.295776 * -1.0;
+      *outPitch = *outPitch * 57.295776 * -1.0;
       DVar1 = GetCurrentThreadId();
       if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -2888,7 +2941,7 @@ Bot_GrenadeInRange(float param_1,float param_2,float *param_3,WeaponDef *param_4
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Bot_GrenadePickType(bot_info_t *param_1,playerState_s *param_2,OffhandSlot *param_3)
+bool __cdecl Bot_GrenadePickType(bot_info_t *botInfo,playerState_s *ps,OffhandSlot *slot)
 
 {
   gentity_s *pgVar1;
@@ -2897,21 +2950,23 @@ bool __cdecl Bot_GrenadePickType(bot_info_t *param_1,playerState_s *param_2,Offh
   DWORD DVar4;
   float fVar5;
   bool local_e;
-  uint local_8;
+  PIXProfile pixProfile;
+  WeaponDef *weapDef;
+  int offHandIndex;
   
   PIXBeginNamedEvent(-1,"Bot_GrenadePickType");
-  *param_3 = OFFHAND_SLOT_LETHAL_GRENADE;
-  local_8 = BG_GetFirstAvailableOffhand(param_2,*param_3);
-  pWVar3 = BG_GetWeaponDef(local_8);
-  if ((pWVar3->rotateType == WEAPROTATE_BLADE_ROTATE) && (param_1->pitchEndTime != 0)) {
-    local_8 = 0;
+  *slot = OFFHAND_SLOT_LETHAL_GRENADE;
+  offHandIndex = BG_GetFirstAvailableOffhand(ps,*slot);
+  pWVar3 = BG_GetWeaponDef(offHandIndex);
+  if ((pWVar3->rotateType == WEAPROTATE_BLADE_ROTATE) && (botInfo->pitchEndTime != 0)) {
+    offHandIndex = 0;
   }
-  if ((local_8 == 0) && (param_1->pitchEndTime != 0)) {
-    *param_3 = OFFHAND_SLOT_TACTICAL_GRENADE;
-    local_8 = BG_GetFirstAvailableOffhand(param_2,*param_3);
+  if ((offHandIndex == 0) && (botInfo->pitchEndTime != 0)) {
+    *slot = OFFHAND_SLOT_TACTICAL_GRENADE;
+    offHandIndex = BG_GetFirstAvailableOffhand(ps,*slot);
   }
-  if ((local_8 == 0) && (param_1->pitchEndTime == 0)) {
-    pgVar1 = (param_1->threat).enemy;
+  if ((offHandIndex == 0) && (botInfo->pitchEndTime == 0)) {
+    pgVar1 = (botInfo->threat).enemy;
     if ((pgVar1 == (gentity_s *)0x0) || (pgVar1->pTurretInfo == (TurretInfo *)0x0)) {
       bVar2 = false;
     }
@@ -2919,12 +2974,12 @@ bool __cdecl Bot_GrenadePickType(bot_info_t *param_1,playerState_s *param_2,Offh
       bVar2 = true;
     }
     if ((bVar2) || (fVar5 = random(), fVar5 < 0.01)) {
-      *param_3 = OFFHAND_SLOT_TACTICAL_GRENADE;
-      local_8 = BG_GetFirstAvailableOffhand(param_2,*param_3);
+      *slot = OFFHAND_SLOT_TACTICAL_GRENADE;
+      offHandIndex = BG_GetFirstAvailableOffhand(ps,*slot);
     }
   }
-  if (local_8 == 0) {
-    *param_3 = OFFHAND_SLOT_NONE;
+  if (offHandIndex == 0) {
+    *slot = OFFHAND_SLOT_NONE;
     local_e = false;
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2950,7 +3005,7 @@ bool __cdecl Bot_GrenadePickType(bot_info_t *param_1,playerState_s *param_2,Offh
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
+bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *botInfo,client_t *bot)
 
 {
   float *pfVar1;
@@ -2958,13 +3013,17 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
   bool bVar3;
   bool bVar4;
   DWORD DVar5;
-  playerState_s *ppVar6;
-  WeaponDef *pWVar7;
-  int iVar8;
-  float fVar9;
+  playerState_s *ps_00;
+  WeaponDef *pWVar6;
+  int iVar7;
+  float fVar8;
   bool local_17;
-  float local_c;
-  float local_8;
+  PIXProfile pixProfile;
+  bool noAmmo;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  float dot;
+  float distSq;
   
   PIXBeginNamedEvent(-1,"Bot_ShouldThrowGrenade");
   if ((sv_botAllowGrenades->current).enabled == false) {
@@ -2975,16 +3034,16 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
     }
   }
   else {
-    ppVar6 = G_GetPlayerState((param_2->gentity->s).number);
-    if (ppVar6->weaponstate == 0) {
-      if ((param_1->threat).enemy == (gentity_s *)0x0) {
+    ps_00 = G_GetPlayerState((bot->gentity->s).number);
+    if (ps_00->weaponstate == 0) {
+      if ((botInfo->threat).enemy == (gentity_s *)0x0) {
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
         local_17 = false;
       }
-      else if (((param_1->threat).enemy)->health < 1) {
+      else if (((botInfo->threat).enemy)->health < 1) {
         DVar5 = GetCurrentThreadId();
         if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
@@ -2992,7 +3051,7 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
         local_17 = false;
       }
       else {
-        pgVar2 = (param_1->threat).enemy;
+        pgVar2 = (botInfo->threat).enemy;
         if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->scr_vehicle == (scr_vehicle_s *)0x0)) {
           bVar3 = false;
         }
@@ -3007,15 +3066,15 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
           local_17 = false;
         }
         else {
-          if (param_1->pitchEndTime != 0) {
-            if (((param_1->pitchEndTime == 0) || ((param_1->threat).lastSightTime == 0)) ||
-               (4999 < svs.time - (param_1->threat).lastSightTime)) {
+          if (botInfo->pitchEndTime != 0) {
+            if (((botInfo->pitchEndTime == 0) || ((botInfo->threat).lastSightTime == 0)) ||
+               (4999 < svs.time - (botInfo->threat).lastSightTime)) {
               bVar3 = false;
             }
             else {
               bVar3 = true;
             }
-            if ((!bVar3) && (ppVar6->damageCount < 1)) {
+            if ((!bVar3) && (ps_00->damageCount < 1)) {
               DVar5 = GetCurrentThreadId();
               if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
@@ -3023,9 +3082,9 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
               return false;
             }
           }
-          bVar3 = Bot_IsFacingEnemy(param_2,(param_1->threat).enemy,&local_c);
+          bVar3 = Bot_IsFacingEnemy(bot,(botInfo->threat).enemy,&dot);
           if (bVar3) {
-            if (svs.time < (int)param_1->scriptGoalRadius) {
+            if (svs.time < (int)botInfo->scriptGoalRadius) {
               DVar5 = GetCurrentThreadId();
               if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
@@ -3033,15 +3092,15 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
               local_17 = false;
             }
             else {
-              pWVar7 = BG_GetWeaponDef((uint)ppVar6->weapon);
-              pgVar2 = (param_1->threat).enemy;
+              pWVar6 = BG_GetWeaponDef((uint)ps_00->weapon);
+              pgVar2 = (botInfo->threat).enemy;
               if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->pTurretInfo == (TurretInfo *)0x0)) {
                 bVar3 = false;
               }
               else {
                 bVar3 = true;
               }
-              if ((bVar3) && (pWVar7->weapType != WEAPTYPE_PROJECTILE)) {
+              if ((bVar3) && (pWVar6->weapType != WEAPTYPE_PROJECTILE)) {
                 DVar5 = GetCurrentThreadId();
                 if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                   _D3DPERF_EndEvent_0();
@@ -3049,26 +3108,26 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
                 local_17 = true;
               }
               else {
-                iVar8 = BG_GetAmmoInClip(ppVar6,(uint)ppVar6->weapon);
-                bVar3 = iVar8 < 1;
+                iVar7 = BG_GetAmmoInClip(ps_00,(uint)ps_00->weapon);
+                bVar3 = iVar7 < 1;
                 if ((bVar3) ||
-                   (fVar9 = (sv_botCloseDistance->current).value *
-                            (sv_botCloseDistance->current).value, pfVar1 = &(param_1->threat).distSq
-                   , fVar9 < *pfVar1 || fVar9 == *pfVar1)) {
-                  if (((param_1->pitchEndTime == 0) || ((param_1->threat).lastSightTime == 0)) ||
-                     (4999 < svs.time - (param_1->threat).lastSightTime)) {
+                   (fVar8 = (sv_botCloseDistance->current).value *
+                            (sv_botCloseDistance->current).value, pfVar1 = &(botInfo->threat).distSq
+                   , fVar8 < *pfVar1 || fVar8 == *pfVar1)) {
+                  if (((botInfo->pitchEndTime == 0) || ((botInfo->threat).lastSightTime == 0)) ||
+                     (4999 < svs.time - (botInfo->threat).lastSightTime)) {
                     bVar4 = false;
                   }
                   else {
                     bVar4 = true;
                   }
                   if ((bVar4) &&
-                     (iVar8 = irand((sv_botMinGrenadeTime->current).integer,
+                     (iVar7 = irand((sv_botMinGrenadeTime->current).integer,
                                     (sv_botMaxGrenadeTime->current).integer),
-                     (param_1->threat).lastSightTime < iVar8 + svs.time)) {
-                    fVar9 = random();
-                    if (0.75 <= fVar9) {
-                      param_1->scriptGoalRadius = (float)(svs.time + 2000);
+                     (botInfo->threat).lastSightTime < iVar7 + svs.time)) {
+                    fVar8 = random();
+                    if (0.75 <= fVar8) {
+                      botInfo->scriptGoalRadius = (float)(svs.time + 2000);
                       DVar5 = GetCurrentThreadId();
                       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                         _D3DPERF_EndEvent_0();
@@ -3083,22 +3142,22 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
                       local_17 = true;
                     }
                   }
-                  else if ((param_1->pitchEndTime != 0) ||
-                          ((bVar4 = Bot_IsInRangeOfEnemy(param_2,(param_1->threat).enemy,&local_8),
-                           bVar4 || (fVar9 = random(), 0.25 <= fVar9)))) {
-                    if ((param_1->pitchEndTime != 0) ||
-                       ((((ppVar6->fWeaponPosFrac <= 0.0 || (bVar3)) || (ppVar6->damageCount != 0))
-                        || (fVar9 = random(), 0.005 <= fVar9)))) {
-                      if (((param_1->pitchEndTime != 0) || (ppVar6->fWeaponPosFrac <= 0.0)) ||
-                         ((ppVar6->damageCount == 0 || (fVar9 = random(), 0.01 <= fVar9)))) {
-                        if ((param_1->pitchEndTime == 0) && (bVar3)) {
+                  else if ((botInfo->pitchEndTime != 0) ||
+                          ((bVar4 = Bot_IsInRangeOfEnemy(bot,(botInfo->threat).enemy,&distSq), bVar4
+                           || (fVar8 = random(), 0.25 <= fVar8)))) {
+                    if ((botInfo->pitchEndTime != 0) ||
+                       ((((ps_00->fWeaponPosFrac <= 0.0 || (bVar3)) || (ps_00->damageCount != 0)) ||
+                        (fVar8 = random(), 0.005 <= fVar8)))) {
+                      if (((botInfo->pitchEndTime != 0) || (ps_00->fWeaponPosFrac <= 0.0)) ||
+                         ((ps_00->damageCount == 0 || (fVar8 = random(), 0.01 <= fVar8)))) {
+                        if ((botInfo->pitchEndTime == 0) && (bVar3)) {
                           DVar5 = GetCurrentThreadId();
                           if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                             _D3DPERF_EndEvent_0();
                           }
                           local_17 = true;
                         }
-                        else if ((param_1->pitchEndTime == 0) || (ppVar6->damageCount == 0)) {
+                        else if ((botInfo->pitchEndTime == 0) || (ps_00->damageCount == 0)) {
                           DVar5 = GetCurrentThreadId();
                           if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                             _D3DPERF_EndEvent_0();
@@ -3177,7 +3236,7 @@ bool __cdecl Bot_ShouldThrowGrenade(bot_info_t *param_1,client_t *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   bool bVar1;
@@ -3185,12 +3244,15 @@ bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercm
   int iVar3;
   float fVar4;
   bool local_29;
-  OffhandSlot local_1c;
-  float local_18;
-  float local_14;
-  playerState_s *local_10;
-  WeaponDef *local_c;
-  uint local_8;
+  float pitchDiff;
+  PIXProfile pixProfile;
+  float range;
+  OffhandSlot offhandSlot;
+  float desiredPitch;
+  float heightDiff;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  int offHandIndex;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateGrenadeThrow");
   if ((sv_botsPressAttackBtn->current).enabled == false) {
@@ -3201,56 +3263,56 @@ bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercm
     }
   }
   else {
-    local_10 = G_GetPlayerState((param_2->gentity->s).number);
-    local_c = BG_GetWeaponDef(local_10->offHandIndex);
-    bVar1 = Bot_IsThrowingGrenade(param_1,param_2);
+    ps = G_GetPlayerState((bot->gentity->s).number);
+    weapDef = BG_GetWeaponDef(ps->offHandIndex);
+    bVar1 = Bot_IsThrowingGrenade(botInfo,bot);
     if (bVar1) {
-      param_3->forwardmove = '\0';
-      param_3->rightmove = '\0';
-      param_1->scriptGoalRadius = (float)(svs.time + 2000);
+      cmd->forwardmove = '\0';
+      cmd->rightmove = '\0';
+      botInfo->scriptGoalRadius = (float)(svs.time + 2000);
     }
-    if ((((uint)param_1[1].path.pts[0].fDir2D[1] & 0x400) == 0) &&
-       (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x800) == 0)) {
-      bVar1 = Bot_ShouldThrowGrenade(param_1,param_2);
+    if ((((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x400) == 0) &&
+       (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x800) == 0)) {
+      bVar1 = Bot_ShouldThrowGrenade(botInfo,bot);
       if (bVar1) {
-        bVar1 = Bot_GrenadePickType(param_1,local_10,&local_1c);
+        bVar1 = Bot_GrenadePickType(botInfo,ps,&offhandSlot);
         if (bVar1) {
-          fVar4 = Vec3Distance((param_2->gentity->r).currentOrigin,
-                               (((param_1->threat).enemy)->r).currentOrigin);
-          local_8 = BG_GetFirstAvailableOffhand(local_10,local_1c);
-          local_c = BG_GetWeaponDef(local_8);
-          if ((local_1c != OFFHAND_SLOT_LETHAL_GRENADE) ||
-             ((float)local_c->iExplosionRadius <= fVar4)) {
-            local_14 = (((param_1->threat).enemy)->r).currentOrigin[2] -
-                       (param_2->gentity->r).currentOrigin[2];
-            bVar1 = Bot_GrenadeInRange(fVar4,local_14,local_10->viewangles,local_c,&local_18);
+          fVar4 = Vec3Distance((bot->gentity->r).currentOrigin,
+                               (((botInfo->threat).enemy)->r).currentOrigin);
+          offHandIndex = BG_GetFirstAvailableOffhand(ps,offhandSlot);
+          weapDef = BG_GetWeaponDef(offHandIndex);
+          if ((offhandSlot != OFFHAND_SLOT_LETHAL_GRENADE) ||
+             ((float)weapDef->iExplosionRadius <= fVar4)) {
+            heightDiff = (((botInfo->threat).enemy)->r).currentOrigin[2] -
+                         (bot->gentity->r).currentOrigin[2];
+            bVar1 = Bot_GrenadeInRange(fVar4,heightDiff,ps->viewangles,weapDef,&desiredPitch);
             if (bVar1) {
-              if (local_c->rotateType == WEAPROTATE_BLADE_ROTATE) {
+              if (weapDef->rotateType == WEAPROTATE_BLADE_ROTATE) {
                 fVar4 = flrand(1.0,3.0);
-                local_18 = fVar4 + local_18;
+                desiredPitch = fVar4 + desiredPitch;
               }
-              else if ((local_14 <= -5.0) || (5.0 <= local_14)) {
+              else if ((heightDiff <= -5.0) || (5.0 <= heightDiff)) {
                 fVar4 = flrand(7.0,10.0);
-                local_18 = fVar4 + local_18;
+                desiredPitch = fVar4 + desiredPitch;
               }
               else {
                 fVar4 = flrand(10.0,13.0);
-                local_18 = fVar4 + local_18;
+                desiredPitch = fVar4 + desiredPitch;
               }
-              bVar1 = Bot_GrenadeSightTrace(param_2,(float)local_c->iProjectileSpeed,local_18);
+              bVar1 = Bot_GrenadeSightTrace(bot,(float)weapDef->iProjectileSpeed,desiredPitch);
               if (bVar1) {
-                *(float *)&param_1->flags = local_18;
-                param_1->weaponDelayEndTime = 0;
-                bitarray<51>::resetBit(&param_3->button_bits,0xb);
-                if (local_1c == OFFHAND_SLOT_LETHAL_GRENADE) {
-                  *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                       *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x400;
-                  bitarray<51>::setBit(&param_3->button_bits,0xe);
+                *(float *)&botInfo->flags = desiredPitch;
+                botInfo->weaponDelayEndTime = 0;
+                bitarray<51>::resetBit(&cmd->button_bits,0xb);
+                if (offhandSlot == OFFHAND_SLOT_LETHAL_GRENADE) {
+                  *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                       *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x400;
+                  bitarray<51>::setBit(&cmd->button_bits,0xe);
                 }
                 else {
-                  *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-                       *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) | 0x800;
-                  bitarray<51>::setBit(&param_3->button_bits,0xf);
+                  *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+                       *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) | 0x800;
+                  bitarray<51>::setBit(&cmd->button_bits,0xf);
                 }
                 DVar2 = GetCurrentThreadId();
                 if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3259,7 +3321,7 @@ bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercm
                 local_29 = true;
               }
               else {
-                param_1->scriptGoalRadius = (float)(svs.time + 2000);
+                botInfo->scriptGoalRadius = (float)(svs.time + 2000);
                 DVar2 = GetCurrentThreadId();
                 if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                   _D3DPERF_EndEvent_0();
@@ -3284,7 +3346,7 @@ bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercm
           }
         }
         else {
-          param_1->scriptGoalRadius = (float)(svs.time + 2000);
+          botInfo->scriptGoalRadius = (float)(svs.time + 2000);
           DVar2 = GetCurrentThreadId();
           if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
@@ -3301,22 +3363,20 @@ bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercm
       }
     }
     else {
-      fVar4 = AngleNormalize180(local_10->viewangles[0] - *(float *)&param_1->flags);
+      fVar4 = AngleNormalize180(ps->viewangles[0] - *(float *)&botInfo->flags);
       bitarray<51>::setBit
-                (&param_3->button_bits,0xf - (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x400) != 0)
-                );
-      if ((((fVar4 < 5.0) && (-5.0 < fVar4)) && (0x15 < local_10->weaponstate)) &&
-         (((0 < local_10->damageCount || (local_c->bCookOffHold == false)) ||
-          (iVar3 = irand(0x6a4,0x9c4), local_10->grenadeTimeLeft <= iVar3)))) {
+                (&cmd->button_bits,0xf - (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x400) != 0));
+      if ((((fVar4 < 5.0) && (-5.0 < fVar4)) && (0x15 < ps->weaponstate)) &&
+         (((0 < ps->damageCount || (weapDef->bCookOffHold == false)) ||
+          (iVar3 = irand(0x6a4,0x9c4), ps->grenadeTimeLeft <= iVar3)))) {
         bitarray<51>::resetBit
-                  (&param_3->button_bits,
-                   0xf - (((uint)param_1[1].path.pts[0].fDir2D[1] & 0x400) != 0));
-        *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-             *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xfbff;
-        *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) =
-             *(ushort *)(param_1[1].path.pts[0].fDir2D + 1) & 0xf7ff;
+                  (&cmd->button_bits,0xf - (((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x400) != 0));
+        *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+             *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xfbff;
+        *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) =
+             *(ushort *)(botInfo[1].path.pts[0].fDir2D + 1) & 0xf7ff;
       }
-      bitarray<51>::resetBit(&param_3->button_bits,0xb);
+      bitarray<51>::resetBit(&cmd->button_bits,0xb);
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -3336,106 +3396,109 @@ bool __cdecl Bot_UpdateGrenadeThrow(bot_info_t *param_1,client_t *param_2,usercm
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_UpdateCombat(bot_info_t *param_1,client_t *param_2,usercmd_s *param_3)
+void __cdecl Bot_UpdateCombat(bot_info_t *botInfo,client_t *bot,usercmd_s *cmd)
 
 {
   float *pfVar1;
   gentity_s *pgVar2;
   bool bVar3;
-  playerState_s *ppVar4;
-  DWORD DVar5;
-  WeaponDef *pWVar6;
-  int iVar7;
-  float fVar8;
+  playerState_s *ps_00;
+  DWORD DVar4;
+  WeaponDef *pWVar5;
+  int iVar6;
+  float fVar7;
+  PIXProfile pixProfile;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
   PIXBeginNamedEvent(-1,"Bot_UpdateCombat");
-  ppVar4 = G_GetPlayerState((param_2->gentity->s).number);
-  bVar3 = Bot_IsFlashbanged(param_2);
+  ps_00 = G_GetPlayerState((bot->gentity->s).number);
+  bVar3 = Bot_IsFlashbanged(bot);
   if (bVar3) {
-    fVar8 = random();
-    if (fVar8 < 0.01) {
-      bitarray<51>::setBit(&param_3->button_bits,2);
+    fVar7 = random();
+    if (fVar7 < 0.01) {
+      bitarray<51>::setBit(&cmd->button_bits,2);
     }
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if ((ppVar4->throwBackGrenadeTimeLeft < 1) || (fVar8 = random(), 0.9 <= fVar8)) {
-    bVar3 = Bot_UpdateGrenadeThrow(param_1,param_2,param_3);
+  else if ((ps_00->throwBackGrenadeTimeLeft < 1) || (fVar7 = random(), 0.9 <= fVar7)) {
+    bVar3 = Bot_UpdateGrenadeThrow(botInfo,bot,cmd);
     if (bVar3) {
-      DVar5 = GetCurrentThreadId();
-      if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar4 = GetCurrentThreadId();
+      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
-    else if (param_1->pitchEndTime == 0) {
-      if (((param_1->threat).enemy)->health < 1) {
-        DVar5 = GetCurrentThreadId();
-        if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    else if (botInfo->pitchEndTime == 0) {
+      if (((botInfo->threat).enemy)->health < 1) {
+        DVar4 = GetCurrentThreadId();
+        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
-        bVar3 = Bot_UpdateMelee(param_1,param_2,param_3);
+        bVar3 = Bot_UpdateMelee(botInfo,bot,cmd);
         if (bVar3) {
-          DVar5 = GetCurrentThreadId();
-          if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          DVar4 = GetCurrentThreadId();
+          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else if ((sv_botsPressAttackBtn->current).enabled == false) {
-          DVar5 = GetCurrentThreadId();
-          if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          DVar4 = GetCurrentThreadId();
+          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else {
-          pWVar6 = BG_GetWeaponDef((uint)ppVar4->weapon);
-          if ((((uint)param_1[1].path.pts[0].fDir2D[1] & 0x20) != 0) ||
-             ((pWVar6->bDualWield == false &&
-              (ppVar4->fWeaponPosFrac <= 1.0 && ppVar4->fWeaponPosFrac != 1.0)))) {
-            if ((param_1->threat).distSq <=
+          pWVar5 = BG_GetWeaponDef((uint)ps_00->weapon);
+          if ((((uint)botInfo[1].path.pts[0].fDir2D[1] & 0x20) != 0) ||
+             ((pWVar5->bDualWield == false &&
+              (ps_00->fWeaponPosFrac <= 1.0 && ps_00->fWeaponPosFrac != 1.0)))) {
+            if ((botInfo->threat).distSq <=
                 (sv_botCloseDistance->current).value * (sv_botCloseDistance->current).value) {
-              (param_1->threat).reactionEndTime = svs.time;
+              (botInfo->threat).reactionEndTime = svs.time;
             }
             else {
-              iVar7 = irand((sv_botMinReactionTime->current).integer,
+              iVar6 = irand((sv_botMinReactionTime->current).integer,
                             (sv_botMaxReactionTime->current).integer);
-              (param_1->threat).reactionEndTime = iVar7 + svs.time;
+              (botInfo->threat).reactionEndTime = iVar6 + svs.time;
             }
           }
-          if (svs.time < (param_1->threat).reactionEndTime) {
-            DVar5 = GetCurrentThreadId();
-            if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          if (svs.time < (botInfo->threat).reactionEndTime) {
+            DVar4 = GetCurrentThreadId();
+            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
           else {
-            iVar7 = BG_WeaponAmmo(ppVar4,(uint)ppVar4->weapon);
-            if (iVar7 == 0) {
-              DVar5 = GetCurrentThreadId();
-              if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+            iVar6 = BG_WeaponAmmo(ps_00,(uint)ps_00->weapon);
+            if (iVar6 == 0) {
+              DVar4 = GetCurrentThreadId();
+              if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
             }
-            else if (((pWVar6->fireType == WEAPON_FIRETYPE_FULLAUTO) ||
-                     (pWVar6->fireType == WEAPON_FIRETYPE_MINIGUN)) ||
-                    ((int)param_1->scriptGoal[1] <= svs.time)) {
-              pgVar2 = (param_1->threat).enemy;
+            else if (((pWVar5->fireType == WEAPON_FIRETYPE_FULLAUTO) ||
+                     (pWVar5->fireType == WEAPON_FIRETYPE_MINIGUN)) ||
+                    ((int)botInfo->scriptGoal[1] <= svs.time)) {
+              pgVar2 = (botInfo->threat).enemy;
               if ((pgVar2 == (gentity_s *)0x0) || (pgVar2->scr_vehicle == (scr_vehicle_s *)0x0)) {
                 bVar3 = false;
               }
               else {
                 bVar3 = true;
               }
-              if ((bVar3) && (pWVar6->lockOnSpeed != 0)) {
-                if (((param_1->threat).acquireTime == 0) && (1.0 <= ppVar4->fWeaponPosFrac)) {
-                  (param_1->threat).acquireTime = svs.time;
+              if ((bVar3) && (pWVar5->lockOnSpeed != 0)) {
+                if (((botInfo->threat).acquireTime == 0) && (1.0 <= ps_00->fWeaponPosFrac)) {
+                  (botInfo->threat).acquireTime = svs.time;
                 }
-                if (svs.time - (param_1->threat).acquireTime < pWVar6->lockOnSpeed + 500) {
-                  DVar5 = GetCurrentThreadId();
-                  if (DVar5 != (DWORD)g_DXDeviceThread) {
+                if (svs.time - (botInfo->threat).acquireTime < pWVar5->lockOnSpeed + 500) {
+                  DVar4 = GetCurrentThreadId();
+                  if (DVar4 != (DWORD)g_DXDeviceThread) {
                     return;
                   }
                   if (g_DXDeviceThread._4_4_ != 0) {
@@ -3444,24 +3507,24 @@ void __cdecl Bot_UpdateCombat(bot_info_t *param_1,client_t *param_2,usercmd_s *p
                   _D3DPERF_EndEvent_0();
                   return;
                 }
-                (param_1->threat).acquireTime = svs.time;
-                bitarray<51>::setBit(&param_3->button_bits,0);
+                (botInfo->threat).acquireTime = svs.time;
+                bitarray<51>::setBit(&cmd->button_bits,0);
               }
-              if (ppVar4->weaponstate == 0) {
+              if (ps_00->weaponstate == 0) {
                 if ((sv_botsForceFragOnly->current).enabled == false) {
                   if ((sv_botsForceSpecialOnly->current).enabled == false) {
-                    fVar8 = random();
-                    if ((fVar8 < 0.005) || ((sv_botsForceFragOnly->current).enabled != false)) {
-                      bitarray<51>::setBit(&param_3->button_bits,0xe);
+                    fVar7 = random();
+                    if ((fVar7 < 0.005) || ((sv_botsForceFragOnly->current).enabled != false)) {
+                      bitarray<51>::setBit(&cmd->button_bits,0xe);
                     }
                     else {
-                      fVar8 = random();
-                      if ((fVar8 < 0.005) || ((sv_botsForceSpecialOnly->current).enabled != false))
+                      fVar7 = random();
+                      if ((fVar7 < 0.005) || ((sv_botsForceSpecialOnly->current).enabled != false))
                       {
-                        bitarray<51>::setBit(&param_3->button_bits,0xf);
+                        bitarray<51>::setBit(&cmd->button_bits,0xf);
                       }
                       else {
-                        pgVar2 = (param_1->threat).enemy;
+                        pgVar2 = (botInfo->threat).enemy;
                         if ((pgVar2 == (gentity_s *)0x0) ||
                            (pgVar2->pTurretInfo == (TurretInfo *)0x0)) {
                           bVar3 = false;
@@ -3470,10 +3533,10 @@ void __cdecl Bot_UpdateCombat(bot_info_t *param_1,client_t *param_2,usercmd_s *p
                           bVar3 = true;
                         }
                         if (((!bVar3) ||
-                            (pfVar1 = &(param_1->threat).distSq,
+                            (pfVar1 = &(botInfo->threat).distSq,
                             4194304.0 < *pfVar1 || *pfVar1 == 4194304.0)) ||
-                           (fVar8 = random(), 0.05 <= fVar8)) {
-                          pgVar2 = (param_1->threat).enemy;
+                           (fVar7 = random(), 0.05 <= fVar7)) {
+                          pgVar2 = (botInfo->threat).enemy;
                           if ((pgVar2 == (gentity_s *)0x0) ||
                              (pgVar2->pTurretInfo == (TurretInfo *)0x0)) {
                             bVar3 = false;
@@ -3482,61 +3545,61 @@ void __cdecl Bot_UpdateCombat(bot_info_t *param_1,client_t *param_2,usercmd_s *p
                             bVar3 = true;
                           }
                           if (((!bVar3) ||
-                              (pfVar1 = &(param_1->threat).distSq,
+                              (pfVar1 = &(botInfo->threat).distSq,
                               4194304.0 < *pfVar1 || *pfVar1 == 4194304.0)) ||
-                             (fVar8 = random(), 0.05 <= fVar8)) {
-                            bVar3 = bitarray<51>::testBit(&param_3->button_bits,0xb);
-                            if ((!bVar3) || (ppVar4->fWeaponPosFrac < 1.0)) {
-                              bVar3 = bitarray<51>::testBit(&param_3->button_bits,0xb);
+                             (fVar7 = random(), 0.05 <= fVar7)) {
+                            bVar3 = bitarray<51>::testBit(&cmd->button_bits,0xb);
+                            if ((!bVar3) || (ps_00->fWeaponPosFrac < 1.0)) {
+                              bVar3 = bitarray<51>::testBit(&cmd->button_bits,0xb);
                               if ((!bVar3) &&
-                                 ((bitarray<51>::setBit(&param_3->button_bits,0),
-                                  pWVar6->bDualWield != false && (fVar8 = random(), fVar8 < 0.9))))
+                                 ((bitarray<51>::setBit(&cmd->button_bits,0),
+                                  pWVar5->bDualWield != false && (fVar7 = random(), fVar7 < 0.9))))
                               {
-                                bitarray<51>::setBit(&param_3->button_bits,0x18);
+                                bitarray<51>::setBit(&cmd->button_bits,0x18);
                               }
                             }
                             else {
-                              bitarray<51>::setBit(&param_3->button_bits,0);
+                              bitarray<51>::setBit(&cmd->button_bits,0);
                             }
                           }
                           else {
-                            bitarray<51>::setBit(&param_3->button_bits,0xe);
+                            bitarray<51>::setBit(&cmd->button_bits,0xe);
                           }
                         }
                         else {
-                          bitarray<51>::setBit(&param_3->button_bits,0xf);
+                          bitarray<51>::setBit(&cmd->button_bits,0xf);
                         }
                       }
                     }
                   }
                   else {
-                    fVar8 = random();
-                    if (fVar8 < 0.01) {
-                      bitarray<51>::setBit(&param_3->button_bits,0xf);
+                    fVar7 = random();
+                    if (fVar7 < 0.01) {
+                      bitarray<51>::setBit(&cmd->button_bits,0xf);
                     }
                   }
                 }
                 else {
-                  fVar8 = random();
-                  if (fVar8 < 0.01) {
-                    bitarray<51>::setBit(&param_3->button_bits,0xe);
+                  fVar7 = random();
+                  if (fVar7 < 0.01) {
+                    bitarray<51>::setBit(&cmd->button_bits,0xe);
                   }
                 }
               }
-              bVar3 = bitarray<51>::testBit(&param_3->button_bits,0);
+              bVar3 = bitarray<51>::testBit(&cmd->button_bits,0);
               if (bVar3) {
-                iVar7 = irand((sv_botMinFireTime->current).integer,
+                iVar6 = irand((sv_botMinFireTime->current).integer,
                               (sv_botMaxFireTime->current).integer);
-                param_1->scriptGoal[1] = (float)(iVar7 + svs.time);
+                botInfo->scriptGoal[1] = (float)(iVar6 + svs.time);
               }
-              DVar5 = GetCurrentThreadId();
-              if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+              DVar4 = GetCurrentThreadId();
+              if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
             }
             else {
-              DVar5 = GetCurrentThreadId();
-              if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+              DVar4 = GetCurrentThreadId();
+              if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
             }
@@ -3545,19 +3608,19 @@ void __cdecl Bot_UpdateCombat(bot_info_t *param_1,client_t *param_2,usercmd_s *p
       }
     }
     else {
-      DVar5 = GetCurrentThreadId();
-      if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar4 = GetCurrentThreadId();
+      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
   }
   else {
-    bitarray<51>::resetBit(&param_3->button_bits,0);
-    bitarray<51>::resetBit(&param_3->button_bits,0xb);
-    bitarray<51>::resetBit(&param_3->button_bits,1);
-    bitarray<51>::setBit(&param_3->button_bits,0xe);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    bitarray<51>::resetBit(&cmd->button_bits,0);
+    bitarray<51>::resetBit(&cmd->button_bits,0xb);
+    bitarray<51>::resetBit(&cmd->button_bits,1);
+    bitarray<51>::setBit(&cmd->button_bits,0xe);
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -3572,14 +3635,15 @@ void __cdecl Bot_UpdateCombat(bot_info_t *param_1,client_t *param_2,usercmd_s *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_Clear(bot_info_t *param_1)
+void __cdecl Bot_Clear(bot_info_t *botInfo)
 
 {
   DWORD DVar1;
   path_t *in_stack_fffffff0;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"Bot_Clear");
-  memset((uchar *)param_1,'\0',0x460);
+  memset((uchar *)botInfo,'\0',0x460);
   Path_Clear(in_stack_fffffff0);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3591,19 +3655,20 @@ void __cdecl Bot_Clear(bot_info_t *param_1)
 
 // 006F9310  SV_BotSwitchWeapon  (server_mp/sv_bot_mp.cpp:2775)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_BotSwitchWeapon(client_t *param_1,int param_2)
+void __cdecl SV_BotSwitchWeapon(client_t *bot,int weapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
+  bot_info_t *botInfo;
   
-  if (param_1->bIsTestClient == 0) {
+  if (bot->bIsTestClient == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xad8,0,
                              "%s");
     if (!bVar2) {
@@ -3612,7 +3677,7 @@ void __cdecl SV_BotSwitchWeapon(client_t *param_1,int param_2)
       return;
     }
   }
-  *(int *)(botInfos + (param_1->gentity->s).number * 0x460 + 0x420) = param_2;
+  *(int *)(botInfos + (bot->gentity->s).number * 0x460 + 0x420) = weapIndex;
   return;
 }
 
@@ -3625,14 +3690,15 @@ void __cdecl SV_BotSwitchWeapon(client_t *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BotSetScriptGoal(client_t *param_1,float *param_2,float param_3)
+void __cdecl SV_BotSetScriptGoal(client_t *bot,float *goal,float goalRadius)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bot_info_t *botInfo;
   
-  if (param_1->bIsTestClient == 0) {
+  if (bot->bIsTestClient == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xae0,0,
                              "%s");
     if (!bVar2) {
@@ -3641,11 +3707,11 @@ void __cdecl SV_BotSetScriptGoal(client_t *param_1,float *param_2,float param_3)
       return;
     }
   }
-  iVar3 = (param_1->gentity->s).number * 0x460;
-  *(float *)(botInfos + iVar3 + 0x44c) = *param_2;
-  *(float *)(botInfos + iVar3 + 0x450) = param_2[1];
-  *(float *)(botInfos + iVar3 + 0x454) = param_2[2];
-  *(float *)(botInfos + iVar3 + 0x458) = param_3;
+  iVar3 = (bot->gentity->s).number * 0x460;
+  *(float *)(botInfos + iVar3 + 0x44c) = *goal;
+  *(float *)(botInfos + iVar3 + 0x450) = goal[1];
+  *(float *)(botInfos + iVar3 + 0x454) = goal[2];
+  *(float *)(botInfos + iVar3 + 0x458) = goalRadius;
   *(ushort *)(botInfos + iVar3 + 0x45c) = *(ushort *)(botInfos + iVar3 + 0x45c) | 4;
   return;
 }
@@ -3653,20 +3719,22 @@ void __cdecl SV_BotSetScriptGoal(client_t *param_1,float *param_2,float param_3)
 
 // 006F9420  SV_BotClearScriptGoal  (server_mp/sv_bot_mp.cpp:2794)
 
+/* WARNING: Variable defined which should be unmapped: botInfo */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BotClearScriptGoal(client_t *param_1)
+void __cdecl SV_BotClearScriptGoal(client_t *bot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bot_info_t *botInfo;
   
-  if (param_1->bIsTestClient == 0) {
+  if (bot->bIsTestClient == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xaeb,0,
                              "%s");
     if (!bVar2) {
@@ -3675,7 +3743,7 @@ void __cdecl SV_BotClearScriptGoal(client_t *param_1)
       return;
     }
   }
-  iVar3 = (param_1->gentity->s).number * 0x460;
+  iVar3 = (bot->gentity->s).number * 0x460;
   *(ushort *)(botInfos + iVar3 + 0x45c) = *(ushort *)(botInfos + iVar3 + 0x45c) & 0xfffb;
   Path_Clear((path_t *)(botInfos + iVar3));
   return;
@@ -3690,23 +3758,24 @@ void __cdecl SV_BotClearScriptGoal(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BotSetScriptEnemy(client_t *param_1,gentity_s *param_2)
+void __cdecl SV_BotSetScriptEnemy(client_t *bot,gentity_s *enemy)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bot_info_t *botInfo;
   
-  if ((param_1->bIsTestClient == 0) &&
+  if ((bot->bIsTestClient == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xaf4,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = (param_1->gentity->s).number * 0x460;
-  if (((param_2 != (gentity_s *)0x0) && ((param_2->r).inuse != '\0')) && (0 < param_2->health)) {
-    *(gentity_s **)(botInfos + iVar3 + 1000) = param_2;
+  iVar3 = (bot->gentity->s).number * 0x460;
+  if (((enemy != (gentity_s *)0x0) && ((enemy->r).inuse != '\0')) && (0 < enemy->health)) {
+    *(gentity_s **)(botInfos + iVar3 + 1000) = enemy;
     *(int *)(botInfos + iVar3 + 0x3f4) = svs.time;
     *(ushort *)(botInfos + iVar3 + 0x45c) = *(ushort *)(botInfos + iVar3 + 0x45c) | 8;
   }
@@ -3716,21 +3785,22 @@ void __cdecl SV_BotSetScriptEnemy(client_t *param_1,gentity_s *param_2)
 
 // 006F9550  SV_BotClearScriptEnemy  (server_mp/sv_bot_mp.cpp:2829)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: botInfo */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_BotClearScriptEnemy(client_t *param_1)
+void __cdecl SV_BotClearScriptEnemy(client_t *bot)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  bot_info_t *pbVar4;
+  bot_info_t *botInfo;
   
-  if (param_1->bIsTestClient == 0) {
+  if (bot->bIsTestClient == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xb0e,0,
                              "%s");
     if (!bVar2) {
@@ -3739,12 +3809,11 @@ void __cdecl SV_BotClearScriptEnemy(client_t *param_1)
       return;
     }
   }
-  iVar3 = (param_1->gentity->s).number * 0x460;
-  pbVar4 = (bot_info_t *)(botInfos + iVar3);
+  iVar3 = (bot->gentity->s).number * 0x460;
   *(ushort *)(botInfos + iVar3 + 0x45c) = *(ushort *)(botInfos + iVar3 + 0x45c) & 0xfff7;
-  Bot_ClearThreat(pbVar4);
-  Path_Clear(&pbVar4->path);
-  pbVar4->pitchEndTime = -1;
+  Bot_ClearThreat((bot_info_t *)(botInfos + iVar3));
+  Path_Clear((path_t *)(botInfos + iVar3));
+  *(undefined4 *)(botInfos + iVar3 + 0x424) = 0xffffffff;
   return;
 }
 
@@ -3757,13 +3826,14 @@ void __cdecl SV_BotClearScriptEnemy(client_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BotPressUseButton(client_t *param_1,int param_2)
+void __cdecl SV_BotPressUseButton(client_t *bot,int msec)
 
 {
   code *pcVar1;
   bool bVar2;
+  bot_info_t *botInfo;
   
-  if (param_1->bIsTestClient == 0) {
+  if (bot->bIsTestClient == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xb1a,0,
                              "%s");
     if (!bVar2) {
@@ -3772,35 +3842,36 @@ void __cdecl SV_BotPressUseButton(client_t *param_1,int param_2)
       return;
     }
   }
-  *(int *)(botInfos + (param_1->gentity->s).number * 0x460 + 0x438) = svs.time + param_2;
+  *(int *)(botInfos + (bot->gentity->s).number * 0x460 + 0x438) = svs.time + msec;
   return;
 }
 
 
 // 006F96C0  SV_BotSetAttacker  (server_mp/sv_bot_mp.cpp:2849)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_BotSetAttacker(client_t *param_1,gentity_s *param_2)
+void __cdecl SV_BotSetAttacker(client_t *bot,gentity_s *attacker)
 
 {
   bool bVar1;
   int iVar2;
+  bot_info_t *botInfo;
   
-  iVar2 = (param_1->gentity->s).number * 0x460;
-  if ((((param_2 == (gentity_s *)0x0) || ((param_2->s).number == 0x3ff)) ||
-      ((param_2->s).number == 0x3fe)) || ((param_2->r).inuse == '\0')) {
+  iVar2 = (bot->gentity->s).number * 0x460;
+  if ((((attacker == (gentity_s *)0x0) || ((attacker->s).number == 0x3ff)) ||
+      ((attacker->s).number == 0x3fe)) || ((attacker->r).inuse == '\0')) {
     bVar1 = false;
   }
   else {
     bVar1 = true;
   }
   if (bVar1) {
-    *(gentity_s **)(botInfos + iVar2 + 0x428) = param_2;
+    *(gentity_s **)(botInfos + iVar2 + 0x428) = attacker;
   }
   else {
     *(undefined4 *)(botInfos + iVar2 + 0x428) = 0;
@@ -3817,35 +3888,39 @@ void __cdecl SV_BotSetAttacker(client_t *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BotThink(client_t *param_1,usercmd_s *param_2)
+void __cdecl SV_BotThink(client_t *bot,usercmd_s *cmd)
 
 {
   code *pcVar1;
   float10 fVar2;
   bool bVar3;
-  char *pcVar4;
-  uint uVar5;
+  char *Name;
+  uint clientNum_00;
+  int iVar4;
+  bot_info_t *botInfo_00;
+  DWORD DVar5;
   int iVar6;
-  bot_info_t *pbVar7;
-  DWORD DVar8;
-  int iVar9;
-  usercmd_s *puVar10;
-  usercmd_s *puVar11;
-  float10 fVar12;
+  usercmd_s *puVar7;
+  usercmd_s *puVar8;
+  float10 fVar9;
   int local_58;
   int local_1c;
+  PIXProfile pixProfile;
+  bot_info_t *botInfo;
+  int clientNum;
+  float sin;
   
-  pcVar4 = va("SV_BotThink \'%s\'");
-  PIXBeginNamedEvent(-1,pcVar4);
-  if ((param_1->bIsTestClient == 0) &&
+  Name = va("SV_BotThink \'%s\'");
+  PIXBeginNamedEvent(-1,Name);
+  if ((bot->bIsTestClient == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xb31,0
                                ,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar5 = ((int)param_1 - (int)svs.clients) / 0x84d00;
-  if (((com_maxclients->current).unsignedInt <= uVar5) &&
+  clientNum_00 = ((int)bot - (int)svs.clients) / 0x84d00;
+  if (((com_maxclients->current).unsignedInt <= clientNum_00) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xb34,0
                                ,
                                "clientNum doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -3854,112 +3929,112 @@ void __cdecl SV_BotThink(client_t *param_1,usercmd_s *param_2)
     (*pcVar1)();
     return;
   }
-  iVar6 = uVar5 * 0x460;
-  pbVar7 = (bot_info_t *)(botInfos + iVar6);
-  puVar10 = &param_1->lastUsercmd;
-  puVar11 = param_2;
-  for (iVar9 = 0xd; iVar9 != 0; iVar9 = iVar9 + -1) {
-    puVar11->serverTime = puVar10->serverTime;
-    puVar10 = (usercmd_s *)&puVar10->button_bits;
-    puVar11 = (usercmd_s *)&puVar11->button_bits;
+  iVar4 = clientNum_00 * 0x460;
+  botInfo_00 = (bot_info_t *)(botInfos + iVar4);
+  puVar7 = &bot->lastUsercmd;
+  puVar8 = cmd;
+  for (iVar6 = 0xd; iVar6 != 0; iVar6 = iVar6 + -1) {
+    puVar8->serverTime = puVar7->serverTime;
+    puVar7 = (usercmd_s *)&puVar7->button_bits;
+    puVar8 = (usercmd_s *)&puVar8->button_bits;
   }
   for (local_1c = 0; local_1c < 2; local_1c = local_1c + 1) {
-    (param_2->button_bits).array[local_1c] = 0;
+    (cmd->button_bits).array[local_1c] = 0;
   }
-  if (param_1->gentity == (gentity_s *)0x0) {
-    DVar8 = GetCurrentThreadId();
-    if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  if (bot->gentity == (gentity_s *)0x0) {
+    DVar5 = GetCurrentThreadId();
+    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    iVar9 = G_GetClientArchiveTime(uVar5);
-    if (iVar9 == 0) {
-      if ((param_1->lastUsercmd).serverTime < 1) {
-        Bot_Clear(pbVar7);
-        iVar9 = Com_HashString(param_1->name,0);
-        if (iVar9 == 0x306eb8ff) {
-          (param_1->gentity->client->sess).cs.score.kills = 1;
+    iVar6 = G_GetClientArchiveTime(clientNum_00);
+    if (iVar6 == 0) {
+      if ((bot->lastUsercmd).serverTime < 1) {
+        Bot_Clear(botInfo_00);
+        iVar6 = Com_HashString(bot->name,0);
+        if (iVar6 == 0x306eb8ff) {
+          (bot->gentity->client->sess).cs.score.kills = 1;
         }
       }
-      if (param_1->gentity->health < 1) {
-        Bot_Clear(pbVar7);
-        DVar8 = GetCurrentThreadId();
-        if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      if (bot->gentity->health < 1) {
+        Bot_Clear(botInfo_00);
+        DVar5 = GetCurrentThreadId();
+        if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
         if (1e-06 < ABS(botFov - (sv_botFov->current).value)) {
           botFov = (sv_botFov->current).value;
-          fVar12 = (float10)(botFov * 0.5 * 0.017453292);
-          fVar2 = (float10)fcos(fVar12);
-          fsin(fVar12);
+          fVar9 = (float10)(botFov * 0.5 * 0.017453292);
+          fVar2 = (float10)fcos(fVar9);
+          fsin(fVar9);
           g_botFovCos = (float)fVar2;
         }
-        param_2->serverTime = svs.time;
-        Bot_UpdateTimedAction((int *)(botInfos + iVar6 + 0x42c));
-        Bot_UpdateTimedAction((int *)(botInfos + iVar6 + 0x430));
-        Bot_UpdateTimedAction((int *)(botInfos + iVar6 + 0x434));
-        Bot_UpdateTimedAction((int *)(botInfos + iVar6 + 0x438));
-        if ((param_1->gentity->client->flags & 4U) == 0) {
-          Bot_UpdateWeapon(pbVar7,param_1,param_2);
-          Bot_UpdateThreat(pbVar7,param_1);
-          Bot_UpdateSight(pbVar7,param_1);
-          Bot_UpdateMovement(pbVar7,param_1,param_2);
-          Bot_UpdateCombat(pbVar7,param_1,param_2);
-          Bot_UpdateReload(pbVar7,param_1,param_2);
-          Bot_UpdateGlassSmash(param_1,param_2);
-          if (*(int *)(botInfos + iVar6 + 0x438) != 0) {
+        cmd->serverTime = svs.time;
+        Bot_UpdateTimedAction((int *)(botInfos + iVar4 + 0x42c));
+        Bot_UpdateTimedAction((int *)(botInfos + iVar4 + 0x430));
+        Bot_UpdateTimedAction((int *)(botInfos + iVar4 + 0x434));
+        Bot_UpdateTimedAction((int *)(botInfos + iVar4 + 0x438));
+        if ((bot->gentity->client->flags & 4U) == 0) {
+          Bot_UpdateWeapon(botInfo_00,bot,cmd);
+          Bot_UpdateThreat(botInfo_00,bot);
+          Bot_UpdateSight(botInfo_00,bot);
+          Bot_UpdateMovement(botInfo_00,bot,cmd);
+          Bot_UpdateCombat(botInfo_00,bot,cmd);
+          Bot_UpdateReload(botInfo_00,bot,cmd);
+          Bot_UpdateGlassSmash(bot,cmd);
+          if (*(int *)(botInfos + iVar4 + 0x438) != 0) {
             for (local_58 = 0; local_58 < 2; local_58 = local_58 + 1) {
-              (param_2->button_bits).array[local_58] = 0;
+              (cmd->button_bits).array[local_58] = 0;
             }
-            bitarray<51>::setBit(&param_2->button_bits,9);
-            bitarray<51>::setBit(&param_2->button_bits,5);
+            bitarray<51>::setBit(&cmd->button_bits,9);
+            bitarray<51>::setBit(&cmd->button_bits,5);
           }
           if ((sv_botsForceStand->current).enabled != false) {
-            bitarray<51>::resetBit(&param_2->button_bits,9);
-            bitarray<51>::resetBit(&param_2->button_bits,8);
-            bitarray<51>::resetBit(&param_2->button_bits,0xc);
+            bitarray<51>::resetBit(&cmd->button_bits,9);
+            bitarray<51>::resetBit(&cmd->button_bits,8);
+            bitarray<51>::resetBit(&cmd->button_bits,0xc);
           }
           if ((sv_botsForceCrouch->current).enabled != false) {
-            bitarray<51>::setBit(&param_2->button_bits,9);
-            bitarray<51>::resetBit(&param_2->button_bits,8);
-            bitarray<51>::resetBit(&param_2->button_bits,1);
-            bitarray<51>::resetBit(&param_2->button_bits,0x2c);
-            bitarray<51>::resetBit(&param_2->button_bits,0xc);
+            bitarray<51>::setBit(&cmd->button_bits,9);
+            bitarray<51>::resetBit(&cmd->button_bits,8);
+            bitarray<51>::resetBit(&cmd->button_bits,1);
+            bitarray<51>::resetBit(&cmd->button_bits,0x2c);
+            bitarray<51>::resetBit(&cmd->button_bits,0xc);
           }
           if ((sv_botsForceProne->current).enabled != false) {
-            bitarray<51>::setBit(&param_2->button_bits,8);
-            bitarray<51>::resetBit(&param_2->button_bits,9);
-            bitarray<51>::resetBit(&param_2->button_bits,1);
-            bitarray<51>::resetBit(&param_2->button_bits,0x2c);
-            bitarray<51>::resetBit(&param_2->button_bits,0xc);
+            bitarray<51>::setBit(&cmd->button_bits,8);
+            bitarray<51>::resetBit(&cmd->button_bits,9);
+            bitarray<51>::resetBit(&cmd->button_bits,1);
+            bitarray<51>::resetBit(&cmd->button_bits,0x2c);
+            bitarray<51>::resetBit(&cmd->button_bits,0xc);
           }
-          (param_1->header).deltaMessage = (param_1->header).netchan.outgoingSequence + -1;
-          DVar8 = GetCurrentThreadId();
-          if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          (bot->header).deltaMessage = (bot->header).netchan.outgoingSequence + -1;
+          DVar5 = GetCurrentThreadId();
+          if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else {
-          param_2->forwardmove = '\0';
-          param_2->rightmove = '\0';
-          if (*(int *)(botInfos + iVar6 + 0x438) != 0) {
-            bitarray<51>::setBit(&param_2->button_bits,9);
-            bitarray<51>::setBit(&param_2->button_bits,5);
+          cmd->forwardmove = '\0';
+          cmd->rightmove = '\0';
+          if (*(int *)(botInfos + iVar4 + 0x438) != 0) {
+            bitarray<51>::setBit(&cmd->button_bits,9);
+            bitarray<51>::setBit(&cmd->button_bits,5);
           }
-          (param_1->header).deltaMessage = (param_1->header).netchan.outgoingSequence + -1;
-          DVar8 = GetCurrentThreadId();
-          if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          (bot->header).deltaMessage = (bot->header).netchan.outgoingSequence + -1;
+          DVar5 = GetCurrentThreadId();
+          if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
       }
     }
     else {
-      DVar8 = GetCurrentThreadId();
-      if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar5 = GetCurrentThreadId();
+      if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
@@ -4115,39 +4190,38 @@ void __cdecl SV_BotRegisterDvars(void)
 
 // 007027E0  Bot_DrawString  (server_mp/sv_bot_mp.cpp:3042)
 
-void __cdecl
-Bot_DrawString(ScreenPlacement *param_1,char *param_2,float param_3,float *param_4,float *param_5)
+void __cdecl Bot_DrawString(ScreenPlacement *scrPlace,char *text,float x,float *y,float *color)
 
 {
-  CG_DrawDevString(param_1,param_3,*param_4,0.8,0.8,param_2,param_5,5,cgMedia.smallDevFont);
-  *param_4 = *param_4 + 10.0;
+  CG_DrawDevString(scrPlace,x,*y,0.8,0.8,text,color,5,cgMedia.smallDevFont);
+  *y = *y + 10.0;
   return;
 }
 
 
 // 00701AE0  Bot_DrawDebug  (server_mp/sv_bot_mp.cpp:3050)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Bot_DrawDebug(ScreenPlacement *param_1)
+void __cdecl Bot_DrawDebug(ScreenPlacement *scrPlace)
 
 {
-  int iVar1;
+  int clientNum_00;
+  bool bVar1;
   bool bVar2;
-  bool bVar3;
-  playerState_s *ppVar4;
-  char *pcVar5;
-  int *piVar6;
-  int iVar7;
-  float fVar8;
-  float fVar9;
-  float *pfVar10;
+  playerState_s *ps_00;
+  char *pcVar3;
+  int *piVar4;
+  int iVar5;
+  float fVar6;
+  float x_00;
+  float *y_00;
   path_t *in_stack_ffffff30;
-  float *pfVar11;
+  float *pfVar7;
   float *local_cc;
   float *local_c8;
   float *local_c4;
@@ -4170,326 +4244,337 @@ void __cdecl Bot_DrawDebug(ScreenPlacement *param_1)
   float *local_5c;
   float *local_58;
   float *local_50;
-  float local_8;
+  client_t *cl;
+  path_t *path;
+  bool dead;
+  char *name;
+  bot_info_t *botInfo;
+  WeaponVariantDef *weapVariantDef;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  int clientNum;
+  float x;
+  float y;
   
-  iVar1 = (sv_botDebug->current).integer;
-  fVar9 = (sv_botDebugX->current).value;
-  local_8 = (float)(sv_botDebugY->current).integer;
-  if (iVar1 < 0) {
+  clientNum_00 = (sv_botDebug->current).integer;
+  x_00 = (sv_botDebugX->current).value;
+  y = (sv_botDebugY->current).value;
+  if (clientNum_00 < 0) {
     return;
   }
-  piVar6 = (int *)(iVar1 * 0x84d00 + (int)svs.clients);
-  if (*piVar6 != 5) {
+  piVar4 = (int *)(clientNum_00 * 0x84d00 + (int)svs.clients);
+  if (*piVar4 != 5) {
     return;
   }
-  if (piVar6[0x18e44] == 0) {
+  if (piVar4[0x18e44] == 0) {
     return;
   }
-  if (piVar6[0x155b] == 0) {
+  if (piVar4[0x155b] == 0) {
     return;
   }
-  iVar7 = iVar1 * 0x460;
-  ppVar4 = G_GetPlayerState(iVar1);
-  BG_GetWeaponDef((uint)ppVar4->weapon);
-  BG_GetWeaponVariantDef((uint)ppVar4->weapon);
-  bVar2 = *(int *)(piVar6[0x155b] + 0x194) < 1;
-  if (*(int *)(botInfos + iVar7 + 1000) != 0) {
-    if ((*(int *)(botInfos + iVar7 + 1000) == 0) ||
-       (*(int *)(*(int *)(botInfos + iVar7 + 1000) + 0x144) == 0)) {
-      bVar3 = false;
+  iVar5 = clientNum_00 * 0x460;
+  ps_00 = G_GetPlayerState(clientNum_00);
+  BG_GetWeaponDef((uint)ps_00->weapon);
+  BG_GetWeaponVariantDef((uint)ps_00->weapon);
+  bVar1 = *(int *)(piVar4[0x155b] + 0x194) < 1;
+  if (*(int *)(botInfos + iVar5 + 1000) != 0) {
+    if ((*(int *)(botInfos + iVar5 + 1000) == 0) ||
+       (*(int *)(*(int *)(botInfos + iVar5 + 1000) + 0x144) == 0)) {
+      bVar2 = false;
     }
     else {
-      bVar3 = true;
+      bVar2 = true;
     }
-    if (bVar3) goto LAB_00701c74;
+    if (bVar2) goto LAB_00701c74;
   }
-  if (*(int *)(botInfos + iVar7 + 1000) != 0) {
-    SL_ConvertToString((uint)*(ushort *)(*(int *)(botInfos + iVar7 + 1000) + 0x164),
+  if (*(int *)(botInfos + iVar5 + 1000) != 0) {
+    SL_ConvertToString((uint)*(ushort *)(*(int *)(botInfos + iVar5 + 1000) + 0x164),
                        SCRIPTINSTANCE_SERVER);
   }
 LAB_00701c74:
-  Bot_DrawString(param_1,(char *)(piVar6 + 0x155c),fVar9,&local_8,colorMdCyan);
-  Bot_DrawString(param_1,"",fVar9,&local_8,colorWhite);
-  Bot_DrawString(param_1,"MOVEMENT",fVar9,&local_8,colorMdCyan);
-  if (bVar2) {
-    Bot_DrawString(param_1,"STANCE: Dead",fVar9,&local_8,colorRedFaded);
+  Bot_DrawString(scrPlace,(char *)(piVar4 + 0x155c),x_00,&y,colorMdCyan);
+  Bot_DrawString(scrPlace,"",x_00,&y,colorWhite);
+  Bot_DrawString(scrPlace,"MOVEMENT",x_00,&y,colorMdCyan);
+  if (bVar1) {
+    Bot_DrawString(scrPlace,"STANCE: Dead",x_00,&y,colorRedFaded);
   }
   else {
-    switch(ppVar4->viewHeightTarget) {
+    switch(ps_00->viewHeightTarget) {
     case 0xb:
-      Bot_DrawString(param_1,"STANCE: Prone",fVar9,&local_8,colorWhite);
+      Bot_DrawString(scrPlace,"STANCE: Prone",x_00,&y,colorWhite);
       break;
     default:
-      Bot_DrawString(param_1,"STANCE: <Unknown>",fVar9,&local_8,colorWhite);
+      Bot_DrawString(scrPlace,"STANCE: <Unknown>",x_00,&y,colorWhite);
       break;
     case 0x16:
-      Bot_DrawString(param_1,"STANCE: Last Stand",fVar9,&local_8,colorWhite);
+      Bot_DrawString(scrPlace,"STANCE: Last Stand",x_00,&y,colorWhite);
       break;
     case 0x28:
-      Bot_DrawString(param_1,"STANCE: Crouched",fVar9,&local_8,colorWhite);
+      Bot_DrawString(scrPlace,"STANCE: Crouched",x_00,&y,colorWhite);
       break;
     case 0x3c:
-      Bot_DrawString(param_1,"STANCE: Standing",fVar9,&local_8,colorWhite);
+      Bot_DrawString(scrPlace,"STANCE: Standing",x_00,&y,colorWhite);
     }
   }
-  if (bVar2) {
+  if (bVar1) {
     local_50 = colorWhiteFaded;
   }
   else {
     local_50 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("SPRINTING: %s");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_50);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("SPRINTING: %s");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_50);
+  if (bVar1) {
     local_58 = colorWhiteFaded;
   }
   else {
     local_58 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  PM_GetSprintLeft(ppVar4,svs.time);
-  pcVar5 = va("SPRINT TIME LEFT: %d");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_58);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  PM_GetSprintLeft(ps_00,svs.time);
+  pcVar3 = va("SPRINT TIME LEFT: %d");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_58);
+  if (bVar1) {
     local_5c = colorWhiteFaded;
   }
   else {
     local_5c = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("ADS: %s");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_5c);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("ADS: %s");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_5c);
+  if (bVar1) {
     local_64 = colorWhiteFaded;
   }
   else {
     local_64 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("ADS TIME LEFT: %d");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_64);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("ADS TIME LEFT: %d");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_64);
+  if (bVar1) {
     local_6c = colorWhiteFaded;
   }
   else {
     local_6c = colorWhite;
   }
-  Bot_DrawString(param_1,"",fVar9,&local_8,local_6c);
-  Bot_DrawString(param_1,"GOAL",fVar9,&local_8,colorMdCyan);
-  if ((*(ushort *)(botInfos + iVar7 + 0x45c) & 4) == 0) {
-    if ((*(ushort *)(botInfos + iVar7 + 0x45c) & 2) == 0) {
-      if (bVar2) {
+  Bot_DrawString(scrPlace,"",x_00,&y,local_6c);
+  Bot_DrawString(scrPlace,"GOAL",x_00,&y,colorMdCyan);
+  if ((*(ushort *)(botInfos + iVar5 + 0x45c) & 4) == 0) {
+    if ((*(ushort *)(botInfos + iVar5 + 0x45c) & 2) == 0) {
+      if (bVar1) {
         local_78 = colorWhiteFaded;
       }
       else {
         local_78 = colorWhite;
       }
-      Bot_DrawString(param_1,"TYPE: <Threat>",fVar9,&local_8,local_78);
+      Bot_DrawString(scrPlace,"TYPE: <Threat>",x_00,&y,local_78);
     }
     else {
-      if (bVar2) {
+      if (bVar1) {
         local_74 = colorWhiteFaded;
       }
       else {
         local_74 = colorWhite;
       }
-      Bot_DrawString(param_1,"TYPE: <Random Node>",fVar9,&local_8,local_74);
+      Bot_DrawString(scrPlace,"TYPE: <Random Node>",x_00,&y,local_74);
     }
   }
   else {
-    if (bVar2) {
+    if (bVar1) {
       local_70 = colorWhiteFaded;
     }
     else {
       local_70 = colorWhite;
     }
-    Bot_DrawString(param_1,"TYPE: <Script Goal>",fVar9,&local_8,local_70);
+    Bot_DrawString(scrPlace,"TYPE: <Script Goal>",x_00,&y,local_70);
   }
-  if (bVar2) {
+  if (bVar1) {
     local_7c = colorWhiteFaded;
   }
   else {
     local_7c = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("GOAL RADIUS: %.1f");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_7c);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("GOAL RADIUS: %.1f");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_7c);
+  if (bVar1) {
     local_84 = colorWhiteFaded;
   }
   else {
     local_84 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("SIGHT DIST: %.1f");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_84);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("SIGHT DIST: %.1f");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_84);
+  if (bVar1) {
     local_88 = colorWhiteFaded;
   }
   else {
     local_88 = colorWhite;
   }
   Path_Exists(in_stack_ffffff30);
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("LOOK AHEAD DIST: %.1f");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_88);
-  Bot_DrawString(param_1,"",fVar9,&local_8,colorWhite);
-  Bot_DrawString(param_1,"THREAT",fVar9,&local_8,colorMdCyan);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("LOOK AHEAD DIST: %.1f");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_88);
+  Bot_DrawString(scrPlace,"",x_00,&y,colorWhite);
+  Bot_DrawString(scrPlace,"THREAT",x_00,&y,colorMdCyan);
+  if (bVar1) {
     local_90 = colorWhiteFaded;
   }
   else {
     local_90 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("ENEMY: %s");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_90);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("ENEMY: %s");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_90);
+  if (bVar1) {
     local_94 = colorWhiteFaded;
   }
   else {
     local_94 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("ACQUIRE TIME: %d");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_94);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("ACQUIRE TIME: %d");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_94);
+  if (bVar1) {
     local_98 = colorWhiteFaded;
   }
   else {
     local_98 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("LOS: %s");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_98);
-  if ((*(int *)(botInfos + iVar7 + 1000) == 0) || (*(int *)(botInfos + iVar7 + 0x3f8) != svs.time))
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("LOS: %s");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_98);
+  if ((*(int *)(botInfos + iVar5 + 1000) == 0) || (*(int *)(botInfos + iVar5 + 0x3f8) != svs.time))
   {
-    if (bVar2) {
+    if (bVar1) {
       local_a4 = colorWhiteFaded;
     }
     else {
       local_a4 = colorWhite;
     }
-    pfVar11 = &local_8;
-    fVar8 = fVar9;
-    pcVar5 = va("LAST SEEN: %d");
-    Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_a4);
+    pfVar7 = &y;
+    fVar6 = x_00;
+    pcVar3 = va("LAST SEEN: %d");
+    Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_a4);
   }
   else {
-    if (bVar2) {
+    if (bVar1) {
       local_a0 = colorWhiteFaded;
     }
     else {
       local_a0 = colorWhite;
     }
-    Bot_DrawString(param_1,"LAST SEEN: <NOW>",fVar9,&local_8,local_a0);
+    Bot_DrawString(scrPlace,"LAST SEEN: <NOW>",x_00,&y,local_a0);
   }
-  if (bVar2) {
+  if (bVar1) {
     local_ac = colorWhiteFaded;
   }
   else {
     local_ac = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("DISTANCE: %.1f");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_ac);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("DISTANCE: %.1f");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_ac);
+  if (bVar1) {
     local_b4 = colorWhiteFaded;
   }
   else {
     local_b4 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("DOT: %.2f");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_b4);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("DOT: %.2f");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_b4);
+  if (bVar1) {
     local_bc = colorWhiteFaded;
   }
   else {
     local_bc = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("HEALTH: %d");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_bc);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("HEALTH: %d");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_bc);
+  if (bVar1) {
     local_c4 = colorWhiteFaded;
   }
   else {
     local_c4 = colorWhite;
   }
-  Bot_DrawString(param_1,"",fVar9,&local_8,local_c4);
-  Bot_DrawString(param_1,"COMBAT",fVar9,&local_8,colorMdCyan);
-  if (bVar2) {
+  Bot_DrawString(scrPlace,"",x_00,&y,local_c4);
+  Bot_DrawString(scrPlace,"COMBAT",x_00,&y,colorMdCyan);
+  if (bVar1) {
     local_c8 = colorWhiteFaded;
   }
   else {
     local_c8 = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("HEALTH: %d");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_c8);
-  if (bVar2) {
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("HEALTH: %d");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_c8);
+  if (bVar1) {
     local_cc = colorWhiteFaded;
   }
   else {
     local_cc = colorWhite;
   }
-  pfVar11 = &local_8;
-  fVar8 = fVar9;
-  pcVar5 = va("WEAPON: %s");
-  Bot_DrawString(param_1,pcVar5,fVar8,pfVar11,local_cc);
-  if (bVar2) {
-    pfVar11 = colorWhiteFaded;
+  pfVar7 = &y;
+  fVar6 = x_00;
+  pcVar3 = va("WEAPON: %s");
+  Bot_DrawString(scrPlace,pcVar3,fVar6,pfVar7,local_cc);
+  if (bVar1) {
+    pfVar7 = colorWhiteFaded;
   }
   else {
-    pfVar11 = colorWhite;
+    pfVar7 = colorWhite;
   }
-  pfVar10 = &local_8;
-  BG_GetAmmoNotInClip(ppVar4,(uint)ppVar4->weapon);
-  BG_GetAmmoInClip(ppVar4,(uint)ppVar4->weapon);
-  pcVar5 = va("AMMO: %d/%d");
-  Bot_DrawString(param_1,pcVar5,fVar9,pfVar10,pfVar11);
+  y_00 = &y;
+  BG_GetAmmoNotInClip(ps_00,(uint)ps_00->weapon);
+  BG_GetAmmoInClip(ps_00,(uint)ps_00->weapon);
+  pcVar3 = va("AMMO: %d/%d");
+  Bot_DrawString(scrPlace,pcVar3,x_00,y_00,pfVar7);
   return;
 }
 
 
 // 00702920  Bot_DrawPath  (server_mp/sv_bot_mp.cpp:3192)
 
+/* WARNING: Variable defined which should be unmapped: botPath */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_DrawPath(client_t *param_1)
+void __cdecl Bot_DrawPath(client_t *bot)
 
 {
-  bool bVar1;
-  path_t *ppVar2;
+  int iVar1;
+  bool bVar2;
   int unaff_EBP;
+  path_t *botPath;
   
-  if ((((param_1->header).state == 5) && (param_1->bIsTestClient != 0)) &&
-     (0 < param_1->gentity->health)) {
-    ppVar2 = (path_t *)(botInfos + (param_1->gentity->s).number * 0x460);
-    bVar1 = Path_Exists(ppVar2);
-    if (bVar1) {
-      Path_DebugDraw((path_t *)(param_1->gentity->s).number,(float *)0xffffffff,(int)ppVar2,
-                     unaff_EBP);
+  if ((((bot->header).state == 5) && (bot->bIsTestClient != 0)) && (0 < bot->gentity->health)) {
+    iVar1 = (bot->gentity->s).number;
+    bVar2 = Path_Exists((path_t *)(botInfos + iVar1 * 0x460));
+    if (bVar2) {
+      Path_DebugDraw((path_t *)(bot->gentity->s).number,(float *)0xffffffff,
+                     (int)(botInfos + iVar1 * 0x460),unaff_EBP);
     }
   }
   return;
@@ -4510,7 +4595,8 @@ void __cdecl SV_DrawBotPath(void)
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  int local_8;
+  client_t *cl;
+  int clientNum;
   
   if ((sv_botDebugPaths->current).unsignedInt < 0x80000000) {
     if ((sv_botDebugPaths->current).integer < (com_maxclients->current).integer) {
@@ -4527,8 +4613,9 @@ void __cdecl SV_DrawBotPath(void)
       Bot_DrawPath((client_t *)(uVar1 * 0x84d00 + (int)svs.clients));
     }
     else {
-      for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-        Bot_DrawPath((client_t *)(local_8 * 0x84d00 + (int)svs.clients));
+      for (clientNum = 0; clientNum < (com_maxclients->current).integer; clientNum = clientNum + 1)
+      {
+        Bot_DrawPath((client_t *)(clientNum * 0x84d00 + (int)svs.clients));
       }
     }
   }
@@ -4544,7 +4631,7 @@ void __cdecl SV_DrawBotPath(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Bot_DrawThreat(client_t *param_1)
+void __cdecl Bot_DrawThreat(client_t *bot)
 
 {
   gentity_s *pgVar1;
@@ -4584,14 +4671,13 @@ void __cdecl Bot_DrawThreat(client_t *param_1)
   undefined1 *local_18;
   int local_14;
   
-  if ((((param_1->header).state == 5) && (param_1->bIsTestClient != 0)) &&
-     (0 < param_1->gentity->health)) {
-    local_14 = (param_1->gentity->s).number;
+  if ((((bot->header).state == 5) && (bot->bIsTestClient != 0)) && (0 < bot->gentity->health)) {
+    local_14 = (bot->gentity->s).number;
     local_18 = botInfos + local_14 * 0x460;
     local_1c = *(int *)(botInfos + local_14 * 0x460 + 1000);
-    local_20 = G_GetPlayerState((param_1->gentity->s).number);
+    local_20 = G_GetPlayerState((bot->gentity->s).number);
     local_24 = BG_GetWeaponDef((uint)local_20->weapon);
-    pgVar1 = param_1->gentity;
+    pgVar1 = bot->gentity;
     local_28 = (pgVar1->r).currentOrigin;
     local_34 = *local_28;
     local_30 = (pgVar1->r).currentOrigin[1];
@@ -4685,7 +4771,8 @@ void __cdecl SV_DrawBotThreat(void)
   uint uVar1;
   code *pcVar2;
   bool bVar3;
-  int local_8;
+  client_t *cl;
+  int clientNum;
   
   if ((sv_botDebugThreat->current).unsignedInt < 0x80000000) {
     if ((sv_botDebugThreat->current).integer < (com_maxclients->current).integer) {
@@ -4702,8 +4789,9 @@ void __cdecl SV_DrawBotThreat(void)
       Bot_DrawThreat((client_t *)(uVar1 * 0x84d00 + (int)svs.clients));
     }
     else {
-      for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-        Bot_DrawThreat((client_t *)(local_8 * 0x84d00 + (int)svs.clients));
+      for (clientNum = 0; clientNum < (com_maxclients->current).integer; clientNum = clientNum + 1)
+      {
+        Bot_DrawThreat((client_t *)(clientNum * 0x84d00 + (int)svs.clients));
       }
     }
   }
@@ -4719,22 +4807,23 @@ void __cdecl SV_DrawBotThreat(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-client_t * __cdecl Bot_NameUsed(char *param_1)
+client_t * __cdecl Bot_NameUsed(char *name)
 
 {
   client_t *pcVar1;
   int iVar2;
-  int local_c;
+  int i;
+  client_t *cl;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if ((com_maxclients->current).integer <= local_c) {
+    if ((com_maxclients->current).integer <= i) {
       return (client_t *)0x0;
     }
-    pcVar1 = (client_t *)(local_c * 0x84d00 + (int)svs.clients);
+    pcVar1 = (client_t *)(i * 0x84d00 + (int)svs.clients);
     if (((pcVar1->bIsTestClient != 0) && (pcVar1 != (client_t *)0xffffaa90)) &&
-       (iVar2 = I_stricmp(pcVar1->name,param_1), iVar2 == 0)) break;
-    local_c = local_c + 1;
+       (iVar2 = I_stricmp(pcVar1->name,name), iVar2 == 0)) break;
+    i = i + 1;
   }
   return pcVar1;
 }
@@ -4767,27 +4856,27 @@ char * __cdecl SV_BotNameRandom(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Friends_IsInCurrentSession(char *param_1)
+bool __cdecl Friends_IsInCurrentSession(char *name)
 
 {
   int iVar1;
-  client_t *local_30;
-  int local_2c;
-  char local_28 [32];
+  client_t *cl;
+  int i;
+  char cleanName [32];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  SV_SanitizeName(param_1,local_28,0x20);
-  local_2c = 0;
-  local_30 = svs.clients;
+  SV_SanitizeName(name,cleanName,0x20);
+  i = 0;
+  cl = svs.clients;
   while( true ) {
-    if ((com_maxclients->current).integer <= local_2c) {
+    if ((com_maxclients->current).integer <= i) {
       return false;
     }
-    iVar1 = I_stricmp(local_30->name,local_28);
+    iVar1 = I_stricmp(cl->name,cleanName);
     if (iVar1 == 0) break;
-    local_2c = local_2c + 1;
-    local_30 = (client_t *)(local_30[1].userinfo + 0x3d8);
+    i = i + 1;
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
   return true;
 }
@@ -4802,30 +4891,31 @@ bool __cdecl Friends_IsInCurrentSession(char *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl SV_BotNameRandomFriend(int param_1,char *param_2,int param_3)
+bool __cdecl SV_BotNameRandomFriend(int controller,char *buf,int bufLen)
 
 {
   bool bVar1;
-  client_t *pcVar2;
-  int local_d0;
-  FriendInfo local_cc;
+  int iVar2;
+  client_t *pcVar3;
+  int numIteration;
+  FriendInfo friendInfo;
   uint local_14;
-  undefined4 local_10;
-  int local_c;
-  int local_8;
+  int maxIterations;
+  int friendIndex;
+  int friendCount;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = 0x12;
+  maxIterations = 0x12;
   if (((sv_botUseFriendNames->current).enabled != false) &&
-     (local_8 = Friends_GetCount(param_1,0,0), 0 < local_8)) {
-    for (local_d0 = 0; local_d0 < 0x12; local_d0 = local_d0 + 1) {
-      local_c = rand();
-      local_c = local_c % local_8;
-      Friends_GetByIndex(param_1,0,local_c,&local_cc);
-      if ((((local_cc.status & 0x30U) == 0) &&
-          (bVar1 = Friends_IsInCurrentSession(local_cc.name), !bVar1)) &&
-         (pcVar2 = Bot_NameUsed(local_cc.name), pcVar2 == (client_t *)0x0)) {
-        I_strncpyz(param_2,local_cc.name,param_3);
+     (friendCount = Friends_GetCount(controller,0,0), 0 < friendCount)) {
+    for (numIteration = 0; numIteration < 0x12; numIteration = numIteration + 1) {
+      iVar2 = rand();
+      friendIndex = iVar2 % friendCount;
+      Friends_GetByIndex(controller,0,friendIndex,&friendInfo);
+      if ((((friendInfo.status & 0x30U) == 0) &&
+          (bVar1 = Friends_IsInCurrentSession(friendInfo.name), !bVar1)) &&
+         (pcVar3 = Bot_NameUsed(friendInfo.name), pcVar3 == (client_t *)0x0)) {
+        I_strncpyz(buf,friendInfo.name,bufLen);
         return true;
       }
     }
@@ -4842,18 +4932,18 @@ bool __cdecl SV_BotNameRandomFriend(int param_1,char *param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_BotNameUpdate(char *param_1)
+void __cdecl SV_BotNameUpdate(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
-  client_t *pcVar3;
-  char *pcVar4;
+  client_t *cl;
+  char *value;
+  client_t *bot;
   
-  pcVar3 = Bot_NameUsed(param_1);
-  if (pcVar3 != (client_t *)0x0) {
-    if ((com_maxclients->current).unsignedInt <= (uint)(((int)pcVar3 - (int)svs.clients) / 0x84d00))
-    {
+  cl = Bot_NameUsed(name);
+  if (cl != (client_t *)0x0) {
+    if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_bot_mp.cpp",0xdbd,0
                                ,
                                "bot - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -4864,10 +4954,10 @@ void __cdecl SV_BotNameUpdate(char *param_1)
         return;
       }
     }
-    pcVar4 = SV_BotNameRandom();
-    Info_SetValueForKey(pcVar3->userinfo,"name",pcVar4);
-    SV_UserinfoChanged(pcVar3);
-    ClientUserinfoChanged(((int)pcVar3 - (int)svs.clients) / 0x84d00);
+    value = SV_BotNameRandom();
+    Info_SetValueForKey(cl->userinfo,"name",value);
+    SV_UserinfoChanged(cl);
+    ClientUserinfoChanged(((int)cl - (int)svs.clients) / 0x84d00);
   }
   return;
 }

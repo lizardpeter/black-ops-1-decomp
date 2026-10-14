@@ -543,9 +543,9 @@ void __thiscall bdContentStreamingBase::handleHTTPComplete(bdContentStreamingBas
 {
   ushort uVar1;
   uint uVar2;
-  bdReference<bdRemoteTask> bVar3;
-  bdReference<bdAddrHandle> *pbVar4;
-  float fVar5;
+  bdReference<bdRemoteTask> other_3;
+  bdReference<bdAddrHandle> *other_3_00;
+  float fVar3;
   bdReference<bdByteBuffer> local_2c;
   bdReference<bdByteBuffer> local_28;
   uint local_24;
@@ -561,17 +561,17 @@ void __thiscall bdContentStreamingBase::handleHTTPComplete(bdContentStreamingBas
   uVar2 = __security_cookie ^ (uint)&stack0xfffffffc;
   ExceptionList = &local_10;
   if (this->m_operation == 0x65) {
-    fVar5 = bdHTTPWrapper::getTransferSpeed(&this->m_http);
-    local_18 = (double)(fVar5 / 1024.0);
+    fVar3 = bdHTTPWrapper::getTransferSpeed(&this->m_http);
+    local_18 = (double)(fVar3 / 1024.0);
     bdLogMessage(BD_LOG_INFO,"info/","lobby/contentStreamingBase",
                  "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdLobby\\bdContentStreaming\\bdContentStreamingBase.cpp"
                  ,"bdContentStreamingBase::handleHTTPComplete",0x18a,
                  "Uploaded: \"%s\" @ %.2f KB/sec",(this->m_taskData).m_fileName,local_18,uVar2);
-    bVar3 = _postUpload(this);
+    other_3 = _postUpload(this);
     local_8 = 0;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->m_remoteTask,
-               (bdReference<bdAddrHandle> *)bVar3.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_28);
     setState(this,(uint)((this->m_remoteTask).m_ptr == (bdRemoteTask *)0x0) * 2 +
@@ -585,9 +585,10 @@ void __thiscall bdContentStreamingBase::handleHTTPComplete(bdContentStreamingBas
       setState(this,PRE_HTTP_OPERATION,BD_NO_ERROR);
     }
     else {
-      pbVar4 = (bdReference<bdAddrHandle> *)(**(code **)(this->_padding_ + 0xc))();
+      other_3_00 = (bdReference<bdAddrHandle> *)(**(code **)(this->_padding_ + 0xc))();
       local_8 = 1;
-      bdReference<bdAddrHandle>::operator=((bdReference<bdAddrHandle> *)&this->m_remoteTask,pbVar4);
+      bdReference<bdAddrHandle>::operator=
+                ((bdReference<bdAddrHandle> *)&this->m_remoteTask,other_3_00);
       local_8 = 0xffffffff;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_2c);
       setState(this,(uint)((this->m_remoteTask).m_ptr == (bdRemoteTask *)0x0) * 2 +
@@ -597,8 +598,8 @@ void __thiscall bdContentStreamingBase::handleHTTPComplete(bdContentStreamingBas
   else if (this->m_operation == 0x66) {
     local_24 = bdHTTPWrapper::getTransferProgress(&this->m_http);
     local_24 = local_24 >> 10;
-    fVar5 = bdHTTPWrapper::getTransferSpeed(&this->m_http);
-    local_20 = (double)(fVar5 / 1024.0);
+    fVar3 = bdHTTPWrapper::getTransferSpeed(&this->m_http);
+    local_20 = (double)(fVar3 / 1024.0);
     bdLogMessage(BD_LOG_INFO,"info/","lobby/contentStreamingBase",
                  "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdLobby\\bdContentStreaming\\bdContentStreamingBase.cpp"
                  ,"bdContentStreamingBase::handleHTTPComplete",0x1a1,
@@ -953,7 +954,7 @@ void __thiscall bdContentStreamingBase::swapURLInfo(bdContentStreamingBase *this
   int extraout_EAX_00;
   int extraout_EAX_01;
   int extraout_EAX_02;
-  ulong uVar1;
+  ulong count;
   uchar local_31c [384];
   ulong local_19c;
   uint local_194;
@@ -975,10 +976,10 @@ void __thiscall bdContentStreamingBase::swapURLInfo(bdContentStreamingBase *this
         strchr((uchar *)param_1,'\0');
         local_19c = extraout_EAX_01 - local_8;
         strchr((uchar *)this->m_testURLs[local_194 + 1].m_url,'\0');
-        uVar1 = extraout_EAX_02 - (int)this->m_testURLs[local_194 + 1].m_url;
-        memcpy(local_31c,(uchar *)this->m_testURLs[local_194 + 1].m_url,uVar1);
-        memcpy(local_31c + uVar1,(uchar *)(param_1 + local_190),local_19c);
-        local_31c[uVar1 + local_19c] = '\0';
+        count = extraout_EAX_02 - (int)this->m_testURLs[local_194 + 1].m_url;
+        memcpy(local_31c,(uchar *)this->m_testURLs[local_194 + 1].m_url,count);
+        memcpy(local_31c + count,(uchar *)(param_1 + local_190),local_19c);
+        local_31c[count + local_19c] = '\0';
         memcpy((uchar *)param_1,local_31c,0x180);
         return;
       }

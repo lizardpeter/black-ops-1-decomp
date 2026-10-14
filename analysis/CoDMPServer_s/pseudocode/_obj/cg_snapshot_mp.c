@@ -225,95 +225,95 @@ void __cdecl CG_SetInitialSnapshot(int param_1,snapshot_s *param_2)
 void __cdecl CG_TransitionSnapshot(int param_1)
 
 {
+  cg_s *dst;
   cg_s *pcVar1;
-  cg_s *pcVar2;
-  uint uVar3;
-  fake_centity_s *pfVar4;
+  uint uVar2;
+  fake_centity_s *pfVar3;
+  int iVar4;
   int iVar5;
   int iVar6;
-  int iVar7;
   int unaff_ESI;
-  fake_centity_s *pfVar8;
+  fake_centity_s *pfVar7;
   int unaff_EDI;
-  int iVar9;
+  int iVar8;
   int iStack_8;
   int iStack_4;
   
-  pcVar2 = cgArray;
+  pcVar1 = cgArray;
   iStack_8 = 0;
   if (0 < *(int *)(*(int *)(cgArray + 0x28) + 0x26fc)) {
     iStack_4 = 0;
     do {
-      iVar6 = *(int *)(iStack_4 + 0x1e700 + *(int *)(pcVar2 + 0x28)) * 0x5d0;
-      pcVar1 = pcVar2 + iVar6 + 0x5f238;
-      if (*(int *)(pcVar2 + iVar6 + 0x5f23c) == 0) {
-        iVar6 = *(int *)(pcVar1 + 0x53c);
-        memset((uchar *)pcVar1,'\0',0x5d0);
-        *(int *)(pcVar1 + 0x53c) = iVar6;
-        if (*(short *)(iVar6 + 4) != 0) {
-          FUN_006b9320(iVar6,*(short *)(iVar6 + 4));
+      iVar5 = *(int *)(iStack_4 + 0x1e700 + *(int *)(pcVar1 + 0x28)) * 0x5d0;
+      dst = pcVar1 + iVar5 + 0x5f238;
+      if (*(int *)(pcVar1 + iVar5 + 0x5f23c) == 0) {
+        iVar5 = *(int *)(dst + 0x53c);
+        memset((uchar *)dst,'\0',0x5d0);
+        *(int *)(dst + 0x53c) = iVar5;
+        if (*(short *)(iVar5 + 4) != 0) {
+          FUN_006b9320(iVar5,*(short *)(iVar5 + 4));
         }
         CG_SafeDObjFree(unaff_EDI,unaff_ESI);
       }
       else {
-        *(undefined4 *)(pcVar1 + 4) = 0;
+        *(undefined4 *)(dst + 4) = 0;
       }
       iStack_8 = iStack_8 + 1;
       iStack_4 = iStack_4 + 0xd8;
-    } while (iStack_8 < *(int *)(*(int *)(pcVar2 + 0x28) + 0x26fc));
+    } while (iStack_8 < *(int *)(*(int *)(pcVar1 + 0x28) + 0x26fc));
   }
-  iVar6 = param_1 * 0x200;
-  iVar9 = param_1 * 0x65800;
+  iVar5 = param_1 * 0x200;
+  iVar8 = param_1 * 0x65800;
   iStack_4 = 0x200;
   do {
-    pfVar4 = cg_fakeEntitiesArray + iVar9;
+    pfVar3 = cg_fakeEntitiesArray + iVar8;
     if ((*(char *)((int)&cg_fakeEntitiesInuseArray +
-                  iVar6 + (int)(pfVar4 + (param_1 * -0x65800 - (int)cg_fakeEntitiesArray)) / 0x32c)
-         != '\0') && (((byte)*pfVar4 & 4) != 0)) {
-      CG_Free(param_1,*(int *)(pfVar4 + 0x1ec));
+                  iVar5 + (int)(pfVar3 + (param_1 * -0x65800 - (int)cg_fakeEntitiesArray)) / 0x32c)
+         != '\0') && (((byte)*pfVar3 & 4) != 0)) {
+      CG_Free(param_1,*(int *)(pfVar3 + 0x1ec));
     }
-    iVar9 = iVar9 + 0x32c;
+    iVar8 = iVar8 + 0x32c;
     iStack_4 = iStack_4 + -1;
   } while (iStack_4 != 0);
-  iVar9 = *(int *)(pcVar2 + 0x2c);
-  *(int *)(pcVar2 + 0x28) = iVar9;
-  if ((*(byte *)(iVar9 + 0x24) & 6) != 0) {
-    uVar3 = (uint)*(byte *)(iVar9 + 0x140);
-    if (uVar3 < 0x400) {
-      pfVar4 = (fake_centity_s *)((&cg_entitiesArray)[param_1] + uVar3 * 0xca);
+  iVar8 = *(int *)(pcVar1 + 0x2c);
+  *(int *)(pcVar1 + 0x28) = iVar8;
+  if ((*(byte *)(iVar8 + 0x24) & 6) != 0) {
+    uVar2 = (uint)*(byte *)(iVar8 + 0x140);
+    if (uVar2 < 0x400) {
+      pfVar3 = (fake_centity_s *)((&cg_entitiesArray)[param_1] + uVar2 * 0xca);
     }
     else {
-      pfVar4 = cg_fakeEntitiesArray + (iVar6 + uVar3) * 0x32c + -0xcaffc;
+      pfVar3 = cg_fakeEntitiesArray + (iVar5 + uVar2) * 0x32c + -0xcaffc;
     }
-    pfVar8 = pfVar4 + 0x1ec;
-    pfVar4 = pfVar4 + 0x174;
-    for (iVar9 = 0x1d; iVar9 != 0; iVar9 = iVar9 + -1) {
-      *(centity_s **)pfVar4 = *(centity_s **)pfVar8;
-      pfVar8 = pfVar8 + 4;
-      pfVar4 = pfVar4 + 4;
+    pfVar7 = pfVar3 + 0x1ec;
+    pfVar3 = pfVar3 + 0x174;
+    for (iVar8 = 0x1d; iVar8 != 0; iVar8 = iVar8 + -1) {
+      *(centity_s **)pfVar3 = *(centity_s **)pfVar7;
+      pfVar7 = pfVar7 + 4;
+      pfVar3 = pfVar3 + 4;
     }
   }
-  iVar9 = 0;
-  if (0 < *(int *)(*(int *)(pcVar2 + 0x2c) + 0x26f8)) {
-    iVar7 = 0;
+  iVar8 = 0;
+  if (0 < *(int *)(*(int *)(pcVar1 + 0x2c) + 0x26f8)) {
+    iVar6 = 0;
     do {
-      iVar5 = *(int *)(iVar7 + 0x2700 + *(int *)(pcVar2 + 0x2c));
-      if (iVar5 < 0x400) {
-        pfVar4 = (fake_centity_s *)((&cg_entitiesArray)[param_1] + iVar5 * 0xca);
+      iVar4 = *(int *)(iVar6 + 0x2700 + *(int *)(pcVar1 + 0x2c));
+      if (iVar4 < 0x400) {
+        pfVar3 = (fake_centity_s *)((&cg_entitiesArray)[param_1] + iVar4 * 0xca);
       }
       else {
-        pfVar4 = cg_fakeEntitiesArray + (iVar6 + iVar5) * 0x32c + -0xcaffc;
+        pfVar3 = cg_fakeEntitiesArray + (iVar5 + iVar4) * 0x32c + -0xcaffc;
       }
-      pfVar8 = pfVar4 + 0x1ec;
-      pfVar4 = pfVar4 + 0x174;
-      for (iVar5 = 0x1d; iVar5 != 0; iVar5 = iVar5 + -1) {
-        *(centity_s **)pfVar4 = *(centity_s **)pfVar8;
-        pfVar8 = pfVar8 + 4;
-        pfVar4 = pfVar4 + 4;
+      pfVar7 = pfVar3 + 0x1ec;
+      pfVar3 = pfVar3 + 0x174;
+      for (iVar4 = 0x1d; iVar4 != 0; iVar4 = iVar4 + -1) {
+        *(centity_s **)pfVar3 = *(centity_s **)pfVar7;
+        pfVar7 = pfVar7 + 4;
+        pfVar3 = pfVar3 + 4;
       }
-      iVar9 = iVar9 + 1;
-      iVar7 = iVar7 + 0xe0;
-    } while (iVar9 < *(int *)(*(int *)(pcVar2 + 0x2c) + 0x26f8));
+      iVar8 = iVar8 + 1;
+      iVar6 = iVar6 + 0xe0;
+    } while (iVar8 < *(int *)(*(int *)(pcVar1 + 0x2c) + 0x26f8));
   }
   return;
 }

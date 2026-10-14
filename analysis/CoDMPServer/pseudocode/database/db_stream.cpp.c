@@ -2,20 +2,20 @@
 
 // 00595E80  DB_InitStreams  (database/db_stream.cpp:30)
 
-void __cdecl DB_InitStreams(XBlock *param_1)
+void __cdecl DB_InitStreams(XBlock *blocks)
 
 {
-  int local_8;
+  int i;
   
-  g_streamBlocks = param_1;
-  g_streamPos = param_1->data;
+  g_streamBlocks = blocks;
+  g_streamPos = blocks->data;
   g_streamPosIndex = 0;
   g_streamDelayIndex = 0;
   g_streamPosArray[0] = (uchar *)0x0;
   g_streamPosStackIndex = 0;
-  for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-    if (local_8 != 0) {
-      g_streamPosArray[local_8] = param_1[local_8].data;
+  for (i = 0; i < 7; i = i + 1) {
+    if (i != 0) {
+      g_streamPosArray[i] = blocks[i].data;
     }
   }
   return;
@@ -24,14 +24,14 @@ void __cdecl DB_InitStreams(XBlock *param_1)
 
 // 00595FD0  DB_SetStreamIndex  (database/db_stream.cpp:54)
 
-void __cdecl DB_SetStreamIndex(uint param_1)
+void __cdecl DB_SetStreamIndex(uint index)
 
 {
-  if (param_1 != g_streamPosIndex) {
+  if (index != g_streamPosIndex) {
     g_streamPosArray[g_streamPosIndex] = g_streamPos;
-    g_streamPosIndex = param_1;
-    g_streamPos = g_streamPosArray[param_1];
-    g_streamPosArray[param_1] = (uchar *)0x0;
+    g_streamPosIndex = index;
+    g_streamPos = g_streamPosArray[index];
+    g_streamPosArray[index] = (uchar *)0x0;
   }
   return;
 }
@@ -39,13 +39,13 @@ void __cdecl DB_SetStreamIndex(uint param_1)
 
 // 00595F00  DB_PushStreamPos  (database/db_stream.cpp:65)
 
-void __cdecl DB_PushStreamPos(uint param_1)
+void __cdecl DB_PushStreamPos(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (6 < param_1) {
+  if (6 < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_stream.cpp",0x42,0,
                              "%s");
     if (!bVar2) {
@@ -74,7 +74,7 @@ void __cdecl DB_PushStreamPos(uint param_1)
   }
   g_streamPosStack[g_streamPosStackIndex].index = g_streamPosIndex;
   g_streamPosStackIndex = g_streamPosStackIndex + 1;
-  DB_SetStreamIndex(param_1);
+  DB_SetStreamIndex(index);
   (&g_streamPosIndex)[g_streamPosStackIndex * 2] = (uint)g_streamPos;
   return;
 }
@@ -117,7 +117,7 @@ uchar * __cdecl DB_GetStreamPos(void)
 
 // 005960B0  DB_AllocStreamPos  (database/db_stream.cpp:109)
 
-uchar * __cdecl DB_AllocStreamPos(int param_1)
+uchar * __cdecl DB_AllocStreamPos(int alignment)
 
 {
   code *pcVar1;
@@ -133,15 +133,15 @@ uchar * __cdecl DB_AllocStreamPos(int param_1)
       return puVar3;
     }
   }
-  puVar3 = g_streamPos + param_1;
-  g_streamPos = (uchar *)((uint)puVar3 & ~param_1);
-  return (uchar *)((uint)puVar3 & ~param_1);
+  puVar3 = g_streamPos + alignment;
+  g_streamPos = (uchar *)((uint)puVar3 & ~alignment);
+  return (uchar *)((uint)puVar3 & ~alignment);
 }
 
 
 // 00596100  DB_IncStreamPos  (database/db_stream.cpp:117)
 
-void __cdecl DB_IncStreamPos(int param_1)
+void __cdecl DB_IncStreamPos(int size)
 
 {
   code *pcVar1;
@@ -157,7 +157,7 @@ void __cdecl DB_IncStreamPos(int param_1)
     }
   }
   if (g_streamBlocks[g_streamPosIndex].data + g_streamBlocks[g_streamPosIndex].size <
-      g_streamPos + param_1) {
+      g_streamPos + size) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\database\\db_stream.cpp",0x78,0,
                              "%s");
     if (!bVar2) {
@@ -166,7 +166,7 @@ void __cdecl DB_IncStreamPos(int param_1)
       return;
     }
   }
-  g_streamPos = g_streamPos + param_1;
+  g_streamPos = g_streamPos + size;
   return;
 }
 
@@ -177,6 +177,7 @@ void ** __cdecl DB_InsertPointer(void)
 
 {
   void **ppvVar1;
+  void **pData;
   
   DB_PushStreamPos(4);
   ppvVar1 = (void **)DB_AllocStreamPos(3);

@@ -54,7 +54,7 @@ bdByteBuffer * __thiscall
 bdByteBuffer::bdByteBuffer(bdByteBuffer *this,void *param_1,uint param_2,bool param_3)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   
   *(undefined ***)this = bdReferencable::vftable;
   *(undefined4 *)(this + 4) = 0;
@@ -65,10 +65,10 @@ bdByteBuffer::bdByteBuffer(bdByteBuffer *this,void *param_1,uint param_2,bool pa
   this[0x19] = (bdByteBuffer)param_3;
   this[0x1a] = (bdByteBuffer)0x0;
   if (param_2 != 0) {
-    puVar1 = bdMemory::allocate(param_2);
-    *(uchar **)(this + 0xc) = puVar1;
+    dst = bdMemory::allocate(param_2);
+    *(uchar **)(this + 0xc) = dst;
     this[0x1a] = (bdByteBuffer)0x1;
-    memcpy(puVar1,param_1,param_2);
+    memcpy(dst,param_1,param_2);
   }
   *(undefined4 *)(this + 0x14) = *(undefined4 *)(this + 0xc);
   *(undefined4 *)(this + 0x10) = *(undefined4 *)(this + 0xc);

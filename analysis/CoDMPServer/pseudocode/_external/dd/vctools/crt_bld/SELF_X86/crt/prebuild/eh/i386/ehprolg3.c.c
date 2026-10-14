@@ -4,9 +4,9 @@
 
 /* WARNING: This is an inlined function */
 /* WARNING: Unable to track spacebase fully for stack */
-/* WARNING: Variable defined which should be unmapped: param_1 */
+/* WARNING: Variable defined which should be unmapped: LocalAllocation */
 
-void __cdecl _EH_prolog3(ulong param_1)
+void __cdecl _EH_prolog3(ulong LocalAllocation)
 
 {
   int iVar1;
@@ -17,11 +17,11 @@ void __cdecl _EH_prolog3(ulong param_1)
   uint auStack_1c [5];
   undefined1 local_8 [8];
   
-  iVar1 = -param_1;
+  iVar1 = -LocalAllocation;
   *(undefined4 *)((int)auStack_1c + iVar1 + 0x10) = unaff_EBX;
   *(undefined4 *)((int)auStack_1c + iVar1 + 0xc) = unaff_ESI;
   *(undefined4 *)((int)auStack_1c + iVar1 + 8) = unaff_EDI;
-  *(uint *)((int)auStack_1c + iVar1 + 4) = __security_cookie ^ (uint)&param_1;
+  *(uint *)((int)auStack_1c + iVar1 + 4) = __security_cookie ^ (uint)&LocalAllocation;
   *(undefined4 *)((int)auStack_1c + iVar1) = unaff_retaddr;
   ExceptionList = local_8;
   return;
@@ -32,9 +32,9 @@ void __cdecl _EH_prolog3(ulong param_1)
 
 /* WARNING: This is an inlined function */
 /* WARNING: Unable to track spacebase fully for stack */
-/* WARNING: Variable defined which should be unmapped: param_1 */
+/* WARNING: Variable defined which should be unmapped: LocalAllocation */
 
-void __cdecl _EH_prolog3_catch(ulong param_1)
+void __cdecl _EH_prolog3_catch(ulong LocalAllocation)
 
 {
   int iVar1;
@@ -45,11 +45,11 @@ void __cdecl _EH_prolog3_catch(ulong param_1)
   uint auStack_1c [5];
   undefined1 local_8 [8];
   
-  iVar1 = -param_1;
+  iVar1 = -LocalAllocation;
   *(undefined4 *)((int)auStack_1c + iVar1 + 0x10) = unaff_EBX;
   *(undefined4 *)((int)auStack_1c + iVar1 + 0xc) = unaff_ESI;
   *(undefined4 *)((int)auStack_1c + iVar1 + 8) = unaff_EDI;
-  *(uint *)((int)auStack_1c + iVar1 + 4) = __security_cookie ^ (uint)&param_1;
+  *(uint *)((int)auStack_1c + iVar1 + 4) = __security_cookie ^ (uint)&LocalAllocation;
   *(undefined4 *)((int)auStack_1c + iVar1) = unaff_retaddr;
   ExceptionList = local_8;
   return;

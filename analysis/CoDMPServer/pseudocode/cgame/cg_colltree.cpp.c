@@ -13,16 +13,18 @@ void __cdecl TRACK_CG_CollWorld(void)
 
 // 004811D0  CG_ClearEntityCollWorld  (cgame/cg_colltree.cpp:66)
 
-void __cdecl CG_ClearEntityCollWorld(int param_1)
+void __cdecl CG_ClearEntityCollWorld(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  CgEntCollWorld *pCVar3;
+  CgEntCollWorld *mins;
   ushort local_1e;
-  ushort local_c;
+  CgEntCollSector *headSector;
+  ushort sectorIndex;
+  CgEntCollWorld *world;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x48,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -30,37 +32,43 @@ void __cdecl CG_ClearEntityCollWorld(int param_1)
     (*pcVar1)();
     return;
   }
-  memset((uchar *)(cgEntCollWorld + param_1),'\0',0x401c);
-  memset((uchar *)cgEntCollNodes[param_1],'\0',0xa800);
-  pCVar3 = cgEntCollWorld + param_1;
-  CM_ModelBounds(0,pCVar3->mins,cgEntCollWorld[param_1].maxs);
-  cgEntCollWorld[param_1].freeHead = 2;
-  for (local_c = 2; local_c < 0x3ff; local_c = local_c + 1) {
-    *(ushort *)(param_1 * 0x401c + 0xe87bc2 + (uint)local_c * 0x10) = local_c + 1;
+  memset((uchar *)(cgEntCollWorld + localClientNum),'\0',0x401c);
+  memset((uchar *)cgEntCollNodes[localClientNum],'\0',0xa800);
+  mins = cgEntCollWorld + localClientNum;
+  CM_ModelBounds(0,mins->mins,cgEntCollWorld[localClientNum].maxs);
+  cgEntCollWorld[localClientNum].freeHead = 2;
+  for (sectorIndex = 2; sectorIndex < 0x3ff; sectorIndex = sectorIndex + 1) {
+    *(ushort *)(localClientNum * 0x401c + 0xe87bc2 + (uint)sectorIndex * 0x10) = sectorIndex + 1;
   }
-  local_1e = (ushort)(cgEntCollWorld[param_1].maxs[0] - pCVar3->mins[0] <=
-                     cgEntCollWorld[param_1].maxs[1] - cgEntCollWorld[param_1].mins[1]);
-  cgEntCollWorld[param_1].sectors[1].tree.axis = local_1e;
-  cgEntCollWorld[param_1].sectors[1].tree.dist =
-       (*(float *)(param_1 * 0x401c + 0xe87bac +
-                  (uint)cgEntCollWorld[param_1].sectors[1].tree.axis * 4) +
-       pCVar3->mins[cgEntCollWorld[param_1].sectors[1].tree.axis]) * 0.5;
+  local_1e = (ushort)(cgEntCollWorld[localClientNum].maxs[0] - mins->mins[0] <=
+                     cgEntCollWorld[localClientNum].maxs[1] - cgEntCollWorld[localClientNum].mins[1]
+                     );
+  cgEntCollWorld[localClientNum].sectors[1].tree.axis = local_1e;
+  cgEntCollWorld[localClientNum].sectors[1].tree.dist =
+       (*(float *)(localClientNum * 0x401c + 0xe87bac +
+                  (uint)cgEntCollWorld[localClientNum].sectors[1].tree.axis * 4) +
+       mins->mins[cgEntCollWorld[localClientNum].sectors[1].tree.axis]) * 0.5;
   return;
 }
 
 
 // 00481A90  CG_AddEntityToCollSector  (cgame/cg_colltree.cpp:98)
 
-void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
+void __cdecl CG_AddEntityToCollSector(int localClientNum,int entIndex,ushort sectorIndex)
 
 {
   ushort uVar1;
   CgEntCollNode *pCVar2;
   code *pcVar3;
   bool bVar4;
-  ushort *local_10;
+  CgEntCollNode *node;
+  uint unsignedEntIndex;
+  CgEntCollSector *sector;
+  ushort *prevListIndex;
+  CgEntCollNode *prevNode;
+  CgEntCollWorld *world;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x6a,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -70,7 +78,7 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
       return;
     }
   }
-  if (0x5ff < (uint)param_2) {
+  if (0x5ff < (uint)entIndex) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x6b,0,
                              "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)");
     if (!bVar4) {
@@ -79,7 +87,7 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
       return;
     }
   }
-  if (param_3 == 0) {
+  if (sectorIndex == 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x6c,0,"%s"
                             );
     if (!bVar4) {
@@ -88,7 +96,7 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
       return;
     }
   }
-  if (0x3ff < param_3) {
+  if (0x3ff < sectorIndex) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x6d,0,
                              "%s\n\t(sectorIndex) = %i");
     if (!bVar4) {
@@ -97,7 +105,7 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
       return;
     }
   }
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -107,7 +115,7 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
       return;
     }
   }
-  if (0x5ff < (uint)param_2) {
+  if (0x5ff < (uint)entIndex) {
     bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6d,0,
                              "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)");
     if (!bVar4) {
@@ -116,17 +124,17 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
       return;
     }
   }
-  pCVar2 = cgEntCollNodes[param_1];
-  local_10 = &cgEntCollWorld[param_1].sectors[param_3].entListHead;
+  pCVar2 = cgEntCollNodes[localClientNum];
+  prevListIndex = &cgEntCollWorld[localClientNum].sectors[sectorIndex].entListHead;
   do {
-    if ((uint)param_2 < *local_10 - 1) {
-      pCVar2[param_2].sector = param_3;
-      pCVar2[param_2].nextEntInSector = *local_10;
-      *local_10 = (short)param_2 + 1;
+    if ((uint)entIndex < *prevListIndex - 1) {
+      pCVar2[entIndex].sector = sectorIndex;
+      pCVar2[entIndex].nextEntInSector = *prevListIndex;
+      *prevListIndex = (short)entIndex + 1;
       return;
     }
-    uVar1 = *local_10;
-    if (param_1 != 0) {
+    uVar1 = *prevListIndex;
+    if (localClientNum != 0) {
       bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               );
@@ -145,14 +153,14 @@ void __cdecl CG_AddEntityToCollSector(int param_1,int param_2,ushort param_3)
         return;
       }
     }
-    local_10 = &cgEntCollNodes[param_1][uVar1 - 1].nextEntInSector;
+    prevListIndex = &cgEntCollNodes[localClientNum][uVar1 - 1].nextEntInSector;
   } while( true );
 }
 
 
 // 00482120  CG_AllocEntityCollSector  (cgame/cg_colltree.cpp:141)
 
-ushort __cdecl CG_AllocEntityCollSector(int param_1,float *param_2,float *param_3)
+ushort __cdecl CG_AllocEntityCollSector(int localClientNum,float *mins,float *maxs)
 
 {
   float *pfVar1;
@@ -160,12 +168,13 @@ ushort __cdecl CG_AllocEntityCollSector(int param_1,float *param_2,float *param_
   bool bVar3;
   ushort uVar4;
   ushort local_1e;
-  float local_18 [2];
-  ushort local_10;
-  CgEntCollWorld *local_c;
-  ushort local_8;
+  CgEntCollSector *sector;
+  float size [2];
+  ushort sectorIndex;
+  CgEntCollWorld *world;
+  ushort axis;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x94,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -173,32 +182,32 @@ ushort __cdecl CG_AllocEntityCollSector(int param_1,float *param_2,float *param_
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x95,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x96,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  local_c = cgEntCollWorld + param_1;
-  local_10 = cgEntCollWorld[param_1].freeHead;
-  if (local_10 == 0) {
-    local_10 = 0;
+  world = cgEntCollWorld + localClientNum;
+  sectorIndex = cgEntCollWorld[localClientNum].freeHead;
+  if (sectorIndex == 0) {
+    sectorIndex = 0;
   }
   else {
-    local_18[0] = *param_3 - *param_2;
-    local_18[1] = param_3[1] - param_2[1];
-    local_1e = (ushort)(*param_3 - *param_2 <= param_3[1] - param_2[1]);
-    local_8 = local_1e;
-    if (512.0 < local_18[local_1e]) {
-      pfVar1 = (float *)(param_1 * 0x401c + 0xe87bbc + (uint)local_10 * 0x10);
+    size[0] = *maxs - *mins;
+    size[1] = maxs[1] - mins[1];
+    local_1e = (ushort)(*maxs - *mins <= maxs[1] - mins[1]);
+    axis = local_1e;
+    if (512.0 < size[local_1e]) {
+      pfVar1 = (float *)(localClientNum * 0x401c + 0xe87bbc + (uint)sectorIndex * 0x10);
       if ((*(short *)(pfVar1 + 3) != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0xa6,
                                    0,"%s"), !bVar3)) {
@@ -206,9 +215,9 @@ ushort __cdecl CG_AllocEntityCollSector(int param_1,float *param_2,float *param_
         uVar4 = (*pcVar2)();
         return uVar4;
       }
-      local_c->freeHead = *(ushort *)((int)pfVar1 + 6);
-      *(ushort *)(pfVar1 + 1) = local_8;
-      *pfVar1 = (param_3[local_8] + param_2[local_8]) * 0.5;
+      world->freeHead = *(ushort *)((int)pfVar1 + 6);
+      *(ushort *)(pfVar1 + 1) = axis;
+      *pfVar1 = (maxs[axis] + mins[axis]) * 0.5;
       if ((*(short *)(pfVar1 + 2) != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0xad,
                                    0,"%s"), !bVar3)) {
@@ -225,16 +234,16 @@ ushort __cdecl CG_AllocEntityCollSector(int param_1,float *param_2,float *param_
       }
     }
     else {
-      local_10 = 0;
+      sectorIndex = 0;
     }
   }
-  return local_10;
+  return sectorIndex;
 }
 
 
 // 00481CC0  CG_SortEntityCollSector  (cgame/cg_colltree.cpp:186)
 
-void __cdecl CG_SortEntityCollSector(int param_1,ushort param_2,float *param_3,float *param_4)
+void __cdecl CG_SortEntityCollSector(int localClientNum,ushort sectorIndex,float *mins,float *maxs)
 
 {
   float *pfVar1;
@@ -243,15 +252,21 @@ void __cdecl CG_SortEntityCollSector(int param_1,ushort param_2,float *param_3,f
   ushort uVar4;
   code *pcVar5;
   bool bVar6;
-  uint uVar7;
-  CgEntCollNode *pCVar8;
-  uint uVar9;
-  int iVar10;
-  ushort local_20;
-  CgEntCollNode *local_18;
-  ushort local_8;
+  uint entIndex_00;
+  CgEntCollNode *pCVar7;
+  uint uVar8;
+  int iVar9;
+  CgEntCollNode *node;
+  CgEntCollSector *sector;
+  ushort listIndex;
+  float dist;
+  CgEntCollNode *prevNode;
+  CgEntCollWorld *world;
+  int entIndex;
+  int axis;
+  ushort childSectorIndex;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0xc5,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar6)) {
@@ -259,47 +274,47 @@ void __cdecl CG_SortEntityCollSector(int param_1,ushort param_2,float *param_3,f
     (*pcVar5)();
     return;
   }
-  if ((param_2 == 0) &&
+  if ((sectorIndex == 0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0xc6,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((0x3ff < param_2) &&
+  if ((0x3ff < sectorIndex) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",199,0,
                                "%s\n\t(sectorIndex) = %i"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",200,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0xc9,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  iVar10 = param_1 * 0x401c;
-  pfVar1 = (float *)(iVar10 + 0xe87bbc + (uint)param_2 * 0x10);
+  iVar9 = localClientNum * 0x401c;
+  pfVar1 = (float *)(iVar9 + 0xe87bbc + (uint)sectorIndex * 0x10);
   uVar3 = *(ushort *)(pfVar1 + 1);
   fVar2 = *pfVar1;
-  local_18 = (CgEntCollNode *)0x0;
-  local_20 = *(ushort *)(pfVar1 + 3);
+  prevNode = (CgEntCollNode *)0x0;
+  listIndex = *(ushort *)(pfVar1 + 3);
   do {
     while( true ) {
-      if (local_20 == 0) {
+      if (listIndex == 0) {
         return;
       }
-      uVar7 = local_20 - 1;
-      if ((param_1 != 0) &&
+      entIndex_00 = listIndex - 1;
+      if ((localClientNum != 0) &&
          (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,0,
                                    "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                                   ), !bVar6)) {
@@ -307,7 +322,7 @@ void __cdecl CG_SortEntityCollSector(int param_1,ushort param_2,float *param_3,f
         (*pcVar5)();
         return;
       }
-      if ((0x5ff < uVar7) &&
+      if ((0x5ff < entIndex_00) &&
          (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6d,0,
                                    "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
                                   ), !bVar6)) {
@@ -315,20 +330,20 @@ void __cdecl CG_SortEntityCollSector(int param_1,ushort param_2,float *param_3,f
         (*pcVar5)();
         return;
       }
-      pCVar8 = cgEntCollNodes[param_1] + uVar7;
-      if (pCVar8->linkMins[uVar3] <= fVar2) break;
-      local_8 = *(ushort *)(pfVar1 + 2);
-      if (local_8 == 0) {
-        local_8 = CG_AllocEntityCollSector(param_1,param_3,param_4);
-        if (local_8 == 0) goto LAB_00481f5b;
-        *(ushort *)(pfVar1 + 2) = local_8;
-        *(ushort *)(iVar10 + 0xe87bc2 + (uint)local_8 * 0x10) = param_2;
+      pCVar7 = cgEntCollNodes[localClientNum] + entIndex_00;
+      if (pCVar7->linkMins[uVar3] <= fVar2) break;
+      childSectorIndex = *(ushort *)(pfVar1 + 2);
+      if (childSectorIndex == 0) {
+        childSectorIndex = CG_AllocEntityCollSector(localClientNum,mins,maxs);
+        if (childSectorIndex == 0) goto LAB_00481f5b;
+        *(ushort *)(pfVar1 + 2) = childSectorIndex;
+        *(ushort *)(iVar9 + 0xe87bc2 + (uint)childSectorIndex * 0x10) = sectorIndex;
       }
 LAB_00481f71:
-      local_20 = pCVar8->nextEntInSector;
-      if (local_18 == (CgEntCollNode *)0x0) {
+      listIndex = pCVar7->nextEntInSector;
+      if (prevNode == (CgEntCollNode *)0x0) {
         uVar4 = *(ushort *)(pfVar1 + 3);
-        if ((param_1 != 0) &&
+        if ((localClientNum != 0) &&
            (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,
                                      0,
                                      "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -346,7 +361,7 @@ LAB_00481f71:
           (*pcVar5)();
           return;
         }
-        if ((cgEntCollNodes[param_1] + (uVar4 - 1) != pCVar8) &&
+        if ((cgEntCollNodes[localClientNum] + (uVar4 - 1) != pCVar7) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",
                                      0xfd,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
@@ -354,9 +369,9 @@ LAB_00481f71:
           return;
         }
       }
-      if (local_18 != (CgEntCollNode *)0x0) {
-        uVar9 = local_18->nextEntInSector - 1;
-        if ((param_1 != 0) &&
+      if (prevNode != (CgEntCollNode *)0x0) {
+        uVar8 = prevNode->nextEntInSector - 1;
+        if ((localClientNum != 0) &&
            (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,
                                      0,
                                      "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -365,7 +380,7 @@ LAB_00481f71:
           (*pcVar5)();
           return;
         }
-        if ((0x5ff < uVar9) &&
+        if ((0x5ff < uVar8) &&
            (bVar6 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6d,
                                      0,
                                      "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
@@ -374,7 +389,7 @@ LAB_00481f71:
           (*pcVar5)();
           return;
         }
-        if ((cgEntCollNodes[param_1] + uVar9 != pCVar8) &&
+        if ((cgEntCollNodes[localClientNum] + uVar8 != pCVar7) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",
                                      0xfe,0,"%s"), !bVar6)) {
           pcVar5 = (code *)swi(3);
@@ -382,34 +397,34 @@ LAB_00481f71:
           return;
         }
       }
-      CG_AddEntityToCollSector(param_1,uVar7,local_8);
-      if (local_18 == (CgEntCollNode *)0x0) {
-        *(ushort *)(pfVar1 + 3) = local_20;
+      CG_AddEntityToCollSector(localClientNum,entIndex_00,childSectorIndex);
+      if (prevNode == (CgEntCollNode *)0x0) {
+        *(ushort *)(pfVar1 + 3) = listIndex;
       }
       else {
-        local_18->nextEntInSector = local_20;
+        prevNode->nextEntInSector = listIndex;
       }
     }
-    if (pCVar8->linkMaxs[uVar3] <= fVar2 && fVar2 != pCVar8->linkMaxs[uVar3]) {
-      local_8 = *(ushort *)((int)pfVar1 + 10);
-      if (local_8 == 0) {
-        local_8 = CG_AllocEntityCollSector(param_1,param_3,param_4);
-        if (local_8 == 0) goto LAB_00481f5b;
-        *(ushort *)((int)pfVar1 + 10) = local_8;
-        *(ushort *)(iVar10 + 0xe87bc2 + (uint)local_8 * 0x10) = param_2;
+    if (pCVar7->linkMaxs[uVar3] <= fVar2 && fVar2 != pCVar7->linkMaxs[uVar3]) {
+      childSectorIndex = *(ushort *)((int)pfVar1 + 10);
+      if (childSectorIndex == 0) {
+        childSectorIndex = CG_AllocEntityCollSector(localClientNum,mins,maxs);
+        if (childSectorIndex == 0) goto LAB_00481f5b;
+        *(ushort *)((int)pfVar1 + 10) = childSectorIndex;
+        *(ushort *)(iVar9 + 0xe87bc2 + (uint)childSectorIndex * 0x10) = sectorIndex;
       }
       goto LAB_00481f71;
     }
 LAB_00481f5b:
-    local_20 = pCVar8->nextEntInSector;
-    local_18 = pCVar8;
+    listIndex = pCVar7->nextEntInSector;
+    prevNode = pCVar7;
   } while( true );
 }
 
 
 // 00481340  CG_UnlinkEntityColl  (cgame/cg_colltree.cpp:272)
 
-void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
+void __cdecl CG_UnlinkEntityColl(int localClientNum,int entIndex)
 
 {
   ushort *puVar1;
@@ -420,11 +435,15 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
   CgEntCollNode *pCVar6;
   uint uVar7;
   CgEntCollNode *pCVar8;
-  int local_1c;
-  CgEntCollNode *local_18;
-  ushort local_c;
+  CgEntCollNode *node;
+  CgEntCollSector *sector;
+  CgEntCollNode *scan;
+  ushort parentSectorIndex;
+  CgEntCollNode *next;
+  ushort sectorIndex;
+  CgEntCollWorld *world;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x119,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar4)) {
@@ -432,7 +451,7 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
     (*pcVar3)();
     return;
   }
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entIndex) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x11a,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
      !bVar4)) {
@@ -440,8 +459,8 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
     (*pcVar3)();
     return;
   }
-  iVar5 = param_1 * 0x401c;
-  if ((param_1 != 0) &&
+  iVar5 = localClientNum * 0x401c;
+  if ((localClientNum != 0) &&
      (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar4)) {
@@ -449,7 +468,7 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
     (*pcVar3)();
     return;
   }
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entIndex) &&
      (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6d,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
      !bVar4)) {
@@ -457,24 +476,24 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
     (*pcVar3)();
     return;
   }
-  pCVar6 = cgEntCollNodes[param_1] + param_2;
-  local_c = pCVar6->sector;
-  if (local_c != 0) {
-    local_1c = iVar5 + 0xe87bbc + (uint)local_c * 0x10;
+  pCVar6 = cgEntCollNodes[localClientNum] + entIndex;
+  sectorIndex = pCVar6->sector;
+  if (sectorIndex != 0) {
+    sector = (CgEntCollSector *)(iVar5 + 0xe87bbc + (uint)sectorIndex * 0x10);
     pCVar6->sector = 0;
-    if ((*(short *)(local_1c + 0xc) == 0) &&
+    if ((sector->entListHead == 0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x126,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (*(ushort *)(local_1c + 0xc) - 1 == param_2) {
-      *(ushort *)(local_1c + 0xc) = pCVar6->nextEntInSector;
+    if (sector->entListHead - 1 == entIndex) {
+      sector->entListHead = pCVar6->nextEntInSector;
     }
     else {
-      uVar7 = *(ushort *)(local_1c + 0xc) - 1;
-      if ((param_1 != 0) &&
+      uVar7 = sector->entListHead - 1;
+      if ((localClientNum != 0) &&
          (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,0,
                                    "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                                   ), !bVar4)) {
@@ -490,10 +509,10 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
         (*pcVar3)();
         return;
       }
-      local_18 = cgEntCollNodes[param_1] + uVar7;
+      scan = cgEntCollNodes[localClientNum] + uVar7;
       while( true ) {
-        uVar7 = local_18->nextEntInSector - 1;
-        if ((param_1 != 0) &&
+        uVar7 = scan->nextEntInSector - 1;
+        if ((localClientNum != 0) &&
            (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,
                                      0,
                                      "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
@@ -511,10 +530,10 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
           (*pcVar3)();
           return;
         }
-        pCVar8 = cgEntCollNodes[param_1] + uVar7;
+        pCVar8 = cgEntCollNodes[localClientNum] + uVar7;
         if (pCVar8 == pCVar6) break;
-        puVar1 = &local_18->nextEntInSector;
-        local_18 = pCVar8;
+        puVar1 = &scan->nextEntInSector;
+        scan = pCVar8;
         if ((*puVar1 == 0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",
                                      0x138,0,"%s"), !bVar4)) {
@@ -523,33 +542,33 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
           return;
         }
       }
-      local_18->nextEntInSector = pCVar6->nextEntInSector;
+      scan->nextEntInSector = pCVar6->nextEntInSector;
     }
     while( true ) {
-      if (((*(short *)(local_1c + 0xc) != 0) || (*(short *)(local_1c + 8) != 0)) ||
-         (*(short *)(local_1c + 10) != 0)) goto LAB_00481709;
-      if (*(short *)(local_1c + 6) == 0) break;
-      uVar2 = *(ushort *)(local_1c + 6);
-      *(ushort *)(local_1c + 6) = cgEntCollWorld[param_1].freeHead;
-      cgEntCollWorld[param_1].freeHead = local_c;
-      local_1c = iVar5 + 0xe87bbc + (uint)uVar2 * 0x10;
-      if (*(ushort *)(local_1c + 8) == local_c) {
-        *(undefined2 *)(local_1c + 8) = 0;
-        local_c = uVar2;
+      if (((sector->entListHead != 0) || ((sector->tree).child[0] != 0)) ||
+         ((sector->tree).child[1] != 0)) goto LAB_00481709;
+      if ((sector->tree).u.parent == 0) break;
+      uVar2 = (sector->tree).u.parent;
+      (sector->tree).u = (<unnamed_type_u>)cgEntCollWorld[localClientNum].freeHead;
+      cgEntCollWorld[localClientNum].freeHead = sectorIndex;
+      sector = (CgEntCollSector *)(iVar5 + 0xe87bbc + (uint)uVar2 * 0x10);
+      if ((sector->tree).child[0] == sectorIndex) {
+        (sector->tree).child[0] = 0;
+        sectorIndex = uVar2;
       }
       else {
-        if ((*(ushort *)(local_1c + 10) != local_c) &&
+        if (((sector->tree).child[1] != sectorIndex) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",
                                      0x151,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        *(undefined2 *)(local_1c + 10) = 0;
-        local_c = uVar2;
+        (sector->tree).child[1] = 0;
+        sectorIndex = uVar2;
       }
     }
-    if ((local_c != 1) &&
+    if ((sectorIndex != 1) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x140,0
                                  ,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -557,8 +576,8 @@ void __cdecl CG_UnlinkEntityColl(int param_1,int param_2)
       return;
     }
 LAB_00481709:
-    for (; *(ushort *)(local_1c + 6) != 0;
-        local_1c = iVar5 + 0xe87bbc + (uint)*(ushort *)(local_1c + 6) * 0x10) {
+    while (uVar2 = (sector->tree).u.parent, uVar2 != 0) {
+      sector = (CgEntCollSector *)(iVar5 + 0xe87bbc + (uint)uVar2 * 0x10);
     }
   }
   return;
@@ -567,9 +586,7 @@ LAB_00481709:
 
 // 00481740  CG_LinkEntityColl  (cgame/cg_colltree.cpp:361)
 
-/* WARNING: Type propagation algorithm not settling */
-
-void __cdecl CG_LinkEntityColl(int param_1,int param_2,float *param_3,float *param_4)
+void __cdecl CG_LinkEntityColl(int localClientNum,int entIndex,float *absMins,float *absMaxs)
 
 {
   CgEntCollSector *pCVar1;
@@ -577,13 +594,16 @@ void __cdecl CG_LinkEntityColl(int param_1,int param_2,float *param_3,float *par
   code *pcVar3;
   bool bVar4;
   CgEntCollNode *pCVar5;
-  float local_20 [2];
-  ushort local_18;
-  float local_14 [2];
-  CgEntCollWorld *local_c;
-  uint local_8;
+  CgEntCollNode *node;
+  CgEntCollSector *sector;
+  float dist;
+  float mins [2];
+  ushort sectorIndex;
+  float maxs [2];
+  CgEntCollWorld *world;
+  int axis;
   
-  if ((param_1 != 0) &&
+  if ((localClientNum != 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x173,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar4)) {
@@ -591,7 +611,7 @@ void __cdecl CG_LinkEntityColl(int param_1,int param_2,float *param_3,float *par
     (*pcVar3)();
     return;
   }
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entIndex) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x174,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
      !bVar4)) {
@@ -599,22 +619,22 @@ void __cdecl CG_LinkEntityColl(int param_1,int param_2,float *param_3,float *par
     (*pcVar3)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((absMins == (float *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x175,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((absMaxs == (float *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",0x176,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_c = cgEntCollWorld + param_1;
-  if ((param_1 != 0) &&
+  world = cgEntCollWorld + localClientNum;
+  if ((localClientNum != 0) &&
      (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6c,0,
                                "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                               ), !bVar4)) {
@@ -622,7 +642,7 @@ void __cdecl CG_LinkEntityColl(int param_1,int param_2,float *param_3,float *par
     (*pcVar3)();
     return;
   }
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entIndex) &&
      (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.h",0x6d,0,
                                "entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"),
      !bVar4)) {
@@ -630,52 +650,52 @@ void __cdecl CG_LinkEntityColl(int param_1,int param_2,float *param_3,float *par
     (*pcVar3)();
     return;
   }
-  pCVar5 = cgEntCollNodes[param_1] + param_2;
+  pCVar5 = cgEntCollNodes[localClientNum] + entIndex;
   do {
-    local_20[0] = local_c->mins[0];
-    local_20[1] = local_c->mins[1];
-    local_14[0] = local_c->maxs[0];
-    local_14[1] = local_c->maxs[1];
-    local_18 = 1;
+    mins[0] = world->mins[0];
+    mins[1] = world->mins[1];
+    maxs[0] = world->maxs[0];
+    maxs[1] = world->maxs[1];
+    sectorIndex = 1;
     while( true ) {
       while( true ) {
-        pCVar1 = local_c->sectors + local_18;
-        local_8 = (uint)(pCVar1->tree).axis;
+        pCVar1 = world->sectors + sectorIndex;
+        axis = (int)(pCVar1->tree).axis;
         fVar2 = (pCVar1->tree).dist;
-        if (param_3[local_8] <= fVar2) break;
-        local_20[local_8] = fVar2;
+        if (absMins[axis] <= fVar2) break;
+        mins[axis] = fVar2;
         if ((pCVar1->tree).child[0] == 0) goto LAB_004819d6;
-        local_18 = (pCVar1->tree).child[0];
+        sectorIndex = (pCVar1->tree).child[0];
       }
-      if (fVar2 < param_4[local_8] || fVar2 == param_4[local_8]) break;
-      local_14[local_8] = fVar2;
+      if (fVar2 < absMaxs[axis] || fVar2 == absMaxs[axis]) break;
+      maxs[axis] = fVar2;
       if ((pCVar1->tree).child[1] == 0) goto LAB_004819d6;
-      local_18 = (pCVar1->tree).child[1];
+      sectorIndex = (pCVar1->tree).child[1];
     }
-    if (local_18 == pCVar5->sector) {
-      pCVar5->linkMins[0] = *param_3;
-      pCVar5->linkMins[1] = param_3[1];
-      pCVar5->linkMins[2] = param_3[2];
-      pCVar5->linkMaxs[0] = *param_4;
-      pCVar5->linkMaxs[1] = param_4[1];
-      pCVar5->linkMaxs[2] = param_4[2];
+    if (sectorIndex == pCVar5->sector) {
+      pCVar5->linkMins[0] = *absMins;
+      pCVar5->linkMins[1] = absMins[1];
+      pCVar5->linkMins[2] = absMins[2];
+      pCVar5->linkMaxs[0] = *absMaxs;
+      pCVar5->linkMaxs[1] = absMaxs[1];
+      pCVar5->linkMaxs[2] = absMaxs[2];
       return;
     }
 LAB_004819d6:
     if (pCVar5->sector == 0) {
-      CG_AddEntityToCollSector(param_1,param_2,local_18);
+      CG_AddEntityToCollSector(localClientNum,entIndex,sectorIndex);
 LAB_00481a1a:
-      pCVar5->linkMins[0] = *param_3;
-      pCVar5->linkMins[1] = param_3[1];
-      pCVar5->linkMins[2] = param_3[2];
-      pCVar5->linkMaxs[0] = *param_4;
-      pCVar5->linkMaxs[1] = param_4[1];
-      pCVar5->linkMaxs[2] = param_4[2];
-      CG_SortEntityCollSector(param_1,local_18,local_20,local_14);
+      pCVar5->linkMins[0] = *absMins;
+      pCVar5->linkMins[1] = absMins[1];
+      pCVar5->linkMins[2] = absMins[2];
+      pCVar5->linkMaxs[0] = *absMaxs;
+      pCVar5->linkMaxs[1] = absMaxs[1];
+      pCVar5->linkMaxs[2] = absMaxs[2];
+      CG_SortEntityCollSector(localClientNum,sectorIndex,mins,maxs);
       return;
     }
-    if (local_18 == pCVar5->sector) goto LAB_00481a1a;
-    CG_UnlinkEntityColl(param_1,param_2);
+    if (sectorIndex == pCVar5->sector) goto LAB_00481a1a;
+    CG_UnlinkEntityColl(localClientNum,entIndex);
   } while( true );
 }
 

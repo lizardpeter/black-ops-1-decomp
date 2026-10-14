@@ -2,7 +2,7 @@
 
 // 0043CBA0  Abs  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:75)
 
-float __cdecl Abs(phys_vec3 *param_1)
+float __cdecl Abs(phys_vec3 *v)
 
 {
   float10 extraout_ST0;
@@ -14,14 +14,14 @@ float __cdecl Abs(phys_vec3 *param_1)
 
 // 00406880  testBit  (qcommon/bitarray.h:108)
 
-bool __thiscall bitarray<51>::testBit(bitarray<51> *this,uint param_1)
+bool __thiscall bitarray<51>::testBit(bitarray<51> *this,uint pos)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (0x32 < param_1) {
+  if (0x32 < pos) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\../qcommon/bitarray.h",
                              0x6d,0,"%s");
     if (!bVar2) {
@@ -30,13 +30,13 @@ bool __thiscall bitarray<51>::testBit(bitarray<51> *this,uint param_1)
       return (bool)uVar3;
     }
   }
-  return (0x80000000U >> ((byte)param_1 & 0x1f) & this->array[param_1 >> 5]) != 0;
+  return (0x80000000U >> ((byte)pos & 0x1f) & this->array[pos >> 5]) != 0;
 }
 
 
 // 00403210  Vec2Length  (universal/com_vector.h:138)
 
-float __cdecl Vec2Length(float *param_1)
+float __cdecl Vec2Length(float *v)
 
 {
   float10 extraout_ST0;
@@ -48,19 +48,22 @@ float __cdecl Vec2Length(float *param_1)
 
 // 00403330  Vec2Normalize  (universal/com_vector.h:194)
 
-float __cdecl Vec2Normalize(float *param_1)
+float __cdecl Vec2Normalize(float *v)
 
 {
   float fVar1;
   float local_14;
+  float safeLength;
+  float ilength;
+  float length;
   
-  fVar1 = SQRT(*param_1 * *param_1 + param_1[1] * param_1[1]);
+  fVar1 = SQRT(*v * *v + v[1] * v[1]);
   local_14 = fVar1;
   if (0.0 <= -fVar1) {
     local_14 = 1.0;
   }
-  *param_1 = *param_1 * (1.0 / local_14);
-  param_1[1] = param_1[1] * (1.0 / local_14);
+  *v = *v * (1.0 / local_14);
+  v[1] = v[1] * (1.0 / local_14);
   return fVar1;
 }
 
@@ -113,14 +116,14 @@ void __cdecl TRACK_aim_assist(void)
 
 // 00403E60  AimAssist_LerpDvars  (aim_assist/aim_assist.cpp:276)
 
-float __cdecl AimAssist_LerpDvars(dvar_s *param_1,dvar_s *param_2,float param_3)
+float __cdecl AimAssist_LerpDvars(dvar_s *from,dvar_s *to,float frac)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   
-  if (param_1 == (dvar_s *)0x0) {
+  if (from == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x115,0
                              ,"%s");
     if (!bVar2) {
@@ -129,7 +132,7 @@ float __cdecl AimAssist_LerpDvars(dvar_s *param_1,dvar_s *param_2,float param_3)
       return (float)fVar3;
     }
   }
-  if (param_2 == (dvar_s *)0x0) {
+  if (to == (dvar_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x116,0
                              ,"%s");
     if (!bVar2) {
@@ -138,7 +141,7 @@ float __cdecl AimAssist_LerpDvars(dvar_s *param_1,dvar_s *param_2,float param_3)
       return (float)fVar3;
     }
   }
-  if ((param_3 < 0.0) || (1.0 < param_3)) {
+  if ((frac < 0.0) || (1.0 < frac)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x117,0
                              ,"%s");
     if (!bVar2) {
@@ -147,21 +150,23 @@ float __cdecl AimAssist_LerpDvars(dvar_s *param_1,dvar_s *param_2,float param_3)
       return (float)fVar3;
     }
   }
-  return ((param_2->current).value - (param_1->current).value) * param_3 + (param_1->current).value;
+  return ((to->current).value - (from->current).value) * frac + (from->current).value;
 }
 
 
 // 00403520  AimAssist_UpdateTweakables  (aim_assist/aim_assist.cpp:307)
 
-void __cdecl AimAssist_UpdateTweakables(int param_1)
+void __cdecl AimAssist_UpdateTweakables(int localClientNum)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   float fVar4;
+  AimAssistGlobals *aaGlob;
+  AimTweakables *tweaks;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x137,0
                              ,"localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -171,83 +176,84 @@ void __cdecl AimAssist_UpdateTweakables(int param_1)
       return;
     }
   }
-  if (aaGlobArray[param_1].aimSlowdownActive == false) {
+  if (aaGlobArray[localClientNum].aimSlowdownActive == false) {
     fVar1 = (aim_slowdown_region_width->current).value;
     fVar4 = ScrPlace_HiResGetScale();
-    aaGlobArray[param_1].tweakables.slowdownRegionWidth =
-         (fVar4 * fVar1 * *(float *)(&scrPlaceView + param_1 * 0x78)) /
-         aaGlobArray[param_1].screenWidth;
+    aaGlobArray[localClientNum].tweakables.slowdownRegionWidth =
+         (fVar4 * fVar1 * *(float *)(&scrPlaceView + localClientNum * 0x78)) /
+         aaGlobArray[localClientNum].screenWidth;
     fVar1 = (aim_slowdown_region_height->current).value;
     fVar4 = ScrPlace_HiResGetScale();
-    aaGlobArray[param_1].tweakables.slowdownRegionHeight =
-         (fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + param_1 * 0x78)) /
-         aaGlobArray[param_1].screenHeight;
+    aaGlobArray[localClientNum].tweakables.slowdownRegionHeight =
+         (fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + localClientNum * 0x78)) /
+         aaGlobArray[localClientNum].screenHeight;
   }
   else {
     fVar1 = (aim_slowdown_region_extended_width->current).value;
     fVar4 = ScrPlace_HiResGetScale();
-    aaGlobArray[param_1].tweakables.slowdownRegionWidth =
-         (fVar4 * fVar1 * *(float *)(&scrPlaceView + param_1 * 0x78)) /
-         aaGlobArray[param_1].screenWidth;
+    aaGlobArray[localClientNum].tweakables.slowdownRegionWidth =
+         (fVar4 * fVar1 * *(float *)(&scrPlaceView + localClientNum * 0x78)) /
+         aaGlobArray[localClientNum].screenWidth;
     fVar1 = (aim_slowdown_region_extended_height->current).value;
     fVar4 = ScrPlace_HiResGetScale();
-    aaGlobArray[param_1].tweakables.slowdownRegionHeight =
-         (fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + param_1 * 0x78)) /
-         aaGlobArray[param_1].screenHeight;
+    aaGlobArray[localClientNum].tweakables.slowdownRegionHeight =
+         (fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + localClientNum * 0x78)) /
+         aaGlobArray[localClientNum].screenHeight;
   }
-  if (aaGlobArray[param_1].overrideSnapWidthAndLerp == false) {
+  if (aaGlobArray[localClientNum].overrideSnapWidthAndLerp == false) {
     fVar1 = (aim_autoaim_region_width->current).value;
     fVar4 = ScrPlace_HiResGetScale();
-    aaGlobArray[param_1].tweakables.autoAimRegionWidth =
-         ((fVar4 * fVar1 * *(float *)(&scrPlaceView + param_1 * 0x78)) /
-         aaGlobArray[param_1].screenWidth) * aaGlobArray[param_1].fovScaleInv;
+    aaGlobArray[localClientNum].tweakables.autoAimRegionWidth =
+         ((fVar4 * fVar1 * *(float *)(&scrPlaceView + localClientNum * 0x78)) /
+         aaGlobArray[localClientNum].screenWidth) * aaGlobArray[localClientNum].fovScaleInv;
   }
   else {
-    fVar1 = aaGlobArray[param_1].overrideAutoaimWidthValue;
+    fVar1 = aaGlobArray[localClientNum].overrideAutoaimWidthValue;
     fVar4 = ScrPlace_HiResGetScale();
-    aaGlobArray[param_1].tweakables.autoAimRegionWidth =
-         ((fVar4 * fVar1 * *(float *)(&scrPlaceView + param_1 * 0x78)) /
-         aaGlobArray[param_1].screenWidth) * aaGlobArray[param_1].fovScaleInv;
+    aaGlobArray[localClientNum].tweakables.autoAimRegionWidth =
+         ((fVar4 * fVar1 * *(float *)(&scrPlaceView + localClientNum * 0x78)) /
+         aaGlobArray[localClientNum].screenWidth) * aaGlobArray[localClientNum].fovScaleInv;
   }
   fVar1 = (aim_autoaim_region_height->current).value;
   fVar4 = ScrPlace_HiResGetScale();
-  aaGlobArray[param_1].tweakables.autoAimRegionHeight =
-       ((fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + param_1 * 0x78)) /
-       aaGlobArray[param_1].screenHeight) * aaGlobArray[param_1].fovScaleInv;
+  aaGlobArray[localClientNum].tweakables.autoAimRegionHeight =
+       ((fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + localClientNum * 0x78)) /
+       aaGlobArray[localClientNum].screenHeight) * aaGlobArray[localClientNum].fovScaleInv;
   fVar1 = (aim_automelee_region_width->current).value;
   fVar4 = ScrPlace_HiResGetScale();
-  aaGlobArray[param_1].tweakables.autoMeleeRegionWidth =
-       ((fVar4 * fVar1 * *(float *)(&scrPlaceView + param_1 * 0x78)) /
-       aaGlobArray[param_1].screenWidth) * aaGlobArray[param_1].fovScaleInv;
+  aaGlobArray[localClientNum].tweakables.autoMeleeRegionWidth =
+       ((fVar4 * fVar1 * *(float *)(&scrPlaceView + localClientNum * 0x78)) /
+       aaGlobArray[localClientNum].screenWidth) * aaGlobArray[localClientNum].fovScaleInv;
   fVar1 = (aim_automelee_region_height->current).value;
   fVar4 = ScrPlace_HiResGetScale();
-  aaGlobArray[param_1].tweakables.autoMeleeRegionHeight =
-       ((fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + param_1 * 0x78)) /
-       aaGlobArray[param_1].screenHeight) * aaGlobArray[param_1].fovScaleInv;
+  aaGlobArray[localClientNum].tweakables.autoMeleeRegionHeight =
+       ((fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + localClientNum * 0x78)) /
+       aaGlobArray[localClientNum].screenHeight) * aaGlobArray[localClientNum].fovScaleInv;
   fVar1 = (aim_lockon_region_width->current).value;
   fVar4 = ScrPlace_HiResGetScale();
-  aaGlobArray[param_1].tweakables.lockOnRegionWidth =
-       (fVar4 * fVar1 * *(float *)(&scrPlaceView + param_1 * 0x78)) /
-       aaGlobArray[param_1].screenWidth;
+  aaGlobArray[localClientNum].tweakables.lockOnRegionWidth =
+       (fVar4 * fVar1 * *(float *)(&scrPlaceView + localClientNum * 0x78)) /
+       aaGlobArray[localClientNum].screenWidth;
   fVar1 = (aim_lockon_region_height->current).value;
   fVar4 = ScrPlace_HiResGetScale();
-  aaGlobArray[param_1].tweakables.lockOnRegionHeight =
-       (fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + param_1 * 0x78)) /
-       aaGlobArray[param_1].screenHeight;
+  aaGlobArray[localClientNum].tweakables.lockOnRegionHeight =
+       (fVar4 * fVar1 * *(float *)(&DAT_02d9e684 + localClientNum * 0x78)) /
+       aaGlobArray[localClientNum].screenHeight;
   return;
 }
 
 
 // 00403950  AimAssist_UpdateAdsLerp  (aim_assist/aim_assist.cpp:344)
 
-void __cdecl AimAssist_UpdateAdsLerp(AimInput *param_1)
+void __cdecl AimAssist_UpdateAdsLerp(AimInput *input)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
+  AimAssistGlobals *aaGlob;
   
-  if (param_1 == (AimInput *)0x0) {
+  if (input == (AimInput *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x15b,0
                              ,"%s");
     if (!bVar3) {
@@ -256,7 +262,7 @@ void __cdecl AimAssist_UpdateAdsLerp(AimInput *param_1)
       return;
     }
   }
-  iVar1 = param_1->localClientNum;
+  iVar1 = input->localClientNum;
   bVar3 = Demo_IsPlaying();
   if (bVar3) {
     aaGlobArray[iVar1].adsLerp = 0.0;
@@ -264,7 +270,7 @@ void __cdecl AimAssist_UpdateAdsLerp(AimInput *param_1)
   else {
     aaGlobArray[iVar1].adsLerp = aaGlobArray[iVar1].ps.fWeaponPosFrac;
     if ((aaGlobArray[iVar1].ps.eFlags & 0x300U) != 0) {
-      bVar3 = bitarray<51>::testBit(&param_1->button_bits,0xb);
+      bVar3 = bitarray<51>::testBit(&input->button_bits,0xb);
       if (bVar3) {
         aaGlobArray[iVar1].adsLerp = 1.0;
       }
@@ -279,6 +285,8 @@ void __cdecl AimAssist_UpdateAdsLerp(AimInput *param_1)
 void __cdecl AimAssist_RegisterDvars(void)
 
 {
+  int dvarFlags;
+  
   aim_aimAssistRangeScale =
        _Dvar_RegisterFloat("aim_aimAssistRangeScale",1.0,0.0,2.0,0x1080,
                            "Scales the weapon\'s aim assist range");
@@ -421,21 +429,24 @@ void __cdecl AimAssist_RegisterDvars(void)
 
 // 00403250  Vec3Normalize  (universal/com_vector.h:459)
 
-float __cdecl Vec3Normalize(float *param_1)
+float __cdecl Vec3Normalize(float *v)
 
 {
   float fVar1;
   float local_14;
+  float safeLength;
+  float ilength;
+  float length;
   
-  fVar1 = SQRT(*param_1 * *param_1 + param_1[1] * param_1[1] + param_1[2] * param_1[2]);
+  fVar1 = SQRT(*v * *v + v[1] * v[1] + v[2] * v[2]);
   local_14 = fVar1;
   if (0.0 <= -fVar1) {
     local_14 = 1.0;
   }
   local_14 = 1.0 / local_14;
-  *param_1 = *param_1 * local_14;
-  param_1[1] = param_1[1] * local_14;
-  param_1[2] = param_1[2] * local_14;
+  *v = *v * local_14;
+  v[1] = v[1] * local_14;
+  v[2] = v[2] * local_14;
   return fVar1;
 }
 
@@ -444,24 +455,24 @@ float __cdecl Vec3Normalize(float *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl AimAssist_Init(int param_1)
+void __cdecl AimAssist_Init(int localClientNum)
 
 {
-  char local_8c [128];
+  char graphName [128];
   uint local_c;
-  int local_8;
+  int graphIndex;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)(aaGlobArray + param_1),'\0',0xeb0);
+  memset((uchar *)(aaGlobArray + localClientNum),'\0',0xeb0);
   AimAssist_RegisterDvars();
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    Com_sprintf(local_8c,0x80,"aim_assist/view_input_%d.graph");
-    GraphFloat_Load(aaInputGraph + local_8,local_8c,1.0);
+  for (graphIndex = 0; graphIndex < 4; graphIndex = graphIndex + 1) {
+    Com_sprintf(graphName,0x80,"aim_assist/view_input_%d.graph");
+    GraphFloat_Load(aaInputGraph + graphIndex,graphName,1.0);
   }
   Cbuf_InsertText(0,"exec devgui_aimassist\n");
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    Com_sprintf(local_8c,0x80,"Aim Assist/Input Graph:1/Graph %d");
-    GraphFloat_CreateDevGui(aaInputGraph + local_8,local_8c);
+  for (graphIndex = 0; graphIndex < 4; graphIndex = graphIndex + 1) {
+    Com_sprintf(graphName,0x80,"Aim Assist/Input Graph:1/Graph %d");
+    GraphFloat_CreateDevGui(aaInputGraph + graphIndex,graphName);
   }
   return;
 }
@@ -469,13 +480,14 @@ void __cdecl AimAssist_Init(int param_1)
 
 // 00401990  AimAssist_Setup  (aim_assist/aim_assist.cpp:498)
 
-void __cdecl AimAssist_Setup(int param_1,playerState_s *param_2)
+void __cdecl AimAssist_Setup(int localClientNum,playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
+  AimAssistGlobals *aaGlob;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x1f5,0
                              ,"localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -485,7 +497,7 @@ void __cdecl AimAssist_Setup(int param_1,playerState_s *param_2)
       return;
     }
   }
-  if (param_2 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x1f6,0
                              ,"%s");
     if (!bVar2) {
@@ -494,28 +506,28 @@ void __cdecl AimAssist_Setup(int param_1,playerState_s *param_2)
       return;
     }
   }
-  memset((uchar *)(aaGlobArray + param_1),'\0',0xeb0);
-  aaGlobArray[param_1].initialized = true;
-  aaGlobArray[param_1].fovTurnRateScale = 1.0;
-  aaGlobArray[param_1].fovScaleInv = 1.0;
-  aaGlobArray[param_1].screenWidth = *(float *)(&DAT_02d9e6c0 + param_1 * 0x78);
-  aaGlobArray[param_1].screenHeight = *(float *)(&DAT_02d9e6c4 + param_1 * 0x78);
-  aaGlobArray[param_1].autoAimTargetEnt = 0x3ff;
-  aaGlobArray[param_1].autoMeleeTargetEnt = 0x3ff;
-  aaGlobArray[param_1].lockOnTargetEnt = 0x3ff;
-  aaGlobArray[param_1].aimSlowdownTargetEnt = 0x3ff;
-  aaGlobArray[param_1].autoAimActive = false;
-  aaGlobArray[param_1].autoAimHasRealTarget = false;
-  aaGlobArray[param_1].autoAimJustGotTarget = false;
-  aaGlobArray[param_1].aimSlowdownActive = false;
-  AimAssist_BackupPlayerState(param_1,param_2);
+  memset((uchar *)(aaGlobArray + localClientNum),'\0',0xeb0);
+  aaGlobArray[localClientNum].initialized = true;
+  aaGlobArray[localClientNum].fovTurnRateScale = 1.0;
+  aaGlobArray[localClientNum].fovScaleInv = 1.0;
+  aaGlobArray[localClientNum].screenWidth = *(float *)(&DAT_02d9e6c0 + localClientNum * 0x78);
+  aaGlobArray[localClientNum].screenHeight = *(float *)(&DAT_02d9e6c4 + localClientNum * 0x78);
+  aaGlobArray[localClientNum].autoAimTargetEnt = 0x3ff;
+  aaGlobArray[localClientNum].autoMeleeTargetEnt = 0x3ff;
+  aaGlobArray[localClientNum].lockOnTargetEnt = 0x3ff;
+  aaGlobArray[localClientNum].aimSlowdownTargetEnt = 0x3ff;
+  aaGlobArray[localClientNum].autoAimActive = false;
+  aaGlobArray[localClientNum].autoAimHasRealTarget = false;
+  aaGlobArray[localClientNum].autoAimJustGotTarget = false;
+  aaGlobArray[localClientNum].aimSlowdownActive = false;
+  AimAssist_BackupPlayerState(localClientNum,ps);
   return;
 }
 
 
 // 00401EA0  AimAssist_PlayerDisabledTargetAssist  (aim_assist/aim_assist.cpp:534)
 
-bool __cdecl AimAssist_PlayerDisabledTargetAssist(int param_1)
+bool __cdecl AimAssist_PlayerDisabledTargetAssist(int localClientNum_2)
 
 {
   Demo_IsPlaying();
@@ -530,7 +542,7 @@ bool __cdecl AimAssist_PlayerDisabledTargetAssist(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
+void __cdecl AimAssist_BackupPlayerState(int localClientNum,playerState_s *ps)
 
 {
   code *pcVar1;
@@ -539,8 +551,9 @@ void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
   int iVar4;
   uint uVar5;
   WeaponDef *pWVar6;
+  AimAssistGlobals *aaGlob;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x249,0
                              ,"localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)"
                             );
@@ -550,7 +563,7 @@ void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
       return;
     }
   }
-  if (param_2 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x24a,0
                              ,"%s");
     if (!bVar2) {
@@ -559,28 +572,28 @@ void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
       return;
     }
   }
-  aaGlobArray[param_1].ps.velocity[0] = param_2->velocity[0];
-  aaGlobArray[param_1].ps.velocity[1] = param_2->velocity[1];
-  aaGlobArray[param_1].ps.velocity[2] = param_2->velocity[2];
-  aaGlobArray[param_1].ps.viewangles[0] = param_2->viewangles[0];
-  aaGlobArray[param_1].ps.viewangles[1] = param_2->viewangles[1];
-  aaGlobArray[param_1].ps.viewangles[2] = param_2->viewangles[2];
-  aaGlobArray[param_1].ps.origin[0] = param_2->origin[0];
-  aaGlobArray[param_1].ps.origin[1] = param_2->origin[1];
-  aaGlobArray[param_1].ps.origin[2] = param_2->origin[2];
-  aaGlobArray[param_1].ps.eFlags = param_2->eFlags;
-  aaGlobArray[param_1].ps.linkFlags = param_2->linkFlags;
-  aaGlobArray[param_1].ps.pm_flags = param_2->pm_flags;
-  aaGlobArray[param_1].ps.weapFlags = param_2->weapFlags;
-  aaGlobArray[param_1].ps.weaponstate = param_2->weaponstate;
-  aaGlobArray[param_1].ps.fWeaponPosFrac = param_2->fWeaponPosFrac;
-  aaGlobArray[param_1].ps.viewHeightCurrent = param_2->viewHeightCurrent;
-  if ((param_2->eFlags & 0x4300U) == 0) {
-    iVar4 = BG_GetViewmodelWeaponIndex(param_2);
-    aaGlobArray[param_1].ps.weapIndex = iVar4;
+  aaGlobArray[localClientNum].ps.velocity[0] = ps->velocity[0];
+  aaGlobArray[localClientNum].ps.velocity[1] = ps->velocity[1];
+  aaGlobArray[localClientNum].ps.velocity[2] = ps->velocity[2];
+  aaGlobArray[localClientNum].ps.viewangles[0] = ps->viewangles[0];
+  aaGlobArray[localClientNum].ps.viewangles[1] = ps->viewangles[1];
+  aaGlobArray[localClientNum].ps.viewangles[2] = ps->viewangles[2];
+  aaGlobArray[localClientNum].ps.origin[0] = ps->origin[0];
+  aaGlobArray[localClientNum].ps.origin[1] = ps->origin[1];
+  aaGlobArray[localClientNum].ps.origin[2] = ps->origin[2];
+  aaGlobArray[localClientNum].ps.eFlags = ps->eFlags;
+  aaGlobArray[localClientNum].ps.linkFlags = ps->linkFlags;
+  aaGlobArray[localClientNum].ps.pm_flags = ps->pm_flags;
+  aaGlobArray[localClientNum].ps.weapFlags = ps->weapFlags;
+  aaGlobArray[localClientNum].ps.weaponstate = ps->weaponstate;
+  aaGlobArray[localClientNum].ps.fWeaponPosFrac = ps->fWeaponPosFrac;
+  aaGlobArray[localClientNum].ps.viewHeightCurrent = ps->viewHeightCurrent;
+  if ((ps->eFlags & 0x4300U) == 0) {
+    iVar4 = BG_GetViewmodelWeaponIndex(ps);
+    aaGlobArray[localClientNum].ps.weapIndex = iVar4;
   }
   else {
-    if (param_2->viewlocked_entNum == 0x3ff) {
+    if (ps->viewlocked_entNum == 0x3ff) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x25d
                                ,0,"%s");
       if (!bVar2) {
@@ -589,7 +602,7 @@ void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
         return;
       }
     }
-    if ((param_2->viewlocked_entNum < 0) || (0x3ff < param_2->viewlocked_entNum)) {
+    if ((ps->viewlocked_entNum < 0) || (0x3ff < ps->viewlocked_entNum)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x25e
                                ,0,"%s\n\t(ps->viewlocked_entNum) = %i");
       if (!bVar2) {
@@ -598,13 +611,13 @@ void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
         return;
       }
     }
-    pcVar3 = CG_GetEntity(param_1,(int)param_2->viewlocked_entNum);
-    aaGlobArray[param_1].ps.weapIndex = (uint)(pcVar3->nextState).weapon;
+    pcVar3 = CG_GetEntity(localClientNum,(int)ps->viewlocked_entNum);
+    aaGlobArray[localClientNum].ps.weapIndex = (uint)(pcVar3->nextState).weapon;
   }
-  iVar4 = CG_GetPlayerMeleeWeapon(param_2,param_1);
-  aaGlobArray[param_1].ps.meleeWeapIndex = iVar4;
+  iVar4 = CG_GetPlayerMeleeWeapon(ps,localClientNum);
+  aaGlobArray[localClientNum].ps.meleeWeapIndex = iVar4;
   uVar5 = BG_GetNumWeapons();
-  if (uVar5 <= (uint)aaGlobArray[param_1].ps.weapIndex) {
+  if (uVar5 <= (uint)aaGlobArray[localClientNum].ps.weapIndex) {
     BG_GetNumWeapons();
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x268,0
                              ,
@@ -616,32 +629,35 @@ void __cdecl AimAssist_BackupPlayerState(int param_1,playerState_s *param_2)
       return;
     }
   }
-  iVar4 = BG_WeaponAmmo(param_2,aaGlobArray[param_1].ps.weapIndex);
-  if ((iVar4 < 1) && (param_2->throwBackGrenadeTimeLeft < 1)) {
-    aaGlobArray[param_1].ps.hasAmmo = false;
+  iVar4 = BG_WeaponAmmo(ps,aaGlobArray[localClientNum].ps.weapIndex);
+  if ((iVar4 < 1) && (ps->throwBackGrenadeTimeLeft < 1)) {
+    aaGlobArray[localClientNum].ps.hasAmmo = false;
   }
   else {
-    aaGlobArray[param_1].ps.hasAmmo = true;
+    aaGlobArray[localClientNum].ps.hasAmmo = true;
   }
-  pWVar6 = BG_GetWeaponDef(aaGlobArray[param_1].ps.weapIndex);
-  *(bool *)(param_1 * 0xeb0 + 0xe20329) = pWVar6->bDualWield != false;
-  bVar2 = AimAssist_PlayerDisabledTargetAssist(param_1);
-  *(bool *)(param_1 * 0xeb0 + 0xe2032a) = bVar2;
+  pWVar6 = BG_GetWeaponDef(aaGlobArray[localClientNum].ps.weapIndex);
+  *(bool *)(localClientNum * 0xeb0 + 0xe20329) = pWVar6->bDualWield != false;
+  bVar2 = AimAssist_PlayerDisabledTargetAssist(localClientNum);
+  *(bool *)(localClientNum * 0xeb0 + 0xe2032a) = bVar2;
   return;
 }
 
 
 // 00402230  AimAssist_FovScale  (aim_assist/aim_assist.cpp:645)
 
-void __cdecl AimAssist_FovScale(AimAssistGlobals *param_1,float param_2)
+/* WARNING: Variable defined which should be unmapped: tanHalfBaseFovY */
+
+void __cdecl AimAssist_FovScale(AimAssistGlobals *aaGlob,float tanHalfFovY)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   double dVar4;
+  float tanHalfBaseFovY;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x288,0
                              ,"%s");
     if (!bVar2) {
@@ -650,12 +666,11 @@ void __cdecl AimAssist_FovScale(AimAssistGlobals *param_1,float param_2)
       return;
     }
   }
-  param_1->fovTurnRateScale = param_2 / 0.47780272;
+  aaGlob->fovTurnRateScale = tanHalfFovY / 0.47780272;
   fVar3 = (cg_fov->current).value * 0.017453292 * 0.5;
   dVar4 = (double)fVar3;
   __libm_sse2_tan((double)CONCAT44(0x3ef4a28f,fVar3));
-  fVar3 = (float)dVar4 * 0.75;
-  if (fVar3 == 0.0) {
+  if ((float)dVar4 * 0.75 == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x291,0
                              ,"%s\n\t(tanHalfBaseFovY) = %g");
     if (!bVar2) {
@@ -664,14 +679,15 @@ void __cdecl AimAssist_FovScale(AimAssistGlobals *param_1,float param_2)
       return;
     }
   }
-  param_1->fovScaleInv = fVar3 / param_2;
+  aaGlob->fovScaleInv = ((float)dVar4 * 0.75) / tanHalfFovY;
   return;
 }
 
 
 // 00402320  AimAssist_CreateScreenMatrix  (aim_assist/aim_assist.cpp:666)
 
-void __cdecl AimAssist_CreateScreenMatrix(AimAssistGlobals *param_1,float param_2,float param_3)
+void __cdecl
+AimAssist_CreateScreenMatrix(AimAssistGlobals *aaGlob,float tanHalfFovX,float tanHalfFovY)
 
 {
   code *pcVar1;
@@ -680,7 +696,7 @@ void __cdecl AimAssist_CreateScreenMatrix(AimAssistGlobals *param_1,float param_
   float local_90 [16];
   float local_50 [16];
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x29f,0
                              ,"%s");
     if (!bVar2) {
@@ -689,19 +705,18 @@ void __cdecl AimAssist_CreateScreenMatrix(AimAssistGlobals *param_1,float param_
       return;
     }
   }
-  MatrixForViewer(param_1->viewOrigin,param_1->viewAxis,(float (*) [4])local_50);
-  InfinitePerspectiveMatrix(param_2,param_3,1.0,(float (*) [4])local_90);
+  MatrixForViewer(aaGlob->viewOrigin,aaGlob->viewAxis,(float (*) [4])local_50);
+  InfinitePerspectiveMatrix(tanHalfFovX,tanHalfFovY,1.0,(float (*) [4])local_90);
   MatrixMultiply44((float (*) [4])local_50,(float (*) [4])local_90,(float (*) [4])local_d0);
-  MatrixTranspose44(local_d0,param_1->screenMtx[0]);
-  MatrixInverse44(param_1->screenMtx[0],param_1->invScreenMtx[0]);
+  MatrixTranspose44(local_d0,aaGlob->screenMtx[0]);
+  MatrixInverse44(aaGlob->screenMtx[0],aaGlob->invScreenMtx[0]);
   return;
 }
 
 
 // 004028D0  AimAssist_XfmWorldPointToClipSpace  (aim_assist/aim_assist.cpp:685)
 
-bool __cdecl
-AimAssist_XfmWorldPointToClipSpace(AimAssistGlobals *param_1,float *param_2,float *param_3)
+bool __cdecl AimAssist_XfmWorldPointToClipSpace(AimAssistGlobals *aaGlob,float *in,float *out)
 
 {
   float fVar1;
@@ -720,45 +735,45 @@ AimAssist_XfmWorldPointToClipSpace(AimAssistGlobals *param_1,float *param_2,floa
   undefined1 uVar14;
   float fVar15;
   
-  if ((param_1 == (AimAssistGlobals *)0x0) &&
+  if ((aaGlob == (AimAssistGlobals *)0x0) &&
      (bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
                                 0x2b1,0,"%s"), !bVar13)) {
     pcVar12 = (code *)swi(3);
     uVar14 = (*pcVar12)();
     return (bool)uVar14;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((in == (float *)0x0) &&
      (bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
                                 0x2b2,0,"%s"), !bVar13)) {
     pcVar12 = (code *)swi(3);
     uVar14 = (*pcVar12)();
     return (bool)uVar14;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((out == (float *)0x0) &&
      (bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
                                 0x2b3,0,"%s"), !bVar13)) {
     pcVar12 = (code *)swi(3);
     uVar14 = (*pcVar12)();
     return (bool)uVar14;
   }
-  fVar1 = *param_2;
-  fVar2 = param_2[1];
-  fVar3 = param_2[2];
-  fVar15 = param_1->screenMtx[3][0] * fVar1 + param_1->screenMtx[3][1] * fVar2 +
-           param_1->screenMtx[3][2] * fVar3 + param_1->screenMtx[3][3] * 1.0;
+  fVar1 = *in;
+  fVar2 = in[1];
+  fVar3 = in[2];
+  fVar15 = aaGlob->screenMtx[3][0] * fVar1 + aaGlob->screenMtx[3][1] * fVar2 +
+           aaGlob->screenMtx[3][2] * fVar3 + aaGlob->screenMtx[3][3] * 1.0;
   if (0.0 < fVar15) {
-    fVar4 = param_1->screenMtx[1][3];
-    fVar5 = param_1->screenMtx[1][2];
-    fVar6 = param_1->screenMtx[1][1];
-    fVar7 = param_1->screenMtx[1][0];
-    fVar8 = param_1->screenMtx[2][3];
-    fVar9 = param_1->screenMtx[2][2];
-    fVar10 = param_1->screenMtx[2][1];
-    fVar11 = param_1->screenMtx[2][0];
-    *param_3 = (param_1->screenMtx[0][0] * fVar1 + param_1->screenMtx[0][1] * fVar2 +
-                param_1->screenMtx[0][2] * fVar3 + param_1->screenMtx[0][3] * 1.0) / fVar15;
-    param_3[1] = ((fVar7 * fVar1 + fVar6 * fVar2 + fVar5 * fVar3 + fVar4 * 1.0) / fVar15) * -1.0;
-    param_3[2] = (fVar11 * fVar1 + fVar10 * fVar2 + fVar9 * fVar3 + fVar8 * 1.0) / fVar15;
+    fVar4 = aaGlob->screenMtx[1][3];
+    fVar5 = aaGlob->screenMtx[1][2];
+    fVar6 = aaGlob->screenMtx[1][1];
+    fVar7 = aaGlob->screenMtx[1][0];
+    fVar8 = aaGlob->screenMtx[2][3];
+    fVar9 = aaGlob->screenMtx[2][2];
+    fVar10 = aaGlob->screenMtx[2][1];
+    fVar11 = aaGlob->screenMtx[2][0];
+    *out = (aaGlob->screenMtx[0][0] * fVar1 + aaGlob->screenMtx[0][1] * fVar2 +
+            aaGlob->screenMtx[0][2] * fVar3 + aaGlob->screenMtx[0][3] * 1.0) / fVar15;
+    out[1] = ((fVar7 * fVar1 + fVar6 * fVar2 + fVar5 * fVar3 + fVar4 * 1.0) / fVar15) * -1.0;
+    out[2] = (fVar11 * fVar1 + fVar10 * fVar2 + fVar9 * fVar3 + fVar8 * 1.0) / fVar15;
   }
   return 0.0 < fVar15;
 }
@@ -768,7 +783,7 @@ AimAssist_XfmWorldPointToClipSpace(AimAssistGlobals *param_1,float *param_2,floa
 
 bool __cdecl
 AimAssist_ConvertToClipBounds
-          (AimAssistGlobals *param_1,float (*param_2) [3],float (*param_3) [3],float (*param_4) [3])
+          (AimAssistGlobals *aaGlob,float (*bounds) [3],float (*mtx) [3],float (*clipBounds) [3])
 
 {
   float fVar1;
@@ -787,59 +802,59 @@ AimAssist_ConvertToClipBounds
   float local_40;
   float local_38;
   float local_30;
-  float local_2c;
+  float worldCorner;
   float local_28;
   float local_24;
-  float local_20 [3];
-  uint local_14;
-  float local_10 [3];
+  float clipCorner [3];
+  int ptIndex;
+  float worldCornerRotated [3];
   
-  if ((param_2 == (float (*) [3])0x0) &&
+  if ((bounds == (float (*) [3])0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x2d2
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_3 == (float (*) [3])0x0) &&
+  if ((mtx == (float (*) [3])0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x2d3
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((param_4 == (float (*) [3])0x0) &&
+  if ((clipBounds == (float (*) [3])0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x2d4
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  ClearBounds(*param_4,param_4[1]);
-  for (local_14 = 0; (int)local_14 < 8; local_14 = local_14 + 1) {
-    local_2c = param_2[local_14 & 1][0];
-    local_28 = param_2[(int)local_14 >> 1 & 1][1];
-    local_24 = param_2[(int)local_14 >> 2 & 1][2];
-    MatrixTransformVector43(&local_2c,param_3,local_10);
-    bVar3 = AimAssist_XfmWorldPointToClipSpace(param_1,local_10,local_20);
+  ClearBounds(*clipBounds,clipBounds[1]);
+  for (ptIndex = 0; ptIndex < 8; ptIndex = ptIndex + 1) {
+    worldCorner = bounds[ptIndex & 1][0];
+    local_28 = bounds[ptIndex >> 1 & 1][1];
+    local_24 = bounds[ptIndex >> 2 & 1][2];
+    MatrixTransformVector43(&worldCorner,mtx,worldCornerRotated);
+    bVar3 = AimAssist_XfmWorldPointToClipSpace(aaGlob,worldCornerRotated,clipCorner);
     if (bVar3) {
-      AddPointToBounds(local_20,*param_4,param_4[1]);
+      AddPointToBounds(clipCorner,*clipBounds,clipBounds[1]);
     }
   }
-  if (((param_4[1][0] <= (*param_4)[0]) || (param_4[1][1] <= (*param_4)[1])) ||
-     (param_4[1][2] <= (*param_4)[2])) {
+  if (((clipBounds[1][0] <= (*clipBounds)[0]) || (clipBounds[1][1] <= (*clipBounds)[1])) ||
+     (clipBounds[1][2] <= (*clipBounds)[2])) {
     bVar3 = false;
   }
-  else if (((1.0 < (*param_4)[0]) || (1.0 < (*param_4)[1])) || (1.0 < (*param_4)[2])) {
+  else if (((1.0 < (*clipBounds)[0]) || (1.0 < (*clipBounds)[1])) || (1.0 < (*clipBounds)[2])) {
     bVar3 = false;
   }
-  else if (((param_4[1][0] <= -1.0 && param_4[1][0] != -1.0) ||
-           (param_4[1][1] <= -1.0 && param_4[1][1] != -1.0)) ||
-          (param_4[1][2] <= 0.0 && param_4[1][2] != 0.0)) {
+  else if (((clipBounds[1][0] <= -1.0 && clipBounds[1][0] != -1.0) ||
+           (clipBounds[1][1] <= -1.0 && clipBounds[1][1] != -1.0)) ||
+          (clipBounds[1][2] <= 0.0 && clipBounds[1][2] != 0.0)) {
     bVar3 = false;
   }
   else {
-    fVar1 = (*param_4)[0];
+    fVar1 = (*clipBounds)[0];
     local_30 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_30 = 1.0;
@@ -850,8 +865,8 @@ AimAssist_ConvertToClipBounds
     else {
       local_60 = -1.0;
     }
-    (*param_4)[0] = local_60;
-    fVar1 = (*param_4)[1];
+    (*clipBounds)[0] = local_60;
+    fVar1 = (*clipBounds)[1];
     local_38 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_38 = 1.0;
@@ -862,8 +877,8 @@ AimAssist_ConvertToClipBounds
     else {
       local_64 = -1.0;
     }
-    (*param_4)[1] = local_64;
-    fVar1 = (*param_4)[2];
+    (*clipBounds)[1] = local_64;
+    fVar1 = (*clipBounds)[2];
     local_40 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_40 = 1.0;
@@ -874,8 +889,8 @@ AimAssist_ConvertToClipBounds
     else {
       local_68 = 0.0;
     }
-    (*param_4)[2] = local_68;
-    fVar1 = param_4[1][0];
+    (*clipBounds)[2] = local_68;
+    fVar1 = clipBounds[1][0];
     local_48 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_48 = 1.0;
@@ -886,8 +901,8 @@ AimAssist_ConvertToClipBounds
     else {
       local_6c = -1.0;
     }
-    param_4[1][0] = local_6c;
-    fVar1 = param_4[1][1];
+    clipBounds[1][0] = local_6c;
+    fVar1 = clipBounds[1][1];
     local_50 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_50 = 1.0;
@@ -898,8 +913,8 @@ AimAssist_ConvertToClipBounds
     else {
       local_70 = -1.0;
     }
-    param_4[1][1] = local_70;
-    fVar1 = param_4[1][2];
+    clipBounds[1][1] = local_70;
+    fVar1 = clipBounds[1][2];
     local_58 = fVar1;
     if (0.0 <= fVar1 - 1.0) {
       local_58 = 1.0;
@@ -910,7 +925,7 @@ AimAssist_ConvertToClipBounds
     else {
       local_74 = 0.0;
     }
-    param_4[1][2] = local_74;
+    clipBounds[1][2] = local_74;
     bVar3 = true;
   }
   return bVar3;
@@ -919,7 +934,7 @@ AimAssist_ConvertToClipBounds
 
 // 00402B30  AimAssist_GetCrosshairDistSqr  (aim_assist/aim_assist.cpp:762)
 
-float __cdecl AimAssist_GetCrosshairDistSqr(float *param_1,float *param_2)
+float __cdecl AimAssist_GetCrosshairDistSqr(float *clipMins,float *clipMaxs)
 
 {
   code *pcVar1;
@@ -927,8 +942,9 @@ float __cdecl AimAssist_GetCrosshairDistSqr(float *param_1,float *param_2)
   float10 fVar3;
   float fVar4;
   float fVar5;
+  float distSqr;
   
-  if (param_1 == (float *)0x0) {
+  if (clipMins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x2fe,0
                              ,"%s");
     if (!bVar2) {
@@ -937,7 +953,7 @@ float __cdecl AimAssist_GetCrosshairDistSqr(float *param_1,float *param_2)
       return (float)fVar3;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (clipMaxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x2ff,0
                              ,"%s");
     if (!bVar2) {
@@ -946,8 +962,8 @@ float __cdecl AimAssist_GetCrosshairDistSqr(float *param_1,float *param_2)
       return (float)fVar3;
     }
   }
-  fVar4 = (*param_1 + *param_2) * 0.5;
-  fVar5 = (param_1[1] + param_2[1]) * 0.5;
+  fVar4 = (*clipMins + *clipMaxs) * 0.5;
+  fVar5 = (clipMins[1] + clipMaxs[1]) * 0.5;
   return fVar4 * fVar4 + fVar5 * fVar5;
 }
 
@@ -955,7 +971,8 @@ float __cdecl AimAssist_GetCrosshairDistSqr(float *param_1,float *param_2)
 // 004046D0  AimAssist_DoBoundsIntersectCenterBox  (aim_assist/aim_assist.cpp:790)
 
 bool __cdecl
-AimAssist_DoBoundsIntersectCenterBox(float *param_1,float *param_2,float param_3,float param_4)
+AimAssist_DoBoundsIntersectCenterBox
+          (float *clipMins,float *clipMaxs,float clipHalfWidth,float clipHalfHeight)
 
 {
   code *pcVar1;
@@ -963,8 +980,12 @@ AimAssist_DoBoundsIntersectCenterBox(float *param_1,float *param_2,float param_3
   bool bVar3;
   undefined1 uVar4;
   bool local_1c;
+  float hOffset;
+  bool widthTest;
+  bool heightTest;
+  float wOffset;
   
-  if (param_1 == (float *)0x0) {
+  if (clipMins == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x31d,0
                              ,"%s");
     if (!bVar3) {
@@ -973,7 +994,7 @@ AimAssist_DoBoundsIntersectCenterBox(float *param_1,float *param_2,float param_3
       return (bool)uVar4;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (clipMaxs == (float *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x31e,0
                              ,"%s");
     if (!bVar3) {
@@ -982,13 +1003,13 @@ AimAssist_DoBoundsIntersectCenterBox(float *param_1,float *param_2,float param_3
       return (bool)uVar4;
     }
   }
-  if ((param_3 + 0.0 < *param_1) || (*param_2 < -param_3 + 0.0)) {
+  if ((clipHalfWidth + 0.0 < *clipMins) || (*clipMaxs < -clipHalfWidth + 0.0)) {
     bVar3 = false;
   }
   else {
     bVar3 = true;
   }
-  if ((param_4 + 0.0 < param_1[1]) || (param_2[1] < -param_4 + 0.0)) {
+  if ((clipHalfHeight + 0.0 < clipMins[1]) || (clipMaxs[1] < -clipHalfHeight + 0.0)) {
     bVar2 = false;
   }
   else {
@@ -1006,15 +1027,18 @@ AimAssist_DoBoundsIntersectCenterBox(float *param_1,float *param_2,float param_3
 
 // 004044E0  AimAssist_GetAimAssistRange  (aim_assist/aim_assist.cpp:822)
 
-float __cdecl AimAssist_GetAimAssistRange(int param_1,float param_2)
+float __cdecl AimAssist_GetAimAssistRange(int weapIndex,float adsLerp)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponVariantDef *pWVar3;
   float10 fVar4;
+  float range;
+  WeaponVariantDef *weapVariantDef;
+  WeaponDef *weapDef;
   
-  if (param_1 == 0) {
+  if (weapIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x33b,0
                              ,"%s");
     if (!bVar2) {
@@ -1023,7 +1047,7 @@ float __cdecl AimAssist_GetAimAssistRange(int param_1,float param_2)
       return (float)fVar4;
     }
   }
-  if ((param_2 < 0.0) || (1.0 < param_2)) {
+  if ((adsLerp < 0.0) || (1.0 < adsLerp)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x33c,0
                              ,"adsLerp not in [0.0f, 1.0f]\n\t%g not in [%g, %g]");
     if (!bVar2) {
@@ -1032,23 +1056,25 @@ float __cdecl AimAssist_GetAimAssistRange(int param_1,float param_2)
       return (float)fVar4;
     }
   }
-  pWVar3 = BG_GetWeaponVariantDef(param_1);
-  return ((1.0 - param_2) * pWVar3->weapDef->aimAssistRange + pWVar3->fAimAssistRangeAds * param_2)
+  pWVar3 = BG_GetWeaponVariantDef(weapIndex);
+  return ((1.0 - adsLerp) * pWVar3->weapDef->aimAssistRange + pWVar3->fAimAssistRangeAds * adsLerp)
          * (aim_aimAssistRangeScale->current).value;
 }
 
 
 // 00404E00  AimAssist_GetAutoAimRange  (aim_assist/aim_assist.cpp:841)
 
-float __cdecl AimAssist_GetAutoAimRange(int param_1)
+float __cdecl AimAssist_GetAutoAimRange(int weapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
   float10 fVar4;
+  float range;
+  WeaponDef *weapDef;
   
-  if (param_1 == 0) {
+  if (weapIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x34d,0
                              ,"%s");
     if (!bVar2) {
@@ -1057,21 +1083,21 @@ float __cdecl AimAssist_GetAutoAimRange(int param_1)
       return (float)fVar4;
     }
   }
-  pWVar3 = BG_GetWeaponDef(param_1);
+  pWVar3 = BG_GetWeaponDef(weapIndex);
   return pWVar3->autoAimRange * (aim_autoAimRangeScale->current).value;
 }
 
 
 // 00402D60  AimAssist_CompareTargets  (aim_assist/aim_assist.cpp:859)
 
-int __cdecl AimAssist_CompareTargets(AimScreenTarget *param_1,AimScreenTarget *param_2)
+int __cdecl AimAssist_CompareTargets(AimScreenTarget *screenTargetA,AimScreenTarget *screenTargetB)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (AimScreenTarget *)0x0) {
+  if (screenTargetA == (AimScreenTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x35c,0
                              ,"%s");
     if (!bVar2) {
@@ -1080,7 +1106,7 @@ int __cdecl AimAssist_CompareTargets(AimScreenTarget *param_1,AimScreenTarget *p
       return iVar3;
     }
   }
-  if (param_2 == (AimScreenTarget *)0x0) {
+  if (screenTargetB == (AimScreenTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x35d,0
                              ,"%s");
     if (!bVar2) {
@@ -1089,10 +1115,10 @@ int __cdecl AimAssist_CompareTargets(AimScreenTarget *param_1,AimScreenTarget *p
       return iVar3;
     }
   }
-  if (param_2->crosshairDistSqr < param_1->crosshairDistSqr ||
-      param_2->crosshairDistSqr == param_1->crosshairDistSqr) {
-    if (param_1->crosshairDistSqr < param_2->crosshairDistSqr ||
-        param_1->crosshairDistSqr == param_2->crosshairDistSqr) {
+  if (screenTargetB->crosshairDistSqr < screenTargetA->crosshairDistSqr ||
+      screenTargetB->crosshairDistSqr == screenTargetA->crosshairDistSqr) {
+    if (screenTargetA->crosshairDistSqr < screenTargetB->crosshairDistSqr ||
+        screenTargetA->crosshairDistSqr == screenTargetB->crosshairDistSqr) {
       iVar3 = 0;
     }
     else {
@@ -1108,7 +1134,7 @@ int __cdecl AimAssist_CompareTargets(AimScreenTarget *param_1,AimScreenTarget *p
 
 // 00402C00  AimAssist_AddToTargetList  (aim_assist/aim_assist.cpp:878)
 
-void __cdecl AimAssist_AddToTargetList(AimAssistGlobals *param_1,AimScreenTarget *param_2)
+void __cdecl AimAssist_AddToTargetList(AimAssistGlobals *aaGlob,AimScreenTarget *screenTarget)
 
 {
   code *pcVar1;
@@ -1116,47 +1142,47 @@ void __cdecl AimAssist_AddToTargetList(AimAssistGlobals *param_1,AimScreenTarget
   int iVar3;
   int iVar4;
   AimScreenTarget *pAVar5;
-  int local_10;
-  int local_8;
+  int low;
+  int middle;
+  int high;
   
-  if ((param_1 == (AimAssistGlobals *)0x0) &&
+  if ((aaGlob == (AimAssistGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x373
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (AimScreenTarget *)0x0) &&
+  if ((screenTarget == (AimScreenTarget *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x374
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_10 = 0;
-  iVar3 = param_1->screenTargetCount;
-  while (local_8 = iVar3, local_10 < local_8) {
-    iVar3 = (local_10 + local_8) / 2;
-    iVar4 = AimAssist_CompareTargets(param_2,param_1->screenTargets + iVar3);
+  low = 0;
+  iVar3 = aaGlob->screenTargetCount;
+  while (high = iVar3, low < high) {
+    iVar3 = (low + high) / 2;
+    iVar4 = AimAssist_CompareTargets(screenTarget,aaGlob->screenTargets + iVar3);
     if (iVar4 < 1) {
-      local_10 = iVar3 + 1;
-      iVar3 = local_8;
+      low = iVar3 + 1;
+      iVar3 = high;
     }
   }
-  if (local_10 < 0x40) {
-    if (param_1->screenTargetCount == 0x40) {
-      param_1->screenTargetCount = param_1->screenTargetCount + -1;
+  if (low < 0x40) {
+    if (aaGlob->screenTargetCount == 0x40) {
+      aaGlob->screenTargetCount = aaGlob->screenTargetCount + -1;
     }
-    memmove((uchar *)(param_1->screenTargets + local_10 + 1),
-            (uchar *)(param_1->screenTargets + local_10),
-            (param_1->screenTargetCount - local_10) * 0x34);
-    pAVar5 = param_1->screenTargets + local_10;
+    memmove((uchar *)(aaGlob->screenTargets + low + 1),(uchar *)(aaGlob->screenTargets + low),
+            (aaGlob->screenTargetCount - low) * 0x34);
+    pAVar5 = aaGlob->screenTargets + low;
     for (iVar3 = 0xd; iVar3 != 0; iVar3 = iVar3 + -1) {
-      pAVar5->entIndex = param_2->entIndex;
-      param_2 = (AimScreenTarget *)param_2->clipMins;
+      pAVar5->entIndex = screenTarget->entIndex;
+      screenTarget = (AimScreenTarget *)screenTarget->clipMins;
       pAVar5 = (AimScreenTarget *)pAVar5->clipMins;
     }
-    param_1->screenTargetCount = param_1->screenTargetCount + 1;
+    aaGlob->screenTargetCount = aaGlob->screenTargetCount + 1;
   }
   return;
 }
@@ -1169,15 +1195,16 @@ void __cdecl AimAssist_AddToTargetList(AimAssistGlobals *param_1,AimScreenTarget
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl AimTarget_GetTagPos(int param_1,centity_s *param_2,uint param_3,float *param_4)
+int __cdecl AimTarget_GetTagPos(int localClientNum,centity_s *cent,uint tagName,float *pos)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  DObj *pDVar4;
+  DObj *obj;
+  DObj *dobj;
   
-  if (param_2 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x398,0
                              ,"%s");
     if (!bVar2) {
@@ -1186,7 +1213,7 @@ int __cdecl AimTarget_GetTagPos(int param_1,centity_s *param_2,uint param_3,floa
       return iVar3;
     }
   }
-  if (param_4 == (float *)0x0) {
+  if (pos == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x399,0
                              ,"%s");
     if (!bVar2) {
@@ -1195,14 +1222,14 @@ int __cdecl AimTarget_GetTagPos(int param_1,centity_s *param_2,uint param_3,floa
       return iVar3;
     }
   }
-  pDVar4 = Com_GetClientDObj((param_2->nextState).number,param_1);
-  if (pDVar4 == (DObj *)0x0) {
+  obj = Com_GetClientDObj((cent->nextState).number,localClientNum);
+  if (obj == (DObj *)0x0) {
     iVar3 = 0;
   }
   else {
-    iVar3 = CG_DObjGetWorldTagPos(&param_2->pose,pDVar4,param_3,param_4);
+    iVar3 = CG_DObjGetWorldTagPos(&cent->pose,obj,tagName,pos);
     if (iVar3 == 0) {
-      SL_ConvertToString(param_3,SCRIPTINSTANCE_SERVER);
+      SL_ConvertToString(tagName,SCRIPTINSTANCE_SERVER);
       Com_Error(ERR_DROP,"AimTarget_GetTagPos: Cannot find tag [%s] on entity\n");
     }
     iVar3 = 1;
@@ -1218,7 +1245,8 @@ int __cdecl AimTarget_GetTagPos(int param_1,centity_s *param_2,uint param_3,floa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl AimAssist_CalcAimPos(int param_1,centity_s *param_2,AimTarget *param_3,float *param_4)
+int __cdecl
+AimAssist_CalcAimPos(int localClientNum,centity_s *targetEnt,AimTarget *target,float *aimPos)
 
 {
   float fVar1;
@@ -1229,7 +1257,7 @@ int __cdecl AimAssist_CalcAimPos(int param_1,centity_s *param_2,AimTarget *param
   bool bVar6;
   int iVar7;
   
-  if (param_2 == (centity_s *)0x0) {
+  if (targetEnt == (centity_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x3ad,0
                              ,"%s");
     if (!bVar6) {
@@ -1238,7 +1266,7 @@ int __cdecl AimAssist_CalcAimPos(int param_1,centity_s *param_2,AimTarget *param
       return iVar7;
     }
   }
-  if (param_4 == (float *)0x0) {
+  if (aimPos == (float *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x3ae,0
                              ,"%s");
     if (!bVar6) {
@@ -1247,20 +1275,20 @@ int __cdecl AimAssist_CalcAimPos(int param_1,centity_s *param_2,AimTarget *param
       return iVar7;
     }
   }
-  if ((param_2->nextState).eType == 1) {
-    iVar7 = AimTarget_GetTagPos(param_1,param_2,(uint)scr_const.aim_bone,param_4);
+  if ((targetEnt->nextState).eType == 1) {
+    iVar7 = AimTarget_GetTagPos(localClientNum,targetEnt,(uint)scr_const.aim_bone,aimPos);
   }
-  else if (param_3 == (AimTarget *)0x0) {
+  else if (target == (AimTarget *)0x0) {
     iVar7 = 0;
   }
   else {
-    fVar1 = param_3->mins[1];
-    fVar2 = param_3->maxs[1];
-    fVar3 = param_3->mins[2];
-    fVar4 = param_3->maxs[2];
-    *param_4 = (param_2->pose).origin[0] + (param_3->mins[0] + param_3->maxs[0]) * 0.5;
-    param_4[1] = (param_2->pose).origin[1] + (fVar1 + fVar2) * 0.5;
-    param_4[2] = (param_2->pose).origin[2] + (fVar3 + fVar4) * 0.5;
+    fVar1 = target->mins[1];
+    fVar2 = target->maxs[1];
+    fVar3 = target->mins[2];
+    fVar4 = target->maxs[2];
+    *aimPos = (targetEnt->pose).origin[0] + (target->mins[0] + target->maxs[0]) * 0.5;
+    aimPos[1] = (targetEnt->pose).origin[1] + (fVar1 + fVar2) * 0.5;
+    aimPos[2] = (targetEnt->pose).origin[2] + (fVar3 + fVar4) * 0.5;
     iVar7 = 1;
   }
   return iVar7;
@@ -1275,77 +1303,78 @@ int __cdecl AimAssist_CalcAimPos(int param_1,centity_s *param_2,AimTarget *param
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-AimAssist_UpdateScreenTargets(int param_1,float *param_2,float *param_3,float param_4,float param_5)
+AimAssist_UpdateScreenTargets
+          (int localClientNum,float *viewOrg,float *viewAngles,float tanHalfFovX,float tanHalfFovY)
 
 {
   bool bVar1;
   int iVar2;
-  AimScreenTarget local_b0;
-  int local_7c;
-  AimTarget *local_78;
-  AimTarget *local_74;
-  centity_s *local_70;
-  float local_6c [9];
+  AimScreenTarget screenTarget;
+  int targetCount;
+  AimTarget *target;
+  AimTarget *targetList;
+  centity_s *cent;
+  float entMtx [9];
   float local_48;
   float local_44;
   float local_40;
-  int local_3c;
-  float local_38;
+  int targetIndex;
+  float bounds;
   float local_34;
   float local_30;
   float local_2c;
   float local_28;
   float local_24;
-  float local_20;
+  float clipBounds;
   float local_1c;
   float local_14 [3];
-  AimAssistGlobals *local_8;
+  AimAssistGlobals *aaGlob;
   
-  local_8 = aaGlobArray + param_1;
-  if (aaGlobArray[param_1].initialized != false) {
-    aaGlobArray[param_1].viewOrigin[0] = *param_2;
-    aaGlobArray[param_1].viewOrigin[1] = param_2[1];
-    aaGlobArray[param_1].viewOrigin[2] = param_2[2];
-    aaGlobArray[param_1].viewAngles[0] = *param_3;
-    aaGlobArray[param_1].viewAngles[1] = param_3[1];
-    aaGlobArray[param_1].viewAngles[2] = param_3[2];
-    AnglesToAxis(param_3,aaGlobArray[param_1].viewAxis);
-    AimAssist_FovScale(local_8,param_5);
-    AimAssist_CreateScreenMatrix(local_8,param_4,param_5);
-    local_8->screenTargetCount = 0;
-    AimTarget_GetClientTargetList(param_1,&local_74,&local_7c);
-    for (local_3c = 0; local_3c < local_7c; local_3c = local_3c + 1) {
-      local_78 = local_74 + local_3c;
-      local_70 = CG_GetEntity(param_1,local_78->entIndex);
-      if ((local_70->nextValid != 0) &&
-         (local_78->worldDistSqr <=
+  aaGlob = aaGlobArray + localClientNum;
+  if (aaGlobArray[localClientNum].initialized != false) {
+    aaGlobArray[localClientNum].viewOrigin[0] = *viewOrg;
+    aaGlobArray[localClientNum].viewOrigin[1] = viewOrg[1];
+    aaGlobArray[localClientNum].viewOrigin[2] = viewOrg[2];
+    aaGlobArray[localClientNum].viewAngles[0] = *viewAngles;
+    aaGlobArray[localClientNum].viewAngles[1] = viewAngles[1];
+    aaGlobArray[localClientNum].viewAngles[2] = viewAngles[2];
+    AnglesToAxis(viewAngles,aaGlobArray[localClientNum].viewAxis);
+    AimAssist_FovScale(aaGlob,tanHalfFovY);
+    AimAssist_CreateScreenMatrix(aaGlob,tanHalfFovX,tanHalfFovY);
+    aaGlob->screenTargetCount = 0;
+    AimTarget_GetClientTargetList(localClientNum,&targetList,&targetCount);
+    for (targetIndex = 0; targetIndex < targetCount; targetIndex = targetIndex + 1) {
+      target = targetList + targetIndex;
+      cent = CG_GetEntity(localClientNum,target->entIndex);
+      if ((cent->nextValid != 0) &&
+         (target->worldDistSqr <=
           (aim_assist_min_target_distance->current).value *
           (aim_assist_min_target_distance->current).value)) {
-        local_38 = local_78->mins[0];
-        local_34 = local_78->mins[1];
-        local_30 = local_78->mins[2];
-        local_2c = local_78->maxs[0];
-        local_28 = local_78->maxs[1];
-        local_24 = local_78->maxs[2];
-        AnglesToAxis((local_70->pose).angles,(float (*) [3])local_6c);
-        local_48 = (local_70->pose).origin[0];
-        local_44 = (local_70->pose).origin[1];
-        local_40 = (local_70->pose).origin[2];
+        bounds = target->mins[0];
+        local_34 = target->mins[1];
+        local_30 = target->mins[2];
+        local_2c = target->maxs[0];
+        local_28 = target->maxs[1];
+        local_24 = target->maxs[2];
+        AnglesToAxis((cent->pose).angles,(float (*) [3])entMtx);
+        local_48 = (cent->pose).origin[0];
+        local_44 = (cent->pose).origin[1];
+        local_40 = (cent->pose).origin[2];
         bVar1 = AimAssist_ConvertToClipBounds
-                          (local_8,(float (*) [3])&local_38,(float (*) [3])local_6c,
-                           (float (*) [3])&local_20);
+                          (aaGlob,(float (*) [3])&bounds,(float (*) [3])entMtx,
+                           (float (*) [3])&clipBounds);
         if (bVar1) {
-          local_b0.entIndex = local_78->entIndex;
-          local_b0.clipMins[0] = local_20;
-          local_b0.clipMins[1] = local_1c;
-          local_b0.velocity[0] = local_78->velocity[0];
-          local_b0.velocity[1] = local_78->velocity[1];
-          local_b0.velocity[2] = local_78->velocity[2];
-          iVar2 = AimAssist_CalcAimPos(param_1,local_70,local_78,local_b0.aimPos);
+          screenTarget.entIndex = target->entIndex;
+          screenTarget.clipMins[0] = clipBounds;
+          screenTarget.clipMins[1] = local_1c;
+          screenTarget.velocity[0] = target->velocity[0];
+          screenTarget.velocity[1] = target->velocity[1];
+          screenTarget.velocity[2] = target->velocity[2];
+          iVar2 = AimAssist_CalcAimPos(localClientNum,cent,target,screenTarget.aimPos);
           if (iVar2 != 0) {
-            local_b0.distSqr = local_78->worldDistSqr;
-            local_b0.crosshairDistSqr = AimAssist_GetCrosshairDistSqr(&local_20,local_14);
-            AimAssist_AddToTargetList(local_8,&local_b0);
+            screenTarget.distSqr = target->worldDistSqr;
+            screenTarget.crosshairDistSqr = AimAssist_GetCrosshairDistSqr(&clipBounds,local_14);
+            AimAssist_AddToTargetList(aaGlob,&screenTarget);
           }
         }
       }
@@ -1357,35 +1386,39 @@ AimAssist_UpdateScreenTargets(int param_1,float *param_2,float *param_3,float pa
 
 // 00403020  AimAssist_GetScreenTargetCount  (aim_assist/aim_assist.cpp:1049)
 
-int __cdecl AimAssist_GetScreenTargetCount(int param_1)
+int __cdecl AimAssist_GetScreenTargetCount(int localClientNum)
 
 {
-  return aaGlobArray[param_1].screenTargetCount;
+  AimAssistGlobals *aaGlob;
+  
+  return aaGlobArray[localClientNum].screenTargetCount;
 }
 
 
 // 004031C0  AngleNormalize180  (universal/com_math.h:1051)
 
-float __cdecl AngleNormalize180(float param_1)
+float __cdecl AngleNormalize180(float angle)
 
 {
   float10 extraout_ST0;
+  float scaledAngle;
   
   floor();
-  return (param_1 * 0.0027777778 - (float)extraout_ST0) * 360.0;
+  return (angle * 0.0027777778 - (float)extraout_ST0) * 360.0;
 }
 
 
 // 00403050  AimAssist_GetScreenTargetEntity  (aim_assist/aim_assist.cpp:1062)
 
-int __cdecl AimAssist_GetScreenTargetEntity(int param_1,int param_2)
+int __cdecl AimAssist_GetScreenTargetEntity(int localClientNum,int targetIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  AimAssistGlobals *aaGlob;
   
-  if ((uint)aaGlobArray[param_1].screenTargetCount <= (uint)param_2) {
+  if ((uint)aaGlobArray[localClientNum].screenTargetCount <= (uint)targetIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x42b,0
                              ,
                              "targetIndex doesn\'t index aaGlob->screenTargetCount\n\t%i not in [0, %i)"
@@ -1396,26 +1429,28 @@ int __cdecl AimAssist_GetScreenTargetEntity(int param_1,int param_2)
       return iVar3;
     }
   }
-  return *(int *)(param_1 * 0xeb0 + 0xe20430 + param_2 * 0x34);
+  return *(int *)(localClientNum * 0xeb0 + 0xe20430 + targetIndex * 0x34);
 }
 
 
 // 004030C0  AimAssist_ClearEntityReference  (aim_assist/aim_assist.cpp:1077)
 
-void __cdecl AimAssist_ClearEntityReference(int param_1,int param_2)
+void __cdecl AimAssist_ClearEntityReference(int localClientNum,int entIndex)
 
 {
-  if (aaGlobArray[param_1].autoAimTargetEnt == param_2) {
-    aaGlobArray[param_1].autoAimTargetEnt = 0x3ff;
+  AimAssistGlobals *aaGlob;
+  
+  if (aaGlobArray[localClientNum].autoAimTargetEnt == entIndex) {
+    aaGlobArray[localClientNum].autoAimTargetEnt = 0x3ff;
   }
-  if (aaGlobArray[param_1].autoMeleeTargetEnt == param_2) {
-    aaGlobArray[param_1].autoMeleeTargetEnt = 0x3ff;
+  if (aaGlobArray[localClientNum].autoMeleeTargetEnt == entIndex) {
+    aaGlobArray[localClientNum].autoMeleeTargetEnt = 0x3ff;
   }
-  if (aaGlobArray[param_1].lockOnTargetEnt == param_2) {
-    aaGlobArray[param_1].lockOnTargetEnt = 0x3ff;
+  if (aaGlobArray[localClientNum].lockOnTargetEnt == entIndex) {
+    aaGlobArray[localClientNum].lockOnTargetEnt = 0x3ff;
   }
-  if (aaGlobArray[param_1].aimSlowdownTargetEnt == param_2) {
-    aaGlobArray[param_1].aimSlowdownTargetEnt = 0x3ff;
+  if (aaGlobArray[localClientNum].aimSlowdownTargetEnt == entIndex) {
+    aaGlobArray[localClientNum].aimSlowdownTargetEnt = 0x3ff;
   }
   return;
 }
@@ -1423,21 +1458,22 @@ void __cdecl AimAssist_ClearEntityReference(int param_1,int param_2)
 
 // 00403150  AimAssist_IsPrevTargetEntity  (aim_assist/aim_assist.cpp:1100)
 
-bool __cdecl AimAssist_IsPrevTargetEntity(int param_1,int param_2)
+bool __cdecl AimAssist_IsPrevTargetEntity(int localClientNum,int entIndex)
 
 {
   bool bVar1;
+  AimAssistGlobals *aaGlob;
   
-  if (aaGlobArray[param_1].aimSlowdownTargetEnt == param_2) {
+  if (aaGlobArray[localClientNum].aimSlowdownTargetEnt == entIndex) {
     bVar1 = true;
   }
-  else if (aaGlobArray[param_1].autoMeleeTargetEnt == param_2) {
+  else if (aaGlobArray[localClientNum].autoMeleeTargetEnt == entIndex) {
     bVar1 = true;
   }
-  else if (aaGlobArray[param_1].lockOnTargetEnt == param_2) {
+  else if (aaGlobArray[localClientNum].lockOnTargetEnt == entIndex) {
     bVar1 = true;
   }
-  else if (aaGlobArray[param_1].autoAimTargetEnt == param_2) {
+  else if (aaGlobArray[localClientNum].autoAimTargetEnt == entIndex) {
     bVar1 = true;
   }
   else {
@@ -1449,25 +1485,26 @@ bool __cdecl AimAssist_IsPrevTargetEntity(int param_1,int param_2)
 
 // 00405060  AimAssist_GetTargetFromEntity  (aim_assist/aim_assist.cpp:1124)
 
-AimScreenTarget * __cdecl AimAssist_GetTargetFromEntity(AimAssistGlobals *param_1,int param_2)
+AimScreenTarget * __cdecl AimAssist_GetTargetFromEntity(AimAssistGlobals *aaGlob,int entIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   AimScreenTarget *pAVar3;
-  int local_8;
+  AimScreenTarget *screenTarget;
+  int targetIndex;
   
-  if ((param_1 == (AimAssistGlobals *)0x0) &&
+  if ((aaGlob == (AimAssistGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x468
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pAVar3 = (AimScreenTarget *)(*pcVar1)();
     return pAVar3;
   }
-  if (param_2 != 0x3ff) {
-    for (local_8 = 0; local_8 < param_1->screenTargetCount; local_8 = local_8 + 1) {
-      if (param_1->screenTargets[local_8].entIndex == param_2) {
-        return param_1->screenTargets + local_8;
+  if (entIndex != 0x3ff) {
+    for (targetIndex = 0; targetIndex < aaGlob->screenTargetCount; targetIndex = targetIndex + 1) {
+      if (aaGlob->screenTargets[targetIndex].entIndex == entIndex) {
+        return aaGlob->screenTargets + targetIndex;
       }
     }
   }
@@ -1478,38 +1515,40 @@ AimScreenTarget * __cdecl AimAssist_GetTargetFromEntity(AimAssistGlobals *param_
 // 004045D0  AimAssist_GetBestTarget  (aim_assist/aim_assist.cpp:1149)
 
 AimScreenTarget * __cdecl
-AimAssist_GetBestTarget(AimAssistGlobals *param_1,float param_2,float param_3,float param_4)
+AimAssist_GetBestTarget(AimAssistGlobals *aaGlob,float range,float regionWidth,float regionHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   AimScreenTarget *pAVar3;
-  int local_8;
+  AimScreenTarget *screenTarget;
+  int targetIndex;
   
-  if ((param_1 == (AimAssistGlobals *)0x0) &&
+  if ((aaGlob == (AimAssistGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x481
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pAVar3 = (AimScreenTarget *)(*pcVar1)();
     return pAVar3;
   }
-  if ((param_2 < 0.0) &&
+  if ((range < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x482
                                ,0,"%s\n\t(range) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pAVar3 = (AimScreenTarget *)(*pcVar1)();
     return pAVar3;
   }
-  local_8 = 0;
+  targetIndex = 0;
   while( true ) {
-    if (param_1->screenTargetCount <= local_8) {
+    if (aaGlob->screenTargetCount <= targetIndex) {
       return (AimScreenTarget *)0x0;
     }
-    pAVar3 = param_1->screenTargets + local_8;
-    if ((pAVar3->distSqr <= param_2 * param_2) &&
+    pAVar3 = aaGlob->screenTargets + targetIndex;
+    if ((pAVar3->distSqr <= range * range) &&
        (bVar2 = AimAssist_DoBoundsIntersectCenterBox
-                          (pAVar3->clipMins,pAVar3->clipMaxs,param_3,param_4), bVar2)) break;
-    local_8 = local_8 + 1;
+                          (pAVar3->clipMins,pAVar3->clipMaxs,regionWidth,regionHeight), bVar2))
+    break;
+    targetIndex = targetIndex + 1;
   }
   return pAVar3;
 }
@@ -1519,33 +1558,35 @@ AimAssist_GetBestTarget(AimAssistGlobals *param_1,float param_2,float param_3,fl
 
 AimScreenTarget * __cdecl
 AimAssist_GetPrevOrBestTarget
-          (AimAssistGlobals *param_1,float param_2,float param_3,float param_4,int param_5)
+          (AimAssistGlobals *aaGlob,float range,float regionWidth,float regionHeight,
+          int prevTargetEnt)
 
 {
   code *pcVar1;
   bool bVar2;
   AimScreenTarget *pAVar3;
+  AimScreenTarget *screenTarget;
   
-  if ((param_1 == (AimAssistGlobals *)0x0) &&
+  if ((aaGlob == (AimAssistGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x49d
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pAVar3 = (AimScreenTarget *)(*pcVar1)();
     return pAVar3;
   }
-  if ((param_2 < 0.0) &&
+  if ((range < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x49e
                                ,0,"%s\n\t(range) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pAVar3 = (AimScreenTarget *)(*pcVar1)();
     return pAVar3;
   }
-  pAVar3 = AimAssist_GetTargetFromEntity(param_1,param_5);
+  pAVar3 = AimAssist_GetTargetFromEntity(aaGlob,prevTargetEnt);
   if (((pAVar3 == (AimScreenTarget *)0x0) ||
-      (param_2 * param_2 < pAVar3->distSqr || param_2 * param_2 == pAVar3->distSqr)) ||
+      (range * range < pAVar3->distSqr || range * range == pAVar3->distSqr)) ||
      (bVar2 = AimAssist_DoBoundsIntersectCenterBox
-                        (pAVar3->clipMins,pAVar3->clipMaxs,param_3,param_4), !bVar2)) {
-    pAVar3 = AimAssist_GetBestTarget(param_1,param_2,param_3,param_4);
+                        (pAVar3->clipMins,pAVar3->clipMaxs,regionWidth,regionHeight), !bVar2)) {
+    pAVar3 = AimAssist_GetBestTarget(aaGlob,range,regionWidth,regionHeight);
   }
   return pAVar3;
 }
@@ -1553,7 +1594,7 @@ AimAssist_GetPrevOrBestTarget
 
 // 00403F20  AimAssist_CalcAdjustedAxis  (aim_assist/aim_assist.cpp:1200)
 
-void __cdecl AimAssist_CalcAdjustedAxis(AimInput *param_1,float *param_2,float *param_3)
+void __cdecl AimAssist_CalcAdjustedAxis(AimInput *input,float *pitchAxis,float *yawAxis)
 
 {
   code *pcVar1;
@@ -1562,22 +1603,26 @@ void __cdecl AimAssist_CalcAdjustedAxis(AimInput *param_1,float *param_2,float *
   float fVar4;
   float local_2c;
   float local_20;
+  float deflection;
+  float absPitchAxis;
+  float graphScale;
+  float absYawAxis;
   
-  if ((param_1 == (AimInput *)0x0) &&
+  if ((input == (AimInput *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x4b6
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((pitchAxis == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x4b7
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((yawAxis == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x4b8
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1585,11 +1630,11 @@ void __cdecl AimAssist_CalcAdjustedAxis(AimInput *param_1,float *param_2,float *
     return;
   }
   if ((aim_input_graph_enabled->current).enabled == false) {
-    *param_2 = param_1->pitchAxis;
-    *param_3 = param_1->yawAxis;
+    *pitchAxis = input->pitchAxis;
+    *yawAxis = input->yawAxis;
   }
   else {
-    fVar3 = SQRT(param_1->pitchAxis * param_1->pitchAxis + param_1->yawAxis * param_1->yawAxis);
+    fVar3 = SQRT(input->pitchAxis * input->pitchAxis + input->yawAxis * input->yawAxis);
     local_20 = fVar3;
     if (0.0 <= fVar3 - 1.0) {
       local_20 = 1.0;
@@ -1610,16 +1655,16 @@ void __cdecl AimAssist_CalcAdjustedAxis(AimInput *param_1,float *param_2,float *
       return;
     }
     fVar3 = GraphFloat_GetValue(aaInputGraph + (aim_input_graph_index->current).integer,local_2c);
-    *param_2 = param_1->pitchAxis * fVar3;
-    *param_3 = param_1->yawAxis * fVar3;
+    *pitchAxis = input->pitchAxis * fVar3;
+    *yawAxis = input->yawAxis * fVar3;
     if ((aim_input_graph_debug->current).enabled != false) {
       Com_Printf(0x11,"Input Pit = %f, Output Pit = %f\n");
       Com_Printf(0x11,"Input Yaw = %f, Output Yaw = %f\n");
     }
   }
   if ((aim_scale_view_axis->current).enabled != false) {
-    fVar3 = ABS(*param_2);
-    fVar4 = ABS(*param_3);
+    fVar3 = ABS(*pitchAxis);
+    fVar4 = ABS(*yawAxis);
     if ((1.0 < fVar3) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
                                  0x4d7,0,"%s"), !bVar2)) {
@@ -1635,10 +1680,10 @@ void __cdecl AimAssist_CalcAdjustedAxis(AimInput *param_1,float *param_2,float *
       return;
     }
     if (fVar3 <= fVar4) {
-      *param_2 = (1.0 - (fVar4 - fVar3)) * *param_2;
+      *pitchAxis = (1.0 - (fVar4 - fVar3)) * *pitchAxis;
     }
     else {
-      *param_3 = (1.0 - (fVar3 - fVar4)) * *param_3;
+      *yawAxis = (1.0 - (fVar3 - fVar4)) * *yawAxis;
     }
   }
   return;
@@ -1647,15 +1692,16 @@ void __cdecl AimAssist_CalcAdjustedAxis(AimInput *param_1,float *param_2,float *
 
 // 00404800  AimAssist_IsPlayerUsingOffhand  (aim_assist/aim_assist.cpp:1250)
 
-bool __cdecl AimAssist_IsPlayerUsingOffhand(AimAssistPlayerState *param_1)
+bool __cdecl AimAssist_IsPlayerUsingOffhand(AimAssistPlayerState *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   WeaponDef *pWVar4;
+  WeaponDef *weapDef;
   
-  if (param_1 == (AimAssistPlayerState *)0x0) {
+  if (ps == (AimAssistPlayerState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x4e5,0
                              ,"%s");
     if (!bVar2) {
@@ -1664,14 +1710,14 @@ bool __cdecl AimAssist_IsPlayerUsingOffhand(AimAssistPlayerState *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1->weapFlags & 2U) == 0) {
+  if ((ps->weapFlags & 2U) == 0) {
     bVar2 = false;
   }
-  else if (param_1->weapIndex == 0) {
+  else if (ps->weapIndex == 0) {
     bVar2 = false;
   }
   else {
-    pWVar4 = BG_GetWeaponDef(param_1->weapIndex);
+    pWVar4 = BG_GetWeaponDef(ps->weapIndex);
     if (pWVar4->impactType == IMPACT_TYPE_BLADE) {
       bVar2 = false;
     }
@@ -1685,7 +1731,7 @@ bool __cdecl AimAssist_IsPlayerUsingOffhand(AimAssistPlayerState *param_1)
 
 // 00404880  AimAssist_IsSlowdownActive  (aim_assist/aim_assist.cpp:1275)
 
-int __cdecl AimAssist_IsSlowdownActive(AimAssistPlayerState *param_1)
+int __cdecl AimAssist_IsSlowdownActive(AimAssistPlayerState *ps)
 
 {
   code *pcVar1;
@@ -1693,7 +1739,7 @@ int __cdecl AimAssist_IsSlowdownActive(AimAssistPlayerState *param_1)
   int iVar3;
   WeaponDef *pWVar4;
   
-  if (param_1 == (AimAssistPlayerState *)0x0) {
+  if (ps == (AimAssistPlayerState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x4fc,0
                              ,"%s");
     if (!bVar2) {
@@ -1706,20 +1752,20 @@ int __cdecl AimAssist_IsSlowdownActive(AimAssistPlayerState *param_1)
     if ((aim_slowdown_enabled->current).enabled == false) {
       iVar3 = 0;
     }
-    else if (param_1->targetAssistDisabled == false) {
-      if (param_1->weapIndex == 0) {
+    else if (ps->targetAssistDisabled == false) {
+      if (ps->weapIndex == 0) {
         iVar3 = 0;
       }
       else {
-        pWVar4 = BG_GetWeaponDef(param_1->weapIndex);
+        pWVar4 = BG_GetWeaponDef(ps->weapIndex);
         if (pWVar4->requireLockonToFire == false) {
-          pWVar4 = BG_GetWeaponDef(param_1->weapIndex);
+          pWVar4 = BG_GetWeaponDef(ps->weapIndex);
           if (pWVar4->guidedMissileType == MISSILE_GUIDANCE_TVGUIDED) {
             iVar3 = 0;
           }
-          else if ((param_1->pm_flags & 0x10000U) == 0) {
-            if ((param_1->eFlags & 0x300U) == 0) {
-              if (param_1->hasAmmo == false) {
+          else if ((ps->pm_flags & 0x10000U) == 0) {
+            if ((ps->eFlags & 0x300U) == 0) {
+              if (ps->hasAmmo == false) {
                 iVar3 = 0;
               }
               else {
@@ -1752,7 +1798,7 @@ int __cdecl AimAssist_IsSlowdownActive(AimAssistPlayerState *param_1)
 
 // 00404280  AimAssist_CalcSlowdown  (aim_assist/aim_assist.cpp:1328)
 
-void __cdecl AimAssist_CalcSlowdown(AimInput *param_1,float *param_2,float *param_3)
+void __cdecl AimAssist_CalcSlowdown(AimInput *input,float *pitchScale,float *yawScale)
 
 {
   int iVar1;
@@ -1760,37 +1806,41 @@ void __cdecl AimAssist_CalcSlowdown(AimInput *param_1,float *param_2,float *para
   bool bVar3;
   int iVar4;
   AimScreenTarget *pAVar5;
-  AimAssistGlobals *pAVar6;
-  float fVar7;
+  AimAssistGlobals *aaGlob_00;
+  float fVar6;
+  AimScreenTarget *screenTarget;
+  float aimAssistRange;
+  AimAssistGlobals *aaGlob;
+  AimTweakables *tweaks;
   
-  if ((param_1 == (AimInput *)0x0) &&
+  if ((input == (AimInput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x536
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((pitchScale == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x537
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((yawScale == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x538
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar1 = param_1->localClientNum;
-  pAVar6 = aaGlobArray + iVar1;
-  *param_2 = 1.0;
-  *param_3 = 1.0;
+  iVar1 = input->localClientNum;
+  aaGlob_00 = aaGlobArray + iVar1;
+  *pitchScale = 1.0;
+  *yawScale = 1.0;
   aaGlobArray[iVar1].aimSlowdownActive = false;
   aaGlobArray[iVar1].aimSlowdownTargetEnt = 0x3ff;
-  iVar4 = AimAssist_IsSlowdownActive(&pAVar6->ps);
+  iVar4 = AimAssist_IsSlowdownActive(&aaGlob_00->ps);
   if ((iVar4 != 0) &&
      ((aaGlobArray[iVar1].ps.weaponstate < 0x2f || (0x31 < aaGlobArray[iVar1].ps.weaponstate)))) {
     if ((aaGlobArray[iVar1].ps.weapIndex == 0) &&
@@ -1800,23 +1850,23 @@ void __cdecl AimAssist_CalcSlowdown(AimInput *param_1,float *param_2,float *para
       (*pcVar2)();
       return;
     }
-    fVar7 = AimAssist_GetAimAssistRange(aaGlobArray[iVar1].ps.weapIndex,aaGlobArray[iVar1].adsLerp);
+    fVar6 = AimAssist_GetAimAssistRange(aaGlobArray[iVar1].ps.weapIndex,aaGlobArray[iVar1].adsLerp);
     pAVar5 = AimAssist_GetBestTarget
-                       (pAVar6,fVar7,aaGlobArray[iVar1].tweakables.slowdownRegionWidth,
+                       (aaGlob_00,fVar6,aaGlobArray[iVar1].tweakables.slowdownRegionWidth,
                         aaGlobArray[iVar1].tweakables.slowdownRegionHeight);
     if (pAVar5 != (AimScreenTarget *)0x0) {
-      fVar7 = AimAssist_LerpDvars(aim_slowdown_pitch_scale,aim_slowdown_pitch_scale_ads,
+      fVar6 = AimAssist_LerpDvars(aim_slowdown_pitch_scale,aim_slowdown_pitch_scale_ads,
                                   aaGlobArray[iVar1].adsLerp);
-      *param_2 = fVar7;
-      fVar7 = AimAssist_LerpDvars(aim_slowdown_yaw_scale,aim_slowdown_yaw_scale_ads,
+      *pitchScale = fVar6;
+      fVar6 = AimAssist_LerpDvars(aim_slowdown_yaw_scale,aim_slowdown_yaw_scale_ads,
                                   aaGlobArray[iVar1].adsLerp);
-      *param_3 = fVar7;
+      *yawScale = fVar6;
       aaGlobArray[iVar1].aimSlowdownActive = true;
       aaGlobArray[iVar1].aimSlowdownTargetEnt = pAVar5->entIndex;
     }
-    bVar3 = AimAssist_IsPlayerUsingOffhand(&pAVar6->ps);
+    bVar3 = AimAssist_IsPlayerUsingOffhand(&aaGlob_00->ps);
     if (bVar3) {
-      *param_2 = 1.0;
+      *pitchScale = 1.0;
     }
     if ((aim_slowdown_debug->current).enabled != false) {
       Com_Printf(0x11,"Target slowdown pitch scale = %f\n");
@@ -1829,27 +1879,27 @@ void __cdecl AimAssist_CalcSlowdown(AimInput *param_1,float *param_2,float *para
 
 // 00404970  AimAssist_GetProfileSensitivity  (aim_assist/aim_assist.cpp:1376)
 
-float __cdecl AimAssist_GetProfileSensitivity(int param_1)
+float __cdecl AimAssist_GetProfileSensitivity(int localClientNum)
 
 {
-  float local_8;
+  float sensitivity;
   
   if (0.0 < (aim_view_sensitivity_override->current).value) {
-    local_8 = (aim_view_sensitivity_override->current).value;
+    sensitivity = (aim_view_sensitivity_override->current).value;
   }
   else {
-    local_8 = Dvar_GetFloat("input_viewSensitivity");
+    sensitivity = Dvar_GetFloat("input_viewSensitivity");
   }
-  if (local_8 < 0.001) {
-    local_8 = 1.0;
+  if (sensitivity < 0.001) {
+    sensitivity = 1.0;
   }
-  return local_8;
+  return sensitivity;
 }
 
 
 // 00403A00  AimAssist_ApplyTurnRates  (aim_assist/aim_assist.cpp:1414)
 
-void __cdecl AimAssist_ApplyTurnRates(AimInput *param_1,AimOutput *param_2)
+void __cdecl AimAssist_ApplyTurnRates(AimInput *input,AimOutput *output)
 
 {
   code *pcVar1;
@@ -1857,116 +1907,116 @@ void __cdecl AimAssist_ApplyTurnRates(AimInput *param_1,AimOutput *param_2)
   float fVar3;
   float local_48;
   float local_44;
-  float local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  AimAssistGlobals *local_10;
-  float local_c;
-  float local_8;
+  float adjustedYawAxis;
+  float pitchTurnRate;
+  float adjustedPitchAxis;
+  float yawDelta;
+  float pitchSign;
+  float slowdownYawScale;
+  float sensitivity;
+  float yawTurnRate;
+  float pitchDelta;
+  float slowdownPitchScale;
+  AimAssistGlobals *aaGlob;
+  float yawSign;
+  float accel;
   
-  local_14 = 0.0;
-  local_24 = 0.0;
-  if ((param_1 == (AimInput *)0x0) &&
+  slowdownPitchScale = 0.0;
+  slowdownYawScale = 0.0;
+  if ((input == (AimInput *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x595
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (AimOutput *)0x0) &&
+  if ((output == (AimOutput *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x596
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_10 = aaGlobArray + param_1->localClientNum;
-  if (aaGlobArray[param_1->localClientNum].autoMeleeState == AMS_TARGETING) {
-    local_30 = 0.0;
-    local_38 = 0.0;
-    local_14 = 1.0;
-    local_24 = 1.0;
+  aaGlob = aaGlobArray + input->localClientNum;
+  if (aaGlobArray[input->localClientNum].autoMeleeState == AMS_TARGETING) {
+    adjustedPitchAxis = 0.0;
+    adjustedYawAxis = 0.0;
+    slowdownPitchScale = 1.0;
+    slowdownYawScale = 1.0;
   }
   else {
-    AimAssist_CalcAdjustedAxis(param_1,&local_30,&local_38);
-    AimAssist_CalcSlowdown(param_1,&local_14,&local_24);
+    AimAssist_CalcAdjustedAxis(input,&adjustedPitchAxis,&adjustedYawAxis);
+    AimAssist_CalcSlowdown(input,&slowdownPitchScale,&slowdownYawScale);
   }
-  local_20 = AimAssist_GetProfileSensitivity(param_1->localClientNum);
-  local_34 = AimAssist_LerpDvars(aim_turnrate_pitch,aim_turnrate_pitch_ads,local_10->adsLerp);
-  local_34 = local_14 * local_10->fovTurnRateScale * local_20 * local_34;
-  local_1c = AimAssist_LerpDvars(aim_turnrate_yaw,aim_turnrate_yaw_ads,local_10->adsLerp);
-  local_1c = local_24 * local_10->fovTurnRateScale * local_20 * local_1c;
-  if ((param_1->pitchMax != 0.0) && (param_1->pitchMax <= local_34 && local_34 != param_1->pitchMax)
-     ) {
-    local_34 = param_1->pitchMax;
+  sensitivity = AimAssist_GetProfileSensitivity(input->localClientNum);
+  fVar3 = AimAssist_LerpDvars(aim_turnrate_pitch,aim_turnrate_pitch_ads,aaGlob->adsLerp);
+  pitchTurnRate = slowdownPitchScale * aaGlob->fovTurnRateScale * sensitivity * fVar3;
+  fVar3 = AimAssist_LerpDvars(aim_turnrate_yaw,aim_turnrate_yaw_ads,aaGlob->adsLerp);
+  yawTurnRate = slowdownYawScale * aaGlob->fovTurnRateScale * sensitivity * fVar3;
+  if ((input->pitchMax != 0.0) &&
+     (input->pitchMax <= pitchTurnRate && pitchTurnRate != input->pitchMax)) {
+    pitchTurnRate = input->pitchMax;
   }
-  if ((param_1->yawMax != 0.0) && (param_1->yawMax <= local_1c && local_1c != param_1->yawMax)) {
-    local_1c = param_1->yawMax;
+  if ((input->yawMax != 0.0) && (input->yawMax <= yawTurnRate && yawTurnRate != input->yawMax)) {
+    yawTurnRate = input->yawMax;
   }
-  if (0.0 <= local_30) {
+  if (0.0 <= adjustedPitchAxis) {
     local_44 = 1.0;
   }
   else {
     local_44 = -1.0;
   }
-  local_28 = local_44;
-  if (0.0 <= local_38) {
+  pitchSign = local_44;
+  if (0.0 <= adjustedYawAxis) {
     local_48 = 1.0;
   }
   else {
     local_48 = -1.0;
   }
-  local_c = local_48;
-  local_18 = ABS(local_30) * local_34;
-  local_2c = ABS(local_38) * local_1c;
+  yawSign = local_48;
+  pitchDelta = ABS(adjustedPitchAxis) * pitchTurnRate;
+  yawDelta = ABS(adjustedYawAxis) * yawTurnRate;
   if (((aim_accel_turnrate_enabled->current).enabled == false) ||
      ((aim_assist_script_disable->current).enabled != false)) {
-    local_10->pitchDelta = local_18;
-    local_10->yawDelta = local_2c;
+    aaGlob->pitchDelta = pitchDelta;
+    aaGlob->yawDelta = yawDelta;
   }
   else {
-    local_8 = (aim_accel_turnrate_lerp->current).value * local_20;
-    if (local_18 < local_10->pitchDelta || local_18 == local_10->pitchDelta) {
-      local_10->pitchDelta = local_18;
+    accel = (aim_accel_turnrate_lerp->current).value * sensitivity;
+    if (pitchDelta < aaGlob->pitchDelta || pitchDelta == aaGlob->pitchDelta) {
+      aaGlob->pitchDelta = pitchDelta;
     }
     else {
-      fVar3 = LinearTrack(local_18,local_10->pitchDelta,local_8,param_1->deltaTime);
-      local_10->pitchDelta = fVar3;
+      fVar3 = LinearTrack(pitchDelta,aaGlob->pitchDelta,accel,input->deltaTime);
+      aaGlob->pitchDelta = fVar3;
     }
-    if (local_2c < local_10->yawDelta || local_2c == local_10->yawDelta) {
-      local_10->yawDelta = local_2c;
+    if (yawDelta < aaGlob->yawDelta || yawDelta == aaGlob->yawDelta) {
+      aaGlob->yawDelta = yawDelta;
     }
     else {
-      fVar3 = LinearTrack(local_2c,local_10->yawDelta,local_8,param_1->deltaTime);
-      local_10->yawDelta = fVar3;
+      fVar3 = LinearTrack(yawDelta,aaGlob->yawDelta,accel,input->deltaTime);
+      aaGlob->yawDelta = fVar3;
     }
     if ((aim_accel_turnrate_debug->current).enabled != false) {
       Com_Printf(0x11,"Target Pit = %f, Current Pit = %f\n");
       Com_Printf(0x11,"Target Yaw = %f, Current Yaw = %f\n");
     }
   }
-  param_2->pitch = local_10->pitchDelta * param_1->deltaTime * local_28 + param_2->pitch;
-  param_2->yaw = local_10->yawDelta * param_1->deltaTime * local_c + param_2->yaw;
+  output->pitch = aaGlob->pitchDelta * input->deltaTime * pitchSign + output->pitch;
+  output->yaw = aaGlob->yawDelta * input->deltaTime * yawSign + output->yaw;
   return;
 }
 
 
 // 00404E70  AimAssist_ClearAutoAimTarget  (aim_assist/aim_assist.cpp:1530)
 
-void __cdecl AimAssist_ClearAutoAimTarget(AimAssistGlobals *param_1)
+void __cdecl AimAssist_ClearAutoAimTarget(AimAssistGlobals *aaGlob)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x5fb,0
                              ,"%s");
     if (!bVar2) {
@@ -1975,34 +2025,34 @@ void __cdecl AimAssist_ClearAutoAimTarget(AimAssistGlobals *param_1)
       return;
     }
   }
-  param_1->autoAimTargetEnt = 0x3ff;
-  param_1->autoAimActive = false;
-  param_1->autoAimPitch = 0.0;
-  param_1->autoAimPitchTarget = 0.0;
-  param_1->autoAimYaw = 0.0;
-  param_1->autoAimYawTarget = 0.0;
-  param_1->autoAimJustGotTarget = false;
-  param_1->autoAimHasRealTarget = false;
+  aaGlob->autoAimTargetEnt = 0x3ff;
+  aaGlob->autoAimActive = false;
+  aaGlob->autoAimPitch = 0.0;
+  aaGlob->autoAimPitchTarget = 0.0;
+  aaGlob->autoAimYaw = 0.0;
+  aaGlob->autoAimYawTarget = 0.0;
+  aaGlob->autoAimJustGotTarget = false;
+  aaGlob->autoAimHasRealTarget = false;
   return;
 }
 
 
 // 00404F20  AimAssist_UpdateAutoAimTarget  (aim_assist/aim_assist.cpp:1551)
 
-bool __cdecl AimAssist_UpdateAutoAimTarget(AimAssistGlobals *param_1)
+bool __cdecl AimAssist_UpdateAutoAimTarget(AimAssistGlobals *aaGlob)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  float local_20;
+  float targetDir;
   float local_1c;
   float local_18;
-  AimScreenTarget *local_14;
-  float local_10;
+  AimScreenTarget *screenTarget;
+  float targetAngles;
   float local_c;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x614,0
                              ,"%s");
     if (!bVar2) {
@@ -2011,7 +2061,7 @@ bool __cdecl AimAssist_UpdateAutoAimTarget(AimAssistGlobals *param_1)
       return (bool)uVar3;
     }
   }
-  if (param_1->autoAimActive == false) {
+  if (aaGlob->autoAimActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x615,0
                              ,"%s");
     if (!bVar2) {
@@ -2020,21 +2070,21 @@ bool __cdecl AimAssist_UpdateAutoAimTarget(AimAssistGlobals *param_1)
       return (bool)uVar3;
     }
   }
-  local_14 = AimAssist_GetTargetFromEntity(param_1,param_1->autoAimTargetEnt);
-  if (local_14 == (AimScreenTarget *)0x0) {
+  screenTarget = AimAssist_GetTargetFromEntity(aaGlob,aaGlob->autoAimTargetEnt);
+  if (screenTarget == (AimScreenTarget *)0x0) {
     bVar2 = false;
   }
   else {
-    local_20 = local_14->aimPos[0] - param_1->viewOrigin[0];
-    local_1c = local_14->aimPos[1] - param_1->viewOrigin[1];
-    local_18 = local_14->aimPos[2] - param_1->viewOrigin[2];
-    vectoangles(&local_20,&local_10);
-    if (param_1->overrideSnapWidthAndLerp != false) {
-      param_1->autoAimPitch = param_1->viewAngles[0];
-      param_1->autoAimYaw = param_1->viewAngles[1];
+    targetDir = screenTarget->aimPos[0] - aaGlob->viewOrigin[0];
+    local_1c = screenTarget->aimPos[1] - aaGlob->viewOrigin[1];
+    local_18 = screenTarget->aimPos[2] - aaGlob->viewOrigin[2];
+    vectoangles(&targetDir,&targetAngles);
+    if (aaGlob->overrideSnapWidthAndLerp != false) {
+      aaGlob->autoAimPitch = aaGlob->viewAngles[0];
+      aaGlob->autoAimYaw = aaGlob->viewAngles[1];
     }
-    param_1->autoAimPitchTarget = local_10;
-    param_1->autoAimYawTarget = local_c;
+    aaGlob->autoAimPitchTarget = targetAngles;
+    aaGlob->autoAimYawTarget = local_c;
     bVar2 = true;
   }
   return bVar2;
@@ -2043,13 +2093,13 @@ bool __cdecl AimAssist_UpdateAutoAimTarget(AimAssistGlobals *param_1)
 
 // 004050F0  AimAssist_SetAutoAimTarget  (aim_assist/aim_assist.cpp:1583)
 
-void __cdecl AimAssist_SetAutoAimTarget(AimAssistGlobals *param_1,AimScreenTarget *param_2)
+void __cdecl AimAssist_SetAutoAimTarget(AimAssistGlobals *aaGlob,AimScreenTarget *screenTarget)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x630,0
                              ,"%s");
     if (!bVar2) {
@@ -2058,7 +2108,7 @@ void __cdecl AimAssist_SetAutoAimTarget(AimAssistGlobals *param_1,AimScreenTarge
       return;
     }
   }
-  if (param_2 == (AimScreenTarget *)0x0) {
+  if (screenTarget == (AimScreenTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x631,0
                              ,"%s");
     if (!bVar2) {
@@ -2067,20 +2117,20 @@ void __cdecl AimAssist_SetAutoAimTarget(AimAssistGlobals *param_1,AimScreenTarge
       return;
     }
   }
-  AimAssist_ClearAutoAimTarget(param_1);
-  param_1->autoAimTargetEnt = param_2->entIndex;
-  param_1->autoAimActive = true;
-  param_1->autoAimHasRealTarget = true;
-  param_1->autoAimPitch = param_1->viewAngles[0];
-  param_1->autoAimYaw = param_1->viewAngles[1];
-  AimAssist_UpdateAutoAimTarget(param_1);
+  AimAssist_ClearAutoAimTarget(aaGlob);
+  aaGlob->autoAimTargetEnt = screenTarget->entIndex;
+  aaGlob->autoAimActive = true;
+  aaGlob->autoAimHasRealTarget = true;
+  aaGlob->autoAimPitch = aaGlob->viewAngles[0];
+  aaGlob->autoAimYaw = aaGlob->viewAngles[1];
+  AimAssist_UpdateAutoAimTarget(aaGlob);
   return;
 }
 
 
 // 004049E0  AimAssist_ApplyAutoAim  (aim_assist/aim_assist.cpp:1634)
 
-void __cdecl AimAssist_ApplyAutoAim(AimInput *param_1,AimOutput *param_2)
+void __cdecl AimAssist_ApplyAutoAim(AimInput *input,AimOutput *output)
 
 {
   int iVar1;
@@ -2088,53 +2138,63 @@ void __cdecl AimAssist_ApplyAutoAim(AimInput *param_1,AimOutput *param_2)
   bool bVar3;
   bool bVar4;
   int iVar5;
-  AimScreenTarget *pAVar6;
-  AimAssistGlobals *pAVar7;
+  AimScreenTarget *screenTarget_00;
+  AimAssistGlobals *aaGlob_00;
+  float fVar6;
+  float fVar7;
   float fVar8;
-  float fVar9;
-  float fVar10;
-  float local_14;
+  AimScreenTarget *screenTarget;
+  float yawDelta;
+  float newPitch;
+  bool autoAimEnabled;
+  float pitchDelta;
+  AimAssistGlobals *aaGlob;
+  float newYaw;
+  WeaponDef *weapDef;
+  AimTweakables *tweaks;
+  float autoAimRange;
   
-  if ((param_1 == (AimInput *)0x0) &&
+  if ((input == (AimInput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x66e
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (AimOutput *)0x0) &&
+  if ((output == (AimOutput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x66f
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar1 = param_1->localClientNum;
-  pAVar7 = aaGlobArray + iVar1;
-  bVar3 = AimAssist_PlayerDisabledTargetAssist(param_1->localClientNum);
+  iVar1 = input->localClientNum;
+  aaGlob_00 = aaGlobArray + iVar1;
+  bVar3 = AimAssist_PlayerDisabledTargetAssist(input->localClientNum);
   BG_GetWeaponDef(aaGlobArray[iVar1].ps.weapIndex);
   if (((((aim_autoaim_enabled->current).enabled == false) ||
        ((aim_assist_script_disable->current).enabled != false)) ||
-      (bVar4 = bitarray<51>::testBit(&param_1->button_bits,0xb), !bVar4)) ||
+      (bVar4 = bitarray<51>::testBit(&input->button_bits,0xb), !bVar4)) ||
      ((bVar3 || (aaGlobArray[iVar1].ps.weapIndex == 0)))) {
-    AimAssist_ClearAutoAimTarget(pAVar7);
+    AimAssist_ClearAutoAimTarget(aaGlob_00);
     aaGlobArray[iVar1].autoAimPressed = false;
   }
   else {
     if ((aaGlobArray[iVar1].autoAimPressed == false) &&
-       (bVar3 = bitarray<51>::testBit(&param_1->button_bits,0xb), bVar3)) {
+       (bVar3 = bitarray<51>::testBit(&input->button_bits,0xb), bVar3)) {
       if (((((aaGlobArray[iVar1].ps.weaponstate != 10) && (aaGlobArray[iVar1].ps.weaponstate != 0xc)
             ) && (aaGlobArray[iVar1].ps.weaponstate != 0xe)) &&
           (((aaGlobArray[iVar1].ps.weaponstate != 0xd && (aaGlobArray[iVar1].ps.weaponstate != 0xb))
            && (aaGlobArray[iVar1].ps.weaponstate != 0xf)))) &&
          ((aaGlobArray[iVar1].ps.weaponstate != 0x10 &&
           (iVar5 = BG_IsAimDownSightWeapon(aaGlobArray[iVar1].ps.weapIndex), iVar5 != 0)))) {
-        fVar8 = AimAssist_GetAutoAimRange(aaGlobArray[iVar1].ps.weapIndex);
-        pAVar6 = AimAssist_GetBestTarget
-                           (pAVar7,fVar8,aaGlobArray[iVar1].tweakables.autoAimRegionWidth,
-                            aaGlobArray[iVar1].tweakables.autoAimRegionHeight);
-        if (pAVar6 != (AimScreenTarget *)0x0) {
-          AimAssist_SetAutoAimTarget(pAVar7,pAVar6);
+        fVar6 = AimAssist_GetAutoAimRange(aaGlobArray[iVar1].ps.weapIndex);
+        screenTarget_00 =
+             AimAssist_GetBestTarget
+                       (aaGlob_00,fVar6,aaGlobArray[iVar1].tweakables.autoAimRegionWidth,
+                        aaGlobArray[iVar1].tweakables.autoAimRegionHeight);
+        if (screenTarget_00 != (AimScreenTarget *)0x0) {
+          AimAssist_SetAutoAimTarget(aaGlob_00,screenTarget_00);
           aaGlobArray[iVar1].autoAimJustGotTarget = true;
         }
       }
@@ -2143,33 +2203,31 @@ void __cdecl AimAssist_ApplyAutoAim(AimInput *param_1,AimOutput *param_2)
     if (aaGlobArray[iVar1].autoAimActive != false) {
       if ((((aaGlobArray[iVar1].ps.eFlags & 0x300U) != 0) ||
           (1.0 < aaGlobArray[iVar1].adsLerp || aaGlobArray[iVar1].adsLerp == 1.0)) ||
-         ((bVar3 = AimAssist_UpdateAutoAimTarget(pAVar7), bVar3 ||
+         ((bVar3 = AimAssist_UpdateAutoAimTarget(aaGlob_00), bVar3 ||
           (aaGlobArray[iVar1].autoAimJustGotTarget != false)))) {
-        fVar8 = DiffTrackAngle(aaGlobArray[iVar1].autoAimPitchTarget,aaGlobArray[iVar1].autoAimPitch
-                               ,(aim_autoaim_lerp->current).value,param_1->deltaTime);
+        fVar6 = DiffTrackAngle(aaGlobArray[iVar1].autoAimPitchTarget,aaGlobArray[iVar1].autoAimPitch
+                               ,(aim_autoaim_lerp->current).value,input->deltaTime);
         if (aaGlobArray[iVar1].overrideSnapWidthAndLerp == false) {
-          local_14 = DiffTrackAngle(aaGlobArray[iVar1].autoAimYawTarget,
-                                    aaGlobArray[iVar1].autoAimYaw,(aim_autoaim_lerp->current).value,
-                                    param_1->deltaTime);
+          newYaw = DiffTrackAngle(aaGlobArray[iVar1].autoAimYawTarget,aaGlobArray[iVar1].autoAimYaw,
+                                  (aim_autoaim_lerp->current).value,input->deltaTime);
         }
         else {
-          local_14 = DiffTrackAngle(aaGlobArray[iVar1].autoAimYawTarget,
-                                    aaGlobArray[iVar1].autoAimYaw,
-                                    aaGlobArray[iVar1].overrideAutoaimLerpValue,param_1->deltaTime);
+          newYaw = DiffTrackAngle(aaGlobArray[iVar1].autoAimYawTarget,aaGlobArray[iVar1].autoAimYaw,
+                                  aaGlobArray[iVar1].overrideAutoaimLerpValue,input->deltaTime);
         }
-        fVar9 = AngleNormalize180(fVar8 - aaGlobArray[iVar1].autoAimPitch);
-        fVar10 = AngleNormalize180(local_14 - aaGlobArray[iVar1].autoAimYaw);
-        aaGlobArray[iVar1].autoAimPitch = fVar8;
-        aaGlobArray[iVar1].autoAimYaw = local_14;
-        param_2->pitch = param_2->pitch + fVar9;
-        param_2->yaw = param_2->yaw + fVar10;
-        if (((ABS(fVar9) < 0.001) && (ABS(fVar10) <= 0.001)) &&
+        fVar7 = AngleNormalize180(fVar6 - aaGlobArray[iVar1].autoAimPitch);
+        fVar8 = AngleNormalize180(newYaw - aaGlobArray[iVar1].autoAimYaw);
+        aaGlobArray[iVar1].autoAimPitch = fVar6;
+        aaGlobArray[iVar1].autoAimYaw = newYaw;
+        output->pitch = output->pitch + fVar7;
+        output->yaw = output->yaw + fVar8;
+        if (((ABS(fVar7) < 0.001) && (ABS(fVar8) <= 0.001)) &&
            (aaGlobArray[iVar1].ps.fWeaponPosFrac == 0.0)) {
-          AimAssist_ClearAutoAimTarget(pAVar7);
+          AimAssist_ClearAutoAimTarget(aaGlob_00);
         }
       }
       else {
-        AimAssist_ClearAutoAimTarget(pAVar7);
+        AimAssist_ClearAutoAimTarget(aaGlob_00);
       }
     }
   }
@@ -2184,7 +2242,7 @@ void __cdecl AimAssist_ApplyAutoAim(AimInput *param_1,AimOutput *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimAssist_ApplyLockOn(AimInput *param_1,AimOutput *param_2)
+void __cdecl AimAssist_ApplyLockOn(AimInput *input,AimOutput *output)
 
 {
   float fVar1;
@@ -2201,71 +2259,82 @@ void __cdecl AimAssist_ApplyLockOn(AimInput *param_1,AimOutput *param_2)
   float fVar12;
   float fVar13;
   int iVar14;
-  int iVar15;
-  code *pcVar16;
-  bool bVar17;
-  WeaponDef *pWVar18;
-  cg_s *pcVar19;
-  float fVar20;
-  AimScreenTarget *local_30;
+  int prevTargetEnt_00;
+  code *pcVar15;
+  bool bVar16;
+  WeaponDef *pWVar17;
+  cg_s *pcVar18;
+  float fVar19;
+  float arcLength;
+  AimScreenTarget *screenTarget;
+  float pitchTurnRate;
+  int prevTargetEnt;
+  float targetHorzSpeed;
+  float playerHorzSpeed;
+  float aimAssistRange;
+  float yawTurnRate;
+  float targetVertSpeed;
+  AimAssistGlobals *aaGlob;
+  AimTweakables *tweaks;
+  float playerVertSpeed;
   
-  if ((param_1 == (AimInput *)0x0) &&
-     (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
-                                0x6cb,0,"%s"), !bVar17)) {
-    pcVar16 = (code *)swi(3);
-    (*pcVar16)();
+  if ((input == (AimInput *)0x0) &&
+     (bVar16 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
+                                0x6cb,0,"%s"), !bVar16)) {
+    pcVar15 = (code *)swi(3);
+    (*pcVar15)();
     return;
   }
-  if ((param_2 == (AimOutput *)0x0) &&
-     (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
-                                0x6cc,0,"%s"), !bVar17)) {
-    pcVar16 = (code *)swi(3);
-    (*pcVar16)();
+  if ((output == (AimOutput *)0x0) &&
+     (bVar16 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
+                                0x6cc,0,"%s"), !bVar16)) {
+    pcVar15 = (code *)swi(3);
+    (*pcVar15)();
     return;
   }
-  iVar14 = param_1->localClientNum;
-  iVar15 = aaGlobArray[iVar14].lockOnTargetEnt;
+  iVar14 = input->localClientNum;
+  prevTargetEnt_00 = aaGlobArray[iVar14].lockOnTargetEnt;
   aaGlobArray[iVar14].lockOnTargetEnt = 0x3ff;
   if ((((((((aim_lockon_enabled->current).enabled != false) &&
-          (bVar17 = AimAssist_IsPlayerUsingOffhand(&aaGlobArray[iVar14].ps), !bVar17)) &&
+          (bVar16 = AimAssist_IsPlayerUsingOffhand(&aaGlobArray[iVar14].ps), !bVar16)) &&
          ((aim_assist_script_disable->current).enabled == false)) &&
         ((aaGlobArray[iVar14].ps.targetAssistDisabled == false &&
          (aaGlobArray[iVar14].autoAimActive == false)))) &&
        ((aaGlobArray[iVar14].autoMeleeState != AMS_TARGETING &&
-        ((pWVar18 = BG_GetWeaponDef(aaGlobArray[iVar14].ps.weapIndex),
-         pWVar18->guidedMissileType != MISSILE_GUIDANCE_TVGUIDED &&
-         (pWVar18 = BG_GetWeaponDef(aaGlobArray[iVar14].ps.weapIndex),
-         pWVar18->requireLockonToFire == false)))))) &&
-      (((aim_lockon_deflection->current).value <= ABS(param_1->pitchAxis) ||
-       (((aim_lockon_deflection->current).value <= ABS(param_1->yawAxis) ||
-        ((aim_lockon_deflection->current).value <= ABS(param_1->rightAxis))))))) &&
-     (pcVar19 = CG_GetLocalClientGlobals(param_1->localClientNum), pcVar19->cameraMode == 0)) {
+        ((pWVar17 = BG_GetWeaponDef(aaGlobArray[iVar14].ps.weapIndex),
+         pWVar17->guidedMissileType != MISSILE_GUIDANCE_TVGUIDED &&
+         (pWVar17 = BG_GetWeaponDef(aaGlobArray[iVar14].ps.weapIndex),
+         pWVar17->requireLockonToFire == false)))))) &&
+      (((aim_lockon_deflection->current).value <= ABS(input->pitchAxis) ||
+       (((aim_lockon_deflection->current).value <= ABS(input->yawAxis) ||
+        ((aim_lockon_deflection->current).value <= ABS(input->rightAxis))))))) &&
+     (pcVar18 = CG_GetLocalClientGlobals(input->localClientNum), pcVar18->cameraMode == 0)) {
     if (aaGlobArray[iVar14].ps.weapIndex == 0) {
-      local_30 = (AimScreenTarget *)0x0;
+      screenTarget = (AimScreenTarget *)0x0;
     }
     else {
-      fVar20 = AimAssist_GetAimAssistRange
+      fVar19 = AimAssist_GetAimAssistRange
                          (aaGlobArray[iVar14].ps.weapIndex,aaGlobArray[iVar14].adsLerp);
-      local_30 = AimAssist_GetPrevOrBestTarget
-                           (aaGlobArray + iVar14,fVar20,
-                            aaGlobArray[iVar14].tweakables.lockOnRegionWidth,
-                            aaGlobArray[iVar14].tweakables.lockOnRegionHeight,iVar15);
+      screenTarget = AimAssist_GetPrevOrBestTarget
+                               (aaGlobArray + iVar14,fVar19,
+                                aaGlobArray[iVar14].tweakables.lockOnRegionWidth,
+                                aaGlobArray[iVar14].tweakables.lockOnRegionHeight,prevTargetEnt_00);
     }
-    if ((local_30 != (AimScreenTarget *)0x0) && (0.0 < local_30->distSqr)) {
-      aaGlobArray[iVar14].lockOnTargetEnt = local_30->entIndex;
-      fVar20 = SQRT(local_30->distSqr) * 3.1415927;
-      if ((fVar20 <= 0.0) &&
-         (bVar17 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
-                                    0x6fd,0,"%s"), !bVar17)) {
-        pcVar16 = (code *)swi(3);
-        (*pcVar16)();
+    if ((screenTarget != (AimScreenTarget *)0x0) && (0.0 < screenTarget->distSqr)) {
+      aaGlobArray[iVar14].lockOnTargetEnt = screenTarget->entIndex;
+      fVar19 = SQRT(screenTarget->distSqr) * 3.1415927;
+      if ((fVar19 <= 0.0) &&
+         (bVar16 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",
+                                    0x6fd,0,"%s"), !bVar16)) {
+        pcVar15 = (code *)swi(3);
+        (*pcVar15)();
         return;
       }
-      fVar1 = local_30->velocity[2];
+      fVar1 = screenTarget->velocity[2];
       fVar2 = aaGlobArray[iVar14].viewAxis[2][2];
-      fVar3 = local_30->velocity[1];
+      fVar3 = screenTarget->velocity[1];
       fVar4 = aaGlobArray[iVar14].viewAxis[2][1];
-      fVar5 = local_30->velocity[0];
+      fVar5 = screenTarget->velocity[0];
       fVar6 = aaGlobArray[iVar14].viewAxis[2][0];
       fVar7 = aaGlobArray[iVar14].ps.velocity[2];
       fVar8 = aaGlobArray[iVar14].viewAxis[2][2];
@@ -2274,19 +2343,19 @@ void __cdecl AimAssist_ApplyLockOn(AimInput *param_1,AimOutput *param_2)
       fVar11 = aaGlobArray[iVar14].ps.velocity[0];
       fVar12 = aaGlobArray[iVar14].viewAxis[2][0];
       fVar13 = (aim_lockon_pitch_strength->current).value;
-      param_2->yaw = (((local_30->velocity[0] * aaGlobArray[iVar14].viewAxis[1][0] +
-                        local_30->velocity[1] * aaGlobArray[iVar14].viewAxis[1][1] +
-                       local_30->velocity[2] * aaGlobArray[iVar14].viewAxis[1][2]) -
-                      (aaGlobArray[iVar14].ps.velocity[0] * aaGlobArray[iVar14].viewAxis[1][0] +
-                       aaGlobArray[iVar14].ps.velocity[1] * aaGlobArray[iVar14].viewAxis[1][1] +
-                      aaGlobArray[iVar14].ps.velocity[2] * aaGlobArray[iVar14].viewAxis[1][2])) /
-                     fVar20) * 180.0 * (aim_lockon_strength->current).value * param_1->deltaTime +
-                     param_2->yaw;
-      param_2->pitch =
-           param_2->pitch -
+      output->yaw = (((screenTarget->velocity[0] * aaGlobArray[iVar14].viewAxis[1][0] +
+                       screenTarget->velocity[1] * aaGlobArray[iVar14].viewAxis[1][1] +
+                      screenTarget->velocity[2] * aaGlobArray[iVar14].viewAxis[1][2]) -
+                     (aaGlobArray[iVar14].ps.velocity[0] * aaGlobArray[iVar14].viewAxis[1][0] +
+                      aaGlobArray[iVar14].ps.velocity[1] * aaGlobArray[iVar14].viewAxis[1][1] +
+                     aaGlobArray[iVar14].ps.velocity[2] * aaGlobArray[iVar14].viewAxis[1][2])) /
+                    fVar19) * 180.0 * (aim_lockon_strength->current).value * input->deltaTime +
+                    output->yaw;
+      output->pitch =
+           output->pitch -
            (((fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2) -
-            (fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8)) / fVar20) * 180.0 * fVar13 *
-           param_1->deltaTime;
+            (fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8)) / fVar19) * 180.0 * fVar13 *
+           input->deltaTime;
     }
   }
   return;
@@ -2295,13 +2364,13 @@ void __cdecl AimAssist_ApplyLockOn(AimInput *param_1,AimOutput *param_2)
 
 // 00405C20  AimAssist_ClearAutoMeleeTarget  (aim_assist/aim_assist.cpp:1812)
 
-void __cdecl AimAssist_ClearAutoMeleeTarget(AimAssistGlobals *param_1)
+void __cdecl AimAssist_ClearAutoMeleeTarget(AimAssistGlobals *aaGlob)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x715,0
                              ,"%s");
     if (!bVar2) {
@@ -2310,12 +2379,12 @@ void __cdecl AimAssist_ClearAutoMeleeTarget(AimAssistGlobals *param_1)
       return;
     }
   }
-  param_1->autoMeleeState = AMS_NOT_ACTIVE;
-  param_1->autoMeleeTargetEnt = 0x3ff;
-  param_1->autoMeleePitch = 0.0;
-  param_1->autoMeleePitchTarget = 0.0;
-  param_1->autoMeleeYaw = 0.0;
-  param_1->autoMeleeYawTarget = 0.0;
+  aaGlob->autoMeleeState = AMS_NOT_ACTIVE;
+  aaGlob->autoMeleeTargetEnt = 0x3ff;
+  aaGlob->autoMeleePitch = 0.0;
+  aaGlob->autoMeleePitchTarget = 0.0;
+  aaGlob->autoMeleeYaw = 0.0;
+  aaGlob->autoMeleeYawTarget = 0.0;
   return;
 }
 
@@ -2327,14 +2396,14 @@ void __cdecl AimAssist_ClearAutoMeleeTarget(AimAssistGlobals *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-cg_s * __cdecl CG_GetLocalClientGlobals(int param_1)
+cg_s * __cdecl CG_GetLocalClientGlobals(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame_mp/cg_local_mp.h",
                              0x726,0,"%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -2354,63 +2423,64 @@ cg_s * __cdecl CG_GetLocalClientGlobals(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl AimAssist_UpdateAutoMeleeTarget(AimAssistGlobals *param_1,int param_2)
+bool __cdecl AimAssist_UpdateAutoMeleeTarget(AimAssistGlobals *aaGlob,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  centity_s *pcVar4;
-  int iVar5;
-  float local_2c;
+  centity_s *targetEnt;
+  int iVar4;
+  centity_s *cent;
+  float targetDir;
   float local_28;
   float local_24;
-  AimScreenTarget *local_20;
-  float local_1c;
+  AimScreenTarget *screenTarget;
+  float aimPos;
   float local_18;
   float local_14;
-  float local_10;
+  float targetAngles;
   float local_c;
   
-  if ((param_1 == (AimAssistGlobals *)0x0) &&
+  if ((aaGlob == (AimAssistGlobals *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x736
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1->autoMeleeState == AMS_NOT_ACTIVE) &&
+  if ((aaGlob->autoMeleeState == AMS_NOT_ACTIVE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x737
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_20 = AimAssist_GetTargetFromEntity(param_1,param_1->autoMeleeTargetEnt);
-  if ((local_20 == (AimScreenTarget *)0x0) && (param_1->autoMeleeTargetEnt == 0x3ff)) {
+  screenTarget = AimAssist_GetTargetFromEntity(aaGlob,aaGlob->autoMeleeTargetEnt);
+  if ((screenTarget == (AimScreenTarget *)0x0) && (aaGlob->autoMeleeTargetEnt == 0x3ff)) {
     return false;
   }
-  if (local_20 == (AimScreenTarget *)0x0) {
-    pcVar4 = CG_GetEntity(param_2,param_1->autoMeleeTargetEnt);
-    if (pcVar4->nextValid == 0) {
+  if (screenTarget == (AimScreenTarget *)0x0) {
+    targetEnt = CG_GetEntity(localClientNum,aaGlob->autoMeleeTargetEnt);
+    if (targetEnt->nextValid == 0) {
       return false;
     }
-    iVar5 = AimAssist_CalcAimPos(param_2,pcVar4,(AimTarget *)0x0,&local_1c);
-    if (iVar5 == 0) {
+    iVar4 = AimAssist_CalcAimPos(localClientNum,targetEnt,(AimTarget *)0x0,&aimPos);
+    if (iVar4 == 0) {
       return false;
     }
   }
   else {
-    local_1c = local_20->aimPos[0];
-    local_18 = local_20->aimPos[1];
-    local_14 = local_20->aimPos[2];
+    aimPos = screenTarget->aimPos[0];
+    local_18 = screenTarget->aimPos[1];
+    local_14 = screenTarget->aimPos[2];
   }
-  local_2c = local_1c - param_1->viewOrigin[0];
-  local_28 = local_18 - param_1->viewOrigin[1];
-  local_24 = local_14 - param_1->viewOrigin[2];
-  vectoangles(&local_2c,&local_10);
-  param_1->autoMeleePitchTarget = local_10;
-  param_1->autoMeleeYawTarget = local_c;
+  targetDir = aimPos - aaGlob->viewOrigin[0];
+  local_28 = local_18 - aaGlob->viewOrigin[1];
+  local_24 = local_14 - aaGlob->viewOrigin[2];
+  vectoangles(&targetDir,&targetAngles);
+  aaGlob->autoMeleePitchTarget = targetAngles;
+  aaGlob->autoMeleeYawTarget = local_c;
   return true;
 }
 
@@ -2422,14 +2492,16 @@ bool __cdecl AimAssist_UpdateAutoMeleeTarget(AimAssistGlobals *param_1,int param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-centity_s * __cdecl CG_GetEntity(int param_1,int param_2)
+centity_s * __cdecl CG_GetEntity(int localClientNum,int entityIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   centity_s *pcVar3;
+  centity_s *entityArray;
+  fake_centity_s *fakeEntityArray;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame_mp/cg_local_mp.h",
                              0x766,0,"%s\n\t(localClientNum) = %i");
     if (!bVar2) {
@@ -2438,7 +2510,7 @@ centity_s * __cdecl CG_GetEntity(int param_1,int param_2)
       return pcVar3;
     }
   }
-  if (0x5ff < (uint)param_2) {
+  if (0x5ff < (uint)entityIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\cgame\\../cgame_mp/cg_local_mp.h",
                              0x76a,0,
                              "entityIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)");
@@ -2448,11 +2520,11 @@ centity_s * __cdecl CG_GetEntity(int param_1,int param_2)
       return pcVar3;
     }
   }
-  if (param_2 < 0x400) {
-    pcVar3 = cg_entitiesArray[param_1] + param_2;
+  if (entityIndex < 0x400) {
+    pcVar3 = cg_entitiesArray[localClientNum] + entityIndex;
   }
   else {
-    pcVar3 = &cg_fakeEntitiesArray[param_1 * 0x200 + param_2 + -0x400].cent;
+    pcVar3 = &cg_fakeEntitiesArray[localClientNum * 0x200 + entityIndex + -0x400].cent;
   }
   return pcVar3;
 }
@@ -2460,13 +2532,13 @@ centity_s * __cdecl CG_GetEntity(int param_1,int param_2)
 
 // 00405E60  AimAssist_SetAutoMeleeTarget  (aim_assist/aim_assist.cpp:1883)
 
-void __cdecl AimAssist_SetAutoMeleeTarget(AimAssistGlobals *param_1,AimScreenTarget *param_2)
+void __cdecl AimAssist_SetAutoMeleeTarget(AimAssistGlobals *aaGlob,AimScreenTarget *screenTarget)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x75c,0
                              ,"%s");
     if (!bVar2) {
@@ -2475,7 +2547,7 @@ void __cdecl AimAssist_SetAutoMeleeTarget(AimAssistGlobals *param_1,AimScreenTar
       return;
     }
   }
-  if (param_2 == (AimScreenTarget *)0x0) {
+  if (screenTarget == (AimScreenTarget *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x75d,0
                              ,"%s");
     if (!bVar2) {
@@ -2484,19 +2556,24 @@ void __cdecl AimAssist_SetAutoMeleeTarget(AimAssistGlobals *param_1,AimScreenTar
       return;
     }
   }
-  param_1->autoMeleeTargetEnt = param_2->entIndex;
-  param_1->autoMeleeState = AMS_TARGET_AQUIRED;
-  param_1->autoMeleePitch = param_1->viewAngles[0];
-  param_1->autoMeleePitchTarget = 0.0;
-  param_1->autoMeleeYaw = param_1->viewAngles[1];
-  param_1->autoMeleeYawTarget = 0.0;
+  aaGlob->autoMeleeTargetEnt = screenTarget->entIndex;
+  aaGlob->autoMeleeState = AMS_TARGET_AQUIRED;
+  aaGlob->autoMeleePitch = aaGlob->viewAngles[0];
+  aaGlob->autoMeleePitchTarget = 0.0;
+  aaGlob->autoMeleeYaw = aaGlob->viewAngles[1];
+  aaGlob->autoMeleeYawTarget = 0.0;
   return;
 }
 
 
 // 00405790  AimAssist_ApplyAutoMelee  (aim_assist/aim_assist.cpp:1970)
 
-void __cdecl AimAssist_ApplyAutoMelee(AimInput *param_1,AimOutput *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl AimAssist_ApplyAutoMelee(AimInput *input,AimOutput *output)
 
 {
   int iVar1;
@@ -2505,113 +2582,115 @@ void __cdecl AimAssist_ApplyAutoMelee(AimInput *param_1,AimOutput *param_2)
   WeaponDef *pWVar4;
   float fVar5;
   float local_60;
-  char local_5c;
-  float local_38;
+  bool local_5c;
+  float targetDir;
   float local_34;
-  float local_30;
-  AimScreenTarget *local_2c;
-  float local_28;
-  char local_21;
-  float local_1c;
-  float local_18;
-  char local_11;
-  AimAssistGlobals *local_10;
-  float local_c;
-  int local_8;
+  float dist;
+  AimScreenTarget *screenTarget;
+  float range;
+  bool meleeing;
+  float yawDelta;
+  float newPitch;
+  float pitchDelta;
+  bool isBayonet;
+  AimAssistGlobals *aaGlob;
+  float newYaw;
+  AimTweakables *tweaks;
   
-  if ((param_1 == (AimInput *)0x0) &&
+  if ((input == (AimInput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x7be
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (AimOutput *)0x0) &&
+  if ((output == (AimOutput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x7bf
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_2->meleeChargeYaw = 0.0;
-  param_2->meleeChargeDist = '\0';
-  iVar1 = param_1->localClientNum;
-  local_10 = aaGlobArray + iVar1;
-  local_8 = iVar1 * 0xeb0 + 0xe20330;
-  local_11 = BG_IsBayonetWeapon(aaGlobArray[iVar1].ps.weapIndex);
-  if (((aim_automelee_enabled->current).enabled == false) || ((local_10->ps).weapIndex == 0)) {
-    AimAssist_ClearAutoMeleeTarget(local_10);
+  output->meleeChargeYaw = 0.0;
+  output->meleeChargeDist = '\0';
+  iVar1 = input->localClientNum;
+  aaGlob = aaGlobArray + iVar1;
+  tweaks = &aaGlobArray[iVar1].tweakables;
+  isBayonet = BG_IsBayonetWeapon(aaGlobArray[iVar1].ps.weapIndex);
+  if (((aim_automelee_enabled->current).enabled == false) || ((aaGlob->ps).weapIndex == 0)) {
+    AimAssist_ClearAutoMeleeTarget(aaGlob);
   }
   else {
-    bVar3 = bitarray<51>::testBit(&param_1->button_bits,2);
-    if ((!bVar3) || (bVar3 = bitarray<51>::testBit(&local_10->prev_button_bits,2), bVar3)) {
-      local_5c = '\0';
+    bVar3 = bitarray<51>::testBit(&input->button_bits,2);
+    if ((!bVar3) || (bVar3 = bitarray<51>::testBit(&aaGlob->prev_button_bits,2), bVar3)) {
+      local_5c = false;
     }
     else {
-      local_5c = '\x01';
+      local_5c = true;
     }
-    local_21 = local_5c;
-    pWVar4 = BG_GetWeaponDef((local_10->ps).weapIndex);
+    meleeing = local_5c;
+    pWVar4 = BG_GetWeaponDef((aaGlob->ps).weapIndex);
     if (pWVar4->meleeChargeRange == 0.0) {
-      if (local_11 == '\0') {
+      if (isBayonet == false) {
         local_60 = (aim_automelee_range->current).value;
       }
       else {
         local_60 = (aim_autobayonet_range->current).value;
       }
-      local_28 = local_60;
+      range = local_60;
     }
     else {
-      pWVar4 = BG_GetWeaponDef((local_10->ps).weapIndex);
-      local_28 = pWVar4->meleeChargeRange;
+      pWVar4 = BG_GetWeaponDef((aaGlob->ps).weapIndex);
+      range = pWVar4->meleeChargeRange;
     }
-    if ((local_10->autoMeleeState != AMS_TARGETING) && (local_21 != '\0')) {
-      local_2c = AimAssist_GetTargetFromEntity(local_10,local_10->autoMeleeTargetEnt);
-      if ((local_2c == (AimScreenTarget *)0x0) &&
-         (local_2c = AimAssist_GetBestTarget
-                               (local_10,local_28,*(float *)(local_8 + 0x10),
-                                *(float *)(local_8 + 0x14)), local_2c == (AimScreenTarget *)0x0)) {
-        AimAssist_ClearAutoMeleeTarget(local_10);
+    if ((aaGlob->autoMeleeState != AMS_TARGETING) && (meleeing != false)) {
+      screenTarget = AimAssist_GetTargetFromEntity(aaGlob,aaGlob->autoMeleeTargetEnt);
+      if ((screenTarget == (AimScreenTarget *)0x0) &&
+         (screenTarget = AimAssist_GetBestTarget
+                                   (aaGlob,range,tweaks->autoMeleeRegionWidth,
+                                    tweaks->autoMeleeRegionHeight),
+         screenTarget == (AimScreenTarget *)0x0)) {
+        AimAssist_ClearAutoMeleeTarget(aaGlob);
         return;
       }
-      AimAssist_SetAutoMeleeTarget(local_10,local_2c);
-      if (((((local_10->ps).pm_flags & 1U) == 0) && (0.0 < local_2c->distSqr)) &&
-         (local_30 = SQRT(local_2c->distSqr) - dist_offset, 0.0 < local_30)) {
-        if (255.0 < local_30) {
-          local_30 = 255.0;
+      AimAssist_SetAutoMeleeTarget(aaGlob,screenTarget);
+      if (((((aaGlob->ps).pm_flags & 1U) == 0) && (0.0 < screenTarget->distSqr)) &&
+         (dist = SQRT(screenTarget->distSqr) - dist_offset, 0.0 < dist)) {
+        if (255.0 < dist) {
+          dist = 255.0;
         }
-        local_38 = local_2c->aimPos[0] - local_10->viewOrigin[0];
-        local_34 = local_2c->aimPos[1] - local_10->viewOrigin[1];
-        fVar5 = vectoyaw(&local_38);
-        param_2->meleeChargeYaw = fVar5;
-        param_2->meleeChargeDist = (uchar)(int)local_30;
+        targetDir = screenTarget->aimPos[0] - aaGlob->viewOrigin[0];
+        local_34 = screenTarget->aimPos[1] - aaGlob->viewOrigin[1];
+        fVar5 = vectoyaw(&targetDir);
+        output->meleeChargeYaw = fVar5;
+        output->meleeChargeDist = (uchar)(int)dist;
       }
     }
-    if ((local_10->autoMeleeState == AMS_TARGET_AQUIRED) && ((local_10->ps).weaponstate == 0x11)) {
-      local_10->autoMeleeState = AMS_TARGETING;
+    if ((aaGlob->autoMeleeState == AMS_TARGET_AQUIRED) && ((aaGlob->ps).weaponstate == 0x11)) {
+      aaGlob->autoMeleeState = AMS_TARGETING;
     }
-    if (local_10->autoMeleeState == AMS_TARGETING) {
-      if (((local_10->ps).weaponstate == 0x12) ||
-         ((((local_10->ps).weaponstate != 0x11 && ((local_10->ps).weaponstate != 0x12)) &&
-          ((local_10->ps).weaponstate != 0x13)))) {
-        AimAssist_ClearAutoMeleeTarget(local_10);
+    if (aaGlob->autoMeleeState == AMS_TARGETING) {
+      if (((aaGlob->ps).weaponstate == 0x12) ||
+         ((((aaGlob->ps).weaponstate != 0x11 && ((aaGlob->ps).weaponstate != 0x12)) &&
+          ((aaGlob->ps).weaponstate != 0x13)))) {
+        AimAssist_ClearAutoMeleeTarget(aaGlob);
       }
       else {
-        bVar3 = AimAssist_UpdateAutoMeleeTarget(local_10,param_1->localClientNum);
+        bVar3 = AimAssist_UpdateAutoMeleeTarget(aaGlob,input->localClientNum);
         if (bVar3) {
-          local_1c = DiffTrackAngle(local_10->autoMeleePitchTarget,local_10->autoMeleePitch,
-                                    (aim_automelee_lerp->current).value,param_1->deltaTime);
-          local_c = DiffTrackAngle(local_10->autoMeleeYawTarget,local_10->autoMeleeYaw,
-                                   (aim_automelee_lerp->current).value,param_1->deltaTime);
-          local_18 = AngleNormalize180(local_1c - local_10->autoMeleePitch);
-          fVar5 = AngleNormalize180(local_c - local_10->autoMeleeYaw);
-          local_10->autoMeleePitch = local_1c;
-          local_10->autoMeleeYaw = local_c;
-          param_2->pitch = param_2->pitch + local_18;
-          param_2->yaw = param_2->yaw + fVar5;
+          newPitch = DiffTrackAngle(aaGlob->autoMeleePitchTarget,aaGlob->autoMeleePitch,
+                                    (aim_automelee_lerp->current).value,input->deltaTime);
+          newYaw = DiffTrackAngle(aaGlob->autoMeleeYawTarget,aaGlob->autoMeleeYaw,
+                                  (aim_automelee_lerp->current).value,input->deltaTime);
+          pitchDelta = AngleNormalize180(newPitch - aaGlob->autoMeleePitch);
+          fVar5 = AngleNormalize180(newYaw - aaGlob->autoMeleeYaw);
+          aaGlob->autoMeleePitch = newPitch;
+          aaGlob->autoMeleeYaw = newYaw;
+          output->pitch = output->pitch + pitchDelta;
+          output->yaw = output->yaw + fVar5;
         }
         else {
-          AimAssist_ClearAutoMeleeTarget(local_10);
+          AimAssist_ClearAutoMeleeTarget(aaGlob);
         }
       }
     }
@@ -2622,42 +2701,43 @@ void __cdecl AimAssist_ApplyAutoMelee(AimInput *param_1,AimOutput *param_2)
 
 // 004033E0  AimAssist_UpdateGamePadInput  (aim_assist/aim_assist.cpp:2321)
 
-void __cdecl AimAssist_UpdateGamePadInput(AimInput *param_1,AimOutput *param_2)
+void __cdecl AimAssist_UpdateGamePadInput(AimInput *input,AimOutput *output)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   int local_c;
+  AimAssistGlobals *aaGlob;
   
-  if ((param_1 == (AimInput *)0x0) &&
+  if ((input == (AimInput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x91a
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (AimOutput *)0x0) &&
+  if ((output == (AimOutput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x91b
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_2->pitch = param_1->pitch;
-  param_2->yaw = param_1->yaw;
-  iVar1 = param_1->localClientNum;
+  output->pitch = input->pitch;
+  output->yaw = input->yaw;
+  iVar1 = input->localClientNum;
   if (aaGlobArray[iVar1].initialized != false) {
-    AimAssist_UpdateTweakables(param_1->localClientNum);
-    AimAssist_UpdateAdsLerp(param_1);
-    AimAssist_ApplyTurnRates(param_1,param_2);
+    AimAssist_UpdateTweakables(input->localClientNum);
+    AimAssist_UpdateAdsLerp(input);
+    AimAssist_ApplyTurnRates(input,output);
     if ((aaGlobArray[iVar1].ps.weaponstate < 0x2f) || (0x31 < aaGlobArray[iVar1].ps.weaponstate)) {
-      AimAssist_ApplyAutoAim(param_1,param_2);
-      AimAssist_ApplyAutoMelee(param_1,param_2);
-      AimAssist_ApplyLockOn(param_1,param_2);
+      AimAssist_ApplyAutoAim(input,output);
+      AimAssist_ApplyAutoMelee(input,output);
+      AimAssist_ApplyLockOn(input,output);
     }
     for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      *(int *)(iVar1 * 0xeb0 + 0xe21170 + local_c * 4) = (param_1->button_bits).array[local_c];
+      *(int *)(iVar1 * 0xeb0 + 0xe21170 + local_c * 4) = (input->button_bits).array[local_c];
     }
   }
   return;
@@ -2666,37 +2746,38 @@ void __cdecl AimAssist_UpdateGamePadInput(AimInput *param_1,AimOutput *param_2)
 
 // 00405F20  AimAssist_UpdateMouseInput  (aim_assist/aim_assist.cpp:2369)
 
-void __cdecl AimAssist_UpdateMouseInput(AimInput *param_1,AimOutput *param_2)
+void __cdecl AimAssist_UpdateMouseInput(AimInput *input,AimOutput *output)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   int local_c;
+  AimAssistGlobals *aaGlob;
   
-  if ((param_1 == (AimInput *)0x0) &&
+  if ((input == (AimInput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x94a
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (AimOutput *)0x0) &&
+  if ((output == (AimOutput *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x94b
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  param_2->pitch = param_1->pitch;
-  param_2->yaw = param_1->yaw;
-  iVar1 = param_1->localClientNum;
+  output->pitch = input->pitch;
+  output->yaw = input->yaw;
+  iVar1 = input->localClientNum;
   if (aaGlobArray[iVar1].initialized != false) {
-    AimAssist_UpdateTweakables(param_1->localClientNum);
-    AimAssist_UpdateAdsLerp(param_1);
-    AimAssist_ApplyAutoMelee(param_1,param_2);
+    AimAssist_UpdateTweakables(input->localClientNum);
+    AimAssist_UpdateAdsLerp(input);
+    AimAssist_ApplyAutoMelee(input,output);
     for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      *(int *)(iVar1 * 0xeb0 + 0xe21170 + local_c * 4) = (param_1->button_bits).array[local_c];
+      *(int *)(iVar1 * 0xeb0 + 0xe21170 + local_c * 4) = (input->button_bits).array[local_c];
     }
   }
   return;
@@ -2707,15 +2788,20 @@ void __cdecl AimAssist_UpdateMouseInput(AimInput *param_1,AimOutput *param_2)
 
 void __cdecl
 AimAssist_DrawCenterBox
-          (AimAssistGlobals *param_1,float param_2,float param_3,float *param_4,bool param_5)
+          (AimAssistGlobals *aaGlob,float clipHalfWidth,float clipHalfHeight,float *color,
+          bool centerOnCrosshair)
 
 {
   code *pcVar1;
   bool bVar2;
-  float fVar3;
-  float fVar4;
+  float w;
+  float h;
+  float width;
+  float height;
+  float x;
+  float y;
   
-  if (param_1 == (AimAssistGlobals *)0x0) {
+  if (aaGlob == (AimAssistGlobals *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x974,0
                              ,"%s");
     if (!bVar2) {
@@ -2724,7 +2810,7 @@ AimAssist_DrawCenterBox
       return;
     }
   }
-  if (param_4 == (float *)0x0) {
+  if (color == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x975,0
                              ,"%s");
     if (!bVar2) {
@@ -2733,91 +2819,101 @@ AimAssist_DrawCenterBox
       return;
     }
   }
-  fVar3 = param_2 * param_1->screenWidth;
-  fVar4 = param_3 * param_1->screenHeight;
+  w = clipHalfWidth * aaGlob->screenWidth;
+  h = clipHalfHeight * aaGlob->screenHeight;
   CL_DrawStretchPicPhysical
-            ((param_1->screenWidth - fVar3) * 0.5 + 0.0,(param_1->screenHeight - fVar4) * 0.5 + 0.0,
-             fVar3,fVar4,0.0,0.0,1.0,1.0,param_4,cgMedia.whiteMaterial);
+            ((aaGlob->screenWidth - w) * 0.5 + 0.0,(aaGlob->screenHeight - h) * 0.5 + 0.0,w,h,0.0,
+             0.0,1.0,1.0,color,cgMedia.whiteMaterial);
   return;
 }
 
 
 // 00406320  AimAssist_DrawTargets  (aim_assist/aim_assist.cpp:2445)
 
-void __cdecl AimAssist_DrawTargets(int param_1,playerState_s *param_2,float *param_3)
+void __cdecl AimAssist_DrawTargets(int localClientNum,playerState_s *ps,float *color)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   char *pcVar4;
+  float x;
   float fVar5;
   float fVar6;
   float fVar7;
-  float fVar8;
   float local_50;
-  int local_24;
+  AimScreenTarget *screenTarget;
+  float width;
+  float height;
+  float aimAssistRange;
+  char *msg;
+  int targetIndex;
+  float meleeRange;
+  AimAssistGlobals *aaGlob;
+  float autoAimRange;
   
-  if ((param_2 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x99a
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((color == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\aim_assist\\aim_assist.cpp",0x99b
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (aaGlobArray[param_1].ps.weapIndex != 0) {
-    bVar3 = BG_IsBayonetWeapon(aaGlobArray[param_1].ps.weapIndex);
+  if (aaGlobArray[localClientNum].ps.weapIndex != 0) {
+    bVar3 = BG_IsBayonetWeapon(aaGlobArray[localClientNum].ps.weapIndex);
     if (bVar3) {
       local_50 = (aim_autobayonet_range->current).value;
     }
     else {
       local_50 = (aim_automelee_range->current).value;
     }
-    fVar7 = AimAssist_GetAimAssistRange
-                      (aaGlobArray[param_1].ps.weapIndex,aaGlobArray[param_1].adsLerp);
-    fVar8 = AimAssist_GetAutoAimRange(aaGlobArray[param_1].ps.weapIndex);
-    for (local_24 = 0; local_24 < aaGlobArray[param_1].screenTargetCount; local_24 = local_24 + 1) {
-      iVar1 = param_1 * 0xeb0 + 0xe20430 + local_24 * 0x34;
+    fVar6 = AimAssist_GetAimAssistRange
+                      (aaGlobArray[localClientNum].ps.weapIndex,aaGlobArray[localClientNum].adsLerp)
+    ;
+    fVar7 = AimAssist_GetAutoAimRange(aaGlobArray[localClientNum].ps.weapIndex);
+    for (targetIndex = 0; targetIndex < aaGlobArray[localClientNum].screenTargetCount;
+        targetIndex = targetIndex + 1) {
+      iVar1 = localClientNum * 0xeb0 + 0xe20430 + targetIndex * 0x34;
       if ((((((aim_autoaim_debug->current).enabled == false) ||
-            (*(float *)(iVar1 + 0x2c) <= fVar8 * fVar8)) &&
+            (*(float *)(iVar1 + 0x2c) <= fVar7 * fVar7)) &&
            (((aim_automelee_debug->current).enabled == false ||
             (*(float *)(iVar1 + 0x2c) <= local_50 * local_50)))) &&
           (((aim_slowdown_debug->current).enabled == false ||
-           (*(float *)(iVar1 + 0x2c) <= fVar7 * fVar7)))) &&
+           (*(float *)(iVar1 + 0x2c) <= fVar6 * fVar6)))) &&
          (((aim_lockon_debug->current).enabled == false ||
-          (*(float *)(iVar1 + 0x2c) <= fVar7 * fVar7)))) {
-        fVar5 = (*(float *)(iVar1 + 4) + 1.0) * aaGlobArray[param_1].screenWidth * 0.5;
-        fVar6 = (*(float *)(iVar1 + 8) + 1.0) * aaGlobArray[param_1].screenHeight * 0.5;
+          (*(float *)(iVar1 + 0x2c) <= fVar6 * fVar6)))) {
+        x = (*(float *)(iVar1 + 4) + 1.0) * aaGlobArray[localClientNum].screenWidth * 0.5;
+        fVar5 = (*(float *)(iVar1 + 8) + 1.0) * aaGlobArray[localClientNum].screenHeight * 0.5;
         CL_DrawStretchPicPhysical
-                  (fVar5,fVar6,
-                   (*(float *)(iVar1 + 0xc) + 1.0) * aaGlobArray[param_1].screenWidth * 0.5 - fVar5,
-                   (*(float *)(iVar1 + 0x10) + 1.0) * aaGlobArray[param_1].screenHeight * 0.5 -
-                   fVar6,0.0,0.0,1.0,1.0,param_3,cgMedia.whiteMaterial);
+                  (x,fVar5,(*(float *)(iVar1 + 0xc) + 1.0) *
+                           aaGlobArray[localClientNum].screenWidth * 0.5 - x,
+                   (*(float *)(iVar1 + 0x10) + 1.0) * aaGlobArray[localClientNum].screenHeight * 0.5
+                   - fVar5,0.0,0.0,1.0,1.0,color,cgMedia.whiteMaterial);
         pcVar4 = va("Pri: %i");
-        CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar4,0x7fffffff,
-                    cgMedia.smallDevFont,fVar5,fVar6,5,5,1.0,1.0,colorYellow,0);
+        CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,0x7fffffff,
+                    cgMedia.smallDevFont,x,fVar5,5,5,1.0,1.0,colorYellow,0);
         pcVar4 = va("Ent: %i");
-        CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar4,0x7fffffff,
-                    cgMedia.smallDevFont,fVar5,fVar6 - 10.0,5,5,1.0,1.0,colorYellow,0);
-        fVar6 = (fVar6 - 10.0) - 10.0;
+        CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,0x7fffffff,
+                    cgMedia.smallDevFont,x,fVar5 - 10.0,5,5,1.0,1.0,colorYellow,0);
+        fVar5 = (fVar5 - 10.0) - 10.0;
         pcVar4 = va("Dist: %.2f");
-        CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar4,0x7fffffff,
-                    cgMedia.smallDevFont,fVar5,fVar6,5,5,1.0,1.0,colorWhite,0);
-        fVar6 = fVar6 - 10.0;
+        CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,0x7fffffff,
+                    cgMedia.smallDevFont,x,fVar5,5,5,1.0,1.0,colorWhite,0);
+        fVar5 = fVar5 - 10.0;
         Abs((phys_vec3 *)(iVar1 + 0x20));
         pcVar4 = va("Speed: %.2f");
-        CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar4,0x7fffffff,
-                    cgMedia.smallDevFont,fVar5,fVar6,5,5,1.0,1.0,colorWhite,0);
+        CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,0x7fffffff,
+                    cgMedia.smallDevFont,x,fVar5,5,5,1.0,1.0,colorWhite,0);
         pcVar4 = va("XHairDist: %.4f");
-        CL_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar4,0x7fffffff,
-                    cgMedia.smallDevFont,fVar5,fVar6 - 10.0,5,5,1.0,1.0,colorWhite,0);
+        CL_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,0x7fffffff,
+                    cgMedia.smallDevFont,x,fVar5 - 10.0,5,5,1.0,1.0,colorWhite,0);
       }
     }
   }
@@ -2832,53 +2928,51 @@ void __cdecl AimAssist_DrawTargets(int param_1,playerState_s *param_2,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AimAssist_DrawDebugOverlay(int param_1)
+void __cdecl AimAssist_DrawDebugOverlay(int localClientNum)
 
 {
   cg_s *pcVar1;
-  float local_30;
+  float green;
   float local_2c;
   undefined4 local_28;
   float local_24;
-  float local_20 [4];
-  AimAssistGlobals *local_10;
-  playerState_s *local_c;
-  AimTweakables *local_8;
+  float red [4];
+  AimAssistGlobals *aaGlob;
+  playerState_s *ps;
+  AimTweakables *tweaks;
   
-  local_20[0] = 1.0;
-  local_20[1] = 0.0;
-  local_20[2] = 0.0;
-  local_20[3] = 0.25;
-  local_30 = 0.0;
+  red[0] = 1.0;
+  red[1] = 0.0;
+  red[2] = 0.0;
+  red[3] = 0.25;
+  green = 0.0;
   local_2c = 1.0;
   local_28 = 0;
   local_24 = 0.25;
-  local_10 = aaGlobArray + param_1;
-  if (aaGlobArray[param_1].initialized != false) {
-    local_8 = &aaGlobArray[param_1].tweakables;
-    pcVar1 = CG_GetLocalClientGlobals(param_1);
-    local_c = &pcVar1->predictedPlayerState;
+  aaGlob = aaGlobArray + localClientNum;
+  if (aaGlobArray[localClientNum].initialized != false) {
+    tweaks = &aaGlobArray[localClientNum].tweakables;
+    pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+    ps = &pcVar1->predictedPlayerState;
     if ((aim_slowdown_debug->current).enabled != false) {
-      AimAssist_DrawTargets(param_1,local_c,local_20);
+      AimAssist_DrawTargets(localClientNum,ps,red);
       AimAssist_DrawCenterBox
-                (local_10,local_8->slowdownRegionWidth,local_8->slowdownRegionHeight,&local_30,false
-                );
+                (aaGlob,tweaks->slowdownRegionWidth,tweaks->slowdownRegionHeight,&green,false);
     }
     if ((aim_autoaim_debug->current).enabled != false) {
-      AimAssist_DrawTargets(param_1,local_c,local_20);
+      AimAssist_DrawTargets(localClientNum,ps,red);
       AimAssist_DrawCenterBox
-                (local_10,local_8->autoAimRegionWidth,local_8->autoAimRegionHeight,&local_30,true);
+                (aaGlob,tweaks->autoAimRegionWidth,tweaks->autoAimRegionHeight,&green,true);
     }
     if ((aim_automelee_debug->current).enabled != false) {
-      AimAssist_DrawTargets(param_1,local_c,local_20);
+      AimAssist_DrawTargets(localClientNum,ps,red);
       AimAssist_DrawCenterBox
-                (local_10,local_8->autoMeleeRegionWidth,local_8->autoMeleeRegionHeight,&local_30,
-                 false);
+                (aaGlob,tweaks->autoMeleeRegionWidth,tweaks->autoMeleeRegionHeight,&green,false);
     }
     if ((aim_lockon_debug->current).enabled != false) {
-      AimAssist_DrawTargets(param_1,local_c,local_20);
+      AimAssist_DrawTargets(localClientNum,ps,red);
       AimAssist_DrawCenterBox
-                (local_10,local_8->lockOnRegionWidth,local_8->lockOnRegionHeight,&local_30,false);
+                (aaGlob,tweaks->lockOnRegionWidth,tweaks->lockOnRegionHeight,&green,false);
     }
   }
   return;
@@ -2888,13 +2982,12 @@ void __cdecl AimAssist_DrawDebugOverlay(int param_1)
 // 00401000  `vector_constructor_iterator'  (line unknown)
 
 void __cdecl
-_vector_constructor_iterator_
-          (void *param_1,uint param_2,int param_3,_func___thiscall_void_ptr_void_ptr *param_4)
+_vector_constructor_iterator_(void *__t,uint __s,int __n,_func___thiscall_void_ptr_void_ptr *__f)
 
 {
-  while (param_3 = param_3 + -1, -1 < param_3) {
-    (*param_4)(param_1);
-    param_1 = (void *)((int)param_1 + param_2);
+  while (__n = __n + -1, -1 < __n) {
+    (*__f)(__t);
+    __t = (void *)((int)__t + __s);
   }
   return;
 }

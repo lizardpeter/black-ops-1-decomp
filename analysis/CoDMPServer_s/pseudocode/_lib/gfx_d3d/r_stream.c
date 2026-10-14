@@ -67,6 +67,8 @@ int __cdecl CountBitsEnabled(uint param_1)
 
 // 0081C980  R_StreamUpdate_ReadTextures  (gfx_d3d/r_stream.cpp:819)
 
+/* WARNING: Variable defined which should be unmapped: numRequests */
+
 void __cdecl R_StreamUpdate_ReadTextures(void)
 
 {
@@ -76,15 +78,15 @@ void __cdecl R_StreamUpdate_ReadTextures(void)
   pendingRequest *ppVar4;
   int iVar5;
   GfxImage *pGVar6;
-  GfxTexture *pGVar7;
   FastCriticalSection *unaff_EDI;
-  int iStack_40;
-  uchar *puStack_3c;
-  int iStack_38;
-  GfxTexture aGStack_34 [13];
+  GfxImage *pGVar7;
+  int numRequests;
+  bool highMip;
+  int bufferSize;
+  GfxImage image;
   
   ppVar4 = (pendingRequest *)0x0;
-  iStack_40 = 0;
+  _highMip = 0;
   Sys_LockWrite(unaff_EDI);
   iVar5 = 0;
   do {
@@ -95,39 +97,38 @@ void __cdecl R_StreamUpdate_ReadTextures(void)
         lastIdx = (iVar3 + 1) % 10;
         s_pendingRequests[iVar3].status = STREAM_STATUS_INPROGRESS;
       }
-      iStack_40 = iStack_40 + 1;
+      _highMip = _highMip + 1;
     }
     iVar5 = iVar5 + 1;
   } while (iVar5 < 10);
-  uVar1 = (uint)puStack_3c >> 8;
-  puStack_3c = (uchar *)((uint)puStack_3c & 0xffffff00);
+  uVar1 = (uint)bufferSize >> 8;
+  bufferSize = bufferSize & 0xffffff00;
   if (ppVar4 != (pendingRequest *)0x0) {
     bVar2 = ppVar4->highMip;
+    pGVar7 = &image;
     pGVar6 = ppVar4->image;
-    pGVar7 = aGStack_34;
-    for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
-      *pGVar7 = pGVar6->texture;
+    for (iVar5 = 0xd; pGVar7 = (GfxImage *)&pGVar7->mapType, iVar5 != 0; iVar5 = iVar5 + -1) {
+      *(GfxTexture *)pGVar7 = pGVar6->texture;
       pGVar6 = (GfxImage *)&pGVar6->mapType;
-      pGVar7 = pGVar7 + 1;
     }
-    puStack_3c = (uchar *)CONCAT31((int3)uVar1,bVar2);
+    bufferSize = CONCAT31((int3)uVar1,bVar2);
   }
   LOCK();
   s_allocGlob.lock.writeCount = s_allocGlob.lock.writeCount + -1;
   UNLOCK();
   if (ppVar4 != (pendingRequest *)0x0) {
-    bVar2 = Image_LoadToBuffer((GfxImage *)aGStack_34,SUB41(puStack_3c,0),&puStack_3c,&iStack_38);
+    bVar2 = Image_LoadToBuffer((GfxImage *)&image.mapType,SUB41(bufferSize,0),(uchar **)&bufferSize,
+                               (int *)&image);
     Sys_LockWrite(unaff_EDI);
     if (ppVar4->status == STREAM_STATUS_INPROGRESS) {
       if (bVar2) {
-        ppVar4->bufferSize = iStack_38;
+        ppVar4->bufferSize = (int)image.texture;
+        pGVar7 = &image;
         ppVar4->status = STREAM_STATUS_FINISHED;
-        ppVar4->buffer = puStack_3c;
-        pGVar7 = aGStack_34;
+        ppVar4->buffer = (uchar *)bufferSize;
         pGVar6 = ppVar4->image;
-        for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
-          pGVar6->texture = *pGVar7;
-          pGVar7 = pGVar7 + 1;
+        for (iVar5 = 0xd; pGVar7 = (GfxImage *)&pGVar7->mapType, iVar5 != 0; iVar5 = iVar5 + -1) {
+          pGVar6->texture = *(GfxTexture *)pGVar7;
           pGVar6 = (GfxImage *)&pGVar6->mapType;
         }
       }
@@ -136,14 +137,14 @@ void __cdecl R_StreamUpdate_ReadTextures(void)
       }
     }
     else {
-      VirtualFree(puStack_3c,0,0x8000);
+      VirtualFree((LPVOID)bufferSize,0,0x8000);
     }
     LOCK();
     s_allocGlob.lock.writeCount = s_allocGlob.lock.writeCount + -1;
     UNLOCK();
     Sleep(1);
   }
-  if (1 < iStack_40) {
+  if (1 < _highMip) {
     SetEvent(DAT_01da481c);
   }
   return;
@@ -151,6 +152,8 @@ void __cdecl R_StreamUpdate_ReadTextures(void)
 
 
 // 0081CC00  R_StreamUpdate_ProcessFileCallbacks  (gfx_d3d/r_stream.cpp:1211)
+
+/* WARNING: Variable defined which should be unmapped: workDone */
 
 bool __cdecl R_StreamUpdate_ProcessFileCallbacks(void)
 
@@ -163,12 +166,14 @@ bool __cdecl R_StreamUpdate_ProcessFileCallbacks(void)
   stream_status *psVar6;
   uint unaff_EBP;
   uchar *unaff_ESI;
-  GfxImage *pGVar7;
-  GfxTexture *pGVar8;
+  GfxTexture data;
+  IDirect3DBaseTexture9 *pIVar7;
   GfxImage *unaff_EDI;
-  GfxImage *pGVar9;
+  GfxTexture image_00;
+  bool workDone;
   bool bStack_3d;
-  GfxTexture aGStack_34 [13];
+  GfxImage *image;
+  GfxImage oldImage;
   
   bStack_3d = false;
   psVar6 = &s_pendingRequests[0].status;
@@ -176,10 +181,10 @@ bool __cdecl R_StreamUpdate_ProcessFileCallbacks(void)
     sVar1 = *psVar6;
     if ((((sVar1 != STREAM_STATUS_INVALID) && (sVar1 != STREAM_STATUS_PRE)) &&
         (sVar1 != STREAM_STATUS_QUEUED)) && (sVar1 != STREAM_STATUS_INPROGRESS)) {
-      pGVar9 = (GfxImage *)psVar6[-6];
-      iVar5 = (int)(pGVar9[-0x491f9].cardMemory.platform + 1) / 0x34;
-      iVar4 = iVar5 >> 5;
-      bVar2 = (byte)iVar5;
+      data = (GfxTexture)((GfxTexture *)(psVar6 + -6))->basemap;
+      iVar4 = (int)(data.basemap + -0x3b69a1) / 0x34 >> 5;
+      bVar2 = (byte)((int)(data.basemap + -0x3b69a1) / 0x34);
+      oldImage.texture = data;
       if (((sVar1 == STREAM_STATUS_CANCELLED) || (sVar1 == STREAM_STATUS_READFAILED)) ||
          (sVar1 == STREAM_STATUS_EOF)) {
         streamFrontendGlob.imageLoading[iVar4] =
@@ -189,32 +194,33 @@ bool __cdecl R_StreamUpdate_ProcessFileCallbacks(void)
       else {
         bStack_3d = true;
         bVar3 = Sys_IsRenderThread();
+        image_00 = oldImage.texture;
         if (bVar3) {
-          pGVar7 = pGVar9;
-          pGVar8 = aGStack_34;
+          pIVar7 = (IDirect3DBaseTexture9 *)&oldImage.mapType;
           for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
-            *pGVar8 = pGVar7->texture;
-            pGVar7 = (GfxImage *)&pGVar7->mapType;
-            pGVar8 = pGVar8 + 1;
+            *pIVar7 = *data.basemap;
+            data = (GfxTexture)&(data.loadDef)->format;
+            pIVar7 = pIVar7 + 1;
           }
-          (**(code **)((int)*(pGVar9->texture).basemap + 4))((pGVar9->texture).basemap);
+          (**(code **)(**(int **)oldImage.texture.loadDef + 4))(*(int **)oldImage.texture.loadDef);
           Image_Release(unaff_EDI);
-          Image_LoadFromData(pGVar9,(GfxImageFileHeader *)unaff_EDI,unaff_ESI,unaff_EBP);
+          Image_LoadFromData((GfxImage *)image_00.basemap,(GfxImageFileHeader *)unaff_EDI,unaff_ESI,
+                             unaff_EBP);
           VirtualFree((uchar *)psVar6[-4],0,0x8000);
-          if ((pGVar9->texture).basemap != (IDirect3DBaseTexture9 *)0x0) {
-            (**(code **)((int)*aGStack_34[0].basemap + 8))(aGStack_34[0].basemap);
+          if (*image_00.basemap != (IDirect3DBaseTexture9)0x0) {
+            (**(code **)(*(int *)oldImage._4_4_ + 8))(oldImage._4_4_);
             goto LAB_0081ccfd;
           }
           Image_Release(unaff_EDI);
-          pGVar8 = aGStack_34;
+          pIVar7 = (IDirect3DBaseTexture9 *)&oldImage.mapType;
           for (iVar5 = 0xd; iVar5 != 0; iVar5 = iVar5 + -1) {
-            pGVar9->texture = *pGVar8;
-            pGVar8 = pGVar8 + 1;
-            pGVar9 = (GfxImage *)&pGVar9->mapType;
+            *image_00.basemap = *pIVar7;
+            pIVar7 = pIVar7 + 1;
+            image_00 = (GfxTexture)&(image_00.loadDef)->format;
           }
         }
         else {
-          RB_Resource_ReloadTexture(pGVar9,(uchar *)psVar6[-4]);
+          RB_Resource_ReloadTexture((GfxImage *)data.basemap,(uchar *)psVar6[-4]);
 LAB_0081ccfd:
           if (*(bool *)(psVar6 + 4) == false) {
             streamFrontendGlob.imageUseBits[iVar4] =
@@ -264,12 +270,16 @@ void __cdecl R_StreamUpdate_SetupInitialImageList(void)
 
 // 0081D050  R_Stream_ForceLoadMaterial  (gfx_d3d/r_stream.cpp:1690)
 
+/* WARNING: Variable defined which should be unmapped: part */
+
 void __cdecl R_Stream_ForceLoadMaterial(Material *param_1,int param_2)
 
 {
   int iVar1;
   uint uVar2;
   int iVar3;
+  Material *material;
+  int part;
   
   if ((param_1 != (Material *)0x0) && (uVar2 = (uint)param_1->textureCount, uVar2 != 0)) {
     iVar3 = 0;
@@ -292,6 +302,8 @@ void __cdecl R_Stream_ForceLoadMaterial(Material *param_1,int param_2)
 
 // 0081D0D0  R_Stream_ForceLoadModel  (gfx_d3d/r_stream.cpp:1716)
 
+/* WARNING: Variable defined which should be unmapped: part */
+
 void __cdecl R_Stream_ForceLoadModel(XModel *param_1,int param_2)
 
 {
@@ -300,6 +312,8 @@ void __cdecl R_Stream_ForceLoadModel(XModel *param_1,int param_2)
   Material **ppMVar3;
   int unaff_EDI;
   ushort *puVar4;
+  XModel *model;
+  int part;
   
   pXVar1 = param_1;
   if (param_1 != (XModel *)0x0) {
@@ -320,6 +334,8 @@ void __cdecl R_Stream_ForceLoadModel(XModel *param_1,int param_2)
 
 
 // 0081D130  R_StreamTouchDObjAndCheck  (gfx_d3d/r_stream.cpp:1743)
+
+/* WARNING: Variable defined which should be unmapped: streamed */
 
 bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
 
@@ -343,10 +359,18 @@ bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
   int unaff_EBP;
   uint uVar17;
   uint uVar18;
+  DObj *obj;
+  bool streamed;
   bool bStack_89;
-  uint uStack_84;
+  uint modelIndex;
+  uint surfaceIndex;
   uint uStack_80;
+  uint boneIndex;
   uint uStack_74;
+  uint surfaceCount;
+  uint boneCount;
+  uint modelCount;
+  int invTargBoneIndexLow;
   uint auStack_3c [2];
   undefined8 uStack_34;
   uint uStack_2c;
@@ -354,19 +378,20 @@ bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
   undefined8 uStack_20;
   uint uStack_18;
   uint uStack_14;
+  int level;
   
   bVar3 = param_1->numModels;
   uStack_74 = 0;
   bStack_89 = true;
-  uStack_84 = 0;
+  surfaceIndex = 0;
   bVar9 = true;
   if (bVar3 != 0) {
     do {
-      if (((int)uStack_84 < 0) || ((int)(uint)param_1->numModels <= (int)uStack_84)) {
+      if (((int)surfaceIndex < 0) || ((int)(uint)param_1->numModels <= (int)surfaceIndex)) {
         pXVar10 = (XModel *)0x0;
       }
       else {
-        pXVar10 = (param_1->field14_0x78).localModels[uStack_84];
+        pXVar10 = (param_1->field14_0x78).localModels[surfaceIndex];
       }
       uVar5 = pXVar10->lodInfo[0].surfIndex;
       ppMVar6 = pXVar10->materialHandles;
@@ -417,9 +442,9 @@ bool __cdecl R_StreamTouchDObjAndCheck(DObj *param_1,int param_2)
         } while (uStack_80 < uVar15);
       }
       uStack_74 = uStack_74 + bVar4;
-      uStack_84 = uStack_84 + 1;
+      surfaceIndex = surfaceIndex + 1;
       bVar9 = bStack_89;
-    } while (uStack_84 < bVar3);
+    } while (surfaceIndex < bVar3);
   }
   return bVar9;
 }
@@ -435,6 +460,7 @@ void __cdecl R_StreamTouchMaterial(Material *param_1)
   byte bVar3;
   uint uVar4;
   int iVar5;
+  Material *material;
   
   uVar4 = (uint)param_1->textureCount;
   if (uVar4 != 0) {
@@ -458,6 +484,8 @@ void __cdecl R_StreamTouchMaterial(Material *param_1)
 
 // 0081D410  R_StreamTouchMaterialAndCheck  (gfx_d3d/r_stream.cpp:1853)
 
+/* WARNING: Variable defined which should be unmapped: level */
+
 bool __cdecl R_StreamTouchMaterialAndCheck(Material *param_1,int param_2)
 
 {
@@ -466,6 +494,8 @@ bool __cdecl R_StreamTouchMaterialAndCheck(Material *param_1,int param_2)
   GfxImage *unaff_ESI;
   int unaff_EDI;
   uint uVar3;
+  Material *material;
+  int level;
   
   bVar2 = true;
   for (uVar3 = (uint)param_1->textureCount; uVar3 != 0; uVar3 = uVar3 - 1) {
@@ -478,6 +508,8 @@ bool __cdecl R_StreamTouchMaterialAndCheck(Material *param_1,int param_2)
 
 // 0081D450  R_StreamTouchImageAndCheck  (gfx_d3d/r_stream.cpp:1891)
 
+/* WARNING: Variable defined which should be unmapped: level */
+
 bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
 
 {
@@ -486,6 +518,7 @@ bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
   int in_EAX;
   byte bVar3;
   int iVar4;
+  int level;
   
   if (*(char *)(in_EAX + 0x1b) == '\0') {
     return true;
@@ -504,7 +537,7 @@ bool __cdecl R_StreamTouchImageAndCheck(GfxImage *param_1,int param_2)
 
 void __cdecl
 std::_Adjust_heap<int_*,int,int,importance_and_offset_pred>
-          (int *param_1,int param_2,int param_3,int param_4,importance_and_offset_pred param_5)
+          (int *_Val,int _Pred,int param_3,int param_4,importance_and_offset_pred param_5)
 
 {
   int *piVar1;
@@ -512,8 +545,9 @@ std::_Adjust_heap<int_*,int,int,importance_and_offset_pred>
   int *piVar3;
   int in_ECX;
   int *in_EDX;
+  int _Hole;
   
-  piVar1 = param_1;
+  piVar1 = _Val;
   while( true ) {
     piVar3 = (int *)((int)piVar1 * 2 + 2);
     if ((int)in_EDX <= (int)piVar3) break;
@@ -530,16 +564,16 @@ std::_Adjust_heap<int_*,int,int,importance_and_offset_pred>
     *(undefined4 *)(in_ECX + (int)piVar1 * 4) = *(undefined4 *)(in_ECX + -4 + (int)in_EDX * 4);
     piVar1 = (int *)((int)in_EDX + -1);
   }
-  while ((int)param_1 < (int)piVar1) {
+  while ((int)_Val < (int)piVar1) {
     piVar3 = (int *)(((int)piVar1 + -1) / 2);
     iVar2 = *(int *)(in_ECX + (int)piVar3 * 4);
-    if (streamFrontendGlob.imageImportance[iVar2] == streamFrontendGlob.imageImportance[param_2] ||
+    if (streamFrontendGlob.imageImportance[iVar2] == streamFrontendGlob.imageImportance[_Pred] ||
         (int)streamFrontendGlob.imageImportance[iVar2] -
-        (int)streamFrontendGlob.imageImportance[param_2] < 0) break;
+        (int)streamFrontendGlob.imageImportance[_Pred] < 0) break;
     *(int *)(in_ECX + (int)piVar1 * 4) = iVar2;
     piVar1 = piVar3;
   }
-  *(int *)(in_ECX + (int)piVar1 * 4) = param_2;
+  *(int *)(in_ECX + (int)piVar1 * 4) = _Pred;
   return;
 }
 
@@ -549,18 +583,18 @@ std::_Adjust_heap<int_*,int,int,importance_and_offset_pred>
 void __cdecl R_StreamInit(void)
 
 {
-  pendingRequest *ppVar1;
+  pendingRequest *dst;
   
   R_StreamAlloc_InitTempImages();
   streamFrontendGlob.frame = 0;
   streamFrontendGlob.queryInProgress = 0;
   streamFrontendGlob.queryClient = -1;
-  ppVar1 = s_pendingRequests;
+  dst = s_pendingRequests;
   do {
-    memset((uchar *)ppVar1,'\0',0x30);
-    ppVar1->status = STREAM_STATUS_INVALID;
-    ppVar1 = ppVar1 + 1;
-  } while ((int)ppVar1 < 0x2d7fde8);
+    memset((uchar *)dst,'\0',0x30);
+    dst->status = STREAM_STATUS_INVALID;
+    dst = dst + 1;
+  } while ((int)dst < 0x2d7fde8);
   memset((uchar *)streamFrontendGlob.imageInSortedListBits,'\0',0x240);
   memset((uchar *)s_preventMaterials,'\0',0x80);
   streamFrontendGlob.sortedImageCount = 0;
@@ -572,23 +606,27 @@ void __cdecl R_StreamInit(void)
 
 // 0081F750  _Make_heap<int_*,int,int,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:2190)
 
+/* WARNING: Variable defined which should be unmapped: __formal */
+
 void __cdecl
 std::_Make_heap<int_*,int,int,importance_and_offset_pred>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3,int *param_4,int *param_5)
+          (int *_Pred,int *param_2,importance_and_offset_pred param_3,int *param_4,int *param_5)
 
 {
   int iVar1;
   int unaff_EBP;
   undefined4 unaff_ESI;
-  int *piVar2;
+  int *_Val;
   int unaff_EDI;
+  int *_Last;
+  int *__formal;
   
-  piVar2 = (int *)(((int)param_1 - unaff_EDI >> 2) - ((int)param_1 - unaff_EDI >> 0x1f) >> 1);
-  while (0 < (int)piVar2) {
-    iVar1 = (int)piVar2 * 4;
-    piVar2 = (int *)((int)piVar2 + -1);
+  _Val = (int *)(((int)_Pred - unaff_EDI >> 2) - ((int)_Pred - unaff_EDI >> 0x1f) >> 1);
+  while (0 < (int)_Val) {
+    iVar1 = (int)_Val * 4;
+    _Val = (int *)((int)_Val + -1);
     _Adjust_heap<int_*,int,int,importance_and_offset_pred>
-              (piVar2,*(int *)(unaff_EDI + -4 + iVar1),(int)param_2,unaff_EBP,SUB41(unaff_ESI,0));
+              (_Val,*(int *)(unaff_EDI + -4 + iVar1),(int)param_2,unaff_EBP,SUB41(unaff_ESI,0));
   }
   return;
 }
@@ -601,24 +639,27 @@ std::_Sort_heap<int_*,importance_and_offset_pred>
           (int *param_1,int *param_2,importance_and_offset_pred param_3)
 
 {
-  int iVar1;
+  int _Pred_00;
   int in_EAX;
   int unaff_EBX;
   undefined4 unaff_ESI;
-  int iVar2;
+  int iVar1;
   undefined4 *unaff_EDI;
+  importance_and_offset_pred _Pred;
   
-  for (iVar2 = in_EAX - (int)unaff_EDI; 1 < iVar2 >> 2; iVar2 = iVar2 + -4) {
-    iVar1 = *(int *)((int)unaff_EDI + iVar2 + -4);
-    *(undefined4 *)((int)unaff_EDI + iVar2 + -4) = *unaff_EDI;
+  for (iVar1 = in_EAX - (int)unaff_EDI; 1 < iVar1 >> 2; iVar1 = iVar1 + -4) {
+    _Pred_00 = *(int *)((int)unaff_EDI + iVar1 + -4);
+    *(undefined4 *)((int)unaff_EDI + iVar1 + -4) = *unaff_EDI;
     _Adjust_heap<int_*,int,int,importance_and_offset_pred>
-              ((int *)0x0,iVar1,(int)param_1,unaff_EBX,SUB41(unaff_ESI,0));
+              ((int *)0x0,_Pred_00,(int)param_1,unaff_EBX,SUB41(unaff_ESI,0));
   }
   return;
 }
 
 
 // 0081D640  R_Stream_ReleaseImage  (gfx_d3d/r_stream.cpp:2259)
+
+/* WARNING: Variable defined which should be unmapped: lock */
 
 void __cdecl R_Stream_ReleaseImage(GfxImage *param_1,bool param_2,bool param_3)
 
@@ -629,6 +670,7 @@ void __cdecl R_Stream_ReleaseImage(GfxImage *param_1,bool param_2,bool param_3)
   int iVar3;
   uint uVar4;
   FastCriticalSection *unaff_ESI;
+  bool lock;
   
   if (*(char *)(in_EAX + 0x1b) != '\0') {
     Sys_LockWrite(unaff_ESI);
@@ -655,6 +697,7 @@ void __cdecl R_StreamSyncThenFlush(bool param_1)
 
 {
   FastCriticalSection *unaff_EDI;
+  bool flushAll;
   
   if (streamIsInitialized) {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6c08);
@@ -738,9 +781,11 @@ void __cdecl R_StreamUpdate_CompletePreload(_func___cdecl_void *param_1)
 
 // 0081F7E0  _Insertion_sort1<int_*,importance_and_offset_pred,int>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3123)
 
+/* WARNING: Variable defined which should be unmapped: __formal */
+
 void __cdecl
 std::_Insertion_sort1<int_*,importance_and_offset_pred,int>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3,int *param_4)
+          (int *_Last,int *_Pred,importance_and_offset_pred param_3,int *param_4)
 
 {
   int iVar1;
@@ -749,13 +794,15 @@ std::_Insertion_sort1<int_*,importance_and_offset_pred,int>
   int *piVar4;
   int *piVar5;
   int *piVar6;
+  int *_First;
+  int *__formal;
   
-  if ((param_1 != param_2) && (piVar6 = param_1 + 1, piVar6 != param_2)) {
+  if ((_Last != _Pred) && (piVar6 = _Last + 1, piVar6 != _Pred)) {
     do {
       iVar1 = *piVar6;
       fVar2 = streamFrontendGlob.imageImportance[iVar1];
-      if (fVar2 == streamFrontendGlob.imageImportance[*param_1] ||
-          (int)fVar2 - (int)streamFrontendGlob.imageImportance[*param_1] < 0) {
+      if (fVar2 == streamFrontendGlob.imageImportance[*_Last] ||
+          (int)fVar2 - (int)streamFrontendGlob.imageImportance[*_Last] < 0) {
         iVar3 = piVar6[-1];
         piVar5 = piVar6;
         piVar4 = piVar6;
@@ -774,14 +821,14 @@ std::_Insertion_sort1<int_*,importance_and_offset_pred,int>
         *piVar5 = iVar1;
       }
       else {
-        iVar3 = (int)piVar6 - (int)param_1 >> 2;
+        iVar3 = (int)piVar6 - (int)_Last >> 2;
         if (0 < iVar3) {
-          memmove_s(piVar6 + (1 - iVar3),iVar3 * 4,param_1,iVar3 * 4);
+          memmove_s(piVar6 + (1 - iVar3),iVar3 * 4,_Last,iVar3 * 4);
         }
-        *param_1 = iVar1;
+        *_Last = iVar1;
       }
       piVar6 = piVar6 + 1;
-    } while (piVar6 != param_2);
+    } while (piVar6 != _Pred);
   }
   return;
 }
@@ -791,12 +838,13 @@ std::_Insertion_sort1<int_*,importance_and_offset_pred,int>
 
 void __cdecl
 std::_Med3<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,int *param_3,importance_and_offset_pred param_4)
+          (int *_Pred,int *param_2,int *param_3,importance_and_offset_pred param_4)
 
 {
   int iVar1;
   int *in_EAX;
   int *in_ECX;
+  int *_Last;
   
   iVar1 = *in_EAX;
   if ((streamFrontendGlob.imageImportance[iVar1] != streamFrontendGlob.imageImportance[*in_ECX] &&
@@ -805,11 +853,11 @@ std::_Med3<int_*,importance_and_offset_pred>
     *in_EAX = *in_ECX;
     *in_ECX = iVar1;
   }
-  iVar1 = *param_1;
+  iVar1 = *_Pred;
   if ((streamFrontendGlob.imageImportance[iVar1] != streamFrontendGlob.imageImportance[*in_EAX] &&
        -1 < (int)streamFrontendGlob.imageImportance[iVar1] -
-            (int)streamFrontendGlob.imageImportance[*in_EAX]) && (param_1 != in_EAX)) {
-    *param_1 = *in_EAX;
+            (int)streamFrontendGlob.imageImportance[*in_EAX]) && (_Pred != in_EAX)) {
+    *_Pred = *in_EAX;
     *in_EAX = iVar1;
   }
   iVar1 = *in_EAX;
@@ -827,7 +875,7 @@ std::_Med3<int_*,importance_and_offset_pred>
 
 void __cdecl
 std::_Median<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,int *param_3,importance_and_offset_pred param_4)
+          (int *_Pred,int *param_2,int *param_3,importance_and_offset_pred param_4)
 
 {
   int iVar1;
@@ -837,36 +885,39 @@ std::_Median<int_*,importance_and_offset_pred>
   int *unaff_EBP;
   int *unaff_ESI;
   int unaff_EDI;
+  int *_Last;
   int *piVar3;
+  int *_Pred_00;
   int *piVar4;
-  int *piVar5;
   
-  iVar1 = (int)param_1 - in_ECX >> 2;
+  iVar1 = (int)_Pred - in_ECX >> 2;
   if (0x28 < iVar1) {
     iVar1 = iVar1 + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     piVar2 = (int *)(iVar1 * 8 + in_ECX);
     piVar3 = param_2;
     _Med3<int_*,importance_and_offset_pred>(piVar2,param_2,unaff_ESI,unaff_BL);
-    piVar4 = (int *)(iVar1 * 4 + unaff_EDI);
-    piVar5 = param_2;
-    _Med3<int_*,importance_and_offset_pred>(piVar4,param_2,piVar2,SUB41(piVar3,0));
-    piVar2 = param_1 + -iVar1;
+    _Pred_00 = (int *)(iVar1 * 4 + unaff_EDI);
+    piVar4 = param_2;
+    _Med3<int_*,importance_and_offset_pred>(_Pred_00,param_2,piVar2,SUB41(piVar3,0));
+    piVar2 = _Pred + -iVar1;
     piVar3 = param_2;
-    _Med3<int_*,importance_and_offset_pred>(param_1,param_2,piVar4,SUB41(piVar5,0));
-    _Med3<int_*,importance_and_offset_pred>(piVar2,param_2,param_1,SUB41(piVar3,0));
+    _Med3<int_*,importance_and_offset_pred>(_Pred,param_2,_Pred_00,SUB41(piVar4,0));
+    _Med3<int_*,importance_and_offset_pred>(piVar2,param_2,_Pred,SUB41(piVar3,0));
     return;
   }
-  _Med3<int_*,importance_and_offset_pred>(param_1,param_2,unaff_EBP,SUB41(in_ECX,0));
+  _Med3<int_*,importance_and_offset_pred>(_Pred,param_2,unaff_EBP,SUB41(in_ECX,0));
   return;
 }
 
 
 // 0081F4B0  _Unguarded_partition<int_*,importance_and_offset_pred>  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/algorithm:3185)
 
+/* WARNING: Variable defined which should be unmapped: _Glast */
+
 pair<int_*,int_*> __cdecl
 std::_Unguarded_partition<int_*,importance_and_offset_pred>
-          (int *param_1,int *param_2,importance_and_offset_pred param_3)
+          (int *_First,int *_Last,importance_and_offset_pred _Pred)
 
 {
   uint *puVar1;
@@ -885,16 +936,16 @@ std::_Unguarded_partition<int_*,importance_and_offset_pred>
   pair<int_*,int_*> pVar11;
   undefined3 in_stack_0000000d;
   int *in_stack_00000010;
+  int *_Glast;
   uint *local_8;
   
-  puVar10 = (uint *)(param_2 +
-                    (((int)_param_3 - (int)param_2 >> 2) - ((int)_param_3 - (int)param_2 >> 0x1f) >>
-                    1));
+  puVar10 = (uint *)(_Last + (((int)__Pred - (int)_Last >> 2) - ((int)__Pred - (int)_Last >> 0x1f)
+                             >> 1));
   _Median<int_*,importance_and_offset_pred>
-            ((int *)(_param_3 + -1),in_stack_00000010,unaff_EDI,unaff_SI);
+            ((int *)(__Pred + -1),in_stack_00000010,unaff_EDI,unaff_SI);
   puVar8 = puVar10 + 1;
   puVar7 = extraout_EDX;
-  for (; param_2 < puVar10; puVar10 = puVar10 + -1) {
+  for (; _Last < puVar10; puVar10 = puVar10 + -1) {
     puVar7 = (uint *)streamFrontendGlob.imageImportance[puVar10[-1]];
     puVar1 = (uint *)streamFrontendGlob.imageImportance[*puVar10];
     if ((puVar7 != puVar1 && -1 < (int)puVar7 - (int)puVar1) ||
@@ -903,7 +954,7 @@ std::_Unguarded_partition<int_*,importance_and_offset_pred>
   puVar1 = puVar8;
   local_8 = puVar10;
   puVar9 = puVar10;
-  if (puVar8 < _param_3) {
+  if (puVar8 < __Pred) {
     puVar7 = (uint *)streamFrontendGlob.imageImportance[*puVar10];
     do {
       puVar2 = (uint *)streamFrontendGlob.imageImportance[*puVar8];
@@ -912,15 +963,15 @@ std::_Unguarded_partition<int_*,importance_and_offset_pred>
          (puVar7 != puVar2 && -1 < (int)puVar7 - (int)puVar2)) break;
       puVar8 = puVar8 + 1;
       puVar1 = puVar8;
-    } while (puVar8 < _param_3);
+    } while (puVar8 < __Pred);
   }
 joined_r0x0081f554:
   do {
     puVar6 = puVar9;
     puVar2 = puVar1;
-    if (_param_3 <= puVar2) {
+    if (__Pred <= puVar2) {
 LAB_0081f5a0:
-      if (param_2 < puVar10) {
+      if (_Last < puVar10) {
         puVar7 = puVar10 + -1;
         do {
           fVar4 = streamFrontendGlob.imageImportance[*puVar7];
@@ -938,14 +989,14 @@ LAB_0081f5a0:
           puVar10 = local_8 + -1;
           puVar7 = puVar7 + -1;
           local_8 = puVar10;
-        } while (param_2 < puVar10);
+        } while (_Last < puVar10);
       }
-      if (puVar10 == (uint *)param_2) {
-        if (puVar2 == _param_3) {
-          *param_1 = (int)puVar6;
-          param_1[1] = (int)puVar8;
+      if (puVar10 == (uint *)_Last) {
+        if (puVar2 == __Pred) {
+          *_First = (int)puVar6;
+          _First[1] = (int)puVar8;
           pVar11.second = (int *)puVar7;
-          pVar11.first = param_1;
+          pVar11.first = _First;
           return pVar11;
         }
         if ((puVar8 != puVar2) && (puVar6 != puVar8)) {
@@ -966,7 +1017,7 @@ LAB_0081f5a0:
       else {
         puVar10 = puVar10 + -1;
         local_8 = puVar10;
-        if (puVar2 == _param_3) {
+        if (puVar2 == __Pred) {
           puVar9 = puVar6 + -1;
           if (puVar10 != puVar9) {
             puVar7 = (uint *)*puVar10;
@@ -1024,6 +1075,7 @@ bool __cdecl R_StreamUpdate(float *param_1)
   dvar_s *pdVar2;
   bool bVar3;
   float *unaff_ESI;
+  float *viewPos;
   char *pcStack_10;
   undefined4 uStack_c;
   undefined8 uStack_8;
@@ -1071,7 +1123,7 @@ bool __cdecl R_StreamUpdate(float *param_1)
 
 void __cdecl
 std::_Sort<int_*,int,importance_and_offset_pred>
-          (int *param_1,int *param_2,int param_3,importance_and_offset_pred param_4)
+          (int *_First,int *_Last,int _Ideal,importance_and_offset_pred _Pred)
 
 {
   int iVar1;
@@ -1080,42 +1132,41 @@ std::_Sort<int_*,int,importance_and_offset_pred>
   int *unaff_EDI;
   undefined3 in_stack_00000011;
   int *local_10;
-  int *local_c;
+  int *_Mid;
   
-  iVar1 = (int)param_2 - (int)param_1;
+  iVar1 = (int)_Last - (int)_First;
   do {
     iVar1 = iVar1 >> 2;
     if (iVar1 < 0x21) {
 LAB_0081f459:
       if (1 < iVar1) {
-        _Insertion_sort1<int_*,importance_and_offset_pred,int>(param_1,param_2,param_4,unaff_EDI);
+        _Insertion_sort1<int_*,importance_and_offset_pred,int>(_First,_Last,_Pred,unaff_EDI);
       }
       return;
     }
-    if (param_3 < 1) {
+    if (_Ideal < 1) {
       if (0x20 < iVar1) {
-        if (4 < (int)((int)param_2 - (int)param_1 & 0xfffffffcU)) {
+        if (4 < (int)((int)_Last - (int)_First & 0xfffffffcU)) {
           _Make_heap<int_*,int,int,importance_and_offset_pred>
-                    (param_2,_param_4,SUB41(unaff_EDI,0),unaff_ESI,unaff_EBX);
+                    (_Last,__Pred,SUB41(unaff_EDI,0),unaff_ESI,unaff_EBX);
         }
-        _Sort_heap<int_*,importance_and_offset_pred>(_param_4,unaff_EDI,SUB41(unaff_ESI,0));
+        _Sort_heap<int_*,importance_and_offset_pred>(__Pred,unaff_EDI,SUB41(unaff_ESI,0));
         return;
       }
       goto LAB_0081f459;
     }
-    _Unguarded_partition<int_*,importance_and_offset_pred>
-              ((int *)&local_10,param_1,SUB41(param_2,0));
-    param_3 = param_3 / 2 + (param_3 / 2) / 2;
-    if ((int)((int)local_10 - (int)param_1 & 0xfffffffcU) <
-        (int)((int)param_2 - (int)local_c & 0xfffffffcU)) {
-      _Sort<int_*,int,importance_and_offset_pred>(param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+    _Unguarded_partition<int_*,importance_and_offset_pred>((int *)&local_10,_First,SUB41(_Last,0));
+    _Ideal = _Ideal / 2 + (_Ideal / 2) / 2;
+    if ((int)((int)local_10 - (int)_First & 0xfffffffcU) <
+        (int)((int)_Last - (int)_Mid & 0xfffffffcU)) {
+      _Sort<int_*,int,importance_and_offset_pred>(_First,local_10,_Ideal,_Pred);
+      _First = _Mid;
     }
     else {
-      _Sort<int_*,int,importance_and_offset_pred>(local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+      _Sort<int_*,int,importance_and_offset_pred>(_Mid,_Last,_Ideal,_Pred);
+      _Last = local_10;
     }
-    iVar1 = (int)param_2 - (int)param_1;
+    iVar1 = (int)_Last - (int)_First;
   } while( true );
 }
 
@@ -1154,65 +1205,66 @@ void __cdecl R_Stream_AddImagePartImportance(int param_1,float param_2)
 
 // 0081E760  importance_merge_sort  (gfx_d3d/r_stream.cpp:4161)
 
-void __cdecl importance_merge_sort(void **param_1,int param_2)
+void __cdecl importance_merge_sort(void **list_count,int param_2)
 
 {
-  void **ppvVar1;
-  void *pvVar2;
+  void **list_count_00;
+  void *pvVar1;
+  void **ppvVar2;
   void **ppvVar3;
   void **ppvVar4;
-  void **ppvVar5;
-  int iVar6;
+  int iVar5;
+  void **list;
   
   if (param_2 < 3) {
     if ((param_2 == 2) &&
-       (pvVar2 = *param_1,
-       (int)streamFrontendGlob.imageImportance[(int)pvVar2] <
-       (int)streamFrontendGlob.imageImportance[(int)param_1[1]])) {
-      *param_1 = param_1[1];
-      param_1[1] = pvVar2;
+       (pvVar1 = *list_count,
+       (int)streamFrontendGlob.imageImportance[(int)pvVar1] <
+       (int)streamFrontendGlob.imageImportance[(int)list_count[1]])) {
+      *list_count = list_count[1];
+      list_count[1] = pvVar1;
       return;
     }
   }
   else {
-    iVar6 = param_2 / 2;
-    importance_merge_sort(param_1,iVar6);
-    ppvVar1 = param_1 + iVar6;
-    importance_merge_sort(ppvVar1,param_2 - iVar6);
-    if ((int)streamFrontendGlob.imageImportance[(int)ppvVar1[-1]] <
-        (int)streamFrontendGlob.imageImportance[(int)*ppvVar1]) {
-      ppvVar4 = aux_buffer;
-      aux_buffer[0] = ppvVar1[-1];
-      for (ppvVar3 = ppvVar1 + -2;
-          (param_1 <= ppvVar3 &&
-          ((int)streamFrontendGlob.imageImportance[(int)*ppvVar3] <
-           (int)streamFrontendGlob.imageImportance[(int)*ppvVar1])); ppvVar3 = ppvVar3 + -1) {
-        ppvVar4 = ppvVar4 + 1;
-        *ppvVar4 = *ppvVar3;
+    iVar5 = param_2 / 2;
+    importance_merge_sort(list_count,iVar5);
+    list_count_00 = list_count + iVar5;
+    importance_merge_sort(list_count_00,param_2 - iVar5);
+    if ((int)streamFrontendGlob.imageImportance[(int)list_count_00[-1]] <
+        (int)streamFrontendGlob.imageImportance[(int)*list_count_00]) {
+      ppvVar3 = aux_buffer;
+      aux_buffer[0] = list_count_00[-1];
+      for (ppvVar2 = list_count_00 + -2;
+          (list_count <= ppvVar2 &&
+          ((int)streamFrontendGlob.imageImportance[(int)*ppvVar2] <
+           (int)streamFrontendGlob.imageImportance[(int)*list_count_00])); ppvVar2 = ppvVar2 + -1) {
+        ppvVar3 = ppvVar3 + 1;
+        *ppvVar3 = *ppvVar2;
       }
-      ppvVar3 = ppvVar3 + 1;
-      ppvVar5 = ppvVar1 + 1;
-      *ppvVar3 = *ppvVar1;
-      if ((void **)((int)&s_shadowHistory[3].lastUpdateTime + 3) < ppvVar4) {
-        while (ppvVar5 < param_1 + param_2) {
-          ppvVar3 = ppvVar3 + 1;
-          if ((int)streamFrontendGlob.imageImportance[(int)*ppvVar5] <
-              (int)streamFrontendGlob.imageImportance[(int)*ppvVar4]) {
-            *ppvVar3 = *ppvVar4;
-            ppvVar4 = ppvVar4 + -1;
+      ppvVar2 = ppvVar2 + 1;
+      ppvVar4 = list_count_00 + 1;
+      *ppvVar2 = *list_count_00;
+      if ((void **)((int)&s_shadowHistory[3].lastUpdateTime + 3) < ppvVar3) {
+        while (ppvVar4 < list_count + param_2) {
+          ppvVar2 = ppvVar2 + 1;
+          if ((int)streamFrontendGlob.imageImportance[(int)*ppvVar4] <
+              (int)streamFrontendGlob.imageImportance[(int)*ppvVar3]) {
+            *ppvVar2 = *ppvVar3;
+            ppvVar3 = ppvVar3 + -1;
           }
           else {
-            *ppvVar3 = *ppvVar5;
-            ppvVar5 = ppvVar5 + 1;
+            *ppvVar2 = *ppvVar4;
+            ppvVar4 = ppvVar4 + 1;
           }
-          if (ppvVar4 < aux_buffer) {
+          if (ppvVar3 < aux_buffer) {
             return;
           }
         }
-        for (; (void **)((int)&s_shadowHistory[3].lastUpdateTime + 3) < ppvVar4;
-            ppvVar4 = ppvVar4 + -1) {
-          ppvVar3 = ppvVar3 + 1;
-          *ppvVar3 = *ppvVar4;
+        for (; (void **)((int)&s_shadowHistory[3].lastUpdateTime + 3) < ppvVar3;
+            ppvVar3 = ppvVar3 + -1) {
+          ppvVar2 = ppvVar2 + 1;
+          *ppvVar2 = *ppvVar3;
         }
       }
     }
@@ -1250,28 +1302,23 @@ void __cdecl R_StreamUpdatePerClient(float *param_1)
 {
   float *unaff_ESI;
   WorkerCmdConditional *in_stack_ffffffd4;
-  StreamFrontendGlob_conflict *pSStack_20;
-  float fStack_1c;
-  float fStack_18;
-  float fStack_14;
-  float fStack_10;
-  int iStack_c;
-  float fStack_8;
+  StreamUpdateCmd updateCmd;
   
   if ((((r_streamFreezeState->current).enabled == false) && (rgp.world != (GfxWorld *)0x0)) &&
      (unaff_ESI != (float *)0x0)) {
     EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6c08);
     if ((streamFrontendGlob.queryInProgress != 0) && (streamFrontendGlob.queryClient != -1)) {
       if (0 < streamFrontendGlob.queryClient) {
-        fStack_1c = *unaff_ESI;
-        fStack_18 = unaff_ESI[1];
-        fStack_14 = unaff_ESI[2];
-        pSStack_20 = &streamFrontendGlob;
-        fStack_8 = 1.0;
-        iStack_c = (r_streamHiddenPush->current).integer;
-        fStack_10 = (r_streamMaxDist->current).value * (r_streamMaxDist->current).value;
-        Sys_AddWorkerCmdInternal(&r_stream_updateWorkerCmd,&pSStack_20,in_stack_ffffffd4);
+        updateCmd.viewPos[1] = *unaff_ESI;
+        updateCmd.viewPos[2] = unaff_ESI[1];
+        updateCmd.maxDistSq = unaff_ESI[2];
+        updateCmd.viewPos[0] = (float)&streamFrontendGlob;
+        updateCmd.distanceScale[1] = (r_streamHiddenPush->current).value;
+        updateCmd.distanceScale[0] =
+             (r_streamMaxDist->current).value * (r_streamMaxDist->current).value;
+        Sys_AddWorkerCmdInternal(&r_stream_updateWorkerCmd,updateCmd.viewPos,in_stack_ffffffd4);
       }
+      updateCmd.frontend = (StreamFrontendGlob *)1.0;
       R_StreamUpdateDynamicModels
                 (unaff_ESI,(float)&stack0xffffffd8,(uint)in_stack_ffffffd4,
                  (float *)(r_streamHiddenPush->current).string);
@@ -1285,24 +1332,24 @@ void __cdecl R_StreamUpdatePerClient(float *param_1)
 
 // 0081EF00  R_StreamUpdate_End  (gfx_d3d/r_stream.cpp:4775)
 
+/* WARNING: Variable defined which should be unmapped: combineCmd */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl R_StreamUpdate_End(void)
 
 {
   jqWorkerCmd *pjVar1;
-  WorkerCmdConditional *in_stack_ffffffec;
-  StreamFrontendGlob_conflict *pSStack_10;
-  StreamFrontendGlob_conflict *pSStack_c;
-  undefined1 uStack_8;
+  StreamCombineCmd combineCmd;
+  StreamSortCmd sortCmd;
   
   EnterCriticalSection((LPCRITICAL_SECTION)&DAT_020c6c08);
   pjVar1 = &r_stream_combineWorkerCmd;
-  pSStack_10 = &streamFrontendGlob;
-  Sys_AddWorkerCmdInternal(&r_stream_combineWorkerCmd,&pSStack_10,in_stack_ffffffec);
-  pSStack_c = &streamFrontendGlob;
-  uStack_8 = streamFrontendGlob.diskOrder;
-  Sys_AddWorkerCmdInternal(&r_stream_sortWorkerCmd,&pSStack_c,(WorkerCmdConditional *)pjVar1);
+  sortCmd.frontend = (StreamFrontendGlob *)&streamFrontendGlob;
+  Sys_AddWorkerCmdInternal
+            (&r_stream_combineWorkerCmd,&sortCmd,(WorkerCmdConditional *)combineCmd.frontend);
+  sortCmd._4_4_ = &streamFrontendGlob;
+  Sys_AddWorkerCmdInternal
+            (&r_stream_sortWorkerCmd,&sortCmd.diskOrder,(WorkerCmdConditional *)pjVar1);
   streamFrontendGlob.queryClient = -1;
   LeaveCriticalSection((LPCRITICAL_SECTION)&DAT_020c6c08);
   return;
@@ -1377,6 +1424,7 @@ int __cdecl r_stream_update_staticmodelsCallback(jqBatch *param_1)
 {
   int iVar1;
   void *unaff_ESI;
+  jqBatch *batch;
   
   iVar1 = 1;
   if ((param_1->Module->Group).field0_0x0._s_0.ExecutingBatchCount < 2) {
@@ -1399,6 +1447,7 @@ int __cdecl r_stream_update_staticsurfacesCallback(jqBatch *param_1)
 {
   int iVar1;
   void *unaff_ESI;
+  jqBatch *batch;
   
   iVar1 = 1;
   if ((param_1->Module->Group).field0_0x0._s_0.ExecutingBatchCount < 2) {
@@ -1421,6 +1470,7 @@ int __cdecl r_stream_sortCallback(jqBatch *param_1)
 {
   bool bVar1;
   uint *puVar2;
+  jqBatch *batch;
   
   bVar1 = jqPoll(&r_stream_combineModule.Group);
   if (!bVar1) {
@@ -1449,6 +1499,7 @@ int __cdecl r_stream_combineCallback(jqBatch *param_1)
 
 {
   bool bVar1;
+  jqBatch *batch;
   
   bVar1 = jqPoll(&r_stream_updateModule.Group);
   if (!bVar1) {
@@ -1477,6 +1528,7 @@ int __cdecl r_stream_updateCallback(jqBatch *param_1)
 {
   int iVar1;
   uint *puVar2;
+  jqBatch *batch;
   
   iVar1 = 1;
   if ((param_1->Module->Group).field0_0x0._s_0.ExecutingBatchCount < 2) {

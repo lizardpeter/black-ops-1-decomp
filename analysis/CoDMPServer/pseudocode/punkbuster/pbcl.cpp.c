@@ -56,7 +56,7 @@ void __thiscall stPbCl::getHomePath(stPbCl *this)
 
 // 00895FF0  makefn  (punkbuster/pbcl.h:98)
 
-char * __thiscall stPbCl::makefn(stPbCl *this,char *param_1,char *param_2)
+char * __thiscall stPbCl::makefn(stPbCl *this,char *buf,char *fn)
 
 {
   char cVar1;
@@ -71,35 +71,35 @@ char * __thiscall stPbCl::makefn(stPbCl *this,char *param_1,char *param_2)
     getHomePath(this);
   }
   local_c = this->m_cwd;
-  local_10 = param_1;
+  local_10 = buf;
   do {
     cVar1 = *local_c;
     *local_10 = cVar1;
     local_c = local_c + 1;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  local_1c = param_2;
+  local_1c = fn;
   do {
     cVar1 = *local_1c;
     local_1c = local_1c + 1;
   } while (cVar1 != '\0');
-  local_30 = param_1 + -1;
+  local_30 = buf + -1;
   do {
     pcVar3 = local_30 + 1;
     local_30 = local_30 + 1;
   } while (*pcVar3 != '\0');
-  pcVar3 = param_2;
-  for (uVar2 = (uint)((int)local_1c - (int)param_2) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
+  pcVar3 = fn;
+  for (uVar2 = (uint)((int)local_1c - (int)fn) >> 2; uVar2 != 0; uVar2 = uVar2 - 1) {
     *(undefined4 *)local_30 = *(undefined4 *)pcVar3;
     pcVar3 = pcVar3 + 4;
     local_30 = local_30 + 4;
   }
-  for (uVar2 = (int)local_1c - (int)param_2 & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
+  for (uVar2 = (int)local_1c - (int)fn & 3; uVar2 != 0; uVar2 = uVar2 - 1) {
     *local_30 = *pcVar3;
     pcVar3 = pcVar3 + 1;
     local_30 = local_30 + 1;
   }
-  return param_1;
+  return buf;
 }
 
 
@@ -133,35 +133,35 @@ char * __thiscall stPbCl::LoadClientDll(stPbCl *this)
   _func___cdecl_char_ptr_void_ptr_int *p_Var3;
   _func___cdecl_char_ptr_void_ptr_int_int_char_ptr_int *p_Var4;
   char *pcVar5;
-  char local_414 [516];
-  _iobuf *local_210;
-  char local_20c [516];
+  char fn [516];
+  _iobuf *f;
+  char extrafn [516];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (this->m_ClInstance == (void *)0x0) {
     UnloadClientDll(this);
     pcVar5 = "rb";
-    pcVar1 = makefn(this,local_414,"pbclnew.dll");
-    local_210 = fopen(pcVar1,pcVar5);
-    if (local_210 != (_iobuf *)0x0) {
-      fclose(local_210);
-      pcVar1 = makefn(this,local_414,"pbclold.dll");
+    pcVar1 = makefn(this,fn,"pbclnew.dll");
+    f = fopen(pcVar1,pcVar5);
+    if (f != (_iobuf *)0x0) {
+      fclose(f);
+      pcVar1 = makefn(this,fn,"pbclold.dll");
       _chmod(pcVar1,0x180);
-      pcVar1 = makefn(this,local_414,"pbclold.dll");
+      pcVar1 = makefn(this,fn,"pbclold.dll");
       ::remove(pcVar1);
-      pcVar1 = makefn(this,local_20c,"pbclold.dll");
-      pcVar5 = makefn(this,local_414,"pbcl.dll");
+      pcVar1 = makefn(this,extrafn,"pbclold.dll");
+      pcVar5 = makefn(this,fn,"pbcl.dll");
       rename(pcVar5,pcVar1);
-      pcVar1 = makefn(this,local_414,"pbcl.dll");
+      pcVar1 = makefn(this,fn,"pbcl.dll");
       _chmod(pcVar1,0x180);
-      pcVar1 = makefn(this,local_414,"pbcl.dll");
+      pcVar1 = makefn(this,fn,"pbcl.dll");
       ::remove(pcVar1);
-      pcVar1 = makefn(this,local_20c,"pbcl.dll");
-      pcVar5 = makefn(this,local_414,"pbclnew.dll");
+      pcVar1 = makefn(this,extrafn,"pbcl.dll");
+      pcVar5 = makefn(this,fn,"pbclnew.dll");
       rename(pcVar5,pcVar1);
     }
-    pcVar1 = makefn(this,local_414,"pbcl.dll");
+    pcVar1 = makefn(this,fn,"pbcl.dll");
     pHVar2 = LoadLibraryA(pcVar1);
     this->m_ClInstance = pHVar2;
     if (this->m_ClInstance == (void *)0x0) {
@@ -193,17 +193,17 @@ char * __thiscall stPbCl::LoadClientDll(stPbCl *this)
 
 // 00895C40  PbClAddEvent  (punkbuster/pbcl.cpp:199)
 
-void __cdecl PbClAddEvent(int param_1,int param_2,char *param_3)
+void __cdecl PbClAddEvent(int event,int datalen,char *data)
 
 {
-  stPbCl::AddPbEvent(&pbcl,param_1,param_2,param_3,0);
+  stPbCl::AddPbEvent(&pbcl,event,datalen,data,0);
   return;
 }
 
 
 // 008961E0  PbTrapPreExecCmd  (punkbuster/pbcl.cpp:204)
 
-int __cdecl PbTrapPreExecCmd(char *param_1)
+int __cdecl PbTrapPreExecCmd(char *cmdtext)
 
 {
   int iVar1;
@@ -212,7 +212,7 @@ int __cdecl PbTrapPreExecCmd(char *param_1)
     iVar1 = 0;
   }
   else {
-    iVar1 = (*pbcl.m_TrapPreExecCmd)(&pbcl,param_1);
+    iVar1 = (*pbcl.m_TrapPreExecCmd)(&pbcl,cmdtext);
   }
   return iVar1;
 }
@@ -220,11 +220,11 @@ int __cdecl PbTrapPreExecCmd(char *param_1)
 
 // 00896210  PbClientTrapConsole  (punkbuster/pbcl.cpp:210)
 
-void __cdecl PbClientTrapConsole(char *param_1,int param_2)
+void __cdecl PbClientTrapConsole(char *msg,int msglen)
 
 {
   if (pbcl.m_TrapConsole != (_func___cdecl_void_void_ptr_char_ptr_int *)0x0) {
-    (*pbcl.m_TrapConsole)(&pbcl,param_1,param_2);
+    (*pbcl.m_TrapConsole)(&pbcl,msg,msglen);
   }
   return;
 }
@@ -232,10 +232,11 @@ void __cdecl PbClientTrapConsole(char *param_1,int param_2)
 
 // 00895C70  AddPbEvent  (punkbuster/pbcl.h:224)
 
-char * __thiscall stPbCl::AddPbEvent(stPbCl *this,int param_1,int param_2,char *param_3,int param_4)
+char * __thiscall stPbCl::AddPbEvent(stPbCl *this,int type,int datalen,char *data,int retry)
 
 {
   char *pcVar1;
+  char *res;
   
   if (this->m_GameCommand == (_func___cdecl_char_ptr_char_ptr_char_ptr *)0x0) {
     return (char *)0x0;
@@ -247,13 +248,13 @@ char * __thiscall stPbCl::AddPbEvent(stPbCl *this,int param_1,int param_2,char *
     }
     pcVar1 = LoadClientDll(this);
     if (pcVar1 != (char *)0x0) {
-      if ((param_1 != 0x71) && (param_1 != 0x72)) {
+      if ((type != 0x71) && (type != 0x72)) {
         return pcVar1;
       }
       return (char *)0x0;
     }
   }
-  pcVar1 = (*this->m_AddPbEvent)(this,param_1,param_2,param_3,param_4);
+  pcVar1 = (*this->m_AddPbEvent)(this,type,datalen,data,retry);
   return pcVar1;
 }
 
@@ -270,7 +271,7 @@ void __cdecl PbClientProcessEvents(void)
 
 // 00896260  ProcessPbEvents  (punkbuster/pbcl.h:242)
 
-char * __thiscall stPbCl::ProcessPbEvents(stPbCl *this,int param_1)
+char * __thiscall stPbCl::ProcessPbEvents(stPbCl *this,int TickLimit)
 
 {
   char *pcVar1;
@@ -285,7 +286,7 @@ char * __thiscall stPbCl::ProcessPbEvents(stPbCl *this,int param_1)
     pcVar1 = (char *)0x0;
   }
   else if (this->m_ReloadClient == 0) {
-    pcVar1 = (*this->m_ProcessPbEvents)(this,param_1);
+    pcVar1 = (*this->m_ProcessPbEvents)(this,TickLimit);
   }
   else {
     UnloadClientDll(this);
@@ -297,11 +298,11 @@ char * __thiscall stPbCl::ProcessPbEvents(stPbCl *this,int param_1)
 
 // 00896300  PbClientConnecting  (punkbuster/pbcl.cpp:242)
 
-void __cdecl PbClientConnecting(int param_1,char *param_2,int *param_3)
+void __cdecl PbClientConnecting(int status,char *pkt,int *pktlen)
 
 {
   if (pbcl.m_ClientConnect != (_func___cdecl_char_ptr_void_ptr_int_char_ptr_int_ptr *)0x0) {
-    (*pbcl.m_ClientConnect)(&pbcl,param_1,param_2,param_3);
+    (*pbcl.m_ClientConnect)(&pbcl,status,pkt,pktlen);
   }
   return;
 }
@@ -309,10 +310,10 @@ void __cdecl PbClientConnecting(int param_1,char *param_2,int *param_3)
 
 // 00896330  PbClientCompleteCommand  (punkbuster/pbcl.cpp:248)
 
-void __cdecl PbClientCompleteCommand(char *param_1,int param_2)
+void __cdecl PbClientCompleteCommand(char *buf,int buflen)
 
 {
-  stPbCl::AddPbEvent(&pbcl,0x33,param_2,param_1,0);
+  stPbCl::AddPbEvent(&pbcl,0x33,buflen,buf,0);
   return;
 }
 

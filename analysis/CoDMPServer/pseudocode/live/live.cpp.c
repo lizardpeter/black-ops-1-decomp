@@ -9,12 +9,16 @@ void __cdecl Live_ShowConnectingDialog(void)
   bool bVar2;
   bool bVar3;
   bool bVar4;
-  int local_c;
+  int controllerIndex;
+  bool isUserSignedInToLive;
+  bool isUserSignedInToDemonware;
+  bool allInfoDownloaded;
+  bool isUserGuest;
   
   bVar4 = true;
-  local_c = 0;
+  controllerIndex = 0;
   do {
-    if (0 < local_c) {
+    if (0 < controllerIndex) {
 LAB_00956f39:
       if (((onlinegame->current).enabled != true) || (bVar4)) {
         bVar1 = Menu_IsMenuOpenAndVisible(0,"popup_inliveconnectingtodw");
@@ -33,37 +37,38 @@ LAB_00956f39:
       }
       return;
     }
-    bVar1 = CL_LocalClient_IsCUIFlagSet(local_c,0x20);
+    bVar1 = CL_LocalClient_IsCUIFlagSet(controllerIndex,0x20);
     if (bVar1) {
       return;
     }
     bVar1 = CL_IsRenderingSplitScreen();
-    bVar2 = Live_IsUserSignedInToLive(local_c);
-    bVar3 = Live_IsUserSignedInToDemonware(local_c);
+    bVar2 = Live_IsUserSignedInToLive(controllerIndex);
+    bVar3 = Live_IsUserSignedInToDemonware(controllerIndex);
     if (((bVar2) && (!bVar1)) &&
        ((!bVar3 ||
         ((((bVar1 = LiveStorage_DoWeHavePlaylists(), !bVar1 ||
-           (bVar1 = LiveStorage_DoWeHaveAllStats(local_c), !bVar1)) ||
+           (bVar1 = LiveStorage_DoWeHaveAllStats(controllerIndex), !bVar1)) ||
           (bVar1 = LiveStorage_IsTimeSynced(), !bVar1)) ||
          (bVar1 = LiveStorage_DoWeHaveContracts(), !bVar1)))))) {
       bVar4 = false;
       goto LAB_00956f39;
     }
-    local_c = local_c + 1;
+    controllerIndex = controllerIndex + 1;
   } while( true );
 }
 
 
 // 00956FD0  Live_DemonwareDisconnectCleanup  (live/live.cpp:106)
 
-void __cdecl Live_DemonwareDisconnectCleanup(int param_1)
+void __cdecl Live_DemonwareDisconnectCleanup(int localControllerIndex)
 
 {
-  bdLobbyService *pbVar1;
+  bdLobbyService *lobby;
+  bdLobbyService *lobbyService;
   
   Com_GameMode_ResetGameModes();
-  pbVar1 = dwGetLobby(param_1);
-  DWDisconnectLobby(pbVar1);
+  lobby = dwGetLobby(localControllerIndex);
+  DWDisconnectLobby(lobby);
   if ((onlinegame->current).enabled == true) {
     Dvar_SetBool(onlinegame,false);
     Com_Error(ERR_DROP,"EXE_DEMONWARE_DISCONNECT");

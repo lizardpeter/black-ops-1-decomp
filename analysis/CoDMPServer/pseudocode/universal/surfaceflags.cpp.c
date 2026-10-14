@@ -2,25 +2,25 @@
 
 // 007D5800  Com_SurfaceTypeFromName  (universal/surfaceflags.cpp:115)
 
-int __cdecl Com_SurfaceTypeFromName(char *param_1)
+int __cdecl Com_SurfaceTypeFromName(char *name)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     iVar1 = -1;
   }
   else {
-    iVar1 = I_stricmp(param_1,"default");
+    iVar1 = I_stricmp(name,"default");
     if (iVar1 == 0) {
       iVar1 = 0;
     }
     else {
-      for (local_8 = 0; local_8 < 0x1e; local_8 = local_8 + 1) {
-        iVar1 = I_stricmp(param_1,infoParms[local_8].name);
+      for (i = 0; i < 0x1e; i = i + 1) {
+        iVar1 = I_stricmp(name,infoParms[i].name);
         if (iVar1 == 0) {
-          return (int)(infoParms[local_8].surfaceFlags & 0x3f00000U) >> 0x14;
+          return (int)(infoParms[i].surfaceFlags & 0x3f00000U) >> 0x14;
         }
       }
       iVar1 = -1;
@@ -32,18 +32,18 @@ int __cdecl Com_SurfaceTypeFromName(char *param_1)
 
 // 007D5880  Com_SurfaceTypeToName  (universal/surfaceflags.cpp:144)
 
-char * __cdecl Com_SurfaceTypeToName(int param_1)
+char * __cdecl Com_SurfaceTypeToName(int iTypeIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if ((param_1 < 1) || (0x1e < param_1)) {
+  if ((iTypeIndex < 1) || (0x1e < iTypeIndex)) {
     pcVar3 = "default";
   }
   else {
-    if ((int)(infoParms[param_1 + -1].surfaceFlags & 0x3f00000U) >> 0x14 != param_1) {
+    if ((int)(infoParms[iTypeIndex + -1].surfaceFlags & 0x3f00000U) >> 0x14 != iTypeIndex) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\surfaceflags.cpp",0x95
                                ,0,"%s");
       if (!bVar2) {
@@ -52,7 +52,7 @@ char * __cdecl Com_SurfaceTypeToName(int param_1)
         return pcVar3;
       }
     }
-    pcVar3 = infoParms[param_1 + -1].name;
+    pcVar3 = infoParms[iTypeIndex + -1].name;
   }
   return pcVar3;
 }
@@ -60,12 +60,12 @@ char * __cdecl Com_SurfaceTypeToName(int param_1)
 
 // 007D58F0  Com_SurfaceBurns  (universal/surfaceflags.cpp:157)
 
-bool __cdecl Com_SurfaceBurns(int param_1)
+bool __cdecl Com_SurfaceBurns(int iTypeIndex)
 
 {
-  bool local_5;
+  bool burns;
   
-  switch(param_1) {
+  switch(iTypeIndex) {
   case 1:
   case 3:
   case 4:
@@ -77,114 +77,114 @@ bool __cdecl Com_SurfaceBurns(int param_1)
   case 0x17:
   case 0x18:
   case 0x19:
-    local_5 = true;
+    burns = true;
     break;
   default:
-    local_5 = false;
+    burns = false;
   }
-  return local_5;
+  return burns;
 }
 
 
 // 007D5960  Com_SurfaceFloats  (universal/surfaceflags.cpp:184)
 
-bool __cdecl Com_SurfaceFloats(int param_1)
+bool __cdecl Com_SurfaceFloats(int iTypeIndex)
 
 {
-  bool local_5;
+  bool floats;
   
-  if ((param_1 == 0x15) || ((0x17 < param_1 && (param_1 < 0x1c)))) {
-    local_5 = true;
+  if ((iTypeIndex == 0x15) || ((0x17 < iTypeIndex && (iTypeIndex < 0x1c)))) {
+    floats = true;
   }
   else {
-    local_5 = false;
+    floats = false;
   }
-  return local_5;
+  return floats;
 }
 
 
 // 007D59A0  Com_SurfaceDensity  (universal/surfaceflags.cpp:205)
 
-float __cdecl Com_SurfaceDensity(int param_1)
+float __cdecl Com_SurfaceDensity(int iTypeIndex)
 
 {
-  float local_8;
+  float density;
   
-  switch(param_1) {
+  switch(iTypeIndex) {
   case 0x10:
-    local_8 = 0.3;
+    density = 0.3;
     break;
   default:
-    local_8 = 1.0;
+    density = 1.0;
     break;
   case 0x15:
-    local_8 = 0.5;
+    density = 0.5;
     break;
   case 0x18:
-    local_8 = 0.25;
+    density = 0.25;
     break;
   case 0x19:
-    local_8 = 0.6;
+    density = 0.6;
     break;
   case 0x1a:
-    local_8 = 0.2;
+    density = 0.2;
     break;
   case 0x1b:
-    local_8 = 0.15;
+    density = 0.15;
   }
-  return local_8;
+  return density;
 }
 
 
 // 007D5A70  Com_SurfaceFrictionScale  (universal/surfaceflags.cpp:237)
 
-float __cdecl Com_SurfaceFrictionScale(int param_1)
+float __cdecl Com_SurfaceFrictionScale(int iTypeIndex)
 
 {
-  float local_8;
+  float friction;
   
-  switch(param_1) {
+  switch(iTypeIndex) {
   case 6:
   case 10:
   case 0xb:
-    local_8 = 0.9;
+    friction = 0.9;
     break;
   default:
-    local_8 = 1.0;
+    friction = 1.0;
     break;
   case 0xc:
-    local_8 = 0.75;
+    friction = 0.75;
     break;
   case 0xe:
   case 0x13:
-    local_8 = 0.8;
+    friction = 0.8;
   }
-  return local_8;
+  return friction;
 }
 
 
 // 007D5B00  Com_SurfaceBounceScale  (universal/surfaceflags.cpp:265)
 
-float __cdecl Com_SurfaceBounceScale(int param_1)
+float __cdecl Com_SurfaceBounceScale(int iTypeIndex)
 
 {
-  float local_8;
+  float bounce;
   
-  switch(param_1) {
+  switch(iTypeIndex) {
   case 6:
   case 10:
   case 0xb:
-    local_8 = 0.3;
+    bounce = 0.3;
     break;
   default:
-    local_8 = 1.0;
+    bounce = 1.0;
     break;
   case 0xe:
-    local_8 = 0.1;
+    bounce = 0.1;
     break;
   case 0x13:
-    local_8 = 0.2;
+    bounce = 0.2;
   }
-  return local_8;
+  return bounce;
 }
 

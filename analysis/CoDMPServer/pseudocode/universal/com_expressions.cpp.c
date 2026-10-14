@@ -2,18 +2,18 @@
 
 // 0078A920  GetOperandAsString  (universal/com_expressions.cpp:64)
 
-char * __cdecl GetOperandAsString(Operand param_1)
+char * __cdecl GetOperandAsString(Operand operand)
 
 {
   char *pcVar1;
   
-  if (param_1.dataType == VAL_STRING) {
+  if (operand.dataType == VAL_STRING) {
     pcVar1 = va("%s");
   }
-  else if (param_1.dataType == VAL_INT) {
+  else if (operand.dataType == VAL_INT) {
     pcVar1 = va("%i");
   }
-  else if (param_1.dataType == VAL_FLOAT) {
+  else if (operand.dataType == VAL_FLOAT) {
     pcVar1 = va("%f");
   }
   else {
@@ -25,34 +25,35 @@ char * __cdecl GetOperandAsString(Operand param_1)
 
 // 00789E50  Expression_Free  (universal/com_expressions.cpp:79)
 
-void __cdecl Expression_Free(ExpressionStatement *param_1)
+void __cdecl Expression_Free(ExpressionStatement *statement)
 
 {
-  if (param_1->rpn != (expressionRpn *)0x0) {
-    Z_Free(param_1->rpn,0x24);
+  if (statement->rpn != (expressionRpn *)0x0) {
+    Z_Free(statement->rpn,0x24);
   }
-  if (param_1->filename != (char *)0x0) {
-    Z_Free(param_1->filename,0x24);
+  if (statement->filename != (char *)0x0) {
+    Z_Free(statement->filename,0x24);
   }
-  param_1->rpn = (expressionRpn *)0x0;
-  param_1->numRpn = 0;
-  param_1->filename = (char *)0x0;
+  statement->rpn = (expressionRpn *)0x0;
+  statement->numRpn = 0;
+  statement->filename = (char *)0x0;
   return;
 }
 
 
 // 0078A990  Expression_Alloc  (universal/com_expressions.cpp:108)
 
-expressionEntry * __cdecl Expression_Alloc(ExpressionAllocState *param_1,int param_2)
+expressionEntry * __cdecl Expression_Alloc(ExpressionAllocState *allocState,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   expressionEntry *peVar3;
   uint uVar4;
+  expressionEntry *result;
   
-  if (param_1 == (ExpressionAllocState *)0x0) {
-    peVar3 = Z_Malloc(param_2,"Expression_Alloc",0x24);
+  if (allocState == (ExpressionAllocState *)0x0) {
+    peVar3 = Z_Malloc(size,"Expression_Alloc",0x24);
     if ((peVar3 == (expressionEntry *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                  ,0x72,0,"%s"), !bVar2)) {
@@ -62,24 +63,24 @@ expressionEntry * __cdecl Expression_Alloc(ExpressionAllocState *param_1,int par
     }
   }
   else {
-    if ((param_1 == (ExpressionAllocState *)0x0) &&
+    if ((allocState == (ExpressionAllocState *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                  ,0x77,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       peVar3 = (expressionEntry *)(*pcVar1)();
       return peVar3;
     }
-    uVar4 = param_2 + 3U & 0xfffffffc;
-    if ((param_1->size < (int)uVar4) &&
+    uVar4 = size + 3U & 0xfffffffc;
+    if ((allocState->size < (int)uVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                  ,0x79,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       peVar3 = (expressionEntry *)(*pcVar1)();
       return peVar3;
     }
-    param_1->size = param_1->size - uVar4;
-    peVar3 = param_1->buffer;
-    param_1->buffer = (void *)((int)param_1->buffer + uVar4);
+    allocState->size = allocState->size - uVar4;
+    peVar3 = allocState->buffer;
+    allocState->buffer = (void *)((int)allocState->buffer + uVar4);
   }
   return peVar3;
 }
@@ -87,37 +88,38 @@ expressionEntry * __cdecl Expression_Alloc(ExpressionAllocState *param_1,int par
 
 // 0078AA70  Expression_OpIsFunction  (universal/com_expressions.cpp:130)
 
-bool __cdecl Expression_OpIsFunction(expOperationEnum param_1)
+bool __cdecl Expression_OpIsFunction(expOperationEnum op)
 
 {
-  return 0x17 < (int)param_1;
+  return 0x17 < (int)op;
 }
 
 
 // 0078AA80  Expression_ParseOperatorToken  (universal/com_expressions.cpp:135)
 
-expOperationEnum __cdecl Expression_ParseOperatorToken(char *param_1)
+expOperationEnum __cdecl Expression_ParseOperatorToken(char *token)
 
 {
   int iVar1;
-  expOperationEnum local_8;
+  int index;
+  int opNum;
   
-  for (local_8 = OP_NOOP; (int)local_8 < 0x18; local_8 = local_8 + OP_RIGHTPAREN) {
-    iVar1 = I_stricmp(*(char **)(&g_expOperatorNames + local_8 * 4),param_1);
+  for (opNum = 0; opNum < 0x18; opNum = opNum + 1) {
+    iVar1 = I_stricmp(*(char **)(&g_expOperatorNames + opNum * 4),token);
     if (iVar1 == 0) {
-      return local_8;
+      return opNum;
     }
   }
-  local_8 = 0;
+  opNum = 0;
   while( true ) {
-    if (g_expFunctionNames[local_8] == (char *)0x0) {
+    if (g_expFunctionNames[opNum] == (char *)0x0) {
       return OP_NOOP;
     }
-    iVar1 = I_stricmp(g_expFunctionNames[local_8],param_1);
+    iVar1 = I_stricmp(g_expFunctionNames[opNum],token);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    opNum = opNum + 1;
   }
-  iVar1 = Expression_GetIndexForFunction(local_8);
+  iVar1 = Expression_GetIndexForFunction(opNum);
   if (iVar1 == -1) {
     Com_PrintError(0x10,"Expression function \'%s\' not found\n");
     return OP_NOOP;
@@ -128,17 +130,18 @@ expOperationEnum __cdecl Expression_ParseOperatorToken(char *param_1)
 
 // 0078AB40  Expression_HashOperand  (universal/com_expressions.cpp:169)
 
-expressionEntry * __cdecl Expression_HashOperand(char *param_1,ExpressionAllocState *param_2)
+expressionEntry * __cdecl Expression_HashOperand(char *str,ExpressionAllocState *alloc)
 
 {
   expressionEntry *peVar1;
   int iVar2;
+  expressionEntry *entry;
   
-  peVar1 = Expression_Alloc(param_2,0x10);
+  peVar1 = Expression_Alloc(alloc,0x10);
   peVar1->next = (expressionEntry *)0x0;
   peVar1->type = 1;
   (peVar1->data).op = OP_NOOP;
-  iVar2 = Com_HashString(param_1,0);
+  iVar2 = Com_HashString(str,0);
   (peVar1->data).operand.internals.intVal = iVar2;
   return peVar1;
 }
@@ -146,7 +149,7 @@ expressionEntry * __cdecl Expression_HashOperand(char *param_1,ExpressionAllocSt
 
 // 0078AB90  Expression_StringOperand  (universal/com_expressions.cpp:181)
 
-expressionEntry * __cdecl Expression_StringOperand(char *param_1,ExpressionAllocState *param_2)
+expressionEntry * __cdecl Expression_StringOperand(char *str,ExpressionAllocState *alloc)
 
 {
   char cVar1;
@@ -154,18 +157,19 @@ expressionEntry * __cdecl Expression_StringOperand(char *param_1,ExpressionAlloc
   char *local_20;
   char *local_1c;
   char *local_c;
+  expressionEntry *entry;
   
-  local_c = param_1;
+  local_c = str;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  peVar2 = Expression_Alloc(param_2,(int)(local_c + (0x11 - (int)(param_1 + 1))));
+  peVar2 = Expression_Alloc(alloc,(int)(local_c + (0x11 - (int)(str + 1))));
   peVar2->next = (expressionEntry *)0x0;
   peVar2->type = 1;
   (peVar2->data).op = OP_MULTIPLY;
   (peVar2->data).operand.internals.string = (char *)(peVar2 + 1);
-  local_1c = param_1;
+  local_1c = str;
   local_20 = *(char **)((int)&peVar2->data + 4);
   do {
     cVar1 = *local_1c;
@@ -179,262 +183,271 @@ expressionEntry * __cdecl Expression_StringOperand(char *param_1,ExpressionAlloc
 
 // 00789EB0  MakeRPN  (universal/com_expressions.cpp:229)
 
-expressionRpn * __cdecl MakeRPN(expressionEntry *param_1,int *param_2)
+expressionRpn * __cdecl MakeRPN(expressionEntry *entry,int *length)
 
 {
   operandInternalDataUnion oVar1;
   code *pcVar2;
   bool bVar3;
   expressionRpn *peVar4;
-  uint local_264;
-  uint local_260 [151];
+  int idxOper;
+  int idxProg;
+  int aiStack_25c [150];
   
-  local_260[0] = 0;
-  local_264 = 0;
+  idxProg = 0;
+  idxOper = 0;
   do {
-    if (param_1 == (expressionEntry *)0x0) {
+    if (entry == (expressionEntry *)0x0) {
       while( true ) {
-        if ((local_264 == 0) || (*(int *)(local_260[local_264] + 4) == 0x11)) {
-          if ((0x95 < local_260[0]) &&
+        if ((idxOper == 0) || (*(int *)(aiStack_25c[idxOper + -1] + 4) == 0x11)) {
+          if ((0x95 < (uint)idxProg) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                        ,0x122,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             peVar4 = (expressionRpn *)(*pcVar2)();
             return peVar4;
           }
-          prog[local_260[0]].type = 3;
-          *param_2 = local_260[0] + 1;
+          prog[idxProg].type = 3;
+          *length = idxProg + 1;
           return prog;
         }
-        if ((0x95 < local_260[0]) &&
+        if ((0x95 < (uint)idxProg) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                      ,0x11e,0,"%s"), !bVar3)) break;
-        prog[local_260[0]].type = 1;
-        prog[local_260[0]].data.constant.dataType = *(expDataType *)(local_260[local_264] + 4);
-        local_260[0] = local_260[0] + 1;
-        local_264 = local_264 - 1;
+        prog[idxProg].type = 1;
+        idxOper = idxOper + -1;
+        prog[idxProg].data.constant.dataType = *(expDataType *)(aiStack_25c[idxOper] + 4);
+        idxProg = idxProg + 1;
       }
       pcVar2 = (code *)swi(3);
       peVar4 = (expressionRpn *)(*pcVar2)();
       return peVar4;
     }
-    if (param_1->type == 1) {
-      if ((0x95 < local_260[0]) &&
+    if (entry->type == 1) {
+      if ((0x95 < (uint)idxProg) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                    ,0xee,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         peVar4 = (expressionRpn *)(*pcVar2)();
         return peVar4;
       }
-      prog[local_260[0]].type = 0;
-      oVar1 = (param_1->data).operand.internals;
-      prog[local_260[0]].data.constant.dataType = (param_1->data).op;
-      prog[local_260[0]].data.constant.internals = oVar1;
-      local_260[0] = local_260[0] + 1;
+      prog[idxProg].type = 0;
+      oVar1 = (entry->data).operand.internals;
+      prog[idxProg].data.constant.dataType = (entry->data).op;
+      prog[idxProg].data.constant.internals = oVar1;
+      idxProg = idxProg + 1;
     }
     else {
-      if ((param_1->type != 0) &&
+      if ((entry->type != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                    ,0xf3,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         peVar4 = (expressionRpn *)(*pcVar2)();
         return peVar4;
       }
-      if ((param_1->data).op == OP_LEFTPAREN) {
-        if ((0x95 < local_264) &&
+      if ((entry->data).op == OP_LEFTPAREN) {
+        if ((0x95 < (uint)idxOper) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                      ,0xf6,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           peVar4 = (expressionRpn *)(*pcVar2)();
           return peVar4;
         }
-        local_260[local_264 + 1] = (uint)param_1;
-        local_264 = local_264 + 1;
+        aiStack_25c[idxOper] = (int)entry;
+        idxOper = idxOper + 1;
       }
-      else if ((param_1->data).op == OP_RIGHTPAREN) {
-        if ((local_264 == 0) &&
+      else if ((entry->data).op == OP_RIGHTPAREN) {
+        if ((idxOper == 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                      ,0xfc,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           peVar4 = (expressionRpn *)(*pcVar2)();
           return peVar4;
         }
-        while (((local_264 != 0 && (*(int *)(local_260[local_264] + 4) != 0x11)) &&
-               (*(int *)(local_260[local_264] + 4) < 0x18))) {
-          if ((0x95 < local_260[0]) &&
+        while (((idxOper != 0 && (*(int *)(aiStack_25c[idxOper + -1] + 4) != 0x11)) &&
+               (*(int *)(aiStack_25c[idxOper + -1] + 4) < 0x18))) {
+          if ((0x95 < (uint)idxProg) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                        ,0xfe,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             peVar4 = (expressionRpn *)(*pcVar2)();
             return peVar4;
           }
-          prog[local_260[0]].type = 1;
-          prog[local_260[0]].data.constant.dataType = *(expDataType *)(local_260[local_264] + 4);
-          local_260[0] = local_260[0] + 1;
-          local_264 = local_264 - 1;
+          prog[idxProg].type = 1;
+          idxOper = idxOper + -1;
+          prog[idxProg].data.constant.dataType = *(expDataType *)(aiStack_25c[idxOper] + 4);
+          idxProg = idxProg + 1;
         }
-        if (((*(int *)(local_260[local_264] + 4) != 0x11) &&
-            (*(int *)(local_260[local_264] + 4) < 0x18)) &&
+        if (((*(int *)(aiStack_25c[idxOper + -1] + 4) != 0x11) &&
+            (*(int *)(aiStack_25c[idxOper + -1] + 4) < 0x18)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                      ,0x102,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           peVar4 = (expressionRpn *)(*pcVar2)();
           return peVar4;
         }
-        if (*(int *)(local_260[local_264] + 4) != 0x11) {
-          if ((0x95 < local_260[0]) &&
+        if (*(int *)(aiStack_25c[idxOper + -1] + 4) != 0x11) {
+          if ((0x95 < (uint)idxProg) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                        ,0x106,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             peVar4 = (expressionRpn *)(*pcVar2)();
             return peVar4;
           }
-          prog[local_260[0]].type = 1;
-          prog[local_260[0]].data.constant.dataType = *(expDataType *)(local_260[local_264] + 4);
-          local_260[0] = local_260[0] + 1;
+          prog[idxProg].type = 1;
+          prog[idxProg].data.constant.dataType = *(expDataType *)(aiStack_25c[idxOper + -1] + 4);
+          idxProg = idxProg + 1;
         }
-        local_264 = local_264 - 1;
+        idxOper = idxOper + -1;
       }
-      else if ((int)(param_1->data).op < 0x18) {
-        while (((local_264 != 0 && (*(int *)(local_260[local_264] + 4) < 0x18)) &&
-               (*(int *)(&s_operatorPrecedence + *(int *)(local_260[local_264] + 4) * 4) <=
-                *(int *)(&s_operatorPrecedence + (param_1->data).op * 4)))) {
-          if ((0x95 < local_260[0]) &&
+      else if ((int)(entry->data).op < 0x18) {
+        while (((idxOper != 0 && (*(int *)(aiStack_25c[idxOper + -1] + 4) < 0x18)) &&
+               (*(int *)(&s_operatorPrecedence + *(int *)(aiStack_25c[idxOper + -1] + 4) * 4) <=
+                *(int *)(&s_operatorPrecedence + (entry->data).op * 4)))) {
+          if ((0x95 < (uint)idxProg) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                        ,0x110,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             peVar4 = (expressionRpn *)(*pcVar2)();
             return peVar4;
           }
-          prog[local_260[0]].type = 1;
-          prog[local_260[0]].data.constant.dataType = *(expDataType *)(local_260[local_264] + 4);
-          local_260[0] = local_260[0] + 1;
-          local_264 = local_264 - 1;
+          prog[idxProg].type = 1;
+          idxOper = idxOper + -1;
+          prog[idxProg].data.constant.dataType = *(expDataType *)(aiStack_25c[idxOper] + 4);
+          idxProg = idxProg + 1;
         }
-        if ((0x95 < local_264) &&
+        if ((0x95 < (uint)idxOper) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                      ,0x114,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           peVar4 = (expressionRpn *)(*pcVar2)();
           return peVar4;
         }
-        local_260[local_264 + 1] = (uint)param_1;
-        local_264 = local_264 + 1;
+        aiStack_25c[idxOper] = (int)entry;
+        idxOper = idxOper + 1;
       }
       else {
-        if ((0x95 < local_264) &&
+        if ((0x95 < (uint)idxOper) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                      ,0x11a,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           peVar4 = (expressionRpn *)(*pcVar2)();
           return peVar4;
         }
-        local_260[local_264 + 1] = (uint)param_1;
-        local_264 = local_264 + 1;
+        aiStack_25c[idxOper] = (int)entry;
+        idxOper = idxOper + 1;
       }
     }
-    param_1 = param_1->next;
+    entry = entry->next;
   } while( true );
 }
 
 
 // 0078A490  Expression_Parse  (universal/com_expressions.cpp:298)
 
-bool __cdecl Expression_Parse(char **param_1,ExpressionStatement *param_2,void *param_3,int param_4)
+bool __cdecl
+Expression_Parse(char **text,ExpressionStatement *statement,void *compileBuffer,
+                int compileBufferSize)
 
 {
   code *pcVar1;
-  Operand OVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  char *pcVar5;
-  ParseTokenType PVar6;
-  int iVar7;
-  expressionRpn *peVar8;
-  expressionEntry *peVar9;
-  double dVar10;
-  expOperationEnum local_40;
-  expressionEntry *local_3c;
-  int local_34;
-  expressionEntry *local_2c;
-  ExpressionAllocState *local_28;
-  expOperationEnum local_24;
-  expDataType local_1c;
+  Operand operand;
+  bool bVar2;
+  undefined1 uVar3;
+  char *s0;
+  ParseTokenType PVar4;
+  int iVar5;
+  expressionRpn *src;
+  expressionEntry *peVar6;
+  double dVar7;
+  float fl;
+  int i;
+  expressionRpn *rpn;
+  expOperationEnum op;
+  expressionEntry *entriesTail;
+  char *sourceText;
+  int lastType;
+  ParseTokenType tokenType;
+  expressionEntry *head;
+  ExpressionAllocState *allocState;
+  expOperationEnum lastOp;
+  char *token;
+  expDataType lastOperand;
   operandInternalDataUnion local_18;
-  int local_14;
-  expressionEntry *local_10;
-  ExpressionAllocState local_c;
+  int numOpenLeftParens;
+  expressionEntry *newExpression;
+  ExpressionAllocState _allocState;
   
-  local_28 = (ExpressionAllocState *)0x0;
-  local_24 = OP_NOOP;
-  local_1c = VAL_INT;
+  allocState = (ExpressionAllocState *)0x0;
+  lastOp = OP_NOOP;
+  lastOperand = VAL_INT;
   local_18.intVal = 0;
-  local_34 = 2;
-  if (param_3 != (void *)0x0) {
-    local_c.buffer = param_3;
-    local_c.size = param_4;
-    local_28 = &local_c;
+  lastType = 2;
+  if (compileBuffer != (void *)0x0) {
+    _allocState.buffer = compileBuffer;
+    _allocState.size = compileBufferSize;
+    allocState = &_allocState;
   }
-  if ((param_1 == (char **)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp",
-                               0x142,0,"%s"), !bVar3)) {
+  if ((text == (char **)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp",
+                               0x142,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar4 = (*pcVar1)();
-    return (bool)uVar4;
+    uVar3 = (*pcVar1)();
+    return (bool)uVar3;
   }
-  local_2c = (expressionEntry *)0x0;
-  local_3c = (expressionEntry *)0x0;
-  param_2->rpn = (expressionRpn *)0x0;
-  param_2->numRpn = 0;
+  head = (expressionEntry *)0x0;
+  entriesTail = (expressionEntry *)0x0;
+  statement->rpn = (expressionRpn *)0x0;
+  statement->numRpn = 0;
   Com_BeginParseSession("expression");
   Com_SetSpaceDelimited(0);
-  local_14 = 0;
+  numOpenLeftParens = 0;
 LAB_0078a546:
-  pcVar5 = Com_ParseOnLine(param_1);
-  if (pcVar5 == (char *)0x0) {
+  s0 = Com_ParseOnLine(text);
+  if (s0 == (char *)0x0) {
 LAB_0078a8a9:
     Com_EndParseSession();
-    peVar8 = MakeRPN(local_2c,&param_2->numRpn);
-    peVar9 = Expression_Alloc(local_28,param_2->numRpn * 0xc);
-    param_2->rpn = (expressionRpn *)peVar9;
-    memcpy((uchar *)param_2->rpn,(uchar *)peVar8,param_2->numRpn * 0xc);
+    src = MakeRPN(head,&statement->numRpn);
+    peVar6 = Expression_Alloc(allocState,statement->numRpn * 0xc);
+    statement->rpn = (expressionRpn *)peVar6;
+    memcpy((uchar *)statement->rpn,(uchar *)src,statement->numRpn * 0xc);
     return true;
   }
-  PVar6 = Com_GetTokenType();
-  iVar7 = I_stricmp(pcVar5,";");
-  if (iVar7 == 0) goto LAB_0078a8a9;
-  if (PVar6 == PARSE_TOKEN_STRING) {
-    local_40 = OP_NOOP;
+  PVar4 = Com_GetTokenType();
+  iVar5 = I_stricmp(s0,";");
+  if (iVar5 == 0) goto LAB_0078a8a9;
+  if (PVar4 == PARSE_TOKEN_STRING) {
+    op = OP_NOOP;
   }
   else {
-    local_40 = Expression_ParseOperatorToken(pcVar5);
+    op = Expression_ParseOperatorToken(s0);
   }
-  if (local_40 == OP_NOOP) {
-    switch(PVar6) {
+  if (op == OP_NOOP) {
+    switch(PVar4) {
     case PARSE_TOKEN_NUMBER:
-      dVar10 = atof(pcVar5);
-      iVar7 = atoi(pcVar5);
-      if ((float)dVar10 == (float)iVar7) {
-        local_10 = Expression_Alloc(local_28,0x10);
-        local_10->next = (expressionEntry *)0x0;
-        local_10->type = 1;
-        (local_10->data).op = OP_NOOP;
-        *(int *)((int)&local_10->data + 4) = iVar7;
+      dVar7 = atof(s0);
+      iVar5 = atoi(s0);
+      if ((float)dVar7 == (float)iVar5) {
+        newExpression = Expression_Alloc(allocState,0x10);
+        newExpression->next = (expressionEntry *)0x0;
+        newExpression->type = 1;
+        (newExpression->data).op = OP_NOOP;
+        *(int *)((int)&newExpression->data + 4) = iVar5;
       }
       else {
-        local_10 = Expression_Alloc(local_28,0x10);
-        local_10->next = (expressionEntry *)0x0;
-        local_10->type = 1;
-        (local_10->data).op = OP_RIGHTPAREN;
-        *(float *)((int)&local_10->data + 4) = (float)dVar10;
+        newExpression = Expression_Alloc(allocState,0x10);
+        newExpression->next = (expressionEntry *)0x0;
+        newExpression->type = 1;
+        (newExpression->data).op = OP_RIGHTPAREN;
+        *(float *)((int)&newExpression->data + 4) = (float)dVar7;
       }
       break;
     case PARSE_TOKEN_STRING:
     case PARSE_TOKEN_NAME:
-      local_10 = Expression_StringOperand(pcVar5,local_28);
+      newExpression = Expression_StringOperand(s0,allocState);
       break;
     case PARSE_TOKEN_HASH:
-      local_10 = Expression_HashOperand(pcVar5,local_28);
+      newExpression = Expression_HashOperand(s0,allocState);
       break;
     default:
       Com_PrintError(0x10,"%s:%d - Expression Error: Unknown token \'%s\'\n");
@@ -442,36 +455,36 @@ LAB_0078a8a9:
       Com_EndParseSession();
       return false;
     }
-    local_34 = 1;
-    local_1c = (local_10->data).op;
-    local_18 = (operandInternalDataUnion)(local_10->data).operand.internals.intVal;
+    lastType = 1;
+    lastOperand = (newExpression->data).op;
+    local_18 = (operandInternalDataUnion)(newExpression->data).operand.internals.intVal;
 LAB_0078a871:
-    if (local_10 != (expressionEntry *)0x0) {
-      if (local_3c == (expressionEntry *)0x0) {
-        local_2c = local_10;
+    if (newExpression != (expressionEntry *)0x0) {
+      if (entriesTail == (expressionEntry *)0x0) {
+        head = newExpression;
       }
       else {
-        local_3c->next = local_10;
+        entriesTail->next = newExpression;
       }
-      local_3c = local_10;
-      local_10->next = (expressionEntry *)0x0;
+      entriesTail = newExpression;
+      newExpression->next = (expressionEntry *)0x0;
     }
     goto LAB_0078a546;
   }
-  if (local_40 == OP_SUBTRACT) {
-    if (((local_34 == 0) && (local_24 != OP_RIGHTPAREN)) || (local_34 == 2)) {
-      local_40 = OP_NEGATE;
+  if (op == OP_SUBTRACT) {
+    if (((lastType == 0) && (lastOp != OP_RIGHTPAREN)) || (lastType == 2)) {
+      op = OP_NEGATE;
     }
   }
   else {
-    if (local_40 == OP_LEFTPAREN) {
-      local_14 = local_14 + 1;
-      if (local_34 == 2) goto LAB_0078a6d1;
-      if (local_34 != 0) {
-        if (local_34 == 1) {
-          OVar2.internals.intVal = local_18.intVal;
-          OVar2.dataType = local_1c;
-          GetOperandAsString(OVar2);
+    if (op == OP_LEFTPAREN) {
+      numOpenLeftParens = numOpenLeftParens + 1;
+      if (lastType == 2) goto LAB_0078a6d1;
+      if (lastType != 0) {
+        if (lastType == 1) {
+          operand.internals.intVal = local_18.intVal;
+          operand.dataType = lastOperand;
+          GetOperandAsString(operand);
           Com_PrintError(0x10,"%s:%d - Expression Error: %s(...\n");
           Com_PrintError(0x10,"%s\n");
           Com_EndParseSession();
@@ -479,14 +492,14 @@ LAB_0078a871:
         }
         goto LAB_0078a6d1;
       }
-      bVar3 = Expression_OpIsFunction(local_24);
-      if (!bVar3) goto LAB_0078a6d1;
-      local_24 = local_40;
+      bVar2 = Expression_OpIsFunction(lastOp);
+      if (!bVar2) goto LAB_0078a6d1;
+      lastOp = op;
       goto LAB_0078a546;
     }
-    if (local_40 != OP_RIGHTPAREN) goto LAB_0078a6d1;
-    local_14 = local_14 + -1;
-    if (local_14 < 0) {
+    if (op != OP_RIGHTPAREN) goto LAB_0078a6d1;
+    numOpenLeftParens = numOpenLeftParens + -1;
+    if (numOpenLeftParens < 0) {
       Com_PrintError(0x10,
                      "%s:%d - Expression Error: Found a right parenthesis that doesn\'t match any left parenthesis\n"
                     );
@@ -494,15 +507,15 @@ LAB_0078a871:
       Com_EndParseSession();
       return false;
     }
-    if (local_14 == 0) goto LAB_0078a8a9;
+    if (numOpenLeftParens == 0) goto LAB_0078a8a9;
   }
 LAB_0078a6d1:
-  local_10 = Expression_Alloc(local_28,0x10);
-  local_10->next = (expressionEntry *)0x0;
-  local_10->type = 0;
-  (local_10->data).op = local_40;
-  local_34 = 0;
-  local_24 = local_40;
+  newExpression = Expression_Alloc(allocState,0x10);
+  newExpression->next = (expressionEntry *)0x0;
+  newExpression->type = 0;
+  (newExpression->data).op = op;
+  lastType = 0;
+  lastOp = op;
   goto LAB_0078a871;
 }
 
@@ -511,7 +524,7 @@ LAB_0078a6d1:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Expression_Read(int param_1,ExpressionStatement *param_2)
+bool __cdecl Expression_Read(int handle,ExpressionStatement *statement)
 
 {
   char cVar1;
@@ -521,60 +534,60 @@ bool __cdecl Expression_Read(int param_1,ExpressionStatement *param_2)
   char *local_c80;
   char *local_c7c;
   char *local_c6c;
-  char *local_c68;
-  char local_c64 [64];
-  pc_token_s local_c24;
-  int local_814;
-  int local_810;
-  char local_80c [2052];
+  char *expressionPtr;
+  char filename [64];
+  pc_token_s token;
+  int line;
+  int numOpenLeftParens;
+  char expressionText [2052];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c68 = local_80c;
-  PC_SourceFileAndLine(param_1,local_c64,&local_814);
-  local_80c[0] = '\0';
-  local_810 = 0;
+  expressionPtr = expressionText;
+  PC_SourceFileAndLine(handle,filename,&line);
+  expressionText[0] = '\0';
+  numOpenLeftParens = 0;
   do {
     while( true ) {
       do {
-        iVar3 = PC_ReadTokenHandle(param_1,&local_c24);
+        iVar3 = PC_ReadTokenHandle(handle,&token);
         if (iVar3 == 0) goto LAB_0078adbd;
-        if (local_c24.type == 1) {
-          I_strncat(local_80c,0x800,"\"");
-          I_strncat(local_80c,0x800,local_c24.string);
-          I_strncat(local_80c,0x800,"\" ");
+        if (token.type == 1) {
+          I_strncat(expressionText,0x800,"\"");
+          I_strncat(expressionText,0x800,token.string);
+          I_strncat(expressionText,0x800,"\" ");
         }
         else {
-          I_strncat(local_80c,0x800,local_c24.string);
-          I_strncat(local_80c,0x800," ");
+          I_strncat(expressionText,0x800,token.string);
+          I_strncat(expressionText,0x800," ");
         }
-        iVar3 = I_strcmp(local_c24.string,";");
+        iVar3 = I_strcmp(token.string,";");
         if (iVar3 == 0) goto LAB_0078adbd;
-      } while (local_c24.type == 1);
-      iVar3 = I_strcmp(local_c24.string,"(");
+      } while (token.type == 1);
+      iVar3 = I_strcmp(token.string,"(");
       if (iVar3 != 0) break;
-      local_810 = local_810 + 1;
+      numOpenLeftParens = numOpenLeftParens + 1;
     }
-    iVar3 = I_strcmp(local_c24.string,")");
-  } while ((iVar3 != 0) || (local_810 = local_810 + -1, local_810 != 0));
+    iVar3 = I_strcmp(token.string,")");
+  } while ((iVar3 != 0) || (numOpenLeftParens = numOpenLeftParens + -1, numOpenLeftParens != 0));
 LAB_0078adbd:
-  param_2->line = local_814;
-  local_c6c = local_c64;
+  statement->line = line;
+  local_c6c = filename;
   do {
     cVar1 = *local_c6c;
     local_c6c = local_c6c + 1;
   } while (cVar1 != '\0');
-  pcVar4 = Z_Malloc((int)(local_c6c + (1 - (int)(local_c64 + 1))),"Expression",0x24);
-  param_2->filename = pcVar4;
-  local_c7c = local_c64;
-  local_c80 = param_2->filename;
+  pcVar4 = Z_Malloc((int)(local_c6c + (1 - (int)(filename + 1))),"Expression",0x24);
+  statement->filename = pcVar4;
+  local_c7c = filename;
+  local_c80 = statement->filename;
   do {
     cVar1 = *local_c7c;
     *local_c80 = cVar1;
     local_c7c = local_c7c + 1;
     local_c80 = local_c80 + 1;
   } while (cVar1 != '\0');
-  bVar2 = Expression_Parse(&local_c68,param_2,(void *)0x0,0);
+  bVar2 = Expression_Parse(&expressionPtr,statement,(void *)0x0,0);
   return bVar2;
 }
 
@@ -586,21 +599,22 @@ void __cdecl Expression_Init(void)
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  char *filebuf;
+  char *buf;
+  char *parse;
+  int index;
+  char *token;
   
-  pcVar3 = Com_LoadRawTextFile("expressions/functions.txt");
-  if (pcVar3 == (char *)0x0) {
+  filebuf = Com_LoadRawTextFile("expressions/functions.txt");
+  if (filebuf == (char *)0x0) {
     Com_Error(ERR_DROP,"\x15Couldn\'t load file \'%s\'");
   }
   else {
-    local_10 = pcVar3;
+    parse = filebuf;
     Com_BeginParseSession("expressions/functions.txt");
-    local_c = 0;
+    index = 0;
     while( true ) {
-      if (0x3ff < local_c) {
+      if (0x3ff < index) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions.cpp"
                                  ,0x21b,0,"%s");
         if (!bVar2) {
@@ -609,13 +623,13 @@ void __cdecl Expression_Init(void)
           return;
         }
       }
-      local_8 = Com_Parse(&local_10);
-      if ((local_8 == (char *)0x0) || (*local_8 == '\0')) break;
-      Expression_MapIndexToFunction(local_c,local_8);
-      local_c = local_c + 1;
+      token = Com_Parse(&parse);
+      if ((token == (char *)0x0) || (*token == '\0')) break;
+      Expression_MapIndexToFunction(index,token);
+      index = index + 1;
     }
     Com_EndParseSession();
-    Com_UnloadRawTextFile(pcVar3);
+    Com_UnloadRawTextFile(filebuf);
   }
   return;
 }

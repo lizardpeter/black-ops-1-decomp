@@ -2,22 +2,22 @@
 
 // 0099BB60  Sys_WaitInterlockedCompareExchange  (qcommon/threads_interlock.h:23)
 
-void __cdecl Sys_WaitInterlockedCompareExchange(long *param_1,int param_2,int param_3)
+void __cdecl Sys_WaitInterlockedCompareExchange(long *destination,int value,int comperand)
 
 {
   int iVar1;
   
   do {
     do {
-    } while (*param_1 != param_3);
+    } while (*destination != comperand);
     LOCK();
-    iVar1 = *param_1;
-    if (param_3 == iVar1) {
-      *param_1 = param_2;
-      iVar1 = param_3;
+    iVar1 = *destination;
+    if (comperand == iVar1) {
+      *destination = value;
+      iVar1 = comperand;
     }
     UNLOCK();
-  } while (iVar1 != param_3);
+  } while (iVar1 != comperand);
   return;
 }
 
@@ -88,13 +88,13 @@ _Find<std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Const_it
 
 // 009982A0  operator_new  (glass/glass_renderer.cpp:58)
 
-void * __cdecl GlassRenderer::operator_new(uint param_1)
+void * __cdecl GlassRenderer::operator_new(uint size)
 
 {
   void *pvVar1;
   
   pvVar1 = GlassesClient::Allocate
-                     (param_1,"C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x3b);
+                     (size,"C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x3b);
   return pvVar1;
 }
 
@@ -105,7 +105,7 @@ _List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> * __thiscall
 std::_List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
 _List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
           (_List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,
-          SmallAllocatorTemplate<GlassShard_*> param_1)
+          SmallAllocatorTemplate<GlassShard_*> _Al_4)
 
 {
   SmallAllocator *local_28 [5];
@@ -113,29 +113,29 @@ _List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
   SmallAllocator **local_c;
   
   local_c = local_28;
-  local_28[0] = param_1.alloc;
+  local_28[0] = _Al_4.alloc;
   local_14 = &stack0xffffffcc;
   _Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_>::
   _Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_>
-            ((_Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_> *)this,param_1);
+            ((_Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_> *)this,_Al_4);
   this->_padding_ = (int)local_28[0];
-  (this->_Alptr).alloc = param_1.alloc;
+  (this->_Alptr).alloc = _Al_4.alloc;
   return this;
 }
 
 
 // 009982E0  GlassRenderer  (glass/glass_renderer.cpp:68)
 
-GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glasses *param_1)
+GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glasses *glasses)
 
 {
   byte bVar1;
   void *pvVar2;
   dvar_s *pdVar3;
   bool bVar4;
+  uint bs;
   uint uVar5;
-  uint uVar6;
-  SmallAllocator *pSVar7;
+  SmallAllocator *pSVar6;
   int local_e0;
   byte *local_d8;
   byte *local_d4;
@@ -155,17 +155,17 @@ GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glas
   FixedSizeAllocator<ShardGroup_*> *local_44;
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *local_40;
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *local_3c;
-  uint local_38;
-  float local_34;
+  uint i;
+  float minGridSize;
   float local_30;
   float local_2c;
-  float local_28;
+  float gridSize;
   float local_24;
   float local_20;
-  float local_1c;
+  float allExtent;
   float local_18;
   float local_14;
-  undefined4 local_10;
+  undefined4 scale;
   undefined4 local_c;
   undefined4 local_8;
   
@@ -173,12 +173,12 @@ GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glas
   local_50->lock = 0;
   local_54 = &this->smallAllocator;
   local_54->memory = (void *)0x0;
-  uVar6 = param_1->smallAllocatorBlocks;
-  uVar5 = 0x10;
+  uVar5 = glasses->smallAllocatorBlocks;
+  bs = 0x10;
   pvVar2 = GlassesClient::Allocate
-                     (param_1->smallAllocatorBlocks << 4,
+                     (glasses->smallAllocatorBlocks << 4,
                       "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x46);
-  SmallAllocator::Init(&this->smallAllocator,pvVar2,uVar5,uVar6);
+  SmallAllocator::Init(&this->smallAllocator,pvVar2,bs,uVar5);
   local_58 = GlassesClient::Allocate
                        (0x1c,"C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x48);
   local_3c = local_58;
@@ -211,13 +211,13 @@ GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glas
     local_c8 = (FixedSizeAllocator<ShardGroup_*> *)0x0;
   }
   else {
-    pSVar7 = &this->smallAllocator;
-    uVar6 = param_1->maxGroups;
+    pSVar6 = &this->smallAllocator;
+    uVar5 = glasses->maxGroups;
     pvVar2 = GlassesClient::Allocate
-                       (param_1->maxGroups * 0x54,
+                       (glasses->maxGroups * 0x54,
                         "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x4b);
     local_c8 = FixedSizeAllocator<ShardGroup_*>::FixedSizeAllocator<ShardGroup_*>
-                         (local_44,pvVar2,uVar6,pSVar7);
+                         (local_44,pvVar2,uVar5,pSVar6);
   }
   this->groupsAllocator = local_c8;
   local_48 = GlassesClient::Allocate
@@ -226,13 +226,13 @@ GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glas
     local_cc = (FixedSizeAllocator<GlassShard_*> *)0x0;
   }
   else {
-    pSVar7 = &this->smallAllocator;
-    uVar6 = param_1->maxShards;
+    pSVar6 = &this->smallAllocator;
+    uVar5 = glasses->maxShards;
     pvVar2 = GlassesClient::Allocate
-                       (param_1->maxShards * 0x90,
+                       (glasses->maxShards * 0x90,
                         "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x4d);
     local_cc = FixedSizeAllocator<GlassShard_*>::FixedSizeAllocator<GlassShard_*>
-                         (local_48,pvVar2,uVar6,pSVar7);
+                         (local_48,pvVar2,uVar5,pSVar6);
   }
   this->shardsAllocator = local_cc;
   local_4c = GlassesClient::Allocate
@@ -241,22 +241,22 @@ GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glas
     local_d0 = (FixedSizeAllocator<GlassPhysics_*> *)0x0;
   }
   else {
-    pSVar7 = &this->smallAllocator;
-    uVar6 = param_1->maxPhysics;
+    pSVar6 = &this->smallAllocator;
+    uVar5 = glasses->maxPhysics;
     pvVar2 = GlassesClient::Allocate
-                       (param_1->maxPhysics * 0xa0,
+                       (glasses->maxPhysics * 0xa0,
                         "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x4f);
     local_d0 = FixedSizeAllocator<GlassPhysics_*>::FixedSizeAllocator<GlassPhysics_*>
-                         (local_4c,pvVar2,uVar6,pSVar7);
+                         (local_4c,pvVar2,uVar5,pSVar6);
   }
   this->physicsAllocator = local_d0;
-  uVar6 = param_1->shardMemorySize;
+  uVar5 = glasses->shardMemorySize;
   pvVar2 = GlassesClient::Allocate
-                     (param_1->shardMemorySize,
+                     (glasses->shardMemorySize,
                       "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x51);
-  Allocator::Init(&this->shardMemoryAllocator,pvVar2,uVar6);
+  Allocator::Init(&this->shardMemoryAllocator,pvVar2,uVar5);
   InitShardMeshVertexLists(this);
-  R_InitGlassRenderBuffers(param_1->numIndices,param_1->numVerts,0x20);
+  R_InitGlassRenderBuffers(glasses->numIndices,glasses->numVerts,0x20);
   GlassesClient::GetFreeMem();
   Com_Printf(0,"GlassRenderer init: unused memory: %d\n");
   Cmd_AddCommandInternal
@@ -352,22 +352,22 @@ GlassRenderer * __thiscall GlassRenderer::GlassRenderer(GlassRenderer *this,Glas
   this->allBBoxMax[0] = -3.4028235e+38;
   this->allBBoxMax[1] = -3.4028235e+38;
   this->allBBoxMax[2] = -3.4028235e+38;
-  for (local_38 = 0; local_38 < param_1->numGlasses; local_38 = local_38 + 1) {
-    Vec3Min(this->allBBoxMin,param_1->glasses[local_38].absmin,this->allBBoxMin);
-    Vec3Max(this->allBBoxMax,param_1->glasses[local_38].absmax,this->allBBoxMax);
+  for (i = 0; i < glasses->numGlasses; i = i + 1) {
+    Vec3Min(this->allBBoxMin,glasses->glasses[i].absmin,this->allBBoxMin);
+    Vec3Max(this->allBBoxMax,glasses->glasses[i].absmax,this->allBBoxMax);
   }
-  local_1c = this->allBBoxMax[0] - this->allBBoxMin[0];
+  allExtent = this->allBBoxMax[0] - this->allBBoxMin[0];
   local_18 = this->allBBoxMax[1] - this->allBBoxMin[1];
   local_14 = this->allBBoxMax[2] - this->allBBoxMin[2];
-  this->allBBoxMin[0] = local_1c * -0.5 + this->allBBoxMin[0];
+  this->allBBoxMin[0] = allExtent * -0.5 + this->allBBoxMin[0];
   this->allBBoxMin[1] = local_18 * -0.5 + this->allBBoxMin[1];
   this->allBBoxMin[2] = local_14 * -0.5 + this->allBBoxMin[2];
-  this->allBBoxMax[0] = local_1c * 0.5 + this->allBBoxMax[0];
+  this->allBBoxMax[0] = allExtent * 0.5 + this->allBBoxMax[0];
   this->allBBoxMax[1] = local_18 * 0.5 + this->allBBoxMax[1];
   this->allBBoxMax[2] = local_14 * 0.5 + this->allBBoxMax[2];
   Vec3Max(this->allBBoxMin,s_world.mins,this->allBBoxMin);
   Vec3Min(this->allBBoxMax,s_world.maxs,this->allBBoxMax);
-  local_1c = this->allBBoxMax[0] - this->allBBoxMin[0];
+  allExtent = this->allBBoxMax[0] - this->allBBoxMin[0];
   local_18 = this->allBBoxMax[1] - this->allBBoxMin[1];
   local_14 = this->allBBoxMax[2] - this->allBBoxMin[2];
   local_d4 = (byte *)0xd52110;
@@ -395,17 +395,17 @@ LAB_00998f54:
   else {
     MIN_SHARD_GROUP_VOLUME_SIZE = 32.0;
   }
-  local_10 = 0x3a000000;
+  scale = 0x3a000000;
   local_c = 0x3a000000;
   local_8 = 0x3a800000;
-  local_28 = local_1c * 0.00048828125 * 1.1;
+  gridSize = allExtent * 0.00048828125 * 1.1;
   local_24 = local_18 * 0.00048828125 * 1.1;
   local_20 = local_14 * 0.0009765625 * 1.1;
-  local_34 = MIN_SHARD_GROUP_VOLUME_SIZE;
+  minGridSize = MIN_SHARD_GROUP_VOLUME_SIZE;
   local_30 = MIN_SHARD_GROUP_VOLUME_SIZE;
   local_2c = MIN_SHARD_GROUP_VOLUME_SIZE;
-  Vec3Max(&local_28,&local_34,&local_28);
-  this->coordScale[0] = 1.0 / local_28;
+  Vec3Max(&gridSize,&minGridSize,&gridSize);
+  this->coordScale[0] = 1.0 / gridSize;
   this->coordScale[1] = 1.0 / local_24;
   this->coordScale[2] = 1.0 / local_20;
   Reset(this);
@@ -518,16 +518,16 @@ float __thiscall GlassShard::Outline::Area(Outline *this)
 
 _Const_iterator<1> * __thiscall
 std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-_Const_iterator<1>(_Const_iterator<1> *this,_Node *param_1,
-                  list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *param_2)
+_Const_iterator<1>(_Const_iterator<1> *this,_Node *_Pnode_4,
+                  list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *_Plist_4)
 
 {
   this->_padding_ = 0;
-  this->_Ptr = param_1;
-  if (param_2 == (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)0x0) {
+  this->_Ptr = _Pnode_4;
+  if (_Plist_4 == (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)0x0) {
     _invalid_parameter_noinfo();
   }
-  this->_padding_ = param_2->_padding_;
+  this->_padding_ = _Plist_4->_padding_;
   return this;
 }
 
@@ -536,20 +536,19 @@ _Const_iterator<1>(_Const_iterator<1> *this,_Node *param_1,
 
 FixedSizeAllocator<GlassShard_*> * __thiscall
 FixedSizeAllocator<GlassShard_*>::FixedSizeAllocator<GlassShard_*>
-          (FixedSizeAllocator<GlassShard_*> *this,void *param_1,uint param_2,SmallAllocator *param_3
-          )
+          (FixedSizeAllocator<GlassShard_*> *this,void *buffer,uint num,SmallAllocator *al)
 
 {
   SmallAllocatorTemplate<GlassShard_*> local_14;
   SmallAllocatorTemplate<GlassShard_*> local_10;
-  uint local_c;
-  GlassShard *local_8;
+  uint i;
+  GlassShard *blk;
   
-  local_10.alloc = param_3;
+  local_10.alloc = al;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,&local_10);
-  local_14.alloc = param_3;
+  local_14.alloc = al;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->free,&local_14);
@@ -558,13 +557,12 @@ FixedSizeAllocator<GlassShard_*>::FixedSizeAllocator<GlassShard_*>
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used);
   this->maxUsed = 0;
-  local_8 = param_1;
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-    std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front
-              (&this->free,&local_8);
-    local_8 = local_8 + 1;
+  blk = buffer;
+  for (i = 0; i < num; i = i + 1) {
+    std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front(&this->free,&blk);
+    blk = blk + 1;
   }
-  this->memory = param_1;
+  this->memory = buffer;
   return this;
 }
 
@@ -573,20 +571,19 @@ FixedSizeAllocator<GlassShard_*>::FixedSizeAllocator<GlassShard_*>
 
 FixedSizeAllocator<ShardGroup_*> * __thiscall
 FixedSizeAllocator<ShardGroup_*>::FixedSizeAllocator<ShardGroup_*>
-          (FixedSizeAllocator<ShardGroup_*> *this,void *param_1,uint param_2,SmallAllocator *param_3
-          )
+          (FixedSizeAllocator<ShardGroup_*> *this,void *buffer,uint num,SmallAllocator *al)
 
 {
   SmallAllocatorTemplate<GlassShard_*> local_14;
   SmallAllocatorTemplate<GlassShard_*> local_10;
-  uint local_c;
-  GlassShard *local_8;
+  uint i;
+  ShardGroup *blk;
   
-  local_10.alloc = param_3;
+  local_10.alloc = al;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,&local_10);
-  local_14.alloc = param_3;
+  local_14.alloc = al;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->free,&local_14);
@@ -595,13 +592,14 @@ FixedSizeAllocator<ShardGroup_*>::FixedSizeAllocator<ShardGroup_*>
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used);
   this->maxUsed = 0;
-  local_8 = param_1;
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
+  blk = buffer;
+  for (i = 0; i < num; i = i + 1) {
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front
-              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)&this->free,&local_8);
-    local_8 = (GlassShard *)(local_8->axis[2] + 2);
+              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)&this->free,
+               (GlassShard **)&blk);
+    blk = blk + 1;
   }
-  this->memory = param_1;
+  this->memory = buffer;
   return this;
 }
 
@@ -610,20 +608,19 @@ FixedSizeAllocator<ShardGroup_*>::FixedSizeAllocator<ShardGroup_*>
 
 FixedSizeAllocator<GlassPhysics_*> * __thiscall
 FixedSizeAllocator<GlassPhysics_*>::FixedSizeAllocator<GlassPhysics_*>
-          (FixedSizeAllocator<GlassPhysics_*> *this,void *param_1,uint param_2,
-          SmallAllocator *param_3)
+          (FixedSizeAllocator<GlassPhysics_*> *this,void *buffer,uint num,SmallAllocator *al)
 
 {
   SmallAllocatorTemplate<GlassShard_*> local_14;
   SmallAllocatorTemplate<GlassShard_*> local_10;
-  uint local_c;
-  GlassShard *local_8;
+  uint i;
+  GlassPhysics *blk;
   
-  local_10.alloc = param_3;
+  local_10.alloc = al;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,&local_10);
-  local_14.alloc = param_3;
+  local_14.alloc = al;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->free,&local_14);
@@ -632,13 +629,14 @@ FixedSizeAllocator<GlassPhysics_*>::FixedSizeAllocator<GlassPhysics_*>
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used);
   this->maxUsed = 0;
-  local_8 = param_1;
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
+  blk = buffer;
+  for (i = 0; i < num; i = i + 1) {
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front
-              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)&this->free,&local_8);
-    local_8 = (GlassShard *)&local_8[1].outline.length;
+              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)&this->free,
+               (GlassShard **)&blk);
+    blk = blk + 1;
   }
-  this->memory = param_1;
+  this->memory = buffer;
   return this;
 }
 
@@ -648,7 +646,7 @@ FixedSizeAllocator<GlassPhysics_*>::FixedSizeAllocator<GlassPhysics_*>
 void __thiscall GlassRenderer::~GlassRenderer(GlassRenderer *this)
 
 {
-  byte local_5;
+  uchar i;
   
   GlassesClient::Free(this->groupsAllocator->memory);
   GlassesClient::Free(this->groupsAllocator);
@@ -660,8 +658,8 @@ void __thiscall GlassRenderer::~GlassRenderer(GlassRenderer *this)
   GlassesClient::Free(this->colidingShards);
   GlassesClient::Free(this->tempShardsList);
   GlassesClient::Free((this->shardMemoryAllocator).buffer);
-  for (local_5 = 0; local_5 < 0x16; local_5 = local_5 + 1) {
-    GlassesClient::Free(this->vertexList[local_5]);
+  for (i = '\0'; i < 0x16; i = i + '\x01') {
+    GlassesClient::Free(this->vertexList[i]);
   }
   R_FreeGlassRenderBuffers();
   return;
@@ -675,9 +673,9 @@ FixedSizeAllocator<GlassShard_*>::Allocate(FixedSizeAllocator<GlassShard_*> *thi
 
 {
   uint uVar1;
+  _Const_iterator<1> _Where_4;
   _Const_iterator<1> _Var2;
-  _Const_iterator<1> _Var3;
-  ShardGroup **ppSVar4;
+  ShardGroup **ppSVar3;
   uint local_e0;
   _Const_iterator<1> local_74;
   int local_6c;
@@ -693,9 +691,9 @@ FixedSizeAllocator<GlassShard_*>::Allocate(FixedSizeAllocator<GlassShard_*> *thi
   _Node *local_18;
   _Node *local_14;
   _Const_iterator<1> local_10;
-  GlassShard *local_8;
+  GlassPhysics *ret_3;
   
-  local_8 = (GlassShard *)0x0;
+  ret_3 = (GlassPhysics *)0x0;
   if ((this->free)._Mysize != 0) {
     local_1c = &this->free;
     local_14 = (this->free)._Myhead;
@@ -706,9 +704,9 @@ FixedSizeAllocator<GlassShard_*>::Allocate(FixedSizeAllocator<GlassShard_*> *thi
       _invalid_parameter_noinfo();
     }
     local_10._padding_ = local_1c->_padding_;
-    ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
+    ppSVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
               operator*(&local_10);
-    local_8 = (GlassShard *)*ppSVar4;
+    ret_3 = (GlassPhysics *)*ppSVar3;
     local_64 = (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->free;
     local_3c = (this->free)._Myhead;
     local_40 = local_3c->_Next;
@@ -717,19 +715,19 @@ FixedSizeAllocator<GlassShard_*>::Allocate(FixedSizeAllocator<GlassShard_*> *thi
                        (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)local_64);
     local_28 = (_Node *)local_30._padding_;
     local_24 = local_30._Ptr;
-    _Var3._Ptr = (_Node *)local_30._padding_;
-    _Var3._padding_ = (int)local_38;
-    std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::erase(local_64,_Var3);
+    _Var2._Ptr = (_Node *)local_30._padding_;
+    _Var2._padding_ = (int)local_38;
+    std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::erase(local_64,_Var2);
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
     _Const_iterator<1>(&local_74,(_Node *)((this->used)._Myhead)->_Next,
                        (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)&this->used);
     local_6c = local_74._padding_;
     local_68 = (_Node *)local_74._Ptr;
-    _Var2._Ptr = (_Node *)local_74._Ptr;
-    _Var2._padding_ = local_74._padding_;
+    _Where_4._Ptr = (_Node *)local_74._Ptr;
+    _Where_4._padding_ = local_74._padding_;
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,_Var2,
-               &local_8);
+              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,_Where_4,
+               (GlassShard **)&ret_3);
   }
   uVar1 = (this->used)._Mysize;
   local_e0 = this->maxUsed;
@@ -737,7 +735,7 @@ FixedSizeAllocator<GlassShard_*>::Allocate(FixedSizeAllocator<GlassShard_*> *thi
     local_e0 = uVar1;
   }
   this->maxUsed = local_e0;
-  return local_8;
+  return (GlassShard *)ret_3;
 }
 
 
@@ -823,7 +821,7 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::_Const_iterator
 // 0099EBE0  Free  (glass/glass_allocator.h:212)
 
 void __thiscall
-FixedSizeAllocator<GlassShard_*>::Free(FixedSizeAllocator<GlassShard_*> *this,GlassShard *param_1)
+FixedSizeAllocator<GlassShard_*>::Free(FixedSizeAllocator<GlassShard_*> *this,GlassShard *mem_3)
 
 {
   int iVar1;
@@ -837,7 +835,7 @@ FixedSizeAllocator<GlassShard_*>::Free(FixedSizeAllocator<GlassShard_*> *this,Gl
   int local_c;
   _Node *local_8;
   
-  bVar4 = IsValidUsedPtr(this,param_1);
+  bVar4 = IsValidUsedPtr(this,mem_3);
   if (!bVar4) {
     if (&this->free == (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)0x0) {
       _invalid_parameter_noinfo();
@@ -874,11 +872,10 @@ FixedSizeAllocator<GlassShard_*>::Free(FixedSizeAllocator<GlassShard_*> *this,Gl
       return;
     }
   }
-  if (param_1 != (GlassShard *)0x0) {
+  if (mem_3 != (GlassShard *)0x0) {
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::remove
-              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,&param_1);
-    std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front
-              (&this->free,&param_1);
+              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)&this->used,&mem_3);
+    std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front(&this->free,&mem_3);
   }
   return;
 }
@@ -898,7 +895,7 @@ void __thiscall GlassRenderer::Reset(GlassRenderer *this)
   _Const_iterator<1> local_1c;
   int local_14;
   _Node *local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> grp;
   
   pGVar3 = &this->rendererLock;
   do {
@@ -924,15 +921,15 @@ void __thiscall GlassRenderer::Reset(GlassRenderer *this)
     }
     local_1c._padding_ = plVar5->_padding_;
     bVar2 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_c,&local_1c);
+            operator!=(&grp,&local_1c);
     if (!bVar2) break;
     ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_c);
+              operator*(&grp);
     ShardGroup::Reset(*ppSVar6);
-    p_Var1 = local_c._Ptr;
-    iVar4 = local_c._padding_;
+    p_Var1 = grp._Ptr;
+    iVar4 = grp._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_c);
+              (&grp);
     local_14 = iVar4;
     local_10 = p_Var1;
   }
@@ -997,7 +994,7 @@ void __thiscall FixedSizeAllocator<GlassShard_*>::FreeAll(FixedSizeAllocator<Gla
 
 bool __thiscall
 FixedSizeAllocator<GlassShard_*>::IsValidUsedPtr
-          (FixedSizeAllocator<GlassShard_*> *this,GlassShard *param_1)
+          (FixedSizeAllocator<GlassShard_*> *this,GlassShard *ptr_3)
 
 {
   _Node *p_Var1;
@@ -1011,7 +1008,7 @@ FixedSizeAllocator<GlassShard_*>::IsValidUsedPtr
   _Node *local_8;
   int *piVar4;
   
-  if (param_1 != (GlassShard *)0x0) {
+  if (ptr_3 != (GlassShard *)0x0) {
     p_Var1 = (this->used)._Myhead;
     if (&this->used == (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)0x0) {
       _invalid_parameter_noinfo();
@@ -1128,20 +1125,21 @@ void __thiscall GlassRenderer::InitShardMeshVertexLists(GlassRenderer *this)
 
 {
   GlassShardMeshVertex *pGVar1;
-  byte bVar2;
-  byte local_5;
+  byte numOutlineVerts;
+  uchar numVerts;
+  uchar i;
   
-  for (local_5 = 0; local_5 < 0x16; local_5 = local_5 + 1) {
-    bVar2 = local_5 + 1;
-    if (bVar2 < 3) {
-      this->vertexList[local_5] = (GlassShardMeshVertex *)0x0;
+  for (i = '\0'; i < 0x16; i = i + '\x01') {
+    numOutlineVerts = i + 1;
+    if (numOutlineVerts < 3) {
+      this->vertexList[i] = (GlassShardMeshVertex *)0x0;
     }
     else {
       pGVar1 = GlassesClient::Allocate
-                         ((uint)bVar2 * 0xc,
+                         ((uint)numOutlineVerts * 0xc,
                           "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x10f);
-      this->vertexList[local_5] = pGVar1;
-      GlassShard::Mesh::InitVertexList(bVar2,this->vertexList[local_5]);
+      this->vertexList[i] = pGVar1;
+      GlassShard::Mesh::InitVertexList(numOutlineVerts,this->vertexList[i]);
     }
   }
   return;
@@ -1223,7 +1221,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 009994D0  RemoveGlassShards  (glass/glass_renderer.cpp:282)
 
-void __thiscall GlassRenderer::RemoveGlassShards(GlassRenderer *this,uint param_1)
+void __thiscall GlassRenderer::RemoveGlassShards(GlassRenderer *this,uint glassIndex)
 
 {
   _Node *p_Var1;
@@ -1232,11 +1230,11 @@ void __thiscall GlassRenderer::RemoveGlassShards(GlassRenderer *this,uint param_
   int iVar4;
   list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar5;
   ShardGroup **ppSVar6;
-  uint uVar7;
+  uint glassIndex_00;
   _Const_iterator<1> local_1c;
   int local_14;
   _Node *local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> grp;
   
   pGVar3 = &this->rendererLock;
   do {
@@ -1262,16 +1260,16 @@ void __thiscall GlassRenderer::RemoveGlassShards(GlassRenderer *this,uint param_
     }
     local_1c._padding_ = plVar5->_padding_;
     bVar2 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_c,&local_1c);
+            operator!=(&grp,&local_1c);
     if (!bVar2) break;
-    uVar7 = param_1;
+    glassIndex_00 = glassIndex;
     ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_c);
-    ShardGroup::RemoveGlassShards(*ppSVar6,uVar7);
-    p_Var1 = local_c._Ptr;
-    iVar4 = local_c._padding_;
+              operator*(&grp);
+    ShardGroup::RemoveGlassShards(*ppSVar6,glassIndex_00);
+    p_Var1 = grp._Ptr;
+    iVar4 = grp._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_c);
+              (&grp);
     local_14 = iVar4;
     local_10 = p_Var1;
   }
@@ -1285,13 +1283,13 @@ void __thiscall GlassRenderer::RemoveGlassShards(GlassRenderer *this,uint param_
 
 bool __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Const_iterator<1>::operator==
-          (_Const_iterator<1> *this,_Const_iterator<1> *param_1)
+          (_Const_iterator<1> *this,_Const_iterator<1> *_Right)
 
 {
-  if ((this->_padding_ == 0) || (this->_padding_ != param_1->_padding_)) {
+  if ((this->_padding_ == 0) || (this->_padding_ != _Right->_padding_)) {
     _invalid_parameter_noinfo();
   }
-  return this->_Ptr == param_1->_Ptr;
+  return this->_Ptr == _Right->_Ptr;
 }
 
 
@@ -1301,6 +1299,7 @@ GlassShard * __thiscall GlassRenderer::AllocShard(GlassRenderer *this)
 
 {
   GlassShard *this_00;
+  GlassShard *shard;
   
   this_00 = FixedSizeAllocator<GlassShard_*>::Allocate(this->shardsAllocator);
   if (this_00 != (GlassShard *)0x0) {
@@ -1314,25 +1313,25 @@ GlassShard * __thiscall GlassRenderer::AllocShard(GlassRenderer *this)
 
 bool __thiscall
 std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator!=
-          (_Const_iterator<1> *this,_Const_iterator<1> *param_1)
+          (_Const_iterator<1> *this,_Const_iterator<1> *_Right_4)
 
 {
-  if ((this->_padding_ == 0) || (this->_padding_ != param_1->_padding_)) {
+  if ((this->_padding_ == 0) || (this->_padding_ != _Right_4->_padding_)) {
     _invalid_parameter_noinfo();
   }
-  return (bool)('\x01' - (this->_Ptr == param_1->_Ptr));
+  return (bool)('\x01' - (this->_Ptr == _Right_4->_Ptr));
 }
 
 
 // 00999600  FreeShard  (glass/glass_renderer.cpp:304)
 
-void __thiscall GlassRenderer::FreeShard(GlassRenderer *this,GlassShard *param_1)
+void __thiscall GlassRenderer::FreeShard(GlassRenderer *this,GlassShard *shard)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->group != (ShardGroup *)0x0) {
+  if (shard->group != (ShardGroup *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x131,0,
                              "%s");
     if (!bVar2) {
@@ -1341,18 +1340,18 @@ void __thiscall GlassRenderer::FreeShard(GlassRenderer *this,GlassShard *param_1
       return;
     }
   }
-  GlassShard::Destroy(param_1);
-  FixedSizeAllocator<GlassShard_*>::Free(this->shardsAllocator,param_1);
+  GlassShard::Destroy(shard);
+  FixedSizeAllocator<GlassShard_*>::Free(this->shardsAllocator,shard);
   return;
 }
 
 
 // 0099BB90  Defrag  (glass/glass_shard.h:310)
 
-void __cdecl GlassShard::Defrag(void *param_1)
+void __cdecl GlassShard::Defrag(void *ptr)
 
 {
-  Defrag(param_1);
+  Defrag(ptr);
   return;
 }
 
@@ -1373,11 +1372,11 @@ GlassPhysics * __thiscall GlassRenderer::AllocPhysics(GlassRenderer *this)
 
 // 00999680  FreePhysics  (glass/glass_renderer.cpp:316)
 
-void __thiscall GlassRenderer::FreePhysics(GlassRenderer *this,GlassPhysics *param_1)
+void __thiscall GlassRenderer::FreePhysics(GlassRenderer *this,GlassPhysics *phys)
 
 {
   FixedSizeAllocator<GlassShard_*>::Free
-            ((FixedSizeAllocator<GlassShard_*> *)this->physicsAllocator,(GlassShard *)param_1);
+            ((FixedSizeAllocator<GlassShard_*> *)this->physicsAllocator,(GlassShard *)phys);
   return;
 }
 
@@ -1398,35 +1397,35 @@ void __thiscall GlassRenderer::RemovePhysicsShards(GlassRenderer *this)
   _Const_iterator<1> local_2c;
   int local_24;
   _Node *local_20;
-  _Const_iterator<1> local_1c;
-  GlassShard *local_14;
-  ShardGroup *local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> shard_2;
+  GlassShard *shard;
+  ShardGroup *grp;
+  _Const_iterator<1> g;
   
   DoGroupChanges(this);
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this->tempShardsList);
   std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-  _Const_iterator<1>(&local_c,((this->groupsAllocator->used)._Myhead)->_Next,
-                     &this->groupsAllocator->used);
+  _Const_iterator<1>(&g,((this->groupsAllocator->used)._Myhead)->_Next,&this->groupsAllocator->used)
+  ;
   while( true ) {
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
     _Const_iterator<1>(&local_2c,(this->groupsAllocator->used)._Myhead,&this->groupsAllocator->used)
     ;
     bVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_c,&local_2c);
+            operator!=(&g,&local_2c);
     if (!bVar4) break;
     ppSVar5 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_c);
-    local_10 = *ppSVar5;
-    for (local_14 = local_10->head; p_Var3 = local_c._Ptr, iVar2 = local_c._padding_,
-        local_14 != (GlassShard *)0x0; local_14 = local_14->groupNext) {
-      if (local_14->glassPhysics != (GlassPhysics *)0x0) {
-        SortedShardsList::Insert(this->tempShardsList,local_14);
+              operator*(&g);
+    grp = *ppSVar5;
+    for (shard = grp->head; p_Var3 = g._Ptr, iVar2 = g._padding_, shard != (GlassShard *)0x0;
+        shard = shard->groupNext) {
+      if (shard->glassPhysics != (GlassPhysics *)0x0) {
+        SortedShardsList::Insert(this->tempShardsList,shard);
       }
     }
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_c);
+              (&g);
     local_24 = iVar2;
     local_20 = p_Var3;
   }
@@ -1441,15 +1440,15 @@ void __thiscall GlassRenderer::RemovePhysicsShards(GlassRenderer *this)
     }
     local_3c._padding_ = *(int *)pSVar1;
     bVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_1c,&local_3c);
+            operator!=(&shard_2,&local_3c);
     if (!bVar4) break;
     ppSVar5 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_1c);
+              operator*(&shard_2);
     GlassShard::Remove((GlassShard *)*ppSVar5,REMOVE_INIT,false);
-    p_Var3 = local_1c._Ptr;
-    iVar2 = local_1c._padding_;
+    p_Var3 = shard_2._Ptr;
+    iVar2 = shard_2._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_1c);
+              (&shard_2);
     local_34 = iVar2;
     local_30 = p_Var3;
   }
@@ -1459,13 +1458,13 @@ void __thiscall GlassRenderer::RemovePhysicsShards(GlassRenderer *this)
 
 // 00999860  AddGroupChange  (glass/glass_renderer.cpp:342)
 
-void __thiscall GlassRenderer::AddGroupChange(GlassRenderer *this,GlassShard *param_1)
+void __thiscall GlassRenderer::AddGroupChange(GlassRenderer *this,GlassShard *shard)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->inGroupChange == false) {
+  if (shard->inGroupChange == false) {
     if (0x7ff < (uint)this->numGroupChanges) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x159,
                                0,"%s");
@@ -1476,9 +1475,9 @@ void __thiscall GlassRenderer::AddGroupChange(GlassRenderer *this,GlassShard *pa
       }
     }
     if ((uint)this->numGroupChanges < 0x800) {
-      this->groupChanges[this->numGroupChanges] = param_1;
+      this->groupChanges[this->numGroupChanges] = shard;
       this->numGroupChanges = this->numGroupChanges + 1;
-      param_1->inGroupChange = true;
+      shard->inGroupChange = true;
     }
   }
   return;
@@ -1491,10 +1490,10 @@ void __thiscall GlassRenderer::DoGroupChanges(GlassRenderer *this)
 
 {
   int local_18;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < this->numGroupChanges; local_8 = local_8 + 1) {
-    GlassShard::ChangeGroup(this->groupChanges[local_8]);
+  for (i = 0; i < this->numGroupChanges; i = i + 1) {
+    GlassShard::ChangeGroup(this->groupChanges[i]);
   }
   local_18 = this->numGroupChanges;
   if (local_18 <= this->maxNumGroupChanges) {
@@ -1515,7 +1514,7 @@ void __thiscall GlassRenderer::DoGroupChanges(GlassRenderer *this)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
+void __thiscall GlassRenderer::Update(GlassRenderer *this,int threadId)
 
 {
   code *pcVar1;
@@ -1527,18 +1526,19 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
   list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar7;
   ShardGroup **ppSVar8;
   GlassLock *pGVar9;
-  float fVar10;
+  float deltaTime;
   float local_44;
   _Const_iterator<1> local_30;
   int local_28;
   _Node *local_24;
-  _Const_iterator<1> local_20;
-  cg_s *local_18;
-  int local_14;
-  int local_10;
-  cg_s *local_c;
+  _Const_iterator<1> grp;
+  cg_s *cgameGlob;
+  int now;
+  int i;
+  cg_s *cg;
+  PIXProfile pixProfile;
   
-  if ((param_1 != 0) &&
+  if ((threadId != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x182,
                                0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -1560,16 +1560,16 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
     }
     UNLOCK();
   } while (iVar4 != 0);
-  if (param_1 == 0) {
+  if (threadId == 0) {
     this->frame = this->frame + 1;
     this->deltaTime = 0.016666668;
-    local_c = CG_GetLocalClientGlobals(0);
-    if ((local_c != (cg_s *)0x0) && (local_c->snap != (snapshot_s *)0x0)) {
-      for (local_10 = 0; local_10 < 1; local_10 = local_10 + 1) {
-        bVar3 = CL_LocalClient_IsActive(local_10);
-        if ((bVar3) && (cVar5 = CL_GetLocalClientConnectionState(local_10), 3 < (int)cVar5)) {
-          local_18 = CG_GetLocalClientGlobals(local_10);
-          if (local_18 == (cg_s *)0x0) {
+    cg = CG_GetLocalClientGlobals(0);
+    if ((cg != (cg_s *)0x0) && (cg->snap != (snapshot_s *)0x0)) {
+      for (i = 0; i < 1; i = i + 1) {
+        bVar3 = CL_LocalClient_IsActive(i);
+        if ((bVar3) && (cVar5 = CL_GetLocalClientConnectionState(i), 3 < (int)cVar5)) {
+          cgameGlob = CG_GetLocalClientGlobals(i);
+          if (cgameGlob == (cg_s *)0x0) {
             DVar6 = GetCurrentThreadId();
             if (DVar6 != (DWORD)g_DXDeviceThread) {
               return;
@@ -1580,8 +1580,8 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
             _D3DPERF_EndEvent_0();
             return;
           }
-          local_14 = local_18->physicsTime;
-          local_44 = (float)(local_14 - this->timeLastUpdate) * 0.001;
+          now = cgameGlob->physicsTime;
+          local_44 = (float)(now - this->timeLastUpdate) * 0.001;
           if (0.0 <= local_44) {
             if (0.1 < local_44) {
               local_44 = 0.1;
@@ -1591,7 +1591,7 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
             local_44 = 0.0;
           }
           this->deltaTime = local_44;
-          this->timeLastUpdate = local_14;
+          this->timeLastUpdate = now;
           break;
         }
       }
@@ -1609,7 +1609,7 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
   }
   PIXBeginNamedEvent(0,"ShardGroup.Update");
   std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-  _Const_iterator<1>(&local_20,((this->groupsAllocator->used)._Myhead)->_Next,
+  _Const_iterator<1>(&grp,((this->groupsAllocator->used)._Myhead)->_Next,
                      &this->groupsAllocator->used);
   while( true ) {
     plVar7 = &this->groupsAllocator->used;
@@ -1620,16 +1620,16 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
     }
     local_30._padding_ = plVar7->_padding_;
     bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_20,&local_30);
+            operator!=(&grp,&local_30);
     if (!bVar3) break;
-    fVar10 = this->deltaTime;
+    deltaTime = this->deltaTime;
     ppSVar8 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_20);
-    ShardGroup::Update(*ppSVar8,fVar10);
-    p_Var2 = local_20._Ptr;
-    iVar4 = local_20._padding_;
+              operator*(&grp);
+    ShardGroup::Update(*ppSVar8,deltaTime);
+    p_Var2 = grp._Ptr;
+    iVar4 = grp._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_20);
+              (&grp);
     local_28 = iVar4;
     local_24 = p_Var2;
   }
@@ -1637,7 +1637,7 @@ void __thiscall GlassRenderer::Update(GlassRenderer *this,int param_1)
   if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (param_1 == 0) {
+  if (threadId == 0) {
     DoGroupChanges(this);
   }
   (this->rendererLock).lock = 0;
@@ -1675,12 +1675,12 @@ _Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_> * __thisca
 std::_Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_>::
 _Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_>
           (_Container_base_aux_alloc_real<SmallAllocatorTemplate<GlassShard_*>_> *this,
-          SmallAllocatorTemplate<GlassShard_*> param_1)
+          SmallAllocatorTemplate<GlassShard_*> _Al_4)
 
 {
   undefined4 *local_18;
   
-  (this->_Alaux).alloc = param_1.alloc;
+  (this->_Alaux).alloc = _Al_4.alloc;
   local_18 = SmallAllocator::Allocate((this->_Alaux).alloc,4);
   if (local_18 == (undefined4 *)0x0) {
     local_18 = (undefined4 *)0x0;
@@ -1699,7 +1699,7 @@ list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> * __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
 list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
           (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,
-          SmallAllocatorTemplate<GlassShard_*> *param_1)
+          SmallAllocatorTemplate<GlassShard_*> *_Al_4)
 
 {
   _Node *p_Var1;
@@ -1710,7 +1710,7 @@ list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
   SmallAllocator *local_c;
   
   local_10 = &local_48;
-  local_48 = param_1->alloc;
+  local_48 = _Al_4->alloc;
   local_18 = &stack0xffffffb0;
   local_c = local_48;
   _List_ptr<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::
@@ -1729,93 +1729,92 @@ list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>
 // 00999D70  GenerateVerts  (glass/glass_renderer.cpp:471)
 
 void __thiscall
-GlassRenderer::GenerateVerts(GlassRenderer *this,int param_1,uint param_2,uint param_3)
+GlassRenderer::GenerateVerts(GlassRenderer *this,int localClientNum,uint viewIndex,uint threadId)
 
 {
   code *pcVar1;
   _Node *p_Var2;
   bool bVar3;
-  char *pcVar4;
-  GlassLock *pGVar5;
-  int iVar6;
-  ShardGroup **ppSVar7;
-  DWORD DVar8;
-  list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar9;
-  char cVar10;
-  _Const_iterator<1> *p_Var11;
-  char local_58;
+  char *Name;
+  GlassLock *pGVar4;
+  int iVar5;
+  ShardGroup **ppSVar6;
+  DWORD DVar7;
+  list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar8;
+  _Const_iterator<1> *cinfo_8;
+  bool local_58;
   _Const_iterator<1> local_20;
   int local_18;
   _Node *local_14;
-  _Const_iterator<1> local_10;
-  char local_5;
+  _Const_iterator<1> grp;
+  PIXProfile pixProfile;
+  bool firstView;
   
-  if ((param_3 != 0) &&
+  if ((threadId != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x1d8,
                                0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar4 = va("Glass.GenVerts(c=%d v=%d t=%d)");
-  PIXBeginNamedEvent(-1,pcVar4);
-  pGVar5 = &this->rendererLock;
+  Name = va("Glass.GenVerts(c=%d v=%d t=%d)");
+  PIXBeginNamedEvent(-1,Name);
+  pGVar4 = &this->rendererLock;
   do {
     do {
-    } while (pGVar5->lock != 0);
+    } while (pGVar4->lock != 0);
     LOCK();
-    iVar6 = pGVar5->lock;
-    if (iVar6 == 0) {
-      pGVar5->lock = 1;
-      iVar6 = 0;
+    iVar5 = pGVar4->lock;
+    if (iVar5 == 0) {
+      pGVar4->lock = 1;
+      iVar5 = 0;
     }
     UNLOCK();
-  } while (iVar6 != 0);
-  bVar3 = CL_LocalClient_IsFirstActive(param_1);
-  if ((bVar3) && (param_2 == 0)) {
-    local_58 = '\x01';
+  } while (iVar5 != 0);
+  bVar3 = CL_LocalClient_IsFirstActive(localClientNum);
+  if ((bVar3) && (viewIndex == 0)) {
+    local_58 = true;
   }
   else {
-    local_58 = '\0';
+    local_58 = false;
   }
-  local_5 = local_58;
-  if (local_58 != '\0') {
+  if (local_58 != false) {
     this->numUsedMaterials = 0;
   }
-  p_Var11 = &local_10;
+  cinfo_8 = &grp;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::begin
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)
              &this->groupsAllocator->used);
   while( true ) {
-    plVar9 = &this->groupsAllocator->used;
+    plVar8 = &this->groupsAllocator->used;
     local_20._Ptr = (this->groupsAllocator->used)._Myhead;
     local_20._padding_ = 0;
-    if (plVar9 == (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)0x0) {
+    if (plVar8 == (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)0x0) {
       _invalid_parameter_noinfo();
     }
-    local_20._padding_ = plVar9->_padding_;
+    local_20._padding_ = plVar8->_padding_;
     bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_10,&local_20);
+            operator!=(&grp,&local_20);
     if (!bVar3) break;
-    iVar6 = param_1;
-    cVar10 = local_5;
-    ppSVar7 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_10);
-    ShardGroup::GenerateVerts(*ppSVar7,(bool)cVar10,iVar6);
-    p_Var2 = local_10._Ptr;
-    iVar6 = local_10._padding_;
+    iVar5 = localClientNum;
+    bVar3 = local_58;
+    ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
+              operator*(&grp);
+    ShardGroup::GenerateVerts(*ppSVar6,bVar3,iVar5);
+    p_Var2 = grp._Ptr;
+    iVar5 = grp._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_10);
-    local_18 = iVar6;
+              (&grp);
+    local_18 = iVar5;
     local_14 = p_Var2;
   }
-  if (param_3 == 0) {
-    GamerProfile_WriteSettings((int)p_Var11);
+  if (threadId == 0) {
+    GamerProfile_WriteSettings((int)cinfo_8);
   }
   (this->rendererLock).lock = 0;
   StartMaintenance(this);
-  DVar8 = GetCurrentThreadId();
-  if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar7 = GetCurrentThreadId();
+  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1876,7 +1875,8 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::end
 
 void __thiscall
 GlassRenderer::ExplosionEvent
-          (GlassRenderer *this,float *param_1,float param_2,float param_3,float param_4,int param_5)
+          (GlassRenderer *this,float *origin,float damageInner,float damageOuter,float radius,
+          int mod)
 
 {
   _Node *p_Var1;
@@ -1884,15 +1884,16 @@ GlassRenderer::ExplosionEvent
   ShardGroup **ppSVar3;
   DWORD DVar4;
   list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar5;
-  float *pfVar6;
-  float fVar7;
-  float fVar8;
-  float fVar9;
-  int iVar10;
+  float *origin_00;
+  float damageInner_00;
+  float damageOuter_00;
+  float radius_00;
+  int iVar6;
   _Const_iterator<1> local_20;
   int local_18;
   _Node *local_14;
-  _Const_iterator<1> local_10;
+  _Const_iterator<1> grp;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"GlassRenderer.ExplosionEvent");
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::begin
@@ -1907,21 +1908,21 @@ GlassRenderer::ExplosionEvent
     }
     local_20._padding_ = plVar5->_padding_;
     bVar2 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_10,&local_20);
+            operator!=(&grp,&local_20);
     if (!bVar2) break;
-    pfVar6 = param_1;
-    fVar7 = param_2;
-    fVar8 = param_3;
-    fVar9 = param_4;
-    iVar10 = param_5;
+    origin_00 = origin;
+    damageInner_00 = damageInner;
+    damageOuter_00 = damageOuter;
+    radius_00 = radius;
+    iVar6 = mod;
     ppSVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_10);
-    ShardGroup::ExplosionEvent(*ppSVar3,pfVar6,fVar7,fVar8,fVar9,iVar10);
-    p_Var1 = local_10._Ptr;
-    iVar10 = local_10._padding_;
+              operator*(&grp);
+    ShardGroup::ExplosionEvent(*ppSVar3,origin_00,damageInner_00,damageOuter_00,radius_00,iVar6);
+    p_Var1 = grp._Ptr;
+    iVar6 = grp._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_10);
-    local_18 = iVar10;
+              (&grp);
+    local_18 = iVar6;
     local_14 = p_Var1;
   }
   DVar4 = GetCurrentThreadId();
@@ -1934,7 +1935,7 @@ GlassRenderer::ExplosionEvent
 
 // 0099A050  TracePoint  (glass/glass_renderer.cpp:587)
 
-int __thiscall GlassRenderer::TracePoint(GlassRenderer *this,float *param_1,float *param_2)
+int __thiscall GlassRenderer::TracePoint(GlassRenderer *this,float *p0,float *p1)
 
 {
   int iVar1;
@@ -1944,16 +1945,17 @@ int __thiscall GlassRenderer::TracePoint(GlassRenderer *this,float *param_1,floa
   int iVar5;
   DWORD DVar6;
   list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar7;
-  float *pfVar8;
-  float *pfVar9;
+  float *p0_00;
+  float *p1_00;
   _Const_iterator<1> local_24;
   int local_1c;
   _Node *local_18;
-  _Const_iterator<1> local_14;
-  int local_8;
+  _Const_iterator<1> grp;
+  PIXProfile pixProfile;
+  int numHits;
   
   PIXBeginNamedEvent(-1,"GlassRenderer.TracePoint");
-  local_8 = 0;
+  numHits = 0;
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::begin
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)
              &this->groupsAllocator->used);
@@ -1966,19 +1968,18 @@ int __thiscall GlassRenderer::TracePoint(GlassRenderer *this,float *param_1,floa
     }
     local_24._padding_ = plVar7->_padding_;
     bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_14,&local_24);
-    iVar1 = local_8;
+            operator!=(&grp,&local_24);
     if (!bVar3) break;
-    pfVar8 = param_1;
-    pfVar9 = param_2;
+    p0_00 = p0;
+    p1_00 = p1;
     ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_14);
-    iVar5 = ShardGroup::TracePoint(*ppSVar4,pfVar8,pfVar9);
-    p_Var2 = local_14._Ptr;
-    iVar1 = local_14._padding_;
-    local_8 = iVar5 + local_8;
+              operator*(&grp);
+    iVar5 = ShardGroup::TracePoint(*ppSVar4,p0_00,p1_00);
+    p_Var2 = grp._Ptr;
+    iVar1 = grp._padding_;
+    numHits = iVar5 + numHits;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_14);
+              (&grp);
     local_1c = iVar1;
     local_18 = p_Var2;
   }
@@ -1986,7 +1987,7 @@ int __thiscall GlassRenderer::TracePoint(GlassRenderer *this,float *param_1,floa
   if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return iVar1;
+  return numHits;
 }
 
 
@@ -1994,31 +1995,30 @@ int __thiscall GlassRenderer::TracePoint(GlassRenderer *this,float *param_1,floa
 
 void __thiscall
 GlassRenderer::Melee
-          (GlassRenderer *this,float *param_1,float *param_2,float *param_3,float *param_4,
-          float param_5)
+          (GlassRenderer *this,float *eyePos,float *forward,float *right,float *up,float range)
 
 {
   int iVar1;
   float fVar2;
   float fVar3;
-  uint local_14;
-  float local_10;
+  int traceIndex;
+  float end;
   float local_c;
   float local_8;
   
-  local_14 = 0;
+  traceIndex = 0;
   while( true ) {
-    if (4 < local_14) {
+    if (4 < (uint)traceIndex) {
       return;
     }
-    fVar2 = (player_meleeWidth->current).value * traceOffsets[local_14][0];
-    fVar3 = (player_meleeHeight->current).value * traceOffsets[local_14][1];
-    local_10 = fVar3 * *param_4 + fVar2 * *param_3 + param_5 * *param_2 + *param_1;
-    local_c = fVar3 * param_4[1] + fVar2 * param_3[1] + param_5 * param_2[1] + param_1[1];
-    local_8 = fVar3 * param_4[2] + fVar2 * param_3[2] + param_5 * param_2[2] + param_1[2];
-    iVar1 = TracePoint(this,param_1,&local_10);
+    fVar2 = (player_meleeWidth->current).value * traceOffsets[traceIndex][0];
+    fVar3 = (player_meleeHeight->current).value * traceOffsets[traceIndex][1];
+    end = fVar3 * *up + fVar2 * *right + range * *forward + *eyePos;
+    local_c = fVar3 * up[1] + fVar2 * right[1] + range * forward[1] + eyePos[1];
+    local_8 = fVar3 * up[2] + fVar2 * right[2] + range * forward[2] + eyePos[2];
+    iVar1 = TracePoint(this,eyePos,&end);
     if (0 < iVar1) break;
-    local_14 = local_14 + 1;
+    traceIndex = traceIndex + 1;
   }
   return;
 }
@@ -2026,7 +2026,7 @@ GlassRenderer::Melee
 
 // 0099A2C0  CalcPackedPos  (glass/glass_renderer.cpp:619)
 
-uint __thiscall GlassRenderer::CalcPackedPos(GlassRenderer *this,float *param_1)
+uint __thiscall GlassRenderer::CalcPackedPos(GlassRenderer *this,float *pos)
 
 {
   code *pcVar1;
@@ -2038,16 +2038,16 @@ uint __thiscall GlassRenderer::CalcPackedPos(GlassRenderer *this,float *param_1)
   uint local_4c;
   uint local_3c;
   uint local_2c;
-  float local_10;
+  float p;
   float local_c;
   float local_8;
   
-  Vec3Max(param_1,this->allBBoxMin,&local_10);
-  Vec3Min(&local_10,this->allBBoxMax,&local_10);
-  local_10 = (local_10 - this->allBBoxMin[0]) * this->coordScale[0];
+  Vec3Max(pos,this->allBBoxMin,&p);
+  Vec3Min(&p,this->allBBoxMax,&p);
+  p = (p - this->allBBoxMin[0]) * this->coordScale[0];
   local_c = (local_c - this->allBBoxMin[1]) * this->coordScale[1];
   local_8 = (local_8 - this->allBBoxMin[2]) * this->coordScale[2];
-  local_2c = (uint)(longlong)ROUND(local_10);
+  local_2c = (uint)(longlong)ROUND(p);
   if (0x7ff < local_2c) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x273,0,
                              "%s\n\t(p[0]) = %g");
@@ -2077,7 +2077,7 @@ uint __thiscall GlassRenderer::CalcPackedPos(GlassRenderer *this,float *param_1)
       return uVar3;
     }
   }
-  local_5c = (uint)(longlong)ROUND(local_10);
+  local_5c = (uint)(longlong)ROUND(p);
   local_6c = (int)(longlong)ROUND(local_c);
   local_7c = (int)(longlong)ROUND(local_8);
   return local_5c | local_6c << 0xb | local_7c << 0x16;
@@ -2087,15 +2087,15 @@ uint __thiscall GlassRenderer::CalcPackedPos(GlassRenderer *this,float *param_1)
 // 0099A4F0  GetShardGroup  (glass/glass_renderer.cpp:635)
 
 ShardGroup * __thiscall
-GlassRenderer::GetShardGroup(GlassRenderer *this,float *param_1,GlassDef *param_2)
+GlassRenderer::GetShardGroup(GlassRenderer *this,float *pos,GlassDef *glassDef)
 
 {
-  uint uVar1;
-  ShardGroup *pSVar2;
+  uint packedPos;
+  ShardGroup *pSVar1;
   
-  uVar1 = CalcPackedPos(this,param_1);
-  pSVar2 = GetShardGroup(this,uVar1,param_2);
-  return pSVar2;
+  packedPos = CalcPackedPos(this,pos);
+  pSVar1 = GetShardGroup(this,packedPos,glassDef);
+  return pSVar1;
 }
 
 
@@ -2125,7 +2125,7 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::front
 // 0099A520  GetShardGroup  (glass/glass_renderer.cpp:640)
 
 ShardGroup * __thiscall
-GlassRenderer::GetShardGroup(GlassRenderer *this,uint param_1,GlassDef *param_2)
+GlassRenderer::GetShardGroup(GlassRenderer *this,uint packedPos,GlassDef *glassDef)
 
 {
   int iVar1;
@@ -2136,8 +2136,8 @@ GlassRenderer::GetShardGroup(GlassRenderer *this,uint param_1,GlassDef *param_2)
   _Const_iterator<1> local_20;
   int local_18;
   _Node *local_14;
-  _Const_iterator<1> local_10;
-  GlassShard *local_8;
+  _Const_iterator<1> grp_2;
+  ShardGroup *grp;
   
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::begin
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)
@@ -2151,31 +2151,32 @@ GlassRenderer::GetShardGroup(GlassRenderer *this,uint param_1,GlassDef *param_2)
     }
     local_20._padding_ = plVar5->_padding_;
     bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_10,&local_20);
+            operator!=(&grp_2,&local_20);
     if (!bVar3) break;
     ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_10);
-    if (((*ppSVar4)->packedPos == param_1) &&
+              operator*(&grp_2);
+    if (((*ppSVar4)->packedPos == packedPos) &&
        (ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_10), (*ppSVar4)->glassDef == param_2)) {
+                  _Const_iterator<1>::operator*(&grp_2), (*ppSVar4)->glassDef == glassDef)) {
       ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
-                ::operator*(&local_10);
+                ::operator*(&grp_2);
       return *ppSVar4;
     }
-    p_Var2 = local_10._Ptr;
-    iVar1 = local_10._padding_;
+    p_Var2 = grp_2._Ptr;
+    iVar1 = grp_2._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_10);
+              (&grp_2);
     local_18 = iVar1;
     local_14 = p_Var2;
   }
-  local_8 = FixedSizeAllocator<GlassShard_*>::Allocate
-                      ((FixedSizeAllocator<GlassShard_*> *)this->groupsAllocator);
-  if (local_8 == (GlassShard *)0x0) {
+  grp = (ShardGroup *)
+        FixedSizeAllocator<GlassShard_*>::Allocate
+                  ((FixedSizeAllocator<GlassShard_*> *)this->groupsAllocator);
+  if ((GlassShard *)grp == (GlassShard *)0x0) {
     return (ShardGroup *)0x0;
   }
-  ShardGroup::Init((ShardGroup *)local_8,param_1,param_2);
-  return (ShardGroup *)local_8;
+  ShardGroup::Init(grp,packedPos,glassDef);
+  return grp;
 }
 
 
@@ -2205,11 +2206,11 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::back
 
 // 0099A620  FreeShardGroup  (glass/glass_renderer.cpp:659)
 
-void __thiscall GlassRenderer::FreeShardGroup(GlassRenderer *this,ShardGroup *param_1)
+void __thiscall GlassRenderer::FreeShardGroup(GlassRenderer *this,ShardGroup *grp)
 
 {
   FixedSizeAllocator<GlassShard_*>::Free
-            ((FixedSizeAllocator<GlassShard_*> *)this->groupsAllocator,(GlassShard *)param_1);
+            ((FixedSizeAllocator<GlassShard_*> *)this->groupsAllocator,(GlassShard *)grp);
   return;
 }
 
@@ -2218,20 +2219,20 @@ void __thiscall GlassRenderer::FreeShardGroup(GlassRenderer *this,ShardGroup *pa
 
 void __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_>::push_front
-          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *this,GlassShard **param_1)
+          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *this,GlassShard **_Val_3)
 
 {
   _Node *p_Var1;
-  _Const_iterator<1> _Var2;
+  _Const_iterator<1> _Where_4;
   
   p_Var1 = (_Node *)this->_Myhead->_Next;
   if (this == (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*_*>_> *)0x0) {
     _invalid_parameter_noinfo();
   }
-  _Var2._Ptr = p_Var1;
-  _Var2._padding_ = this->_padding_;
+  _Where_4._Ptr = p_Var1;
+  _Where_4._padding_ = this->_padding_;
   list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-            ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var2,param_1);
+            ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4,_Val_3);
   return;
 }
 
@@ -2269,15 +2270,15 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::pop_back
 
 void __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,_Const_iterator<1> param_1
-          ,GlassShard **param_2)
+          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,
+          _Const_iterator<1> _Where_4,GlassShard **_Val_4)
 
 {
   _Node *p_Var1;
   
-  p_Var1 = _Buynode(this,param_1._Ptr,(param_1._Ptr)->_Prev,param_2);
+  p_Var1 = _Buynode(this,_Where_4._Ptr,(_Where_4._Ptr)->_Prev,_Val_4);
   _Incsize(this,1);
-  (param_1._Ptr)->_Prev = p_Var1;
+  (_Where_4._Ptr)->_Prev = p_Var1;
   p_Var1->_Prev->_Next = p_Var1;
   return;
 }
@@ -2286,55 +2287,55 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
 // 0099A640  AllocateShardMemory  (glass/glass_renderer.cpp:723)
 
 void * __thiscall
-GlassRenderer::AllocateShardMemory(GlassRenderer *this,uint param_1,GlassShard *param_2)
+GlassRenderer::AllocateShardMemory(GlassRenderer *this,uint size,GlassShard *shard)
 
 {
   void *pvVar1;
   
-  pvVar1 = Allocator::Allocate(&this->shardMemoryAllocator,param_1,param_2);
+  pvVar1 = Allocator::Allocate(&this->shardMemoryAllocator,size,shard);
   return pvVar1;
 }
 
 
 // 0099A670  FreeShardMemory  (glass/glass_renderer.cpp:728)
 
-void __thiscall GlassRenderer::FreeShardMemory(GlassRenderer *this,void *param_1)
+void __thiscall GlassRenderer::FreeShardMemory(GlassRenderer *this,void *ptr)
 
 {
-  Allocator::Free(&this->shardMemoryAllocator,param_1);
+  Allocator::Free(&this->shardMemoryAllocator,ptr);
   return;
 }
 
 
 // 0099A690  ShardMemorySize  (glass/glass_renderer.cpp:733)
 
-int __thiscall GlassRenderer::ShardMemorySize(GlassRenderer *this,void *param_1)
+int __thiscall GlassRenderer::ShardMemorySize(GlassRenderer *this,void *ptr)
 
 {
   int iVar1;
   
-  iVar1 = Allocator::GetMemorySize(&this->shardMemoryAllocator,param_1);
+  iVar1 = Allocator::GetMemorySize(&this->shardMemoryAllocator,ptr);
   return iVar1;
 }
 
 
 // 0099A6B0  Insert  (glass/glass_renderer.cpp:738)
 
-void __thiscall GlassRenderer::SortedShardsList::Insert(SortedShardsList *this,GlassShard *param_1)
+void __thiscall GlassRenderer::SortedShardsList::Insert(SortedShardsList *this,GlassShard *shard)
 
 {
   _Node *p_Var1;
-  _Const_iterator<1> _Var2;
-  _Const_iterator<1> _Var3;
-  _Const_iterator<1> _Var4;
-  _Const_iterator<1> _Var5;
-  int iVar6;
-  _Node *p_Var7;
-  bool bVar8;
-  GlassShard **ppGVar9;
-  ShardGroup **ppSVar10;
-  float fVar11;
-  float fVar12;
+  _Const_iterator<1> _Where_4;
+  _Const_iterator<1> _Where_4_00;
+  _Const_iterator<1> _Where_4_01;
+  _Const_iterator<1> _Where_4_02;
+  int iVar2;
+  _Node *p_Var3;
+  bool bVar4;
+  GlassShard **ppGVar5;
+  ShardGroup **ppSVar6;
+  float fVar7;
+  float fVar8;
   _Const_iterator<1> local_64;
   int local_5c;
   _Node *local_58;
@@ -2351,7 +2352,7 @@ void __thiscall GlassRenderer::SortedShardsList::Insert(SortedShardsList *this,G
   _Const_iterator<1> local_1c;
   int local_14;
   _Node *local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> iter;
   
   if (*(int *)&this->field_0x18 == 0) {
     local_38 = *(undefined4 **)&this->field_0x14;
@@ -2361,58 +2362,59 @@ void __thiscall GlassRenderer::SortedShardsList::Insert(SortedShardsList *this,G
                        (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
     local_2c = local_34._padding_;
     local_28 = (_Node *)local_34._Ptr;
-    _Var2._Ptr = (_Node *)local_34._Ptr;
-    _Var2._padding_ = local_34._padding_;
+    _Where_4._Ptr = (_Node *)local_34._Ptr;
+    _Where_4._padding_ = local_34._padding_;
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var2,&param_1);
+              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4,&shard);
   }
   else {
-    ppGVar9 = std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::back
+    ppGVar5 = std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::back
                         ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this);
-    local_4c = *ppGVar9;
+    local_4c = *ppGVar5;
     local_50 = GlassShard::Outline::Area(&local_4c->outline);
-    local_54 = param_1;
-    fVar11 = GlassShard::Outline::Area(&param_1->outline);
-    if (fVar11 <= local_50) {
+    local_54 = shard;
+    fVar7 = GlassShard::Outline::Area(&shard->outline);
+    if (fVar7 <= local_50) {
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-      _Const_iterator<1>(&local_c,(_Node *)**(undefined4 **)&this->field_0x14,
+      _Const_iterator<1>(&iter,(_Node *)**(undefined4 **)&this->field_0x14,
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
       while( true ) {
         std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
         _Const_iterator<1>(&local_1c,*(_Node **)&this->field_0x14,
                            (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
-        bVar8 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
-                ::operator!=(&local_c,&local_1c);
-        if (!bVar8) break;
-        ppSVar10 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                   _Const_iterator<1>::operator*(&local_c);
-        fVar11 = GlassShard::Outline::Area((Outline *)(*ppSVar10)->worldBBoxMin);
-        fVar12 = GlassShard::Outline::Area(&param_1->outline);
-        p_Var7 = local_c._Ptr;
-        iVar6 = local_c._padding_;
-        if (fVar12 < fVar11) {
-          local_24 = local_c._padding_;
-          local_20 = (_Node *)local_c._Ptr;
-          _Var4._Ptr = (_Node *)local_c._Ptr;
-          _Var4._padding_ = local_c._padding_;
+        bVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
+                ::operator!=(&iter,&local_1c);
+        if (!bVar4) break;
+        ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
+                  _Const_iterator<1>::operator*(&iter);
+        fVar7 = GlassShard::Outline::Area((Outline *)(*ppSVar6)->worldBBoxMin);
+        fVar8 = GlassShard::Outline::Area(&shard->outline);
+        p_Var3 = iter._Ptr;
+        iVar2 = iter._padding_;
+        if (fVar8 < fVar7) {
+          local_24 = iter._padding_;
+          local_20 = (_Node *)iter._Ptr;
+          _Where_4_01._Ptr = (_Node *)iter._Ptr;
+          _Where_4_01._padding_ = iter._padding_;
           std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-                    ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var4,&param_1
-                    );
+                    ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4_01,
+                     &shard);
           return;
         }
         std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-        operator++(&local_c);
-        local_14 = iVar6;
-        local_10 = (_Node *)p_Var7;
+        operator++(&iter);
+        local_14 = iVar2;
+        local_10 = (_Node *)p_Var3;
       }
       p_Var1 = *(_Node **)&this->field_0x14;
       if (this == (SortedShardsList *)0x0) {
         _invalid_parameter_noinfo();
       }
-      _Var5._Ptr = p_Var1;
-      _Var5._padding_ = *(int *)this;
+      _Where_4_02._Ptr = p_Var1;
+      _Where_4_02._padding_ = *(int *)this;
       std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var5,&param_1);
+                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4_02,&shard
+                );
     }
     else {
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
@@ -2420,10 +2422,11 @@ void __thiscall GlassRenderer::SortedShardsList::Insert(SortedShardsList *this,G
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
       local_5c = local_64._padding_;
       local_58 = (_Node *)local_64._Ptr;
-      _Var3._Ptr = (_Node *)local_64._Ptr;
-      _Var3._padding_ = local_64._padding_;
+      _Where_4_00._Ptr = (_Node *)local_64._Ptr;
+      _Where_4_00._padding_ = local_64._padding_;
       std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var3,&param_1);
+                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4_00,&shard
+                );
     }
   }
   return;
@@ -2433,21 +2436,21 @@ void __thiscall GlassRenderer::SortedShardsList::Insert(SortedShardsList *this,G
 // 0099A990  InsertReverse  (glass/glass_renderer.cpp:763)
 
 void __thiscall
-GlassRenderer::SortedShardsList::InsertReverse(SortedShardsList *this,GlassShard *param_1)
+GlassRenderer::SortedShardsList::InsertReverse(SortedShardsList *this,GlassShard *shard)
 
 {
   _Node *p_Var1;
-  _Const_iterator<1> _Var2;
-  _Const_iterator<1> _Var3;
-  _Const_iterator<1> _Var4;
-  _Const_iterator<1> _Var5;
-  int iVar6;
-  _Node *p_Var7;
-  bool bVar8;
-  GlassShard **ppGVar9;
-  ShardGroup **ppSVar10;
-  float fVar11;
-  float fVar12;
+  _Const_iterator<1> _Where_4;
+  _Const_iterator<1> _Where_4_00;
+  _Const_iterator<1> _Where_4_01;
+  _Const_iterator<1> _Where_4_02;
+  int iVar2;
+  _Node *p_Var3;
+  bool bVar4;
+  GlassShard **ppGVar5;
+  ShardGroup **ppSVar6;
+  float fVar7;
+  float fVar8;
   _Const_iterator<1> local_64;
   int local_5c;
   _Node *local_58;
@@ -2464,7 +2467,7 @@ GlassRenderer::SortedShardsList::InsertReverse(SortedShardsList *this,GlassShard
   _Const_iterator<1> local_1c;
   int local_14;
   _Node *local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> iter;
   
   if (*(int *)&this->field_0x18 == 0) {
     local_38 = *(undefined4 **)&this->field_0x14;
@@ -2474,58 +2477,59 @@ GlassRenderer::SortedShardsList::InsertReverse(SortedShardsList *this,GlassShard
                        (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
     local_2c = local_34._padding_;
     local_28 = (_Node *)local_34._Ptr;
-    _Var2._Ptr = (_Node *)local_34._Ptr;
-    _Var2._padding_ = local_34._padding_;
+    _Where_4._Ptr = (_Node *)local_34._Ptr;
+    _Where_4._padding_ = local_34._padding_;
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var2,&param_1);
+              ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4,&shard);
   }
   else {
-    ppGVar9 = std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::back
+    ppGVar5 = std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::back
                         ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this);
-    local_4c = *ppGVar9;
+    local_4c = *ppGVar5;
     local_50 = GlassShard::Outline::Area(&local_4c->outline);
-    local_54 = param_1;
-    fVar11 = GlassShard::Outline::Area(&param_1->outline);
-    if (local_50 <= fVar11) {
+    local_54 = shard;
+    fVar7 = GlassShard::Outline::Area(&shard->outline);
+    if (local_50 <= fVar7) {
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-      _Const_iterator<1>(&local_c,(_Node *)**(undefined4 **)&this->field_0x14,
+      _Const_iterator<1>(&iter,(_Node *)**(undefined4 **)&this->field_0x14,
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
       while( true ) {
         std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
         _Const_iterator<1>(&local_1c,*(_Node **)&this->field_0x14,
                            (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
-        bVar8 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
-                ::operator!=(&local_c,&local_1c);
-        if (!bVar8) break;
-        ppSVar10 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                   _Const_iterator<1>::operator*(&local_c);
-        fVar11 = GlassShard::Outline::Area((Outline *)(*ppSVar10)->worldBBoxMin);
-        fVar12 = GlassShard::Outline::Area(&param_1->outline);
-        p_Var7 = local_c._Ptr;
-        iVar6 = local_c._padding_;
-        if (fVar11 < fVar12) {
-          local_24 = local_c._padding_;
-          local_20 = (_Node *)local_c._Ptr;
-          _Var4._Ptr = (_Node *)local_c._Ptr;
-          _Var4._padding_ = local_c._padding_;
+        bVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
+                ::operator!=(&iter,&local_1c);
+        if (!bVar4) break;
+        ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
+                  _Const_iterator<1>::operator*(&iter);
+        fVar7 = GlassShard::Outline::Area((Outline *)(*ppSVar6)->worldBBoxMin);
+        fVar8 = GlassShard::Outline::Area(&shard->outline);
+        p_Var3 = iter._Ptr;
+        iVar2 = iter._padding_;
+        if (fVar7 < fVar8) {
+          local_24 = iter._padding_;
+          local_20 = (_Node *)iter._Ptr;
+          _Where_4_01._Ptr = (_Node *)iter._Ptr;
+          _Where_4_01._padding_ = iter._padding_;
           std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-                    ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var4,&param_1
-                    );
+                    ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4_01,
+                     &shard);
           return;
         }
         std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-        operator++(&local_c);
-        local_14 = iVar6;
-        local_10 = (_Node *)p_Var7;
+        operator++(&iter);
+        local_14 = iVar2;
+        local_10 = (_Node *)p_Var3;
       }
       p_Var1 = *(_Node **)&this->field_0x14;
       if (this == (SortedShardsList *)0x0) {
         _invalid_parameter_noinfo();
       }
-      _Var5._Ptr = p_Var1;
-      _Var5._padding_ = *(int *)this;
+      _Where_4_02._Ptr = p_Var1;
+      _Where_4_02._padding_ = *(int *)this;
       std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var5,&param_1);
+                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4_02,&shard
+                );
     }
     else {
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
@@ -2533,10 +2537,11 @@ GlassRenderer::SortedShardsList::InsertReverse(SortedShardsList *this,GlassShard
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)this);
       local_5c = local_64._padding_;
       local_58 = (_Node *)local_64._Ptr;
-      _Var3._Ptr = (_Node *)local_64._Ptr;
-      _Var3._padding_ = local_64._padding_;
+      _Where_4_00._Ptr = (_Node *)local_64._Ptr;
+      _Where_4_00._padding_ = local_64._padding_;
       std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Insert
-                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Var3,&param_1);
+                ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this,_Where_4_00,&shard
+                );
     }
   }
   return;
@@ -2576,22 +2581,22 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::erase
 
 // 0099AC20  AddColidingShard  (glass/glass_renderer.cpp:788)
 
-bool __thiscall GlassRenderer::AddColidingShard(GlassRenderer *this,GlassShard *param_1)
+bool __thiscall GlassRenderer::AddColidingShard(GlassRenderer *this,GlassShard *shard)
 
 {
-  SortedShardsList::Insert(this->colidingShards,param_1);
+  SortedShardsList::Insert(this->colidingShards,shard);
   return 100 < *(uint *)&this->colidingShards->field_0x18;
 }
 
 
 // 0099AC60  RemoveColidingShard  (glass/glass_renderer.cpp:795)
 
-void __thiscall GlassRenderer::RemoveColidingShard(GlassRenderer *this,GlassShard *param_1)
+void __thiscall GlassRenderer::RemoveColidingShard(GlassRenderer *this,GlassShard *shard)
 
 {
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::remove
-            ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this->colidingShards,
-             &param_1);
+            ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this->colidingShards,&shard
+            );
   return;
 }
 
@@ -2612,7 +2617,7 @@ GlassShard * __thiscall GlassRenderer::GetSmallestColidingShard(GlassRenderer *t
 
 // 0099ACB0  IsVisible  (glass/glass_renderer.cpp:805)
 
-bool __thiscall GlassRenderer::IsVisible(GlassRenderer *this,float *param_1,int param_2)
+bool __thiscall GlassRenderer::IsVisible(GlassRenderer *this,float *minmax,int localClientNum)
 
 {
   int iVar1;
@@ -2622,7 +2627,7 @@ bool __thiscall GlassRenderer::IsVisible(GlassRenderer *this,float *param_1,int 
     bVar2 = true;
   }
   else {
-    iVar1 = R_CullBoxCurDpvs_SceneSelect(param_1,param_2,0);
+    iVar1 = R_CullBoxCurDpvs_SceneSelect(minmax,localClientNum,0);
     bVar2 = iVar1 == 0;
   }
   return bVar2;
@@ -2633,7 +2638,7 @@ bool __thiscall GlassRenderer::IsVisible(GlassRenderer *this,float *param_1,int 
 
 void __thiscall
 GlassRenderer::AddShatterAction
-          (GlassRenderer *this,GlassClient *param_1,float *param_2,float *param_3,bool param_4)
+          (GlassRenderer *this,GlassClient *glass,float *hitPos,float *hitDir,bool gameState)
 
 {
   Action *pAVar1;
@@ -2641,14 +2646,14 @@ GlassRenderer::AddShatterAction
   Sys_EnterCriticalSection(CRITSECT_GLASS_ACTIONS);
   pAVar1 = this->actions + (uint)this[1].groupChanges[0x502] % 200;
   pAVar1->type = SHATTER;
-  (pAVar1->field1_0x4).shatter.glass = param_1;
-  *(bool *)((int)&pAVar1->field1_0x4 + 4) = param_4;
-  (pAVar1->field1_0x4).shatter.hitPos[1] = *param_2;
-  (pAVar1->field1_0x4).shatter.hitPos[2] = param_2[1];
-  (pAVar1->field1_0x4).shatter.hitDir[0] = param_2[2];
-  (pAVar1->field1_0x4).shatter.hitDir[1] = *param_3;
-  (pAVar1->field1_0x4).shatter.hitDir[2] = param_3[1];
-  (pAVar1->field1_0x4).melee.right[1] = param_3[2];
+  (pAVar1->field1_0x4).shatter.glass = glass;
+  *(bool *)((int)&pAVar1->field1_0x4 + 4) = gameState;
+  (pAVar1->field1_0x4).shatter.hitPos[1] = *hitPos;
+  (pAVar1->field1_0x4).shatter.hitPos[2] = hitPos[1];
+  (pAVar1->field1_0x4).shatter.hitDir[0] = hitPos[2];
+  (pAVar1->field1_0x4).shatter.hitDir[1] = *hitDir;
+  (pAVar1->field1_0x4).shatter.hitDir[2] = hitDir[1];
+  (pAVar1->field1_0x4).melee.right[1] = hitDir[2];
   LOCK();
   this[1].groupChanges[0x502] = (GlassShard *)((int)&this[1].groupChanges[0x502]->groupNext + 1);
   UNLOCK();
@@ -2665,16 +2670,16 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
 
 {
   _Node *p_Var1;
-  _Node *local_8;
+  _Node *_Pnode_4;
   
-  local_8 = this->_Myhead->_Next;
+  _Pnode_4 = this->_Myhead->_Next;
   this->_Myhead->_Next = this->_Myhead;
   this->_Myhead->_Prev = this->_Myhead;
   this->_Mysize = 0;
-  while (local_8 != this->_Myhead) {
-    p_Var1 = local_8->_Next;
-    SmallAllocator::Free((SmallAllocator *)this->_padding_,local_8,1);
-    local_8 = p_Var1;
+  while (_Pnode_4 != this->_Myhead) {
+    p_Var1 = _Pnode_4->_Next;
+    SmallAllocator::Free((SmallAllocator *)this->_padding_,_Pnode_4,1);
+    _Pnode_4 = p_Var1;
   }
   return;
 }
@@ -2684,7 +2689,8 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
 
 void __thiscall
 GlassRenderer::AddExplosionAction
-          (GlassRenderer *this,float *param_1,float param_2,float param_3,float param_4,int param_5)
+          (GlassRenderer *this,float *origin,float damageInner,float damageOuter,float radius,
+          int mod)
 
 {
   Action *pAVar1;
@@ -2692,13 +2698,13 @@ GlassRenderer::AddExplosionAction
   Sys_EnterCriticalSection(CRITSECT_GLASS_ACTIONS);
   pAVar1 = this->actions + (uint)this[1].groupChanges[0x502] % 200;
   pAVar1->type = EXPLOSION;
-  (pAVar1->field1_0x4).trace.p0[0] = *param_1;
-  (pAVar1->field1_0x4).shatter.hitPos[0] = param_1[1];
-  (pAVar1->field1_0x4).shatter.hitPos[1] = param_1[2];
-  (pAVar1->field1_0x4).shatter.hitPos[2] = param_2;
-  (pAVar1->field1_0x4).shatter.hitDir[0] = param_3;
-  (pAVar1->field1_0x4).shatter.hitDir[1] = param_4;
-  (pAVar1->field1_0x4).explosion.mod = param_5;
+  (pAVar1->field1_0x4).trace.p0[0] = *origin;
+  (pAVar1->field1_0x4).shatter.hitPos[0] = origin[1];
+  (pAVar1->field1_0x4).shatter.hitPos[1] = origin[2];
+  (pAVar1->field1_0x4).shatter.hitPos[2] = damageInner;
+  (pAVar1->field1_0x4).shatter.hitDir[0] = damageOuter;
+  (pAVar1->field1_0x4).shatter.hitDir[1] = radius;
+  (pAVar1->field1_0x4).explosion.mod = mod;
   LOCK();
   this[1].groupChanges[0x502] = (GlassShard *)((int)&this[1].groupChanges[0x502]->groupNext + 1);
   UNLOCK();
@@ -2709,7 +2715,7 @@ GlassRenderer::AddExplosionAction
 
 // 0099AE90  AddTraceAction  (glass/glass_renderer.cpp:841)
 
-void __thiscall GlassRenderer::AddTraceAction(GlassRenderer *this,float *param_1,float *param_2)
+void __thiscall GlassRenderer::AddTraceAction(GlassRenderer *this,float *p0,float *p1)
 
 {
   Action *pAVar1;
@@ -2717,12 +2723,12 @@ void __thiscall GlassRenderer::AddTraceAction(GlassRenderer *this,float *param_1
   Sys_EnterCriticalSection(CRITSECT_GLASS_ACTIONS);
   pAVar1 = this->actions + (uint)this[1].groupChanges[0x502] % 200;
   pAVar1->type = TRACE_POINT;
-  (pAVar1->field1_0x4).trace.p0[0] = *param_1;
-  (pAVar1->field1_0x4).shatter.hitPos[0] = param_1[1];
-  (pAVar1->field1_0x4).shatter.hitPos[1] = param_1[2];
-  (pAVar1->field1_0x4).shatter.hitPos[2] = *param_2;
-  (pAVar1->field1_0x4).shatter.hitDir[0] = param_2[1];
-  (pAVar1->field1_0x4).shatter.hitDir[1] = param_2[2];
+  (pAVar1->field1_0x4).trace.p0[0] = *p0;
+  (pAVar1->field1_0x4).shatter.hitPos[0] = p0[1];
+  (pAVar1->field1_0x4).shatter.hitPos[1] = p0[2];
+  (pAVar1->field1_0x4).shatter.hitPos[2] = *p1;
+  (pAVar1->field1_0x4).shatter.hitDir[0] = p1[1];
+  (pAVar1->field1_0x4).shatter.hitDir[1] = p1[2];
   LOCK();
   this[1].groupChanges[0x502] = (GlassShard *)((int)&this[1].groupChanges[0x502]->groupNext + 1);
   UNLOCK();
@@ -2735,8 +2741,7 @@ void __thiscall GlassRenderer::AddTraceAction(GlassRenderer *this,float *param_1
 
 void __thiscall
 GlassRenderer::AddMeleeAction
-          (GlassRenderer *this,float *param_1,float *param_2,float *param_3,float *param_4,
-          float param_5)
+          (GlassRenderer *this,float *eyePos,float *forward,float *right,float *up,float range)
 
 {
   Action *pAVar1;
@@ -2744,19 +2749,19 @@ GlassRenderer::AddMeleeAction
   Sys_EnterCriticalSection(CRITSECT_GLASS_ACTIONS);
   pAVar1 = this->actions + (uint)this[1].groupChanges[0x502] % 200;
   pAVar1->type = MELEE;
-  (pAVar1->field1_0x4).trace.p0[0] = *param_1;
-  (pAVar1->field1_0x4).shatter.hitPos[0] = param_1[1];
-  (pAVar1->field1_0x4).shatter.hitPos[1] = param_1[2];
-  (pAVar1->field1_0x4).shatter.hitPos[2] = *param_2;
-  (pAVar1->field1_0x4).shatter.hitDir[0] = param_2[1];
-  (pAVar1->field1_0x4).shatter.hitDir[1] = param_2[2];
-  (pAVar1->field1_0x4).shatter.hitDir[2] = *param_3;
-  (pAVar1->field1_0x4).melee.right[1] = param_3[1];
-  (pAVar1->field1_0x4).melee.right[2] = param_3[2];
-  (pAVar1->field1_0x4).melee.up[0] = *param_4;
-  (pAVar1->field1_0x4).melee.up[1] = param_4[1];
-  (pAVar1->field1_0x4).melee.up[2] = param_4[2];
-  (pAVar1->field1_0x4).melee.range = param_5;
+  (pAVar1->field1_0x4).trace.p0[0] = *eyePos;
+  (pAVar1->field1_0x4).shatter.hitPos[0] = eyePos[1];
+  (pAVar1->field1_0x4).shatter.hitPos[1] = eyePos[2];
+  (pAVar1->field1_0x4).shatter.hitPos[2] = *forward;
+  (pAVar1->field1_0x4).shatter.hitDir[0] = forward[1];
+  (pAVar1->field1_0x4).shatter.hitDir[1] = forward[2];
+  (pAVar1->field1_0x4).shatter.hitDir[2] = *right;
+  (pAVar1->field1_0x4).melee.right[1] = right[1];
+  (pAVar1->field1_0x4).melee.right[2] = right[2];
+  (pAVar1->field1_0x4).melee.up[0] = *up;
+  (pAVar1->field1_0x4).melee.up[1] = up[1];
+  (pAVar1->field1_0x4).melee.up[2] = up[2];
+  (pAVar1->field1_0x4).melee.range = range;
   LOCK();
   this[1].groupChanges[0x502] = (GlassShard *)((int)&this[1].groupChanges[0x502]->groupNext + 1);
   UNLOCK();
@@ -2774,6 +2779,7 @@ void __thiscall GlassRenderer::ExecuteActions(GlassRenderer *this)
   code *pcVar2;
   bool bVar3;
   DWORD DVar4;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"GlassRenderer.ExecuteActions");
   do {
@@ -2837,7 +2843,8 @@ void __thiscall GlassRenderer::StartMaintenance(GlassRenderer *this)
 // 0099B230  GetSmallestShards  (glass/glass_renderer.cpp:918)
 
 void __thiscall
-GlassRenderer::GetSmallestShards(GlassRenderer *this,uint param_1,bool param_2,bool param_3)
+GlassRenderer::GetSmallestShards
+          (GlassRenderer *this,uint maxShards,bool checkVisible,bool isVisible)
 
 {
   int iVar1;
@@ -2848,9 +2855,9 @@ GlassRenderer::GetSmallestShards(GlassRenderer *this,uint param_1,bool param_2,b
   _Const_iterator<1> local_24;
   int local_1c;
   _Node *local_18;
-  GlassShard *local_14;
-  ShardGroup *local_10;
-  _Const_iterator<1> local_c;
+  GlassShard *shard;
+  ShardGroup *grp;
+  _Const_iterator<1> g;
   
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this->tempShardsList);
@@ -2866,26 +2873,25 @@ GlassRenderer::GetSmallestShards(GlassRenderer *this,uint param_1,bool param_2,b
     }
     local_24._padding_ = plVar5->_padding_;
     bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_c,&local_24);
+            operator!=(&g,&local_24);
     if (!bVar3) break;
     ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_c);
-    local_10 = *ppSVar4;
-    if ((!param_2) || (local_10->visible == param_3)) {
-      for (local_14 = local_10->head; local_14 != (GlassShard *)0x0; local_14 = local_14->groupNext)
-      {
-        SortedShardsList::Insert(this->tempShardsList,local_14);
-        if (param_1 < *(uint *)&this->tempShardsList->field_0x18) {
+              operator*(&g);
+    grp = *ppSVar4;
+    if ((!checkVisible) || (grp->visible == isVisible)) {
+      for (shard = grp->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+        SortedShardsList::Insert(this->tempShardsList,shard);
+        if (maxShards < *(uint *)&this->tempShardsList->field_0x18) {
           std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::pop_back
                     ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)
                      this->tempShardsList);
         }
       }
     }
-    p_Var2 = local_c._Ptr;
-    iVar1 = local_c._padding_;
+    p_Var2 = g._Ptr;
+    iVar1 = g._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_c);
+              (&g);
     local_1c = iVar1;
     local_18 = p_Var2;
   }
@@ -2897,7 +2903,7 @@ GlassRenderer::GetSmallestShards(GlassRenderer *this,uint param_1,bool param_2,b
 
 void __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::remove
-          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,GlassShard **param_1)
+          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,GlassShard **_Val_arg_4)
 
 {
   _Const_iterator<1> _Var1;
@@ -2907,29 +2913,29 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::remove
   undefined1 local_28 [8];
   _Node *local_20;
   _Node *local_1c;
-  _Const_iterator<1> local_18;
-  GlassShard *local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> _First_4;
+  GlassShard *_Val_4;
+  _Const_iterator<1> _Last_4;
   
-  local_10 = *param_1;
+  _Val_4 = *_Val_arg_4;
   end(this);
   begin(this);
   while (bVar2 = list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-                 operator!=(&local_18,&local_c), bVar2) {
+                 operator!=(&_First_4,&_Last_4), bVar2) {
     ppSVar3 = list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_18);
-    if ((GlassShard *)*ppSVar3 == local_10) {
-      local_20 = (_Node *)local_18._padding_;
-      local_1c = local_18._Ptr;
-      _Var1._Ptr = (_Node *)local_18._padding_;
+              operator*(&_First_4);
+    if ((GlassShard *)*ppSVar3 == _Val_4) {
+      local_20 = (_Node *)_First_4._padding_;
+      local_1c = _First_4._Ptr;
+      _Var1._Ptr = (_Node *)_First_4._padding_;
       _Var1._padding_ = (int)local_28;
       _Var4 = erase(this,_Var1);
-      local_18._padding_ = *_Var4._0_4_;
-      local_18._Ptr = (_Node *)_Var4._0_4_[1];
+      _First_4._padding_ = *_Var4._0_4_;
+      _First_4._Ptr = (_Node *)_Var4._0_4_[1];
     }
     else {
       list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-                (&local_18);
+                (&_First_4);
     }
   }
   return;
@@ -2939,7 +2945,7 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::remove
 // 0099B380  GetLargestShards  (glass/glass_renderer.cpp:939)
 
 void __thiscall
-GlassRenderer::GetLargestShards(GlassRenderer *this,uint param_1,bool param_2,bool param_3)
+GlassRenderer::GetLargestShards(GlassRenderer *this,uint maxShards,bool checkVisible,bool isVisible)
 
 {
   int iVar1;
@@ -2950,9 +2956,9 @@ GlassRenderer::GetLargestShards(GlassRenderer *this,uint param_1,bool param_2,bo
   _Const_iterator<1> local_24;
   int local_1c;
   _Node *local_18;
-  GlassShard *local_14;
-  ShardGroup *local_10;
-  _Const_iterator<1> local_c;
+  GlassShard *shard;
+  ShardGroup *grp;
+  _Const_iterator<1> g;
   
   std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
             ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this->tempShardsList);
@@ -2968,26 +2974,25 @@ GlassRenderer::GetLargestShards(GlassRenderer *this,uint param_1,bool param_2,bo
     }
     local_24._padding_ = plVar5->_padding_;
     bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-            operator!=(&local_c,&local_24);
+            operator!=(&g,&local_24);
     if (!bVar3) break;
     ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator*(&local_c);
-    local_10 = *ppSVar4;
-    if ((!param_2) || (local_10->visible == param_3)) {
-      for (local_14 = local_10->head; local_14 != (GlassShard *)0x0; local_14 = local_14->groupNext)
-      {
-        SortedShardsList::InsertReverse(this->tempShardsList,local_14);
-        if (param_1 < *(uint *)&this->tempShardsList->field_0x18) {
+              operator*(&g);
+    grp = *ppSVar4;
+    if ((!checkVisible) || (grp->visible == isVisible)) {
+      for (shard = grp->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+        SortedShardsList::InsertReverse(this->tempShardsList,shard);
+        if (maxShards < *(uint *)&this->tempShardsList->field_0x18) {
           std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::pop_back
                     ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)
                      this->tempShardsList);
         }
       }
     }
-    p_Var2 = local_c._Ptr;
-    iVar1 = local_c._padding_;
+    p_Var2 = g._Ptr;
+    iVar1 = g._padding_;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::operator++
-              (&local_c);
+              (&g);
     local_1c = iVar1;
     local_18 = p_Var2;
   }
@@ -2997,21 +3002,21 @@ GlassRenderer::GetLargestShards(GlassRenderer *this,uint param_1,bool param_2,bo
 
 // 0099B4D0  AddUsedShardMaterial  (glass/glass_renderer.cpp:960)
 
-void __thiscall GlassRenderer::AddUsedShardMaterial(GlassRenderer *this,Material *param_1)
+void __thiscall GlassRenderer::AddUsedShardMaterial(GlassRenderer *this,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < this->numUsedMaterials; local_8 = local_8 + 1) {
-    if (this->usedMaterials[local_8] == param_1) {
+  for (i = 0; i < this->numUsedMaterials; i = i + 1) {
+    if (this->usedMaterials[i] == material) {
       return;
     }
   }
   if (this->numUsedMaterials < 0x20) {
-    R_StreamTouchMaterial(param_1);
-    this->usedMaterials[this->numUsedMaterials] = param_1;
+    R_StreamTouchMaterial(material);
+    this->usedMaterials[this->numUsedMaterials] = material;
     this->numUsedMaterials = this->numUsedMaterials + 1;
   }
   else {
@@ -3046,10 +3051,14 @@ void __thiscall GlassRenderer::DoMaintenance(GlassRenderer *this)
   _Const_iterator<1> local_3c;
   int local_34;
   _Node *local_30;
-  _Const_iterator<1> local_28;
-  int local_20;
-  _Const_iterator<1> local_18;
-  uint local_c;
+  PIXProfile pp_4;
+  _Const_iterator<1> shard_2;
+  int targetFree;
+  PIXProfile pp_3;
+  _Const_iterator<1> shard;
+  PIXProfile pp_2;
+  uint numToFree;
+  PIXProfile pp;
   
   Sys_WaitInterlockedCompareExchange(&(this->rendererLock).lock,1,0);
   PIXBeginNamedEvent(-1,"GlassRenderer.DoMaintenance");
@@ -3070,13 +3079,12 @@ void __thiscall GlassRenderer::DoMaintenance(GlassRenderer *this)
       if ((float)iVar7 / (float)((int)pMVar1 + (0x10 - (int)&pMVar2->prevFree)) < 0.100000024) {
         PIXBeginNamedEvent(-1,"Too much shard memory");
         GetSmallestShards(this,0x32,true,false);
-        local_20 = (int)((float)((int)(this->shardMemoryAllocator).tail +
-                                (0x10 - (int)&((this->shardMemoryAllocator).head)->prevFree)) *
-                        0.100000024);
+        targetFree = (int)((float)((int)(this->shardMemoryAllocator).tail +
+                                  (0x10 - (int)&((this->shardMemoryAllocator).head)->prevFree)) *
+                          0.100000024);
         std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-        _Const_iterator<1>(&local_28,
-                           ((list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
-                           this->tempShardsList)->_Myhead->_Next,
+        _Const_iterator<1>(&shard_2,((list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
+                                    this->tempShardsList)->_Myhead->_Next,
                            (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                            this->tempShardsList);
         while( true ) {
@@ -3087,16 +3095,16 @@ void __thiscall GlassRenderer::DoMaintenance(GlassRenderer *this)
                              (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                              this->tempShardsList);
           bVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator!=(&local_28,&local_4c);
+                  _Const_iterator<1>::operator!=(&shard_2,&local_4c);
           if ((!bVar4) ||
-             (iVar7 = Allocator::GetFree(&this->shardMemoryAllocator), local_20 <= iVar7)) break;
+             (iVar7 = Allocator::GetFree(&this->shardMemoryAllocator), targetFree <= iVar7)) break;
           ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                    _Const_iterator<1>::operator*(&local_28);
+                    _Const_iterator<1>::operator*(&shard_2);
           GlassShard::Remove((GlassShard *)*ppSVar6,REMOVE_OUT_OF_SHARD_MEMORY,true);
-          p_Var3 = local_28._Ptr;
-          iVar7 = local_28._padding_;
+          p_Var3 = shard_2._Ptr;
+          iVar7 = shard_2._padding_;
           std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-          operator++(&local_28);
+          operator++(&shard_2);
           local_44 = iVar7;
           local_40 = p_Var3;
         }
@@ -3114,12 +3122,10 @@ void __thiscall GlassRenderer::DoMaintenance(GlassRenderer *this)
       local_13c = (int)(longlong)
                        ROUND((float)((this->shardsAllocator->used)._Mysize +
                                     (this->shardsAllocator->free)._Mysize) * 0.9 - 5.0);
-      local_c = (this->shardsAllocator->used)._Mysize - local_13c;
-      GetSmallestShards(this,local_c,true,false);
+      GetSmallestShards(this,(this->shardsAllocator->used)._Mysize - local_13c,true,false);
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-      _Const_iterator<1>(&local_18,
-                         ((list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
-                         this->tempShardsList)->_Myhead->_Next,
+      _Const_iterator<1>(&shard,((list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
+                                this->tempShardsList)->_Myhead->_Next,
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                          this->tempShardsList);
       while( true ) {
@@ -3130,15 +3136,15 @@ void __thiscall GlassRenderer::DoMaintenance(GlassRenderer *this)
                            (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                            this->tempShardsList);
         bVar4 = std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Const_iterator<1>::
-                operator==((_Const_iterator<1> *)&local_18,(_Const_iterator<1> *)&local_3c);
+                operator==((_Const_iterator<1> *)&shard,(_Const_iterator<1> *)&local_3c);
         if (bVar4) break;
         ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_18);
+                  _Const_iterator<1>::operator*(&shard);
         GlassShard::Remove((GlassShard *)*ppSVar6,REMOVE_OUT_OF_SHARDS,true);
-        p_Var3 = local_18._Ptr;
-        iVar7 = local_18._padding_;
+        p_Var3 = shard._Ptr;
+        iVar7 = shard._padding_;
         std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-        operator++(&local_18);
+        operator++(&shard);
         local_34 = iVar7;
         local_30 = (_Node *)p_Var3;
       }
@@ -3182,7 +3188,7 @@ void __thiscall GlassRenderer::StartCrashGlass(GlassRenderer *this)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   int local_20;
   
   iVar1 = Cmd_Argc();
@@ -3190,8 +3196,8 @@ void __thiscall GlassRenderer::StartCrashGlass(GlassRenderer *this)
     this->maxCrashShards = 0;
   }
   else {
-    pcVar2 = Cmd_Argv(1);
-    local_20 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    local_20 = atoi(nptr);
     if (100 < local_20) {
       local_20 = 100;
     }
@@ -3217,24 +3223,24 @@ void __thiscall GlassRenderer::CrashGlass(GlassRenderer *this)
   _Const_iterator<1> local_40;
   int local_38;
   _Node *local_34;
-  float local_30;
+  float delta;
   float local_2c;
   float local_28;
-  float local_24;
+  float p1;
   float local_20;
   float local_1c;
-  float local_18;
+  float p2;
   float local_14;
   float local_10;
-  _Const_iterator<1> local_c;
+  _Const_iterator<1> shard;
   
   if (0 < this->maxCrashShards) {
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::clear
               ((list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *)this->tempShardsList);
     GetLargestShards(this,this->maxCrashShards,false,false);
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-    _Const_iterator<1>(&local_c,((list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
-                                this->tempShardsList)->_Myhead->_Next,
+    _Const_iterator<1>(&shard,((list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
+                              this->tempShardsList)->_Myhead->_Next,
                        (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                        this->tempShardsList);
     while( true ) {
@@ -3245,40 +3251,40 @@ void __thiscall GlassRenderer::CrashGlass(GlassRenderer *this)
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                          this->tempShardsList);
       bVar5 = std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Const_iterator<1>::
-              operator==((_Const_iterator<1> *)&local_c,(_Const_iterator<1> *)&local_40);
+              operator==((_Const_iterator<1> *)&shard,(_Const_iterator<1> *)&local_40);
       if (bVar5) break;
       ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
-                ::operator*(&local_c);
+                ::operator*(&shard);
       bVar5 = GlassShard::CanSplit((GlassShard *)*ppSVar6,false);
       if (bVar5) {
         ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_c);
+                  _Const_iterator<1>::operator*(&shard);
         ppSVar7 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_c);
+                  _Const_iterator<1>::operator*(&shard);
         pSVar1 = *ppSVar7;
         fVar8 = flrand(-1.0,1.0);
         pSVar2 = *ppSVar6;
-        local_30 = (float)(pSVar1->lightingInfo).lightingHandle * 10.0 + fVar8 * pSVar2->extent[1];
+        delta = (float)(pSVar1->lightingInfo).lightingHandle * 10.0 + fVar8 * pSVar2->extent[1];
         local_2c = (float)pSVar1->renderIndices * 10.0 + fVar8 * pSVar2->extent[2];
         local_28 = (float)pSVar1[1].packedPos * 10.0 + fVar8 * *(float *)&pSVar2->invalidBBox;
         ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_c);
+                  _Const_iterator<1>::operator*(&shard);
         pSVar1 = *ppSVar6;
-        local_24 = (float)pSVar1[1].glassDef + local_30;
+        p1 = (float)pSVar1[1].glassDef + delta;
         local_20 = (float)pSVar1[1].head + local_2c;
         local_1c = pSVar1[1].worldBBoxMin[0] + local_28;
         ppSVar6 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_c);
+                  _Const_iterator<1>::operator*(&shard);
         pSVar1 = *ppSVar6;
-        local_18 = (float)pSVar1[1].glassDef - local_30;
+        p2 = (float)pSVar1[1].glassDef - delta;
         local_14 = (float)pSVar1[1].head - local_2c;
         local_10 = pSVar1[1].worldBBoxMin[0] - local_28;
-        AddTraceAction(this,&local_24,&local_18);
+        AddTraceAction(this,&p1,&p2);
       }
-      p_Var4 = local_c._Ptr;
-      iVar3 = local_c._padding_;
+      p_Var4 = shard._Ptr;
+      iVar3 = shard._padding_;
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-      operator++(&local_c);
+      operator++(&shard);
       local_38 = iVar3;
       local_34 = (_Node *)p_Var4;
     }
@@ -3336,38 +3342,38 @@ void __thiscall GlassRenderer::Broom(GlassRenderer *this)
   _Const_iterator<1> local_5c;
   int local_54;
   _Node *local_50;
-  float local_4c;
+  float d3;
   float local_48;
   float local_44;
-  float local_40;
+  float d2;
   float local_3c;
-  float local_38;
+  float pos;
   float local_34;
-  GlassShard *local_30;
-  _Const_iterator<1> local_2c;
-  float local_24;
+  GlassShard *shrd;
+  _Const_iterator<1> shard;
+  float dir;
   float local_20;
-  float local_1c;
+  float origin;
   float local_18;
-  cg_s *local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  cg_s *cgameGlob;
+  float DISTANCE;
+  float FORCE_SCALE;
+  float RADIUS;
   
   if ((this->broom->current).enabled != false) {
-    local_10 = 150.0;
-    local_8 = 120.0;
-    local_c = 0.05;
-    local_14 = CG_GetLocalClientGlobals(0);
-    local_1c = (local_14->refdef).vieworg[0];
-    local_18 = (local_14->refdef).vieworg[1];
-    local_24 = (local_14->refdef).viewaxis[2][0];
-    local_20 = (local_14->refdef).viewaxis[2][1];
-    Vec2Normalize(&local_24);
-    local_1c = local_10 * local_24 + local_1c;
-    local_18 = local_10 * local_20 + local_18;
+    DISTANCE = 150.0;
+    RADIUS = 120.0;
+    FORCE_SCALE = 0.05;
+    cgameGlob = CG_GetLocalClientGlobals(0);
+    origin = (cgameGlob->refdef).vieworg[0];
+    local_18 = (cgameGlob->refdef).vieworg[1];
+    dir = (cgameGlob->refdef).viewaxis[2][0];
+    local_20 = (cgameGlob->refdef).viewaxis[2][1];
+    Vec2Normalize(&dir);
+    origin = DISTANCE * dir + origin;
+    local_18 = DISTANCE * local_20 + local_18;
     std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-    _Const_iterator<1>(&local_2c,(_Node *)((this->shardsAllocator->used)._Myhead)->_Next,
+    _Const_iterator<1>(&shard,(_Node *)((this->shardsAllocator->used)._Myhead)->_Next,
                        (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                        &this->shardsAllocator->used);
     while( true ) {
@@ -3376,31 +3382,31 @@ void __thiscall GlassRenderer::Broom(GlassRenderer *this)
                          (list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *)
                          &this->shardsAllocator->used);
       bVar3 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator!=(&local_2c,&local_5c);
+              operator!=(&shard,&local_5c);
       if (!bVar3) break;
       ppSVar4 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
-                ::operator*(&local_2c);
-      local_30 = (GlassShard *)*ppSVar4;
-      if (local_30->group != (ShardGroup *)0x0) {
-        local_38 = local_30->origin[0];
-        local_34 = local_30->origin[1];
-        if ((local_38 - local_1c) * (local_38 - local_1c) +
-            (local_34 - local_18) * (local_34 - local_18) < local_8 * local_8) {
-          local_40 = local_1c - local_38;
+                ::operator*(&shard);
+      shrd = (GlassShard *)*ppSVar4;
+      if (shrd->group != (ShardGroup *)0x0) {
+        pos = shrd->origin[0];
+        local_34 = shrd->origin[1];
+        if ((pos - origin) * (pos - origin) + (local_34 - local_18) * (local_34 - local_18) <
+            RADIUS * RADIUS) {
+          d2 = origin - pos;
           local_3c = local_18 - local_34;
-          Vec2Normalize(&local_40);
-          if (0.0 < local_24 * local_40 + local_20 * local_3c) {
-            local_4c = local_c * local_40;
-            local_48 = local_c * local_3c;
-            local_44 = local_c * 0.0;
-            GlassShard::InitPhysics(local_30,true,local_30->origin,&local_4c,0.0,0.0);
+          Vec2Normalize(&d2);
+          if (0.0 < dir * d2 + local_20 * local_3c) {
+            d3 = FORCE_SCALE * d2;
+            local_48 = FORCE_SCALE * local_3c;
+            local_44 = FORCE_SCALE * 0.0;
+            GlassShard::InitPhysics(shrd,true,shrd->origin,&d3,0.0,0.0);
           }
         }
       }
-      p_Var2 = local_2c._Ptr;
-      iVar1 = local_2c._padding_;
+      p_Var2 = shard._Ptr;
+      iVar1 = shard._padding_;
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-      operator++(&local_2c);
+      operator++(&shard);
       local_54 = iVar1;
       local_50 = p_Var2;
     }
@@ -3418,6 +3424,7 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Buynode
 {
   void *pvVar1;
   _Node *p_Var2;
+  int _Linkcnt_4;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -3445,12 +3452,13 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Buynode
 
 _Node * __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Buynode
-          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,_Node *param_1,
-          _Node *param_2,GlassShard **param_3)
+          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,_Node *_Next_4,
+          _Node *_Prev_4,GlassShard **_Val_4)
 
 {
   undefined4 *puVar1;
   _Node *p_Var2;
+  int _Linkcnt_4;
   void *local_10;
   undefined1 *puStack_c;
   undefined4 local_8;
@@ -3464,13 +3472,13 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Buynode
   puVar1 = SmallAllocator::Allocate((SmallAllocator *)this->_padding_,0xc);
   local_8 = 0;
   if (puVar1 != (undefined4 *)0x0) {
-    *puVar1 = param_1;
+    *puVar1 = _Next_4;
   }
   if (puVar1 + 1 != (undefined4 *)0x0) {
-    puVar1[1] = param_2;
+    puVar1[1] = _Prev_4;
   }
   if (puVar1 + 2 != (undefined4 *)0x0) {
-    puVar1[2] = *param_3;
+    puVar1[2] = *_Val_4;
   }
   p_Var2 = (_Node *)FUN_0099e5f8();
   return p_Var2;
@@ -3491,52 +3499,52 @@ void __thiscall GlassRenderer::DrawDebug(GlassRenderer *this)
   list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_> *plVar7;
   float *pfVar8;
   float fVar9;
-  float *pfVar10;
-  undefined8 uVar11;
-  int iVar12;
+  float *color;
+  undefined8 uVar10;
+  int duration;
   _Const_iterator<1> local_2c;
   int local_24;
   _Node *local_20;
-  uint local_1c;
-  _Const_iterator<1> local_18;
-  undefined4 local_10;
-  float local_c;
-  float local_8;
+  uint i;
+  _Const_iterator<1> grp;
+  float idx2vtx;
+  float x;
+  float y;
   
   if ((this->drawDebug != (dvar_s *)0x0) && ((this->drawDebug->current).enabled != false)) {
-    local_c = 0.0;
-    local_8 = 0.0;
-    local_10 = 0;
+    x = 0.0;
+    y = 0.0;
+    idx2vtx = 0.0;
     pcVar3 = va("glasses:%d shards:%d(free:%d) moving:%d(%d) vis:%d idx/vtx=%.1f");
-    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_c,local_8,0.75,0.75,pcVar3,
-                             colorWhite,5,cgMedia.smallDevFont);
-    local_8 = (float)iVar4 + local_8;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,0.75,0.75,pcVar3,colorWhite,5,
+                             cgMedia.smallDevFont);
+    y = (float)iVar4 + y;
     if ((this->shardsAllocator->used)._Mysize != 0) {
       Allocator::GetFree(&this->shardMemoryAllocator);
     }
     pcVar3 = va("Shard: bytes:%d shatter:%.2fms triang=%.1f%% split=%.1fus genV=%.1fns");
-    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_c,local_8,0.75,0.75,pcVar3,
-                             colorWhite,5,cgMedia.smallDevFont);
-    local_8 = (float)iVar4 + local_8;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,0.75,0.75,pcVar3,colorWhite,5,
+                             cgMedia.smallDevFont);
+    y = (float)iVar4 + y;
     pcVar3 = va("ShardRemoves: bottom:%d shards:%d shardMem:%d vtx:%d phys:%d init:%d");
-    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_c,local_8,0.75,0.75,pcVar3,
-                             colorWhite,5,cgMedia.smallDevFont);
-    local_8 = (float)iVar4 + local_8;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,0.75,0.75,pcVar3,colorWhite,5,
+                             cgMedia.smallDevFont);
+    y = (float)iVar4 + y;
     pcVar3 = va("ShardGroups: num:%d (free:%d) vis:%d oom:%d maxChng:%d");
-    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_c,local_8,0.75,0.75,pcVar3,
-                             colorWhite,5,cgMedia.smallDevFont);
-    local_8 = (float)iVar4 + local_8;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,0.75,0.75,pcVar3,colorWhite,5,
+                             cgMedia.smallDevFont);
+    y = (float)iVar4 + y;
     pcVar3 = va("Allocator: used:%d(%d) free:%d");
-    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_c,local_8,0.75,0.75,pcVar3,
-                             colorWhite,5,cgMedia.smallDevFont);
-    local_8 = (float)iVar4 + local_8;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,0.75,0.75,pcVar3,colorWhite,5,
+                             cgMedia.smallDevFont);
+    y = (float)iVar4 + y;
     Allocator::GetLargestFree(&this->shardMemoryAllocator);
     Allocator::GetFree(&this->shardMemoryAllocator);
     Allocator::GetFree(&this->shardMemoryAllocator);
     pcVar3 = va("shards:  sz:%d free:%d(%.0f%%) largest:%d min:%d(%.0f%%)");
-    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_c,local_8,0.75,0.75,pcVar3,
-                             colorWhite,5,cgMedia.smallDevFont);
-    local_8 = (float)iVar4 + local_8;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,0.75,0.75,pcVar3,colorWhite,5,
+                             cgMedia.smallDevFont);
+    y = (float)iVar4 + y;
   }
   if ((this->drawBBox != (dvar_s *)0x0) && ((this->drawBBox->current).enabled != false)) {
     std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::begin
@@ -3551,38 +3559,38 @@ void __thiscall GlassRenderer::DrawDebug(GlassRenderer *this)
       }
       local_2c._padding_ = plVar7->_padding_;
       bVar2 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-              operator!=(&local_18,&local_2c);
+              operator!=(&grp,&local_2c);
       if (!bVar2) break;
       ppSVar5 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>
-                ::operator*(&local_18);
+                ::operator*(&grp);
       if ((*ppSVar5)->visible != false) {
         iVar4 = 1;
-        uVar11 = 0x100d0bcd4;
+        uVar10 = 0x100d0bcd4;
         fVar9 = 0.0;
         ppSVar5 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_18);
+                  _Const_iterator<1>::operator*(&grp);
         pfVar8 = (*ppSVar5)->worldBBoxMax;
         ppSVar5 = std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::
-                  _Const_iterator<1>::operator*(&local_18);
-        CL_AddDebugBox(vec3_origin,(*ppSVar5)->worldBBoxMin,pfVar8,fVar9,(float *)uVar11,
-                       (int)((ulonglong)uVar11 >> 0x20),iVar4);
+                  _Const_iterator<1>::operator*(&grp);
+        CL_AddDebugBox(vec3_origin,(*ppSVar5)->worldBBoxMin,pfVar8,fVar9,(float *)uVar10,
+                       (int)((ulonglong)uVar10 >> 0x20),iVar4);
       }
-      p_Var1 = local_18._Ptr;
-      iVar4 = local_18._padding_;
+      p_Var1 = grp._Ptr;
+      iVar4 = grp._padding_;
       std::list<ShardGroup_*,SmallAllocatorTemplate<ShardGroup_*_*>_>::_Const_iterator<1>::
-      operator++(&local_18);
+      operator++(&grp);
       local_24 = iVar4;
       local_20 = p_Var1;
     }
-    for (local_1c = 0; local_1c < clGlasses->numGlasses; local_1c = local_1c + 1) {
-      iVar12 = 1;
+    for (i = 0; i < clGlasses->numGlasses; i = i + 1) {
+      duration = 1;
       iVar4 = 1;
-      pfVar10 = colorBlue;
+      color = colorBlue;
       fVar9 = 0.0;
-      pGVar6 = GlassesClient::GetGlass(clGlasses,local_1c);
+      pGVar6 = GlassesClient::GetGlass(clGlasses,i);
       pfVar8 = pGVar6->glass->absmax;
-      pGVar6 = GlassesClient::GetGlass(clGlasses,local_1c);
-      CL_AddDebugBox(vec3_origin,pGVar6->glass->absmin,pfVar8,fVar9,pfVar10,iVar4,iVar12);
+      pGVar6 = GlassesClient::GetGlass(clGlasses,i);
+      CL_AddDebugBox(vec3_origin,pGVar6->glass->absmin,pfVar8,fVar9,color,iVar4,duration);
     }
   }
   return;
@@ -3593,7 +3601,7 @@ void __thiscall GlassRenderer::DrawDebug(GlassRenderer *this)
 
 void __thiscall
 std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Incsize
-          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,uint param_1)
+          (list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_> *this,uint _Count_4)
 
 {
   char *pcVar1;
@@ -3603,7 +3611,7 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Incsize
   basic_string<char,std::char_traits<char>,std::allocator<char>_> local_48;
   logic_error local_2c;
   
-  if (-this->_Mysize - 1 < param_1) {
+  if (-this->_Mysize - 1 < _Count_4) {
     local_50 = &local_51;
     basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Tidy(&local_48,false,0);
     local_a0 = "list<T> too long";
@@ -3619,18 +3627,18 @@ std::list<GlassShard_*,SmallAllocatorTemplate<GlassShard_*>_>::_Incsize
                     /* WARNING: Subroutine does not return */
     _CxxThrowException(&local_2c,(_s__ThrowInfo *)&__TI3_AVlength_error_std__);
   }
-  this->_Mysize = this->_Mysize + param_1;
+  this->_Mysize = this->_Mysize + _Count_4;
   return;
 }
 
 
 // 0099D090  Init  (glass/glass_renderer.cpp:1423)
 
-void __thiscall ShardGroup::Init(ShardGroup *this,uint param_1,GlassDef *param_2)
+void __thiscall ShardGroup::Init(ShardGroup *this,uint p,GlassDef *gd)
 
 {
-  this->packedPos = param_1;
-  this->glassDef = param_2;
+  this->packedPos = p;
+  this->glassDef = gd;
   this->head = (GlassShard *)0x0;
   this->lightingHandle = 0;
   this->invalidBBox = true;
@@ -3646,17 +3654,17 @@ void __thiscall ShardGroup::Reset(ShardGroup *this)
 
 {
   bool bVar1;
-  GlassShard *local_8;
+  GlassShard *shard;
   
-  for (local_8 = this->head; local_8 != (GlassShard *)0x0; local_8 = local_8->groupNext) {
-    if ((local_8->physObjId == 0) && (local_8->glassPhysics == (GlassPhysics *)0x0)) {
+  for (shard = this->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+    if ((shard->physObjId == 0) && (shard->glassPhysics == (GlassPhysics *)0x0)) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
     if (bVar1) {
-      GlassShard::DestroyPhysicsObj(local_8);
+      GlassShard::DestroyPhysicsObj(shard);
     }
   }
   this->head = (GlassShard *)0x0;
@@ -3666,13 +3674,13 @@ void __thiscall ShardGroup::Reset(ShardGroup *this)
 
 // 0099D150  Add  (glass/glass_renderer.cpp:1459)
 
-void __thiscall ShardGroup::Add(ShardGroup *this,GlassShard *param_1)
+void __thiscall ShardGroup::Add(ShardGroup *this,GlassShard *shard)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->group != (ShardGroup *)0x0) {
+  if (shard->group != (ShardGroup *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x5b4,0,
                              "%s");
     if (!bVar2) {
@@ -3682,9 +3690,9 @@ void __thiscall ShardGroup::Add(ShardGroup *this,GlassShard *param_1)
     }
   }
   this->invalidBBox = true;
-  param_1->group = this;
-  param_1->groupNext = this->head;
-  this->head = param_1;
+  shard->group = this;
+  shard->groupNext = this->head;
+  this->head = shard;
   this->numShards = this->numShards + 1;
   return;
 }
@@ -3692,14 +3700,14 @@ void __thiscall ShardGroup::Add(ShardGroup *this,GlassShard *param_1)
 
 // 0099D1D0  Remove  (glass/glass_renderer.cpp:1470)
 
-void __thiscall ShardGroup::Remove(ShardGroup *this,GlassShard *param_1)
+void __thiscall ShardGroup::Remove(ShardGroup *this,GlassShard *shard)
 
 {
   code *pcVar1;
   bool bVar2;
-  GlassShard *local_8;
+  GlassShard *s;
   
-  if (param_1->group != this) {
+  if (shard->group != this) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x5bf,0,
                              "%s");
     if (!bVar2) {
@@ -3710,22 +3718,22 @@ void __thiscall ShardGroup::Remove(ShardGroup *this,GlassShard *param_1)
   }
   this->numShards = this->numShards + -1;
   this->invalidBBox = true;
-  if (this->head == param_1) {
-    this->head = param_1->groupNext;
-    param_1->group = (ShardGroup *)0x0;
-    param_1->groupNext = (GlassShard *)0x0;
+  if (this->head == shard) {
+    this->head = shard->groupNext;
+    shard->group = (ShardGroup *)0x0;
+    shard->groupNext = (GlassShard *)0x0;
   }
   else {
-    for (local_8 = this->head; local_8 != (GlassShard *)0x0; local_8 = local_8->groupNext) {
-      if (local_8->groupNext == param_1) {
-        local_8->groupNext = param_1->groupNext;
-        param_1->group = (ShardGroup *)0x0;
-        param_1->groupNext = (GlassShard *)0x0;
+    for (s = this->head; s != (GlassShard *)0x0; s = s->groupNext) {
+      if (s->groupNext == shard) {
+        s->groupNext = shard->groupNext;
+        shard->group = (ShardGroup *)0x0;
+        shard->groupNext = (GlassShard *)0x0;
         break;
       }
     }
   }
-  if (param_1->group != (ShardGroup *)0x0) {
+  if (shard->group != (ShardGroup *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",0x5d7,0,
                              "%s");
     if (!bVar2) {
@@ -3753,14 +3761,14 @@ void __thiscall ShardGroup::Remove(ShardGroup *this,GlassShard *param_1)
 
 // 0099D340  RemoveGlassShards  (glass/glass_renderer.cpp:1506)
 
-void __thiscall ShardGroup::RemoveGlassShards(ShardGroup *this,uint param_1)
+void __thiscall ShardGroup::RemoveGlassShards(ShardGroup *this,uint glassIndex)
 
 {
-  GlassShard *local_8;
+  GlassShard *shard;
   
-  for (local_8 = this->head; local_8 != (GlassShard *)0x0; local_8 = local_8->groupNext) {
-    if (local_8->glassIndex == param_1) {
-      GlassShard::Remove(local_8,REMOVE_ROLLBACK_TIME,true);
+  for (shard = this->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+    if (shard->glassIndex == glassIndex) {
+      GlassShard::Remove(shard,REMOVE_ROLLBACK_TIME,true);
     }
   }
   return;
@@ -3774,7 +3782,8 @@ void __thiscall ShardGroup::UpdateBBox(ShardGroup *this)
 {
   GlassShard *pGVar1;
   bool bVar2;
-  GlassShard *local_c;
+  GlassShard *s;
+  bool foundPhysical;
   
   if (this->head != (GlassShard *)0x0) {
     pGVar1 = this->head;
@@ -3786,26 +3795,25 @@ void __thiscall ShardGroup::UpdateBBox(ShardGroup *this)
     this->worldBBoxMax[1] = pGVar1->worldBBoxMax[1];
     this->worldBBoxMax[2] = pGVar1->worldBBoxMax[2];
     bVar2 = this->head->glassPhysics == (GlassPhysics *)0x0;
-    for (local_c = this->head->groupNext; local_c != (GlassShard *)0x0; local_c = local_c->groupNext
-        ) {
-      if (local_c->glassPhysics == (GlassPhysics *)0x0) {
+    for (s = this->head->groupNext; s != (GlassShard *)0x0; s = s->groupNext) {
+      if (s->glassPhysics == (GlassPhysics *)0x0) {
         if (bVar2) {
-          Vec3Min(this->worldBBoxMin,local_c->worldBBoxMin,this->worldBBoxMin);
-          Vec3Max(this->worldBBoxMax,local_c->worldBBoxMax,this->worldBBoxMax);
+          Vec3Min(this->worldBBoxMin,s->worldBBoxMin,this->worldBBoxMin);
+          Vec3Max(this->worldBBoxMax,s->worldBBoxMax,this->worldBBoxMax);
         }
         else {
-          this->worldBBoxMin[0] = local_c->worldBBoxMin[0];
-          this->worldBBoxMin[1] = local_c->worldBBoxMin[1];
-          this->worldBBoxMin[2] = local_c->worldBBoxMin[2];
-          this->worldBBoxMax[0] = local_c->worldBBoxMax[0];
-          this->worldBBoxMax[1] = local_c->worldBBoxMax[1];
-          this->worldBBoxMax[2] = local_c->worldBBoxMax[2];
+          this->worldBBoxMin[0] = s->worldBBoxMin[0];
+          this->worldBBoxMin[1] = s->worldBBoxMin[1];
+          this->worldBBoxMin[2] = s->worldBBoxMin[2];
+          this->worldBBoxMax[0] = s->worldBBoxMax[0];
+          this->worldBBoxMax[1] = s->worldBBoxMax[1];
+          this->worldBBoxMax[2] = s->worldBBoxMax[2];
           bVar2 = true;
         }
       }
       else if (!bVar2) {
-        Vec3Min(this->worldBBoxMin,local_c->worldBBoxMin,this->worldBBoxMin);
-        Vec3Max(this->worldBBoxMax,local_c->worldBBoxMax,this->worldBBoxMax);
+        Vec3Min(this->worldBBoxMin,s->worldBBoxMin,this->worldBBoxMin);
+        Vec3Max(this->worldBBoxMax,s->worldBBoxMax,this->worldBBoxMax);
       }
     }
     this->origin[0] = (this->worldBBoxMin[0] + this->worldBBoxMax[0]) * 0.5;
@@ -3825,27 +3833,27 @@ void __thiscall ShardGroup::UpdateBBox(ShardGroup *this)
 
 // 0099D690  Update  (glass/glass_renderer.cpp:1556)
 
-void __thiscall ShardGroup::Update(ShardGroup *this,float param_1)
+void __thiscall ShardGroup::Update(ShardGroup *this,float deltaTime)
 
 {
   bool bVar1;
   <unnamed_type_stat> *p<Var2;
-  GlassShard *local_8;
+  GlassShard *shard;
   
   if (this->visible == false) {
     FreeRenderMemory(this);
   }
   this->visible = false;
-  for (local_8 = this->head; local_8 != (GlassShard *)0x0; local_8 = local_8->groupNext) {
-    if (((local_8->physObjId == 0) && (local_8->glassPhysics == (GlassPhysics *)0x0)) &&
-       (local_8->delayedDrop == false)) {
+  for (shard = this->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+    if (((shard->physObjId == 0) && (shard->glassPhysics == (GlassPhysics *)0x0)) &&
+       (shard->delayedDrop == false)) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
     if (bVar1) {
-      GlassShard::Update(local_8,param_1);
+      GlassShard::Update(shard,deltaTime);
       p<Var2 = &clGlasses->renderer->stat;
       p<Var2->numMovingShards = p<Var2->numMovingShards + 1;
       this->invalidBBox = true;
@@ -3858,18 +3866,19 @@ void __thiscall ShardGroup::Update(ShardGroup *this,float param_1)
 
 // 0099D750  GenerateVerts  (glass/glass_renderer.cpp:1577)
 
-void __thiscall ShardGroup::GenerateVerts(ShardGroup *this,bool param_1,int param_2)
+void __thiscall ShardGroup::GenerateVerts(ShardGroup *this,bool firstView,int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort *puVar3;
   DWORD DVar4;
+  uint lightHandle_00;
   uint *puVar5;
   int *piVar6;
   ulong64 uVar7;
   float fVar8;
-  XModelLodRampType XVar9;
+  XModelLodRampType lodRampType;
   byte local_ab;
   byte local_aa;
   byte local_a9;
@@ -3877,65 +3886,64 @@ void __thiscall ShardGroup::GenerateVerts(ShardGroup *this,bool param_1,int para
   byte local_9d;
   uint local_7c;
   int local_78;
-  GlassShard *local_48;
-  GlassShard *local_44;
-  GlassShard *local_40;
-  ushort local_3c [2];
-  ushort local_38;
-  GfxPackedVertex *local_34;
-  ushort *local_30;
-  undefined8 local_2c;
+  GlassShard *shard_3;
+  GlassShard *shard_2;
+  GlassShard *shard;
+  ushort vertsBaseIndex;
+  ushort vertsIndex;
+  GfxPackedVertex *verts;
+  ushort *indices;
+  undefined8 timer;
   ulong64 *local_24;
-  GfxPackedVertex *local_18;
-  bool local_11;
-  float local_10;
-  uint local_c;
-  uint local_8;
+  PIXProfile pp;
+  GfxPackedVertex *baseVerts;
+  bool needHighLod;
+  float dist;
+  uint primaryLightIndex;
+  uint lightHandle;
   
-  if ((param_1) && (this->invalidBBox != false)) {
+  if ((firstView) && (this->invalidBBox != false)) {
     UpdateBBox(this);
   }
-  bVar2 = GlassRenderer::IsVisible(clGlasses->renderer,this->worldBBoxMin,param_2);
+  bVar2 = GlassRenderer::IsVisible(clGlasses->renderer,this->worldBBoxMin,localClientNum);
   if (bVar2) {
     this->visible = true;
-    XVar9 = XMODEL_LOD_RAMP_RIGID;
+    lodRampType = XMODEL_LOD_RAMP_RIGID;
     fVar8 = Vec3Distance(this->origin,rg.viewOrg);
-    local_10 = R_GetAdjustedLodDist(fVar8,XVar9);
-    local_11 = local_10 < (clGlasses->renderer->lowLodDist->current).value;
-    if (((local_11) && (this->highLod == false)) && (this->renderIndices != (ushort *)0x0)) {
+    fVar8 = R_GetAdjustedLodDist(fVar8,lodRampType);
+    bVar2 = fVar8 < (clGlasses->renderer->lowLodDist->current).value;
+    if (((bVar2) && (this->highLod == false)) && (this->renderIndices != (ushort *)0x0)) {
       FreeRenderMemory(this);
     }
     if (this->renderIndices == (ushort *)0x0) {
       PIXBeginNamedEvent(-1,"ShardGroup.GenerateVerts");
-      this->highLod = local_11;
+      this->highLod = bVar2;
       FreeRenderMemory(this);
       this->numIndices = 0;
       this->numVerts = 0;
-      for (local_40 = this->head; local_40 != (GlassShard *)0x0; local_40 = local_40->groupNext) {
+      for (shard = this->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
         if (this->highLod == false) {
-          local_9d = (local_40->mesh).numIndicesLow;
+          local_9d = (shard->mesh).numIndicesLow;
         }
         else {
-          local_9d = (local_40->mesh).numIndices;
+          local_9d = (shard->mesh).numIndices;
         }
         this->numIndices = this->numIndices + (ushort)local_9d;
         if (this->highLod == false) {
-          local_9e = (local_40->mesh).numVertsLow;
+          local_9e = (shard->mesh).numVertsLow;
         }
         else {
-          local_9e = (local_40->mesh).numVerts;
+          local_9e = (shard->mesh).numVerts;
         }
         this->numVerts = this->numVerts + (ushort)local_9e;
       }
       puVar3 = AllocateIndices(this,(int)this->numIndices);
       this->renderIndices = puVar3;
-      local_34 = AllocateVerts(this,(int)this->numVerts,local_3c);
-      local_18 = local_34;
-      if ((this->renderIndices == (ushort *)0x0) || (local_34 == (GfxPackedVertex *)0x0)) {
+      verts = AllocateVerts(this,(int)this->numVerts,&vertsBaseIndex);
+      if ((this->renderIndices == (ushort *)0x0) || (verts == (GfxPackedVertex *)0x0)) {
         piVar6 = &(clGlasses->renderer->stat).numOOMGroups;
         *piVar6 = *piVar6 + 1;
         FreeRenderMemory(this);
-        local_18 = (GfxPackedVertex *)0x0;
         this->renderIndices = (ushort *)0x0;
         DVar4 = GetCurrentThreadId();
         if (DVar4 != (DWORD)g_DXDeviceThread) {
@@ -3947,45 +3955,45 @@ void __thiscall ShardGroup::GenerateVerts(ShardGroup *this,bool param_1,int para
         _D3DPERF_EndEvent_0();
         return;
       }
-      local_30 = this->renderIndices;
-      local_38 = local_3c[0];
+      indices = this->renderIndices;
+      vertsIndex = vertsBaseIndex;
       local_24 = &clGlasses->renderer->genVertsTimer;
-      local_2c = tlPcGetTick();
+      timer = tlPcGetTick();
       puVar5 = &clGlasses->renderer->genVertsCount;
       *puVar5 = (int)this->numVerts + *puVar5;
-      for (local_44 = this->head; local_44 != (GlassShard *)0x0; local_44 = local_44->groupNext) {
-        GlassShard::GenerateVerts(local_44,this->highLod,local_34,local_38,local_30);
+      for (shard_2 = this->head; shard_2 != (GlassShard *)0x0; shard_2 = shard_2->groupNext) {
+        GlassShard::GenerateVerts(shard_2,this->highLod,verts,vertsIndex,indices);
         if (this->highLod == false) {
-          local_a9 = (local_44->mesh).numIndicesLow;
+          local_a9 = (shard_2->mesh).numIndicesLow;
         }
         else {
-          local_a9 = (local_44->mesh).numIndices;
+          local_a9 = (shard_2->mesh).numIndices;
         }
-        local_30 = local_30 + local_a9;
+        indices = indices + local_a9;
         if (this->highLod == false) {
-          local_aa = (local_44->mesh).numVertsLow;
+          local_aa = (shard_2->mesh).numVertsLow;
         }
         else {
-          local_aa = (local_44->mesh).numVerts;
+          local_aa = (shard_2->mesh).numVerts;
         }
-        local_34 = local_34 + local_aa;
+        verts = verts + local_aa;
         if (this->highLod == false) {
-          local_ab = (local_44->mesh).numVertsLow;
+          local_ab = (shard_2->mesh).numVertsLow;
         }
         else {
-          local_ab = (local_44->mesh).numVerts;
+          local_ab = (shard_2->mesh).numVerts;
         }
-        local_38 = local_38 + local_ab;
+        vertsIndex = vertsIndex + local_ab;
       }
       uVar7 = tlPcGetTick();
       local_7c = (uint)uVar7;
       local_78 = (int)(uVar7 >> 0x20);
       uVar7 = *local_24;
-      *(uint *)local_24 = (local_7c - (uint)local_2c) + (uint)*local_24;
+      *(uint *)local_24 = (local_7c - (uint)timer) + (uint)*local_24;
       *(uint *)((int)local_24 + 4) =
            *(uint *)((int)local_24 + 4) +
-           ((local_78 - local_2c._4_4_) - (uint)(local_7c < (uint)local_2c)) +
-           (uint)CARRY4(local_7c - (uint)local_2c,(uint)uVar7);
+           ((local_78 - timer._4_4_) - (uint)(local_7c < (uint)timer)) +
+           (uint)CARRY4(local_7c - (uint)timer,(uint)uVar7);
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -3998,15 +4006,17 @@ void __thiscall ShardGroup::GenerateVerts(ShardGroup *this,bool param_1,int para
       (*pcVar1)();
       return;
     }
-    local_c = R_GetNonSunPrimaryLightForBox((GfxViewInfo *)0x0,this->origin,this->extent);
-    if (local_c == 0) {
-      local_c = (rgp.world)->sunPrimaryLightIndex;
+    primaryLightIndex = R_GetNonSunPrimaryLightForBox((GfxViewInfo *)0x0,this->origin,this->extent);
+    if (primaryLightIndex == 0) {
+      primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
     }
-    local_8 = R_AllocModelLighting_PrimaryLight
-                        (this->origin,local_c,false,&this->lightingHandle,&this->lightingInfo);
-    if (local_8 != 0) {
+    lightHandle_00 =
+         R_AllocModelLighting_PrimaryLight
+                   (this->origin,primaryLightIndex,false,&this->lightingHandle,&this->lightingInfo);
+    if (lightHandle_00 != 0) {
       R_AddGlassDrawSurf(this->glassDef->shardMaterial,this->renderIndices,(int)this->numIndices,
-                         local_8,local_c,(uint)(this->lightingInfo).reflectionProbeIndex,9);
+                         lightHandle_00,primaryLightIndex,
+                         (uint)(this->lightingInfo).reflectionProbeIndex,9);
       GlassRenderer::AddUsedShardMaterial(clGlasses->renderer,this->glassDef->shardMaterial);
     }
     piVar6 = &(clGlasses->renderer->stat).numVisShards;
@@ -4014,8 +4024,8 @@ void __thiscall ShardGroup::GenerateVerts(ShardGroup *this,bool param_1,int para
     piVar6 = &(clGlasses->renderer->stat).numVisGroups;
     *piVar6 = *piVar6 + 1;
     if (0 < (clGlasses->renderer->drawShardOutline->current).integer) {
-      for (local_48 = this->head; local_48 != (GlassShard *)0x0; local_48 = local_48->groupNext) {
-        GlassShard::DrawOutline(local_48);
+      for (shard_3 = this->head; shard_3 != (GlassShard *)0x0; shard_3 = shard_3->groupNext) {
+        GlassShard::DrawOutline(shard_3);
       }
     }
     FreeRenderMemory(this);
@@ -4036,31 +4046,32 @@ void __thiscall ShardGroup::FreeRenderMemory(ShardGroup *this)
 
 // 0099DDA0  AllocateIndices  (glass/glass_renderer.cpp:1715)
 
-ushort * __thiscall ShardGroup::AllocateIndices(ShardGroup *this,int param_1)
+ushort * __thiscall ShardGroup::AllocateIndices(ShardGroup *this,int numIndices)
 
 {
   bool bVar1;
-  r_double_index_t *local_8;
+  r_double_index_t *baseIndices;
   
-  bVar1 = R_ReserveCodeMeshIndices(param_1,&local_8);
+  bVar1 = R_ReserveCodeMeshIndices(numIndices,&baseIndices);
   if (!bVar1) {
-    local_8 = (r_double_index_t *)0x0;
+    baseIndices = (r_double_index_t *)0x0;
   }
-  return local_8->value;
+  return baseIndices->value;
 }
 
 
 // 0099DDD0  AllocateVerts  (glass/glass_renderer.cpp:1739)
 
-GfxPackedVertex * __thiscall ShardGroup::AllocateVerts(ShardGroup *this,int param_1,ushort *param_2)
+GfxPackedVertex * __thiscall
+ShardGroup::AllocateVerts(ShardGroup *this,int numVerts,ushort *vertsBaseIndex)
 
 {
   bool bVar1;
   GfxPackedVertex *pGVar2;
   
-  bVar1 = R_ReserveCodeMeshVerts(param_1,param_2);
+  bVar1 = R_ReserveCodeMeshVerts(numVerts,vertsBaseIndex);
   if (bVar1) {
-    pGVar2 = R_GetCodeMeshVerts(*param_2);
+    pGVar2 = R_GetCodeMeshVerts(*vertsBaseIndex);
   }
   else {
     pGVar2 = (GfxPackedVertex *)0x0;
@@ -4073,32 +4084,31 @@ GfxPackedVertex * __thiscall ShardGroup::AllocateVerts(ShardGroup *this,int para
 
 void __thiscall
 ShardGroup::ExplosionEvent
-          (ShardGroup *this,float *param_1,float param_2,float param_3,float param_4,int param_5)
+          (ShardGroup *this,float *origin,float damageInner,float damageOuter,float radius,int mod)
 
 {
   bool bVar1;
-  GlassShard *local_20;
+  GlassShard *shard;
   
-  if (((((this->worldBBoxMax[0] < *param_1 - param_4) ||
-        (this->worldBBoxMax[1] < param_1[1] - param_4)) ||
-       (this->worldBBoxMax[2] < param_1[2] - param_4)) ||
-      ((*param_1 + param_4 < this->worldBBoxMin[0] || (param_1[1] + param_4 < this->worldBBoxMin[1])
-       ))) || (param_1[2] + param_4 < this->worldBBoxMin[2])) {
+  if (((((this->worldBBoxMax[0] < *origin - radius) || (this->worldBBoxMax[1] < origin[1] - radius))
+       || (this->worldBBoxMax[2] < origin[2] - radius)) ||
+      ((*origin + radius < this->worldBBoxMin[0] || (origin[1] + radius < this->worldBBoxMin[1]))))
+     || (origin[2] + radius < this->worldBBoxMin[2])) {
     bVar1 = false;
   }
   else {
     bVar1 = true;
   }
   if (bVar1) {
-    for (local_20 = this->head; local_20 != (GlassShard *)0x0; local_20 = local_20->groupNext) {
-      if ((local_20->physObjId == 0) && (local_20->glassPhysics == (GlassPhysics *)0x0)) {
+    for (shard = this->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+      if ((shard->physObjId == 0) && (shard->glassPhysics == (GlassPhysics *)0x0)) {
         bVar1 = false;
       }
       else {
         bVar1 = true;
       }
       if (!bVar1) {
-        GlassShard::ExplosionEvent(local_20,param_1,param_2,param_3,param_4,param_5);
+        GlassShard::ExplosionEvent(shard,origin,damageInner,damageOuter,radius,mod);
       }
     }
   }
@@ -4108,30 +4118,32 @@ ShardGroup::ExplosionEvent
 
 // 0099DF70  TracePoint  (glass/glass_renderer.cpp:1821)
 
-int __thiscall ShardGroup::TracePoint(ShardGroup *this,float *param_1,float *param_2)
+int __thiscall ShardGroup::TracePoint(ShardGroup *this,float *p0,float *p1)
 
 {
   bool bVar1;
   DWORD DVar2;
-  GlassShard *local_38;
-  float local_34;
+  float length_00;
+  GlassShard *shard;
+  float dir;
   float local_30;
   float local_2c;
-  float local_24;
-  float local_20;
+  PIXProfile pp;
+  float length;
+  float mins;
   float local_1c;
   float local_18;
-  float local_14;
+  float maxs;
   float local_10;
   float local_c;
-  int local_8;
+  int numHits;
   
-  local_8 = 0;
-  Vec3Min(param_1,param_2,&local_20);
-  Vec3Max(param_1,param_2,&local_14);
-  if (((((this->worldBBoxMax[0] < local_20) || (this->worldBBoxMax[1] < local_1c)) ||
+  numHits = 0;
+  Vec3Min(p0,p1,&mins);
+  Vec3Max(p0,p1,&maxs);
+  if (((((this->worldBBoxMax[0] < mins) || (this->worldBBoxMax[1] < local_1c)) ||
        (this->worldBBoxMax[2] < local_18)) ||
-      ((local_14 < this->worldBBoxMin[0] || (local_10 < this->worldBBoxMin[1])))) ||
+      ((maxs < this->worldBBoxMin[0] || (local_10 < this->worldBBoxMin[1])))) ||
      (local_c < this->worldBBoxMin[2])) {
     bVar1 = false;
   }
@@ -4140,22 +4152,20 @@ int __thiscall ShardGroup::TracePoint(ShardGroup *this,float *param_1,float *par
   }
   if (bVar1) {
     PIXBeginNamedEvent(-1,"ShardGroup.TracePoint");
-    local_34 = *param_2 - *param_1;
-    local_30 = param_2[1] - param_1[1];
-    local_2c = param_2[2] - param_1[2];
-    local_24 = Vec3Normalize(&local_34);
-    for (local_38 = this->head; local_38 != (GlassShard *)0x0; local_38 = local_38->groupNext) {
-      if ((local_38->physObjId == 0) && (local_38->glassPhysics == (GlassPhysics *)0x0)) {
+    dir = *p1 - *p0;
+    local_30 = p1[1] - p0[1];
+    local_2c = p1[2] - p0[2];
+    length_00 = Vec3Normalize(&dir);
+    for (shard = this->head; shard != (GlassShard *)0x0; shard = shard->groupNext) {
+      if ((shard->physObjId == 0) && (shard->glassPhysics == (GlassPhysics *)0x0)) {
         bVar1 = false;
       }
       else {
         bVar1 = true;
       }
       if ((!bVar1) &&
-         (bVar1 = GlassShard::TracePoint
-                            (local_38,param_1,param_2,&local_34,local_24,&local_20,&local_14), bVar1
-         )) {
-        local_8 = local_8 + 1;
+         (bVar1 = GlassShard::TracePoint(shard,p0,p1,&dir,length_00,&mins,&maxs), bVar1)) {
+        numHits = numHits + 1;
       }
     }
     DVar2 = GetCurrentThreadId();
@@ -4163,6 +4173,6 @@ int __thiscall ShardGroup::TracePoint(ShardGroup *this,float *param_1,float *par
       _D3DPERF_EndEvent_0();
     }
   }
-  return local_8;
+  return numHits;
 }
 

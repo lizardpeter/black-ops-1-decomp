@@ -4,53 +4,54 @@
 
 bool __cdecl
 R_DrawXModelSurfCheckBreak
-          (uint param_1,GfxBackEndData *param_2,uint param_3,float param_4,float param_5,
-          float param_6,float param_7,bool param_8,int param_9,uint param_10)
+          (uint gfxEntIndex,GfxBackEndData *data,uint depthHackFlags,float materialTime,
+          float curDestructibleBurnAmount,float curDestructibleFadeAmount,float curWetness,
+          bool TEXTURE_OVERRIDE,int currTextureOverride,uint drawOutlineFlags)
 
 {
   GfxEntity *pGVar1;
   
-  if (param_1 == 0) {
-    if (param_3 != 0) {
+  if (gfxEntIndex == 0) {
+    if (depthHackFlags != 0) {
       return true;
     }
-    if (param_4 != 0.0) {
+    if (materialTime != 0.0) {
       return true;
     }
-    if (param_5 != 0.0) {
+    if (curDestructibleBurnAmount != 0.0) {
       return true;
     }
-    if (param_6 != 0.0) {
+    if (curDestructibleFadeAmount != 0.0) {
       return true;
     }
-    if (param_7 != 0.0) {
+    if (curWetness != 0.0) {
       return true;
     }
-    if ((param_8) && (-1 < param_9)) {
+    if ((TEXTURE_OVERRIDE) && (-1 < currTextureOverride)) {
       return true;
     }
-    if (param_10 != 0) {
+    if (drawOutlineFlags != 0) {
       return true;
     }
   }
   else {
-    pGVar1 = param_2->gfxEnts + param_1;
-    if ((pGVar1->renderFxFlags & 2) != param_3) {
+    pGVar1 = data->gfxEnts + gfxEntIndex;
+    if ((pGVar1->renderFxFlags & 2) != depthHackFlags) {
       return true;
     }
-    if (pGVar1->materialTime != param_4) {
+    if (pGVar1->materialTime != materialTime) {
       return true;
     }
-    if (pGVar1->destructibleBurnAmount != param_5) {
+    if (pGVar1->destructibleBurnAmount != curDestructibleBurnAmount) {
       return true;
     }
-    if (pGVar1->destructibleFadeAmount != param_6) {
+    if (pGVar1->destructibleFadeAmount != curDestructibleFadeAmount) {
       return true;
     }
-    if (pGVar1->wetness != param_7) {
+    if (pGVar1->wetness != curWetness) {
       return true;
     }
-    if ((param_8) && (pGVar1->textureOverrideIndex != param_9)) {
+    if ((TEXTURE_OVERRIDE) && (pGVar1->textureOverrideIndex != currTextureOverride)) {
       return true;
     }
   }
@@ -64,7 +65,7 @@ R_DrawXModelSurfCheckBreak
 
 void __cdecl
 R_GetWorldMatrixForModelSurf
-          (GfxModelRigidSurface *param_1,float4 param_2,vector4 *param_3,XSurface *param_4)
+          (GfxModelRigidSurface *modelSurf,float4 eyeOffset,vector4 *worldMat,XSurface *xsurf)
 
 {
   code *pcVar1;
@@ -74,18 +75,19 @@ R_GetWorldMatrixForModelSurf
   float fVar5;
   float fVar6;
   float fVar7;
-  float local_2c;
+  float quat;
   float local_28;
   float local_24;
   float local_20;
+  float scale;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c = (param_1->placement).base.quat[0];
-  local_28 = (param_1->placement).base.quat[1];
-  local_24 = (param_1->placement).base.quat[2];
-  local_20 = (param_1->placement).base.quat[3];
-  iVar3 = Vec4IsNormalized(&local_2c);
+  quat = (modelSurf->placement).base.quat[0];
+  local_28 = (modelSurf->placement).base.quat[1];
+  local_24 = (modelSurf->placement).base.quat[2];
+  local_20 = (modelSurf->placement).base.quat[3];
+  iVar3 = Vec4IsNormalized(&quat);
   if (iVar3 == 0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_vector4_novec.h",
                              0x3cc,0,"%s");
@@ -95,104 +97,103 @@ R_GetWorldMatrixForModelSurf
       return;
     }
   }
-  fVar4 = local_2c + local_2c;
+  fVar4 = quat + quat;
   fVar5 = local_28 + local_28;
   fVar6 = (local_24 + local_24) * local_20;
   fVar7 = (local_24 + local_24) * local_24;
-  param_3->_padding_ = (int)(1.0 - (fVar5 * local_28 + fVar7));
-  param_3->_padding_ = (int)(fVar4 * local_28 + fVar6);
-  param_3->_padding_ = (int)(fVar4 * local_24 - fVar5 * local_20);
-  param_3->_padding_ = 0;
-  param_3->_padding_ = (int)(fVar4 * local_28 - fVar6);
-  param_3->_padding_ = (int)(1.0 - (fVar4 * local_2c + fVar7));
-  param_3->_padding_ = (int)(fVar5 * local_24 + fVar4 * local_20);
-  param_3->_padding_ = 0;
-  param_3->_padding_ = (int)(fVar4 * local_24 + fVar5 * local_20);
-  param_3->_padding_ = (int)(fVar5 * local_24 - fVar4 * local_20);
-  param_3->_padding_ = (int)(1.0 - (fVar4 * local_2c + fVar5 * local_28));
-  param_3->_padding_ = 0;
-  fVar4 = (param_1->placement).scale;
-  (param_3->w).v[0] = (param_1->placement).base.origin[0];
-  (param_3->w).v[1] = (param_1->placement).base.origin[1];
-  (param_3->w).v[2] = (param_1->placement).base.origin[2];
-  (param_3->w).v[3] = 0.0;
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  param_3->_padding_ = (int)((float)param_3->_padding_ * fVar4);
-  (param_3->w).v[0] = (param_3->w).v[0] - param_2.v[0];
-  (param_3->w).v[1] = (param_3->w).v[1] - param_2.v[1];
-  (param_3->w).v[2] = (param_3->w).v[2] - param_2.v[2];
-  (param_3->w).v[3] = (param_3->w).v[3] - param_2.v[3];
+  worldMat->_padding_ = (int)(1.0 - (fVar5 * local_28 + fVar7));
+  worldMat->_padding_ = (int)(fVar4 * local_28 + fVar6);
+  worldMat->_padding_ = (int)(fVar4 * local_24 - fVar5 * local_20);
+  worldMat->_padding_ = 0;
+  worldMat->_padding_ = (int)(fVar4 * local_28 - fVar6);
+  worldMat->_padding_ = (int)(1.0 - (fVar4 * quat + fVar7));
+  worldMat->_padding_ = (int)(fVar5 * local_24 + fVar4 * local_20);
+  worldMat->_padding_ = 0;
+  worldMat->_padding_ = (int)(fVar4 * local_24 + fVar5 * local_20);
+  worldMat->_padding_ = (int)(fVar5 * local_24 - fVar4 * local_20);
+  worldMat->_padding_ = (int)(1.0 - (fVar4 * quat + fVar5 * local_28));
+  worldMat->_padding_ = 0;
+  fVar4 = (modelSurf->placement).scale;
+  (worldMat->w).v[0] = (modelSurf->placement).base.origin[0];
+  (worldMat->w).v[1] = (modelSurf->placement).base.origin[1];
+  (worldMat->w).v[2] = (modelSurf->placement).base.origin[2];
+  (worldMat->w).v[3] = 0.0;
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  worldMat->_padding_ = (int)((float)worldMat->_padding_ * fVar4);
+  (worldMat->w).v[0] = (worldMat->w).v[0] - eyeOffset.v[0];
+  (worldMat->w).v[1] = (worldMat->w).v[1] - eyeOffset.v[1];
+  (worldMat->w).v[2] = (worldMat->w).v[2] - eyeOffset.v[2];
+  (worldMat->w).v[3] = (worldMat->w).v[3] - eyeOffset.v[3];
   return;
 }
 
 
 // 00B53F60  R_DrawXModelRigidModelSurf  (gfx_d3d/r_draw_xmodel.cpp:315)
 
-void __cdecl R_DrawXModelRigidModelSurf(GfxCmdBufContext param_1,XSurface *param_2)
+void __cdecl R_DrawXModelRigidModelSurf(GfxCmdBufContext context,XSurface *xsurf)
 
 {
-  IDirect3DIndexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  GfxMatrix *pGVar4;
-  char *pcVar5;
-  float *pfVar6;
-  GfxDrawPrimArgs local_10;
+  IDirect3DIndexBuffer9 *ib_00;
+  code *pcVar1;
+  bool bVar2;
+  GfxMatrix *pGVar3;
+  char *tessName;
+  float *color;
+  IDirect3DIndexBuffer9 *ib;
+  GfxDrawPrimArgs args;
   
-  if (param_2 == (XSurface *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_xmodel.cpp",0x13f,0
+  if (xsurf == (XSurface *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_xmodel.cpp",0x13f,0
                              ,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_10.baseIndex = 0;
-  local_10.vertexCount = (int)param_2->vertCount;
-  local_10.triCount = (int)param_2->triCount;
-  ((param_1.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount =
-       local_10.triCount * 3 + ((param_1.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount;
-  pIVar1 = param_2->indexBuffer;
-  if (pIVar1 == (IDirect3DIndexBuffer9 *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_xmodel.cpp",0x14c,0
+  args.baseIndex = 0;
+  args.vertexCount = (int)xsurf->vertCount;
+  args.triCount = (int)xsurf->triCount;
+  ((context.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount =
+       args.triCount * 3 + ((context.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount;
+  ib_00 = xsurf->indexBuffer;
+  if (ib_00 == (IDirect3DIndexBuffer9 *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_draw_xmodel.cpp",0x14c,0
                              ,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (((param_1.field0_0x0._s_0.state)->prim).indexBuffer != pIVar1) {
-    R_ChangeIndices(&(param_1.field0_0x0._s_0.state)->prim,pIVar1);
+  if (((context.field0_0x0._s_0.state)->prim).indexBuffer != ib_00) {
+    R_ChangeIndices(&(context.field0_0x0._s_0.state)->prim,ib_00);
   }
   R_SetStreamsForXModelSurface
-            (param_2,&(param_1.field0_0x0._s_0.state)->prim,(GfxCmdBufPrimState *)0x0);
-  R_SetupPassPerPrimArgs(param_1);
-  R_DrawIndexedPrimitive(&(param_1.field0_0x0._s_0.state)->prim,&local_10);
-  if (((param_1.field0_0x0._s_0.state)->prim).primStats != (GfxPrimStats *)0x0) {
-    (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount =
-         local_10.triCount * 3 +
-         (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount;
-    (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount =
-         (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount +
-         local_10.vertexCount;
+            (xsurf,&(context.field0_0x0._s_0.state)->prim,(GfxCmdBufPrimState *)0x0);
+  R_SetupPassPerPrimArgs(context);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
+  if (((context.field0_0x0._s_0.state)->prim).primStats != (GfxPrimStats *)0x0) {
+    (((context.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount =
+         args.triCount * 3 + (((context.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount;
+    (((context.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount =
+         (((context.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount + args.vertexCount;
   }
   if ((r_showTess->current).integer != 0) {
-    pfVar6 = colorWhite;
-    pcVar5 = "XMRigid";
-    pGVar4 = R_GetActiveWorldMatrix(param_1.field0_0x0._s_0.source);
-    RB_ShowTess(param_1,pGVar4->m[3],pcVar5,pfVar6);
+    color = colorWhite;
+    tessName = "XMRigid";
+    pGVar3 = R_GetActiveWorldMatrix(context.field0_0x0._s_0.source);
+    RB_ShowTess(context,pGVar3->m[3],tessName,color);
   }
   return;
 }
@@ -205,108 +206,110 @@ void __cdecl R_DrawXModelRigidModelSurf(GfxCmdBufContext param_1,XSurface *param
 
 uint __cdecl
 R_DrawXModelSurfLitInternal
-          (GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3,GfxCmdBufContext param_4)
+          (GfxDrawSurf *drawSurfList,uint drawSurfCount,GfxCmdBufContext context,
+          GfxCmdBufContext prepassContext)
 
 {
-  float4 fVar1;
-  bool bVar2;
+  float4 eyeOffset_00;
+  bool bVar1;
   int extraout_EAX;
-  GfxMatrix *pGVar3;
+  GfxMatrix *pGVar2;
   uint extraout_EAX_00;
   int extraout_EAX_01;
-  vector4 local_a4;
-  uint local_60;
-  uint local_5c;
+  vector4 worldMat;
+  uint baseGfxEntIndex;
+  uint drawSurf;
   uint local_58;
-  GfxBackEndData *local_50;
-  GfxCmdBufSourceState *local_4c;
-  float local_48;
-  uint local_44;
-  float local_40;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  float curWetness;
+  uint drawSurfIndex;
+  float eyeOffset;
   float local_3c;
   float local_38;
   undefined4 local_34;
   uint local_30;
-  uint local_2c;
+  uint drawSurfMask;
   uint local_28;
-  GfxModelRigidSurface *local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  XSurface *local_14;
-  float local_10;
-  uint local_c;
+  GfxModelRigidSurface *modelSurf;
+  float curDestructibleBurnAmount;
+  uint depthHackFlags;
+  float curDestructibleFadeAmount;
+  XSurface *xsurf;
+  float materialTime;
+  uint drawSurfKey;
   uint local_8;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c = param_3.field0_0x0._s_0.source;
-  local_50 = (GfxBackEndData *)((param_3.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
-  local_5c = *(uint *)param_1;
-  local_58 = *(uint *)((int)param_1 + 4);
-  local_2c = 0xf1ff0000;
+  commonSource = context.field0_0x0._s_0.source;
+  data = (GfxBackEndData *)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
+  drawSurf = *(uint *)drawSurfList;
+  local_58 = *(uint *)((int)drawSurfList + 4);
+  drawSurfMask = 0xf1ff0000;
   local_28 = 0xffffffff;
-  local_c = local_5c & 0xf1ff0000;
-  local_44 = 0;
-  local_40 = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[0] - (float)0;
-  local_3c = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[1] - (float)0;
-  local_38 = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[2] - (float)0;
+  drawSurfKey = drawSurf & 0xf1ff0000;
+  drawSurfIndex = 0;
+  eyeOffset = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[0] - (float)0;
+  local_3c = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[1] - (float)0;
+  local_38 = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[2] - (float)0;
   local_34 = 0xbf800000;
   local_8 = local_58;
   _allshl();
-  local_24 = (GfxModelRigidSurface *)(local_50->surfsBuffer + extraout_EAX);
-  local_60 = (uint)(local_24->surf).info.gfxEntIndex;
-  local_1c = (local_4c->sceneDef).floatTime;
-  local_10 = local_4c[1].matrices.matrix[0].m[0][3];
-  local_20 = local_4c[1].matrices.matrix[0].m[1][0];
-  local_18 = local_4c[1].matrices.matrix[0].m[1][1];
-  local_48 = local_4c[1].matrices.matrix[0].m[1][2];
+  modelSurf = (GfxModelRigidSurface *)(data->surfsBuffer + extraout_EAX);
+  baseGfxEntIndex = (uint)(modelSurf->surf).info.gfxEntIndex;
+  depthHackFlags = (uint)(commonSource->sceneDef).floatTime;
+  materialTime = commonSource[1].matrices.matrix[0].m[0][3];
+  curDestructibleBurnAmount = commonSource[1].matrices.matrix[0].m[1][0];
+  curDestructibleFadeAmount = commonSource[1].matrices.matrix[0].m[1][1];
+  curWetness = commonSource[1].matrices.matrix[0].m[1][2];
   do {
-    local_14 = (local_24->surf).xsurf;
-    fVar1.v[1] = local_3c;
-    fVar1.v[0] = local_40;
-    fVar1.v[2] = local_38;
-    fVar1.u[3] = local_34;
-    R_GetWorldMatrixForModelSurf(local_24,fVar1,&local_a4,local_14);
-    pGVar3 = R_GetActiveWorldMatrix(local_4c);
-    pGVar3->m[0][0] = (float)local_a4._padding_;
-    pGVar3->m[0][1] = (float)local_a4._padding_;
-    pGVar3->m[0][2] = (float)local_a4._padding_;
-    pGVar3->m[0][3] = (float)local_a4._padding_;
-    pGVar3->m[1][0] = (float)local_a4._padding_;
-    pGVar3->m[1][1] = (float)local_a4._padding_;
-    pGVar3->m[1][2] = (float)local_a4._padding_;
-    pGVar3->m[1][3] = (float)local_a4._padding_;
-    pGVar3->m[2][0] = (float)local_a4._padding_;
-    pGVar3->m[2][1] = (float)local_a4._padding_;
-    pGVar3->m[2][2] = (float)local_a4._padding_;
-    pGVar3->m[2][3] = (float)local_a4._padding_;
-    pGVar3->m[3][0] = local_a4.w.v[0];
-    pGVar3->m[3][1] = local_a4.w.v[1];
-    pGVar3->m[3][2] = local_a4.w.v[2];
-    pGVar3->m[3][3] = local_a4.w.v[3];
-    R_SetModelLightingCoordsForSource((local_24->surf).info.lightingHandle,local_4c);
+    xsurf = (modelSurf->surf).xsurf;
+    eyeOffset_00.v[1] = local_3c;
+    eyeOffset_00.v[0] = eyeOffset;
+    eyeOffset_00.v[2] = local_38;
+    eyeOffset_00.u[3] = local_34;
+    R_GetWorldMatrixForModelSurf(modelSurf,eyeOffset_00,&worldMat,xsurf);
+    pGVar2 = R_GetActiveWorldMatrix(commonSource);
+    pGVar2->m[0][0] = (float)worldMat._padding_;
+    pGVar2->m[0][1] = (float)worldMat._padding_;
+    pGVar2->m[0][2] = (float)worldMat._padding_;
+    pGVar2->m[0][3] = (float)worldMat._padding_;
+    pGVar2->m[1][0] = (float)worldMat._padding_;
+    pGVar2->m[1][1] = (float)worldMat._padding_;
+    pGVar2->m[1][2] = (float)worldMat._padding_;
+    pGVar2->m[1][3] = (float)worldMat._padding_;
+    pGVar2->m[2][0] = (float)worldMat._padding_;
+    pGVar2->m[2][1] = (float)worldMat._padding_;
+    pGVar2->m[2][2] = (float)worldMat._padding_;
+    pGVar2->m[2][3] = (float)worldMat._padding_;
+    pGVar2->m[3][0] = worldMat.w.v[0];
+    pGVar2->m[3][1] = worldMat.w.v[1];
+    pGVar2->m[3][2] = worldMat.w.v[2];
+    pGVar2->m[3][3] = worldMat.w.v[3];
+    R_SetModelLightingCoordsForSource((modelSurf->surf).info.lightingHandle,commonSource);
     _aullshr();
-    R_SetReflectionProbe(param_3,extraout_EAX_00 & 7);
-    R_DrawXModelRigidModelSurf(param_3,local_14);
-    local_44 = local_44 + 1;
-    if (local_44 == param_2) {
-      return local_44;
+    R_SetReflectionProbe(context,extraout_EAX_00 & 7);
+    R_DrawXModelRigidModelSurf(context,xsurf);
+    drawSurfIndex = drawSurfIndex + 1;
+    if (drawSurfIndex == drawSurfCount) {
+      return drawSurfIndex;
     }
-    local_5c = *(uint *)(param_1 + local_44);
-    local_58 = *(uint *)((int)param_1 + local_44 * 8 + 4);
-    if ((local_5c & local_2c) != local_c) {
-      return local_44;
+    drawSurf = *(uint *)(drawSurfList + drawSurfIndex);
+    local_58 = *(uint *)((int)drawSurfList + drawSurfIndex * 8 + 4);
+    if ((drawSurf & drawSurfMask) != drawSurfKey) {
+      return drawSurfIndex;
     }
     if ((local_58 & local_28) != local_8) {
-      return local_44;
+      return drawSurfIndex;
     }
     _allshl();
-    local_24 = (GfxModelRigidSurface *)(local_50->surfsBuffer + extraout_EAX_01);
-  } while (((local_24->surf).info.gfxEntIndex == local_60) ||
-          (bVar2 = R_DrawXModelSurfCheckBreak
-                             ((uint)(local_24->surf).info.gfxEntIndex,local_50,(uint)local_1c,
-                              local_10,local_20,local_18,local_48,false,-1,0), !bVar2));
-  return local_44;
+    modelSurf = (GfxModelRigidSurface *)(data->surfsBuffer + extraout_EAX_01);
+  } while (((modelSurf->surf).info.gfxEntIndex == baseGfxEntIndex) ||
+          (bVar1 = R_DrawXModelSurfCheckBreak
+                             ((uint)(modelSurf->surf).info.gfxEntIndex,data,depthHackFlags,
+                              materialTime,curDestructibleBurnAmount,curDestructibleFadeAmount,
+                              curWetness,false,-1,0), !bVar1));
+  return drawSurfIndex;
 }
 
 
@@ -316,117 +319,120 @@ R_DrawXModelSurfLitInternal
 /* WARNING: Type propagation algorithm not settling */
 
 uint __cdecl
-R_DrawXModelSurfCameraInternal(GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3)
+R_DrawXModelSurfCameraInternal
+          (GfxDrawSurf *drawSurfList,uint drawSurfCount,GfxCmdBufContext context)
 
 {
-  float4 fVar1;
-  bool bVar2;
+  float4 eyeOffset_00;
+  bool bVar1;
   int extraout_EAX;
-  GfxMatrix *pGVar3;
+  GfxMatrix *pGVar2;
   int extraout_EAX_00;
-  vector4 local_ac;
-  uint local_68;
-  uint local_64;
+  vector4 worldMat;
+  uint baseGfxEntIndex;
+  uint drawSurf;
   uint local_60;
-  GfxBackEndData *local_5c;
-  GfxCmdBufSourceState *local_58;
-  float local_54;
-  uint local_50;
-  float local_4c;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  float curWetness;
+  uint drawSurfIndex;
+  float eyeOffset;
   float local_48;
   float local_44;
   undefined4 local_40;
   uint local_3c;
-  GfxEntity *local_38;
-  uint local_34;
+  GfxEntity *gfxEnt;
+  uint drawSurfMask;
   uint local_30;
-  GfxModelRigidSurface *local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  XSurface *local_18;
-  float local_14;
-  int local_10;
-  uint local_c;
+  GfxModelRigidSurface *modelSurf;
+  float curDestructibleBurnAmount;
+  uint depthHackFlags;
+  float curDestructibleFadeAmount;
+  XSurface *xsurf;
+  float materialTime;
+  int currTextureOverride;
+  uint drawSurfKey;
   uint local_8;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_58 = param_3.field0_0x0._s_0.source;
-  local_5c = (GfxBackEndData *)((param_3.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
-  local_64 = *(uint *)param_1;
-  local_60 = *(uint *)((int)param_1 + 4);
-  local_34 = 0xf00f0000;
+  commonSource = context.field0_0x0._s_0.source;
+  data = (GfxBackEndData *)((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
+  drawSurf = *(uint *)drawSurfList;
+  local_60 = *(uint *)((int)drawSurfList + 4);
+  drawSurfMask = 0xf00f0000;
   local_30 = 0xffffffff;
-  local_c = local_64 & 0xf00f0000;
-  local_50 = 0;
-  local_4c = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[0] - (float)0;
-  local_48 = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[1] - (float)0;
-  local_44 = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[2] - (float)0;
+  drawSurfKey = drawSurf & 0xf00f0000;
+  drawSurfIndex = 0;
+  eyeOffset = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[0] - (float)0;
+  local_48 = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[1] - (float)0;
+  local_44 = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[2] - (float)0;
   local_40 = 0xbf800000;
   local_8 = local_60;
   _allshl();
-  local_28 = (GfxModelRigidSurface *)(local_5c->surfsBuffer + extraout_EAX);
-  local_68 = (uint)(local_28->surf).info.gfxEntIndex;
-  local_20 = (local_58->sceneDef).floatTime;
-  local_14 = local_58[1].matrices.matrix[0].m[0][3];
-  local_24 = local_58[1].matrices.matrix[0].m[1][0];
-  local_1c = local_58[1].matrices.matrix[0].m[1][1];
-  local_54 = local_58[1].matrices.matrix[0].m[1][2];
-  if (local_68 == 0) {
-    local_10 = -1;
+  modelSurf = (GfxModelRigidSurface *)(data->surfsBuffer + extraout_EAX);
+  baseGfxEntIndex = (uint)(modelSurf->surf).info.gfxEntIndex;
+  depthHackFlags = (uint)(commonSource->sceneDef).floatTime;
+  materialTime = commonSource[1].matrices.matrix[0].m[0][3];
+  curDestructibleBurnAmount = commonSource[1].matrices.matrix[0].m[1][0];
+  curDestructibleFadeAmount = commonSource[1].matrices.matrix[0].m[1][1];
+  curWetness = commonSource[1].matrices.matrix[0].m[1][2];
+  if (baseGfxEntIndex == 0) {
+    currTextureOverride = -1;
   }
   else {
-    local_38 = local_5c->gfxEnts + local_68;
-    local_10 = local_38->textureOverrideIndex;
+    gfxEnt = data->gfxEnts + baseGfxEntIndex;
+    currTextureOverride = gfxEnt->textureOverrideIndex;
   }
   while( true ) {
-    local_18 = (local_28->surf).xsurf;
-    fVar1.v[1] = local_48;
-    fVar1.v[0] = local_4c;
-    fVar1.v[2] = local_44;
-    fVar1.u[3] = local_40;
-    R_GetWorldMatrixForModelSurf(local_28,fVar1,&local_ac,local_18);
-    pGVar3 = R_GetActiveWorldMatrix(local_58);
-    pGVar3->m[0][0] = (float)local_ac._padding_;
-    pGVar3->m[0][1] = (float)local_ac._padding_;
-    pGVar3->m[0][2] = (float)local_ac._padding_;
-    pGVar3->m[0][3] = (float)local_ac._padding_;
-    pGVar3->m[1][0] = (float)local_ac._padding_;
-    pGVar3->m[1][1] = (float)local_ac._padding_;
-    pGVar3->m[1][2] = (float)local_ac._padding_;
-    pGVar3->m[1][3] = (float)local_ac._padding_;
-    pGVar3->m[2][0] = (float)local_ac._padding_;
-    pGVar3->m[2][1] = (float)local_ac._padding_;
-    pGVar3->m[2][2] = (float)local_ac._padding_;
-    pGVar3->m[2][3] = (float)local_ac._padding_;
-    pGVar3->m[3][0] = local_ac.w.v[0];
-    pGVar3->m[3][1] = local_ac.w.v[1];
-    pGVar3->m[3][2] = local_ac.w.v[2];
-    pGVar3->m[3][3] = local_ac.w.v[3];
-    if (-1 < local_10) {
-      R_TextureOverride(local_5c,param_3,(uint)(local_28->surf).info.dobjModelIndex,local_10);
+    xsurf = (modelSurf->surf).xsurf;
+    eyeOffset_00.v[1] = local_48;
+    eyeOffset_00.v[0] = eyeOffset;
+    eyeOffset_00.v[2] = local_44;
+    eyeOffset_00.u[3] = local_40;
+    R_GetWorldMatrixForModelSurf(modelSurf,eyeOffset_00,&worldMat,xsurf);
+    pGVar2 = R_GetActiveWorldMatrix(commonSource);
+    pGVar2->m[0][0] = (float)worldMat._padding_;
+    pGVar2->m[0][1] = (float)worldMat._padding_;
+    pGVar2->m[0][2] = (float)worldMat._padding_;
+    pGVar2->m[0][3] = (float)worldMat._padding_;
+    pGVar2->m[1][0] = (float)worldMat._padding_;
+    pGVar2->m[1][1] = (float)worldMat._padding_;
+    pGVar2->m[1][2] = (float)worldMat._padding_;
+    pGVar2->m[1][3] = (float)worldMat._padding_;
+    pGVar2->m[2][0] = (float)worldMat._padding_;
+    pGVar2->m[2][1] = (float)worldMat._padding_;
+    pGVar2->m[2][2] = (float)worldMat._padding_;
+    pGVar2->m[2][3] = (float)worldMat._padding_;
+    pGVar2->m[3][0] = worldMat.w.v[0];
+    pGVar2->m[3][1] = worldMat.w.v[1];
+    pGVar2->m[3][2] = worldMat.w.v[2];
+    pGVar2->m[3][3] = worldMat.w.v[3];
+    if (-1 < currTextureOverride) {
+      R_TextureOverride(data,context,(uint)(modelSurf->surf).info.dobjModelIndex,currTextureOverride
+                       );
     }
-    R_DrawXModelRigidModelSurf(param_3,local_18);
-    local_50 = local_50 + 1;
-    if (local_50 == param_2) {
-      return local_50;
+    R_DrawXModelRigidModelSurf(context,xsurf);
+    drawSurfIndex = drawSurfIndex + 1;
+    if (drawSurfIndex == drawSurfCount) {
+      return drawSurfIndex;
     }
-    local_64 = *(uint *)(param_1 + local_50);
-    local_60 = *(uint *)((int)param_1 + local_50 * 8 + 4);
-    if ((local_64 & local_34) != local_c) {
-      return local_50;
+    drawSurf = *(uint *)(drawSurfList + drawSurfIndex);
+    local_60 = *(uint *)((int)drawSurfList + drawSurfIndex * 8 + 4);
+    if ((drawSurf & drawSurfMask) != drawSurfKey) {
+      return drawSurfIndex;
     }
     if ((local_60 & local_30) != local_8) break;
     _allshl();
-    local_28 = (GfxModelRigidSurface *)(local_5c->surfsBuffer + extraout_EAX_00);
-    if (((local_28->surf).info.gfxEntIndex != local_68) &&
-       (bVar2 = R_DrawXModelSurfCheckBreak
-                          ((uint)(local_28->surf).info.gfxEntIndex,local_5c,(uint)local_20,local_14,
-                           local_24,local_1c,local_54,true,local_10,0), bVar2)) {
-      return local_50;
+    modelSurf = (GfxModelRigidSurface *)(data->surfsBuffer + extraout_EAX_00);
+    if (((modelSurf->surf).info.gfxEntIndex != baseGfxEntIndex) &&
+       (bVar1 = R_DrawXModelSurfCheckBreak
+                          ((uint)(modelSurf->surf).info.gfxEntIndex,data,depthHackFlags,materialTime
+                           ,curDestructibleBurnAmount,curDestructibleFadeAmount,curWetness,true,
+                           currTextureOverride,0), bVar1)) {
+      return drawSurfIndex;
     }
   }
-  return local_50;
+  return drawSurfIndex;
 }
 
 
@@ -434,96 +440,97 @@ R_DrawXModelSurfCameraInternal(GfxDrawSurf *param_1,uint param_2,GfxCmdBufContex
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl R_DrawXModelSurfInternal(GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3)
+uint __cdecl
+R_DrawXModelSurfInternal(GfxDrawSurf *drawSurfList,uint drawSurfCount,GfxCmdBufContext context)
 
 {
-  float4 fVar1;
+  float4 eyeOffset_00;
   int extraout_EAX;
-  GfxMatrix *pGVar2;
-  vector4 local_84;
-  uint local_44;
+  GfxMatrix *pGVar1;
+  vector4 worldMat;
+  uint drawSurf;
   uint local_40;
-  float local_3c;
-  GfxCmdBufSourceState *local_38;
-  uint local_34;
-  float local_30;
+  float data;
+  GfxCmdBufSourceState *commonSource;
+  uint drawSurfIndex;
+  float eyeOffset;
   float local_2c;
   float local_28;
   undefined4 local_24;
   uint local_20;
-  uint local_1c;
+  uint drawSurfMask;
   uint local_18;
-  GfxModelRigidSurface *local_14;
-  XSurface *local_10;
-  uint local_c;
+  GfxModelRigidSurface *modelSurf;
+  XSurface *xsurf;
+  uint drawSurfKey;
   uint local_8;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_38 = param_3.field0_0x0._s_0.source;
-  local_3c = ((param_3.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
-  local_44 = *(uint *)param_1;
-  local_40 = *(uint *)((int)param_1 + 4);
-  local_1c = 0xf00f0000;
+  commonSource = context.field0_0x0._s_0.source;
+  data = ((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
+  drawSurf = *(uint *)drawSurfList;
+  local_40 = *(uint *)((int)drawSurfList + 4);
+  drawSurfMask = 0xf00f0000;
   local_18 = 0xffffffff;
-  local_c = local_44 & 0xf00f0000;
-  local_34 = 0;
-  local_30 = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[0] - (float)0;
-  local_2c = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[1] - (float)0;
-  local_28 = ((param_3.field0_0x0._s_0.source)->skinnedPlacement).base.origin[2] - (float)0;
+  drawSurfKey = drawSurf & 0xf00f0000;
+  drawSurfIndex = 0;
+  eyeOffset = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[0] - (float)0;
+  local_2c = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[1] - (float)0;
+  local_28 = ((context.field0_0x0._s_0.source)->skinnedPlacement).base.origin[2] - (float)0;
   local_24 = 0xbf800000;
   local_8 = local_40;
   while( true ) {
     _allshl();
-    local_14 = (GfxModelRigidSurface *)(extraout_EAX + (int)local_3c);
-    local_10 = (local_14->surf).xsurf;
-    fVar1.v[1] = local_2c;
-    fVar1.v[0] = local_30;
-    fVar1.v[2] = local_28;
-    fVar1.u[3] = local_24;
-    R_GetWorldMatrixForModelSurf(local_14,fVar1,&local_84,local_10);
-    pGVar2 = R_GetActiveWorldMatrix(local_38);
-    pGVar2->m[0][0] = (float)local_84._padding_;
-    pGVar2->m[0][1] = (float)local_84._padding_;
-    pGVar2->m[0][2] = (float)local_84._padding_;
-    pGVar2->m[0][3] = (float)local_84._padding_;
-    pGVar2->m[1][0] = (float)local_84._padding_;
-    pGVar2->m[1][1] = (float)local_84._padding_;
-    pGVar2->m[1][2] = (float)local_84._padding_;
-    pGVar2->m[1][3] = (float)local_84._padding_;
-    pGVar2->m[2][0] = (float)local_84._padding_;
-    pGVar2->m[2][1] = (float)local_84._padding_;
-    pGVar2->m[2][2] = (float)local_84._padding_;
-    pGVar2->m[2][3] = (float)local_84._padding_;
-    pGVar2->m[3][0] = local_84.w.v[0];
-    pGVar2->m[3][1] = local_84.w.v[1];
-    pGVar2->m[3][2] = local_84.w.v[2];
-    pGVar2->m[3][3] = local_84.w.v[3];
-    R_DrawXModelRigidModelSurf(param_3,local_10);
-    local_34 = local_34 + 1;
-    if (local_34 == param_2) {
-      return local_34;
+    modelSurf = (GfxModelRigidSurface *)(extraout_EAX + (int)data);
+    xsurf = (modelSurf->surf).xsurf;
+    eyeOffset_00.v[1] = local_2c;
+    eyeOffset_00.v[0] = eyeOffset;
+    eyeOffset_00.v[2] = local_28;
+    eyeOffset_00.u[3] = local_24;
+    R_GetWorldMatrixForModelSurf(modelSurf,eyeOffset_00,&worldMat,xsurf);
+    pGVar1 = R_GetActiveWorldMatrix(commonSource);
+    pGVar1->m[0][0] = (float)worldMat._padding_;
+    pGVar1->m[0][1] = (float)worldMat._padding_;
+    pGVar1->m[0][2] = (float)worldMat._padding_;
+    pGVar1->m[0][3] = (float)worldMat._padding_;
+    pGVar1->m[1][0] = (float)worldMat._padding_;
+    pGVar1->m[1][1] = (float)worldMat._padding_;
+    pGVar1->m[1][2] = (float)worldMat._padding_;
+    pGVar1->m[1][3] = (float)worldMat._padding_;
+    pGVar1->m[2][0] = (float)worldMat._padding_;
+    pGVar1->m[2][1] = (float)worldMat._padding_;
+    pGVar1->m[2][2] = (float)worldMat._padding_;
+    pGVar1->m[2][3] = (float)worldMat._padding_;
+    pGVar1->m[3][0] = worldMat.w.v[0];
+    pGVar1->m[3][1] = worldMat.w.v[1];
+    pGVar1->m[3][2] = worldMat.w.v[2];
+    pGVar1->m[3][3] = worldMat.w.v[3];
+    R_DrawXModelRigidModelSurf(context,xsurf);
+    drawSurfIndex = drawSurfIndex + 1;
+    if (drawSurfIndex == drawSurfCount) {
+      return drawSurfIndex;
     }
-    local_44 = *(uint *)(param_1 + local_34);
-    local_40 = *(uint *)((int)param_1 + local_34 * 8 + 4);
-    if ((local_44 & local_1c) != local_c) break;
+    drawSurf = *(uint *)(drawSurfList + drawSurfIndex);
+    local_40 = *(uint *)((int)drawSurfList + drawSurfIndex * 8 + 4);
+    if ((drawSurf & drawSurfMask) != drawSurfKey) break;
     if ((local_40 & local_18) != local_8) {
-      return local_34;
+      return drawSurfIndex;
     }
   }
-  return local_34;
+  return drawSurfIndex;
 }
 
 
 // 00B53780  R_DrawXModelSurfLit  (gfx_d3d/r_draw_xmodel.cpp:629)
 
 uint __cdecl
-R_DrawXModelSurfLit(GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3,
-                   GfxCmdBufContext param_4,GfxDrawSurfListInfo *param_5)
+R_DrawXModelSurfLit(GfxDrawSurf *drawSurfList,uint drawSurfCount,GfxCmdBufContext context,
+                   GfxCmdBufContext prepassContext,GfxDrawSurfListInfo *info)
 
 {
   uint uVar1;
   
-  uVar1 = R_DrawXModelSurfLitInternal(param_1,param_2,param_3,param_4);
+  uVar1 = R_DrawXModelSurfLitInternal(drawSurfList,drawSurfCount,context,prepassContext);
   return uVar1;
 }
 
@@ -532,12 +539,13 @@ R_DrawXModelSurfLit(GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3,
 
 uint __cdecl
 R_DrawXModelSurfCamera
-          (GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3,GfxDrawSurfListInfo *param_4)
+          (GfxDrawSurf *drawSurfList,uint drawSurfCount,GfxCmdBufContext context,
+          GfxDrawSurfListInfo *info)
 
 {
   uint uVar1;
   
-  uVar1 = R_DrawXModelSurfCameraInternal(param_1,param_2,param_3);
+  uVar1 = R_DrawXModelSurfCameraInternal(drawSurfList,drawSurfCount,context);
   return uVar1;
 }
 
@@ -545,13 +553,13 @@ R_DrawXModelSurfCamera
 // 00B544C0  R_DrawXModelSurf  (gfx_d3d/r_draw_xmodel.cpp:639)
 
 uint __cdecl
-R_DrawXModelSurf(GfxDrawSurf *param_1,uint param_2,GfxCmdBufContext param_3,
-                GfxDrawSurfListInfo *param_4)
+R_DrawXModelSurf(GfxDrawSurf *drawSurfList,uint drawSurfCount,GfxCmdBufContext context,
+                GfxDrawSurfListInfo *info)
 
 {
   uint uVar1;
   
-  uVar1 = R_DrawXModelSurfInternal(param_1,param_2,param_3);
+  uVar1 = R_DrawXModelSurfInternal(drawSurfList,drawSurfCount,context);
   return uVar1;
 }
 

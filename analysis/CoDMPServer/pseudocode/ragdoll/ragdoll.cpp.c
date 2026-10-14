@@ -23,21 +23,22 @@ void __cdecl Ragdoll_DebugDraw(void)
   int iVar6;
   float fVar7;
   int iVar8;
-  phys_free_list<RagdollBody> *local_24;
-  int local_1c [6];
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
+  int total;
+  int states [6];
   
   if ((ragdoll_debug->current).integer != 0) {
-    local_1c[0] = 0;
-    local_1c[1] = 0;
-    local_1c[2] = 0;
-    local_1c[3] = 0;
-    local_1c[4] = 0;
-    local_1c[5] = 0;
-    for (local_24 = (phys_free_list<RagdollBody> *)
-                    g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
-        local_24 != &g_ragdoll_body_pool;
-        local_24 = (phys_free_list<RagdollBody> *)(local_24->m_dummy_head).m_next_T_internal) {
-      bVar2 = Ragdoll_BodyInUse((RagdollBody *)&local_24->m_list_count);
+    states[0] = 0;
+    states[1] = 0;
+    states[2] = 0;
+    states[3] = 0;
+    states[4] = 0;
+    states[5] = 0;
+    for (body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+        body_i != &g_ragdoll_body_pool;
+        body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal) {
+      bVar2 = Ragdoll_BodyInUse((RagdollBody *)&body_i->m_list_count);
       if ((!bVar2) &&
          (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x60,
                             "Ragdoll_BodyInUse( body )",""), bVar2)) {
@@ -45,7 +46,7 @@ void __cdecl Ragdoll_DebugDraw(void)
         (*pcVar1)();
         return;
       }
-      if (((RagdollBody *)&DAT_00000005 < local_24->m_ptr_list[7]) &&
+      if (((RagdollBody *)&DAT_00000005 < body_i->m_ptr_list[7]) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x61,0,
                                    "(int)body->state doesn\'t index RAGDOLL_NUM_STATES\n\t%i not in [0, %i)"
                                   ), !bVar2)) {
@@ -53,7 +54,7 @@ void __cdecl Ragdoll_DebugDraw(void)
         (*pcVar1)();
         return;
       }
-      local_1c[(int)local_24->m_ptr_list[7]] = local_1c[(int)local_24->m_ptr_list[7]] + 1;
+      states[(int)body_i->m_ptr_list[7]] = states[(int)body_i->m_ptr_list[7]] + 1;
     }
     iVar8 = 0;
     fVar7 = 12.0;
@@ -76,13 +77,13 @@ void __cdecl Ragdoll_DebugDraw(void)
 
 // 00864080  Ragdoll_InitBody  (ragdoll/ragdoll.cpp:109)
 
-void __cdecl Ragdoll_InitBody(RagdollBody *param_1)
+void __cdecl Ragdoll_InitBody(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x6e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -90,7 +91,7 @@ void __cdecl Ragdoll_InitBody(RagdollBody *param_1)
       return;
     }
   }
-  memset((uchar *)param_1,'\0',0xa28);
+  memset((uchar *)body,'\0',0xa28);
   return;
 }
 
@@ -102,55 +103,57 @@ int __cdecl Ragdoll_GetUnusedBody(void)
 {
   code *pcVar1;
   bool bVar2;
-  RagdollBody *pRVar3;
-  int iVar4;
+  RagdollBody *body_00;
+  int iVar3;
+  RagdollBody *body;
   
   if ((0x1f < g_ragdoll_body_pool.m_list_count) ||
-     (pRVar3 = phys_free_list<RagdollBody>::add
-                         (&g_ragdoll_body_pool,0,"phys_free_list error: out of memory."),
-     pRVar3 == (RagdollBody *)0x0)) {
+     (body_00 = phys_free_list<RagdollBody>::add
+                          (&g_ragdoll_body_pool,0,"phys_free_list error: out of memory."),
+     body_00 == (RagdollBody *)0x0)) {
     return 0;
   }
-  Ragdoll_InitBody(pRVar3);
-  Ragdoll_BodyNewState(pRVar3,BS_DEAD);
-  if ((pRVar3->references != 0) &&
+  Ragdoll_InitBody(body_00);
+  Ragdoll_BodyNewState(body_00,BS_DEAD);
+  if ((body_00->references != 0) &&
      (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x7d,
                         "body->references == 0",""), bVar2)) {
     pcVar1 = (code *)swi(3);
-    iVar4 = (*pcVar1)();
-    return iVar4;
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  pRVar3->references = pRVar3->references + 1;
-  return (int)pRVar3;
+  body_00->references = body_00->references + 1;
+  return (int)body_00;
 }
 
 
 // 008640D0  Ragdoll_ReferenceDObjBody  (ragdoll/ragdoll.cpp:137)
 
-int __cdecl Ragdoll_ReferenceDObjBody(int param_1)
+int __cdecl Ragdoll_ReferenceDObjBody(int dobj)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int *piVar4;
-  phys_free_list<RagdollBody> *local_8;
+  int *body_00;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
   
-  local_8 = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+  body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
   while( true ) {
-    if (local_8 == &g_ragdoll_body_pool) {
+    if (body_i == &g_ragdoll_body_pool) {
       return 0;
     }
-    piVar4 = &local_8->m_list_count;
-    bVar2 = Ragdoll_BodyInUse((RagdollBody *)piVar4);
+    body_00 = &body_i->m_list_count;
+    bVar2 = Ragdoll_BodyInUse((RagdollBody *)body_00);
     if ((!bVar2) &&
        (bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x8d,
                           "Ragdoll_BodyInUse( body )",""), bVar2)) break;
-    if (local_8->m_ptr_list[0] == (RagdollBody *)param_1) {
-      *piVar4 = *piVar4 + 1;
-      return (int)piVar4;
+    if (body_i->m_ptr_list[0] == (RagdollBody *)dobj) {
+      *body_00 = *body_00 + 1;
+      return (int)body_00;
     }
-    local_8 = (phys_free_list<RagdollBody> *)(local_8->m_dummy_head).m_next_T_internal;
+    body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal;
   }
   pcVar1 = (code *)swi(3);
   iVar3 = (*pcVar1)();
@@ -160,15 +163,16 @@ int __cdecl Ragdoll_ReferenceDObjBody(int param_1)
 
 // 00864420  Ragdoll_FreeBody  (ragdoll/ragdoll.cpp:155)
 
-void __cdecl Ragdoll_FreeBody(int param_1)
+void __cdecl Ragdoll_FreeBody(int ragdollBody)
 
 {
   code *pcVar1;
   bool bVar2;
-  RagdollBody *pRVar3;
+  RagdollBody *body_00;
+  RagdollBody *body;
   
-  pRVar3 = Ragdoll_HandleBody(param_1);
-  if (pRVar3 == (RagdollBody *)0x0) {
+  body_00 = Ragdoll_HandleBody(ragdollBody);
+  if (body_00 == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x9d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -176,7 +180,7 @@ void __cdecl Ragdoll_FreeBody(int param_1)
       return;
     }
   }
-  if (pRVar3->references != 1) {
+  if (body_00->references != 1) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x9e,
                       "body->references == 1","");
     if (bVar2) {
@@ -185,23 +189,23 @@ void __cdecl Ragdoll_FreeBody(int param_1)
       return;
     }
   }
-  Ragdoll_BodyNewState(pRVar3,BS_DEAD);
-  pRVar3->references = 0;
-  phys_free_list<RagdollBody>::remove(&g_ragdoll_body_pool,pRVar3);
+  Ragdoll_BodyNewState(body_00,BS_DEAD);
+  body_00->references = 0;
+  phys_free_list<RagdollBody>::remove(&g_ragdoll_body_pool,body_00);
   return;
 }
 
 
 // 00863B10  Ragdoll_BodyDef  (ragdoll/ragdoll.cpp:168)
 
-RagdollDef * __cdecl Ragdoll_BodyDef(RagdollBody *param_1)
+RagdollDef * __cdecl Ragdoll_BodyDef(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   RagdollDef *pRVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xa9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -209,7 +213,7 @@ RagdollDef * __cdecl Ragdoll_BodyDef(RagdollBody *param_1)
       return pRVar3;
     }
   }
-  if (1 < (uint)param_1->ragdollDef) {
+  if (1 < (uint)body->ragdollDef) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xaa,0,
                              "body->ragdollDef doesn\'t index RAGDOLL_MAX_DEFS\n\t%i not in [0, %i)"
                             );
@@ -219,20 +223,20 @@ RagdollDef * __cdecl Ragdoll_BodyDef(RagdollBody *param_1)
       return pRVar3;
     }
   }
-  return (RagdollDef *)(&ragdollDefs + param_1->ragdollDef * 0xf08);
+  return (RagdollDef *)(&ragdollDefs + body->ragdollDef * 0xf08);
 }
 
 
 // 00863B90  Ragdoll_BodyDObj  (ragdoll/ragdoll.cpp:177)
 
-DObj * __cdecl Ragdoll_BodyDObj(RagdollBody *param_1)
+DObj * __cdecl Ragdoll_BodyDObj(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   DObj *pDVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xb2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -240,8 +244,8 @@ DObj * __cdecl Ragdoll_BodyDObj(RagdollBody *param_1)
       return pDVar3;
     }
   }
-  if (param_1->obj == (DObj *)0x0) {
-    if (param_1->dobj == -1) {
+  if (body->obj == (DObj *)0x0) {
+    if (body->dobj == -1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xba,0,"%s"
                               );
       if (!bVar2) {
@@ -250,10 +254,10 @@ DObj * __cdecl Ragdoll_BodyDObj(RagdollBody *param_1)
         return pDVar3;
       }
     }
-    pDVar3 = Com_GetClientDObj(param_1->dobj,param_1->localClientNum);
+    pDVar3 = Com_GetClientDObj(body->dobj,body->localClientNum);
   }
   else {
-    pDVar3 = param_1->obj;
+    pDVar3 = body->obj;
   }
   return pDVar3;
 }
@@ -261,14 +265,19 @@ DObj * __cdecl Ragdoll_BodyDObj(RagdollBody *param_1)
 
 // 00863C20  Ragdoll_BodyPose  (ragdoll/ragdoll.cpp:193)
 
-cpose_t * __cdecl Ragdoll_BodyPose(RagdollBody *param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+cpose_t * __cdecl Ragdoll_BodyPose(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   cpose_t *pcVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xc2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -276,8 +285,8 @@ cpose_t * __cdecl Ragdoll_BodyPose(RagdollBody *param_1)
       return pcVar3;
     }
   }
-  if (param_1->pose == (cpose_t *)0x0) {
-    if (param_1->dobj == -1) {
+  if (body->pose == (cpose_t *)0x0) {
+    if (body->dobj == -1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xca,0,"%s"
                               );
       if (!bVar2) {
@@ -286,10 +295,10 @@ cpose_t * __cdecl Ragdoll_BodyPose(RagdollBody *param_1)
         return pcVar3;
       }
     }
-    pcVar3 = CG_GetPose(param_1->localClientNum,param_1->dobj);
+    pcVar3 = CG_GetPose(body->localClientNum,body->dobj);
   }
   else {
-    pcVar3 = param_1->pose;
+    pcVar3 = body->pose;
   }
   return pcVar3;
 }
@@ -297,18 +306,19 @@ cpose_t * __cdecl Ragdoll_BodyPose(RagdollBody *param_1)
 
 // 00863CB0  Ragdoll_BodyRootOrigin  (ragdoll/ragdoll.cpp:213)
 
-void __cdecl Ragdoll_BodyRootOrigin(RagdollBody *param_1,float *param_2)
+void __cdecl Ragdoll_BodyRootOrigin(RagdollBody *body,float *origin)
 
 {
   bool bVar1;
   BoneOrientation *pBVar2;
+  BoneOrientation *boneOrientation;
   
-  bVar1 = Ragdoll_BodyPoseValid(param_1);
+  bVar1 = Ragdoll_BodyPoseValid(body);
   if (bVar1) {
-    pBVar2 = Ragdoll_BodyBoneOrientations(param_1);
-    *param_2 = pBVar2->origin[0];
-    param_2[1] = pBVar2->origin[1];
-    param_2[2] = pBVar2->origin[2];
+    pBVar2 = Ragdoll_BodyBoneOrientations(body);
+    *origin = pBVar2->origin[0];
+    origin[1] = pBVar2->origin[1];
+    origin[2] = pBVar2->origin[2];
   }
   return;
 }
@@ -316,24 +326,25 @@ void __cdecl Ragdoll_BodyRootOrigin(RagdollBody *param_1,float *param_2)
 
 // 00863D40  Ragdoll_GetRootOrigin  (ragdoll/ragdoll.cpp:231)
 
-void __cdecl Ragdoll_GetRootOrigin(int param_1,float *param_2)
+void __cdecl Ragdoll_GetRootOrigin(int ragdollHandle,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
-  RagdollBody *pRVar3;
+  RagdollBody *body_00;
+  RagdollBody *body;
   
-  pRVar3 = Ragdoll_HandleBody(param_1);
-  if (((pRVar3 == (RagdollBody *)0x0) || (bVar2 = Ragdoll_BodyInUse(pRVar3), !bVar2)) &&
+  body_00 = Ragdoll_HandleBody(ragdollHandle);
+  if (((body_00 == (RagdollBody *)0x0) || (bVar2 = Ragdoll_BodyInUse(body_00), !bVar2)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0xeb,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = Ragdoll_BodyPoseValid(pRVar3);
+  bVar2 = Ragdoll_BodyPoseValid(body_00);
   if (bVar2) {
-    Ragdoll_BodyRootOrigin(pRVar3,param_2);
+    Ragdoll_BodyRootOrigin(body_00,origin);
   }
   return;
 }
@@ -341,14 +352,15 @@ void __cdecl Ragdoll_GetRootOrigin(int param_1,float *param_2)
 
 // 00864330  Ragdoll_ValidateDef  (ragdoll/ragdoll.cpp:259)
 
-bool __cdecl Ragdoll_ValidateDef(int param_1)
+bool __cdecl Ragdoll_ValidateDef(int ragdollDef)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  RagdollDef *def;
   
-  if ((1 < (uint)param_1) &&
+  if ((1 < (uint)ragdollDef) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x106,0,
                                "ragdollDef doesn\'t index RAGDOLL_MAX_DEFS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -356,7 +368,7 @@ bool __cdecl Ragdoll_ValidateDef(int param_1)
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  return *(int *)(&DAT_09c3b094 + param_1 * 0xf08) != 0;
+  return *(int *)(&DAT_09c3b094 + ragdollDef * 0xf08) != 0;
 }
 
 
@@ -435,61 +447,63 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00864170  Ragdoll_BindDef  (ragdoll/ragdoll.cpp:274)
 
-bool __cdecl Ragdoll_BindDef(int param_1)
+bool __cdecl Ragdoll_BindDef(int ragdollDef)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
   int iVar4;
-  int local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  RagdollDef *def;
+  int nameIdx;
+  BoneDef *boneDef;
+  int i;
+  BaseLerpBoneDef *lerpBoneDef;
+  int parentIdx;
   
-  bVar1 = Ragdoll_ValidateDef(param_1);
+  bVar1 = Ragdoll_ValidateDef(ragdollDef);
   if (bVar1) {
-    iVar4 = param_1 * 0xf08;
+    iVar4 = ragdollDef * 0xf08;
     if ((&DAT_09c3b091)[iVar4] == '\0') {
-      local_14 = iVar4 + 0x9c3b098;
-      for (local_10 = 0; local_10 < *(int *)(&DAT_09c3b094 + iVar4); local_10 = local_10 + 1) {
-        for (local_18 = 0; local_18 < 2; local_18 = local_18 + 1) {
-          iVar2 = I_stricmp((char *)(local_18 * 0x14 + local_14),"none");
+      boneDef = (BoneDef *)(iVar4 + 0x9c3b098);
+      for (i = 0; i < *(int *)(&DAT_09c3b094 + iVar4); i = i + 1) {
+        for (nameIdx = 0; nameIdx < 2; nameIdx = nameIdx + 1) {
+          iVar2 = I_stricmp(boneDef->animBoneTextNames[nameIdx],"none");
           if (iVar2 == 0) {
-            *(undefined4 *)(local_14 + 0x28 + local_18 * 4) = 0;
+            boneDef->animBoneNames[nameIdx] = 0;
           }
           else {
-            uVar3 = SL_FindString((char *)(local_18 * 0x14 + local_14),SCRIPTINSTANCE_SERVER);
-            *(uint *)(local_14 + 0x28 + local_18 * 4) = uVar3;
-            if (*(int *)(local_14 + 0x28 + local_18 * 4) == 0) {
+            uVar3 = SL_FindString(boneDef->animBoneTextNames[nameIdx],SCRIPTINSTANCE_SERVER);
+            boneDef->animBoneNames[nameIdx] = uVar3;
+            if (boneDef->animBoneNames[nameIdx] == 0) {
               return false;
             }
           }
         }
-        local_14 = local_14 + 0x50;
+        boneDef = boneDef + 1;
       }
-      local_c = (char *)(iVar4 + 0x9c3b4fc);
-      for (local_10 = 0; local_10 < *(int *)(&DAT_09c3b4f8 + iVar4); local_10 = local_10 + 1) {
-        uVar3 = SL_FindString(local_c,SCRIPTINSTANCE_SERVER);
-        *(uint *)(local_c + 0x14) = uVar3;
-        if (*(int *)(local_c + 0x14) == 0) {
+      lerpBoneDef = (BaseLerpBoneDef *)(iVar4 + 0x9c3b4fc);
+      for (i = 0; i < *(int *)(&DAT_09c3b4f8 + iVar4); i = i + 1) {
+        uVar3 = SL_FindString(lerpBoneDef->animBoneTextName,SCRIPTINSTANCE_SERVER);
+        lerpBoneDef->animBoneName = uVar3;
+        if (lerpBoneDef->animBoneName == 0) {
           return false;
         }
-        if (*(int *)(local_c + 0x18) == 0) {
-          local_14 = iVar4 + 0x9c3b098;
-          for (local_8 = 0; local_8 < *(int *)(&DAT_09c3b094 + iVar4); local_8 = local_8 + 1) {
-            if (*(int *)(local_14 + 0x2c) == *(int *)(local_c + 0x14)) {
-              *(int *)(local_c + 0x18) = local_8;
+        if (lerpBoneDef->parentBoneIndex == 0) {
+          boneDef = (BoneDef *)(iVar4 + 0x9c3b098);
+          for (parentIdx = 0; parentIdx < *(int *)(&DAT_09c3b094 + iVar4); parentIdx = parentIdx + 1
+              ) {
+            if (boneDef->animBoneNames[1] == lerpBoneDef->animBoneName) {
+              lerpBoneDef->parentBoneIndex = parentIdx;
               break;
             }
-            local_14 = local_14 + 0x50;
+            boneDef = boneDef + 1;
           }
-          if (local_8 == *(int *)(&DAT_09c3b094 + iVar4)) {
+          if (parentIdx == *(int *)(&DAT_09c3b094 + iVar4)) {
             return false;
           }
         }
-        local_c = local_c + 0x20;
+        lerpBoneDef = lerpBoneDef + 1;
       }
       (&DAT_09c3b091)[iVar4] = 1;
       bVar1 = true;
@@ -507,14 +521,14 @@ bool __cdecl Ragdoll_BindDef(int param_1)
 
 // 00863D00  Ragdoll_BodyPoseValid  (ragdoll/ragdoll.h:298)
 
-bool __cdecl Ragdoll_BodyPoseValid(RagdollBody *param_1)
+bool __cdecl Ragdoll_BodyPoseValid(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.h",299,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -522,20 +536,20 @@ bool __cdecl Ragdoll_BodyPoseValid(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  return 2 < (int)param_1->state;
+  return 2 < (int)body->state;
 }
 
 
 // 00863AD0  Ragdoll_BodyInUse  (ragdoll/ragdoll.h:312)
 
-bool __cdecl Ragdoll_BodyInUse(RagdollBody *param_1)
+bool __cdecl Ragdoll_BodyInUse(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.h",0x139,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -543,13 +557,13 @@ bool __cdecl Ragdoll_BodyInUse(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  return 0 < param_1->references;
+  return 0 < body->references;
 }
 
 
 // 00863E70  Ragdoll_BodyHasPhysics  (ragdoll/ragdoll.h:319)
 
-bool __cdecl Ragdoll_BodyHasPhysics(RagdollBody *param_1)
+bool __cdecl Ragdoll_BodyHasPhysics(RagdollBody *body)
 
 {
   code *pcVar1;
@@ -557,7 +571,7 @@ bool __cdecl Ragdoll_BodyHasPhysics(RagdollBody *param_1)
   undefined1 uVar3;
   bool local_8;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.h",0x140,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -565,7 +579,7 @@ bool __cdecl Ragdoll_BodyHasPhysics(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  if (((int)param_1->state < 1) || (4 < (int)param_1->state)) {
+  if (((int)body->state < 1) || (4 < (int)body->state)) {
     local_8 = false;
   }
   else {
@@ -583,16 +597,17 @@ int __cdecl Ragdoll_CountPhysicsBodies(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  phys_free_list<RagdollBody> *local_c;
-  int local_8;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
+  int running;
   
-  local_8 = 0;
-  local_c = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+  running = 0;
+  body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
   do {
-    if (local_c == &g_ragdoll_body_pool) {
-      return local_8;
+    if (body_i == &g_ragdoll_body_pool) {
+      return running;
     }
-    bVar2 = Ragdoll_BodyInUse((RagdollBody *)&local_c->m_list_count);
+    bVar2 = Ragdoll_BodyInUse((RagdollBody *)&body_i->m_list_count);
     if (!bVar2) {
       bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x15b,
                         "Ragdoll_BodyInUse( body )","");
@@ -602,11 +617,11 @@ int __cdecl Ragdoll_CountPhysicsBodies(void)
         return iVar3;
       }
     }
-    bVar2 = Ragdoll_BodyHasPhysics((RagdollBody *)&local_c->m_list_count);
+    bVar2 = Ragdoll_BodyHasPhysics((RagdollBody *)&body_i->m_list_count);
     if (bVar2) {
-      local_8 = local_8 + 1;
+      running = running + 1;
     }
-    local_c = (phys_free_list<RagdollBody> *)(local_c->m_dummy_head).m_next_T_internal;
+    body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal;
   } while( true );
 }
 
@@ -614,16 +629,17 @@ int __cdecl Ragdoll_CountPhysicsBodies(void)
 // 00863ED0  Ragdoll_CreateRagdollForDObj  (ragdoll/ragdoll.cpp:356)
 
 int __cdecl
-Ragdoll_CreateRagdollForDObj(int param_1,int param_2,int param_3,bool param_4,bool param_5)
+Ragdoll_CreateRagdollForDObj(int localClientNum,int ragdollDef,int dobj,bool reset,bool share)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  RagdollBody *pRVar4;
-  int local_c;
+  RagdollBody *body_00;
+  int ragdoll;
+  RagdollBody *body;
   
-  if ((param_3 == -1) &&
+  if ((dobj == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x168,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -634,40 +650,40 @@ Ragdoll_CreateRagdollForDObj(int param_1,int param_2,int param_3,bool param_4,bo
   if (bVar2) {
     iVar3 = Ragdoll_CountPhysicsBodies();
     if (iVar3 < (ragdoll_max_simulating->current).integer) {
-      if (param_5) {
-        local_c = Ragdoll_ReferenceDObjBody(param_3);
-        if (local_c == 0) {
-          local_c = Ragdoll_GetUnusedBody();
+      if (share) {
+        ragdoll = Ragdoll_ReferenceDObjBody(dobj);
+        if (ragdoll == 0) {
+          ragdoll = Ragdoll_GetUnusedBody();
         }
       }
       else {
-        local_c = Ragdoll_GetUnusedBody();
+        ragdoll = Ragdoll_GetUnusedBody();
       }
-      if (local_c == 0) {
+      if (ragdoll == 0) {
         Com_Printf(0x14,"Ragdoll allocation failed, out of ragdoll bodies (obj %d)\n");
-        local_c = 0;
+        ragdoll = 0;
       }
       else {
-        pRVar4 = Ragdoll_HandleBody(local_c);
-        if (param_4) {
-          Ragdoll_BodyNewState(pRVar4,BS_DEAD);
+        body_00 = Ragdoll_HandleBody(ragdoll);
+        if (reset) {
+          Ragdoll_BodyNewState(body_00,BS_DEAD);
         }
-        if (pRVar4->state == BS_DEAD) {
-          pRVar4->dobj = param_3;
-          pRVar4->ragdollDef = 1;
-          pRVar4->localClientNum = param_1;
-          Ragdoll_BodyNewState(pRVar4,BS_DOBJ_WAIT);
+        if (body_00->state == BS_DEAD) {
+          body_00->dobj = dobj;
+          body_00->ragdollDef = 1;
+          body_00->localClientNum = localClientNum;
+          Ragdoll_BodyNewState(body_00,BS_DOBJ_WAIT);
         }
       }
     }
     else {
-      local_c = 0;
+      ragdoll = 0;
     }
   }
   else {
-    local_c = 0;
+    ragdoll = 0;
   }
-  return local_c;
+  return ragdoll;
 }
 
 
@@ -694,7 +710,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 // 00864A30  debug_add  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:405)
 
 void __thiscall
-phys_free_list<RagdollBody>::debug_add(phys_free_list<RagdollBody> *this,T_internal *param_1)
+phys_free_list<RagdollBody>::debug_add(phys_free_list<RagdollBody> *this,T_internal *T_i)
 
 {
   int local_14;
@@ -707,12 +723,12 @@ phys_free_list<RagdollBody>::debug_add(phys_free_list<RagdollBody> *this,T_inter
   }
   this->m_list_count_high_water = local_14;
   if (this->m_ptr_list_count < 0x100) {
-    param_1->m_ptr_list_index = this->m_ptr_list_count;
-    this->m_ptr_list[this->m_ptr_list_count] = &param_1->m_data;
+    T_i->m_ptr_list_index = this->m_ptr_list_count;
+    this->m_ptr_list[this->m_ptr_list_count] = &T_i->m_data;
     this->m_ptr_list_count = this->m_ptr_list_count + 1;
   }
   else {
-    param_1->m_ptr_list_index = -1;
+    T_i->m_ptr_list_index = -1;
   }
   return;
 }
@@ -720,15 +736,16 @@ phys_free_list<RagdollBody>::debug_add(phys_free_list<RagdollBody> *this,T_inter
 
 // 00864390  Ragdoll_Remove  (ragdoll/ragdoll.cpp:454)
 
-void __cdecl Ragdoll_Remove(int param_1)
+void __cdecl Ragdoll_Remove(int ragdoll)
 
 {
   code *pcVar1;
   bool bVar2;
-  RagdollBody *pRVar3;
+  RagdollBody *body_00;
+  RagdollBody *body;
   
-  pRVar3 = Ragdoll_HandleBody(param_1);
-  bVar2 = Ragdoll_BodyInUse(pRVar3);
+  body_00 = Ragdoll_HandleBody(ragdoll);
+  bVar2 = Ragdoll_BodyInUse(body_00);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.cpp",0x1cb,0,"%s")
     ;
@@ -738,12 +755,12 @@ void __cdecl Ragdoll_Remove(int param_1)
       return;
     }
   }
-  if (pRVar3->references == 1) {
-    Ragdoll_BodyNewState(pRVar3,BS_DEAD);
-    Ragdoll_FreeBody(param_1);
+  if (body_00->references == 1) {
+    Ragdoll_BodyNewState(body_00,BS_DEAD);
+    Ragdoll_FreeBody(ragdoll);
   }
   else {
-    pRVar3->references = pRVar3->references + -1;
+    body_00->references = body_00->references + -1;
   }
   return;
 }
@@ -754,35 +771,35 @@ void __cdecl Ragdoll_Remove(int param_1)
 /* WARNING: Removing unreachable block (ram,0x0086490f) */
 
 RagdollBody * __thiscall
-phys_free_list<RagdollBody>::add(phys_free_list<RagdollBody> *this,int param_1,char *param_2)
+phys_free_list<RagdollBody>::add(phys_free_list<RagdollBody> *this,int no_error,char *error_msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  T_internal *pTVar3;
-  RagdollBody *pRVar4;
+  T_internal *T_i;
+  RagdollBody *pRVar3;
   
-  pTVar3 = PMM_ALLOC(0xa34,4);
-  if (pTVar3 == (T_internal *)0x0) {
-    if ((param_1 == 0) &&
+  T_i = PMM_ALLOC(0xa34,4);
+  if (T_i == (T_internal *)0x0) {
+    if ((no_error == 0) &&
        (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1d6,
-                          "no_error",param_2), bVar2)) {
+                          "no_error",error_msg), bVar2)) {
       pcVar1 = (code *)swi(3);
-      pRVar4 = (RagdollBody *)(*pcVar1)();
-      return pRVar4;
+      pRVar3 = (RagdollBody *)(*pcVar1)();
+      return pRVar3;
     }
-    pRVar4 = (RagdollBody *)0x0;
+    pRVar3 = (RagdollBody *)0x0;
   }
   else {
-    pTVar3->_padding_ = (int)this;
-    pTVar3->_padding_ = (int)(this->m_dummy_head).m_next_T_internal;
-    ((this->m_dummy_head).m_next_T_internal)->m_prev_T_internal = (T_internal_base *)pTVar3;
-    (this->m_dummy_head).m_next_T_internal = (T_internal_base *)pTVar3;
+    T_i->_padding_ = (int)this;
+    T_i->_padding_ = (int)(this->m_dummy_head).m_next_T_internal;
+    ((this->m_dummy_head).m_next_T_internal)->m_prev_T_internal = (T_internal_base *)T_i;
+    (this->m_dummy_head).m_next_T_internal = (T_internal_base *)T_i;
     this->m_list_count = this->m_list_count + 1;
-    debug_add(this,pTVar3);
-    pRVar4 = &pTVar3->m_data;
+    debug_add(this,T_i);
+    pRVar3 = &T_i->m_data;
   }
-  return pRVar4;
+  return pRVar3;
 }
 
 
@@ -791,12 +808,12 @@ phys_free_list<RagdollBody>::add(phys_free_list<RagdollBody> *this,int param_1,c
 /* WARNING: Removing unreachable block (ram,0x008649f5) */
 
 void __thiscall
-phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,RagdollBody *param_1)
+phys_free_list<RagdollBody>::remove(phys_free_list<RagdollBody> *this,RagdollBody *data_)
 
 {
-  if (param_1 != (RagdollBody *)0x0) {
-    PMM_VALIDATE(&param_1[-1].rope_id,0xa34,4);
-    remove(this,(T_internal *)&param_1[-1].rope_id);
+  if (data_ != (RagdollBody *)0x0) {
+    PMM_VALIDATE(&data_[-1].rope_id,0xa34,4);
+    remove(this,(T_internal *)&data_[-1].rope_id);
   }
   return;
 }
@@ -858,8 +875,8 @@ void __cdecl Ragdoll_Register(void)
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  char *pcVar4;
+  int controllerIndex;
+  char *text;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -882,9 +899,9 @@ void __cdecl Ragdoll_Register(void)
   }
   Ragdoll_InitDvars();
   Ragdoll_InitCommands();
-  pcVar4 = "exec ragdoll.cfg";
-  iVar3 = Com_LocalClient_GetControllerIndex(0);
-  Cmd_ExecuteSingleCommand(0,iVar3,pcVar4);
+  text = "exec ragdoll.cfg";
+  controllerIndex = Com_LocalClient_GetControllerIndex(0);
+  Cmd_ExecuteSingleCommand(0,controllerIndex,text);
   ragdollFirstInit = true;
   return;
 }
@@ -897,7 +914,7 @@ void __cdecl Ragdoll_Init(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -915,9 +932,9 @@ void __cdecl Ragdoll_Init(void)
     return;
   }
   if (ragdollInited == false) {
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      (&DAT_09c3b091)[local_8 * 0xf08] = 0;
-      (&ragdollDefs)[local_8 * 0xf08] = 0;
+    for (i = 0; i < 2; i = i + 1) {
+      (&DAT_09c3b091)[i * 0xf08] = 0;
+      (&ragdollDefs)[i * 0xf08] = 0;
     }
     ragdollInited = true;
   }

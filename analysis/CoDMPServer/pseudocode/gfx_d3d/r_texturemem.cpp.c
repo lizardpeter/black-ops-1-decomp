@@ -51,19 +51,19 @@ DDraw * __cdecl DDraw::Instance(void)
 
 // 00B40A90  R_VideoMemoryForDevice  (gfx_d3d/r_texturemem.cpp:83)
 
-ulong __cdecl R_VideoMemoryForDevice(_GUID *param_1,char *param_2)
+ulong __cdecl R_VideoMemoryForDevice(_GUID *lpGUID,char *lpDriverDescription)
 
 {
   DDraw *pDVar1;
   int local_2c;
-  undefined4 local_24;
+  undefined4 caps;
   undefined4 local_20;
   undefined4 local_1c;
   undefined4 local_18;
-  int local_14;
-  int *local_10;
-  ulong local_c;
-  undefined1 local_8 [4];
+  HRESULT hr;
+  IDirectDraw7 *dd;
+  ulong total;
+  undefined1 free [4];
   
   pDVar1 = DDraw::Instance();
   if (pDVar1->pDirectDrawCreateEx ==
@@ -71,38 +71,40 @@ ulong __cdecl R_VideoMemoryForDevice(_GUID *param_1,char *param_2)
     local_2c = -1;
   }
   else {
-    local_2c = (*pDVar1->pDirectDrawCreateEx)(param_1,&local_10,&IID_IDirectDraw7,(IUnknown *)0x0);
+    local_2c = (*pDVar1->pDirectDrawCreateEx)(lpGUID,&dd,&IID_IDirectDraw7,(IUnknown *)0x0);
   }
-  local_14 = local_2c;
+  hr = local_2c;
   if (local_2c < 0) {
-    local_c = 0;
+    total = 0;
   }
   else {
     local_20 = 0;
     local_1c = 0;
     local_18 = 0;
-    local_24 = 0x10000000;
-    local_14 = (**(code **)(*local_10 + 0x5c))(local_10,&local_24,&local_c,local_8);
-    (**(code **)(*local_10 + 8))(local_10);
-    if (local_14 < 0) {
-      local_c = 0;
+    caps = 0x10000000;
+    hr = (**(code **)((int)*dd + 0x5c))(dd,&caps,&total,free);
+    (**(code **)((int)*dd + 8))(dd);
+    if (hr < 0) {
+      total = 0;
     }
   }
-  return local_c;
+  return total;
 }
 
 
 // 00B40B30  R_DDEnumCallback  (gfx_d3d/r_texturemem.cpp:105)
 
 int __cdecl
-R_DDEnumCallback(_GUID *param_1,char *param_2,char *param_3,void *param_4,HMONITOR__ *param_5)
+R_DDEnumCallback(_GUID *lpGUID,char *lpDriverDescription,char *lpDriverName,void *lpContext,
+                HMONITOR__ *hm)
 
 {
   ulong uVar1;
+  ulong total;
   
-  if ((param_5 == (HMONITOR__ *)0x0) &&
-     (uVar1 = R_VideoMemoryForDevice(param_1,param_2), *(uint *)param_4 < uVar1)) {
-    *(ulong *)param_4 = uVar1;
+  if ((hm == (HMONITOR__ *)0x0) &&
+     (uVar1 = R_VideoMemoryForDevice(lpGUID,lpDriverDescription), *(uint *)lpContext < uVar1)) {
+    *(ulong *)lpContext = uVar1;
   }
   return 1;
 }
@@ -110,22 +112,22 @@ R_DDEnumCallback(_GUID *param_1,char *param_2,char *param_3,void *param_4,HMONIT
 
 // 00B40B80  R_DrasticVideoMemoryForDevice  (gfx_d3d/r_texturemem.cpp:119)
 
-ulong __cdecl R_DrasticVideoMemoryForDevice(_GUID *param_1,char *param_2)
+ulong __cdecl R_DrasticVideoMemoryForDevice(_GUID *lpGUID,char *lpDriverDescription)
 
 {
   DDraw *pDVar1;
   HMODULE hInstance;
   LPVOID lpParam;
   int local_30;
-  undefined4 local_28;
+  undefined4 caps;
   undefined4 local_24;
   undefined4 local_20;
   undefined4 local_1c;
-  int local_18;
-  int *local_14;
-  ulong local_10;
-  HWND local_c;
-  undefined1 local_8 [4];
+  HRESULT hr;
+  IDirectDraw7 *dd;
+  ulong total;
+  HWND__ *hwndDummy;
+  undefined1 free [4];
   
   pDVar1 = DDraw::Instance();
   if (pDVar1->pDirectDrawCreateEx ==
@@ -133,42 +135,44 @@ ulong __cdecl R_DrasticVideoMemoryForDevice(_GUID *param_1,char *param_2)
     local_30 = -1;
   }
   else {
-    local_30 = (*pDVar1->pDirectDrawCreateEx)(param_1,&local_14,&IID_IDirectDraw7,(IUnknown *)0x0);
+    local_30 = (*pDVar1->pDirectDrawCreateEx)(lpGUID,&dd,&IID_IDirectDraw7,(IUnknown *)0x0);
   }
-  local_18 = local_30;
+  hr = local_30;
   if (local_30 < 0) {
-    local_10 = 0;
+    total = 0;
   }
   else {
     lpParam = (LPVOID)0x0;
     hInstance = GetModuleHandleA((LPCSTR)0x0);
-    local_c = CreateWindowExA(0,"static","dummy",0,0,0,1,1,(HWND)0x0,(HMENU)0x0,hInstance,lpParam);
-    if (local_c == (HWND)0x0) {
-      (**(code **)(*local_14 + 8))(local_14);
-      local_10 = 0;
+    hwndDummy = (HWND__ *)
+                CreateWindowExA(0,"static","dummy",0,0,0,1,1,(HWND)0x0,(HMENU)0x0,hInstance,lpParam)
+    ;
+    if (hwndDummy == (HWND__ *)0x0) {
+      (**(code **)((int)*dd + 8))(dd);
+      total = 0;
     }
     else {
-      local_18 = (**(code **)(*local_14 + 0x50))(local_14,local_c,0x11);
-      if (local_18 < 0) {
-        DestroyWindow(local_c);
-        (**(code **)(*local_14 + 8))(local_14);
-        local_10 = 0;
+      hr = (**(code **)((int)*dd + 0x50))(dd,hwndDummy,0x11);
+      if (hr < 0) {
+        DestroyWindow((HWND)hwndDummy);
+        (**(code **)((int)*dd + 8))(dd);
+        total = 0;
       }
       else {
         local_24 = 0;
         local_20 = 0;
         local_1c = 0;
-        local_28 = 0x4000;
-        local_18 = (**(code **)(*local_14 + 0x5c))(local_14,&local_28,&local_10,local_8);
-        DestroyWindow(local_c);
-        (**(code **)(*local_14 + 8))(local_14);
-        if (local_18 < 0) {
-          local_10 = 0;
+        caps = 0x4000;
+        hr = (**(code **)((int)*dd + 0x5c))(dd,&caps,&total,free);
+        DestroyWindow((HWND)hwndDummy);
+        (**(code **)((int)*dd + 8))(dd);
+        if (hr < 0) {
+          total = 0;
         }
       }
     }
   }
-  return local_10;
+  return total;
 }
 
 
@@ -176,14 +180,16 @@ ulong __cdecl R_DrasticVideoMemoryForDevice(_GUID *param_1,char *param_2)
 
 int __cdecl
 R_DDEnumDrasticCallback
-          (_GUID *param_1,char *param_2,char *param_3,void *param_4,HMONITOR__ *param_5)
+          (_GUID *lpGUID,char *lpDriverDescription,char *lpDriverName,void *lpContext,HMONITOR__ *hm
+          )
 
 {
   ulong uVar1;
+  ulong total;
   
-  uVar1 = R_DrasticVideoMemoryForDevice(param_1,param_2);
-  if (*(uint *)param_4 < uVar1) {
-    *(ulong *)param_4 = uVar1;
+  uVar1 = R_DrasticVideoMemoryForDevice(lpGUID,lpDriverDescription);
+  if (*(uint *)lpContext < uVar1) {
+    *(ulong *)lpContext = uVar1;
   }
   return 1;
 }
@@ -195,27 +201,27 @@ uint __cdecl R_VideoMemory(void)
 
 {
   DDraw *pDVar1;
-  ulong local_c;
-  uint local_8;
+  ulong total;
+  uint size;
   
-  local_c = R_VideoMemoryForDevice((_GUID *)0x0,"NULL device");
-  if (local_c == 0) {
+  total = R_VideoMemoryForDevice((_GUID *)0x0,"NULL device");
+  if (total == 0) {
     pDVar1 = DDraw::Instance();
     if (pDVar1->pDirectDrawEnumerateEx !=
         (_func___cdecl_T_HRESULT__func___cdecl_int__GUID_ptr_char_ptr_char_ptr_void_ptr_HMONITOR___ptr_ptr_void_ptr_ulong
          *)0x0) {
-      (*pDVar1->pDirectDrawEnumerateEx)(R_DDEnumCallback,&local_c,0);
+      (*pDVar1->pDirectDrawEnumerateEx)(R_DDEnumCallback,&total,0);
     }
-    if (local_c == 0) {
-      local_c = R_DrasticVideoMemoryForDevice((_GUID *)0x0,"NULL device");
-      if (local_c == 0) {
+    if (total == 0) {
+      total = R_DrasticVideoMemoryForDevice((_GUID *)0x0,"NULL device");
+      if (total == 0) {
         pDVar1 = DDraw::Instance();
         if (pDVar1->pDirectDrawEnumerateEx !=
             (_func___cdecl_T_HRESULT__func___cdecl_int__GUID_ptr_char_ptr_char_ptr_void_ptr_HMONITOR___ptr_ptr_void_ptr_ulong
              *)0x0) {
-          (*pDVar1->pDirectDrawEnumerateEx)(R_DDEnumDrasticCallback,&local_c,0);
+          (*pDVar1->pDirectDrawEnumerateEx)(R_DDEnumDrasticCallback,&total,0);
         }
-        if (local_c == 0) {
+        if (total == 0) {
           Com_Printf(8,"Failed to get video memory size.\n");
           return 0;
         }
@@ -232,14 +238,14 @@ uint __cdecl R_VideoMemory(void)
   else {
     Com_Printf(8,"Video memory for device: %i MB.\n");
   }
-  local_c = (local_c - 1 >> 0x14) + 1;
-  for (local_8 = 1; local_8 < local_c; local_8 = local_8 << 1) {
+  total = (total - 1 >> 0x14) + 1;
+  for (size = 1; size < total; size = size << 1) {
   }
-  if (0x20 < local_8 - local_c) {
-    local_8 = local_8 >> 1;
+  if (0x20 < size - total) {
+    size = size >> 1;
   }
   Com_Printf(8,"Rounded video memory size: %i MB.\n");
-  return local_8;
+  return size;
 }
 
 
@@ -252,6 +258,9 @@ uint __cdecl R_AvailableTextureMemory(void)
   bool bVar2;
   uint uVar3;
   uint uVar4;
+  uint texMemInMegs;
+  uint texMemInBytes;
+  uint vidMemInMegs;
   
   if ((dx.device == (IDirect3DDevice9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_texturemem.cpp",0xe4,0

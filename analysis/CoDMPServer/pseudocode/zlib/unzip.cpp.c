@@ -2,26 +2,26 @@
 
 // 00813A20  unzlocal_getShort  (zlib/unzip.cpp:120)
 
-int __cdecl unzlocal_getShort(_iobuf *param_1,ulong *param_2)
+int __cdecl unzlocal_getShort(_iobuf *fin,ulong *pX)
 
 {
-  short local_8 [2];
+  short v;
   
-  FS_FileRead(local_8,2,param_1);
-  *param_2 = (int)local_8[0];
+  FS_FileRead(&v,2,fin);
+  *pX = (int)v;
   return 0;
 }
 
 
 // 00813A50  unzlocal_getLong  (zlib/unzip.cpp:149)
 
-int __cdecl unzlocal_getLong(_iobuf *param_1,ulong *param_2)
+int __cdecl unzlocal_getLong(_iobuf *fin,ulong *pX)
 
 {
-  ulong local_8;
+  int v;
   
-  FS_FileRead(&local_8,4,param_1);
-  *param_2 = local_8;
+  FS_FileRead(&v,4,fin);
+  *pX = v;
   return 0;
 }
 
@@ -30,89 +30,93 @@ int __cdecl unzlocal_getLong(_iobuf *param_1,ulong *param_2)
 
 /* WARNING: Removing unreachable block (ram,0x00813aa9) */
 
-ulong __cdecl unzlocal_SearchCentralDir(_iobuf *param_1)
+ulong __cdecl unzlocal_SearchCentralDir(_iobuf *fin)
 
 {
   uint uVar1;
-  void *pvVar2;
-  int iVar3;
-  uint uVar4;
-  int iVar5;
+  void *ptr;
+  int iVar2;
+  uint uVar3;
+  int offset;
   uint local_28;
-  int local_1c;
-  uint local_14;
-  uint local_10;
-  ulong local_c;
+  ulong uReadSize;
+  ulong uReadPos;
+  int i;
+  uchar *buf;
+  ulong uMaxBack;
+  ulong uBackRead;
+  ulong uPosFound;
+  ulong uSizeFile;
   
-  local_14 = 0xffff;
-  local_c = 0;
-  uVar1 = FS_FileGetFileSize(param_1);
+  uMaxBack = 0xffff;
+  uPosFound = 0;
+  uVar1 = FS_FileGetFileSize(fin);
   if (uVar1 < 0xffff) {
-    local_14 = uVar1;
+    uMaxBack = uVar1;
   }
-  pvVar2 = malloc(0x404);
-  if (pvVar2 == (void *)0x0) {
-    local_c = 0;
+  ptr = malloc(0x404);
+  if (ptr == (void *)0x0) {
+    uPosFound = 0;
   }
   else {
-    local_10 = 4;
-    while (local_10 < local_14) {
-      if (local_14 < local_10 + 0x400) {
-        local_10 = local_14;
+    uBackRead = 4;
+    while (uBackRead < uMaxBack) {
+      if (uMaxBack < uBackRead + 0x400) {
+        uBackRead = uMaxBack;
       }
       else {
-        local_10 = local_10 + 0x400;
+        uBackRead = uBackRead + 0x400;
       }
-      iVar5 = uVar1 - local_10;
-      if (uVar1 - iVar5 < 0x405) {
-        local_28 = uVar1 - iVar5;
+      offset = uVar1 - uBackRead;
+      if (uVar1 - offset < 0x405) {
+        local_28 = uVar1 - offset;
       }
       else {
         local_28 = 0x404;
       }
-      iVar3 = FS_FileSeek(param_1,iVar5,2);
-      if ((iVar3 != 0) || (uVar4 = FS_FileRead(pvVar2,local_28,param_1), uVar4 != local_28)) break;
-      iVar3 = local_28 - 3;
+      iVar2 = FS_FileSeek(fin,offset,2);
+      if ((iVar2 != 0) || (uVar3 = FS_FileRead(ptr,local_28,fin), uVar3 != local_28)) break;
+      iVar2 = local_28 - 3;
       do {
-        local_1c = iVar3;
-        iVar3 = local_1c + -1;
-        if (local_1c < 1) goto LAB_00813bd5;
-      } while ((((*(char *)((int)pvVar2 + iVar3) != 'P') ||
-                (*(char *)((int)pvVar2 + local_1c) != 'K')) ||
-               (*(char *)((int)pvVar2 + local_1c + 1) != '\x05')) ||
-              (*(char *)((int)pvVar2 + local_1c + 2) != '\x06'));
-      local_c = iVar5 + iVar3;
+        i = iVar2;
+        iVar2 = i + -1;
+        if (i < 1) goto LAB_00813bd5;
+      } while ((((*(char *)((int)ptr + iVar2) != 'P') || (*(char *)((int)ptr + i) != 'K')) ||
+               (*(char *)((int)ptr + i + 1) != '\x05')) || (*(char *)((int)ptr + i + 2) != '\x06'));
+      uPosFound = offset + iVar2;
 LAB_00813bd5:
-      if (local_c != 0) break;
+      if (uPosFound != 0) break;
     }
-    free(pvVar2);
+    free(ptr);
   }
-  return local_c;
+  return uPosFound;
 }
 
 
 // 008137A0  unzReOpen  (zlib/unzip.cpp:299)
 
-uchar * __cdecl unzReOpen(char *param_1,uchar *param_2)
+uchar * __cdecl unzReOpen(char *path,uchar *file)
 
 {
   _iobuf *p_Var1;
-  uchar *puVar2;
+  uchar *dest;
+  _iobuf *fin;
+  unz_s *s;
   
-  p_Var1 = FS_FileOpenReadBinary(param_1);
+  p_Var1 = FS_FileOpenReadBinary(path);
   if (p_Var1 == (_iobuf *)0x0) {
-    puVar2 = (uchar *)0x0;
+    dest = (uchar *)0x0;
   }
   else {
-    puVar2 = malloc(0x80);
-    Com_Memcpy(puVar2,param_2,0x80);
-    *(_iobuf **)puVar2 = p_Var1;
-    puVar2[0x7c] = '\0';
-    puVar2[0x7d] = '\0';
-    puVar2[0x7e] = '\0';
-    puVar2[0x7f] = '\0';
+    dest = malloc(0x80);
+    Com_Memcpy(dest,file,0x80);
+    *(_iobuf **)dest = p_Var1;
+    dest[0x7c] = '\0';
+    dest[0x7d] = '\0';
+    dest[0x7e] = '\0';
+    dest[0x7f] = '\0';
   }
-  return puVar2;
+  return dest;
 }
 
 
@@ -120,14 +124,15 @@ uchar * __cdecl unzReOpen(char *param_1,uchar *param_2)
 
 /* WARNING: Removing unreachable block (ram,0x0081381e) */
 
-uchar * __cdecl unzOpen(char *param_1)
+uchar * __cdecl unzOpen(char *path)
 
 {
-  ulong uVar1;
-  int iVar2;
-  _iobuf **pp_Var3;
-  uchar *puVar4;
-  _iobuf *local_a4;
+  ulong offset;
+  int iVar1;
+  _iobuf **pp_Var2;
+  unz_s *puVar3;
+  ulong central_pos;
+  _iobuf *us;
   ulong local_a0;
   ulong local_9c;
   int local_98;
@@ -135,106 +140,107 @@ uchar * __cdecl unzOpen(char *param_1)
   ulong local_84;
   ulong local_80 [22];
   undefined4 local_28;
-  ulong local_20;
-  ulong local_1c;
-  int local_18;
-  ulong local_14;
-  _iobuf *local_10;
-  uchar *local_c;
-  ulong local_8;
+  ulong number_disk_with_CD;
+  ulong number_entry_CD;
+  int err;
+  ulong uL;
+  _iobuf *fin;
+  unz_s *s;
+  ulong number_disk;
   
-  local_18 = 0;
-  local_10 = FS_FileOpenReadBinary(param_1);
-  if (local_10 == (_iobuf *)0x0) {
-    local_c = (uchar *)0x0;
+  err = 0;
+  fin = FS_FileOpenReadBinary(path);
+  if (fin == (_iobuf *)0x0) {
+    s = (unz_s *)0x0;
   }
   else {
-    uVar1 = unzlocal_SearchCentralDir(local_10);
-    if (uVar1 == 0) {
-      local_18 = -1;
+    offset = unzlocal_SearchCentralDir(fin);
+    if (offset == 0) {
+      err = -1;
     }
-    iVar2 = FS_FileSeek(local_10,uVar1,2);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = FS_FileSeek(fin,offset,2);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getLong(local_10,&local_14);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getLong(fin,&uL);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getShort(local_10,&local_8);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getShort(fin,&number_disk);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getShort(local_10,&local_20);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getShort(fin,&number_disk_with_CD);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getShort(local_10,&local_a0);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getShort(fin,&local_a0);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getShort(local_10,&local_1c);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getShort(fin,&number_entry_CD);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    if (((local_1c != local_a0) || (local_20 != 0)) || (local_8 != 0)) {
-      local_18 = -0x67;
+    if (((number_entry_CD != local_a0) || (number_disk_with_CD != 0)) || (number_disk != 0)) {
+      err = -0x67;
     }
-    iVar2 = unzlocal_getLong(local_10,&local_84);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getLong(fin,&local_84);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getLong(local_10,local_80);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getLong(fin,local_80);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    iVar2 = unzlocal_getShort(local_10,&local_9c);
-    if (iVar2 != 0) {
-      local_18 = -1;
+    iVar1 = unzlocal_getShort(fin,&local_9c);
+    if (iVar1 != 0) {
+      err = -1;
     }
-    if ((uVar1 < local_80[0] + local_84) && (local_18 == 0)) {
-      local_18 = -0x67;
+    if ((offset < local_80[0] + local_84) && (err == 0)) {
+      err = -0x67;
     }
-    if (local_18 == 0) {
-      local_a4 = local_10;
-      local_98 = uVar1 - (local_80[0] + local_84);
+    if (err == 0) {
+      us = fin;
+      local_98 = offset - (local_80[0] + local_84);
       local_28 = 0;
-      local_88 = uVar1;
-      local_c = malloc(0x80);
-      pp_Var3 = &local_a4;
-      puVar4 = local_c;
-      for (iVar2 = 0x20; iVar2 != 0; iVar2 = iVar2 + -1) {
-        *(_iobuf **)puVar4 = *pp_Var3;
-        pp_Var3 = pp_Var3 + 1;
-        puVar4 = puVar4 + 4;
+      local_88 = offset;
+      s = malloc(0x80);
+      pp_Var2 = &us;
+      puVar3 = s;
+      for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
+        puVar3->file = *pp_Var2;
+        pp_Var2 = pp_Var2 + 1;
+        puVar3 = (unz_s *)&puVar3->gi;
       }
-      unzGoToFirstFile(local_c);
+      unzGoToFirstFile((uchar *)s);
     }
     else {
-      FS_FileClose(local_10);
-      local_c = (uchar *)0x0;
+      FS_FileClose(fin);
+      s = (unz_s *)0x0;
     }
   }
-  return local_c;
+  return (uchar *)s;
 }
 
 
 // 00813C00  unzClose  (zlib/unzip.cpp:423)
 
-int __cdecl unzClose(uchar *param_1)
+int __cdecl unzClose(uchar *file)
 
 {
   int iVar1;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     iVar1 = -0x66;
   }
   else {
-    if (*(int *)(param_1 + 0x7c) != 0) {
-      unzCloseCurrentFile(param_1);
+    if (*(int *)(file + 0x7c) != 0) {
+      unzCloseCurrentFile(file);
     }
-    FS_FileClose(*(_iobuf **)param_1);
-    free(param_1);
+    FS_FileClose(*(_iobuf **)file);
+    free(file);
     iVar1 = 0;
   }
   return iVar1;
@@ -243,19 +249,20 @@ int __cdecl unzClose(uchar *param_1)
 
 // 00813C50  unzGetGlobalInfo  (zlib/unzip.cpp:443)
 
-int __cdecl unzGetGlobalInfo(uchar *param_1,unz_global_info_s *param_2)
+int __cdecl unzGetGlobalInfo(uchar *file,unz_global_info_s *pglobal_info)
 
 {
   ulong uVar1;
   int iVar2;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     iVar2 = -0x66;
   }
   else {
-    uVar1 = *(ulong *)(param_1 + 8);
-    param_2->number_entry = *(ulong *)(param_1 + 4);
-    param_2->size_comment = uVar1;
+    uVar1 = *(ulong *)(file + 8);
+    pglobal_info->number_entry = *(ulong *)(file + 4);
+    pglobal_info->size_comment = uVar1;
     iVar2 = 0;
   }
   return iVar2;
@@ -264,15 +271,17 @@ int __cdecl unzGetGlobalInfo(uchar *param_1,unz_global_info_s *param_2)
 
 // 008140E0  unzlocal_DosDateToTmuDate  (zlib/unzip.cpp:457)
 
-void __cdecl unzlocal_DosDateToTmuDate(ulong param_1,tm_unz_s *param_2)
+void __cdecl unzlocal_DosDateToTmuDate(ulong ulDosDate,tm_unz_s *ptm)
 
 {
-  param_2->tm_mday = param_1 >> 0x10 & 0x1f;
-  param_2->tm_mon = ((param_1 >> 0x10 & 0x1e0) >> 5) - 1;
-  param_2->tm_year = (param_1 >> 0x19) + 0x7bc;
-  param_2->tm_hour = (param_1 & 0xf800) >> 0xb;
-  param_2->tm_min = (param_1 & 0x7e0) >> 5;
-  param_2->tm_sec = (param_1 & 0x1f) << 1;
+  ulong uDate;
+  
+  ptm->tm_mday = ulDosDate >> 0x10 & 0x1f;
+  ptm->tm_mon = ((ulDosDate >> 0x10 & 0x1e0) >> 5) - 1;
+  ptm->tm_year = (ulDosDate >> 0x19) + 0x7bc;
+  ptm->tm_hour = (ulDosDate & 0xf800) >> 0xb;
+  ptm->tm_min = (ulDosDate & 0x7e0) >> 5;
+  ptm->tm_sec = (ulDosDate & 0x1f) << 1;
   return;
 }
 
@@ -281,20 +290,21 @@ void __cdecl unzlocal_DosDateToTmuDate(ulong param_1,tm_unz_s *param_2)
 
 int __cdecl
 unzlocal_GetCurrentFileInfoInternal
-          (uchar *param_1,unz_file_info_s *param_2,unz_file_info_internal_s *param_3,char *param_4,
-          ulong param_5,void *param_6,ulong param_7,char *param_8,ulong param_9)
+          (uchar *file,unz_file_info_s *pfile_info,unz_file_info_internal_s *pfile_info_internal,
+          char *szFileName,ulong fileNameBufferSize,void *extraField,ulong extraFieldBufferSize,
+          char *szComment,ulong commentBufferSize)
 
 {
   int iVar1;
   uint uVar2;
   ulong *puVar3;
-  uint local_74;
-  uint local_70;
-  uint local_6c;
-  int local_68;
-  unz_file_info_internal_s local_64;
-  int local_60;
-  ulong local_5c [4];
+  ulong uSizeRead_3;
+  ulong uSizeRead_2;
+  ulong uSizeRead;
+  int err;
+  unz_file_info_internal_s file_info_internal;
+  long lSeek;
+  ulong file_info [4];
   ulong local_4c;
   ulong local_48;
   ulong local_44;
@@ -306,167 +316,160 @@ unzlocal_GetCurrentFileInfoInternal
   ulong local_2c;
   ulong local_28;
   tm_unz_s local_24;
-  ulong local_c;
-  uchar *local_8;
+  ulong uMagic;
+  unz_s *s;
   
-  local_68 = 0;
-  local_60 = 0;
-  if (param_1 == (uchar *)0x0) {
-    local_68 = -0x66;
+  err = 0;
+  if (file == (uchar *)0x0) {
+    err = -0x66;
   }
   else {
-    local_8 = param_1;
-    iVar1 = FS_FileSeek(*(_iobuf **)param_1,*(int *)(param_1 + 0x14) + *(int *)(param_1 + 0xc),2);
+    s = (unz_s *)file;
+    iVar1 = FS_FileSeek(*(_iobuf **)file,*(int *)(file + 0x14) + *(int *)(file + 0xc),2);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    if (local_68 == 0) {
-      iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_c);
+    if (err == 0) {
+      iVar1 = unzlocal_getLong(s->file,&uMagic);
       if (iVar1 == 0) {
-        if (local_c != 0x2014b50) {
-          local_68 = -0x67;
+        if (uMagic != 0x2014b50) {
+          err = -0x67;
         }
       }
       else {
-        local_68 = -1;
+        err = -1;
       }
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,local_5c);
+    iVar1 = unzlocal_getShort(s->file,file_info);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,local_5c + 1);
+    iVar1 = unzlocal_getShort(s->file,file_info + 1);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,local_5c + 2);
+    iVar1 = unzlocal_getShort(s->file,file_info + 2);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,local_5c + 3);
+    iVar1 = unzlocal_getShort(s->file,file_info + 3);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_4c);
+    iVar1 = unzlocal_getLong(s->file,&local_4c);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
     unzlocal_DosDateToTmuDate(local_4c,&local_24);
-    iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_48);
+    iVar1 = unzlocal_getLong(s->file,&local_48);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_44);
+    iVar1 = unzlocal_getLong(s->file,&local_44);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_40);
+    iVar1 = unzlocal_getLong(s->file,&local_40);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,&local_3c);
+    iVar1 = unzlocal_getShort(s->file,&local_3c);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,&local_38);
+    iVar1 = unzlocal_getShort(s->file,&local_38);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,&local_34);
+    iVar1 = unzlocal_getShort(s->file,&local_34);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,&local_30);
+    iVar1 = unzlocal_getShort(s->file,&local_30);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(*(_iobuf **)local_8,&local_2c);
+    iVar1 = unzlocal_getShort(s->file,&local_2c);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_28);
+    iVar1 = unzlocal_getLong(s->file,&local_28);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(*(_iobuf **)local_8,&local_64.offset_curfile);
+    iVar1 = unzlocal_getLong(s->file,&file_info_internal.offset_curfile);
     if (iVar1 != 0) {
-      local_68 = -1;
+      err = -1;
     }
-    local_60 = local_60 + local_3c;
-    if ((local_68 == 0) && (param_4 != (char *)0x0)) {
-      if (local_3c < param_5) {
-        param_4[local_3c] = '\0';
-        local_6c = local_3c;
+    lSeek = local_3c;
+    if ((err == 0) && (szFileName != (char *)0x0)) {
+      if (local_3c < fileNameBufferSize) {
+        szFileName[local_3c] = '\0';
+        uSizeRead = local_3c;
       }
       else {
-        local_6c = param_5;
+        uSizeRead = fileNameBufferSize;
       }
-      if (((local_3c != 0) && (param_5 != 0)) &&
-         (uVar2 = FS_FileRead(param_4,local_6c,*(_iobuf **)local_8), uVar2 != local_6c)) {
-        local_68 = -1;
+      if (((local_3c != 0) && (fileNameBufferSize != 0)) &&
+         (uVar2 = FS_FileRead(szFileName,uSizeRead,s->file), uVar2 != uSizeRead)) {
+        err = -1;
       }
-      local_60 = local_60 - local_6c;
+      lSeek = local_3c - uSizeRead;
     }
-    if ((local_68 == 0) && (param_6 != (void *)0x0)) {
-      if (local_38 < param_7) {
-        local_70 = local_38;
+    if ((err == 0) && (extraField != (void *)0x0)) {
+      if (local_38 < extraFieldBufferSize) {
+        uSizeRead_2 = local_38;
       }
       else {
-        local_70 = param_7;
+        uSizeRead_2 = extraFieldBufferSize;
       }
-      if (local_60 != 0) {
-        iVar1 = FS_FileSeek(*(_iobuf **)local_8,local_60,0);
+      if (lSeek != 0) {
+        iVar1 = FS_FileSeek(s->file,lSeek,0);
         if (iVar1 == 0) {
-          local_60 = 0;
+          lSeek = 0;
         }
         else {
-          local_68 = -1;
+          err = -1;
         }
       }
-      if (((local_38 != 0) && (param_7 != 0)) &&
-         (uVar2 = FS_FileRead(param_6,local_70,*(_iobuf **)local_8), uVar2 != local_70)) {
-        local_68 = -1;
+      if (((local_38 != 0) && (extraFieldBufferSize != 0)) &&
+         (uVar2 = FS_FileRead(extraField,uSizeRead_2,s->file), uVar2 != uSizeRead_2)) {
+        err = -1;
       }
-      local_60 = (local_38 - local_70) + local_60;
+      lSeek = (local_38 - uSizeRead_2) + lSeek;
     }
     else {
-      local_60 = local_60 + local_38;
+      lSeek = lSeek + local_38;
     }
-    if ((local_68 == 0) && (param_8 != (char *)0x0)) {
-      if (local_34 < param_9) {
-        param_8[local_34] = '\0';
-        local_74 = local_34;
+    if ((err == 0) && (szComment != (char *)0x0)) {
+      if (local_34 < commentBufferSize) {
+        szComment[local_34] = '\0';
+        uSizeRead_3 = local_34;
       }
       else {
-        local_74 = param_9;
+        uSizeRead_3 = commentBufferSize;
       }
-      if (local_60 != 0) {
-        iVar1 = FS_FileSeek(*(_iobuf **)local_8,local_60,0);
-        if (iVar1 == 0) {
-          local_60 = 0;
-        }
-        else {
-          local_68 = -1;
-        }
+      if ((lSeek != 0) && (iVar1 = FS_FileSeek(s->file,lSeek,0), iVar1 != 0)) {
+        err = -1;
       }
-      if (((local_34 != 0) && (param_9 != 0)) &&
-         (uVar2 = FS_FileRead(param_8,local_74,*(_iobuf **)local_8), uVar2 != local_74)) {
-        local_68 = -1;
+      if (((local_34 != 0) && (commentBufferSize != 0)) &&
+         (uVar2 = FS_FileRead(szComment,uSizeRead_3,s->file), uVar2 != uSizeRead_3)) {
+        err = -1;
       }
     }
-    if ((local_68 == 0) && (param_2 != (unz_file_info_s *)0x0)) {
-      puVar3 = local_5c;
+    if ((err == 0) && (pfile_info != (unz_file_info_s *)0x0)) {
+      puVar3 = file_info;
       for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
-        param_2->version = *puVar3;
+        pfile_info->version = *puVar3;
         puVar3 = puVar3 + 1;
-        param_2 = (unz_file_info_s *)&param_2->version_needed;
+        pfile_info = (unz_file_info_s *)&pfile_info->version_needed;
       }
     }
-    if ((local_68 == 0) && (param_3 != (unz_file_info_internal_s *)0x0)) {
-      param_3->offset_curfile = (ulong)local_64;
+    if ((err == 0) && (pfile_info_internal != (unz_file_info_internal_s *)0x0)) {
+      pfile_info_internal->offset_curfile = (ulong)file_info_internal;
     }
   }
-  return local_68;
+  return err;
 }
 
 
@@ -474,40 +477,42 @@ unzlocal_GetCurrentFileInfoInternal
 
 int __cdecl
 unzGetCurrentFileInfo
-          (uchar *param_1,unz_file_info_s *param_2,char *param_3,ulong param_4,void *param_5,
-          ulong param_6,char *param_7,ulong param_8)
+          (uchar *file,unz_file_info_s *pfile_info,char *szFileName,ulong fileNameBufferSize,
+          void *extraField,ulong extraFieldBufferSize,char *szComment,ulong commentBufferSize)
 
 {
   int iVar1;
   
   iVar1 = unzlocal_GetCurrentFileInfoInternal
-                    (param_1,param_2,(unz_file_info_internal_s *)0x0,param_3,param_4,param_5,param_6
-                     ,param_7,param_8);
+                    (file,pfile_info,(unz_file_info_internal_s *)0x0,szFileName,fileNameBufferSize,
+                     extraField,extraFieldBufferSize,szComment,commentBufferSize);
   return iVar1;
 }
 
 
 // 00814160  unzGoToFirstFile  (zlib/unzip.cpp:656)
 
-int __cdecl unzGoToFirstFile(uchar *param_1)
+int __cdecl unzGoToFirstFile(uchar *file)
 
 {
   int iVar1;
+  int err;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     iVar1 = -0x66;
   }
   else {
-    *(undefined4 *)(param_1 + 0x14) = *(undefined4 *)(param_1 + 0x24);
-    param_1[0x10] = '\0';
-    param_1[0x11] = '\0';
-    param_1[0x12] = '\0';
-    param_1[0x13] = '\0';
+    *(undefined4 *)(file + 0x14) = *(undefined4 *)(file + 0x24);
+    file[0x10] = '\0';
+    file[0x11] = '\0';
+    file[0x12] = '\0';
+    file[0x13] = '\0';
     iVar1 = unzlocal_GetCurrentFileInfoInternal
-                      (param_1,(unz_file_info_s *)(param_1 + 0x28),
-                       (unz_file_info_internal_s *)(param_1 + 0x78),(char *)0x0,0,(void *)0x0,0,
+                      (file,(unz_file_info_s *)(file + 0x28),
+                       (unz_file_info_internal_s *)(file + 0x78),(char *)0x0,0,(void *)0x0,0,
                        (char *)0x0,0);
-    *(uint *)(param_1 + 0x18) = (uint)(iVar1 == 0);
+    *(uint *)(file + 0x18) = (uint)(iVar1 == 0);
   }
   return iVar1;
 }
@@ -515,30 +520,32 @@ int __cdecl unzGoToFirstFile(uchar *param_1)
 
 // 008141E0  unzGoToNextFile  (zlib/unzip.cpp:678)
 
-int __cdecl unzGoToNextFile(uchar *param_1)
+int __cdecl unzGoToNextFile(uchar *file)
 
 {
   int iVar1;
+  int err;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     iVar1 = -0x66;
   }
-  else if (*(int *)(param_1 + 0x18) == 0) {
+  else if (*(int *)(file + 0x18) == 0) {
     iVar1 = -100;
   }
-  else if (*(int *)(param_1 + 0x10) + 1 == *(int *)(param_1 + 4)) {
+  else if (*(int *)(file + 0x10) + 1 == *(int *)(file + 4)) {
     iVar1 = -100;
   }
   else {
-    *(int *)(param_1 + 0x14) =
-         *(int *)(param_1 + 0x48) + 0x2e + *(int *)(param_1 + 0x4c) + *(int *)(param_1 + 0x50) +
-         *(int *)(param_1 + 0x14);
-    *(int *)(param_1 + 0x10) = *(int *)(param_1 + 0x10) + 1;
+    *(int *)(file + 0x14) =
+         *(int *)(file + 0x48) + 0x2e + *(int *)(file + 0x4c) + *(int *)(file + 0x50) +
+         *(int *)(file + 0x14);
+    *(int *)(file + 0x10) = *(int *)(file + 0x10) + 1;
     iVar1 = unzlocal_GetCurrentFileInfoInternal
-                      (param_1,(unz_file_info_s *)(param_1 + 0x28),
-                       (unz_file_info_internal_s *)(param_1 + 0x78),(char *)0x0,0,(void *)0x0,0,
+                      (file,(unz_file_info_s *)(file + 0x28),
+                       (unz_file_info_internal_s *)(file + 0x78),(char *)0x0,0,(void *)0x0,0,
                        (char *)0x0,0);
-    *(uint *)(param_1 + 0x18) = (uint)(iVar1 == 0);
+    *(uint *)(file + 0x18) = (uint)(iVar1 == 0);
   }
   return iVar1;
 }
@@ -546,16 +553,17 @@ int __cdecl unzGoToNextFile(uchar *param_1)
 
 // 008142A0  unzGetCurrentFileInfoPosition  (zlib/unzip.cpp:705)
 
-int __cdecl unzGetCurrentFileInfoPosition(uchar *param_1,ulong *param_2)
+int __cdecl unzGetCurrentFileInfoPosition(uchar *file,ulong *pos)
 
 {
   int iVar1;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     iVar1 = -0x66;
   }
   else {
-    *param_2 = *(ulong *)(param_1 + 0x14);
+    *pos = *(ulong *)(file + 0x14);
     iVar1 = 0;
   }
   return iVar1;
@@ -564,21 +572,23 @@ int __cdecl unzGetCurrentFileInfoPosition(uchar *param_1,ulong *param_2)
 
 // 008142D0  unzSetCurrentFileInfoPosition  (zlib/unzip.cpp:721)
 
-int __cdecl unzSetCurrentFileInfoPosition(uchar *param_1,ulong param_2)
+int __cdecl unzSetCurrentFileInfoPosition(uchar *file,ulong pos)
 
 {
   int iVar1;
+  int err;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     iVar1 = -0x66;
   }
   else {
-    *(ulong *)(param_1 + 0x14) = param_2;
+    *(ulong *)(file + 0x14) = pos;
     iVar1 = unzlocal_GetCurrentFileInfoInternal
-                      (param_1,(unz_file_info_s *)(param_1 + 0x28),
-                       (unz_file_info_internal_s *)(param_1 + 0x78),(char *)0x0,0,(void *)0x0,0,
+                      (file,(unz_file_info_s *)(file + 0x28),
+                       (unz_file_info_internal_s *)(file + 0x78),(char *)0x0,0,(void *)0x0,0,
                        (char *)0x0,0);
-    *(uint *)(param_1 + 0x18) = (uint)(iVar1 == 0);
+    *(uint *)(file + 0x18) = (uint)(iVar1 == 0);
     iVar1 = 0;
   }
   return iVar1;
@@ -588,184 +598,186 @@ int __cdecl unzSetCurrentFileInfoPosition(uchar *param_1,ulong param_2)
 // 00814500  unzlocal_CheckCurrentFileCoherencyHeader  (zlib/unzip.cpp:798)
 
 int __cdecl
-unzlocal_CheckCurrentFileCoherencyHeader(unz_s *param_1,uint *param_2,ulong *param_3,uint *param_4)
+unzlocal_CheckCurrentFileCoherencyHeader
+          (unz_s *s,uint *piSizeVar,ulong *poffset_local_extrafield,uint *psize_local_extrafield)
 
 {
   int iVar1;
-  uint local_1c;
-  ulong local_18;
-  int local_14;
-  char *local_10;
-  uint local_c;
-  ulong local_8;
+  ulong uFlags;
+  ulong size_filename;
+  int err;
+  ulong uMagic;
+  ulong size_extra_field;
+  ulong uData;
   
-  local_14 = 0;
-  *param_2 = 0;
-  *param_3 = 0;
-  *param_4 = 0;
-  iVar1 = FS_FileSeek(param_1->file,
-                      (param_1->cur_file_info_internal).offset_curfile +
-                      param_1->byte_before_the_zipfile,2);
+  err = 0;
+  *piSizeVar = 0;
+  *poffset_local_extrafield = 0;
+  *psize_local_extrafield = 0;
+  iVar1 = FS_FileSeek(s->file,(s->cur_file_info_internal).offset_curfile +
+                              s->byte_before_the_zipfile,2);
   if (iVar1 == 0) {
-    if (local_14 == 0) {
-      iVar1 = unzlocal_getLong(param_1->file,(ulong *)&local_10);
+    if (err == 0) {
+      iVar1 = unzlocal_getLong(s->file,&uMagic);
       if (iVar1 == 0) {
-        if (local_10 != info5 + 0x3d08) {
-          local_14 = -0x67;
+        if ((char *)uMagic != info5 + 0x3d08) {
+          err = -0x67;
         }
       }
       else {
-        local_14 = -1;
+        err = -1;
       }
     }
-    iVar1 = unzlocal_getShort(param_1->file,&local_8);
+    iVar1 = unzlocal_getShort(s->file,&uData);
     if (iVar1 != 0) {
-      local_14 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(param_1->file,&local_1c);
+    iVar1 = unzlocal_getShort(s->file,&uFlags);
     if (iVar1 != 0) {
-      local_14 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(param_1->file,&local_8);
+    iVar1 = unzlocal_getShort(s->file,&uData);
     if (iVar1 == 0) {
-      if ((local_14 == 0) && (local_8 != (param_1->cur_file_info).compression_method)) {
-        local_14 = -0x67;
+      if ((err == 0) && (uData != (s->cur_file_info).compression_method)) {
+        err = -0x67;
       }
     }
     else {
-      local_14 = -1;
+      err = -1;
     }
-    if (((local_14 == 0) && ((param_1->cur_file_info).compression_method != 0)) &&
-       ((param_1->cur_file_info).compression_method != 8)) {
-      local_14 = -0x67;
+    if (((err == 0) && ((s->cur_file_info).compression_method != 0)) &&
+       ((s->cur_file_info).compression_method != 8)) {
+      err = -0x67;
     }
-    iVar1 = unzlocal_getLong(param_1->file,&local_8);
+    iVar1 = unzlocal_getLong(s->file,&uData);
     if (iVar1 != 0) {
-      local_14 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(param_1->file,&local_8);
+    iVar1 = unzlocal_getLong(s->file,&uData);
     if (iVar1 == 0) {
-      if (((local_14 == 0) && (local_8 != (param_1->cur_file_info).crc)) && ((local_1c & 8) == 0)) {
-        local_14 = -0x67;
+      if (((err == 0) && (uData != (s->cur_file_info).crc)) && ((uFlags & 8) == 0)) {
+        err = -0x67;
       }
     }
     else {
-      local_14 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(param_1->file,&local_8);
+    iVar1 = unzlocal_getLong(s->file,&uData);
     if (iVar1 == 0) {
-      if (((local_14 == 0) && (local_8 != (param_1->cur_file_info).compressed_size)) &&
-         ((local_1c & 8) == 0)) {
-        local_14 = -0x67;
+      if (((err == 0) && (uData != (s->cur_file_info).compressed_size)) && ((uFlags & 8) == 0)) {
+        err = -0x67;
       }
     }
     else {
-      local_14 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getLong(param_1->file,&local_8);
+    iVar1 = unzlocal_getLong(s->file,&uData);
     if (iVar1 == 0) {
-      if (((local_14 == 0) && (local_8 != (param_1->cur_file_info).uncompressed_size)) &&
-         ((local_1c & 8) == 0)) {
-        local_14 = -0x67;
+      if (((err == 0) && (uData != (s->cur_file_info).uncompressed_size)) && ((uFlags & 8) == 0)) {
+        err = -0x67;
       }
     }
     else {
-      local_14 = -1;
+      err = -1;
     }
-    iVar1 = unzlocal_getShort(param_1->file,&local_18);
+    iVar1 = unzlocal_getShort(s->file,&size_filename);
     if (iVar1 == 0) {
-      if ((local_14 == 0) && (local_18 != (param_1->cur_file_info).size_filename)) {
-        local_14 = -0x67;
+      if ((err == 0) && (size_filename != (s->cur_file_info).size_filename)) {
+        err = -0x67;
       }
     }
     else {
-      local_14 = -1;
+      err = -1;
     }
-    *param_2 = *param_2 + local_18;
-    iVar1 = unzlocal_getShort(param_1->file,&local_c);
+    *piSizeVar = *piSizeVar + size_filename;
+    iVar1 = unzlocal_getShort(s->file,&size_extra_field);
     if (iVar1 != 0) {
-      local_14 = -1;
+      err = -1;
     }
-    *param_3 = (param_1->cur_file_info_internal).offset_curfile + 0x1e + local_18;
-    *param_4 = local_c;
-    *param_2 = *param_2 + local_c;
+    *poffset_local_extrafield = (s->cur_file_info_internal).offset_curfile + 0x1e + size_filename;
+    *psize_local_extrafield = size_extra_field;
+    *piSizeVar = *piSizeVar + size_extra_field;
   }
   else {
-    local_14 = -1;
+    err = -1;
   }
-  return local_14;
+  return err;
 }
 
 
 // 00814330  unzOpenCurrentFile  (zlib/unzip.cpp:882)
 
-int __cdecl unzOpenCurrentFile(uchar *param_1)
+int __cdecl unzOpenCurrentFile(uchar *file)
 
 {
   int iVar1;
   char *pcVar2;
-  ulong local_20 [2];
-  uint local_18;
-  uint local_14;
-  file_in_zip_read_info_s *local_10;
-  uint local_c;
-  unz_s *local_8;
+  ulong offset_local_extrafield;
+  int err;
+  int Store;
+  uint iSizeVar;
+  file_in_zip_read_info_s *pfile_in_zip_read_info;
+  uint size_local_extrafield;
+  unz_s *s;
   
-  local_20[1] = 0;
-  if (param_1 == (uchar *)0x0) {
+  err = 0;
+  if (file == (uchar *)0x0) {
     iVar1 = -0x66;
   }
   else {
-    local_8 = (unz_s *)param_1;
-    if (*(int *)(param_1 + 0x18) == 0) {
+    s = (unz_s *)file;
+    if (*(int *)(file + 0x18) == 0) {
       iVar1 = -0x66;
     }
     else {
-      if (*(int *)(param_1 + 0x7c) != 0) {
-        unzCloseCurrentFile(param_1);
+      if (*(int *)(file + 0x7c) != 0) {
+        unzCloseCurrentFile(file);
       }
-      iVar1 = unzlocal_CheckCurrentFileCoherencyHeader(local_8,&local_14,local_20,&local_c);
+      iVar1 = unzlocal_CheckCurrentFileCoherencyHeader
+                        (s,&iSizeVar,&offset_local_extrafield,&size_local_extrafield);
       if (iVar1 == 0) {
-        local_10 = malloc(0x60);
-        if (local_10 == (file_in_zip_read_info_s *)0x0) {
+        pfile_in_zip_read_info = malloc(0x60);
+        if (pfile_in_zip_read_info == (file_in_zip_read_info_s *)0x0) {
           iVar1 = -0x68;
         }
         else {
           pcVar2 = malloc(0x4000);
-          local_10->read_buffer = pcVar2;
-          local_10->offset_local_extrafield = local_20[0];
-          local_10->size_local_extrafield = local_c;
-          local_10->pos_local_extrafield = 0;
-          if (local_10->read_buffer == (char *)0x0) {
-            free(local_10);
+          pfile_in_zip_read_info->read_buffer = pcVar2;
+          pfile_in_zip_read_info->offset_local_extrafield = offset_local_extrafield;
+          pfile_in_zip_read_info->size_local_extrafield = size_local_extrafield;
+          pfile_in_zip_read_info->pos_local_extrafield = 0;
+          if (pfile_in_zip_read_info->read_buffer == (char *)0x0) {
+            free(pfile_in_zip_read_info);
             iVar1 = -0x68;
           }
           else {
-            local_10->stream_initialised = 0;
-            if (((local_8->cur_file_info).compression_method != 0) &&
-               ((local_8->cur_file_info).compression_method != 8)) {
-              local_20[1] = 0xffffff99;
+            pfile_in_zip_read_info->stream_initialised = 0;
+            if (((s->cur_file_info).compression_method != 0) &&
+               ((s->cur_file_info).compression_method != 8)) {
+              err = -0x67;
             }
-            local_18 = (uint)((local_8->cur_file_info).compression_method == 0);
-            local_10->compression_method = (local_8->cur_file_info).compression_method;
-            local_10->file = local_8->file;
-            local_10->byte_before_the_zipfile = local_8->byte_before_the_zipfile;
-            (local_10->stream).total_out = 0;
-            if (local_18 == 0) {
-              (local_10->stream).zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
-              (local_10->stream).zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
-              (local_10->stream).opaque = (uchar *)0x0;
-              iVar1 = inflateInit2_(&local_10->stream,-0xf,"1.2.3",0x34);
+            Store = (int)((s->cur_file_info).compression_method == 0);
+            pfile_in_zip_read_info->compression_method = (s->cur_file_info).compression_method;
+            pfile_in_zip_read_info->file = s->file;
+            pfile_in_zip_read_info->byte_before_the_zipfile = s->byte_before_the_zipfile;
+            (pfile_in_zip_read_info->stream).total_out = 0;
+            if (Store == 0) {
+              (pfile_in_zip_read_info->stream).zalloc =
+                   (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
+              (pfile_in_zip_read_info->stream).zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0
+              ;
+              (pfile_in_zip_read_info->stream).opaque = (uchar *)0x0;
+              iVar1 = inflateInit2_(&pfile_in_zip_read_info->stream,-0xf,"1.2.3",0x34);
               if (iVar1 == 0) {
-                local_10->stream_initialised = 1;
+                pfile_in_zip_read_info->stream_initialised = 1;
               }
             }
-            local_10->rest_read_compressed = (local_8->cur_file_info).compressed_size;
-            local_10->rest_read_uncompressed = (local_8->cur_file_info).uncompressed_size;
-            local_10->pos_in_zipfile =
-                 (local_8->cur_file_info_internal).offset_curfile + 0x1e + local_14;
-            (local_10->stream).avail_in = 0;
-            local_8->pfile_in_zip_read = local_10;
+            pfile_in_zip_read_info->rest_read_compressed = (s->cur_file_info).compressed_size;
+            pfile_in_zip_read_info->rest_read_uncompressed = (s->cur_file_info).uncompressed_size;
+            pfile_in_zip_read_info->pos_in_zipfile =
+                 (s->cur_file_info_internal).offset_curfile + 0x1e + iSizeVar;
+            (pfile_in_zip_read_info->stream).avail_in = 0;
+            s->pfile_in_zip_read = pfile_in_zip_read_info;
             iVar1 = 0;
           }
         }
@@ -781,119 +793,128 @@ int __cdecl unzOpenCurrentFile(uchar *param_1)
 
 // 00814780  unzReadCurrentFile  (zlib/unzip.cpp:983)
 
-int __cdecl unzReadCurrentFile(uchar *param_1,uchar *param_2,uint param_3)
+int __cdecl unzReadCurrentFile(uchar *file,uchar *buf,uint len)
 
 {
   int *piVar1;
   int iVar2;
   uint uVar3;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  uint local_14;
-  uint local_10;
+  ulong uTotalOutBefore;
+  ulong uTotalOutAfter;
+  int flush;
+  ulong uOutThis;
+  uchar *bufBefore;
+  uint uDoCopy;
+  uint i;
+  uint uReadThis;
+  int err;
+  uint iRead;
+  file_in_zip_read_info_s *pfile_in_zip_read_info;
+  unz_s *s;
   
-  local_14 = 0;
-  local_10 = 0;
-  if (param_1 == (uchar *)0x0) {
-    local_14 = 0xffffff9a;
+  err = 0;
+  iRead = 0;
+  if (file == (uchar *)0x0) {
+    err = 0xffffff9a;
   }
   else {
-    piVar1 = *(int **)(param_1 + 0x7c);
+    piVar1 = *(int **)(file + 0x7c);
     if (piVar1 == (int *)0x0) {
-      local_14 = 0xffffff9a;
+      err = 0xffffff9a;
     }
     else if (*piVar1 == 0) {
-      local_14 = 0xffffff9c;
+      err = 0xffffff9c;
     }
-    else if (param_3 == 0) {
-      local_14 = 0;
+    else if (len == 0) {
+      err = 0;
     }
     else {
-      piVar1[4] = (int)param_2;
-      piVar1[5] = param_3;
-      if ((uint)piVar1[0x14] < param_3) {
+      piVar1[4] = (int)buf;
+      piVar1[5] = len;
+      if ((uint)piVar1[0x14] < len) {
         piVar1[5] = piVar1[0x14];
       }
       do {
         while( true ) {
           if (piVar1[5] == 0) goto LAB_00814a2c;
           if ((piVar1[2] == 0) && (piVar1[0x13] != 0)) {
-            local_18 = 0x4000;
+            uReadThis = 0x4000;
             if ((uint)piVar1[0x13] < 0x4000) {
-              local_18 = piVar1[0x13];
+              uReadThis = piVar1[0x13];
             }
-            if (local_18 == 0) {
+            if (uReadThis == 0) {
               return 0;
             }
             iVar2 = FS_FileSeek((_iobuf *)piVar1[0x15],piVar1[0xe] + piVar1[0x17],2);
             if (iVar2 != 0) {
               return -1;
             }
-            uVar3 = FS_FileRead((void *)*piVar1,local_18,(_iobuf *)piVar1[0x15]);
-            if (uVar3 != local_18) {
+            uVar3 = FS_FileRead((void *)*piVar1,uReadThis,(_iobuf *)piVar1[0x15]);
+            if (uVar3 != uReadThis) {
               return -1;
             }
-            piVar1[0xe] = piVar1[0xe] + local_18;
-            piVar1[0x13] = piVar1[0x13] - local_18;
+            piVar1[0xe] = piVar1[0xe] + uReadThis;
+            piVar1[0x13] = piVar1[0x13] - uReadThis;
             piVar1[1] = *piVar1;
-            piVar1[2] = local_18;
+            piVar1[2] = uReadThis;
           }
           if (piVar1[0x16] != 0) break;
           if ((uint)piVar1[5] < (uint)piVar1[2]) {
-            local_20 = piVar1[5];
+            uDoCopy = piVar1[5];
           }
           else {
-            local_20 = piVar1[2];
+            uDoCopy = piVar1[2];
           }
-          if (param_2 != (uchar *)0x0) {
-            for (local_1c = 0; local_1c < local_20; local_1c = local_1c + 1) {
-              *(undefined1 *)(piVar1[4] + local_1c) = *(undefined1 *)(piVar1[1] + local_1c);
+          if (buf != (uchar *)0x0) {
+            for (i = 0; i < uDoCopy; i = i + 1) {
+              *(undefined1 *)(piVar1[4] + i) = *(undefined1 *)(piVar1[1] + i);
             }
           }
-          piVar1[0x14] = piVar1[0x14] - local_20;
-          piVar1[2] = piVar1[2] - local_20;
-          piVar1[5] = piVar1[5] - local_20;
-          if (param_2 != (uchar *)0x0) {
-            piVar1[4] = piVar1[4] + local_20;
+          piVar1[0x14] = piVar1[0x14] - uDoCopy;
+          piVar1[2] = piVar1[2] - uDoCopy;
+          piVar1[5] = piVar1[5] - uDoCopy;
+          if (buf != (uchar *)0x0) {
+            piVar1[4] = piVar1[4] + uDoCopy;
           }
-          piVar1[1] = piVar1[1] + local_20;
-          piVar1[6] = piVar1[6] + local_20;
-          local_10 = local_10 + local_20;
+          piVar1[1] = piVar1[1] + uDoCopy;
+          piVar1[6] = piVar1[6] + uDoCopy;
+          iRead = iRead + uDoCopy;
         }
         iVar2 = piVar1[6];
-        local_14 = inflate((z_stream_s *)(piVar1 + 1),2);
+        err = inflate((z_stream_s *)(piVar1 + 1),2);
         piVar1[0x14] = piVar1[0x14] - (piVar1[6] - iVar2);
-        local_10 = (piVar1[6] - iVar2) + local_10;
-        if (local_14 == 1) {
-          return -(uint)(local_10 != 0) & local_10;
+        iRead = (piVar1[6] - iVar2) + iRead;
+        if (err == 1) {
+          return -(uint)(iRead != 0) & iRead;
         }
-      } while (local_14 == 0);
+      } while (err == 0);
 LAB_00814a2c:
-      if (local_14 == 0) {
-        local_14 = local_10;
+      if (err == 0) {
+        err = iRead;
       }
     }
   }
-  return local_14;
+  return err;
 }
 
 
 // 00814A40  unztell  (zlib/unzip.cpp:1113)
 
-long __cdecl unztell(uchar *param_1)
+long __cdecl unztell(uchar *file)
 
 {
   long lVar1;
+  file_in_zip_read_info_s *pfile_in_zip_read_info;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
+  if (file == (uchar *)0x0) {
     lVar1 = -0x66;
   }
-  else if (*(int *)(param_1 + 0x7c) == 0) {
+  else if (*(int *)(file + 0x7c) == 0) {
     lVar1 = -0x66;
   }
   else {
-    lVar1 = *(long *)(*(int *)(param_1 + 0x7c) + 0x18);
+    lVar1 = *(long *)(*(int *)(file + 0x7c) + 0x18);
   }
   return lVar1;
 }
@@ -901,35 +922,38 @@ long __cdecl unztell(uchar *param_1)
 
 // 00814A80  unzCloseCurrentFile  (zlib/unzip.cpp:1208)
 
-int __cdecl unzCloseCurrentFile(uchar *param_1)
+int __cdecl unzCloseCurrentFile(uchar *file)
 
 {
-  undefined4 *puVar1;
-  int iVar2;
+  undefined4 *pBlock;
+  int iVar1;
+  int err;
+  file_in_zip_read_info_s *pfile_in_zip_read_info;
+  unz_s *s;
   
-  if (param_1 == (uchar *)0x0) {
-    iVar2 = -0x66;
+  if (file == (uchar *)0x0) {
+    iVar1 = -0x66;
   }
   else {
-    puVar1 = *(undefined4 **)(param_1 + 0x7c);
-    if (puVar1 == (undefined4 *)0x0) {
-      iVar2 = -0x66;
+    pBlock = *(undefined4 **)(file + 0x7c);
+    if (pBlock == (undefined4 *)0x0) {
+      iVar1 = -0x66;
     }
     else {
-      free((void *)*puVar1);
-      *puVar1 = 0;
-      if (puVar1[0xf] != 0) {
-        inflateEnd((z_stream_s *)(puVar1 + 1));
+      free((void *)*pBlock);
+      *pBlock = 0;
+      if (pBlock[0xf] != 0) {
+        inflateEnd((z_stream_s *)(pBlock + 1));
       }
-      puVar1[0xf] = 0;
-      free(puVar1);
-      param_1[0x7c] = '\0';
-      param_1[0x7d] = '\0';
-      param_1[0x7e] = '\0';
-      param_1[0x7f] = '\0';
-      iVar2 = 0;
+      pBlock[0xf] = 0;
+      free(pBlock);
+      file[0x7c] = '\0';
+      file[0x7d] = '\0';
+      file[0x7e] = '\0';
+      file[0x7f] = '\0';
+      iVar1 = 0;
     }
   }
-  return iVar2;
+  return iVar1;
 }
 

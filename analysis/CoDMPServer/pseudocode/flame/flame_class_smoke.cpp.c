@@ -30,6 +30,7 @@ flameSmoke_t * __cdecl Flame_Class_Smoke_Alloc(void)
 
 {
   flameSmoke_t *pfVar1;
+  flameSmoke_t *freeSmoke;
   
   pfVar1 = flameSmokeFree;
   if (flameSmokeFree == (flameSmoke_t *)0x0) {
@@ -47,12 +48,12 @@ flameSmoke_t * __cdecl Flame_Class_Smoke_Alloc(void)
 
 // 0088C4E0  Flame_Class_Smoke_Free  (flame/flame_class_smoke.cpp:67)
 
-void __cdecl Flame_Class_Smoke_Free(flameSmoke_t *param_1)
+void __cdecl Flame_Class_Smoke_Free(flameSmoke_t *smoke)
 
 {
   Flame_List_Move_Global
-            (&param_1->gen,(flameGeneric_s **)&flameSmokeUsed,(flameGeneric_s **)&flameSmokeFree);
-  Flame_Item_Init(&param_1->gen,0x74);
+            (&smoke->gen,(flameGeneric_s **)&flameSmokeUsed,(flameGeneric_s **)&flameSmokeFree);
+  Flame_Item_Init(&smoke->gen,0x74);
   g_SmokeCount = g_SmokeCount + -1;
   return;
 }
@@ -60,39 +61,40 @@ void __cdecl Flame_Class_Smoke_Free(flameSmoke_t *param_1)
 
 // 0088C520  Flame_Class_Smoke_Age  (flame/flame_class_smoke.cpp:125)
 
-void __cdecl Flame_Class_Smoke_Age(bool param_1,int param_2,int param_3)
+void __cdecl Flame_Class_Smoke_Age(bool is_server,int time,int localClientNum)
 
 {
   flameSmoke_t *pfVar1;
   phys_static_array<flameGeneric_s_*,1000> *local_14;
-  flameSmoke_t *local_8;
+  flameSmoke_t *next;
+  flameSmoke_t *trav;
   
-  if (!param_1) {
-    local_8 = flameSmokeUsed;
-    pfVar1 = local_8;
-    while (local_8 = pfVar1, local_8 != (flameSmoke_t *)0x0) {
-      pfVar1 = (flameSmoke_t *)(local_8->gen).listGlobal.next;
-      if ((local_8->gen).age.lastUpdateTime < (local_8->gen).age.endTime) {
-        if ((local_8->gen).id < flame_freeze_id) {
-          (local_8->gen).phys.velocity[0] = 0.0;
-          (local_8->gen).phys.velocity[1] = 0.0;
+  if (!is_server) {
+    trav = flameSmokeUsed;
+    pfVar1 = trav;
+    while (trav = pfVar1, trav != (flameSmoke_t *)0x0) {
+      pfVar1 = (flameSmoke_t *)(trav->gen).listGlobal.next;
+      if ((trav->gen).age.lastUpdateTime < (trav->gen).age.endTime) {
+        if ((trav->gen).id < flame_freeze_id) {
+          (trav->gen).phys.velocity[0] = 0.0;
+          (trav->gen).phys.velocity[1] = 0.0;
         }
-        if (param_1) {
+        if (is_server) {
           local_14 = &sv_flames;
         }
         else {
           local_14 = &cl_flames;
         }
-        Flame_Phys_Update_Item_Smoke(&local_8->gen,param_2,local_14);
-        if ((local_8->gen).age.endTime < (local_8->gen).age.lastUpdateTime) {
-          (local_8->gen).age.lastUpdateTime = (local_8->gen).age.endTime;
+        Flame_Phys_Update_Item_Smoke(&trav->gen,time,local_14);
+        if ((trav->gen).age.endTime < (trav->gen).age.lastUpdateTime) {
+          (trav->gen).age.lastUpdateTime = (trav->gen).age.endTime;
         }
       }
       else {
-        Flame_Class_Smoke_Free(local_8);
+        Flame_Class_Smoke_Free(trav);
       }
     }
-    Flame_Phys_Update_Items(param_1,param_3);
+    Flame_Phys_Update_Items(is_server,localClientNum);
   }
   return;
 }
@@ -100,15 +102,20 @@ void __cdecl Flame_Class_Smoke_Age(bool param_1,int param_2,int param_3)
 
 // 0088C620  Flame_Class_Smoke_Spawn  (flame/flame_class_smoke.cpp:184)
 
-flameSmoke_t * __cdecl Flame_Class_Smoke_Spawn(flameChunk_s *param_1,int param_2)
+flameSmoke_t * __cdecl Flame_Class_Smoke_Spawn(flameChunk_s *fromChunk,int curTime)
 
 {
   flameTable *pfVar1;
   flameSmoke_t *pfVar2;
   int extraout_EAX;
   float fVar3;
+  int duration;
+  flameGeneric_s *gen;
+  float end;
+  flameTable *flameVars;
+  flameSmoke_t *smoke;
   
-  if ((param_1 == (flameChunk_s *)0x0) || ((param_1->gen).stream == (flameStream_s *)0x0)) {
+  if ((fromChunk == (flameChunk_s *)0x0) || ((fromChunk->gen).stream == (flameStream_s *)0x0)) {
     pfVar2 = (flameSmoke_t *)0x0;
   }
   else {
@@ -117,22 +124,23 @@ flameSmoke_t * __cdecl Flame_Class_Smoke_Spawn(flameChunk_s *param_1,int param_2
       pfVar2 = (flameSmoke_t *)0x0;
     }
     else {
-      pfVar1 = ((param_1->gen).stream)->flameVars;
+      pfVar1 = ((fromChunk->gen).stream)->flameVars;
       Flame_Random(false);
       _ftol2_sse();
       (pfVar2->gen).type = 3;
-      (pfVar2->gen).stream = (param_1->gen).stream;
-      (pfVar2->gen).id = (param_1->gen).id;
-      (pfVar2->gen).age.startTime = param_2;
-      (pfVar2->gen).age.endTime = param_2 + extraout_EAX;
-      (pfVar2->gen).age.lastUpdateTime = param_2;
-      (pfVar2->gen).size.current = (param_1->gen).size.current + pfVar1->flameVar_smokeStartSizeAdd;
+      (pfVar2->gen).stream = (fromChunk->gen).stream;
+      (pfVar2->gen).id = (fromChunk->gen).id;
+      (pfVar2->gen).age.startTime = curTime;
+      (pfVar2->gen).age.endTime = curTime + extraout_EAX;
+      (pfVar2->gen).age.lastUpdateTime = curTime;
+      (pfVar2->gen).size.current =
+           (fromChunk->gen).size.current + pfVar1->flameVar_smokeStartSizeAdd;
       (pfVar2->gen).size.rate =
-           (((param_1->gen).size.current + pfVar1->flameVar_smokeEndSizeAdd) -
+           (((fromChunk->gen).size.current + pfVar1->flameVar_smokeEndSizeAdd) -
            (pfVar2->gen).size.current) / pfVar1->flameVar_smokeLife;
-      (pfVar2->gen).phys.origin[0] = (param_1->gen).phys.origin[0];
-      (pfVar2->gen).phys.origin[1] = (param_1->gen).phys.origin[1];
-      (pfVar2->gen).phys.origin[2] = (param_1->gen).phys.origin[2];
+      (pfVar2->gen).phys.origin[0] = (fromChunk->gen).phys.origin[0];
+      (pfVar2->gen).phys.origin[1] = (fromChunk->gen).phys.origin[1];
+      (pfVar2->gen).phys.origin[2] = (fromChunk->gen).phys.origin[2];
       fVar3 = Flame_CRandom(false);
       (pfVar2->gen).phys.origin[0] =
            fVar3 * pfVar1->flameVar_smokeOriginOffset + (pfVar2->gen).phys.origin[0];
@@ -140,16 +148,16 @@ flameSmoke_t * __cdecl Flame_Class_Smoke_Spawn(flameChunk_s *param_1,int param_2
       (pfVar2->gen).phys.origin[1] =
            fVar3 * pfVar1->flameVar_smokeOriginOffset + (pfVar2->gen).phys.origin[1];
       (pfVar2->gen).phys.origin[2] =
-           (param_1->gen).size.current * pfVar1->flameVar_smokeOriginSizeOfsZScale +
+           (fromChunk->gen).size.current * pfVar1->flameVar_smokeOriginSizeOfsZScale +
            pfVar1->flameVar_smokeOriginOfsZ + (pfVar2->gen).phys.origin[2];
       fVar3 = pfVar1->flameVar_smokeSpeedScale;
-      (pfVar2->gen).phys.velocity[0] = fVar3 * (param_1->gen).phys.velocity[0];
-      (pfVar2->gen).phys.velocity[1] = fVar3 * (param_1->gen).phys.velocity[1];
-      (pfVar2->gen).phys.velocity[2] = fVar3 * (param_1->gen).phys.velocity[2];
+      (pfVar2->gen).phys.velocity[0] = fVar3 * (fromChunk->gen).phys.velocity[0];
+      (pfVar2->gen).phys.velocity[1] = fVar3 * (fromChunk->gen).phys.velocity[1];
+      (pfVar2->gen).phys.velocity[2] = fVar3 * (fromChunk->gen).phys.velocity[2];
       (pfVar2->gen).phys.velocity[2] =
            (pfVar2->gen).phys.velocity[2] + pfVar1->flameVar_smokeVelocityAddZ;
       fVar3 = Flame_CalcInvStartSpeed
-                        ((param_1->gen).phys.invStartSpeed,pfVar1->flameVar_smokeSpeedScale);
+                        ((fromChunk->gen).phys.invStartSpeed,pfVar1->flameVar_smokeSpeedScale);
       (pfVar2->gen).phys.invStartSpeed = fVar3;
       (pfVar2->gen).phys.gravity = pfVar1->flameVar_smokeGravity;
       fVar3 = Flame_CRandom(false);
@@ -174,33 +182,33 @@ flameSmoke_t * __cdecl Flame_Class_Smoke_Spawn(flameChunk_s *param_1,int param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Flame_Class_Smoke_Render_Item(int param_1,flameSmoke_t *param_2)
+void __cdecl Flame_Class_Smoke_Render_Item(int localClientNum,flameSmoke_t *smoke)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_78;
-  float local_74 [3];
-  float local_68 [9];
+  float alpha;
+  float fwd [3];
+  float points [9];
   float local_44;
   float local_40;
-  float local_3c;
+  float start;
   float local_38;
   float local_34;
-  float local_30;
+  float end;
   float local_2c;
   float local_28;
-  float local_24 [2];
+  float angles [2];
   float local_1c;
-  float local_18;
+  float down;
   float local_14;
   float local_10;
-  int local_c;
-  cg_s *local_8;
+  int i;
+  cg_s *clientGlobals;
   
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8 == (cg_s *)0x0) &&
+  clientGlobals = CG_GetLocalClientGlobals(localClientNum);
+  if ((clientGlobals == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_smoke.cpp",
                                0x104,0,"%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -208,60 +216,59 @@ void __cdecl Flame_Class_Smoke_Render_Item(int param_1,flameSmoke_t *param_2)
     return;
   }
   if ((flame_debug_render->current).integer < 1) {
-    local_78 = 1.0;
-    if ((float)(param_2->gen).age.startTime +
-        (float)((param_2->gen).age.endTime - (param_2->gen).age.startTime) * param_2->smokeFadein <=
-        (float)(param_2->gen).age.lastUpdateTime) {
-      if ((float)(param_2->gen).age.startTime +
-          (float)((param_2->gen).age.endTime - (param_2->gen).age.startTime) * param_2->smokeFadeout
-          < (float)(param_2->gen).age.lastUpdateTime) {
-        local_78 = 1.0 - ((float)((param_2->gen).age.lastUpdateTime - (param_2->gen).age.startTime)
-                          / (float)((param_2->gen).age.endTime - (param_2->gen).age.startTime) -
-                         param_2->smokeFadeout) / (1.0 - param_2->smokeFadeout);
+    alpha = 1.0;
+    if ((float)(smoke->gen).age.startTime +
+        (float)((smoke->gen).age.endTime - (smoke->gen).age.startTime) * smoke->smokeFadein <=
+        (float)(smoke->gen).age.lastUpdateTime) {
+      if ((float)(smoke->gen).age.startTime +
+          (float)((smoke->gen).age.endTime - (smoke->gen).age.startTime) * smoke->smokeFadeout <
+          (float)(smoke->gen).age.lastUpdateTime) {
+        alpha = 1.0 - ((float)((smoke->gen).age.lastUpdateTime - (smoke->gen).age.startTime) /
+                       (float)((smoke->gen).age.endTime - (smoke->gen).age.startTime) -
+                      smoke->smokeFadeout) / (1.0 - smoke->smokeFadeout);
       }
     }
     else {
-      local_78 = ((float)((param_2->gen).age.lastUpdateTime - (param_2->gen).age.startTime) /
-                 (float)((param_2->gen).age.endTime - (param_2->gen).age.startTime)) /
-                 param_2->smokeFadein;
+      alpha = ((float)((smoke->gen).age.lastUpdateTime - (smoke->gen).age.startTime) /
+              (float)((smoke->gen).age.endTime - (smoke->gen).age.startTime)) / smoke->smokeFadein;
     }
-    Flame_Render_Sprite(local_8,param_2->material,&param_2->gen,local_78 * param_2->smokeMaxAlpha,
-                        -1.0,(uchar)(int)(param_2->smokeBrightness * 255.0));
+    Flame_Render_Sprite(clientGlobals,smoke->material,&smoke->gen,alpha * smoke->smokeMaxAlpha,-1.0,
+                        (uchar)(int)(smoke->smokeBrightness * 255.0));
   }
   else {
-    local_68[0] = -1.0;
-    local_68[1] = -1.0;
-    local_68[2] = 1.0;
-    local_68[3] = -1.0;
-    local_68[4] = 1.0;
-    local_68[5] = 1.0;
-    local_68[6] = -1.0;
-    local_68[7] = 1.0;
-    AxisToAngles((local_8->refdef).viewaxis,local_24);
-    local_1c = (param_2->gen).phys.rotation;
-    AngleVectors(local_24,local_74,local_68 + 8,&local_18);
-    fVar3 = (param_2->gen).size.current * 0.5;
-    local_68[8] = fVar3 * local_68[8];
+    points[0] = -1.0;
+    points[1] = -1.0;
+    points[2] = 1.0;
+    points[3] = -1.0;
+    points[4] = 1.0;
+    points[5] = 1.0;
+    points[6] = -1.0;
+    points[7] = 1.0;
+    AxisToAngles((clientGlobals->refdef).viewaxis,angles);
+    local_1c = (smoke->gen).phys.rotation;
+    AngleVectors(angles,fwd,points + 8,&down);
+    fVar3 = (smoke->gen).size.current * 0.5;
+    points[8] = fVar3 * points[8];
     local_44 = fVar3 * local_44;
     local_40 = fVar3 * local_40;
-    fVar3 = (param_2->gen).size.current * -0.5;
-    local_18 = fVar3 * local_18;
+    fVar3 = (smoke->gen).size.current * -0.5;
+    down = fVar3 * down;
     local_14 = fVar3 * local_14;
     local_10 = fVar3 * local_10;
-    local_3c = local_68[7] * local_18 + local_68[6] * local_68[8] + (param_2->gen).phys.origin[0];
-    local_38 = local_68[7] * local_14 + local_68[6] * local_44 + (param_2->gen).phys.origin[1];
-    local_34 = local_68[7] * local_10 + local_68[6] * local_40 + (param_2->gen).phys.origin[2];
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      fVar3 = local_68[local_c * 2];
-      local_30 = fVar3 * local_68[8] + (param_2->gen).phys.origin[0];
-      local_2c = fVar3 * local_44 + (param_2->gen).phys.origin[1];
-      local_28 = fVar3 * local_40 + (param_2->gen).phys.origin[2];
-      fVar3 = local_68[local_c * 2 + 1];
-      local_30 = fVar3 * local_18 + local_30;
+    start = points[7] * down + points[6] * points[8] + (smoke->gen).phys.origin[0];
+    local_38 = points[7] * local_14 + points[6] * local_44 + (smoke->gen).phys.origin[1];
+    local_34 = points[7] * local_10 + points[6] * local_40 + (smoke->gen).phys.origin[2];
+    for (i = 0; i < 4; i = i + 1) {
+      fVar3 = points[i * 2];
+      end = fVar3 * points[8] + (smoke->gen).phys.origin[0];
+      local_2c = fVar3 * local_44 + (smoke->gen).phys.origin[1];
+      local_28 = fVar3 * local_40 + (smoke->gen).phys.origin[2];
+      fVar3 = points[i * 2 + 1];
+      end = fVar3 * down + end;
       local_2c = fVar3 * local_14 + local_2c;
       local_28 = fVar3 * local_10 + local_28;
-      G_DebugLineWithDuration(&local_3c,&local_30,colorMdGrey,1,1);
-      local_3c = local_30;
+      G_DebugLineWithDuration(&start,&end,colorMdGrey,1,1);
+      start = end;
       local_38 = local_2c;
       local_34 = local_28;
     }
@@ -345,18 +352,23 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 0088CD90  Flame_Class_Smoke_Render_All  (flame/flame_class_smoke.cpp:317)
 
-void __cdecl Flame_Class_Smoke_Render_All(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Class_Smoke_Render_All(int localClientNum)
 
 {
-  flameSmoke_t *local_8;
+  flameSmoke_t *smoke;
   
-  local_8 = flameSmokeUsed;
-  while ((local_8 != (flameSmoke_t *)0x0 &&
-         ((local_8->gen).listGlobal.next != (flameGeneric_s *)0x0))) {
-    local_8 = (flameSmoke_t *)(local_8->gen).listGlobal.next;
+  smoke = flameSmokeUsed;
+  while ((smoke != (flameSmoke_t *)0x0 && ((smoke->gen).listGlobal.next != (flameGeneric_s *)0x0)))
+  {
+    smoke = (flameSmoke_t *)(smoke->gen).listGlobal.next;
   }
-  for (; local_8 != (flameSmoke_t *)0x0; local_8 = (flameSmoke_t *)(local_8->gen).listGlobal.prev) {
-    Flame_Class_Smoke_Render_Item(param_1,local_8);
+  for (; smoke != (flameSmoke_t *)0x0; smoke = (flameSmoke_t *)(smoke->gen).listGlobal.prev) {
+    Flame_Class_Smoke_Render_Item(localClientNum,smoke);
   }
   return;
 }

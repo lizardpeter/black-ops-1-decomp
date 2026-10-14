@@ -52,10 +52,10 @@ void __cdecl std::_String_base::_Xran(void)
 length_error * __thiscall
 std::length_error::length_error
           (length_error *this,
-          basic_string<char,std::char_traits<char>,std::allocator<char>_> *param_1)
+          basic_string<char,std::char_traits<char>,std::allocator<char>_> *_Message)
 
 {
-  logic_error::logic_error((logic_error *)this,param_1);
+  logic_error::logic_error((logic_error *)this,_Message);
   *(undefined ***)this = vftable;
   return this;
 }
@@ -66,10 +66,10 @@ std::length_error::length_error
 out_of_range * __thiscall
 std::out_of_range::out_of_range
           (out_of_range *this,
-          basic_string<char,std::char_traits<char>,std::allocator<char>_> *param_1)
+          basic_string<char,std::char_traits<char>,std::allocator<char>_> *_Message)
 
 {
-  logic_error::logic_error((logic_error *)this,param_1);
+  logic_error::logic_error((logic_error *)this,_Message);
   *(undefined ***)this = vftable;
   return this;
 }
@@ -80,12 +80,12 @@ std::out_of_range::out_of_range
 basic_string<char,std::char_traits<char>,std::allocator<char>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::
 basic_string<char,std::char_traits<char>,std::allocator<char>_>
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *param_1)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *_Ptr)
 
 {
   this->_Myres = 0xf;
   _Eos(this,0);
-  assign(this,param_1);
+  assign(this,_Ptr);
   return this;
 }
 
@@ -107,14 +107,14 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::
 
 basic_string<char,std::char_traits<char>,std::allocator<char>_> * __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *param_1)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,char *_Ptr)
 
 {
-  uint extraout_EAX;
+  uint _Count;
   basic_string<char,std::char_traits<char>,std::allocator<char>_> *pbVar1;
   
-  strlen((uchar *)param_1);
-  pbVar1 = assign(this,param_1,extraout_EAX);
+  strlen((uchar *)_Ptr);
+  pbVar1 = assign(this,_Ptr,_Count);
   return pbVar1;
 }
 
@@ -123,19 +123,19 @@ std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::assign
 
 void __thiscall
 std::basic_string<char,std::char_traits<char>,std::allocator<char>_>::_Eos
-          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,uint param_1)
+          (basic_string<char,std::char_traits<char>,std::allocator<char>_> *this,uint _Newsize)
 
 {
   _Bxty *p_Var1;
   
-  this->_Mysize = param_1;
+  this->_Mysize = _Newsize;
   if (this->_Myres < 0x10) {
     p_Var1 = &this->_Bx;
   }
   else {
     p_Var1 = (_Bxty *)(this->_Bx)._Ptr;
   }
-  p_Var1->_Buf[param_1] = '\0';
+  p_Var1->_Buf[_Newsize] = '\0';
   return;
 }
 

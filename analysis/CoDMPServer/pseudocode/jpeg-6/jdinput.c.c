@@ -2,84 +2,83 @@
 
 // 00B58B00  initial_setup  (jpeg-6/jdinput.c:41)
 
-void __cdecl initial_setup(jpeg_decompress_struct *param_1)
+void __cdecl initial_setup(jpeg_decompress_struct *cinfo)
 
 {
   uint uVar1;
   int local_14;
   int local_10;
-  int local_c;
-  jpeg_component_info *local_8;
+  int ci;
+  jpeg_component_info *compptr;
   
-  if ((0xffdc < (int)param_1->image_height) || (0xffdc < (int)param_1->image_width)) {
-    param_1->err->msg_code = 0x29;
-    (param_1->err->msg_parm).i[0] = 0xffdc;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if ((0xffdc < (int)cinfo->image_height) || (0xffdc < (int)cinfo->image_width)) {
+    cinfo->err->msg_code = 0x29;
+    (cinfo->err->msg_parm).i[0] = 0xffdc;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_1->data_precision != 8) {
-    param_1->err->msg_code = 0xf;
-    (param_1->err->msg_parm).i[0] = param_1->data_precision;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->data_precision != 8) {
+    cinfo->err->msg_code = 0xf;
+    (cinfo->err->msg_parm).i[0] = cinfo->data_precision;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (10 < param_1->num_components) {
-    param_1->err->msg_code = 0x1a;
-    (param_1->err->msg_parm).i[0] = param_1->num_components;
-    (param_1->err->msg_parm).i[1] = 10;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (10 < cinfo->num_components) {
+    cinfo->err->msg_code = 0x1a;
+    (cinfo->err->msg_parm).i[0] = cinfo->num_components;
+    (cinfo->err->msg_parm).i[1] = 10;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  param_1->max_h_samp_factor = 1;
-  param_1->max_v_samp_factor = 1;
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    if ((((local_8->h_samp_factor < 1) || (4 < local_8->h_samp_factor)) ||
-        (local_8->v_samp_factor < 1)) || (4 < local_8->v_samp_factor)) {
-      param_1->err->msg_code = 0x12;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  cinfo->max_h_samp_factor = 1;
+  cinfo->max_v_samp_factor = 1;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    if ((((compptr->h_samp_factor < 1) || (4 < compptr->h_samp_factor)) ||
+        (compptr->v_samp_factor < 1)) || (4 < compptr->v_samp_factor)) {
+      cinfo->err->msg_code = 0x12;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (local_8->h_samp_factor < param_1->max_h_samp_factor) {
-      local_10 = param_1->max_h_samp_factor;
+    if (compptr->h_samp_factor < cinfo->max_h_samp_factor) {
+      local_10 = cinfo->max_h_samp_factor;
     }
     else {
-      local_10 = local_8->h_samp_factor;
+      local_10 = compptr->h_samp_factor;
     }
-    param_1->max_h_samp_factor = local_10;
-    if (local_8->v_samp_factor < param_1->max_v_samp_factor) {
-      local_14 = param_1->max_v_samp_factor;
+    cinfo->max_h_samp_factor = local_10;
+    if (compptr->v_samp_factor < cinfo->max_v_samp_factor) {
+      local_14 = cinfo->max_v_samp_factor;
     }
     else {
-      local_14 = local_8->v_samp_factor;
+      local_14 = compptr->v_samp_factor;
     }
-    param_1->max_v_samp_factor = local_14;
-    local_8 = local_8 + 1;
+    cinfo->max_v_samp_factor = local_14;
+    compptr = compptr + 1;
   }
-  param_1->min_DCT_scaled_size = 8;
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    local_8->DCT_scaled_size = 8;
-    uVar1 = jdiv_round_up(param_1->image_width * local_8->h_samp_factor,
-                          param_1->max_h_samp_factor << 3);
-    local_8->width_in_blocks = uVar1;
-    uVar1 = jdiv_round_up(param_1->image_height * local_8->v_samp_factor,
-                          param_1->max_v_samp_factor << 3);
-    local_8->height_in_blocks = uVar1;
-    uVar1 = jdiv_round_up(param_1->image_width * local_8->h_samp_factor,param_1->max_h_samp_factor);
-    local_8->downsampled_width = uVar1;
-    uVar1 = jdiv_round_up(param_1->image_height * local_8->v_samp_factor,param_1->max_v_samp_factor)
+  cinfo->min_DCT_scaled_size = 8;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    compptr->DCT_scaled_size = 8;
+    uVar1 = jdiv_round_up(cinfo->image_width * compptr->h_samp_factor,cinfo->max_h_samp_factor << 3)
     ;
-    local_8->downsampled_height = uVar1;
-    local_8->component_needed = '\x01';
-    local_8->quant_table = (JQUANT_TBL *)0x0;
-    local_8 = local_8 + 1;
+    compptr->width_in_blocks = uVar1;
+    uVar1 = jdiv_round_up(cinfo->image_height * compptr->v_samp_factor,cinfo->max_v_samp_factor << 3
+                         );
+    compptr->height_in_blocks = uVar1;
+    uVar1 = jdiv_round_up(cinfo->image_width * compptr->h_samp_factor,cinfo->max_h_samp_factor);
+    compptr->downsampled_width = uVar1;
+    uVar1 = jdiv_round_up(cinfo->image_height * compptr->v_samp_factor,cinfo->max_v_samp_factor);
+    compptr->downsampled_height = uVar1;
+    compptr->component_needed = '\x01';
+    compptr->quant_table = (JQUANT_TBL *)0x0;
+    compptr = compptr + 1;
   }
-  uVar1 = jdiv_round_up(param_1->image_height,param_1->max_v_samp_factor << 3);
-  param_1->total_iMCU_rows = uVar1;
-  if ((param_1->comps_in_scan < param_1->num_components) || (param_1->progressive_mode != '\0')) {
-    param_1->inputctl->has_multiple_scans = '\x01';
+  uVar1 = jdiv_round_up(cinfo->image_height,cinfo->max_v_samp_factor << 3);
+  cinfo->total_iMCU_rows = uVar1;
+  if ((cinfo->comps_in_scan < cinfo->num_components) || (cinfo->progressive_mode != '\0')) {
+    cinfo->inputctl->has_multiple_scans = '\x01';
   }
   else {
-    param_1->inputctl->has_multiple_scans = '\0';
+    cinfo->inputctl->has_multiple_scans = '\0';
   }
   return;
 }
@@ -87,69 +86,70 @@ void __cdecl initial_setup(jpeg_decompress_struct *param_1)
 
 // 00B58630  per_scan_setup  (jpeg-6/jdinput.c:124)
 
-void __cdecl per_scan_setup(jpeg_decompress_struct *param_1)
+void __cdecl per_scan_setup(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_component_info *pjVar1;
   uint uVar2;
-  int local_14;
-  uint local_10;
-  int local_c;
+  int mcublks;
+  int tmp;
+  int ci;
+  jpeg_component_info *compptr;
   
-  if (param_1->comps_in_scan == 1) {
-    pjVar1 = param_1->cur_comp_info[0];
-    param_1->MCUs_per_row = pjVar1->width_in_blocks;
-    param_1->MCU_rows_in_scan = pjVar1->height_in_blocks;
+  if (cinfo->comps_in_scan == 1) {
+    pjVar1 = cinfo->cur_comp_info[0];
+    cinfo->MCUs_per_row = pjVar1->width_in_blocks;
+    cinfo->MCU_rows_in_scan = pjVar1->height_in_blocks;
     pjVar1->MCU_width = 1;
     pjVar1->MCU_height = 1;
     pjVar1->MCU_blocks = 1;
     pjVar1->MCU_sample_width = pjVar1->DCT_scaled_size;
     pjVar1->last_col_width = 1;
-    local_10 = pjVar1->height_in_blocks % (uint)pjVar1->v_samp_factor;
-    if (local_10 == 0) {
-      local_10 = pjVar1->v_samp_factor;
+    tmp = pjVar1->height_in_blocks % (uint)pjVar1->v_samp_factor;
+    if (tmp == 0) {
+      tmp = pjVar1->v_samp_factor;
     }
-    pjVar1->last_row_height = local_10;
-    param_1->blocks_in_MCU = 1;
-    param_1->MCU_membership[0] = 0;
+    pjVar1->last_row_height = tmp;
+    cinfo->blocks_in_MCU = 1;
+    cinfo->MCU_membership[0] = 0;
   }
   else {
-    if ((param_1->comps_in_scan < 1) || (4 < param_1->comps_in_scan)) {
-      param_1->err->msg_code = 0x1a;
-      (param_1->err->msg_parm).i[0] = param_1->comps_in_scan;
-      (param_1->err->msg_parm).i[1] = 4;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if ((cinfo->comps_in_scan < 1) || (4 < cinfo->comps_in_scan)) {
+      cinfo->err->msg_code = 0x1a;
+      (cinfo->err->msg_parm).i[0] = cinfo->comps_in_scan;
+      (cinfo->err->msg_parm).i[1] = 4;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    uVar2 = jdiv_round_up(param_1->image_width,param_1->max_h_samp_factor << 3);
-    param_1->MCUs_per_row = uVar2;
-    uVar2 = jdiv_round_up(param_1->image_height,param_1->max_v_samp_factor << 3);
-    param_1->MCU_rows_in_scan = uVar2;
-    param_1->blocks_in_MCU = 0;
-    for (local_c = 0; local_c < param_1->comps_in_scan; local_c = local_c + 1) {
-      pjVar1 = param_1->cur_comp_info[local_c];
+    uVar2 = jdiv_round_up(cinfo->image_width,cinfo->max_h_samp_factor << 3);
+    cinfo->MCUs_per_row = uVar2;
+    uVar2 = jdiv_round_up(cinfo->image_height,cinfo->max_v_samp_factor << 3);
+    cinfo->MCU_rows_in_scan = uVar2;
+    cinfo->blocks_in_MCU = 0;
+    for (ci = 0; ci < cinfo->comps_in_scan; ci = ci + 1) {
+      pjVar1 = cinfo->cur_comp_info[ci];
       pjVar1->MCU_width = pjVar1->h_samp_factor;
       pjVar1->MCU_height = pjVar1->v_samp_factor;
       pjVar1->MCU_blocks = pjVar1->MCU_width * pjVar1->MCU_height;
       pjVar1->MCU_sample_width = pjVar1->MCU_width * pjVar1->DCT_scaled_size;
-      local_10 = pjVar1->width_in_blocks % (uint)pjVar1->MCU_width;
-      if (local_10 == 0) {
-        local_10 = pjVar1->MCU_width;
+      tmp = pjVar1->width_in_blocks % (uint)pjVar1->MCU_width;
+      if (tmp == 0) {
+        tmp = pjVar1->MCU_width;
       }
-      pjVar1->last_col_width = local_10;
-      local_10 = pjVar1->height_in_blocks % (uint)pjVar1->MCU_height;
-      if (local_10 == 0) {
-        local_10 = pjVar1->MCU_height;
+      pjVar1->last_col_width = tmp;
+      tmp = pjVar1->height_in_blocks % (uint)pjVar1->MCU_height;
+      if (tmp == 0) {
+        tmp = pjVar1->MCU_height;
       }
-      pjVar1->last_row_height = local_10;
-      local_14 = pjVar1->MCU_blocks;
-      if (10 < param_1->blocks_in_MCU + local_14) {
-        param_1->err->msg_code = 0xd;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      pjVar1->last_row_height = tmp;
+      mcublks = pjVar1->MCU_blocks;
+      if (10 < cinfo->blocks_in_MCU + mcublks) {
+        cinfo->err->msg_code = 0xd;
+        (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
       }
-      while (0 < local_14) {
-        param_1->MCU_membership[param_1->blocks_in_MCU] = local_c;
-        param_1->blocks_in_MCU = param_1->blocks_in_MCU + 1;
-        local_14 = local_14 + -1;
+      while (0 < mcublks) {
+        cinfo->MCU_membership[cinfo->blocks_in_MCU] = ci;
+        cinfo->blocks_in_MCU = cinfo->blocks_in_MCU + 1;
+        mcublks = mcublks + -1;
       }
     }
   }
@@ -159,7 +159,7 @@ void __cdecl per_scan_setup(jpeg_decompress_struct *param_1)
 
 // 00B588E0  latch_quant_tables  (jpeg-6/jdinput.c:221)
 
-void __cdecl latch_quant_tables(jpeg_decompress_struct *param_1)
+void __cdecl latch_quant_tables(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_component_info *pjVar1;
@@ -168,19 +168,22 @@ void __cdecl latch_quant_tables(jpeg_decompress_struct *param_1)
   int iVar4;
   JQUANT_TBL *pJVar5;
   JQUANT_TBL *pJVar6;
-  int local_14;
+  int ci;
+  int qtblno;
+  jpeg_component_info *compptr;
+  JQUANT_TBL *qtbl;
   
-  for (local_14 = 0; local_14 < param_1->comps_in_scan; local_14 = local_14 + 1) {
-    pjVar1 = param_1->cur_comp_info[local_14];
+  for (ci = 0; ci < cinfo->comps_in_scan; ci = ci + 1) {
+    pjVar1 = cinfo->cur_comp_info[ci];
     if (pjVar1->quant_table == (JQUANT_TBL *)0x0) {
       iVar2 = pjVar1->quant_tbl_no;
-      if (((iVar2 < 0) || (3 < iVar2)) || (param_1->quant_tbl_ptrs[iVar2] == (JQUANT_TBL *)0x0)) {
-        param_1->err->msg_code = 0x34;
-        (param_1->err->msg_parm).i[0] = iVar2;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      if (((iVar2 < 0) || (3 < iVar2)) || (cinfo->quant_tbl_ptrs[iVar2] == (JQUANT_TBL *)0x0)) {
+        cinfo->err->msg_code = 0x34;
+        (cinfo->err->msg_parm).i[0] = iVar2;
+        (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
       }
-      pJVar3 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x82);
-      pJVar5 = param_1->quant_tbl_ptrs[iVar2];
+      pJVar3 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x82);
+      pJVar5 = cinfo->quant_tbl_ptrs[iVar2];
       pJVar6 = pJVar3;
       for (iVar4 = 0x20; iVar4 != 0; iVar4 = iVar4 + -1) {
         *(undefined4 *)pJVar6->quantval = *(undefined4 *)pJVar5->quantval;
@@ -197,62 +200,64 @@ void __cdecl latch_quant_tables(jpeg_decompress_struct *param_1)
 
 // 00B585D0  start_input_pass  (jpeg-6/jdinput.c:255)
 
-void __cdecl start_input_pass(jpeg_decompress_struct *param_1)
+void __cdecl start_input_pass(jpeg_decompress_struct *cinfo)
 
 {
-  per_scan_setup(param_1);
-  latch_quant_tables(param_1);
-  (*param_1->entropy->start_pass)(param_1);
-  (*param_1->coef->start_input_pass)(param_1);
-  param_1->inputctl->consume_input = param_1->coef->consume_data;
+  per_scan_setup(cinfo);
+  latch_quant_tables(cinfo);
+  (*cinfo->entropy->start_pass)(cinfo);
+  (*cinfo->coef->start_input_pass)(cinfo);
+  cinfo->inputctl->consume_input = cinfo->coef->consume_data;
   return;
 }
 
 
 // 00B589C0  finish_input_pass  (jpeg-6/jdinput.c:272)
 
-void __cdecl finish_input_pass(jpeg_decompress_struct *param_1)
+void __cdecl finish_input_pass(jpeg_decompress_struct *cinfo)
 
 {
-  param_1->inputctl->consume_input = consume_markers;
+  cinfo->inputctl->consume_input = consume_markers;
   return;
 }
 
 
 // 00B589E0  consume_markers  (jpeg-6/jdinput.c:289)
 
-int __cdecl consume_markers(jpeg_decompress_struct *param_1)
+int __cdecl consume_markers(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_input_controller *pjVar1;
   int iVar2;
+  int val;
+  my_input_controller *inputctl;
   
-  pjVar1 = param_1->inputctl;
+  pjVar1 = cinfo->inputctl;
   if (pjVar1->eoi_reached == '\0') {
-    iVar2 = (*param_1->marker->read_markers)(param_1);
+    iVar2 = (*cinfo->marker->read_markers)(cinfo);
     if (iVar2 == 1) {
       if (*(char *)&pjVar1[1].consume_input == '\0') {
         if (pjVar1->has_multiple_scans == '\0') {
-          param_1->err->msg_code = 0x23;
-          (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+          cinfo->err->msg_code = 0x23;
+          (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
         }
-        start_input_pass(param_1);
+        start_input_pass(cinfo);
       }
       else {
-        initial_setup(param_1);
+        initial_setup(cinfo);
         *(undefined1 *)&pjVar1[1].consume_input = 0;
       }
     }
     else if (iVar2 == 2) {
       pjVar1->eoi_reached = '\x01';
       if (*(char *)&pjVar1[1].consume_input == '\0') {
-        if (param_1->input_scan_number < param_1->output_scan_number) {
-          param_1->output_scan_number = param_1->input_scan_number;
+        if (cinfo->input_scan_number < cinfo->output_scan_number) {
+          cinfo->output_scan_number = cinfo->input_scan_number;
         }
       }
-      else if (param_1->marker->saw_SOF != '\0') {
-        param_1->err->msg_code = 0x3b;
-        (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      else if (cinfo->marker->saw_SOF != '\0') {
+        cinfo->err->msg_code = 0x3b;
+        (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
       }
     }
   }
@@ -265,32 +270,34 @@ int __cdecl consume_markers(jpeg_decompress_struct *param_1)
 
 // 00B58E20  reset_input_controller  (jpeg-6/jdinput.c:340)
 
-void __cdecl reset_input_controller(jpeg_decompress_struct *param_1)
+void __cdecl reset_input_controller(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_input_controller *pjVar1;
+  my_input_controller *inputctl;
   
-  pjVar1 = param_1->inputctl;
+  pjVar1 = cinfo->inputctl;
   pjVar1->consume_input = consume_markers;
   pjVar1->has_multiple_scans = '\0';
   pjVar1->eoi_reached = '\0';
   *(undefined1 *)&pjVar1[1].consume_input = 1;
-  (*param_1->err->reset_error_mgr)((jpeg_common_struct *)param_1);
-  (*param_1->marker->reset_marker_reader)(param_1);
-  param_1->coef_bits = (int (*) [64])0x0;
+  (*cinfo->err->reset_error_mgr)((jpeg_common_struct *)cinfo);
+  (*cinfo->marker->reset_marker_reader)(cinfo);
+  cinfo->coef_bits = (int (*) [64])0x0;
   return;
 }
 
 
 // 00B58560  jinit_input_controller  (jpeg-6/jdinput.c:362)
 
-void __cdecl jinit_input_controller(jpeg_decompress_struct *param_1)
+void __cdecl jinit_input_controller(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_input_controller *pjVar1;
+  my_input_controller *inputctl;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,0,0x18);
-  param_1->inputctl = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,0,0x18);
+  cinfo->inputctl = pjVar1;
   pjVar1->consume_input = consume_markers;
   pjVar1->reset_input_controller = reset_input_controller;
   pjVar1->start_input_pass = start_input_pass;

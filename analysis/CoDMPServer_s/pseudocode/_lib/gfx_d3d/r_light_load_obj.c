@@ -2,6 +2,8 @@
 
 // 00874700  R_LoadLightDef  (gfx_d3d/r_light_load_obj.cpp:88)
 
+/* WARNING: Variable defined which should be unmapped: file */
+
 GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
 
 {
@@ -12,6 +14,7 @@ GfxLightDef * __cdecl R_LoadLightDef(char *param_1)
   GfxLightImage *pGVar5;
   char *unaff_ESI;
   char *unaff_EDI;
+  uchar *file;
   LPVOID pvStack_4;
   
   va("lights/%s");

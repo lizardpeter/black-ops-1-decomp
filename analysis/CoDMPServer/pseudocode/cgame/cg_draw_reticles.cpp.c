@@ -7,37 +7,39 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CalcCrosshairPosition(cg_s *param_1,float *param_2,float *param_3)
+void __cdecl CG_CalcCrosshairPosition(cg_s *cgameGlob,float *x,float *y)
 
 {
   float fVar1;
-  float local_20;
+  float gunDir;
   float local_1c;
   float local_18;
-  float local_14;
+  float gunAng;
   float local_10;
   float local_c;
+  float dot;
   
-  local_14 = param_1->gunPitch;
-  local_10 = param_1->gunYaw;
-  local_c = param_1->refdefViewAngles[2];
-  AngleVectors(&local_14,&local_20,(float *)0x0,(float *)0x0);
-  fVar1 = (param_1->refdef).viewaxis[0][0] * local_20 + (param_1->refdef).viewaxis[0][1] * local_1c
-          + (param_1->refdef).viewaxis[0][2] * local_18;
-  if (((fVar1 <= 0.0) || ((param_1->refdef).tanHalfFovX <= 0.0)) ||
-     ((param_1->refdef).tanHalfFovX <= 0.0)) {
-    *param_2 = 0.0;
-    *param_3 = 0.0;
+  gunAng = cgameGlob->gunPitch;
+  local_10 = cgameGlob->gunYaw;
+  local_c = cgameGlob->refdefViewAngles[2];
+  AngleVectors(&gunAng,&gunDir,(float *)0x0,(float *)0x0);
+  fVar1 = (cgameGlob->refdef).viewaxis[0][0] * gunDir +
+          (cgameGlob->refdef).viewaxis[0][1] * local_1c +
+          (cgameGlob->refdef).viewaxis[0][2] * local_18;
+  if (((fVar1 <= 0.0) || ((cgameGlob->refdef).tanHalfFovX <= 0.0)) ||
+     ((cgameGlob->refdef).tanHalfFovX <= 0.0)) {
+    *x = 0.0;
+    *y = 0.0;
   }
   else {
-    *param_2 = (((param_1->refdef).viewaxis[1][0] * local_20 +
-                 (param_1->refdef).viewaxis[1][1] * local_1c +
-                (param_1->refdef).viewaxis[1][2] * local_18) /
-               (fVar1 * (param_1->refdef).tanHalfFovX)) * -320.0;
-    *param_3 = (((param_1->refdef).viewaxis[2][0] * local_20 +
-                 (param_1->refdef).viewaxis[2][1] * local_1c +
-                (param_1->refdef).viewaxis[2][2] * local_18) /
-               (fVar1 * (param_1->refdef).tanHalfFovY)) * -240.0;
+    *x = (((cgameGlob->refdef).viewaxis[1][0] * gunDir +
+           (cgameGlob->refdef).viewaxis[1][1] * local_1c +
+          (cgameGlob->refdef).viewaxis[1][2] * local_18) / (fVar1 * (cgameGlob->refdef).tanHalfFovX)
+         ) * -320.0;
+    *y = (((cgameGlob->refdef).viewaxis[2][0] * gunDir +
+           (cgameGlob->refdef).viewaxis[2][1] * local_1c +
+          (cgameGlob->refdef).viewaxis[2][2] * local_18) / (fVar1 * (cgameGlob->refdef).tanHalfFovY)
+         ) * -240.0;
   }
   return;
 }
@@ -50,59 +52,63 @@ void __cdecl CG_CalcCrosshairPosition(cg_s *param_1,float *param_2,float *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_GetWeapReticleZoom(cg_s *param_1,float *param_2)
+bool __cdecl CG_GetWeapReticleZoom(cg_s *cgameGlob,float *zoom)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
-  uint uVar5;
-  WeaponVariantDef *pWVar6;
-  WeaponDef *pWVar7;
+  uint weaponIndex;
+  WeaponVariantDef *pWVar5;
+  WeaponDef *pWVar6;
+  WeaponVariantDef *weapVariantDef;
+  int weapIndex;
+  float fPosLerp;
+  WeaponDef *weapDef;
   
-  uVar5 = BG_GetViewmodelWeaponIndex(&param_1->predictedPlayerState);
-  pWVar6 = BG_GetWeaponVariantDef(uVar5);
-  pWVar7 = BG_GetWeaponDef(uVar5);
-  fVar1 = (param_1->predictedPlayerState).fWeaponPosFrac;
-  *param_2 = 0.0;
-  if ((pWVar6 == (WeaponVariantDef *)0x0) &&
+  weaponIndex = BG_GetViewmodelWeaponIndex(&cgameGlob->predictedPlayerState);
+  pWVar5 = BG_GetWeaponVariantDef(weaponIndex);
+  pWVar6 = BG_GetWeaponDef(weaponIndex);
+  fVar1 = (cgameGlob->predictedPlayerState).fWeaponPosFrac;
+  *zoom = 0.0;
+  if ((pWVar5 == (WeaponVariantDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",0x83
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((pWVar7 == (WeaponDef *)0x0) &&
+  if ((pWVar6 == (WeaponDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",0x84
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  if ((pWVar6->overlayMaterial == (Material *)0x0) &&
-     (pWVar7->overlayReticle == WEAPOVERLAYRETICLE_NONE)) {
+  if ((pWVar5->overlayMaterial == (Material *)0x0) &&
+     (pWVar6->overlayReticle == WEAPOVERLAYRETICLE_NONE)) {
     bVar3 = false;
   }
   else if (fVar1 == 0.0) {
     bVar3 = false;
   }
   else {
-    if ((param_1->playerEntity).bPositionToADS == 0) {
-      *param_2 = fVar1 - (1.0 - pWVar6->fAdsZoomOutFrac);
-      if (0.0 < *param_2) {
-        *param_2 = *param_2 / pWVar6->fAdsZoomOutFrac;
+    if ((cgameGlob->playerEntity).bPositionToADS == 0) {
+      *zoom = fVar1 - (1.0 - pWVar5->fAdsZoomOutFrac);
+      if (0.0 < *zoom) {
+        *zoom = *zoom / pWVar5->fAdsZoomOutFrac;
       }
     }
     else {
-      *param_2 = fVar1 - (1.0 - pWVar6->fAdsZoomInFrac);
-      if (0.0 < *param_2) {
-        *param_2 = *param_2 / pWVar6->fAdsZoomInFrac;
+      *zoom = fVar1 - (1.0 - pWVar5->fAdsZoomInFrac);
+      if (0.0 < *zoom) {
+        *zoom = *zoom / pWVar5->fAdsZoomInFrac;
       }
     }
-    if (0.01 < *param_2) {
-      if (1.0 < *param_2) {
-        *param_2 = 1.0;
+    if (0.01 < *zoom) {
+      if (1.0 < *zoom) {
+        *zoom = 1.0;
       }
       bVar3 = true;
     }
@@ -117,56 +123,57 @@ bool __cdecl CG_GetWeapReticleZoom(cg_s *param_1,float *param_2)
 // 004A2810  CG_DrawFrameOverlay  (cgame/cg_draw_reticles.cpp:174)
 
 void __cdecl
-CG_DrawFrameOverlay(float param_1,float param_2,float param_3,float param_4,float param_5,
-                   float *param_6,Material *param_7)
+CG_DrawFrameOverlay(float innerLeft,float innerRight,float innerTop,float innerBottom,float centerW,
+                   float *color,Material *material)
 
 {
   bool bVar1;
   float fVar2;
-  int local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  int local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float screenWidth;
+  int displayHeight;
+  float screenTop;
+  float screenRight;
+  float displayAspect;
+  int displayWidth;
+  float screenHeight;
+  float screenBottom;
+  float screenLeft;
   
-  CL_GetScreenDimensions(&local_14,&local_24,&local_18);
-  fVar2 = (float)local_14;
-  local_10 = (float)local_24;
+  CL_GetScreenDimensions(&displayWidth,&displayHeight,&displayAspect);
+  fVar2 = (float)displayWidth;
+  screenHeight = (float)displayHeight;
   bVar1 = R_StereoActivated();
   if (bVar1) {
-    local_8 = -fVar2;
-    local_20 = -local_10;
-    local_c = local_10 * 2.0;
-    local_1c = fVar2 * 2.0;
+    screenLeft = -fVar2;
+    screenTop = -screenHeight;
+    screenBottom = screenHeight * 2.0;
+    screenRight = fVar2 * 2.0;
   }
   else {
-    local_8 = 0.0;
-    local_20 = 0.0;
-    local_c = local_10;
-    local_1c = fVar2;
+    screenLeft = 0.0;
+    screenTop = 0.0;
+    screenBottom = screenHeight;
+    screenRight = fVar2;
   }
-  if (local_8 < param_1) {
+  if (screenLeft < innerLeft) {
     CL_DrawStretchPicPhysicalW
-              (local_8,local_20,param_5,param_1 - local_8,local_c - local_20,0.0,0.0,0.0,1.0,param_6
-               ,param_7);
+              (screenLeft,screenTop,centerW,innerLeft - screenLeft,screenBottom - screenTop,0.0,0.0,
+               0.0,1.0,color,material);
   }
-  if (param_2 < local_1c) {
+  if (innerRight < screenRight) {
     CL_DrawStretchPicPhysicalW
-              (param_2,local_20,param_5,local_1c - param_2,local_c - local_20,0.0,0.0,0.0,1.0,
-               param_6,param_7);
+              (innerRight,screenTop,centerW,screenRight - innerRight,screenBottom - screenTop,0.0,
+               0.0,0.0,1.0,color,material);
   }
-  if (local_20 < param_3) {
+  if (screenTop < innerTop) {
     CL_DrawStretchPicPhysicalW
-              (param_1,local_20,param_5,param_2 - param_1,param_3 - local_20,0.0,0.0,1.0,0.0,param_6
-               ,param_7);
+              (innerLeft,screenTop,centerW,innerRight - innerLeft,innerTop - screenTop,0.0,0.0,1.0,
+               0.0,color,material);
   }
-  if (param_4 < local_c) {
+  if (innerBottom < screenBottom) {
     CL_DrawStretchPicPhysicalW
-              (param_1,param_4,param_5,param_2 - param_1,local_c - param_4,0.0,0.0,1.0,0.0,param_6,
-               param_7);
+              (innerLeft,innerBottom,centerW,innerRight - innerLeft,screenBottom - innerBottom,0.0,
+               0.0,1.0,0.0,color,material);
   }
   return;
 }
@@ -179,20 +186,22 @@ CG_DrawFrameOverlay(float param_1,float param_2,float param_3,float param_4,floa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawNightVisionOverlay(int param_1)
+void __cdecl CG_DrawNightVisionOverlay(int localClientNum)
 
 {
   bool bVar1;
+  cg_s *cgameGlob;
+  playerState_s *ps;
   
-  CG_GetLocalClientGlobals(param_1);
-  bVar1 = CG_LookingThroughNightVision(param_1);
+  CG_GetLocalClientGlobals(localClientNum);
+  bVar1 = CG_LookingThroughNightVision(localClientNum);
   if (bVar1) {
     if (cgMedia.nightVisionOverlay == (Material *)0x0) {
       Com_PrintWarning(0xe,"CG_DrawNightVisionOverlay(): Nightvision Assets not Precached.\n");
     }
     else {
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0.0,0.0,640.0,480.0,4,4,
-                        0.0,0.0,1.0,1.0,colorWhite,cgMedia.nightVisionOverlay);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),0.0,0.0,640.0,
+                        480.0,4,4,0.0,0.0,1.0,1.0,colorWhite,cgMedia.nightVisionOverlay);
     }
   }
   return;
@@ -201,10 +210,10 @@ void __cdecl CG_DrawNightVisionOverlay(int param_1)
 
 // 004A1610  CG_UsingLowResViewPort  (cgame/cg_draw_reticles.cpp:247)
 
-bool __cdecl CG_UsingLowResViewPort(int param_1)
+bool __cdecl CG_UsingLowResViewPort(int localClientNum)
 
 {
-  return *(float *)(&DAT_02d9e6c4 + param_1 * 0x78) <= 480.0;
+  return *(float *)(&DAT_02d9e6c4 + localClientNum * 0x78) <= 480.0;
 }
 
 
@@ -216,120 +225,119 @@ bool __cdecl CG_UsingLowResViewPort(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawAdsOverlay(int param_1,int param_2,float *param_3,float *param_4)
+void __cdecl CG_DrawAdsOverlay(int localClientNum,int weaponIndex,float *color,float *crosshairPos)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_ac;
-  float local_90;
+  float start;
   float local_8c;
   float local_88;
-  float local_84;
+  float end;
   float local_80;
   float local_7c;
-  float4 local_78;
+  float4 trace;
   float local_68;
   uint local_40;
-  float local_3c [3];
-  float local_30;
-  ScreenPlacement *local_2c;
-  float local_28;
+  float contact [3];
+  float centerW;
+  ScreenPlacement *scrPlace;
+  float drawPos;
   float local_24;
-  Material *local_20;
-  cg_s *local_1c;
-  int local_18;
-  float local_14;
+  Material *material;
+  cg_s *cgameGlob;
+  int vertAlign;
+  float drawSize;
   float local_10;
-  int local_c;
-  WeaponDef *local_8;
+  int horzAlign;
+  WeaponDef *weapDef;
   
   local_40 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = BG_GetWeaponDef(param_2);
-  if ((local_8 == (WeaponDef *)0x0) &&
+  weapDef = BG_GetWeaponDef(weaponIndex);
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x128,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_20 = CG_GetWeaponOverlay(param_1,param_2);
-  if (local_20 != (Material *)0x0) {
-    local_1c = CG_GetLocalClientGlobals(param_1);
-    local_c = 2;
-    local_18 = 2;
-    local_14 = local_8->overlayWidth;
-    local_10 = local_8->overlayHeight;
-    local_2c = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    if ((320.0 < local_14) || (240.0 < local_10)) {
-      local_30 = 1.0;
+  material = CG_GetWeaponOverlay(localClientNum,weaponIndex);
+  if (material != (Material *)0x0) {
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    horzAlign = 2;
+    vertAlign = 2;
+    drawSize = weapDef->overlayWidth;
+    local_10 = weapDef->overlayHeight;
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    if ((320.0 < drawSize) || (240.0 < local_10)) {
+      centerW = 1.0;
       bVar2 = R_StereoActivated();
       if (bVar2) {
-        local_78.v[0] = 0.0;
-        local_78.v[1] = 0.0;
-        local_78.v[2] = 0.0;
-        local_78.v[3] = 0.0;
-        local_90 = (local_1c->refdef).vieworg[0];
-        local_8c = (local_1c->refdef).vieworg[1];
-        local_88 = (local_1c->refdef).vieworg[2];
-        local_84 = (local_1c->refdef).viewaxis[0][0] * 15000.0 + local_90;
-        local_80 = (local_1c->refdef).viewaxis[0][1] * 15000.0 + local_8c;
-        local_7c = (local_1c->refdef).viewaxis[0][2] * 15000.0 + local_88;
-        CG_LocationalTrace((trace_t *)&local_78,&local_90,&local_84,
-                           (uint)(local_1c->nextSnap->ps).clientNum,0x280b001,false,
-                           (col_context_t *)0x0);
-        Vec3Lerp(&local_90,&local_84,local_68,local_3c);
-        local_ac = Vec3Distance(&local_90,local_3c);
+        trace.v[0] = 0.0;
+        trace.v[1] = 0.0;
+        trace.v[2] = 0.0;
+        trace.v[3] = 0.0;
+        start = (cgameGlob->refdef).vieworg[0];
+        local_8c = (cgameGlob->refdef).vieworg[1];
+        local_88 = (cgameGlob->refdef).vieworg[2];
+        end = (cgameGlob->refdef).viewaxis[0][0] * 15000.0 + start;
+        local_80 = (cgameGlob->refdef).viewaxis[0][1] * 15000.0 + local_8c;
+        local_7c = (cgameGlob->refdef).viewaxis[0][2] * 15000.0 + local_88;
+        CG_LocationalTrace((trace_t *)&trace,&start,&end,(uint)(cgameGlob->nextSnap->ps).clientNum,
+                           0x280b001,false,(col_context_t *)0x0);
+        Vec3Lerp(&start,&end,local_68,contact);
+        local_ac = Vec3Distance(&start,contact);
         if (10000.0 <= local_ac) {
           local_ac = 10000.0;
         }
-        local_30 = local_ac;
+        centerW = local_ac;
       }
-      local_28 = *param_4 - local_14 * 0.5;
-      local_24 = param_4[1] - local_10 * 0.5;
+      drawPos = *crosshairPos - drawSize * 0.5;
+      local_24 = crosshairPos[1] - local_10 * 0.5;
       if ((cg_debug_overlay_viewport->current).enabled == false) {
-        CL_DrawStretchPicW(local_2c,local_28,local_24,local_30,local_14,local_10,local_c,local_18,
-                           0.0,0.0,1.0,1.0,param_3,local_20);
+        CL_DrawStretchPicW(scrPlace,drawPos,local_24,centerW,drawSize,local_10,horzAlign,vertAlign,
+                           0.0,0.0,1.0,1.0,color,material);
       }
-      *(float *)(local_1c->weaponTracerCount + 0xac) = local_28;
-      *(float *)(local_1c->weaponTracerCount + 0xb0) = local_24;
-      *(float *)(local_1c->weaponTracerCount + 0xb4) = local_14;
-      *(float *)(local_1c->weaponTracerCount + 0xb8) = local_10;
-      *(float *)(local_1c->weaponTracerCount + 0xbc) = *param_3;
-      *(float *)(local_1c->weaponTracerCount + 0xc0) = param_3[1];
-      *(float *)(local_1c->weaponTracerCount + 0xc4) = param_3[2];
-      *(float *)(local_1c->weaponTracerCount + 200) = param_3[3];
-      if (*(int *)local_1c->genericFilterPassEnabled[0] != 0) {
-        local_1c->weaponTracerCount[0xcc] = '\x01';
+      *(float *)(cgameGlob->weaponTracerCount + 0xac) = drawPos;
+      *(float *)(cgameGlob->weaponTracerCount + 0xb0) = local_24;
+      *(float *)(cgameGlob->weaponTracerCount + 0xb4) = drawSize;
+      *(float *)(cgameGlob->weaponTracerCount + 0xb8) = local_10;
+      *(float *)(cgameGlob->weaponTracerCount + 0xbc) = *color;
+      *(float *)(cgameGlob->weaponTracerCount + 0xc0) = color[1];
+      *(float *)(cgameGlob->weaponTracerCount + 0xc4) = color[2];
+      *(float *)(cgameGlob->weaponTracerCount + 200) = color[3];
+      if (*(int *)cgameGlob->genericFilterPassEnabled[0] != 0) {
+        cgameGlob->weaponTracerCount[0xcc] = '\x01';
       }
-      ScrPlace_ApplyRect(local_2c,&local_28,&local_24,&local_14,&local_10,local_c,local_18);
+      ScrPlace_ApplyRect(scrPlace,&drawPos,&local_24,&drawSize,&local_10,horzAlign,vertAlign);
       if ((cg_debug_overlay_viewport->current).enabled == false) {
-        CG_DrawFrameOverlay(local_28,local_28 + local_14,local_24,local_24 + local_10,local_30,
-                            param_3,local_20);
+        CG_DrawFrameOverlay(drawPos,drawPos + drawSize,local_24,local_24 + local_10,centerW,color,
+                            material);
       }
     }
     else {
-      local_28 = *param_4 - local_14;
-      local_24 = param_4[1] - local_10;
-      CL_DrawStretchPic(local_2c,local_28,local_24,local_14,local_10,2,2,0.0,0.0,1.0,1.0,param_3,
-                        local_20);
-      local_28 = *param_4;
-      local_24 = param_4[1] - local_10;
-      CL_DrawStretchPic(local_2c,local_28,local_24,local_14,local_10,local_c,local_18,1.0,0.0,0.0,
-                        1.0,param_3,local_20);
-      local_28 = *param_4 - local_14;
-      local_24 = param_4[1];
-      CL_DrawStretchPic(local_2c,local_28,local_24,local_14,local_10,local_c,local_18,0.0,1.0,1.0,
-                        0.0,param_3,local_20);
-      local_28 = *param_4;
-      local_24 = param_4[1];
-      CL_DrawStretchPic(local_2c,local_28,local_24,local_14,local_10,local_c,local_18,1.0,1.0,0.0,
-                        0.0,param_3,local_20);
-      local_28 = *param_4 - local_14;
-      local_24 = param_4[1] - local_10;
-      ScrPlace_ApplyRect(local_2c,&local_28,&local_24,&local_14,&local_10,local_c,local_18);
-      CG_DrawFrameOverlay(local_28,local_14 * 2.0 + local_28,local_24,local_10 * 2.0 + local_24,1.0,
-                          param_3,local_20);
+      drawPos = *crosshairPos - drawSize;
+      local_24 = crosshairPos[1] - local_10;
+      CL_DrawStretchPic(scrPlace,drawPos,local_24,drawSize,local_10,2,2,0.0,0.0,1.0,1.0,color,
+                        material);
+      drawPos = *crosshairPos;
+      local_24 = crosshairPos[1] - local_10;
+      CL_DrawStretchPic(scrPlace,drawPos,local_24,drawSize,local_10,horzAlign,vertAlign,1.0,0.0,0.0,
+                        1.0,color,material);
+      drawPos = *crosshairPos - drawSize;
+      local_24 = crosshairPos[1];
+      CL_DrawStretchPic(scrPlace,drawPos,local_24,drawSize,local_10,horzAlign,vertAlign,0.0,1.0,1.0,
+                        0.0,color,material);
+      drawPos = *crosshairPos;
+      local_24 = crosshairPos[1];
+      CL_DrawStretchPic(scrPlace,drawPos,local_24,drawSize,local_10,horzAlign,vertAlign,1.0,1.0,0.0,
+                        0.0,color,material);
+      drawPos = *crosshairPos - drawSize;
+      local_24 = crosshairPos[1] - local_10;
+      ScrPlace_ApplyRect(scrPlace,&drawPos,&local_24,&drawSize,&local_10,horzAlign,vertAlign);
+      CG_DrawFrameOverlay(drawPos,drawSize * 2.0 + drawPos,local_24,local_10 * 2.0 + local_24,1.0,
+                          color,material);
     }
   }
   return;
@@ -343,75 +351,85 @@ void __cdecl CG_DrawAdsOverlay(int param_1,int param_2,float *param_3,float *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_DrawWeapReticle(int param_1)
+float __cdecl CG_DrawWeapReticle(int localClientNum)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  cg_s *pcVar4;
-  uint uVar5;
-  WeaponVariantDef *pWVar6;
-  float10 fVar7;
+  cg_s *cgameGlob_00;
+  uint weaponIndex;
+  WeaponVariantDef *pWVar4;
+  float10 fVar5;
   float local_50;
-  float local_24;
-  float local_20 [4];
-  float local_10;
-  float local_c;
+  float t;
+  float normal;
+  float zoom;
+  playerState_s *ps;
+  float alphaScale;
+  cg_s *cgameGlob;
+  WeaponVariantDef *weapVariantDef;
+  bool drawOverlay;
+  int weapIndex;
+  float crossHairAlpha;
+  float color [4];
+  float zoomFrac;
+  float crosshairPos;
   float local_8;
   
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  bVar3 = CG_GetWeapReticleZoom(pcVar4,&local_10);
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  bVar3 = CG_GetWeapReticleZoom(cgameGlob_00,&zoomFrac);
   if (bVar3) {
-    uVar5 = BG_GetViewmodelWeaponIndex(&pcVar4->predictedPlayerState);
-    pWVar6 = BG_GetWeaponVariantDef(uVar5);
-    if (1.0 < pWVar6->fOverlayAlphaScale || pWVar6->fOverlayAlphaScale == 1.0) {
-      local_50 = pWVar6->fOverlayAlphaScale;
+    weaponIndex = BG_GetViewmodelWeaponIndex(&cgameGlob_00->predictedPlayerState);
+    pWVar4 = BG_GetWeaponVariantDef(weaponIndex);
+    if (1.0 < pWVar4->fOverlayAlphaScale || pWVar4->fOverlayAlphaScale == 1.0) {
+      local_50 = pWVar4->fOverlayAlphaScale;
     }
     else {
       local_50 = 1.0;
     }
-    local_20[3] = local_10 / local_50;
-    local_20[0] = 1.0;
-    local_20[1] = 1.0;
-    local_20[2] = 1.0;
-    CG_CalcCrosshairPosition(pcVar4,&local_c,&local_8);
-    CG_DrawAdsOverlay(param_1,uVar5,local_20,&local_c);
-    local_24 = 1.0 - local_10 / local_50;
+    color[3] = zoomFrac / local_50;
+    color[0] = 1.0;
+    color[1] = 1.0;
+    color[2] = 1.0;
+    CG_CalcCrosshairPosition(cgameGlob_00,&crosshairPos,&local_8);
+    CG_DrawAdsOverlay(localClientNum,weaponIndex,color,&crosshairPos);
+    crossHairAlpha = 1.0 - zoomFrac / local_50;
   }
   else {
-    local_24 = 1.0;
+    crossHairAlpha = 1.0;
   }
   bVar3 = R_StereoActivated();
   if (bVar3) {
-    fVar1 = (pcVar4->predictedPlayerState).fWeaponPosFrac;
+    fVar1 = (cgameGlob_00->predictedPlayerState).fWeaponPosFrac;
     Dvar_SetFloat(r_convergence,(1.0 - fVar1) * 6.06253 + fVar1 * 1.9224);
   }
-  if ((local_24 < 0.0) || (1.0 < local_24)) {
+  if ((crossHairAlpha < 0.0) || (1.0 < crossHairAlpha)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",0x1c9,
                              1,"%s\n\t(crossHairAlpha) = %g");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
-      fVar7 = (float10)(*pcVar2)();
-      return (float)fVar7;
+      fVar5 = (float10)(*pcVar2)();
+      return (float)fVar5;
     }
   }
-  return local_24;
+  return crossHairAlpha;
 }
 
 
 // 004A1650  CG_ColorCrosshairs  (cgame/cg_draw_reticles.cpp:462)
 
-bool __cdecl CG_ColorCrosshairs(int param_1,int param_2,int param_3,int param_4,int param_5)
+bool __cdecl CG_ColorCrosshairs(int time,int startMsec,int lastMsec,int fadeInMsec,int fadeOutMsec)
 
 {
   bool bVar1;
+  int timeSinceLastOver;
   
-  if (param_1 - param_3 < param_5) {
-    if (param_3 - param_2 < param_4) {
+  if (time - lastMsec < fadeOutMsec) {
+    if (lastMsec - startMsec < fadeInMsec) {
       bVar1 = true;
     }
-    else if (param_1 - param_3 < param_5) {
+    else if (time - lastMsec < fadeOutMsec) {
       bVar1 = true;
     }
     else {
@@ -432,15 +450,22 @@ bool __cdecl CG_ColorCrosshairs(int param_1,int param_2,int param_3,int param_4,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_CalcCrosshairColor(int param_1,float param_2,float *param_3)
+void __cdecl CG_CalcCrosshairColor(int localClientNum,float alpha,float *color)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
   cg_s *pcVar4;
-  uint uVar5;
-  WeaponDef *pWVar6;
+  uint weaponIndex_00;
+  WeaponDef *pWVar5;
+  cg_s *cgameGlob;
+  int colorChangeAllowed;
+  playerState_s *predictedPlayerState;
+  cgs_t *cgs;
+  int isInVehicle;
+  int weaponIndex;
+  WeaponDef *weapDef;
   
   if ((cg_crosshairAlpha == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
@@ -456,36 +481,36 @@ void __cdecl CG_CalcCrosshairColor(int param_1,float param_2,float *param_3)
     (*pcVar2)();
     return;
   }
-  if (((param_2 < 0.0) || (1.0 < param_2)) &&
+  if (((alpha < 0.0) || (1.0 < alpha)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x1eb,0,"%s\n\t(alpha) = %g"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pcVar4 = CG_GetLocalClientGlobals(param_1);
-  CG_GetLocalClientStaticGlobals(param_1);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+  CG_GetLocalClientStaticGlobals(localClientNum);
   uVar1 = (pcVar4->predictedPlayerState).eFlags;
-  uVar5 = CG_GetPlayerWeapon(&pcVar4->predictedPlayerState,param_1);
-  pWVar6 = BG_GetWeaponDef(uVar5);
-  if ((pWVar6 == (WeaponDef *)0x0) &&
+  weaponIndex_00 = CG_GetPlayerWeapon(&pcVar4->predictedPlayerState,localClientNum);
+  pWVar5 = BG_GetWeaponDef(weaponIndex_00);
+  if ((pWVar5 == (WeaponDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x1f7,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (pWVar6->crosshairColorChange == false && (uVar1 & 0x4000) == 0) {
-    *param_3 = 1.0;
-    param_3[1] = 1.0;
-    param_3[2] = 1.0;
+  if (pWVar5->crosshairColorChange == false && (uVar1 & 0x4000) == 0) {
+    *color = 1.0;
+    color[1] = 1.0;
+    color[2] = 1.0;
   }
   else if (((pcVar4->predictedPlayerState).weapFlags & 8U) == 0) {
     if ((((pcVar4->predictedPlayerState).weapFlags & 0x10U) == 0) ||
        ((cg_crosshairEnemyColor->current).enabled == false)) {
-      *param_3 = 1.0;
-      param_3[1] = 1.0;
-      param_3[2] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
     }
     else {
       bVar3 = CG_ColorCrosshairs(pcVar4->time,pcVar4->crosshairClientStartTime,
@@ -494,16 +519,16 @@ void __cdecl CG_CalcCrosshairColor(int param_1,float param_2,float *param_3)
                                  (cg_enemyNameFadeOut->current).integer);
       if (bVar3) {
         if ((team_indicator->current).integer == 3) {
-          Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,param_3);
+          Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeamAlt,color);
         }
         else {
-          Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeam,param_3);
+          Dvar_GetUnpackedColor(cg_TeamColor_EnemyTeam,color);
         }
       }
       else {
-        *param_3 = 1.0;
-        param_3[1] = 1.0;
-        param_3[2] = 1.0;
+        *color = 1.0;
+        color[1] = 1.0;
+        color[2] = 1.0;
       }
     }
   }
@@ -514,19 +539,19 @@ void __cdecl CG_CalcCrosshairColor(int param_1,float param_2,float *param_3)
                                (cg_friendlyNameFadeOut->current).integer);
     if (bVar3) {
       if ((team_indicator->current).integer == 3) {
-        Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,param_3);
+        Dvar_GetUnpackedColor(cg_TeamColor_MyTeamAlt,color);
       }
       else {
-        Dvar_GetUnpackedColor(cg_TeamColor_MyTeam,param_3);
+        Dvar_GetUnpackedColor(cg_TeamColor_MyTeam,color);
       }
     }
     else {
-      *param_3 = 1.0;
-      param_3[1] = 1.0;
-      param_3[2] = 1.0;
+      *color = 1.0;
+      color[1] = 1.0;
+      color[2] = 1.0;
     }
   }
-  param_3[3] = param_2 * (cg_crosshairAlpha->current).value;
+  color[3] = alpha * (cg_crosshairAlpha->current).value;
   return;
 }
 
@@ -538,7 +563,7 @@ void __cdecl CG_CalcCrosshairColor(int param_1,float param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawTurretCrossHair(int param_1)
+void __cdecl CG_DrawTurretCrossHair(int localClientNum)
 
 {
   code *pcVar1;
@@ -546,11 +571,19 @@ void __cdecl CG_DrawTurretCrossHair(int param_1)
   cg_s *pcVar3;
   centity_s *pcVar4;
   WeaponDef *pWVar5;
-  uint uVar6;
-  float fVar7;
-  float local_1c [4];
-  float local_c;
-  float local_8;
+  uint weaponIndex;
+  float w;
+  cg_s *cgameGlob;
+  Material *material;
+  centity_s *cent;
+  int vertAlign;
+  playerState_s *predictedPlayerState;
+  int horzAlign;
+  int weapIndex;
+  WeaponDef *weapDef;
+  float reticleColor [4];
+  float x;
+  float y;
   
   if ((cg_drawTurretCrosshair == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
@@ -583,7 +616,7 @@ void __cdecl CG_DrawTurretCrossHair(int param_1)
   if (((cg_drawTurretCrosshair->current).enabled != false) &&
      (((bVar2 = CL_IsRenderingSplitScreen(), bVar2 || ((cg_paused->current).integer == 0)) ||
       ((cg_drawpaused->current).enabled == false)))) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
     if (((pcVar3->predictedPlayerState).viewlocked_entNum == 0x3ff) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                  0x276,0,"%s"), !bVar2)) {
@@ -591,10 +624,10 @@ void __cdecl CG_DrawTurretCrossHair(int param_1)
       (*pcVar1)();
       return;
     }
-    pcVar4 = CG_GetEntity(param_1,(int)(pcVar3->predictedPlayerState).viewlocked_entNum);
-    if (((pcVar4->nextState).eType == 0xb) && (uVar6 = (uint)(pcVar4->nextState).weapon, uVar6 != 0)
-       ) {
-      pWVar5 = BG_GetWeaponDef(uVar6);
+    pcVar4 = CG_GetEntity(localClientNum,(int)(pcVar3->predictedPlayerState).viewlocked_entNum);
+    if (((pcVar4->nextState).eType == 0xb) &&
+       (weaponIndex = (uint)(pcVar4->nextState).weapon, weaponIndex != 0)) {
+      pWVar5 = BG_GetWeaponDef(weaponIndex);
       if ((pWVar5->weapClass != WEAPCLASS_TURRET) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                    0x280,0,"%s"), !bVar2)) {
@@ -605,12 +638,12 @@ void __cdecl CG_DrawTurretCrossHair(int param_1)
       if ((pWVar5->reticleCenter != (Material *)0x0) &&
          (0.01 < (cg_crosshairAlpha->current).value || (cg_crosshairAlpha->current).value == 0.01))
       {
-        CG_CalcCrosshairColor(param_1,1.0,local_1c);
-        fVar7 = (float)pWVar5->iReticleCenterSize;
-        local_c = fVar7 * -0.5;
-        local_8 = fVar7 * -0.5;
-        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,local_8,fVar7,
-                          fVar7,2,2,0.0,0.0,1.0,1.0,local_1c,pWVar5->reticleCenter);
+        CG_CalcCrosshairColor(localClientNum,1.0,reticleColor);
+        w = (float)pWVar5->iReticleCenterSize;
+        x = w * -0.5;
+        y = w * -0.5;
+        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,w,2,2,0.0
+                          ,0.0,1.0,1.0,reticleColor,pWVar5->reticleCenter);
       }
     }
   }
@@ -625,7 +658,7 @@ void __cdecl CG_DrawTurretCrossHair(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_GetVehicleCrossHairAlpha(int param_1)
+float __cdecl CG_GetVehicleCrossHairAlpha(int localClientNum)
 
 {
   short sVar1;
@@ -634,59 +667,68 @@ float __cdecl CG_GetVehicleCrossHairAlpha(int param_1)
   float fVar4;
   bool bVar5;
   cg_s *pcVar6;
-  uint uVar7;
-  WeaponDef *pWVar8;
+  uint weaponIndex;
+  WeaponDef *pWVar7;
+  centity_s *pcVar8;
   centity_s *pcVar9;
-  centity_s *pcVar10;
-  vehicle_info_t *pvVar11;
-  int local_24;
-  float local_14;
+  vehicle_info_t *pvVar10;
+  vehicle_info_t *info;
+  cg_s *cgameGlob;
+  int weapon;
+  centity_s *cent;
+  int gunnerIndex;
+  centity_s *vehicle;
+  WeaponDef *weapDef;
+  centity_s *player;
+  float angleDiff;
   float local_10;
+  int seatIndex;
   
   bVar5 = CG_IsVehicleMayhemGameType();
   if (bVar5) {
     fVar4 = 1.0;
   }
   else {
-    pcVar6 = CG_GetLocalClientGlobals(param_1);
-    uVar7 = CG_GetPlayerWeapon(&pcVar6->predictedPlayerState,param_1);
-    pWVar8 = BG_GetWeaponDef(uVar7);
-    pcVar9 = CG_GetEntity(param_1,(int)(pcVar6->predictedPlayerEntity).nextState.otherEntityNum);
-    pcVar10 = CG_GetEntity(param_1,(int)(pcVar6->predictedPlayerState).viewlocked_entNum);
-    pvVar11 = CG_GetVehicleInfo((uint)(pcVar10->nextState).un2.vehicleState.vehicleInfoIndex);
+    pcVar6 = CG_GetLocalClientGlobals(localClientNum);
+    weaponIndex = CG_GetPlayerWeapon(&pcVar6->predictedPlayerState,localClientNum);
+    pWVar7 = BG_GetWeaponDef(weaponIndex);
+    pcVar8 = CG_GetEntity(localClientNum,
+                          (int)(pcVar6->predictedPlayerEntity).nextState.otherEntityNum);
+    pcVar9 = CG_GetEntity(localClientNum,(int)(pcVar6->predictedPlayerState).viewlocked_entNum);
+    pvVar10 = CG_GetVehicleInfo((uint)(pcVar9->nextState).un2.vehicleState.vehicleInfoIndex);
     iVar3 = (pcVar6->predictedPlayerState).vehiclePos;
-    local_24 = -1;
+    gunnerIndex = -1;
     if ((iVar3 < 1) || (4 < iVar3)) {
       if ((iVar3 == 0) &&
-         (((pcVar10->nextState).weapon == 0 && (-1 < pvVar11->driverControlledGunPos)))) {
-        local_24 = pvVar11->driverControlledGunPos;
+         (((pcVar9->nextState).weapon == 0 && (-1 < pvVar10->driverControlledGunPos)))) {
+        gunnerIndex = pvVar10->driverControlledGunPos;
       }
-      if ((iVar3 == 0) && ((pcVar10->nextState).weapon != 0)) {
-        sVar1 = (pcVar9->currentState).u.vehicle.gunYaw;
-        sVar2 = (pcVar9->currentState).u.vehicle.gunPitch;
+      if ((iVar3 == 0) && ((pcVar9->nextState).weapon != 0)) {
+        sVar1 = (pcVar8->currentState).u.vehicle.gunYaw;
+        sVar2 = (pcVar8->currentState).u.vehicle.gunPitch;
       }
       else {
-        if (local_24 < 0) {
+        if (gunnerIndex < 0) {
           return 0.0;
         }
-        sVar1 = *(short *)((int)(&(pcVar9->currentState).apos + 1) + local_24 * 4 + 10);
-        sVar2 = *(short *)((int)(&(pcVar9->currentState).apos + 1) + local_24 * 4 + 8);
+        sVar1 = *(short *)((int)(&(pcVar8->currentState).apos + 1) + gunnerIndex * 4 + 10);
+        sVar2 = *(short *)((int)(&(pcVar8->currentState).apos + 1) + gunnerIndex * 4 + 8);
       }
       local_10 = (float)(int)sVar1 * 0.005493164;
-      local_14 = (float)(int)sVar2 * 0.005493164;
-      if ((pWVar8->leftArc <= local_10 + s_arcEpsilon) ||
-         (local_10 - s_arcEpsilon <= -pWVar8->rightArc)) {
+      angleDiff = (float)(int)sVar2 * 0.005493164;
+      if ((pWVar7->leftArc <= local_10 + s_arcEpsilon) ||
+         (local_10 - s_arcEpsilon <= -pWVar7->rightArc)) {
         fVar4 = 0.0;
       }
-      else if ((pWVar8->bottomArc <= local_14 + s_arcEpsilon) ||
-              (local_14 - s_arcEpsilon <= -pWVar8->topArc)) {
+      else if ((pWVar7->bottomArc <= angleDiff + s_arcEpsilon) ||
+              (angleDiff - s_arcEpsilon <= -pWVar7->topArc)) {
         fVar4 = 0.0;
       }
       else {
         fVar4 = 1.0;
       }
     }
-    else if (pvVar11->gunnerWeaponIndex[iVar3 + -1] == 0) {
+    else if (pvVar10->gunnerWeaponIndex[iVar3 + -1] == 0) {
       fVar4 = 0.0;
     }
     else {
@@ -704,18 +746,19 @@ float __cdecl CG_GetVehicleCrossHairAlpha(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ShouldShowCrosshairOnVehicle(cg_s *param_1,WeaponDef *param_2)
+bool __cdecl ShouldShowCrosshairOnVehicle(cg_s *cgameGlob,WeaponDef *weapDef)
 
 {
   bool bVar1;
+  playerState_s *ps;
   
-  if ((((param_2->bKeepCrosshairWhenADS == false) &&
-       ((param_1->predictedPlayerState).fWeaponPosFrac != 0.0)) &&
-      (0 < (param_1->predictedPlayerState).vehiclePos)) &&
-     ((param_1->predictedPlayerState).vehiclePos < 5)) {
+  if ((((weapDef->bKeepCrosshairWhenADS == false) &&
+       ((cgameGlob->predictedPlayerState).fWeaponPosFrac != 0.0)) &&
+      (0 < (cgameGlob->predictedPlayerState).vehiclePos)) &&
+     ((cgameGlob->predictedPlayerState).vehiclePos < 5)) {
     bVar1 = false;
   }
-  else if (param_2->reticleCenter == (Material *)0x0) {
+  else if (weapDef->reticleCenter == (Material *)0x0) {
     bVar1 = false;
   }
   else if (0.01 < (cg_crosshairAlpha->current).value || (cg_crosshairAlpha->current).value == 0.01)
@@ -737,38 +780,38 @@ bool __cdecl ShouldShowCrosshairOnVehicle(cg_s *param_1,WeaponDef *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawVehicleCrossHair(int param_1)
+void __cdecl CG_DrawVehicleCrossHair(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_c0;
-  float local_a4;
+  float start;
   float local_a0;
   float local_9c;
-  float local_98;
+  float end;
   float local_94;
   float local_90;
-  float4 local_8c;
+  float4 trace;
   float local_7c;
   uint local_54;
-  float local_50 [3];
-  float local_44;
-  cg_s *local_40;
-  Material *local_3c;
-  uint local_38;
-  int local_34;
-  int local_30;
-  WeaponDef *local_2c;
-  float local_28 [4];
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float contact [3];
+  float centerW;
+  cg_s *cgameGlob;
+  Material *material;
+  int weapon;
+  int vertAlign;
+  int horzAlign;
+  WeaponDef *weapDef;
+  float color [4];
+  float x;
+  float y;
+  float h;
+  float alpha;
+  float w;
   
   local_54 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40 = CG_GetLocalClientGlobals(param_1);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
   if ((cg_crosshairAlpha == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x304,0,"%s"), !bVar2)) {
@@ -776,53 +819,51 @@ void __cdecl CG_DrawVehicleCrossHair(int param_1)
     (*pcVar1)();
     return;
   }
-  if ((((local_40->predictedPlayerState).eFlags & 0x4000U) == 0) &&
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x305,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_38 = CG_GetPlayerWeapon(&local_40->predictedPlayerState,param_1);
-  if (local_38 != 0) {
-    local_2c = BG_GetWeaponDef(local_38);
-    bVar2 = ShouldShowCrosshairOnVehicle(local_40,local_2c);
+  weapon = CG_GetPlayerWeapon(&cgameGlob->predictedPlayerState,localClientNum);
+  if (weapon != 0) {
+    weapDef = BG_GetWeaponDef(weapon);
+    bVar2 = ShouldShowCrosshairOnVehicle(cgameGlob,weapDef);
     if (bVar2) {
-      local_c = CG_GetVehicleCrossHairAlpha(param_1);
-      CG_CalcCrosshairColor(param_1,local_c,local_28);
-      local_10 = (float)local_2c->iReticleCenterSize;
-      local_18 = local_10 * -0.5;
-      local_14 = local_10 * -0.5;
-      local_3c = local_2c->reticleCenter;
-      local_30 = 2;
-      local_34 = 2;
-      local_44 = 1.0;
-      local_8 = local_10;
+      alpha = CG_GetVehicleCrossHairAlpha(localClientNum);
+      CG_CalcCrosshairColor(localClientNum,alpha,color);
+      h = (float)weapDef->iReticleCenterSize;
+      x = h * -0.5;
+      y = h * -0.5;
+      material = weapDef->reticleCenter;
+      horzAlign = 2;
+      vertAlign = 2;
+      centerW = 1.0;
+      w = h;
       bVar2 = R_StereoActivated();
       if (bVar2) {
-        local_8c.v[0] = 0.0;
-        local_8c.v[1] = 0.0;
-        local_8c.v[2] = 0.0;
-        local_8c.v[3] = 0.0;
-        local_a4 = (local_40->refdef).vieworg[0];
-        local_a0 = (local_40->refdef).vieworg[1];
-        local_9c = (local_40->refdef).vieworg[2];
-        local_98 = (local_40->refdef).viewaxis[0][0] * 15000.0 + local_a4;
-        local_94 = (local_40->refdef).viewaxis[0][1] * 15000.0 + local_a0;
-        local_90 = (local_40->refdef).viewaxis[0][2] * 15000.0 + local_9c;
-        CG_LocationalTrace((trace_t *)&local_8c,&local_a4,&local_98,
-                           (uint)(local_40->nextSnap->ps).clientNum,0x280b001,false,
-                           (col_context_t *)0x0);
-        Vec3Lerp(&local_a4,&local_98,local_7c,local_50);
-        local_c0 = Vec3Distance(&local_a4,local_50);
+        trace.v[0] = 0.0;
+        trace.v[1] = 0.0;
+        trace.v[2] = 0.0;
+        trace.v[3] = 0.0;
+        start = (cgameGlob->refdef).vieworg[0];
+        local_a0 = (cgameGlob->refdef).vieworg[1];
+        local_9c = (cgameGlob->refdef).vieworg[2];
+        end = (cgameGlob->refdef).viewaxis[0][0] * 15000.0 + start;
+        local_94 = (cgameGlob->refdef).viewaxis[0][1] * 15000.0 + local_a0;
+        local_90 = (cgameGlob->refdef).viewaxis[0][2] * 15000.0 + local_9c;
+        CG_LocationalTrace((trace_t *)&trace,&start,&end,(uint)(cgameGlob->nextSnap->ps).clientNum,
+                           0x280b001,false,(col_context_t *)0x0);
+        Vec3Lerp(&start,&end,local_7c,contact);
+        local_c0 = Vec3Distance(&start,contact);
         if (10000.0 <= local_c0) {
           local_c0 = 10000.0;
         }
-        local_44 = local_c0;
+        centerW = local_c0;
       }
-      CL_DrawStretchPicW((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_18,local_14,
-                         local_44,local_8,local_10,local_30,local_34,0.0,0.0,1.0,1.0,local_28,
-                         local_3c);
+      CL_DrawStretchPicW((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,centerW,w,h,
+                         horzAlign,vertAlign,0.0,0.0,1.0,1.0,color,material);
     }
   }
   return;
@@ -831,12 +872,17 @@ void __cdecl CG_DrawVehicleCrossHair(int param_1)
 
 // 004A39F0  CG_IsReticleTurnedOff  (cgame/cg_draw_reticles.cpp:824)
 
-bool __cdecl CG_IsReticleTurnedOff(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+bool __cdecl CG_IsReticleTurnedOff(int localClientNum)
 
 {
   bool bVar1;
   
-  bVar1 = IsHardcoreMode(param_1);
+  bVar1 = IsHardcoreMode(localClientNum);
   if (((!bVar1) && ((cg_drawCrosshair->current).enabled != false)) &&
      (bVar1 = UI_ShouldDrawCrosshair(), bVar1)) {
     return false;
@@ -847,7 +893,7 @@ bool __cdecl CG_IsReticleTurnedOff(int param_1)
 
 // 004A3860  AllowedToDrawCrosshair  (cgame/cg_draw_reticles.cpp:839)
 
-bool __cdecl AllowedToDrawCrosshair(int param_1,playerState_s *param_2)
+bool __cdecl AllowedToDrawCrosshair(int localClientNum,playerState_s *predictedPlayerState)
 
 {
   code *pcVar1;
@@ -855,7 +901,7 @@ bool __cdecl AllowedToDrawCrosshair(int param_1,playerState_s *param_2)
   undefined1 uVar3;
   WeaponDef *pWVar4;
   
-  if ((param_2 == (playerState_s *)0x0) &&
+  if ((predictedPlayerState == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x348,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -872,7 +918,7 @@ bool __cdecl AllowedToDrawCrosshair(int param_1,playerState_s *param_2)
   bVar2 = CL_IsRenderingSplitScreen();
   if (((bVar2) || ((cg_paused->current).integer == 0)) ||
      ((cg_drawpaused->current).enabled == false)) {
-    bVar2 = CG_IsReticleTurnedOff(param_1);
+    bVar2 = CG_IsReticleTurnedOff(localClientNum);
     if (bVar2) {
       bVar2 = false;
     }
@@ -881,24 +927,27 @@ bool __cdecl AllowedToDrawCrosshair(int param_1,playerState_s *param_2)
       if (bVar2) {
         bVar2 = false;
       }
-      else if ((param_2->locationSelectionInfo & 0xfU) == 0) {
-        if (((param_2->weaponstate == 0x11) || (param_2->weaponstate == 0x12)) ||
-           (param_2->weaponstate == 0x13)) {
+      else if ((predictedPlayerState->locationSelectionInfo & 0xfU) == 0) {
+        if (((predictedPlayerState->weaponstate == 0x11) ||
+            (predictedPlayerState->weaponstate == 0x12)) ||
+           (predictedPlayerState->weaponstate == 0x13)) {
           bVar2 = false;
         }
         else {
-          pWVar4 = BG_GetWeaponDef((uint)param_2->weapon);
+          pWVar4 = BG_GetWeaponDef((uint)predictedPlayerState->weapon);
           if (pWVar4->bDualWield == false) {
-            if (param_2->weaponstate == 10) {
+            if (predictedPlayerState->weaponstate == 10) {
               return false;
             }
           }
-          else if ((param_2->weaponstate == 10) && (param_2->weaponstateLeft == 10)) {
+          else if ((predictedPlayerState->weaponstate == 10) &&
+                  (predictedPlayerState->weaponstateLeft == 10)) {
             return false;
           }
-          if ((((param_2->weaponstate == 1) || (param_2->weaponstate == 2)) ||
-              (param_2->weaponstate == 3)) ||
-             ((param_2->weaponstate == 4 || (param_2->weaponstate == 5)))) {
+          if ((((predictedPlayerState->weaponstate == 1) || (predictedPlayerState->weaponstate == 2)
+               ) || (predictedPlayerState->weaponstate == 3)) ||
+             ((predictedPlayerState->weaponstate == 4 || (predictedPlayerState->weaponstate == 5))))
+          {
             bVar2 = false;
           }
           else {
@@ -922,14 +971,22 @@ bool __cdecl AllowedToDrawCrosshair(int param_1,playerState_s *param_2)
 
 void __cdecl
 CG_DrawAdsAimIndicator
-          (int param_1,WeaponDef *param_2,float *param_3,float param_4,float param_5,float param_6)
+          (int localClientNum,WeaponDef *weapDef,float *color,float centerX,float centerY,
+          float transScale)
 
 {
   code *pcVar1;
   bool bVar2;
-  float fVar3;
+  float w_00;
+  Material *material;
+  int vertAlign;
+  int horzAlign;
+  float x;
+  float y;
+  float h;
+  float w;
   
-  if ((param_2 == (WeaponDef *)0x0) &&
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x380,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -943,12 +1000,12 @@ CG_DrawAdsAimIndicator
     (*pcVar1)();
     return;
   }
-  if ((((cg_drawGun->current).enabled == false) && (param_6 < 1.0)) &&
-     (param_2->reticleCenter != (Material *)0x0)) {
-    fVar3 = (1.5 - param_6) * (float)param_2->iReticleCenterSize;
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_4 - fVar3 * 0.5,
-                      param_5 - fVar3 * 0.5,fVar3,fVar3,2,2,0.0,0.0,1.0,1.0,param_3,
-                      param_2->reticleCenter);
+  if ((((cg_drawGun->current).enabled == false) && (transScale < 1.0)) &&
+     (weapDef->reticleCenter != (Material *)0x0)) {
+    w_00 = (1.5 - transScale) * (float)weapDef->iReticleCenterSize;
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                      centerX - w_00 * 0.5,centerY - w_00 * 0.5,w_00,w_00,2,2,0.0,0.0,1.0,1.0,color,
+                      weapDef->reticleCenter);
   }
   return;
 }
@@ -962,84 +1019,85 @@ CG_DrawAdsAimIndicator
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_TransitionToAds(cg_s *param_1,WeaponDef *param_2,float param_3,float *param_4,float *param_5)
+CG_TransitionToAds(cg_s *cgameGlob,WeaponDef *weapDef,float posLerp,float *transScale,
+                  float *transShift)
 
 {
   code *pcVar1;
   bool bVar2;
-  float fVar3;
-  double dVar4;
+  double dVar3;
+  float fVar4;
   undefined4 in_stack_fffffff0;
-  float local_8;
+  float f;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x3a2,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (WeaponDef *)0x0) &&
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x3a3,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((transScale == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x3a4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((transShift == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x3a5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->playerEntity).bPositionToADS == 0) {
-    local_8 = param_3 - (1.0 - param_2->fAdsCrosshairOutFrac);
-    if (local_8 <= 0.0) {
+  if ((cgameGlob->playerEntity).bPositionToADS == 0) {
+    fVar4 = posLerp - (1.0 - weapDef->fAdsCrosshairOutFrac);
+    if (fVar4 <= 0.0) {
       return;
     }
-    if ((param_2->fAdsCrosshairOutFrac == 0.0) &&
+    if ((weapDef->fAdsCrosshairOutFrac == 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                  0x3b8,0,"%s\n\t(weapDef->fAdsCrosshairOutFrac) = %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = local_8 / param_2->fAdsCrosshairOutFrac;
+    f = fVar4 / weapDef->fAdsCrosshairOutFrac;
   }
   else {
-    local_8 = param_3 - (1.0 - param_2->fAdsCrosshairInFrac);
-    if (local_8 <= 0.0) {
+    fVar4 = posLerp - (1.0 - weapDef->fAdsCrosshairInFrac);
+    if (fVar4 <= 0.0) {
       return;
     }
-    if ((param_2->fAdsCrosshairInFrac == 0.0) &&
+    if ((weapDef->fAdsCrosshairInFrac == 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                  0x3af,0,"%s\n\t(weapDef->fAdsCrosshairInFrac) = %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = local_8 / param_2->fAdsCrosshairInFrac;
+    f = fVar4 / weapDef->fAdsCrosshairInFrac;
   }
-  if (((param_1->refdef).tanHalfFovY == 0.0) &&
+  if (((cgameGlob->refdef).tanHalfFovY == 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x3bc,0,"%s\n\t(cgameGlob->refdef.tanHalfFovY) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  *param_4 = 1.0 - local_8 * 0.5;
-  fVar3 = param_2->fAdsAimPitch * 0.017453292;
-  dVar4 = (double)fVar3;
-  __libm_sse2_tan((double)CONCAT44(fVar3,in_stack_fffffff0));
-  *param_5 = ((local_8 * 240.0) / (param_1->refdef).tanHalfFovY) * (float)dVar4;
+  *transScale = 1.0 - f * 0.5;
+  fVar4 = weapDef->fAdsAimPitch * 0.017453292;
+  dVar3 = (double)fVar4;
+  __libm_sse2_tan((double)CONCAT44(fVar4,in_stack_fffffff0));
+  *transShift = ((f * 240.0) / (cgameGlob->refdef).tanHalfFovY) * (float)dVar3;
   return;
 }
 
@@ -1053,39 +1111,45 @@ CG_TransitionToAds(cg_s *param_1,WeaponDef *param_2,float param_3,float *param_4
 
 void __cdecl
 CG_DrawReticleCenter
-          (int param_1,WeaponDef *param_2,float *param_3,float param_4,float param_5,float param_6,
-          float param_7)
+          (int localClientNum,WeaponDef *weapDef,float *color,float centerX,float centerY,
+          float centerW,float transScale)
 
 {
-  Material *pMVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  cg_s *pcVar5;
-  float local_18;
+  Material *material_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  cg_s *pcVar4;
+  Material *material;
+  int grenadeTimeLeft;
+  int vertAlign;
+  float drawSize;
+  int horzAlign;
+  float x;
+  float y;
   
-  if ((param_2 == (WeaponDef *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
-                               0x3d1,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if ((weapDef == (WeaponDef *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
+                               0x3d1,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  pMVar1 = param_2->reticleCenter;
-  if (pMVar1 != (Material *)0x0) {
-    local_18 = (float)param_2->iReticleCenterSize;
-    if (((param_2->weapType == WEAPTYPE_GRENADE) || (param_2->weapType == WEAPTYPE_MINE)) &&
-       (param_2->bCookOffHold != false)) {
-      pcVar5 = CG_GetLocalClientGlobals(param_1);
-      iVar2 = (pcVar5->predictedPlayerState).grenadeTimeLeft;
-      if (iVar2 != 0) {
-        local_18 = (float)(iVar2 % 1000) / 100.0 + local_18;
+  material_00 = weapDef->reticleCenter;
+  if (material_00 != (Material *)0x0) {
+    drawSize = (float)weapDef->iReticleCenterSize;
+    if (((weapDef->weapType == WEAPTYPE_GRENADE) || (weapDef->weapType == WEAPTYPE_MINE)) &&
+       (weapDef->bCookOffHold != false)) {
+      pcVar4 = CG_GetLocalClientGlobals(localClientNum);
+      iVar1 = (pcVar4->predictedPlayerState).grenadeTimeLeft;
+      if (iVar1 != 0) {
+        drawSize = (float)(iVar1 % 1000) / 100.0 + drawSize;
       }
     }
-    local_18 = local_18 * param_7;
-    CL_DrawStretchPicW((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_4 - local_18 * 0.5,
-                       param_5 - local_18 * 0.5,param_6,local_18,local_18,2,2,0.0,0.0,1.0,1.0,
-                       param_3,pMVar1);
+    drawSize = drawSize * transScale;
+    CL_DrawStretchPicW((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),
+                       centerX - drawSize * 0.5,centerY - drawSize * 0.5,centerW,drawSize,drawSize,2
+                       ,2,0.0,0.0,1.0,1.0,color,material_00);
   }
   return;
 }
@@ -1099,18 +1163,19 @@ CG_DrawReticleCenter
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_CalcReticleSpread(cg_s *param_1,WeaponDef *param_2,float *param_3,float param_4,float *param_5)
+CG_CalcReticleSpread
+          (cg_s *cgameGlob,WeaponDef *weapDef,float *drawSize,float transScale,float *spread)
 
 {
   code *pcVar1;
   bool bVar2;
   double dVar3;
   undefined4 in_stack_ffffffe8;
-  float local_10;
-  float local_c;
-  float local_8;
+  float maxSpread;
+  float f;
+  float scale;
   
-  if (param_2 == (WeaponDef *)0x0) {
+  if (weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",0x3f8,
                              0,"%s");
     if (!bVar2) {
@@ -1119,24 +1184,25 @@ CG_CalcReticleSpread(cg_s *param_1,WeaponDef *param_2,float *param_3,float param
       return;
     }
   }
-  BG_GetSpreadForWeapon(&param_1->predictedPlayerState,param_2,&local_c,&local_10);
-  local_c = ((local_10 - local_c) * ((param_1->predictedPlayerState).aimSpreadScale / 255.0) +
-            local_c) * param_4;
-  dVar3 = (double)(local_c * 0.017453292);
-  __libm_sse2_tan((double)CONCAT44(local_c * 0.017453292,in_stack_ffffffe8));
-  local_8 = ((float)dVar3 * 240.0) / (param_1->refdef).tanHalfFovY;
-  if (local_8 < (float)param_2->iReticleMinOfs) {
-    local_8 = (float)param_2->iReticleMinOfs;
+  BG_GetSpreadForWeapon(&cgameGlob->predictedPlayerState,weapDef,&f,&maxSpread);
+  f = ((maxSpread - f) * ((cgameGlob->predictedPlayerState).aimSpreadScale / 255.0) + f) *
+      transScale;
+  dVar3 = (double)(f * 0.017453292);
+  __libm_sse2_tan((double)CONCAT44(f * 0.017453292,in_stack_ffffffe8));
+  scale = ((float)dVar3 * 240.0) / (cgameGlob->refdef).tanHalfFovY;
+  if (scale < (float)weapDef->iReticleMinOfs) {
+    scale = (float)weapDef->iReticleMinOfs;
   }
-  *param_5 = local_8 - param_2->fHipReticleSidePos * *param_3;
-  param_5[1] = local_8 - param_2->fHipReticleSidePos * param_3[1];
+  *spread = scale - weapDef->fHipReticleSidePos * *drawSize;
+  spread[1] = scale - weapDef->fHipReticleSidePos * drawSize[1];
   return;
 }
 
 
 // 004A44E0  CG_CalcReticleColor  (cgame/cg_draw_reticles.cpp:1039)
 
-void __cdecl CG_CalcReticleColor(float *param_1,float param_2,float param_3,float *param_4)
+void __cdecl
+CG_CalcReticleColor(float *baseColor,float alpha,float aimSpreadScale,float *reticleColor)
 
 {
   code *pcVar1;
@@ -1160,7 +1226,7 @@ void __cdecl CG_CalcReticleColor(float *param_1,float param_2,float param_3,floa
       return;
     }
   }
-  if ((param_2 < 0.0) || (1.0 < param_2)) {
+  if ((alpha < 0.0) || (1.0 < alpha)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",0x412,
                              0,"%s\n\t(alpha) = %g");
     if (!bVar2) {
@@ -1169,15 +1235,15 @@ void __cdecl CG_CalcReticleColor(float *param_1,float param_2,float param_3,floa
       return;
     }
   }
-  *param_4 = *param_1;
-  param_4[1] = param_1[1];
-  param_4[2] = param_1[2];
-  param_4[3] = param_2 * (cg_crosshairAlpha->current).value * (1.0 - param_3 / 255.0);
-  if (param_4[3] <= (cg_crosshairAlphaMin->current).value &&
-      (cg_crosshairAlphaMin->current).value != param_4[3]) {
-    param_4[3] = (float)(cg_crosshairAlphaMin->current).integer;
+  *reticleColor = *baseColor;
+  reticleColor[1] = baseColor[1];
+  reticleColor[2] = baseColor[2];
+  reticleColor[3] = alpha * (cg_crosshairAlpha->current).value * (1.0 - aimSpreadScale / 255.0);
+  if (reticleColor[3] <= (cg_crosshairAlphaMin->current).value &&
+      (cg_crosshairAlphaMin->current).value != reticleColor[3]) {
+    reticleColor[3] = (float)(cg_crosshairAlphaMin->current).integer;
   }
-  if ((param_4[3] < 0.0) || (1.0 < param_4[3])) {
+  if ((reticleColor[3] < 0.0) || (1.0 < reticleColor[3])) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",0x41e,
                              1,"%s\n\t(reticleColor[3]) = %g");
     if (!bVar2) {
@@ -1192,11 +1258,11 @@ void __cdecl CG_CalcReticleColor(float *param_1,float param_2,float param_3,floa
 
 // 004A4670  CG_CalcReticleImageOffset  (cgame/cg_draw_reticles.cpp:1059)
 
-void __cdecl CG_CalcReticleImageOffset(float *param_1,float *param_2)
+void __cdecl CG_CalcReticleImageOffset(float *drawSize,float *imageTexelOffset)
 
 {
-  *param_2 = *param_1 / 8.0;
-  param_2[1] = param_1[1] / 8.0;
+  *imageTexelOffset = *drawSize / 8.0;
+  imageTexelOffset[1] = drawSize[1] / 8.0;
   return;
 }
 
@@ -1209,90 +1275,92 @@ void __cdecl CG_CalcReticleImageOffset(float *param_1,float *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DrawReticleSides(int param_1,uint param_2,float *param_3,float param_4,float param_5,
-                   float param_6,float param_7)
+CG_DrawReticleSides(int localClientNum,uint weaponIndex,float *baseColor,float centerX,float centerY
+                   ,float centerW,float transScale)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_60;
-  float local_58;
+  float alphaScale;
+  float spread;
   float local_54;
-  ScreenPlacement *local_50;
-  cg_s *local_4c;
-  Material *local_48;
-  float local_44;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  Material *material;
+  float drawPos;
   float local_40;
-  int local_3c;
-  float local_38;
+  int vertAlign;
+  float imageTexelOffset;
   float local_34;
-  float local_30;
-  float local_2c;
+  float reticleAlpha;
+  float drawSize;
   float local_28;
-  WeaponVariantDef *local_24;
-  int local_20;
-  float local_1c [3];
+  WeaponVariantDef *weapVariantDef;
+  int horzAlign;
+  float reticleColor [3];
   float local_10;
-  WeaponDef *local_c;
-  float local_8;
+  WeaponDef *weapDef;
+  float zoomFrac;
   
-  local_24 = BG_GetWeaponVariantDef(param_2);
-  local_c = BG_GetWeaponDef(param_2);
-  if ((local_24 == (WeaponVariantDef *)0x0) &&
+  weapVariantDef = BG_GetWeaponVariantDef(weaponIndex);
+  weapDef = BG_GetWeaponDef(weaponIndex);
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x442,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_c == (WeaponDef *)0x0) &&
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x443,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_48 = local_c->reticleSide;
-  if (local_48 != (Material *)0x0) {
-    local_20 = 2;
-    local_3c = 2;
-    local_4c = CG_GetLocalClientGlobals(param_1);
-    bVar2 = CG_GetWeapReticleZoom(local_4c,&local_8);
+  material = weapDef->reticleSide;
+  if (material != (Material *)0x0) {
+    horzAlign = 2;
+    vertAlign = 2;
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    bVar2 = CG_GetWeapReticleZoom(cgameGlob,&zoomFrac);
     if (bVar2) {
-      if (1.0 < local_24->fOverlayAlphaScale || local_24->fOverlayAlphaScale == 1.0) {
-        local_60 = local_24->fOverlayAlphaScale;
+      if (1.0 < weapVariantDef->fOverlayAlphaScale || weapVariantDef->fOverlayAlphaScale == 1.0) {
+        local_60 = weapVariantDef->fOverlayAlphaScale;
       }
       else {
         local_60 = 1.0;
       }
-      local_30 = 1.0 - local_8 / local_60;
+      reticleAlpha = 1.0 - zoomFrac / local_60;
     }
     else {
-      local_30 = 1.0;
+      reticleAlpha = 1.0;
     }
-    CG_CalcReticleColor(param_3,local_30,(local_4c->predictedPlayerState).aimSpreadScale,local_1c);
+    CG_CalcReticleColor(baseColor,reticleAlpha,(cgameGlob->predictedPlayerState).aimSpreadScale,
+                        reticleColor);
     if (0.01 <= local_10) {
-      local_2c = (float)local_c->iReticleSideSize * param_7;
-      local_28 = local_2c;
-      CG_CalcReticleSpread(local_4c,local_c,&local_2c,param_7,&local_58);
-      local_50 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-      CG_CalcReticleImageOffset(&local_2c,&local_38);
-      local_44 = param_4 - local_2c * 0.5;
-      local_40 = ((param_5 - local_28) - local_54) - local_34;
-      CG_DrawRotatedPicW(local_50,local_44,local_40,param_6,local_2c,local_28,local_20,local_3c,0.0,
-                         local_1c,local_48);
-      local_44 = param_4 + local_58;
-      local_40 = param_5 - local_28 * 0.5;
-      CG_DrawRotatedPicW(local_50,local_44,local_40,param_6,local_2c,local_28,local_20,local_3c,90.0
-                         ,local_1c,local_48);
-      local_44 = (param_4 - local_2c * 0.5) - local_38;
-      local_40 = param_5 + local_54;
-      CG_DrawRotatedPicW(local_50,local_44,local_40,param_6,local_2c,local_28,local_20,local_3c,
-                         180.0,local_1c,local_48);
-      local_44 = ((param_4 - local_2c) - local_58) - local_38;
-      local_40 = (param_5 - local_28 * 0.5) - local_34;
-      CG_DrawRotatedPicW(local_50,local_44,local_40,param_6,local_2c,local_28,local_20,local_3c,
-                         270.0,local_1c,local_48);
+      drawSize = (float)weapDef->iReticleSideSize * transScale;
+      local_28 = drawSize;
+      CG_CalcReticleSpread(cgameGlob,weapDef,&drawSize,transScale,&spread);
+      scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+      CG_CalcReticleImageOffset(&drawSize,&imageTexelOffset);
+      drawPos = centerX - drawSize * 0.5;
+      local_40 = ((centerY - local_28) - local_54) - local_34;
+      CG_DrawRotatedPicW(scrPlace,drawPos,local_40,centerW,drawSize,local_28,horzAlign,vertAlign,0.0
+                         ,reticleColor,material);
+      drawPos = centerX + spread;
+      local_40 = centerY - local_28 * 0.5;
+      CG_DrawRotatedPicW(scrPlace,drawPos,local_40,centerW,drawSize,local_28,horzAlign,vertAlign,
+                         90.0,reticleColor,material);
+      drawPos = (centerX - drawSize * 0.5) - imageTexelOffset;
+      local_40 = centerY + local_54;
+      CG_DrawRotatedPicW(scrPlace,drawPos,local_40,centerW,drawSize,local_28,horzAlign,vertAlign,
+                         180.0,reticleColor,material);
+      drawPos = ((centerX - drawSize) - spread) - imageTexelOffset;
+      local_40 = (centerY - local_28 * 0.5) - local_34;
+      CG_DrawRotatedPicW(scrPlace,drawPos,local_40,centerW,drawSize,local_28,horzAlign,vertAlign,
+                         270.0,reticleColor,material);
     }
   }
   return;
@@ -1306,28 +1374,28 @@ CG_DrawReticleSides(int param_1,uint param_2,float *param_3,float param_4,float 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ShouldDrawCrosshair(cg_s *param_1,playerState_s *param_2)
+bool __cdecl ShouldDrawCrosshair(cg_s *cgameGlob,playerState_s *ps)
 
 {
   bool bVar1;
   
-  if (param_1->cameraMode == 1) {
+  if (cgameGlob->cameraMode == 1) {
     bVar1 = false;
   }
-  else if ((param_2->weaponstate < 0x2f) || (0x31 < param_2->weaponstate)) {
-    if ((param_1->renderingThirdPerson == TP_FOR_MODEL) && ((param_2->eFlags & 0x4000U) == 0)) {
+  else if ((ps->weaponstate < 0x2f) || (0x31 < ps->weaponstate)) {
+    if ((cgameGlob->renderingThirdPerson == TP_FOR_MODEL) && ((ps->eFlags & 0x4000U) == 0)) {
       bVar1 = false;
     }
     else {
-      if ((param_1->renderingThirdPerson == TP_FOR_MODEL) &&
-         (bVar1 = CG_KillCamEntityEnabled(param_1->localClientNum), bVar1)) {
+      if ((cgameGlob->renderingThirdPerson == TP_FOR_MODEL) &&
+         (bVar1 = CG_KillCamEntityEnabled(cgameGlob->localClientNum), bVar1)) {
         return false;
       }
-      if (param_2->pm_type < 9) {
+      if (ps->pm_type < 9) {
         bVar1 = true;
       }
-      else if (((param_2->eFlags & 0x4000U) == 0) || (param_2->vehicleType != 6)) {
-        if ((param_2->eFlags2 & 0x10000000U) == 0) {
+      else if (((ps->eFlags & 0x4000U) == 0) || (ps->vehicleType != 6)) {
+        if ((ps->eFlags2 & 0x10000000U) == 0) {
           bVar1 = false;
         }
         else {
@@ -1354,45 +1422,50 @@ bool __cdecl ShouldDrawCrosshair(cg_s *param_1,playerState_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawCrosshair(int param_1)
+void __cdecl CG_DrawCrosshair(int localClientNum)
 
 {
+  float posLerp_00;
   code *pcVar1;
   bool bVar2;
-  DWORD DVar3;
-  WeaponVariantDef *pWVar4;
+  bool bVar3;
+  cg_s *cgameGlob_00;
+  DWORD DVar4;
+  WeaponVariantDef *pWVar5;
+  float alpha;
   float local_150;
-  float local_ac;
+  float start;
   float local_a8;
   float local_a4;
-  float local_a0;
+  float end;
   float local_9c;
   float local_98;
-  float4 local_94;
+  float4 trace;
   float local_84;
   uint local_5c;
-  float local_58 [3];
-  float local_4c;
-  float local_44;
-  cg_s *local_40;
-  char local_3a;
-  char local_39;
-  cgs_t *local_38;
-  float local_34;
-  float local_30;
-  uint local_2c;
-  playerState_s *local_28;
-  WeaponDef *local_24;
-  float local_20 [3];
+  float contact [3];
+  float centerW;
+  PIXProfile pixProfile;
+  float posLerp;
+  cg_s *cgameGlob;
+  bool drawHud;
+  bool forceCrosshairsOn;
+  cgs_t *cgs;
+  float reticleAlpha;
+  float centerY;
+  int weapIndex;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  float color [3];
   float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float transShift;
+  float transScale;
+  float centerX;
   
   local_5c = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"CG_DrawCrosshair");
-  local_40 = CG_GetLocalClientGlobals(param_1);
-  local_28 = &local_40->predictedPlayerState;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob_00->predictedPlayerState;
   if ((cg_drawGun == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_draw_reticles.cpp",
                                0x4b2,0,"%s"), !bVar2)) {
@@ -1407,139 +1480,140 @@ void __cdecl CG_DrawCrosshair(int param_1)
     (*pcVar1)();
     return;
   }
-  bVar2 = ShouldDrawCrosshair(local_40,local_28);
+  bVar2 = ShouldDrawCrosshair(cgameGlob_00,ps);
   if (bVar2) {
-    local_3a = CG_ShouldDrawHud(param_1);
-    local_44 = local_28->fWeaponPosFrac;
-    local_c = 1.0;
-    local_10 = 0.0;
-    if ((local_28->eFlags & 0x300U) == 0) {
-      if ((local_28->eFlags & 0x4000U) == 0) {
-        if (((show_reticle_during_swimming->current).enabled == false) && (2 < local_28->waterlevel)
-           ) {
-          DVar3 = GetCurrentThreadId();
-          if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    bVar2 = CG_ShouldDrawHud(localClientNum);
+    posLerp_00 = ps->fWeaponPosFrac;
+    transScale = 1.0;
+    transShift = 0.0;
+    if ((ps->eFlags & 0x300U) == 0) {
+      if ((ps->eFlags & 0x4000U) == 0) {
+        if (((show_reticle_during_swimming->current).enabled == false) && (2 < ps->waterlevel)) {
+          DVar4 = GetCurrentThreadId();
+          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else {
-          local_2c = BG_GetViewmodelWeaponIndex(&local_40->predictedPlayerState);
-          if (local_2c == 0) {
-            DVar3 = GetCurrentThreadId();
-            if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          weapIndex = BG_GetViewmodelWeaponIndex(&cgameGlob_00->predictedPlayerState);
+          if (weapIndex == 0) {
+            DVar4 = GetCurrentThreadId();
+            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
           else {
-            local_24 = BG_GetWeaponDef(local_2c);
-            local_34 = CG_DrawWeapReticle(param_1);
-            bVar2 = CG_Flashbanged(param_1);
-            if (bVar2) {
-              DVar3 = GetCurrentThreadId();
-              if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+            weapDef = BG_GetWeaponDef(weapIndex);
+            alpha = CG_DrawWeapReticle(localClientNum);
+            bVar3 = CG_Flashbanged(localClientNum);
+            if (bVar3) {
+              DVar4 = GetCurrentThreadId();
+              if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
             }
             else {
-              bVar2 = CG_Flared(param_1);
-              if (bVar2) {
-                DVar3 = GetCurrentThreadId();
-                if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+              bVar3 = CG_Flared(localClientNum);
+              if (bVar3) {
+                DVar4 = GetCurrentThreadId();
+                if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                   _D3DPERF_EndEvent_0();
                 }
               }
-              else if (local_3a == '\0') {
-                DVar3 = GetCurrentThreadId();
-                if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
-                  _D3DPERF_EndEvent_0();
-                }
-              }
-              else {
-                local_38 = CG_GetLocalClientStaticGlobals(param_1);
-                CG_CalcCrosshairColor(param_1,local_34,local_20);
+              else if (bVar2) {
+                CG_GetLocalClientStaticGlobals(localClientNum);
+                CG_CalcCrosshairColor(localClientNum,alpha,color);
                 if (0.01 <= local_14) {
-                  local_39 = local_24->bKeepCrosshairWhenADS;
-                  if (((local_44 == 1.0) && ((cg_drawGun->current).enabled != false)) &&
-                     ((bool)local_39 == false)) {
-                    DVar3 = GetCurrentThreadId();
-                    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                  if (((posLerp_00 == 1.0) && ((cg_drawGun->current).enabled != false)) &&
+                     (weapDef->bKeepCrosshairWhenADS == false)) {
+                    DVar4 = GetCurrentThreadId();
+                    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                       _D3DPERF_EndEvent_0();
                     }
                   }
                   else {
-                    bVar2 = AllowedToDrawCrosshair(param_1,&local_40->predictedPlayerState);
+                    bVar2 = AllowedToDrawCrosshair
+                                      (localClientNum,&cgameGlob_00->predictedPlayerState);
                     if (bVar2) {
-                      CG_CalcCrosshairPosition(local_40,&local_8,&local_30);
-                      if ((local_44 != 0.0) && (local_24->bKeepCrosshairWhenADS == false)) {
-                        CG_TransitionToAds(local_40,local_24,local_44,&local_c,&local_10);
-                        CG_DrawAdsAimIndicator(param_1,local_24,local_20,local_8,local_30,local_c);
+                      CG_CalcCrosshairPosition(cgameGlob_00,&centerX,&centerY);
+                      if ((posLerp_00 != 0.0) && (weapDef->bKeepCrosshairWhenADS == false)) {
+                        CG_TransitionToAds(cgameGlob_00,weapDef,posLerp_00,&transScale,&transShift);
+                        CG_DrawAdsAimIndicator
+                                  (localClientNum,weapDef,color,centerX,centerY,transScale);
                       }
-                      if ((local_44 == 1.0) && ((cg_drawGun->current).enabled == false)) {
-                        DVar3 = GetCurrentThreadId();
-                        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                      if ((posLerp_00 == 1.0) && ((cg_drawGun->current).enabled == false)) {
+                        DVar4 = GetCurrentThreadId();
+                        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                           _D3DPERF_EndEvent_0();
                         }
                       }
                       else {
                         if ((cg_crosshairDynamic->current).enabled == false) {
-                          local_8 = 0.0;
-                          local_30 = local_10;
+                          centerX = 0.0;
+                          centerY = transShift;
                         }
-                        local_4c = 1.0;
-                        bVar2 = IsHardcoreMode(param_1);
+                        centerW = 1.0;
+                        bVar2 = IsHardcoreMode(localClientNum);
                         if (bVar2) {
-                          DVar3 = GetCurrentThreadId();
-                          if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                          DVar4 = GetCurrentThreadId();
+                          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                             _D3DPERF_EndEvent_0();
                           }
                         }
                         else {
                           bVar2 = R_StereoActivated();
                           if (bVar2) {
-                            local_94.v[0] = 0.0;
-                            local_94.v[1] = 0.0;
-                            local_94.v[2] = 0.0;
-                            local_94.v[3] = 0.0;
-                            local_ac = (local_40->refdef).vieworg[0];
-                            local_a8 = (local_40->refdef).vieworg[1];
-                            local_a4 = (local_40->refdef).vieworg[2];
-                            local_a0 = (local_40->refdef).viewaxis[0][0] * 15000.0 + local_ac;
-                            local_9c = (local_40->refdef).viewaxis[0][1] * 15000.0 + local_a8;
-                            local_98 = (local_40->refdef).viewaxis[0][2] * 15000.0 + local_a4;
-                            CG_LocationalTrace((trace_t *)&local_94,&local_ac,&local_a0,
-                                               (uint)(local_40->nextSnap->ps).clientNum,0x280b001,
-                                               false,(col_context_t *)0x0);
-                            Vec3Lerp(&local_ac,&local_a0,local_84,local_58);
-                            local_150 = Vec3Distance(&local_ac,local_58);
+                            trace.v[0] = 0.0;
+                            trace.v[1] = 0.0;
+                            trace.v[2] = 0.0;
+                            trace.v[3] = 0.0;
+                            start = (cgameGlob_00->refdef).vieworg[0];
+                            local_a8 = (cgameGlob_00->refdef).vieworg[1];
+                            local_a4 = (cgameGlob_00->refdef).vieworg[2];
+                            end = (cgameGlob_00->refdef).viewaxis[0][0] * 15000.0 + start;
+                            local_9c = (cgameGlob_00->refdef).viewaxis[0][1] * 15000.0 + local_a8;
+                            local_98 = (cgameGlob_00->refdef).viewaxis[0][2] * 15000.0 + local_a4;
+                            CG_LocationalTrace((trace_t *)&trace,&start,&end,
+                                               (uint)(cgameGlob_00->nextSnap->ps).clientNum,
+                                               0x280b001,false,(col_context_t *)0x0);
+                            Vec3Lerp(&start,&end,local_84,contact);
+                            local_150 = Vec3Distance(&start,contact);
                             if (10000.0 <= local_150) {
                               local_150 = 10000.0;
                             }
-                            local_4c = local_150;
+                            centerW = local_150;
                           }
                           CG_DrawReticleCenter
-                                    (param_1,local_24,local_20,local_8,local_30,local_4c,local_c);
-                          CG_DrawReticleSides(param_1,local_2c,local_20,local_8,local_30,local_4c,
-                                              local_c);
-                          DVar3 = GetCurrentThreadId();
-                          if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                                    (localClientNum,weapDef,color,centerX,centerY,centerW,transScale
+                                    );
+                          CG_DrawReticleSides(localClientNum,weapIndex,color,centerX,centerY,centerW
+                                              ,transScale);
+                          DVar4 = GetCurrentThreadId();
+                          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                             _D3DPERF_EndEvent_0();
                           }
                         }
                       }
                     }
                     else {
-                      DVar3 = GetCurrentThreadId();
-                      if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                      DVar4 = GetCurrentThreadId();
+                      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                         _D3DPERF_EndEvent_0();
                       }
                     }
                   }
                 }
                 else {
-                  DVar3 = GetCurrentThreadId();
-                  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                  DVar4 = GetCurrentThreadId();
+                  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                     _D3DPERF_EndEvent_0();
                   }
+                }
+              }
+              else {
+                DVar4 = GetCurrentThreadId();
+                if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+                  _D3DPERF_EndEvent_0();
                 }
               }
             }
@@ -1547,55 +1621,55 @@ void __cdecl CG_DrawCrosshair(int param_1)
         }
       }
       else {
-        CG_DrawVehicleCrossHair(param_1);
-        DVar3 = GetCurrentThreadId();
-        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        CG_DrawVehicleCrossHair(localClientNum);
+        DVar4 = GetCurrentThreadId();
+        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
     }
     else {
-      local_2c = CG_PlayerTurretWeaponIdx(param_1);
-      if ((local_2c == 0) ||
-         (pWVar4 = BG_GetWeaponVariantDef(local_2c), pWVar4->overlayMaterial == (Material *)0x0)) {
-        bVar2 = CG_Flashbanged(param_1);
-        if (bVar2) {
-          DVar3 = GetCurrentThreadId();
-          if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      weapIndex = CG_PlayerTurretWeaponIdx(localClientNum);
+      if ((weapIndex == 0) ||
+         (pWVar5 = BG_GetWeaponVariantDef(weapIndex), pWVar5->overlayMaterial == (Material *)0x0)) {
+        bVar3 = CG_Flashbanged(localClientNum);
+        if (bVar3) {
+          DVar4 = GetCurrentThreadId();
+          if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else {
-          bVar2 = CG_Flared(param_1);
-          if (bVar2) {
-            DVar3 = GetCurrentThreadId();
-            if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          bVar3 = CG_Flared(localClientNum);
+          if (bVar3) {
+            DVar4 = GetCurrentThreadId();
+            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
           else {
-            if ((local_3a != '\0') && (local_28->viewlocked_entNum != 0x3ff)) {
-              CG_DrawTurretCrossHair(param_1);
+            if ((bVar2) && (ps->viewlocked_entNum != 0x3ff)) {
+              CG_DrawTurretCrossHair(localClientNum);
             }
-            DVar3 = GetCurrentThreadId();
-            if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+            DVar4 = GetCurrentThreadId();
+            if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
         }
       }
       else {
-        CG_DrawAdsOverlay(param_1,local_2c,colorWhite,vec2_origin);
-        DVar3 = GetCurrentThreadId();
-        if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        CG_DrawAdsOverlay(localClientNum,weapIndex,colorWhite,vec2_origin);
+        DVar4 = GetCurrentThreadId();
+        if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
     }
   }
   else {
-    DVar3 = GetCurrentThreadId();
-    if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }

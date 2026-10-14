@@ -2,7 +2,7 @@
 
 // 0095CC6E  _toupper_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/toupper.c:73)
 
-int __cdecl _toupper_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _toupper_l(int c,localeinfo_struct *plocinfo)
 
 {
   int iVar1;
@@ -10,36 +10,36 @@ int __cdecl _toupper_l(int param_1,localeinfo_struct *param_2)
   int iVar3;
   int *piVar4;
   char cVar5;
-  _LocaleUpdate _Stack_1c;
+  _LocaleUpdate _loc_update;
   byte bStack_c;
   undefined1 uStack_b;
   char cStack_8;
   char cStack_7;
   undefined1 uStack_6;
   
-  iVar1 = param_1;
-  _LocaleUpdate::_LocaleUpdate(&_Stack_1c,param_2);
-  if ((uint)param_1 < 0x100) {
-    if ((_Stack_1c.localeinfo.locinfo)->mb_cur_max < 2) {
-      uVar2 = (_Stack_1c.localeinfo.locinfo)->pctype[param_1] & 2;
+  iVar1 = c;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((uint)c < 0x100) {
+    if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+      uVar2 = (_loc_update.localeinfo.locinfo)->pctype[c] & 2;
     }
     else {
-      uVar2 = _isctype_l(param_1,2,&_Stack_1c.localeinfo);
+      uVar2 = _isctype_l(c,2,&_loc_update.localeinfo);
     }
     if (uVar2 == 0) {
 LAB_0095cccd:
-      if (_Stack_1c.updated == false) {
+      if (_loc_update.updated == false) {
         return iVar1;
       }
-      (_Stack_1c.ptd)->_ownlocale = (_Stack_1c.ptd)->_ownlocale & 0xfffffffd;
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       return iVar1;
     }
-    uVar2 = (uint)(_Stack_1c.localeinfo.locinfo)->pcumap[param_1];
+    uVar2 = (uint)(_loc_update.localeinfo.locinfo)->pcumap[c];
   }
   else {
-    cVar5 = (char)param_1;
-    if (((_Stack_1c.localeinfo.locinfo)->mb_cur_max < 2) ||
-       (iVar3 = _isleadbyte_l(param_1 >> 8 & 0xff,&_Stack_1c.localeinfo), iVar3 == 0)) {
+    cVar5 = (char)c;
+    if (((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) ||
+       (iVar3 = _isleadbyte_l(c >> 8 & 0xff,&_loc_update.localeinfo), iVar3 == 0)) {
       piVar4 = _errno();
       *piVar4 = 0x2a;
       cStack_7 = '\0';
@@ -47,23 +47,23 @@ LAB_0095cccd:
       cStack_8 = cVar5;
     }
     else {
-      param_1._0_1_ = (char)((uint)param_1 >> 8);
-      cStack_8 = (char)param_1;
+      c._0_1_ = (char)((uint)c >> 8);
+      cStack_8 = (char)c;
       uStack_6 = 0;
       iVar3 = 2;
       cStack_7 = cVar5;
     }
-    iVar3 = __crtLCMapStringA(&_Stack_1c.localeinfo,(_Stack_1c.localeinfo.locinfo)->lc_handle[2],
-                              0x200,&cStack_8,iVar3,(char *)&bStack_c,3,
-                              (_Stack_1c.localeinfo.locinfo)->lc_codepage,1);
+    iVar3 = __crtLCMapStringA(&_loc_update.localeinfo,(_loc_update.localeinfo.locinfo)->lc_handle[2]
+                              ,0x200,&cStack_8,iVar3,(char *)&bStack_c,3,
+                              (_loc_update.localeinfo.locinfo)->lc_codepage,1);
     if (iVar3 == 0) goto LAB_0095cccd;
     uVar2 = (uint)bStack_c;
     if (iVar3 != 1) {
       uVar2 = (uint)CONCAT11(bStack_c,uStack_b);
     }
   }
-  if (_Stack_1c.updated != false) {
-    (_Stack_1c.ptd)->_ownlocale = (_Stack_1c.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar2;
 }
@@ -71,17 +71,17 @@ LAB_0095cccd:
 
 // 0095CD84  toupper  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/toupper.c:149)
 
-int __cdecl toupper(int param_1)
+int __cdecl toupper(int c)
 
 {
   if (__locale_changed == 0) {
-    if (param_1 - 0x61U < 0x1a) {
-      return param_1 + -0x20;
+    if (c - 0x61U < 0x1a) {
+      return c + -0x20;
     }
   }
   else {
-    param_1 = _toupper_l(param_1,(localeinfo_struct *)0x0);
+    c = _toupper_l(c,(localeinfo_struct *)0x0);
   }
-  return param_1;
+  return c;
 }
 

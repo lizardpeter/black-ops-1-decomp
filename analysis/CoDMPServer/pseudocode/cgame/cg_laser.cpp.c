@@ -11,8 +11,8 @@
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_Laser_Add_Core(centity_s *param_1,DObj *param_2,orientation_t *param_3,float *param_4,
-                 LaserOwnerEnum param_5)
+CG_Laser_Add_Core(centity_s *cent,DObj *obj,orientation_t *orient,float *viewerPos,
+                 LaserOwnerEnum laserOwner)
 
 {
   code *pcVar1;
@@ -20,73 +20,76 @@ CG_Laser_Add_Core(centity_s *param_1,DObj *param_2,orientation_t *param_3,float 
   float fVar3;
   float fVar4;
   int local_158;
-  col_context_t local_13c;
-  float local_114;
-  float local_110 [3];
-  FxBeam local_104;
-  float local_b8;
-  float local_b4;
-  float local_b0;
-  float4 local_ac;
+  float laserLightAverageDist;
+  float laserLength;
+  col_context_t context;
+  float laserLightBeginDist;
+  float mins [3];
+  FxBeam beam;
+  float laserLightEndDist;
+  float laserRange;
+  float distanceBetweenViewerAndLaserEnd;
+  float4 traceResults;
   float local_9c;
   uint local_94;
-  float local_74 [4];
-  float local_64;
+  float maxs [3];
+  float endBrightness;
+  float laserBegin;
   float local_60;
   float local_5c;
-  float local_58;
+  float laserBeginLightPos;
   float local_54;
   float local_50;
-  float local_4c;
-  float local_48;
+  float laserEndWidenScale;
+  float laserEndLightPos;
   float local_44;
   float local_40;
-  undefined1 local_39;
-  FxPostLight local_38;
+  uchar endColorByte;
+  FxPostLight postLight;
   uint local_14;
-  float local_10;
+  float laserEnd;
   float local_c;
   float local_8;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_ac.v[0] = 0.0;
-  local_ac.v[1] = 0.0;
-  local_ac.v[2] = 0.0;
-  local_ac.v[3] = 0.0;
-  Com_Memset(&local_ac,0,0x38);
-  if (((param_5 != LASER_OWNER_PLAYER) && (param_5 != LASER_OWNER_NON_PLAYER)) &&
+  traceResults.v[0] = 0.0;
+  traceResults.v[1] = 0.0;
+  traceResults.v[2] = 0.0;
+  traceResults.v[3] = 0.0;
+  Com_Memset(&traceResults,0,0x38);
+  if (((laserOwner != LASER_OWNER_PLAYER) && (laserOwner != LASER_OWNER_NON_PLAYER)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_laser.cpp",0x25,0,
                                "%s\n\t(laserOwner) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_5 == LASER_OWNER_PLAYER) {
-    local_b4 = (cg_laserRangePlayer->current).value;
+  if (laserOwner == LASER_OWNER_PLAYER) {
+    laserRange = (cg_laserRangePlayer->current).value;
   }
   else {
-    local_b4 = (cg_laserRange->current).value;
+    laserRange = (cg_laserRange->current).value;
   }
-  local_110[0] = 0.0;
-  local_110[1] = 0.0;
-  local_110[2] = 0.0;
-  local_74[0] = 0.0;
-  local_74[1] = 0.0;
-  local_74[2] = 0.0;
-  local_64 = param_3->origin[0];
-  local_60 = param_3->origin[1];
-  local_5c = param_3->origin[2];
-  local_10 = local_b4 * param_3->axis[0][0] + param_3->origin[0];
-  local_c = local_b4 * param_3->axis[0][1] + param_3->origin[1];
-  local_8 = local_b4 * param_3->axis[0][2] + param_3->origin[2];
-  col_context_t::col_context_t(&local_13c);
-  CG_TraceCapsule((trace_t *)&local_ac,&local_64,local_110,local_74,&local_10,
-                  (param_1->nextState).number,0x280e833,&local_13c);
-  fVar3 = local_9c * local_b4;
+  mins[0] = 0.0;
+  mins[1] = 0.0;
+  mins[2] = 0.0;
+  maxs[0] = 0.0;
+  maxs[1] = 0.0;
+  maxs[2] = 0.0;
+  laserBegin = orient->origin[0];
+  local_60 = orient->origin[1];
+  local_5c = orient->origin[2];
+  laserEnd = laserRange * orient->axis[0][0] + orient->origin[0];
+  local_c = laserRange * orient->axis[0][1] + orient->origin[1];
+  local_8 = laserRange * orient->axis[0][2] + orient->origin[2];
+  col_context_t::col_context_t(&context);
+  CG_TraceCapsule((trace_t *)&traceResults,&laserBegin,mins,maxs,&laserEnd,(cent->nextState).number,
+                  0x280e833,&context);
+  fVar3 = local_9c * laserRange;
   fVar4 = fVar3 - (cg_laserEndOffset->current).value;
-  local_10 = fVar4 * param_3->axis[0][0] + param_3->origin[0];
-  local_c = fVar4 * param_3->axis[0][1] + param_3->origin[1];
-  local_8 = fVar4 * param_3->axis[0][2] + param_3->origin[2];
+  laserEnd = fVar4 * orient->axis[0][0] + orient->origin[0];
+  local_c = fVar4 * orient->axis[0][1] + orient->origin[1];
+  local_8 = fVar4 * orient->axis[0][2] + orient->origin[2];
   if ((1.0001 < local_9c) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_laser.cpp",0x37,0,"%s")
      , !bVar2)) {
@@ -94,58 +97,59 @@ CG_Laser_Add_Core(centity_s *param_1,DObj *param_2,orientation_t *param_3,float 
     (*pcVar1)();
     return;
   }
-  local_104.begin[0] = local_64;
-  local_104.begin[1] = local_60;
-  local_104.begin[2] = local_5c;
-  local_104.end[0] = local_10;
-  local_104.end[1] = local_c;
-  local_104.end[2] = local_8;
-  local_104.beginColor.packed = 0xffffffff;
-  local_74[3] = 1.0 - local_9c;
-  local_158 = (int)(local_74[3] * 255.0);
+  beam.begin[0] = laserBegin;
+  beam.begin[1] = local_60;
+  beam.begin[2] = local_5c;
+  beam.end[0] = laserEnd;
+  beam.end[1] = local_c;
+  beam.end[2] = local_8;
+  beam.beginColor.packed = 0xffffffff;
+  endBrightness = 1.0 - local_9c;
+  local_158 = (int)(endBrightness * 255.0);
   if (local_158 < 0) {
     local_158 = 0;
   }
   else if (0xff < local_158) {
     local_158 = 0xff;
   }
-  local_39 = (undefined1)local_158;
-  local_104.endColor.packed = local_158 << 0x18 | 0xffffff;
-  local_b0 = Vec3Distance(&local_10,param_4);
-  local_4c = local_b0 * (cg_laserFlarePct->current).value * 0.01 + 1.0;
-  local_104.beginRadius = (float)(cg_laserRadius->current).integer;
-  local_104.endRadius = (cg_laserRadius->current).value * local_4c;
-  local_104.material = cgMedia.laserMaterial;
-  local_104.segmentCount = 1;
-  local_104.wiggleDist = 0.0;
-  FX_Beam_Add(&local_104);
+  endColorByte = (uchar)local_158;
+  beam.endColor.packed = local_158 << 0x18 | 0xffffff;
+  distanceBetweenViewerAndLaserEnd = Vec3Distance(&laserEnd,viewerPos);
+  laserEndWidenScale =
+       distanceBetweenViewerAndLaserEnd * (cg_laserFlarePct->current).value * 0.01 + 1.0;
+  beam.beginRadius = (float)(cg_laserRadius->current).integer;
+  beam.endRadius = (cg_laserRadius->current).value * laserEndWidenScale;
+  beam.material = cgMedia.laserMaterial;
+  beam.segmentCount = 1;
+  beam.wiggleDist = 0.0;
+  FX_Beam_Add(&beam);
   if ((cg_laserLight->current).enabled != false) {
-    local_114 = (cg_laserLightBeginOffset->current).value;
-    local_b8 = fVar3 - (cg_laserLightEndOffset->current).value;
+    laserLightBeginDist = (cg_laserLightBeginOffset->current).value;
+    laserLightEndDist = fVar3 - (cg_laserLightEndOffset->current).value;
     if ((local_94 & 0x200c000) != 0) {
-      local_b8 = local_b8 + (cg_laserLightBodyTweak->current).value;
+      laserLightEndDist = laserLightEndDist + (cg_laserLightBodyTweak->current).value;
     }
-    if (local_b8 - local_114 < 4.0) {
-      local_114 = (local_114 + local_b8) * 0.5;
-      local_b8 = local_114 + 2.0;
-      local_114 = local_114 - 2.0;
+    if (laserLightEndDist - laserLightBeginDist < 4.0) {
+      fVar3 = (laserLightBeginDist + laserLightEndDist) * 0.5;
+      laserLightEndDist = fVar3 + 2.0;
+      laserLightBeginDist = fVar3 - 2.0;
     }
-    local_58 = local_114 * param_3->axis[0][0] + param_3->origin[0];
-    local_54 = local_114 * param_3->axis[0][1] + param_3->origin[1];
-    local_50 = local_114 * param_3->axis[0][2] + param_3->origin[2];
-    local_48 = local_b8 * param_3->axis[0][0] + param_3->origin[0];
-    local_44 = local_b8 * param_3->axis[0][1] + param_3->origin[1];
-    local_40 = local_b8 * param_3->axis[0][2] + param_3->origin[2];
-    local_38.radius = (cg_laserLightRadius->current).value * local_4c;
-    local_38.color.packed = 0xffffffff;
-    local_38.material = cgMedia.laserLightMaterial;
-    local_38.begin[0] = local_58;
-    local_38.begin[1] = local_54;
-    local_38.begin[2] = local_50;
-    local_38.end[0] = local_48;
-    local_38.end[1] = local_44;
-    local_38.end[2] = local_40;
-    FX_PostLight_Add(&local_38);
+    laserBeginLightPos = laserLightBeginDist * orient->axis[0][0] + orient->origin[0];
+    local_54 = laserLightBeginDist * orient->axis[0][1] + orient->origin[1];
+    local_50 = laserLightBeginDist * orient->axis[0][2] + orient->origin[2];
+    laserEndLightPos = laserLightEndDist * orient->axis[0][0] + orient->origin[0];
+    local_44 = laserLightEndDist * orient->axis[0][1] + orient->origin[1];
+    local_40 = laserLightEndDist * orient->axis[0][2] + orient->origin[2];
+    postLight.radius = (cg_laserLightRadius->current).value * laserEndWidenScale;
+    postLight.color.packed = 0xffffffff;
+    postLight.material = cgMedia.laserLightMaterial;
+    postLight.begin[0] = laserBeginLightPos;
+    postLight.begin[1] = local_54;
+    postLight.begin[2] = local_50;
+    postLight.end[0] = laserEndLightPos;
+    postLight.end[1] = local_44;
+    postLight.end[2] = local_40;
+    FX_PostLight_Add(&postLight);
   }
   return;
 }
@@ -159,25 +163,24 @@ CG_Laser_Add_Core(centity_s *param_1,DObj *param_2,orientation_t *param_3,float 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_Laser_Add(centity_s *param_1,DObj *param_2,cpose_t *param_3,float *param_4,LaserOwnerEnum param_5
-            )
+CG_Laser_Add(centity_s *cent,DObj *obj,cpose_t *pose,float *viewerPos,LaserOwnerEnum laserOwner)
 
 {
   int iVar1;
-  byte local_35;
-  orientation_t local_34;
+  uchar boneIndex;
+  orientation_t orient;
   
-  local_35 = 0xfe;
-  iVar1 = DObjGetBoneIndex(param_2,(uint)scr_const.tag_laser,&local_35,-1);
+  boneIndex = 0xfe;
+  iVar1 = DObjGetBoneIndex(obj,(uint)scr_const.tag_laser,&boneIndex,-1);
   if (iVar1 == 0) {
-    local_35 = 0xfe;
-    iVar1 = DObjGetBoneIndex(param_2,(uint)scr_const.tag_flash,&local_35,-1);
+    boneIndex = 0xfe;
+    iVar1 = DObjGetBoneIndex(obj,(uint)scr_const.tag_flash,&boneIndex,-1);
     if (iVar1 == 0) {
       return;
     }
   }
-  CG_DObjGetWorldBoneMatrix(param_3,param_2,(uint)local_35,local_34.axis,local_34.origin);
-  CG_Laser_Add_Core(param_1,param_2,&local_34,param_4,param_5);
+  CG_DObjGetWorldBoneMatrix(pose,obj,(uint)boneIndex,orient.axis,orient.origin);
+  CG_Laser_Add_Core(cent,obj,&orient,viewerPos,laserOwner);
   return;
 }
 

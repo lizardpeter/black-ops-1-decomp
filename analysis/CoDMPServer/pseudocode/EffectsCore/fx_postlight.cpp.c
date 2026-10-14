@@ -2,7 +2,7 @@
 
 // 005DDBC0  FX_PostLight_GenerateVerts  (EffectsCore/fx_postlight.cpp:54)
 
-void __cdecl FX_PostLight_GenerateVerts(FxPostLightInfo *param_1,FxSystem *param_2)
+void __cdecl FX_PostLight_GenerateVerts(FxPostLightInfo *postLightInfoAddr,FxSystem *system)
 
 {
   code *pcVar1;
@@ -17,165 +17,175 @@ void __cdecl FX_PostLight_GenerateVerts(FxPostLightInfo *param_1,FxSystem *param
   float fVar10;
   float fVar11;
   float fVar12;
-  int local_9c;
-  float local_98;
+  int nextAround;
+  float c;
+  float s;
+  int around;
+  float ortho0;
   float local_94;
   float local_90;
-  float local_8c;
-  float local_88;
+  float radius;
+  float normalizedDelta;
   float local_84;
   float local_80;
-  float local_7c;
+  float ortho1;
   float local_78;
   float local_74;
-  undefined4 local_70;
-  r_double_index_t *local_6c;
-  float (*local_68) [4];
-  float local_64;
-  float local_60;
+  r_double_index_t workingIndex;
+  r_double_index_t *baseIndices;
+  float (*baseArgs) [4];
+  float posDeltaLenSq;
+  float posDelta;
   float local_5c;
   float local_58;
-  GfxPackedVertex *local_54;
-  r_double_index_t *local_50;
-  uint local_4c;
-  FxPostLight *local_48;
-  ushort local_44 [2];
-  float (*local_40) [4];
-  GfxPackedVertex *local_3c;
-  undefined4 local_38;
-  float local_34;
+  GfxPackedVertex *verts;
+  r_double_index_t *indices;
+  uint argOffset;
+  FxPostLight *postLight;
+  ushort baseVertex;
+  float (*args) [4];
+  GfxPackedVertex *baseVerts;
+  int VERT_COUNT;
+  float lightOrigin;
   float local_30;
   float local_2c;
-  FxPostLightInfo *local_28;
-  int local_24;
-  float local_20;
+  FxPostLightInfo *postLightInfo;
+  int postLightIter;
+  float eyeOffset;
   float local_1c;
   float local_18;
-  undefined4 local_10;
-  float local_c;
-  undefined4 local_8;
+  SpuDmaBuffer argsOutBuf;
+  int IND_COUNT;
+  float POLYGON_RADIUS_GROW;
+  int POINTS_AROUND;
   
-  local_8 = 8;
-  local_c = 1.4142135;
-  local_38 = 0x10;
-  local_10 = 0x54;
-  local_28 = param_1;
-  local_20 = (param_2->camera).origin[0];
-  local_1c = (param_2->camera).origin[1];
-  local_18 = (param_2->camera).origin[2];
-  local_24 = 0;
+  VERT_COUNT = 0x10;
+  postLightInfo = postLightInfoAddr;
+  eyeOffset = (system->camera).origin[0];
+  local_1c = (system->camera).origin[1];
+  local_18 = (system->camera).origin[2];
+  postLightIter = 0;
   do {
-    if (local_24 == local_28->postLightCount) {
+    if (postLightIter == postLightInfo->postLightCount) {
       return;
     }
-    local_48 = local_28->postLights + local_24;
-    if ((local_48->radius < 0.001) &&
+    postLight = postLightInfo->postLights + postLightIter;
+    if ((postLight->radius < 0.001) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_postlight.cpp",
                                  100,0,"%s\n\t(postLight->radius) = %g"), !bVar5)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_60 = local_48->end[0] - local_48->begin[0];
-    local_5c = local_48->end[1] - local_48->begin[1];
-    local_58 = local_48->end[2] - local_48->begin[2];
-    local_64 = local_60 * local_60 + local_5c * local_5c + local_58 * local_58;
-    if (0.0001 <= local_64) {
-      bVar5 = R_ReserveCodeMeshIndices(0x54,&local_6c);
+    posDelta = postLight->end[0] - postLight->begin[0];
+    local_5c = postLight->end[1] - postLight->begin[1];
+    local_58 = postLight->end[2] - postLight->begin[2];
+    posDeltaLenSq = posDelta * posDelta + local_5c * local_5c + local_58 * local_58;
+    if (0.0001 <= posDeltaLenSq) {
+      bVar5 = R_ReserveCodeMeshIndices(0x54,&baseIndices);
       if (!bVar5) {
         return;
       }
-      bVar5 = R_ReserveCodeMeshVerts(0x10,local_44);
+      bVar5 = R_ReserveCodeMeshVerts(0x10,&baseVertex);
       if (!bVar5) {
         return;
       }
-      bVar5 = R_ReserveCodeMeshArgs(2,&local_4c);
+      bVar5 = R_ReserveCodeMeshArgs(2,&argOffset);
       if (!bVar5) {
         return;
       }
-      local_3c = R_GetCodeMeshVerts(local_44[0]);
-      local_68 = R_GetCodeMeshArgs(local_4c);
-      local_34 = local_48->begin[0] - local_20;
-      local_30 = local_48->begin[1] - local_1c;
-      local_2c = local_48->begin[2] - local_18;
-      fVar10 = local_48->radius;
-      (*local_68)[0] = local_34;
-      (*local_68)[1] = local_30;
-      (*local_68)[2] = local_2c;
-      (*local_68)[3] = 1.0 / fVar10;
-      local_68[1][0] = local_60;
-      local_68[1][1] = local_5c;
-      local_68[1][2] = local_58;
-      local_68[1][3] = 1.0 / local_64;
-      local_8c = local_48->radius;
-      local_40 = local_68;
-      Vec3NormalizeTo(&local_60,&local_88);
-      PerpendicularVector(&local_88,&local_98);
-      Vec3Cross(&local_88,&local_98,&local_7c);
-      local_54 = local_3c;
-      for (local_9c = 0; local_9c != 8; local_9c = local_9c + 1) {
-        fVar7 = (float10)(((float)local_9c * 2.0 * 3.1415927) / 8.0);
+      baseVerts = R_GetCodeMeshVerts(baseVertex);
+      baseArgs = R_GetCodeMeshArgs(argOffset);
+      lightOrigin = postLight->begin[0] - eyeOffset;
+      local_30 = postLight->begin[1] - local_1c;
+      local_2c = postLight->begin[2] - local_18;
+      fVar10 = postLight->radius;
+      (*baseArgs)[0] = lightOrigin;
+      (*baseArgs)[1] = local_30;
+      (*baseArgs)[2] = local_2c;
+      (*baseArgs)[3] = 1.0 / fVar10;
+      baseArgs[1][0] = posDelta;
+      baseArgs[1][1] = local_5c;
+      baseArgs[1][2] = local_58;
+      baseArgs[1][3] = 1.0 / posDeltaLenSq;
+      radius = postLight->radius;
+      args = baseArgs;
+      Vec3NormalizeTo(&posDelta,&normalizedDelta);
+      PerpendicularVector(&normalizedDelta,&ortho0);
+      Vec3Cross(&normalizedDelta,&ortho0,&ortho1);
+      verts = baseVerts;
+      for (around = 0; around != 8; around = around + 1) {
+        fVar7 = (float10)(((float)around * 2.0 * 3.1415927) / 8.0);
         fVar2 = (float10)fcos(fVar7);
         fVar7 = (float10)fsin(fVar7);
         fVar10 = (float)fVar2;
         fVar11 = (float)fVar7;
-        fVar8 = fVar11 * local_98 + fVar10 * local_7c;
+        fVar8 = fVar11 * ortho0 + fVar10 * ortho1;
         fVar9 = fVar11 * local_94 + fVar10 * local_78;
         fVar10 = fVar11 * local_90 + fVar10 * local_74;
-        fVar11 = -local_8c;
-        fVar12 = local_8c * local_c;
-        local_54->xyz[0] = fVar11 * local_88 + local_48->begin[0] + fVar12 * fVar8;
-        local_54->xyz[1] = fVar11 * local_84 + local_48->begin[1] + fVar12 * fVar9;
-        local_54->xyz[2] = fVar11 * local_80 + local_48->begin[2] + fVar12 * fVar10;
-        fVar11 = local_8c * local_c;
-        local_54[8].xyz[0] = local_8c * local_88 + local_48->end[0] + fVar11 * fVar8;
-        local_54[8].xyz[1] = local_8c * local_84 + local_48->end[1] + fVar11 * fVar9;
-        local_54[8].xyz[2] = local_8c * local_80 + local_48->end[2] + fVar11 * fVar10;
-        (local_54->texCoord).packed = 0;
-        local_54->color = local_48->color;
-        local_54[8].texCoord.packed = 0;
-        local_54[8].color = local_48->color;
-        local_54 = local_54 + 1;
+        fVar11 = -radius;
+        fVar12 = radius * 1.4142135;
+        verts->xyz[0] = fVar11 * normalizedDelta + postLight->begin[0] + fVar12 * fVar8;
+        verts->xyz[1] = fVar11 * local_84 + postLight->begin[1] + fVar12 * fVar9;
+        verts->xyz[2] = fVar11 * local_80 + postLight->begin[2] + fVar12 * fVar10;
+        fVar11 = radius * 1.4142135;
+        verts[8].xyz[0] = radius * normalizedDelta + postLight->end[0] + fVar11 * fVar8;
+        verts[8].xyz[1] = radius * local_84 + postLight->end[1] + fVar11 * fVar9;
+        verts[8].xyz[2] = radius * local_80 + postLight->end[2] + fVar11 * fVar10;
+        (verts->texCoord).packed = 0;
+        verts->color = postLight->color;
+        verts[8].texCoord.packed = 0;
+        verts[8].color = postLight->color;
+        verts = verts + 1;
       }
-      local_50 = local_6c;
-      for (local_9c = 0; local_9c != 8; local_9c = local_9c + 1) {
-        uVar6 = local_9c + 1U & 0x80000007;
+      indices = baseIndices;
+      for (around = 0; around != 8; around = around + 1) {
+        uVar6 = around + 1U & 0x80000007;
         if ((int)uVar6 < 0) {
           uVar6 = (uVar6 - 1 | 0xfffffff8) + 1;
         }
-        sVar3 = (short)local_9c;
+        sVar3 = (short)around;
         sVar4 = (short)uVar6;
-        local_70 = CONCAT22(local_44[0] + sVar4,local_44[0] + sVar3);
-        *(undefined4 *)local_50->value = local_70;
-        local_70 = CONCAT22(local_44[0] + 8 + sVar3,local_44[0] + 8 + sVar3);
-        *(undefined4 *)local_50[1].value = local_70;
-        local_70 = CONCAT22(local_44[0] + 8 + sVar4,local_44[0] + sVar4);
-        *(undefined4 *)local_50[2].value = local_70;
-        local_50 = local_50 + 3;
+        workingIndex.value[1] = baseVertex + sVar4;
+        workingIndex.value[0] = baseVertex + sVar3;
+        *(r_double_index_t *)indices->value = workingIndex;
+        workingIndex.value[1] = baseVertex + 8 + sVar3;
+        workingIndex.value[0] = baseVertex + 8 + sVar3;
+        *&indices[1].value = workingIndex.value;
+        workingIndex.value[1] = baseVertex + 8 + sVar4;
+        workingIndex.value[0] = baseVertex + sVar4;
+        *&indices[2].value = workingIndex.value;
+        indices = indices + 3;
       }
-      for (local_9c = 0; local_9c != 6; local_9c = local_9c + 2) {
-        sVar3 = (short)local_9c;
-        local_70 = CONCAT22(local_44[0] + 1 + sVar3,local_44[0] + 2 + sVar3);
-        *(undefined4 *)local_50->value = local_70;
-        local_70 = CONCAT22(local_44[0] + 3 + sVar3,local_44[0]);
-        *(undefined4 *)local_50[1].value = local_70;
-        local_70 = CONCAT22(local_44[0],local_44[0] + 2 + sVar3);
-        *(undefined4 *)local_50[2].value = local_70;
-        local_50 = local_50 + 3;
+      for (around = 0; around != 6; around = around + 2) {
+        sVar3 = (short)around;
+        workingIndex.value[1] = baseVertex + 1 + sVar3;
+        workingIndex.value[0] = baseVertex + 2 + sVar3;
+        *(r_double_index_t *)indices->value = workingIndex;
+        workingIndex.value[1] = baseVertex + 3 + sVar3;
+        workingIndex.value[0] = baseVertex;
+        *&indices[1].value = workingIndex.value;
+        workingIndex.value[1] = baseVertex;
+        workingIndex.value[0] = baseVertex + 2 + sVar3;
+        *&indices[2].value = workingIndex.value;
+        indices = indices + 3;
       }
-      for (local_9c = 0; local_9c != 6; local_9c = local_9c + 2) {
-        sVar3 = (short)local_9c;
-        local_70 = CONCAT22(local_44[0] + 9 + sVar3,local_44[0] + 8);
-        *(undefined4 *)local_50->value = local_70;
-        local_70 = CONCAT22(local_44[0] + 8,local_44[0] + 10 + sVar3);
-        *(undefined4 *)local_50[1].value = local_70;
-        local_70 = CONCAT22(local_44[0] + 0xb + sVar3,local_44[0] + 10 + sVar3);
-        *(undefined4 *)local_50[2].value = local_70;
-        local_50 = local_50 + 3;
+      for (around = 0; around != 6; around = around + 2) {
+        sVar3 = (short)around;
+        workingIndex.value[1] = baseVertex + 9 + sVar3;
+        workingIndex.value[0] = baseVertex + 8;
+        *(r_double_index_t *)indices->value = workingIndex;
+        workingIndex.value[1] = baseVertex + 8;
+        workingIndex.value[0] = baseVertex + 10 + sVar3;
+        *&indices[1].value = workingIndex.value;
+        workingIndex.value[1] = baseVertex + 0xb + sVar3;
+        workingIndex.value[0] = baseVertex + 10 + sVar3;
+        *&indices[2].value = workingIndex.value;
+        indices = indices + 3;
       }
-      R_AddCodeMeshDrawSurf(local_48->material,local_6c,0x54,local_4c,2,"PostLight",0xd);
+      R_AddCodeMeshDrawSurf(postLight->material,baseIndices,0x54,argOffset,2,"PostLight",0xd);
     }
-    local_24 = local_24 + 1;
+    postLightIter = postLightIter + 1;
   } while( true );
 }
 
@@ -192,7 +202,7 @@ void __cdecl FX_PostLight_Begin(void)
 
 // 005DE4A0  FX_PostLight_Add  (EffectsCore/fx_postlight.cpp:235)
 
-void __cdecl FX_PostLight_Add(FxPostLight *param_1)
+void __cdecl FX_PostLight_Add(FxPostLight *postLight)
 
 {
   int iVar1;
@@ -201,8 +211,8 @@ void __cdecl FX_PostLight_Add(FxPostLight *param_1)
   if (g_postLightInfo.postLightCount != 0x60) {
     pFVar2 = g_postLightInfo.postLights + g_postLightInfo.postLightCount;
     for (iVar1 = 9; iVar1 != 0; iVar1 = iVar1 + -1) {
-      pFVar2->begin[0] = param_1->begin[0];
-      param_1 = (FxPostLight *)(param_1->begin + 1);
+      pFVar2->begin[0] = postLight->begin[0];
+      postLight = (FxPostLight *)(postLight->begin + 1);
       pFVar2 = (FxPostLight *)(pFVar2->begin + 1);
     }
     g_postLightInfo.postLightCount = g_postLightInfo.postLightCount + 1;

@@ -5,11 +5,12 @@
 double __cdecl SecondsPerTick(void)
 
 {
-  LARGE_INTEGER local_14 [2];
+  LARGE_INTEGER qpcFrequency;
+  double secPerTick2;
   
   Sleep(0);
-  QueryPerformanceFrequency(local_14);
-  return 1.0 / (double)(longlong)local_14[0];
+  QueryPerformanceFrequency(&qpcFrequency);
+  return 1.0 / (double)(longlong)qpcFrequency;
 }
 
 

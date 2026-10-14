@@ -9,6 +9,7 @@ void __cdecl XModelOptimizeCallback(void *param_1)
   ushort *puVar2;
   XSurface *unaff_ESI;
   XModel *unaff_EDI;
+  void *data;
   
   if (0 < *(short *)((int)param_1 + 0xd8)) {
     puVar2 = (ushort *)((int)param_1 + 0x2c);
@@ -58,6 +59,7 @@ void __cdecl _XModelOptimize(XModel *param_1)
   ushort *puVar2;
   XSurface *unaff_ESI;
   XModel *unaff_EDI;
+  XModel *model;
   
   if (0 < param_1->numLods) {
     puVar2 = &param_1->lodInfo[0].numsurfs;
@@ -85,6 +87,7 @@ void __cdecl XModelUnoptimizeCallback(void *param_1)
   uint uVar4;
   ushort *puVar5;
   int *piVar6;
+  void *data;
   int iStack_4;
   
   iVar1 = *(int *)ThreadLocalStoragePointer;
@@ -139,6 +142,7 @@ void __cdecl XModelUnoptimize(XModel *param_1)
   uint uVar5;
   ushort *puVar6;
   IDirect3DIndexBuffer9 **ppIVar7;
+  XModel *model;
   int local_4;
   
   iVar1 = *(int *)ThreadLocalStoragePointer;

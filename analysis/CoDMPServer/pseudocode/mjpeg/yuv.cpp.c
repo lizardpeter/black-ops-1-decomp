@@ -7,7 +7,27 @@ void __cdecl yuv_init_internal(void)
 {
   int iVar1;
   int iVar2;
-  undefined2 local_2c;
+  int semaphore_11;
+  HRESULT hr_10;
+  int semaphore_10;
+  HRESULT hr_9;
+  int semaphore_9;
+  HRESULT hr_8;
+  int semaphore_8;
+  HRESULT hr_7;
+  int semaphore_7;
+  HRESULT hr_6;
+  int semaphore_6;
+  HRESULT hr_5;
+  int semaphore_5;
+  HRESULT hr_4;
+  int semaphore_4;
+  HRESULT hr_3;
+  int semaphore_3;
+  HRESULT hr_2;
+  int semaphore_2;
+  HRESULT hr;
+  undefined2 VertexElements;
   undefined2 local_2a;
   undefined1 local_28;
   undefined1 local_27;
@@ -25,23 +45,23 @@ void __cdecl yuv_init_internal(void)
   undefined1 local_17;
   undefined1 local_16;
   undefined1 local_15;
-  int local_14;
-  int local_10;
-  undefined4 *local_c;
-  int local_8;
+  int width;
+  int height;
+  float *vtx;
+  int semaphore;
   
-  local_14 = yuv_globals.width;
-  local_10 = yuv_globals.height;
-  local_8 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  yuv_globals.outY = operator_new__((local_10 + 0x10) * local_14);
-  memset(yuv_globals.outY,'\0',(local_10 + 0x10) * local_14);
-  iVar1 = (local_10 + 0x10) * local_14;
+  width = yuv_globals.width;
+  height = yuv_globals.height;
+  semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+  yuv_globals.outY = operator_new__((height + 0x10) * width);
+  memset(yuv_globals.outY,'\0',(height + 0x10) * width);
+  iVar1 = (height + 0x10) * width;
   yuv_globals.outU = operator_new__((int)(iVar1 + (iVar1 >> 0x1f & 3U)) >> 2);
-  iVar1 = (local_10 + 0x10) * local_14;
+  iVar1 = (height + 0x10) * width;
   memset(yuv_globals.outU,'\0',(int)(iVar1 + (iVar1 >> 0x1f & 3U)) >> 2);
-  iVar1 = (local_10 + 0x10) * local_14;
+  iVar1 = (height + 0x10) * width;
   yuv_globals.outV = operator_new__((int)(iVar1 + (iVar1 >> 0x1f & 3U)) >> 2);
-  iVar1 = (local_10 + 0x10) * local_14;
+  iVar1 = (height + 0x10) * width;
   memset(yuv_globals.outV,'\0',(int)(iVar1 + (iVar1 >> 0x1f & 3U)) >> 2);
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
@@ -50,7 +70,7 @@ void __cdecl yuv_init_internal(void)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,local_14,local_10,1,1,0x15,0,0xa7272f0,0);
+  iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,width,height,1,1,0x15,0,0xa7272f0,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -69,8 +89,7 @@ void __cdecl yuv_init_internal(void)
                  );
     }
     iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    iVar2 = (**(code **)((int)*dx.device + 0x5c))
-                      (dx.device,local_14,local_10,1,1,0x15,0,0xa7272f4,0);
+    iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,width,height,1,1,0x15,0,0xa7272f4,0);
     if (iVar1 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
@@ -89,7 +108,7 @@ void __cdecl yuv_init_internal(void)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,local_14,local_10,1,1,0x15,0,0xa7272f8,0);
+  iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,width,height,1,1,0x15,0,0xa7272f8,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -107,7 +126,7 @@ void __cdecl yuv_init_internal(void)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,local_14,local_10,1,0,0x15,2,0xa7272fc,0);
+  iVar2 = (**(code **)((int)*dx.device + 0x5c))(dx.device,width,height,1,0,0x15,2,0xa7272fc,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -141,8 +160,7 @@ void __cdecl yuv_init_internal(void)
     RB_LogPrint("yuv_globals.vertexBuffer->Lock(0, 0, (void**)&vtx, 0)\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*yuv_globals.vertexBuffer + 0x2c))
-                    (yuv_globals.vertexBuffer,0,0,&local_c,0);
+  iVar2 = (**(code **)((int)*yuv_globals.vertexBuffer + 0x2c))(yuv_globals.vertexBuffer,0,0,&vtx,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -153,30 +171,30 @@ void __cdecl yuv_init_internal(void)
               "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp (%i) yuv_globals.vertexBuffer->Lock(0, 0, (void**)&vtx, 0) failed: %s\n"
              );
   }
-  *local_c = 0xbf800000;
-  local_c[1] = 0xbf800000;
-  local_c[2] = 0;
-  local_c[3] = 1.0;
-  local_c[4] = 0;
-  local_c[5] = 1.0;
-  local_c[6] = 1.0;
-  local_c[7] = 0xbf800000;
-  local_c[8] = 0;
-  local_c[9] = 1.0;
-  local_c[10] = 1.0;
-  local_c[0xb] = 1.0;
-  local_c[0xc] = 1.0;
-  local_c[0xd] = 1.0;
-  local_c[0xe] = 0;
-  local_c[0xf] = 1.0;
-  local_c[0x10] = 1.0;
-  local_c[0x11] = 0;
-  local_c[0x12] = 0xbf800000;
-  local_c[0x13] = 1.0;
-  local_c[0x14] = 0;
-  local_c[0x15] = 1.0;
-  local_c[0x16] = 0;
-  local_c[0x17] = 0;
+  *vtx = -1.0;
+  vtx[1] = -1.0;
+  vtx[2] = 0.0;
+  vtx[3] = 1.0;
+  vtx[4] = 0.0;
+  vtx[5] = 1.0;
+  vtx[6] = 1.0;
+  vtx[7] = -1.0;
+  vtx[8] = 0.0;
+  vtx[9] = 1.0;
+  vtx[10] = 1.0;
+  vtx[0xb] = 1.0;
+  vtx[0xc] = 1.0;
+  vtx[0xd] = 1.0;
+  vtx[0xe] = 0.0;
+  vtx[0xf] = 1.0;
+  vtx[0x10] = 1.0;
+  vtx[0x11] = 0.0;
+  vtx[0x12] = -1.0;
+  vtx[0x13] = 1.0;
+  vtx[0x14] = 0.0;
+  vtx[0x15] = 1.0;
+  vtx[0x16] = 0.0;
+  vtx[0x17] = 0.0;
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("yuv_globals.vertexBuffer->Unlock()\n");
@@ -193,7 +211,7 @@ void __cdecl yuv_init_internal(void)
               "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp (%i) yuv_globals.vertexBuffer->Unlock() failed: %s\n"
              );
   }
-  local_2c = 0;
+  VertexElements = 0;
   local_2a = 0;
   local_28 = 3;
   local_27 = 0;
@@ -218,7 +236,7 @@ void __cdecl yuv_init_internal(void)
                );
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*dx.device + 0x158))(dx.device,&local_2c,0xa72730c);
+  iVar2 = (**(code **)((int)*dx.device + 0x158))(dx.device,&VertexElements,0xa72730c);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -265,7 +283,7 @@ void __cdecl yuv_init_internal(void)
               "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp (%i) dx.device->CreatePixelShader((DWORD*)g_ps30_mjpeg_shader_yuv, &yuv_globals.pixelShader) failed: %s\n"
              );
   }
-  if (local_8 != 0) {
+  if (semaphore != 0) {
     R_ReleaseDXDeviceOwnership();
   }
   yuv_globals.init = true;
@@ -275,15 +293,15 @@ void __cdecl yuv_init_internal(void)
 
 // 009B46F0  yuv_init  (mjpeg/yuv.cpp:77)
 
-void __cdecl yuv_init(int param_1,int param_2,bool param_3)
+void __cdecl yuv_init(int width,int height,bool double_buffer)
 
 {
   bool bVar1;
   
   if (!yuv_globals.init) {
-    yuv_globals.width = param_1;
-    yuv_globals.height = param_2;
-    yuv_globals.double_buffer = param_3;
+    yuv_globals.width = width;
+    yuv_globals.height = height;
+    yuv_globals.double_buffer = double_buffer;
     yuv_globals.frame = 0;
     bVar1 = Sys_IsRenderThread();
     if (bVar1) {
@@ -303,55 +321,59 @@ void __cdecl yuv_init(int param_1,int param_2,bool param_3)
 bool __cdecl yuv_encode_frame(void)
 
 {
-  char *pcVar1;
-  char *pcVar2;
-  char *pcVar3;
-  char *pcVar4;
+  uchar *puVar1;
+  uchar *puVar2;
+  uchar *puVar3;
+  uchar *puVar4;
   int iVar5;
   int iVar6;
   uchar *puVar7;
   bool bVar8;
   IDirect3DTexture9 *local_60;
   IDirect3DTexture9 *local_5c;
-  undefined1 local_48 [4];
-  int local_44;
-  uchar *local_40;
-  int local_3c;
-  int local_38;
-  uchar *local_34;
-  uchar *local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  int *local_1c;
-  int *local_18;
-  int local_14;
-  int local_10;
-  IDirect3DTexture9 *local_c;
-  IDirect3DSurface9 *local_8;
+  uchar *pixel2;
+  uchar *pixel3;
+  uchar *pixel1;
+  uchar *pixel4;
+  undefined1 lockedRect [4];
+  uchar *local_44;
+  uchar *outV;
+  int width;
+  int height;
+  uchar *outY;
+  uchar *outU;
+  int row;
+  int col;
+  int semaphore_2;
+  HRESULT hr;
+  IDirect3DSurface9 *dstSurface;
+  IDirect3DSurface9 *imageSurface;
+  uchar *pixels;
+  int semaphore;
+  IDirect3DTexture9 *renderTarget;
+  IDirect3DSurface9 *srcSurface;
   
   if (yuv_globals.init) {
-    local_10 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    (**(code **)((int)*yuv_globals.srcTexture + 0x48))(yuv_globals.srcTexture,0,&local_1c);
-    local_8 = gfxRenderTargets[2].surface.color;
+    semaphore = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+    (**(code **)((int)*yuv_globals.srcTexture + 0x48))(yuv_globals.srcTexture,0,&dstSurface);
+    srcSurface = gfxRenderTargets[2].surface.color;
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("dx.device->StretchRect(srcSurface, 0, dstSurface, 0, D3DTEXF_NONE)\n");
     }
-    local_24 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-    local_20 = (**(code **)((int)*dx.device + 0x88))(dx.device,local_8,0,local_1c,0,0);
-    if (local_24 != 0) {
+    semaphore_2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
+    hr = (**(code **)((int)*dx.device + 0x88))(dx.device,srcSurface,0,dstSurface,0,0);
+    if (semaphore_2 != 0) {
       R_ReleaseDXDeviceOwnership();
     }
-    if (local_20 < 0) {
+    if (hr < 0) {
       g_disableRendering = g_disableRendering + 1;
-      R_ErrorDescription(local_20);
+      R_ErrorDescription(hr);
       Com_Error(ERR_FATAL,
                 "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp (%i) dx.device->StretchRect(srcSurface, 0, dstSurface, 0, D3DTEXF_NONE) failed: %s\n"
                );
     }
-    (**(code **)(*local_1c + 8))(local_1c);
+    (**(code **)((int)*dstSurface + 8))(dstSurface);
     (**(code **)((int)*dx.device + 0x104))(dx.device,0,yuv_globals.srcTexture);
     (**(code **)((int)*dx.device + 0x170))(dx.device,yuv_globals.vertexShader);
     (**(code **)((int)*dx.device + 400))(dx.device,0,yuv_globals.vertexBuffer,0,0x18);
@@ -365,7 +387,7 @@ bool __cdecl yuv_encode_frame(void)
     (**(code **)((int)*dx.device + 0x114))(dx.device,0,2,3);
     (**(code **)((int)*dx.device + 0x15c))(dx.device,yuv_globals.vertexDeclaration);
     if (yuv_globals.double_buffer == false) {
-      local_c = yuv_globals.renderTarget1;
+      renderTarget = yuv_globals.renderTarget1;
     }
     else {
       if ((yuv_globals.frame & 1U) == 0) {
@@ -374,18 +396,18 @@ bool __cdecl yuv_encode_frame(void)
       else {
         local_5c = yuv_globals.renderTarget1;
       }
-      local_c = local_5c;
+      renderTarget = local_5c;
     }
-    (**(code **)((int)*local_c + 0x48))(local_c,0,&local_18);
+    (**(code **)((int)*renderTarget + 0x48))(renderTarget,0,&imageSurface);
     (**(code **)((int)*dx.device + 0xa4))(dx.device);
-    (**(code **)((int)*dx.device + 0x94))(dx.device,0,local_18);
+    (**(code **)((int)*dx.device + 0x94))(dx.device,0,imageSurface);
     (**(code **)((int)*dx.device + 0x1ac))(dx.device,yuv_globals.pixelShader);
     (**(code **)((int)*dx.device + 0x144))(dx.device,6,0,2);
     (**(code **)((int)*dx.device + 0xa8))(dx.device);
-    (**(code **)(*local_18 + 8))(local_18);
+    (**(code **)((int)*imageSurface + 8))(imageSurface);
     if ((yuv_globals.double_buffer == false) || (yuv_globals.frame != 0)) {
       if (yuv_globals.double_buffer == false) {
-        local_c = yuv_globals.renderTarget1;
+        renderTarget = yuv_globals.renderTarget1;
       }
       else {
         if ((yuv_globals.frame & 1U) == 0) {
@@ -394,40 +416,40 @@ bool __cdecl yuv_encode_frame(void)
         else {
           local_60 = yuv_globals.renderTarget2;
         }
-        local_c = local_60;
+        renderTarget = local_60;
       }
-      (**(code **)((int)*local_c + 0x48))(local_c,0,&local_18);
-      (**(code **)((int)*yuv_globals.dstTexture + 0x48))(yuv_globals.dstTexture,0,&local_1c);
-      (**(code **)((int)*dx.device + 0x80))(dx.device,local_18,local_1c);
-      (**(code **)(*local_18 + 8))(local_18);
-      (**(code **)(*local_1c + 0x34))(local_1c,local_48,0,0x10);
+      (**(code **)((int)*renderTarget + 0x48))(renderTarget,0,&imageSurface);
+      (**(code **)((int)*yuv_globals.dstTexture + 0x48))(yuv_globals.dstTexture,0,&dstSurface);
+      (**(code **)((int)*dx.device + 0x80))(dx.device,imageSurface,dstSurface);
+      (**(code **)((int)*imageSurface + 8))(imageSurface);
+      (**(code **)((int)*dstSurface + 0x34))(dstSurface,lockedRect,0,0x10);
       puVar7 = yuv_globals.outY;
       iVar6 = yuv_globals.height;
       iVar5 = yuv_globals.width;
-      local_14 = local_44;
-      local_34 = yuv_globals.outY;
-      local_30 = yuv_globals.outU;
-      local_40 = yuv_globals.outV;
-      local_3c = yuv_globals.width;
-      local_38 = yuv_globals.height;
-      for (local_2c = 0; local_2c < iVar6; local_2c = local_2c + 2) {
-        for (local_28 = 0; local_28 < iVar5; local_28 = local_28 + 2) {
-          pcVar1 = (char *)(local_44 + (local_2c * iVar5 + local_28) * 4);
-          pcVar3 = (char *)(local_44 + 4 + (local_2c * iVar5 + local_28) * 4);
-          pcVar2 = (char *)(local_44 + ((local_2c + 1) * iVar5 + local_28) * 4);
-          pcVar4 = (char *)(local_44 + 4 + ((local_2c + 1) * iVar5 + local_28) * 4);
-          puVar7[local_2c * iVar5 + local_28] = pcVar1[2];
-          puVar7[local_2c * iVar5 + local_28 + 1] = pcVar3[2];
-          puVar7[(local_2c + 1) * iVar5 + local_28] = pcVar2[2];
-          puVar7[(local_2c + 1) * iVar5 + local_28 + 1] = pcVar4[2];
-          *local_30 = pcVar1[1] + pcVar3[1] + pcVar2[1] + pcVar4[1];
-          local_30 = local_30 + 1;
-          *local_40 = *pcVar1 + *pcVar3 + *pcVar2 + *pcVar4;
-          local_40 = local_40 + 1;
+      pixels = local_44;
+      outY = yuv_globals.outY;
+      outU = yuv_globals.outU;
+      outV = yuv_globals.outV;
+      width = yuv_globals.width;
+      height = yuv_globals.height;
+      for (row = 0; row < iVar6; row = row + 2) {
+        for (col = 0; col < iVar5; col = col + 2) {
+          puVar1 = local_44 + (row * iVar5 + col) * 4;
+          puVar3 = local_44 + (row * iVar5 + col) * 4 + 4;
+          puVar2 = local_44 + ((row + 1) * iVar5 + col) * 4;
+          puVar4 = local_44 + ((row + 1) * iVar5 + col) * 4 + 4;
+          puVar7[row * iVar5 + col] = puVar1[2];
+          puVar7[row * iVar5 + col + 1] = puVar3[2];
+          puVar7[(row + 1) * iVar5 + col] = puVar2[2];
+          puVar7[(row + 1) * iVar5 + col + 1] = puVar4[2];
+          *outU = puVar1[1] + puVar3[1] + puVar2[1] + puVar4[1];
+          outU = outU + 1;
+          *outV = *puVar1 + *puVar3 + *puVar2 + *puVar4;
+          outV = outV + 1;
         }
       }
-      (**(code **)(*local_1c + 0x38))(local_1c);
-      (**(code **)(*local_1c + 8))(local_1c);
+      (**(code **)((int)*dstSurface + 0x38))(dstSurface);
+      (**(code **)((int)*dstSurface + 8))(dstSurface);
     }
     else {
       memset(yuv_globals.outY,'\0',yuv_globals.width * yuv_globals.height);
@@ -439,7 +461,7 @@ bool __cdecl yuv_encode_frame(void)
                   (yuv_globals.width * yuv_globals.height >> 0x1f & 3U)) >> 2);
     }
     R_InitCmdBufState(&gfxCmdBufState);
-    if (local_10 != 0) {
+    if (semaphore != 0) {
       R_ReleaseDXDeviceOwnership();
     }
     yuv_globals.frame = yuv_globals.frame + 1;
@@ -456,14 +478,15 @@ bool __cdecl yuv_encode_frame(void)
 
 void __cdecl
 R_ReleaseAndSetNULL<IDirect3DTexture9>
-          (IDirect3DTexture9 *param_1,char *param_2,char *param_3,int param_4)
+          (IDirect3DTexture9 *var_9,char *fn_9,char *filename_9,int line_9)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  uint useCount_9;
   
-  if (param_1 == (IDirect3DTexture9 *)0x0) {
+  if (var_9 == (IDirect3DTexture9 *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_types_d3d.h",0xd0,0,"%s"
                             );
     if (!bVar2) {
@@ -472,7 +495,7 @@ R_ReleaseAndSetNULL<IDirect3DTexture9>
       return;
     }
   }
-  iVar3 = (**(code **)((int)*param_1 + 8))(param_1);
+  iVar3 = (**(code **)((int)*var_9 + 8))(var_9);
   if (iVar3 != 0) {
     va("%s (%i) %s->Release() failed: %i leak(s)!");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_types_d3d.h",0xdc,0,
@@ -489,12 +512,12 @@ R_ReleaseAndSetNULL<IDirect3DTexture9>
 
 // 009B4D90  yuv_get_buffers  (mjpeg/yuv.cpp:211)
 
-void __cdecl yuv_get_buffers(uchar **param_1,uchar **param_2,uchar **param_3)
+void __cdecl yuv_get_buffers(uchar **y,uchar **u,uchar **v)
 
 {
-  *param_1 = yuv_globals.outY;
-  *param_2 = yuv_globals.outU;
-  *param_3 = yuv_globals.outV;
+  *y = yuv_globals.outY;
+  *u = yuv_globals.outU;
+  *v = yuv_globals.outV;
   return;
 }
 
@@ -505,10 +528,18 @@ void __cdecl yuv_shutdown_internal(void)
 
 {
   IDirect3DTexture9 *pIVar1;
-  IDirect3DPixelShader9 *pIVar2;
-  IDirect3DVertexShader9 *pIVar3;
-  IDirect3DVertexBuffer9 *pIVar4;
-  IDirect3DVertexDeclaration9 *pIVar5;
+  IDirect3DPixelShader9 *var_9;
+  IDirect3DVertexShader9 *var_9_00;
+  IDirect3DVertexBuffer9 *var_9_01;
+  IDirect3DVertexDeclaration9 *var_9_02;
+  IDirect3DVertexDeclaration9 *varCopy_8;
+  IDirect3DVertexBuffer9 *varCopy_7;
+  IDirect3DVertexShader9 *varCopy_6;
+  IDirect3DPixelShader9 *varCopy_5;
+  IDirect3DTexture9 *varCopy_4;
+  IDirect3DTexture9 *varCopy_3;
+  IDirect3DTexture9 *varCopy_2;
+  IDirect3DTexture9 *varCopy;
   
   operator_delete__(yuv_globals.outY);
   operator_delete__(yuv_globals.outU);
@@ -559,40 +590,40 @@ void __cdecl yuv_shutdown_internal(void)
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("yuv_globals.pixelShader->Release()\n");
     }
-    pIVar2 = yuv_globals.pixelShader;
+    var_9 = yuv_globals.pixelShader;
     yuv_globals.pixelShader = (IDirect3DPixelShader9 *)0x0;
     R_ReleaseAndSetNULL<IDirect3DTexture9>
-              ((IDirect3DTexture9 *)pIVar2,"yuv_globals.pixelShader",
+              ((IDirect3DTexture9 *)var_9,"yuv_globals.pixelShader",
                "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp",0xe4);
   } while (alwaysfails != 0);
   do {
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("yuv_globals.vertexShader->Release()\n");
     }
-    pIVar3 = yuv_globals.vertexShader;
+    var_9_00 = yuv_globals.vertexShader;
     yuv_globals.vertexShader = (IDirect3DVertexShader9 *)0x0;
     R_ReleaseAndSetNULL<IDirect3DTexture9>
-              ((IDirect3DTexture9 *)pIVar3,"yuv_globals.vertexShader",
+              ((IDirect3DTexture9 *)var_9_00,"yuv_globals.vertexShader",
                "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp",0xe5);
   } while (alwaysfails != 0);
   do {
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("yuv_globals.vertexBuffer->Release()\n");
     }
-    pIVar4 = yuv_globals.vertexBuffer;
+    var_9_01 = yuv_globals.vertexBuffer;
     yuv_globals.vertexBuffer = (IDirect3DVertexBuffer9 *)0x0;
     R_ReleaseAndSetNULL<IDirect3DTexture9>
-              ((IDirect3DTexture9 *)pIVar4,"yuv_globals.vertexBuffer",
+              ((IDirect3DTexture9 *)var_9_01,"yuv_globals.vertexBuffer",
                "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp",0xe6);
   } while (alwaysfails != 0);
   do {
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("yuv_globals.vertexDeclaration->Release()\n");
     }
-    pIVar5 = yuv_globals.vertexDeclaration;
+    var_9_02 = yuv_globals.vertexDeclaration;
     yuv_globals.vertexDeclaration = (IDirect3DVertexDeclaration9 *)0x0;
     R_ReleaseAndSetNULL<IDirect3DTexture9>
-              ((IDirect3DTexture9 *)pIVar5,"yuv_globals.vertexDeclaration",
+              ((IDirect3DTexture9 *)var_9_02,"yuv_globals.vertexDeclaration",
                "C:\\projects_pc\\cod\\codsrc\\src\\mjpeg\\yuv.cpp",0xe7);
   } while (alwaysfails != 0);
   yuv_globals.init = false;

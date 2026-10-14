@@ -2,15 +2,17 @@
 
 // 00865DD0  Ragdoll_QuatMul  (ragdoll/ragdoll_quat.cpp:17)
 
-void __cdecl Ragdoll_QuatMul(float *param_1,float *param_2,float *param_3)
+void __cdecl Ragdoll_QuatMul(float *qa,float *qb,float *dest)
 
 {
   float fVar1;
   float fVar2;
   code *pcVar3;
   bool bVar4;
+  float w0;
+  float w1;
   
-  if ((param_1 == param_3) || (param_2 == param_3)) {
+  if ((qa == dest) || (qb == dest)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_quat.cpp",0x15,0,
                              "%s");
     if (!bVar4) {
@@ -19,56 +21,52 @@ void __cdecl Ragdoll_QuatMul(float *param_1,float *param_2,float *param_3)
       return;
     }
   }
-  fVar1 = param_1[3];
-  fVar2 = param_2[3];
-  *param_3 = (fVar1 * *param_2 + fVar2 * *param_1 + param_1[1] * param_2[2]) -
-             param_1[2] * param_2[1];
-  param_3[1] = (fVar1 * param_2[1] + fVar2 * param_1[1] + param_1[2] * *param_2) -
-               *param_1 * param_2[2];
-  param_3[2] = (fVar1 * param_2[2] + fVar2 * param_1[2] + *param_1 * param_2[1]) -
-               param_1[1] * *param_2;
-  param_3[3] = ((fVar1 * fVar2 - *param_1 * *param_2) - param_1[1] * param_2[1]) -
-               param_1[2] * param_2[2];
+  fVar1 = qa[3];
+  fVar2 = qb[3];
+  *dest = (fVar1 * *qb + fVar2 * *qa + qa[1] * qb[2]) - qa[2] * qb[1];
+  dest[1] = (fVar1 * qb[1] + fVar2 * qa[1] + qa[2] * *qb) - *qa * qb[2];
+  dest[2] = (fVar1 * qb[2] + fVar2 * qa[2] + *qa * qb[1]) - qa[1] * *qb;
+  dest[3] = ((fVar1 * fVar2 - *qa * *qb) - qa[1] * qb[1]) - qa[2] * qb[2];
   return;
 }
 
 
 // 00865F60  Ragdoll_QuatMulInvSecond  (ragdoll/ragdoll_quat.cpp:46)
 
-void __cdecl Ragdoll_QuatMulInvSecond(float *param_1,float *param_2,float *param_3)
+void __cdecl Ragdoll_QuatMulInvSecond(float *qa,float *qb,float *dest)
 
 {
-  float local_14 [4];
+  float qinv [4];
   
-  Ragdoll_QuatConjugate(param_2,local_14);
-  Ragdoll_QuatMul(param_1,local_14,param_3);
+  Ragdoll_QuatConjugate(qb,qinv);
+  Ragdoll_QuatMul(qa,qinv,dest);
   return;
 }
 
 
 // 00865F90  Ragdoll_QuatConjugate  (ragdoll/ragdoll_quat.cpp:80)
 
-void __cdecl Ragdoll_QuatConjugate(float *param_1,float *param_2)
+void __cdecl Ragdoll_QuatConjugate(float *src,float *dest)
 
 {
-  *param_2 = -*param_1;
-  param_2[1] = -param_1[1];
-  param_2[2] = -param_1[2];
-  param_2[3] = param_1[3];
+  *dest = -*src;
+  dest[1] = -src[1];
+  dest[2] = -src[2];
+  dest[3] = src[3];
   return;
 }
 
 
 // 00865FF0  Ragdoll_QuatInverse  (ragdoll/ragdoll_quat.cpp:90)
 
-void __cdecl Ragdoll_QuatInverse(float *param_1,float *param_2)
+void __cdecl Ragdoll_QuatInverse(float *src,float *dest)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  iVar3 = Vec4IsNormalized(param_1);
+  iVar3 = Vec4IsNormalized(src);
   if (iVar3 == 0) {
     va("%g %g %g %g");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_quat.cpp",0x5b,0,
@@ -79,83 +77,85 @@ void __cdecl Ragdoll_QuatInverse(float *param_1,float *param_2)
       return;
     }
   }
-  *param_2 = -*param_1;
-  param_2[1] = -param_1[1];
-  param_2[2] = -param_1[2];
-  param_2[3] = param_1[3];
+  *dest = -*src;
+  dest[1] = -src[1];
+  dest[2] = -src[2];
+  dest[3] = src[3];
   return;
 }
 
 
 // 008660D0  Ragdoll_QuatPointRotate  (ragdoll/ragdoll_quat.cpp:126)
 
-void __cdecl Ragdoll_QuatPointRotate(float *param_1,float *param_2,float *param_3)
+void __cdecl Ragdoll_QuatPointRotate(float *p,float *q,float *dest)
 
 {
-  float local_44 [4];
-  float local_34;
+  float tmp0 [4];
+  float qp;
   float local_30;
   float local_2c;
   undefined4 local_28;
-  float local_24;
+  float tmp1;
   float local_20;
   float local_1c;
-  float local_14 [4];
+  float qInv [4];
   
-  local_34 = *param_1;
-  local_30 = param_1[1];
-  local_2c = param_1[2];
+  qp = *p;
+  local_30 = p[1];
+  local_2c = p[2];
   local_28 = 0;
-  Ragdoll_QuatInverse(param_2,local_14);
-  Ragdoll_QuatMul(param_2,local_14,local_44);
-  Ragdoll_QuatMul(local_44,&local_34,&local_24);
-  *param_3 = local_24;
-  param_3[1] = local_20;
-  param_3[2] = local_1c;
+  Ragdoll_QuatInverse(q,qInv);
+  Ragdoll_QuatMul(q,qInv,tmp0);
+  Ragdoll_QuatMul(tmp0,&qp,&tmp1);
+  *dest = tmp1;
+  dest[1] = local_20;
+  dest[2] = local_1c;
   return;
 }
 
 
 // 00866170  Ragdoll_Mat33ToQuat  (ragdoll/ragdoll_quat.cpp:178)
 
-void __cdecl Ragdoll_Mat33ToQuat(float (*param_1) [3],float *param_2)
+void __cdecl Ragdoll_Mat33ToQuat(float (*axis) [3],float *quat)
 
 {
   float fVar1;
+  float trace;
+  float s;
   
-  fVar1 = (*param_1)[0] + param_1[1][1] + param_1[2][2] + 1.0;
+  fVar1 = (*axis)[0] + axis[1][1] + axis[2][2] + 1.0;
   if (fVar1 <= 1e-06) {
-    if (((*param_1)[0] < param_1[1][1] || (*param_1)[0] == param_1[1][1]) ||
-       ((*param_1)[0] < param_1[2][2] || (*param_1)[0] == param_1[2][2])) {
-      if (param_1[1][1] < param_1[2][2] || param_1[1][1] == param_1[2][2]) {
-        fVar1 = SQRT(((param_1[2][2] + 1.0) - (*param_1)[0]) - param_1[1][1]) * 2.0;
-        *param_2 = ((*param_1)[2] + param_1[2][0]) / fVar1;
-        param_2[1] = (param_1[1][2] + param_1[2][1]) / fVar1;
-        param_2[2] = fVar1 * 0.25;
-        param_2[3] = ((*param_1)[1] - param_1[1][0]) / fVar1;
+    if (((*axis)[0] < axis[1][1] || (*axis)[0] == axis[1][1]) ||
+       ((*axis)[0] < axis[2][2] || (*axis)[0] == axis[2][2])) {
+      if (axis[1][1] < axis[2][2] || axis[1][1] == axis[2][2]) {
+        fVar1 = SQRT(((axis[2][2] + 1.0) - (*axis)[0]) - axis[1][1]) * 2.0;
+        *quat = ((*axis)[2] + axis[2][0]) / fVar1;
+        quat[1] = (axis[1][2] + axis[2][1]) / fVar1;
+        quat[2] = fVar1 * 0.25;
+        quat[3] = ((*axis)[1] - axis[1][0]) / fVar1;
       }
       else {
-        fVar1 = SQRT(((param_1[1][1] + 1.0) - (*param_1)[0]) - param_1[2][2]) * 2.0;
-        *param_2 = ((*param_1)[1] + param_1[1][0]) / fVar1;
-        param_2[1] = fVar1 * 0.25;
-        param_2[2] = (param_1[1][2] + param_1[2][1]) / fVar1;
-        param_2[3] = ((*param_1)[2] - param_1[2][0]) / fVar1;
+        fVar1 = SQRT(((axis[1][1] + 1.0) - (*axis)[0]) - axis[2][2]) * 2.0;
+        *quat = ((*axis)[1] + axis[1][0]) / fVar1;
+        quat[1] = fVar1 * 0.25;
+        quat[2] = (axis[1][2] + axis[2][1]) / fVar1;
+        quat[3] = ((*axis)[2] - axis[2][0]) / fVar1;
       }
     }
     else {
-      fVar1 = SQRT((((*param_1)[0] + 1.0) - param_1[1][1]) - param_1[2][2]) * 2.0;
-      *param_2 = fVar1 * 0.25;
-      param_2[1] = ((*param_1)[1] + param_1[1][0]) / fVar1;
-      param_2[2] = ((*param_1)[2] + param_1[2][0]) / fVar1;
-      param_2[3] = (param_1[1][2] - param_1[2][1]) / fVar1;
+      fVar1 = SQRT((((*axis)[0] + 1.0) - axis[1][1]) - axis[2][2]) * 2.0;
+      *quat = fVar1 * 0.25;
+      quat[1] = ((*axis)[1] + axis[1][0]) / fVar1;
+      quat[2] = ((*axis)[2] + axis[2][0]) / fVar1;
+      quat[3] = (axis[1][2] - axis[2][1]) / fVar1;
     }
   }
   else {
     fVar1 = 0.5 / SQRT(fVar1);
-    *param_2 = (param_1[2][1] - param_1[1][2]) * fVar1;
-    param_2[1] = ((*param_1)[2] - param_1[2][0]) * fVar1;
-    param_2[2] = (param_1[1][0] - (*param_1)[1]) * fVar1;
-    param_2[3] = 0.25 / fVar1;
+    *quat = (axis[2][1] - axis[1][2]) * fVar1;
+    quat[1] = ((*axis)[2] - axis[2][0]) * fVar1;
+    quat[2] = (axis[1][0] - (*axis)[1]) * fVar1;
+    quat[3] = 0.25 / fVar1;
   }
   return;
 }
@@ -163,7 +163,7 @@ void __cdecl Ragdoll_Mat33ToQuat(float (*param_1) [3],float *param_2)
 
 // 00866470  Ragdoll_QuatToAxisAngle  (ragdoll/ragdoll_quat.cpp:225)
 
-void __cdecl Ragdoll_QuatToAxisAngle(float *param_1,float *param_2)
+void __cdecl Ragdoll_QuatToAxisAngle(float *quat,float *axisAngle)
 
 {
   double dVar1;
@@ -171,19 +171,19 @@ void __cdecl Ragdoll_QuatToAxisAngle(float *param_1,float *param_2)
   undefined4 in_stack_ffffffe0;
   undefined4 in_stack_ffffffe4;
   
-  fVar2 = Q_acos(param_1[3]);
+  fVar2 = Q_acos(quat[3]);
   dVar1 = (double)fVar2;
   __libm_sse2_sin((double)CONCAT44(in_stack_ffffffe4,in_stack_ffffffe0));
   if (ABS((float)dVar1) <= 1e-06) {
-    *param_2 = 0.0;
-    param_2[1] = 0.0;
-    param_2[2] = 0.0;
+    *axisAngle = 0.0;
+    axisAngle[1] = 0.0;
+    axisAngle[2] = 0.0;
   }
   else {
     fVar2 = (fVar2 * 2.0) / (float)dVar1;
-    *param_2 = *param_1 * fVar2;
-    param_2[1] = param_1[1] * fVar2;
-    param_2[2] = param_1[2] * fVar2;
+    *axisAngle = *quat * fVar2;
+    axisAngle[1] = quat[1] * fVar2;
+    axisAngle[2] = quat[2] * fVar2;
   }
   return;
 }
@@ -191,11 +191,11 @@ void __cdecl Ragdoll_QuatToAxisAngle(float *param_1,float *param_2)
 
 // 00866570  Ragdoll_QuatLerp  (ragdoll/ragdoll_quat.cpp:269)
 
-void __cdecl Ragdoll_QuatLerp(float *param_1,float *param_2,float param_3,float *param_4)
+void __cdecl Ragdoll_QuatLerp(float *qa,float *qb,float t,float *dest)
 
 {
-  Vec4Lerp(param_1,param_2,param_3,param_4);
-  Vec4Normalize(param_4);
+  Vec4Lerp(qa,qb,t,dest);
+  Vec4Normalize(dest);
   return;
 }
 

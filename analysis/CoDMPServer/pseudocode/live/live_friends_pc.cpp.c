@@ -6,14 +6,15 @@ int __cdecl _GetNumFriends<4>(void)
 
 {
   int *piVar1;
-  undefined4 local_c;
+  int result;
+  ISteamFriends *steamFriends;
   
-  local_c = 0;
+  result = 0;
   piVar1 = (int *)SteamFriends();
   if (piVar1 != (int *)0x0) {
-    local_c = (**(code **)(*piVar1 + 0xc))(4);
+    result = (**(code **)(*piVar1 + 0xc))(4);
   }
-  return local_c;
+  return result;
 }
 
 
@@ -23,37 +24,38 @@ int __cdecl _GetNumFriends<16>(void)
 
 {
   int *piVar1;
-  undefined4 local_c;
+  int result;
+  ISteamFriends *steamFriends;
   
-  local_c = 0;
+  result = 0;
   piVar1 = (int *)SteamFriends();
   if (piVar1 != (int *)0x0) {
-    local_c = (**(code **)(*piVar1 + 0xc))(0x10);
+    result = (**(code **)(*piVar1 + 0xc))(0x10);
   }
-  return local_c;
+  return result;
 }
 
 
 // 009663A0  _GetFriendXuid<4>  (live/live_friends_pc.cpp:32)
 
-ulong64 __cdecl _GetFriendXuid<4>(int param_1)
+ulong64 __cdecl _GetFriendXuid<4>(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   ulong64 uVar4;
-  SteamID_t local_18;
-  int *local_10;
-  uint local_c;
+  SteamID_t steamID;
+  ISteamFriends *steamFriends;
+  uint xuid;
   undefined4 local_8;
   
-  local_c = 0;
+  xuid = 0;
   local_8 = 0;
-  local_10 = (int *)SteamFriends();
-  if (local_10 != (int *)0x0) {
-    iVar3 = (**(code **)(*local_10 + 0xc))(4);
-    if (iVar3 <= param_1) {
+  steamFriends = (ISteamFriends *)SteamFriends();
+  if (steamFriends != (ISteamFriends *)0x0) {
+    iVar3 = (**(code **)((int)*steamFriends + 0xc))(4);
+    if (iVar3 <= index) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x25,0
                                ,"%s");
       if (!bVar2) {
@@ -62,8 +64,8 @@ ulong64 __cdecl _GetFriendXuid<4>(int param_1)
         return uVar4;
       }
     }
-    (**(code **)(*local_10 + 0x10))(&local_18,param_1,4);
-    bVar2 = CSteamID::IsValid((CSteamID *)&local_18.m_comp);
+    (**(code **)((int)*steamFriends + 0x10))(&steamID,index,4);
+    bVar2 = CSteamID::IsValid((CSteamID *)&steamID.m_comp);
     if (!bVar2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x27,0
                                ,"%s");
@@ -73,28 +75,28 @@ ulong64 __cdecl _GetFriendXuid<4>(int param_1)
         return uVar4;
       }
     }
-    local_c = local_18.m_comp.m_unAccountID;
-    local_8 = local_18.m_unAll64Bits._4_4_;
+    xuid = steamID.m_comp.m_unAccountID;
+    local_8 = steamID.m_unAll64Bits._4_4_;
   }
-  return CONCAT44(local_8,local_c);
+  return CONCAT44(local_8,xuid);
 }
 
 
 // 00966520  _GetFriendPersonaName<4>  (live/live_friends_pc.cpp:48)
 
-void __cdecl _GetFriendPersonaName<4>(int param_1,char *param_2,int param_3)
+void __cdecl _GetFriendPersonaName<4>(int index,char *buf,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  undefined4 local_14;
+  undefined4 steamID;
   undefined4 local_10;
-  undefined4 local_c;
-  int *local_8;
+  char *s;
+  ISteamFriends *steamFriends;
   
-  local_8 = (int *)SteamFriends();
-  if ((param_2 == (char *)0x0) || (param_3 == 0)) {
+  steamFriends = (ISteamFriends *)SteamFriends();
+  if ((buf == (char *)0x0) || (size == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x32,0,
                              "%s");
     if (!bVar2) {
@@ -103,12 +105,12 @@ void __cdecl _GetFriendPersonaName<4>(int param_1,char *param_2,int param_3)
       return;
     }
   }
-  if (local_8 == (int *)0x0) {
-    *param_2 = '\0';
+  if (steamFriends == (ISteamFriends *)0x0) {
+    *buf = '\0';
   }
   else {
-    iVar3 = (**(code **)(*local_8 + 0xc))(4);
-    if (iVar3 <= param_1) {
+    iVar3 = (**(code **)((int)*steamFriends + 0xc))(4);
+    if (iVar3 <= index) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x35,0
                                ,"%s");
       if (!bVar2) {
@@ -117,9 +119,9 @@ void __cdecl _GetFriendPersonaName<4>(int param_1,char *param_2,int param_3)
         return;
       }
     }
-    (**(code **)(*local_8 + 0x10))(&local_14,param_1,4);
-    local_c = (**(code **)(*local_8 + 0x1c))(local_14,local_10);
-    Com_sprintf(param_2,param_3,"%.16s");
+    (**(code **)((int)*steamFriends + 0x10))(&steamID,index,4);
+    s = (char *)(**(code **)((int)*steamFriends + 0x1c))(steamID,local_10);
+    Com_sprintf(buf,size,"%.16s");
   }
   return;
 }
@@ -127,19 +129,19 @@ void __cdecl _GetFriendPersonaName<4>(int param_1,char *param_2,int param_3)
 
 // 00966600  _GetFriendPersonaName<16>  (live/live_friends_pc.cpp:48)
 
-void __cdecl _GetFriendPersonaName<16>(int param_1,char *param_2,int param_3)
+void __cdecl _GetFriendPersonaName<16>(int index,char *buf,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  undefined4 local_14;
+  undefined4 steamID;
   undefined4 local_10;
-  undefined4 local_c;
-  int *local_8;
+  char *s;
+  ISteamFriends *steamFriends;
   
-  local_8 = (int *)SteamFriends();
-  if ((param_2 == (char *)0x0) || (param_3 == 0)) {
+  steamFriends = (ISteamFriends *)SteamFriends();
+  if ((buf == (char *)0x0) || (size == 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x32,0,
                              "%s");
     if (!bVar2) {
@@ -148,12 +150,12 @@ void __cdecl _GetFriendPersonaName<16>(int param_1,char *param_2,int param_3)
       return;
     }
   }
-  if (local_8 == (int *)0x0) {
-    *param_2 = '\0';
+  if (steamFriends == (ISteamFriends *)0x0) {
+    *buf = '\0';
   }
   else {
-    iVar3 = (**(code **)(*local_8 + 0xc))(0x10);
-    if (iVar3 <= param_1) {
+    iVar3 = (**(code **)((int)*steamFriends + 0xc))(0x10);
+    if (iVar3 <= index) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x35,0
                                ,"%s");
       if (!bVar2) {
@@ -162,9 +164,9 @@ void __cdecl _GetFriendPersonaName<16>(int param_1,char *param_2,int param_3)
         return;
       }
     }
-    (**(code **)(*local_8 + 0x10))(&local_14,param_1,0x10);
-    local_c = (**(code **)(*local_8 + 0x1c))(local_14,local_10);
-    Com_sprintf(param_2,param_3,"%.16s");
+    (**(code **)((int)*steamFriends + 0x10))(&steamID,index,0x10);
+    s = (char *)(**(code **)((int)*steamFriends + 0x1c))(steamID,local_10);
+    Com_sprintf(buf,size,"%.16s");
   }
   return;
 }
@@ -172,7 +174,7 @@ void __cdecl _GetFriendPersonaName<16>(int param_1,char *param_2,int param_3)
 
 // 009666E0  _GetFriendPersonaNameByXuid<4>  (live/live_friends_pc.cpp:66)
 
-bool __cdecl _GetFriendPersonaNameByXuid<4>(ulong64 param_1,char *param_2,int param_3)
+bool __cdecl _GetFriendPersonaNameByXuid<4>(ulong64 xuid_2,char *buf_2,int size_2)
 
 {
   code *pcVar1;
@@ -180,21 +182,23 @@ bool __cdecl _GetFriendPersonaNameByXuid<4>(ulong64 param_1,char *param_2,int pa
   undefined1 uVar3;
   int *piVar4;
   int iVar5;
+  char *s_2;
+  ISteamFriends *steamFriends_2;
   
   piVar4 = (int *)SteamFriends();
-  if (((param_2 == (char *)0x0) || (param_3 == 0)) &&
+  if (((buf_2 == (char *)0x0) || (size_2 == 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_friends_pc.cpp",0x44,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((piVar4 != (int *)0x0) && (iVar5 = (**(code **)(*piVar4 + 0x14))(param_1), iVar5 != 0)) {
-    (**(code **)(*piVar4 + 0x1c))(param_1);
-    Com_sprintf(param_2,param_3,"%.16s");
+  if ((piVar4 != (int *)0x0) && (iVar5 = (**(code **)(*piVar4 + 0x14))(xuid_2), iVar5 != 0)) {
+    (**(code **)(*piVar4 + 0x1c))(xuid_2);
+    Com_sprintf(buf_2,size_2,"%.16s");
     return true;
   }
-  *param_2 = '\0';
+  *buf_2 = '\0';
   return false;
 }
 
@@ -225,77 +229,77 @@ int __cdecl LiveSteam_GetNumFriendsOnTheServer(void)
 
 // 00965CD0  LiveSteam_GetFriendXuid  (live/live_friends_pc.cpp:92)
 
-ulong64 __cdecl LiveSteam_GetFriendXuid(int param_1)
+ulong64 __cdecl LiveSteam_GetFriendXuid(int index)
 
 {
-  int iVar1;
-  ulong64 uVar2;
+  int index_00;
+  ulong64 uVar1;
   
-  iVar1 = _GetSortedFriendIndex(param_1);
-  uVar2 = _GetFriendXuid<4>(iVar1);
-  return uVar2;
+  index_00 = _GetSortedFriendIndex(index);
+  uVar1 = _GetFriendXuid<4>(index_00);
+  return uVar1;
 }
 
 
 // 00965CF0  LiveSteam_GetFriendPersonaName  (live/live_friends_pc.cpp:100)
 
-void __cdecl LiveSteam_GetFriendPersonaName(int param_1,char *param_2,int param_3)
+void __cdecl LiveSteam_GetFriendPersonaName(int index,char *buf,int size)
 
 {
-  int iVar1;
+  int index_00;
   
-  iVar1 = _GetSortedFriendIndex(param_1);
-  _GetFriendPersonaName<4>(iVar1,param_2,param_3);
+  index_00 = _GetSortedFriendIndex(index);
+  _GetFriendPersonaName<4>(index_00,buf,size);
   return;
 }
 
 
 // 00965D20  LiveSteam_GetFriendOnTheServerPersonaName  (live/live_friends_pc.cpp:104)
 
-void __cdecl LiveSteam_GetFriendOnTheServerPersonaName(int param_1,char *param_2,int param_3)
+void __cdecl LiveSteam_GetFriendOnTheServerPersonaName(int index,char *buf,int size)
 
 {
-  _GetFriendPersonaName<16>(param_1,param_2,param_3);
+  _GetFriendPersonaName<16>(index,buf,size);
   return;
 }
 
 
 // 00965D40  LiveSteam_GetFriendPersonaState  (live/live_friends_pc.cpp:109)
 
-LiveSteam_PersonaState __cdecl LiveSteam_GetFriendPersonaState(ulong64 param_1)
+LiveSteam_PersonaState __cdecl LiveSteam_GetFriendPersonaState(ulong64 xuid)
 
 {
   int iVar1;
   int *piVar2;
-  undefined4 local_8;
+  LiveSteam_PersonaState result;
   
-  local_8 = LIVE_STEAM_PERSONA_STATE_OFFLINE;
+  result = LIVE_STEAM_PERSONA_STATE_OFFLINE;
   iVar1 = SteamFriends();
   if (iVar1 != 0) {
     piVar2 = (int *)SteamFriends();
-    local_8 = (**(code **)(*piVar2 + 0x18))(param_1);
+    result = (**(code **)(*piVar2 + 0x18))(xuid);
   }
-  return local_8;
+  return result;
 }
 
 
 // 00965D90  LiveSteam_GetFriendPersonaStateByIndex  (live/live_friends_pc.cpp:117)
 
-LiveSteam_PersonaState __cdecl LiveSteam_GetFriendPersonaStateByIndex(int param_1)
+LiveSteam_PersonaState __cdecl LiveSteam_GetFriendPersonaStateByIndex(int index)
 
 {
   LiveSteam_PersonaState LVar1;
-  ulong64 uVar2;
+  ulong64 xuid;
   
-  uVar2 = LiveSteam_GetFriendXuid(param_1);
-  LVar1 = LiveSteam_GetFriendPersonaState(uVar2);
+  xuid = LiveSteam_GetFriendXuid(index);
+  LVar1 = LiveSteam_GetFriendPersonaState(xuid);
   return LVar1;
 }
 
 
 // 00965DB0  Friends_Update  (live/live_friends_pc.cpp:122)
 
-bool __cdecl Friends_Update(int param_1)
+bool __cdecl Friends_Update(int __formal)
 
 {
   g_sortedFriendsListDirty = true;
@@ -305,15 +309,15 @@ bool __cdecl Friends_Update(int param_1)
 
 // 00965DC0  Friends_GetCount  (live/live_friends_pc.cpp:128)
 
-int __cdecl Friends_GetCount(int param_1,int param_2,int param_3)
+int __cdecl Friends_GetCount(int __formal,int type,int __formal_2)
 
 {
   int iVar1;
   
-  if (param_2 == 0) {
+  if (type == 0) {
     iVar1 = LiveSteam_GetNumFriends();
   }
-  else if (param_2 == 1) {
+  else if (type == 1) {
     iVar1 = LiveMeetPlayer_GetNoOfMetPlayers(0);
   }
   else {
@@ -325,7 +329,7 @@ int __cdecl Friends_GetCount(int param_1,int param_2,int param_3)
 
 // 00965E00  Friends_GetByIndex  (live/live_friends_pc.cpp:142)
 
-bool __cdecl Friends_GetByIndex(int param_1,int param_2,int param_3,FriendInfo *param_4)
+bool __cdecl Friends_GetByIndex(int controllerIndex,int filter,int index,FriendInfo *info)
 
 {
   bool bVar1;
@@ -333,34 +337,34 @@ bool __cdecl Friends_GetByIndex(int param_1,int param_2,int param_3,FriendInfo *
   LiveSteam_PersonaState LVar3;
   ulong64 uVar4;
   
-  if (((param_3 < 0) || (iVar2 = LiveSteam_GetNumFriends(), iVar2 <= param_3)) ||
-     (param_4 == (FriendInfo *)0x0)) {
+  if (((index < 0) || (iVar2 = LiveSteam_GetNumFriends(), iVar2 <= index)) ||
+     (info == (FriendInfo *)0x0)) {
     bVar1 = false;
   }
   else {
-    uVar4 = LiveSteam_GetFriendXuid(param_3);
-    param_4->steamid = uVar4;
-    *(int *)&param_4->dwid = (int)param_4->steamid;
-    *(undefined4 *)((int)&param_4->dwid + 4) = *(undefined4 *)((int)&param_4->steamid + 4);
-    LVar3 = LiveSteam_GetFriendPersonaStateByIndex(param_3);
+    uVar4 = LiveSteam_GetFriendXuid(index);
+    info->steamid = uVar4;
+    *(int *)&info->dwid = (int)info->steamid;
+    *(undefined4 *)((int)&info->dwid + 4) = *(undefined4 *)((int)&info->steamid + 4);
+    LVar3 = LiveSteam_GetFriendPersonaStateByIndex(index);
     switch(LVar3) {
     case LIVE_STEAM_PERSONA_STATE_OFFLINE:
-      param_4->status = 8;
+      info->status = 8;
       break;
     case LIVE_STEAM_PERSONA_STATE_ONLINE:
-      param_4->status = 5;
+      info->status = 5;
       break;
     case LIVE_STEAM_PERSONA_STATE_BUSY:
-      param_4->status = 4;
+      info->status = 4;
       break;
     case LIVE_STEAM_PERSONA_STATE_SNOOZE:
-      param_4->status = 4;
+      info->status = 4;
       break;
     default:
-      param_4->status = 8;
+      info->status = 8;
     }
-    LiveSteam_GetFriendPersonaName(param_3,param_4->name,0x20);
-    param_4->presence[0] = '\0';
+    LiveSteam_GetFriendPersonaName(index,info->name,0x20);
+    info->presence[0] = '\0';
     bVar1 = true;
   }
   return bVar1;
@@ -369,7 +373,7 @@ bool __cdecl Friends_GetByIndex(int param_1,int param_2,int param_3,FriendInfo *
 
 // 00965ED0  Friends_GetByID  (live/live_friends_pc.cpp:177)
 
-bool __cdecl Friends_GetByID(int param_1,ulong64 param_2,FriendInfo *param_3)
+bool __cdecl Friends_GetByID(int controllerIndex,ulong64 param_2,FriendInfo *param_3)
 
 {
   bool bVar1;
@@ -415,71 +419,71 @@ bool __cdecl Friends_GetByID(int param_1,ulong64 param_2,FriendInfo *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Friend_GetByName(int param_1,char *param_2,ulong64 *param_3)
+bool __cdecl Friend_GetByName(int controllerIndex,char *friendName,ulong64 *uid)
 
 {
   int iVar1;
   ulong64 uVar2;
-  int local_c0;
-  char local_bc [164];
+  int i;
+  char friendBuf [164];
   uint local_18;
-  undefined8 local_14;
-  undefined1 local_5;
+  undefined8 tmpXuid;
+  bool retval;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5 = 0;
-  if (param_3 != (ulong64 *)0x0) {
-    local_bc[0] = '\0';
-    local_bc[1] = '\0';
-    local_bc[2] = '\0';
-    local_bc[3] = '\0';
-    local_bc[4] = '\0';
-    local_bc[5] = '\0';
-    local_bc[6] = '\0';
-    local_bc[7] = '\0';
-    local_bc[8] = '\0';
-    local_bc[9] = '\0';
-    local_bc[10] = '\0';
-    local_bc[0xb] = '\0';
-    local_bc[0xc] = '\0';
-    local_bc[0xd] = '\0';
-    local_bc[0xe] = '\0';
-    local_bc[0xf] = '\0';
-    local_bc[0x10] = '\0';
-    local_bc[0x11] = '\0';
-    local_bc[0x12] = '\0';
-    local_bc[0x13] = '\0';
-    local_bc[0x14] = '\0';
-    local_bc[0x15] = '\0';
-    local_bc[0x16] = '\0';
-    local_bc[0x17] = '\0';
-    local_bc[0x18] = '\0';
-    local_bc[0x19] = '\0';
-    local_bc[0x1a] = '\0';
-    local_bc[0x1b] = '\0';
-    local_bc[0x1c] = '\0';
-    local_bc[0x1d] = '\0';
-    local_bc[0x1e] = '\0';
-    local_bc[0x1f] = 0;
-    for (local_c0 = 0; iVar1 = _GetNumFriends<4>(), local_c0 < iVar1; local_c0 = local_c0 + 1) {
-      _GetFriendPersonaName<4>(local_c0,local_bc,0x20);
-      iVar1 = I_stricmp(param_2,local_bc);
+  retval = false;
+  if (uid != (ulong64 *)0x0) {
+    friendBuf[0] = '\0';
+    friendBuf[1] = '\0';
+    friendBuf[2] = '\0';
+    friendBuf[3] = '\0';
+    friendBuf[4] = '\0';
+    friendBuf[5] = '\0';
+    friendBuf[6] = '\0';
+    friendBuf[7] = '\0';
+    friendBuf[8] = '\0';
+    friendBuf[9] = '\0';
+    friendBuf[10] = '\0';
+    friendBuf[0xb] = '\0';
+    friendBuf[0xc] = '\0';
+    friendBuf[0xd] = '\0';
+    friendBuf[0xe] = '\0';
+    friendBuf[0xf] = '\0';
+    friendBuf[0x10] = '\0';
+    friendBuf[0x11] = '\0';
+    friendBuf[0x12] = '\0';
+    friendBuf[0x13] = '\0';
+    friendBuf[0x14] = '\0';
+    friendBuf[0x15] = '\0';
+    friendBuf[0x16] = '\0';
+    friendBuf[0x17] = '\0';
+    friendBuf[0x18] = '\0';
+    friendBuf[0x19] = '\0';
+    friendBuf[0x1a] = '\0';
+    friendBuf[0x1b] = '\0';
+    friendBuf[0x1c] = '\0';
+    friendBuf[0x1d] = '\0';
+    friendBuf[0x1e] = '\0';
+    friendBuf[0x1f] = 0;
+    for (i = 0; iVar1 = _GetNumFriends<4>(), i < iVar1; i = i + 1) {
+      _GetFriendPersonaName<4>(i,friendBuf,0x20);
+      iVar1 = I_stricmp(friendName,friendBuf);
       if (iVar1 == 0) {
-        uVar2 = _GetFriendXuid<4>(local_c0);
-        *param_3 = uVar2;
+        uVar2 = _GetFriendXuid<4>(i);
+        *uid = uVar2;
         return true;
       }
-      local_14 = _GetFriendXuid<4>(local_c0);
-      XUIDToString(&local_14,local_bc + 0x20);
-      iVar1 = I_stricmp(param_2,local_bc);
+      tmpXuid = _GetFriendXuid<4>(i);
+      XUIDToString(&tmpXuid,friendBuf + 0x20);
+      iVar1 = I_stricmp(friendName,friendBuf);
       if (iVar1 == 0) {
-        *(undefined4 *)param_3 = (undefined4)local_14;
-        *(undefined4 *)((int)param_3 + 4) = local_14._4_4_;
+        *(undefined4 *)uid = (undefined4)tmpXuid;
+        *(undefined4 *)((int)uid + 4) = tmpXuid._4_4_;
         return true;
       }
     }
   }
-  return (bool)local_5;
+  return retval;
 }
 
 
@@ -490,18 +494,18 @@ bool __cdecl Friend_GetByName(int param_1,char *param_2,ulong64 *param_3)
 void __cdecl Friends_GetPeopleOnServer(void)
 
 {
-  char local_54;
+  char buf;
   uchar local_53 [67];
   uint local_10;
-  int local_c;
-  int local_8;
+  int i;
+  int numPeople;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = _GetNumFriends<16>();
-  for (local_c = 0; local_c < local_8; local_c = local_c + 1) {
-    local_54 = '\0';
+  numPeople = _GetNumFriends<16>();
+  for (i = 0; i < numPeople; i = i + 1) {
+    buf = '\0';
     memset(local_53,'\0',0x3f);
-    _GetFriendPersonaName<16>(local_c,&local_54,0x40);
+    _GetFriendPersonaName<16>(i,&buf,0x40);
     Com_Printf(0x17,"%s\n");
   }
   return;
@@ -533,27 +537,27 @@ void __cdecl Friends_Init(void)
 
 // 009661B0  Live_GetRecentPlayerName  (live/live_friends_pc.cpp:278)
 
-void __cdecl Live_GetRecentPlayerName(ulong64 param_1,char *param_2,int param_3)
+void __cdecl Live_GetRecentPlayerName(ulong64 uid,char *buf,int bufsize)
 
 {
-  _GetFriendPersonaNameByXuid<4>(param_1,param_2,param_3);
+  _GetFriendPersonaNameByXuid<4>(uid,buf,bufsize);
   return;
 }
 
 
 // 00966230  _GetSortedFriendIndex  (live/live_friends_pc.cpp:290)
 
-int __cdecl _GetSortedFriendIndex(int param_1)
+int __cdecl _GetSortedFriendIndex(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   LiveSteam_PersonaState LVar4;
-  ulong64 uVar5;
-  int local_10;
-  int local_c;
-  int local_8;
+  ulong64 xuid;
+  int i;
+  int onlineInsertIndex;
+  int offlineInsertIndex;
   
   if (g_sortedFriendsListDirty) {
     g_sortedNumFriends = LiveSteam_GetNumFriends();
@@ -564,23 +568,23 @@ int __cdecl _GetSortedFriendIndex(int param_1)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_c = 0;
-    local_8 = g_sortedNumFriends + -1;
-    for (local_10 = 0; local_10 < g_sortedNumFriends; local_10 = local_10 + 1) {
-      uVar5 = _GetFriendXuid<4>(local_10);
-      LVar4 = LiveSteam_GetFriendPersonaState(uVar5);
+    onlineInsertIndex = 0;
+    offlineInsertIndex = g_sortedNumFriends + -1;
+    for (i = 0; i < g_sortedNumFriends; i = i + 1) {
+      xuid = _GetFriendXuid<4>(i);
+      LVar4 = LiveSteam_GetFriendPersonaState(xuid);
       if (((int)LVar4 < 1) || (3 < (int)LVar4)) {
-        g_sortedFriendsRedirect[local_8] = local_10;
-        local_8 = local_8 + -1;
+        g_sortedFriendsRedirect[offlineInsertIndex] = i;
+        offlineInsertIndex = offlineInsertIndex + -1;
       }
       else {
-        g_sortedFriendsRedirect[local_c] = local_10;
-        local_c = local_c + 1;
+        g_sortedFriendsRedirect[onlineInsertIndex] = i;
+        onlineInsertIndex = onlineInsertIndex + 1;
       }
     }
     g_sortedFriendsListDirty = false;
   }
-  return g_sortedFriendsRedirect[param_1];
+  return g_sortedFriendsRedirect[index];
 }
 
 

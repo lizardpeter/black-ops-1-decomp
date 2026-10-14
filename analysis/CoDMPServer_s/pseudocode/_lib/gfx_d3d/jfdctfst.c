@@ -2,6 +2,8 @@
 
 // 0087F330  jpeg_fdct_ifast  (jpeg-6/jfdctfst.c:115)
 
+/* WARNING: Variable defined which should be unmapped: tmp2 */
+
 void __cdecl jpeg_fdct_ifast(int *param_1)
 
 {
@@ -15,6 +17,11 @@ void __cdecl jpeg_fdct_ifast(int *param_1)
   int iVar8;
   int iVar9;
   int iVar10;
+  int *data;
+  int tmp2;
+  int tmp3;
+  int tmp4;
+  int tmp5;
   int local_4;
   
   piVar1 = param_1 + 2;

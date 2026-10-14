@@ -2,21 +2,21 @@
 
 // 00C1085D  _isalpha_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:57)
 
-int __cdecl _isalpha_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isalpha_l(int c,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-    uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1] & 0x103;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+    uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c] & 0x103;
   }
   else {
-    uVar1 = _isctype_l(param_1,0x103,&local_14.localeinfo);
+    uVar1 = _isctype_l(c,0x103,&_loc_update.localeinfo);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1;
 }
@@ -24,36 +24,36 @@ int __cdecl _isalpha_l(int param_1,localeinfo_struct *param_2)
 
 // 00C108B3  isalpha  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:66)
 
-int __cdecl isalpha(int param_1)
+int __cdecl isalpha(int c)
 
 {
   int iVar1;
   
   if (__locale_changed == 0) {
-    return __initiallocinfo.pctype[param_1] & 0x103;
+    return __initiallocinfo.pctype[c] & 0x103;
   }
-  iVar1 = _isalpha_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isalpha_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 
 
 // 00C108E3  _isdigit_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:129)
 
-int __cdecl _isdigit_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isdigit_l(int c,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-    uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1] & 4;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+    uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c] & 4;
   }
   else {
-    uVar1 = _isctype_l(param_1,4,&local_14.localeinfo);
+    uVar1 = _isctype_l(c,4,&_loc_update.localeinfo);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1;
 }
@@ -61,36 +61,36 @@ int __cdecl _isdigit_l(int param_1,localeinfo_struct *param_2)
 
 // 00C10934  isdigit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:138)
 
-int __cdecl isdigit(int param_1)
+int __cdecl isdigit(int c)
 
 {
   int iVar1;
   
   if (__locale_changed == 0) {
-    return __initiallocinfo.pctype[param_1] & 4;
+    return __initiallocinfo.pctype[c] & 4;
   }
-  iVar1 = _isdigit_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isdigit_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 
 
 // 00C10962  _isxdigit_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:153)
 
-int __cdecl _isxdigit_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isxdigit_l(int c,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-    uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1] & 0x80;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+    uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c] & 0x80;
   }
   else {
-    uVar1 = _isctype_l(param_1,0x80,&local_14.localeinfo);
+    uVar1 = _isctype_l(c,0x80,&_loc_update.localeinfo);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1;
 }
@@ -98,36 +98,36 @@ int __cdecl _isxdigit_l(int param_1,localeinfo_struct *param_2)
 
 // 00C109B8  isxdigit  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:162)
 
-int __cdecl isxdigit(int param_1)
+int __cdecl isxdigit(int c)
 
 {
   int iVar1;
   
   if (__locale_changed == 0) {
-    return __initiallocinfo.pctype[param_1] & 0x80;
+    return __initiallocinfo.pctype[c] & 0x80;
   }
-  iVar1 = _isxdigit_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isxdigit_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 
 
 // 00C109E8  _isspace_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:177)
 
-int __cdecl _isspace_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isspace_l(int c,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-    uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1] & 8;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+    uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c] & 8;
   }
   else {
-    uVar1 = _isctype_l(param_1,8,&local_14.localeinfo);
+    uVar1 = _isctype_l(c,8,&_loc_update.localeinfo);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1;
 }
@@ -135,36 +135,36 @@ int __cdecl _isspace_l(int param_1,localeinfo_struct *param_2)
 
 // 00C10A39  isspace  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:186)
 
-int __cdecl isspace(int param_1)
+int __cdecl isspace(int c)
 
 {
   int iVar1;
   
   if (__locale_changed == 0) {
-    return __initiallocinfo.pctype[param_1] & 8;
+    return __initiallocinfo.pctype[c] & 8;
   }
-  iVar1 = _isspace_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isspace_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 
 
 // 00C10A67  _isalnum_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:225)
 
-int __cdecl _isalnum_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isalnum_l(int c,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-    uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1] & 0x107;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+    uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c] & 0x107;
   }
   else {
-    uVar1 = _isctype_l(param_1,0x107,&local_14.localeinfo);
+    uVar1 = _isctype_l(c,0x107,&_loc_update.localeinfo);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1;
 }
@@ -172,36 +172,36 @@ int __cdecl _isalnum_l(int param_1,localeinfo_struct *param_2)
 
 // 00C10ABD  isalnum  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:234)
 
-int __cdecl isalnum(int param_1)
+int __cdecl isalnum(int c)
 
 {
   int iVar1;
   
   if (__locale_changed == 0) {
-    return __initiallocinfo.pctype[param_1] & 0x107;
+    return __initiallocinfo.pctype[c] & 0x107;
   }
-  iVar1 = _isalnum_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isalnum_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 
 
 // 00C10AED  _isprint_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:249)
 
-int __cdecl _isprint_l(int param_1,localeinfo_struct *param_2)
+int __cdecl _isprint_l(int c,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-    uVar1 = (local_14.localeinfo.locinfo)->pctype[param_1] & 0x157;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+    uVar1 = (_loc_update.localeinfo.locinfo)->pctype[c] & 0x157;
   }
   else {
-    uVar1 = _isctype_l(param_1,0x157,&local_14.localeinfo);
+    uVar1 = _isctype_l(c,0x157,&_loc_update.localeinfo);
   }
-  if (local_14.updated != false) {
-    (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+  if (_loc_update.updated != false) {
+    (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
   }
   return uVar1;
 }
@@ -209,15 +209,15 @@ int __cdecl _isprint_l(int param_1,localeinfo_struct *param_2)
 
 // 00C10B43  isprint  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/_ctype.c:258)
 
-int __cdecl isprint(int param_1)
+int __cdecl isprint(int c)
 
 {
   int iVar1;
   
   if (__locale_changed == 0) {
-    return __initiallocinfo.pctype[param_1] & 0x157;
+    return __initiallocinfo.pctype[c] & 0x157;
   }
-  iVar1 = _isprint_l(param_1,(localeinfo_struct *)0x0);
+  iVar1 = _isprint_l(c,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

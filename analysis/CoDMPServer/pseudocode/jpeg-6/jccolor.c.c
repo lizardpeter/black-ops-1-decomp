@@ -2,25 +2,27 @@
 
 // 00B61DA0  rgb_ycc_start  (jpeg-6/jccolor.c:87)
 
-void __cdecl rgb_ycc_start(jpeg_compress_struct *param_1)
+void __cdecl rgb_ycc_start(jpeg_compress_struct *cinfo)
 
 {
   jpeg_color_converter *pjVar1;
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var2;
-  int local_8;
+  long *rgb_ycc_tab;
+  my_color_converter *cconvert;
+  long i;
   
-  pjVar1 = param_1->cconvert;
-  p_Var2 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x2000);
+  pjVar1 = cinfo->cconvert;
+  p_Var2 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x2000);
   pjVar1[1].start_pass = p_Var2;
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
-    *(int *)(p_Var2 + local_8 * 4) = local_8 * 0x4c8b;
-    *(int *)(p_Var2 + local_8 * 4 + 0x400) = local_8 * 0x9646;
-    *(int *)(p_Var2 + local_8 * 4 + 0x800) = local_8 * 0x1d2f + 0x8000;
-    *(int *)(p_Var2 + local_8 * 4 + 0xc00) = local_8 * -0x2b33;
-    *(int *)(p_Var2 + local_8 * 4 + 0x1000) = local_8 * -0x54cd;
-    *(int *)(p_Var2 + local_8 * 4 + 0x1400) = local_8 * 0x8000 + 0x807fff;
-    *(int *)(p_Var2 + local_8 * 4 + 0x1800) = local_8 * -0x6b2f;
-    *(int *)(p_Var2 + local_8 * 4 + 0x1c00) = local_8 * -0x14d1;
+  for (i = 0; i < 0x100; i = i + 1) {
+    *(long *)(p_Var2 + i * 4) = i * 0x4c8b;
+    *(long *)(p_Var2 + i * 4 + 0x400) = i * 0x9646;
+    *(long *)(p_Var2 + i * 4 + 0x800) = i * 0x1d2f + 0x8000;
+    *(long *)(p_Var2 + i * 4 + 0xc00) = i * -0x2b33;
+    *(long *)(p_Var2 + i * 4 + 0x1000) = i * -0x54cd;
+    *(long *)(p_Var2 + i * 4 + 0x1400) = i * 0x8000 + 0x807fff;
+    *(long *)(p_Var2 + i * 4 + 0x1800) = i * -0x6b2f;
+    *(long *)(p_Var2 + i * 4 + 0x1c00) = i * -0x14d1;
   }
   return;
 }
@@ -29,8 +31,8 @@ void __cdecl rgb_ycc_start(jpeg_compress_struct *param_1)
 // 00B61EC0  rgb_ycc_convert  (jpeg-6/jccolor.c:133)
 
 void __cdecl
-rgb_ycc_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,uint param_4,
-               int param_5)
+rgb_ycc_convert(jpeg_compress_struct *cinfo,uchar **input_buf,uchar ***output_buf,uint output_row,
+               int num_rows)
 
 {
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var1;
@@ -41,34 +43,41 @@ rgb_ycc_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,u
   uint uVar6;
   uint uVar7;
   uint uVar8;
-  byte *local_14;
-  uint local_8;
+  uchar *outptr0;
+  uchar *outptr1;
+  int r;
+  int g;
+  int b;
+  my_color_converter *cconvert;
+  long *ctab;
+  uchar *inptr;
+  uchar *outptr2;
+  uint num_cols;
+  uint col;
   
-  p_Var1 = param_1->cconvert[1].start_pass;
-  uVar2 = param_1->image_width;
-  while (param_5 = param_5 + -1, -1 < param_5) {
-    local_14 = *param_2;
-    param_2 = param_2 + 1;
-    puVar3 = (*param_3)[param_4];
-    puVar4 = param_3[1][param_4];
-    puVar5 = param_3[2][param_4];
-    param_4 = param_4 + 1;
-    for (local_8 = 0; local_8 < uVar2; local_8 = local_8 + 1) {
-      uVar8 = (uint)local_14[2];
-      uVar7 = (uint)local_14[1];
-      uVar6 = (uint)*local_14;
-      local_14 = local_14 + 3;
-      puVar3[local_8] =
-           (uchar)((uint)(*(int *)(p_Var1 + uVar8 * 4) + *(int *)(p_Var1 + uVar7 * 4 + 0x400) +
-                         *(int *)(p_Var1 + uVar6 * 4 + 0x800)) >> 0x10);
-      puVar4[local_8] =
-           (uchar)((uint)(*(int *)(p_Var1 + uVar8 * 4 + 0xc00) +
-                          *(int *)(p_Var1 + uVar7 * 4 + 0x1000) +
-                         *(int *)(p_Var1 + uVar6 * 4 + 0x1400)) >> 0x10);
-      puVar5[local_8] =
-           (uchar)((uint)(*(int *)(p_Var1 + uVar8 * 4 + 0x1400) +
-                          *(int *)(p_Var1 + uVar7 * 4 + 0x1800) +
-                         *(int *)(p_Var1 + uVar6 * 4 + 0x1c00)) >> 0x10);
+  p_Var1 = cinfo->cconvert[1].start_pass;
+  uVar2 = cinfo->image_width;
+  while (num_rows = num_rows + -1, -1 < num_rows) {
+    inptr = *input_buf;
+    input_buf = input_buf + 1;
+    puVar3 = (*output_buf)[output_row];
+    puVar4 = output_buf[1][output_row];
+    puVar5 = output_buf[2][output_row];
+    output_row = output_row + 1;
+    for (col = 0; col < uVar2; col = col + 1) {
+      uVar8 = (uint)inptr[2];
+      uVar7 = (uint)inptr[1];
+      uVar6 = (uint)*inptr;
+      inptr = inptr + 3;
+      puVar3[col] = (uchar)((uint)(*(int *)(p_Var1 + uVar8 * 4) +
+                                   *(int *)(p_Var1 + uVar7 * 4 + 0x400) +
+                                  *(int *)(p_Var1 + uVar6 * 4 + 0x800)) >> 0x10);
+      puVar4[col] = (uchar)((uint)(*(int *)(p_Var1 + uVar8 * 4 + 0xc00) +
+                                   *(int *)(p_Var1 + uVar7 * 4 + 0x1000) +
+                                  *(int *)(p_Var1 + uVar6 * 4 + 0x1400)) >> 0x10);
+      puVar5[col] = (uchar)((uint)(*(int *)(p_Var1 + uVar8 * 4 + 0x1400) +
+                                   *(int *)(p_Var1 + uVar7 * 4 + 0x1800) +
+                                  *(int *)(p_Var1 + uVar6 * 4 + 0x1c00)) >> 0x10);
     }
   }
   return;
@@ -78,8 +87,8 @@ rgb_ycc_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,u
 // 00B62020  rgb_gray_convert  (jpeg-6/jccolor.c:189)
 
 void __cdecl
-rgb_gray_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,uint param_4,
-                int param_5)
+rgb_gray_convert(jpeg_compress_struct *cinfo,uchar **input_buf,uchar ***output_buf,uint output_row,
+                int num_rows)
 
 {
   byte *pbVar1;
@@ -88,25 +97,31 @@ rgb_gray_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var4;
   uint uVar5;
   uchar *puVar6;
-  byte *local_10;
-  uint local_8;
+  int r;
+  uchar *outptr;
+  int g;
+  int b;
+  my_color_converter *cconvert;
+  long *ctab;
+  uchar *inptr;
+  uint num_cols;
+  uint col;
   
-  p_Var4 = param_1->cconvert[1].start_pass;
-  uVar5 = param_1->image_width;
-  while (param_5 = param_5 + -1, -1 < param_5) {
-    local_10 = *param_2;
-    param_2 = param_2 + 1;
-    puVar6 = (*param_3)[param_4];
-    param_4 = param_4 + 1;
-    for (local_8 = 0; local_8 < uVar5; local_8 = local_8 + 1) {
-      pbVar1 = local_10 + 2;
-      pbVar2 = local_10 + 1;
-      bVar3 = *local_10;
-      local_10 = local_10 + 3;
-      puVar6[local_8] =
-           (uchar)((uint)(*(int *)(p_Var4 + (uint)*pbVar1 * 4) +
-                          *(int *)(p_Var4 + (uint)*pbVar2 * 4 + 0x400) +
-                         *(int *)(p_Var4 + (uint)bVar3 * 4 + 0x800)) >> 0x10);
+  p_Var4 = cinfo->cconvert[1].start_pass;
+  uVar5 = cinfo->image_width;
+  while (num_rows = num_rows + -1, -1 < num_rows) {
+    inptr = *input_buf;
+    input_buf = input_buf + 1;
+    puVar6 = (*output_buf)[output_row];
+    output_row = output_row + 1;
+    for (col = 0; col < uVar5; col = col + 1) {
+      pbVar1 = inptr + 2;
+      pbVar2 = inptr + 1;
+      bVar3 = *inptr;
+      inptr = inptr + 3;
+      puVar6[col] = (uchar)((uint)(*(int *)(p_Var4 + (uint)*pbVar1 * 4) +
+                                   *(int *)(p_Var4 + (uint)*pbVar2 * 4 + 0x400) +
+                                  *(int *)(p_Var4 + (uint)bVar3 * 4 + 0x800)) >> 0x10);
     }
   }
   return;
@@ -116,8 +131,8 @@ rgb_gray_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,
 // 00B62100  cmyk_ycck_convert  (jpeg-6/jccolor.c:228)
 
 void __cdecl
-cmyk_ycck_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,uint param_4,
-                 int param_5)
+cmyk_ycck_convert(jpeg_compress_struct *cinfo,uchar **input_buf,uchar ***output_buf,uint output_row,
+                 int num_rows)
 
 {
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var1;
@@ -129,36 +144,44 @@ cmyk_ycck_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3
   int iVar7;
   int iVar8;
   int iVar9;
-  byte *local_14;
-  uint local_8;
+  uchar *outptr0;
+  uchar *outptr1;
+  uchar *outptr3;
+  int r;
+  int g;
+  int b;
+  my_color_converter *cconvert;
+  long *ctab;
+  uchar *inptr;
+  uchar *outptr2;
+  uint num_cols;
+  uint col;
   
-  p_Var1 = param_1->cconvert[1].start_pass;
-  uVar2 = param_1->image_width;
-  while (param_5 = param_5 + -1, -1 < param_5) {
-    local_14 = *param_2;
-    param_2 = param_2 + 1;
-    puVar3 = (*param_3)[param_4];
-    puVar4 = param_3[1][param_4];
-    puVar5 = param_3[2][param_4];
-    puVar6 = param_3[3][param_4];
-    param_4 = param_4 + 1;
-    for (local_8 = 0; local_8 < uVar2; local_8 = local_8 + 1) {
-      iVar7 = 0xff - (uint)*local_14;
-      iVar8 = 0xff - (uint)local_14[1];
-      iVar9 = 0xff - (uint)local_14[2];
-      puVar6[local_8] = local_14[3];
-      local_14 = local_14 + 4;
-      puVar3[local_8] =
-           (uchar)((uint)(*(int *)(p_Var1 + iVar7 * 4) + *(int *)(p_Var1 + iVar8 * 4 + 0x400) +
-                         *(int *)(p_Var1 + iVar9 * 4 + 0x800)) >> 0x10);
-      puVar4[local_8] =
-           (uchar)((uint)(*(int *)(p_Var1 + iVar7 * 4 + 0xc00) +
-                          *(int *)(p_Var1 + iVar8 * 4 + 0x1000) +
-                         *(int *)(p_Var1 + iVar9 * 4 + 0x1400)) >> 0x10);
-      puVar5[local_8] =
-           (uchar)((uint)(*(int *)(p_Var1 + iVar7 * 4 + 0x1400) +
-                          *(int *)(p_Var1 + iVar8 * 4 + 0x1800) +
-                         *(int *)(p_Var1 + iVar9 * 4 + 0x1c00)) >> 0x10);
+  p_Var1 = cinfo->cconvert[1].start_pass;
+  uVar2 = cinfo->image_width;
+  while (num_rows = num_rows + -1, -1 < num_rows) {
+    inptr = *input_buf;
+    input_buf = input_buf + 1;
+    puVar3 = (*output_buf)[output_row];
+    puVar4 = output_buf[1][output_row];
+    puVar5 = output_buf[2][output_row];
+    puVar6 = output_buf[3][output_row];
+    output_row = output_row + 1;
+    for (col = 0; col < uVar2; col = col + 1) {
+      iVar7 = 0xff - (uint)*inptr;
+      iVar8 = 0xff - (uint)inptr[1];
+      iVar9 = 0xff - (uint)inptr[2];
+      puVar6[col] = inptr[3];
+      inptr = inptr + 4;
+      puVar3[col] = (uchar)((uint)(*(int *)(p_Var1 + iVar7 * 4) +
+                                   *(int *)(p_Var1 + iVar8 * 4 + 0x400) +
+                                  *(int *)(p_Var1 + iVar9 * 4 + 0x800)) >> 0x10);
+      puVar4[col] = (uchar)((uint)(*(int *)(p_Var1 + iVar7 * 4 + 0xc00) +
+                                   *(int *)(p_Var1 + iVar8 * 4 + 0x1000) +
+                                  *(int *)(p_Var1 + iVar9 * 4 + 0x1400)) >> 0x10);
+      puVar5[col] = (uchar)((uint)(*(int *)(p_Var1 + iVar7 * 4 + 0x1400) +
+                                   *(int *)(p_Var1 + iVar8 * 4 + 0x1800) +
+                                  *(int *)(p_Var1 + iVar9 * 4 + 0x1c00)) >> 0x10);
     }
   }
   return;
@@ -168,26 +191,29 @@ cmyk_ycck_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3
 // 00B62290  grayscale_convert  (jpeg-6/jccolor.c:283)
 
 void __cdecl
-grayscale_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,uint param_4,
-                 int param_5)
+grayscale_convert(jpeg_compress_struct *cinfo,uchar **input_buf,uchar ***output_buf,uint output_row,
+                 int num_rows)
 
 {
   uint uVar1;
   int iVar2;
   uchar *puVar3;
-  uchar *local_14;
-  uint local_8;
+  uchar *outptr;
+  uchar *inptr;
+  int instride;
+  uint num_cols;
+  uint col;
   
-  uVar1 = param_1->image_width;
-  iVar2 = param_1->input_components;
-  while (param_5 = param_5 + -1, -1 < param_5) {
-    local_14 = *param_2;
-    param_2 = param_2 + 1;
-    puVar3 = (*param_3)[param_4];
-    param_4 = param_4 + 1;
-    for (local_8 = 0; local_8 < uVar1; local_8 = local_8 + 1) {
-      puVar3[local_8] = *local_14;
-      local_14 = local_14 + iVar2;
+  uVar1 = cinfo->image_width;
+  iVar2 = cinfo->input_components;
+  while (num_rows = num_rows + -1, -1 < num_rows) {
+    inptr = *input_buf;
+    input_buf = input_buf + 1;
+    puVar3 = (*output_buf)[output_row];
+    output_row = output_row + 1;
+    for (col = 0; col < uVar1; col = col + 1) {
+      puVar3[col] = *inptr;
+      inptr = inptr + iVar2;
     }
   }
   return;
@@ -197,30 +223,33 @@ grayscale_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3
 // 00B62320  null_convert  (jpeg-6/jccolor.c:312)
 
 void __cdecl
-null_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,uint param_4,int param_5
-            )
+null_convert(jpeg_compress_struct *cinfo,uchar **input_buf,uchar ***output_buf,uint output_row,
+            int num_rows)
 
 {
   int iVar1;
   uint uVar2;
   uchar *puVar3;
-  uchar *local_14;
-  int local_10;
-  uint local_8;
+  uchar *outptr;
+  int nc;
+  uchar *inptr;
+  int ci;
+  uint num_cols;
+  uint col;
   
-  iVar1 = param_1->num_components;
-  uVar2 = param_1->image_width;
-  while (param_5 = param_5 + -1, -1 < param_5) {
-    for (local_10 = 0; local_10 < iVar1; local_10 = local_10 + 1) {
-      local_14 = *param_2;
-      puVar3 = param_3[local_10][param_4];
-      for (local_8 = 0; local_8 < uVar2; local_8 = local_8 + 1) {
-        puVar3[local_8] = local_14[local_10];
-        local_14 = local_14 + iVar1;
+  iVar1 = cinfo->num_components;
+  uVar2 = cinfo->image_width;
+  while (num_rows = num_rows + -1, -1 < num_rows) {
+    for (ci = 0; ci < iVar1; ci = ci + 1) {
+      inptr = *input_buf;
+      puVar3 = output_buf[ci][output_row];
+      for (col = 0; col < uVar2; col = col + 1) {
+        puVar3[col] = inptr[ci];
+        inptr = inptr + iVar1;
       }
     }
-    param_2 = param_2 + 1;
-    param_4 = param_4 + 1;
+    input_buf = input_buf + 1;
+    output_row = output_row + 1;
   }
   return;
 }
@@ -228,127 +257,128 @@ null_convert(jpeg_compress_struct *param_1,uchar **param_2,uchar ***param_3,uint
 
 // 00B619E0  jinit_color_converter  (jpeg-6/jccolor.c:353)
 
-void __cdecl jinit_color_converter(jpeg_compress_struct *param_1)
+void __cdecl jinit_color_converter(jpeg_compress_struct *cinfo)
 
 {
   jpeg_color_converter *pjVar1;
+  my_color_converter *cconvert;
   
-  pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0xc);
-  param_1->cconvert = pjVar1;
+  pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0xc);
+  cinfo->cconvert = pjVar1;
   pjVar1->start_pass = GamerProfile_WriteSettings;
-  switch(param_1->in_color_space) {
+  switch(cinfo->in_color_space) {
   case JCS_GRAYSCALE:
-    if (param_1->input_components != 1) {
-      param_1->err->msg_code = 9;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->input_components != 1) {
+      cinfo->err->msg_code = 9;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   case JCS_RGB:
   case JCS_YCbCr:
-    if (param_1->input_components != 3) {
-      param_1->err->msg_code = 9;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->input_components != 3) {
+      cinfo->err->msg_code = 9;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   case JCS_CMYK:
   case JCS_YCCK:
-    if (param_1->input_components != 4) {
-      param_1->err->msg_code = 9;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->input_components != 4) {
+      cinfo->err->msg_code = 9;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   default:
-    if (param_1->input_components < 1) {
-      param_1->err->msg_code = 9;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->input_components < 1) {
+      cinfo->err->msg_code = 9;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
   }
-  switch(param_1->jpeg_color_space) {
+  switch(cinfo->jpeg_color_space) {
   case JCS_GRAYSCALE:
-    if (param_1->num_components != 1) {
-      param_1->err->msg_code = 10;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->num_components != 1) {
+      cinfo->err->msg_code = 10;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->in_color_space == JCS_GRAYSCALE) {
+    if (cinfo->in_color_space == JCS_GRAYSCALE) {
       pjVar1->color_convert = grayscale_convert;
     }
-    else if (param_1->in_color_space == JCS_RGB) {
+    else if (cinfo->in_color_space == JCS_RGB) {
       pjVar1->start_pass = rgb_ycc_start;
       pjVar1->color_convert = rgb_gray_convert;
     }
-    else if (param_1->in_color_space == JCS_YCbCr) {
+    else if (cinfo->in_color_space == JCS_YCbCr) {
       pjVar1->color_convert = grayscale_convert;
     }
     else {
-      param_1->err->msg_code = 0x1b;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x1b;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   case JCS_RGB:
-    if (param_1->num_components != 3) {
-      param_1->err->msg_code = 10;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->num_components != 3) {
+      cinfo->err->msg_code = 10;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->in_color_space == JCS_RGB) {
+    if (cinfo->in_color_space == JCS_RGB) {
       pjVar1->color_convert = null_convert;
     }
     else {
-      param_1->err->msg_code = 0x1b;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x1b;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   case JCS_YCbCr:
-    if (param_1->num_components != 3) {
-      param_1->err->msg_code = 10;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->num_components != 3) {
+      cinfo->err->msg_code = 10;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->in_color_space == JCS_RGB) {
+    if (cinfo->in_color_space == JCS_RGB) {
       pjVar1->start_pass = rgb_ycc_start;
       pjVar1->color_convert = rgb_ycc_convert;
     }
-    else if (param_1->in_color_space == JCS_YCbCr) {
+    else if (cinfo->in_color_space == JCS_YCbCr) {
       pjVar1->color_convert = null_convert;
     }
     else {
-      param_1->err->msg_code = 0x1b;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x1b;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   case JCS_CMYK:
-    if (param_1->num_components != 4) {
-      param_1->err->msg_code = 10;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->num_components != 4) {
+      cinfo->err->msg_code = 10;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->in_color_space == JCS_CMYK) {
+    if (cinfo->in_color_space == JCS_CMYK) {
       pjVar1->color_convert = null_convert;
     }
     else {
-      param_1->err->msg_code = 0x1b;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x1b;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   case JCS_YCCK:
-    if (param_1->num_components != 4) {
-      param_1->err->msg_code = 10;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if (cinfo->num_components != 4) {
+      cinfo->err->msg_code = 10;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->in_color_space == JCS_CMYK) {
+    if (cinfo->in_color_space == JCS_CMYK) {
       pjVar1->start_pass = rgb_ycc_start;
       pjVar1->color_convert = cmyk_ycck_convert;
     }
-    else if (param_1->in_color_space == JCS_YCCK) {
+    else if (cinfo->in_color_space == JCS_YCCK) {
       pjVar1->color_convert = null_convert;
     }
     else {
-      param_1->err->msg_code = 0x1b;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x1b;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     break;
   default:
-    if ((param_1->jpeg_color_space != param_1->in_color_space) ||
-       (param_1->num_components != param_1->input_components)) {
-      param_1->err->msg_code = 0x1b;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    if ((cinfo->jpeg_color_space != cinfo->in_color_space) ||
+       (cinfo->num_components != cinfo->input_components)) {
+      cinfo->err->msg_code = 0x1b;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     pjVar1->color_convert = null_convert;
   }

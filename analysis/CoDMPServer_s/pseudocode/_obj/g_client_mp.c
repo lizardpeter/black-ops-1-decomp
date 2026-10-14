@@ -336,74 +336,74 @@ char * __cdecl ClientConnect(int param_1,uint param_2)
   int unaff_EBP;
   int iVar4;
   char *unaff_ESI;
-  uchar *puVar5;
+  uchar *dst;
   gentity_s *unaff_EDI;
-  uchar *puVar6;
+  uchar *dst_00;
   
   if ((1 < (g_connectpaths->current).integer) && (param_1 == 0)) {
     Path_InitPaths();
   }
-  puVar5 = (uchar *)(param_1 * 0x2a28 + _level);
+  dst = (uchar *)(param_1 * 0x2a28 + _level);
   iVar4 = param_1 * 0x2f8;
   FUN_00554dd0();
-  memset(puVar5,'\0',0x2a28);
-  puVar6 = &DAT_01c44c00 + param_1 * 0x5d0;
+  memset(dst,'\0',0x2a28);
+  dst_00 = &DAT_01c44c00 + param_1 * 0x5d0;
   uVar1 = (&DAT_01c4513c)[param_1 * 0x174];
-  memset(puVar6,'\0',0x5d0);
+  memset(dst_00,'\0',0x5d0);
   (&DAT_01c4513c)[param_1 * 0x174] = uVar1;
-  puVar6[0] = '\x01';
-  puVar6[1] = '\0';
-  puVar6[2] = '\0';
-  puVar6[3] = '\0';
+  dst_00[0] = '\x01';
+  dst_00[1] = '\0';
+  dst_00[2] = '\0';
+  dst_00[3] = '\0';
   *(undefined4 *)(param_1 * 0x5d0 + 0x1c44c04) = 1;
-  puVar5[0x2700] = '\x01';
-  puVar5[0x2701] = '\0';
-  puVar5[0x2702] = '\0';
-  puVar5[0x2703] = '\0';
-  *(uint *)(puVar5 + 0x26fc) = param_2;
-  puVar5[0x27bc] = '\0';
-  puVar5[0x27bd] = '\0';
-  puVar5[0x27be] = '\0';
-  puVar5[0x27bf] = '\0';
-  puVar5[0x26e8] = '\x02';
-  puVar5[0x26e9] = '\0';
-  puVar5[0x26ea] = '\0';
-  puVar5[0x26eb] = '\0';
-  puVar5[0x28e0] = 0xff;
-  puVar5[0x28e1] = 0xff;
-  puVar5[0x28e2] = 0xff;
-  puVar5[0x28e3] = 0xff;
-  puVar5[0x26ec] = 0xff;
-  puVar5[0x26ed] = 0xff;
-  puVar5[0x26ee] = 0xff;
-  puVar5[0x26ef] = 0xff;
-  puVar5[0x26f0] = 0xff;
-  puVar5[0x26f1] = 0xff;
-  puVar5[0x26f2] = 0xff;
-  puVar5[0x26f3] = 0xff;
-  puVar5[0x26f4] = 0xff;
-  puVar5[0x26f5] = 0xff;
-  puVar5[0x26f6] = 0xff;
-  puVar5[0x26f7] = 0xff;
+  dst[0x2700] = '\x01';
+  dst[0x2701] = '\0';
+  dst[0x2702] = '\0';
+  dst[0x2703] = '\0';
+  *(uint *)(dst + 0x26fc) = param_2;
+  dst[0x27bc] = '\0';
+  dst[0x27bd] = '\0';
+  dst[0x27be] = '\0';
+  dst[0x27bf] = '\0';
+  dst[0x26e8] = '\x02';
+  dst[0x26e9] = '\0';
+  dst[0x26ea] = '\0';
+  dst[0x26eb] = '\0';
+  dst[0x28e0] = 0xff;
+  dst[0x28e1] = 0xff;
+  dst[0x28e2] = 0xff;
+  dst[0x28e3] = 0xff;
+  dst[0x26ec] = 0xff;
+  dst[0x26ed] = 0xff;
+  dst[0x26ee] = 0xff;
+  dst[0x26ef] = 0xff;
+  dst[0x26f0] = 0xff;
+  dst[0x26f1] = 0xff;
+  dst[0x26f2] = 0xff;
+  dst[0x26f3] = 0xff;
+  dst[0x26f4] = 0xff;
+  dst[0x26f5] = 0xff;
+  dst[0x26f6] = 0xff;
+  dst[0x26f7] = 0xff;
   G_InitGentity(unaff_EDI);
   (&DAT_01af97b2)[iVar4] = 0;
-  (&DAT_01af9794)[param_1 * 0xbe] = puVar5;
+  (&DAT_01af9794)[param_1 * 0xbe] = dst;
   (&DAT_01af9725)[iVar4] = (uchar)param_1;
-  *(int *)(puVar5 + 0x27b8) = param_1;
-  puVar5[0x130] = (uchar)param_1;
-  puVar5[0xd8] = 0xff;
-  puVar5[0xd9] = 0xff;
-  puVar5[0xda] = 0xff;
-  puVar5[0xdb] = 0xff;
-  *(float *)(puVar5 + 0x27a8) = 1.0;
-  *(float *)(puVar5 + 0x4f4) = 1.0;
+  *(int *)(dst + 0x27b8) = param_1;
+  dst[0x130] = (uchar)param_1;
+  dst[0xd8] = 0xff;
+  dst[0xd9] = 0xff;
+  dst[0xda] = 0xff;
+  dst[0xdb] = 0xff;
+  *(float *)(dst + 0x27a8) = 1.0;
+  *(float *)(dst + 0x4f4) = 1.0;
   psVar3 = Sentient_Alloc();
   if (psVar3 == (sentient_s *)0x0) {
     Com_Error(ERR_DROP,"\x15No sentient for player.\n");
   }
   *(sentient_s **)(&DAT_01af979c + iVar4) = psVar3;
   *(gentity_s ***)psVar3 = &g_entities + param_1 * 0xbe;
-  uVar1 = *(undefined4 *)(puVar5 + 0x27bc);
+  uVar1 = *(undefined4 *)(dst + 0x27bc);
   *(undefined4 *)(psVar3 + 0x24) = 0x46000000;
   *(undefined4 *)(psVar3 + 4) = uVar1;
   *(float *)(psVar3 + 0x58) = 1.0;
@@ -458,24 +458,24 @@ void __cdecl ClientSpawn(gentity_s *param_1,float *param_2,float *param_3)
   float fVar1;
   float fVar2;
   float fVar3;
-  int *piVar4;
-  uint uVar5;
-  ushort uVar6;
+  int *dst;
+  uint uVar4;
+  ushort uVar5;
+  int iVar6;
   int iVar7;
-  int iVar8;
-  int *piVar9;
+  int *piVar8;
   uint unaff_ESI;
   gentity_s *unaff_EDI;
-  int *piVar10;
-  gentity_s *pgVar11;
-  usercmd_s *puVar12;
+  int *piVar9;
+  gentity_s *pgVar10;
+  usercmd_s *puVar11;
   int *piStack_214;
   int iStack_210;
   int aiStack_1f8 [126];
   
-  piVar4 = *(int **)(param_1 + 0x144);
-  if (((*(byte *)(piVar4 + 5) & 4) != 0) && ((piVar4[0x38] & 0x300U) != 0)) {
-    G_ClientStopUsingTurret((gentity_s *)((short)piVar4[0x11f] * 0x2f8 + DAT_01c57804));
+  dst = *(int **)(param_1 + 0x144);
+  if (((*(byte *)(dst + 5) & 4) != 0) && ((dst[0x38] & 0x300U) != 0)) {
+    G_ClientStopUsingTurret((gentity_s *)((short)dst[0x11f] * 0x2f8 + DAT_01c57804));
   }
   G_EntUnlink(unaff_EDI);
   if (param_1[0xe0] != (gentity_s)0x0) {
@@ -483,7 +483,7 @@ void __cdecl ClientSpawn(gentity_s *param_1,float *param_2,float *param_3)
   }
   *(int *)(param_1 + 0x74) = *(int *)(param_1 + 0x2e0) + 1;
   *(undefined2 *)(param_1 + 0xc0) = 0x3ff;
-  uVar6 = (ushort)DAT_01c78e0c;
+  uVar5 = (ushort)DAT_01c78e0c;
   if ((ushort)DAT_01c78e0c != 0) {
     LOCK();
     *(int *)(gScrMemTreePub + (uint)(ushort)DAT_01c78e0c * 0x10) =
@@ -493,7 +493,7 @@ void __cdecl ClientSpawn(gentity_s *param_1,float *param_2,float *param_3)
   if (*(short *)(param_1 + 0x164) != 0) {
     SL_RemoveRefToString((scriptInstance_t)unaff_EDI,unaff_ESI);
   }
-  *(ushort *)(param_1 + 0x164) = uVar6;
+  *(ushort *)(param_1 + 0x164) = uVar5;
   param_1[0xe2] = (gentity_s)((byte)param_1[0xe2] | 1);
   *(undefined **)(param_1 + 0x184) = &DAT_02818011;
   param_1[0x15f] = (gentity_s)0x0;
@@ -512,80 +512,80 @@ void __cdecl ClientSpawn(gentity_s *param_1,float *param_2,float *param_3)
   *(undefined1 **)(param_1 + 0xfc) = &DAT_41700000;
   *(undefined1 **)(param_1 + 0x100) = &DAT_41700000;
   *(undefined4 *)(param_1 + 0x104) = 0x428c0000;
-  uVar5 = piVar4[0x38];
-  piVar9 = piVar4 + 0x9ba;
-  piVar10 = aiStack_1f8;
-  for (iVar8 = 0x7e; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *piVar10 = *piVar9;
-    piVar9 = piVar9 + 1;
-    piVar10 = piVar10 + 1;
-  }
-  iVar8 = piVar4[0xa7f];
-  iVar7 = piVar4[0x75];
-  FUN_00554dd0();
-  memset((uchar *)piVar4,'\0',0x2a28);
-  piVar4[0x75] = iVar7 + 1;
-  *(uchar *)(piVar4 + 0x4c) = (uchar)((int)(param_1 + -0x1af9650) / 0x2f8);
-  piVar4[0xa7f] = iVar8;
+  uVar4 = dst[0x38];
+  piVar8 = dst + 0x9ba;
   piVar9 = aiStack_1f8;
-  piVar10 = piVar4 + 0x9ba;
-  for (iVar8 = 0x7e; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *piVar10 = *piVar9;
+  for (iVar7 = 0x7e; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *piVar9 = *piVar8;
+    piVar8 = piVar8 + 1;
     piVar9 = piVar9 + 1;
-    piVar10 = piVar10 + 1;
   }
-  piVar4[0x73] = piVar4[0x9e5];
-  piVar4[0x9ee] = (int)(param_1 + -0x1af9650) / 0x2f8;
-  piVar4[0x38] = uVar5 & 0x100002;
-  *(undefined2 *)(piVar4 + 0x11f) = 0x3ff;
-  piVar4[0xa38] = -1;
-  piVar4[0xa12] = 0x3ff;
-  piVar9 = (int *)((((int)piVar4 - _level) / 0x2a28) * 0x7c2e8 + 0x5134 + DAT_01e5d49c);
-  piVar10 = piVar4 + 0x9c1;
-  for (iVar8 = 0xd; iVar8 != 0; iVar8 = iVar8 + -1) {
-    *piVar10 = *piVar9;
+  iVar7 = dst[0xa7f];
+  iVar6 = dst[0x75];
+  FUN_00554dd0();
+  memset((uchar *)dst,'\0',0x2a28);
+  dst[0x75] = iVar6 + 1;
+  *(uchar *)(dst + 0x4c) = (uchar)((int)(param_1 + -0x1af9650) / 0x2f8);
+  dst[0xa7f] = iVar7;
+  piVar8 = aiStack_1f8;
+  piVar9 = dst + 0x9ba;
+  for (iVar7 = 0x7e; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *piVar9 = *piVar8;
+    piVar8 = piVar8 + 1;
     piVar9 = piVar9 + 1;
-    piVar10 = piVar10 + 1;
   }
-  piVar4[100] = 0x42700000;
-  piVar4[0x160] = 0x40c00000;
-  piVar4[0x38] = uVar5 & 0x100002 ^ 2;
-  piVar4[99] = 0x3c;
-  piVar4[0x65] = 0;
-  piVar4[0x161] = 0x3fe66666;
-  piVar4[0x5c] = 0;
-  piVar4[0x5d] = 0;
-  piVar4[0x16] = 0;
-  piVar4[0x15] = 0x3ff;
+  dst[0x73] = dst[0x9e5];
+  dst[0x9ee] = (int)(param_1 + -0x1af9650) / 0x2f8;
+  dst[0x38] = uVar4 & 0x100002;
+  *(undefined2 *)(dst + 0x11f) = 0x3ff;
+  dst[0xa38] = -1;
+  dst[0xa12] = 0x3ff;
+  piVar8 = (int *)((((int)dst - _level) / 0x2a28) * 0x7c2e8 + 0x5134 + DAT_01e5d49c);
+  piVar9 = dst + 0x9c1;
+  for (iVar7 = 0xd; iVar7 != 0; iVar7 = iVar7 + -1) {
+    *piVar9 = *piVar8;
+    piVar8 = piVar8 + 1;
+    piVar9 = piVar9 + 1;
+  }
+  dst[100] = 0x42700000;
+  dst[0x160] = 0x40c00000;
+  dst[0x38] = uVar4 & 0x100002 ^ 2;
+  dst[99] = 0x3c;
+  dst[0x65] = 0;
+  dst[0x161] = 0x3fe66666;
+  dst[0x5c] = 0;
+  dst[0x5d] = 0;
+  dst[0x16] = 0;
+  dst[0x15] = 0x3ff;
   iStack_210 = 0xf;
-  piStack_214 = piVar4 + 0x76;
+  piStack_214 = dst + 0x76;
   do {
-    iVar8 = *piStack_214;
-    if (iVar8 != 0) {
-      iVar7 = 0;
-      piVar9 = piVar4 + 0x76;
+    iVar7 = *piStack_214;
+    if (iVar7 != 0) {
+      iVar6 = 0;
+      piVar8 = dst + 0x76;
       do {
-        if (iVar8 == *piVar9) {
-          if ((iVar7 != -1) && (piVar4 + iVar7 * 7 + 0x76 != (int *)0x0)) {
-            *(bool *)((int)(piVar4 + iVar7 * 7 + 0x76) + 0x17) =
-                 *(char *)((int)(&bg_weaponVariantDefs)[iVar8] + 0x85) != '\0';
+        if (iVar7 == *piVar8) {
+          if ((iVar6 != -1) && (dst + iVar6 * 7 + 0x76 != (int *)0x0)) {
+            *(bool *)((int)(dst + iVar6 * 7 + 0x76) + 0x17) =
+                 *(char *)((int)(&bg_weaponVariantDefs)[iVar7] + 0x85) != '\0';
           }
           break;
         }
-        iVar7 = iVar7 + 1;
-        piVar9 = piVar9 + 7;
-      } while (iVar7 < 0xf);
+        iVar6 = iVar6 + 1;
+        piVar8 = piVar8 + 7;
+      } while (iVar6 < 0xf);
     }
     piStack_214 = piStack_214 + 7;
     iStack_210 = iStack_210 + -1;
     if (iStack_210 == 0) {
-      if ((&bg_weaponVariantDefs)[*(ushort *)(piVar4 + 0x51)][2][0x56a] == (WeaponVariantDef)0x0) {
-        if (piVar4[1] < 9) {
-          piVar4[0x156] = ~piVar4[0x156] & 0x400U | 1;
+      if ((&bg_weaponVariantDefs)[*(ushort *)(dst + 0x51)][2][0x56a] == (WeaponVariantDef)0x0) {
+        if (dst[1] < 9) {
+          dst[0x156] = ~dst[0x156] & 0x400U | 1;
         }
       }
-      else if ((piVar4[1] < 9) && (piVar4[0x157] = ~piVar4[0x157] & 0x400U | 1, piVar4[1] < 9)) {
-        piVar4[0x156] = ~piVar4[0x156] & 0x400U | 1;
+      else if ((dst[1] < 9) && (dst[0x157] = ~dst[0x157] & 0x400U | 1, dst[1] < 9)) {
+        dst[0x156] = ~dst[0x156] & 0x400U | 1;
       }
       fVar1 = *param_2;
       fVar2 = param_2[1];
@@ -602,26 +602,26 @@ void __cdecl ClientSpawn(gentity_s *param_1,float *param_2,float *param_3)
       *(float *)(param_1 + 0x124) = fVar1;
       *(float *)(param_1 + 0x128) = fVar2;
       *(float *)(param_1 + 300) = fVar3;
-      piVar4[9] = (int)fVar1;
-      piVar4[10] = (int)fVar2;
-      piVar4[0xb] = (int)fVar3;
-      piVar4[3] = piVar4[3] | 0x400;
+      dst[9] = (int)fVar1;
+      dst[10] = (int)fVar2;
+      dst[0xb] = (int)fVar3;
+      dst[3] = dst[3] | 0x400;
       SetClientViewAngle(param_1,(float *)unaff_EDI);
-      puVar12 = (usercmd_s *)(piVar4 + 0x9c1);
-      piVar4[0xa4a] = (g_inactivity->current).integer * 1000 + DAT_01c57f4c;
-      piVar4[0x9c2] = piVar4[0x9c2] & 0xff3fffff;
-      piVar4[0xa3c] = piVar4[0x9c3];
-      piVar4[0xa3b] = piVar4[0x9c2];
+      puVar11 = (usercmd_s *)(dst + 0x9c1);
+      dst[0xa4a] = (g_inactivity->current).integer * 1000 + DAT_01c57f4c;
+      dst[0x9c2] = dst[0x9c2] & 0xff3fffff;
+      dst[0xa3c] = dst[0x9c3];
+      dst[0xa3b] = dst[0x9c2];
       _DAT_01c57840 = 1;
-      piVar4[0xa80] = DAT_01c57f4c;
-      *(int *)puVar12 = DAT_01c57f4c;
-      *piVar4 = DAT_01c57f4c + -100;
+      dst[0xa80] = DAT_01c57f4c;
+      *(int *)puVar11 = DAT_01c57f4c;
+      *dst = DAT_01c57f4c + -100;
       ClientEndFrame(param_1);
-      pgVar11 = param_1;
-      ClientThink_real(param_1,puVar12);
+      pgVar10 = param_1;
+      ClientThink_real(param_1,puVar11);
       _DAT_01c57840 = 0;
       BG_PlayerStateToEntityState
-                ((playerState_s *)param_1,(entityState_s *)&DAT_00000001,(int)pgVar11,(uchar)puVar12
+                ((playerState_s *)param_1,(entityState_s *)&DAT_00000001,(int)pgVar10,(uchar)puVar11
                 );
       return;
     }

@@ -3,79 +3,79 @@
 // 00C2BB98  _wctomb_s_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wctomb.c:56)
 
 int __cdecl
-_wctomb_s_l(int *param_1,char *param_2,uint param_3,wchar_t param_4,localeinfo_struct *param_5)
+_wctomb_s_l(int *pRetValue,char *dst,uint sizeInBytes,wchar_t wchar,localeinfo_struct *plocinfo)
 
 {
-  char *lpMultiByteStr;
-  uint cbMultiByte;
+  char *dst_00;
+  uint count;
   int iVar1;
   int *piVar2;
   DWORD DVar3;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  cbMultiByte = param_3;
-  lpMultiByteStr = param_2;
-  if ((param_2 == (char *)0x0) && (param_3 != 0)) {
-    if (param_1 != (int *)0x0) {
-      *param_1 = 0;
+  count = sizeInBytes;
+  dst_00 = dst;
+  if ((dst == (char *)0x0) && (sizeInBytes != 0)) {
+    if (pRetValue != (int *)0x0) {
+      *pRetValue = 0;
     }
 LAB_00c2bbbc:
     iVar1 = 0;
   }
   else {
-    if (param_1 != (int *)0x0) {
-      *param_1 = -1;
+    if (pRetValue != (int *)0x0) {
+      *pRetValue = -1;
     }
-    if (0x7fffffff < param_3) {
+    if (0x7fffffff < sizeInBytes) {
       piVar2 = _errno();
       *piVar2 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       return 0x16;
     }
-    _LocaleUpdate::_LocaleUpdate(&local_14,param_5);
-    if ((local_14.localeinfo.locinfo)->lc_handle[2] == 0) {
-      if ((ushort)param_4 < 0x100) {
-        if (lpMultiByteStr != (char *)0x0) {
-          if (cbMultiByte == 0) goto LAB_00c2bc53;
-          *lpMultiByteStr = (char)param_4;
+    _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+    if ((_loc_update.localeinfo.locinfo)->lc_handle[2] == 0) {
+      if ((ushort)wchar < 0x100) {
+        if (dst_00 != (char *)0x0) {
+          if (count == 0) goto LAB_00c2bc53;
+          *dst_00 = (char)wchar;
         }
-        if (param_1 != (int *)0x0) {
-          *param_1 = 1;
+        if (pRetValue != (int *)0x0) {
+          *pRetValue = 1;
         }
 LAB_00c2bc8e:
-        if (local_14.updated != false) {
-          (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+        if (_loc_update.updated != false) {
+          (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
         }
         goto LAB_00c2bbbc;
       }
-      if ((lpMultiByteStr != (char *)0x0) && (cbMultiByte != 0)) {
-        memset((uchar *)lpMultiByteStr,'\0',cbMultiByte);
+      if ((dst_00 != (char *)0x0) && (count != 0)) {
+        memset((uchar *)dst_00,'\0',count);
       }
     }
     else {
-      param_2 = (char *)0x0;
-      iVar1 = WideCharToMultiByte((local_14.localeinfo.locinfo)->lc_codepage,0,&param_4,1,
-                                  lpMultiByteStr,cbMultiByte,(LPCSTR)0x0,(LPBOOL)&param_2);
+      dst = (char *)0x0;
+      iVar1 = WideCharToMultiByte((_loc_update.localeinfo.locinfo)->lc_codepage,0,&wchar,1,dst_00,
+                                  count,(LPCSTR)0x0,(LPBOOL)&dst);
       if (iVar1 == 0) {
         DVar3 = GetLastError();
         if (DVar3 == 0x7a) {
-          if ((lpMultiByteStr != (char *)0x0) && (cbMultiByte != 0)) {
-            memset((uchar *)lpMultiByteStr,'\0',cbMultiByte);
+          if ((dst_00 != (char *)0x0) && (count != 0)) {
+            memset((uchar *)dst_00,'\0',count);
           }
 LAB_00c2bc53:
           piVar2 = _errno();
           *piVar2 = 0x22;
           _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-          if (local_14.updated == false) {
+          if (_loc_update.updated == false) {
             return 0x22;
           }
-          (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+          (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
           return 0x22;
         }
       }
-      else if (param_2 == (char *)0x0) {
-        if (param_1 != (int *)0x0) {
-          *param_1 = iVar1;
+      else if (dst == (char *)0x0) {
+        if (pRetValue != (int *)0x0) {
+          *pRetValue = iVar1;
         }
         goto LAB_00c2bc8e;
       }
@@ -84,8 +84,8 @@ LAB_00c2bc53:
     *piVar2 = 0x2a;
     piVar2 = _errno();
     iVar1 = *piVar2;
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   return iVar1;
@@ -94,12 +94,12 @@ LAB_00c2bc53:
 
 // 00C2BD04  wctomb_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/wctomb.c:144)
 
-int __cdecl wctomb_s(int *param_1,char *param_2,uint param_3,wchar_t param_4)
+int __cdecl wctomb_s(int *pRetValue,char *dst,uint sizeInBytes,wchar_t wchar)
 
 {
   int iVar1;
   
-  iVar1 = _wctomb_s_l(param_1,param_2,param_3,param_4,(localeinfo_struct *)0x0);
+  iVar1 = _wctomb_s_l(pRetValue,dst,sizeInBytes,wchar,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

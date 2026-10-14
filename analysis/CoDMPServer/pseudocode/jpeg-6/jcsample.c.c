@@ -2,21 +2,23 @@
 
 // 00B61150  expand_right_edge  (jpeg-6/jcsample.c:89)
 
-void __cdecl expand_right_edge(uchar **param_1,int param_2,uint param_3,uint param_4)
+void __cdecl expand_right_edge(uchar **image_data,int num_rows,uint input_cols,uint output_cols)
 
 {
   uchar uVar1;
-  int local_18;
-  uchar *local_14;
-  int local_c;
+  int row;
+  uchar *ptr;
+  uchar pixval;
+  int count;
+  int numcols;
   
-  if (0 < (int)(param_4 - param_3)) {
-    for (local_18 = 0; local_18 < param_2; local_18 = local_18 + 1) {
-      local_14 = param_1[local_18] + param_3;
-      uVar1 = local_14[-1];
-      for (local_c = param_4 - param_3; 0 < local_c; local_c = local_c + -1) {
-        *local_14 = uVar1;
-        local_14 = local_14 + 1;
+  if (0 < (int)(output_cols - input_cols)) {
+    for (row = 0; row < num_rows; row = row + 1) {
+      ptr = image_data[row] + input_cols;
+      uVar1 = ptr[-1];
+      for (count = output_cols - input_cols; 0 < count; count = count + -1) {
+        *ptr = uVar1;
+        ptr = ptr + 1;
       }
     }
   }
@@ -27,16 +29,20 @@ void __cdecl expand_right_edge(uchar **param_1,int param_2,uint param_3,uint par
 // 00B60F40  sep_downsample  (jpeg-6/jcsample.c:117)
 
 void __cdecl
-sep_downsample(jpeg_compress_struct *param_1,uchar ***param_2,uint param_3,uchar ***param_4,
-              uint param_5)
+sep_downsample(jpeg_compress_struct *cinfo,uchar ***input_buf,uint in_row_index,uchar ***output_buf,
+              uint out_row_group_index)
 
 {
   jpeg_downsampler *pjVar1;
-  int local_10;
+  my_downsampler *downsample;
+  uchar **out_ptr;
+  int ci;
+  jpeg_component_info *compptr;
+  uchar **in_ptr;
   
-  pjVar1 = param_1->downsample;
-  for (local_10 = 0; local_10 < param_1->num_components; local_10 = local_10 + 1) {
-    (*(&pjVar1[1].start_pass)[local_10])(param_1);
+  pjVar1 = cinfo->downsample;
+  for (ci = 0; ci < cinfo->num_components; ci = ci + 1) {
+    (*(&pjVar1[1].start_pass)[ci])(cinfo);
   }
   return;
 }
@@ -45,45 +51,50 @@ sep_downsample(jpeg_compress_struct *param_1,uchar ***param_2,uint param_3,uchar
 // 00B60FE0  int_downsample  (jpeg-6/jcsample.c:142)
 
 void __cdecl
-int_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-              uchar **param_4)
+int_downsample(jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **input_data,
+              uchar **output_data)
 
 {
   int iVar1;
   int iVar2;
   uint uVar3;
-  int local_3c;
-  uint local_34;
-  uchar *local_30;
-  int local_24;
-  byte *local_20;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
+  int inrow;
+  int numpix;
+  uint outcol;
+  uchar *outptr;
+  int h_expand;
+  uint output_cols;
+  int outrow;
+  uchar *inptr;
+  int v_expand;
+  uint outcol_h;
+  int h;
+  int v;
+  long outvalue;
+  int numpix2;
   
-  uVar3 = param_2->width_in_blocks * 8;
-  iVar1 = param_1->max_h_samp_factor / param_2->h_samp_factor;
-  iVar2 = param_1->max_v_samp_factor / param_2->v_samp_factor;
-  expand_right_edge(param_3,param_1->max_v_samp_factor,param_1->image_width,uVar3 * iVar1);
-  local_3c = 0;
-  for (local_24 = 0; local_24 < param_2->v_samp_factor; local_24 = local_24 + 1) {
-    local_30 = param_4[local_24];
-    local_18 = 0;
-    for (local_34 = 0; local_34 < uVar3; local_34 = local_34 + 1) {
-      local_c = 0;
-      for (local_10 = 0; local_10 < iVar2; local_10 = local_10 + 1) {
-        local_20 = param_3[local_3c + local_10] + local_18;
-        for (local_14 = 0; local_14 < iVar1; local_14 = local_14 + 1) {
-          local_c = (uint)*local_20 + local_c;
-          local_20 = local_20 + 1;
+  uVar3 = compptr->width_in_blocks * 8;
+  iVar1 = cinfo->max_h_samp_factor / compptr->h_samp_factor;
+  iVar2 = cinfo->max_v_samp_factor / compptr->v_samp_factor;
+  expand_right_edge(input_data,cinfo->max_v_samp_factor,cinfo->image_width,uVar3 * iVar1);
+  inrow = 0;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow = outrow + 1) {
+    outptr = output_data[outrow];
+    outcol_h = 0;
+    for (outcol = 0; outcol < uVar3; outcol = outcol + 1) {
+      outvalue = 0;
+      for (v = 0; v < iVar2; v = v + 1) {
+        inptr = input_data[inrow + v] + outcol_h;
+        for (h = 0; h < iVar1; h = h + 1) {
+          outvalue = (uint)*inptr + outvalue;
+          inptr = inptr + 1;
         }
       }
-      *local_30 = (uchar)((local_c + (iVar1 * iVar2) / 2) / (iVar1 * iVar2));
-      local_30 = local_30 + 1;
-      local_18 = local_18 + iVar1;
+      *outptr = (uchar)((outvalue + (iVar1 * iVar2) / 2) / (iVar1 * iVar2));
+      outptr = outptr + 1;
+      outcol_h = outcol_h + iVar1;
     }
-    local_3c = local_3c + iVar2;
+    inrow = inrow + iVar2;
   }
   return;
 }
@@ -92,13 +103,13 @@ int_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar 
 // 00B611D0  fullsize_downsample  (jpeg-6/jcsample.c:189)
 
 void __cdecl
-fullsize_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-                   uchar **param_4)
+fullsize_downsample(jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **input_data,
+                   uchar **output_data)
 
 {
-  jcopy_sample_rows(param_3,0,param_4,0,param_1->max_v_samp_factor,param_1->image_width);
-  expand_right_edge(param_4,param_1->max_v_samp_factor,param_1->image_width,
-                    param_2->width_in_blocks << 3);
+  jcopy_sample_rows(input_data,0,output_data,0,cinfo->max_v_samp_factor,cinfo->image_width);
+  expand_right_edge(output_data,cinfo->max_v_samp_factor,cinfo->image_width,
+                    compptr->width_in_blocks << 3);
   return;
 }
 
@@ -106,28 +117,29 @@ fullsize_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,u
 // 00B61230  h2v1_downsample  (jpeg-6/jcsample.c:214)
 
 void __cdecl
-h2v1_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-               uchar **param_4)
+h2v1_downsample(jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **input_data,
+               uchar **output_data)
 
 {
   uint uVar1;
-  uint local_1c;
-  uchar *local_18;
-  int local_10;
-  byte *local_c;
-  uint local_8;
+  uint outcol;
+  uchar *outptr;
+  uint output_cols;
+  int outrow;
+  uchar *inptr;
+  int bias;
   
-  uVar1 = param_2->width_in_blocks;
-  expand_right_edge(param_3,param_1->max_v_samp_factor,param_1->image_width,uVar1 << 4);
-  for (local_10 = 0; local_10 < param_2->v_samp_factor; local_10 = local_10 + 1) {
-    local_18 = param_4[local_10];
-    local_c = param_3[local_10];
-    local_8 = 0;
-    for (local_1c = 0; local_1c < uVar1 << 3; local_1c = local_1c + 1) {
-      *local_18 = (uchar)((int)((uint)local_c[1] + *local_c + local_8) >> 1);
-      local_18 = local_18 + 1;
-      local_8 = local_8 ^ 1;
-      local_c = local_c + 2;
+  uVar1 = compptr->width_in_blocks;
+  expand_right_edge(input_data,cinfo->max_v_samp_factor,cinfo->image_width,uVar1 << 4);
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow = outrow + 1) {
+    outptr = output_data[outrow];
+    inptr = input_data[outrow];
+    bias = 0;
+    for (outcol = 0; outcol < uVar1 << 3; outcol = outcol + 1) {
+      *outptr = (uchar)((int)((uint)inptr[1] + (uint)*inptr + bias) >> 1);
+      outptr = outptr + 1;
+      bias = bias ^ 1;
+      inptr = inptr + 2;
     }
   }
   return;
@@ -137,36 +149,37 @@ h2v1_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar
 // 00B61300  h2v2_downsample  (jpeg-6/jcsample.c:251)
 
 void __cdecl
-h2v2_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-               uchar **param_4)
+h2v2_downsample(jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **input_data,
+               uchar **output_data)
 
 {
   uint uVar1;
-  int local_24;
-  uint local_20;
-  uchar *local_1c;
-  byte *local_18;
-  int local_10;
-  uint local_c;
-  byte *local_8;
+  int inrow;
+  uint outcol;
+  uchar *outptr;
+  uchar *inptr1;
+  uint output_cols;
+  int outrow;
+  int bias;
+  uchar *inptr0;
   
-  uVar1 = param_2->width_in_blocks;
-  expand_right_edge(param_3,param_1->max_v_samp_factor,param_1->image_width,uVar1 << 4);
-  local_24 = 0;
-  for (local_10 = 0; local_10 < param_2->v_samp_factor; local_10 = local_10 + 1) {
-    local_1c = param_4[local_10];
-    local_8 = param_3[local_24];
-    local_18 = param_3[local_24 + 1];
-    local_c = 1;
-    for (local_20 = 0; local_20 < uVar1 << 3; local_20 = local_20 + 1) {
-      *local_1c = (uchar)((int)((uint)local_18[1] +
-                               (uint)*local_8 + (uint)local_8[1] + (uint)*local_18 + local_c) >> 2);
-      local_1c = local_1c + 1;
-      local_c = local_c ^ 3;
-      local_8 = local_8 + 2;
-      local_18 = local_18 + 2;
+  uVar1 = compptr->width_in_blocks;
+  expand_right_edge(input_data,cinfo->max_v_samp_factor,cinfo->image_width,uVar1 << 4);
+  inrow = 0;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow = outrow + 1) {
+    outptr = output_data[outrow];
+    inptr0 = input_data[inrow];
+    inptr1 = input_data[inrow + 1];
+    bias = 1;
+    for (outcol = 0; outcol < uVar1 << 3; outcol = outcol + 1) {
+      *outptr = (uchar)((int)((uint)inptr1[1] +
+                             (uint)*inptr0 + (uint)inptr0[1] + (uint)*inptr1 + bias) >> 2);
+      outptr = outptr + 1;
+      bias = bias ^ 3;
+      inptr0 = inptr0 + 2;
+      inptr1 = inptr1 + 2;
     }
-    local_24 = local_24 + 2;
+    inrow = inrow + 2;
   }
   return;
 }
@@ -176,8 +189,8 @@ h2v2_downsample(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar
 
 void __cdecl
 h2v2_smooth_downsample
-          (jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-          uchar **param_4)
+          (jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **input_data,
+          uchar **output_data)
 
 {
   uint uVar1;
@@ -187,55 +200,56 @@ h2v2_smooth_downsample
   byte *pbVar5;
   int iVar6;
   int iVar7;
-  byte *local_38;
-  int local_34;
-  uchar *local_2c;
-  byte *local_28;
-  int local_1c;
-  int local_18;
-  byte *local_14;
-  byte *local_10;
+  uchar *above_ptr;
+  int inrow;
+  long neighscale;
+  uchar *outptr;
+  uchar *inptr1;
+  uint output_cols;
+  long neighsum;
+  int outrow;
+  uint colctr;
+  uchar *below_ptr;
+  uchar *inptr0;
+  long membersum;
+  long memberscale;
   
-  uVar1 = param_2->width_in_blocks;
-  expand_right_edge(param_3 + -1,param_1->max_v_samp_factor + 2,param_1->image_width,uVar1 << 4);
-  iVar7 = param_1->smoothing_factor * -0x50 + 0x4000;
-  iVar6 = param_1->smoothing_factor * 0x10;
-  local_34 = 0;
-  for (local_1c = 0; local_1c < param_2->v_samp_factor; local_1c = local_1c + 1) {
-    local_2c = param_4[local_1c];
-    pbVar2 = param_3[local_34];
-    pbVar3 = param_3[local_34 + 1];
-    pbVar4 = param_3[local_34 + -1];
-    pbVar5 = param_3[local_34 + 2];
-    *local_2c = (uchar)(((uint)*pbVar2 + (uint)pbVar2[1] + (uint)*pbVar3 + (uint)pbVar3[1]) * iVar7
-                        + ((uint)pbVar5[2] +
-                           ((uint)*pbVar4 + (uint)pbVar4[1] + (uint)*pbVar5 + (uint)pbVar5[1] +
-                            (uint)*pbVar2 + (uint)pbVar2[2] + (uint)*pbVar3 + (uint)pbVar3[2]) * 2 +
-                          (uint)*pbVar4 + (uint)pbVar4[2] + (uint)*pbVar5) * iVar6 + 0x8000 >> 0x10)
-    ;
-    for (local_18 = uVar1 * 8 + -2; local_10 = pbVar2 + 2, local_14 = pbVar5 + 2,
-        local_28 = pbVar3 + 2, local_2c = local_2c + 1, local_38 = pbVar4 + 2, local_18 != 0;
-        local_18 = local_18 + -1) {
-      *local_2c = (uchar)(((uint)*local_10 + (uint)pbVar2[3] + (uint)*local_28 + (uint)pbVar3[3]) *
-                          iVar7 + ((uint)pbVar5[4] +
-                                   ((uint)*local_38 + (uint)pbVar4[3] + (uint)*local_14 +
-                                    (uint)pbVar5[3] + (uint)pbVar2[1] + (uint)pbVar2[4] +
-                                    (uint)pbVar3[1] + (uint)pbVar3[4]) * 2 +
-                                  (uint)pbVar4[1] + (uint)pbVar4[4] + (uint)pbVar5[1]) * iVar6 +
-                          0x8000 >> 0x10);
-      pbVar4 = local_38;
-      pbVar3 = local_28;
-      pbVar5 = local_14;
-      pbVar2 = local_10;
-    }
-    *local_2c = (uchar)(((uint)*local_10 + (uint)pbVar2[3] + (uint)*local_28 + (uint)pbVar3[3]) *
-                        iVar7 + ((uint)pbVar5[3] +
-                                 ((uint)*local_38 + (uint)pbVar4[3] + (uint)*local_14 +
-                                  (uint)pbVar5[3] + (uint)pbVar2[1] + (uint)pbVar2[3] +
-                                  (uint)pbVar3[1] + (uint)pbVar3[3]) * 2 +
-                                (uint)pbVar4[1] + (uint)pbVar4[3] + (uint)pbVar5[1]) * iVar6 +
+  uVar1 = compptr->width_in_blocks;
+  expand_right_edge(input_data + -1,cinfo->max_v_samp_factor + 2,cinfo->image_width,uVar1 << 4);
+  iVar7 = cinfo->smoothing_factor * -0x50 + 0x4000;
+  iVar6 = cinfo->smoothing_factor * 0x10;
+  inrow = 0;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow = outrow + 1) {
+    outptr = output_data[outrow];
+    pbVar2 = input_data[inrow];
+    pbVar3 = input_data[inrow + 1];
+    pbVar4 = input_data[inrow + -1];
+    pbVar5 = input_data[inrow + 2];
+    *outptr = (uchar)(((uint)*pbVar2 + (uint)pbVar2[1] + (uint)*pbVar3 + (uint)pbVar3[1]) * iVar7 +
+                      ((uint)pbVar5[2] +
+                       ((uint)*pbVar4 + (uint)pbVar4[1] + (uint)*pbVar5 + (uint)pbVar5[1] +
+                        (uint)*pbVar2 + (uint)pbVar2[2] + (uint)*pbVar3 + (uint)pbVar3[2]) * 2 +
+                      (uint)*pbVar4 + (uint)pbVar4[2] + (uint)*pbVar5) * iVar6 + 0x8000 >> 0x10);
+    for (colctr = uVar1 * 8 - 2; inptr0 = pbVar2 + 2, below_ptr = pbVar5 + 2, inptr1 = pbVar3 + 2,
+        outptr = outptr + 1, above_ptr = pbVar4 + 2, colctr != 0; colctr = colctr - 1) {
+      *outptr = (uchar)(((uint)*inptr0 + (uint)pbVar2[3] + (uint)*inptr1 + (uint)pbVar3[3]) * iVar7
+                        + ((uint)pbVar5[4] +
+                           ((uint)*above_ptr + (uint)pbVar4[3] + (uint)*below_ptr + (uint)pbVar5[3]
+                            + (uint)pbVar2[1] + (uint)pbVar2[4] + (uint)pbVar3[1] + (uint)pbVar3[4])
+                           * 2 + (uint)pbVar4[1] + (uint)pbVar4[4] + (uint)pbVar5[1]) * iVar6 +
                         0x8000 >> 0x10);
-    local_34 = local_34 + 2;
+      pbVar4 = above_ptr;
+      pbVar3 = inptr1;
+      pbVar5 = below_ptr;
+      pbVar2 = inptr0;
+    }
+    *outptr = (uchar)(((uint)*inptr0 + (uint)pbVar2[3] + (uint)*inptr1 + (uint)pbVar3[3]) * iVar7 +
+                      ((uint)pbVar5[3] +
+                       ((uint)*above_ptr + (uint)pbVar4[3] + (uint)*below_ptr + (uint)pbVar5[3] +
+                        (uint)pbVar2[1] + (uint)pbVar2[3] + (uint)pbVar3[1] + (uint)pbVar3[3]) * 2 +
+                      (uint)pbVar4[1] + (uint)pbVar4[3] + (uint)pbVar5[1]) * iVar6 + 0x8000 >> 0x10)
+    ;
+    inrow = inrow + 2;
   }
   return;
 }
@@ -245,52 +259,58 @@ h2v2_smooth_downsample
 
 void __cdecl
 fullsize_smooth_downsample
-          (jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-          uchar **param_4)
+          (jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **input_data,
+          uchar **output_data)
 
 {
   byte bVar1;
   byte *pbVar2;
   int iVar3;
   int iVar4;
-  uint uVar5;
-  int iVar6;
-  byte *local_3c;
-  uchar *local_30;
-  int local_2c;
-  int local_20;
-  byte *local_1c;
-  int local_18;
-  int local_14;
-  byte *local_10;
+  uint output_cols_00;
+  int iVar5;
+  uchar *above_ptr;
+  long neighscale;
+  int nextcolsum;
+  uchar *outptr;
+  int lastcolsum;
+  uint output_cols;
+  long neighsum;
+  int outrow;
+  uchar *inptr;
+  int colsum;
+  uint colctr;
+  uchar *below_ptr;
+  long membersum;
+  long memberscale;
   
-  uVar5 = param_2->width_in_blocks * 8;
-  expand_right_edge(param_3 + -1,param_1->max_v_samp_factor + 2,param_1->image_width,uVar5);
-  iVar6 = param_1->smoothing_factor * -0x200 + 0x10000;
-  iVar3 = param_1->smoothing_factor * 0x40;
-  for (local_20 = 0; local_20 < param_2->v_samp_factor; local_20 = local_20 + 1) {
-    local_30 = param_4[local_20];
-    pbVar2 = param_3[local_20];
-    local_2c = (uint)*param_3[local_20 + -1] + (uint)*param_3[local_20 + 1] + (uint)*pbVar2;
-    local_10 = param_3[local_20 + 1] + 1;
-    local_3c = param_3[local_20 + -1] + 1;
-    local_1c = pbVar2 + 1;
-    local_18 = (uint)*local_3c + (uint)*local_10 + (uint)*local_1c;
-    *local_30 = (uchar)((uint)*pbVar2 * iVar6 + ((local_2c * 2 - (uint)*pbVar2) + local_18) * iVar3
+  output_cols_00 = compptr->width_in_blocks * 8;
+  expand_right_edge(input_data + -1,cinfo->max_v_samp_factor + 2,cinfo->image_width,output_cols_00);
+  iVar5 = cinfo->smoothing_factor * -0x200 + 0x10000;
+  iVar3 = cinfo->smoothing_factor * 0x40;
+  for (outrow = 0; outrow < compptr->v_samp_factor; outrow = outrow + 1) {
+    outptr = output_data[outrow];
+    pbVar2 = input_data[outrow];
+    lastcolsum = (uint)*input_data[outrow + -1] + (uint)*input_data[outrow + 1] + (uint)*pbVar2;
+    below_ptr = input_data[outrow + 1] + 1;
+    above_ptr = input_data[outrow + -1] + 1;
+    inptr = pbVar2 + 1;
+    colsum = (uint)*above_ptr + (uint)*below_ptr + (uint)*inptr;
+    *outptr = (uchar)((uint)*pbVar2 * iVar5 + ((lastcolsum * 2 - (uint)*pbVar2) + colsum) * iVar3 +
+                      0x8000 >> 0x10);
+    for (colctr = output_cols_00 - 2; outptr = outptr + 1, colctr != 0; colctr = colctr - 1) {
+      bVar1 = *inptr;
+      inptr = inptr + 1;
+      above_ptr = above_ptr + 1;
+      below_ptr = below_ptr + 1;
+      iVar4 = (uint)*above_ptr + (uint)*below_ptr + (uint)*inptr;
+      *outptr = (uchar)((uint)bVar1 * iVar5 + ((colsum - (uint)bVar1) + lastcolsum + iVar4) * iVar3
                         + 0x8000 >> 0x10);
-    for (local_14 = uVar5 - 2; local_30 = local_30 + 1, local_14 != 0; local_14 = local_14 + -1) {
-      bVar1 = *local_1c;
-      local_1c = local_1c + 1;
-      local_3c = local_3c + 1;
-      local_10 = local_10 + 1;
-      iVar4 = (uint)*local_3c + (uint)*local_10 + (uint)*local_1c;
-      *local_30 = (uchar)((uint)bVar1 * iVar6 +
-                          ((local_18 - (uint)bVar1) + local_2c + iVar4) * iVar3 + 0x8000 >> 0x10);
-      local_2c = local_18;
-      local_18 = iVar4;
+      lastcolsum = colsum;
+      colsum = iVar4;
     }
-    *local_30 = (uchar)((uint)*local_1c * iVar6 +
-                        ((local_18 * 2 - (uint)*local_1c) + local_2c) * iVar3 + 0x8000 >> 0x10);
+    *outptr = (uchar)((uint)*inptr * iVar5 + ((colsum * 2 - (uint)*inptr) + lastcolsum) * iVar3 +
+                      0x8000 >> 0x10);
   }
   return;
 }
@@ -298,66 +318,68 @@ fullsize_smooth_downsample
 
 // 00B60D10  jinit_downsampler  (jpeg-6/jcsample.c:465)
 
-void __cdecl jinit_downsampler(jpeg_compress_struct *param_1)
+void __cdecl jinit_downsampler(jpeg_compress_struct *cinfo)
 
 {
   bool bVar1;
   jpeg_downsampler *pjVar2;
-  int local_c;
-  jpeg_component_info *local_8;
+  my_downsampler *downsample;
+  uchar smoothok;
+  int ci;
+  jpeg_component_info *compptr;
   
   bVar1 = true;
-  pjVar2 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x34);
-  param_1->downsample = pjVar2;
+  pjVar2 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x34);
+  cinfo->downsample = pjVar2;
   pjVar2->start_pass = GamerProfile_WriteSettings;
   pjVar2->downsample = sep_downsample;
   pjVar2->need_context_rows = '\0';
-  if (param_1->CCIR601_sampling != '\0') {
-    param_1->err->msg_code = 0x19;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->CCIR601_sampling != '\0') {
+    cinfo->err->msg_code = 0x19;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  local_c = 0;
-  local_8 = param_1->comp_info;
-  for (; local_c < param_1->num_components; local_c = local_c + 1) {
-    if ((local_8->h_samp_factor == param_1->max_h_samp_factor) &&
-       (local_8->v_samp_factor == param_1->max_v_samp_factor)) {
-      if (param_1->smoothing_factor == 0) {
-        (&pjVar2[1].start_pass)[local_c] = fullsize_downsample;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    if ((compptr->h_samp_factor == cinfo->max_h_samp_factor) &&
+       (compptr->v_samp_factor == cinfo->max_v_samp_factor)) {
+      if (cinfo->smoothing_factor == 0) {
+        (&pjVar2[1].start_pass)[ci] = fullsize_downsample;
       }
       else {
-        (&pjVar2[1].start_pass)[local_c] = fullsize_smooth_downsample;
+        (&pjVar2[1].start_pass)[ci] = fullsize_smooth_downsample;
         pjVar2->need_context_rows = '\x01';
       }
     }
-    else if ((local_8->h_samp_factor * 2 - param_1->max_h_samp_factor == 0) &&
-            (local_8->v_samp_factor == param_1->max_v_samp_factor)) {
+    else if ((compptr->h_samp_factor * 2 - cinfo->max_h_samp_factor == 0) &&
+            (compptr->v_samp_factor == cinfo->max_v_samp_factor)) {
       bVar1 = false;
-      (&pjVar2[1].start_pass)[local_c] = h2v1_downsample;
+      (&pjVar2[1].start_pass)[ci] = h2v1_downsample;
     }
-    else if ((local_8->h_samp_factor * 2 - param_1->max_h_samp_factor == 0) &&
-            (local_8->v_samp_factor * 2 - param_1->max_v_samp_factor == 0)) {
-      if (param_1->smoothing_factor == 0) {
-        (&pjVar2[1].start_pass)[local_c] = h2v2_downsample;
+    else if ((compptr->h_samp_factor * 2 - cinfo->max_h_samp_factor == 0) &&
+            (compptr->v_samp_factor * 2 - cinfo->max_v_samp_factor == 0)) {
+      if (cinfo->smoothing_factor == 0) {
+        (&pjVar2[1].start_pass)[ci] = h2v2_downsample;
       }
       else {
-        (&pjVar2[1].start_pass)[local_c] = h2v2_smooth_downsample;
+        (&pjVar2[1].start_pass)[ci] = h2v2_smooth_downsample;
         pjVar2->need_context_rows = '\x01';
       }
     }
-    else if ((param_1->max_h_samp_factor % local_8->h_samp_factor == 0) &&
-            (param_1->max_v_samp_factor % local_8->v_samp_factor == 0)) {
+    else if ((cinfo->max_h_samp_factor % compptr->h_samp_factor == 0) &&
+            (cinfo->max_v_samp_factor % compptr->v_samp_factor == 0)) {
       bVar1 = false;
-      (&pjVar2[1].start_pass)[local_c] = int_downsample;
+      (&pjVar2[1].start_pass)[ci] = int_downsample;
     }
     else {
-      param_1->err->msg_code = 0x26;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x26;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    local_8 = local_8 + 1;
+    compptr = compptr + 1;
   }
-  if ((param_1->smoothing_factor != 0) && (!bVar1)) {
-    param_1->err->msg_code = 99;
-    (*param_1->err->emit_message)((jpeg_common_struct *)param_1,0);
+  if ((cinfo->smoothing_factor != 0) && (!bVar1)) {
+    cinfo->err->msg_code = 99;
+    (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,0);
   }
   return;
 }

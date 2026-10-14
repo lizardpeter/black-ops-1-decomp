@@ -2,7 +2,7 @@
 
 // 0096B73D  _mbschr_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbschr.c:53)
 
-uchar * __cdecl _mbschr_l(uchar *param_1,uint param_2,localeinfo_struct *param_3)
+uchar * __cdecl _mbschr_l(uchar *string,uint c,localeinfo_struct *plocinfo)
 
 {
   byte bVar1;
@@ -10,64 +10,64 @@ uchar * __cdecl _mbschr_l(uchar *param_1,uint param_2,localeinfo_struct *param_3
   int *piVar3;
   byte *extraout_EAX;
   byte *pbVar4;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_3);
-  if (param_1 == (uchar *)0x0) {
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (string == (uchar *)0x0) {
     piVar3 = _errno();
     *piVar3 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
-    param_1 = (byte *)0x0;
+    string = (byte *)0x0;
   }
   else {
-    if ((local_14.localeinfo.mbcinfo)->ismbcodepage == 0) {
-      strchr(param_1,(uchar)param_2);
-      param_1 = extraout_EAX;
+    if ((_loc_update.localeinfo.mbcinfo)->ismbcodepage == 0) {
+      strchr(string,(uchar)c);
+      string = extraout_EAX;
     }
     else {
       while( true ) {
-        bVar2 = *param_1;
+        bVar2 = *string;
         if (bVar2 == 0) break;
-        if (((local_14.localeinfo.mbcinfo)->mbctype[bVar2 + 1] & 4) == 0) {
-          pbVar4 = param_1;
-          if (param_2 == bVar2) break;
+        if (((_loc_update.localeinfo.mbcinfo)->mbctype[bVar2 + 1] & 4) == 0) {
+          pbVar4 = string;
+          if (c == bVar2) break;
         }
         else {
-          bVar1 = param_1[1];
+          bVar1 = string[1];
           if (bVar1 == 0) goto LAB_0096b7e7;
-          pbVar4 = param_1 + 1;
-          if (param_2 == CONCAT11(bVar2,bVar1)) goto LAB_0096b7d9;
+          pbVar4 = string + 1;
+          if (c == CONCAT11(bVar2,bVar1)) goto LAB_0096b7d9;
         }
-        param_1 = pbVar4 + 1;
+        string = pbVar4 + 1;
       }
-      if (param_2 != (ushort)bVar2) {
+      if (c != (ushort)bVar2) {
 LAB_0096b7e7:
-        if (local_14.updated != false) {
-          (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+        if (_loc_update.updated != false) {
+          (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
         }
         return (uchar *)0x0;
       }
     }
 LAB_0096b7d9:
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
-  return param_1;
+  return string;
 }
 
 
 // 0096B7F9  _mbschr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbschr.c:86)
 
-uchar * __cdecl _mbschr(uchar *param_1,uint param_2)
+uchar * __cdecl _mbschr(uchar *string,uint c)
 
 {
   uchar *puVar1;
   
-  puVar1 = _mbschr_l(param_1,param_2,(localeinfo_struct *)0x0);
+  puVar1 = _mbschr_l(string,c,(localeinfo_struct *)0x0);
   return puVar1;
 }
 

@@ -2,9 +2,11 @@
 
 // 0085E6B0  R_SetQuadMeshData  (gfx_d3d/r_meshdata.cpp:142)
 
+/* WARNING: Variable defined which should be unmapped: index */
+
 void __cdecl
-R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4,float param_5,
-                 float param_6,float param_7,float param_8,float param_9,ulong param_10)
+R_SetQuadMeshData(GfxMeshData *y,float w,float h,float param_4,float param_5,float param_6,
+                 float param_7,float param_8,float param_9,ulong param_10)
 
 {
   undefined4 *puVar1;
@@ -13,14 +15,16 @@ R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4
   int iVar4;
   int unaff_ESI;
   float unaff_EDI;
+  float x;
   undefined4 uVar5;
+  r_double_index_t index;
   float fStack_8;
-  float fStack_4;
+  float s0;
   
   uVar5 = *(undefined4 *)(unaff_ESI + 0x14);
   fVar3 = (float)((-(uint)(*(int *)(unaff_ESI + 0x10) != 0) & 0xfffff000) + 0x2000);
   iVar4 = (**(code **)(**(int **)(unaff_ESI + 0x18) + 0x2c))
-                    (*(int **)(unaff_ESI + 0x18),0,uVar5,&fStack_4);
+                    (*(int **)(unaff_ESI + 0x18),0,uVar5,&s0);
   if (iVar4 < 0) {
                     /* WARNING: Subroutine does not return */
     R_FatalLockError(iVar4);
@@ -48,7 +52,7 @@ R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4
   pfVar2[0xd] = 1.0;
   pfVar2[0xe] = 0.0;
   pfVar2[0x10] = fVar3 + fStack_8;
-  pfVar2[0x11] = unaff_EDI + fStack_4;
+  pfVar2[0x11] = unaff_EDI + s0;
   pfVar2[0x12] = 0.0;
   pfVar2[0x13] = 1.0;
   pfVar2[0x17] = 1.9882659;
@@ -56,7 +60,7 @@ R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4
   pfVar2[0x15] = 1.0;
   pfVar2[0x16] = 1.0;
   pfVar2[0x18] = fVar3;
-  pfVar2[0x19] = unaff_EDI + fStack_4;
+  pfVar2[0x19] = unaff_EDI + s0;
   pfVar2[0x1a] = 0.0;
   pfVar2[0x1b] = 1.0;
   pfVar2[0x1f] = 1.9882659;
@@ -75,65 +79,60 @@ R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4
 
 // 0085E820  R_DrawQuadMesh  (gfx_d3d/r_meshdata.cpp:197)
 
-void __cdecl R_DrawQuadMesh(GfxCmdBufContext param_1,Material *param_2,GfxMeshData *param_3)
+/* WARNING: Variable defined which should be unmapped: viewport */
+
+void __cdecl R_DrawQuadMesh(GfxCmdBufContext context,Material *param_2,GfxMeshData *param_3)
 
 {
   byte bVar1;
-  GfxCmdBufContext GVar2;
-  GfxCmdBufContext GVar3;
-  int iVar4;
+  int iVar2;
   uint in_ECX;
   uint unaff_EBX;
   GfxViewport *unaff_ESI;
   GfxCmdBufSourceState *unaff_EDI;
-  uint in_stack_ffffffec;
-  GfxCmdBufContext_u_0 local_10 [2];
+  GfxMeshData *quadMesh;
+  GfxViewport viewport;
   
-  iVar4 = *(int *)(*(int *)(in_ECX + 0xb0) + 0x18);
-  if (iVar4 != 0) {
+  iVar2 = *(int *)(*(int *)(in_ECX + 0xb0) + 0x18);
+  if (iVar2 != 0) {
     param_2[1].info.gameFlags = in_ECX;
     param_2[1].info.pad = '\x04';
-    *(int *)&param_2[1].info.field_0xc = iVar4;
+    *(int *)&param_2[1].info.field_0xc = iVar2;
     param_2->stateBitsEntry[0x70] = '\0';
     param_2->stateBitsEntry[0x71] = '\0';
     param_2->stateBitsEntry[0x72] = '\0';
     param_2->stateBitsEntry[0x73] = '\0';
     R_Set2D(unaff_EDI);
-    if ((char)param_1.field0_0x0._s_0.state[1].pixelShaderConstState[0xc] != '\0') {
+    if ((char)context.field0_0x0._s_0.state[1].pixelShaderConstState[0xc] != '\0') {
       R_GetViewport(unaff_EDI,unaff_ESI);
       R_SetViewport((GfxCmdBufState *)unaff_EDI,unaff_ESI);
       R_UpdateViewport(unaff_EDI,unaff_ESI);
     }
-    GVar2.field0_0x0._s_0.state = (GfxCmdBufState *)param_2;
-    GVar2.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state;
-    R_SetupPass(GVar2,(uint)unaff_EDI);
+    R_SetupPass();
     R_UpdateVertexDecl((GfxCmdBufState *)unaff_EDI);
     bVar1 = *(byte *)(*(int *)&param_2[1].info.drawSurf + 0xe);
-    local_10[0]._s_0.source = param_1.field0_0x0._s_0.state;
-    local_10[0]._s_0.state = param_2;
+    viewport.y = (int)context.field0_0x0._s_0.state;
+    viewport.width = (int)param_2;
     if (bVar1 != 0) {
       R_SetPassPixelShaderStableArguments
                 ((GfxCmdBufContext *)(uint)bVar1,(uint)unaff_EDI,(MaterialShaderArgument *)unaff_ESI
                 );
     }
     R_SetStreamSource((GfxCmdBufPrimState *)unaff_EDI,(IDirect3DVertexBuffer9 *)unaff_ESI,unaff_EBX,
-                      in_stack_ffffffec);
-    iVar4 = R_SetIndexData((GfxCmdBufPrimState *)(param_2->stateBitsEntry + 0x68),
-                           (ushort *)((param_1.field0_0x0._s_0.source)->matrices).matrix[0].m[0][3],
+                      viewport.x);
+    iVar2 = R_SetIndexData((GfxCmdBufPrimState *)(param_2->stateBitsEntry + 0x68),
+                           (ushort *)((context.field0_0x0._s_0.source)->matrices).matrix[0].m[0][3],
                            (int)unaff_EDI);
-    local_10[0]._s_0.source = param_1.field0_0x0._s_0.state;
+    viewport.y = (int)context.field0_0x0._s_0.state;
     bVar1 = *(byte *)(*(int *)&param_2[1].info.drawSurf + 0xd);
-    local_10[0]._s_0.state = param_2;
+    viewport.width = (int)param_2;
     if (bVar1 != 0) {
       R_SetPassShaderObjectArguments
-                ((GfxCmdBufContext *)&local_10[0]._s_0,(uint)bVar1,
-                 (MaterialShaderArgument *)unaff_EDI);
+                ((GfxCmdBufContext *)&viewport.y,(uint)bVar1,(MaterialShaderArgument *)unaff_EDI);
     }
-    GVar3.field0_0x0._s_0.state = (GfxCmdBufState *)param_2;
-    GVar3.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1.field0_0x0._s_0.state;
-    R_SetupPassPerPrimArgs(GVar3);
+    R_SetupPassPerPrimArgs();
     (**(code **)(**(int **)(param_2->stateBitsEntry + 0x68) + 0x148))
-              (*(int **)(param_2->stateBitsEntry + 0x68),4,0,0,4,iVar4,2);
+              (*(int **)(param_2->stateBitsEntry + 0x68),4,0,0,4,iVar2,2);
   }
   return;
 }

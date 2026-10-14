@@ -2,42 +2,42 @@
 
 // 008754C0  R_DrawStaticModelSurfLit  (gfx_d3d/r_draw_staticmodel.cpp:2371)
 
-void __cdecl
-R_DrawStaticModelSurfLit
-          (uint *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3,
-          GfxDrawSurfListInfo *param_4)
+/* WARNING: Variable defined which should be unmapped: drawStream */
+
+void __cdecl R_DrawStaticModelSurfLit(void)
 
 {
-  int iVar1;
-  GfxCmdBufContext GVar2;
+  GfxCmdBufContext GVar1;
   int in_EAX;
-  uint *in_ECX;
-  GfxStaticModelDrawStream GStack_2c;
+  GfxTexture *in_ECX;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
+  GfxStaticModelDrawStream drawStream;
   
-  GStack_2c._32_4_ = GStack_2c._32_4_ & 0xfffffffc;
-  GStack_2c.reflectionProbeTexture =
-       (GfxTexture *)((param_2.field0_0x0._s_0.source)->matrices).matrix[2].m[0][3];
-  GStack_2c.customSamplerFlags =
-       (uint)*(byte *)((int)((param_2.field0_0x0._s_0.source)->matrices).matrix[3].m[1][0] + 0xf);
-  GStack_2c.usingCrossFade = (int)(*(int *)(param_1[0x5a0] + 0x16cf1c) == 0);
-  if ((in_EAX == 0) || (iVar1 = *(int *)(in_EAX + 0xc), iVar1 == 0)) {
-    GStack_2c.dynSModelView = (DynSModelClientView *)0x0;
-    GStack_2c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.dynSModelView = (DynSModelClientView *)((uint)drawStream.dynSModelView & 0xfffffffc);
+  drawStream.customSamplerFlags = *(uint *)(in_stack_00000008 + 0x8c);
+  drawStream.usingCrossFade = (int)*(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xf);
+  drawStream.localSurf =
+       (XSurface *)
+       (uint)(*(int *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState[0x8b] + 0x16cf1c
+                      ) == 0);
+  if ((in_EAX == 0) || (*(int *)(in_EAX + 0xc) == 0)) {
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    GStack_2c.dynSModelView = *(DynSModelClientView **)(iVar1 + 0x38d0);
-    GStack_2c.dynSModelState = *(DynSModelGfxState **)(iVar1 + 0x38d4);
+    drawStream.dynSModelState = *(DynSModelGfxState **)(*(int *)(in_EAX + 0xc) + 0x38d0);
   }
   while( true ) {
-    GStack_2c.smodelCount = *in_ECX & 0xfffffff;
-    if (GStack_2c.smodelCount == 0) break;
-    GStack_2c.primDrawSurfPos = in_ECX + (GStack_2c.smodelCount + 1 >> 1) + 2;
-    GStack_2c.smodelList = (ushort *)(in_ECX + 2);
-    GStack_2c.localSurf = (XSurface *)in_ECX[1];
-    GVar2.field0_0x0._s_0.state = (GfxCmdBufState *)param_2.field0_0x0._s_0.source;
-    GVar2.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1;
-    R_DrawStaticModelDrawSurfLightingNonOptimized(&GStack_2c,GVar2);
-    in_ECX = GStack_2c.primDrawSurfPos;
+    drawStream.smodelList = (ushort *)((uint)in_ECX->basemap & 0xfffffff);
+    if (drawStream.smodelList == (ushort *)0x0) break;
+    drawStream.reflectionProbeTexture = in_ECX + ((int)drawStream.smodelList + 1U >> 1) + 2;
+    drawStream.reflectionProbeIndex = (uint)(in_ECX + 2);
+    drawStream.smodelCount = *(uint *)(in_ECX + 1);
+    GVar1.field0_0x0._s_0.state = (GfxCmdBufState *)in_stack_00000008;
+    GVar1.field0_0x0._s_0.source = (GfxCmdBufSourceState *)context.field0_0x0._s_0.state;
+    R_DrawStaticModelDrawSurfLightingNonOptimized
+              ((GfxStaticModelDrawStream *)&drawStream.reflectionProbeTexture,GVar1);
+    in_ECX = drawStream.reflectionProbeTexture;
   }
   return;
 }
@@ -45,40 +45,42 @@ R_DrawStaticModelSurfLit
 
 // 00875580  R_DrawStaticModelSurf  (gfx_d3d/r_draw_staticmodel.cpp:2382)
 
-void __cdecl
-R_DrawStaticModelSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
+/* WARNING: Variable defined which should be unmapped: drawStream */
+
+void __cdecl R_DrawStaticModelSurf(void)
 
 {
-  int iVar1;
-  GfxCmdBufContext GVar2;
+  GfxCmdBufContext GVar1;
   int in_EAX;
-  uint *in_ECX;
-  GfxStaticModelDrawStream GStack_2c;
+  GfxTexture *in_ECX;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
+  GfxStaticModelDrawStream drawStream;
   
-  GStack_2c._32_4_ = GStack_2c._32_4_ & 0xfffffffc;
-  GStack_2c.reflectionProbeTexture =
-       (GfxTexture *)((param_2.field0_0x0._s_0.source)->matrices).matrix[2].m[0][3];
-  GStack_2c.customSamplerFlags =
-       (uint)*(byte *)((int)((param_2.field0_0x0._s_0.source)->matrices).matrix[3].m[1][0] + 0xf);
-  GStack_2c.usingCrossFade = (int)(*(int *)(param_1[0x5a0] + 0x16cf1c) == 0);
-  if ((in_EAX == 0) || (iVar1 = *(int *)(in_EAX + 0xc), iVar1 == 0)) {
-    GStack_2c.dynSModelView = (DynSModelClientView *)0x0;
-    GStack_2c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.dynSModelView = (DynSModelClientView *)((uint)drawStream.dynSModelView & 0xfffffffc);
+  drawStream.customSamplerFlags = *(uint *)(in_stack_00000008 + 0x8c);
+  drawStream.usingCrossFade = (int)*(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xf);
+  drawStream.localSurf =
+       (XSurface *)
+       (uint)(*(int *)((int)context.field0_0x0._s_0.state[1].vertexShaderConstState[0x8b] + 0x16cf1c
+                      ) == 0);
+  if ((in_EAX == 0) || (*(int *)(in_EAX + 0xc) == 0)) {
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    GStack_2c.dynSModelView = *(DynSModelClientView **)(iVar1 + 0x38d0);
-    GStack_2c.dynSModelState = *(DynSModelGfxState **)(iVar1 + 0x38d4);
+    drawStream.dynSModelState = *(DynSModelGfxState **)(*(int *)(in_EAX + 0xc) + 0x38d0);
   }
   while( true ) {
-    GStack_2c.smodelCount = *in_ECX & 0xfffffff;
-    if (GStack_2c.smodelCount == 0) break;
-    GStack_2c.primDrawSurfPos = in_ECX + (GStack_2c.smodelCount + 1 >> 1) + 2;
-    GStack_2c.smodelList = (ushort *)(in_ECX + 2);
-    GStack_2c.localSurf = (XSurface *)in_ECX[1];
-    GVar2.field0_0x0._s_0.state = (GfxCmdBufState *)param_2.field0_0x0._s_0.source;
-    GVar2.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_1;
-    R_DrawStaticModelDrawSurfNonOptimized(&GStack_2c,GVar2);
-    in_ECX = GStack_2c.primDrawSurfPos;
+    drawStream.smodelList = (ushort *)((uint)in_ECX->basemap & 0xfffffff);
+    if (drawStream.smodelList == (ushort *)0x0) break;
+    drawStream.reflectionProbeTexture = in_ECX + ((int)drawStream.smodelList + 1U >> 1) + 2;
+    drawStream.reflectionProbeIndex = (uint)(in_ECX + 2);
+    drawStream.smodelCount = *(uint *)(in_ECX + 1);
+    GVar1.field0_0x0._s_0.state = (GfxCmdBufState *)in_stack_00000008;
+    GVar1.field0_0x0._s_0.source = (GfxCmdBufSourceState *)context.field0_0x0._s_0.state;
+    R_DrawStaticModelDrawSurfNonOptimized
+              ((GfxStaticModelDrawStream *)&drawStream.reflectionProbeTexture,GVar1);
+    in_ECX = drawStream.reflectionProbeTexture;
   }
   return;
 }
@@ -87,45 +89,46 @@ R_DrawStaticModelSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo
 // 00875E40  R_DrawStaticModelSkinnedSurfLit  (gfx_d3d/r_draw_staticmodel.cpp:2852)
 
 void __cdecl
-R_DrawStaticModelSkinnedSurfLit(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
+R_DrawStaticModelSkinnedSurfLit(uint *context,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
 
 {
   byte bVar1;
-  int iVar2;
   int in_EAX;
   MaterialShaderArgument *unaff_ESI;
-  GfxCmdBufContext_u_0 GStack_34;
-  GfxStaticModelDrawStream GStack_2c;
+  uint *primDrawSurfPos;
+  undefined1 auStack_34 [4];
+  GfxStaticModelDrawStream drawStream;
   
-  GStack_34._s_0.source = param_2.field0_0x0._s_0.source;
+  auStack_34 = (undefined1  [4])param_2.field0_0x0._s_0.source;
   bVar1 = (param_2.field0_0x0._s_0.state)->pass->perObjArgCount;
-  GStack_34._s_0.state = param_2.field0_0x0._s_0.state;
+  drawStream.primDrawSurfPos = (uint *)param_2.field0_0x0._s_0.state;
   if (bVar1 != 0) {
-    R_SetPassShaderObjectArguments((GfxCmdBufContext *)&GStack_34._s_0,(uint)bVar1,unaff_ESI);
+    R_SetPassShaderObjectArguments((GfxCmdBufContext *)auStack_34,(uint)bVar1,unaff_ESI);
   }
-  GStack_2c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  GStack_2c._32_4_ = GStack_2c._32_4_ & 0xfffffffc;
-  GStack_2c.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  GStack_2c.usingCrossFade =
-       (int)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
-  if ((in_EAX == 0) || (iVar2 = *(int *)(in_EAX + 0xc), iVar2 == 0)) {
-    GStack_2c.dynSModelView = (DynSModelClientView *)0x0;
-    GStack_2c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.dynSModelView = (DynSModelClientView *)((uint)drawStream.dynSModelView & 0xfffffffc);
+  drawStream.usingCrossFade = (int)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.localSurf =
+       (XSurface *)(uint)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
+  if ((in_EAX == 0) || (*(int *)(in_EAX + 0xc) == 0)) {
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    GStack_2c.dynSModelView = *(DynSModelClientView **)(iVar2 + 0x38d0);
-    GStack_2c.dynSModelState = *(DynSModelGfxState **)(iVar2 + 0x38d4);
+    drawStream.dynSModelState = *(DynSModelGfxState **)(*(int *)(in_EAX + 0xc) + 0x38d0);
   }
   while( true ) {
-    GStack_2c.smodelCount = *param_1 & 0xfffffff;
-    if (GStack_2c.smodelCount == 0) break;
-    GStack_2c.primDrawSurfPos = param_1 + (GStack_2c.smodelCount + 1 >> 1) + 2;
-    GStack_2c.smodelList = (ushort *)(param_1 + 2);
-    GStack_2c.localSurf = (XSurface *)param_1[1];
-    R_DrawStaticModelsSkinnedDrawSurfLighting(&GStack_2c,param_2);
-    param_1 = GStack_2c.primDrawSurfPos;
+    drawStream.smodelList = (ushort *)((uint)*context & 0xfffffff);
+    if (drawStream.smodelList == (ushort *)0x0) break;
+    drawStream.reflectionProbeTexture =
+         (GfxTexture *)(context + ((int)drawStream.smodelList + 1U >> 1) + 2);
+    drawStream.reflectionProbeIndex = (uint)(context + 2);
+    drawStream.smodelCount = *(uint *)(context + 1);
+    R_DrawStaticModelsSkinnedDrawSurfLighting
+              ((GfxStaticModelDrawStream *)&drawStream.reflectionProbeTexture,param_2);
+    context = (uint *)drawStream.reflectionProbeTexture;
   }
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = GStack_2c.reflectionProbeTexture;
+  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = (GfxTexture *)drawStream.customSamplerFlags
+  ;
   return;
 }
 
@@ -133,43 +136,43 @@ R_DrawStaticModelSkinnedSurfLit(uint *param_1,GfxCmdBufContext param_2,GfxDrawSu
 // 00875F50  R_DrawStaticModelSkinnedSurf  (gfx_d3d/r_draw_staticmodel.cpp:2871)
 
 void __cdecl
-R_DrawStaticModelSkinnedSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
+R_DrawStaticModelSkinnedSurf(uint *context,GfxCmdBufContext param_2,GfxDrawSurfListInfo *param_3)
 
 {
   byte bVar1;
-  int iVar2;
   int in_EAX;
   MaterialShaderArgument *unaff_ESI;
-  GfxCmdBufContext_u_0 GStack_34;
-  GfxStaticModelDrawStream GStack_2c;
+  uint *primDrawSurfPos;
+  undefined1 auStack_34 [4];
+  GfxStaticModelDrawStream drawStream;
   
-  GStack_34._s_0.source = param_2.field0_0x0._s_0.source;
+  auStack_34 = (undefined1  [4])param_2.field0_0x0._s_0.source;
   bVar1 = (param_2.field0_0x0._s_0.state)->pass->perObjArgCount;
-  GStack_34._s_0.state = param_2.field0_0x0._s_0.state;
+  drawStream.primDrawSurfPos = (uint *)param_2.field0_0x0._s_0.state;
   if (bVar1 != 0) {
-    R_SetPassShaderObjectArguments((GfxCmdBufContext *)&GStack_34._s_0,(uint)bVar1,unaff_ESI);
+    R_SetPassShaderObjectArguments((GfxCmdBufContext *)auStack_34,(uint)bVar1,unaff_ESI);
   }
-  GStack_2c.reflectionProbeTexture = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  GStack_2c._32_4_ = GStack_2c._32_4_ & 0xfffffffc;
-  GStack_2c.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  GStack_2c.usingCrossFade =
-       (int)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
-  if ((in_EAX == 0) || (iVar2 = *(int *)(in_EAX + 0xc), iVar2 == 0)) {
-    GStack_2c.dynSModelView = (DynSModelClientView *)0x0;
-    GStack_2c.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.dynSModelView = (DynSModelClientView *)((uint)drawStream.dynSModelView & 0xfffffffc);
+  drawStream.usingCrossFade = (int)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.localSurf =
+       (XSurface *)(uint)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
+  if ((in_EAX == 0) || (*(int *)(in_EAX + 0xc) == 0)) {
+    drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   }
   else {
-    GStack_2c.dynSModelView = *(DynSModelClientView **)(iVar2 + 0x38d0);
-    GStack_2c.dynSModelState = *(DynSModelGfxState **)(iVar2 + 0x38d4);
+    drawStream.dynSModelState = *(DynSModelGfxState **)(*(int *)(in_EAX + 0xc) + 0x38d0);
   }
   while( true ) {
-    GStack_2c.smodelCount = *param_1 & 0xfffffff;
-    if (GStack_2c.smodelCount == 0) break;
-    GStack_2c.primDrawSurfPos = param_1 + (GStack_2c.smodelCount + 1 >> 1) + 2;
-    GStack_2c.smodelList = (ushort *)(param_1 + 2);
-    GStack_2c.localSurf = (XSurface *)param_1[1];
-    R_DrawStaticModelsSkinnedDrawSurf(&GStack_2c,param_2);
-    param_1 = GStack_2c.primDrawSurfPos;
+    drawStream.smodelList = (ushort *)((uint)*context & 0xfffffff);
+    if (drawStream.smodelList == (ushort *)0x0) break;
+    drawStream.reflectionProbeTexture =
+         (GfxTexture *)(context + ((int)drawStream.smodelList + 1U >> 1) + 2);
+    drawStream.reflectionProbeIndex = (uint)(context + 2);
+    drawStream.smodelCount = *(uint *)(context + 1);
+    R_DrawStaticModelsSkinnedDrawSurf
+              ((GfxStaticModelDrawStream *)&drawStream.reflectionProbeTexture,param_2);
+    context = (uint *)drawStream.reflectionProbeTexture;
   }
   return;
 }
@@ -177,122 +180,106 @@ R_DrawStaticModelSkinnedSurf(uint *param_1,GfxCmdBufContext param_2,GfxDrawSurfL
 
 // 00876460  R_DrawStaticModelCachedSurfLit  (gfx_d3d/r_draw_staticmodel.cpp:3151)
 
-void __cdecl R_DrawStaticModelCachedSurfLit(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelCachedSurfLit(uint *context,GfxCmdBufContext param_2)
 
 {
   byte bVar1;
   ushort uVar2;
-  GfxCmdBufContext GVar3;
-  static_model_node_t *psVar4;
+  static_model_node_t *psVar3;
   MaterialShaderArgument *unaff_EDI;
-  GfxCmdBufContext_u_0 GStack_34;
-  uint *puStack_2c;
-  GfxTexture *pGStack_28;
-  uint uStack_24;
-  uint uStack_20;
-  uint uStack_1c;
-  uint uStack_18;
-  uint *puStack_14;
-  uint uStack_10;
-  uint uStack_c;
-  undefined4 uStack_8;
-  undefined4 uStack_4;
+  uint *primDrawSurfPos;
+  undefined1 auStack_34 [4];
+  GfxStaticModelDrawStream drawStream;
   
-  uStack_8 = 0;
-  uStack_4 = 0;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
   ((param_2.field0_0x0._s_0.source)->input).consts[0x4e][0] = 0.0;
   ((param_2.field0_0x0._s_0.source)->input).consts[0x4e][1] = 0.0;
   ((param_2.field0_0x0._s_0.source)->input).consts[0x4e][2] = 0.5;
   ((param_2.field0_0x0._s_0.source)->input).consts[0x4e][3] = 1.0;
   (param_2.field0_0x0._s_0.source)->constVersions[0x4e] =
        (param_2.field0_0x0._s_0.source)->constVersions[0x4e] + 1;
-  GStack_34._s_0.source = param_2.field0_0x0._s_0.source;
+  auStack_34 = (undefined1  [4])param_2.field0_0x0._s_0.source;
   bVar1 = (param_2.field0_0x0._s_0.state)->pass->perObjArgCount;
-  GStack_34._s_0.state = param_2.field0_0x0._s_0.state;
+  drawStream.primDrawSurfPos = (uint *)param_2.field0_0x0._s_0.state;
   if (bVar1 != 0) {
-    R_SetPassShaderObjectArguments((GfxCmdBufContext *)&GStack_34._s_0,(uint)bVar1,unaff_EDI);
+    R_SetPassShaderObjectArguments((GfxCmdBufContext *)auStack_34,(uint)bVar1,unaff_EDI);
   }
-  pGStack_28 = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  uStack_c = uStack_c & 0xfffffffc;
-  uStack_24 = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  uStack_8 = 0;
-  uStack_20 = (uint)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
-  uStack_4 = 0;
+  drawStream.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.dynSModelView = (DynSModelClientView *)((uint)drawStream.dynSModelView & 0xfffffffc);
+  drawStream.usingCrossFade = (int)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.localSurf =
+       (XSurface *)(uint)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
   while( true ) {
-    uStack_18 = *param_1;
-    if (((rgp.world)->dpvs).smodelCount < uStack_18) {
-      (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = pGStack_28;
+    drawStream.smodelList = (ushort *)*context;
+    if ((GfxImageLoadDef *)((rgp.world)->dpvs).smodelCount < drawStream.smodelList) {
+      (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] =
+           (GfxTexture *)drawStream.customSamplerFlags;
       return;
     }
-    if (uStack_18 == 0) break;
-    uStack_1c = param_1[1];
-    puStack_14 = param_1 + 2;
-    puStack_2c = puStack_14 + (uStack_18 + 1 >> 1);
-    psVar4 = s_cache.trees[0x1ff].nodes + (uint)(ushort)*puStack_14 * 2 + 0x3e;
-    uVar2._0_1_ = psVar4->inuse;
-    uVar2._1_1_ = psVar4->reserved;
-    uStack_10 = (uint)((rgp.world)->dpvs).smodelDrawInsts[uVar2].reflectionProbeIndex;
-    GVar3.field0_0x0._s_0.state = (GfxCmdBufState *)unaff_EDI;
-    GVar3.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_2.field0_0x0._s_0.state;
-    R_DrawStaticModelsCachedDrawSurfLighting
-              ((GfxStaticModelDrawStream *)param_2.field0_0x0._s_0.source,GVar3);
-    param_1 = puStack_2c;
+    if ((GfxImageLoadDef *)drawStream.smodelList == (GfxImageLoadDef *)0x0) break;
+    drawStream.smodelCount = *(uint *)(context + 1);
+    drawStream.reflectionProbeIndex = (uint)(context + 2);
+    drawStream.reflectionProbeTexture =
+         (GfxTexture *)
+         (drawStream.reflectionProbeIndex +
+         ((uint)&((GfxImageLoadDef *)drawStream.smodelList)->flags >> 1) * 4);
+    psVar3 = s_cache.trees[0x1ff].nodes +
+             (uint)*(ushort *)drawStream.reflectionProbeIndex * 2 + 0x3e;
+    uVar2._0_1_ = psVar3->inuse;
+    uVar2._1_1_ = psVar3->reserved;
+    drawStream._32_4_ = ZEXT14(((rgp.world)->dpvs).smodelDrawInsts[uVar2].reflectionProbeIndex);
+    R_DrawStaticModelsCachedDrawSurfLighting();
+    context = (uint *)drawStream.reflectionProbeTexture;
   }
-  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = pGStack_28;
+  (param_2.field0_0x0._s_0.state)->samplerTexture[0xf] = (GfxTexture *)drawStream.customSamplerFlags
+  ;
   return;
 }
 
 
 // 008765C0  R_DrawStaticModelCachedSurf  (gfx_d3d/r_draw_staticmodel.cpp:3170)
 
-void __cdecl R_DrawStaticModelCachedSurf(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelCachedSurf(uint *context,GfxCmdBufContext param_2)
 
 {
   byte bVar1;
   ushort uVar2;
-  GfxCmdBufContext GVar3;
-  static_model_node_t *psVar4;
+  static_model_node_t *psVar3;
   MaterialShaderArgument *unaff_EDI;
-  GfxCmdBufContext_u_0 GStack_34;
-  uint *puStack_2c;
-  GfxTexture *pGStack_28;
-  uint uStack_24;
-  uint uStack_20;
-  uint uStack_1c;
-  uint uStack_18;
-  uint *puStack_14;
-  uint uStack_10;
-  uint uStack_c;
-  undefined4 uStack_8;
-  undefined4 uStack_4;
+  uint *primDrawSurfPos;
+  undefined1 auStack_34 [4];
+  GfxStaticModelDrawStream drawStream;
   
-  GStack_34._s_0.source = param_2.field0_0x0._s_0.source;
+  auStack_34 = (undefined1  [4])param_2.field0_0x0._s_0.source;
   bVar1 = (param_2.field0_0x0._s_0.state)->pass->perObjArgCount;
-  GStack_34._s_0.state = param_2.field0_0x0._s_0.state;
+  drawStream.primDrawSurfPos = (uint *)param_2.field0_0x0._s_0.state;
   if (bVar1 != 0) {
-    R_SetPassShaderObjectArguments((GfxCmdBufContext *)&GStack_34._s_0,(uint)bVar1,unaff_EDI);
+    R_SetPassShaderObjectArguments((GfxCmdBufContext *)auStack_34,(uint)bVar1,unaff_EDI);
   }
-  pGStack_28 = (param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
-  uStack_c = uStack_c & 0xfffffffc;
-  uStack_24 = (uint)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
-  uStack_8 = 0;
-  uStack_20 = (uint)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
-  uStack_4 = 0;
+  drawStream.customSamplerFlags = (uint)(param_2.field0_0x0._s_0.state)->samplerTexture[0xf];
+  drawStream.dynSModelView = (DynSModelClientView *)((uint)drawStream.dynSModelView & 0xfffffffc);
+  drawStream.usingCrossFade = (int)(param_2.field0_0x0._s_0.state)->pass->customSamplerFlags;
+  drawStream.dynSModelState = (DynSModelGfxState *)0x0;
+  drawStream.localSurf =
+       (XSurface *)(uint)((((param_2.field0_0x0._s_0.source)->input).data)->splitscreen == 0);
   while( true ) {
-    uStack_18 = *param_1;
-    if ((((rgp.world)->dpvs).smodelCount < uStack_18) || (uStack_18 == 0)) break;
-    uStack_1c = param_1[1];
-    puStack_14 = param_1 + 2;
-    puStack_2c = puStack_14 + (uStack_18 + 1 >> 1);
-    psVar4 = s_cache.trees[0x1ff].nodes + (uint)(ushort)*puStack_14 * 2 + 0x3e;
-    uVar2._0_1_ = psVar4->inuse;
-    uVar2._1_1_ = psVar4->reserved;
-    uStack_10 = (uint)((rgp.world)->dpvs).smodelDrawInsts[uVar2].reflectionProbeIndex;
-    GVar3.field0_0x0._s_0.state = (GfxCmdBufState *)unaff_EDI;
-    GVar3.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_2.field0_0x0._s_0.state;
-    R_DrawStaticModelsCachedDrawSurf
-              ((GfxStaticModelDrawStream *)param_2.field0_0x0._s_0.source,GVar3);
-    param_1 = puStack_2c;
+    drawStream.smodelList = (ushort *)*context;
+    if (((GfxImageLoadDef *)((rgp.world)->dpvs).smodelCount < drawStream.smodelList) ||
+       ((GfxImageLoadDef *)drawStream.smodelList == (GfxImageLoadDef *)0x0)) break;
+    drawStream.smodelCount = *(uint *)(context + 1);
+    drawStream.reflectionProbeIndex = (uint)(context + 2);
+    drawStream.reflectionProbeTexture =
+         (GfxTexture *)
+         (drawStream.reflectionProbeIndex +
+         ((uint)&((GfxImageLoadDef *)drawStream.smodelList)->flags >> 1) * 4);
+    psVar3 = s_cache.trees[0x1ff].nodes +
+             (uint)*(ushort *)drawStream.reflectionProbeIndex * 2 + 0x3e;
+    uVar2._0_1_ = psVar3->inuse;
+    uVar2._1_1_ = psVar3->reserved;
+    drawStream._32_4_ = ZEXT14(((rgp.world)->dpvs).smodelDrawInsts[uVar2].reflectionProbeIndex);
+    R_DrawStaticModelsCachedDrawSurf();
+    context = (uint *)drawStream.reflectionProbeTexture;
   }
   return;
 }
@@ -300,12 +287,13 @@ void __cdecl R_DrawStaticModelCachedSurf(uint *param_1,GfxCmdBufContext param_2)
 
 // 008766D0  R_DrawStaticModelPreTessSurfLit  (gfx_d3d/r_draw_staticmodel.cpp:3187)
 
-void __cdecl R_DrawStaticModelPreTessSurfLit(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelPreTessSurfLit(uint *context,GfxCmdBufContext param_2)
 
 {
   byte bVar1;
   GfxCmdBufContext GVar2;
   MaterialShaderArgument *unaff_EDI;
+  uint *primDrawSurfPos;
   GfxCmdBufContext_u_0 GStack_8;
   
   ((param_2.field0_0x0._s_0.source)->input).consts[0x4e][0] = 0.0;
@@ -320,11 +308,11 @@ void __cdecl R_DrawStaticModelPreTessSurfLit(uint *param_1,GfxCmdBufContext para
   if (bVar1 != 0) {
     R_SetPassShaderObjectArguments((GfxCmdBufContext *)&GStack_8._s_0,(uint)bVar1,unaff_EDI);
   }
-  for (; *param_1 != 0; param_1 = param_1 + 3) {
+  for (; *context != 0; context = context + 3) {
     GVar2.field0_0x0._s_0.state = (GfxCmdBufState *)unaff_EDI;
     GVar2.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_2.field0_0x0._s_0.state;
     R_DrawStaticModelsPreTessDrawSurfLighting
-              (*(GfxStaticModelPreTessSurf *)(param_1 + 1),param_1[2],
+              (*(GfxStaticModelPreTessSurf *)(context + 1),context[2],
                (uint)param_2.field0_0x0._s_0.source,GVar2);
   }
   return;
@@ -333,12 +321,13 @@ void __cdecl R_DrawStaticModelPreTessSurfLit(uint *param_1,GfxCmdBufContext para
 
 // 00876780  R_DrawStaticModelPreTessSurf  (gfx_d3d/r_draw_staticmodel.cpp:3207)
 
-void __cdecl R_DrawStaticModelPreTessSurf(uint *param_1,GfxCmdBufContext param_2)
+void __cdecl R_DrawStaticModelPreTessSurf(uint *context,GfxCmdBufContext param_2)
 
 {
   byte bVar1;
   GfxCmdBufContext GVar2;
   MaterialShaderArgument *unaff_EDI;
+  uint *primDrawSurfPos;
   GfxCmdBufContext_u_0 GStack_8;
   
   GStack_8._s_0.source = param_2.field0_0x0._s_0.source;
@@ -347,11 +336,11 @@ void __cdecl R_DrawStaticModelPreTessSurf(uint *param_1,GfxCmdBufContext param_2
   if (bVar1 != 0) {
     R_SetPassShaderObjectArguments((GfxCmdBufContext *)&GStack_8._s_0,(uint)bVar1,unaff_EDI);
   }
-  for (; *param_1 != 0; param_1 = param_1 + 3) {
+  for (; *context != 0; context = context + 3) {
     GVar2.field0_0x0._s_0.state = (GfxCmdBufState *)unaff_EDI;
     GVar2.field0_0x0._s_0.source = (GfxCmdBufSourceState *)param_2.field0_0x0._s_0.state;
     R_DrawStaticModelsPreTessDrawSurf
-              (*(GfxStaticModelPreTessSurf *)(param_1 + 1),param_1[2],
+              (*(GfxStaticModelPreTessSurf *)(context + 1),context[2],
                (uint)param_2.field0_0x0._s_0.source,GVar2);
   }
   return;

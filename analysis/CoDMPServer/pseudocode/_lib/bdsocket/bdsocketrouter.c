@@ -1172,16 +1172,16 @@ bdSocketRouter::processPacket
   bdPacketInterceptor *pbVar1;
   undefined1 *puVar2;
   bool bVar3;
-  uchar *puVar4;
-  bdDTLSAssociationStatus bVar5;
-  bdReference<bdAddrHandle> bVar6;
-  bdSecurityID *pbVar7;
+  uchar *src;
+  bdDTLSAssociationStatus bVar4;
+  bdReference<bdAddrHandle> bVar5;
+  bdSecurityID *pbVar6;
   bdCommonAddr *extraout_ECX;
-  bdReference<bdCommonAddr> bVar8;
-  bdAddressMap *pbVar9;
-  char *pcVar10;
-  float fVar11;
-  uint uVar12;
+  bdReference<bdCommonAddr> bVar7;
+  bdAddressMap *pbVar8;
+  char *pcVar9;
+  float fVar10;
+  uint uVar11;
   bdDTLSAssociation *local_144c;
   bdReference<bdByteBuffer> local_135c;
   undefined1 *local_1358;
@@ -1257,32 +1257,32 @@ bdSocketRouter::processPacket
       bVar3 = tryToFindConnection(this,param_3,&param_4,&local_44,param_2,param_1,(int *)&local_18,
                                   true);
       if (!bVar3) {
-        fVar11 = (this->m_config).m_DTLSAssociationReceiveTimeout;
-        pbVar9 = &this->m_addrMap;
+        fVar10 = (this->m_config).m_DTLSAssociationReceiveTimeout;
+        pbVar8 = &this->m_addrMap;
         local_1328 = &stack0xffffeb8c;
-        bVar8.m_ptr = (this->m_localCommonAddr).m_ptr;
+        bVar7.m_ptr = (this->m_localCommonAddr).m_ptr;
         puVar2 = &stack0xffffeb8c;
-        if (bVar8.m_ptr != (bdCommonAddr *)0x0) {
-          InterlockedIncrement(&(bVar8.m_ptr)->_padding_);
+        if (bVar7.m_ptr != (bdCommonAddr *)0x0) {
+          InterlockedIncrement(&(bVar7.m_ptr)->_padding_);
           puVar2 = local_1328;
         }
         local_1328 = puVar2;
         local_132c = &stack0xffffeb88;
-        bVar6 = (bdReference<bdAddrHandle>)param_1->m_ptr;
+        bVar5 = (bdReference<bdAddrHandle>)param_1->m_ptr;
         puVar2 = &stack0xffffeb88;
-        if (bVar6.m_ptr != (bdAddrHandle *)0x0) {
-          InterlockedIncrement(&(bVar6.m_ptr)->_padding_);
+        if (bVar5.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(bVar5.m_ptr)->_padding_);
           puVar2 = local_132c;
         }
         local_132c = puVar2;
         bdDTLSAssociation::bdDTLSAssociation
-                  (&local_488,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,bVar6,bVar8,
-                   pbVar9,fVar11);
+                  (&local_488,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,bVar5,bVar7,
+                   pbVar8,fVar10);
         local_8._0_1_ = 1;
         local_18 = bdDTLSAssociation::receiveFrom
                              (&local_488,param_2,param_3,local_18,param_1,param_3,param_4);
-        bVar5 = bdDTLSAssociation::getStatus(&local_488);
-        uStack_14 = CONCAT13(bVar5 == BD_SOCKET_CONNECTED,(uint3)uStack_14);
+        bVar4 = bdDTLSAssociation::getStatus(&local_488);
+        uStack_14 = CONCAT13(bVar4 == BD_SOCKET_CONNECTED,(uint3)uStack_14);
         local_8 = (uint)local_8._1_3_ << 8;
         bdDTLSAssociation::~bdDTLSAssociation(&local_488);
       }
@@ -1310,37 +1310,37 @@ bdSocketRouter::processPacket
     local_489 = bdDTLSCookieEcho::deserialize(local_558,param_3,local_18,0,&local_490);
     if ((bool)local_489) {
       bdSecurityID::bdSecurityID(&local_560);
-      puVar4 = bdDTLSCookieEcho::getSecID(local_558);
-      memcpy(local_560.ab,puVar4,8);
+      src = bdDTLSCookieEcho::getSecID(local_558);
+      memcpy(local_560.ab,src,8);
       bVar3 = tryToFindConnection(this,param_3,&param_4,&local_560,param_2,param_1,(int *)&local_18,
                                   true);
       if (!bVar3) {
-        fVar11 = (this->m_config).m_DTLSAssociationReceiveTimeout;
-        pbVar9 = &this->m_addrMap;
+        fVar10 = (this->m_config).m_DTLSAssociationReceiveTimeout;
+        pbVar8 = &this->m_addrMap;
         local_1330 = &stack0xffffeb8c;
-        bVar8.m_ptr = (this->m_localCommonAddr).m_ptr;
+        bVar7.m_ptr = (this->m_localCommonAddr).m_ptr;
         puVar2 = &stack0xffffeb8c;
-        if (bVar8.m_ptr != (bdCommonAddr *)0x0) {
-          InterlockedIncrement(&(bVar8.m_ptr)->_padding_);
+        if (bVar7.m_ptr != (bdCommonAddr *)0x0) {
+          InterlockedIncrement(&(bVar7.m_ptr)->_padding_);
           puVar2 = local_1330;
         }
         local_1330 = puVar2;
         local_1334 = &stack0xffffeb88;
-        bVar6 = (bdReference<bdAddrHandle>)param_1->m_ptr;
+        bVar5 = (bdReference<bdAddrHandle>)param_1->m_ptr;
         puVar2 = &stack0xffffeb88;
-        if (bVar6.m_ptr != (bdAddrHandle *)0x0) {
-          InterlockedIncrement(&(bVar6.m_ptr)->_padding_);
+        if (bVar5.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(bVar5.m_ptr)->_padding_);
           puVar2 = local_1334;
         }
         local_1334 = puVar2;
         bdDTLSAssociation::bdDTLSAssociation
-                  (&local_9a0,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,bVar6,bVar8,
-                   pbVar9,fVar11);
+                  (&local_9a0,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,bVar5,bVar7,
+                   pbVar8,fVar10);
         local_8._0_1_ = 3;
         local_18 = bdDTLSAssociation::receiveFrom
                              (&local_9a0,param_2,param_3,local_18,param_1,param_3,param_4);
-        bVar5 = bdDTLSAssociation::getStatus(&local_9a0);
-        uStack_14 = CONCAT13(bVar5 == BD_SOCKET_CONNECTED,(uint3)uStack_14);
+        bVar4 = bdDTLSAssociation::getStatus(&local_9a0);
+        uStack_14 = CONCAT13(bVar4 == BD_SOCKET_CONNECTED,(uint3)uStack_14);
         local_8 = CONCAT31(local_8._1_3_,2);
         bdDTLSAssociation::~bdDTLSAssociation(&local_9a0);
       }
@@ -1372,32 +1372,32 @@ bdSocketRouter::processPacket
       bVar3 = tryToFindConnection(this,param_3,&param_4,&local_9c8,param_2,param_1,(int *)&local_18,
                                   true);
       if (!bVar3) {
-        fVar11 = (this->m_config).m_DTLSAssociationReceiveTimeout;
-        pbVar9 = &this->m_addrMap;
+        fVar10 = (this->m_config).m_DTLSAssociationReceiveTimeout;
+        pbVar8 = &this->m_addrMap;
         local_1338 = &stack0xffffeb8c;
-        bVar8.m_ptr = (this->m_localCommonAddr).m_ptr;
+        bVar7.m_ptr = (this->m_localCommonAddr).m_ptr;
         puVar2 = &stack0xffffeb8c;
-        if (bVar8.m_ptr != (bdCommonAddr *)0x0) {
-          InterlockedIncrement(&(bVar8.m_ptr)->_padding_);
+        if (bVar7.m_ptr != (bdCommonAddr *)0x0) {
+          InterlockedIncrement(&(bVar7.m_ptr)->_padding_);
           puVar2 = local_1338;
         }
         local_1338 = puVar2;
         local_133c = &stack0xffffeb88;
-        bVar6 = (bdReference<bdAddrHandle>)param_1->m_ptr;
+        bVar5 = (bdReference<bdAddrHandle>)param_1->m_ptr;
         puVar2 = &stack0xffffeb88;
-        if (bVar6.m_ptr != (bdAddrHandle *)0x0) {
-          InterlockedIncrement(&(bVar6.m_ptr)->_padding_);
+        if (bVar5.m_ptr != (bdAddrHandle *)0x0) {
+          InterlockedIncrement(&(bVar5.m_ptr)->_padding_);
           puVar2 = local_133c;
         }
         local_133c = puVar2;
         bdDTLSAssociation::bdDTLSAssociation
-                  (&local_e08,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,bVar6,bVar8,
-                   pbVar9,fVar11);
+                  (&local_e08,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,bVar5,bVar7,
+                   pbVar8,fVar10);
         local_8._0_1_ = 5;
         local_18 = bdDTLSAssociation::receiveFrom
                              (&local_e08,param_2,param_3,local_18,param_1,param_3,param_4);
-        bVar5 = bdDTLSAssociation::getStatus(&local_e08);
-        uStack_14 = CONCAT13(bVar5 == BD_SOCKET_CONNECTED,(uint3)uStack_14);
+        bVar4 = bdDTLSAssociation::getStatus(&local_e08);
+        uStack_14 = CONCAT13(bVar4 == BD_SOCKET_CONNECTED,(uint3)uStack_14);
         local_8 = CONCAT31(local_8._1_3_,4);
         bdDTLSAssociation::~bdDTLSAssociation(&local_e08);
       }
@@ -1429,28 +1429,28 @@ bdSocketRouter::processPacket
       local_144c = (bdDTLSAssociation *)0x0;
     }
     else {
-      fVar11 = (this->m_config).m_DTLSAssociationReceiveTimeout;
-      pbVar9 = &this->m_addrMap;
+      fVar10 = (this->m_config).m_DTLSAssociationReceiveTimeout;
+      pbVar8 = &this->m_addrMap;
       local_134c = &stack0xffffeb8c;
-      bVar8.m_ptr = (this->m_localCommonAddr).m_ptr;
+      bVar7.m_ptr = (this->m_localCommonAddr).m_ptr;
       puVar2 = &stack0xffffeb8c;
-      if (bVar8.m_ptr != (bdCommonAddr *)0x0) {
-        InterlockedIncrement(&(bVar8.m_ptr)->_padding_);
+      if (bVar7.m_ptr != (bdCommonAddr *)0x0) {
+        InterlockedIncrement(&(bVar7.m_ptr)->_padding_);
         puVar2 = local_134c;
       }
       local_134c = puVar2;
       local_1350 = &stack0xffffeb88;
-      bVar6 = (bdReference<bdAddrHandle>)param_1->m_ptr;
+      bVar5 = (bdReference<bdAddrHandle>)param_1->m_ptr;
       puVar2 = &stack0xffffeb88;
-      if (bVar6.m_ptr != (bdAddrHandle *)0x0) {
-        InterlockedIncrement(&(bVar6.m_ptr)->_padding_);
+      if (bVar5.m_ptr != (bdAddrHandle *)0x0) {
+        InterlockedIncrement(&(bVar5.m_ptr)->_padding_);
         puVar2 = local_1350;
       }
       local_1350 = puVar2;
       local_144c = (bdDTLSAssociation *)
                    bdDTLSAssociation::bdDTLSAssociation
                              (local_1348,this->m_socket,&this->m_keyStore,&this->m_ECCKey,param_2,
-                              bVar6,bVar8,pbVar9,fVar11);
+                              bVar5,bVar7,pbVar8,fVar10);
     }
     local_1344 = local_144c;
     local_8 = 0xffffffff;
@@ -1460,17 +1460,17 @@ bdSocketRouter::processPacket
     bdLogMessage(BD_LOG_INFO,"info/","bdSocket/socket",
                  "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdSocketRouter.cpp",
                  "bdSocketRouter::processPacket",0x2a3,"New incoming DTLS connection from %s.");
-    bVar6 = bdDTLSAssociation::getAddrHandle(local_f10);
+    bVar5 = bdDTLSAssociation::getAddrHandle(local_f10);
     local_8 = 9;
-    pbVar7 = (bdSecurityID *)
+    pbVar6 = (bdSecurityID *)
              bdSequenceNumberStore::getLastSequenceNumber
-                       ((bdSequenceNumberStore *)((bVar6.m_ptr)->_padding_ + 8));
-    bVar6 = bdDTLSAssociation::getAddrHandle(local_f10);
+                       ((bdSequenceNumberStore *)((bVar5.m_ptr)->_padding_ + 8));
+    bVar5 = bdDTLSAssociation::getAddrHandle(local_f10);
     local_8._0_1_ = 10;
-    bVar8.m_ptr = (bdCommonAddr *)(bVar6.m_ptr)->_padding_;
+    bVar7.m_ptr = (bdCommonAddr *)(bVar5.m_ptr)->_padding_;
     local_1358 = &stack0xffffeb90;
-    bdEndpoint::getCommonAddr((bdEndpoint *)&(bVar8.m_ptr)->m_localAddrs);
-    bdEndpoint::bdEndpoint(&local_ef0,bVar8,pbVar7);
+    bdEndpoint::getCommonAddr((bdEndpoint *)&(bVar7.m_ptr)->m_localAddrs);
+    bdEndpoint::bdEndpoint(&local_ef0,bVar7,pbVar6);
     local_8._0_1_ = 0xc;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_135c);
     local_8 = CONCAT31(local_8._1_3_,0xd);
@@ -1479,16 +1479,16 @@ bdSocketRouter::processPacket
                           ((bdHashMap<bdEndpoint,bdDTLSAssociation*,bdEndpointHashingClass> *)
                            &this->m_dtls,&local_ef0,&local_f10);
     if (!(bool)local_f09) {
-      uVar12 = 0x400;
-      pcVar10 = local_1310;
-      bVar8.m_ptr = extraout_ECX;
+      uVar11 = 0x400;
+      pcVar9 = local_1310;
+      bVar7.m_ptr = extraout_ECX;
       bdEndpoint::getCommonAddr(&local_ef0);
-      bdCommonAddrInfo::getInfo(bVar8,pcVar10,uVar12);
-      uVar12 = 0x12;
-      pcVar10 = local_1324;
-      pbVar7 = (bdSecurityID *)
+      bdCommonAddrInfo::getInfo(bVar7,pcVar9,uVar11);
+      uVar11 = 0x12;
+      pcVar9 = local_1324;
+      pbVar6 = (bdSecurityID *)
                bdSequenceNumberStore::getLastSequenceNumber((bdSequenceNumberStore *)&local_ef0);
-      bdSecurityInfo::toString(pbVar7,pcVar10,uVar12);
+      bdSecurityInfo::toString(pbVar6,pcVar9,uVar11);
       bdLogMessage(BD_LOG_ERROR,"err/","bdSocket/socket",
                    "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdSocketRouter.cpp",
                    "bdSocketRouter::processPacket",0x2ae,
@@ -2111,10 +2111,10 @@ bdSocketRouter::tryDecryptPacket
 {
   undefined1 uVar1;
   bool bVar2;
-  bdReference<bdAddrHandle> bVar3;
+  bdReference<bdAddrHandle> other_3;
   bdSecurityID *this_00;
-  bdAddr bVar4;
-  bdSecurityID *pbVar5;
+  bdAddr bVar3;
+  bdSecurityID *pbVar4;
   bdInetAddr local_48 [2];
   bdReference<bdByteBuffer> local_40;
   int local_3c;
@@ -2154,29 +2154,29 @@ bdSocketRouter::tryDecryptPacket
     uVar1 = (undefined1)local_8;
     local_8._0_1_ = 2;
     if (local_38 != (bdDTLSAssociation *)0x0) {
-      bVar3 = bdDTLSAssociation::getAddrHandle(local_38);
+      other_3 = bdDTLSAssociation::getAddrHandle(local_38);
       local_8._0_1_ = 3;
-      bdReference<bdAddrHandle>::operator=(&local_34,(bdReference<bdAddrHandle> *)bVar3.m_ptr);
+      bdReference<bdAddrHandle>::operator=(&local_34,(bdReference<bdAddrHandle> *)other_3.m_ptr);
       local_8._0_1_ = 2;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_40);
       uVar1 = (undefined1)local_8;
     }
     local_8._0_1_ = uVar1;
     if (local_34.m_ptr != (bdAddrHandle *)0x0) {
-      bVar4 = bdAddrHandle::getRealAddr(local_34.m_ptr);
-      local_20 = *(<unnamed_type_inUn> *)bVar4.m_address.m_addr.inUn.m_addr;
-      local_1c = *(undefined4 *)((int)bVar4.m_address.m_addr.inUn.m_addr + 4);
+      bVar3 = bdAddrHandle::getRealAddr(local_34.m_ptr);
+      local_20 = *(<unnamed_type_inUn> *)bVar3.m_address.m_addr.inUn.m_addr;
+      local_1c = *(undefined4 *)((int)bVar3.m_address.m_addr.inUn.m_addr + 4);
       bdInetAddr::~bdInetAddr(local_48);
     }
     if (local_34.m_ptr != (bdAddrHandle *)0x0) {
       bVar2 = bdAddr::operator==((bdAddr *)&local_20.m_caddr,param_4);
       if (bVar2) {
         if (param_7) {
-          pbVar5 = param_3;
+          pbVar4 = param_3;
           this_00 = (bdSecurityID *)
                     bdSequenceNumberStore::getLastSequenceNumber((bdSequenceNumberStore *)&local_30)
           ;
-          bVar2 = bdSecurityID::operator==(this_00,pbVar5);
+          bVar2 = bdSecurityID::operator==(this_00,pbVar4);
           if (!bVar2) goto LAB_00b7cf50;
         }
         local_3c = (**(code **)(local_38->_padding_ + 8))
@@ -2218,10 +2218,10 @@ bdSocketRouter::tryToFindConnection
 {
   undefined1 uVar1;
   bool bVar2;
-  bdReference<bdAddrHandle> bVar3;
+  bdReference<bdAddrHandle> other_3;
   bdSecurityID *this_00;
-  bdAddr bVar4;
-  bdSecurityID *pbVar5;
+  bdAddr bVar3;
+  bdSecurityID *pbVar4;
   bdInetAddr local_48 [2];
   bdReference<bdByteBuffer> local_40;
   int local_3c;
@@ -2261,29 +2261,29 @@ bdSocketRouter::tryToFindConnection
     uVar1 = (undefined1)local_8;
     local_8._0_1_ = 2;
     if (local_38 != (bdDTLSAssociation *)0x0) {
-      bVar3 = bdDTLSAssociation::getAddrHandle(local_38);
+      other_3 = bdDTLSAssociation::getAddrHandle(local_38);
       local_8._0_1_ = 3;
-      bdReference<bdAddrHandle>::operator=(&local_34,(bdReference<bdAddrHandle> *)bVar3.m_ptr);
+      bdReference<bdAddrHandle>::operator=(&local_34,(bdReference<bdAddrHandle> *)other_3.m_ptr);
       local_8._0_1_ = 2;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_40);
       uVar1 = (undefined1)local_8;
     }
     local_8._0_1_ = uVar1;
     if (local_34.m_ptr != (bdAddrHandle *)0x0) {
-      bVar4 = bdAddrHandle::getRealAddr(local_34.m_ptr);
-      local_20 = *(<unnamed_type_inUn> *)bVar4.m_address.m_addr.inUn.m_addr;
-      local_1c = *(undefined4 *)((int)bVar4.m_address.m_addr.inUn.m_addr + 4);
+      bVar3 = bdAddrHandle::getRealAddr(local_34.m_ptr);
+      local_20 = *(<unnamed_type_inUn> *)bVar3.m_address.m_addr.inUn.m_addr;
+      local_1c = *(undefined4 *)((int)bVar3.m_address.m_addr.inUn.m_addr + 4);
       bdInetAddr::~bdInetAddr(local_48);
     }
     if (local_34.m_ptr != (bdAddrHandle *)0x0) {
       bVar2 = bdAddr::operator==((bdAddr *)&local_20.m_caddr,param_4);
       if (bVar2) {
         if (param_7) {
-          pbVar5 = param_3;
+          pbVar4 = param_3;
           this_00 = (bdSecurityID *)
                     bdSequenceNumberStore::getLastSequenceNumber((bdSequenceNumberStore *)&local_30)
           ;
-          bVar2 = bdSecurityID::operator==(this_00,pbVar5);
+          bVar2 = bdSecurityID::operator==(this_00,pbVar4);
           if (!bVar2) goto LAB_00b7d1ab;
         }
         local_3c = (**(code **)(local_38->_padding_ + 8))

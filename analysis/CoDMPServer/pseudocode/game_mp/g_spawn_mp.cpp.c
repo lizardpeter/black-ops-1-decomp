@@ -2,32 +2,34 @@
 
 // 006838F0  G_SpawnFloat  (game_mp/g_spawn_mp.cpp:24)
 
-int __cdecl G_SpawnFloat(SpawnVar *param_1,char *param_2,char *param_3,float *param_4)
+int __cdecl G_SpawnFloat(SpawnVar *spawnVar,char *key,char *defaultString,float *out)
 
 {
   int iVar1;
   double dVar2;
-  char *local_8;
+  int present;
+  char *s;
   
-  iVar1 = G_SpawnString(param_1,param_2,param_3,&local_8);
-  dVar2 = atof(local_8);
-  *param_4 = (float)dVar2;
+  iVar1 = G_SpawnString(spawnVar,key,defaultString,&s);
+  dVar2 = atof(s);
+  *out = (float)dVar2;
   return iVar1;
 }
 
 
 // 00683930  G_SpawnInt  (game_mp/g_spawn_mp.cpp:35)
 
-int __cdecl G_SpawnInt(SpawnVar *param_1,char *param_2,char *param_3,int *param_4)
+int __cdecl G_SpawnInt(SpawnVar *spawnVar,char *key,char *defaultString,int *out)
 
 {
   int iVar1;
   int iVar2;
-  char *local_8;
+  int present;
+  char *s;
   
-  iVar1 = G_SpawnString(param_1,param_2,param_3,&local_8);
-  iVar2 = atoi(local_8);
-  *param_4 = iVar2;
+  iVar1 = G_SpawnString(spawnVar,key,defaultString,&s);
+  iVar2 = atoi(s);
+  *out = iVar2;
   return iVar1;
 }
 
@@ -39,7 +41,7 @@ int __cdecl G_SpawnInt(SpawnVar *param_1,char *param_2,char *param_3,int *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_ReadOnlyField(gentity_s *param_1,int param_2)
+void __cdecl Scr_ReadOnlyField(gentity_s *ent,int offset)
 
 {
   Scr_Error("Tried to set a read only entity field",false);
@@ -54,42 +56,43 @@ void __cdecl Scr_ReadOnlyField(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_FreeEntityWrapper(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl G_FreeEntityWrapper(gentity_s *ent,SpawnVar *spawnVar)
 
 {
-  G_FreeEntity(param_1);
+  G_FreeEntity(ent);
   return;
 }
 
 
 // 006839B0  G_SetEntityScriptVariableInternal  (game_mp/g_spawn_mp.cpp:180)
 
-uint __cdecl G_SetEntityScriptVariableInternal(char *param_1,char *param_2)
+uint __cdecl G_SetEntityScriptVariableInternal(char *key,char *value)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int iVar4;
-  char *pcVar5;
-  double dVar6;
-  scriptInstance_t sVar7;
-  int local_14;
-  float local_10 [3];
+  int value_00;
+  char *fmt;
+  double dVar4;
+  scriptInstance_t sVar5;
+  uint index;
+  int type;
+  float vec [3];
   
-  uVar3 = Scr_FindField(param_1,&local_14,SCRIPTINSTANCE_SERVER);
+  uVar3 = Scr_FindField(key,&type,SCRIPTINSTANCE_SERVER);
   if (uVar3 == 0) {
     uVar3 = 0;
   }
   else {
-    switch(local_14) {
+    switch(type) {
     case 2:
-      Scr_AddString(param_2,SCRIPTINSTANCE_SERVER);
+      Scr_AddString(value,SCRIPTINSTANCE_SERVER);
       break;
     default:
-      pcVar5 = va("G_SetEntityScriptVariableInternal: bad case %d");
+      fmt = va("G_SetEntityScriptVariableInternal: bad case %d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0xd2,0,
-                               pcVar5);
+                               fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
@@ -97,21 +100,21 @@ uint __cdecl G_SetEntityScriptVariableInternal(char *param_1,char *param_2)
       }
       break;
     case 4:
-      local_10[0] = 0.0;
-      local_10[1] = 0.0;
-      local_10[2] = 0.0;
-      sscanf(param_2,"%f %f %f");
-      Scr_AddVector(local_10,SCRIPTINSTANCE_SERVER);
+      vec[0] = 0.0;
+      vec[1] = 0.0;
+      vec[2] = 0.0;
+      sscanf(value,"%f %f %f");
+      Scr_AddVector(vec,SCRIPTINSTANCE_SERVER);
       break;
     case 5:
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      dVar6 = atof(param_2);
-      Scr_AddFloat((float)dVar6,sVar7);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      dVar4 = atof(value);
+      Scr_AddFloat((float)dVar4,sVar5);
       break;
     case 6:
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      iVar4 = atoi(param_2);
-      Scr_AddInt(iVar4,sVar7);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      value_00 = atoi(value);
+      Scr_AddInt(value_00,sVar5);
     }
   }
   return uVar3;
@@ -125,14 +128,15 @@ uint __cdecl G_SetEntityScriptVariableInternal(char *param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SetEntityScriptVariable(char *param_1,char *param_2,gentity_s *param_3)
+void __cdecl G_SetEntityScriptVariable(char *key,char *value,gentity_s *ent)
 
 {
-  uint uVar1;
+  uint index_00;
+  uint index;
   
-  uVar1 = G_SetEntityScriptVariableInternal(param_1,param_2);
-  if (uVar1 != 0) {
-    GScr_SetDynamicEntityField(param_3,uVar1);
+  index_00 = G_SetEntityScriptVariableInternal(key,value);
+  if (index_00 != 0) {
+    GScr_SetDynamicEntityField(ent,index_00);
   }
   return;
 }
@@ -145,7 +149,7 @@ void __cdecl G_SetEntityScriptVariable(char *param_1,char *param_2,gentity_s *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ParseEntityField(char *param_1,char *param_2,gentity_s *param_3,int param_4)
+void __cdecl G_ParseEntityField(char *key,char *value,gentity_s *ent,int radiant_update)
 
 {
   code *pcVar1;
@@ -153,42 +157,43 @@ void __cdecl G_ParseEntityField(char *param_1,char *param_2,gentity_s *param_3,i
   int iVar3;
   uint uVar4;
   double dVar5;
-  ent_field_t *local_18;
-  short local_8;
+  uchar *b;
+  ent_field_t *f;
+  int modelIndex;
   
-  local_18 = fields;
+  f = fields;
   while( true ) {
-    if (local_18->name == (char *)0x0) {
-      G_SetEntityScriptVariable(param_1,param_2,param_3);
+    if (f->name == (char *)0x0) {
+      G_SetEntityScriptVariable(key,value,ent);
       return;
     }
-    iVar3 = I_stricmp(local_18->name,param_1);
+    iVar3 = I_stricmp(f->name,key);
     if (iVar3 == 0) break;
-    local_18 = local_18 + 1;
+    f = f + 1;
   }
-  switch(local_18->type) {
+  switch(f->type) {
   case F_INT:
-    iVar3 = atoi(param_2);
-    *(int *)((int)(param_3->s).lerp.pos.trBase + local_18->ofs + -0x18) = iVar3;
+    iVar3 = atoi(value);
+    *(int *)((int)(ent->s).lerp.pos.trBase + f->ofs + -0x18) = iVar3;
     break;
   case F_FLOAT:
-    dVar5 = atof(param_2);
-    *(float *)((int)(param_3->s).lerp.pos.trBase + local_18->ofs + -0x18) = (float)dVar5;
+    dVar5 = atof(value);
+    *(float *)((int)(ent->s).lerp.pos.trBase + f->ofs + -0x18) = (float)dVar5;
     break;
   case F_STRING:
     Scr_SetStringLiveUpdateSafe
-              ((ushort *)((int)(param_3->s).lerp.pos.trBase + local_18->ofs + -0x18),param_2,
+              ((ushort *)((int)(ent->s).lerp.pos.trBase + f->ofs + -0x18),value,
                SCRIPTINSTANCE_SERVER);
     break;
   case F_VECTOR:
-    sscanf(param_2,"%f %f %f");
-    *(undefined4 *)((int)(param_3->s).lerp.pos.trBase + local_18->ofs + -0x18) = 0;
-    *(undefined4 *)((int)(param_3->s).lerp.pos.trBase + local_18->ofs + -0x14) = 0;
-    *(undefined4 *)((int)(param_3->s).lerp.pos.trBase + local_18->ofs + -0x10) = 0;
+    sscanf(value,"%f %f %f");
+    *(undefined4 *)((int)(ent->s).lerp.pos.trBase + f->ofs + -0x18) = 0;
+    *(undefined4 *)((int)(ent->s).lerp.pos.trBase + f->ofs + -0x14) = 0;
+    *(undefined4 *)((int)(ent->s).lerp.pos.trBase + f->ofs + -0x10) = 0;
     break;
   case F_MODEL:
-    if (*param_2 == '*') {
-      uVar4 = atoi(param_2 + 1);
+    if (*value == '*') {
+      uVar4 = atoi(value + 1);
       if ((uVar4 != (uVar4 & 0xffff)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",
                                    0x11a,0,"%s"), !bVar2)) {
@@ -196,19 +201,19 @@ void __cdecl G_ParseEntityField(char *param_1,char *param_2,gentity_s *param_3,i
         (*pcVar1)();
         return;
       }
-      local_8 = (short)uVar4;
-      (param_3->s).index.brushmodel = local_8;
+      modelIndex._0_2_ = (short)uVar4;
+      (ent->s).index.brushmodel = (short)modelIndex;
     }
     else {
-      iVar3 = Com_IsLegacyXModelName(param_2);
+      iVar3 = Com_IsLegacyXModelName(value);
       if (iVar3 != 0) {
-        param_2 = param_2 + 7;
+        value = value + 7;
       }
-      if (param_4 == 0) {
-        G_SetModel(param_3,param_2);
+      if (radiant_update == 0) {
+        G_SetModel(ent,value);
       }
       else {
-        G_SetModelIfLoaded(param_3,param_2);
+        G_SetModelIfLoaded(ent,value);
       }
     }
   }
@@ -223,14 +228,14 @@ void __cdecl G_ParseEntityField(char *param_1,char *param_2,gentity_s *param_3,i
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_ParseEntityFields(SpawnVar *param_1,gentity_s *param_2,int param_3)
+void __cdecl G_ParseEntityFields(SpawnVar *spawnVar,gentity_s *ent,int radiant_update)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if (param_1->spawnVarsValid == false) {
+  if (spawnVar->spawnVarsValid == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x13c,0,
                              "%s");
     if (!bVar2) {
@@ -239,41 +244,41 @@ void __cdecl G_ParseEntityFields(SpawnVar *param_1,gentity_s *param_2,int param_
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_1->numSpawnVars; local_8 = local_8 + 1) {
-    G_ParseEntityField(param_1->spawnVars[local_8][0],param_1->spawnVars[local_8][1],param_2,param_3
-                      );
+  for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+    G_ParseEntityField(spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1],ent,radiant_update);
   }
-  G_SetOrigin(param_2,(param_2->r).currentOrigin);
-  G_SetAngle(param_2,(param_2->r).currentAngles);
+  G_SetOrigin(ent,(ent->r).currentOrigin);
+  G_SetAngle(ent,(ent->r).currentAngles);
   return;
 }
 
 
 // 00683E20  G_SpawnStruct  (game_mp/g_spawn_mp.cpp:333)
 
-uint __cdecl G_SpawnStruct(SpawnVar *param_1)
+uint __cdecl G_SpawnStruct(SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
-  int local_10;
-  char *local_c;
-  uint local_8;
+  uint index;
+  int i;
+  char *scriptLabel;
+  uint structId;
   
-  if ((param_1->spawnVarsValid == false) &&
+  if ((spawnVar->spawnVarsValid == false) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x153,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  G_SpawnString(param_1,"script_label","",&local_c);
-  iVar4 = I_stricmp(local_c,"random");
-  if (((iVar4 == 0) || (iVar4 = I_stricmp(local_c,"looper"), iVar4 == 0)) ||
-     (iVar4 = I_stricmp(local_c,"line_emitter"), iVar4 == 0)) {
-    local_8 = 0;
+  G_SpawnString(spawnVar,"script_label","",&scriptLabel);
+  iVar4 = I_stricmp(scriptLabel,"random");
+  if (((iVar4 == 0) || (iVar4 = I_stricmp(scriptLabel,"looper"), iVar4 == 0)) ||
+     (iVar4 = I_stricmp(scriptLabel,"line_emitter"), iVar4 == 0)) {
+    structId = 0;
   }
   else {
     if ((g_scr_data.createstruct == 0) &&
@@ -284,16 +289,16 @@ uint __cdecl G_SpawnStruct(SpawnVar *param_1)
       return uVar3;
     }
     Scr_AddExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.createstruct,0);
-    local_8 = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
-    for (local_10 = 0; local_10 < param_1->numSpawnVars; local_10 = local_10 + 1) {
-      uVar3 = G_SetEntityScriptVariableInternal
-                        (param_1->spawnVars[local_10][0],param_1->spawnVars[local_10][1]);
+    structId = Scr_GetObject(0,SCRIPTINSTANCE_SERVER);
+    for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+      uVar3 = G_SetEntityScriptVariableInternal(spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1])
+      ;
       if (uVar3 != 0) {
-        Scr_SetStructField(local_8,uVar3,SCRIPTINSTANCE_SERVER);
+        Scr_SetStructField(structId,uVar3,SCRIPTINSTANCE_SERVER);
       }
     }
   }
-  return local_8;
+  return structId;
 }
 
 
@@ -304,38 +309,40 @@ uint __cdecl G_SpawnStruct(SpawnVar *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_DuplicateEntityFields(gentity_s *param_1,gentity_s *param_2)
+void __cdecl G_DuplicateEntityFields(gentity_s *dest,gentity_s *source)
 
 {
   undefined4 *puVar1;
   undefined4 *puVar2;
-  ent_field_t *local_c;
+  uchar *from;
+  ent_field_t *f;
+  uchar *to;
   
-  for (local_c = fields; local_c->name != (char *)0x0; local_c = local_c + 1) {
-    switch(local_c->type) {
+  for (f = fields; f->name != (char *)0x0; f = f + 1) {
+    switch(f->type) {
     case F_INT:
-      *(undefined4 *)((int)(param_1->s).lerp.pos.trBase + local_c->ofs + -0x18) =
-           *(undefined4 *)((int)(param_2->s).lerp.pos.trBase + local_c->ofs + -0x18);
+      *(undefined4 *)((int)(dest->s).lerp.pos.trBase + f->ofs + -0x18) =
+           *(undefined4 *)((int)(source->s).lerp.pos.trBase + f->ofs + -0x18);
       break;
     case F_FLOAT:
-      *(undefined4 *)((int)(param_1->s).lerp.pos.trBase + local_c->ofs + -0x18) =
-           *(undefined4 *)((int)(param_2->s).lerp.pos.trBase + local_c->ofs + -0x18);
+      *(undefined4 *)((int)(dest->s).lerp.pos.trBase + f->ofs + -0x18) =
+           *(undefined4 *)((int)(source->s).lerp.pos.trBase + f->ofs + -0x18);
       break;
     case F_STRING:
-      Scr_SetString((ushort *)((int)(param_1->s).lerp.pos.trBase + local_c->ofs + -0x18),
-                    (uint)*(ushort *)((int)(param_2->s).lerp.pos.trBase + local_c->ofs + -0x18),
+      Scr_SetString((ushort *)((int)(dest->s).lerp.pos.trBase + f->ofs + -0x18),
+                    (uint)*(ushort *)((int)(source->s).lerp.pos.trBase + f->ofs + -0x18),
                     SCRIPTINSTANCE_SERVER);
       break;
     case F_VECTOR:
-      puVar1 = (undefined4 *)((int)(param_1->s).lerp.pos.trBase + local_c->ofs + -0x18);
-      puVar2 = (undefined4 *)((int)(param_2->s).lerp.pos.trBase + local_c->ofs + -0x18);
+      puVar1 = (undefined4 *)((int)(dest->s).lerp.pos.trBase + f->ofs + -0x18);
+      puVar2 = (undefined4 *)((int)(source->s).lerp.pos.trBase + f->ofs + -0x18);
       *puVar1 = *puVar2;
       puVar1[1] = puVar2[1];
       puVar1[2] = puVar2[2];
       break;
     case F_MODEL:
-      *(undefined2 *)((int)(param_1->s).lerp.pos.trBase + local_c->ofs + -0x18) =
-           *(undefined2 *)((int)(param_2->s).lerp.pos.trBase + local_c->ofs + -0x18);
+      *(undefined2 *)((int)(dest->s).lerp.pos.trBase + f->ofs + -0x18) =
+           *(undefined2 *)((int)(source->s).lerp.pos.trBase + f->ofs + -0x18);
     }
   }
   return;
@@ -349,13 +356,13 @@ void __cdecl G_DuplicateEntityFields(gentity_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_DuplicateScriptFields(gentity_s *param_1,gentity_s *param_2)
+void __cdecl G_DuplicateScriptFields(gentity_s *dest,gentity_s *source)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1->s).number != (int)param_1[-0x1487a].r.mins / 0x2f8) {
+  if ((dest->s).number != (int)dest[-0x1487a].r.mins / 0x2f8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x19c,0,
                              "%s");
     if (!bVar2) {
@@ -364,7 +371,7 @@ void __cdecl G_DuplicateScriptFields(gentity_s *param_1,gentity_s *param_2)
       return;
     }
   }
-  if ((param_2->s).number != (int)param_2[-0x1487a].r.mins / 0x2f8) {
+  if ((source->s).number != (int)source[-0x1487a].r.mins / 0x2f8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x19d,0,
                              "%s");
     if (!bVar2) {
@@ -373,26 +380,28 @@ void __cdecl G_DuplicateScriptFields(gentity_s *param_1,gentity_s *param_2)
       return;
     }
   }
-  Scr_CopyEntityNum((param_2->s).number,(param_1->s).number,0,SCRIPTINSTANCE_SERVER);
+  Scr_CopyEntityNum((source->s).number,(dest->s).number,0,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00684A60  G_GetItemForClassname  (game_mp/g_spawn_mp.cpp:425)
 
-gitem_s * __cdecl G_GetItemForClassname(char *param_1,uchar param_2)
+gitem_s * __cdecl G_GetItemForClassname(char *classname,uchar model)
 
 {
   int iVar1;
-  uint uVar2;
-  gitem_s *pgVar3;
+  uint weaponIndex;
+  gitem_s *pgVar2;
+  int weapIndex;
+  WeaponDef *weapDef;
   
   if ((((g_connectpaths->current).integer == 0) &&
-      (iVar1 = strncmp(param_1,"weapon_",7), iVar1 == 0)) &&
-     (uVar2 = G_GetWeaponIndexForName(param_1 + 7), uVar2 != 0)) {
-    BG_GetWeaponDef(uVar2);
-    pgVar3 = BG_FindItemForWeapon(uVar2,(uint)param_2);
-    return pgVar3;
+      (iVar1 = strncmp(classname,"weapon_",7), iVar1 == 0)) &&
+     (weaponIndex = G_GetWeaponIndexForName(classname + 7), weaponIndex != 0)) {
+    BG_GetWeaponDef(weaponIndex);
+    pgVar2 = BG_FindItemForWeapon(weaponIndex,(uint)model);
+    return pgVar2;
   }
   return (gitem_s *)0x0;
 }
@@ -406,7 +415,7 @@ gitem_s * __cdecl G_GetItemForClassname(char *param_1,uchar param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 _func___cdecl_void_gentity_s_ptr_SpawnVar_ptr * __cdecl
-G_FindSpawnFunc(char *param_1,SpawnFuncEntry *param_2,int param_3)
+G_FindSpawnFunc(char *classname,SpawnFuncEntry *spawnFuncArray,int spawnFuncCount)
 
 {
   byte bVar1;
@@ -414,15 +423,15 @@ G_FindSpawnFunc(char *param_1,SpawnFuncEntry *param_2,int param_3)
   int local_18;
   byte *local_10;
   byte *local_c;
-  int local_8;
+  int spawnFuncIter;
   
-  local_8 = 0;
+  spawnFuncIter = 0;
   do {
-    if (param_3 <= local_8) {
+    if (spawnFuncCount <= spawnFuncIter) {
       return (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0;
     }
-    local_c = (byte *)param_2[local_8].classname;
-    local_10 = (byte *)param_1;
+    local_c = (byte *)spawnFuncArray[spawnFuncIter].classname;
+    local_10 = (byte *)classname;
     do {
       bVar1 = *local_10;
       bVar2 = bVar1 < *local_c;
@@ -441,16 +450,16 @@ LAB_00684b3f:
     local_18 = 0;
 LAB_00684b47:
     if (local_18 == 0) {
-      return param_2[local_8].callback;
+      return spawnFuncArray[spawnFuncIter].callback;
     }
-    local_8 = local_8 + 1;
+    spawnFuncIter = spawnFuncIter + 1;
   } while( true );
 }
 
 
 // 00684150  IsClientOnlyEntity  (game_mp/g_spawn_mp.cpp:462)
 
-bool __cdecl IsClientOnlyEntity(SpawnVar *param_1)
+bool __cdecl IsClientOnlyEntity(SpawnVar *spawnVar)
 
 {
   byte bVar1;
@@ -462,21 +471,21 @@ bool __cdecl IsClientOnlyEntity(SpawnVar *param_1)
   int local_38;
   byte *local_30;
   byte *local_2c;
-  char *local_28;
-  char *local_24;
-  char *local_20;
-  DestructibleDef *local_1c;
-  char *local_18;
-  char local_11;
-  byte *local_10;
-  uint local_c;
-  char *local_8;
+  char *clientSide_2;
+  char *modelName;
+  char *clientSide;
+  DestructibleDef *ddef;
+  char *destructibledefname;
+  bool bClientSide;
+  char *classname;
+  uint flags;
+  char *spawnFlags;
   
-  G_SpawnString(param_1,"classname","",(char **)&local_10);
-  G_SpawnString(param_1,"spawnflags","",&local_8);
-  local_c = atoi(local_8);
-  local_11 = (local_c & 2) != 0;
-  local_2c = local_10;
+  G_SpawnString(spawnVar,"classname","",&classname);
+  G_SpawnString(spawnVar,"spawnflags","",&spawnFlags);
+  flags = atoi(spawnFlags);
+  bClientSide = (flags & 2) != 0;
+  local_2c = (byte *)classname;
   local_30 = (byte *)0xc8c20c;
   do {
     bVar1 = *local_30;
@@ -496,27 +505,27 @@ LAB_006841f3:
   local_38 = 0;
 LAB_006841fb:
   if (local_38 == 0) {
-    G_SpawnString(param_1,"destructibledef",(char *)0x0,&local_18);
-    if (local_18 == (char *)0x0) {
-      local_20 = (char *)0x0;
-      G_SpawnString(param_1,"clientside",(char *)0x0,&local_20);
-      if (((local_11 != '\0') || (local_20 != (char *)0x0)) &&
-         ((local_11 != '\0' || (dVar3 = atof(local_20), dVar3 == 1.0)))) {
-        G_SpawnString(param_1,"model",(char *)0x0,&local_24);
-        if ((local_24 != (char *)0x0) && (*local_24 != '\0')) {
-          G_ModelIndex(local_24);
+    G_SpawnString(spawnVar,"destructibledef",(char *)0x0,&destructibledefname);
+    if (destructibledefname == (char *)0x0) {
+      clientSide = (char *)0x0;
+      G_SpawnString(spawnVar,"clientside",(char *)0x0,&clientSide);
+      if (((bClientSide != false) || (clientSide != (char *)0x0)) &&
+         ((bClientSide != false || (dVar3 = atof(clientSide), dVar3 == 1.0)))) {
+        G_SpawnString(spawnVar,"model",(char *)0x0,&modelName);
+        if ((modelName != (char *)0x0) && (*modelName != '\0')) {
+          G_ModelIndex(modelName);
         }
         return true;
       }
     }
     else {
-      local_1c = DestructibleDefPrecache(local_18);
-      if ((local_1c != (DestructibleDef *)0x0) && (local_1c->clientOnly != 0)) {
+      ddef = DestructibleDefPrecache(destructibledefname);
+      if ((ddef != (DestructibleDef *)0x0) && (ddef->clientOnly != 0)) {
         return true;
       }
     }
   }
-  local_40 = local_10;
+  local_40 = (byte *)classname;
   local_44 = (byte *)0xc8c1fc;
   do {
     bVar1 = *local_44;
@@ -536,10 +545,10 @@ LAB_00684324:
   local_4c = 0;
 LAB_0068432c:
   if (local_4c == 0) {
-    local_28 = (char *)0x0;
-    G_SpawnString(param_1,"clientside",(char *)0x0,&local_28);
-    if (((local_11 != '\0') || (local_28 != (char *)0x0)) &&
-       ((local_11 != '\0' || (dVar3 = atof(local_28), dVar3 == 1.0)))) {
+    clientSide_2 = (char *)0x0;
+    G_SpawnString(spawnVar,"clientside",(char *)0x0,&clientSide_2);
+    if (((bClientSide != false) || (clientSide_2 != (char *)0x0)) &&
+       ((bClientSide != false || (dVar3 = atof(clientSide_2), dVar3 == 1.0)))) {
       return true;
     }
   }
@@ -554,55 +563,56 @@ LAB_0068432c:
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl G_SetupDestructible(gentity_s *param_1,char *param_2)
+void __cdecl G_SetupDestructible(gentity_s *ent,char *destructibleName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_40c [1024];
+  char szConfigString [1024];
   uint local_c;
-  int local_8;
+  int iDestID;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x215,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((destructibleName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x216,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  iDestID = 0;
   do {
-    if (0x3f < local_8) {
+    if (0x3f < iDestID) {
 LAB_0068446f:
-      if ((0x3f < local_8) &&
+      if ((0x3f < iDestID) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",
                                    0x228,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      AssignToSmallerType<unsigned_char>(&(param_1->s).un1.scale,local_8);
-      (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags | 0x20000;
+      AssignToSmallerType<unsigned_char>(&(ent->s).un1.scale,iDestID);
+      (ent->s).lerp.eFlags = (ent->s).lerp.eFlags | 0x20000;
       return;
     }
-    SV_GetConfigstring(local_8 + 0xc6c,local_40c,0x400);
-    if (local_40c[0] == '\0') {
-      SV_SetConfigstring(local_8 + 0xc6c,param_2);
+    SV_GetConfigstring(iDestID + 0xc6c,szConfigString,0x400);
+    if (szConfigString[0] == '\0') {
+      SV_SetConfigstring(iDestID + 0xc6c,destructibleName);
       goto LAB_0068446f;
     }
-    iVar3 = I_stricmp(local_40c,param_2);
+    iVar3 = I_stricmp(szConfigString,destructibleName);
     if (iVar3 == 0) goto LAB_0068446f;
-    local_8 = local_8 + 1;
+    iDestID = iDestID + 1;
   } while( true );
 }
 
@@ -614,15 +624,15 @@ LAB_0068446f:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SetupDestructible(gentity_s *param_1,SpawnVar *param_2)
+void __cdecl G_SetupDestructible(gentity_s *ent,SpawnVar *spawnVar)
 
 {
-  char *local_8;
+  char *destructibleName;
   
-  local_8 = (char *)0x0;
-  G_SpawnString(param_2,"destructibledef",(char *)0x0,&local_8);
-  if (local_8 != (char *)0x0) {
-    G_SetupDestructible(param_1,local_8);
+  destructibleName = (char *)0x0;
+  G_SpawnString(spawnVar,"destructibledef",(char *)0x0,&destructibleName);
+  if (destructibleName != (char *)0x0) {
+    G_SetupDestructible(ent,destructibleName);
   }
   return;
 }
@@ -635,14 +645,14 @@ void __cdecl G_SetupDestructible(gentity_s *param_1,SpawnVar *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_CallSpawn(SpawnVar *param_1)
+void __cdecl G_CallSpawn(SpawnVar *spawnVar)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  gitem_s *pgVar5;
+  gitem_s *item_00;
   int local_a0;
   byte *local_98;
   byte *local_94;
@@ -664,42 +674,43 @@ void __cdecl G_CallSpawn(SpawnVar *param_1)
   int local_28;
   byte *local_20;
   byte *local_1c;
-  _func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *local_14;
-  byte *local_10;
-  gentity_s *local_c;
-  uint local_8;
+  gitem_s *item;
+  _func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *spawnFunc;
+  char *classname;
+  gentity_s *ent;
+  int radiantLiveUpdate;
   
-  if ((param_1->spawnVarsValid == false) &&
+  if ((spawnVar->spawnVarsValid == false) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x248,1,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_8 = (uint)(level.spawnVar.spawnVarsValid == false);
-  G_SpawnString(param_1,"classname","",(char **)&local_10);
-  if (local_10 == (byte *)0x0) {
+  radiantLiveUpdate = (int)(level.spawnVar.spawnVarsValid == false);
+  G_SpawnString(spawnVar,"classname","",&classname);
+  if (classname == (char *)0x0) {
     Com_Printf(0xf,"G_CallSpawn: NULL classname\n");
   }
   else {
-    iVar4 = strncmp((char *)local_10,"dyn_",4);
+    iVar4 = strncmp(classname,"dyn_",4);
     if (iVar4 != 0) {
-      iVar4 = strncmp((char *)local_10,"node_",5);
+      iVar4 = strncmp(classname,"node_",5);
       if (iVar4 == 0) {
         if ((useFastFile->current).enabled == false) {
-          G_SpawnPathnodeStatic(param_1,(char *)local_10);
+          G_SpawnPathnodeStatic(spawnVar,classname);
         }
-        G_SpawnPathnodeDynamic(param_1);
+        G_SpawnPathnodeDynamic(spawnVar);
       }
       else {
-        iVar4 = strncmp((char *)local_10,"actor_",6);
+        iVar4 = strncmp(classname,"actor_",6);
         if (iVar4 == 0) {
-          local_c = G_Spawn();
-          G_ParseEntityFields(param_1,local_c,local_8);
-          SP_actor(local_c,param_1);
+          ent = G_Spawn();
+          G_ParseEntityFields(spawnVar,ent,radiantLiveUpdate);
+          SP_actor(ent,spawnVar);
         }
         else {
-          local_1c = local_10;
+          local_1c = (byte *)classname;
           local_20 = (byte *)0xccb4dc;
           do {
             bVar1 = *local_20;
@@ -719,10 +730,10 @@ LAB_0068468b:
           local_28 = 0;
 LAB_00684693:
           if (local_28 == 0) {
-            SP_info_vehicle_node(param_1,0,0);
+            SP_info_vehicle_node(spawnVar,0,0);
           }
           else {
-            local_30 = local_10;
+            local_30 = (byte *)classname;
             local_34 = (byte *)0xccb4c0;
             do {
               bVar1 = *local_34;
@@ -742,14 +753,14 @@ LAB_006846fe:
             local_3c = 0;
 LAB_00684706:
             if (local_3c == 0) {
-              SP_info_vehicle_node(param_1,1,0);
+              SP_info_vehicle_node(spawnVar,1,0);
             }
             else {
-              pgVar5 = G_GetItemForClassname((char *)local_10,'\0');
-              if (pgVar5 == (gitem_s *)0x0) {
-                bVar3 = IsClientOnlyEntity(param_1);
+              item_00 = G_GetItemForClassname(classname,'\0');
+              if (item_00 == (gitem_s *)0x0) {
+                bVar3 = IsClientOnlyEntity(spawnVar);
                 if (!bVar3) {
-                  local_44 = local_10;
+                  local_44 = (byte *)classname;
                   local_48 = (byte *)0xc90a90;
                   do {
                     bVar1 = *local_48;
@@ -769,7 +780,7 @@ LAB_006847d1:
                   local_50 = 0;
 LAB_006847d9:
                   if (local_50 != 0) {
-                    local_58 = local_10;
+                    local_58 = (byte *)classname;
                     local_5c = (byte *)0xc90a68;
                     do {
                       bVar1 = *local_5c;
@@ -789,7 +800,7 @@ LAB_00684834:
                     local_64 = 0;
 LAB_0068483c:
                     if (local_64 != 0) {
-                      local_6c = local_10;
+                      local_6c = (byte *)classname;
                       local_70 = &s_rope;
                       do {
                         bVar1 = *local_70;
@@ -809,7 +820,7 @@ LAB_00684897:
                       local_78 = 0;
 LAB_0068489f:
                       if (local_78 != 0) {
-                        local_80 = local_10;
+                        local_80 = (byte *)classname;
                         local_84 = (byte *)0xc90aa4;
                         do {
                           bVar1 = *local_84;
@@ -829,10 +840,10 @@ LAB_00684909:
                         local_8c = 0;
 LAB_00684914:
                         if (local_8c == 0) {
-                          G_SpawnHeliHeightLock(param_1);
+                          G_SpawnHeliHeightLock(spawnVar);
                         }
                         else {
-                          local_94 = local_10;
+                          local_94 = (byte *)classname;
                           local_98 = (byte *)0xc8aff4;
                           do {
                             bVar1 = *local_98;
@@ -852,18 +863,18 @@ LAB_006849ab:
                           local_a0 = 0;
 LAB_006849b6:
                           if (local_a0 != 0) {
-                            local_14 = G_FindSpawnFunc((char *)local_10,s_bspOrDynamicSpawns,7);
-                            if ((local_14 == (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0)
+                            spawnFunc = G_FindSpawnFunc(classname,s_bspOrDynamicSpawns,7);
+                            if ((spawnFunc == (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0)
                                && (level.spawnVar.spawnVarsValid != false)) {
-                              local_14 = G_FindSpawnFunc((char *)local_10,s_bspOnlySpawns,0xf);
+                              spawnFunc = G_FindSpawnFunc(classname,s_bspOnlySpawns,0xf);
                             }
-                            if (local_14 != G_FreeEntityWrapper) {
-                              local_c = G_Spawn();
-                              G_ParseEntityFields(param_1,local_c,local_8);
-                              G_SetupDestructible(local_c,param_1);
-                              if (local_14 != (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0)
+                            if (spawnFunc != G_FreeEntityWrapper) {
+                              ent = G_Spawn();
+                              G_ParseEntityFields(spawnVar,ent,radiantLiveUpdate);
+                              G_SetupDestructible(ent,spawnVar);
+                              if (spawnFunc != (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0)
                               {
-                                (*local_14)(local_c,param_1);
+                                (*spawnFunc)(ent,spawnVar);
                               }
                             }
                           }
@@ -874,9 +885,9 @@ LAB_006849b6:
                 }
               }
               else {
-                local_c = G_Spawn();
-                G_ParseEntityFields(param_1,local_c,local_8);
-                G_SpawnItem(local_c,pgVar5);
+                ent = G_Spawn();
+                G_ParseEntityFields(spawnVar,ent,radiantLiveUpdate);
+                G_SpawnItem(ent,item_00);
               }
             }
           }
@@ -895,15 +906,17 @@ LAB_006849b6:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_CallSpawnEntity(gentity_s *param_1)
+int __cdecl G_CallSpawnEntity(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  gitem_s *pgVar5;
-  _func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *p_Var6;
+  char *classname_00;
+  gitem_s *item_00;
+  _func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *p_Var4;
+  gitem_s *item;
+  char *classname;
   
   if (level.spawnVar.spawnVarsValid) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x2c1,1,
@@ -914,21 +927,21 @@ int __cdecl G_CallSpawnEntity(gentity_s *param_1)
       return iVar3;
     }
   }
-  if (param_1->classname == 0) {
+  if (ent->classname == 0) {
     Com_Printf(0xf,"G_CallSpawnEntity: NULL classname\n");
     iVar3 = 0;
   }
   else {
-    pcVar4 = SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
-    pgVar5 = G_GetItemForClassname(pcVar4,'\0');
-    if (pgVar5 == (gitem_s *)0x0) {
-      p_Var6 = G_FindSpawnFunc(pcVar4,s_bspOrDynamicSpawns,7);
-      if (p_Var6 == (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0) {
+    classname_00 = SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
+    item_00 = G_GetItemForClassname(classname_00,'\0');
+    if (item_00 == (gitem_s *)0x0) {
+      p_Var4 = G_FindSpawnFunc(classname_00,s_bspOrDynamicSpawns,7);
+      if (p_Var4 == (_func___cdecl_void_gentity_s_ptr_SpawnVar_ptr *)0x0) {
         Com_Printf(0xf,"%s cannot be spawned dynamically\n");
         iVar3 = 0;
       }
       else {
-        if (p_Var6 == G_FreeEntityWrapper) {
+        if (p_Var4 == G_FreeEntityWrapper) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",
                                    0x2d9,0,"%s");
           if (!bVar2) {
@@ -937,8 +950,8 @@ int __cdecl G_CallSpawnEntity(gentity_s *param_1)
             return iVar3;
           }
         }
-        (*p_Var6)(param_1,(SpawnVar *)0x0);
-        if ((param_1->r).inuse == '\0') {
+        (*p_Var4)(ent,(SpawnVar *)0x0);
+        if ((ent->r).inuse == '\0') {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",
                                    0x2db,0,"%s");
           if (!bVar2) {
@@ -951,7 +964,7 @@ int __cdecl G_CallSpawnEntity(gentity_s *param_1)
       }
     }
     else {
-      G_SpawnItem(param_1,pgVar5);
+      G_SpawnItem(ent,item_00);
       iVar3 = 1;
     }
   }
@@ -971,17 +984,17 @@ void __cdecl GScr_AddFieldsForEntity(void)
 {
   code *pcVar1;
   bool bVar2;
-  ent_field_t *local_8;
+  ent_field_t *f;
   
-  local_8 = fields;
+  f = fields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       GScr_AddFieldsForActor();
       GScr_AddFieldsForSentient();
       GScr_AddFieldsForClient();
       return;
     }
-    if (((int)&local_8[-0xa3c15].type / 0x14 & 0xc000U) != 0) {
+    if (((int)&f[-0xa3c15].type / 0x14 & 0xc000U) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x2eb,0,
                                "%s");
       if (!bVar2) {
@@ -990,7 +1003,7 @@ void __cdecl GScr_AddFieldsForEntity(void)
         return;
       }
     }
-    if ((int)&local_8[-0xa3c15].type / 0x14 != ((int)&local_8[-0xa3c15].type / 0x14 & 0xffffU)) {
+    if ((int)&f[-0xa3c15].type / 0x14 != ((int)&f[-0xa3c15].type / 0x14 & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x2ec,0,
                                "%s");
       if (!bVar2) {
@@ -999,9 +1012,8 @@ void __cdecl GScr_AddFieldsForEntity(void)
         return;
       }
     }
-    Scr_AddClassField(0,local_8->name,(int)&local_8[-0xa3c15].type / 0x14 & 0xffff,
-                      SCRIPTINSTANCE_SERVER);
-    local_8 = local_8 + 1;
+    Scr_AddClassField(0,f->name,(int)&f[-0xa3c15].type / 0x14 & 0xffff,SCRIPTINSTANCE_SERVER);
+    f = f + 1;
   } while( true );
 }
 
@@ -1023,14 +1035,16 @@ void __cdecl GScr_AddFieldsForRadiant(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Scr_SetEntityField(int param_1,int param_2)
+int __cdecl Scr_SetEntityField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  ent_field_t *f;
+  gentity_s *ent;
   
-  if (0x3ff < (uint)param_1) {
+  if (0x3ff < (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x30d,0,
                              "%s");
     if (!bVar2) {
@@ -1039,7 +1053,7 @@ int __cdecl Scr_SetEntityField(int param_1,int param_2)
       return iVar3;
     }
   }
-  if (g_entities[param_1].r.inuse == '\0') {
+  if (g_entities[entnum].r.inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x310,0,
                              "%s\n\t(ent->s.number) = %i");
     if (!bVar2) {
@@ -1048,35 +1062,35 @@ int __cdecl Scr_SetEntityField(int param_1,int param_2)
       return iVar3;
     }
   }
-  if ((param_2 & 0xc000U) == 0x8000) {
-    if (g_entities[param_1].actor == (actor_s *)0x0) {
+  if ((offset & 0xc000U) == 0x8000) {
+    if (g_entities[entnum].actor == (actor_s *)0x0) {
       iVar3 = 0;
     }
     else {
-      Scr_SetActorField(g_entities[param_1].actor,param_2 & 0xffff3fff);
+      Scr_SetActorField(g_entities[entnum].actor,offset & 0xffff3fff);
       iVar3 = 1;
     }
   }
-  else if ((param_2 & 0xc000U) == 0x4000) {
-    if (g_entities[param_1].sentient == (sentient_s *)0x0) {
+  else if ((offset & 0xc000U) == 0x4000) {
+    if (g_entities[entnum].sentient == (sentient_s *)0x0) {
       iVar3 = 0;
     }
     else {
-      Scr_SetSentientField(g_entities[param_1].sentient,param_2 & 0xffff3fff);
+      Scr_SetSentientField(g_entities[entnum].sentient,offset & 0xffff3fff);
       iVar3 = 1;
     }
   }
-  else if ((param_2 & 0xc000U) == 0xc000) {
-    if (g_entities[param_1].client == (gclient_s *)0x0) {
+  else if ((offset & 0xc000U) == 0xc000) {
+    if (g_entities[entnum].client == (gclient_s *)0x0) {
       iVar3 = 0;
     }
     else {
-      Scr_SetClientField(g_entities[param_1].client,param_2 & 0xffff3fff);
+      Scr_SetClientField(g_entities[entnum].client,offset & 0xffff3fff);
       iVar3 = 1;
     }
   }
   else {
-    if (0xe < (uint)param_2) {
+    if (0xe < (uint)offset) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x32f,0,
                                "%s");
       if (!bVar2) {
@@ -1085,13 +1099,12 @@ int __cdecl Scr_SetEntityField(int param_1,int param_2)
         return iVar3;
       }
     }
-    if (fields[param_2].callback == (_func___cdecl_void_gentity_s_ptr_int *)0x0) {
-      GScr_SetGenericField
-                ((uchar *)(g_entities + param_1),fields[param_2].type,fields[param_2].ofs,0);
+    if (fields[offset].callback == (_func___cdecl_void_gentity_s_ptr_int *)0x0) {
+      GScr_SetGenericField((uchar *)(g_entities + entnum),fields[offset].type,fields[offset].ofs,0);
       iVar3 = 1;
     }
     else {
-      (*fields[param_2].callback)(g_entities + param_1,param_2);
+      (*fields[offset].callback)(g_entities + entnum,offset);
       iVar3 = 1;
     }
   }
@@ -1101,44 +1114,45 @@ int __cdecl Scr_SetEntityField(int param_1,int param_2)
 
 // 00684DD0  GScr_SetGenericField  (game_mp/g_spawn_mp.cpp:836)
 
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetGenericField(uchar *param_1,fieldtype_t param_2,int param_3,uint param_4)
+void __cdecl GScr_SetGenericField(uchar *b,fieldtype_t type,int ofs,uint whichbits)
 
 {
   gentity_s *pgVar1;
   pathnode_t *ppVar2;
   uchar *puVar3;
   sentient_s *local_10;
+  gentity_s *ent;
   
-  switch(param_2) {
+  switch(type) {
   case F_ACTOR:
     pgVar1 = Scr_GetEntityAllowNull(0,SCRIPTINSTANCE_SERVER);
     if (pgVar1 == (gentity_s *)0x0) {
-      puVar3 = param_1 + param_3;
+      puVar3 = b + ofs;
       puVar3[0] = '\0';
       puVar3[1] = '\0';
       puVar3[2] = '\0';
       puVar3[3] = '\0';
     }
     else {
-      *(actor_s **)(param_1 + param_3) = pgVar1->actor;
+      *(actor_s **)(b + ofs) = pgVar1->actor;
     }
     break;
   case F_SENTIENT:
     pgVar1 = Scr_GetEntityAllowNull(0,SCRIPTINSTANCE_SERVER);
     if (pgVar1 == (gentity_s *)0x0) {
-      puVar3 = param_1 + param_3;
+      puVar3 = b + ofs;
       puVar3[0] = '\0';
       puVar3[1] = '\0';
       puVar3[2] = '\0';
       puVar3[3] = '\0';
     }
     else {
-      *(sentient_s **)(param_1 + param_3) = pgVar1->sentient;
+      *(sentient_s **)(b + ofs) = pgVar1->sentient;
     }
     break;
   case F_SENTIENTHANDLE:
@@ -1149,14 +1163,14 @@ void __cdecl GScr_SetGenericField(uchar *param_1,fieldtype_t param_2,int param_3
     else {
       local_10 = pgVar1->sentient;
     }
-    SentientHandle::setSentient((SentientHandle *)(param_1 + param_3),local_10);
+    SentientHandle::setSentient((SentientHandle *)(b + ofs),local_10);
     break;
   default:
-    Scr_SetGenericField(param_1,param_2,param_3,SCRIPTINSTANCE_SERVER,param_4);
+    Scr_SetGenericField(b,type,ofs,SCRIPTINSTANCE_SERVER,whichbits);
     break;
   case F_PATHNODE:
     ppVar2 = Scr_GetPathnode(0,SCRIPTINSTANCE_SERVER);
-    *(pathnode_t **)(param_1 + param_3) = ppVar2;
+    *(pathnode_t **)(b + ofs) = ppVar2;
   }
   return;
 }
@@ -1164,7 +1178,12 @@ void __cdecl GScr_SetGenericField(uchar *param_1,fieldtype_t param_2,int param_3
 
 // 00684EF0  Scr_SetObjectField  (game_mp/g_spawn_mp.cpp:877)
 
-int __cdecl Scr_SetObjectField(uint param_1,int param_2,int param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+int __cdecl Scr_SetObjectField(uint classnum,int entnum,int offset)
 
 {
   code *pcVar1;
@@ -1172,15 +1191,15 @@ int __cdecl Scr_SetObjectField(uint param_1,int param_2,int param_3)
   char *pcVar3;
   int iVar4;
   
-  switch(param_1) {
+  switch(classnum) {
   case 0:
-    iVar4 = Scr_SetEntityField(param_2,param_3);
+    iVar4 = Scr_SetEntityField(entnum,offset);
     return iVar4;
   case 1:
-    Scr_SetHudElemField(param_2,param_3);
+    Scr_SetHudElemField(entnum,offset);
     break;
   case 2:
-    Scr_SetPathnodeField(param_2,param_3);
+    Scr_SetPathnodeField(entnum,offset);
     break;
   case 3:
     bVar2 = false;
@@ -1208,51 +1227,52 @@ int __cdecl Scr_SetObjectField(uint param_1,int param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_GetEntityField(int param_1,int param_2)
+void __cdecl Scr_GetEntityField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  ent_field_t *f;
+  gentity_s *ent;
   
-  if ((0x3ff < (uint)param_1) &&
+  if ((0x3ff < (uint)entnum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x38f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((g_entities[param_1].r.inuse == '\0') &&
+  if ((g_entities[entnum].r.inuse == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x392,0,
                                "%s\n\t(ent->s.number) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 & 0xc000U) == 0x8000) {
-    if (g_entities[param_1].actor != (actor_s *)0x0) {
-      Scr_GetActorField(g_entities[param_1].actor,param_2 & 0xffff3fff);
+  if ((offset & 0xc000U) == 0x8000) {
+    if (g_entities[entnum].actor != (actor_s *)0x0) {
+      Scr_GetActorField(g_entities[entnum].actor,offset & 0xffff3fff);
     }
   }
-  else if ((param_2 & 0xc000U) == 0x4000) {
-    if (g_entities[param_1].sentient != (sentient_s *)0x0) {
-      Scr_GetSentientField(g_entities[param_1].sentient,param_2 & 0xffff3fff);
+  else if ((offset & 0xc000U) == 0x4000) {
+    if (g_entities[entnum].sentient != (sentient_s *)0x0) {
+      Scr_GetSentientField(g_entities[entnum].sentient,offset & 0xffff3fff);
     }
   }
-  else if ((param_2 & 0xc000U) == 0xc000) {
-    if (g_entities[param_1].client != (gclient_s *)0x0) {
-      Scr_GetClientField(g_entities[param_1].client,param_2 & 0xffff3fff);
+  else if ((offset & 0xc000U) == 0xc000) {
+    if (g_entities[entnum].client != (gclient_s *)0x0) {
+      Scr_GetClientField(g_entities[entnum].client,offset & 0xffff3fff);
     }
   }
   else {
-    if ((0xe < (uint)param_2) &&
+    if ((0xe < (uint)offset) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x3ae,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    GScr_GetGenericField((uchar *)(g_entities + param_1),fields[param_2].type,fields[param_2].ofs,0)
-    ;
+    GScr_GetGenericField((uchar *)(g_entities + entnum),fields[offset].type,fields[offset].ofs,0);
   }
   return;
 }
@@ -1265,64 +1285,65 @@ void __cdecl Scr_GetEntityField(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_GetGenericField(uchar *param_1,fieldtype_t param_2,int param_3,uint param_4)
+void __cdecl GScr_GetGenericField(uchar *b,fieldtype_t type,int ofs,uint whichbits)
 
 {
-  gentity_s *pgVar1;
-  int iVar2;
-  sentient_s *psVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
+  gentity_s *ent;
+  int iVar1;
+  sentient_s *psVar2;
+  uint value;
+  scriptInstance_t sVar3;
+  uint id;
   
-  switch(param_2) {
+  switch(type) {
   case F_ENTITY:
-    if (*(int *)(param_1 + param_3) != 0) {
-      Scr_AddEntity(*(gentity_s **)(param_1 + param_3),SCRIPTINSTANCE_SERVER);
+    if (*(int *)(b + ofs) != 0) {
+      Scr_AddEntity(*(gentity_s **)(b + ofs),SCRIPTINSTANCE_SERVER);
     }
     break;
   case F_ENTHANDLE:
-    iVar2 = EntHandle::isDefined((EntHandle *)(param_1 + param_3));
-    if (iVar2 != 0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pgVar1 = EntHandle::ent((EntHandle *)(param_1 + param_3));
-      Scr_AddEntity(pgVar1,sVar5);
+    iVar1 = EntHandle::isDefined((EntHandle *)(b + ofs));
+    if (iVar1 != 0) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      ent = EntHandle::ent((EntHandle *)(b + ofs));
+      Scr_AddEntity(ent,sVar3);
     }
     break;
   case F_ACTOR:
-    if (*(int *)(param_1 + param_3) != 0) {
-      Scr_AddEntity((gentity_s *)**(undefined4 **)(param_1 + param_3),SCRIPTINSTANCE_SERVER);
+    if (*(int *)(b + ofs) != 0) {
+      Scr_AddEntity((gentity_s *)**(undefined4 **)(b + ofs),SCRIPTINSTANCE_SERVER);
     }
     break;
   case F_SENTIENT:
-    if (*(int *)(param_1 + param_3) != 0) {
-      Scr_AddEntity((gentity_s *)**(undefined4 **)(param_1 + param_3),SCRIPTINSTANCE_SERVER);
+    if (*(int *)(b + ofs) != 0) {
+      Scr_AddEntity((gentity_s *)**(undefined4 **)(b + ofs),SCRIPTINSTANCE_SERVER);
     }
     break;
   case F_SENTIENTHANDLE:
-    iVar2 = SentientHandle::isDefined((SentientHandle *)(param_1 + param_3));
-    if (iVar2 != 0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      psVar3 = SentientHandle::sentient((SentientHandle *)(param_1 + param_3));
-      Scr_AddEntity(psVar3->ent,sVar5);
+    iVar1 = SentientHandle::isDefined((SentientHandle *)(b + ofs));
+    if (iVar1 != 0) {
+      sVar3 = SCRIPTINSTANCE_SERVER;
+      psVar2 = SentientHandle::sentient((SentientHandle *)(b + ofs));
+      Scr_AddEntity(psVar2->ent,sVar3);
     }
     break;
   default:
-    Scr_GetGenericField(param_1,param_2,param_3,SCRIPTINSTANCE_SERVER,param_4);
+    Scr_GetGenericField(b,type,ofs,SCRIPTINSTANCE_SERVER,whichbits);
     break;
   case F_PATHNODE:
-    if (*(int *)(param_1 + param_3) != 0) {
-      Scr_AddPathnode(*(pathnode_t **)(param_1 + param_3),SCRIPTINSTANCE_SERVER);
+    if (*(int *)(b + ofs) != 0) {
+      Scr_AddPathnode(*(pathnode_t **)(b + ofs),SCRIPTINSTANCE_SERVER);
     }
     break;
   case F_OBJECT:
-    if (*(uint *)(param_1 + param_3) != 0) {
-      Scr_AddObject(*(uint *)(param_1 + param_3),SCRIPTINSTANCE_SERVER);
+    if (*(uint *)(b + ofs) != 0) {
+      Scr_AddObject(*(uint *)(b + ofs),SCRIPTINSTANCE_SERVER);
     }
     break;
   case F_MODEL:
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    uVar4 = G_ModelName((uint)param_1[param_3]);
-    Scr_AddConstString(uVar4,sVar5);
+    sVar3 = SCRIPTINSTANCE_SERVER;
+    value = G_ModelName((uint)b[ofs]);
+    Scr_AddConstString(value,sVar3);
   }
   return;
 }
@@ -1330,30 +1351,35 @@ void __cdecl GScr_GetGenericField(uchar *param_1,fieldtype_t param_2,int param_3
 
 // 006854D0  Scr_GetObjectField  (game_mp/g_spawn_mp.cpp:1005)
 
-void __cdecl Scr_GetObjectField(uint param_1,int param_2,int param_3)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Scr_GetObjectField(uint classnum,int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   
-  switch(param_1) {
+  switch(classnum) {
   case 0:
-    Scr_GetEntityField(param_2,param_3);
+    Scr_GetEntityField(entnum,offset);
     break;
   case 1:
-    Scr_GetHudElemField(param_2,param_3);
+    Scr_GetHudElemField(entnum,offset);
     break;
   case 2:
-    Scr_GetPathnodeField(param_2,param_3);
+    Scr_GetPathnodeField(entnum,offset);
     break;
   case 3:
-    GScr_GetVehicleNodeField(param_2,param_3);
+    GScr_GetVehicleNodeField(entnum,offset);
     break;
   default:
-    pcVar3 = va("bad class num %u");
+    fmt = va("bad class num %u");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x3ff,0,
-                             pcVar3);
+                             fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -1371,21 +1397,22 @@ void __cdecl Scr_GetObjectField(uint param_1,int param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_FreeEntityConstStrings(gentity_s *param_1)
+void __cdecl Scr_FreeEntityConstStrings(gentity_s *pEnt)
 
 {
-  ent_field_t *local_c;
-  int local_8;
+  uchar *b;
+  ent_field_t *f;
+  int i;
   
-  for (local_c = fields; local_c->name != (char *)0x0; local_c = local_c + 1) {
-    if (local_c->type == F_STRING) {
-      Scr_SetString((ushort *)((int)(param_1->s).lerp.pos.trBase + local_c->ofs + -0x18),0,
+  for (f = fields; f->name != (char *)0x0; f = f + 1) {
+    if (f->type == F_STRING) {
+      Scr_SetString((ushort *)((int)(pEnt->s).lerp.pos.trBase + f->ofs + -0x18),0,
                     SCRIPTINSTANCE_SERVER);
     }
   }
-  for (local_8 = 0; local_8 < 0x13; local_8 = local_8 + 1) {
-    param_1->attachModelNames[local_8] = 0;
-    Scr_SetString(param_1->attachTagNames + local_8,0,SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < 0x13; i = i + 1) {
+    pEnt->attachModelNames[i] = 0;
+    Scr_SetString(pEnt->attachTagNames + i,0,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -1398,13 +1425,13 @@ void __cdecl Scr_FreeEntityConstStrings(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_FreeEntity(gentity_s *param_1)
+void __cdecl Scr_FreeEntity(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x429,0,
                              "%s");
     if (!bVar2) {
@@ -1413,7 +1440,7 @@ void __cdecl Scr_FreeEntity(gentity_s *param_1)
       return;
     }
   }
-  if ((param_1->s).number != (int)param_1[-0x1487a].r.mins / 0x2f8) {
+  if ((ent->s).number != (int)ent[-0x1487a].r.mins / 0x2f8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x42a,0,
                              "ent->s.number == ent - g_entities\n\t%i, %i");
     if (!bVar2) {
@@ -1422,7 +1449,7 @@ void __cdecl Scr_FreeEntity(gentity_s *param_1)
       return;
     }
   }
-  if ((param_1->r).inuse == '\0') {
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x42b,0,
                              "%s\n\t(ent->s.number) = %i");
     if (!bVar2) {
@@ -1431,8 +1458,8 @@ void __cdecl Scr_FreeEntity(gentity_s *param_1)
       return;
     }
   }
-  Scr_FreeEntityConstStrings(param_1);
-  Scr_FreeEntityNum((param_1->s).number,0,SCRIPTINSTANCE_SERVER);
+  Scr_FreeEntityConstStrings(ent);
+  Scr_FreeEntityNum((ent->s).number,0,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1444,13 +1471,13 @@ void __cdecl Scr_FreeEntity(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_AddEntity(gentity_s *param_1,scriptInstance_t param_2)
+void __cdecl Scr_AddEntity(gentity_s *ent,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x434,0,
                              "%s");
     if (!bVar2) {
@@ -1459,7 +1486,7 @@ void __cdecl Scr_AddEntity(gentity_s *param_1,scriptInstance_t param_2)
       return;
     }
   }
-  if ((param_1->s).number != (int)param_1[-0x1487a].r.mins / 0x2f8) {
+  if ((ent->s).number != (int)ent[-0x1487a].r.mins / 0x2f8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x435,0,
                              "ent->s.number == ent - g_entities\n\t%i, %i");
     if (!bVar2) {
@@ -1468,7 +1495,7 @@ void __cdecl Scr_AddEntity(gentity_s *param_1,scriptInstance_t param_2)
       return;
     }
   }
-  if ((param_1->r).inuse == '\0') {
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x436,0,
                              "%s\n\t(ent->s.number) = %i");
     if (!bVar2) {
@@ -1477,7 +1504,7 @@ void __cdecl Scr_AddEntity(gentity_s *param_1,scriptInstance_t param_2)
       return;
     }
   }
-  Scr_AddEntityNum((param_1->s).number,0,param_2,0);
+  Scr_AddEntityNum((ent->s).number,0,inst,0);
   return;
 }
 
@@ -1489,7 +1516,7 @@ void __cdecl Scr_AddEntity(gentity_s *param_1,scriptInstance_t param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl Scr_GetEntityAllowNull(uint param_1,scriptInstance_t param_2)
+gentity_s * __cdecl Scr_GetEntityAllowNull(uint index,scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -1499,23 +1526,23 @@ gentity_s * __cdecl Scr_GetEntityAllowNull(uint param_1,scriptInstance_t param_2
   undefined1 local_20 [10];
   uint local_16;
   undefined2 local_12;
-  undefined4 local_10;
+  undefined4 entref;
   undefined2 local_c;
-  int local_8;
+  int type;
   
-  local_8 = Scr_GetType(param_1,param_2);
-  if (local_8 == 0) {
+  type = Scr_GetType(index,inst);
+  if (type == 0) {
     pgVar3 = (gentity_s *)0x0;
   }
   else {
-    sVar4 = Scr_GetEntityRef((uint)local_20,(scriptInstance_t)param_1);
+    sVar4 = Scr_GetEntityRef((uint)local_20,(scriptInstance_t)index);
     local_16 = *sVar4._0_4_;
     local_12 = (undefined2)sVar4._0_4_[1];
-    local_10._2_2_ = (short)(local_16 >> 0x10);
-    if (local_10._2_2_ == 0) {
-      local_10._0_2_ = (ushort)local_16;
-      bVar2 = 0x3ff < (ushort)local_10;
-      local_10 = local_16;
+    entref._2_2_ = (short)(local_16 >> 0x10);
+    if (entref._2_2_ == 0) {
+      entref._0_2_ = (ushort)local_16;
+      bVar2 = 0x3ff < (ushort)entref;
+      entref = local_16;
       if (bVar2) {
         local_c = local_12;
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x44d,
@@ -1526,7 +1553,7 @@ gentity_s * __cdecl Scr_GetEntityAllowNull(uint param_1,scriptInstance_t param_2
           return pgVar3;
         }
       }
-      pgVar3 = g_entities + (local_10 & 0xffff);
+      pgVar3 = g_entities + (entref & 0xffff);
     }
     else {
       pgVar3 = (gentity_s *)0x0;
@@ -1543,7 +1570,7 @@ gentity_s * __cdecl Scr_GetEntityAllowNull(uint param_1,scriptInstance_t param_2
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl Scr_GetEntity(uint param_1)
+gentity_s * __cdecl Scr_GetEntity(uint index)
 
 {
   code *pcVar1;
@@ -1553,18 +1580,18 @@ gentity_s * __cdecl Scr_GetEntity(uint param_1)
   undefined1 local_1c [10];
   uint local_12;
   undefined2 local_e;
-  undefined4 local_c;
+  undefined4 entref;
   undefined2 local_8;
   
-  sVar4 = Scr_GetEntityRef((uint)local_1c,(scriptInstance_t)param_1);
+  sVar4 = Scr_GetEntityRef((uint)local_1c,(scriptInstance_t)index);
   local_12 = *sVar4._0_4_;
   local_e = (undefined2)sVar4._0_4_[1];
-  local_c._2_2_ = (short)(local_12 >> 0x10);
-  local_c = local_12;
+  entref._2_2_ = (short)(local_12 >> 0x10);
+  entref = local_12;
   local_8 = local_e;
-  if (local_c._2_2_ == 0) {
-    local_c._0_2_ = (ushort)local_12;
-    bVar2 = 0x3ff < (ushort)local_c;
+  if (entref._2_2_ == 0) {
+    entref._0_2_ = (ushort)local_12;
+    bVar2 = 0x3ff < (ushort)entref;
     if (bVar2) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x460,0,
                                "%s");
@@ -1574,10 +1601,10 @@ gentity_s * __cdecl Scr_GetEntity(uint param_1)
         return pgVar3;
       }
     }
-    pgVar3 = g_entities + (local_c & 0xffff);
+    pgVar3 = g_entities + (entref & 0xffff);
   }
   else {
-    Scr_ParamError(param_1,"not an entity",SCRIPTINSTANCE_SERVER);
+    Scr_ParamError(index,"not an entity",SCRIPTINSTANCE_SERVER);
     pgVar3 = (gentity_s *)0x0;
   }
   return pgVar3;
@@ -1586,14 +1613,15 @@ gentity_s * __cdecl Scr_GetEntity(uint param_1)
 
 // 00685910  Scr_FreeHudElem  (game_mp/g_spawn_mp.cpp:1134)
 
-void __cdecl Scr_FreeHudElem(game_hudelem_s *param_1)
+void __cdecl Scr_FreeHudElem(game_hudelem_s *hud)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int entnum;
+  int number;
   
-  if (param_1 == (game_hudelem_s *)0x0) {
+  if (hud == (game_hudelem_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x471,0,
                              "%s");
     if (!bVar2) {
@@ -1602,7 +1630,7 @@ void __cdecl Scr_FreeHudElem(game_hudelem_s *param_1)
       return;
     }
   }
-  if (0x3ff < (uint)((int)&param_1[-0x7d8f6].elem.color / 0x7c)) {
+  if (0x3ff < (uint)((int)&hud[-0x7d8f6].elem.color / 0x7c)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x472,0,
                              "hud - g_hudelems doesn\'t index MAX_HUDELEMS_TOTAL\n\t%i not in [0, %i)"
                             );
@@ -1612,7 +1640,7 @@ void __cdecl Scr_FreeHudElem(game_hudelem_s *param_1)
       return;
     }
   }
-  if ((param_1->elem).type == '\0') {
+  if ((hud->elem).type == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x473,0,
                              "%s");
     if (!bVar2) {
@@ -1621,23 +1649,23 @@ void __cdecl Scr_FreeHudElem(game_hudelem_s *param_1)
       return;
     }
   }
-  iVar3 = (int)&param_1[-0x7d8f6].elem.color / 0x7c;
-  Scr_NotifyNum(iVar3,1,(uint)scr_const.death,0);
-  Scr_FreeHudElemConstStrings(param_1);
-  Scr_FreeEntityNum(iVar3,1,SCRIPTINSTANCE_SERVER);
+  entnum = (int)&hud[-0x7d8f6].elem.color / 0x7c;
+  Scr_NotifyNum(entnum,1,(uint)scr_const.death,0);
+  Scr_FreeHudElemConstStrings(hud);
+  Scr_FreeEntityNum(entnum,1,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 00685A10  Scr_AddHudElem  (game_mp/g_spawn_mp.cpp:1157)
 
-void __cdecl Scr_AddHudElem(game_hudelem_s *param_1)
+void __cdecl Scr_AddHudElem(game_hudelem_s *hud)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (game_hudelem_s *)0x0) {
+  if (hud == (game_hudelem_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x486,0,
                              "%s");
     if (!bVar2) {
@@ -1646,7 +1674,7 @@ void __cdecl Scr_AddHudElem(game_hudelem_s *param_1)
       return;
     }
   }
-  if (0x3ff < (uint)((int)&param_1[-0x7d8f6].elem.color / 0x7c)) {
+  if (0x3ff < (uint)((int)&hud[-0x7d8f6].elem.color / 0x7c)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x487,0,
                              "hud - g_hudelems doesn\'t index MAX_HUDELEMS_TOTAL\n\t%i not in [0, %i)"
                             );
@@ -1656,7 +1684,7 @@ void __cdecl Scr_AddHudElem(game_hudelem_s *param_1)
       return;
     }
   }
-  if ((param_1->elem).type == '\0') {
+  if ((hud->elem).type == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x488,0,
                              "%s");
     if (!bVar2) {
@@ -1665,7 +1693,7 @@ void __cdecl Scr_AddHudElem(game_hudelem_s *param_1)
       return;
     }
   }
-  Scr_AddEntityNum((int)&param_1[-0x7d8f6].elem.color / 0x7c,1,SCRIPTINSTANCE_SERVER,0);
+  Scr_AddEntityNum((int)&hud[-0x7d8f6].elem.color / 0x7c,1,SCRIPTINSTANCE_SERVER,0);
   return;
 }
 
@@ -1677,14 +1705,14 @@ void __cdecl Scr_AddHudElem(game_hudelem_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-ushort __cdecl Scr_ExecEntThread(gentity_s *param_1,int param_2,uint param_3)
+ushort __cdecl Scr_ExecEntThread(gentity_s *ent,int handle,uint paramcount)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4a9,0,
                              "%s");
     if (!bVar2) {
@@ -1693,7 +1721,7 @@ ushort __cdecl Scr_ExecEntThread(gentity_s *param_1,int param_2,uint param_3)
       return uVar3;
     }
   }
-  if ((param_1->s).number != (int)param_1[-0x1487a].r.mins / 0x2f8) {
+  if ((ent->s).number != (int)ent[-0x1487a].r.mins / 0x2f8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4aa,0,
                              "ent->s.number == ent - g_entities\n\t%i, %i");
     if (!bVar2) {
@@ -1702,7 +1730,7 @@ ushort __cdecl Scr_ExecEntThread(gentity_s *param_1,int param_2,uint param_3)
       return uVar3;
     }
   }
-  if ((param_1->r).inuse == '\0') {
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4ab,0,
                              "%s\n\t(ent->s.number) = %i");
     if (!bVar2) {
@@ -1711,7 +1739,7 @@ ushort __cdecl Scr_ExecEntThread(gentity_s *param_1,int param_2,uint param_3)
       return uVar3;
     }
   }
-  uVar3 = Scr_ExecEntThreadNum(SCRIPTINSTANCE_SERVER,(param_1->s).number,0,param_2,param_3,0);
+  uVar3 = Scr_ExecEntThreadNum(SCRIPTINSTANCE_SERVER,(ent->s).number,0,handle,paramcount,0);
   return uVar3;
 }
 
@@ -1723,13 +1751,13 @@ ushort __cdecl Scr_ExecEntThread(gentity_s *param_1,int param_2,uint param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_Notify(gentity_s *param_1,ushort param_2,uint param_3)
+void __cdecl Scr_Notify(gentity_s *ent,ushort stringValue,uint paramcount)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4c7,0,
                              "%s");
     if (!bVar2) {
@@ -1738,8 +1766,8 @@ void __cdecl Scr_Notify(gentity_s *param_1,ushort param_2,uint param_3)
       return;
     }
   }
-  if ((param_1->s).number != (int)param_1[-0x1487a].r.mins / 0x2f8) {
-    SL_ConvertToString((uint)param_2,SCRIPTINSTANCE_SERVER);
+  if ((ent->s).number != (int)ent[-0x1487a].r.mins / 0x2f8) {
+    SL_ConvertToString((uint)stringValue,SCRIPTINSTANCE_SERVER);
     va("s.number = %i, index = %i, stringValue = %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4c8,0,
                              "%s\n\t%s");
@@ -1749,7 +1777,7 @@ void __cdecl Scr_Notify(gentity_s *param_1,ushort param_2,uint param_3)
       return;
     }
   }
-  if ((param_1->r).inuse == '\0') {
+  if ((ent->r).inuse == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4c9,0,
                              "%s\n\t(ent->s.number) = %i");
     if (!bVar2) {
@@ -1758,7 +1786,7 @@ void __cdecl Scr_Notify(gentity_s *param_1,ushort param_2,uint param_3)
       return;
     }
   }
-  Scr_NotifyNum((param_1->s).number,0,(uint)param_2,param_3);
+  Scr_NotifyNum((ent->s).number,0,(uint)stringValue,paramcount);
   return;
 }
 
@@ -1777,39 +1805,45 @@ void __cdecl Scr_GetEnt(void)
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  char *pcVar5;
-  int iVar6;
-  gentity_s *local_28;
-  gentity_s *local_10;
-  int local_c;
+  char *name_00;
+  int iVar5;
+  gentity_s *result;
+  uchar *b;
+  ushort name;
+  int offset;
+  char *key;
+  ent_field_t *f;
+  gentity_s *ent;
+  int i;
+  ushort value;
   
   uVar4 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  pcVar5 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  iVar6 = Scr_GetOffset(0,pcVar5,SCRIPTINSTANCE_SERVER);
-  if (-1 < iVar6) {
-    if (((iVar6 < 0) || (0xe < iVar6)) &&
+  name_00 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  iVar5 = Scr_GetOffset(0,name_00,SCRIPTINSTANCE_SERVER);
+  if (-1 < iVar5) {
+    if (((iVar5 < 0) || (0xe < iVar5)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x4e7,
                                  0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (fields[iVar6].type == F_STRING) {
-      local_28 = (gentity_s *)0x0;
-      local_10 = g_entities;
-      for (local_c = 0; local_c < level.num_entities; local_c = local_c + 1) {
-        if ((((local_10->r).inuse != '\0') &&
-            (sVar1 = *(short *)((int)(local_10->s).lerp.pos.trBase + fields[iVar6].ofs + -0x18),
+    if (fields[iVar5].type == F_STRING) {
+      result = (gentity_s *)0x0;
+      ent = g_entities;
+      for (i = 0; i < level.num_entities; i = i + 1) {
+        if ((((ent->r).inuse != '\0') &&
+            (sVar1 = *(short *)((int)(ent->s).lerp.pos.trBase + fields[iVar5].ofs + -0x18),
             sVar1 != 0)) && (sVar1 == (short)uVar4)) {
-          if (local_28 != (gentity_s *)0x0) {
+          if (result != (gentity_s *)0x0) {
             Scr_Error("getent used with more than one entity",false);
           }
-          local_28 = local_10;
+          result = ent;
         }
-        local_10 = local_10 + 1;
+        ent = ent + 1;
       }
-      if (local_28 != (gentity_s *)0x0) {
-        Scr_AddEntity(local_28,SCRIPTINSTANCE_SERVER);
+      if (result != (gentity_s *)0x0) {
+        Scr_AddEntity(result,SCRIPTINSTANCE_SERVER);
       }
     }
   }
@@ -1831,46 +1865,52 @@ void __cdecl Scr_GetEntArray(void)
   code *pcVar2;
   bool bVar3;
   uint uVar4;
-  char *pcVar5;
-  int iVar6;
-  gentity_s *local_10;
-  int local_c;
+  char *name_00;
+  int iVar5;
+  uchar *b;
+  ushort name;
+  int offset;
+  char *key;
+  ent_field_t *f;
+  gentity_s *ent;
+  int i;
+  ushort value;
   
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 0) {
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-    local_10 = g_entities;
-    for (local_c = 0; local_c < level.num_entities; local_c = local_c + 1) {
-      if ((local_10->r).inuse != '\0') {
-        Scr_AddEntity(local_10,SCRIPTINSTANCE_SERVER);
+    ent = g_entities;
+    for (i = 0; i < level.num_entities; i = i + 1) {
+      if ((ent->r).inuse != '\0') {
+        Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
         Scr_AddArray(SCRIPTINSTANCE_SERVER);
       }
-      local_10 = local_10 + 1;
+      ent = ent + 1;
     }
   }
   else {
     uVar4 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-    pcVar5 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-    iVar6 = Scr_GetOffset(0,pcVar5,SCRIPTINSTANCE_SERVER);
-    if (-1 < iVar6) {
-      if (((iVar6 < 0) || (0xe < iVar6)) &&
+    name_00 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    iVar5 = Scr_GetOffset(0,name_00,SCRIPTINSTANCE_SERVER);
+    if (-1 < iVar5) {
+      if (((iVar5 < 0) || (0xe < iVar5)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",
                                    0x529,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (fields[iVar6].type == F_STRING) {
+      if (fields[iVar5].type == F_STRING) {
         Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-        local_10 = g_entities;
-        for (local_c = 0; local_c < level.num_entities; local_c = local_c + 1) {
-          if ((((local_10->r).inuse != '\0') &&
-              (sVar1 = *(short *)((int)(local_10->s).lerp.pos.trBase + fields[iVar6].ofs + -0x18),
+        ent = g_entities;
+        for (i = 0; i < level.num_entities; i = i + 1) {
+          if ((((ent->r).inuse != '\0') &&
+              (sVar1 = *(short *)((int)(ent->s).lerp.pos.trBase + fields[iVar5].ofs + -0x18),
               sVar1 != 0)) && (sVar1 == (short)uVar4)) {
-            Scr_AddEntity(local_10,SCRIPTINSTANCE_SERVER);
+            Scr_AddEntity(ent,SCRIPTINSTANCE_SERVER);
             Scr_AddArray(SCRIPTINSTANCE_SERVER);
           }
-          local_10 = local_10 + 1;
+          ent = ent + 1;
         }
       }
     }
@@ -1886,51 +1926,52 @@ void __cdecl Scr_GetEntArray(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GScr_SetDynamicEntityField(gentity_s *param_1,uint param_2)
+void __cdecl GScr_SetDynamicEntityField(gentity_s *ent,uint index)
 
 {
-  Scr_SetDynamicEntityField((param_1->s).number,0,param_2,SCRIPTINSTANCE_SERVER,0);
+  Scr_SetDynamicEntityField((ent->s).number,0,index,SCRIPTINSTANCE_SERVER,0);
   return;
 }
 
 
 // 00685FC0  SP_worldspawn  (game_mp/g_spawn_mp.cpp:1357)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SP_worldspawn(SpawnVar *param_1)
+void __cdecl SP_worldspawn(SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   float10 fVar2;
   bool bVar3;
   int iVar4;
-  char *pcVar5;
-  float10 fVar6;
-  double dVar7;
-  char *local_8;
+  char *val;
+  float10 fVar5;
+  double dVar6;
+  char *s;
   
-  G_SpawnString(param_1,"classname","",&local_8);
-  iVar4 = I_stricmp(local_8,"worldspawn");
+  G_SpawnString(spawnVar,"classname","",&s);
+  iVar4 = I_stricmp(s,"worldspawn");
   if (iVar4 != 0) {
     Com_Error(ERR_DROP,"\x15SP_worldspawn: The first entity isn\'t \'worldspawn\'");
   }
   SV_SetConfigstring(2,"cod");
-  G_SpawnString(param_1,"ambienttrack","",&local_8);
-  if (*local_8 == '\0') {
+  G_SpawnString(spawnVar,"ambienttrack","",&s);
+  if (*s == '\0') {
     SV_SetConfigstring(0x60b,"");
   }
   else {
-    pcVar5 = va("n\\%s");
-    SV_SetConfigstring(0x60b,pcVar5);
+    val = va("n\\%s");
+    SV_SetConfigstring(0x60b,val);
   }
-  G_SpawnString(param_1,"message","",&local_8);
-  SV_SetConfigstring(4,local_8);
+  G_SpawnString(spawnVar,"message","",&s);
+  SV_SetConfigstring(4,s);
   SV_SetConfigstring(0xb,(g_motd->current).string);
-  G_SpawnString(param_1,"gravity","800",&local_8);
+  G_SpawnString(spawnVar,"gravity","800",&s);
   if (bg_gravity == (dvar_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x565,0,
                              "%s");
@@ -1940,24 +1981,24 @@ void __cdecl SP_worldspawn(SpawnVar *param_1)
       return;
     }
   }
-  dVar7 = atof(local_8);
-  Dvar_SetFloat(bg_gravity,(float)dVar7);
-  G_SpawnString(param_1,"northyaw","",&local_8);
-  if (*local_8 == '\0') {
+  dVar6 = atof(s);
+  Dvar_SetFloat(bg_gravity,(float)dVar6);
+  G_SpawnString(spawnVar,"northyaw","",&s);
+  if (*s == '\0') {
     SV_SetConfigstring(0x60c,"0");
     level.compassNorth[0] = 1.0;
     level.compassNorth[1] = 0.0;
   }
   else {
-    SV_SetConfigstring(0x60c,local_8);
-    dVar7 = atof(local_8);
-    fVar2 = (float10)fcos((float10)((float)dVar7 * 0.017453292));
-    fVar6 = (float10)fsin((float10)((float)dVar7 * 0.017453292));
+    SV_SetConfigstring(0x60c,s);
+    dVar6 = atof(s);
+    fVar2 = (float10)fcos((float10)((float)dVar6 * 0.017453292));
+    fVar5 = (float10)fsin((float10)((float)dVar6 * 0.017453292));
     level.compassNorth[0] = (float)fVar2;
-    level.compassNorth[1] = (float)fVar6;
+    level.compassNorth[1] = (float)fVar5;
   }
-  G_SpawnString(param_1,"spawnflags","0",&local_8);
-  g_entities[0x3fe].spawnflags = atoi(local_8);
+  G_SpawnString(spawnVar,"spawnflags","0",&s);
+  g_entities[0x3fe].spawnflags = atoi(s);
   g_entities[0x3fe].s.number = 0x3fe;
   Scr_SetString(&g_entities[0x3fe].classname,(uint)scr_const.worldspawn,SCRIPTINSTANCE_SERVER);
   g_entities[0x3fe].r.inuse = '\x01';
@@ -2015,12 +2056,13 @@ void __cdecl G_LoadStructs(void)
   byte bVar1;
   code *pcVar2;
   bool bVar3;
-  ushort uVar4;
-  int iVar5;
+  ushort handle;
+  int iVar4;
   int local_1c;
   byte *local_14;
   byte *local_10;
-  byte *local_8;
+  ushort hThread;
+  char *classname;
   
   if ((g_scr_data.initstructs == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_spawn_mp.cpp",0x5a3,0,
@@ -2029,16 +2071,16 @@ void __cdecl G_LoadStructs(void)
     (*pcVar2)();
     return;
   }
-  uVar4 = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.initstructs,0);
-  Scr_FreeThread(uVar4,SCRIPTINSTANCE_SERVER);
+  handle = Scr_ExecThread(SCRIPTINSTANCE_SERVER,g_scr_data.initstructs,0);
+  Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   do {
-    iVar5 = G_ParseSpawnVars(&level.spawnVar);
-    if (iVar5 == 0) {
+    iVar4 = G_ParseSpawnVars(&level.spawnVar);
+    if (iVar4 == 0) {
       G_ResetEntityParsePoint();
       return;
     }
-    G_SpawnString(&level.spawnVar,"classname","",(char **)&local_8);
-    local_10 = local_8;
+    G_SpawnString(&level.spawnVar,"classname","",&classname);
+    local_10 = (byte *)classname;
     local_14 = (byte *)0xc8e10c;
     do {
       bVar1 = *local_14;

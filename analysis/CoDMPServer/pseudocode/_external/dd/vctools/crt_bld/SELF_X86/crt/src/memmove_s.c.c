@@ -2,25 +2,25 @@
 
 // 00C11BF5  memmove_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/memmove_s.c:46)
 
-int __cdecl memmove_s(void *param_1,uint param_2,void *param_3,uint param_4)
+int __cdecl memmove_s(void *dst,uint sizeInBytes,void *src,uint count)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (param_4 == 0) {
+  if (count == 0) {
 LAB_00c11c4c:
     iVar2 = 0;
   }
   else {
-    if ((param_1 == (void *)0x0) || (param_3 == (void *)0x0)) {
+    if ((dst == (void *)0x0) || (src == (void *)0x0)) {
       piVar1 = _errno();
       iVar2 = 0x16;
       *piVar1 = 0x16;
     }
     else {
-      if (param_4 <= param_2) {
-        memmove(param_1,param_3,param_4);
+      if (count <= sizeInBytes) {
+        memmove(dst,src,count);
         goto LAB_00c11c4c;
       }
       piVar1 = _errno();

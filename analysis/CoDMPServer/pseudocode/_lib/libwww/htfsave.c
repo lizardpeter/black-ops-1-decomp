@@ -157,7 +157,7 @@ int FUN_00bd6f30(uchar *param_1,int param_2,char *param_3,int param_4)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *string;
   int extraout_EAX;
   int extraout_EAX_00;
   uchar *local_2c;
@@ -174,8 +174,8 @@ int FUN_00bd6f30(uchar *param_1,int param_2,char *param_3,int param_4)
       _HTSACat(&local_8,param_3);
     }
   }
-  else if ((param_2 != 0) && (puVar2 = (uchar *)_HTParse(param_2,"",5), puVar2 != (uchar *)0x0)) {
-    strrchr(puVar2,'/');
+  else if ((param_2 != 0) && (string = (uchar *)_HTParse(param_2,"",5), string != (uchar *)0x0)) {
+    strrchr(string,'/');
     if ((param_1 == (uchar *)0x0) || (strlen(param_1), param_1[extraout_EAX_00 + -1] != '\\')) {
       bVar1 = false;
     }

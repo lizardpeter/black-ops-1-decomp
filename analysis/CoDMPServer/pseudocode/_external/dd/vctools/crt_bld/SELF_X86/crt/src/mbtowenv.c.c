@@ -6,31 +6,32 @@ int __cdecl __mbtow_environ(void)
 
 {
   LPCSTR lpMultiByteStr;
-  uint cchWideChar;
+  uint count;
   int iVar1;
   char **ppcVar2;
-  LPWSTR local_8;
+  int size;
+  ushort *wenvp;
   
-  local_8 = (LPWSTR)0x0;
+  wenvp = (ushort *)0x0;
   lpMultiByteStr = *_environ;
   ppcVar2 = _environ;
   while( true ) {
     if (lpMultiByteStr == (LPCSTR)0x0) {
       return 0;
     }
-    cchWideChar = MultiByteToWideChar(0,0,lpMultiByteStr,-1,(LPWSTR)0x0,0);
-    if (cchWideChar == 0) {
+    count = MultiByteToWideChar(0,0,lpMultiByteStr,-1,(LPWSTR)0x0,0);
+    if (count == 0) {
       return -1;
     }
-    local_8 = _calloc_crt(cchWideChar,2);
-    if (local_8 == (LPWSTR)0x0) {
+    wenvp = _calloc_crt(count,2);
+    if ((LPWSTR)wenvp == (LPWSTR)0x0) {
       return -1;
     }
-    iVar1 = MultiByteToWideChar(0,0,*ppcVar2,-1,local_8,cchWideChar);
+    iVar1 = MultiByteToWideChar(0,0,*ppcVar2,-1,(LPWSTR)wenvp,count);
     if (iVar1 == 0) break;
-    iVar1 = __crtwsetenv((ushort **)&local_8,0);
+    iVar1 = __crtwsetenv(&wenvp,0);
     if (iVar1 < 0) {
-      if (local_8 == (LPWSTR)0x0) {
+      if (wenvp == (ushort *)0x0) {
         return -1;
       }
       break;
@@ -38,7 +39,7 @@ int __cdecl __mbtow_environ(void)
     ppcVar2 = ppcVar2 + 1;
     lpMultiByteStr = *ppcVar2;
   }
-  free(local_8);
+  free(wenvp);
   return -1;
 }
 

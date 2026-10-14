@@ -2,7 +2,7 @@
 
 // 00B6CEE0  jpeg_fdct_float  (jpeg-6/jfdctflt.c:60)
 
-void __cdecl jpeg_fdct_float(float *param_1)
+void __cdecl jpeg_fdct_float(float *data)
 
 {
   float fVar1;
@@ -12,64 +12,83 @@ void __cdecl jpeg_fdct_float(float *param_1)
   float fVar5;
   float fVar6;
   float fVar7;
-  int local_28;
-  float *local_8;
+  float tmp0;
+  float tmp4;
+  float z1;
+  float z5;
+  float z4;
+  float tmp1;
+  float tmp5;
+  float z11;
+  float z2;
+  float tmp2;
+  float tmp6;
+  float tmp13;
+  int ctr;
+  float tmp12;
+  float z3;
+  float tmp10;
+  float tmp11;
+  float tmp3;
+  float tmp7;
+  float z13;
+  float *dataptr;
   
-  local_8 = param_1;
-  for (local_28 = 7; -1 < local_28; local_28 = local_28 + -1) {
-    fVar1 = *local_8 - local_8[7];
-    fVar6 = local_8[6];
-    fVar7 = local_8[2];
-    fVar5 = local_8[4];
-    fVar2 = *local_8 + local_8[7] + local_8[3] + local_8[4];
-    fVar3 = (*local_8 + local_8[7]) - (local_8[3] + local_8[4]);
-    fVar4 = local_8[1] + local_8[6] + local_8[2] + local_8[5];
-    *local_8 = fVar2 + fVar4;
-    local_8[4] = fVar2 - fVar4;
-    fVar2 = (((local_8[1] + local_8[6]) - (local_8[2] + local_8[5])) + fVar3) * 0.70710677;
-    local_8[2] = fVar3 + fVar2;
-    local_8[6] = fVar3 - fVar2;
-    fVar5 = (local_8[3] - fVar5) + (fVar7 - local_8[5]);
-    fVar2 = (local_8[1] - fVar6) + fVar1;
+  dataptr = data;
+  for (ctr = 7; -1 < ctr; ctr = ctr + -1) {
+    fVar1 = *dataptr - dataptr[7];
+    fVar6 = dataptr[6];
+    fVar7 = dataptr[2];
+    fVar5 = dataptr[4];
+    fVar2 = *dataptr + dataptr[7] + dataptr[3] + dataptr[4];
+    fVar3 = (*dataptr + dataptr[7]) - (dataptr[3] + dataptr[4]);
+    fVar4 = dataptr[1] + dataptr[6] + dataptr[2] + dataptr[5];
+    *dataptr = fVar2 + fVar4;
+    dataptr[4] = fVar2 - fVar4;
+    fVar2 = (((dataptr[1] + dataptr[6]) - (dataptr[2] + dataptr[5])) + fVar3) * 0.70710677;
+    dataptr[2] = fVar3 + fVar2;
+    dataptr[6] = fVar3 - fVar2;
+    fVar5 = (dataptr[3] - fVar5) + (fVar7 - dataptr[5]);
+    fVar2 = (dataptr[1] - fVar6) + fVar1;
     fVar3 = (fVar5 - fVar2) * 0.38268343;
     fVar5 = fVar5 * 0.5411961 + fVar3;
     fVar3 = fVar2 * 1.306563 + fVar3;
-    fVar6 = ((fVar7 - local_8[5]) + (local_8[1] - fVar6)) * 0.70710677;
+    fVar6 = ((fVar7 - dataptr[5]) + (dataptr[1] - fVar6)) * 0.70710677;
     fVar7 = fVar1 + fVar6;
     fVar1 = fVar1 - fVar6;
-    local_8[5] = fVar1 + fVar5;
-    local_8[3] = fVar1 - fVar5;
-    local_8[1] = fVar7 + fVar3;
-    local_8[7] = fVar7 - fVar3;
-    local_8 = local_8 + 8;
+    dataptr[5] = fVar1 + fVar5;
+    dataptr[3] = fVar1 - fVar5;
+    dataptr[1] = fVar7 + fVar3;
+    dataptr[7] = fVar7 - fVar3;
+    dataptr = dataptr + 8;
   }
-  local_8 = param_1;
-  for (local_28 = 7; -1 < local_28; local_28 = local_28 + -1) {
-    fVar1 = *local_8 - local_8[0x38];
-    fVar6 = local_8[0x30];
-    fVar7 = local_8[0x10];
-    fVar5 = local_8[0x20];
-    fVar2 = *local_8 + local_8[0x38] + local_8[0x18] + local_8[0x20];
-    fVar3 = (*local_8 + local_8[0x38]) - (local_8[0x18] + local_8[0x20]);
-    fVar4 = local_8[8] + local_8[0x30] + local_8[0x10] + local_8[0x28];
-    *local_8 = fVar2 + fVar4;
-    local_8[0x20] = fVar2 - fVar4;
-    fVar2 = (((local_8[8] + local_8[0x30]) - (local_8[0x10] + local_8[0x28])) + fVar3) * 0.70710677;
-    local_8[0x10] = fVar3 + fVar2;
-    local_8[0x30] = fVar3 - fVar2;
-    fVar5 = (local_8[0x18] - fVar5) + (fVar7 - local_8[0x28]);
-    fVar2 = (local_8[8] - fVar6) + fVar1;
+  dataptr = data;
+  for (ctr = 7; -1 < ctr; ctr = ctr + -1) {
+    fVar1 = *dataptr - dataptr[0x38];
+    fVar6 = dataptr[0x30];
+    fVar7 = dataptr[0x10];
+    fVar5 = dataptr[0x20];
+    fVar2 = *dataptr + dataptr[0x38] + dataptr[0x18] + dataptr[0x20];
+    fVar3 = (*dataptr + dataptr[0x38]) - (dataptr[0x18] + dataptr[0x20]);
+    fVar4 = dataptr[8] + dataptr[0x30] + dataptr[0x10] + dataptr[0x28];
+    *dataptr = fVar2 + fVar4;
+    dataptr[0x20] = fVar2 - fVar4;
+    fVar2 = (((dataptr[8] + dataptr[0x30]) - (dataptr[0x10] + dataptr[0x28])) + fVar3) * 0.70710677;
+    dataptr[0x10] = fVar3 + fVar2;
+    dataptr[0x30] = fVar3 - fVar2;
+    fVar5 = (dataptr[0x18] - fVar5) + (fVar7 - dataptr[0x28]);
+    fVar2 = (dataptr[8] - fVar6) + fVar1;
     fVar3 = (fVar5 - fVar2) * 0.38268343;
     fVar5 = fVar5 * 0.5411961 + fVar3;
     fVar3 = fVar2 * 1.306563 + fVar3;
-    fVar6 = ((fVar7 - local_8[0x28]) + (local_8[8] - fVar6)) * 0.70710677;
+    fVar6 = ((fVar7 - dataptr[0x28]) + (dataptr[8] - fVar6)) * 0.70710677;
     fVar7 = fVar1 + fVar6;
     fVar1 = fVar1 - fVar6;
-    local_8[0x28] = fVar1 + fVar5;
-    local_8[0x18] = fVar1 - fVar5;
-    local_8[8] = fVar7 + fVar3;
-    local_8[0x38] = fVar7 - fVar3;
-    local_8 = local_8 + 1;
+    dataptr[0x28] = fVar1 + fVar5;
+    dataptr[0x18] = fVar1 - fVar5;
+    dataptr[8] = fVar7 + fVar3;
+    dataptr[0x38] = fVar7 - fVar3;
+    dataptr = dataptr + 1;
   }
   return;
 }

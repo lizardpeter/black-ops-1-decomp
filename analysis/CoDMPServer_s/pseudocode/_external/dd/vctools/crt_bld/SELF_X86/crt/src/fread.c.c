@@ -5,21 +5,22 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-uint __cdecl fread_s(void *param_1,uint param_2,uint param_3,uint param_4,_iobuf *param_5)
+uint __cdecl fread_s(void *buffer,uint bufferSize,uint elementSize,uint count,_iobuf *stream)
 
 {
   int *piVar1;
   uint uVar2;
+  uint retval;
   
-  if ((param_3 != 0) && (param_4 != 0)) {
-    if (param_5 != (_iobuf *)0x0) {
-      _lock_file(param_5);
-      uVar2 = _fread_nolock_s(param_1,param_2,param_3,param_4,param_5);
+  if ((elementSize != 0) && (count != 0)) {
+    if (stream != (_iobuf *)0x0) {
+      _lock_file(stream);
+      uVar2 = _fread_nolock_s(buffer,bufferSize,elementSize,count,stream);
       FUN_0095d4e5();
       return uVar2;
     }
-    if (param_2 != 0xffffffff) {
-      memset(param_1,'\0',param_2);
+    if (bufferSize != 0xffffffff) {
+      memset(buffer,'\0',bufferSize);
     }
     piVar1 = _errno();
     *piVar1 = 0x16;
@@ -31,7 +32,7 @@ uint __cdecl fread_s(void *param_1,uint param_2,uint param_3,uint param_4,_iobuf
 
 // 0095D24F  _fread_nolock_s  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fread.c:127)
 
-uint __cdecl _fread_nolock_s(void *param_1,uint param_2,uint param_3,uint param_4,_iobuf *param_5)
+uint __cdecl _fread_nolock_s(void *buffer,uint bufferSize,uint elementSize,uint num,_iobuf *stream)
 
 {
   uint uVar1;
@@ -42,59 +43,62 @@ uint __cdecl _fread_nolock_s(void *param_1,uint param_2,uint param_3,uint param_
   uint uVar6;
   uint uVar7;
   uint uVar8;
-  undefined1 *puVar9;
-  uint uStack_10;
+  undefined1 *buf;
+  uint total;
+  uint streambufsize;
+  char *data;
+  uint dataSize;
   
-  if ((param_3 != 0) && (param_4 != 0)) {
-    if (param_1 != (void *)0x0) {
-      if ((param_5 != (_iobuf *)0x0) && (param_4 <= (uint)(0xffffffff / (ulonglong)param_3))) {
+  if ((elementSize != 0) && (num != 0)) {
+    if (buffer != (void *)0x0) {
+      if ((stream != (_iobuf *)0x0) && (num <= (uint)(0xffffffff / (ulonglong)elementSize))) {
 LAB_0095d2ca:
-        uVar8 = param_3 * param_4;
+        uVar8 = elementSize * num;
         uVar7 = uVar8;
-        puVar2 = param_1;
-        uVar1 = param_2;
-        if ((param_5->_flag & 0x10cU) == 0) {
-          uStack_10 = 0x1000;
+        puVar2 = buffer;
+        uVar1 = bufferSize;
+        if ((stream->_flag & 0x10cU) == 0) {
+          streambufsize = 0x1000;
         }
         else {
-          uStack_10 = param_5->_bufsiz;
+          streambufsize = stream->_bufsiz;
         }
 joined_r0x0095d2f0:
         do {
           while( true ) {
             if (uVar7 == 0) {
-              return param_4;
+              return num;
             }
-            if ((param_5->_flag & 0x10cU) == 0) break;
-            uVar4 = param_5->_cnt;
+            if ((stream->_flag & 0x10cU) == 0) break;
+            uVar4 = stream->_cnt;
             if (uVar4 == 0) break;
             if ((int)uVar4 < 0) {
 LAB_0095d441:
-              param_5->_flag = param_5->_flag | 0x20;
+              stream->_flag = stream->_flag | 0x20;
 LAB_0095d445:
-              return (uVar8 - uVar7) / param_3;
+              return (uVar8 - uVar7) / elementSize;
             }
             uVar6 = uVar7;
             if (uVar4 <= uVar7) {
               uVar6 = uVar4;
             }
             if (uVar1 < uVar6) {
-              if (param_2 != 0xffffffff) {
-                memset(param_1,'\0',param_2);
+              if (bufferSize != 0xffffffff) {
+                memset(buffer,'\0',bufferSize);
               }
               piVar3 = _errno();
               *piVar3 = 0x22;
               goto LAB_0095d286;
             }
-            memcpy_s(puVar2,uVar1,param_5->_ptr,uVar6);
-            param_5->_cnt = param_5->_cnt - uVar6;
-            param_5->_ptr = param_5->_ptr + uVar6;
+            memcpy_s(puVar2,uVar1,stream->_ptr,uVar6);
+            stream->_cnt = stream->_cnt - uVar6;
+            stream->_ptr = stream->_ptr + uVar6;
             uVar7 = uVar7 - uVar6;
             uVar1 = uVar1 - uVar6;
             puVar2 = puVar2 + uVar6;
           }
-          if (uStack_10 <= uVar7) {
-            if (uStack_10 == 0) {
+          if (streambufsize <= uVar7) {
+            if (streambufsize == 0) {
               uVar4 = 0x7fffffff;
               if (uVar7 < 0x80000000) {
                 uVar4 = uVar7;
@@ -102,29 +106,29 @@ LAB_0095d445:
             }
             else {
               if (uVar7 < 0x80000000) {
-                uVar6 = uVar7 % uStack_10;
+                uVar6 = uVar7 % streambufsize;
                 uVar4 = uVar7;
               }
               else {
-                uVar6 = (uint)(0x7fffffff % (ulonglong)uStack_10);
+                uVar6 = (uint)(0x7fffffff % (ulonglong)streambufsize);
                 uVar4 = 0x7fffffff;
               }
               uVar4 = uVar4 - uVar6;
             }
             if (uVar1 < uVar4) {
 LAB_0095d414:
-              if (param_2 != 0xffffffff) {
-                memset(param_1,'\0',param_2);
+              if (bufferSize != 0xffffffff) {
+                memset(buffer,'\0',bufferSize);
               }
               piVar3 = _errno();
               *piVar3 = 0x22;
               goto LAB_0095d286;
             }
-            puVar9 = puVar2;
-            iVar5 = _fileno(param_5);
-            iVar5 = _read(iVar5,puVar9,uVar4);
+            buf = puVar2;
+            iVar5 = _fileno(stream);
+            iVar5 = _read(iVar5,buf,uVar4);
             if (iVar5 == 0) {
-              param_5->_flag = param_5->_flag | 0x10;
+              stream->_flag = stream->_flag | 0x10;
               goto LAB_0095d445;
             }
             if (iVar5 == -1) goto LAB_0095d441;
@@ -133,20 +137,20 @@ LAB_0095d414:
             puVar2 = puVar2 + iVar5;
             goto joined_r0x0095d2f0;
           }
-          iVar5 = _filbuf(param_5);
+          iVar5 = _filbuf(stream);
           if (iVar5 == -1) goto LAB_0095d445;
           if (uVar1 == 0) goto LAB_0095d414;
           *puVar2 = (char)iVar5;
-          uStack_10 = param_5->_bufsiz;
+          streambufsize = stream->_bufsiz;
           uVar7 = uVar7 - 1;
           uVar1 = uVar1 - 1;
           puVar2 = puVar2 + 1;
         } while( true );
       }
-      if (param_2 != 0xffffffff) {
-        memset(param_1,'\0',param_2);
+      if (bufferSize != 0xffffffff) {
+        memset(buffer,'\0',bufferSize);
       }
-      if ((param_5 != (_iobuf *)0x0) && (param_4 <= (uint)(0xffffffff / (ulonglong)param_3)))
+      if ((stream != (_iobuf *)0x0) && (num <= (uint)(0xffffffff / (ulonglong)elementSize)))
       goto LAB_0095d2ca;
     }
     piVar3 = _errno();
@@ -160,12 +164,12 @@ LAB_0095d286:
 
 // 0095D4EF  fread  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fread.c:301)
 
-uint __cdecl fread(void *param_1,uint param_2,uint param_3,_iobuf *param_4)
+uint __cdecl fread(void *buffer,uint elementSize,uint count,_iobuf *stream)
 
 {
   uint uVar1;
   
-  uVar1 = fread_s(param_1,0xffffffff,param_2,param_3,param_4);
+  uVar1 = fread_s(buffer,0xffffffff,elementSize,count,stream);
   return uVar1;
 }
 

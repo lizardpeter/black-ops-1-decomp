@@ -480,13 +480,13 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
   bool bVar2;
   bdAddr *pbVar3;
   bdAddr *pbVar4;
-  bdSecurityID *pbVar5;
-  int iVar6;
-  bdStatus bVar7;
-  bdNATTypeDiscoveryClientState bVar8;
-  char *pcVar9;
-  uchar *puVar10;
-  uint uVar11;
+  bdSecurityID *rhs;
+  int iVar5;
+  bdStatus bVar6;
+  bdNATTypeDiscoveryClientState bVar7;
+  char *pcVar8;
+  uchar *puVar9;
+  uint uVar10;
   char local_618 [24];
   undefined4 local_600;
   int local_5fc;
@@ -568,20 +568,20 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
                  "bdNATTravClient::receiveFrom",0x103,"Received NAT Trav reply.");
     local_568 = bdGetHostByName::getStatus((bdGetHostByName *)param_2);
     local_56c = 10;
-    puVar10 = local_560;
+    puVar9 = local_560;
     pbVar3 = bdNATTraversalPacket::getAddrDest(param_2);
     pbVar4 = bdCommonAddr::getPublicAddr((bdCommonAddr *)param_2);
-    local_561 = doHMac(this,local_568,pbVar4,pbVar3,puVar10);
+    local_561 = doHMac(this,local_568,pbVar4,pbVar3,puVar9);
     if ((bool)local_561) {
-      pbVar5 = bdEndpoint::getSecID((bdEndpoint *)param_2);
-      iVar6 = memcmp(local_560,pbVar5,local_56c);
-      if (iVar6 == 0) {
+      rhs = bdEndpoint::getSecID((bdEndpoint *)param_2);
+      iVar5 = memcmp(local_560,rhs,local_56c);
+      if (iVar5 == 0) {
         local_570 = 0x16;
         bdAddr::toString(param_1,local_5d0,0x16);
-        uVar11 = 0x16;
-        pcVar9 = local_5b8;
+        uVar10 = 0x16;
+        pcVar8 = local_5b8;
         pbVar3 = bdNATTraversalPacket::getAddrDest(param_2);
-        bdAddr::toString(pbVar3,pcVar9,uVar11);
+        bdAddr::toString(pbVar3,pcVar8,uVar10);
         bdLogMessage(0,"info/","bdSocket/nat",
                      "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdNAT\\bdNATTravClient.cpp"
                      ,"bdNATTravClient::receiveFrom",0x114,"discovered addr for %s: %s");
@@ -601,8 +601,8 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
             local_5d4 = bdNATTypeDiscoveryClient::getStatus(local_598[0]);
             pbVar3 = getFromCache(this,local_5d4);
             if (pbVar3 == (bdAddr *)0x0) {
-              bVar8 = bdNATTypeDiscoveryClient::getStatus(local_598[0]);
-              saveInCache(this,bVar8,param_1);
+              bVar7 = bdNATTypeDiscoveryClient::getStatus(local_598[0]);
+              saveInCache(this,bVar7,param_1);
             }
           }
         }
@@ -628,9 +628,9 @@ bdNATTravClient::receiveFrom(bdNATTravClient *this,bdAddr *param_1,bdNATTraversa
     break;
   case '\r':
     this_00 = *(bdNATTypeDiscoveryClient **)(this + 0x58);
-    bVar7 = bdGetHostByName::getStatus((bdGetHostByName *)param_2);
-    bVar8 = bdNATTypeDiscoveryClient::getStatus(this_00);
-    if (bVar7 == bVar8) {
+    bVar6 = bdGetHostByName::getStatus((bdGetHostByName *)param_2);
+    bVar7 = bdNATTypeDiscoveryClient::getStatus(this_00);
+    if (bVar6 == bVar7) {
       bdAddr::bdAddr(local_5dc,param_1);
       local_8 = 3;
       bdNATTraversalPacket::setType(param_2,'\f');

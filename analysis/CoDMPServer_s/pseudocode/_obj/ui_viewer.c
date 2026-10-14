@@ -816,7 +816,7 @@ DObj * __thiscall UIViewer::AllocDobj(UIViewer *this,uint *param_1)
   int iVar2;
   int in_EAX;
   centity_s *pcVar3;
-  fake_centity_s *pfVar4;
+  fake_centity_s *dst;
   int *unaff_EDI;
   
   *(undefined4 *)(in_EAX + 0x1c8) = 0;
@@ -830,12 +830,12 @@ DObj * __thiscall UIViewer::AllocDobj(UIViewer *this,uint *param_1)
   }
   iVar2 = *unaff_EDI;
   if (iVar2 < 0x400) {
-    pfVar4 = (fake_centity_s *)(cg_entitiesArray + iVar2 * 0xca);
+    dst = (fake_centity_s *)(cg_entitiesArray + iVar2 * 0xca);
   }
   else {
-    pfVar4 = cg_fakeEntitiesArray + iVar2 * 0x32c + -0xcaffc;
+    dst = cg_fakeEntitiesArray + iVar2 * 0x32c + -0xcaffc;
   }
-  memset((uchar *)pfVar4,'\0',0x328);
+  memset((uchar *)dst,'\0',0x328);
   *unaff_EDI = iVar2 + 1;
   return pDVar1;
 }
@@ -1329,12 +1329,12 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
 
 {
   clientActive_t *pcVar1;
-  cg_s *pcVar2;
-  int *piVar3;
-  cg_s *pcVar4;
-  clientActive_t *pcVar5;
-  undefined4 uVar6;
-  bool bVar7;
+  cg_s *dst;
+  int *piVar2;
+  cg_s *pcVar3;
+  clientActive_t *pcVar4;
+  undefined4 uVar5;
+  bool bVar6;
   float in_EAX;
   UIViewer *extraout_ECX;
   UIViewer *this_00;
@@ -1342,8 +1342,8 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
   DrawDobj *this_01;
   undefined4 unaff_ESI;
   refdef_s *unaff_EDI;
-  float fVar8;
-  undefined1 auVar9 [16];
+  float fVar7;
+  undefined1 auVar8 [16];
   float fStack_30;
   DrawDobj *pDStack_2c;
   int iStack_28;
@@ -1351,12 +1351,12 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
   undefined4 uStack_1c;
   undefined8 uStack_18;
   
-  fVar8 = (float)_DAT_0354aa3c * 0.001;
+  fVar7 = (float)_DAT_0354aa3c * 0.001;
   fStack_30 = 0.1;
-  if (fVar8 - 0.1 < 0.0) {
-    fStack_30 = fVar8;
+  if (fVar7 - 0.1 < 0.0) {
+    fStack_30 = fVar7;
   }
-  if (0.0 <= -fVar8) {
+  if (0.0 <= -fVar7) {
     fStack_30 = 0.0;
   }
   Update(this,in_EAX);
@@ -1364,51 +1364,51 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
   if (*(char *)((int)in_EAX + 5) == '\0') {
     IK_UpdateTimeAll(0,1,SUB41(unaff_EDI,0));
     R_ClearScene((int)unaff_EDI);
-    pcVar5 = clients;
+    pcVar4 = clients;
     pcVar1 = clients + 0x2858;
     *(int *)pcVar1 = *(int *)pcVar1 + 1;
     if (*(int *)pcVar1 == 0) {
-      *(undefined4 *)(pcVar5 + 0x2858) = 1;
+      *(undefined4 *)(pcVar4 + 0x2858) = 1;
     }
-    this_00 = (UIViewer *)((uint)(pcVar5 + 0x286f) & 0xfffffff0);
-    *(UIViewer **)(pcVar5 + 0x42860) = this_00;
-    *(undefined4 *)(pcVar5 + 0x285c) = 0;
+    this_00 = (UIViewer *)((uint)(pcVar4 + 0x286f) & 0xfffffff0);
+    *(UIViewer **)(pcVar4 + 0x42860) = this_00;
+    *(undefined4 *)(pcVar4 + 0x285c) = 0;
   }
-  pcVar4 = cgArray;
+  pcVar3 = cgArray;
   if (*(char *)((int)in_EAX + 5) == '\0') {
-    pcVar2 = cgArray + 0x43100;
-    memset((uchar *)pcVar2,'\0',0x18520);
-    *(float *)(pcVar4 + 0x5b578) = ((rgp.world)->sunParse).sunSettings[0].exposure;
-    auVar9._0_8_ = (double)(*(float *)(*(int *)((int)in_EAX + 0xd0) + 0x18) * 0.017453292 * 0.5);
-    auVar9._8_8_ = 0;
+    dst = cgArray + 0x43100;
+    memset((uchar *)dst,'\0',0x18520);
+    *(float *)(pcVar3 + 0x5b578) = ((rgp.world)->sunParse).sunSettings[0].exposure;
+    auVar8._0_8_ = (double)(*(float *)(*(int *)((int)in_EAX + 0xd0) + 0x18) * 0.017453292 * 0.5);
+    auVar8._8_8_ = 0;
     __libm_sse2_tan((double)CONCAT44(unaff_ESI,unaff_EDI));
-    *(float *)(pcVar4 + 0x43110) = (float)auVar9._0_8_;
-    *(float *)(pcVar4 + 0x43114) = (float)auVar9._0_8_;
+    *(float *)(pcVar3 + 0x43110) = (float)auVar8._0_8_;
+    *(float *)(pcVar3 + 0x43114) = (float)auVar8._0_8_;
     this_00 = (UIViewer *)0x0;
-    *(undefined4 *)(pcVar4 + 0x43118) = *(undefined4 *)(*(int *)((int)in_EAX + 0xd0) + 0x18);
-    *(undefined4 *)pcVar2 = 0;
-    *(undefined4 *)(pcVar4 + 0x43104) = 0;
-    uVar6 = DAT_047aaae8;
-    *(undefined4 *)(pcVar4 + 0x43108) = DAT_047aaae4;
-    *(undefined4 *)(pcVar4 + 0x4310c) = uVar6;
-    *(undefined4 *)(pcVar4 + 0x5b4a4) = 0;
+    *(undefined4 *)(pcVar3 + 0x43118) = *(undefined4 *)(*(int *)((int)in_EAX + 0xd0) + 0x18);
+    *(undefined4 *)dst = 0;
+    *(undefined4 *)(pcVar3 + 0x43104) = 0;
+    uVar5 = DAT_047aaae8;
+    *(undefined4 *)(pcVar3 + 0x43108) = DAT_047aaae4;
+    *(undefined4 *)(pcVar3 + 0x4310c) = uVar5;
+    *(undefined4 *)(pcVar3 + 0x5b4a4) = 0;
   }
-  UpdateCamera(this_00,(refdef_s *)(pcVar4 + 0x43100),fStack_30);
+  UpdateCamera(this_00,(refdef_s *)(pcVar3 + 0x43100),fStack_30);
   R_SetLodOrigin(unaff_EDI);
   pDStack_2c = (DrawDobj *)0x0;
   iStack_28 = 0;
   this_01 = extraout_ECX_00;
   if (0 < *(int *)((int)in_EAX + 0x3d8)) {
     do {
-      bVar7 = DrawDobj::Draw(this_01,fStack_30,*(float *)(*(int *)((int)in_EAX + 0xcc) + 0x18));
-      this_01 = (DrawDobj *)(uint)bVar7;
+      bVar6 = DrawDobj::Draw(this_01,fStack_30,*(float *)(*(int *)((int)in_EAX + 0xcc) + 0x18));
+      this_01 = (DrawDobj *)(uint)bVar6;
       iStack_28 = iStack_28 + 1;
       pDStack_2c = pDStack_2c + (int)this_01;
     } while (iStack_28 < *(int *)((int)in_EAX + 0x3d8));
   }
-  piVar3 = *(int **)((int)in_EAX + 0xa0);
-  if ((piVar3 != (int *)0x0) && (*piVar3 != 0)) {
-    if (piVar3[4] == 0) {
+  piVar2 = *(int **)((int)in_EAX + 0xa0);
+  if ((piVar2 != (int *)0x0) && (*piVar2 != 0)) {
+    if (piVar2[4] == 0) {
       pcStack_20 = (char *)CONCAT31(pcStack_20._1_3_,pDStack_2c == (DrawDobj *)0x0);
     }
     else {
@@ -1417,10 +1417,10 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
         pcStack_20 = "0";
       }
     }
-    FUN_0069f980(piVar3,CONCAT44(uStack_1c,pcStack_20),uStack_18,0);
+    FUN_0069f980(piVar2,CONCAT44(uStack_1c,pcStack_20),uStack_18,0);
   }
   if (*(char *)((int)in_EAX + 5) == '\0') {
-    R_InitPrimaryLights((GfxLight *)(pcVar4 + 0x44600));
+    R_InitPrimaryLights((GfxLight *)(pcVar3 + 0x44600));
     s_shadowHistory[0].entryCount = 0;
     s_shadowHistory[0].lastUpdateTime = 0;
     CG_VisionSetApplyToRefdef(0,SUB41(unaff_EDI,0));
@@ -1435,12 +1435,12 @@ void __thiscall UIViewer::DrawScene(UIViewer *this,uint param_1)
     g_ui3d_windows[4].numRenderCmds = 0;
     g_ui3d_windows[5].numRenderCmds = 0;
     R_UI3D_SetupBackendData((GfxUI3DBackend *)unaff_EDI);
-    DAT_047ab224 = *(undefined4 *)(pcVar4 + 0x43120);
-    DAT_047ab228 = *(undefined4 *)(pcVar4 + 0x43124);
-    DAT_047ab22c = *(undefined4 *)(pcVar4 + 0x43128);
-    _DAT_047ab218 = *(undefined4 *)(pcVar4 + 0x43134);
-    _DAT_047ab21c = *(undefined4 *)(pcVar4 + 0x43138);
-    _DAT_047ab220 = *(undefined4 *)(pcVar4 + 0x4313c);
+    DAT_047ab224 = *(undefined4 *)(pcVar3 + 0x43120);
+    DAT_047ab228 = *(undefined4 *)(pcVar3 + 0x43124);
+    DAT_047ab22c = *(undefined4 *)(pcVar3 + 0x43128);
+    _DAT_047ab218 = *(undefined4 *)(pcVar3 + 0x43134);
+    _DAT_047ab21c = *(undefined4 *)(pcVar3 + 0x43138);
+    _DAT_047ab220 = *(undefined4 *)(pcVar3 + 0x4313c);
     R_RenderScene((refdef_s *)0x0,(int)unaff_EDI);
   }
   return;
@@ -1552,12 +1552,12 @@ bool __thiscall UIViewer::DrawDobj::Draw(DrawDobj *this,float param_1,float para
 {
   char cVar1;
   bool bVar2;
-  int iVar3;
+  int dobjConstantSet;
   float unaff_EBX;
   undefined4 *unaff_ESI;
   char *unaff_EDI;
-  float fVar4;
-  double dVar5;
+  float fVar3;
+  double dVar4;
   float local_14 [4];
   
   bVar2 = R_StreamTouchDObjAndCheck((DObj *)*unaff_ESI,(int)unaff_EDI);
@@ -1568,45 +1568,46 @@ bool __thiscall UIViewer::DrawDobj::Draw(DrawDobj *this,float param_1,float para
   local_14[0] = 0.0;
   local_14[1] = 0.0;
   local_14[2] = 0.0;
-  iVar3 = WeaponOptions::SetupWeaponOptionsRender
-                    ((WeaponOptions *)(unaff_ESI + 0xe),unaff_ESI[1],(float *)unaff_ESI[0x61],
-                     (WeaponVariantDef *)0xffffffff,(renderOptions_s)(unaff_ESI + 0x65),0x2843508,
-                     (ShaderConstantSet *)0xffffffff,unaff_EDI,(int)unaff_EBX);
-  fVar4 = 1.0;
-  if ((*(char *)(unaff_ESI + 0x62) != '\0') && (fVar4 = 1.0, *(char *)(DAT_04a4031c + 0x18) != '\0')
+  dobjConstantSet =
+       WeaponOptions::SetupWeaponOptionsRender
+                 ((WeaponOptions *)(unaff_ESI + 0xe),unaff_ESI[1],(float *)unaff_ESI[0x61],
+                  (WeaponVariantDef *)0xffffffff,(renderOptions_s)(unaff_ESI + 0x65),0x2843508,
+                  (ShaderConstantSet *)0xffffffff,unaff_EDI,(int)unaff_EBX);
+  fVar3 = 1.0;
+  if ((*(char *)(unaff_ESI + 0x62) != '\0') && (fVar3 = 1.0, *(char *)(DAT_04a4031c + 0x18) != '\0')
      ) {
-    dVar5 = (double)((float)(DAT_0354aa44 - unaff_ESI[99]) * 0.001 * 3.1415927);
+    dVar4 = (double)((float)(DAT_0354aa44 - unaff_ESI[99]) * 0.001 * 3.1415927);
     __libm_sse2_sin((double)CONCAT44(unaff_EBX,unaff_EDI));
-    fVar4 = ((float)dVar5 + 1.0) * 0.5 * 4.0 + 1.0;
+    fVar3 = ((float)dVar4 + 1.0) * 0.5 * 4.0 + 1.0;
   }
   if (*(char *)(unaff_ESI + 100) != '\0') {
     param_2 = param_2 * 0.03;
   }
-  fVar4 = fVar4 * param_2;
+  fVar3 = fVar3 * param_2;
   if ((*(byte *)((int)unaff_ESI + 0x20b) & 0x10) != 0) {
-    unaff_ESI[0x75] = fVar4;
+    unaff_ESI[0x75] = fVar3;
     unaff_ESI[0x76] = 0;
     unaff_ESI[0x77] = 0;
     unaff_ESI[0x78] = 0;
   }
   if ((*(byte *)((int)unaff_ESI + 0x20b) & 0x20) != 0) {
     unaff_ESI[0x79] = 0;
-    unaff_ESI[0x7a] = fVar4;
+    unaff_ESI[0x7a] = fVar3;
     unaff_ESI[0x7b] = 0;
     unaff_ESI[0x7c] = 0;
   }
   if ((*(byte *)((int)unaff_ESI + 0x20b) & 0x40) != 0) {
     unaff_ESI[0x7d] = 0;
     unaff_ESI[0x7e] = 0;
-    unaff_ESI[0x7f] = fVar4;
+    unaff_ESI[0x7f] = fVar3;
     unaff_ESI[0x80] = 0;
   }
-  fVar4 = (float)unaff_ESI[0x5f] - (float)DAT_04a40264;
+  fVar3 = (float)unaff_ESI[0x5f] - (float)DAT_04a40264;
   unaff_ESI[0x11] = 0;
-  unaff_ESI[0x12] = fVar4;
+  unaff_ESI[0x12] = fVar3;
   unaff_ESI[0x13] = 0;
   R_AddDObjToScene((DObj *)*unaff_ESI,(cpose_t *)(unaff_ESI + 2),((DObj *)*unaff_ESI)->entnum - 1,
-                   -(uint)(cVar1 != '\0') & 3,local_14,0.0,0.0,0.0,0.0,-1,iVar3,
+                   -(uint)(cVar1 != '\0') & 3,local_14,0.0,0.0,0.0,0.0,-1,dobjConstantSet,
                    (ShaderConstantSet *)(unaff_ESI + 0x65),(ShaderConstantSet *)0x0,(float)unaff_EDI
                    ,unaff_EBX);
   DObjUpdateClientInfo((DObj *)param_1,0.0,(int)unaff_EDI);
@@ -2621,11 +2622,11 @@ bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *param_1,bool param_2
 
 {
   uchar *in_EAX;
-  char *pcVar1;
+  char *nptr;
   undefined4 unaff_ESI;
-  int iVar2;
-  double dVar3;
-  undefined1 uVar4;
+  int iVar1;
+  double dVar2;
+  undefined1 uVar3;
   undefined4 local_120;
   float local_11c;
   undefined4 local_118;
@@ -2635,27 +2636,27 @@ bool __thiscall UIViewer::SetCameraPos(UIViewer *this,char *param_1,bool param_2
   
   strncpy(local_100,in_EAX,0x100);
   local_1 = 0;
-  pcVar1 = strtok((char *)local_100," ,");
-  iVar2 = 0;
+  nptr = strtok((char *)local_100," ,");
+  iVar1 = 0;
   do {
-    uVar4 = (undefined1)unaff_ESI;
-    if (pcVar1 == (char *)0x0) {
-      if (iVar2 < 5) {
+    uVar3 = (undefined1)unaff_ESI;
+    if (nptr == (char *)0x0) {
+      if (iVar1 < 5) {
         return false;
       }
       break;
     }
-    dVar3 = atof(pcVar1);
-    local_114[iVar2] = (float)dVar3;
-    pcVar1 = strtok((char *)0x0," ,");
-    uVar4 = (undefined1)unaff_ESI;
-    iVar2 = iVar2 + 1;
-  } while (iVar2 < 5);
+    dVar2 = atof(nptr);
+    local_114[iVar1] = (float)dVar2;
+    nptr = strtok((char *)0x0," ,");
+    uVar3 = (undefined1)unaff_ESI;
+    iVar1 = iVar1 + 1;
+  } while (iVar1 < 5);
   local_120 = 0;
   local_11c = local_114[0];
   local_118 = local_114[1];
   SetCameraPos((UIViewer *)&local_120,(float *)param_1,local_114[2],local_114[3],local_114[4],
-               (bool)uVar4);
+               (bool)uVar3);
   return true;
 }
 
@@ -2744,23 +2745,23 @@ void __thiscall UIViewer::InitFov(UIViewer *this)
 
 {
   int iVar1;
-  char *pcVar2;
-  int iVar3;
+  char *nptr;
+  int iVar2;
   char *unaff_ESI;
   int unaff_EDI;
-  double dVar4;
+  double dVar3;
   
   iVar1 = *(int *)(unaff_EDI + 0xf3f8);
   if (iVar1 == 0) {
     Com_PrintError(0xd,"Unable to find the lookup table in the fastfile, aborting lookup\n");
     return;
   }
-  iVar3 = StringTable_LookupRowNumForValue((StringTable *)0x0,0xa64d6c,unaff_ESI);
-  if ((((1 < *(int *)(iVar1 + 4)) && (iVar3 < *(int *)(iVar1 + 8))) && (-1 < iVar3)) &&
-     ((pcVar2 = *(char **)(*(int *)(iVar1 + 0xc) + 8 + *(int *)(iVar1 + 4) * iVar3 * 8),
-      pcVar2 != (char *)0x0 && (*pcVar2 != '\0')))) {
-    dVar4 = atof(pcVar2);
-    Dvar_SetFloatFromSource(*(dvar_s **)(unaff_EDI + 0xd0),(float)dVar4,0);
+  iVar2 = StringTable_LookupRowNumForValue((StringTable *)0x0,0xa64d6c,unaff_ESI);
+  if ((((1 < *(int *)(iVar1 + 4)) && (iVar2 < *(int *)(iVar1 + 8))) && (-1 < iVar2)) &&
+     ((nptr = *(char **)(*(int *)(iVar1 + 0xc) + 8 + *(int *)(iVar1 + 4) * iVar2 * 8),
+      nptr != (char *)0x0 && (*nptr != '\0')))) {
+    dVar3 = atof(nptr);
+    Dvar_SetFloatFromSource(*(dvar_s **)(unaff_EDI + 0xd0),(float)dVar3,0);
   }
   return;
 }
@@ -2776,14 +2777,14 @@ void __cdecl UIViewer::SetCameraPosCmd(void)
 {
   int *piVar1;
   int iVar2;
+  char *nptr;
   char *pcVar3;
   char *pcVar4;
-  char *pcVar5;
+  double dVar5;
   double dVar6;
   double dVar7;
   double dVar8;
   double dVar9;
-  double dVar10;
   
   piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
   iVar2 = *piVar1;
@@ -2793,52 +2794,52 @@ void __cdecl UIViewer::SetCameraPosCmd(void)
     return;
   }
   if (piVar1[iVar2 + 0x21] < 3) {
-    pcVar5 = "";
+    pcVar4 = "";
   }
   else {
-    pcVar5 = *(char **)(piVar1[iVar2 + 0x29] + 8);
+    pcVar4 = *(char **)(piVar1[iVar2 + 0x29] + 8);
   }
   if (piVar1[iVar2 + 0x21] < 2) {
-    pcVar4 = "";
-  }
-  else {
-    pcVar4 = *(char **)(piVar1[iVar2 + 0x29] + 4);
-  }
-  dVar6 = atof(pcVar4);
-  dVar7 = atof(pcVar5);
-  piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  if (piVar1[*piVar1 + 0x21] < 6) {
-    pcVar5 = "";
-  }
-  else {
-    pcVar5 = *(char **)(piVar1[*piVar1 + 0x29] + 0x14);
-  }
-  iVar2 = *piVar1;
-  if (piVar1[iVar2 + 0x21] < 5) {
-    pcVar4 = "";
-  }
-  else {
-    pcVar4 = *(char **)(piVar1[iVar2 + 0x29] + 0x10);
-  }
-  if (piVar1[iVar2 + 0x21] < 4) {
     pcVar3 = "";
   }
   else {
-    pcVar3 = *(char **)(piVar1[iVar2 + 0x29] + 0xc);
+    pcVar3 = *(char **)(piVar1[iVar2 + 0x29] + 4);
   }
+  dVar5 = atof(pcVar3);
+  dVar6 = atof(pcVar4);
+  piVar1 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
+  if (piVar1[*piVar1 + 0x21] < 6) {
+    pcVar4 = "";
+  }
+  else {
+    pcVar4 = *(char **)(piVar1[*piVar1 + 0x29] + 0x14);
+  }
+  iVar2 = *piVar1;
+  if (piVar1[iVar2 + 0x21] < 5) {
+    pcVar3 = "";
+  }
+  else {
+    pcVar3 = *(char **)(piVar1[iVar2 + 0x29] + 0x10);
+  }
+  if (piVar1[iVar2 + 0x21] < 4) {
+    nptr = "";
+  }
+  else {
+    nptr = *(char **)(piVar1[iVar2 + 0x29] + 0xc);
+  }
+  dVar7 = atof(nptr);
   dVar8 = atof(pcVar3);
   dVar9 = atof(pcVar4);
-  dVar10 = atof(pcVar5);
-  DAT_04a4025c._4_4_ = (float)dVar8;
+  DAT_04a4025c._4_4_ = (float)dVar7;
   DAT_04a40254._0_4_ = 0;
-  DAT_04a40264._0_4_ = (float)dVar9;
-  DAT_04a40254._4_4_ = (float)dVar6;
-  DAT_04a40264._4_4_ = (float)dVar10;
-  DAT_04a4025c._0_4_ = (float)dVar7;
-  _DAT_04a40284 = (ulonglong)(uint)(float)dVar6 << 0x20;
-  _DAT_04a4028c = CONCAT44((float)dVar8,(float)dVar7);
+  DAT_04a40264._0_4_ = (float)dVar8;
+  DAT_04a40254._4_4_ = (float)dVar5;
+  DAT_04a40264._4_4_ = (float)dVar9;
+  DAT_04a4025c._0_4_ = (float)dVar6;
+  _DAT_04a40284 = (ulonglong)(uint)(float)dVar5 << 0x20;
+  _DAT_04a4028c = CONCAT44((float)dVar7,(float)dVar6);
   DAT_04a4024c = 0;
-  _DAT_04a40294 = CONCAT44((float)dVar10,(float)dVar9);
+  _DAT_04a40294 = CONCAT44((float)dVar9,(float)dVar8);
   return;
 }
 

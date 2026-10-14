@@ -4,7 +4,7 @@
 
 void __thiscall
 minspec_hash_table<phys_slot_pool,64>::add
-          (minspec_hash_table<phys_slot_pool,64> *this,uint param_1,phys_slot_pool *param_2)
+          (minspec_hash_table<phys_slot_pool,64> *this,uint key,phys_slot_pool *entry_to_add)
 
 {
   phys_slot_pool *ppVar1;
@@ -14,17 +14,17 @@ minspec_hash_table<phys_slot_pool,64>::add
   uint uVar5;
   uint *puVar6;
   uint uVar7;
-  uint local_20c;
-  phys_slot_pool *local_208 [64];
+  uint mod_i;
+  uint total_collisions;
+  int entry_list [63];
   uint local_108 [65];
   
-  local_208[0] = param_2;
   uVar5 = 1;
   uVar2 = 0;
   do {
     for (ppVar1 = this->m_hash_table[uVar2]; ppVar1 != (phys_slot_pool *)0x0;
         ppVar1 = ppVar1->m_hash_next) {
-      local_208[uVar5] = ppVar1;
+      entry_list[uVar5 - 1] = (int)ppVar1;
       uVar5 = uVar5 + 1;
     }
     this->m_hash_table[uVar2] = (phys_slot_pool *)0x0;
@@ -44,18 +44,18 @@ minspec_hash_table<phys_slot_pool,64>::add
     uVar3 = 0;
     uVar7 = 0;
     uVar4 = 0;
-    local_20c = 0;
+    mod_i = 0;
     if (uVar5 != 0) {
       do {
-        uVar3 = local_208[uVar4]->m_map_key % uVar2;
+        uVar3 = *(uint *)(entry_list[uVar4 - 1] + 8) % uVar2;
         local_108[uVar3] = local_108[uVar3] + 1;
         uVar3 = local_108[uVar3];
         if (uVar7 < uVar3) {
           uVar7 = uVar3;
         }
-        uVar3 = local_20c + uVar3;
+        uVar3 = mod_i + uVar3;
         uVar4 = uVar4 + 1;
-        local_20c = uVar3;
+        mod_i = uVar3;
       } while (uVar4 < uVar5);
     }
     if (uVar3 < this->m_total_collisions) {
@@ -67,7 +67,7 @@ minspec_hash_table<phys_slot_pool,64>::add
   uVar2 = 0;
   if (uVar5 != 0) {
     do {
-      ppVar1 = local_208[uVar2];
+      ppVar1 = (phys_slot_pool *)entry_list[uVar2 - 1];
       uVar3 = ppVar1->m_map_key % this->m_mod;
       uVar2 = uVar2 + 1;
       ppVar1->m_hash_next = this->m_hash_table[uVar3];
@@ -80,9 +80,11 @@ minspec_hash_table<phys_slot_pool,64>::add
 
 // 004A5980  operator_delete  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/new:63)
 
-void __cdecl operator_delete(void *param_1,void *param_2)
+void __cdecl operator_delete(void *__formal,void *param_2)
 
 {
+  void *__formal_2;
+  
   return;
 }
 
@@ -90,7 +92,8 @@ void __cdecl operator_delete(void *param_1,void *param_2)
 // 008E3770  phys_memory_manager  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:144)
 
 phys_memory_manager * __thiscall
-phys_memory_manager::phys_memory_manager(phys_memory_manager *this,void *param_1,int param_2)
+phys_memory_manager::phys_memory_manager
+          (phys_memory_manager *this,void *memory_buffer_size,int param_2)
 
 {
   int iVar1;
@@ -106,9 +109,9 @@ phys_memory_manager::phys_memory_manager(phys_memory_manager *this,void *param_1
   (this->m_slot_pool_map).m_total_collisions = 0;
   (this->m_slot_pool_map).m_mod = 1;
   (this->m_slot_pool_allocate_mutex).m_token = 0;
-  this->m_buffer_start = param_1;
-  this->m_buffer_cur = param_1;
-  this->m_buffer_end = (char *)(param_2 + (int)param_1);
+  this->m_buffer_start = memory_buffer_size;
+  this->m_buffer_cur = memory_buffer_size;
+  this->m_buffer_end = (char *)(param_2 + (int)memory_buffer_size);
   this->m_list_slot_pool_count = 0;
   pmVar2 = &this->m_slot_pool_map;
   for (iVar1 = 0x40; iVar1 != 0; iVar1 = iVar1 + -1) {
@@ -125,7 +128,8 @@ phys_memory_manager::phys_memory_manager(phys_memory_manager *this,void *param_1
 
 // 008E34D0  allocate  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:158)
 
-void * __thiscall phys_memory_manager::allocate(phys_memory_manager *this,uint param_1,uint param_2)
+void * __thiscall
+phys_memory_manager::allocate(phys_memory_manager *this,uint alignment,uint param_2)
 
 {
   char **ppcVar1;
@@ -133,12 +137,13 @@ void * __thiscall phys_memory_manager::allocate(phys_memory_manager *this,uint p
   char *pcVar3;
   char *pcVar4;
   void *pvVar5;
+  uint size;
   
   ppcVar1 = &this->m_buffer_cur;
   do {
     pcVar2 = *ppcVar1;
     pvVar5 = (void *)((uint)(pcVar2 + (param_2 - 1)) & ~(param_2 - 1));
-    pcVar3 = (char *)(param_1 + (int)pvVar5);
+    pcVar3 = (char *)(alignment + (int)pvVar5);
     if (this->m_buffer_end < pcVar3) {
       return (void *)0x0;
     }
@@ -198,7 +203,7 @@ phys_slot_pool * __thiscall phys_memory_manager::allocate_slot_pool(phys_memory_
 // 008E35C0  get_slot_pool  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:203)
 
 phys_slot_pool * __thiscall
-phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint param_2)
+phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint slot_alignment,uint param_2)
 
 {
   minspec_read_write_mutex *this_00;
@@ -206,16 +211,17 @@ phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint p
   uint uVar1;
   uint uVar2;
   phys_slot_pool *ppVar3;
-  uint uVar4;
+  uint key;
+  uint slot_size;
   LONG local_4;
   
   this_00 = &this->m_slot_pool_map_mutex;
-  uVar4 = param_2 << 0x10 | param_1;
+  key = param_2 << 0x10 | slot_alignment;
   minspec_read_write_mutex::ReadLock(this_00);
   this_01 = &this->m_slot_pool_map;
-  for (ppVar3 = this_01->m_hash_table[uVar4 % (this->m_slot_pool_map).m_mod];
-      (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != uVar4));
-      ppVar3 = ppVar3->m_hash_next) {
+  for (ppVar3 = this_01->m_hash_table[key % (this->m_slot_pool_map).m_mod];
+      (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != key)); ppVar3 = ppVar3->m_hash_next)
+  {
   }
   do {
     uVar1 = this_00->m_count;
@@ -229,16 +235,16 @@ phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint p
   } while (uVar2 != uVar1);
   if (ppVar3 == (phys_slot_pool *)0x0) {
     minspec_read_write_mutex::WriteLock(this_00);
-    for (ppVar3 = this_01->m_hash_table[uVar4 % (this->m_slot_pool_map).m_mod];
-        (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != uVar4));
+    for (ppVar3 = this_01->m_hash_table[key % (this->m_slot_pool_map).m_mod];
+        (ppVar3 != (phys_slot_pool *)0x0 && (ppVar3->m_map_key != key));
         ppVar3 = ppVar3->m_hash_next) {
     }
     if (ppVar3 == (phys_slot_pool *)0x0) {
       ppVar3 = allocate_slot_pool(this);
       (ppVar3->m_first_free_slot).m_ptr = (void *)0x0;
       (ppVar3->m_first_free_slot).m_tag = 0;
-      ppVar3->m_map_key = uVar4;
-      minspec_hash_table<phys_slot_pool,64>::add(this_01,uVar4,ppVar3);
+      ppVar3->m_map_key = key;
+      minspec_hash_table<phys_slot_pool,64>::add(this_01,key,ppVar3);
     }
     local_4 = 0;
     InterlockedExchange(&local_4,0);
@@ -255,16 +261,16 @@ phys_memory_manager::get_slot_pool(phys_memory_manager *this,uint param_1,uint p
 
 // 008E37F0  phys_memory_manager_init  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:236)
 
-void __cdecl phys_memory_manager_init(void *param_1,int param_2)
+void __cdecl phys_memory_manager_init(void *memory_buffer_size,int param_2)
 
 {
-  g_phys_memory_manager = (phys_memory_manager *)((int)param_1 + 7U & 0xfffffff8);
-  g_phys_memory_buffer = param_1;
+  g_phys_memory_manager = (phys_memory_manager *)((int)memory_buffer_size + 7U & 0xfffffff8);
+  g_phys_memory_buffer = memory_buffer_size;
   g_phys_memory_buffer_size = param_2;
   if (g_phys_memory_manager != (phys_memory_manager *)0x0) {
     phys_memory_manager::phys_memory_manager
               (g_phys_memory_manager,g_phys_memory_manager + 1,
-               (int)param_1 + (param_2 - (int)(g_phys_memory_manager + 1)));
+               (int)memory_buffer_size + (param_2 - (int)(g_phys_memory_manager + 1)));
   }
   return;
 }
@@ -284,24 +290,27 @@ void __cdecl phys_memory_manager_term(void)
 
 // 008E36D0  PMM_PERM_ALLOCATE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:263)
 
-void * __cdecl PMM_PERM_ALLOCATE(uint param_1,uint param_2)
+void * __cdecl PMM_PERM_ALLOCATE(uint alignment,uint param_2)
 
 {
   void *pvVar1;
+  uint size;
   
-  pvVar1 = phys_memory_manager::allocate(g_phys_memory_manager,param_1,param_2);
+  pvVar1 = phys_memory_manager::allocate(g_phys_memory_manager,alignment,param_2);
   return pvVar1;
 }
 
 
 // 008E3480  init  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:270)
 
-void __thiscall phys_slot_pool::init(phys_slot_pool *this,uint param_1,uint param_2)
+void __thiscall phys_slot_pool::init(phys_slot_pool *this,uint slot_alignment,uint param_2)
 
 {
+  uint slot_size;
+  
   (this->m_first_free_slot).m_ptr = (void *)0x0;
   (this->m_first_free_slot).m_tag = 0;
-  this->m_map_key = param_2 << 0x10 | param_1;
+  this->m_map_key = param_2 << 0x10 | slot_alignment;
   return;
 }
 
@@ -318,10 +327,12 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 008E34A0  ppu_pmm_get_linear_buffer  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:381)
 
-void __cdecl ppu_pmm_get_linear_buffer(char ***param_1,char **param_2)
+void __cdecl ppu_pmm_get_linear_buffer(char ***linear_buffer_end,char **param_2)
 
 {
-  *param_1 = &g_phys_memory_manager->m_buffer_cur;
+  char ***linear_buffer_cur;
+  
+  *linear_buffer_end = &g_phys_memory_manager->m_buffer_cur;
   *param_2 = g_phys_memory_manager->m_buffer_end;
   return;
 }
@@ -376,7 +387,7 @@ void * __thiscall phys_slot_pool::allocate_slot(phys_slot_pool *this)
 
 // 008E3830  free_slot  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:444)
 
-void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
+void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *slot)
 
 {
   tagged_void_pointer_t tVar1;
@@ -391,7 +402,7 @@ void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
   do {
     pvVar2 = (this->m_first_free_slot).m_ptr;
     local_c = (this->m_first_free_slot).m_tag;
-    *(void **)param_1 = pvVar2;
+    *(void **)slot = pvVar2;
     local_14 = 0;
     local_10 = pvVar2;
     InterlockedExchange(&local_14,0);
@@ -401,7 +412,7 @@ void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
     tVar3.m_ptr = pvVar2;
     if (tVar3 == tVar1) {
       tVar1.m_tag = local_c + 1;
-      tVar1.m_ptr = param_1;
+      tVar1.m_ptr = slot;
       this->m_first_free_slot = tVar1;
       pvVar4 = pvVar2;
       uVar5 = local_c;
@@ -418,13 +429,14 @@ void __thiscall phys_slot_pool::free_slot(phys_slot_pool *this,void *param_1)
 
 // 008E36F0  PMM_ALLOC  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:464)
 
-void * __cdecl PMM_ALLOC(uint param_1,uint param_2)
+void * __cdecl PMM_ALLOC(uint alignment,uint param_2)
 
 {
   phys_slot_pool *this;
   void *pvVar1;
+  uint size;
   
-  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_1,param_2);
+  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,alignment,param_2);
   pvVar1 = phys_slot_pool::allocate_slot(this);
   return pvVar1;
 }
@@ -432,13 +444,14 @@ void * __cdecl PMM_ALLOC(uint param_1,uint param_2)
 
 // 008E3710  PMM_FREE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:470)
 
-void __cdecl PMM_FREE(void *param_1,uint param_2,uint param_3)
+void __cdecl PMM_FREE(void *size,uint alignment,uint param_3)
 
 {
   phys_slot_pool *this;
+  void *ptr;
   
-  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_2,param_3);
-  phys_slot_pool::free_slot(this,param_1);
+  this = phys_memory_manager::get_slot_pool(g_phys_memory_manager,alignment,param_3);
+  phys_slot_pool::free_slot(this,size);
   return;
 }
 
@@ -449,6 +462,7 @@ void * __cdecl PSP_ALLOC(void *param_1)
 
 {
   void *pvVar1;
+  void *slot_pool;
   
   pvVar1 = phys_slot_pool::allocate_slot(param_1);
   return pvVar1;
@@ -457,22 +471,25 @@ void * __cdecl PSP_ALLOC(void *param_1)
 
 // 008E34C0  PSP_FREE  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:482)
 
-void __cdecl PSP_FREE(void *param_1,void *param_2)
+void __cdecl PSP_FREE(void *slot,void *param_2)
 
 {
-  phys_slot_pool::free_slot(param_1,param_2);
+  void *slot_pool;
+  
+  phys_slot_pool::free_slot(slot,param_2);
   return;
 }
 
 
 // 008E3750  GET_PHYS_SLOT_POOL  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_mem_new.cpp:488)
 
-void * __cdecl GET_PHYS_SLOT_POOL(uint param_1,uint param_2)
+void * __cdecl GET_PHYS_SLOT_POOL(uint alignment,uint param_2)
 
 {
   phys_slot_pool *ppVar1;
+  uint size;
   
-  ppVar1 = phys_memory_manager::get_slot_pool(g_phys_memory_manager,param_1,param_2);
+  ppVar1 = phys_memory_manager::get_slot_pool(g_phys_memory_manager,alignment,param_2);
   return ppVar1;
 }
 

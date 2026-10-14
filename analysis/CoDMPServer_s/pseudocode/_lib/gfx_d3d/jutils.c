@@ -3,24 +3,26 @@
 // 008783F0  jcopy_sample_rows  (jpeg-6/jutils.c:119)
 
 void __cdecl
-jcopy_sample_rows(uchar **param_1,int param_2,uchar **param_3,int param_4,int param_5,uint param_6)
+jcopy_sample_rows(uchar **dest_row,int num_rows,uchar **num_cols,int param_4,int param_5,
+                 uint param_6)
 
 {
-  uchar *puVar1;
-  uchar *puVar2;
+  uchar *src;
+  uchar *dst;
   int in_EAX;
   int in_ECX;
-  undefined4 *puVar3;
-  uchar **ppuVar4;
+  undefined4 *puVar1;
+  uchar **ppuVar2;
+  uchar **output_array;
   
-  puVar3 = (undefined4 *)(in_ECX + in_EAX * 4);
-  ppuVar4 = param_1 + param_2;
-  for (; 0 < (int)param_3; param_3 = (uchar **)((int)param_3 + -1)) {
-    puVar1 = (uchar *)*puVar3;
-    puVar2 = *ppuVar4;
-    puVar3 = puVar3 + 1;
-    ppuVar4 = ppuVar4 + 1;
-    memcpy(puVar2,puVar1,param_4);
+  puVar1 = (undefined4 *)(in_ECX + in_EAX * 4);
+  ppuVar2 = dest_row + num_rows;
+  for (; 0 < (int)num_cols; num_cols = (uchar **)((int)num_cols + -1)) {
+    src = (uchar *)*puVar1;
+    dst = *ppuVar2;
+    puVar1 = puVar1 + 1;
+    ppuVar2 = ppuVar2 + 1;
+    memcpy(dst,src,param_4);
   }
   return;
 }

@@ -2,36 +2,36 @@
 
 // 006B3650  CM_Hunk_AllocXModel  (qcommon/cm_staticmodel.cpp:12)
 
-void * __cdecl CM_Hunk_AllocXModel(int param_1)
+void * __cdecl CM_Hunk_AllocXModel(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"CM_Hunk_AllocXModel",0x16);
+  pvVar1 = Hunk_Alloc(size,"CM_Hunk_AllocXModel",0x16);
   return pvVar1;
 }
 
 
 // 006B3690  CM_Hunk_AllocXModelColl  (qcommon/cm_staticmodel.cpp:17)
 
-void * __cdecl CM_Hunk_AllocXModelColl(int param_1)
+void * __cdecl CM_Hunk_AllocXModelColl(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"CM_Hunk_AllocXModelColl",0x1c);
+  pvVar1 = Hunk_Alloc(size,"CM_Hunk_AllocXModelColl",0x1c);
   return pvVar1;
 }
 
 
 // 006B3670  CM_XModelPrecache  (qcommon/cm_staticmodel.cpp:22)
 
-XModel * __cdecl CM_XModelPrecache(char *param_1)
+XModel * __cdecl CM_XModelPrecache(char *name)
 
 {
   XModel *pXVar1;
   
-  pXVar1 = XModelPrecache(param_1,CM_Hunk_AllocXModel,CM_Hunk_AllocXModelColl);
+  pXVar1 = XModelPrecache(name,CM_Hunk_AllocXModel,CM_Hunk_AllocXModelColl);
   return pXVar1;
 }
 
@@ -39,47 +39,46 @@ XModel * __cdecl CM_XModelPrecache(char *param_1)
 // 006B36B0  CM_TraceStaticModel  (qcommon/cm_staticmodel.cpp:29)
 
 void __cdecl
-CM_TraceStaticModel(cStaticModel_s *param_1,trace_t *param_2,float *param_3,float *param_4,
-                   int param_5)
+CM_TraceStaticModel(cStaticModel_s *sm,trace_t *results,float *start,float *end,int contentmask)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_34 [3];
-  float local_28;
+  float localStart [3];
+  float delta;
   float local_24;
   float local_20;
-  float local_1c;
+  float normal;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float localEnd [3];
   
-  local_28 = *param_3 - param_1->origin[0];
-  local_24 = param_3[1] - param_1->origin[1];
-  local_20 = param_3[2] - param_1->origin[2];
-  MatrixTransformVector(&local_28,param_1->invScaledAxis,local_34);
-  local_28 = *param_4 - param_1->origin[0];
-  local_24 = param_4[1] - param_1->origin[1];
-  local_20 = param_4[2] - param_1->origin[2];
-  MatrixTransformVector(&local_28,param_1->invScaledAxis,local_10);
-  iVar3 = XModelTraceLine(param_1->xmodel,param_2,local_34,local_10,param_5);
+  delta = *start - sm->origin[0];
+  local_24 = start[1] - sm->origin[1];
+  local_20 = start[2] - sm->origin[2];
+  MatrixTransformVector(&delta,sm->invScaledAxis,localStart);
+  delta = *end - sm->origin[0];
+  local_24 = end[1] - sm->origin[1];
+  local_20 = end[2] - sm->origin[2];
+  MatrixTransformVector(&delta,sm->invScaledAxis,localEnd);
+  iVar3 = XModelTraceLine(sm->xmodel,results,localStart,localEnd,contentmask);
   if (-1 < iVar3) {
-    param_2->staticModel = param_1;
-    if ((param_2 == (trace_t *)0x0) &&
+    results->staticModel = sm;
+    if ((results == (trace_t *)0x0) &&
        (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_2->hitType = TRACE_HITTYPE_ENTITY;
-    param_2->hitId = 0x3fe;
-    MatrixTransposeTransformVector((float *)param_2,param_1->invScaledAxis,&local_1c);
-    Vec3Normalize(&local_1c);
-    (param_2->normal).vec.v[0] = local_1c;
-    (param_2->normal).vec.v[1] = local_18;
-    (param_2->normal).vec.v[2] = local_14;
+    results->hitType = TRACE_HITTYPE_ENTITY;
+    results->hitId = 0x3fe;
+    MatrixTransposeTransformVector((float *)results,sm->invScaledAxis,&normal);
+    Vec3Normalize(&normal);
+    (results->normal).vec.v[0] = normal;
+    (results->normal).vec.v[1] = local_18;
+    (results->normal).vec.v[2] = local_14;
   }
   return;
 }
@@ -89,35 +88,34 @@ CM_TraceStaticModel(cStaticModel_s *param_1,trace_t *param_2,float *param_3,floa
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl
-CM_TraceStaticModelComplete(cStaticModel_s *param_1,float *param_2,float *param_3,int param_4)
+int __cdecl CM_TraceStaticModelComplete(cStaticModel_s *sm,float *start,float *end,int contentmask)
 
 {
   int iVar1;
-  float local_64 [3];
-  float local_58;
+  float localStart [3];
+  float delta;
   float local_54;
   float local_50;
-  float local_4c [3];
-  float4 local_40;
+  float localEnd [3];
+  float4 results;
   float local_30;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40.v[0] = 0.0;
-  local_40.v[1] = 0.0;
-  local_40.v[2] = 0.0;
-  local_40.v[3] = 0.0;
-  local_58 = *param_2 - param_1->origin[0];
-  local_54 = param_2[1] - param_1->origin[1];
-  local_50 = param_2[2] - param_1->origin[2];
-  MatrixTransformVector(&local_58,param_1->invScaledAxis,local_64);
-  local_58 = *param_3 - param_1->origin[0];
-  local_54 = param_3[1] - param_1->origin[1];
-  local_50 = param_3[2] - param_1->origin[2];
-  MatrixTransformVector(&local_58,param_1->invScaledAxis,local_4c);
+  results.v[0] = 0.0;
+  results.v[1] = 0.0;
+  results.v[2] = 0.0;
+  results.v[3] = 0.0;
+  delta = *start - sm->origin[0];
+  local_54 = start[1] - sm->origin[1];
+  local_50 = start[2] - sm->origin[2];
+  MatrixTransformVector(&delta,sm->invScaledAxis,localStart);
+  delta = *end - sm->origin[0];
+  local_54 = end[1] - sm->origin[1];
+  local_50 = end[2] - sm->origin[2];
+  MatrixTransformVector(&delta,sm->invScaledAxis,localEnd);
   local_30 = 1.0;
-  iVar1 = XModelTraceLine(param_1->xmodel,(trace_t *)&local_40,local_64,local_4c,param_4);
+  iVar1 = XModelTraceLine(sm->xmodel,(trace_t *)&results,localStart,localEnd,contentmask);
   return (uint)(iVar1 < 0);
 }
 

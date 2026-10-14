@@ -7,23 +7,24 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-actor_s * __cdecl Actor_Get(scr_entref_t param_1)
+actor_s * __cdecl Actor_Get(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *paVar3;
+  actor_s *self;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",
                                  0x59,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       paVar3 = (actor_s *)(*pcVar1)();
       return paVar3;
     }
-    if (g_entities[param_1.entnum].actor != (actor_s *)0x0) {
-      return g_entities[param_1.entnum].actor;
+    if (g_entities[entref.entnum].actor != (actor_s *)0x0) {
+      return g_entities[entref.entnum].actor;
     }
   }
   Scr_ObjectError("not an actor",SCRIPTINSTANCE_SERVER);
@@ -33,28 +34,30 @@ actor_s * __cdecl Actor_Get(scr_entref_t param_1)
 
 // 00918430  Actor_SetScriptGoalPos  (game/actor_script_cmd.cpp:129)
 
+/* WARNING: Variable defined which should be unmapped: vGoalPos */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-Actor_SetScriptGoalPos(actor_s *param_1,float *param_2,pathnode_t *param_3,float *param_4)
+void __cdecl Actor_SetScriptGoalPos(actor_s *node,float *ang,pathnode_t *param_3,float *param_4)
 
 {
   int iVar1;
   int in_ECX;
   actor_s *in_EDX;
+  float *vGoalPos;
+  actor_s *self;
   
   EntHandle::setEnt((EntHandle *)(in_ECX + 0xe94),(gentity_s *)0x0);
   Actor_ClearKeepClaimedNode(in_EDX);
   *(gentity_s **)(in_ECX + 0xe6c) = in_EDX->ent;
   *(sentient_s **)(in_ECX + 0xe70) = in_EDX->sentient;
   *(AISpecies *)(in_ECX + 0xe74) = in_EDX->species;
-  *(float *)(in_ECX + 0xe78) = *param_2;
-  *(float *)(in_ECX + 0xe7c) = param_2[1];
-  *(float *)(in_ECX + 0xe80) = param_2[2];
-  *(actor_s **)(in_ECX + 0xe8c) = param_1;
+  *(float *)(in_ECX + 0xe78) = *ang;
+  *(float *)(in_ECX + 0xe7c) = ang[1];
+  *(float *)(in_ECX + 0xe80) = ang[2];
+  *(actor_s **)(in_ECX + 0xe8c) = node;
   if (*(int *)(in_ECX + 0xe90) != 0) {
     iVar1 = SV_EntityContact((float *)in_EDX,(float *)in_EDX,*(gentity_s **)(in_ECX + 0xe90));
     if (iVar1 == 0) {
@@ -67,6 +70,8 @@ Actor_SetScriptGoalPos(actor_s *param_1,float *param_2,pathnode_t *param_3,float
 
 // 00915AA0  Actor_StartArrivalState  (game/actor_script_cmd.cpp:174)
 
+/* WARNING: Variable defined which should be unmapped: newState */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -81,16 +86,18 @@ void __cdecl Actor_StartArrivalState(actor_s *param_1,ai_state_t param_2)
   actor_s *in_EDX;
   actor_s *paVar3;
   actor_s *paVar4;
-  float local_20;
+  ai_state_t newState;
+  actor_s *self;
+  float startPos;
   float local_1c;
   float local_18;
-  actor_s *local_14;
+  actor_s *angles;
   float local_10;
   undefined4 local_c;
-  int local_8;
+  gentity_s *ent;
   
-  local_8 = *in_ECX;
-  if ((local_8 == 0) &&
+  ent = (gentity_s *)*in_ECX;
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xb3,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -106,11 +113,11 @@ void __cdecl Actor_StartArrivalState(actor_s *param_1,ai_state_t param_2)
   else {
     Actor_PushState(in_EDX,(ai_state_t)in_ECX);
   }
-  Scr_GetVector(0,&local_20,SCRIPTINSTANCE_SERVER);
-  in_ECX[0x3c2] = (int)(local_20 - *(float *)(local_8 + 0x124));
-  in_ECX[0x3c3] = (int)(local_1c - *(float *)(local_8 + 0x128));
-  in_ECX[0x3c4] = (int)(local_18 - *(float *)(local_8 + 300));
-  local_14 = (actor_s *)0x0;
+  Scr_GetVector(0,&startPos,SCRIPTINSTANCE_SERVER);
+  in_ECX[0x3c2] = (int)(startPos - (ent->r).currentOrigin[0]);
+  in_ECX[0x3c3] = (int)(local_1c - (ent->r).currentOrigin[1]);
+  in_ECX[0x3c4] = (int)(local_18 - (ent->r).currentOrigin[2]);
+  angles = (actor_s *)0x0;
   local_10 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   local_c = 0;
   in_ECX[0x90] = 0;
@@ -120,10 +127,10 @@ void __cdecl Actor_StartArrivalState(actor_s *param_1,ai_state_t param_2)
   in_ECX[0x99] = 0;
   in_ECX[0x9a] = 0;
   in_ECX[0x4b] = 0;
-  paVar4 = local_14;
-  Actor_SetDesiredAngles((ai_orient_t *)local_14,local_10,(float)in_EDX);
-  paVar3 = local_14;
-  Actor_SetDesiredAngles((ai_orient_t *)local_14,local_10,(float)paVar4);
+  paVar4 = angles;
+  Actor_SetDesiredAngles((ai_orient_t *)angles,local_10,(float)in_EDX);
+  paVar3 = angles;
+  Actor_SetDesiredAngles((ai_orient_t *)angles,local_10,(float)paVar4);
   Actor_ClearPath(paVar3);
   return;
 }
@@ -136,13 +143,14 @@ void __cdecl Actor_StartArrivalState(actor_s *param_1,ai_state_t param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_StartCoverArrival(scr_entref_t param_1)
+void __cdecl ActorCmd_StartCoverArrival(scr_entref_t entref)
 
 {
   undefined2 in_stack_fffffff6;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  Actor_StartArrivalState((actor_s *)param_1._0_4_,CONCAT22(in_stack_fffffff6,param_1.client));
+  Actor_Get(entref);
+  Actor_StartArrivalState((actor_s *)entref._0_4_,CONCAT22(in_stack_fffffff6,entref.client));
   return;
 }
 
@@ -154,13 +162,14 @@ void __cdecl ActorCmd_StartCoverArrival(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_StartTraverseArrival(scr_entref_t param_1)
+void __cdecl ActorCmd_StartTraverseArrival(scr_entref_t entref)
 
 {
   undefined2 in_stack_fffffff6;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  Actor_StartArrivalState((actor_s *)param_1._0_4_,CONCAT22(in_stack_fffffff6,param_1.client));
+  Actor_Get(entref);
+  Actor_StartArrivalState((actor_s *)entref._0_4_,CONCAT22(in_stack_fffffff6,entref.client));
   return;
 }
 
@@ -172,25 +181,26 @@ void __cdecl ActorCmd_StartTraverseArrival(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_Melee(scr_entref_t param_1)
+void __cdecl ActorCmd_Melee(scr_entref_t entref)
 
 {
-  actor_s *paVar1;
-  uint uVar2;
-  gentity_s *local_14;
-  float local_10 [3];
+  actor_s *self_00;
+  uint uVar1;
+  actor_s *self;
+  gentity_s *hitEnt;
+  float direction [3];
   
-  paVar1 = Actor_Get(param_1);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 == 0) {
-    local_14 = Actor_Melee(paVar1,(float *)0x0);
+  self_00 = Actor_Get(entref);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 == 0) {
+    hitEnt = Actor_Melee(self_00,(float *)0x0);
   }
   else {
-    Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-    local_14 = Actor_Melee(paVar1,local_10);
+    Scr_GetVector(0,direction,SCRIPTINSTANCE_SERVER);
+    hitEnt = Actor_Melee(self_00,direction);
   }
-  if (local_14 != (gentity_s *)0x0) {
-    Scr_AddEntity(local_14,SCRIPTINSTANCE_SERVER);
+  if (hitEnt != (gentity_s *)0x0) {
+    Scr_AddEntity(hitEnt,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -203,18 +213,19 @@ void __cdecl ActorCmd_Melee(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ReacquireStep(scr_entref_t param_1)
+void __cdecl ActorCmd_ReacquireStep(scr_entref_t entref)
 
 {
   bool bVar1;
-  actor_s *paVar2;
-  float fVar3;
+  actor_s *fDist;
+  float fVar2;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  fVar3 = 0.0;
-  paVar2 = (actor_s *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = Actor_Exposed_ReacquireStepMove(paVar2,fVar3);
-  Scr_AddBool((uint)bVar1,(scriptInstance_t)paVar2);
+  Actor_Get(entref);
+  fVar2 = 0.0;
+  fDist = (actor_s *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  bVar1 = Actor_Exposed_ReacquireStepMove(fDist,fVar2);
+  Scr_AddBool((uint)bVar1,(scriptInstance_t)fDist);
   return;
 }
 
@@ -226,31 +237,35 @@ void __cdecl ActorCmd_ReacquireStep(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_FindReacquireNode(scr_entref_t param_1)
+void __cdecl ActorCmd_FindReacquireNode(scr_entref_t entref)
 
 {
-  Actor_Get(param_1);
-  Actor_Exposed_FindReacquireNode((actor_s *)param_1._0_4_);
+  actor_s *self;
+  
+  Actor_Get(entref);
+  Actor_Exposed_FindReacquireNode((actor_s *)entref._0_4_);
   return;
 }
 
 
 // 00915DA0  ActorCmd_GetReacquireNode  (game/actor_script_cmd.cpp:575)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetReacquireNode(scr_entref_t param_1)
+void __cdecl ActorCmd_GetReacquireNode(scr_entref_t entref)
 
 {
-  pathnode_t *ppVar1;
+  pathnode_t *node;
+  actor_s *self;
+  pathnode_t *pNode;
   
-  Actor_Get(param_1);
-  ppVar1 = Actor_Exposed_GetReacquireNode((actor_s *)param_1._0_4_);
-  if (ppVar1 != (pathnode_t *)0x0) {
-    Scr_AddPathnode(ppVar1,SCRIPTINSTANCE_SERVER);
+  Actor_Get(entref);
+  node = Actor_Exposed_GetReacquireNode((actor_s *)entref._0_4_);
+  if (node != (pathnode_t *)0x0) {
+    Scr_AddPathnode(node,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -263,20 +278,21 @@ void __cdecl ActorCmd_GetReacquireNode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_UseReacquireNode(scr_entref_t param_1)
+void __cdecl ActorCmd_UseReacquireNode(scr_entref_t entref)
 
 {
   bool bVar1;
   actor_s *paVar2;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  bVar1 = Actor_KeepClaimedNode((actor_s *)param_1._0_4_);
+  Actor_Get(entref);
+  bVar1 = Actor_KeepClaimedNode((actor_s *)entref._0_4_);
   if (bVar1) {
     Scr_Error("cannot change node when keepclaimednode is set",false);
   }
   paVar2 = (actor_s *)0x0;
   Scr_GetPathnode(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = Actor_Exposed_UseReacquireNode(paVar2,(pathnode_t *)param_1._0_4_);
+  bVar1 = Actor_Exposed_UseReacquireNode(paVar2,(pathnode_t *)entref._0_4_);
   Scr_AddBool((uint)bVar1,(scriptInstance_t)paVar2);
   return;
 }
@@ -289,19 +305,21 @@ void __cdecl ActorCmd_UseReacquireNode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_FindReacquireDirectPath(scr_entref_t param_1)
+void __cdecl ActorCmd_FindReacquireDirectPath(scr_entref_t entref)
 
 {
   uint uVar1;
   undefined1 uVar2;
+  actor_s *self;
+  bool ignoreSuppression;
   
-  uVar2 = (undefined1)param_1.client;
-  Actor_Get(param_1);
+  uVar2 = (undefined1)entref.client;
+  Actor_Get(entref);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   }
-  Actor_Exposed_FindReacquireDirectPath((actor_s *)param_1._0_4_,(bool)uVar2);
+  Actor_Exposed_FindReacquireDirectPath((actor_s *)entref._0_4_,(bool)uVar2);
   return;
 }
 
@@ -313,19 +331,21 @@ void __cdecl ActorCmd_FindReacquireDirectPath(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_FindReacquireProximatePath(scr_entref_t param_1)
+void __cdecl ActorCmd_FindReacquireProximatePath(scr_entref_t entref)
 
 {
   uint uVar1;
   undefined1 uVar2;
+  actor_s *self;
+  bool ignoreSuppression;
   
-  uVar2 = (undefined1)param_1.client;
-  Actor_Get(param_1);
+  uVar2 = (undefined1)entref.client;
+  Actor_Get(entref);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 != 0) {
     Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   }
-  Actor_Exposed_FindReacquireProximatePath((actor_s *)param_1._0_4_,(bool)uVar2);
+  Actor_Exposed_FindReacquireProximatePath((actor_s *)entref._0_4_,(bool)uVar2);
   return;
 }
 
@@ -337,22 +357,23 @@ void __cdecl ActorCmd_FindReacquireProximatePath(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_TrimPathToAttack(scr_entref_t param_1)
+void __cdecl ActorCmd_TrimPathToAttack(scr_entref_t entref)
 
 {
   bool bVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  int value;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  bVar1 = Actor_MayReacquireMove((actor_s *)param_1._0_4_);
+  Actor_Get(entref);
+  bVar1 = Actor_MayReacquireMove((actor_s *)entref._0_4_);
   if (!bVar1) {
     Scr_Error("TrimPathToAttack may only called after calling FindReacquireDirectPath or FindReacquireProximatePath"
               ,false);
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  iVar2 = Actor_TrimPathToAttack((actor_s *)0x0);
-  Scr_AddBool(iVar2,sVar3);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Actor_TrimPathToAttack((actor_s *)0x0);
+  Scr_AddBool(value,inst);
   return;
 }
 
@@ -364,21 +385,22 @@ void __cdecl ActorCmd_TrimPathToAttack(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ReacquireMove(scr_entref_t param_1)
+void __cdecl ActorCmd_ReacquireMove(scr_entref_t entref)
 
 {
   bool bVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  bVar1 = Actor_MayReacquireMove((actor_s *)param_1._0_4_);
+  Actor_Get(entref);
+  bVar1 = Actor_MayReacquireMove((actor_s *)entref._0_4_);
   if (!bVar1) {
     Scr_Error("ReacquireMove may only called after calling FindReacquireDirectPath or FindReacquireProximatePath"
               ,false);
   }
-  sVar2 = SCRIPTINSTANCE_SERVER;
+  inst = SCRIPTINSTANCE_SERVER;
   bVar1 = Actor_Exposed_StartReacquireMove((actor_s *)0x0);
-  Scr_AddBool((uint)bVar1,sVar2);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
@@ -390,11 +412,13 @@ void __cdecl ActorCmd_ReacquireMove(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_FlagEnemyUnattackable(scr_entref_t param_1)
+void __cdecl ActorCmd_FlagEnemyUnattackable(scr_entref_t entref)
 
 {
-  Actor_Get(param_1);
-  Actor_FlagEnemyUnattackable((actor_s *)param_1._0_4_);
+  actor_s *self;
+  
+  Actor_Get(entref);
+  Actor_FlagEnemyUnattackable((actor_s *)entref._0_4_);
   return;
 }
 
@@ -406,12 +430,13 @@ void __cdecl ActorCmd_FlagEnemyUnattackable(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearPitchOrient(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearPitchOrient(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   (paVar1->ProneInfo).prone = false;
   (paVar1->ProneInfo).orientPitch = false;
   return;
@@ -425,25 +450,30 @@ void __cdecl ActorCmd_ClearPitchOrient(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetLookAtAnimNodes(scr_entref_t param_1)
+void __cdecl ActorCmd_SetLookAtAnimNodes(scr_entref_t entref)
 
 {
-  actor_s *paVar1;
-  XAnimTree_s *pXVar2;
-  scr_anim_s sVar3;
+  actor_s *actor;
+  XAnimTree_s *tree_00;
+  scr_anim_s sVar1;
   undefined2 local_24;
   undefined2 local_20;
   undefined2 local_1c;
+  XAnimTree_s *tree;
+  actor_s *self;
+  ushort animRight;
+  ushort animStraight;
+  ushort animLeft;
   
-  paVar1 = Actor_Get(param_1);
-  pXVar2 = G_GetActorAnimTree(paVar1);
-  sVar3 = Scr_GetAnim(0,pXVar2,SCRIPTINSTANCE_SERVER);
-  local_1c = sVar3.field0_0x0._0_2_;
-  sVar3 = Scr_GetAnim(1,pXVar2,SCRIPTINSTANCE_SERVER);
-  local_20 = sVar3.field0_0x0._0_2_;
-  sVar3 = Scr_GetAnim(2,pXVar2,SCRIPTINSTANCE_SERVER);
-  local_24 = sVar3.field0_0x0._0_2_;
-  Actor_SetLookAtAnimNodes(paVar1,local_1c,local_20,local_24);
+  actor = Actor_Get(entref);
+  tree_00 = G_GetActorAnimTree(actor);
+  sVar1 = Scr_GetAnim(0,tree_00,SCRIPTINSTANCE_SERVER);
+  local_1c = sVar1.field0_0x0._0_2_;
+  sVar1 = Scr_GetAnim(1,tree_00,SCRIPTINSTANCE_SERVER);
+  local_20 = sVar1.field0_0x0._0_2_;
+  sVar1 = Scr_GetAnim(2,tree_00,SCRIPTINSTANCE_SERVER);
+  local_24 = sVar1.field0_0x0._0_2_;
+  Actor_SetLookAtAnimNodes(actor,local_1c,local_20,local_24);
   return;
 }
 
@@ -455,25 +485,25 @@ void __cdecl ActorCmd_SetLookAtAnimNodes(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetLookAt(scr_entref_t param_1)
+void __cdecl ActorCmd_SetLookAt(scr_entref_t entref)
 
 {
   uint uVar1;
-  float local_18 [3];
-  float local_c;
-  actor_s *local_8;
+  float pfPosition [3];
+  float fTurnAccel;
+  actor_s *self;
   
-  local_c = 0.0;
-  local_8 = Actor_Get(param_1);
-  if ((local_8->lookAtInfo).bLookAtSetup == false) {
+  fTurnAccel = 0.0;
+  self = Actor_Get(entref);
+  if ((self->lookAtInfo).bLookAtSetup == false) {
     Scr_Error("LookAt Called without setLookAtAnimNodes being called first.",false);
   }
-  Scr_GetVector(0,local_18,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,pfPosition,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (1 < uVar1) {
-    local_c = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    fTurnAccel = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   }
-  Actor_SetLookAt(local_8,local_18,local_c);
+  Actor_SetLookAt(self,pfPosition,fTurnAccel);
   return;
 }
 
@@ -485,19 +515,20 @@ void __cdecl ActorCmd_SetLookAt(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetLookAtYawLimits(scr_entref_t param_1)
+void __cdecl ActorCmd_SetLookAtYawLimits(scr_entref_t entref)
 
 {
-  actor_s *paVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
+  actor_s *self_00;
+  float fBlendTime;
+  float fYawLimit;
+  float fAnimYawLimit;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
-  fVar2 = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
-  fVar3 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-  fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  Actor_SetLookAtYawLimits(paVar1,fVar4,fVar3,fVar2);
+  self_00 = Actor_Get(entref);
+  fBlendTime = Scr_GetFloat(2,SCRIPTINSTANCE_SERVER);
+  fYawLimit = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  fAnimYawLimit = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  Actor_SetLookAtYawLimits(self_00,fAnimYawLimit,fYawLimit,fBlendTime);
   return;
 }
 
@@ -509,20 +540,21 @@ void __cdecl ActorCmd_SetLookAtYawLimits(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_StopLookAt(scr_entref_t param_1)
+void __cdecl ActorCmd_StopLookAt(scr_entref_t entref)
 
 {
-  actor_s *paVar1;
-  uint uVar2;
-  undefined4 local_c;
+  actor_s *self_00;
+  uint uVar1;
+  float fTurnAccel;
+  actor_s *self;
   
-  local_c = 0.0;
-  paVar1 = Actor_Get(param_1);
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 != 0) {
-    local_c = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  fTurnAccel = 0.0;
+  self_00 = Actor_Get(entref);
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 != 0) {
+    fTurnAccel = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   }
-  Actor_StopLookAt(paVar1,local_c);
+  Actor_StopLookAt(self_00,fTurnAccel);
   return;
 }
 
@@ -534,22 +566,25 @@ void __cdecl ActorCmd_StopLookAt(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_CanSee(scr_entref_t param_1)
+void __cdecl ActorCmd_CanSee(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   uint uVar4;
-  actor_s *extraout_EAX;
+  int extraout_EAX;
   DWORD DVar5;
   undefined2 uVar6;
-  bool local_d;
-  actor_s *local_8;
+  PIXProfile pixProfile;
+  gentity_s *pOther;
+  bool bVisible;
+  actor_s *self;
+  int iLatency;
   
   uVar6 = 0xd3;
   PIXBeginNamedEvent(-1,"ActorCmd_CanSee");
-  Actor_Get(param_1);
+  Actor_Get(entref);
   pgVar3 = Scr_GetEntity(0);
   if ((pgVar3 == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0x480
@@ -559,23 +594,24 @@ void __cdecl ActorCmd_CanSee(scr_entref_t param_1)
     return;
   }
   if (pgVar3->sentient == (sentient_s *)0x0) {
-    local_d = Actor_CanSeeEntity((actor_s *)param_1._0_4_,
-                                 (gentity_s *)CONCAT22(uVar6,param_1.client));
+    bVisible = Actor_CanSeeEntity((actor_s *)entref._0_4_,(gentity_s *)CONCAT22(uVar6,entref.client)
+                                 );
   }
   else {
     uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar4 < 2) {
-      local_8 = (actor_s *)0xfa;
+      iLatency = 0xfa;
     }
     else {
       Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
       _ftol2_sse();
-      local_8 = extraout_EAX;
+      iLatency = extraout_EAX;
     }
-    local_d = Actor_CanSeeSentient
-                        (local_8,(sentient_s *)param_1._0_4_,CONCAT22(uVar6,param_1.client));
+    bVisible = Actor_CanSeeSentient
+                         ((actor_s *)iLatency,(sentient_s *)entref._0_4_,
+                          CONCAT22(uVar6,entref.client));
   }
-  Scr_AddBool((uint)local_d,SCRIPTINSTANCE_SERVER);
+  Scr_AddBool((uint)bVisible,SCRIPTINSTANCE_SERVER);
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -586,29 +622,28 @@ void __cdecl ActorCmd_CanSee(scr_entref_t param_1)
 
 // 00916510  DEBUGMAYMOVE  (game/actor_script_cmd.cpp:1291)
 
-void __cdecl
-DEBUGMAYMOVE(float *param_1,float *param_2,float *param_3,DEBUGMAYMOVE_LIFT_ENUM param_4)
+void __cdecl DEBUGMAYMOVE(float *vec1,float *vec2,float *color,DEBUGMAYMOVE_LIFT_ENUM liftBehavior)
 
 {
-  float local_1c;
+  float from;
   float local_18;
   float local_14;
-  float local_10;
+  float to;
   float local_c;
   float local_8;
   
   if ((ai_debugMayMove->current).enabled != false) {
-    local_1c = *param_1;
-    local_18 = param_1[1];
-    local_14 = param_1[2];
-    local_10 = *param_2;
-    local_c = param_2[1];
-    local_8 = param_2[2];
-    if (param_4 == DEBUGMAYMOVE_LIFTED) {
+    from = *vec1;
+    local_18 = vec1[1];
+    local_14 = vec1[2];
+    to = *vec2;
+    local_c = vec2[1];
+    local_8 = vec2[2];
+    if (liftBehavior == DEBUGMAYMOVE_LIFTED) {
       local_14 = local_14 + 32.0;
       local_8 = local_8 + 32.0;
     }
-    G_DebugLineWithDuration(&local_1c,&local_10,param_3,0,100);
+    G_DebugLineWithDuration(&from,&to,color,0,100);
   }
   return;
 }
@@ -623,7 +658,7 @@ DEBUGMAYMOVE(float *param_1,float *param_2,float *param_3,DEBUGMAYMOVE_LIFT_ENUM
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-MayMove_TraceCheck(actor_s *param_1,float *param_2,float *param_3,int param_4,int param_5)
+MayMove_TraceCheck(actor_s *self,float *vStart,float *vEnd,int allowStartSolid,int checkDrop)
 
 {
   code *pcVar1;
@@ -631,83 +666,84 @@ MayMove_TraceCheck(actor_s *param_1,float *param_2,float *param_3,int param_4,in
   int iVar3;
   float in_stack_ffffff24;
   int in_stack_ffffff28;
-  col_context_t local_94;
-  undefined1 local_6c [12];
-  float local_60;
-  float local_5c;
+  col_context_t context;
+  undefined1 vTraceEndPos [12];
+  float stepheight;
+  float vPointHigh;
   float local_58;
   float local_54;
-  float local_50;
-  float4 local_4c;
+  float MAX_FALL_HEIGHT;
+  float4 results;
   float local_3c;
   char local_22;
   uint local_14;
-  float local_10;
+  float vPointLow;
   float local_c;
   float local_8;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c.v[0] = 0.0;
-  local_4c.v[1] = 0.0;
-  local_4c.v[2] = 0.0;
-  local_4c.v[3] = 0.0;
-  local_50 = 32.0;
-  if ((param_1 == (actor_s *)0x0) &&
+  results.v[0] = 0.0;
+  results.v[1] = 0.0;
+  results.v[2] = 0.0;
+  results.v[3] = 0.0;
+  MAX_FALL_HEIGHT = 32.0;
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0x550
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((vStart == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0x551
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((vEnd == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0x552
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_5c = *param_3;
-  local_58 = param_3[1];
-  local_10 = *param_3;
-  local_c = param_3[1];
-  local_54 = param_3[2] + 48.0;
-  local_8 = param_3[2] - 48.0;
-  col_context_t::col_context_t(&local_94);
-  G_TraceCapsule((trace_t *)&local_4c,&local_5c,vec3_origin,vec3_origin,&local_10,
-                 (param_1->ent->s).number,(param_1->Physics).iTraceMask | 0xa000,&local_94);
+  vPointHigh = *vEnd;
+  local_58 = vEnd[1];
+  vPointLow = *vEnd;
+  local_c = vEnd[1];
+  local_54 = vEnd[2] + 48.0;
+  local_8 = vEnd[2] - 48.0;
+  col_context_t::col_context_t(&context);
+  G_TraceCapsule((trace_t *)&results,&vPointHigh,vec3_origin,vec3_origin,&vPointLow,
+                 (self->ent->s).number,(self->Physics).iTraceMask | 0xa000,&context);
   if (local_22 == '\0') {
-    if ((param_1->Physics).prone == false) {
-      local_60 = 18.0;
+    if ((self->Physics).prone == false) {
+      stepheight = 18.0;
     }
     else {
-      local_60 = 10.0;
+      stepheight = 10.0;
     }
-    if ((param_5 != 0) &&
-       (Vec3Lerp(&local_5c,&local_10,local_3c,&local_10), local_50 < param_2[2] - local_8)) {
-      DEBUGMAYMOVE(param_3,&local_10,colorOrange,DEBUGMAYMOVE_NOT_LIFTED);
+    if ((checkDrop != 0) &&
+       (Vec3Lerp(&vPointHigh,&vPointLow,local_3c,&vPointLow), MAX_FALL_HEIGHT < vStart[2] - local_8)
+       ) {
+      DEBUGMAYMOVE(vEnd,&vPointLow,colorOrange,DEBUGMAYMOVE_NOT_LIFTED);
       return 0;
     }
     bVar2 = Path_PredictionTrace
-                      ((float *)(param_1->ent->s).number,
-                       (float *)((param_1->Physics).iTraceMask | 0x8004),(int)local_6c,(int)local_60
-                       ,(float *)param_4,in_stack_ffffff24,in_stack_ffffff28);
+                      ((float *)(self->ent->s).number,(float *)((self->Physics).iTraceMask | 0x8004)
+                       ,(int)vTraceEndPos,(int)stepheight,(float *)allowStartSolid,in_stack_ffffff24
+                       ,in_stack_ffffff28);
     if (bVar2) {
       iVar3 = 1;
     }
     else {
-      DEBUGMAYMOVE(param_2,param_3,colorLtOrange,DEBUGMAYMOVE_LIFTED);
+      DEBUGMAYMOVE(vStart,vEnd,colorLtOrange,DEBUGMAYMOVE_LIFTED);
       iVar3 = 0;
     }
   }
   else {
-    DEBUGMAYMOVE(&local_5c,&local_10,colorOrange,DEBUGMAYMOVE_LIFTED);
+    DEBUGMAYMOVE(&vPointHigh,&vPointLow,colorOrange,DEBUGMAYMOVE_LIFTED);
     iVar3 = 0;
   }
   return iVar3;
@@ -721,33 +757,34 @@ MayMove_TraceCheck(actor_s *param_1,float *param_2,float *param_3,int param_4,in
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_MayMoveToPoint(scr_entref_t param_1)
+void __cdecl ActorCmd_MayMoveToPoint(scr_entref_t entref)
 
 {
   uint uVar1;
   int iVar2;
   DWORD DVar3;
   undefined2 uVar4;
-  uint local_28;
-  float local_20 [3];
-  actor_s *local_14;
-  float local_10 [3];
+  int checkDrop;
+  PIXProfile pixProfile;
+  float vPoint [3];
+  actor_s *self;
+  float myPos [3];
   
   uVar4 = 0xd3;
   PIXBeginNamedEvent(-1,"MayMoveToPoint");
-  local_14 = Actor_Get(param_1);
-  Scr_GetVector(0,local_20,SCRIPTINSTANCE_SERVER);
+  self = Actor_Get(entref);
+  Scr_GetVector(0,vPoint,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 2) {
-    local_28 = 1;
+    checkDrop = 1;
   }
   else {
     iVar2 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    local_28 = (uint)(iVar2 != 0);
+    checkDrop = (int)(iVar2 != 0);
   }
-  if (local_14->ent->tagInfo == (tagInfo_s *)0x0) {
-    Sentient_GetOrigin((sentient_s *)param_1._0_4_,(float *)CONCAT22(uVar4,param_1.client));
-    iVar2 = MayMove_TraceCheck(local_14,local_10,local_20,1,local_28);
+  if (self->ent->tagInfo == (tagInfo_s *)0x0) {
+    Sentient_GetOrigin((sentient_s *)entref._0_4_,(float *)CONCAT22(uVar4,entref.client));
+    iVar2 = MayMove_TraceCheck(self,myPos,vPoint,1,checkDrop);
     if (iVar2 == 0) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
       DVar3 = GetCurrentThreadId();
@@ -756,8 +793,8 @@ void __cdecl ActorCmd_MayMoveToPoint(scr_entref_t param_1)
       }
     }
     else {
-      local_14->mayMoveTime = level.time;
-      DEBUGMAYMOVE((local_14->ent->r).currentOrigin,local_20,colorGreen,DEBUGMAYMOVE_LIFTED);
+      self->mayMoveTime = level.time;
+      DEBUGMAYMOVE((self->ent->r).currentOrigin,vPoint,colorGreen,DEBUGMAYMOVE_LIFTED);
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -766,7 +803,7 @@ void __cdecl ActorCmd_MayMoveToPoint(scr_entref_t param_1)
     }
   }
   else {
-    DEBUGMAYMOVE((local_14->ent->r).currentOrigin,local_20,colorMagenta,DEBUGMAYMOVE_LIFTED);
+    DEBUGMAYMOVE((self->ent->r).currentOrigin,vPoint,colorMagenta,DEBUGMAYMOVE_LIFTED);
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -784,37 +821,38 @@ void __cdecl ActorCmd_MayMoveToPoint(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_MayMoveFromPointToPoint(scr_entref_t param_1)
+void __cdecl ActorCmd_MayMoveFromPointToPoint(scr_entref_t entref)
 
 {
   uint uVar1;
   int iVar2;
   DWORD DVar3;
-  uint local_28;
-  float local_20 [3];
-  actor_s *local_14;
-  float local_10 [3];
+  int checkDrop;
+  PIXProfile pixProfile;
+  float vEnd [3];
+  actor_s *self;
+  float vStart [3];
   
   PIXBeginNamedEvent(-1,"MayMoveFromPointToPoint");
-  local_14 = Actor_Get(param_1);
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_20,SCRIPTINSTANCE_SERVER);
+  self = Actor_Get(entref);
+  Scr_GetVector(0,vStart,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,vEnd,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 < 3) {
-    local_28 = 1;
+    checkDrop = 1;
   }
   else {
     iVar2 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-    local_28 = (uint)(iVar2 != 0);
+    checkDrop = (int)(iVar2 != 0);
   }
-  if (local_14->ent->tagInfo == (tagInfo_s *)0x0) {
-    iVar2 = MayMove_TraceCheck(local_14,local_10,local_20,0,local_28);
+  if (self->ent->tagInfo == (tagInfo_s *)0x0) {
+    iVar2 = MayMove_TraceCheck(self,vStart,vEnd,0,checkDrop);
     if (iVar2 == 0) {
       Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
     }
     else {
-      local_14->mayMoveTime = level.time;
-      DEBUGMAYMOVE(local_10,local_20,colorGreen,DEBUGMAYMOVE_LIFTED);
+      self->mayMoveTime = level.time;
+      DEBUGMAYMOVE(vStart,vEnd,colorGreen,DEBUGMAYMOVE_LIFTED);
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
     DVar3 = GetCurrentThreadId();
@@ -823,7 +861,7 @@ void __cdecl ActorCmd_MayMoveFromPointToPoint(scr_entref_t param_1)
     }
   }
   else {
-    DEBUGMAYMOVE(local_10,local_20,colorMagenta,DEBUGMAYMOVE_LIFTED);
+    DEBUGMAYMOVE(vStart,vEnd,colorMagenta,DEBUGMAYMOVE_LIFTED);
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -841,103 +879,103 @@ void __cdecl ActorCmd_MayMoveFromPointToPoint(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_Teleport(scr_entref_t param_1)
+void __cdecl ActorCmd_Teleport(scr_entref_t entref)
 
 {
   bool bVar1;
   uint uVar2;
   int iVar3;
   actor_s *in_stack_ffffff90;
-  ai_orient_t *paVar4;
-  ai_orient_t *paVar5;
-  actor_s *paVar6;
+  ai_orient_t *fPitch;
+  ai_orient_t *fPitch_00;
+  actor_s *paVar4;
   undefined2 in_stack_ffffffae;
-  float local_3c [3];
-  actor_s *local_30;
-  ai_orient_t local_2c;
-  float local_1c;
-  float local_18 [3];
-  gentity_s *local_c;
-  gentity_s *local_8;
+  float vAngles [3];
+  actor_s *self;
+  float *angles;
+  float distSquared;
+  float vSpawnPos [3];
+  gentity_s *ent;
+  gentity_s *player;
   
-  paVar6 = param_1._0_4_;
-  local_30 = Actor_Get(param_1);
-  local_2c.fDesiredBodyYaw = 0.0;
-  local_c = local_30->ent;
-  paVar4 = (ai_orient_t *)0x916a0c;
-  Scr_GetVector(0,local_18,SCRIPTINSTANCE_SERVER);
+  paVar4 = entref._0_4_;
+  self = Actor_Get(entref);
+  angles = (float *)0x0;
+  ent = self->ent;
+  fPitch = (ai_orient_t *)0x916a0c;
+  Scr_GetVector(0,vSpawnPos,SCRIPTINSTANCE_SERVER);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (1 < uVar2) {
-    paVar4 = (ai_orient_t *)0x916a2b;
-    Scr_GetVector(1,local_3c,SCRIPTINSTANCE_SERVER);
-    local_2c.fDesiredBodyYaw = (float)local_3c;
+    fPitch = (ai_orient_t *)0x916a2b;
+    Scr_GetVector(1,vAngles,SCRIPTINSTANCE_SERVER);
+    angles = vAngles;
   }
-  local_1c = Vec3DistanceSq(local_18,(local_c->r).currentOrigin);
-  if (local_30->ent->tagInfo == (tagInfo_s *)0x0) {
-    if (local_1c <= 100.0) {
-      bVar1 = Actor_HasPath(paVar6);
-      if ((bVar1) && ((local_30->Path).iPathEndTime != 0)) {
+  distSquared = Vec3DistanceSq(vSpawnPos,(ent->r).currentOrigin);
+  if (self->ent->tagInfo == (tagInfo_s *)0x0) {
+    if (distSquared <= 100.0) {
+      bVar1 = Actor_HasPath(paVar4);
+      if ((bVar1) && ((self->Path).iPathEndTime != 0)) {
         Com_DPrintf(0x12,"Teleport failed because actor (%i) in mid-stopping.\n");
         Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
         return;
       }
     }
     else {
-      paVar4 = (ai_orient_t *)0x916a95;
-      local_8 = G_Find((gentity_s *)0x0,0x164,scr_const.player);
-      if ((local_8 != (gentity_s *)0x0) && (local_8->sentient != (sentient_s *)0x0)) {
+      fPitch = (ai_orient_t *)0x916a95;
+      player = G_Find((gentity_s *)0x0,0x164,scr_const.player);
+      if ((player != (gentity_s *)0x0) && (player->sentient != (sentient_s *)0x0)) {
         Sentient_GetEyePosition
-                  ((sentient_s *)paVar6,(float *)CONCAT22(in_stack_ffffffae,param_1.client));
-        iVar3 = PointCouldSeeSpawn((float *)&local_2c,local_18,(local_8->s).number,
-                                   (uint)param_1.entnum);
+                  ((sentient_s *)paVar4,(float *)CONCAT22(in_stack_ffffffae,entref.client));
+        iVar3 = PointCouldSeeSpawn((float *)&stack0xffffffd4,vSpawnPos,(player->s).number,
+                                   (uint)entref.entnum);
         if (iVar3 != 0) {
           Com_DPrintf(0x12,"Teleport (of actor %i) failed because player could see goal pos.\n");
           Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
           return;
         }
-        paVar4 = &local_2c;
-        iVar3 = PointCouldSeeSpawn((float *)paVar4,(local_c->r).currentOrigin,(local_8->s).number,
-                                   (uint)param_1.entnum);
+        fPitch = (ai_orient_t *)&stack0xffffffd4;
+        iVar3 = PointCouldSeeSpawn((float *)fPitch,(ent->r).currentOrigin,(player->s).number,
+                                   (uint)entref.entnum);
         if (iVar3 != 0) {
           Com_DPrintf(0x12,"Teleport failed because player could see actor (%i).\n");
           Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
           return;
         }
       }
-      if (16384.0 < local_1c) {
-        (local_c->s).lerp.eFlags = (local_c->s).lerp.eFlags ^ 2;
+      if (16384.0 < distSquared) {
+        (ent->s).lerp.eFlags = (ent->s).lerp.eFlags ^ 2;
       }
     }
   }
   else {
-    (local_c->s).lerp.eFlags = (local_c->s).lerp.eFlags ^ 2;
+    (ent->s).lerp.eFlags = (ent->s).lerp.eFlags ^ 2;
   }
-  G_SetOrigin(local_c,local_18);
-  (local_30->Physics).vVelocity[0] = 0.0;
-  (local_30->Physics).vVelocity[1] = 0.0;
-  (local_30->Physics).vVelocity[2] = 0.0;
-  (local_30->Physics).vWishDelta[0] = 0.0;
-  (local_30->Physics).vWishDelta[1] = 0.0;
-  (local_30->Physics).vWishDelta[2] = 0.0;
-  if ((local_30->useEnemyGoal != false) &&
-     ((bVar1 = Actor_PointAtGoal((float *)paVar6,
-                                 (actor_goal_s *)CONCAT22(in_stack_ffffffae,param_1.client)), !bVar1
-      || (100.0 < local_1c)))) {
-    local_30->useEnemyGoal = false;
-    Actor_UpdateGoalPos(paVar6);
+  G_SetOrigin(ent,vSpawnPos);
+  (self->Physics).vVelocity[0] = 0.0;
+  (self->Physics).vVelocity[1] = 0.0;
+  (self->Physics).vVelocity[2] = 0.0;
+  (self->Physics).vWishDelta[0] = 0.0;
+  (self->Physics).vWishDelta[1] = 0.0;
+  (self->Physics).vWishDelta[2] = 0.0;
+  if ((self->useEnemyGoal != false) &&
+     ((bVar1 = Actor_PointAtGoal((float *)paVar4,
+                                 (actor_goal_s *)CONCAT22(in_stack_ffffffae,entref.client)), !bVar1
+      || (100.0 < distSquared)))) {
+    self->useEnemyGoal = false;
+    Actor_UpdateGoalPos(paVar4);
   }
-  if ((float *)local_2c.fDesiredBodyYaw != (float *)0x0) {
-    G_SetAngle(local_c,(float *)local_2c.fDesiredBodyYaw);
-    paVar5 = (ai_orient_t *)(local_c->r).currentAngles[0];
-    Actor_SetDesiredAngles(paVar5,(local_c->r).currentAngles[1],(float)paVar6);
-    if ((local_30->ScriptOrient).eMode == AI_ORIENT_DONT_CHANGE) {
-      paVar4 = (ai_orient_t *)(local_c->r).currentAngles[0];
-      Actor_SetDesiredAngles(paVar4,(local_c->r).currentAngles[1],(float)paVar5);
+  if (angles != (float *)0x0) {
+    G_SetAngle(ent,angles);
+    fPitch_00 = (ai_orient_t *)(ent->r).currentAngles[0];
+    Actor_SetDesiredAngles(fPitch_00,(ent->r).currentAngles[1],(float)paVar4);
+    if ((self->ScriptOrient).eMode == AI_ORIENT_DONT_CHANGE) {
+      fPitch = (ai_orient_t *)(ent->r).currentAngles[0];
+      Actor_SetDesiredAngles(fPitch,(ent->r).currentAngles[1],(float)fPitch_00);
     }
-    in_stack_ffffff90 = (actor_s *)(local_c->r).currentAngles[0];
-    Actor_SetLookAngles(in_stack_ffffff90,(local_c->r).currentAngles[1],(float)paVar4);
+    in_stack_ffffff90 = (actor_s *)(ent->r).currentAngles[0];
+    Actor_SetLookAngles(in_stack_ffffff90,(ent->r).currentAngles[1],(float)fPitch);
   }
-  if ((local_30->ent->tagInfo == (tagInfo_s *)0x0) && (100.0 < local_1c)) {
+  if ((self->ent->tagInfo == (tagInfo_s *)0x0) && (100.0 < distSquared)) {
     Sentient_InvalidateNearestNode((sentient_s *)in_stack_ffffff90);
     Actor_ClearPath(in_stack_ffffff90);
     Sentient_NearestNode((sentient_s *)in_stack_ffffff90);
@@ -954,62 +992,62 @@ void __cdecl ActorCmd_Teleport(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ForceTeleport(scr_entref_t param_1)
+void __cdecl ActorCmd_ForceTeleport(scr_entref_t entref)
 
 {
   bool bVar1;
   uint uVar2;
-  actor_s *paVar3;
-  ai_orient_t *paVar4;
+  actor_s *fPitch;
+  ai_orient_t *fPitch_00;
   undefined2 in_stack_ffffffbe;
-  float local_2c [3];
-  actor_s *local_20;
-  float *local_1c;
-  float local_18;
-  float local_14 [3];
-  gentity_s *local_8;
+  float vAngles [3];
+  actor_s *self;
+  float *angles;
+  float distSquared;
+  float vSpawnPos [3];
+  gentity_s *ent;
   
-  local_20 = Actor_Get(param_1);
-  local_1c = (float *)0x0;
-  local_8 = local_20->ent;
-  paVar3 = (actor_s *)0x916dac;
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
+  self = Actor_Get(entref);
+  angles = (float *)0x0;
+  ent = self->ent;
+  fPitch = (actor_s *)0x916dac;
+  Scr_GetVector(0,vSpawnPos,SCRIPTINSTANCE_SERVER);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (1 < uVar2) {
-    paVar3 = (actor_s *)0x916dcb;
-    Scr_GetVector(1,local_2c,SCRIPTINSTANCE_SERVER);
-    local_1c = local_2c;
+    fPitch = (actor_s *)0x916dcb;
+    Scr_GetVector(1,vAngles,SCRIPTINSTANCE_SERVER);
+    angles = vAngles;
   }
-  local_18 = Vec3DistanceSq(local_14,(local_8->r).currentOrigin);
-  if (local_20->ent->tagInfo != (tagInfo_s *)0x0) {
-    (local_8->s).lerp.eFlags = (local_8->s).lerp.eFlags ^ 2;
+  distSquared = Vec3DistanceSq(vSpawnPos,(ent->r).currentOrigin);
+  if (self->ent->tagInfo != (tagInfo_s *)0x0) {
+    (ent->s).lerp.eFlags = (ent->s).lerp.eFlags ^ 2;
   }
-  G_SetOrigin(local_8,local_14);
-  (local_20->Physics).vVelocity[0] = 0.0;
-  (local_20->Physics).vVelocity[1] = 0.0;
-  (local_20->Physics).vVelocity[2] = 0.0;
-  (local_20->Physics).vWishDelta[0] = 0.0;
-  (local_20->Physics).vWishDelta[1] = 0.0;
-  (local_20->Physics).vWishDelta[2] = 0.0;
-  if (local_20->useEnemyGoal != false) {
-    bVar1 = Actor_PointAtGoal((float *)param_1._0_4_,
-                              (actor_goal_s *)CONCAT22(in_stack_ffffffbe,param_1.client));
-    if ((!bVar1) || (100.0 < local_18)) {
-      local_20->useEnemyGoal = false;
-      Actor_UpdateGoalPos((actor_s *)param_1._0_4_);
+  G_SetOrigin(ent,vSpawnPos);
+  (self->Physics).vVelocity[0] = 0.0;
+  (self->Physics).vVelocity[1] = 0.0;
+  (self->Physics).vVelocity[2] = 0.0;
+  (self->Physics).vWishDelta[0] = 0.0;
+  (self->Physics).vWishDelta[1] = 0.0;
+  (self->Physics).vWishDelta[2] = 0.0;
+  if (self->useEnemyGoal != false) {
+    bVar1 = Actor_PointAtGoal((float *)entref._0_4_,
+                              (actor_goal_s *)CONCAT22(in_stack_ffffffbe,entref.client));
+    if ((!bVar1) || (100.0 < distSquared)) {
+      self->useEnemyGoal = false;
+      Actor_UpdateGoalPos((actor_s *)entref._0_4_);
     }
   }
-  if (local_1c != (float *)0x0) {
-    G_SetAngle(local_8,local_1c);
-    paVar4 = (ai_orient_t *)(local_8->r).currentAngles[0];
-    Actor_SetDesiredAngles(paVar4,(local_8->r).currentAngles[1],(float)param_1._0_4_);
-    paVar3 = (actor_s *)(local_8->r).currentAngles[0];
-    Actor_SetLookAngles(paVar3,(local_8->r).currentAngles[1],(float)paVar4);
+  if (angles != (float *)0x0) {
+    G_SetAngle(ent,angles);
+    fPitch_00 = (ai_orient_t *)(ent->r).currentAngles[0];
+    Actor_SetDesiredAngles(fPitch_00,(ent->r).currentAngles[1],(float)entref._0_4_);
+    fPitch = (actor_s *)(ent->r).currentAngles[0];
+    Actor_SetLookAngles(fPitch,(ent->r).currentAngles[1],(float)fPitch_00);
   }
-  if ((local_20->ent->tagInfo == (tagInfo_s *)0x0) && (100.0 < local_18)) {
-    Sentient_InvalidateNearestNode((sentient_s *)paVar3);
-    Actor_ClearPath(paVar3);
-    Sentient_NearestNode((sentient_s *)paVar3);
+  if ((self->ent->tagInfo == (tagInfo_s *)0x0) && (100.0 < distSquared)) {
+    Sentient_InvalidateNearestNode((sentient_s *)fPitch);
+    Actor_ClearPath(fPitch);
+    Sentient_NearestNode((sentient_s *)fPitch);
   }
   Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   return;
@@ -1023,18 +1061,19 @@ void __cdecl ActorCmd_ForceTeleport(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_WithinApproxPathDist(scr_entref_t param_1)
+void __cdecl ActorCmd_WithinApproxPathDist(scr_entref_t entref)
 
 {
   bool bVar1;
-  path_t *ppVar2;
-  float fVar3;
+  path_t *checkDist;
+  float fVar2;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  fVar3 = 0.0;
-  ppVar2 = (path_t *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  bVar1 = Path_WithinApproxDist(ppVar2,fVar3);
-  Scr_AddFloat((float)bVar1,(scriptInstance_t)ppVar2);
+  Actor_Get(entref);
+  fVar2 = 0.0;
+  checkDist = (path_t *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  bVar1 = Path_WithinApproxDist(checkDist,fVar2);
+  Scr_AddFloat((float)bVar1,(scriptInstance_t)checkDist);
   return;
 }
 
@@ -1046,19 +1085,20 @@ void __cdecl ActorCmd_WithinApproxPathDist(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_IsPathDirect(scr_entref_t param_1)
+void __cdecl ActorCmd_IsPathDirect(scr_entref_t entref)
 
 {
   bool bVar1;
-  int iVar2;
-  scriptInstance_t sVar3;
+  int value;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  Actor_Get(param_1);
-  bVar1 = Actor_HasPath((actor_s *)param_1._0_4_);
+  Actor_Get(entref);
+  bVar1 = Actor_HasPath((actor_s *)entref._0_4_);
   if (bVar1) {
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    iVar2 = Path_CompleteLookahead((path_t *)0x0);
-    Scr_AddInt(iVar2,sVar3);
+    inst = SCRIPTINSTANCE_SERVER;
+    value = Path_CompleteLookahead((path_t *)0x0);
+    Scr_AddInt(value,inst);
   }
   else {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
@@ -1074,38 +1114,41 @@ void __cdecl ActorCmd_IsPathDirect(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_AllowedStances(scr_entref_t param_1)
+void __cdecl ActorCmd_AllowedStances(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
-  uint uVar3;
-  char *pcVar4;
-  undefined1 uVar5;
-  uint local_8;
+  uint stringValue;
+  char *error;
+  undefined1 force_terminal;
+  uint str;
+  actor_s *self;
+  int iNumParam;
+  int i;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((int)uVar2 < 1) {
     Scr_Error("no stances given in allowedStances()\n",false);
   }
   paVar1->eAllowedStances = STANCE_BAD;
-  for (local_8 = 0; (int)local_8 < (int)uVar2; local_8 = local_8 + 1) {
-    uVar3 = Scr_GetConstString(local_8,SCRIPTINSTANCE_SERVER);
-    if (uVar3 == scr_const.stand) {
+  for (i = 0; i < (int)uVar2; i = i + 1) {
+    stringValue = Scr_GetConstString(i,SCRIPTINSTANCE_SERVER);
+    if (stringValue == scr_const.stand) {
       paVar1->eAllowedStances = paVar1->eAllowedStances | STANCE_STAND;
     }
-    else if (uVar3 == scr_const.crouch) {
+    else if (stringValue == scr_const.crouch) {
       paVar1->eAllowedStances = paVar1->eAllowedStances | STANCE_CROUCH;
     }
-    else if (uVar3 == scr_const.prone) {
+    else if (stringValue == scr_const.prone) {
       paVar1->eAllowedStances = paVar1->eAllowedStances | STANCE_PRONE;
     }
     else {
-      uVar5 = 0;
-      SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
-      pcVar4 = va("invalid stance \'%s\' in allowedStances()\n");
-      Scr_Error(pcVar4,(bool)uVar5);
+      force_terminal = 0;
+      SL_ConvertToString(stringValue,SCRIPTINSTANCE_SERVER);
+      error = va("invalid stance \'%s\' in allowedStances()\n");
+      Scr_Error(error,(bool)force_terminal);
     }
   }
   if (paVar1->eAllowedStances == STANCE_BAD) {
@@ -1123,55 +1166,57 @@ void __cdecl ActorCmd_AllowedStances(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_IsStanceAllowed(scr_entref_t param_1)
+void __cdecl ActorCmd_IsStanceAllowed(scr_entref_t entref)
 
 {
   bool bVar1;
   actor_s *paVar2;
-  uint uVar3;
-  char *pcVar4;
-  undefined1 uVar5;
+  uint stringValue;
+  char *error;
+  undefined1 force_terminal;
   undefined2 in_stack_ffffffea;
-  ai_stance_e local_10;
-  ai_stance_e local_8;
+  uint str;
+  ai_stance_e eAllowedStances;
+  actor_s *self;
+  ai_stance_e eStance;
   
-  paVar2 = Actor_Get(param_1);
-  uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  local_8 = STANCE_BAD;
-  if (uVar3 == scr_const.stand) {
-    local_8 = STANCE_STAND;
+  paVar2 = Actor_Get(entref);
+  stringValue = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  eStance = STANCE_BAD;
+  if (stringValue == scr_const.stand) {
+    eStance = STANCE_STAND;
   }
-  else if (uVar3 == scr_const.crouch) {
-    local_8 = STANCE_CROUCH;
+  else if (stringValue == scr_const.crouch) {
+    eStance = STANCE_CROUCH;
   }
-  else if (uVar3 == scr_const.prone) {
-    local_8 = STANCE_PRONE;
+  else if (stringValue == scr_const.prone) {
+    eStance = STANCE_PRONE;
   }
   else {
-    uVar5 = 0;
-    SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
-    pcVar4 = va("invalid stance \'%s\' in isStanceAllowed()\n");
-    Scr_Error(pcVar4,(bool)uVar5);
+    force_terminal = 0;
+    SL_ConvertToString(stringValue,SCRIPTINSTANCE_SERVER);
+    error = va("invalid stance \'%s\' in isStanceAllowed()\n");
+    Scr_Error(error,(bool)force_terminal);
   }
-  local_10 = STANCE_ANY;
-  bVar1 = Actor_HasPath((actor_s *)param_1._0_4_);
+  eAllowedStances = STANCE_ANY;
+  bVar1 = Actor_HasPath((actor_s *)entref._0_4_);
   if (bVar1) {
-    local_10 = Path_AllowedStancesForPath((path_t *)param_1._0_4_);
+    eAllowedStances = Path_AllowedStancesForPath((path_t *)entref._0_4_);
   }
   else if (paVar2->sentient->pClaimedNode != (pathnode_t *)0x0) {
-    bVar1 = Actor_PointNearNode((float *)param_1._0_4_,
-                                (pathnode_t *)CONCAT22(in_stack_ffffffea,param_1.client));
+    bVar1 = Actor_PointNearNode((float *)entref._0_4_,
+                                (pathnode_t *)CONCAT22(in_stack_ffffffea,entref.client));
     if (bVar1) {
-      local_10 = Path_AllowedStancesForNode(paVar2->sentient->pClaimedNode);
+      eAllowedStances = Path_AllowedStancesForNode(paVar2->sentient->pClaimedNode);
     }
   }
-  if ((local_10 & paVar2->eAllowedStances) == STANCE_BAD) {
-    local_10 = paVar2->eAllowedStances;
+  if ((eAllowedStances & paVar2->eAllowedStances) == STANCE_BAD) {
+    eAllowedStances = paVar2->eAllowedStances;
   }
   else {
-    local_10 = local_10 & paVar2->eAllowedStances;
+    eAllowedStances = eAllowedStances & paVar2->eAllowedStances;
   }
-  if ((local_10 & local_8) == STANCE_BAD) {
+  if ((eAllowedStances & eStance) == STANCE_BAD) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1188,14 +1233,17 @@ void __cdecl ActorCmd_IsStanceAllowed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_Knockback(scr_entref_t param_1)
+void __cdecl ActorCmd_Knockback(scr_entref_t entref)
 
 {
   uint uVar1;
   int iVar2;
+  actor_s *self;
+  bool use;
+  gentity_s *pEnt;
   
-  Actor_Get(param_1);
-  uVar1 = (uint)param_1.entnum;
+  Actor_Get(entref);
+  uVar1 = (uint)entref.entnum;
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar2 == 1) {
     g_entities[uVar1].flags = g_entities[uVar1].flags & 0xfffffff7;
@@ -1214,13 +1262,15 @@ void __cdecl ActorCmd_Knockback(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_TraverseMode(scr_entref_t param_1)
+void __cdecl ActorCmd_TraverseMode(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
+  actor_s *self;
+  uint mode;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   uVar2 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   if (uVar2 == scr_const.gravity) {
     paVar1->eTraverseMode = AI_TRAVERSE_GRAVITY;
@@ -1245,7 +1295,7 @@ void __cdecl ActorCmd_TraverseMode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_AnimMode(scr_entref_t param_1)
+void __cdecl ActorCmd_AnimMode(scr_entref_t entref)
 
 {
   actor_s *paVar1;
@@ -1253,8 +1303,12 @@ void __cdecl ActorCmd_AnimMode(scr_entref_t param_1)
   uint uVar3;
   int iVar4;
   bool bVar5;
+  actor_s *self;
+  char *usage;
+  uint mode;
+  bool clearPath;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   bVar5 = true;
   uVar2 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -1263,7 +1317,7 @@ void __cdecl ActorCmd_AnimMode(scr_entref_t param_1)
     bVar5 = iVar4 != 0;
   }
   if ((uVar2 != scr_const.none) && (bVar5)) {
-    Actor_ClearPath((actor_s *)param_1._0_4_);
+    Actor_ClearPath((actor_s *)entref._0_4_);
   }
   if (uVar2 == scr_const.nophysics) {
     paVar1->eScriptSetAnimMode = AI_ANIM_NOPHYSICS;
@@ -1313,74 +1367,74 @@ void __cdecl ActorCmd_AnimMode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_OrientMode(scr_entref_t param_1)
+void __cdecl ActorCmd_OrientMode(scr_entref_t entref)
 
 {
   uint uVar1;
   int iVar2;
-  float fVar3;
-  ai_orient_t *paVar4;
-  char *pcVar5;
+  float fYaw;
+  ai_orient_t *fAngle;
+  char *vectorValue;
   undefined2 in_stack_ffffffca;
-  float local_24;
+  float point;
   float local_20;
-  float local_18;
+  float v;
   float local_14;
-  actor_s *local_c;
-  uint local_8;
+  actor_s *self;
+  uint mode;
   
-  local_c = Actor_Get(param_1);
-  pcVar5 = (char *)0x0;
-  local_8 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  if (local_8 == scr_const.face_angle) {
-    (local_c->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
-    fVar3 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    pcVar5 = (char *)0x0;
-    Actor_SetDesiredAngles((ai_orient_t *)0x0,fVar3,(float)param_1._0_4_);
+  self = Actor_Get(entref);
+  vectorValue = (char *)0x0;
+  mode = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  if (mode == scr_const.face_angle) {
+    (self->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
+    fYaw = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    vectorValue = (char *)0x0;
+    Actor_SetDesiredAngles((ai_orient_t *)0x0,fYaw,(float)entref._0_4_);
   }
-  else if (local_8 == scr_const.face_current) {
-    (local_c->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
-    (local_c->ScriptOrient).fDesiredBodyYaw = local_c->fDesiredBodyYaw;
+  else if (mode == scr_const.face_current) {
+    (self->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
+    (self->ScriptOrient).fDesiredBodyYaw = self->fDesiredBodyYaw;
   }
-  else if (local_8 == scr_const.face_direction) {
-    pcVar5 = (char *)&local_18;
-    Scr_GetVector(1,(float *)pcVar5,SCRIPTINSTANCE_SERVER);
-    if ((local_18 == 0.0) && (local_14 == 0.0)) {
-      pcVar5 = "cannot face (0, 0, *)";
+  else if (mode == scr_const.face_direction) {
+    vectorValue = (char *)&v;
+    Scr_GetVector(1,(float *)vectorValue,SCRIPTINSTANCE_SERVER);
+    if ((v == 0.0) && (local_14 == 0.0)) {
+      vectorValue = "cannot face (0, 0, *)";
       Scr_Error("cannot face (0, 0, *)",false);
     }
-    (local_c->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
-    Actor_FaceVector((ai_orient_t *)param_1._0_4_,
-                     (float *)CONCAT22(in_stack_ffffffca,param_1.client));
+    (self->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
+    Actor_FaceVector((ai_orient_t *)entref._0_4_,(float *)CONCAT22(in_stack_ffffffca,entref.client))
+    ;
   }
-  else if (local_8 == scr_const.face_enemy) {
-    (local_c->ScriptOrient).eMode = AI_ORIENT_TO_ENEMY;
+  else if (mode == scr_const.face_enemy) {
+    (self->ScriptOrient).eMode = AI_ORIENT_TO_ENEMY;
   }
-  else if (local_8 == scr_const.face_enemy_or_motion) {
-    (local_c->ScriptOrient).eMode = AI_ORIENT_TO_ENEMY_OR_MOTION;
+  else if (mode == scr_const.face_enemy_or_motion) {
+    (self->ScriptOrient).eMode = AI_ORIENT_TO_ENEMY_OR_MOTION;
   }
-  else if (local_8 == scr_const.face_goal) {
-    (local_c->ScriptOrient).eMode = AI_ORIENT_TO_GOAL;
+  else if (mode == scr_const.face_goal) {
+    (self->ScriptOrient).eMode = AI_ORIENT_TO_GOAL;
   }
-  else if (local_8 == scr_const.face_motion) {
-    (local_c->ScriptOrient).eMode = AI_ORIENT_TO_MOTION;
+  else if (mode == scr_const.face_motion) {
+    (self->ScriptOrient).eMode = AI_ORIENT_TO_MOTION;
   }
-  else if (local_8 == scr_const.face_point) {
-    pcVar5 = (char *)&local_24;
-    Scr_GetVector(1,(float *)pcVar5,SCRIPTINSTANCE_SERVER);
-    local_24 = local_24 - (local_c->ent->r).currentOrigin[0];
-    local_20 = local_20 - (local_c->ent->r).currentOrigin[1];
-    (local_c->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
-    if (1.0 <= local_24 * local_24 + local_20 * local_20) {
-      Actor_FaceVector((ai_orient_t *)param_1._0_4_,
-                       (float *)CONCAT22(in_stack_ffffffca,param_1.client));
+  else if (mode == scr_const.face_point) {
+    vectorValue = (char *)&point;
+    Scr_GetVector(1,(float *)vectorValue,SCRIPTINSTANCE_SERVER);
+    point = point - (self->ent->r).currentOrigin[0];
+    local_20 = local_20 - (self->ent->r).currentOrigin[1];
+    (self->ScriptOrient).eMode = AI_ORIENT_DONT_CHANGE;
+    if (1.0 <= point * point + local_20 * local_20) {
+      Actor_FaceVector((ai_orient_t *)entref._0_4_,
+                       (float *)CONCAT22(in_stack_ffffffca,entref.client));
     }
   }
-  else if (local_8 == scr_const.face_default) {
-    Actor_ClearScriptOrient((actor_s *)param_1._0_4_);
+  else if (mode == scr_const.face_default) {
+    Actor_ClearScriptOrient((actor_s *)entref._0_4_);
   }
   else {
-    pcVar5 = 
+    vectorValue = 
     "orientMode must be \'face angle\', \'face current\', \'face direction\', \'face enemy\', \'face enemy or motion\', \'face goal\', \'face motion\', \'face point\', or \'face default\'\n\'face direction\' and \'face point\' take a second argument that is a vector giving the way to face\n\'face angle\' takes a second argument that is a yaw angle\n"
     ;
     Scr_Error("orientMode must be \'face angle\', \'face current\', \'face direction\', \'face enemy\', \'face enemy or motion\', \'face goal\', \'face motion\', \'face point\', or \'face default\'\n\'face direction\' and \'face point\' take a second argument that is a vector giving the way to face\n\'face angle\' takes a second argument that is a yaw angle\n"
@@ -1388,9 +1442,9 @@ void __cdecl ActorCmd_OrientMode(scr_entref_t param_1)
   }
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if ((2 < uVar1) && (iVar2 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER), 0 < iVar2)) {
-    paVar4 = (ai_orient_t *)(local_c->ScriptOrient).fDesiredBodyYaw;
-    Actor_SetDesiredBodyAngle(paVar4,(float)pcVar5);
-    Actor_SetBodyAngle((actor_s *)(local_c->ScriptOrient).fDesiredBodyYaw,(float)paVar4);
+    fAngle = (ai_orient_t *)(self->ScriptOrient).fDesiredBodyYaw;
+    Actor_SetDesiredBodyAngle(fAngle,(float)vectorValue);
+    Actor_SetBodyAngle((actor_s *)(self->ScriptOrient).fDesiredBodyYaw,(float)fAngle);
   }
   return;
 }
@@ -1403,7 +1457,7 @@ void __cdecl ActorCmd_OrientMode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetMotionAngle(scr_entref_t param_1)
+void __cdecl ActorCmd_GetMotionAngle(scr_entref_t entref)
 
 {
   bool bVar1;
@@ -1411,26 +1465,29 @@ void __cdecl ActorCmd_GetMotionAngle(scr_entref_t param_1)
   float *pfVar3;
   DWORD DVar4;
   float fVar5;
-  float local_c;
+  PIXProfile pixProfile;
+  float fMoveYaw;
+  float fDeltaYaw;
+  actor_s *self;
   
   PIXBeginNamedEvent(-1,"GetMotionAngle");
-  paVar2 = Actor_Get(param_1);
+  paVar2 = Actor_Get(entref);
   pfVar3 = (paVar2->Physics).vVelocity;
   if (*pfVar3 * *pfVar3 + (paVar2->Physics).vVelocity[1] * (paVar2->Physics).vVelocity[1] <= 1.0) {
-    bVar1 = Actor_HasPath((actor_s *)param_1._0_4_);
+    bVar1 = Actor_HasPath((actor_s *)entref._0_4_);
     if (bVar1) {
       fVar5 = vectoyaw((paVar2->Path).lookaheadDir);
-      local_c = AngleNormalize180(fVar5 - (paVar2->ent->r).currentAngles[1]);
+      fDeltaYaw = AngleNormalize180(fVar5 - (paVar2->ent->r).currentAngles[1]);
     }
     else {
-      local_c = 0.0;
+      fDeltaYaw = 0.0;
     }
   }
   else {
     fVar5 = vectoyaw((paVar2->Physics).vVelocity);
-    local_c = AngleNormalize180(fVar5 - (paVar2->ent->r).currentAngles[1]);
+    fDeltaYaw = AngleNormalize180(fVar5 - (paVar2->ent->r).currentAngles[1]);
   }
-  Scr_AddFloat(local_c,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat(fDeltaYaw,SCRIPTINSTANCE_SERVER);
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1446,14 +1503,15 @@ void __cdecl ActorCmd_GetMotionAngle(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetAnglesToLikelyEnemyPath(scr_entref_t param_1)
+void __cdecl ActorCmd_GetAnglesToLikelyEnemyPath(scr_entref_t entref)
 
 {
   bool bVar1;
   actor_s *paVar2;
+  actor_s *self;
   
-  paVar2 = Actor_Get(param_1);
-  bVar1 = Actor_GetAnglesToLikelyEnemyPath((actor_s *)param_1._0_4_);
+  paVar2 = Actor_Get(entref);
+  bVar1 = Actor_GetAnglesToLikelyEnemyPath((actor_s *)entref._0_4_);
   if (bVar1) {
     Scr_AddVector(paVar2->anglesToLikelyEnemyPath,SCRIPTINSTANCE_SERVER);
   }
@@ -1468,44 +1526,44 @@ void __cdecl ActorCmd_GetAnglesToLikelyEnemyPath(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_LerpPosition(scr_entref_t param_1)
+void __cdecl ActorCmd_LerpPosition(scr_entref_t entref)
 
 {
-  float local_24;
+  float origin;
   float local_20;
   float local_1c;
-  float local_18;
+  float angles;
   float local_14;
   float local_10;
-  actor_s *local_c;
-  gentity_s *local_8;
+  actor_s *self;
+  gentity_s *ent;
   
-  local_c = Actor_Get(param_1);
-  if (local_c->eScriptSetAnimMode != AI_ANIM_NOPHYSICS) {
+  self = Actor_Get(entref);
+  if (self->eScriptSetAnimMode != AI_ANIM_NOPHYSICS) {
     Scr_Error("cannot lerp position if animMode is not \'nophysics\'",false);
   }
-  local_8 = local_c->ent;
-  Scr_GetVector(0,&local_24,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,&local_18,SCRIPTINSTANCE_SERVER);
-  (local_8->r).currentAngles[0] = local_18;
-  (local_8->r).currentAngles[1] = local_14;
-  (local_8->r).currentAngles[2] = local_10;
+  ent = self->ent;
+  Scr_GetVector(0,&origin,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,&angles,SCRIPTINSTANCE_SERVER);
+  (ent->r).currentAngles[0] = angles;
+  (ent->r).currentAngles[1] = local_14;
+  (ent->r).currentAngles[2] = local_10;
   Actor_SetDesiredAngles
-            ((ai_orient_t *)(local_8->r).currentAngles[0],(local_8->r).currentAngles[1],
-             (float)param_1._0_4_);
-  (local_c->Physics).vVelocity[0] = local_24 - (local_8->r).currentOrigin[0];
-  (local_c->Physics).vVelocity[1] = local_20 - (local_8->r).currentOrigin[1];
-  (local_c->Physics).vVelocity[2] = local_1c - (local_8->r).currentOrigin[2];
-  (local_c->Physics).vVelocity[0] = (local_c->Physics).vVelocity[0] * 20.0;
-  (local_c->Physics).vVelocity[1] = (local_c->Physics).vVelocity[1] * 20.0;
-  (local_c->Physics).vVelocity[2] = (local_c->Physics).vVelocity[2] * 20.0;
-  (local_c->Physics).vWishDelta[0] = 0.0;
-  (local_c->Physics).vWishDelta[1] = 0.0;
-  (local_c->Physics).vWishDelta[2] = 0.0;
-  (local_8->r).currentOrigin[0] = local_24;
-  (local_8->r).currentOrigin[1] = local_20;
-  (local_8->r).currentOrigin[2] = local_1c;
-  (local_c->Physics).groundEntNum = 0x3ff;
+            ((ai_orient_t *)(ent->r).currentAngles[0],(ent->r).currentAngles[1],(float)entref._0_4_)
+  ;
+  (self->Physics).vVelocity[0] = origin - (ent->r).currentOrigin[0];
+  (self->Physics).vVelocity[1] = local_20 - (ent->r).currentOrigin[1];
+  (self->Physics).vVelocity[2] = local_1c - (ent->r).currentOrigin[2];
+  (self->Physics).vVelocity[0] = (self->Physics).vVelocity[0] * 20.0;
+  (self->Physics).vVelocity[1] = (self->Physics).vVelocity[1] * 20.0;
+  (self->Physics).vVelocity[2] = (self->Physics).vVelocity[2] * 20.0;
+  (self->Physics).vWishDelta[0] = 0.0;
+  (self->Physics).vWishDelta[1] = 0.0;
+  (self->Physics).vWishDelta[2] = 0.0;
+  (ent->r).currentOrigin[0] = origin;
+  (ent->r).currentOrigin[1] = local_20;
+  (ent->r).currentOrigin[2] = local_1c;
+  (self->Physics).groundEntNum = 0x3ff;
   return;
 }
 
@@ -1517,15 +1575,17 @@ void __cdecl ActorCmd_LerpPosition(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_PredictOriginAndAngles(scr_entref_t param_1)
+void __cdecl ActorCmd_PredictOriginAndAngles(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   code *pcVar2;
   bool bVar3;
   actor_s *paVar4;
+  actor_s *self;
+  gentity_s *ent;
   
-  paVar4 = Actor_Get(param_1);
+  paVar4 = Actor_Get(entref);
   if (paVar4 == (actor_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xb0d,0
                              ,"%s");
@@ -1558,7 +1618,7 @@ void __cdecl ActorCmd_PredictOriginAndAngles(scr_entref_t param_1)
     paVar4->eAnimMode = paVar4->eScriptSetAnimMode;
   }
   paVar4->bUseGoalWeight = true;
-  Actor_PredictOriginAndAngles((actor_s *)param_1._0_4_);
+  Actor_PredictOriginAndAngles((actor_s *)entref._0_4_);
   return;
 }
 
@@ -1570,11 +1630,13 @@ void __cdecl ActorCmd_PredictOriginAndAngles(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_PredictAnim(scr_entref_t param_1)
+void __cdecl ActorCmd_PredictAnim(scr_entref_t entref)
 
 {
-  Actor_Get(param_1);
-  Actor_PredictAnim((actor_s *)param_1._0_4_);
+  actor_s *self;
+  
+  Actor_Get(entref);
+  Actor_PredictAnim((actor_s *)entref._0_4_);
   return;
 }
 
@@ -1586,17 +1648,17 @@ void __cdecl ActorCmd_PredictAnim(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_GetEntType(int param_1)
+void __cdecl Actor_GetEntType(int entnum)
 
 {
   ushort uVar1;
   
-  if (param_1 == 0x3ff) {
+  if (entnum == 0x3ff) {
     Scr_AddConstString((uint)scr_const.none,SCRIPTINSTANCE_SERVER);
   }
   else {
     uVar1 = scr_const.world;
-    if ((level.gentities[param_1].flags & 0x4000000U) != 0) {
+    if ((level.gentities[entnum].flags & 0x4000000U) != 0) {
       uVar1 = scr_const.obstacle;
     }
     Scr_AddConstString((uint)uVar1,SCRIPTINSTANCE_SERVER);
@@ -1612,12 +1674,13 @@ void __cdecl Actor_GetEntType(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetHitEntType(scr_entref_t param_1)
+void __cdecl ActorCmd_GetHitEntType(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   Actor_GetEntType((paVar1->Physics).iHitEntnum);
   return;
 }
@@ -1630,26 +1693,26 @@ void __cdecl ActorCmd_GetHitEntType(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetHitYaw(scr_entref_t param_1)
+void __cdecl ActorCmd_GetHitYaw(scr_entref_t entref)
 
 {
-  float fVar1;
-  scriptInstance_t sVar2;
-  float local_14;
+  float value;
+  scriptInstance_t inst;
+  float normal;
   float local_10;
   undefined4 local_c;
-  actor_s *local_8;
+  actor_s *self;
   
-  local_8 = Actor_Get(param_1);
-  if ((local_8->Physics).iHitEntnum == 0x3ff) {
+  self = Actor_Get(entref);
+  if ((self->Physics).iHitEntnum == 0x3ff) {
     Scr_Error("nothing was hit",false);
   }
-  local_14 = -(local_8->Physics).vHitNormal[0];
-  local_10 = -(local_8->Physics).vHitNormal[1];
+  normal = -(self->Physics).vHitNormal[0];
+  local_10 = -(self->Physics).vHitNormal[1];
   local_c = 0;
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  fVar1 = vectoyaw(&local_14);
-  Scr_AddFloat(fVar1,sVar2);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = vectoyaw(&normal);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -1661,12 +1724,13 @@ void __cdecl ActorCmd_GetHitYaw(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetGroundEntType(scr_entref_t param_1)
+void __cdecl ActorCmd_GetGroundEntType(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   Actor_GetEntType((uint)(paVar1->Physics).groundEntNum);
   return;
 }
@@ -1679,12 +1743,13 @@ void __cdecl ActorCmd_GetGroundEntType(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_IsDeflected(scr_entref_t param_1)
+void __cdecl ActorCmd_IsDeflected(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   Scr_AddInt((uint)(paVar1->Physics).bDeflected,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -1697,18 +1762,20 @@ void __cdecl ActorCmd_IsDeflected(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_animcustom(scr_entref_t param_1)
+void __cdecl ScrCmd_animcustom(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   int iVar2;
   undefined2 in_stack_fffffff2;
+  int func;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
-  iVar2 = Actor_PushState((actor_s *)param_1._0_4_,CONCAT22(in_stack_fffffff2,param_1.client));
+  paVar1 = Actor_Get(entref);
+  iVar2 = Actor_PushState((actor_s *)entref._0_4_,CONCAT22(in_stack_fffffff2,entref.client));
   if (iVar2 != 0) {
     iVar2 = Scr_GetFunc(0,SCRIPTINSTANCE_SERVER);
-    Actor_KillAnimScript((actor_s *)param_1._0_4_);
+    Actor_KillAnimScript((actor_s *)entref._0_4_);
     (paVar1->AnimScriptSpecific).func = iVar2;
     Scr_SetString(&(paVar1->AnimScriptSpecific).name,(uint)scr_const._custom,SCRIPTINSTANCE_SERVER);
   }
@@ -1723,25 +1790,28 @@ void __cdecl ScrCmd_animcustom(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_CanAttackEnemyNode(scr_entref_t param_1)
+void __cdecl ScrCmd_CanAttackEnemyNode(scr_entref_t entref)
 
 {
   sentient_s *psVar1;
-  pathnode_t *ppVar2;
-  pathnode_t *ppVar3;
-  int iVar4;
+  pathnode_t *node0;
+  pathnode_t *node1;
+  int iVar2;
+  pathnode_t *enemyNode;
+  actor_s *self;
+  pathnode_t *myNode;
   
-  Actor_Get(param_1);
-  psVar1 = Actor_GetTargetSentient((actor_s *)param_1._0_4_);
+  Actor_Get(entref);
+  psVar1 = Actor_GetTargetSentient((actor_s *)entref._0_4_);
   if (psVar1 == (sentient_s *)0x0) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    ppVar2 = Sentient_NearestNode((sentient_s *)param_1._0_4_);
-    Actor_GetTargetSentient((actor_s *)param_1._0_4_);
-    ppVar3 = Sentient_NearestNode((sentient_s *)param_1._0_4_);
-    if (((ppVar2 != (pathnode_t *)0x0) && (ppVar3 != (pathnode_t *)0x0)) &&
-       (iVar4 = Path_NodesVisible(ppVar2,ppVar3), iVar4 != 0)) {
+    node0 = Sentient_NearestNode((sentient_s *)entref._0_4_);
+    Actor_GetTargetSentient((actor_s *)entref._0_4_);
+    node1 = Sentient_NearestNode((sentient_s *)entref._0_4_);
+    if (((node0 != (pathnode_t *)0x0) && (node1 != (pathnode_t *)0x0)) &&
+       (iVar2 = Path_NodesVisible(node0,node1), iVar2 != 0)) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
       return;
     }
@@ -1758,17 +1828,18 @@ void __cdecl ScrCmd_CanAttackEnemyNode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetNegotiationStartNode(scr_entref_t param_1)
+void __cdecl ScrCmd_GetNegotiationStartNode(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *paVar3;
-  pathnode_t *ppVar4;
-  scriptInstance_t sVar5;
+  pathnode_t *node;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  paVar3 = Actor_Get(param_1);
-  bVar2 = Path_HasNegotiationNode((path_t *)param_1._0_4_);
+  paVar3 = Actor_Get(entref);
+  bVar2 = Path_HasNegotiationNode((path_t *)entref._0_4_);
   if (bVar2) {
     if (((paVar3->Path).wPathLen <= (paVar3->Path).wNegotiationStartNode) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",
@@ -1784,11 +1855,11 @@ void __cdecl ScrCmd_GetNegotiationStartNode(scr_entref_t param_1)
       (*pcVar1)();
       return;
     }
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    ppVar4 = Path_ConvertIndexToNode
-                       (((path_t *)(&paVar3->Physics + 1))->pts
-                        [(paVar3->Path).wNegotiationStartNode].iNodeNum);
-    Scr_AddPathnode(ppVar4,sVar5);
+    inst = SCRIPTINSTANCE_SERVER;
+    node = Path_ConvertIndexToNode
+                     (((path_t *)(&paVar3->Physics + 1))->pts[(paVar3->Path).wNegotiationStartNode].
+                      iNodeNum);
+    Scr_AddPathnode(node,inst);
   }
   return;
 }
@@ -1801,17 +1872,18 @@ void __cdecl ScrCmd_GetNegotiationStartNode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_GetNegotiationEndNode(scr_entref_t param_1)
+void __cdecl ScrCmd_GetNegotiationEndNode(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *paVar3;
-  pathnode_t *ppVar4;
-  scriptInstance_t sVar5;
+  pathnode_t *node;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  paVar3 = Actor_Get(param_1);
-  bVar2 = Path_HasNegotiationNode((path_t *)param_1._0_4_);
+  paVar3 = Actor_Get(entref);
+  bVar2 = Path_HasNegotiationNode((path_t *)entref._0_4_);
   if (bVar2) {
     if (((paVar3->Path).wPathLen <= (paVar3->Path).wNegotiationStartNode) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",
@@ -1827,10 +1899,10 @@ void __cdecl ScrCmd_GetNegotiationEndNode(scr_entref_t param_1)
       (*pcVar1)();
       return;
     }
-    sVar5 = SCRIPTINSTANCE_SERVER;
-    ppVar4 = Path_ConvertIndexToNode
-                       ((paVar3->Path).pts[(paVar3->Path).wNegotiationStartNode + -1].iNodeNum);
-    Scr_AddPathnode(ppVar4,sVar5);
+    inst = SCRIPTINSTANCE_SERVER;
+    node = Path_ConvertIndexToNode
+                     ((paVar3->Path).pts[(paVar3->Path).wNegotiationStartNode + -1].iNodeNum);
+    Scr_AddPathnode(node,inst);
   }
   return;
 }
@@ -1843,22 +1915,25 @@ void __cdecl ScrCmd_GetNegotiationEndNode(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_CheckProne(scr_entref_t param_1)
+void __cdecl ActorCmd_CheckProne(scr_entref_t entref)
 
 {
   bool bVar1;
   int iVar2;
-  float fVar3;
-  float local_14 [3];
-  undefined1 local_5;
+  float fYaw;
+  bool canGoProne;
+  float yaw;
+  actor_s *self;
+  float position [3];
+  bool isProne;
   
-  Actor_Get(param_1);
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-  fVar3 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+  Actor_Get(entref);
+  Scr_GetVector(0,position,SCRIPTINSTANCE_SERVER);
+  fYaw = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   iVar2 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  local_5 = iVar2 != 0;
-  bVar1 = BG_CheckProne((playerState_s *)0x0,(uint)param_1.entnum,local_14,15.0,48.0,fVar3,
-                        (float *)0x0,(float *)0x0,(bool)local_5,true,true,'\x01',PCT_ACTOR,50.0);
+  isProne = iVar2 != 0;
+  bVar1 = BG_CheckProne((playerState_s *)0x0,(uint)entref.entnum,position,15.0,48.0,fYaw,
+                        (float *)0x0,(float *)0x0,isProne,true,true,'\x01',PCT_ACTOR,50.0);
   Scr_AddBool((uint)bVar1,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -1871,13 +1946,14 @@ void __cdecl ActorCmd_CheckProne(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_PushPlayer(scr_entref_t param_1)
+void __cdecl ActorCmd_PushPlayer(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   int iVar2;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if (iVar2 == 0) {
     (paVar1->Physics).iTraceMask = (paVar1->Physics).iTraceMask | 0x2000000;
@@ -1904,6 +1980,8 @@ void __cdecl Actor_SetScriptGoalVolume(actor_s *param_1,gentity_s *param_2)
   int iVar3;
   int in_ECX;
   gentity_s *in_EDX;
+  gentity_s *volume;
+  actor_s *self;
   
   if (in_EDX == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xc6f,0
@@ -1950,35 +2028,39 @@ void __cdecl Actor_SetScriptGoalVolume(actor_s *param_1,gentity_s *param_2)
 
 // 00918360  ActorCmd_SetGoalNode  (game/actor_script_cmd.cpp:3205)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetGoalNode(scr_entref_t param_1)
+void __cdecl ActorCmd_SetGoalNode(scr_entref_t entref)
 
 {
-  actor_s *paVar1;
+  actor_s *node_00;
   undefined2 in_stack_ffffffe6;
-  float local_10 [3];
+  pathnode_t *node;
+  actor_s *self;
+  float ang [3];
   
-  Actor_Get(param_1);
-  local_10[2] = 0.0;
-  local_10[1] = 0.0;
-  local_10[0] = 0.0;
-  paVar1 = (actor_s *)Scr_GetPathnode(0,SCRIPTINSTANCE_SERVER);
-  if ((*(undefined2 *)((int)paVar1->eSubState + 0xe) == 0) && (((uint)paVar1->sentient & 1) == 0)) {
+  Actor_Get(entref);
+  ang[2] = 0.0;
+  ang[1] = 0.0;
+  ang[0] = 0.0;
+  node_00 = (actor_s *)Scr_GetPathnode(0,SCRIPTINSTANCE_SERVER);
+  if ((*(undefined2 *)((int)node_00->eSubState + 0xe) == 0) && (((uint)node_00->sentient & 1) == 0))
+  {
     Com_PrintError(0x12,"AI %d\'s goal node at (%0.f, %0.f, %0.f) does not have any path links\n");
   }
   Actor_SetScriptGoalPos
-            (paVar1,local_10,(pathnode_t *)param_1._0_4_,
-             (float *)CONCAT22(in_stack_ffffffe6,param_1.client));
+            (node_00,ang,(pathnode_t *)entref._0_4_,
+             (float *)CONCAT22(in_stack_ffffffe6,entref.client));
   return;
 }
 
 
 // 009185E0  Actor_SetScriptGoalEntity  (game/actor_script_cmd.cpp:3240)
 
+/* WARNING: Variable defined which should be unmapped: pGoalEnt */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -1991,6 +2073,8 @@ void __cdecl Actor_SetScriptGoalEntity(actor_s *param_1,gentity_s *param_2)
   bool bVar2;
   int in_ECX;
   actor_s *in_EDX;
+  gentity_s *pGoalEnt;
+  actor_s *self;
   
   if (in_EDX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xcab,0
@@ -2025,27 +2109,27 @@ void __cdecl Actor_SetScriptGoalEntity(actor_s *param_1,gentity_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetGoalPos(scr_entref_t param_1)
+void __cdecl ActorCmd_SetGoalPos(scr_entref_t entref)
 
 {
   uint uVar1;
   undefined2 in_stack_ffffffde;
-  float local_20 [3];
-  actor_s *local_14;
-  float local_10 [3];
+  float pos [3];
+  actor_s *self;
+  float ang [3];
   
-  local_14 = Actor_Get(param_1);
-  local_10[2] = 0.0;
-  local_10[1] = 0.0;
-  local_10[0] = 0.0;
-  Scr_GetVector(0,local_20,SCRIPTINSTANCE_SERVER);
+  self = Actor_Get(entref);
+  ang[2] = 0.0;
+  ang[1] = 0.0;
+  ang[0] = 0.0;
+  Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar1 == 2) {
-    Scr_GetVector(1,local_10,SCRIPTINSTANCE_SERVER);
+    Scr_GetVector(1,ang,SCRIPTINSTANCE_SERVER);
   }
   Actor_SetScriptGoalPos
-            ((actor_s *)0x0,local_10,(pathnode_t *)param_1._0_4_,
-             (float *)CONCAT22(in_stack_ffffffde,param_1.client));
+            ((actor_s *)0x0,ang,(pathnode_t *)entref._0_4_,
+             (float *)CONCAT22(in_stack_ffffffde,entref.client));
   return;
 }
 
@@ -2057,16 +2141,18 @@ void __cdecl ActorCmd_SetGoalPos(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetGoalEntity(scr_entref_t param_1)
+void __cdecl ActorCmd_SetGoalEntity(scr_entref_t entref)
 
 {
   undefined2 in_stack_fffffff2;
+  actor_s *self;
+  gentity_s *ent;
   
-  Actor_Get(param_1);
+  Actor_Get(entref);
   Scr_GetEntity(0);
-  Actor_ClearKeepClaimedNode((actor_s *)param_1._0_4_);
+  Actor_ClearKeepClaimedNode((actor_s *)entref._0_4_);
   Actor_SetScriptGoalEntity
-            ((actor_s *)param_1._0_4_,(gentity_s *)CONCAT22(in_stack_fffffff2,param_1.client));
+            ((actor_s *)entref._0_4_,(gentity_s *)CONCAT22(in_stack_fffffff2,entref.client));
   return;
 }
 
@@ -2078,31 +2164,33 @@ void __cdecl ActorCmd_SetGoalEntity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetGoalVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_SetGoalVolume(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   int iVar2;
-  gentity_s *pgVar3;
-  char *pcVar4;
-  bool bVar5;
+  gentity_s *gEnt;
+  char *error;
+  bool force_terminal;
   undefined2 in_stack_fffffff2;
+  gentity_s *volume;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   iVar2 = EntHandle::isDefined(&paVar1->scriptGoalEnt);
   if (iVar2 != 0) {
     Scr_Error("cannot set goal volume when a goal entity is set",false);
   }
-  pgVar3 = Scr_GetEntity(0);
-  iVar2 = SV_EntityContact((paVar1->scriptGoal).pos,(paVar1->scriptGoal).pos,pgVar3);
+  gEnt = Scr_GetEntity(0);
+  iVar2 = SV_EntityContact((paVar1->scriptGoal).pos,(paVar1->scriptGoal).pos,gEnt);
   if (iVar2 == 0) {
-    bVar5 = false;
-    pcVar4 = va("cannot set goal volume which does not contain goal position (goal pt %f, %f, %f)");
-    Scr_Error(pcVar4,bVar5);
+    force_terminal = false;
+    error = va("cannot set goal volume which does not contain goal position (goal pt %f, %f, %f)");
+    Scr_Error(error,force_terminal);
   }
-  Actor_ClearKeepClaimedNode((actor_s *)param_1._0_4_);
+  Actor_ClearKeepClaimedNode((actor_s *)entref._0_4_);
   Actor_SetScriptGoalVolume
-            ((actor_s *)param_1._0_4_,(gentity_s *)CONCAT22(in_stack_fffffff2,param_1.client));
+            ((actor_s *)entref._0_4_,(gentity_s *)CONCAT22(in_stack_fffffff2,entref.client));
   return;
 }
 
@@ -2114,12 +2202,13 @@ void __cdecl ActorCmd_SetGoalVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetGoalVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_GetGoalVolume(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   if ((paVar1->scriptGoal).volume != (gentity_s *)0x0) {
     Scr_AddEntity((paVar1->scriptGoal).volume,SCRIPTINSTANCE_SERVER);
   }
@@ -2134,12 +2223,13 @@ void __cdecl ActorCmd_GetGoalVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearGoalVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearGoalVolume(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   (paVar1->scriptGoal).volume = (gentity_s *)0x0;
   return;
 }
@@ -2152,18 +2242,20 @@ void __cdecl ActorCmd_ClearGoalVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetFixedNodeSafeVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_SetFixedNodeSafeVolume(scr_entref_t entref)
 
 {
   actor_s *paVar1;
-  gentity_s *pgVar2;
-  float fVar3;
+  gentity_s *ent;
+  float fVar2;
+  gentity_s *volume;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
-  pgVar2 = Scr_GetEntity(0);
-  EntHandle::setEnt(&paVar1->fixedNodeSafeVolume,pgVar2);
-  fVar3 = RadiusFromBounds2DSq((pgVar2->r).mins,(pgVar2->r).maxs);
-  paVar1->fixedNodeSafeVolumeRadiusSq = fVar3;
+  paVar1 = Actor_Get(entref);
+  ent = Scr_GetEntity(0);
+  EntHandle::setEnt(&paVar1->fixedNodeSafeVolume,ent);
+  fVar2 = RadiusFromBounds2DSq((ent->r).mins,(ent->r).maxs);
+  paVar1->fixedNodeSafeVolumeRadiusSq = fVar2;
   return;
 }
 
@@ -2175,20 +2267,21 @@ void __cdecl ActorCmd_SetFixedNodeSafeVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetFixedNodeSafeVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_GetFixedNodeSafeVolume(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   int iVar2;
-  gentity_s *pgVar3;
-  scriptInstance_t sVar4;
+  gentity_s *ent;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   iVar2 = EntHandle::isDefined(&paVar1->fixedNodeSafeVolume);
   if (iVar2 != 0) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pgVar3 = EntHandle::ent(&paVar1->fixedNodeSafeVolume);
-    Scr_AddEntity(pgVar3,sVar4);
+    inst = SCRIPTINSTANCE_SERVER;
+    ent = EntHandle::ent(&paVar1->fixedNodeSafeVolume);
+    Scr_AddEntity(ent,inst);
   }
   return;
 }
@@ -2201,12 +2294,13 @@ void __cdecl ActorCmd_GetFixedNodeSafeVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearFixedNodeSafeVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearFixedNodeSafeVolume(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   EntHandle::setEnt(&paVar1->fixedNodeSafeVolume,(gentity_s *)0x0);
   paVar1->fixedNodeSafeVolumeRadiusSq = 0.0;
   return;
@@ -2220,27 +2314,27 @@ void __cdecl ActorCmd_ClearFixedNodeSafeVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_IsInGoal(scr_entref_t param_1)
+void __cdecl ActorCmd_IsInGoal(scr_entref_t entref)
 
 {
   bool bVar1;
   uint uVar2;
-  scriptInstance_t sVar3;
-  float local_18 [3];
-  actor_s *local_c;
-  char *local_8;
+  scriptInstance_t inst;
+  float pos [3];
+  actor_s *self;
+  char *usage;
   
-  local_c = Actor_Get(param_1);
-  local_8 = "illegal call to isingoal()\n";
+  self = Actor_Get(entref);
+  usage = "illegal call to isingoal()\n";
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 1) {
-    Scr_GetVector(0,local_18,SCRIPTINSTANCE_SERVER);
-    sVar3 = SCRIPTINSTANCE_SERVER;
-    bVar1 = Actor_PointAtGoal((float *)0x0,(actor_goal_s *)param_1._0_4_);
-    Scr_AddBool((uint)bVar1,sVar3);
+    Scr_GetVector(0,pos,SCRIPTINSTANCE_SERVER);
+    inst = SCRIPTINSTANCE_SERVER;
+    bVar1 = Actor_PointAtGoal((float *)0x0,(actor_goal_s *)entref._0_4_);
+    Scr_AddBool((uint)bVar1,inst);
   }
   else {
-    Scr_Error(local_8,false);
+    Scr_Error(usage,false);
   }
   return;
 }
@@ -2253,32 +2347,32 @@ void __cdecl ActorCmd_IsInGoal(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetOverrideRunToPos(scr_entref_t param_1)
+void __cdecl ActorCmd_SetOverrideRunToPos(scr_entref_t entref)
 
 {
   bool bVar1;
-  float local_14;
+  float pos;
   float local_10;
   float local_c;
-  actor_s *local_8;
+  actor_s *self;
   
-  local_8 = Actor_Get(param_1);
-  Scr_GetVector(0,&local_14,SCRIPTINSTANCE_SERVER);
-  if (((local_14 == (local_8->arrivalInfo).animscriptOverrideRunToPos[0]) &&
-      (local_10 == (local_8->arrivalInfo).animscriptOverrideRunToPos[1])) &&
-     (local_c == (local_8->arrivalInfo).animscriptOverrideRunToPos[2])) {
+  self = Actor_Get(entref);
+  Scr_GetVector(0,&pos,SCRIPTINSTANCE_SERVER);
+  if (((pos == (self->arrivalInfo).animscriptOverrideRunToPos[0]) &&
+      (local_10 == (self->arrivalInfo).animscriptOverrideRunToPos[1])) &&
+     (local_c == (self->arrivalInfo).animscriptOverrideRunToPos[2])) {
     bVar1 = true;
   }
   else {
     bVar1 = false;
   }
-  if ((!bVar1) || ((local_8->arrivalInfo).animscriptOverrideRunTo == 0)) {
-    Scr_Notify(local_8->ent,scr_const.goal_changed,0);
+  if ((!bVar1) || ((self->arrivalInfo).animscriptOverrideRunTo == 0)) {
+    Scr_Notify(self->ent,scr_const.goal_changed,0);
   }
-  (local_8->arrivalInfo).animscriptOverrideRunTo = 1;
-  (local_8->arrivalInfo).animscriptOverrideRunToPos[0] = local_14;
-  (local_8->arrivalInfo).animscriptOverrideRunToPos[1] = local_10;
-  (local_8->arrivalInfo).animscriptOverrideRunToPos[2] = local_c;
+  (self->arrivalInfo).animscriptOverrideRunTo = 1;
+  (self->arrivalInfo).animscriptOverrideRunToPos[0] = pos;
+  (self->arrivalInfo).animscriptOverrideRunToPos[1] = local_10;
+  (self->arrivalInfo).animscriptOverrideRunToPos[2] = local_c;
   return;
 }
 
@@ -2290,12 +2384,13 @@ void __cdecl ActorCmd_SetOverrideRunToPos(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearOverrideRunToPos(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearOverrideRunToPos(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   (paVar1->arrivalInfo).animscriptOverrideRunTo = 0;
   (paVar1->arrivalInfo).animscriptOverrideRunToPos[0] = 0.0;
   (paVar1->arrivalInfo).animscriptOverrideRunToPos[1] = 0.0;
@@ -2306,34 +2401,36 @@ void __cdecl ActorCmd_ClearOverrideRunToPos(scr_entref_t param_1)
 
 // 00918BE0  ActorCmd_NearNode  (game/actor_script_cmd.cpp:3544)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_NearNode(scr_entref_t param_1)
+void __cdecl ActorCmd_NearNode(scr_entref_t entref)
 
 {
   bool bVar1;
-  scriptInstance_t sVar2;
+  scriptInstance_t inst;
+  pathnode_t *node;
+  actor_s *self;
   
-  Actor_Get(param_1);
+  Actor_Get(entref);
   Scr_GetPathnode(0,SCRIPTINSTANCE_SERVER);
-  sVar2 = SCRIPTINSTANCE_SERVER;
-  bVar1 = Actor_PointNearNode((float *)0x0,(pathnode_t *)param_1._0_4_);
-  Scr_AddBool((uint)bVar1,sVar2);
+  inst = SCRIPTINSTANCE_SERVER;
+  bVar1 = Actor_PointNearNode((float *)0x0,(pathnode_t *)entref._0_4_);
+  Scr_AddBool((uint)bVar1,inst);
   return;
 }
 
 
 // 00918C40  ActorCmd_ClearEnemy  (game/actor_script_cmd.cpp:3565)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearEnemy(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearEnemy(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -2344,8 +2441,10 @@ void __cdecl ActorCmd_ClearEnemy(scr_entref_t param_1)
   gentity_s *pgVar6;
   gentity_s *pgVar7;
   undefined2 in_stack_ffffffee;
+  sentient_info_t *enemyInfo;
+  actor_s *self;
   
-  paVar3 = Actor_Get(param_1);
+  paVar3 = Actor_Get(entref);
   if (paVar3->sentient == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xdf2,0
                              ,"%s");
@@ -2355,22 +2454,22 @@ void __cdecl ActorCmd_ClearEnemy(scr_entref_t param_1)
       return;
     }
   }
-  psVar4 = Actor_GetTargetSentient((actor_s *)param_1._0_4_);
+  psVar4 = Actor_GetTargetSentient((actor_s *)entref._0_4_);
   if (psVar4 != (sentient_s *)0x0) {
-    psVar4 = Actor_GetTargetSentient((actor_s *)param_1._0_4_);
+    psVar4 = Actor_GetTargetSentient((actor_s *)entref._0_4_);
     paVar3->sentientInfo[((int)psVar4 - (int)level.sentients) / 0x90].lastKnownPosTime = 0;
     paVar3->faceLikelyEnemyPathNode = (pathnode_t *)0x0;
   }
   iVar5 = EntHandle::isDefined(&paVar3->sentient->scriptTargetEnt);
   if (iVar5 != 0) {
-    pgVar6 = Actor_GetTargetEntity((actor_s *)param_1._0_4_);
+    pgVar6 = Actor_GetTargetEntity((actor_s *)entref._0_4_);
     pgVar7 = EntHandle::ent(&paVar3->sentient->scriptTargetEnt);
     if (pgVar6 == pgVar7) {
       EntHandle::setEnt(&paVar3->sentient->scriptTargetEnt,(gentity_s *)0x0);
     }
   }
-  Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)param_1._0_4_,
-                    CONCAT22(in_stack_ffffffee,param_1.client));
+  Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)entref._0_4_,
+                    CONCAT22(in_stack_ffffffee,entref.client));
   return;
 }
 
@@ -2382,7 +2481,7 @@ void __cdecl ActorCmd_ClearEnemy(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetEntityTarget(scr_entref_t param_1)
+void __cdecl ActorCmd_SetEntityTarget(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -2393,12 +2492,13 @@ void __cdecl ActorCmd_SetEntityTarget(scr_entref_t param_1)
   undefined2 in_stack_ffffffda;
   float local_24;
   float local_14;
-  float local_10;
-  gentity_s *local_c;
+  float targetThreat;
+  gentity_s *targetEnt;
+  actor_s *self;
   
-  paVar3 = Actor_Get(param_1);
-  local_c = (gentity_s *)0x0;
-  local_10 = 1.0;
+  paVar3 = Actor_Get(entref);
+  targetEnt = (gentity_s *)0x0;
+  targetThreat = 1.0;
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 != 1) {
     if (uVar4 != 2) {
@@ -2420,9 +2520,9 @@ void __cdecl ActorCmd_SetEntityTarget(scr_entref_t param_1)
     else {
       local_24 = 0.0;
     }
-    local_10 = local_24;
+    targetThreat = local_24;
   }
-  local_c = Scr_GetEntity(0);
+  targetEnt = Scr_GetEntity(0);
 LAB_00918e3e:
   if ((paVar3->sentient == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xe26
@@ -2431,18 +2531,18 @@ LAB_00918e3e:
     (*pcVar1)();
     return;
   }
-  if ((local_c == (gentity_s *)0x0) &&
+  if ((targetEnt == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xe27
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  EntHandle::setEnt(&paVar3->sentient->scriptTargetEnt,local_c);
-  paVar3->sentient->entityTargetThreat = local_10;
+  EntHandle::setEnt(&paVar3->sentient->scriptTargetEnt,targetEnt);
+  paVar3->sentient->entityTargetThreat = targetThreat;
   if (paVar3->sentient->entityTargetThreat == 1.0) {
-    Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)param_1._0_4_,
-                      CONCAT22(in_stack_ffffffda,param_1.client));
+    Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)entref._0_4_,
+                      CONCAT22(in_stack_ffffffda,entref.client));
   }
   return;
 }
@@ -2455,7 +2555,7 @@ LAB_00918e3e:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearEntityTarget(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearEntityTarget(scr_entref_t entref)
 
 {
   actor_s *paVar1;
@@ -2463,15 +2563,16 @@ void __cdecl ActorCmd_ClearEntityTarget(scr_entref_t param_1)
   gentity_s *pgVar3;
   gentity_s *pgVar4;
   undefined2 in_stack_fffffff2;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   iVar2 = EntHandle::isDefined(&paVar1->sentient->scriptTargetEnt);
   if (iVar2 != 0) {
-    pgVar3 = Actor_GetTargetEntity((actor_s *)param_1._0_4_);
+    pgVar3 = Actor_GetTargetEntity((actor_s *)entref._0_4_);
     pgVar4 = EntHandle::ent(&paVar1->sentient->scriptTargetEnt);
     if (pgVar3 == pgVar4) {
-      Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)param_1._0_4_,
-                        CONCAT22(in_stack_fffffff2,param_1.client));
+      Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)entref._0_4_,
+                        CONCAT22(in_stack_fffffff2,entref.client));
     }
   }
   EntHandle::setEnt(&paVar1->sentient->scriptTargetEnt,(gentity_s *)0x0);
@@ -2487,12 +2588,14 @@ void __cdecl ActorCmd_ClearEntityTarget(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearEntityOwner(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearEntityOwner(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  int team;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   EntHandle::setEnt(&paVar1->sentient->scriptOwner,(gentity_s *)0x0);
   (paVar1->ent->s).faction.iHeadIconTeam = (paVar1->ent->s).faction.iHeadIconTeam & 3 | 0xfc;
   return;
@@ -2506,17 +2609,20 @@ void __cdecl ActorCmd_ClearEntityOwner(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetEntityOwner(scr_entref_t param_1)
+void __cdecl ActorCmd_SetEntityOwner(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *paVar3;
-  gentity_s *pgVar4;
+  gentity_s *ent;
+  int team;
+  actor_s *self;
+  gentity_s *ownerEnt;
   
-  paVar3 = Actor_Get(param_1);
-  pgVar4 = Scr_GetEntity(0);
-  if (pgVar4 == (gentity_s *)0x0) {
+  paVar3 = Actor_Get(entref);
+  ent = Scr_GetEntity(0);
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xe75,0
                              ,"%s");
     if (!bVar2) {
@@ -2534,9 +2640,9 @@ void __cdecl ActorCmd_SetEntityOwner(scr_entref_t param_1)
       return;
     }
   }
-  EntHandle::setEnt(&paVar3->sentient->scriptOwner,pgVar4);
+  EntHandle::setEnt(&paVar3->sentient->scriptOwner,ent);
   (paVar3->ent->s).faction.iHeadIconTeam =
-       (byte)((pgVar4->s).number << 2) | (paVar3->ent->s).faction.iHeadIconTeam & 3;
+       (byte)((ent->s).number << 2) | (paVar3->ent->s).faction.iHeadIconTeam & 3;
   return;
 }
 
@@ -2548,22 +2654,25 @@ void __cdecl ActorCmd_SetEntityOwner(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetPotentialThreat(scr_entref_t param_1)
+void __cdecl ActorCmd_SetPotentialThreat(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
-  potential_threat_t *ppVar3;
+  potential_threat_t *yaw;
+  actor_s *self;
+  float potentialThreatDir;
+  char *usage;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   if (paVar1 != (actor_s *)0x0) {
     uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar2 == 1) goto LAB_009190ea;
   }
   Scr_Error("illegal call to setpotentialthreat()\n",false);
 LAB_009190ea:
-  ppVar3 = (potential_threat_t *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  Actor_SetPotentialThreat(ppVar3,(float)param_1._0_4_);
+  yaw = (potential_threat_t *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  Actor_SetPotentialThreat(yaw,(float)entref._0_4_);
   return;
 }
 
@@ -2575,32 +2684,36 @@ LAB_009190ea:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_ClearPotentialThreat(scr_entref_t param_1)
+void __cdecl ActorCmd_ClearPotentialThreat(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
+  actor_s *self;
+  char *usage;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   if (paVar1 != (actor_s *)0x0) {
     uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (uVar2 == 0) goto LAB_00919169;
   }
   Scr_Error("illegal call to clearpotentialthreat()\n",false);
 LAB_00919169:
-  Actor_ClearPotentialThreat((potential_threat_t *)param_1._0_4_);
+  Actor_ClearPotentialThreat((potential_threat_t *)entref._0_4_);
   return;
 }
 
 
 // 00919180  ActorCmd_GetPerfectInfo  (game/actor_script_cmd.cpp:3779)
 
+/* WARNING: Variable defined which should be unmapped: targetEnt */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetPerfectInfo(scr_entref_t param_1)
+void __cdecl ActorCmd_GetPerfectInfo(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -2609,8 +2722,10 @@ void __cdecl ActorCmd_GetPerfectInfo(scr_entref_t param_1)
   uint uVar4;
   gentity_s *pgVar5;
   undefined2 in_stack_fffffff2;
+  gentity_s *targetEnt;
+  actor_s *self;
   
-  paVar3 = Actor_Get(param_1);
+  paVar3 = Actor_Get(entref);
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 0) {
     Scr_Error("No entity provided for GetPerfectInfo",false);
@@ -2621,7 +2736,7 @@ void __cdecl ActorCmd_GetPerfectInfo(scr_entref_t param_1)
                              ,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      (*pcVar1)(param_1.client,pgVar5,paVar3);
+      (*pcVar1)(entref.client,0,paVar3);
       return;
     }
   }
@@ -2629,7 +2744,7 @@ void __cdecl ActorCmd_GetPerfectInfo(scr_entref_t param_1)
     Scr_Error("Entity provided to GetPerfectInfo is not a sentient",false);
   }
   Actor_GetPerfectInfo
-            ((actor_s *)param_1._0_4_,(sentient_s *)CONCAT22(in_stack_fffffff2,param_1.client));
+            ((actor_s *)entref._0_4_,(sentient_s *)CONCAT22(in_stack_fffffff2,entref.client));
   return;
 }
 
@@ -2641,26 +2756,28 @@ void __cdecl ActorCmd_GetPerfectInfo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetFlashBanged(scr_entref_t param_1)
+void __cdecl ActorCmd_SetFlashBanged(scr_entref_t entref)
 
 {
-  actor_s *paVar1;
-  uint uVar2;
-  int iVar3;
-  float local_8;
+  actor_s *self_00;
+  uint uVar1;
+  int flashed_00;
+  int flashed;
+  actor_s *self;
+  float strength;
   
-  paVar1 = Actor_Get(param_1);
-  local_8 = 1.0;
-  uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar2 != 1) {
-    if (uVar2 != 2) {
+  self_00 = Actor_Get(entref);
+  strength = 1.0;
+  uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar1 != 1) {
+    if (uVar1 != 2) {
       Scr_Error(USAGEMSG,false);
       return;
     }
-    local_8 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    strength = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   }
-  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  Actor_SetFlashed(paVar1,iVar3,local_8);
+  flashed_00 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  Actor_SetFlashed(self_00,flashed_00,strength);
   return;
 }
 
@@ -2672,14 +2789,16 @@ void __cdecl ActorCmd_SetFlashBanged(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetFlashbangImmunity(scr_entref_t param_1)
+void __cdecl ActorCmd_SetFlashbangImmunity(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
   int iVar3;
+  actor_s *self;
+  int immune;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar2 == 1) {
     iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
@@ -2699,12 +2818,13 @@ void __cdecl ActorCmd_SetFlashbangImmunity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetFlashBangedStrength(scr_entref_t param_1)
+void __cdecl ActorCmd_GetFlashBangedStrength(scr_entref_t entref)
 
 {
   actor_s *paVar1;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   Scr_AddFloat(paVar1->flashBangedStrength,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -2717,19 +2837,20 @@ void __cdecl ActorCmd_GetFlashBangedStrength(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_IsKnownEnemyInRadius(scr_entref_t param_1)
+void __cdecl ActorCmd_IsKnownEnemyInRadius(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   undefined2 in_stack_ffffffea;
-  float local_10 [3];
+  actor_s *self;
+  float position [3];
   
-  Actor_Get(param_1);
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
+  Actor_Get(entref);
+  Scr_GetVector(0,position,SCRIPTINSTANCE_SERVER);
   pgVar1 = (gentity_s *)Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
   pgVar1 = Actor_IsKnownEnemyInRegion
-                     ((actor_s *)local_10,pgVar1,(float *)param_1._0_4_,
-                      (float)CONCAT22(in_stack_ffffffea,param_1.client));
+                     ((actor_s *)position,pgVar1,(float *)entref._0_4_,
+                      (float)CONCAT22(in_stack_ffffffea,entref.client));
   if (pgVar1 == (gentity_s *)0x0) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
@@ -2747,17 +2868,19 @@ void __cdecl ActorCmd_IsKnownEnemyInRadius(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_IsKnownEnemyInVolume(scr_entref_t param_1)
+void __cdecl ActorCmd_IsKnownEnemyInVolume(scr_entref_t entref)
 
 {
   gentity_s *pgVar1;
   undefined2 in_stack_fffffff2;
+  gentity_s *volume;
+  actor_s *self;
   
-  Actor_Get(param_1);
+  Actor_Get(entref);
   Scr_GetEntity(0);
   pgVar1 = Actor_IsKnownEnemyInRegion
-                     ((actor_s *)vec3_origin,(gentity_s *)0x0,(float *)param_1._0_4_,
-                      (float)CONCAT22(in_stack_fffffff2,param_1.client));
+                     ((actor_s *)vec3_origin,(gentity_s *)0x0,(float *)entref._0_4_,
+                      (float)CONCAT22(in_stack_fffffff2,entref.client));
   if (pgVar1 == (gentity_s *)0x0) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
@@ -2775,22 +2898,24 @@ void __cdecl ActorCmd_IsKnownEnemyInVolume(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetTalkToSpecies(scr_entref_t param_1)
+void __cdecl ActorCmd_SetTalkToSpecies(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
-  int local_18;
-  uint local_14;
-  uint local_8;
+  int i;
+  int speciesFlag;
+  actor_s *self;
+  uint species;
+  uint paramNum;
   
-  paVar1 = Actor_Get(param_1);
-  local_14 = 0;
-  local_8 = 0;
+  paVar1 = Actor_Get(entref);
+  speciesFlag = 0;
+  paramNum = 0;
   do {
     uVar2 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (uVar2 <= local_8) {
-      paVar1->talkToSpecies = local_14;
+    if (uVar2 <= paramNum) {
+      paVar1->talkToSpecies = speciesFlag;
       return;
     }
     uVar2 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
@@ -2798,13 +2923,13 @@ void __cdecl ActorCmd_SetTalkToSpecies(scr_entref_t param_1)
       paVar1->talkToSpecies = -1;
       return;
     }
-    for (local_18 = 0; local_18 < 1; local_18 = local_18 + 1) {
-      if (uVar2 == *g_AISpeciesNames[local_18]) {
-        local_14 = 1 << ((byte)local_18 & 0x1f) | local_14;
+    for (i = 0; i < 1; i = i + 1) {
+      if (uVar2 == *g_AISpeciesNames[i]) {
+        speciesFlag = 1 << ((byte)i & 0x1f) | speciesFlag;
         break;
       }
     }
-    local_8 = local_8 + 1;
+    paramNum = paramNum + 1;
   } while( true );
 }
 
@@ -2816,16 +2941,17 @@ void __cdecl ActorCmd_SetTalkToSpecies(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_GetDeltaTurnYaw(scr_entref_t param_1)
+void __cdecl ActorCmd_GetDeltaTurnYaw(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *paVar3;
-  float fVar4;
-  scriptInstance_t sVar5;
+  float value;
+  scriptInstance_t inst;
+  actor_s *self;
   
-  paVar3 = Actor_Get(param_1);
+  paVar3 = Actor_Get(entref);
   bVar2 = CL_IsLastActiveLocalClient(paVar3->species);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_script_cmd.cpp",0xfe5,0
@@ -2836,9 +2962,9 @@ void __cdecl ActorCmd_GetDeltaTurnYaw(scr_entref_t param_1)
       return;
     }
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  fVar4 = Actor_Dog_GetDeltaTurnYaw((actor_s *)0x0);
-  Scr_AddFloat(fVar4,sVar5);
+  inst = SCRIPTINSTANCE_SERVER;
+  value = Actor_Dog_GetDeltaTurnYaw((actor_s *)0x0);
+  Scr_AddFloat(value,inst);
   return;
 }
 
@@ -2850,17 +2976,20 @@ void __cdecl ActorCmd_GetDeltaTurnYaw(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetAnimState(scr_entref_t param_1)
+void __cdecl ActorCmd_SetAnimState(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   uint uVar2;
-  int iVar3;
+  int animState;
+  uint animstate;
+  actor_s *self;
+  int anim_state_index;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   uVar2 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  iVar3 = BG_Actor_GetAnimStateIndex((ushort)uVar2);
-  BG_Dog_SetAnimState(&paVar1->ent->s,iVar3);
+  animState = BG_Actor_GetAnimStateIndex((ushort)uVar2);
+  BG_Dog_SetAnimState(&paVar1->ent->s,animState);
   return;
 }
 
@@ -2872,13 +3001,14 @@ void __cdecl ActorCmd_SetAnimState(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_SetAimAnimWeights(scr_entref_t param_1)
+void __cdecl ActorCmd_SetAimAnimWeights(scr_entref_t entref)
 
 {
   actor_s *paVar1;
   float fVar2;
+  actor_s *self;
   
-  paVar1 = Actor_Get(param_1);
+  paVar1 = Actor_Get(entref);
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
   (paVar1->ent->s).un2.animState.fAimUpDown = fVar2;
   fVar2 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
@@ -2894,118 +3024,118 @@ void __cdecl ActorCmd_SetAimAnimWeights(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCmd_finishActorDamage(scr_entref_t param_1)
+void __cdecl ActorCmd_finishActorDamage(scr_entref_t entref)
 
 {
   bool bVar1;
   byte bVar2;
   int iVar3;
-  meansOfDeath_t mVar4;
-  char *pcVar5;
-  uint uVar6;
-  WeaponDef *pWVar7;
-  gentity_s *local_60;
-  int local_5c;
-  float *local_54;
-  float local_50 [6];
-  float local_38 [3];
-  gentity_s *local_2c;
-  uint local_28;
-  int local_24;
-  actor_s *local_20;
-  int local_1c;
-  gentity_s *local_18;
-  hitLocation_t local_14;
-  code *local_10;
-  code *local_c;
-  float *local_8;
+  meansOfDeath_t mod_00;
+  char *name;
+  uint uVar4;
+  WeaponDef *pWVar5;
+  gentity_s *attacker;
+  int damage;
+  meansOfDeath_t mod;
+  float *dir;
+  float localdir [6];
+  float vPoint [3];
+  gentity_s *tempBulletHitEntity;
+  int iWeapon;
+  int psTimeOffset;
+  actor_s *self;
+  int dflags;
+  gentity_s *inflictor;
+  hitLocation_t hitLoc;
+  code *die;
+  code *pain;
+  float *point;
   
-  local_20 = Actor_Get(param_1);
-  local_18 = g_entities + 0x3fe;
-  local_60 = g_entities + 0x3fe;
-  local_54 = (float *)0x0;
-  local_8 = (float *)0x0;
-  local_2c = (gentity_s *)0x0;
-  local_5c = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  if (0 < local_5c) {
+  self = Actor_Get(entref);
+  inflictor = g_entities + 0x3fe;
+  attacker = g_entities + 0x3fe;
+  dir = (float *)0x0;
+  point = (float *)0x0;
+  tempBulletHitEntity = (gentity_s *)0x0;
+  damage = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  if (0 < damage) {
     iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
     if ((iVar3 != 0) && (iVar3 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar3 == 0x13)) {
-      local_18 = Scr_GetEntity(0);
+      inflictor = Scr_GetEntity(0);
     }
     iVar3 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
     if ((iVar3 != 0) && (iVar3 = Scr_GetPointerType(1,SCRIPTINSTANCE_SERVER), iVar3 == 0x13)) {
-      local_60 = Scr_GetEntity(1);
+      attacker = Scr_GetEntity(1);
     }
-    local_1c = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-    mVar4 = G_MeansOfDeathFromScriptParam(4);
-    pcVar5 = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
-    local_28 = G_GetWeaponIndexForName(pcVar5);
+    dflags = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    mod_00 = G_MeansOfDeathFromScriptParam(4);
+    name = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
+    iWeapon = G_GetWeaponIndexForName(name);
     iVar3 = Scr_GetType(6,SCRIPTINSTANCE_SERVER);
     if (iVar3 != 0) {
-      Scr_GetVector(6,local_38,SCRIPTINSTANCE_SERVER);
-      local_8 = local_38;
+      Scr_GetVector(6,vPoint,SCRIPTINSTANCE_SERVER);
+      point = vPoint;
     }
     iVar3 = Scr_GetType(7,SCRIPTINSTANCE_SERVER);
     if (iVar3 != 0) {
-      Scr_GetVector(7,local_50 + 3,SCRIPTINSTANCE_SERVER);
-      local_54 = local_50 + 3;
+      Scr_GetVector(7,localdir + 3,SCRIPTINSTANCE_SERVER);
+      dir = localdir + 3;
     }
-    uVar6 = Scr_GetConstString(8,SCRIPTINSTANCE_SERVER);
-    local_14 = G_GetHitLocationIndexFromString((ushort)uVar6);
-    local_24 = Scr_GetInt(9,SCRIPTINSTANCE_SERVER);
-    if ((local_20->Physics).bIsAlive == 0) {
+    uVar4 = Scr_GetConstString(8,SCRIPTINSTANCE_SERVER);
+    hitLoc = G_GetHitLocationIndexFromString((ushort)uVar4);
+    psTimeOffset = Scr_GetInt(9,SCRIPTINSTANCE_SERVER);
+    if ((self->Physics).bIsAlive == 0) {
       Scr_Error("Trying to do damage to a actor that is already dead",false);
     }
     else {
-      if (local_54 == (float *)0x0) {
-        local_50[0] = 0.0;
-        local_50[1] = 0.0;
-        local_50[2] = 0.0;
+      if (dir == (float *)0x0) {
+        localdir[0] = 0.0;
+        localdir[1] = 0.0;
+        localdir[2] = 0.0;
       }
       else {
-        Vec3NormalizeTo(local_54,local_50);
+        Vec3NormalizeTo(dir,localdir);
       }
-      if ((local_20->ent->flags & 1U) == 0) {
-        if (((local_28 != 0) &&
-            (pWVar7 = BG_GetWeaponDef(local_28), pWVar7->weapType == WEAPTYPE_BULLET)) &&
-           (bVar1 = IsBulletImpactMOD(mVar4), bVar1)) {
-          local_2c = G_TempEntity(local_38,0x33);
-          AssignToSmallerType<unsigned_short>(&(local_2c->s).weapon,local_28);
-          bVar2 = DirToByte(local_50);
-          (local_2c->s).eventParm = (ushort)bVar2;
-          (local_2c->s).un1 = (<unnamed_type_un1>)(local_14 == HITLOC_HEAD);
-          (local_2c->s).surfType = '\a';
-          AssignToSmallerType<short>(&(local_2c->s).otherEntityNum,(local_60->s).number);
+      if ((self->ent->flags & 1U) == 0) {
+        if (((iWeapon != 0) &&
+            (pWVar5 = BG_GetWeaponDef(iWeapon), pWVar5->weapType == WEAPTYPE_BULLET)) &&
+           (bVar1 = IsBulletImpactMOD(mod_00), bVar1)) {
+          tempBulletHitEntity = G_TempEntity(vPoint,0x33);
+          AssignToSmallerType<unsigned_short>(&(tempBulletHitEntity->s).weapon,iWeapon);
+          bVar2 = DirToByte(localdir);
+          (tempBulletHitEntity->s).eventParm = (ushort)bVar2;
+          (tempBulletHitEntity->s).un1 = (<unnamed_type_un1>)(hitLoc == HITLOC_HEAD);
+          (tempBulletHitEntity->s).surfType = '\a';
+          AssignToSmallerType<short>(&(tempBulletHitEntity->s).otherEntityNum,(attacker->s).number);
         }
-        if (((local_20->ent->flags & 2U) != 0) &&
-           (iVar3 = local_20->ent->health, iVar3 == local_5c || iVar3 - local_5c < 0)) {
-          local_5c = local_20->ent->health + -1;
+        if (((self->ent->flags & 2U) != 0) &&
+           (iVar3 = self->ent->health, iVar3 == damage || iVar3 - damage < 0)) {
+          damage = self->ent->health + -1;
         }
         if ((g_debugDamage->current).enabled != false) {
           Com_Printf(0xf,"target:%i health:%i damage:%i\n");
         }
-        local_20->ent->health = local_20->ent->health - local_5c;
-        Scr_AddEntity(local_60,SCRIPTINSTANCE_SERVER);
-        Scr_AddInt(local_5c,SCRIPTINSTANCE_SERVER);
-        Scr_Notify(local_20->ent,scr_const.damage,2);
-        ScrNotify_FaceEvent(local_20->ent,scr_const.damage);
-        if (local_20->ent->health < 1) {
-          if (local_20->ent->health < -999) {
-            local_20->ent->health = -999;
+        self->ent->health = self->ent->health - damage;
+        Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+        Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+        Scr_Notify(self->ent,scr_const.damage,2);
+        ScrNotify_FaceEvent(self->ent,scr_const.damage);
+        if (self->ent->health < 1) {
+          if (self->ent->health < -999) {
+            self->ent->health = -999;
           }
-          ScrNotify_FaceEvent(local_20->ent,scr_const.death);
-          Scr_AddEntity(local_60,SCRIPTINSTANCE_SERVER);
-          Scr_Notify(local_20->ent,scr_const.death,1);
-          local_10 = *(code **)(&DAT_00e07cec + (uint)local_20->ent->handler * 0x30);
-          if (local_10 != (code *)0x0) {
-            (*local_10)(local_20->ent,local_18,local_60,local_5c,mVar4,local_28,local_50,local_14,
-                        local_24);
+          ScrNotify_FaceEvent(self->ent,scr_const.death);
+          Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+          Scr_Notify(self->ent,scr_const.death,1);
+          die = *(code **)(&DAT_00e07cec + (uint)self->ent->handler * 0x30);
+          if (die != (code *)0x0) {
+            (*die)(self->ent,inflictor,attacker,damage,mod_00,iWeapon,localdir,hitLoc,psTimeOffset);
           }
         }
         else {
-          local_c = *(code **)(&DAT_00e07ce4 + (uint)local_20->ent->handler * 0x30);
-          if (local_c != (code *)0x0) {
-            (*local_c)(local_20->ent,local_60,local_5c,local_8,mVar4,local_50,local_14,local_28);
+          pain = *(code **)(&DAT_00e07ce4 + (uint)self->ent->handler * 0x30);
+          if (pain != (code *)0x0) {
+            (*pain)(self->ent,attacker,damage,point,mod_00,localdir,hitLoc,iWeapon);
           }
         }
       }
@@ -3017,7 +3147,7 @@ void __cdecl ActorCmd_finishActorDamage(scr_entref_t param_1)
 
 // 00919AC0  Actor_GetMethod  (game/actor_script_cmd.cpp:4605)
 
-_func___cdecl_void_scr_entref_t * __cdecl Actor_GetMethod(char **param_1)
+_func___cdecl_void_scr_entref_t * __cdecl Actor_GetMethod(char **pName)
 
 {
   byte bVar1;
@@ -3025,15 +3155,16 @@ _func___cdecl_void_scr_entref_t * __cdecl Actor_GetMethod(char **param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x4c < local_8) {
+    if (0x4c < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -3052,10 +3183,10 @@ LAB_00919b3c:
     local_1c = 0;
 LAB_00919b44:
     if (local_1c == 0) {
-      *param_1 = methods[local_8].actionString;
-      return methods[local_8].actionFunc;
+      *pName = methods[i].actionString;
+      return methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 

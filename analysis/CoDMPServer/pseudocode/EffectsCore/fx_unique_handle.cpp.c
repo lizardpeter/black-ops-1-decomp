@@ -2,15 +2,16 @@
 
 // 005E9980  UniqueHandleToEffect  (EffectsCore/fx_unique_handle.cpp:18)
 
-FxEffect * __cdecl UniqueHandleToEffect(int param_1,uint param_2)
+FxEffect * __cdecl UniqueHandleToEffect(int localClientNum,uint h)
 
 {
-  FxSystem *pFVar1;
-  FxEffect *pFVar2;
+  FxSystem *system;
+  FxEffect *pFVar1;
+  FxSystem *s;
   
-  pFVar1 = FX_GetSystem(param_1);
-  pFVar2 = UniqueHandleToEffect(pFVar1,param_2);
-  return pFVar2;
+  system = FX_GetSystem(localClientNum);
+  pFVar1 = UniqueHandleToEffect(system,h);
+  return pFVar1;
 }
 
 
@@ -18,7 +19,7 @@ FxEffect * __cdecl UniqueHandleToEffect(int param_1,uint param_2)
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-FxEffect * __cdecl UniqueHandleToEffect(FxSystem *param_1,uint param_2)
+FxEffect * __cdecl UniqueHandleToEffect(FxSystem *system,uint handle)
 
 {
   FxUniqueHandleDb *pFVar1;
@@ -26,16 +27,21 @@ FxEffect * __cdecl UniqueHandleToEffect(FxSystem *param_1,uint param_2)
   bool bVar3;
   FxEffect *pFVar4;
   Node *pNVar5;
+  FxUniqueHandleDb *uniqueHandleDb;
+  uint effectHandle;
+  I_spuDmaSave save;
+  FxEffect *remoteEffect;
+  ushort *shandle;
   
-  pFVar1 = param_1->uniqueHandleDb;
+  pFVar1 = system->uniqueHandleDb;
   if (pFVar1 == (FxUniqueHandleDb *)0x0) {
     pFVar4 = (FxEffect *)0x0;
   }
-  else if (param_2 == 0) {
+  else if (handle == 0) {
     pFVar4 = (FxEffect *)0x0;
   }
   else {
-    if (0x400 < param_2._2_2_) {
+    if (0x400 < handle._2_2_) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x23,0,"%s");
       if (!bVar3) {
@@ -44,14 +50,14 @@ FxEffect * __cdecl UniqueHandleToEffect(FxSystem *param_1,uint param_2)
         return pFVar4;
       }
     }
-    pNVar5 = pFVar1->nodes + (param_2._2_2_ - 1);
-    if (pNVar5->handle == param_2) {
+    pNVar5 = pFVar1->nodes + (handle._2_2_ - 1);
+    if (pNVar5->handle == handle) {
       if (pNVar5->effect == 0xffff) {
         pFVar4 = (FxEffect *)0x0;
       }
       else {
-        pFVar4 = FX_EffectFromHandle(param_1,pNVar5->effect);
-        if (pFVar4->uniqueHandle == param_2) {
+        pFVar4 = FX_EffectFromHandle(system,pNVar5->effect);
+        if (pFVar4->uniqueHandle == handle) {
           if (pNVar5->nextNode != -1) {
             bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                      ,0x32,0,"%s");
@@ -61,7 +67,7 @@ FxEffect * __cdecl UniqueHandleToEffect(FxSystem *param_1,uint param_2)
               return pFVar4;
             }
           }
-          pFVar4 = FX_EffectFromHandle(param_1,pNVar5->effect);
+          pFVar4 = FX_EffectFromHandle(system,pNVar5->effect);
         }
         else {
           pFVar4 = (FxEffect *)0x0;
@@ -81,7 +87,7 @@ FxEffect * __cdecl UniqueHandleToEffect(FxSystem *param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x005e9c9f) */
 /* WARNING: Removing unreachable block (ram,0x005e9cc1) */
 
-void __cdecl UniqueHandleAssignHandle(FxSystem *param_1,FxEffect *param_2,FxEffect *param_3)
+void __cdecl UniqueHandleAssignHandle(FxSystem *system,FxEffect *effect,FxEffect *remoteEffect)
 
 {
   FxUniqueHandleDb *pFVar1;
@@ -91,15 +97,19 @@ void __cdecl UniqueHandleAssignHandle(FxSystem *param_1,FxEffect *param_2,FxEffe
   ushort uVar5;
   FxEffect *pFVar6;
   Node *pNVar7;
+  FxUniqueHandleDb *uniqueHandleDb;
+  int firstFreeNode;
+  I_spuDmaSave save;
+  ushort *shandle;
   
-  if ((param_2 != param_3) &&
+  if ((effect != remoteEffect) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x39,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  pFVar1 = param_1->uniqueHandleDb;
+  pFVar1 = system->uniqueHandleDb;
   if ((pFVar1 == (FxUniqueHandleDb *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x3d,0,"%s"), !bVar4)) {
@@ -107,7 +117,7 @@ void __cdecl UniqueHandleAssignHandle(FxSystem *param_1,FxEffect *param_2,FxEffe
     (*pcVar3)();
     return;
   }
-  pFVar6 = UniqueHandleToEffect(param_1,param_2->uniqueHandle);
+  pFVar6 = UniqueHandleToEffect(system,effect->uniqueHandle);
   if ((pFVar6 != (FxEffect *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x3f,0,"%s"), !bVar4)) {
@@ -133,7 +143,7 @@ void __cdecl UniqueHandleAssignHandle(FxSystem *param_1,FxEffect *param_2,FxEffe
     return;
   }
   pFVar1->firstFreeNode = pNVar7->nextNode;
-  uVar5 = FX_EffectToHandle(param_1,param_3);
+  uVar5 = FX_EffectToHandle(system,remoteEffect);
   pNVar7->effect = uVar5;
   pNVar7->nextNode = -1;
   *(short *)&pNVar7->handle = (short)pNVar7->handle + 1;
@@ -144,12 +154,12 @@ void __cdecl UniqueHandleAssignHandle(FxSystem *param_1,FxEffect *param_2,FxEffe
     (*pcVar3)();
     return;
   }
-  param_2->uniqueHandle = pNVar7->handle;
+  effect->uniqueHandle = pNVar7->handle;
   Sys_LeaveCriticalSection(CRITSECT_FX_UNIQUE_HANDLE);
   LOCK();
   pFVar1->numNodesInUse = pFVar1->numNodesInUse + 1;
   UNLOCK();
-  pFVar6 = UniqueHandleToEffect(param_1,param_2->uniqueHandle);
+  pFVar6 = UniqueHandleToEffect(system,effect->uniqueHandle);
   if ((pFVar6 == (FxEffect *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x69,0,"%s"), !bVar4)) {
@@ -166,7 +176,7 @@ void __cdecl UniqueHandleAssignHandle(FxSystem *param_1,FxEffect *param_2,FxEffe
 /* WARNING: Removing unreachable block (ram,0x005e9eed) */
 /* WARNING: Removing unreachable block (ram,0x005e9f12) */
 
-void __cdecl UniqueHandleRelease(FxSystem *param_1,FxEffect *param_2)
+void __cdecl UniqueHandleRelease(FxSystem *system,FxEffect *effect)
 
 {
   FxUniqueHandleDb *pFVar1;
@@ -174,8 +184,13 @@ void __cdecl UniqueHandleRelease(FxSystem *param_1,FxEffect *param_2)
   bool bVar3;
   FxEffect *pFVar4;
   Node *pNVar5;
+  ushort *shandle_2;
+  FxUniqueHandleDb *uniqueHandleDb;
+  I_spuDmaSave save;
+  uint remoteNodeIndex;
+  ushort *shandle;
   
-  pFVar1 = param_1->uniqueHandleDb;
+  pFVar1 = system->uniqueHandleDb;
   if ((pFVar1 == (FxUniqueHandleDb *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x6f,0,"%s"), !bVar3)) {
@@ -183,17 +198,17 @@ void __cdecl UniqueHandleRelease(FxSystem *param_1,FxEffect *param_2)
     (*pcVar2)();
     return;
   }
-  if ((0x400 < *(ushort *)((int)&param_2->uniqueHandle + 2)) &&
+  if ((0x400 < *(ushort *)((int)&effect->uniqueHandle + 2)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                ,0x78,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pFVar4 = UniqueHandleToEffect(param_1,param_2->uniqueHandle);
+  pFVar4 = UniqueHandleToEffect(system,effect->uniqueHandle);
   if (pFVar4 != (FxEffect *)0x0) {
     Sys_EnterCriticalSection(CRITSECT_FX_UNIQUE_HANDLE);
-    pNVar5 = pFVar1->nodes + (*(ushort *)((int)&param_2->uniqueHandle + 2) - 1);
+    pNVar5 = pFVar1->nodes + (*(ushort *)((int)&effect->uniqueHandle + 2) - 1);
     if ((pNVar5->nextNode != -1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_unique_handle.cpp"
                                  ,0x83,0,"%s"), !bVar3)) {
@@ -210,7 +225,7 @@ void __cdecl UniqueHandleRelease(FxSystem *param_1,FxEffect *param_2)
     }
     pNVar5->nextNode = pFVar1->firstFreeNode;
     pNVar5->effect = 0xffff;
-    param_2->uniqueHandle = 0;
+    effect->uniqueHandle = 0;
     pFVar1->firstFreeNode = (int)pNVar5 - (int)pFVar1 >> 4;
     *(short *)&pNVar5->handle = (short)pNVar5->handle + 1;
     if (((uint)*(ushort *)((int)&pNVar5->handle + 2) != ((int)pNVar5 - (int)pFVar1 >> 4) + 1U) &&
@@ -231,23 +246,24 @@ void __cdecl UniqueHandleRelease(FxSystem *param_1,FxEffect *param_2)
 
 // 005E9F40  UniqueHandleInit  (EffectsCore/fx_unique_handle.cpp:157)
 
-void __cdecl UniqueHandleInit(FxUniqueHandleDb *param_1)
+void __cdecl UniqueHandleInit(FxUniqueHandleDb *uniqueHandleDb)
 
 {
   Node *pNVar1;
-  int local_c;
-  int local_8;
+  ushort *shandle;
+  int i;
+  int last;
   
-  param_1->numNodesInUse = 0;
-  param_1->firstFreeNode = 0;
-  local_8 = -1;
-  for (local_c = 0x3ff; -1 < local_c; local_c = local_c + -1) {
-    pNVar1 = param_1->nodes + local_c;
-    pNVar1->nextNode = local_8;
+  uniqueHandleDb->numNodesInUse = 0;
+  uniqueHandleDb->firstFreeNode = 0;
+  last = -1;
+  for (i = 0x3ff; -1 < i; i = i + -1) {
+    pNVar1 = uniqueHandleDb->nodes + i;
+    pNVar1->nextNode = last;
     pNVar1->effect = 0xffff;
-    local_8 = local_c;
+    last = i;
     *(short *)&pNVar1->handle = (short)pNVar1->handle + 1;
-    *(short *)((int)&pNVar1->handle + 2) = (short)local_c + 1;
+    *(short *)((int)&pNVar1->handle + 2) = (short)i + 1;
   }
   return;
 }

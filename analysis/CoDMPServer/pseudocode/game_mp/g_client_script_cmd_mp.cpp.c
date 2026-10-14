@@ -2,18 +2,19 @@
 
 // 006028E0  BG_GetStartAmmo  (bgame/bg_weapons_ammo.h:57)
 
-int __cdecl BG_GetStartAmmo(int param_1)
+int __cdecl BG_GetStartAmmo(int weaponIndex)
 
 {
   WeaponDef *pWVar1;
   int iVar2;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef(param_1);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
   if (pWVar1->ammoCountClipRelative == false) {
     iVar2 = pWVar1->iStartAmmo;
   }
   else {
-    iVar2 = BG_GetClipSize(param_1);
+    iVar2 = BG_GetClipSize(weaponIndex);
     iVar2 = iVar2 * pWVar1->iStartAmmo;
   }
   return iVar2;
@@ -27,54 +28,60 @@ int __cdecl BG_GetStartAmmo(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetNeededStartAmmo(gentity_s *param_1,int param_2)
+int __cdecl G_GetNeededStartAmmo(gentity_s *pSelf,int weaponIndex)
 
 {
-  gclient_s *pgVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  WeaponVariantDef *pWVar6;
-  WeaponVariantDef *pWVar7;
-  int iVar8;
-  int local_18;
-  int local_10;
+  gclient_s *ps_00;
+  uint weaponIndex_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  WeaponVariantDef *weapVarDef_00;
+  int iVar4;
+  WeaponVariantDef *weapVarDef_01;
+  WeaponVariantDef *heldWeapVarDef;
+  int reservedAmmoForThisWeapon;
+  int slot;
+  WeaponVariantDef *weapVarDef;
+  int applicableOwnedAmmo;
+  uint heldWeapIndex;
+  playerState_s *ps;
   
-  if ((param_1 == (gentity_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                               ,0x43,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar5 = (*pcVar3)();
-    return iVar5;
+  if ((pSelf == (gentity_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                               ,0x43,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                               ,0x44,0,"%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar5 = (*pcVar3)();
-    return iVar5;
+  if ((pSelf->client == (gclient_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                               ,0x44,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  pWVar6 = BG_GetWeaponVariantDef(param_2);
-  pgVar1 = param_1->client;
-  iVar5 = BG_GetAmmoNotInClipForAmmoIndex(&pgVar1->ps,pWVar6->iAmmoIndex);
-  local_10 = BG_GetAmmoInClipForWeaponDef(&pgVar1->ps,pWVar6);
-  local_10 = local_10 + iVar5;
-  for (local_18 = 0; local_18 < 0xf; local_18 = local_18 + 1) {
-    uVar2 = (pgVar1->ps).heldWeapons[local_18].weapon;
-    if (((uVar2 != 0) &&
-        (pWVar7 = BG_GetWeaponVariantDef(uVar2), pWVar7->iAmmoIndex == pWVar6->iAmmoIndex)) &&
-       (pWVar6 != pWVar7)) {
-      iVar5 = BG_GetStartAmmo(uVar2);
-      iVar8 = BG_GetAmmoInClipForWeaponDef(&pgVar1->ps,pWVar7);
-      local_10 = local_10 - (iVar5 - iVar8);
+  weapVarDef_00 = BG_GetWeaponVariantDef(weaponIndex);
+  ps_00 = pSelf->client;
+  iVar3 = BG_GetAmmoNotInClipForAmmoIndex(&ps_00->ps,weapVarDef_00->iAmmoIndex);
+  iVar4 = BG_GetAmmoInClipForWeaponDef(&ps_00->ps,weapVarDef_00);
+  applicableOwnedAmmo = iVar4 + iVar3;
+  for (slot = 0; slot < 0xf; slot = slot + 1) {
+    weaponIndex_00 = (ps_00->ps).heldWeapons[slot].weapon;
+    if (((weaponIndex_00 != 0) &&
+        (weapVarDef_01 = BG_GetWeaponVariantDef(weaponIndex_00),
+        weapVarDef_01->iAmmoIndex == weapVarDef_00->iAmmoIndex)) && (weapVarDef_00 != weapVarDef_01)
+       ) {
+      iVar3 = BG_GetStartAmmo(weaponIndex_00);
+      iVar4 = BG_GetAmmoInClipForWeaponDef(&ps_00->ps,weapVarDef_01);
+      applicableOwnedAmmo = applicableOwnedAmmo - (iVar3 - iVar4);
     }
   }
-  if (local_10 < 0) {
-    local_10 = 0;
+  if (applicableOwnedAmmo < 0) {
+    applicableOwnedAmmo = 0;
   }
-  iVar5 = BG_GetStartAmmo(param_2);
-  return iVar5 - local_10;
+  iVar3 = BG_GetStartAmmo(weaponIndex);
+  return iVar3 - applicableOwnedAmmo;
 }
 
 
@@ -85,36 +92,38 @@ int __cdecl G_GetNeededStartAmmo(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_InitializeAmmo(gentity_s *param_1,int param_2,uchar param_3,int param_4)
+void __cdecl G_InitializeAmmo(gentity_s *pSelf,int weaponIndex,uchar weaponModel,int hadWeapon)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   int iVar4;
-  uint local_18;
-  WeaponVariantDef *local_10;
-  WeaponDef *local_8;
+  int numWeapons;
+  int startWeapon;
+  WeaponVariantDef *weapVariantDef;
+  int ammoGive;
+  WeaponDef *weapDef;
   
-  iVar2 = param_2;
-  local_18 = BG_GetNumWeapons();
-  local_10 = BG_GetWeaponVariantDef(param_2);
-  local_8 = BG_GetWeaponDef(param_2);
-  if ((local_8 == (WeaponDef *)0x0) &&
+  iVar2 = weaponIndex;
+  numWeapons = BG_GetNumWeapons();
+  weapVariantDef = BG_GetWeaponVariantDef(weaponIndex);
+  weapDef = BG_GetWeaponDef(weaponIndex);
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x74,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((pSelf == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x76,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x77,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -122,66 +131,66 @@ void __cdecl G_InitializeAmmo(gentity_s *param_1,int param_2,uchar param_3,int p
     return;
   }
   do {
-    iVar4 = G_GetNeededStartAmmo(param_1,param_2);
+    iVar4 = G_GetNeededStartAmmo(pSelf,weaponIndex);
     if (iVar4 < 1) {
-      if (param_4 == 0) {
-        Fill_Clip(&param_1->client->ps,param_2);
+      if (hadWeapon == 0) {
+        Fill_Clip(&pSelf->client->ps,weaponIndex);
       }
     }
     else {
-      Add_Ammo(param_1,param_2,param_3,iVar4,(uint)(param_4 == 0));
+      Add_Ammo(pSelf,weaponIndex,weaponModel,iVar4,(uint)(hadWeapon == 0));
     }
-    if ((param_4 == 0) && (local_8->bDualWield != false)) {
-      Fill_Clip(&param_1->client->ps,param_2);
+    if ((hadWeapon == 0) && (weapDef->bDualWield != false)) {
+      Fill_Clip(&pSelf->client->ps,weaponIndex);
     }
-    if (local_8->bDualWield == false) {
-      param_2 = local_10->altWeaponIndex;
+    if (weapDef->bDualWield == false) {
+      weaponIndex = weapVariantDef->altWeaponIndex;
     }
     else {
-      param_2 = local_8->dualWieldWeaponIndex;
+      weaponIndex = weapDef->dualWieldWeaponIndex;
     }
-    local_10 = BG_GetWeaponVariantDef(param_2);
-    local_8 = BG_GetWeaponDef(param_2);
-    if ((local_10 == (WeaponVariantDef *)0x0) &&
+    weapVariantDef = BG_GetWeaponVariantDef(weaponIndex);
+    weapDef = BG_GetWeaponDef(weaponIndex);
+    if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x8c,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((local_8 == (WeaponDef *)0x0) &&
+    if ((weapDef == (WeaponDef *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x8d,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = local_18 - 1;
-    if (((int)local_18 < 0) &&
+    numWeapons = numWeapons + -1;
+    if ((numWeapons < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x90,0,"%s\n\t(weapVariantDef->szDisplayName) = %s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_2 == 0) {
+    if (weaponIndex == 0) {
       return;
     }
-    if (param_2 == iVar2) {
+    if (weaponIndex == iVar2) {
       return;
     }
-    if ((int)local_18 < 0) {
+    if (numWeapons < 0) {
       return;
     }
-    iVar4 = BG_PlayerHasWeapon(&param_1->client->ps,param_2);
-  } while ((iVar4 != 0) || (local_8->bDualWield != false));
+    iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+  } while ((iVar4 != 0) || (weapDef->bDualWield != false));
   return;
 }
 
 
 // 0060E0E0  BG_SetPerk  (bgame/bg_perks.h:144)
 
-void __cdecl BG_SetPerk(uint *param_1,uint param_2)
+void __cdecl BG_SetPerk(uint *perks,uint perkIndex)
 
 {
   code *pcVar1;
@@ -189,7 +198,7 @@ void __cdecl BG_SetPerk(uint *param_1,uint param_2)
   uint extraout_EAX;
   uint extraout_EDX;
   
-  if (param_1 == (uint *)0x0) {
+  if (perks == (uint *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_perks.h",0x91,0,
                              "%s");
     if (!bVar2) {
@@ -198,7 +207,7 @@ void __cdecl BG_SetPerk(uint *param_1,uint param_2)
       return;
     }
   }
-  if (0x33 < param_2) {
+  if (0x33 < perkIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_perks.h",0x92,0,
                              "perkIndex doesn\'t index PERK_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -208,8 +217,8 @@ void __cdecl BG_SetPerk(uint *param_1,uint param_2)
     }
   }
   _allshl();
-  *param_1 = extraout_EAX | *param_1;
-  param_1[1] = extraout_EDX | param_1[1];
+  *perks = extraout_EAX | *perks;
+  perks[1] = extraout_EDX | perks[1];
   return;
 }
 
@@ -221,50 +230,55 @@ void __cdecl BG_SetPerk(uint *param_1,uint param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setBlockWeaponPickup(scr_entref_t param_1)
+void __cdecl PlayerCmd_setBlockWeaponPickup(scr_entref_t entref)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  uint uVar5;
-  int iVar6;
-  scriptInstance_t sVar7;
-  gentity_s *local_1c;
+  gclient_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  uint uVar4;
+  int iVar5;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *weaponName;
+  bool blockWeaponPickup;
+  int weaponIndex;
+  playerState_s *ps;
+  int argc;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0x9c,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0x9c,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    local_1c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar7);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_1c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar5 != 2) {
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar4 != 2) {
     Scr_Error("setBlockWeaponPickup( <weaponname>, <blockWeaponPickup> ) takes 2 parameters",false);
   }
-  pgVar1 = local_1c->client;
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar5 = G_GetWeaponIndexForName(pcVar4);
-  iVar6 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  iVar6 = BG_PlayerWeaponSetBlockPickupWeapon(&pgVar1->ps,uVar5,iVar6 != 0);
-  if (iVar6 == 0) {
-    bVar3 = false;
-    pcVar4 = va("Cannot set blocked weapon pickup, player does not have %s");
-    Scr_Error(pcVar4,bVar3);
+  ps_00 = pSelf->client;
+  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  uVar4 = G_GetWeaponIndexForName(pcVar3);
+  iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  iVar5 = BG_PlayerWeaponSetBlockPickupWeapon(&ps_00->ps,uVar4,iVar5 != 0);
+  if (iVar5 == 0) {
+    bVar2 = false;
+    pcVar3 = va("Cannot set blocked weapon pickup, player does not have %s");
+    Scr_Error(pcVar3,bVar2);
   }
   return;
 }
@@ -272,7 +286,7 @@ void __cdecl PlayerCmd_setBlockWeaponPickup(scr_entref_t param_1)
 
 // 0060E490  BG_UnsetPerk  (bgame/bg_perks.h:159)
 
-void __cdecl BG_UnsetPerk(uint *param_1,uint param_2)
+void __cdecl BG_UnsetPerk(uint *perks,uint perkIndex)
 
 {
   code *pcVar1;
@@ -280,7 +294,7 @@ void __cdecl BG_UnsetPerk(uint *param_1,uint param_2)
   uint extraout_EAX;
   uint extraout_EDX;
   
-  if (param_1 == (uint *)0x0) {
+  if (perks == (uint *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_perks.h",0xa0,0,
                              "%s");
     if (!bVar2) {
@@ -289,7 +303,7 @@ void __cdecl BG_UnsetPerk(uint *param_1,uint param_2)
       return;
     }
   }
-  if (0x33 < param_2) {
+  if (0x33 < perkIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_perks.h",0xa1,0,
                              "perkIndex doesn\'t index PERK_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -299,21 +313,21 @@ void __cdecl BG_UnsetPerk(uint *param_1,uint param_2)
     }
   }
   _allshl();
-  *param_1 = ~extraout_EAX & *param_1;
-  param_1[1] = ~extraout_EDX & param_1[1];
+  *perks = ~extraout_EAX & *perks;
+  perks[1] = ~extraout_EDX & perks[1];
   return;
 }
 
 
 // 0060E5F0  BG_ClearPerks  (bgame/bg_perks.h:174)
 
-void __cdecl BG_ClearPerks(uint *param_1)
+void __cdecl BG_ClearPerks(uint *perks)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (uint *)0x0) {
+  if (perks == (uint *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_perks.h",0xaf,0,
                              "%s");
     if (!bVar2) {
@@ -322,8 +336,8 @@ void __cdecl BG_ClearPerks(uint *param_1)
       return;
     }
   }
-  *param_1 = 0;
-  param_1[1] = 0;
+  *perks = 0;
+  perks[1] = 0;
   return;
 }
 
@@ -336,83 +350,85 @@ void __cdecl BG_ClearPerks(uint *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_giveWeapon(scr_entref_t param_1)
+void __cdecl PlayerCmd_giveWeapon(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  uint uVar5;
+  uint weaponIndex_00;
+  int hadWeapon_00;
+  uint uVar4;
+  WeaponDef *pWVar5;
   int iVar6;
-  scriptInstance_t sVar7;
-  int local_6c;
-  gentity_s *local_68;
-  char local_5c [63];
+  scriptInstance_t inst;
+  int weaponModel;
+  gentity_s *pSelf;
+  char *weaponName;
+  int hadWeapon;
+  char svcmd [63];
   undefined1 local_1d;
   uint local_18;
-  renderOptions_s_u_0 local_14;
-  uint local_10;
-  WeaponDef *local_c;
-  gclient_s *local_8;
+  renderOptions_s weaponOptions;
+  int weaponIndex;
+  WeaponDef *weapDef;
+  playerState_s *ps;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14.i = 0;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  weaponOptions.field0_0x0 = (renderOptions_s_u_0)(<unnamed_type_s>)0x0;
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xba,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_68 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar7);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_68 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_10 = G_GetWeaponIndexForName(pcVar3);
-  if ((local_68->client == (gclient_s *)0x0) &&
+  weaponIndex_00 = G_GetWeaponIndexForName(pcVar3);
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xc0,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = local_68->client;
-  iVar4 = BG_PlayerHasWeapon(&local_8->ps,local_10);
-  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar5 < 2) {
-    local_6c._0_1_ = '\0';
+  hadWeapon_00 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex_00);
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar4 < 2) {
+    weaponModel._0_1_ = '\0';
   }
   else {
-    local_c = BG_GetWeaponDef(local_10);
-    local_6c = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    if ((local_6c < 0) || (0xff < local_6c)) {
-      local_6c = 0;
+    pWVar5 = BG_GetWeaponDef(weaponIndex_00);
+    weaponModel = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    if ((weaponModel < 0) || (0xff < weaponModel)) {
+      weaponModel = 0;
     }
-    else if (local_c->gunXModel[local_6c] == (XModel *)0x0) {
-      local_6c = 0;
+    else if (pWVar5->gunXModel[weaponModel] == (XModel *)0x0) {
+      weaponModel = 0;
     }
-    uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (2 < uVar5) {
-      local_14.i = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+    uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+    if (2 < uVar4) {
+      weaponOptions.field0_0x0 = (renderOptions_s_u_0)Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
     }
   }
-  iVar6 = G_GivePlayerWeapon(&local_68->client->ps,local_10,(uchar)local_6c,
-                             (renderOptions_s)local_14.s);
+  iVar6 = G_GivePlayerWeapon(&pSelf->client->ps,weaponIndex_00,(uchar)weaponModel,weaponOptions);
   if (iVar6 != 0) {
-    _snprintf(local_5c,0x40,"%c \"%i\"");
+    _snprintf(svcmd,0x40,"%c \"%i\"");
     local_1d = 0;
-    SV_GameSendServerCommand((int)local_68[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,local_5c);
-    G_InitializeAmmo(local_68,local_10,(uchar)local_6c,iVar4);
+    SV_GameSendServerCommand((int)pSelf[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,svcmd);
+    G_InitializeAmmo(pSelf,weaponIndex_00,(uchar)weaponModel,hadWeapon_00);
   }
   return;
 }
@@ -425,35 +441,36 @@ void __cdecl PlayerCmd_giveWeapon(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_giveNextBaseWeaponDEVONLY(scr_entref_t param_1)
+void __cdecl PlayerCmd_giveNextBaseWeaponDEVONLY(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_c;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  playerState_s *ps;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_c->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xe6,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -470,7 +487,7 @@ void __cdecl PlayerCmd_giveNextBaseWeaponDEVONLY(scr_entref_t param_1)
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl WeaponComponentListAddAllPoints(WeaponComponentList *param_1)
+void __cdecl WeaponComponentListAddAllPoints(WeaponComponentList *componentList)
 
 {
   code *pcVar1;
@@ -480,34 +497,35 @@ void __cdecl WeaponComponentListAddAllPoints(WeaponComponentList *param_1)
   WeaponComponentList *pWVar5;
   WeaponComponent *pWVar6;
   int *piVar7;
-  eAttachmentPoint local_150;
-  int local_14c;
-  int local_144 [10];
+  int point;
+  int compIdx;
+  int count;
+  int tempList [10];
   undefined4 auStack_11c [69];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  memset((uchar *)local_144,'\0',0x138);
-  piVar7 = local_144 + local_144[0] * 0xb + 1;
-  pWVar5 = param_1;
+  memset((uchar *)tempList,'\0',0x138);
+  piVar7 = tempList + tempList[0] * 0xb + 1;
+  pWVar5 = componentList;
   for (iVar3 = 0xb; pWVar5 = (WeaponComponentList *)pWVar5->components, iVar3 != 0;
       iVar3 = iVar3 + -1) {
     *piVar7 = *(int *)((WeaponComponent *)pWVar5)->name;
     piVar7 = piVar7 + 1;
   }
-  local_150 = ATTACHMENT_POINT_FIRST;
-  iVar3 = local_144[0];
+  point = 1;
+  iVar3 = tempList[0];
   do {
-    local_144[0] = iVar3 + 1;
-    if (4 < (int)local_150) {
-      pWVar6 = param_1->components + param_1->numComponents + -1;
-      piVar7 = local_144 + local_144[0] * 0xb + 1;
+    tempList[0] = iVar3 + 1;
+    if (4 < point) {
+      pWVar6 = componentList->components + componentList->numComponents + -1;
+      piVar7 = tempList + tempList[0] * 0xb + 1;
       for (iVar4 = 0xb; iVar4 != 0; iVar4 = iVar4 + -1) {
         *piVar7 = *(int *)pWVar6->name;
         pWVar6 = (WeaponComponent *)(pWVar6->name + 4);
         piVar7 = piVar7 + 1;
       }
-      local_144[0] = iVar3 + 2;
+      tempList[0] = iVar3 + 2;
       if ((iVar3 + 2 != 6) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                    ,0x110,0,"%s"), !bVar2)) {
@@ -515,32 +533,32 @@ void __cdecl WeaponComponentListAddAllPoints(WeaponComponentList *param_1)
         (*pcVar1)();
         return;
       }
-      piVar7 = local_144;
+      piVar7 = tempList;
       for (iVar3 = 0x4e; iVar3 != 0; iVar3 = iVar3 + -1) {
-        param_1->numComponents = *piVar7;
+        componentList->numComponents = *piVar7;
         piVar7 = piVar7 + 1;
-        param_1 = (WeaponComponentList *)param_1->components;
+        componentList = (WeaponComponentList *)componentList->components;
       }
       return;
     }
-    auStack_11c[local_144[0] * 0xb] = 0;
-    auStack_11c[local_144[0] * 0xb + 1] = 0;
-    local_14c = 0;
+    auStack_11c[tempList[0] * 0xb] = 0;
+    auStack_11c[tempList[0] * 0xb + 1] = 0;
+    compIdx = 0;
     while( true ) {
-      if (param_1->numComponents <= local_14c) goto LAB_00602a7d;
-      if (param_1->components[local_14c].attachmentPoint == local_150) break;
-      local_14c = local_14c + 1;
+      if (componentList->numComponents <= compIdx) goto LAB_00602a7d;
+      if (componentList->components[compIdx].attachmentPoint == point) break;
+      compIdx = compIdx + 1;
     }
-    pWVar6 = param_1->components + local_14c;
-    piVar7 = local_144 + local_144[0] * 0xb + 1;
+    pWVar6 = componentList->components + compIdx;
+    piVar7 = tempList + tempList[0] * 0xb + 1;
     for (iVar3 = 0xb; iVar3 != 0; iVar3 = iVar3 + -1) {
       *piVar7 = *(int *)pWVar6->name;
       pWVar6 = (WeaponComponent *)(pWVar6->name + 4);
       piVar7 = piVar7 + 1;
     }
 LAB_00602a7d:
-    local_150 = local_150 + ATTACHMENT_POINT_FIRST;
-    iVar3 = local_144[0];
+    point = point + 1;
+    iVar3 = tempList[0];
   } while( true );
 }
 
@@ -550,21 +568,21 @@ LAB_00602a7d:
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl WeaponComponentListToName(WeaponComponentList *param_1,char *param_2,int param_3)
+void __cdecl WeaponComponentListToName(WeaponComponentList *componentList,char *name,int size)
 
 {
-  int local_8;
+  int compIdx;
   
-  *param_2 = '\0';
-  if (param_1->numComponents != 0) {
-    I_strncat(param_2,param_3,param_1->components[0].name);
-    for (local_8 = 1; local_8 < param_1->numComponents; local_8 = local_8 + 1) {
-      if (((param_1->components[local_8].type == WEAPON_COMPONENT_UNKNOWN) ||
-          ((param_1->components[local_8].attachmentPoint != ATTACHMENT_POINT_NONE &&
-           (param_1->components[local_8].attachment != ATTACHMENT_NONE)))) &&
-         (param_1->components[local_8].name[0] != '\0')) {
-        I_strncat(param_2,param_3,"_");
-        I_strncat(param_2,param_3,param_1->components[local_8].name);
+  *name = '\0';
+  if (componentList->numComponents != 0) {
+    I_strncat(name,size,componentList->components[0].name);
+    for (compIdx = 1; compIdx < componentList->numComponents; compIdx = compIdx + 1) {
+      if (((componentList->components[compIdx].type == WEAPON_COMPONENT_UNKNOWN) ||
+          ((componentList->components[compIdx].attachmentPoint != ATTACHMENT_POINT_NONE &&
+           (componentList->components[compIdx].attachment != ATTACHMENT_NONE)))) &&
+         (componentList->components[compIdx].name[0] != '\0')) {
+        I_strncat(name,size,"_");
+        I_strncat(name,size,componentList->components[compIdx].name);
       }
     }
   }
@@ -575,109 +593,118 @@ void __cdecl WeaponComponentListToName(WeaponComponentList *param_1,char *param_
 // 00602CA0  PlayerCmd_giveWeaponNextAttachmentDEVONLY  (game_mp/g_client_script_cmd_mp.cpp:306)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_giveWeaponNextAttachmentDEVONLY(scr_entref_t param_1)
+void __cdecl PlayerCmd_giveWeaponNextAttachmentDEVONLY(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  eAttachment eVar5;
-  uint uVar6;
-  scriptInstance_t sVar7;
-  int local_1fc;
-  gentity_s *local_1f8;
-  char local_1f4 [64];
-  char *local_1b4;
-  eAttachmentPoint local_1b0;
-  char local_1ac [63];
+  eAttachment index;
+  uint iWeaponIndex;
+  scriptInstance_t inst;
+  eAttachment attachment;
+  int itemAttachmentNum;
+  int weaponIndex;
+  int i;
+  gentity_s *pSelf;
+  char buffer [64];
+  char *weaponName;
+  int componentIndex;
+  char svcmd [63];
   undefined1 local_16d;
-  int local_168;
-  uint local_164;
-  char *local_160;
-  WeaponComponentList local_15c;
+  int weaponStatItemIndex;
+  int originalWeapon;
+  char *attachPointString;
+  WeaponComponentList weaponComponentList;
   uint local_20;
-  int local_1c;
-  eAttachment local_18;
-  int local_14;
-  gclient_s *local_10;
-  WeaponVariantDef *local_c;
-  eAttachmentPoint local_8;
+  int numAttachmentsForWeapon;
+  eAttachment currentAttachment;
+  int newAttachmentIndex;
+  playerState_s *ps;
+  WeaponVariantDef *weaponVariantDef;
+  eAttachmentPoint point;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_1b4 = local_1f4;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  weaponName = buffer;
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x13a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_1f8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar7);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_1f8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_1f8->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x13b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_10 = local_1f8->client;
-  local_c = BG_GetWeaponVariantDef((uint)(local_10->ps).weapon);
-  local_164 = (uint)(local_10->ps).weapon;
-  local_168 = BG_UnlockablesGetItemIndexforWeapon((uint)(local_10->ps).weapon);
-  if (local_168 != -1) {
-    local_160 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    local_8 = BG_GetAttachmentPointIndex(local_160);
-    if (local_8 != ATTACHMENT_POINT_NONE) {
-      BG_WeaponNameToComponentList(local_c->szInternalName,&local_15c);
-      BG_WeaponComponentListIdentify(&local_15c);
-      WeaponComponentListAddAllPoints(&local_15c);
-      local_1b0 = local_8;
-      local_18 = local_15c.components[local_8].attachment;
-      local_14 = BG_UnlockablesGetItemAttachmentIndexForAttachmentPoint(local_168,local_18,local_8);
-      local_1c = BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(local_168,local_8);
-      for (local_1fc = 0; local_1fc < local_1c; local_1fc = local_1fc + 1) {
-        local_14 = (local_14 + 1) % local_1c;
-        iVar4 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint(local_168,local_14,local_8);
-        eVar5 = BG_UnlockablesGetItemAttachment(local_168,iVar4);
+  ps = &pSelf->client->ps;
+  weaponVariantDef = BG_GetWeaponVariantDef((uint)(((gclient_s *)ps)->ps).weapon);
+  originalWeapon = (int)ps->weapon;
+  weaponStatItemIndex = BG_UnlockablesGetItemIndexforWeapon((uint)ps->weapon);
+  if (weaponStatItemIndex != -1) {
+    attachPointString = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    point = BG_GetAttachmentPointIndex(attachPointString);
+    if (point != ATTACHMENT_POINT_NONE) {
+      BG_WeaponNameToComponentList(weaponVariantDef->szInternalName,&weaponComponentList);
+      BG_WeaponComponentListIdentify(&weaponComponentList);
+      WeaponComponentListAddAllPoints(&weaponComponentList);
+      componentIndex = point;
+      currentAttachment = weaponComponentList.components[point].attachment;
+      newAttachmentIndex =
+           BG_UnlockablesGetItemAttachmentIndexForAttachmentPoint
+                     (weaponStatItemIndex,currentAttachment,point);
+      numAttachmentsForWeapon =
+           BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(weaponStatItemIndex,point);
+      for (i = 0; i < numAttachmentsForWeapon; i = i + 1) {
+        newAttachmentIndex = (newAttachmentIndex + 1) % numAttachmentsForWeapon;
+        iVar4 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint
+                          (weaponStatItemIndex,newAttachmentIndex,point);
+        index = BG_UnlockablesGetItemAttachment(weaponStatItemIndex,iVar4);
         iVar4 = 0x20;
-        pcVar3 = BG_GetAttachmentName(eVar5);
-        I_strncpyz(local_15c.components[local_1b0].name,pcVar3,iVar4);
-        local_15c.components[local_1b0].attachment = eVar5;
-        WeaponComponentListToName(&local_15c,local_1b4,0x40);
-        uVar6 = BG_GetWeaponIndexForName(local_1b4);
-        if (uVar6 != 0) {
-          iVar4 = G_GivePlayerWeapon(&local_1f8->client->ps,uVar6,'\0',(renderOptions_s)0x0);
+        pcVar3 = BG_GetAttachmentName(index);
+        I_strncpyz(weaponComponentList.components[componentIndex].name,pcVar3,iVar4);
+        weaponComponentList.components[componentIndex].attachment = index;
+        WeaponComponentListToName(&weaponComponentList,weaponName,0x40);
+        iWeaponIndex = BG_GetWeaponIndexForName(weaponName);
+        if (iWeaponIndex != 0) {
+          iVar4 = G_GivePlayerWeapon(&pSelf->client->ps,iWeaponIndex,'\0',(renderOptions_s)0x0);
           if (iVar4 == 0) {
             return;
           }
-          if (local_164 != uVar6) {
-            BG_TakePlayerWeapon(&local_10->ps,local_164);
+          if (originalWeapon != iWeaponIndex) {
+            BG_TakePlayerWeapon(ps,originalWeapon);
           }
-          _snprintf(local_1ac,0x40,"%c \"%i\"");
+          _snprintf(svcmd,0x40,"%c \"%i\"");
           local_16d = 0;
-          SV_GameSendServerCommand
-                    ((int)local_1f8[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,local_1ac);
-          G_InitializeAmmo(local_1f8,uVar6,'\0',0);
-          G_SelectWeaponIndex((local_1f8->s).number,uVar6);
+          SV_GameSendServerCommand((int)pSelf[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,svcmd);
+          G_InitializeAmmo(pSelf,iWeaponIndex,'\0',0);
+          G_SelectWeaponIndex((pSelf->s).number,iWeaponIndex);
           return;
         }
       }
@@ -689,7 +716,7 @@ void __cdecl PlayerCmd_giveWeaponNextAttachmentDEVONLY(scr_entref_t param_1)
 
 // 00603540  PlayerCmd_GetStatFromPlayer  (game_mp/g_client_script_cmd_mp.cpp:378)
 
-int __cdecl PlayerCmd_GetStatFromPlayer(int param_1,char **param_2,int param_3)
+int __cdecl PlayerCmd_GetStatFromPlayer(int clientNum,char **operands,int nOperands)
 
 {
   code *pcVar1;
@@ -697,69 +724,71 @@ int __cdecl PlayerCmd_GetStatFromPlayer(int param_1,char **param_2,int param_3)
   byte bVar3;
   int iVar4;
   ddlState_t *pdVar5;
-  int local_1c;
-  ddlState_t local_18;
-  uint local_8;
+  int i;
+  ddlState_t searchState;
+  int statVal;
   
   bVar2 = UI_Gametype_IsUsingCustom();
   if ((bVar2) && (iVar4 = Dvar_GetInt(custom_class_mode), iVar4 != 0)) {
-    bVar3 = GetCustomClassLoadoutItemForClassName(0,param_2[1],param_2[2]);
-    local_8 = (uint)bVar3;
+    bVar3 = GetCustomClassLoadoutItemForClassName(0,operands[1],operands[2]);
+    statVal = (int)bVar3;
   }
   else {
     pdVar5 = LiveStats_GetRootDDLState();
-    local_18.absoluteOffset = pdVar5->absoluteOffset;
-    local_18.arrayIndex = pdVar5->arrayIndex;
-    local_18.member = pdVar5->member;
-    local_18.ddl = pdVar5->ddl;
-    for (local_1c = 0; local_1c < param_3; local_1c = local_1c + 1) {
-      if (((local_18.member != (ddlMemberDef_t *)0x0) && (1 < (local_18.member)->arraySize)) &&
-         ((local_18.member)->enumIndex == -1)) {
+    searchState.absoluteOffset = pdVar5->absoluteOffset;
+    searchState.arrayIndex = pdVar5->arrayIndex;
+    searchState.member = pdVar5->member;
+    searchState.ddl = pdVar5->ddl;
+    for (i = 0; i < nOperands; i = i + 1) {
+      if (((searchState.member != (ddlMemberDef_t *)0x0) && (1 < (searchState.member)->arraySize))
+         && ((searchState.member)->enumIndex == -1)) {
         DDL_PrintError("DDL: array index (integer) expected. Received a string instead.");
         return -1;
       }
-      iVar4 = DDL_MoveToName(&local_18,&local_18,param_2[local_1c]);
+      iVar4 = DDL_MoveToName(&searchState,&searchState,operands[i]);
       if (iVar4 == 0) {
         DDL_PrintError("DDL: Could not find member name.");
         return -1;
       }
     }
-    if ((local_18.member == (ddlMemberDef_t *)0x0) &&
+    if ((searchState.member == (ddlMemberDef_t *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x198,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar4 = (*pcVar1)();
       return iVar4;
     }
-    local_8 = 0;
-    if (local_18.member != (ddlMemberDef_t *)0x0) {
-      local_8 = SV_GetClientDIntStat(param_1,&local_18);
+    statVal = 0;
+    if (searchState.member != (ddlMemberDef_t *)0x0) {
+      statVal = SV_GetClientDIntStat(clientNum,&searchState);
     }
   }
-  return local_8;
+  return statVal;
 }
 
 
 // 00602280  BG_PlayerWeaponSetBlockPickupWeapon  (bgame/bg_weapons.h:405)
 
-int __cdecl BG_PlayerWeaponSetBlockPickupWeapon(playerState_s *param_1,uint param_2,bool param_3)
+int __cdecl
+BG_PlayerWeaponSetBlockPickupWeapon(playerState_s *ps,uint weaponIndex,bool blockPickupWeapon)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   PlayerHeldWeapon *pPVar4;
+  PlayerHeldWeapon *heldWeapon;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../bgame/bg_weapons.h",
                                0x196,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  pPVar4 = BG_GetHeldWeapon(param_1,param_2);
+  pPVar4 = BG_GetHeldWeapon(ps,weaponIndex);
   if (pPVar4 != (PlayerHeldWeapon *)0x0) {
-    pPVar4->blockWeaponPickup = param_3;
+    pPVar4->blockWeaponPickup = blockPickupWeapon;
   }
   return (uint)(pPVar4 != (PlayerHeldWeapon *)0x0);
 }
@@ -772,7 +801,7 @@ int __cdecl BG_PlayerWeaponSetBlockPickupWeapon(playerState_s *param_1,uint para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t param_1)
+void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -780,54 +809,54 @@ void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t param_1)
   char *pcVar3;
   uint uVar4;
   int iVar5;
-  scriptInstance_t sVar6;
+  scriptInstance_t inst;
   char *local_64;
   char *local_60;
   char *local_5c;
   char *local_58;
   char *local_54;
   char *local_50;
-  char *local_1c;
+  char *ops;
   char *local_18;
   char *local_14;
-  char local_d;
-  gentity_s *local_c;
-  uint local_8;
+  bool primary;
+  gentity_s *pSelf;
+  renderOptions_s weaponOptions;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1a7,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_c->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x1a8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((0x1f < (local_c->s).number) &&
+  if ((0x1f < (pSelf->s).number) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x1a9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = ((local_c->s).number + 1U & 0x1f) << 0x15;
+  weaponOptions.field0_0x0 = (renderOptions_s_u_0)(((pSelf->s).number + 1U & 0x1f) << 0x15);
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 2) {
     iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
@@ -835,7 +864,7 @@ void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t param_1)
     if (pcVar3 == (char *)0x0) {
       return;
     }
-    local_1c = "cacLoadouts";
+    ops = "cacLoadouts";
     iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     BG_UnlockablesGetCustomClassNameForInt(iVar5);
     local_18 = va("%s");
@@ -846,61 +875,67 @@ void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t param_1)
       local_18 = va("%d");
     }
     iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    local_d = '\x01' - (iVar5 != 0);
-    if (local_d == '\0') {
+    primary = (bool)('\x01' - (iVar5 != 0));
+    if (primary == false) {
       local_50 = "secondarycamo";
     }
     else {
       local_50 = "primarycamo";
     }
     local_14 = local_50;
-    uVar4 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_1c,3);
-    local_8 = local_8 & 0xffffffc0 | uVar4 & 0x3f;
-    if (local_d == '\0') {
+    uVar4 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xffffffc0 | uVar4 & 0x3f);
+    if (primary == false) {
       local_54 = "secondarylens";
     }
     else {
       local_54 = "primarylens";
     }
     local_14 = local_54;
-    uVar4 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_1c,3);
-    local_8 = local_8 & 0xfffffc3f | (uVar4 & 0xf) << 6;
-    if (local_d == '\0') {
+    uVar4 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xfffffc3f | (uVar4 & 0xf) << 6);
+    if (primary == false) {
       local_58 = "secondaryreticle";
     }
     else {
       local_58 = "primaryreticle";
     }
     local_14 = local_58;
-    uVar4 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_1c,3);
-    local_8 = local_8 & 0xffff03ff | (uVar4 & 0x3f) << 10;
-    if (local_d == '\0') {
+    uVar4 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xffff03ff | (uVar4 & 0x3f) << 10);
+    if (primary == false) {
       local_5c = "secondaryreticlecolor";
     }
     else {
       local_5c = "primaryreticlecolor";
     }
     local_14 = local_5c;
-    uVar4 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_1c,3);
-    local_8 = local_8 & 0xfff8ffff | (uVar4 & 7) << 0x10;
-    if (local_d == '\0') {
+    uVar4 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xfff8ffff | (uVar4 & 7) << 0x10);
+    if (primary == false) {
       local_60 = "secondarytag";
     }
     else {
       local_60 = "primarytag";
     }
     local_14 = local_60;
-    uVar4 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_1c,3);
-    local_8 = local_8 & 0xffefffff | (uVar4 & 1) << 0x14;
-    if (local_d == '\0') {
+    uVar4 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xffefffff | (uVar4 & 1) << 0x14);
+    if (primary == false) {
       local_64 = "secondaryemblem";
     }
     else {
       local_64 = "primaryemblem";
     }
     local_14 = local_64;
-    uVar4 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_1c,3);
-    local_8 = local_8 & 0xfff7ffff | (uVar4 & 1) << 0x13;
+    uVar4 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xfff7ffff | (uVar4 & 1) << 0x13);
   }
   else {
     uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -910,27 +945,35 @@ void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t param_1)
     }
     else {
       uVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      local_8 = local_8 & 0xffffffc0 | uVar4 & 0x3f;
+      weaponOptions.field0_0x0 =
+           (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xffffffc0 | uVar4 & 0x3f);
       uVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-      local_8 = local_8 & 0xfffffc3f | (uVar4 & 0xf) << 6;
+      weaponOptions.field0_0x0 =
+           (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0xfffffc3f | (uVar4 & 0xf) << 6);
       uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
       if (2 < uVar4) {
         uVar4 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-        local_8 = local_8 & 0xffff03ff | (uVar4 & 0x3f) << 10;
+        weaponOptions.field0_0x0 =
+             (renderOptions_s_u_0)
+             ((uint)weaponOptions.field0_0x0 & 0xffff03ff | (uVar4 & 0x3f) << 10);
         uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
         if (3 < uVar4) {
           uVar4 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-          local_8 = local_8 & 0xffefffff | (uVar4 & 1) << 0x14;
+          weaponOptions.field0_0x0 =
+               (renderOptions_s_u_0)
+               ((uint)weaponOptions.field0_0x0 & 0xffefffff | (uVar4 & 1) << 0x14);
           uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
           if (4 < uVar4) {
             uVar4 = Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
-            local_8 = local_8 & 0xfff7ffff | (uVar4 & 1) << 0x13;
+            weaponOptions.field0_0x0 =
+                 (renderOptions_s_u_0)
+                 ((uint)weaponOptions.field0_0x0 & 0xfff7ffff | (uVar4 & 1) << 0x13);
           }
         }
       }
     }
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((int)weaponOptions.field0_0x0,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -942,7 +985,7 @@ void __cdecl PlayerCmd_calcWeaponOptions(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t param_1)
+void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -950,40 +993,40 @@ void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t param_1)
   char *pcVar3;
   uint uVar4;
   int iVar5;
-  scriptInstance_t sVar6;
-  char *local_18;
+  scriptInstance_t inst;
+  char *ops;
   char *local_14;
   char *local_10;
-  gentity_s *local_c;
-  uint local_8;
+  gentity_s *pSelf;
+  renderOptions_s weaponOptions;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1e7,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_c->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x1e8,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = 0;
+  weaponOptions.field0_0x0 = (renderOptions_s_u_0)(<unnamed_type_s>)0x0;
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 1) {
     iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
@@ -991,7 +1034,7 @@ void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t param_1)
     if (pcVar3 == (char *)0x0) {
       return;
     }
-    local_18 = "cacLoadouts";
+    ops = "cacLoadouts";
     iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
     BG_UnlockablesGetCustomClassNameForInt(iVar5);
     local_14 = va("%s");
@@ -1002,8 +1045,9 @@ void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t param_1)
       local_14 = va("%d");
     }
     local_10 = "facepaintPattern";
-    iVar5 = PlayerCmd_GetStatFromPlayer((local_c->s).number,&local_18,3);
-    local_8 = local_8 & 0x3ffffff | iVar5 << 0x1a;
+    iVar5 = PlayerCmd_GetStatFromPlayer((pSelf->s).number,&ops,3);
+    weaponOptions.field0_0x0 =
+         (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0x3ffffff | iVar5 << 0x1a);
   }
   else {
     uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
@@ -1013,10 +1057,11 @@ void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t param_1)
     }
     else {
       iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-      local_8 = local_8 & 0x3ffffff | iVar5 << 0x1a;
+      weaponOptions.field0_0x0 =
+           (renderOptions_s_u_0)((uint)weaponOptions.field0_0x0 & 0x3ffffff | iVar5 << 0x1a);
     }
   }
-  Scr_AddInt(local_8,SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((int)weaponOptions.field0_0x0,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1028,44 +1073,44 @@ void __cdecl PlayerCmd_calcPlayerOptions(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setPlayerRenderOptions(scr_entref_t param_1)
+void __cdecl PlayerCmd_setPlayerRenderOptions(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x217,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_8->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x218,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (local_8->client->ps).renderOptions.field0_0x0.i = uVar4;
+  uVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  (pSelf->client->ps).renderOptions.field0_0x0.i = uVar3;
   return;
 }
 
@@ -1077,7 +1122,7 @@ void __cdecl PlayerCmd_setPlayerRenderOptions(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
+void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -1087,38 +1132,44 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
   int iVar5;
   PlayerHeldWeapon *pPVar6;
   renderOptions_s *prVar7;
-  scriptInstance_t sVar8;
-  undefined1 uVar9;
-  char *pcVar10;
-  int local_58;
-  int local_50;
-  int local_44;
-  int local_38;
-  int local_2c;
-  int local_20;
-  int local_14;
-  gentity_s *local_8;
+  scriptInstance_t inst;
+  undefined1 force_terminal;
+  char *pcVar8;
+  int i_7;
+  int i_6;
+  PlayerHeldWeapon *weaponState_6;
+  int i_5;
+  PlayerHeldWeapon *weaponState_5;
+  int i_4;
+  PlayerHeldWeapon *weaponState_4;
+  int i_3;
+  PlayerHeldWeapon *weaponState_3;
+  int i_2;
+  PlayerHeldWeapon *weaponState_2;
+  int i;
+  PlayerHeldWeapon *weaponState;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x234,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar8 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar8);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_8->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x235,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1129,15 +1180,15 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
   if (uVar4 == 2) {
     bVar2 = CG_IsValidRenderOption
                       ((renderOptions_s)
-                       *(renderOptions_s_u_0 *)&(local_8->client->ps).renderOptions.field0_0x0.s);
+                       *(renderOptions_s_u_0 *)&(pSelf->client->ps).renderOptions.field0_0x0.s);
     if (bVar2) {
-      pcVar10 = "camo";
+      pcVar8 = "camo";
       pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-      iVar5 = I_stricmp(pcVar3,pcVar10);
+      iVar5 = I_stricmp(pcVar3,pcVar8);
       if (iVar5 == 0) {
-        pPVar6 = BG_GetHeldWeapon(&local_8->client->ps,(uint)(local_8->client->ps).weapon);
+        pPVar6 = BG_GetHeldWeapon(&pSelf->client->ps,(uint)(pSelf->client->ps).weapon);
         prVar7 = &pPVar6->options;
-        for (local_14 = 0; local_14 < 0x40; local_14 = local_14 + 1) {
+        for (i = 0; i < 0x40; i = i + 1) {
           uVar4 = (prVar7->field0_0x0).i;
           iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
           (prVar7->field0_0x0).i =
@@ -1151,13 +1202,13 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
         }
       }
       else {
-        pcVar10 = "lens";
+        pcVar8 = "lens";
         pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-        iVar5 = I_stricmp(pcVar3,pcVar10);
+        iVar5 = I_stricmp(pcVar3,pcVar8);
         if (iVar5 == 0) {
-          pPVar6 = BG_GetHeldWeapon(&local_8->client->ps,(uint)(local_8->client->ps).weapon);
+          pPVar6 = BG_GetHeldWeapon(&pSelf->client->ps,(uint)(pSelf->client->ps).weapon);
           prVar7 = &pPVar6->options;
-          for (local_20 = 0; local_20 < 0x40; local_20 = local_20 + 1) {
+          for (i_2 = 0; i_2 < 0x40; i_2 = i_2 + 1) {
             uVar4 = (prVar7->field0_0x0).i;
             iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
             (prVar7->field0_0x0).i =
@@ -1171,13 +1222,13 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
           }
         }
         else {
-          pcVar10 = "reticle";
+          pcVar8 = "reticle";
           pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-          iVar5 = I_stricmp(pcVar3,pcVar10);
+          iVar5 = I_stricmp(pcVar3,pcVar8);
           if (iVar5 == 0) {
-            pPVar6 = BG_GetHeldWeapon(&local_8->client->ps,(uint)(local_8->client->ps).weapon);
+            pPVar6 = BG_GetHeldWeapon(&pSelf->client->ps,(uint)(pSelf->client->ps).weapon);
             prVar7 = &pPVar6->options;
-            for (local_2c = 0; local_2c < 0x40; local_2c = local_2c + 1) {
+            for (i_3 = 0; i_3 < 0x40; i_3 = i_3 + 1) {
               uVar4 = (prVar7->field0_0x0).i;
               iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
               (prVar7->field0_0x0).i =
@@ -1191,13 +1242,13 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
             }
           }
           else {
-            pcVar10 = "reticle_color";
+            pcVar8 = "reticle_color";
             pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-            iVar5 = I_stricmp(pcVar3,pcVar10);
+            iVar5 = I_stricmp(pcVar3,pcVar8);
             if (iVar5 == 0) {
-              pPVar6 = BG_GetHeldWeapon(&local_8->client->ps,(uint)(local_8->client->ps).weapon);
+              pPVar6 = BG_GetHeldWeapon(&pSelf->client->ps,(uint)(pSelf->client->ps).weapon);
               prVar7 = &pPVar6->options;
-              for (local_38 = 0; local_38 < 0x40; local_38 = local_38 + 1) {
+              for (i_4 = 0; i_4 < 0x40; i_4 = i_4 + 1) {
                 uVar4 = (prVar7->field0_0x0).i;
                 iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
                 (prVar7->field0_0x0).i =
@@ -1212,13 +1263,13 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
               }
             }
             else {
-              pcVar10 = "emblem";
+              pcVar8 = "emblem";
               pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-              iVar5 = I_stricmp(pcVar3,pcVar10);
+              iVar5 = I_stricmp(pcVar3,pcVar8);
               if (iVar5 == 0) {
-                pPVar6 = BG_GetHeldWeapon(&local_8->client->ps,(uint)(local_8->client->ps).weapon);
+                pPVar6 = BG_GetHeldWeapon(&pSelf->client->ps,(uint)(pSelf->client->ps).weapon);
                 prVar7 = &pPVar6->options;
-                for (local_44 = 0; local_44 < 0x40; local_44 = local_44 + 1) {
+                for (i_5 = 0; i_5 < 0x40; i_5 = i_5 + 1) {
                   uVar4 = (prVar7->field0_0x0).i;
                   Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
                   (prVar7->field0_0x0).i =
@@ -1230,19 +1281,18 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
                 }
                 if (((prVar7->field0_0x0).i >> 0x15 & 0x1f) == 0) {
                   (prVar7->field0_0x0).i =
-                       (prVar7->field0_0x0).i & 0xfc1fffff |
-                       ((local_8->s).number + 1U & 0x1f) << 0x15;
+                       (prVar7->field0_0x0).i & 0xfc1fffff | ((pSelf->s).number + 1U & 0x1f) << 0x15
+                  ;
                 }
               }
               else {
-                pcVar10 = "tag";
+                pcVar8 = "tag";
                 pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-                iVar5 = I_stricmp(pcVar3,pcVar10);
+                iVar5 = I_stricmp(pcVar3,pcVar8);
                 if (iVar5 == 0) {
-                  pPVar6 = BG_GetHeldWeapon(&local_8->client->ps,(uint)(local_8->client->ps).weapon)
-                  ;
+                  pPVar6 = BG_GetHeldWeapon(&pSelf->client->ps,(uint)(pSelf->client->ps).weapon);
                   prVar7 = &pPVar6->options;
-                  for (local_50 = 0; local_50 < 0x40; local_50 = local_50 + 1) {
+                  for (i_6 = 0; i_6 < 0x40; i_6 = i_6 + 1) {
                     uVar4 = (prVar7->field0_0x0).i;
                     Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
                     (prVar7->field0_0x0).i =
@@ -1256,16 +1306,16 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
                   if (((prVar7->field0_0x0).i >> 0x15 & 0x1f) == 0) {
                     (prVar7->field0_0x0).i =
                          (prVar7->field0_0x0).i & 0xfc1fffff |
-                         ((local_8->s).number + 1U & 0x1f) << 0x15;
+                         ((pSelf->s).number + 1U & 0x1f) << 0x15;
                   }
                 }
                 else {
-                  pcVar10 = "facepaint_pattern";
+                  pcVar8 = "facepaint_pattern";
                   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-                  iVar5 = I_stricmp(pcVar3,pcVar10);
+                  iVar5 = I_stricmp(pcVar3,pcVar8);
                   if (iVar5 == 0) {
-                    prVar7 = &(local_8->client->ps).renderOptions;
-                    for (local_58 = 0; local_58 < 0x40; local_58 = local_58 + 1) {
+                    prVar7 = &(pSelf->client->ps).renderOptions;
+                    for (i_7 = 0; i_7 < 0x40; i_7 = i_7 + 1) {
                       uVar4 = (prVar7->field0_0x0).i;
                       iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
                       (prVar7->field0_0x0).i =
@@ -1280,10 +1330,10 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
                     }
                   }
                   else {
-                    uVar9 = 0;
+                    force_terminal = 0;
                     Scr_GetString(0,SCRIPTINSTANCE_SERVER);
                     pcVar3 = va("NextPlayerRenderOption: Unknown option name: \'%s\'");
-                    Scr_Error(pcVar3,(bool)uVar9);
+                    Scr_Error(pcVar3,(bool)force_terminal);
                   }
                 }
               }
@@ -1310,44 +1360,44 @@ void __cdecl PlayerCmd_NextPlayerRenderOption(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetHighlighted(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetHighlighted(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x270,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_8->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x271,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 != 1) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 != 1) {
     Scr_Error("SetHighlighted takes 1 argument: <true/false>",false);
   }
   return;
@@ -1361,50 +1411,51 @@ void __cdecl PlayerCmd_SetHighlighted(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsThrowingGrenade(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsThrowingGrenade(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *error;
+  scriptInstance_t inst;
   int local_10;
-  gentity_s *local_c;
+  gentity_s *pSelf;
+  bool isThrowingGrenade;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x28d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_c == (gentity_s *)0x0) &&
+  if ((pSelf == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x28e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_c->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x28f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_c->client->ps).weaponstate < 0x14) || (0x19 < (local_c->client->ps).weaponstate)) {
+  if (((pSelf->client->ps).weaponstate < 0x14) || (0x19 < (pSelf->client->ps).weaponstate)) {
     local_10 = 0;
   }
   else {
@@ -1422,38 +1473,40 @@ void __cdecl PlayerCmd_IsThrowingGrenade(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_takeWeapon(scr_entref_t param_1)
+void __cdecl PlayerCmd_takeWeapon(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  uint weaponIndex;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x299,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  BG_TakePlayerWeapon(&local_10->client->ps,uVar4);
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  BG_TakePlayerWeapon(&pSelf->client->ps,weaponIndex);
   return;
 }
 
@@ -1465,41 +1518,42 @@ void __cdecl PlayerCmd_takeWeapon(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_takeAllWeapons(scr_entref_t param_1)
+void __cdecl PlayerCmd_takeAllWeapons(scr_entref_t entref)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  int local_10;
-  gentity_s *local_c;
+  uint weaponIndex;
+  code *pcVar1;
+  bool bVar2;
+  char *error;
+  scriptInstance_t inst;
+  int slot;
+  gentity_s *pSelf;
+  uint weapIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0x2a6,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0x2a6,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_c->client->ps).weapon = 0;
-  for (local_10 = 0; local_10 < 0xf; local_10 = local_10 + 1) {
-    uVar1 = (local_c->client->ps).heldWeapons[local_10].weapon;
-    if (uVar1 != 0) {
-      BG_TakePlayerWeapon(&local_c->client->ps,uVar1);
+  (pSelf->client->ps).weapon = 0;
+  for (slot = 0; slot < 0xf; slot = slot + 1) {
+    weaponIndex = (pSelf->client->ps).heldWeapons[slot].weapon;
+    if (weaponIndex != 0) {
+      BG_TakePlayerWeapon(&pSelf->client->ps,weaponIndex);
     }
   }
   return;
@@ -1513,14 +1567,14 @@ void __cdecl PlayerCmd_takeAllWeapons(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl ClientPlaying(gentity_s *param_1)
+int __cdecl ClientPlaying(gentity_s *pSelf)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->client == (gclient_s *)0x0) {
+  if (pSelf->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                              ,0x2ba,0,"%s");
     if (!bVar2) {
@@ -1529,7 +1583,7 @@ int __cdecl ClientPlaying(gentity_s *param_1)
       return iVar3;
     }
   }
-  if ((param_1->client->sess).connected == CON_DISCONNECTED) {
+  if ((pSelf->client->sess).connected == CON_DISCONNECTED) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                              ,699,0,"%s");
     if (!bVar2) {
@@ -1538,7 +1592,7 @@ int __cdecl ClientPlaying(gentity_s *param_1)
       return iVar3;
     }
   }
-  return (uint)((param_1->client->sess).sessionState == SESS_STATE_PLAYING);
+  return (uint)((pSelf->client->sess).sessionState == SESS_STATE_PLAYING);
 }
 
 
@@ -1549,49 +1603,51 @@ int __cdecl ClientPlaying(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getCurrentWeapon(scr_entref_t param_1)
+void __cdecl PlayerCmd_getCurrentWeapon(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  uint uVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  uint weapon_00;
+  scriptInstance_t sVar5;
+  gentity_s *pSelf;
+  int weapon;
+  playerState_s *ps;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x2c6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = ClientPlaying(local_10);
+  iVar4 = ClientPlaying(pSelf);
   if (iVar4 == 0) {
     Scr_AddString("none",SCRIPTINSTANCE_SERVER);
   }
   else {
-    uVar5 = (uint)(local_10->client->ps).weapon;
-    if (uVar5 == 0) {
+    weapon_00 = (uint)(pSelf->client->ps).weapon;
+    if (weapon_00 == 0) {
       Scr_AddString("none",SCRIPTINSTANCE_SERVER);
     }
     else {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = BG_WeaponName(uVar5);
-      Scr_AddString(pcVar3,sVar6);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      pcVar3 = BG_WeaponName(weapon_00);
+      Scr_AddString(pcVar3,sVar5);
     }
   }
   return;
@@ -1605,7 +1661,7 @@ void __cdecl PlayerCmd_getCurrentWeapon(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getCurrentOffhand(scr_entref_t param_1)
+void __cdecl PlayerCmd_getCurrentOffhand(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -1613,18 +1669,18 @@ void __cdecl PlayerCmd_getCurrentOffhand(scr_entref_t param_1)
   char *pcVar3;
   int iVar4;
   scriptInstance_t sVar5;
-  gentity_s *local_8;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x2dd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
       sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
       Scr_ObjectError(pcVar3,sVar5);
@@ -1632,18 +1688,18 @@ void __cdecl PlayerCmd_getCurrentOffhand(scr_entref_t param_1)
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = ClientPlaying(local_8);
+  iVar4 = ClientPlaying(pSelf);
   if (iVar4 == 0) {
     Scr_AddString("none",SCRIPTINSTANCE_SERVER);
   }
-  else if ((local_8->client->ps).offHandIndex < 1) {
+  else if ((pSelf->client->ps).offHandIndex < 1) {
     Scr_AddString("none",SCRIPTINSTANCE_SERVER);
   }
   else {
     sVar5 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = BG_WeaponName((local_8->client->ps).offHandIndex);
+    pcVar3 = BG_WeaponName((pSelf->client->ps).offHandIndex);
     Scr_AddString(pcVar3,sVar5);
   }
   return;
@@ -1657,44 +1713,47 @@ void __cdecl PlayerCmd_getCurrentOffhand(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setOffhandSecondaryClass(scr_entref_t param_1)
+void __cdecl PlayerCmd_setOffhandSecondaryClass(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_14;
+  uint weaponIndex;
+  WeaponDef *pWVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
+  WeaponDef *weapDef;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x300,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = BG_FindWeaponIndexForName(pcVar3);
-  pWVar5 = BG_GetWeaponDef(uVar4);
-  if (pWVar5->offhandClass == OFFHAND_CLASS_SMOKE_GRENADE) {
-    (local_14->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_SMOKE;
+  weaponIndex = BG_FindWeaponIndexForName(pcVar3);
+  pWVar4 = BG_GetWeaponDef(weaponIndex);
+  if (pWVar4->offhandClass == OFFHAND_CLASS_SMOKE_GRENADE) {
+    (pSelf->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_SMOKE;
   }
-  else if (pWVar5->offhandClass == OFFHAND_CLASS_FLASH_GRENADE) {
-    (local_14->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_FLASH;
+  else if (pWVar4->offhandClass == OFFHAND_CLASS_FLASH_GRENADE) {
+    (pSelf->client->ps).offhandSecondary = PLAYER_OFFHAND_SECONDARY_FLASH;
   }
   else {
     Scr_Error("Invalid class to set Secondary offhand to.\n",false);
@@ -1710,45 +1769,48 @@ void __cdecl PlayerCmd_setOffhandSecondaryClass(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setOffhandPrimaryClass(scr_entref_t param_1)
+void __cdecl PlayerCmd_setOffhandPrimaryClass(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_14;
+  uint weaponIndex;
+  WeaponDef *pWVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
+  WeaponDef *weapDef;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x324,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = BG_FindWeaponIndexForName(pcVar3);
-  pWVar5 = BG_GetWeaponDef(uVar4);
-  if (pWVar5->offhandClass == OFFHAND_CLASS_FRAG_GRENADE) {
-    (local_14->client->ps).offhandPrimary = PLAYER_OFFHAND_PRIMARY_FRAG;
+  weaponIndex = BG_FindWeaponIndexForName(pcVar3);
+  pWVar4 = BG_GetWeaponDef(weaponIndex);
+  if (pWVar4->offhandClass == OFFHAND_CLASS_FRAG_GRENADE) {
+    (pSelf->client->ps).offhandPrimary = PLAYER_OFFHAND_PRIMARY_FRAG;
     Scr_AddString("frag",SCRIPTINSTANCE_SERVER);
   }
-  else if (pWVar5->offhandClass == OFFHAND_CLASS_GEAR) {
-    (local_14->client->ps).offhandPrimary = PLAYER_OFFHAND_PRIMARY_GEAR;
+  else if (pWVar4->offhandClass == OFFHAND_CLASS_GEAR) {
+    (pSelf->client->ps).offhandPrimary = PLAYER_OFFHAND_PRIMARY_GEAR;
     Scr_AddString("gear",SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1765,39 +1827,39 @@ void __cdecl PlayerCmd_setOffhandPrimaryClass(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getOffhandSecondaryClass(scr_entref_t param_1)
+void __cdecl PlayerCmd_getOffhandSecondaryClass(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x33b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_8->client->ps).offhandSecondary == PLAYER_OFFHAND_SECONDARY_FLASH) {
+  if ((pSelf->client->ps).offhandSecondary == PLAYER_OFFHAND_SECONDARY_FLASH) {
     Scr_AddConstString((uint)scr_const.flash,SCRIPTINSTANCE_SERVER);
   }
   else {
-    if (((local_8->client->ps).offhandSecondary != PLAYER_OFFHAND_SECONDARY_SMOKE) &&
+    if (((pSelf->client->ps).offhandSecondary != PLAYER_OFFHAND_SECONDARY_SMOKE) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x343,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1817,39 +1879,42 @@ void __cdecl PlayerCmd_getOffhandSecondaryClass(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_hasWeapon(scr_entref_t param_1)
+void __cdecl PlayerCmd_hasWeapon(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  uint weaponIndex;
+  int iVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x34e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = BG_FindWeaponIndexForName(pcVar3);
-  if ((uVar4 == 0) || (iVar5 = BG_PlayerHasWeapon(&local_10->client->ps,uVar4), iVar5 == 0)) {
+  weaponIndex = BG_FindWeaponIndexForName(pcVar3);
+  if ((weaponIndex == 0) || (iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex), iVar4 == 0)
+     ) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -1861,68 +1926,71 @@ void __cdecl PlayerCmd_hasWeapon(scr_entref_t param_1)
 
 // 00604BF0  PlayerCmd_switchToWeapon  (game_mp/g_client_script_cmd_mp.cpp:859)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_switchToWeapon(scr_entref_t param_1)
+void __cdecl PlayerCmd_switchToWeapon(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  client_t *pcVar6;
-  scriptInstance_t sVar7;
-  gentity_s *local_10;
+  uint weaponIndex;
+  int iVar4;
+  client_t *bot;
+  scriptInstance_t sVar5;
+  client_t *cl;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x360,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar7);
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  if (uVar4 == 0) {
-    sVar7 = SCRIPTINSTANCE_SERVER;
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  if (weaponIndex == 0) {
+    sVar5 = SCRIPTINSTANCE_SERVER;
     pcVar3 = va("unknown weapon \'%s\'");
-    Scr_ParamError(0,pcVar3,sVar7);
+    Scr_ParamError(0,pcVar3,sVar5);
   }
-  pcVar6 = (client_t *)((local_10->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar6->bIsTestClient == 0) {
-    iVar5 = BG_PlayerHasWeapon(&local_10->client->ps,uVar4);
-    if (iVar5 == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
+    iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+    if (iVar4 == 0) {
       Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
     }
     else {
-      G_SelectWeaponIndex((uint)param_1.entnum,uVar4);
+      G_SelectWeaponIndex((uint)entref.entnum,weaponIndex);
       Scr_AddBool(1,SCRIPTINSTANCE_SERVER);
     }
   }
   else {
-    iVar5 = BG_PlayerHasWeapon(&local_10->client->ps,uVar4);
-    if (iVar5 == 0) {
+    iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+    if (iVar4 == 0) {
       Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
     }
     else {
-      SV_BotSwitchWeapon(pcVar6,uVar4);
+      SV_BotSwitchWeapon(bot,weaponIndex);
       Scr_AddBool(1,SCRIPTINSTANCE_SERVER);
     }
   }
@@ -1937,49 +2005,51 @@ void __cdecl PlayerCmd_switchToWeapon(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_switchToOffhand(scr_entref_t param_1)
+void __cdecl PlayerCmd_switchToOffhand(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  uint weaponIndex;
+  int iVar4;
+  scriptInstance_t sVar5;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x388,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  if (uVar4 == 0) {
-    sVar6 = SCRIPTINSTANCE_SERVER;
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  if (weaponIndex == 0) {
+    sVar5 = SCRIPTINSTANCE_SERVER;
     pcVar3 = va("unknown weapon \'%s\'");
-    Scr_ParamError(0,pcVar3,sVar6);
+    Scr_ParamError(0,pcVar3,sVar5);
   }
-  iVar5 = BG_PlayerHasWeapon(&local_10->client->ps,uVar4);
-  if (iVar5 == 0) {
+  iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+  if (iVar4 == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    G_SetEquippedOffHand((uint)param_1.entnum,uVar4);
+    G_SetEquippedOffHand((uint)entref.entnum,weaponIndex);
     Scr_AddBool(1,SCRIPTINSTANCE_SERVER);
   }
   return;
@@ -1993,37 +2063,38 @@ void __cdecl PlayerCmd_switchToOffhand(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getLockOnRadius(scr_entref_t param_1)
+void __cdecl PlayerCmd_getLockOnRadius(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  WeaponDef *pWVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  WeaponDef *pWVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  WeaponDef *weapDef;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x3a6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pWVar4 = BG_GetWeaponDef((uint)(local_c->client->ps).weapon);
-  Scr_AddInt(pWVar4->lockOnRadius,SCRIPTINSTANCE_SERVER);
+  pWVar3 = BG_GetWeaponDef((uint)(pSelf->client->ps).weapon);
+  Scr_AddInt(pWVar3->lockOnRadius,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2035,37 +2106,38 @@ void __cdecl PlayerCmd_getLockOnRadius(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getLockOnSpeed(scr_entref_t param_1)
+void __cdecl PlayerCmd_getLockOnSpeed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  WeaponDef *pWVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  WeaponDef *pWVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  WeaponDef *weapDef;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x3ba,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pWVar4 = BG_GetWeaponDef((uint)(local_c->client->ps).weapon);
-  Scr_AddInt(pWVar4->lockOnSpeed,SCRIPTINSTANCE_SERVER);
+  pWVar3 = BG_GetWeaponDef((uint)(pSelf->client->ps).weapon);
+  Scr_AddInt(pWVar3->lockOnSpeed,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2077,44 +2149,46 @@ void __cdecl PlayerCmd_getLockOnSpeed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_giveStartAmmo(scr_entref_t param_1)
+void __cdecl PlayerCmd_giveStartAmmo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar uVar3;
-  char *pcVar4;
-  uint uVar5;
-  int iVar6;
-  scriptInstance_t sVar7;
-  gentity_s *local_10;
+  uchar weaponModel;
+  char *pcVar3;
+  uint weaponIndex;
+  int iVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x3c7,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar7);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar5 = G_GetWeaponIndexForName(pcVar4);
-  iVar6 = BG_PlayerHasWeapon(&local_10->client->ps,uVar5);
-  if (iVar6 != 0) {
-    iVar6 = 0;
-    uVar3 = BG_GetPlayerWeaponModel(&local_10->client->ps,uVar5);
-    G_InitializeAmmo(local_10,uVar5,uVar3,iVar6);
+  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+  if (iVar4 != 0) {
+    iVar4 = 0;
+    weaponModel = BG_GetPlayerWeaponModel(&pSelf->client->ps,weaponIndex);
+    G_InitializeAmmo(pSelf,weaponIndex,weaponModel,iVar4);
   }
   return;
 }
@@ -2127,50 +2201,55 @@ void __cdecl PlayerCmd_giveStartAmmo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_giveMaxAmmo(scr_entref_t param_1)
+void __cdecl PlayerCmd_giveMaxAmmo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar uVar3;
-  char *pcVar4;
-  uint uVar5;
-  int iVar6;
-  int iVar7;
-  scriptInstance_t sVar8;
-  gentity_s *local_1c;
+  uchar weaponModel;
+  char *pcVar3;
+  uint weaponIndex_00;
+  int iVar4;
+  int iVar5;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *weaponName;
+  int maxWeaponAmmo;
+  int weaponIndex;
+  int ammoGive;
+  WeaponDef *weapDef;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x3d9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_1c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar8 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar8);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_1c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar5 = G_GetWeaponIndexForName(pcVar4);
-  iVar6 = BG_PlayerHasWeapon(&local_1c->client->ps,uVar5);
-  if (iVar6 != 0) {
-    iVar6 = BG_GetAmmoPlayerMax(&local_1c->client->ps,uVar5,0);
-    BG_GetWeaponDef(uVar5);
-    iVar7 = BG_GetAmmoNotInClip(&local_1c->client->ps,uVar5);
-    iVar6 = iVar6 - iVar7;
-    if (0 < iVar6) {
-      iVar7 = 0;
-      uVar3 = BG_GetPlayerWeaponModel(&local_1c->client->ps,uVar5);
-      Add_Ammo(local_1c,uVar5,uVar3,iVar6,iVar7);
+  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex_00 = G_GetWeaponIndexForName(pcVar3);
+  iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex_00);
+  if (iVar4 != 0) {
+    iVar4 = BG_GetAmmoPlayerMax(&pSelf->client->ps,weaponIndex_00,0);
+    BG_GetWeaponDef(weaponIndex_00);
+    iVar5 = BG_GetAmmoNotInClip(&pSelf->client->ps,weaponIndex_00);
+    iVar4 = iVar4 - iVar5;
+    if (0 < iVar4) {
+      iVar5 = 0;
+      weaponModel = BG_GetPlayerWeaponModel(&pSelf->client->ps,weaponIndex_00);
+      Add_Ammo(pSelf,weaponIndex_00,weaponModel,iVar4,iVar5);
     }
   }
   return;
@@ -2184,56 +2263,60 @@ void __cdecl PlayerCmd_giveMaxAmmo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getFractionStartAmmo(scr_entref_t param_1)
+void __cdecl PlayerCmd_getFractionStartAmmo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
+  uint weaponIndex;
+  int iVar4;
   int iVar5;
-  int iVar6;
-  scriptInstance_t sVar7;
-  gentity_s *local_14;
+  scriptInstance_t inst;
+  int startAmmo;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
+  float fAmmoFrac;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x3ee,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar7);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  iVar5 = BG_PlayerHasWeapon(&local_14->client->ps,uVar4);
-  if (iVar5 == 0) {
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+  if (iVar4 == 0) {
     Scr_AddFloat(1.0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    iVar5 = BG_GetStartAmmo(uVar4);
-    if (iVar5 < 1) {
+    iVar4 = BG_GetStartAmmo(weaponIndex);
+    if (iVar4 < 1) {
       Scr_AddFloat(1.0,SCRIPTINSTANCE_SERVER);
     }
     else {
-      iVar6 = BG_GetAmmoNotInClip(&local_14->client->ps,uVar4);
-      if (iVar6 < 1) {
+      iVar5 = BG_GetAmmoNotInClip(&pSelf->client->ps,weaponIndex);
+      if (iVar5 < 1) {
         Scr_AddFloat(0.0,SCRIPTINSTANCE_SERVER);
       }
       else {
-        iVar6 = BG_GetAmmoNotInClip(&local_14->client->ps,uVar4);
-        Scr_AddFloat((float)iVar6 / (float)iVar5,SCRIPTINSTANCE_SERVER);
+        iVar5 = BG_GetAmmoNotInClip(&pSelf->client->ps,weaponIndex);
+        Scr_AddFloat((float)iVar5 / (float)iVar4,SCRIPTINSTANCE_SERVER);
       }
     }
   }
@@ -2248,56 +2331,60 @@ void __cdecl PlayerCmd_getFractionStartAmmo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getFractionMaxAmmo(scr_entref_t param_1)
+void __cdecl PlayerCmd_getFractionMaxAmmo(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
+  uint weaponIndex;
+  int iVar4;
   int iVar5;
-  int iVar6;
-  scriptInstance_t sVar7;
-  gentity_s *local_14;
+  scriptInstance_t inst;
+  int maxAmmo;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
+  float fAmmoFrac;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x40e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar7);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  iVar5 = BG_PlayerHasWeapon(&local_14->client->ps,uVar4);
-  if (iVar5 == 0) {
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  iVar4 = BG_PlayerHasWeapon(&pSelf->client->ps,weaponIndex);
+  if (iVar4 == 0) {
     Scr_AddFloat(1.0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    iVar5 = BG_GetMaxAmmo(uVar4);
-    if (iVar5 < 1) {
+    iVar4 = BG_GetMaxAmmo(weaponIndex);
+    if (iVar4 < 1) {
       Scr_AddFloat(1.0,SCRIPTINSTANCE_SERVER);
     }
     else {
-      iVar6 = BG_GetAmmoNotInClip(&local_14->client->ps,uVar4);
-      if (iVar6 < 1) {
+      iVar5 = BG_GetAmmoNotInClip(&pSelf->client->ps,weaponIndex);
+      if (iVar5 < 1) {
         Scr_AddFloat(0.0,SCRIPTINSTANCE_SERVER);
       }
       else {
-        iVar6 = BG_GetAmmoNotInClip(&local_14->client->ps,uVar4);
-        Scr_AddFloat((float)iVar6 / (float)iVar5,SCRIPTINSTANCE_SERVER);
+        iVar5 = BG_GetAmmoNotInClip(&pSelf->client->ps,weaponIndex);
+        Scr_AddFloat((float)iVar5 / (float)iVar4,SCRIPTINSTANCE_SERVER);
       }
     }
   }
@@ -2312,52 +2399,52 @@ void __cdecl PlayerCmd_getFractionMaxAmmo(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setOrigin(scr_entref_t param_1)
+void __cdecl PlayerCmd_setOrigin(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_14;
-  float local_10;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float vNewOrigin;
   float local_c;
   float local_8;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x42c,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  SV_UnlinkEntity(local_14);
-  pgVar1 = local_14->client;
-  (pgVar1->ps).origin[0] = local_10;
+  Scr_GetVector(0,&vNewOrigin,SCRIPTINSTANCE_SERVER);
+  SV_UnlinkEntity(pSelf);
+  pgVar1 = pSelf->client;
+  (pgVar1->ps).origin[0] = vNewOrigin;
   (pgVar1->ps).origin[1] = local_c;
   (pgVar1->ps).origin[2] = local_8;
-  (local_14->client->ps).origin[2] = (local_14->client->ps).origin[2] + 1.0;
-  (local_14->client->ps).eFlags = (local_14->client->ps).eFlags ^ 2;
-  BG_PlayerStateToEntityState(&local_14->client->ps,&local_14->s,1,'\x01');
-  pgVar1 = local_14->client;
-  (local_14->r).currentOrigin[0] = (pgVar1->ps).origin[0];
-  (local_14->r).currentOrigin[1] = (pgVar1->ps).origin[1];
-  (local_14->r).currentOrigin[2] = (pgVar1->ps).origin[2];
-  SV_LinkEntity(local_14);
+  (pSelf->client->ps).origin[2] = (pSelf->client->ps).origin[2] + 1.0;
+  (pSelf->client->ps).eFlags = (pSelf->client->ps).eFlags ^ 2;
+  BG_PlayerStateToEntityState(&pSelf->client->ps,&pSelf->s,1,'\x01');
+  pgVar1 = pSelf->client;
+  (pSelf->r).currentOrigin[0] = (pgVar1->ps).origin[0];
+  (pSelf->r).currentOrigin[1] = (pgVar1->ps).origin[1];
+  (pSelf->r).currentOrigin[2] = (pgVar1->ps).origin[2];
+  SV_LinkEntity(pSelf);
   return;
 }
 
@@ -2369,41 +2456,41 @@ void __cdecl PlayerCmd_setOrigin(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetVelocity(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetVelocity(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_14;
-  float local_10;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float vel;
   float local_c;
   float local_8;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x446,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,&local_10,SCRIPTINSTANCE_SERVER);
-  pgVar1 = local_14->client;
-  (pgVar1->ps).velocity[0] = local_10;
+  Scr_GetVector(0,&vel,SCRIPTINSTANCE_SERVER);
+  pgVar1 = pSelf->client;
+  (pgVar1->ps).velocity[0] = vel;
   (pgVar1->ps).velocity[1] = local_c;
   (pgVar1->ps).velocity[2] = local_8;
   return;
@@ -2417,39 +2504,39 @@ void __cdecl PlayerCmd_SetVelocity(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setAngles(scr_entref_t param_1)
+void __cdecl PlayerCmd_setAngles(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_14;
-  float local_10 [3];
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float angles [3];
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x45d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  SetClientViewAngle(local_14,local_10);
-  if (local_14->tagInfo == (tagInfo_s *)0x0) {
-    (local_14->r).currentAngles[0] = 0.0;
+  Scr_GetVector(0,angles,SCRIPTINSTANCE_SERVER);
+  SetClientViewAngle(pSelf,angles);
+  if (pSelf->tagInfo == (tagInfo_s *)0x0) {
+    (pSelf->r).currentAngles[0] = 0.0;
   }
   return;
 }
@@ -2462,35 +2549,35 @@ void __cdecl PlayerCmd_setAngles(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_getAngles(scr_entref_t param_1)
+void __cdecl PlayerCmd_getAngles(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x469,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_AddVector((local_8->client->ps).viewangles,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector((pSelf->client->ps).viewangles,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -2502,37 +2589,38 @@ void __cdecl PlayerCmd_getAngles(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CameraActivate(scr_entref_t param_1)
+void __cdecl PlayerCmd_CameraActivate(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_c;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int flags;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x47e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   pcVar3 = va("%c %i");
-  SV_GameSendServerCommand((uint)(local_c->s).clientNum,SV_CMD_RELIABLE,pcVar3);
+  SV_GameSendServerCommand((uint)(pSelf->s).clientNum,SV_CMD_RELIABLE,pcVar3);
   return;
 }
 
@@ -2544,7 +2632,7 @@ void __cdecl PlayerCmd_CameraActivate(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CameraSetPosition(scr_entref_t param_1)
+void __cdecl PlayerCmd_CameraSetPosition(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -2552,42 +2640,43 @@ void __cdecl PlayerCmd_CameraSetPosition(scr_entref_t param_1)
   char *pcVar3;
   int iVar4;
   uint uVar5;
-  scriptInstance_t sVar6;
-  float local_20 [3];
-  float local_14 [3];
-  gentity_s *local_8;
+  scriptInstance_t inst;
+  gentity_s *ent;
+  float origin [3];
+  float angles [3];
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x49b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar4 == 4) {
-    Scr_GetVector(0,local_20,SCRIPTINSTANCE_SERVER);
-    local_14[0] = 0.0;
-    local_14[1] = 0.0;
-    local_14[2] = 0.0;
+    Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
+    angles[0] = 0.0;
+    angles[1] = 0.0;
+    angles[2] = 0.0;
     uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if ((1 < uVar5) && (iVar4 = Scr_GetType(1,SCRIPTINSTANCE_SERVER), iVar4 == 4)) {
-      Scr_GetVector(1,local_14,SCRIPTINSTANCE_SERVER);
+      Scr_GetVector(1,angles,SCRIPTINSTANCE_SERVER);
     }
     pcVar3 = va("%c %i %f %f %f %f %f %f");
-    SV_GameSendServerCommand((uint)(local_8->s).clientNum,SV_CMD_RELIABLE,pcVar3);
+    SV_GameSendServerCommand((uint)(pSelf->s).clientNum,SV_CMD_RELIABLE,pcVar3);
   }
   else {
     iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
@@ -2600,7 +2689,7 @@ void __cdecl PlayerCmd_CameraSetPosition(scr_entref_t param_1)
     }
     Scr_GetEntity(0);
     pcVar3 = va("%c %i %i");
-    SV_GameSendServerCommand((uint)(local_8->s).clientNum,SV_CMD_RELIABLE,pcVar3);
+    SV_GameSendServerCommand((uint)(pSelf->s).clientNum,SV_CMD_RELIABLE,pcVar3);
   }
   return;
 }
@@ -2613,7 +2702,7 @@ void __cdecl PlayerCmd_CameraSetPosition(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CameraSetLookAt(scr_entref_t param_1)
+void __cdecl PlayerCmd_CameraSetLookAt(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -2621,40 +2710,41 @@ void __cdecl PlayerCmd_CameraSetLookAt(scr_entref_t param_1)
   char *pcVar3;
   uint uVar4;
   int iVar5;
-  scriptInstance_t sVar6;
-  float local_14 [3];
-  gentity_s *local_8;
+  scriptInstance_t inst;
+  gentity_s *ent;
+  float origin [3];
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x4c6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 0) {
     pcVar3 = va("%c %i");
-    SV_GameSendServerCommand((uint)(local_8->s).clientNum,SV_CMD_RELIABLE,pcVar3);
+    SV_GameSendServerCommand((uint)(pSelf->s).clientNum,SV_CMD_RELIABLE,pcVar3);
   }
   else {
     iVar5 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
     if (iVar5 == 4) {
-      Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
+      Scr_GetVector(0,origin,SCRIPTINSTANCE_SERVER);
       pcVar3 = va("%c %i %f %f %f");
-      SV_GameSendServerCommand((uint)(local_8->s).clientNum,SV_CMD_RELIABLE,pcVar3);
+      SV_GameSendServerCommand((uint)(pSelf->s).clientNum,SV_CMD_RELIABLE,pcVar3);
     }
     else {
       iVar5 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
@@ -2675,7 +2765,7 @@ void __cdecl PlayerCmd_CameraSetLookAt(scr_entref_t param_1)
       }
       Scr_GetEntity(0);
       pcVar3 = va("%c %i %i");
-      SV_GameSendServerCommand((uint)(local_8->s).clientNum,SV_CMD_RELIABLE,pcVar3);
+      SV_GameSendServerCommand((uint)(pSelf->s).clientNum,SV_CMD_RELIABLE,pcVar3);
     }
   }
   return;
@@ -2690,64 +2780,63 @@ void __cdecl PlayerCmd_CameraSetLookAt(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_Revive(scr_entref_t param_1)
+void __cdecl PlayerCmd_Revive(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_920;
-  pmove_t local_91c;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  pmove_t pm;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x4f4,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_920 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_920 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pmove_t::pmove_t(&local_91c,
-                   (pmove_t *)(&g_pmove + (uint)(local_920->client->ps).clientNum * 0x910));
-  local_920->client->lastStand = 0;
-  local_920->client->revive = 0;
-  (local_920->client->ps).pm_type = 8;
-  local_920->health = (local_920->client->sess).maxHealth;
-  local_920->client->damage_blood = 0;
-  bVar2 = bitarray<51>::testBit(&local_91c.cmd.button_bits,9);
+  pmove_t::pmove_t(&pm,(pmove_t *)(&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910));
+  pSelf->client->lastStand = 0;
+  pSelf->client->revive = 0;
+  (pSelf->client->ps).pm_type = 8;
+  pSelf->health = (pSelf->client->sess).maxHealth;
+  pSelf->client->damage_blood = 0;
+  bVar2 = bitarray<51>::testBit(&pm.cmd.button_bits,9);
   if (bVar2) {
-    BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(local_920->client->ps).clientNum * 0x910),
+    BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
                        ANIM_ET_LASTSTAND_TO_CROUCH,0,1);
   }
   else {
-    bVar2 = bitarray<51>::testBit(&local_91c.cmd.button_bits,8);
+    bVar2 = bitarray<51>::testBit(&pm.cmd.button_bits,8);
     if (bVar2) {
-      BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(local_920->client->ps).clientNum * 0x910),
+      BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
                          ANIM_ET_LASTSTAND_TO_PRONE,0,1);
     }
     else {
-      BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(local_920->client->ps).clientNum * 0x910),
+      BG_AnimScriptEvent((pmove_t *)(&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
                          ANIM_ET_LASTSTAND_TO_STAND,0,1);
     }
   }
-  AssignToSmallerType<unsigned_short>(&(local_920->client->ps).lastStandPrevWeapon,0);
-  (local_920->client->ps).damageTimer = 0;
-  (local_920->client->ps).damageDuration = 0;
-  local_920->client->damage_fromWorld = 0;
+  AssignToSmallerType<unsigned_short>(&(pSelf->client->ps).lastStandPrevWeapon,0);
+  (pSelf->client->ps).damageTimer = 0;
+  (pSelf->client->ps).damageDuration = 0;
+  pSelf->client->damage_fromWorld = 0;
   return;
 }
 
@@ -2759,39 +2848,39 @@ void __cdecl PlayerCmd_Revive(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_useButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_useButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x51b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if (((local_8->client->ps).pm_flags & 0x400000U) == 0) {
-    bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,3);
-    if ((((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,3), bVar2)) ||
-        (bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,5), bVar2)) ||
-       (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,5), bVar2)) {
+  if (((pSelf->client->ps).pm_flags & 0x400000U) == 0) {
+    bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,3);
+    if ((((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,3), bVar2)) ||
+        (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,5), bVar2)) ||
+       (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,5), bVar2)) {
       Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
     }
     else {
@@ -2812,36 +2901,36 @@ void __cdecl PlayerCmd_useButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_ChangeSeatButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_ChangeSeatButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x536,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0x1c);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0x1c), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0x1c);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0x1c), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -2858,36 +2947,36 @@ void __cdecl PlayerCmd_ChangeSeatButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_attackButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_attackButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x54a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -2904,36 +2993,36 @@ void __cdecl PlayerCmd_attackButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_actionSlotOneButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_actionSlotOneButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x55f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0x2d);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0x2d), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0x2d);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0x2d), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -2950,36 +3039,36 @@ void __cdecl PlayerCmd_actionSlotOneButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_actionSlotTwoButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_actionSlotTwoButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x574,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0x2e);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0x2e), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0x2e);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0x2e), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -2996,36 +3085,36 @@ void __cdecl PlayerCmd_actionSlotTwoButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_actionSlotThreeButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_actionSlotThreeButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x589,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0x2f);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0x2f), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0x2f);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0x2f), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3042,36 +3131,36 @@ void __cdecl PlayerCmd_actionSlotThreeButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_actionSlotFourButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_actionSlotFourButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x59e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0x30);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0x30), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0x30);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0x30), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3088,36 +3177,36 @@ void __cdecl PlayerCmd_actionSlotFourButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_adsButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_adsButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x5b3,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0xb);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0xb), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0xb);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0xb), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3134,36 +3223,36 @@ void __cdecl PlayerCmd_adsButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_throwButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_throwButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x5c8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0x18);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0x18), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0x18);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0x18), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3180,36 +3269,36 @@ void __cdecl PlayerCmd_throwButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_meleeButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_meleeButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x5dd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,2);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,2), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,2);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,2), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3226,36 +3315,36 @@ void __cdecl PlayerCmd_meleeButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_jumpButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_jumpButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x5f2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,10);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,10), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,10);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,10), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3272,36 +3361,36 @@ void __cdecl PlayerCmd_jumpButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_fragButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_fragButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x607,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0xe);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0xe), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0xe);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0xe), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3318,36 +3407,36 @@ void __cdecl PlayerCmd_fragButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_secondaryOffhandButtonPressed(scr_entref_t param_1)
+void __cdecl PlayerCmd_secondaryOffhandButtonPressed(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x61d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  bVar2 = bitarray<51>::testBit(&local_8->client->button_bitsSinceLastFrame,0xf);
-  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&local_8->client->button_bits,0xf), bVar2)) {
+  bVar2 = bitarray<51>::testBit(&pSelf->client->button_bitsSinceLastFrame,0xf);
+  if ((bVar2) || (bVar2 = bitarray<51>::testBit(&pSelf->client->button_bits,0xf), bVar2)) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -3364,27 +3453,30 @@ void __cdecl PlayerCmd_secondaryOffhandButtonPressed(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_buttonPressedDEVONLY(scr_entref_t param_1)
+void __cdecl PlayerCmd_buttonPressedDEVONLY(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  scriptInstance_t sVar5;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int buttonPressed;
+  char *button;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x63b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
@@ -3419,35 +3511,35 @@ void __cdecl PlayerCmd_buttonPressedDEVONLY(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_playerADS(scr_entref_t param_1)
+void __cdecl PlayerCmd_playerADS(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x661,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_AddFloat((local_8->client->ps).fWeaponPosFrac,SCRIPTINSTANCE_SERVER);
+  Scr_AddFloat((pSelf->client->ps).fWeaponPosFrac,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -3459,36 +3551,36 @@ void __cdecl PlayerCmd_playerADS(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_pingPlayer(scr_entref_t param_1)
+void __cdecl PlayerCmd_pingPlayer(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x673,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).eFlags = (local_8->client->ps).eFlags | 0x400000;
-  local_8->client->compassPingTime = level.time + 3000;
+  (pSelf->client->ps).eFlags = (pSelf->client->ps).eFlags | 0x400000;
+  pSelf->client->compassPingTime = level.time + 3000;
   return;
 }
 
@@ -3500,34 +3592,36 @@ void __cdecl PlayerCmd_pingPlayer(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetViewmodel(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetViewmodel(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *modelName;
+  int modelIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x67f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   if ((pcVar3 == (char *)0x0) || (*pcVar3 == '\0')) {
@@ -3541,7 +3635,7 @@ void __cdecl PlayerCmd_SetViewmodel(scr_entref_t param_1)
     (*pcVar1)();
     return;
   }
-  (local_10->client->sess).viewmodelIndex = uVar4;
+  (pSelf->client->sess).viewmodelIndex = uVar4;
   return;
 }
 
@@ -3553,37 +3647,38 @@ void __cdecl PlayerCmd_SetViewmodel(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetViewmodel(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetViewmodel(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  uint value;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  uint modelName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x69b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = G_ModelName((local_c->client->sess).viewmodelIndex);
-  Scr_AddConstString(uVar4,SCRIPTINSTANCE_SERVER);
+  value = G_ModelName((pSelf->client->sess).viewmodelIndex);
+  Scr_AddConstString(value,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -3595,43 +3690,45 @@ void __cdecl PlayerCmd_GetViewmodel(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setSpawnWeapon(scr_entref_t param_1)
+void __cdecl PlayerCmd_setSpawnWeapon(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  uint weaponIndex;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  char *pszWeaponName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x6b1,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  bVar2 = BG_IsWeaponValid(&local_10->client->ps,uVar4);
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  bVar2 = BG_IsWeaponValid(&pSelf->client->ps,weaponIndex);
   if (bVar2) {
-    AssignToSmallerType<unsigned_short>(&(local_10->client->ps).weapon,uVar4);
-    (local_10->client->ps).weaponstate = 0;
-    BG_PlayerSetEverHadWeapon(&local_10->client->ps,uVar4,true);
-    G_SelectWeaponIndex((uint)param_1.entnum,uVar4);
+    AssignToSmallerType<unsigned_short>(&(pSelf->client->ps).weapon,weaponIndex);
+    (pSelf->client->ps).weaponstate = 0;
+    BG_PlayerSetEverHadWeapon(&pSelf->client->ps,weaponIndex,true);
+    G_SelectWeaponIndex((uint)entref.entnum,weaponIndex);
   }
   return;
 }
@@ -3644,63 +3741,66 @@ void __cdecl PlayerCmd_setSpawnWeapon(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_dropItem(scr_entref_t param_1)
+void __cdecl PlayerCmd_dropItem(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar uVar3;
-  char *pcVar4;
-  uint uVar5;
-  uint uVar6;
-  gitem_s *pgVar7;
-  scriptInstance_t sVar8;
-  gentity_s *local_1c;
-  uint local_10;
-  gentity_s *local_c;
+  uchar weaponModel;
+  char *pcVar3;
+  uint weaponIndex;
+  uint uVar4;
+  gitem_s *item;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iWeaponIndex;
+  gitem_s *pItem;
+  uint dropTag;
+  gentity_s *pDroppedItem;
+  char *pszItemName;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x6d5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_1c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar8 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar8);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_1c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar5 = G_GetWeaponIndexForName(pcVar4);
-  if (uVar5 == 0) {
-    pgVar7 = G_FindItem(pcVar4,0);
-    if (pgVar7 == (gitem_s *)0x0) {
-      local_c = (gentity_s *)0x0;
+  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  if (weaponIndex == 0) {
+    item = G_FindItem(pcVar3,0);
+    if (item == (gitem_s *)0x0) {
+      pDroppedItem = (gentity_s *)0x0;
     }
     else {
-      local_c = Drop_Item(local_1c,pgVar7,0.0,0);
+      pDroppedItem = Drop_Item(pSelf,item,0.0,0);
     }
   }
   else {
-    uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (uVar6 < 2) {
-      local_10 = (uint)scr_const.tag_weapon_right;
+    uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+    if (uVar4 < 2) {
+      dropTag = (uint)scr_const.tag_weapon_right;
     }
     else {
-      local_10 = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER);
+      dropTag = Scr_GetConstLowercaseString(1,SCRIPTINSTANCE_SERVER);
     }
-    uVar3 = BG_GetPlayerWeaponModel(&local_1c->client->ps,uVar5);
-    local_c = Drop_Weapon(local_1c,uVar5,uVar3,local_10);
+    weaponModel = BG_GetPlayerWeaponModel(&pSelf->client->ps,weaponIndex);
+    pDroppedItem = Drop_Weapon(pSelf,weaponIndex,weaponModel,dropTag);
   }
-  GScr_AddEntity(local_c);
+  GScr_AddEntity(pDroppedItem);
   return;
 }
 
@@ -3712,44 +3812,46 @@ void __cdecl PlayerCmd_dropItem(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_dropScavengerItem(scr_entref_t param_1)
+void __cdecl PlayerCmd_dropScavengerItem(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  gitem_s *pgVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_14;
-  gentity_s *local_c;
+  gitem_s *item;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  gitem_s *pItem;
+  gentity_s *pDroppedItem;
+  char *pszItemName;
   
-  local_c = (gentity_s *)0x0;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  pDroppedItem = (gentity_s *)0x0;
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x702,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  pgVar4 = G_FindItem(pcVar3,0);
-  if (pgVar4 != (gitem_s *)0x0) {
-    local_c = Drop_Item(local_14,pgVar4,0.0,0);
-    (local_c->s).lerp.eFlags2 = (local_c->s).lerp.eFlags2 | 0x800000;
+  item = G_FindItem(pcVar3,0);
+  if (item != (gitem_s *)0x0) {
+    pDroppedItem = Drop_Item(pSelf,item,0.0,0);
+    (pDroppedItem->s).lerp.eFlags2 = (pDroppedItem->s).lerp.eFlags2 | 0x800000;
   }
-  GScr_AddEntity(local_c);
+  GScr_AddEntity(pDroppedItem);
   return;
 }
 
@@ -3761,39 +3863,39 @@ void __cdecl PlayerCmd_dropScavengerItem(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_hasAGrenadePulledBack(scr_entref_t param_1)
+void __cdecl PlayerCmd_hasAGrenadePulledBack(scr_entref_t entref)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x71c,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if (local_8->client == (gclient_s *)0x0) {
+  if (pSelf->client == (gclient_s *)0x0) {
     Scr_Error("Entity is not a player",false);
   }
-  iVar1 = (local_8->client->ps).weaponstate;
+  iVar1 = (pSelf->client->ps).weaponstate;
   if ((iVar1 < 0x14) || (0x18 < iVar1)) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
@@ -3812,47 +3914,48 @@ void __cdecl PlayerCmd_hasAGrenadePulledBack(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BotSetScriptGoal(scr_entref_t param_1)
+void __cdecl PlayerCmd_BotSetScriptGoal(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  client_t *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_18;
-  float local_14 [3];
-  float local_8;
+  client_t *bot;
+  scriptInstance_t inst;
+  client_t *cl;
+  gentity_s *pSelf;
+  float vGoal [3];
+  float goalRadius;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x744,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_18 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = (client_t *)((local_18->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar4->bIsTestClient == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
     bVar2 = false;
     pcVar3 = va("Illegal call to SetScriptGoal(). Player \'%s\' is not a bot.");
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
-    local_8 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    SV_BotSetScriptGoal(pcVar4,local_14,local_8);
+    Scr_GetVector(0,vGoal,SCRIPTINSTANCE_SERVER);
+    goalRadius = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    SV_BotSetScriptGoal(bot,vGoal,goalRadius);
   }
   return;
 }
@@ -3866,43 +3969,44 @@ void __cdecl PlayerCmd_BotSetScriptGoal(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BotClearScriptGoal(scr_entref_t param_1)
+void __cdecl PlayerCmd_BotClearScriptGoal(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  client_t *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  client_t *bot;
+  scriptInstance_t inst;
+  client_t *cl;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x761,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = (client_t *)((local_8->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar4->bIsTestClient == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
     bVar2 = false;
     pcVar3 = va("Illegal call to ClearScriptGoal(). Player \'%s\' is not a bot.");
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    SV_BotClearScriptGoal(pcVar4);
+    SV_BotClearScriptGoal(bot);
   }
   return;
 }
@@ -3910,51 +4014,53 @@ void __cdecl PlayerCmd_BotClearScriptGoal(scr_entref_t param_1)
 
 // 00607C90  PlayerCmd_BotSetScriptEnemy  (game_mp/g_client_script_cmd_mp.cpp:1913)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BotSetScriptEnemy(scr_entref_t param_1)
+void __cdecl PlayerCmd_BotSetScriptEnemy(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  gentity_s *pgVar4;
-  client_t *pcVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_c;
+  gentity_s *enemy;
+  client_t *bot;
+  scriptInstance_t inst;
+  client_t *cl;
+  gentity_s *pSelf;
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x77d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar5 = (client_t *)((local_c->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar5->bIsTestClient == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
     bVar2 = false;
     pcVar3 = va("Illegal call to SetScriptEnemy(). Player \'%s\' is not a bot.");
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    pgVar4 = Scr_GetEntity(0);
-    SV_BotSetScriptEnemy(pcVar5,pgVar4);
+    enemy = Scr_GetEntity(0);
+    SV_BotSetScriptEnemy(bot,enemy);
   }
   return;
 }
@@ -3962,7 +4068,7 @@ void __cdecl PlayerCmd_BotSetScriptEnemy(scr_entref_t param_1)
 
 // 00609010  IsBulletImpactMOD  (bgame/bg_public.h:1923)
 
-bool __cdecl IsBulletImpactMOD(meansOfDeath_t param_1)
+bool __cdecl IsBulletImpactMOD(meansOfDeath_t mod)
 
 {
   code *pcVar1;
@@ -3970,7 +4076,7 @@ bool __cdecl IsBulletImpactMOD(meansOfDeath_t param_1)
   undefined1 uVar3;
   bool local_8;
   
-  if (MOD_GAS < param_1) {
+  if (MOD_GAS < mod) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\game\\../bgame/bg_public.h",0x784,0
                              ,"mod doesn\'t index MOD_NUM\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3979,8 +4085,7 @@ bool __cdecl IsBulletImpactMOD(meansOfDeath_t param_1)
       return (bool)uVar3;
     }
   }
-  if (((param_1 == MOD_PISTOL_BULLET) || (param_1 == MOD_RIFLE_BULLET)) ||
-     (param_1 == MOD_HEAD_SHOT)) {
+  if (((mod == MOD_PISTOL_BULLET) || (mod == MOD_RIFLE_BULLET)) || (mod == MOD_HEAD_SHOT)) {
     local_8 = true;
   }
   else {
@@ -3992,49 +4097,50 @@ bool __cdecl IsBulletImpactMOD(meansOfDeath_t param_1)
 
 // 00607D90  PlayerCmd_BotClearScriptEnemy  (game_mp/g_client_script_cmd_mp.cpp:1941)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BotClearScriptEnemy(scr_entref_t param_1)
+void __cdecl PlayerCmd_BotClearScriptEnemy(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  client_t *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  client_t *bot;
+  scriptInstance_t inst;
+  client_t *cl;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x798,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = (client_t *)((local_8->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar4->bIsTestClient == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
     bVar2 = false;
     pcVar3 = va("Illegal call to ClearScriptEnemy(). Player \'%s\' is not a bot.");
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    SV_BotClearScriptEnemy(pcVar4);
+    SV_BotClearScriptEnemy(bot);
   }
   return;
 }
@@ -4042,51 +4148,53 @@ void __cdecl PlayerCmd_BotClearScriptEnemy(scr_entref_t param_1)
 
 // 00607E80  PlayerCmd_BotSetAttacker  (game_mp/g_client_script_cmd_mp.cpp:1968)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BotSetAttacker(scr_entref_t param_1)
+void __cdecl PlayerCmd_BotSetAttacker(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  gentity_s *pgVar4;
-  client_t *pcVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_c;
+  gentity_s *attacker;
+  client_t *bot;
+  scriptInstance_t inst;
+  client_t *cl;
+  gentity_s *pSelf;
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x7b4,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar5 = (client_t *)((local_c->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar5->bIsTestClient == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
     bVar2 = false;
     pcVar3 = va("Illegal call to SetAttacker(). Player \'%s\' is not a bot.");
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    pgVar4 = Scr_GetEntity(0);
-    SV_BotSetAttacker(pcVar5,pgVar4);
+    attacker = Scr_GetEntity(0);
+    SV_BotSetAttacker(bot,attacker);
   }
   return;
 }
@@ -4094,51 +4202,54 @@ void __cdecl PlayerCmd_BotSetAttacker(scr_entref_t param_1)
 
 // 00607F80  PlayerCmd_BotPressUseButton  (game_mp/g_client_script_cmd_mp.cpp:1997)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BotPressUseButton(scr_entref_t param_1)
+void __cdecl PlayerCmd_BotPressUseButton(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  client_t *pcVar4;
-  float fVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  client_t *bot;
+  float fVar4;
+  scriptInstance_t inst;
+  client_t *cl;
+  gentity_s *pSelf;
+  int msec;
+  float time;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x7d2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = (client_t *)((local_10->s).number * 0x84d00 + (int)svs.clients);
-  if (pcVar4->bIsTestClient == 0) {
+  bot = (client_t *)((pSelf->s).number * 0x84d00 + (int)svs.clients);
+  if (bot->bIsTestClient == 0) {
     bVar2 = false;
     pcVar3 = va("Illegal call to PressUseButton(). Player \'%s\' is not a bot.");
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-    SV_BotPressUseButton(pcVar4,(int)(fVar5 * 1000.0));
+    fVar4 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+    SV_BotPressUseButton(bot,(int)(fVar4 * 1000.0));
   }
   return;
 }
@@ -4146,19 +4257,19 @@ void __cdecl PlayerCmd_BotPressUseButton(scr_entref_t param_1)
 
 // 00609070  ForceGrenadeThrow  (game_mp/g_client_script_cmd_mp.cpp:2018)
 
-void __cdecl ForceGrenadeThrow(playerState_s *param_1)
+void __cdecl ForceGrenadeThrow(playerState_s *ps)
 
 {
   WeaponDef *pWVar1;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef(param_1->offHandIndex);
-  if (((param_1->weaponstate == 0x14) || (param_1->weaponstate == 0x15)) ||
-     (param_1->weaponstate == 0x17)) {
-    param_1->weaponstate = 0x16;
-    param_1->weaponTime = pWVar1->iFireTime;
-    param_1->weaponDelay = pWVar1->iFireDelay;
-    param_1->weapFlags = param_1->weapFlags | 2;
-    PM_StartWeaponAnim(param_1,2,0);
+  pWVar1 = BG_GetWeaponDef(ps->offHandIndex);
+  if (((ps->weaponstate == 0x14) || (ps->weaponstate == 0x15)) || (ps->weaponstate == 0x17)) {
+    ps->weaponstate = 0x16;
+    ps->weaponTime = pWVar1->iFireTime;
+    ps->weaponDelay = pWVar1->iFireDelay;
+    ps->weapFlags = ps->weapFlags | 2;
+    PM_StartWeaponAnim(ps,2,0);
   }
   return;
 }
@@ -4171,7 +4282,8 @@ void __cdecl ForceGrenadeThrow(playerState_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ApplyKnockBack(gentity_s *param_1,int param_2,float *param_3,int param_4,bool param_5)
+void __cdecl
+ApplyKnockBack(gentity_s *pSelf,int damage,float *localdir,int dflags,bool allow_in_air)
 
 {
   float fVar1;
@@ -4179,46 +4291,47 @@ void __cdecl ApplyKnockBack(gentity_s *param_1,int param_2,float *param_3,int pa
   gclient_s *pgVar3;
   gclient_s *pgVar4;
   float fVar5;
-  int local_20;
-  int local_1c;
-  float local_18;
+  int knockback;
+  int t;
+  float knockbackMod;
+  float mass;
   
-  if ((((param_1->flags & 8U) == 0) && ((param_4 & 4U) == 0)) &&
-     ((param_5 ||
-      ((((param_1->client->ps).pm_flags & 0x4000U) == 0 && ((param_1->s).groundEntityNum != 0x3ff)))
-      ))) {
-    local_18 = 0.3;
-    if (((param_1->client->ps).pm_flags & 1U) == 0) {
-      if (((param_1->client->ps).pm_flags & 2U) != 0) {
-        local_18 = 0.15;
+  if ((((pSelf->flags & 8U) == 0) && ((dflags & 4U) == 0)) &&
+     ((allow_in_air ||
+      ((((pSelf->client->ps).pm_flags & 0x4000U) == 0 && ((pSelf->s).groundEntityNum != 0x3ff))))))
+  {
+    knockbackMod = 0.3;
+    if (((pSelf->client->ps).pm_flags & 1U) == 0) {
+      if (((pSelf->client->ps).pm_flags & 2U) != 0) {
+        knockbackMod = 0.15;
       }
     }
     else {
-      local_18 = 0.02;
+      knockbackMod = 0.02;
     }
-    local_20 = (int)((float)param_2 * local_18);
-    if (0x3c < local_20) {
-      local_20 = 0x3c;
+    knockback = (int)((float)damage * knockbackMod);
+    if (0x3c < knockback) {
+      knockback = 0x3c;
     }
-    if ((local_20 != 0) && (((param_1->client->ps).eFlags & 0x300U) == 0)) {
-      fVar5 = ((float)local_20 * (g_knockback->current).value) / 250.0;
-      fVar1 = param_3[1];
-      fVar2 = param_3[2];
-      pgVar3 = param_1->client;
-      pgVar4 = param_1->client;
-      (pgVar3->ps).velocity[0] = (pgVar4->ps).velocity[0] + fVar5 * *param_3;
+    if ((knockback != 0) && (((pSelf->client->ps).eFlags & 0x300U) == 0)) {
+      fVar5 = ((float)knockback * (g_knockback->current).value) / 250.0;
+      fVar1 = localdir[1];
+      fVar2 = localdir[2];
+      pgVar3 = pSelf->client;
+      pgVar4 = pSelf->client;
+      (pgVar3->ps).velocity[0] = (pgVar4->ps).velocity[0] + fVar5 * *localdir;
       (pgVar3->ps).velocity[1] = (pgVar4->ps).velocity[1] + fVar5 * fVar1;
       (pgVar3->ps).velocity[2] = (pgVar4->ps).velocity[2] + fVar5 * fVar2;
-      if ((param_1->client->ps).pm_time == 0) {
-        local_1c = local_20 << 1;
-        if (local_1c < 0x32) {
-          local_1c = 0x32;
+      if ((pSelf->client->ps).pm_time == 0) {
+        t = knockback << 1;
+        if (t < 0x32) {
+          t = 0x32;
         }
-        if (200 < local_1c) {
-          local_1c = 200;
+        if (200 < t) {
+          t = 200;
         }
-        (param_1->client->ps).pm_time = local_1c;
-        (param_1->client->ps).pm_flags = (param_1->client->ps).pm_flags | 0x100;
+        (pSelf->client->ps).pm_time = t;
+        (pSelf->client->ps).pm_flags = (pSelf->client->ps).pm_flags | 0x100;
       }
     }
   }
@@ -4235,7 +4348,7 @@ void __cdecl ApplyKnockBack(gentity_s *param_1,int param_2,float *param_3,int pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_finishPlayerDamage(scr_entref_t param_1)
+void __cdecl PlayerCmd_finishPlayerDamage(scr_entref_t entref)
 
 {
   short sVar1;
@@ -4245,352 +4358,358 @@ void __cdecl PlayerCmd_finishPlayerDamage(scr_entref_t param_1)
   byte bVar5;
   char *pcVar6;
   int iVar7;
-  meansOfDeath_t mVar8;
-  clientState_s *pcVar9;
-  uint uVar10;
-  WeaponDef *pWVar11;
-  gentity_s *pgVar12;
-  DWORD DVar13;
+  meansOfDeath_t mod_00;
+  clientState_s *pcVar8;
+  uint uVar9;
+  WeaponDef *pWVar10;
+  gentity_s *pgVar11;
+  DWORD DVar12;
   uint extraout_EAX;
-  gentity_s *pgVar14;
-  <unnamed_type_index> <Var15;
+  gentity_s *ent;
+  <unnamed_type_index> <Var13;
   uint extraout_EDX;
-  scriptInstance_t sVar16;
-  gentity_s *local_7c;
-  int local_78;
-  gentity_s *local_6c;
-  float *local_68;
-  float local_64;
+  float fVar14;
+  scriptInstance_t inst;
+  int seat;
+  gentity_s *turret;
+  gentity_s *tent;
+  gentity_s *attacker;
+  int damage;
+  meansOfDeath_t mod;
+  float damage_time;
+  gentity_s *pSelf;
+  float *dir;
+  float localdir;
   float local_60;
   float local_5c;
-  float local_58 [3];
-  float local_4c [3];
-  float local_40;
-  gentity_s *local_3c;
-  uint local_38;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int *local_28;
-  float local_24;
-  gentity_s *local_20;
-  hitLocation_t local_1c;
-  code *local_18;
-  code *local_14;
-  float local_10;
-  float *local_c;
-  float local_8;
+  float vDir [3];
+  float vPoint [3];
+  float player_yaw;
+  gentity_s *tempBulletHitEntity;
+  int iWeapon;
+  int psTimeOffset;
+  int dflags;
+  int iSurfType;
+  pmove_t *pm;
+  float flinchYawDir;
+  gentity_s *inflictor;
+  hitLocation_t hitLoc;
+  code *die;
+  code *pain;
+  float max_damage_time;
+  float *point;
+  float time_per_point;
   
-  local_20 = g_entities + 0x3fe;
-  local_7c = g_entities + 0x3fe;
-  local_68 = (float *)0x0;
-  local_c = (float *)0x0;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  inflictor = g_entities + 0x3fe;
+  attacker = g_entities + 0x3fe;
+  dir = (float *)0x0;
+  point = (float *)0x0;
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x85a,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_6c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar16 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar6 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar6,sVar16);
+      Scr_ObjectError(pcVar6,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_6c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_3c = (gentity_s *)0x0;
-  local_78 = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
-  if ((0 < local_78) &&
-     (local_28 = (int *)(&g_pmove + (uint)(local_6c->client->ps).clientNum * 0x910), *local_28 != 0)
-     ) {
+  tempBulletHitEntity = (gentity_s *)0x0;
+  damage = Scr_GetInt(2,SCRIPTINSTANCE_SERVER);
+  if ((0 < damage) &&
+     (pm = (pmove_t *)(&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
+     pm->ps != (playerState_s *)0x0)) {
     iVar7 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
     if ((iVar7 != 0) && (iVar7 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar7 == 0x13)) {
-      local_20 = Scr_GetEntity(0);
+      inflictor = Scr_GetEntity(0);
     }
     iVar7 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
     if ((iVar7 != 0) && (iVar7 = Scr_GetPointerType(1,SCRIPTINSTANCE_SERVER), iVar7 == 0x13)) {
-      local_7c = Scr_GetEntity(1);
+      attacker = Scr_GetEntity(1);
     }
-    local_30 = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
-    mVar8 = G_MeansOfDeathFromScriptParam(4);
-    if (((local_6c->client->lastStand == 0) || (mVar8 == MOD_MELEE)) ||
-       (pcVar9 = G_GetClientState((local_6c->s).number), pcVar9->lastStandStartTime <= level.time))
-    {
+    dflags = Scr_GetInt(3,SCRIPTINSTANCE_SERVER);
+    mod_00 = G_MeansOfDeathFromScriptParam(4);
+    if (((pSelf->client->lastStand == 0) || (mod_00 == MOD_MELEE)) ||
+       (pcVar8 = G_GetClientState((pSelf->s).number), pcVar8->lastStandStartTime <= level.time)) {
       pcVar6 = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
-      local_38 = G_GetWeaponIndexForName(pcVar6);
+      iWeapon = G_GetWeaponIndexForName(pcVar6);
       iVar7 = Scr_GetType(6,SCRIPTINSTANCE_SERVER);
       if (iVar7 != 0) {
-        Scr_GetVector(6,local_4c,SCRIPTINSTANCE_SERVER);
-        local_c = local_4c;
+        Scr_GetVector(6,vPoint,SCRIPTINSTANCE_SERVER);
+        point = vPoint;
       }
       iVar7 = Scr_GetType(7,SCRIPTINSTANCE_SERVER);
       if (iVar7 != 0) {
-        Scr_GetVector(7,local_58,SCRIPTINSTANCE_SERVER);
-        local_68 = local_58;
+        Scr_GetVector(7,vDir,SCRIPTINSTANCE_SERVER);
+        dir = vDir;
       }
-      uVar10 = Scr_GetConstString(8,SCRIPTINSTANCE_SERVER);
-      local_1c = G_GetHitLocationIndexFromString((ushort)uVar10);
-      local_34 = Scr_GetInt(9,SCRIPTINSTANCE_SERVER);
+      uVar9 = Scr_GetConstString(8,SCRIPTINSTANCE_SERVER);
+      hitLoc = G_GetHitLocationIndexFromString((ushort)uVar9);
+      psTimeOffset = Scr_GetInt(9,SCRIPTINSTANCE_SERVER);
       pcVar6 = Scr_GetString(10,SCRIPTINSTANCE_SERVER);
-      local_2c = Com_SurfaceTypeFromName(pcVar6);
-      if (local_2c == -1) {
-        local_2c = 7;
+      iSurfType = Com_SurfaceTypeFromName(pcVar6);
+      if (iSurfType == -1) {
+        iSurfType = 7;
       }
-      if ((local_6c->client->ps).pm_type == 9) {
+      if ((pSelf->client->ps).pm_type == 9) {
         Com_Printf(0xf,"Trying to do damage to a client that is already dead");
       }
       else {
-        if (local_68 == (float *)0x0) {
-          local_64 = 0.0;
+        if (dir == (float *)0x0) {
+          localdir = 0.0;
           local_60 = 0.0;
           local_5c = 0.0;
         }
         else {
-          Vec3NormalizeTo(local_68,&local_64);
+          Vec3NormalizeTo(dir,&localdir);
         }
-        if ((local_6c->flags & 1U) == 0) {
-          if ((((((local_6c->client->ps).eFlags & 0x4000U) != 0) &&
-               (((local_6c->client->ps).eFlags2 & 0x10000000U) == 0)) &&
-              ((0 < (local_6c->client->ps).vehiclePos && ((local_6c->client->ps).vehiclePos < 5))))
-             && ((mVar8 == MOD_PROJECTILE_SPLASH || (mVar8 == MOD_GRENADE_SPLASH)))) {
-            local_78 = (int)((float)local_78 * (vehGunnerSplashDamage->current).value);
+        if ((pSelf->flags & 1U) == 0) {
+          if ((((((pSelf->client->ps).eFlags & 0x4000U) != 0) &&
+               (((pSelf->client->ps).eFlags2 & 0x10000000U) == 0)) &&
+              ((0 < (pSelf->client->ps).vehiclePos && ((pSelf->client->ps).vehiclePos < 5)))) &&
+             ((mod_00 == MOD_PROJECTILE_SPLASH || (mod_00 == MOD_GRENADE_SPLASH)))) {
+            damage = (int)((float)damage * (vehGunnerSplashDamage->current).value);
           }
-          if (((local_38 != 0) &&
-              (pWVar11 = BG_GetWeaponDef(local_38), pWVar11->weapType == WEAPTYPE_BULLET)) &&
-             (bVar4 = IsBulletImpactMOD(mVar8), bVar4)) {
-            local_3c = G_TempEntity(local_4c,0x33);
-            AssignToSmallerType<unsigned_short>(&(local_3c->s).weapon,local_38);
-            bVar5 = DirToByte(&local_64);
-            (local_3c->s).eventParm = (ushort)bVar5;
-            (local_3c->s).un1 = (<unnamed_type_un1>)(local_1c == HITLOC_HEAD);
-            (local_3c->s).un1.scale = (local_3c->s).un1.scale | 4;
-            (local_3c->s).surfType = (uchar)local_2c;
-            AssignToSmallerType<short>(&(local_3c->s).otherEntityNum,(local_7c->s).number);
-            <Var15.brushmodel._1_1_ = 0;
-            <Var15.bone._0_1_ = scr_playerdamage_boneindex;
-            (local_3c->s).index = <Var15;
-            (local_3c->s).groundEntityNum = param_1.entnum;
-            if (((local_3c->r).clientMask[0] != 0) &&
+          if (((iWeapon != 0) &&
+              (pWVar10 = BG_GetWeaponDef(iWeapon), pWVar10->weapType == WEAPTYPE_BULLET)) &&
+             (bVar4 = IsBulletImpactMOD(mod_00), bVar4)) {
+            tempBulletHitEntity = G_TempEntity(vPoint,0x33);
+            AssignToSmallerType<unsigned_short>(&(tempBulletHitEntity->s).weapon,iWeapon);
+            bVar5 = DirToByte(&localdir);
+            (tempBulletHitEntity->s).eventParm = (ushort)bVar5;
+            (tempBulletHitEntity->s).un1 = (<unnamed_type_un1>)(hitLoc == HITLOC_HEAD);
+            (tempBulletHitEntity->s).un1.scale = (tempBulletHitEntity->s).un1.scale | 4;
+            (tempBulletHitEntity->s).surfType = (uchar)iSurfType;
+            AssignToSmallerType<short>
+                      (&(tempBulletHitEntity->s).otherEntityNum,(attacker->s).number);
+            <Var13.brushmodel._1_1_ = 0;
+            <Var13.bone._0_1_ = scr_playerdamage_boneindex;
+            (tempBulletHitEntity->s).index = <Var13;
+            (tempBulletHitEntity->s).groundEntityNum = entref.entnum;
+            if (((tempBulletHitEntity->r).clientMask[0] != 0) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                          ,0x8b2,0,"%s"), !bVar4)) {
               pcVar3 = (code *)swi(3);
               (*pcVar3)();
               return;
             }
-            (local_3c->r).clientMask[(int)(uint)(local_6c->client->ps).clientNum >> 5] =
-                 1 << ((local_6c->client->ps).clientNum & 0x1f) |
-                 (local_3c->r).clientMask[(int)(uint)(local_6c->client->ps).clientNum >> 5];
-            pWVar11 = BG_GetWeaponDef(local_38);
-            pgVar12 = G_TempEntity(local_4c,(pWVar11->bRifleBullet != false) + 0x34);
-            AssignToSmallerType<unsigned_short>(&(pgVar12->s).weapon,local_38);
-            (pgVar12->s).surfType = (uchar)local_2c;
-            AssignToSmallerType<short>(&(pgVar12->s).otherEntityNum,(local_7c->s).number);
-            (pgVar12->s).clientNum = (local_6c->client->ps).clientNum;
-            (pgVar12->r).clientMask[0] = -1;
-            (pgVar12->r).clientMask[(int)(uint)(local_6c->client->ps).clientNum >> 5] =
-                 ~(1 << ((local_6c->client->ps).clientNum & 0x1f)) &
-                 (pgVar12->r).clientMask[(int)(uint)(local_6c->client->ps).clientNum >> 5];
+            (tempBulletHitEntity->r).clientMask[(int)(uint)(pSelf->client->ps).clientNum >> 5] =
+                 1 << ((pSelf->client->ps).clientNum & 0x1f) |
+                 (tempBulletHitEntity->r).clientMask[(int)(uint)(pSelf->client->ps).clientNum >> 5];
+            pWVar10 = BG_GetWeaponDef(iWeapon);
+            pgVar11 = G_TempEntity(vPoint,(pWVar10->bRifleBullet != false) + 0x34);
+            AssignToSmallerType<unsigned_short>(&(pgVar11->s).weapon,iWeapon);
+            (pgVar11->s).surfType = (uchar)iSurfType;
+            AssignToSmallerType<short>(&(pgVar11->s).otherEntityNum,(attacker->s).number);
+            (pgVar11->s).clientNum = (pSelf->client->ps).clientNum;
+            (pgVar11->r).clientMask[0] = -1;
+            (pgVar11->r).clientMask[(int)(uint)(pSelf->client->ps).clientNum >> 5] =
+                 ~(1 << ((pSelf->client->ps).clientNum & 0x1f)) &
+                 (pgVar11->r).clientMask[(int)(uint)(pSelf->client->ps).clientNum >> 5];
           }
-          local_6c->client->damage_blood = local_6c->client->damage_blood + local_78;
-          if (local_68 == (float *)0x0) {
-            pgVar2 = local_6c->client;
-            pgVar2->damage_from[0] = (local_6c->r).currentOrigin[0];
-            pgVar2->damage_from[1] = (local_6c->r).currentOrigin[1];
-            pgVar2->damage_from[2] = (local_6c->r).currentOrigin[2];
-            local_6c->client->damage_fromWorld = 1;
+          pSelf->client->damage_blood = pSelf->client->damage_blood + damage;
+          if (dir == (float *)0x0) {
+            pgVar2 = pSelf->client;
+            pgVar2->damage_from[0] = (pSelf->r).currentOrigin[0];
+            pgVar2->damage_from[1] = (pSelf->r).currentOrigin[1];
+            pgVar2->damage_from[2] = (pSelf->r).currentOrigin[2];
+            pSelf->client->damage_fromWorld = 1;
           }
           else {
-            pgVar2 = local_6c->client;
-            pgVar2->damage_from[0] = local_64;
+            pgVar2 = pSelf->client;
+            pgVar2->damage_from[0] = localdir;
             pgVar2->damage_from[1] = local_60;
             pgVar2->damage_from[2] = local_5c;
-            local_6c->client->damage_fromWorld = 0;
+            pSelf->client->damage_fromWorld = 0;
           }
-          if (((local_6c->flags & 2U) != 0) &&
-             (local_6c->health == local_78 || local_6c->health - local_78 < 0)) {
-            local_78 = local_6c->health + -1;
+          if (((pSelf->flags & 2U) != 0) && (pSelf->health == damage || pSelf->health - damage < 0))
+          {
+            damage = pSelf->health + -1;
           }
-          local_8 = (player_dmgtimer_timePerPoint->current).value;
-          local_10 = (player_dmgtimer_maxTime->current).value;
-          (local_6c->client->ps).damageTimer =
-               (int)((float)local_78 * local_8) + (local_6c->client->ps).damageTimer;
-          if (local_68 == (float *)0x0) {
-            local_24 = 0.0;
+          time_per_point = (player_dmgtimer_timePerPoint->current).value;
+          max_damage_time = (player_dmgtimer_maxTime->current).value;
+          (pSelf->client->ps).damageTimer =
+               (int)((float)damage * time_per_point) + (pSelf->client->ps).damageTimer;
+          if (dir == (float *)0x0) {
+            flinchYawDir = 0.0;
           }
           else {
-            local_24 = vectoyaw(local_68);
-            local_40 = (local_6c->client->ps).viewangles[1];
-            if (local_40 < 0.0) {
-              local_40 = local_40 + 360.0;
+            fVar14 = vectoyaw(dir);
+            player_yaw = (pSelf->client->ps).viewangles[1];
+            if (player_yaw < 0.0) {
+              player_yaw = player_yaw + 360.0;
             }
-            local_24 = local_24 - (float)(int)local_40;
-            if (local_24 < 0.0) {
-              local_24 = local_24 + 360.0;
+            flinchYawDir = fVar14 - (float)(int)player_yaw;
+            if (flinchYawDir < 0.0) {
+              flinchYawDir = flinchYawDir + 360.0;
             }
           }
-          if ((315.0 <= local_24) || (local_24 < 45.0)) {
-            (local_6c->client->ps).dmgDirection = 2;
+          if ((315.0 <= flinchYawDir) || (flinchYawDir < 45.0)) {
+            (pSelf->client->ps).dmgDirection = 2;
           }
-          else if ((local_24 < 135.0) || (225.0 <= local_24)) {
-            if ((local_24 < 45.0) || (135.0 <= local_24)) {
-              (local_6c->client->ps).dmgDirection = 3;
+          else if ((flinchYawDir < 135.0) || (225.0 <= flinchYawDir)) {
+            if ((flinchYawDir < 45.0) || (135.0 <= flinchYawDir)) {
+              (pSelf->client->ps).dmgDirection = 3;
             }
             else {
-              (local_6c->client->ps).dmgDirection = 4;
+              (pSelf->client->ps).dmgDirection = 4;
             }
           }
           else {
-            (local_6c->client->ps).dmgDirection = 1;
+            (pSelf->client->ps).dmgDirection = 1;
           }
-          if (mVar8 == MOD_BURNED) {
-            (local_6c->client->ps).dmgType = 1;
+          if (mod_00 == MOD_BURNED) {
+            (pSelf->client->ps).dmgType = 1;
           }
-          else if ((((mVar8 == MOD_GRENADE) || (mVar8 == MOD_GRENADE_SPLASH)) ||
-                   (mVar8 == MOD_PROJECTILE)) ||
-                  ((mVar8 == MOD_PROJECTILE_SPLASH || (mVar8 == MOD_EXPLOSIVE)))) {
-            (local_6c->client->ps).dmgType = 4;
+          else if ((((mod_00 == MOD_GRENADE) || (mod_00 == MOD_GRENADE_SPLASH)) ||
+                   (mod_00 == MOD_PROJECTILE)) ||
+                  ((mod_00 == MOD_PROJECTILE_SPLASH || (mod_00 == MOD_EXPLOSIVE)))) {
+            (pSelf->client->ps).dmgType = 4;
           }
-          else if ((mVar8 == MOD_MELEE) || (mVar8 == MOD_BAYONET)) {
-            (local_6c->client->ps).dmgType = 2;
+          else if ((mod_00 == MOD_MELEE) || (mod_00 == MOD_BAYONET)) {
+            (pSelf->client->ps).dmgType = 2;
           }
-          else if (mVar8 == MOD_HEAD_SHOT) {
-            (local_6c->client->ps).dmgType = 3;
+          else if (mod_00 == MOD_HEAD_SHOT) {
+            (pSelf->client->ps).dmgType = 3;
           }
-          else if (mVar8 == MOD_SUICIDE) {
-            (local_6c->client->ps).dmgType = 5;
+          else if (mod_00 == MOD_SUICIDE) {
+            (pSelf->client->ps).dmgType = 5;
           }
           else {
-            (local_6c->client->ps).dmgType = 0;
+            (pSelf->client->ps).dmgType = 0;
           }
-          if (local_10 < (float)(local_6c->client->ps).damageTimer) {
-            (local_6c->client->ps).damageTimer = (int)local_10;
+          if (max_damage_time < (float)(pSelf->client->ps).damageTimer) {
+            (pSelf->client->ps).damageTimer = (int)max_damage_time;
           }
-          (local_6c->client->ps).damageDuration = (local_6c->client->ps).damageTimer;
-          local_6c->health = local_6c->health - local_78;
+          (pSelf->client->ps).damageDuration = (pSelf->client->ps).damageTimer;
+          pSelf->health = pSelf->health - damage;
           PIXBeginNamedEvent(-1,"damage notify");
-          Scr_AddEntity(local_7c,SCRIPTINSTANCE_SERVER);
-          Scr_AddInt(local_78,SCRIPTINSTANCE_SERVER);
-          Scr_Notify(local_6c,scr_const.damage,2);
-          DVar13 = GetCurrentThreadId();
-          if ((DVar13 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+          Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
+          Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+          Scr_Notify(pSelf,scr_const.damage,2);
+          DVar12 = GetCurrentThreadId();
+          if ((DVar12 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
-          if (*(int *)(&DAT_00e07cec + (uint)local_6c->handler * 0x30) == 0) {
+          if (*(int *)(&DAT_00e07cec + (uint)pSelf->handler * 0x30) == 0) {
             Com_Printf(1,"No die handler for player entity type %i");
           }
-          if (local_6c->health < 1) {
-            if (((local_6c->client->lastStand == 0) &&
-                (pgVar2 = local_6c->client, _allshl(),
+          if (pSelf->health < 1) {
+            if (((pSelf->client->lastStand == 0) &&
+                (pgVar2 = pSelf->client, _allshl(),
                 (extraout_EAX & (pgVar2->ps).perks[0]) != 0 ||
                 (extraout_EDX & (pgVar2->ps).perks[1]) != 0)) &&
-               ((local_6c->client->ps).waterlevel == 0)) {
+               ((pSelf->client->ps).waterlevel == 0)) {
               PIXBeginNamedEvent(-1,"enter last stand");
-              if (((local_6c->client->ps).pm_flags & 2U) == 0) {
-                if (((local_6c->client->ps).pm_flags & 1U) == 0) {
+              if (((pSelf->client->ps).pm_flags & 2U) == 0) {
+                if (((pSelf->client->ps).pm_flags & 1U) == 0) {
                   BG_AnimScriptEvent((pmove_t *)
-                                     (&g_pmove + (uint)(local_6c->client->ps).clientNum * 0x910),
+                                     (&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
                                      ANIM_ET_STAND_TO_LASTSTAND,0,1);
                 }
                 else {
                   BG_AnimScriptEvent((pmove_t *)
-                                     (&g_pmove + (uint)(local_6c->client->ps).clientNum * 0x910),
+                                     (&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
                                      ANIM_ET_PRONE_TO_LASTSTAND,0,1);
                 }
               }
               else {
                 BG_AnimScriptEvent((pmove_t *)
-                                   (&g_pmove + (uint)(local_6c->client->ps).clientNum * 0x910),
+                                   (&g_pmove + (uint)(pSelf->client->ps).clientNum * 0x910),
                                    ANIM_ET_CROUCH_TO_LASTSTAND,0,1);
               }
-              local_6c->client->lastStand = 1;
+              pSelf->client->lastStand = 1;
               iVar7 = level.time + 500;
-              pcVar9 = G_GetClientState((local_6c->s).number);
-              pcVar9->lastStandStartTime = iVar7;
-              if (((((local_6c->client->ps).eFlags & 0x300U) != 0) ||
-                  ((local_6c->client->ps).weaponstate == 0x23)) ||
-                 (((local_6c->client->ps).weaponstate == 0x24 ||
-                  ((local_6c->client->ps).weaponstate == 0x25)))) {
-                sVar1 = (local_6c->client->ps).viewlocked_entNum;
+              pcVar8 = G_GetClientState((pSelf->s).number);
+              pcVar8->lastStandStartTime = iVar7;
+              if (((((pSelf->client->ps).eFlags & 0x300U) != 0) ||
+                  ((pSelf->client->ps).weaponstate == 0x23)) ||
+                 (((pSelf->client->ps).weaponstate == 0x24 ||
+                  ((pSelf->client->ps).weaponstate == 0x25)))) {
+                sVar1 = (pSelf->client->ps).viewlocked_entNum;
                 if (g_entities[sVar1].s.eType == 0xb) {
                   G_ClientStopUsingTurret(g_entities + sVar1);
                 }
-                (local_6c->client->ps).weaponstate = 0;
+                (pSelf->client->ps).weaponstate = 0;
               }
-              ForceGrenadeThrow(&local_6c->client->ps);
-              Scr_PlayerLastStand(local_6c,local_20,local_7c,local_78,mVar8,local_38,&local_64,
-                                  local_1c,local_34);
-              DVar13 = GetCurrentThreadId();
-              if ((DVar13 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+              ForceGrenadeThrow(&pSelf->client->ps);
+              Scr_PlayerLastStand(pSelf,inflictor,attacker,damage,mod_00,iWeapon,&localdir,hitLoc,
+                                  psTimeOffset);
+              DVar12 = GetCurrentThreadId();
+              if ((DVar12 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
             }
-            if (local_6c->health < 1) {
+            if (pSelf->health < 1) {
               PIXBeginNamedEvent(-1,"die");
-              if (local_3c != (gentity_s *)0x0) {
-                (local_3c->s).un1.scale = (local_3c->s).un1.scale | 2;
+              if (tempBulletHitEntity != (gentity_s *)0x0) {
+                (tempBulletHitEntity->s).un1.scale = (tempBulletHitEntity->s).un1.scale | 2;
               }
-              if ((local_6c->health < -999) || (-1 < local_6c->health)) {
-                local_6c->health = -999;
+              if ((pSelf->health < -999) || (-1 < pSelf->health)) {
+                pSelf->health = -999;
               }
-              ApplyKnockBack(local_6c,local_78,&local_64,local_30,true);
-              if ((((local_6c->client->ps).eFlags & 0x4000U) != 0) &&
-                 (iVar7 = EntHandle::isDefined(&(local_6c->r).ownerNum), iVar7 != 0)) {
-                pgVar12 = local_6c;
-                pgVar14 = EntHandle::ent(&(local_6c->r).ownerNum);
-                iVar7 = G_GetVehicleSeatPlayerOccupies(pgVar14,pgVar12);
+              ApplyKnockBack(pSelf,damage,&localdir,dflags,true);
+              if ((((pSelf->client->ps).eFlags & 0x4000U) != 0) &&
+                 (iVar7 = EntHandle::isDefined(&(pSelf->r).ownerNum), iVar7 != 0)) {
+                pgVar11 = pSelf;
+                ent = EntHandle::ent(&(pSelf->r).ownerNum);
+                iVar7 = G_GetVehicleSeatPlayerOccupies(ent,pgVar11);
                 if (0 < iVar7) {
                   Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
-                  Scr_Notify(local_6c,scr_const.vehicle_death,1);
+                  Scr_Notify(pSelf,scr_const.vehicle_death,1);
                 }
               }
-              local_18 = *(code **)(&DAT_00e07cec + (uint)local_6c->handler * 0x30);
-              if (local_18 != (code *)0x0) {
-                (*local_18)(local_6c,local_20,local_7c,local_78,mVar8,local_38,&local_64,local_1c,
-                            local_34);
+              die = *(code **)(&DAT_00e07cec + (uint)pSelf->handler * 0x30);
+              if (die != (code *)0x0) {
+                (*die)(pSelf,inflictor,attacker,damage,mod_00,iWeapon,&localdir,hitLoc,psTimeOffset)
+                ;
               }
-              DVar13 = GetCurrentThreadId();
-              if ((DVar13 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+              DVar12 = GetCurrentThreadId();
+              if ((DVar12 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
-              if ((local_6c->r).inuse == '\0') {
+              if ((pSelf->r).inuse == '\0') {
                 return;
               }
             }
           }
           else {
             PIXBeginNamedEvent(-1,"pain");
-            ApplyKnockBack(local_6c,local_78,&local_64,local_30,false);
-            local_14 = *(code **)(&DAT_00e07ce4 + (uint)local_6c->handler * 0x30);
-            if (local_14 != (code *)0x0) {
-              (*local_14)(local_6c,local_7c,local_78,local_c,mVar8,&local_64,local_1c,local_38);
+            ApplyKnockBack(pSelf,damage,&localdir,dflags,false);
+            pain = *(code **)(&DAT_00e07ce4 + (uint)pSelf->handler * 0x30);
+            if (pain != (code *)0x0) {
+              (*pain)(pSelf,attacker,damage,point,mod_00,&localdir,hitLoc,iWeapon);
             }
-            DVar13 = GetCurrentThreadId();
-            if ((DVar13 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+            DVar12 = GetCurrentThreadId();
+            if ((DVar12 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
-          if (((local_6c->r).inuse == '\0') &&
+          if (((pSelf->r).inuse == '\0') &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                        ,0x9ba,0,"%s"), !bVar4)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
           }
-          (local_6c->client->ps).stats[0] = local_6c->health;
+          (pSelf->client->ps).stats[0] = pSelf->health;
         }
         else {
-          ApplyKnockBack(local_6c,local_78,&local_64,local_30,true);
+          ApplyKnockBack(pSelf,damage,&localdir,dflags,true);
         }
       }
     }
     else {
-      local_6c->health = 1;
+      pSelf->health = 1;
     }
   }
   return;
@@ -4604,38 +4723,38 @@ void __cdecl PlayerCmd_finishPlayerDamage(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_Suicide(scr_entref_t param_1)
+void __cdecl PlayerCmd_Suicide(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x9cb,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_8->flags = local_8->flags & 0xfffffffc;
-  local_8->health = 0;
-  (local_8->client->ps).stats[0] = 0;
-  player_die(local_8,local_8,local_8,100000,0xd,0,(float *)0x0,HITLOC_NONE,0);
+  pSelf->flags = pSelf->flags & 0xfffffffc;
+  pSelf->health = 0;
+  (pSelf->client->ps).stats[0] = 0;
+  player_die(pSelf,pSelf,pSelf,100000,0xd,0,(float *)0x0,HITLOC_NONE,0);
   return;
 }
 
@@ -4647,26 +4766,27 @@ void __cdecl PlayerCmd_Suicide(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsSplitscreen(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsSplitscreen(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x9df,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
@@ -4684,39 +4804,41 @@ void __cdecl PlayerCmd_IsSplitscreen(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsPlayerOnSameMachine(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsPlayerOnSameMachine(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  gentity_s *pgVar5;
-  scriptInstance_t sVar6;
+  char *error;
+  int iVar3;
+  gentity_s *pgVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  gentity_s *player;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xa0b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  iVar4 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
-  if ((iVar4 == 0) || (iVar4 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar4 != 0x13)) {
+  iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
+  if ((iVar3 == 0) || (iVar3 = Scr_GetPointerType(0,SCRIPTINSTANCE_SERVER), iVar3 != 0x13)) {
     Scr_Error("IsPlayerOnSameMachine: Player must be passed in.",false);
   }
-  pgVar5 = Scr_GetEntity(0);
-  if (pgVar5->client == (gclient_s *)0x0) {
+  pgVar4 = Scr_GetEntity(0);
+  if (pgVar4->client == (gclient_s *)0x0) {
     Scr_Error("IsPlayerOnSameMachine: Player must be passed in.",false);
   }
   Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
@@ -4731,35 +4853,35 @@ void __cdecl PlayerCmd_IsPlayerOnSameMachine(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsInVehicle(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsInVehicle(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xa39,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if (((local_8->client->ps).eFlags & 0x4000U) == 0) {
+  if (((pSelf->client->ps).eFlags & 0x4000U) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -4776,35 +4898,35 @@ void __cdecl PlayerCmd_IsInVehicle(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsRemoteControlling(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsRemoteControlling(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xa4f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if (((local_8->client->ps).eFlags2 & 0x10000000U) == 0) {
+  if (((pSelf->client->ps).eFlags2 & 0x10000000U) == 0) {
     Scr_AddBool(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -4821,47 +4943,47 @@ void __cdecl PlayerCmd_IsRemoteControlling(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetVehicleOccupied(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetVehicleOccupied(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  gentity_s *pgVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_8;
+  gentity_s *ent;
+  scriptInstance_t sVar5;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xa67,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if (((local_8->client->ps).eFlags & 0x4000U) != 0) {
-    iVar4 = EntHandle::isDefined(&(local_8->r).ownerNum);
+  if (((pSelf->client->ps).eFlags & 0x4000U) != 0) {
+    iVar4 = EntHandle::isDefined(&(pSelf->r).ownerNum);
     if (iVar4 == 0) {
       bVar2 = false;
       pcVar3 = va("Player %s is attached to a vehicle but has no owner");
       Scr_Error(pcVar3,bVar2);
     }
     else {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pgVar5 = EntHandle::ent(&(local_8->r).ownerNum);
-      Scr_AddEntity(pgVar5,sVar6);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      ent = EntHandle::ent(&(pSelf->r).ownerNum);
+      Scr_AddEntity(ent,sVar5);
     }
   }
   return;
@@ -4876,40 +4998,41 @@ void __cdecl PlayerCmd_GetVehicleOccupied(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_OpenMenu(scr_entref_t param_1)
+void __cdecl PlayerCmd_OpenMenu(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_54;
-  char local_4c [63];
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iMenuIndex;
+  char svcmd [63];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xa7b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_54 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_54 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_54->client->sess).connected == CON_CONNECTED) {
+  if ((pSelf->client->sess).connected == CON_CONNECTED) {
     pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
     iVar4 = GScr_GetScriptMenuIndex(pcVar3);
     if (((iVar4 < 0) || (0x1f < iVar4)) &&
@@ -4919,9 +5042,9 @@ void __cdecl PlayerCmd_OpenMenu(scr_entref_t param_1)
       (*pcVar1)();
       return;
     }
-    _snprintf(local_4c,0x40,"%c %i");
+    _snprintf(svcmd,0x40,"%c %i");
     local_d = 0;
-    SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_RELIABLE,local_4c);
+    SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_RELIABLE,svcmd);
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -4939,40 +5062,41 @@ void __cdecl PlayerCmd_OpenMenu(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_OpenMenuNoMouse(scr_entref_t param_1)
+void __cdecl PlayerCmd_OpenMenuNoMouse(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_54;
-  char local_4c [63];
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int iMenuIndex;
+  char svcmd [63];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xa93,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_54 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_54 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_54->client->sess).connected == CON_CONNECTED) {
+  if ((pSelf->client->sess).connected == CON_CONNECTED) {
     pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
     iVar4 = GScr_GetScriptMenuIndex(pcVar3);
     if (((iVar4 < 0) || (0x1f < iVar4)) &&
@@ -4982,9 +5106,9 @@ void __cdecl PlayerCmd_OpenMenuNoMouse(scr_entref_t param_1)
       (*pcVar1)();
       return;
     }
-    _snprintf(local_4c,0x40,"%c %i 1");
+    _snprintf(svcmd,0x40,"%c %i 1");
     local_d = 0;
-    SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_RELIABLE,local_4c);
+    SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_RELIABLE,svcmd);
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -5002,38 +5126,39 @@ void __cdecl PlayerCmd_OpenMenuNoMouse(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CloseMenu(scr_entref_t param_1)
+void __cdecl PlayerCmd_CloseMenu(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_4c [63];
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char svcmd [63];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xaab,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  _snprintf(local_4c,0x40,"%c");
+  _snprintf(svcmd,0x40,"%c");
   local_d = 0;
-  SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_RELIABLE,local_4c);
+  SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_RELIABLE,svcmd);
   return;
 }
 
@@ -5046,56 +5171,60 @@ void __cdecl PlayerCmd_CloseMenu(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CloseInGameMenu(scr_entref_t param_1)
+void __cdecl PlayerCmd_CloseInGameMenu(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_28 [31];
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char svcmd [31];
   undefined1 local_9;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xac2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  _snprintf(local_28,0x20,"%c");
+  _snprintf(svcmd,0x20,"%c");
   local_9 = 0;
-  SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_RELIABLE,local_28);
+  SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_RELIABLE,svcmd);
   return;
 }
 
 
 // 00609E50  SetWeaponAmmoClipDualWield  (game_mp/g_client_script_cmd_mp.cpp:2763)
 
-void __cdecl SetWeaponAmmoClipDualWield(playerState_s *param_1)
+void __cdecl SetWeaponAmmoClipDualWield(playerState_s *ps)
 
 {
   WeaponDef *pWVar1;
-  int iVar2;
-  int iVar3;
+  int clipIndex_00;
+  int amount;
+  int ammoCount;
+  int clipIndex;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef((uint)param_1->weapon);
+  pWVar1 = BG_GetWeaponDef((uint)ps->weapon);
   if ((pWVar1->dualWieldWeaponIndex != 0) &&
-     (iVar2 = BG_ClipForWeapon(pWVar1->dualWieldWeaponIndex), iVar2 != 0)) {
-    iVar3 = BG_GetClipSize(pWVar1->dualWieldWeaponIndex);
-    BG_SetAmmoInClip(param_1,iVar2,iVar3);
+     (clipIndex_00 = BG_ClipForWeapon(pWVar1->dualWieldWeaponIndex), clipIndex_00 != 0)) {
+    amount = BG_GetClipSize(pWVar1->dualWieldWeaponIndex);
+    BG_SetAmmoInClip(ps,clipIndex_00,amount);
   }
   return;
 }
@@ -5108,61 +5237,65 @@ void __cdecl SetWeaponAmmoClipDualWield(playerState_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetWeaponAmmoClip(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetWeaponAmmoClip(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  int iVar6;
-  WeaponDef *pWVar7;
-  scriptInstance_t sVar8;
-  int local_1c;
-  gentity_s *local_18;
+  uint weaponIndex;
+  int clipIndex_00;
+  int iVar4;
+  WeaponDef *pWVar5;
+  scriptInstance_t inst;
+  int ammoCount;
+  gentity_s *pSelf;
+  char *weapName;
+  int clipIndex;
+  int weapIndex;
+  WeaponDef *weapDef;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xae5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar8 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar8);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_18 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_1c = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  if (uVar4 == 0) {
+  ammoCount = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  if (weaponIndex == 0) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    iVar5 = BG_ClipForWeapon(uVar4);
-    if (iVar5 != 0) {
-      if (local_1c < 0) {
-        local_1c = 0;
+    clipIndex_00 = BG_ClipForWeapon(weaponIndex);
+    if (clipIndex_00 != 0) {
+      if (ammoCount < 0) {
+        ammoCount = 0;
       }
       else {
-        iVar6 = BG_GetClipSize(uVar4);
-        if (iVar6 < local_1c) {
-          local_1c = BG_GetClipSize(uVar4);
+        iVar4 = BG_GetClipSize(weaponIndex);
+        if (iVar4 < ammoCount) {
+          ammoCount = BG_GetClipSize(weaponIndex);
         }
       }
-      BG_SetAmmoInClip(&local_18->client->ps,iVar5,local_1c);
-      pWVar7 = BG_GetWeaponDef(uVar4);
-      if (pWVar7->bDualWield != false) {
-        SetWeaponAmmoClipDualWield(&local_18->client->ps);
+      BG_SetAmmoInClip(&pSelf->client->ps,clipIndex_00,ammoCount);
+      pWVar5 = BG_GetWeaponDef(weaponIndex);
+      if (pWVar5->bDualWield != false) {
+        SetWeaponAmmoClipDualWield(&pSelf->client->ps);
       }
     }
   }
@@ -5177,54 +5310,61 @@ void __cdecl PlayerCmd_SetWeaponAmmoClip(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetWeaponAmmoStock(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetWeaponAmmoStock(scr_entref_t entref)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  uint uVar5;
-  int iVar6;
-  int iVar7;
-  scriptInstance_t sVar8;
+  gclient_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  uint weaponIndex;
+  int iVar4;
+  int iVar5;
+  scriptInstance_t inst;
   int local_50;
   int local_4c;
   int local_48;
   int local_40;
-  gentity_s *local_18;
+  int ammoIdx;
+  int maxAmmo;
+  int clipIdx;
+  gentity_s *pSelf;
+  char *weapName;
+  int weapIdx;
+  playerState_s *ps;
+  int newAmmoCnt;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0xb09,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0xb09,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    local_18 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar8 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar8);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_18 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   local_48 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  uVar5 = G_GetWeaponIndexForName(pcVar4);
-  pgVar1 = local_18->client;
-  if (uVar5 != 0) {
-    iVar6 = BG_WeaponIsClipOnly(uVar5);
-    if (iVar6 == 0) {
-      iVar6 = BG_AmmoForWeapon(uVar5);
-      if (iVar6 != 0) {
-        iVar6 = BG_GetAmmoPlayerMax(&pgVar1->ps,uVar5,0);
-        if (iVar6 <= local_48) {
-          local_48 = iVar6;
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  ps_00 = pSelf->client;
+  if (weaponIndex != 0) {
+    iVar4 = BG_WeaponIsClipOnly(weaponIndex);
+    if (iVar4 == 0) {
+      iVar4 = BG_AmmoForWeapon(weaponIndex);
+      if (iVar4 != 0) {
+        iVar4 = BG_GetAmmoPlayerMax(&ps_00->ps,weaponIndex,0);
+        if (iVar4 <= local_48) {
+          local_48 = iVar4;
         }
         if (local_48 < 1) {
           local_50 = 0;
@@ -5232,16 +5372,16 @@ void __cdecl PlayerCmd_SetWeaponAmmoStock(scr_entref_t param_1)
         else {
           local_50 = local_48;
         }
-        BG_SetAmmoInPool(&pgVar1->ps,uVar5,local_50);
+        BG_SetAmmoInPool(&ps_00->ps,weaponIndex,local_50);
       }
     }
     else {
-      iVar6 = BG_ClipForWeapon(uVar5);
-      if (iVar6 != 0) {
-        iVar7 = BG_GetClipSize(uVar5);
+      iVar4 = BG_ClipForWeapon(weaponIndex);
+      if (iVar4 != 0) {
+        iVar5 = BG_GetClipSize(weaponIndex);
         local_40 = local_48;
-        if (iVar7 <= local_48) {
-          local_40 = iVar7;
+        if (iVar5 <= local_48) {
+          local_40 = iVar5;
         }
         if (local_40 < 1) {
           local_4c = 0;
@@ -5249,7 +5389,7 @@ void __cdecl PlayerCmd_SetWeaponAmmoStock(scr_entref_t param_1)
         else {
           local_4c = local_40;
         }
-        BG_SetAmmoInClip(&pgVar1->ps,iVar6,local_4c);
+        BG_SetAmmoInClip(&ps_00->ps,iVar4,local_4c);
       }
     }
   }
@@ -5264,37 +5404,38 @@ void __cdecl PlayerCmd_SetWeaponAmmoStock(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetCurrentSpectatorClient(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetCurrentSpectatorClient(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  gentity_s *pgVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  gentity_s *pgVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  gentity_s *entity;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb2b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pgVar4 = Scr_GetEntity(0);
-  local_c->client->spectatorClient = (uint)(pgVar4->s).clientNum;
+  pgVar3 = Scr_GetEntity(0);
+  pSelf->client->spectatorClient = (uint)(pgVar3->s).clientNum;
   return;
 }
 
@@ -5306,45 +5447,47 @@ void __cdecl PlayerCmd_SetCurrentSpectatorClient(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetWeaponAmmoClip(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetWeaponAmmoClip(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  uint weaponIndex;
+  int value;
+  scriptInstance_t sVar4;
+  gentity_s *pSelf;
+  char *weapName;
+  int weapIdx;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb36,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar4 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,sVar4);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  if (uVar4 == 0) {
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  if (weaponIndex == 0) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    sVar6 = SCRIPTINSTANCE_SERVER;
-    iVar5 = BG_GetAmmoInClip(&local_10->client->ps,uVar4);
-    Scr_AddInt(iVar5,sVar6);
+    sVar4 = SCRIPTINSTANCE_SERVER;
+    value = BG_GetAmmoInClip(&pSelf->client->ps,weaponIndex);
+    Scr_AddInt(value,sVar4);
   }
   return;
 }
@@ -5357,52 +5500,54 @@ void __cdecl PlayerCmd_GetWeaponAmmoClip(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetWeaponAmmoStock(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetWeaponAmmoStock(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  uint weaponIndex;
+  int iVar4;
+  scriptInstance_t sVar5;
+  gentity_s *pSelf;
+  char *weapName;
+  int weapIdx;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb49,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  if (uVar4 == 0) {
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  if (weaponIndex == 0) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
-    iVar5 = BG_WeaponIsClipOnly(uVar4);
-    if (iVar5 == 0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      iVar5 = BG_GetAmmoNotInClip(&local_10->client->ps,uVar4);
-      Scr_AddInt(iVar5,sVar6);
+    iVar4 = BG_WeaponIsClipOnly(weaponIndex);
+    if (iVar4 == 0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      iVar4 = BG_GetAmmoNotInClip(&pSelf->client->ps,weaponIndex);
+      Scr_AddInt(iVar4,sVar5);
     }
     else {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      iVar5 = BG_GetAmmoInClip(&local_10->client->ps,uVar4);
-      Scr_AddInt(iVar5,sVar6);
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      iVar4 = BG_GetAmmoInClip(&pSelf->client->ps,weaponIndex);
+      Scr_AddInt(iVar4,sVar5);
     }
   }
   return;
@@ -5416,48 +5561,51 @@ void __cdecl PlayerCmd_GetWeaponAmmoStock(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_AnyAmmoForWeaponModes(scr_entref_t param_1)
+void __cdecl PlayerCmd_AnyAmmoForWeaponModes(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  WeaponVariantDef *pWVar5;
-  int iVar6;
-  scriptInstance_t sVar7;
-  gentity_s *local_18;
-  int local_8;
+  uint weaponIndex;
+  WeaponVariantDef *pWVar4;
+  int iVar5;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *weapName;
+  int weapIdx;
+  uint altWeapIdx;
+  int totalAmmo;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb65,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar7);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_18 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = G_GetWeaponIndexForName(pcVar3);
-  Scr_VerifyWeaponIndex(uVar4,pcVar3);
-  local_8 = BG_WeaponAmmo(&local_18->client->ps,uVar4);
-  pWVar5 = BG_GetWeaponVariantDef(uVar4);
-  if (pWVar5->altWeaponIndex != 0) {
-    iVar6 = BG_WeaponAmmo(&local_18->client->ps,pWVar5->altWeaponIndex);
-    local_8 = iVar6 + local_8;
+  weaponIndex = G_GetWeaponIndexForName(pcVar3);
+  Scr_VerifyWeaponIndex(weaponIndex,pcVar3);
+  totalAmmo = BG_WeaponAmmo(&pSelf->client->ps,weaponIndex);
+  pWVar4 = BG_GetWeaponVariantDef(weaponIndex);
+  if (pWVar4->altWeaponIndex != 0) {
+    iVar5 = BG_WeaponAmmo(&pSelf->client->ps,pWVar4->altWeaponIndex);
+    totalAmmo = iVar5 + totalAmmo;
   }
-  if (local_8 == 0) {
+  if (totalAmmo == 0) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -5475,38 +5623,39 @@ void __cdecl PlayerCmd_AnyAmmoForWeaponModes(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl iclientprintln(scr_entref_t param_1)
+void __cdecl iclientprintln(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_28 [31];
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char svcmd [31];
   undefined1 local_9;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb7d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  _snprintf(local_28,0x20,"%c");
+  _snprintf(svcmd,0x20,"%c");
   local_9 = 0;
-  Scr_MakeGameMessage((uint)param_1.entnum,local_28);
+  Scr_MakeGameMessage((uint)entref.entnum,svcmd);
   return;
 }
 
@@ -5519,38 +5668,39 @@ void __cdecl iclientprintln(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl iclientprintlnbold(scr_entref_t param_1)
+void __cdecl iclientprintlnbold(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_28 [31];
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char svcmd [31];
   undefined1 local_9;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb89,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  _snprintf(local_28,0x20,"%c");
+  _snprintf(svcmd,0x20,"%c");
   local_9 = 0;
-  Scr_MakeGameMessage((uint)param_1.entnum,local_28);
+  Scr_MakeGameMessage((uint)entref.entnum,svcmd);
   return;
 }
 
@@ -5562,47 +5712,48 @@ void __cdecl iclientprintlnbold(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_spawn(scr_entref_t param_1)
+void __cdecl PlayerCmd_spawn(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  DWORD DVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_24;
-  float local_1c [3];
-  float local_10 [3];
+  char *error;
+  DWORD DVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  PIXProfile pp;
+  float spawn_angles [3];
+  float spawn_origin [3];
   
   PIXBeginNamedEvent(-1,"PlayerCmd_spawn");
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xb97,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_24 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_GetVector(0,local_10,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(1,local_1c,SCRIPTINSTANCE_SERVER);
-  ClientSpawn(local_24,local_10,local_1c);
+  Scr_GetVector(0,spawn_origin,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(1,spawn_angles,SCRIPTINSTANCE_SERVER);
+  ClientSpawn(pSelf,spawn_origin,spawn_angles);
   if ((((onlinegame->current).enabled != false) && ((com_sv_running->current).enabled != false)) &&
-     ((local_24->client->sess).sessionState == SESS_STATE_PLAYING)) {
-    MatchRecordSpawn(local_24->client);
+     ((pSelf->client->sess).sessionState == SESS_STATE_PLAYING)) {
+    MatchRecordSpawn(pSelf->client);
   }
-  DVar4 = GetCurrentThreadId();
-  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar3 = GetCurrentThreadId();
+  if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -5616,37 +5767,37 @@ void __cdecl PlayerCmd_spawn(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_setEnterTime(scr_entref_t param_1)
+void __cdecl PlayerCmd_setEnterTime(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xbaf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (local_8->client->sess).enterTime = iVar4;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  (pSelf->client->sess).enterTime = iVar3;
   return;
 }
 
@@ -5658,12 +5809,12 @@ void __cdecl PlayerCmd_setEnterTime(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl BodyEnd(gentity_s *param_1)
+void __cdecl BodyEnd(gentity_s *ent)
 
 {
-  (param_1->s).lerp.eFlags = (param_1->s).lerp.eFlags & 0xffffffef;
-  (param_1->r).contents = 0x4000000;
-  (param_1->r).svFlags = '\0';
+  (ent->s).lerp.eFlags = (ent->s).lerp.eFlags & 0xffffffef;
+  (ent->r).contents = 0x4000000;
+  (ent->r).svFlags = '\0';
   return;
 }
 
@@ -5675,50 +5826,57 @@ void __cdecl BodyEnd(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_ClonePlayer(scr_entref_t param_1)
+void __cdecl PlayerCmd_ClonePlayer(scr_entref_t entref)
 
 {
   float fVar1;
   gclient_s *pgVar2;
   code *pcVar3;
   bool bVar4;
-  char *pcVar5;
-  int iVar6;
-  gentity_s *pgVar7;
-  DObj *pDVar8;
-  XAnimTree_s *pXVar9;
-  int iVar10;
-  int iVar11;
-  int iVar12;
-  undefined4 *puVar13;
-  undefined4 *puVar14;
-  gentity_s *pgVar15;
-  clientInfo_t *pcVar16;
-  scriptInstance_t sVar17;
-  gentity_s *local_24;
-  int local_8;
+  char *error;
+  int iVar5;
+  gentity_s *ent;
+  DObj *pDVar6;
+  XAnimTree_s *from;
+  int iVar7;
+  int iVar8;
+  int iVar9;
+  undefined4 *puVar10;
+  undefined4 *puVar11;
+  gentity_s *es;
+  clientInfo_t *ci;
+  scriptInstance_t inst;
+  gclient_s *client;
+  gentity_s *pSelf;
+  DObj *dobj;
+  XAnimTree_s *tree;
+  gentity_s *body;
+  int deathAnimDuration;
+  int corpseIndex;
+  corpseInfo_t *corpseInfo;
+  int axis;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xbd3,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_24 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar17 = SCRIPTINSTANCE_SERVER;
-      pcVar5 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar5,sVar17);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar6 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  pgVar2 = local_24->client;
+  iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  pgVar2 = pSelf->client;
   if ((pgVar2 == (gclient_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xbd8,0,"%s"), !bVar4)) {
@@ -5733,46 +5891,45 @@ void __cdecl PlayerCmd_ClonePlayer(scr_entref_t param_1)
     (*pcVar3)();
     return;
   }
-  pgVar7 = G_SpawnPlayerClone();
-  (pgVar7->s).clientNum = (pgVar2->ps).clientNum;
-  (pgVar7->s).lerp.eFlags =
-       (pgVar2->ps).eFlags & 0xfffffffdU | (pgVar7->s).lerp.eFlags & 2U | 0x40010;
+  ent = G_SpawnPlayerClone();
+  (ent->s).clientNum = (pgVar2->ps).clientNum;
+  (ent->s).lerp.eFlags = (pgVar2->ps).eFlags & 0xfffffffdU | (ent->s).lerp.eFlags & 2U | 0x40010;
   if (((pgVar2->ps).eFlags2 & 0x200000U) != 0) {
-    (pgVar7->s).lerp.eFlags2 = (pgVar7->s).lerp.eFlags2 | 0x200000;
+    (ent->s).lerp.eFlags2 = (ent->s).lerp.eFlags2 | 0x200000;
   }
-  G_SetOrigin(pgVar7,(pgVar2->ps).origin);
-  G_SetAngle(pgVar7,(local_24->r).currentAngles);
-  (pgVar7->s).lerp.pos.trType = '\x06';
-  (pgVar7->s).lerp.pos.trTime = level.time;
-  (pgVar7->s).lerp.pos.trDelta[0] = (pgVar2->ps).velocity[0];
-  (pgVar7->s).lerp.pos.trDelta[1] = (pgVar2->ps).velocity[1];
-  (pgVar7->s).lerp.pos.trDelta[2] = (pgVar2->ps).velocity[2];
-  if ((((((uint)(pgVar7->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(pgVar7->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(pgVar7->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  G_SetOrigin(ent,(pgVar2->ps).origin);
+  G_SetAngle(ent,(pSelf->r).currentAngles);
+  (ent->s).lerp.pos.trType = '\x06';
+  (ent->s).lerp.pos.trTime = level.time;
+  (ent->s).lerp.pos.trDelta[0] = (pgVar2->ps).velocity[0];
+  (ent->s).lerp.pos.trDelta[1] = (pgVar2->ps).velocity[1];
+  (ent->s).lerp.pos.trDelta[2] = (pgVar2->ps).velocity[2];
+  if ((((((uint)(ent->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(ent->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(ent->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xbe9,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  (pgVar7->s).eType = 2;
-  pgVar7->physicsObject = '\x01';
-  pgVar7->model = local_24->model;
-  (pgVar7->s).renderOptions.field0_0x0 = (local_24->s).renderOptions.field0_0x0;
-  pDVar8 = Com_GetServerDObj((uint)(pgVar2->ps).clientNum);
-  pXVar9 = DObjGetTree(pDVar8);
-  (pgVar7->s).lerp.u.player.stowedWeapon = (ushort)(pgVar2->ps).stowedWeapon;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    fVar1 = (pgVar7->s).lerp.pos.trDelta[local_8];
+  (ent->s).eType = 2;
+  ent->physicsObject = '\x01';
+  ent->model = pSelf->model;
+  (ent->s).renderOptions.field0_0x0 = (pSelf->s).renderOptions.field0_0x0;
+  pDVar6 = Com_GetServerDObj((uint)(pgVar2->ps).clientNum);
+  from = DObjGetTree(pDVar6);
+  (ent->s).lerp.u.player.stowedWeapon = (ushort)(pgVar2->ps).stowedWeapon;
+  for (axis = 0; axis < 2; axis = axis + 1) {
+    fVar1 = (ent->s).lerp.pos.trDelta[axis];
     if ((g_clonePlayerMaxVelocity->current).value <= fVar1 &&
         fVar1 != (g_clonePlayerMaxVelocity->current).value) {
-      (pgVar7->s).lerp.pos.trDelta[local_8] = (float)(g_clonePlayerMaxVelocity->current).integer;
+      (ent->s).lerp.pos.trDelta[axis] = (float)(g_clonePlayerMaxVelocity->current).integer;
     }
   }
-  if ((((((uint)(pgVar7->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(pgVar7->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(pgVar7->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(ent->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(ent->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(ent->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xbfc,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -5780,12 +5937,12 @@ void __cdecl PlayerCmd_ClonePlayer(scr_entref_t param_1)
     return;
   }
   Com_Printf(0xe,"Cloning Player entnum %i %i\n");
-  (pgVar7->field36_0x21c).item[0].ammoCount = level.time;
-  iVar10 = G_GetFreePlayerCorpseIndex();
-  iVar12 = iVar10 * 0x5e0;
-  *(int *)(g_scr_data.playerCorpseInfo + iVar12 + 4) = (pgVar7->s).number;
-  *(int *)(g_scr_data.playerCorpseInfo + iVar12 + 8) = level.time;
-  g_scr_data.playerCorpseInfo[iVar12 + 0x5d8] = 1;
+  (ent->field36_0x21c).item[0].ammoCount = level.time;
+  iVar7 = G_GetFreePlayerCorpseIndex();
+  iVar9 = iVar7 * 0x5e0;
+  *(int *)(g_scr_data.playerCorpseInfo + iVar9 + 4) = (ent->s).number;
+  *(int *)(g_scr_data.playerCorpseInfo + iVar9 + 8) = level.time;
+  g_scr_data.playerCorpseInfo[iVar9 + 0x5d8] = 1;
   if ((0x1f < (pgVar2->ps).clientNum) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xc05,0,
@@ -5795,51 +5952,51 @@ void __cdecl PlayerCmd_ClonePlayer(scr_entref_t param_1)
     (*pcVar3)();
     return;
   }
-  puVar13 = (undefined4 *)(level_bgs.clientinfo + (uint)(pgVar2->ps).clientNum * 0x5c8);
-  puVar14 = (undefined4 *)(g_scr_data.playerCorpseInfo + iVar12 + 0x10);
-  for (iVar11 = 0x172; iVar11 != 0; iVar11 = iVar11 + -1) {
-    *puVar14 = *puVar13;
-    puVar13 = puVar13 + 1;
-    puVar14 = puVar14 + 1;
+  puVar10 = (undefined4 *)(level_bgs.clientinfo + (uint)(pgVar2->ps).clientNum * 0x5c8);
+  puVar11 = (undefined4 *)(g_scr_data.playerCorpseInfo + iVar9 + 0x10);
+  for (iVar8 = 0x172; iVar8 != 0; iVar8 = iVar8 + -1) {
+    *puVar11 = *puVar10;
+    puVar10 = puVar10 + 1;
+    puVar11 = puVar11 + 1;
   }
-  *(undefined4 *)(g_scr_data.playerCorpseInfo + iVar12 + 0x544) =
-       *(undefined4 *)(g_scr_data.playerCorpseInfo + iVar12);
-  (pgVar2->ps).corpseIndex = iVar10;
-  XAnimCloneAnimTree(pXVar9,*(XAnimTree_s **)(g_scr_data.playerCorpseInfo + iVar12));
-  iVar10 = 0;
-  pcVar16 = (clientInfo_t *)(g_scr_data.playerCorpseInfo + iVar12 + 0x10);
-  pgVar15 = pgVar7;
-  pDVar8 = Com_GetServerDObj((pgVar7->s).number);
-  BG_UpdatePlayerDObj(-1,pDVar8,&pgVar15->s,pcVar16,iVar10);
-  (pgVar7->s).groundEntityNum = 0x3ff;
-  if (((pgVar7->r).svFlags != '\0') &&
+  *(undefined4 *)(g_scr_data.playerCorpseInfo + iVar9 + 0x544) =
+       *(undefined4 *)(g_scr_data.playerCorpseInfo + iVar9);
+  (pgVar2->ps).corpseIndex = iVar7;
+  XAnimCloneAnimTree(from,*(XAnimTree_s **)(g_scr_data.playerCorpseInfo + iVar9));
+  iVar7 = 0;
+  ci = (clientInfo_t *)(g_scr_data.playerCorpseInfo + iVar9 + 0x10);
+  es = ent;
+  pDVar6 = Com_GetServerDObj((ent->s).number);
+  BG_UpdatePlayerDObj(-1,pDVar6,&es->s,ci,iVar7);
+  (ent->s).groundEntityNum = 0x3ff;
+  if (((ent->r).svFlags != '\0') &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xc0f,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  (pgVar7->r).svFlags = '\x02';
-  (pgVar7->r).mins[0] = (local_24->r).mins[0];
-  (pgVar7->r).mins[1] = (local_24->r).mins[1];
-  (pgVar7->r).mins[2] = (local_24->r).mins[2];
-  (pgVar7->r).maxs[0] = (local_24->r).maxs[0];
-  (pgVar7->r).maxs[1] = (local_24->r).maxs[1];
-  (pgVar7->r).maxs[2] = (local_24->r).maxs[2];
-  (pgVar7->r).absmin[0] = (local_24->r).absmin[0];
-  (pgVar7->r).absmin[1] = (local_24->r).absmin[1];
-  (pgVar7->r).absmin[2] = (local_24->r).absmin[2];
-  (pgVar7->r).absmax[0] = (local_24->r).absmax[0];
-  (pgVar7->r).absmax[1] = (local_24->r).absmax[1];
-  (pgVar7->r).absmax[2] = (local_24->r).absmax[2];
-  *(int *)&(pgVar7->s).un2 = (int)(pgVar2->ps).legsAnim;
-  *(int *)((int)&(pgVar7->s).un2 + 4) = (int)(pgVar2->ps).torsoAnim;
-  pgVar7->clipmask = 0x10001;
-  (pgVar7->r).contents = 0x4004000;
-  SV_LinkEntity(pgVar7);
-  pgVar7->nextthink = level.time + iVar6;
-  pgVar7->handler = '\x10';
-  GScr_AddEntity(pgVar7);
+  (ent->r).svFlags = '\x02';
+  (ent->r).mins[0] = (pSelf->r).mins[0];
+  (ent->r).mins[1] = (pSelf->r).mins[1];
+  (ent->r).mins[2] = (pSelf->r).mins[2];
+  (ent->r).maxs[0] = (pSelf->r).maxs[0];
+  (ent->r).maxs[1] = (pSelf->r).maxs[1];
+  (ent->r).maxs[2] = (pSelf->r).maxs[2];
+  (ent->r).absmin[0] = (pSelf->r).absmin[0];
+  (ent->r).absmin[1] = (pSelf->r).absmin[1];
+  (ent->r).absmin[2] = (pSelf->r).absmin[2];
+  (ent->r).absmax[0] = (pSelf->r).absmax[0];
+  (ent->r).absmax[1] = (pSelf->r).absmax[1];
+  (ent->r).absmax[2] = (pSelf->r).absmax[2];
+  *(int *)&(ent->s).un2 = (int)(pgVar2->ps).legsAnim;
+  *(int *)((int)&(ent->s).un2 + 4) = (int)(pgVar2->ps).torsoAnim;
+  ent->clipmask = 0x10001;
+  (ent->r).contents = 0x4004000;
+  SV_LinkEntity(ent);
+  ent->nextthink = level.time + iVar5;
+  ent->handler = '\x10';
+  GScr_AddEntity(ent);
   return;
 }
 
@@ -5852,84 +6009,86 @@ void __cdecl PlayerCmd_ClonePlayer(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetClientDvar(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetClientDvar(scr_entref_t entref)
 
 {
-  char cVar1;
-  code *pcVar2;
-  bool bVar3;
-  uchar uVar4;
-  char *pcVar5;
-  int iVar6;
-  uint uVar7;
-  char *pcVar8;
-  char *pcVar9;
-  scriptInstance_t sVar10;
-  uint uVar11;
+  code *pcVar1;
+  bool bVar2;
+  char cVar3;
+  char *pcVar4;
+  int iVar5;
+  uint uVar6;
+  char *errorContext;
+  char *string;
+  scriptInstance_t inst;
+  uint stringLimit;
   char *local_828;
-  char *local_818;
-  int local_810;
-  char local_80c [1024];
-  uchar local_40c [1024];
+  gentity_s *pSelf;
+  int iType;
+  char *pszDvar;
+  char *pszText;
+  int iLen;
+  int i;
+  char szString [1024];
+  uchar szOutString [1024];
   uint local_c;
-  uchar *local_8;
+  char *pCh;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0xc32,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0xc32,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar10 = SCRIPTINSTANCE_SERVER;
-      pcVar5 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar5,sVar10);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar4 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar4,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  pcVar5 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar6 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
-  if (iVar6 == 3) {
-    uVar11 = 0x400;
-    pcVar9 = local_80c;
-    pcVar8 = "Client Dvar Value";
-    uVar7 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    Scr_ConstructMessageString(1,uVar7 - 1,pcVar8,pcVar9,uVar11);
-    local_818 = local_80c;
+  pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+  iVar5 = Scr_GetType(1,SCRIPTINSTANCE_SERVER);
+  if (iVar5 == 3) {
+    stringLimit = 0x400;
+    string = szString;
+    errorContext = "Client Dvar Value";
+    uVar6 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+    Scr_ConstructMessageString(1,uVar6 - 1,errorContext,string,stringLimit);
+    pszText = szString;
   }
   else {
-    local_818 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+    pszText = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
   }
-  local_828 = local_818;
+  local_828 = pszText;
   do {
-    cVar1 = *local_828;
+    cVar3 = *local_828;
     local_828 = local_828 + 1;
-  } while (cVar1 != '\0');
-  bVar3 = Dvar_IsValidName(pcVar5);
-  if (bVar3) {
-    local_8 = local_40c;
-    memset(local_40c,'\0',0x400);
-    for (local_810 = 0; (local_810 < 0x3ff && (local_818[local_810] != '\0'));
-        local_810 = local_810 + 1) {
-      uVar4 = I_CleanChar(local_818[local_810]);
-      *local_8 = uVar4;
-      if (*local_8 == '\"') {
-        *local_8 = '\'';
+  } while (cVar3 != '\0');
+  bVar2 = Dvar_IsValidName(pcVar4);
+  if (bVar2) {
+    pCh = (char *)szOutString;
+    memset(szOutString,'\0',0x400);
+    for (i = 0; (i < 0x3ff && (pszText[i] != '\0')); i = i + 1) {
+      cVar3 = I_CleanChar(pszText[i]);
+      *pCh = cVar3;
+      if (*pCh == '\"') {
+        *pCh = '\'';
       }
-      local_8 = local_8 + 1;
+      pCh = pCh + 1;
     }
-    pcVar5 = va("%c %s \"%s\"");
-    SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_RELIABLE,pcVar5);
+    pcVar4 = va("%c %s \"%s\"");
+    SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_RELIABLE,pcVar4);
   }
   else {
-    bVar3 = false;
-    pcVar5 = va("Dvar %s has an invalid dvar name");
-    Scr_Error(pcVar5,bVar3);
+    bVar2 = false;
+    pcVar4 = va("Dvar %s has an invalid dvar name");
+    Scr_Error(pcVar4,bVar2);
   }
   return;
 }
@@ -5942,94 +6101,98 @@ void __cdecl PlayerCmd_SetClientDvar(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetClientUIVisibilityFlag(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetClientUIVisibilityFlag(scr_entref_t entref)
 
 {
   code *pcVar1;
-  byte bVar2;
-  bool bVar3;
-  char *pcVar4;
-  uint uVar5;
+  bool bVar2;
+  char *pcVar3;
+  uint uVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  clientState_s *pcVar8;
-  scriptInstance_t sVar9;
-  gentity_s *local_18;
+  clientState_s *pcVar7;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *flagName;
+  clientState_s *clientState;
+  int flagBit;
+  int value;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0xc5b,0,"%s"), !bVar3)) {
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0xc5b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar9 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar9);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_18 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar5 == 2) {
-    pcVar4 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-    iVar6 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-    iVar7 = I_stricmp("hud_visible",pcVar4);
-    if (iVar7 == 0) {
-      bVar2 = 0;
+  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar4 == 2) {
+    pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
+    iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+    iVar6 = I_stricmp("hud_visible",pcVar3);
+    if (iVar6 == 0) {
+      flagBit = 0;
     }
     else {
-      iVar7 = I_stricmp("g_compassShowEnemies",pcVar4);
-      if (iVar7 == 0) {
-        bVar2 = 1;
+      iVar6 = I_stricmp("g_compassShowEnemies",pcVar3);
+      if (iVar6 == 0) {
+        flagBit = 1;
       }
       else {
-        iVar7 = I_stricmp("radar_client",pcVar4);
-        if (iVar7 == 0) {
-          bVar2 = 2;
+        iVar6 = I_stricmp("radar_client",pcVar3);
+        if (iVar6 == 0) {
+          flagBit = 2;
         }
         else {
-          iVar7 = I_stricmp("killcam_nemesis",pcVar4);
-          if (iVar7 != 0) {
-            bVar3 = false;
-            pcVar4 = va("PlayerCmd_SetClientFlag: Couldn\'t find a matching bit for flag name : %s "
+          iVar6 = I_stricmp("killcam_nemesis",pcVar3);
+          if (iVar6 != 0) {
+            bVar2 = false;
+            pcVar3 = va("PlayerCmd_SetClientFlag: Couldn\'t find a matching bit for flag name : %s "
                        );
-            Scr_Error(pcVar4,bVar3);
+            Scr_Error(pcVar3,bVar2);
             return;
           }
-          bVar2 = 3;
+          flagBit = 3;
         }
       }
     }
-    if (bVar2 < 0x41) {
-      if ((3 < bVar2) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                   ,0xc82,0,"%s"), !bVar3)) {
+    if ((uint)flagBit < 0x41) {
+      if ((3 < (uint)flagBit) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                   ,0xc82,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      pcVar8 = G_GetClientState((local_18->s).number);
-      if (pcVar8 != (clientState_s *)0x0) {
-        if (iVar6 == 0) {
-          pcVar8->clientUIVisibilityFlags = ~(1 << bVar2) & pcVar8->clientUIVisibilityFlags;
+      pcVar7 = G_GetClientState((pSelf->s).number);
+      if (pcVar7 != (clientState_s *)0x0) {
+        if (iVar5 == 0) {
+          pcVar7->clientUIVisibilityFlags = ~(1 << (sbyte)flagBit) & pcVar7->clientUIVisibilityFlags
+          ;
         }
         else {
-          pcVar8->clientUIVisibilityFlags = 1 << bVar2 | pcVar8->clientUIVisibilityFlags;
+          pcVar7->clientUIVisibilityFlags = 1 << (sbyte)flagBit | pcVar7->clientUIVisibilityFlags;
         }
       }
     }
     else {
-      bVar3 = false;
-      pcVar4 = va(
+      bVar2 = false;
+      pcVar3 = va(
                  "PlayerCmd_SetClientFlag: Couldn\'t set bit for flagName %s. Exceeded the limit of client flag bits."
                  );
-      Scr_Error(pcVar4,bVar3);
+      Scr_Error(pcVar3,bVar2);
     }
   }
   return;
@@ -6044,7 +6207,7 @@ void __cdecl PlayerCmd_SetClientUIVisibilityFlag(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetClientDvars(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetClientDvars(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -6052,28 +6215,29 @@ void __cdecl PlayerCmd_SetClientDvars(scr_entref_t param_1)
   char cVar3;
   char *pcVar4;
   uint uVar5;
-  scriptInstance_t sVar6;
-  char *local_818;
-  char local_814 [1024];
-  char local_414 [1024];
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *c;
+  char finalString [1024];
+  char tempString [1024];
   uint local_14;
-  char *local_10;
-  uint local_c;
-  char *local_8;
+  char *dvarName;
+  uint i;
+  char *value;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xc99,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar6);
+      Scr_ObjectError(pcVar4,inst);
     }
   }
   else {
@@ -6084,33 +6248,33 @@ void __cdecl PlayerCmd_SetClientDvars(scr_entref_t param_1)
     Scr_Error("Not enough parameters to setclientdvar() - must be an even number of parameters (dvar, value, dvar, value, etc.)\n"
               ,false);
   }
-  local_814[0] = 'v';
-  local_814[1] = 0;
-  local_c = 0;
+  finalString[0] = 'v';
+  finalString[1] = 0;
+  i = 0;
   while( true ) {
     uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-    if (uVar5 <= local_c) {
-      SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_RELIABLE,local_814);
+    if (uVar5 <= i) {
+      SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_RELIABLE,finalString);
       return;
     }
-    local_10 = Scr_GetString(local_c,SCRIPTINSTANCE_SERVER);
-    local_8 = Scr_GetString(local_c + 1,SCRIPTINSTANCE_SERVER);
-    bVar2 = Dvar_IsValidName(local_10);
+    dvarName = Scr_GetString(i,SCRIPTINSTANCE_SERVER);
+    value = Scr_GetString(i + 1,SCRIPTINSTANCE_SERVER);
+    bVar2 = Dvar_IsValidName(dvarName);
     if (!bVar2) break;
-    I_strncpyz(local_414,local_8,0x400);
-    for (local_818 = local_414; *local_818 != '\0'; local_818 = local_818 + 1) {
-      cVar3 = I_CleanChar(*local_818);
-      *local_818 = cVar3;
-      if (*local_818 == '\"') {
-        *local_818 = '\'';
+    I_strncpyz(tempString,value,0x400);
+    for (c = tempString; *c != '\0'; c = c + 1) {
+      cVar3 = I_CleanChar(*c);
+      *c = cVar3;
+      if (*c == '\"') {
+        *c = '\'';
       }
     }
-    I_strncat(local_814,0x400," ");
-    I_strncat(local_814,0x400,local_10);
-    I_strncat(local_814,0x400," \"");
-    I_strncat(local_814,0x400,local_414);
-    I_strncat(local_814,0x400,"\"");
-    local_c = local_c + 2;
+    I_strncat(finalString,0x400," ");
+    I_strncat(finalString,0x400,dvarName);
+    I_strncat(finalString,0x400," \"");
+    I_strncat(finalString,0x400,tempString);
+    I_strncat(finalString,0x400,"\"");
+    i = i + 2;
   }
   bVar2 = false;
   pcVar4 = va("Dvar %s has an invalid dvar name");
@@ -6126,40 +6290,46 @@ void __cdecl PlayerCmd_SetClientDvars(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_PlayClientAirstrike(scr_entref_t param_1)
+void __cdecl PlayerCmd_PlayClientAirstrike(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  scriptInstance_t sVar4;
-  float local_14 [3];
-  char *local_8;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *teamName;
+  char *team;
+  uint owner;
+  uint yaw;
+  int height;
+  float position [3];
+  char *exitType;
   
-  local_8 = "straight";
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  exitType = "straight";
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xcd2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,position,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   Scr_GetString(2,SCRIPTINSTANCE_SERVER);
   Scr_GetString(3,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
+  exitType = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
   pcVar3 = va("%c %f %f %f %i %c %c %c %i %c %i %i");
   SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,pcVar3);
@@ -6174,40 +6344,46 @@ void __cdecl PlayerCmd_PlayClientAirstrike(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_PlayClientNapalm(scr_entref_t param_1)
+void __cdecl PlayerCmd_PlayClientNapalm(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  scriptInstance_t sVar4;
-  float local_14 [3];
-  char *local_8;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *teamName;
+  char *team;
+  uint owner;
+  uint yaw;
+  int height;
+  float position [3];
+  char *exitType;
   
-  local_8 = "left";
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  exitType = "left";
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xcf7,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  Scr_GetVector(0,local_14,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(0,position,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
   Scr_GetString(2,SCRIPTINSTANCE_SERVER);
   Scr_GetString(3,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(4,SCRIPTINSTANCE_SERVER);
-  local_8 = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
+  exitType = Scr_GetString(5,SCRIPTINSTANCE_SERVER);
   Scr_GetInt(6,SCRIPTINSTANCE_SERVER);
   pcVar3 = va("%c %f %f %f %i %c %c %c %i %c %i %i");
   SV_GameSendServerCommand(-1,SV_CMD_RELIABLE,pcVar3);
@@ -6222,37 +6398,38 @@ void __cdecl PlayerCmd_PlayClientNapalm(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsTalking(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsTalking(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int elapsedTime;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd14,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = level.time - local_c->client->lastVoiceTime;
-  if ((iVar4 < 0) || ((g_voiceChatTalkingDuration->current).integer <= iVar4)) {
+  iVar3 = level.time - pSelf->client->lastVoiceTime;
+  if ((iVar3 < 0) || ((g_voiceChatTalkingDuration->current).integer <= iVar3)) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -6269,41 +6446,41 @@ void __cdecl PlayerCmd_IsTalking(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_FreezeControls(scr_entref_t param_1)
+void __cdecl PlayerCmd_FreezeControls(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd20,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (iVar4 == 0) {
-    local_8->client->flags = local_8->client->flags & 0xfffffffb;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (iVar3 == 0) {
+    pSelf->client->flags = pSelf->client->flags & 0xfffffffb;
   }
   else {
-    local_8->client->flags = local_8->client->flags | 4;
+    pSelf->client->flags = pSelf->client->flags | 4;
   }
   return;
 }
@@ -6316,35 +6493,35 @@ void __cdecl PlayerCmd_FreezeControls(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DisableUsability(scr_entref_t param_1)
+void __cdecl PlayerCmd_DisableUsability(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd2b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_8->client->flags = local_8->client->flags | 8;
+  pSelf->client->flags = pSelf->client->flags | 8;
   return;
 }
 
@@ -6356,35 +6533,35 @@ void __cdecl PlayerCmd_DisableUsability(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EnableUsability(scr_entref_t param_1)
+void __cdecl PlayerCmd_EnableUsability(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd32,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_8->client->flags = local_8->client->flags & 0xfffffff7;
+  pSelf->client->flags = pSelf->client->flags & 0xfffffff7;
   return;
 }
 
@@ -6396,36 +6573,36 @@ void __cdecl PlayerCmd_EnableUsability(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DisableWeapons(scr_entref_t param_1)
+void __cdecl PlayerCmd_DisableWeapons(scr_entref_t entref)
 
 {
   gclient_s *pgVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd38,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pgVar1 = local_c->client;
+  pgVar1 = pSelf->client;
   (pgVar1->ps).weapFlags = (pgVar1->ps).weapFlags | 0x80;
   if (((pgVar1->ps).pm_flags & 0x400000U) != 0) {
     (pgVar1->ps).pm_flags = (pgVar1->ps).pm_flags & 0xffbfffff;
@@ -6447,35 +6624,35 @@ void __cdecl PlayerCmd_DisableWeapons(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EnableWeapons(scr_entref_t param_1)
+void __cdecl PlayerCmd_EnableWeapons(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd4c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags & 0xffffff7f;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags & 0xffffff7f;
   return;
 }
 
@@ -6487,35 +6664,35 @@ void __cdecl PlayerCmd_EnableWeapons(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DisableDeathStreak(scr_entref_t param_1)
+void __cdecl PlayerCmd_DisableDeathStreak(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd52,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags & 0xfffbffff;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags & 0xfffbffff;
   return;
 }
 
@@ -6527,35 +6704,35 @@ void __cdecl PlayerCmd_DisableDeathStreak(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EnableDeathStreak(scr_entref_t param_1)
+void __cdecl PlayerCmd_EnableDeathStreak(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd59,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags | 0x40000;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags | 0x40000;
   return;
 }
 
@@ -6567,35 +6744,35 @@ void __cdecl PlayerCmd_EnableDeathStreak(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DeathStreakActive(scr_entref_t param_1)
+void __cdecl PlayerCmd_DeathStreakActive(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd5f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  Scr_AddInt((uint)(((local_8->client->ps).weapFlags & 0x40000U) != 0),SCRIPTINSTANCE_SERVER);
+  Scr_AddInt((uint)(((pSelf->client->ps).weapFlags & 0x40000U) != 0),SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -6607,35 +6784,35 @@ void __cdecl PlayerCmd_DeathStreakActive(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DisableOffhandWeapons(scr_entref_t param_1)
+void __cdecl PlayerCmd_DisableOffhandWeapons(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd70,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags | 0x100;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags | 0x100;
   return;
 }
 
@@ -6647,35 +6824,35 @@ void __cdecl PlayerCmd_DisableOffhandWeapons(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EnableOffhandWeapons(scr_entref_t param_1)
+void __cdecl PlayerCmd_EnableOffhandWeapons(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd80,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags & 0xfffffeff;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags & 0xfffffeff;
   return;
 }
 
@@ -6687,35 +6864,35 @@ void __cdecl PlayerCmd_EnableOffhandWeapons(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DisableWeaponCycling(scr_entref_t param_1)
+void __cdecl PlayerCmd_DisableWeaponCycling(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xd90,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags | 0x200;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags | 0x200;
   return;
 }
 
@@ -6727,35 +6904,35 @@ void __cdecl PlayerCmd_DisableWeaponCycling(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EnableWeaponCycling(scr_entref_t param_1)
+void __cdecl PlayerCmd_EnableWeaponCycling(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xda1,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags & 0xfffffdff;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags & 0xfffffdff;
   return;
 }
 
@@ -6768,30 +6945,32 @@ void __cdecl PlayerCmd_EnableWeaponCycling(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_PlayLocalSound(scr_entref_t param_1)
+void __cdecl ScrCmd_PlayLocalSound(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_4c [63];
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *pszSoundName;
+  char svcmd [63];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xdcb,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
@@ -6800,9 +6979,9 @@ void __cdecl ScrCmd_PlayLocalSound(scr_entref_t param_1)
   Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   SND_FindAliasId(pcVar3);
-  _snprintf(local_4c,0x40,"%c %i");
+  _snprintf(svcmd,0x40,"%c %i");
   local_d = 0;
-  SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_CAN_IGNORE,local_4c);
+  SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_CAN_IGNORE,svcmd);
   return;
 }
 
@@ -6815,41 +6994,43 @@ void __cdecl ScrCmd_PlayLocalSound(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ScrCmd_StopLocalSound(scr_entref_t param_1)
+void __cdecl ScrCmd_StopLocalSound(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  scriptInstance_t sVar4;
-  char local_4c [63];
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *pszSoundName;
+  char svcmd [63];
   undefined1 local_d;
   uint local_c;
-  uint local_8;
+  uint soundIndex;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xdda,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  local_8 = SND_FindAliasId(pcVar3);
-  _snprintf(local_4c,0x40,"%c %i");
+  soundIndex = SND_FindAliasId(pcVar3);
+  _snprintf(svcmd,0x40,"%c %i");
   local_d = 0;
-  SV_GameSendServerCommand((uint)param_1.entnum,SV_CMD_CAN_IGNORE,local_4c);
+  SV_GameSendServerCommand((uint)entref.entnum,SV_CMD_CAN_IGNORE,svcmd);
   return;
 }
 
@@ -6862,48 +7043,48 @@ void __cdecl ScrCmd_StopLocalSound(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SayAll(scr_entref_t param_1)
+void __cdecl PlayerCmd_SayAll(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   uint uVar4;
-  char *pcVar5;
-  scriptInstance_t sVar6;
-  uint uVar7;
-  gentity_s *local_410;
-  char local_40c;
+  char *errorContext;
+  scriptInstance_t inst;
+  uint stringLimit;
+  gentity_s *pSelf;
+  char szString;
   char local_40b [1027];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xdf5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_410 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_410 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar7 = 0x3ff;
+  stringLimit = 0x3ff;
   pcVar3 = local_40b;
-  pcVar5 = "Client Chat Message";
+  errorContext = "Client Chat Message";
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(0,uVar4 - 1,pcVar5,pcVar3,uVar7);
-  local_40c = '\x14';
-  G_Say(local_410,(gentity_s *)0x0,0,&local_40c);
+  Scr_ConstructMessageString(0,uVar4 - 1,errorContext,pcVar3,stringLimit);
+  szString = '\x14';
+  G_Say(pSelf,(gentity_s *)0x0,0,&szString);
   return;
 }
 
@@ -6916,48 +7097,48 @@ void __cdecl PlayerCmd_SayAll(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SayTeam(scr_entref_t param_1)
+void __cdecl PlayerCmd_SayTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   uint uVar4;
-  char *pcVar5;
-  scriptInstance_t sVar6;
-  uint uVar7;
-  gentity_s *local_410;
-  char local_40c;
+  char *errorContext;
+  scriptInstance_t inst;
+  uint stringLimit;
+  gentity_s *pSelf;
+  char szString;
   char local_40b [1027];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe0e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_410 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_410 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar7 = 0x3ff;
+  stringLimit = 0x3ff;
   pcVar3 = local_40b;
-  pcVar5 = "Client Chat Message";
+  errorContext = "Client Chat Message";
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  Scr_ConstructMessageString(0,uVar4 - 1,pcVar5,pcVar3,uVar7);
-  local_40c = '\x14';
-  G_Say(local_410,(gentity_s *)0x0,1,&local_40c);
+  Scr_ConstructMessageString(0,uVar4 - 1,errorContext,pcVar3,stringLimit);
+  szString = '\x14';
+  G_Say(pSelf,(gentity_s *)0x0,1,&szString);
   return;
 }
 
@@ -6969,45 +7150,45 @@ void __cdecl PlayerCmd_SayTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_AllowADS(scr_entref_t param_1)
+void __cdecl PlayerCmd_AllowADS(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_8;
+  char *error;
+  uint uVar3;
+  int iVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe1c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 == 1) {
-    iVar5 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-    if (iVar5 == 0) {
-      (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags | 0x20;
-      PM_ExitAimDownSight(&local_8->client->ps);
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 == 1) {
+    iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+    if (iVar4 == 0) {
+      (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags | 0x20;
+      PM_ExitAimDownSight(&pSelf->client->ps);
     }
     else {
-      (local_8->client->ps).weapFlags = (local_8->client->ps).weapFlags & 0xffffffdf;
+      (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags & 0xffffffdf;
     }
   }
   else {
@@ -7024,41 +7205,41 @@ void __cdecl PlayerCmd_AllowADS(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_AllowJump(scr_entref_t param_1)
+void __cdecl PlayerCmd_AllowJump(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe32,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (iVar4 == 0) {
-    (local_8->client->ps).pm_flags = (local_8->client->ps).pm_flags | 0x80000;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (iVar3 == 0) {
+    (pSelf->client->ps).pm_flags = (pSelf->client->ps).pm_flags | 0x80000;
   }
   else {
-    (local_8->client->ps).pm_flags = (local_8->client->ps).pm_flags & 0xfff7ffff;
+    (pSelf->client->ps).pm_flags = (pSelf->client->ps).pm_flags & 0xfff7ffff;
   }
   return;
 }
@@ -7071,41 +7252,41 @@ void __cdecl PlayerCmd_AllowJump(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_AllowSprint(scr_entref_t param_1)
+void __cdecl PlayerCmd_AllowSprint(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe3d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (iVar4 == 0) {
-    (local_8->client->ps).pm_flags = (local_8->client->ps).pm_flags | 0x40000;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (iVar3 == 0) {
+    (pSelf->client->ps).pm_flags = (pSelf->client->ps).pm_flags | 0x40000;
   }
   else {
-    (local_8->client->ps).pm_flags = (local_8->client->ps).pm_flags & 0xfffbffff;
+    (pSelf->client->ps).pm_flags = (pSelf->client->ps).pm_flags & 0xfffbffff;
   }
   return;
 }
@@ -7118,7 +7299,7 @@ void __cdecl PlayerCmd_AllowSprint(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetSprintDuration(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetSprintDuration(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -7127,18 +7308,19 @@ void __cdecl PlayerCmd_SetSprintDuration(scr_entref_t param_1)
   uint uVar4;
   float fVar5;
   scriptInstance_t sVar6;
-  gentity_s *local_c;
+  gentity_s *pSelf;
+  float duration;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe49,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
       sVar6 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
       Scr_ObjectError(pcVar3,sVar6);
@@ -7146,14 +7328,14 @@ void __cdecl PlayerCmd_SetSprintDuration(scr_entref_t param_1)
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 1) {
     fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
     if (0.0 <= fVar5) {
       if (fVar5 < 16383.0) {
-        (local_c->client->ps).sprintState.sprintDuration = (int)(fVar5 * 1000.0);
+        (pSelf->client->ps).sprintState.sprintDuration = (int)(fVar5 * 1000.0);
       }
       else {
         sVar6 = SCRIPTINSTANCE_SERVER;
@@ -7179,7 +7361,7 @@ void __cdecl PlayerCmd_SetSprintDuration(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetSprintCooldown(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetSprintCooldown(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -7188,18 +7370,19 @@ void __cdecl PlayerCmd_SetSprintCooldown(scr_entref_t param_1)
   uint uVar4;
   float fVar5;
   scriptInstance_t sVar6;
-  gentity_s *local_c;
+  gentity_s *pSelf;
+  float duration;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe65,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
       sVar6 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
       Scr_ObjectError(pcVar3,sVar6);
@@ -7207,14 +7390,14 @@ void __cdecl PlayerCmd_SetSprintCooldown(scr_entref_t param_1)
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 1) {
     fVar5 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
     if (0.0 <= fVar5) {
       if (fVar5 < 16383.0) {
-        (local_c->client->ps).sprintState.sprintCooldown = (int)(fVar5 * 1000.0);
+        (pSelf->client->ps).sprintState.sprintCooldown = (int)(fVar5 * 1000.0);
       }
       else {
         sVar6 = SCRIPTINSTANCE_SERVER;
@@ -7240,7 +7423,7 @@ void __cdecl PlayerCmd_SetSprintCooldown(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetSpreadOverride(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetSpreadOverride(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -7249,18 +7432,19 @@ void __cdecl PlayerCmd_SetSpreadOverride(scr_entref_t param_1)
   uint uVar4;
   int iVar5;
   scriptInstance_t sVar6;
-  gentity_s *local_c;
+  gentity_s *pSelf;
+  int value;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe81,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
       sVar6 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
       Scr_ObjectError(pcVar3,sVar6);
@@ -7268,7 +7452,7 @@ void __cdecl PlayerCmd_SetSpreadOverride(scr_entref_t param_1)
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar4 == 1) {
@@ -7277,8 +7461,8 @@ void __cdecl PlayerCmd_SetSpreadOverride(scr_entref_t param_1)
       Scr_ParamError(0,"setspreadoverride: spread must be > 0",SCRIPTINSTANCE_SERVER);
     }
     else if (iVar5 < 0x40) {
-      (local_c->client->ps).spreadOverride = iVar5;
-      (local_c->client->ps).spreadOverrideState = 2;
+      (pSelf->client->ps).spreadOverride = iVar5;
+      (pSelf->client->ps).spreadOverrideState = 2;
     }
     else {
       sVar6 = SCRIPTINSTANCE_SERVER;
@@ -7300,39 +7484,39 @@ void __cdecl PlayerCmd_SetSpreadOverride(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_ResetSpreadOverride(scr_entref_t param_1)
+void __cdecl PlayerCmd_ResetSpreadOverride(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xe9d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).spreadOverrideState = 1;
-  (local_8->client->ps).aimSpreadScale = 255.0;
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 != 0) {
+  (pSelf->client->ps).spreadOverrideState = 1;
+  (pSelf->client->ps).aimSpreadScale = 255.0;
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 != 0) {
     Scr_Error("USAGE: <player> resetspreadoverride()\n",false);
   }
   return;
@@ -7346,65 +7530,67 @@ void __cdecl PlayerCmd_ResetSpreadOverride(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_AllowSpectateTeam(scr_entref_t param_1)
+void __cdecl PlayerCmd_AllowSpectateTeam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_14;
-  uint local_8;
+  char *error;
+  uint uVar3;
+  int iVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int teamAllow;
+  ushort teamString;
+  int teamBit;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xeb9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_14 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  local_8 = 0;
-  if ((uVar4 & 0xffff) == (uint)scr_const.axis) {
-    local_8 = 2;
+  uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  teamBit = 0;
+  if ((uVar3 & 0xffff) == (uint)scr_const.axis) {
+    teamBit = 2;
   }
-  else if ((uVar4 & 0xffff) == (uint)scr_const.allies) {
-    local_8 = 4;
+  else if ((uVar3 & 0xffff) == (uint)scr_const.allies) {
+    teamBit = 4;
   }
-  else if ((uVar4 & 0xffff) == (uint)scr_const.none) {
-    local_8 = 1;
+  else if ((uVar3 & 0xffff) == (uint)scr_const.none) {
+    teamBit = 1;
   }
-  else if ((uVar4 & 0xffff) == (uint)scr_const.freelook) {
-    local_8 = 0x10;
+  else if ((uVar3 & 0xffff) == (uint)scr_const.freelook) {
+    teamBit = 0x10;
   }
-  else if ((uVar4 & 0xffff) == (uint)scr_const.localplayers) {
-    local_8 = 0x20;
+  else if ((uVar3 & 0xffff) == (uint)scr_const.localplayers) {
+    teamBit = 0x20;
   }
   else {
     Scr_ParamError(0,
                    "team must be \"axis\", \"allies\", \"none\", \"localplayers\", or \"freelook\"",
                    SCRIPTINSTANCE_SERVER);
   }
-  iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
-  if (iVar5 == 0) {
-    (local_14->client->sess).noSpectate = (local_14->client->sess).noSpectate | local_8;
+  iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
+  if (iVar4 == 0) {
+    (pSelf->client->sess).noSpectate = (pSelf->client->sess).noSpectate | teamBit;
   }
   else {
-    (local_14->client->sess).noSpectate = ~local_8 & (local_14->client->sess).noSpectate;
+    (pSelf->client->sess).noSpectate = ~teamBit & (pSelf->client->sess).noSpectate;
   }
   return;
 }
@@ -7417,40 +7603,41 @@ void __cdecl PlayerCmd_AllowSpectateTeam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetGuid(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetGuid(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  int iVar5;
-  scriptInstance_t sVar6;
+  char *error;
+  uint uVar3;
+  int value;
+  scriptInstance_t sVar4;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xed6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar4 = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,sVar4);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 != 0) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 != 0) {
     Scr_Error("USAGE: self getGuid()\n",false);
   }
-  sVar6 = SCRIPTINSTANCE_SERVER;
-  iVar5 = SV_GetGuid((uint)param_1.entnum);
-  Scr_AddInt(iVar5,sVar6);
+  sVar4 = SCRIPTINSTANCE_SERVER;
+  value = SV_GetGuid((uint)entref.entnum);
+  Scr_AddInt(value,sVar4);
   return;
 }
 
@@ -7463,51 +7650,51 @@ void __cdecl PlayerCmd_GetGuid(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetXuid(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetXuid(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_90;
-  char local_8c [127];
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char svcmd [127];
   undefined1 local_d;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xee5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_90 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_90 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if ((uVar4 != 0) && (uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER), uVar4 != 1)) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if ((uVar3 != 0) && (uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER), uVar3 != 1)) {
     Scr_Error("USAGE: self getXuid()\n",false);
   }
-  if (local_90->client == (gclient_s *)0x0) {
+  if (pSelf->client == (gclient_s *)0x0) {
     Scr_AddString("0",SCRIPTINSTANCE_SERVER);
   }
   else {
-    SV_GetPlayerXuid((local_90->client->sess).cs.clientIndex);
-    _snprintf(local_8c,0x80,"%llx");
+    SV_GetPlayerXuid((pSelf->client->sess).cs.clientIndex);
+    _snprintf(svcmd,0x80,"%llx");
     local_d = 0;
-    Scr_AddString(local_8c,SCRIPTINSTANCE_SERVER);
+    Scr_AddString(svcmd,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -7520,40 +7707,40 @@ void __cdecl PlayerCmd_GetXuid(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsHost(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsHost(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xf19,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 != 0) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 != 0) {
     Scr_Error("USAGE: self IsHost()\n",false);
   }
-  bVar2 = Session_IsHost(&g_serverSession,(local_8->client->sess).cs.clientIndex);
+  bVar2 = Session_IsHost(&g_serverSession,(pSelf->client->sess).cs.clientIndex);
   if (bVar2) {
     Scr_AddInt(1,SCRIPTINSTANCE_SERVER);
   }
@@ -7581,40 +7768,42 @@ void __cdecl PlayerCmd_IsHost(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_IsLocalToHost(scr_entref_t param_1)
+void __cdecl PlayerCmd_IsLocalToHost(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  int controllerIndex;
+  int localClientNum;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xf2f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 != 0) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 != 0) {
     Scr_Error("USAGE: self IsLocalToHost()\n",false);
   }
-  if ((0x1f < (uint)(local_10->client->sess).cs.clientIndex) &&
+  if ((0x1f < (uint)(pSelf->client->sess).cs.clientIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xf33,0,
                                "pSelf->client->sess.cs.clientIndex doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -7623,8 +7812,7 @@ void __cdecl PlayerCmd_IsLocalToHost(scr_entref_t param_1)
     (*pcVar1)();
     return;
   }
-  if (((local_10->client->sess).cs.clientIndex < 0) ||
-     (0x1f < (local_10->client->sess).cs.clientIndex)) {
+  if (((pSelf->client->sess).cs.clientIndex < 0) || (0x1f < (pSelf->client->sess).cs.clientIndex)) {
     Scr_AddInt(0,SCRIPTINSTANCE_SERVER);
   }
   else {
@@ -7643,7 +7831,7 @@ void __cdecl PlayerCmd_IsLocalToHost(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_BeginLocationTypeSelection(scr_entref_t param_1,locSel_t param_2)
+void __cdecl PlayerCmd_BeginLocationTypeSelection(scr_entref_t entref,locSel_t selectionType)
 
 {
   code *pcVar1;
@@ -7651,37 +7839,41 @@ void __cdecl PlayerCmd_BeginLocationTypeSelection(scr_entref_t param_1,locSel_t 
   char *pcVar3;
   uint uVar4;
   uint uVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_18;
-  float local_14;
+  float fVar6;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float radius;
+  int locSelIndex;
+  char *locSelName;
+  int radiusBits;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xf58,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_18 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_18->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xf5a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_18->client->sess).connected == CON_DISCONNECTED) &&
+  if (((pSelf->client->sess).connected == CON_DISCONNECTED) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xf5b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -7701,31 +7893,31 @@ void __cdecl PlayerCmd_BeginLocationTypeSelection(scr_entref_t param_1,locSel_t 
   }
   uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
   if (uVar5 < 2) {
-    local_14 = 0.15;
+    radius = 0.15;
   }
   else {
-    local_14 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
-    if (local_14 <= 0.0) {
+    fVar6 = Scr_GetFloat(1,SCRIPTINSTANCE_SERVER);
+    if (fVar6 <= 0.0) {
       Scr_ParamError(1,"Radius of location selector must be greater than zero\n",
                      SCRIPTINSTANCE_SERVER);
     }
-    if ((level.compassMapWorldSize[1] <= 0.0) || (local_14 <= 0.0)) {
-      local_14 = local_14 / 1000.0;
+    if ((level.compassMapWorldSize[1] <= 0.0) || (fVar6 <= 0.0)) {
+      radius = fVar6 / 1000.0;
     }
     else {
-      local_14 = local_14 / level.compassMapWorldSize[1];
+      radius = fVar6 / level.compassMapWorldSize[1];
     }
-    if (0.0 <= local_14) {
-      if (1.0 < local_14) {
-        local_14 = 1.0;
+    if (0.0 <= radius) {
+      if (1.0 < radius) {
+        radius = 1.0;
       }
     }
     else {
-      local_14 = 0.0;
+      radius = 0.0;
     }
   }
-  (local_18->client->ps).locationSelectionType = param_2;
-  uVar5 = (uint)ROUND(local_14 * 15.0 + 9.313226e-10);
+  (pSelf->client->ps).locationSelectionType = selectionType;
+  uVar5 = (uint)ROUND(radius * 15.0 + 9.313226e-10);
   if ((0xf < uVar5) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xf78,0,
@@ -7735,67 +7927,97 @@ void __cdecl PlayerCmd_BeginLocationTypeSelection(scr_entref_t param_1,locSel_t 
     (*pcVar1)();
     return;
   }
-  (local_18->client->ps).locationSelectionInfo = uVar5 << 4 | uVar4;
+  (pSelf->client->ps).locationSelectionInfo = uVar5 << 4 | uVar4;
   return;
 }
 
 
 // 0060D640  PlayerCmd_BeginLocationSelection  (game_mp/g_client_script_cmd_mp.cpp:3966)
 
-void __cdecl PlayerCmd_BeginLocationSelection(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PlayerCmd_BeginLocationSelection(scr_entref_t entref)
 
 {
-  PlayerCmd_BeginLocationTypeSelection(param_1,LOC_SEL_NONE);
+  PlayerCmd_BeginLocationTypeSelection(entref,LOC_SEL_NONE);
   return;
 }
 
 
 // 0060D960  PlayerCmd_BeginLocationAirstrikeSelection  (game_mp/g_client_script_cmd_mp.cpp:3971)
 
-void __cdecl PlayerCmd_BeginLocationAirstrikeSelection(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PlayerCmd_BeginLocationAirstrikeSelection(scr_entref_t entref)
 
 {
-  PlayerCmd_BeginLocationTypeSelection(param_1,LOC_SEL_AIRSTRIKE);
+  PlayerCmd_BeginLocationTypeSelection(entref,LOC_SEL_AIRSTRIKE);
   return;
 }
 
 
 // 0060D990  PlayerCmd_BeginLocationMortarSelection  (game_mp/g_client_script_cmd_mp.cpp:3976)
 
-void __cdecl PlayerCmd_BeginLocationMortarSelection(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PlayerCmd_BeginLocationMortarSelection(scr_entref_t entref)
 
 {
-  PlayerCmd_BeginLocationTypeSelection(param_1,LOC_SEL_MORTAR);
+  PlayerCmd_BeginLocationTypeSelection(entref,LOC_SEL_MORTAR);
   return;
 }
 
 
 // 0060D9C0  PlayerCmd_BeginLocationArtillerySelection  (game_mp/g_client_script_cmd_mp.cpp:3981)
 
-void __cdecl PlayerCmd_BeginLocationArtillerySelection(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PlayerCmd_BeginLocationArtillerySelection(scr_entref_t entref)
 
 {
-  PlayerCmd_BeginLocationTypeSelection(param_1,LOC_SEL_ARTILLERY);
+  PlayerCmd_BeginLocationTypeSelection(entref,LOC_SEL_ARTILLERY);
   return;
 }
 
 
 // 0060D9F0  PlayerCmd_BeginLocationComlinkSelection  (game_mp/g_client_script_cmd_mp.cpp:3986)
 
-void __cdecl PlayerCmd_BeginLocationComlinkSelection(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PlayerCmd_BeginLocationComlinkSelection(scr_entref_t entref)
 
 {
-  PlayerCmd_BeginLocationTypeSelection(param_1,LOC_SEL_COMLINK);
+  PlayerCmd_BeginLocationTypeSelection(entref,LOC_SEL_COMLINK);
   return;
 }
 
 
 // 0060DA20  PlayerCmd_BeginLocationNapalmSelection  (game_mp/g_client_script_cmd_mp.cpp:3991)
 
-void __cdecl PlayerCmd_BeginLocationNapalmSelection(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl PlayerCmd_BeginLocationNapalmSelection(scr_entref_t entref)
 
 {
-  PlayerCmd_BeginLocationTypeSelection(param_1,LOC_SEL_NAPALM);
+  PlayerCmd_BeginLocationTypeSelection(entref,LOC_SEL_NAPALM);
   return;
 }
 
@@ -7807,49 +8029,49 @@ void __cdecl PlayerCmd_BeginLocationNapalmSelection(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EndLocationSelection(scr_entref_t param_1)
+void __cdecl PlayerCmd_EndLocationSelection(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xf9e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_8->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,4000,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((local_8->client->sess).connected == CON_DISCONNECTED) &&
+  if (((pSelf->client->sess).connected == CON_DISCONNECTED) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0xfa1,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (local_8->client->ps).locationSelectionInfo = 0;
+  (pSelf->client->ps).locationSelectionInfo = 0;
   return;
 }
 
@@ -7861,7 +8083,7 @@ void __cdecl PlayerCmd_EndLocationSelection(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetActionSlot(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetActionSlot(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -7871,18 +8093,21 @@ void __cdecl PlayerCmd_SetActionSlot(scr_entref_t param_1)
   int iVar5;
   ActionSlotType AVar6;
   scriptInstance_t sVar7;
-  gentity_s *local_c;
+  int weaponIdx;
+  char *str;
+  gentity_s *pSelf;
+  int slot;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0xfac,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
       sVar7 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
       Scr_ObjectError(pcVar3,sVar7);
@@ -7890,7 +8115,7 @@ void __cdecl PlayerCmd_SetActionSlot(scr_entref_t param_1)
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar4 < 1) || (4 < iVar4)) {
@@ -7910,24 +8135,24 @@ void __cdecl PlayerCmd_SetActionSlot(scr_entref_t param_1)
         Scr_ParamError(2,pcVar3,sVar7);
       }
       else {
-        (local_c->client->ps).perks[iVar4 + 1] = 1;
-        (local_c->client->ps).actionSlotType[iVar4 + 3] = AVar6;
+        (pSelf->client->ps).perks[iVar4 + 1] = 1;
+        (pSelf->client->ps).actionSlotType[iVar4 + 3] = AVar6;
       }
     }
     else {
       iVar5 = I_stricmp(pcVar3,"altmode");
       if (iVar5 == 0) {
-        (local_c->client->ps).perks[iVar4 + 1] = 2;
+        (pSelf->client->ps).perks[iVar4 + 1] = 2;
       }
       else {
         iVar5 = I_stricmp(pcVar3,"nightvision");
         if (iVar5 == 0) {
-          (local_c->client->ps).perks[iVar4 + 1] = 3;
+          (pSelf->client->ps).perks[iVar4 + 1] = 3;
         }
         else {
           iVar5 = I_stricmp(pcVar3,"");
           if (iVar5 == 0) {
-            (local_c->client->ps).perks[iVar4 + 1] = 0;
+            (pSelf->client->ps).perks[iVar4 + 1] = 0;
           }
           else {
             Scr_Error("Invalid option: expected \"weapon\", \"altweapon\", or \"nightvision\".\n",
@@ -7948,45 +8173,47 @@ void __cdecl PlayerCmd_SetActionSlot(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetWeaponsList(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetWeaponsList(scr_entref_t entref)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  WeaponDef *pWVar5;
-  scriptInstance_t sVar6;
-  int local_10;
-  gentity_s *local_c;
+  uint weaponIndex;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  WeaponDef *pWVar4;
+  scriptInstance_t sVar5;
+  WeaponDef *weapDef;
+  int slot;
+  gentity_s *pSelf;
+  uint weapIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0xfdf,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0xfdf,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar6);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_10 = 0; local_10 < 0xf; local_10 = local_10 + 1) {
-    uVar1 = (local_c->client->ps).heldWeapons[local_10].weapon;
-    if ((uVar1 != 0) &&
-       (pWVar5 = BG_GetWeaponDef(uVar1), pWVar5->inventoryType != WEAPINVENTORY_ALTMODE)) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = BG_WeaponName(uVar1);
-      Scr_AddString(pcVar4,sVar6);
+  for (slot = 0; slot < 0xf; slot = slot + 1) {
+    weaponIndex = (pSelf->client->ps).heldWeapons[slot].weapon;
+    if ((weaponIndex != 0) &&
+       (pWVar4 = BG_GetWeaponDef(weaponIndex), pWVar4->inventoryType != WEAPINVENTORY_ALTMODE)) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      pcVar3 = BG_WeaponName(weaponIndex);
+      Scr_AddString(pcVar3,sVar5);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -8001,45 +8228,47 @@ void __cdecl PlayerCmd_GetWeaponsList(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetWeaponsListPrimaries(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetWeaponsListPrimaries(scr_entref_t entref)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  WeaponDef *pWVar5;
-  scriptInstance_t sVar6;
-  int local_10;
-  gentity_s *local_c;
+  uint weaponIndex;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  WeaponDef *pWVar4;
+  scriptInstance_t sVar5;
+  WeaponDef *weapDef;
+  int slot;
+  gentity_s *pSelf;
+  uint weapIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
-                                 ,0xffa,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
+       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
+                                 ,0xffa,0,"%s"), !bVar2)) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar6);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      pcVar3 = va("entity %i is not a player");
+      Scr_ObjectError(pcVar3,sVar5);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_10 = 0; local_10 < 0xf; local_10 = local_10 + 1) {
-    uVar1 = (local_c->client->ps).heldWeapons[local_10].weapon;
-    if ((uVar1 != 0) &&
-       (pWVar5 = BG_GetWeaponDef(uVar1), pWVar5->inventoryType == WEAPINVENTORY_PRIMARY)) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar4 = BG_WeaponName(uVar1);
-      Scr_AddString(pcVar4,sVar6);
+  for (slot = 0; slot < 0xf; slot = slot + 1) {
+    weaponIndex = (pSelf->client->ps).heldWeapons[slot].weapon;
+    if ((weaponIndex != 0) &&
+       (pWVar4 = BG_GetWeaponDef(weaponIndex), pWVar4->inventoryType == WEAPINVENTORY_PRIMARY)) {
+      sVar5 = SCRIPTINSTANCE_SERVER;
+      pcVar3 = BG_WeaponName(weaponIndex);
+      Scr_AddString(pcVar3,sVar5);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
   }
@@ -8054,44 +8283,46 @@ void __cdecl PlayerCmd_GetWeaponsListPrimaries(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetPerk(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetPerk(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  uint perkIndex_00;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *perkName;
+  uint perkIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1021,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = BG_GetPerkIndexForName(pcVar3);
-  if (uVar4 == 0x34) {
+  perkIndex_00 = BG_GetPerkIndexForName(pcVar3);
+  if (perkIndex_00 == 0x34) {
     bVar2 = false;
     pcVar3 = va("Unknown perk: %s\n");
     Scr_Error(pcVar3,bVar2);
   }
-  BG_SetPerk((local_10->client->ps).perks,uVar4);
-  BG_SetPerk((local_10->client->sess).cs.perks,uVar4);
+  BG_SetPerk((pSelf->client->ps).perks,perkIndex_00);
+  BG_SetPerk((pSelf->client->sess).cs.perks,perkIndex_00);
   return;
 }
 
@@ -8103,45 +8334,47 @@ void __cdecl PlayerCmd_SetPerk(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_HasPerk(scr_entref_t param_1)
+void __cdecl PlayerCmd_HasPerk(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  uint perkIndex_00;
+  scriptInstance_t sVar4;
+  gentity_s *pSelf;
+  char *perkName;
+  uint perkIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x103f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      sVar4 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,sVar4);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = BG_GetPerkIndexForName(pcVar3);
-  if (uVar4 == 0x34) {
+  perkIndex_00 = BG_GetPerkIndexForName(pcVar3);
+  if (perkIndex_00 == 0x34) {
     bVar2 = false;
     pcVar3 = va("Unknown perk: %s\n");
     Scr_Error(pcVar3,bVar2);
   }
-  sVar5 = SCRIPTINSTANCE_SERVER;
-  bVar2 = BG_HasPerk((local_10->client->ps).perks,uVar4);
-  Scr_AddBool((uint)bVar2,sVar5);
+  sVar4 = SCRIPTINSTANCE_SERVER;
+  bVar2 = BG_HasPerk((pSelf->client->ps).perks,perkIndex_00);
+  Scr_AddBool((uint)bVar2,sVar4);
   return;
 }
 
@@ -8153,26 +8386,26 @@ void __cdecl PlayerCmd_HasPerk(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_GetPerks(scr_entref_t param_1)
+void __cdecl PlayerCmd_GetPerks(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   scriptInstance_t sVar4;
-  gentity_s *local_c;
-  uint local_8;
+  gentity_s *pSelf;
+  uint perkIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1058,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
       sVar4 = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
       Scr_ObjectError(pcVar3,sVar4);
@@ -8180,14 +8413,14 @@ void __cdecl PlayerCmd_GetPerks(scr_entref_t param_1)
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  for (local_8 = 0; local_8 < 0x34; local_8 = local_8 + 1) {
-    bVar2 = BG_HasPerk((local_c->client->ps).perks,local_8);
+  for (perkIndex = 0; perkIndex < 0x34; perkIndex = perkIndex + 1) {
+    bVar2 = BG_HasPerk((pSelf->client->ps).perks,perkIndex);
     if (bVar2) {
       sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = BG_GetPerkNameForIndex(local_8);
+      pcVar3 = BG_GetPerkNameForIndex(perkIndex);
       Scr_AddString(pcVar3,sVar4);
       Scr_AddArray(SCRIPTINSTANCE_SERVER);
     }
@@ -8203,44 +8436,46 @@ void __cdecl PlayerCmd_GetPerks(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_UnsetPerk(scr_entref_t param_1)
+void __cdecl PlayerCmd_UnsetPerk(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  uint perkIndex_00;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *perkName;
+  uint perkIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1076,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  uVar4 = BG_GetPerkIndexForName(pcVar3);
-  if (uVar4 == 0x34) {
+  perkIndex_00 = BG_GetPerkIndexForName(pcVar3);
+  if (perkIndex_00 == 0x34) {
     bVar2 = false;
     pcVar3 = va("Unknown perk: %s\n");
     Scr_Error(pcVar3,bVar2);
   }
-  BG_UnsetPerk((local_10->client->ps).perks,uVar4);
-  BG_UnsetPerk((local_10->client->sess).cs.perks,uVar4);
+  BG_UnsetPerk((pSelf->client->ps).perks,perkIndex_00);
+  BG_UnsetPerk((pSelf->client->sess).cs.perks,perkIndex_00);
   return;
 }
 
@@ -8252,36 +8487,36 @@ void __cdecl PlayerCmd_UnsetPerk(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_ClearPerks(scr_entref_t param_1)
+void __cdecl PlayerCmd_ClearPerks(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1090,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  BG_ClearPerks((local_8->client->ps).perks);
-  BG_ClearPerks((local_8->client->sess).cs.perks);
+  BG_ClearPerks((pSelf->client->ps).perks);
+  BG_ClearPerks((pSelf->client->sess).cs.perks);
   return;
 }
 
@@ -8293,35 +8528,35 @@ void __cdecl PlayerCmd_ClearPerks(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_EnableInvulnerability(scr_entref_t param_1)
+void __cdecl PlayerCmd_EnableInvulnerability(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x10a5,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).otherFlags = (local_8->client->ps).otherFlags | 1;
+  (pSelf->client->ps).otherFlags = (pSelf->client->ps).otherFlags | 1;
   return;
 }
 
@@ -8333,35 +8568,35 @@ void __cdecl PlayerCmd_EnableInvulnerability(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_DisableInvulnerability(scr_entref_t param_1)
+void __cdecl PlayerCmd_DisableInvulnerability(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x10b6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).otherFlags = (local_8->client->ps).otherFlags & 0xfffffffe;
+  (pSelf->client->ps).otherFlags = (pSelf->client->ps).otherFlags & 0xfffffffe;
   return;
 }
 
@@ -8373,7 +8608,7 @@ void __cdecl PlayerCmd_DisableInvulnerability(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetRank(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetRank(scr_entref_t entref)
 
 {
   code *pcVar1;
@@ -8381,27 +8616,29 @@ void __cdecl PlayerCmd_SetRank(scr_entref_t param_1)
   char *pcVar3;
   int iVar4;
   uint uVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_10;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int prestige;
+  int rank;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x10c8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
   if ((iVar4 < 0) || (0xff < iVar4)) {
@@ -8410,7 +8647,7 @@ void __cdecl PlayerCmd_SetRank(scr_entref_t param_1)
     Scr_Error(pcVar3,bVar2);
   }
   else {
-    (local_10->client->sess).cs.rank = iVar4;
+    (pSelf->client->sess).cs.rank = iVar4;
     uVar5 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
     if (1 < uVar5) {
       iVar4 = Scr_GetInt(1,SCRIPTINSTANCE_SERVER);
@@ -8420,7 +8657,7 @@ void __cdecl PlayerCmd_SetRank(scr_entref_t param_1)
         Scr_Error(pcVar3,bVar2);
       }
       else {
-        (local_10->client->sess).cs.prestige = iVar4;
+        (pSelf->client->sess).cs.prestige = iVar4;
       }
     }
   }
@@ -8435,38 +8672,40 @@ void __cdecl PlayerCmd_SetRank(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_SetLastStandPrevWeap(scr_entref_t param_1)
+void __cdecl PlayerCmd_SetLastStandPrevWeap(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_10;
+  int src;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  char *weapName;
+  int weapIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x10f3,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_10 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+      Scr_ObjectError(pcVar3,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_10 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
-  iVar4 = G_GetWeaponIndexForName(pcVar3);
-  AssignToSmallerType<unsigned_short>(&(local_10->client->ps).lastStandPrevWeapon,iVar4);
+  src = G_GetWeaponIndexForName(pcVar3);
+  AssignToSmallerType<unsigned_short>(&(pSelf->client->ps).lastStandPrevWeapon,src);
   return;
 }
 
@@ -8479,80 +8718,80 @@ void __cdecl PlayerCmd_SetLastStandPrevWeap(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_ClientSysSetState(scr_entref_t param_1)
+void __cdecl PlayerCmd_ClientSysSetState(scr_entref_t entref)
 
 {
   char cVar1;
   code *pcVar2;
   bool bVar3;
   char *pcVar4;
-  scriptInstance_t sVar5;
+  scriptInstance_t inst;
   char *local_820;
-  uint local_81c;
-  gentity_s *local_818;
-  char local_814 [1028];
-  char *local_410;
-  char local_40c [1024];
+  uint j;
+  gentity_s *pSelf;
+  char str [1028];
+  char *pNewState;
+  char szConfigString [1024];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1113,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_818 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
       pcVar4 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar4,sVar5);
+      Scr_ObjectError(pcVar4,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_818 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_8 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if ((local_8 < 0) || (8 < local_8)) {
+  i = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if ((i < 0) || (8 < i)) {
     bVar3 = true;
     pcVar4 = va("ClientSysSetState - state index (%i) out of bounds (0 - %i)");
     Scr_Error(pcVar4,bVar3);
   }
   else {
-    SV_GetConfigstring(local_8 + 0x602,local_40c,0x400);
-    if (local_40c[0] == '\0') {
+    SV_GetConfigstring(i + 0x602,szConfigString,0x400);
+    if (szConfigString[0] == '\0') {
       bVar3 = true;
       pcVar4 = va("ClientSysSetState - state index (%i) unregistered.  Use ClientSysRegister first."
                  );
       Scr_Error(pcVar4,bVar3);
     }
     else {
-      local_40c[0] = '\0';
-      local_814[0] = '\0';
-      local_410 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-      if (local_410 != (char *)0x0) {
-        I_strncpyz(local_814,local_410,0x400);
-        local_81c = 0;
+      szConfigString[0] = '\0';
+      str[0] = '\0';
+      pNewState = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+      if (pNewState != (char *)0x0) {
+        I_strncpyz(str,pNewState,0x400);
+        j = 0;
         while( true ) {
-          local_820 = local_814;
+          local_820 = str;
           do {
             cVar1 = *local_820;
             local_820 = local_820 + 1;
           } while (cVar1 != '\0');
-          if ((uint)((int)local_820 - (int)(local_814 + 1)) <= local_81c) break;
-          if (local_814[local_81c] == ' ') {
-            local_814[local_81c] = '!';
+          if ((uint)((int)local_820 - (int)(str + 1)) <= j) break;
+          if (str[j] == ' ') {
+            str[j] = '!';
           }
-          local_81c = local_81c + 1;
+          j = j + 1;
         }
       }
-      Info_SetValueForKey(local_40c,"s",local_814);
+      Info_SetValueForKey(szConfigString,"s",str);
       pcVar4 = va("%c %i %s");
-      SV_GameSendServerCommand((uint)(local_818->client->ps).clientNum,SV_CMD_RELIABLE,pcVar4);
+      SV_GameSendServerCommand((uint)(pSelf->client->ps).clientNum,SV_CMD_RELIABLE,pcVar4);
     }
   }
   return;
@@ -8566,47 +8805,48 @@ void __cdecl PlayerCmd_ClientSysSetState(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_WeaponLockStart(scr_entref_t param_1)
+void __cdecl PlayerCmd_WeaponLockStart(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  gentity_s *pgVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_c;
+  char *error;
+  uint uVar3;
+  gentity_s *pgVar4;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1150,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 == 0) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 == 0) {
     Scr_Error("Incorrect number of parameters.\n",false);
   }
   else {
-    pgVar5 = Scr_GetEntity(0);
-    (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags | 1;
-    (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags & 0xfffffffd;
-    (local_c->client->ps).weapLockedEntnum = (pgVar5->s).number;
-    (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags & 0xfffffffb;
-    (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags & 0xfffffff7;
+    pgVar4 = Scr_GetEntity(0);
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 1;
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffffd;
+    (pSelf->client->ps).weapLockedEntnum = (pgVar4->s).number;
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffffb;
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffff7;
   }
   return;
 }
@@ -8619,51 +8859,52 @@ void __cdecl PlayerCmd_WeaponLockStart(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_WeaponLockFinalize(scr_entref_t param_1)
+void __cdecl PlayerCmd_WeaponLockFinalize(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  gentity_s *pgVar5;
-  scriptInstance_t sVar6;
-  gentity_s *local_c;
+  char *error;
+  uint uVar3;
+  gentity_s *ent_00;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1170,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar6 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar6);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (uVar4 == 0) {
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (uVar3 == 0) {
     Scr_Error("Incorrect number of parameters.\n",false);
   }
   else {
-    pgVar5 = Scr_GetEntity(0);
-    (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags | 1;
-    (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags | 2;
-    (local_c->client->ps).weapLockedEntnum = (pgVar5->s).number;
-    bVar2 = G_TargetAttackProfileTop(pgVar5);
+    ent_00 = Scr_GetEntity(0);
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 1;
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 2;
+    (pSelf->client->ps).weapLockedEntnum = (ent_00->s).number;
+    bVar2 = G_TargetAttackProfileTop(ent_00);
     if (bVar2) {
-      (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags | 4;
+      (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 4;
     }
     else {
-      (local_c->client->ps).weapLockFlags = (local_c->client->ps).weapLockFlags | 8;
+      (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 8;
     }
   }
   return;
@@ -8677,39 +8918,39 @@ void __cdecl PlayerCmd_WeaponLockFinalize(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_WeaponLockFree(scr_entref_t param_1)
+void __cdecl PlayerCmd_WeaponLockFree(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1192,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags & 0xfffffffe;
-  (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags & 0xfffffffd;
-  (local_8->client->ps).weapLockedEntnum = 0x3ff;
-  (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags & 0xfffffffb;
-  (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags & 0xfffffff7;
+  (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffffe;
+  (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffffd;
+  (pSelf->client->ps).weapLockedEntnum = 0x3ff;
+  (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffffb;
+  (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xfffffff7;
   return;
 }
 
@@ -8721,41 +8962,41 @@ void __cdecl PlayerCmd_WeaponLockFree(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_WeaponLockTargetTooClose(scr_entref_t param_1)
+void __cdecl PlayerCmd_WeaponLockTargetTooClose(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x11a9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (iVar4 == 0) {
-    (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags & 0xffffffef;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (iVar3 == 0) {
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xffffffef;
   }
   else {
-    (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags | 0x10;
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 0x10;
   }
   return;
 }
@@ -8768,41 +9009,41 @@ void __cdecl PlayerCmd_WeaponLockTargetTooClose(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_WeaponLockNoClearance(scr_entref_t param_1)
+void __cdecl PlayerCmd_WeaponLockNoClearance(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x11bf,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  if (iVar4 == 0) {
-    (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags & 0xffffffdf;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  if (iVar3 == 0) {
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags & 0xffffffdf;
   }
   else {
-    (local_8->client->ps).weapLockFlags = (local_8->client->ps).weapLockFlags | 0x20;
+    (pSelf->client->ps).weapLockFlags = (pSelf->client->ps).weapLockFlags | 0x20;
   }
   return;
 }
@@ -8815,38 +9056,39 @@ void __cdecl PlayerCmd_WeaponLockNoClearance(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_ReLinkToTurret(scr_entref_t param_1)
+void __cdecl PlayerCmd_ReLinkToTurret(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  gentity_s *pgVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_c;
+  char *error;
+  gentity_s *pgVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x11d4,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_c = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_c = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  pgVar4 = Scr_GetEntity(0);
-  (local_c->client->ps).viewlocked_entNum = (short)(pgVar4->s).number;
-  (local_c->client->ps).eFlags = (local_c->client->ps).eFlags | 0x300;
+  pgVar3 = Scr_GetEntity(0);
+  (pSelf->client->ps).viewlocked_entNum = (short)(pgVar3->s).number;
+  (pSelf->client->ps).eFlags = (pSelf->client->ps).eFlags | 0x300;
   return;
 }
 
@@ -8858,44 +9100,44 @@ void __cdecl PlayerCmd_ReLinkToTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CarryTurret(scr_entref_t param_1)
+void __cdecl PlayerCmd_CarryTurret(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_24;
-  float local_20 [3];
-  float local_14 [3];
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float anglesOffset [3];
+  float offset [3];
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x11ea,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_24 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_8 = Scr_GetEntity(0);
-  Scr_GetVector(1,local_14,SCRIPTINSTANCE_SERVER);
-  Scr_GetVector(2,local_20,SCRIPTINSTANCE_SERVER);
-  (local_8->r).svFlags = (local_8->r).svFlags & 0xfb;
-  (local_8->r).contents = 0;
-  (local_24->client->ps).weapFlags = (local_24->client->ps).weapFlags | 0x400000;
-  G_EntLinkToWithOffset(local_8,local_24,0,local_14,local_20);
+  ent = Scr_GetEntity(0);
+  Scr_GetVector(1,offset,SCRIPTINSTANCE_SERVER);
+  Scr_GetVector(2,anglesOffset,SCRIPTINSTANCE_SERVER);
+  (ent->r).svFlags = (ent->r).svFlags & 0xfb;
+  (ent->r).contents = 0;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags | 0x400000;
+  G_EntLinkToWithOffset(ent,pSelf,0,offset,anglesOffset);
   return;
 }
 
@@ -8907,54 +9149,54 @@ void __cdecl PlayerCmd_CarryTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_StopCarryTurret(scr_entref_t param_1)
+void __cdecl PlayerCmd_StopCarryTurret(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_24;
-  float local_20 [3];
-  float local_14 [3];
-  gentity_s *local_8;
+  char *error;
+  uint uVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  float origin [3];
+  float angles [3];
+  gentity_s *ent;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x120a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_24 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  local_8 = Scr_GetEntity(0);
-  G_EntUnlink(local_8);
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (1 < uVar4) {
-    Scr_GetVector(1,local_20,SCRIPTINSTANCE_SERVER);
-    G_SetOrigin(local_8,local_20);
+  ent = Scr_GetEntity(0);
+  G_EntUnlink(ent);
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (1 < uVar3) {
+    Scr_GetVector(1,origin,SCRIPTINSTANCE_SERVER);
+    G_SetOrigin(ent,origin);
   }
-  uVar4 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
-  if (2 < uVar4) {
-    Scr_GetVector(2,local_14,SCRIPTINSTANCE_SERVER);
-    G_SetAngle(local_8,local_14);
+  uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_SERVER);
+  if (2 < uVar3) {
+    Scr_GetVector(2,angles,SCRIPTINSTANCE_SERVER);
+    G_SetAngle(ent,angles);
   }
-  (local_8->r).svFlags = (local_8->r).svFlags | 4;
-  (local_8->r).contents = (local_8->r).contents & 0xfffffffe;
-  (local_8->r).contents = 0x376c0;
-  (local_24->client->ps).weapFlags = (local_24->client->ps).weapFlags & 0xffbfffff;
+  (ent->r).svFlags = (ent->r).svFlags | 4;
+  (ent->r).contents = (ent->r).contents & 0xfffffffe;
+  (ent->r).contents = 0x376c0;
+  (pSelf->client->ps).weapFlags = (pSelf->client->ps).weapFlags & 0xffbfffff;
   return;
 }
 
@@ -8966,36 +9208,36 @@ void __cdecl PlayerCmd_StopCarryTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_LinkGuidedMissileCamera(scr_entref_t param_1)
+void __cdecl PlayerCmd_LinkGuidedMissileCamera(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1232,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).eFlags2 = (local_8->client->ps).eFlags2 | 0x10000000;
-  (local_8->client->ps).eFlags2 = (local_8->client->ps).eFlags2 | 0x40000;
+  (pSelf->client->ps).eFlags2 = (pSelf->client->ps).eFlags2 | 0x10000000;
+  (pSelf->client->ps).eFlags2 = (pSelf->client->ps).eFlags2 | 0x40000;
   return;
 }
 
@@ -9007,36 +9249,36 @@ void __cdecl PlayerCmd_LinkGuidedMissileCamera(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_UnlinkGuidedMissileCamera(scr_entref_t param_1)
+void __cdecl PlayerCmd_UnlinkGuidedMissileCamera(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
-  gentity_s *local_8;
+  char *error;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x1246,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar4 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar4);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  (local_8->client->ps).eFlags2 = (local_8->client->ps).eFlags2 & 0xefffffff;
-  (local_8->client->ps).eFlags2 = (local_8->client->ps).eFlags2 & 0xfffbffff;
+  (pSelf->client->ps).eFlags2 = (pSelf->client->ps).eFlags2 & 0xefffffff;
+  (pSelf->client->ps).eFlags2 = (pSelf->client->ps).eFlags2 & 0xfffbffff;
   return;
 }
 
@@ -9048,37 +9290,37 @@ void __cdecl PlayerCmd_UnlinkGuidedMissileCamera(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_isCarryingTurret(scr_entref_t param_1)
+void __cdecl PlayerCmd_isCarryingTurret(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_8;
+  char *error;
+  int iVar3;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x125a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_8 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  iVar4 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  (local_8->client->ps).bCarryingTurret = iVar4 != 0;
+  iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
+  (pSelf->client->ps).bCarryingTurret = iVar3 != 0;
   return;
 }
 
@@ -9090,51 +9332,52 @@ void __cdecl PlayerCmd_isCarryingTurret(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayerCmd_CanPlayerPlaceTurret(scr_entref_t param_1)
+void __cdecl PlayerCmd_CanPlayerPlaceTurret(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  scriptInstance_t sVar5;
-  gentity_s *local_24;
-  float local_1c [3];
-  float local_10 [3];
+  char *error;
+  int value;
+  scriptInstance_t inst;
+  gentity_s *pSelf;
+  int result;
+  float origin [3];
+  float angles [3];
   
-  if (param_1.classnum == 0) {
-    if ((0x3ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x3ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                  ,0x126e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_24 = g_entities + param_1.entnum;
-    if (g_entities[param_1.entnum].client == (gclient_s *)0x0) {
-      sVar5 = SCRIPTINSTANCE_SERVER;
-      pcVar3 = va("entity %i is not a player");
-      Scr_ObjectError(pcVar3,sVar5);
+    pSelf = g_entities + entref.entnum;
+    if (g_entities[entref.entnum].client == (gclient_s *)0x0) {
+      inst = SCRIPTINSTANCE_SERVER;
+      error = va("entity %i is not a player");
+      Scr_ObjectError(error,inst);
     }
   }
   else {
     Scr_ObjectError("not an entity",SCRIPTINSTANCE_SERVER);
-    local_24 = (gentity_s *)0x0;
+    pSelf = (gentity_s *)0x0;
   }
-  if ((local_24->client == (gclient_s *)0x0) &&
+  if ((pSelf->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\g_client_script_cmd_mp.cpp"
                                ,0x1270,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar4 = Turret_PlaceTurret_Server(&local_24->client->ps,local_1c,local_10);
+  value = Turret_PlaceTurret_Server(&pSelf->client->ps,origin,angles);
   Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-  Scr_AddBool(iVar4,SCRIPTINSTANCE_SERVER);
+  Scr_AddBool(value,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.result,SCRIPTINSTANCE_SERVER);
-  Scr_AddVector(local_1c,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(origin,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.origin,SCRIPTINSTANCE_SERVER);
-  Scr_AddVector(local_10,SCRIPTINSTANCE_SERVER);
+  Scr_AddVector(angles,SCRIPTINSTANCE_SERVER);
   Scr_AddArrayStringIndexed((uint)scr_const.angles,SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -9142,7 +9385,7 @@ void __cdecl PlayerCmd_CanPlayerPlaceTurret(scr_entref_t param_1)
 
 // 0060F9A0  Player_GetMethod  (game_mp/g_client_script_cmd_mp.cpp:4918)
 
-_func___cdecl_void_scr_entref_t * __cdecl Player_GetMethod(char **param_1)
+_func___cdecl_void_scr_entref_t * __cdecl Player_GetMethod(char **pName)
 
 {
   byte bVar1;
@@ -9150,15 +9393,16 @@ _func___cdecl_void_scr_entref_t * __cdecl Player_GetMethod(char **param_1)
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x99 < local_8) {
+    if (0x99 < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -9177,17 +9421,17 @@ LAB_0060fa1f:
     local_1c = 0;
 LAB_0060fa27:
     if (local_1c == 0) {
-      *param_1 = methods[local_8].actionString;
-      return methods[local_8].actionFunc;
+      *pName = methods[i].actionString;
+      return methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00606110  pmove_t  (line unknown)
 
-pmove_t * __thiscall pmove_t::pmove_t(pmove_t *this,pmove_t *param_1)
+pmove_t * __thiscall pmove_t::pmove_t(pmove_t *this,pmove_t *__that)
 
 {
   int iVar1;
@@ -9202,9 +9446,9 @@ pmove_t * __thiscall pmove_t::pmove_t(pmove_t *this,pmove_t *param_1)
   float *pfVar10;
   col_prim_t_u_4 *pcVar11;
   
-  this->ps = param_1->ps;
+  this->ps = __that->ps;
   iVar1 = 0xd;
-  ppVar2 = param_1;
+  ppVar2 = __that;
   ppVar7 = this;
   while( true ) {
     ppVar7 = (pmove_t *)&ppVar7->cmd;
@@ -9213,70 +9457,70 @@ pmove_t * __thiscall pmove_t::pmove_t(pmove_t *this,pmove_t *param_1)
     iVar1 = iVar1 + -1;
     ((usercmd_s *)ppVar7)->serverTime = ((usercmd_s *)ppVar2)->serverTime;
   }
-  puVar3 = &param_1->oldcmd;
+  puVar3 = &__that->oldcmd;
   puVar8 = &this->oldcmd;
   for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
     puVar8->serverTime = puVar3->serverTime;
     puVar3 = (usercmd_s *)&puVar3->button_bits;
     puVar8 = (usercmd_s *)&puVar8->button_bits;
   }
-  this->tracemask = param_1->tracemask;
-  this->numtouch = param_1->numtouch;
-  piVar4 = param_1->touchents;
+  this->tracemask = __that->tracemask;
+  this->numtouch = __that->numtouch;
+  piVar4 = __that->touchents;
   piVar9 = this->touchents;
   for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
     *piVar9 = *piVar4;
     piVar4 = piVar4 + 1;
     piVar9 = piVar9 + 1;
   }
-  this->numGlassTouch = param_1->numGlassTouch;
-  piVar4 = param_1->touchGlasses;
+  this->numGlassTouch = __that->numGlassTouch;
+  piVar4 = __that->touchGlasses;
   piVar9 = this->touchGlasses;
   for (iVar1 = 0x20; iVar1 != 0; iVar1 = iVar1 + -1) {
     *piVar9 = *piVar4;
     piVar4 = piVar4 + 1;
     piVar9 = piVar9 + 1;
   }
-  this->mins[0] = param_1->mins[0];
-  this->mins[1] = param_1->mins[1];
-  this->mins[2] = param_1->mins[2];
-  this->maxs[0] = param_1->maxs[0];
-  this->maxs[1] = param_1->maxs[1];
-  this->maxs[2] = param_1->maxs[2];
-  this->xyspeed = param_1->xyspeed;
-  this->currentPitch = param_1->currentPitch;
-  this->averagePitch = param_1->averagePitch;
-  this->nextPitch = param_1->nextPitch;
-  pfVar5 = param_1->pitchHistory;
+  this->mins[0] = __that->mins[0];
+  this->mins[1] = __that->mins[1];
+  this->mins[2] = __that->mins[2];
+  this->maxs[0] = __that->maxs[0];
+  this->maxs[1] = __that->maxs[1];
+  this->maxs[2] = __that->maxs[2];
+  this->xyspeed = __that->xyspeed;
+  this->currentPitch = __that->currentPitch;
+  this->averagePitch = __that->averagePitch;
+  this->nextPitch = __that->nextPitch;
+  pfVar5 = __that->pitchHistory;
   pfVar10 = this->pitchHistory;
   for (iVar1 = 0x1e; iVar1 != 0; iVar1 = iVar1 + -1) {
     *pfVar10 = *pfVar5;
     pfVar5 = pfVar5 + 1;
     pfVar10 = pfVar10 + 1;
   }
-  this->proneChange = param_1->proneChange;
-  this->maxSprintTimeMultiplier = param_1->maxSprintTimeMultiplier;
-  this->mantleStarted = param_1->mantleStarted;
-  this->mantleEndPos[0] = param_1->mantleEndPos[0];
-  this->mantleEndPos[1] = param_1->mantleEndPos[1];
-  this->mantleEndPos[2] = param_1->mantleEndPos[2];
-  this->mantleDuration = param_1->mantleDuration;
-  this->viewChangeTime = param_1->viewChangeTime;
-  this->viewChange = param_1->viewChange;
-  this->vehicleAngles[0] = param_1->vehicleAngles[0];
-  this->vehicleAngles[1] = param_1->vehicleAngles[1];
-  this->vehicleAngles[2] = param_1->vehicleAngles[2];
-  this->vehAnimState = param_1->vehAnimState;
-  this->handler = param_1->handler;
-  this->localClientNum = param_1->localClientNum;
-  this->m_gjkcc_input = param_1->m_gjkcc_input;
+  this->proneChange = __that->proneChange;
+  this->maxSprintTimeMultiplier = __that->maxSprintTimeMultiplier;
+  this->mantleStarted = __that->mantleStarted;
+  this->mantleEndPos[0] = __that->mantleEndPos[0];
+  this->mantleEndPos[1] = __that->mantleEndPos[1];
+  this->mantleEndPos[2] = __that->mantleEndPos[2];
+  this->mantleDuration = __that->mantleDuration;
+  this->viewChangeTime = __that->viewChangeTime;
+  this->viewChange = __that->viewChange;
+  this->vehicleAngles[0] = __that->vehicleAngles[0];
+  this->vehicleAngles[1] = __that->vehicleAngles[1];
+  this->vehicleAngles[2] = __that->vehicleAngles[2];
+  this->vehAnimState = __that->vehAnimState;
+  this->handler = __that->handler;
+  this->localClientNum = __that->localClientNum;
+  this->m_gjkcc_input = __that->m_gjkcc_input;
   colgeom_visitor_t::colgeom_visitor_t
-            ((colgeom_visitor_t *)&this->proximity_data,
-             (colgeom_visitor_t *)&param_1->proximity_data);
+            ((colgeom_visitor_t *)&this->proximity_data,(colgeom_visitor_t *)&__that->proximity_data
+            );
   (this->proximity_data)._padding_ = (int)colgeom_visitor_inlined_t<200>::vftable;
-  (this->proximity_data).nprims = (param_1->proximity_data).nprims;
-  (this->proximity_data).overflow = (param_1->proximity_data).overflow;
-  pcVar6 = (col_prim_t_u_4 *)(param_1->proximity_data).prims;
+  (this->proximity_data).nprims = (__that->proximity_data).nprims;
+  (this->proximity_data).overflow = (__that->proximity_data).overflow;
+  pcVar6 = (col_prim_t_u_4 *)(__that->proximity_data).prims;
   pcVar11 = (col_prim_t_u_4 *)(this->proximity_data).prims;
   for (iVar1 = 400; iVar1 != 0; iVar1 = iVar1 + -1) {
     *pcVar11 = *pcVar6;
@@ -9290,38 +9534,38 @@ pmove_t * __thiscall pmove_t::pmove_t(pmove_t *this,pmove_t *param_1)
 // 006063A0  colgeom_visitor_t  (line unknown)
 
 colgeom_visitor_t * __thiscall
-colgeom_visitor_t::colgeom_visitor_t(colgeom_visitor_t *this,colgeom_visitor_t *param_1)
+colgeom_visitor_t::colgeom_visitor_t(colgeom_visitor_t *this,colgeom_visitor_t *__that)
 
 {
   this->_padding_ = (int)visitor_base_t::vftable;
   this->_padding_ = (int)vftable;
-  (this->m_mn).vec.v[0] = (param_1->m_mn).vec.v[0];
-  (this->m_mn).vec.v[1] = (param_1->m_mn).vec.v[1];
-  (this->m_mn).vec.v[2] = (param_1->m_mn).vec.v[2];
-  (this->m_mn).vec.v[3] = (param_1->m_mn).vec.v[3];
-  (this->m_mx).vec.v[0] = (param_1->m_mx).vec.v[0];
-  (this->m_mx).vec.v[1] = (param_1->m_mx).vec.v[1];
-  (this->m_mx).vec.v[2] = (param_1->m_mx).vec.v[2];
-  (this->m_mx).vec.v[3] = (param_1->m_mx).vec.v[3];
-  (this->m_p0).vec.v[0] = (param_1->m_p0).vec.v[0];
-  (this->m_p0).vec.v[1] = (param_1->m_p0).vec.v[1];
-  (this->m_p0).vec.v[2] = (param_1->m_p0).vec.v[2];
-  (this->m_p0).vec.v[3] = (param_1->m_p0).vec.v[3];
-  (this->m_p1).vec.v[0] = (param_1->m_p1).vec.v[0];
-  (this->m_p1).vec.v[1] = (param_1->m_p1).vec.v[1];
-  (this->m_p1).vec.v[2] = (param_1->m_p1).vec.v[2];
-  (this->m_p1).vec.v[3] = (param_1->m_p1).vec.v[3];
-  (this->m_delta).vec.v[0] = (param_1->m_delta).vec.v[0];
-  (this->m_delta).vec.v[1] = (param_1->m_delta).vec.v[1];
-  (this->m_delta).vec.v[2] = (param_1->m_delta).vec.v[2];
-  (this->m_delta).vec.v[3] = (param_1->m_delta).vec.v[3];
-  (this->m_rvec).vec.v[0] = (param_1->m_rvec).vec.v[0];
-  (this->m_rvec).vec.v[1] = (param_1->m_rvec).vec.v[1];
-  (this->m_rvec).vec.v[2] = (param_1->m_rvec).vec.v[2];
-  (this->m_rvec).vec.v[3] = (param_1->m_rvec).vec.v[3];
-  this->m_radius = param_1->m_radius;
-  this->m_mask = param_1->m_mask;
-  this->m_threadInfo = param_1->m_threadInfo;
+  (this->m_mn).vec.v[0] = (__that->m_mn).vec.v[0];
+  (this->m_mn).vec.v[1] = (__that->m_mn).vec.v[1];
+  (this->m_mn).vec.v[2] = (__that->m_mn).vec.v[2];
+  (this->m_mn).vec.v[3] = (__that->m_mn).vec.v[3];
+  (this->m_mx).vec.v[0] = (__that->m_mx).vec.v[0];
+  (this->m_mx).vec.v[1] = (__that->m_mx).vec.v[1];
+  (this->m_mx).vec.v[2] = (__that->m_mx).vec.v[2];
+  (this->m_mx).vec.v[3] = (__that->m_mx).vec.v[3];
+  (this->m_p0).vec.v[0] = (__that->m_p0).vec.v[0];
+  (this->m_p0).vec.v[1] = (__that->m_p0).vec.v[1];
+  (this->m_p0).vec.v[2] = (__that->m_p0).vec.v[2];
+  (this->m_p0).vec.v[3] = (__that->m_p0).vec.v[3];
+  (this->m_p1).vec.v[0] = (__that->m_p1).vec.v[0];
+  (this->m_p1).vec.v[1] = (__that->m_p1).vec.v[1];
+  (this->m_p1).vec.v[2] = (__that->m_p1).vec.v[2];
+  (this->m_p1).vec.v[3] = (__that->m_p1).vec.v[3];
+  (this->m_delta).vec.v[0] = (__that->m_delta).vec.v[0];
+  (this->m_delta).vec.v[1] = (__that->m_delta).vec.v[1];
+  (this->m_delta).vec.v[2] = (__that->m_delta).vec.v[2];
+  (this->m_delta).vec.v[3] = (__that->m_delta).vec.v[3];
+  (this->m_rvec).vec.v[0] = (__that->m_rvec).vec.v[0];
+  (this->m_rvec).vec.v[1] = (__that->m_rvec).vec.v[1];
+  (this->m_rvec).vec.v[2] = (__that->m_rvec).vec.v[2];
+  (this->m_rvec).vec.v[3] = (__that->m_rvec).vec.v[3];
+  this->m_radius = __that->m_radius;
+  this->m_mask = __that->m_mask;
+  this->m_threadInfo = __that->m_threadInfo;
   return this;
 }
 

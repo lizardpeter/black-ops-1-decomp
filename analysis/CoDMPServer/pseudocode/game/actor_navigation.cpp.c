@@ -2,7 +2,7 @@
 
 // 00902F70  Path_GetPathDir  (game/actor_navigation.cpp:59)
 
-float __cdecl Path_GetPathDir(float *param_1,float *param_2,float *param_3)
+float __cdecl Path_GetPathDir(float *vTo,float *param_2,float *param_3)
 
 {
   code *pcVar1;
@@ -11,9 +11,13 @@ float __cdecl Path_GetPathDir(float *param_1,float *param_2,float *param_3)
   float *in_EDX;
   float10 fVar3;
   float fVar4;
+  float *vFrom;
+  float *delta;
+  float fInvDist;
+  float fDist;
   
-  *in_ECX = *param_1 - *in_EDX;
-  in_ECX[1] = param_1[1] - in_EDX[1];
+  *in_ECX = *vTo - *in_EDX;
+  in_ECX[1] = vTo[1] - in_EDX[1];
   if (((uint)*in_ECX & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x44,0,
                              "%s");
@@ -69,6 +73,8 @@ pathnode_t * __cdecl Path_GetNegotiationNode(path_t *param_1)
   bool bVar2;
   pathnode_t *ppVar3;
   int in_ECX;
+  path_t *pPath;
+  int negotiationNodeNum;
   
   if (*(short *)(in_ECX + 0x386) < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x56,0,
@@ -86,6 +92,7 @@ pathnode_t * __cdecl Path_GetNegotiationNode(path_t *param_1)
 
 // 00903180  Path_IncrementNodeUserCount  (game/actor_navigation.cpp:100)
 
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
@@ -96,6 +103,8 @@ void __cdecl Path_IncrementNodeUserCount(path_t *param_1)
   bool bVar2;
   pathnode_t *ppVar3;
   path_t *in_ECX;
+  path_t *pPath;
+  pathnode_t *negotiationNode;
   
   ppVar3 = Path_GetNegotiationNode(in_ECX);
   if (ppVar3 == (pathnode_t *)0x0) {
@@ -114,6 +123,7 @@ void __cdecl Path_IncrementNodeUserCount(path_t *param_1)
 
 // 00905FD0  Path_DecrementNodeUserCount  (game/actor_navigation.cpp:116)
 
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
@@ -124,6 +134,8 @@ void __cdecl Path_DecrementNodeUserCount(path_t *param_1)
   bool bVar2;
   pathnode_t *ppVar3;
   path_t *in_ECX;
+  path_t *pPath;
+  pathnode_t *negotiationNode;
   
   ppVar3 = Path_GetNegotiationNode(in_ECX);
   if (ppVar3 == (pathnode_t *)0x0) {
@@ -163,6 +175,8 @@ float __cdecl Path_GetDistToPathSegment(float *param_1,pathpoint_t *param_2)
   float *in_ECX;
   float *in_EDX;
   float10 fVar7;
+  pathpoint_t *pt;
+  float *vStartPos;
   
   if (in_EDX == (float *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xa8,0,
@@ -192,6 +206,8 @@ float __cdecl Path_GetDistToPathSegment(float *param_1,pathpoint_t *param_2)
 
 // 009031E0  Path_AddTrimmedAmount  (game/actor_navigation.cpp:184)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
@@ -201,19 +217,21 @@ void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
   bool bVar2;
   pathpoint_t *in_ECX;
   float *in_EDX;
+  float *vStartPos;
+  path_t *pPath;
   float local_30;
   float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
+  float dist;
+  float height;
+  float closestDist;
+  float offset;
   float local_18;
-  float local_14;
-  float local_10;
-  pathpoint_t *local_c;
-  int local_8;
+  float amount;
+  float closestAmount;
+  pathpoint_t *pt;
+  int i;
   
-  local_8 = *(short *)in_ECX[0x20].vOrigPoint + -1;
+  i = *(short *)in_ECX[0x20].vOrigPoint + -1;
   if ((*(short *)((int)in_ECX[0x20].vOrigPoint + 6) < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xc6,
                                0,"%s"), !bVar2)) {
@@ -221,21 +239,21 @@ void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
     (*pcVar1)();
     return;
   }
-  if (((local_8 != -1) && (local_8 < *(short *)((int)in_ECX[0x20].vOrigPoint + 6))) &&
+  if (((i != -1) && (i < *(short *)((int)in_ECX[0x20].vOrigPoint + 6))) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",199,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (*(short *)((int)in_ECX[0x20].vOrigPoint + 6) < local_8) {
-    local_c = in_ECX + local_8 + -1;
-    local_30 = *in_EDX - local_c->vOrigPoint[0];
-    local_2c = in_EDX[1] - local_c->vOrigPoint[1];
-    local_20 = Vec2Length(&local_30);
-    local_14 = 0.0;
-    local_10 = 0.0;
-    if ((*(short *)((int)in_ECX[0x20].vOrigPoint + 2) <= local_8) &&
+  if (*(short *)((int)in_ECX[0x20].vOrigPoint + 6) < i) {
+    pt = in_ECX + i + -1;
+    local_30 = *in_EDX - pt->vOrigPoint[0];
+    local_2c = in_EDX[1] - pt->vOrigPoint[1];
+    closestDist = Vec2Length(&local_30);
+    amount = 0.0;
+    closestAmount = 0.0;
+    if ((*(short *)((int)in_ECX[0x20].vOrigPoint + 2) <= i) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xd1,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -243,36 +261,36 @@ void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
       return;
     }
     do {
-      local_c = in_ECX + local_8;
-      local_1c = local_c->vOrigPoint[0] - *in_EDX;
-      local_18 = local_c->vOrigPoint[1] - in_EDX[1];
-      local_28 = Vec2Length(&local_1c);
-      if (local_28 <= local_20) {
-        local_10 = local_14;
-        local_20 = local_28;
+      pt = in_ECX + i;
+      offset = pt->vOrigPoint[0] - *in_EDX;
+      local_18 = pt->vOrigPoint[1] - in_EDX[1];
+      dist = Vec2Length(&offset);
+      if (dist <= closestDist) {
+        closestAmount = amount;
+        closestDist = dist;
       }
-      local_8 = local_8 + 1;
-      if (*(short *)((int)in_ECX[0x20].vOrigPoint + 2) <= local_8) break;
-      if (((local_c->fDir2D[0] == 0.0) && (local_c->fDir2D[1] == 0.0)) &&
+      i = i + 1;
+      if (*(short *)((int)in_ECX[0x20].vOrigPoint + 2) <= i) break;
+      if (((pt->fDir2D[0] == 0.0) && (pt->fDir2D[1] == 0.0)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xe2,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_24 = ABS(local_c->fDir2D[0] * local_18 - local_c->fDir2D[1] * local_1c);
-      if ((local_c->fOrigLength <= 0.0) &&
+      height = ABS(pt->fDir2D[0] * local_18 - pt->fDir2D[1] * offset);
+      if ((pt->fOrigLength <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xe4,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_14 = local_24 * local_c->fOrigLength + local_14;
-    } while (local_14 <= 21845.334);
-    local_c = in_ECX + *(short *)in_ECX[0x20].vOrigPoint + -2;
-    local_24 = Path_GetDistToPathSegment(in_EDX,in_ECX);
-    if ((local_c->fOrigLength <= 0.0) &&
+      amount = height * pt->fOrigLength + amount;
+    } while (amount <= 21845.334);
+    pt = in_ECX + *(short *)in_ECX[0x20].vOrigPoint + -2;
+    height = Path_GetDistToPathSegment(in_EDX,in_ECX);
+    if ((pt->fOrigLength <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xeb,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -286,7 +304,7 @@ void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
       (*pcVar1)();
       return;
     }
-    if ((local_c->fOrigLength < in_ECX[0x22].fDir2D[1]) &&
+    if ((pt->fOrigLength < in_ECX[0x22].fDir2D[1]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xed,0,"pt->fOrigLength >= pPath->fCurrLength\n\t%g, %g"), !bVar2))
     {
@@ -294,15 +312,15 @@ void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
       (*pcVar1)();
       return;
     }
-    local_10 = (local_c->fOrigLength - in_ECX[0x22].fDir2D[1]) * local_24 + local_10;
-    if ((local_10 < 0.0) &&
+    closestAmount = (pt->fOrigLength - in_ECX[0x22].fDir2D[1]) * height + closestAmount;
+    if ((closestAmount < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xf0,0,"%s\n\t(closestAmount) = %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    in_ECX[0x21].fOrigLength = in_ECX[0x21].fOrigLength + local_10;
+    in_ECX[0x21].fOrigLength = in_ECX[0x21].fOrigLength + closestAmount;
   }
   return;
 }
@@ -312,14 +330,14 @@ void __cdecl Path_AddTrimmedAmount(path_t *param_1,float *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Path_IsPathStanceNode(pathnode_t *param_1)
+int __cdecl Path_IsPathStanceNode(pathnode_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (pathnode_t *)0x0) {
+  if (node == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\game\\pathnode.h",0xe2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -327,12 +345,14 @@ int __cdecl Path_IsPathStanceNode(pathnode_t *param_1)
       return iVar3;
     }
   }
-  return (uint)((1 << ((byte)(param_1->constant).type & 0x1f) & 0x183ffcU) == 0);
+  return (uint)((1 << ((byte)(node->constant).type & 0x1f) & 0x183ffcU) == 0);
 }
 
 
 // 009085D0  Path_SubtractTrimmedAmount  (game/actor_navigation.cpp:254)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl Path_SubtractTrimmedAmount(path_t *param_1,float *param_2)
@@ -344,10 +364,12 @@ void __cdecl Path_SubtractTrimmedAmount(path_t *param_1,float *param_2)
   pathpoint_t *in_ECX;
   float *in_EDX;
   float fVar4;
-  pathpoint_t *ppVar5;
-  pathpoint_t *ppVar6;
-  float local_10;
-  int local_8;
+  float *vStartPos;
+  path_t *pPath;
+  float height;
+  float amount;
+  pathpoint_t *pt;
+  int i;
   
   if (*(short *)in_ECX[0x20].vOrigPoint != *(short *)((int)in_ECX[0x20].vOrigPoint + 2)) {
     if ((*(short *)in_ECX[0x20].vOrigPoint < 2) &&
@@ -358,8 +380,7 @@ void __cdecl Path_SubtractTrimmedAmount(path_t *param_1,float *param_2)
       return;
     }
     iVar3 = *(short *)in_ECX[0x20].vOrigPoint + -2;
-    ppVar5 = in_ECX;
-    local_10 = Path_GetDistToPathSegment(in_EDX,in_ECX);
+    fVar4 = Path_GetDistToPathSegment(in_EDX,in_ECX);
     if ((in_ECX[iVar3].fOrigLength <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x10d,0,"%s"), !bVar2)) {
@@ -367,14 +388,14 @@ void __cdecl Path_SubtractTrimmedAmount(path_t *param_1,float *param_2)
       (*pcVar1)();
       return;
     }
-    if ((ppVar5[0x22].fDir2D[1] <= 0.0) &&
+    if ((in_ECX[0x22].fDir2D[1] <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x10e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((in_ECX[iVar3].fOrigLength < ppVar5[0x22].fDir2D[1]) &&
+    if ((in_ECX[iVar3].fOrigLength < in_ECX[0x22].fDir2D[1]) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x10f,0,"pt->fOrigLength >= pPath->fCurrLength\n\t%g, %g"), !bVar2)
        ) {
@@ -382,24 +403,22 @@ void __cdecl Path_SubtractTrimmedAmount(path_t *param_1,float *param_2)
       (*pcVar1)();
       return;
     }
-    local_10 = (in_ECX[iVar3].fOrigLength - ppVar5[0x22].fDir2D[1]) * local_10;
-    local_8 = *(short *)ppVar5[0x20].vOrigPoint + -1;
-    for (; local_8 < *(short *)((int)ppVar5[0x20].vOrigPoint + 2) + -1; local_8 = local_8 + 1) {
-      ppVar6 = ppVar5;
-      fVar4 = Path_GetDistToPathSegment(in_EDX,ppVar5);
-      if ((ppVar5[local_8].fOrigLength <= 0.0) &&
+    amount = (in_ECX[iVar3].fOrigLength - in_ECX[0x22].fDir2D[1]) * fVar4;
+    for (i = *(short *)in_ECX[0x20].vOrigPoint + -1;
+        i < *(short *)((int)in_ECX[0x20].vOrigPoint + 2) + -1; i = i + 1) {
+      fVar4 = Path_GetDistToPathSegment(in_EDX,in_ECX);
+      if ((in_ECX[i].fOrigLength <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x117,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_10 = fVar4 * ppVar5[local_8].fOrigLength + local_10;
-      ppVar5 = ppVar6;
+      amount = fVar4 * in_ECX[i].fOrigLength + amount;
     }
-    ppVar5[0x21].fOrigLength = ppVar5[0x21].fOrigLength - local_10;
-    if (ppVar5[0x21].fOrigLength <= 64.0 && ppVar5[0x21].fOrigLength != 64.0) {
-      ppVar5[0x21].fOrigLength = 64.0;
+    in_ECX[0x21].fOrigLength = in_ECX[0x21].fOrigLength - amount;
+    if (in_ECX[0x21].fOrigLength <= 64.0 && in_ECX[0x21].fOrigLength != 64.0) {
+      in_ECX[0x21].fOrigLength = 64.0;
     }
   }
   return;
@@ -408,15 +427,19 @@ void __cdecl Path_SubtractTrimmedAmount(path_t *param_1,float *param_2)
 
 // 009052F0  Path_SetLookaheadToStart  (game/actor_navigation.cpp:296)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Path_SetLookaheadToStart(path_t *param_1,float *param_2,int param_3)
+void __cdecl Path_SetLookaheadToStart(path_t *bTrimAmount,float *param_2,int param_3)
 
 {
   int in_ECX;
   float *in_EDX;
   float fVar1;
-  int local_8;
+  float *vStartPos;
+  path_t *pPath;
+  int i;
   
   *(float *)(in_ECX + 0x398) = *(float *)(in_ECX + 0x3cc) - *in_EDX;
   *(float *)(in_ECX + 0x39c) = *(float *)(in_ECX + 0x3d0) - in_EDX[1];
@@ -436,8 +459,8 @@ void __cdecl Path_SetLookaheadToStart(path_t *param_1,float *param_2,int param_3
      ((zombiemode->current).enabled == false)) {
     numIter = 3;
   }
-  for (local_8 = 0; local_8 < numIter; local_8 = local_8 + 1) {
-    Path_UpdateLookahead((path_t *)0x0,(float *)param_1,1,0,0,(int)in_EDX);
+  for (i = 0; i < numIter; i = i + 1) {
+    Path_UpdateLookahead((path_t *)0x0,(float *)bTrimAmount,1,0,0,(int)in_EDX);
   }
   return;
 }
@@ -460,22 +483,26 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
   float fVar6;
   float *in_stack_ffffff50;
   float in_stack_ffffff54;
-  float local_44;
-  float local_40;
-  float local_3c;
+  float *vStartPos;
+  path_t *pPath;
+  float dist;
+  float height;
+  float bestForwardDot;
+  float closestTotalArea;
+  float vStartDir;
   float local_38;
-  float local_34;
+  float offset;
   float local_30;
-  float *local_2c;
-  int local_28;
-  float local_24;
-  float local_20;
-  float *local_1c;
-  float local_18;
-  int local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  int bInFront;
+  int bAtStart;
+  float totalArea;
+  float amount;
+  pathpoint_t *pt;
+  float fLength;
+  int i;
+  float prevDot;
+  float dot;
+  float forwardDot;
   
   if ((in_ECX == 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x15c
@@ -521,9 +548,9 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
     Path_SetLookaheadToStart((path_t *)0x0,in_stack_ffffff50,(int)in_stack_ffffff54);
   }
   else {
-    local_24 = 0.0;
-    local_20 = *(float *)(in_ECX + 0x3b0);
-    if ((local_20 <= 0.0) &&
+    totalArea = 0.0;
+    amount = *(float *)(in_ECX + 0x3b0);
+    if ((amount <= 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x16a,0,"%s\n\t(amount) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -539,60 +566,59 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
       (*pcVar3)();
       return;
     }
-    local_3c = *(float *)(in_ECX + 0x3cc) - *in_EDX;
+    vStartDir = *(float *)(in_ECX + 0x3cc) - *in_EDX;
     local_38 = *(float *)(in_ECX + 0x3d0) - in_EDX[1];
-    local_18 = Vec2Normalize(&local_3c);
-    local_10 = (fVar1 * local_38 - fVar2 * local_3c) * local_18;
-    local_44 = fVar1 * local_3c + fVar2 * local_38;
-    local_40 = 0.0;
-    local_28 = 1;
-    for (local_14 = *(short *)(in_ECX + 0x380) + -2; *(short *)(in_ECX + 0x386) <= local_14;
-        local_14 = local_14 + -1) {
-      local_1c = (float *)(local_14 * 0x1c + in_ECX);
-      local_34 = *local_1c - *in_EDX;
-      local_30 = local_1c[1] - in_EDX[1];
-      if (local_28 == 0) {
-        in_stack_ffffff54 = local_1c[5];
+    fLength = Vec2Normalize(&vStartDir);
+    prevDot = (fVar1 * local_38 - fVar2 * vStartDir) * fLength;
+    bestForwardDot = fVar1 * vStartDir + fVar2 * local_38;
+    closestTotalArea = 0.0;
+    bAtStart = 1;
+    for (i = *(short *)(in_ECX + 0x380) + -2; *(short *)(in_ECX + 0x386) <= i; i = i + -1) {
+      pt = (pathpoint_t *)(i * 0x1c + in_ECX);
+      offset = pt->vOrigPoint[0] - *in_EDX;
+      local_30 = pt->vOrigPoint[1] - in_EDX[1];
+      if (bAtStart == 0) {
+        in_stack_ffffff54 = pt->fOrigLength;
       }
       else {
         in_stack_ffffff54 = *(float *)(in_ECX + 0x3c8);
       }
-      local_18 = in_stack_ffffff54;
-      if (((local_1c[3] == 0.0) && (local_1c[4] == 0.0)) &&
+      fLength = in_stack_ffffff54;
+      if (((pt->fDir2D[0] == 0.0) && (pt->fDir2D[1] == 0.0)) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x17b,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      fVar5 = local_1c[3] * local_30 - local_1c[4] * local_34;
-      in_stack_ffffff50 = (float *)(uint)(0.0 < (local_1c[3] * fVar2 - local_1c[4] * fVar1) * fVar5)
-      ;
+      fVar5 = pt->fDir2D[0] * local_30 - pt->fDir2D[1] * offset;
+      in_stack_ffffff50 =
+           (float *)(uint)(0.0 < (pt->fDir2D[0] * fVar2 - pt->fDir2D[1] * fVar1) * fVar5);
       fVar5 = ABS(fVar5);
-      local_c = fVar1 * local_30 - fVar2 * local_34;
-      local_2c = in_stack_ffffff50;
-      if ((in_stack_ffffff50 != (float *)0x0) && (local_c * local_10 < 0.0)) {
+      dot = fVar1 * local_30 - fVar2 * offset;
+      bInFront = (int)in_stack_ffffff50;
+      if ((in_stack_ffffff50 != (float *)0x0) && (dot * prevDot < 0.0)) {
         Path_UpdateLookahead
                   ((path_t *)0x0,(float *)&DAT_00000001,1,0,(int)in_stack_ffffff50,
                    (int)in_stack_ffffff54);
         return;
       }
-      if ((((uint)local_18 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)fLength & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x186,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if ((local_18 <= 0.0) &&
+      if ((fLength <= 0.0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x187,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      local_24 = fVar5 * local_18 + local_24;
-      if (local_20 <= local_24) {
+      totalArea = fVar5 * fLength + totalArea;
+      if (amount <= totalArea) {
         if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x18b,0,"%s"), !bVar4)) {
@@ -607,22 +633,22 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
           (*pcVar3)();
           return;
         }
-        if ((((uint)local_18 & 0x7f800000) == 0x7f800000) &&
+        if ((((uint)fLength & 0x7f800000) == 0x7f800000) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x18d,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        if ((local_18 <= 0.0) &&
+        if ((fLength <= 0.0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x18e,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        fVar6 = local_24 - local_20;
-        if (((local_1c[3] == 0.0) && (local_1c[4] == 0.0)) &&
+        fVar6 = totalArea - amount;
+        if (((pt->fDir2D[0] == 0.0) && (pt->fDir2D[1] == 0.0)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x192,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
@@ -630,11 +656,11 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
           return;
         }
         fVar5 = -(fVar6 / fVar5);
-        local_34 = (fVar5 * local_1c[3] + *local_1c) - *in_EDX;
-        local_30 = (fVar5 * local_1c[4] + local_1c[1]) - in_EDX[1];
-        Vec2Normalize(&local_34);
-        local_8 = fVar1 * local_34 + fVar2 * local_30;
-        if (local_44 <= local_8) {
+        offset = (fVar5 * pt->fDir2D[0] + pt->vOrigPoint[0]) - *in_EDX;
+        local_30 = (fVar5 * pt->fDir2D[1] + pt->vOrigPoint[1]) - in_EDX[1];
+        Vec2Normalize(&offset);
+        forwardDot = fVar1 * offset + fVar2 * local_30;
+        if (bestForwardDot <= forwardDot) {
           Path_SetLookaheadToStart((path_t *)0x0,in_stack_ffffff50,(int)in_stack_ffffff54);
           return;
         }
@@ -642,34 +668,35 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
         if ((*(uint *)(in_ECX + 0x3bc) & 2) != 0) {
           return;
         }
-        if (*(float *)(in_ECX + 0x3b0) <= local_40) {
+        if (*(float *)(in_ECX + 0x3b0) <= closestTotalArea) {
           return;
         }
-        if (local_40 < 64.0) {
-          local_40 = 64.0;
+        if (closestTotalArea < 64.0) {
+          closestTotalArea = 64.0;
         }
-        *(float *)(in_ECX + 0x3b0) = local_40;
+        *(float *)(in_ECX + 0x3b0) = closestTotalArea;
         return;
       }
-      local_10 = local_c;
-      Vec2Normalize(&local_34);
-      local_8 = fVar1 * local_34 + fVar2 * local_30;
-      if (local_44 <= local_8) {
-        local_40 = local_24;
-        local_44 = local_8;
+      prevDot = dot;
+      Vec2Normalize(&offset);
+      forwardDot = fVar1 * offset + fVar2 * local_30;
+      if (bestForwardDot <= forwardDot) {
+        closestTotalArea = totalArea;
+        bestForwardDot = forwardDot;
       }
-      local_28 = 0;
+      bAtStart = 0;
     }
-    if (local_40 == local_24) {
+    if (closestTotalArea == totalArea) {
       Path_SetLookaheadToStart((path_t *)0x0,in_stack_ffffff50,(int)in_stack_ffffff54);
     }
     else {
       Path_SetLookaheadToStart((path_t *)&DAT_00000001,in_stack_ffffff50,(int)in_stack_ffffff54);
-      if (((*(uint *)(in_ECX + 0x3bc) & 2) == 0) && (local_40 < *(float *)(in_ECX + 0x3b0))) {
-        if (local_40 < 64.0) {
-          local_40 = 64.0;
+      if (((*(uint *)(in_ECX + 0x3bc) & 2) == 0) && (closestTotalArea < *(float *)(in_ECX + 0x3b0)))
+      {
+        if (closestTotalArea < 64.0) {
+          closestTotalArea = 64.0;
         }
-        *(float *)(in_ECX + 0x3b0) = local_40;
+        *(float *)(in_ECX + 0x3b0) = closestTotalArea;
       }
     }
   }
@@ -685,101 +712,109 @@ void __cdecl Path_TransferLookahead(path_t *param_1,float *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Path_GeneratePath(path_t *param_1,team_t param_2,float *param_3,float *param_4,pathnode_t *param_5,
-                 pathnode_t *param_6,int param_7,int param_8)
+Path_GeneratePath(path_t *vStartPos,team_t vGoalPos,float *pNodeFrom,float *pNodeTo,
+                 pathnode_t *bIncludeGoalPos,pathnode_t *bAllowNegotiationLinks,int param_7,
+                 int param_8)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  int iVar3;
-  float fVar4;
-  float *pfVar5;
-  float fVar6;
+  pathnode_t *ppVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  float fVar5;
+  float *pfVar6;
+  float fVar7;
   float *in_ECX;
   float in_EDX;
   path_t *in_stack_ffffff94;
-  path_t *ppVar7;
+  path_t *ppVar8;
   float *in_stack_ffffff98;
-  float *local_24;
-  uint local_20;
-  pathnode_t *local_18;
-  uint local_14;
-  uint local_10;
+  path_t *pPath;
+  int excess;
+  pathnode_t *pPrevNode;
+  int iTotal;
+  pathpoint_t *pts;
+  pathnode_t *pNode;
+  int negotiationStartNode;
+  int i;
+  pathnode_t *pPrevPrevNode;
+  int prevFlags;
   
   if ((in_ECX == (float *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1de
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1de
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((param_3 == (float *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1df
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  if ((pNodeFrom == (float *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1df
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((param_4 == (float *)0x0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1e0
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  if ((pNodeTo == (float *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1e0
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if (((param_2 == TEAM_BAD) && (param_5 != (pathnode_t *)0x0)) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1e1
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  if (((vGoalPos == TEAM_BAD) && (bIncludeGoalPos != (pathnode_t *)0x0)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1e1
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
   Path_AddTrimmedAmount(in_stack_ffffff94,in_stack_ffffff98);
-  local_20 = 0;
-  local_18 = (pathnode_t *)param_4;
-  if (param_5 == (pathnode_t *)0x0) {
-    *in_ECX = param_4[5];
-    in_ECX[1] = param_4[6];
-    in_ECX[2] = param_4[7];
-    fVar4 = (float)Path_ConvertNodeToIndex((pathnode_t *)param_4);
-    in_ECX[6] = fVar4;
+  iTotal = 0;
+  pNode = (pathnode_t *)pNodeTo;
+  if (bIncludeGoalPos == (pathnode_t *)0x0) {
+    *in_ECX = pNodeTo[5];
+    in_ECX[1] = pNodeTo[6];
+    in_ECX[2] = pNodeTo[7];
+    fVar5 = (float)Path_ConvertNodeToIndex((pathnode_t *)pNodeTo);
+    in_ECX[6] = fVar5;
   }
   else {
-    if ((param_2 == TEAM_BAD) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                 0x1ef,0,"%s"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+    if ((vGoalPos == TEAM_BAD) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                 0x1ef,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    *in_ECX = *(float *)param_2;
-    in_ECX[1] = *(float *)(param_2 + TEAM_NUM_TEAMS);
-    in_ECX[2] = *(float *)(param_2 + 8);
-    if ((*(float *)param_2 == param_4[5]) && (*(float *)(param_2 + TEAM_NUM_TEAMS) == param_4[6])) {
-      bVar2 = true;
+    *in_ECX = *(float *)vGoalPos;
+    in_ECX[1] = *(float *)(vGoalPos + TEAM_NUM_TEAMS);
+    in_ECX[2] = *(float *)(vGoalPos + 8);
+    if ((*(float *)vGoalPos == pNodeTo[5]) && (*(float *)(vGoalPos + TEAM_NUM_TEAMS) == pNodeTo[6]))
+    {
+      bVar3 = true;
     }
     else {
-      bVar2 = false;
+      bVar3 = false;
     }
-    if (!bVar2) {
+    if (!bVar3) {
       in_ECX[6] = -NAN;
     }
     else {
-      fVar4 = (float)Path_ConvertNodeToIndex((pathnode_t *)param_4);
-      in_ECX[6] = fVar4;
+      fVar5 = (float)Path_ConvertNodeToIndex((pathnode_t *)pNodeTo);
+      in_ECX[6] = fVar5;
     }
-    local_20 = (uint)!bVar2;
+    iTotal = (int)!bVar3;
   }
-  fVar4 = in_ECX[0xef];
+  fVar5 = in_ECX[0xef];
   in_ECX[0xef] = 0.0;
   if (*(short *)(in_ECX + 0xe0) != 0) {
     if (((*in_ECX == in_ECX[0xe3]) && (in_ECX[1] == in_ECX[0xe4])) && (in_ECX[2] == in_ECX[0xe5])) {
-      bVar2 = true;
+      bVar3 = true;
     }
     else {
-      bVar2 = false;
+      bVar3 = false;
     }
-    if (bVar2) goto LAB_00904234;
+    if (bVar3) goto LAB_00904234;
   }
   if ((*in_ECX == in_ECX[0xe3]) && (in_ECX[1] == in_ECX[0xe4])) {
     in_stack_ffffff98 = (float *)&DAT_00000001;
@@ -796,115 +831,116 @@ Path_GeneratePath(path_t *param_1,team_t param_2,float *param_3,float *param_4,p
 LAB_00904234:
   Path_Clear(in_stack_ffffff94);
   *(undefined2 *)(in_ECX + 0xe1) = 0;
-  local_14 = 0;
-  if (param_4 != (float *)0x0) {
-    local_24 = (float *)param_4[0x1c];
-    while (local_20 = local_20 + 1, local_18 != (pathnode_t *)param_3) {
-      if (((*local_24 == 2.38221e-44) && (*(float *)local_18 == 2.52234e-44)) &&
-         ((*(short *)(local_24 + 3) == *(short *)((int)local_18 + 6) &&
-          (local_14 = local_20, param_6 == (pathnode_t *)0x0)))) {
+  negotiationStartNode = 0;
+  if (pNodeTo != (float *)0x0) {
+    pPrevNode = (pathnode_t *)pNodeTo[0x1c];
+    while (iTotal = iTotal + 1, pNode != (pathnode_t *)pNodeFrom) {
+      if ((((pPrevNode->constant).type == NODE_NEGOTIATION_BEGIN) &&
+          ((pNode->constant).type == NODE_NEGOTIATION_END)) &&
+         (((pPrevNode->constant).target == (pNode->constant).targetname &&
+          (negotiationStartNode = iTotal, bAllowNegotiationLinks == (pathnode_t *)0x0)))) {
         return 0;
       }
-      pfVar5 = (float *)local_24[0x1c];
-      local_24[0x1c] = (float)local_18;
-      local_18 = (pathnode_t *)local_24;
-      local_24 = pfVar5;
+      ppVar1 = (pPrevNode->transient).pParent;
+      (pPrevNode->transient).pParent = pNode;
+      pNode = pPrevNode;
+      pPrevNode = ppVar1;
     }
   }
-  if (((int)local_20 < 1) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x234
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  if ((iTotal < 1) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x234
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  iVar3 = local_20 - 0x20;
-  if (0 < iVar3) {
-    local_20 = 0x20;
+  iVar4 = iTotal + -0x20;
+  if (0 < iVar4) {
+    iTotal = 0x20;
     in_ECX[0xef] = (float)((uint)in_ECX[0xef] | 4);
-    local_14 = local_14 - iVar3;
-    if ((int)local_14 < 0) {
-      local_14 = 0;
+    negotiationStartNode = negotiationStartNode - iVar4;
+    if (negotiationStartNode < 0) {
+      negotiationStartNode = 0;
     }
   }
-  if (((int)local_20 < 1) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x240
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  if ((iTotal < 1) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x240
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  local_18 = (pathnode_t *)param_3;
-  local_10 = local_20;
-  while (local_10 = local_10 - 1, 0 < (int)local_10) {
-    pfVar5 = in_ECX + local_10 * 7;
-    *pfVar5 = (local_18->constant).vOrigin[0];
-    pfVar5[1] = (local_18->constant).vOrigin[1];
-    pfVar5[2] = (local_18->constant).vOrigin[2];
-    fVar6 = (float)Path_ConvertNodeToIndex(local_18);
-    in_ECX[local_10 * 7 + 6] = fVar6;
-    local_18 = (local_18->transient).pParent;
+  pNode = (pathnode_t *)pNodeFrom;
+  i = iTotal;
+  while (i = i + -1, 0 < i) {
+    pfVar6 = in_ECX + i * 7;
+    *pfVar6 = (pNode->constant).vOrigin[0];
+    pfVar6[1] = (pNode->constant).vOrigin[1];
+    pfVar6[2] = (pNode->constant).vOrigin[2];
+    fVar7 = (float)Path_ConvertNodeToIndex(pNode);
+    in_ECX[i * 7 + 6] = fVar7;
+    pNode = (pNode->transient).pParent;
   }
-  if (0 < iVar3) {
-    *in_ECX = (local_18->constant).vOrigin[0];
-    in_ECX[1] = (local_18->constant).vOrigin[1];
-    in_ECX[2] = (local_18->constant).vOrigin[2];
-    fVar6 = (float)Path_ConvertNodeToIndex(local_18);
-    in_ECX[6] = fVar6;
+  if (0 < iVar4) {
+    *in_ECX = (pNode->constant).vOrigin[0];
+    in_ECX[1] = (pNode->constant).vOrigin[1];
+    in_ECX[2] = (pNode->constant).vOrigin[2];
+    fVar7 = (float)Path_ConvertNodeToIndex(pNode);
+    in_ECX[6] = fVar7;
   }
   if ((*(short *)((int)in_ECX + 0x386) != 0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x24e
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x24e
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  *(undefined2 *)((int)in_ECX + 0x386) = (undefined2)local_14;
+  *(undefined2 *)((int)in_ECX + 0x386) = (undefined2)negotiationStartNode;
   if ((*(short *)((int)in_ECX + 0x386) < 0) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x250
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x250
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
   if (0 < *(short *)((int)in_ECX + 0x386)) {
     Path_IncrementNodeUserCount(in_stack_ffffff94);
   }
-  in_ECX[(local_20 - 1) * 7 + 5] = 0.0;
-  in_ECX[(local_20 - 1) * 7 + 3] = 0.0;
-  in_ECX[(local_20 - 1) * 7 + 4] = 0.0;
-  pfVar5 = in_ECX + (local_20 - 1) * 7;
-  in_ECX[0xf3] = *pfVar5;
-  in_ECX[0xf4] = pfVar5[1];
-  in_ECX[0xf5] = pfVar5[2];
-  for (local_10 = 0; (int)local_10 < (int)(local_20 - 1); local_10 = local_10 + 1) {
-    fVar6 = Path_GetPathDir(in_ECX + local_10 * 7,in_ECX + local_10 * 7,in_stack_ffffff98);
-    in_ECX[local_10 * 7 + 5] = fVar6;
+  in_ECX[(iTotal + -1) * 7 + 5] = 0.0;
+  in_ECX[(iTotal + -1) * 7 + 3] = 0.0;
+  in_ECX[(iTotal + -1) * 7 + 4] = 0.0;
+  pfVar6 = in_ECX + (iTotal + -1) * 7;
+  in_ECX[0xf3] = *pfVar6;
+  in_ECX[0xf4] = pfVar6[1];
+  in_ECX[0xf5] = pfVar6[2];
+  for (i = 0; i < iTotal + -1; i = i + 1) {
+    fVar7 = Path_GetPathDir(in_ECX + i * 7,in_ECX + i * 7,in_stack_ffffff98);
+    in_ECX[i * 7 + 5] = fVar7;
   }
-  if ((int)local_20 < 2) {
-    ppVar7 = (path_t *)0x0;
+  if (iTotal < 2) {
+    ppVar8 = (path_t *)0x0;
   }
   else {
-    ppVar7 = (path_t *)in_ECX[(local_20 - 2) * 7 + 5];
+    ppVar8 = (path_t *)in_ECX[(iTotal + -2) * 7 + 5];
   }
-  in_ECX[0xf2] = (float)ppVar7;
-  if (((int)local_20 < 1) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x261
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  in_ECX[0xf2] = (float)ppVar8;
+  if ((iTotal < 1) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x261
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((0x20 < (int)local_20) &&
-     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x262
-                               ,0,"%s"), !bVar2)) {
-    pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)();
-    return iVar3;
+  if ((0x20 < iTotal) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x262
+                               ,0,"%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  *(undefined2 *)(in_ECX + 0xe0) = (undefined2)local_20;
+  *(undefined2 *)(in_ECX + 0xe0) = (undefined2)iTotal;
   *(undefined2 *)((int)in_ECX + 0x382) = *(undefined2 *)(in_ECX + 0xe0);
-  if (param_6 != (pathnode_t *)0x0) {
+  if (bAllowNegotiationLinks != (pathnode_t *)0x0) {
     in_ECX[0xef] = (float)((uint)in_ECX[0xef] | 0x10);
   }
   in_ECX[0xf1] = in_EDX;
@@ -912,11 +948,11 @@ LAB_00904234:
   *(undefined2 *)((int)in_ECX + 0x3e6) = 0;
   *(undefined2 *)(in_ECX + 0xf9) = 0;
   if (in_ECX[0xec] != 0.0) {
-    if (((uint)fVar4 & 0x180) == 0) {
-      Path_TransferLookahead(ppVar7,in_stack_ffffff98);
+    if (((uint)fVar5 & 0x180) == 0) {
+      Path_TransferLookahead(ppVar8,in_stack_ffffff98);
     }
     else {
-      if (((uint)fVar4 & 0x80) == 0) {
+      if (((uint)fVar5 & 0x80) == 0) {
         in_ECX[0xec] = 4096.0;
         in_ECX[0xee] = 2.8026e-45;
       }
@@ -927,56 +963,56 @@ LAB_00904234:
       in_ECX[0xe6] = 0.0;
       in_ECX[0xe7] = 0.0;
       in_ECX[0xe8] = 0.0;
-      Path_UpdateLookahead((path_t *)0x0,(float *)0x0,1,0,(int)ppVar7,(int)in_stack_ffffff98);
+      Path_UpdateLookahead((path_t *)0x0,(float *)0x0,1,0,(int)ppVar8,(int)in_stack_ffffff98);
       in_ECX[0xee] = 0.0;
     }
     if ((*(short *)(in_ECX + 0xe2) < *(short *)((int)in_ECX + 0x386)) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                 0x286,0,"%s"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                 0x286,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     if ((*(short *)(in_ECX + 0xe0) <= *(short *)(in_ECX + 0xe2)) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                 0x287,0,"%s"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                 0x287,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     if ((in_ECX[*(short *)(in_ECX + 0xe2) * 7 + 5] < in_ECX[0xed]) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                 0x288,0,"%s"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                 0x288,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     if ((1 < *(short *)(in_ECX + 0xe0)) &&
        (in_ECX[(*(short *)(in_ECX + 0xe0) + -2) * 7 + 5] < in_ECX[0xf2])) {
       va("pPath->fCurrLength: %g, pPath->pts[pPath->wPathLen - 2].fOrigLength: %g");
-      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x289
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x289
                                ,0,"%s\n\t%s");
-      if (!bVar2) {
-        pcVar1 = (code *)swi(3);
-        iVar3 = (*pcVar1)();
-        return iVar3;
+      if (!bVar3) {
+        pcVar2 = (code *)swi(3);
+        iVar4 = (*pcVar2)();
+        return iVar4;
       }
     }
     if ((*(short *)((int)in_ECX + 0x386) != 0) &&
        ((((int)in_ECX[*(short *)((int)in_ECX + 0x386) * 7 + 6] < 0 ||
          ((int)in_ECX[(*(short *)((int)in_ECX + 0x386) + -1) * 7 + 6] < 0)) &&
-        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                  0x28a,0,"%s"), !bVar2)))) {
-      pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                  0x28a,0,"%s"), !bVar3)))) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
     if (((in_ECX[0xed] != 0.0) && (*(short *)(in_ECX + 0xe0) + -1 <= (int)*(short *)(in_ECX + 0xe2))
-        ) && (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                       ,0x28b,0,"%s"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      iVar3 = (*pcVar1)();
-      return iVar3;
+        ) && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                       ,0x28b,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
   return 1;
@@ -1003,8 +1039,9 @@ LAB_00904234:
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_FindCloseNode>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_FindCloseNode *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,CustomSearchInfo_FindCloseNode *custom,
+          int bIgnoreBadPlaces)
 
 {
   code *pcVar1;
@@ -1014,25 +1051,26 @@ Path_AStarAlgorithm<CustomSearchInfo_FindCloseNode>
   float fVar5;
   float local_c4;
   float local_c0;
-  pathnode_t *local_a8;
-  pathnode_t *local_a0;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
+  if ((TEAM_SPECTATOR < eTeam) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
@@ -1041,98 +1079,96 @@ Path_AStarAlgorithm<CustomSearchInfo_FindCloseNode>
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    local_a0 = local_9c.transient.pNextOpen;
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    pCurrent = TopParent.transient.pNextOpen;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (local_a0->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((local_a0->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0'))
+    for (i = 0; i < (pCurrent->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((pCurrent->constant).Links[i].ubBadPlaceCount[eTeam] == '\0'))
       {
-        local_8 = Path_ConvertIndexToNode((uint)(local_a0->constant).Links[local_10].nodeNum);
-        if ((local_8 == local_a0) &&
+        pSuccessor = Path_ConvertIndexToNode((uint)(pCurrent->constant).Links[i].nodeNum);
+        if ((pSuccessor == pCurrent) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x2d5,0,"%s"), !bVar3)) {
           pcVar1 = (code *)swi(3);
           iVar4 = (*pcVar1)();
           return iVar4;
         }
-        bVar3 = CustomSearchInfo_FindCloseNode::IgnoreNode(param_8,local_8);
+        bVar3 = CustomSearchInfo_FindCloseNode::IgnoreNode(custom,pSuccessor);
         if ((!bVar3) &&
-           ((((local_a0->constant).type != NODE_NEGOTIATION_BEGIN ||
-             ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-            (((local_a0->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0))))))
-        {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (local_a0->constant).Links[local_10].fDist * 1.0 + (local_a0->transient).fCost
-            ;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0090e23d;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+           ((((pCurrent->constant).type != NODE_NEGOTIATION_BEGIN ||
+             ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+            (((pCurrent->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0)))
+            ))) {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (pCurrent->constant).Links[i].fDist * 1.0 + (pCurrent->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0090e23d;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
-            local_c4 = *param_5 - (local_8->constant).vOrigin[0];
-            local_c0 = param_5[1] - (local_8->constant).vOrigin[1];
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
+            local_c4 = *vGoalPos - (pSuccessor->constant).vOrigin[0];
+            local_c0 = vGoalPos[1] - (pSuccessor->constant).vOrigin[1];
             fVar5 = Vec2Length(&local_c4);
-            (local_8->transient).fHeuristic = fVar5;
-            local_c = (local_a0->constant).Links[local_10].fDist * 1.0 + (local_a0->transient).fCost
-            ;
+            (pSuccessor->transient).fHeuristic = fVar5;
+            fCost = (pCurrent->constant).Links[i].fDist * 1.0 + (pCurrent->transient).fCost;
           }
-          (local_8->transient).pParent = local_a0;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar2 = &local_9c;
+          (pSuccessor->transient).pParent = pCurrent;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar2 = &TopParent;
           do {
-            local_14 = ppVar2;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            local_a8 = (local_14->transient).pNextOpen;
-            ppVar2 = local_a8;
-          } while ((local_a8->transient).fCost + (local_a8->transient).fHeuristic < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
+            pInsert = ppVar2;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            pEval = (pInsert->transient).pNextOpen;
+            ppVar2 = pEval;
+          } while ((pEval->transient).fCost + (pEval->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                        ,0x30c,0,"%s"), !bVar3)) {
             pcVar1 = (code *)swi(3);
             iVar4 = (*pcVar1)();
             return iVar4;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
 LAB_0090e23d:
     }
-    (local_a0->transient).pPrevOpen = (pathnode_t *)0x0;
+    (pCurrent->transient).pPrevOpen = (pathnode_t *)0x0;
   } while( true );
 }
 
@@ -1140,15 +1176,16 @@ LAB_0090e23d:
 // 0090E5F0  Path_AStarAlgorithm<CustomSearchInfo_FindPath>  (game/actor_navigation.cpp:662)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_FindPath>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_FindPath *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,CustomSearchInfo_FindPath *custom,
+          int bIgnoreBadPlaces)
 
 {
   pathnode_t *ppVar1;
@@ -1159,23 +1196,26 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPath>
   float fVar6;
   int in_stack_ffffff34;
   int in_stack_ffffff38;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
                                ,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
+  if ((TEAM_SPECTATOR < eTeam) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
@@ -1184,36 +1224,38 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPath>
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    ppVar3 = local_9c.transient.pNextOpen;
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    ppVar3 = TopParent.transient.pNextOpen;
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    if (local_9c.transient.pNextOpen == param_8->m_pNodeTo) {
-      if (param_1 == (path_t *)0x0) {
+    if (TopParent.transient.pNextOpen == custom->m_pNodeTo) {
+      if (pPath == (path_t *)0x0) {
         return 1;
       }
-      iVar5 = Path_GeneratePath((path_t *)param_3,(team_t)param_5,(float *)param_4,
-                                (float *)local_9c.transient.pNextOpen,(pathnode_t *)param_6,
-                                (pathnode_t *)param_7,in_stack_ffffff34,in_stack_ffffff38);
-      if ((param_1->wOrigPathLen < param_1->wPathLen) &&
+      iVar5 = Path_GeneratePath((path_t *)vStartPos,(team_t)vGoalPos,(float *)pNodeFrom,
+                                (float *)TopParent.transient.pNextOpen,
+                                (pathnode_t *)bIncludeGoalInPath,
+                                (pathnode_t *)bAllowNegotiationLinks,in_stack_ffffff34,
+                                in_stack_ffffff38);
+      if ((pPath->wOrigPathLen < pPath->wPathLen) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x2c4,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -1223,7 +1265,7 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPath>
       if (iVar5 != 0) {
         return iVar5;
       }
-      if (param_1->wOrigPathLen == 0) {
+      if (pPath->wOrigPathLen == 0) {
         return 0;
       }
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
@@ -1235,63 +1277,64 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPath>
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (ppVar3->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((ppVar3->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0')) {
-        local_8 = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[local_10].nodeNum);
-        if ((local_8 == ppVar3) &&
+    for (i = 0; i < (ppVar3->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((ppVar3->constant).Links[i].ubBadPlaceCount[eTeam] == '\0')) {
+        pSuccessor = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[i].nodeNum);
+        if ((pSuccessor == ppVar3) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x2d5,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           iVar5 = (*pcVar2)();
           return iVar5;
         }
-        iVar5 = IsNodeEnabled(local_8);
+        iVar5 = IsNodeEnabled(pSuccessor);
         if ((iVar5 != 0) &&
            ((((ppVar3->constant).type != NODE_NEGOTIATION_BEGIN ||
-             ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-            (((ppVar3->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0)))))) {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0090e82e;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+             ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+            (((ppVar3->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0)))))
+           ) {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (ppVar3->constant).Links[i].fDist * 1.0 + (ppVar3->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0090e82e;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
-            fVar6 = CustomSearchInfo_FindPath::EvaluateHeuristic(param_8,local_8,param_5);
-            (local_8->transient).fHeuristic = fVar6;
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
+            fVar6 = CustomSearchInfo_FindPath::EvaluateHeuristic(custom,pSuccessor,vGoalPos);
+            (pSuccessor->transient).fHeuristic = fVar6;
+            fCost = (ppVar3->constant).Links[i].fDist * 1.0 + (ppVar3->transient).fCost;
           }
-          (local_8->transient).pParent = ppVar3;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar1 = &local_9c;
+          (pSuccessor->transient).pParent = ppVar3;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar1 = &TopParent;
           do {
-            local_14 = ppVar1;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            ppVar1 = (local_14->transient).pNextOpen;
-          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
+            pInsert = ppVar1;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            ppVar1 = (pInsert->transient).pNextOpen;
+          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                        ,0x30c,0,"%s"), !bVar4)) {
             pcVar2 = (code *)swi(3);
             iVar5 = (*pcVar2)();
             return iVar5;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
@@ -1313,8 +1356,9 @@ LAB_0090e82e:
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_FindPathWithWidth *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,
+          CustomSearchInfo_FindPathWithWidth *custom,int bIgnoreBadPlaces)
 
 {
   pathnode_t *ppVar1;
@@ -1325,23 +1369,26 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
   float fVar6;
   float in_stack_ffffff2c;
   int in_stack_ffffff30;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
                                ,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
+  if ((TEAM_SPECTATOR < eTeam) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
@@ -1350,36 +1397,38 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    ppVar3 = local_9c.transient.pNextOpen;
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    ppVar3 = TopParent.transient.pNextOpen;
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    if (local_9c.transient.pNextOpen == param_8->m_pNodeTo) {
-      if (param_1 == (path_t *)0x0) {
+    if (TopParent.transient.pNextOpen == custom->m_pNodeTo) {
+      if (pPath == (path_t *)0x0) {
         return 1;
       }
-      iVar5 = Path_GeneratePath((path_t *)param_3,(team_t)param_5,(float *)param_4,
-                                (float *)local_9c.transient.pNextOpen,(pathnode_t *)param_6,
-                                (pathnode_t *)param_7,(int)in_stack_ffffff2c,in_stack_ffffff30);
-      if ((param_1->wOrigPathLen < param_1->wPathLen) &&
+      iVar5 = Path_GeneratePath((path_t *)vStartPos,(team_t)vGoalPos,(float *)pNodeFrom,
+                                (float *)TopParent.transient.pNextOpen,
+                                (pathnode_t *)bIncludeGoalInPath,
+                                (pathnode_t *)bAllowNegotiationLinks,(int)in_stack_ffffff2c,
+                                in_stack_ffffff30);
+      if ((pPath->wOrigPathLen < pPath->wPathLen) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x2c4,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -1389,7 +1438,7 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
       if (iVar5 != 0) {
         return iVar5;
       }
-      if (param_1->wOrigPathLen == 0) {
+      if (pPath->wOrigPathLen == 0) {
         return 0;
       }
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
@@ -1401,14 +1450,14 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (ppVar3->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((ppVar3->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0')) {
-        local_8 = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[local_10].nodeNum);
-        if ((local_8 == ppVar3) &&
+    for (i = 0; i < (ppVar3->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((ppVar3->constant).Links[i].ubBadPlaceCount[eTeam] == '\0')) {
+        pSuccessor = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[i].nodeNum);
+        if ((pSuccessor == ppVar3) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x2d5,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
@@ -1416,49 +1465,50 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
           return iVar5;
         }
         if ((((ppVar3->constant).type != NODE_NEGOTIATION_BEGIN) ||
-            ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-           (((ppVar3->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0)))) {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (ppVar3->constant).Links[local_10].fDist * (local_8->transient).costFactor +
-                      (ppVar3->transient).fCost;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0090edee;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+            ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+           (((ppVar3->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0)))) {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (ppVar3->constant).Links[i].fDist * (pSuccessor->transient).costFactor +
+                    (ppVar3->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0090edee;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
-            fVar6 = CustomSearchInfo_FindPathWithWidth::EvaluateHeuristic(param_8,local_8,param_5);
-            (local_8->transient).fHeuristic = fVar6;
-            in_stack_ffffff2c = (local_8->transient).costFactor;
-            local_c = (ppVar3->constant).Links[local_10].fDist * in_stack_ffffff2c +
-                      (ppVar3->transient).fCost;
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
+            fVar6 = CustomSearchInfo_FindPathWithWidth::EvaluateHeuristic
+                              (custom,pSuccessor,vGoalPos);
+            (pSuccessor->transient).fHeuristic = fVar6;
+            in_stack_ffffff2c = (pSuccessor->transient).costFactor;
+            fCost = (ppVar3->constant).Links[i].fDist * in_stack_ffffff2c +
+                    (ppVar3->transient).fCost;
           }
-          (local_8->transient).pParent = ppVar3;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar1 = &local_9c;
+          (pSuccessor->transient).pParent = ppVar3;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar1 = &TopParent;
           do {
-            local_14 = ppVar1;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            ppVar1 = (local_14->transient).pNextOpen;
-          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
+            pInsert = ppVar1;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            ppVar1 = (pInsert->transient).pNextOpen;
+          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                        ,0x30c,0,"%s"), !bVar4)) {
             pcVar2 = (code *)swi(3);
             iVar5 = (*pcVar2)();
             return iVar5;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
@@ -1472,15 +1522,16 @@ LAB_0090edee:
 // 0090F190  Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>  (game/actor_navigation.cpp:662)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_FindPathNotCrossPlanes *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,
+          CustomSearchInfo_FindPathNotCrossPlanes *custom,int bIgnoreBadPlaces)
 
 {
   pathnode_t *ppVar1;
@@ -1491,23 +1542,26 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>
   float fVar6;
   int in_stack_ffffff2c;
   int in_stack_ffffff30;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
                                ,0,"%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
+  if ((TEAM_SPECTATOR < eTeam) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
@@ -1516,36 +1570,38 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    ppVar3 = local_9c.transient.pNextOpen;
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    ppVar3 = TopParent.transient.pNextOpen;
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    if (local_9c.transient.pNextOpen == (pathnode_t *)param_8->_padding_) {
-      if (param_1 == (path_t *)0x0) {
+    if (TopParent.transient.pNextOpen == (pathnode_t *)custom->_padding_) {
+      if (pPath == (path_t *)0x0) {
         return 1;
       }
-      iVar5 = Path_GeneratePath((path_t *)param_3,(team_t)param_5,(float *)param_4,
-                                (float *)local_9c.transient.pNextOpen,(pathnode_t *)param_6,
-                                (pathnode_t *)param_7,in_stack_ffffff2c,in_stack_ffffff30);
-      if ((param_1->wOrigPathLen < param_1->wPathLen) &&
+      iVar5 = Path_GeneratePath((path_t *)vStartPos,(team_t)vGoalPos,(float *)pNodeFrom,
+                                (float *)TopParent.transient.pNextOpen,
+                                (pathnode_t *)bIncludeGoalInPath,
+                                (pathnode_t *)bAllowNegotiationLinks,in_stack_ffffff2c,
+                                in_stack_ffffff30);
+      if ((pPath->wOrigPathLen < pPath->wPathLen) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x2c4,0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -1555,7 +1611,7 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>
       if (iVar5 != 0) {
         return iVar5;
       }
-      if (param_1->wOrigPathLen == 0) {
+      if (pPath->wOrigPathLen == 0) {
         return 0;
       }
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
@@ -1567,64 +1623,65 @@ Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (ppVar3->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((ppVar3->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0')) {
-        local_8 = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[local_10].nodeNum);
-        if ((local_8 == ppVar3) &&
+    for (i = 0; i < (ppVar3->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((ppVar3->constant).Links[i].ubBadPlaceCount[eTeam] == '\0')) {
+        pSuccessor = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[i].nodeNum);
+        if ((pSuccessor == ppVar3) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x2d5,0,"%s"), !bVar4)) {
           pcVar2 = (code *)swi(3);
           iVar5 = (*pcVar2)();
           return iVar5;
         }
-        bVar4 = CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode(param_8,local_8);
+        bVar4 = CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode(custom,pSuccessor);
         if ((!bVar4) &&
            ((((ppVar3->constant).type != NODE_NEGOTIATION_BEGIN ||
-             ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-            (((ppVar3->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0)))))) {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0090f3ce;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+             ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+            (((ppVar3->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0)))))
+           ) {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (ppVar3->constant).Links[i].fDist * 1.0 + (ppVar3->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0090f3ce;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
             fVar6 = CustomSearchInfo_FindPath::EvaluateHeuristic
-                              ((CustomSearchInfo_FindPath *)param_8,local_8,param_5);
-            (local_8->transient).fHeuristic = fVar6;
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
+                              ((CustomSearchInfo_FindPath *)custom,pSuccessor,vGoalPos);
+            (pSuccessor->transient).fHeuristic = fVar6;
+            fCost = (ppVar3->constant).Links[i].fDist * 1.0 + (ppVar3->transient).fCost;
           }
-          (local_8->transient).pParent = ppVar3;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar1 = &local_9c;
+          (pSuccessor->transient).pParent = ppVar3;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar1 = &TopParent;
           do {
-            local_14 = ppVar1;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            ppVar1 = (local_14->transient).pNextOpen;
-          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
+            pInsert = ppVar1;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            ppVar1 = (pInsert->transient).pNextOpen;
+          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                        ,0x30c,0,"%s"), !bVar4)) {
             pcVar2 = (code *)swi(3);
             iVar5 = (*pcVar2)();
             return iVar5;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
@@ -1638,173 +1695,179 @@ LAB_0090f3ce:
 // 0090F670  Path_AStarAlgorithm<CustomSearchInfo_FindPathInCylinderWithLOS>  (game/actor_navigation.cpp:662)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_FindPathInCylinderWithLOS>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_FindPathInCylinderWithLOS *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,
+          CustomSearchInfo_FindPathInCylinderWithLOS *custom,int bIgnoreBadPlaces)
 
 {
   pathnode_t *ppVar1;
   code *pcVar2;
-  pathnode_t *ppVar3;
-  bool bVar4;
-  int iVar5;
-  float fVar6;
+  pathnode_t *node0;
+  bool bVar3;
+  int iVar4;
+  float fVar5;
   float *in_stack_ffffff28;
   actor_goal_s *in_stack_ffffff2c;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
-                               ,0,"%s"), !bVar4)) {
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
+                               ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
+  if ((TEAM_SPECTATOR < eTeam) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
-                              ), !bVar4)) {
+                              ), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    ppVar3 = local_9c.transient.pNextOpen;
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    node0 = TopParent.transient.pNextOpen;
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    fVar6 = Vec3DistanceSq(((local_9c.transient.pNextOpen)->constant).vOrigin,param_5);
-    if (((float)param_8->_padding_ <= fVar6) ||
-       (iVar5 = Path_NodesVisible(ppVar3,(pathnode_t *)param_8->_padding_), iVar5 == 0)) {
+    fVar5 = Vec3DistanceSq(((TopParent.transient.pNextOpen)->constant).vOrigin,vGoalPos);
+    if (((float)custom->_padding_ <= fVar5) ||
+       (iVar4 = Path_NodesVisible(node0,(pathnode_t *)custom->_padding_), iVar4 == 0)) {
       in_stack_ffffff28 = (float *)((uint)in_stack_ffffff28 & 0xffffff);
     }
     else {
       in_stack_ffffff28 = (float *)CONCAT13(1,(int3)in_stack_ffffff28);
     }
     if ((char)((uint)in_stack_ffffff28 >> 0x18) != '\0') {
-      if (param_1 == (path_t *)0x0) {
+      if (pPath == (path_t *)0x0) {
         return 1;
       }
-      iVar5 = Path_GeneratePath((path_t *)param_3,(team_t)param_5,(float *)param_4,(float *)ppVar3,
-                                (pathnode_t *)param_6,(pathnode_t *)param_7,(int)in_stack_ffffff28,
+      iVar4 = Path_GeneratePath((path_t *)vStartPos,(team_t)vGoalPos,(float *)pNodeFrom,
+                                (float *)node0,(pathnode_t *)bIncludeGoalInPath,
+                                (pathnode_t *)bAllowNegotiationLinks,(int)in_stack_ffffff28,
                                 (int)in_stack_ffffff2c);
-      if ((param_1->wOrigPathLen < param_1->wPathLen) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                   0x2c4,0,"%s"), !bVar4)) {
+      if ((pPath->wOrigPathLen < pPath->wPathLen) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                   0x2c4,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
-        iVar5 = (*pcVar2)();
-        return iVar5;
+        iVar4 = (*pcVar2)();
+        return iVar4;
       }
-      if (iVar5 != 0) {
-        return iVar5;
+      if (iVar4 != 0) {
+        return iVar4;
       }
-      if (param_1->wOrigPathLen == 0) {
+      if (pPath->wOrigPathLen == 0) {
         return 0;
       }
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
                                ,0,"%s");
-      if (bVar4) {
+      if (bVar3) {
         return 0;
       }
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (ppVar3->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((ppVar3->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0')) {
-        local_8 = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[local_10].nodeNum);
-        if ((local_8 == ppVar3) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                     ,0x2d5,0,"%s"), !bVar4)) {
+    for (i = 0; i < (node0->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((node0->constant).Links[i].ubBadPlaceCount[eTeam] == '\0')) {
+        pSuccessor = Path_ConvertIndexToNode((uint)(node0->constant).Links[i].nodeNum);
+        if ((pSuccessor == node0) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                     ,0x2d5,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
-          iVar5 = (*pcVar2)();
-          return iVar5;
+          iVar4 = (*pcVar2)();
+          return iVar4;
         }
-        bVar4 = Actor_PointAtGoal(in_stack_ffffff28,in_stack_ffffff2c);
-        if ((bVar4) &&
-           ((((ppVar3->constant).type != NODE_NEGOTIATION_BEGIN ||
-             ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-            (((ppVar3->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0)))))) {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0090f8ef;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+        bVar3 = Actor_PointAtGoal(in_stack_ffffff28,in_stack_ffffff2c);
+        if ((bVar3) &&
+           ((((node0->constant).type != NODE_NEGOTIATION_BEGIN ||
+             ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+            (((node0->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0))))))
+        {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (node0->constant).Links[i].fDist * 1.0 + (node0->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0090f8ef;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
-            fVar6 = CustomSearchInfo_FindPathWithLOS::EvaluateHeuristic
-                              ((CustomSearchInfo_FindPathWithLOS *)param_8,local_8,param_5);
-            (local_8->transient).fHeuristic = fVar6;
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
+            fVar5 = CustomSearchInfo_FindPathWithLOS::EvaluateHeuristic
+                              ((CustomSearchInfo_FindPathWithLOS *)custom,pSuccessor,vGoalPos);
+            (pSuccessor->transient).fHeuristic = fVar5;
+            fCost = (node0->constant).Links[i].fDist * 1.0 + (node0->transient).fCost;
           }
-          (local_8->transient).pParent = ppVar3;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar1 = &local_9c;
+          (pSuccessor->transient).pParent = node0;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar1 = &TopParent;
           do {
-            local_14 = ppVar1;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            ppVar1 = (local_14->transient).pNextOpen;
-          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
-             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                       ,0x30c,0,"%s"), !bVar4)) {
+            pInsert = ppVar1;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            ppVar1 = (pInsert->transient).pNextOpen;
+          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                       ,0x30c,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
-            iVar5 = (*pcVar2)();
-            return iVar5;
+            iVar4 = (*pcVar2)();
+            return iVar4;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
 LAB_0090f8ef:
     }
-    (ppVar3->transient).pPrevOpen = (pathnode_t *)0x0;
+    (node0->transient).pPrevOpen = (pathnode_t *)0x0;
   } while( true );
 }
 
@@ -1813,170 +1876,175 @@ LAB_0090f8ef:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Removing unreachable block (ram,0x0090ff5f) */
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: pEval */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_CouldAttack>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_CouldAttack *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,CustomSearchInfo_CouldAttack *custom,
+          int bIgnoreBadPlaces)
 
 {
   code *pcVar1;
+  pathnode_t *pNodeTo;
   pathnode_t *ppVar2;
-  pathnode_t *ppVar3;
-  bool bVar4;
-  int iVar5;
+  bool bVar3;
+  int iVar4;
   uint in_stack_ffffff54;
-  pathnode_t *in_stack_ffffff58;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
-                               ,0,"%s"), !bVar4)) {
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
+                               ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
-    iVar5 = (*pcVar1)();
-    return iVar5;
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
+  if ((TEAM_SPECTATOR < eTeam) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
-                              ), !bVar4)) {
+                              ), !bVar3)) {
     pcVar1 = (code *)swi(3);
-    iVar5 = (*pcVar1)();
-    return iVar5;
+    iVar4 = (*pcVar1)();
+    return iVar4;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    ppVar2 = local_9c.transient.pNextOpen;
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    pNodeTo = TopParent.transient.pNextOpen;
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    iVar5 = Path_NodesVisible(local_9c.transient.pNextOpen,param_8->m_pNodeTo);
-    if (iVar5 == 0) {
+    iVar4 = Path_NodesVisible(TopParent.transient.pNextOpen,custom->m_pNodeTo);
+    if (iVar4 == 0) {
       in_stack_ffffff54 = in_stack_ffffff54 & 0xffffff;
     }
     else {
-      param_8->attackNode = ppVar2;
+      custom->attackNode = pNodeTo;
       in_stack_ffffff54 = CONCAT13(1,(int3)in_stack_ffffff54);
     }
     if ((char)(in_stack_ffffff54 >> 0x18) != '\0') {
-      if (param_1 == (path_t *)0x0) {
+      if (pPath == (path_t *)0x0) {
         return 1;
       }
-      iVar5 = Path_GeneratePath((path_t *)param_3,(team_t)param_5,(float *)param_4,(float *)ppVar2,
-                                (pathnode_t *)param_6,(pathnode_t *)param_7,in_stack_ffffff54,
-                                (int)in_stack_ffffff58);
-      if ((param_1->wOrigPathLen < param_1->wPathLen) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                   0x2c4,0,"%s"), !bVar4)) {
+      iVar4 = Path_GeneratePath((path_t *)vStartPos,(team_t)vGoalPos,(float *)pNodeFrom,
+                                (float *)pNodeTo,(pathnode_t *)bIncludeGoalInPath,
+                                (pathnode_t *)bAllowNegotiationLinks,in_stack_ffffff54,(int)pEval);
+      if ((pPath->wOrigPathLen < pPath->wPathLen) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                   0x2c4,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
-        iVar5 = (*pcVar1)();
-        return iVar5;
+        iVar4 = (*pcVar1)();
+        return iVar4;
       }
-      if (iVar5 != 0) {
-        return iVar5;
+      if (iVar4 != 0) {
+        return iVar4;
       }
-      if (param_1->wOrigPathLen == 0) {
+      if (pPath->wOrigPathLen == 0) {
         return 0;
       }
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
                                ,0,"%s");
-      if (bVar4) {
+      if (bVar3) {
         return 0;
       }
       pcVar1 = (code *)swi(3);
-      iVar5 = (*pcVar1)();
-      return iVar5;
+      iVar4 = (*pcVar1)();
+      return iVar4;
     }
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (ppVar2->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((ppVar2->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0')) {
-        local_8 = Path_ConvertIndexToNode((uint)(ppVar2->constant).Links[local_10].nodeNum);
-        if ((local_8 == ppVar2) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                     ,0x2d5,0,"%s"), !bVar4)) {
+    for (i = 0; i < (pNodeTo->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((pNodeTo->constant).Links[i].ubBadPlaceCount[eTeam] == '\0'))
+      {
+        pSuccessor = Path_ConvertIndexToNode((uint)(pNodeTo->constant).Links[i].nodeNum);
+        if ((pSuccessor == pNodeTo) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                     ,0x2d5,0,"%s"), !bVar3)) {
           pcVar1 = (code *)swi(3);
-          iVar5 = (*pcVar1)();
-          return iVar5;
+          iVar4 = (*pcVar1)();
+          return iVar4;
         }
-        if ((((ppVar2->constant).type != NODE_NEGOTIATION_BEGIN) ||
-            ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-           (((ppVar2->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0)))) {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (ppVar2->constant).Links[local_10].fDist * 1.0 + (ppVar2->transient).fCost;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0090fec9;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+        if ((((pNodeTo->constant).type != NODE_NEGOTIATION_BEGIN) ||
+            ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+           (((pNodeTo->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0))))
+        {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (pNodeTo->constant).Links[i].fDist * 1.0 + (pNodeTo->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0090fec9;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
-            (local_8->transient).fHeuristic = 0.0;
-            local_c = (ppVar2->constant).Links[local_10].fDist * 1.0 + (ppVar2->transient).fCost;
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
+            (pSuccessor->transient).fHeuristic = 0.0;
+            fCost = (pNodeTo->constant).Links[i].fDist * 1.0 + (pNodeTo->transient).fCost;
           }
-          (local_8->transient).pParent = ppVar2;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar3 = &local_9c;
+          (pSuccessor->transient).pParent = pNodeTo;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar2 = &TopParent;
           do {
-            local_14 = ppVar3;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            in_stack_ffffff58 = (local_14->transient).pNextOpen;
-            ppVar3 = in_stack_ffffff58;
-          } while ((in_stack_ffffff58->transient).fCost + (in_stack_ffffff58->transient).fHeuristic
-                   < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
-             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                       ,0x30c,0,"%s"), !bVar4)) {
+            pInsert = ppVar2;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            pEval = (pInsert->transient).pNextOpen;
+            ppVar2 = pEval;
+          } while ((pEval->transient).fCost + (pEval->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                       ,0x30c,0,"%s"), !bVar3)) {
             pcVar1 = (code *)swi(3);
-            iVar5 = (*pcVar1)();
-            return iVar5;
+            iVar4 = (*pcVar1)();
+            return iVar4;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
 LAB_0090fec9:
     }
-    (ppVar2->transient).pPrevOpen = (pathnode_t *)0x0;
+    (pNodeTo->transient).pPrevOpen = (pathnode_t *)0x0;
   } while( true );
 }
 
@@ -1985,176 +2053,183 @@ LAB_0090fec9:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Removing unreachable block (ram,0x009104a1) */
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
 Path_AStarAlgorithm<CustomSearchInfo_FindPathClosestPossible>
-          (path_t *param_1,team_t param_2,float *param_3,pathnode_t *param_4,float *param_5,
-          int param_6,int param_7,CustomSearchInfo_FindPathClosestPossible *param_8,int param_9)
+          (path_t *pPath,team_t eTeam,float *vStartPos,pathnode_t *pNodeFrom,float *vGoalPos,
+          int bIncludeGoalInPath,int bAllowNegotiationLinks,
+          CustomSearchInfo_FindPathClosestPossible *custom,int bIgnoreBadPlaces)
 
 {
   pathnode_t *ppVar1;
   code *pcVar2;
-  pathnode_t *ppVar3;
-  bool bVar4;
-  int iVar5;
-  float fVar6;
+  pathnode_t *pNodeTo;
+  bool bVar3;
+  int iVar4;
+  float fVar5;
   int in_stack_ffffff30;
   int in_stack_ffffff34;
-  pathnode_t local_9c;
+  pathnode_t *pEval;
+  int success;
+  pathnode_t *pCurrent;
+  pathnode_t TopParent;
   uint local_1c;
-  float local_18;
-  pathnode_t *local_14;
-  int local_10;
-  float local_c;
-  pathnode_t *local_8;
+  float fApproxTotalCost;
+  pathnode_t *pInsert;
+  int i;
+  float fCost;
+  pathnode_t *pSuccessor;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (((param_5 == (float *)0x0) && (param_6 != 0)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
-                               ,0,"%s"), !bVar4)) {
+  if (((vGoalPos == (float *)0x0) && (bIncludeGoalInPath != 0)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a3
+                               ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((TEAM_SPECTATOR < param_2) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
+  if ((TEAM_SPECTATOR < eTeam) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2a4
                                ,0,
                                "eTeam doesn\'t index ARRAY_COUNT( ((pathlink_t *) 0)->ubBadPlaceCount )\n\t%i not in [0, %i)"
-                              ), !bVar4)) {
+                              ), !bVar3)) {
     pcVar2 = (code *)swi(3);
-    iVar5 = (*pcVar2)();
-    return iVar5;
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if (param_5 == (float *)0x0) {
+  if (vGoalPos == (float *)0x0) {
     g_pathAttemptGoalPos[0] = 0.0;
     g_pathAttemptGoalPos[1] = 0.0;
     g_pathAttemptGoalPos[2] = 0.0;
   }
   else {
-    g_pathAttemptGoalPos[0] = *param_5;
-    g_pathAttemptGoalPos[1] = param_5[1];
-    g_pathAttemptGoalPos[2] = param_5[2];
+    g_pathAttemptGoalPos[0] = *vGoalPos;
+    g_pathAttemptGoalPos[1] = vGoalPos[1];
+    g_pathAttemptGoalPos[2] = vGoalPos[2];
   }
   level.iSearchFrame = level.iSearchFrame + 1;
-  (param_4->transient).iSearchFrame = level.iSearchFrame;
-  (param_4->transient).pParent = &local_9c;
-  (param_4->transient).pNextOpen = (pathnode_t *)0x0;
-  (param_4->transient).pPrevOpen = &local_9c;
-  (param_4->transient).fCost = 0.0;
-  local_9c.transient.pNextOpen = param_4;
+  (pNodeFrom->transient).iSearchFrame = level.iSearchFrame;
+  (pNodeFrom->transient).pParent = &TopParent;
+  (pNodeFrom->transient).pNextOpen = (pathnode_t *)0x0;
+  (pNodeFrom->transient).pPrevOpen = &TopParent;
+  (pNodeFrom->transient).fCost = 0.0;
+  TopParent.transient.pNextOpen = pNodeFrom;
   do {
-    ppVar3 = local_9c.transient.pNextOpen;
-    if (local_9c.transient.pNextOpen == (pathnode_t *)0x0) {
+    pNodeTo = TopParent.transient.pNextOpen;
+    if (TopParent.transient.pNextOpen == (pathnode_t *)0x0) {
       return 0;
     }
-    if (local_9c.transient.pNextOpen == param_8->m_pNodeTo) {
-      param_8->m_pBestNode = param_8->m_pNodeTo;
-      bVar4 = true;
+    if (TopParent.transient.pNextOpen == custom->m_pNodeTo) {
+      custom->m_pBestNode = custom->m_pNodeTo;
+      bVar3 = true;
     }
     else {
-      fVar6 = Vec3DistanceSq((param_8->m_pNodeTo->constant).vOrigin,
-                             ((local_9c.transient.pNextOpen)->constant).vOrigin);
-      if (fVar6 < param_8->m_fBestScore) {
-        param_8->m_fBestScore = fVar6;
-        param_8->m_pBestNode = ppVar3;
+      fVar5 = Vec3DistanceSq((custom->m_pNodeTo->constant).vOrigin,
+                             ((TopParent.transient.pNextOpen)->constant).vOrigin);
+      if (fVar5 < custom->m_fBestScore) {
+        custom->m_fBestScore = fVar5;
+        custom->m_pBestNode = pNodeTo;
       }
-      bVar4 = false;
+      bVar3 = false;
     }
-    if (bVar4) {
-      if (param_1 == (path_t *)0x0) {
+    if (bVar3) {
+      if (pPath == (path_t *)0x0) {
         return 1;
       }
-      iVar5 = Path_GeneratePath((path_t *)param_3,(team_t)param_5,(float *)param_4,(float *)ppVar3,
-                                (pathnode_t *)param_6,(pathnode_t *)param_7,in_stack_ffffff30,
+      iVar4 = Path_GeneratePath((path_t *)vStartPos,(team_t)vGoalPos,(float *)pNodeFrom,
+                                (float *)pNodeTo,(pathnode_t *)bIncludeGoalInPath,
+                                (pathnode_t *)bAllowNegotiationLinks,in_stack_ffffff30,
                                 in_stack_ffffff34);
-      if ((param_1->wOrigPathLen < param_1->wPathLen) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                   0x2c4,0,"%s"), !bVar4)) {
+      if ((pPath->wOrigPathLen < pPath->wPathLen) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                   0x2c4,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
-        iVar5 = (*pcVar2)();
-        return iVar5;
+        iVar4 = (*pcVar2)();
+        return iVar4;
       }
-      if (iVar5 != 0) {
-        return iVar5;
+      if (iVar4 != 0) {
+        return iVar4;
       }
-      if (param_1->wOrigPathLen == 0) {
+      if (pPath->wOrigPathLen == 0) {
         return 0;
       }
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x2c5
                                ,0,"%s");
-      if (bVar4) {
+      if (bVar3) {
         return 0;
       }
       pcVar2 = (code *)swi(3);
-      iVar5 = (*pcVar2)();
-      return iVar5;
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    local_9c.transient.pNextOpen = ((local_9c.transient.pNextOpen)->transient).pNextOpen;
-    if (local_9c.transient.pNextOpen != (pathnode_t *)0x0) {
-      ((local_9c.transient.pNextOpen)->transient).pPrevOpen = &local_9c;
+    TopParent.transient.pNextOpen = ((TopParent.transient.pNextOpen)->transient).pNextOpen;
+    if (TopParent.transient.pNextOpen != (pathnode_t *)0x0) {
+      ((TopParent.transient.pNextOpen)->transient).pPrevOpen = &TopParent;
     }
-    for (local_10 = 0; local_10 < (ppVar3->dynamic).wLinkCount; local_10 = local_10 + 1) {
-      if ((param_9 != 0) || ((ppVar3->constant).Links[local_10].ubBadPlaceCount[param_2] == '\0')) {
-        local_8 = Path_ConvertIndexToNode((uint)(ppVar3->constant).Links[local_10].nodeNum);
-        if ((local_8 == ppVar3) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                     ,0x2d5,0,"%s"), !bVar4)) {
+    for (i = 0; i < (pNodeTo->dynamic).wLinkCount; i = i + 1) {
+      if ((bIgnoreBadPlaces != 0) || ((pNodeTo->constant).Links[i].ubBadPlaceCount[eTeam] == '\0'))
+      {
+        pSuccessor = Path_ConvertIndexToNode((uint)(pNodeTo->constant).Links[i].nodeNum);
+        if ((pSuccessor == pNodeTo) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                     ,0x2d5,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
-          iVar5 = (*pcVar2)();
-          return iVar5;
+          iVar4 = (*pcVar2)();
+          return iVar4;
         }
-        if ((((ppVar3->constant).type != NODE_NEGOTIATION_BEGIN) ||
-            ((local_8->constant).type != NODE_NEGOTIATION_END)) ||
-           (((ppVar3->dynamic).wOverlapCount == 0 && ((local_8->dynamic).wOverlapCount == 0)))) {
-          if ((local_8->transient).iSearchFrame == level.iSearchFrame) {
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
-            if ((local_8->transient).fCost <= local_c) goto LAB_0091040b;
-            if (((local_8->transient).pPrevOpen != (pathnode_t *)0x0) &&
-               ((((local_8->transient).pPrevOpen)->transient).pNextOpen =
-                     (local_8->transient).pNextOpen,
-               (local_8->transient).pNextOpen != (pathnode_t *)0x0)) {
-              (((local_8->transient).pNextOpen)->transient).pPrevOpen =
-                   (local_8->transient).pPrevOpen;
+        if ((((pNodeTo->constant).type != NODE_NEGOTIATION_BEGIN) ||
+            ((pSuccessor->constant).type != NODE_NEGOTIATION_END)) ||
+           (((pNodeTo->dynamic).wOverlapCount == 0 && ((pSuccessor->dynamic).wOverlapCount == 0))))
+        {
+          if ((pSuccessor->transient).iSearchFrame == level.iSearchFrame) {
+            fCost = (pNodeTo->constant).Links[i].fDist * 1.0 + (pNodeTo->transient).fCost;
+            if ((pSuccessor->transient).fCost <= fCost) goto LAB_0091040b;
+            if (((pSuccessor->transient).pPrevOpen != (pathnode_t *)0x0) &&
+               ((((pSuccessor->transient).pPrevOpen)->transient).pNextOpen =
+                     (pSuccessor->transient).pNextOpen,
+               (pSuccessor->transient).pNextOpen != (pathnode_t *)0x0)) {
+              (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen =
+                   (pSuccessor->transient).pPrevOpen;
             }
           }
           else {
-            (local_8->transient).iSearchFrame = level.iSearchFrame;
-            fVar6 = CustomSearchInfo_FindPathClosestPossible::EvaluateHeuristic
-                              (param_8,local_8,param_5);
-            (local_8->transient).fHeuristic = fVar6;
-            local_c = (ppVar3->constant).Links[local_10].fDist * 1.0 + (ppVar3->transient).fCost;
+            (pSuccessor->transient).iSearchFrame = level.iSearchFrame;
+            fVar5 = CustomSearchInfo_FindPathClosestPossible::EvaluateHeuristic
+                              (custom,pSuccessor,vGoalPos);
+            (pSuccessor->transient).fHeuristic = fVar5;
+            fCost = (pNodeTo->constant).Links[i].fDist * 1.0 + (pNodeTo->transient).fCost;
           }
-          (local_8->transient).pParent = ppVar3;
-          (local_8->transient).fCost = local_c;
-          local_18 = (local_8->transient).fCost + (local_8->transient).fHeuristic;
-          ppVar1 = &local_9c;
+          (pSuccessor->transient).pParent = pNodeTo;
+          (pSuccessor->transient).fCost = fCost;
+          fApproxTotalCost = (pSuccessor->transient).fCost + (pSuccessor->transient).fHeuristic;
+          ppVar1 = &TopParent;
           do {
-            local_14 = ppVar1;
-            if ((local_14->transient).pNextOpen == (pathnode_t *)0x0) break;
-            ppVar1 = (local_14->transient).pNextOpen;
-          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < local_18);
-          if ((local_14 == (pathnode_t *)0x0) &&
-             (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
-                                       ,0x30c,0,"%s"), !bVar4)) {
+            pInsert = ppVar1;
+            if ((pInsert->transient).pNextOpen == (pathnode_t *)0x0) break;
+            ppVar1 = (pInsert->transient).pNextOpen;
+          } while ((ppVar1->transient).fCost + (ppVar1->transient).fHeuristic < fApproxTotalCost);
+          if ((pInsert == (pathnode_t *)0x0) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
+                                       ,0x30c,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
-            iVar5 = (*pcVar2)();
-            return iVar5;
+            iVar4 = (*pcVar2)();
+            return iVar4;
           }
-          (local_8->transient).pPrevOpen = local_14;
-          (local_8->transient).pNextOpen = (local_14->transient).pNextOpen;
-          (local_14->transient).pNextOpen = local_8;
-          if ((local_8->transient).pNextOpen != (pathnode_t *)0x0) {
-            (((local_8->transient).pNextOpen)->transient).pPrevOpen = local_8;
+          (pSuccessor->transient).pPrevOpen = pInsert;
+          (pSuccessor->transient).pNextOpen = (pInsert->transient).pNextOpen;
+          (pInsert->transient).pNextOpen = pSuccessor;
+          if ((pSuccessor->transient).pNextOpen != (pathnode_t *)0x0) {
+            (((pSuccessor->transient).pNextOpen)->transient).pPrevOpen = pSuccessor;
           }
         }
       }
 LAB_0091040b:
     }
-    (ppVar3->transient).pPrevOpen = (pathnode_t *)0x0;
+    (pNodeTo->transient).pPrevOpen = (pathnode_t *)0x0;
   } while( true );
 }
 
@@ -2164,21 +2239,23 @@ LAB_0091040b:
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 bool __thiscall
-CustomSearchInfo_FindCloseNode::IgnoreNode(CustomSearchInfo_FindCloseNode *this,pathnode_t *param_1)
+CustomSearchInfo_FindCloseNode::IgnoreNode(CustomSearchInfo_FindCloseNode *this,pathnode_t *pNode)
 
 {
   bool bVar1;
   float fVar2;
   float fVar3;
+  float heightDist;
+  float distSq;
   
-  fVar2 = this->goalPos[0] - (param_1->constant).vOrigin[0];
-  fVar3 = this->goalPos[1] - (param_1->constant).vOrigin[1];
+  fVar2 = this->goalPos[0] - (pNode->constant).vOrigin[0];
+  fVar3 = this->goalPos[1] - (pNode->constant).vOrigin[1];
   fVar2 = fVar2 * fVar2 + fVar3 * fVar3;
   if (fVar2 < this->closestDistSq) {
-    fVar3 = (param_1->constant).vOrigin[2] - this->goalPos[2];
+    fVar3 = (pNode->constant).vOrigin[2] - this->goalPos[2];
     if (fVar3 * fVar3 <= 6400.0) {
       this->closestDistSq = fVar2;
-      this->closestNode = param_1;
+      this->closestNode = pNode;
       bVar1 = false;
     }
     else {
@@ -2198,7 +2275,7 @@ CustomSearchInfo_FindCloseNode::IgnoreNode(CustomSearchInfo_FindCloseNode *this,
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 pathnode_t * __cdecl
-Path_FindCloseNode(team_t param_1,pathnode_t *param_2,float *param_3,int param_4)
+Path_FindCloseNode(team_t vGoalPos,pathnode_t *bAllowNegotiationLinks,float *param_3,int param_4)
 
 {
   code *pcVar1;
@@ -2208,7 +2285,8 @@ Path_FindCloseNode(team_t param_1,pathnode_t *param_2,float *param_3,int param_4
   pathnode_t *in_EDX;
   float fVar4;
   float fVar5;
-  CustomSearchInfo_FindCloseNode local_18;
+  pathnode_t *pNodeFrom;
+  CustomSearchInfo_FindCloseNode info;
   
   if (in_EDX == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x356,0
@@ -2228,7 +2306,7 @@ Path_FindCloseNode(team_t param_1,pathnode_t *param_2,float *param_3,int param_4
       return ppVar3;
     }
   }
-  if (param_1 == TEAM_BAD) {
+  if (vGoalPos == TEAM_BAD) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x358,0
                              ,"%s");
     if (!bVar2) {
@@ -2237,17 +2315,17 @@ Path_FindCloseNode(team_t param_1,pathnode_t *param_2,float *param_3,int param_4
       return ppVar3;
     }
   }
-  local_18.goalPos[0] = *(float *)param_1;
-  local_18.goalPos[1] = *(float *)(param_1 + TEAM_NUM_TEAMS);
-  local_18.goalPos[2] = *(float *)(param_1 + 8);
-  fVar4 = *(float *)param_1 - (in_EDX->constant).vOrigin[0];
-  fVar5 = *(float *)(param_1 + TEAM_NUM_TEAMS) - (in_EDX->constant).vOrigin[1];
-  local_18.closestDistSq = fVar4 * fVar4 + fVar5 * fVar5;
-  local_18.closestNode = in_EDX;
+  info.goalPos[0] = *(float *)vGoalPos;
+  info.goalPos[1] = *(float *)(vGoalPos + TEAM_NUM_TEAMS);
+  info.goalPos[2] = *(float *)(vGoalPos + 8);
+  fVar4 = *(float *)vGoalPos - (in_EDX->constant).vOrigin[0];
+  fVar5 = *(float *)(vGoalPos + TEAM_NUM_TEAMS) - (in_EDX->constant).vOrigin[1];
+  info.closestDistSq = fVar4 * fVar4 + fVar5 * fVar5;
+  info.closestNode = in_EDX;
   Path_AStarAlgorithm<CustomSearchInfo_FindCloseNode>
-            ((path_t *)0x0,in_ECX,(in_EDX->constant).vOrigin,in_EDX,(float *)param_1,1,(int)param_2,
-             &local_18,0);
-  return local_18.closestNode;
+            ((path_t *)0x0,in_ECX,(in_EDX->constant).vOrigin,in_EDX,(float *)vGoalPos,1,
+             (int)bAllowNegotiationLinks,&info,0);
+  return info.closestNode;
 }
 
 
@@ -2257,60 +2335,62 @@ Path_FindCloseNode(team_t param_1,pathnode_t *param_2,float *param_3,int param_4
 
 float __thiscall
 CustomSearchInfo_FindPath::EvaluateHeuristic
-          (CustomSearchInfo_FindPath *this,pathnode_t *param_1,float *param_2)
+          (CustomSearchInfo_FindPath *this,pathnode_t *pSuccessor,float *vGoalPos)
 
 {
   float fVar1;
   float local_10;
   float local_c;
-  float local_8;
+  float dist;
   
-  local_10 = *param_2 - (param_1->constant).vOrigin[0];
-  local_c = param_2[1] - (param_1->constant).vOrigin[1];
-  local_8 = Vec2Length(&local_10);
-  local_8 = (float)(int)(param_1->dynamic).userCount * this->negotiationOverlapCost + local_8;
-  if (1.0 < (param_1->constant).minUseDistSq) {
-    fVar1 = Vec3DistanceSq((param_1->constant).vOrigin,this->startPos);
-    if (fVar1 < (param_1->constant).minUseDistSq) {
-      local_8 = local_8 + this->negotiationOverlapCost;
+  local_10 = *vGoalPos - (pSuccessor->constant).vOrigin[0];
+  local_c = vGoalPos[1] - (pSuccessor->constant).vOrigin[1];
+  fVar1 = Vec2Length(&local_10);
+  dist = (float)(int)(pSuccessor->dynamic).userCount * this->negotiationOverlapCost + fVar1;
+  if (1.0 < (pSuccessor->constant).minUseDistSq) {
+    fVar1 = Vec3DistanceSq((pSuccessor->constant).vOrigin,this->startPos);
+    if (fVar1 < (pSuccessor->constant).minUseDistSq) {
+      dist = dist + this->negotiationOverlapCost;
     }
   }
-  return local_8;
+  return dist;
 }
 
 
 // 00903830  Path_FindPath  (game/actor_navigation.cpp:923)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Path_FindPath(path_t *param_1,team_t param_2,float *param_3,float *param_4,int param_5)
+int __cdecl
+Path_FindPath(path_t *vStartPos,team_t vGoalPos,float *bAllowNegotiationLinks,float *param_4,
+             int param_5)
 
 {
   int iVar1;
+  int in_ECX;
   int in_EDX;
-  int extraout_var;
-  pathsort_t local_314 [64];
-  pathnode_t *local_10;
-  int local_c;
-  path_t *local_8;
+  path_t *pPath;
+  pathsort_t nodes [64];
+  pathnode_t *pNodeTo;
+  int nodeCount;
+  pathnode_t *pNodeFrom;
   
-  local_10 = Path_NearestNode((float *)param_2,local_314,-2,192.0,&local_c,0x40,
-                              NEAREST_NODE_DO_HEIGHT_CHECK);
-  if (local_10 == (pathnode_t *)0x0) {
+  pNodeTo = Path_NearestNode((float *)vGoalPos,nodes,-2,192.0,&nodeCount,0x40,
+                             NEAREST_NODE_DO_HEIGHT_CHECK);
+  if (pNodeTo == (pathnode_t *)0x0) {
     iVar1 = 0;
   }
   else {
-    iVar1 = extraout_var;
-    local_8 = (path_t *)
-              Path_NearestNode((float *)param_1,local_314,-2,192.0,&local_c,0x40,
-                               NEAREST_NODE_DO_HEIGHT_CHECK);
-    if (local_8 == (path_t *)0x0) {
+    pNodeFrom = Path_NearestNode((float *)vStartPos,nodes,-2,192.0,&nodeCount,0x40,
+                                 NEAREST_NODE_DO_HEIGHT_CHECK);
+    if ((path_t *)pNodeFrom == (path_t *)0x0) {
       iVar1 = 0;
     }
     else {
-      iVar1 = Path_FindPathFromTo(local_8,(team_t)param_1,local_10,(float *)param_2,
-                                  (pathnode_t *)param_3,(float *)0x0,in_EDX,iVar1);
+      iVar1 = Path_FindPathFromTo((path_t *)pNodeFrom,(team_t)vStartPos,pNodeTo,(float *)vGoalPos,
+                                  (pathnode_t *)bAllowNegotiationLinks,(float *)0x0,in_EDX,in_ECX);
     }
   }
   return iVar1;
@@ -2319,29 +2399,32 @@ int __cdecl Path_FindPath(path_t *param_1,team_t param_2,float *param_3,float *p
 
 // 009038E0  Path_FindPathFrom  (game/actor_navigation.cpp:959)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 int __cdecl
-Path_FindPathFrom(path_t *param_1,team_t param_2,pathnode_t *param_3,float *param_4,float *param_5,
-                 int param_6,int param_7)
+Path_FindPathFrom(path_t *pNodeFrom,team_t vStartPos,pathnode_t *vGoalPos,
+                 float *bAllowNegotiationLinks,float *bIgnoreBadplaces,int param_6,int param_7)
 
 {
   int iVar1;
+  int in_ECX;
   int in_EDX;
-  int extraout_var;
-  pathsort_t local_30c [64];
-  pathnode_t *local_c;
-  int local_8;
+  path_t *pPath;
+  pathsort_t nodes [64];
+  pathnode_t *pNodeTo;
+  int nodeCount;
   
-  local_c = Path_NearestNode((float *)param_3,local_30c,-2,192.0,&local_8,0x40,
+  pNodeTo = Path_NearestNode((float *)vGoalPos,nodes,-2,192.0,&nodeCount,0x40,
                              NEAREST_NODE_DO_HEIGHT_CHECK);
-  if (local_c == (pathnode_t *)0x0) {
+  if (pNodeTo == (pathnode_t *)0x0) {
     iVar1 = 0;
   }
   else {
-    iVar1 = Path_FindPathFromTo(param_1,param_2,local_c,(float *)param_3,(pathnode_t *)param_4,
-                                param_5,in_EDX,extraout_var);
+    iVar1 = Path_FindPathFromTo(pNodeFrom,vStartPos,pNodeTo,(float *)vGoalPos,
+                                (pathnode_t *)bAllowNegotiationLinks,bIgnoreBadplaces,in_EDX,in_ECX)
+    ;
   }
   return iVar1;
 }
@@ -2353,8 +2436,9 @@ Path_FindPathFrom(path_t *param_1,team_t param_2,pathnode_t *param_3,float *para
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl
-Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *param_4,
-                   pathnode_t *param_5,float *param_6,int param_7,int param_8)
+Path_FindPathFromTo(path_t *pNodeFrom,team_t vStartPos,pathnode_t *pNodeTo,float *vGoalPos,
+                   pathnode_t *bAllowNegotiationLinks,float *bIgnoreBadplaces,int param_7,
+                   int param_8)
 
 {
   code *pcVar1;
@@ -2362,10 +2446,11 @@ Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *pa
   int iVar3;
   path_t *in_ECX;
   team_t in_EDX;
-  CustomSearchInfo_FindPath local_18;
+  path_t *pPath;
+  CustomSearchInfo_FindPath info;
   
-  local_18.negotiationOverlapCost = (float)(ai_pathNegotiationOverlapCost->current).integer;
-  if (param_1 == (path_t *)0x0) {
+  info.negotiationOverlapCost = (float)(ai_pathNegotiationOverlapCost->current).integer;
+  if (pNodeFrom == (path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x3e0,0
                              ,"%s");
     if (!bVar2) {
@@ -2374,7 +2459,7 @@ Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *pa
       return iVar3;
     }
   }
-  if (param_3 == (pathnode_t *)0x0) {
+  if (pNodeTo == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x3e1,0
                              ,"%s");
     if (!bVar2) {
@@ -2383,7 +2468,7 @@ Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *pa
       return iVar3;
     }
   }
-  if (((uint)param_1->pts[0].vOrigPoint[1] & 1) != 0) {
+  if (((uint)pNodeFrom->pts[0].vOrigPoint[1] & 1) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x3e2,0
                              ,"%s");
     if (!bVar2) {
@@ -2392,7 +2477,7 @@ Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *pa
       return iVar3;
     }
   }
-  if (((param_3->constant).spawnflags & 1) != 0) {
+  if (((pNodeTo->constant).spawnflags & 1) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x3e3,0
                              ,"%s");
     if (!bVar2) {
@@ -2401,13 +2486,13 @@ Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *pa
       return iVar3;
     }
   }
-  local_18.m_pNodeTo = param_3;
-  local_18.startPos[0] = *(float *)param_2;
-  local_18.startPos[1] = *(float *)(param_2 + TEAM_NUM_TEAMS);
-  local_18.startPos[2] = *(float *)(param_2 + 8);
+  info.m_pNodeTo = pNodeTo;
+  info.startPos[0] = *(float *)vStartPos;
+  info.startPos[1] = *(float *)(vStartPos + TEAM_NUM_TEAMS);
+  info.startPos[2] = *(float *)(vStartPos + 8);
   iVar3 = Path_AStarAlgorithm<CustomSearchInfo_FindPath>
-                    (in_ECX,in_EDX,(float *)param_2,(pathnode_t *)param_1,param_4,1,(int)param_5,
-                     &local_18,(int)param_6);
+                    (in_ECX,in_EDX,(float *)vStartPos,(pathnode_t *)pNodeFrom,vGoalPos,1,
+                     (int)bAllowNegotiationLinks,&info,(int)bIgnoreBadplaces);
   return iVar3;
 }
 
@@ -2418,7 +2503,7 @@ Path_FindPathFromTo(path_t *param_1,team_t param_2,pathnode_t *param_3,float *pa
 
 float __thiscall
 CustomSearchInfo_FindPathWithWidth::EvaluateHeuristic
-          (CustomSearchInfo_FindPathWithWidth *this,pathnode_t *param_1,float *param_2)
+          (CustomSearchInfo_FindPathWithWidth *this,pathnode_t *pSuccessor,float *vGoalPos)
 
 {
   double dVar1;
@@ -2429,14 +2514,14 @@ CustomSearchInfo_FindPathWithWidth::EvaluateHeuristic
   float *local_18;
   CustomSearchInfo_FindPathWithWidth *local_14;
   
-  local_18 = (param_1->constant).vOrigin;
-  local_20 = *local_18 - *param_2;
-  local_1c = (param_1->constant).vOrigin[1] - param_2[1];
+  local_18 = (pSuccessor->constant).vOrigin;
+  local_20 = *local_18 - *vGoalPos;
+  local_1c = (pSuccessor->constant).vOrigin[1] - vGoalPos[1];
   dVar1 = (double)(ABS((this->perp[0] * local_20 + this->perp[1] * local_1c) - this->width) *
                   0.0069077);
   local_14 = this;
   __libm_sse2_exp(in_stack_ffffffc0);
-  (param_1->transient).costFactor = (float)dVar1;
+  (pSuccessor->transient).costFactor = (float)dVar1;
   fVar2 = Vec2Length(&local_20);
   return fVar2 * (float)dVar1;
 }
@@ -2444,41 +2529,40 @@ CustomSearchInfo_FindPathWithWidth::EvaluateHeuristic
 
 // 00903AB0  Path_FindPathWithWidth  (game/actor_navigation.cpp:1052)
 
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl
 Path_FindPathWithWidth
-          (path_t *param_1,team_t param_2,float *param_3,float *param_4,int param_5,float param_6,
-          float *param_7)
+          (path_t *vStartPos,team_t vGoalPos,float *bAllowNegotiationLinks,float *width,int perp,
+          float param_6,float *param_7)
 
 {
   int iVar1;
+  float *in_ECX;
   float in_EDX;
-  float *extraout_var;
-  float *pfVar2;
-  pathsort_t local_314 [64];
-  pathnode_t *local_10;
-  int local_c;
-  path_t *local_8;
+  path_t *pPath;
+  pathsort_t nodes [64];
+  pathnode_t *pNodeTo;
+  int nodeCount;
+  pathnode_t *pNodeFrom;
   
-  local_10 = Path_NearestNode((float *)param_2,local_314,-2,192.0,&local_c,0x40,
-                              NEAREST_NODE_DO_HEIGHT_CHECK);
-  if (local_10 == (pathnode_t *)0x0) {
+  pNodeTo = Path_NearestNode((float *)vGoalPos,nodes,-2,192.0,&nodeCount,0x40,
+                             NEAREST_NODE_DO_HEIGHT_CHECK);
+  if (pNodeTo == (pathnode_t *)0x0) {
     iVar1 = 0;
   }
   else {
-    pfVar2 = extraout_var;
-    local_8 = (path_t *)
-              Path_NearestNode((float *)param_1,local_314,-2,192.0,&local_c,0x40,
-                               NEAREST_NODE_DO_HEIGHT_CHECK);
-    if (local_8 == (path_t *)0x0) {
+    pNodeFrom = Path_NearestNode((float *)vStartPos,nodes,-2,192.0,&nodeCount,0x40,
+                                 NEAREST_NODE_DO_HEIGHT_CHECK);
+    if ((path_t *)pNodeFrom == (path_t *)0x0) {
       iVar1 = 0;
     }
     else {
       iVar1 = Path_FindPathFromToWithWidth
-                        (local_8,(team_t)param_1,local_10,(float *)param_2,(pathnode_t *)param_3,
-                         param_4,param_5,in_EDX,pfVar2);
+                        ((path_t *)pNodeFrom,(team_t)vStartPos,pNodeTo,(float *)vGoalPos,
+                         (pathnode_t *)bAllowNegotiationLinks,width,perp,in_EDX,in_ECX);
     }
   }
   return iVar1;
@@ -2492,8 +2576,8 @@ Path_FindPathWithWidth
 
 int __cdecl
 Path_FindPathFromToWithWidth
-          (path_t *param_1,team_t param_2,pathnode_t *param_3,float *param_4,pathnode_t *param_5,
-          float *param_6,int param_7,float param_8,float *param_9)
+          (path_t *pNodeFrom,team_t vStartPos,pathnode_t *pNodeTo,float *vGoalPos,
+          pathnode_t *bAllowNegotiationLinks,float *width,int perp,float param_8,float *param_9)
 
 {
   code *pcVar1;
@@ -2501,9 +2585,10 @@ Path_FindPathFromToWithWidth
   int iVar3;
   path_t *in_ECX;
   team_t in_EDX;
-  CustomSearchInfo_FindPathWithWidth local_14;
+  path_t *pPath;
+  CustomSearchInfo_FindPathWithWidth info;
   
-  if (param_1 == (path_t *)0x0) {
+  if (pNodeFrom == (path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x446,0
                              ,"%s");
     if (!bVar2) {
@@ -2512,7 +2597,7 @@ Path_FindPathFromToWithWidth
       return iVar3;
     }
   }
-  if (param_3 == (pathnode_t *)0x0) {
+  if (pNodeTo == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x447,0
                              ,"%s");
     if (!bVar2) {
@@ -2521,7 +2606,7 @@ Path_FindPathFromToWithWidth
       return iVar3;
     }
   }
-  if (((uint)param_1->pts[0].vOrigPoint[1] & 1) != 0) {
+  if (((uint)pNodeFrom->pts[0].vOrigPoint[1] & 1) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x448,0
                              ,"%s");
     if (!bVar2) {
@@ -2530,7 +2615,7 @@ Path_FindPathFromToWithWidth
       return iVar3;
     }
   }
-  if (((param_3->constant).spawnflags & 1) != 0) {
+  if (((pNodeTo->constant).spawnflags & 1) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x449,0
                              ,"%s");
     if (!bVar2) {
@@ -2539,14 +2624,14 @@ Path_FindPathFromToWithWidth
       return iVar3;
     }
   }
-  local_14.m_pNodeTo = param_3;
-  local_14.width = (float)param_6;
-  local_14.perp[0] = *(float *)param_7;
-  local_14.perp[1] = *(float *)(param_7 + 4);
-  param_1->pts[4].fDir2D[0] = 0.0;
+  info.m_pNodeTo = pNodeTo;
+  info.width = (float)width;
+  info.perp[0] = *(float *)perp;
+  info.perp[1] = *(float *)(perp + 4);
+  pNodeFrom->pts[4].fDir2D[0] = 0.0;
   iVar3 = Path_AStarAlgorithm<CustomSearchInfo_FindPathWithWidth>
-                    (in_ECX,in_EDX,(float *)param_2,(pathnode_t *)param_1,param_4,1,(int)param_5,
-                     &local_14,0);
+                    (in_ECX,in_EDX,(float *)vStartPos,(pathnode_t *)pNodeFrom,vGoalPos,1,
+                     (int)bAllowNegotiationLinks,&info,0);
   return iVar3;
 }
 
@@ -2557,21 +2642,21 @@ Path_FindPathFromToWithWidth
 
 bool __thiscall
 CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode
-          (CustomSearchInfo_FindPathNotCrossPlanes *this,pathnode_t *param_1)
+          (CustomSearchInfo_FindPathNotCrossPlanes *this,pathnode_t *pNode)
 
 {
   float fVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (this->m_iPlaneCount <= local_8) {
+    if (this->m_iPlaneCount <= i) {
       return false;
     }
-    fVar1 = (param_1->constant).vOrigin[0] * this->m_vNormal[local_8][0] +
-            (param_1->constant).vOrigin[1] * this->m_vNormal[local_8][1];
-    if (this->m_fDist[local_8] <= fVar1 && fVar1 != this->m_fDist[local_8]) break;
-    local_8 = local_8 + 1;
+    fVar1 = (pNode->constant).vOrigin[0] * this->m_vNormal[i][0] +
+            (pNode->constant).vOrigin[1] * this->m_vNormal[i][1];
+    if (this->m_fDist[i] <= fVar1 && fVar1 != this->m_fDist[i]) break;
+    i = i + 1;
   }
   return true;
 }
@@ -2579,32 +2664,35 @@ CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode
 
 // 00903CB0  Path_FindPathFromNotCrossPlanes  (game/actor_navigation.cpp:1174)
 
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl
 Path_FindPathFromNotCrossPlanes
-          (path_t *param_1,team_t param_2,pathnode_t *param_3,float *param_4,float *param_5,
-          float (*param_6) [2],float *param_7,int param_8,int param_9,int param_10)
+          (path_t *pNodeFrom,team_t vStartPos,pathnode_t *vGoalPos,float *vNormal,float *fDist,
+          float (*iPlaneCount) [2],float *bAllowNegotiationLinks,int bIgnoreBadplaces,int param_9,
+          int param_10)
 
 {
   int iVar1;
+  int in_ECX;
   int in_EDX;
-  int extraout_var;
-  pathsort_t local_30c [64];
-  pathnode_t *local_c;
-  int local_8;
+  path_t *pPath;
+  pathsort_t nodes [64];
+  pathnode_t *pNodeTo;
+  int nodeCount;
   
-  local_c = Path_NearestNodeNotCrossPlanes
-                      ((float *)param_3,local_30c,-2,192.0,(float (*) [2])param_4,param_5,
-                       (int)param_6,&local_8,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
-  if (local_c == (pathnode_t *)0x0) {
+  pNodeTo = Path_NearestNodeNotCrossPlanes
+                      ((float *)vGoalPos,nodes,-2,192.0,(float (*) [2])vNormal,fDist,
+                       (int)iPlaneCount,&nodeCount,0x40,NEAREST_NODE_DO_HEIGHT_CHECK);
+  if (pNodeTo == (pathnode_t *)0x0) {
     iVar1 = 0;
   }
   else {
     iVar1 = Path_FindPathFromToNotCrossPlanes
-                      (param_1,param_2,local_c,(float *)param_3,(pathnode_t *)param_4,param_5,
-                       param_6,param_7,param_8,in_EDX,extraout_var);
+                      (pNodeFrom,vStartPos,pNodeTo,(float *)vGoalPos,(pathnode_t *)vNormal,fDist,
+                       iPlaneCount,bAllowNegotiationLinks,bIgnoreBadplaces,in_EDX,in_ECX);
   }
   return iVar1;
 }
@@ -2617,8 +2705,9 @@ Path_FindPathFromNotCrossPlanes
 
 int __cdecl
 Path_FindPathFromToNotCrossPlanes
-          (path_t *param_1,team_t param_2,pathnode_t *param_3,float *param_4,pathnode_t *param_5,
-          float *param_6,float (*param_7) [2],float *param_8,int param_9,int param_10,int param_11)
+          (path_t *pNodeFrom,team_t vStartPos,pathnode_t *pNodeTo,float *vGoalPos,
+          pathnode_t *vNormal,float *fDist,float (*iPlaneCount) [2],float *bAllowNegotiationLinks,
+          int bIgnoreBadplaces,int param_10,int param_11)
 
 {
   code *pcVar1;
@@ -2626,50 +2715,51 @@ Path_FindPathFromToNotCrossPlanes
   int iVar3;
   path_t *in_ECX;
   team_t in_EDX;
-  CustomSearchInfo_FindPathNotCrossPlanes local_24;
+  path_t *pPath;
+  CustomSearchInfo_FindPathNotCrossPlanes info;
   
-  local_24._padding_ = (ai_pathNegotiationOverlapCost->current).integer;
-  if ((param_1 == (path_t *)0x0) &&
+  info._padding_ = (ai_pathNegotiationOverlapCost->current).integer;
+  if ((pNodeFrom == (path_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x4b7
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (pathnode_t *)0x0) &&
+  if ((pNodeTo == (pathnode_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x4b8
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((uint)param_1->pts[0].vOrigPoint[1] & 1) != 0) &&
+  if ((((uint)pNodeFrom->pts[0].vOrigPoint[1] & 1) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x4b9
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((((param_3->constant).spawnflags & 1) != 0) &&
+  if ((((pNodeTo->constant).spawnflags & 1) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x4ba
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_24._padding_ = (int)param_3;
-  local_24.m_iPlaneCount = (int)param_7;
-  local_24.m_vNormal = (float (*) [2])param_5;
-  local_24.m_fDist = param_6;
-  local_24._padding_ = *(int *)param_2;
-  local_24._padding_ = *(int *)(param_2 + TEAM_NUM_TEAMS);
-  local_24._padding_ = *(int *)(param_2 + 8);
-  bVar2 = CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode(&local_24,(pathnode_t *)param_1);
+  info._padding_ = (int)pNodeTo;
+  info.m_iPlaneCount = (int)iPlaneCount;
+  info.m_vNormal = (float (*) [2])vNormal;
+  info.m_fDist = fDist;
+  info._padding_ = *(int *)vStartPos;
+  info._padding_ = *(int *)(vStartPos + TEAM_NUM_TEAMS);
+  info._padding_ = *(int *)(vStartPos + 8);
+  bVar2 = CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode(&info,(pathnode_t *)pNodeFrom);
   if ((!bVar2) &&
-     (bVar2 = CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode(&local_24,param_3), !bVar2)) {
+     (bVar2 = CustomSearchInfo_FindPathNotCrossPlanes::IgnoreNode(&info,pNodeTo), !bVar2)) {
     iVar3 = Path_AStarAlgorithm<CustomSearchInfo_FindPathNotCrossPlanes>
-                      (in_ECX,in_EDX,(float *)param_2,(pathnode_t *)param_1,param_4,1,(int)param_8,
-                       &local_24,param_9);
+                      (in_ECX,in_EDX,(float *)vStartPos,(pathnode_t *)pNodeFrom,vGoalPos,1,
+                       (int)bAllowNegotiationLinks,&info,bIgnoreBadplaces);
     return iVar3;
   }
   return 0;
@@ -2682,25 +2772,25 @@ Path_FindPathFromToNotCrossPlanes
 
 float __thiscall
 CustomSearchInfo_FindPathWithLOS::EvaluateHeuristic
-          (CustomSearchInfo_FindPathWithLOS *this,pathnode_t *param_1,float *param_2)
+          (CustomSearchInfo_FindPathWithLOS *this,pathnode_t *pSuccessor,float *vGoalPos)
 
 {
   float fVar1;
   float local_10;
   float local_c;
-  float local_8;
+  float dist;
   
-  local_10 = *param_2 - (param_1->constant).vOrigin[0];
-  local_c = param_2[1] - (param_1->constant).vOrigin[1];
-  local_8 = Vec2Length(&local_10);
-  local_8 = (float)(int)(param_1->dynamic).userCount * this->negotiationOverlapCost + local_8;
-  if (1.0 < (param_1->constant).minUseDistSq) {
-    fVar1 = Vec3DistanceSq((param_1->constant).vOrigin,this->startPos);
-    if (fVar1 < (param_1->constant).minUseDistSq) {
-      local_8 = local_8 + this->negotiationOverlapCost;
+  local_10 = *vGoalPos - (pSuccessor->constant).vOrigin[0];
+  local_c = vGoalPos[1] - (pSuccessor->constant).vOrigin[1];
+  fVar1 = Vec2Length(&local_10);
+  dist = (float)(int)(pSuccessor->dynamic).userCount * this->negotiationOverlapCost + fVar1;
+  if (1.0 < (pSuccessor->constant).minUseDistSq) {
+    fVar1 = Vec3DistanceSq((pSuccessor->constant).vOrigin,this->startPos);
+    if (fVar1 < (pSuccessor->constant).minUseDistSq) {
+      dist = dist + this->negotiationOverlapCost;
     }
   }
-  return local_8;
+  return dist;
 }
 
 
@@ -2713,40 +2803,41 @@ CustomSearchInfo_FindPathWithLOS::EvaluateHeuristic
 
 int __cdecl
 Path_FindPathInCylinderWithLOS
-          (path_t *param_1,team_t param_2,float *param_3,float *param_4,actor_goal_s *param_5,
-          float param_6,int param_7)
+          (path_t *vStartPos,team_t vGoalPos,float *goal,float *fWithinDistSqrd,
+          actor_goal_s *bAllowNegotiationLinks,float param_6,int param_7)
 
 {
   int iVar1;
   path_t *in_ECX;
   team_t in_EDX;
-  CustomSearchInfo_FindPathInCylinderWithLOS local_328;
-  pathsort_t local_30c [64];
-  int local_c;
-  pathnode_t *local_8;
+  path_t *pPath;
+  CustomSearchInfo_FindPathInCylinderWithLOS info;
+  pathsort_t nodes [64];
+  int nodeCount;
+  pathnode_t *pNodeFrom;
   
-  local_328._padding_ = (ai_pathNegotiationOverlapCost->current).integer;
-  local_328._padding_ =
-       (int)Path_NearestNode((float *)param_2,local_30c,-2,192.0,&local_c,0x40,
+  info._padding_ = (ai_pathNegotiationOverlapCost->current).integer;
+  info._padding_ =
+       (int)Path_NearestNode((float *)vGoalPos,nodes,-2,192.0,&nodeCount,0x40,
                              NEAREST_NODE_DO_HEIGHT_CHECK);
-  if ((pathnode_t *)local_328._padding_ == (pathnode_t *)0x0) {
+  if ((pathnode_t *)info._padding_ == (pathnode_t *)0x0) {
     iVar1 = 0;
   }
   else {
-    local_8 = Path_NearestNode((float *)param_1,local_30c,-2,192.0,&local_c,0x40,
-                               NEAREST_NODE_DO_HEIGHT_CHECK);
-    if (local_8 == (pathnode_t *)0x0) {
+    pNodeFrom = Path_NearestNode((float *)vStartPos,nodes,-2,192.0,&nodeCount,0x40,
+                                 NEAREST_NODE_DO_HEIGHT_CHECK);
+    if (pNodeFrom == (pathnode_t *)0x0) {
       iVar1 = 0;
     }
     else {
-      local_328._padding_ = (int)param_4;
-      local_328.goal = (actor_goal_s *)param_3;
-      local_328._padding_ = (int)param_1->pts[0].vOrigPoint[0];
-      local_328._padding_ = (int)param_1->pts[0].vOrigPoint[1];
-      local_328._padding_ = (int)param_1->pts[0].vOrigPoint[2];
+      info._padding_ = (int)fWithinDistSqrd;
+      info.goal = (actor_goal_s *)goal;
+      info._padding_ = (int)vStartPos->pts[0].vOrigPoint[0];
+      info._padding_ = (int)vStartPos->pts[0].vOrigPoint[1];
+      info._padding_ = (int)vStartPos->pts[0].vOrigPoint[2];
       iVar1 = Path_AStarAlgorithm<CustomSearchInfo_FindPathInCylinderWithLOS>
-                        (in_ECX,in_EDX,(float *)param_1,local_8,(float *)param_2,0,(int)param_5,
-                         &local_328,0);
+                        (in_ECX,in_EDX,(float *)vStartPos,pNodeFrom,(float *)vGoalPos,0,
+                         (int)bAllowNegotiationLinks,&info,0);
     }
   }
   return iVar1;
@@ -2755,64 +2846,67 @@ Path_FindPathInCylinderWithLOS
 
 // 00905570  Path_FindFacingNode  (game/actor_navigation.cpp:1655)
 
+/* WARNING: Variable defined which should be unmapped: pOther */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 pathnode_t * __cdecl
-Path_FindFacingNode(sentient_s *param_1,sentient_s *param_2,sentient_info_t *param_3)
+Path_FindFacingNode(sentient_s *pInfo,sentient_s *param_2,sentient_info_t *param_3)
 
 {
-  sentient_s *psVar1;
-  int iVar2;
+  sentient_s *node0;
+  int iVar1;
   float *in_EDX;
   sentient_s *in_stack_ffffff24;
-  float local_28 [3];
-  CustomSearchInfo_CouldAttack local_1c;
-  float local_14;
+  sentient_s *pOther;
+  sentient_s *pSelf;
+  float vGoalPos [3];
+  CustomSearchInfo_CouldAttack info;
+  float vStartPos;
   float local_10;
   float local_c;
-  sentient_s *local_8;
+  pathnode_t *pNodeFrom;
   
-  local_1c.m_pNodeTo = Sentient_NearestNode(in_stack_ffffff24);
-  if (local_1c.m_pNodeTo == (pathnode_t *)0x0) {
-    local_8 = (sentient_s *)0x0;
+  info.m_pNodeTo = Sentient_NearestNode(in_stack_ffffff24);
+  if (info.m_pNodeTo == (pathnode_t *)0x0) {
+    pNodeFrom = (pathnode_t *)0x0;
   }
   else {
-    if ((param_1 == (sentient_s *)0x0) || (param_1->maxVisibleDist == 0.0)) {
-      psVar1 = (sentient_s *)Sentient_NearestNode(in_stack_ffffff24);
+    if ((pInfo == (sentient_s *)0x0) || (pInfo->maxVisibleDist == 0.0)) {
+      node0 = (sentient_s *)Sentient_NearestNode(in_stack_ffffff24);
     }
     else {
-      psVar1 = (sentient_s *)param_1->maxVisibleDist;
+      node0 = (sentient_s *)pInfo->maxVisibleDist;
     }
-    if (psVar1 == (sentient_s *)0x0) {
-      local_8 = (sentient_s *)0x0;
+    if (node0 == (sentient_s *)0x0) {
+      pNodeFrom = (pathnode_t *)0x0;
     }
     else {
-      local_8 = psVar1;
-      iVar2 = Path_NodesVisible((pathnode_t *)psVar1,local_1c.m_pNodeTo);
-      if (iVar2 == 0) {
-        Sentient_GetOrigin(psVar1,in_EDX);
-        if (param_1 == (sentient_s *)0x0) {
-          Sentient_GetOrigin(psVar1,in_EDX);
+      pNodeFrom = (pathnode_t *)node0;
+      iVar1 = Path_NodesVisible((pathnode_t *)node0,info.m_pNodeTo);
+      if (iVar1 == 0) {
+        Sentient_GetOrigin(node0,in_EDX);
+        if (pInfo == (sentient_s *)0x0) {
+          Sentient_GetOrigin(node0,in_EDX);
         }
         else {
-          local_14 = param_1->oldOrigin[0];
-          local_10 = param_1->oldOrigin[1];
-          local_c = param_1->oldOrigin[2];
+          vStartPos = pInfo->oldOrigin[0];
+          local_10 = pInfo->oldOrigin[1];
+          local_c = pInfo->oldOrigin[2];
         }
-        iVar2 = Path_AStarAlgorithm<CustomSearchInfo_CouldAttack>
-                          ((path_t *)0x0,(team_t)in_EDX[1],&local_14,(pathnode_t *)local_8,local_28,
-                           0,1,&local_1c,0);
-        local_8 = (sentient_s *)local_1c.attackNode;
-        if (iVar2 == 0) {
-          local_8 = (sentient_s *)0x0;
+        iVar1 = Path_AStarAlgorithm<CustomSearchInfo_CouldAttack>
+                          ((path_t *)0x0,(team_t)in_EDX[1],&vStartPos,pNodeFrom,vGoalPos,0,1,&info,0
+                          );
+        pNodeFrom = info.attackNode;
+        if (iVar1 == 0) {
+          pNodeFrom = (pathnode_t *)0x0;
         }
       }
     }
   }
-  return (pathnode_t *)local_8;
+  return pNodeFrom;
 }
 
 
@@ -2822,29 +2916,31 @@ Path_FindFacingNode(sentient_s *param_1,sentient_s *param_2,sentient_info_t *par
 
 float __thiscall
 CustomSearchInfo_FindPathClosestPossible::EvaluateHeuristic
-          (CustomSearchInfo_FindPathClosestPossible *this,pathnode_t *param_1,float *param_2)
+          (CustomSearchInfo_FindPathClosestPossible *this,pathnode_t *pSuccessor,float *vGoalPos)
 
 {
   float fVar1;
   float local_10;
   float local_c;
+  float dist;
   
-  local_10 = *param_2 - (param_1->constant).vOrigin[0];
-  local_c = param_2[1] - (param_1->constant).vOrigin[1];
+  local_10 = *vGoalPos - (pSuccessor->constant).vOrigin[0];
+  local_c = vGoalPos[1] - (pSuccessor->constant).vOrigin[1];
   fVar1 = Vec2Length(&local_10);
-  return (float)(int)(param_1->dynamic).userCount * this->negotiationOverlapCost + fVar1;
+  return (float)(int)(pSuccessor->dynamic).userCount * this->negotiationOverlapCost + fVar1;
 }
 
 
 // 00905690  Path_FindPathGetCloseAsPossible  (game/actor_navigation.cpp:1764)
 
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl
 Path_FindPathGetCloseAsPossible
-          (path_t *param_1,team_t param_2,pathnode_t *param_3,float *param_4,pathnode_t *param_5,
-          float *param_6,int param_7)
+          (path_t *pNodeFrom,team_t vStartPos,pathnode_t *pNodeTo,float *vGoalPos,
+          pathnode_t *bAllowNegotiationLinks,float *param_6,int param_7)
 
 {
   code *pcVar1;
@@ -2852,12 +2948,13 @@ Path_FindPathGetCloseAsPossible
   int iVar3;
   path_t *in_ECX;
   team_t in_EDX;
-  CustomSearchInfo_FindPathClosestPossible local_14;
+  path_t *pPath;
+  CustomSearchInfo_FindPathClosestPossible info;
   
-  local_14.negotiationOverlapCost = (float)(ai_pathNegotiationOverlapCost->current).integer;
-  local_14.m_fBestScore = 3.4028235e+38;
-  local_14.m_pBestNode = (pathnode_t *)0x0;
-  if (param_3 == (pathnode_t *)0x0) {
+  info.negotiationOverlapCost = (float)(ai_pathNegotiationOverlapCost->current).integer;
+  info.m_fBestScore = 3.4028235e+38;
+  info.m_pBestNode = (pathnode_t *)0x0;
+  if (pNodeTo == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x6ea,0
                              ,"%s");
     if (!bVar2) {
@@ -2866,7 +2963,7 @@ Path_FindPathGetCloseAsPossible
       return iVar3;
     }
   }
-  if (param_1 == (path_t *)0x0) {
+  if (pNodeFrom == (path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x6eb,0
                              ,"%s");
     if (!bVar2) {
@@ -2875,7 +2972,7 @@ Path_FindPathGetCloseAsPossible
       return iVar3;
     }
   }
-  if (((uint)param_1->pts[0].vOrigPoint[1] & 1) != 0) {
+  if (((uint)pNodeFrom->pts[0].vOrigPoint[1] & 1) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x6ec,0
                              ,"%s");
     if (!bVar2) {
@@ -2884,12 +2981,12 @@ Path_FindPathGetCloseAsPossible
       return iVar3;
     }
   }
-  local_14.m_pNodeTo = param_3;
+  info.m_pNodeTo = pNodeTo;
   iVar3 = Path_AStarAlgorithm<CustomSearchInfo_FindPathClosestPossible>
-                    (in_ECX,in_EDX,(float *)param_2,(pathnode_t *)param_1,param_4,1,(int)param_5,
-                     &local_14,0);
+                    (in_ECX,in_EDX,(float *)vStartPos,(pathnode_t *)pNodeFrom,vGoalPos,1,
+                     (int)bAllowNegotiationLinks,&info,0);
   if (iVar3 == 0) {
-    if (local_14.m_pBestNode == (pathnode_t *)0x0) {
+    if (info.m_pBestNode == (pathnode_t *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x6f4
                                ,0,"%s");
       if (!bVar2) {
@@ -2898,9 +2995,10 @@ Path_FindPathGetCloseAsPossible
         return iVar3;
       }
     }
-    iVar3 = Path_GeneratePath((path_t *)param_2,(team_t)((local_14.m_pBestNode)->constant).vOrigin,
-                              (float *)param_1,(float *)local_14.m_pBestNode,
-                              (pathnode_t *)&DAT_00000001,param_5,in_EDX,(int)in_ECX);
+    iVar3 = Path_GeneratePath((path_t *)vStartPos,(team_t)((info.m_pBestNode)->constant).vOrigin,
+                              (float *)pNodeFrom,(float *)info.m_pBestNode,
+                              (pathnode_t *)&DAT_00000001,bAllowNegotiationLinks,in_EDX,(int)in_ECX)
+    ;
     if (iVar3 == 0) {
       iVar3 = 0;
     }
@@ -2927,8 +3025,9 @@ Path_FindPathGetCloseAsPossible
 // 00905950  Path_TrimLastNodes  (game/actor_navigation.cpp:1801)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl Path_TrimLastNodes(path_t *param_1,int param_2,bool param_3)
+void __cdecl Path_TrimLastNodes(path_t *pPath,int iNodeCount,bool bMaintainGoalPos)
 
 {
   code *pcVar1;
@@ -2936,59 +3035,59 @@ void __cdecl Path_TrimLastNodes(path_t *param_1,int param_2,bool param_3)
   bool bVar3;
   int iVar4;
   path_t *in_stack_fffffff0;
-  short local_8;
+  int newNegotiationNode;
   
-  if ((param_1 == (path_t *)0x0) &&
+  if ((pPath == (path_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x70c
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 0) &&
+  if ((iNodeCount < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x70d
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->wPathLen <= param_2) &&
+  if ((pPath->wPathLen <= iNodeCount) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x70e
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->wNegotiationStartNode < 0) &&
+  if ((pPath->wNegotiationStartNode < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x70f
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->lookaheadNextNode < param_1->wNegotiationStartNode) &&
+  if ((pPath->lookaheadNextNode < pPath->wNegotiationStartNode) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x710
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->wPathLen <= param_1->lookaheadNextNode) &&
+  if ((pPath->wPathLen <= pPath->lookaheadNextNode) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x711
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->pts[param_1->lookaheadNextNode].fOrigLength < param_1->fLookaheadDistToNextNode) &&
+  if ((pPath->pts[pPath->lookaheadNextNode].fOrigLength < pPath->fLookaheadDistToNextNode) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x712
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((1 < param_1->wPathLen) &&
-     (param_1->pts[param_1->wPathLen + -2].fOrigLength < param_1->fCurrLength)) {
+  if ((1 < pPath->wPathLen) && (pPath->pts[pPath->wPathLen + -2].fOrigLength < pPath->fCurrLength))
+  {
     va("pPath->fCurrLength: %g, pPath->pts[pPath->wPathLen - 2].fOrigLength: %g");
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x713,0
                              ,"%s\n\t%s");
@@ -2998,89 +3097,89 @@ void __cdecl Path_TrimLastNodes(path_t *param_1,int param_2,bool param_3)
       return;
     }
   }
-  if (param_2 != 0) {
-    sVar2 = (short)param_2;
-    param_1->wPathLen = param_1->wPathLen - sVar2;
-    param_1->wOrigPathLen = param_1->wOrigPathLen - sVar2;
-    if ((-1 < param_1->wDodgeCount) &&
-       (param_1->wDodgeCount = param_1->wDodgeCount - sVar2, param_1->wDodgeCount < 0)) {
-      param_1->wDodgeCount = 0;
+  if (iNodeCount != 0) {
+    sVar2 = (short)iNodeCount;
+    pPath->wPathLen = pPath->wPathLen - sVar2;
+    pPath->wOrigPathLen = pPath->wOrigPathLen - sVar2;
+    if ((-1 < pPath->wDodgeCount) &&
+       (pPath->wDodgeCount = pPath->wDodgeCount - sVar2, pPath->wDodgeCount < 0)) {
+      pPath->wDodgeCount = 0;
     }
-    param_1->lookaheadNextNode = param_1->lookaheadNextNode - sVar2;
-    if (param_1->lookaheadNextNode < 0) {
-      param_1->lookaheadNextNode = 0;
-      param_1->fLookaheadDistToNextNode = 0.0;
+    pPath->lookaheadNextNode = pPath->lookaheadNextNode - sVar2;
+    if (pPath->lookaheadNextNode < 0) {
+      pPath->lookaheadNextNode = 0;
+      pPath->fLookaheadDistToNextNode = 0.0;
     }
-    iVar4 = param_1->wNegotiationStartNode - param_2;
+    iVar4 = pPath->wNegotiationStartNode - iNodeCount;
     if (iVar4 < 1) {
-      if (0 < param_1->wNegotiationStartNode) {
+      if (0 < pPath->wNegotiationStartNode) {
         Path_DecrementNodeUserCount(in_stack_fffffff0);
       }
-      param_1->wNegotiationStartNode = 0;
+      pPath->wNegotiationStartNode = 0;
     }
     else {
-      local_8 = (short)iVar4;
-      param_1->wNegotiationStartNode = local_8;
+      newNegotiationNode._0_2_ = (short)iVar4;
+      pPath->wNegotiationStartNode = (short)newNegotiationNode;
     }
-    if ((param_1->wPathLen < 1) &&
+    if ((pPath->wPathLen < 1) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x736,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_1->wPathLen < 2) {
-      if ((param_1->wNegotiationStartNode != 0) &&
+    if (pPath->wPathLen < 2) {
+      if ((pPath->wNegotiationStartNode != 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0x73e,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      param_1->pts[0].vOrigPoint[0] = param_1->vCurrPoint[0];
-      param_1->pts[0].vOrigPoint[1] = param_1->vCurrPoint[1];
-      param_1->pts[0].vOrigPoint[2] = param_1->vCurrPoint[2];
-      param_1->wOrigPathLen = 1;
-      param_1->fCurrLength = 0.0;
-      param_1->pts[0].iNodeNum = -1;
-      param_1->pts[0].fOrigLength = 0.0;
-      param_1->pts[0].fDir2D[0] = 0.0;
-      param_1->pts[0].fDir2D[1] = 0.0;
+      pPath->pts[0].vOrigPoint[0] = pPath->vCurrPoint[0];
+      pPath->pts[0].vOrigPoint[1] = pPath->vCurrPoint[1];
+      pPath->pts[0].vOrigPoint[2] = pPath->vCurrPoint[2];
+      pPath->wOrigPathLen = 1;
+      pPath->fCurrLength = 0.0;
+      pPath->pts[0].iNodeNum = -1;
+      pPath->pts[0].fOrigLength = 0.0;
+      pPath->pts[0].fDir2D[0] = 0.0;
+      pPath->pts[0].fDir2D[1] = 0.0;
     }
     else {
-      memmove((uchar *)param_1,(uchar *)(param_1->pts + param_2),param_1->wOrigPathLen * 0x1c);
+      memmove((uchar *)pPath,(uchar *)(pPath->pts + iNodeCount),pPath->wOrigPathLen * 0x1c);
     }
-    if (!param_3) {
-      in_stack_fffffff0 = (path_t *)param_1->vFinalGoal;
-      *(float *)in_stack_fffffff0 = param_1->pts[0].vOrigPoint[0];
-      param_1->vFinalGoal[1] = param_1->pts[0].vOrigPoint[1];
-      param_1->vFinalGoal[2] = param_1->pts[0].vOrigPoint[2];
+    if (!bMaintainGoalPos) {
+      in_stack_fffffff0 = (path_t *)pPath->vFinalGoal;
+      *(float *)in_stack_fffffff0 = pPath->pts[0].vOrigPoint[0];
+      pPath->vFinalGoal[1] = pPath->pts[0].vOrigPoint[1];
+      pPath->vFinalGoal[2] = pPath->pts[0].vOrigPoint[2];
     }
-    param_1->flags = param_1->flags & 0xfffffffb;
-    param_1->iPathEndTime = 0;
-    if ((param_1->lookaheadNextNode < param_1->wNegotiationStartNode) &&
+    pPath->flags = pPath->flags & 0xfffffffb;
+    pPath->iPathEndTime = 0;
+    if ((pPath->lookaheadNextNode < pPath->wNegotiationStartNode) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x750,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->wPathLen <= param_1->lookaheadNextNode) &&
+    if ((pPath->wPathLen <= pPath->lookaheadNextNode) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x751,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_1->pts[param_1->lookaheadNextNode].fOrigLength < param_1->fLookaheadDistToNextNode)
-       && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                    0x752,0,"%s"), !bVar3)) {
+    if ((pPath->pts[pPath->lookaheadNextNode].fOrigLength < pPath->fLookaheadDistToNextNode) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
+                                 0x752,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((1 < param_1->wPathLen) &&
-       (param_1->pts[param_1->wPathLen + -2].fOrigLength < param_1->fCurrLength)) {
+    if ((1 < pPath->wPathLen) && (pPath->pts[pPath->wPathLen + -2].fOrigLength < pPath->fCurrLength)
+       ) {
       va("pPath->fCurrLength: %g, pPath->pts[pPath->wPathLen - 2].fOrigLength: %g");
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x753
                                ,0,"%s\n\t%s");
@@ -3092,8 +3191,8 @@ void __cdecl Path_TrimLastNodes(path_t *param_1,int param_2,bool param_3)
     }
     bVar3 = Path_HasNegotiationNode(in_stack_fffffff0);
     if ((bVar3) &&
-       (((param_1->pts[param_1->wNegotiationStartNode].iNodeNum < 0 ||
-         (param_1->pts[param_1->wNegotiationStartNode + -1].iNodeNum < 0)) &&
+       (((pPath->pts[pPath->wNegotiationStartNode].iNodeNum < 0 ||
+         (pPath->pts[pPath->wNegotiationStartNode + -1].iNodeNum < 0)) &&
         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                   0x754,0,"%s"), !bVar3)))) {
       pcVar1 = (code *)swi(3);
@@ -3107,8 +3206,10 @@ void __cdecl Path_TrimLastNodes(path_t *param_1,int param_2,bool param_3)
 
 // 00905850  Path_ClipToGoal  (game/actor_navigation.cpp:1888)
 
-/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: goal */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -3120,7 +3221,9 @@ int __cdecl Path_ClipToGoal(path_t *param_1,actor_goal_s *param_2)
   int iVar3;
   path_t *in_ECX;
   float *in_EDX;
-  int local_8;
+  actor_goal_s *goal;
+  path_t *pPath;
+  int i;
   
   if ((in_ECX == (path_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x765
@@ -3142,10 +3245,10 @@ int __cdecl Path_ClipToGoal(path_t *param_1,actor_goal_s *param_2)
   else {
     bVar2 = Actor_PointAtGoal(in_EDX,(actor_goal_s *)in_ECX);
     if (bVar2) {
-      for (local_8 = in_ECX->wPathLen + -2; -1 < local_8; local_8 = local_8 + -1) {
+      for (i = in_ECX->wPathLen + -2; -1 < i; i = i + -1) {
         bVar2 = Actor_PointAtGoal(in_EDX,(actor_goal_s *)in_ECX);
         if (!bVar2) {
-          Path_TrimLastNodes(in_ECX,local_8 + 1,false);
+          Path_TrimLastNodes(in_ECX,i + 1,false);
           return 1;
         }
       }
@@ -3170,6 +3273,8 @@ void __cdecl Path_BeginTrim(path_t *param_1,path_trim_t *param_2)
   bool bVar2;
   int in_ECX;
   int *in_EDX;
+  path_trim_t *pTrim;
+  path_t *pPath;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x786
@@ -3195,14 +3300,16 @@ void __cdecl Path_BeginTrim(path_t *param_1,path_trim_t *param_2)
 
 // 00906100  Path_TrimToSeePoint  (game/actor_navigation.cpp:1945)
 
+/* WARNING: Variable defined which should be unmapped: pTrim */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Path_TrimToSeePoint(path_t *param_1,path_trim_t *param_2,actor_s *param_3,float param_4,int param_5,
-                   float *param_6)
+Path_TrimToSeePoint(path_t *pActor,path_trim_t *fMaxDistSqrd,actor_s *iIgnoreEntityNum,float vPoint,
+                   int param_5,float *param_6)
 
 {
   short sVar1;
@@ -3210,8 +3317,12 @@ Path_TrimToSeePoint(path_t *param_1,path_trim_t *param_2,actor_s *param_3,float 
   bool bVar3;
   int iVar4;
   path_t *in_ECX;
-  gentity_s *pgVar5;
+  gentity_s *iNodeCount;
   actor_s *in_EDX;
+  path_trim_t *pTrim;
+  path_t *pPath;
+  int bAtStart;
+  int i;
   
   if ((in_ECX == (path_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x79c
@@ -3227,14 +3338,14 @@ Path_TrimToSeePoint(path_t *param_1,path_trim_t *param_2,actor_s *param_3,float 
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_1 == (path_t *)0x0) &&
+  if ((pActor == (path_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x79e
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_4 == 0.0) &&
+  if ((vPoint == 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x79f
                                ,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -3254,29 +3365,29 @@ Path_TrimToSeePoint(path_t *param_1,path_trim_t *param_2,actor_s *param_3,float 
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    pgVar5 = (gentity_s *)((int)in_EDX->sentient->oldOrigin + (int)&in_EDX->ent[-1].useCount);
-    if (((int)pgVar5 < 0) &&
+    iNodeCount = (gentity_s *)((int)in_EDX->sentient->oldOrigin + (int)&in_EDX->ent[-1].useCount);
+    if (((int)iNodeCount < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0x7ac,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar4 = (*pcVar2)();
       return iVar4;
     }
-    if ((int)pgVar5 < (int)in_ECX->wPathLen) {
+    if ((int)iNodeCount < (int)in_ECX->wPathLen) {
       Actor_GetEyeOffset(in_EDX,(float *)in_ECX);
       sVar1 = in_ECX->wPathLen;
       bVar3 = Actor_CanSeePointFrom
-                        ((actor_s *)param_4,(float *)param_2,(float *)param_3,(float)in_EDX,
-                         (int)in_ECX);
+                        ((actor_s *)vPoint,(float *)fMaxDistSqrd,(float *)iIgnoreEntityNum,
+                         (float)in_EDX,(int)in_ECX);
       if (bVar3) {
-        if ((in_EDX->sentient == (sentient_s *)0xfffffffe) && (pgVar5 != (gentity_s *)(sVar1 + -1)))
-        {
-          in_EDX->ent = pgVar5;
+        if ((in_EDX->sentient == (sentient_s *)0xfffffffe) &&
+           (iNodeCount != (gentity_s *)(sVar1 + -1))) {
+          in_EDX->ent = iNodeCount;
           in_EDX->sentient = (sentient_s *)&DAT_00000001;
           iVar4 = 1;
         }
         else {
-          Path_TrimLastNodes(in_ECX,(int)pgVar5,false);
+          Path_TrimLastNodes(in_ECX,(int)iNodeCount,false);
           iVar4 = 0;
         }
       }
@@ -3284,8 +3395,8 @@ Path_TrimToSeePoint(path_t *param_1,path_trim_t *param_2,actor_s *param_3,float 
         Path_TrimLastNodes(in_ECX,(int)in_EDX->ent,false);
         iVar4 = 0;
       }
-      else if (pgVar5 == (gentity_s *)0x0) {
-        Actor_ClearPath((actor_s *)param_4);
+      else if (iNodeCount == (gentity_s *)0x0) {
+        Actor_ClearPath((actor_s *)vPoint);
         iVar4 = 0;
       }
       else {
@@ -3296,7 +3407,7 @@ Path_TrimToSeePoint(path_t *param_1,path_trim_t *param_2,actor_s *param_3,float 
           iVar4 = (*pcVar2)();
           return iVar4;
         }
-        in_EDX->ent = pgVar5;
+        in_EDX->ent = iNodeCount;
         if (in_EDX->ent == (gentity_s *)0x1) {
           in_EDX->sentient = (sentient_s *)0xffffffff;
         }
@@ -3319,6 +3430,7 @@ void __cdecl Path_Begin(path_t *param_1)
 
 {
   uchar *in_ECX;
+  path_t *pPath;
   
   memset(in_ECX,'\0',1000);
   in_ECX[0x3b0] = 0xab;
@@ -3333,7 +3445,9 @@ void __cdecl Path_Begin(path_t *param_1)
 
 // 00906440  Path_Clear  (game/actor_navigation.cpp:2046)
 
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Path_Clear(path_t *param_1)
 
@@ -3341,6 +3455,7 @@ void __cdecl Path_Clear(path_t *param_1)
   code *pcVar1;
   bool bVar2;
   path_t *in_ECX;
+  path_t *pPath;
   
   if (in_ECX == (path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x802,0
@@ -3372,6 +3487,7 @@ bool __cdecl Path_Exists(path_t *param_1)
   bool bVar2;
   undefined1 uVar3;
   int in_ECX;
+  path_t *pPath;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x818,0
@@ -3397,6 +3513,7 @@ int __cdecl Path_CompleteLookahead(path_t *param_1)
   bool bVar2;
   int iVar3;
   int in_ECX;
+  path_t *pPath;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x826,0
@@ -3431,6 +3548,7 @@ int __cdecl Path_AttemptedCompleteLookahead(path_t *param_1)
   bool bVar2;
   int iVar3;
   int in_ECX;
+  path_t *pPath;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x836,0
@@ -3465,6 +3583,7 @@ int __cdecl Path_UsesObstacleNegotiation(path_t *param_1)
   bool bVar2;
   int iVar3;
   int in_ECX;
+  path_t *pPath;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x846,0
@@ -3529,6 +3648,7 @@ int __cdecl Path_UsesObstacleNegotiation(path_t *param_1)
 
 // 009067E0  Path_HasNegotiationNode  (game/actor_navigation.cpp:2135)
 
+/* WARNING: Variable defined which should be unmapped: path */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 bool __cdecl Path_HasNegotiationNode(path_t *param_1)
@@ -3536,6 +3656,7 @@ bool __cdecl Path_HasNegotiationNode(path_t *param_1)
 {
   bool bVar1;
   path_t *in_ECX;
+  path_t *path;
   
   bVar1 = Path_Exists(in_ECX);
   if (bVar1) {
@@ -3559,6 +3680,7 @@ int __cdecl Path_AllowsObstacleNegotiation(path_t *param_1)
   bool bVar2;
   int iVar3;
   int in_ECX;
+  path_t *pPath;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x86a,0
@@ -3595,6 +3717,9 @@ void __cdecl Path_GetObstacleNegotiationScript(path_t *param_1,scr_animscript_t 
   pathnode_t *ppVar3;
   int in_ECX;
   int *in_EDX;
+  scr_animscript_t *animscript;
+  path_t *pPath;
+  pathnode_t *pNodeBegin;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x87b,0
@@ -3673,6 +3798,8 @@ bool __cdecl Path_NeedsReevaluation(path_t *param_1)
   undefined1 uVar3;
   pathnode_t *ppVar4;
   int in_ECX;
+  path_t *pPath;
+  pathnode_t *nextNode;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x891
@@ -3709,7 +3836,7 @@ bool __cdecl Path_NeedsReevaluation(path_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Path_DistanceGreaterThan(path_t *param_1,float param_2)
+int __cdecl Path_DistanceGreaterThan(path_t *fDist,float param_2)
 
 {
   short sVar1;
@@ -3717,8 +3844,9 @@ int __cdecl Path_DistanceGreaterThan(path_t *param_1,float param_2)
   bool bVar3;
   int iVar4;
   int in_ECX;
-  float local_c;
-  int local_8;
+  path_t *pPath;
+  float totalLength;
+  int i;
   
   if ((in_ECX == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x942
@@ -3767,18 +3895,18 @@ int __cdecl Path_DistanceGreaterThan(path_t *param_1,float param_2)
       return iVar4;
     }
   }
-  local_c = *(float *)(in_ECX + 0x3ac) + *(float *)(in_ECX + 0x3b4);
+  totalLength = *(float *)(in_ECX + 0x3ac) + *(float *)(in_ECX + 0x3b4);
   if (*(short *)(in_ECX + 0x386) != 0) {
-    local_c = local_c + 128.0;
+    totalLength = totalLength + 128.0;
   }
-  if (local_c <= (float)param_1) {
+  if (totalLength <= (float)fDist) {
     if (*(short *)(in_ECX + 0x388) == 0) {
       iVar4 = 0;
     }
     else {
       sVar1 = *(short *)(in_ECX + 0x388);
-      local_8 = sVar1 + -1;
-      if (local_8 == *(short *)(in_ECX + 0x380) + -2) {
+      i = sVar1 + -1;
+      if (i == *(short *)(in_ECX + 0x380) + -2) {
         if ((*(float *)(in_ECX + 0x3c8) < 0.0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x957,0,"%s"), !bVar3)) {
@@ -3786,22 +3914,22 @@ int __cdecl Path_DistanceGreaterThan(path_t *param_1,float param_2)
           iVar4 = (*pcVar2)();
           return iVar4;
         }
-        local_c = local_c + *(float *)(in_ECX + 0x3c8);
-        if ((float)param_1 < local_c) {
+        totalLength = totalLength + *(float *)(in_ECX + 0x3c8);
+        if ((float)fDist < totalLength) {
           return 1;
         }
-        local_8 = sVar1 + -2;
+        i = sVar1 + -2;
       }
-      for (; -1 < local_8; local_8 = local_8 + -1) {
-        if ((*(float *)(in_ECX + 0x14 + local_8 * 0x1c) <= 0.0) &&
+      for (; -1 < i; i = i + -1) {
+        if ((*(float *)(in_ECX + 0x14 + i * 0x1c) <= 0.0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0x960,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           iVar4 = (*pcVar2)();
           return iVar4;
         }
-        local_c = local_c + *(float *)(in_ECX + 0x14 + local_8 * 0x1c);
-        if ((float)param_1 < local_c) {
+        totalLength = totalLength + *(float *)(in_ECX + 0x14 + i * 0x1c);
+        if ((float)fDist < totalLength) {
           return 1;
         }
       }
@@ -3819,18 +3947,19 @@ int __cdecl Path_DistanceGreaterThan(path_t *param_1,float param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Path_ReduceLookaheadAmount(path_t *param_1,float param_2)
+void __cdecl Path_ReduceLookaheadAmount(path_t *maxLookaheadAmountIfReduce,float param_2)
 
 {
   int in_ECX;
+  path_t *pPath;
   
   *(undefined2 *)(in_ECX + 0x3e4) = 0;
   *(short *)(in_ECX + 0x3e6) = *(short *)(in_ECX + 0x3e6) + 1;
   if ((*(uint *)(in_ECX + 0x3bc) & 2) == 0) {
-    *(float *)(in_ECX + 0x3b0) = (float)param_1 * 0.5625;
+    *(float *)(in_ECX + 0x3b0) = (float)maxLookaheadAmountIfReduce * 0.5625;
   }
   else {
-    *(float *)(in_ECX + 0x3b0) = (float)param_1 * 0.75;
+    *(float *)(in_ECX + 0x3b0) = (float)maxLookaheadAmountIfReduce * 0.75;
   }
   if (*(float *)(in_ECX + 0x3b0) <= 0.001 && *(float *)(in_ECX + 0x3b0) != 0.001) {
     *(undefined4 *)(in_ECX + 0x3b0) = 0x3a83126f;
@@ -3849,6 +3978,7 @@ int __cdecl Path_FailedLookahead(path_t *param_1)
 {
   int in_ECX;
   uint local_c;
+  path_t *pPath;
   
   local_c = (uint)(*(float *)(in_ECX + 0x3b0) <= 0.001);
   return local_c;
@@ -3864,6 +3994,7 @@ void __cdecl Path_IncreaseLookaheadAmount(path_t *param_1)
 {
   int in_ECX;
   float fVar1;
+  path_t *pPath;
   
   *(undefined2 *)(in_ECX + 0x3e6) = 0;
   *(short *)(in_ECX + 0x3e4) = *(short *)(in_ECX + 0x3e4) + 1;
@@ -3889,6 +4020,8 @@ void __cdecl Path_IncreaseLookaheadAmount(path_t *param_1)
 
 // 00906F00  Path_PredictionTraceCheckForEntities  (game/actor_navigation.cpp:2497)
 
+/* WARNING: Variable defined which should be unmapped: vEndPos */
+/* WARNING: Variable defined which should be unmapped: vStartPos */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -3896,59 +4029,62 @@ void __cdecl Path_IncreaseLookaheadAmount(path_t *param_1)
 
 PredictionTraceResult __cdecl
 Path_PredictionTraceCheckForEntities
-          (float *param_1,float *param_2,int *param_3,int param_4,int param_5,int param_6,
-          float *param_7)
+          (float *entities,float *entityCount,int *entityIgnore,int mask,int vTraceEndPos,
+          int param_6,float *param_7)
 
 {
   bool bVar1;
   int iVar2;
   float *in_ECX;
   float *in_EDX;
-  sightclip_t local_5c;
-  int local_10;
-  float local_c;
-  int local_8;
+  float *vEndPos;
+  float *vStartPos;
+  sightclip_t clip;
+  int entityIndex;
+  float stepheight;
+  gentity_s *ent;
   
-  local_5c.start[0] = *in_ECX;
-  local_5c.start[1] = in_ECX[1];
-  local_5c.start[2] = in_ECX[2];
-  local_5c.end[0] = *in_EDX;
-  local_5c.end[1] = in_EDX[1];
-  local_5c.end[2] = in_ECX[2];
-  local_5c.mins[0] = -15.0;
-  local_5c.mins[1] = -15.0;
-  local_5c.mins[2] = 0.0;
-  local_5c.maxs[0] = 15.0;
-  local_5c.maxs[1] = 15.0;
-  local_5c.maxs[2] = 48.0;
-  local_5c.contentmask = -1;
-  local_5c.passEntityNum[1] = 0x3ff;
-  local_5c.passEntityNum[0] = 0x3ff;
-  local_10 = 0;
+  clip.start[0] = *in_ECX;
+  clip.start[1] = in_ECX[1];
+  clip.start[2] = in_ECX[2];
+  clip.end[0] = *in_EDX;
+  clip.end[1] = in_EDX[1];
+  clip.end[2] = in_ECX[2];
+  clip.mins[0] = -15.0;
+  clip.mins[1] = -15.0;
+  clip.mins[2] = 0.0;
+  clip.maxs[0] = 15.0;
+  clip.maxs[1] = 15.0;
+  clip.maxs[2] = 48.0;
+  clip.contentmask = -1;
+  clip.passEntityNum[1] = 0x3ff;
+  clip.passEntityNum[0] = 0x3ff;
+  entityIndex = 0;
   while( true ) {
-    if ((int)param_2 <= local_10) {
+    if ((int)entityCount <= entityIndex) {
       bVar1 = Path_PredictionTrace
-                        ((float *)param_3,(float *)param_4,param_5,0x41900000,(float *)&DAT_00000001
-                         ,(float)in_EDX,(int)in_ECX);
+                        ((float *)entityIgnore,(float *)mask,vTraceEndPos,0x41900000,
+                         (float *)&DAT_00000001,(float)in_EDX,(int)in_ECX);
       return (uint)!bVar1;
     }
-    local_8 = (int)((sv.gentities)->s).lerp.pos.trBase +
-              sv.gentitySize * (int)param_1[local_10] + -0x18;
-    if (((local_8 == 0) || (*(int *)(local_8 + 0x148) == 0)) ||
-       (*(char *)(*(int *)(local_8 + 0x148) + 0x298) == '\0')) {
-      local_c = 18.0;
+    ent = (gentity_s *)
+          ((int)((sv.gentities)->s).lerp.pos.trBase +
+          sv.gentitySize * (int)entities[entityIndex] + -0x18);
+    if (((ent == (gentity_s *)0x0) || (ent->actor == (actor_s *)0x0)) ||
+       ((ent->actor->Physics).prone == false)) {
+      stepheight = 18.0;
     }
     else {
-      local_c = 10.0;
+      stepheight = 10.0;
     }
-    local_5c.mins[2] = local_c + 0.0;
-    iVar2 = SV_SightTraceCapsuleToEntity(&local_5c,(int)param_1[local_10]);
+    clip.mins[2] = stepheight + 0.0;
+    iVar2 = SV_SightTraceCapsuleToEntity(&clip,(int)entities[entityIndex]);
     if (iVar2 != 0) break;
-    local_10 = local_10 + 1;
+    entityIndex = entityIndex + 1;
   }
-  *(float *)param_5 = *in_ECX;
-  *(float *)(param_5 + 4) = in_ECX[1];
-  *(float *)(param_5 + 8) = in_ECX[2];
+  *(float *)vTraceEndPos = *in_ECX;
+  *(float *)(vTraceEndPos + 4) = in_ECX[1];
+  *(float *)(vTraceEndPos + 8) = in_ECX[2];
   return PTR_HIT_ENTITY;
 }
 
@@ -3963,8 +4099,8 @@ Path_PredictionTraceCheckForEntities
 
 bool __cdecl
 Path_PredictionTrace
-          (float *param_1,float *param_2,int param_3,int param_4,float *param_5,float param_6,
-          int param_7)
+          (float *entityIgnore,float *mask,int vTraceEndPos,int stepheight,float *allowStartSolid,
+          float param_6,int param_7)
 
 {
   code *pcVar1;
@@ -3974,36 +4110,39 @@ Path_PredictionTrace
   float *in_ECX;
   float *in_EDX;
   float fVar5;
-  col_context_t local_a4;
-  float local_78;
+  float *vEndPos;
+  float *vStartPos;
+  col_context_t context;
+  PIXProfile pixProfile;
+  float vDown;
   undefined4 local_74;
   float local_70;
-  float local_6c;
+  float vDest;
   float local_68;
   float local_64;
-  float local_60;
+  float traceMin;
   float local_5c;
   float local_58;
-  float4 local_54;
+  float4 trace;
   float local_44;
   char local_2a;
   char local_29;
   uint local_1c;
-  float local_18;
+  float vSource;
   float local_14;
   float local_10;
-  actor_s *local_c;
-  ushort local_8;
+  actor_s *actor;
+  ushort hitEntId;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"pathpredictiontrace");
-  local_54.v[0] = 0.0;
-  local_54.v[1] = 0.0;
-  local_54.v[2] = 0.0;
-  local_54.v[3] = 0.0;
-  local_60 = -15.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  traceMin = -15.0;
   local_5c = -15.0;
-  local_58 = (float)param_4 + 0.0;
+  local_58 = (float)stepheight + 0.0;
   if ((in_ECX == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x9ff
                                ,0,"%s"), !bVar2)) {
@@ -4018,17 +4157,17 @@ Path_PredictionTrace
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_6c = *in_EDX;
+  vDest = *in_EDX;
   local_68 = in_EDX[1];
   local_64 = in_ECX[2];
-  local_18 = *in_ECX;
+  vSource = *in_ECX;
   local_14 = in_ECX[1];
   local_10 = in_ECX[2];
-  col_context_t::col_context_t(&local_a4);
+  col_context_t::col_context_t(&context);
   while( true ) {
-    G_TraceCapsule((trace_t *)&local_54,&local_18,&local_60,PREDICTION_TRACE_MAX,&local_6c,
-                   (int)param_1,(int)param_2,&local_a4);
-    Vec3Lerp(&local_18,&local_6c,local_44,(float *)param_3);
+    G_TraceCapsule((trace_t *)&trace,&vSource,&traceMin,PREDICTION_TRACE_MAX,&vDest,
+                   (int)entityIgnore,(int)mask,&context);
+    Vec3Lerp(&vSource,&vDest,local_44,(float *)vTraceEndPos);
     if (local_44 < 0.0001) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -4036,7 +4175,7 @@ Path_PredictionTrace
       }
       return false;
     }
-    if ((local_29 != '\0') && (param_5 == (float *)0x0)) {
+    if ((local_29 != '\0') && (allowStartSolid == (float *)0x0)) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -4044,10 +4183,11 @@ Path_PredictionTrace
       return false;
     }
     if ((local_2a == '\0') && (local_44 == 1.0)) break;
-    local_8 = Trace_GetEntityHitId((trace_t *)&local_54);
-    if (level.gentities[local_8].sentient == (sentient_s *)0x0) {
-      fVar5 = local_14 - *(float *)(param_3 + 4);
-      if ((local_18 - *(float *)param_3) * (local_18 - *(float *)param_3) + fVar5 * fVar5 < 225.0) {
+    hitEntId = Trace_GetEntityHitId((trace_t *)&trace);
+    if (level.gentities[hitEntId].sentient == (sentient_s *)0x0) {
+      fVar5 = local_14 - *(float *)(vTraceEndPos + 4);
+      if ((vSource - *(float *)vTraceEndPos) * (vSource - *(float *)vTraceEndPos) + fVar5 * fVar5 <
+          225.0) {
         DVar4 = GetCurrentThreadId();
         if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
@@ -4056,60 +4196,60 @@ Path_PredictionTrace
       }
     }
     else {
-      local_c = level.gentities[local_8].actor;
-      if (local_c == (actor_s *)0x0) {
+      actor = level.gentities[hitEntId].actor;
+      if (actor == (actor_s *)0x0) {
         DVar4 = GetCurrentThreadId();
         if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
         return false;
       }
-      if (((local_c->eAnimMode != AI_ANIM_MOVE_CODE) || (local_c->moveMode == '\0')) &&
-         ((local_c->pPileUpActor == (actor_s *)0x0 ||
-          ((float *)(local_c->pPileUpActor->ent->s).number != param_1)))) {
+      if (((actor->eAnimMode != AI_ANIM_MOVE_CODE) || (actor->moveMode == '\0')) &&
+         ((actor->pPileUpActor == (actor_s *)0x0 ||
+          ((float *)(actor->pPileUpActor->ent->s).number != entityIgnore)))) {
         DVar4 = GetCurrentThreadId();
         if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
         return false;
       }
-      param_2 = (float *)((uint)param_2 & 0xffff7fff);
+      mask = (float *)((uint)mask & 0xffff7fff);
     }
-    local_18 = *(float *)param_3;
-    local_14 = *(float *)(param_3 + 4);
-    local_78 = *(float *)param_3;
-    local_74 = *(undefined4 *)(param_3 + 4);
+    vSource = *(float *)vTraceEndPos;
+    local_14 = *(float *)(vTraceEndPos + 4);
+    vDown = *(float *)vTraceEndPos;
+    local_74 = *(undefined4 *)(vTraceEndPos + 4);
     local_70 = local_10 - 48.0;
-    G_TraceCapsule((trace_t *)&local_54,&local_18,&local_60,PREDICTION_TRACE_MAX,&local_78,
-                   (int)param_1,(int)param_2,&local_a4);
-    Vec3Lerp(&local_18,&local_78,local_44,(float *)param_3);
-    if (((local_10 <= *(float *)(param_3 + 8)) && (local_44 != 1.0)) && (local_54.v[2] < 0.7)) {
+    G_TraceCapsule((trace_t *)&trace,&vSource,&traceMin,PREDICTION_TRACE_MAX,&vDown,
+                   (int)entityIgnore,(int)mask,&context);
+    Vec3Lerp(&vSource,&vDown,local_44,(float *)vTraceEndPos);
+    if (((local_10 <= *(float *)(vTraceEndPos + 8)) && (local_44 != 1.0)) && (trace.v[2] < 0.7)) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return false;
     }
-    local_64 = *(float *)(param_3 + 8) + (float)param_4;
+    local_64 = *(float *)(vTraceEndPos + 8) + (float)stepheight;
     local_10 = local_64;
   }
-  local_18 = *(float *)param_3;
-  local_14 = *(float *)(param_3 + 4);
-  local_78 = *(float *)param_3;
-  local_74 = *(undefined4 *)(param_3 + 4);
+  vSource = *(float *)vTraceEndPos;
+  local_14 = *(float *)(vTraceEndPos + 4);
+  vDown = *(float *)vTraceEndPos;
+  local_74 = *(undefined4 *)(vTraceEndPos + 4);
   local_70 = local_10 - 48.0;
-  G_TraceCapsule((trace_t *)&local_54,&local_18,&local_60,PREDICTION_TRACE_MAX,&local_78,
-                 (int)param_1,(int)param_2,&local_a4);
-  Vec3Lerp(&local_18,&local_78,local_44,(float *)param_3);
-  if ((local_10 <= *(float *)(param_3 + 8)) && ((local_44 != 1.0 && (local_54.v[2] < 0.7)))) {
+  G_TraceCapsule((trace_t *)&trace,&vSource,&traceMin,PREDICTION_TRACE_MAX,&vDown,(int)entityIgnore,
+                 (int)mask,&context);
+  Vec3Lerp(&vSource,&vDown,local_44,(float *)vTraceEndPos);
+  if ((local_10 <= *(float *)(vTraceEndPos + 8)) && ((local_44 != 1.0 && (trace.v[2] < 0.7)))) {
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     return false;
   }
-  *(float *)(param_3 + 8) = *(float *)(param_3 + 8) + (float)param_4;
-  bVar2 = ABS(*(float *)(param_3 + 8) - in_EDX[2]) < 48.0;
+  *(float *)(vTraceEndPos + 8) = *(float *)(vTraceEndPos + 8) + (float)stepheight;
+  bVar2 = ABS(*(float *)(vTraceEndPos + 8) - in_EDX[2]) < 48.0;
   DVar4 = GetCurrentThreadId();
   if (DVar4 != (DWORD)g_DXDeviceThread) {
     return bVar2;
@@ -4124,37 +4264,41 @@ Path_PredictionTrace
 
 // 00907840  Path_LookaheadPredictionTrace  (game/actor_navigation.cpp:2633)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Path_LookaheadPredictionTrace(path_t *param_1,float *param_2,float *param_3)
+int __cdecl Path_LookaheadPredictionTrace(path_t *vEndPos,float *param_2,float *param_3)
 
 {
   PredictionTraceResult PVar1;
   float *in_ECX;
   float in_EDX;
   bool bVar2;
-  undefined1 local_18 [12];
-  float local_c;
-  float *local_8;
+  float *vStartPos;
+  path_t *pPath;
+  undefined1 vTraceEndPos [12];
+  float entities;
+  int mask;
   
-  local_8 = (float *)0x820011;
+  mask = 0x820011;
   if ((*(short *)(in_ECX + 0xe1) != 0) && (*(short *)((int)in_ECX + 0x38a) != 0x3ff)) {
     if (level.gentities[*(short *)((int)in_ECX + 0x38a)].actor != (actor_s *)0x0) {
-      local_c = (float)(int)*(short *)((int)in_ECX + 0x38a);
+      entities = (float)(int)*(short *)((int)in_ECX + 0x38a);
       PVar1 = Path_PredictionTraceCheckForEntities
-                        (&local_c,(float *)&DAT_00000001,(int *)0x3ff,0x820011,(int)local_18,
+                        (&entities,(float *)&DAT_00000001,(int *)0x3ff,0x820011,(int)vTraceEndPos,
                          (int)in_EDX,in_ECX);
       bVar2 = PVar1 == PTR_SUCCESS;
       goto LAB_009078f3;
     }
-    local_8 = (float *)(cls.recentServers + 0x2c6019);
+    mask = 0x2820011;
   }
   bVar2 = Path_PredictionTrace
-                    ((float *)0x3ff,local_8,(int)local_18,0x41900000,(float *)&DAT_00000001,in_EDX,
-                     (int)in_ECX);
+                    ((float *)0x3ff,(float *)mask,(int)vTraceEndPos,0x41900000,
+                     (float *)&DAT_00000001,in_EDX,(int)in_ECX);
 LAB_009078f3:
   return (uint)bVar2;
 }
@@ -4166,35 +4310,39 @@ LAB_009078f3:
 
 void __cdecl
 Path_UpdateLookaheadAmount
-          (path_t *param_1,float *param_2,float *param_3,int param_4,float param_5,int param_6,
-          float param_7,int param_8)
+          (path_t *vLookaheadPos,float *bReduceLookaheadAmount,float *dist,int lookaheadNextNode,
+          float maxLookaheadAmountIfReduce,int bAllowRestore,float param_7,int param_8)
 
 {
   code *pcVar1;
-  char cVar2;
+  bool bVar2;
   bool bVar3;
   int iVar4;
   int in_ECX;
   float *in_EDX;
   float fVar5;
   float fVar6;
-  path_t *ppVar7;
-  float *pfVar8;
-  path_t *ppVar9;
+  path_t *vEndPos;
+  float *pfVar7;
+  path_t *ppVar8;
   float *in_stack_ffffff7c;
   float *in_stack_ffffff80;
   float local_7c;
   float local_74;
-  float local_34;
-  float local_28;
+  float *vStartPos;
+  path_t *pPath;
+  float prevHeight;
+  bool lookaheadPosMovedBack;
+  float prevLookaheadAmount;
+  float prevLookaheadPos;
   float local_24;
   float local_20;
-  float local_1c;
-  char local_15;
-  float local_14;
-  float *local_10;
-  float local_c;
-  undefined1 local_5;
+  float fLength;
+  bool restorePrevLookahead;
+  float prevLength;
+  pathpoint_t *nextPathPt;
+  pathpoint_t *prevPathPt;
+  bool lookaheadTrace;
   
   if ((*(short *)(in_ECX + 0x380) < 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xa6f
@@ -4207,14 +4355,14 @@ Path_UpdateLookaheadAmount
     *(undefined4 *)(in_ECX + 0x3b4) = 0;
     *(short *)(in_ECX + 0x388) = *(short *)(in_ECX + 0x380) + -1;
   }
-  local_14 = 0.0;
-  local_34 = 0.0;
+  prevLength = 0.0;
+  prevHeight = 0.0;
   fVar6 = *(float *)(in_ECX + 0x3b0);
-  local_15 = '\0';
-  local_5 = 0;
-  if (param_2 == (float *)0x0) {
-    ppVar9 = param_1;
-    iVar4 = Path_LookaheadPredictionTrace(param_1,in_stack_ffffff7c,in_stack_ffffff80);
+  restorePrevLookahead = false;
+  lookaheadTrace = false;
+  if (bReduceLookaheadAmount == (float *)0x0) {
+    ppVar8 = vLookaheadPos;
+    iVar4 = Path_LookaheadPredictionTrace(vLookaheadPos,in_stack_ffffff7c,in_stack_ffffff80);
     if (iVar4 == 0) {
       if ((*(short *)(in_ECX + 0x388) < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
@@ -4229,11 +4377,11 @@ Path_UpdateLookaheadAmount
       else {
         local_74 = *(float *)(in_ECX + 0x14 + *(short *)(in_ECX + 0x388) * 0x1c);
       }
-      local_1c = local_74;
+      fLength = local_74;
       if ((((*(uint *)(in_ECX + 0x3bc) & 2) != 0) &&
           (*(short *)(in_ECX + 0x388) < *(short *)(in_ECX + 0x380))) &&
          (*(float *)(in_ECX + 0x3b4) <= local_74)) {
-        Path_ReduceLookaheadAmount((path_t *)param_5,(float)ppVar9);
+        Path_ReduceLookaheadAmount((path_t *)maxLookaheadAmountIfReduce,(float)ppVar8);
         if ((*(short *)(in_ECX + 0x380) <= *(short *)(in_ECX + 0x388)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xa9a,0,"%s"), !bVar3)) {
@@ -4256,70 +4404,71 @@ Path_UpdateLookaheadAmount
         (*pcVar1)();
         return;
       }
-      Path_ReduceLookaheadAmount((path_t *)param_5,(float)ppVar9);
+      Path_ReduceLookaheadAmount((path_t *)maxLookaheadAmountIfReduce,(float)ppVar8);
     }
     else {
-      param_5 = 1.3284904e-38;
-      Path_IncreaseLookaheadAmount(ppVar9);
+      maxLookaheadAmountIfReduce = 1.3284904e-38;
+      Path_IncreaseLookaheadAmount(ppVar8);
     }
   }
   else {
-    pfVar8 = (float *)0x90a73f;
-    ppVar9 = (path_t *)param_5;
-    Path_ReduceLookaheadAmount((path_t *)param_5,(float)in_stack_ffffff7c);
-    param_5 = (float)pfVar8;
+    pfVar7 = (float *)0x90a73f;
+    ppVar8 = (path_t *)maxLookaheadAmountIfReduce;
+    Path_ReduceLookaheadAmount((path_t *)maxLookaheadAmountIfReduce,(float)in_stack_ffffff7c);
+    maxLookaheadAmountIfReduce = (float)pfVar7;
   }
-  if ((*(short *)(in_ECX + 0x388) < param_4) ||
-     ((param_4 == *(short *)(in_ECX + 0x388) &&
-      (*(float *)(in_ECX + 0x3b4) <= (float)param_3 && (float)param_3 != *(float *)(in_ECX + 0x3b4))
-      ))) {
+  if ((*(short *)(in_ECX + 0x388) < lookaheadNextNode) ||
+     ((lookaheadNextNode == *(short *)(in_ECX + 0x388) &&
+      (*(float *)(in_ECX + 0x3b4) <= (float)dist && (float)dist != *(float *)(in_ECX + 0x3b4))))) {
     bVar3 = true;
   }
   else {
     bVar3 = false;
   }
-  cVar2 = local_15;
+  bVar2 = restorePrevLookahead;
   if (((((ai_useBetterLookahead->current).enabled != false) &&
-       ((zombiemode->current).enabled == false)) && (param_6 != 0)) &&
+       ((zombiemode->current).enabled == false)) && (bAllowRestore != 0)) &&
      ((((*(float *)(in_ECX + 0x3b0) <= fVar6 && fVar6 != *(float *)(in_ECX + 0x3b0) ||
         ((fVar6 <= *(float *)(in_ECX + 0x3b0) && (bVar3)))) &&
        ((int)*(short *)(in_ECX + 0x388) <= *(short *)(in_ECX + 0x380) + -2)) &&
       (((*(float *)(in_ECX + 0x3b4) <= *(float *)(in_ECX + 0x14 + *(short *)(in_ECX + 0x388) * 0x1c)
         && (*(short *)(in_ECX + 0x386) < 1)) && (minLookaheadDist < *(float *)(in_ECX + 0x3ac)))))))
   {
-    local_10 = (float *)(*(short *)(in_ECX + 0x388) * 0x1c + in_ECX);
-    local_c = (float)((*(short *)(in_ECX + 0x388) + 1) * 0x1c + in_ECX);
-    local_34 = Path_GetDistToPathSegment((float *)param_5,ppVar9->pts);
+    nextPathPt = (pathpoint_t *)(*(short *)(in_ECX + 0x388) * 0x1c + in_ECX);
+    prevPathPt = (pathpoint_t *)((*(short *)(in_ECX + 0x388) + 1) * 0x1c + in_ECX);
+    prevHeight = Path_GetDistToPathSegment((float *)maxLookaheadAmountIfReduce,ppVar8->pts);
     if ((int)*(short *)(in_ECX + 0x388) == *(short *)(in_ECX + 0x380) + -2) {
       local_7c = *(float *)(in_ECX + 0x3c8);
     }
     else {
-      local_7c = local_10[5];
+      local_7c = nextPathPt->fOrigLength;
     }
-    local_14 = local_7c;
-    local_28 = -*(float *)(in_ECX + 0x3b4) * local_10[3] + *local_10;
-    local_24 = -*(float *)(in_ECX + 0x3b4) * local_10[4] + local_10[1];
-    local_20 = local_10[2] -
-               ((local_10[2] - *(float *)((int)local_c + 8)) * *(float *)(in_ECX + 0x3b4)) /
-               local_7c;
-    ppVar7 = (path_t *)&local_28;
-    iVar4 = Path_LookaheadPredictionTrace(ppVar7,(float *)param_5,(float *)ppVar9);
-    local_5 = iVar4 != 0;
-    cVar2 = local_5;
+    prevLength = local_7c;
+    prevLookaheadPos =
+         -*(float *)(in_ECX + 0x3b4) * nextPathPt->fDir2D[0] + nextPathPt->vOrigPoint[0];
+    local_24 = -*(float *)(in_ECX + 0x3b4) * nextPathPt->fDir2D[1] + nextPathPt->vOrigPoint[1];
+    local_20 = nextPathPt->vOrigPoint[2] -
+               ((nextPathPt->vOrigPoint[2] - prevPathPt->vOrigPoint[2]) * *(float *)(in_ECX + 0x3b4)
+               ) / local_7c;
+    vEndPos = (path_t *)&prevLookaheadPos;
+    iVar4 = Path_LookaheadPredictionTrace
+                      (vEndPos,(float *)maxLookaheadAmountIfReduce,(float *)ppVar8);
+    lookaheadTrace = iVar4 != 0;
+    bVar2 = lookaheadTrace;
     if (*(float *)(in_ECX + 0x3b0) < fVar6) {
-      if (!(bool)local_5) {
-        Path_SetLookaheadToStart((path_t *)0x0,(float *)ppVar7,(int)param_5);
+      if (!lookaheadTrace) {
+        Path_SetLookaheadToStart((path_t *)0x0,(float *)vEndPos,(int)maxLookaheadAmountIfReduce);
         return;
       }
-      local_15 = '\x01';
-      cVar2 = local_15;
+      restorePrevLookahead = true;
+      bVar2 = restorePrevLookahead;
     }
   }
-  local_15 = cVar2;
-  if (local_15 == '\0') {
-    *(float *)(in_ECX + 0x398) = param_1->pts[0].vOrigPoint[0] - *in_EDX;
-    *(float *)(in_ECX + 0x39c) = param_1->pts[0].vOrigPoint[1] - in_EDX[1];
-    *(float *)(in_ECX + 0x3a0) = param_1->pts[0].vOrigPoint[2] - in_EDX[2];
+  restorePrevLookahead = bVar2;
+  if (restorePrevLookahead == false) {
+    *(float *)(in_ECX + 0x398) = vLookaheadPos->pts[0].vOrigPoint[0] - *in_EDX;
+    *(float *)(in_ECX + 0x39c) = vLookaheadPos->pts[0].vOrigPoint[1] - in_EDX[1];
+    *(float *)(in_ECX + 0x3a0) = vLookaheadPos->pts[0].vOrigPoint[2] - in_EDX[2];
     fVar6 = Vec2Normalize((float *)(in_ECX + 0x398));
     *(float *)(in_ECX + 0x3ac) = fVar6;
     if (*(float *)(in_ECX + 0x3ac) == 0.0) {
@@ -4329,11 +4478,11 @@ Path_UpdateLookaheadAmount
       fVar6 = *(float *)(in_ECX + 0x3a0) / *(float *)(in_ECX + 0x3ac);
     }
     *(float *)(in_ECX + 0x3a0) = fVar6;
-    *(float **)(in_ECX + 0x3b4) = param_3;
-    *(undefined2 *)(in_ECX + 0x388) = (undefined2)param_4;
+    *(float **)(in_ECX + 0x3b4) = dist;
+    *(undefined2 *)(in_ECX + 0x388) = (undefined2)lookaheadNextNode;
   }
   else {
-    *(float *)(in_ECX + 0x398) = local_28 - *in_EDX;
+    *(float *)(in_ECX + 0x398) = prevLookaheadPos - *in_EDX;
     *(float *)(in_ECX + 0x39c) = local_24 - in_EDX[1];
     *(float *)(in_ECX + 0x3a0) = local_20 - in_EDX[2];
     fVar5 = Vec2Normalize((float *)(in_ECX + 0x398));
@@ -4345,8 +4494,9 @@ Path_UpdateLookaheadAmount
       fVar5 = *(float *)(in_ECX + 0x3a0) / *(float *)(in_ECX + 0x3ac);
     }
     *(float *)(in_ECX + 0x3a0) = fVar5;
-    if ((*(short *)(in_ECX + 0x388) != param_4) || (fVar6 <= *(float *)(in_ECX + 0x3b0))) {
-      *(float *)(in_ECX + 0x3b0) = local_34 * local_14;
+    if ((*(short *)(in_ECX + 0x388) != lookaheadNextNode) || (fVar6 <= *(float *)(in_ECX + 0x3b0)))
+    {
+      *(float *)(in_ECX + 0x3b0) = prevHeight * prevLength;
     }
   }
   if ((*(float *)(in_ECX + 0x3b0) <= 0.0) &&
@@ -4436,6 +4586,8 @@ int __cdecl Path_IsTrimmed(path_t *param_1)
   int in_ECX;
   float *pfVar4;
   path_t *in_stack_ffffffec;
+  path_t *pPath;
+  pathpoint_t *pt;
   
   if ((*(short *)(in_ECX + 0x382) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xb23
@@ -4528,6 +4680,8 @@ void __cdecl Path_RemoveCompletedPathPoints(path_t *param_1,int param_2)
   bool bVar2;
   int in_ECX;
   short in_DX;
+  int pathPointIndex;
+  path_t *pPath;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xb49
@@ -4595,6 +4749,8 @@ void __cdecl Path_RemoveCompletedPathPoints(path_t *param_1,int param_2)
 
 // 00908820  Path_TrimCompletedPath  (game/actor_navigation.cpp:2919)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl Path_TrimCompletedPath(path_t *param_1,float *param_2)
@@ -4607,9 +4763,17 @@ void __cdecl Path_TrimCompletedPath(path_t *param_1,float *param_2)
   path_t *in_EDX;
   float fVar4;
   float fVar5;
-  float local_18;
-  int local_14;
-  float *local_10;
+  float *vStartPos;
+  path_t *pPath;
+  float d1;
+  float dist;
+  float fraction;
+  int bAtStart;
+  float d2;
+  pathpoint_t *pt;
+  float fLength;
+  int i;
+  float *prevPos;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xb76
@@ -4652,28 +4816,28 @@ void __cdecl Path_TrimCompletedPath(path_t *param_1,float *param_2)
     }
   }
   bVar2 = true;
-  local_14 = *(short *)(in_ECX + 0x380) + -2;
+  i = *(short *)(in_ECX + 0x380) + -2;
   while( true ) {
-    if (local_14 < *(short *)(in_ECX + 0x386)) {
+    if (i < *(short *)(in_ECX + 0x386)) {
       return;
     }
-    pfVar3 = (float *)(local_14 * 0x1c + in_ECX);
+    pfVar3 = (float *)(i * 0x1c + in_ECX);
     fVar4 = *(float *)(in_ECX + 0x398) * (*pfVar3 - in_EDX->pts[0].vOrigPoint[0]) +
             *(float *)(in_ECX + 0x39c) * (pfVar3[1] - in_EDX->pts[0].vOrigPoint[1]);
     if (0.0 < fVar4) break;
-    local_14 = local_14 + -1;
+    i = i + -1;
     bVar2 = false;
   }
   if (bVar2) {
-    local_10 = (float *)(in_ECX + 0x3cc);
-    local_18 = *(float *)(in_ECX + 0x3c8);
+    prevPos = (float *)(in_ECX + 0x3cc);
+    fLength = *(float *)(in_ECX + 0x3c8);
   }
   else {
-    local_10 = (float *)((local_14 + 1) * 0x1c + in_ECX);
-    local_18 = pfVar3[5];
+    prevPos = (float *)((i + 1) * 0x1c + in_ECX);
+    fLength = pfVar3[5];
   }
-  fVar5 = (*(float *)(in_ECX + 0x398) * (*local_10 - in_EDX->pts[0].vOrigPoint[0]) +
-          *(float *)(in_ECX + 0x39c) * (local_10[1] - in_EDX->pts[0].vOrigPoint[1])) - 0.0001;
+  fVar5 = (*(float *)(in_ECX + 0x398) * (*prevPos - in_EDX->pts[0].vOrigPoint[0]) +
+          *(float *)(in_ECX + 0x39c) * (prevPos[1] - in_EDX->pts[0].vOrigPoint[1])) - 0.0001;
   if ((0.0 < fVar5) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xb95
                                ,0,"%s\n\t(d1) = %g"), !bVar2)) {
@@ -4719,36 +4883,36 @@ void __cdecl Path_TrimCompletedPath(path_t *param_1,float *param_2)
       return;
     }
   }
-  if ((((uint)local_18 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)fLength & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xba0
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_18 <= 0.0) &&
+  if ((fLength <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xba1
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar4 = fVar5 * local_18;
-  if ((local_18 < fVar4) &&
+  fVar4 = fVar5 * fLength;
+  if ((fLength < fVar4) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xba4
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_18 <= fVar4) {
-    if (local_14 <= *(short *)(in_ECX + 0x386)) {
+  if (fLength <= fVar4) {
+    if (i <= *(short *)(in_ECX + 0x386)) {
       return;
     }
     *(float *)(in_ECX + 0x3cc) = *pfVar3;
     *(float *)(in_ECX + 0x3d0) = pfVar3[1];
     *(float *)(in_ECX + 0x3d4) = pfVar3[2];
-    *(undefined4 *)(in_ECX + 0x3c8) = *(undefined4 *)(in_ECX + 0x14 + (local_14 + -1) * 0x1c);
+    *(undefined4 *)(in_ECX + 0x3c8) = *(undefined4 *)(in_ECX + 0x14 + (i + -1) * 0x1c);
     Path_RemoveCompletedPathPoints(in_EDX,in_ECX);
     return;
   }
@@ -4766,10 +4930,10 @@ void __cdecl Path_TrimCompletedPath(path_t *param_1,float *param_2)
     (*pcVar1)();
     return;
   }
-  *(float *)(in_ECX + 0x3cc) = fVar4 * pfVar3[3] + *local_10;
-  *(float *)(in_ECX + 0x3d0) = fVar4 * pfVar3[4] + local_10[1];
-  *(float *)(in_ECX + 0x3d4) = (pfVar3[2] - local_10[2]) * fVar5 + local_10[2];
-  *(float *)(in_ECX + 0x3c8) = local_18 - fVar4;
+  *(float *)(in_ECX + 0x3cc) = fVar4 * pfVar3[3] + *prevPos;
+  *(float *)(in_ECX + 0x3d0) = fVar4 * pfVar3[4] + prevPos[1];
+  *(float *)(in_ECX + 0x3d4) = (pfVar3[2] - prevPos[2]) * fVar5 + prevPos[2];
+  *(float *)(in_ECX + 0x3c8) = fLength - fVar4;
   if (((*(uint *)(in_ECX + 0x3c8) & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xbbc
                                ,0,"%s"), !bVar2)) {
@@ -4809,22 +4973,30 @@ void __cdecl Path_BacktrackCompletedPath(path_t *param_1,float *param_2)
   bool bVar4;
   int in_ECX;
   float *in_EDX;
-  float *pfVar5;
+  pathpoint_t *ppVar5;
   float fVar6;
   float fVar7;
   float fVar8;
   float fVar9;
   path_t *in_stack_ffffff90;
   path_t *ppVar10;
-  float local_38;
-  float local_34;
-  float *local_1c;
-  float local_18;
-  int local_c;
+  float *vStartPos;
+  path_t *pPath;
+  float d1;
+  float dist;
+  float height;
+  float fraction;
+  float d2;
+  pathpoint_t *nextPt;
+  float amount;
+  pathpoint_t *pt;
+  float largestAmount;
+  int i;
+  float amountInc;
   
   sVar2 = *(short *)(in_ECX + 0x380);
-  local_c = sVar2 + -1;
-  if ((local_c <= *(short *)(in_ECX + 0x386)) &&
+  i = sVar2 + -1;
+  if ((i <= *(short *)(in_ECX + 0x386)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xbdf
                                ,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -4832,21 +5004,21 @@ void __cdecl Path_BacktrackCompletedPath(path_t *param_1,float *param_2)
     return;
   }
   fVar6 = *(float *)(in_ECX + 0x3b0) * 0.17647055;
-  local_1c = (float *)((sVar2 + -2) * 0x1c + in_ECX);
-  fVar7 = *local_1c;
+  nextPt = (pathpoint_t *)((sVar2 + -2) * 0x1c + in_ECX);
+  fVar7 = nextPt->vOrigPoint[0];
   fVar8 = *in_EDX;
-  fVar9 = local_1c[1];
+  fVar9 = nextPt->vOrigPoint[1];
   fVar1 = in_EDX[1];
-  if (((local_1c[3] == 0.0) && (local_1c[4] == 0.0)) &&
+  if (((nextPt->fDir2D[0] == 0.0) && (nextPt->fDir2D[1] == 0.0)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xbe5
                                ,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_38 = ABS(local_1c[3] * (fVar9 - fVar1) - local_1c[4] * (fVar7 - fVar8));
-  local_18 = -(local_38 * *(float *)(in_ECX + 0x3c8));
-  if ((local_1c[5] < *(float *)(in_ECX + 0x3c8)) &&
+  height = ABS(nextPt->fDir2D[0] * (fVar9 - fVar1) - nextPt->fDir2D[1] * (fVar7 - fVar8));
+  amount = -(height * *(float *)(in_ECX + 0x3c8));
+  if ((nextPt->fOrigLength < *(float *)(in_ECX + 0x3c8)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xbea
                                ,0,"pPath->fCurrLength <= nextPt->fOrigLength\n\t%g, %g"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -4854,52 +5026,52 @@ void __cdecl Path_BacktrackCompletedPath(path_t *param_1,float *param_2)
     return;
   }
   do {
-    if ((*(short *)(in_ECX + 0x382) <= local_c) &&
+    if ((*(short *)(in_ECX + 0x382) <= i) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xbee,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    pfVar5 = (float *)(local_c * 0x1c + in_ECX);
-    fVar7 = *pfVar5 - *in_EDX;
-    fVar8 = pfVar5[1] - in_EDX[1];
+    ppVar5 = (pathpoint_t *)(i * 0x1c + in_ECX);
+    fVar7 = ppVar5->vOrigPoint[0] - *in_EDX;
+    fVar8 = ppVar5->vOrigPoint[1] - in_EDX[1];
     if (65536.0 < fVar7 * fVar7 + fVar8 * fVar8) {
       *(uint *)(in_ECX + 0x3bc) = *(uint *)(in_ECX + 0x3bc) | 0x20;
 LAB_00909e4d:
-      *(float *)(in_ECX + 0x3cc) = *local_1c;
-      *(float *)(in_ECX + 0x3d0) = local_1c[1];
-      *(float *)(in_ECX + 0x3d4) = local_1c[2];
-      if ((((uint)local_1c[5] & 0x7f800000) == 0x7f800000) &&
+      *(float *)(in_ECX + 0x3cc) = nextPt->vOrigPoint[0];
+      *(float *)(in_ECX + 0x3d0) = nextPt->vOrigPoint[1];
+      *(float *)(in_ECX + 0x3d4) = nextPt->vOrigPoint[2];
+      if ((((uint)nextPt->fOrigLength & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc75,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if ((local_1c[5] <= 0.0) &&
+      if ((nextPt->fOrigLength <= 0.0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc76,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if ((local_c <= *(short *)(in_ECX + 0x386)) &&
+      if ((i <= *(short *)(in_ECX + 0x386)) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc78,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if (*(short *)(in_ECX + 0x386) + 1 < local_c) {
-        ppVar10 = *(path_t **)(in_ECX + 0x14 + (local_c + -2) * 0x1c);
+      if (*(short *)(in_ECX + 0x386) + 1 < i) {
+        ppVar10 = *(path_t **)(in_ECX + 0x14 + (i + -2) * 0x1c);
       }
       else {
         ppVar10 = (path_t *)0x0;
       }
       *(path_t **)(in_ECX + 0x3c8) = ppVar10;
-      local_18 = local_38 * local_1c[5] + local_18;
-      *(undefined2 *)(in_ECX + 0x380) = (undefined2)local_c;
+      amount = height * nextPt->fOrigLength + amount;
+      *(undefined2 *)(in_ECX + 0x380) = (undefined2)i;
       if ((1 < *(short *)(in_ECX + 0x380)) &&
          (*(float *)(in_ECX + 0x14 + (*(short *)(in_ECX + 0x380) + -2) * 0x1c) <
           *(float *)(in_ECX + 0x3c8))) {
@@ -4922,23 +5094,23 @@ LAB_00909e4d:
         (*pcVar3)();
         return;
       }
-      if (local_18 <= 0.0) {
+      if (amount <= 0.0) {
         return;
       }
       if ((*(uint *)(in_ECX + 0x3bc) & 2) == 0) {
-        local_18 = local_18 * 0.75;
+        amount = amount * 0.75;
       }
-      *(float *)(in_ECX + 0x3b0) = *(float *)(in_ECX + 0x3b0) + local_18;
+      *(float *)(in_ECX + 0x3b0) = *(float *)(in_ECX + 0x3b0) + amount;
       if (*(float *)(in_ECX + 0x3b0) <= 65536.0) {
         return;
       }
       *(undefined4 *)(in_ECX + 0x3b0) = 0x47800000;
       return;
     }
-    local_34 = *(float *)(in_ECX + 0x398) * fVar7 + *(float *)(in_ECX + 0x39c) * fVar8;
-    if (local_34 <= 0.0) {
-      fVar7 = *(float *)(in_ECX + 0x398) * (*local_1c - *in_EDX) +
-              *(float *)(in_ECX + 0x39c) * (local_1c[1] - in_EDX[1]);
+    fVar9 = *(float *)(in_ECX + 0x398) * fVar7 + *(float *)(in_ECX + 0x39c) * fVar8;
+    if (fVar9 <= 0.0) {
+      fVar7 = *(float *)(in_ECX + 0x398) * (nextPt->vOrigPoint[0] - *in_EDX) +
+              *(float *)(in_ECX + 0x39c) * (nextPt->vOrigPoint[1] - in_EDX[1]);
       if (fVar7 <= 0.0) {
         if ((0.0 < fVar7) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
@@ -4947,7 +5119,7 @@ LAB_00909e4d:
           (*pcVar3)();
           return;
         }
-        if ((0.0 < local_34) &&
+        if ((0.0 < fVar9) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xc6f,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
@@ -4956,22 +5128,22 @@ LAB_00909e4d:
         }
         goto LAB_00909e4d;
       }
-      if ((0.0 < local_34) &&
+      if ((0.0 < fVar9) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc33,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if ((local_34 - fVar7 == 0.0) &&
+      if ((fVar9 - fVar7 == 0.0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc34,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      local_34 = local_34 / (local_34 - fVar7);
-      if (local_34 < 0.0) {
+      fraction = fVar9 / (fVar9 - fVar7);
+      if (fraction < 0.0) {
         va("i: %d, d1: %f, d2: %f, fraction: %f");
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xc38,0,"%s\n\t%s");
@@ -4981,7 +5153,7 @@ LAB_00909e4d:
           return;
         }
       }
-      if (1.0 < local_34) {
+      if (1.0 < fraction) {
         va("i: %d: d1: %f, d2: %f, fraction: %f");
         bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xc3b,0,"%s\n\t%s");
@@ -4992,22 +5164,22 @@ LAB_00909e4d:
         }
       }
 LAB_0090991b:
-      if ((local_1c[5] <= 0.0) &&
+      if ((nextPt->fOrigLength <= 0.0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc3e,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      fVar7 = local_34 * local_1c[5];
-      if ((local_1c[5] < fVar7) &&
+      fVar7 = fraction * nextPt->fOrigLength;
+      if ((nextPt->fOrigLength < fVar7) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc41,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if (fVar7 < local_1c[5]) {
+      if (fVar7 < nextPt->fOrigLength) {
         if ((fVar7 < 0.0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xc50,0,"%s"), !bVar4)) {
@@ -5015,14 +5187,14 @@ LAB_0090991b:
           (*pcVar3)();
           return;
         }
-        if ((local_1c[5] <= 0.0) &&
+        if ((nextPt->fOrigLength <= 0.0) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xc51,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        *(float *)(in_ECX + 0x3c8) = local_1c[5] - fVar7;
+        *(float *)(in_ECX + 0x3c8) = nextPt->fOrigLength - fVar7;
         if (((*(uint *)(in_ECX + 0x3c8) & 0x7f800000) == 0x7f800000) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xc53,0,"%s"), !bVar4)) {
@@ -5037,7 +5209,7 @@ LAB_0090991b:
           (*pcVar3)();
           return;
         }
-        if ((local_1c[5] < *(float *)(in_ECX + 0x3c8)) &&
+        if ((nextPt->fOrigLength < *(float *)(in_ECX + 0x3c8)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xc55,0,"nextPt->fOrigLength >= pPath->fCurrLength\n\t%g, %g")
            , !bVar4)) {
@@ -5045,29 +5217,30 @@ LAB_0090991b:
           (*pcVar3)();
           return;
         }
-        local_18 = local_38 * *(float *)(in_ECX + 0x3c8) + local_18;
-        if (((local_1c[3] == 0.0) && (local_1c[4] == 0.0)) &&
+        amount = height * *(float *)(in_ECX + 0x3c8) + amount;
+        if (((nextPt->fDir2D[0] == 0.0) && (nextPt->fDir2D[1] == 0.0)) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xc58,0,"%s"), !bVar4)) {
           pcVar3 = (code *)swi(3);
           (*pcVar3)();
           return;
         }
-        *(float *)(in_ECX + 0x3cc) = fVar7 * local_1c[3] + *pfVar5;
-        *(float *)(in_ECX + 0x3d0) = fVar7 * local_1c[4] + pfVar5[1];
-        *(float *)(in_ECX + 0x3d4) = (local_1c[2] - pfVar5[2]) * local_34 + pfVar5[2];
+        *(float *)(in_ECX + 0x3cc) = fVar7 * nextPt->fDir2D[0] + ppVar5->vOrigPoint[0];
+        *(float *)(in_ECX + 0x3d0) = fVar7 * nextPt->fDir2D[1] + ppVar5->vOrigPoint[1];
+        *(float *)(in_ECX + 0x3d4) =
+             (nextPt->vOrigPoint[2] - ppVar5->vOrigPoint[2]) * fraction + ppVar5->vOrigPoint[2];
       }
       else {
-        if (local_c + -1 <= (int)*(short *)(in_ECX + 0x386)) {
+        if (i + -1 <= (int)*(short *)(in_ECX + 0x386)) {
           return;
         }
-        *(float *)(in_ECX + 0x3cc) = *local_1c;
-        *(float *)(in_ECX + 0x3d0) = local_1c[1];
-        *(float *)(in_ECX + 0x3d4) = local_1c[2];
-        *(undefined4 *)(in_ECX + 0x3c8) = *(undefined4 *)(in_ECX + 0x14 + (local_c + -2) * 0x1c);
-        local_c = local_c + -1;
+        *(float *)(in_ECX + 0x3cc) = nextPt->vOrigPoint[0];
+        *(float *)(in_ECX + 0x3d0) = nextPt->vOrigPoint[1];
+        *(float *)(in_ECX + 0x3d4) = nextPt->vOrigPoint[2];
+        *(undefined4 *)(in_ECX + 0x3c8) = *(undefined4 *)(in_ECX + 0x14 + (i + -2) * 0x1c);
+        i = i + -1;
       }
-      *(short *)(in_ECX + 0x380) = (short)local_c + 1;
+      *(short *)(in_ECX + 0x380) = (short)i + 1;
       if ((1 < *(short *)(in_ECX + 0x380)) &&
          (*(float *)(in_ECX + 0x14 + (*(short *)(in_ECX + 0x380) + -2) * 0x1c) <
           *(float *)(in_ECX + 0x3c8))) {
@@ -5090,28 +5263,28 @@ LAB_0090991b:
         (*pcVar3)();
         return;
       }
-      if (0.0 < local_18) {
+      if (0.0 < amount) {
         if ((*(uint *)(in_ECX + 0x3bc) & 2) == 0) {
-          local_18 = local_18 * 0.75;
+          amount = amount * 0.75;
         }
-        *(float *)(in_ECX + 0x3b0) = *(float *)(in_ECX + 0x3b0) + local_18;
+        *(float *)(in_ECX + 0x3b0) = *(float *)(in_ECX + 0x3b0) + amount;
         if (65536.0 < *(float *)(in_ECX + 0x3b0)) {
           *(undefined4 *)(in_ECX + 0x3b0) = 0x47800000;
         }
       }
       return;
     }
-    if ((local_1c[5] <= 0.0) &&
+    if ((nextPt->fOrigLength <= 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xbfd,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    fVar9 = local_38 * local_1c[5];
-    local_18 = local_18 + fVar9;
-    if (fVar6 <= local_18) {
-      if ((fVar6 <= local_18 - fVar9) &&
+    fVar9 = height * nextPt->fOrigLength;
+    amount = amount + fVar9;
+    if (fVar6 <= amount) {
+      if ((fVar6 <= amount - fVar9) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc03,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
@@ -5125,41 +5298,41 @@ LAB_0090991b:
         (*pcVar3)();
         return;
       }
-      local_34 = (local_18 - fVar6) / fVar9;
-      if ((local_34 < 0.0) &&
+      fraction = (amount - fVar6) / fVar9;
+      if ((fraction < 0.0) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc06,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if ((1.0 < local_34) &&
+      if ((1.0 < fraction) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc07,0,"%s"), !bVar4)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      local_18 = local_18 - fVar9;
+      amount = amount - fVar9;
       goto LAB_0090991b;
     }
-    if ((local_1c[5] <= 0.0) &&
+    if ((nextPt->fOrigLength <= 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xc0d,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_c = local_c + 1;
-    if ((*(short *)(in_ECX + 0x382) < local_c) &&
+    i = i + 1;
+    if ((*(short *)(in_ECX + 0x382) < i) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xc10,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (*(short *)(in_ECX + 0x382) <= local_c) {
-      *(float *)(in_ECX + 0x3c8) = local_1c[5];
+    if (*(short *)(in_ECX + 0x382) <= i) {
+      *(float *)(in_ECX + 0x3c8) = nextPt->fOrigLength;
       if (((*(uint *)(in_ECX + 0x3c8) & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xc14,0,"%s"), !bVar4)) {
@@ -5174,9 +5347,9 @@ LAB_0090991b:
         (*pcVar3)();
         return;
       }
-      *(float *)(in_ECX + 0x3cc) = *pfVar5;
-      *(float *)(in_ECX + 0x3d0) = pfVar5[1];
-      *(float *)(in_ECX + 0x3d4) = pfVar5[2];
+      *(float *)(in_ECX + 0x3cc) = ppVar5->vOrigPoint[0];
+      *(float *)(in_ECX + 0x3d0) = ppVar5->vOrigPoint[1];
+      *(float *)(in_ECX + 0x3d4) = ppVar5->vOrigPoint[2];
       *(undefined2 *)(in_ECX + 0x380) = *(undefined2 *)(in_ECX + 0x382);
       if ((1 < *(short *)(in_ECX + 0x380)) &&
          (*(float *)(in_ECX + 0x14 + (*(short *)(in_ECX + 0x380) + -2) * 0x1c) <
@@ -5200,28 +5373,28 @@ LAB_0090991b:
         (*pcVar3)();
         return;
       }
-      if (local_18 <= 0.0) {
+      if (amount <= 0.0) {
         return;
       }
       if ((*(uint *)(in_ECX + 0x3bc) & 2) == 0) {
-        local_18 = local_18 * 0.75;
+        amount = amount * 0.75;
       }
-      *(float *)(in_ECX + 0x3b0) = *(float *)(in_ECX + 0x3b0) + local_18;
+      *(float *)(in_ECX + 0x3b0) = *(float *)(in_ECX + 0x3b0) + amount;
       if (*(float *)(in_ECX + 0x3b0) <= 65536.0) {
         return;
       }
       *(undefined4 *)(in_ECX + 0x3b0) = 0x47800000;
       return;
     }
-    if (((pfVar5[3] == 0.0) && (pfVar5[4] == 0.0)) &&
+    if (((ppVar5->fDir2D[0] == 0.0) && (ppVar5->fDir2D[1] == 0.0)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xc29,0,"%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_38 = ABS(pfVar5[3] * fVar8 - pfVar5[4] * fVar7);
-    local_1c = pfVar5;
+    height = ABS(ppVar5->fDir2D[0] * fVar8 - ppVar5->fDir2D[1] * fVar7);
+    nextPt = ppVar5;
   } while( true );
 }
 
@@ -5231,7 +5404,9 @@ LAB_0090991b:
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-Path_CalcLookahead_Completed(path_t *param_1,float *param_2,int param_3,float param_4,int param_5)
+Path_CalcLookahead_Completed
+          (path_t *bReduceLookaheadAmount,float *totalArea,int bAllowRestore,float param_4,
+          int param_5)
 
 {
   code *pcVar1;
@@ -5239,7 +5414,10 @@ Path_CalcLookahead_Completed(path_t *param_1,float *param_2,int param_3,float pa
   int in_ECX;
   float in_stack_ffffffe0;
   int in_stack_ffffffe4;
-  path_t *local_8;
+  float *vStartPos;
+  path_t *pPath;
+  float maxLookaheadAmount;
+  path_t *vLookaheadPos;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xc99
@@ -5257,21 +5435,22 @@ Path_CalcLookahead_Completed(path_t *param_1,float *param_2,int param_3,float pa
   }
   *(uint *)(in_ECX + 0x3bc) = *(uint *)(in_ECX + 0x3bc) | 0x41;
   if (*(short *)(in_ECX + 0x380) + -1 == (int)*(short *)(in_ECX + 0x386)) {
-    local_8 = (path_t *)(in_ECX + 0x3cc);
+    vLookaheadPos = (path_t *)(in_ECX + 0x3cc);
   }
   else {
-    local_8 = (path_t *)(*(short *)(in_ECX + 0x386) * 0x1c + in_ECX);
+    vLookaheadPos = (path_t *)(*(short *)(in_ECX + 0x386) * 0x1c + in_ECX);
   }
   Path_UpdateLookaheadAmount
-            (local_8,(float *)param_1,(float *)0x0,(int)*(short *)(in_ECX + 0x386),(float)param_2,
-             param_3,in_stack_ffffffe0,in_stack_ffffffe4);
-  if ((float)param_2 - 21845.334 < 0.0) {
-    param_2 = (float *)0x46aaaaab;
+            (vLookaheadPos,(float *)bReduceLookaheadAmount,(float *)0x0,
+             (int)*(short *)(in_ECX + 0x386),(float)totalArea,bAllowRestore,in_stack_ffffffe0,
+             in_stack_ffffffe4);
+  if ((float)totalArea - 21845.334 < 0.0) {
+    totalArea = (float *)0x46aaaaab;
   }
-  if (0.0 <= (float)param_2 - (float)*(float **)(in_ECX + 0x3b0)) {
-    param_2 = *(float **)(in_ECX + 0x3b0);
+  if (0.0 <= (float)totalArea - (float)*(float **)(in_ECX + 0x3b0)) {
+    totalArea = *(float **)(in_ECX + 0x3b0);
   }
-  *(float **)(in_ECX + 0x3b0) = param_2;
+  *(float **)(in_ECX + 0x3b0) = totalArea;
   return;
 }
 
@@ -5281,7 +5460,7 @@ Path_CalcLookahead_Completed(path_t *param_1,float *param_2,int param_3,float pa
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-PathCalcLookahead_CheckMinLookaheadNodes(path_t *param_1,pathpoint_t *param_2,int param_3)
+PathCalcLookahead_CheckMinLookaheadNodes(path_t *currentNode,pathpoint_t *param_2,int param_3)
 
 {
   code *pcVar1;
@@ -5289,11 +5468,15 @@ PathCalcLookahead_CheckMinLookaheadNodes(path_t *param_1,pathpoint_t *param_2,in
   float *pfVar3;
   int in_ECX;
   float *pfVar4;
-  float local_18;
+  pathpoint_t *pt;
+  path_t *pPath;
+  float cos80;
+  float n2n4;
   float local_14;
-  float local_c;
+  float cos30;
+  float dot;
   
-  local_c = 0.866;
+  cos30 = 0.866;
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xcc5
                                ,0,"%s"), !bVar2)) {
@@ -5301,24 +5484,24 @@ PathCalcLookahead_CheckMinLookaheadNodes(path_t *param_1,pathpoint_t *param_2,in
     (*pcVar1)();
     return;
   }
-  if ((undefined1 *)((int)param_1->pts[0].vOrigPoint + 3) ==
+  if ((undefined1 *)((int)currentNode->pts[0].vOrigPoint + 3) ==
       (undefined1 *)(int)*(short *)(in_ECX + 0x380)) {
-    if ((*(short *)(in_ECX + 0x380) + -2 <= (int)param_1) &&
+    if ((*(short *)(in_ECX + 0x380) + -2 <= (int)currentNode) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xcca,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pfVar3 = (float *)((int)((int)param_1->pts[0].vOrigPoint + 1) * 0x1c + in_ECX);
-    pfVar4 = (float *)((int)((int)&param_1[-1].numReductions + 1) * 0x1c + in_ECX);
-    local_18 = *pfVar4 - *pfVar3;
+    pfVar3 = (float *)((int)((int)currentNode->pts[0].vOrigPoint + 1) * 0x1c + in_ECX);
+    pfVar4 = (float *)((int)((int)&currentNode[-1].numReductions + 1) * 0x1c + in_ECX);
+    n2n4 = *pfVar4 - *pfVar3;
     local_14 = pfVar4[1] - pfVar3[1];
-    Vec2Normalize(&local_18);
-    pfVar3 = (float *)(in_ECX + 0xc + (int)((int)&param_1[-1].numReductions + 1) * 0x1c);
-    if ((local_c <= *pfVar3 * local_18 + pfVar3[1] * local_14) &&
-       (pfVar3 = (float *)(in_ECX + 0xc + (int)param_1 * 0x1c),
-       pfVar4 = (float *)(in_ECX + 0xc + (int)((int)&param_1[-1].numReductions + 1) * 0x1c),
+    Vec2Normalize(&n2n4);
+    pfVar3 = (float *)(in_ECX + 0xc + (int)((int)&currentNode[-1].numReductions + 1) * 0x1c);
+    if ((cos30 <= *pfVar3 * n2n4 + pfVar3[1] * local_14) &&
+       (pfVar3 = (float *)(in_ECX + 0xc + (int)currentNode * 0x1c),
+       pfVar4 = (float *)(in_ECX + 0xc + (int)((int)&currentNode[-1].numReductions + 1) * 0x1c),
        0.173 <= *pfVar4 * *pfVar3 + pfVar4[1] * pfVar3[1])) {
       *(int *)(in_ECX + 0x3b8) = *(int *)(in_ECX + 0x3b8) + 1;
     }
@@ -5331,7 +5514,8 @@ PathCalcLookahead_CheckMinLookaheadNodes(path_t *param_1,pathpoint_t *param_2,in
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Path_CalcLookahead(path_t *param_1,float *param_2,int param_3,int param_4)
+void __cdecl
+Path_CalcLookahead(path_t *bReduceLookaheadAmount,float *bAllowRestore,int param_3,int param_4)
 
 {
   code *pcVar1;
@@ -5339,18 +5523,20 @@ void __cdecl Path_CalcLookahead(path_t *param_1,float *param_2,int param_3,int p
   int in_ECX;
   pathpoint_t *in_stack_ffffffa4;
   pathpoint_t *in_stack_ffffffa8;
-  float local_34;
+  float *vStartPos;
+  path_t *pPath;
+  float vLookaheadPos;
   float local_30;
   float local_2c;
-  float *local_28;
-  pathpoint_t *local_24;
-  float local_20;
-  float *local_1c;
-  pathpoint_t *local_18;
-  float local_14;
-  float *local_10;
-  path_t *local_c;
-  float local_8;
+  float *prevPoint;
+  float dist;
+  float height;
+  pathpoint_t *pt;
+  float fLength;
+  int bAtStart;
+  float totalArea;
+  int i;
+  float lookaheadAmount;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xcec
@@ -5392,48 +5578,49 @@ void __cdecl Path_CalcLookahead(path_t *param_1,float *param_2,int param_3,int p
       return;
     }
   }
-  local_10 = (float *)0x0;
-  local_8 = *(float *)(in_ECX + 0x3b0);
-  if ((((uint)local_8 & 0x7f800000) == 0x7f800000) &&
+  totalArea = 0.0;
+  lookaheadAmount = *(float *)(in_ECX + 0x3b0);
+  if ((((uint)lookaheadAmount & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xcf5
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((local_8 <= 0.0) &&
+  if ((lookaheadAmount <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xcf6
                                ,0,"%s\n\t(lookaheadAmount) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = 1.4013e-45;
-  local_c = (path_t *)(*(short *)(in_ECX + 0x380) + -2);
+  bAtStart = 1;
+  i = *(short *)(in_ECX + 0x380) + -2;
   while( true ) {
-    if ((int)local_c < (int)*(short *)(in_ECX + 0x386)) {
+    if (i < *(short *)(in_ECX + 0x386)) {
       Path_CalcLookahead_Completed
-                (param_1,local_10,(int)param_2,(float)in_stack_ffffffa4,(int)in_stack_ffffffa8);
+                (bReduceLookaheadAmount,(float *)totalArea,(int)bAllowRestore,
+                 (float)in_stack_ffffffa4,(int)in_stack_ffffffa8);
       return;
     }
-    local_1c = (float *)((int)local_c * 0x1c + in_ECX);
-    if ((((((uint)*local_1c & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_1c[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_1c[2] & 0x7f800000) == 0x7f800000)) &&
+    pt = (pathpoint_t *)(i * 0x1c + in_ECX);
+    if ((((((uint)pt->vOrigPoint[0] & 0x7f800000) == 0x7f800000) ||
+         (((uint)pt->vOrigPoint[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)pt->vOrigPoint[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xd02,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_20 = Path_GetDistToPathSegment(in_stack_ffffffa4->vOrigPoint,in_stack_ffffffa8);
-    if (local_14 == 0.0) {
-      in_stack_ffffffa8 = (pathpoint_t *)local_1c[5];
+    height = Path_GetDistToPathSegment(in_stack_ffffffa4->vOrigPoint,in_stack_ffffffa8);
+    if (bAtStart == 0) {
+      in_stack_ffffffa8 = (pathpoint_t *)pt->fOrigLength;
     }
     else {
       in_stack_ffffffa8 = *(pathpoint_t **)(in_ECX + 0x3c8);
     }
-    local_18 = in_stack_ffffffa8;
+    fLength = (float)in_stack_ffffffa8;
     if (((float)in_stack_ffffffa8 <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xd06,0,"%s"), !bVar2)) {
@@ -5441,39 +5628,41 @@ void __cdecl Path_CalcLookahead(path_t *param_1,float *param_2,int param_3,int p
       (*pcVar1)();
       return;
     }
-    local_10 = (float *)(local_20 * (float)local_18 + (float)local_10);
+    totalArea = height * fLength + totalArea;
     if (*(int *)(in_ECX + 0x3b8) == 2) {
-      PathCalcLookahead_CheckMinLookaheadNodes(local_c,in_stack_ffffffa4,(int)in_stack_ffffffa8);
+      PathCalcLookahead_CheckMinLookaheadNodes((path_t *)i,in_stack_ffffffa4,(int)in_stack_ffffffa8)
+      ;
     }
-    if (((int)local_c->pts[0].vOrigPoint + *(int *)(in_ECX + 0x3b8) <=
-         *(short *)(in_ECX + 0x380) + -2) && (local_8 <= (float)local_10)) break;
-    local_c = (path_t *)((int)&local_c[-1].numReductions + 1);
-    local_14 = 0.0;
+    if ((i + *(int *)(in_ECX + 0x3b8) <= *(short *)(in_ECX + 0x380) + -2) &&
+       (lookaheadAmount <= totalArea)) break;
+    i = i + -1;
+    bAtStart = 0;
   }
-  local_24 = (pathpoint_t *)(((float)local_10 - local_8) / local_20);
-  if ((local_1c[5] < (float)local_18) &&
+  dist = (totalArea - lookaheadAmount) / height;
+  if ((pt->fOrigLength < fLength) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xd18
                                ,0,"fLength <= pt->fOrigLength\n\t%g, %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((float)local_18 < (float)local_24) {
-    local_24 = local_18;
+  if (fLength < dist) {
+    dist = fLength;
   }
-  local_34 = -(float)local_24 * local_1c[3] + *local_1c;
-  local_30 = -(float)local_24 * local_1c[4] + local_1c[1];
-  if (local_14 == 0.0) {
-    local_28 = local_1c + 7;
+  vLookaheadPos = -dist * pt->fDir2D[0] + pt->vOrigPoint[0];
+  local_30 = -dist * pt->fDir2D[1] + pt->vOrigPoint[1];
+  if (bAtStart == 0) {
+    prevPoint = pt[1].vOrigPoint;
   }
   else {
-    local_28 = (float *)(in_ECX + 0x3cc);
+    prevPoint = (float *)(in_ECX + 0x3cc);
   }
-  local_2c = local_1c[2] - ((local_1c[2] - local_28[2]) * (float)local_24) / (float)local_18;
+  local_2c = pt->vOrigPoint[2] -
+             ((pt->vOrigPoint[2] - ((pathpoint_t *)prevPoint)->vOrigPoint[2]) * dist) / fLength;
   *(uint *)(in_ECX + 0x3bc) = *(uint *)(in_ECX + 0x3bc) & 0xffffffbe;
   Path_UpdateLookaheadAmount
-            ((path_t *)&local_34,(float *)param_1,local_24->vOrigPoint,(int)local_c,local_8,
-             (int)param_2,(float)local_28,(int)in_stack_ffffffa8);
+            ((path_t *)&vLookaheadPos,(float *)bReduceLookaheadAmount,(float *)dist,i,
+             lookaheadAmount,(int)bAllowRestore,(float)prevPoint,(int)in_stack_ffffffa8);
   return;
 }
 
@@ -5482,13 +5671,16 @@ void __cdecl Path_CalcLookahead(path_t *param_1,float *param_2,int param_3,int p
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Path_GetForwardStartPos(path_t *param_1,float *param_2,float *param_3)
+int __cdecl Path_GetForwardStartPos(path_t *vForwardStartPos,float *param_2,float *param_3)
 
 {
   int iVar1;
   int in_ECX;
   float *in_EDX;
   float local_1c;
+  float *vStartPos;
+  path_t *pPath;
+  float forwardDist;
   
   if (*(short *)(in_ECX + 0x380) < 2) {
     iVar1 = 0;
@@ -5498,8 +5690,8 @@ int __cdecl Path_GetForwardStartPos(path_t *param_1,float *param_2,float *param_
     if (60.0 - local_1c < 0.0) {
       local_1c = 60.0;
     }
-    param_1->pts[0].vOrigPoint[0] = local_1c * *(float *)(in_ECX + 0x398) + *in_EDX;
-    param_1->pts[0].vOrigPoint[1] = local_1c * *(float *)(in_ECX + 0x39c) + in_EDX[1];
+    vForwardStartPos->pts[0].vOrigPoint[0] = local_1c * *(float *)(in_ECX + 0x398) + *in_EDX;
+    vForwardStartPos->pts[0].vOrigPoint[1] = local_1c * *(float *)(in_ECX + 0x39c) + in_EDX[1];
     iVar1 = 1;
   }
   else {
@@ -5515,15 +5707,18 @@ int __cdecl Path_GetForwardStartPos(path_t *param_1,float *param_2,float *param_
 
 void __cdecl
 Path_UpdateForwardLookahead_IncompletePath
-          (path_t *param_1,pathpoint_t *param_2,float *param_3,float param_4,float param_5)
+          (path_t *vForwardStartPos,pathpoint_t *area,float *height,float param_4,float param_5)
 
 {
   code *pcVar1;
   bool bVar2;
   int in_ECX;
   float *in_EDX;
+  pathpoint_t *pt;
+  path_t *pPath;
+  float dist;
   
-  if (((uint)param_3 & 0x7f800000) == 0x7f800000) {
+  if (((uint)height & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xd54,0
                              ,"%s");
     if (!bVar2) {
@@ -5532,7 +5727,7 @@ Path_UpdateForwardLookahead_IncompletePath
       return;
     }
   }
-  if ((float)param_3 == 0.0) {
+  if ((float)height == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xd55,0
                              ,"%s\n\t(height) = %g");
     if (!bVar2) {
@@ -5550,10 +5745,10 @@ Path_UpdateForwardLookahead_IncompletePath
       return;
     }
   }
-  *(float *)(in_ECX + 0x3a4) = -((float)param_2 / (float)param_3) * in_EDX[3] + *in_EDX;
-  *(float *)(in_ECX + 0x3a8) = -((float)param_2 / (float)param_3) * in_EDX[4] + in_EDX[1];
-  *(float *)(in_ECX + 0x3a4) = *(float *)(in_ECX + 0x3a4) - param_1->pts[0].vOrigPoint[0];
-  *(float *)(in_ECX + 0x3a8) = *(float *)(in_ECX + 0x3a8) - param_1->pts[0].vOrigPoint[1];
+  *(float *)(in_ECX + 0x3a4) = -((float)area / (float)height) * in_EDX[3] + *in_EDX;
+  *(float *)(in_ECX + 0x3a8) = -((float)area / (float)height) * in_EDX[4] + in_EDX[1];
+  *(float *)(in_ECX + 0x3a4) = *(float *)(in_ECX + 0x3a4) - vForwardStartPos->pts[0].vOrigPoint[0];
+  *(float *)(in_ECX + 0x3a8) = *(float *)(in_ECX + 0x3a8) - vForwardStartPos->pts[0].vOrigPoint[1];
   Vec2Normalize((float *)(in_ECX + 0x3a4));
   return;
 }
@@ -5561,6 +5756,8 @@ Path_UpdateForwardLookahead_IncompletePath
 
 // 0090B570  Path_UpdateForwardLookahead  (game/actor_navigation.cpp:3429)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
@@ -5572,22 +5769,26 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
   float *in_ECX;
   pathpoint_t *in_EDX;
   float fVar4;
-  path_t *ppVar5;
-  float local_44;
+  path_t *vForwardStartPos_00;
+  float *vStartPos;
+  path_t *pPath;
+  float lookaheadAmount;
+  float d1;
+  float vForwardStartPos;
   float local_40;
-  float local_3c;
-  float *local_38;
-  float local_34;
-  float local_30;
+  float dist;
+  float height;
+  float fraction;
+  float offset;
   float local_2c;
-  float local_28;
-  float local_24;
-  float *local_20;
-  float local_1c;
-  float *local_18;
-  float local_14;
-  int local_10;
-  float local_c;
+  int bAtStart;
+  float d2;
+  pathpoint_t *prevPt;
+  float totalArea;
+  pathpoint_t *pt;
+  float fLength;
+  int i;
+  float prevOffset;
   float local_8;
   
   if ((in_ECX == (float *)0x0) &&
@@ -5637,45 +5838,45 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
     }
   }
   if (((uint)in_ECX[0xef] & 0x200) != 0) {
-    ppVar5 = (path_t *)&local_44;
-    iVar3 = Path_GetForwardStartPos(ppVar5,in_EDX->vOrigPoint,in_ECX);
+    vForwardStartPos_00 = (path_t *)&vForwardStartPos;
+    iVar3 = Path_GetForwardStartPos(vForwardStartPos_00,in_EDX->vOrigPoint,in_ECX);
     if (iVar3 != 0) {
-      if (0.0 < in_ECX[0xe6] * (in_ECX[0xf3] - local_44) + in_ECX[0xe7] * (in_ECX[0xf4] - local_40))
-      {
+      if (0.0 < in_ECX[0xe6] * (in_ECX[0xf3] - vForwardStartPos) +
+                in_ECX[0xe7] * (in_ECX[0xf4] - local_40)) {
         in_ECX[0xe9] = in_ECX[0xe6];
         in_ECX[0xea] = in_ECX[0xe7];
         return;
       }
-      local_28 = 1.4013e-45;
-      local_10 = *(short *)(in_ECX + 0xe0) + -2;
+      bAtStart = 1;
+      i = *(short *)(in_ECX + 0xe0) + -2;
       while( true ) {
-        if (local_10 < *(short *)((int)in_ECX + 0x386)) {
+        if (i < *(short *)((int)in_ECX + 0x386)) {
           in_ECX[0xe9] = in_ECX[0xe6];
           in_ECX[0xea] = in_ECX[0xe7];
           return;
         }
-        local_18 = in_ECX + local_10 * 7;
-        local_30 = *local_18 - local_44;
-        local_2c = local_18[1] - local_40;
-        local_24 = in_ECX[0xe6] * local_30 + in_ECX[0xe7] * local_2c;
-        if (0.0 < local_24) break;
-        local_10 = local_10 + -1;
-        local_28 = 0.0;
+        pt = (pathpoint_t *)(in_ECX + i * 7);
+        offset = pt->vOrigPoint[0] - vForwardStartPos;
+        local_2c = pt->vOrigPoint[1] - local_40;
+        d2 = in_ECX[0xe6] * offset + in_ECX[0xe7] * local_2c;
+        if (0.0 < d2) break;
+        i = i + -1;
+        bAtStart = 0;
       }
-      local_20 = in_ECX + (local_10 + 1) * 7;
-      if (local_28 == 0.0) {
-        local_c = *local_20;
-        local_8 = local_20[1];
-        local_14 = local_18[5];
+      prevPt = (pathpoint_t *)(in_ECX + (i + 1) * 7);
+      if (bAtStart == 0) {
+        prevOffset = prevPt->vOrigPoint[0];
+        local_8 = prevPt->vOrigPoint[1];
+        fLength = pt->fOrigLength;
       }
       else {
-        local_c = in_ECX[0xf3];
+        prevOffset = in_ECX[0xf3];
         local_8 = in_ECX[0xf4];
-        local_14 = in_ECX[0xf2];
+        fLength = in_ECX[0xf2];
       }
       local_8 = local_8 - local_40;
-      local_c = local_c - local_44;
-      fVar4 = in_ECX[0xe6] * local_c + in_ECX[0xe7] * local_8;
+      prevOffset = prevOffset - vForwardStartPos;
+      fVar4 = in_ECX[0xe6] * prevOffset + in_ECX[0xe7] * local_8;
       if ((0.0 < fVar4) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xda3,0,"%s\n\t(d1) = %g"), !bVar2)) {
@@ -5683,22 +5884,22 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
         (*pcVar1)();
         return;
       }
-      if ((local_24 <= 0.0) &&
+      if ((d2 <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xda4,0,"%s\n\t(d2) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((fVar4 - local_24 == 0.0) &&
+      if ((fVar4 - d2 == 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xda5,0,"%s\n\t(d1 - d2) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_34 = fVar4 / (fVar4 - local_24);
-      if (local_34 < 0.0) {
+      fraction = fVar4 / (fVar4 - d2);
+      if (fraction < 0.0) {
         va("i: %d, pPath->wPathLen: %d, d1: %f, d2: %f, fraction: %f");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xda9,0,"%s\n\t%s");
@@ -5708,7 +5909,7 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
           return;
         }
       }
-      if (1.0 < local_34) {
+      if (1.0 < fraction) {
         va("i: %d, pPath->wPathLen: %d, d1: %f, d2: %f, fraction: %f");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xdac,0,"%s\n\t%s");
@@ -5718,14 +5919,14 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
           return;
         }
       }
-      if ((local_14 <= 0.0) &&
+      if ((fLength <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                    0xdad,0,"%s\n\t(fLength) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_3c = local_34 * local_14;
+      dist = fraction * fLength;
       fVar4 = in_ECX[0xec];
       if ((fVar4 <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
@@ -5734,32 +5935,32 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
         (*pcVar1)();
         return;
       }
-      local_38 = (float *)Path_GetDistToPathSegment((float *)ppVar5,in_EDX);
-      local_1c = (local_14 - local_3c) * (float)local_38;
-      if (fVar4 <= local_1c) {
+      height = Path_GetDistToPathSegment((float *)vForwardStartPos_00,in_EDX);
+      totalArea = (fLength - dist) * height;
+      if (fVar4 <= totalArea) {
         Path_UpdateForwardLookahead_IncompletePath
-                  ((path_t *)&local_44,(pathpoint_t *)(local_1c - fVar4),local_38,(float)ppVar5,
-                   (float)in_EDX);
+                  ((path_t *)&vForwardStartPos,(pathpoint_t *)(totalArea - fVar4),(float *)height,
+                   (float)vForwardStartPos_00,(float)in_EDX);
         return;
       }
       while( true ) {
-        if (local_10 <= *(short *)((int)in_ECX + 0x386)) {
-          in_ECX[0xe9] = in_ECX[*(short *)((int)in_ECX + 0x386) * 7] - local_44;
+        if (i <= *(short *)((int)in_ECX + 0x386)) {
+          in_ECX[0xe9] = in_ECX[*(short *)((int)in_ECX + 0x386) * 7] - vForwardStartPos;
           in_ECX[0xea] = (in_ECX + *(short *)((int)in_ECX + 0x386) * 7)[1] - local_40;
           Vec2Normalize(in_ECX + 0xe9);
           return;
         }
-        local_10 = local_10 + -1;
-        local_18 = in_ECX + local_10 * 7;
-        if ((local_18[5] <= 0.0) &&
+        i = i + -1;
+        pt = (pathpoint_t *)(in_ECX + i * 7);
+        if ((pt->fOrigLength <= 0.0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xdc1,0,"%s\n\t(pt->fOrigLength) = %g"), !bVar2)) break;
-        local_38 = (float *)Path_GetDistToPathSegment((float *)ppVar5,in_EDX);
-        local_1c = (float)local_38 * local_18[5] + local_1c;
-        if (fVar4 <= local_1c) {
+        height = Path_GetDistToPathSegment((float *)vForwardStartPos_00,in_EDX);
+        totalArea = height * pt->fOrigLength + totalArea;
+        if (fVar4 <= totalArea) {
           Path_UpdateForwardLookahead_IncompletePath
-                    ((path_t *)&local_44,(pathpoint_t *)(local_1c - fVar4),local_38,(float)ppVar5,
-                     (float)in_EDX);
+                    ((path_t *)&vForwardStartPos,(pathpoint_t *)(totalArea - fVar4),(float *)height,
+                     (float)vForwardStartPos_00,(float)in_EDX);
           return;
         }
       }
@@ -5776,9 +5977,10 @@ void __cdecl Path_UpdateForwardLookahead(path_t *param_1,float *param_2)
 
 // 00907C70  Path_UpdateLookahead_NonCodeMove  (game/actor_navigation.cpp:3548)
 
+/* WARNING: Variable defined which should be unmapped: vPrevPos */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Path_UpdateLookahead_NonCodeMove(path_t *param_1,float *param_2,float *param_3)
+void __cdecl Path_UpdateLookahead_NonCodeMove(path_t *vStartPos,float *param_2,float *param_3)
 
 {
   code *pcVar1;
@@ -5789,7 +5991,10 @@ void __cdecl Path_UpdateLookahead_NonCodeMove(path_t *param_1,float *param_2,flo
   float fVar4;
   float fVar5;
   path_t *in_stack_ffffffc8;
-  int local_20;
+  float *vPrevPos;
+  path_t *pPath;
+  pathpoint_t *pt;
+  int i;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xde1
@@ -5798,7 +6003,7 @@ void __cdecl Path_UpdateLookahead_NonCodeMove(path_t *param_1,float *param_2,flo
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (path_t *)0x0) &&
+  if ((vStartPos == (path_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xde2
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -5812,20 +6017,19 @@ void __cdecl Path_UpdateLookahead_NonCodeMove(path_t *param_1,float *param_2,flo
     (*pcVar1)();
     return;
   }
-  fVar4 = param_1->pts[0].vOrigPoint[0] - *in_EDX;
-  fVar5 = param_1->pts[0].vOrigPoint[1] - in_EDX[1];
+  fVar4 = vStartPos->pts[0].vOrigPoint[0] - *in_EDX;
+  fVar5 = vStartPos->pts[0].vOrigPoint[1] - in_EDX[1];
   if (minSpeed * minSpeed < fVar4 * fVar4 + fVar5 * fVar5) {
-    for (local_20 = *(short *)(in_ECX + 0x380) + -2; *(short *)(in_ECX + 0x386) <= local_20;
-        local_20 = local_20 + -1) {
-      pfVar3 = (float *)(local_20 * 0x1c + in_ECX);
+    for (i = *(short *)(in_ECX + 0x380) + -2; *(short *)(in_ECX + 0x386) <= i; i = i + -1) {
+      pfVar3 = (float *)(i * 0x1c + in_ECX);
       if (0.0 <= fVar4 * (*pfVar3 - *in_EDX) + fVar5 * (pfVar3[1] - in_EDX[1])) {
-        if ((fVar4 * (*pfVar3 - param_1->pts[0].vOrigPoint[0]) +
-             fVar5 * (pfVar3[1] - param_1->pts[0].vOrigPoint[1]) <= 0.0) &&
-           (*(short *)(in_ECX + 0x386) < local_20)) {
+        if ((fVar4 * (*pfVar3 - vStartPos->pts[0].vOrigPoint[0]) +
+             fVar5 * (pfVar3[1] - vStartPos->pts[0].vOrigPoint[1]) <= 0.0) &&
+           (*(short *)(in_ECX + 0x386) < i)) {
           *(float *)(in_ECX + 0x3cc) = *pfVar3;
           *(float *)(in_ECX + 0x3d0) = pfVar3[1];
           *(float *)(in_ECX + 0x3d4) = pfVar3[2];
-          *(undefined4 *)(in_ECX + 0x3c8) = *(undefined4 *)((local_20 + -1) * 0x1c + in_ECX + 0x14);
+          *(undefined4 *)(in_ECX + 0x3c8) = *(undefined4 *)((i + -1) * 0x1c + in_ECX + 0x14);
           Path_RemoveCompletedPathPoints(in_stack_ffffffc8,(int)in_EDX);
         }
         break;
@@ -5844,13 +6048,16 @@ void __cdecl Path_UpdateLookahead_NonCodeMove(path_t *param_1,float *param_2,flo
 
 // 00908210  Path_UpdateLookahead  (game/actor_navigation.cpp:3609)
 
+/* WARNING: Variable defined which should be unmapped: vStartPos */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Path_UpdateLookahead(path_t *param_1,float *param_2,int param_3,int param_4,int param_5,int param_6)
+Path_UpdateLookahead
+          (path_t *bReduceLookaheadAmount,float *bTrimAmount,int bAllowBacktrack,int bAllowRestore,
+          int param_5,int param_6)
 
 {
   code *pcVar1;
@@ -5859,6 +6066,8 @@ Path_UpdateLookahead(path_t *param_1,float *param_2,int param_3,int param_4,int 
   path_t *in_EDX;
   float fVar3;
   path_t *in_stack_ffffffcc;
+  float *vStartPos;
+  path_t *pPath;
   
   if ((*(short *)(in_ECX + 0x386) < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xe21
@@ -5909,7 +6118,7 @@ Path_UpdateLookahead(path_t *param_1,float *param_2,int param_3,int param_4,int 
               (*(float *)(in_ECX + 0x3cc) - in_EDX->pts[0].vOrigPoint[0]) +
               *(float *)(in_ECX + 0x39c) *
               (*(float *)(in_ECX + 0x3d0) - in_EDX->pts[0].vOrigPoint[1])) {
-      if ((param_3 != 0) && (64.0 <= *(float *)(in_ECX + 0x3b0))) {
+      if ((bAllowBacktrack != 0) && (64.0 <= *(float *)(in_ECX + 0x3b0))) {
         Path_BacktrackCompletedPath(in_stack_ffffffcc,(float *)in_EDX);
       }
     }
@@ -5923,11 +6132,12 @@ Path_UpdateLookahead(path_t *param_1,float *param_2,int param_3,int param_4,int 
       if (((*(uint *)(in_ECX + 0x3bc) & 2) != 0) || (*(float *)(in_ECX + 0x3b0) <= 16384.0)) {
         Path_TrimCompletedPath(in_stack_ffffffcc,(float *)in_EDX);
       }
-      if (param_2 != (float *)0x0) {
+      if (bTrimAmount != (float *)0x0) {
         Path_SubtractTrimmedAmount(in_stack_ffffffcc,(float *)in_EDX);
       }
     }
-    Path_CalcLookahead(param_1,(float *)param_4,(int)in_stack_ffffffcc,(int)in_EDX);
+    Path_CalcLookahead(bReduceLookaheadAmount,(float *)bAllowRestore,(int)in_stack_ffffffcc,
+                       (int)in_EDX);
   }
   Path_UpdateForwardLookahead(in_stack_ffffffcc,(float *)in_EDX);
   return;
@@ -5938,7 +6148,7 @@ Path_UpdateLookahead(path_t *param_1,float *param_2,int param_3,int param_4,int 
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Path_DebugDraw(path_t *param_1,float *param_2,int param_3,int param_4)
+void __cdecl Path_DebugDraw(path_t *bDrawLookahead,float *entId,int param_3,int param_4)
 
 {
   float fVar1;
@@ -5947,69 +6157,71 @@ void __cdecl Path_DebugDraw(path_t *param_1,float *param_2,int param_3,int param
   int in_ECX;
   float *in_EDX;
   float *pfVar4;
-  float local_20;
+  float *vStartPos;
+  path_t *pPath;
+  float v2;
   float local_1c;
   float local_18;
-  float local_14;
+  float v1;
   float local_10;
   float local_c;
-  int local_8;
+  int i;
   
   if (*(short *)(in_ECX + 0x380) != 0) {
-    if (param_1 != (path_t *)0x0) {
-      local_14 = *in_EDX;
+    if (bDrawLookahead != (path_t *)0x0) {
+      v1 = *in_EDX;
       local_10 = in_EDX[1];
       fVar1 = *(float *)(in_ECX + 0x3ac);
-      local_20 = fVar1 * *(float *)(in_ECX + 0x398) + *in_EDX;
+      v2 = fVar1 * *(float *)(in_ECX + 0x398) + *in_EDX;
       local_1c = fVar1 * *(float *)(in_ECX + 0x39c) + in_EDX[1];
       local_c = in_EDX[2] + 16.0;
       local_18 = fVar1 * *(float *)(in_ECX + 0x3a0) + in_EDX[2] + 16.0;
-      G_DebugLine(&local_14,&local_20,colorRed,0);
+      G_DebugLine(&v1,&v2,colorRed,0);
     }
-    local_8 = (int)*(short *)(in_ECX + 0x380);
-    local_14 = *in_EDX;
+    i = (int)*(short *)(in_ECX + 0x380);
+    v1 = *in_EDX;
     local_10 = in_EDX[1];
     local_c = in_EDX[2] + 16.0;
-    if ((local_8 == 0) &&
+    if ((i == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xe7a,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8 = local_8 + -1;
-    local_20 = *(float *)(in_ECX + 0x3cc);
+    i = i + -1;
+    v2 = *(float *)(in_ECX + 0x3cc);
     local_1c = *(float *)(in_ECX + 0x3d0);
     local_18 = *(float *)(in_ECX + 0x3d4) + 16.0;
-    if (local_8 == *(short *)(in_ECX + 0x386) + -1) {
-      G_DebugLine(&local_14,&local_20,colorCyan,0);
+    if (i == *(short *)(in_ECX + 0x386) + -1) {
+      G_DebugLine(&v1,&v2,colorCyan,0);
     }
     else {
-      G_DebugLine(&local_14,&local_20,colorBlue,0);
+      G_DebugLine(&v1,&v2,colorBlue,0);
     }
-    local_14 = local_20;
+    v1 = v2;
     local_10 = local_1c;
     local_c = local_18;
-    while (local_8 != 0) {
-      local_8 = local_8 + -1;
-      pfVar4 = (float *)(local_8 * 0x1c + in_ECX);
-      local_20 = *pfVar4;
+    while (i != 0) {
+      i = i + -1;
+      pfVar4 = (float *)(i * 0x1c + in_ECX);
+      v2 = *pfVar4;
       local_1c = pfVar4[1];
       local_18 = pfVar4[2] + 16.0;
-      if (local_8 == *(short *)(in_ECX + 0x386) + -1) {
-        G_DebugLine(&local_14,&local_20,colorCyan,0);
+      if (i == *(short *)(in_ECX + 0x386) + -1) {
+        G_DebugLine(&v1,&v2,colorCyan,0);
       }
       else {
-        G_DebugLine(&local_14,&local_20,colorBlue,0);
+        G_DebugLine(&v1,&v2,colorBlue,0);
       }
-      local_14 = local_20;
+      v1 = v2;
       local_10 = local_1c;
       local_c = local_18;
     }
-    local_8 = (int)*(short *)(in_ECX + 0x380);
+    i = (int)*(short *)(in_ECX + 0x380);
     do {
-      local_8 = local_8 + -1;
-    } while (-1 < local_8);
+      i = i + -1;
+    } while (-1 < i);
   }
   return;
 }
@@ -6019,7 +6231,7 @@ void __cdecl Path_DebugDraw(path_t *param_1,float *param_2,int param_3,int param
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Path_WithinApproxDist(path_t *param_1,float param_2)
+bool __cdecl Path_WithinApproxDist(path_t *checkDist,float param_2)
 
 {
   short sVar1;
@@ -6027,8 +6239,9 @@ bool __cdecl Path_WithinApproxDist(path_t *param_1,float param_2)
   bool bVar3;
   undefined1 uVar4;
   int in_ECX;
-  float local_c;
-  int local_8;
+  path_t *pPath;
+  float fDist;
+  int i;
   
   if ((in_ECX == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xeb5
@@ -6062,14 +6275,14 @@ bool __cdecl Path_WithinApproxDist(path_t *param_1,float param_2)
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    local_c = *(float *)(in_ECX + 0x3ac) + *(float *)(in_ECX + 0x3b4);
+    fDist = *(float *)(in_ECX + 0x3ac) + *(float *)(in_ECX + 0x3b4);
     if (*(short *)(in_ECX + 0x388) == *(short *)(in_ECX + 0x386)) {
-      bVar3 = local_c < (float)param_1;
+      bVar3 = fDist < (float)checkDist;
     }
     else {
       sVar1 = *(short *)(in_ECX + 0x388);
-      local_8 = sVar1 + -1;
-      if (local_8 == *(short *)(in_ECX + 0x380) + -2) {
+      i = sVar1 + -1;
+      if (i == *(short *)(in_ECX + 0x380) + -2) {
         if ((*(float *)(in_ECX + 0x3c8) <= 0.0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                      ,0xec7,0,"%s"), !bVar3)) {
@@ -6077,20 +6290,20 @@ bool __cdecl Path_WithinApproxDist(path_t *param_1,float param_2)
           uVar4 = (*pcVar2)();
           return (bool)uVar4;
         }
-        local_c = local_c + *(float *)(in_ECX + 0x3c8);
-        local_8 = sVar1 + -2;
+        fDist = fDist + *(float *)(in_ECX + 0x3c8);
+        i = sVar1 + -2;
       }
-      if (local_c < (float)param_1) {
-        for (; *(short *)(in_ECX + 0x386) <= local_8; local_8 = local_8 + -1) {
-          if ((*(float *)(in_ECX + 0x14 + local_8 * 0x1c) <= 0.0) &&
+      if (fDist < (float)checkDist) {
+        for (; *(short *)(in_ECX + 0x386) <= i; i = i + -1) {
+          if ((*(float *)(in_ECX + 0x14 + i * 0x1c) <= 0.0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp"
                                        ,0xed1,0,"%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             uVar4 = (*pcVar2)();
             return (bool)uVar4;
           }
-          local_c = local_c + *(float *)(in_ECX + 0x14 + local_8 * 0x1c);
-          if ((float)param_1 <= local_c) {
+          fDist = fDist + *(float *)(in_ECX + 0x14 + i * 0x1c);
+          if ((float)checkDist <= fDist) {
             return false;
           }
         }
@@ -6121,7 +6334,8 @@ ai_stance_e __cdecl Path_AllowedStancesForPath(path_t *param_1)
   int iVar6;
   int in_ECX;
   float *pfVar7;
-  int local_8;
+  path_t *pPath;
+  int i;
   
   if (in_ECX == 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xee6,0
@@ -6181,8 +6395,8 @@ ai_stance_e __cdecl Path_AllowedStancesForPath(path_t *param_1)
     }
   }
   sVar1 = *(short *)(in_ECX + 0x380);
-  local_8 = sVar1 + -1;
-  if (local_8 < *(short *)(in_ECX + 0x386)) {
+  i = sVar1 + -1;
+  if (i < *(short *)(in_ECX + 0x386)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xeee,0
                              ,"%s");
     if (!bVar3) {
@@ -6191,7 +6405,7 @@ ai_stance_e __cdecl Path_AllowedStancesForPath(path_t *param_1)
       return aVar4;
     }
   }
-  pfVar7 = (float *)(local_8 * 0x1c + in_ECX);
+  pfVar7 = (float *)(i * 0x1c + in_ECX);
   if (((*(float *)(in_ECX + 0x3cc) == *pfVar7) && (*(float *)(in_ECX + 0x3d0) == pfVar7[1])) &&
      (*(float *)(in_ECX + 0x3d4) == pfVar7[2])) {
     bVar3 = true;
@@ -6200,19 +6414,19 @@ ai_stance_e __cdecl Path_AllowedStancesForPath(path_t *param_1)
     bVar3 = false;
   }
   if (!bVar3) {
-    local_8 = sVar1 + -2;
+    i = sVar1 + -2;
   }
-  for (; *(short *)(in_ECX + 0x386) <= local_8; local_8 = local_8 + -1) {
-    if (-1 < *(int *)(in_ECX + 0x18 + local_8 * 0x1c)) {
-      ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + local_8 * 0x1c));
+  for (; *(short *)(in_ECX + 0x386) <= i; i = i + -1) {
+    if (-1 < *(int *)(in_ECX + 0x18 + i * 0x1c)) {
+      ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + i * 0x1c));
       iVar6 = Path_IsPathStanceNode(ppVar5);
       if (iVar6 != 0) break;
     }
   }
-  if (local_8 < *(short *)(in_ECX + 0x386)) {
-    local_8 = *(short *)(in_ECX + 0x380) + -1;
-    if (-1 < *(int *)(in_ECX + 0x18 + local_8 * 0x1c)) {
-      ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + local_8 * 0x1c));
+  if (i < *(short *)(in_ECX + 0x386)) {
+    i = *(short *)(in_ECX + 0x380) + -1;
+    if (-1 < *(int *)(in_ECX + 0x18 + i * 0x1c)) {
+      ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + i * 0x1c));
       iVar6 = Path_IsPathStanceNode(ppVar5);
       if (iVar6 != 0) goto LAB_0090c8cb;
     }
@@ -6220,7 +6434,7 @@ ai_stance_e __cdecl Path_AllowedStancesForPath(path_t *param_1)
   }
   else {
 LAB_0090c8cb:
-    if (*(int *)(in_ECX + 0x18 + local_8 * 0x1c) < 0) {
+    if (*(int *)(in_ECX + 0x18 + i * 0x1c) < 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xefd
                                ,0,"%s");
       if (!bVar3) {
@@ -6229,7 +6443,7 @@ LAB_0090c8cb:
         return aVar4;
       }
     }
-    ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + local_8 * 0x1c));
+    ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + i * 0x1c));
     iVar6 = Path_IsPathStanceNode(ppVar5);
     if (iVar6 == 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xefe
@@ -6240,7 +6454,7 @@ LAB_0090c8cb:
         return aVar4;
       }
     }
-    ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + local_8 * 0x1c));
+    ppVar5 = Path_ConvertIndexToNode(*(int *)(in_ECX + 0x18 + i * 0x1c));
     aVar4 = Path_AllowedStancesForNode(ppVar5);
   }
   return aVar4;
@@ -6252,19 +6466,20 @@ LAB_0090c8cb:
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-Path_CheckNodeCountForDodge(path_t *param_1,int param_2,pathpoint_t **param_3,int *param_4)
+Path_CheckNodeCountForDodge(path_t *pPath,int numNeeded,pathpoint_t **pt,int *startIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
+  int iNodeCount_00;
+  int iNodeCount;
   
-  iVar3 = (*param_4 + 1) - (0x20 - param_2);
-  if (0 < iVar3) {
-    Path_TrimLastNodes(param_1,iVar3,false);
-    *param_3 = *param_3 + -iVar3;
-    *param_4 = *param_4 - iVar3;
-    if (param_1->wNegotiationStartNode < 0) {
+  iNodeCount_00 = (*startIndex + 1) - (0x20 - numNeeded);
+  if (0 < iNodeCount_00) {
+    Path_TrimLastNodes(pPath,iNodeCount_00,false);
+    *pt = *pt + -iNodeCount_00;
+    *startIndex = *startIndex - iNodeCount_00;
+    if (pPath->wNegotiationStartNode < 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf0e
                                ,0,"%s");
       if (!bVar2) {
@@ -6273,7 +6488,7 @@ Path_CheckNodeCountForDodge(path_t *param_1,int param_2,pathpoint_t **param_3,in
         return;
       }
     }
-    if (*param_4 < (int)param_1->wNegotiationStartNode) {
+    if (*startIndex < (int)pPath->wNegotiationStartNode) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf0f
                                ,0,"%s");
       if (!bVar2) {
@@ -6289,24 +6504,24 @@ Path_CheckNodeCountForDodge(path_t *param_1,int param_2,pathpoint_t **param_3,in
 
 // 0090DB90  Path_DodgeDrawRaisedLine  (game/actor_navigation.cpp:3862)
 
-void __cdecl Path_DodgeDrawRaisedLine(float *param_1,float *param_2,float *param_3)
+void __cdecl Path_DodgeDrawRaisedLine(float *start,float *end,float *color)
 
 {
-  float local_1c;
+  float startRaised;
   float local_18;
   float local_14;
-  float local_10;
+  float endRaised;
   float local_c;
   float local_8;
   
   if ((ai_showDodge->current).enabled != false) {
-    local_1c = *param_1;
-    local_18 = param_1[1];
-    local_10 = *param_2;
-    local_c = param_2[1];
-    local_14 = param_1[2] + 50.0;
-    local_8 = param_2[2] + 50.0;
-    G_DebugLineWithDuration(&local_1c,&local_10,param_3,0,0x19);
+    startRaised = *start;
+    local_18 = start[1];
+    endRaised = *end;
+    local_c = end[1];
+    local_14 = start[2] + 50.0;
+    local_8 = end[2] + 50.0;
+    G_DebugLineWithDuration(&startRaised,&endRaised,color,0,0x19);
   }
   return;
 }
@@ -6314,11 +6529,17 @@ void __cdecl Path_DodgeDrawRaisedLine(float *param_1,float *param_2,float *param
 
 // 0090C9C0  Path_AttemptDodge  (game/actor_navigation.cpp:3886)
 
+/* WARNING: Variable defined which should be unmapped: vOrg */
+/* WARNING: Variable defined which should be unmapped: pPath */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-Path_AttemptDodge(path_t *param_1,float *param_2,float *param_3,float *param_4,int param_5,
-                 int *param_6,int param_7,int param_8,int param_9,int param_10)
+Path_AttemptDodge(path_t *vDodgeStart,float *vDodgeEnd,float *startIndex,float *entities,
+                 int entityCount,int *entityIgnore,int mask,int bCheckLookahead,int param_9,
+                 int param_10)
 
 {
   code *pcVar1;
@@ -6339,22 +6560,24 @@ Path_AttemptDodge(path_t *param_1,float *param_2,float *param_3,float *param_4,i
   float *in_stack_ffffff0c;
   float *pfVar11;
   float *pfVar12;
-  float local_50;
+  float *vOrg;
+  path_t *pPath;
+  float vNewDodgeEnd;
   float local_4c;
   float local_48;
-  PredictionTraceResult local_44;
-  undefined1 local_40 [12];
-  float local_34;
-  float local_30;
+  PredictionTraceResult result;
+  undefined1 vTraceEndPos [12];
+  float dist;
+  float vEnd;
   float local_2c;
   float local_28;
-  float local_24;
+  float vNewDodgeStart;
   float local_20;
   float local_1c;
-  int local_18;
-  pathpoint_t *local_14;
-  float local_10;
-  float local_c;
+  int maxIndex;
+  pathpoint_t *pt;
+  float dot;
+  float vDelta;
   float local_8;
   
   if ((in_ECX == (path_t *)0x0) &&
@@ -6371,14 +6594,15 @@ Path_AttemptDodge(path_t *param_1,float *param_2,float *param_3,float *param_4,i
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if (((param_1->pts[0].vOrigPoint[0] == *param_2) && (param_1->pts[0].vOrigPoint[1] == param_2[1]))
-     && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
-                                  0xf3e,0,"%s"), !bVar3)) {
+  if (((vDodgeStart->pts[0].vOrigPoint[0] == *vDodgeEnd) &&
+      (vDodgeStart->pts[0].vOrigPoint[1] == vDodgeEnd[1])) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf3e
+                               ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if (((int)in_ECX->lookaheadNextNode < (int)param_3) &&
+  if (((int)in_ECX->lookaheadNextNode < (int)startIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf3f
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -6392,72 +6616,75 @@ Path_AttemptDodge(path_t *param_1,float *param_2,float *param_3,float *param_4,i
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  pfVar11 = param_4;
-  pfVar12 = (float *)param_5;
+  pfVar11 = entities;
+  pfVar12 = (float *)entityCount;
   Path_PredictionTraceCheckForEntities
-            (param_4,(float *)param_5,param_6,param_7,(int)&local_24,(int)in_EDX,(float *)in_ECX);
-  pfVar7 = param_4;
-  pfVar10 = (float *)param_5;
+            (entities,(float *)entityCount,entityIgnore,mask,(int)&vNewDodgeStart,(int)in_EDX,
+             (float *)in_ECX);
+  pfVar7 = entities;
+  pfVar10 = (float *)entityCount;
   Path_PredictionTraceCheckForEntities
-            (param_4,(float *)param_5,param_6,param_7,(int)&local_50,(int)pfVar11,pfVar12);
-  local_14 = in_ECX->pts + (int)param_3;
+            (entities,(float *)entityCount,entityIgnore,mask,(int)&vNewDodgeEnd,(int)pfVar11,pfVar12
+            );
+  pt = in_ECX->pts + (int)startIndex;
   if ((ai_showDodge->current).enabled != false) {
-    G_DebugLineWithDuration((float *)param_1,&local_24,colorYellow,0,0x19);
-    G_DebugLineWithDuration(&local_24,&local_50,colorYellow,0,0x19);
-    G_DebugLineWithDuration(&local_50,local_14->vOrigPoint,colorYellow,0,0x19);
+    G_DebugLineWithDuration((float *)vDodgeStart,&vNewDodgeStart,colorYellow,0,0x19);
+    G_DebugLineWithDuration(&vNewDodgeStart,&vNewDodgeEnd,colorYellow,0,0x19);
+    G_DebugLineWithDuration(&vNewDodgeEnd,pt->vOrigPoint,colorYellow,0,0x19);
   }
-  if ((int)in_ECX->wNegotiationStartNode <= (int)param_3) {
-    pfVar11 = param_4;
-    pfVar12 = (float *)param_5;
+  if ((int)in_ECX->wNegotiationStartNode <= (int)startIndex) {
+    pfVar11 = entities;
+    pfVar12 = (float *)entityCount;
     PVar5 = Path_PredictionTraceCheckForEntities
-                      (param_4,(float *)param_5,param_6,param_7,(int)local_40,(int)pfVar7,pfVar10);
+                      (entities,(float *)entityCount,entityIgnore,mask,(int)vTraceEndPos,(int)pfVar7
+                       ,pfVar10);
     if (PVar5 == PTR_SUCCESS) {
 LAB_0090cd1d:
-      Path_CheckNodeCountForDodge(in_ECX,2,&local_14,(int *)&param_3);
+      Path_CheckNodeCountForDodge(in_ECX,2,&pt,(int *)&startIndex);
       goto LAB_0090d4ed;
     }
-    local_18 = in_ECX->wPathLen + -2;
+    maxIndex = in_ECX->wPathLen + -2;
     if (0 < in_ECX->wDodgeCount) {
-      local_18 = local_18 - in_ECX->wDodgeCount;
+      maxIndex = maxIndex - in_ECX->wDodgeCount;
     }
-    pfVar7 = param_3;
-    if ((int)param_3 < local_18) {
+    pfVar7 = startIndex;
+    if ((int)startIndex < maxIndex) {
       do {
-        param_3 = pfVar7;
-        pfVar7 = (float *)((int)param_3 + 1);
-        fVar9 = *in_EDX - in_ECX->pts[(int)param_3 + 2].vOrigPoint[0];
-        fVar8 = in_EDX[1] - in_ECX->pts[(int)param_3 + 2].vOrigPoint[1];
+        startIndex = pfVar7;
+        pfVar7 = (float *)((int)startIndex + 1);
+        fVar9 = *in_EDX - in_ECX->pts[(int)startIndex + 2].vOrigPoint[0];
+        fVar8 = in_EDX[1] - in_ECX->pts[(int)startIndex + 2].vOrigPoint[1];
         if (fVar9 * fVar9 + fVar8 * fVar8 < 1406.25) break;
-      } while ((int)param_3 + 2 < local_18);
-      local_14 = in_ECX->pts + (int)param_3 + 1;
-      param_3 = pfVar7;
+      } while ((int)startIndex + 2 < maxIndex);
+      pt = in_ECX->pts + (int)startIndex + 1;
+      startIndex = pfVar7;
       if ((ai_showDodge->current).enabled != false) {
-        G_DebugLineWithDuration(&local_50,local_14->vOrigPoint,colorMagenta,0,0x19);
+        G_DebugLineWithDuration(&vNewDodgeEnd,pt->vOrigPoint,colorMagenta,0,0x19);
       }
-      in_stack_ffffff08 = param_4;
-      in_stack_ffffff0c = (float *)param_5;
+      in_stack_ffffff08 = entities;
+      in_stack_ffffff0c = (float *)entityCount;
       PVar5 = Path_PredictionTraceCheckForEntities
-                        (param_4,(float *)param_5,param_6,param_7,(int)local_40,(int)pfVar11,pfVar12
-                        );
+                        (entities,(float *)entityCount,entityIgnore,mask,(int)vTraceEndPos,
+                         (int)pfVar11,pfVar12);
       if (PVar5 == PTR_SUCCESS) goto LAB_0090cd1d;
     }
   }
-  if (param_8 == 0) {
+  if (bCheckLookahead == 0) {
     return false;
   }
-  local_c = local_50 - local_24;
+  vDelta = vNewDodgeEnd - vNewDodgeStart;
   local_8 = local_4c - local_20;
-  fVar9 = Vec2Normalize(&local_c);
+  fVar9 = Vec2Normalize(&vDelta);
   if (15.0 < fVar9) {
-    local_50 = local_c * -15.0 + local_50;
+    vNewDodgeEnd = vDelta * -15.0 + vNewDodgeEnd;
     local_4c = local_8 * -15.0 + local_4c;
   }
   else {
-    local_50 = local_24;
+    vNewDodgeEnd = vNewDodgeStart;
     local_4c = local_20;
     local_48 = local_1c;
   }
-  param_3 = (float *)(int)in_ECX->lookaheadNextNode;
+  startIndex = (float *)(int)in_ECX->lookaheadNextNode;
   if ((in_ECX->wNegotiationStartNode < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf81
                                ,0,"%s"), !bVar3)) {
@@ -6465,51 +6692,52 @@ LAB_0090cd1d:
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if (((int)param_3 < (int)in_ECX->wNegotiationStartNode) &&
+  if (((int)startIndex < (int)in_ECX->wNegotiationStartNode) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf82
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  if ((in_ECX->wPathLen + -1 <= (int)param_3) &&
+  if ((in_ECX->wPathLen + -1 <= (int)startIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xf83
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     uVar4 = (*pcVar1)();
     return (bool)uVar4;
   }
-  local_14 = in_ECX->pts + (int)param_3;
-  local_30 = in_ECX->fLookaheadDist * in_ECX->lookaheadDir[0] + *in_EDX;
+  pt = in_ECX->pts + (int)startIndex;
+  vEnd = in_ECX->fLookaheadDist * in_ECX->lookaheadDir[0] + *in_EDX;
   local_2c = in_ECX->fLookaheadDist * in_ECX->lookaheadDir[1] + in_EDX[1];
-  local_28 = local_14->vOrigPoint[2];
+  local_28 = pt->vOrigPoint[2];
   if ((ai_showDodge->current).enabled != false) {
-    G_DebugLineWithDuration(&local_50,&local_30,colorRed,0,0x19);
+    G_DebugLineWithDuration(&vNewDodgeEnd,&vEnd,colorRed,0,0x19);
   }
-  pfVar7 = param_4;
-  pfVar10 = (float *)param_5;
-  local_44 = Path_PredictionTraceCheckForEntities
-                       (param_4,(float *)param_5,param_6,param_7,(int)local_40,
-                        (int)in_stack_ffffff08,in_stack_ffffff0c);
-  if (local_44 == PTR_HIT_WORLD) {
+  pfVar7 = entities;
+  pfVar10 = (float *)entityCount;
+  result = Path_PredictionTraceCheckForEntities
+                     (entities,(float *)entityCount,entityIgnore,mask,(int)vTraceEndPos,
+                      (int)in_stack_ffffff08,in_stack_ffffff0c);
+  if (result == PTR_HIT_WORLD) {
     return false;
   }
-  if (local_44 == PTR_HIT_ENTITY) {
-    local_10 = (local_50 - *in_EDX) * in_ECX->lookaheadDir[0] +
-               (local_4c - in_EDX[1]) * in_ECX->lookaheadDir[1];
-    local_30 = (local_10 + 15.0) * in_ECX->lookaheadDir[0] + *in_EDX;
-    local_2c = (local_10 + 15.0) * in_ECX->lookaheadDir[1] + in_EDX[1];
+  if (result == PTR_HIT_ENTITY) {
+    dot = (vNewDodgeEnd - *in_EDX) * in_ECX->lookaheadDir[0] +
+          (local_4c - in_EDX[1]) * in_ECX->lookaheadDir[1];
+    vEnd = (dot + 15.0) * in_ECX->lookaheadDir[0] + *in_EDX;
+    local_2c = (dot + 15.0) * in_ECX->lookaheadDir[1] + in_EDX[1];
     if ((ai_showDodge->current).enabled != false) {
-      G_DebugLineWithDuration(&local_50,&local_30,colorCyan,0,0x19);
+      G_DebugLineWithDuration(&vNewDodgeEnd,&vEnd,colorCyan,0,0x19);
     }
-    in_stack_fffffee0 = (path_t *)param_4;
-    in_stack_fffffee4 = (float *)param_5;
+    in_stack_fffffee0 = (path_t *)entities;
+    in_stack_fffffee4 = (float *)entityCount;
     PVar5 = Path_PredictionTraceCheckForEntities
-                      (param_4,(float *)param_5,param_6,param_7,(int)local_40,(int)pfVar7,pfVar10);
+                      (entities,(float *)entityCount,entityIgnore,mask,(int)vTraceEndPos,(int)pfVar7
+                       ,pfVar10);
     if (PVar5 != PTR_SUCCESS) {
       return false;
     }
-    if (((int)param_3 < (int)in_ECX->wNegotiationStartNode) &&
+    if (((int)startIndex < (int)in_ECX->wNegotiationStartNode) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfa2,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
@@ -6517,115 +6745,115 @@ LAB_0090cd1d:
       return (bool)uVar4;
     }
     if ((ai_showDodge->current).enabled != false) {
-      G_DebugLineWithDuration(&local_30,local_14->vOrigPoint,colorCyan,0,0x19);
+      G_DebugLineWithDuration(&vEnd,pt->vOrigPoint,colorCyan,0,0x19);
     }
-    pfVar7 = param_4;
-    pfVar10 = (float *)param_5;
+    pfVar7 = entities;
+    pfVar10 = (float *)entityCount;
     PVar5 = Path_PredictionTraceCheckForEntities
-                      (param_4,(float *)param_5,param_6,param_7,(int)local_40,(int)in_stack_fffffee0
-                       ,in_stack_fffffee4);
+                      (entities,(float *)entityCount,entityIgnore,mask,(int)vTraceEndPos,
+                       (int)in_stack_fffffee0,in_stack_fffffee4);
     if (PVar5 != PTR_SUCCESS) {
       return false;
     }
-    Path_CheckNodeCountForDodge(in_ECX,3,&local_14,(int *)&param_3);
-    fVar9 = Path_GetPathDir(local_14->vOrigPoint,pfVar7,pfVar10);
-    local_14->fOrigLength = fVar9;
-    if ((((uint)local_14->fOrigLength & 0x7f800000) == 0x7f800000) &&
+    Path_CheckNodeCountForDodge(in_ECX,3,&pt,(int *)&startIndex);
+    fVar9 = Path_GetPathDir(pt->vOrigPoint,pfVar7,pfVar10);
+    pt->fOrigLength = fVar9;
+    if ((((uint)pt->fOrigLength & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfaf,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    ppVar2 = local_14;
-    ppVar6 = local_14 + 1;
-    param_3 = (float *)((int)param_3 + 1);
-    ppVar6->vOrigPoint[0] = local_30;
-    local_14[1].vOrigPoint[1] = local_2c;
-    local_14[1].vOrigPoint[2] = local_28;
-    local_14[1].iNodeNum = -1;
-    local_14 = ppVar6;
+    ppVar2 = pt;
+    ppVar6 = pt + 1;
+    startIndex = (float *)((int)startIndex + 1);
+    ppVar6->vOrigPoint[0] = vEnd;
+    pt[1].vOrigPoint[1] = local_2c;
+    pt[1].vOrigPoint[2] = local_28;
+    pt[1].iNodeNum = -1;
+    pt = ppVar6;
     Path_DodgeDrawRaisedLine(ppVar2->vOrigPoint,ppVar6->vOrigPoint,colorBlue);
   }
   else {
     if ((ai_showDodge->current).enabled != false) {
-      G_DebugLineWithDuration(&local_30,local_14->vOrigPoint,colorMdGrey,0,0x19);
+      G_DebugLineWithDuration(&vEnd,pt->vOrigPoint,colorMdGrey,0,0x19);
     }
-    in_stack_fffffee0 = (path_t *)param_4;
-    in_stack_fffffee4 = (float *)param_5;
+    in_stack_fffffee0 = (path_t *)entities;
+    in_stack_fffffee4 = (float *)entityCount;
     PVar5 = Path_PredictionTraceCheckForEntities
-                      (param_4,(float *)param_5,param_6,param_7,(int)local_40,(int)pfVar7,pfVar10);
+                      (entities,(float *)entityCount,entityIgnore,mask,(int)vTraceEndPos,(int)pfVar7
+                       ,pfVar10);
     if (PVar5 != PTR_SUCCESS) {
       return false;
     }
-    Path_CheckNodeCountForDodge(in_ECX,3,&local_14,(int *)&param_3);
-    local_34 = in_ECX->fLookaheadDistToNextNode;
-    if ((local_34 <= 0.0) &&
+    Path_CheckNodeCountForDodge(in_ECX,3,&pt,(int *)&startIndex);
+    dist = in_ECX->fLookaheadDistToNextNode;
+    if ((dist <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfc9,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    if ((((uint)local_14->fOrigLength & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)pt->fOrigLength & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfcb,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    if ((local_14->fOrigLength <= 0.0) &&
+    if ((pt->fOrigLength <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfcc,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    if (((local_14->fDir2D[0] == 0.0) && (local_14->fDir2D[1] == 0.0)) &&
+    if (((pt->fDir2D[0] == 0.0) && (pt->fDir2D[1] == 0.0)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfcd,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    if ((local_14->fOrigLength < local_34) &&
+    if ((pt->fOrigLength < dist) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfce,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    local_14[1].vOrigPoint[0] = local_14->vOrigPoint[0] - local_14->fDir2D[0] * local_34;
-    local_14[1].vOrigPoint[1] = local_14->vOrigPoint[1] - local_14->fDir2D[1] * local_34;
-    local_14[1].vOrigPoint[2] =
-         local_14->vOrigPoint[2] -
-         ((local_14->vOrigPoint[2] - local_14[1].vOrigPoint[2]) * local_34) / local_14->fOrigLength;
-    local_14->fOrigLength = local_34;
-    if ((((uint)local_14->fOrigLength & 0x7f800000) == 0x7f800000) &&
+    pt[1].vOrigPoint[0] = pt->vOrigPoint[0] - pt->fDir2D[0] * dist;
+    pt[1].vOrigPoint[1] = pt->vOrigPoint[1] - pt->fDir2D[1] * dist;
+    pt[1].vOrigPoint[2] =
+         pt->vOrigPoint[2] - ((pt->vOrigPoint[2] - pt[1].vOrigPoint[2]) * dist) / pt->fOrigLength;
+    pt->fOrigLength = dist;
+    if ((((uint)pt->fOrigLength & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfd5,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    if ((local_14->fOrigLength <= 0.0) &&
+    if ((pt->fOrigLength <= 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfd6,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    ppVar2 = local_14;
-    ppVar6 = local_14 + 1;
-    param_3 = (float *)((int)param_3 + 1);
-    in_ECX->lookaheadNextNode = (short)param_3;
+    ppVar2 = pt;
+    ppVar6 = pt + 1;
+    startIndex = (float *)((int)startIndex + 1);
+    in_ECX->lookaheadNextNode = (short)startIndex;
     in_ECX->fLookaheadDistToNextNode = 0.0;
-    local_14[1].iNodeNum = -1;
-    local_14 = ppVar6;
+    pt[1].iNodeNum = -1;
+    pt = ppVar6;
     Path_DodgeDrawRaisedLine(ppVar2->vOrigPoint,ppVar6->vOrigPoint,colorGreen);
   }
 LAB_0090d4ed:
-  if ((local_14 != in_ECX->pts + (int)param_3) &&
+  if ((pt != in_ECX->pts + (int)startIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0xfe6
                                ,0,"%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -6633,57 +6861,57 @@ LAB_0090d4ed:
     return (bool)uVar4;
   }
   in_ECX->wDodgeCount = 0;
-  if ((local_14->vOrigPoint[0] != local_50) || (local_14->vOrigPoint[1] != local_4c)) {
-    fVar9 = Path_GetPathDir(local_14->vOrigPoint,(float *)in_stack_fffffee0,in_stack_fffffee4);
-    local_14->fOrigLength = fVar9;
-    if ((((uint)local_14->fOrigLength & 0x7f800000) == 0x7f800000) &&
+  if ((pt->vOrigPoint[0] != vNewDodgeEnd) || (pt->vOrigPoint[1] != local_4c)) {
+    fVar9 = Path_GetPathDir(pt->vOrigPoint,(float *)in_stack_fffffee0,in_stack_fffffee4);
+    pt->fOrigLength = fVar9;
+    if ((((uint)pt->fOrigLength & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xfec,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    ppVar2 = local_14;
-    ppVar6 = local_14 + 1;
-    param_3 = (float *)((int)param_3 + 1);
+    ppVar2 = pt;
+    ppVar6 = pt + 1;
+    startIndex = (float *)((int)startIndex + 1);
     in_ECX->wDodgeCount = in_ECX->wDodgeCount + 1;
-    ppVar6->vOrigPoint[0] = local_50;
-    local_14[1].vOrigPoint[1] = local_4c;
-    local_14[1].vOrigPoint[2] = local_48;
-    local_14[1].iNodeNum = -1;
-    local_14 = ppVar6;
+    ppVar6->vOrigPoint[0] = vNewDodgeEnd;
+    pt[1].vOrigPoint[1] = local_4c;
+    pt[1].vOrigPoint[2] = local_48;
+    pt[1].iNodeNum = -1;
+    pt = ppVar6;
     Path_DodgeDrawRaisedLine(ppVar2->vOrigPoint,ppVar6->vOrigPoint,colorLtGreen);
   }
-  if ((local_24 != local_50) || (local_20 != local_4c)) {
-    fVar9 = Path_GetPathDir(&local_50,(float *)in_stack_fffffee0,in_stack_fffffee4);
-    local_14->fOrigLength = fVar9;
-    if ((((uint)local_14->fOrigLength & 0x7f800000) == 0x7f800000) &&
+  if ((vNewDodgeStart != vNewDodgeEnd) || (local_20 != local_4c)) {
+    fVar9 = Path_GetPathDir(&vNewDodgeEnd,(float *)in_stack_fffffee0,in_stack_fffffee4);
+    pt->fOrigLength = fVar9;
+    if ((((uint)pt->fOrigLength & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
                                  0xffd,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar4 = (*pcVar1)();
       return (bool)uVar4;
     }
-    ppVar2 = local_14;
-    ppVar6 = local_14 + 1;
-    param_3 = (float *)((int)param_3 + 1);
+    ppVar2 = pt;
+    ppVar6 = pt + 1;
+    startIndex = (float *)((int)startIndex + 1);
     in_ECX->wDodgeCount = in_ECX->wDodgeCount + 1;
-    ppVar6->vOrigPoint[0] = local_24;
-    local_14[1].vOrigPoint[1] = local_20;
-    local_14[1].vOrigPoint[2] = local_1c;
-    local_14[1].iNodeNum = -1;
-    local_14 = ppVar6;
+    ppVar6->vOrigPoint[0] = vNewDodgeStart;
+    pt[1].vOrigPoint[1] = local_20;
+    pt[1].vOrigPoint[2] = local_1c;
+    pt[1].iNodeNum = -1;
+    pt = ppVar6;
     Path_DodgeDrawRaisedLine(ppVar2->vOrigPoint,ppVar6->vOrigPoint,colorMdYellow);
   }
-  in_ECX->fCurrLength = ((path_t *)(local_14 + -1))->pts[0].fOrigLength;
-  in_ECX->vCurrPoint[0] = local_24;
+  in_ECX->fCurrLength = pt[-1].fOrigLength;
+  in_ECX->vCurrPoint[0] = vNewDodgeStart;
   in_ECX->vCurrPoint[1] = local_20;
   in_ECX->vCurrPoint[2] = local_1c;
-  local_14->fOrigLength = 0.0;
-  local_14->fDir2D[0] = 0.0;
-  local_14->fDir2D[1] = 0.0;
+  pt->fOrigLength = 0.0;
+  pt->fDir2D[0] = 0.0;
+  pt->fDir2D[1] = 0.0;
   in_ECX->flags = in_ECX->flags & 0xfffffdbc;
-  in_ECX->wPathLen = (short)param_3 + 1;
+  in_ECX->wPathLen = (short)startIndex + 1;
   in_ECX->wOrigPathLen = in_ECX->wPathLen;
   Path_TransferLookahead(in_stack_fffffee0,in_stack_fffffee4);
   if ((in_ECX->lookaheadNextNode < in_ECX->wNegotiationStartNode) &&
@@ -6741,12 +6969,13 @@ LAB_0090d4ed:
 
 // 0090DC40  Path_MayFaceEnemy  (game/actor_navigation.cpp:4137)
 
+/* WARNING: Variable defined which should be unmapped: vEnemyDir */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Path_MayFaceEnemy(path_t *param_1,float *param_2,float *param_3)
+int __cdecl Path_MayFaceEnemy(path_t *vOrg,float *param_2,float *param_3)
 
 {
   code *pcVar1;
@@ -6756,6 +6985,12 @@ int __cdecl Path_MayFaceEnemy(path_t *param_1,float *param_2,float *param_3)
   float *in_EDX;
   float fVar4;
   float fVar5;
+  float *vEnemyDir;
+  path_t *pPath;
+  float fLerp;
+  float fMaxTime;
+  float fMinStraightDist;
+  float fDot;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",0x1031,
@@ -6855,6 +7090,7 @@ int __cdecl Path_MayFaceEnemy(path_t *param_1,float *param_2,float *param_3)
 // 0090DF30  Path_TrimToBadPlaceLink  (game/actor_navigation.cpp:4198)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 void __cdecl Path_TrimToBadPlaceLink(path_t *param_1,team_t param_2)
 
@@ -6864,7 +7100,8 @@ void __cdecl Path_TrimToBadPlaceLink(path_t *param_1,team_t param_2)
   int iVar3;
   path_t *in_ECX;
   team_t in_EDX;
-  int local_8;
+  path_t *pPath;
+  int i;
   
   if ((in_ECX == (path_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_navigation.cpp",
@@ -6873,18 +7110,18 @@ void __cdecl Path_TrimToBadPlaceLink(path_t *param_1,team_t param_2)
     (*pcVar1)();
     return;
   }
-  local_8 = in_ECX->wPathLen + -2;
+  i = in_ECX->wPathLen + -2;
   while( true ) {
-    if (local_8 < 0) {
+    if (i < 0) {
       return;
     }
-    if ((((-1 < in_ECX->pts[local_8].iNodeNum) && (-1 < in_ECX->pts[local_8 + 1].iNodeNum)) &&
+    if ((((-1 < in_ECX->pts[i].iNodeNum) && (-1 < in_ECX->pts[i + 1].iNodeNum)) &&
         ((in_EDX & (TEAM_NUM_TEAMS|TEAM_ALLIES)) != TEAM_BAD)) &&
-       (iVar3 = Path_IsBadPlaceLink(in_ECX->pts[local_8 + 1].iNodeNum,in_ECX->pts[local_8].iNodeNum,
-                                    in_EDX), iVar3 != 0)) break;
-    local_8 = local_8 + -1;
+       (iVar3 = Path_IsBadPlaceLink(in_ECX->pts[i + 1].iNodeNum,in_ECX->pts[i].iNodeNum,in_EDX),
+       iVar3 != 0)) break;
+    i = i + -1;
   }
-  Path_TrimLastNodes(in_ECX,local_8,true);
+  Path_TrimLastNodes(in_ECX,i,true);
   return;
 }
 

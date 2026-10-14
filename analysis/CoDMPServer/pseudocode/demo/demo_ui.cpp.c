@@ -59,60 +59,61 @@ int __cdecl Demo_GetKeyboardTextSize(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_KeyboardComplete(int param_1,char *param_2,bool param_3,char *param_4)
+void __cdecl
+Demo_KeyboardComplete(int localClientNum,char *string,bool errorReported,char *errorString)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
   
-  if (param_3) {
+  if (errorReported) {
     if ((demo.keyboard.mode < 1) || (5 < demo.keyboard.mode)) {
-      Com_SetErrorMessage(param_4);
-      UI_OpenMenu(param_1,"error_popmenu_keyboard");
+      Com_SetErrorMessage(errorString);
+      UI_OpenMenu(localClientNum,"error_popmenu_keyboard");
     }
     else {
-      Demo_Error(param_1,"MPUI_ERROR_CAPS",param_4);
+      Demo_Error(localClientNum,"MPUI_ERROR_CAPS",errorString);
     }
   }
   else {
     switch(demo.keyboard.mode) {
     case 1:
-      I_strncpyz((demo.playback)->segments[demo.keyboard.currentProcessingSegmentIndex].name,param_2
-                 ,demo.keyboard.textSize);
+      I_strncpyz((demo.playback)->segments[demo.keyboard.currentProcessingSegmentIndex].name,string,
+                 demo.keyboard.textSize);
       pcVar3 = "demo_save_clip";
-      iVar2 = Com_LocalClient_GetControllerIndex(param_1);
+      iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
       bVar1 = Menu_IsMenuOpenAndVisible(iVar2,pcVar3);
       if (bVar1) {
         pcVar3 = va("demo_savesegment %d 0");
-        iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-        Cmd_ExecuteSingleCommand(param_1,iVar2,pcVar3);
-        Key_RemoveCatcher(param_1,-0x11);
-        UI_CloseMenu(param_1,"demo_save_clip");
+        iVar2 = Com_LocalClient_GetControllerIndex(localClientNum);
+        Cmd_ExecuteSingleCommand(localClientNum,iVar2,pcVar3);
+        Key_RemoveCatcher(localClientNum,-0x11);
+        UI_CloseMenu(localClientNum,"demo_save_clip");
       }
       break;
     case 2:
-      I_strncpyz(((demo.playback)->clipRecordInfo).name,param_2,demo.keyboard.textSize);
+      I_strncpyz(((demo.playback)->clipRecordInfo).name,string,demo.keyboard.textSize);
       ((demo.playback)->clipRecordInfo).isModifiedName = true;
       break;
     case 3:
-      I_strncpyz(((demo.playback)->clipRecordInfo).description,param_2,demo.keyboard.textSize);
+      I_strncpyz(((demo.playback)->clipRecordInfo).description,string,demo.keyboard.textSize);
       ((demo.playback)->clipRecordInfo).isModifiedDescription = true;
       break;
     case 4:
-      I_strncpyz(((demo.playback)->screenshotInfo).name,param_2,demo.keyboard.textSize);
+      I_strncpyz(((demo.playback)->screenshotInfo).name,string,demo.keyboard.textSize);
       ((demo.playback)->screenshotInfo).isModifiedName = true;
       break;
     case 5:
-      I_strncpyz(((demo.playback)->screenshotInfo).description,param_2,demo.keyboard.textSize);
+      I_strncpyz(((demo.playback)->screenshotInfo).description,string,demo.keyboard.textSize);
       ((demo.playback)->screenshotInfo).isModifiedDescription = true;
       break;
     case 6:
-      Dvar_SetString(fsSelectedFileName,param_2);
+      Dvar_SetString(fsSelectedFileName,string);
       Dvar_SetBool(fsIsSelectedFileNameModified,true);
       break;
     case 7:
-      Dvar_SetString(fsSelectedFileDescription,param_2);
+      Dvar_SetString(fsSelectedFileDescription,string);
       Dvar_SetBool(fsIsSelectedFileDescriptionModified,true);
     }
   }
@@ -129,21 +130,24 @@ void __cdecl Demo_KeyboardComplete(int param_1,char *param_2,bool param_3,char *
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Demo_GetStartAndEndTime(int *param_1,int *param_2)
+void __cdecl Demo_GetStartAndEndTime(int *startTime,int *endTime)
 
 {
-  *param_1 = demo.info.startTime;
-  *param_2 = demo.info.endTime;
+  *startTime = demo.info.startTime;
+  *endTime = demo.info.endTime;
   return;
 }
 
 
 // 009CD6B0  Demo_GetDuration  (demo/demo_ui.cpp:331)
 
-void __cdecl Demo_GetDuration(char *param_1,int param_2)
+void __cdecl Demo_GetDuration(char *outputText,int duration)
 
 {
-  sprintf(param_1,"%02i:%02i");
+  int demoTimeMin;
+  int demoTimeSec;
+  
+  sprintf(outputText,"%02i:%02i");
   return;
 }
 
@@ -193,6 +197,7 @@ char * __cdecl Demo_GetTimeInfo(void)
 
 {
   char *pcVar1;
+  char *s;
   
   pcVar1 = UI_GetMonthAbbrev(demo.info.month + -1);
   UI_SafeTranslateString(pcVar1);
@@ -210,6 +215,9 @@ char * __cdecl Demo_GetDuration(void)
 
 {
   char *pcVar1;
+  int timeMin;
+  int timeSec;
+  int duration;
   
   pcVar1 = va("%02i:%02i");
   return pcVar1;
@@ -221,7 +229,7 @@ char * __cdecl Demo_GetDuration(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_GetSaveScreenName(char *param_1)
+char * __cdecl Demo_GetSaveScreenName(char *type)
 
 {
   bool bVar1;
@@ -230,12 +238,12 @@ char * __cdecl Demo_GetSaveScreenName(char *param_1)
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    iVar3 = I_stricmp(param_1,"clip");
+    iVar3 = I_stricmp(type,"clip");
     if (iVar3 == 0) {
       pcVar2 = ((demo.playback)->clipRecordInfo).name;
     }
     else {
-      iVar3 = I_stricmp(param_1,"screenshot");
+      iVar3 = I_stricmp(type,"screenshot");
       if (iVar3 == 0) {
         pcVar2 = ((demo.playback)->screenshotInfo).name;
       }
@@ -256,7 +264,7 @@ char * __cdecl Demo_GetSaveScreenName(char *param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_GetSaveScreenDescription(char *param_1)
+char * __cdecl Demo_GetSaveScreenDescription(char *type)
 
 {
   bool bVar1;
@@ -265,12 +273,12 @@ char * __cdecl Demo_GetSaveScreenDescription(char *param_1)
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    iVar3 = I_stricmp(param_1,"clip");
+    iVar3 = I_stricmp(type,"clip");
     if (iVar3 == 0) {
       pcVar2 = ((demo.playback)->clipRecordInfo).description;
     }
     else {
-      iVar3 = I_stricmp(param_1,"screenshot");
+      iVar3 = I_stricmp(type,"screenshot");
       if (iVar3 == 0) {
         pcVar2 = ((demo.playback)->screenshotInfo).description;
       }
@@ -291,29 +299,33 @@ char * __cdecl Demo_GetSaveScreenDescription(char *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_GetConnectionTimeInfoForPlayer(int param_1,int *param_2,int *param_3)
+void __cdecl
+Demo_GetConnectionTimeInfoForPlayer(int localClientNum,int *connectTime,int *disconnectTime)
 
 {
   uint uVar1;
   int iVar2;
   clientActive_t *pcVar3;
-  int local_c;
+  clientActive_t *cl;
+  int snapTime;
+  int i;
+  int clientNum;
   
   uVar1 = (demo_client->current).integer;
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
+  pcVar3 = CL_GetLocalClientGlobals(localClientNum);
   iVar2 = (pcVar3->snap).serverTime;
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (demo.info.numConnectedPlayersInfoCount <= local_c) {
+    if (demo.info.numConnectedPlayersInfoCount <= i) {
       return;
     }
-    if (((demo.info.connectedPlayers[local_c].clientNum == uVar1) &&
-        (demo.info.connectedPlayers[local_c].connectTime <= iVar2)) &&
-       (iVar2 <= demo.info.connectedPlayers[local_c].disconnectTime)) break;
-    local_c = local_c + 1;
+    if (((demo.info.connectedPlayers[i].clientNum == uVar1) &&
+        (demo.info.connectedPlayers[i].connectTime <= iVar2)) &&
+       (iVar2 <= demo.info.connectedPlayers[i].disconnectTime)) break;
+    i = i + 1;
   }
-  *param_2 = demo.info.connectedPlayers[local_c].connectTime;
-  *param_3 = demo.info.connectedPlayers[local_c].disconnectTime;
+  *connectTime = demo.info.connectedPlayers[i].connectTime;
+  *disconnectTime = demo.info.connectedPlayers[i].disconnectTime;
   return;
 }
 
@@ -323,26 +335,27 @@ void __cdecl Demo_GetConnectionTimeInfoForPlayer(int param_1,int *param_2,int *p
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Demo_GetPlayerIndexForClientNum(int param_1,int param_2)
+int __cdecl Demo_GetPlayerIndexForClientNum(int clientNum,int serverTime)
 
 {
-  int local_8;
+  bool ignoreServerTime;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (demo.info.numConnectedPlayersInfoCount <= local_8) {
+    if (demo.info.numConnectedPlayersInfoCount <= i) {
       return -1;
     }
-    if ((uint)demo.info.connectedPlayers[local_8].clientNum == param_1) {
-      if ((demo.info.connectedPlayers[local_8].connectTime <= param_2) &&
-         (param_2 <= demo.info.connectedPlayers[local_8].disconnectTime)) {
-        return local_8;
+    if ((uint)demo.info.connectedPlayers[i].clientNum == clientNum) {
+      if ((demo.info.connectedPlayers[i].connectTime <= serverTime) &&
+         (serverTime <= demo.info.connectedPlayers[i].disconnectTime)) {
+        return i;
       }
-      if (param_2 < 0) {
-        return local_8;
+      if (serverTime < 0) {
+        return i;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -354,86 +367,90 @@ int __cdecl Demo_GetPlayerIndexForClientNum(int param_1,int param_2)
 
 int __cdecl
 Demo_GetNextDefaultBookmarkForPlayer
-          (int param_1,int param_2,int *param_3,int *param_4,float (*param_5) [4])
+          (int localClientNum,int index,int *type,int *time,float (*color) [4])
 
 {
   uchar uVar1;
-  uint uVar2;
-  code *pcVar3;
-  int iVar4;
-  bool bVar5;
-  clientActive_t *pcVar6;
-  int iVar7;
-  char *pcVar8;
-  int local_c;
+  uint clientNum_00;
+  code *pcVar2;
+  int iVar3;
+  bool bVar4;
+  clientActive_t *pcVar5;
+  int iVar6;
+  char *fmt;
+  clientActive_t *cl;
+  int playerIndex;
+  int snapTime;
+  int i;
+  int clientNum;
   
-  uVar2 = (demo_client->current).integer;
-  pcVar6 = CL_GetLocalClientGlobals(param_1);
-  iVar7 = Demo_GetPlayerIndexForClientNum(uVar2,(pcVar6->snap).serverTime);
+  clientNum_00 = (demo_client->current).integer;
+  pcVar5 = CL_GetLocalClientGlobals(localClientNum);
+  iVar6 = Demo_GetPlayerIndexForClientNum(clientNum_00,(pcVar5->snap).serverTime);
   do {
     while( true ) {
       do {
-        iVar4 = param_2;
-        local_c = iVar4 + 1;
-        if (demo.info.numDefaultBookmarksCount <= local_c) {
+        iVar3 = index;
+        i = iVar3 + 1;
+        if (demo.info.numDefaultBookmarksCount <= i) {
           return -1;
         }
-        param_2 = local_c;
-      } while (((iVar7 < 0) ||
-               (param_2 = local_c,
-               demo.info.defaultBookmarks[iVar4 + 1].time <
-               demo.info.connectedPlayers[iVar7].connectTime)) ||
-              (param_2 = local_c,
-              demo.info.connectedPlayers[iVar7].disconnectTime <
-              demo.info.defaultBookmarks[iVar4 + 1].time));
-      uVar1 = demo.info.defaultBookmarks[iVar4 + 1].type;
+        index = i;
+      } while (((iVar6 < 0) ||
+               (index = i,
+               demo.info.defaultBookmarks[iVar3 + 1].time <
+               demo.info.connectedPlayers[iVar6].connectTime)) ||
+              (index = i,
+              demo.info.connectedPlayers[iVar6].disconnectTime <
+              demo.info.defaultBookmarks[iVar3 + 1].time));
+      uVar1 = demo.info.defaultBookmarks[iVar3 + 1].type;
       if (uVar1 == '\0') break;
       if (uVar1 == '\x01') {
-        (*param_5)[0] = 0.0;
-        (*param_5)[1] = 0.0;
-        (*param_5)[2] = 1.0;
-        (*param_5)[3] = 1.0;
+        (*color)[0] = 0.0;
+        (*color)[1] = 0.0;
+        (*color)[2] = 1.0;
+        (*color)[3] = 1.0;
         goto LAB_009cdc77;
       }
       if (uVar1 != '\x02') {
-        pcVar8 = va("Unknown bookmark type %d\n");
-        bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_ui.cpp",0x239,0,
-                                 pcVar8);
-        if (!bVar5) {
-          pcVar3 = (code *)swi(3);
-          iVar7 = (*pcVar3)();
-          return iVar7;
+        fmt = va("Unknown bookmark type %d\n");
+        bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\demo\\demo_ui.cpp",0x239,0,fmt)
+        ;
+        if (!bVar4) {
+          pcVar2 = (code *)swi(3);
+          iVar6 = (*pcVar2)();
+          return iVar6;
         }
         goto LAB_009cdc77;
       }
-      param_2 = local_c;
-      if (demo.info.defaultBookmarks[iVar4 + 1].clientNum1 == uVar2) {
-        (*param_5)[0] = 1.0;
-        (*param_5)[1] = 1.0;
-        (*param_5)[2] = 0.0;
-        (*param_5)[3] = 1.0;
+      index = i;
+      if (demo.info.defaultBookmarks[iVar3 + 1].clientNum1 == clientNum_00) {
+        (*color)[0] = 1.0;
+        (*color)[1] = 1.0;
+        (*color)[2] = 0.0;
+        (*color)[3] = 1.0;
         goto LAB_009cdc77;
       }
     }
-    if ((demo.info.defaultBookmarks[iVar4 + 1].clientNum2 == uVar2) &&
-       (demo.info.defaultBookmarks[iVar4 + 1].clientNum2 !=
-        demo.info.defaultBookmarks[iVar4 + 1].clientNum1)) {
-      (*param_5)[0] = 0.0;
-      (*param_5)[1] = 1.0;
-      (*param_5)[2] = 0.0;
-      (*param_5)[3] = 1.0;
+    if ((demo.info.defaultBookmarks[iVar3 + 1].clientNum2 == clientNum_00) &&
+       (demo.info.defaultBookmarks[iVar3 + 1].clientNum2 !=
+        demo.info.defaultBookmarks[iVar3 + 1].clientNum1)) {
+      (*color)[0] = 0.0;
+      (*color)[1] = 1.0;
+      (*color)[2] = 0.0;
+      (*color)[3] = 1.0;
       goto LAB_009cdc77;
     }
-    param_2 = local_c;
-  } while (demo.info.defaultBookmarks[iVar4 + 1].clientNum1 != uVar2);
-  (*param_5)[0] = 1.0;
-  (*param_5)[1] = 0.0;
-  (*param_5)[2] = 0.0;
-  (*param_5)[3] = 1.0;
+    index = i;
+  } while (demo.info.defaultBookmarks[iVar3 + 1].clientNum1 != clientNum_00);
+  (*color)[0] = 1.0;
+  (*color)[1] = 0.0;
+  (*color)[2] = 0.0;
+  (*color)[3] = 1.0;
 LAB_009cdc77:
-  *param_3 = (uint)demo.info.defaultBookmarks[iVar4 + 1].type;
-  *param_4 = demo.info.defaultBookmarks[iVar4 + 1].time;
-  return local_c;
+  *type = (uint)demo.info.defaultBookmarks[iVar3 + 1].type;
+  *time = demo.info.defaultBookmarks[iVar3 + 1].time;
+  return i;
 }
 
 
@@ -442,33 +459,35 @@ LAB_009cdc77:
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Demo_GetClientNumForXuid(int param_1,ulong64 param_2)
+int __cdecl Demo_GetClientNumForXuid(int localClientNum,ulong64 param_2)
 
 {
   int iVar1;
   clientActive_t *pcVar2;
   int in_stack_00000008;
-  int local_14;
-  char local_9;
+  int i;
+  clientActive_t *cl;
+  bool ignoreServerTime;
+  int serverTime;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
   iVar1 = (pcVar2->snap).serverTime;
   if (iVar1 < 1) {
-    local_9 = '\x01';
+    ignoreServerTime = true;
   }
-  local_14 = 0;
+  i = 0;
   while( true ) {
-    if (demo.info.numConnectedPlayersInfoCount <= local_14) {
+    if (demo.info.numConnectedPlayersInfoCount <= i) {
       return -1;
     }
-    if ((((int)demo.info.connectedPlayers[local_14].xuid == in_stack_00000008) &&
-        (*(int *)((int)&demo.info.connectedPlayers[local_14].xuid + 4) == (int)param_2)) &&
-       (((demo.info.connectedPlayers[local_14].connectTime <= iVar1 &&
-         (iVar1 <= demo.info.connectedPlayers[local_14].disconnectTime)) || (local_9 != '\0'))))
+    if ((((int)demo.info.connectedPlayers[i].xuid == in_stack_00000008) &&
+        (*(int *)((int)&demo.info.connectedPlayers[i].xuid + 4) == (int)param_2)) &&
+       (((demo.info.connectedPlayers[i].connectTime <= iVar1 &&
+         (iVar1 <= demo.info.connectedPlayers[i].disconnectTime)) || (ignoreServerTime != false))))
     break;
-    local_14 = local_14 + 1;
+    i = i + 1;
   }
-  return (uint)demo.info.connectedPlayers[local_14].clientNum;
+  return (uint)demo.info.connectedPlayers[i].clientNum;
 }
 
 
@@ -477,7 +496,7 @@ int __cdecl Demo_GetClientNumForXuid(int param_1,ulong64 param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl Demo_GetActivatedColorForButton(int param_1,float (*param_2) [4])
+bool __cdecl Demo_GetActivatedColorForButton(int demoControlButtonType,float (*color) [4])
 
 {
   bool bVar1;
@@ -485,16 +504,16 @@ bool __cdecl Demo_GetActivatedColorForButton(int param_1,float (*param_2) [4])
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    if ((demo.playback)->buttonPressTime[param_1] == 0) {
+    if ((demo.playback)->buttonPressTime[demoControlButtonType] == 0) {
       bVar1 = false;
     }
     else {
       iVar2 = Sys_Milliseconds();
-      if (iVar2 - (demo.playback)->buttonPressTime[param_1] < 0x65) {
-        (*param_2)[0] = 1.0;
-        (*param_2)[1] = 1.0;
-        (*param_2)[2] = 0.0;
-        (*param_2)[3] = 1.0;
+      if (iVar2 - (demo.playback)->buttonPressTime[demoControlButtonType] < 0x65) {
+        (*color)[0] = 1.0;
+        (*color)[1] = 1.0;
+        (*color)[2] = 0.0;
+        (*color)[3] = 1.0;
         bVar1 = true;
       }
       else {
@@ -513,19 +532,18 @@ bool __cdecl Demo_GetActivatedColorForButton(int param_1,float (*param_2) [4])
 
 void __cdecl
 Demo_DrawVerticalLine
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float param_8,float param_9,float param_10,float param_11,
-          float *param_12,Material *param_13)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+          float s1,float t1,float s2,float t2,float *color,Material *material)
 
 {
-  float fVar1;
+  float w_00;
+  float originalWidth;
   
-  fVar1 = param_4;
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  param_2 = (float)(int)ROUND(param_2 + 9.313226e-10);
-  param_4 = fVar1;
-  CL_DrawStretchPicPhysical
-            (param_2,param_3,fVar1,param_5,param_8,param_9,param_10,param_11,param_12,param_13);
+  w_00 = w;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+  x = (float)(int)ROUND(x + 9.313226e-10);
+  w = w_00;
+  CL_DrawStretchPicPhysical(x,y,w_00,h,s1,t1,s2,t2,color,material);
   return;
 }
 
@@ -557,7 +575,7 @@ int __cdecl Demo_GetSegmentCount(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_GetSegmentName(int param_1)
+char * __cdecl Demo_GetSegmentName(int index)
 
 {
   bool bVar1;
@@ -565,7 +583,7 @@ char * __cdecl Demo_GetSegmentName(int param_1)
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    pcVar2 = (demo.playback)->segments[param_1].name;
+    pcVar2 = (demo.playback)->segments[index].name;
   }
   else {
     pcVar2 = "";
@@ -579,20 +597,22 @@ char * __cdecl Demo_GetSegmentName(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_GetSegmentTransition(int param_1)
+char * __cdecl Demo_GetSegmentTransition(int index)
 
 {
   bool bVar1;
   char *pcVar2;
+  int transitionVal;
+  char *s;
   
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    if (param_1 == (demo.playback)->segmentCount + -1) {
+    if (index == (demo.playback)->segmentCount + -1) {
       UI_SafeTranslateString("MENU_NONE");
     }
     else {
       UI_SafeTranslateString
-                (demo_transition_enum_string[(demo.playback)->segments[param_1].transition]);
+                (demo_transition_enum_string[(demo.playback)->segments[index].transition]);
     }
     pcVar2 = va("%s");
   }
@@ -609,71 +629,71 @@ char * __cdecl Demo_GetSegmentTransition(int param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Demo_GetSegmentInformation(int param_1,char *param_2)
+char * __cdecl Demo_GetSegmentInformation(int index,char *s)
 
 {
   bool bVar1;
   char *pcVar2;
   int iVar3;
-  int local_20;
-  int local_1c;
-  char local_18 [12];
+  int i;
+  int total;
+  char output [12];
   uint local_c;
-  char *local_8;
+  char *outputStr;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18[0] = '\0';
-  local_18[1] = '\0';
-  local_18[2] = '\0';
-  local_18[3] = '\0';
-  local_18[4] = '\0';
-  local_18[5] = '\0';
-  local_18[6] = '\0';
-  local_18[7] = '\0';
-  local_18[8] = '\0';
-  local_18[9] = '\0';
-  local_18[10] = '\0';
-  local_18[0xb] = 0;
-  local_8 = "";
-  local_1c = 0;
+  output[0] = '\0';
+  output[1] = '\0';
+  output[2] = '\0';
+  output[3] = '\0';
+  output[4] = '\0';
+  output[5] = '\0';
+  output[6] = '\0';
+  output[7] = '\0';
+  output[8] = '\0';
+  output[9] = '\0';
+  output[10] = '\0';
+  output[0xb] = 0;
+  outputStr = "";
+  total = 0;
   bVar1 = Demo_IsPlaybackInited();
   if (bVar1) {
-    iVar3 = I_stricmp(param_2,"name");
+    iVar3 = I_stricmp(s,"name");
     if (iVar3 == 0) {
-      pcVar2 = Demo_GetSegmentName(param_1);
+      pcVar2 = Demo_GetSegmentName(index);
     }
     else {
-      iVar3 = I_stricmp(param_2,"duration");
+      iVar3 = I_stricmp(s,"duration");
       if (iVar3 == 0) {
-        Demo_GetDuration(local_18,(demo.playback)->segments[param_1].duration);
+        Demo_GetDuration(output,(demo.playback)->segments[index].duration);
         pcVar2 = va("%s");
       }
       else {
-        iVar3 = I_stricmp(param_2,"durationLocString");
+        iVar3 = I_stricmp(s,"durationLocString");
         if (iVar3 == 0) {
-          local_8 = UI_SafeTranslateString("MENU_DEMO_DURATION");
-          Demo_GetDuration(local_18,(demo.playback)->segments[param_1].duration);
-          local_8 = UI_ReplaceConversionString(local_8,local_18);
+          outputStr = UI_SafeTranslateString("MENU_DEMO_DURATION");
+          Demo_GetDuration(output,(demo.playback)->segments[index].duration);
+          outputStr = UI_ReplaceConversionString(outputStr,output);
           pcVar2 = va("%s");
         }
         else {
-          iVar3 = I_stricmp(param_2,"transition");
+          iVar3 = I_stricmp(s,"transition");
           if (iVar3 == 0) {
-            pcVar2 = Demo_GetSegmentTransition(param_1);
+            pcVar2 = Demo_GetSegmentTransition(index);
           }
           else {
-            iVar3 = I_stricmp(param_2,"totalClipDurationLocString");
+            iVar3 = I_stricmp(s,"totalClipDurationLocString");
             if (iVar3 == 0) {
-              local_20 = 0;
+              i = 0;
               while( true ) {
                 iVar3 = Demo_GetSegmentCount();
-                if (iVar3 <= local_20) break;
-                local_1c = local_1c + (demo.playback)->segments[local_20].duration;
-                local_20 = local_20 + 1;
+                if (iVar3 <= i) break;
+                total = total + (demo.playback)->segments[i].duration;
+                i = i + 1;
               }
-              local_8 = UI_SafeTranslateString("MENU_TOTAL_CLIP_DURATION");
-              Demo_GetDuration(local_18,local_1c);
-              local_8 = UI_ReplaceConversionString(local_8,local_18);
+              outputStr = UI_SafeTranslateString("MENU_TOTAL_CLIP_DURATION");
+              Demo_GetDuration(output,total);
+              outputStr = UI_ReplaceConversionString(outputStr,output);
               pcVar2 = va("%s");
             }
             else {
@@ -693,12 +713,12 @@ char * __cdecl Demo_GetSegmentInformation(int param_1,char *param_2)
 
 // 009CE1B0  Demo_IsPauseMenuOpen  (demo/demo_ui.cpp:774)
 
-bool __cdecl Demo_IsPauseMenuOpen(int param_1)
+bool __cdecl Demo_IsPauseMenuOpen(int localClientNum)
 
 {
   bool bVar1;
-  int local_34;
-  char *local_30 [4];
+  int menuCount;
+  char *ingameMenuNames [4];
   char *local_20;
   char *local_1c;
   char *local_18;
@@ -707,10 +727,10 @@ bool __cdecl Demo_IsPauseMenuOpen(int param_1)
   char *local_c;
   undefined4 local_8;
   
-  local_30[0] = "demo_ingame";
-  local_30[1] = "demo_manage_segments";
-  local_30[2] = "demo_button_layout";
-  local_30[3] = "ingameoptions";
+  ingameMenuNames[0] = "demo_ingame";
+  ingameMenuNames[1] = "demo_manage_segments";
+  ingameMenuNames[2] = "demo_button_layout";
+  ingameMenuNames[3] = "ingameoptions";
   local_20 = "ingameoptions_sensitivity";
   local_1c = "ingameoptions_team_indicator";
   local_18 = "ingameoptions_volume";
@@ -718,10 +738,10 @@ bool __cdecl Demo_IsPauseMenuOpen(int param_1)
   local_10 = "options_new_pc";
   local_c = "options_controls_new_pc";
   local_8 = 0;
-  bVar1 = Key_IsCatcherActive(param_1,0x10);
+  bVar1 = Key_IsCatcherActive(localClientNum,0x10);
   if (bVar1) {
-    for (local_34 = 0; local_30[local_34] != (char *)0x0; local_34 = local_34 + 1) {
-      bVar1 = Menu_IsMenuOpenAndVisible(param_1,local_30[local_34]);
+    for (menuCount = 0; ingameMenuNames[menuCount] != (char *)0x0; menuCount = menuCount + 1) {
+      bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,ingameMenuNames[menuCount]);
       if (bVar1) {
         return true;
       }
@@ -733,18 +753,19 @@ bool __cdecl Demo_IsPauseMenuOpen(int param_1)
 
 // 009CE260  Demo_OpenSavePopUp  (demo/demo_ui.cpp:816)
 
-void __cdecl Demo_OpenSavePopUp(int param_1,int param_2)
+void __cdecl Demo_OpenSavePopUp(int localClientNum,int type)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
-  Key_SetCatcher(param_1,0x10);
-  if (param_2 == 0) {
-    Menus_OpenByName(param_1,&puVar1->uiDC,"demo_save_clip");
+  dc = UI_GetInfo(localClientNum);
+  Key_SetCatcher(localClientNum,0x10);
+  if (type == 0) {
+    Menus_OpenByName(localClientNum,&dc->uiDC,"demo_save_clip");
   }
-  else if (param_2 == 1) {
-    Menus_OpenByName(param_1,&puVar1->uiDC,"demo_save_screenshot");
+  else if (type == 1) {
+    Menus_OpenByName(localClientNum,&dc->uiDC,"demo_save_screenshot");
   }
   return;
 }
@@ -752,27 +773,27 @@ void __cdecl Demo_OpenSavePopUp(int param_1,int param_2)
 
 // 009CE2D0  Demo_IsSaveDialogOpen  (demo/demo_ui.cpp:842)
 
-bool __cdecl Demo_IsSaveDialogOpen(int param_1)
+bool __cdecl Demo_IsSaveDialogOpen(int localClientNum)
 
 {
   bool bVar1;
   
-  bVar1 = Menu_IsMenuOpenAndVisible(param_1,"demo_save_clip");
+  bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,"demo_save_clip");
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = Menu_IsMenuOpenAndVisible(param_1,"demo_save_screenshot");
+    bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,"demo_save_screenshot");
     if (bVar1) {
       bVar1 = true;
     }
     else {
-      bVar1 = Menu_IsMenuOpenAndVisible(param_1,"screenshot_save_screen");
+      bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,"screenshot_save_screen");
       if (bVar1) {
         bVar1 = true;
       }
       else {
-        bVar1 = Menu_IsMenuOpenAndVisible(param_1,"fileshare_slotselection_scr");
+        bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,"fileshare_slotselection_scr");
         if (bVar1) {
           bVar1 = true;
         }
@@ -788,36 +809,37 @@ bool __cdecl Demo_IsSaveDialogOpen(int param_1)
 
 // 009CE350  Demo_Error  (demo/demo_ui.cpp:866)
 
-void __cdecl Demo_Error(int param_1,char *param_2,char *param_3)
+void __cdecl Demo_Error(int localClientNum,char *errorTitle,char *errorMessage)
 
 {
   bool bVar1;
   char *pcVar2;
-  uiInfo_s *puVar3;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  pcVar2 = UI_SafeTranslateString(param_2);
+  pcVar2 = UI_SafeTranslateString(errorTitle);
   Dvar_SetString(demo_errortitle,pcVar2);
-  pcVar2 = UI_SafeTranslateString(param_3);
+  pcVar2 = UI_SafeTranslateString(errorMessage);
   Dvar_SetString(demo_errormessage,pcVar2);
   bVar1 = Demo_IsPaused();
   if (!bVar1) {
     Dvar_SetBool(demo_pause,true);
   }
-  puVar3 = UI_GetInfo(param_1);
-  Key_SetCatcher(param_1,0x10);
-  Menus_OpenByName(param_1,&puVar3->uiDC,"demo_error");
+  dc = UI_GetInfo(localClientNum);
+  Key_SetCatcher(localClientNum,0x10);
+  Menus_OpenByName(localClientNum,&dc->uiDC,"demo_error");
   return;
 }
 
 
 // 009CE3E0  Demo_IsErrorDialogOpen  (demo/demo_ui.cpp:888)
 
-bool __cdecl Demo_IsErrorDialogOpen(int param_1)
+bool __cdecl Demo_IsErrorDialogOpen(int localClientNum)
 
 {
   bool bVar1;
   
-  bVar1 = Menu_IsMenuOpenAndVisible(param_1,"demo_error");
+  bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,"demo_error");
   return bVar1;
 }
 

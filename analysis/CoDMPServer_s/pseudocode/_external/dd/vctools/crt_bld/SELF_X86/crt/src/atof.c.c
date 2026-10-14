@@ -2,49 +2,49 @@
 
 // 0095BA25  _atof_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atof.c:49)
 
-double __cdecl _atof_l(char *param_1,localeinfo_struct *param_2)
+double __cdecl _atof_l(char *nptr,localeinfo_struct *plocinfo)
 
 {
   double dVar1;
   int *piVar2;
   uint uVar3;
-  int extraout_EAX;
+  int len_ignore;
   _flt *p_Var4;
-  int iVar5;
-  int iVar6;
-  _LocaleUpdate *p_Var7;
-  _flt local_2c;
-  _LocaleUpdate local_14;
+  int scale_ignore;
+  int radix_ignore;
+  _LocaleUpdate *_Locale;
+  _flt fltstruct;
+  _LocaleUpdate _loc_update;
   
-  _LocaleUpdate::_LocaleUpdate(&local_14,param_2);
-  if (param_1 == (char *)0x0) {
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (nptr == (char *)0x0) {
     piVar2 = _errno();
     *piVar2 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     dVar1 = 0.0;
   }
   else {
     while( true ) {
-      if ((local_14.localeinfo.locinfo)->mb_cur_max < 2) {
-        uVar3 = (local_14.localeinfo.locinfo)->pctype[(byte)*param_1] & 8;
+      if ((_loc_update.localeinfo.locinfo)->mb_cur_max < 2) {
+        uVar3 = (_loc_update.localeinfo.locinfo)->pctype[(byte)*nptr] & 8;
       }
       else {
-        uVar3 = _isctype_l((uint)(byte)*param_1,8,&local_14.localeinfo);
+        uVar3 = _isctype_l((uint)(byte)*nptr,8,&_loc_update.localeinfo);
       }
       if (uVar3 == 0) break;
-      param_1 = param_1 + 1;
+      nptr = nptr + 1;
     }
-    p_Var7 = &local_14;
-    iVar6 = 0;
-    iVar5 = 0;
-    strlen((uchar *)param_1);
-    p_Var4 = _fltin2(&local_2c,param_1,extraout_EAX,iVar5,iVar6,&p_Var7->localeinfo);
+    _Locale = &_loc_update;
+    radix_ignore = 0;
+    scale_ignore = 0;
+    strlen((uchar *)nptr);
+    p_Var4 = _fltin2(&fltstruct,nptr,len_ignore,scale_ignore,radix_ignore,&_Locale->localeinfo);
     dVar1 = p_Var4->dval;
-    if (local_14.updated != false) {
-      (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
   return dVar1;
@@ -53,12 +53,12 @@ double __cdecl _atof_l(char *param_1,localeinfo_struct *param_2)
 
 // 0095BAD0  atof  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/atof.c:70)
 
-double __cdecl atof(char *param_1)
+double __cdecl atof(char *nptr)
 
 {
   double dVar1;
   
-  dVar1 = _atof_l(param_1,(localeinfo_struct *)0x0);
+  dVar1 = _atof_l(nptr,(localeinfo_struct *)0x0);
   return dVar1;
 }
 

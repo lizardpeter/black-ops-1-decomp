@@ -7,28 +7,28 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateVehicleWaterFX(int param_1,centity_s *param_2)
+void __cdecl CG_UpdateVehicleWaterFX(int localClientNum,centity_s *cent)
 
 {
   bool bVar1;
-  float local_34;
+  float axis;
   float local_30;
   float local_2c;
-  float local_10;
+  float point;
   float local_c;
   float local_8;
   
-  bVar1 = CL_LocalClient_IsFirstActive(param_1);
+  bVar1 = CL_LocalClient_IsFirstActive(localClientNum);
   if (bVar1) {
-    AnglesToAxis((param_2->pose).angles,(float (*) [3])&local_34);
-    local_10 = dist1 * local_34 + (param_2->pose).origin[0];
-    local_c = dist1 * local_30 + (param_2->pose).origin[1];
-    local_8 = dist1 * local_2c + (param_2->pose).origin[2];
-    R_WaterSimulationSetHeight((param_2->pose).origin,radius,depth,lerpRate);
-    local_10 = dist2 * local_34 + (param_2->pose).origin[0];
-    local_c = dist2 * local_30 + (param_2->pose).origin[1];
-    local_8 = dist2 * local_2c + (param_2->pose).origin[2];
-    R_WaterSimulationSetHeight(&local_10,radius2,depth2,lerpRate2);
+    AnglesToAxis((cent->pose).angles,(float (*) [3])&axis);
+    point = dist1 * axis + (cent->pose).origin[0];
+    local_c = dist1 * local_30 + (cent->pose).origin[1];
+    local_8 = dist1 * local_2c + (cent->pose).origin[2];
+    R_WaterSimulationSetHeight((cent->pose).origin,radius,depth,lerpRate);
+    point = dist2 * axis + (cent->pose).origin[0];
+    local_c = dist2 * local_30 + (cent->pose).origin[1];
+    local_8 = dist2 * local_2c + (cent->pose).origin[2];
+    R_WaterSimulationSetHeight(&point,radius2,depth2,lerpRate2);
   }
   return;
 }
@@ -77,7 +77,7 @@ void __cdecl _dynamic_initializer_for__PHYS_Y_VEC__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl VEH_UpdateMaterialTime(centity_s *param_1,int param_2,float param_3)
+void __cdecl VEH_UpdateMaterialTime(centity_s *cent,int dt,float speed)
 
 {
   phys_vec3 *ppVar1;
@@ -87,24 +87,22 @@ void __cdecl VEH_UpdateMaterialTime(centity_s *param_1,int param_2,float param_3
   float local_18;
   vehicle_info_t *local_14;
   
-  local_14 = CG_GetVehicleInfo((uint)(param_1->nextState).un2.vehicleState.vehicleInfoIndex);
+  local_14 = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
   if (local_14->texScroll == 0) {
-    param_1->vehicle->materialTime = 0.0;
-    param_1->vehicle->materialTime2 = 0.0;
+    cent->vehicle->materialTime = 0.0;
+    cent->vehicle->materialTime2 = 0.0;
   }
   else {
     local_18 = 1.0;
-    local_1c = (float)param_2 * ((param_3 * 1.0) / 176.0) * local_14->texScrollScale;
-    param_1->vehicle->materialTime = local_1c * 0.001 + param_1->vehicle->materialTime;
-    param_1->vehicle->materialTime2 = local_1c * 0.001 + param_1->vehicle->materialTime2;
-    if ((param_1->destructible != (Destructible *)0x0) &&
-       (param_1->nitrousVeh != (NitrousVehicle *)0x0)) {
-      ppVar1 = NitrousVehicle::get_a_velocity(param_1->nitrousVeh,&local_30);
-      fVar2 = (float)param_2 * (ppVar1->z / 176.0);
-      param_1->vehicle->materialTime = fVar2 * 0.001 * aScrollSpeed + param_1->vehicle->materialTime
-      ;
-      param_1->vehicle->materialTime2 =
-           param_1->vehicle->materialTime2 - fVar2 * 0.001 * aScrollSpeed;
+    local_1c = (float)dt * ((speed * 1.0) / 176.0) * local_14->texScrollScale;
+    cent->vehicle->materialTime = local_1c * 0.001 + cent->vehicle->materialTime;
+    cent->vehicle->materialTime2 = local_1c * 0.001 + cent->vehicle->materialTime2;
+    if ((cent->destructible != (Destructible *)0x0) && (cent->nitrousVeh != (NitrousVehicle *)0x0))
+    {
+      ppVar1 = NitrousVehicle::get_a_velocity(cent->nitrousVeh,&local_30);
+      fVar2 = (float)dt * (ppVar1->z / 176.0);
+      cent->vehicle->materialTime = fVar2 * 0.001 * aScrollSpeed + cent->vehicle->materialTime;
+      cent->vehicle->materialTime2 = cent->vehicle->materialTime2 - fVar2 * 0.001 * aScrollSpeed;
     }
   }
   return;
@@ -156,7 +154,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *param_3)
+void __cdecl CG_Vehicle_PreControllers(int localClientNum,DObj *obj,centity_s *cent)
 
 {
   float (*pafVar1) [3];
@@ -189,8 +187,8 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
   short extraout_AX_22;
   cgVehicle_s *pcVar5;
   vehicle_cache_t *pvVar6;
-  XModel *pXVar7;
-  int iVar8;
+  XModel *model;
+  int iVar7;
   undefined4 unaff_ESI;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
@@ -213,12 +211,12 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
   float10 extraout_ST0_17;
   float10 extraout_ST0_18;
   float10 extraout_ST0_19;
-  float10 fVar9;
+  float10 fVar8;
   float10 extraout_ST0_20;
   float10 extraout_ST0_21;
   float10 extraout_ST0_22;
-  double dVar10;
-  float fVar11;
+  double dVar9;
+  float fVar10;
   undefined4 in_stack_fffffa44;
   double in_stack_fffffa48;
   col_context_t local_59c;
@@ -432,7 +430,7 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
   local_4c.v[1] = 0.0;
   local_4c.v[2] = 0.0;
   local_4c.v[3] = 0.0;
-  if ((param_2 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x153,0,
                                "%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
@@ -441,31 +439,31 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
   }
   local_50 = -1;
   local_51 = '\0';
-  if (param_3->vehicle == (cgVehicle_s *)0x0) {
+  if (cent->vehicle == (cgVehicle_s *)0x0) {
     pcVar5 = MT_Alloc(0x54,0x15,SCRIPTINSTANCE_SERVER);
-    param_3->vehicle = pcVar5;
-    if ((param_3->vehicle == (cgVehicle_s *)0x0) &&
+    cent->vehicle = pcVar5;
+    if ((cent->vehicle == (cgVehicle_s *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x15b,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    memset((uchar *)param_3->vehicle,'\0',0x54);
+    memset((uchar *)cent->vehicle,'\0',0x54);
   }
-  local_58 = CG_GetLocalClientGlobals(param_1);
-  local_5c = &param_3->currentState;
-  local_60 = &param_3->nextState;
+  local_58 = CG_GetLocalClientGlobals(localClientNum);
+  local_5c = &cent->currentState;
+  local_60 = &cent->nextState;
   local_64 = &local_58->predictedPlayerState;
-  AngleVectors((param_3->pose).angles,&local_70,(float *)0x0,(float *)0x0);
+  AngleVectors((cent->pose).angles,&local_70,(float *)0x0,(float *)0x0);
   local_74 = (local_60->lerp).pos.trDelta;
   local_78 = *local_74 * local_70 + (local_60->lerp).pos.trDelta[1] * local_6c +
              (local_60->lerp).pos.trDelta[2] * local_68;
-  if (param_3->nitrousVeh != (NitrousVehicle *)0x0) {
-    local_78 = param_3->nitrousVeh->m_forward_vel;
+  if (cent->nitrousVeh != (NitrousVehicle *)0x0) {
+    local_78 = cent->nitrousVeh->m_forward_vel;
   }
-  VEH_UpdateMaterialTime(param_3,local_58->frametime,local_78);
-  local_7c = CG_GetVehicleInfo((uint)(param_3->nextState).un2.vehicleState.vehicleInfoIndex);
+  VEH_UpdateMaterialTime(cent,local_58->frametime,local_78);
+  local_7c = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
   local_80 = 0;
   if (local_7c->type == 1) {
     local_80 = 2;
@@ -476,10 +474,10 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
   else if (local_7c->type == 2) {
     local_80 = 6;
   }
-  if ((param_3->vehicle->vehicle_cache == (vehicle_cache_t *)0x0) && (local_80 != 0)) {
+  if ((cent->vehicle->vehicle_cache == (vehicle_cache_t *)0x0) && (local_80 != 0)) {
     pvVar6 = MT_Alloc(0x788,0x15,SCRIPTINSTANCE_SERVER);
-    param_3->vehicle->vehicle_cache = pvVar6;
-    if ((param_3->vehicle->vehicle_cache == (vehicle_cache_t *)0x0) &&
+    cent->vehicle->vehicle_cache = pvVar6;
+    if ((cent->vehicle->vehicle_cache == (vehicle_cache_t *)0x0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x17e,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
@@ -494,17 +492,17 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
       atexit(`CG_Vehicle_PreControllers'::__l19::_dynamic_atexit_destructor_for__dummy__);
     }
     local_84 = dummy._padding_;
-    local_88 = &param_3->vehicle->vehicle_cache->proximity_data;
+    local_88 = &cent->vehicle->vehicle_cache->proximity_data;
     local_88->_padding_ = dummy._padding_;
     colgeom_visitor_inlined_t<500>::reset
-              ((colgeom_visitor_inlined_t<500> *)&param_3->vehicle->vehicle_cache->proximity_data);
+              ((colgeom_visitor_inlined_t<500> *)&cent->vehicle->vehicle_cache->proximity_data);
     for (local_8c = 0; local_8c < 6; local_8c = local_8c + 1) {
-      param_3->vehicle->vehicle_cache->hit_indices[local_8c] = -1;
-      local_90 = param_3->vehicle->vehicle_cache;
+      cent->vehicle->vehicle_cache->hit_indices[local_8c] = -1;
+      local_90 = cent->vehicle->vehicle_cache;
       local_90->lastOrigin[0] = 3.4028235e+38;
       local_90->lastOrigin[1] = 3.4028235e+38;
       local_90->lastOrigin[2] = 3.4028235e+38;
-      pvVar6 = param_3->vehicle->vehicle_cache;
+      pvVar6 = cent->vehicle->vehicle_cache;
       local_a4[4] = pvVar6->lastAngles;
       *local_a4[4] = 3.4028235e+38;
       pvVar6->lastAngles[1] = 3.4028235e+38;
@@ -512,19 +510,19 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
     }
   }
   if (((local_64->eFlags & 0x4000U) == 0) ||
-     ((int)local_64->viewlocked_entNum != (param_3->nextState).number)) {
+     ((int)local_64->viewlocked_entNum != (cent->nextState).number)) {
     local_2b0 = (float)(int)(local_60->lerp).u.vehicle.gunYaw * 0.005493164;
     local_2b4 = (float)(int)(local_5c->u).vehicle.gunYaw * 0.005493164;
     local_2b8 = local_2b4 + (local_5c->apos).trBase[1];
     local_2bc = local_2b0 + (local_60->lerp).apos.trBase[1];
     local_2c0 = local_58->frameInterpolation;
-    fVar11 = AngleNormalize180(local_2bc - local_2b8);
-    local_2c4 = fVar11 * local_2c0 + local_2b8;
-    local_2c8 = local_2c4 - (param_3->pose).angles[1];
+    fVar10 = AngleNormalize180(local_2bc - local_2b8);
+    local_2c4 = fVar10 * local_2c0 + local_2b8;
+    local_2c8 = local_2c4 - (cent->pose).angles[1];
     floor();
     local_2cc = (float)extraout_ST0_08;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.yaw = extraout_AX_08;
+    (cent->pose).field19_0x6c.vehicle.yaw = extraout_AX_08;
   }
   else if (((local_64->vehiclePos < 1) || (4 < local_64->vehiclePos)) ||
           (gVehicleRelativeGunnerAngles == false)) {
@@ -534,20 +532,20 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
       local_1d4 = local_1d0 + (local_5c->apos).trBase[1];
       local_1d8 = local_1cc + (local_60->lerp).apos.trBase[1];
       local_1dc = local_58->frameInterpolation;
-      fVar11 = AngleNormalize180(local_1d8 - local_1d4);
-      local_1e0 = fVar11 * local_1dc + local_1d4;
-      local_1e4 = (param_3->pose).angles[1];
+      fVar10 = AngleNormalize180(local_1d8 - local_1d4);
+      local_1e0 = fVar10 * local_1dc + local_1d4;
+      local_1e4 = (cent->pose).angles[1];
       local_1e8 = AngleNormalize180(local_1e0 - local_1e4);
       local_1ec = (Material *)0x0;
       floor();
       local_1f0 = (float)extraout_ST0_05;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.yaw = extraout_AX_05;
+      (cent->pose).field19_0x6c.vehicle.yaw = extraout_AX_05;
       if ((0 < local_64->vehiclePos) && (local_64->vehiclePos < 5)) {
-        local_1f4 = (param_3->pose).angles;
+        local_1f4 = (cent->pose).angles;
         local_200[0] = *local_1f4;
-        local_204 = (param_3->pose).angles[1];
-        local_200[2] = (param_3->pose).angles[2];
+        local_204 = (cent->pose).angles[1];
+        local_200[2] = (cent->pose).angles[2];
         local_200[1] = 0.0;
         AnglesToAxis(local_200,(float (*) [3])local_228);
         local_22c = local_64->viewangles[1];
@@ -566,30 +564,30 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
         floor();
         local_2a0 = (float)extraout_ST0_06;
         _ftol2_sse();
-        *(undefined2 *)((int)(param_3->pose).absmax + local_294 * 2 + 0x26) = extraout_AX_06;
+        *(undefined2 *)((int)(cent->pose).absmax + local_294 * 2 + 0x26) = extraout_AX_06;
         local_2a4 = local_64->viewangles[1];
         local_2a8 = AngleNormalize180(local_2a4 - local_1e0);
         floor();
         local_2ac = (float)extraout_ST0_07;
         _ftol2_sse();
-        *(undefined2 *)((int)(param_3->pose).absmax + local_294 * 2 + 0x2e) = extraout_AX_07;
+        *(undefined2 *)((int)(cent->pose).absmax + local_294 * 2 + 0x2e) = extraout_AX_07;
         local_50 = local_294;
       }
-      DObjLock(param_2);
-      DObjSkelClear(param_2);
-      DObjUnlock(param_2);
+      DObjLock(obj);
+      DObjSkelClear(obj);
+      DObjUnlock(obj);
     }
     else {
-      local_130 = (param_3->pose).angles;
+      local_130 = (cent->pose).angles;
       local_13c = *local_130;
-      local_138 = (param_3->pose).angles[1];
-      local_134 = (param_3->pose).angles[2];
+      local_138 = (cent->pose).angles[1];
+      local_134 = (cent->pose).angles[2];
       AnglesToAxis(&local_13c,(float (*) [3])local_160);
       MatrixTranspose((float (*) [3])local_160,(float (*) [3])local_184);
       local_188 = local_64->viewangles;
       local_194 = *local_188;
       local_190 = local_64->viewangles[1];
-      local_18c = (param_3->pose).angles[2];
+      local_18c = (cent->pose).angles[2];
       AnglesToAxis(&local_194,(float (*) [3])local_1b8);
       MatrixMultiply((float (*) [3])local_1b8,(float (*) [3])local_184,(float (*) [3])local_160);
       AxisToAngles((float (*) [3])local_160,&local_194);
@@ -597,15 +595,15 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
       floor();
       local_1c0 = (float)extraout_ST0_03;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.yaw = extraout_AX_03;
+      (cent->pose).field19_0x6c.vehicle.yaw = extraout_AX_03;
       local_1c4 = local_194;
       floor();
       local_1c8 = (float)extraout_ST0_04;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.barrelPitch = extraout_AX_04;
-      DObjLock(param_2);
-      DObjSkelClear(param_2);
-      DObjUnlock(param_2);
+      (cent->pose).field19_0x6c.vehicle.barrelPitch = extraout_AX_04;
+      DObjLock(obj);
+      DObjSkelClear(obj);
+      DObjUnlock(obj);
       local_51 = '\x01';
     }
   }
@@ -614,7 +612,7 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
     local_a4[1] = (float *)0x3f3918a;
     local_a4[2] = (float *)0x3f3918c;
     local_a4[3] = (float *)0x3f3918e;
-    local_a8 = Com_GetClientDObj((param_3->nextState).number,param_1);
+    local_a8 = Com_GetClientDObj((cent->nextState).number,localClientNum);
     if (local_a8 != (DObj *)0x0) {
       local_ac = local_64->vehiclePos + -1;
       local_ad = '\0';
@@ -626,124 +624,121 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
       floor();
       local_114 = (float)extraout_ST0;
       _ftol2_sse();
-      *(undefined2 *)((int)(&(param_3->currentState).apos + 1) + local_ac * 4 + 8) = extraout_AX;
+      *(undefined2 *)((int)(&(cent->currentState).apos + 1) + local_ac * 4 + 8) = extraout_AX;
       local_118 = local_64->viewangles[1] + local_108;
       floor();
       local_11c = (float)extraout_ST0_00;
       _ftol2_sse();
-      *(undefined2 *)((int)(&(param_3->currentState).apos + 1) + local_ac * 4 + 10) = extraout_AX_00
-      ;
+      *(undefined2 *)((int)(&(cent->currentState).apos + 1) + local_ac * 4 + 10) = extraout_AX_00;
       local_120 = local_64->viewangles[0] + local_10c;
       floor();
       local_124 = (float)extraout_ST0_01;
       _ftol2_sse();
-      *(undefined2 *)((int)(&(param_3->nextState).lerp.apos + 1) + local_ac * 4 + 8) =
-           extraout_AX_01;
+      *(undefined2 *)((int)(&(cent->nextState).lerp.apos + 1) + local_ac * 4 + 8) = extraout_AX_01;
       local_128 = local_64->viewangles[1] + local_108;
       floor();
       local_12c = (float)extraout_ST0_02;
       _ftol2_sse();
-      *(undefined2 *)((int)(&(param_3->nextState).lerp.apos + 1) + local_ac * 4 + 10) =
-           extraout_AX_02;
+      *(undefined2 *)((int)(&(cent->nextState).lerp.apos + 1) + local_ac * 4 + 10) = extraout_AX_02;
     }
   }
-  if (param_3->nitrousVeh == (NitrousVehicle *)0x0) {
-    local_2d0 = (ushort)(param_3->nextState).un2.vehicleState.vehicleInfoIndex;
+  if (cent->nitrousVeh == (NitrousVehicle *)0x0) {
+    local_2d0 = (ushort)(cent->nextState).un2.vehicleState.vehicleInfoIndex;
     local_2d4 = CG_GetVehicleInfo((int)(short)local_2d0);
     if (local_2d4->isNitrous == 0) {
       local_2e0 = (float)(int)(local_60->lerp).u.vehicle.field3_0x18.throttle * 0.005493164;
       local_2e4 = (float)(int)(local_5c->u).vehicle.field3_0x18.throttle * 0.005493164;
       local_2e8 = local_58->frameInterpolation;
-      fVar11 = AngleNormalize180(local_2e0 - local_2e4);
-      local_2ec = fVar11 * local_2e8 + local_2e4;
+      fVar10 = AngleNormalize180(local_2e0 - local_2e4);
+      local_2ec = fVar10 * local_2e8 + local_2e4;
       floor();
       local_2f0 = (float)extraout_ST0_11;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.pitch = extraout_AX_11;
+      (cent->pose).field19_0x6c.vehicle.pitch = extraout_AX_11;
       local_2f4 = (local_5c->u).turret.gunAngles[1];
       local_2f8 = (local_60->lerp).u.turret.gunAngles[1];
       local_2fc = local_58->frameInterpolation;
-      fVar11 = AngleNormalize180(local_2f8 - local_2f4);
-      local_300 = fVar11 * local_2fc + local_2f4;
+      fVar10 = AngleNormalize180(local_2f8 - local_2f4);
+      local_300 = fVar10 * local_2fc + local_2f4;
       floor();
       local_304 = (float)extraout_ST0_12;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.roll = extraout_AX_12;
+      (cent->pose).field19_0x6c.vehicle.roll = extraout_AX_12;
     }
     else {
       floor();
       local_2d8 = (float)extraout_ST0_09;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.pitch = extraout_AX_09;
+      (cent->pose).field19_0x6c.vehicle.pitch = extraout_AX_09;
       floor();
       local_2dc = (float)extraout_ST0_10;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.roll = extraout_AX_10;
+      (cent->pose).field19_0x6c.vehicle.roll = extraout_AX_10;
     }
     local_308 = (local_5c->u).turret.gunAngles[0];
     local_30c = (local_60->lerp).u.turret.gunAngles[0];
     local_310 = local_58->frameInterpolation;
-    fVar11 = AngleNormalize180(local_30c - local_308);
-    local_314 = fVar11 * local_310 + local_308;
+    fVar10 = AngleNormalize180(local_30c - local_308);
+    local_314 = fVar10 * local_310 + local_308;
     floor();
     local_318 = (float)extraout_ST0_13;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.steerYaw = extraout_AX_13;
+    (cent->pose).field19_0x6c.vehicle.steerYaw = extraout_AX_13;
     if (local_7c->wheelRotRate == 0.0) {
-      (param_3->pose).field19_0x6c.vehicle.steerPitch = 0;
+      (cent->pose).field19_0x6c.vehicle.steerPitch = 0;
     }
     else {
       local_31c = (float)local_58->frametime * 0.001 * local_7c->wheelRotRate * local_78;
       floor();
       local_320 = (float)extraout_ST0_14;
       _ftol2_sse();
-      (param_3->pose).field19_0x6c.vehicle.steerPitch =
-           (param_3->pose).field19_0x6c.vehicle.steerPitch + extraout_AX_14;
+      (cent->pose).field19_0x6c.vehicle.steerPitch =
+           (cent->pose).field19_0x6c.vehicle.steerPitch + extraout_AX_14;
     }
   }
   else {
     floor();
     local_328 = (float)extraout_ST0_15;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.pitch = extraout_AX_15;
+    (cent->pose).field19_0x6c.vehicle.pitch = extraout_AX_15;
     floor();
     local_32c = (float)extraout_ST0_16;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.roll = extraout_AX_16;
+    (cent->pose).field19_0x6c.vehicle.roll = extraout_AX_16;
     floor();
     local_330 = (float)extraout_ST0_17;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.steerPitch = extraout_AX_17;
+    (cent->pose).field19_0x6c.vehicle.steerPitch = extraout_AX_17;
     floor();
     local_334 = (float)extraout_ST0_18;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.steerYaw = extraout_AX_18;
+    (cent->pose).field19_0x6c.vehicle.steerYaw = extraout_AX_18;
   }
   if (local_51 == '\0') {
     local_338 = (float)(int)(local_60->lerp).u.vehicle.gunPitch * 0.005493164;
     local_33c = (float)(int)(local_5c->u).vehicle.gunPitch * 0.005493164;
     local_340 = local_58->frameInterpolation;
-    fVar11 = AngleNormalize180(local_338 - local_33c);
-    local_344 = fVar11 * local_340 + local_33c;
+    fVar10 = AngleNormalize180(local_338 - local_33c);
+    local_344 = fVar10 * local_340 + local_33c;
     floor();
     local_348 = (float)extraout_ST0_19;
     _ftol2_sse();
-    (param_3->pose).field19_0x6c.vehicle.barrelPitch = extraout_AX_19;
+    (cent->pose).field19_0x6c.vehicle.barrelPitch = extraout_AX_19;
   }
-  if ((param_3->vehicle->fireTime == 0) ||
-     (param_3->vehicle->fireTime <= local_58->time - recoilDuration)) {
-    (param_3->pose).field19_0x6c.vehicle.barrelRecoil = 0.0;
+  if ((cent->vehicle->fireTime == 0) || (cent->vehicle->fireTime <= local_58->time - recoilDuration)
+     ) {
+    (cent->pose).field19_0x6c.vehicle.barrelRecoil = 0.0;
   }
   else {
-    if (local_58->time - recoilBackTime < param_3->vehicle->fireTime) {
-      local_34c = (float)(local_58->time - param_3->vehicle->fireTime) / (float)recoilBackTime;
+    if (local_58->time - recoilBackTime < cent->vehicle->fireTime) {
+      local_34c = (float)(local_58->time - cent->vehicle->fireTime) / (float)recoilBackTime;
       local_350 = recoilBackPow;
-      dVar10 = (double)local_34c;
+      dVar9 = (double)local_34c;
       __libm_sse2_pow((double)CONCAT44(in_stack_fffffa44,unaff_ESI),in_stack_fffffa48);
-      local_354 = (float)dVar10;
+      local_354 = (float)dVar9;
     }
     else {
-      local_354 = 1.0 - (float)((local_58->time - param_3->vehicle->fireTime) - recoilBackTime) /
+      local_354 = 1.0 - (float)((local_58->time - cent->vehicle->fireTime) - recoilBackTime) /
                         (float)(recoilDuration - recoilBackTime);
     }
     if (local_354 - 1.0 < 0.0) {
@@ -762,10 +757,10 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
     local_36c = local_368;
     local_370 = local_35c * 3.1415927 - 1.5707964;
     fVar3 = (float10)fcos((float10)local_370);
-    fVar9 = (float10)fsin((float10)local_370);
+    fVar8 = (float10)fsin((float10)local_370);
     local_360 = (float)fVar3;
-    local_354 = ((float)fVar9 + 1.0) / 2.0;
-    (param_3->pose).field19_0x6c.vehicle.barrelRecoil = local_354 * recoilDist;
+    local_354 = ((float)fVar8 + 1.0) / 2.0;
+    (cent->pose).field19_0x6c.vehicle.barrelRecoil = local_354 * recoilDist;
   }
   for (local_8c = 0; local_8c < 4; local_8c = local_8c + 1) {
     if (local_50 != local_8c) {
@@ -774,67 +769,64 @@ void __cdecl CG_Vehicle_PreControllers(int param_1,DObj *param_2,centity_s *para
       local_378 = (float)(int)*(short *)((int)(&local_5c->apos + 1) + local_8c * 4 + 8) *
                   0.005493164;
       local_37c = local_58->frameInterpolation;
-      fVar11 = AngleNormalize180(local_374 - local_378);
-      local_380 = fVar11 * local_37c + local_378;
+      fVar10 = AngleNormalize180(local_374 - local_378);
+      local_380 = fVar10 * local_37c + local_378;
       floor();
       local_384 = (float)extraout_ST0_20;
       _ftol2_sse();
-      *(undefined2 *)((int)(param_3->pose).absmax + local_8c * 2 + 0x26) = extraout_AX_20;
+      *(undefined2 *)((int)(cent->pose).absmax + local_8c * 2 + 0x26) = extraout_AX_20;
       local_388 = (float)(int)*(short *)((int)(&(local_60->lerp).apos + 1) + local_8c * 4 + 10) *
                   0.005493164;
       local_38c = (float)(int)*(short *)((int)(&local_5c->apos + 1) + local_8c * 4 + 10) *
                   0.005493164;
       local_390 = local_58->frameInterpolation;
-      fVar11 = AngleNormalize180(local_388 - local_38c);
-      local_394 = fVar11 * local_390 + local_38c;
+      fVar10 = AngleNormalize180(local_388 - local_38c);
+      local_394 = fVar10 * local_390 + local_38c;
       floor();
       local_398 = (float)extraout_ST0_21;
       _ftol2_sse();
-      *(undefined2 *)((int)(param_3->pose).absmax + local_8c * 2 + 0x2e) = extraout_AX_21;
+      *(undefined2 *)((int)(cent->pose).absmax + local_8c * 2 + 0x2e) = extraout_AX_21;
     }
   }
-  DObjGetBoneIndex(param_2,(uint)scr_const.tag_body,&(param_3->pose).field19_0x6c.vehicle.tag_body,
-                   -1);
-  DObjGetBoneIndex(param_2,(uint)scr_const.tag_turret,
-                   &(param_3->pose).field19_0x6c.vehicle.tag_turret,-1);
-  DObjGetBoneIndex(param_2,(uint)scr_const.tag_barrel,
-                   &(param_3->pose).field19_0x6c.vehicle.tag_barrel,-1);
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_body,&(cent->pose).field19_0x6c.vehicle.tag_body,-1);
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_turret,&(cent->pose).field19_0x6c.vehicle.tag_turret,-1);
+  DObjGetBoneIndex(obj,(uint)scr_const.tag_barrel,&(cent->pose).field19_0x6c.vehicle.tag_barrel,-1);
   if (local_7c->type != 6) {
-    DObjGetBoneIndex(param_2,(uint)scr_const.tag_barrel_recoil,
-                     &(param_3->pose).field19_0x6c.vehicle.tag_barrel_recoil,-1);
+    DObjGetBoneIndex(obj,(uint)scr_const.tag_barrel_recoil,
+                     &(cent->pose).field19_0x6c.vehicle.tag_barrel_recoil,-1);
   }
-  (param_3->pose).field19_0x6c.vehicle.tag_minigun_spin = 0xfe;
-  (param_3->pose).field19_0x6c.vehicle.minigun_rotation = 0;
+  (cent->pose).field19_0x6c.vehicle.tag_minigun_spin = 0xfe;
+  (cent->pose).field19_0x6c.vehicle.minigun_rotation = 0;
   for (local_8c = 0; local_8c < 4; local_8c = local_8c + 1) {
-    DObjGetBoneIndex(param_2,(uint)*g_gunnerBarrelTags[local_8c],
-                     (uchar *)((int)((param_3->pose).constantSet.value + -2) + 0xc + local_8c),-1);
-    DObjGetBoneIndex(param_2,(uint)*g_gunnerTurretTags[local_8c],
-                     (uchar *)((int)((param_3->pose).constantSet.value + -2) + 8 + local_8c),-1);
+    DObjGetBoneIndex(obj,(uint)*g_gunnerBarrelTags[local_8c],
+                     (uchar *)((int)((cent->pose).constantSet.value + -2) + 0xc + local_8c),-1);
+    DObjGetBoneIndex(obj,(uint)*g_gunnerTurretTags[local_8c],
+                     (uchar *)((int)((cent->pose).constantSet.value + -2) + 8 + local_8c),-1);
   }
   local_39c = 0;
   do {
     if (0x1f < local_39c) {
 LAB_0050fd6f:
-      (param_3->pose).field19_0x6c.vehicle.extra_wheel_rot_scale = local_7c->extraWheelRotScale;
+      (cent->pose).field19_0x6c.vehicle.extra_wheel_rot_scale = local_7c->extraWheelRotScale;
       for (local_8c = 0; local_8c < 4; local_8c = local_8c + 1) {
         if (local_7c->extraWheelTags[local_8c] == 0) {
-          *(undefined1 *)((int)((param_3->pose).constantSet.value + -1) + local_8c) = 0xfe;
+          *(undefined1 *)((int)((cent->pose).constantSet.value + -1) + local_8c) = 0xfe;
         }
         else {
-          DObjGetBoneIndex(param_2,local_7c->extraWheelTags[local_8c],
-                           (uchar *)((int)((param_3->pose).constantSet.value + -1) + local_8c),-1);
+          DObjGetBoneIndex(obj,local_7c->extraWheelTags[local_8c],
+                           (uchar *)((int)((cent->pose).constantSet.value + -1) + local_8c),-1);
         }
       }
-      if ((param_3->pose).cullIn == 2) {
-        local_3b4 = (param_3->pose).field19_0x6c.vehicle.time;
-        AnglesToAxis((param_3->pose).angles,(float (*) [3])local_3e4);
+      if ((cent->pose).cullIn == 2) {
+        local_3b4 = (cent->pose).field19_0x6c.vehicle.time;
+        AnglesToAxis((cent->pose).angles,(float (*) [3])local_3e4);
         local_3e8 = &local_3c0;
-        local_3ec = (param_3->pose).origin;
+        local_3ec = (cent->pose).origin;
         local_3c0 = *local_3ec;
-        local_3bc = (param_3->pose).origin[1];
-        local_3b8 = (param_3->pose).origin[2];
-        pXVar7 = DObjGetModel(param_2,0);
-        local_3f0 = XModelGetBasePose(pXVar7);
+        local_3bc = (cent->pose).origin[1];
+        local_3b8 = (cent->pose).origin[2];
+        model = DObjGetModel(obj,0);
+        local_3f0 = XModelGetBasePose(model);
         if ((*g_wheelTags[0] != scr_const.tag_wheel_front_left) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",
                                      0x29b,0,"%s"), !bVar4)) {
@@ -849,14 +841,13 @@ LAB_0050fd6f:
           (*pcVar2)();
           return;
         }
-        if (param_3->nitrousVeh == (NitrousVehicle *)0x0) {
-          local_48c = param_3->vehicle->vehicle_cache;
+        if (cent->nitrousVeh == (NitrousVehicle *)0x0) {
+          local_48c = cent->vehicle->vehicle_cache;
           if (local_48c != (vehicle_cache_t *)0x0) {
-            iVar8 = VecNCompareCustomEpsilon(local_48c->lastOrigin,(param_3->pose).origin,0.001,3);
-            if ((iVar8 == 0) ||
-               (iVar8 = VecNCompareCustomEpsilon
-                                  (local_48c->lastAngles,(param_3->pose).angles,0.001,3), iVar8 == 0
-               )) {
+            iVar7 = VecNCompareCustomEpsilon(local_48c->lastOrigin,(cent->pose).origin,0.001,3);
+            if ((iVar7 == 0) ||
+               (iVar7 = VecNCompareCustomEpsilon(local_48c->lastAngles,(cent->pose).angles,0.001,3),
+               iVar7 == 0)) {
               local_4a8[3] = 3.4028235e+38;
               local_4a8[4] = 3.4028235e+38;
               local_4a8[5] = 3.4028235e+38;
@@ -866,27 +857,26 @@ LAB_0050fd6f:
               local_4ac = 0;
               local_490 = 1;
               for (local_8c = 0; local_8c < local_80; local_8c = local_8c + 1) {
-                iVar8 = DObjGetBoneIndex(param_2,(uint)*g_wheelTags[local_8c],
-                                         (uchar *)((int)(param_3->pose).absmax + local_8c + 0x3c),-1
-                                        );
-                if (iVar8 != 0) {
+                iVar7 = DObjGetBoneIndex(obj,(uint)*g_wheelTags[local_8c],
+                                         (uchar *)((int)(cent->pose).absmax + local_8c + 0x3c),-1);
+                if (iVar7 != 0) {
                   local_4ac = local_4ac | local_490;
-                  local_4b0 = (uint)*(byte *)((int)(param_3->pose).absmax + local_8c + 0x3c);
+                  local_4b0 = (uint)*(byte *)((int)(cent->pose).absmax + local_8c + 0x3c);
                   local_4b4 = local_3f0 + local_4b0;
                   MatrixTransformVector43(local_4b4->trans,(float (*) [3])local_3e4,&local_4c0);
-                  iVar8 = local_8c;
+                  iVar7 = local_8c;
                   local_554 = afStack_550 + local_8c * 6;
                   local_558 = &local_3cc;
                   *local_554 = local_3cc * 40.0 + local_4c0;
-                  afStack_550[iVar8 * 6 + 1] = local_3c8 * 40.0 + local_4bc;
-                  afStack_550[iVar8 * 6 + 2] = local_3c4 * 40.0 + local_4b8;
-                  iVar8 = local_8c;
+                  afStack_550[iVar7 * 6 + 1] = local_3c8 * 40.0 + local_4bc;
+                  afStack_550[iVar7 * 6 + 2] = local_3c4 * 40.0 + local_4b8;
+                  iVar7 = local_8c;
                   local_55c = afStack_550 + local_8c * 6 + 3;
                   local_560 = &local_3cc;
                   local_564 = -local_3b4;
                   *local_55c = local_564 * local_3cc + local_4c0;
-                  afStack_550[iVar8 * 6 + 4] = local_564 * local_3c8 + local_4bc;
-                  afStack_550[iVar8 * 6 + 5] = local_564 * local_3c4 + local_4b8;
+                  afStack_550[iVar7 * 6 + 4] = local_564 * local_3c8 + local_4bc;
+                  afStack_550[iVar7 * 6 + 5] = local_564 * local_3c4 + local_4b8;
                   Vec3Min(afStack_550 + local_8c * 6,local_4a8 + 3,local_4a8 + 3);
                   Vec3Min(afStack_550 + local_8c * 6 + 3,local_4a8 + 3,local_4a8 + 3);
                   Vec3Max(afStack_550 + local_8c * 6,local_4a8,local_4a8);
@@ -927,16 +917,16 @@ LAB_0050fd6f:
                     (*pafVar1)[1] = local_4c.v[1];
                     (*pafVar1)[2] = local_4c.v[2];
                     local_48c->hit_sflags[local_8c] = local_38;
-                    local_48c->lastOrigin[0] = (param_3->pose).origin[0];
-                    local_48c->lastOrigin[1] = (param_3->pose).origin[1];
-                    local_48c->lastOrigin[2] = (param_3->pose).origin[2];
-                    local_48c->lastAngles[0] = (param_3->pose).angles[0];
-                    local_48c->lastAngles[1] = (param_3->pose).angles[1];
-                    local_48c->lastAngles[2] = (param_3->pose).angles[2];
+                    local_48c->lastOrigin[0] = (cent->pose).origin[0];
+                    local_48c->lastOrigin[1] = (cent->pose).origin[1];
+                    local_48c->lastOrigin[2] = (cent->pose).origin[2];
+                    local_48c->lastAngles[0] = (cent->pose).angles[0];
+                    local_48c->lastAngles[1] = (cent->pose).angles[1];
+                    local_48c->lastAngles[2] = (cent->pose).angles[2];
                     local_48c->wheel_mask = local_4ac;
                   }
-                  (param_3->pose).absmax[local_8c + 0x1d] = local_3c;
-                  param_3->vehicle->wheelSurfType[local_8c] = (int)(local_38 & 0x3f00000) >> 0x14;
+                  (cent->pose).absmax[local_8c + 0x1d] = local_3c;
+                  cent->vehicle->wheelSurfType[local_8c] = (int)(local_38 & 0x3f00000) >> 0x14;
                 }
                 local_490 = local_490 << 1;
               }
@@ -945,8 +935,8 @@ LAB_0050fd6f:
               local_490 = 1;
               for (local_8c = 0; local_8c < local_80; local_8c = local_8c + 1) {
                 if ((local_48c->wheel_mask & local_490) != 0) {
-                  (param_3->pose).absmax[local_8c + 0x1d] = local_48c->hit_fractions[local_8c];
-                  param_3->vehicle->wheelSurfType[local_8c] =
+                  (cent->pose).absmax[local_8c + 0x1d] = local_48c->hit_fractions[local_8c];
+                  cent->vehicle->wheelSurfType[local_8c] =
                        (int)(local_48c->hit_sflags[local_8c] & 0x3f00000U) >> 0x14;
                 }
                 local_490 = local_490 << 1;
@@ -956,41 +946,41 @@ LAB_0050fd6f:
         }
         else {
           for (local_3f4 = 0; local_3f4 < 6; local_3f4 = local_3f4 + 1) {
-            param_3->vehicle->wheelSurfType[local_3f4] =
-                 param_3->nitrousVeh->m_wheel_surf_types[local_3f4];
-            local_3f8 = param_3->nitrousVeh->m_wheels[local_3f4];
+            cent->vehicle->wheelSurfType[local_3f4] =
+                 cent->nitrousVeh->m_wheel_surf_types[local_3f4];
+            local_3f8 = cent->nitrousVeh->m_wheels[local_3f4];
             if (local_3f8 != (rigid_body_constraint_wheel *)0x0) {
-              local_3fc = param_3->nitrousVeh->m_parameter;
+              local_3fc = cent->nitrousVeh->m_parameter;
               local_400 = local_3f8->m_wheel_radius;
               local_404 = local_3fc->m_wheel_radius - local_400;
               local_408 = local_3f8->m_wheel_displaced_center_dist;
-              local_40c = param_3->nitrousVeh->m_parameter;
+              local_40c = cent->nitrousVeh->m_parameter;
               local_410 = (local_408 - local_40c->m_susp_adj) + local_404;
               if (local_7c->type == 1) {
                 if (local_3f4 == 0) {
-                  local_414 = param_3->nitrousVeh->m_wheels[1];
+                  local_414 = cent->nitrousVeh->m_wheels[1];
                   local_418 = local_3f8->m_wheel_displaced_center_dist;
                   local_41c = local_414->m_wheel_displaced_center_dist;
-                  local_420 = param_3->nitrousVeh->m_parameter;
+                  local_420 = cent->nitrousVeh->m_parameter;
                   local_410 = ((local_418 + local_41c) * 0.5 - local_420->m_susp_adj) + local_404;
-                  DObjGetBoneIndex(param_2,(uint)scr_const.tag_wheel_front,
-                                   (param_3->pose).field19_0x6c.vehicle.wheelBoneIndex,-1);
+                  DObjGetBoneIndex(obj,(uint)scr_const.tag_wheel_front,
+                                   (cent->pose).field19_0x6c.vehicle.wheelBoneIndex,-1);
                 }
                 else if (local_3f4 == 2) {
-                  local_424 = param_3->nitrousVeh->m_wheels[3];
+                  local_424 = cent->nitrousVeh->m_wheels[3];
                   local_428 = local_3f8->m_wheel_displaced_center_dist;
                   local_42c = local_424->m_wheel_displaced_center_dist;
-                  local_430 = param_3->nitrousVeh->m_parameter;
+                  local_430 = cent->nitrousVeh->m_parameter;
                   local_410 = ((local_428 + local_42c) * 0.5 - local_430->m_susp_adj) + local_404;
-                  DObjGetBoneIndex(param_2,(uint)scr_const.tag_wheel_back,
-                                   (param_3->pose).field19_0x6c.vehicle.wheelBoneIndex + 2,-1);
+                  DObjGetBoneIndex(obj,(uint)scr_const.tag_wheel_back,
+                                   (cent->pose).field19_0x6c.vehicle.wheelBoneIndex + 2,-1);
                 }
               }
               else {
-                DObjGetBoneIndex(param_2,(uint)*g_wheelTags[local_3f4],
-                                 (uchar *)((int)(param_3->pose).absmax + local_3f4 + 0x3c),-1);
+                DObjGetBoneIndex(obj,(uint)*g_wheelTags[local_3f4],
+                                 (uchar *)((int)(cent->pose).absmax + local_3f4 + 0x3c),-1);
               }
-              if (param_3->nitrousVeh->m_owner == (gentity_s *)0x0) {
+              if (cent->nitrousVeh->m_owner == (gentity_s *)0x0) {
                 local_434 = 0x41f00000;
                 local_438 = (float)local_58->frametime * 0.001 * 30.0;
                 local_43c = local_438;
@@ -1004,25 +994,25 @@ LAB_0050fd6f:
                   local_440 = 0.0;
                 }
                 local_444 = local_440;
-                (param_3->pose).absmax[local_3f4 + 0x1d] =
-                     (local_410 - (param_3->pose).absmax[local_3f4 + 0x1d]) * local_440 +
-                     (param_3->pose).absmax[local_3f4 + 0x1d];
+                (cent->pose).absmax[local_3f4 + 0x1d] =
+                     (local_410 - (cent->pose).absmax[local_3f4 + 0x1d]) * local_440 +
+                     (cent->pose).absmax[local_3f4 + 0x1d];
               }
               else {
-                (param_3->pose).absmax[local_3f4 + 0x1d] = local_410;
+                (cent->pose).absmax[local_3f4 + 0x1d] = local_410;
               }
               local_448 = (local_7c->nitrousVehParams).m_susp_min_height;
-              local_44c = (param_3->pose).absmax[local_3f4 + 0x1d];
+              local_44c = (cent->pose).absmax[local_3f4 + 0x1d];
               local_450 = local_44c;
               if (0.0 <= local_448 - local_44c) {
                 local_450 = local_448;
               }
-              (param_3->pose).absmax[local_3f4 + 0x1d] = local_450;
+              (cent->pose).absmax[local_3f4 + 0x1d] = local_450;
               local_454 = local_3f8->m_wheel_pos;
-              (param_3->pose).absmax[local_3f4 + 0x11] = local_454 * 57.295776;
-              if ((param_3->nitrousVeh->m_vehicle_info->type == 2) ||
+              (cent->pose).absmax[local_3f4 + 0x11] = local_454 * 57.295776;
+              if ((cent->nitrousVeh->m_vehicle_info->type == 2) ||
                  ((local_3f4 != 0 && (local_3f4 != 1)))) {
-                (param_3->pose).absmax[local_3f4 + 0x17] = 0.0;
+                (cent->pose).absmax[local_3f4 + 0x17] = 0.0;
               }
               else {
                 local_470.x = (local_3f8->m_b1_wheel_axis_loc).x;
@@ -1031,7 +1021,7 @@ LAB_0050fd6f:
                 local_470.w = (local_3f8->m_b1_wheel_axis_loc).w;
                 Phys_NitrousVecToVec3(&local_470,local_47c);
                 vectoangles(local_47c,&local_488);
-                (param_3->pose).absmax[local_3f4 + 0x17] = local_484 - 90.0;
+                (cent->pose).absmax[local_3f4 + 0x17] = local_484 - 90.0;
               }
             }
           }
@@ -1040,45 +1030,45 @@ LAB_0050fd6f:
               _S1 = _S1 | 2;
               DAT_00f5c5d8 = SL_GetLowercaseString("tag_steering_wheel",0,SCRIPTINSTANCE_SERVER);
             }
-            iVar8 = DObjGetBoneIndex(param_2,DAT_00f5c5d8,
-                                     (param_3->pose).field19_0x6c.vehicle.wheelBoneIndex + 1,-1);
-            if ((iVar8 == 0) ||
-               ((int)(local_58->predictedPlayerState).viewlocked_entNum ==
-                (param_3->nextState).number)) {
-              (param_3->pose).field19_0x6c.vehicle.wheelBoneIndex[1] = 0xfe;
+            iVar7 = DObjGetBoneIndex(obj,DAT_00f5c5d8,
+                                     (cent->pose).field19_0x6c.vehicle.wheelBoneIndex + 1,-1);
+            if ((iVar7 == 0) ||
+               ((int)(local_58->predictedPlayerState).viewlocked_entNum == (cent->nextState).number)
+               ) {
+              (cent->pose).field19_0x6c.vehicle.wheelBoneIndex[1] = 0xfe;
             }
             else {
-              (param_3->pose).field19_0x6c.vehicle.nitrousWheelYaw[1] =
-                   (param_3->pose).field19_0x6c.vehicle.nitrousWheelYaw[0];
-              (param_3->pose).field19_0x6c.vehicle.nitrousWheelRotation[1] = 0.0;
-              (param_3->pose).field19_0x6c.vehicle.wheelHeight[1] = 0.0;
+              (cent->pose).field19_0x6c.vehicle.nitrousWheelYaw[1] =
+                   (cent->pose).field19_0x6c.vehicle.nitrousWheelYaw[0];
+              (cent->pose).field19_0x6c.vehicle.nitrousWheelRotation[1] = 0.0;
+              (cent->pose).field19_0x6c.vehicle.wheelHeight[1] = 0.0;
             }
           }
-          if (param_3->nitrousVeh->m_vehicle_info->type == 2) {
-            R_FoliageNotifyVehiclePosition(param_1,(param_3->pose).origin);
+          if (cent->nitrousVeh->m_vehicle_info->type == 2) {
+            R_FoliageNotifyVehiclePosition(localClientNum,(cent->pose).origin);
           }
         }
       }
       else {
         for (local_8c = 0; local_8c < 6; local_8c = local_8c + 1) {
-          *(undefined1 *)((int)(param_3->pose).absmax + local_8c + 0x3c) = 0xfe;
+          *(undefined1 *)((int)(cent->pose).absmax + local_8c + 0x3c) = 0xfe;
         }
       }
       return;
     }
     local_3a0 = (int *)((int)(local_58->bgs).clientinfo + local_39c * 0x5c8);
-    if ((((*local_3a0 != 0) && (local_3a0[0x157] == (param_3->nextState).number)) &&
+    if ((((*local_3a0 != 0) && (local_3a0[0x157] == (cent->nextState).number)) &&
         (0 < local_3a0[0x158])) && (local_3a0[0x158] < 5)) {
       local_3a4 = local_3a0[0x158] + -1;
       local_3a8 = BG_GetWeaponDef((uint)local_7c->gunnerWeaponIndex[local_3a0[0x158] + -1]);
       if (local_3a8->fireType == WEAPON_FIRETYPE_MINIGUN) {
-        DObjGetBoneIndex(param_2,(uint)scr_const.tag_minigun_right_barrel,
-                         &(param_3->pose).field19_0x6c.vehicle.tag_minigun_spin,-1);
+        DObjGetBoneIndex(obj,(uint)scr_const.tag_minigun_right_barrel,
+                         &(cent->pose).field19_0x6c.vehicle.tag_minigun_spin,-1);
         local_3ac = local_3a0[0x16d];
         floor();
         local_3b0 = (float)extraout_ST0_22;
         _ftol2_sse();
-        (param_3->pose).field19_0x6c.vehicle.minigun_rotation = extraout_AX_22;
+        (cent->pose).field19_0x6c.vehicle.minigun_rotation = extraout_AX_22;
         goto LAB_0050fd6f;
       }
     }
@@ -1114,7 +1104,7 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetSoundInfoForVehicle(int param_1,centity_s *param_2,float *param_3)
+int __cdecl GetSoundInfoForVehicle(int localClientNum,centity_s *cent,float *slideRate)
 
 {
   float fVar1;
@@ -1124,26 +1114,31 @@ int __cdecl GetSoundInfoForVehicle(int param_1,centity_s *param_2,float *param_3
   bool bVar5;
   int iVar6;
   int local_2c;
-  int local_18;
-  int local_14;
-  int local_10;
-  uint local_8;
+  int surface_group_index;
+  int wheelIndex;
+  int surface_type_index;
+  rigid_body_constraint_wheel *wheel;
+  int iWheel;
+  int iSide;
+  int hardness;
+  int back_wheel;
+  int surfType;
   
-  *param_3 = 0.0;
-  local_8 = 0xffffffff;
-  if (param_2->nitrousVeh != (NitrousVehicle *)0x0) {
-    local_10 = -1;
-    for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
-      for (local_18 = 0; local_18 < 2; local_18 = local_18 + 1) {
-        iVar6 = aaWheels[local_14][local_18];
-        uVar2 = param_2->nitrousVeh->m_wheel_surf_types[iVar6];
-        if (((param_2->nitrousVeh->m_wheel_state[iVar6].m_state == WHEEL_STATE_SKIDDING) &&
-            (local_18 == 1)) &&
-           (fVar1 = param_2->nitrousVeh->m_wheel_state[iVar6].m_rate,
-           *param_3 <= fVar1 && fVar1 != *param_3)) {
-          *param_3 = param_2->nitrousVeh->m_wheel_state[iVar6].m_rate;
+  *slideRate = 0.0;
+  surfType = -1;
+  if (cent->nitrousVeh != (NitrousVehicle *)0x0) {
+    hardness = -1;
+    for (iSide = 0; iSide < 2; iSide = iSide + 1) {
+      for (iWheel = 0; iWheel < 2; iWheel = iWheel + 1) {
+        iVar6 = aaWheels[iSide][iWheel];
+        uVar2 = cent->nitrousVeh->m_wheel_surf_types[iVar6];
+        if (((cent->nitrousVeh->m_wheel_state[iVar6].m_state == WHEEL_STATE_SKIDDING) &&
+            (iWheel == 1)) &&
+           (fVar1 = cent->nitrousVeh->m_wheel_state[iVar6].m_rate,
+           *slideRate <= fVar1 && fVar1 != *slideRate)) {
+          *slideRate = cent->nitrousVeh->m_wheel_state[iVar6].m_rate;
         }
-        prVar3 = param_2->nitrousVeh->m_wheels[iVar6];
+        prVar3 = cent->nitrousVeh->m_wheels[iVar6];
         if ((prVar3 != (rigid_body_constraint_wheel *)0x0) && ((prVar3->m_wheel_flags & 1) != 0)) {
           if ((((int)uVar2 < 0) || (0x1e < uVar2)) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",
@@ -1161,18 +1156,18 @@ int __cdecl GetSoundInfoForVehicle(int param_1,centity_s *param_2,float *param_3
             return iVar6;
           }
           local_2c = iVar6;
-          if (iVar6 <= local_10) {
-            local_2c = local_10;
+          if (iVar6 <= hardness) {
+            local_2c = hardness;
           }
-          local_10 = local_2c;
+          hardness = local_2c;
           if (local_2c == iVar6) {
-            local_8 = uVar2;
+            surfType = uVar2;
           }
         }
       }
     }
   }
-  return local_8;
+  return surfType;
 }
 
 
@@ -1183,17 +1178,17 @@ int __cdecl GetSoundInfoForVehicle(int param_1,centity_s *param_2,float *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetSoundOriginForVehicle(centity_s *param_1,float *param_2)
+void __cdecl GetSoundOriginForVehicle(centity_s *cent,float *origin)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = (param_1->pose).origin[1];
-  fVar2 = (param_1->pose).origin[2];
-  *param_2 = (param_1->pose).origin[0];
-  param_2[1] = fVar1;
-  param_2[2] = fVar2 + 5.0;
+  fVar1 = (cent->pose).origin[1];
+  fVar2 = (cent->pose).origin[2];
+  *origin = (cent->pose).origin[0];
+  origin[1] = fVar1;
+  origin[2] = fVar2 + 5.0;
   return;
 }
 
@@ -1207,27 +1202,28 @@ void __cdecl GetSoundOriginForVehicle(centity_s *param_1,float *param_2)
 
 void __cdecl
 CG_CrossFadeVehicleMaterialEffects
-          (int param_1,centity_s *param_2,vehicle_info_t *param_3,int param_4,int param_5,
-          float param_6,int param_7)
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,int groundEffectIndex,
+          int surfType,float ratio,int fadeTime)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint uVar4;
-  float local_1c [3];
-  undefined1 local_d;
-  char (*local_c) [64];
-  cgVehicleWheelEffect *local_8;
+  uint id;
+  bool transition;
+  float soundOrigin [3];
+  bool still_fading_out;
+  char *soundAlias;
+  cgVehicleWheelEffect *wheelEffect;
   
-  if ((param_2->vehicle == (cgVehicle_s *)0x0) &&
+  if ((cent->vehicle == (cgVehicle_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x3ba,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((2 < (uint)param_4) &&
+  if ((2 < (uint)groundEffectIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x3bb,0,
                                "groundEffectIndex doesn\'t index NUM_VEHICLE_MATERIAL_SNDS\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -1235,36 +1231,38 @@ CG_CrossFadeVehicleMaterialEffects
     (*pcVar1)();
     return;
   }
-  local_8 = param_2->vehicle->wheelEffects + param_4;
-  if (param_6 < 1.52879e-05) {
-    param_6 = 0.0;
+  wheelEffect = cent->vehicle->wheelEffects + groundEffectIndex;
+  if (ratio < 1.52879e-05) {
+    ratio = 0.0;
   }
-  local_c = param_3->sndMaterialNames + param_4;
-  if ((*local_c)[0] != '\0') {
-    local_d = 1;
-    GetSoundOriginForVehicle(param_2,local_1c);
-    if ((local_8->lastSurfaceType != -1) && (local_8->surfaceType != local_8->lastSurfaceType)) {
-      Com_SurfaceTypeToName(local_8->lastSurfaceType);
+  soundAlias = info->sndMaterialNames[groundEffectIndex];
+  if ((*(char (*) [64])soundAlias)[0] != '\0') {
+    still_fading_out = true;
+    GetSoundOriginForVehicle(cent,soundOrigin);
+    if ((wheelEffect->lastSurfaceType != -1) &&
+       (wheelEffect->surfaceType != wheelEffect->lastSurfaceType)) {
+      Com_SurfaceTypeToName(wheelEffect->lastSurfaceType);
       pcVar3 = va("%s_%s");
-      uVar4 = SND_FindAliasId(pcVar3);
-      CG_PlaySoundWithHandle(param_1,(param_2->nextState).number,local_1c,-param_7,false,1.0,uVar4);
+      id = SND_FindAliasId(pcVar3);
+      CG_PlaySoundWithHandle
+                (localClientNum,(cent->nextState).number,soundOrigin,-fadeTime,false,1.0,id);
     }
-    local_d = 0;
-    bVar2 = local_8->surfaceType != param_5;
+    still_fading_out = false;
+    bVar2 = wheelEffect->surfaceType != surfType;
     if (bVar2) {
-      local_8->lastSurfaceType = local_8->surfaceType;
-      local_8->surfaceType = param_5;
+      wheelEffect->lastSurfaceType = wheelEffect->surfaceType;
+      wheelEffect->surfaceType = surfType;
     }
-    if (local_8->surfaceType != -1) {
-      Com_SurfaceTypeToName(local_8->surfaceType);
+    if (wheelEffect->surfaceType != -1) {
+      Com_SurfaceTypeToName(wheelEffect->surfaceType);
       pcVar3 = va("%s_%s");
-      CG_PlaySound(param_1,(param_2->nextState).number,local_1c,-(uint)bVar2 & param_7,false,param_6
-                   ,pcVar3);
+      CG_PlaySound(localClientNum,(cent->nextState).number,soundOrigin,-(uint)bVar2 & fadeTime,false
+                   ,ratio,pcVar3);
     }
-    if ((bVar2) && (local_8->lastSurfaceType != -1)) {
-      Com_SurfaceTypeToName(local_8->lastSurfaceType);
+    if ((bVar2) && (wheelEffect->lastSurfaceType != -1)) {
+      Com_SurfaceTypeToName(wheelEffect->lastSurfaceType);
       pcVar3 = va("%s_%s");
-      CG_PlaySound(param_1,(param_2->nextState).number,local_1c,-param_7,false,1.0,pcVar3);
+      CG_PlaySound(localClientNum,(cent->nextState).number,soundOrigin,-fadeTime,false,1.0,pcVar3);
     }
   }
   return;
@@ -1279,7 +1277,8 @@ CG_CrossFadeVehicleMaterialEffects
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_UpdateWheeledSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+CG_UpdateWheeledSurfaceSounds
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,bool isLocalPlayersVehicle)
 
 {
   bool bVar1;
@@ -1297,9 +1296,9 @@ CG_UpdateWheeledSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *par
   
   local_14 = 0;
   local_18 = 0.0;
-  local_14 = GetSoundInfoForVehicle(param_1,param_2,&local_18);
-  fVar2 = param_2->nitrousVeh->m_forward_vel;
-  fVar4 = NitrousVehicle::get_max_speed(param_2->nitrousVeh,false);
+  local_14 = GetSoundInfoForVehicle(localClientNum,cent,&local_18);
+  fVar2 = cent->nitrousVeh->m_forward_vel;
+  fVar4 = NitrousVehicle::get_max_speed(cent->nitrousVeh,false);
   dVar3 = (double)((ABS(fVar2) / fVar4) * 1.5707964);
   __libm_sse2_sin(in_stack_ffffffb0);
   fVar2 = (float)dVar3;
@@ -1313,7 +1312,7 @@ CG_UpdateWheeledSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *par
   else {
     local_30 = 0.0;
   }
-  CG_CrossFadeVehicleMaterialEffects(param_1,param_2,param_3,0,local_14,local_30,fadetime);
+  CG_CrossFadeVehicleMaterialEffects(localClientNum,cent,info,0,local_14,local_30,fadetime);
   dVar3 = (double)(local_18 * 1.5707964);
   __libm_sse2_sin(in_stack_ffffffb0);
   fVar2 = (float)dVar3;
@@ -1328,15 +1327,15 @@ CG_UpdateWheeledSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *par
     local_44 = 0.0;
   }
   local_18 = local_44;
-  CG_CrossFadeVehicleMaterialEffects(param_1,param_2,param_3,1,local_14,local_44,fadetime);
-  bVar1 = NitrousVehicle::is_peeling_out(param_2->nitrousVeh);
+  CG_CrossFadeVehicleMaterialEffects(localClientNum,cent,info,1,local_14,local_44,fadetime);
+  bVar1 = NitrousVehicle::is_peeling_out(cent->nitrousVeh);
   if (bVar1) {
     local_48 = 1.0;
   }
   else {
     local_48 = 0.0;
   }
-  CG_CrossFadeVehicleMaterialEffects(param_1,param_2,param_3,2,local_14,local_48,fadetime);
+  CG_CrossFadeVehicleMaterialEffects(localClientNum,cent,info,2,local_14,local_48,fadetime);
   return;
 }
 
@@ -1351,7 +1350,8 @@ CG_UpdateWheeledSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *par
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+CG_UpdateTankSurfaceSounds
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,bool isLocalPlayersVehicle)
 
 {
   uint uVar1;
@@ -1360,9 +1360,9 @@ CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_
   phys_vec3 *ppVar4;
   int iVar5;
   int iVar6;
-  char *pcVar7;
-  float fVar8;
-  double dVar9;
+  char *name;
+  float fVar7;
+  double dVar8;
   double in_stack_fffffec0;
   float local_130;
   int local_12c;
@@ -1410,20 +1410,20 @@ CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_
   float local_24;
   float local_20;
   
-  AnglesToAxis((param_2->pose).angles,&local_34);
+  AnglesToAxis((cent->pose).angles,&local_34);
   local_38 = &local_28;
-  local_3c = (param_2->pose).origin;
+  local_3c = (cent->pose).origin;
   local_54[0] = local_28 * 35.0 + *local_3c;
-  local_54[1] = local_24 * 35.0 + (param_2->pose).origin[1];
-  local_54[2] = local_20 * 35.0 + (param_2->pose).origin[2];
+  local_54[1] = local_24 * 35.0 + (cent->pose).origin[1];
+  local_54[2] = local_20 * 35.0 + (cent->pose).origin[2];
   local_58 = local_54 + 3;
   local_5c = &local_28;
-  local_60 = (param_2->pose).origin;
+  local_60 = (cent->pose).origin;
   local_54[3] = local_28 * -35.0 + *local_60;
-  local_44 = local_24 * -35.0 + (param_2->pose).origin[1];
-  local_40 = local_20 * -35.0 + (param_2->pose).origin[2];
-  local_64 = Abs((phys_vec3 *)(param_2->currentState).pos.trDelta);
-  local_68 = local_64 / param_3->engineSndSpeed;
+  local_44 = local_24 * -35.0 + (cent->pose).origin[1];
+  local_40 = local_20 * -35.0 + (cent->pose).origin[2];
+  local_64 = Abs((phys_vec3 *)(cent->currentState).pos.trDelta);
+  local_68 = local_64 / info->engineSndSpeed;
   local_6c = local_68;
   if (0.0 <= local_68 - 1.0) {
     local_6c = 1.0;
@@ -1435,66 +1435,66 @@ CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_
     local_70 = 0.0;
   }
   local_74 = local_70;
-  local_78 = CG_VehGetHealthPercentageEntity(param_2);
+  local_78 = CG_VehGetHealthPercentageEntity(cent);
   local_7c = 1.0 - local_78;
   if (playBodyDmgLoop != false) {
     local_80 = local_74 * local_7c;
-    CG_PlaySound(param_1,(param_2->nextState).number,local_54,0,false,local_80,
-                 param_3->sndNames[0xb]);
-    CG_PlaySound(param_1,(param_2->nextState).number,local_54 + 3,0,false,local_80,
-                 param_3->sndNames[0xc]);
+    CG_PlaySound(localClientNum,(cent->nextState).number,local_54,0,false,local_80,
+                 info->sndNames[0xb]);
+    CG_PlaySound(localClientNum,(cent->nextState).number,local_54 + 3,0,false,local_80,
+                 info->sndNames[0xc]);
   }
   if (playTreadSqueaks != false) {
-    local_84 = CG_VehGetHealthPercentageLeftTread(param_2);
-    local_88 = CG_VehGetHealthPercentageRightTread(param_2);
-    local_8a = local_84 < param_3->treadDamageLoopHealthRatio;
+    local_84 = CG_VehGetHealthPercentageLeftTread(cent);
+    local_88 = CG_VehGetHealthPercentageRightTread(cent);
+    local_8a = local_84 < info->treadDamageLoopHealthRatio;
     local_90 = (-(uint)(byte)local_8a & 2) + 0xd;
-    local_94 = param_3->treadGrindAttenuation * local_74;
+    local_94 = info->treadGrindAttenuation * local_74;
     local_89 = local_8a;
-    CG_PlaySound(param_1,(param_2->nextState).number,local_54,0,false,local_94,
-                 param_3->sndNames[(-(uint)(byte)local_8a & 2) + 0xd]);
-    local_96 = local_88 < param_3->treadDamageLoopHealthRatio;
+    CG_PlaySound(localClientNum,(cent->nextState).number,local_54,0,false,local_94,
+                 info->sndNames[(-(uint)(byte)local_8a & 2) + 0xd]);
+    local_96 = local_88 < info->treadDamageLoopHealthRatio;
     local_9c = (-(uint)(byte)local_96 & 2) + 0xe;
-    local_a0 = param_3->treadGrindAttenuation * local_74;
+    local_a0 = info->treadGrindAttenuation * local_74;
     local_95 = local_96;
-    CG_PlaySound(param_1,(param_2->nextState).number,local_54 + 3,0,false,local_a0,
-                 param_3->sndNames[(-(uint)(byte)local_96 & 2) + 0xe]);
+    CG_PlaySound(localClientNum,(cent->nextState).number,local_54 + 3,0,false,local_a0,
+                 info->sndNames[(-(uint)(byte)local_96 & 2) + 0xe]);
   }
-  local_a4 = param_3->sndMaterialNames;
+  local_a4 = info->sndMaterialNames;
   if ((*local_a4)[0] != '\0') {
-    local_a8 = CG_GetLocalClientGlobals(param_1);
+    local_a8 = CG_GetLocalClientGlobals(localClientNum);
     local_b4[2] = (int *)0x1;
-    local_b4[0] = &param_2->nitrousVeh->m_trackDistAccumLeftInches;
-    local_b4[1] = &param_2->nitrousVeh->m_trackDistAccumRightInches;
-    local_b8 = param_3->trackLengthInches;
+    local_b4[0] = &cent->nitrousVeh->m_trackDistAccumLeftInches;
+    local_b4[1] = &cent->nitrousVeh->m_trackDistAccumRightInches;
+    local_b8 = info->trackLengthInches;
     local_b9 = playTreadClacks;
     local_c0 = (float)(local_a8->bgs).frametime * 0.001;
     local_c4 = local_c0 * local_64;
-    if (param_2->nitrousVeh == (NitrousVehicle *)0x0) {
-      local_e8 = (param_2->nextState).lerp.apos.trDelta[2];
+    if (cent->nitrousVeh == (NitrousVehicle *)0x0) {
+      local_e8 = (cent->nextState).lerp.apos.trDelta[2];
     }
     else {
-      ppVar4 = NitrousVehicle::get_a_velocity(param_2->nitrousVeh,&local_e0);
+      ppVar4 = NitrousVehicle::get_a_velocity(cent->nitrousVeh,&local_e0);
       local_e8 = ppVar4->z;
     }
-    fVar8 = local_c0 * 48.0;
-    dVar9 = (double)local_e8;
+    fVar7 = local_c0 * 48.0;
+    dVar8 = (double)local_e8;
     __libm_sse2_sin(in_stack_fffffec0);
     bVar3 = false;
     while (!bVar3) {
       if (0 < local_b8) {
         for (local_f8 = 0; local_f8 < 2; local_f8 = local_f8 + 1) {
           iVar6 = *local_b4[local_f8];
-          iVar5 = (int)((float)iVar6 + local_c4 + fSign[local_f8] * fVar8 * (float)dVar9);
+          iVar5 = (int)((float)iVar6 + local_c4 + fSign[local_f8] * fVar7 * (float)dVar8);
           *local_b4[local_f8] = iVar5;
           if ((iVar5 / local_b8 != iVar6 / local_b8) &&
              (*local_b4[local_f8] = *local_b4[local_f8] % local_b8, local_b9 != '\0')) {
             local_110 = -1;
             local_114 = 0;
             for (local_118 = 0; local_118 < 3; local_118 = local_118 + 1) {
-              if ((param_2->nitrousVeh->m_wheels[aaWheels[local_f8][local_118]]->m_wheel_flags & 1)
-                  != 0) {
-                uVar1 = param_2->nitrousVeh->m_wheel_surf_types[aaWheels[local_f8][local_118]];
+              if ((cent->nitrousVeh->m_wheels[aaWheels[local_f8][local_118]]->m_wheel_flags & 1) !=
+                  0) {
+                uVar1 = cent->nitrousVeh->m_wheel_surf_types[aaWheels[local_f8][local_118]];
                 if ((((int)uVar1 < 0) || (0x1e < uVar1)) &&
                    (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp"
                                              ,0x487,0,"%s"), !bVar3)) {
@@ -1524,15 +1524,15 @@ CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_
               if ((_S2 & 1) == 0) {
                 _S2 = _S2 | 1;
                 clacksCurveSlope =
-                     param_3->clacksCurveMaxOmitted /
-                     (param_3->clacksCurveDamageEnd - param_3->clacksCurveDamageStart);
+                     info->clacksCurveMaxOmitted /
+                     (info->clacksCurveDamageEnd - info->clacksCurveDamageStart);
               }
-              if (param_3->clacksCurveDamageStart < local_7c) {
-                if (local_7c < param_3->clacksCurveDamageStart) {
-                  local_130 = (local_7c - param_3->clacksCurveDamageStart) * clacksCurveSlope;
+              if (info->clacksCurveDamageStart < local_7c) {
+                if (local_7c < info->clacksCurveDamageStart) {
+                  local_130 = (local_7c - info->clacksCurveDamageStart) * clacksCurveSlope;
                 }
                 else {
-                  local_130 = param_3->clacksCurveMaxOmitted;
+                  local_130 = info->clacksCurveMaxOmitted;
                 }
               }
               else {
@@ -1541,9 +1541,9 @@ CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_
               iVar6 = rand();
               if (local_130 <= (float)(iVar6 % 0x65) / 100.0) {
                 Com_SurfaceTypeToName(local_114);
-                pcVar7 = va("%s_%s");
-                CG_PlaySound(param_1,(param_2->nextState).number,local_54 + local_f8 * 3,0,false,1.0
-                             ,pcVar7);
+                name = va("%s_%s");
+                CG_PlaySound(localClientNum,(cent->nextState).number,local_54 + local_f8 * 3,0,false
+                             ,1.0,name);
               }
             }
           }
@@ -1564,27 +1564,30 @@ CG_UpdateTankSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_UpdateSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+CG_UpdateSurfaceSounds
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,bool isLocalPlayersVehicle)
 
 {
   code *pcVar1;
   bool bVar2;
   bool bVar3;
   bool bVar4;
+  bool isTank;
+  bool isWheeledVehicle;
   
-  if ((param_3 == (vehicle_info_t *)0x0) || (param_3->type != 2)) {
+  if ((info == (vehicle_info_t *)0x0) || (info->type != 2)) {
     bVar3 = false;
   }
   else {
     bVar3 = true;
   }
-  if ((param_3 == (vehicle_info_t *)0x0) || ((param_3->type != 0 && (param_3->type != 1)))) {
+  if ((info == (vehicle_info_t *)0x0) || ((info->type != 0 && (info->type != 1)))) {
     bVar2 = false;
   }
   else {
     bVar2 = true;
   }
-  if (param_2->nitrousVeh == (NitrousVehicle *)0x0) {
+  if (cent->nitrousVeh == (NitrousVehicle *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x4ba,0,"%s"
                             );
     if (!bVar4) {
@@ -1594,10 +1597,10 @@ CG_UpdateSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bo
     }
   }
   if (bVar3) {
-    CG_UpdateTankSurfaceSounds(param_1,param_2,param_3,param_4);
+    CG_UpdateTankSurfaceSounds(localClientNum,cent,info,isLocalPlayersVehicle);
   }
   else if (bVar2) {
-    CG_UpdateWheeledSurfaceSounds(param_1,param_2,param_3,param_4);
+    CG_UpdateWheeledSurfaceSounds(localClientNum,cent,info,isLocalPlayersVehicle);
   }
   return;
 }
@@ -1610,41 +1613,43 @@ CG_UpdateSurfaceSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bo
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateVehicleNotifies(int param_1,centity_s *param_2)
+void __cdecl CG_UpdateVehicleNotifies(int localClientNum,centity_s *cent)
 
 {
   uint uVar1;
-  char *pcVar2;
-  scriptInstance_t sVar3;
+  char *value;
+  scriptInstance_t inst;
+  int notifyFlags;
   
-  if ((param_2->nitrousVeh != (NitrousVehicle *)0x0) &&
-     (uVar1 = param_2->nitrousVeh->m_notify_flags, uVar1 != 0)) {
+  if ((cent->nitrousVeh != (NitrousVehicle *)0x0) &&
+     (uVar1 = cent->nitrousVeh->m_notify_flags, uVar1 != 0)) {
     if ((uVar1 & 1) != 0) {
-      if (param_2->nitrousVeh->m_collision_entnum == 0x3fe) {
+      if (cent->nitrousVeh->m_collision_entnum == 0x3fe) {
         Scr_AddUndefined(SCRIPTINSTANCE_CLIENT);
       }
       else {
-        Scr_AddEntityNum(param_2->nitrousVeh->m_collision_entnum,0,SCRIPTINSTANCE_CLIENT,param_1);
+        Scr_AddEntityNum(cent->nitrousVeh->m_collision_entnum,0,SCRIPTINSTANCE_CLIENT,localClientNum
+                        );
       }
-      sVar3 = SCRIPTINSTANCE_CLIENT;
-      pcVar2 = Com_SurfaceTypeToName(param_2->nitrousVeh->m_collision_stype);
-      Scr_AddString(pcVar2,sVar3);
-      Scr_AddFloat(param_2->nitrousVeh->m_collision_intensity,SCRIPTINSTANCE_CLIENT);
-      Scr_AddVector(param_2->nitrousVeh->m_collision_hitn,SCRIPTINSTANCE_CLIENT);
-      Scr_AddVector(param_2->nitrousVeh->m_collision_hitp,SCRIPTINSTANCE_CLIENT);
-      CScr_Notify(param_1,param_2,cscr_const.veh_collision,5);
+      inst = SCRIPTINSTANCE_CLIENT;
+      value = Com_SurfaceTypeToName(cent->nitrousVeh->m_collision_stype);
+      Scr_AddString(value,inst);
+      Scr_AddFloat(cent->nitrousVeh->m_collision_intensity,SCRIPTINSTANCE_CLIENT);
+      Scr_AddVector(cent->nitrousVeh->m_collision_hitn,SCRIPTINSTANCE_CLIENT);
+      Scr_AddVector(cent->nitrousVeh->m_collision_hitp,SCRIPTINSTANCE_CLIENT);
+      CScr_Notify(localClientNum,cent,cscr_const.veh_collision,5);
     }
     if ((uVar1 & 2) != 0) {
-      CScr_Notify(param_1,param_2,cscr_const.veh_inair,0);
+      CScr_Notify(localClientNum,cent,cscr_const.veh_inair,0);
     }
     if ((uVar1 & 4) != 0) {
-      CScr_Notify(param_1,param_2,cscr_const.veh_landed,0);
+      CScr_Notify(localClientNum,cent,cscr_const.veh_landed,0);
     }
     if ((uVar1 & 8) != 0) {
-      CScr_Notify(param_1,param_2,cscr_const.veh_suspension_limit_activated,0);
+      CScr_Notify(localClientNum,cent,cscr_const.veh_suspension_limit_activated,0);
     }
     if ((uVar1 & 0x10) != 0) {
-      CScr_Notify(param_1,param_2,cscr_const.veh_engine_stutter,0);
+      CScr_Notify(localClientNum,cent,cscr_const.veh_engine_stutter,0);
     }
   }
   return;
@@ -1659,22 +1664,26 @@ void __cdecl CG_UpdateVehicleNotifies(int param_1,centity_s *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_UpdateFireSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+CG_UpdateFireSounds(int localClientNum,centity_s *cent,vehicle_info_t *info,
+                   bool isLocalPlayersVehicle)
 
 {
   float fVar1;
   char *local_10;
+  char *fireAliasName;
+  float healthRatio;
   
   if (playFireSounds) {
-    fVar1 = CG_VehGetHealthPercentageEntity(param_2);
+    fVar1 = CG_VehGetHealthPercentageEntity(cent);
     if (fVar1 < 0.5) {
-      if (param_4) {
+      if (isLocalPlayersVehicle) {
         local_10 = "tank_burning_1p_loop";
       }
       else {
         local_10 = "tank_burning_3p_loop";
       }
-      CG_PlaySound(param_1,(param_2->nextState).number,(param_2->pose).origin,0,false,1.0,local_10);
+      CG_PlaySound(localClientNum,(cent->nextState).number,(cent->pose).origin,0,false,1.0,local_10)
+      ;
     }
   }
   return;
@@ -1689,29 +1698,30 @@ CG_UpdateFireSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_UpdateBoostSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+CG_UpdateBoostSounds
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,bool isLocalPlayersVehicle)
 
 {
   bool bVar1;
-  float local_18 [3];
-  int local_c;
-  char local_5;
+  float soundOrigin [3];
+  int sndNameIndex;
+  bool wasBoosting;
   
-  if (param_2->nitrousVeh != (NitrousVehicle *)0x0) {
-    local_5 = (param_2->nitrousVeh->m_sfx_state_flags & 2U) != 0;
-    bVar1 = NitrousVehicle::is_boosting(param_2->nitrousVeh);
-    if ((bVar1) && (local_5 == '\0')) {
-      GetSoundOriginForVehicle(param_2,local_18);
-      local_c = param_4 + 0x11;
-      CG_PlaySound(param_1,(param_2->nextState).number,local_18,0,false,1.0,
-                   param_3->sndNames[param_4 + 0x11]);
+  if (cent->nitrousVeh != (NitrousVehicle *)0x0) {
+    wasBoosting = (cent->nitrousVeh->m_sfx_state_flags & 2U) != 0;
+    bVar1 = NitrousVehicle::is_boosting(cent->nitrousVeh);
+    if ((bVar1) && (wasBoosting == false)) {
+      GetSoundOriginForVehicle(cent,soundOrigin);
+      sndNameIndex = isLocalPlayersVehicle + 0x11;
+      CG_PlaySound(localClientNum,(cent->nextState).number,soundOrigin,0,false,1.0,
+                   info->sndNames[isLocalPlayersVehicle + 0x11]);
     }
-    bVar1 = NitrousVehicle::is_boosting(param_2->nitrousVeh);
+    bVar1 = NitrousVehicle::is_boosting(cent->nitrousVeh);
     if (bVar1) {
-      param_2->nitrousVeh->m_sfx_state_flags = param_2->nitrousVeh->m_sfx_state_flags | 2;
+      cent->nitrousVeh->m_sfx_state_flags = cent->nitrousVeh->m_sfx_state_flags | 2;
     }
     else {
-      param_2->nitrousVeh->m_sfx_state_flags = param_2->nitrousVeh->m_sfx_state_flags & 0xfffffffd;
+      cent->nitrousVeh->m_sfx_state_flags = cent->nitrousVeh->m_sfx_state_flags & 0xfffffffd;
     }
   }
   return;
@@ -1726,7 +1736,8 @@ CG_UpdateBoostSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_UpdateVehicleEngineSounds(int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+CG_UpdateVehicleEngineSounds
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,bool isLocalPlayersVehicle)
 
 {
   double dVar1;
@@ -1765,12 +1776,12 @@ CG_UpdateVehicleEngineSounds(int param_1,centity_s *param_2,vehicle_info_t *para
   float local_18;
   float local_14;
   
-  local_14 = (float)(int)(param_2->nextState).lerp.u.vehicle.field3_0x18.throttle * 3.0517578e-05;
-  if (param_2->nitrousVeh != (NitrousVehicle *)0x0) {
-    local_14 = param_2->nitrousVeh->m_throttle;
+  local_14 = (float)(int)(cent->nextState).lerp.u.vehicle.field3_0x18.throttle * 3.0517578e-05;
+  if (cent->nitrousVeh != (NitrousVehicle *)0x0) {
+    local_14 = cent->nitrousVeh->m_throttle;
   }
-  local_18 = Abs((phys_vec3 *)(param_2->currentState).pos.trDelta);
-  local_1c = local_18 / param_3->engineSndSpeed;
+  local_18 = Abs((phys_vec3 *)(cent->currentState).pos.trDelta);
+  local_1c = local_18 / info->engineSndSpeed;
   local_20 = local_1c;
   if (0.0 <= local_1c - 1.0) {
     local_20 = 1.0;
@@ -1782,35 +1793,34 @@ CG_UpdateVehicleEngineSounds(int param_1,centity_s *param_2,vehicle_info_t *para
     local_24 = 0.0;
   }
   local_28 = local_24;
-  local_2c = CG_VehGetHealthPercentageEntity(param_2);
+  local_2c = CG_VehGetHealthPercentageEntity(cent);
   local_30 = 1.0 - local_2c;
   local_34 = local_18 / 17.6;
-  local_38 = param_2->vehicle->wheelEffects;
+  local_38 = cent->vehicle->wheelEffects;
   if (local_38->surfaceType == -1) {
-    local_3c = (param_3->gear2MaxRPMs - param_3->idleRPMs) * local_14 + param_3->idleRPMs;
+    local_3c = (info->gear2MaxRPMs - info->idleRPMs) * local_14 + info->idleRPMs;
   }
-  else if ((param_2->nitrousVeh == (NitrousVehicle *)0x0) || (local_14 != 0.0)) {
-    if (param_3->gearChangeMPH <= local_34) {
-      local_44 = (param_3->gear2MaxRPMs - param_3->gear2MinRPMs) /
-                 (param_3->maxSpeed - param_3->gearChangeMPH);
-      local_3c = (local_34 - param_3->gearChangeMPH) * local_44 + param_3->gear2MinRPMs;
+  else if ((cent->nitrousVeh == (NitrousVehicle *)0x0) || (local_14 != 0.0)) {
+    if (info->gearChangeMPH <= local_34) {
+      local_44 = (info->gear2MaxRPMs - info->gear2MinRPMs) / (info->maxSpeed - info->gearChangeMPH);
+      local_3c = (local_34 - info->gearChangeMPH) * local_44 + info->gear2MinRPMs;
     }
     else {
-      local_40 = (param_3->gear1MaxRPMs - param_3->gear1MinRPMs) / (param_3->gearChangeMPH - 0.0);
-      local_3c = (local_34 - 0.0) * local_40 + param_3->gear1MinRPMs;
+      local_40 = (info->gear1MaxRPMs - info->gear1MinRPMs) / (info->gearChangeMPH - 0.0);
+      local_3c = (local_34 - 0.0) * local_40 + info->gear1MinRPMs;
     }
   }
   else {
-    local_3c = param_3->idleRPMs;
+    local_3c = info->idleRPMs;
   }
-  local_48 = local_3c / param_3->idleRPMs;
-  local_4c = param_3->idleRPMsMax - param_3->idleRPMs;
+  local_48 = local_3c / info->idleRPMs;
+  local_4c = info->idleRPMsMax - info->idleRPMs;
   if (local_4c <= 0.0) {
     local_4c = 1.0;
   }
-  GetSoundOriginForVehicle(param_2,local_58);
-  local_5c = (uint)param_4;
-  local_60 = (local_3c - param_3->idleRPMs) / local_4c;
+  GetSoundOriginForVehicle(cent,local_58);
+  local_5c = (uint)isLocalPlayersVehicle;
+  local_60 = (local_3c - info->idleRPMs) / local_4c;
   local_64 = local_60;
   if (0.0 <= local_60 - 1.0) {
     local_64 = 1.0;
@@ -1837,10 +1847,10 @@ CG_UpdateVehicleEngineSounds(int param_1,centity_s *param_2,vehicle_info_t *para
   }
   local_7c = local_78;
   local_80 = CG_PlaySoundWithHandle
-                       (param_1,(param_2->nextState).number,local_58,0,false,local_78,
-                        param_3->sndNames[local_5c]);
+                       (localClientNum,(cent->nextState).number,local_58,0,false,local_78,
+                        info->sndNames[local_5c]);
   SND_SetPlaybackPitch(local_80,local_48);
-  local_84 = local_3c / param_3->engineModLoopNaturalRPMs;
+  local_84 = local_3c / info->engineModLoopNaturalRPMs;
   local_88 = (ABS(local_14) - local_28) + local_30;
   local_8c = local_88;
   if (0.0 <= local_88 - 1.0) {
@@ -1855,13 +1865,13 @@ CG_UpdateVehicleEngineSounds(int param_1,centity_s *param_2,vehicle_info_t *para
   SND_EqualPowerFadeCoefs(local_90,&local_98,&local_94);
   local_7c = local_98 * local_6c;
   local_80 = CG_PlaySoundWithHandle
-                       (param_1,(param_2->nextState).number,local_58,0,false,local_7c,
-                        param_3->sndNames[param_4 + 7]);
+                       (localClientNum,(cent->nextState).number,local_58,0,false,local_7c,
+                        info->sndNames[isLocalPlayersVehicle + 7]);
   SND_SetPlaybackPitch(local_80,local_84);
   local_7c = local_94 * local_6c;
   local_80 = CG_PlaySoundWithHandle
-                       (param_1,(param_2->nextState).number,local_58,0,false,local_7c,
-                        param_3->sndNames[param_4 + 9]);
+                       (localClientNum,(cent->nextState).number,local_58,0,false,local_7c,
+                        info->sndNames[isLocalPlayersVehicle + 9]);
   SND_SetPlaybackPitch(local_80,local_84);
   return;
 }
@@ -1876,20 +1886,22 @@ CG_UpdateVehicleEngineSounds(int param_1,centity_s *param_2,vehicle_info_t *para
 
 void __cdecl
 CG_UpdateTurretAndOverheatSounds
-          (int param_1,centity_s *param_2,vehicle_info_t *param_3,bool param_4)
+          (int localClientNum,centity_s *cent,vehicle_info_t *info,bool isLocalPlayersVehicle)
 
 {
-  short sVar1;
-  short sVar2;
-  int iVar3;
-  uint uVar4;
-  code *pcVar5;
-  bool bVar6;
+  float fVar1;
+  float fVar2;
+  short sVar3;
+  short sVar4;
+  int seatIndex;
+  uint uVar5;
+  code *pcVar6;
   bool bVar7;
   bool bVar8;
   bool bVar9;
-  cg_s *pcVar10;
-  bool bVar11;
+  bool bVar10;
+  cg_s *pcVar11;
+  bool bVar12;
   FxEffectDef *local_94;
   char *local_90;
   char *local_8c;
@@ -1898,136 +1910,154 @@ CG_UpdateTurretAndOverheatSounds
   float local_80;
   float local_78;
   float local_74;
-  ushort local_6c;
-  float local_60;
-  float local_58;
-  float local_54;
-  float local_50;
-  float local_48;
-  float local_44;
-  float local_38;
-  float local_30;
-  bool local_15;
-  WeaponDef *local_14;
-  uint local_c;
+  char *overheatSoundAlias;
+  ushort flash;
+  FxEffectDef *overheatEffect;
+  int gunnerIndex_3;
+  float gunPitch;
+  float attenuation;
+  float gunYaw;
+  float yawMax;
+  float pitchMax;
+  float pitchFadeEdgeRange;
+  float yawMin;
+  float pitchLockFade;
+  char *gunSpinLoopAlias;
+  float yawAttenuation;
+  float pitchMin;
+  float yawFadeEdgeRange;
+  float yawLockFade;
+  float pitchAttenuation;
+  int gunnerIndex_2;
+  int gunnerIndex;
+  int overheatFlag;
+  int vehSeat;
+  bool isOverheating;
+  WeaponDef *pWeapon;
+  bool gun_turning_pitch;
+  bool gun_turning_yaw;
+  bool isLocalPlayersSeat;
+  bool wasOverheating;
+  int i;
   
   if (((playTurretRotationSounds) || (playOverheatSounds)) &&
-     (param_2->nitrousVeh != (NitrousVehicle *)0x0)) {
-    pcVar10 = CG_GetLocalClientGlobals(param_1);
-    for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      iVar3 = _seat_positions[local_c];
-      if (((iVar3 != 0) && ((iVar3 < 1 || (4 < iVar3)))) &&
-         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x57a,
-                                   0,"%s"), !bVar6)) {
-        pcVar5 = (code *)swi(3);
-        (*pcVar5)();
+     (cent->nitrousVeh != (NitrousVehicle *)0x0)) {
+    pcVar11 = CG_GetLocalClientGlobals(localClientNum);
+    for (i = 0; (uint)i < 2; i = i + 1) {
+      seatIndex = _seat_positions[i];
+      if (((seatIndex != 0) && ((seatIndex < 1 || (4 < seatIndex)))) &&
+         (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",0x57a,
+                                   0,"%s"), !bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
-      if ((*(int *)((int)(pcVar10->bgs).clientinfo + pcVar10->clientNum * 0x5c8 + 0x560) == iVar3)
-         && (param_4)) {
-        bVar6 = true;
+      if ((*(int *)((int)(pcVar11->bgs).clientinfo + pcVar11->clientNum * 0x5c8 + 0x560) ==
+           seatIndex) && (isLocalPlayersVehicle)) {
+        bVar7 = true;
       }
       else {
-        bVar6 = false;
+        bVar7 = false;
       }
-      bVar7 = CG_VehGetSeatGunTurningYaw(param_2,iVar3);
-      bVar8 = CG_VehGetSeatGunTurningPitch(param_2,iVar3);
-      uVar4 = _overheat_flags[local_c];
-      bVar11 = (param_2->nitrousVeh->m_sfx_state_flags & uVar4) != 0;
-      local_15 = false;
-      if (bVar6) {
-        if (iVar3 == 0) {
-          local_15 = (param_2->nextState).lerp.u.turret.overheating != 0;
+      bVar8 = CG_VehGetSeatGunTurningYaw(cent,seatIndex);
+      bVar9 = CG_VehGetSeatGunTurningPitch(cent,seatIndex);
+      uVar5 = _overheat_flags[i];
+      bVar12 = (cent->nitrousVeh->m_sfx_state_flags & uVar5) != 0;
+      isOverheating = false;
+      if (bVar7) {
+        if (seatIndex == 0) {
+          isOverheating = (cent->nextState).lerp.u.turret.overheating != 0;
         }
-        else if ((0 < iVar3) && (iVar3 < 5)) {
-          local_15 = BG_PlayerWeaponOverheating
-                               (&pcVar10->predictedPlayerState,
-                                (uint)param_3->gunnerWeaponIndex[iVar3 + -1]);
+        else if ((0 < seatIndex) && (seatIndex < 5)) {
+          isOverheating =
+               BG_PlayerWeaponOverheating
+                         (&pcVar11->predictedPlayerState,
+                          (uint)info->gunnerWeaponIndex[seatIndex + -1]);
         }
       }
       else {
-        local_15 = CG_VehGetSeatGunOverheating(param_2,iVar3);
+        isOverheating = CG_VehGetSeatGunOverheating(cent,seatIndex);
       }
-      if (((local_15 != bVar11) || (bVar7)) || (bVar8)) {
-        if (iVar3 == 0) {
-          local_14 = BG_GetWeaponDef((uint)(param_2->nextState).weapon);
-          if ((local_14 == (WeaponDef *)0x0) &&
-             (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",
-                                       0x5ac,0,"%s"), !bVar9)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+      if (((isOverheating != bVar12) || (bVar8)) || (bVar9)) {
+        if (seatIndex == 0) {
+          pWeapon = BG_GetWeaponDef((uint)(cent->nextState).weapon);
+          if ((pWeapon == (WeaponDef *)0x0) &&
+             (bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",
+                                        0x5ac,0,"%s"), !bVar10)) {
+            pcVar6 = (code *)swi(3);
+            (*pcVar6)();
             return;
           }
         }
         else {
-          local_14 = BG_GetWeaponDef((uint)param_3->gunnerWeaponIndex[iVar3 + -1]);
-          if ((local_14 == (WeaponDef *)0x0) &&
-             (bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",
-                                       0x5b2,0,"%s"), !bVar9)) {
-            pcVar5 = (code *)swi(3);
-            (*pcVar5)();
+          pWeapon = BG_GetWeaponDef((uint)info->gunnerWeaponIndex[seatIndex + -1]);
+          if ((pWeapon == (WeaponDef *)0x0) &&
+             (bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",
+                                        0x5b2,0,"%s"), !bVar10)) {
+            pcVar6 = (code *)swi(3);
+            (*pcVar6)();
             return;
           }
         }
-        if (((bVar7) || (bVar8)) && (playTurretRotationSounds != false)) {
-          if (iVar3 == 0) {
-            sVar1 = (param_2->currentState).u.vehicle.gunYaw;
-            local_48 = (param_3->turretViewLimits).horizSpanRight;
-            local_54 = (param_3->turretViewLimits).horizSpanLeft;
-            sVar2 = (param_2->currentState).u.vehicle.gunPitch;
-            local_38 = (param_3->turretViewLimits).vertSpanUp;
-            local_50 = (param_3->turretViewLimits).vertSpanDown;
+        if (((bVar8) || (bVar9)) && (playTurretRotationSounds != false)) {
+          if (seatIndex == 0) {
+            sVar3 = (cent->currentState).u.vehicle.gunYaw;
+            fVar1 = (info->turretViewLimits).horizSpanRight;
+            yawMax = (info->turretViewLimits).horizSpanLeft;
+            sVar4 = (cent->currentState).u.vehicle.gunPitch;
+            fVar2 = (info->turretViewLimits).vertSpanUp;
+            pitchMax = (info->turretViewLimits).vertSpanDown;
           }
           else {
-            sVar1 = *(short *)((int)(&(param_2->currentState).apos + 1) + iVar3 * 4 + 6);
-            local_48 = local_14->rightArc;
-            local_54 = local_14->leftArc;
-            sVar2 = *(short *)((int)(&(param_2->currentState).apos + 1) + iVar3 * 4 + 4);
-            local_38 = local_14->topArc;
-            local_50 = local_14->bottomArc;
+            sVar3 = *(short *)((int)(&(cent->currentState).apos + 1) + seatIndex * 4 + 6);
+            fVar1 = pWeapon->rightArc;
+            yawMax = pWeapon->leftArc;
+            sVar4 = *(short *)((int)(&(cent->currentState).apos + 1) + seatIndex * 4 + 4);
+            fVar2 = pWeapon->topArc;
+            pitchMax = pWeapon->bottomArc;
           }
-          local_38 = -local_38;
-          local_48 = -local_48;
-          local_58 = (float)(int)sVar1 * 0.005493164;
-          local_60 = (float)(int)sVar2 * 0.005493164;
-          local_30 = 1.0;
-          local_44 = 1.0;
-          if (local_48 + 3.0 <= local_58) {
-            if (local_54 - 3.0 < local_58) {
-              local_30 = (local_54 - local_58) / 3.0;
+          pitchMin = -fVar2;
+          yawMin = -fVar1;
+          gunYaw = (float)(int)sVar3 * 0.005493164;
+          gunPitch = (float)(int)sVar4 * 0.005493164;
+          yawLockFade = 1.0;
+          pitchLockFade = 1.0;
+          if (yawMin + 3.0 <= gunYaw) {
+            if (yawMax - 3.0 < gunYaw) {
+              yawLockFade = (yawMax - gunYaw) / 3.0;
             }
           }
           else {
-            local_30 = (local_58 - local_48) / 3.0;
+            yawLockFade = (gunYaw - yawMin) / 3.0;
           }
-          if (local_38 + 3.0 <= local_60) {
-            if (local_50 - 3.0 < local_60) {
-              local_44 = (local_50 - local_60) / 3.0;
+          if (pitchMin + 3.0 <= gunPitch) {
+            if (pitchMax - 3.0 < gunPitch) {
+              pitchLockFade = (pitchMax - gunPitch) / 3.0;
             }
           }
           else {
-            local_44 = (local_60 - local_38) / 3.0;
+            pitchLockFade = (gunPitch - pitchMin) / 3.0;
           }
-          if (bVar7) {
+          if (bVar8) {
             local_74 = 1.0;
           }
           else {
             local_74 = 0.0;
           }
-          if (local_30 - local_74 < 0.0) {
-            local_80 = local_30;
+          if (yawLockFade - local_74 < 0.0) {
+            local_80 = yawLockFade;
           }
           else {
             local_80 = local_74;
           }
-          if (bVar8) {
+          if (bVar9) {
             local_78 = 1.0;
           }
           else {
             local_78 = 0.0;
           }
-          if (local_44 - local_78 < 0.0) {
-            local_84 = local_44;
+          if (pitchLockFade - local_78 < 0.0) {
+            local_84 = pitchLockFade;
           }
           else {
             local_84 = local_78;
@@ -2038,47 +2068,46 @@ CG_UpdateTurretAndOverheatSounds
           else {
             local_88 = local_80;
           }
-          if (bVar6) {
-            local_8c = local_14->rotateLoopSoundPlayer;
+          if (bVar7) {
+            local_8c = pWeapon->rotateLoopSoundPlayer;
           }
           else {
-            local_8c = local_14->rotateLoopSound;
+            local_8c = pWeapon->rotateLoopSound;
           }
           if (local_8c != (char *)0x0) {
-            CG_PlaySound(param_1,(param_2->nextState).number,(param_2->pose).origin,0,false,local_88
-                         ,local_8c);
+            CG_PlaySound(localClientNum,(cent->nextState).number,(cent->pose).origin,0,false,
+                         local_88,local_8c);
           }
         }
         if (playOverheatSounds != false) {
-          if ((local_15 != false) && (!bVar11)) {
-            if (bVar6) {
-              local_90 = local_14->overheatSoundPlayer;
+          if ((isOverheating != false) && (!bVar12)) {
+            if (bVar7) {
+              local_90 = pWeapon->overheatSoundPlayer;
             }
             else {
-              local_90 = local_14->overheatSound;
+              local_90 = pWeapon->overheatSound;
             }
-            CG_PlaySound(param_1,(param_2->nextState).number,(param_2->pose).origin,0,false,1.0,
+            CG_PlaySound(localClientNum,(cent->nextState).number,(cent->pose).origin,0,false,1.0,
                          local_90);
-            local_6c = scr_const.tag_flash;
-            if ((0 < iVar3) && (iVar3 < 5)) {
-              local_6c = scr_const.tag_flash_gunner[iVar3 + -1];
+            flash = scr_const.tag_flash;
+            if ((0 < seatIndex) && (seatIndex < 5)) {
+              flash = scr_const.tag_flash_gunner[seatIndex + -1];
             }
-            if (bVar6) {
-              local_94 = local_14->viewLastShotEjectEffect;
+            if (bVar7) {
+              local_94 = pWeapon->viewLastShotEjectEffect;
             }
             else {
-              local_94 = local_14->worldLastShotEjectEffect;
+              local_94 = pWeapon->worldLastShotEjectEffect;
             }
             if (local_94 != (FxEffectDef *)0x0) {
-              CG_PlayBoltedEffect(param_1,local_94,(param_2->nextState).number,(uint)local_6c);
+              CG_PlayBoltedEffect(localClientNum,local_94,(cent->nextState).number,(uint)flash);
             }
           }
-          if (local_15 == false) {
-            param_2->nitrousVeh->m_sfx_state_flags = ~uVar4 & param_2->nitrousVeh->m_sfx_state_flags
-            ;
+          if (isOverheating == false) {
+            cent->nitrousVeh->m_sfx_state_flags = ~uVar5 & cent->nitrousVeh->m_sfx_state_flags;
           }
           else {
-            param_2->nitrousVeh->m_sfx_state_flags = param_2->nitrousVeh->m_sfx_state_flags | uVar4;
+            cent->nitrousVeh->m_sfx_state_flags = cent->nitrousVeh->m_sfx_state_flags | uVar5;
           }
         }
       }
@@ -2095,42 +2124,45 @@ CG_UpdateTurretAndOverheatSounds
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_UpdateVehicleSounds(int param_1,centity_s *param_2)
+void __cdecl CG_UpdateVehicleSounds(int localClientNum,centity_s *cent)
 
 {
   bool bVar1;
-  vehicle_info_t *pvVar2;
-  cg_s *pcVar3;
-  bool bVar4;
-  ushort local_18;
-  float local_14;
+  vehicle_info_t *info_00;
+  cg_s *pcVar2;
+  bool isLocalPlayersVehicle_00;
+  ushort i;
+  float speedIPS;
+  vehicle_info_t *info;
+  bool isLocalPlayersVehicle;
+  bool vehicleOccupied;
   
-  pvVar2 = CG_GetVehicleInfo((uint)(param_2->nextState).un2.vehicleState.vehicleInfoIndex);
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_14 = Abs((phys_vec3 *)(param_2->currentState).pos.trDelta);
-  if (param_2->nitrousVeh != (NitrousVehicle *)0x0) {
-    local_14 = ABS(param_2->nitrousVeh->m_forward_vel);
+  info_00 = CG_GetVehicleInfo((uint)(cent->nextState).un2.vehicleState.vehicleInfoIndex);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+  speedIPS = Abs((phys_vec3 *)(cent->currentState).pos.trDelta);
+  if (cent->nitrousVeh != (NitrousVehicle *)0x0) {
+    speedIPS = ABS(cent->nitrousVeh->m_forward_vel);
   }
-  bVar4 = *(int *)((int)(pcVar3->bgs).clientinfo + pcVar3->clientNum * 0x5c8 + 0x55c) ==
-          (param_2->nextState).number;
+  isLocalPlayersVehicle_00 =
+       *(int *)((int)(pcVar2->bgs).clientinfo + pcVar2->clientNum * 0x5c8 + 0x55c) ==
+       (cent->nextState).number;
   bVar1 = false;
-  for (local_18 = 0; (!bVar1 && ((int)(uint)local_18 < (com_maxclients->current).integer));
-      local_18 = local_18 + 1) {
-    if (*(int *)((int)(pcVar3->bgs).clientinfo + (uint)local_18 * 0x5c8 + 0x55c) ==
-        (param_2->nextState).number) {
+  for (i = 0; (!bVar1 && ((int)(uint)i < (com_maxclients->current).integer)); i = i + 1) {
+    if (*(int *)((int)(pcVar2->bgs).clientinfo + (uint)i * 0x5c8 + 0x55c) ==
+        (cent->nextState).number) {
       bVar1 = true;
     }
   }
-  if (((param_2->nitrousVeh != (NitrousVehicle *)0x0) && (param_2->vehicle != (cgVehicle_s *)0x0))
-     && ((local_14 != 0.0 || (bVar1)))) {
-    CG_UpdateSurfaceSounds(param_1,param_2,pvVar2,bVar4);
+  if (((cent->nitrousVeh != (NitrousVehicle *)0x0) && (cent->vehicle != (cgVehicle_s *)0x0)) &&
+     ((speedIPS != 0.0 || (bVar1)))) {
+    CG_UpdateSurfaceSounds(localClientNum,cent,info_00,isLocalPlayersVehicle_00);
   }
   if (bVar1) {
-    CG_UpdateVehicleEngineSounds(param_1,param_2,pvVar2,bVar4);
+    CG_UpdateVehicleEngineSounds(localClientNum,cent,info_00,isLocalPlayersVehicle_00);
   }
-  CG_UpdateBoostSounds(param_1,param_2,pvVar2,bVar4);
-  CG_UpdateTurretAndOverheatSounds(param_1,param_2,pvVar2,bVar4);
-  CG_UpdateFireSounds(param_1,param_2,pvVar2,bVar4);
+  CG_UpdateBoostSounds(localClientNum,cent,info_00,isLocalPlayersVehicle_00);
+  CG_UpdateTurretAndOverheatSounds(localClientNum,cent,info_00,isLocalPlayersVehicle_00);
+  CG_UpdateFireSounds(localClientNum,cent,info_00,isLocalPlayersVehicle_00);
   return;
 }
 

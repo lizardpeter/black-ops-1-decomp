@@ -14,7 +14,7 @@ void __cdecl TRACK_cl_parse(void)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SHOWNET(msg_t *param_1,char *param_2)
+void __cdecl SHOWNET(msg_t *msg,char *s)
 
 {
   if (1 < (cl_shownet->current).integer) {
@@ -30,16 +30,17 @@ void __cdecl SHOWNET(msg_t *param_1,char *param_2)
 
 void __cdecl
 CL_SavePredictedOriginForServerTime
-          (clientActive_t *param_1,int param_2,float *param_3,float *param_4,float *param_5,
-          int param_6,int param_7)
+          (clientActive_t *cl,int serverTime,float *predictedOrigin,float *predictedVelocity,
+          float *viewangles,int bobCycle,int movementDir)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
   uint uVar4;
+  int lastIndex;
   
-  uVar4 = param_1->clientArchiveIndex + 0xffU & 0x800000ff;
+  uVar4 = cl->clientArchiveIndex + 0xffU & 0x800000ff;
   if ((int)uVar4 < 0) {
     uVar4 = (uVar4 - 1 | 0xffffff00) + 1;
   }
@@ -51,28 +52,28 @@ CL_SavePredictedOriginForServerTime
     (*pcVar2)();
     return;
   }
-  if (param_1->clientArchive[uVar4].serverTime != param_2) {
-    param_1->clientArchive[param_1->clientArchiveIndex].serverTime = param_2;
-    pfVar1 = param_1->clientArchive[param_1->clientArchiveIndex].origin;
-    *pfVar1 = *param_3;
-    pfVar1[1] = param_3[1];
-    pfVar1[2] = param_3[2];
-    pfVar1 = param_1->clientArchive[param_1->clientArchiveIndex].velocity;
-    *pfVar1 = *param_4;
-    pfVar1[1] = param_4[1];
-    pfVar1[2] = param_4[2];
-    param_1->clientArchive[param_1->clientArchiveIndex].bobCycle = param_6;
-    param_1->clientArchive[param_1->clientArchiveIndex].movementDir = param_7;
-    pfVar1 = param_1->clientArchive[param_1->clientArchiveIndex].viewangles;
-    *pfVar1 = *param_5;
-    pfVar1[1] = param_5[1];
-    pfVar1[2] = param_5[2];
-    uVar4 = param_1->clientArchiveIndex + 1U & 0x800000ff;
+  if (cl->clientArchive[uVar4].serverTime != serverTime) {
+    cl->clientArchive[cl->clientArchiveIndex].serverTime = serverTime;
+    pfVar1 = cl->clientArchive[cl->clientArchiveIndex].origin;
+    *pfVar1 = *predictedOrigin;
+    pfVar1[1] = predictedOrigin[1];
+    pfVar1[2] = predictedOrigin[2];
+    pfVar1 = cl->clientArchive[cl->clientArchiveIndex].velocity;
+    *pfVar1 = *predictedVelocity;
+    pfVar1[1] = predictedVelocity[1];
+    pfVar1[2] = predictedVelocity[2];
+    cl->clientArchive[cl->clientArchiveIndex].bobCycle = bobCycle;
+    cl->clientArchive[cl->clientArchiveIndex].movementDir = movementDir;
+    pfVar1 = cl->clientArchive[cl->clientArchiveIndex].viewangles;
+    *pfVar1 = *viewangles;
+    pfVar1[1] = viewangles[1];
+    pfVar1[2] = viewangles[2];
+    uVar4 = cl->clientArchiveIndex + 1U & 0x800000ff;
     if ((int)uVar4 < 0) {
       uVar4 = (uVar4 - 1 | 0xffffff00) + 1;
     }
-    param_1->clientArchiveIndex = uVar4;
-    if ((0xff < (uint)param_1->clientArchiveIndex) &&
+    cl->clientArchiveIndex = uVar4;
+    if ((0xff < (uint)cl->clientArchiveIndex) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
                                  0x76,0,
                                  "cl->clientArchiveIndex doesn\'t index CLIENT_ARCHIVE_SIZE\n\t%i not in [0, %i)"
@@ -92,8 +93,8 @@ CL_SavePredictedOriginForServerTime
 
 bool __cdecl
 CL_GetPredictedOriginForServerTime
-          (clientActive_t *param_1,int param_2,float *param_3,float *param_4,float *param_5,
-          int *param_6,int *param_7)
+          (clientActive_t *cl,int serverTime,float *predictedOrigin,float *predictedVelocity,
+          float *viewangles,int *bobCycle,int *movementDir)
 
 {
   float *pfVar1;
@@ -101,20 +102,21 @@ CL_GetPredictedOriginForServerTime
   bool bVar3;
   undefined1 uVar4;
   uint uVar5;
-  int local_8;
+  int index;
+  int cmd;
   
-  local_8 = 0;
+  cmd = 0;
   while( true ) {
-    if (0xff < local_8) {
+    if (0xff < cmd) {
       Com_PrintError(0xe,
                      "Unable to find predicted origin for server time %i.  Here\'s what we have:\n")
       ;
-      local_8 = 0;
+      cmd = 0;
       while( true ) {
-        if (0xff < local_8) {
+        if (0xff < cmd) {
           return false;
         }
-        uVar5 = (param_1->clientArchiveIndex - local_8) + 0xffU & 0x800000ff;
+        uVar5 = (cl->clientArchiveIndex - cmd) + 0xffU & 0x800000ff;
         if ((int)uVar5 < 0) {
           uVar5 = (uVar5 - 1 | 0xffffff00) + 1;
         }
@@ -124,13 +126,13 @@ CL_GetPredictedOriginForServerTime
                                      "index doesn\'t index CLIENT_ARCHIVE_SIZE\n\t%i not in [0, %i)"
                                     ), !bVar3)) break;
         Com_PrintError(0xe,"%i: %i\n");
-        local_8 = local_8 + 1;
+        cmd = cmd + 1;
       }
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
     }
-    uVar5 = (param_1->clientArchiveIndex - local_8) + 0xffU & 0x800000ff;
+    uVar5 = (cl->clientArchiveIndex - cmd) + 0xffU & 0x800000ff;
     if ((int)uVar5 < 0) {
       uVar5 = (uVar5 - 1 | 0xffffff00) + 1;
     }
@@ -139,36 +141,36 @@ CL_GetPredictedOriginForServerTime
                                  0x86,0,
                                  "index doesn\'t index CLIENT_ARCHIVE_SIZE\n\t%i not in [0, %i)"),
        !bVar3)) break;
-    if (param_1->clientArchive[uVar5].serverTime <= param_2) {
-      if (param_1->clientArchive[uVar5].serverTime != param_2) {
+    if (cl->clientArchive[uVar5].serverTime <= serverTime) {
+      if (cl->clientArchive[uVar5].serverTime != serverTime) {
         Com_Printf(0xe,"Couldn\'t find exact match for servertime %i, using servertime %i\n");
       }
-      pfVar1 = param_1->clientArchive[uVar5].origin;
-      *param_3 = *pfVar1;
-      param_3[1] = pfVar1[1];
-      param_3[2] = pfVar1[2];
-      pfVar1 = param_1->clientArchive[uVar5].velocity;
-      *param_4 = *pfVar1;
-      param_4[1] = pfVar1[1];
-      param_4[2] = pfVar1[2];
-      pfVar1 = param_1->clientArchive[uVar5].viewangles;
-      *param_5 = *pfVar1;
-      param_5[1] = pfVar1[1];
-      param_5[2] = pfVar1[2];
-      *param_6 = param_1->clientArchive[uVar5].bobCycle;
-      *param_7 = param_1->clientArchive[uVar5].movementDir;
-      if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+      pfVar1 = cl->clientArchive[uVar5].origin;
+      *predictedOrigin = *pfVar1;
+      predictedOrigin[1] = pfVar1[1];
+      predictedOrigin[2] = pfVar1[2];
+      pfVar1 = cl->clientArchive[uVar5].velocity;
+      *predictedVelocity = *pfVar1;
+      predictedVelocity[1] = pfVar1[1];
+      predictedVelocity[2] = pfVar1[2];
+      pfVar1 = cl->clientArchive[uVar5].viewangles;
+      *viewangles = *pfVar1;
+      viewangles[1] = pfVar1[1];
+      viewangles[2] = pfVar1[2];
+      *bobCycle = cl->clientArchive[uVar5].bobCycle;
+      *movementDir = cl->clientArchive[uVar5].movementDir;
+      if ((((((uint)*predictedOrigin & 0x7f800000) == 0x7f800000) ||
+           (((uint)predictedOrigin[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)predictedOrigin[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
                                    0x92,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         uVar4 = (*pcVar2)();
         return (bool)uVar4;
       }
-      if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)*predictedVelocity & 0x7f800000) == 0x7f800000) ||
+           (((uint)predictedVelocity[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)predictedVelocity[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
                                    0x93,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -177,7 +179,7 @@ CL_GetPredictedOriginForServerTime
       }
       return true;
     }
-    local_8 = local_8 + 1;
+    cmd = cmd + 1;
   }
   pcVar2 = (code *)swi(3);
   uVar4 = (*pcVar2)();
@@ -191,17 +193,18 @@ CL_GetPredictedOriginForServerTime
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-CL_DeltaEntity(clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *param_4,int param_5,
-              entityState_s *param_6)
+CL_DeltaEntity(clientActive_t *cl,msg_t *msg,int time,clSnapshot_t *frame,int newnum,
+              entityState_s *old)
 
 {
   int iVar1;
+  entityState_s *state;
   
-  iVar1 = MSG_ReadDeltaEntity(param_2,param_3,param_6,
-                              param_1->parseEntities + (param_1->parseEntitiesNum & 0x7ff),param_5);
+  iVar1 = MSG_ReadDeltaEntity(msg,time,old,cl->parseEntities + (cl->parseEntitiesNum & 0x7ff),newnum
+                             );
   if (iVar1 == 0) {
-    param_1->parseEntitiesNum = param_1->parseEntitiesNum + 1;
-    param_4->numEntities = param_4->numEntities + 1;
+    cl->parseEntitiesNum = cl->parseEntitiesNum + 1;
+    frame->numEntities = frame->numEntities + 1;
   }
   return;
 }
@@ -211,20 +214,21 @@ CL_DeltaEntity(clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_CopyOldEntity(clientActive_t *param_1,clSnapshot_t *param_2,entityState_s *param_3)
+void __cdecl CL_CopyOldEntity(clientActive_t *cl,clSnapshot_t *frame,entityState_s *old)
 
 {
   int iVar1;
   entityState_s *peVar2;
+  entityState_s *state;
   
-  peVar2 = param_1->parseEntities + (param_1->parseEntitiesNum & 0x7ff);
+  peVar2 = cl->parseEntities + (cl->parseEntitiesNum & 0x7ff);
   for (iVar1 = 0x38; iVar1 != 0; iVar1 = iVar1 + -1) {
-    peVar2->number = param_3->number;
-    param_3 = (entityState_s *)&param_3->lerp;
+    peVar2->number = old->number;
+    old = (entityState_s *)&old->lerp;
     peVar2 = (entityState_s *)&peVar2->lerp;
   }
-  param_1->parseEntitiesNum = param_1->parseEntitiesNum + 1;
-  param_2->numEntities = param_2->numEntities + 1;
+  cl->parseEntitiesNum = cl->parseEntitiesNum + 1;
+  frame->numEntities = frame->numEntities + 1;
   return;
 }
 
@@ -235,30 +239,31 @@ void __cdecl CL_CopyOldEntity(clientActive_t *param_1,clSnapshot_t *param_2,enti
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-CL_DeltaClient(clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *param_4,int param_5,
-              clientState_s *param_6,int param_7)
+CL_DeltaClient(clientActive_t *cl,msg_t *msg,int time,clSnapshot_t *frame,int newnum,
+              clientState_s *old,int unchanged)
 
 {
   int iVar1;
   clientState_s *pcVar2;
+  clientState_s *state;
   
-  if (param_7 == 0) {
-    iVar1 = MSG_ReadDeltaClient(param_2,param_3,param_6,
-                                param_1->parseClients + (param_1->parseClientsNum & 0x7ff),param_5);
+  if (unchanged == 0) {
+    iVar1 = MSG_ReadDeltaClient(msg,time,old,cl->parseClients + (cl->parseClientsNum & 0x7ff),newnum
+                               );
     if (iVar1 != 0) {
       return;
     }
   }
   else {
-    pcVar2 = param_1->parseClients + (param_1->parseClientsNum & 0x7ff);
+    pcVar2 = cl->parseClients + (cl->parseClientsNum & 0x7ff);
     for (iVar1 = 0x34; iVar1 != 0; iVar1 = iVar1 + -1) {
-      pcVar2->clientIndex = param_6->clientIndex;
-      param_6 = (clientState_s *)&param_6->team;
+      pcVar2->clientIndex = old->clientIndex;
+      old = (clientState_s *)&old->team;
       pcVar2 = (clientState_s *)&pcVar2->team;
     }
   }
-  param_1->parseClientsNum = param_1->parseClientsNum + 1;
-  param_4->numClients = param_4->numClients + 1;
+  cl->parseClientsNum = cl->parseClientsNum + 1;
+  frame->numClients = frame->numClients + 1;
   return;
 }
 
@@ -270,35 +275,35 @@ CL_DeltaClient(clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *
 
 int __cdecl
 CL_ParsePacketEntities
-          (clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *param_4,
-          clSnapshot_t *param_5)
+          (clientActive_t *cl,msg_t *msg,int time,clSnapshot_t *oldframe,clSnapshot_t *newframe)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  entityState_s *local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  entityState_s *oldstate;
+  int newnum;
+  int oldindex;
+  int oldnum;
+  int numChanged;
   
-  param_5->parseEntitiesNum = param_1->parseEntitiesNum;
-  param_5->numEntities = 0;
-  local_8 = 0;
-  local_10 = 0;
-  local_18 = (entityState_s *)0x0;
-  if (param_4 == (clSnapshot_t *)0x0) {
-    local_c = 99999;
+  newframe->parseEntitiesNum = cl->parseEntitiesNum;
+  newframe->numEntities = 0;
+  numChanged = 0;
+  oldindex = 0;
+  oldstate = (entityState_s *)0x0;
+  if (oldframe == (clSnapshot_t *)0x0) {
+    oldnum = 99999;
   }
-  else if (param_4->numEntities < 1) {
-    local_c = 99999;
+  else if (oldframe->numEntities < 1) {
+    oldnum = 99999;
   }
   else {
-    local_18 = param_1->parseEntities + (param_4->parseEntitiesNum & 0x7ff);
-    local_c = local_18->number;
+    oldstate = cl->parseEntities + (oldframe->parseEntitiesNum & 0x7ff);
+    oldnum = oldstate->number;
   }
-  while (param_2->overflowed == 0) {
-    iVar3 = MSG_ReadEntityIndex(param_2,10);
+  while (msg->overflowed == 0) {
+    iVar3 = MSG_ReadEntityIndex(msg,10);
     if (((iVar3 < 0) || (0x3ff < iVar3)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
                                  0x162,0,"%s\n\t(newnum) = %i"), !bVar2)) {
@@ -307,79 +312,79 @@ CL_ParsePacketEntities
       return iVar3;
     }
     if (iVar3 == 0x3ff) break;
-    if (param_2->cursize < param_2->readcount) {
+    if (msg->cursize < msg->readcount) {
       Com_Error(ERR_DROP,"\x15CL_ParsePacketEntities: end of message");
     }
-    while ((local_c < iVar3 && (param_2->overflowed == 0))) {
+    while ((oldnum < iVar3 && (msg->overflowed == 0))) {
       if ((cl_shownet->current).integer == 3) {
         Com_Printf(0xe,"%3i:  unchanged: %i\n");
       }
-      CL_CopyOldEntity(param_1,param_5,local_18);
-      local_10 = local_10 + 1;
-      if (local_10 < param_4->numEntities) {
-        local_18 = param_1->parseEntities + (param_4->parseEntitiesNum + local_10 & 0x7ff);
-        local_c = local_18->number;
+      CL_CopyOldEntity(cl,newframe,oldstate);
+      oldindex = oldindex + 1;
+      if (oldindex < oldframe->numEntities) {
+        oldstate = cl->parseEntities + (oldframe->parseEntitiesNum + oldindex & 0x7ff);
+        oldnum = oldstate->number;
       }
       else {
-        local_c = 99999;
+        oldnum = 99999;
       }
       if ((msg_dumpEnts->current).enabled != false) {
-        BG_GetEntityTypeName((int)local_18->eType);
+        BG_GetEntityTypeName((int)oldstate->eType);
         Com_Printf(0xe,"%3i: unchanged ent, eType %s\n");
       }
     }
-    if (local_c == iVar3) {
-      local_8 = local_8 + 1;
+    if (oldnum == iVar3) {
+      numChanged = numChanged + 1;
       if ((cl_shownet->current).integer == 3) {
         Com_Printf(0xe,"%3i:  delta: %i\n");
       }
-      CL_DeltaEntity(param_1,param_2,param_3,param_5,iVar3,local_18);
-      local_10 = local_10 + 1;
-      if (local_10 < param_4->numEntities) {
-        local_18 = param_1->parseEntities + (param_4->parseEntitiesNum + local_10 & 0x7ff);
-        local_c = local_18->number;
+      CL_DeltaEntity(cl,msg,time,newframe,iVar3,oldstate);
+      oldindex = oldindex + 1;
+      if (oldindex < oldframe->numEntities) {
+        oldstate = cl->parseEntities + (oldframe->parseEntitiesNum + oldindex & 0x7ff);
+        oldnum = oldstate->number;
       }
       else {
-        local_c = 99999;
+        oldnum = 99999;
       }
     }
     else {
-      if ((local_c <= iVar3) &&
+      if ((oldnum <= iVar3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
                                    0x1a0,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      local_8 = local_8 + 1;
+      numChanged = numChanged + 1;
       if ((cl_shownet->current).integer == 3) {
         Com_Printf(0xe,"%3i:  baseline: %i\n");
       }
-      CL_DeltaEntity(param_1,param_2,param_3,param_5,iVar3,param_1->entityBaselines + iVar3);
+      CL_DeltaEntity(cl,msg,time,newframe,iVar3,cl->entityBaselines + iVar3);
     }
   }
-  while ((local_c != 99999 && (param_2->overflowed == 0))) {
+  while ((oldnum != 99999 && (msg->overflowed == 0))) {
     if ((cl_shownet->current).integer == 3) {
       Com_Printf(0xe,"%3i:  unchanged: %i\n");
     }
-    CL_CopyOldEntity(param_1,param_5,local_18);
-    local_10 = local_10 + 1;
-    if (local_10 < param_4->numEntities) {
-      local_18 = param_1->parseEntities + (param_4->parseEntitiesNum + local_10 & 0x7ff);
-      local_c = local_18->number;
+    CL_CopyOldEntity(cl,newframe,oldstate);
+    oldindex = oldindex + 1;
+    if (oldindex < oldframe->numEntities) {
+      oldstate = cl->parseEntities + (oldframe->parseEntitiesNum + oldindex & 0x7ff);
+      oldnum = oldstate->number;
     }
     else {
-      local_c = 99999;
+      oldnum = 99999;
     }
     if ((msg_dumpEnts->current).enabled != false) {
-      BG_GetEntityTypeName((int)local_18->eType);
+      BG_GetEntityTypeName((int)oldstate->eType);
       Com_Printf(0xe,"%3i: unchanged ent, eType %s at %f, %f, %f\n");
     }
   }
   if (((cl_shownuments->current).enabled != false) || ((msg_dumpEnts->current).enabled != false)) {
     Com_Printf(0xe,"Entities in packet: %i\n");
   }
-  return local_8;
+  return numChanged;
 }
 
 
@@ -391,49 +396,49 @@ CL_ParsePacketEntities
 
 void __cdecl
 CL_ParsePacketClients
-          (clientActive_t *param_1,msg_t *param_2,int param_3,clSnapshot_t *param_4,
-          clSnapshot_t *param_5)
+          (clientActive_t *cl,msg_t *msg,int time,clSnapshot_t *oldframe,clSnapshot_t *newframe)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  clientState_s *local_ec;
-  clientState_s local_e4;
+  clientState_s *oldstate;
+  int newnum;
+  clientState_s dummy;
   uint local_10;
-  int local_c;
-  int local_8;
+  int oldindex;
+  int oldnum;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  param_5->parseClientsNum = param_1->parseClientsNum;
-  param_5->numClients = 0;
-  local_c = 0;
-  local_ec = (clientState_s *)0x0;
-  if (param_4 == (clSnapshot_t *)0x0) {
-    local_8 = 99999;
+  newframe->parseClientsNum = cl->parseClientsNum;
+  newframe->numClients = 0;
+  oldindex = 0;
+  oldstate = (clientState_s *)0x0;
+  if (oldframe == (clSnapshot_t *)0x0) {
+    oldnum = 99999;
   }
-  else if (param_4->numClients < 1) {
-    local_8 = 99999;
+  else if (oldframe->numClients < 1) {
+    oldnum = 99999;
   }
   else {
-    local_ec = param_1->parseClients + (param_4->parseClientsNum & 0x7ff);
-    local_8 = local_ec->clientIndex;
+    oldstate = cl->parseClients + (oldframe->parseClientsNum & 0x7ff);
+    oldnum = oldstate->clientIndex;
   }
   while( true ) {
     while( true ) {
-      if ((param_2->overflowed != 0) || (iVar3 = MSG_ReadBit(param_2), iVar3 == 0)) {
-        while ((local_8 != 99999 && (param_2->overflowed == 0))) {
+      if ((msg->overflowed != 0) || (iVar3 = MSG_ReadBit(msg), iVar3 == 0)) {
+        while ((oldnum != 99999 && (msg->overflowed == 0))) {
           if ((cl_shownet->current).integer == 3) {
             Com_Printf(0xe,"%3i:  unchanged: %i\n");
           }
-          CL_DeltaClient(param_1,param_2,param_3,param_5,local_8,local_ec,1);
-          local_c = local_c + 1;
-          if (local_c < param_4->numClients) {
-            local_ec = param_1->parseClients + (param_4->parseClientsNum + local_c & 0x7ff);
-            local_8 = local_ec->clientIndex;
+          CL_DeltaClient(cl,msg,time,newframe,oldnum,oldstate,1);
+          oldindex = oldindex + 1;
+          if (oldindex < oldframe->numClients) {
+            oldstate = cl->parseClients + (oldframe->parseClientsNum + oldindex & 0x7ff);
+            oldnum = oldstate->clientIndex;
           }
           else {
-            local_8 = 99999;
+            oldnum = 99999;
           }
         }
         if ((cl_shownuments->current).enabled != false) {
@@ -441,46 +446,46 @@ CL_ParsePacketClients
         }
         return;
       }
-      iVar3 = MSG_ReadEntityIndex(param_2,5);
-      if (param_2->cursize < param_2->readcount) {
+      iVar3 = MSG_ReadEntityIndex(msg,5);
+      if (msg->cursize < msg->readcount) {
         Com_Error(ERR_DROP,"\x15CL_ParsePacketClients: end of message");
       }
-      while (local_8 < iVar3) {
+      while (oldnum < iVar3) {
         if ((cl_shownet->current).integer == 3) {
           Com_Printf(0xe,"%3i:  unchanged: %i\n");
         }
-        CL_DeltaClient(param_1,param_2,param_3,param_5,local_8,local_ec,1);
-        local_c = local_c + 1;
-        if (local_c < param_4->numClients) {
-          local_ec = param_1->parseClients + (param_4->parseClientsNum + local_c & 0x7ff);
-          local_8 = local_ec->clientIndex;
+        CL_DeltaClient(cl,msg,time,newframe,oldnum,oldstate,1);
+        oldindex = oldindex + 1;
+        if (oldindex < oldframe->numClients) {
+          oldstate = cl->parseClients + (oldframe->parseClientsNum + oldindex & 0x7ff);
+          oldnum = oldstate->clientIndex;
         }
         else {
-          local_8 = 99999;
+          oldnum = 99999;
         }
       }
-      if (local_8 != iVar3) break;
+      if (oldnum != iVar3) break;
       if ((cl_shownet->current).integer == 3) {
         Com_Printf(0xe,"%3i:  delta: %i\n");
       }
-      CL_DeltaClient(param_1,param_2,param_3,param_5,iVar3,local_ec,0);
-      local_c = local_c + 1;
-      if (local_c < param_4->numClients) {
-        local_ec = param_1->parseClients + (param_4->parseClientsNum + local_c & 0x7ff);
-        local_8 = local_ec->clientIndex;
+      CL_DeltaClient(cl,msg,time,newframe,iVar3,oldstate,0);
+      oldindex = oldindex + 1;
+      if (oldindex < oldframe->numClients) {
+        oldstate = cl->parseClients + (oldframe->parseClientsNum + oldindex & 0x7ff);
+        oldnum = oldstate->clientIndex;
       }
       else {
-        local_8 = 99999;
+        oldnum = 99999;
       }
     }
-    if ((local_8 <= iVar3) &&
+    if ((oldnum <= iVar3) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
                                  0x235,0,"%s"), !bVar2)) break;
     if ((cl_shownet->current).integer == 3) {
       Com_Printf(0xe,"%3i:  baseline: %i\n");
     }
-    memset((uchar *)&local_e4,'\0',0xd0);
-    CL_DeltaClient(param_1,param_2,param_3,param_5,iVar3,&local_e4,0);
+    memset((uchar *)&dummy,'\0',0xd0);
+    CL_DeltaClient(cl,msg,time,newframe,iVar3,&dummy,0);
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -492,14 +497,15 @@ CL_ParsePacketClients
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ProcessMapCenterFromMatchState(int param_1,clSnapshot_t *param_2)
+void __cdecl CL_ProcessMapCenterFromMatchState(int localClientNum,clSnapshot_t *clSnap)
 
 {
   float *pfVar1;
   clientActive_t *pcVar2;
+  clientActive_t *cl;
   
-  pcVar2 = CL_GetLocalClientGlobals(param_1);
-  pfVar1 = pcVar2->parseMatchStates[param_2->parseMatchStateNum & 0x1f].unarchivedState.mapCenter;
+  pcVar2 = CL_GetLocalClientGlobals(localClientNum);
+  pfVar1 = pcVar2->parseMatchStates[clSnap->parseMatchStateNum & 0x1f].unarchivedState.mapCenter;
   cls.mapCenter[0] = *pfVar1;
   cls.mapCenter[1] = pfVar1[1];
   cls.mapCenter[2] = pfVar1[2];
@@ -509,12 +515,12 @@ void __cdecl CL_ProcessMapCenterFromMatchState(int param_1,clSnapshot_t *param_2
 
 // 00570B10  CL_UpdateMapCenterFromMatchState  (client_mp/cl_parse_mp.cpp:616)
 
-void __cdecl CL_UpdateMapCenterFromMatchState(float *param_1)
+void __cdecl CL_UpdateMapCenterFromMatchState(float *newcenter)
 
 {
-  cls.mapCenter[0] = *param_1;
-  cls.mapCenter[1] = param_1[1];
-  cls.mapCenter[2] = param_1[2];
+  cls.mapCenter[0] = *newcenter;
+  cls.mapCenter[1] = newcenter[1];
+  cls.mapCenter[2] = newcenter[2];
   return;
 }
 
@@ -524,79 +530,85 @@ void __cdecl CL_UpdateMapCenterFromMatchState(float *param_1)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ParseSnapshot(int param_1,msg_t *param_2)
+void __cdecl CL_ParseSnapshot(int localClientNum,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  clientActive_t *pcVar3;
-  clientConnection_t *pcVar4;
-  int iVar5;
-  uint uVar6;
-  uint local_18;
-  int local_14;
-  clSnapshot_t *local_c;
+  clientActive_t *cl_00;
+  clientConnection_t *pcVar3;
+  int iVar4;
+  uint uVar5;
+  clientActive_t *cl;
+  int serverTimeBackup;
+  clientConnection_t *clc;
+  int deltaNum;
+  int oldMessageNum;
+  int i;
+  int numChanged;
+  clSnapshot_t *old;
+  int packetNum;
   
-  pcVar3 = CL_GetLocalClientGlobals(param_1);
-  pcVar4 = CL_GetLocalClientConnection(param_1);
+  cl_00 = CL_GetLocalClientGlobals(localClientNum);
+  pcVar3 = CL_GetLocalClientConnection(localClientNum);
   memset((uchar *)&newSnap,'\0',0x26dc);
-  newSnap.serverCommandNum = pcVar4->serverCommandSequence;
-  newSnap.serverTime = MSG_ReadLong(param_2);
-  newSnap.physicsTime = MSG_ReadLong(param_2);
-  newSnap.messageNum = pcVar4->serverMessageSequence;
-  iVar5 = MSG_ReadByte(param_2);
-  if (iVar5 == 0) {
+  newSnap.serverCommandNum = pcVar3->serverCommandSequence;
+  newSnap.serverTime = MSG_ReadLong(msg);
+  newSnap.physicsTime = MSG_ReadLong(msg);
+  newSnap.messageNum = pcVar3->serverMessageSequence;
+  iVar4 = MSG_ReadByte(msg);
+  if (iVar4 == 0) {
     newSnap.deltaNum = -1;
   }
   else {
-    newSnap.deltaNum = newSnap.messageNum - iVar5;
+    newSnap.deltaNum = newSnap.messageNum - iVar4;
   }
-  newSnap.snapFlags = MSG_ReadByte(param_2);
+  newSnap.snapFlags = MSG_ReadByte(msg);
   if (newSnap.deltaNum < 1) {
     newSnap.valid = 1;
-    local_c = (clSnapshot_t *)0x0;
-    pcVar4->demowaiting = 0;
-    pcVar4->demoRequestUncompressedPacket = 0;
-    pcVar4->demoReceivedUncompressedPacket = 1;
+    old = (clSnapshot_t *)0x0;
+    pcVar3->demowaiting = 0;
+    pcVar3->demoRequestUncompressedPacket = 0;
+    pcVar3->demoReceivedUncompressedPacket = 1;
   }
   else {
-    local_c = pcVar3->snapshots + (newSnap.deltaNum & 0x1f);
-    if (local_c->valid == 0) {
+    old = cl_00->snapshots + (newSnap.deltaNum & 0x1f);
+    if (old->valid == 0) {
       Com_PrintError(0xe,"Delta from invalid frame (not supposed to happen!).\n");
-      MSG_Discard(param_2);
+      MSG_Discard(msg);
       return;
     }
-    if (local_c->messageNum != newSnap.deltaNum) {
+    if (old->messageNum != newSnap.deltaNum) {
       Com_DPrintf(0xe,"Delta frame too old.\n");
-      MSG_Discard(param_2);
+      MSG_Discard(msg);
       return;
     }
-    if (0x780 < pcVar3->parseEntitiesNum - local_c->parseEntitiesNum) {
+    if (0x780 < cl_00->parseEntitiesNum - old->parseEntitiesNum) {
       Com_DPrintf(0xe,"Delta parseEntitiesNum too old.\n");
-      MSG_Discard(param_2);
+      MSG_Discard(msg);
       return;
     }
-    if (0x780 < pcVar3->parseClientsNum - local_c->parseClientsNum) {
+    if (0x780 < cl_00->parseClientsNum - old->parseClientsNum) {
       Com_DPrintf(0xe,"Delta parseClientsNum too old.\n");
-      MSG_Discard(param_2);
+      MSG_Discard(msg);
       return;
     }
     newSnap.valid = 1;
   }
-  iVar5 = pcVar3->serverTime;
-  MSG_ClearLastReferencedEntity(param_2);
-  CL_ParsePacketMatchState(pcVar3,param_2,newSnap.serverTime,local_c,&newSnap);
-  CL_ProcessMapCenterFromMatchState(param_1,&newSnap);
-  MSG_ClearLastReferencedEntity(param_2);
-  SHOWNET(param_2,"playerstate");
-  if (local_c == (clSnapshot_t *)0x0) {
+  iVar4 = cl_00->serverTime;
+  MSG_ClearLastReferencedEntity(msg);
+  CL_ParsePacketMatchState(cl_00,msg,newSnap.serverTime,old,&newSnap);
+  CL_ProcessMapCenterFromMatchState(localClientNum,&newSnap);
+  MSG_ClearLastReferencedEntity(msg);
+  SHOWNET(msg,"playerstate");
+  if (old == (clSnapshot_t *)0x0) {
     MSG_ReadDeltaPlayerstate
-              (param_1,param_2,newSnap.serverTime,(playerState_s *)0x0,&newSnap.ps,true);
+              (localClientNum,msg,newSnap.serverTime,(playerState_s *)0x0,&newSnap.ps,true);
   }
   else {
-    MSG_ReadDeltaPlayerstate(param_1,param_2,newSnap.serverTime,&local_c->ps,&newSnap.ps,true);
+    MSG_ReadDeltaPlayerstate(localClientNum,msg,newSnap.serverTime,&old->ps,&newSnap.ps,true);
   }
-  if (iVar5 != pcVar3->serverTime) {
+  if (iVar4 != cl_00->serverTime) {
     va("cl->serverTime changed from %i to %i in MSG_ReadDeltaPlayerstate()\n");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",0x321,0
                              ,"%s\n\t%s");
@@ -606,39 +618,39 @@ void __cdecl CL_ParseSnapshot(int param_1,msg_t *param_2)
       return;
     }
   }
-  MSG_ClearLastReferencedEntity(param_2);
-  SHOWNET(param_2,"packet entities");
-  CL_ParsePacketEntities(pcVar3,param_2,newSnap.serverTime,local_c,&newSnap);
-  MSG_ClearLastReferencedEntity(param_2);
-  SHOWNET(param_2,"packet clients");
-  CL_ParsePacketClients(pcVar3,param_2,newSnap.serverTime,local_c,&newSnap);
-  if (param_2->overflowed == 0) {
-    GlassCl_ParseSnapshot(param_1,param_2);
-    if (param_2->overflowed == 0) {
+  MSG_ClearLastReferencedEntity(msg);
+  SHOWNET(msg,"packet entities");
+  CL_ParsePacketEntities(cl_00,msg,newSnap.serverTime,old,&newSnap);
+  MSG_ClearLastReferencedEntity(msg);
+  SHOWNET(msg,"packet clients");
+  CL_ParsePacketClients(cl_00,msg,newSnap.serverTime,old,&newSnap);
+  if (msg->overflowed == 0) {
+    GlassCl_ParseSnapshot(localClientNum,msg);
+    if (msg->overflowed == 0) {
       if (newSnap.valid != 0) {
-        local_18 = (pcVar3->snap).messageNum + 1;
-        if (0x1f < (int)(newSnap.messageNum - local_18)) {
-          local_18 = newSnap.messageNum - 0x1f;
+        oldMessageNum = (cl_00->snap).messageNum + 1;
+        if (0x1f < newSnap.messageNum - oldMessageNum) {
+          oldMessageNum = newSnap.messageNum + -0x1f;
         }
-        for (; (int)local_18 < newSnap.messageNum; local_18 = local_18 + 1) {
-          pcVar3->snapshots[local_18 & 0x1f].valid = 0;
+        for (; oldMessageNum < newSnap.messageNum; oldMessageNum = oldMessageNum + 1) {
+          cl_00->snapshots[oldMessageNum & 0x1f].valid = 0;
         }
-        pcVar3->oldSnapServerTime = (pcVar3->snap).serverTime;
-        memcpy((uchar *)&pcVar3->snap,(uchar *)&newSnap,0x26dc);
-        (pcVar3->snap).ping = 999;
-        for (local_14 = 0; local_14 < 0x20; local_14 = local_14 + 1) {
-          uVar6 = ((pcVar4->netchan).outgoingSequence + -1) - local_14 & 0x1f;
-          if (pcVar3->outPackets[uVar6].p_serverTime <= (pcVar3->snap).ps.commandTime) {
-            (pcVar3->snap).ping = cls.realtime - pcVar3->outPackets[uVar6].p_realtime;
+        cl_00->oldSnapServerTime = (cl_00->snap).serverTime;
+        memcpy((uchar *)&cl_00->snap,(uchar *)&newSnap,0x26dc);
+        (cl_00->snap).ping = 999;
+        for (i = 0; i < 0x20; i = i + 1) {
+          uVar5 = ((pcVar3->netchan).outgoingSequence + -1) - i & 0x1f;
+          if (cl_00->outPackets[uVar5].p_serverTime <= (cl_00->snap).ps.commandTime) {
+            (cl_00->snap).ping = cls.realtime - cl_00->outPackets[uVar5].p_realtime;
             break;
           }
         }
-        memcpy((uchar *)(pcVar3->snapshots + ((pcVar3->snap).messageNum & 0x1f)),
-               (uchar *)&pcVar3->snap,0x26dc);
+        memcpy((uchar *)(cl_00->snapshots + ((cl_00->snap).messageNum & 0x1f)),(uchar *)&cl_00->snap
+               ,0x26dc);
         if ((cl_shownet->current).integer == 3) {
           Com_Printf(0xe,"   snapshot:%i  delta:%i  ping:%i\n");
         }
-        pcVar3->newSnapshots = 1;
+        cl_00->newSnapshots = 1;
       }
     }
     else {
@@ -656,15 +668,16 @@ void __cdecl CL_ParseSnapshot(int param_1,msg_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ServerIdChanged(int param_1)
+void __cdecl CL_ServerIdChanged(int localClientNum)
 
 {
   clientActive_t *pcVar1;
-  char *pcVar2;
+  char *nptr;
+  clientActive_t *cl;
   
-  pcVar1 = CL_GetLocalClientGlobals(param_1);
-  pcVar2 = CL_GetConfigString(3);
-  cls.serverId = atoi(pcVar2);
+  pcVar1 = CL_GetLocalClientGlobals(localClientNum);
+  nptr = CL_GetConfigString(3);
+  cls.serverId = atoi(nptr);
   pcVar1->serverId = cls.serverId;
   return;
 }
@@ -674,7 +687,7 @@ void __cdecl CL_ServerIdChanged(int param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_SystemInfoChanged(int param_1)
+void __cdecl CL_SystemInfoChanged(int localClientNum)
 
 {
   bool bVar1;
@@ -682,64 +695,64 @@ void __cdecl CL_SystemInfoChanged(int param_1)
   char *pcVar3;
   int iVar4;
   connstate_t cVar5;
-  LargeLocal local_24;
-  char *local_1c;
-  char *local_18;
-  LargeLocal local_14;
-  char *local_c;
-  char *local_8;
+  char *t;
+  LargeLocal value_large_local;
+  char *systemInfo;
+  char *key;
+  LargeLocal key_large_local;
+  char *s;
+  char *value;
   
-  LargeLocal::LargeLocal(&local_14,0x2000);
-  local_18 = LargeLocal::GetBuf(&local_14);
-  LargeLocal::LargeLocal(&local_24,0x2000);
-  local_8 = LargeLocal::GetBuf(&local_24);
-  local_1c = CL_GetConfigString(1);
-  pcVar2 = CL_GetLocalClientConnection(param_1);
+  LargeLocal::LargeLocal(&key_large_local,0x2000);
+  key = LargeLocal::GetBuf(&key_large_local);
+  LargeLocal::LargeLocal(&value_large_local,0x2000);
+  value = LargeLocal::GetBuf(&value_large_local);
+  systemInfo = CL_GetConfigString(1);
+  pcVar2 = CL_GetLocalClientConnection(localClientNum);
   if (pcVar2->demoplaying == 0) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      LargeLocal::~LargeLocal(&local_24);
-      LargeLocal::~LargeLocal(&local_14);
+      LargeLocal::~LargeLocal(&value_large_local);
+      LargeLocal::~LargeLocal(&key_large_local);
       return;
     }
     if (((com_sv_running->current).enabled == false) &&
-       (cVar5 = CL_GetLocalClientConnectionState(param_1), (int)cVar5 < 10)) {
-      local_c = Info_ValueForKey(local_1c,"sv_cheats");
-      iVar4 = atoi(local_c);
+       (cVar5 = CL_GetLocalClientConnectionState(localClientNum), (int)cVar5 < 10)) {
+      s = Info_ValueForKey(systemInfo,"sv_cheats");
+      iVar4 = atoi(s);
       if (iVar4 == 0) {
         Dvar_SetCheatState();
         UI_Gametype_CustomGameModeDataToDvars();
       }
     }
-    local_c = Info_ValueForKey(local_1c,"sv_iwds");
-    pcVar3 = Info_ValueForKey(local_1c,"sv_iwdNames");
-    bVar1 = FS_PureServerSetLoadedIwds(local_c,pcVar3);
+    s = Info_ValueForKey(systemInfo,"sv_iwds");
+    pcVar3 = Info_ValueForKey(systemInfo,"sv_iwdNames");
+    bVar1 = FS_PureServerSetLoadedIwds(s,pcVar3);
     if (bVar1) {
       cls.doVidRestart = 1;
     }
-    local_c = Info_ValueForKey(local_1c,"sv_referencedIwds");
-    pcVar3 = Info_ValueForKey(local_1c,"sv_referencedIwdNames");
-    FS_ServerSetReferencedIwds(local_c,pcVar3);
-    local_c = Info_ValueForKey(local_1c,"sv_referencedFFCheckSums");
-    pcVar3 = Info_ValueForKey(local_1c,"sv_referencedFFNames");
-    FS_ServerSetReferencedFFs(local_c,pcVar3);
+    s = Info_ValueForKey(systemInfo,"sv_referencedIwds");
+    pcVar3 = Info_ValueForKey(systemInfo,"sv_referencedIwdNames");
+    FS_ServerSetReferencedIwds(s,pcVar3);
+    s = Info_ValueForKey(systemInfo,"sv_referencedFFCheckSums");
+    pcVar3 = Info_ValueForKey(systemInfo,"sv_referencedFFNames");
+    FS_ServerSetReferencedFFs(s,pcVar3);
     if ((com_sv_running->current).enabled == false) {
-      local_c = local_1c;
-      while ((local_c != (char *)0x0 &&
-             (Info_NextPair(&local_c,local_18,local_8), *local_18 != '\0'))) {
-        Dvar_SetFromStringByName(local_18,local_8);
+      s = systemInfo;
+      while ((s != (char *)0x0 && (Info_NextPair(&s,key,value), *key != '\0'))) {
+        Dvar_SetFromStringByName(key,value);
       }
     }
     bVar1 = Dvar_GetBool("sv_pure");
     cl_connectedToPureServer = (int)bVar1;
-    LargeLocal::~LargeLocal(&local_24);
-    LargeLocal::~LargeLocal(&local_14);
+    LargeLocal::~LargeLocal(&value_large_local);
+    LargeLocal::~LargeLocal(&key_large_local);
     return;
   }
-  local_c = Info_ValueForKey(local_1c,"fs_game");
-  if (*local_c != '\0') {
+  s = Info_ValueForKey(systemInfo,"fs_game");
+  if (*s != '\0') {
     pcVar3 = Dvar_GetString("fs_game");
-    iVar4 = I_strcmp(local_c,pcVar3);
+    iVar4 = I_strcmp(s,pcVar3);
     if (iVar4 != 0) {
       pcVar3 = va("PATCH_LOADMOD_DEMO\x15%s");
       Com_Error(ERR_DROP,pcVar3);
@@ -747,13 +760,13 @@ void __cdecl CL_SystemInfoChanged(int param_1)
     }
   }
   pcVar3 = Dvar_GetString("fs_game");
-  iVar4 = I_strcmp(local_c,pcVar3);
+  iVar4 = I_strcmp(s,pcVar3);
   if (iVar4 != 0) {
-    Dvar_SetStringByName("fs_game",local_c);
+    Dvar_SetStringByName("fs_game",s);
   }
 LAB_00570c7b:
-  LargeLocal::~LargeLocal(&local_24);
-  LargeLocal::~LargeLocal(&local_14);
+  LargeLocal::~LargeLocal(&value_large_local);
+  LargeLocal::~LargeLocal(&key_large_local);
   return;
 }
 
@@ -763,10 +776,11 @@ LAB_00570c7b:
 void __cdecl CL_ParseMapCenter(void)
 
 {
-  char *pcVar1;
+  char *string;
+  char *mapCenterString;
   
-  pcVar1 = CL_GetConfigString(0xd);
-  sscanf(pcVar1,"%f %f %f");
+  string = CL_GetConfigString(0xd);
+  sscanf(string,"%f %f %f");
   return;
 }
 
@@ -777,242 +791,249 @@ void __cdecl CL_ParseMapCenter(void)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ParseGamestate(int param_1,msg_t *param_2)
+void __cdecl CL_ParseGamestate(int localClientNum,msg_t *msg)
 
 {
   uchar uVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  clientActive_t *pcVar5;
-  uchar *puVar6;
+  char cVar2;
+  code *pcVar3;
+  bool bVar4;
+  int iVar5;
+  clientActive_t *pcVar6;
+  char *pcVar7;
+  uchar *puVar8;
   uchar *local_198;
-  uchar *local_188;
+  char *local_188;
   uchar *local_178;
-  int local_170;
-  int local_168;
-  int local_164;
-  int local_160;
-  int local_15c;
-  int local_154;
-  entityState_s local_14c;
-  int local_68;
-  undefined4 local_64;
-  char local_60 [32];
-  clientConnection_t *local_40;
-  entityState_s *local_3c;
-  int local_38;
-  uchar *local_34;
-  char local_30 [32];
+  int nextConstConfigStringIndex;
+  int len;
+  int lastStringIndex;
+  int numConfigStrings;
+  int nextConstConfigStringNumber;
+  int weaponOffset;
+  clientActive_t *cl;
+  int configStringIndex;
+  int newnum;
+  entityState_s nullstate;
+  int clientConfigStringChecksum;
+  int party;
+  char gametype [32];
+  clientConnection_t *clc;
+  entityState_s *es;
+  int file;
+  char *s;
+  char mapname [32];
   uint local_10;
-  int local_c;
-  int local_8;
+  int cmd;
+  int serverConfigStringChecksum;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Con_Close(param_1);
+  Con_Close(localClientNum);
   CL_AllocatePerLocalClientMemory((char *)0x0,0);
-  local_40 = CL_GetLocalClientConnection(param_1);
-  local_40->connectPacketCount = 0;
-  if (local_40->demoplaying == 0) {
-    local_15c = 0;
+  clc = CL_GetLocalClientConnection(localClientNum);
+  clc->connectPacketCount = 0;
+  if (clc->demoplaying == 0) {
+    weaponOffset = 0;
     if (((collectors->current).enabled == false) || ((presell->current).enabled == false)) {
       if (((collectors->current).enabled == false) || ((presell->current).enabled != false)) {
         if (((collectors->current).enabled == false) && ((presell->current).enabled != false)) {
-          local_15c = 5;
+          weaponOffset = 5;
         }
       }
       else {
-        local_15c = 6;
+        weaponOffset = 6;
       }
     }
     else {
-      local_15c = 7;
+      weaponOffset = 7;
     }
-    Dvar_SetIntByName("primaryWeaponOffset",local_15c);
+    Dvar_SetIntByName("primaryWeaponOffset",weaponOffset);
   }
-  CL_ClearState(param_1);
-  MSG_ClearLastReferencedEntity(param_2);
+  CL_ClearState(localClientNum);
+  MSG_ClearLastReferencedEntity(msg);
   cls.mapCenter[0] = 0.0;
   cls.mapCenter[1] = 0.0;
   cls.mapCenter[2] = 0.0;
-  iVar4 = MSG_ReadLong(param_2);
-  local_40->serverCommandSequence = iVar4;
-  MSG_ReadString(param_2,local_30,0x20);
-  MSG_ReadString(param_2,local_60,0x20);
-  local_8 = MSG_ReadLong(param_2);
-  local_64 = 1;
-  bVar3 = CCS_ShouldLoadConstConfigStrings(1);
-  if (bVar3) {
-    CCS_LoadConstantConfigStrings(local_30,local_60);
+  iVar5 = MSG_ReadLong(msg);
+  clc->serverCommandSequence = iVar5;
+  MSG_ReadString(msg,mapname,0x20);
+  MSG_ReadString(msg,gametype,0x20);
+  serverConfigStringChecksum = MSG_ReadLong(msg);
+  party = 1;
+  bVar4 = CCS_ShouldLoadConstConfigStrings(1);
+  if (bVar4) {
+    CCS_LoadConstantConfigStrings(mapname,gametype);
   }
   else {
     CCS_ClearConstantConfigStrings();
   }
-  local_68 = CCS_GetChecksum();
-  CCS_ValidateChecksums(local_8,local_68);
-  pcVar5 = CL_GetLocalClientGlobals(param_1);
+  clientConfigStringChecksum = CCS_GetChecksum();
+  CCS_ValidateChecksums(serverConfigStringChecksum,clientConfigStringChecksum);
+  pcVar6 = CL_GetLocalClientGlobals(localClientNum);
   memset((uchar *)&cls.gameState,'\0',0x32f0);
   cls._30353396_4_ = 1;
-  while (local_c = MSG_ReadByte(param_2), local_c != 0xe) {
-    if (local_c == 2) {
-      local_168 = -1;
-      local_164 = MSG_ReadShort(param_2);
-      local_170 = 0;
-      local_160 = CCS_GetConfigStringNum(0);
-      while ((local_160 == 0 && (local_170 < 0xcbc))) {
-        local_170 = local_170 + 1;
-        local_160 = CCS_GetConfigStringNum(local_170);
+  while (cmd = MSG_ReadByte(msg), cmd != 0xe) {
+    if (cmd == 2) {
+      lastStringIndex = -1;
+      numConfigStrings = MSG_ReadShort(msg);
+      nextConstConfigStringIndex = 0;
+      nextConstConfigStringNumber = CCS_GetConfigStringNum(0);
+      while ((nextConstConfigStringNumber == 0 && (nextConstConfigStringIndex < 0xcbc))) {
+        nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+        nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
       }
-      for (; local_164 != 0; local_164 = local_164 + -1) {
-        iVar4 = MSG_ReadBit(param_2);
-        if (iVar4 == 0) {
-          local_154 = MSG_ReadBits(param_2,0xc);
+      for (; numConfigStrings != 0; numConfigStrings = numConfigStrings + -1) {
+        iVar5 = MSG_ReadBit(msg);
+        if (iVar5 == 0) {
+          configStringIndex = MSG_ReadBits(msg,0xc);
         }
         else {
-          local_154 = local_168 + 1;
+          configStringIndex = lastStringIndex + 1;
         }
-        if ((local_154 < 0) || (0xcbb < local_154)) {
+        if ((configStringIndex < 0) || (0xcbb < configStringIndex)) {
           Com_Error(ERR_DROP,"\x15configstring > MAX_CONFIGSTRINGS");
         }
-        while ((local_160 != 0 && (local_160 < local_154))) {
-          local_34 = (uchar *)CCS_GetConfigStringValue(local_170);
-          puVar6 = local_34 + 1;
-          local_178 = local_34;
+        while ((nextConstConfigStringNumber != 0 &&
+               (nextConstConfigStringNumber < configStringIndex))) {
+          s = CCS_GetConfigStringValue(nextConstConfigStringIndex);
+          puVar8 = (uchar *)(s + 1);
+          local_178 = (uchar *)s;
           do {
             uVar1 = *local_178;
             local_178 = local_178 + 1;
           } while (uVar1 != '\0');
-          cls.gameState.stringOffsets[local_160] = cls._30353396_4_;
-          memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),local_34,
-                 (ulong)(local_178 + (1 - (int)puVar6)));
-          cls._30353396_4_ = local_178 + ((cls._30353396_4_ + 1) - (int)puVar6);
-          local_170 = local_170 + 1;
-          local_160 = CCS_GetConfigStringNum(local_170);
+          cls.gameState.stringOffsets[nextConstConfigStringNumber] = cls._30353396_4_;
+          memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),(uchar *)s,
+                 (ulong)(local_178 + (1 - (int)puVar8)));
+          cls._30353396_4_ = local_178 + ((cls._30353396_4_ + 1) - (int)puVar8);
+          nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+          nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
         }
-        if ((local_160 != 0) && (local_160 == local_154)) {
-          local_170 = local_170 + 1;
-          local_160 = CCS_GetConfigStringNum(local_170);
+        if ((nextConstConfigStringNumber != 0) && (nextConstConfigStringNumber == configStringIndex)
+           ) {
+          nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+          nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
         }
-        local_34 = (uchar *)MSG_ReadBigString(param_2);
-        puVar6 = local_34 + 1;
-        local_188 = local_34;
+        s = MSG_ReadBigString(msg);
+        pcVar7 = s + 1;
+        local_188 = s;
         do {
-          uVar1 = *local_188;
+          cVar2 = *local_188;
           local_188 = local_188 + 1;
-        } while (uVar1 != '\0');
-        if (0x10000 < (int)(local_188 + cls._30353396_4_ + (1 - (int)puVar6))) {
+        } while (cVar2 != '\0');
+        if (0x10000 < (int)(local_188 + cls._30353396_4_ + (1 - (int)pcVar7))) {
           Com_Error(ERR_DROP,"\x15MAX_GAMESTATE_CHARS exceeded");
         }
-        cls.gameState.stringOffsets[local_154] = cls._30353396_4_;
-        memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),local_34,
-               (ulong)(local_188 + (1 - (int)puVar6)));
-        cls._30353396_4_ = local_188 + ((cls._30353396_4_ + 1) - (int)puVar6);
-        local_168 = local_154;
+        cls.gameState.stringOffsets[configStringIndex] = cls._30353396_4_;
+        memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),(uchar *)s,
+               (ulong)(local_188 + (1 - (int)pcVar7)));
+        cls._30353396_4_ = local_188 + ((cls._30353396_4_ + 1) - (int)pcVar7);
+        lastStringIndex = configStringIndex;
       }
-      while (local_160 != 0) {
-        local_34 = (uchar *)CCS_GetConfigStringValue(local_170);
-        puVar6 = local_34 + 1;
-        local_198 = local_34;
+      while (nextConstConfigStringNumber != 0) {
+        s = CCS_GetConfigStringValue(nextConstConfigStringIndex);
+        puVar8 = (uchar *)(s + 1);
+        local_198 = (uchar *)s;
         do {
           uVar1 = *local_198;
           local_198 = local_198 + 1;
         } while (uVar1 != '\0');
-        cls.gameState.stringOffsets[local_160] = cls._30353396_4_;
-        memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),local_34,
-               (ulong)(local_198 + (1 - (int)puVar6)));
-        cls._30353396_4_ = local_198 + ((cls._30353396_4_ + 1) - (int)puVar6);
-        local_170 = local_170 + 1;
-        local_160 = CCS_GetConfigStringNum(local_170);
+        cls.gameState.stringOffsets[nextConstConfigStringNumber] = cls._30353396_4_;
+        memcpy((uchar *)(cls.gameState.stringData + cls._30353396_4_ + 0x80),(uchar *)s,
+               (ulong)(local_198 + (1 - (int)puVar8)));
+        cls._30353396_4_ = local_198 + ((cls._30353396_4_ + 1) - (int)puVar8);
+        nextConstConfigStringIndex = nextConstConfigStringIndex + 1;
+        nextConstConfigStringNumber = CCS_GetConfigStringNum(nextConstConfigStringIndex);
       }
       CL_ParseMapCenter();
     }
-    else if (local_c == 4) {
-      iVar4 = MSG_ReadEntityIndex(param_2,10);
-      if ((iVar4 < 0) || (0x3ff < iVar4)) {
+    else if (cmd == 4) {
+      iVar5 = MSG_ReadEntityIndex(msg,10);
+      if ((iVar5 < 0) || (0x3ff < iVar5)) {
         Com_Error(ERR_DROP,"\x15Baseline number out of range: %i");
       }
-      memset((uchar *)&local_14c,'\0',0xe0);
-      local_3c = pcVar5->entityBaselines + iVar4;
-      MSG_ReadDeltaEntity(param_2,0,&local_14c,local_3c,iVar4);
+      memset((uchar *)&nullstate,'\0',0xe0);
+      es = pcVar6->entityBaselines + iVar5;
+      MSG_ReadDeltaEntity(msg,0,&nullstate,es,iVar5);
     }
     else {
-      if (local_c != 3) {
-        local_38 = FS_FOpenFileWrite("badpacket.dat");
-        if (local_38 != 0) {
-          FS_Write(param_2->data,param_2->cursize,local_38);
-          FS_FCloseFile(local_38);
+      if (cmd != 3) {
+        file = FS_FOpenFileWrite("badpacket.dat");
+        if (file != 0) {
+          FS_Write(msg->data,msg->cursize,file);
+          FS_FCloseFile(file);
         }
         Com_PrintError(1,"CL_ParseGamestate: bad command byte %d\n");
-        MSG_Discard(param_2);
+        MSG_Discard(msg);
         return;
       }
-      cls._30353400_4_ = MSG_ReadLong(param_2);
+      cls._30353400_4_ = MSG_ReadLong(msg);
     }
   }
-  iVar4 = MSG_ReadLong(param_2);
-  local_40->clientNum = iVar4;
-  if ((local_40->clientNum < 0) || (0x1f < local_40->clientNum)) {
+  iVar5 = MSG_ReadLong(msg);
+  clc->clientNum = iVar5;
+  if ((clc->clientNum < 0) || (0x1f < clc->clientNum)) {
     Com_PrintError(1,"CL_ParseGamestate: bad clientNum %i\n");
-    local_40->clientNum = 0;
-    MSG_Discard(param_2);
+    clc->clientNum = 0;
+    MSG_Discard(msg);
   }
   else {
-    iVar4 = MSG_ReadLong(param_2);
-    local_40->checksumFeed = iVar4;
+    iVar5 = MSG_ReadLong(msg);
+    clc->checksumFeed = iVar5;
     if ((useFastFile->current).enabled != false) {
       DB_SyncXAssets();
     }
-    CL_ServerIdChanged(param_1);
-    CL_SystemInfoChanged(param_1);
+    CL_ServerIdChanged(localClientNum);
+    CL_SystemInfoChanged(localClientNum);
     cls.doVidRestart = (uint)fs_gameDirVar->modified | cls.doVidRestart;
-    iVar4 = FS_NeedRestart(local_40->checksumFeed);
-    if (iVar4 != 0) {
+    iVar5 = FS_NeedRestart(clc->checksumFeed);
+    if (iVar5 != 0) {
       UI_CloseAll(0);
-      FS_Restart(param_1,local_40->checksumFeed);
+      FS_Restart(localClientNum,clc->checksumFeed);
     }
     if (((net_lanauthorize->current).enabled != false) ||
-       (iVar4 = Sys_IsLANAddress(local_40->serverAddress), iVar4 == 0)) {
-      GamerProfile_WriteSettings(param_1);
+       (iVar5 = Sys_IsLANAddress(clc->serverAddress), iVar5 == 0)) {
+      GamerProfile_WriteSettings(localClientNum);
     }
-    CL_InitDownloads(param_1);
-    local_c = MSG_ReadByte(param_2);
-    if ((local_c != 6) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
-                                 0x53d,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    CL_InitDownloads(localClientNum);
+    cmd = MSG_ReadByte(msg);
+    if ((cmd != 6) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
+                                 0x53d,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    DynEnt_ReadGameState(param_2,param_1);
-    local_c = MSG_ReadByte(param_2);
-    if ((local_c != 7) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
-                                 0x541,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    DynEnt_ReadGameState(msg,localClientNum);
+    cmd = MSG_ReadByte(msg);
+    if ((cmd != 7) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
+                                 0x541,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    Destructible_ReadGameState(param_2,param_1);
-    local_c = MSG_ReadByte(param_2);
-    if ((local_c != 8) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
-                                 0x545,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    Destructible_ReadGameState(msg,localClientNum);
+    cmd = MSG_ReadByte(msg);
+    if ((cmd != 8) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
+                                 0x545,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    Rope_ReadGameState(param_2,param_1);
-    local_c = MSG_ReadByte(param_2);
-    if ((local_c != 9) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
-                                 0x54a,0,"%s"), !bVar3)) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    Rope_ReadGameState(msg,localClientNum);
+    cmd = MSG_ReadByte(msg);
+    if ((cmd != 9) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_parse_mp.cpp",
+                                 0x54a,0,"%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    GlassCl_ReadGameState(param_1,param_2);
-    bVar3 = UI_Gametype_Custom_ReadClientData(param_2);
-    if ((bVar3) && (bVar3 = UI_Gametype_CanUseCustom(), !bVar3)) {
+    GlassCl_ReadGameState(localClientNum,msg);
+    bVar4 = UI_Gametype_Custom_ReadClientData(msg);
+    if ((bVar4) && (bVar4 = UI_Gametype_CanUseCustom(), !bVar4)) {
       Com_Error(ERR_DROP,"EXE_TRANSMITERROR");
     }
     Dvar_SetInt(cl_paused,0);
@@ -1026,48 +1047,49 @@ void __cdecl CL_ParseGamestate(int param_1,msg_t *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_ParseWWWDownload(int param_1,msg_t *param_2)
+void __cdecl CL_ParseWWWDownload(int localClientNum,msg_t *msg)
 
 {
-  char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char local_50c [1024];
-  char local_10c [260];
+  char *base;
+  char *src;
+  int iVar1;
+  char *downloadPath;
+  char strBuf [1024];
+  char toOSPath [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = (fs_homepath->current).string;
+  base = (fs_homepath->current).string;
   I_strncpyz(cls.originalDownloadName,cls.downloadName,0x40);
-  iVar3 = 0x100;
-  pcVar2 = MSG_ReadString(param_2,local_50c,0x400);
-  I_strncpyz(cls.downloadName,pcVar2,iVar3);
-  cls.downloadSize = MSG_ReadLong(param_2);
-  cls.downloadFlags = MSG_ReadLong(param_2);
+  iVar1 = 0x100;
+  src = MSG_ReadString(msg,strBuf,0x400);
+  I_strncpyz(cls.downloadName,src,iVar1);
+  cls.downloadSize = MSG_ReadLong(msg);
+  cls.downloadFlags = MSG_ReadLong(msg);
   if ((cls.downloadFlags & 2U) == 0) {
     legacyHacks.cl_downloadSize = cls.downloadSize;
     Com_DPrintf(0xe,"Server redirected download: %s\n");
     cls.wwwDlInProgress = 1;
-    CL_AddReliableCommand(param_1,"wwwdl ack");
-    FS_BuildOSPath(pcVar1,(char *)0x0,cls.downloadTempName,local_10c);
-    I_strncpyz(cls.downloadTempName,local_10c,0x100);
-    iVar3 = DL_BeginDownload(cls.downloadTempName,cls.downloadName,(com_developer->current).integer)
+    CL_AddReliableCommand(localClientNum,"wwwdl ack");
+    FS_BuildOSPath(base,(char *)0x0,cls.downloadTempName,toOSPath);
+    I_strncpyz(cls.downloadTempName,toOSPath,0x100);
+    iVar1 = DL_BeginDownload(cls.downloadTempName,cls.downloadName,(com_developer->current).integer)
     ;
-    if (iVar3 == 0) {
-      CL_AddReliableCommand(param_1,"wwwdl fail");
+    if (iVar1 == 0) {
+      CL_AddReliableCommand(localClientNum,"wwwdl fail");
       DL_CancelDownload();
       cls.wwwDlInProgress = 0;
       Com_Printf(0xe,"Failed to initialize download for \'%s\'\n");
     }
     if ((cls.downloadFlags & 1U) != 0) {
-      CL_AddReliableCommand(param_1,"wwwdl bbl8r");
+      CL_AddReliableCommand(localClientNum,"wwwdl bbl8r");
       cls.wwwDlDisconnected = 1;
     }
   }
   else {
     Sys_OpenURL(cls.downloadName,1);
-    Cbuf_AddText(param_1,"quit\n");
-    CL_AddReliableCommand(param_1,"wwwdl bbl8r");
+    Cbuf_AddText(localClientNum,"quit\n");
+    CL_AddReliableCommand(localClientNum,"wwwdl bbl8r");
     DL_CancelDownload();
     cls.wwwDlInProgress = 0;
   }
@@ -1079,66 +1101,69 @@ void __cdecl CL_ParseWWWDownload(int param_1,msg_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ParseDownload(int param_1,msg_t *param_2)
+void __cdecl CL_ParseDownload(int localClientNum,msg_t *msg)
 
 {
   int iVar1;
   char *pcVar2;
-  int iVar3;
-  char local_40c [1024];
+  int len;
+  int block;
+  int size;
+  char strBuf [1024];
   uint local_c;
-  clientConnection_t *local_8;
+  clientConnection_t *clc;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = CL_GetLocalClientConnection(param_1);
-  iVar1 = MSG_ReadLong(param_2);
+  clc = CL_GetLocalClientConnection(localClientNum);
+  iVar1 = MSG_ReadLong(msg);
   if (iVar1 == -1) {
     if (cls.wwwDlInProgress == 0) {
-      CL_ParseWWWDownload(param_1,param_2);
+      CL_ParseWWWDownload(localClientNum,msg);
     }
     else {
-      MSG_ReadString(param_2,local_40c,0x400);
-      MSG_ReadLong(param_2);
-      MSG_ReadLong(param_2);
+      MSG_ReadString(msg,strBuf,0x400);
+      MSG_ReadLong(msg);
+      MSG_ReadLong(msg);
     }
   }
   else if ((iVar1 == 0) &&
-          (cls.downloadSize = MSG_ReadLong(param_2), legacyHacks.cl_downloadSize = cls.downloadSize,
+          (cls.downloadSize = MSG_ReadLong(msg), legacyHacks.cl_downloadSize = cls.downloadSize,
           cls.downloadSize < 0)) {
-    MSG_ReadString(param_2,local_40c,0x400);
+    MSG_ReadString(msg,strBuf,0x400);
     pcVar2 = va("%s");
     Com_Error(ERR_DROP,pcVar2);
   }
   else {
-    iVar3 = MSG_ReadShort(param_2);
-    if (0 < iVar3) {
-      MSG_ReadData(param_2,parseDownloadData,iVar3);
+    len = MSG_ReadShort(msg);
+    if (0 < len) {
+      MSG_ReadData(msg,parseDownloadData,len);
     }
     if (cls.downloadBlock == iVar1) {
       if (cls.download == 0) {
         if (cls.downloadTempName[0] == '\0') {
           Com_Printf(0xe,"Server sending download, but no download was requested\n");
-          CL_AddReliableCommand(param_1,"stopdl");
+          CL_AddReliableCommand(localClientNum,"stopdl");
           return;
         }
         cls.download = FS_SV_FOpenFileWrite(cls.downloadTempName,(char *)0x0);
         if (cls.download == 0) {
           Com_Printf(0xe,"Could not create %s\n");
-          CL_AddReliableCommand(param_1,"stopdl");
-          CL_NextDownload(param_1);
+          CL_AddReliableCommand(localClientNum,"stopdl");
+          CL_NextDownload(localClientNum);
           return;
         }
       }
-      if (iVar3 != 0) {
-        FS_Write(parseDownloadData,iVar3,cls.download);
+      if (len != 0) {
+        FS_Write(parseDownloadData,len,cls.download);
       }
       pcVar2 = va("nextdl %d");
-      CL_AddReliableCommand(param_1,pcVar2);
+      CL_AddReliableCommand(localClientNum,pcVar2);
       cls.downloadBlock = cls.downloadBlock + 1;
-      cls.downloadCount = cls.downloadCount + iVar3;
+      cls.downloadCount = cls.downloadCount + len;
       legacyHacks.cl_downloadCount = cls.downloadCount;
-      if (iVar3 == 0) {
+      if (len == 0) {
         if (cls.download != 0) {
           FS_FCloseFile(cls.download);
           cls.download = 0;
@@ -1147,9 +1172,9 @@ void __cdecl CL_ParseDownload(int param_1,msg_t *param_2)
         cls.downloadName[0] = '\0';
         cls.downloadTempName[0] = '\0';
         legacyHacks.cl_downloadName[0] = '\0';
-        CL_WritePacket(param_1);
-        CL_WritePacket(param_1);
-        CL_NextDownload(param_1);
+        CL_WritePacket(localClientNum);
+        CL_WritePacket(localClientNum);
+        CL_NextDownload(localClientNum);
       }
     }
     else {
@@ -1157,7 +1182,7 @@ void __cdecl CL_ParseDownload(int param_1,msg_t *param_2)
       if (cls.downloadBlock < iVar1) {
         Com_DPrintf(0xe,"CL_ParseDownload: Sending retransmit request to get the missed block\n");
         pcVar2 = va("retransdl %d");
-        CL_AddReliableCommand(param_1,pcVar2);
+        CL_AddReliableCommand(localClientNum,pcVar2);
       }
     }
   }
@@ -1170,24 +1195,25 @@ void __cdecl CL_ParseDownload(int param_1,msg_t *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_ParseCommandString(int param_1,msg_t *param_2)
+void __cdecl CL_ParseCommandString(int localClientNum,msg_t *msg)
 
 {
   uint uVar1;
-  char local_414 [1024];
+  int seq;
+  char strBuf [1024];
   uint local_14;
-  clientConnection_t *local_10;
-  uint local_c;
-  char *local_8;
+  clientConnection_t *clc;
+  int index;
+  char *s;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar1 = MSG_ReadLong(param_2);
-  local_8 = MSG_ReadString(param_2,local_414,0x400);
-  local_10 = CL_GetLocalClientConnection(param_1);
-  if (local_10->serverCommandSequence < (int)uVar1) {
-    local_10->serverCommandSequence = uVar1;
-    local_c = uVar1 & 0x7f;
-    I_strncpyz(local_10->serverCommands[local_c],local_8,0x400);
+  uVar1 = MSG_ReadLong(msg);
+  s = MSG_ReadString(msg,strBuf,0x400);
+  clc = CL_GetLocalClientConnection(localClientNum);
+  if (clc->serverCommandSequence < (int)uVar1) {
+    clc->serverCommandSequence = uVar1;
+    index = uVar1 & 0x7f;
+    I_strncpyz(clc->serverCommands[index],s,0x400);
   }
   return;
 }
@@ -1196,13 +1222,14 @@ void __cdecl CL_ParseCommandString(int param_1,msg_t *param_2)
 // 00571A00  CL_ParseServerMessage  (client_mp/cl_parse_mp.cpp:1612)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CL_ParseServerMessage(int param_1,msg_t *param_2)
+void __cdecl CL_ParseServerMessage(int localClientNum,msg_t *msg)
 
 {
-  msg_t local_3c;
-  int local_c;
-  int local_8;
+  msg_t msgCompressed;
+  int file;
+  int cmd;
   
   if ((cl_shownet->current).integer == 1) {
     Com_Printf(0xe,"%i ");
@@ -1210,58 +1237,58 @@ void __cdecl CL_ParseServerMessage(int param_1,msg_t *param_2)
   else if (1 < (cl_shownet->current).integer) {
     Com_Printf(0xe,"------------------\n");
   }
-  MSG_Init(&local_3c,msgCompressed_buf,0x10000);
-  if (0x10000 < (uint)(param_2->cursize - param_2->readcount)) {
+  MSG_Init(&msgCompressed,msgCompressed_buf,0x10000);
+  if (0x10000 < (uint)(msg->cursize - msg->readcount)) {
     Com_Error(ERR_DROP,"Compressed msg overflow in CL_ParseServerMessage");
   }
-  local_3c.cursize =
+  msgCompressed.cursize =
        MSG_ReadBitsCompress
-                 (param_2->data + param_2->readcount,param_2->cursize - param_2->readcount,
-                  msgCompressed_buf,0x10000);
+                 (msg->data + msg->readcount,msg->cursize - msg->readcount,msgCompressed_buf,0x10000
+                 );
   do {
-    if (local_3c.overflowed != 0) {
+    if (msgCompressed.overflowed != 0) {
 LAB_00571bf9:
-      if (local_3c.overflowed != 0) {
-        MSG_Discard(param_2);
+      if (msgCompressed.overflowed != 0) {
+        MSG_Discard(msg);
       }
       return;
     }
-    local_8 = MSG_ReadByte(&local_3c);
-    if ((local_8 == 0xe) || (local_3c.overflowed != 0)) {
-      SHOWNET(&local_3c,"END OF MESSAGE");
+    cmd = MSG_ReadByte(&msgCompressed);
+    if ((cmd == 0xe) || (msgCompressed.overflowed != 0)) {
+      SHOWNET(&msgCompressed,"END OF MESSAGE");
       goto LAB_00571bf9;
     }
     if (1 < (cl_shownet->current).integer) {
-      if (svc_strings[local_8] == (char *)0x0) {
+      if (svc_strings[cmd] == (char *)0x0) {
         Com_Printf(0xe,"%3i:BAD CMD %i\n");
       }
       else {
-        SHOWNET(&local_3c,svc_strings[local_8]);
+        SHOWNET(&msgCompressed,svc_strings[cmd]);
       }
     }
-    switch(local_8) {
+    switch(cmd) {
     case 0:
       break;
     case 1:
-      CL_ParseGamestate(param_1,&local_3c);
+      CL_ParseGamestate(localClientNum,&msgCompressed);
       break;
     default:
-      local_c = FS_FOpenFileWrite("badpacket.dat");
-      if (local_c != 0) {
-        FS_Write(param_2->data,param_2->cursize,local_c);
-        FS_FCloseFile(local_c);
+      file = FS_FOpenFileWrite("badpacket.dat");
+      if (file != 0) {
+        FS_Write(msg->data,msg->cursize,file);
+        FS_FCloseFile(file);
       }
       Com_PrintError(1,"CL_ParseServerMessage: Illegible server message %d\n");
-      MSG_Discard(param_2);
+      MSG_Discard(msg);
       return;
     case 10:
-      CL_ParseCommandString(param_1,&local_3c);
+      CL_ParseCommandString(localClientNum,&msgCompressed);
       break;
     case 0xb:
-      CL_ParseDownload(param_1,&local_3c);
+      CL_ParseDownload(localClientNum,&msgCompressed);
       break;
     case 0xc:
-      CL_ParseSnapshot(param_1,&local_3c);
+      CL_ParseSnapshot(localClientNum,&msgCompressed);
     }
   } while( true );
 }

@@ -13,12 +13,12 @@ void __cdecl TRACK_r_image(void)
 
 // 00AC0A40  Image_IsCodeImage  (gfx_d3d/r_image.cpp:198)
 
-bool __cdecl Image_IsCodeImage(int param_1)
+bool __cdecl Image_IsCodeImage(int track)
 
 {
   bool bVar1;
   
-  if ((param_1 < 0) || ((1 < param_1 && (param_1 != 4)))) {
+  if ((track < 0) || ((1 < track && (track != 4)))) {
     bVar1 = false;
   }
   else {
@@ -30,16 +30,16 @@ bool __cdecl Image_IsCodeImage(int param_1)
 
 // 00AC0A00  Image_TrackTotalMemory  (gfx_d3d/r_image.cpp:214)
 
-void __cdecl Image_TrackTotalMemory(GfxImage *param_1,int param_2,int param_3)
+void __cdecl Image_TrackTotalMemory(GfxImage *image,int platform,int memory)
 
 {
   bool bVar1;
   
-  bVar1 = Image_IsCodeImage((uint)param_1->track);
+  bVar1 = Image_IsCodeImage((uint)image->track);
   if (!bVar1) {
-    imageGlobals.totalMemory.platform[param_2] =
-         (param_3 - (param_1->cardMemory).platform[param_2]) +
-         imageGlobals.totalMemory.platform[param_2];
+    imageGlobals.totalMemory.platform[platform] =
+         (memory - (image->cardMemory).platform[platform]) +
+         imageGlobals.totalMemory.platform[platform];
   }
   return;
 }
@@ -49,13 +49,14 @@ void __cdecl Image_TrackTotalMemory(GfxImage *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_AddImageToList(XAssetHeader param_1,void *param_2)
+void __cdecl R_AddImageToList(XAssetHeader header,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
+  ImageList *imageList;
   
-  if (0x107f < *(uint *)param_2) {
+  if (0x107f < *(uint *)data) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0xe1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -63,8 +64,8 @@ void __cdecl R_AddImageToList(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  *(XAssetHeader *)((int)param_2 + *(int *)param_2 * 4 + 4) = param_1;
-  *(int *)param_2 = *(int *)param_2 + 1;
+  *(XAssetHeader *)((int)data + *(int *)data * 4 + 4) = header;
+  *(int *)data = *(int *)data + 1;
   return;
 }
 
@@ -74,13 +75,13 @@ void __cdecl R_AddImageToList(XAssetHeader param_1,void *param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 
-void __cdecl R_GetImageList(ImageList *param_1)
+void __cdecl R_GetImageList(ImageList *imageList)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (ImageList *)0x0) {
+  if (imageList == (ImageList *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0xe8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -88,8 +89,8 @@ void __cdecl R_GetImageList(ImageList *param_1)
       return;
     }
   }
-  param_1->count = 0;
-  DB_EnumXAssets(ASSET_TYPE_IMAGE,R_AddImageToList,param_1,true);
+  imageList->count = 0;
+  DB_EnumXAssets(ASSET_TYPE_IMAGE,R_AddImageToList,imageList,true);
   return;
 }
 
@@ -98,44 +99,46 @@ void __cdecl R_GetImageList(ImageList *param_1)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_SumOfUsedImages(Image_MemUsage *param_1)
+void __cdecl R_SumOfUsedImages(Image_MemUsage *usage)
 
 {
   GfxImage *pGVar1;
   code *pcVar2;
   bool bVar3;
-  int local_4240 [11];
-  uint local_4214;
-  int local_4210;
-  ImageList local_420c;
+  GfxImage *image;
+  int imageTrack [10];
+  int memory;
+  uint imageIndex;
+  int totalMemory;
+  ImageList imageList;
   undefined4 uStack_8;
   
   uStack_8 = 0xac0b2d;
-  if ((param_1 == (Image_MemUsage *)0x0) &&
+  if ((usage == (Image_MemUsage *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0xf8,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  R_GetImageList(&local_420c);
-  local_4240[0] = 0;
-  local_4240[1] = 0;
-  local_4240[2] = 0;
-  local_4240[3] = 0;
-  local_4240[4] = 0;
-  local_4240[5] = 0;
-  local_4240[6] = 0;
-  local_4240[7] = 0;
-  local_4240[8] = 0;
-  local_4240[9] = 0;
-  local_4210 = 0;
-  local_4214 = 0;
+  R_GetImageList(&imageList);
+  imageTrack[0] = 0;
+  imageTrack[1] = 0;
+  imageTrack[2] = 0;
+  imageTrack[3] = 0;
+  imageTrack[4] = 0;
+  imageTrack[5] = 0;
+  imageTrack[6] = 0;
+  imageTrack[7] = 0;
+  imageTrack[8] = 0;
+  imageTrack[9] = 0;
+  totalMemory = 0;
+  imageIndex = 0;
   while( true ) {
-    if (local_420c.count <= local_4214) {
-      param_1->total = local_4210;
-      param_1->lightmap = local_4240[4];
-      if (param_1->total != imageGlobals.totalMemory.platform[0]) {
+    if (imageList.count <= imageIndex) {
+      usage->total = totalMemory;
+      usage->lightmap = imageTrack[4];
+      if (usage->total != imageGlobals.totalMemory.platform[0]) {
         va("%i != %i");
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x119,0,
                                  "%s\n\t%s");
@@ -145,20 +148,20 @@ void __cdecl R_SumOfUsedImages(Image_MemUsage *param_1)
           return;
         }
       }
-      param_1->minspec = imageGlobals.totalMemory.platform[1];
+      usage->minspec = imageGlobals.totalMemory.platform[1];
       return;
     }
-    pGVar1 = local_420c.image[local_4214];
+    pGVar1 = imageList.image[imageIndex];
     if ((pGVar1 == (GfxImage *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x104,0,
                                  "%s"), !bVar3)) break;
-    local_4240[10] = (pGVar1->cardMemory).platform[0];
-    local_4240[pGVar1->track] = local_4240[pGVar1->track] + local_4240[10];
+    memory = (pGVar1->cardMemory).platform[0];
+    imageTrack[pGVar1->track] = imageTrack[pGVar1->track] + memory;
     bVar3 = Image_IsCodeImage((uint)pGVar1->track);
     if (!bVar3) {
-      local_4210 = local_4210 + local_4240[10];
+      totalMemory = totalMemory + memory;
     }
-    local_4214 = local_4214 + 1;
+    imageIndex = imageIndex + 1;
   }
   pcVar2 = (code *)swi(3);
   (*pcVar2)();
@@ -168,14 +171,14 @@ void __cdecl R_SumOfUsedImages(Image_MemUsage *param_1)
 
 // 00AC0D00  Image_Release  (gfx_d3d/r_image.cpp:309)
 
-void __cdecl Image_Release(GfxImage *param_1)
+void __cdecl Image_Release(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int platform;
   
-  if (param_1 == (GfxImage *)0x0) {
+  if (image == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x13a,0,"%s")
     ;
     if (!bVar2) {
@@ -184,16 +187,15 @@ void __cdecl Image_Release(GfxImage *param_1)
       return;
     }
   }
-  bVar2 = Image_IsCodeImage((uint)param_1->track);
+  bVar2 = Image_IsCodeImage((uint)image->track);
   if (!bVar2) {
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      imageGlobals.totalMemory.platform[local_8] =
-           imageGlobals.totalMemory.platform[local_8] - (param_1->cardMemory).platform[local_8];
+    for (platform = 0; platform < 2; platform = platform + 1) {
+      imageGlobals.totalMemory.platform[platform] =
+           imageGlobals.totalMemory.platform[platform] - (image->cardMemory).platform[platform];
     }
   }
-  if ((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
-    if (((r_loadForRenderer->current).enabled != false) && ((param_1->cardMemory).platform[0] != 0))
-    {
+  if ((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
+    if (((r_loadForRenderer->current).enabled != false) && ((image->cardMemory).platform[0] != 0)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x167,0,
                                "%s");
       if (!bVar2) {
@@ -206,54 +208,57 @@ void __cdecl Image_Release(GfxImage *param_1)
   else {
     bVar2 = Sys_IsRenderThread();
     if (bVar2) {
-      (**(code **)((int)*(param_1->texture).basemap + 8))((param_1->texture).basemap);
+      (**(code **)((int)*(image->texture).basemap + 8))((image->texture).basemap);
     }
     else {
-      RB_Resource_Release((IUnknown *)(param_1->texture).basemap);
+      RB_Resource_Release((IUnknown *)(image->texture).basemap);
     }
-    (param_1->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
-    (param_1->cardMemory).platform[0] = 0;
-    (param_1->cardMemory).platform[1] = 0;
+    (image->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
+    (image->cardMemory).platform[0] = 0;
+    (image->cardMemory).platform[1] = 0;
   }
-  Image_TrackBytes = Image_TrackBytes - param_1->loadedSize;
-  param_1->loadedSize = 0;
-  param_1->mapType = '\0';
+  Image_TrackBytes = Image_TrackBytes - image->loadedSize;
+  image->loadedSize = 0;
+  image->mapType = '\0';
   return;
 }
 
 
 // 00AC0EF0  Image_GetAvailableHashLocation  (gfx_d3d/r_image.cpp:390)
 
-int __cdecl Image_GetAvailableHashLocation(char *param_1)
+int __cdecl Image_GetAvailableHashLocation(char *name)
 
 {
-  uint local_c;
-  uint local_8;
+  uint uVar1;
+  uint arraySize;
+  uint stuck;
+  uint hashIndex;
   
-  local_8 = R_HashAssetName(param_1);
-  local_8 = local_8 & 0x7ff;
-  local_c = 0;
+  uVar1 = R_HashAssetName(name);
+  hashIndex = uVar1 & 0x7ff;
+  stuck = 0;
   do {
-    if (imageGlobals.imageHashTable[local_8] == (GfxImage *)0x0) {
-      return local_8;
+    if (imageGlobals.imageHashTable[hashIndex] == (GfxImage *)0x0) {
+      return hashIndex;
     }
-    local_8 = local_8 + 1 & 0x7ff;
-    local_c = local_c + 1;
-  } while (local_c < 0x801);
-  return local_8;
+    hashIndex = hashIndex + 1 & 0x7ff;
+    stuck = stuck + 1;
+  } while (stuck < 0x801);
+  return hashIndex;
 }
 
 
 // 00AC1070  Image_Construct  (gfx_d3d/r_image.cpp:406)
 
 void __cdecl
-Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_5,GfxImage *param_6)
+Image_Construct(char *name,int nameSize,uchar category,uchar semantic,int imageTrack,GfxImage *image
+               )
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x197,0,"%s")
     ;
     if (!bVar2) {
@@ -262,7 +267,7 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  if (param_2 < 1) {
+  if (nameSize < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x198,0,
                              "%s\n\t(nameSize) = %i");
     if (!bVar2) {
@@ -271,7 +276,7 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  if (param_6 == (GfxImage *)0x0) {
+  if (image == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x199,0,"%s")
     ;
     if (!bVar2) {
@@ -280,8 +285,8 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  memcpy((uchar *)param_6->name,(uchar *)param_1,param_2);
-  if (param_3 == '\0') {
+  memcpy((uchar *)image->name,(uchar *)name,nameSize);
+  if (category == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x19f,0,"%s")
     ;
     if (!bVar2) {
@@ -290,9 +295,9 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  param_6->category = param_3;
-  param_6->semantic = param_4;
-  if (param_6->noPicmip != false) {
+  image->category = category;
+  image->semantic = semantic;
+  if (image->noPicmip != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1a3,1,"%s")
     ;
     if (!bVar2) {
@@ -301,7 +306,7 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  if ((param_6->picmip).platform[0] != '\0') {
+  if ((image->picmip).platform[0] != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1a4,1,"%s")
     ;
     if (!bVar2) {
@@ -310,7 +315,7 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  if ((param_6->picmip).platform[1] != '\0') {
+  if ((image->picmip).platform[1] != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1a6,1,"%s")
     ;
     if (!bVar2) {
@@ -319,55 +324,58 @@ Image_Construct(char *param_1,int param_2,uchar param_3,uchar param_4,int param_
       return;
     }
   }
-  param_6->track = (uchar)param_5;
+  image->track = (uchar)imageTrack;
   return;
 }
 
 
 // 00AC0E30  Image_AllocProg  (gfx_d3d/r_image.cpp:437)
 
-GfxImage * __cdecl Image_AllocProg(int param_1,uchar param_2,uchar param_3)
+GfxImage * __cdecl Image_AllocProg(int imageProgType,uchar category,uchar semantic)
 
 {
-  char *pcVar1;
-  code *pcVar2;
-  bool bVar3;
-  GfxImage *pGVar4;
-  int iVar5;
+  char *name_00;
+  code *pcVar1;
+  bool bVar2;
+  GfxImage *pGVar3;
+  int iVar4;
+  GfxImage *image;
+  char *name;
+  int hashIndex;
   
-  pGVar4 = g_imageProgs + param_1;
-  if (pGVar4 == (GfxImage *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1bd,1,"%s")
+  pGVar3 = g_imageProgs + imageProgType;
+  if (pGVar3 == (GfxImage *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1bd,1,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      pGVar4 = (GfxImage *)(*pcVar2)();
-      return pGVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      pGVar3 = (GfxImage *)(*pcVar1)();
+      return pGVar3;
     }
   }
-  pcVar1 = g_imageProgNames[param_1];
-  g_imageProgs[param_1].name = pcVar1;
-  if (param_2 == '\0') {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1c2,0,"%s")
+  name_00 = g_imageProgNames[imageProgType];
+  g_imageProgs[imageProgType].name = name_00;
+  if (category == '\0') {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x1c2,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      pGVar4 = (GfxImage *)(*pcVar2)();
-      return pGVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      pGVar3 = (GfxImage *)(*pcVar1)();
+      return pGVar3;
     }
   }
-  g_imageProgs[param_1].category = param_2;
-  g_imageProgs[param_1].semantic = param_3;
-  g_imageProgs[param_1].track = '\0';
-  iVar5 = Image_GetAvailableHashLocation(pcVar1);
-  imageGlobals.imageHashTable[iVar5] = pGVar4;
-  return pGVar4;
+  g_imageProgs[imageProgType].category = category;
+  g_imageProgs[imageProgType].semantic = semantic;
+  g_imageProgs[imageProgType].track = '\0';
+  iVar4 = Image_GetAvailableHashLocation(name_00);
+  imageGlobals.imageHashTable[iVar4] = pGVar3;
+  return pGVar3;
 }
 
 
 // 00AC0F60  Image_Alloc  (gfx_d3d/r_image.cpp:506)
 
-GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int param_4,float param_5)
+GfxImage * __cdecl Image_Alloc(char *name,uchar category,uchar semantic,int imageTrack,float gamma)
 
 {
   char cVar1;
@@ -376,8 +384,12 @@ GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int par
   GfxImage *pGVar4;
   int iVar5;
   char *local_18;
+  GfxImage *image;
+  int nameSize;
+  int hashIndex;
+  int allocationSize;
   
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x200,0,"%s")
     ;
     if (!bVar3) {
@@ -386,12 +398,12 @@ GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int par
       return pGVar4;
     }
   }
-  local_18 = param_1;
+  local_18 = name;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  pGVar4 = Hunk_Alloc((int)(local_18 + (0x35 - (int)(param_1 + 1))),"Image_Alloc",0x17);
+  pGVar4 = Hunk_Alloc((int)(local_18 + (0x35 - (int)(name + 1))),"Image_Alloc",0x17);
   if (pGVar4 == (GfxImage *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x209,1,"%s")
     ;
@@ -402,9 +414,8 @@ GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int par
     }
   }
   pGVar4->name = (char *)(pGVar4 + 1);
-  Image_Construct(param_1,(int)(local_18 + (1 - (int)(param_1 + 1))),param_2,param_3,param_4,pGVar4)
-  ;
-  iVar5 = Image_GetAvailableHashLocation(param_1);
+  Image_Construct(name,(int)(local_18 + (1 - (int)(name + 1))),category,semantic,imageTrack,pGVar4);
+  iVar5 = Image_GetAvailableHashLocation(name);
   imageGlobals.imageHashTable[iVar5] = pGVar4;
   return pGVar4;
 }
@@ -412,12 +423,12 @@ GfxImage * __cdecl Image_Alloc(char *param_1,uchar param_2,uchar param_3,int par
 
 // 00AC1320  Image_IsProg  (gfx_d3d/r_image.cpp:533)
 
-bool __cdecl Image_IsProg(GfxImage *param_1)
+bool __cdecl Image_IsProg(GfxImage *image)
 
 {
   bool local_8;
   
-  if ((param_1 < g_imageProgs) || ((GfxImage *)((int)&g_imageProgs[0x1c].hash + 3) < param_1)) {
+  if ((image < g_imageProgs) || ((GfxImage *)((int)&g_imageProgs[0x1c].hash + 3) < image)) {
     local_8 = false;
   }
   else {
@@ -429,10 +440,10 @@ bool __cdecl Image_IsProg(GfxImage *param_1)
 
 // 00AC1350  Image_Free  (gfx_d3d/r_image.cpp:538)
 
-void __cdecl Image_Free(GfxImage *param_1)
+void __cdecl Image_Free(GfxImage *image)
 
 {
-  Image_Release(param_1);
+  Image_Release(image);
   return;
 }
 
@@ -447,30 +458,32 @@ void __cdecl R_ShutdownImages(void)
   GfxImage *pGVar1;
   bool bVar2;
   int iVar3;
-  int local_2014;
-  uint local_2010;
+  GfxImage *image;
+  int savedImageCount;
+  int hashIndex;
   int aiStack_200c [2049];
-  int local_8;
+  int savedImageIndex;
   
-  local_8 = 0xac11fd;
+  savedImageIndex = 0xac11fd;
   RB_UnbindAllImages();
-  local_2014 = 0;
-  for (local_2010 = 0; local_2010 < 0x800; local_2010 = local_2010 + 1) {
-    pGVar1 = imageGlobals.imageHashTable[local_2010];
+  savedImageCount = 0;
+  for (hashIndex = 0; (uint)hashIndex < 0x800; hashIndex = hashIndex + 1) {
+    pGVar1 = imageGlobals.imageHashTable[hashIndex];
     if (pGVar1 != (GfxImage *)0x0) {
       bVar2 = Image_IsProg(pGVar1);
       if (bVar2) {
-        aiStack_200c[local_2014] = (int)pGVar1;
-        local_2014 = local_2014 + 1;
+        aiStack_200c[savedImageCount] = (int)pGVar1;
+        savedImageCount = savedImageCount + 1;
       }
       else {
-        Image_Free(imageGlobals.imageHashTable[local_2010]);
+        Image_Free(imageGlobals.imageHashTable[hashIndex]);
       }
     }
   }
   memset((uchar *)&imageGlobals,'\0',0x2000);
-  for (local_8 = 0; local_8 < local_2014; local_8 = local_8 + 1) {
-    pGVar1 = (GfxImage *)aiStack_200c[local_8];
+  for (savedImageIndex = 0; savedImageIndex < savedImageCount; savedImageIndex = savedImageIndex + 1
+      ) {
+    pGVar1 = (GfxImage *)aiStack_200c[savedImageIndex];
     iVar3 = Image_GetAvailableHashLocation(pGVar1->name);
     imageGlobals.imageHashTable[iVar3] = pGVar1;
   }
@@ -480,20 +493,21 @@ void __cdecl R_ShutdownImages(void)
 
 // 00AC1560  Image_GetUsage  (gfx_d3d/r_image.cpp:615)
 
-ulong __cdecl Image_GetUsage(int param_1,_D3DFORMAT param_2)
+ulong __cdecl Image_GetUsage(int imageFlags,_D3DFORMAT imageFormat)
 
 {
   ulong uVar1;
   
-  if ((param_1 & 0x20000U) == 0) {
-    if ((param_1 & 0x10000U) == 0) {
+  if ((imageFlags & 0x20000U) == 0) {
+    if ((imageFlags & 0x10000U) == 0) {
       uVar1 = 0;
     }
     else {
       uVar1 = 0x200;
     }
   }
-  else if (((param_2 == D3DFMT_D24S8) || (param_2 == D3DFMT_D24X8)) || (param_2 == D3DFMT_D16)) {
+  else if (((imageFormat == D3DFMT_D24S8) || (imageFormat == D3DFMT_D24X8)) ||
+          (imageFormat == D3DFMT_D16)) {
     uVar1 = 2;
   }
   else {
@@ -507,8 +521,8 @@ ulong __cdecl Image_GetUsage(int param_1,_D3DFORMAT param_2)
 
 void __cdecl
 Image_Create2DTexture_PC
-          (GfxImage *param_1,ushort param_2,ushort param_3,int param_4,int param_5,
-          _D3DFORMAT param_6)
+          (GfxImage *image,ushort width,ushort height,int mipmapCount,int imageFlags,
+          _D3DFORMAT imageFormat)
 
 {
   code *pcVar1;
@@ -516,41 +530,45 @@ Image_Create2DTexture_PC
   ulong uVar3;
   int iVar4;
   int iVar5;
-  int iVar6;
-  undefined4 local_8;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  ulong usage;
+  int semaphore;
+  _D3DPOOL memPool;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x286,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+  if (((image->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x287,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->width = param_2;
-  param_1->height = param_3;
-  param_1->depth = 1;
-  param_1->mapType = '\x03';
-  uVar3 = Image_GetUsage(param_5,param_6);
-  if ((param_5 & 0x40000U) == 0) {
+  image->width = width;
+  image->height = height;
+  image->depth = 1;
+  image->mapType = '\x03';
+  uVar3 = Image_GetUsage(imageFlags,imageFormat);
+  if ((imageFlags & 0x40000U) == 0) {
     if (uVar3 == 0) {
-      local_8 = 1;
+      memPool = D3DPOOL_MANAGED;
     }
     else {
-      local_8 = 0;
+      memPool = D3DPOOL_DEFAULT;
     }
   }
   else {
-    local_8 = 2;
+    memPool = D3DPOOL_SYSTEMMEM;
   }
-  if ((param_5 & 0x100U) != 0) {
-    local_8 = 2;
+  if ((imageFlags & 0x100U) != 0) {
+    memPool = D3DPOOL_SYSTEMMEM;
   }
   bVar2 = Sys_IsRenderThread();
   if ((!bVar2) &&
@@ -568,14 +586,14 @@ Image_Create2DTexture_PC
                );
   }
   iVar5 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar6 = (**(code **)((int)*dx.device + 0x5c))
-                    (dx.device,param_2,param_3,param_4,uVar3,param_6,local_8,param_1,0);
+  hr_00 = (**(code **)((int)*dx.device + 0x5c))
+                    (dx.device,width,height,mipmapCount,uVar3,imageFormat,memPool,image,0);
   if (iVar5 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar6 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar6);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp (%i) dx.device->CreateTexture( width, height, mipmapCount, usage, imageFormat, memPool, &image->texture.map, 0 ) failed: %s\n"
              );
@@ -591,35 +609,40 @@ Image_Create2DTexture_PC
 
 void __cdecl
 Image_Create3DTexture_PC
-          (GfxImage *param_1,ushort param_2,ushort param_3,ushort param_4,int param_5,int param_6,
-          _D3DFORMAT param_7)
+          (GfxImage *image,ushort width,ushort height,ushort depth,int mipmapCount,int imageFlags,
+          _D3DFORMAT imageFormat)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  ulong usage;
+  int semaphore;
+  _D3DPOOL memPool;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x2bd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+  if (((image->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x2be,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->width = param_2;
-  param_1->height = param_3;
-  param_1->depth = param_4;
-  param_1->mapType = '\x04';
-  Image_GetUsage(param_6,param_7);
+  image->width = width;
+  image->height = height;
+  image->depth = depth;
+  image->mapType = '\x04';
+  Image_GetUsage(imageFlags,imageFormat);
   bVar2 = Sys_IsRenderThread();
   if ((!bVar2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x2cd,0,
@@ -636,14 +659,14 @@ Image_Create3DTexture_PC
                );
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*dx.device + 0x60))
-                    (dx.device,param_2,param_3,param_4,param_5,0,param_7,1,param_1,0);
+  hr_00 = (**(code **)((int)*dx.device + 0x60))
+                    (dx.device,width,height,depth,mipmapCount,0,imageFormat,1,image,0);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp (%i) dx.device->CreateVolumeTexture( width, height, depth, mipmapCount, 0, imageFormat, D3DPOOL_MANAGED, &image->texture.volmap, 0 ) failed: %s\n"
              );
@@ -658,35 +681,38 @@ Image_Create3DTexture_PC
 // 00AC1780  Image_CreateCubeTexture_PC  (gfx_d3d/r_image.cpp:738)
 
 void __cdecl
-Image_CreateCubeTexture_PC(GfxImage *param_1,ushort param_2,int param_3,_D3DFORMAT param_4)
+Image_CreateCubeTexture_PC(GfxImage *image,ushort edgeLen,int mipmapCount,_D3DFORMAT imageFormat)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x2e5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+  if (((image->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x2e6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->width = param_2;
-  param_1->height = param_2;
-  param_1->depth = 1;
-  param_1->mapType = '\x05';
+  image->width = edgeLen;
+  image->height = edgeLen;
+  image->depth = 1;
+  image->mapType = '\x05';
   if (gfxMetrics.canMipCubemaps == false) {
-    param_3 = 1;
+    mipmapCount = 1;
   }
   bVar2 = Sys_IsRenderThread();
   if ((!bVar2) &&
@@ -704,13 +730,14 @@ Image_CreateCubeTexture_PC(GfxImage *param_1,ushort param_2,int param_3,_D3DFORM
                );
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*dx.device + 100))(dx.device,param_2,param_3,0,param_4,1,param_1,0);
+  hr_00 = (**(code **)((int)*dx.device + 100))
+                    (dx.device,edgeLen,mipmapCount,0,imageFormat,1,image,0);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp (%i) dx.device->CreateCubeTexture( edgeLen, mipmapCount, 0, imageFormat, D3DPOOL_MANAGED, &image->texture.cubemap, 0 ) failed: %s\n"
              );
@@ -726,49 +753,49 @@ Image_CreateCubeTexture_PC(GfxImage *param_1,ushort param_2,int param_3,_D3DFORM
 
 void __cdecl
 Image_SetupRenderTarget
-          (GfxImage *param_1,ushort param_2,ushort param_3,_D3DFORMAT param_4,char *param_5,
-          uint param_6)
+          (GfxImage *image,ushort width,ushort height,_D3DFORMAT imageFormat,char *name,
+          uint allocFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x301,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->semantic != '\0') &&
+  if ((image->semantic != '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x302,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = _stricmp(param_1->name,"$16bit_system");
-  if ((iVar3 != 0) && (iVar3 = _stricmp(param_1->name,"$8bit_system"), iVar3 != 0)) {
-    Image_SetupAndLoad(param_1,(uint)param_2,(uint)param_3,1,0x20003,param_4,param_5,param_6);
+  iVar3 = _stricmp(image->name,"$16bit_system");
+  if ((iVar3 != 0) && (iVar3 = _stricmp(image->name,"$8bit_system"), iVar3 != 0)) {
+    Image_SetupAndLoad(image,(uint)width,(uint)height,1,0x20003,imageFormat,name,allocFlags);
     return;
   }
-  Image_SetupAndLoad(param_1,(uint)param_2,(uint)param_3,1,0x103,param_4,param_5,param_6);
+  Image_SetupAndLoad(image,(uint)width,(uint)height,1,0x103,imageFormat,name,allocFlags);
   return;
 }
 
 
 // 00AC1A20  Image_PicmipForSemantic  (gfx_d3d/r_image.cpp:792)
 
-void __cdecl Image_PicmipForSemantic(uchar param_1,Picmip *param_2)
+void __cdecl Image_PicmipForSemantic(uchar semantic,Picmip *picmip)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int local_8;
+  char *fmt;
+  int picmipUsed;
   
-  switch(param_1) {
+  switch(semantic) {
   case '\x02':
   case '\v':
   case '\f':
@@ -788,12 +815,11 @@ void __cdecl Image_PicmipForSemantic(uchar param_1,Picmip *param_2)
   case '\x1a':
   case '\x1b':
   case '\x1c':
-    local_8 = imageGlobals.picmip;
+    picmipUsed = imageGlobals.picmip;
     break;
   default:
-    pcVar3 = va("unhandled case: %d");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x31e,1,
-                             pcVar3);
+    fmt = va("unhandled case: %d");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x31e,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -801,40 +827,40 @@ void __cdecl Image_PicmipForSemantic(uchar param_1,Picmip *param_2)
     }
   case '\0':
   case '\x01':
-    *(undefined2 *)param_2->platform = 0;
+    *(undefined2 *)picmip->platform = 0;
     return;
   case '\x05':
-    local_8 = imageGlobals.picmipBump;
+    picmipUsed = imageGlobals.picmipBump;
     break;
   case '\b':
-    local_8 = imageGlobals.picmipSpec;
+    picmipUsed = imageGlobals.picmipSpec;
   }
-  param_2->platform[1] = '\x02';
-  if (local_8 < 0) {
-    local_8 = 0;
+  picmip->platform[1] = '\x02';
+  if (picmipUsed < 0) {
+    picmipUsed = 0;
   }
-  else if (3 < local_8) {
-    local_8 = 3;
+  else if (3 < picmipUsed) {
+    picmipUsed = 3;
   }
-  param_2->platform[0] = (uchar)local_8;
+  picmip->platform[0] = (uchar)picmipUsed;
   return;
 }
 
 
 // 00AC1BF0  R_DuplicateTexture  (gfx_d3d/r_image.cpp:872)
 
-bool __cdecl R_DuplicateTexture(GfxImage *param_1,GfxImage *param_2)
+bool __cdecl R_DuplicateTexture(GfxImage *dstImage,GfxImage *srcImage)
 
 {
   bool bVar1;
   
-  if ((param_2 == (GfxImage *)0x0) || ((param_2->texture).basemap == (IDirect3DBaseTexture9 *)0x0))
-  {
+  if ((srcImage == (GfxImage *)0x0) || ((srcImage->texture).basemap == (IDirect3DBaseTexture9 *)0x0)
+     ) {
     bVar1 = false;
   }
   else {
-    param_1->texture = param_2->texture;
-    (**(code **)((int)*(param_1->texture).basemap + 4))((param_1->texture).basemap);
+    dstImage->texture = srcImage->texture;
+    (**(code **)((int)*(dstImage->texture).basemap + 4))((dstImage->texture).basemap);
     bVar1 = true;
   }
   return bVar1;
@@ -843,20 +869,20 @@ bool __cdecl R_DuplicateTexture(GfxImage *param_1,GfxImage *param_2)
 
 // 00AC1B80  Image_AssignDefaultTexture  (gfx_d3d/r_image.cpp:885)
 
-bool __cdecl Image_AssignDefaultTexture(GfxImage *param_1)
+bool __cdecl Image_AssignDefaultTexture(GfxImage *image)
 
 {
   bool bVar1;
   
-  if (param_1->mapType == '\x03') {
-    if (param_1->semantic == '\x05') {
-      bVar1 = R_DuplicateTexture(param_1,rgp.identityNormalMapImage);
+  if (image->mapType == '\x03') {
+    if (image->semantic == '\x05') {
+      bVar1 = R_DuplicateTexture(image,rgp.identityNormalMapImage);
     }
-    else if (param_1->semantic == '\b') {
-      bVar1 = R_DuplicateTexture(param_1,rgp.blackImage);
+    else if (image->semantic == '\b') {
+      bVar1 = R_DuplicateTexture(image,rgp.blackImage);
     }
     else {
-      bVar1 = R_DuplicateTexture(param_1,rgp.whiteImage);
+      bVar1 = R_DuplicateTexture(image,rgp.whiteImage);
     }
   }
   else {
@@ -870,22 +896,24 @@ bool __cdecl Image_AssignDefaultTexture(GfxImage *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_DelayLoadImage(XAssetHeader param_1,void *param_2)
+void __cdecl R_DelayLoadImage(XAssetHeader header,void *data)
 
 {
-  int iVar1;
-  bool bVar2;
+  int size;
+  bool bVar1;
+  GfxImage *image;
+  uint externalDataSize;
   
-  if ((param_1.model)->lodRampType != '\0') {
-    (param_1.model)->lodRampType = '\0';
-    iVar1 = (param_1.destructibleDef)->numPieces;
-    (param_1.physPreset)->bounce = 0.0;
-    (param_1.physPreset)->friction = 0.0;
+  if ((header.model)->lodRampType != '\0') {
+    (header.model)->lodRampType = '\0';
+    size = (header.destructibleDef)->numPieces;
+    (header.physPreset)->bounce = 0.0;
+    (header.physPreset)->friction = 0.0;
     if (((r_loadForRenderer->current).enabled != false) &&
-       (bVar2 = Image_LoadFromFile(param_1.image,false), !bVar2)) {
-      Image_AssignDefaultTexture(param_1.image);
+       (bVar1 = Image_LoadFromFile(header.image,false), !bVar1)) {
+      Image_AssignDefaultTexture(header.image);
     }
-    DB_LoadedExternalData(iVar1);
+    DB_LoadedExternalData(size);
   }
   return;
 }
@@ -893,143 +921,151 @@ void __cdecl R_DelayLoadImage(XAssetHeader param_1,void *param_2)
 
 // 00AC1C30  Load_Texture  (gfx_d3d/r_image.cpp:930)
 
-void __cdecl Load_Texture(GfxImageLoadDef **param_1,GfxImage *param_2)
+void __cdecl Load_Texture(GfxImageLoadDef **remoteLoadDef,GfxImage *image)
 
 {
   GfxImageLoadDef *pGVar1;
-  _D3DFORMAT _Var2;
-  int iVar3;
-  code *pcVar4;
-  bool bVar5;
-  uint uVar6;
-  uint uVar7;
-  uchar *puVar8;
-  byte bVar9;
-  ulong uVar10;
+  _D3DFORMAT imageFormat_00;
+  int size;
+  code *pcVar2;
+  bool bVar3;
+  uint uVar4;
+  uint uVar5;
+  uchar *dst;
+  byte bVar6;
+  ulong count;
   uint local_6c;
   uint local_68;
   uint local_64;
   int local_58;
   int local_54;
-  uchar *local_2c;
-  int local_14;
-  uint local_10;
-  int local_8;
+  int depth;
+  GfxImageLoadDef *loadDef;
+  uint externalDataSize;
+  int mipCount;
+  uchar *data;
+  int bufferSize;
+  uchar *imageBuffer;
+  _D3DCUBEMAP_FACES face;
+  int width;
+  int height;
+  int faceCount;
+  int faceIndex;
+  _D3DFORMAT imageFormat;
+  int mipLevel;
   
-  pGVar1 = *param_1;
-  if ((pGVar1 != (GfxImageLoadDef *)(param_2->texture).basemap) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3b1,0,
-                               "%s"), !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  pGVar1 = *remoteLoadDef;
+  if ((pGVar1 != (GfxImageLoadDef *)(image->texture).basemap) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3b1,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  (param_2->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
+  (image->texture).basemap = (IDirect3DBaseTexture9 *)0x0;
   if ((r_loadForRenderer != (dvar_s *)0x0) && ((r_loadForRenderer->current).enabled != false)) {
-    _Var2 = pGVar1->format;
+    imageFormat_00 = pGVar1->format;
     if (pGVar1->resourceSize == 0) {
-      if (param_2->category == '\x05') {
-        param_2->delayLoadPixels = false;
-        local_54 = (int)(uint)param_2->width >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f)
-        ;
+      if (image->category == '\x05') {
+        image->delayLoadPixels = false;
+        local_54 = (int)(uint)image->width >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
         if (local_54 < 4) {
           local_54 = 4;
         }
-        local_58 = (int)(uint)param_2->height >>
-                   ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
+        local_58 = (int)(uint)image->height >> ((byte)(r_picmip_water->current).unsignedInt & 0x1f);
         if (local_58 < 4) {
           local_58 = 4;
         }
-        (param_2->cardMemory).platform[0] = 0;
-        (param_2->cardMemory).platform[1] = 0;
+        (image->cardMemory).platform[0] = 0;
+        (image->cardMemory).platform[1] = 0;
         Image_Create2DTexture_PC
-                  (param_2,(ushort)local_54,(ushort)local_58,(uint)pGVar1->levelCount,0x10000,_Var2)
-        ;
+                  (image,(ushort)local_54,(ushort)local_58,(uint)pGVar1->levelCount,0x10000,
+                   imageFormat_00);
       }
       else {
-        uVar6 = Image_GetCardMemoryAmount
-                          ((uint)pGVar1->flags,pGVar1->format,(uint)param_2->width,
-                           (uint)param_2->height,(uint)param_2->depth);
-        if (((param_2->cardMemory).platform[0] != uVar6) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3c5
-                                     ,1,"%s\n\t(image->name) = %s"), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        uVar4 = Image_GetCardMemoryAmount
+                          ((uint)pGVar1->flags,pGVar1->format,(uint)image->width,(uint)image->height
+                           ,(uint)image->depth);
+        if (((image->cardMemory).platform[0] != uVar4) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3c5
+                                     ,1,"%s\n\t(image->name) = %s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        if (((param_2->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3c6
-                                     ,1,"%s\n\t(image->name) = %s"), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        if (((image->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3c6
+                                     ,1,"%s\n\t(image->name) = %s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        param_2->delayLoadPixels = false;
-        if (param_2->delayLoadPixels == false) {
-          iVar3 = (param_2->cardMemory).platform[0];
-          (param_2->cardMemory).platform[0] = 0;
-          (param_2->cardMemory).platform[1] = 0;
-          bVar5 = Image_LoadFromFile(param_2,false);
-          if (!bVar5) {
+        image->delayLoadPixels = false;
+        if (image->delayLoadPixels == false) {
+          size = (image->cardMemory).platform[0];
+          (image->cardMemory).platform[0] = 0;
+          (image->cardMemory).platform[1] = 0;
+          bVar3 = Image_LoadFromFile(image,false);
+          if (!bVar3) {
             Com_Error(ERR_DROP,"Couldn\'t load image \'%s\'\n");
           }
-          DB_LoadedExternalData(iVar3);
+          DB_LoadedExternalData(size);
         }
       }
     }
     else {
-      param_2->delayLoadPixels = false;
-      if (param_2->mapType == '\x03') {
-        local_14 = 1;
+      image->delayLoadPixels = false;
+      if (image->mapType == '\x03') {
+        faceCount = 1;
       }
-      else if (param_2->mapType == '\x04') {
-        local_14 = 1;
+      else if (image->mapType == '\x04') {
+        faceCount = 1;
       }
       else {
-        if ((param_2->mapType != '\x05') &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3e4
-                                     ,0,"%s\n\t(image->mapType) = %i"), !bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        if ((image->mapType != '\x05') &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x3e4
+                                     ,0,"%s\n\t(image->mapType) = %i"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        local_14 = 6;
+        faceCount = 6;
       }
-      local_2c = pGVar1->data;
-      uVar6 = Image_CountMipmaps((uint)pGVar1->flags,(uint)param_2->width,(uint)param_2->height,
-                                 (uint)param_2->depth);
-      for (local_10 = 0; (int)local_10 < local_14; local_10 = local_10 + 1) {
-        if (local_14 != 1) {
-          Image_CubemapFace(local_10);
+      data = pGVar1->data;
+      uVar4 = Image_CountMipmaps((uint)pGVar1->flags,(uint)image->width,(uint)image->height,
+                                 (uint)image->depth);
+      for (faceIndex = 0; faceIndex < faceCount; faceIndex = faceIndex + 1) {
+        if (faceCount != 1) {
+          Image_CubemapFace(faceIndex);
         }
-        for (local_8 = 0; local_8 < (int)uVar6; local_8 = local_8 + 1) {
-          bVar9 = (byte)local_8;
-          local_64 = (uint)(param_2->width >> (bVar9 & 0x1f));
+        for (mipLevel = 0; mipLevel < (int)uVar4; mipLevel = mipLevel + 1) {
+          bVar6 = (byte)mipLevel;
+          local_64 = (uint)(image->width >> (bVar6 & 0x1f));
           if (local_64 < 2) {
             local_64 = 1;
           }
-          local_68 = (uint)(param_2->height >> (bVar9 & 0x1f));
+          local_68 = (uint)(image->height >> (bVar6 & 0x1f));
           if (local_68 < 2) {
             local_68 = 1;
           }
-          local_6c = (uint)(param_2->depth >> (bVar9 & 0x1f));
+          local_6c = (uint)(image->depth >> (bVar6 & 0x1f));
           if (local_6c < 2) {
             local_6c = 1;
           }
-          uVar7 = Image_GetCardMemoryAmountForMipLevel(_Var2,local_64,local_68,local_6c);
-          local_2c = local_2c + uVar7;
+          uVar5 = Image_GetCardMemoryAmountForMipLevel(imageFormat_00,local_64,local_68,local_6c);
+          data = data + uVar5;
         }
       }
-      uVar10 = (int)local_2c - (int)pGVar1->data;
-      puVar8 = Z_VirtualAlloc(uVar10,"Image_AllocTempMemory",0x14);
-      memcpy(puVar8,pGVar1->data,uVar10);
-      RB_Resource_CreateTexture(param_2,puVar8,uVar6,0,_Var2);
-      if ((local_2c != pGVar1->data + pGVar1->resourceSize) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x423,0
+      count = (int)data - (int)pGVar1->data;
+      dst = Z_VirtualAlloc(count,"Image_AllocTempMemory",0x14);
+      memcpy(dst,pGVar1->data,count);
+      RB_Resource_CreateTexture(image,dst,uVar4,0,imageFormat_00);
+      if ((data != pGVar1->data + pGVar1->resourceSize) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x423,0
                                    ,"data == &loadDef->data[loadDef->resourceSize]\n\t%i, %i"),
-         !bVar5)) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+         !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
     }
@@ -1040,45 +1076,45 @@ void __cdecl Load_Texture(GfxImageLoadDef **param_1,GfxImage *param_2)
 
 // 00AC2570  Image_Rebuild  (gfx_d3d/r_image.cpp:1176)
 
-void __cdecl Image_Rebuild(GfxImage *param_1)
+void __cdecl Image_Rebuild(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *fmt;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x499,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->category == '\0') &&
+  if ((image->category == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x49a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->category < 5) &&
+  if ((image->category < 5) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x49d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
+  if (((image->texture).basemap != (IDirect3DBaseTexture9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x49f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->category == '\x05') {
-    Image_BuildWaterMap(param_1);
+  if (image->category == '\x05') {
+    Image_BuildWaterMap(image);
   }
-  else if (param_1->category == '\x06') {
+  else if (image->category == '\x06') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x4a8,1,
                              "non-prog image cannot be a render target");
     if (!bVar2) {
@@ -1088,9 +1124,8 @@ void __cdecl Image_Rebuild(GfxImage *param_1)
     }
   }
   else {
-    pcVar3 = va("unhandled case %i");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x4ac,1,
-                             pcVar3);
+    fmt = va("unhandled case %i");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x4ac,1,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
@@ -1105,40 +1140,42 @@ void __cdecl Image_Rebuild(GfxImage *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-GfxImage * __cdecl Image_FindExisting_LoadObj(char *param_1)
+GfxImage * __cdecl Image_FindExisting_LoadObj(char *name)
 
 {
   byte bVar1;
-  bool bVar2;
+  uint uVar2;
+  bool bVar3;
   int local_12c;
   byte *local_124;
   byte *local_120;
-  GfxImage *local_11c;
-  uint local_114;
-  uint local_110;
-  char local_10c [260];
+  GfxImage *image;
+  uint arraySize;
+  uint stuck;
+  uint hashIndex;
+  char error_string [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_110 = R_HashAssetName(param_1);
-  local_110 = local_110 & 0x7ff;
-  local_11c = imageGlobals.imageHashTable[local_110];
-  local_114 = 0;
+  uVar2 = R_HashAssetName(name);
+  hashIndex = uVar2 & 0x7ff;
+  image = imageGlobals.imageHashTable[hashIndex];
+  stuck = 0;
   do {
-    if (local_11c == (GfxImage *)0x0) goto LAB_00ac2253;
-    local_120 = (byte *)local_11c->name;
-    local_124 = (byte *)param_1;
+    if (image == (GfxImage *)0x0) goto LAB_00ac2253;
+    local_120 = (byte *)image->name;
+    local_124 = (byte *)name;
     do {
       bVar1 = *local_124;
-      bVar2 = bVar1 < *local_120;
+      bVar3 = bVar1 < *local_120;
       if (bVar1 != *local_120) {
 LAB_00ac21b4:
-        local_12c = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
+        local_12c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
         goto LAB_00ac21bf;
       }
       if (bVar1 == 0) break;
       bVar1 = local_124[1];
-      bVar2 = bVar1 < local_120[1];
+      bVar3 = bVar1 < local_120[1];
       if (bVar1 != local_120[1]) goto LAB_00ac21b4;
       local_124 = local_124 + 2;
       local_120 = local_120 + 2;
@@ -1146,15 +1183,15 @@ LAB_00ac21b4:
     local_12c = 0;
 LAB_00ac21bf:
     if (local_12c == 0) goto LAB_00ac2253;
-    local_110 = local_110 + 1 & 0x7ff;
-    local_11c = imageGlobals.imageHashTable[local_110];
-    local_114 = local_114 + 1;
-  } while (local_114 < 0x801);
-  sprintf(local_10c,"stuck %s name %x\n");
+    hashIndex = hashIndex + 1 & 0x7ff;
+    image = imageGlobals.imageHashTable[hashIndex];
+    stuck = stuck + 1;
+  } while (stuck < 0x801);
+  sprintf(error_string,"stuck %s name %x\n");
   Com_Printf(0x10,"%s");
 LAB_00ac2253:
-  bVar2 = Image_IsProg(local_11c);
-  return (GfxImage *)(~-(uint)bVar2 & (uint)local_11c);
+  bVar3 = Image_IsProg(image);
+  return (GfxImage *)(~-(uint)bVar3 & (uint)image);
 }
 
 
@@ -1163,19 +1200,19 @@ LAB_00ac2253:
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-GfxImage * __cdecl Image_FindExisting_FastFile(char *param_1)
+GfxImage * __cdecl Image_FindExisting_FastFile(char *name)
 
 {
   XAssetHeader XVar1;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_IMAGE,name,true,-1);
   return (GfxImage *)XVar1.xmodelPieces;
 }
 
 
 // 00AC20A0  Image_FindExisting  (gfx_d3d/r_image.cpp:1245)
 
-GfxImage * __cdecl Image_FindExisting(char *param_1)
+GfxImage * __cdecl Image_FindExisting(char *name)
 
 {
   GfxImage *pGVar1;
@@ -1187,22 +1224,23 @@ GfxImage * __cdecl Image_FindExisting(char *param_1)
   else {
     local_c = Image_FindExisting_FastFile;
   }
-  pGVar1 = (GfxImage *)(*local_c)(param_1);
+  pGVar1 = (GfxImage *)(*local_c)(name);
   return pGVar1;
 }
 
 
 // 00AC22F0  Image_Register_LoadObj  (gfx_d3d/r_image.cpp:1253)
 
-GfxImage * __cdecl Image_Register_LoadObj(char *param_1,uchar param_2,int param_3)
+GfxImage * __cdecl Image_Register_LoadObj(char *imageName,uchar semantic,int imageTrack)
 
 {
   GfxImage *pGVar1;
+  GfxImage *image;
   
-  pGVar1 = Image_FindExisting(param_1);
+  pGVar1 = Image_FindExisting(imageName);
   if (pGVar1 == (GfxImage *)0x0) {
     ProfLoad_Begin("Load image");
-    pGVar1 = Image_Load(param_1,param_2,param_3);
+    pGVar1 = Image_Load(imageName,semantic,imageTrack);
     ProfLoad_End();
     if (pGVar1 == (GfxImage *)0x0) {
       Com_PrintError(8,"ERROR: failed to load image \'%s\'\n");
@@ -1214,23 +1252,24 @@ GfxImage * __cdecl Image_Register_LoadObj(char *param_1,uchar param_2,int param_
 
 // 00AC2360  Image_Register_FastFile  (gfx_d3d/r_image.cpp:1273)
 
-GfxImage * __cdecl Image_Register_FastFile(char *param_1,uchar param_2,int param_3)
+GfxImage * __cdecl Image_Register_FastFile(char *imageName,uchar semantic,int imageTrack)
 
 {
   GfxImage *pGVar1;
   
-  pGVar1 = Image_FindExisting(param_1);
+  pGVar1 = Image_FindExisting(imageName);
   return pGVar1;
 }
 
 
 // 00AC22A0  Image_Register  (gfx_d3d/r_image.cpp:1280)
 
-GfxImage * __cdecl Image_Register(char *param_1,uchar param_2,int param_3)
+GfxImage * __cdecl Image_Register(char *imageName,uchar semantic,int imageTrack)
 
 {
   GfxImage *pGVar1;
   code *local_10;
+  GfxImage *ret;
   
   if ((useFastFile->current).enabled == false) {
     local_10 = Image_Register_LoadObj;
@@ -1238,7 +1277,7 @@ GfxImage * __cdecl Image_Register(char *param_1,uchar param_2,int param_3)
   else {
     local_10 = Image_Register_FastFile;
   }
-  pGVar1 = (GfxImage *)(*local_10)(param_1,param_2,param_3);
+  pGVar1 = (GfxImage *)(*local_10)(imageName,semantic,imageTrack);
   return pGVar1;
 }
 
@@ -1247,13 +1286,14 @@ GfxImage * __cdecl Image_Register(char *param_1,uchar param_2,int param_3)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_FreeLostImage(XAssetHeader param_1,void *param_2)
+void __cdecl R_FreeLostImage(XAssetHeader header,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
+  GfxImage *image;
   
-  if (param_1.xmodelPieces == (XModelPieces *)0x0) {
+  if (header.xmodelPieces == (XModelPieces *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x50d,0,"%s")
     ;
     if (!bVar2) {
@@ -1262,7 +1302,7 @@ void __cdecl R_FreeLostImage(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  if ((param_1.model)->numsurfs == '\0') {
+  if ((header.model)->numsurfs == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x50e,0,"%s")
     ;
     if (!bVar2) {
@@ -1271,8 +1311,8 @@ void __cdecl R_FreeLostImage(XAssetHeader param_1,void *param_2)
       return;
     }
   }
-  if (4 < (param_1.model)->numsurfs) {
-    Image_Release(param_1.image);
+  if (4 < (header.model)->numsurfs) {
+    Image_Release(header.image);
   }
   return;
 }
@@ -1282,32 +1322,33 @@ void __cdecl R_FreeLostImage(XAssetHeader param_1,void *param_2)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_RebuildLostImage(XAssetHeader param_1,void *param_2)
+void __cdecl R_RebuildLostImage(XAssetHeader header,void *data)
 
 {
   code *pcVar1;
   bool bVar2;
+  GfxImage *image;
   
-  if ((param_1.xmodelPieces == (XModelPieces *)0x0) &&
+  if ((header.xmodelPieces == (XModelPieces *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x51d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1.model)->numsurfs == '\0') &&
+  if (((header.model)->numsurfs == '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x51e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1.xmodelPieces)->name == (char *)0x0) {
-    if ((param_1.model)->numsurfs < 5) {
-      if ((param_1.model)->numsurfs == '\x03') {
-        if ((((param_1.model)->lodRampType == '\0') &&
-            (bVar2 = Image_LoadFromFile(param_1.image,(param_1.material)->stateBitsEntry[0] == '\0')
-            , !bVar2)) && (bVar2 = Image_AssignDefaultTexture(param_1.image), !bVar2)) {
+  if ((header.xmodelPieces)->name == (char *)0x0) {
+    if ((header.model)->numsurfs < 5) {
+      if ((header.model)->numsurfs == '\x03') {
+        if ((((header.model)->lodRampType == '\0') &&
+            (bVar2 = Image_LoadFromFile(header.image,(header.material)->stateBitsEntry[0] == '\0'),
+            !bVar2)) && (bVar2 = Image_AssignDefaultTexture(header.image), !bVar2)) {
           Com_Error(ERR_DROP,"Couldn\'t load image \'%s\' to recover from a lost device");
         }
       }
@@ -1316,9 +1357,9 @@ void __cdecl R_RebuildLostImage(XAssetHeader param_1,void *param_2)
       }
     }
     else {
-      bVar2 = Image_IsProg(param_1.image);
+      bVar2 = Image_IsProg(header.image);
       if (!bVar2) {
-        Image_Rebuild(param_1.image);
+        Image_Rebuild(header.image);
       }
     }
   }
@@ -1354,23 +1395,23 @@ void __cdecl R_ReloadLostImages(void)
 
 // 00AC26B0  Image_UpdatePicmip  (gfx_d3d/r_image.cpp:1386)
 
-void __cdecl Image_UpdatePicmip(GfxImage *param_1)
+void __cdecl Image_UpdatePicmip(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
-  Picmip local_8 [2];
+  Picmip picmip [2];
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x56d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->category == '\x03') && (param_1->noPicmip == false)) &&
-     (Image_GetPicmip(param_1,local_8), (param_1->picmip).platform[0] != local_8[0].platform[0])) {
-    Image_Reload(param_1);
+  if (((image->category == '\x03') && (image->noPicmip == false)) &&
+     (Image_GetPicmip(image,picmip), (image->picmip).platform[0] != picmip[0].platform[0])) {
+    Image_Reload(image);
   }
   return;
 }
@@ -1378,13 +1419,13 @@ void __cdecl Image_UpdatePicmip(GfxImage *param_1)
 
 // 00AC2730  Image_Reload  (gfx_d3d/r_image.cpp:1401)
 
-void __cdecl Image_Reload(GfxImage *param_1)
+void __cdecl Image_Reload(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxImage *)0x0) {
+  if (image == (GfxImage *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x57a,0,"%s")
     ;
     if (!bVar2) {
@@ -1393,8 +1434,8 @@ void __cdecl Image_Reload(GfxImage *param_1)
       return;
     }
   }
-  Image_Release(param_1);
-  bVar2 = Image_LoadFromFile(param_1,param_1->skippedMipLevels == '\0');
+  Image_Release(image);
+  bVar2 = Image_LoadFromFile(image,image->skippedMipLevels == '\0');
   if (!bVar2) {
     Com_Error(ERR_DROP,"failed to load image \'%s\'");
   }
@@ -1406,18 +1447,19 @@ void __cdecl Image_Reload(GfxImage *param_1)
 
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl R_EnumImages(_func___cdecl_void_XAssetHeader_void_ptr *param_1,void *param_2)
+void __cdecl R_EnumImages(_func___cdecl_void_XAssetHeader_void_ptr *func,void *data)
 
 {
-  XAssetHeader XVar1;
-  bool bVar2;
-  uint local_8;
+  XAssetHeader image;
+  bool bVar1;
+  XAssetHeader header;
+  int imageIndex;
   
-  for (local_8 = 0; local_8 < 0x800; local_8 = local_8 + 1) {
-    XVar1 = (XAssetHeader)((XAssetHeader *)(imageGlobals.imageHashTable + local_8))->image;
-    if ((XVar1.xmodelPieces != (XModelPieces *)0x0) && (bVar2 = Image_IsProg(XVar1.image), !bVar2))
+  for (imageIndex = 0; (uint)imageIndex < 0x800; imageIndex = imageIndex + 1) {
+    image = (XAssetHeader)((XAssetHeader *)(imageGlobals.imageHashTable + imageIndex))->image;
+    if ((image.xmodelPieces != (XModelPieces *)0x0) && (bVar1 = Image_IsProg(image.image), !bVar1))
     {
-      (*param_1)(XVar1,param_2);
+      (*func)(image,data);
     }
   }
   return;
@@ -1426,31 +1468,33 @@ void __cdecl R_EnumImages(_func___cdecl_void_XAssetHeader_void_ptr *param_1,void
 
 // 00AC2810  Image_GetSurface  (gfx_d3d/r_image.cpp:1452)
 
-IDirect3DSurface9 * __cdecl Image_GetSurface(GfxImage *param_1)
+IDirect3DSurface9 * __cdecl Image_GetSurface(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
   IDirect3DSurface9 *pIVar3;
   int iVar4;
-  int iVar5;
-  IDirect3DSurface9 *local_8;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
+  IDirect3DSurface9 *surface;
   
-  if ((param_1 == (GfxImage *)0x0) &&
+  if ((image == (GfxImage *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x5af,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pIVar3 = (IDirect3DSurface9 *)(*pcVar1)();
     return pIVar3;
   }
-  if ((param_1->mapType != '\x03') &&
+  if ((image->mapType != '\x03') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x5b0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pIVar3 = (IDirect3DSurface9 *)(*pcVar1)();
     return pIVar3;
   }
-  if (((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
+  if (((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x5b1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1462,19 +1506,18 @@ IDirect3DSurface9 * __cdecl Image_GetSurface(GfxImage *param_1)
     RB_LogPrint("image->texture.map->GetSurfaceLevel( 0, &surface )\n");
   }
   iVar4 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar5 = (**(code **)((int)*(param_1->texture).basemap + 0x48))
-                    ((param_1->texture).basemap,0,&local_8);
+  hr_00 = (**(code **)((int)*(image->texture).basemap + 0x48))((image->texture).basemap,0,&surface);
   if (iVar4 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar5 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar5);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp (%i) image->texture.map->GetSurfaceLevel( 0, &surface ) failed: %s\n"
              );
   }
-  return local_8;
+  return surface;
 }
 
 
@@ -1628,39 +1671,42 @@ void __cdecl R_InitCodeImages(void)
 void __cdecl R_SetPicmip(void)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  uint uVar3;
+  bool bVar1;
+  code *pcVar2;
+  bool bVar3;
   uint uVar4;
-  bool local_9;
-  uint local_8;
+  uint uVar5;
+  uint texMemInMegs;
+  uint sysMemInMegs;
+  bool cappedPicmip;
+  int minPicmip;
   
   if (dx.device == (IDirect3DDevice9 *)0x0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x63e,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x63e,0,"%s")
     ;
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  uVar3 = R_AvailableTextureMemory();
-  uVar4 = Dvar_GetInt("sys_sysMB");
+  uVar4 = R_AvailableTextureMemory();
+  uVar5 = Dvar_GetInt("sys_sysMB");
   if (r_reflectionProbeGenerate == (dvar_s *)0x0) {
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x648,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x648,0,"%s")
     ;
-    if (!bVar2) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
   if ((r_reflectionProbeGenerate->current).enabled == false) {
     if ((r_picmip_manual->current).enabled == false) {
       Com_Printf(8,"Texture detail is set automatically.\n");
-      if (uVar3 < 0x1c2) {
-        if (uVar3 < 300) {
-          if (uVar3 < 200) {
+      if (uVar4 < 0x1c2) {
+        if (uVar4 < 300) {
+          if (uVar4 < 200) {
             imageGlobals.picmip = 1;
             imageGlobals.picmipBump = 1;
             imageGlobals.picmipSpec = 1;
@@ -1682,30 +1728,30 @@ void __cdecl R_SetPicmip(void)
         imageGlobals.picmipBump = 0;
         imageGlobals.picmipSpec = 0;
       }
-      if (uVar4 < 0x181) {
-        local_8 = 2;
+      if (uVar5 < 0x181) {
+        minPicmip = 2;
       }
-      else if (uVar4 < 0x281) {
-        local_8 = 1;
+      else if (uVar5 < 0x281) {
+        minPicmip = 1;
       }
       else {
-        local_8 = 0;
+        minPicmip = 0;
       }
-      if (local_8 != 0) {
-        bVar2 = (uint)imageGlobals.picmip < local_8;
-        if (bVar2) {
-          imageGlobals.picmip = local_8;
+      if (minPicmip != 0) {
+        bVar3 = (uint)imageGlobals.picmip < (uint)minPicmip;
+        if (bVar3) {
+          imageGlobals.picmip = minPicmip;
         }
-        local_9 = (uint)imageGlobals.picmipBump < local_8;
-        if (local_9) {
-          imageGlobals.picmipBump = local_8;
+        bVar1 = (uint)imageGlobals.picmipBump < (uint)minPicmip;
+        if (bVar1) {
+          imageGlobals.picmipBump = minPicmip;
         }
-        local_9 = local_9 || bVar2;
-        if ((uint)imageGlobals.picmipSpec < local_8) {
-          imageGlobals.picmipSpec = local_8;
-          local_9 = true;
+        cappedPicmip = bVar1 || bVar3;
+        if ((uint)imageGlobals.picmipSpec < (uint)minPicmip) {
+          imageGlobals.picmipSpec = minPicmip;
+          cappedPicmip = true;
         }
-        if (local_9) {
+        if (cappedPicmip) {
           Com_Printf(8,
                      "Reducing texture detail based on total system memory of %i MB to improve load times.\n"
                     );
@@ -1740,18 +1786,18 @@ void __cdecl R_InitImages(void)
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (1 < local_8) {
+    if (1 < i) {
       R_SetPicmip();
       R_InitCodeImages();
       RB_InitImages();
       R_InitRawImage();
       return;
     }
-    if (imageGlobals.totalMemory.platform[local_8] != 0) {
+    if (imageGlobals.totalMemory.platform[i] != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x6a7,0,
                                "%s");
       if (!bVar2) {
@@ -1760,26 +1806,26 @@ void __cdecl R_InitImages(void)
         return;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00AC36C0  imagecompare  (gfx_d3d/r_image.cpp:1723)
 
-int __cdecl imagecompare(GfxImage *param_1,GfxImage *param_2)
+int __cdecl imagecompare(GfxImage *image1,GfxImage *image2)
 
 {
   uint uVar1;
   
-  if (param_2->track < param_1->track) {
+  if (image2->track < image1->track) {
     uVar1 = 0;
   }
-  else if (param_1->track < param_2->track) {
+  else if (image1->track < image2->track) {
     uVar1 = 1;
   }
   else {
-    uVar1 = (uint)((param_1->cardMemory).platform[0] < (param_2->cardMemory).platform[0]);
+    uVar1 = (uint)((image1->cardMemory).platform[0] < (image2->cardMemory).platform[0]);
   }
   return uVar1;
 }
@@ -1787,67 +1833,66 @@ int __cdecl imagecompare(GfxImage *param_1,GfxImage *param_2)
 
 // 00AC3710  R_ImagePixelFormat  (gfx_d3d/r_image.cpp:1741)
 
-_D3DFORMAT __cdecl R_ImagePixelFormat(GfxImage *param_1)
+_D3DFORMAT __cdecl R_ImagePixelFormat(GfxImage *image)
 
 {
   uchar uVar1;
   code *pcVar2;
   bool bVar3;
-  char *pcVar4;
-  _D3DFORMAT _Var5;
-  _D3DFORMAT local_40 [8];
-  _D3DFORMAT local_20 [7];
+  char *fmt;
+  _D3DFORMAT _Var4;
+  _D3DFORMAT surfaceDesc [8];
+  _D3DFORMAT volumeDesc [7];
   
-  uVar1 = param_1->mapType;
+  uVar1 = image->mapType;
   if (uVar1 == '\x03') {
-    if ((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
+    if ((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x6d4,0,
                                "%s");
       if (!bVar3) {
         pcVar2 = (code *)swi(3);
-        _Var5 = (*pcVar2)();
-        return _Var5;
+        _Var4 = (*pcVar2)();
+        return _Var4;
       }
     }
-    (**(code **)((int)*(param_1->texture).basemap + 0x44))((param_1->texture).basemap,0,local_40);
+    (**(code **)((int)*(image->texture).basemap + 0x44))((image->texture).basemap,0,surfaceDesc);
   }
   else if (uVar1 == '\x04') {
-    if ((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
+    if ((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x6de,0,
                                "%s");
       if (!bVar3) {
         pcVar2 = (code *)swi(3);
-        _Var5 = (*pcVar2)();
-        return _Var5;
+        _Var4 = (*pcVar2)();
+        return _Var4;
       }
     }
-    (**(code **)((int)*(param_1->texture).basemap + 0x44))((param_1->texture).basemap,0,local_20);
-    local_40[0] = local_20[0];
+    (**(code **)((int)*(image->texture).basemap + 0x44))((image->texture).basemap,0,volumeDesc);
+    surfaceDesc[0] = volumeDesc[0];
   }
   else if (uVar1 == '\x05') {
-    if ((param_1->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
+    if ((image->texture).basemap == (IDirect3DBaseTexture9 *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x6d9,0,
                                "%s");
       if (!bVar3) {
         pcVar2 = (code *)swi(3);
-        _Var5 = (*pcVar2)();
-        return _Var5;
+        _Var4 = (*pcVar2)();
+        return _Var4;
       }
     }
-    (**(code **)((int)*(param_1->texture).basemap + 0x44))((param_1->texture).basemap,0,local_40);
+    (**(code **)((int)*(image->texture).basemap + 0x44))((image->texture).basemap,0,surfaceDesc);
   }
   else {
-    pcVar4 = va("unhandled case %i for %s");
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x6e3,1,
-                             pcVar4);
+    fmt = va("unhandled case %i for %s");
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x6e3,1,fmt);
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
-      _Var5 = (*pcVar2)();
-      return _Var5;
+      _Var4 = (*pcVar2)();
+      return _Var4;
     }
-    local_40[0] = D3DFMT_UNKNOWN;
+    surfaceDesc[0] = D3DFMT_UNKNOWN;
   }
-  return local_40[0];
+  return surfaceDesc[0];
 }
 
 
@@ -1864,50 +1909,55 @@ _D3DFORMAT __cdecl R_ImagePixelFormat(GfxImage *param_1)
 void __cdecl R_ImageList_Output(void)
 
 {
-  GfxImage *pGVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  char *pcVar5;
+  GfxImage *image_00;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  char *fmt;
   char *local_431c;
-  int local_4274 [20];
-  int local_4224 [4];
-  ImageList local_4214;
-  int local_c;
-  float local_8;
+  GfxImage *image;
+  int cardMemory;
+  bool listAllImages;
+  int imageTrack [20];
+  int total [2];
+  _D3DFORMAT format;
+  uint i;
+  ImageList imageList;
+  int platform;
+  float value;
   
-  local_8 = 1.5812898e-38;
-  local_4224[0] = 0;
-  local_4224[1] = 0;
-  memset((uchar *)local_4274,'\0',0x50);
-  R_GetImageList(&local_4214);
+  value = 1.5812898e-38;
+  total[0] = 0;
+  total[1] = 0;
+  memset((uchar *)imageTrack,'\0',0x50);
+  R_GetImageList(&imageList);
   std::_Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-            (local_4214.image,local_4214.image + local_4214.count,
-             (int)(local_4214.image + local_4214.count) - (int)local_4214.image >> 2,imagecompare);
+            (imageList.image,imageList.image + imageList.count,
+             (int)(imageList.image + imageList.count) - (int)imageList.image >> 2,imagecompare);
   Com_Printf(8,"\n-reqrd w*h-");
   Com_Printf(8,"-fmt-  ");
-  for (local_c = 0; local_c < 2; local_c = local_c + 1) {
+  for (platform = 0; platform < 2; platform = platform + 1) {
     Com_Printf(8,"%s");
   }
   Com_Printf(8,"  --name-------\n");
-  local_4224[3] = 0;
+  i = 0;
   do {
-    if (local_4214.count <= (uint)local_4224[3]) {
+    if (imageList.count <= i) {
       Com_Printf(8," ---------\n");
       Com_Printf(8," %i total images\n");
-      for (local_c = 0; local_c < 2; local_c = local_c + 1) {
+      for (platform = 0; platform < 2; platform = platform + 1) {
         Com_Printf(8," %5.1f MB %s total non-streamed image size\n");
       }
       if ((useFastFile->current).enabled == false) {
         Com_Printf(8,"\n");
         Com_Printf(8,"       ");
-        for (local_c = 0; local_c < 2; local_c = local_c + 1) {
+        for (platform = 0; platform < 2; platform = platform + 1) {
           Com_Printf(8,"%s");
         }
         Com_Printf(8,"\n");
-        for (local_4224[3] = 0; (uint)local_4224[3] < 10; local_4224[3] = local_4224[3] + 1) {
+        for (i = 0; i < 10; i = i + 1) {
           Com_Printf(8,"%s:");
-          for (local_c = 0; local_c < 2; local_c = local_c + 1) {
+          for (platform = 0; platform < 2; platform = platform + 1) {
             Com_Printf(8,"  %5.1f");
           }
           Com_Printf(8,"  MB\n");
@@ -1918,67 +1968,67 @@ void __cdecl R_ImageList_Output(void)
                 );
       return;
     }
-    pGVar1 = local_4214.image[local_4224[3]];
+    image_00 = imageList.image[i];
     Com_Printf(8,"%4i x %-4i ");
-    local_4224[2] = R_ImagePixelFormat(pGVar1);
-    if (local_4224[2] < 0x33) {
-      if (local_4224[2] == D3DFMT_L8) {
+    format = R_ImagePixelFormat(image_00);
+    if ((int)format < 0x33) {
+      if (format == D3DFMT_L8) {
         Com_Printf(8,"L8    ");
       }
       else {
-        switch(local_4224[2]) {
-        case 0x15:
+        switch(format) {
+        case D3DFMT_A8R8G8B8:
           Com_Printf(8,"RGBA32");
           break;
-        case 0x16:
+        case D3DFMT_X8R8G8B8:
           Com_Printf(8,"RGB32 ");
           break;
-        case 0x17:
+        case D3DFMT_R5G6B5:
           Com_Printf(8,"RGB565");
           break;
         default:
 switchD_00ac321c_caseD_18:
-          pcVar5 = va("unhandled case: %d");
-          bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x7ca,1
-                                   ,pcVar5);
-          if (!bVar4) {
-            pcVar3 = (code *)swi(3);
-            (*pcVar3)();
+          fmt = va("unhandled case: %d");
+          bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x7ca,1
+                                   ,fmt);
+          if (!bVar3) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
             return;
           }
           break;
-        case 0x1c:
+        case D3DFMT_A8:
           Com_Printf(8,"A8    ");
           break;
-        case 0x22:
+        case D3DFMT_G16R16:
           Com_Printf(8,"G16R16");
         }
       }
     }
-    else if (local_4224[2] < 0x31545845) {
-      if (local_4224[2] == D3DFMT_DXT1) {
+    else if ((int)format < 0x31545845) {
+      if (format == D3DFMT_DXT1) {
         Com_Printf(8,"DXT1  ");
       }
-      else if (local_4224[2] == D3DFMT_A8L8) {
+      else if (format == D3DFMT_A8L8) {
         Com_Printf(8,"AL16  ");
       }
       else {
-        if (local_4224[2] != D3DFMT_R32F) goto switchD_00ac321c_caseD_18;
+        if (format != D3DFMT_R32F) goto switchD_00ac321c_caseD_18;
         Com_Printf(8,"R32F  ");
       }
     }
-    else if (local_4224[2] == D3DFMT_DXT3) {
+    else if (format == D3DFMT_DXT3) {
       Com_Printf(8,"DXT3  ");
     }
     else {
-      if (local_4224[2] != D3DFMT_DXT5) goto switchD_00ac321c_caseD_18;
+      if (format != D3DFMT_DXT5) goto switchD_00ac321c_caseD_18;
       Com_Printf(8,"DXT5  ");
     }
     Com_Printf(8,"  %s");
-    for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-      iVar2 = (pGVar1->cardMemory).platform[local_c];
-      local_8 = (float)iVar2 / 1024.0;
-      if (10.0 <= local_8) {
+    for (platform = 0; platform < 2; platform = platform + 1) {
+      iVar1 = (image_00->cardMemory).platform[platform];
+      value = (float)iVar1 / 1024.0;
+      if (10.0 <= value) {
         local_431c = "%7.0fk";
       }
       else {
@@ -1986,18 +2036,18 @@ switchD_00ac321c_caseD_18:
       }
       Com_Printf(8,local_431c);
       if ((useFastFile->current).enabled == false) {
-        local_4274[(uint)pGVar1->track * 2 + local_c] =
-             local_4274[(uint)pGVar1->track * 2 + local_c] + iVar2;
-        bVar4 = Image_IsCodeImage((uint)pGVar1->track);
-        if (!bVar4) goto LAB_00ac349a;
+        imageTrack[(uint)image_00->track * 2 + platform] =
+             imageTrack[(uint)image_00->track * 2 + platform] + iVar1;
+        bVar3 = Image_IsCodeImage((uint)image_00->track);
+        if (!bVar3) goto LAB_00ac349a;
       }
       else {
 LAB_00ac349a:
-        local_4224[local_c] = local_4224[local_c] + iVar2;
+        total[platform] = total[platform] + iVar1;
       }
     }
     Com_Printf(8,"  %s\t\t%x\n");
-    local_4224[3] = local_4224[3] + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -2006,38 +2056,39 @@ LAB_00ac349a:
 
 void __cdecl
 std::_Adjust_heap<GfxImage_*_*,int,GfxImage_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,int param_2,int param_3,GfxImage *param_4,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_5)
+          (GfxImage **_First,int _Hole,int _Bottom,GfxImage *_Val,
+          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
   int local_10;
-  int local_c;
+  int _Idx;
+  int _Top;
   
-  iVar1 = param_2;
+  iVar1 = _Hole;
   while( true ) {
-    iVar3 = param_2 * 2;
-    local_c = iVar3 + 2;
-    if (param_3 <= local_c) break;
-    iVar2 = (*param_5)(param_1[local_c],param_1[iVar3 + 1]);
+    iVar3 = _Hole * 2;
+    _Idx = iVar3 + 2;
+    if (_Bottom <= _Idx) break;
+    iVar2 = (*_Pred)(_First[_Idx],_First[iVar3 + 1]);
     if (iVar2 != 0) {
-      local_c = iVar3 + 1;
+      _Idx = iVar3 + 1;
     }
-    param_1[param_2] = param_1[local_c];
-    param_2 = local_c;
+    _First[_Hole] = _First[_Idx];
+    _Hole = _Idx;
   }
-  if (local_c == param_3) {
-    param_1[param_2] = param_1[param_3 + -1];
-    param_2 = param_3 + -1;
+  if (_Idx == _Bottom) {
+    _First[_Hole] = _First[_Bottom + -1];
+    _Hole = _Bottom + -1;
   }
-  while ((local_10 = (param_2 + -1) / 2, iVar1 < param_2 &&
-         (iVar3 = (*param_5)(param_1[local_10],param_4), iVar3 != 0))) {
-    param_1[param_2] = param_1[local_10];
-    param_2 = local_10;
+  while ((local_10 = (_Hole + -1) / 2, iVar1 < _Hole &&
+         (iVar3 = (*_Pred)(_First[local_10],_Val), iVar3 != 0))) {
+    _First[_Hole] = _First[local_10];
+    _Hole = local_10;
   }
-  param_1[param_2] = param_4;
+  _First[_Hole] = _Val;
   return;
 }
 
@@ -2045,7 +2096,7 @@ std::_Adjust_heap<GfxImage_*_*,int,GfxImage_*,int_(__cdecl*)(GfxImage_*,GfxImage
 // 00AC3860  R_DownsampleMipMapBilinear  (gfx_d3d/r_image.cpp:2138)
 
 void __cdecl
-R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uchar *param_5)
+R_DownsampleMipMapBilinear(uchar *src,int srcWidth,int srcHeight,int texelPitch,uchar *dst)
 
 {
   code *pcVar1;
@@ -2053,76 +2104,81 @@ R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uc
   int iVar3;
   int iVar4;
   int iVar5;
-  int local_24;
-  uchar *local_20;
-  int local_14;
-  uchar *local_c;
-  int local_8;
+  int srcRowPitch;
+  int channelIndex;
+  uchar *dstPos;
+  int dstWidth;
+  int dstHeight;
+  int colIndex;
+  int dstRowPitch;
+  uchar *srcPos;
+  int rowIndex;
   
-  if ((param_1 == (uchar *)0x0) &&
+  if ((src == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x865,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 1) &&
+  if ((srcWidth < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x866,0,
                                "%s\n\t(srcWidth) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 1) &&
+  if ((srcHeight < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x867,0,
                                "%s\n\t(srcHeight) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 < 1) &&
+  if ((texelPitch < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x868,0,
                                "%s\n\t(texelPitch) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (uchar *)0x0) &&
+  if ((dst == (uchar *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",0x86a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 != 1) || (param_3 != 1)) {
-    local_c = param_1;
-    local_20 = param_5;
-    iVar3 = param_2 >> 1;
-    iVar4 = param_3 >> 1;
-    iVar5 = param_2 * param_4;
+  if ((srcWidth != 1) || (srcHeight != 1)) {
+    srcPos = src;
+    dstPos = dst;
+    iVar3 = srcWidth >> 1;
+    iVar4 = srcHeight >> 1;
+    iVar5 = srcWidth * texelPitch;
     if ((iVar3 == 0) || (iVar4 == 0)) {
-      for (local_14 = 0; local_14 < iVar3 + iVar4; local_14 = local_14 + 1) {
-        for (local_24 = 0; local_24 < param_4; local_24 = local_24 + 1) {
-          local_20[local_24] =
-               (uchar)((int)((uint)local_c[local_24] + (uint)local_c[local_24 + param_4]) >> 1);
+      for (colIndex = 0; colIndex < iVar3 + iVar4; colIndex = colIndex + 1) {
+        for (channelIndex = 0; channelIndex < texelPitch; channelIndex = channelIndex + 1) {
+          dstPos[channelIndex] =
+               (uchar)((int)((uint)srcPos[channelIndex] + (uint)srcPos[channelIndex + texelPitch])
+                      >> 1);
         }
-        local_20 = local_20 + param_4;
-        local_c = local_c + param_4 * 2;
+        dstPos = dstPos + texelPitch;
+        srcPos = srcPos + texelPitch * 2;
       }
     }
     else {
-      for (local_8 = 0; local_8 < iVar4; local_8 = local_8 + 1) {
-        local_c = param_1 + iVar5 * local_8 * 2;
-        local_20 = param_5 + iVar3 * param_4 * local_8;
-        for (local_14 = 0; local_14 < iVar3; local_14 = local_14 + 1) {
-          for (local_24 = 0; local_24 < param_4; local_24 = local_24 + 1) {
-            local_20[local_24] =
-                 (uchar)((int)((uint)local_c[local_24] + (uint)local_c[local_24 + param_4] +
-                               (uint)local_c[iVar5 + local_24] +
-                              (uint)local_c[iVar5 + local_24 + param_4]) >> 2);
+      for (rowIndex = 0; rowIndex < iVar4; rowIndex = rowIndex + 1) {
+        srcPos = src + iVar5 * rowIndex * 2;
+        dstPos = dst + iVar3 * texelPitch * rowIndex;
+        for (colIndex = 0; colIndex < iVar3; colIndex = colIndex + 1) {
+          for (channelIndex = 0; channelIndex < texelPitch; channelIndex = channelIndex + 1) {
+            dstPos[channelIndex] =
+                 (uchar)((int)((uint)srcPos[channelIndex] + (uint)srcPos[channelIndex + texelPitch]
+                               + (uint)srcPos[iVar5 + channelIndex] +
+                              (uint)srcPos[iVar5 + channelIndex + texelPitch]) >> 2);
           }
-          local_20 = local_20 + param_4;
-          local_c = local_c + param_4 * 2;
+          dstPos = dstPos + texelPitch;
+          srcPos = srcPos + texelPitch * 2;
         }
       }
     }
@@ -2135,17 +2191,16 @@ R_DownsampleMipMapBilinear(uchar *param_1,int param_2,int param_3,int param_4,uc
 
 void __cdecl
 std::pop_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,GfxImage **param_2,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_3)
+          (GfxImage **_First,GfxImage **_Last,_func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred)
 
 {
-  GfxImage *pGVar1;
+  GfxImage *_Val;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    pGVar1 = param_2[-1];
-    param_2[-1] = *param_1;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Val = _Last[-1];
+    _Last[-1] = *_First;
     _Adjust_heap<GfxImage_*_*,int,GfxImage_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-              (param_1,0,(int)param_2 + (-4 - (int)param_1) >> 2,pGVar1,param_3);
+              (_First,0,(int)_Last + (-4 - (int)_First) >> 2,_Val,_Pred);
   }
   return;
 }
@@ -2155,20 +2210,19 @@ std::pop_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
 
 void __cdecl
 std::make_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,GfxImage **param_2,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_3)
+          (GfxImage **_First,GfxImage **_Last,_func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < (int)param_2 - (int)param_1 >> 2) {
-    iVar1 = (int)param_2 - (int)param_1 >> 2;
-    local_18 = iVar1 / 2;
+  if (1 < (int)_Last - (int)_First >> 2) {
+    _Bottom = (int)_Last - (int)_First >> 2;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<GfxImage_*_*,int,GfxImage_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -2179,39 +2233,41 @@ std::make_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
 
 void __cdecl
 std::_Insertion_sort1<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*),GfxImage_*>
-          (GfxImage **param_1,GfxImage **param_2,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_3,GfxImage **param_4)
+          (GfxImage **_First,GfxImage **_Last,_func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred,
+          GfxImage **__formal)
 
 {
   flameGeneric_s *pfVar1;
   int iVar2;
-  flameGeneric_s **ppfVar3;
-  flameGeneric_s **ppfVar4;
-  flameGeneric_s **local_14;
-  flameGeneric_s **local_8;
+  GfxImage **ppGVar3;
+  flameGeneric_s **_Last_10;
+  GfxImage **_First1;
+  GfxImage *_Val;
+  GfxImage **_Next1;
+  GfxImage **_Next;
   
-  if (param_1 != param_2) {
-    local_8 = (flameGeneric_s **)param_1;
-    while (ppfVar4 = local_8 + 1, ppfVar4 != (flameGeneric_s **)param_2) {
-      pfVar1 = *ppfVar4;
-      iVar2 = (*param_3)((GfxImage *)pfVar1,*param_1);
-      local_14 = ppfVar4;
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Last_10 = (flameGeneric_s **)(_Next + 1), _Last_10 != (flameGeneric_s **)_Last) {
+      pfVar1 = *_Last_10;
+      iVar2 = (*_Pred)((GfxImage *)pfVar1,*_First);
+      _First1 = (GfxImage **)_Last_10;
       if (iVar2 == 0) {
         while( true ) {
-          ppfVar3 = local_14 + -1;
-          iVar2 = (*param_3)((GfxImage *)pfVar1,(GfxImage *)*ppfVar3);
+          ppGVar3 = _First1 + -1;
+          iVar2 = (*_Pred)((GfxImage *)pfVar1,*ppGVar3);
           if (iVar2 == 0) break;
-          *local_14 = *ppfVar3;
-          local_14 = ppfVar3;
+          *_First1 = *ppGVar3;
+          _First1 = ppGVar3;
         }
-        *local_14 = pfVar1;
-        local_8 = ppfVar4;
+        *_First1 = (GfxImage *)pfVar1;
+        _Next = (GfxImage **)_Last_10;
       }
       else {
         stdext::unchecked_copy_backward<flameGeneric_s_*_*,flameGeneric_s_*_*>
-                  ((flameGeneric_s **)param_1,ppfVar4,local_8 + 2);
-        *param_1 = (GfxImage *)pfVar1;
-        local_8 = ppfVar4;
+                  ((flameGeneric_s **)_First,_Last_10,(flameGeneric_s **)(_Next + 2));
+        *_First = (GfxImage *)pfVar1;
+        _Next = (GfxImage **)_Last_10;
       }
     }
   }
@@ -2223,30 +2279,30 @@ std::_Insertion_sort1<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*),GfxImag
 
 void __cdecl
 std::_Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,GfxImage **param_2,GfxImage **param_3,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_4)
+          (GfxImage **_First,GfxImage **_Mid,GfxImage **_Last,
+          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred)
 
 {
   GfxImage *pGVar1;
   int iVar2;
   
-  iVar2 = (*param_4)(*param_2,*param_1);
-  if ((iVar2 != 0) && (param_2 != param_1)) {
-    pGVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pGVar1;
+  iVar2 = (*_Pred)(*_Mid,*_First);
+  if ((iVar2 != 0) && (_Mid != _First)) {
+    pGVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pGVar1;
   }
-  iVar2 = (*param_4)(*param_3,*param_2);
-  if ((iVar2 != 0) && (param_3 != param_2)) {
-    pGVar1 = *param_3;
-    *param_3 = *param_2;
-    *param_2 = pGVar1;
+  iVar2 = (*_Pred)(*_Last,*_Mid);
+  if ((iVar2 != 0) && (_Last != _Mid)) {
+    pGVar1 = *_Last;
+    *_Last = *_Mid;
+    *_Mid = pGVar1;
   }
-  iVar2 = (*param_4)(*param_2,*param_1);
-  if ((iVar2 != 0) && (param_2 != param_1)) {
-    pGVar1 = *param_2;
-    *param_2 = *param_1;
-    *param_1 = pGVar1;
+  iVar2 = (*_Pred)(*_Mid,*_First);
+  if ((iVar2 != 0) && (_Mid != _First)) {
+    pGVar1 = *_Mid;
+    *_Mid = *_First;
+    *_First = pGVar1;
   }
   return;
 }
@@ -2256,26 +2312,27 @@ std::_Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
 
 void __cdecl
 std::_Median<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,GfxImage **param_2,GfxImage **param_3,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_4)
+          (GfxImage **_First,GfxImage **_Mid,GfxImage **_Last,
+          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred)
 
 {
   int iVar1;
+  uint _Step;
   
-  if ((int)param_3 - (int)param_1 >> 2 < 0x29) {
-    _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(param_1,param_2,param_3,param_4);
+  if ((int)_Last - (int)_First >> 2 < 0x29) {
+    _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(_First,_Mid,_Last,_Pred);
   }
   else {
-    iVar1 = ((int)param_3 - (int)param_1 >> 2) + 1;
+    iVar1 = ((int)_Last - (int)_First >> 2) + 1;
     iVar1 = (int)(iVar1 + (iVar1 >> 0x1f & 7U)) >> 3;
     _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-              (param_1,param_1 + iVar1,param_1 + iVar1 * 2,param_4);
+              (_First,_First + iVar1,_First + iVar1 * 2,_Pred);
+    _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(_Mid + -iVar1,_Mid,_Mid + iVar1,_Pred)
+    ;
     _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-              (param_2 + -iVar1,param_2,param_2 + iVar1,param_4);
+              (_Last + iVar1 * -2,_Last + -iVar1,_Last,_Pred);
     _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-              (param_3 + iVar1 * -2,param_3 + -iVar1,param_3,param_4);
-    _Med3<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-              (param_1 + iVar1,param_2,param_3 + -iVar1,param_4);
+              (_First + iVar1,_Mid,_Last + -iVar1,_Pred);
   }
   return;
 }
@@ -2285,138 +2342,118 @@ std::_Median<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
 
 pair<GfxImage_*_*,GfxImage_*_*> __cdecl
 std::_Unguarded_partition<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,GfxImage **param_2,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_3)
+          (GfxImage **param_1,GfxImage **_First,_func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Last)
 
 {
-  GfxTexture GVar1;
-  uint uVar2;
-  GfxImage *pGVar3;
-  int iVar4;
-  GfxImage *pGVar5;
-  uint *puVar6;
-  pair<GfxImage_*_*,GfxImage_*_*> pVar7;
+  GfxImage *pGVar1;
+  int iVar2;
+  GfxImage **ppGVar3;
+  GfxImage **ppGVar4;
+  pair<GfxImage_*_*,GfxImage_*_*> pVar5;
   _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *in_stack_00000010;
-  GfxImage *local_18;
-  GfxImage *local_14;
-  GfxImage *local_10;
-  GfxImage *local_c;
+  GfxImage **_Plast;
+  GfxImage **_Glast;
+  GfxImage **_Pfirst;
+  GfxImage **_Gfirst;
+  GfxImage **_Mid;
   
-  local_10 = (GfxImage *)
-             (param_2 +
-             (((int)param_3 - (int)param_2 >> 2) - ((int)param_3 - (int)param_2 >> 0x1f) >> 1));
+  _Pfirst = _First + (((int)_Last - (int)_First >> 2) - ((int)_Last - (int)_First >> 0x1f) >> 1);
   _Median<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-            (param_2,(GfxImage **)local_10,(GfxImage **)(param_3 + -4),in_stack_00000010);
-  local_18 = (GfxImage *)&local_10->mapType;
-  while (((param_2 < local_10 &&
-          (iVar4 = (*in_stack_00000010)
-                             ((GfxImage *)local_10[-1].hash,(GfxImage *)(local_10->texture).basemap)
-          , iVar4 == 0)) &&
-         (iVar4 = (*in_stack_00000010)
-                            ((GfxImage *)(local_10->texture).basemap,(GfxImage *)local_10[-1].hash),
-         iVar4 == 0))) {
-    local_10 = (GfxImage *)&local_10[-1].hash;
+            (_First,_Pfirst,(GfxImage **)(_Last + -4),in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst && (iVar2 = (*in_stack_00000010)(_Pfirst[-1],*_Pfirst), iVar2 == 0)) &&
+         (iVar2 = (*in_stack_00000010)(*_Pfirst,_Pfirst[-1]), iVar2 == 0))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < param_3 &&
-          (iVar4 = (*in_stack_00000010)
-                             ((GfxImage *)(local_18->texture).basemap,
-                              (GfxImage *)(local_10->texture).basemap), iVar4 == 0)) &&
-         (iVar4 = (*in_stack_00000010)
-                            ((GfxImage *)(local_10->texture).basemap,
-                             (GfxImage *)(local_18->texture).basemap), iVar4 == 0))) {
-    local_18 = (GfxImage *)&local_18->mapType;
+  while (((_Plast < _Last && (iVar2 = (*in_stack_00000010)(*_Plast,*_Pfirst), iVar2 == 0)) &&
+         (iVar2 = (*in_stack_00000010)(*_Pfirst,*_Plast), iVar2 == 0))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pGVar3 = local_c;
-  pGVar5 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  ppGVar4 = _Gfirst;
+  ppGVar3 = _Pfirst;
   do {
-    while (local_10 = pGVar5, local_c = pGVar3, param_3 <= local_c) {
+    while (_Pfirst = ppGVar3, _Gfirst = ppGVar4, _Last <= _Gfirst) {
 LAB_00ac3db6:
-      for (; param_2 < local_14; local_14 = (GfxImage *)&local_14[-1].hash) {
-        iVar4 = (*in_stack_00000010)
-                          ((GfxImage *)local_14[-1].hash,(GfxImage *)(local_10->texture).basemap);
-        if (iVar4 == 0) {
-          iVar4 = (*in_stack_00000010)
-                            ((GfxImage *)(local_10->texture).basemap,(GfxImage *)local_14[-1].hash);
-          if (iVar4 != 0) break;
-          local_10 = (GfxImage *)&local_10[-1].hash;
-          puVar6 = &local_14[-1].hash;
-          if (local_10 != (GfxImage *)puVar6) {
-            uVar2 = *(uint *)local_10;
-            *(uint *)local_10 = *puVar6;
-            *puVar6 = uVar2;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        iVar2 = (*in_stack_00000010)(_Glast[-1],*_Pfirst);
+        if (iVar2 == 0) {
+          iVar2 = (*in_stack_00000010)(*_Pfirst,_Glast[-1]);
+          if (iVar2 != 0) break;
+          _Pfirst = _Pfirst + -1;
+          ppGVar4 = _Glast + -1;
+          if (_Pfirst != ppGVar4) {
+            pGVar1 = *_Pfirst;
+            *_Pfirst = *ppGVar4;
+            *ppGVar4 = pGVar1;
           }
         }
       }
-      if ((local_14 == (GfxImage *)param_2) && (local_c == (GfxImage *)param_3)) {
-        *param_1 = local_10;
-        param_1[1] = local_18;
-        pVar7.second = (GfxImage **)local_18;
-        pVar7.first = param_1;
-        return pVar7;
+      if ((_Glast == _First) && (_Gfirst == (GfxImage **)_Last)) {
+        *param_1 = (GfxImage *)_Pfirst;
+        param_1[1] = (GfxImage *)_Plast;
+        pVar5.second = _Plast;
+        pVar5.first = param_1;
+        return pVar5;
       }
-      if (local_14 == (GfxImage *)param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          GVar1 = local_10->texture;
-          local_10->texture = local_18->texture;
-          local_18->texture = GVar1;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          pGVar1 = *_Pfirst;
+          *_Pfirst = *_Plast;
+          *_Plast = pGVar1;
         }
-        local_18 = (GfxImage *)&local_18->mapType;
-        pGVar3 = (GfxImage *)&local_c->mapType;
-        pGVar5 = (GfxImage *)&local_10->mapType;
-        if (local_10 != local_c) {
-          GVar1 = local_10->texture;
-          local_10->texture = local_c->texture;
-          local_c->texture = GVar1;
+        _Plast = _Plast + 1;
+        ppGVar4 = _Gfirst + 1;
+        ppGVar3 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          pGVar1 = *_Pfirst;
+          *_Pfirst = *_Gfirst;
+          *_Gfirst = pGVar1;
         }
       }
-      else if (local_c == (GfxImage *)param_3) {
-        local_14 = (GfxImage *)&local_14[-1].hash;
-        pGVar5 = (GfxImage *)&local_10[-1].hash;
-        if ((local_14 != pGVar5) && (local_14 != pGVar5)) {
-          uVar2 = *(uint *)local_14;
-          *(uint *)local_14 = *(uint *)pGVar5;
-          *(uint *)pGVar5 = uVar2;
+      else if (_Gfirst == (GfxImage **)_Last) {
+        _Glast = _Glast + -1;
+        ppGVar3 = _Pfirst + -1;
+        if ((_Glast != ppGVar3) && (_Glast != ppGVar3)) {
+          pGVar1 = *_Glast;
+          *_Glast = *ppGVar3;
+          *ppGVar3 = pGVar1;
         }
-        local_18 = (GfxImage *)&local_18[-1].hash;
-        pGVar3 = local_c;
-        if (pGVar5 != local_18) {
-          uVar2 = *(uint *)pGVar5;
-          *(uint *)pGVar5 = *(uint *)local_18;
-          *(uint *)local_18 = uVar2;
+        _Plast = _Plast + -1;
+        ppGVar4 = _Gfirst;
+        if (ppGVar3 != _Plast) {
+          pGVar1 = *ppGVar3;
+          *ppGVar3 = *_Plast;
+          *_Plast = pGVar1;
         }
       }
       else {
-        local_14 = (GfxImage *)&local_14[-1].hash;
-        if (local_c != local_14) {
-          GVar1 = local_c->texture;
-          local_c->texture = *(GfxTexture *)local_14;
-          *(GfxTexture *)local_14 = GVar1;
+        _Glast = _Glast + -1;
+        if (_Gfirst != _Glast) {
+          pGVar1 = *_Gfirst;
+          *_Gfirst = *_Glast;
+          *_Glast = pGVar1;
         }
-        pGVar3 = (GfxImage *)&local_c->mapType;
-        pGVar5 = local_10;
+        ppGVar4 = _Gfirst + 1;
+        ppGVar3 = _Pfirst;
       }
     }
-    iVar4 = (*in_stack_00000010)
-                      ((GfxImage *)(local_10->texture).basemap,
-                       (GfxImage *)(local_c->texture).basemap);
-    pGVar3 = local_18;
-    if (iVar4 == 0) {
-      iVar4 = (*in_stack_00000010)
-                        ((GfxImage *)(local_c->texture).basemap,
-                         (GfxImage *)(local_10->texture).basemap);
-      if (iVar4 != 0) goto LAB_00ac3db6;
-      pGVar3 = (GfxImage *)&local_18->mapType;
-      if (local_18 != local_c) {
-        GVar1 = local_18->texture;
-        local_18->texture = local_c->texture;
-        local_c->texture = GVar1;
+    iVar2 = (*in_stack_00000010)(*_Pfirst,*_Gfirst);
+    ppGVar4 = _Plast;
+    if (iVar2 == 0) {
+      iVar2 = (*in_stack_00000010)(*_Gfirst,*_Pfirst);
+      if (iVar2 != 0) goto LAB_00ac3db6;
+      ppGVar4 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        pGVar1 = *_Plast;
+        *_Plast = *_Gfirst;
+        *_Gfirst = pGVar1;
       }
     }
-    local_18 = pGVar3;
-    pGVar3 = (GfxImage *)&local_c->mapType;
-    pGVar5 = local_10;
+    _Plast = ppGVar4;
+    ppGVar4 = _Gfirst + 1;
+    ppGVar3 = _Pfirst;
   } while( true );
 }
 
@@ -2425,40 +2462,39 @@ LAB_00ac3db6:
 
 void __cdecl
 std::_Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-          (GfxImage **param_1,GfxImage **param_2,int param_3,
-          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *param_4)
+          (GfxImage **_First,GfxImage **_Last,int _Ideal,
+          _func___cdecl_int_GfxImage_ptr_GfxImage_ptr *_Pred)
 
 {
   GfxImage **local_ac;
-  GfxImage *local_10;
+  GfxImage *_Mid;
   GfxImage **local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = (int)param_2 - (int)param_1 >> 2, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = (int)_Last - (int)_First >> 2, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-              (&local_10,param_1,(_func___cdecl_int_GfxImage_ptr_GfxImage_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if ((int)local_10 - (int)param_1 >> 2 < (int)param_2 - (int)local_c >> 2) {
+              (&_Mid,_First,(_func___cdecl_int_GfxImage_ptr_GfxImage_ptr *)_Last);
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if ((int)_Mid - (int)_First >> 2 < (int)_Last - (int)local_c >> 2) {
       _Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>
-                (param_1,(GfxImage **)local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,(GfxImage **)_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
-      _Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(local_c,param_2,param_3,param_4)
-      ;
-      param_2 = (GfxImage **)local_10;
+      _Sort<GfxImage_*_*,int,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(local_c,_Last,_Ideal,_Pred);
+      _Last = (GfxImage **)_Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*),GfxImage_*>
-                (param_1,param_2,param_4,(GfxImage **)0x0);
+                (_First,_Last,_Pred,(GfxImage **)0x0);
     }
   }
   else {
-    make_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(param_1,param_2,param_4);
-    for (local_ac = param_2; 1 < (int)local_ac - (int)param_1 >> 2; local_ac = local_ac + -1) {
-      pop_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(param_1,local_ac,param_4);
+    make_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(_First,_Last,_Pred);
+    for (local_ac = _Last; 1 < (int)local_ac - (int)_First >> 2; local_ac = local_ac + -1) {
+      pop_heap<GfxImage_*_*,int_(__cdecl*)(GfxImage_*,GfxImage_*)>(_First,local_ac,_Pred);
     }
   }
   return;

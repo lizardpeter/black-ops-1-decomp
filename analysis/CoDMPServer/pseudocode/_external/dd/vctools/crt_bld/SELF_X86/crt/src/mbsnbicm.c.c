@@ -2,7 +2,7 @@
 
 // 00C2D100  _mbsnbicmp_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbicm.c:52)
 
-int __cdecl _mbsnbicmp_l(uchar *param_1,uchar *param_2,uint param_3,localeinfo_struct *param_4)
+int __cdecl _mbsnbicmp_l(uchar *s1,uchar *s2,uint n,localeinfo_struct *plocinfo)
 
 {
   uint uVar1;
@@ -11,129 +11,129 @@ int __cdecl _mbsnbicmp_l(uchar *param_1,uchar *param_2,uint param_3,localeinfo_s
   int *piVar4;
   uint uVar5;
   byte *pbVar6;
-  _LocaleUpdate local_1c;
-  ushort local_c;
-  ushort local_8;
+  _LocaleUpdate _loc_update;
+  ushort c1;
+  ushort c2;
   
-  _LocaleUpdate::_LocaleUpdate(&local_1c,param_4);
-  if (param_3 == 0) {
-    if (local_1c.updated != false) {
-      (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+  _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+  if (n == 0) {
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     iVar3 = 0;
   }
-  else if ((local_1c.localeinfo.mbcinfo)->ismbcodepage == 0) {
-    iVar3 = _strnicmp((char *)param_1,(char *)param_2,param_3);
-    if (local_1c.updated != false) {
-      (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+  else if ((_loc_update.localeinfo.mbcinfo)->ismbcodepage == 0) {
+    iVar3 = _strnicmp((char *)s1,(char *)s2,n);
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
   }
-  else if (param_1 == (uchar *)0x0) {
+  else if (s1 == (uchar *)0x0) {
     piVar4 = _errno();
     *piVar4 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_1c.updated != false) {
-      (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     iVar3 = 0x7fffffff;
   }
   else {
-    if (param_2 != (uchar *)0x0) {
+    if (s2 != (uchar *)0x0) {
       do {
-        uVar5 = (uint)*param_1;
-        uVar1 = param_3 - 1;
-        puVar2 = param_1 + 1;
-        if (((local_1c.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 4) == 0) {
-          if (((local_1c.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 0x10) != 0) {
-            uVar5 = (uint)(local_1c.localeinfo.mbcinfo)->mbcasemap[uVar5];
+        uVar5 = (uint)*s1;
+        uVar1 = n - 1;
+        puVar2 = s1 + 1;
+        if (((_loc_update.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 4) == 0) {
+          if (((_loc_update.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 0x10) != 0) {
+            uVar5 = (uint)(_loc_update.localeinfo.mbcinfo)->mbcasemap[uVar5];
           }
-          local_c = (ushort)uVar5;
-          param_1 = puVar2;
+          c1 = (ushort)uVar5;
+          s1 = puVar2;
 LAB_00c2d270:
-          uVar5 = (uint)*param_2;
-          pbVar6 = param_2 + 1;
-          if (((local_1c.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 4) == 0) {
-            if (((local_1c.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 0x10) != 0) {
-              uVar5 = (uint)(local_1c.localeinfo.mbcinfo)->mbcasemap[uVar5];
+          uVar5 = (uint)*s2;
+          pbVar6 = s2 + 1;
+          if (((_loc_update.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 4) == 0) {
+            if (((_loc_update.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 0x10) != 0) {
+              uVar5 = (uint)(_loc_update.localeinfo.mbcinfo)->mbcasemap[uVar5];
             }
             goto LAB_00c2d2ea;
           }
           if (uVar1 == 0) {
 LAB_00c2d28a:
-            param_3 = uVar1;
-            local_8 = 0;
+            n = uVar1;
+            c2 = 0;
           }
           else {
-            uVar1 = param_3 - 2;
+            uVar1 = n - 2;
             if (*pbVar6 == 0) goto LAB_00c2d28a;
-            local_8 = CONCAT11(*param_2,*pbVar6);
-            pbVar6 = param_2 + 2;
-            param_3 = uVar1;
-            if ((local_8 < (local_1c.localeinfo.mbcinfo)->mbulinfo[0]) ||
-               ((local_1c.localeinfo.mbcinfo)->mbulinfo[1] < local_8)) {
-              if (((local_1c.localeinfo.mbcinfo)->mbulinfo[3] <= local_8) &&
-                 (local_8 <= (local_1c.localeinfo.mbcinfo)->mbulinfo[4])) {
-                local_8 = local_8 + (local_1c.localeinfo.mbcinfo)->mbulinfo[5];
+            c2 = CONCAT11(*s2,*pbVar6);
+            pbVar6 = s2 + 2;
+            n = uVar1;
+            if ((c2 < (_loc_update.localeinfo.mbcinfo)->mbulinfo[0]) ||
+               ((_loc_update.localeinfo.mbcinfo)->mbulinfo[1] < c2)) {
+              if (((_loc_update.localeinfo.mbcinfo)->mbulinfo[3] <= c2) &&
+                 (c2 <= (_loc_update.localeinfo.mbcinfo)->mbulinfo[4])) {
+                c2 = c2 + (_loc_update.localeinfo.mbcinfo)->mbulinfo[5];
               }
             }
             else {
-              local_8 = local_8 + (local_1c.localeinfo.mbcinfo)->mbulinfo[2];
+              c2 = c2 + (_loc_update.localeinfo.mbcinfo)->mbulinfo[2];
             }
           }
         }
         else {
           if (uVar1 != 0) {
             if (*puVar2 == '\0') {
-              local_c = 0;
-              param_1 = puVar2;
+              c1 = 0;
+              s1 = puVar2;
             }
             else {
-              local_c = CONCAT11(*param_1,*puVar2);
-              param_1 = param_1 + 2;
-              if ((local_c < (local_1c.localeinfo.mbcinfo)->mbulinfo[0]) ||
-                 ((local_1c.localeinfo.mbcinfo)->mbulinfo[1] < local_c)) {
-                if (((local_1c.localeinfo.mbcinfo)->mbulinfo[3] <= local_c) &&
-                   (local_c <= (local_1c.localeinfo.mbcinfo)->mbulinfo[4])) {
-                  local_c = local_c + (local_1c.localeinfo.mbcinfo)->mbulinfo[5];
+              c1 = CONCAT11(*s1,*puVar2);
+              s1 = s1 + 2;
+              if ((c1 < (_loc_update.localeinfo.mbcinfo)->mbulinfo[0]) ||
+                 ((_loc_update.localeinfo.mbcinfo)->mbulinfo[1] < c1)) {
+                if (((_loc_update.localeinfo.mbcinfo)->mbulinfo[3] <= c1) &&
+                   (c1 <= (_loc_update.localeinfo.mbcinfo)->mbulinfo[4])) {
+                  c1 = c1 + (_loc_update.localeinfo.mbcinfo)->mbulinfo[5];
                 }
               }
               else {
-                local_c = local_c + (local_1c.localeinfo.mbcinfo)->mbulinfo[2];
+                c1 = c1 + (_loc_update.localeinfo.mbcinfo)->mbulinfo[2];
               }
             }
             goto LAB_00c2d270;
           }
-          uVar5 = (uint)*param_2;
-          if (((local_1c.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 4) != 0) {
+          uVar5 = (uint)*s2;
+          if (((_loc_update.localeinfo.mbcinfo)->mbctype[uVar5 + 1] & 4) != 0) {
 LAB_00c2d304:
-            if (local_1c.updated != false) {
-              (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+            if (_loc_update.updated != false) {
+              (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
             }
             return 0;
           }
-          local_c = 0;
-          pbVar6 = param_2;
-          param_1 = puVar2;
+          c1 = 0;
+          pbVar6 = s2;
+          s1 = puVar2;
 LAB_00c2d2ea:
-          local_8 = (ushort)uVar5;
-          param_3 = uVar1;
+          c2 = (ushort)uVar5;
+          n = uVar1;
         }
-        if (local_8 != local_c) {
-          iVar3 = (-(uint)(local_8 < local_c) & 2) - 1;
-          if (local_1c.updated == false) {
+        if (c2 != c1) {
+          iVar3 = (-(uint)(c2 < c1) & 2) - 1;
+          if (_loc_update.updated == false) {
             return iVar3;
           }
-          (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+          (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
           return iVar3;
         }
-        if ((local_c == 0) || (param_2 = pbVar6, param_3 == 0)) goto LAB_00c2d304;
+        if ((c1 == 0) || (s2 = pbVar6, n == 0)) goto LAB_00c2d304;
       } while( true );
     }
     piVar4 = _errno();
     *piVar4 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    if (local_1c.updated != false) {
-      (local_1c.ptd)->_ownlocale = (local_1c.ptd)->_ownlocale & 0xfffffffd;
+    if (_loc_update.updated != false) {
+      (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
     }
     iVar3 = 0x7fffffff;
   }
@@ -143,12 +143,12 @@ LAB_00c2d2ea:
 
 // 00C2D32B  _mbsnbicmp  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbsnbicm.c:134)
 
-int __cdecl _mbsnbicmp(uchar *param_1,uchar *param_2,uint param_3)
+int __cdecl _mbsnbicmp(uchar *s1,uchar *s2,uint n)
 
 {
   int iVar1;
   
-  iVar1 = _mbsnbicmp_l(param_1,param_2,param_3,(localeinfo_struct *)0x0);
+  iVar1 = _mbsnbicmp_l(s1,s2,n,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

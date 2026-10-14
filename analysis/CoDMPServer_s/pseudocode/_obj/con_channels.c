@@ -164,40 +164,40 @@ void __cdecl Con_InitGameMsgChannels(void)
 
 {
   dvar_s *pdVar1;
-  char **ppcVar2;
+  char **string;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  uint uVar5;
-  char **ppcVar6;
-  char **ppcVar7;
-  char *pcVar8;
+  uint uVar4;
+  char **string_00;
+  char **ppcVar5;
+  char *pcVar6;
   
   if (DAT_04fad6b8 == '\0') {
-    iVar4 = 0;
+    iVar3 = 0;
     DAT_04fad6b8 = '\x01';
-    ppcVar2 = &con_gameMsgWindowNFilter_Descs;
-    ppcVar6 = &con_gameMsgWindowNFilter_Names;
-    iVar3 = 3;
+    string = &con_gameMsgWindowNFilter_Descs;
+    string_00 = &con_gameMsgWindowNFilter_Names;
+    iVar2 = 3;
     do {
-      sprintf((char *)ppcVar6,"con_gameMsgWindow%dFilter");
-      pcVar8 = 
+      sprintf((char *)string_00,"con_gameMsgWindow%dFilter");
+      pcVar6 = 
       "Space-separated list of console channels that should be displayed in game message window %d";
-      ppcVar7 = ppcVar2;
-      sprintf((char *)ppcVar2,
+      ppcVar5 = string;
+      sprintf((char *)string,
               "Space-separated list of console channels that should be displayed in game message window %d"
              );
-      pdVar1 = _Dvar_RegisterString((char *)ppcVar6,(char *)0x21,(ushort)ppcVar7,pcVar8);
-      (&con_gameMsgWindowNFilter)[iVar4] = (dvar_s **)pdVar1;
-      iVar4 = iVar4 + 1;
-      ppcVar6 = (char **)((int)ppcVar6 + 0x19);
-      ppcVar2 = (char **)((int)ppcVar2 + 0x5b);
-      iVar3 = iVar3 + -1;
-    } while (iVar3 != 0);
-    uVar5 = 0;
+      pdVar1 = _Dvar_RegisterString((char *)string_00,(char *)0x21,(ushort)ppcVar5,pcVar6);
+      (&con_gameMsgWindowNFilter)[iVar3] = (dvar_s **)pdVar1;
+      iVar3 = iVar3 + 1;
+      string_00 = (char **)((int)string_00 + 0x19);
+      string = (char **)((int)string + 0x5b);
+      iVar2 = iVar2 + -1;
+    } while (iVar2 != 0);
+    uVar4 = 0;
     do {
-      FUN_00501270(uVar5 + 3,(&con_gameMsgWindowNFilter)[uVar5][6]);
-      uVar5 = uVar5 + 1;
-    } while (uVar5 < 3);
+      FUN_00501270(uVar4 + 3,(&con_gameMsgWindowNFilter)[uVar4][6]);
+      uVar4 = uVar4 + 1;
+    } while (uVar4 < 3);
   }
   return;
 }

@@ -4,29 +4,30 @@
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwRecordEvent(overlappedTask *param_1,char *param_2,int param_3,uint param_4)
+void __cdecl dwRecordEvent(overlappedTask *task,char *buff,int buffSize,uint category)
 
 {
   bool bVar1;
   bdReference<bdRemoteTask> bVar2;
   bdReference<bdByteBuffer> local_1c;
-  bdCommonAddr *local_18;
-  ulong64 local_14;
-  bdTitleUtilities *local_8;
+  bdRemoteTask *remoteTask;
+  ulong64 userID;
+  bdTitleUtilities *titleUtil;
   
-  local_8 = dwGetTitleUtilities(param_1->controllerIndex);
-  if ((local_8 != (bdTitleUtilities *)0x0) && (param_1 != (overlappedTask *)0x0)) {
-    bVar1 = dwGetOnlineUserID(param_1->controllerIndex,&local_14);
+  titleUtil = dwGetTitleUtilities(task->controllerIndex);
+  if ((titleUtil != (bdTitleUtilities *)0x0) && (task != (overlappedTask *)0x0)) {
+    bVar1 = dwGetOnlineUserID(task->controllerIndex,&userID);
     if (bVar1) {
-      bVar2 = bdTitleUtilities::recordEventBin(local_8,&local_1c,(uint)param_2,param_3);
-      local_18 = (bdCommonAddr *)(bVar2.m_ptr)->_padding_;
+      bVar2 = bdTitleUtilities::recordEventBin(titleUtil,&local_1c,(uint)buff,buffSize);
+      remoteTask = (bdRemoteTask *)(bVar2.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
-      if (local_18 == (bdCommonAddr *)0x0) {
-        TaskManager_ClearTask(param_1);
+      if (remoteTask == (bdRemoteTask *)0x0) {
+        TaskManager_ClearTask(task);
         Com_Printf(0x10,"Error occurred when uploading title data.\n");
       }
       else {
-        bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_18);
+        bdReference<bdCommonAddr>::operator=
+                  ((bdReference<bdCommonAddr> *)task,(bdCommonAddr *)remoteTask);
       }
     }
   }
@@ -38,29 +39,30 @@ void __cdecl dwRecordEvent(overlappedTask *param_1,char *param_2,int param_3,uin
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwRecordEventAscii(overlappedTask *param_1,char *param_2,int param_3,uint param_4)
+void __cdecl dwRecordEventAscii(overlappedTask *task,char *buff,int buffSize,uint category)
 
 {
   bool bVar1;
   bdReference<bdRemoteTask> bVar2;
   bdReference<bdByteBuffer> local_1c;
-  bdCommonAddr *local_18;
-  ulong64 local_14;
-  bdTitleUtilities *local_8;
+  bdRemoteTask *remoteTask;
+  ulong64 userID;
+  bdTitleUtilities *titleUtil;
   
-  local_8 = dwGetTitleUtilities(param_1->controllerIndex);
-  if ((local_8 != (bdTitleUtilities *)0x0) && (param_1 != (overlappedTask *)0x0)) {
-    bVar1 = dwGetOnlineUserID(param_1->controllerIndex,&local_14);
+  titleUtil = dwGetTitleUtilities(task->controllerIndex);
+  if ((titleUtil != (bdTitleUtilities *)0x0) && (task != (overlappedTask *)0x0)) {
+    bVar1 = dwGetOnlineUserID(task->controllerIndex,&userID);
     if (bVar1) {
-      bVar2 = bdTitleUtilities::recordEvent(local_8,(char *)&local_1c,(uint)param_2,param_3);
-      local_18 = (bdCommonAddr *)(bVar2.m_ptr)->_padding_;
+      bVar2 = bdTitleUtilities::recordEvent(titleUtil,(char *)&local_1c,(uint)buff,buffSize);
+      remoteTask = (bdRemoteTask *)(bVar2.m_ptr)->_padding_;
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
-      if (local_18 == (bdCommonAddr *)0x0) {
-        TaskManager_ClearTask(param_1);
+      if (remoteTask == (bdRemoteTask *)0x0) {
+        TaskManager_ClearTask(task);
         Com_Printf(0x10,"Error occurred when uploading title data.\n");
       }
       else {
-        bdReference<bdCommonAddr>::operator=((bdReference<bdCommonAddr> *)param_1,local_18);
+        bdReference<bdCommonAddr>::operator=
+                  ((bdReference<bdCommonAddr> *)task,(bdCommonAddr *)remoteTask);
       }
     }
   }
@@ -94,39 +96,39 @@ void __cdecl _dynamic_initializer_for__overlappedTasks__(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl dwRecordEventFormat(overlappedTask *param_1,uint param_2,char *param_3)
+void __cdecl dwRecordEventFormat(overlappedTask *task,uint category,char *fmt)
 
 {
   char cVar1;
   char *local_58;
-  char local_54;
+  char event;
   undefined1 auStack_53 [61];
   undefined1 local_16;
   uint local_10;
-  undefined4 local_c;
-  char *local_8;
+  uint MAX_EVENT_LEN;
+  char *args;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = 0x3f;
-  local_8 = &stack0x00000010;
-  _vsnprintf(&local_54,0x3f,param_3,local_8);
-  local_8 = (char *)0x0;
+  MAX_EVENT_LEN = 0x3f;
+  args = &stack0x00000010;
+  _vsnprintf(&event,0x3f,fmt,args);
+  args = (char *)0x0;
   local_16 = 0;
-  if (param_1 == (overlappedTask *)0x0) {
+  if (task == (overlappedTask *)0x0) {
     if ((_S1 & 1) == 0) {
       _S1 = _S1 | 1;
       overlappedIO.overlappedIO.m_ptr = (bdRemoteTask *)0x0;
       atexit(`dwRecordEventFormat'::__l5::_dynamic_atexit_destructor_for__overlappedIO__);
     }
-    param_1 = &overlappedIO;
+    task = &overlappedIO;
     dwClearTask(&overlappedIO);
   }
-  local_58 = &local_54;
+  local_58 = &event;
   do {
     cVar1 = *local_58;
     local_58 = local_58 + 1;
   } while (cVar1 != '\0');
-  dwRecordEventAscii(param_1,&local_54,(int)local_58 - (int)auStack_53,param_2);
+  dwRecordEventAscii(task,&event,(int)local_58 - (int)auStack_53,category);
   return;
 }
 
@@ -135,39 +137,39 @@ void __cdecl dwRecordEventFormat(overlappedTask *param_1,uint param_2,char *para
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-taskCompleteResults __cdecl dwRecordEventComplete(overlappedTask *param_1,int param_2)
+taskCompleteResults __cdecl dwRecordEventComplete(overlappedTask *task,int controllerIndex)
 
 {
   bdLobbyErrorCode bVar1;
   bdTitleUtilities *pbVar2;
-  bdStatus bVar3;
+  bdStatus taskStatus;
   undefined3 extraout_var;
-  taskCompleteResults local_c;
-  int local_8;
+  taskCompleteResults status;
+  bdLobbyErrorCode errorCode;
   
-  local_c = TASK_ERROR;
-  local_8 = 0;
-  pbVar2 = dwGetTitleUtilities(param_1->controllerIndex);
-  if (((pbVar2 == (bdTitleUtilities *)0x0) || (param_1 == (overlappedTask *)0x0)) ||
-     ((param_1->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
+  status = TASK_ERROR;
+  _errorCode = 0;
+  pbVar2 = dwGetTitleUtilities(task->controllerIndex);
+  if (((pbVar2 == (bdTitleUtilities *)0x0) || (task == (overlappedTask *)0x0)) ||
+     ((task->overlappedIO).m_ptr == (bdRemoteTask *)0x0)) {
     Com_Printf(0x10,"Failed to retrieve bdTitleUtilities for record event complete.\n");
   }
   else {
-    dwLobbyPump(param_1->controllerIndex);
-    bVar3 = bdRemoteTask::getStatus((param_1->overlappedIO).m_ptr);
-    if (bVar3 == BD_DONE) {
-      bVar1 = bdRemoteTask::getErrorCode((param_1->overlappedIO).m_ptr);
-      local_8 = CONCAT31(extraout_var,bVar1);
-      if (local_8 != 0) {
+    dwLobbyPump(task->controllerIndex);
+    taskStatus = bdRemoteTask::getStatus((task->overlappedIO).m_ptr);
+    if (taskStatus == BD_DONE) {
+      bVar1 = bdRemoteTask::getErrorCode((task->overlappedIO).m_ptr);
+      _errorCode = CONCAT31(extraout_var,bVar1);
+      if (_errorCode != 0) {
         Com_Printf(0x10,"Title data uploading failed to complete.\n");
       }
     }
-    local_c = dwTaskStatusConvert(bVar3,(bdLobbyErrorCode)local_8);
-    if (bVar3 != BD_PENDING) {
-      dwCloseRemoteTask(&param_1->overlappedIO);
+    status = dwTaskStatusConvert(taskStatus,(bdLobbyErrorCode)_errorCode);
+    if (taskStatus != BD_PENDING) {
+      dwCloseRemoteTask(&task->overlappedIO);
     }
   }
-  return local_c;
+  return status;
 }
 
 

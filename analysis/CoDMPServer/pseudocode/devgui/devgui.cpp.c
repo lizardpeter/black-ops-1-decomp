@@ -66,14 +66,14 @@ void __cdecl DevGui_RegisterDvars(void)
 
 // 00596620  DevGui_GetMenu  (devgui/devgui.cpp:213)
 
-DevMenuItem * __cdecl DevGui_GetMenu(ushort param_1)
+DevMenuItem * __cdecl DevGui_GetMenu(ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
   
-  if ((param_1 == 0) || (0x800 < param_1)) {
+  if ((handle == 0) || (0x800 < handle)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0xd6,0,
                              "handle not in [1, ARRAY_COUNT( devguiGlob.menus )]\n\t%i not in [%i, %i]"
                             );
@@ -83,32 +83,34 @@ DevMenuItem * __cdecl DevGui_GetMenu(ushort param_1)
       return pDVar3;
     }
   }
-  return devguiGlob.menus + (param_1 - 1);
+  return devguiGlob.menus + (handle - 1);
 }
 
 
 // 005977D0  DevGui_GetMenuParent  (devgui/devgui.cpp:220)
 
-ushort __cdecl DevGui_GetMenuParent(ushort param_1)
+ushort __cdecl DevGui_GetMenuParent(ushort handle)
 
 {
   DevMenuItem *pDVar1;
+  DevMenuItem *menu;
   
-  pDVar1 = DevGui_GetMenu(param_1);
+  pDVar1 = DevGui_GetMenu(handle);
   return pDVar1->parent;
 }
 
 
 // 00596920  DevGui_GetMenuHandle  (devgui/devgui.cpp:229)
 
-ushort __cdecl DevGui_GetMenuHandle(DevMenuItem *param_1)
+ushort __cdecl DevGui_GetMenuHandle(DevMenuItem *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  ushort handle;
   
-  uVar3 = (short)((int)(param_1[-0x146dc0].label + 8) / 0x28) + 1;
+  uVar3 = (short)((int)(menu[-0x146dc0].label + 8) / 0x28) + 1;
   if ((uVar3 == 0) || (0x800 < uVar3)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0xe9,0,
                              "handle not in [1, ARRAY_COUNT( devguiGlob.menus )]\n\t%i not in [%i, %i]"
@@ -125,20 +127,20 @@ ushort __cdecl DevGui_GetMenuHandle(DevMenuItem *param_1)
 
 // 00597660  DevGui_EditableMenuItem  (devgui/devgui.cpp:239)
 
-bool __cdecl DevGui_EditableMenuItem(DevMenuItem *param_1)
+bool __cdecl DevGui_EditableMenuItem(DevMenuItem *menu)
 
 {
   bool bVar1;
   
-  if (param_1->childType == '\x03') {
+  if (menu->childType == '\x03') {
     bVar1 = true;
   }
-  else if (param_1->childType == '\x01') {
-    if (((param_1->child).dvar)->type == DVAR_TYPE_STRING) {
+  else if (menu->childType == '\x01') {
+    if (((menu->child).dvar)->type == DVAR_TYPE_STRING) {
       bVar1 = false;
     }
-    else if ((((param_1->child).dvar)->type == DVAR_TYPE_ENUM) &&
-            ((((param_1->child).dvar)->domain).enumeration.stringCount == 0)) {
+    else if ((((menu->child).dvar)->type == DVAR_TYPE_ENUM) &&
+            ((((menu->child).dvar)->domain).enumeration.stringCount == 0)) {
       bVar1 = false;
     }
     else {
@@ -154,13 +156,13 @@ bool __cdecl DevGui_EditableMenuItem(DevMenuItem *param_1)
 
 // 00597D30  DevGui_MenuItemDisabled  (devgui/devgui.cpp:257)
 
-bool __cdecl DevGui_MenuItemDisabled(DevMenuItem *param_1)
+bool __cdecl DevGui_MenuItemDisabled(DevMenuItem *menu)
 
 {
   bool bVar1;
   
-  if (param_1->childType == '\x01') {
-    bVar1 = DevGui_EditableMenuItem(param_1);
+  if (menu->childType == '\x01') {
+    bVar1 = DevGui_EditableMenuItem(menu);
     if (bVar1) {
       bVar1 = false;
     }
@@ -177,14 +179,14 @@ bool __cdecl DevGui_MenuItemDisabled(DevMenuItem *param_1)
 
 // 00596990  DevGui_CompareMenus  (devgui/devgui.cpp:270)
 
-int __cdecl DevGui_CompareMenus(DevMenuItem *param_1,DevMenuItem *param_2)
+int __cdecl DevGui_CompareMenus(DevMenuItem *menu0,DevMenuItem *menu1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (DevMenuItem *)0x0) {
+  if (menu0 == (DevMenuItem *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x10f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -192,7 +194,7 @@ int __cdecl DevGui_CompareMenus(DevMenuItem *param_1,DevMenuItem *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (DevMenuItem *)0x0) {
+  if (menu1 == (DevMenuItem *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x110,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -200,11 +202,11 @@ int __cdecl DevGui_CompareMenus(DevMenuItem *param_1,DevMenuItem *param_2)
       return iVar3;
     }
   }
-  if (param_1->sortKey == param_2->sortKey) {
-    iVar3 = I_stricmp(param_1->label,param_2->label);
+  if (menu0->sortKey == menu1->sortKey) {
+    iVar3 = I_stricmp(menu0->label,menu1->label);
   }
   else {
-    iVar3 = (int)param_1->sortKey - (int)param_2->sortKey;
+    iVar3 = (int)menu0->sortKey - (int)menu1->sortKey;
   }
   return iVar3;
 }
@@ -212,20 +214,21 @@ int __cdecl DevGui_CompareMenus(DevMenuItem *param_1,DevMenuItem *param_2)
 
 // 00597450  DevGui_FreeMenu_r  (devgui/devgui.cpp:281)
 
-void __cdecl DevGui_FreeMenu_r(ushort param_1)
+void __cdecl DevGui_FreeMenu_r(ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
+  DevMenuItem *menu;
   
-  if (param_1 != 0) {
-    if (devguiGlob.selectedMenu == param_1) {
+  if (handle != 0) {
+    if (devguiGlob.selectedMenu == handle) {
       devguiGlob.selectedMenu = 0;
       devguiGlob.isActive = false;
       devguiGlob.editingMenuItem = false;
     }
-    pDVar3 = DevGui_GetMenu(param_1);
+    pDVar3 = DevGui_GetMenu(handle);
     if ((pDVar3 == (DevMenuItem *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x127,0,
                                  "%s"), !bVar2)) {
@@ -269,53 +272,61 @@ void __cdecl DevGui_FreeMenu_r(ushort param_1)
 /* WARNING: Removing unreachable block (ram,0x005968fb) */
 /* WARNING: Removing unreachable block (ram,0x00596913) */
 
-ushort __cdecl DevGui_CreateMenu(ushort param_1,char *param_2,short param_3)
+ushort __cdecl DevGui_CreateMenu(ushort parentHandle,char *label,short sortKey)
 
 {
+  ushort handle;
+  ushort *prevNext;
+  DevMenuItem *menu;
+  ushort prev;
+  DevMenuItem *nextMenu;
+  DevMenuItem *parentMenu;
+  
   return 0;
 }
 
 
 // 00596A30  DevGui_FindMenu  (devgui/devgui.cpp:368)
 
-ushort __cdecl DevGui_FindMenu(ushort param_1,char *param_2)
+ushort __cdecl DevGui_FindMenu(ushort parentHandle,char *label)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  DevMenuItem *pDVar4;
-  int iVar5;
-  ushort local_c;
-  DevMenuItem *local_8;
+  DevMenuItem *s1;
+  int iVar4;
+  DevMenuItem *childMenu;
+  ushort childHandle;
+  DevMenuItem *parentMenu;
   
-  if (param_1 == 0) {
-    local_8 = &devguiGlob.topmostMenu;
+  if (parentHandle == 0) {
+    parentMenu = &devguiGlob.topmostMenu;
   }
   else {
-    local_8 = DevGui_GetMenu(param_1);
+    parentMenu = DevGui_GetMenu(parentHandle);
   }
-  if ((local_8->childType != '\0') &&
+  if ((parentMenu->childType != '\0') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x179,0,
                                "%s\n\t(parentMenu->childType) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  local_c = (local_8->child).menu;
+  childHandle = (parentMenu->child).menu;
   while( true ) {
-    if (local_c == 0) {
+    if (childHandle == 0) {
       return 0;
     }
-    pDVar4 = DevGui_GetMenu(local_c);
-    if ((pDVar4 == (DevMenuItem *)0x0) &&
+    s1 = DevGui_GetMenu(childHandle);
+    if ((s1 == (DevMenuItem *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x17e,0,
                                  "%s"), !bVar2)) break;
-    iVar5 = I_stricmp(param_2,pDVar4->label);
-    if (iVar5 == 0) {
-      return local_c;
+    iVar4 = I_stricmp(label,s1->label);
+    if (iVar4 == 0) {
+      return childHandle;
     }
-    local_c = pDVar4->nextSibling;
+    childHandle = s1->nextSibling;
   }
   pcVar1 = (code *)swi(3);
   uVar3 = (*pcVar1)();
@@ -325,14 +336,15 @@ ushort __cdecl DevGui_FindMenu(ushort param_1,char *param_2)
 
 // 00596710  DevGui_RegisterMenu  (devgui/devgui.cpp:392)
 
-ushort __cdecl DevGui_RegisterMenu(ushort param_1,char *param_2,short param_3)
+ushort __cdecl DevGui_RegisterMenu(ushort parentHandle,char *label,short sortKey)
 
 {
   ushort uVar1;
+  ushort childHandle;
   
-  uVar1 = DevGui_FindMenu(param_1,param_2);
+  uVar1 = DevGui_FindMenu(parentHandle,label);
   if (uVar1 == 0) {
-    uVar1 = DevGui_CreateMenu(param_1,param_2,param_3);
+    uVar1 = DevGui_CreateMenu(parentHandle,label,sortKey);
   }
   return uVar1;
 }
@@ -340,95 +352,95 @@ ushort __cdecl DevGui_RegisterMenu(ushort param_1,char *param_2,short param_3)
 
 // 00596B10  DevGui_PathToken  (devgui/devgui.cpp:403)
 
-DevGuiTokenResult __cdecl DevGui_PathToken(char **param_1,char *param_2,short *param_3)
+DevGuiTokenResult __cdecl DevGui_PathToken(char **pathInOut,char *label,short *sortKeyOut)
 
 {
   code *pcVar1;
   bool bVar2;
   DevGuiTokenResult DVar3;
   char *pcVar4;
-  char *local_14;
-  short local_10;
-  int local_c;
-  short local_8;
+  char *path;
+  short sign;
+  int labelLen;
+  short sortKey;
   
-  if ((param_1 == (char **)0x0) &&
+  if ((pathInOut == (char **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x199,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     DVar3 = (*pcVar1)();
     return DVar3;
   }
-  if ((*param_1 == (char *)0x0) &&
+  if ((*pathInOut == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x19a,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     DVar3 = (*pcVar1)();
     return DVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((label == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x19b,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     DVar3 = (*pcVar1)();
     return DVar3;
   }
-  if ((param_3 == (short *)0x0) &&
+  if ((sortKeyOut == (short *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x19c,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     DVar3 = (*pcVar1)();
     return DVar3;
   }
-  pcVar4 = *param_1;
-  local_c = 0;
-  *param_3 = 0x7fff;
+  pcVar4 = *pathInOut;
+  labelLen = 0;
+  *sortKeyOut = 0x7fff;
   do {
     while( true ) {
-      local_14 = pcVar4;
-      if (*local_14 == '\0') {
-        if (local_c == 0) {
+      path = pcVar4;
+      if (*path == '\0') {
+        if (labelLen == 0) {
           return DEVGUI_TOKEN_ERROR;
         }
-        *param_1 = local_14;
-        param_2[local_c] = '\0';
+        *pathInOut = path;
+        label[labelLen] = '\0';
         return DEVGUI_TOKEN_LAST;
       }
-      if (*local_14 == ':') break;
-      if ((*local_14 == '/') && (local_14 = local_14 + 1, *local_14 != '/')) {
-        param_2[local_c] = '\0';
-        *param_1 = local_14;
+      if (*path == ':') break;
+      if ((*path == '/') && (path = path + 1, *path != '/')) {
+        label[labelLen] = '\0';
+        *pathInOut = path;
         return DEVGUI_TOKEN_MORE;
       }
-      if (local_c < 0x19) {
-        param_2[local_c] = *local_14;
-        local_c = local_c + 1;
+      if (labelLen < 0x19) {
+        label[labelLen] = *path;
+        labelLen = labelLen + 1;
       }
-      pcVar4 = local_14 + 1;
+      pcVar4 = path + 1;
     }
-    param_2[local_c] = '\0';
-    pcVar4 = local_14 + 1;
-    local_8 = 0;
-    local_10 = 1;
+    label[labelLen] = '\0';
+    pcVar4 = path + 1;
+    sortKey = 0;
+    sign = 1;
     if (*pcVar4 == '-') {
-      local_10 = -1;
-      pcVar4 = local_14 + 2;
+      sign = -1;
+      pcVar4 = path + 2;
     }
     else if (*pcVar4 == '+') {
-      pcVar4 = local_14 + 2;
+      pcVar4 = path + 2;
     }
-    local_14 = pcVar4;
-    if ((*local_14 < '0') || (pcVar4 = local_14, '9' < *local_14)) {
+    path = pcVar4;
+    if ((*path < '0') || (pcVar4 = path, '9' < *path)) {
       return DEVGUI_TOKEN_ERROR;
     }
     do {
-      local_14 = pcVar4;
-      local_8 = local_8 * 10 + -0x30 + (short)*local_14;
-      pcVar4 = local_14 + 1;
+      path = pcVar4;
+      sortKey = sortKey * 10 + -0x30 + (short)*path;
+      pcVar4 = path + 1;
       if (*pcVar4 < '0') break;
     } while (*pcVar4 < ':');
-    *param_3 = local_8 * local_10;
-    if ((*pcVar4 != '\0') && ((*pcVar4 != '/' || (local_14[2] == '/')))) {
+    *sortKeyOut = sortKey * sign;
+    if ((*pcVar4 != '\0') && ((*pcVar4 != '/' || (path[2] == '/')))) {
       return DEVGUI_TOKEN_ERROR;
     }
   } while( true );
@@ -439,24 +451,24 @@ DevGuiTokenResult __cdecl DevGui_PathToken(char **param_1,char *param_2,short *p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-ushort __cdecl DevGui_ConstructPath_r(ushort param_1,char *param_2)
+ushort __cdecl DevGui_ConstructPath_r(ushort parent,char *path)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  char local_2c [28];
+  char label [28];
   uint local_10;
-  DevGuiTokenResult local_c;
-  short local_8 [2];
+  DevGuiTokenResult tokResult;
+  short sortKey;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  while ((local_c = DevGui_PathToken(&param_2,local_2c,local_8), local_c != DEVGUI_TOKEN_ERROR ||
+  while ((tokResult = DevGui_PathToken(&path,label,&sortKey), tokResult != DEVGUI_TOKEN_ERROR ||
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x1ed,0,
                                    "%s"), bVar2))) {
-    param_1 = DevGui_RegisterMenu(param_1,local_2c,local_8[0]);
-    if (local_c == DEVGUI_TOKEN_LAST) {
-      return param_1;
+    parent = DevGui_RegisterMenu(parent,label,sortKey);
+    if (tokResult == DEVGUI_TOKEN_LAST) {
+      return parent;
     }
   }
   pcVar1 = (code *)swi(3);
@@ -469,7 +481,7 @@ ushort __cdecl DevGui_ConstructPath_r(ushort param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl DevGui_IsValidPath(char *param_1)
+bool __cdecl DevGui_IsValidPath(char *path)
 
 {
   char cVar1;
@@ -478,47 +490,47 @@ bool __cdecl DevGui_IsValidPath(char *param_1)
   undefined1 uVar4;
   char *local_44;
   char *local_34;
-  char local_30 [28];
+  char label [28];
   uint local_14;
-  char *local_10;
-  DevGuiTokenResult local_c;
-  short local_8 [2];
+  char *originalPath;
+  DevGuiTokenResult tokResult;
+  short sortKey [2];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (char *)0x0) &&
+  if ((path == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x1fc,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_34 = param_1;
+  local_34 = path;
   do {
     cVar1 = *local_34;
     local_34 = local_34 + 1;
   } while (cVar1 != '\0');
-  if ((uint)((int)local_34 - (int)(param_1 + 1)) < 0x79) {
-    local_10 = param_1;
-    local_c = DevGui_PathToken(&param_1,local_30,local_8);
-    if (local_c == DEVGUI_TOKEN_LAST) {
+  if ((uint)((int)local_34 - (int)(path + 1)) < 0x79) {
+    originalPath = path;
+    tokResult = DevGui_PathToken(&path,label,sortKey);
+    if (tokResult == DEVGUI_TOKEN_LAST) {
       Com_Printf(0xb,"Path \'%s\' must have at least one menu separator (\'/\' character).\n");
       bVar3 = false;
     }
     else {
       do {
-        if (local_c == DEVGUI_TOKEN_ERROR) {
+        if (tokResult == DEVGUI_TOKEN_ERROR) {
           Com_Printf(0xb,
                      "path \'%s\' is invalid.  Format is \'menu name:sortkey/submenu/...\', where \'sortkey\' is any (possibly signed) integer.\n"
                     );
           return false;
         }
-        local_c = DevGui_PathToken(&param_1,local_30,local_8);
-      } while (local_c != DEVGUI_TOKEN_LAST);
+        tokResult = DevGui_PathToken(&path,label,sortKey);
+      } while (tokResult != DEVGUI_TOKEN_LAST);
       bVar3 = true;
     }
   }
   else {
-    local_44 = param_1;
+    local_44 = path;
     do {
       cVar1 = *local_44;
       local_44 = local_44 + 1;
@@ -532,43 +544,45 @@ bool __cdecl DevGui_IsValidPath(char *param_1)
 
 // 00596500  DevGui_AddDvar  (devgui/devgui.cpp:539)
 
-void __cdecl DevGui_AddDvar(char *param_1,dvar_s *param_2)
+void __cdecl DevGui_AddDvar(char *path,dvar_s *dvar)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
-  DevMenuItem *pDVar4;
+  ushort handle_00;
+  DevMenuItem *pDVar3;
+  ushort handle;
+  DevMenuItem *menu;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((path == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x21f,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (dvar_s *)0x0) &&
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x220,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = DevGui_IsValidPath(param_1);
+  bVar2 = DevGui_IsValidPath(path);
   if (bVar2) {
-    uVar3 = DevGui_ConstructPath_r(0,param_1);
-    pDVar4 = DevGui_GetMenu(uVar3);
-    if ((pDVar4 == (DevMenuItem *)0x0) &&
+    handle_00 = DevGui_ConstructPath_r(0,path);
+    pDVar3 = DevGui_GetMenu(handle_00);
+    if ((pDVar3 == (DevMenuItem *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x227,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((pDVar4->childType == '\0') && ((pDVar4->child).menu == 0)) ||
-       ((pDVar4->childType == '\x01' && ((dvar_s *)(pDVar4->child).command == param_2)))) {
-      pDVar4->childType = '\x01';
-      (pDVar4->child).dvar = param_2;
+    if (((pDVar3->childType == '\0') && ((pDVar3->child).menu == 0)) ||
+       ((pDVar3->childType == '\x01' && ((dvar_s *)(pDVar3->child).command == dvar)))) {
+      pDVar3->childType = '\x01';
+      (pDVar3->child).dvar = dvar;
     }
     else {
       Com_Printf(0xb,
@@ -582,45 +596,47 @@ void __cdecl DevGui_AddDvar(char *param_1,dvar_s *param_2)
 
 // 00596EB0  DevGui_AddCommand  (devgui/devgui.cpp:564)
 
-void __cdecl DevGui_AddCommand(char *param_1,char *param_2)
+void __cdecl DevGui_AddCommand(char *path,char *command)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
-  DevMenuItem *pDVar4;
-  char *pcVar5;
+  ushort handle_00;
+  DevMenuItem *pDVar3;
+  char *pcVar4;
+  ushort handle;
+  DevMenuItem *menu;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((path == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x238,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((command == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x239,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = DevGui_IsValidPath(param_1);
+  bVar2 = DevGui_IsValidPath(path);
   if (bVar2) {
-    uVar3 = DevGui_ConstructPath_r(0,param_1);
-    pDVar4 = DevGui_GetMenu(uVar3);
-    if ((pDVar4 == (DevMenuItem *)0x0) &&
+    handle_00 = DevGui_ConstructPath_r(0,path);
+    pDVar3 = DevGui_GetMenu(handle_00);
+    if ((pDVar3 == (DevMenuItem *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x240,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((pDVar4->childType == '\0') && ((pDVar4->child).menu == 0)) ||
-       ((pDVar4->childType == '\x02' && ((pDVar4->child).command == param_2)))) {
-      pDVar4->childType = '\x02';
-      pcVar5 = CopyString(param_2,"DevGui_AddCommand",0,SCRIPTINSTANCE_SERVER);
-      (pDVar4->child).command = pcVar5;
+    if (((pDVar3->childType == '\0') && ((pDVar3->child).menu == 0)) ||
+       ((pDVar3->childType == '\x02' && ((pDVar3->child).command == command)))) {
+      pDVar3->childType = '\x02';
+      pcVar4 = CopyString(command,"DevGui_AddCommand",0,SCRIPTINSTANCE_SERVER);
+      (pDVar3->child).command = pcVar4;
     }
     else {
       Com_Printf(0xb,
@@ -650,41 +666,43 @@ void __cdecl DevGui_AddCommand(char *param_1,char *param_2)
 /* WARNING: Removing unreachable block (ram,0x005971bd) */
 /* WARNING: Removing unreachable block (ram,0x0059713d) */
 
-void __cdecl DevGui_AddGraph(char *param_1,DevGraph *param_2)
+void __cdecl DevGui_AddGraph(char *path,DevGraph *graph)
 
 {
   code *pcVar1;
   bool bVar2;
+  ushort handle;
+  DevMenuItem *menu;
   
-  if ((param_2 == (DevGraph *)0x0) &&
+  if ((graph == (DevGraph *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x251,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->knots == (float (*) [2])0x0) &&
+  if ((graph->knots == (float (*) [2])0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x251,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->knotCount == (int *)0x0) &&
+  if ((graph->knotCount == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x251,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->knotCountMax < 1) &&
+  if ((graph->knotCountMax < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x251,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((path == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x252,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -700,74 +718,74 @@ void __cdecl DevGui_AddGraph(char *param_1,DevGraph *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DevGui_RemoveMenu(char *param_1)
+void __cdecl DevGui_RemoveMenu(char *path)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort local_3c;
-  char local_38 [28];
+  ushort handle;
+  char label [28];
   uint local_1c;
-  DevMenuItem *local_18;
-  DevMenuItem *local_14;
-  DevMenuItem *local_10;
-  DevGuiTokenResult local_c;
-  short local_8 [2];
+  DevMenuItem *parent;
+  DevMenuItem *menu;
+  DevMenuItem *sibling;
+  DevGuiTokenResult tokResult;
+  short sortKey [2];
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar2 = DevGui_IsValidPath(param_1);
+  bVar2 = DevGui_IsValidPath(path);
   if (bVar2) {
-    local_3c = 0;
+    handle = 0;
     do {
-      local_c = DevGui_PathToken(&param_1,local_38,local_8);
-      if ((local_c == DEVGUI_TOKEN_ERROR) &&
+      tokResult = DevGui_PathToken(&path,label,sortKey);
+      if ((tokResult == DEVGUI_TOKEN_ERROR) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2b5,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_3c = DevGui_FindMenu(local_3c,local_38);
-      if (local_3c == 0) {
+      handle = DevGui_FindMenu(handle,label);
+      if (handle == 0) {
         return;
       }
-    } while (local_c != DEVGUI_TOKEN_LAST);
-    if ((local_3c == 0) &&
+    } while (tokResult != DEVGUI_TOKEN_LAST);
+    if ((handle == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2bd,1,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = DevGui_GetMenu(local_3c);
-    if ((local_14 == (DevMenuItem *)0x0) &&
+    menu = DevGui_GetMenu(handle);
+    if ((menu == (DevMenuItem *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2bf,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_14->nextSibling != 0) {
-      local_10 = DevGui_GetMenu(local_14->nextSibling);
-      local_10->prevSibling = local_14->prevSibling;
+    if (menu->nextSibling != 0) {
+      sibling = DevGui_GetMenu(menu->nextSibling);
+      sibling->prevSibling = menu->prevSibling;
     }
-    if (local_14->prevSibling == 0) {
-      if ((local_14->parent == 0) &&
+    if (menu->prevSibling == 0) {
+      if ((menu->parent == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2cc,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_18 = DevGui_GetMenu(local_14->parent);
-      if ((local_18 == (DevMenuItem *)0x0) &&
+      parent = DevGui_GetMenu(menu->parent);
+      if ((parent == (DevMenuItem *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2ce,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_18->childType != '\0') {
+      if (parent->childType != '\0') {
         va("menu %s type %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2cf,0,
                                  "%s\n\t%s");
@@ -777,15 +795,15 @@ void __cdecl DevGui_RemoveMenu(char *param_1)
           return;
         }
       }
-      (local_18->child).menu = local_14->nextSibling;
+      (parent->child).menu = menu->nextSibling;
     }
     else {
-      local_10 = DevGui_GetMenu(local_14->prevSibling);
-      local_10->nextSibling = local_14->nextSibling;
+      sibling = DevGui_GetMenu(menu->prevSibling);
+      sibling->nextSibling = menu->nextSibling;
     }
-    local_14->nextSibling = 0;
-    local_14->prevSibling = 0;
-    DevGui_FreeMenu_r(local_3c);
+    menu->nextSibling = 0;
+    menu->prevSibling = 0;
+    DevGui_FreeMenu_r(handle);
   }
   return;
 }
@@ -795,46 +813,46 @@ void __cdecl DevGui_RemoveMenu(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DevGui_OpenMenu(char *param_1)
+void __cdecl DevGui_OpenMenu(char *path)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort local_34;
-  char local_30 [28];
+  ushort handle;
+  char label [28];
   uint local_14;
-  DevMenuItem *local_10;
-  DevGuiTokenResult local_c;
-  short local_8 [2];
+  DevMenuItem *menu;
+  DevGuiTokenResult tokResult;
+  short sortKey [2];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bVar2 = DevGui_IsValidPath(param_1);
+  bVar2 = DevGui_IsValidPath(path);
   if (bVar2) {
-    local_34 = 0;
+    handle = 0;
     do {
-      local_c = DevGui_PathToken(&param_1,local_30,local_8);
-      if ((local_c == DEVGUI_TOKEN_ERROR) &&
+      tokResult = DevGui_PathToken(&path,label,sortKey);
+      if ((tokResult == DEVGUI_TOKEN_ERROR) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x2e8,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_34 = DevGui_FindMenu(local_34,local_30);
-      if (local_34 == 0) {
+      handle = DevGui_FindMenu(handle,label);
+      if (handle == 0) {
         return;
       }
-    } while (local_c != DEVGUI_TOKEN_LAST);
-    local_10 = DevGui_GetMenu(local_34);
-    if (local_10->childType == '\x02') {
-      Cbuf_InsertText(0,(local_10->child).command);
+    } while (tokResult != DEVGUI_TOKEN_LAST);
+    menu = DevGui_GetMenu(handle);
+    if (menu->childType == '\x02') {
+      Cbuf_InsertText(0,(menu->child).command);
     }
     else {
       devguiGlob.isActive = true;
-      devguiGlob.selectedMenu = local_34;
-      devguiGlob.editingMenuItem = DevGui_EditableMenuItem(local_10);
-      if ((!devguiGlob.editingMenuItem) && (local_10->childType == '\0')) {
-        devguiGlob.selectedMenu = (local_10->child).menu;
+      devguiGlob.selectedMenu = handle;
+      devguiGlob.editingMenuItem = DevGui_EditableMenuItem(menu);
+      if ((!devguiGlob.editingMenuItem) && (menu->childType == '\0')) {
+        devguiGlob.selectedMenu = (menu->child).menu;
       }
       devguiGlob.selRow = 0;
     }
@@ -857,35 +875,37 @@ int __cdecl DevGui_SubMenuTextWidth(void)
 
 // 00597E50  DevGui_MenuItemWidth  (devgui/devgui.cpp:778)
 
-int __cdecl DevGui_MenuItemWidth(DevMenuItem *param_1)
+int __cdecl DevGui_MenuItemWidth(DevMenuItem *menu)
 
 {
   int iVar1;
-  int local_8;
+  int width;
   
-  local_8 = R_TextWidth(param_1->label,0,cls.consoleFont);
-  local_8 = local_8 + 8;
-  if ((param_1->childType == '\0') && ((param_1->child).menu != 0)) {
+  iVar1 = R_TextWidth(menu->label,0,cls.consoleFont);
+  width = iVar1 + 8;
+  if ((menu->childType == '\0') && ((menu->child).menu != 0)) {
     iVar1 = DevGui_SubMenuTextWidth();
-    local_8 = iVar1 + local_8;
+    width = iVar1 + width;
   }
-  return local_8;
+  return width;
 }
 
 
 // 00597D80  DevGui_MaxChildMenuWidth  (devgui/devgui.cpp:789)
 
-int __cdecl DevGui_MaxChildMenuWidth(DevMenuItem *param_1)
+int __cdecl DevGui_MaxChildMenuWidth(DevMenuItem *menu)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  DevMenuItem *pDVar4;
-  int local_c;
-  ushort local_8;
+  DevMenuItem *menu_00;
+  DevMenuItem *childMenu;
+  int widthCur;
+  int widthMax;
+  ushort childHandle;
   
-  if (param_1 == (DevMenuItem *)0x0) {
+  if (menu == (DevMenuItem *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x31b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -893,7 +913,7 @@ int __cdecl DevGui_MaxChildMenuWidth(DevMenuItem *param_1)
       return iVar3;
     }
   }
-  if (param_1->childType != '\0') {
+  if (menu->childType != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x31c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -901,23 +921,23 @@ int __cdecl DevGui_MaxChildMenuWidth(DevMenuItem *param_1)
       return iVar3;
     }
   }
-  local_c = DevGui_MenuItemWidth(param_1);
-  local_8 = (param_1->child).menu;
-  while (local_8 != 0) {
-    pDVar4 = DevGui_GetMenu(local_8);
-    iVar3 = DevGui_MenuItemWidth(pDVar4);
-    if (local_c < iVar3) {
-      local_c = iVar3;
+  widthMax = DevGui_MenuItemWidth(menu);
+  childHandle = (menu->child).menu;
+  while (childHandle != 0) {
+    menu_00 = DevGui_GetMenu(childHandle);
+    iVar3 = DevGui_MenuItemWidth(menu_00);
+    if (widthMax < iVar3) {
+      widthMax = iVar3;
     }
-    local_8 = pDVar4->nextSibling;
+    childHandle = menu_00->nextSibling;
   }
-  return local_c;
+  return widthMax;
 }
 
 
 // 005978C0  DevGui_DrawMenuVertically  (devgui/devgui.cpp:867)
 
-void __cdecl DevGui_DrawMenuVertically(DevMenuItem *param_1,ushort param_2,int *param_3)
+void __cdecl DevGui_DrawMenuVertically(DevMenuItem *menu,ushort activeChild,int *origin)
 
 {
   code *pcVar1;
@@ -926,126 +946,132 @@ void __cdecl DevGui_DrawMenuVertically(DevMenuItem *param_1,ushort param_2,int *
   int iVar4;
   DevMenuItem *pDVar5;
   int iVar6;
-  float local_4c;
-  int local_48;
-  int local_3c;
-  float local_38;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  float local_14;
-  int local_10;
-  ushort local_c;
-  int local_8;
+  int iVar7;
+  DevMenuItem *childMenu;
+  int origW;
+  float fontYScale;
+  int activeChildIndex;
+  int origH;
+  int adjustedBottomPosY;
+  int bgndColor;
+  float fontXScale;
+  int fontYOffset;
+  int textColor;
+  int subMenuStringPos;
+  int visibleMenuCount;
+  int x;
+  int y;
+  int fontXOffset;
+  int h;
+  float shade;
+  int childCount;
+  ushort childHandle;
+  int w;
   
-  if ((param_1 == (DevMenuItem *)0x0) &&
+  if ((menu == (DevMenuItem *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x379,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = *param_3;
-  local_20 = param_3[1];
-  iVar3 = DevGui_MaxChildMenuWidth(param_1);
+  x = *origin;
+  y = origin[1];
+  iVar3 = DevGui_MaxChildMenuWidth(menu);
   iVar4 = R_TextHeight(cls.consoleFont);
-  local_38 = 1.0;
-  local_4c = 1.0;
-  local_1c = 4;
-  local_34 = 4;
-  local_10 = 0;
-  local_48 = 0;
-  local_c = (param_1->child).menu;
-  local_18 = iVar4 + 8;
-  local_8 = iVar3;
-  while (local_c != 0) {
-    pDVar5 = DevGui_GetMenu(local_c);
-    if (local_c == param_2) {
-      local_48 = local_10;
+  fontXScale = 1.0;
+  fontYScale = 1.0;
+  fontXOffset = 4;
+  fontYOffset = 4;
+  childCount = 0;
+  activeChildIndex = 0;
+  childHandle = (menu->child).menu;
+  h = iVar4 + 8;
+  w = iVar3;
+  while (childHandle != 0) {
+    pDVar5 = DevGui_GetMenu(childHandle);
+    if (childHandle == activeChild) {
+      activeChildIndex = childCount;
     }
-    local_10 = local_10 + 1;
-    local_c = pDVar5->nextSibling;
+    childCount = childCount + 1;
+    childHandle = pDVar5->nextSibling;
   }
-  local_28 = ((devguiGlob.bottom + local_18 * -2) - local_20) / local_18;
-  if ((local_28 < local_10) && (local_28 < local_48)) {
-    local_3c = (devgui_colorBgnd->current).integer;
-    local_30 = (devgui_colorText->current).integer;
-    local_14 = (devgui_bevelShade->current).value;
-    DevGui_DrawBevelBox(local_24,local_20,local_8,local_18,local_14,(uchar *)&local_3c);
-    DevGui_DrawFont(local_24 + local_1c,local_20 + local_34,(uchar *)&local_30,"...",local_38,1.0);
-    local_20 = local_20 + local_18;
+  visibleMenuCount = ((devguiGlob.bottom + h * -2) - y) / h;
+  if ((visibleMenuCount < childCount) && (visibleMenuCount < activeChildIndex)) {
+    bgndColor = (devgui_colorBgnd->current).integer;
+    textColor = (devgui_colorText->current).integer;
+    shade = (devgui_bevelShade->current).value;
+    DevGui_DrawBevelBox(x,y,w,h,shade,(uchar *)&bgndColor);
+    DevGui_DrawFont(x + fontXOffset,y + fontYOffset,(uchar *)&textColor,"...",fontXScale,1.0);
+    y = y + h;
   }
-  local_10 = 0;
-  local_c = (param_1->child).menu;
-  while (local_c != 0) {
-    pDVar5 = DevGui_GetMenu(local_c);
-    if (local_48 - local_28 <= local_10) {
-      if (local_c == param_2) {
-        *param_3 = local_24 + local_8;
-        param_3[1] = local_20;
+  childCount = 0;
+  childHandle = (menu->child).menu;
+  while (childHandle != 0) {
+    pDVar5 = DevGui_GetMenu(childHandle);
+    if (activeChildIndex - visibleMenuCount <= childCount) {
+      if (childHandle == activeChild) {
+        *origin = x + w;
+        origin[1] = y;
         bVar2 = DevGui_MenuItemDisabled(pDVar5);
         if (bVar2) {
-          local_3c = (devgui_colorBgndGraySel->current).integer;
-          local_30 = (devgui_colorTextGraySel->current).integer;
+          bgndColor = (devgui_colorBgndGraySel->current).integer;
+          textColor = (devgui_colorTextGraySel->current).integer;
         }
         else {
-          local_3c = (devgui_colorBgndSel->current).integer;
-          local_30 = (devgui_colorTextSel->current).integer;
+          bgndColor = (devgui_colorBgndSel->current).integer;
+          textColor = (devgui_colorTextSel->current).integer;
         }
-        if ((local_c == devguiGlob.selectedMenu) &&
+        if ((childHandle == devguiGlob.selectedMenu) &&
            (bVar2 = DevGui_IsButtonDown(INPUT_ACCEPT), bVar2)) {
-          local_14 = 2.0 - (devgui_bevelShade->current).value;
+          shade = 2.0 - (devgui_bevelShade->current).value;
         }
         else {
-          local_14 = (devgui_bevelShade->current).value;
+          shade = (devgui_bevelShade->current).value;
         }
         if ((devgui_zoomEnabled->current).enabled != false) {
-          local_8 = (int)((float)local_8 * 1.5);
-          local_18 = local_18 << 1;
-          local_38 = local_38 * 1.5;
-          local_4c = local_4c * 1.5;
-          local_1c = local_1c + 4;
-          local_34 = local_34 + 0xe;
+          w = (int)((float)w * 1.5);
+          h = h << 1;
+          fontXScale = fontXScale * 1.5;
+          fontYScale = fontYScale * 1.5;
+          fontXOffset = fontXOffset + 4;
+          fontYOffset = fontYOffset + 0xe;
         }
       }
       else {
         if ((devgui_zoomEnabled->current).enabled != false) {
-          local_38 = 1.0;
-          local_4c = 1.0;
-          local_1c = 4;
-          local_34 = 4;
-          local_18 = iVar4 + 8;
-          local_8 = iVar3;
+          fontXScale = 1.0;
+          fontYScale = 1.0;
+          fontXOffset = 4;
+          fontYOffset = 4;
+          h = iVar4 + 8;
+          w = iVar3;
         }
         bVar2 = DevGui_MenuItemDisabled(pDVar5);
         if (bVar2) {
-          local_3c = (devgui_colorBgndGray->current).integer;
-          local_30 = (devgui_colorTextGray->current).integer;
+          bgndColor = (devgui_colorBgndGray->current).integer;
+          textColor = (devgui_colorTextGray->current).integer;
         }
         else {
-          local_3c = (devgui_colorBgnd->current).integer;
-          local_30 = (devgui_colorText->current).integer;
+          bgndColor = (devgui_colorBgnd->current).integer;
+          textColor = (devgui_colorText->current).integer;
         }
-        local_14 = (devgui_bevelShade->current).value;
+        shade = (devgui_bevelShade->current).value;
       }
-      iVar6 = (local_24 + -4 + local_8) - local_1c;
-      local_2c = DevGui_SubMenuTextWidth();
-      local_2c = iVar6 - local_2c;
-      DevGui_DrawBevelBox(local_24,local_20,local_8,local_18,local_14,(uchar *)&local_3c);
-      DevGui_DrawFont(local_24 + local_1c,local_20 + local_34,(uchar *)&local_30,pDVar5->label,
-                      local_38,local_4c);
+      iVar7 = (x + -4 + w) - fontXOffset;
+      iVar6 = DevGui_SubMenuTextWidth();
+      subMenuStringPos = iVar7 - iVar6;
+      DevGui_DrawBevelBox(x,y,w,h,shade,(uchar *)&bgndColor);
+      DevGui_DrawFont(x + fontXOffset,y + fontYOffset,(uchar *)&textColor,pDVar5->label,fontXScale,
+                      fontYScale);
       if ((pDVar5->childType == '\0') && ((pDVar5->child).menu != 0)) {
-        DevGui_DrawFont(local_2c,local_20 + local_34,(uchar *)&local_30," >",local_38,local_4c);
+        DevGui_DrawFont(subMenuStringPos,y + fontYOffset,(uchar *)&textColor," >",fontXScale,
+                        fontYScale);
       }
-      local_20 = local_20 + local_18;
+      y = y + h;
     }
-    local_10 = local_10 + 1;
-    local_c = pDVar5->nextSibling;
+    childCount = childCount + 1;
+    childHandle = pDVar5->nextSibling;
   }
   return;
 }
@@ -1053,21 +1079,23 @@ void __cdecl DevGui_DrawMenuVertically(DevMenuItem *param_1,ushort param_2,int *
 
 // 00597EA0  DevGui_DrawMenuHorizontally  (devgui/devgui.cpp:1015)
 
-void __cdecl DevGui_DrawMenuHorizontally(DevMenuItem *param_1,ushort param_2,int *param_3)
+void __cdecl DevGui_DrawMenuHorizontally(DevMenuItem *menu,ushort activeChild,int *origin)
 
 {
   code *pcVar1;
   bool bVar2;
-  DevMenuItem *pDVar3;
-  int local_20;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  ushort local_c;
-  int local_8;
+  int iVar3;
+  DevMenuItem *menu_00;
+  DevMenuItem *childMenu;
+  int bgndColor;
+  int textColor;
+  int x;
+  int y;
+  int h;
+  ushort childHandle;
+  int w;
   
-  if (param_1 == (DevMenuItem *)0x0) {
+  if (menu == (DevMenuItem *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x401,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1075,29 +1103,28 @@ void __cdecl DevGui_DrawMenuHorizontally(DevMenuItem *param_1,ushort param_2,int
       return;
     }
   }
-  local_18 = *param_3;
-  local_14 = param_3[1];
-  local_10 = R_TextHeight(cls.consoleFont);
-  local_10 = local_10 + 8;
-  local_c = (param_1->child).menu;
-  while (local_c != 0) {
-    pDVar3 = DevGui_GetMenu(local_c);
-    local_8 = DevGui_MenuItemWidth(pDVar3);
-    if (local_c == param_2) {
-      *param_3 = local_18;
-      param_3[1] = local_14 + local_10;
-      local_20 = (devgui_colorBgndSel->current).integer;
-      local_1c = (devgui_colorTextSel->current).integer;
+  x = *origin;
+  y = origin[1];
+  iVar3 = R_TextHeight(cls.consoleFont);
+  h = iVar3 + 8;
+  childHandle = (menu->child).menu;
+  while (childHandle != 0) {
+    menu_00 = DevGui_GetMenu(childHandle);
+    w = DevGui_MenuItemWidth(menu_00);
+    if (childHandle == activeChild) {
+      *origin = x;
+      origin[1] = y + h;
+      bgndColor = (devgui_colorBgndSel->current).integer;
+      textColor = (devgui_colorTextSel->current).integer;
     }
     else {
-      local_20 = (devgui_colorBgnd->current).integer;
-      local_1c = (devgui_colorText->current).integer;
+      bgndColor = (devgui_colorBgnd->current).integer;
+      textColor = (devgui_colorText->current).integer;
     }
-    DevGui_DrawBevelBox(local_18,local_14,local_8,local_10,(devgui_bevelShade->current).value,
-                        (uchar *)&local_20);
-    DevGui_DrawFont(local_18 + 4,local_14 + 4,(uchar *)&local_1c,pDVar3->label,1.0,1.0);
-    local_18 = local_18 + local_8;
-    local_c = pDVar3->nextSibling;
+    DevGui_DrawBevelBox(x,y,w,h,(devgui_bevelShade->current).value,(uchar *)&bgndColor);
+    DevGui_DrawFont(x + 4,y + 4,(uchar *)&textColor,menu_00->label,1.0,1.0);
+    x = x + w;
+    childHandle = menu_00->nextSibling;
   }
   return;
 }
@@ -1105,14 +1132,15 @@ void __cdecl DevGui_DrawMenuHorizontally(DevMenuItem *param_1,ushort param_2,int
 
 // 005977F0  DevGui_DrawMenu  (devgui/devgui.cpp:1066)
 
-void __cdecl DevGui_DrawMenu(ushort param_1,ushort param_2,int *param_3)
+void __cdecl DevGui_DrawMenu(ushort menuHandle,ushort activeChild,int *origin)
 
 {
   code *pcVar1;
   bool bVar2;
-  DevMenuItem *pDVar3;
+  DevMenuItem *menu_00;
+  DevMenuItem *menu;
   
-  if (param_3 == (int *)0x0) {
+  if (origin == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x42d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1120,8 +1148,8 @@ void __cdecl DevGui_DrawMenu(ushort param_1,ushort param_2,int *param_3)
       return;
     }
   }
-  pDVar3 = DevGui_GetMenu(param_1);
-  if (pDVar3 == (DevMenuItem *)0x0) {
+  menu_00 = DevGui_GetMenu(menuHandle);
+  if (menu_00 == (DevMenuItem *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x430,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1129,51 +1157,53 @@ void __cdecl DevGui_DrawMenu(ushort param_1,ushort param_2,int *param_3)
       return;
     }
   }
-  if (pDVar3->parent == 0) {
-    DevGui_DrawMenuHorizontally(&devguiGlob.topmostMenu,param_1,param_3);
+  if (menu_00->parent == 0) {
+    DevGui_DrawMenuHorizontally(&devguiGlob.topmostMenu,menuHandle,origin);
   }
   else {
-    DevGui_DrawMenu(pDVar3->parent,param_1,param_3);
+    DevGui_DrawMenu(menu_00->parent,menuHandle,origin);
   }
-  DevGui_DrawMenuVertically(pDVar3,param_2,param_3);
+  DevGui_DrawMenuVertically(menu_00,activeChild,origin);
   return;
 }
 
 
 // 00597FF0  DevGui_ChooseOrigin  (devgui/devgui.cpp:1082)
 
-void __cdecl DevGui_ChooseOrigin(int *param_1)
+void __cdecl DevGui_ChooseOrigin(int *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
   int iVar4;
-  ushort local_1c;
-  ushort local_10;
-  ushort local_c;
-  int local_8;
+  ushort handle;
+  DevMenuItem *childMenu;
+  DevMenuItem *menu;
+  ushort activeChild;
+  ushort childHandle;
+  int w;
   
-  local_8 = 0;
-  local_10 = devguiGlob.selectedMenu;
-  local_1c = DevGui_GetMenuParent(devguiGlob.selectedMenu);
+  w = 0;
+  activeChild = devguiGlob.selectedMenu;
+  handle = DevGui_GetMenuParent(devguiGlob.selectedMenu);
   do {
-    if (local_1c == 0) {
-      local_c = devguiGlob.topmostMenu.child.menu;
-      while (local_c != local_10) {
-        pDVar3 = DevGui_GetMenu(local_c);
+    if (handle == 0) {
+      childHandle = devguiGlob.topmostMenu.child.menu;
+      while (childHandle != activeChild) {
+        pDVar3 = DevGui_GetMenu(childHandle);
         iVar4 = DevGui_MenuItemWidth(pDVar3);
-        local_8 = iVar4 + local_8;
-        local_c = pDVar3->nextSibling;
+        w = iVar4 + w;
+        childHandle = pDVar3->nextSibling;
       }
-      *param_1 = devguiGlob.left;
-      param_1[1] = devguiGlob.top;
-      if (devguiGlob.right - devguiGlob.left < local_8) {
-        *param_1 = *param_1 - (local_8 - (devguiGlob.right - devguiGlob.left));
+      *origin = devguiGlob.left;
+      origin[1] = devguiGlob.top;
+      if (devguiGlob.right - devguiGlob.left < w) {
+        *origin = *origin - (w - (devguiGlob.right - devguiGlob.left));
       }
       return;
     }
-    pDVar3 = DevGui_GetMenu(local_1c);
+    pDVar3 = DevGui_GetMenu(handle);
     if (pDVar3 == (DevMenuItem *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x448,0,"%s")
       ;
@@ -1184,57 +1214,59 @@ void __cdecl DevGui_ChooseOrigin(int *param_1)
       }
     }
     iVar4 = DevGui_MaxChildMenuWidth(pDVar3);
-    local_8 = iVar4 + local_8;
-    local_10 = local_1c;
-    local_1c = pDVar3->parent;
+    w = iVar4 + w;
+    activeChild = handle;
+    handle = pDVar3->parent;
   } while( true );
 }
 
 
 // 00598B70  DevGui_GetSliderPath  (devgui/devgui.cpp:1116)
 
-int __cdecl DevGui_GetSliderPath(ushort param_1,char *param_2,int param_3)
+int __cdecl DevGui_GetSliderPath(ushort menuHandle,char *path,int pathLen)
 
 {
   code *pcVar1;
   char *pcVar2;
   bool bVar3;
-  DevMenuItem *pDVar4;
-  int iVar5;
-  char *pcVar6;
+  DevMenuItem *src;
+  int iVar4;
+  char *pcVar5;
   DevMenuItem *local_10;
+  DevMenuItem *menu;
+  int labelLen;
   
-  pDVar4 = DevGui_GetMenu(param_1);
-  if (pDVar4 == (DevMenuItem *)0x0) {
+  src = DevGui_GetMenu(menuHandle);
+  if (src == (DevMenuItem *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x461,0,"%s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
-      iVar5 = (*pcVar1)();
-      return iVar5;
+      iVar4 = (*pcVar1)();
+      return iVar4;
     }
   }
-  if (pDVar4->parent != 0) {
-    iVar5 = DevGui_GetSliderPath(pDVar4->parent,param_2,param_3);
-    param_2[iVar5] = '/';
-    param_3 = iVar5 + 1;
+  if (src->parent != 0) {
+    iVar4 = DevGui_GetSliderPath(src->parent,path,pathLen);
+    path[iVar4] = '/';
+    pathLen = iVar4 + 1;
   }
-  pcVar6 = pDVar4->label + 1;
-  local_10 = pDVar4;
+  pcVar5 = src->label + 1;
+  local_10 = src;
   do {
     pcVar2 = local_10->label;
     local_10 = (DevMenuItem *)(local_10->label + 1);
   } while (*pcVar2 != '\0');
-  if (0x78 < (int)((int)local_10 + (param_3 - (int)pcVar6))) {
+  if (0x78 < (int)((int)local_10 + (pathLen - (int)pcVar5))) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x46a,0,
                              "%s\n\t(path + pathLen) = %s");
     if (!bVar3) {
       pcVar1 = (code *)swi(3);
-      iVar5 = (*pcVar1)();
-      return iVar5;
+      iVar4 = (*pcVar1)();
+      return iVar4;
     }
   }
-  memcpy((uchar *)(param_2 + param_3),(uchar *)pDVar4,(ulong)((int)local_10 + (1 - (int)pcVar6)));
-  return (int)((int)local_10 + (param_3 - (int)pcVar6));
+  memcpy((uchar *)(path + pathLen),(uchar *)src,(ulong)((int)local_10 + (1 - (int)pcVar5)));
+  return (int)((int)local_10 + (pathLen - (int)pcVar5));
 }
 
 
@@ -1242,26 +1274,26 @@ int __cdecl DevGui_GetSliderPath(ushort param_1,char *param_2,int param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DevGui_DrawSliderPath(int param_1,int param_2)
+void __cdecl DevGui_DrawSliderPath(int x,int y)
 
 {
-  char local_8c [132];
+  char path [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  DevGui_GetSliderPath(devguiGlob.selectedMenu,local_8c,0);
-  DevGui_DrawFont(param_1,param_2,(devgui_colorText->current).color,local_8c,1.0,1.0);
+  DevGui_GetSliderPath(devguiGlob.selectedMenu,path,0);
+  DevGui_DrawFont(x,y,(devgui_colorText->current).color,path,1.0,1.0);
   return;
 }
 
 
 // 00598C80  DevGui_DrawDvarDescription  (devgui/devgui.cpp:1146)
 
-void __cdecl DevGui_DrawDvarDescription(int param_1,int param_2,dvar_s *param_3)
+void __cdecl DevGui_DrawDvarDescription(int x,int y,dvar_s *dvar)
 
 {
-  if (param_3->description != (char *)0x0) {
-    DevGui_DrawFont(param_1,param_2,(devgui_colorText->current).color,param_3->description,1.0,1.0);
+  if (dvar->description != (char *)0x0) {
+    DevGui_DrawFont(x,y,(devgui_colorText->current).color,dvar->description,1.0,1.0);
   }
   return;
 }
@@ -1270,21 +1302,22 @@ void __cdecl DevGui_DrawDvarDescription(int param_1,int param_2,dvar_s *param_3)
 // 00598CC0  DevGui_DrawSingleSlider  (devgui/devgui.cpp:1155)
 
 void __cdecl
-DevGui_DrawSingleSlider
-          (int param_1,int param_2,int param_3,int param_4,float param_5,uchar *param_6)
+DevGui_DrawSingleSlider(int x,int y,int rowWidth,int rowHeight,float fraction,uchar *knobColor)
 
 {
-  DevGui_DrawBevelBox(param_1,param_2,param_3,param_4,(devgui_bevelShade->current).value,
+  int sliderX;
+  
+  DevGui_DrawBevelBox(x,y,rowWidth,rowHeight,(devgui_bevelShade->current).value,
                       (devgui_colorSliderBgnd->current).color);
-  DevGui_DrawBevelBox((int)ROUND((float)param_1 + (float)(param_3 + -8) * param_5 + 9.313226e-10),
-                      param_2,8,param_4,(devgui_bevelShade->current).value,param_6);
+  DevGui_DrawBevelBox((int)ROUND((float)x + (float)(rowWidth + -8) * fraction + 9.313226e-10),y,8,
+                      rowHeight,(devgui_bevelShade->current).value,knobColor);
   return;
 }
 
 
 // 00598D60  DevGui_DrawDvarValue  (devgui/devgui.cpp:1168)
 
-void __cdecl DevGui_DrawDvarValue(int param_1,int param_2,dvar_s *param_3)
+void __cdecl DevGui_DrawDvarValue(int x,int y,dvar_s *dvar)
 
 {
   double dVar1;
@@ -1294,37 +1327,46 @@ void __cdecl DevGui_DrawDvarValue(int param_1,int param_2,dvar_s *param_3)
   double in_stack_ffffff80;
   double in_stack_ffffff88;
   char *local_5c;
-  char *local_8;
+  double G;
+  double X;
+  int r;
+  double Y;
+  double R;
+  int g;
+  int b;
+  double B;
+  double Z;
+  char *text;
   
-  if (param_3->type == DVAR_TYPE_BOOL) {
-    if ((param_3->latched).enabled == false) {
+  if (dvar->type == DVAR_TYPE_BOOL) {
+    if ((dvar->latched).enabled == false) {
       local_5c = "Off";
     }
     else {
       local_5c = "On";
     }
-    local_8 = local_5c;
+    text = local_5c;
   }
-  else if (param_3->type == DVAR_TYPE_ENUM) {
-    Dvar_DisplayableLatchedValue(param_3);
-    local_8 = va("%i: %s");
+  else if (dvar->type == DVAR_TYPE_ENUM) {
+    Dvar_DisplayableLatchedValue(dvar);
+    text = va("%i: %s");
   }
-  else if (param_3->type == DVAR_TYPE_LINEAR_COLOR_RGB) {
-    if (0.0031308 < (param_3->latched).vector[2]) {
+  else if (dvar->type == DVAR_TYPE_LINEAR_COLOR_RGB) {
+    if (0.0031308 < (dvar->latched).vector[2]) {
       __libm_sse2_pow(in_stack_ffffff80,in_stack_ffffff88);
     }
-    if (0.0031308 < (param_3->latched).vector[1]) {
+    if (0.0031308 < (dvar->latched).vector[1]) {
       __libm_sse2_pow(in_stack_ffffff80,in_stack_ffffff88);
     }
-    if (0.0031308 < (param_3->latched).value) {
+    if (0.0031308 < (dvar->latched).value) {
       __libm_sse2_pow(in_stack_ffffff80,in_stack_ffffff88);
     }
-    local_8 = va("sRGB: %g %g %g Linear: %g %g %g");
+    text = va("sRGB: %g %g %g Linear: %g %g %g");
   }
-  else if (param_3->type == DVAR_TYPE_COLOR_XYZ) {
-    dVar1 = (double)(param_3->latched).value / 100.0;
-    dVar2 = (double)(param_3->latched).vector[1] / 100.0;
-    dVar3 = (double)(param_3->latched).vector[2] / 100.0;
+  else if (dvar->type == DVAR_TYPE_COLOR_XYZ) {
+    dVar1 = (double)(dvar->latched).value / 100.0;
+    dVar2 = (double)(dvar->latched).vector[1] / 100.0;
+    dVar3 = (double)(dvar->latched).vector[2] / 100.0;
     dVar4 = dVar1 * -0.9692 + dVar2 * 1.876 + dVar3 * 0.0416;
     if (0.0031308 < dVar1 * 3.241 + dVar2 * -1.5374 + dVar3 * -0.4986) {
       __libm_sse2_pow(in_stack_ffffff80,in_stack_ffffff88);
@@ -1345,24 +1387,24 @@ void __cdecl DevGui_DrawDvarValue(int param_1,int param_2,dvar_s *param_3)
     _ftol2_sse();
     floor();
     _ftol2_sse();
-    local_8 = va("XYZ:%f %f %f sRGB: %d %d %d");
+    text = va("XYZ:%f %f %f sRGB: %d %d %d");
   }
   else {
-    local_8 = Dvar_DisplayableLatchedValue(param_3);
+    text = Dvar_DisplayableLatchedValue(dvar);
   }
-  DevGui_DrawFont(param_1,param_2,(devgui_colorText->current).color,local_8,1.0,1.0);
+  DevGui_DrawFont(x,y,(devgui_colorText->current).color,text,1.0,1.0);
   return;
 }
 
 
 // 00599290  DevGui_DvarRowCount  (devgui/devgui.cpp:1218)
 
-int __cdecl DevGui_DvarRowCount(dvar_s *param_1)
+int __cdecl DevGui_DvarRowCount(dvar_s *dvar)
 
 {
   int iVar1;
   
-  switch(param_1->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_FLOAT_2:
     iVar1 = 2;
     break;
@@ -1384,13 +1426,13 @@ int __cdecl DevGui_DvarRowCount(dvar_s *param_1)
 
 // 00598120  DevGui_DrawSliders  (devgui/devgui.cpp:1241)
 
-void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
+void __cdecl DevGui_DrawSliders(DevMenuItem *menu)
 
 {
   code *pcVar1;
   dvar_s *pdVar2;
   bool bVar3;
-  char *pcVar4;
+  char *fmt;
   float local_c0;
   DvarValue *local_bc;
   DvarValue *local_b8;
@@ -1402,33 +1444,33 @@ void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
   double local_90;
   double local_88;
   DvarValue *local_80;
-  uchar local_70;
+  uchar gammaColor_2;
   undefined1 local_6f;
   undefined1 local_6e;
   undefined1 local_6d;
-  double local_6c;
-  double local_64;
-  double local_5c;
-  uchar local_50;
+  double G;
+  double X;
+  double Y;
+  uchar gammaColor;
   undefined1 local_4f;
   undefined1 local_4e;
   undefined1 local_4d;
-  double local_4c;
-  double local_44;
-  double local_3c;
-  int local_30;
-  DvarValue *local_2c;
-  int local_28;
-  int local_24;
-  float local_20;
-  int local_1c;
-  int local_18;
-  dvar_s *local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  double R;
+  double B;
+  double Z;
+  int rowHeight;
+  uchar *knobColor;
+  int width;
+  int height;
+  float fraction;
+  int rowCount;
+  int row;
+  dvar_s *dvar;
+  int x;
+  int y;
+  int rowWidth;
   
-  if (param_1->childType != '\x01') {
+  if (menu->childType != '\x01') {
     va("menu %s type %i");
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x4e6,0,
                              "%s\n\t%s");
@@ -1438,54 +1480,54 @@ void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
       return;
     }
   }
-  local_14 = (param_1->child).dvar;
-  if ((local_14 == (dvar_s *)0x0) &&
+  dvar = (menu->child).dvar;
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x4e8,0,
                                "%s\n\t(menu->label) = %s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = devguiGlob.sliderWidth;
-  local_30 = DevGui_GetFontHeight();
-  local_1c = DevGui_DvarRowCount(local_14);
-  local_28 = local_8 + 8;
-  local_24 = (local_1c + 3) * local_30 + 0x10 + local_1c * 2;
-  if (((local_14->type == DVAR_TYPE_COLOR) || (local_14->type == DVAR_TYPE_LINEAR_COLOR_RGB)) ||
-     (local_14->type == DVAR_TYPE_COLOR_XYZ)) {
-    local_24 = local_24 + 2 + local_30;
+  rowWidth = devguiGlob.sliderWidth;
+  rowHeight = DevGui_GetFontHeight();
+  rowCount = DevGui_DvarRowCount(dvar);
+  width = rowWidth + 8;
+  height = (rowCount + 3) * rowHeight + 0x10 + rowCount * 2;
+  if (((dvar->type == DVAR_TYPE_COLOR) || (dvar->type == DVAR_TYPE_LINEAR_COLOR_RGB)) ||
+     (dvar->type == DVAR_TYPE_COLOR_XYZ)) {
+    height = height + 2 + rowHeight;
   }
-  local_10 = ((devguiGlob.right - devguiGlob.left) - local_28) / 2 + devguiGlob.left;
-  local_c = devguiGlob.bottom - local_24;
-  DevGui_DrawBevelBox(local_10,local_c,local_28,local_24,(devgui_bevelShade->current).value,
+  x = ((devguiGlob.right - devguiGlob.left) - width) / 2 + devguiGlob.left;
+  y = devguiGlob.bottom - height;
+  DevGui_DrawBevelBox(x,y,width,height,(devgui_bevelShade->current).value,
                       (devgui_colorBgnd->current).color);
-  local_10 = local_10 + 4;
-  local_c = local_c + 6;
-  DevGui_DrawSliderPath(local_10,local_c);
-  local_c = local_c + 2 + local_30;
-  DevGui_DrawDvarDescription(local_10,local_c,local_14);
-  if (local_14->type == DVAR_TYPE_COLOR) {
-    local_c = local_c + 2 + local_30;
-    DevGui_DrawBox(local_10,local_c,local_8,local_30,(local_14->latched).color);
-    for (local_18 = 0; local_18 < local_1c; local_18 = local_18 + 1) {
-      local_c = local_c + 2 + local_30;
-      local_20 = ((float)(local_14->latched).color[local_18] * 1.0) / 255.0;
+  x = x + 4;
+  y = y + 6;
+  DevGui_DrawSliderPath(x,y);
+  y = y + 2 + rowHeight;
+  DevGui_DrawDvarDescription(x,y,dvar);
+  if (dvar->type == DVAR_TYPE_COLOR) {
+    y = y + 2 + rowHeight;
+    DevGui_DrawBox(x,y,rowWidth,rowHeight,(dvar->latched).color);
+    for (row = 0; row < rowCount; row = row + 1) {
+      y = y + 2 + rowHeight;
+      fraction = ((float)(dvar->latched).color[row] * 1.0) / 255.0;
       pdVar2 = devgui_colorSliderKnob;
-      if (local_18 == devguiGlob.selRow) {
+      if (row == devguiGlob.selRow) {
         pdVar2 = devgui_colorSliderKnobSel;
       }
       local_80 = &pdVar2->current;
-      local_2c = local_80;
-      DevGui_DrawSingleSlider(local_10,local_c,local_8,local_30,local_20,local_80->color);
+      knobColor = local_80->color;
+      DevGui_DrawSingleSlider(x,y,rowWidth,rowHeight,fraction,local_80->color);
     }
   }
-  else if (local_14->type == DVAR_TYPE_COLOR_XYZ) {
-    local_64 = (double)(local_14->latched).value / 100.0;
-    local_5c = (double)(local_14->latched).vector[1] / 100.0;
-    local_3c = (double)(local_14->latched).vector[2] / 100.0;
-    local_88 = local_64 * 3.241 + local_5c * -1.5374 + local_3c * -0.4986;
-    local_98 = local_64 * -0.9692 + local_5c * 1.876 + local_3c * 0.0416;
-    local_a8 = local_64 * 0.0556 + local_5c * -0.204 + local_3c * 1.057;
+  else if (dvar->type == DVAR_TYPE_COLOR_XYZ) {
+    X = (double)(dvar->latched).value / 100.0;
+    Y = (double)(dvar->latched).vector[1] / 100.0;
+    Z = (double)(dvar->latched).vector[2] / 100.0;
+    local_88 = X * 3.241 + Y * -1.5374 + Z * -0.4986;
+    local_98 = X * -0.9692 + Y * 1.876 + Z * 0.0416;
+    local_a8 = X * 0.0556 + Y * -0.204 + Z * 1.057;
     if (local_88 < 0.0) {
       local_88 = 0.0;
     }
@@ -1495,7 +1537,7 @@ void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
     else {
       local_90 = 1.0;
     }
-    local_4c = local_90;
+    R = local_90;
     if (local_98 < 0.0) {
       local_98 = 0.0;
     }
@@ -1505,7 +1547,7 @@ void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
     else {
       local_a0 = 1.0;
     }
-    local_6c = local_a0;
+    G = local_a0;
     if (local_a8 < 0.0) {
       local_a8 = 0.0;
     }
@@ -1515,114 +1557,110 @@ void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
     else {
       local_b0 = 1.0;
     }
-    local_44 = local_b0;
-    local_50 = (uchar)(int)(SQRT(local_90) * 255.0);
+    B = local_b0;
+    gammaColor = (uchar)(int)(SQRT(local_90) * 255.0);
     local_4f = (undefined1)(int)(SQRT(local_a0) * 255.0);
     local_4e = (undefined1)(int)(SQRT(local_b0) * 255.0);
     local_4d = 0xff;
-    local_c = local_c + 2 + local_30;
-    DevGui_DrawBox(local_10,local_c,local_8,local_30,&local_50);
-    for (local_18 = 0; local_18 < local_1c; local_18 = local_18 + 1) {
-      local_c = local_c + 2 + local_30;
-      local_20 = (*(float *)((int)&local_14->latched + local_18 * 4) - (local_14->domain).value.min)
-                 / ((local_14->domain).value.max - (local_14->domain).value.min);
+    y = y + 2 + rowHeight;
+    DevGui_DrawBox(x,y,rowWidth,rowHeight,&gammaColor);
+    for (row = 0; row < rowCount; row = row + 1) {
+      y = y + 2 + rowHeight;
+      fraction = (*(float *)((int)&dvar->latched + row * 4) - (dvar->domain).value.min) /
+                 ((dvar->domain).value.max - (dvar->domain).value.min);
       pdVar2 = devgui_colorSliderKnob;
-      if (local_18 == devguiGlob.selRow) {
+      if (row == devguiGlob.selRow) {
         pdVar2 = devgui_colorSliderKnobSel;
       }
       local_b4 = &pdVar2->current;
-      local_2c = local_b4;
-      DevGui_DrawSingleSlider(local_10,local_c,local_8,local_30,local_20,local_b4->color);
+      knobColor = local_b4->color;
+      DevGui_DrawSingleSlider(x,y,rowWidth,rowHeight,fraction,local_b4->color);
     }
   }
-  else if (local_14->type == DVAR_TYPE_LINEAR_COLOR_RGB) {
-    local_70 = (uchar)(int)(SQRT((local_14->latched).value) * 255.0);
-    local_6f = (undefined1)(int)(SQRT((local_14->latched).vector[1]) * 255.0);
-    local_6e = (undefined1)(int)(SQRT((local_14->latched).vector[2]) * 255.0);
+  else if (dvar->type == DVAR_TYPE_LINEAR_COLOR_RGB) {
+    gammaColor_2 = (uchar)(int)(SQRT((dvar->latched).value) * 255.0);
+    local_6f = (undefined1)(int)(SQRT((dvar->latched).vector[1]) * 255.0);
+    local_6e = (undefined1)(int)(SQRT((dvar->latched).vector[2]) * 255.0);
     local_6d = 0xff;
-    local_c = local_c + 2 + local_30;
-    DevGui_DrawBox(local_10,local_c,local_8,local_30,&local_70);
-    for (local_18 = 0; local_18 < local_1c; local_18 = local_18 + 1) {
-      local_c = local_c + 2 + local_30;
-      local_20 = (*(float *)((int)&local_14->latched + local_18 * 4) - (local_14->domain).value.min)
-                 / ((local_14->domain).value.max - (local_14->domain).value.min);
+    y = y + 2 + rowHeight;
+    DevGui_DrawBox(x,y,rowWidth,rowHeight,&gammaColor_2);
+    for (row = 0; row < rowCount; row = row + 1) {
+      y = y + 2 + rowHeight;
+      fraction = (*(float *)((int)&dvar->latched + row * 4) - (dvar->domain).value.min) /
+                 ((dvar->domain).value.max - (dvar->domain).value.min);
       pdVar2 = devgui_colorSliderKnob;
-      if (local_18 == devguiGlob.selRow) {
+      if (row == devguiGlob.selRow) {
         pdVar2 = devgui_colorSliderKnobSel;
       }
       local_b8 = &pdVar2->current;
-      local_2c = local_b8;
-      DevGui_DrawSingleSlider(local_10,local_c,local_8,local_30,local_20,local_b8->color);
+      knobColor = local_b8->color;
+      DevGui_DrawSingleSlider(x,y,rowWidth,rowHeight,fraction,local_b8->color);
     }
   }
-  else if (((local_14->type == DVAR_TYPE_FLOAT_2) || (local_14->type == DVAR_TYPE_FLOAT_3)) ||
-          (local_14->type == DVAR_TYPE_FLOAT_4)) {
-    for (local_18 = 0; local_18 < local_1c; local_18 = local_18 + 1) {
-      local_c = local_c + 2 + local_30;
-      local_20 = (*(float *)((int)&local_14->latched + local_18 * 4) - (local_14->domain).value.min)
-                 / ((local_14->domain).value.max - (local_14->domain).value.min);
+  else if (((dvar->type == DVAR_TYPE_FLOAT_2) || (dvar->type == DVAR_TYPE_FLOAT_3)) ||
+          (dvar->type == DVAR_TYPE_FLOAT_4)) {
+    for (row = 0; row < rowCount; row = row + 1) {
+      y = y + 2 + rowHeight;
+      fraction = (*(float *)((int)&dvar->latched + row * 4) - (dvar->domain).value.min) /
+                 ((dvar->domain).value.max - (dvar->domain).value.min);
       pdVar2 = devgui_colorSliderKnob;
-      if (local_18 == devguiGlob.selRow) {
+      if (row == devguiGlob.selRow) {
         pdVar2 = devgui_colorSliderKnobSel;
       }
       local_bc = &pdVar2->current;
-      local_2c = local_bc;
-      DevGui_DrawSingleSlider(local_10,local_c,local_8,local_30,local_20,local_bc->color);
+      knobColor = local_bc->color;
+      DevGui_DrawSingleSlider(x,y,rowWidth,rowHeight,fraction,local_bc->color);
     }
   }
   else {
-    local_c = local_c + 2 + local_30;
-    if (local_14->type == DVAR_TYPE_BOOL) {
-      if ((local_14->latched).enabled == false) {
+    y = y + 2 + rowHeight;
+    if (dvar->type == DVAR_TYPE_BOOL) {
+      if ((dvar->latched).enabled == false) {
         local_c0 = 0.0;
       }
       else {
         local_c0 = 1.0;
       }
-      local_20 = local_c0;
+      fraction = local_c0;
     }
-    else if (local_14->type == DVAR_TYPE_INT) {
-      if ((local_14->domain).enumeration.strings ==
-          (char **)(local_14->domain).enumeration.stringCount) {
-        local_20 = 0.5;
+    else if (dvar->type == DVAR_TYPE_INT) {
+      if ((dvar->domain).enumeration.strings == (char **)(dvar->domain).enumeration.stringCount) {
+        fraction = 0.5;
       }
       else {
-        local_20 = (float)((int)(local_14->latched).string -
-                          (local_14->domain).enumeration.stringCount) /
-                   (float)((int)(local_14->domain).enumeration.strings -
-                          (local_14->domain).enumeration.stringCount);
+        fraction = (float)((int)(dvar->latched).string - (dvar->domain).enumeration.stringCount) /
+                   (float)((int)(dvar->domain).enumeration.strings -
+                          (dvar->domain).enumeration.stringCount);
       }
     }
-    else if (local_14->type == DVAR_TYPE_ENUM) {
-      if ((local_14->domain).enumeration.stringCount < 2) {
-        local_20 = 0.5;
+    else if (dvar->type == DVAR_TYPE_ENUM) {
+      if ((dvar->domain).enumeration.stringCount < 2) {
+        fraction = 0.5;
       }
       else {
-        local_20 = (float)(local_14->latched).integer /
-                   (float)((local_14->domain).enumeration.stringCount + -1);
+        fraction = (float)(dvar->latched).integer /
+                   (float)((dvar->domain).enumeration.stringCount + -1);
       }
     }
-    else if (local_14->type == DVAR_TYPE_FLOAT) {
-      local_20 = ((local_14->latched).value - (local_14->domain).value.min) /
-                 ((local_14->domain).value.max - (local_14->domain).value.min);
+    else if (dvar->type == DVAR_TYPE_FLOAT) {
+      fraction = ((dvar->latched).value - (dvar->domain).value.min) /
+                 ((dvar->domain).value.max - (dvar->domain).value.min);
     }
     else {
-      pcVar4 = va("unhandled dvar type %i");
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x575,1,
-                               pcVar4);
+      fmt = va("unhandled dvar type %i");
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x575,1,fmt);
       if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_20 = 0.5;
+      fraction = 0.5;
     }
     DevGui_DrawSingleSlider
-              (local_10,local_c,local_8,local_30,local_20,(devgui_colorSliderKnobSel->current).color
-              );
+              (x,y,rowWidth,rowHeight,fraction,(devgui_colorSliderKnobSel->current).color);
   }
-  local_c = local_c + 2 + local_30;
-  DevGui_DrawDvarValue(local_10,local_c,local_14);
+  y = y + 2 + rowHeight;
+  DevGui_DrawDvarValue(x,y,dvar);
   return;
 }
 
@@ -1632,29 +1670,29 @@ void __cdecl DevGui_DrawSliders(DevMenuItem *param_1)
 void __cdecl DevGui_DrawBindNextKey(void)
 
 {
-  uchar local_20 [8];
-  int local_18;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  uchar fadeColor [8];
+  int x;
+  int y;
+  int h;
+  char *text;
+  int w;
   
-  local_20[0] = '\0';
-  local_20[1] = '\0';
-  local_20[2] = '\0';
-  local_20[3] = 0xaa;
+  fadeColor[0] = '\0';
+  fadeColor[1] = '\0';
+  fadeColor[2] = '\0';
+  fadeColor[3] = 0xaa;
   DevGui_DrawBox(devguiGlob.left,devguiGlob.top,devguiGlob.right - devguiGlob.left,
-                 devguiGlob.bottom - devguiGlob.top,local_20);
-  local_c = "Press key to bind (ESC to cancel)...";
-  local_8 = DevGui_GetFontWidth("Press key to bind (ESC to cancel)...");
-  local_10 = DevGui_GetFontHeight();
-  local_18 = ((devguiGlob.left + devguiGlob.right) - local_8) / 2;
-  local_14 = ((devguiGlob.top + devguiGlob.bottom) - local_10) / 2;
-  local_20[4] = 0xff;
-  local_20[5] = 0xff;
-  local_20[6] = 0xff;
-  local_20[7] = 0xff;
-  DevGui_DrawFont(local_18,local_14,local_20 + 4,local_c,1.0,1.0);
+                 devguiGlob.bottom - devguiGlob.top,fadeColor);
+  text = "Press key to bind (ESC to cancel)...";
+  w = DevGui_GetFontWidth("Press key to bind (ESC to cancel)...");
+  h = DevGui_GetFontHeight();
+  x = ((devguiGlob.left + devguiGlob.right) - w) / 2;
+  y = ((devguiGlob.top + devguiGlob.bottom) - h) / 2;
+  fadeColor[4] = 0xff;
+  fadeColor[5] = 0xff;
+  fadeColor[6] = 0xff;
+  fadeColor[7] = 0xff;
+  DevGui_DrawFont(x,y,fadeColor + 4,text,1.0,1.0);
   return;
 }
 
@@ -1663,32 +1701,38 @@ void __cdecl DevGui_DrawBindNextKey(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DevGui_DrawGraph(DevMenuItem *param_1,int param_2)
+void __cdecl DevGui_DrawGraph(DevMenuItem *menu,int localClientNum)
 
 {
   DevGraph *pDVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
+  int w;
   int iVar5;
-  int iVar6;
-  int iVar7;
-  float local_138;
+  int centerX;
+  int rowHeight;
+  int graphBottomY;
+  int width;
+  int height;
+  DevGraph *graph;
+  int knotX;
+  float endKnotPos;
   float local_134;
-  int local_130;
-  int local_12c;
-  int local_128;
-  int local_124;
-  float local_120;
+  int knotY;
+  int x;
+  int y;
+  int rowWidth;
+  float startKnotPos;
   float local_11c;
-  float local_118;
+  float knot;
   float local_114;
-  int local_110;
-  char local_10c [260];
+  int knotIndex;
+  char text [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->childType != '\x03') {
+  if (menu->childType != '\x03') {
     va("menu %s type %i");
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x5ad,0,
                              "%s\n\t%s");
@@ -1698,7 +1742,7 @@ void __cdecl DevGui_DrawGraph(DevMenuItem *param_1,int param_2)
       return;
     }
   }
-  pDVar1 = (param_1->child).graph;
+  pDVar1 = (menu->child).graph;
   if ((pDVar1 == (DevGraph *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x5b0,0,"%s")
      , !bVar3)) {
@@ -1734,61 +1778,61 @@ void __cdecl DevGui_DrawGraph(DevMenuItem *param_1,int param_2)
     (*pcVar2)();
     return;
   }
-  local_124 = devguiGlob.sliderWidth;
+  rowWidth = devguiGlob.sliderWidth;
   iVar4 = DevGui_GetFontHeight();
-  iVar5 = local_124 + 8;
-  iVar6 = iVar4 * 3 + 0x10;
-  local_12c = ((devguiGlob.right - devguiGlob.left) - iVar5) / 2 + devguiGlob.left;
-  local_128 = devguiGlob.bottom - iVar6;
-  DevGui_DrawBevelBox(local_12c,local_128,iVar5,iVar6,(devgui_bevelShade->current).value,
+  w = rowWidth + 8;
+  iVar5 = iVar4 * 3 + 0x10;
+  x = ((devguiGlob.right - devguiGlob.left) - w) / 2 + devguiGlob.left;
+  y = devguiGlob.bottom - iVar5;
+  DevGui_DrawBevelBox(x,y,w,iVar5,(devgui_bevelShade->current).value,
                       (devgui_colorBgnd->current).color);
-  iVar6 = (int)((float)local_128 * 0.95);
-  DevGui_DrawBox(local_12c,iVar6,iVar5,2,(devgui_colorBgndSel->current).color);
-  local_12c = local_12c + 4;
-  local_128 = local_128 + 6;
-  DevGui_DrawSliderPath(local_12c,local_128);
-  for (local_110 = 0; local_110 < *pDVar1->knotCount; local_110 = local_110 + 1) {
-    local_118 = pDVar1->knots[local_110][0];
-    local_114 = pDVar1->knots[local_110][1];
-    iVar7 = (int)((float)iVar5 * local_118) + local_12c;
-    local_130 = iVar6 - (int)((float)(iVar6 + -0x30) * local_114);
-    if (local_110 == pDVar1->selectedKnot) {
+  iVar5 = (int)((float)y * 0.95);
+  DevGui_DrawBox(x,iVar5,w,2,(devgui_colorBgndSel->current).color);
+  x = x + 4;
+  y = y + 6;
+  DevGui_DrawSliderPath(x,y);
+  for (knotIndex = 0; knotIndex < *pDVar1->knotCount; knotIndex = knotIndex + 1) {
+    knot = pDVar1->knots[knotIndex][0];
+    local_114 = pDVar1->knots[knotIndex][1];
+    centerX = (int)((float)w * knot) + x;
+    knotY = iVar5 - (int)((float)(iVar5 + -0x30) * local_114);
+    if (knotIndex == pDVar1->selectedKnot) {
       if (devguiGlob.editingKnot == false) {
         DevGui_DrawBoxCentered
-                  (iVar7,local_130,0x10,0x10,(devgui_colorGraphKnotSelected->current).color);
+                  (centerX,knotY,0x10,0x10,(devgui_colorGraphKnotSelected->current).color);
       }
       else {
         DevGui_DrawBoxCentered
-                  (iVar7,local_130,0x13,0x13,(devgui_colorGraphKnotEditing->current).color);
+                  (centerX,knotY,0x13,0x13,(devgui_colorGraphKnotEditing->current).color);
       }
     }
     else {
-      DevGui_DrawBoxCentered(iVar7,local_130,0xc,0xc,(devgui_colorGraphKnotNormal->current).color);
+      DevGui_DrawBoxCentered(centerX,knotY,0xc,0xc,(devgui_colorGraphKnotNormal->current).color);
     }
   }
-  for (local_110 = 0; local_110 < *pDVar1->knotCount + -1; local_110 = local_110 + 1) {
-    local_118 = pDVar1->knots[local_110][0];
-    local_114 = pDVar1->knots[local_110][1];
-    local_120 = (float)iVar5 * local_118 + (float)local_12c;
-    local_11c = (float)iVar6 - (float)(iVar6 + -0x30) * local_114;
-    local_138 = (float)iVar5 * pDVar1->knots[local_110 + 1][0] + (float)local_12c;
-    local_134 = (float)iVar6 - (float)(iVar6 + -0x30) * pDVar1->knots[local_110 + 1][1];
-    DevGui_DrawLine(&local_120,&local_138,2,(devgui_colorGraphKnotNormal->current).color);
+  for (knotIndex = 0; knotIndex < *pDVar1->knotCount + -1; knotIndex = knotIndex + 1) {
+    knot = pDVar1->knots[knotIndex][0];
+    local_114 = pDVar1->knots[knotIndex][1];
+    startKnotPos = (float)w * knot + (float)x;
+    local_11c = (float)iVar5 - (float)(iVar5 + -0x30) * local_114;
+    endKnotPos = (float)w * pDVar1->knots[knotIndex + 1][0] + (float)x;
+    local_134 = (float)iVar5 - (float)(iVar5 + -0x30) * pDVar1->knots[knotIndex + 1][1];
+    DevGui_DrawLine(&startKnotPos,&endKnotPos,2,(devgui_colorGraphKnotNormal->current).color);
   }
-  local_128 = local_128 + 2 + iVar4;
-  local_118 = pDVar1->knots[pDVar1->selectedKnot][0];
+  y = y + 2 + iVar4;
+  knot = pDVar1->knots[pDVar1->selectedKnot][0];
   local_114 = pDVar1->knots[pDVar1->selectedKnot][1];
   if (pDVar1->textCallback == (_func___cdecl_void_DevGraph_ptr_float_float_char_ptr_int *)0x0) {
-    sprintf(local_10c,"X: %.4f, Y: %.4f");
+    sprintf(text,"X: %.4f, Y: %.4f");
   }
   else {
-    (*pDVar1->textCallback)(pDVar1,local_118,local_114,local_10c,0x100);
+    (*pDVar1->textCallback)(pDVar1,knot,local_114,text,0x100);
   }
-  DevGui_DrawFont(local_12c,local_128,(devgui_colorText->current).color,local_10c,1.0,1.0);
-  local_128 = local_128 + 2 + iVar4;
-  DevGui_DrawFont(local_12c,local_128,(devgui_colorText->current).color,MYINSTRUCTIONS,1.0,1.0);
+  DevGui_DrawFont(x,y,(devgui_colorText->current).color,text,1.0,1.0);
+  y = y + 2 + iVar4;
+  DevGui_DrawFont(x,y,(devgui_colorText->current).color,MYINSTRUCTIONS,1.0,1.0);
   if (pDVar1->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
-    (*pDVar1->eventCallback)(pDVar1,EVENT_DRAW,param_2);
+    (*pDVar1->eventCallback)(pDVar1,EVENT_DRAW,localClientNum);
   }
   return;
 }
@@ -1796,38 +1840,38 @@ void __cdecl DevGui_DrawGraph(DevMenuItem *param_1,int param_2)
 
 // 005976C0  DevGui_Draw  (devgui/devgui.cpp:1537)
 
-void __cdecl DevGui_Draw(int param_1)
+void __cdecl DevGui_Draw(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_14;
+  int origin;
   int local_10;
-  DevMenuItem *local_c;
-  ushort local_8;
+  DevMenuItem *menuItem;
+  ushort parent;
   
   if (devguiGlob.isActive) {
-    local_c = DevGui_GetMenu(devguiGlob.selectedMenu);
+    menuItem = DevGui_GetMenu(devguiGlob.selectedMenu);
     if (devguiGlob.editingMenuItem == false) {
-      local_14 = devguiGlob.left;
+      origin = devguiGlob.left;
       local_10 = devguiGlob.top;
-      local_8 = DevGui_GetMenuParent(devguiGlob.selectedMenu);
-      DevGui_ChooseOrigin(&local_14);
-      DevGui_DrawMenu(local_8,devguiGlob.selectedMenu,&local_14);
+      parent = DevGui_GetMenuParent(devguiGlob.selectedMenu);
+      DevGui_ChooseOrigin(&origin);
+      DevGui_DrawMenu(parent,devguiGlob.selectedMenu,&origin);
     }
     else {
-      if (((local_c->childType != '\x03') && (local_c->childType != '\x01')) &&
+      if (((menuItem->childType != '\x03') && (menuItem->childType != '\x01')) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x60d,0,
                                    "%s\n\t(menuItem->childType) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_c->childType == '\x01') {
-        DevGui_DrawSliders(local_c);
+      if (menuItem->childType == '\x01') {
+        DevGui_DrawSliders(menuItem);
       }
       else {
-        DevGui_DrawGraph(local_c,param_1);
+        DevGui_DrawGraph(menuItem,localClientNum);
       }
     }
     if (devguiGlob.bindNextKey != false) {
@@ -1840,18 +1884,19 @@ void __cdecl DevGui_Draw(int param_1)
 
 // 0059A4E0  DevGui_AdvanceChildNum  (devgui/devgui.cpp:1572)
 
-void __cdecl DevGui_AdvanceChildNum(int param_1)
+void __cdecl DevGui_AdvanceChildNum(int numberToAdvance)
 
 {
   DevMenuItem *pDVar1;
-  int local_8;
+  DevMenuItem *menu;
+  int numberIter;
   
-  local_8 = 0;
-  while ((local_8 != param_1 &&
+  numberIter = 0;
+  while ((numberIter != numberToAdvance &&
          (pDVar1 = DevGui_GetMenu(devguiGlob.selectedMenu), pDVar1->nextSibling != 0))) {
     devguiGlob.selectedMenu = pDVar1->nextSibling;
     DevGui_GetMenu(devguiGlob.selectedMenu);
-    local_8 = local_8 + 1;
+    numberIter = numberIter + 1;
   }
   return;
 }
@@ -1865,6 +1910,7 @@ void __cdecl DevGui_SelectTopLevelChild(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
+  DevMenuItem *menu;
   
   pDVar3 = DevGui_GetMenu(devguiGlob.selectedMenu);
   if ((pDVar3 == (DevMenuItem *)0x0) &&
@@ -1904,7 +1950,8 @@ void __cdecl DevGui_SelectPrevMenuItem(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *local_10;
-  DevMenuItem *local_c;
+  DevMenuItem *menu;
+  DevMenuItem *menuParent;
   
   if (devguiGlob.selectedMenu == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x64b,0,"%s");
@@ -1914,30 +1961,30 @@ void __cdecl DevGui_SelectPrevMenuItem(void)
       return;
     }
   }
-  local_c = DevGui_GetMenu(devguiGlob.selectedMenu);
-  if (local_c->parent == 0) {
+  menu = DevGui_GetMenu(devguiGlob.selectedMenu);
+  if (menu->parent == 0) {
     local_10 = (DevMenuItem *)0x0;
   }
   else {
-    local_10 = DevGui_GetMenu(local_c->parent);
+    local_10 = DevGui_GetMenu(menu->parent);
   }
-  if (local_c->prevSibling == 0) {
+  if (menu->prevSibling == 0) {
     if (local_10 != (DevMenuItem *)0x0) {
       local_10->childMenuMemory = '\0';
     }
-    while (local_c->nextSibling != 0) {
+    while (menu->nextSibling != 0) {
       if (local_10 != (DevMenuItem *)0x0) {
         local_10->childMenuMemory = local_10->childMenuMemory + '\x01';
       }
-      devguiGlob.selectedMenu = local_c->nextSibling;
-      local_c = DevGui_GetMenu(devguiGlob.selectedMenu);
+      devguiGlob.selectedMenu = menu->nextSibling;
+      menu = DevGui_GetMenu(devguiGlob.selectedMenu);
     }
   }
   else {
     if (local_10 != (DevMenuItem *)0x0) {
       local_10->childMenuMemory = local_10->childMenuMemory + 0xff;
     }
-    devguiGlob.selectedMenu = local_c->prevSibling;
+    devguiGlob.selectedMenu = menu->prevSibling;
   }
   DevGui_SelectTopLevelChild();
   return;
@@ -1952,7 +1999,8 @@ void __cdecl DevGui_SelectNextMenuItem(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
-  DevMenuItem *local_8;
+  DevMenuItem *menuParent;
+  DevMenuItem *menu;
   
   if (devguiGlob.selectedMenu == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x679,0,"%s");
@@ -1962,24 +2010,24 @@ void __cdecl DevGui_SelectNextMenuItem(void)
       return;
     }
   }
-  local_8 = DevGui_GetMenu(devguiGlob.selectedMenu);
-  if (local_8->parent != 0) {
-    pDVar3 = DevGui_GetMenu(local_8->parent);
-    if (local_8->nextSibling == 0) {
+  menu = DevGui_GetMenu(devguiGlob.selectedMenu);
+  if (menu->parent != 0) {
+    pDVar3 = DevGui_GetMenu(menu->parent);
+    if (menu->nextSibling == 0) {
       pDVar3->childMenuMemory = '\0';
     }
     else {
       pDVar3->childMenuMemory = pDVar3->childMenuMemory + '\x01';
     }
   }
-  if (local_8->nextSibling == 0) {
-    while (local_8->prevSibling != 0) {
-      devguiGlob.selectedMenu = local_8->prevSibling;
-      local_8 = DevGui_GetMenu(devguiGlob.selectedMenu);
+  if (menu->nextSibling == 0) {
+    while (menu->prevSibling != 0) {
+      devguiGlob.selectedMenu = menu->prevSibling;
+      menu = DevGui_GetMenu(devguiGlob.selectedMenu);
     }
   }
   else {
-    devguiGlob.selectedMenu = local_8->nextSibling;
+    devguiGlob.selectedMenu = menu->nextSibling;
   }
   DevGui_SelectTopLevelChild();
   return;
@@ -1993,7 +2041,7 @@ void __cdecl DevGui_MoveLeft(void)
 {
   code *pcVar1;
   bool bVar2;
-  DevMenuItem *local_8;
+  DevMenuItem *menu;
   
   if (devguiGlob.selectedMenu == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x6a5,0,"%s");
@@ -2003,10 +2051,10 @@ void __cdecl DevGui_MoveLeft(void)
       return;
     }
   }
-  local_8 = DevGui_GetMenu(devguiGlob.selectedMenu);
-  while (local_8->parent != 0) {
-    devguiGlob.selectedMenu = local_8->parent;
-    local_8 = DevGui_GetMenu(devguiGlob.selectedMenu);
+  menu = DevGui_GetMenu(devguiGlob.selectedMenu);
+  while (menu->parent != 0) {
+    devguiGlob.selectedMenu = menu->parent;
+    menu = DevGui_GetMenu(devguiGlob.selectedMenu);
   }
   DevGui_SelectPrevMenuItem();
   return;
@@ -2022,6 +2070,7 @@ void __cdecl DevGui_MoveRight(void)
   code *pcVar2;
   bool bVar3;
   DevMenuItem *pDVar4;
+  DevMenuItem *menu;
   
   if ((devguiGlob.selectedMenu == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x6b4,0,"%s")
@@ -2050,6 +2099,7 @@ void __cdecl DevGui_MoveUp(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
+  DevMenuItem *menu;
   
   if (devguiGlob.selectedMenu == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x6c7,0,"%s");
@@ -2086,6 +2136,7 @@ void __cdecl DevGui_MoveDown(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
+  DevMenuItem *menu;
   
   if (devguiGlob.selectedMenu == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x6d8,0,"%s");
@@ -2120,13 +2171,13 @@ void __cdecl DevGui_MoveSelectionHorizontally(void)
 
 {
   short sVar1;
-  undefined4 local_8;
+  int scroll;
   
   sVar1 = DevGui_GetMenuScroll(SCROLL_XAXIS);
-  for (local_8 = (int)sVar1; local_8 < 0; local_8 = local_8 + 1) {
+  for (scroll = (int)sVar1; scroll < 0; scroll = scroll + 1) {
     DevGui_MoveLeft();
   }
-  for (; 0 < local_8; local_8 = local_8 + -1) {
+  for (; 0 < scroll; scroll = scroll + -1) {
     DevGui_MoveRight();
   }
   return;
@@ -2139,13 +2190,13 @@ void __cdecl DevGui_MoveSelectionVertically(void)
 
 {
   short sVar1;
-  undefined4 local_8;
+  int scroll;
   
   sVar1 = DevGui_GetMenuScroll(SCROLL_YAXIS);
-  for (local_8 = (int)sVar1; local_8 < 0; local_8 = local_8 + 1) {
+  for (scroll = (int)sVar1; scroll < 0; scroll = scroll + 1) {
     DevGui_MoveDown();
   }
-  for (; 0 < local_8; local_8 = local_8 + -1) {
+  for (; 0 < scroll; scroll = scroll + -1) {
     DevGui_MoveUp();
   }
   return;
@@ -2154,46 +2205,48 @@ void __cdecl DevGui_MoveSelectionVertically(void)
 
 // 0059A890  DevGui_Accept  (devgui/devgui.cpp:1807)
 
-void __cdecl DevGui_Accept(int param_1)
+void __cdecl DevGui_Accept(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  DevMenuItem *pDVar3;
+  DevMenuItem *menu_00;
+  DevMenuItem *menu;
   
-  pDVar3 = DevGui_GetMenu(devguiGlob.selectedMenu);
-  if ((pDVar3 == (DevMenuItem *)0x0) &&
+  menu_00 = DevGui_GetMenu(devguiGlob.selectedMenu);
+  if ((menu_00 == (DevMenuItem *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x713,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(pDVar3->childType) {
+  switch(menu_00->childType) {
   case '\0':
-    devguiGlob.selectedMenu = (pDVar3->child).menu;
-    DevGui_AdvanceChildNum((uint)pDVar3->childMenuMemory);
+    devguiGlob.selectedMenu = (menu_00->child).menu;
+    DevGui_AdvanceChildNum((uint)menu_00->childMenuMemory);
     break;
   case '\x01':
-    bVar2 = DevGui_EditableMenuItem(pDVar3);
+    bVar2 = DevGui_EditableMenuItem(menu_00);
     if (bVar2) {
       if (devguiGlob.editingMenuItem != false) {
-        Dvar_MakeLatchedValueCurrent((pDVar3->child).dvar);
-        Dvar_SetModified((pDVar3->child).dvar);
+        Dvar_MakeLatchedValueCurrent((menu_00->child).dvar);
+        Dvar_SetModified((menu_00->child).dvar);
       }
       devguiGlob.editingMenuItem = (bool)('\x01' - (devguiGlob.editingMenuItem != false));
       devguiGlob.selRow = 0;
     }
     break;
   case '\x02':
-    Cbuf_InsertText(param_1,(pDVar3->child).command);
+    Cbuf_InsertText(localClientNum,(menu_00->child).command);
     break;
   case '\x03':
     devguiGlob.editingMenuItem = (bool)('\x01' - (devguiGlob.editingMenuItem != false));
     devguiGlob.selRow = 0;
-    if (((pDVar3->child).command != (char *)0x0) && (((pDVar3->child).dvar)->type != DVAR_TYPE_BOOL)
-       ) {
-      (*((pDVar3->child).graph)->eventCallback)((pDVar3->child).graph,EVENT_ACTIVATE,param_1);
+    if (((menu_00->child).command != (char *)0x0) &&
+       (((menu_00->child).dvar)->type != DVAR_TYPE_BOOL)) {
+      (*((menu_00->child).graph)->eventCallback)
+                ((menu_00->child).graph,EVENT_ACTIVATE,localClientNum);
     }
     break;
   default:
@@ -2218,6 +2271,7 @@ void __cdecl DevGui_Reject(void)
   bool bVar2;
   DevMenuItem *pDVar3;
   DevMenuItem *pDVar4;
+  DevMenuItem *menu;
   
   if ((devguiGlob.selectedMenu == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x744,0,"%s")
@@ -2253,15 +2307,17 @@ void __cdecl DevGui_Init(void)
   int iVar2;
   int iVar3;
   int iVar4;
-  uint local_10;
+  uint menuIndex;
+  int screen_yPad;
+  int screen_xPad;
   
   DevGui_RegisterDvars();
   iVar2 = CL_GetFirstActiveLocalClient();
   iVar3 = CL_GetFirstActiveLocalClient();
-  for (local_10 = 0; local_10 < 0x7ff; local_10 = local_10 + 1) {
-    *(DevMenuItem **)devguiGlob.menus[local_10].label = devguiGlob.menus + local_10 + 1;
+  for (menuIndex = 0; menuIndex < 0x7ff; menuIndex = menuIndex + 1) {
+    *(DevMenuItem **)devguiGlob.menus[menuIndex].label = devguiGlob.menus + menuIndex + 1;
   }
-  pDVar1 = devguiGlob.menus + local_10;
+  pDVar1 = devguiGlob.menus + menuIndex;
   pDVar1->label[0] = '\0';
   pDVar1->label[1] = '\0';
   pDVar1->label[2] = '\0';
@@ -2300,6 +2356,8 @@ dvar_s * __cdecl DevGui_SelectedDvar(void)
   bool bVar2;
   DevMenuItem *pDVar3;
   dvar_s *pdVar4;
+  DevMenuItem *menu;
+  dvar_s *dvar;
   
   pDVar3 = DevGui_GetMenu(devguiGlob.selectedMenu);
   if (pDVar3 == (DevMenuItem *)0x0) {
@@ -2340,12 +2398,13 @@ void __cdecl DevGui_ScrollUpInternal(void)
 
 {
   bool bVar1;
-  DevMenuItem *pDVar2;
+  DevMenuItem *menu_00;
+  DevMenuItem *menu;
   
   do {
     DevGui_MoveUp();
-    pDVar2 = DevGui_GetMenu(devguiGlob.selectedMenu);
-    bVar1 = DevGui_EditableMenuItem(pDVar2);
+    menu_00 = DevGui_GetMenu(devguiGlob.selectedMenu);
+    bVar1 = DevGui_EditableMenuItem(menu_00);
   } while (!bVar1);
   return;
 }
@@ -2359,8 +2418,11 @@ void __cdecl DevGui_ScrollUp(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
-  dvar_s *pdVar4;
-  int iVar5;
+  dvar_s *dvar_00;
+  int iVar4;
+  int rowCount;
+  DevMenuItem *menu;
+  dvar_s *dvar;
   
   pDVar3 = DevGui_GetMenu(devguiGlob.selectedMenu);
   if (pDVar3->childType == '\x03') {
@@ -2376,8 +2438,8 @@ void __cdecl DevGui_ScrollUp(void)
         return;
       }
     }
-    pdVar4 = DevGui_SelectedDvar();
-    if (pdVar4 == (dvar_s *)0x0) {
+    dvar_00 = DevGui_SelectedDvar();
+    if (dvar_00 == (dvar_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x7b4,0,"%s")
       ;
       if (!bVar2) {
@@ -2386,12 +2448,12 @@ void __cdecl DevGui_ScrollUp(void)
         return;
       }
     }
-    iVar5 = DevGui_DvarRowCount(pdVar4);
-    if (iVar5 == 1) {
+    iVar4 = DevGui_DvarRowCount(dvar_00);
+    if (iVar4 == 1) {
       DevGui_ScrollUpInternal();
     }
     else if (devguiGlob.selRow == 0) {
-      devguiGlob.selRow = iVar5 + -1;
+      devguiGlob.selRow = iVar4 + -1;
     }
     else {
       devguiGlob.selRow = devguiGlob.selRow + -1;
@@ -2407,12 +2469,13 @@ void __cdecl DevGui_ScrollDownInternal(void)
 
 {
   bool bVar1;
-  DevMenuItem *pDVar2;
+  DevMenuItem *menu_00;
+  DevMenuItem *menu;
   
   do {
     DevGui_MoveDown();
-    pDVar2 = DevGui_GetMenu(devguiGlob.selectedMenu);
-    bVar1 = DevGui_EditableMenuItem(pDVar2);
+    menu_00 = DevGui_GetMenu(devguiGlob.selectedMenu);
+    bVar1 = DevGui_EditableMenuItem(menu_00);
   } while (!bVar1);
   return;
 }
@@ -2426,8 +2489,11 @@ void __cdecl DevGui_ScrollDown(void)
   code *pcVar1;
   bool bVar2;
   DevMenuItem *pDVar3;
-  dvar_s *pdVar4;
-  int iVar5;
+  dvar_s *dvar_00;
+  int iVar4;
+  int rowCount;
+  DevMenuItem *menu;
+  dvar_s *dvar;
   
   pDVar3 = DevGui_GetMenu(devguiGlob.selectedMenu);
   if (pDVar3->childType == '\x03') {
@@ -2443,8 +2509,8 @@ void __cdecl DevGui_ScrollDown(void)
         return;
       }
     }
-    pdVar4 = DevGui_SelectedDvar();
-    if (pdVar4 == (dvar_s *)0x0) {
+    dvar_00 = DevGui_SelectedDvar();
+    if (dvar_00 == (dvar_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x7df,0,"%s")
       ;
       if (!bVar2) {
@@ -2453,13 +2519,13 @@ void __cdecl DevGui_ScrollDown(void)
         return;
       }
     }
-    iVar5 = DevGui_DvarRowCount(pdVar4);
-    if (iVar5 == 1) {
+    iVar4 = DevGui_DvarRowCount(dvar_00);
+    if (iVar4 == 1) {
       DevGui_ScrollDownInternal();
     }
     else {
       devguiGlob.selRow = devguiGlob.selRow + 1;
-      if (devguiGlob.selRow == iVar5) {
+      if (devguiGlob.selRow == iVar4) {
         devguiGlob.selRow = 0;
       }
     }
@@ -2474,13 +2540,13 @@ void __cdecl DevGui_UpdateSelection(void)
 
 {
   short sVar1;
-  undefined4 local_8;
+  int scroll;
   
   sVar1 = DevGui_GetMenuScroll(SCROLL_YAXIS);
-  for (local_8 = (int)sVar1; local_8 < 0; local_8 = local_8 + 1) {
+  for (scroll = (int)sVar1; scroll < 0; scroll = scroll + 1) {
     DevGui_ScrollDown();
   }
-  for (; 0 < local_8; local_8 = local_8 + -1) {
+  for (; 0 < scroll; scroll = scroll + -1) {
     DevGui_ScrollUp();
   }
   return;
@@ -2489,34 +2555,36 @@ void __cdecl DevGui_UpdateSelection(void)
 
 // 0059B7D0  DevGui_PickFloatScrollStep  (devgui/devgui.cpp:2048)
 
-float __cdecl DevGui_PickFloatScrollStep(float param_1,float param_2)
+float __cdecl DevGui_PickFloatScrollStep(float min,float max)
 
 {
   float fVar1;
-  float local_c;
+  float range;
+  float step;
+  float roundedStep;
   
-  fVar1 = param_2 - param_1;
-  if ((param_2 == (float)(int)ROUND(param_2 + 9.313226e-10)) &&
-     (param_1 == (float)(int)ROUND(param_1 + 9.313226e-10))) {
-    for (local_c = 1.0; local_c * 100.0 < fVar1; local_c = local_c * 2.0) {
+  fVar1 = max - min;
+  if ((max == (float)(int)ROUND(max + 9.313226e-10)) &&
+     (min == (float)(int)ROUND(min + 9.313226e-10))) {
+    for (step = 1.0; step * 100.0 < fVar1; step = step * 2.0) {
     }
-    for (; fVar1 < local_c * 100.0; local_c = local_c * 0.5) {
+    for (; fVar1 < step * 100.0; step = step * 0.5) {
     }
   }
   else {
-    local_c = fVar1 * 0.01;
-    fVar1 = (float)(int)ROUND(local_c + 9.313226e-10);
-    if ((fVar1 != 0.0) && (ABS(fVar1 - local_c) < 0.1)) {
-      local_c = fVar1;
+    step = fVar1 * 0.01;
+    fVar1 = (float)(int)ROUND(step + 9.313226e-10);
+    if ((fVar1 != 0.0) && (ABS(fVar1 - step) < 0.1)) {
+      step = fVar1;
     }
   }
-  return local_c;
+  return step;
 }
 
 
 // 0059AE50  DevGui_UpdateDvar  (devgui/devgui.cpp:2075)
 
-void __cdecl DevGui_UpdateDvar(float param_1,bool param_2,bool param_3)
+void __cdecl DevGui_UpdateDvar(float deltaTime,bool channelLink,bool dvarReset)
 
 {
   int iVar1;
@@ -2524,179 +2592,176 @@ void __cdecl DevGui_UpdateDvar(float param_1,bool param_2,bool param_3)
   code *pcVar3;
   bool bVar4;
   uint uVar5;
-  char *pcVar6;
-  long64 lVar7;
+  char *fmt;
+  long64 lVar6;
+  float fVar7;
   float fVar8;
-  float fVar9;
   DevGuiInputAxis in_stack_ffffff90;
-  int local_3c;
+  float floatValue;
+  bool boolValue;
+  int int64Value;
   float local_38;
-  float local_2c [4];
-  dvar_s *local_1c;
-  float local_18 [4];
-  uint local_8;
+  float step;
+  float vector [4];
+  dvar_s *dvar;
+  float color [4];
+  int intValue;
   
-  local_1c = DevGui_SelectedDvar();
-  if ((local_1c == (dvar_s *)0x0) &&
+  dvar = DevGui_SelectedDvar();
+  if ((dvar == (dvar_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x826,0,"%s")
      , !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if (param_3) {
-    Dvar_Reset(local_1c,DVAR_SOURCE_DEVGUI);
+  if (dvarReset) {
+    Dvar_Reset(dvar,DVAR_SOURCE_DEVGUI);
   }
-  switch(local_1c->type) {
+  switch(dvar->type) {
   case DVAR_TYPE_BOOL:
-    local_8 = (uint)((local_1c->latched).enabled != false);
-    lVar7 = DevGui_UpdateIntScroll(param_1,0,0x100000000,0,in_stack_ffffff90);
-    local_8 = (uint)lVar7;
-    if ((local_8 != 0) != (local_1c->latched).enabled) {
-      Dvar_SetBoolFromSource(local_1c,local_8 != 0,DVAR_SOURCE_DEVGUI);
+    intValue = (int)((dvar->latched).enabled != false);
+    lVar6 = DevGui_UpdateIntScroll(deltaTime,0,0x100000000,0,in_stack_ffffff90);
+    intValue = (int)lVar6;
+    if ((intValue != 0) != (dvar->latched).enabled) {
+      Dvar_SetBoolFromSource(dvar,intValue != 0,DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_FLOAT:
-    fVar8 = DevGui_PickFloatScrollStep((local_1c->domain).value.min,(local_1c->domain).value.max);
-    fVar8 = DevGui_UpdateFloatScroll
-                      (param_1,(local_1c->latched).value,(local_1c->domain).value.min,
-                       (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-    if (fVar8 != (local_1c->latched).value) {
-      Dvar_SetFloatFromSource(local_1c,fVar8,DVAR_SOURCE_DEVGUI);
+    fVar7 = DevGui_PickFloatScrollStep((dvar->domain).value.min,(dvar->domain).value.max);
+    fVar7 = DevGui_UpdateFloatScroll
+                      (deltaTime,(dvar->latched).value,(dvar->domain).value.min,
+                       (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+    if (fVar7 != (dvar->latched).value) {
+      Dvar_SetFloatFromSource(dvar,fVar7,DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_FLOAT_2:
-    fVar8 = DevGui_PickFloatScrollStep((local_1c->domain).value.min,(local_1c->domain).value.max);
-    local_2c[0] = (local_1c->latched).value;
-    local_2c[1] = (local_1c->latched).vector[1];
-    if (param_2) {
-      local_2c[0] = DevGui_UpdateFloatScroll
-                              (param_1,(local_1c->latched).value,(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[1] = DevGui_UpdateFloatScroll
-                              (param_1,local_2c[1],(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
+    fVar7 = DevGui_PickFloatScrollStep((dvar->domain).value.min,(dvar->domain).value.max);
+    vector[0] = (dvar->latched).value;
+    vector[1] = (dvar->latched).vector[1];
+    if (channelLink) {
+      vector[0] = DevGui_UpdateFloatScroll
+                            (deltaTime,(dvar->latched).value,(dvar->domain).value.min,
+                             (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+      vector[1] = DevGui_UpdateFloatScroll
+                            (deltaTime,vector[1],(dvar->domain).value.min,(dvar->domain).value.max,
+                             fVar7,SCROLL_XAXIS);
     }
     else {
-      fVar8 = DevGui_UpdateFloatScroll
-                        (param_1,local_2c[devguiGlob.selRow],(local_1c->domain).value.min,
-                         (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[devguiGlob.selRow] = fVar8;
+      fVar7 = DevGui_UpdateFloatScroll
+                        (deltaTime,vector[devguiGlob.selRow],(dvar->domain).value.min,
+                         (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+      vector[devguiGlob.selRow] = fVar7;
     }
-    if (((local_1c->latched).value == local_2c[0]) && ((local_1c->latched).vector[1] == local_2c[1])
-       ) {
+    if (((dvar->latched).value == vector[0]) && ((dvar->latched).vector[1] == vector[1])) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
     if (!bVar4) {
-      Dvar_SetVec2FromSource(local_1c,local_2c[0],local_2c[1],DVAR_SOURCE_DEVGUI);
+      Dvar_SetVec2FromSource(dvar,vector[0],vector[1],DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_FLOAT_3:
   case DVAR_TYPE_LINEAR_COLOR_RGB:
   case DVAR_TYPE_COLOR_XYZ:
-    fVar8 = DevGui_PickFloatScrollStep((local_1c->domain).value.min,(local_1c->domain).value.max);
-    local_2c[0] = (local_1c->latched).value;
-    local_2c[1] = (local_1c->latched).vector[1];
-    local_2c[2] = (local_1c->latched).vector[2];
-    if (param_2) {
-      local_2c[0] = DevGui_UpdateFloatScroll
-                              (param_1,(local_1c->latched).value,(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[1] = DevGui_UpdateFloatScroll
-                              (param_1,local_2c[1],(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[2] = DevGui_UpdateFloatScroll
-                              (param_1,local_2c[2],(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
+    fVar7 = DevGui_PickFloatScrollStep((dvar->domain).value.min,(dvar->domain).value.max);
+    vector[0] = (dvar->latched).value;
+    vector[1] = (dvar->latched).vector[1];
+    vector[2] = (dvar->latched).vector[2];
+    if (channelLink) {
+      vector[0] = DevGui_UpdateFloatScroll
+                            (deltaTime,(dvar->latched).value,(dvar->domain).value.min,
+                             (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+      vector[1] = DevGui_UpdateFloatScroll
+                            (deltaTime,vector[1],(dvar->domain).value.min,(dvar->domain).value.max,
+                             fVar7,SCROLL_XAXIS);
+      vector[2] = DevGui_UpdateFloatScroll
+                            (deltaTime,vector[2],(dvar->domain).value.min,(dvar->domain).value.max,
+                             fVar7,SCROLL_XAXIS);
     }
     else {
-      fVar8 = DevGui_UpdateFloatScroll
-                        (param_1,local_2c[devguiGlob.selRow],(local_1c->domain).value.min,
-                         (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[devguiGlob.selRow] = fVar8;
+      fVar7 = DevGui_UpdateFloatScroll
+                        (deltaTime,vector[devguiGlob.selRow],(dvar->domain).value.min,
+                         (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+      vector[devguiGlob.selRow] = fVar7;
     }
-    if ((((local_1c->latched).value == local_2c[0]) &&
-        ((local_1c->latched).vector[1] == local_2c[1])) &&
-       ((local_1c->latched).vector[2] == local_2c[2])) {
+    if ((((dvar->latched).value == vector[0]) && ((dvar->latched).vector[1] == vector[1])) &&
+       ((dvar->latched).vector[2] == vector[2])) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
     if (!bVar4) {
-      Dvar_SetVec3FromSource(local_1c,local_2c[0],local_2c[1],local_2c[2],DVAR_SOURCE_DEVGUI);
+      Dvar_SetVec3FromSource(dvar,vector[0],vector[1],vector[2],DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_FLOAT_4:
-    fVar8 = DevGui_PickFloatScrollStep((local_1c->domain).value.min,(local_1c->domain).value.max);
-    local_2c[0] = (local_1c->latched).value;
-    local_2c[1] = (local_1c->latched).vector[1];
-    local_2c[2] = (local_1c->latched).vector[2];
-    local_2c[3] = (local_1c->latched).vector[3];
-    if (param_2) {
-      local_2c[0] = DevGui_UpdateFloatScroll
-                              (param_1,(local_1c->latched).value,(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[1] = DevGui_UpdateFloatScroll
-                              (param_1,local_2c[1],(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[2] = DevGui_UpdateFloatScroll
-                              (param_1,local_2c[2],(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[3] = DevGui_UpdateFloatScroll
-                              (param_1,local_2c[3],(local_1c->domain).value.min,
-                               (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
+    fVar7 = DevGui_PickFloatScrollStep((dvar->domain).value.min,(dvar->domain).value.max);
+    vector[0] = (dvar->latched).value;
+    vector[1] = (dvar->latched).vector[1];
+    vector[2] = (dvar->latched).vector[2];
+    vector[3] = (dvar->latched).vector[3];
+    if (channelLink) {
+      vector[0] = DevGui_UpdateFloatScroll
+                            (deltaTime,(dvar->latched).value,(dvar->domain).value.min,
+                             (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+      vector[1] = DevGui_UpdateFloatScroll
+                            (deltaTime,vector[1],(dvar->domain).value.min,(dvar->domain).value.max,
+                             fVar7,SCROLL_XAXIS);
+      vector[2] = DevGui_UpdateFloatScroll
+                            (deltaTime,vector[2],(dvar->domain).value.min,(dvar->domain).value.max,
+                             fVar7,SCROLL_XAXIS);
+      vector[3] = DevGui_UpdateFloatScroll
+                            (deltaTime,vector[3],(dvar->domain).value.min,(dvar->domain).value.max,
+                             fVar7,SCROLL_XAXIS);
     }
     else {
-      fVar8 = DevGui_UpdateFloatScroll
-                        (param_1,local_2c[devguiGlob.selRow],(local_1c->domain).value.min,
-                         (local_1c->domain).value.max,fVar8,SCROLL_XAXIS);
-      local_2c[devguiGlob.selRow] = fVar8;
+      fVar7 = DevGui_UpdateFloatScroll
+                        (deltaTime,vector[devguiGlob.selRow],(dvar->domain).value.min,
+                         (dvar->domain).value.max,fVar7,SCROLL_XAXIS);
+      vector[devguiGlob.selRow] = fVar7;
     }
-    if (((((local_1c->latched).value == local_2c[0]) &&
-         ((local_1c->latched).vector[1] == local_2c[1])) &&
-        ((local_1c->latched).vector[2] == local_2c[2])) &&
-       ((local_1c->latched).vector[3] == local_2c[3])) {
+    if (((((dvar->latched).value == vector[0]) && ((dvar->latched).vector[1] == vector[1])) &&
+        ((dvar->latched).vector[2] == vector[2])) && ((dvar->latched).vector[3] == vector[3])) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
     if (!bVar4) {
-      Dvar_SetVec4FromSource
-                (local_1c,local_2c[0],local_2c[1],local_2c[2],local_2c[3],DVAR_SOURCE_DEVGUI);
+      Dvar_SetVec4FromSource(dvar,vector[0],vector[1],vector[2],vector[3],DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_INT:
-    iVar1 = (local_1c->domain).integer.max;
-    iVar2 = (local_1c->domain).enumeration.stringCount;
-    lVar7 = DevGui_UpdateIntScroll
-                      (param_1,CONCAT44(iVar2,(local_1c->latched).integer >> 0x1f),
+    iVar1 = (dvar->domain).integer.max;
+    iVar2 = (dvar->domain).enumeration.stringCount;
+    lVar6 = DevGui_UpdateIntScroll
+                      (deltaTime,CONCAT44(iVar2,(dvar->latched).integer >> 0x1f),
                        CONCAT44(iVar1,iVar2 >> 0x1f),(ulonglong)(uint)(iVar1 >> 0x1f),
                        in_stack_ffffff90);
-    local_8 = (uint)lVar7;
-    if (local_8 != (local_1c->latched).integer) {
-      Dvar_SetIntFromSource(local_1c,local_8,DVAR_SOURCE_DEVGUI);
+    intValue = (int)lVar6;
+    if (intValue != (dvar->latched).integer) {
+      Dvar_SetIntFromSource(dvar,intValue,DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_ENUM:
-    uVar5 = (local_1c->domain).enumeration.stringCount - 1;
-    lVar7 = DevGui_UpdateIntScroll
-                      (param_1,(ulonglong)(uint)((local_1c->latched).integer >> 0x1f),
+    uVar5 = (dvar->domain).enumeration.stringCount - 1;
+    lVar6 = DevGui_UpdateIntScroll
+                      (deltaTime,(ulonglong)(uint)((dvar->latched).integer >> 0x1f),
                        (ulonglong)uVar5 << 0x20,(ulonglong)(uint)((int)uVar5 >> 0x1f),
                        in_stack_ffffff90);
-    local_8 = (uint)lVar7;
-    if (local_8 != (local_1c->latched).integer) {
-      Dvar_SetIntFromSource(local_1c,local_8,DVAR_SOURCE_DEVGUI);
+    intValue = (int)lVar6;
+    if (intValue != (dvar->latched).integer) {
+      Dvar_SetIntFromSource(dvar,intValue,DVAR_SOURCE_DEVGUI);
     }
     break;
   default:
-    pcVar6 = va("invalid dvar type %i");
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x890,1,pcVar6)
-    ;
+    fmt = va("invalid dvar type %i");
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x890,1,fmt);
     if (!bVar4) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
@@ -2704,34 +2769,33 @@ void __cdecl DevGui_UpdateDvar(float param_1,bool param_2,bool param_3)
     }
     break;
   case DVAR_TYPE_COLOR:
-    Byte4UnpackRgba((local_1c->latched).color,local_18);
-    fVar8 = local_18[devguiGlob.selRow];
-    if (param_2) {
-      local_18[0] = DevGui_UpdateFloatScroll(param_1,local_18[0],0.0,1.0,0.019607844,SCROLL_XAXIS);
-      local_18[1] = DevGui_UpdateFloatScroll(param_1,local_18[1],0.0,1.0,0.019607844,SCROLL_XAXIS);
-      local_18[2] = DevGui_UpdateFloatScroll(param_1,local_18[2],0.0,1.0,0.019607844,SCROLL_XAXIS);
-      local_18[3] = DevGui_UpdateFloatScroll(param_1,local_18[3],0.0,1.0,0.019607844,SCROLL_XAXIS);
+    Byte4UnpackRgba((dvar->latched).color,color);
+    fVar7 = color[devguiGlob.selRow];
+    if (channelLink) {
+      color[0] = DevGui_UpdateFloatScroll(deltaTime,color[0],0.0,1.0,0.019607844,SCROLL_XAXIS);
+      color[1] = DevGui_UpdateFloatScroll(deltaTime,color[1],0.0,1.0,0.019607844,SCROLL_XAXIS);
+      color[2] = DevGui_UpdateFloatScroll(deltaTime,color[2],0.0,1.0,0.019607844,SCROLL_XAXIS);
+      color[3] = DevGui_UpdateFloatScroll(deltaTime,color[3],0.0,1.0,0.019607844,SCROLL_XAXIS);
     }
     else {
-      fVar9 = DevGui_UpdateFloatScroll
-                        (param_1,local_18[devguiGlob.selRow],0.0,1.0,0.019607844,SCROLL_XAXIS);
-      local_18[devguiGlob.selRow] = fVar9;
+      fVar8 = DevGui_UpdateFloatScroll
+                        (deltaTime,color[devguiGlob.selRow],0.0,1.0,0.019607844,SCROLL_XAXIS);
+      color[devguiGlob.selRow] = fVar8;
     }
-    if (fVar8 != local_18[devguiGlob.selRow]) {
-      Dvar_SetColorFromSource
-                (local_1c,local_18[0],local_18[1],local_18[2],local_18[3],DVAR_SOURCE_DEVGUI);
+    if (fVar7 != color[devguiGlob.selRow]) {
+      Dvar_SetColorFromSource(dvar,color[0],color[1],color[2],color[3],DVAR_SOURCE_DEVGUI);
     }
     break;
   case DVAR_TYPE_INT64:
-    lVar7 = DevGui_UpdateIntScroll
-                      (param_1,CONCAT44((local_1c->domain).enumeration.stringCount,
-                                        (local_1c->latched).vector[1]),
-                       *(long64 *)((int)&(local_1c->domain).integer64.min + 4),
-                       (ulonglong)*(uint *)((int)&local_1c->domain + 0xc),in_stack_ffffff90);
-    local_3c = (int)lVar7;
-    local_38 = (float)((ulonglong)lVar7 >> 0x20);
-    if ((local_3c != (local_1c->latched).integer) || (local_38 != (local_1c->latched).vector[1])) {
-      Dvar_SetInt64FromSource(local_1c,CONCAT44(3,local_38),(DvarSetSource)local_1c);
+    lVar6 = DevGui_UpdateIntScroll
+                      (deltaTime,
+                       CONCAT44((dvar->domain).enumeration.stringCount,(dvar->latched).vector[1]),
+                       *(long64 *)((int)&(dvar->domain).integer64.min + 4),
+                       (ulonglong)*(uint *)((int)&dvar->domain + 0xc),in_stack_ffffff90);
+    int64Value = (int)lVar6;
+    local_38 = (float)((ulonglong)lVar6 >> 0x20);
+    if ((int64Value != (dvar->latched).integer) || (local_38 != (dvar->latched).vector[1])) {
+      Dvar_SetInt64FromSource(dvar,CONCAT44(3,local_38),(DvarSetSource)dvar);
     }
   }
   return;
@@ -2740,7 +2804,7 @@ void __cdecl DevGui_UpdateDvar(float param_1,bool param_2,bool param_3)
 
 // 0059C0A0  DevGui_AddGraphKnot  (devgui/devgui.cpp:2199)
 
-void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
+void __cdecl DevGui_AddGraphKnot(DevGraph *graph,int localClientNum)
 
 {
   float fVar1;
@@ -2752,9 +2816,12 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
   float (*pafVar7) [2];
   code *pcVar8;
   bool bVar9;
-  int local_c;
+  float averageX;
+  int currentKnotCount;
+  int knotIndex;
+  float averageY;
   
-  if (param_1 == (DevGraph *)0x0) {
+  if (graph == (DevGraph *)0x0) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x89d,0,"%s");
     if (!bVar9) {
       pcVar8 = (code *)swi(3);
@@ -2762,7 +2829,7 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
       return;
     }
   }
-  if (param_1->knots == (float (*) [2])0x0) {
+  if (graph->knots == (float (*) [2])0x0) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x89d,0,"%s");
     if (!bVar9) {
       pcVar8 = (code *)swi(3);
@@ -2770,7 +2837,7 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
       return;
     }
   }
-  if (param_1->knotCount == (int *)0x0) {
+  if (graph->knotCount == (int *)0x0) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x89d,0,"%s");
     if (!bVar9) {
       pcVar8 = (code *)swi(3);
@@ -2778,7 +2845,7 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
       return;
     }
   }
-  if (param_1->knotCountMax < 1) {
+  if (graph->knotCountMax < 1) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x89d,0,"%s");
     if (!bVar9) {
       pcVar8 = (code *)swi(3);
@@ -2786,7 +2853,7 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
       return;
     }
   }
-  if (param_1->selectedKnot < 0) {
+  if (graph->selectedKnot < 0) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x89e,0,"%s");
     if (!bVar9) {
       pcVar8 = (code *)swi(3);
@@ -2794,7 +2861,7 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
       return;
     }
   }
-  if (*param_1->knotCount <= param_1->selectedKnot) {
+  if (*graph->knotCount <= graph->selectedKnot) {
     bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x89f,0,"%s");
     if (!bVar9) {
       pcVar8 = (code *)swi(3);
@@ -2802,44 +2869,44 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
       return;
     }
   }
-  if (*param_1->knotCount == param_1->knotCountMax) {
+  if (*graph->knotCount == graph->knotCountMax) {
     Com_Printf(0xb,"^3Maximum number of knots have reached for this graph\n");
   }
   else {
-    iVar5 = *param_1->knotCount;
-    if (param_1->selectedKnot + 1 < iVar5) {
-      fVar1 = param_1->knots[param_1->selectedKnot][0];
-      fVar2 = param_1->knots[param_1->selectedKnot + 1][0];
-      fVar3 = param_1->knots[param_1->selectedKnot][1];
-      fVar4 = param_1->knots[param_1->selectedKnot + 1][1];
-      iVar5 = *param_1->knotCount;
-      while (local_c = iVar5 + -1, param_1->selectedKnot <= local_c) {
-        pafVar6 = param_1->knots;
-        pafVar7 = param_1->knots;
-        pafVar6[iVar5][0] = pafVar7[local_c][0];
-        pafVar6[iVar5][1] = pafVar7[local_c][1];
-        iVar5 = local_c;
+    iVar5 = *graph->knotCount;
+    if (graph->selectedKnot + 1 < iVar5) {
+      fVar1 = graph->knots[graph->selectedKnot][0];
+      fVar2 = graph->knots[graph->selectedKnot + 1][0];
+      fVar3 = graph->knots[graph->selectedKnot][1];
+      fVar4 = graph->knots[graph->selectedKnot + 1][1];
+      iVar5 = *graph->knotCount;
+      while (knotIndex = iVar5 + -1, graph->selectedKnot <= knotIndex) {
+        pafVar6 = graph->knots;
+        pafVar7 = graph->knots;
+        pafVar6[iVar5][0] = pafVar7[knotIndex][0];
+        pafVar6[iVar5][1] = pafVar7[knotIndex][1];
+        iVar5 = knotIndex;
       }
-      param_1->knots[param_1->selectedKnot + 1][0] = (fVar1 + fVar2) * 0.5;
-      param_1->knots[param_1->selectedKnot + 1][1] = (fVar3 + fVar4) * 0.5;
-      param_1->selectedKnot = param_1->selectedKnot + 1;
-      *param_1->knotCount = *param_1->knotCount + 1;
+      graph->knots[graph->selectedKnot + 1][0] = (fVar1 + fVar2) * 0.5;
+      graph->knots[graph->selectedKnot + 1][1] = (fVar3 + fVar4) * 0.5;
+      graph->selectedKnot = graph->selectedKnot + 1;
+      *graph->knotCount = *graph->knotCount + 1;
     }
     else {
-      fVar1 = param_1->knots[param_1->selectedKnot][0];
-      fVar2 = param_1->knots[param_1->selectedKnot + -1][0];
-      fVar3 = param_1->knots[param_1->selectedKnot][1];
-      fVar4 = param_1->knots[param_1->selectedKnot + -1][1];
-      pafVar6 = param_1->knots;
-      pafVar7 = param_1->knots;
+      fVar1 = graph->knots[graph->selectedKnot][0];
+      fVar2 = graph->knots[graph->selectedKnot + -1][0];
+      fVar3 = graph->knots[graph->selectedKnot][1];
+      fVar4 = graph->knots[graph->selectedKnot + -1][1];
+      pafVar6 = graph->knots;
+      pafVar7 = graph->knots;
       pafVar6[iVar5][0] = pafVar7[iVar5 + -1][0];
       pafVar6[iVar5][1] = pafVar7[iVar5 + -1][1];
-      param_1->knots[iVar5 + -1][0] = (fVar1 + fVar2) * 0.5;
-      param_1->knots[iVar5 + -1][1] = (fVar3 + fVar4) * 0.5;
-      *param_1->knotCount = *param_1->knotCount + 1;
+      graph->knots[iVar5 + -1][0] = (fVar1 + fVar2) * 0.5;
+      graph->knots[iVar5 + -1][1] = (fVar3 + fVar4) * 0.5;
+      *graph->knotCount = *graph->knotCount + 1;
     }
-    if (param_1->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
-      (*param_1->eventCallback)(param_1,EVENT_UPDATE,param_2);
+    if (graph->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
+      (*graph->eventCallback)(graph,EVENT_UPDATE,localClientNum);
     }
   }
   return;
@@ -2848,7 +2915,7 @@ void __cdecl DevGui_AddGraphKnot(DevGraph *param_1,int param_2)
 
 // 0059C400  DevGui_RemoveGraphKnot  (devgui/devgui.cpp:2251)
 
-void __cdecl DevGui_RemoveGraphKnot(DevGraph *param_1,int param_2)
+void __cdecl DevGui_RemoveGraphKnot(DevGraph *graph,int localClientNum)
 
 {
   int iVar1;
@@ -2856,63 +2923,64 @@ void __cdecl DevGui_RemoveGraphKnot(DevGraph *param_1,int param_2)
   float (*pafVar3) [2];
   code *pcVar4;
   bool bVar5;
-  int local_8;
+  int currentKnotCount;
+  int knotIndex;
   
-  if ((param_1 == (DevGraph *)0x0) &&
+  if ((graph == (DevGraph *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8cf,0,"%s")
      , !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_1->knots == (float (*) [2])0x0) &&
+  if ((graph->knots == (float (*) [2])0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8cf,0,"%s")
      , !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_1->knotCount == (int *)0x0) &&
+  if ((graph->knotCount == (int *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8cf,0,"%s")
      , !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_1->knotCountMax < 1) &&
+  if ((graph->knotCountMax < 1) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8cf,0,"%s")
      , !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((param_1->selectedKnot < 0) &&
+  if ((graph->selectedKnot < 0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8d1,0,"%s")
      , !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((*param_1->knotCount <= param_1->selectedKnot) &&
+  if ((*graph->knotCount <= graph->selectedKnot) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8d2,0,"%s")
      , !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  iVar1 = *param_1->knotCount;
-  if ((param_1->selectedKnot != 0) && (param_1->selectedKnot + 1 != iVar1)) {
-    for (local_8 = param_1->selectedKnot; local_8 < iVar1 + -1; local_8 = local_8 + 1) {
-      pafVar2 = param_1->knots;
-      pafVar3 = param_1->knots;
-      pafVar2[local_8][0] = pafVar3[local_8 + 1][0];
-      pafVar2[local_8][1] = pafVar3[local_8 + 1][1];
+  iVar1 = *graph->knotCount;
+  if ((graph->selectedKnot != 0) && (graph->selectedKnot + 1 != iVar1)) {
+    for (knotIndex = graph->selectedKnot; knotIndex < iVar1 + -1; knotIndex = knotIndex + 1) {
+      pafVar2 = graph->knots;
+      pafVar3 = graph->knots;
+      pafVar2[knotIndex][0] = pafVar3[knotIndex + 1][0];
+      pafVar2[knotIndex][1] = pafVar3[knotIndex + 1][1];
     }
-    param_1->knots[iVar1 + -1][0] = -1.0;
-    param_1->knots[iVar1 + -1][1] = -1.0;
-    *param_1->knotCount = *param_1->knotCount + -1;
-    if (param_1->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
-      (*param_1->eventCallback)(param_1,EVENT_UPDATE,param_2);
+    graph->knots[iVar1 + -1][0] = -1.0;
+    graph->knots[iVar1 + -1][1] = -1.0;
+    *graph->knotCount = *graph->knotCount + -1;
+    if (graph->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
+      (*graph->eventCallback)(graph,EVENT_UPDATE,localClientNum);
     }
   }
   return;
@@ -2921,146 +2989,156 @@ void __cdecl DevGui_RemoveGraphKnot(DevGraph *param_1,int param_2)
 
 // 0059B930  DevGui_UpdateGraph  (devgui/devgui.cpp:2278)
 
-void __cdecl DevGui_UpdateGraph(int param_1,float param_2)
+void __cdecl DevGui_UpdateGraph(int localClientNum,float deltaTime)
 
 {
   float fVar1;
-  DevGraph *pDVar2;
-  int iVar3;
-  code *pcVar4;
-  bool bVar5;
-  short sVar6;
-  DevMenuItem *pDVar7;
+  DevGraph *graph_00;
+  int iVar2;
+  code *pcVar3;
+  bool bVar4;
+  short sVar5;
+  DevMenuItem *pDVar6;
+  float fVar7;
   float fVar8;
   float fVar9;
-  float fVar10;
   float local_80;
   float local_78;
   float local_74;
   float local_68;
   float local_60;
   float local_50;
+  short xAxisDelta;
+  bool graphUpdated;
+  int currentKnotCount;
+  DevGraph *graph;
+  float deltaX;
+  DevMenuItem *menu;
+  float updatedY;
+  float updatedX;
+  float deltaY;
   
-  pDVar7 = DevGui_GetMenu(devguiGlob.selectedMenu);
-  if ((pDVar7 == (DevMenuItem *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8f6,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  pDVar6 = DevGui_GetMenu(devguiGlob.selectedMenu);
+  if ((pDVar6 == (DevMenuItem *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8f6,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((pDVar7->childType != '\x03') &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8f7,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if ((pDVar6->childType != '\x03') &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8f7,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if (((pDVar7->child).command == (char *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8f8,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if (((pDVar6->child).command == (char *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8f8,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  pDVar2 = (pDVar7->child).graph;
-  if ((pDVar2 == (DevGraph *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  graph_00 = (pDVar6->child).graph;
+  if ((graph_00 == (DevGraph *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((pDVar2->knots == (float (*) [2])0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if ((graph_00->knots == (float (*) [2])0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((pDVar2->knotCount == (int *)0x0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if ((graph_00->knotCount == (int *)0x0) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((pDVar2->knotCountMax < 1) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  if ((graph_00->knotCountMax < 1) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8fc,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  iVar3 = *pDVar2->knotCount;
-  if (((iVar3 < 2) || (pDVar2->knotCountMax < iVar3)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8ff,0,"%s")
-     , !bVar5)) {
-    pcVar4 = (code *)swi(3);
-    (*pcVar4)();
+  iVar2 = *graph_00->knotCount;
+  if (((iVar2 < 2) || (graph_00->knotCountMax < iVar2)) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x8ff,0,"%s")
+     , !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if ((pDVar2->selectedKnot < 0) || (iVar3 <= pDVar2->selectedKnot)) {
-    pDVar2->selectedKnot = 0;
+  if ((graph_00->selectedKnot < 0) || (iVar2 <= graph_00->selectedKnot)) {
+    graph_00->selectedKnot = 0;
   }
-  bVar5 = DevGui_IsButtonPressed(INPUT_GRAPH_EDIT);
-  if (bVar5) {
+  bVar4 = DevGui_IsButtonPressed(INPUT_GRAPH_EDIT);
+  if (bVar4) {
     devguiGlob.editingKnot = (bool)('\x01' - (devguiGlob.editingKnot != false));
   }
-  bVar5 = DevGui_IsButtonPressed(INPUT_GRAPH_ADD);
-  if (bVar5) {
-    DevGui_AddGraphKnot(pDVar2,param_1);
+  bVar4 = DevGui_IsButtonPressed(INPUT_GRAPH_ADD);
+  if (bVar4) {
+    DevGui_AddGraphKnot(graph_00,localClientNum);
     devguiGlob.editingKnot = false;
   }
   else {
-    bVar5 = DevGui_IsButtonPressed(INPUT_GRAPH_REMOVE);
-    if (bVar5) {
-      DevGui_RemoveGraphKnot(pDVar2,param_1);
+    bVar4 = DevGui_IsButtonPressed(INPUT_GRAPH_REMOVE);
+    if (bVar4) {
+      DevGui_RemoveGraphKnot(graph_00,localClientNum);
       devguiGlob.editingKnot = false;
     }
     else {
-      bVar5 = DevGui_IsButtonPressed(INPUT_GRAPH_SAVE);
-      if (bVar5) {
-        if (pDVar2->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
-          (*pDVar2->eventCallback)(pDVar2,EVENT_SAVE,param_1);
+      bVar4 = DevGui_IsButtonPressed(INPUT_GRAPH_SAVE);
+      if (bVar4) {
+        if (graph_00->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
+          (*graph_00->eventCallback)(graph_00,EVENT_SAVE,localClientNum);
         }
       }
       else {
-        bVar5 = DevGui_IsButtonPressed(INPUT_ACCEPT);
-        if (bVar5) {
-          if (pDVar2->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
-            (*pDVar2->eventCallback)(pDVar2,EVENT_ACCEPT,param_1);
+        bVar4 = DevGui_IsButtonPressed(INPUT_ACCEPT);
+        if (bVar4) {
+          if (graph_00->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
+            (*graph_00->eventCallback)(graph_00,EVENT_ACCEPT,localClientNum);
           }
         }
         else {
-          bVar5 = DevGui_IsButtonPressed(INPUT_REJECT);
-          if (bVar5) {
-            if (pDVar2->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0) {
-              (*pDVar2->eventCallback)(pDVar2,EVENT_DEACTIVATE,param_1);
+          bVar4 = DevGui_IsButtonPressed(INPUT_REJECT);
+          if (bVar4) {
+            if (graph_00->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0)
+            {
+              (*graph_00->eventCallback)(graph_00,EVENT_DEACTIVATE,localClientNum);
             }
             devguiGlob.editingMenuItem = false;
           }
           else if (devguiGlob.editingKnot == false) {
-            sVar6 = DevGui_GetMenuScroll(SCROLL_XAXIS);
-            if ((sVar6 < 0) && (0 < pDVar2->selectedKnot)) {
-              pDVar2->selectedKnot = pDVar2->selectedKnot + -1;
+            sVar5 = DevGui_GetMenuScroll(SCROLL_XAXIS);
+            if ((sVar5 < 0) && (0 < graph_00->selectedKnot)) {
+              graph_00->selectedKnot = graph_00->selectedKnot + -1;
             }
-            else if ((0 < sVar6) && (pDVar2->selectedKnot + 1 < iVar3)) {
-              pDVar2->selectedKnot = pDVar2->selectedKnot + 1;
+            else if ((0 < sVar5) && (graph_00->selectedKnot + 1 < iVar2)) {
+              graph_00->selectedKnot = graph_00->selectedKnot + 1;
             }
             DevGui_UpdateSelection();
           }
           else {
-            fVar1 = pDVar2->knots[pDVar2->selectedKnot][0];
-            fVar8 = pDVar2->knots[pDVar2->selectedKnot][1];
-            fVar9 = DevGui_UpdateFloatScroll(param_2,fVar1,0.0,1.0,0.03,SCROLL_XAXIS);
-            fVar10 = DevGui_UpdateFloatScroll(param_2,fVar8,0.0,1.0,0.03,SCROLL_YAXIS);
-            if ((pDVar2->selectedKnot < 1) || (iVar3 <= pDVar2->selectedKnot + 1)) {
-              if (pDVar2->disableEditingEndPoints == false) {
-                bVar5 = 1e-06 < ABS(fVar10 - fVar8);
-                pDVar2->knots[pDVar2->selectedKnot][1] =
-                     (fVar10 - fVar8) * 4.0 + pDVar2->knots[pDVar2->selectedKnot][1];
-                fVar1 = pDVar2->knots[pDVar2->selectedKnot][1];
+            fVar1 = graph_00->knots[graph_00->selectedKnot][0];
+            fVar7 = graph_00->knots[graph_00->selectedKnot][1];
+            fVar8 = DevGui_UpdateFloatScroll(deltaTime,fVar1,0.0,1.0,0.03,SCROLL_XAXIS);
+            fVar9 = DevGui_UpdateFloatScroll(deltaTime,fVar7,0.0,1.0,0.03,SCROLL_YAXIS);
+            if ((graph_00->selectedKnot < 1) || (iVar2 <= graph_00->selectedKnot + 1)) {
+              if (graph_00->disableEditingEndPoints == false) {
+                bVar4 = 1e-06 < ABS(fVar9 - fVar7);
+                graph_00->knots[graph_00->selectedKnot][1] =
+                     (fVar9 - fVar7) * 4.0 + graph_00->knots[graph_00->selectedKnot][1];
+                fVar1 = graph_00->knots[graph_00->selectedKnot][1];
                 local_68 = fVar1;
                 if (0.0 <= fVar1 - 1.0) {
                   local_68 = 1.0;
@@ -3071,36 +3149,36 @@ void __cdecl DevGui_UpdateGraph(int param_1,float param_2)
                 else {
                   local_80 = 0.0;
                 }
-                pDVar2->knots[pDVar2->selectedKnot][1] = local_80;
+                graph_00->knots[graph_00->selectedKnot][1] = local_80;
               }
               else {
-                bVar5 = false;
+                bVar4 = false;
               }
             }
             else {
-              fVar9 = fVar9 - fVar1;
-              if ((1e-06 < ABS(fVar9)) || (1e-06 < ABS(fVar10 - fVar8))) {
-                bVar5 = true;
+              fVar8 = fVar8 - fVar1;
+              if ((1e-06 < ABS(fVar8)) || (1e-06 < ABS(fVar9 - fVar7))) {
+                bVar4 = true;
               }
               else {
-                bVar5 = false;
+                bVar4 = false;
               }
-              pDVar2->knots[pDVar2->selectedKnot][0] =
-                   fVar9 * 3.0 + pDVar2->knots[pDVar2->selectedKnot][0];
-              pDVar2->knots[pDVar2->selectedKnot][1] =
-                   (fVar10 - fVar8) * 4.0 + pDVar2->knots[pDVar2->selectedKnot][1];
-              fVar1 = pDVar2->knots[pDVar2->selectedKnot][0];
-              local_74 = pDVar2->knots[pDVar2->selectedKnot + -1][0] + 0.005;
-              fVar8 = pDVar2->knots[pDVar2->selectedKnot + 1][0] - 0.005;
+              graph_00->knots[graph_00->selectedKnot][0] =
+                   fVar8 * 3.0 + graph_00->knots[graph_00->selectedKnot][0];
+              graph_00->knots[graph_00->selectedKnot][1] =
+                   (fVar9 - fVar7) * 4.0 + graph_00->knots[graph_00->selectedKnot][1];
+              fVar1 = graph_00->knots[graph_00->selectedKnot][0];
+              local_74 = graph_00->knots[graph_00->selectedKnot + -1][0] + 0.005;
+              fVar7 = graph_00->knots[graph_00->selectedKnot + 1][0] - 0.005;
               local_50 = fVar1;
-              if (0.0 <= fVar1 - fVar8) {
-                local_50 = fVar8;
+              if (0.0 <= fVar1 - fVar7) {
+                local_50 = fVar7;
               }
               if (local_74 - fVar1 < 0.0) {
                 local_74 = local_50;
               }
-              pDVar2->knots[pDVar2->selectedKnot][0] = local_74;
-              fVar1 = pDVar2->knots[pDVar2->selectedKnot][1];
+              graph_00->knots[graph_00->selectedKnot][0] = local_74;
+              fVar1 = graph_00->knots[graph_00->selectedKnot][1];
               local_60 = fVar1;
               if (0.0 <= fVar1 - 1.0) {
                 local_60 = 1.0;
@@ -3111,11 +3189,12 @@ void __cdecl DevGui_UpdateGraph(int param_1,float param_2)
               else {
                 local_78 = 0.0;
               }
-              pDVar2->knots[pDVar2->selectedKnot][1] = local_78;
+              graph_00->knots[graph_00->selectedKnot][1] = local_78;
             }
-            if ((bVar5) &&
-               (pDVar2->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0)) {
-              (*pDVar2->eventCallback)(pDVar2,EVENT_UPDATE,param_1);
+            if ((bVar4) &&
+               (graph_00->eventCallback != (_func___cdecl_void_DevGraph_ptr_DevEventType_int *)0x0))
+            {
+              (*graph_00->eventCallback)(graph_00,EVENT_UPDATE,localClientNum);
             }
           }
         }
@@ -3151,51 +3230,51 @@ void __cdecl DevGui_Shutdown(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl DevGui_KeyPressed(int param_1)
+void __cdecl DevGui_KeyPressed(int key)
 
 {
   code *pcVar1;
-  ushort uVar2;
-  bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  ushort local_90;
-  char local_8c [128];
+  ushort handle_00;
+  bool bVar2;
+  char *binding;
+  int bindNum;
+  ushort handle;
+  char path [128];
   uint local_c;
-  DevMenuItem *local_8;
+  DevMenuItem *menu;
   
-  uVar2 = devguiGlob.selectedMenu;
+  handle_00 = devguiGlob.selectedMenu;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((devguiGlob.bindNextKey) && (devguiGlob.bindNextKey = false, param_1 != 0x1b)) {
-    if ((param_1 == 9) || (param_1 == 0xa7)) {
+  if ((devguiGlob.bindNextKey) && (devguiGlob.bindNextKey = false, key != 0x1b)) {
+    if ((key == 9) || (key == 0xa7)) {
       Com_Printf(0xb,"Can\'t rebind \'tab\' or \'F1\'\n");
     }
     else {
-      local_90 = devguiGlob.selectedMenu;
+      handle = devguiGlob.selectedMenu;
       if ((devguiGlob.selectedMenu == 0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x98f,0,
-                                   "%s"), !bVar3)) {
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x98f,0,
+                                   "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_8 = DevGui_GetMenu(uVar2);
-      if ((local_8 == (DevMenuItem *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x991,0,
-                                   "%s"), !bVar3)) {
+      menu = DevGui_GetMenu(handle_00);
+      if ((menu == (DevMenuItem *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x991,0,
+                                   "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_8->parent != 0) &&
-         ((local_8->childType == '\0' ||
-          ((local_8->childType == '\x01' && (devguiGlob.editingMenuItem == false)))))) {
-        local_90 = local_8->parent;
+      if ((menu->parent != 0) &&
+         ((menu->childType == '\0' ||
+          ((menu->childType == '\x01' && (devguiGlob.editingMenuItem == false)))))) {
+        handle = menu->parent;
       }
-      DevGui_GetSliderPath(local_90,local_8c,0);
-      iVar5 = 0;
-      pcVar4 = va("devgui_open \"%s\"");
-      Key_SetBinding(0,param_1,pcVar4,iVar5);
+      DevGui_GetSliderPath(handle,path,0);
+      bindNum = 0;
+      binding = va("devgui_open \"%s\"");
+      Key_SetBinding(0,key,binding,bindNum);
     }
   }
   return;
@@ -3204,31 +3283,32 @@ void __cdecl DevGui_KeyPressed(int param_1)
 
 // 0059A0C0  DevGui_Update  (devgui/devgui.cpp:2464)
 
-void __cdecl DevGui_Update(int param_1,float param_2)
+void __cdecl DevGui_Update(int localClientNum,float deltaTime)
 
 {
   code *pcVar1;
   bool bVar2;
-  bool bVar3;
-  DevMenuItem *pDVar4;
+  bool channelLink;
+  DevMenuItem *pDVar3;
+  DevMenuItem *selMenuItem;
   
   if (((devguiGlob.isActive) && (!devguiGlob.bindNextKey)) &&
-     (bVar2 = DevGui_InputUpdate(param_1,param_2), bVar2)) {
-    pDVar4 = DevGui_GetMenu(devguiGlob.selectedMenu);
-    if ((pDVar4 == (DevMenuItem *)0x0) &&
+     (bVar2 = DevGui_InputUpdate(localClientNum,deltaTime), bVar2)) {
+    pDVar3 = DevGui_GetMenu(devguiGlob.selectedMenu);
+    if ((pDVar3 == (DevMenuItem *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x9b6,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((devguiGlob.editingMenuItem == false) || (pDVar4->childType != '\x03')) {
+    if ((devguiGlob.editingMenuItem == false) || (pDVar3->childType != '\x03')) {
       if (devguiGlob.editingMenuItem == false) {
         DevGui_MoveSelectionHorizontally();
         DevGui_MoveSelectionVertically();
       }
       else {
-        if ((pDVar4->childType != '\x01') &&
+        if ((pDVar3->childType != '\x01') &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\devgui\\devgui.cpp",0x9c1,0
                                      ,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -3236,13 +3316,13 @@ void __cdecl DevGui_Update(int param_1,float param_2)
           return;
         }
         bVar2 = DevGui_IsButtonDown(INPUT_RESET);
-        bVar3 = DevGui_IsButtonDown(INPUT_LINK);
-        DevGui_UpdateDvar(param_2,bVar3,bVar2);
+        channelLink = DevGui_IsButtonDown(INPUT_LINK);
+        DevGui_UpdateDvar(deltaTime,channelLink,bVar2);
         DevGui_UpdateSelection();
       }
       bVar2 = DevGui_IsButtonReleased(INPUT_ACCEPT);
       if (bVar2) {
-        DevGui_Accept(param_1);
+        DevGui_Accept(localClientNum);
       }
       bVar2 = DevGui_IsButtonReleased(INPUT_REJECT);
       if (bVar2) {
@@ -3250,7 +3330,7 @@ void __cdecl DevGui_Update(int param_1,float param_2)
       }
     }
     else {
-      DevGui_UpdateGraph(param_1,param_2);
+      DevGui_UpdateGraph(localClientNum,deltaTime);
     }
   }
   return;

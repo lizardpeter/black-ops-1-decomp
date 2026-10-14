@@ -4,36 +4,38 @@
 
 void __thiscall
 rigid_body_constraint_wheel::set
-          (rigid_body_constraint_wheel *this,phys_vec3 *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3,float param_4,float param_5,float param_6,float param_7,float param_8,
-          float param_9,float param_10,float param_11,float param_12)
+          (rigid_body_constraint_wheel *this,phys_vec3 *wheel_center_loc,
+          phys_vec3 *suspension_dir_loc,phys_vec3 *wheel_axis_loc,float wheel_radius,
+          float fwd_fric_k,float side_fric_k,float suspension_stiffness_k,float suspension_damp_k,
+          float hard_limit_dist,float roll_stability_factor,float pitch_stability_factor,
+          float side_fric_max)
 
 {
-  phys_vec3 *ppVar1;
-  phys_vec3 *ppVar2;
+  phys_vec3 *v;
+  phys_vec3 *v_00;
   
-  (this->m_b1_wheel_center_loc).x = param_1->x;
-  ppVar1 = &this->m_b1_suspension_dir_loc;
-  (this->m_b1_wheel_center_loc).y = param_1->y;
-  ppVar2 = &this->m_b1_wheel_axis_loc;
-  (this->m_b1_wheel_center_loc).z = param_1->z;
-  ppVar1->x = param_2->x;
-  (this->m_b1_suspension_dir_loc).y = param_2->y;
-  (this->m_b1_suspension_dir_loc).z = param_2->z;
-  ppVar2->x = param_3->x;
-  (this->m_b1_wheel_axis_loc).y = param_3->y;
-  (this->m_b1_wheel_axis_loc).z = param_3->z;
+  (this->m_b1_wheel_center_loc).x = wheel_center_loc->x;
+  v = &this->m_b1_suspension_dir_loc;
+  (this->m_b1_wheel_center_loc).y = wheel_center_loc->y;
+  v_00 = &this->m_b1_wheel_axis_loc;
+  (this->m_b1_wheel_center_loc).z = wheel_center_loc->z;
+  v->x = suspension_dir_loc->x;
+  (this->m_b1_suspension_dir_loc).y = suspension_dir_loc->y;
+  (this->m_b1_suspension_dir_loc).z = suspension_dir_loc->z;
+  v_00->x = wheel_axis_loc->x;
+  (this->m_b1_wheel_axis_loc).y = wheel_axis_loc->y;
+  (this->m_b1_wheel_axis_loc).z = wheel_axis_loc->z;
   this->m_wheel_state = 1;
   this->m_wheel_flags = 0;
-  this->m_wheel_radius = param_4;
-  this->m_fwd_fric_k = param_5;
-  this->m_side_fric_k = param_6;
-  this->m_side_fric_max = param_12;
-  this->m_suspension_stiffness_k = param_7;
-  this->m_suspension_damp_k = param_8;
-  this->m_hard_limit_dist = param_9;
-  this->m_roll_stability_factor = param_10;
-  this->m_pitch_stability_factor = param_11;
+  this->m_wheel_radius = wheel_radius;
+  this->m_fwd_fric_k = fwd_fric_k;
+  this->m_side_fric_k = side_fric_k;
+  this->m_side_fric_max = side_fric_max;
+  this->m_suspension_stiffness_k = suspension_stiffness_k;
+  this->m_suspension_damp_k = suspension_damp_k;
+  this->m_hard_limit_dist = hard_limit_dist;
+  this->m_roll_stability_factor = roll_stability_factor;
+  this->m_pitch_stability_factor = pitch_stability_factor;
   this->m_braking_factor_k = 0.0;
   this->m_turning_radius_ratio_max_speed = 1.0;
   this->m_turning_radius_ratio_accel = 1.0;
@@ -41,9 +43,9 @@ rigid_body_constraint_wheel::set
   this->m_wheel_pos = 0.0;
   this->m_wheel_fwd = 0.0;
   this->m_wheel_displaced_center_dist = 0.0;
-  PHYS_ASSERT_UNIT(ppVar1);
-  PHYS_ASSERT_UNIT(ppVar2);
-  PHYS_ASSERT_ORTHOGONAL(ppVar1,ppVar2);
+  PHYS_ASSERT_UNIT(v);
+  PHYS_ASSERT_UNIT(v_00);
+  PHYS_ASSERT_ORTHOGONAL(v,v_00);
   return;
 }
 
@@ -52,7 +54,7 @@ rigid_body_constraint_wheel::set
 
 void __thiscall
 pulse_sum_wheel::set_side_fwd_ratios
-          (pulse_sum_wheel *this,float param_1,float param_2,float param_3)
+          (pulse_sum_wheel *this,float side_ratio,float fwd_ratio,float side_fric_max)
 
 {
   code *pcVar1;
@@ -67,9 +69,9 @@ pulse_sum_wheel::set_side_fwd_ratios
       return;
     }
   }
-  this->m_side->m_pulse_limit_ratio = param_1;
-  this->m_fwd->m_pulse_limit_ratio = param_2;
-  this->m_side_fric_max = param_3;
+  this->m_side->m_pulse_limit_ratio = side_ratio;
+  this->m_fwd->m_pulse_limit_ratio = fwd_ratio;
+  this->m_side_fric_max = side_fric_max;
   return;
 }
 
@@ -78,12 +80,12 @@ pulse_sum_wheel::set_side_fwd_ratios
 
 void __thiscall
 rigid_body_constraint_wheel::set_wheel_state_accelerating
-          (rigid_body_constraint_wheel *this,float param_1,float param_2)
+          (rigid_body_constraint_wheel *this,float desired_speed_k,float acceleration_factor_k)
 
 {
   this->m_wheel_state = 0;
-  this->m_desired_speed_k = param_1;
-  this->m_acceleration_factor_k = param_2;
+  this->m_desired_speed_k = desired_speed_k;
+  this->m_acceleration_factor_k = acceleration_factor_k;
   return;
 }
 
@@ -92,11 +94,11 @@ rigid_body_constraint_wheel::set_wheel_state_accelerating
 
 void __thiscall
 rigid_body_constraint_wheel::get_wheel_state_accelerating
-          (rigid_body_constraint_wheel *this,float *param_1,float *param_2)
+          (rigid_body_constraint_wheel *this,float *desired_speed_k,float *acceleration_factor_k)
 
 {
-  *param_1 = this->m_desired_speed_k;
-  *param_2 = this->m_acceleration_factor_k;
+  *desired_speed_k = this->m_desired_speed_k;
+  *acceleration_factor_k = this->m_acceleration_factor_k;
   return;
 }
 
@@ -105,11 +107,11 @@ rigid_body_constraint_wheel::get_wheel_state_accelerating
 
 void __thiscall
 rigid_body_constraint_wheel::set_wheel_state_braking
-          (rigid_body_constraint_wheel *this,float param_1)
+          (rigid_body_constraint_wheel *this,float braking_factor_k)
 
 {
   this->m_wheel_state = 1;
-  this->m_braking_factor_k = param_1;
+  this->m_braking_factor_k = braking_factor_k;
   return;
 }
 
@@ -118,8 +120,7 @@ rigid_body_constraint_wheel::set_wheel_state_braking
 
 void __thiscall
 rigid_body_constraint_wheel::get_wheel_collide_segment
-          (rigid_body_constraint_wheel *this,phys_mat44 *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3)
+          (rigid_body_constraint_wheel *this,phys_mat44 *b1_mat,phys_vec3 *p0,phys_vec3 *p1)
 
 {
   float fVar1;
@@ -131,7 +132,7 @@ rigid_body_constraint_wheel::get_wheel_collide_segment
   phys_vec3 local_50;
   phys_vec3 local_40 [3];
   
-  if (((uint)param_2 & 0xf) != 0) {
+  if (((uint)p0 & 0xf) != 0) {
     bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_math.h",0x1bc,
                       "uint(v) % PHYS_ALIGNOF(phys_vec3) == 0","");
     if (bVar5) {
@@ -140,7 +141,7 @@ rigid_body_constraint_wheel::get_wheel_collide_segment
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)p1 & 0xf) != 0) {
     bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_math.h",0x1bc,
                       "uint(v) % PHYS_ALIGNOF(phys_vec3) == 0","");
     if (bVar5) {
@@ -149,18 +150,18 @@ rigid_body_constraint_wheel::get_wheel_collide_segment
       return;
     }
   }
-  phys_full_multiply(&local_50,param_1,&this->m_b1_wheel_center_loc);
-  ppVar6 = phys_multiply33(local_40,param_1,&this->m_b1_suspension_dir_loc);
+  phys_full_multiply(&local_50,b1_mat,&this->m_b1_wheel_center_loc);
+  ppVar6 = phys_multiply33(local_40,b1_mat,&this->m_b1_suspension_dir_loc);
   fVar1 = this->m_wheel_radius;
   fVar3 = fVar1 * ppVar6->x;
   fVar4 = ppVar6->y * fVar1;
   fVar1 = fVar1 * ppVar6->z;
-  param_2->x = local_50.x - fVar3;
-  param_2->y = local_50.y - fVar4;
-  param_2->z = local_50.z - fVar1;
-  param_3->x = local_50.x + fVar3;
-  param_3->y = fVar4 + local_50.y;
-  param_3->z = local_50.z + fVar1;
+  p0->x = local_50.x - fVar3;
+  p0->y = local_50.y - fVar4;
+  p0->z = local_50.z - fVar1;
+  p1->x = local_50.x + fVar3;
+  p1->y = fVar4 + local_50.y;
+  p1->z = local_50.z + fVar1;
   return;
 }
 
@@ -180,18 +181,17 @@ void __thiscall rigid_body_constraint_wheel::set_no_collision(rigid_body_constra
 
 void __thiscall
 rigid_body_constraint_wheel::set_collision
-          (rigid_body_constraint_wheel *this,rigid_body *param_1,phys_vec3 *param_2,
-          phys_vec3 *param_3)
+          (rigid_body_constraint_wheel *this,rigid_body *rb,phys_vec3 *hitp_loc,phys_vec3 *hitn_loc)
 
 {
   this->m_wheel_flags = this->m_wheel_flags | 1;
-  this->_padding_ = (int)param_1;
-  (this->m_b2_hitp_loc).x = param_2->x;
-  (this->m_b2_hitp_loc).y = param_2->y;
-  (this->m_b2_hitp_loc).z = param_2->z;
-  (this->m_b2_hitn_loc).x = param_3->x;
-  (this->m_b2_hitn_loc).y = param_3->y;
-  (this->m_b2_hitn_loc).z = param_3->z;
+  this->_padding_ = (int)rb;
+  (this->m_b2_hitp_loc).x = hitp_loc->x;
+  (this->m_b2_hitp_loc).y = hitp_loc->y;
+  (this->m_b2_hitp_loc).z = hitp_loc->z;
+  (this->m_b2_hitn_loc).x = hitn_loc->x;
+  (this->m_b2_hitn_loc).y = hitn_loc->y;
+  (this->m_b2_hitn_loc).z = hitn_loc->z;
   return;
 }
 
@@ -199,22 +199,23 @@ rigid_body_constraint_wheel::set_collision
 // 00A1A2C0  setup_vel_uni_standard  (<external>/projects_pc/cod/codsrc/tl/physics/include/constraint_solver/pulse_sum_normal.h:90)
 
 void __thiscall
-pulse_sum_normal::setup_vel_uni_standard(pulse_sum_normal *this,float param_1,float param_2)
+pulse_sum_normal::setup_vel_uni_standard
+          (pulse_sum_normal *this,float delta_t,float max_penalty_restitution_vel)
 
 {
   float fVar1;
   
-  if (param_1 <= 0.016666668) {
-    param_1 = 0.016666668;
+  if (delta_t <= 0.016666668) {
+    delta_t = 0.016666668;
   }
   fVar1 = get_pos(this);
-  fVar1 = -fVar1 / param_1;
+  fVar1 = -fVar1 / delta_t;
   this->m_big_dirt = fVar1;
   if (fVar1 < 0.0) {
     this->m_big_dirt = fVar1 * 0.3;
   }
-  if (this->m_big_dirt < -param_2) {
-    this->m_big_dirt = -param_2;
+  if (this->m_big_dirt < -max_penalty_restitution_vel) {
+    this->m_big_dirt = -max_penalty_restitution_vel;
   }
   if (0.0 < this->m_big_dirt == (this->m_big_dirt == 0.0)) {
     this->m_right_side = 0.0;
@@ -232,7 +233,7 @@ pulse_sum_normal::setup_vel_uni_standard(pulse_sum_normal *this,float param_1,fl
 
 void __thiscall
 rigid_body_constraint_wheel::setup_constraint
-          (rigid_body_constraint_wheel *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_wheel *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   int iVar1;
@@ -308,7 +309,7 @@ rigid_body_constraint_wheel::setup_constraint
     local_e0.x = -local_30.x;
     local_e0.y = -local_30.y;
     local_e0.z = -local_30.z;
-    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_normal(param_1);
+    ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_normal(psys);
     local_14 = (phys_mat44 *)this->m_hard_limit_dist;
     local_30.x = (float)local_14 * local_90.x;
     local_30.y = local_90.y * (float)local_14;
@@ -321,7 +322,7 @@ rigid_body_constraint_wheel::setup_constraint
                &local_b0,&local_e0,this->m_ps_cache_list,&::PHYS_ZERO_VEC);
     ppVar5->m_pulse_sum_min = -1e+07;
     ppVar5->m_pulse_sum_max = 0.0;
-    pulse_sum_normal::setup_vel_uni_standard(ppVar5,param_2,170.0);
+    pulse_sum_normal::setup_vel_uni_standard(ppVar5,delta_t,170.0);
   }
   phys_multiply33(&local_a0,(phys_mat44 *)(this->_padding_ + 0x30),&this->m_b2_hitn_loc);
   local_70.x = -local_a0.x;
@@ -342,7 +343,7 @@ rigid_body_constraint_wheel::setup_constraint
   local_c0.x = (float)local_14 * local_90.x;
   local_c0.y = local_90.y * (float)local_14;
   local_c0.z = (float)local_14 * local_90.z;
-  local_54 = pulse_sum_constraint_solver::create_pulse_sum_wheel(param_1);
+  local_54 = pulse_sum_constraint_solver::create_pulse_sum_wheel(psys);
   local_54->m_side = (pulse_sum_normal *)0x0;
   local_54->m_fwd = (pulse_sum_normal *)0x0;
   this->m_ps_suspension = &local_54->m_suspension;
@@ -353,11 +354,11 @@ rigid_body_constraint_wheel::setup_constraint
   ppVar5->m_pulse_sum_min = -1e+07;
   ppVar5->m_pulse_sum_max = 0.0;
   ppVar5 = this->m_ps_suspension;
-  fVar7 = param_2 * this->m_suspension_stiffness_k * param_2;
+  fVar7 = delta_t * this->m_suspension_stiffness_k * delta_t;
   unique0x0000aa00 = (double)fVar7;
-  local_14 = (phys_mat44 *)(1.0 / (fVar7 + this->m_suspension_damp_k * param_2));
+  local_14 = (phys_mat44 *)(1.0 / (fVar7 + this->m_suspension_damp_k * delta_t));
   fVar7 = pulse_sum_normal::get_pos(ppVar5);
-  ppVar5->m_right_side = (-((float)stack0xffffffb8 * (float)local_14) / param_2) * fVar7;
+  ppVar5->m_right_side = (-((float)stack0xffffffb8 * (float)local_14) / delta_t) * fVar7;
   ppVar5->m_big_dirt = 0.0;
   ppVar5->m_cfm = (float)local_14;
   ppVar5->m_denom = (float)local_14 + ppVar5->m_denom;
@@ -366,8 +367,8 @@ rigid_body_constraint_wheel::setup_constraint
   make_rotate(&local_120,&local_90,&local_70);
   phys_multiply33(&local_d0,&local_120,&local_a0);
   ppVar5 = phys_transient_allocator::allocate
-                     (&param_1->m_solver_memory_allocator,0xa0,0x10,0,
-                      SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
+                     (&psys->m_solver_memory_allocator,0xa0,0x10,0,SOLVER_MEMORY_ALLOCATOR_ERROR_MSG
+                     );
   local_54->m_side = ppVar5;
   this->m_ps_side_fric = ppVar5;
   pulse_sum_normal::set
@@ -397,7 +398,7 @@ rigid_body_constraint_wheel::setup_constraint
   ppVar5 = this->m_ps_side_fric;
   ppVar5->m_pulse_sum_min = -1e+07;
   ppVar5->m_pulse_sum_max = 1e+07;
-  ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_wheel_fwd(param_1,local_54);
+  ppVar5 = pulse_sum_constraint_solver::create_pulse_sum_wheel_fwd(psys,local_54);
   local_14 = (phys_mat44 *)-this->m_pitch_stability_factor;
   local_a0.x = (float)local_14 * local_90.x;
   local_a0.y = local_90.y * (float)local_14;
@@ -408,7 +409,7 @@ rigid_body_constraint_wheel::setup_constraint
              &local_30,this->m_ps_cache_list + 3,&local_a0);
   if (this->m_wheel_state == 0) {
     fStack_44 = this->m_desired_speed_k * this->m_turning_radius_ratio_max_speed;
-    local_34 = (this->m_acceleration_factor_k * this->m_turning_radius_ratio_accel * param_2) /
+    local_34 = (this->m_acceleration_factor_k * this->m_turning_radius_ratio_accel * delta_t) /
                (this->m_wheel_radius * this->m_wheel_radius);
     if (local_34 <= 1e-06) {
       local_34 = 1e-05;
@@ -440,7 +441,7 @@ rigid_body_constraint_wheel::setup_constraint
     ppVar5->m_big_dirt = 0.0;
     ppVar5->m_cfm = 0.0;
     ppVar5 = this->m_ps_fwd_fric;
-    fVar7 = this->m_braking_factor_k * param_2;
+    fVar7 = this->m_braking_factor_k * delta_t;
     fStack_44 = fVar7;
     fVar3 = -fVar7;
   }
@@ -491,14 +492,14 @@ pulse_sum_constraint_solver::create_pulse_sum_wheel(pulse_sum_constraint_solver 
 
 pulse_sum_normal * __thiscall
 pulse_sum_constraint_solver::create_pulse_sum_wheel_fwd
-          (pulse_sum_constraint_solver *this,pulse_sum_wheel *param_1)
+          (pulse_sum_constraint_solver *this,pulse_sum_wheel *psw)
 
 {
   code *pcVar1;
   bool bVar2;
   pulse_sum_normal *ppVar3;
   
-  if (param_1->m_side == (pulse_sum_normal *)0x0) {
+  if (psw->m_side == (pulse_sum_normal *)0x0) {
     bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\constraint_solver\\pulse_sum_constraint_solver.h"
                       ,0xc4,"psw->m_side","");
     if (bVar2) {
@@ -510,33 +511,33 @@ pulse_sum_constraint_solver::create_pulse_sum_wheel_fwd
   ppVar3 = phys_transient_allocator::allocate
                      (&this->m_solver_memory_allocator,0xa0,0x10,0,SOLVER_MEMORY_ALLOCATOR_ERROR_MSG
                      );
-  param_1->m_fwd = ppVar3;
+  psw->m_fwd = ppVar3;
   return ppVar3;
 }
 
 
 // 00A19550  lerp_float  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_vehicle.cpp:216)
 
-float __cdecl lerp_float(float param_1,float param_2,float param_3,float param_4)
+float __cdecl lerp_float(float tgt,float cur,float rate,float delta_t)
 
 {
   float fVar1;
   
-  if (param_1 - param_2 <= 0.0) {
-    param_3 = -param_3;
+  if (tgt - cur <= 0.0) {
+    rate = -rate;
   }
-  fVar1 = ABS(param_1 - param_2);
-  if ((0.05 < fVar1) && (ABS(param_3 * param_4) <= fVar1)) {
-    return param_2 + param_3 * param_4;
+  fVar1 = ABS(tgt - cur);
+  if ((0.05 < fVar1) && (ABS(rate * delta_t) <= fVar1)) {
+    return cur + rate * delta_t;
   }
-  return param_1;
+  return tgt;
 }
 
 
 // 00A197E0  epilog_vel_constraint  (<external>/projects_pc/cod/codsrc/tl/physics/source/rbc_def_vehicle.cpp:238)
 
 void __thiscall
-rigid_body_constraint_wheel::epilog_vel_constraint(rigid_body_constraint_wheel *this,float param_1)
+rigid_body_constraint_wheel::epilog_vel_constraint(rigid_body_constraint_wheel *this,float delta_t)
 
 {
   int iVar1;
@@ -590,7 +591,7 @@ rigid_body_constraint_wheel::epilog_vel_constraint(rigid_body_constraint_wheel *
   }
   this->m_wheel_displaced_center_dist = fVar3;
   if (this->m_wheel_displaced_center_dist < local_20) {
-    local_18 = local_20 - param_1 * 51.0;
+    local_18 = local_20 - delta_t * 51.0;
     if (local_18 < this->m_wheel_displaced_center_dist) {
       local_18 = this->m_wheel_displaced_center_dist;
     }
@@ -621,14 +622,14 @@ rigid_body_constraint_wheel::epilog_vel_constraint(rigid_body_constraint_wheel *
     }
   }
   if (local_11 != '\0') {
-    this->m_wheel_pos = this->m_wheel_vel * param_1 + this->m_wheel_pos;
+    this->m_wheel_pos = this->m_wheel_vel * delta_t + this->m_wheel_pos;
   }
   if ((this->m_wheel_flags & 1) == 0) {
     local_18 = lr;
     if (this->m_braking_factor_k < 50.0) {
       local_18 = lr;
     }
-    fVar3 = lerp_float(0.0,this->m_wheel_vel,local_18,param_1);
+    fVar3 = lerp_float(0.0,this->m_wheel_vel,local_18,delta_t);
     this->m_wheel_vel = fVar3;
     return;
   }
@@ -640,13 +641,13 @@ rigid_body_constraint_wheel::epilog_vel_constraint(rigid_body_constraint_wheel *
 
 void __thiscall
 pulse_sum_normal::set_pulse_sum_limits_parent_ratio
-          (pulse_sum_normal *this,float param_1,pulse_sum_normal *param_2)
+          (pulse_sum_normal *this,float limit_ratio,pulse_sum_normal *parent)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (NAN(param_1) || 0.0 < param_1 == (param_1 == 0.0)) {
+  if (NAN(limit_ratio) || 0.0 < limit_ratio == (limit_ratio == 0.0)) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\constraint_solver\\pulse_sum_normal.h"
                       ,0x10d,"limit_ratio >= 0.0f","");
     if (bVar2) {
@@ -655,7 +656,7 @@ pulse_sum_normal::set_pulse_sum_limits_parent_ratio
       return;
     }
   }
-  if (param_2 == (pulse_sum_normal *)0x0) {
+  if (parent == (pulse_sum_normal *)0x0) {
     bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\constraint_solver\\pulse_sum_normal.h"
                       ,0x10e,"parent","");
     if (bVar2) {
@@ -665,8 +666,8 @@ pulse_sum_normal::set_pulse_sum_limits_parent_ratio
     }
   }
   this->m_flags = this->m_flags | 1;
-  this->m_pulse_limit_ratio = param_1;
-  this->m_pulse_parent = param_2;
+  this->m_pulse_limit_ratio = limit_ratio;
+  this->m_pulse_parent = parent;
   this->m_pulse_sum_min = 0.0;
   this->m_pulse_sum_max = 0.0;
   return;

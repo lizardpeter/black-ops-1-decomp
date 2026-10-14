@@ -2,14 +2,14 @@
 
 // 00744DD0  UI_UIContext_GetInfo  (ui/ui_main.cpp:338)
 
-uiInfo_s * __cdecl UI_UIContext_GetInfo(int param_1)
+uiInfo_s * __cdecl UI_UIContext_GetInfo(int contextIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
   
-  if (param_1 != 0) {
+  if (contextIndex != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x157,0,
                              "%s\n\t(contextIndex) = %i");
     if (!bVar2) {
@@ -24,15 +24,16 @@ uiInfo_s * __cdecl UI_UIContext_GetInfo(int param_1)
 
 // 00744E10  UI_GetInfo  (ui/ui_main.cpp:349)
 
-uiInfo_s * __cdecl UI_GetInfo(int param_1)
+uiInfo_s * __cdecl UI_GetInfo(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
-  int iVar4;
+  int contextIndex_00;
+  int contextIndex;
   
-  if (param_1 != 0) {
+  if (localClientNum != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x15e,0,
                              "localClientNum doesn\'t index MAX_LOCAL_CLIENTS\n\t%i not in [0, %i)")
     ;
@@ -42,34 +43,34 @@ uiInfo_s * __cdecl UI_GetInfo(int param_1)
       return puVar3;
     }
   }
-  iVar4 = Com_LocalClient_GetUIContextIndex(param_1);
-  puVar3 = UI_UIContext_GetInfo(iVar4);
+  contextIndex_00 = Com_LocalClient_GetUIContextIndex(localClientNum);
+  puVar3 = UI_UIContext_GetInfo(contextIndex_00);
   return puVar3;
 }
 
 
 // 00744E60  UI_UIContext_GetLocalVarsContext  (ui/ui_main.cpp:356)
 
-UILocalVarContext * __cdecl UI_UIContext_GetLocalVarsContext(int param_1)
+UILocalVarContext * __cdecl UI_UIContext_GetLocalVarsContext(int contextIndex)
 
 {
   uiInfo_s *puVar1;
   
-  puVar1 = UI_UIContext_GetInfo(param_1);
+  puVar1 = UI_UIContext_GetInfo(contextIndex);
   return &(puVar1->uiDC).localVars;
 }
 
 
 // 00744E80  UI_GetMonthAbbrev  (ui/ui_main.cpp:361)
 
-char * __cdecl UI_GetMonthAbbrev(int param_1)
+char * __cdecl UI_GetMonthAbbrev(int month)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0xb < (uint)param_1) {
+  if (0xb < (uint)month) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x16a,0,
                              "month doesn\'t index ARRAY_COUNT( MonthAbbrev )\n\t%i not in [0, %i)")
     ;
@@ -79,7 +80,7 @@ char * __cdecl UI_GetMonthAbbrev(int param_1)
       return pcVar3;
     }
   }
-  return MonthAbbrev[param_1];
+  return MonthAbbrev[month];
 }
 
 
@@ -127,14 +128,14 @@ void __cdecl TRACK_ui_main(void)
 
 // 00744F80  UI_KeysBypassMenu  (ui/ui_main.cpp:398)
 
-bool __cdecl UI_KeysBypassMenu(int param_1)
+bool __cdecl UI_KeysBypassMenu(int localClientNum)
 
 {
   bool bVar1;
   uiMenuCommand_t uVar2;
   
   if ((cl_bypassMouseInput == (dvar_s *)0x0) || ((cl_bypassMouseInput->current).enabled == false)) {
-    uVar2 = UI_GetActiveMenu(param_1);
+    uVar2 = UI_GetActiveMenu(localClientNum);
     if (uVar2 == UIMENU_SCOREBOARD) {
       bVar1 = true;
     }
@@ -329,30 +330,31 @@ void __cdecl UI_AssetCache(void)
 
 // 00745000  GetMenuBuffer_LoadObj  (ui/ui_main.cpp:590)
 
-char * __cdecl GetMenuBuffer_LoadObj(char *param_1)
+char * __cdecl GetMenuBuffer_LoadObj(char *filename)
 
 {
-  int iVar1;
-  char *pcVar2;
-  int local_8;
+  int len_00;
+  char *pcVar1;
+  int len;
+  int f;
   
-  iVar1 = FS_FOpenFileByMode(param_1,&local_8,FS_READ);
-  if (local_8 == 0) {
+  len_00 = FS_FOpenFileByMode(filename,&f,FS_READ);
+  if (f == 0) {
     Com_PrintError(0xd,"menu file not found: %s, using default\n");
-    pcVar2 = (char *)0x0;
+    pcVar1 = (char *)0x0;
   }
-  else if (iVar1 < 0x8000) {
-    FS_Read(menuBuf2,iVar1,local_8);
-    menuBuf2[iVar1] = '\0';
-    FS_FCloseFile(local_8);
-    pcVar2 = menuBuf2;
+  else if (len_00 < 0x8000) {
+    FS_Read(menuBuf2,len_00,f);
+    menuBuf2[len_00] = '\0';
+    FS_FCloseFile(f);
+    pcVar1 = menuBuf2;
   }
   else {
     Com_PrintError(0xd,"menu file too large: %s is %i, max allowed is %i");
-    FS_FCloseFile(local_8);
-    pcVar2 = (char *)0x0;
+    FS_FCloseFile(f);
+    pcVar1 = (char *)0x0;
   }
-  return pcVar2;
+  return pcVar1;
 }
 
 
@@ -361,13 +363,14 @@ char * __cdecl GetMenuBuffer_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl GetMenuBuffer_FastFile(char *param_1)
+char * __cdecl GetMenuBuffer_FastFile(char *filename)
 
 {
   XAssetHeader XVar1;
   XModelPiece *pXVar2;
+  RawFile *rawfile;
   
-  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,param_1,true,-1);
+  XVar1 = DB_FindXAssetHeader(ASSET_TYPE_RAWFILE,filename,true,-1);
   if (XVar1.xmodelPieces == (XModelPieces *)0x0) {
     Com_PrintError(0xd,"menu file not found: %s, using default\n");
     pXVar2 = (XModelPiece *)0x0;
@@ -381,7 +384,7 @@ char * __cdecl GetMenuBuffer_FastFile(char *param_1)
 
 // 00744FC0  UI_GetMenuBuffer  (ui/ui_main.cpp:642)
 
-char * __cdecl UI_GetMenuBuffer(char *param_1)
+char * __cdecl UI_GetMenuBuffer(char *filename)
 
 {
   char *pcVar1;
@@ -393,29 +396,32 @@ char * __cdecl UI_GetMenuBuffer(char *param_1)
   else {
     local_c = GetMenuBuffer_FastFile;
   }
-  pcVar1 = (char *)(*local_c)(param_1);
+  pcVar1 = (char *)(*local_c)(filename);
   return pcVar1;
 }
 
 
 // 00745100  UI_DrawBuildNumber  (ui/ui_main.cpp:647)
 
-void __cdecl UI_DrawBuildNumber(int param_1)
+void __cdecl UI_DrawBuildNumber(int contextIndex)
 
 {
-  Font_s *pFVar1;
-  char *pcVar2;
-  int iVar3;
+  Font_s *font;
+  char *text_00;
+  int iVar1;
+  Font_s *fh;
+  int width;
+  char *text;
   
-  pFVar1 = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),0,
-                            (ui_buildSize->current).value);
+  font = UI_GetFontHandle((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),0,
+                          (ui_buildSize->current).value);
   Com_GetChangelist();
   Com_GetBuildNumber();
   Com_GetBuildName();
-  pcVar2 = va("%s.%i [CL:%d]");
-  iVar3 = UI_TextWidth(pcVar2,0x40,pFVar1,(ui_buildSize->current).value);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar2,0x40,pFVar1,
-              (ui_buildLocation->current).value - (float)iVar3,(ui_buildLocation->current).vector[1]
+  text_00 = va("%s.%i [CL:%d]");
+  iVar1 = UI_TextWidth(text_00,0x40,font,(ui_buildSize->current).value);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text_00,0x40,font,
+              (ui_buildLocation->current).value - (float)iVar1,(ui_buildLocation->current).vector[1]
               ,3,1,(ui_buildSize->current).value,colorWhite,0);
   return;
 }
@@ -424,14 +430,13 @@ void __cdecl UI_DrawBuildNumber(int param_1)
 // 007451E0  UI_DrawSides  (ui/ui_main.cpp:684)
 
 void __cdecl
-UI_DrawSides(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-            int param_6,int param_7,float param_8,float *param_9)
+UI_DrawSides(ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+            float size,float *color)
 
 {
-  CL_DrawStretchPic(param_1,param_2,param_3,param_8,param_5,param_6,param_7,0.0,0.0,0.0,0.0,param_9,
+  CL_DrawStretchPic(scrPlace,x,y,size,h,horzAlign,vertAlign,0.0,0.0,0.0,0.0,color,DAT_098b4b78);
+  CL_DrawStretchPic(scrPlace,(x + w) - size,y,size,h,horzAlign,vertAlign,0.0,0.0,0.0,0.0,color,
                     DAT_098b4b78);
-  CL_DrawStretchPic(param_1,(param_2 + param_4) - param_8,param_3,param_8,param_5,param_6,param_7,
-                    0.0,0.0,0.0,0.0,param_9,DAT_098b4b78);
   return;
 }
 
@@ -439,14 +444,13 @@ UI_DrawSides(ScreenPlacement *param_1,float param_2,float param_3,float param_4,
 // 007452A0  UI_DrawTopBottom  (ui/ui_main.cpp:691)
 
 void __cdecl
-UI_DrawTopBottom(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-                int param_6,int param_7,float param_8,float *param_9)
+UI_DrawTopBottom(ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,
+                int vertAlign,float size,float *color)
 
 {
-  CL_DrawStretchPic(param_1,param_2,param_3,param_4,param_8,param_6,param_7,0.0,0.0,0.0,0.0,param_9,
+  CL_DrawStretchPic(scrPlace,x,y,w,size,horzAlign,vertAlign,0.0,0.0,0.0,0.0,color,DAT_098b4b78);
+  CL_DrawStretchPic(scrPlace,x,(y + h) - size,w,size,horzAlign,vertAlign,0.0,0.0,0.0,0.0,color,
                     DAT_098b4b78);
-  CL_DrawStretchPic(param_1,param_2,(param_3 + param_5) - param_8,param_4,param_8,param_6,param_7,
-                    0.0,0.0,0.0,0.0,param_9,DAT_098b4b78);
   return;
 }
 
@@ -454,13 +458,12 @@ UI_DrawTopBottom(ScreenPlacement *param_1,float param_2,float param_3,float para
 // 00745360  UI_DrawRect  (ui/ui_main.cpp:705)
 
 void __cdecl
-UI_DrawRect(ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-           int param_6,int param_7,float param_8,float *param_9)
+UI_DrawRect(ScreenPlacement *scrPlace,float x,float y,float width,float height,int horzAlign,
+           int vertAlign,float size,float *color)
 
 {
-  UI_DrawTopBottom(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
-  UI_DrawSides(param_1,param_2,param_3 + param_8,param_4,param_5 - param_8 * 2.0,param_6,param_7,
-               param_8,param_9);
+  UI_DrawTopBottom(scrPlace,x,y,width,height,horzAlign,vertAlign,size,color);
+  UI_DrawSides(scrPlace,x,y + size,width,height - size * 2.0,horzAlign,vertAlign,size,color);
   return;
 }
 
@@ -469,13 +472,13 @@ UI_DrawRect(ScreenPlacement *param_1,float param_2,float param_3,float param_4,f
 
 void __cdecl
 UI_DrawHighlightRect
-          (ScreenPlacement *param_1,float param_2,float param_3,float param_4,float param_5,
-          int param_6,int param_7,float param_8,float *param_9,float *param_10)
+          (ScreenPlacement *scrPlace,float x,float y,float w,float h,int horzAlign,int vertAlign,
+          float size,float *hiColor,float *loColor)
 
 {
-  float local_34;
-  float local_30;
-  float local_2c;
+  float dx;
+  float dummyY;
+  float verts;
   float local_28;
   float local_24;
   float local_20;
@@ -483,64 +486,65 @@ UI_DrawHighlightRect
   float local_18;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float dummyX;
+  float dy;
   
-  ScrPlace_ApplyRect(param_1,&param_2,&param_3,&param_4,&param_5,param_6,param_7);
-  local_c = 0.0;
-  local_30 = 0.0;
-  local_34 = param_8;
-  local_8 = param_8;
-  ScrPlace_ApplyRect(param_1,&local_c,&local_30,&local_34,&local_8,param_6,param_7);
-  local_2c = param_2;
-  local_28 = param_3;
-  local_24 = param_2 + param_4;
-  local_20 = param_3;
-  local_1c = (param_2 + param_4) - local_34;
-  local_18 = param_3 + local_8;
-  local_14 = param_2 + local_34;
-  local_10 = param_3 + local_8;
-  R_AddCmdDrawQuadPic((float (*) [2])&local_2c,param_9,DAT_098b4b78);
-  local_2c = param_2;
-  local_28 = param_3;
-  local_24 = param_2 + local_34;
-  local_20 = param_3 + local_8;
-  local_1c = param_2 + local_34;
-  local_18 = (param_3 + param_5) - local_8;
-  local_10 = param_3 + param_5;
-  local_14 = param_2;
-  R_AddCmdDrawQuadPic((float (*) [2])&local_2c,param_9,DAT_098b4b78);
-  local_28 = param_3 + param_5;
-  local_2c = param_2;
-  local_24 = param_2 + local_34;
-  local_20 = (param_3 + param_5) - local_8;
-  local_1c = (param_2 + param_4) - local_34;
-  local_18 = (param_3 + param_5) - local_8;
-  local_14 = param_2 + param_4;
-  local_10 = param_3 + param_5;
-  R_AddCmdDrawQuadPic((float (*) [2])&local_2c,param_10,DAT_098b4b78);
-  local_2c = param_2 + param_4;
-  local_28 = param_3;
-  local_24 = param_2 + param_4;
-  local_20 = param_3 + param_5;
-  local_1c = (param_2 + param_4) - local_34;
-  local_18 = (param_3 + param_5) - local_8;
-  local_14 = (param_2 + param_4) - local_34;
-  local_10 = param_3 + local_8;
-  R_AddCmdDrawQuadPic((float (*) [2])&local_2c,param_10,DAT_098b4b78);
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,horzAlign,vertAlign);
+  dummyX = 0.0;
+  dummyY = 0.0;
+  dx = size;
+  dy = size;
+  ScrPlace_ApplyRect(scrPlace,&dummyX,&dummyY,&dx,&dy,horzAlign,vertAlign);
+  verts = x;
+  local_28 = y;
+  local_24 = x + w;
+  local_20 = y;
+  local_1c = (x + w) - dx;
+  local_18 = y + dy;
+  local_14 = x + dx;
+  local_10 = y + dy;
+  R_AddCmdDrawQuadPic((float (*) [2])&verts,hiColor,DAT_098b4b78);
+  verts = x;
+  local_28 = y;
+  local_24 = x + dx;
+  local_20 = y + dy;
+  local_1c = x + dx;
+  local_18 = (y + h) - dy;
+  local_10 = y + h;
+  local_14 = x;
+  R_AddCmdDrawQuadPic((float (*) [2])&verts,hiColor,DAT_098b4b78);
+  local_28 = y + h;
+  verts = x;
+  local_24 = x + dx;
+  local_20 = (y + h) - dy;
+  local_1c = (x + w) - dx;
+  local_18 = (y + h) - dy;
+  local_14 = x + w;
+  local_10 = y + h;
+  R_AddCmdDrawQuadPic((float (*) [2])&verts,loColor,DAT_098b4b78);
+  verts = x + w;
+  local_28 = y;
+  local_24 = x + w;
+  local_20 = y + h;
+  local_1c = (x + w) - dx;
+  local_18 = (y + h) - dy;
+  local_14 = (x + w) - dx;
+  local_10 = y + dy;
+  R_AddCmdDrawQuadPic((float (*) [2])&verts,loColor,DAT_098b4b78);
   return;
 }
 
 
 // 00745930  UI_TextWidth  (ui/ui_main.cpp:766)
 
-int __cdecl UI_TextWidth(char *param_1,int param_2,Font_s *param_3,float param_4)
+int __cdecl UI_TextWidth(char *text,int maxChars,Font_s *font,float scale)
 
 {
   int extraout_EAX;
+  float actualScale;
   
-  R_NormalizedTextScale(param_3,param_4);
-  R_TextWidth(param_1,param_2,param_3);
+  R_NormalizedTextScale(font,scale);
+  R_TextWidth(text,maxChars,font);
   floor();
   _ftol2_sse();
   return extraout_EAX;
@@ -549,13 +553,14 @@ int __cdecl UI_TextWidth(char *param_1,int param_2,Font_s *param_3,float param_4
 
 // 007459A0  UI_TextHeight  (ui/ui_main.cpp:775)
 
-int __cdecl UI_TextHeight(Font_s *param_1,float param_2)
+int __cdecl UI_TextHeight(Font_s *font,float scale)
 
 {
   int extraout_EAX;
+  float actualScale;
   
-  R_NormalizedTextScale(param_1,param_2);
-  R_TextHeight(param_1);
+  R_NormalizedTextScale(font,scale);
+  R_TextHeight(font);
   floor();
   _ftol2_sse();
   return extraout_EAX;
@@ -565,24 +570,23 @@ int __cdecl UI_TextHeight(Font_s *param_1,float param_2)
 // 00745A00  UI_DrawText  (ui/ui_main.cpp:784)
 
 void __cdecl
-UI_DrawText(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,float param_5,
-           float param_6,int param_7,int param_8,float param_9,float *param_10,int param_11)
+UI_DrawText(ScreenPlacement *scrPlace,char *text,int maxChars,Font_s *font,float x,float y,
+           int horzAlign,int vertAlign,float scale,float *color,int style)
 
 {
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  float local_c;
-  float local_8;
+  float xScale;
+  float yScale;
   
-  local_c = R_NormalizedTextScale(param_4,param_9);
-  local_8 = local_c;
-  ScrPlace_ApplyRect(param_1,&param_5,&param_6,&local_c,&local_8,param_7,param_8);
+  xScale = R_NormalizedTextScale(font,scale);
+  yScale = xScale;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&xScale,&yScale,horzAlign,vertAlign);
   floor();
-  param_5 = (float)extraout_ST0;
+  x = (float)extraout_ST0;
   floor();
-  param_6 = (float)extraout_ST0_00;
-  CL_DrawTextPhysical(param_2,param_3,param_4,param_5,param_6,1.0,local_c,local_8,param_10,param_11)
-  ;
+  y = (float)extraout_ST0_00;
+  CL_DrawTextPhysical(text,maxChars,font,x,y,1.0,xScale,yScale,color,style);
   return;
 }
 
@@ -590,16 +594,17 @@ UI_DrawText(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,f
 // 00745AF0  UI_DrawTextRotated  (ui/ui_main.cpp:801)
 
 void __cdecl
-UI_DrawTextRotated(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,float param_5,
-                  float param_6,int param_7,int param_8,float param_9,float *param_10,int param_11,
-                  float param_12)
+UI_DrawTextRotated(ScreenPlacement *scrPlace,char *text,int maxChars,Font_s *font,float x,float y,
+                  int horzAlign,int vertAlign,float scale,float *color,int style,float rotation)
 
 {
-  float fVar1;
+  float xScale_00;
+  float xScale;
+  float yScale;
   
-  fVar1 = R_NormalizedTextScale(param_4,param_9);
-  CL_DrawTextRotate(param_1,param_2,param_3,param_4,param_5,param_6,param_12,param_7,param_8,fVar1,
-                    fVar1,param_10,param_11);
+  xScale_00 = R_NormalizedTextScale(font,scale);
+  CL_DrawTextRotate(scrPlace,text,maxChars,font,x,y,rotation,horzAlign,vertAlign,xScale_00,xScale_00
+                    ,color,style);
   return;
 }
 
@@ -608,32 +613,31 @@ UI_DrawTextRotated(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *pa
 
 void __cdecl
 UI_DrawTextWithGlowW
-          (ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,float param_5,
-          float param_6,float param_7,int param_8,int param_9,float param_10,float *param_11,
-          int param_12,float *param_13,bool param_14,bool param_15)
+          (ScreenPlacement *scrPlace,char *text,int maxChars,Font_s *font,float x,float y,float w,
+          int horzAlign,int vertAlign,float scale,float *color,int style,float *glowColor,
+          bool subtitle,bool cinematic)
 
 {
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  float local_c;
-  float local_8;
+  float xScale;
+  float yScale;
   
-  local_c = R_NormalizedTextScale(param_4,param_10);
-  local_8 = local_c;
-  ScrPlace_ApplyRect(param_1,&param_5,&param_6,&local_c,&local_8,param_8,param_9);
+  xScale = R_NormalizedTextScale(font,scale);
+  yScale = xScale;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&xScale,&yScale,horzAlign,vertAlign);
   floor();
-  param_5 = (float)extraout_ST0;
+  x = (float)extraout_ST0;
   floor();
-  param_6 = (float)extraout_ST0_00;
-  if (param_14 == false) {
+  y = (float)extraout_ST0_00;
+  if (subtitle == false) {
     CL_DrawTextPhysicalWithEffects
-              (param_2,param_3,param_4,param_5,param_6,param_7,local_c,local_8,param_11,param_12,
-               param_13,(Material *)0x0,(Material *)0x0,0,0,0,0);
+              (text,maxChars,font,x,y,w,xScale,yScale,color,style,glowColor,(Material *)0x0,
+               (Material *)0x0,0,0,0,0);
   }
   else {
     R_AddCmdDrawTextSubtitle
-              (param_2,param_3,param_4,param_5,param_6,local_c,local_8,0.0,param_11,param_12,
-               param_13,param_15);
+              (text,maxChars,font,x,y,xScale,yScale,0.0,color,style,glowColor,cinematic);
   }
   return;
 }
@@ -642,14 +646,14 @@ UI_DrawTextWithGlowW
 // 00745CC0  UI_DrawTextWithGlow  (ui/ui_main.cpp:832)
 
 void __cdecl
-UI_DrawTextWithGlow(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,float param_5
-                   ,float param_6,int param_7,int param_8,float param_9,float *param_10,int param_11
-                   ,float *param_12,bool param_13,bool param_14)
+UI_DrawTextWithGlow(ScreenPlacement *scrPlace,char *text,int maxChars,Font_s *font,float x,float y,
+                   int horzAlign,int vertAlign,float scale,float *color,int style,float *glowColor,
+                   bool subtitle,bool cinematic)
 
 {
   UI_DrawTextWithGlowW
-            (param_1,param_2,param_3,param_4,param_5,param_6,1.0,param_7,param_8,param_9,param_10,
-             param_11,param_12,param_13,param_14);
+            (scrPlace,text,maxChars,font,x,y,1.0,horzAlign,vertAlign,scale,color,style,glowColor,
+             subtitle,cinematic);
   return;
 }
 
@@ -657,18 +661,17 @@ UI_DrawTextWithGlow(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *p
 // 00745D20  UI_DrawTextNoSnap  (ui/ui_main.cpp:838)
 
 void __cdecl
-UI_DrawTextNoSnap(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,float param_5,
-                 float param_6,int param_7,int param_8,float param_9,float *param_10,int param_11)
+UI_DrawTextNoSnap(ScreenPlacement *scrPlace,char *text,int maxChars,Font_s *font,float x,float y,
+                 int horzAlign,int vertAlign,float scale,float *color,int style)
 
 {
-  float local_c;
-  float local_8;
+  float xScale;
+  float yScale;
   
-  local_c = R_NormalizedTextScale(param_4,param_9);
-  local_8 = local_c;
-  ScrPlace_ApplyRect(param_1,&param_5,&param_6,&local_c,&local_8,param_7,param_8);
-  CL_DrawTextPhysical(param_2,param_3,param_4,param_5,param_6,1.0,local_c,local_8,param_10,param_11)
-  ;
+  xScale = R_NormalizedTextScale(font,scale);
+  yScale = xScale;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&xScale,&yScale,horzAlign,vertAlign);
+  CL_DrawTextPhysical(text,maxChars,font,x,y,1.0,xScale,yScale,color,style);
   return;
 }
 
@@ -677,43 +680,40 @@ UI_DrawTextNoSnap(ScreenPlacement *param_1,char *param_2,int param_3,Font_s *par
 
 void __cdecl
 UI_DrawTextWithCursor
-          (ScreenPlacement *param_1,char *param_2,int param_3,Font_s *param_4,float param_5,
-          float param_6,int param_7,int param_8,float param_9,float *param_10,int param_11,
-          int param_12,char param_13)
+          (ScreenPlacement *scrPlace,char *text,int maxChars,Font_s *font,float x,float y,
+          int horzAlign,int vertAlign,float scale,float *color,int style,int cursorPos,char cursor)
 
 {
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  float local_c;
-  float local_8;
+  float xScale;
+  float yScale;
   
-  local_c = R_NormalizedTextScale(param_4,param_9);
-  local_8 = local_c;
-  ScrPlace_ApplyRect(param_1,&param_5,&param_6,&local_c,&local_8,param_7,param_8);
+  xScale = R_NormalizedTextScale(font,scale);
+  yScale = xScale;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&xScale,&yScale,horzAlign,vertAlign);
   floor();
-  param_5 = (float)extraout_ST0;
+  x = (float)extraout_ST0;
   floor();
-  param_6 = (float)extraout_ST0_00;
-  CL_DrawTextPhysicalWithCursor
-            (param_2,param_3,param_4,param_5,param_6,local_c,local_8,param_10,param_11,param_12,
-             param_13);
+  y = (float)extraout_ST0_00;
+  CL_DrawTextPhysicalWithCursor(text,maxChars,font,x,y,xScale,yScale,color,style,cursorPos,cursor);
   return;
 }
 
 
 // 00745EA0  UI_GetFontHandleDefault  (ui/ui_main.cpp:867)
 
-Font_s * __cdecl UI_GetFontHandleDefault(float param_1)
+Font_s * __cdecl UI_GetFontHandleDefault(float scale)
 
 {
   Font_s *pFVar1;
   
   if ((((ui_smallFont == (dvar_s *)0x0) ||
-       (pFVar1 = DAT_098b4b98, (ui_smallFont->current).value < param_1)) &&
+       (pFVar1 = DAT_098b4b98, (ui_smallFont->current).value < scale)) &&
       ((ui_extraBigFont == (dvar_s *)0x0 ||
-       (pFVar1 = DAT_098b4ba8, param_1 < (ui_extraBigFont->current).value)))) &&
-     ((pFVar1 = DAT_098b4ba4, ui_bigFont != (dvar_s *)0x0 &&
-      ((ui_bigFont->current).value <= param_1)))) {
+       (pFVar1 = DAT_098b4ba8, scale < (ui_extraBigFont->current).value)))) &&
+     ((pFVar1 = DAT_098b4ba4, ui_bigFont != (dvar_s *)0x0 && ((ui_bigFont->current).value <= scale))
+     )) {
     pFVar1 = DAT_098b4b94;
   }
   return pFVar1;
@@ -722,19 +722,19 @@ Font_s * __cdecl UI_GetFontHandleDefault(float param_1)
 
 // 00745F10  UI_GetFontHandle  (ui/ui_main.cpp:879)
 
-Font_s * __cdecl UI_GetFontHandle(ScreenPlacement *param_1,int param_2,float param_3)
+Font_s * __cdecl UI_GetFontHandle(ScreenPlacement *scrPlace,int fontEnum,float scale)
 
 {
   Font_s *pFVar1;
   float fVar2;
   
   pFVar1 = DAT_098b4b94;
-  if ((((param_2 != 2) && (pFVar1 = DAT_098b4b98, param_2 != 3)) &&
-      (pFVar1 = DAT_098b4ba4, param_2 != 1)) &&
-     ((pFVar1 = DAT_098b4b9c, param_2 != 5 && (pFVar1 = DAT_098b4ba8, param_2 != 6)))) {
+  if ((((fontEnum != 2) && (pFVar1 = DAT_098b4b98, fontEnum != 3)) &&
+      (pFVar1 = DAT_098b4ba4, fontEnum != 1)) &&
+     ((pFVar1 = DAT_098b4b9c, fontEnum != 5 && (pFVar1 = DAT_098b4ba8, fontEnum != 6)))) {
     fVar2 = ScrPlace_HiResGetScale();
-    fVar2 = fVar2 * param_3 * param_1->scaleVirtualToReal[1];
-    if (param_2 == 4) {
+    fVar2 = fVar2 * scale * scrPlace->scaleVirtualToReal[1];
+    if (fontEnum == 4) {
       if (((ui_smallFont == (dvar_s *)0x0) ||
           (pFVar1 = DAT_098b4b98, (ui_smallFont->current).value < fVar2)) &&
          ((pFVar1 = DAT_098b4ba4, ui_bigFont != (dvar_s *)0x0 &&
@@ -752,17 +752,18 @@ Font_s * __cdecl UI_GetFontHandle(ScreenPlacement *param_1,int param_2,float par
 
 // 00745FF0  UI_UpdateTime  (ui/ui_main.cpp:928)
 
-void __cdecl UI_UpdateTime(int param_1,int param_2)
+void __cdecl UI_UpdateTime(int localClientNum,int realtime)
 
 {
   uiInfo_s *puVar1;
   uint uVar2;
-  int local_10;
-  int local_8;
+  int frameTimeIndex;
+  uiInfo_s *uiInfo;
+  int frameTimeTotal;
   
-  puVar1 = UI_GetInfo(param_1);
-  (puVar1->uiDC).frameTime = param_2 - (puVar1->uiDC).realTime;
-  (puVar1->uiDC).realTime = param_2;
+  puVar1 = UI_GetInfo(localClientNum);
+  (puVar1->uiDC).frameTime = realtime - (puVar1->uiDC).realTime;
+  (puVar1->uiDC).realTime = realtime;
   uVar2 = puVar1->timeIndex & 0x80000003;
   if ((int)uVar2 < 0) {
     uVar2 = (uVar2 - 1 | 0xfffffffc) + 1;
@@ -770,14 +771,14 @@ void __cdecl UI_UpdateTime(int param_1,int param_2)
   puVar1->previousTimes[uVar2] = (puVar1->uiDC).frameTime;
   puVar1->timeIndex = puVar1->timeIndex + 1;
   if (4 < puVar1->timeIndex) {
-    local_8 = 0;
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      local_8 = local_8 + puVar1->previousTimes[local_10];
+    frameTimeTotal = 0;
+    for (frameTimeIndex = 0; frameTimeIndex < 4; frameTimeIndex = frameTimeIndex + 1) {
+      frameTimeTotal = frameTimeTotal + puVar1->previousTimes[frameTimeIndex];
     }
-    if (local_8 == 0) {
-      local_8 = 1;
+    if (frameTimeTotal == 0) {
+      frameTimeTotal = 1;
     }
-    (puVar1->uiDC).FPS = (float)(int)(4000 / (longlong)local_8);
+    (puVar1->uiDC).FPS = (float)(int)(4000 / (longlong)frameTimeTotal);
   }
   return;
 }
@@ -785,13 +786,14 @@ void __cdecl UI_UpdateTime(int param_1,int param_2)
 
 // 007464E0  UI_ShouldDrawBuildNumber  (ui/ui_main.cpp:956)
 
-bool __cdecl UI_ShouldDrawBuildNumber(int param_1)
+bool __cdecl UI_ShouldDrawBuildNumber(int localClientNum)
 
 {
   bool bVar1;
   connstate_t cVar2;
+  connstate_t connectionState;
   
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   bVar1 = CL_AllLocalClientsDisconnected();
   if ((bVar1) && (cVar2 == CA_DISCONNECTED)) {
     bVar1 = true;
@@ -829,105 +831,112 @@ bool __cdecl UI_ShouldUpdateFriends(void)
 
 // 007460C0  UI_Refresh  (ui/ui_main.cpp:987)
 
-void __cdecl UI_Refresh(int param_1)
+void __cdecl UI_Refresh(int localClientNum)
 
 {
   bool bVar1;
-  uiInfo_s *puVar2;
-  int iVar3;
-  menuDef_t *pmVar4;
-  uint uVar5;
-  int iVar6;
-  float fVar7;
-  float fVar8;
+  uiInfo_s *uiInfo_00;
+  int iVar2;
+  menuDef_t *pmVar3;
+  uint uVar4;
+  int iVar5;
+  float w_00;
+  float h_00;
   int local_30;
   int local_2c;
+  uiInfo_s *uiInfo;
+  menuDef_t *toastPopupMenu;
+  int contextIndex;
+  float h;
+  float w;
   
-  UI_Project_Refresh(param_1);
-  puVar2 = UI_GetInfo(param_1);
-  iVar6 = (puVar2->uiDC).contextIndex;
-  iVar3 = Menu_Count(&puVar2->uiDC);
-  if (0 < iVar3) {
-    Menu_PaintAll(param_1,&puVar2->uiDC);
-    UI_DoServerRefresh(param_1,puVar2);
-    UI_BuildServerStatus(param_1,puVar2,0);
-    UI_BuildServerStatusScoreBoard(param_1,puVar2,0);
-    if (puVar2->toastPopupOpened != false) {
-      pmVar4 = Menus_FindByName(&puVar2->uiDC,"menu_toast_popup");
-      iVar3 = Sys_Milliseconds();
-      if (iVar3 - puVar2->toastPopupTimeCounter < puVar2->toastPopupDuration) {
-        Window_AddDynamicFlags(iVar6,&pmVar4->window,4);
-        Menu_Paint(param_1,&puVar2->uiDC,(ScreenPlacementStack *)0x0,pmVar4,-1);
+  UI_Project_Refresh(localClientNum);
+  uiInfo_00 = UI_GetInfo(localClientNum);
+  iVar5 = (uiInfo_00->uiDC).contextIndex;
+  iVar2 = Menu_Count(&uiInfo_00->uiDC);
+  if (0 < iVar2) {
+    Menu_PaintAll(localClientNum,&uiInfo_00->uiDC);
+    UI_DoServerRefresh(localClientNum,uiInfo_00);
+    UI_BuildServerStatus(localClientNum,uiInfo_00,0);
+    UI_BuildServerStatusScoreBoard(localClientNum,uiInfo_00,0);
+    if (uiInfo_00->toastPopupOpened != false) {
+      pmVar3 = Menus_FindByName(&uiInfo_00->uiDC,"menu_toast_popup");
+      iVar2 = Sys_Milliseconds();
+      if (iVar2 - uiInfo_00->toastPopupTimeCounter < uiInfo_00->toastPopupDuration) {
+        Window_AddDynamicFlags(iVar5,&pmVar3->window,4);
+        Menu_Paint(localClientNum,&uiInfo_00->uiDC,(ScreenPlacementStack *)0x0,pmVar3,-1);
       }
       else {
-        uVar5 = Window_GetDynamicFlags(iVar6,&pmVar4->window);
-        if ((uVar5 & 0x42000) == 0) {
-          Menu_Paint(param_1,&puVar2->uiDC,(ScreenPlacementStack *)0x0,pmVar4,-1);
-          if (((pmVar4->closeSlideSpeed < 1) || (pmVar4->closeSlideDirection < 0)) ||
-             (3 < pmVar4->closeSlideDirection)) {
-            if (0 < pmVar4->closeFadingTime) {
-              Window_AddDynamicFlags(iVar6,&pmVar4->window,0x2000);
-              iVar3 = Sys_Milliseconds();
-              pmVar4->fadeTimeCounter = iVar3;
+        uVar4 = Window_GetDynamicFlags(iVar5,&pmVar3->window);
+        if ((uVar4 & 0x42000) == 0) {
+          Menu_Paint(localClientNum,&uiInfo_00->uiDC,(ScreenPlacementStack *)0x0,pmVar3,-1);
+          if (((pmVar3->closeSlideSpeed < 1) || (pmVar3->closeSlideDirection < 0)) ||
+             (3 < pmVar3->closeSlideDirection)) {
+            if (0 < pmVar3->closeFadingTime) {
+              Window_AddDynamicFlags(iVar5,&pmVar3->window,0x2000);
+              iVar2 = Sys_Milliseconds();
+              pmVar3->fadeTimeCounter = iVar2;
             }
           }
           else {
-            Window_AddDynamicFlags(iVar6,&pmVar4->window,0x40000);
-            iVar3 = Sys_Milliseconds();
-            pmVar4->slideTimeCounter = iVar3;
-            if (0 < pmVar4->closeFadingTime) {
-              Window_AddDynamicFlags(iVar6,&pmVar4->window,0x2000);
-              local_2c = pmVar4->closeFadingTime;
-              if (local_2c <= pmVar4->closeSlideSpeed) {
-                local_2c = pmVar4->closeSlideSpeed;
+            Window_AddDynamicFlags(iVar5,&pmVar3->window,0x40000);
+            iVar2 = Sys_Milliseconds();
+            pmVar3->slideTimeCounter = iVar2;
+            if (0 < pmVar3->closeFadingTime) {
+              Window_AddDynamicFlags(iVar5,&pmVar3->window,0x2000);
+              local_2c = pmVar3->closeFadingTime;
+              if (local_2c <= pmVar3->closeSlideSpeed) {
+                local_2c = pmVar3->closeSlideSpeed;
               }
-              pmVar4->closeSlideSpeed = local_2c;
-              local_30 = pmVar4->closeFadingTime;
-              if (local_30 <= pmVar4->closeSlideSpeed) {
-                local_30 = pmVar4->closeSlideSpeed;
+              pmVar3->closeSlideSpeed = local_2c;
+              local_30 = pmVar3->closeFadingTime;
+              if (local_30 <= pmVar3->closeSlideSpeed) {
+                local_30 = pmVar3->closeSlideSpeed;
               }
-              pmVar4->closeFadingTime = local_30;
-              iVar3 = Sys_Milliseconds();
-              pmVar4->fadeTimeCounter = iVar3;
+              pmVar3->closeFadingTime = local_30;
+              iVar2 = Sys_Milliseconds();
+              pmVar3->fadeTimeCounter = iVar2;
             }
           }
         }
         else {
-          uVar5 = Window_GetDynamicFlags(iVar6,&pmVar4->window);
-          if ((uVar5 & 0x42000) != 0) {
-            Menu_Paint(param_1,&puVar2->uiDC,(ScreenPlacementStack *)0x0,pmVar4,-1);
-            uVar5 = Window_GetDynamicFlags(iVar6,&pmVar4->window);
-            if ((uVar5 & 0x42000) == 0) {
-              Window_RemoveDynamicFlags(iVar6,&pmVar4->window,4);
-              puVar2->toastPopupTimeCounter = -1;
-              puVar2->toastPopupOpened = false;
+          uVar4 = Window_GetDynamicFlags(iVar5,&pmVar3->window);
+          if ((uVar4 & 0x42000) != 0) {
+            Menu_Paint(localClientNum,&uiInfo_00->uiDC,(ScreenPlacementStack *)0x0,pmVar3,-1);
+            uVar4 = Window_GetDynamicFlags(iVar5,&pmVar3->window);
+            if ((uVar4 & 0x42000) == 0) {
+              Window_RemoveDynamicFlags(iVar5,&pmVar3->window,4);
+              uiInfo_00->toastPopupTimeCounter = -1;
+              uiInfo_00->toastPopupOpened = false;
             }
           }
         }
       }
     }
     UI_BuildFindPlayerList();
-    bVar1 = UI_ShouldDrawBuildNumber(param_1);
+    bVar1 = UI_ShouldDrawBuildNumber(localClientNum);
     if (bVar1) {
-      UI_DrawBuildNumber(iVar6);
+      UI_DrawBuildNumber(iVar5);
     }
-    if ((((puVar2->uiDC).isCursorVisible != 0) && (bVar1 = UI_KeysBypassMenu(param_1), !bVar1)) &&
+    if ((((uiInfo_00->uiDC).isCursorVisible != 0) &&
+        (bVar1 = UI_KeysBypassMenu(localClientNum), !bVar1)) &&
        (bVar1 = CL_IsRenderingSplitScreen(), !bVar1)) {
-      fVar7 = (scrPlaceFull.scaleVirtualToReal[0] * 32.0) / scrPlaceFull.scaleVirtualToFull[0];
-      fVar8 = (scrPlaceFull.scaleVirtualToReal[1] * 32.0) / scrPlaceFull.scaleVirtualToFull[1];
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + iVar6 * 0x78),
-                       (puVar2->uiDC).cursor.x - fVar7 * 0.5,(puVar2->uiDC).cursor.y - fVar8 * 0.5,
-                       fVar7,fVar8,4,4,(float *)0x0,DAT_098b4b7c);
+      w_00 = (scrPlaceFull.scaleVirtualToReal[0] * 32.0) / scrPlaceFull.scaleVirtualToFull[0];
+      h_00 = (scrPlaceFull.scaleVirtualToReal[1] * 32.0) / scrPlaceFull.scaleVirtualToFull[1];
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + iVar5 * 0x78),
+                       (uiInfo_00->uiDC).cursor.x - w_00 * 0.5,
+                       (uiInfo_00->uiDC).cursor.y - h_00 * 0.5,w_00,h_00,4,4,(float *)0x0,
+                       DAT_098b4b7c);
     }
   }
-  pmVar4 = Menu_GetFocused(&puVar2->uiDC);
-  if ((pmVar4 == (menuDef_t *)0x0) && (bVar1 = Key_IsCatcherActive(param_1,0x10), bVar1)) {
-    Key_RemoveCatcher(param_1,-0x11);
+  pmVar3 = Menu_GetFocused(&uiInfo_00->uiDC);
+  if ((pmVar3 == (menuDef_t *)0x0) && (bVar1 = Key_IsCatcherActive(localClientNum,0x10), bVar1)) {
+    Key_RemoveCatcher(localClientNum,-0x11);
   }
   bVar1 = UI_ShouldUpdateFriends();
   if (bVar1) {
-    iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-    UI_FriendsUpdate(iVar6);
+    iVar5 = Com_LocalClient_GetControllerIndex(localClientNum);
+    UI_FriendsUpdate(iVar5);
   }
   return;
 }
@@ -935,19 +944,20 @@ void __cdecl UI_Refresh(int param_1)
 
 // 00746550  UI_Shutdown  (ui/ui_main.cpp:1102)
 
-void __cdecl UI_Shutdown(int param_1)
+void __cdecl UI_Shutdown(int localClientNum)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
-  Menus_CloseAll(param_1,&puVar1->uiDC);
+  dc = UI_GetInfo(localClientNum);
+  Menus_CloseAll(localClientNum,&dc->uiDC);
   DAT_098b4b78 = 0;
-  UILocalVar_Shutdown(&(puVar1->uiDC).localVars);
+  UILocalVar_Shutdown(&(dc->uiDC).localVars);
   if ((useFastFile->current).enabled == false) {
-    Menus_FreeAllMemory(&puVar1->uiDC);
+    Menus_FreeAllMemory(&dc->uiDC);
   }
-  UI_Project_Shutdown(param_1);
+  UI_Project_Shutdown(localClientNum);
   return;
 }
 
@@ -956,65 +966,67 @@ void __cdecl UI_Shutdown(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-MenuList * __cdecl Load_ScriptMenuInternal(char *param_1,int param_2)
+MenuList * __cdecl Load_ScriptMenuInternal(char *pszMenu,int imageTrack)
 
 {
   MenuList *pMVar1;
-  char local_10c [260];
+  char szMenuFile [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  builtin_strncpy(local_10c,"ui_mp/scriptmenus/",0x13);
-  I_strncat(local_10c,0x100,param_1);
-  I_strncat(local_10c,0x100,".menu");
-  pMVar1 = UI_LoadMenu(local_10c,param_2);
+  builtin_strncpy(szMenuFile,"ui_mp/scriptmenus/",0x13);
+  I_strncat(szMenuFile,0x100,pszMenu);
+  I_strncat(szMenuFile,0x100,".menu");
+  pMVar1 = UI_LoadMenu(szMenuFile,imageTrack);
   return pMVar1;
 }
 
 
 // 007465D0  Load_ScriptMenu  (ui/ui_main.cpp:1143)
 
-int __cdecl Load_ScriptMenu(int param_1,char *param_2,int param_3)
+int __cdecl Load_ScriptMenu(int localClientNum,char *pszMenu,int imageTrack)
 
 {
-  MenuList *pMVar1;
-  uiInfo_s *puVar2;
+  MenuList *menuList_00;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
+  MenuList *menuList;
   
-  pMVar1 = Load_ScriptMenuInternal(param_2,param_3);
-  if (pMVar1 != (MenuList *)0x0) {
-    puVar2 = UI_GetInfo(param_1);
-    UI_AddMenuList(param_1,&puVar2->uiDC,pMVar1,1);
+  menuList_00 = Load_ScriptMenuInternal(pszMenu,imageTrack);
+  if (menuList_00 != (MenuList *)0x0) {
+    dc = UI_GetInfo(localClientNum);
+    UI_AddMenuList(localClientNum,&dc->uiDC,menuList_00,1);
   }
-  return (uint)(pMVar1 != (MenuList *)0x0);
+  return (uint)(menuList_00 != (MenuList *)0x0);
 }
 
 
 // 007466E0  UI_GetMapDisplayName  (ui/ui_main.cpp:1157)
 
-char * __cdecl UI_GetMapDisplayName(char *param_1)
+char * __cdecl UI_GetMapDisplayName(char *pszMap)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b9e44 <= local_8) {
-      return param_1;
+    if (DAT_098b9e44 <= i) {
+      return pszMap;
     }
-    iVar1 = I_stricmp(param_1,&DAT_098b9e68 + local_8 * 0x130);
+    iVar1 = I_stricmp(pszMap,&DAT_098b9e68 + i * 0x130);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pcVar2 = UI_SafeTranslateString(&DAT_098b9e48 + local_8 * 0x130);
+  pcVar2 = UI_SafeTranslateString(&DAT_098b9e48 + i * 0x130);
   return pcVar2;
 }
 
 
 // 00746750  UI_GetMapDisplayNameFromPartialLoadNameMatch  (ui/ui_main.cpp:1170)
 
-char * __cdecl UI_GetMapDisplayNameFromPartialLoadNameMatch(char *param_1,int *param_2)
+char * __cdecl UI_GetMapDisplayNameFromPartialLoadNameMatch(char *mapName,int *mapLoadNameLen)
 
 {
   char cVar1;
@@ -1023,103 +1035,104 @@ char * __cdecl UI_GetMapDisplayNameFromPartialLoadNameMatch(char *param_1,int *p
   char *pcVar4;
   int iVar5;
   char *local_c;
-  int local_8;
+  int i;
   
-  if ((param_2 == (int *)0x0) &&
+  if ((mapLoadNameLen == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x495,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar2)();
     return pcVar4;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b9e44 <= local_8) {
+    if (DAT_098b9e44 <= i) {
       return (char *)0x0;
     }
-    local_c = &DAT_098b9e68 + local_8 * 0x130;
+    local_c = &DAT_098b9e68 + i * 0x130;
     do {
       cVar1 = *local_c;
       local_c = local_c + 1;
     } while (cVar1 != '\0');
-    *param_2 = (int)local_c - (int)(&DAT_098b9e69 + local_8 * 0x130);
-    iVar5 = I_strnicmp(param_1,&DAT_098b9e68 + local_8 * 0x130,*param_2);
+    *mapLoadNameLen = (int)local_c - (int)(&DAT_098b9e69 + i * 0x130);
+    iVar5 = I_strnicmp(mapName,&DAT_098b9e68 + i * 0x130,*mapLoadNameLen);
     if (iVar5 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pcVar4 = UI_SafeTranslateString(&DAT_098b9e48 + local_8 * 0x130);
+  pcVar4 = UI_SafeTranslateString(&DAT_098b9e48 + i * 0x130);
   return pcVar4;
 }
 
 
 // 00746830  UI_GetGameTypeDisplayName  (ui/ui_main.cpp:1190)
 
-char * __cdecl UI_GetGameTypeDisplayName(char *param_1)
+char * __cdecl UI_GetGameTypeDisplayName(char *pszGameType)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b5434 <= local_8) {
-      return param_1;
+    if (DAT_098b5434 <= i) {
+      return pszGameType;
     }
-    iVar1 = I_stricmp(param_1,&DAT_098b5438 + local_8 * 0x74);
+    iVar1 = I_stricmp(pszGameType,&DAT_098b5438 + i * 0x74);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pcVar2 = UI_SafeTranslateString(&DAT_098b5444 + local_8 * 0x74);
+  pcVar2 = UI_SafeTranslateString(&DAT_098b5444 + i * 0x74);
   return pcVar2;
 }
 
 
 // 00746890  UI_GetGameTypeDisplayShortName  (ui/ui_main.cpp:1209)
 
-char * __cdecl UI_GetGameTypeDisplayShortName(char *param_1)
+char * __cdecl UI_GetGameTypeDisplayShortName(char *pszGameType)
 
 {
   int iVar1;
   char *pcVar2;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098b5434 <= local_8) {
-      return param_1;
+    if (DAT_098b5434 <= i) {
+      return pszGameType;
     }
-    iVar1 = I_stricmp(param_1,&DAT_098b5438 + local_8 * 0x74);
+    iVar1 = I_stricmp(pszGameType,&DAT_098b5438 + i * 0x74);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  pcVar2 = UI_SafeTranslateString(&DAT_098b5464 + local_8 * 0x74);
+  pcVar2 = UI_SafeTranslateString(&DAT_098b5464 + i * 0x74);
   return pcVar2;
 }
 
 
 // 007468F0  UI_Update  (ui/ui_main.cpp:1230)
 
-void __cdecl UI_Update(char *param_1)
+void __cdecl UI_Update(char *name)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
+  int rate;
   
-  iVar2 = I_stricmp(param_1,"ui_SetName");
+  iVar2 = I_stricmp(name,"ui_SetName");
   if (iVar2 == 0) {
     pcVar3 = Dvar_GetVariantString("ui_Name");
     Dvar_SetStringByName("name",pcVar3);
   }
   else {
-    iVar2 = I_stricmp(param_1,"ui_GetName");
+    iVar2 = I_stricmp(name,"ui_GetName");
     if (iVar2 == 0) {
       pcVar3 = Dvar_GetVariantString("name");
       Dvar_SetStringByName("ui_Name",pcVar3);
     }
     else {
-      iVar2 = I_stricmp(param_1,"ui_setRate");
+      iVar2 = I_stricmp(name,"ui_setRate");
       if (iVar2 == 0) {
         iVar2 = Dvar_GetInt("rate");
         if (iVar2 < 5000) {
@@ -1138,9 +1151,9 @@ void __cdecl UI_Update(char *param_1)
         }
       }
       else {
-        iVar2 = I_stricmp(param_1,"ui_mousePitch");
+        iVar2 = I_stricmp(name,"ui_mousePitch");
         if (iVar2 == 0) {
-          bVar1 = Dvar_GetBool(param_1);
+          bVar1 = Dvar_GetBool(name);
           if (bVar1) {
             Dvar_SetFloatByName("m_pitch",-0.022);
           }
@@ -1161,16 +1174,19 @@ void __cdecl UI_VerifyLanguage(void)
 
 {
   int iVar1;
-  int iVar2;
-  int iVar3;
+  int iLanguageSelection;
+  int value;
+  int newLanguage;
+  int verifiedLanguage;
+  int oldLanguage;
   
   iVar1 = Dvar_GetInt("loc_language");
-  iVar2 = Dvar_GetInt("ui_language");
-  iVar3 = SEH_VerifyLanguageSelection(iVar2);
-  if (iVar3 != iVar2) {
-    Dvar_SetIntByName("ui_language",iVar3);
+  iLanguageSelection = Dvar_GetInt("ui_language");
+  value = SEH_VerifyLanguageSelection(iLanguageSelection);
+  if (value != iLanguageSelection) {
+    Dvar_SetIntByName("ui_language",value);
   }
-  if (iVar2 == iVar1) {
+  if (iLanguageSelection == iVar1) {
     Dvar_SetBoolByName("ui_languagechanged",false);
   }
   else {
@@ -1184,26 +1200,26 @@ void __cdecl UI_VerifyLanguage(void)
 
 bool __cdecl
 UI_GetOpenOrCloseMenuOnDvarArgs
-          (char **param_1,char *param_2,char *param_3,int param_4,char *param_5,int param_6,
-          char *param_7,int param_8)
+          (char **args,char *cmd,char *dvarName,int dvarNameLen,char *testValue,int testValueLen,
+          char *menuName,int menuNameLen)
 
 {
   bool bVar1;
   int iVar2;
   
-  iVar2 = String_Parse(param_1,param_3,param_4);
+  iVar2 = String_Parse(args,dvarName,dvarNameLen);
   if (iVar2 == 0) {
     Com_Printf(0xd,"%s: invalid dvar name.\n");
     bVar1 = false;
   }
   else {
-    iVar2 = String_Parse(param_1,param_5,param_6);
+    iVar2 = String_Parse(args,testValue,testValueLen);
     if (iVar2 == 0) {
       Com_Printf(0xd,"%s: invalid test value.\n");
       bVar1 = false;
     }
     else {
-      iVar2 = String_Parse(param_1,param_7,param_8);
+      iVar2 = String_Parse(args,menuName,menuNameLen);
       if (iVar2 == 0) {
         Com_Printf(0xd,"%s: invalid menu name.\n");
         bVar1 = false;
@@ -1219,17 +1235,20 @@ UI_GetOpenOrCloseMenuOnDvarArgs
 
 // 00747DA0  UI_DvarValueTest  (ui/ui_main.cpp:1343)
 
-bool __cdecl UI_DvarValueTest(char *param_1,char *param_2,char *param_3,bool param_4)
+bool __cdecl UI_DvarValueTest(char *cmd,char *dvarName,char *testValue,bool wantMatch)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   dvar_s *pdVar4;
-  char *pcVar5;
-  int iVar6;
+  char *s1;
+  int iVar5;
+  bool doesMatch;
+  dvar_s *dvar;
+  char *dvarValue;
   
-  if (param_1 == (char *)0x0) {
+  if (cmd == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x544,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1237,7 +1256,7 @@ bool __cdecl UI_DvarValueTest(char *param_1,char *param_2,char *param_3,bool par
       return (bool)uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (dvarName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x545,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1245,7 +1264,7 @@ bool __cdecl UI_DvarValueTest(char *param_1,char *param_2,char *param_3,bool par
       return (bool)uVar3;
     }
   }
-  if (param_3 == (char *)0x0) {
+  if (testValue == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x546,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1253,15 +1272,15 @@ bool __cdecl UI_DvarValueTest(char *param_1,char *param_2,char *param_3,bool par
       return (bool)uVar3;
     }
   }
-  pdVar4 = Dvar_FindVar(param_2);
+  pdVar4 = Dvar_FindVar(dvarName);
   if (pdVar4 == (dvar_s *)0x0) {
     Com_Printf(0xd,"%s: cannot find dvar %s\n");
     bVar2 = false;
   }
   else {
-    pcVar5 = Dvar_GetVariantString(param_2);
-    iVar6 = I_stricmp(param_3,pcVar5);
-    bVar2 = (bool)('\x01' - (iVar6 != 0)) == param_4;
+    s1 = Dvar_GetVariantString(dvarName);
+    iVar5 = I_stricmp(testValue,s1);
+    bVar2 = (bool)('\x01' - (iVar5 != 0)) == wantMatch;
   }
   return bVar2;
 }
@@ -1270,15 +1289,16 @@ bool __cdecl UI_DvarValueTest(char *param_1,char *param_2,char *param_3,bool par
 // 00747C90  UI_OpenMenuOnDvar  (ui/ui_main.cpp:1366)
 
 void __cdecl
-UI_OpenMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,char *param_5,
-                 char *param_6)
+UI_OpenMenuOnDvar(int localClientNum,uiInfo_s *uiInfo,char *cmd,char *menuName,char *dvarName,
+                 char *testValue)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bool wantMatch;
   
-  if (param_3 == (char *)0x0) {
+  if (cmd == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x559,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1286,9 +1306,9 @@ UI_OpenMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,char
       return;
     }
   }
-  iVar3 = I_stricmp(param_3,"openMenuOnDvar");
+  iVar3 = I_stricmp(cmd,"openMenuOnDvar");
   if (iVar3 != 0) {
-    iVar3 = I_stricmp(param_3,"openMenuOnDvarNot");
+    iVar3 = I_stricmp(cmd,"openMenuOnDvarNot");
     if (iVar3 != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x55a,0,
                                "%s\n\t(cmd) = %s");
@@ -1299,7 +1319,7 @@ UI_OpenMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,char
       }
     }
   }
-  if (param_4 == (char *)0x0) {
+  if (menuName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x55b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1307,10 +1327,10 @@ UI_OpenMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,char
       return;
     }
   }
-  iVar3 = I_stricmp(param_3,"openMenuOnDvar");
-  bVar2 = UI_DvarValueTest(param_3,param_5,param_6,(bool)('\x01' - (iVar3 != 0)));
+  iVar3 = I_stricmp(cmd,"openMenuOnDvar");
+  bVar2 = UI_DvarValueTest(cmd,dvarName,testValue,(bool)('\x01' - (iVar3 != 0)));
   if (bVar2) {
-    Menus_OpenByName(param_1,&param_2->uiDC,param_4);
+    Menus_OpenByName(localClientNum,&uiInfo->uiDC,menuName);
   }
   return;
 }
@@ -1319,15 +1339,16 @@ UI_OpenMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,char
 // 00747EA0  UI_CloseMenuOnDvar  (ui/ui_main.cpp:1379)
 
 void __cdecl
-UI_CloseMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,char *param_5,
-                  char *param_6)
+UI_CloseMenuOnDvar(int localClientNum,uiInfo_s *uiInfo,char *cmd,char *menuName,char *dvarName,
+                  char *testValue)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  bool wantMatch;
   
-  if (param_3 == (char *)0x0) {
+  if (cmd == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x566,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1335,9 +1356,9 @@ UI_CloseMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,cha
       return;
     }
   }
-  iVar3 = I_stricmp(param_3,"closeMenuOnDvar");
+  iVar3 = I_stricmp(cmd,"closeMenuOnDvar");
   if (iVar3 != 0) {
-    iVar3 = I_stricmp(param_3,"closeMenuOnDvarNot");
+    iVar3 = I_stricmp(cmd,"closeMenuOnDvarNot");
     if (iVar3 != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x567,0,
                                "%s\n\t(cmd) = %s");
@@ -1348,7 +1369,7 @@ UI_CloseMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,cha
       }
     }
   }
-  if (param_4 == (char *)0x0) {
+  if (menuName == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x568,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1356,10 +1377,10 @@ UI_CloseMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,cha
       return;
     }
   }
-  iVar3 = I_stricmp(param_3,"closeMenuOnDvar");
-  bVar2 = UI_DvarValueTest(param_3,param_5,param_6,(bool)('\x01' - (iVar3 != 0)));
+  iVar3 = I_stricmp(cmd,"closeMenuOnDvar");
+  bVar2 = UI_DvarValueTest(cmd,dvarName,testValue,(bool)('\x01' - (iVar3 != 0)));
   if (bVar2) {
-    Menus_CloseByName(param_1,&param_2->uiDC,param_4);
+    Menus_CloseByName(localClientNum,&uiInfo->uiDC,menuName);
   }
   return;
 }
@@ -1367,15 +1388,16 @@ UI_CloseMenuOnDvar(int param_1,uiInfo_s *param_2,char *param_3,char *param_4,cha
 
 // 00746AE0  UI_UpdateDisplayServers  (ui/ui_main.cpp:1399)
 
-void __cdecl UI_UpdateDisplayServers(int param_1,uiInfo_s *param_2)
+void __cdecl UI_UpdateDisplayServers(int localClientNum,uiInfo_s *uiInfo)
 
 {
   int iVar1;
+  int serverCount;
   
   iVar1 = LAN_GetServerCount((ui_netSource->current).integer);
   if ((DAT_098d761c != iVar1) && (DAT_098d761c = iVar1, DAT_098d7618 != 0)) {
     DAT_098c3d94 = 0xffffffff;
-    UI_BuildServerDisplayList(param_1,param_2,1);
+    UI_BuildServerDisplayList(localClientNum,uiInfo,1);
   }
   return;
 }
@@ -1383,14 +1405,15 @@ void __cdecl UI_UpdateDisplayServers(int param_1,uiInfo_s *param_2)
 
 // 00746B40  UI_GetClientNumForPlayerListNum  (ui/ui_main.cpp:1419)
 
-int __cdecl UI_GetClientNumForPlayerListNum(int param_1)
+int __cdecl UI_GetClientNumForPlayerListNum(int playerListIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (((int)(&DAT_098b53b4)[param_1] < 0) || (0x1f < (int)(&DAT_098b53b4)[param_1])) {
+  if (((int)(&DAT_098b53b4)[playerListIndex] < 0) || (0x1f < (int)(&DAT_098b53b4)[playerListIndex]))
+  {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x58c,0,
                              "%s\n\t(sharedUiInfo.playerClientNums[playerListIndex]) = %i");
     if (!bVar2) {
@@ -1399,7 +1422,7 @@ int __cdecl UI_GetClientNumForPlayerListNum(int param_1)
       return iVar3;
     }
   }
-  return (&DAT_098b53b4)[param_1];
+  return (&DAT_098b53b4)[playerListIndex];
 }
 
 
@@ -1407,8 +1430,9 @@ int __cdecl UI_GetClientNumForPlayerListNum(int param_1)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "LbType": Some values do not have unique names */
 
-void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param_4)
+void __cdecl UI_RunMenuScript(int localClientNum,int contextIndex,char **args,char *actualScript)
 
 {
   code *pcVar1;
@@ -1419,43 +1443,43 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
   uint uVar6;
   int unaff_ESI;
   char *pcVar7;
-  ulong64 *puVar8;
-  char local_1d3c [128];
-  char local_1cbc [256];
-  char local_1bbc [128];
-  char local_1b3c [128];
-  char local_1abc [256];
-  char local_19bc [132];
-  int local_1938;
-  char local_1934 [1024];
-  undefined4 local_1534;
+  ulong64 *xuid;
+  char menuName_2 [128];
+  char testValue_2 [256];
+  char dvarName_2 [128];
+  char menuName [128];
+  char testValue [256];
+  char dvarName [132];
+  int stat;
+  char name2_2 [1024];
+  undefined4 uid;
   undefined4 local_1530;
-  char local_152c [1024];
-  int local_112c;
-  int local_1128;
-  char local_1124 [268];
-  int local_1018;
-  char local_1014 [1024];
-  char local_c14 [1024];
-  char local_814 [1028];
-  uiInfo_s *local_410;
-  char local_40c [1028];
+  char buff [1024];
+  int sortColumn;
+  int source;
+  char modPath [268];
+  uint serverCount;
+  char mapName [1024];
+  char gameType [1024];
+  char name2 [1028];
+  uiInfo_s *uiInfo;
+  char name [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = String_Parse(param_3,local_40c,0x400);
+  iVar3 = String_Parse(args,name,0x400);
   if (iVar3 != 0) {
-    local_410 = UI_UIContext_GetInfo(param_2);
-    iVar3 = I_stricmp(local_40c,"Quit");
+    uiInfo = UI_UIContext_GetInfo(contextIndex);
+    iVar3 = I_stricmp(name,"Quit");
     if (iVar3 == 0) {
       pcVar7 = "quit";
-      iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-      Cmd_ExecuteSingleCommand(param_1,iVar3,pcVar7);
+      iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+      Cmd_ExecuteSingleCommand(localClientNum,iVar3,pcVar7);
     }
     else {
-      iVar3 = I_stricmp(local_40c,"openurl");
+      iVar3 = I_stricmp(name,"openurl");
       if (iVar3 == 0) {
-        iVar3 = String_Parse(param_3,local_814,0x400);
+        iVar3 = String_Parse(args,name2,0x400);
         if (iVar3 == 0) {
           Com_PrintError(0xd,"openurl invalid argument %s\n ");
         }
@@ -1464,7 +1488,7 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
         }
       }
       else {
-        iVar3 = I_stricmp(local_40c,"iviteOrDeleteFriend");
+        iVar3 = I_stricmp(name,"iviteOrDeleteFriend");
         if (iVar3 == 0) {
           if ((ui_inviteScreen->current).enabled == false) {
             GamerProfile_WriteSettings(unaff_ESI);
@@ -1474,111 +1498,110 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
           }
         }
         else {
-          iVar3 = I_stricmp(local_40c,"sendRequestFriend");
+          iVar3 = I_stricmp(name,"sendRequestFriend");
           if (iVar3 == 0) {
             GamerProfile_WriteSettings(unaff_ESI);
           }
           else {
-            iVar3 = I_stricmp(local_40c,"deleteFriendPopup");
+            iVar3 = I_stricmp(name,"deleteFriendPopup");
             if (iVar3 == 0) {
               GamerProfile_WriteSettings(unaff_ESI);
             }
             else {
-              iVar3 = I_stricmp(local_40c,"deleteFriend");
+              iVar3 = I_stricmp(name,"deleteFriend");
               if (iVar3 == 0) {
                 GamerProfile_WriteSettings(unaff_ESI);
               }
               else {
-                iVar3 = I_stricmp(local_40c,"acceptFriend");
+                iVar3 = I_stricmp(name,"acceptFriend");
                 if (iVar3 == 0) {
                   UI_AcceptFriend();
                 }
                 else {
-                  iVar3 = I_stricmp(local_40c,"declineFriend");
+                  iVar3 = I_stricmp(name,"declineFriend");
                   if (iVar3 == 0) {
                     UI_DeclineFriend();
                   }
                   else {
-                    iVar3 = I_stricmp(local_40c,"acceptAllFriend");
+                    iVar3 = I_stricmp(name,"acceptAllFriend");
                     if (iVar3 == 0) {
                       GamerProfile_WriteSettings(unaff_ESI);
                     }
                     else {
-                      iVar3 = I_stricmp(local_40c,"declineAllFriend");
+                      iVar3 = I_stricmp(name,"declineAllFriend");
                       if (iVar3 == 0) {
                         GamerProfile_WriteSettings(unaff_ESI);
                       }
                       else {
-                        iVar3 = I_stricmp(local_40c,"inviteFriend");
+                        iVar3 = I_stricmp(name,"inviteFriend");
                         if (iVar3 == 0) {
                           GamerProfile_WriteSettings(unaff_ESI);
                         }
                         else {
-                          iVar3 = I_stricmp(local_40c,"acceptInvite");
+                          iVar3 = I_stricmp(name,"acceptInvite");
                           if (iVar3 == 0) {
                             UI_AcceptInvite();
                           }
                           else {
-                            iVar3 = I_stricmp(local_40c,"clearInvites");
+                            iVar3 = I_stricmp(name,"clearInvites");
                             if (iVar3 == 0) {
                               GamerProfile_WriteSettings(unaff_ESI);
                             }
                             else {
-                              iVar3 = I_stricmp(local_40c,"loadArenas");
+                              iVar3 = I_stricmp(name,"loadArenas");
                               if (iVar3 == 0) {
                                 UI_LoadArenas();
                                 UI_SelectCurrentGameType();
                                 UI_MapCountByGameType();
                                 Menu_SetFeederSelection
-                                          (param_1,&local_410->uiDC,(menuDef_t *)0x0,4,0,
+                                          (localClientNum,&uiInfo->uiDC,(menuDef_t *)0x0,4,0,
                                            "createserver");
-                                UI_SelectCurrentMap(param_1);
+                                UI_SelectCurrentMap(localClientNum);
                               }
                               else {
-                                iVar3 = I_stricmp(local_40c,"LoadMods");
+                                iVar3 = I_stricmp(name,"LoadMods");
                                 if (iVar3 == 0) {
                                   UI_LoadMods();
                                   DAT_098c38f4 = 0;
                                 }
                                 else {
-                                  iVar3 = I_stricmp(local_40c,"voteTypeMap");
+                                  iVar3 = I_stricmp(name,"voteTypeMap");
                                   if (iVar3 == 0) {
                                     pcVar7 = va("callvote typemap %s %s\n");
-                                    Cbuf_AddText(param_1,pcVar7);
+                                    Cbuf_AddText(localClientNum,pcVar7);
                                   }
                                   else {
-                                    iVar3 = I_stricmp(local_40c,"voteTypeMapDVar");
+                                    iVar3 = I_stricmp(name,"voteTypeMapDVar");
                                     if (iVar3 == 0) {
-                                      iVar3 = String_Parse(param_3,local_c14,0x400);
+                                      iVar3 = String_Parse(args,gameType,0x400);
                                       if ((iVar3 != 0) &&
-                                         (iVar3 = String_Parse(param_3,local_1014,0x400), iVar3 != 0
-                                         )) {
-                                        Dvar_GetString(local_1014);
-                                        Dvar_GetString(local_c14);
+                                         (iVar3 = String_Parse(args,mapName,0x400), iVar3 != 0)) {
+                                        Dvar_GetString(mapName);
+                                        Dvar_GetString(gameType);
                                         pcVar7 = va("callvote typemap %s %s\n");
-                                        Cbuf_AddText(param_1,pcVar7);
+                                        Cbuf_AddText(localClientNum,pcVar7);
                                       }
                                     }
                                     else {
-                                      iVar3 = I_stricmp(local_40c,"voteMap");
+                                      iVar3 = I_stricmp(name,"voteMap");
                                       if (iVar3 == 0) {
                                         if ((-1 < (ui_currentNetMap->current).integer) &&
                                            ((ui_currentNetMap->current).integer < DAT_098b9e44)) {
                                           pcVar7 = va("callvote map %s\n");
-                                          Cbuf_AddText(param_1,pcVar7);
+                                          Cbuf_AddText(localClientNum,pcVar7);
                                         }
                                       }
                                       else {
-                                        iVar3 = I_stricmp(local_40c,"voteGame");
+                                        iVar3 = I_stricmp(name,"voteGame");
                                         if (iVar3 == 0) {
                                           pcVar7 = va("callvote g_gametype %s\n");
-                                          Cbuf_AddText(param_1,pcVar7);
+                                          Cbuf_AddText(localClientNum,pcVar7);
                                         }
                                         else {
-                                          iVar3 = I_stricmp(local_40c,"RefreshServers");
+                                          iVar3 = I_stricmp(name,"RefreshServers");
                                           if (iVar3 == 0) {
-                                            UI_StartServerRefresh(param_1,param_2,1);
-                                            UI_BuildServerDisplayList(param_1,local_410,1);
+                                            UI_StartServerRefresh(localClientNum,contextIndex,1);
+                                            UI_BuildServerDisplayList(localClientNum,uiInfo,1);
                                             uVar4 = LiveGroups_GetCount("online/mp");
                                             pcVar7 = UI_SafeTranslateString
                                                                ("PLATFORM_PLAYERS_ONLINE");
@@ -1588,20 +1611,20 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
                                             uVar5 = LiveGroups_GetCountByType(SERVER_GROUP_UNRANKED)
                                             ;
                                             uVar6 = LiveGroups_GetCountByType(SERVER_GROUP_WAGER);
-                                            iVar3 = uVar4 + uVar5 + uVar6;
-                                            local_1018 = iVar3;
+                                            uVar6 = uVar4 + uVar5 + uVar6;
+                                            serverCount = uVar6;
                                             pcVar7 = UI_SafeTranslateString("PLATFORM_ALL_SERVERS");
-                                            pcVar7 = UI_ReplaceConversionInt(pcVar7,iVar3);
+                                            pcVar7 = UI_ReplaceConversionInt(pcVar7,uVar6);
                                             Dvar_SetString(ui_browserDedicatedServerCount,pcVar7);
                                           }
                                           else {
-                                            iVar3 = I_stricmp(local_40c,"RefreshFilter");
+                                            iVar3 = I_stricmp(name,"RefreshFilter");
                                             if (iVar3 == 0) {
-                                              UI_StartServerRefresh(param_1,param_2,0);
-                                              UI_BuildServerDisplayList(param_1,local_410,1);
+                                              UI_StartServerRefresh(localClientNum,contextIndex,0);
+                                              UI_BuildServerDisplayList(localClientNum,uiInfo,1);
                                             }
                                             else {
-                                              iVar3 = I_stricmp(local_40c,"RunMod");
+                                              iVar3 = I_stricmp(name,"RunMod");
                                               if (iVar3 == 0) {
                                                 if ((0x3f < DAT_098c38f4) &&
                                                    (bVar2 = Assert_MyHandler(
@@ -1614,29 +1637,29 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
                                                   return;
                                                 }
                                                 if ((&DAT_098c36f0)[DAT_098c38f4 * 2] != 0) {
-                                                  Com_sprintf(local_1124,0x104,"%s/%s");
+                                                  Com_sprintf(modPath,0x104,"%s/%s");
                                                   if ((useFastFile->current).enabled != false) {
                                                     DB_SyncXAssets();
                                                   }
-                                                  Dvar_SetStringByName("fs_game",local_1124);
-                                                  Cbuf_AddText(param_1,"vid_restart\n");
+                                                  Dvar_SetStringByName("fs_game",modPath);
+                                                  Cbuf_AddText(localClientNum,"vid_restart\n");
                                                 }
                                               }
                                               else {
-                                                iVar3 = I_stricmp(local_40c,"UpdateNetSource");
+                                                iVar3 = I_stricmp(name,"UpdateNetSource");
                                                 if (iVar3 == 0) {
-                                                  iVar3 = Int_Parse(param_3,&local_1128);
+                                                  iVar3 = Int_Parse(args,&source);
                                                   if (iVar3 != 0) {
-                                                    UI_NetSource_UpdateDisplayList(local_1128);
+                                                    UI_NetSource_UpdateDisplayList(source);
                                                   }
                                                 }
                                                 else {
-                                                  iVar3 = I_stricmp(local_40c,"closeJoin");
+                                                  iVar3 = I_stricmp(name,"closeJoin");
                                                   if (iVar3 == 0) {
                                                     if (DAT_098c3d90 == 0) {
-                                                      Menus_CloseByName(param_1,&local_410->uiDC,
-                                                                        "joinserver");
-                                                      Menus_OpenByName(param_1,&local_410->uiDC,
+                                                      Menus_CloseByName(localClientNum,&uiInfo->uiDC
+                                                                        ,"joinserver");
+                                                      Menus_OpenByName(localClientNum,&uiInfo->uiDC,
                                                                        "main");
                                                     }
                                                     else {
@@ -1644,25 +1667,25 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
                                                       DAT_098d7624 = 0;
                                                       DAT_098da4d8 = 0;
                                                       DAT_098da4dc = 0;
-                                                      local_410->nextFindPlayerRefresh = 0;
-                                                      UI_BuildServerDisplayList(param_1,local_410,1)
-                                                      ;
+                                                      uiInfo->nextFindPlayerRefresh = 0;
+                                                      UI_BuildServerDisplayList
+                                                                (localClientNum,uiInfo,1);
                                                     }
                                                   }
                                                   else {
-                                                    iVar3 = I_stricmp(local_40c,"StopRefresh");
+                                                    iVar3 = I_stricmp(name,"StopRefresh");
                                                     if (iVar3 == 0) {
                                                       UI_StopServerRefresh();
                                                       DAT_098d7624 = 0;
                                                       DAT_098da4d8 = 0;
-                                                      local_410->nextFindPlayerRefresh = 0;
+                                                      uiInfo->nextFindPlayerRefresh = 0;
                                                     }
                                                     else {
-                                                      iVar3 = I_stricmp(local_40c,"ServerStatus");
+                                                      iVar3 = I_stricmp(name,"ServerStatus");
                                                       if (iVar3 == 0) {
                                                         Dvar_SetBool(ui_browserShowInfo,false);
-                                                        UI_UpdateDisplayServers(param_1,uiInfoArray)
-                                                        ;
+                                                        UI_UpdateDisplayServers
+                                                                  (localClientNum,uiInfoArray);
                                                         if ((-1 < DAT_098c3d94) &&
                                                            (DAT_098c3d94 < DAT_098d7618)) {
                                                           LAN_GetServerSecurityId
@@ -1671,251 +1694,243 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
                                                                               DAT_098c3d94 * 4),
                                                                      &DAT_098d7b88,8);
                                                           UI_BuildServerStatus
-                                                                    (param_1,uiInfoArray,1);
+                                                                    (localClientNum,uiInfoArray,1);
                                                         }
                                                       }
                                                       else {
-                                                        iVar3 = I_stricmp(local_40c,
-                                                                          "ServerStatusScoreBoard");
-                                                        if (iVar3 == 0) {
-                                                          UI_UpdateDisplayServers
-                                                                    (param_1,uiInfoArray);
-                                                          if ((-1 < DAT_098c3d94) &&
-                                                             (DAT_098c3d94 < DAT_098d7618)) {
-                                                            LAN_GetServerSecurityId
-                                                                      ((ui_netSource->current).
-                                                                       integer,*(int *)(&
-                                                  DAT_098c3d98 + DAT_098c3d94 * 4),&DAT_098d7b88,8);
-                                                  UI_BuildServerStatusScoreBoard
-                                                            (param_1,uiInfoArray,1);
-                                                  }
+                                                        iVar3 = I_stricmp(name,
+                                                  "ServerStatusScoreBoard");
+                                                  if (iVar3 == 0) {
+                                                    UI_UpdateDisplayServers
+                                                              (localClientNum,uiInfoArray);
+                                                    if ((-1 < DAT_098c3d94) &&
+                                                       (DAT_098c3d94 < DAT_098d7618)) {
+                                                      LAN_GetServerSecurityId
+                                                                ((ui_netSource->current).integer,
+                                                                 *(int *)(&DAT_098c3d98 +
+                                                                         DAT_098c3d94 * 4),
+                                                                 &DAT_098d7b88,8);
+                                                      UI_BuildServerStatusScoreBoard
+                                                                (localClientNum,uiInfoArray,1);
+                                                    }
                                                   }
                                                   else {
-                                                    iVar3 = I_stricmp(local_40c,"UpdateFilter");
+                                                    iVar3 = I_stricmp(name,"UpdateFilter");
                                                     if (iVar3 == 0) {
-                                                      UI_BuildServerDisplayList(param_1,local_410,1)
-                                                      ;
-                                                      UI_FeederSelection(param_1,param_2,2.0,0);
+                                                      UI_BuildServerDisplayList
+                                                                (localClientNum,uiInfo,1);
+                                                      UI_FeederSelection(localClientNum,contextIndex
+                                                                         ,2.0,0);
                                                     }
                                                     else {
-                                                      iVar3 = I_stricmp(local_40c,"Controls");
+                                                      iVar3 = I_stricmp(name,"Controls");
                                                       if (iVar3 == 0) {
                                                         CL_PauseGame(true);
-                                                        Key_SetCatcher(param_1,0x10);
-                                                        Menus_CloseAll(param_1,&local_410->uiDC);
-                                                        Menus_OpenByName(param_1,&local_410->uiDC,
-                                                                         "setup_menu2");
+                                                        Key_SetCatcher(localClientNum,0x10);
+                                                        Menus_CloseAll(localClientNum,&uiInfo->uiDC)
+                                                        ;
+                                                        Menus_OpenByName(localClientNum,
+                                                                         &uiInfo->uiDC,"setup_menu2"
+                                                                        );
                                                       }
                                                       else {
-                                                        iVar3 = I_stricmp(local_40c,"Leave");
+                                                        iVar3 = I_stricmp(name,"Leave");
                                                         if (iVar3 == 0) {
-                                                          Cbuf_AddText(param_1,"disconnect\n");
-                                                          Key_SetCatcher(param_1,0x10);
-                                                          Menus_CloseAll(param_1,&local_410->uiDC);
-                                                          Menus_OpenByName(param_1,&local_410->uiDC,
-                                                                           "main");
+                                                          Cbuf_AddText(localClientNum,"disconnect\n"
+                                                                      );
+                                                          Key_SetCatcher(localClientNum,0x10);
+                                                          Menus_CloseAll(localClientNum,
+                                                                         &uiInfo->uiDC);
+                                                          Menus_OpenByName(localClientNum,
+                                                                           &uiInfo->uiDC,"main");
                                                         }
                                                         else {
-                                                          iVar3 = I_stricmp(local_40c,"ServerSort");
+                                                          iVar3 = I_stricmp(name,"ServerSort");
                                                           if (iVar3 == 0) {
-                                                            iVar3 = Int_Parse(param_3,&local_112c);
+                                                            iVar3 = Int_Parse(args,&sortColumn);
                                                             if (iVar3 != 0) {
-                                                              if (local_112c == DAT_098c3d84) {
+                                                              if (sortColumn == DAT_098c3d84) {
                                                                 DAT_098c3d88 = (uint)(DAT_098c3d88
                                                                                      == 0);
                                                               }
-                                                              UI_ServersSort(local_112c,1);
+                                                              UI_ServersSort(sortColumn,1);
                                                             }
                                                           }
                                                           else {
-                                                            iVar3 = I_stricmp(local_40c,
-                                                                              "closeingame");
+                                                            iVar3 = I_stricmp(name,"closeingame");
                                                             if (iVar3 == 0) {
-                                                              Key_RemoveCatcher(param_1,-0x11);
-                                                              Key_ClearStates(param_1);
+                                                              Key_RemoveCatcher(localClientNum,-0x11
+                                                                               );
+                                                              Key_ClearStates(localClientNum);
                                                               CL_PauseGame(false);
-                                                              Menus_CloseAll(param_1,&local_410->
-                                                                                      uiDC);
+                                                              Menus_CloseAll(localClientNum,
+                                                                             &uiInfo->uiDC);
                                                             }
                                                             else {
-                                                              iVar3 = I_stricmp(local_40c,"voteKick"
-                                                                               );
+                                                              iVar3 = I_stricmp(name,"voteKick");
                                                               if (iVar3 == 0) {
-                                                                if ((-1 < local_410->playerIndex) &&
-                                                                   (local_410->playerIndex <
+                                                                if ((-1 < uiInfo->playerIndex) &&
+                                                                   (uiInfo->playerIndex <
                                                                     DAT_098b4bb0)) {
                                                                   pcVar7 = va(
                                                   "callvote kick \"%s\"\n");
-                                                  Cbuf_AddText(param_1,pcVar7);
+                                                  Cbuf_AddText(localClientNum,pcVar7);
                                                   }
                                                   }
                                                   else {
-                                                    iVar3 = I_stricmp(local_40c,"voteTempBan");
+                                                    iVar3 = I_stricmp(name,"voteTempBan");
                                                     if (iVar3 == 0) {
-                                                      if ((-1 < local_410->playerIndex) &&
-                                                         (local_410->playerIndex < DAT_098b4bb0)) {
+                                                      if ((-1 < uiInfo->playerIndex) &&
+                                                         (uiInfo->playerIndex < DAT_098b4bb0)) {
                                                         pcVar7 = va("callvote tempBanUser \"%s\"\n")
                                                         ;
-                                                        Cbuf_AddText(param_1,pcVar7);
+                                                        Cbuf_AddText(localClientNum,pcVar7);
                                                       }
                                                     }
                                                     else {
-                                                      iVar3 = I_stricmp(local_40c,"addFavorite");
+                                                      iVar3 = I_stricmp(name,"addFavorite");
                                                       if (iVar3 == 0) {
                                                         if ((((ui_netSource->current).integer != 3)
                                                             && (-1 < DAT_098c3d94)) &&
                                                            (DAT_098c3d94 < DAT_098d7618)) {
                                                           LAN_GetServerInfo((ui_netSource->current).
                                                                             integer,*(int *)(&
-                                                  DAT_098c3d98 + DAT_098c3d94 * 4),local_152c,0x400)
-                                                  ;
-                                                  puVar8 = (ulong64 *)&local_1534;
-                                                  pcVar7 = Info_ValueForKey(local_152c,"dwuserid");
-                                                  StringToXUID(pcVar7,puVar8);
+                                                  DAT_098c3d98 + DAT_098c3d94 * 4),buff,0x400);
+                                                  xuid = (ulong64 *)&uid;
+                                                  pcVar7 = Info_ValueForKey(buff,"dwuserid");
+                                                  StringToXUID(pcVar7,xuid);
                                                   UI_AddServerToFavoritesList
-                                                            (CONCAT44(local_1530,local_1534));
+                                                            (CONCAT44(local_1530,uid));
                                                   }
                                                   }
                                                   else {
-                                                    iVar3 = I_stricmp(local_40c,"deleteFavorite");
+                                                    iVar3 = I_stricmp(name,"deleteFavorite");
                                                     if (iVar3 == 0) {
                                                       if ((((ui_netSource->current).integer == 3) &&
                                                           (-1 < DAT_098c3d94)) &&
                                                          (DAT_098c3d94 < DAT_098d7618)) {
-                                                        UI_UpdateDisplayServers(param_1,local_410);
+                                                        UI_UpdateDisplayServers
+                                                                  (localClientNum,uiInfo);
                                                         UI_RemoveServerFromFavoritesList
                                                                   (DAT_098c3d94);
                                                       }
                                                     }
                                                     else {
-                                                      iVar3 = I_stricmp(local_40c,"update");
+                                                      iVar3 = I_stricmp(name,"update");
                                                       if (iVar3 == 0) {
-                                                        iVar3 = String_Parse(param_3,local_1934,
-                                                                             0x400);
+                                                        iVar3 = String_Parse(args,name2_2,0x400);
                                                         if (iVar3 != 0) {
-                                                          UI_Update(local_1934);
+                                                          UI_Update(name2_2);
                                                         }
                                                       }
                                                       else {
-                                                        iVar3 = I_stricmp(local_40c,"setPbClStatus")
-                                                        ;
+                                                        iVar3 = I_stricmp(name,"setPbClStatus");
                                                         if (iVar3 == 0) {
-                                                          iVar3 = Int_Parse(param_3,&local_1938);
+                                                          iVar3 = Int_Parse(args,&stat);
                                                           if (iVar3 != 0) {
-                                                            CLUI_SetPbClStatus(local_1938);
+                                                            CLUI_SetPbClStatus(stat);
                                                           }
                                                         }
                                                         else {
-                                                          iVar3 = I_stricmp(local_40c,
-                                                                            "startSingleplayer");
-                                                          if (iVar3 == 0) {
-                                                            Cbuf_AddText(param_1,
-                                                  "startSingleplayer\n");
-                                                  }
-                                                  else {
-                                                    iVar3 = I_stricmp(local_40c,"getLanguage");
-                                                    if (iVar3 == 0) {
-                                                      iVar3 = Dvar_GetInt("loc_language");
-                                                      Dvar_SetIntByName("ui_language",iVar3);
-                                                      UI_VerifyLanguage();
-                                                    }
-                                                    else {
-                                                      iVar3 = I_stricmp(local_40c,"verifyLanguage");
-                                                      if (iVar3 == 0) {
-                                                        UI_VerifyLanguage();
-                                                      }
-                                                      else {
-                                                        iVar3 = I_stricmp(local_40c,"updateLanguage"
-                                                                         );
-                                                        if (iVar3 == 0) {
-                                                          iVar3 = Dvar_GetInt("ui_language");
-                                                          Dvar_SetIntByName("loc_language",iVar3);
-                                                          UI_VerifyLanguage();
-                                                          Cbuf_AddText(param_1,"vid_restart\n");
-                                                        }
-                                                        else {
-                                                          iVar3 = I_stricmp(local_40c,"mutePlayer");
-                                                          if (iVar3 == 0) {
-                                                            if ((-1 < local_410->playerIndex) &&
-                                                               (local_410->playerIndex <
-                                                                DAT_098b4bb0)) {
-                                                              iVar3 = 
-                                                  UI_GetClientNumForPlayerListNum
-                                                            (local_410->playerIndex);
-                                                  CL_MutePlayer(param_1,iVar3);
-                                                  }
-                                                  }
-                                                  else {
-                                                    iVar3 = I_stricmp(local_40c,"openMenuOnDvar");
-                                                    if ((iVar3 == 0) ||
-                                                       (iVar3 = I_stricmp(local_40c,
-                                                                          "openMenuOnDvarNot"),
-                                                       iVar3 == 0)) {
-                                                      bVar2 = UI_GetOpenOrCloseMenuOnDvarArgs
-                                                                        (param_3,local_40c,
-                                                                         local_19bc,0x80,local_1abc,
-                                                                         0x100,local_1b3c,0x80);
-                                                      if (bVar2) {
-                                                        UI_OpenMenuOnDvar(param_1,local_410,
-                                                                          local_40c,local_1b3c,
-                                                                          local_19bc,local_1abc);
-                                                      }
-                                                    }
-                                                    else {
-                                                      iVar3 = I_stricmp(local_40c,"closeMenuOnDvar")
-                                                      ;
-                                                      if ((iVar3 == 0) ||
-                                                         (iVar3 = I_stricmp(local_40c,
-                                                                            "closeMenuOnDvarNot"),
-                                                         iVar3 == 0)) {
-                                                        bVar2 = UI_GetOpenOrCloseMenuOnDvarArgs
-                                                                          (param_3,local_40c,
-                                                                           local_1bbc,0x80,
-                                                                           local_1cbc,0x100,
-                                                                           local_1d3c,0x80);
-                                                        if (bVar2) {
-                                                          UI_CloseMenuOnDvar(param_1,local_410,
-                                                                             local_40c,local_1d3c,
-                                                                             local_1bbc,local_1cbc);
-                                                        }
-                                                      }
-                                                      else {
-                                                        iVar3 = I_stricmp(local_40c,"setRecommended"
-                                                                         );
-                                                        if (iVar3 == 0) {
-                                                          Com_SetRecommended(param_1,1);
-                                                        }
-                                                        else {
-                                                          iVar3 = I_stricmp(local_40c,
-                                                                            "clearLoadErrorsSummary"
+                                                          iVar3 = I_stricmp(name,"startSingleplayer"
                                                                            );
                                                           if (iVar3 == 0) {
-                                                            Menus_CloseAll(param_1,&local_410->uiDC)
-                                                            ;
+                                                            Cbuf_AddText(localClientNum,
+                                                                         "startSingleplayer\n");
                                                           }
                                                           else {
-                                                            iVar3 = I_stricmp(local_40c,
-                                                                              "RefreshLeaderboards")
-                                                            ;
+                                                            iVar3 = I_stricmp(name,"getLanguage");
                                                             if (iVar3 == 0) {
-                                                              LB_ForceRefresh();
+                                                              iVar3 = Dvar_GetInt("loc_language");
+                                                              Dvar_SetIntByName("ui_language",iVar3)
+                                                              ;
+                                                              UI_VerifyLanguage();
                                                             }
                                                             else {
-                                                              iVar3 = I_stricmp(local_40c,
-                                                                                "ViewGamerCard");
-                                                              if (iVar3 == 0) {
-                                                                LB_OnSelect(param_1);
-                                                              }
-                                                              else {
-                                                                UI_Project_RunMenuScript
-                                                                          (param_1,param_2,local_40c
-                                                                           ,param_3,param_4);
-                                                              }
-                                                            }
-                                                          }
+                                                              iVar3 = I_stricmp(name,
+                                                  "verifyLanguage");
+                                                  if (iVar3 == 0) {
+                                                    UI_VerifyLanguage();
+                                                  }
+                                                  else {
+                                                    iVar3 = I_stricmp(name,"updateLanguage");
+                                                    if (iVar3 == 0) {
+                                                      iVar3 = Dvar_GetInt("ui_language");
+                                                      Dvar_SetIntByName("loc_language",iVar3);
+                                                      UI_VerifyLanguage();
+                                                      Cbuf_AddText(localClientNum,"vid_restart\n");
+                                                    }
+                                                    else {
+                                                      iVar3 = I_stricmp(name,"mutePlayer");
+                                                      if (iVar3 == 0) {
+                                                        if ((-1 < uiInfo->playerIndex) &&
+                                                           (uiInfo->playerIndex < DAT_098b4bb0)) {
+                                                          iVar3 = UI_GetClientNumForPlayerListNum
+                                                                            (uiInfo->playerIndex);
+                                                          CL_MutePlayer(localClientNum,iVar3);
                                                         }
                                                       }
+                                                      else {
+                                                        iVar3 = I_stricmp(name,"openMenuOnDvar");
+                                                        if ((iVar3 == 0) ||
+                                                           (iVar3 = I_stricmp(name,
+                                                  "openMenuOnDvarNot"), iVar3 == 0)) {
+                                                    bVar2 = UI_GetOpenOrCloseMenuOnDvarArgs
+                                                                      (args,name,dvarName,0x80,
+                                                                       testValue,0x100,menuName,0x80
+                                                                      );
+                                                    if (bVar2) {
+                                                      UI_OpenMenuOnDvar(localClientNum,uiInfo,name,
+                                                                        menuName,dvarName,testValue)
+                                                      ;
                                                     }
+                                                  }
+                                                  else {
+                                                    iVar3 = I_stricmp(name,"closeMenuOnDvar");
+                                                    if ((iVar3 == 0) ||
+                                                       (iVar3 = I_stricmp(name,"closeMenuOnDvarNot")
+                                                       , iVar3 == 0)) {
+                                                      bVar2 = UI_GetOpenOrCloseMenuOnDvarArgs
+                                                                        (args,name,dvarName_2,0x80,
+                                                                         testValue_2,0x100,
+                                                                         menuName_2,0x80);
+                                                      if (bVar2) {
+                                                        UI_CloseMenuOnDvar(localClientNum,uiInfo,
+                                                                           name,menuName_2,
+                                                                           dvarName_2,testValue_2);
+                                                      }
+                                                    }
+                                                    else {
+                                                      iVar3 = I_stricmp(name,"setRecommended");
+                                                      if (iVar3 == 0) {
+                                                        Com_SetRecommended(localClientNum,1);
+                                                      }
+                                                      else {
+                                                        iVar3 = I_stricmp(name,
+                                                  "clearLoadErrorsSummary");
+                                                  if (iVar3 == 0) {
+                                                    Menus_CloseAll(localClientNum,&uiInfo->uiDC);
+                                                  }
+                                                  else {
+                                                    iVar3 = I_stricmp(name,"RefreshLeaderboards");
+                                                    if (iVar3 == 0) {
+                                                      LB_ForceRefresh();
+                                                    }
+                                                    else {
+                                                      iVar3 = I_stricmp(name,"ViewGamerCard");
+                                                      if (iVar3 == 0) {
+                                                        LB_OnSelect(localClientNum);
+                                                      }
+                                                      else {
+                                                        UI_Project_RunMenuScript
+                                                                  (localClientNum,contextIndex,name,
+                                                                   args,actualScript);
+                                                      }
+                                                    }
+                                                  }
+                                                  }
+                                                  }
+                                                  }
                                                   }
                                                   }
                                                   }
@@ -1966,17 +1981,17 @@ void __cdecl UI_RunMenuScript(int param_1,int param_2,char **param_3,char *param
 
 // 00747FB0  UI_Pause  (ui/ui_main.cpp:2005)
 
-void __cdecl UI_Pause(int param_1,int param_2)
+void __cdecl UI_Pause(int localClientNum,int b)
 
 {
-  if (param_2 == 0) {
-    Key_RemoveCatcher(param_1,-0x11);
-    Key_ClearStates(param_1);
+  if (b == 0) {
+    Key_RemoveCatcher(localClientNum,-0x11);
+    Key_ClearStates(localClientNum);
     CL_PauseGame(false);
   }
   else {
     CL_PauseGame(true);
-    Key_SetCatcher(param_1,0x10);
+    Key_SetCatcher(localClientNum,0x10);
   }
   return;
 }
@@ -1984,35 +1999,36 @@ void __cdecl UI_Pause(int param_1,int param_2)
 
 // 00748000  UI_MouseEvent  (ui/ui_main.cpp:2023)
 
-void __cdecl UI_MouseEvent(int param_1,int param_2,int param_3)
+void __cdecl UI_MouseEvent(int localClientNum,int x,int y)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
-  float fVar3;
+  uiInfo_s *dc;
+  int iVar1;
+  float fVar2;
   int local_c;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
-  fVar3 = (puVar1->uiDC).cursor.y;
-  (puVar1->uiDC).prevCursor.x = (puVar1->uiDC).cursor.x;
-  (puVar1->uiDC).prevCursor.y = fVar3;
-  fVar3 = ScrPlace_HiResGetScale();
-  (puVar1->uiDC).cursor.x = (float)param_2 / (fVar3 * scrPlaceFull.scaleVirtualToFull[0]);
-  fVar3 = ScrPlace_HiResGetScale();
-  (puVar1->uiDC).cursor.y = (float)param_3 / (fVar3 * scrPlaceFull.scaleVirtualToFull[1]);
-  if (((((puVar1->uiDC).cursor.x < 0.0) || (640.0 < (puVar1->uiDC).cursor.x)) ||
-      ((puVar1->uiDC).cursor.y < 0.0)) || (480.0 < (puVar1->uiDC).cursor.y)) {
+  dc = UI_GetInfo(localClientNum);
+  fVar2 = (dc->uiDC).cursor.y;
+  (dc->uiDC).prevCursor.x = (dc->uiDC).cursor.x;
+  (dc->uiDC).prevCursor.y = fVar2;
+  fVar2 = ScrPlace_HiResGetScale();
+  (dc->uiDC).cursor.x = (float)x / (fVar2 * scrPlaceFull.scaleVirtualToFull[0]);
+  fVar2 = ScrPlace_HiResGetScale();
+  (dc->uiDC).cursor.y = (float)y / (fVar2 * scrPlaceFull.scaleVirtualToFull[1]);
+  if (((((dc->uiDC).cursor.x < 0.0) || (640.0 < (dc->uiDC).cursor.x)) || ((dc->uiDC).cursor.y < 0.0)
+      ) || (480.0 < (dc->uiDC).cursor.y)) {
     local_c = 0;
   }
   else {
     local_c = 1;
   }
-  (puVar1->uiDC).isCursorVisible = local_c;
-  CL_ShowSystemCursor((uint)((puVar1->uiDC).isCursorVisible == 0));
-  if ((puVar1->uiDC).isCursorVisible != 0) {
-    iVar2 = Menu_Count(&puVar1->uiDC);
-    if (0 < iVar2) {
-      Display_MouseMove(param_1,&puVar1->uiDC);
+  (dc->uiDC).isCursorVisible = local_c;
+  CL_ShowSystemCursor((uint)((dc->uiDC).isCursorVisible == 0));
+  if ((dc->uiDC).isCursorVisible != 0) {
+    iVar1 = Menu_Count(&dc->uiDC);
+    if (0 < iVar1) {
+      Display_MouseMove(localClientNum,&dc->uiDC);
     }
   }
   return;
@@ -2021,12 +2037,12 @@ void __cdecl UI_MouseEvent(int param_1,int param_2,int param_3)
 
 // 007480F0  UI_GetActiveMenu  (ui/ui_main.cpp:2041)
 
-uiMenuCommand_t __cdecl UI_GetActiveMenu(int param_1)
+uiMenuCommand_t __cdecl UI_GetActiveMenu(int localClientNum)
 
 {
   uiInfo_s *puVar1;
   
-  puVar1 = UI_GetInfo(param_1);
+  puVar1 = UI_GetInfo(localClientNum);
   return puVar1->currentMenuType;
 }
 
@@ -2035,7 +2051,7 @@ uiMenuCommand_t __cdecl UI_GetActiveMenu(int param_1)
 
 /* WARNING: Type propagation algorithm not settling */
 
-char * __cdecl UI_GetTopActiveMenuName(int param_1)
+char * __cdecl UI_GetTopActiveMenuName(int localClientNum)
 
 {
   int iVar1;
@@ -2043,8 +2059,10 @@ char * __cdecl UI_GetTopActiveMenuName(int param_1)
   bool bVar3;
   uiInfo_s *puVar4;
   char *pcVar5;
+  uiInfo_s *uiInfo;
+  int topMenuStackIndex;
   
-  puVar4 = UI_GetInfo(param_1);
+  puVar4 = UI_GetInfo(localClientNum);
   iVar1 = (puVar4->uiDC).openMenuCount;
   if ((iVar1 + -1 < 0) || ((puVar4->uiDC).menuCount <= iVar1 + -1)) {
     pcVar5 = (char *)0x0;
@@ -2066,29 +2084,31 @@ char * __cdecl UI_GetTopActiveMenuName(int param_1)
 
 // 007481A0  UI_IsFullscreen  (ui/ui_main.cpp:2155)
 
-int __cdecl UI_IsFullscreen(int param_1)
+int __cdecl UI_IsFullscreen(int localClientNum)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
+  uiInfo_s *dc;
+  int iVar1;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
-  iVar2 = Menus_AnyFullScreenVisible(&puVar1->uiDC);
-  return iVar2;
+  dc = UI_GetInfo(localClientNum);
+  iVar1 = Menus_AnyFullScreenVisible(&dc->uiDC);
+  return iVar1;
 }
 
 
 // 007481D0  UI_GetBlurRadius  (ui/ui_main.cpp:2174)
 
-float __cdecl UI_GetBlurRadius(int param_1)
+float __cdecl UI_GetBlurRadius(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   uiInfo_s *puVar3;
   float10 fVar4;
+  uiInfo_s *uiInfo;
   
-  puVar3 = UI_GetInfo(param_1);
+  puVar3 = UI_GetInfo(localClientNum);
   if (puVar3 == (uiInfo_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x882,0,"%s");
     if (!bVar2) {
@@ -2103,24 +2123,24 @@ float __cdecl UI_GetBlurRadius(int param_1)
 
 // 00748220  UI_SafeTranslateString  (ui/ui_main.cpp:2198)
 
-char * __cdecl UI_SafeTranslateString(char *param_1)
+char * __cdecl UI_SafeTranslateString(char *reference)
 
 {
   char cVar1;
   char *local_10;
   char *local_c;
-  char *local_8;
+  char *translation;
   
-  if (*param_1 == '\x15') {
-    param_1 = param_1 + 1;
-    local_8 = (char *)0x0;
+  if (*reference == '\x15') {
+    reference = reference + 1;
+    translation = (char *)0x0;
   }
   else {
-    local_8 = SEH_StringEd_GetString(param_1);
+    translation = SEH_StringEd_GetString(reference);
   }
-  if (local_8 == (char *)0x0) {
+  if (translation == (char *)0x0) {
     if ((loc_warnings->current).enabled == false) {
-      local_c = param_1;
+      local_c = reference;
       local_10 = errorString;
       do {
         cVar1 = *local_c;
@@ -2137,35 +2157,36 @@ char * __cdecl UI_SafeTranslateString(char *param_1)
         Com_Error(ERR_LOCALIZATION,"Could not translate string \"%s\"");
       }
       builtin_strncpy(errorString,"^1UNLOCALIZED(^7",0x11);
-      I_strncat(errorString,0x400,param_1);
+      I_strncat(errorString,0x400,reference);
       I_strncat(errorString,0x400,"^1)^7");
     }
-    local_8 = errorString;
+    translation = errorString;
   }
-  return local_8;
+  return translation;
 }
 
 
 // 00748360  UI_AnyMenuVisible  (ui/ui_main.cpp:2237)
 
-int __cdecl UI_AnyMenuVisible(int param_1)
+int __cdecl UI_AnyMenuVisible(int localClientNum)
 
 {
   uiInfo_s *puVar1;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
+  puVar1 = UI_GetInfo(localClientNum);
   return (uint)((puVar1->uiDC).openMenuCount != 0);
 }
 
 
 // 00748390  UI_ReplaceConversionString  (ui/ui_main.cpp:2258)
 
-char * __cdecl UI_ReplaceConversionString(char *param_1,char *param_2)
+char * __cdecl UI_ReplaceConversionString(char *sourceString,char *replaceString)
 
 {
   char *pcVar1;
   
-  pcVar1 = UI_ReplaceConversionStrings(param_1,1,&param_2);
+  pcVar1 = UI_ReplaceConversionStrings(sourceString,1,&replaceString);
   return pcVar1;
 }
 
@@ -2174,30 +2195,30 @@ char * __cdecl UI_ReplaceConversionString(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl UI_ReplaceConversionStrings(char *param_1,int param_2,char **param_3)
+char * __cdecl UI_ReplaceConversionStrings(char *sourceString,int numStrings,char **replaceStrings)
 
 {
   char *pcVar1;
-  char local_434 [1024];
+  char outputString [1024];
   uint local_34;
-  int local_30;
-  ConversionArguments local_2c;
+  int argNum;
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = param_2;
-  for (local_30 = 0; local_30 < param_2; local_30 = local_30 + 1) {
-    local_2c.args[local_30] = param_3[local_30];
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = numStrings;
+  for (argNum = 0; argNum < numStrings; argNum = argNum + 1) {
+    convArgs.args[argNum] = replaceStrings[argNum];
   }
-  UI_ReplaceConversions(param_1,&local_2c,local_434,0x400);
+  UI_ReplaceConversions(sourceString,&convArgs,outputString,0x400);
   pcVar1 = va("%s");
   return pcVar1;
 }
@@ -2205,12 +2226,12 @@ char * __cdecl UI_ReplaceConversionStrings(char *param_1,int param_2,char **para
 
 // 00748460  UI_ReplaceConversionInt  (ui/ui_main.cpp:2281)
 
-char * __cdecl UI_ReplaceConversionInt(char *param_1,int param_2)
+char * __cdecl UI_ReplaceConversionInt(char *sourceString,int replaceInt)
 
 {
   char *pcVar1;
   
-  pcVar1 = UI_ReplaceConversionInts(param_1,1,&param_2);
+  pcVar1 = UI_ReplaceConversionInts(sourceString,1,&replaceInt);
   return pcVar1;
 }
 
@@ -2219,32 +2240,32 @@ char * __cdecl UI_ReplaceConversionInt(char *param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl UI_ReplaceConversionInts(char *param_1,int param_2,int *param_3)
+char * __cdecl UI_ReplaceConversionInts(char *sourceString,int numInts,int *replaceInts)
 
 {
   char *pcVar1;
   char acStack_634 [512];
-  char local_434 [1024];
+  char outputString [1024];
   uint local_34;
-  int local_30;
-  ConversionArguments local_2c;
+  int argNum;
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = param_2;
-  for (local_30 = 0; local_30 < param_2; local_30 = local_30 + 1) {
-    sprintf(acStack_634 + local_30 * 0x20,"%d");
-    local_2c.args[local_30] = acStack_634 + local_30 * 0x20;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = numInts;
+  for (argNum = 0; argNum < numInts; argNum = argNum + 1) {
+    sprintf(acStack_634 + argNum * 0x20,"%d");
+    convArgs.args[argNum] = acStack_634 + argNum * 0x20;
   }
-  UI_ReplaceConversions(param_1,&local_2c,local_434,0x400);
+  UI_ReplaceConversions(sourceString,&convArgs,outputString,0x400);
   pcVar1 = va("%s");
   return pcVar1;
 }
@@ -2252,20 +2273,21 @@ char * __cdecl UI_ReplaceConversionInts(char *param_1,int param_2,int *param_3)
 
 // 00748550  UI_FilterStringForButtonAnimation  (ui/ui_main.cpp:2310)
 
-void __cdecl UI_FilterStringForButtonAnimation(char *param_1,uint param_2)
+void __cdecl UI_FilterStringForButtonAnimation(char *str,uint strMaxSize)
 
 {
   int iVar1;
-  uint local_c;
+  uint idx;
+  int remainder;
   
   iVar1 = SEH_GetCurrentLanguage();
   if ((iVar1 != 10) && (iVar1 = Sys_Milliseconds(), 800 < iVar1 % 1000)) {
-    for (local_c = 0; (param_1[local_c] != '\0' && (local_c < param_2)); local_c = local_c + 1) {
-      if (param_1[local_c] == '\x10') {
-        param_1[local_c] = -0x44;
+    for (idx = 0; (str[idx] != '\0' && (idx < strMaxSize)); idx = idx + 1) {
+      if (str[idx] == '\x10') {
+        str[idx] = -0x44;
       }
-      else if (param_1[local_c] == '\x11') {
-        param_1[local_c] = -0x43;
+      else if (str[idx] == '\x11') {
+        str[idx] = -0x43;
       }
     }
   }
@@ -2276,7 +2298,9 @@ void __cdecl UI_FilterStringForButtonAnimation(char *param_1,uint param_2)
 // 007485E0  UI_ReplaceConversions  (ui/ui_main.cpp:2340)
 
 void __cdecl
-UI_ReplaceConversions(char *param_1,ConversionArguments *param_2,char *param_3,int param_4)
+UI_ReplaceConversions
+          (char *sourceString,ConversionArguments *arguments,char *outputString,int outputStringSize
+          )
 
 {
   char cVar1;
@@ -2288,63 +2312,66 @@ UI_ReplaceConversions(char *param_1,ConversionArguments *param_2,char *param_3,i
   char *pcVar6;
   char *local_30;
   char *local_20;
-  int local_14;
-  int local_10;
-  int local_c;
+  int argStringLength;
+  int argIndex;
+  int argStringIndex;
+  int index;
+  int outputStringCounter;
+  int sourceStringLength;
   
-  if ((param_3 == (char *)0x0) &&
+  if ((outputString == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x92c,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (param_3 != (char *)0x0) {
-    if ((param_4 < 0) &&
+  if (outputString != (char *)0x0) {
+    if ((outputStringSize < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x930,0,"%s"),
        !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (-1 < param_4) {
-      memset((uchar *)param_3,'\0',param_4);
-      local_c = 0;
-      if ((param_1 == (char *)0x0) &&
+    if (-1 < outputStringSize) {
+      memset((uchar *)outputString,'\0',outputStringSize);
+      outputStringCounter = 0;
+      if ((sourceString == (char *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x937,0,"%s"
                                   ), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      if (param_1 != (char *)0x0) {
-        strstr((uchar *)param_1,"&&");
+      if (sourceString != (char *)0x0) {
+        strstr((uchar *)sourceString,"&&");
         if (extraout_EAX == 0) {
-          I_strncpyz(param_3,param_1,param_4);
+          I_strncpyz(outputString,sourceString,outputStringSize);
         }
         else {
-          if ((param_2 == (ConversionArguments *)0x0) &&
+          if ((arguments == (ConversionArguments *)0x0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x941,0,
                                        "%s"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          if (param_2 != (ConversionArguments *)0x0) {
-            if ((9 < param_2->argCount) &&
+          if (arguments != (ConversionArguments *)0x0) {
+            if ((9 < arguments->argCount) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x945,
                                          0,"%s\n\t(arguments->argCount) = %i"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            if (param_2->argCount < 10) {
-              local_20 = param_1;
+            if (arguments->argCount < 10) {
+              local_20 = sourceString;
               do {
                 cVar1 = *local_20;
                 local_20 = local_20 + 1;
               } while (cVar1 != '\0');
-              iVar4 = (int)local_20 - (int)(param_1 + 1);
+              iVar4 = (int)local_20 - (int)(sourceString + 1);
               if ((iVar4 < 1) &&
                  (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",
                                            0x94b,0,"%s\n\t(sourceStringLength) = %i"), !bVar3)) {
@@ -2353,12 +2380,12 @@ UI_ReplaceConversions(char *param_1,ConversionArguments *param_2,char *param_3,i
                 return;
               }
               if (0 < iVar4) {
-                local_10 = 0;
-                while (local_10 < iVar4) {
-                  iVar5 = strncmp(param_1 + local_10,"&&",2);
-                  if ((iVar5 == 0) && (iVar5 = isdigit((int)param_1[local_10 + 2]), iVar5 != 0)) {
-                    iVar5 = param_1[local_10 + 2] + -0x31;
-                    if (((iVar5 < 0) || (param_2->argCount <= iVar5)) &&
+                index = 0;
+                while (index < iVar4) {
+                  iVar5 = strncmp(sourceString + index,"&&",2);
+                  if ((iVar5 == 0) && (iVar5 = isdigit((int)sourceString[index + 2]), iVar5 != 0)) {
+                    iVar5 = sourceString[index + 2] + -0x31;
+                    if (((iVar5 < 0) || (arguments->argCount <= iVar5)) &&
                        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp"
                                                  ,0x958,0,"%s\n\t(argIndex) = %i"), !bVar3)) {
                       pcVar2 = (code *)swi(3);
@@ -2368,7 +2395,7 @@ UI_ReplaceConversions(char *param_1,ConversionArguments *param_2,char *param_3,i
                     if (iVar5 < 0) {
                       return;
                     }
-                    if (param_2->argCount <= iVar5) {
+                    if (arguments->argCount <= iVar5) {
                       return;
                     }
                     if ((8 < iVar5) &&
@@ -2381,37 +2408,37 @@ UI_ReplaceConversions(char *param_1,ConversionArguments *param_2,char *param_3,i
                     if (8 < iVar5) {
                       return;
                     }
-                    if ((*(int *)((int)param_2 + iVar5 * 4 + 4) == 0) &&
+                    if ((*(int *)((int)arguments + iVar5 * 4 + 4) == 0) &&
                        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp"
                                                  ,0x95e,0,"%s"), !bVar3)) {
                       pcVar2 = (code *)swi(3);
                       (*pcVar2)();
                       return;
                     }
-                    if (*(int *)((int)param_2 + iVar5 * 4 + 4) == 0) {
+                    if (*(int *)((int)arguments + iVar5 * 4 + 4) == 0) {
                       return;
                     }
-                    local_30 = *(char **)((int)param_2 + iVar5 * 4 + 4);
+                    local_30 = *(char **)((int)arguments + iVar5 * 4 + 4);
                     pcVar6 = local_30 + 1;
                     do {
                       cVar1 = *local_30;
                       local_30 = local_30 + 1;
                     } while (cVar1 != '\0');
-                    for (local_14 = 0; local_14 < (int)local_30 - (int)pcVar6;
-                        local_14 = local_14 + 1) {
-                      param_3[local_c] =
-                           *(char *)(*(int *)((int)param_2 + iVar5 * 4 + 4) + local_14);
-                      local_c = local_c + 1;
+                    for (argStringIndex = 0; argStringIndex < (int)local_30 - (int)pcVar6;
+                        argStringIndex = argStringIndex + 1) {
+                      outputString[outputStringCounter] =
+                           *(char *)(*(int *)((int)arguments + iVar5 * 4 + 4) + argStringIndex);
+                      outputStringCounter = outputStringCounter + 1;
                     }
-                    local_10 = local_10 + 3;
+                    index = index + 3;
                   }
                   else {
-                    param_3[local_c] = param_1[local_10];
-                    local_c = local_c + 1;
-                    local_10 = local_10 + 1;
+                    outputString[outputStringCounter] = sourceString[index];
+                    outputStringCounter = outputStringCounter + 1;
+                    index = index + 1;
                   }
                 }
-                UI_FilterStringForButtonAnimation(param_3,param_4);
+                UI_FilterStringForButtonAnimation(outputString,outputStringSize);
               }
             }
           }
@@ -2425,42 +2452,45 @@ UI_ReplaceConversions(char *param_1,ConversionArguments *param_2,char *param_3,i
 
 // 007489A0  UI_CloseAll  (ui/ui_main.cpp:2425)
 
-void __cdecl UI_CloseAll(int param_1)
+void __cdecl UI_CloseAll(int localClientNum)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
-  Menus_CloseAll(param_1,&puVar1->uiDC);
-  UI_SetActiveMenu(param_1,0);
+  dc = UI_GetInfo(localClientNum);
+  Menus_CloseAll(localClientNum,&dc->uiDC);
+  UI_SetActiveMenu(localClientNum,0);
   return;
 }
 
 
 // 007489E0  UI_CloseFocusedMenu  (ui/ui_main.cpp:2434)
 
-void __cdecl UI_CloseFocusedMenu(int param_1)
+void __cdecl UI_CloseFocusedMenu(int localClientNum)
 
 {
   bool bVar1;
-  uiInfo_s *puVar2;
-  int iVar3;
-  menuDef_t *pmVar4;
+  uiInfo_s *dc;
+  int iVar2;
+  menuDef_t *pmVar3;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
   
-  puVar2 = UI_GetInfo(param_1);
-  iVar3 = Menu_Count(&puVar2->uiDC);
-  if (0 < iVar3) {
-    pmVar4 = Menu_GetFocused(&puVar2->uiDC);
-    if (pmVar4 == (menuDef_t *)0x0) {
-      bVar1 = Key_IsCatcherActive(param_1,0x10);
+  dc = UI_GetInfo(localClientNum);
+  iVar2 = Menu_Count(&dc->uiDC);
+  if (0 < iVar2) {
+    pmVar3 = Menu_GetFocused(&dc->uiDC);
+    if (pmVar3 == (menuDef_t *)0x0) {
+      bVar1 = Key_IsCatcherActive(localClientNum,0x10);
       if (bVar1) {
-        Key_RemoveCatcher(param_1,-0x11);
+        Key_RemoveCatcher(localClientNum,-0x11);
       }
     }
     else {
-      iVar3 = Menus_AnyFullScreenVisible(&puVar2->uiDC);
-      if (iVar3 == 0) {
-        Menus_CloseAll(param_1,&puVar2->uiDC);
+      iVar2 = Menus_AnyFullScreenVisible(&dc->uiDC);
+      if (iVar2 == 0) {
+        Menus_CloseAll(localClientNum,&dc->uiDC);
       }
     }
   }
@@ -2470,26 +2500,28 @@ void __cdecl UI_CloseFocusedMenu(int param_1)
 
 // 00748A70  Menu_IsMenuOpenAndVisible  (ui/ui_main.cpp:2458)
 
-bool __cdecl Menu_IsMenuOpenAndVisible(int param_1,char *param_2)
+bool __cdecl Menu_IsMenuOpenAndVisible(int localClientNum,char *menuName)
 
 {
   bool bVar1;
-  uiInfo_s *puVar2;
-  menuDef_t *pmVar3;
-  int iVar4;
+  uiInfo_s *dc;
+  menuDef_t *menu_00;
+  int iVar2;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
   
-  puVar2 = UI_GetInfo(param_1);
-  pmVar3 = Menus_FindByName(&puVar2->uiDC,param_2);
-  if (pmVar3 == (menuDef_t *)0x0) {
+  dc = UI_GetInfo(localClientNum);
+  menu_00 = Menus_FindByName(&dc->uiDC,menuName);
+  if (menu_00 == (menuDef_t *)0x0) {
     bVar1 = false;
   }
   else {
-    iVar4 = Menus_MenuIsInStack(&puVar2->uiDC,pmVar3);
-    if (iVar4 == 0) {
+    iVar2 = Menus_MenuIsInStack(&dc->uiDC,menu_00);
+    if (iVar2 == 0) {
       bVar1 = false;
     }
     else {
-      bVar1 = Menu_IsVisible(param_1,&puVar2->uiDC,pmVar3);
+      bVar1 = Menu_IsVisible(localClientNum,&dc->uiDC,menu_00);
       if (bVar1) {
         bVar1 = true;
       }
@@ -2504,33 +2536,35 @@ bool __cdecl Menu_IsMenuOpenAndVisible(int param_1,char *param_2)
 
 // 00748AE0  UI_PopupScriptMenu  (ui/ui_main.cpp:2478)
 
-int __cdecl UI_PopupScriptMenu(int param_1,char *param_2,bool param_3)
+int __cdecl UI_PopupScriptMenu(int localClientNum,char *menuName,bool useMouse)
 
 {
-  uiInfo_s *puVar1;
-  menuDef_t *pmVar2;
-  int iVar3;
-  int iVar4;
+  uiInfo_s *dc;
+  menuDef_t *pmVar1;
+  int iVar2;
+  int catcher;
+  uiInfo_s *uiInfo;
+  menuDef_t *pFocus;
   
-  puVar1 = UI_GetInfo(param_1);
-  pmVar2 = Menu_GetFocused(&puVar1->uiDC);
-  if (((pmVar2 != (menuDef_t *)0x0) && (puVar1->currentMenuType != UIMENU_SCRIPT_POPUP)) &&
-     (puVar1->currentMenuType != UIMENU_SCOREBOARD)) {
+  dc = UI_GetInfo(localClientNum);
+  pmVar1 = Menu_GetFocused(&dc->uiDC);
+  if (((pmVar1 != (menuDef_t *)0x0) && (dc->currentMenuType != UIMENU_SCRIPT_POPUP)) &&
+     (dc->currentMenuType != UIMENU_SCOREBOARD)) {
     return 0;
   }
-  if ((pmVar2 == (menuDef_t *)0x0) || (iVar3 = I_stricmp((pmVar2->window).name,param_2), iVar3 != 0)
-     ) {
-    puVar1->currentMenuType = UIMENU_SCRIPT_POPUP;
-    if (!param_3) {
-      (puVar1->uiDC).cursor.x = 639.0;
-      (puVar1->uiDC).cursor.y = 479.0;
-      UI_SetSystemCursorPos(&puVar1->uiDC,639.0,479.0);
+  if ((pmVar1 == (menuDef_t *)0x0) ||
+     (iVar2 = I_stricmp((pmVar1->window).name,menuName), iVar2 != 0)) {
+    dc->currentMenuType = UIMENU_SCRIPT_POPUP;
+    if (!useMouse) {
+      (dc->uiDC).cursor.x = 639.0;
+      (dc->uiDC).cursor.y = 479.0;
+      UI_SetSystemCursorPos(&dc->uiDC,639.0,479.0);
     }
-    Menus_CloseAll(param_1,&puVar1->uiDC);
-    Menus_OpenByName(param_1,&puVar1->uiDC,param_2);
-    iVar4 = 0x10;
-    iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-    Key_ContextIndex_SetCatcher(iVar3,iVar4);
+    Menus_CloseAll(localClientNum,&dc->uiDC);
+    Menus_OpenByName(localClientNum,&dc->uiDC,menuName);
+    catcher = 0x10;
+    iVar2 = Com_LocalClient_GetUIContextIndex(localClientNum);
+    Key_ContextIndex_SetCatcher(iVar2,catcher);
   }
   return 1;
 }
@@ -2538,15 +2572,16 @@ int __cdecl UI_PopupScriptMenu(int param_1,char *param_2,bool param_3)
 
 // 00748BF0  UI_ClosePopupScriptMenu  (ui/ui_main.cpp:2526)
 
-void __cdecl UI_ClosePopupScriptMenu(int param_1,bool param_2)
+void __cdecl UI_ClosePopupScriptMenu(int localClientNum,bool allowResponse)
 
 {
   uiInfo_s *puVar1;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_GetInfo(param_1);
+  puVar1 = UI_GetInfo(localClientNum);
   if (puVar1->currentMenuType == UIMENU_SCRIPT_POPUP) {
-    puVar1->allowScriptMenuResponse = param_2;
-    UI_CloseFocusedMenu(param_1);
+    puVar1->allowScriptMenuResponse = allowResponse;
+    UI_CloseFocusedMenu(localClientNum);
     puVar1->allowScriptMenuResponse = true;
   }
   return;
@@ -2555,29 +2590,29 @@ void __cdecl UI_ClosePopupScriptMenu(int param_1,bool param_2)
 
 // 00748C40  UI_AllowScriptMenuResponse  (ui/ui_main.cpp:2540)
 
-bool __cdecl UI_AllowScriptMenuResponse(int param_1)
+bool __cdecl UI_AllowScriptMenuResponse(int localClientNum)
 
 {
   uiInfo_s *puVar1;
   
-  puVar1 = UI_GetInfo(param_1);
+  puVar1 = UI_GetInfo(localClientNum);
   return puVar1->allowScriptMenuResponse;
 }
 
 
 // 00748C60  UI_CloseInGameMenu  (ui/ui_main.cpp:2546)
 
-void __cdecl UI_CloseInGameMenu(int param_1)
+void __cdecl UI_CloseInGameMenu(int localClientNum)
 
 {
   int iVar1;
   uiMenuCommand_t uVar2;
   
-  iVar1 = UI_IsFullscreen(param_1);
+  iVar1 = UI_IsFullscreen(localClientNum);
   if (iVar1 == 0) {
-    uVar2 = UI_GetActiveMenu(param_1);
+    uVar2 = UI_GetActiveMenu(localClientNum);
     if (uVar2 == UIMENU_INGAME) {
-      UI_CloseFocusedMenu(param_1);
+      UI_CloseFocusedMenu(localClientNum);
     }
   }
   return;
@@ -2586,56 +2621,58 @@ void __cdecl UI_CloseInGameMenu(int param_1)
 
 // 00748CA0  UI_UpdatePendingPings  (ui/ui_main.cpp:2553)
 
-void __cdecl UI_UpdatePendingPings(uiInfo_s *param_1)
+void __cdecl UI_UpdatePendingPings(uiInfo_s *uiInfo)
 
 {
   LAN_ResetPings((ui_netSource->current).integer);
   DAT_098c3d90 = 1;
-  DAT_098c3d7c = (param_1->uiDC).realTime + 1000;
+  DAT_098c3d7c = (uiInfo->uiDC).realTime + 1000;
   return;
 }
 
 
 // 00748CD0  UI_CheckExecKey  (ui/ui_main.cpp:2848)
 
-int __cdecl UI_CheckExecKey(int param_1,int param_2)
+int __cdecl UI_CheckExecKey(int localClientNum,int key)
 
 {
-  uiInfo_s *puVar1;
-  menuDef_t *pmVar2;
-  int iVar3;
-  ItemKeyHandler *local_8;
+  uiInfo_s *dc;
+  menuDef_t *pmVar1;
+  int iVar2;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
+  ItemKeyHandler *handler;
   
-  puVar1 = UI_GetInfo(param_1);
-  pmVar2 = Menu_GetFocused(&puVar1->uiDC);
+  dc = UI_GetInfo(localClientNum);
+  pmVar1 = Menu_GetFocused(&dc->uiDC);
   if (g_editingField == 0) {
-    if (param_2 < 0x101) {
-      if (pmVar2 == (menuDef_t *)0x0) {
-        iVar3 = 0;
+    if (key < 0x101) {
+      if (pmVar1 == (menuDef_t *)0x0) {
+        iVar2 = 0;
       }
       else {
-        for (local_8 = pmVar2->onKey; local_8 != (ItemKeyHandler *)0x0; local_8 = local_8->next) {
-          if (local_8->key == param_2) {
+        for (handler = pmVar1->onKey; handler != (ItemKeyHandler *)0x0; handler = handler->next) {
+          if (handler->key == key) {
             return 1;
           }
         }
-        iVar3 = 0;
+        iVar2 = 0;
       }
     }
     else {
-      iVar3 = 0;
+      iVar2 = 0;
     }
   }
   else {
-    iVar3 = 1;
+    iVar2 = 1;
   }
-  return iVar3;
+  return iVar2;
 }
 
 
 // 00748D60  UI_OwnerDrawWidth  (ui/ui_main.cpp:2876)
 
-int __cdecl UI_OwnerDrawWidth(int param_1,Font_s *param_2,float param_3)
+int __cdecl UI_OwnerDrawWidth(int ownerDraw,Font_s *font,float scale)
 
 {
   char *pcVar1;
@@ -2643,12 +2680,12 @@ int __cdecl UI_OwnerDrawWidth(int param_1,Font_s *param_2,float param_3)
   char *pcVar3;
   msgLocErrType_t mVar4;
   undefined1 local_10 [8];
-  char *local_8;
+  char *s;
   
-  local_8 = (char *)0x0;
-  switch(param_1) {
+  s = (char *)0x0;
+  switch(ownerDraw) {
   case 0xce:
-    local_8 = &DAT_098b5444 + (ui_netGameTypeName->current).integer * 0x74;
+    s = &DAT_098b5444 + (ui_netGameTypeName->current).integer * 0x74;
     break;
   case 0xdc:
     if (DAT_098b8fc0 < (ui_netSource->current).integer) {
@@ -2658,7 +2695,7 @@ int __cdecl UI_OwnerDrawWidth(int param_1,Font_s *param_2,float param_3)
     pcVar3 = "net source";
     UI_GetNetSources((ui_netSource->current).integer);
     pcVar1 = va("EXE_NETSOURCE\x14%s");
-    local_8 = SEH_LocalizeTextMessage(pcVar1,pcVar3,mVar4);
+    s = SEH_LocalizeTextMessage(pcVar1,pcVar3,mVar4);
     break;
   case 0xde:
     if ((ui_serverFilterType < 0) || (1 < ui_serverFilterType)) {
@@ -2668,26 +2705,26 @@ int __cdecl UI_OwnerDrawWidth(int param_1,Font_s *param_2,float param_3)
     pcVar3 = "server filter";
     UI_GetServerFilter((int)local_10);
     pcVar1 = va("EXE_SERVERFILTER\x14%s");
-    local_8 = SEH_LocalizeTextMessage(pcVar1,pcVar3,mVar4);
+    s = SEH_LocalizeTextMessage(pcVar1,pcVar3,mVar4);
     break;
   case 0xf7:
     pcVar1 = va("ui_lastServerRefresh_%i");
-    local_8 = Dvar_GetVariantString(pcVar1);
+    s = Dvar_GetVariantString(pcVar1);
     break;
   case 0xfa:
     iVar2 = Display_KeyBindPending();
     if (iVar2 == 0) {
-      local_8 = UI_SafeTranslateString("EXE_KEYCHANGE");
+      s = UI_SafeTranslateString("EXE_KEYCHANGE");
     }
     else {
-      local_8 = UI_SafeTranslateString("EXE_KEYWAIT");
+      s = UI_SafeTranslateString("EXE_KEYWAIT");
     }
   }
-  if (local_8 == (char *)0x0) {
+  if (s == (char *)0x0) {
     iVar2 = 0;
   }
   else {
-    iVar2 = UI_TextWidth(local_8,0,param_2,param_3);
+    iVar2 = UI_TextWidth(s,0,font,scale);
   }
   return iVar2;
 }
@@ -2697,16 +2734,17 @@ int __cdecl UI_OwnerDrawWidth(int param_1,Font_s *param_2,float param_3)
 
 void __cdecl
 UI_DrawKeyBindStatus
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,int param_6)
+          (int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,int textStyle)
 
 {
   int iVar1;
-  char *pcVar2;
-  int iVar3;
-  float fVar4;
-  float fVar5;
-  int iVar6;
+  char *text;
+  int maxChars;
+  float x;
+  float y;
+  int horzAlign;
   char *local_c;
+  char *str;
   
   iVar1 = Display_KeyBindPending();
   if (iVar1 == 0) {
@@ -2715,57 +2753,60 @@ UI_DrawKeyBindStatus
   else {
     local_c = "EXE_KEYWAIT";
   }
-  iVar1 = param_2->vertAlign;
-  iVar6 = param_2->horzAlign;
-  fVar5 = param_2->y;
-  fVar4 = param_2->x;
-  iVar3 = 0x7fffffff;
-  pcVar2 = UI_SafeTranslateString(local_c);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar2,iVar3,param_3,fVar4,fVar5,
-              iVar6,iVar1,param_4,param_5,param_6);
+  iVar1 = rect->vertAlign;
+  horzAlign = rect->horzAlign;
+  y = rect->y;
+  x = rect->x;
+  maxChars = 0x7fffffff;
+  text = UI_SafeTranslateString(local_c);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,maxChars,font,x,y,
+              horzAlign,iVar1,scale,color,textStyle);
   return;
 }
 
 
 // 00748F20  UI_DrawRecordLevel  (ui/ui_main.cpp:2944)
 
-bool __cdecl UI_DrawRecordLevel(int param_1,rectDef_s *param_2)
+bool __cdecl UI_DrawRecordLevel(int contextIndex,rectDef_s *rect)
 
 {
-  ScreenPlacement *pSVar1;
-  float fVar2;
+  ScreenPlacement *scrPlace_00;
+  float fVar1;
+  ScreenPlacement *scrPlace;
+  float size;
+  float curLevel;
   
-  pSVar1 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  fVar2 = Voice_GetVoiceLevel();
-  if ((0.0 < fVar2) && (fVar2 = param_2->w * fVar2 - 4.0, 0.0 < fVar2)) {
-    UI_FillRect(pSVar1,param_2->x + 2.0,param_2->y + 2.0,fVar2,param_2->h - 4.0,param_2->horzAlign,
-                param_2->vertAlign,colorRed);
+  scrPlace_00 = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  fVar1 = Voice_GetVoiceLevel();
+  if ((0.0 < fVar1) && (fVar1 = rect->w * fVar1 - 4.0, 0.0 < fVar1)) {
+    UI_FillRect(scrPlace_00,rect->x + 2.0,rect->y + 2.0,fVar1,rect->h - 4.0,rect->horzAlign,
+                rect->vertAlign,colorRed);
   }
-  UI_FillRect(pSVar1,param_2->x,param_2->y,param_2->w,1.0,param_2->horzAlign,param_2->vertAlign,
+  UI_FillRect(scrPlace_00,rect->x,rect->y,rect->w,1.0,rect->horzAlign,rect->vertAlign,colorDkGrey);
+  UI_FillRect(scrPlace_00,rect->x,(rect->y + rect->h) - 1.0,rect->w,1.0,rect->horzAlign,
+              rect->vertAlign,colorDkGrey);
+  UI_FillRect(scrPlace_00,rect->x,rect->y + 1.0,1.0,rect->h - 2.0,rect->horzAlign,rect->vertAlign,
               colorDkGrey);
-  UI_FillRect(pSVar1,param_2->x,(param_2->y + param_2->h) - 1.0,param_2->w,1.0,param_2->horzAlign,
-              param_2->vertAlign,colorDkGrey);
-  UI_FillRect(pSVar1,param_2->x,param_2->y + 1.0,1.0,param_2->h - 2.0,param_2->horzAlign,
-              param_2->vertAlign,colorDkGrey);
-  UI_FillRect(pSVar1,(param_2->x + param_2->w) - 1.0,param_2->y + 1.0,1.0,param_2->h - 2.0,
-              param_2->horzAlign,param_2->vertAlign,colorDkGrey);
+  UI_FillRect(scrPlace_00,(rect->x + rect->w) - 1.0,rect->y + 1.0,1.0,rect->h - 2.0,rect->horzAlign,
+              rect->vertAlign,colorDkGrey);
   return true;
 }
 
 
 // 00749830  UI_DrawLocalTalking  (ui/ui_main.cpp:2967)
 
-void __cdecl UI_DrawLocalTalking(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawLocalTalking(int contextIndex,rectDef_s *rect,float *color)
 
 {
   bool bVar1;
-  Material *pMVar2;
+  Material *material_00;
+  Material *material;
   
   bVar1 = SV_VoiceEnabled();
   if (((bVar1) && ((cl_voice->current).enabled != false)) && (bVar1 = IN_IsTalkKeyHeld(), bVar1)) {
-    pMVar2 = Material_RegisterHandle("voice_on",7);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,pMVar2);
+    material_00 = Material_RegisterHandle("voice_on",7);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,material_00);
   }
   return;
 }
@@ -2773,27 +2814,27 @@ void __cdecl UI_DrawLocalTalking(int param_1,rectDef_s *param_2,float *param_3)
 
 // 00749150  UI_GetTalkerClientNum  (ui/ui_main.cpp:2998)
 
-int __cdecl UI_GetTalkerClientNum(int param_1,int param_2,int param_3)
+int __cdecl UI_GetTalkerClientNum(int localClientNum,int contextIndex,int num)
 
 {
   bool bVar1;
-  int local_c;
-  int local_8;
+  int client;
+  int talker;
   
-  local_8 = 0;
-  local_c = 0;
+  talker = 0;
+  client = 0;
   do {
-    if ((com_maxclients->current).integer <= local_c) {
+    if ((com_maxclients->current).integer <= client) {
       return -1;
     }
-    bVar1 = CL_IsClientLocal(local_c);
-    if ((!bVar1) && (bVar1 = CL_IsPlayerTalking(param_1,local_c), bVar1)) {
-      if (local_8 == param_3) {
-        return local_c;
+    bVar1 = CL_IsClientLocal(client);
+    if ((!bVar1) && (bVar1 = CL_IsPlayerTalking(localClientNum,client), bVar1)) {
+      if (talker == num) {
+        return client;
       }
-      local_8 = local_8 + 1;
+      talker = talker + 1;
     }
-    local_c = local_c + 1;
+    client = client + 1;
   } while( true );
 }
 
@@ -2801,34 +2842,37 @@ int __cdecl UI_GetTalkerClientNum(int param_1,int param_2,int param_3)
 // 0074A160  UI_DrawTalkerNum  (ui/ui_main.cpp:3034)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-UI_DrawTalkerNum(int param_1,int param_2,int param_3,rectDef_s *param_4,Font_s *param_5,
-                float *param_6,float param_7,int param_8)
+UI_DrawTalkerNum(int localClientNum,int contextIndex,int num,rectDef_s *rect,Font_s *font,
+                float *color,float textScale,int style)
 
 {
   int iVar1;
-  Material *pMVar2;
-  char local_34 [40];
+  Material *material_00;
+  int client;
+  Material *material;
+  char name [40];
   uint local_c;
-  int local_8;
+  int textHeight;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = UI_GetTalkerClientNum(param_1,param_2,param_3);
+  iVar1 = UI_GetTalkerClientNum(localClientNum,contextIndex,num);
   if (-1 < iVar1) {
-    iVar1 = CL_GetClientName(param_1,iVar1,local_34,0x26,true);
+    iVar1 = CL_GetClientName(localClientNum,iVar1,name,0x26,true);
     if (iVar1 == 0) {
       Com_PrintWarning(0xd,"Unable to find client %i but they are talking\n");
     }
     else {
-      pMVar2 = Material_RegisterHandle("voice_on",7);
-      local_8 = UI_TextHeight(param_5,param_7);
-      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_4->x,param_4->y,
-                       param_4->w,param_4->h,param_4->horzAlign,param_4->vertAlign,param_6,pMVar2);
-      UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),local_34,0x20,param_5,
-                  param_4->x + param_4->w + 2.0,
-                  (float)local_8 + param_4->y + (param_4->h - (float)local_8) / 2.0,
-                  param_4->horzAlign,param_4->vertAlign,param_7,param_6,param_8);
+      material_00 = Material_RegisterHandle("voice_on",7);
+      textHeight = UI_TextHeight(font,textScale);
+      UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                       rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,material_00);
+      UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),name,0x20,font,
+                  rect->x + rect->w + 2.0,
+                  (float)textHeight + rect->y + (rect->h - (float)textHeight) / 2.0,rect->horzAlign,
+                  rect->vertAlign,textScale,color,style);
     }
   }
   return;
@@ -2839,24 +2883,26 @@ UI_DrawTalkerNum(int param_1,int param_2,int param_3,rectDef_s *param_4,Font_s *
 
 void __cdecl
 UI_DrawReservedSlots
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float *param_4,float param_5,int param_6)
+          (int contextIndex,rectDef_s *rect,Font_s *font,float *color,float textScale,int style)
 
 {
-  char *pcVar1;
+  char *text;
+  int textHeight;
+  char *s;
   
   Com_GetPrivateClients();
-  pcVar1 = va("%i");
-  UI_TextHeight(param_3,param_5);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,0x7fffffff,param_3,
-              param_2->x + param_2->w + 2.0,param_2->y,param_2->horzAlign,param_2->vertAlign,param_5
-              ,param_4,param_6);
+  text = va("%i");
+  UI_TextHeight(font,textScale);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,
+              rect->x + rect->w + 2.0,rect->y,rect->horzAlign,rect->vertAlign,textScale,color,style)
+  ;
   return;
 }
 
 
 // 0074A4D0  UI_GetTextAlignAdj  (ui/ui_main.cpp:3104)
 
-float __cdecl UI_GetTextAlignAdj(int param_1,float param_2,float param_3)
+float __cdecl UI_GetTextAlignAdj(int alignment,float width,float textWidth)
 
 {
   code *pcVar1;
@@ -2865,21 +2911,21 @@ float __cdecl UI_GetTextAlignAdj(int param_1,float param_2,float param_3)
   float local_18;
   float local_14;
   
-  if (param_1 == 1) {
-    local_14 = (param_2 - param_3) * 0.5;
+  if (alignment == 1) {
+    local_14 = (width - textWidth) * 0.5;
     if (0.0 <= 0.0 - local_14) {
       local_14 = 0.0;
     }
   }
-  else if (param_1 == 2) {
-    local_14 = param_2 - param_3;
+  else if (alignment == 2) {
+    local_14 = width - textWidth;
     if (0.0 <= 0.0 - local_14) {
       local_18 = 0.0;
       local_14 = local_18;
     }
   }
   else {
-    if ((param_1 != 0) &&
+    if ((alignment != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xc2a,0,
                                  "%s\n\t(alignment) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -2895,39 +2941,40 @@ float __cdecl UI_GetTextAlignAdj(int param_1,float param_2,float param_3)
 // 0074A380  UI_DrawLoggedInUser  (ui/ui_main.cpp:3120)
 
 void __cdecl
-UI_DrawLoggedInUser(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,float param_5,
-                   float *param_6,int param_7)
+UI_DrawLoggedInUser(int localClientNum,int contextIndex,rectDef_s *rect,Font_s *font,float scale,
+                   float *color,int textStyle)
 
 {
   bool bVar1;
   int iVar2;
   float fVar3;
-  char *local_c;
+  char *name;
+  float xadj;
   
-  local_c = Dvar_GetString("com_playerProfile");
-  iVar2 = I_strcmp(local_c,"default");
+  name = Dvar_GetString("com_playerProfile");
+  iVar2 = I_strcmp(name,"default");
   if (iVar2 == 0) {
     UI_SafeTranslateString("PLATFORM_OFFLINE");
-    local_c = va("%s");
+    name = va("%s");
   }
   else {
     bVar1 = Dvar_GetBool("dw_loggedin");
     if (bVar1) {
       UI_SafeTranslateString("PLATFORM_ONLINE");
-      local_c = va("%s: %s");
+      name = va("%s: %s");
     }
     else {
       bVar1 = Dvar_GetBool("dw_loggedin");
       if (!bVar1) {
         UI_SafeTranslateString("PLATFORM_OFFLINE");
-        local_c = va("%s: %s");
+        name = va("%s: %s");
       }
     }
   }
-  iVar2 = UI_TextWidth(local_c,0x7fffffff,param_4,param_5);
-  fVar3 = UI_GetTextAlignAdj(2,param_3->w,(float)iVar2);
-  UI_DrawText(&scrPlaceFull,local_c,0x7fffffff,param_4,param_3->x + fVar3,param_3->y,
-              param_3->horzAlign,param_3->vertAlign,param_5,param_6,param_7);
+  iVar2 = UI_TextWidth(name,0x7fffffff,font,scale);
+  fVar3 = UI_GetTextAlignAdj(2,rect->w,(float)iVar2);
+  UI_DrawText(&scrPlaceFull,name,0x7fffffff,font,rect->x + fVar3,rect->y,rect->horzAlign,
+              rect->vertAlign,scale,color,textStyle);
   return;
 }
 
@@ -2936,35 +2983,37 @@ UI_DrawLoggedInUser(int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,f
 
 void __cdecl
 UI_DrawLoggedInUserName
-          (int param_1,int param_2,rectDef_s *param_3,Font_s *param_4,float param_5,float *param_6,
-          int param_7)
+          (int localClientNum,int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color
+          ,int textStyle)
 
 {
   int iVar1;
   char *pcVar2;
-  char *pcVar3;
-  int iVar4;
-  float fVar5;
-  float fVar6;
-  int iVar7;
+  char *clanAbbrev;
+  int maxChars;
+  float x;
+  float y;
+  int iVar3;
+  char *name;
+  int localControllerIndex;
   
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
   pcVar2 = CL_ControllerIndex_GetUsername(iVar1);
   if (*pcVar2 == '\0') {
-    iVar1 = param_3->vertAlign;
-    iVar7 = param_3->horzAlign;
-    fVar6 = param_3->y;
-    fVar5 = param_3->x;
-    iVar4 = 0x7fffffff;
+    iVar1 = rect->vertAlign;
+    iVar3 = rect->horzAlign;
+    y = rect->y;
+    x = rect->x;
+    maxChars = 0x7fffffff;
     pcVar2 = UI_SafeTranslateString("XBOXLIVE_NOTSIGNEDIN");
-    UI_DrawText(&scrPlaceFull,pcVar2,iVar4,param_4,fVar5,fVar6,iVar7,iVar1,param_5,param_6,param_7);
+    UI_DrawText(&scrPlaceFull,pcVar2,maxChars,font,x,y,iVar3,iVar1,scale,color,textStyle);
   }
   else {
-    iVar7 = 3;
-    pcVar3 = Clan_GetName(iVar1);
-    pcVar2 = Com_DisplayName(pcVar2,pcVar3,iVar7);
-    UI_DrawText(&scrPlaceFull,pcVar2,0x7fffffff,param_4,param_3->x,param_3->y,param_3->horzAlign,
-                param_3->vertAlign,param_5,param_6,param_7);
+    iVar3 = 3;
+    clanAbbrev = Clan_GetName(iVar1);
+    pcVar2 = Com_DisplayName(pcVar2,clanAbbrev,iVar3);
+    UI_DrawText(&scrPlaceFull,pcVar2,0x7fffffff,font,rect->x,rect->y,rect->horzAlign,rect->vertAlign
+                ,scale,color,textStyle);
   }
   return;
 }
@@ -2974,7 +3023,7 @@ UI_DrawLoggedInUserName
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl GetXpLockDescription(int param_1,int param_2)
+char * __cdecl GetXpLockDescription(int localClientNum,int playlistId)
 
 {
   code *pcVar1;
@@ -2982,17 +3031,19 @@ char * __cdecl GetXpLockDescription(int param_1,int param_2)
   int iVar3;
   char *pcVar4;
   uint uVar5;
-  int iVar6;
-  char *pcVar7;
-  ConversionArguments *pCVar8;
-  char local_43c [1024];
-  char local_3c [8];
+  int rank_00;
+  char *pcVar6;
+  ConversionArguments *pCVar7;
+  int controllerIndex;
+  int rank;
+  char outputString [1024];
+  char tempString [8];
   uint local_34;
-  ConversionArguments local_30;
-  char *local_8;
+  ConversionArguments convArgs;
+  char *rankString;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if (iVar3 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xc84,0,"%s");
     if (!bVar2) {
@@ -3001,39 +3052,39 @@ char * __cdecl GetXpLockDescription(int param_1,int param_2)
       return pcVar4;
     }
   }
-  uVar5 = Playlist_GetUnlockXp(iVar3,param_2);
-  iVar6 = CL_GetRankForXp((uVar5 ^ (int)uVar5 >> 0x1f) - ((int)uVar5 >> 0x1f));
-  pcVar4 = CL_GetRankData(iVar6,MP_RANKTABLE_FULLRANK);
-  local_8 = UI_SafeTranslateString(pcVar4);
-  CL_GetRankData(iVar6,MP_RANKTABLE_DISPLAYLEVEL);
-  Com_sprintf(local_3c,5,"%s");
-  if (*local_8 == '\0') {
+  uVar5 = Playlist_GetUnlockXp(iVar3,playlistId);
+  rank_00 = CL_GetRankForXp((uVar5 ^ (int)uVar5 >> 0x1f) - ((int)uVar5 >> 0x1f));
+  pcVar4 = CL_GetRankData(rank_00,MP_RANKTABLE_FULLRANK);
+  rankString = UI_SafeTranslateString(pcVar4);
+  CL_GetRankData(rank_00,MP_RANKTABLE_DISPLAYLEVEL);
+  Com_sprintf(tempString,5,"%s");
+  if (*rankString == '\0') {
     Com_PrintWarning(0xd,"Empty rank string for rank %i\n");
   }
-  local_30.args[2] = (char *)0x0;
-  local_30.args[3] = (char *)0x0;
-  local_30.args[4] = (char *)0x0;
-  local_30.args[5] = (char *)0x0;
-  local_30.args[6] = (char *)0x0;
-  local_30.args[7] = (char *)0x0;
-  local_30.args[8] = (char *)0x0;
-  local_30.argCount = 2;
-  local_30.args[0] = local_8;
-  local_30.args[1] = local_3c;
-  iVar3 = Playlist_GetUnlockXp(iVar3,param_2);
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 2;
+  convArgs.args[0] = rankString;
+  convArgs.args[1] = tempString;
+  iVar3 = Playlist_GetUnlockXp(iVar3,playlistId);
   if (iVar3 < 0) {
     iVar3 = 0x400;
-    pcVar4 = local_43c;
-    pCVar8 = &local_30;
-    pcVar7 = UI_SafeTranslateString("MPUI_LOCKXP");
-    UI_ReplaceConversions(pcVar7,pCVar8,pcVar4,iVar3);
+    pcVar4 = outputString;
+    pCVar7 = &convArgs;
+    pcVar6 = UI_SafeTranslateString("MPUI_LOCKXP");
+    UI_ReplaceConversions(pcVar6,pCVar7,pcVar4,iVar3);
   }
   else {
     iVar3 = 0x400;
-    pcVar4 = local_43c;
-    pCVar8 = &local_30;
-    pcVar7 = UI_SafeTranslateString("MPUI_UNLOCKXP");
-    UI_ReplaceConversions(pcVar7,pCVar8,pcVar4,iVar3);
+    pcVar4 = outputString;
+    pCVar7 = &convArgs;
+    pcVar6 = UI_SafeTranslateString("MPUI_UNLOCKXP");
+    UI_ReplaceConversions(pcVar6,pCVar7,pcVar4,iVar3);
   }
   pcVar4 = va("%s");
   return pcVar4;
@@ -3042,15 +3093,18 @@ char * __cdecl GetXpLockDescription(int param_1,int param_2)
 
 // 0074AB70  GetPLevelLockDescription  (ui/ui_main.cpp:3230)
 
-char * __cdecl GetPLevelLockDescription(int param_1,int param_2)
+char * __cdecl GetPLevelLockDescription(int localClientNum,int playlistId)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
+  int PLevel;
+  int controllerIndex;
+  char *outputString;
   
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   if (iVar3 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xca0,0,"%s");
     if (!bVar2) {
@@ -3059,7 +3113,7 @@ char * __cdecl GetPLevelLockDescription(int param_1,int param_2)
       return pcVar4;
     }
   }
-  iVar3 = Playlist_GetUnlockPLevel(iVar3,param_2);
+  iVar3 = Playlist_GetUnlockPLevel(iVar3,playlistId);
   pcVar4 = UI_SafeTranslateString("CLASS_PRESTIGE_UNLOCK_DESC");
   UI_ReplaceConversionInt(pcVar4,iVar3);
   pcVar4 = va("%s");
@@ -3071,74 +3125,78 @@ char * __cdecl GetPLevelLockDescription(int param_1,int param_2)
 
 void __cdecl
 UI_DrawPlaylistDescription
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float *param_4,float param_5,int param_6,
-          int param_7)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float *color,float textScale,int style,
+          int textAlignment)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int iVar4;
-  int iVar5;
-  PlaylistLockState PVar6;
-  char *pcVar7;
-  int iVar8;
-  int iVar9;
-  char *local_28;
-  rectDef_s local_24;
-  int local_c;
-  int local_8;
+  int xp;
+  PlaylistLockState PVar5;
+  char *pcVar6;
+  int gametypeBan;
+  int partyCount;
+  int playlistId;
+  PlaylistLockState lockState;
+  int textHeight;
+  int gameTypeBan;
+  char *desc;
+  rectDef_s textRect;
+  int localControllerIndex;
+  int partyMemberCount;
   
   iVar4 = (playlist->current).integer;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
   iVar4 = Playlist_GetPlaylistIdForNum(iVar3,iVar4);
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = 1;
-  iVar9 = 1;
-  iVar8 = 0;
-  iVar3 = LiveStats_GetPrestige(local_c);
-  iVar5 = LiveStats_GetXp(local_c);
-  PVar6 = Playlist_IsLocked(local_c,iVar4,iVar5,iVar3,iVar8,iVar9);
-  switch(PVar6) {
+  localControllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  partyMemberCount = 1;
+  partyCount = 1;
+  gametypeBan = 0;
+  iVar3 = LiveStats_GetPrestige(localControllerIndex);
+  xp = LiveStats_GetXp(localControllerIndex);
+  PVar5 = Playlist_IsLocked(localControllerIndex,iVar4,xp,iVar3,gametypeBan,partyCount);
+  switch(PVar5) {
   case PLS_UNLOCKED:
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-    local_28 = Playlist_GetPlaylistDescription(iVar3,iVar4);
-    if (local_28 == (char *)0x0) {
+    iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
+    desc = Playlist_GetPlaylistDescription(iVar3,iVar4);
+    if (desc == (char *)0x0) {
       return;
     }
-    if (*local_28 == '\0') {
+    if (*desc == '\0') {
       return;
     }
     break;
   case PLS_FETCHING:
     return;
   case PLS_XP:
-    local_28 = GetXpLockDescription(param_1,iVar4);
+    desc = GetXpLockDescription(localClientNum,iVar4);
     break;
   case PLS_PLEVEL:
-    local_28 = GetPLevelLockDescription(param_1,iVar4);
+    desc = GetPLevelLockDescription(localClientNum,iVar4);
     break;
   case PLS_MAXPARTY:
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+    iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
     iVar4 = Playlist_GetMaxPartySize(iVar3,iVar4);
-    pcVar7 = UI_SafeTranslateString("MPUI_MAXPARTYSIZE");
-    local_28 = UI_ReplaceConversionInt(pcVar7,iVar4);
+    pcVar6 = UI_SafeTranslateString("MPUI_MAXPARTYSIZE");
+    desc = UI_ReplaceConversionInt(pcVar6,iVar4);
     break;
   case PLS_MINPARTY:
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
+    iVar3 = Com_LocalClient_GetControllerIndex(localClientNum);
     iVar4 = Playlist_GetMinPartySize(iVar3,iVar4);
-    pcVar7 = UI_SafeTranslateString("MPUI_MINPARTYSIZE");
-    local_28 = UI_ReplaceConversionInt(pcVar7,iVar4);
+    pcVar6 = UI_SafeTranslateString("MPUI_MINPARTYSIZE");
+    desc = UI_ReplaceConversionInt(pcVar6,iVar4);
     break;
   case PLS_GAMETYPEBAN:
-    local_28 = UI_SafeTranslateString("MPUI_GAMETYPE_BAN");
+    desc = UI_SafeTranslateString("MPUI_GAMETYPE_BAN");
     break;
   case PLS_COLLECTORS:
-    local_28 = UI_SafeTranslateString("MPUI_COLLECTORS_ONLY");
+    desc = UI_SafeTranslateString("MPUI_COLLECTORS_ONLY");
     break;
   default:
-    pcVar7 = va("Unknown playlist lock state: %i\n");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xd35,0,pcVar7);
+    pcVar6 = va("Unknown playlist lock state: %i\n");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xd35,0,pcVar6);
     if (bVar2) {
       return;
     }
@@ -3146,56 +3204,60 @@ UI_DrawPlaylistDescription
     (*pcVar1)();
     return;
   case PLS_REQUIRED_DLC_DISABLED:
-    local_28 = UI_SafeTranslateString("MP_PLAYLIST_MAPS_NOT_ENABLED");
+    desc = UI_SafeTranslateString("MP_PLAYLIST_MAPS_NOT_ENABLED");
     break;
   case PLS_REQUIRED_DLC_NOT_AVAILABLE:
-    local_28 = UI_SafeTranslateString("MPUI_PLAYLIST_REQUIRES_DLC");
+    desc = UI_SafeTranslateString("MPUI_PLAYLIST_REQUIRES_DLC");
     break;
   case PLS_CODPOINTS:
-    if (local_8 < 2) {
-      iVar4 = Playlist_GetWagerBet(local_c,iVar4);
-      pcVar7 = UI_SafeTranslateString("MPUI_WAGERMATCH_NOT_ENOUGH_CP");
-      local_28 = UI_ReplaceConversionInt(pcVar7,iVar4);
+    if (partyMemberCount < 2) {
+      iVar4 = Playlist_GetWagerBet(localControllerIndex,iVar4);
+      pcVar6 = UI_SafeTranslateString("MPUI_WAGERMATCH_NOT_ENOUGH_CP");
+      desc = UI_ReplaceConversionInt(pcVar6,iVar4);
     }
     else {
-      iVar4 = Playlist_GetWagerBet(local_c,iVar4);
-      pcVar7 = UI_SafeTranslateString("MPUI_WAGERMATCH_NOT_ENOUGH_CP_PARTY");
-      local_28 = UI_ReplaceConversionInt(pcVar7,iVar4);
+      iVar4 = Playlist_GetWagerBet(localControllerIndex,iVar4);
+      pcVar6 = UI_SafeTranslateString("MPUI_WAGERMATCH_NOT_ENOUGH_CP_PARTY");
+      desc = UI_ReplaceConversionInt(pcVar6,iVar4);
     }
     break;
   case PLS_VISDVAR:
-    local_28 = UI_SafeTranslateString("UIPLS_PLAYLIST_NOTVISIBLE_DESC");
+    desc = UI_SafeTranslateString("UIPLS_PLAYLIST_NOTVISIBLE_DESC");
     break;
   case PLS_LOCALPLAYERS:
-    local_28 = UI_SafeTranslateString("MPUI_PLAYLIST_LOCALPLAYERS");
+    desc = UI_SafeTranslateString("MPUI_PLAYLIST_LOCALPLAYERS");
     break;
   case PLS_NOGUESTS:
-    local_28 = UI_SafeTranslateString("MPUI_PLAYLIST_NOGUESTS_DESC");
+    desc = UI_SafeTranslateString("MPUI_PLAYLIST_NOGUESTS_DESC");
   }
-  UI_TextHeight(param_3,param_5);
-  UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_28,param_2,param_3,
-                     param_2->x,param_2->y,param_5,param_4,param_6,param_7,&local_24);
+  UI_TextHeight(font,textScale);
+  UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),desc,rect,font,
+                     rect->x,rect->y,textScale,color,style,textAlignment,&textRect);
   return;
 }
 
 
 // 007498D0  UI_DrawPlaylistIcon  (ui/ui_main.cpp:3390)
 
-void __cdecl UI_DrawPlaylistIcon(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawPlaylistIcon(int localClientNum,rectDef_s *rect,float *color)
 
 {
-  int iVar1;
-  int iVar2;
-  char *pcVar3;
-  Material *pMVar4;
+  int controllerIndex;
+  int playlistId_00;
+  char *name;
+  Material *material;
+  char *playlistIconName;
+  int playlistId;
+  Material *mtl;
+  int localControllerIndex;
   
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  iVar2 = Playlist_GetPlaylistIdForNum(iVar1,(playlist->current).integer);
-  pcVar3 = Playlist_GetPlaylistIconName(iVar1,iVar2);
-  if ((pcVar3 != (char *)0x0) && (*pcVar3 != '\0')) {
-    pMVar4 = Material_RegisterHandle(pcVar3,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,pMVar4);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  playlistId_00 = Playlist_GetPlaylistIdForNum(controllerIndex,(playlist->current).integer);
+  name = Playlist_GetPlaylistIconName(controllerIndex,playlistId_00);
+  if ((name != (char *)0x0) && (*name != '\0')) {
+    material = Material_RegisterHandle(name,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,material);
   }
   return;
 }
@@ -3203,26 +3265,29 @@ void __cdecl UI_DrawPlaylistIcon(int param_1,rectDef_s *param_2,float *param_3)
 
 // 00749990  UI_DrawCategoryIcon  (ui/ui_main.cpp:3493)
 
-void __cdecl UI_DrawCategoryIcon(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawCategoryIcon(int localClientNum,rectDef_s *rect,float *color)
 
 {
-  int iVar1;
-  char *pcVar2;
-  Material *pMVar3;
-  int local_c;
+  int controllerIndex;
+  char *name;
+  Material *material;
+  char *categoryIconName;
+  Material *mtl;
+  int categoryId;
+  int localControllerIndex;
   
   if ((xblive_wagermatch->current).enabled == false) {
-    local_c = Playlist_GetCategoryIdForNum((category->current).integer);
+    categoryId = Playlist_GetCategoryIdForNum((category->current).integer);
   }
   else {
-    local_c = Playlist_GetCategoryIdForNum((wagerCategory->current).integer);
+    categoryId = Playlist_GetCategoryIdForNum((wagerCategory->current).integer);
   }
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  pcVar2 = Playlist_GetCategoryIconName(iVar1,local_c);
-  if (*pcVar2 != '\0') {
-    pMVar3 = Material_RegisterHandle(pcVar2,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                     param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,pMVar3);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  name = Playlist_GetCategoryIconName(controllerIndex,categoryId);
+  if (*name != '\0') {
+    material = Material_RegisterHandle(name,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,material);
   }
   return;
 }
@@ -3230,55 +3295,58 @@ void __cdecl UI_DrawCategoryIcon(int param_1,rectDef_s *param_2,float *param_3)
 
 // 0074AC00  UI_DrawScrollingText  (ui/ui_main.cpp:3523)
 
+/* WARNING: Enum "streamName_t": Some values do not have unique names */
+
 void __cdecl
 UI_DrawScrollingText
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,int param_6)
+          (int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,int style)
 
 {
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
-  Font_s *pFVar5;
-  float fVar6;
-  float *pfVar7;
-  float *pfVar8;
-  float *pfVar9;
-  float local_2c;
+  float scrX;
+  float baseX;
+  float baseY;
+  float baseAlpha;
+  Font_s *font_00;
+  float scale_00;
+  float *xCoord;
+  float *yCoord;
+  float *alpha;
+  float scissorRect;
   float local_28;
   float local_24;
   float local_20;
   int local_1c;
   int local_18;
-  float local_14;
-  float local_10;
-  char *local_c;
-  float local_8;
+  float outXCoord;
+  float outAlpha;
+  char *text;
+  float outYCoord;
   
-  pfVar9 = &local_10;
-  pfVar8 = &local_8;
-  pfVar7 = &local_14;
-  fVar4 = param_5[3];
-  fVar3 = param_2->y;
-  fVar2 = param_2->x;
-  pFVar5 = param_3;
-  fVar6 = param_4;
-  fVar1 = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,
-                          param_2->horzAlign);
-  local_c = LiveTicker_GetCurrentMessage(fVar1,fVar2,fVar3,fVar4,pFVar5,fVar6,pfVar7,pfVar8,pfVar9);
-  param_5[3] = 1.0;
-  local_2c = param_2->x;
-  local_28 = param_2->y;
-  local_24 = param_2->w;
-  local_20 = param_2->h;
-  local_1c = param_2->horzAlign;
-  local_18 = param_2->vertAlign;
-  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),&local_2c,&local_28,
-                     &local_24,&local_20,local_1c,local_18);
+  alpha = &outAlpha;
+  yCoord = &outYCoord;
+  xCoord = &outXCoord;
+  baseAlpha = color[3];
+  baseY = rect->y;
+  baseX = rect->x;
+  font_00 = font;
+  scale_00 = scale;
+  scrX = ScrPlace_ApplyX((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,
+                         rect->horzAlign);
+  text = LiveTicker_GetCurrentMessage
+                   (scrX,baseX,baseY,baseAlpha,font_00,scale_00,xCoord,yCoord,alpha);
+  color[3] = 1.0;
+  scissorRect = rect->x;
+  local_28 = rect->y;
+  local_24 = rect->w;
+  local_20 = rect->h;
+  local_1c = rect->horzAlign;
+  local_18 = rect->vertAlign;
+  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),&scissorRect,&local_28
+                     ,&local_24,&local_20,local_1c,local_18);
   local_28 = local_28 - local_20;
-  R_AddCmdSetScissorValues(true,(int)local_2c,(int)local_28,(int)local_24,(int)local_20);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_c,0x7fffffff,param_3,
-              local_14,local_8,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  R_AddCmdSetScissorValues(true,(int)scissorRect,(int)local_28,(int)local_24,(int)local_20);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,
+              outXCoord,outYCoord,rect->horzAlign,rect->vertAlign,scale,color,style);
   R_AddCmdSetScissorValues(false,0,0,0,0);
   return;
 }
@@ -3286,25 +3354,26 @@ UI_DrawScrollingText
 
 // 0074AD70  UI_DrawScrollingTextCategory  (ui/ui_main.cpp:3546)
 
+/* WARNING: Enum "streamName_t": Some values do not have unique names */
+
 void __cdecl
 UI_DrawScrollingTextCategory
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,int param_6)
+          (int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,int style)
 
 {
-  int iVar1;
-  float local_14;
-  float local_10;
-  float local_c;
-  char *local_8;
+  int value;
+  float outScale;
+  float outXCoord;
+  float outAlpha;
+  char *text;
   
-  local_8 = LiveTicker_GetCurrentMessageCategory
-                      (param_5[3],param_2->x,param_2->w,param_3,param_4,&local_10,&local_c,&local_14
-                      );
-  param_5[3] = local_c;
-  iVar1 = UI_TextWidth(local_8,0x20,param_3,param_4);
-  Dvar_SetIntIfChanged(tickerHeaderWidth,iVar1);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_8,0x7fffffff,param_3,
-              local_10,param_2->y,param_2->horzAlign,param_2->vertAlign,local_14,param_5,param_6);
+  text = LiveTicker_GetCurrentMessageCategory
+                   (color[3],rect->x,rect->w,font,scale,&outXCoord,&outAlpha,&outScale);
+  color[3] = outAlpha;
+  value = UI_TextWidth(text,0x20,font,scale);
+  Dvar_SetIntIfChanged(tickerHeaderWidth,value);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,
+              outXCoord,rect->y,rect->horzAlign,rect->vertAlign,outScale,color,style);
   return;
 }
 
@@ -3313,19 +3382,19 @@ UI_DrawScrollingTextCategory
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl UI_DrawControllerIcon(int param_1,int param_2,rectDef_s *param_3,float *param_4)
+void __cdecl UI_DrawControllerIcon(int localClientNum,int contextIndex,rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_30 [32];
+  char controllerIconName [32];
   uint local_10;
-  Material *local_c;
-  int local_8;
+  Material *mtl;
+  int localControllerIndex;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  if (local_8 == -1) {
+  localControllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (localControllerIndex == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xdeb,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -3333,11 +3402,11 @@ void __cdecl UI_DrawControllerIcon(int param_1,int param_2,rectDef_s *param_3,fl
       return;
     }
   }
-  sprintf(local_30,"controller_icon%d");
-  if (local_30[0] != '\0') {
-    local_c = Material_RegisterHandle(local_30,3);
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_2 * 0x78),param_3->x,param_3->y,
-                     param_3->w,param_3->h,param_3->horzAlign,param_3->vertAlign,param_4,local_c);
+  sprintf(controllerIconName,"controller_icon%d");
+  if (controllerIconName[0] != '\0') {
+    mtl = Material_RegisterHandle(controllerIconName,3);
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,
+                     rect->w,rect->h,rect->horzAlign,rect->vertAlign,color,mtl);
   }
   return;
 }
@@ -3346,310 +3415,322 @@ void __cdecl UI_DrawControllerIcon(int param_1,int param_2,rectDef_s *param_3,fl
 // 007491D0  UI_DrawPrettyLine  (ui/ui_main.cpp:3576)
 
 void __cdecl
-UI_DrawPrettyLine(int param_1,float *param_2,float *param_3,float param_4,int param_5,int param_6,
-                 float *param_7)
+UI_DrawPrettyLine(int contextIndex,float *p1,float *p2,float lineWidth,int horzAlign,int vertAlign,
+                 float *color)
 
 {
   ushort uVar1;
   float *pfVar2;
-  int local_58;
-  float local_54;
-  ScreenPlacement *local_50;
-  float local_4c [4];
+  int i;
+  float p2y;
+  ScreenPlacement *scrPlace;
+  float rectPos [4];
   float local_3c;
   float local_38;
-  float local_34 [5];
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
+  float rectDim [2];
+  float tempH;
+  float capWidth;
+  float p1x;
+  float p2x;
+  float tempW;
+  float p1y;
+  float scriptVector0;
   float local_10;
   float local_c;
   float local_8;
   
-  local_50 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  local_34[3] = 1.0;
-  for (local_58 = 0; local_58 < 2; local_58 = local_58 + 1) {
-    if (param_3[local_58] < param_2[local_58] || param_3[local_58] == param_2[local_58]) {
-      local_4c[local_58] = param_3[local_58];
-      local_34[local_58] = param_2[local_58] - param_3[local_58];
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78);
+  capWidth = 1.0;
+  for (i = 0; i < 2; i = i + 1) {
+    if (p2[i] < p1[i] || p2[i] == p1[i]) {
+      rectPos[i] = p2[i];
+      rectDim[i] = p1[i] - p2[i];
     }
     else {
-      local_4c[local_58] = param_2[local_58];
-      local_34[local_58] = param_3[local_58] - param_2[local_58];
+      rectPos[i] = p1[i];
+      rectDim[i] = p2[i] - p1[i];
     }
-    local_4c[local_58] = local_4c[local_58] - param_4;
-    local_34[local_58] = param_4 * 2.0 + local_34[local_58];
+    rectPos[i] = rectPos[i] - lineWidth;
+    rectDim[i] = lineWidth * 2.0 + rectDim[i];
   }
-  local_1c = local_34[0];
-  local_34[2] = local_34[1];
-  local_34[4] = *param_2;
-  local_18 = param_2[1];
-  ScrPlace_ApplyRect(local_50,local_34 + 4,&local_18,&local_1c,local_34 + 2,param_5,param_6);
-  local_20 = *param_3;
-  local_54 = param_3[1];
-  ScrPlace_ApplyRect(local_50,&local_20,&local_54,&local_1c,local_34 + 2,param_5,param_6);
-  ScrPlace_ApplyRect(local_50,local_4c,local_4c + 1,local_34,local_34 + 1,param_5,param_6);
-  local_14 = local_34[0];
-  local_10 = local_34[1];
-  local_c = param_4;
-  local_8 = local_34[3];
-  pfVar2 = &local_14;
+  tempW = rectDim[0];
+  tempH = rectDim[1];
+  p1x = *p1;
+  p1y = p1[1];
+  ScrPlace_ApplyRect(scrPlace,&p1x,&p1y,&tempW,&tempH,horzAlign,vertAlign);
+  p2x = *p2;
+  p2y = p2[1];
+  ScrPlace_ApplyRect(scrPlace,&p2x,&p2y,&tempW,&tempH,horzAlign,vertAlign);
+  ScrPlace_ApplyRect(scrPlace,rectPos,rectPos + 1,rectDim,rectDim + 1,horzAlign,vertAlign);
+  scriptVector0 = rectDim[0];
+  local_10 = rectDim[1];
+  local_c = lineWidth;
+  local_8 = capWidth;
+  pfVar2 = &scriptVector0;
   uVar1 = GetCodeConst_GenericParam0();
   CL_SetCustomConstant((uint)uVar1,pfVar2);
-  local_4c[2] = local_34[4] - local_4c[0];
-  local_4c[3] = local_18 - local_4c[1];
-  local_3c = local_20 - local_4c[0];
-  local_38 = local_54 - local_4c[1];
-  pfVar2 = local_4c + 2;
+  rectPos[2] = p1x - rectPos[0];
+  rectPos[3] = p1y - rectPos[1];
+  local_3c = p2x - rectPos[0];
+  local_38 = p2y - rectPos[1];
+  pfVar2 = rectPos + 2;
   uVar1 = GetCodeConst_GenericParam1();
   CL_SetCustomConstant((uint)uVar1,pfVar2);
   CL_DrawStretchPicPhysical
-            (local_4c[0],local_4c[1],local_34[0],local_34[1],0.0,0.0,1.0,1.0,param_7,DAT_098b4b88);
+            (rectPos[0],rectPos[1],rectDim[0],rectDim[1],0.0,0.0,1.0,1.0,color,DAT_098b4b88);
   return;
 }
 
 
 // 00749B50  UI_PrettyLineOwnerdraw  (ui/ui_main.cpp:3623)
 
-void __cdecl UI_PrettyLineOwnerdraw(int param_1,rectDef_s *param_2,float param_3,float *param_4)
+void __cdecl UI_PrettyLineOwnerdraw(int contextIndex,rectDef_s *rect,float lineWidth,float *color)
 
 {
-  float local_14;
+  float pt1;
   float local_10;
-  float local_c;
+  float pt2;
   float local_8;
   
-  local_14 = param_2->x;
-  local_10 = param_2->y;
-  local_c = param_2->x + param_2->w;
-  local_8 = param_2->y + param_2->h;
-  UI_DrawPrettyLine(param_1,&local_14,&local_c,param_3,param_2->horzAlign,param_2->vertAlign,param_4
-                   );
+  pt1 = rect->x;
+  local_10 = rect->y;
+  pt2 = rect->x + rect->w;
+  local_8 = rect->y + rect->h;
+  UI_DrawPrettyLine(contextIndex,&pt1,&pt2,lineWidth,rect->horzAlign,rect->vertAlign,color);
   return;
 }
 
 
 // 00749470  UI_OwnerDraw  (ui/ui_main.cpp:3630)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-UI_OwnerDraw(int param_1,itemDef_s *param_2,float param_3,float param_4,float param_5,float param_6,
-            int param_7,int param_8,int param_9,int param_10,float *param_11,Material *param_12,
-            rectDef_s param_13,char *param_14)
+UI_OwnerDraw(int localClientNum,itemDef_s *item,float x,float y,float w,float h,int horzAlign,
+            int vertAlign,int ownerDraw,int ownerDrawFlags,float *color,Material *material,
+            rectDef_s parentRect,char *dvarName)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  rectDef_s local_1c;
+  int contextIndex_00;
+  int contextIndex;
+  rectDef_s rect;
   
-  bVar2 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  bVar2 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if (bVar2) {
-    CG_OwnerDraw(param_1,param_13,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-                 param_11,param_12);
+    CG_OwnerDraw(localClientNum,parentRect,x,y,w,h,horzAlign,vertAlign,ownerDraw,ownerDrawFlags,
+                 color,material);
   }
-  local_1c.x = param_3;
-  local_1c.y = param_4;
-  local_1c.w = param_5;
-  local_1c.h = param_6;
-  local_1c.horzAlign = param_7;
-  local_1c.vertAlign = param_8;
-  iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-  if ((iVar3 == -1) &&
+  rect.x = x;
+  rect.y = y;
+  rect.w = w;
+  rect.h = h;
+  rect.horzAlign = horzAlign;
+  rect.vertAlign = vertAlign;
+  contextIndex_00 = Com_LocalClient_GetUIContextIndex(localClientNum);
+  if ((contextIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xe3c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_9) {
+  switch(ownerDraw) {
   case 0xfe:
-    UI_DrawMapPreview(iVar3,&local_1c,param_11);
+    UI_DrawMapPreview(contextIndex_00,&rect,color);
     break;
   case 0x108:
-    ProfLoad_DrawOverlay(&local_1c);
+    ProfLoad_DrawOverlay(&rect);
     break;
   case 0x109:
-    UI_DrawRecordLevel(iVar3,&local_1c);
+    UI_DrawRecordLevel(contextIndex_00,&rect);
     break;
   case 0x10a:
-    UI_DrawLocalTalking(iVar3,&local_1c,param_11);
+    UI_DrawLocalTalking(contextIndex_00,&rect,color);
     break;
   case 0x119:
-    UI_DrawPlaylistIcon(iVar3,&local_1c,param_11);
+    UI_DrawPlaylistIcon(contextIndex_00,&rect,color);
     break;
   case 0x11a:
-    UI_DrawCategoryIcon(iVar3,&local_1c,param_11);
+    UI_DrawCategoryIcon(contextIndex_00,&rect,color);
     break;
   case 0x12d:
-    UI_DrawControllerIcon(param_1,iVar3,&local_1c,param_11);
+    UI_DrawControllerIcon(localClientNum,contextIndex_00,&rect,color);
     break;
   case 0x130:
-    UI_DrawCustomEmblem(iVar3,&local_1c,param_11);
+    UI_DrawCustomEmblem(contextIndex_00,&rect,color);
     break;
   case 0x15d:
-    UI_DrawEmblemIconThumbnail(iVar3,&local_1c,param_11);
+    UI_DrawEmblemIconThumbnail(contextIndex_00,&rect,color);
     break;
   case 0x15e:
-    UI_DrawEmblemColors(iVar3,&local_1c,param_11);
+    UI_DrawEmblemColors(contextIndex_00,&rect,color);
     break;
   case 0x160:
-    UI_DrawPlayerEmblem(param_1,iVar3,param_2,&local_1c,param_11);
+    UI_DrawPlayerEmblem(localClientNum,contextIndex_00,item,&rect,color);
     break;
   case 0x163:
-    UI_PrettyLineOwnerdraw(iVar3,&local_1c,(param_2->window).borderSize,param_11);
+    UI_PrettyLineOwnerdraw(contextIndex_00,&rect,(item->window).borderSize,color);
     break;
   case 0x180:
-    UI_DrawEmblemSelector(param_1,iVar3,param_2,&local_1c,param_11);
+    UI_DrawEmblemSelector(localClientNum,contextIndex_00,item,&rect,color);
     break;
   case 0x185:
-    UI_DrawPlayerEmblemServer(param_1,iVar3,param_2,&local_1c,param_11);
+    UI_DrawPlayerEmblemServer(localClientNum,contextIndex_00,item,&rect,color);
   }
   UI_Project_OwnerDraw
-            (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-             param_11,param_12,param_13,param_14);
+            (localClientNum,item,x,y,w,h,horzAlign,vertAlign,ownerDraw,ownerDrawFlags,color,material
+             ,parentRect,dvarName);
   return;
 }
 
 
 // 00749BD0  UI_OwnerDrawText  (ui/ui_main.cpp:3719)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-UI_OwnerDrawText(int param_1,int param_2,itemDef_s *param_3,float param_4,float param_5,
-                float param_6,float param_7,int param_8,int param_9,float param_10,float param_11,
-                int param_12,int param_13,int param_14,Font_s *param_15,float param_16,
-                float *param_17,Material *param_18,int param_19,rectDef_s param_20,int param_21,
-                char *param_22)
+UI_OwnerDrawText(int localClientNum,int contextIndex,itemDef_s *item,float x,float y,float w,float h
+                ,int horzAlign,int vertAlign,float text_x,float text_y,int ownerDraw,
+                int ownerDrawFlags,int align,Font_s *font,float scale,float *color,
+                Material *material,int textStyle,rectDef_s parentRect,int textAlignMode,char *text)
 
 {
   code *pcVar1;
   bool bVar2;
-  rectDef_s local_1c;
+  rectDef_s rect;
   
-  if ((param_1 == -1) &&
+  if ((localClientNum == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xe8a,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  bVar2 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if (bVar2) {
-    CG_OwnerDrawText(param_1,param_20,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-                     param_11,param_12,param_13,param_14,param_15,param_16,param_17,param_18,
-                     param_19,param_21,param_3,param_22);
+    CG_OwnerDrawText(localClientNum,parentRect,x,y,w,h,horzAlign,vertAlign,text_x,text_y,ownerDraw,
+                     ownerDrawFlags,align,font,scale,color,material,textStyle,textAlignMode,item,
+                     text);
   }
-  local_1c.x = param_4 + param_10;
-  local_1c.y = param_5 + param_11;
-  local_1c.w = param_6;
-  local_1c.h = param_7;
-  local_1c.horzAlign = param_8;
-  local_1c.vertAlign = param_9;
-  switch(param_12) {
+  rect.x = x + text_x;
+  rect.y = y + text_y;
+  rect.w = w;
+  rect.h = h;
+  rect.horzAlign = horzAlign;
+  rect.vertAlign = vertAlign;
+  switch(ownerDraw) {
   case 0xce:
-    UI_DrawGameType(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawGameType(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0xdc:
-    UI_DrawNetSource(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawNetSource(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0xde:
-    UI_DrawNetFilter(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawNetFilter(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0xf5:
-    UI_DrawNetGameType(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawNetGameType(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0xf7:
-    UI_DrawServerRefreshDate(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawServerRefreshDate(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0xfa:
-    UI_DrawKeyBindStatus(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawKeyBindStatus(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0xfd:
-    UI_DrawJoinGameType(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawJoinGameType(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0x10b:
   case 0x10c:
   case 0x10d:
   case 0x10e:
-    UI_DrawTalkerNum(param_1,param_2,param_12 + -0x10b,&local_1c,param_15,param_17,param_16,param_19
+    UI_DrawTalkerNum(localClientNum,contextIndex,ownerDraw + -0x10b,&rect,font,color,scale,textStyle
                     );
     break;
   case 0x110:
-    UI_DrawLoggedInUser(param_1,param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawLoggedInUser(localClientNum,contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0x111:
-    UI_DrawReservedSlots(param_2,&local_1c,param_15,param_17,param_16,param_19);
+    UI_DrawReservedSlots(contextIndex,&rect,font,color,scale,textStyle);
     break;
   case 0x113:
-    UI_DrawPlaylistDescription(param_1,&local_1c,param_15,param_17,param_16,param_19,param_21);
+    UI_DrawPlaylistDescription(localClientNum,&rect,font,color,scale,textStyle,textAlignMode);
     break;
   case 0x114:
-    UI_DrawLoggedInUserName(param_1,param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawLoggedInUserName(localClientNum,contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0x12e:
-    UI_DrawScrollingText(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawScrollingText(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0x12f:
-    UI_DrawScrollingTextCategory(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawScrollingTextCategory(contextIndex,&rect,font,scale,color,textStyle);
     break;
   case 0x136:
-    UI_DrawJoinMod(param_2,&local_1c,param_15,param_16,param_17,param_19);
+    UI_DrawJoinMod(contextIndex,&rect,font,scale,color,textStyle);
   }
   UI_Project_OwnerDrawText
-            (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,param_10,
-             param_11,param_12,param_13,param_14,param_15,param_16,param_17,param_18,param_19,
-             param_20,param_21,param_22);
+            (localClientNum,contextIndex,item,x,y,w,h,horzAlign,vertAlign,text_x,text_y,ownerDraw,
+             ownerDrawFlags,align,font,scale,color,material,textStyle,parentRect,textAlignMode,text)
+  ;
   return;
 }
 
 
 // 0074AE40  UI_OwnerDrawVisible  (ui/ui_main.cpp:3814)
 
-int __cdecl UI_OwnerDrawVisible(int param_1)
+int __cdecl UI_OwnerDrawVisible(int flags)
 
 {
-  int local_8;
+  int vis;
   
-  local_8 = 1;
-  if (((param_1 & 4U) != 0) && ((ui_netSource->current).integer != 3)) {
-    local_8 = 0;
+  vis = 1;
+  if (((flags & 4U) != 0) && ((ui_netSource->current).integer != 3)) {
+    vis = 0;
   }
-  if (((param_1 & 0x1000U) != 0) && ((ui_netSource->current).integer == 3)) {
-    local_8 = 0;
+  if (((flags & 0x1000U) != 0) && ((ui_netSource->current).integer == 3)) {
+    vis = 0;
   }
-  return local_8;
+  return vis;
 }
 
 
 // 0074AE90  UI_OwnerDrawHandleKey  (ui/ui_main.cpp:3840)
 
-int __cdecl UI_OwnerDrawHandleKey(int param_1,int param_2,int param_3)
+int __cdecl UI_OwnerDrawHandleKey(int ownerDraw,int flags,int key)
 
 {
   int iVar1;
   
-  switch(param_1) {
+  switch(ownerDraw) {
   case 0xce:
-    iVar1 = UI_GameType_HandleKey(param_2,param_3,1);
+    iVar1 = UI_GameType_HandleKey(flags,key,1);
     break;
   default:
     goto switchD_0074aeb6_caseD_cf;
   case 0xdc:
-    UI_NetSource_HandleKey(param_2,param_3);
+    UI_NetSource_HandleKey(flags,key);
     goto switchD_0074aeb6_caseD_cf;
   case 0xde:
-    UI_NetFilter_HandleKey(param_2,param_3);
+    UI_NetFilter_HandleKey(flags,key);
 switchD_0074aeb6_caseD_cf:
     iVar1 = 0;
     break;
   case 0xf5:
-    iVar1 = UI_NetGameType_HandleKey(param_2,param_3);
+    iVar1 = UI_NetGameType_HandleKey(flags,key);
     break;
   case 0xfd:
-    iVar1 = UI_JoinGameType_HandleKey(param_2,param_3);
+    iVar1 = UI_JoinGameType_HandleKey(flags,key);
     break;
   case 0x136:
-    iVar1 = UI_JoinMod_HandleKey(param_2,param_3);
+    iVar1 = UI_JoinMod_HandleKey(flags,key);
   }
   return iVar1;
 }
@@ -3665,47 +3746,47 @@ void __cdecl UI_InitUIInfos(void)
   int iVar1;
   bool bVar2;
   int iVar3;
-  int local_98;
-  char local_94 [132];
+  int infoIndex;
+  char menuname [132];
   uint local_10;
-  uiInfo_s *local_c;
-  MenuList *local_8;
+  uiInfo_s *uiInfo;
+  MenuList *menuList;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_98 = 0; local_98 < 1; local_98 = local_98 + 1) {
-    local_c = UI_UIContext_GetInfo(local_98);
-    (local_c->uiDC).contextIndex = 0;
-    (local_c->uiDC).contextIndex = local_98;
-    local_c->allowScriptMenuResponse = true;
-    Menu_Setup(&local_c->uiDC);
+  for (infoIndex = 0; infoIndex < 1; infoIndex = infoIndex + 1) {
+    uiInfo = UI_UIContext_GetInfo(infoIndex);
+    (uiInfo->uiDC).contextIndex = 0;
+    (uiInfo->uiDC).contextIndex = infoIndex;
+    uiInfo->allowScriptMenuResponse = true;
+    Menu_Setup(&uiInfo->uiDC);
     CL_GetScreenDimensions
-              (&(local_c->uiDC).screenWidth,&(local_c->uiDC).screenHeight,
-               &(local_c->uiDC).screenAspect);
-    iVar3 = (local_c->uiDC).screenWidth * 0x1e0;
-    iVar1 = (local_c->uiDC).screenHeight;
+              (&(uiInfo->uiDC).screenWidth,&(uiInfo->uiDC).screenHeight,&(uiInfo->uiDC).screenAspect
+              );
+    iVar3 = (uiInfo->uiDC).screenWidth * 0x1e0;
+    iVar1 = (uiInfo->uiDC).screenHeight;
     if (iVar3 + iVar1 * -0x280 == 0 || iVar3 < iVar1 * 0x280) {
-      (local_c->uiDC).bias = 0.0;
+      (uiInfo->uiDC).bias = 0.0;
     }
     else {
-      (local_c->uiDC).bias =
-           ((float)(local_c->uiDC).screenWidth - (float)(local_c->uiDC).screenHeight * 1.3333334) *
+      (uiInfo->uiDC).bias =
+           ((float)(uiInfo->uiDC).screenWidth - (float)(uiInfo->uiDC).screenHeight * 1.3333334) *
            0.5;
     }
     if ((useFastFile->current).enabled != false) {
-      Com_sprintf(local_94,0x80,"%spatch.txt");
-      local_8 = UI_LoadMenus(local_94,3);
-      UI_AddMenuList(0,&local_c->uiDC,local_8,1);
-      Com_sprintf(local_94,0x80,"%scode.txt");
-      local_8 = UI_LoadMenus(local_94,3);
-      UI_AddMenuList(0,&local_c->uiDC,local_8,1);
+      Com_sprintf(menuname,0x80,"%spatch.txt");
+      menuList = UI_LoadMenus(menuname,3);
+      UI_AddMenuList(0,&uiInfo->uiDC,menuList,1);
+      Com_sprintf(menuname,0x80,"%scode.txt");
+      menuList = UI_LoadMenus(menuname,3);
+      UI_AddMenuList(0,&uiInfo->uiDC,menuList,1);
     }
     bVar2 = G_ExitAfterToolComplete();
     if ((!bVar2) && ((g_mapname[0] == '\0' || ((useFastFile->current).enabled == false)))) {
-      Com_sprintf(local_94,0x80,"%smenus.txt");
-      local_8 = UI_LoadMenus(local_94,3);
-      UI_AddMenuList(0,&local_c->uiDC,local_8,1);
+      Com_sprintf(menuname,0x80,"%smenus.txt");
+      menuList = UI_LoadMenus(menuname,3);
+      UI_AddMenuList(0,&uiInfo->uiDC,menuList,1);
     }
-    Menus_CloseAll(0,&local_c->uiDC);
+    Menus_CloseAll(0,&uiInfo->uiDC);
   }
   return;
 }
@@ -3718,10 +3799,10 @@ void __cdecl UI_InitOnceForAllClients(void)
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  Font_s *pFVar4;
-  float fVar5;
-  int iVar6;
+  char *filename;
+  Font_s *font;
+  float fVar3;
+  int size;
   int in_stack_fffffff4;
   
   UI_InitUIInfos();
@@ -3749,12 +3830,12 @@ void __cdecl UI_InitOnceForAllClients(void)
   UI_LoadCustomMatchGameTypes();
   UI_LoadMaps();
   if ((g_mapname[0] != '\0') && ((useFastFile->current).enabled == false)) {
-    pcVar3 = va("%s%s.csv");
-    UI_MapLoadInfo(pcVar3);
+    filename = va("%s%s.csv");
+    UI_MapLoadInfo(filename);
   }
   UI_ServersSort(8,0);
-  fVar5 = Dvar_GetFloat("m_pitch");
-  Dvar_SetBoolByName("ui_mousePitch",fVar5 < 0.0);
+  fVar3 = Dvar_GetFloat("m_pitch");
+  Dvar_SetBoolByName("ui_mousePitch",fVar3 < 0.0);
   if ((((ui_netGameType->current).integer < 0) || (0x1f < (ui_netGameType->current).unsignedInt)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0xfa9,0,
                                "%s\n\t(ui_netGameType->current.integer) = %i"), !bVar2)) {
@@ -3765,36 +3846,35 @@ void __cdecl UI_InitOnceForAllClients(void)
   Dvar_SetString(ui_netGameTypeName,&DAT_098b5438 + (ui_netGameType->current).integer * 0x74);
   uiscript_debug = _Dvar_RegisterInt("uiscript_debug",0,0,2,0,"spam debug info for the ui script");
   UI_Project_InitOnceForAllClients();
-  iVar6 = 0x118;
-  fVar5 = 0.315;
-  pFVar4 = UI_GetFontHandleDefault(0.315);
-  SD_TruncateAudioDeviceNames(pFVar4,fVar5,iVar6);
+  size = 0x118;
+  fVar3 = 0.315;
+  font = UI_GetFontHandleDefault(0.315);
+  SD_TruncateAudioDeviceNames(font,fVar3,size);
   return;
 }
 
 
 // 0074BDD0  UI_Init  (ui/ui_main.cpp:4022)
 
-void __cdecl UI_Init(int param_1)
+void __cdecl UI_Init(int localClientNum)
 
 {
-  g_ingameMenusLoaded[param_1] = false;
+  g_ingameMenusLoaded[localClientNum] = false;
   return;
 }
 
 
 // 0074C020  UI_KeyEvent_CancelButtonPressed  (ui/ui_main.cpp:4049)
 
-bool __cdecl
-UI_KeyEvent_CancelButtonPressed(UiContext *param_1,menuDef_t *param_2,int param_3,int param_4)
+bool __cdecl UI_KeyEvent_CancelButtonPressed(UiContext *dc,menuDef_t *menu,int key,int down)
 
 {
   bool bVar1;
   int iVar2;
   
-  if ((((param_3 == 2) || (param_3 == 0x1b)) && (param_4 != 0)) &&
-     ((iVar2 = Menus_AnyFullScreenVisible(param_1), iVar2 == 0 &&
-      (bVar1 = Menus_DoesEventExist(param_2,"onESC"), !bVar1)))) {
+  if ((((key == 2) || (key == 0x1b)) && (down != 0)) &&
+     ((iVar2 = Menus_AnyFullScreenVisible(dc), iVar2 == 0 &&
+      (bVar1 = Menus_DoesEventExist(menu,"onESC"), !bVar1)))) {
     return true;
   }
   return false;
@@ -3804,21 +3884,21 @@ UI_KeyEvent_CancelButtonPressed(UiContext *param_1,menuDef_t *param_2,int param_
 // 0074BDE0  UI_KeyEvent_AutoJoinButtonPressed  (ui/ui_main.cpp:4069)
 
 bool __cdecl
-UI_KeyEvent_AutoJoinButtonPressed
-          (int param_1,UiContext *param_2,menuDef_t *param_3,int param_4,int param_5)
+UI_KeyEvent_AutoJoinButtonPressed(int localClientNum,UiContext *dc,menuDef_t *menu,int key,int down)
 
 {
-  int local_14;
-  int local_10 [3];
+  int i;
+  int twokeys [2];
+  int numBinds;
   
-  local_10[2] = Key_GetCommandAssignment(param_1,"acceptInvitation",local_10,0);
-  local_14 = 0;
+  numBinds = Key_GetCommandAssignment(localClientNum,"acceptInvitation",twokeys,0);
+  i = 0;
   while( true ) {
-    if (local_10[2] <= local_14) {
+    if (numBinds <= i) {
       return false;
     }
-    if ((param_4 == local_10[local_14]) && (param_5 != 0)) break;
-    local_14 = local_14 + 1;
+    if ((key == twokeys[i]) && (down != 0)) break;
+    i = i + 1;
   }
   return true;
 }
@@ -3826,56 +3906,59 @@ UI_KeyEvent_AutoJoinButtonPressed
 
 // 0074BE40  UI_KeyEvent  (ui/ui_main.cpp:4169)
 
-void __cdecl UI_KeyEvent(int param_1,int param_2,int param_3)
+void __cdecl UI_KeyEvent(int localClientNum,int key,int down)
 
 {
   bool bVar1;
-  uiInfo_s *puVar2;
-  int iVar3;
-  menuDef_t *pmVar4;
-  connstate_t cVar5;
+  uiInfo_s *dc;
+  int iVar2;
+  menuDef_t *pmVar3;
+  connstate_t cVar4;
+  connstate_t connstate;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
   
-  puVar2 = UI_GetInfo(param_1);
-  iVar3 = Menu_Count(&puVar2->uiDC);
-  if (iVar3 != 0) {
-    pmVar4 = Menu_GetFocused(&puVar2->uiDC);
-    if (pmVar4 != (menuDef_t *)0x0) {
-      bVar1 = UI_KeysBypassMenu(param_1);
+  dc = UI_GetInfo(localClientNum);
+  iVar2 = Menu_Count(&dc->uiDC);
+  if (iVar2 != 0) {
+    pmVar3 = Menu_GetFocused(&dc->uiDC);
+    if (pmVar3 != (menuDef_t *)0x0) {
+      bVar1 = UI_KeysBypassMenu(localClientNum);
       if (bVar1) {
         bypassKeyClear = 1;
       }
-      bVar1 = UI_KeyEvent_CancelButtonPressed(&puVar2->uiDC,pmVar4,param_2,param_3);
+      bVar1 = UI_KeyEvent_CancelButtonPressed(&dc->uiDC,pmVar3,key,down);
       if (bVar1) {
-        Menus_CloseAll(param_1,&puVar2->uiDC);
+        Menus_CloseAll(localClientNum,&dc->uiDC);
       }
-      bVar1 = UI_KeyEvent_AutoJoinButtonPressed(param_1,&puVar2->uiDC,pmVar4,param_2,param_3);
+      bVar1 = UI_KeyEvent_AutoJoinButtonPressed(localClientNum,&dc->uiDC,pmVar3,key,down);
       if (bVar1) {
         Live_AcceptLastInvite_f();
       }
-      bVar1 = Key_IsCatcherActive(param_1,0x150);
+      bVar1 = Key_IsCatcherActive(localClientNum,0x150);
       if (bVar1) {
-        Menu_HandleKey(param_1,&puVar2->uiDC,pmVar4,param_2,param_3);
+        Menu_HandleKey(localClientNum,&dc->uiDC,pmVar3,key,down);
       }
-      pmVar4 = Menu_GetFocused(&puVar2->uiDC);
-      if (pmVar4 != (menuDef_t *)0x0) {
+      pmVar3 = Menu_GetFocused(&dc->uiDC);
+      if (pmVar3 != (menuDef_t *)0x0) {
         return;
       }
     }
-    bVar1 = Key_IsCatcherActive(param_1,0x10);
-    if ((bVar1) && (bVar1 = Com_LocalClient_IsBeingUsed(param_1), bVar1)) {
-      Key_RemoveCatcher(param_1,-0x11);
+    bVar1 = Key_IsCatcherActive(localClientNum,0x10);
+    if ((bVar1) && (bVar1 = Com_LocalClient_IsBeingUsed(localClientNum), bVar1)) {
+      Key_RemoveCatcher(localClientNum,-0x11);
       if (bypassKeyClear == 0) {
-        Key_ClearStates(param_1);
+        Key_ClearStates(localClientNum);
       }
       bypassKeyClear = 0;
-      cVar5 = CL_GetLocalClientConnectionState(param_1);
-      if (cVar5 == CA_ACTIVE) {
+      cVar4 = CL_GetLocalClientConnectionState(localClientNum);
+      if (cVar4 == CA_ACTIVE) {
         Com_DPrintf(0xd,"PC ONLY: No menu has focus and == CA_ACTIVE, so forcing UIMENU_NONE");
-        UI_SetActiveMenu(param_1,0);
+        UI_SetActiveMenu(localClientNum,0);
       }
-      else if ((int)cVar5 < 4) {
+      else if ((int)cVar4 < 4) {
         Com_DPrintf(0xd,"PC ONLY: No menu has focus and < CA_CONNECTING, so forcing UIMENU_MAIN");
-        UI_SetActiveMenu(param_1,1);
+        UI_SetActiveMenu(localClientNum,1);
       }
       else {
         Com_DPrintf(0xd,"PC ONLY: No menu has focus and %s, what should I do?");
@@ -3889,49 +3972,52 @@ void __cdecl UI_KeyEvent(int param_1,int param_2,int param_3)
 
 // 0074C070  UI_CloseAllMenus  (ui/ui_main.cpp:4292)
 
-void __cdecl UI_CloseAllMenus(int param_1)
+void __cdecl UI_CloseAllMenus(int localClientNum)
 
 {
-  UI_CloseAll(param_1);
+  UI_CloseAll(localClientNum);
   return;
 }
 
 
 // 0074C090  UI_UIContext_OpenMenu  (ui/ui_main.cpp:4297)
 
-void __cdecl UI_UIContext_OpenMenu(int param_1,int param_2,char *param_3)
+void __cdecl UI_UIContext_OpenMenu(int localClientNum,int contextIndex,char *menuName)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_UIContext_GetInfo(param_2);
-  Menus_OpenByName(param_1,&puVar1->uiDC,param_3);
+  dc = UI_UIContext_GetInfo(contextIndex);
+  Menus_OpenByName(localClientNum,&dc->uiDC,menuName);
   return;
 }
 
 
 // 0074C0C0  UI_UIContext_CloseMenu  (ui/ui_main.cpp:4315)
 
-void __cdecl UI_UIContext_CloseMenu(int param_1,int param_2,char *param_3)
+void __cdecl UI_UIContext_CloseMenu(int localClientNum,int contextIndex,char *menuName)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_UIContext_GetInfo(param_2);
-  Menus_CloseByName(param_1,&puVar1->uiDC,param_3);
+  dc = UI_UIContext_GetInfo(contextIndex);
+  Menus_CloseByName(localClientNum,&dc->uiDC,menuName);
   return;
 }
 
 
 // 0074C0F0  UI_UIContext_CloseMenuImmediate  (ui/ui_main.cpp:4324)
 
-void __cdecl UI_UIContext_CloseMenuImmediate(int param_1,int param_2,char *param_3)
+void __cdecl UI_UIContext_CloseMenuImmediate(int localClientNum,int contextIndex,char *menuName)
 
 {
-  uiInfo_s *puVar1;
+  uiInfo_s *dc;
+  uiInfo_s *uiInfo;
   
-  puVar1 = UI_UIContext_GetInfo(param_2);
-  Menus_CloseImmediateByName(param_1,&puVar1->uiDC,param_3);
+  dc = UI_UIContext_GetInfo(contextIndex);
+  Menus_CloseImmediateByName(localClientNum,&dc->uiDC,menuName);
   return;
 }
 
@@ -3939,105 +4025,111 @@ void __cdecl UI_UIContext_CloseMenuImmediate(int param_1,int param_2,char *param
 // 0074C120  UI_UIContext_OpenToastPopup  (ui/ui_main.cpp:4332)
 
 void __cdecl
-UI_UIContext_OpenToastPopup(int param_1,char *param_2,char *param_3,char *param_4,int param_5)
+UI_UIContext_OpenToastPopup
+          (int contextIndex,char *toastPopupIconName,char *toastPopupTitle,char *toastPopupDesc,
+          int toastPopupDuration)
 
 {
-  uiInfo_s *puVar1;
-  int iVar2;
-  menuDef_t *pmVar3;
+  uiInfo_s *dc;
+  int iVar1;
+  menuDef_t *w;
   int local_24;
   int local_20;
+  uiInfo_s *uiInfo;
+  menuDef_t *toastPopupMenu;
   
-  puVar1 = UI_UIContext_GetInfo(param_1);
-  I_strncpyz(puVar1->toastPopupIconName,param_2,0x100);
-  I_strncpyz(puVar1->toastPopupTitle,param_3,0x100);
-  I_strncpyz(puVar1->toastPopupDesc,param_4,0x100);
-  puVar1->toastPopupDuration = param_5;
-  puVar1->toastPopupOpened = true;
-  iVar2 = Sys_Milliseconds();
-  puVar1->toastPopupTimeCounter = iVar2;
-  pmVar3 = Menus_FindByName(&puVar1->uiDC,"menu_toast_popup");
-  if (((pmVar3->openSlideSpeed < 1) || (pmVar3->openSlideDirection < 0)) ||
-     (3 < pmVar3->openSlideDirection)) {
-    if (0 < pmVar3->openFadingTime) {
-      Window_AddDynamicFlags(param_1,&pmVar3->window,0x80000);
-      iVar2 = Sys_Milliseconds();
-      pmVar3->fadeTimeCounter = iVar2;
+  dc = UI_UIContext_GetInfo(contextIndex);
+  I_strncpyz(dc->toastPopupIconName,toastPopupIconName,0x100);
+  I_strncpyz(dc->toastPopupTitle,toastPopupTitle,0x100);
+  I_strncpyz(dc->toastPopupDesc,toastPopupDesc,0x100);
+  dc->toastPopupDuration = toastPopupDuration;
+  dc->toastPopupOpened = true;
+  iVar1 = Sys_Milliseconds();
+  dc->toastPopupTimeCounter = iVar1;
+  w = Menus_FindByName(&dc->uiDC,"menu_toast_popup");
+  if (((w->openSlideSpeed < 1) || (w->openSlideDirection < 0)) || (3 < w->openSlideDirection)) {
+    if (0 < w->openFadingTime) {
+      Window_AddDynamicFlags(contextIndex,&w->window,0x80000);
+      iVar1 = Sys_Milliseconds();
+      w->fadeTimeCounter = iVar1;
     }
   }
   else {
-    Window_AddDynamicFlags(param_1,&pmVar3->window,0x20000);
-    iVar2 = Sys_Milliseconds();
-    pmVar3->slideTimeCounter = iVar2;
-    if (0 < pmVar3->openFadingTime) {
-      Window_AddDynamicFlags(param_1,&pmVar3->window,0x80000);
-      local_20 = pmVar3->openFadingTime;
-      if (local_20 <= pmVar3->openSlideSpeed) {
-        local_20 = pmVar3->openSlideSpeed;
+    Window_AddDynamicFlags(contextIndex,&w->window,0x20000);
+    iVar1 = Sys_Milliseconds();
+    w->slideTimeCounter = iVar1;
+    if (0 < w->openFadingTime) {
+      Window_AddDynamicFlags(contextIndex,&w->window,0x80000);
+      local_20 = w->openFadingTime;
+      if (local_20 <= w->openSlideSpeed) {
+        local_20 = w->openSlideSpeed;
       }
-      pmVar3->openSlideSpeed = local_20;
-      local_24 = pmVar3->openFadingTime;
-      if (local_24 <= pmVar3->openSlideSpeed) {
-        local_24 = pmVar3->openSlideSpeed;
+      w->openSlideSpeed = local_20;
+      local_24 = w->openFadingTime;
+      if (local_24 <= w->openSlideSpeed) {
+        local_24 = w->openSlideSpeed;
       }
-      pmVar3->openFadingTime = local_24;
-      iVar2 = Sys_Milliseconds();
-      pmVar3->fadeTimeCounter = iVar2;
+      w->openFadingTime = local_24;
+      iVar1 = Sys_Milliseconds();
+      w->fadeTimeCounter = iVar1;
     }
   }
-  Window_RemoveDynamicFlags(param_1,&pmVar3->window,0x42000);
+  Window_RemoveDynamicFlags(contextIndex,&w->window,0x42000);
   return;
 }
 
 
 // 0074C310  UI_OpenMenu  (ui/ui_main.cpp:4368)
 
-void __cdecl UI_OpenMenu(int param_1,char *param_2)
+void __cdecl UI_OpenMenu(int localClientNum,char *menuName)
 
 {
-  int iVar1;
+  int contextIndex;
   
-  iVar1 = Com_LocalClient_GetUIContextIndex(param_1);
-  UI_UIContext_OpenMenu(param_1,iVar1,param_2);
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  UI_UIContext_OpenMenu(localClientNum,contextIndex,menuName);
   return;
 }
 
 
 // 0074C340  UI_CloseMenu  (ui/ui_main.cpp:4379)
 
-void __cdecl UI_CloseMenu(int param_1,char *param_2)
+void __cdecl UI_CloseMenu(int localClientNum,char *menuName)
 
 {
-  int iVar1;
+  int contextIndex;
   
-  iVar1 = Com_LocalClient_GetUIContextIndex(param_1);
-  UI_UIContext_CloseMenu(param_1,iVar1,param_2);
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  UI_UIContext_CloseMenu(localClientNum,contextIndex,menuName);
   return;
 }
 
 
 // 0074C370  UI_CloseMenuImmediate  (ui/ui_main.cpp:4385)
 
-void __cdecl UI_CloseMenuImmediate(int param_1,char *param_2)
+void __cdecl UI_CloseMenuImmediate(int localClientNum,char *menuName)
 
 {
-  int iVar1;
+  int contextIndex;
   
-  iVar1 = Com_LocalClient_GetUIContextIndex(param_1);
-  UI_UIContext_CloseMenuImmediate(param_1,iVar1,param_2);
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  UI_UIContext_CloseMenuImmediate(localClientNum,contextIndex,menuName);
   return;
 }
 
 
 // 0074C3A0  UI_OpenToastPopup  (ui/ui_main.cpp:4390)
 
-void __cdecl UI_OpenToastPopup(int param_1,char *param_2,char *param_3,char *param_4,int param_5)
+void __cdecl
+UI_OpenToastPopup(int localClientNum,char *toastPopupIconName,char *toastPopupTitle,
+                 char *toastPopupDesc,int toastPopupDuration)
 
 {
-  int iVar1;
+  int contextIndex;
   
-  iVar1 = Com_LocalClient_GetUIContextIndex(param_1);
-  UI_UIContext_OpenToastPopup(iVar1,param_2,param_3,param_4,param_5);
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  UI_UIContext_OpenToastPopup
+            (contextIndex,toastPopupIconName,toastPopupTitle,toastPopupDesc,toastPopupDuration);
   return;
 }
 
@@ -4047,50 +4139,53 @@ void __cdecl UI_OpenToastPopup(int param_1,char *param_2,char *param_3,char *par
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl UI_DrawMapLevelshot(int param_1)
+void __cdecl UI_DrawMapLevelshot(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
+  int contextIndex_00;
+  uiInfo_s *dc_00;
+  menuDef_t *menu_00;
   int iVar3;
-  uiInfo_s *puVar4;
-  menuDef_t *pmVar5;
-  int iVar6;
-  XAssetHeader local_10;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
+  int contextIndex;
+  UiContext *dc;
   
-  iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-  if ((iVar3 == -1) &&
+  contextIndex_00 = Com_LocalClient_GetUIContextIndex(localClientNum);
+  if ((contextIndex_00 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main.cpp",0x113f,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  puVar4 = UI_GetInfo(param_1);
-  pmVar5 = Menus_FindByName(&puVar4->uiDC,"pregame_loaderror_mp");
-  if ((pmVar5 == (menuDef_t *)0x0) ||
-     (iVar6 = Menus_MenuIsInStack(&puVar4->uiDC,pmVar5), iVar6 == 0)) {
+  dc_00 = UI_GetInfo(localClientNum);
+  menu_00 = Menus_FindByName(&dc_00->uiDC,"pregame_loaderror_mp");
+  if ((menu_00 == (menuDef_t *)0x0) ||
+     (iVar3 = Menus_MenuIsInStack(&dc_00->uiDC,menu_00), iVar3 == 0)) {
     if (g_showLoadingScreenMenu == false) {
-      local_10.xmodelPieces = (XModelPieces *)0x0;
+      menu = (menuDef_t *)0x0;
     }
     else if ((useFastFile->current).enabled == false) {
-      local_10.menu = Menus_FindByName(&puVar4->uiDC,"connect");
+      menu = Menus_FindByName(&dc_00->uiDC,"connect");
     }
     else {
-      local_10 = DB_FindXAssetHeader(ASSET_TYPE_MENU,"connect",true,-1);
+      menu = (menuDef_t *)DB_FindXAssetHeader(ASSET_TYPE_MENU,"connect",true,-1);
     }
-    if (local_10.xmodelPieces == (XModelPieces *)0x0) {
-      UI_FillRect((ScreenPlacement *)(&scrPlaceView + iVar3 * 0x78),0.0,0.0,640.0,480.0,0,0,
-                  colorBlack);
+    if (menu == (menuDef_t *)0x0) {
+      UI_FillRect((ScreenPlacement *)(&scrPlaceView + contextIndex_00 * 0x78),0.0,0.0,640.0,480.0,0,
+                  0,colorBlack);
     }
     else {
-      iVar6 = Menus_MenuIsInStack(&puVar4->uiDC,local_10.menu);
-      if (iVar6 == 0) {
-        Menus_Open(param_1,&puVar4->uiDC,local_10.menu);
+      iVar3 = Menus_MenuIsInStack(&dc_00->uiDC,menu);
+      if (iVar3 == 0) {
+        Menus_Open(localClientNum,&dc_00->uiDC,menu);
       }
-      (puVar4->uiDC).blurRadiusOut = 0.0;
-      Window_SetDynamicFlags(iVar3,(windowDef_t *)local_10.xmodelPieces,0x4004);
-      Menu_Paint(param_1,&puVar4->uiDC,(ScreenPlacementStack *)0x0,local_10.menu,-1);
+      (dc_00->uiDC).blurRadiusOut = 0.0;
+      Window_SetDynamicFlags(contextIndex_00,&menu->window,0x4004);
+      Menu_Paint(localClientNum,&dc_00->uiDC,(ScreenPlacementStack *)0x0,menu,-1);
     }
   }
   return;
@@ -4099,21 +4194,23 @@ void __cdecl UI_DrawMapLevelshot(int param_1)
 
 // 0074C570  UI_LoadIngameMenus  (ui/ui_main.cpp:4462)
 
-void __cdecl UI_LoadIngameMenus(int param_1)
+void __cdecl UI_LoadIngameMenus(int contextIndex)
 
 {
-  char *pcVar1;
-  MenuList *pMVar2;
-  uiInfo_s *puVar3;
-  int iVar4;
+  char *menuFile;
+  MenuList *menuList_00;
+  uiInfo_s *dc;
+  int imageTrack;
+  uiInfo_s *uiInfo;
+  MenuList *menuList;
   
-  if (g_ingameMenusLoaded[param_1] == false) {
-    g_ingameMenusLoaded[param_1] = true;
-    iVar4 = 3;
-    pcVar1 = va("%singame.txt");
-    pMVar2 = UI_LoadMenus(pcVar1,iVar4);
-    puVar3 = UI_UIContext_GetInfo(param_1);
-    UI_AddMenuList(param_1,&puVar3->uiDC,pMVar2,1);
+  if (g_ingameMenusLoaded[contextIndex] == false) {
+    g_ingameMenusLoaded[contextIndex] = true;
+    imageTrack = 3;
+    menuFile = va("%singame.txt");
+    menuList_00 = UI_LoadMenus(menuFile,imageTrack);
+    dc = UI_UIContext_GetInfo(contextIndex);
+    UI_AddMenuList(contextIndex,&dc->uiDC,menuList_00,1);
   }
   return;
 }
@@ -4121,98 +4218,100 @@ void __cdecl UI_LoadIngameMenus(int param_1)
 
 // 0074C5E0  UI_ToUpper_CodePage_1250  (ui/ui_main.cpp:4483)
 
-uchar __cdecl UI_ToUpper_CodePage_1250(uchar param_1)
+uchar __cdecl UI_ToUpper_CodePage_1250(uchar character)
 
 {
-  if ((param_1 < 0x61) || (0x7a < param_1)) {
-    if ((param_1 < 0xe0) || ((param_1 == 0xf7 || (param_1 == 0xff)))) {
-      if (((param_1 == 0x9a) || (((param_1 == 0x9c || (param_1 == 0x9e)) || (param_1 == 0x9f)))) ||
-         (((param_1 == 0xb3 || (param_1 == 0xba)) || (param_1 == 0xbf)))) {
-        param_1 = param_1 + 0xf0;
+  if ((character < 0x61) || (0x7a < character)) {
+    if ((character < 0xe0) || ((character == 0xf7 || (character == 0xff)))) {
+      if (((character == 0x9a) ||
+          (((character == 0x9c || (character == 0x9e)) || (character == 0x9f)))) ||
+         (((character == 0xb3 || (character == 0xba)) || (character == 0xbf)))) {
+        character = character + 0xf0;
       }
-      else if (param_1 == 0xb9) {
-        param_1 = 0xa5;
+      else if (character == 0xb9) {
+        character = 0xa5;
       }
-      else if (param_1 == 0xbe) {
-        param_1 = 0xbc;
+      else if (character == 0xbe) {
+        character = 0xbc;
       }
     }
     else {
-      param_1 = param_1 + 0xe0;
+      character = character + 0xe0;
     }
   }
   else {
-    param_1 = param_1 + 0xe0;
+    character = character + 0xe0;
   }
-  return param_1;
+  return character;
 }
 
 
 // 0074C6C0  UI_ToUpper_CodePage_1251  (ui/ui_main.cpp:4512)
 
-uchar __cdecl UI_ToUpper_CodePage_1251(uchar param_1)
+uchar __cdecl UI_ToUpper_CodePage_1251(uchar character)
 
 {
-  if ((param_1 < 0x61) || (0x7a < param_1)) {
-    if (param_1 < 0xe0) {
-      if ((((param_1 == 0xbf) || (param_1 == 0xba)) || (param_1 == 0xb8)) ||
-         ((((param_1 == 0x90 || (param_1 == 0x9a)) ||
-           ((param_1 == 0x9c || ((param_1 == 0x9d || (param_1 == 0x9e)))))) || (param_1 == 0x9f))))
-      {
-        param_1 = param_1 + 0xf0;
+  if ((character < 0x61) || (0x7a < character)) {
+    if (character < 0xe0) {
+      if ((((character == 0xbf) || (character == 0xba)) || (character == 0xb8)) ||
+         ((((character == 0x90 || (character == 0x9a)) ||
+           ((character == 0x9c || ((character == 0x9d || (character == 0x9e)))))) ||
+          (character == 0x9f)))) {
+        character = character + 0xf0;
       }
-      else if (((param_1 == 0xbe) || (param_1 == 0xb3)) || (param_1 == 0xa2)) {
-        param_1 = param_1 + 0xff;
+      else if (((character == 0xbe) || (character == 0xb3)) || (character == 0xa2)) {
+        character = character + 0xff;
       }
-      else if (param_1 == 0xbc) {
-        param_1 = 0xa3;
+      else if (character == 0xbc) {
+        character = 0xa3;
       }
-      else if (param_1 == 0xb4) {
-        param_1 = 0xa5;
+      else if (character == 0xb4) {
+        character = 0xa5;
       }
-      else if (param_1 == 0x83) {
-        param_1 = 0x81;
+      else if (character == 0x83) {
+        character = 0x81;
       }
     }
     else {
-      param_1 = param_1 + 0xe0;
+      character = character + 0xe0;
     }
   }
   else {
-    param_1 = param_1 + 0xe0;
+    character = character + 0xe0;
   }
-  return param_1;
+  return character;
 }
 
 
 // 0074C7E0  UI_ToUpper_CodePage_1252  (ui/ui_main.cpp:4546)
 
-uchar __cdecl UI_ToUpper_CodePage_1252(uchar param_1)
+uchar __cdecl UI_ToUpper_CodePage_1252(uchar character)
 
 {
-  if ((param_1 < 0x61) || (0x7a < param_1)) {
-    if ((param_1 < 0xe0) || (((0xfe < param_1 || (param_1 == 0xf0)) || (param_1 == 0xf7)))) {
-      if (((param_1 == 0x9a) || (param_1 == 0x9c)) || (param_1 == 0x9e)) {
-        param_1 = param_1 + 0xe0;
+  if ((character < 0x61) || (0x7a < character)) {
+    if ((character < 0xe0) || (((0xfe < character || (character == 0xf0)) || (character == 0xf7))))
+    {
+      if (((character == 0x9a) || (character == 0x9c)) || (character == 0x9e)) {
+        character = character + 0xe0;
       }
-      else if (param_1 == 0xff) {
-        param_1 = 0x9f;
+      else if (character == 0xff) {
+        character = 0x9f;
       }
     }
     else {
-      param_1 = param_1 + 0xe0;
+      character = character + 0xe0;
     }
   }
   else {
-    param_1 = param_1 + 0xe0;
+    character = character + 0xe0;
   }
-  return param_1;
+  return character;
 }
 
 
 // 0074C880  UI_CharToUpper  (ui/ui_main.cpp:4573)
 
-uchar __cdecl UI_CharToUpper(uchar param_1)
+uchar __cdecl UI_CharToUpper(uchar character)
 
 {
   code *pcVar1;
@@ -4228,18 +4327,18 @@ uchar __cdecl UI_CharToUpper(uchar param_1)
   }
   switch((loc_language->current).integer) {
   case 8:
-    param_1 = UI_ToUpper_CodePage_1251(param_1);
+    character = UI_ToUpper_CodePage_1251(character);
     break;
   case 9:
-    param_1 = UI_ToUpper_CodePage_1250(param_1);
+    character = UI_ToUpper_CodePage_1250(character);
     break;
   case 10:
   case 0xb:
     break;
   default:
-    param_1 = UI_ToUpper_CodePage_1252(param_1);
+    character = UI_ToUpper_CodePage_1252(character);
   }
-  return param_1;
+  return character;
 }
 
 
@@ -4247,22 +4346,21 @@ uchar __cdecl UI_CharToUpper(uchar param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl UI_ToUpper(char *param_1)
+char * __cdecl UI_ToUpper(char *sourceString)
 
 {
   uchar uVar1;
   char *pcVar2;
-  uint local_410;
-  uchar local_40c [1028];
+  int i;
+  uchar upperString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40c[0] = '\0';
-  memset(local_40c + 1,'\0',0x3ff);
-  for (local_410 = 0; (param_1[local_410] != '\0' && (local_410 < 0x400)); local_410 = local_410 + 1
-      ) {
-    uVar1 = UI_CharToUpper(param_1[local_410]);
-    local_40c[local_410] = uVar1;
+  upperString[0] = '\0';
+  memset(upperString + 1,'\0',0x3ff);
+  for (i = 0; (sourceString[i] != '\0' && ((uint)i < 0x400)); i = i + 1) {
+    uVar1 = UI_CharToUpper(sourceString[i]);
+    upperString[i] = uVar1;
   }
   pcVar2 = va("%s");
   return pcVar2;

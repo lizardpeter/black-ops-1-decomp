@@ -5,26 +5,28 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-char * __cdecl fgets(char *param_1,int param_2,_iobuf *param_3)
+char * __cdecl fgets(char *string,int count,_iobuf *str)
 
 {
   int *piVar1;
   uint uVar2;
   ioinfo *piVar3;
   char *pcVar4;
-  char *local_20;
+  int ch;
+  _iobuf *stream;
+  char *pointer;
+  char *retval;
   
-  local_20 = param_1;
-  if ((((param_1 == (char *)0x0) && (param_2 != 0)) || (param_2 < 0)) || (param_3 == (_iobuf *)0x0))
-  {
+  retval = string;
+  if ((((string == (char *)0x0) && (count != 0)) || (count < 0)) || (str == (_iobuf *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  else if (param_2 != 0) {
-    _lock_file(param_3);
-    if ((param_3->_flag & 0x40) == 0) {
-      uVar2 = _fileno(param_3);
+  else if (count != 0) {
+    _lock_file(str);
+    if ((str->_flag & 0x40) == 0) {
+      uVar2 = _fileno(str);
       if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
         piVar3 = &__badioinfo;
       }
@@ -43,26 +45,26 @@ char * __cdecl fgets(char *param_1,int param_2,_iobuf *param_3)
       piVar1 = _errno();
       *piVar1 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-      local_20 = (char *)0x0;
+      retval = (char *)0x0;
     }
 LAB_00c13933:
-    pcVar4 = param_1;
-    if (local_20 != (char *)0x0) {
+    pcVar4 = string;
+    if (retval != (char *)0x0) {
       do {
-        param_2 = param_2 + -1;
-        if (param_2 == 0) break;
-        piVar1 = &param_3->_cnt;
+        count = count + -1;
+        if (count == 0) break;
+        piVar1 = &str->_cnt;
         *piVar1 = *piVar1 + -1;
         if (*piVar1 < 0) {
-          uVar2 = _filbuf(param_3);
+          uVar2 = _filbuf(str);
         }
         else {
-          uVar2 = (uint)(byte)*param_3->_ptr;
-          param_3->_ptr = param_3->_ptr + 1;
+          uVar2 = (uint)(byte)*str->_ptr;
+          str->_ptr = str->_ptr + 1;
         }
         if (uVar2 == 0xffffffff) {
-          if (pcVar4 == param_1) {
-            local_20 = (char *)0x0;
+          if (pcVar4 == string) {
+            retval = (char *)0x0;
             goto LAB_00c13974;
           }
           break;
@@ -74,7 +76,7 @@ LAB_00c13933:
     }
 LAB_00c13974:
     FUN_00c1398c();
-    return local_20;
+    return retval;
   }
   return (char *)0x0;
 }

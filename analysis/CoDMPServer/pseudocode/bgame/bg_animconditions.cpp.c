@@ -2,20 +2,24 @@
 
 // 00413110  BG_LocalEvalPlayerAnimType  (bgame/bg_animconditions.cpp:61)
 
-void __cdecl BG_LocalEvalPlayerAnimType(pmove_t *param_1)
+void __cdecl BG_LocalEvalPlayerAnimType(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
-  int iVar6;
+  uint weaponIndex_00;
+  WeaponDef *pWVar4;
+  int value;
+  int typeIndex;
+  WeaponDef *weaponDef;
+  int weaponIndex;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  uVar4 = BG_GetPlayerStateWeaponIndex(param_1);
-  pWVar5 = BG_GetWeaponDef(uVar4);
-  if ((pWVar5 == (WeaponDef *)0x0) &&
+  ppVar1 = pm->ps;
+  weaponIndex_00 = BG_GetPlayerStateWeaponIndex(pm);
+  pWVar4 = BG_GetWeaponDef(weaponIndex_00);
+  if ((pWVar4 == (WeaponDef *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animconditions.cpp",
                                0x41,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -23,16 +27,16 @@ void __cdecl BG_LocalEvalPlayerAnimType(pmove_t *param_1)
     return;
   }
   if (ppVar1->pm_type == 7) {
-    iVar6 = BG_GetPlayerAnimTypeIndex(0);
-    if (iVar6 == -1) {
-      BG_SetConditionBit((uint)ppVar1->clientNum,0,pWVar5->playerAnimType);
+    value = BG_GetPlayerAnimTypeIndex(0);
+    if (value == -1) {
+      BG_SetConditionBit((uint)ppVar1->clientNum,0,pWVar4->playerAnimType);
     }
     else {
-      BG_SetConditionBit((uint)ppVar1->clientNum,0,iVar6);
+      BG_SetConditionBit((uint)ppVar1->clientNum,0,value);
     }
   }
   else {
-    BG_SetConditionBit((uint)ppVar1->clientNum,0,pWVar5->playerAnimType);
+    BG_SetConditionBit((uint)ppVar1->clientNum,0,pWVar4->playerAnimType);
   }
   return;
 }
@@ -42,14 +46,15 @@ void __cdecl BG_LocalEvalPlayerAnimType(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalPlayerAnimType(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalPlayerAnimType(entityState_s *es,clientInfo_t *ci)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
+  WeaponDef *weaponDef;
   
-  pWVar3 = BG_GetWeaponDef((uint)param_1->weapon);
+  pWVar3 = BG_GetWeaponDef((uint)es->weapon);
   if (pWVar3 == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animconditions.cpp",0x57,
                              0,"%s");
@@ -59,21 +64,23 @@ void __cdecl BG_EvalPlayerAnimType(entityState_s *param_1,clientInfo_t *param_2)
       return;
     }
   }
-  BG_SetConditionBit((uint)param_1->clientNum,0,pWVar3->playerAnimType);
+  BG_SetConditionBit((uint)es->clientNum,0,pWVar3->playerAnimType);
   return;
 }
 
 
 // 00413250  BG_LocalEvalNextPlayerAnimType  (bgame/bg_animconditions.cpp:93)
 
-void __cdecl BG_LocalEvalNextPlayerAnimType(pmove_t *param_1)
+void __cdecl BG_LocalEvalNextPlayerAnimType(pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
+  WeaponDef *weaponDef;
+  int weaponIndex;
   
-  pWVar3 = BG_GetWeaponDef((uint)(param_1->cmd).weapon);
+  pWVar3 = BG_GetWeaponDef((uint)(pm->cmd).weapon);
   if (pWVar3 == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animconditions.cpp",0x60,
                              0,"%s");
@@ -83,24 +90,27 @@ void __cdecl BG_LocalEvalNextPlayerAnimType(pmove_t *param_1)
       return;
     }
   }
-  BG_SetConditionBit((uint)param_1->ps->clientNum,2,pWVar3->playerAnimType);
+  BG_SetConditionBit((uint)pm->ps->clientNum,2,pWVar3->playerAnimType);
   return;
 }
 
 
 // 004132C0  BG_LocalEvalWeaponClass  (bgame/bg_animconditions.cpp:106)
 
-void __cdecl BG_LocalEvalWeaponClass(pmove_t *param_1)
+void __cdecl BG_LocalEvalWeaponClass(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
-  uint uVar2;
-  WeaponDef *pWVar3;
+  uint weaponIndex_00;
+  WeaponDef *pWVar2;
+  WeaponDef *weaponDef;
+  int weaponIndex;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  uVar2 = BG_GetPlayerStateWeaponIndex(param_1);
-  pWVar3 = BG_GetWeaponDef(uVar2);
-  BG_SetConditionBit((uint)ppVar1->clientNum,1,pWVar3->weapClass);
+  ppVar1 = pm->ps;
+  weaponIndex_00 = BG_GetPlayerStateWeaponIndex(pm);
+  pWVar2 = BG_GetWeaponDef(weaponIndex_00);
+  BG_SetConditionBit((uint)ppVar1->clientNum,1,pWVar2->weapClass);
   return;
 }
 
@@ -109,14 +119,15 @@ void __cdecl BG_LocalEvalWeaponClass(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalWeaponClass(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalWeaponClass(entityState_s *es,clientInfo_t *ci)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
+  WeaponDef *weaponDef;
   
-  pWVar3 = BG_GetWeaponDef((uint)param_1->weapon);
+  pWVar3 = BG_GetWeaponDef((uint)es->weapon);
   if (pWVar3 == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animconditions.cpp",0x75,
                              0,"%s");
@@ -126,32 +137,35 @@ void __cdecl BG_EvalWeaponClass(entityState_s *param_1,clientInfo_t *param_2)
       return;
     }
   }
-  BG_SetConditionBit((uint)param_1->clientNum,1,pWVar3->weapClass);
+  BG_SetConditionBit((uint)es->clientNum,1,pWVar3->weapClass);
   return;
 }
 
 
 // 00413380  BG_LocalEvalNextWeaponClass  (bgame/bg_animconditions.cpp:123)
 
-void __cdecl BG_LocalEvalNextWeaponClass(pmove_t *param_1)
+void __cdecl BG_LocalEvalNextWeaponClass(pmove_t *pm)
 
 {
   WeaponDef *pWVar1;
+  WeaponDef *weaponDef;
+  int weaponIndex;
   
-  pWVar1 = BG_GetWeaponDef((uint)(param_1->cmd).weapon);
-  BG_SetConditionBit((uint)param_1->ps->clientNum,3,pWVar1->weapClass);
+  pWVar1 = BG_GetWeaponDef((uint)(pm->cmd).weapon);
+  BG_SetConditionBit((uint)pm->ps->clientNum,3,pWVar1->weapClass);
   return;
 }
 
 
 // 004133D0  BG_LocalEvalMounted  (bgame/bg_animconditions.cpp:135)
 
-void __cdecl BG_LocalEvalMounted(pmove_t *param_1)
+void __cdecl BG_LocalEvalMounted(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((ppVar1->eFlags & 0x300U) == 0) {
     BG_SetConditionValue((uint)ppVar1->clientNum,4,0);
   }
@@ -166,20 +180,20 @@ void __cdecl BG_LocalEvalMounted(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalMounted(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalMounted(entityState_s *es,clientInfo_t *ci)
 
 {
-  if (((param_1->lerp).eFlags & 0x300U) == 0) {
-    if (((((param_1->lerp).eFlags & 0x4000U) == 0) || ((param_1->lerp).u.player.vehicleSeat == '\0')
-        ) || (4 < (param_1->lerp).u.player.vehicleSeat)) {
-      BG_SetConditionValue((uint)param_1->clientNum,4,0);
+  if (((es->lerp).eFlags & 0x300U) == 0) {
+    if (((((es->lerp).eFlags & 0x4000U) == 0) || ((es->lerp).u.player.vehicleSeat == '\0')) ||
+       (4 < (es->lerp).u.player.vehicleSeat)) {
+      BG_SetConditionValue((uint)es->clientNum,4,0);
     }
     else {
-      BG_SetConditionValue((uint)param_1->clientNum,4,1);
+      BG_SetConditionValue((uint)es->clientNum,4,1);
     }
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,4,1);
+    BG_SetConditionValue((uint)es->clientNum,4,1);
   }
   return;
 }
@@ -187,33 +201,33 @@ void __cdecl BG_EvalMounted(entityState_s *param_1,clientInfo_t *param_2)
 
 // 004134C0  BG_LocalEvalMoveStatus  (bgame/bg_animconditions.cpp:156)
 
-void __cdecl BG_LocalEvalMoveStatus(pmove_t *param_1)
+void __cdecl BG_LocalEvalMoveStatus(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   
-  if (((param_1->ps->pm_flags & 0x100U) == 0) ||
-     (ppVar1 = param_1->ps,
+  if (((pm->ps->pm_flags & 0x100U) == 0) ||
+     (ppVar1 = pm->ps,
      (player_knockbackMoveThreshhold->current).value <=
      ppVar1->velocity[0] * ppVar1->velocity[0] + ppVar1->velocity[1] * ppVar1->velocity[1])) {
-    ppVar1 = param_1->ps;
+    ppVar1 = pm->ps;
     if (ppVar1->velocity[0] * ppVar1->velocity[0] + ppVar1->velocity[1] * ppVar1->velocity[1] <=
         (player_runThreshhold->current).value * (player_runThreshhold->current).value) {
-      ppVar1 = param_1->ps;
+      ppVar1 = pm->ps;
       if (ppVar1->velocity[0] * ppVar1->velocity[0] + ppVar1->velocity[1] * ppVar1->velocity[1] <=
           (player_moveThreshhold->current).value * (player_moveThreshhold->current).value) {
-        BG_SetConditionBit((uint)param_1->ps->clientNum,5,0);
+        BG_SetConditionBit((uint)pm->ps->clientNum,5,0);
       }
       else {
-        BG_SetConditionBit((uint)param_1->ps->clientNum,5,1);
+        BG_SetConditionBit((uint)pm->ps->clientNum,5,1);
       }
     }
     else {
-      BG_SetConditionBit((uint)param_1->ps->clientNum,5,2);
+      BG_SetConditionBit((uint)pm->ps->clientNum,5,2);
     }
   }
   else {
-    BG_SetConditionBit((uint)param_1->ps->clientNum,5,0);
+    BG_SetConditionBit((uint)pm->ps->clientNum,5,0);
   }
   return;
 }
@@ -223,24 +237,25 @@ void __cdecl BG_LocalEvalMoveStatus(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalMoveStatus(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalMoveStatus(entityState_s *es,clientInfo_t *ci)
 
 {
   uint uVar1;
+  int legsAnim;
   
-  uVar1 = (param_1->un2).animState.state & 0xfffffbff;
+  uVar1 = (es->un2).animState.state & 0xfffffbff;
   if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c +
                 uVar1 * 0x78) & 0x4000000) == 0) {
     if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
                   + uVar1 * 0x78) & 0x2000000) == 0) {
-      BG_SetConditionValue((uint)param_1->clientNum,5,0);
+      BG_SetConditionValue((uint)es->clientNum,5,0);
     }
     else {
-      BG_SetConditionValue((uint)param_1->clientNum,5,1);
+      BG_SetConditionValue((uint)es->clientNum,5,1);
     }
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,5,2);
+    BG_SetConditionValue((uint)es->clientNum,5,2);
   }
   return;
 }
@@ -248,49 +263,50 @@ void __cdecl BG_EvalMoveStatus(entityState_s *param_1,clientInfo_t *param_2)
 
 // 004136E0  BG_LocalEvalDirection  (bgame/bg_animconditions.cpp:191)
 
-void __cdecl BG_LocalEvalDirection(pmove_t *param_1)
+void __cdecl BG_LocalEvalDirection(pmove_t *pm)
 
 {
   float fVar1;
-  float local_24;
+  float t;
+  float temp;
   float local_20;
-  float local_18;
+  float moveVec;
   float local_14;
-  float local_10;
-  int local_c;
-  float local_8;
+  float yaw;
+  scriptAnimDirections_t directionState;
+  float deltaYaw;
   
-  local_18 = (float)(int)(param_1->cmd).rightmove;
-  local_14 = (float)(int)(param_1->cmd).forwardmove;
-  Vec2Normalize(&local_18);
-  fVar1 = local_18;
+  moveVec = (float)(int)(pm->cmd).rightmove;
+  local_14 = (float)(int)(pm->cmd).forwardmove;
+  Vec2Normalize(&moveVec);
+  fVar1 = moveVec;
   if (1 < (player_topDownCamMode->current).integer) {
-    local_18 = local_14;
+    moveVec = local_14;
     local_14 = -fVar1;
-    local_10 = vectoyaw(&local_18);
-    local_8 = AngleDelta(local_10,param_1->ps->viewangles[1]);
-    YawVectors(local_8,&local_24,(float *)0x0);
-    local_18 = -local_20;
-    local_14 = local_24;
+    yaw = vectoyaw(&moveVec);
+    deltaYaw = AngleDelta(yaw,pm->ps->viewangles[1]);
+    YawVectors(deltaYaw,&temp,(float *)0x0);
+    moveVec = -local_20;
+    local_14 = temp;
   }
   if (local_14 < (player_strafeAnimCosAngle->current).value ||
       local_14 == (player_strafeAnimCosAngle->current).value) {
     if (-(player_strafeAnimCosAngle->current).value <= local_14) {
-      if (local_18 <= 0.0) {
-        local_c = 3;
+      if (moveVec <= 0.0) {
+        directionState = ANIM_DIRECTION_LEFT;
       }
       else {
-        local_c = 4;
+        directionState = ANIM_DIRECTION_RIGHT;
       }
     }
     else {
-      local_c = 2;
+      directionState = ANIM_DIRECTION_BACKWARD;
     }
   }
   else {
-    local_c = 1;
+    directionState = ANIM_DIRECTION_FORWARD;
   }
-  BG_SetConditionValue((uint)param_1->ps->clientNum,6,(longlong)local_c);
+  BG_SetConditionValue((uint)pm->ps->clientNum,6,(longlong)(int)directionState);
   return;
 }
 
@@ -299,12 +315,13 @@ void __cdecl BG_LocalEvalDirection(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalDirection(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalDirection(entityState_s *es,clientInfo_t *ci)
 
 {
   uint uVar1;
+  int legsAnim;
   
-  uVar1 = (param_1->un2).animState.state & 0xfffffbff;
+  uVar1 = (es->un2).animState.state & 0xfffffbff;
   if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c +
                 uVar1 * 0x78) & 0x10) == 0) {
     if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
@@ -313,22 +330,22 @@ void __cdecl BG_EvalDirection(entityState_s *param_1,clientInfo_t *param_2)
                      0x5c + uVar1 * 0x78) & 0x40) == 0) {
         if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                        0x5c + uVar1 * 0x78) & 0x80) == 0) {
-          BG_SetConditionValue((uint)param_1->clientNum,6,0);
+          BG_SetConditionValue((uint)es->clientNum,6,0);
         }
         else {
-          BG_SetConditionValue((uint)param_1->clientNum,6,1);
+          BG_SetConditionValue((uint)es->clientNum,6,1);
         }
       }
       else {
-        BG_SetConditionValue((uint)param_1->clientNum,6,2);
+        BG_SetConditionValue((uint)es->clientNum,6,2);
       }
     }
     else {
-      BG_SetConditionValue((uint)param_1->clientNum,6,4);
+      BG_SetConditionValue((uint)es->clientNum,6,4);
     }
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,6,3);
+    BG_SetConditionValue((uint)es->clientNum,6,3);
   }
   return;
 }
@@ -336,12 +353,13 @@ void __cdecl BG_EvalDirection(entityState_s *param_1,clientInfo_t *param_2)
 
 // 00413970  BG_LocalEvalDmgDirection  (bgame/bg_animconditions.cpp:251)
 
-void __cdecl BG_LocalEvalDmgDirection(pmove_t *param_1)
+void __cdecl BG_LocalEvalDmgDirection(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if (ppVar1->dmgDirection == 3) {
     BG_SetConditionValue((uint)ppVar1->clientNum,7,3);
   }
@@ -365,12 +383,13 @@ void __cdecl BG_LocalEvalDmgDirection(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalDmgDirection(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalDmgDirection(entityState_s *es,clientInfo_t *ci)
 
 {
   uint uVar1;
+  int legsAnim;
   
-  uVar1 = (param_1->un2).animState.state & 0xfffffbff;
+  uVar1 = (es->un2).animState.state & 0xfffffbff;
   if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c +
                 uVar1 * 0x78) & 0x80000) == 0) {
     if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
@@ -379,22 +398,22 @@ void __cdecl BG_EvalDmgDirection(entityState_s *param_1,clientInfo_t *param_2)
                      0x5c + uVar1 * 0x78) & 0x200000) == 0) {
         if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                        0x5c + uVar1 * 0x78) & 0x400000) == 0) {
-          BG_SetConditionValue((uint)param_1->clientNum,7,0);
+          BG_SetConditionValue((uint)es->clientNum,7,0);
         }
         else {
-          BG_SetConditionValue((uint)param_1->clientNum,7,1);
+          BG_SetConditionValue((uint)es->clientNum,7,1);
         }
       }
       else {
-        BG_SetConditionValue((uint)param_1->clientNum,7,2);
+        BG_SetConditionValue((uint)es->clientNum,7,2);
       }
     }
     else {
-      BG_SetConditionValue((uint)param_1->clientNum,7,4);
+      BG_SetConditionValue((uint)es->clientNum,7,4);
     }
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,7,3);
+    BG_SetConditionValue((uint)es->clientNum,7,3);
   }
   return;
 }
@@ -402,12 +421,13 @@ void __cdecl BG_EvalDmgDirection(entityState_s *param_1,clientInfo_t *param_2)
 
 // 00413B90  BG_LocalEvalDmgType  (bgame/bg_animconditions.cpp:287)
 
-void __cdecl BG_LocalEvalDmgType(pmove_t *param_1)
+void __cdecl BG_LocalEvalDmgType(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if (ppVar1->dmgType == 1) {
     BG_SetConditionValue((uint)ppVar1->clientNum,8,4);
   }
@@ -432,20 +452,21 @@ void __cdecl BG_LocalEvalDmgType(pmove_t *param_1)
 
 // 00413C90  BG_LocalEvalStance  (bgame/bg_animconditions.cpp:322)
 
-void __cdecl BG_LocalEvalStance(pmove_t *param_1)
+void __cdecl BG_LocalEvalStance(pmove_t *pm)
 
 {
   int iVar1;
+  int stance;
   
-  iVar1 = PM_GetEffectiveStance(param_1->ps);
-  if ((iVar1 == 1) || ((param_1->ps->pm_flags & 0x400000U) != 0)) {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,9,2);
+  iVar1 = PM_GetEffectiveStance(pm->ps);
+  if ((iVar1 == 1) || ((pm->ps->pm_flags & 0x400000U) != 0)) {
+    BG_SetConditionValue((uint)pm->ps->clientNum,9,2);
   }
   else if (iVar1 == 2) {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,9,1);
+    BG_SetConditionValue((uint)pm->ps->clientNum,9,1);
   }
   else {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,9,0);
+    BG_SetConditionValue((uint)pm->ps->clientNum,9,0);
   }
   return;
 }
@@ -455,24 +476,25 @@ void __cdecl BG_LocalEvalStance(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalStance(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalStance(entityState_s *es,clientInfo_t *ci)
 
 {
   uint uVar1;
+  int legsAnim;
   
-  uVar1 = (param_1->un2).animState.state & 0xfffffbff;
+  uVar1 = (es->un2).animState.state & 0xfffffbff;
   if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c +
                 uVar1 * 0x78) & 0x1000000) == 0) {
     if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
                   + uVar1 * 0x78) & 0x800000) == 0) {
-      BG_SetConditionValue((uint)param_1->clientNum,9,0);
+      BG_SetConditionValue((uint)es->clientNum,9,0);
     }
     else {
-      BG_SetConditionValue((uint)param_1->clientNum,9,1);
+      BG_SetConditionValue((uint)es->clientNum,9,1);
     }
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,9,2);
+    BG_SetConditionValue((uint)es->clientNum,9,2);
   }
   return;
 }
@@ -480,11 +502,10 @@ void __cdecl BG_EvalStance(entityState_s *param_1,clientInfo_t *param_2)
 
 // 00413DE0  BG_LocalEvalUnderhand  (bgame/bg_animconditions.cpp:354)
 
-void __cdecl BG_LocalEvalUnderhand(pmove_t *param_1)
+void __cdecl BG_LocalEvalUnderhand(pmove_t *pm)
 
 {
-  BG_SetConditionValue
-            ((uint)param_1->ps->clientNum,10,(ulonglong)(0.0 < param_1->ps->viewangles[0]));
+  BG_SetConditionValue((uint)pm->ps->clientNum,10,(ulonglong)(0.0 < pm->ps->viewangles[0]));
   return;
 }
 
@@ -493,27 +514,27 @@ void __cdecl BG_LocalEvalUnderhand(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalUnderhand(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalUnderhand(entityState_s *es,clientInfo_t *ci)
 
 {
-  BG_SetConditionValue((uint)param_1->clientNum,10,(ulonglong)(0.0 < param_2->playerAngles[0]));
+  BG_SetConditionValue((uint)es->clientNum,10,(ulonglong)(0.0 < ci->playerAngles[0]));
   return;
 }
 
 
 // 00413EA0  BG_LocalEvalFiring  (bgame/bg_animconditions.cpp:364)
 
-void __cdecl BG_LocalEvalFiring(pmove_t *param_1)
+void __cdecl BG_LocalEvalFiring(pmove_t *pm)
 
 {
   bool bVar1;
   
-  bVar1 = bitarray<51>::testBit(&(param_1->cmd).button_bits,0);
+  bVar1 = bitarray<51>::testBit(&(pm->cmd).button_bits,0);
   if (bVar1) {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,0xb,1);
+    BG_SetConditionValue((uint)pm->ps->clientNum,0xb,1);
   }
   else {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,0xb,0);
+    BG_SetConditionValue((uint)pm->ps->clientNum,0xb,0);
   }
   return;
 }
@@ -523,14 +544,14 @@ void __cdecl BG_LocalEvalFiring(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalFiring(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalFiring(entityState_s *es,clientInfo_t *ci)
 
 {
-  if (((param_1->lerp).eFlags & 0x40U) == 0) {
-    BG_SetConditionValue((uint)param_1->clientNum,0xb,0);
+  if (((es->lerp).eFlags & 0x40U) == 0) {
+    BG_SetConditionValue((uint)es->clientNum,0xb,0);
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,0xb,1);
+    BG_SetConditionValue((uint)es->clientNum,0xb,1);
   }
   return;
 }
@@ -538,14 +559,14 @@ void __cdecl BG_EvalFiring(entityState_s *param_1,clientInfo_t *param_2)
 
 // 00413F50  BG_LocalEvalWeaponPosition  (bgame/bg_animconditions.cpp:380)
 
-void __cdecl BG_LocalEvalWeaponPosition(pmove_t *param_1)
+void __cdecl BG_LocalEvalWeaponPosition(pmove_t *pm)
 
 {
-  if ((param_1->ps->pm_flags & 0x10U) == 0) {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,0xc,0);
+  if ((pm->ps->pm_flags & 0x10U) == 0) {
+    BG_SetConditionValue((uint)pm->ps->clientNum,0xc,0);
   }
   else {
-    BG_SetConditionValue((uint)param_1->ps->clientNum,0xc,1);
+    BG_SetConditionValue((uint)pm->ps->clientNum,0xc,1);
   }
   return;
 }
@@ -555,14 +576,14 @@ void __cdecl BG_LocalEvalWeaponPosition(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalWeaponPosition(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalWeaponPosition(entityState_s *es,clientInfo_t *ci)
 
 {
-  if (((param_1->lerp).eFlags & 0x80000U) == 0) {
-    BG_SetConditionValue((uint)param_1->clientNum,0xc,0);
+  if (((es->lerp).eFlags & 0x80000U) == 0) {
+    BG_SetConditionValue((uint)es->clientNum,0xc,0);
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,0xc,1);
+    BG_SetConditionValue((uint)es->clientNum,0xc,1);
   }
   return;
 }
@@ -570,28 +591,28 @@ void __cdecl BG_EvalWeaponPosition(entityState_s *param_1,clientInfo_t *param_2)
 
 // 00413FF0  BG_LocalEvalSlope  (bgame/bg_animconditions.cpp:396)
 
-void __cdecl BG_LocalEvalSlope(pmove_t *param_1)
+void __cdecl BG_LocalEvalSlope(pmove_t *pm)
 
 {
-  int local_8;
+  scriptAnimSlopeStates_t slopeState;
   
   if ((player_useSlopeAnims->current).enabled == false) {
-    local_8 = 0;
+    slopeState = ANIM_SLOPE_NONE;
   }
-  else if (param_1->averagePitch < (player_slopeAnimAngle->current).value ||
-           param_1->averagePitch == (player_slopeAnimAngle->current).value) {
-    if (-(player_slopeAnimAngle->current).value < param_1->averagePitch ||
-        -(player_slopeAnimAngle->current).value == param_1->averagePitch) {
-      local_8 = 0;
+  else if (pm->averagePitch < (player_slopeAnimAngle->current).value ||
+           pm->averagePitch == (player_slopeAnimAngle->current).value) {
+    if (-(player_slopeAnimAngle->current).value < pm->averagePitch ||
+        -(player_slopeAnimAngle->current).value == pm->averagePitch) {
+      slopeState = ANIM_SLOPE_NONE;
     }
     else {
-      local_8 = 2;
+      slopeState = ANIM_SLOPE_DOWN;
     }
   }
   else {
-    local_8 = 1;
+    slopeState = ANIM_SLOPE_UP;
   }
-  BG_SetConditionValue((uint)param_1->ps->clientNum,0xd,(longlong)local_8);
+  BG_SetConditionValue((uint)pm->ps->clientNum,0xd,(longlong)(int)slopeState);
   return;
 }
 
@@ -600,24 +621,25 @@ void __cdecl BG_LocalEvalSlope(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_EvalSlope(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_EvalSlope(entityState_s *es,clientInfo_t *ci)
 
 {
   uint uVar1;
+  int legsAnim;
   
-  uVar1 = (param_1->un2).animState.state & 0xfffffbff;
+  uVar1 = (es->un2).animState.state & 0xfffffbff;
   if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c +
                 uVar1 * 0x78) & 0x20000) == 0) {
     if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
                   + uVar1 * 0x78) & 0x40000) == 0) {
-      BG_SetConditionValue((uint)param_1->clientNum,0xd,0);
+      BG_SetConditionValue((uint)es->clientNum,0xd,0);
     }
     else {
-      BG_SetConditionValue((uint)param_1->clientNum,0xd,2);
+      BG_SetConditionValue((uint)es->clientNum,0xd,2);
     }
   }
   else {
-    BG_SetConditionValue((uint)param_1->clientNum,0xd,1);
+    BG_SetConditionValue((uint)es->clientNum,0xd,1);
   }
   return;
 }
@@ -628,15 +650,17 @@ void __cdecl BG_EvalSlope(entityState_s *param_1,clientInfo_t *param_2)
 /* WARNING: Removing unreachable block (ram,0x00414198) */
 /* WARNING: Removing unreachable block (ram,0x004141bc) */
 
-void __cdecl BG_LocalEvalPerk(pmove_t *param_1)
+void __cdecl BG_LocalEvalPerk(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   uint extraout_EAX;
   int iVar2;
   uint extraout_EDX;
+  int grenadeWeaponIndex;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((ppVar1->pm_type == 6) || (ppVar1->pm_type == 7)) {
     BG_SetConditionBit((uint)ppVar1->clientNum,0xe,1);
   }
@@ -658,19 +682,22 @@ void __cdecl BG_LocalEvalPerk(pmove_t *param_1)
 
 // 00414280  BG_LocalEvalAttachment  (bgame/bg_animconditions.cpp:459)
 
-void __cdecl BG_LocalEvalAttachment(pmove_t *param_1)
+void __cdecl BG_LocalEvalAttachment(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
-  uint uVar4;
-  WeaponDef *pWVar5;
+  uint weaponIndex_00;
+  WeaponDef *pWVar4;
+  WeaponDef *weaponDef;
+  int weaponIndex;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  uVar4 = BG_GetPlayerStateWeaponIndex(param_1);
-  pWVar5 = BG_GetWeaponDef(uVar4);
-  if (pWVar5 == (WeaponDef *)0x0) {
+  ppVar1 = pm->ps;
+  weaponIndex_00 = BG_GetPlayerStateWeaponIndex(pm);
+  pWVar4 = BG_GetWeaponDef(weaponIndex_00);
+  if (pWVar4 == (WeaponDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animconditions.cpp",0x1cf
                              ,0,"%s");
     if (!bVar3) {
@@ -679,7 +706,7 @@ void __cdecl BG_LocalEvalAttachment(pmove_t *param_1)
       return;
     }
   }
-  if (pWVar5->bHasBayonet == false) {
+  if (pWVar4->bHasBayonet == false) {
     BG_SetConditionValue((uint)ppVar1->clientNum,0xf,0);
   }
   else {
@@ -691,30 +718,34 @@ void __cdecl BG_LocalEvalAttachment(pmove_t *param_1)
 
 // 00414320  BG_LocalEvalVehicleName  (bgame/bg_animconditions.cpp:477)
 
-void __cdecl BG_LocalEvalVehicleName(pmove_t *param_1)
+void __cdecl BG_LocalEvalVehicleName(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
-  ushort uVar2;
-  int iVar3;
-  short sVar4;
+  ushort animSetStr_00;
+  int iVar2;
+  short sVar3;
+  int animSetIndex;
+  ushort animSetStr;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((((ppVar1->eFlags & 0x4000U) == 0) || ((ppVar1->eFlags & 0x10000U) != 0)) ||
      ((ppVar1->eFlags2 & 0x10000000U) != 0)) {
     BG_SetConditionValue((uint)ppVar1->clientNum,0x10,0xff);
   }
   else {
-    uVar2 = (*(code *)(&PTR_CG_GetVehicleTypeString_00dff51c)[(uint)param_1->handler * 8])
-                      (ppVar1->clientNum,ppVar1->viewlocked_entNum);
-    if (uVar2 == 0) {
+    animSetStr_00 =
+         (*(code *)(&PTR_CG_GetVehicleTypeString_00dff51c)[(uint)pm->handler * 8])
+                   (ppVar1->clientNum,ppVar1->viewlocked_entNum);
+    if (animSetStr_00 == 0) {
       BG_SetConditionValue((uint)ppVar1->clientNum,0x10,0xff);
     }
     else {
-      iVar3 = BG_GetVehicleAnimSetIndex(uVar2);
-      if (-1 < iVar3) {
-        sVar4 = (short)(iVar3 >> 0x1f);
-        BG_SetConditionValue((uint)ppVar1->clientNum,0x10,CONCAT26(sVar4,CONCAT24(sVar4,iVar3)));
+      iVar2 = BG_GetVehicleAnimSetIndex(animSetStr_00);
+      if (-1 < iVar2) {
+        sVar3 = (short)(iVar2 >> 0x1f);
+        BG_SetConditionValue((uint)ppVar1->clientNum,0x10,CONCAT26(sVar3,CONCAT24(sVar3,iVar2)));
       }
     }
   }
@@ -724,12 +755,13 @@ void __cdecl BG_LocalEvalVehicleName(pmove_t *param_1)
 
 // 00414420  BG_LocalEvalVehicleSeatTo  (bgame/bg_animconditions.cpp:529)
 
-void __cdecl BG_LocalEvalVehicleSeatTo(pmove_t *param_1)
+void __cdecl BG_LocalEvalVehicleSeatTo(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if ((((ppVar1->eFlags & 0x4000U) != 0) && ((ppVar1->eFlags & 0x10000U) == 0)) &&
      ((ppVar1->eFlags2 & 0x10000000U) == 0)) {
     BG_SetConditionBit((uint)ppVar1->clientNum,0x11,ppVar1->vehiclePos);
@@ -740,14 +772,15 @@ void __cdecl BG_LocalEvalVehicleSeatTo(pmove_t *param_1)
 
 // 00414490  BG_LocalEvalEvent  (bgame/bg_animconditions.cpp:554)
 
-void __cdecl BG_LocalEvalEvent(pmove_t *param_1)
+void __cdecl BG_LocalEvalEvent(pmove_t *pm)
 
 {
   playerState_s *ppVar1;
   code *pcVar2;
   bool bVar3;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
+  ppVar1 = pm->ps;
   if (ppVar1 == (playerState_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animconditions.cpp",0x22e
                              ,0,"%s");
@@ -761,7 +794,7 @@ void __cdecl BG_LocalEvalEvent(pmove_t *param_1)
     if (ppVar1->scriptedAnimTime == 0) {
       BG_SetConditionValue((uint)ppVar1->clientNum,0x15,(ulonglong)ppVar1->scriptedAnim);
     }
-    if ((param_1->cmd).serverTime < ppVar1->scriptedAnimTime) {
+    if ((pm->cmd).serverTime < ppVar1->scriptedAnimTime) {
       BG_SetConditionValue((uint)ppVar1->clientNum,0x15,(ulonglong)ppVar1->scriptedAnim);
     }
   }

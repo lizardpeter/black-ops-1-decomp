@@ -35,14 +35,14 @@ void __cdecl _dynamic_initializer_for__TRACKINST_sv_flameStreams__(void)
 void __cdecl Flame_Class_Stream_Init(void)
 
 {
-  int local_8;
+  int i;
   
   memset((uchar *)flameStreams,'\0',0x2300);
   Flame_List_Init(&flameStreams[0].gen,0x8c,0x40);
   flameStreamsFree = flameStreams;
   flameStreamsUsed = (flameStream_s *)0x0;
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    flameStreams[local_8].renderList = flameStreamRenderList + local_8;
+  for (i = 0; i < 0x40; i = i + 1) {
+    flameStreams[i].renderList = flameStreamRenderList + i;
   }
   memset((uchar *)sv_flameStreams,'\0',0x2300);
   Flame_List_Init(&sv_flameStreams[0].gen,0x8c,0x40);
@@ -55,31 +55,31 @@ void __cdecl Flame_Class_Stream_Init(void)
 
 // 0088CEB0  Flame_Class_Stream_Alloc  (flame/flame_class_stream.cpp:79)
 
-flameStream_s * __cdecl Flame_Class_Stream_Alloc(bool param_1)
+flameStream_s * __cdecl Flame_Class_Stream_Alloc(bool is_server)
 
 {
-  flameStream_s *local_8;
+  flameStream_s *freeStream;
   
-  if (param_1) {
-    local_8 = sv_flameStreamsFree;
+  if (is_server) {
+    freeStream = sv_flameStreamsFree;
   }
   else {
-    local_8 = flameStreamsFree;
+    freeStream = flameStreamsFree;
   }
-  if (local_8 != (flameStream_s *)0x0) {
-    local_8->chunkList = (flameChunk_s *)0x0;
-    if (!param_1) {
-      local_8->renderList->flameRend = (flameRender_s *)0x0;
+  if (freeStream != (flameStream_s *)0x0) {
+    freeStream->chunkList = (flameChunk_s *)0x0;
+    if (!is_server) {
+      freeStream->renderList->flameRend = (flameRender_s *)0x0;
     }
-    local_8->flameVars = (flameTable *)0x0;
-    if (param_1) {
+    freeStream->flameVars = (flameTable *)0x0;
+    if (is_server) {
       Flame_List_Move_Global
-                (&local_8->gen,(flameGeneric_s **)&sv_flameStreamsFree,
+                (&freeStream->gen,(flameGeneric_s **)&sv_flameStreamsFree,
                  (flameGeneric_s **)&sv_flameStreamsUsed);
     }
     else {
       Flame_List_Move_Global
-                (&local_8->gen,(flameGeneric_s **)&flameStreamsFree,
+                (&freeStream->gen,(flameGeneric_s **)&flameStreamsFree,
                  (flameGeneric_s **)&flameStreamsUsed);
       g_StreamCount = g_StreamCount + 1;
       if (g_StreamCountWaterMark < g_StreamCount) {
@@ -87,34 +87,35 @@ flameStream_s * __cdecl Flame_Class_Stream_Alloc(bool param_1)
       }
     }
   }
-  return local_8;
+  return freeStream;
 }
 
 
 // 0088CF70  Flame_Class_Stream_Free  (flame/flame_class_stream.cpp:120)
 
-void __cdecl Flame_Class_Stream_Free(bool param_1,flameStream_s *param_2)
+void __cdecl Flame_Class_Stream_Free(bool is_server,flameStream_s *flameStream)
 
 {
   flameSource_t *pfVar1;
+  flameSource_t *source;
   
-  if (param_1) {
-    Flame_Class_Drips_Free_If_Stream(param_1,param_2);
-    pfVar1 = SV_Flame_Source_Get(param_2->entityNum);
-    if (pfVar1->currentStream == param_2) {
+  if (is_server) {
+    Flame_Class_Drips_Free_If_Stream(is_server,flameStream);
+    pfVar1 = SV_Flame_Source_Get(flameStream->entityNum);
+    if (pfVar1->currentStream == flameStream) {
       pfVar1->currentStream = (flameStream_s *)0x0;
     }
     Flame_List_Move_Global
-              (&param_2->gen,(flameGeneric_s **)&sv_flameStreamsUsed,
+              (&flameStream->gen,(flameGeneric_s **)&sv_flameStreamsUsed,
                (flameGeneric_s **)&sv_flameStreamsFree);
   }
   else {
-    pfVar1 = Flame_Source_Get(param_2->entityNum);
-    if (pfVar1->currentStream == param_2) {
+    pfVar1 = Flame_Source_Get(flameStream->entityNum);
+    if (pfVar1->currentStream == flameStream) {
       pfVar1->currentStream = (flameStream_s *)0x0;
     }
     Flame_List_Move_Global
-              (&param_2->gen,(flameGeneric_s **)&flameStreamsUsed,
+              (&flameStream->gen,(flameGeneric_s **)&flameStreamsUsed,
                (flameGeneric_s **)&flameStreamsFree);
     g_StreamCount = g_StreamCount + -1;
   }
@@ -124,22 +125,25 @@ void __cdecl Flame_Class_Stream_Free(bool param_1,flameStream_s *param_2)
 
 // 0088D020  Flame_Class_Stream_Light_Chunks  (flame/flame_class_stream.cpp:151)
 
-void __cdecl Flame_Class_Stream_Light_Chunks(flameStream_s *param_1)
+void __cdecl Flame_Class_Stream_Light_Chunks(flameStream_s *stream)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  float local_54;
-  int local_48;
-  float local_44;
+  float fVar5;
+  float color_fade;
+  float radius_flutter;
+  float blue_flutter;
+  int point_count;
+  float median_point;
   float local_40;
   float local_3c;
-  float local_38;
-  flameChunk_s *local_34;
-  float local_30;
-  float local_2c;
+  float red_flutter;
+  flameChunk_s *thisChunk;
+  float green_flutter;
+  float dummyAxis;
   float local_28;
   float local_24;
   undefined4 local_20;
@@ -148,9 +152,9 @@ void __cdecl Flame_Class_Stream_Light_Chunks(flameStream_s *param_1)
   undefined4 local_14;
   undefined4 local_10;
   undefined4 local_c;
-  flameChunk_s *local_8;
+  flameChunk_s *nextChunk;
   
-  local_2c = 0.0;
+  dummyAxis = 0.0;
   local_28 = 0.0;
   local_24 = 0.0;
   local_20 = 0;
@@ -159,43 +163,43 @@ void __cdecl Flame_Class_Stream_Light_Chunks(flameStream_s *param_1)
   local_14 = 0;
   local_10 = 0;
   local_c = 0;
-  local_48 = 0;
-  local_44 = 0.0;
+  point_count = 0;
+  median_point = 0.0;
   local_40 = 0.0;
   local_3c = 0.0;
-  local_34 = param_1->chunkList;
-  while (local_34 != (flameChunk_s *)0x0) {
-    local_44 = local_44 + (local_34->gen).phys.origin[0];
-    local_40 = local_40 + (local_34->gen).phys.origin[1];
-    local_3c = local_3c + (local_34->gen).phys.origin[2];
-    local_48 = local_48 + 1;
-    local_34 = (flameChunk_s *)(local_34->gen).listLocal.next;
-    local_8 = local_34;
+  thisChunk = stream->chunkList;
+  while (thisChunk != (flameChunk_s *)0x0) {
+    median_point = median_point + (thisChunk->gen).phys.origin[0];
+    local_40 = local_40 + (thisChunk->gen).phys.origin[1];
+    local_3c = local_3c + (thisChunk->gen).phys.origin[2];
+    point_count = point_count + 1;
+    thisChunk = (flameChunk_s *)(thisChunk->gen).listLocal.next;
+    nextChunk = thisChunk;
   }
-  if (0 < local_48) {
-    local_44 = local_44 / (float)local_48;
-    local_40 = local_40 / (float)local_48;
-    local_3c = local_3c / (float)local_48;
-    if ((local_48 == 1) || (local_48 == 2)) {
-      local_54 = 0.2;
+  if (0 < point_count) {
+    median_point = median_point / (float)point_count;
+    local_40 = local_40 / (float)point_count;
+    local_3c = local_3c / (float)point_count;
+    if ((point_count == 1) || (point_count == 2)) {
+      color_fade = 0.2;
     }
     else {
-      local_54 = 1.0;
+      color_fade = 1.0;
     }
+    fVar2 = Flame_CRandom(false);
+    fVar1 = stream->flameVars->flameVar_streamPrimaryLightRadiusFlutter;
     fVar3 = Flame_CRandom(false);
-    fVar1 = param_1->flameVars->flameVar_streamPrimaryLightRadiusFlutter;
-    local_38 = Flame_CRandom(false);
-    local_38 = local_38 * param_1->flameVars->flameVar_streamPrimaryLightFlutterR;
+    red_flutter = fVar3 * stream->flameVars->flameVar_streamPrimaryLightFlutterR;
     fVar4 = Flame_CRandom(false);
-    fVar2 = param_1->flameVars->flameVar_streamPrimaryLightFlutterG;
-    local_30 = Flame_CRandom(false);
-    local_30 = local_30 * param_1->flameVars->flameVar_streamPrimaryLightFlutterB;
+    fVar3 = stream->flameVars->flameVar_streamPrimaryLightFlutterG;
+    fVar5 = Flame_CRandom(false);
+    green_flutter = fVar5 * stream->flameVars->flameVar_streamPrimaryLightFlutterB;
     R_AddOmniLightToScene
-              (&local_44,(float (*) [3])&local_2c,
-               param_1->flameVars->flameVar_streamPrimaryLightRadius + fVar3 * fVar1,
-               (param_1->flameVars->flameVar_streamPrimaryLightR + local_38) * local_54,
-               (param_1->flameVars->flameVar_streamPrimaryLightG + local_30) * local_54,
-               (param_1->flameVars->flameVar_streamPrimaryLightB + fVar4 * fVar2) * local_54);
+              (&median_point,(float (*) [3])&dummyAxis,
+               stream->flameVars->flameVar_streamPrimaryLightRadius + fVar2 * fVar1,
+               (stream->flameVars->flameVar_streamPrimaryLightR + red_flutter) * color_fade,
+               (stream->flameVars->flameVar_streamPrimaryLightG + green_flutter) * color_fade,
+               (stream->flameVars->flameVar_streamPrimaryLightB + fVar4 * fVar3) * color_fade);
   }
   return;
 }
@@ -203,25 +207,26 @@ void __cdecl Flame_Class_Stream_Light_Chunks(flameStream_s *param_1)
 
 // 0088D250  Flame_Class_Stream_Age  (flame/flame_class_stream.cpp:210)
 
-void __cdecl Flame_Class_Stream_Age(bool param_1,int param_2,int param_3)
+void __cdecl Flame_Class_Stream_Age(bool is_server,int time,int localClientNum)
 
 {
   flameStream_s *pfVar1;
-  flameStream_s *local_8;
+  flameStream_s *nextTrav;
+  flameStream_s *trav;
   
-  if (param_1) {
-    local_8 = sv_flameStreamsUsed;
-    pfVar1 = local_8;
+  if (is_server) {
+    trav = sv_flameStreamsUsed;
+    pfVar1 = trav;
   }
   else {
-    local_8 = flameStreamsUsed;
-    pfVar1 = local_8;
+    trav = flameStreamsUsed;
+    pfVar1 = trav;
   }
-  while (local_8 = pfVar1, local_8 != (flameStream_s *)0x0) {
-    pfVar1 = (flameStream_s *)(local_8->gen).listGlobal.next;
-    Flame_Cull_Stream_Chunks(param_1,local_8);
-    if (local_8->chunkList == (flameChunk_s *)0x0) {
-      Flame_Class_Stream_Free(param_1,local_8);
+  while (trav = pfVar1, trav != (flameStream_s *)0x0) {
+    pfVar1 = (flameStream_s *)(trav->gen).listGlobal.next;
+    Flame_Cull_Stream_Chunks(is_server,trav);
+    if (trav->chunkList == (flameChunk_s *)0x0) {
+      Flame_Class_Stream_Free(is_server,trav);
     }
   }
   return;
@@ -305,8 +310,8 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 void __cdecl
 Flame_Class_Stream_Fire_Chunks
-          (flameSource_t *param_1,flameWeaponConfig_t *param_2,int param_3,flameRender_s *param_4,
-          int param_5)
+          (flameSource_t *source,flameWeaponConfig_t *weaponConfig,int inTime,
+          flameRender_s *flameRend,int localClientNum)
 
 {
   float fVar1;
@@ -320,173 +325,178 @@ Flame_Class_Stream_Fire_Chunks
   int extraout_EAX_00;
   float fVar8;
   phys_static_array<flameGeneric_s_*,1000> *local_ec;
-  flameChunk_s *local_98;
-  int local_90;
-  float local_8c;
+  float fRand;
+  int totalTime;
+  flameChunk_s *newChunk;
+  bool spawnSmoke;
+  int thisTime;
+  float diffAngle;
   float local_88;
   float local_84;
-  flameChunkSpawnVars_t local_74;
-  float local_2c [3];
-  flameStream_s *local_20;
-  int local_1c;
-  int local_18;
-  flameTable *local_14;
-  float local_10;
+  int FLAME_MAX_FRAME_CHUNKS_TIME;
+  int endTime;
+  int scaledDuration;
+  flameChunkSpawnVars_t spawnVars;
+  float velocityAdd [3];
+  flameStream_s *stream;
+  int stepTime;
+  int lastTime;
+  flameTable *fTable;
+  float diffOrigin;
   float local_c;
   float local_8;
   
-  local_98 = (flameChunk_s *)0x0;
+  newChunk = (flameChunk_s *)0x0;
   bVar4 = false;
-  local_14 = param_2->fTable;
+  fTable = weaponConfig->fTable;
   if ((flame_use_dvars != (dvar_s *)0x0) && ((flame_use_dvars->current).enabled != false)) {
-    local_14 = Flame_FindFlameTable((flameVar_editingFlameTable->current).string);
-    Flame_DVarsToFlameVars(local_14);
+    fTable = Flame_FindFlameTable((flameVar_editingFlameTable->current).string);
+    Flame_DVarsToFlameVars(fTable);
     Com_Printf(0x10,"FLAMETHROWER TEST ACTIVE\n%s\n");
   }
-  local_10 = 0.0;
+  diffOrigin = 0.0;
   local_c = 0.0;
   local_8 = 0.0;
-  local_8c = 0.0;
+  diffAngle = 0.0;
   local_88 = 0.0;
   local_84 = 0.0;
-  if ((param_2->bIsFiring != param_1->bIsFiring) || (param_1->currentStream == (flameStream_s *)0x0)
-     ) {
-    pfVar5 = Flame_Class_Stream_Alloc(param_1->is_server_alloc);
-    param_1->currentStream = pfVar5;
-    if (param_1->currentStream == (flameStream_s *)0x0) {
+  if ((weaponConfig->bIsFiring != source->bIsFiring) ||
+     (source->currentStream == (flameStream_s *)0x0)) {
+    pfVar5 = Flame_Class_Stream_Alloc(source->is_server_alloc);
+    source->currentStream = pfVar5;
+    if (source->currentStream == (flameStream_s *)0x0) {
       return;
     }
   }
-  local_20 = param_1->currentStream;
-  (local_20->gen).stream = local_20;
-  (local_20->gen).type = 0;
-  local_20->entityNum = param_1->entityNum;
-  local_20->flameVars = local_14;
-  if (param_1->is_server_alloc == false) {
-    local_20->renderList->flameRend = param_4;
+  stream = source->currentStream;
+  (stream->gen).stream = stream;
+  (stream->gen).type = 0;
+  stream->entityNum = source->entityNum;
+  stream->flameVars = fTable;
+  if (source->is_server_alloc == false) {
+    stream->renderList->flameRend = flameRend;
   }
-  local_20->damage = param_2->damage;
-  local_20->damageDuration = param_2->damageDuration;
-  local_20->damageInterval = param_2->damageInterval;
-  local_20->isKillcamFlame = param_1->isKillcamFlame;
-  local_20->firingThroughGeo = param_1->firingThroughGeo;
-  local_1c = (int)((local_14->flameVar_streamChunkStartSize *
-                    local_14->flameVar_streamChunkDistScalar * 1000.0) /
-                  local_14->flameVar_streamChunkSpeed);
-  if (local_1c == 0) {
-    local_1c = 1;
+  stream->damage = weaponConfig->damage;
+  stream->damageDuration = weaponConfig->damageDuration;
+  stream->damageInterval = weaponConfig->damageInterval;
+  stream->isKillcamFlame = source->isKillcamFlame;
+  stream->firingThroughGeo = source->firingThroughGeo;
+  stepTime = (int)((fTable->flameVar_streamChunkStartSize * fTable->flameVar_streamChunkDistScalar *
+                   1000.0) / fTable->flameVar_streamChunkSpeed);
+  if (stepTime == 0) {
+    stepTime = 1;
   }
-  iVar6 = (int)(local_14->flameVar_streamChunkDuration * 1000.0);
-  if (local_20->chunkList == (flameChunk_s *)0x0) {
-    local_18 = param_3;
-    local_90 = param_3;
+  iVar6 = (int)(fTable->flameVar_streamChunkDuration * 1000.0);
+  if (stream->chunkList == (flameChunk_s *)0x0) {
+    lastTime = inTime;
+    thisTime = inTime;
   }
   else {
-    local_10 = param_2->origin[0] - param_1->origin[0];
-    local_c = param_2->origin[1] - param_1->origin[1];
-    local_8 = param_2->origin[2] - param_1->origin[2];
-    fVar8 = param_2->angle[1];
-    fVar1 = param_1->angle[1];
-    fVar2 = param_2->angle[2];
-    fVar3 = param_1->angle[2];
-    local_8c = AngleNormalize180(param_2->angle[0] - param_1->angle[0]);
+    diffOrigin = weaponConfig->origin[0] - source->origin[0];
+    local_c = weaponConfig->origin[1] - source->origin[1];
+    local_8 = weaponConfig->origin[2] - source->origin[2];
+    fVar8 = weaponConfig->angle[1];
+    fVar1 = source->angle[1];
+    fVar2 = weaponConfig->angle[2];
+    fVar3 = source->angle[2];
+    diffAngle = AngleNormalize180(weaponConfig->angle[0] - source->angle[0]);
     local_88 = AngleNormalize180(fVar8 - fVar1);
     local_84 = AngleNormalize180(fVar2 - fVar3);
-    local_18 = param_1->lastUsedTime;
-    local_90 = local_18 + local_1c;
-    if (((param_2->entityOrigin[0] == param_1->entityOrigin[0]) &&
-        (param_2->entityOrigin[1] == param_1->entityOrigin[1])) &&
-       (param_2->entityOrigin[2] == param_1->entityOrigin[2])) {
+    lastTime = source->lastUsedTime;
+    thisTime = lastTime + stepTime;
+    if (((weaponConfig->entityOrigin[0] == source->entityOrigin[0]) &&
+        (weaponConfig->entityOrigin[1] == source->entityOrigin[1])) &&
+       (weaponConfig->entityOrigin[2] == source->entityOrigin[2])) {
       bVar4 = true;
     }
     else {
       bVar4 = false;
     }
   }
-  local_2c[2] = 0.0;
-  local_2c[1] = 0.0;
-  local_2c[0] = 0.0;
-  iVar7 = param_3 - local_18;
-  for (; local_90 <= param_3; local_90 = local_90 + local_1c) {
-    if (param_3 - local_90 < 0x19) {
-      local_74.time = local_90;
-      if (local_90 < param_3) {
-        fVar8 = 1.0 - (float)(param_3 - local_90) / (float)iVar7;
-        local_74.origin[0] = fVar8 * local_10 + param_1->origin[0];
-        local_74.origin[1] = fVar8 * local_c + param_1->origin[1];
-        local_74.origin[2] = fVar8 * local_8 + param_1->origin[2];
-        fVar8 = 1.0 - (float)(param_3 - local_90) / (float)iVar7;
-        local_74.angle[0] = fVar8 * local_8c + param_1->angle[0];
-        local_74.angle[1] = fVar8 * local_88 + param_1->angle[1];
-        local_74.angle[2] = fVar8 * local_84 + param_1->angle[2];
+  velocityAdd[2] = 0.0;
+  velocityAdd[1] = 0.0;
+  velocityAdd[0] = 0.0;
+  iVar7 = inTime - lastTime;
+  for (; thisTime <= inTime; thisTime = thisTime + stepTime) {
+    if (inTime - thisTime < 0x19) {
+      spawnVars.time = thisTime;
+      if (thisTime < inTime) {
+        fVar8 = 1.0 - (float)(inTime - thisTime) / (float)iVar7;
+        spawnVars.origin[0] = fVar8 * diffOrigin + source->origin[0];
+        spawnVars.origin[1] = fVar8 * local_c + source->origin[1];
+        spawnVars.origin[2] = fVar8 * local_8 + source->origin[2];
+        fVar8 = 1.0 - (float)(inTime - thisTime) / (float)iVar7;
+        spawnVars.angle[0] = fVar8 * diffAngle + source->angle[0];
+        spawnVars.angle[1] = fVar8 * local_88 + source->angle[1];
+        spawnVars.angle[2] = fVar8 * local_84 + source->angle[2];
       }
       else {
-        local_74.origin[0] = param_2->origin[0];
-        local_74.origin[1] = param_2->origin[1];
-        local_74.origin[2] = param_2->origin[2];
-        local_74.angle[0] = param_2->angle[0];
-        local_74.angle[1] = param_2->angle[1];
-        local_74.angle[2] = param_2->angle[2];
+        spawnVars.origin[0] = weaponConfig->origin[0];
+        spawnVars.origin[1] = weaponConfig->origin[1];
+        spawnVars.origin[2] = weaponConfig->origin[2];
+        spawnVars.angle[0] = weaponConfig->angle[0];
+        spawnVars.angle[1] = weaponConfig->angle[1];
+        spawnVars.angle[2] = weaponConfig->angle[2];
       }
-      local_74.speed = local_14->flameVar_streamChunkSpeed;
-      local_74.decel = local_14->flameVar_streamChunkDecel;
-      local_74.gravityStart = local_14->flameVar_streamChunkGravityStart;
-      local_74.gravityEnd = local_14->flameVar_streamChunkGravityEnd;
-      local_74.duration = iVar6;
-      fVar8 = Flame_SwayRand(local_14->flameVar_streamSizeRandSinWave,
-                             local_14->flameVar_streamSizeRandCosWave,local_90);
+      spawnVars.speed = fTable->flameVar_streamChunkSpeed;
+      spawnVars.decel = fTable->flameVar_streamChunkDecel;
+      spawnVars.gravityStart = fTable->flameVar_streamChunkGravityStart;
+      spawnVars.gravityEnd = fTable->flameVar_streamChunkGravityEnd;
+      spawnVars.duration = iVar6;
+      fVar8 = Flame_SwayRand(fTable->flameVar_streamSizeRandSinWave,
+                             fTable->flameVar_streamSizeRandCosWave,thisTime);
       fVar8 = fVar8 * 0.5 + 0.5;
-      local_74.sizeStart =
-           (1.0 - fVar8 * local_14->flameVar_streamChunkStartSizeRand) *
-           local_14->flameVar_streamChunkStartSize;
-      local_74.sizeEnd =
-           (1.0 - fVar8 * local_14->flameVar_streamChunkEndSizeRand) *
-           local_14->flameVar_streamChunkEndSize;
-      local_74.sizeMax = local_14->flameVar_streamChunkMaxSize;
-      local_74.sizeRate = (local_74.sizeEnd - local_74.sizeStart) / (float)iVar6;
-      local_98 = Flame_Class_Chunk_Spawn
-                           (param_1->is_server_alloc,&local_74,&local_20->chunkList,local_2c,
-                            local_14);
-      if (local_98 != (flameChunk_s *)0x0) {
-        (local_98->gen).stream = local_20;
+      spawnVars.sizeStart =
+           (1.0 - fVar8 * fTable->flameVar_streamChunkStartSizeRand) *
+           fTable->flameVar_streamChunkStartSize;
+      spawnVars.sizeEnd =
+           (1.0 - fVar8 * fTable->flameVar_streamChunkEndSizeRand) *
+           fTable->flameVar_streamChunkEndSize;
+      spawnVars.sizeMax = fTable->flameVar_streamChunkMaxSize;
+      spawnVars.sizeRate = (spawnVars.sizeEnd - spawnVars.sizeStart) / (float)iVar6;
+      newChunk = Flame_Class_Chunk_Spawn
+                           (source->is_server_alloc,&spawnVars,&stream->chunkList,velocityAdd,fTable
+                           );
+      if (newChunk != (flameChunk_s *)0x0) {
+        (newChunk->gen).stream = stream;
         if ((bVar4) &&
-           ((int)(local_14->flameVar_streamSmokeChunkInterval * 1000.0) <
-            local_90 - local_20->lastSmokeChunkTime)) {
-          Flame_Random(param_1->is_server_alloc);
+           ((int)(fTable->flameVar_streamSmokeChunkInterval * 1000.0) <
+            thisTime - stream->lastSmokeChunkTime)) {
+          Flame_Random(source->is_server_alloc);
           _ftol2_sse();
-          local_98->spawnSmokeInterval = extraout_EAX;
-          local_20->lastSmokeChunkTime = local_90;
+          newChunk->spawnSmokeInterval = extraout_EAX;
+          stream->lastSmokeChunkTime = thisTime;
         }
-        if ((int)(local_14->flameVar_streamDripsChunkInterval * 1000.0) <
-            local_90 - local_20->lastDripChunkTime) {
-          Flame_Random(param_1->is_server_alloc);
+        if ((int)(fTable->flameVar_streamDripsChunkInterval * 1000.0) <
+            thisTime - stream->lastDripChunkTime) {
+          Flame_Random(source->is_server_alloc);
           _ftol2_sse();
-          local_98->spawnDripsInterval = extraout_EAX_00;
-          local_20->lastDripChunkTime = local_90;
+          newChunk->spawnDripsInterval = extraout_EAX_00;
+          stream->lastDripChunkTime = thisTime;
         }
-        if (param_1->is_server_alloc == false) {
+        if (source->is_server_alloc == false) {
           local_ec = &cl_flames;
         }
         else {
           local_ec = &sv_flames;
         }
-        Flame_Phys_Update_Item_Stream(&local_98->gen,param_3,local_ec);
+        Flame_Phys_Update_Item_Stream(&newChunk->gen,inTime,local_ec);
       }
     }
-    local_18 = local_90;
+    lastTime = thisTime;
   }
-  Flame_Phys_Update_Items(param_1->is_server_alloc,param_5);
-  if (local_98 != (flameChunk_s *)0x0) {
-    param_1->origin[0] = local_74.origin[0];
-    param_1->origin[1] = local_74.origin[1];
-    param_1->origin[2] = local_74.origin[2];
-    param_1->angle[0] = local_74.angle[0];
-    param_1->angle[1] = local_74.angle[1];
-    param_1->angle[2] = local_74.angle[2];
-    param_1->entityOrigin[0] = param_2->entityOrigin[0];
-    param_1->entityOrigin[1] = param_2->entityOrigin[1];
-    param_1->entityOrigin[2] = param_2->entityOrigin[2];
-    param_1->lastUsedTime = local_18;
+  Flame_Phys_Update_Items(source->is_server_alloc,localClientNum);
+  if (newChunk != (flameChunk_s *)0x0) {
+    source->origin[0] = spawnVars.origin[0];
+    source->origin[1] = spawnVars.origin[1];
+    source->origin[2] = spawnVars.origin[2];
+    source->angle[0] = spawnVars.angle[0];
+    source->angle[1] = spawnVars.angle[1];
+    source->angle[2] = spawnVars.angle[2];
+    source->entityOrigin[0] = weaponConfig->entityOrigin[0];
+    source->entityOrigin[1] = weaponConfig->entityOrigin[1];
+    source->entityOrigin[2] = weaponConfig->entityOrigin[2];
+    source->lastUsedTime = lastTime;
   }
   return;
 }
@@ -522,8 +532,8 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 void __cdecl
 Flame_Class_Stream_Render_Item
-          (int param_1,flameStream_s *param_2,Material *param_3,Material *param_4,
-          float (*param_5) [3],bool param_6)
+          (int localClientNum,flameStream_s *stream,Material *material,Material *material2,
+          float (*verts) [3],bool isFire)
 
 {
   code *pcVar1;
@@ -532,132 +542,138 @@ Flame_Class_Stream_Render_Item
   cg_s *pcVar4;
   float fVar5;
   float fVar6;
-  int local_b8;
-  byte local_b1;
-  float local_ac;
-  int local_a8;
-  int local_9c;
-  FxBeam local_94;
+  float dist;
+  float lastDist;
+  int dobjHandle;
+  uchar boneIndex;
+  cg_s *cgameGlob_2;
+  float minDist;
+  int loopTime;
+  flameSource_t *source;
+  float segLength;
+  int numSegments;
+  cg_s *cgameGlob;
+  FxBeam beam;
   uint local_48;
-  orientation_t local_44;
-  int local_14;
-  flameChunk_s *local_10;
-  int local_c;
-  float local_8;
+  orientation_t orient;
+  int segCount;
+  flameChunk_s *chunk;
+  int beamLength;
+  float segDist;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = 0;
-  if (((param_3 != (Material *)0x0) && (param_4 != (Material *)0x0)) &&
-     (pfVar3 = Flame_Source_Get(param_2->entityNum), pfVar3 != (flameSource_t *)0x0)) {
-    CG_GetLocalClientGlobals(param_1);
-    if (param_6) {
-      fVar5 = param_2->flameVars->flameVar_streamFlameNumSegments;
+  beamLength = 0;
+  if (((material != (Material *)0x0) && (material2 != (Material *)0x0)) &&
+     (pfVar3 = Flame_Source_Get(stream->entityNum), pfVar3 != (flameSource_t *)0x0)) {
+    CG_GetLocalClientGlobals(localClientNum);
+    if (isFire) {
+      fVar5 = stream->flameVars->flameVar_streamFlameNumSegments;
     }
     else {
-      fVar5 = param_2->flameVars->flameVar_streamFuelNumSegments;
+      fVar5 = stream->flameVars->flameVar_streamFuelNumSegments;
     }
-    local_9c = (int)fVar5;
-    if ((pfVar3->currentStream == param_2) &&
-       (local_10 = param_2->chunkList, local_10 != (flameChunk_s *)0x0)) {
-      if (param_6) {
-        local_94.beginRadius = param_2->flameVars->flameVar_streamFlameSizeStart;
-        local_94.endRadius = param_2->flameVars->flameVar_streamFlameSizeEnd;
+    numSegments = (int)fVar5;
+    if ((pfVar3->currentStream == stream) &&
+       (chunk = stream->chunkList, chunk != (flameChunk_s *)0x0)) {
+      if (isFire) {
+        beam.beginRadius = stream->flameVars->flameVar_streamFlameSizeStart;
+        beam.endRadius = stream->flameVars->flameVar_streamFlameSizeEnd;
       }
       else {
-        local_94.beginRadius = param_2->flameVars->flameVar_streamFuelSizeStart;
-        local_94.endRadius = param_2->flameVars->flameVar_streamFuelSizeEnd;
+        beam.beginRadius = stream->flameVars->flameVar_streamFuelSizeStart;
+        beam.endRadius = stream->flameVars->flameVar_streamFuelSizeEnd;
       }
-      local_b8 = pfVar3->firstDobjHandle;
-      local_b1 = pfVar3->firstBoneIndex;
-      pcVar4 = CG_GetLocalClientGlobals(param_1);
+      dobjHandle = pfVar3->firstDobjHandle;
+      boneIndex = pfVar3->firstBoneIndex;
+      pcVar4 = CG_GetLocalClientGlobals(localClientNum);
       bVar2 = CG_IsLocalPlayer(pfVar3->entityNum);
       if (((!bVar2) ||
           ((((pcVar4->nextSnap->ps).otherFlags & 2U) != 0 &&
            (pcVar4->renderingThirdPerson == TP_FOR_MODEL)))) ||
          ((bVar2 = Demo_IsThirdPersonCamera(), bVar2 || (bVar2 = Demo_IsMovieCamera(), bVar2)))) {
-        local_b8 = pfVar3->thirdDobjHandle;
-        local_b1 = pfVar3->thirdBoneIndex;
+        dobjHandle = pfVar3->thirdDobjHandle;
+        boneIndex = pfVar3->thirdBoneIndex;
       }
-      bVar2 = FX_GetBoneOrientation(param_1,local_b8,(uint)local_b1,&local_44);
+      bVar2 = FX_GetBoneOrientation(localClientNum,dobjHandle,(uint)boneIndex,&orient);
       if (bVar2) {
-        local_94.end[0] = local_44.origin[0];
-        local_94.end[1] = local_44.origin[1];
-        local_94.end[2] = local_44.origin[2];
+        beam.end[0] = orient.origin[0];
+        beam.end[1] = orient.origin[1];
+        beam.end[2] = orient.origin[2];
       }
       else {
-        local_94.end[0] = 0.0;
-        local_94.end[1] = 0.0;
-        local_94.end[2] = 0.0;
+        beam.end[0] = 0.0;
+        beam.end[1] = 0.0;
+        beam.end[2] = 0.0;
       }
-      local_94.begin[0] = local_94.end[0];
-      local_94.begin[1] = local_94.end[1];
-      local_94.begin[2] = local_94.end[2];
+      beam.begin[0] = beam.end[0];
+      beam.begin[1] = beam.end[1];
+      beam.begin[2] = beam.end[2];
       curve = cCurveManager::GetFreeCurve();
-      cCurveManager::AddNodeToCurve(curve,local_94.begin);
-      if (param_6) {
-        fVar5 = param_2->flameVars->flameVar_streamFlameLength *
-                param_2->flameVars->flameVar_streamFlameLength;
+      cCurveManager::AddNodeToCurve(curve,beam.begin);
+      if (isFire) {
+        fVar5 = stream->flameVars->flameVar_streamFlameLength *
+                stream->flameVars->flameVar_streamFlameLength;
       }
       else {
-        fVar5 = param_2->flameVars->flameVar_streamFuelLength *
-                param_2->flameVars->flameVar_streamFuelLength;
+        fVar5 = stream->flameVars->flameVar_streamFuelLength *
+                stream->flameVars->flameVar_streamFuelLength;
       }
-      local_c = (int)fVar5;
-      local_ac = 144.0;
-      if (local_b8 < 0x20) {
-        local_ac = 14400.0;
+      beamLength = (int)fVar5;
+      minDist = 144.0;
+      if (dobjHandle < 0x20) {
+        minDist = 14400.0;
       }
-      local_14 = 1;
+      segCount = 1;
       do {
-        fVar5 = Vec3DistanceSq(local_94.begin,(float *)local_10);
-        fVar6 = Vec3DistanceSq(local_94.end,(float *)local_10);
+        fVar5 = Vec3DistanceSq(beam.begin,(float *)chunk);
+        fVar6 = Vec3DistanceSq(beam.end,(float *)chunk);
         if ((1.0 < fVar6) &&
-           (((local_ac < fVar5 && (fVar5 < (float)local_c)) ||
-            (((local_10->gen).listLocal.next == (flameGeneric_s *)0x0 && (fVar5 < (float)local_c))))
+           (((minDist < fVar5 && (fVar5 < (float)beamLength)) ||
+            (((chunk->gen).listLocal.next == (flameGeneric_s *)0x0 && (fVar5 < (float)beamLength))))
            )) {
-          local_94.end[0] = (local_10->gen).phys.origin[0];
-          local_94.end[1] = (local_10->gen).phys.origin[1];
-          local_94.end[2] = (local_10->gen).phys.origin[2];
-          cCurveManager::AddNodeToCurve(curve,local_94.end);
-          local_14 = local_14 + 1;
+          beam.end[0] = (chunk->gen).phys.origin[0];
+          beam.end[1] = (chunk->gen).phys.origin[1];
+          beam.end[2] = (chunk->gen).phys.origin[2];
+          cCurveManager::AddNodeToCurve(curve,beam.end);
+          segCount = segCount + 1;
         }
-        local_10 = (flameChunk_s *)(local_10->gen).listLocal.next;
-      } while ((local_10 != (flameChunk_s *)0x0) && (local_14 < 100));
+        chunk = (flameChunk_s *)(chunk->gen).listLocal.next;
+      } while ((chunk != (flameChunk_s *)0x0) && (segCount < 100));
       cCurveManager::SetCurveBSpline(curve);
-      cCurveManager::SortCurve(curve,local_94.begin,true);
+      cCurveManager::SortCurve(curve,beam.begin,true);
       cCurveManager::BuildCurve(curve);
-      local_8 = 0.0;
-      for (local_14 = 0; local_14 < local_9c; local_14 = local_14 + 1) {
-        cCurveManager::GetPos(curve,local_8,param_5[local_14]);
-        if ((((((uint)param_5[local_14][0] & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_5[local_14][1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_5[local_14][2] & 0x7f800000) == 0x7f800000)) &&
+      segDist = 0.0;
+      for (segCount = 0; segCount < numSegments; segCount = segCount + 1) {
+        cCurveManager::GetPos(curve,segDist,verts[segCount]);
+        if ((((((uint)verts[segCount][0] & 0x7f800000) == 0x7f800000) ||
+             (((uint)verts[segCount][1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)verts[segCount][2] & 0x7f800000) == 0x7f800000)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_stream.cpp"
                                      ,0x27b,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_8 = local_8 + 1.0 / (float)local_9c;
+        segDist = segDist + 1.0 / (float)numSegments;
       }
-      local_94.beginColor.packed = 0xffffffff;
-      local_94.endColor.packed = 0xffffffff;
-      local_94.material = param_3;
-      local_94.material2 = param_4;
-      local_94.segmentVerts = *param_5;
-      local_94.segmentCount = local_9c + -1;
-      local_94.perpSegmentCount = 1;
-      local_94.wiggleDist = 0.0;
-      local_94.flags = 0xe;
-      if (param_6) {
-        fVar5 = param_2->flameVars->flameVar_streamFlameAnimLoopTime;
+      beam.beginColor.packed = 0xffffffff;
+      beam.endColor.packed = 0xffffffff;
+      beam.material = material;
+      beam.material2 = material2;
+      beam.segmentVerts = *verts;
+      beam.segmentCount = numSegments + -1;
+      beam.perpSegmentCount = 1;
+      beam.wiggleDist = 0.0;
+      beam.flags = 0xe;
+      if (isFire) {
+        fVar5 = stream->flameVars->flameVar_streamFlameAnimLoopTime;
       }
       else {
-        fVar5 = param_2->flameVars->flameVar_streamFuelAnimLoopTime;
+        fVar5 = stream->flameVars->flameVar_streamFuelAnimLoopTime;
       }
-      local_a8 = (int)(fVar5 * 1000.0);
-      local_94.animFrac = (float)(pfVar3->lastUsedTime % local_a8) / (float)local_a8;
-      FX_Beam_Add(&local_94);
+      loopTime = (int)(fVar5 * 1000.0);
+      beam.animFrac = (float)(pfVar3->lastUsedTime % loopTime) / (float)loopTime;
+      FX_Beam_Add(&beam);
       cCurveManager::FreeCurve(curve);
     }
   }
@@ -667,22 +683,27 @@ Flame_Class_Stream_Render_Item
 
 // 0088E220  Flame_Class_Stream_Render_All  (flame/flame_class_stream.cpp:668)
 
-void __cdecl Flame_Class_Stream_Render_All(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Class_Stream_Render_All(int localClientNum)
 
 {
-  flameStream_s *local_8;
+  flameStream_s *stream;
   
-  for (local_8 = flameStreamsUsed; local_8 != (flameStream_s *)0x0;
-      local_8 = (flameStream_s *)(local_8->gen).listGlobal.next) {
-    if (0.1 < local_8->flameVars->flameVar_streamFuelLength) {
+  for (stream = flameStreamsUsed; stream != (flameStream_s *)0x0;
+      stream = (flameStream_s *)(stream->gen).listGlobal.next) {
+    if (0.1 < stream->flameVars->flameVar_streamFuelLength) {
       Flame_Class_Stream_Render_Item
-                (param_1,local_8,local_8->flameVars->streamFuel,local_8->flameVars->streamFuel2,
-                 (float (*) [3])local_8->renderList,false);
+                (localClientNum,stream,stream->flameVars->streamFuel,stream->flameVars->streamFuel2,
+                 (float (*) [3])stream->renderList,false);
     }
-    if (0.1 < local_8->flameVars->flameVar_streamFlameLength) {
+    if (0.1 < stream->flameVars->flameVar_streamFlameLength) {
       Flame_Class_Stream_Render_Item
-                (param_1,local_8,local_8->flameVars->streamFlame,local_8->flameVars->streamFlame2,
-                 local_8->renderList->flameVerts,true);
+                (localClientNum,stream,stream->flameVars->streamFlame,
+                 stream->flameVars->streamFlame2,stream->renderList->flameVerts,true);
     }
   }
   return;
@@ -691,21 +712,22 @@ void __cdecl Flame_Class_Stream_Render_All(int param_1)
 
 // 0088E2F0  CG_Flame_Render  (flame/flame_class_stream.cpp:701)
 
-void __cdecl CG_Flame_Render(int param_1)
+void __cdecl CG_Flame_Render(int localClientNum)
 
 {
   bool bVar1;
   DWORD DVar2;
-  flameStream_s *local_8;
+  PIXProfile pp;
+  flameStream_s *stream;
   
   PIXBeginNamedEvent(-1,"CG_Flame_Render");
-  local_8 = flameStreamsUsed;
+  stream = flameStreamsUsed;
   if ((flameStreamsUsed == (flameStream_s *)0x0) ||
-     (bVar1 = CL_IsLastActiveLocalClient(param_1), bVar1)) {
-    for (; local_8 != (flameStream_s *)0x0;
-        local_8 = (flameStream_s *)(local_8->gen).listGlobal.next) {
-      if (0.1 < local_8->flameVars->flameVar_streamFlameLength) {
-        Flame_Class_Stream_Light_Chunks(local_8);
+     (bVar1 = CL_IsLastActiveLocalClient(localClientNum), bVar1)) {
+    for (; stream != (flameStream_s *)0x0; stream = (flameStream_s *)(stream->gen).listGlobal.next)
+    {
+      if (0.1 < stream->flameVars->flameVar_streamFlameLength) {
+        Flame_Class_Stream_Light_Chunks(stream);
       }
     }
     DVar2 = GetCurrentThreadId();

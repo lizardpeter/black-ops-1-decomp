@@ -326,30 +326,30 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
   bool bVar3;
   ushort uVar4;
   int iVar5;
-  DObj *pDVar6;
+  DObj *pose;
+  int iVar6;
   int iVar7;
-  int iVar8;
-  WeaponVariantDef *pWVar9;
-  ShaderConstantSet *pSVar10;
-  DObj *pDVar11;
-  uint uVar12;
-  ShaderConstantSet *pSVar13;
-  int iVar14;
+  WeaponVariantDef *pWVar8;
+  ShaderConstantSet *dobjConstantSet;
+  DObj *pDVar9;
+  uint uVar10;
+  ShaderConstantSet *pSVar11;
+  int iVar12;
   GfxScaledPlacement *extraout_ECX;
   float *unaff_EBX;
   DObj *unaff_ESI;
   cpose_t *unaff_EDI;
-  int iVar15;
-  float fVar16;
+  int iVar13;
+  float fVar14;
+  cpose_t *pcVar15;
+  DObj_u_0 *pDVar16;
   cpose_t *pcVar17;
-  DObj_u_0 *pDVar18;
-  cpose_t *pcVar19;
-  centity_s *pcVar20;
-  undefined1 *puVar21;
-  DObj_u_0 *pDVar22;
-  entityState_s *peVar23;
-  uchar *puVar24;
-  undefined1 uVar25;
+  centity_s *pcVar18;
+  undefined1 *puVar19;
+  DObj_u_0 *pDVar20;
+  entityState_s *peVar21;
+  uchar *puVar22;
+  undefined1 uVar23;
   float *in_stack_ffffff04;
   uint local_f4;
   DObj_u_0 local_ec;
@@ -370,17 +370,17 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
   
   FUN_00491f70(param_1);
   pcVar2 = cgArray;
-  uVar12 = *(uint *)(param_2 + 0x1ec);
+  uVar10 = *(uint *)(param_2 + 0x1ec);
   local_d0 = cgArray;
-  if ((uVar12 & 0x20) == 0) {
-    if ((uVar12 & 0x40000) == 0) {
+  if ((uVar10 & 0x20) == 0) {
+    if ((uVar10 & 0x40000) == 0) {
       if ((&DAT_01d4c1b0)[param_1 * 0x601 + *(int *)(param_2 + 0x1e8)] != 0) {
         iVar5 = (short)(&DAT_01d4c1b0)[param_1 * 0x601 + *(int *)(param_2 + 0x1e8)] * 0x7c;
-        pDVar6 = (DObj *)(&DAT_01cef1a8 + iVar5);
-        if (pDVar6 != (DObj *)0x0) {
-          iVar7 = (uint)(byte)param_2[0x2bd] * 0x5d0;
-          if (*(int *)(param_2 + 0x2dc) != *(int *)(cgArray + iVar7 + 0x5f774)) {
-            *(int *)(param_2 + 0x2dc) = *(int *)(cgArray + iVar7 + 0x5f774);
+        pose = (DObj *)(&DAT_01cef1a8 + iVar5);
+        if (pose != (DObj *)0x0) {
+          iVar6 = (uint)(byte)param_2[0x2bd] * 0x5d0;
+          if (*(int *)(param_2 + 0x2dc) != *(int *)(cgArray + iVar6 + 0x5f774)) {
+            *(int *)(param_2 + 0x2dc) = *(int *)(cgArray + iVar6 + 0x5f774);
           }
           if (((*(int *)(param_2 + 0x2dc) != 0) && (bVar3 = CG_LoadScripts(), bVar3)) &&
              ((*(uint *)(param_2 + 0x324) & 0x100) == 0)) {
@@ -391,23 +391,23 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
           }
           CG_UpdateMinigunSpin(param_1,pcVar2,param_2);
           FUN_004921a0();
-          if (*(int *)(pcVar2 + iVar7 + 0x5f708) == 0x1a) {
+          if (*(int *)(pcVar2 + iVar6 + 0x5f708) == 0x1a) {
             if (*(int *)(param_2 + 0x300) < *(int *)(cgArray + 0x40688)) {
               *(int *)(param_2 + 0x300) = *(int *)(cgArray + 0x40688) + 5;
-              pDVar22 = &local_e0;
-              pcVar19 = local_c8;
-              CG_DObjGetWorldTagMatrix
-                        (pcVar19,(DObj *)pDVar22,(uint)unaff_EDI,(float *)unaff_ESI,unaff_EBX);
-              pDVar18 = &local_ec;
+              pDVar20 = &local_e0;
               pcVar17 = local_c8;
               CG_DObjGetWorldTagMatrix
-                        (pcVar17,(DObj *)pDVar18,(uint)pcVar19,(float *)pDVar22,(float *)unaff_EDI);
+                        (pcVar17,(DObj *)pDVar20,(uint)unaff_EDI,(float *)unaff_ESI,unaff_EBX);
+              pDVar16 = &local_ec;
+              pcVar15 = local_c8;
+              CG_DObjGetWorldTagMatrix
+                        (pcVar15,(DObj *)pDVar16,(uint)pcVar17,(float *)pDVar20,(float *)unaff_EDI);
               local_e0 = (DObj_u_0)(((float)local_ec + (float)local_e0) * 0.5);
               local_dc = (local_e8 + local_dc) * 0.5;
               local_d8 = (local_e4 + local_d8) * 0.5;
               FX_PlayOrientedEffect
-                        (DAT_00c1d6d4,*(FxEffectDef **)(pcVar2 + 0x40688),(int)pcVar17,
-                         (float *)pDVar18,(float *)pcVar19);
+                        (DAT_00c1d6d4,*(FxEffectDef **)(pcVar2 + 0x40688),(int)pcVar15,
+                         (float *)pDVar16,(float *)pcVar17);
             }
           }
           else {
@@ -430,20 +430,20 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
                ((uint)*(byte *)(*(int *)(pcVar2 + 0x2c) + 0x140) == *(uint *)(param_2 + 0x1e8))) {
               CG_DObjGetWorldTagPos(unaff_EDI,unaff_ESI,(uint)unaff_EBX,in_stack_ffffff04);
             }
-            uVar25 = SUB41(unaff_EBX,0);
+            uVar23 = SUB41(unaff_EBX,0);
             peVar1 = (entityState_s *)(param_2 + 0x1e8);
-            pcVar20 = (centity_s *)param_1;
-            peVar23 = peVar1;
+            pcVar18 = (centity_s *)param_1;
+            peVar21 = peVar1;
             BG_PlayerAnimation(param_1,peVar1,(clientInfo_t *)unaff_EDI);
             bVar3 = CG_Player_ApplyVehicleAnimOffsets
-                              ((int)peVar1,(entityState_s *)param_2,pcVar20,(clientInfo_t *)peVar23)
+                              ((int)peVar1,(entityState_s *)param_2,pcVar18,(clientInfo_t *)peVar21)
             ;
             if (bVar3) {
               if (((*(uint *)(param_2 + 0x1ec) & 0x4300) != 0) &&
                  ((*(uint *)(param_2 + 0x1f0) & 0x10000000) == 0)) {
                 FUN_00490f20(param_2);
               }
-              CG_Player_PreControllers(pDVar6,param_2);
+              CG_Player_PreControllers(pose,param_2);
               FUN_004934e0(param_2);
               local_ec = *(DObj_u_0 *)(param_2 + 0x30);
               local_e8 = *(float *)(param_2 + 0x34);
@@ -461,74 +461,75 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
               }
               if (((*(uint *)(param_2 + 0x1f0) & 0x200000) == 0) &&
                  (((byte)param_2[0x324] & 0x20) == 0)) {
-                fVar16 = 0.0;
+                fVar14 = 0.0;
                 *(undefined4 *)(param_2 + 0x28) = 0;
               }
               else {
                 if (*(int *)(param_2 + 0x28) == 0) {
                   *(undefined4 *)(param_2 + 0x28) = *(undefined4 *)(cgArray + 0x40688);
                 }
-                fVar16 = (float)(*(int *)(cgArray + 0x40688) - *(int *)(param_2 + 0x28)) * 0.0005;
+                fVar14 = (float)(*(int *)(cgArray + 0x40688) - *(int *)(param_2 + 0x28)) * 0.0005;
                 I_fclamp(0.0,(float)unaff_EDI,(float)unaff_ESI);
               }
-              local_d4 = fVar16;
+              local_d4 = fVar14;
               CG_HighlightPlayer(0,(centity_s *)unaff_EDI,(ShaderConstantSet *)unaff_ESI,
-                                 (bool)uVar25);
+                                 (bool)uVar23);
               local_cc = (&bg_weaponVariantDefs)[*(ushort *)(param_2 + 0x24a)];
-              iVar8 = (byte)(&DAT_01cef1b1)[iVar5] - 1;
-              iVar15 = -1;
-              if (-1 < iVar8) {
+              iVar7 = (byte)(&DAT_01cef1b1)[iVar5] - 1;
+              iVar13 = -1;
+              if (-1 < iVar7) {
                 do {
-                  if ((iVar8 < 0) || ((int)(uint)(byte)(&DAT_01cef1b1)[iVar5] <= iVar8)) {
-                    iVar14 = 0;
+                  if ((iVar7 < 0) || ((int)(uint)(byte)(&DAT_01cef1b1)[iVar5] <= iVar7)) {
+                    iVar12 = 0;
                   }
                   else {
-                    iVar14 = *(int *)(*(int *)(&DAT_01cef220 + iVar5) + iVar8 * 4);
+                    iVar12 = *(int *)(*(int *)(&DAT_01cef220 + iVar5) + iVar7 * 4);
                   }
-                  iVar15 = iVar8;
-                } while ((**(int **)(local_cc[2] + 0x30c) != iVar14) &&
-                        (iVar8 = iVar8 + -1, iVar15 = -1, -1 < iVar8));
+                  iVar13 = iVar7;
+                } while ((**(int **)(local_cc[2] + 0x30c) != iVar12) &&
+                        (iVar7 = iVar7 + -1, iVar13 = -1, -1 < iVar7));
               }
-              pWVar9 = (WeaponVariantDef *)0xffffffff;
-              if (-1 < iVar15) {
-                pWVar9 = (WeaponVariantDef *)~(1 << ((byte)iVar15 & 0x1f));
+              pWVar8 = (WeaponVariantDef *)0xffffffff;
+              if (-1 < iVar13) {
+                pWVar8 = (WeaponVariantDef *)~(1 << ((byte)iVar13 & 0x1f));
               }
-              pSVar10 = (ShaderConstantSet *)
-                        WeaponOptions::SetupWeaponOptionsRender
-                                  ((WeaponOptions *)(param_2 + 0x30),
-                                   (int)(&bg_weaponVariantDefs)[*(ushort *)(param_2 + 0x248)],
-                                   *(float **)(param_2 + 0x26c),pWVar9,
-                                   (renderOptions_s)((int)param_2 + 0xfc),0,
-                                   (ShaderConstantSet *)0xffffffff,(char *)unaff_EDI,(int)unaff_ESI)
-              ;
-              if ((-1 < iVar15) && (param_2[0x255] != (centity_s)0x0)) {
-                pSVar10 = (ShaderConstantSet *)
-                          WeaponOptions::SetupWeaponOptionsRender
-                                    ((WeaponOptions *)(param_2 + 0x30),(int)local_cc,
-                                     (float *)((byte)param_2[0x255] & 0x3f),
-                                     (WeaponVariantDef *)(1 << ((byte)iVar15 & 0x1f)),
-                                     (renderOptions_s)0x0,0,pSVar10,(char *)unaff_EDI,(int)unaff_ESI
-                                    );
+              dobjConstantSet =
+                   (ShaderConstantSet *)
+                   WeaponOptions::SetupWeaponOptionsRender
+                             ((WeaponOptions *)(param_2 + 0x30),
+                              (int)(&bg_weaponVariantDefs)[*(ushort *)(param_2 + 0x248)],
+                              *(float **)(param_2 + 0x26c),pWVar8,
+                              (renderOptions_s)((int)param_2 + 0xfc),0,
+                              (ShaderConstantSet *)0xffffffff,(char *)unaff_EDI,(int)unaff_ESI);
+              if ((-1 < iVar13) && (param_2[0x255] != (centity_s)0x0)) {
+                dobjConstantSet =
+                     (ShaderConstantSet *)
+                     WeaponOptions::SetupWeaponOptionsRender
+                               ((WeaponOptions *)(param_2 + 0x30),(int)local_cc,
+                                (float *)((byte)param_2[0x255] & 0x3f),
+                                (WeaponVariantDef *)(1 << ((byte)iVar13 & 0x1f)),
+                                (renderOptions_s)0x0,0,dobjConstantSet,(char *)unaff_EDI,
+                                (int)unaff_ESI);
               }
               local_f4 = 0x400004;
-              if ((*(int *)(pcVar2 + iVar7 + 0x5f264) !=
+              if ((*(int *)(pcVar2 + iVar6 + 0x5f264) !=
                    *(int *)(local_d0 +
                            (uint)*(byte *)(*(int *)(local_d0 + 0x2c) + 0x140) * 0x5d0 + 0x5f264)) ||
-                 (uVar12 = 0x1000000, *(int *)(pcVar2 + iVar7 + 0x5f264) == 0)) {
-                uVar12 = 0;
+                 (uVar10 = 0x1000000, *(int *)(pcVar2 + iVar6 + 0x5f264) == 0)) {
+                uVar10 = 0;
               }
               bVar3 = CG_IsInfrared((int)unaff_EDI);
-              if ((bVar3) && ((*(uint *)(pcVar2 + iVar7 + 0x5f280) & 8) == 0)) {
+              if ((bVar3) && ((*(uint *)(pcVar2 + iVar6 + 0x5f280) & 8) == 0)) {
                 local_f4 = 0x400084;
-                if ((*(int *)(param_2 + 0x31c) == 0) && ((char)(uVar12 >> 0x18) != '\0')) {
-                  puVar24 = (uchar *)0xffffffff;
-                  puVar21 = &stack0xffffff07;
-                  pDVar11 = (DObj *)SL_FindString((char *)0x0,(scriptInstance_t)puVar21);
-                  iVar5 = DObjGetBoneIndex(pDVar11,(uint)puVar21,puVar24,(int)unaff_EDI);
+                if ((*(int *)(param_2 + 0x31c) == 0) && ((char)(uVar10 >> 0x18) != '\0')) {
+                  puVar22 = (uchar *)0xffffffff;
+                  puVar19 = &stack0xffffff07;
+                  pDVar9 = (DObj *)SL_FindString((char *)0x0,(scriptInstance_t)puVar19);
+                  iVar5 = DObjGetBoneIndex(pDVar9,(uint)puVar19,puVar22,(int)unaff_EDI);
                   if (iVar5 != 0) {
-                    uVar12 = FX_PlayBoltedEffect(param_1,*(FxEffectDef **)(param_2 + 0x1e8),
-                                                 uVar12 >> 0x18,(int)unaff_EDI,(int)unaff_ESI);
-                    *(uint *)(param_2 + 0x31c) = uVar12;
+                    uVar10 = FX_PlayBoltedEffect(param_1,*(FxEffectDef **)(param_2 + 0x1e8),
+                                                 uVar10 >> 0x18,(int)unaff_EDI,(int)unaff_ESI);
+                    *(uint *)(param_2 + 0x31c) = uVar10;
                   }
                 }
               }
@@ -536,16 +537,16 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
                 FX_ThroughWithEffect(1,(uint)unaff_EDI,SUB41(unaff_ESI,0));
                 *(undefined4 *)(param_2 + 0x31c) = 0;
               }
-              pSVar13 = (ShaderConstantSet *)0x0;
+              pSVar11 = (ShaderConstantSet *)0x0;
               if (*(int *)(local_d0 + 0x71794) != 0) {
                 local_80.used = '\0';
-                pSVar13 = &local_80;
+                pSVar11 = &local_80;
                 CG_HighlightPlayer(1,(centity_s *)unaff_EDI,(ShaderConstantSet *)unaff_ESI,
-                                   (bool)uVar25);
+                                   (bool)uVar23);
               }
-              R_AddDObjToScene(pDVar6,(cpose_t *)param_2,*(uint *)(param_2 + 0x1e8),local_f4,
+              R_AddDObjToScene(pose,(cpose_t *)param_2,*(uint *)(param_2 + 0x1e8),local_f4,
                                (float *)&local_ec,0.0,0.0,local_d4,*(float *)(param_2 + 0x2c),-1,
-                               (int)pSVar10,(ShaderConstantSet *)(param_2 + 0xfc),pSVar13,
+                               (int)dobjConstantSet,(ShaderConstantSet *)(param_2 + 0xfc),pSVar11,
                                (float)unaff_EDI,(float)unaff_ESI);
               if ((*(uint *)(param_2 + 0x1ec) & 0x40000) == 0) {
                 local_b8 = *(undefined4 *)(param_2 + 0x30);
@@ -562,7 +563,7 @@ void __cdecl CG_Player(int param_1,centity_s *param_2)
         }
       }
     }
-    else if ((uVar12 & 0x4000) != 0) {
+    else if ((uVar10 & 0x4000) != 0) {
       CG_UpdateMinigunSpin(param_1,cgArray,param_2);
       return;
     }
@@ -582,13 +583,13 @@ void __cdecl CG_Corpse(int param_1,centity_s *param_2)
   ushort uVar2;
   DObj *pDVar3;
   DObj *pDVar4;
-  int iVar5;
-  ShaderConstantSet *pSVar6;
+  int dobjConstantSet;
+  ShaderConstantSet *pSVar5;
   undefined1 unaff_BL;
   DObj *unaff_ESI;
   clientInfo_t *unaff_EDI;
-  float fVar7;
-  FxMarkDObjUpdateContext *pFVar8;
+  float fVar6;
+  FxMarkDObjUpdateContext *pFVar7;
   float local_1a0;
   float local_198;
   undefined4 local_194;
@@ -617,9 +618,9 @@ void __cdecl CG_Corpse(int param_1,centity_s *param_2)
       pDVar3 = (DObj *)(&DAT_01cef1a8 +
                        (short)(&DAT_01d4c1b0)[*(int *)(param_2 + 0x1e8) + param_1 * 0x601] * 0x7c);
     }
-    pFVar8 = local_110;
-    FX_MarkEntUpdateBegin(pFVar8,pDVar3,SUB41(unaff_EDI,0),(ushort)unaff_ESI);
-    BG_UpdatePlayerDObj(param_1,pDVar4,(entityState_s *)0x0,(clientInfo_t *)pFVar8,(int)pDVar3);
+    pFVar7 = local_110;
+    FX_MarkEntUpdateBegin(pFVar7,pDVar3,SUB41(unaff_EDI,0),(ushort)unaff_ESI);
+    BG_UpdatePlayerDObj(param_1,pDVar4,(entityState_s *)0x0,(clientInfo_t *)pFVar7,(int)pDVar3);
     if ((&DAT_01d4c1b0)[param_1 * 0x601 + *(int *)(param_2 + 0x1e8)] == 0) {
       pDVar4 = (DObj *)0x0;
     }
@@ -653,29 +654,31 @@ void __cdecl CG_Corpse(int param_1,centity_s *param_2)
         if (*(int *)(param_2 + 0x28) == 0) {
           *(undefined4 *)(param_2 + 0x28) = *(undefined4 *)(cgArray + 0x40688);
         }
-        fVar7 = (float)(*(int *)(cgArray + 0x40688) - *(int *)(param_2 + 0x28)) * 0.0005;
+        fVar6 = (float)(*(int *)(cgArray + 0x40688) - *(int *)(param_2 + 0x28)) * 0.0005;
         local_1a0 = 1.0;
-        if (fVar7 - 1.0 < 0.0) {
-          local_1a0 = fVar7;
+        if (fVar6 - 1.0 < 0.0) {
+          local_1a0 = fVar6;
         }
-        if (0.0 <= -fVar7) {
+        if (0.0 <= -fVar6) {
           local_1a0 = 0.0;
         }
       }
       CG_HighlightPlayer(0,(centity_s *)unaff_EDI,(ShaderConstantSet *)unaff_ESI,(bool)unaff_BL);
-      iVar5 = WeaponOptions::SetupWeaponOptionsRender
-                        ((WeaponOptions *)(param_2 + 0x30),0,*(float **)(param_2 + 0x26c),
-                         (WeaponVariantDef *)0xffffffff,(renderOptions_s)((int)param_2 + 0xfc),0,
-                         (ShaderConstantSet *)0xffffffff,(char *)unaff_EDI,(int)unaff_ESI);
-      pSVar6 = (ShaderConstantSet *)0x0;
+      dobjConstantSet =
+           WeaponOptions::SetupWeaponOptionsRender
+                     ((WeaponOptions *)(param_2 + 0x30),0,*(float **)(param_2 + 0x26c),
+                      (WeaponVariantDef *)0xffffffff,(renderOptions_s)((int)param_2 + 0xfc),0,
+                      (ShaderConstantSet *)0xffffffff,(char *)unaff_EDI,(int)unaff_ESI);
+      pSVar5 = (ShaderConstantSet *)0x0;
       if (*(int *)(local_18c + 0x71794) != 0) {
         local_188.used = '\0';
-        pSVar6 = &local_188;
+        pSVar5 = &local_188;
         CG_HighlightPlayer(1,(centity_s *)unaff_EDI,(ShaderConstantSet *)unaff_ESI,(bool)unaff_BL);
       }
       R_AddDObjToScene(pDVar4,(cpose_t *)param_2,*(uint *)(param_2 + 0x1e8),0x400000,&local_198,0.0,
-                       0.0,local_1a0,0.0,-1,iVar5,(ShaderConstantSet *)((int)param_2 + 0xfc),pSVar6,
-                       (float)unaff_EDI,(float)unaff_ESI);
+                       0.0,local_1a0,0.0,-1,dobjConstantSet,
+                       (ShaderConstantSet *)((int)param_2 + 0xfc),pSVar5,(float)unaff_EDI,
+                       (float)unaff_ESI);
     }
   }
   return;

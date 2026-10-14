@@ -12,15 +12,19 @@ void __cdecl _dynamic_initializer_for__TRACKINST_defineStrings__(void)
 
 // 0040CBD0  I_rsqrt  (universal/com_math.h:107)
 
-float __cdecl I_rsqrt(float param_1)
+float __cdecl I_rsqrt(float number)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float10 fVar4;
+  float threehalfs;
+  int i;
+  float x2;
+  float y;
   
-  if (((uint)param_1 & 0x7f800000) == 0x7f800000) {
+  if (((uint)number & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x70,0,"%s")
     ;
     if (!bVar2) {
@@ -29,7 +33,7 @@ float __cdecl I_rsqrt(float param_1)
       return (float)fVar4;
     }
   }
-  if (param_1 == 0.0) {
+  if (number == 0.0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x71,0,"%s")
     ;
     if (!bVar2) {
@@ -38,21 +42,21 @@ float __cdecl I_rsqrt(float param_1)
       return (float)fVar4;
     }
   }
-  fVar3 = (float)(0x5f3759df - ((int)param_1 >> 1));
-  return (1.5 - param_1 * 0.5 * fVar3 * fVar3) * fVar3;
+  fVar3 = (float)(0x5f3759df - ((int)number >> 1));
+  return (1.5 - number * 0.5 * fVar3 * fVar3) * fVar3;
 }
 
 
 // 004130D0  AssignToSmallerType<short>  (universal/q_shared.h:283)
 
-void __cdecl AssignToSmallerType<short>(short *param_1,int param_2)
+void __cdecl AssignToSmallerType<short>(short *dest,int src)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  *param_1 = (short)param_2;
-  if (*param_1 != param_2) {
+  *dest = (short)src;
+  if (*dest != src) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../universal/q_shared.h",
                              0x11d,0,"%s");
     if (!bVar2) {
@@ -97,22 +101,23 @@ void __cdecl TRACK_bg_animation_mp(void)
 
 // 00408A60  BG_StringHashValue  (bgame/bg_animation.cpp:571)
 
-long __cdecl BG_StringHashValue(char *param_1)
+long __cdecl BG_StringHashValue(char *fname)
 
 {
   int iVar1;
-  int local_10;
-  int local_8;
+  long hash;
+  char letter;
+  int i;
   
-  local_10 = 0;
-  for (local_8 = 0; param_1[local_8] != '\0'; local_8 = local_8 + 1) {
-    iVar1 = tolower((int)param_1[local_8]);
-    local_10 = (int)(char)iVar1 * (local_8 + 0x77) + local_10;
+  hash = 0;
+  for (i = 0; fname[i] != '\0'; i = i + 1) {
+    iVar1 = tolower((int)fname[i]);
+    hash = (int)(char)iVar1 * (i + 0x77) + hash;
   }
-  if (local_10 == -1) {
-    local_10 = 0;
+  if (hash == -1) {
+    hash = 0;
   }
-  return local_10;
+  return hash;
 }
 
 
@@ -120,14 +125,15 @@ long __cdecl BG_StringHashValue(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl BG_AnimParseError(char *param_1)
+void __cdecl BG_AnimParseError(char *msg)
 
 {
-  char local_40c [1028];
+  char *argptr;
+  char text [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _vsnprintf(local_40c,0x400,param_1,&stack0x00000008);
+  _vsnprintf(text,0x400,msg,&stack0x00000008);
   if (globalFilename == (char *)0x0) {
     Com_Error(ERR_DROP,"\x15%s");
   }
@@ -141,7 +147,7 @@ void __cdecl BG_AnimParseError(char *param_1)
 
 // 00408B70  BG_AnimationIndexForString  (bgame/bg_animation.cpp:621)
 
-int __cdecl BG_AnimationIndexForString(char *param_1)
+int __cdecl BG_AnimationIndexForString(char *string)
 
 {
   char cVar1;
@@ -149,12 +155,13 @@ int __cdecl BG_AnimationIndexForString(char *param_1)
   bool bVar3;
   int iVar4;
   long lVar5;
-  loadAnim_t *plVar6;
+  loadAnim_t *anim_00;
   char *local_1c;
   char *local_18;
-  loadAnim_t *local_10;
-  char *local_c;
-  uint local_8;
+  int hash;
+  loadAnim_t *loadAnim;
+  animation_s *anim;
+  uint i;
   
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
@@ -165,43 +172,43 @@ int __cdecl BG_AnimationIndexForString(char *param_1)
     return iVar4;
   }
   if (g_pLoadAnims == (loadAnim_t *)0x0) {
-    lVar5 = BG_StringHashValue(param_1);
-    local_8 = 0;
-    local_c = (char *)**(undefined4 **)
-                        (*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8);
-    for (; local_8 < *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
-                                         + 8) + 0x1e000); local_8 = local_8 + 1) {
-      if ((lVar5 == *(int *)(local_c + 0x58)) && (iVar4 = I_stricmp(param_1,local_c), iVar4 == 0)) {
-        return local_8;
+    lVar5 = BG_StringHashValue(string);
+    i = 0;
+    anim = (animation_s *)
+           **(undefined4 **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8);
+    for (; i < *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
+                        0x1e000); i = i + 1) {
+      if ((lVar5 == anim->nameHash) && (iVar4 = I_stricmp(string,anim->name), iVar4 == 0)) {
+        return i;
       }
-      local_c = local_c + 0x78;
+      anim = anim + 1;
     }
     BG_AnimParseError("BG_AnimationIndexForString: unknown player animation \'%s\'");
     iVar4 = -1;
   }
   else {
-    lVar5 = BG_StringHashValue(param_1);
-    local_10 = g_pLoadAnims;
-    for (local_8 = 0; local_8 < *g_piNumLoadAnims; local_8 = local_8 + 1) {
-      if ((lVar5 == local_10->iNameHash) &&
-         (iVar4 = I_stricmp(param_1,local_10->szAnimName), iVar4 == 0)) {
-        return local_8;
+    lVar5 = BG_StringHashValue(string);
+    loadAnim = g_pLoadAnims;
+    for (i = 0; i < *g_piNumLoadAnims; i = i + 1) {
+      if ((lVar5 == loadAnim->iNameHash) &&
+         (iVar4 = I_stricmp(string,loadAnim->szAnimName), iVar4 == 0)) {
+        return i;
       }
-      local_10 = local_10 + 1;
+      loadAnim = loadAnim + 1;
     }
-    plVar6 = g_pLoadAnims + *g_piNumLoadAnims;
-    Scr_FindAnim(SCRIPTINSTANCE_SERVER,"multiplayer",param_1,&plVar6->anim,
+    anim_00 = g_pLoadAnims + *g_piNumLoadAnims;
+    Scr_FindAnim(SCRIPTINSTANCE_SERVER,"multiplayer",string,&anim_00->anim,
                  *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
                          0x10));
-    local_18 = param_1;
-    local_1c = plVar6->szAnimName;
+    local_18 = string;
+    local_1c = anim_00->szAnimName;
     do {
       cVar1 = *local_18;
       *local_1c = cVar1;
       local_18 = local_18 + 1;
       local_1c = local_1c + 1;
     } while (cVar1 != '\0');
-    plVar6->iNameHash = lVar5;
+    anim_00->iNameHash = lVar5;
     *g_piNumLoadAnims = *g_piNumLoadAnims + 1;
     iVar4 = *g_piNumLoadAnims - 1;
   }
@@ -211,55 +218,55 @@ int __cdecl BG_AnimationIndexForString(char *param_1)
 
 // 00408D90  BG_IndexForString  (bgame/bg_animation.cpp:709)
 
-int __cdecl BG_IndexForString(char *param_1,animStringItem_t *param_2,int param_3)
+int __cdecl BG_IndexForString(char *token,animStringItem_t *strings,int allowFail)
 
 {
   long lVar1;
   long lVar2;
   int iVar3;
-  animStringItem_t *local_10;
-  int local_8;
+  animStringItem_t *strav;
+  int hash;
+  int i;
   
-  lVar1 = BG_StringHashValue(param_1);
-  local_8 = 0;
-  local_10 = param_2;
+  lVar1 = BG_StringHashValue(token);
+  i = 0;
+  strav = strings;
   while( true ) {
-    if (local_10->string == (char *)0x0) {
-      if (param_3 == 0) {
+    if (strav->string == (char *)0x0) {
+      if (allowFail == 0) {
         BG_AnimParseError("BG_IndexForString: unknown token \'%s\'");
       }
       return -1;
     }
-    if (local_10->hash == -1) {
-      lVar2 = BG_StringHashValue(local_10->string);
-      local_10->hash = lVar2;
+    if (strav->hash == -1) {
+      lVar2 = BG_StringHashValue(strav->string);
+      strav->hash = lVar2;
     }
-    if ((lVar1 == local_10->hash) && (iVar3 = I_stricmp(param_1,local_10->string), iVar3 == 0))
-    break;
-    local_10 = local_10 + 1;
-    local_8 = local_8 + 1;
+    if ((lVar1 == strav->hash) && (iVar3 = I_stricmp(token,strav->string), iVar3 == 0)) break;
+    strav = strav + 1;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 00408E40  BG_StringForIndex  (bgame/bg_animation.cpp:744)
 
-char * __cdecl BG_StringForIndex(int param_1,animStringItem_t *param_2,int param_3)
+char * __cdecl BG_StringForIndex(int index,animStringItem_t *strings,int allowFail)
 
 {
-  animStringItem_t *local_c;
-  int local_8;
+  animStringItem_t *strav;
+  int i;
   
-  local_8 = 0;
-  for (local_c = param_2; (local_c->string != (char *)0x0 && (local_c->string != (char *)0x0));
-      local_c = local_c + 1) {
-    if (local_8 == param_1) {
-      return local_c->string;
+  i = 0;
+  for (strav = strings; (strav->string != (char *)0x0 && (strav->string != (char *)0x0));
+      strav = strav + 1) {
+    if (i == index) {
+      return strav->string;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  if (param_3 == 0) {
+  if (allowFail == 0) {
     BG_AnimParseError("BG_StringForIndex: index out of range (%i, max is %i)");
   }
   return (char *)0x0;
@@ -268,7 +275,7 @@ char * __cdecl BG_StringForIndex(int param_1,animStringItem_t *param_2,int param
 
 // 00411DA0  BG_CopyStringIntoBuffer  (bgame/bg_animation.cpp:771)
 
-char * __cdecl BG_CopyStringIntoBuffer(char *param_1,char *param_2,uint param_3,uint *param_4)
+char * __cdecl BG_CopyStringIntoBuffer(char *string,char *buffer,uint bufSize,uint *offset)
 
 {
   char cVar1;
@@ -277,44 +284,45 @@ char * __cdecl BG_CopyStringIntoBuffer(char *param_1,char *param_2,uint param_3,
   char *local_20;
   char *local_1c;
   char *local_c;
+  char *pch;
   
-  local_c = param_1;
+  local_c = string;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  if (param_3 <= local_c + ((*param_4 + 1) - (int)(param_1 + 1))) {
+  if (bufSize <= local_c + ((*offset + 1) - (int)(string + 1))) {
     BG_AnimParseError("BG_CopyStringIntoBuffer: out of buffer space");
   }
-  uVar2 = *param_4;
-  local_1c = param_1;
-  local_20 = param_2 + uVar2;
+  uVar2 = *offset;
+  local_1c = string;
+  local_20 = buffer + uVar2;
   do {
     cVar1 = *local_1c;
     *local_20 = cVar1;
     local_1c = local_1c + 1;
     local_20 = local_20 + 1;
   } while (cVar1 != '\0');
-  local_2c = param_1;
+  local_2c = string;
   do {
     cVar1 = *local_2c;
     local_2c = local_2c + 1;
   } while (cVar1 != '\0');
-  *param_4 = (uint)(local_2c + *param_4 + (1 - (int)(param_1 + 1)));
-  return param_2 + uVar2;
+  *offset = (uint)(local_2c + *offset + (1 - (int)(string + 1)));
+  return buffer + uVar2;
 }
 
 
 // 00408EB0  BG_InitWeaponString  (bgame/bg_animation.cpp:799)
 
-void __cdecl BG_InitWeaponString(int param_1,char *param_2)
+void __cdecl BG_InitWeaponString(int index,char *name)
 
 {
   long lVar1;
   
-  weaponStrings[param_1].string = param_2;
-  lVar1 = BG_StringHashValue(param_2);
-  weaponStrings[param_1].hash = lVar1;
+  weaponStrings[index].string = name;
+  lVar1 = BG_StringHashValue(name);
+  weaponStrings[index].hash = lVar1;
   return;
 }
 
@@ -332,68 +340,68 @@ void __cdecl BG_InitWeaponStrings(void)
 
 // 00408F00  BG_AddVehicleName  (bgame/bg_animation.cpp:825)
 
-void __cdecl BG_AddVehicleName(char *param_1,int param_2,int param_3,int param_4,int param_5)
+void __cdecl BG_AddVehicleName(char *vehName,int vehType,int drivers,int gunners,int passengers)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   long lVar4;
-  byte bVar5;
-  int local_14;
-  animStringItem_t *local_c;
-  int local_8;
+  int j;
+  int pos;
+  animStringItem_t *strav;
+  int i;
   
-  local_c = animVehicleNameStr;
-  for (local_8 = 0; (local_c->string != (char *)0x0 && (local_8 < 0x10)); local_8 = local_8 + 1) {
-    iVar3 = I_stricmp(param_1,local_c->string);
+  strav = animVehicleNameStr;
+  for (i = 0; (strav->string != (char *)0x0 && (i < 0x10)); i = i + 1) {
+    iVar3 = I_stricmp(vehName,strav->string);
     if (iVar3 == 0) {
       return;
     }
-    local_c = local_c + 1;
+    strav = strav + 1;
   }
-  if ((0xf < local_8 + 1) &&
+  if ((0xf < i + 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x347,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  I_strncpyz(animVehicleNameStrings + local_8 * 0x18,param_1,0x18);
-  animVehicleNameStr[local_8].string = animVehicleNameStrings + local_8 * 0x18;
-  lVar4 = BG_StringHashValue(param_1);
-  animVehicleNameStr[local_8].hash = lVar4;
-  animVehicleTypes[local_8] = param_2;
-  animVehicleSeats[local_8].seats = 0;
-  if (0 < param_3) {
-    animVehicleSeats[local_8].seats = animVehicleSeats[local_8].seats | 1;
+  I_strncpyz(animVehicleNameStrings + i * 0x18,vehName,0x18);
+  animVehicleNameStr[i].string = animVehicleNameStrings + i * 0x18;
+  lVar4 = BG_StringHashValue(vehName);
+  animVehicleNameStr[i].hash = lVar4;
+  animVehicleTypes[i] = vehType;
+  animVehicleSeats[i].seats = 0;
+  if (0 < drivers) {
+    animVehicleSeats[i].seats = animVehicleSeats[i].seats | 1;
   }
-  bVar5 = 1;
-  for (local_14 = 0; local_14 < param_4; local_14 = local_14 + 1) {
-    animVehicleSeats[local_8].seats = 1 << (bVar5 & 0x1f) | animVehicleSeats[local_8].seats;
-    bVar5 = bVar5 + 1;
+  pos = 1;
+  for (j = 0; j < gunners; j = j + 1) {
+    animVehicleSeats[i].seats = 1 << ((byte)pos & 0x1f) | animVehicleSeats[i].seats;
+    pos = pos + 1;
   }
-  bVar5 = 5;
-  for (local_14 = 0; local_14 < param_5; local_14 = local_14 + 1) {
-    animVehicleSeats[local_8].seats = 1 << (bVar5 & 0x1f) | animVehicleSeats[local_8].seats;
-    bVar5 = bVar5 + 1;
+  pos = 5;
+  for (j = 0; j < passengers; j = j + 1) {
+    animVehicleSeats[i].seats = 1 << ((byte)pos & 0x1f) | animVehicleSeats[i].seats;
+    pos = pos + 1;
   }
-  animVehicleNameStr[local_8 + 1].string = (char *)0x0;
-  animVehicleNameStr[local_8 + 1].hash = -1;
+  animVehicleNameStr[i + 1].string = (char *)0x0;
+  animVehicleNameStr[i + 1].hash = -1;
   return;
 }
 
 
 // 0040A5F0  Com_BitCheckAssert  (universal/q_shared.h:869)
 
-int __cdecl Com_BitCheckAssert(uint *param_1,int param_2,int param_3)
+int __cdecl Com_BitCheckAssert(uint *array,int bitNum,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (uint *)0x0) {
+  if (array == (uint *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../universal/q_shared.h",
                              0x366,0,"%s");
     if (!bVar2) {
@@ -402,7 +410,7 @@ int __cdecl Com_BitCheckAssert(uint *param_1,int param_2,int param_3)
       return iVar3;
     }
   }
-  if ((uint)(param_3 << 3) <= (uint)param_2) {
+  if ((uint)(size << 3) <= (uint)bitNum) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../universal/q_shared.h",
                              0x367,0,"bitNum doesn\'t index size * 8\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -411,41 +419,41 @@ int __cdecl Com_BitCheckAssert(uint *param_1,int param_2,int param_3)
       return iVar3;
     }
   }
-  return (uint)((1 << ((byte)param_2 & 0x1f) & param_1[param_2 >> 5]) != 0);
+  return (uint)((1 << ((byte)bitNum & 0x1f) & array[bitNum >> 5]) != 0);
 }
 
 
 // 004090C0  BG_AnimGetConditionValue  (bgame/bg_animation.cpp:875)
 
-int __cdecl BG_AnimGetConditionValue(animScriptItem_t *param_1,int param_2)
+int __cdecl BG_AnimGetConditionValue(animScriptItem_t *scriptItem,int conditionIndex)
 
 {
-  animScriptCondition_t *local_c;
-  int local_8;
+  animScriptCondition_t *scriptCond;
+  int i;
   
-  local_8 = 0;
-  local_c = param_1->conditions;
+  i = 0;
+  scriptCond = scriptItem->conditions;
   while( true ) {
-    if (param_1->numConditions <= local_8) {
+    if (scriptItem->numConditions <= i) {
       return -1;
     }
-    if (local_c->index == param_2) break;
-    local_8 = local_8 + 1;
-    local_c = local_c + 1;
+    if (scriptCond->index == conditionIndex) break;
+    i = i + 1;
+    scriptCond = scriptCond + 1;
   }
-  return local_c->value;
+  return scriptCond->value;
 }
 
 
 // 0040C650  Com_BitSetAssert  (universal/q_shared.h:876)
 
-void __cdecl Com_BitSetAssert(uint *param_1,int param_2,int param_3)
+void __cdecl Com_BitSetAssert(uint *array,int bitNum,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (uint *)0x0) {
+  if (array == (uint *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../universal/q_shared.h",
                              0x36d,0,"%s");
     if (!bVar2) {
@@ -454,7 +462,7 @@ void __cdecl Com_BitSetAssert(uint *param_1,int param_2,int param_3)
       return;
     }
   }
-  if ((uint)(param_3 << 3) <= (uint)param_2) {
+  if ((uint)(size << 3) <= (uint)bitNum) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\bgame\\../universal/q_shared.h",
                              0x36e,0,"bitNum doesn\'t index size * 8\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -463,7 +471,7 @@ void __cdecl Com_BitSetAssert(uint *param_1,int param_2,int param_3)
       return;
     }
   }
-  param_1[param_2 >> 5] = 1 << ((byte)param_2 & 0x1f) | param_1[param_2 >> 5];
+  array[bitNum >> 5] = 1 << ((byte)bitNum & 0x1f) | array[bitNum >> 5];
   return;
 }
 
@@ -481,44 +489,45 @@ void __cdecl BG_InitVehicles(void)
 
 // 00409140  BG_GetVehicleAnimSetIndex  (bgame/bg_animation.cpp:905)
 
-int __cdecl BG_GetVehicleAnimSetIndex(ushort param_1)
+int __cdecl BG_GetVehicleAnimSetIndex(ushort animSetStr)
 
 {
-  char *pcVar1;
-  animStringItem_t *paVar2;
-  int iVar3;
+  char *token;
+  animStringItem_t *strings;
+  int iVar1;
+  int index;
   
-  iVar3 = 1;
-  paVar2 = animVehicleNameStr;
-  pcVar1 = SL_ConvertToString((uint)param_1,SCRIPTINSTANCE_SERVER);
-  iVar3 = BG_IndexForString(pcVar1,paVar2,iVar3);
-  return iVar3;
+  iVar1 = 1;
+  strings = animVehicleNameStr;
+  token = SL_ConvertToString((uint)animSetStr,SCRIPTINSTANCE_SERVER);
+  iVar1 = BG_IndexForString(token,strings,iVar1);
+  return iVar1;
 }
 
 
 // 00412ED0  BG_LoadAnimForAnimIndex  (bgame/bg_animation.cpp:926)
 
-loadAnim_t * __cdecl BG_LoadAnimForAnimIndex(int param_1)
+loadAnim_t * __cdecl BG_LoadAnimForAnimIndex(int iAnimIndex)
 
 {
-  uint local_c;
-  loadAnim_t *local_8;
+  uint i;
+  loadAnim_t *pAnim;
   
   if (*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x1e000)
-      <= (uint)param_1) {
+      <= (uint)iAnimIndex) {
     Com_Error(ERR_DROP,"\x15Player animation index %i out of 0 to %i range");
   }
-  local_c = 0;
-  local_8 = g_pLoadAnims;
+  i = 0;
+  pAnim = g_pLoadAnims;
   while( true ) {
-    if (*g_piNumLoadAnims <= local_c) {
+    if (*g_piNumLoadAnims <= i) {
       return (loadAnim_t *)0x0;
     }
-    if (param_1 == (uint)(local_8->anim).field0_0x0._s_0.index) break;
-    local_c = local_c + 1;
-    local_8 = local_8 + 1;
+    if (iAnimIndex == (uint)(pAnim->anim).field0_0x0._s_0.index) break;
+    i = i + 1;
+    pAnim = pAnim + 1;
   }
-  return local_8;
+  return pAnim;
 }
 
 
@@ -526,16 +535,19 @@ loadAnim_t * __cdecl BG_LoadAnimForAnimIndex(int param_1)
 
 /* WARNING: Type propagation algorithm not settling */
 
-void __cdecl BG_SetupAnimNoteTypes(animScriptData_t *param_1)
+void __cdecl BG_SetupAnimNoteTypes(animScriptData_t *scriptData)
 
 {
   animScriptCommand_t *paVar1;
   animScriptItem_t *paVar2;
   code *pcVar3;
   bool bVar4;
-  int local_18;
-  uint local_c;
-  int local_8;
+  animScriptCommand_t *scriptCommand;
+  int cmdIndex;
+  animScript_t *script;
+  animScriptItem_t *scriptItem;
+  uint animIndex;
+  int itemIndex;
   
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
@@ -545,20 +557,21 @@ void __cdecl BG_SetupAnimNoteTypes(animScriptData_t *param_1)
     (*pcVar3)();
     return;
   }
-  for (local_c = 0; local_c < param_1->numAnimations; local_c = local_c + 1) {
-    param_1->animations[local_c].noteType = 0;
+  for (animIndex = 0; animIndex < scriptData->numAnimations; animIndex = animIndex + 1) {
+    scriptData->animations[animIndex].noteType = 0;
   }
   if (*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x10) == 0)
   {
-    for (local_8 = 0; local_8 < param_1->scriptEvents[7].numItems; local_8 = local_8 + 1) {
-      paVar2 = param_1->scriptEvents[7].items[local_8];
-      for (local_18 = 0; local_18 < paVar2->numCommands; local_18 = local_18 + 1) {
-        paVar1 = paVar2->commands + local_18;
+    for (itemIndex = 0; itemIndex < scriptData->scriptEvents[7].numItems; itemIndex = itemIndex + 1)
+    {
+      paVar2 = scriptData->scriptEvents[7].items[itemIndex];
+      for (cmdIndex = 0; cmdIndex < paVar2->numCommands; cmdIndex = cmdIndex + 1) {
+        paVar1 = paVar2->commands + cmdIndex;
         if (paVar1->bodyPart[0] != 0) {
-          param_1->animations[paVar1->animIndex[0]].noteType = 1;
+          scriptData->animations[paVar1->animIndex[0]].noteType = 1;
         }
         if (paVar1->bodyPart[1] != 0) {
-          param_1->animations[paVar1->animIndex[1]].noteType = 1;
+          scriptData->animations[paVar1->animIndex[1]].noteType = 1;
         }
       }
     }
@@ -569,11 +582,11 @@ void __cdecl BG_SetupAnimNoteTypes(animScriptData_t *param_1)
 
 // 004127E0  BG_FinalizePlayerAnims  (bgame/bg_animation.cpp:1001)
 
-void __cdecl BG_FinalizePlayerAnims(char *param_1)
+void __cdecl BG_FinalizePlayerAnims(char *levelName)
 
 {
   code *pcVar1;
-  uchar *puVar2;
+  animation_s *paVar2;
   bool bVar3;
   loadAnim_t *plVar4;
   char *pcVar5;
@@ -584,15 +597,20 @@ void __cdecl BG_FinalizePlayerAnims(char *param_1)
   float fVar7;
   float fVar8;
   int iVar9;
-  uchar *local_38;
-  float local_30 [2];
-  int local_28;
-  uint local_24;
-  XAnim_s *local_20;
-  float local_1c;
-  uint local_18;
-  uchar *local_14;
-  float local_10;
+  bool animRotates;
+  float duration;
+  float fullspeed;
+  loadAnim_t *pLoadAnim;
+  animation_s *pCurrAnim;
+  char *moveType;
+  float vRot [2];
+  int devNumNamedAnims;
+  int i;
+  XAnim_s *pXAnims;
+  float rotate;
+  int iNumAnims;
+  animation_s *pAnims;
+  float vDelta;
   float local_c;
   float local_8;
   
@@ -610,174 +628,126 @@ void __cdecl BG_FinalizePlayerAnims(char *param_1)
     (*pcVar1)();
     return;
   }
-  local_14 = (uchar *)**(undefined4 **)
-                        (*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8);
-  local_20 = *(XAnim_s **)
-              (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
-  local_18 = XAnimGetAnimTreeSize(local_20);
-  if ((0x3ff < (int)local_18) &&
+  pAnims = (animation_s *)
+           **(undefined4 **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8);
+  pXAnims = *(XAnim_s **)
+             (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
+  iNumAnims = XAnimGetAnimTreeSize(pXAnims);
+  if ((0x3ff < iNumAnims) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x400,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  puVar2 = local_14;
-  *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x1e000) =
-       local_18;
-  *(uint *)(local_14 + 0x5c) = *(uint *)(local_14 + 0x5c) | 0x2001;
-  I_strncpyz((char *)local_14,"root",0x40);
-  puVar2[0x58] = '\0';
-  puVar2[0x59] = '\0';
-  puVar2[0x5a] = '\0';
-  puVar2[0x5b] = '\0';
-  local_28 = 0;
+  paVar2 = pAnims;
+  *(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x1e000) =
+       iNumAnims;
+  pAnims->flags = pAnims->flags | 0x2001;
+  I_strncpyz(pAnims->name,"root",0x40);
+  paVar2->nameHash = 0;
+  devNumNamedAnims = 0;
   if ((animScript_listAnims->current).enabled != false) {
     Com_Printf(0x13,"\n===========================================================\n");
     Com_Printf(0x13,"Listing playeranim.script animations...\n\n");
   }
-  for (local_24 = 1; local_38 = puVar2 + 0x78, (int)local_24 < (int)local_18;
-      local_24 = local_24 + 1) {
-    plVar4 = BG_LoadAnimForAnimIndex(local_24);
+  for (i = 1; pCurrAnim = paVar2 + 1, i < iNumAnims; i = i + 1) {
+    plVar4 = BG_LoadAnimForAnimIndex(i);
     if (plVar4 == (loadAnim_t *)0x0) {
-      *(uint *)(puVar2 + 0xd4) = *(uint *)(puVar2 + 0xd4) | 0x2000;
-      I_strncpyz((char *)local_38,"unused",0x40);
-      puVar2[0xd0] = '\0';
-      puVar2[0xd1] = '\0';
-      puVar2[0xd2] = '\0';
-      puVar2[0xd3] = '\0';
+      paVar2[1].flags = paVar2[1].flags | 0x2000;
+      I_strncpyz(pCurrAnim->name,"unused",0x40);
+      paVar2[1].nameHash = 0;
     }
     else {
-      bVar3 = XAnimIsPrimitive(local_20,local_24);
+      bVar3 = XAnimIsPrimitive(pXAnims,i);
       if (bVar3) {
         iVar9 = 0x40;
-        pcVar5 = XAnimGetAnimName(local_20,local_24);
-        I_strncpyz((char *)local_38,pcVar5,iVar9);
-        lVar6 = BG_StringHashValue((char *)local_38);
-        *(long *)(puVar2 + 0xd0) = lVar6;
-        if (*(int *)(puVar2 + 0xb8) == 0) {
-          puVar2[0xb8] = 0xff;
-          puVar2[0xb9] = 0xff;
-          puVar2[0xba] = 0xff;
-          puVar2[0xbb] = 0xff;
+        pcVar5 = XAnimGetAnimName(pXAnims,i);
+        I_strncpyz(pCurrAnim->name,pcVar5,iVar9);
+        lVar6 = BG_StringHashValue(pCurrAnim->name);
+        paVar2[1].nameHash = lVar6;
+        if (paVar2[1].initialLerp == 0) {
+          paVar2[1].initialLerp = -1;
         }
-        puVar2[0xbc] = 0xff;
-        puVar2[0xbd] = 0xff;
-        puVar2[0xbe] = 0xff;
-        puVar2[0xbf] = 0xff;
-        puVar2[0xc0] = '\0';
-        puVar2[0xc1] = '\0';
-        puVar2[0xc2] = 0x80;
-        puVar2[0xc3] = 0xbf;
-        fVar7 = XAnimGetLength(local_20,local_24);
+        paVar2[1].finalLerp = -1;
+        paVar2[1].forceAnimRate = -1.0;
+        fVar7 = XAnimGetLength(pXAnims,i);
         if (fVar7 == 0.0) {
-          puVar2[0xcc] = 0xf4;
-          puVar2[0xcd] = '\x01';
-          puVar2[0xce] = '\0';
-          puVar2[0xcf] = '\0';
-          puVar2[0xc4] = '\0';
-          puVar2[0xc5] = '\0';
-          puVar2[0xc6] = '\0';
-          puVar2[199] = '\0';
+          paVar2[1].duration = 500;
+          paVar2[1].moveSpeed = 0.0;
         }
         else {
-          *(int *)(puVar2 + 0xcc) = (int)(fVar7 * 1000.0);
-          XAnimGetRelDelta(local_20,local_24,local_30,&local_10,0.0,1.0);
-          if (local_10 + local_c <= local_8 * 0.8) {
-            fVar8 = Abs((phys_vec3 *)&local_10);
-            *(float *)(puVar2 + 0xc4) = fVar8 / fVar7;
+          paVar2[1].duration = (int)(fVar7 * 1000.0);
+          XAnimGetRelDelta(pXAnims,i,vRot,&vDelta,0.0,1.0);
+          if (vDelta + local_c <= local_8 * 0.8) {
+            fVar8 = Abs((phys_vec3 *)&vDelta);
+            paVar2[1].moveSpeed = fVar8 / fVar7;
           }
           else {
-            fVar8 = Vec2Length(&local_10);
-            *(float *)(puVar2 + 0xc4) = fVar8 / fVar7;
+            fVar8 = Vec2Length(&vDelta);
+            paVar2[1].moveSpeed = fVar8 / fVar7;
           }
-          bVar3 = XAnimGetParamValue(local_20,local_24,"turn",&local_1c);
+          bVar3 = XAnimGetParamValue(pXAnims,i,"turn",&rotate);
           if (bVar3) {
-            *(float *)(puVar2 + 200) = local_1c / fVar7;
+            paVar2[1].rotSpeed = rotate / fVar7;
           }
           else {
-            puVar2[200] = '\0';
-            puVar2[0xc9] = '\0';
-            puVar2[0xca] = '\0';
-            puVar2[0xcb] = '\0';
+            paVar2[1].rotSpeed = 0.0;
           }
           if ((anim_debugSpeeds->current).enabled != false) {
-            if (*(float *)(puVar2 + 0xc4) <= 1.0) {
-              Abs((phys_vec3 *)&local_10);
+            if (paVar2[1].moveSpeed <= 1.0) {
+              Abs((phys_vec3 *)&vDelta);
               Com_Printf(0x13,"Anim \'%s\' moves %f units over %fms\n");
             }
             else {
-              strstr(local_38,(uchar *)"crouch");
-              if (((extraout_EAX == 0) && (strstr(local_38,(uchar *)"prone"), extraout_EAX_00 == 0))
-                 && (strstr(local_38,(uchar *)"walk"), extraout_EAX_01 == 0)) {
-                strstr(local_38,(uchar *)"fast");
+              strstr((uchar *)pCurrAnim,(uchar *)"crouch");
+              if (((extraout_EAX == 0) &&
+                  (strstr((uchar *)pCurrAnim,(uchar *)"prone"), extraout_EAX_00 == 0)) &&
+                 (strstr((uchar *)pCurrAnim,(uchar *)"walk"), extraout_EAX_01 == 0)) {
+                strstr((uchar *)pCurrAnim,(uchar *)"fast");
               }
-              Abs((phys_vec3 *)&local_10);
+              Abs((phys_vec3 *)&vDelta);
               Com_Printf(0x13,
                          "Anim \'%s\' moves %f units over %ims (%f units/s), will play back at %.1f%% speed when player moves at full %s speed (%.0f units/sec)\n"
                         );
             }
           }
-          if (*(int *)(puVar2 + 0xcc) < 500) {
-            puVar2[0xcc] = 0xf4;
-            puVar2[0xcd] = '\x01';
-            puVar2[0xce] = '\0';
-            puVar2[0xcf] = '\0';
+          if (paVar2[1].duration < 500) {
+            paVar2[1].duration = 500;
           }
         }
-        bVar3 = XAnimIsLooped(local_20,local_24);
+        bVar3 = XAnimIsLooped(pXAnims,i);
         if (bVar3) {
-          *(uint *)(puVar2 + 0xd4) = *(uint *)(puVar2 + 0xd4) | 0x200;
+          paVar2[1].flags = paVar2[1].flags | 0x200;
         }
         if ((animScript_listAnims->current).enabled != false) {
-          local_28 = local_28 + 1;
+          devNumNamedAnims = devNumNamedAnims + 1;
           Com_Printf(0x13,"%s\n");
         }
       }
       else {
-        *(uint *)(puVar2 + 0xd4) = *(uint *)(puVar2 + 0xd4) | 1;
+        paVar2[1].flags = paVar2[1].flags | 1;
         if (plVar4 == (loadAnim_t *)0x0) {
           iVar9 = 0x40;
-          pcVar5 = XAnimGetAnimName(local_20,local_24);
-          I_strncpyz((char *)local_38,pcVar5,iVar9);
-          puVar2[0xd0] = '\0';
-          puVar2[0xd1] = '\0';
-          puVar2[0xd2] = '\0';
-          puVar2[0xd3] = '\0';
+          pcVar5 = XAnimGetAnimName(pXAnims,i);
+          I_strncpyz(pCurrAnim->name,pcVar5,iVar9);
+          paVar2[1].nameHash = 0;
         }
         else {
-          I_strncpyz((char *)local_38,plVar4->szAnimName,0x40);
-          *(int *)(puVar2 + 0xd0) = plVar4->iNameHash;
+          I_strncpyz(pCurrAnim->name,plVar4->szAnimName,0x40);
+          paVar2[1].nameHash = plVar4->iNameHash;
         }
-        if (*(int *)(puVar2 + 0xb8) == 0) {
-          puVar2[0xb8] = 0xff;
-          puVar2[0xb9] = 0xff;
-          puVar2[0xba] = 0xff;
-          puVar2[0xbb] = 0xff;
+        if (paVar2[1].initialLerp == 0) {
+          paVar2[1].initialLerp = -1;
         }
-        puVar2[0xcc] = '\0';
-        puVar2[0xcd] = '\0';
-        puVar2[0xce] = '\0';
-        puVar2[0xcf] = '\0';
-        puVar2[0xc4] = '\0';
-        puVar2[0xc5] = '\0';
-        puVar2[0xc6] = '\0';
-        puVar2[199] = '\0';
-        puVar2[200] = '\0';
-        puVar2[0xc9] = '\0';
-        puVar2[0xca] = '\0';
-        puVar2[0xcb] = '\0';
-        puVar2[0xbc] = 0xff;
-        puVar2[0xbd] = 0xff;
-        puVar2[0xbe] = 0xff;
-        puVar2[0xbf] = 0xff;
-        puVar2[0xc0] = '\0';
-        puVar2[0xc1] = '\0';
-        puVar2[0xc2] = 0x80;
-        puVar2[0xc3] = 0xbf;
+        paVar2[1].duration = 0;
+        paVar2[1].moveSpeed = 0.0;
+        paVar2[1].rotSpeed = 0.0;
+        paVar2[1].finalLerp = -1;
+        paVar2[1].forceAnimRate = -1.0;
       }
     }
-    puVar2 = local_38;
+    paVar2 = pCurrAnim;
   }
   if ((animScript_listAnims->current).enabled != false) {
     Com_Printf(0x13,"\n%i total player anims.\n");
@@ -786,7 +756,7 @@ void __cdecl BG_FinalizePlayerAnims(char *param_1)
   BG_AnimParseAnimScript
             ((animScriptData_t *)
              **(undefined4 **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8),
-             (loadAnim_t *)0x0,(uint *)0x0,param_1);
+             (loadAnim_t *)0x0,(uint *)0x0,levelName);
   BG_SetupAnimNoteTypes
             ((animScriptData_t *)
              **(undefined4 **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8));
@@ -796,15 +766,15 @@ void __cdecl BG_FinalizePlayerAnims(char *param_1)
 
 // 004122C0  BG_SetAnimConditionFlags  (bgame/bg_animation.cpp:1203)
 
-void __cdecl BG_SetAnimConditionFlags(int param_1,uint param_2)
+void __cdecl BG_SetAnimConditionFlags(int condIndex,uint result)
 
 {
   int iVar1;
   
-  if (param_1 == 5) {
-    iVar1 = Com_BitCheckAssert(&param_2,2,0xfffffff);
+  if (condIndex == 5) {
+    iVar1 = Com_BitCheckAssert(&result,2,0xfffffff);
     if (iVar1 == 0) {
-      iVar1 = Com_BitCheckAssert(&param_2,1,0xfffffff);
+      iVar1 = Com_BitCheckAssert(&result,1,0xfffffff);
       if (iVar1 == 0) {
         parseMovestatus = ANIM_MOVESTATUS_STATIONARY;
       }
@@ -816,10 +786,10 @@ void __cdecl BG_SetAnimConditionFlags(int param_1,uint param_2)
       parseMovestatus = ANIM_MOVESTATUS_RUN;
     }
   }
-  else if (param_1 == 9) {
-    iVar1 = Com_BitCheckAssert(&param_2,2,0xfffffff);
+  else if (condIndex == 9) {
+    iVar1 = Com_BitCheckAssert(&result,2,0xfffffff);
     if (iVar1 == 0) {
-      iVar1 = Com_BitCheckAssert(&param_2,1,0xfffffff);
+      iVar1 = Com_BitCheckAssert(&result,1,0xfffffff);
       if (iVar1 == 0) {
         parseStance = ANIM_STANCE_STAND;
       }
@@ -840,7 +810,7 @@ void __cdecl BG_SetAnimConditionFlags(int param_1,uint param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-BG_ParseConditionBits(char **param_1,animStringItem_t *param_2,int param_3,uint *param_4)
+BG_ParseConditionBits(char **text_pp,animStringItem_t *stringTable,int condIndex,uint *result)
 
 {
   char cVar1;
@@ -851,70 +821,70 @@ BG_ParseConditionBits(char **param_1,animStringItem_t *param_2,int param_3,uint 
   char *local_84;
   char *local_74;
   char *local_64;
-  uint local_60;
-  char local_5c [68];
+  uint tempBits;
+  char currentString [68];
   uint local_18;
-  int local_14;
-  char *local_10;
-  int local_c;
-  int local_8;
+  int minus;
+  char *token;
+  int endFlag;
+  int indexFound;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = 0;
-  local_14 = 0;
-  local_5c[0] = '\0';
-  *param_4 = 0;
-  *param_4 = 0;
-  local_60 = 0;
+  endFlag = 0;
+  minus = 0;
+  currentString[0] = '\0';
+  *result = 0;
+  *result = 0;
+  tempBits = 0;
 LAB_00411ec1:
   do {
     do {
-      if (local_c != 0) {
+      if (endFlag != 0) {
 LAB_00412297:
-        BG_SetAnimConditionFlags(param_3,*param_4);
+        BG_SetAnimConditionFlags(condIndex,*result);
         return;
       }
-      local_10 = Com_ParseOnLine(param_1);
-      if ((local_10 == (char *)0x0) || (*local_10 == '\0')) {
+      token = Com_ParseOnLine(text_pp);
+      if ((token == (char *)0x0) || (*token == '\0')) {
         Com_UngetToken();
-        local_c = 1;
-        local_64 = local_5c;
+        endFlag = 1;
+        local_64 = currentString;
         do {
           cVar1 = *local_64;
           local_64 = local_64 + 1;
         } while (cVar1 != '\0');
-        if (local_64 == local_5c + 1) goto LAB_00412297;
+        if (local_64 == currentString + 1) goto LAB_00412297;
       }
-      iVar3 = I_stricmp(local_10,",");
+      iVar3 = I_stricmp(token,",");
       if (iVar3 == 0) {
-        local_c = 1;
+        endFlag = 1;
       }
-      iVar3 = I_stricmp(local_10,"none");
+      iVar3 = I_stricmp(token,"none");
       if (iVar3 == 0) {
-        Com_BitSetAssert(param_4,0,0xfffffff);
+        Com_BitSetAssert(result,0,0xfffffff);
         goto LAB_00411ec1;
       }
-      iVar3 = I_stricmp(local_10,"none,");
+      iVar3 = I_stricmp(token,"none,");
       if (iVar3 == 0) {
-        Com_BitSetAssert(param_4,0,0xfffffff);
-        local_c = 1;
+        Com_BitSetAssert(result,0,0xfffffff);
+        endFlag = 1;
         goto LAB_00411ec1;
       }
-      iVar3 = I_stricmp(local_10,"NOT");
+      iVar3 = I_stricmp(token,"NOT");
       if (iVar3 == 0) {
-        local_10 = s_MINUS;
+        token = s_MINUS;
       }
-      if (((local_c == 0) && (iVar3 = I_stricmp(local_10,"AND"), iVar3 != 0)) &&
-         (iVar3 = I_stricmp(local_10,s_MINUS), iVar3 != 0)) {
-        local_74 = local_10;
+      if (((endFlag == 0) && (iVar3 = I_stricmp(token,"AND"), iVar3 != 0)) &&
+         (iVar3 = I_stricmp(token,s_MINUS), iVar3 != 0)) {
+        local_74 = token;
         pcVar2 = local_74;
         do {
           local_74 = pcVar2;
           pcVar2 = local_74 + 1;
         } while (*local_74 != '\0');
         if (local_74[-1] == ',') {
-          local_c = 1;
-          local_84 = local_10;
+          endFlag = 1;
+          local_84 = token;
           pcVar2 = local_84;
           do {
             local_84 = pcVar2;
@@ -922,28 +892,28 @@ LAB_00412297:
           } while (*local_84 != '\0');
           local_84[-1] = '\0';
         }
-        local_94 = local_5c;
+        local_94 = currentString;
         do {
           cVar1 = *local_94;
           local_94 = local_94 + 1;
         } while (cVar1 != '\0');
-        if (local_94 != local_5c + 1) {
-          I_strncat(local_5c,0x40," ");
+        if (local_94 != currentString + 1) {
+          I_strncat(currentString,0x40," ");
         }
-        I_strncat(local_5c,0x40,local_10);
+        I_strncat(currentString,0x40,token);
       }
-      iVar3 = I_stricmp(local_10,"AND");
-    } while (((iVar3 != 0) && (iVar3 = I_stricmp(local_10,s_MINUS), iVar3 != 0)) && (local_c == 0));
-    local_a4 = local_5c;
+      iVar3 = I_stricmp(token,"AND");
+    } while (((iVar3 != 0) && (iVar3 = I_stricmp(token,s_MINUS), iVar3 != 0)) && (endFlag == 0));
+    local_a4 = currentString;
     do {
       cVar1 = *local_a4;
       local_a4 = local_a4 + 1;
     } while (cVar1 != '\0');
-    if (local_a4 == local_5c + 1) {
-      if (local_c == 0) {
-        iVar3 = I_stricmp(local_10,s_MINUS);
+    if (local_a4 == currentString + 1) {
+      if (endFlag == 0) {
+        iVar3 = I_stricmp(token,s_MINUS);
         if (iVar3 == 0) {
-          local_14 = 1;
+          minus = 1;
           goto LAB_00411ec1;
         }
         BG_AnimParseError("BG_ParseConditionBits: unexpected \'%s\'");
@@ -952,34 +922,34 @@ LAB_00412297:
         BG_AnimParseError("BG_ParseConditionBits: unexpected end of condition");
       }
     }
-    iVar3 = I_stricmp(local_5c,"all");
+    iVar3 = I_stricmp(currentString,"all");
     if (iVar3 == 0) {
-      local_60 = 0xffffffff;
+      tempBits = 0xffffffff;
     }
     else {
-      local_8 = BG_IndexForString(local_5c,defineStr[param_3],1);
-      if (local_8 < 0) {
-        local_60 = 0;
-        local_8 = BG_IndexForString(local_5c,param_2,0);
-        Com_BitSetAssert(&local_60,local_8,0xfffffff);
+      indexFound = BG_IndexForString(currentString,defineStr[condIndex],1);
+      if (indexFound < 0) {
+        tempBits = 0;
+        indexFound = BG_IndexForString(currentString,stringTable,0);
+        Com_BitSetAssert(&tempBits,indexFound,0xfffffff);
       }
       else {
-        local_60 = defineBits[param_3][local_8];
+        tempBits = defineBits[condIndex][indexFound];
       }
     }
-    if (local_14 == 0) {
-      *param_4 = *param_4 | local_60;
+    if (minus == 0) {
+      *result = *result | tempBits;
     }
     else {
-      if (*param_4 == 0) {
-        *param_4 = 0xffffffff;
+      if (*result == 0) {
+        *result = 0xffffffff;
       }
-      *param_4 = ~local_60 & *param_4;
+      *result = ~tempBits & *result;
     }
-    local_5c[0] = '\0';
-    iVar3 = I_stricmp(local_10,s_MINUS);
+    currentString[0] = '\0';
+    iVar3 = I_stricmp(token,s_MINUS);
     if (iVar3 == 0) {
-      local_14 = 1;
+      minus = 1;
     }
   } while( true );
 }
@@ -987,7 +957,7 @@ LAB_00412297:
 
 // 00412390  BG_ParseConditions  (bgame/bg_animation.cpp:1392)
 
-int __cdecl BG_ParseConditions(char **param_1,animScriptItem_t *param_2)
+int __cdecl BG_ParseConditions(char **text_pp,animScriptItem_t *scriptItem)
 
 {
   char *pcVar1;
@@ -997,35 +967,36 @@ int __cdecl BG_ParseConditions(char **param_1,animScriptItem_t *param_2)
   char *local_40;
   char *local_30;
   char *local_20;
-  uint local_c;
-  char *local_8;
+  int conditionIndex;
+  uint conditionValue;
+  char *token;
   
-  local_c = 0;
+  conditionValue = 0;
   parseStance = ANIM_STANCE_STAND;
   parseMovestatus = ANIM_MOVESTATUS_STATIONARY;
-  while ((local_8 = Com_ParseOnLine(param_1), local_8 != (char *)0x0 && (*local_8 != '\0'))) {
-    iVar2 = I_stricmp(local_8,"default");
+  while ((token = Com_ParseOnLine(text_pp), token != (char *)0x0 && (*token != '\0'))) {
+    iVar2 = I_stricmp(token,"default");
     if (iVar2 == 0) {
       return 1;
     }
-    iVar2 = BG_IndexForString(local_8,animConditionsStr,0);
+    iVar2 = BG_IndexForString(token,animConditionsStr,0);
     switch(animConditionsTable[iVar2].type) {
     case ANIM_CONDTYPE_BITFLAGS:
-      BG_ParseConditionBits(param_1,animConditionsTable[iVar2].values,iVar2,&local_c);
+      BG_ParseConditionBits(text_pp,animConditionsTable[iVar2].values,iVar2,&conditionValue);
       break;
     case ANIM_CONDTYPE_VALUE:
-      local_8 = Com_ParseOnLine(param_1);
-      if ((local_8 == (char *)0x0) || (*local_8 == '\0')) {
+      token = Com_ParseOnLine(text_pp);
+      if ((token == (char *)0x0) || (*token == '\0')) {
         BG_AnimParseError("BG_ParseConditions: expected condition value, found end of line");
       }
-      local_20 = local_8;
+      local_20 = token;
       pcVar1 = local_20;
       do {
         local_20 = pcVar1;
         pcVar1 = local_20 + 1;
       } while (*local_20 != '\0');
       if (local_20[-1] == ',') {
-        local_30 = local_8;
+        local_30 = token;
         pcVar1 = local_30;
         do {
           local_30 = pcVar1;
@@ -1034,39 +1005,39 @@ int __cdecl BG_ParseConditions(char **param_1,animScriptItem_t *param_2)
         local_30[-1] = '\0';
       }
       if (animConditionsTable[iVar2].values == (animStringItem_t *)0x0) {
-        local_c = atoi(local_8);
+        conditionValue = atoi(token);
       }
       else {
-        iVar3 = I_stricmp(local_8,"%vehicle_name");
+        iVar3 = I_stricmp(token,"%vehicle_name");
         if (iVar3 == 0) {
           if (parseVehicleNameIndex < 0) {
             BG_AnimParseError(
                              "BG_ParseConditions: %vehicle_name found outside of #FOR_ALL_VEHICLES loop"
                              );
           }
-          local_c = parseVehicleNameIndex;
+          conditionValue = parseVehicleNameIndex;
         }
         else {
-          local_c = BG_IndexForString(local_8,animConditionsTable[iVar2].values,0);
+          conditionValue = BG_IndexForString(token,animConditionsTable[iVar2].values,0);
         }
       }
       break;
     case ANIM_CONDTYPE_ENABLED:
-      local_c = 1;
+      conditionValue = 1;
       break;
     case ANIM_CONDTYPE_STRINGHASH:
-      local_8 = Com_ParseOnLine(param_1);
-      if ((local_8 == (char *)0x0) || (*local_8 == '\0')) {
+      token = Com_ParseOnLine(text_pp);
+      if ((token == (char *)0x0) || (*token == '\0')) {
         BG_AnimParseError("BG_ParseConditions: expected condition value, found end of line");
       }
-      local_40 = local_8;
+      local_40 = token;
       pcVar1 = local_40;
       do {
         local_40 = pcVar1;
         pcVar1 = local_40 + 1;
       } while (*local_40 != '\0');
       if (local_40[-1] == ',') {
-        local_50 = local_8;
+        local_50 = token;
         pcVar1 = local_50;
         do {
           local_50 = pcVar1;
@@ -1074,13 +1045,13 @@ int __cdecl BG_ParseConditions(char **param_1,animScriptItem_t *param_2)
         } while (*local_50 != '\0');
         local_50[-1] = '\0';
       }
-      local_c = BG_StringHashValue(local_8);
+      conditionValue = BG_StringHashValue(token);
     }
-    param_2->conditions[param_2->numConditions].index = iVar2;
-    param_2->conditions[param_2->numConditions].value = local_c;
-    param_2->numConditions = param_2->numConditions + 1;
+    scriptItem->conditions[scriptItem->numConditions].index = iVar2;
+    scriptItem->conditions[scriptItem->numConditions].value = conditionValue;
+    scriptItem->numConditions = scriptItem->numConditions + 1;
   }
-  if (param_2->numConditions == 0) {
+  if (scriptItem->numConditions == 0) {
     BG_AnimParseError("BG_ParseConditions: no conditions found");
   }
   return 1;
@@ -1091,160 +1062,159 @@ int __cdecl BG_ParseConditions(char **param_1,animScriptItem_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl BG_ParseCommands(char **param_1,animScriptItem_t *param_2,animScriptData_t *param_3)
+void __cdecl
+BG_ParseCommands(char **input,animScriptItem_t *scriptItem,animScriptData_t *scriptData)
 
 {
-  uchar uVar1;
-  char cVar2;
+  char cVar1;
+  short sVar2;
   short sVar3;
-  short sVar4;
-  code *pcVar5;
-  bool bVar6;
-  int iVar7;
-  char *pcVar8;
+  code *pcVar4;
+  bool bVar5;
+  int iVar6;
+  char *pcVar7;
   uint extraout_EAX;
-  uint uVar9;
+  uint uVar8;
   int extraout_EAX_00;
-  snd_alias_list_t *psVar10;
+  snd_alias_list_t *psVar9;
   uint extraout_EDX;
-  char *pcVar11;
-  uchar *puVar12;
-  double dVar13;
-  uchar *local_c4;
-  uchar *local_b8;
-  uchar *local_a4;
+  char *pcVar10;
+  double dVar11;
+  char *local_c4;
+  char *local_b8;
+  char *local_a4;
   char *local_9c;
   char *local_88;
-  uchar *local_78;
-  uchar *local_68;
-  uchar *local_64;
-  undefined4 local_60;
-  uchar local_5c [64];
+  char *local_78;
+  char *local_68;
+  char *local_64;
+  int partIndex;
+  char animName [64];
   uint local_1c;
-  int local_18;
-  uchar *local_14;
-  animScriptCommand_t *local_10;
-  int local_c;
-  int local_8;
+  int numAnimTokens;
+  char *token;
+  animScriptCommand_t *command;
+  int i;
+  int bCommandFound;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = (animScriptCommand_t *)0x0;
-  local_60 = 0;
+  command = (animScriptCommand_t *)0x0;
+  partIndex = 0;
 LAB_00409193:
-  if (local_60 < 1) {
-    local_64 = (uchar *)Com_Parse(param_1);
+  if (partIndex < 1) {
+    local_64 = Com_Parse(input);
   }
   else {
-    local_64 = (uchar *)Com_ParseOnLine(param_1);
+    local_64 = Com_ParseOnLine(input);
   }
-  local_14 = local_64;
-  if ((local_64 != (uchar *)0x0) && (*local_64 != '\0')) {
-    iVar7 = I_stricmp((char *)local_64,"}");
-    if (iVar7 != 0) {
-      if (local_60 == 0) {
-        if (7 < param_2->numCommands) {
+  token = local_64;
+  if ((local_64 != (char *)0x0) && (*local_64 != '\0')) {
+    iVar6 = I_stricmp(local_64,"}");
+    if (iVar6 != 0) {
+      if (partIndex == 0) {
+        if (7 < scriptItem->numCommands) {
           BG_AnimParseError("BG_ParseCommands: exceeded maximum number of animations (%i)");
         }
-        local_10 = param_2->commands + param_2->numCommands;
-        param_2->numCommands = param_2->numCommands + 1;
-        local_10->bodyPart[0] = 0;
-        local_10->bodyPart[1] = 0;
+        command = scriptItem->commands + scriptItem->numCommands;
+        scriptItem->numCommands = scriptItem->numCommands + 1;
+        command->bodyPart[0] = 0;
+        command->bodyPart[1] = 0;
       }
-      iVar7 = BG_IndexForString((char *)local_14,animBodyPartsStr,1);
-      local_10->bodyPart[local_60] = (short)iVar7;
-      if (0 < local_10->bodyPart[local_60]) goto code_r0x0040929b;
-      local_c4 = local_14;
+      iVar6 = BG_IndexForString(token,animBodyPartsStr,1);
+      command->bodyPart[partIndex] = (short)iVar6;
+      if (0 < command->bodyPart[partIndex]) goto code_r0x0040929b;
+      local_c4 = token;
       do {
-        uVar1 = *local_c4;
+        cVar1 = *local_c4;
         local_c4 = local_c4 + 1;
-      } while (uVar1 != '\0');
-      *param_1 = *param_1 + -((int)local_c4 - (int)(local_14 + 1));
+      } while (cVar1 != '\0');
+      *input = *input + -((int)local_c4 - (int)(token + 1));
       goto LAB_0040a4af;
     }
-    local_68 = local_14;
+    local_68 = token;
     do {
-      uVar1 = *local_68;
+      cVar1 = *local_68;
       local_68 = local_68 + 1;
-    } while (uVar1 != '\0');
-    *param_1 = *param_1 + -((int)local_68 - (int)(local_14 + 1));
+    } while (cVar1 != '\0');
+    *input = *input + -((int)local_68 - (int)(token + 1));
   }
   return;
 code_r0x0040929b:
-  local_5c[0] = '\0';
-  local_18 = 1;
-  while (0 < local_18) {
-    local_14 = (uchar *)Com_ParseOnLine(param_1);
-    if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
-      local_78 = local_5c;
+  animName[0] = '\0';
+  numAnimTokens = 1;
+  while (0 < numAnimTokens) {
+    token = Com_ParseOnLine(input);
+    if ((token == (char *)0x0) || (*token == '\0')) {
+      local_78 = animName;
       do {
-        uVar1 = *local_78;
+        cVar1 = *local_78;
         local_78 = local_78 + 1;
-      } while (uVar1 != '\0');
-      if (local_78 != local_5c + 1) break;
+      } while (cVar1 != '\0');
+      if (local_78 != animName + 1) break;
       BG_AnimParseError("BG_ParseCommands: expected animation");
     }
     else {
-      local_18 = local_18 + -1;
-      iVar7 = I_stricmp((char *)local_14,"%vehicle_name");
-      if (iVar7 == 0) {
+      numAnimTokens = numAnimTokens + -1;
+      iVar6 = I_stricmp(token,"%vehicle_name");
+      if (iVar6 == 0) {
         if (((parseVehicleNameIndex < 0) ||
-            (pcVar8 = BG_StringForIndex(parseVehicleNameIndex,animVehicleNameStr,0),
-            pcVar8 == (char *)0x0)) || (parseVehicleLoop == false)) {
+            (pcVar7 = BG_StringForIndex(parseVehicleNameIndex,animVehicleNameStr,0),
+            pcVar7 == (char *)0x0)) || (parseVehicleLoop == false)) {
           BG_AnimParseError(
                            "BG_ParseCommands: %vehicle_name variable used outside #FOR_ALL_VEHICLES loop"
                            );
         }
-        pcVar8 = BG_StringForIndex(parseVehicleNameIndex,animVehicleNameStr,0);
-        local_88 = pcVar8;
+        pcVar7 = BG_StringForIndex(parseVehicleNameIndex,animVehicleNameStr,0);
+        local_88 = pcVar7;
         do {
-          cVar2 = *local_88;
+          cVar1 = *local_88;
           local_88 = local_88 + 1;
-        } while (cVar2 != '\0');
-        local_9c = (char *)((int)&local_60 + 3);
+        } while (cVar1 != '\0');
+        local_9c = (char *)((int)&partIndex + 3);
         do {
-          pcVar11 = local_9c + 1;
+          pcVar10 = local_9c + 1;
           local_9c = local_9c + 1;
-        } while (*pcVar11 != '\0');
-        pcVar11 = pcVar8;
-        for (uVar9 = (uint)((int)local_88 - (int)pcVar8) >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-          *(undefined4 *)local_9c = *(undefined4 *)pcVar11;
-          pcVar11 = pcVar11 + 4;
+        } while (*pcVar10 != '\0');
+        pcVar10 = pcVar7;
+        for (uVar8 = (uint)((int)local_88 - (int)pcVar7) >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+          *(undefined4 *)local_9c = *(undefined4 *)pcVar10;
+          pcVar10 = pcVar10 + 4;
           local_9c = local_9c + 4;
         }
-        for (uVar9 = (int)local_88 - (int)pcVar8 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
-          *local_9c = *pcVar11;
-          pcVar11 = pcVar11 + 1;
+        for (uVar8 = (int)local_88 - (int)pcVar7 & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
+          *local_9c = *pcVar10;
+          pcVar10 = pcVar10 + 1;
           local_9c = local_9c + 1;
         }
       }
       else {
-        local_a4 = local_14;
+        local_a4 = token;
         do {
-          uVar1 = *local_a4;
+          cVar1 = *local_a4;
           local_a4 = local_a4 + 1;
-        } while (uVar1 != '\0');
-        local_b8 = (uchar *)((int)&local_60 + 3);
+        } while (cVar1 != '\0');
+        local_b8 = (char *)((int)&partIndex + 3);
         do {
-          puVar12 = local_b8 + 1;
+          pcVar7 = local_b8 + 1;
           local_b8 = local_b8 + 1;
-        } while (*puVar12 != '\0');
-        puVar12 = local_14;
-        for (uVar9 = (uint)((int)local_a4 - (int)local_14) >> 2; uVar9 != 0; uVar9 = uVar9 - 1) {
-          *(undefined4 *)local_b8 = *(undefined4 *)puVar12;
-          puVar12 = puVar12 + 4;
+        } while (*pcVar7 != '\0');
+        pcVar7 = token;
+        for (uVar8 = (uint)((int)local_a4 - (int)token) >> 2; uVar8 != 0; uVar8 = uVar8 - 1) {
+          *(undefined4 *)local_b8 = *(undefined4 *)pcVar7;
+          pcVar7 = pcVar7 + 4;
           local_b8 = local_b8 + 4;
         }
-        for (uVar9 = (int)local_a4 - (int)local_14 & 3; uVar9 != 0; uVar9 = uVar9 - 1) {
-          *local_b8 = *puVar12;
-          puVar12 = puVar12 + 1;
+        for (uVar8 = (int)local_a4 - (int)token & 3; uVar8 != 0; uVar8 = uVar8 - 1) {
+          *local_b8 = *pcVar7;
+          pcVar7 = pcVar7 + 1;
           local_b8 = local_b8 + 1;
         }
       }
-      local_14 = (uchar *)Com_ParseOnLine(param_1);
-      if (local_14 != (uchar *)0x0) {
-        iVar7 = I_stricmp((char *)local_14,"+");
-        if (iVar7 == 0) {
-          local_18 = 1;
+      token = Com_ParseOnLine(input);
+      if (token != (char *)0x0) {
+        iVar6 = I_stricmp(token,"+");
+        if (iVar6 == 0) {
+          numAnimTokens = 1;
         }
         else {
           Com_UngetToken();
@@ -1252,326 +1222,328 @@ code_r0x0040929b:
       }
     }
   }
-  iVar7 = BG_AnimationIndexForString((char *)local_5c);
-  local_10->animIndex[local_60] = (short)iVar7;
-  local_10->animDuration[local_60] =
-       (ushort)param_3->animations[local_10->animIndex[local_60]].duration;
-  if ((uint)local_10->animDuration[local_60] !=
-      param_3->animations[local_10->animIndex[local_60]].duration) {
-    param_3->animations[local_10->animIndex[local_60]].flags =
-         param_3->animations[local_10->animIndex[local_60]].flags | 0x1000;
+  iVar6 = BG_AnimationIndexForString(animName);
+  command->animIndex[partIndex] = (short)iVar6;
+  command->animDuration[partIndex] =
+       (ushort)scriptData->animations[command->animIndex[partIndex]].duration;
+  if ((uint)command->animDuration[partIndex] !=
+      scriptData->animations[command->animIndex[partIndex]].duration) {
+    scriptData->animations[command->animIndex[partIndex]].flags =
+         scriptData->animations[command->animIndex[partIndex]].flags | 0x1000;
   }
   if (g_pLoadAnims == (loadAnim_t *)0x0) {
     if (((parseMovetype != ANIM_MT_UNUSED) || (parseEvent != 0)) &&
-       (local_10->bodyPart[local_60] != 2)) {
-      param_3->animations[local_10->animIndex[local_60]].stance =
+       (command->bodyPart[partIndex] != 2)) {
+      scriptData->animations[command->animIndex[partIndex]].stance =
            1 << ((byte)parseStance & 0x1f) |
-           param_3->animations[local_10->animIndex[local_60]].stance;
-      sVar3 = local_10->animIndex[local_60];
+           scriptData->animations[command->animIndex[partIndex]].stance;
+      sVar2 = command->animIndex[partIndex];
       _allshl();
-      uVar9 = *(uint *)((int)&param_3->animations[sVar3].movetype + 4);
-      sVar4 = local_10->animIndex[local_60];
-      *(uint *)&param_3->animations[sVar4].movetype =
-           extraout_EAX | (uint)param_3->animations[sVar3].movetype;
-      *(uint *)((int)&param_3->animations[sVar4].movetype + 4) = extraout_EDX | uVar9;
+      uVar8 = *(uint *)((int)&scriptData->animations[sVar2].movetype + 4);
+      sVar3 = command->animIndex[partIndex];
+      *(uint *)&scriptData->animations[sVar3].movetype =
+           extraout_EAX | (uint)scriptData->animations[sVar2].movetype;
+      *(uint *)((int)&scriptData->animations[sVar3].movetype + 4) = extraout_EDX | uVar8;
       if (parseMovestatus == ANIM_MOVESTATUS_RUN) {
-        param_3->animations[local_10->animIndex[local_60]].flags =
-             param_3->animations[local_10->animIndex[local_60]].flags | 0x4000000;
+        scriptData->animations[command->animIndex[partIndex]].flags =
+             scriptData->animations[command->animIndex[partIndex]].flags | 0x4000000;
       }
       else if (parseMovestatus == ANIM_MOVESTATUS_WALK) {
-        param_3->animations[local_10->animIndex[local_60]].flags =
-             param_3->animations[local_10->animIndex[local_60]].flags | 0x2000000;
+        scriptData->animations[command->animIndex[partIndex]].flags =
+             scriptData->animations[command->animIndex[partIndex]].flags | 0x2000000;
       }
       if (((parseMovetype == ANIM_MT_CLIMBUP) || (parseMovetype == ANIM_MT_CLIMBDOWN)) &&
-         (param_3->animations[local_10->animIndex[local_60]].moveSpeed != 0.0)) {
-        param_3->animations[local_10->animIndex[local_60]].flags =
-             param_3->animations[local_10->animIndex[local_60]].flags | 2;
+         (scriptData->animations[command->animIndex[partIndex]].moveSpeed != 0.0)) {
+        scriptData->animations[command->animIndex[partIndex]].flags =
+             scriptData->animations[command->animIndex[partIndex]].flags | 2;
       }
-      for (local_c = 0; local_c < param_2->numConditions; local_c = local_c + 1) {
-        if (param_2->conditions[local_c].index == 6) {
-          if (param_2->conditions[local_c].value == 3) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x10;
+      for (i = 0; i < scriptItem->numConditions; i = i + 1) {
+        if (scriptItem->conditions[i].index == 6) {
+          if (scriptItem->conditions[i].value == 3) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x10;
           }
-          else if (param_2->conditions[local_c].value == 4) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x20;
+          else if (scriptItem->conditions[i].value == 4) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x20;
           }
-          else if (param_2->conditions[local_c].value == 2) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x40;
+          else if (scriptItem->conditions[i].value == 2) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x40;
           }
-          else if (param_2->conditions[local_c].value == 1) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x80;
-          }
-        }
-        else if (param_2->conditions[local_c].index == 0xd) {
-          if (param_2->conditions[local_c].value == 1) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x20000;
-          }
-          else if (param_2->conditions[local_c].value == 2) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x40000;
+          else if (scriptItem->conditions[i].value == 1) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x80;
           }
         }
-        else if (param_2->conditions[local_c].index == 7) {
-          if (param_2->conditions[local_c].value == 3) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x80000;
+        else if (scriptItem->conditions[i].index == 0xd) {
+          if (scriptItem->conditions[i].value == 1) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x20000;
           }
-          else if (param_2->conditions[local_c].value == 4) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x100000;
-          }
-          else if (param_2->conditions[local_c].value == 2) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x200000;
-          }
-          else if (param_2->conditions[local_c].value == 1) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x400000;
+          else if (scriptItem->conditions[i].value == 2) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x40000;
           }
         }
-        else if (param_2->conditions[local_c].index == 5) {
-          if (param_2->conditions[local_c].value == 2) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x4000000;
+        else if (scriptItem->conditions[i].index == 7) {
+          if (scriptItem->conditions[i].value == 3) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x80000;
           }
-          else if (param_2->conditions[local_c].value == 1) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x2000000;
+          else if (scriptItem->conditions[i].value == 4) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x100000;
           }
-          else if (param_2->conditions[local_c].value == 0) {
-            param_3->animations[local_10->animIndex[local_60]].flags = 0;
+          else if (scriptItem->conditions[i].value == 2) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x200000;
+          }
+          else if (scriptItem->conditions[i].value == 1) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x400000;
           }
         }
-        else if (param_2->conditions[local_c].index == 9) {
-          if (param_2->conditions[local_c].value == 1) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x800000;
+        else if (scriptItem->conditions[i].index == 5) {
+          if (scriptItem->conditions[i].value == 2) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x4000000;
           }
-          else if (param_2->conditions[local_c].value == 2) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 0x1000000;
+          else if (scriptItem->conditions[i].value == 1) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x2000000;
+          }
+          else if (scriptItem->conditions[i].value == 0) {
+            scriptData->animations[command->animIndex[partIndex]].flags = 0;
+          }
+        }
+        else if (scriptItem->conditions[i].index == 9) {
+          if (scriptItem->conditions[i].value == 1) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x800000;
+          }
+          else if (scriptItem->conditions[i].value == 2) {
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 0x1000000;
           }
           else {
-            param_3->animations[local_10->animIndex[local_60]].flags = 0;
+            scriptData->animations[command->animIndex[partIndex]].flags = 0;
           }
         }
       }
     }
     if ((parseMovetype == ANIM_MT_IDLE) || (parseEvent == 0x16)) {
-      param_3->animations[local_10->animIndex[local_60]].moveSpeed = 0.0;
+      scriptData->animations[command->animIndex[partIndex]].moveSpeed = 0.0;
     }
     if (parseMovetype == ANIM_MT_RUN) {
-      param_3->animations[local_10->animIndex[local_60]].flags =
-           param_3->animations[local_10->animIndex[local_60]].flags | 0x4000000;
+      scriptData->animations[command->animIndex[partIndex]].flags =
+           scriptData->animations[command->animIndex[partIndex]].flags | 0x4000000;
     }
     if (parseMovetype == ANIM_MT_WALK) {
-      param_3->animations[local_10->animIndex[local_60]].flags =
-           param_3->animations[local_10->animIndex[local_60]].flags | 0x2000000;
+      scriptData->animations[command->animIndex[partIndex]].flags =
+           scriptData->animations[command->animIndex[partIndex]].flags | 0x2000000;
     }
     if (parseEvent == 2) {
-      param_3->animations[local_10->animIndex[local_60]].flags =
-           param_3->animations[local_10->animIndex[local_60]].flags | 8;
-      param_3->animations[local_10->animIndex[local_60]].initialLerp = 0x1e;
+      scriptData->animations[command->animIndex[partIndex]].flags =
+           scriptData->animations[command->animIndex[partIndex]].flags | 8;
+      scriptData->animations[command->animIndex[partIndex]].initialLerp = 0x1e;
     }
     else if ((parseEvent == 0xf) || (parseEvent == 0x10)) {
-      param_3->animations[local_10->animIndex[local_60]].flags =
-           param_3->animations[local_10->animIndex[local_60]].flags | 0x400;
+      scriptData->animations[command->animIndex[partIndex]].flags =
+           scriptData->animations[command->animIndex[partIndex]].flags | 0x400;
     }
     else if (parseEvent == 1) {
-      param_3->animations[local_10->animIndex[local_60]].moveSpeed = 0.0;
-      param_3->animations[local_10->animIndex[local_60]].rotSpeed = 0.0;
-      param_3->animations[local_10->animIndex[local_60]].flags =
-           param_3->animations[local_10->animIndex[local_60]].flags | 0x100;
+      scriptData->animations[command->animIndex[partIndex]].moveSpeed = 0.0;
+      scriptData->animations[command->animIndex[partIndex]].rotSpeed = 0.0;
+      scriptData->animations[command->animIndex[partIndex]].flags =
+           scriptData->animations[command->animIndex[partIndex]].flags | 0x100;
     }
     else if (parseEvent == 7) {
-      param_3->animations[local_10->animIndex[local_60]].moveSpeed = 0.0;
+      scriptData->animations[command->animIndex[partIndex]].moveSpeed = 0.0;
     }
     else if (((int)parseMovetype < 9) || (0x12 < (int)parseMovetype)) {
       if ((parseEvent < 0x13) || (0x15 < parseEvent)) {
         if (parseEvent == 0x16) {
-          param_3->animations[local_10->animIndex[local_60]].flags =
-               param_3->animations[local_10->animIndex[local_60]].flags | 0x800;
+          scriptData->animations[command->animIndex[partIndex]].flags =
+               scriptData->animations[command->animIndex[partIndex]].flags | 0x800;
         }
       }
       else {
-        param_3->animations[local_10->animIndex[local_60]].moveSpeed = 0.0;
-        param_3->animations[local_10->animIndex[local_60]].rotSpeed = 0.0;
+        scriptData->animations[command->animIndex[partIndex]].moveSpeed = 0.0;
+        scriptData->animations[command->animIndex[partIndex]].rotSpeed = 0.0;
       }
     }
     else {
-      param_3->animations[local_10->animIndex[local_60]].moveSpeed = 0.0;
-      param_3->animations[local_10->animIndex[local_60]].rotSpeed = 0.0;
+      scriptData->animations[command->animIndex[partIndex]].moveSpeed = 0.0;
+      scriptData->animations[command->animIndex[partIndex]].rotSpeed = 0.0;
     }
   }
   do {
-    local_8 = 0;
-    local_14 = (uchar *)Com_ParseOnLine(param_1);
-    if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+    bCommandFound = 0;
+    token = Com_ParseOnLine(input);
+    if ((token == (char *)0x0) || (*token == '\0')) {
       Com_UngetToken();
     }
     else {
-      iVar7 = I_stricmp((char *)local_14,"duration");
-      if (iVar7 == 0) {
-        local_8 = 1;
-        local_14 = (uchar *)Com_ParseOnLine(param_1);
-        if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+      iVar6 = I_stricmp(token,"duration");
+      if (iVar6 == 0) {
+        bCommandFound = 1;
+        token = Com_ParseOnLine(input);
+        if ((token == (char *)0x0) || (*token == '\0')) {
           BG_AnimParseError("BG_ParseCommands: expected duration value");
         }
-        iVar7 = atoi((char *)local_14);
-        local_10->animDuration[local_60] = (ushort)iVar7;
+        iVar6 = atoi(token);
+        command->animDuration[partIndex] = (ushort)iVar6;
       }
       else {
-        iVar7 = I_stricmp((char *)local_14,"turretanim");
-        if (iVar7 == 0) {
-          local_8 = 1;
+        iVar6 = I_stricmp(token,"turretanim");
+        if (iVar6 == 0) {
+          bCommandFound = 1;
           if (g_pLoadAnims == (loadAnim_t *)0x0) {
-            param_3->animations[local_10->animIndex[local_60]].flags =
-                 param_3->animations[local_10->animIndex[local_60]].flags | 4;
+            scriptData->animations[command->animIndex[partIndex]].flags =
+                 scriptData->animations[command->animIndex[partIndex]].flags | 4;
           }
-          if (local_10->bodyPart[local_60] != 3) {
+          if (command->bodyPart[partIndex] != 3) {
             BG_AnimParseError(
                              "BG_ParseCommands: Turret animations can only be played on the \'both\' body part"
                              );
           }
         }
         else {
-          iVar7 = I_stricmp((char *)local_14,"blendtime");
-          if (iVar7 == 0) {
-            local_8 = 1;
-            local_14 = (uchar *)Com_ParseOnLine(param_1);
-            if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+          iVar6 = I_stricmp(token,"blendtime");
+          if (iVar6 == 0) {
+            bCommandFound = 1;
+            token = Com_ParseOnLine(input);
+            if ((token == (char *)0x0) || (*token == '\0')) {
               BG_AnimParseError("BG_ParseCommands: expected blendtime value");
             }
             if (g_pLoadAnims == (loadAnim_t *)0x0) {
-              iVar7 = atoi((char *)local_14);
-              param_3->animations[local_10->animIndex[local_60]].initialLerp = iVar7;
+              iVar6 = atoi(token);
+              scriptData->animations[command->animIndex[partIndex]].initialLerp = iVar6;
             }
           }
           else {
-            iVar7 = I_stricmp((char *)local_14,"blendouttime");
-            if (iVar7 == 0) {
-              local_8 = 1;
-              local_14 = (uchar *)Com_ParseOnLine(param_1);
-              if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+            iVar6 = I_stricmp(token,"blendouttime");
+            if (iVar6 == 0) {
+              bCommandFound = 1;
+              token = Com_ParseOnLine(input);
+              if ((token == (char *)0x0) || (*token == '\0')) {
                 BG_AnimParseError("BG_ParseCommands: expected blendtime value");
               }
               if (g_pLoadAnims == (loadAnim_t *)0x0) {
-                iVar7 = atoi((char *)local_14);
-                param_3->animations[local_10->animIndex[local_60]].finalLerp = iVar7;
+                iVar6 = atoi(token);
+                scriptData->animations[command->animIndex[partIndex]].finalLerp = iVar6;
               }
             }
             else {
-              iVar7 = I_stricmp((char *)local_14,"attach");
-              if (iVar7 == 0) {
-                local_8 = 1;
-                local_14 = (uchar *)Com_ParseOnLine(param_1);
-                if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+              iVar6 = I_stricmp(token,"attach");
+              if (iVar6 == 0) {
+                bCommandFound = 1;
+                token = Com_ParseOnLine(input);
+                if ((token == (char *)0x0) || (*token == '\0')) {
                   BG_AnimParseError("BG_ParseCommands: expected attach tag name");
                 }
-                uVar9 = SL_FindString((char *)local_14,SCRIPTINSTANCE_SERVER);
-                local_10->tagName = (ushort)uVar9;
-                if (local_10->tagName == 0) {
-                  uVar9 = SL_GetString_(SCRIPTINSTANCE_SERVER,(char *)local_14,0,0x11);
-                  local_10->tagName = (ushort)uVar9;
+                uVar8 = SL_FindString(token,SCRIPTINSTANCE_SERVER);
+                command->tagName = (ushort)uVar8;
+                if (command->tagName == 0) {
+                  uVar8 = SL_GetString_(SCRIPTINSTANCE_SERVER,token,0,0x11);
+                  command->tagName = (ushort)uVar8;
                 }
               }
               else {
-                iVar7 = I_stricmp((char *)local_14,"turn_to_turret");
-                if (iVar7 == 0) {
-                  local_8 = 1;
-                  local_10->flags = local_10->flags | 2;
+                iVar6 = I_stricmp(token,"turn_to_turret");
+                if (iVar6 == 0) {
+                  bCommandFound = 1;
+                  command->flags = command->flags | 2;
                 }
                 else {
-                  iVar7 = I_stricmp((char *)local_14,"throw_grenade");
-                  if (iVar7 == 0) {
-                    local_8 = 1;
-                    local_10->flags = local_10->flags | 1;
+                  iVar6 = I_stricmp(token,"throw_grenade");
+                  if (iVar6 == 0) {
+                    bCommandFound = 1;
+                    command->flags = command->flags | 1;
                   }
                   else {
-                    iVar7 = I_stricmp((char *)local_14,"grenadeAnim");
-                    if (iVar7 == 0) {
-                      local_8 = 1;
+                    iVar6 = I_stricmp(token,"grenadeAnim");
+                    if (iVar6 == 0) {
+                      bCommandFound = 1;
                       if (g_pLoadAnims == (loadAnim_t *)0x0) {
-                        param_3->animations[local_10->animIndex[local_60]].flags =
-                             param_3->animations[local_10->animIndex[local_60]].flags | 0x10000;
+                        scriptData->animations[command->animIndex[partIndex]].flags =
+                             scriptData->animations[command->animIndex[partIndex]].flags | 0x10000;
                       }
                     }
                     else {
-                      iVar7 = I_stricmp((char *)local_14,"allowMovementInterrupt");
-                      if (iVar7 == 0) {
-                        local_8 = 1;
+                      iVar6 = I_stricmp(token,"allowMovementInterrupt");
+                      if (iVar6 == 0) {
+                        bCommandFound = 1;
                         if (g_pLoadAnims == (loadAnim_t *)0x0) {
-                          param_3->animations[local_10->animIndex[local_60]].flags =
-                               param_3->animations[local_10->animIndex[local_60]].flags | 0x8000000;
+                          scriptData->animations[command->animIndex[partIndex]].flags =
+                               scriptData->animations[command->animIndex[partIndex]].flags |
+                               0x8000000;
                         }
                       }
                       else {
-                        iVar7 = I_stricmp((char *)local_14,"weaponTimeScale");
-                        if (iVar7 == 0) {
-                          local_8 = 1;
-                          if ((((param_3->animations[local_10->animIndex[local_60]].flags & 0x8000U)
-                                != 0) ||
-                              (0.0 < param_3->animations[local_10->animIndex[local_60]].
+                        iVar6 = I_stricmp(token,"weaponTimeScale");
+                        if (iVar6 == 0) {
+                          bCommandFound = 1;
+                          if ((((scriptData->animations[command->animIndex[partIndex]].flags &
+                                0x8000U) != 0) ||
+                              (0.0 < scriptData->animations[command->animIndex[partIndex]].
                                      forceAnimRate)) &&
-                             (bVar6 = Assert_MyHandler(
+                             (bVar5 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp"
-                                                  ,0x722,0,"%s\n\t%s"), !bVar6)) {
-                            pcVar5 = (code *)swi(3);
-                            (*pcVar5)();
+                                                  ,0x722,0,"%s\n\t%s"), !bVar5)) {
+                            pcVar4 = (code *)swi(3);
+                            (*pcVar4)();
                             return;
                           }
                           if (g_pLoadAnims == (loadAnim_t *)0x0) {
-                            param_3->animations[local_10->animIndex[local_60]].flags =
-                                 param_3->animations[local_10->animIndex[local_60]].flags | 0x4000;
+                            scriptData->animations[command->animIndex[partIndex]].flags =
+                                 scriptData->animations[command->animIndex[partIndex]].flags |
+                                 0x4000;
                           }
                         }
                         else {
-                          iVar7 = I_stricmp((char *)local_14,"weaponDelayScale");
-                          if (iVar7 == 0) {
-                            local_8 = 1;
-                            if ((((param_3->animations[local_10->animIndex[local_60]].flags &
+                          iVar6 = I_stricmp(token,"weaponDelayScale");
+                          if (iVar6 == 0) {
+                            bCommandFound = 1;
+                            if ((((scriptData->animations[command->animIndex[partIndex]].flags &
                                   0x4000U) != 0) ||
-                                (0.0 < param_3->animations[local_10->animIndex[local_60]].
+                                (0.0 < scriptData->animations[command->animIndex[partIndex]].
                                        forceAnimRate)) &&
-                               (bVar6 = Assert_MyHandler(
+                               (bVar5 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp"
-                                                  ,0x72a,0,"%s\n\t%s"), !bVar6)) {
-                              pcVar5 = (code *)swi(3);
-                              (*pcVar5)();
+                                                  ,0x72a,0,"%s\n\t%s"), !bVar5)) {
+                              pcVar4 = (code *)swi(3);
+                              (*pcVar4)();
                               return;
                             }
                             if (g_pLoadAnims == (loadAnim_t *)0x0) {
-                              param_3->animations[local_10->animIndex[local_60]].flags =
-                                   param_3->animations[local_10->animIndex[local_60]].flags | 0x8000
-                              ;
+                              scriptData->animations[command->animIndex[partIndex]].flags =
+                                   scriptData->animations[command->animIndex[partIndex]].flags |
+                                   0x8000;
                             }
                           }
                           else {
-                            iVar7 = I_stricmp((char *)local_14,"animrate");
-                            if (iVar7 == 0) {
-                              local_8 = 1;
-                              if (((param_3->animations[local_10->animIndex[local_60]].flags &
+                            iVar6 = I_stricmp(token,"animrate");
+                            if (iVar6 == 0) {
+                              bCommandFound = 1;
+                              if (((scriptData->animations[command->animIndex[partIndex]].flags &
                                    0xc000U) != 0) &&
-                                 (bVar6 = Assert_MyHandler(
+                                 (bVar5 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp"
-                                                  ,0x732,0,"%s\n\t%s"), !bVar6)) {
-                                pcVar5 = (code *)swi(3);
-                                (*pcVar5)();
+                                                  ,0x732,0,"%s\n\t%s"), !bVar5)) {
+                                pcVar4 = (code *)swi(3);
+                                (*pcVar4)();
                                 return;
                               }
-                              local_14 = (uchar *)Com_ParseOnLine(param_1);
-                              if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+                              token = Com_ParseOnLine(input);
+                              if ((token == (char *)0x0) || (*token == '\0')) {
                                 BG_AnimParseError("BG_ParseCommands: expected animrate value");
                               }
                               if (g_pLoadAnims == (loadAnim_t *)0x0) {
-                                dVar13 = atof((char *)local_14);
-                                param_3->animations[local_10->animIndex[local_60]].forceAnimRate =
-                                     (float)dVar13;
+                                dVar11 = atof(token);
+                                scriptData->animations[command->animIndex[partIndex]].forceAnimRate
+                                     = (float)dVar11;
                               }
                             }
                             else {
@@ -1589,32 +1561,31 @@ code_r0x0040929b:
         }
       }
     }
-  } while (local_8 != 0);
-  if ((local_10->bodyPart[local_60] == 3) ||
-     (iVar7 = local_60 + 1, bVar6 = 0 < local_60, local_60 = iVar7, bVar6)) {
+  } while (bCommandFound != 0);
+  if ((command->bodyPart[partIndex] == 3) ||
+     (iVar6 = partIndex + 1, bVar5 = 0 < partIndex, partIndex = iVar6, bVar5)) {
 LAB_0040a4af:
-    while ((local_14 = (uchar *)Com_ParseOnLine(param_1), local_14 != (uchar *)0x0 &&
-           (*local_14 != '\0'))) {
-      iVar7 = I_stricmp((char *)local_14,"sound");
-      if (iVar7 == 0) {
-        local_14 = (uchar *)Com_ParseOnLine(param_1);
-        if ((local_14 == (uchar *)0x0) || (*local_14 == '\0')) {
+    while ((token = Com_ParseOnLine(input), token != (char *)0x0 && (*token != '\0'))) {
+      iVar6 = I_stricmp(token,"sound");
+      if (iVar6 == 0) {
+        token = Com_ParseOnLine(input);
+        if ((token == (char *)0x0) || (*token == '\0')) {
           BG_AnimParseError("BG_ParseCommands: expected sound");
         }
-        strstr(local_14,(uchar *)".wav");
+        strstr((uchar *)token,(uchar *)".wav");
         if (extraout_EAX_00 != 0) {
           BG_AnimParseError("BG_ParseCommands: wav files not supported, only sound scripts");
         }
-        psVar10 = (snd_alias_list_t *)
-                  (**(code **)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
-                                         + 8) + 0x8d37c))(local_14);
-        local_10->soundAlias = psVar10;
+        psVar9 = (snd_alias_list_t *)
+                 (**(code **)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0x8d37c))(token);
+        command->soundAlias = psVar9;
       }
       else {
         BG_AnimParseError("BG_ParseCommands: unknown parameter \'%s\'");
       }
     }
-    local_60 = 0;
+    partIndex = 0;
   }
   goto LAB_00409193;
 }
@@ -1627,7 +1598,8 @@ LAB_0040a4af:
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 void __cdecl
-BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param_3,char *param_4)
+BG_AnimParseAnimScript
+          (animScriptData_t *scriptData,loadAnim_t *pLoadAnims,uint *piNumAnims,char *levelName)
 
 {
   char cVar1;
@@ -1648,39 +1620,44 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
   char *local_188;
   char *local_178;
   char *local_168;
-  char local_158 [24];
-  int local_140;
-  int local_13c;
-  int local_138;
-  int local_134;
-  int *local_130;
-  char *local_12c;
-  char local_125;
-  char *local_124;
-  int local_120;
-  animScriptItem_t *local_11c;
-  int local_118;
-  char *local_114;
-  char *local_110;
-  animScript_t *local_10c;
-  int local_108;
-  int local_104;
-  com_parse_mark_t local_100;
-  animScriptItem_t local_ec;
+  bool inBrace;
+  bool conditionSeatsPresent;
+  int seat;
+  char vehName [24];
+  int gunners;
+  int passengers;
+  int drivers;
+  int vehType;
+  int *pInt;
+  char *levelStr;
+  bool matched;
+  char *vehTypeStr;
+  int newParseMode;
+  animScriptItem_t *currentScriptItem;
+  int oldState;
+  char *input;
+  char *text_p;
+  animScript_t *currentScript;
+  int inCommentLevel;
+  int indentLevel;
+  com_parse_mark_t forAllVehiclesMark;
+  animScriptItem_t tempScriptItem;
   uint local_24;
-  char *local_20;
-  int local_1c;
-  int local_18 [5];
+  char *token;
+  animScriptParseMode_t parseMode;
+  int indexes [3];
+  int i;
+  int defineType;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_11c = (animScriptItem_t *)0x0;
-  local_114 = Com_LoadRawTextFile(globalFilename);
-  if (local_114 == (char *)0x0) {
+  currentScriptItem = (animScriptItem_t *)0x0;
+  input = Com_LoadRawTextFile(globalFilename);
+  if (input == (char *)0x0) {
     Com_Error(ERR_DROP,"\x15Couldn\'t load player animation script %s\n");
   }
-  g_pLoadAnims = param_2;
-  g_piNumLoadAnims = param_3;
-  local_1c = 0;
+  g_pLoadAnims = pLoadAnims;
+  g_piNumLoadAnims = piNumAnims;
+  parseMode = PARSEMODE_DEFINES;
   BG_InitWeaponStrings();
   BG_InitVehicles();
   memset((uchar *)defineStr,'\0',0xb80);
@@ -1689,105 +1666,105 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
   defineStringsOffset = 0;
   parseVehicleLoop = false;
   parseVehicleNameIndex = -1;
-  local_108 = 0;
-  for (local_18[3] = 0; local_18[3] < 3; local_18[3] = local_18[3] + 1) {
-    local_18[local_18[3]] = -1;
+  inCommentLevel = 0;
+  for (i = 0; i < 3; i = i + 1) {
+    indexes[i] = -1;
   }
-  local_104 = 0;
-  local_10c = (animScript_t *)0x0;
-  local_110 = local_114;
+  indentLevel = 0;
+  currentScript = (animScript_t *)0x0;
+  text_p = input;
   Com_BeginParseSession("BG_AnimParseAnimScript");
-  for (local_18[3] = 0; local_18[3] < 0x22; local_18[3] = local_18[3] + 1) {
-    memset((uchar *)(param_1->scriptEvents + local_18[3]),'\0',0x204);
+  for (i = 0; i < 0x22; i = i + 1) {
+    memset((uchar *)(scriptData->scriptEvents + i),'\0',0x204);
   }
   do {
     while( true ) {
       while( true ) {
         while( true ) {
-          local_20 = Com_Parse(&local_110);
-          if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
-            if (local_104 != 0) {
+          token = Com_Parse(&text_p);
+          if ((token == (char *)0x0) || (*token == '\0')) {
+            if (indentLevel != 0) {
               BG_AnimParseError("BG_AnimParseAnimScript: unexpected end of file: %s");
             }
             Com_EndParseSession();
-            Com_UnloadRawTextFile(local_114);
+            Com_UnloadRawTextFile(input);
             return;
           }
-          if (local_108 == 0) break;
-          iVar4 = I_stricmp(local_20,"*/");
-          if ((iVar4 == 0) && (local_108 = local_108 + -1, local_108 < 0)) {
-            local_108 = 0;
+          if (inCommentLevel == 0) break;
+          iVar4 = I_stricmp(token,"*/");
+          if ((iVar4 == 0) && (inCommentLevel = inCommentLevel + -1, inCommentLevel < 0)) {
+            inCommentLevel = 0;
           }
         }
-        iVar4 = I_stricmp(local_20,"/*");
+        iVar4 = I_stricmp(token,"/*");
         if (iVar4 != 0) break;
-        local_108 = local_108 + 1;
+        inCommentLevel = inCommentLevel + 1;
       }
-      local_120 = BG_IndexForString(local_20,animParseModesStr,1);
-      if (local_120 < 0) break;
-      if (local_104 != 0) {
+      newParseMode = BG_IndexForString(token,animParseModesStr,1);
+      if (newParseMode < 0) break;
+      if (indentLevel != 0) {
         BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
       }
-      local_1c = local_120;
+      parseMode = newParseMode;
       parseMovetype = ANIM_MT_UNUSED;
       parseEvent = -1;
     }
-    switch(local_1c) {
-    case 0:
-      iVar4 = I_stricmp(local_20,"set");
+    switch(parseMode) {
+    case PARSEMODE_DEFINES:
+      iVar4 = I_stricmp(token,"set");
       if (iVar4 == 0) {
-        local_20 = Com_ParseOnLine(&local_110);
-        if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+        token = Com_ParseOnLine(&text_p);
+        if ((token == (char *)0x0) || (*token == '\0')) {
           BG_AnimParseError("BG_AnimParseAnimScript: expected condition type string");
         }
-        local_18[4] = BG_IndexForString(local_20,animConditionsStr,0);
-        if (animConditionsTable[local_18[4]].type != ANIM_CONDTYPE_BITFLAGS) {
+        defineType = BG_IndexForString(token,animConditionsStr,0);
+        if (animConditionsTable[defineType].type != ANIM_CONDTYPE_BITFLAGS) {
           BG_AnimParseError("BG_AnimParseAnimScript: can not make a define of type \'%s\'");
         }
-        local_20 = Com_ParseOnLine(&local_110);
-        if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+        token = Com_ParseOnLine(&text_p);
+        if ((token == (char *)0x0) || (*token == '\0')) {
           BG_AnimParseError("BG_AnimParseAnimScript: expected condition define string");
         }
-        pcVar6 = BG_CopyStringIntoBuffer(local_20,defineStrings,10000,&defineStringsOffset);
-        defineStr[local_18[4]][numDefines[local_18[4]]].string = pcVar6;
-        lVar5 = BG_StringHashValue(defineStr[local_18[4]][numDefines[local_18[4]]].string);
-        *(long *)(local_18[4] * 0x80 + 0xe22c9c + numDefines[local_18[4]] * 8) = lVar5;
-        local_20 = Com_ParseOnLine(&local_110);
-        if (local_20 == (char *)0x0) {
+        pcVar6 = BG_CopyStringIntoBuffer(token,defineStrings,10000,&defineStringsOffset);
+        defineStr[defineType][numDefines[defineType]].string = pcVar6;
+        lVar5 = BG_StringHashValue(defineStr[defineType][numDefines[defineType]].string);
+        *(long *)(defineType * 0x80 + 0xe22c9c + numDefines[defineType] * 8) = lVar5;
+        token = Com_ParseOnLine(&text_p);
+        if (token == (char *)0x0) {
           BG_AnimParseError("BG_AnimParseAnimScript: expected \'=\', found end of line");
         }
-        iVar4 = I_stricmp(local_20,"=");
+        iVar4 = I_stricmp(token,"=");
         if (iVar4 != 0) {
           BG_AnimParseError("BG_AnimParseAnimScript: expected \'=\', found \'%s\'");
         }
         BG_ParseConditionBits
-                  (&local_110,animConditionsTable[local_18[4]].values,local_18[4],
-                   defineBits[local_18[4]] + numDefines[local_18[4]]);
-        numDefines[local_18[4]] = numDefines[local_18[4]] + 1;
+                  (&text_p,animConditionsTable[defineType].values,defineType,
+                   defineBits[defineType] + numDefines[defineType]);
+        numDefines[defineType] = numDefines[defineType] + 1;
       }
       else {
-        iVar4 = I_stricmp(local_20,"#IF");
+        iVar4 = I_stricmp(token,"#IF");
         if (iVar4 == 0) {
-          local_20 = Com_ParseOnLine(&local_110);
-          if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+          token = Com_ParseOnLine(&text_p);
+          if ((token == (char *)0x0) || (*token == '\0')) {
             BG_AnimParseError("BG_AnimParseAnimScript: expected #IF <conditional> <value>");
           }
-          iVar4 = I_stricmp(local_20,"vehicle_anim_type");
+          iVar4 = I_stricmp(token,"vehicle_anim_type");
           if (iVar4 == 0) {
-            local_20 = Com_ParseOnLine(&local_110);
-            if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+            token = Com_ParseOnLine(&text_p);
+            if ((token == (char *)0x0) || (*token == '\0')) {
               BG_AnimParseError("BG_AnimParseAnimScript: expected #IF <conditional> <value>");
             }
-            local_124 = BG_StringForIndex(animVehicleTypes[parseVehicleNameIndex],
-                                          animVehicleAnimTypeStr,1);
-            if (local_124 == (char *)0x0) {
+            vehTypeStr = BG_StringForIndex(animVehicleTypes[parseVehicleNameIndex],
+                                           animVehicleAnimTypeStr,1);
+            if (vehTypeStr == (char *)0x0) {
               BG_AnimParseError("BG_AnimParseAnimScript: unknown vehicle type for %s");
             }
-            iVar4 = I_stricmp(local_124,local_20);
+            iVar4 = I_stricmp(vehTypeStr,token);
             if (iVar4 != 0) {
-              while (iVar4 = I_stricmp(local_20,"#END_IF"), iVar4 != 0) {
-                local_20 = Com_Parse(&local_110);
-                if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+              while (iVar4 = I_stricmp(token,"#END_IF"), iVar4 != 0) {
+                token = Com_Parse(&text_p);
+                if ((token == (char *)0x0) || (*token == '\0')) {
                   BG_AnimParseError("BG_AnimParseAnimScript: expected #END_IF, reached end of file")
                   ;
                 }
@@ -1795,32 +1772,32 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
             }
           }
           else {
-            iVar4 = I_stricmp(local_20,"level_name");
+            iVar4 = I_stricmp(token,"level_name");
             if (iVar4 == 0) {
-              local_125 = '\0';
-              local_20 = Com_ParseOnLine(&local_110);
-              if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+              matched = false;
+              token = Com_ParseOnLine(&text_p);
+              if ((token == (char *)0x0) || (*token == '\0')) {
                 BG_AnimParseError("BG_AnimParseAnimScript: expected #IF <conditional> <value>");
               }
-              while ((local_20 != (char *)0x0 && (*local_20 != '\0'))) {
-                if (local_125 == '\0') {
-                  local_12c = param_4;
-                  pcVar6 = I_stristr(param_4,"mp/");
-                  if (pcVar6 == local_12c) {
-                    local_12c = param_4 + 3;
+              while ((token != (char *)0x0 && (*token != '\0'))) {
+                if (matched == false) {
+                  levelStr = levelName;
+                  pcVar6 = I_stristr(levelName,"mp/");
+                  if (pcVar6 == levelStr) {
+                    levelStr = levelName + 3;
                   }
-                  iVar4 = I_stricmp(local_20,local_12c);
+                  iVar4 = I_stricmp(token,levelStr);
                   if (iVar4 == 0) {
-                    local_125 = '\x01';
+                    matched = true;
                   }
                 }
-                local_20 = Com_ParseOnLine(&local_110);
+                token = Com_ParseOnLine(&text_p);
               }
-              if (local_125 == '\0') {
-                local_20 = Com_Parse(&local_110);
-                while (iVar4 = I_stricmp(local_20,"#END_IF"), iVar4 != 0) {
-                  local_20 = Com_Parse(&local_110);
-                  if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+              if (matched == false) {
+                token = Com_Parse(&text_p);
+                while (iVar4 = I_stricmp(token,"#END_IF"), iVar4 != 0) {
+                  token = Com_Parse(&text_p);
+                  if ((token == (char *)0x0) || (*token == '\0')) {
                     BG_AnimParseError(
                                      "BG_AnimParseAnimScript: expected #END_IF, reached end of file"
                                      );
@@ -1834,163 +1811,163 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
           }
         }
         else {
-          iVar4 = I_stricmp(local_20,"#END_IF");
-          if ((iVar4 != 0) && (iVar4 = I_stricmp(local_20,"#ADD_VEHICLE"), iVar4 == 0)) {
-            local_20 = Com_ParseOnLine(&local_110);
-            if (local_20 == (char *)0x0) {
+          iVar4 = I_stricmp(token,"#END_IF");
+          if ((iVar4 != 0) && (iVar4 = I_stricmp(token,"#ADD_VEHICLE"), iVar4 == 0)) {
+            token = Com_ParseOnLine(&text_p);
+            if (token == (char *)0x0) {
               BG_AnimParseError(
                                "BG_AnimParseAnimScript: expected #ADD_VEHICLE <vehicle_name> <default/tank>"
                                );
             }
-            local_168 = local_20;
+            local_168 = token;
             do {
               cVar1 = *local_168;
               local_168 = local_168 + 1;
             } while (cVar1 != '\0');
-            if ((0x17 < (uint)((int)local_168 - (int)(local_20 + 1))) &&
+            if ((0x17 < (uint)((int)local_168 - (int)(token + 1))) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp"
                                          ,0x898,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               (*pcVar2)();
               return;
             }
-            I_strncpyz(local_158,local_20,0x18);
-            local_20 = Com_ParseOnLine(&local_110);
-            if (local_20 == (char *)0x0) {
+            I_strncpyz(vehName,token,0x18);
+            token = Com_ParseOnLine(&text_p);
+            if (token == (char *)0x0) {
               BG_AnimParseError(
                                "BG_AnimParseAnimScript: expected #ADD_VEHICLE <vehicle_name> <default/tank>"
                                );
             }
-            local_134 = BG_IndexForString(local_20,animVehicleAnimTypeStr,0);
-            local_138 = 0;
-            local_140 = 0;
-            local_13c = 0;
-            local_20 = Com_ParseOnLine(&local_110);
-            while ((local_20 != (char *)0x0 && (*local_20 != '\0'))) {
-              local_130 = (int *)0x0;
-              iVar4 = I_stricmp(local_20,"drivers");
+            vehType = BG_IndexForString(token,animVehicleAnimTypeStr,0);
+            drivers = 0;
+            gunners = 0;
+            passengers = 0;
+            token = Com_ParseOnLine(&text_p);
+            while ((token != (char *)0x0 && (*token != '\0'))) {
+              pInt = (int *)0x0;
+              iVar4 = I_stricmp(token,"drivers");
               if (iVar4 == 0) {
-                local_130 = &local_138;
+                pInt = &drivers;
               }
               else {
-                iVar4 = I_stricmp(local_20,"gunners");
+                iVar4 = I_stricmp(token,"gunners");
                 if (iVar4 == 0) {
-                  local_130 = &local_140;
+                  pInt = &gunners;
                 }
                 else {
-                  iVar4 = I_stricmp(local_20,"passengers");
+                  iVar4 = I_stricmp(token,"passengers");
                   if (iVar4 == 0) {
-                    local_130 = &local_13c;
+                    pInt = &passengers;
                   }
                 }
               }
-              if (local_130 == (int *)0x0) {
+              if (pInt == (int *)0x0) {
                 BG_AnimParseError(
                                  "BG_AnimParseAnimScript: unknown token (%s) in #ADD_VEHICLE command"
                                  );
               }
               else {
-                local_20 = Com_ParseOnLine(&local_110);
-                if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+                token = Com_ParseOnLine(&text_p);
+                if ((token == (char *)0x0) || (*token == '\0')) {
                   BG_AnimParseError("BG_AnimParseAnimScript: missing index for seat type");
                 }
                 else {
-                  iVar4 = atoi(local_20);
-                  *local_130 = iVar4;
+                  iVar4 = atoi(token);
+                  *pInt = iVar4;
                 }
               }
-              local_20 = Com_ParseOnLine(&local_110);
+              token = Com_ParseOnLine(&text_p);
             }
-            BG_AddVehicleName(local_158,local_134,local_138,local_140,local_13c);
+            BG_AddVehicleName(vehName,vehType,drivers,gunners,passengers);
           }
         }
       }
       break;
-    case 1:
-    case 2:
-      iVar4 = I_stricmp(local_20,"{");
+    case PARSEMODE_ANIMATION:
+    case PARSEMODE_CANNED_ANIMATIONS:
+      iVar4 = I_stricmp(token,"{");
       if (iVar4 == 0) {
-        if (2 < local_104) {
+        if (2 < indentLevel) {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
-        if (local_18[local_104] < 0) {
+        if (indexes[indentLevel] < 0) {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
-        local_104 = local_104 + 1;
+        indentLevel = indentLevel + 1;
       }
       else {
-        iVar4 = I_stricmp(local_20,"}");
+        iVar4 = I_stricmp(token,"}");
         if (iVar4 == 0) {
-          local_104 = local_104 + -1;
-          if (local_104 < 0) {
+          indentLevel = indentLevel + -1;
+          if (indentLevel < 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
           }
-          if (local_104 == 1) {
-            local_10c = (animScript_t *)0x0;
+          if (indentLevel == 1) {
+            currentScript = (animScript_t *)0x0;
           }
-          local_18[local_104] = -1;
+          indexes[indentLevel] = -1;
         }
-        else if ((local_104 == 0) && (local_18[0] < 0)) {
-          iVar4 = I_stricmp(local_20,"state");
+        else if ((indentLevel == 0) && (indexes[0] < 0)) {
+          iVar4 = I_stricmp(token,"state");
           if (iVar4 != 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: expected \'state\'");
           }
-          local_20 = Com_ParseOnLine(&local_110);
-          if (local_20 == (char *)0x0) {
+          token = Com_ParseOnLine(&text_p);
+          if (token == (char *)0x0) {
             BG_AnimParseError("BG_AnimParseAnimScript: expected state type");
           }
-          iVar4 = BG_IndexForString(local_20,animStateStr,0);
-          local_18[local_104] = iVar4;
-          local_20 = Com_Parse(&local_110);
-          if ((local_20 == (char *)0x0) || (iVar4 = I_stricmp(local_20,"{"), iVar4 != 0)) {
+          iVar4 = BG_IndexForString(token,animStateStr,0);
+          indexes[indentLevel] = iVar4;
+          token = Com_Parse(&text_p);
+          if ((token == (char *)0x0) || (iVar4 = I_stricmp(token,"{"), iVar4 != 0)) {
             BG_AnimParseError("BG_AnimParseAnimScript: expected \'{\'");
           }
-          local_104 = local_104 + 1;
+          indentLevel = indentLevel + 1;
         }
-        else if ((local_104 == 1) && (local_18[1] < 0)) {
-          iVar4 = BG_IndexForString(local_20,animMoveTypesStr,0);
-          local_18[local_104] = iVar4;
-          if (local_1c == 1) {
-            local_10c = param_1->scriptAnims[local_18[0]] + local_18[1];
-            parseMovetype = local_18[1];
+        else if ((indentLevel == 1) && (indexes[1] < 0)) {
+          iVar4 = BG_IndexForString(token,animMoveTypesStr,0);
+          indexes[indentLevel] = iVar4;
+          if (parseMode == PARSEMODE_ANIMATION) {
+            currentScript = scriptData->scriptAnims[indexes[0]] + indexes[1];
+            parseMovetype = indexes[1];
           }
-          else if (local_1c == 2) {
-            local_10c = param_1->scriptCannedAnims[local_18[0]] + local_18[1];
+          else if (parseMode == PARSEMODE_CANNED_ANIMATIONS) {
+            currentScript = scriptData->scriptCannedAnims[indexes[0]] + indexes[1];
           }
-          memset((uchar *)local_10c,'\0',0x204);
+          memset((uchar *)currentScript,'\0',0x204);
         }
-        else if ((local_104 == 2) && (local_18[2] < 0)) {
-          local_178 = local_20;
+        else if ((indentLevel == 2) && (indexes[2] < 0)) {
+          local_178 = token;
           do {
             cVar1 = *local_178;
             local_178 = local_178 + 1;
           } while (cVar1 != '\0');
-          local_110 = local_110 + -((int)local_178 - (int)(local_20 + 1));
-          local_188 = local_20;
+          text_p = text_p + -((int)local_178 - (int)(token + 1));
+          local_188 = token;
           do {
             cVar1 = *local_188;
             local_188 = local_188 + 1;
           } while (cVar1 != '\0');
-          iVar4 = I_strncmp(local_110,local_20,(int)local_188 - (int)(local_20 + 1));
+          iVar4 = I_strncmp(text_p,token,(int)local_188 - (int)(token + 1));
           if (iVar4 != 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: internal error");
           }
-          iVar4 = I_stricmp(local_20,"#FOR_ALL_VEHICLES");
+          iVar4 = I_stricmp(token,"#FOR_ALL_VEHICLES");
           if (iVar4 == 0) {
-            local_20 = Com_Parse(&local_110);
-            if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+            token = Com_Parse(&text_p);
+            if ((token == (char *)0x0) || (*token == '\0')) {
               BG_AnimParseError("BG_AnimParseAnimScript: internal error");
             }
-            Com_ParseSetMark(&local_110,&local_100);
+            Com_ParseSetMark(&text_p,&forAllVehiclesMark);
             parseVehicleLoop = true;
             parseVehicleNameIndex = 0;
             pcVar6 = BG_StringForIndex(0,animVehicleNameStr,1);
             if (pcVar6 == (char *)0x0) {
               parseVehicleLoop = false;
               parseVehicleNameIndex = 0;
-              while (iVar4 = I_stricmp(local_20,"#END_FOR_ALL_VEHICLES"), iVar4 != 0) {
-                local_20 = Com_Parse(&local_110);
-                if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+              while (iVar4 = I_stricmp(token,"#END_FOR_ALL_VEHICLES"), iVar4 != 0) {
+                token = Com_Parse(&text_p);
+                if ((token == (char *)0x0) || (*token == '\0')) {
                   BG_AnimParseError(
                                    "BG_AnimParseAnimScript: expected #END_FOR_ALL_VEHICLES, reached end of file"
                                    );
@@ -1999,39 +1976,39 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
             }
           }
           else {
-            iVar4 = I_stricmp(local_20,"#END_FOR_ALL_VEHICLES");
+            iVar4 = I_stricmp(token,"#END_FOR_ALL_VEHICLES");
             if (iVar4 == 0) {
               parseVehicleNameIndex = parseVehicleNameIndex + 1;
               pcVar6 = BG_StringForIndex(parseVehicleNameIndex,animVehicleNameStr,1);
               if (pcVar6 == (char *)0x0) {
-                local_20 = Com_Parse(&local_110);
-                if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+                token = Com_Parse(&text_p);
+                if ((token == (char *)0x0) || (*token == '\0')) {
                   BG_AnimParseError("BG_AnimParseAnimScript: internal error");
                 }
                 parseVehicleLoop = false;
                 parseVehicleNameIndex = 0;
               }
               else {
-                Com_ParseReturnToMark(&local_110,&local_100);
+                Com_ParseReturnToMark(&text_p,&forAllVehiclesMark);
               }
             }
             else {
-              memset((uchar *)&local_ec,'\0',200);
-              iVar4 = BG_ParseConditions(&local_110,&local_ec);
-              local_18[local_104] = iVar4;
-              if (0x7f < local_10c->numItems) {
+              memset((uchar *)&tempScriptItem,'\0',200);
+              iVar4 = BG_ParseConditions(&text_p,&tempScriptItem);
+              indexes[indentLevel] = iVar4;
+              if (0x7f < currentScript->numItems) {
                 BG_AnimParseError("BG_AnimParseAnimScript: exceeded maximum items per script (%i)");
               }
-              if (0x7ff < param_1->numScriptItems) {
+              if (0x7ff < scriptData->numScriptItems) {
                 BG_AnimParseError("BG_AnimParseAnimScript: exceeded maximum global items (%i)");
               }
-              local_10c->items[local_10c->numItems] = param_1->scriptItems + param_1->numScriptItems
-              ;
-              param_1->numScriptItems = param_1->numScriptItems + 1;
-              local_11c = local_10c->items[local_10c->numItems];
-              local_10c->numItems = local_10c->numItems + 1;
-              paVar8 = &local_ec;
-              paVar9 = local_11c;
+              currentScript->items[currentScript->numItems] =
+                   scriptData->scriptItems + scriptData->numScriptItems;
+              scriptData->numScriptItems = scriptData->numScriptItems + 1;
+              currentScriptItem = currentScript->items[currentScript->numItems];
+              currentScript->numItems = currentScript->numItems + 1;
+              paVar8 = &tempScriptItem;
+              paVar9 = currentScriptItem;
               for (iVar4 = 0x32; iVar4 != 0; iVar4 = iVar4 + -1) {
                 paVar9->numConditions = paVar8->numConditions;
                 paVar8 = (animScriptItem_t *)paVar8->conditions;
@@ -2040,91 +2017,91 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
             }
           }
         }
-        else if (local_104 == 3) {
-          local_198 = local_20;
+        else if (indentLevel == 3) {
+          local_198 = token;
           do {
             cVar1 = *local_198;
             local_198 = local_198 + 1;
           } while (cVar1 != '\0');
-          local_110 = local_110 + -((int)local_198 - (int)(local_20 + 1));
-          local_1a8 = local_20;
+          text_p = text_p + -((int)local_198 - (int)(token + 1));
+          local_1a8 = token;
           do {
             cVar1 = *local_1a8;
             local_1a8 = local_1a8 + 1;
           } while (cVar1 != '\0');
-          iVar4 = I_strncmp(local_110,local_20,(int)local_1a8 - (int)(local_20 + 1));
+          iVar4 = I_strncmp(text_p,token,(int)local_1a8 - (int)(token + 1));
           if (iVar4 != 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: internal error");
           }
-          BG_ParseCommands(&local_110,local_11c,param_1);
+          BG_ParseCommands(&text_p,currentScriptItem,scriptData);
         }
         else {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
       }
       break;
-    case 3:
-    case 4:
-      iVar4 = I_stricmp(local_20,"{");
+    case PARSEMODE_STATECHANGES:
+    case PARSEMODE_EVENTS:
+      iVar4 = I_stricmp(token,"{");
       if (iVar4 == 0) {
-        if (2 < local_104) {
+        if (2 < indentLevel) {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
-        if (local_18[local_104] < 0) {
+        if (indexes[indentLevel] < 0) {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
-        local_104 = local_104 + 1;
+        indentLevel = indentLevel + 1;
       }
       else {
-        iVar4 = I_stricmp(local_20,"}");
+        iVar4 = I_stricmp(token,"}");
         if (iVar4 == 0) {
-          local_104 = local_104 + -1;
-          if (local_104 < 0) {
+          indentLevel = indentLevel + -1;
+          if (indentLevel < 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
           }
-          if (local_104 == 0) {
-            local_10c = (animScript_t *)0x0;
+          if (indentLevel == 0) {
+            currentScript = (animScript_t *)0x0;
           }
-          local_18[local_104] = -1;
+          indexes[indentLevel] = -1;
         }
-        else if ((local_104 == 0) && (local_18[0] < 0)) {
-          if (local_1c == 3) {
-            iVar4 = I_stricmp(local_20,"statechange");
+        else if ((indentLevel == 0) && (indexes[0] < 0)) {
+          if (parseMode == PARSEMODE_STATECHANGES) {
+            iVar4 = I_stricmp(token,"statechange");
             if (iVar4 != 0) {
               BG_AnimParseError("BG_AnimParseAnimScript: expected \'statechange\', got \'%s\'");
             }
-            local_20 = Com_ParseOnLine(&local_110);
-            if (local_20 == (char *)0x0) {
+            token = Com_ParseOnLine(&text_p);
+            if (token == (char *)0x0) {
               BG_AnimParseError("BG_AnimParseAnimScript: expected <state type>");
             }
-            local_118 = BG_IndexForString(local_20,animStateStr,0);
-            local_20 = Com_ParseOnLine(&local_110);
-            if (local_20 == (char *)0x0) {
+            oldState = BG_IndexForString(token,animStateStr,0);
+            token = Com_ParseOnLine(&text_p);
+            if (token == (char *)0x0) {
               BG_AnimParseError("BG_AnimParseAnimScript: expected <state type>");
             }
-            iVar4 = BG_IndexForString(local_20,animStateStr,0);
-            local_18[local_104] = iVar4;
-            local_10c = param_1->scriptStateChange[local_118 + local_18[local_104]];
-            local_20 = Com_Parse(&local_110);
-            if ((local_20 == (char *)0x0) || (iVar4 = I_stricmp(local_20,"{"), iVar4 != 0)) {
+            iVar4 = BG_IndexForString(token,animStateStr,0);
+            indexes[indentLevel] = iVar4;
+            currentScript = scriptData->scriptStateChange[oldState + indexes[indentLevel]];
+            token = Com_Parse(&text_p);
+            if ((token == (char *)0x0) || (iVar4 = I_stricmp(token,"{"), iVar4 != 0)) {
               BG_AnimParseError("BG_AnimParseAnimScript: expected \'{\'");
             }
-            local_104 = local_104 + 1;
-            memset((uchar *)local_10c,'\0',0x204);
+            indentLevel = indentLevel + 1;
+            memset((uchar *)currentScript,'\0',0x204);
           }
           else {
-            iVar4 = I_stricmp(local_20,"#FOR_ALL_VEHICLES");
+            iVar4 = I_stricmp(token,"#FOR_ALL_VEHICLES");
             if (iVar4 == 0) {
-              Com_ParseSetMark(&local_110,&local_100);
+              Com_ParseSetMark(&text_p,&forAllVehiclesMark);
               parseVehicleLoop = true;
               parseVehicleNameIndex = 0;
               pcVar6 = BG_StringForIndex(0,animVehicleNameStr,1);
               if (pcVar6 == (char *)0x0) {
                 parseVehicleLoop = false;
                 parseVehicleNameIndex = 0;
-                while (iVar4 = I_stricmp(local_20,"#END_FOR_ALL_VEHICLES"), iVar4 != 0) {
-                  local_20 = Com_Parse(&local_110);
-                  if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+                while (iVar4 = I_stricmp(token,"#END_FOR_ALL_VEHICLES"), iVar4 != 0) {
+                  token = Com_Parse(&text_p);
+                  if ((token == (char *)0x0) || (*token == '\0')) {
                     BG_AnimParseError(
                                      "BG_AnimParseAnimScript: expected #END_FOR_ALL_VEHICLES, reached end of file"
                                      );
@@ -2133,7 +2110,7 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
               }
             }
             else {
-              iVar4 = I_stricmp(local_20,"#END_FOR_ALL_VEHICLES");
+              iVar4 = I_stricmp(token,"#END_FOR_ALL_VEHICLES");
               if (iVar4 == 0) {
                 parseVehicleNameIndex = parseVehicleNameIndex + 1;
                 pcVar6 = BG_StringForIndex(parseVehicleNameIndex,animVehicleNameStr,1);
@@ -2142,49 +2119,49 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
                   parseVehicleNameIndex = 0;
                 }
                 else {
-                  Com_ParseReturnToMark(&local_110,&local_100);
+                  Com_ParseReturnToMark(&text_p,&forAllVehiclesMark);
                 }
               }
               else {
-                iVar4 = BG_IndexForString(local_20,animEventTypesStr,0);
-                local_18[local_104] = iVar4;
-                local_10c = param_1->scriptEvents + local_18[local_104];
-                parseEvent = local_18[local_104];
+                iVar4 = BG_IndexForString(token,animEventTypesStr,0);
+                indexes[indentLevel] = iVar4;
+                currentScript = scriptData->scriptEvents + indexes[indentLevel];
+                parseEvent = indexes[indentLevel];
               }
             }
           }
         }
-        else if ((local_104 == 1) && (local_18[1] < 0)) {
-          local_1b8 = local_20;
+        else if ((indentLevel == 1) && (indexes[1] < 0)) {
+          local_1b8 = token;
           do {
             cVar1 = *local_1b8;
             local_1b8 = local_1b8 + 1;
           } while (cVar1 != '\0');
-          local_110 = local_110 + -((int)local_1b8 - (int)(local_20 + 1));
-          local_1c8 = local_20;
+          text_p = text_p + -((int)local_1b8 - (int)(token + 1));
+          local_1c8 = token;
           do {
             cVar1 = *local_1c8;
             local_1c8 = local_1c8 + 1;
           } while (cVar1 != '\0');
-          iVar4 = I_strncmp(local_110,local_20,(int)local_1c8 - (int)(local_20 + 1));
+          iVar4 = I_strncmp(text_p,token,(int)local_1c8 - (int)(token + 1));
           if (iVar4 != 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: internal error");
           }
-          memset((uchar *)&local_ec,'\0',200);
-          iVar4 = BG_ParseConditions(&local_110,&local_ec);
-          local_18[local_104] = iVar4;
-          if (0x7f < local_10c->numItems) {
+          memset((uchar *)&tempScriptItem,'\0',200);
+          iVar4 = BG_ParseConditions(&text_p,&tempScriptItem);
+          indexes[indentLevel] = iVar4;
+          if (0x7f < currentScript->numItems) {
             BG_AnimParseError("BG_AnimParseAnimScript: exceeded maximum items per script (%i)");
           }
-          if (0x7ff < param_1->numScriptItems) {
+          if (0x7ff < scriptData->numScriptItems) {
             BG_AnimParseError("BG_AnimParseAnimScript: exceeded maximum global items (%i)");
           }
           if (parseVehicleLoop != false) {
             bVar3 = true;
-            uVar7 = BG_AnimGetConditionValue(&local_ec,0x12);
+            uVar7 = BG_AnimGetConditionValue(&tempScriptItem,0x12);
             if (((int)uVar7 < 1) || ((animVehicleSeats[parseVehicleNameIndex].seats & uVar7) != 0))
             {
-              uVar7 = BG_AnimGetConditionValue(&local_ec,0x11);
+              uVar7 = BG_AnimGetConditionValue(&tempScriptItem,0x11);
               if ((0 < (int)uVar7) && ((animVehicleSeats[parseVehicleNameIndex].seats & uVar7) == 0)
                  ) {
                 bVar3 = false;
@@ -2195,83 +2172,84 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
             }
             if (!bVar3) {
               bVar3 = false;
-              local_20 = Com_Parse(&local_110);
-              while ((local_20 != (char *)0x0 && (*local_20 != '\0'))) {
+              token = Com_Parse(&text_p);
+              while ((token != (char *)0x0 && (*token != '\0'))) {
                 if (bVar3) {
-                  iVar4 = I_stricmp(local_20,"}");
+                  iVar4 = I_stricmp(token,"}");
                   if (iVar4 == 0) break;
                 }
                 else {
-                  iVar4 = I_stricmp(local_20,"{");
+                  iVar4 = I_stricmp(token,"{");
                   if (iVar4 == 0) {
                     bVar3 = true;
                   }
                 }
-                local_20 = Com_Parse(&local_110);
+                token = Com_Parse(&text_p);
               }
-              local_18[local_104] = -1;
+              indexes[indentLevel] = -1;
               break;
             }
           }
-          local_10c->items[local_10c->numItems] = param_1->scriptItems + param_1->numScriptItems;
-          param_1->numScriptItems = param_1->numScriptItems + 1;
-          local_11c = local_10c->items[local_10c->numItems];
-          local_10c->numItems = local_10c->numItems + 1;
-          paVar8 = &local_ec;
-          paVar9 = local_11c;
+          currentScript->items[currentScript->numItems] =
+               scriptData->scriptItems + scriptData->numScriptItems;
+          scriptData->numScriptItems = scriptData->numScriptItems + 1;
+          currentScriptItem = currentScript->items[currentScript->numItems];
+          currentScript->numItems = currentScript->numItems + 1;
+          paVar8 = &tempScriptItem;
+          paVar9 = currentScriptItem;
           for (iVar4 = 0x32; iVar4 != 0; iVar4 = iVar4 + -1) {
             paVar9->numConditions = paVar8->numConditions;
             paVar8 = (animScriptItem_t *)paVar8->conditions;
             paVar9 = (animScriptItem_t *)paVar9->conditions;
           }
         }
-        else if (local_104 == 2) {
-          local_1d8 = local_20;
+        else if (indentLevel == 2) {
+          local_1d8 = token;
           do {
             cVar1 = *local_1d8;
             local_1d8 = local_1d8 + 1;
           } while (cVar1 != '\0');
-          local_110 = local_110 + -((int)local_1d8 - (int)(local_20 + 1));
-          local_1e8 = local_20;
+          text_p = text_p + -((int)local_1d8 - (int)(token + 1));
+          local_1e8 = token;
           do {
             cVar1 = *local_1e8;
             local_1e8 = local_1e8 + 1;
           } while (cVar1 != '\0');
-          iVar4 = I_strncmp(local_110,local_20,(int)local_1e8 - (int)(local_20 + 1));
+          iVar4 = I_strncmp(text_p,token,(int)local_1e8 - (int)(token + 1));
           if (iVar4 != 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: internal error");
           }
-          BG_ParseCommands(&local_110,local_11c,param_1);
+          BG_ParseCommands(&text_p,currentScriptItem,scriptData);
         }
         else {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
       }
       break;
-    case 5:
-      iVar4 = I_stricmp(local_20,"{");
+    case PARSEMODE_FORCELOAD:
+      iVar4 = I_stricmp(token,"{");
       if (iVar4 == 0) {
-        if (2 < local_104) {
+        if (2 < indentLevel) {
           BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
         }
-        local_104 = local_104 + 1;
+        indentLevel = indentLevel + 1;
       }
       else {
-        iVar4 = I_stricmp(local_20,"}");
+        iVar4 = I_stricmp(token,"}");
         if (iVar4 == 0) {
-          local_104 = local_104 + -1;
-          if (local_104 < 0) {
+          indentLevel = indentLevel + -1;
+          if (indentLevel < 0) {
             BG_AnimParseError("BG_AnimParseAnimScript: unexpected \'%s\'");
           }
-          if (local_104 == 1) {
-            local_10c = (animScript_t *)0x0;
+          if (indentLevel == 1) {
+            currentScript = (animScript_t *)0x0;
           }
         }
-        else if ((local_20 == (char *)0x0) || (*local_20 == '\0')) {
+        else if ((token == (char *)0x0) || (*token == '\0')) {
           BG_AnimParseError("BG_AnimParseAnimScript: expected animation");
         }
         else {
-          BG_AnimationIndexForString(local_20);
+          BG_AnimationIndexForString(token);
         }
       }
     }
@@ -2281,12 +2259,12 @@ BG_AnimParseAnimScript(animScriptData_t *param_1,loadAnim_t *param_2,uint *param
 
 // 0040BBD0  GetWeaponTypeName  (bgame/bg_animation.cpp:2655)
 
-char * __cdecl GetWeaponTypeName(int param_1)
+char * __cdecl GetWeaponTypeName(int type)
 
 {
   char *pcVar1;
   
-  switch(param_1) {
+  switch(type) {
   case 0:
     pcVar1 = "Rifle";
     break;
@@ -2326,28 +2304,29 @@ char * __cdecl GetWeaponTypeName(int param_1)
 
 // 0040A5A0  GetValueForBitfield  (bgame/bg_animation.cpp:2684)
 
-int __cdecl GetValueForBitfield(uint param_1)
+int __cdecl GetValueForBitfield(uint bitfield)
 
 {
   int iVar1;
-  int local_c;
+  int i;
+  int numBits;
   
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0x1f < local_c) {
+    if (0x1f < i) {
       return 0;
     }
-    iVar1 = Com_BitCheckAssert(&param_1,local_c,0xfffffff);
+    iVar1 = Com_BitCheckAssert(&bitfield,i,0xfffffff);
     if (iVar1 != 0) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
 // 0040BC70  BG_GetConditionString  (bgame/bg_animation.cpp:2708)
 
-char * __cdecl BG_GetConditionString(int param_1,int param_2)
+char * __cdecl BG_GetConditionString(int condition,int value)
 
 {
   code *pcVar1;
@@ -2356,26 +2335,26 @@ char * __cdecl BG_GetConditionString(int param_1,int param_2)
   char *local_c;
   
   BG_CheckThread();
-  switch(param_1) {
+  switch(condition) {
   case 0:
   case 2:
-    local_c = BG_GetPlayerAnimTypeName(param_2);
+    local_c = BG_GetPlayerAnimTypeName(value);
     break;
   case 1:
   case 3:
-    local_c = animWeaponClassStr[param_2].string;
+    local_c = animWeaponClassStr[value].string;
     break;
   case 4:
-    local_c = animConditionMountedStr[param_2].string;
+    local_c = animConditionMountedStr[value].string;
     break;
   case 5:
-    local_c = animMoveStatusStr[param_2].string;
+    local_c = animMoveStatusStr[value].string;
     break;
   case 6:
-    local_c = animDirectionStr[param_2].string;
+    local_c = animDirectionStr[value].string;
     break;
   case 7:
-    local_c = animDmgDirectionStr[param_2].string;
+    local_c = animDmgDirectionStr[value].string;
     break;
   default:
     pcVar3 = va("BG_GetConditionString: unhandled case: %d");
@@ -2389,12 +2368,12 @@ char * __cdecl BG_GetConditionString(int param_1,int param_2)
     local_c = (char *)0x0;
     break;
   case 9:
-    local_c = animStanceStr[param_2].string;
+    local_c = animStanceStr[value].string;
     break;
   case 10:
   case 0xb:
   case 0x16:
-    if (param_2 == 0) {
+    if (value == 0) {
       local_c = "false";
     }
     else {
@@ -2402,10 +2381,10 @@ char * __cdecl BG_GetConditionString(int param_1,int param_2)
     }
     break;
   case 0xc:
-    local_c = animWeaponPositionStr[param_2].string;
+    local_c = animWeaponPositionStr[value].string;
     break;
   case 0xd:
-    local_c = animSlopeStateStr[param_2].string;
+    local_c = animSlopeStateStr[value].string;
     break;
   case 0x15:
     sprintf(debugString,"0x%08x");
@@ -2419,58 +2398,56 @@ char * __cdecl BG_GetConditionString(int param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_EvaluateConditions(clientInfo_t *param_1,animScriptItem_t *param_2)
+int __cdecl BG_EvaluateConditions(clientInfo_t *ci,animScriptItem_t *scriptItem)
 
 {
   animScriptConditionTypes_t aVar1;
   int iVar2;
-  animScriptCondition_t *local_14;
-  int local_c;
+  animScriptCondition_t *cond;
+  int index;
+  int i;
+  int validCond;
   
-  local_c = 0;
-  local_14 = param_2->conditions;
+  i = 0;
+  cond = scriptItem->conditions;
   do {
-    if (param_2->numConditions <= local_c) {
+    if (scriptItem->numConditions <= i) {
       if ((animscript_debug->current).enabled != false) {
         Com_Printf(0x13,"Success\n");
       }
       return 1;
     }
     if ((animscript_debug->current).enabled != false) {
-      switch(param_2->conditions[local_c].index) {
+      switch(scriptItem->conditions[i].index) {
       case 0:
-        iVar2 = GetValueForBitfield(param_2->conditions[local_c].value);
+        iVar2 = GetValueForBitfield(scriptItem->conditions[i].value);
         BG_GetPlayerAnimTypeName(iVar2);
         Com_Printf(0x13,"Checking to see if weapon animtype is %s...\n");
         break;
       case 1:
-        iVar2 = GetValueForBitfield(param_2->conditions[local_c].value);
+        iVar2 = GetValueForBitfield(scriptItem->conditions[i].value);
         GetWeaponTypeName(iVar2);
         Com_Printf(0x13,"Checking to see if weapon type is %s...\n");
         break;
       case 4:
-        BG_GetConditionString(param_2->conditions[local_c].index,param_2->conditions[local_c].value)
-        ;
+        BG_GetConditionString(scriptItem->conditions[i].index,scriptItem->conditions[i].value);
         Com_Printf(0x13,"Checking to see if player is mounted status is %s...\n");
         break;
       case 5:
-        iVar2 = GetValueForBitfield(param_2->conditions[local_c].value);
-        BG_GetConditionString(param_2->conditions[local_c].index,iVar2);
+        iVar2 = GetValueForBitfield(scriptItem->conditions[i].value);
+        BG_GetConditionString(scriptItem->conditions[i].index,iVar2);
         Com_Printf(0x13,"Checking to see if player movestatus is %s...\n");
         break;
       case 6:
-        BG_GetConditionString(param_2->conditions[local_c].index,param_2->conditions[local_c].value)
-        ;
+        BG_GetConditionString(scriptItem->conditions[i].index,scriptItem->conditions[i].value);
         Com_Printf(0x13,"Checking to see if player direction is %s...\n");
         break;
       case 7:
-        BG_GetConditionString(param_2->conditions[local_c].index,param_2->conditions[local_c].value)
-        ;
+        BG_GetConditionString(scriptItem->conditions[i].index,scriptItem->conditions[i].value);
         Com_Printf(0x13,"Checking to see if player damage direction is %s...\n");
         break;
       case 9:
-        BG_GetConditionString(param_2->conditions[local_c].index,param_2->conditions[local_c].value)
-        ;
+        BG_GetConditionString(scriptItem->conditions[i].index,scriptItem->conditions[i].value);
         Com_Printf(0x13,"Checking to see if player stance is %s...\n");
         break;
       case 10:
@@ -2498,9 +2475,9 @@ int __cdecl BG_EvaluateConditions(clientInfo_t *param_1,animScriptItem_t *param_
         Com_Printf(0x13,"Checking if Crate a Class...\n");
       }
     }
-    aVar1 = animConditionsTable[local_14->index].type;
+    aVar1 = animConditionsTable[cond->index].type;
     if (aVar1 == ANIM_CONDTYPE_BITFLAGS) {
-      if ((param_1->clientConditions[local_14->index] & local_14->value) == 0) {
+      if ((ci->clientConditions[cond->index] & cond->value) == 0) {
         if ((animscript_debug->current).enabled != false) {
           Com_Printf(0x13,"failed\n");
         }
@@ -2508,32 +2485,32 @@ int __cdecl BG_EvaluateConditions(clientInfo_t *param_1,animScriptItem_t *param_
       }
     }
     else if (((0 < (int)aVar1) && ((int)aVar1 < 4)) &&
-            (param_1->clientConditions[local_14->index] != local_14->value)) {
+            (ci->clientConditions[cond->index] != cond->value)) {
       if ((animscript_debug->current).enabled != false) {
         Com_Printf(0x13,"failed\n");
       }
       return 0;
     }
-    local_c = local_c + 1;
-    local_14 = local_14 + 1;
+    i = i + 1;
+    cond = cond + 1;
   } while( true );
 }
 
 
 // 0040BDE0  GetBodyPart  (bgame/bg_animation.cpp:2893)
 
-char * __cdecl GetBodyPart(int param_1)
+char * __cdecl GetBodyPart(int bodypart)
 
 {
   char *pcVar1;
   
-  if (param_1 == 1) {
+  if (bodypart == 1) {
     pcVar1 = "legs";
   }
-  else if (param_1 == 2) {
+  else if (bodypart == 2) {
     pcVar1 = "torso";
   }
-  else if (param_1 == 3) {
+  else if (bodypart == 3) {
     pcVar1 = "fullbody";
   }
   else {
@@ -2547,16 +2524,16 @@ char * __cdecl GetBodyPart(int param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-animScriptItem_t * __cdecl BG_FirstValidItem(int param_1,animScript_t *param_2)
+animScriptItem_t * __cdecl BG_FirstValidItem(int client,animScript_t *script)
 
 {
   code *pcVar1;
   bool bVar2;
   animScriptItem_t *paVar3;
   int iVar4;
-  int local_10;
-  int local_c;
-  animScriptItem_t **local_8;
+  int command;
+  int i;
+  animScriptItem_t **ppScriptItem;
   
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
@@ -2566,36 +2543,36 @@ animScriptItem_t * __cdecl BG_FirstValidItem(int param_1,animScript_t *param_2)
     paVar3 = (animScriptItem_t *)(*pcVar1)();
     return paVar3;
   }
-  local_c = 0;
-  local_8 = (animScriptItem_t **)param_2;
+  i = 0;
+  ppScriptItem = (animScriptItem_t **)script;
   while( true ) {
-    local_8 = ((animScript_t *)local_8)->items;
-    if (param_2->numItems <= local_c) {
+    ppScriptItem = ((animScript_t *)ppScriptItem)->items;
+    if (script->numItems <= i) {
       return (animScriptItem_t *)0x0;
     }
     if ((animscript_debug->current).enabled != false) {
       Com_Printf(0x13,"Evaluating whether to play: ");
-      for (local_10 = 0; local_10 < (*local_8)->numCommands; local_10 = local_10 + 1) {
-        GetBodyPart((int)(*local_8)->commands[local_10].bodyPart[0]);
+      for (command = 0; command < (*ppScriptItem)->numCommands; command = command + 1) {
+        GetBodyPart((int)(*ppScriptItem)->commands[command].bodyPart[0]);
         Com_Printf(0x13,"%s on %s");
-        if (0 < local_10) {
+        if (0 < command) {
           Com_Printf(0x13,", ");
         }
       }
       Com_Printf(0x13,"\n");
     }
-    if ((0x1f < (uint)param_1) &&
+    if ((0x1f < (uint)client) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xb83,
                                  0,"client doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"), !bVar2
        )) break;
     iVar4 = BG_EvaluateConditions
                       ((clientInfo_t *)
                        (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                        0xc0 + param_1 * 0x5c8),*local_8);
+                        0xc0 + client * 0x5c8),*ppScriptItem);
     if (iVar4 != 0) {
-      return *local_8;
+      return *ppScriptItem;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   }
   pcVar1 = (code *)swi(3);
   paVar3 = (animScriptItem_t *)(*pcVar1)();
@@ -2607,15 +2584,16 @@ animScriptItem_t * __cdecl BG_FirstValidItem(int param_1,animScript_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_GetCurrentStance(playerState_s *param_1)
+char * __cdecl BG_GetCurrentStance(playerState_s *ps)
 
 {
   int iVar1;
+  int stance;
   
   iVar1 = BG_GetConditionValue
                     ((clientInfo_t *)
                      (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0
-                     + (uint)param_1->clientNum * 0x5c8),9);
+                     + (uint)ps->clientNum * 0x5c8),9);
   return animStanceStr[iVar1].string;
 }
 
@@ -2624,18 +2602,19 @@ char * __cdecl BG_GetCurrentStance(playerState_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_GetCurrentMoveStatus(playerState_s *param_1)
+char * __cdecl BG_GetCurrentMoveStatus(playerState_s *ps)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint bitfield;
+  int iVar1;
+  int moveStatus;
   
-  uVar1 = BG_GetConditionValue
-                    ((clientInfo_t *)
-                     (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0
-                     + (uint)param_1->clientNum * 0x5c8),5);
-  iVar2 = GetValueForBitfield(uVar1);
-  return animMoveStatusStr[iVar2].string;
+  bitfield = BG_GetConditionValue
+                       ((clientInfo_t *)
+                        (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
+                         0xc0 + (uint)ps->clientNum * 0x5c8),5);
+  iVar1 = GetValueForBitfield(bitfield);
+  return animMoveStatusStr[iVar1].string;
 }
 
 
@@ -2643,15 +2622,16 @@ char * __cdecl BG_GetCurrentMoveStatus(playerState_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_GetCurrentDirection(playerState_s *param_1)
+char * __cdecl BG_GetCurrentDirection(playerState_s *ps)
 
 {
   int iVar1;
+  int direction;
   
   iVar1 = BG_GetConditionValue
                     ((clientInfo_t *)
                      (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0
-                     + (uint)param_1->clientNum * 0x5c8),6);
+                     + (uint)ps->clientNum * 0x5c8),6);
   return animDirectionStr[iVar1].string;
 }
 
@@ -2660,15 +2640,16 @@ char * __cdecl BG_GetCurrentDirection(playerState_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_GetCurrentDmgDirection(playerState_s *param_1)
+char * __cdecl BG_GetCurrentDmgDirection(playerState_s *ps)
 
 {
   int iVar1;
+  int dmgDirection;
   
   iVar1 = BG_GetConditionValue
                     ((clientInfo_t *)
                      (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0
-                     + (uint)param_1->clientNum * 0x5c8),7);
+                     + (uint)ps->clientNum * 0x5c8),7);
   return animDmgDirectionStr[iVar1].string;
 }
 
@@ -2677,15 +2658,16 @@ char * __cdecl BG_GetCurrentDmgDirection(playerState_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_GetCurrentDmgType(playerState_s *param_1)
+char * __cdecl BG_GetCurrentDmgType(playerState_s *ps)
 
 {
   int iVar1;
+  int dmgType;
   
   iVar1 = BG_GetConditionValue
                     ((clientInfo_t *)
                      (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0
-                     + (uint)param_1->clientNum * 0x5c8),8);
+                     + (uint)ps->clientNum * 0x5c8),8);
   return animDmgTypeStr[iVar1].string;
 }
 
@@ -2694,60 +2676,64 @@ char * __cdecl BG_GetCurrentDmgType(playerState_s *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl BG_GetCurrentSlope(playerState_s *param_1)
+char * __cdecl BG_GetCurrentSlope(playerState_s *ps)
 
 {
   int iVar1;
+  int slope;
   
   iVar1 = BG_GetConditionValue
                     ((clientInfo_t *)
                      (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xc0
-                     + (uint)param_1->clientNum * 0x5c8),0xd);
+                     + (uint)ps->clientNum * 0x5c8),0xd);
   return animSlopeStateStr[iVar1].string;
 }
 
 
 // 0040B0D0  BG_GetCurrentWeaponName  (bgame/bg_animation.cpp:3002)
 
-char * __cdecl BG_GetCurrentWeaponName(playerState_s *param_1)
+char * __cdecl BG_GetCurrentWeaponName(playerState_s *ps)
 
 {
-  uint uVar1;
-  WeaponVariantDef *pWVar2;
+  uint weaponIndex;
+  WeaponVariantDef *pWVar1;
+  WeaponVariantDef *variantDef;
   
-  uVar1 = BG_GetViewmodelWeaponIndex(param_1);
-  pWVar2 = BG_GetWeaponVariantDef(uVar1);
-  return pWVar2->szInternalName;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps);
+  pWVar1 = BG_GetWeaponVariantDef(weaponIndex);
+  return pWVar1->szInternalName;
 }
 
 
 // 0040B100  BG_GetCurrentWeaponClass  (bgame/bg_animation.cpp:3009)
 
-char * __cdecl BG_GetCurrentWeaponClass(playerState_s *param_1)
+char * __cdecl BG_GetCurrentWeaponClass(playerState_s *ps)
 
 {
-  uint uVar1;
-  WeaponDef *pWVar2;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  int weapClass;
   
-  uVar1 = BG_GetViewmodelWeaponIndex(param_1);
-  pWVar2 = BG_GetWeaponDef(uVar1);
-  return animWeaponClassStr[pWVar2->weapClass].string;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  return animWeaponClassStr[pWVar1->weapClass].string;
 }
 
 
 // 0040B130  BG_GetCurrentPlayerAnimType  (bgame/bg_animation.cpp:3015)
 
-char * __cdecl BG_GetCurrentPlayerAnimType(playerState_s *param_1)
+char * __cdecl BG_GetCurrentPlayerAnimType(playerState_s *ps)
 
 {
-  uint uVar1;
-  WeaponDef *pWVar2;
-  char *pcVar3;
+  uint weaponIndex;
+  WeaponDef *pWVar1;
+  char *pcVar2;
+  int playerAnimType;
   
-  uVar1 = BG_GetViewmodelWeaponIndex(param_1);
-  pWVar2 = BG_GetWeaponDef(uVar1);
-  pcVar3 = BG_GetPlayerAnimTypeName(pWVar2->playerAnimType);
-  return pcVar3;
+  weaponIndex = BG_GetViewmodelWeaponIndex(ps);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
+  pcVar2 = BG_GetPlayerAnimTypeName(pWVar1->playerAnimType);
+  return pcVar2;
 }
 
 
@@ -2756,8 +2742,8 @@ char * __cdecl BG_GetCurrentPlayerAnimType(playerState_s *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 int __cdecl
-BG_PlayAnim(playerState_s *param_1,int param_2,animBodyPart_t param_3,int param_4,int param_5,
-           int param_6,int param_7)
+BG_PlayAnim(playerState_s *ps,int animNum,animBodyPart_t bodyPart,int forceDuration,int setTimer,
+           int isContinue,int force)
 
 {
   code *pcVar1;
@@ -2765,32 +2751,34 @@ BG_PlayAnim(playerState_s *param_1,int param_2,animBodyPart_t param_3,int param_
   bool bVar3;
   int iVar4;
   float local_14;
-  int local_8;
+  float rate;
+  int wasSet;
+  int duration;
   
   bVar2 = false;
   if (*(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x48 +
-                param_2 * 0x78) <= 0.0) {
+                animNum * 0x78) <= 0.0) {
     local_14 = 1.0;
   }
   else {
     local_14 = *(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
-                          + 0x48 + param_2 * 0x78);
+                          + 0x48 + animNum * 0x78);
   }
   if (0 < (bg_forceDurationOverride->current).integer) {
-    param_4 = (bg_forceDurationOverride->current).integer;
+    forceDuration = (bg_forceDurationOverride->current).integer;
   }
-  if (param_4 == 0) {
-    local_8 = (int)((float)*(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer +
-                                                       _tls_index * 4) + 8) + 0x54 + param_2 * 0x78)
-                   / local_14) + 0x32;
+  if (forceDuration == 0) {
+    duration = (int)((float)*(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer +
+                                                        _tls_index * 4) + 8) + 0x54 + animNum * 0x78
+                                    ) / local_14) + 0x32;
   }
   else {
-    local_8 = (int)((float)param_4 / local_14);
+    duration = (int)((float)forceDuration / local_14);
   }
-  if (param_3 == ANIM_BP_LEGS) {
+  if (bodyPart == ANIM_BP_LEGS) {
 LAB_0040a77e:
-    if ((param_7 == 0) && (((int)param_1->legsAnim & 0xfffffbffU) != param_2)) {
-      if ((param_1->legsAnim < 0) &&
+    if ((force == 0) && (((int)ps->legsAnim & 0xfffffbffU) != animNum)) {
+      if ((ps->legsAnim < 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                    0xbef,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -2798,7 +2786,7 @@ LAB_0040a77e:
         return iVar4;
       }
       if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                    0x1e000) <= ((int)param_1->legsAnim & 0xfffffbffU)) &&
+                    0x1e000) <= ((int)ps->legsAnim & 0xfffffbffU)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                    0xbf0,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -2806,428 +2794,433 @@ LAB_0040a77e:
         return iVar4;
       }
       if (((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                      0x5c + ((int)param_1->legsAnim & 0xfffffbffU) * 0x78) & 0x8000000) != 0) &&
+                      0x5c + ((int)ps->legsAnim & 0xfffffbffU) * 0x78) & 0x8000000) != 0) &&
          ((*(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                      0x4c + param_2 * 0x78) != 0.0 ||
+                      0x4c + animNum * 0x78) != 0.0 ||
           (*(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                      0x50 + param_2 * 0x78) != 0.0)))) {
-        param_7 = 1;
+                      0x50 + animNum * 0x78) != 0.0)))) {
+        force = 1;
       }
     }
-    if ((param_1->legsTimer < 0x32) || (param_7 != 0)) {
-      if ((param_6 == 0) || (((int)param_1->legsAnim & 0xfffffbffU) != param_2)) {
+    if ((ps->legsTimer < 0x32) || (force != 0)) {
+      if ((isContinue == 0) || (((int)ps->legsAnim & 0xfffffbffU) != animNum)) {
         bVar2 = true;
-        param_1->legsAnimDuration = local_8;
-        AssignToSmallerType<short>
-                  (&param_1->legsAnim,(int)param_1->legsAnim & 0x400U ^ 0x400 | param_2);
-        if (param_5 != 0) {
-          param_1->legsTimer = local_8;
+        ps->legsAnimDuration = duration;
+        AssignToSmallerType<short>(&ps->legsAnim,(int)ps->legsAnim & 0x400U ^ 0x400 | animNum);
+        if (setTimer != 0) {
+          ps->legsTimer = duration;
         }
         if ((xanim_debug->current).enabled != false) {
           Com_Printf(0x13,"\n[%s]%i: Playing (client %i) %s on %s\n");
-          BG_GetCurrentMoveStatus(param_1);
+          BG_GetCurrentMoveStatus(ps);
           Com_Printf(0x13,"     MoveStatus: %s\n");
-          BG_GetCurrentWeaponName(param_1);
+          BG_GetCurrentWeaponName(ps);
           Com_Printf(0x13,"     WeaponName: %s\n");
-          BG_GetCurrentWeaponClass(param_1);
+          BG_GetCurrentWeaponClass(ps);
           Com_Printf(0x13,"     WeaponClass: %s\n");
-          BG_GetCurrentPlayerAnimType(param_1);
+          BG_GetCurrentPlayerAnimType(ps);
           Com_Printf(0x13,"     PlayerAnimType: %s\n");
-          BG_GetCurrentStance(param_1);
+          BG_GetCurrentStance(ps);
           Com_Printf(0x13,"     Stance: %s\n");
-          BG_GetCurrentDirection(param_1);
+          BG_GetCurrentDirection(ps);
           Com_Printf(0x13,"     Direction: %s\n");
-          BG_GetCurrentDmgDirection(param_1);
+          BG_GetCurrentDmgDirection(ps);
           Com_Printf(0x13,"     DmgDirection: %s\n");
-          BG_GetCurrentDmgType(param_1);
+          BG_GetCurrentDmgType(ps);
           Com_Printf(0x13,"     DmgType: %s\n");
-          BG_GetCurrentSlope(param_1);
+          BG_GetCurrentSlope(ps);
           Com_Printf(0x13,"     Slope: %s\n");
         }
       }
-      else if ((param_5 == 0) ||
+      else if ((setTimer == 0) ||
               ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
-                          + 0x5c + param_2 * 0x78) & 0x200) == 0)) {
+                          + 0x5c + animNum * 0x78) & 0x200) == 0)) {
         if (((xanim_debug->current).enabled != false) &&
-           (((int)param_1->legsAnim & 0xfffffbffU) != param_2)) {
+           (((int)ps->legsAnim & 0xfffffbffU) != animNum)) {
           Com_Printf(0x13,"anim failed because");
-          if ((param_6 != 0) && (((int)param_1->legsAnim & 0xfffffbffU) == param_2)) {
+          if ((isContinue != 0) && (((int)ps->legsAnim & 0xfffffbffU) == animNum)) {
             Com_Printf(0x13,", isContinue is true");
             Com_Printf(0x13,", legsAnim is %s, asking to play %s");
           }
-          if (param_5 == 0) {
+          if (setTimer == 0) {
             Com_Printf(0x13,", setTimer is false");
           }
           else if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0x5c + param_2 * 0x78) & 0x200) == 0) {
+                                        8) + 0x5c + animNum * 0x78) & 0x200) == 0) {
             Com_Printf(0x13,", on a non-looped anim");
           }
           Com_Printf(0x13,"\n");
         }
       }
       else {
-        param_1->legsTimer = local_8;
+        ps->legsTimer = duration;
       }
     }
-    if (param_3 != ANIM_BP_BOTH) goto LAB_0040aec9;
-    param_2 = 0;
+    if (bodyPart != ANIM_BP_BOTH) goto LAB_0040aec9;
+    animNum = 0;
   }
-  else if (param_3 != ANIM_BP_TORSO) {
-    if (param_3 != ANIM_BP_BOTH) goto LAB_0040aec9;
+  else if (bodyPart != ANIM_BP_TORSO) {
+    if (bodyPart != ANIM_BP_BOTH) goto LAB_0040aec9;
     goto LAB_0040a77e;
   }
-  if ((param_1->torsoTimer < 0x32) || (param_7 != 0)) {
-    if ((param_6 == 0) || (((int)param_1->torsoAnim & 0xfffffbffU) != param_2)) {
-      AssignToSmallerType<short>
-                (&param_1->torsoAnim,(int)param_1->torsoAnim & 0x400U ^ 0x400 | param_2);
-      if (param_5 != 0) {
-        param_1->torsoTimer = local_8;
+  if ((ps->torsoTimer < 0x32) || (force != 0)) {
+    if ((isContinue == 0) || (((int)ps->torsoAnim & 0xfffffbffU) != animNum)) {
+      AssignToSmallerType<short>(&ps->torsoAnim,(int)ps->torsoAnim & 0x400U ^ 0x400 | animNum);
+      if (setTimer != 0) {
+        ps->torsoTimer = duration;
       }
-      param_1->torsoAnimDuration = local_8;
+      ps->torsoAnimDuration = duration;
       if ((xanim_debug->current).enabled != false) {
         Com_Printf(0x13,"\n[%s]%i: Playing (client %i) %s on %s\n");
-        BG_GetCurrentMoveStatus(param_1);
+        BG_GetCurrentMoveStatus(ps);
         Com_Printf(0x13,"     MoveStatus: %s\n");
-        BG_GetCurrentWeaponName(param_1);
+        BG_GetCurrentWeaponName(ps);
         Com_Printf(0x13,"     WeaponName: %s\n");
-        BG_GetCurrentWeaponClass(param_1);
+        BG_GetCurrentWeaponClass(ps);
         Com_Printf(0x13,"     WeaponClass: %s\n");
-        BG_GetCurrentPlayerAnimType(param_1);
+        BG_GetCurrentPlayerAnimType(ps);
         Com_Printf(0x13,"     PlayerAnimType: %s\n");
-        BG_GetCurrentStance(param_1);
+        BG_GetCurrentStance(ps);
         Com_Printf(0x13,"     Stance: %s\n");
-        BG_GetCurrentDirection(param_1);
+        BG_GetCurrentDirection(ps);
         Com_Printf(0x13,"     Direction: %s\n");
-        BG_GetCurrentDmgDirection(param_1);
+        BG_GetCurrentDmgDirection(ps);
         Com_Printf(0x13,"     DmgDirection: %s\n");
-        BG_GetCurrentDmgType(param_1);
+        BG_GetCurrentDmgType(ps);
         Com_Printf(0x13,"     DmgType: %s\n");
-        BG_GetCurrentSlope(param_1);
+        BG_GetCurrentSlope(ps);
         Com_Printf(0x13,"     Slope: %s\n");
       }
     }
-    else if ((param_5 != 0) &&
+    else if ((setTimer != 0) &&
             ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                        0x5c + param_2 * 0x78) & 0x200) != 0)) {
-      param_1->torsoTimer = local_8;
+                        0x5c + animNum * 0x78) & 0x200) != 0)) {
+      ps->torsoTimer = duration;
     }
   }
 LAB_0040aec9:
   if (!bVar2) {
-    local_8 = -1;
+    duration = -1;
   }
-  return local_8;
+  return duration;
 }
 
 
 // 0040B160  BG_ExecuteCommand  (bgame/bg_animation.cpp:3198)
 
 int __cdecl
-BG_ExecuteCommand(playerState_s *param_1,animScriptCommand_t *param_2,int param_3,int param_4,
-                 int param_5)
+BG_ExecuteCommand(playerState_s *ps,animScriptCommand_t *scriptCommand,int setTimer,int isContinue,
+                 int force)
 
 {
   bool bVar1;
   bool bVar2;
   uint uVar3;
-  int local_c;
+  int duration;
+  int playedLegsAnim;
   
-  local_c = -1;
+  duration = -1;
   bVar1 = false;
   bVar2 = Demo_IsPlaying();
   if (bVar2) {
-    local_c = -1;
+    duration = -1;
   }
   else {
-    if (param_2->bodyPart[0] != 0) {
+    if (scriptCommand->bodyPart[0] != 0) {
       if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                     0x5c + param_2->animIndex[0] * 0x78) & 0x1000) == 0) {
-        uVar3 = (uint)param_2->animDuration[0];
+                     0x5c + scriptCommand->animIndex[0] * 0x78) & 0x1000) == 0) {
+        uVar3 = (uint)scriptCommand->animDuration[0];
       }
       else {
         uVar3 = *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
-                          + 0x54 + param_2->animIndex[0] * 0x78);
+                          + 0x54 + scriptCommand->animIndex[0] * 0x78);
       }
-      local_c = uVar3 + 0x32;
-      if ((param_2->bodyPart[0] == 1) || (param_2->bodyPart[0] == 3)) {
-        uVar3 = BG_PlayAnim(param_1,(int)param_2->animIndex[0],(int)param_2->bodyPart[0],local_c,
-                            param_3,param_4,param_5);
+      duration = uVar3 + 0x32;
+      if ((scriptCommand->bodyPart[0] == 1) || (scriptCommand->bodyPart[0] == 3)) {
+        uVar3 = BG_PlayAnim(ps,(int)scriptCommand->animIndex[0],(int)scriptCommand->bodyPart[0],
+                            duration,setTimer,isContinue,force);
         bVar1 = uVar3 < 0x80000000;
       }
       else {
-        BG_PlayAnim(param_1,(int)param_2->animIndex[0],(int)param_2->bodyPart[0],local_c,param_3,
-                    param_4,param_5);
+        BG_PlayAnim(ps,(int)scriptCommand->animIndex[0],(int)scriptCommand->bodyPart[0],duration,
+                    setTimer,isContinue,force);
       }
     }
-    if (param_2->bodyPart[1] != 0) {
+    if (scriptCommand->bodyPart[1] != 0) {
       if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                     0x5c + param_2->animIndex[0] * 0x78) & 0x1000) == 0) {
-        uVar3 = (uint)param_2->animDuration[0];
+                     0x5c + scriptCommand->animIndex[0] * 0x78) & 0x1000) == 0) {
+        uVar3 = (uint)scriptCommand->animDuration[0];
       }
       else {
         uVar3 = *(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
-                          + 0x54 + param_2->animIndex[0] * 0x78);
+                          + 0x54 + scriptCommand->animIndex[0] * 0x78);
       }
-      local_c = uVar3 + 0x32;
-      if ((param_2->bodyPart[0] == 1) || (param_2->bodyPart[0] == 3)) {
-        uVar3 = BG_PlayAnim(param_1,(int)param_2->animIndex[1],(int)param_2->bodyPart[1],local_c,
-                            param_3,param_4,param_5);
+      duration = uVar3 + 0x32;
+      if ((scriptCommand->bodyPart[0] == 1) || (scriptCommand->bodyPart[0] == 3)) {
+        uVar3 = BG_PlayAnim(ps,(int)scriptCommand->animIndex[1],(int)scriptCommand->bodyPart[1],
+                            duration,setTimer,isContinue,force);
         bVar1 = uVar3 < 0x80000000;
       }
       else {
-        BG_PlayAnim(param_1,(int)param_2->animIndex[1],(int)param_2->bodyPart[1],local_c,param_3,
-                    param_4,param_5);
+        BG_PlayAnim(ps,(int)scriptCommand->animIndex[1],(int)scriptCommand->bodyPart[1],duration,
+                    setTimer,isContinue,force);
       }
     }
-    if (param_2->soundAlias != (snd_alias_list_t *)0x0) {
+    if (scriptCommand->soundAlias != (snd_alias_list_t *)0x0) {
       (**(code **)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                  0x8d380))(param_1->clientNum,param_2->soundAlias);
+                  0x8d380))(ps->clientNum,scriptCommand->soundAlias);
     }
     if (!bVar1) {
-      local_c = -1;
+      duration = -1;
     }
   }
-  return local_c;
+  return duration;
 }
 
 
 // 0040B3C0  BG_AnimScriptAnimation  (bgame/bg_animation.cpp:3257)
 
+/* WARNING: Variable defined which should be unmapped: scriptCommand */
+/* WARNING: Variable defined which should be unmapped: script */
+
 int __cdecl
-BG_AnimScriptAnimation
-          (pmove_t *param_1,aistateEnum_t param_2,scriptAnimMoveTypes_t param_3,int param_4)
+BG_AnimScriptAnimation(pmove_t *pm,aistateEnum_t state,scriptAnimMoveTypes_t movetype,int force)
 
 {
-  playerState_s *ppVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
-  animScript_t *paVar6;
-  undefined4 uVar7;
-  undefined4 uVar8;
-  animScriptItem_t *local_c;
+  playerState_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uint uVar4;
+  animScript_t *script_00;
+  animScriptCommand_t *scriptCommand;
+  animScript_t *script;
+  animScriptItem_t *scriptItem;
+  playerState_s *ps;
   
-  uVar8 = 0;
-  local_c = (animScriptItem_t *)0x0;
-  uVar7 = 0;
-  ppVar1 = param_1->ps;
+  scriptItem = (animScriptItem_t *)0x0;
+  ps_00 = pm->ps;
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc3,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc3,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if (((int)param_3 < 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc5,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if (((int)movetype < 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc5,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((0x1a < (int)param_3) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc6,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)(uVar7,uVar8);
-    return iVar4;
+  if ((0x1a < (int)movetype) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc6,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)(0,0);
+    return iVar3;
   }
-  if ((0x1f < ppVar1->clientNum) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc8,0,
+  if ((0x1f < ps_00->clientNum) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xcc8,0,
                                "ps->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  BG_AnimUpdatePlayerStateConditions(param_1);
-  if (ppVar1->pm_type < 9) {
-    while ((local_c == (animScriptItem_t *)0x0 && (-1 < (int)param_2))) {
-      paVar6 = (animScript_t *)
-               (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x1e004
-                + param_2 * 0x366c + param_3 * 0x204);
-      if (paVar6->numItems == 0) {
-        param_2 = param_2 - MAX_AISTATES;
+  BG_AnimUpdatePlayerStateConditions(pm);
+  if (ps_00->pm_type < 9) {
+    while ((scriptItem == (animScriptItem_t *)0x0 && (-1 < (int)state))) {
+      script_00 = (animScript_t *)
+                  (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
+                   0x1e004 + state * 0x366c + movetype * 0x204);
+      if (script_00->numItems == 0) {
+        state = state - MAX_AISTATES;
       }
       else {
-        local_c = BG_FirstValidItem((uint)ppVar1->clientNum,paVar6);
-        if (local_c == (animScriptItem_t *)0x0) {
-          param_2 = param_2 - MAX_AISTATES;
+        scriptItem = BG_FirstValidItem((uint)ps_00->clientNum,script_00);
+        if (scriptItem == (animScriptItem_t *)0x0) {
+          state = state - MAX_AISTATES;
         }
       }
     }
-    if (local_c == (animScriptItem_t *)0x0) {
+    if (scriptItem == (animScriptItem_t *)0x0) {
       if ((xanim_debug->current).enabled != false) {
         Com_Printf(0x13,"Failed playing animation, finding new animation\n");
       }
-      uVar5 = 0xffffffff;
+      uVar4 = 0xffffffff;
     }
-    else if (local_c->numCommands == 0) {
+    else if (scriptItem->numCommands == 0) {
       if ((xanim_debug->current).enabled != false) {
         Com_Printf(0x13,"Animation has no commands associated, finding new animation\n");
       }
-      uVar5 = 0xffffffff;
+      uVar4 = 0xffffffff;
     }
     else {
-      ppVar1->moveType = param_3;
-      if ((0x1f < ppVar1->clientNum) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
+      ps_00->moveType = movetype;
+      if ((0x1f < ps_00->clientNum) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                    0xcf7,0,
                                    "ps->clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"),
-         !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+         !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      if ((local_c->numCommands == 0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
-                                   0xcfa,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if ((scriptItem->numCommands == 0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
+                                   0xcfa,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      iVar4 = BG_ExecuteCommand(ppVar1,local_c->commands +
-                                       (int)((longlong)(ulonglong)ppVar1->clientNum %
-                                            (longlong)local_c->numCommands),0,1,param_4);
-      uVar5 = (uint)(iVar4 != -1);
+      iVar3 = BG_ExecuteCommand(ps_00,scriptItem->commands +
+                                      (int)((longlong)(ulonglong)ps_00->clientNum %
+                                           (longlong)scriptItem->numCommands),0,1,force);
+      uVar4 = (uint)(iVar3 != -1);
     }
   }
   else {
-    uVar5 = 0xffffffff;
+    uVar4 = 0xffffffff;
   }
-  return uVar5;
+  return uVar4;
 }
 
 
 // 0040BE20  BG_AnimScriptEventGetCommand  (bgame/bg_animation.cpp:3338)
 
 animScriptCommand_t * __cdecl
-BG_AnimScriptEventGetCommand(playerState_s *param_1,scriptAnimEventTypes_t param_2)
+BG_AnimScriptEventGetCommand(playerState_s *ps,scriptAnimEventTypes_t event)
 
 {
-  animScript_t *paVar1;
-  code *pcVar2;
-  bool bVar3;
-  animScriptCommand_t *paVar4;
-  int iVar5;
-  animScriptItem_t *paVar6;
+  animScript_t *script_00;
+  code *pcVar1;
+  bool bVar2;
+  animScriptCommand_t *paVar3;
+  int iVar4;
+  animScriptItem_t *paVar5;
+  animScriptCommand_t *scriptCommand;
+  animScript_t *script;
+  animScriptItem_t *scriptItem;
   
-  if ((param_2 == ANIM_ET_DEATH) || (param_1->pm_type < 9)) {
-    iVar5 = G_IsServerGameSystem((uint)param_1->clientNum);
-    if (iVar5 != 0) {
+  if ((event == ANIM_ET_DEATH) || (ps->pm_type < 9)) {
+    iVar4 = G_IsServerGameSystem((uint)ps->clientNum);
+    if (iVar4 != 0) {
       Com_Printf(0x13,"event: %s\n");
     }
-    paVar1 = (animScript_t *)
-             (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x24ee0 +
-             param_2 * 0x204);
-    if (paVar1->numItems == 0) {
-      paVar4 = (animScriptCommand_t *)0x0;
+    script_00 = (animScript_t *)
+                (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x24ee0
+                + event * 0x204);
+    if (script_00->numItems == 0) {
+      paVar3 = (animScriptCommand_t *)0x0;
     }
     else {
-      paVar6 = BG_FirstValidItem((uint)param_1->clientNum,paVar1);
-      if (paVar6 == (animScriptItem_t *)0x0) {
-        paVar4 = (animScriptCommand_t *)0x0;
+      paVar5 = BG_FirstValidItem((uint)ps->clientNum,script_00);
+      if (paVar5 == (animScriptItem_t *)0x0) {
+        paVar3 = (animScriptCommand_t *)0x0;
       }
-      else if (paVar6->numCommands == 0) {
-        paVar4 = (animScriptCommand_t *)0x0;
+      else if (paVar5->numCommands == 0) {
+        paVar3 = (animScriptCommand_t *)0x0;
       }
       else {
-        if (paVar6->numCommands == 0) {
-          bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
+        if (paVar5->numCommands == 0) {
+          bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                    0xd25,0,"%s");
-          if (!bVar3) {
-            pcVar2 = (code *)swi(3);
-            paVar4 = (animScriptCommand_t *)(*pcVar2)();
-            return paVar4;
+          if (!bVar2) {
+            pcVar1 = (code *)swi(3);
+            paVar3 = (animScriptCommand_t *)(*pcVar1)();
+            return paVar3;
           }
         }
-        iVar5 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
+        iVar4 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
                             + 0xac))();
-        paVar4 = paVar6->commands + iVar5 % paVar6->numCommands;
+        paVar3 = paVar5->commands + iVar4 % paVar5->numCommands;
       }
     }
   }
   else {
-    paVar4 = (animScriptCommand_t *)0x0;
+    paVar3 = (animScriptCommand_t *)0x0;
   }
-  return paVar4;
+  return paVar3;
 }
 
 
 // 0040BF40  BG_AnimScriptEvent  (bgame/bg_animation.cpp:3379)
 
-int __cdecl
-BG_AnimScriptEvent(pmove_t *param_1,scriptAnimEventTypes_t param_2,int param_3,int param_4)
+int __cdecl BG_AnimScriptEvent(pmove_t *pm,scriptAnimEventTypes_t event,int isContinue,int force)
 
 {
-  playerState_s *ppVar1;
-  animScriptCommand_t *paVar2;
-  int iVar3;
-  float fVar4;
+  playerState_s *ps_00;
+  animScriptCommand_t *scriptCommand_00;
+  int iVar1;
+  float fVar2;
   float local_24;
   float local_20;
-  int local_14;
+  int i;
+  animScriptCommand_t *scriptCommand;
+  float forcedAnimRate;
+  playerState_s *ps;
   
-  ppVar1 = param_1->ps;
-  BG_AnimUpdatePlayerStateConditions(param_1);
-  paVar2 = BG_AnimScriptEventGetCommand(ppVar1,param_2);
-  for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
-    if ((paVar2 == (animScriptCommand_t *)0x0) ||
+  ps_00 = pm->ps;
+  BG_AnimUpdatePlayerStateConditions(pm);
+  scriptCommand_00 = BG_AnimScriptEventGetCommand(ps_00,event);
+  for (i = 0; i < 2; i = i + 1) {
+    if ((scriptCommand_00 == (animScriptCommand_t *)0x0) ||
        ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
-                  + paVar2->animIndex[local_14] * 0x78) & 0x4000) == 0)) {
-      if ((paVar2 != (animScriptCommand_t *)0x0) &&
+                  + scriptCommand_00->animIndex[i] * 0x78) & 0x4000) == 0)) {
+      if ((scriptCommand_00 != (animScriptCommand_t *)0x0) &&
          ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                     0x5c + paVar2->animIndex[local_14] * 0x78) & 0x8000) != 0)) {
-        fVar4 = (float)*(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
-                                          + 8) + 0x54 + paVar2->animIndex[local_14] * 0x78) /
-                (float)ppVar1->weaponDelay;
-        if (ABS(fVar4 - 1.0) < (bg_maxWeaponAnimScale->current).value ||
-            ABS(fVar4 - 1.0) == (bg_maxWeaponAnimScale->current).value) {
+                     0x5c + scriptCommand_00->animIndex[i] * 0x78) & 0x8000) != 0)) {
+        fVar2 = (float)*(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
+                                          + 8) + 0x54 + scriptCommand_00->animIndex[i] * 0x78) /
+                (float)ps_00->weaponDelay;
+        if (ABS(fVar2 - 1.0) < (bg_maxWeaponAnimScale->current).value ||
+            ABS(fVar2 - 1.0) == (bg_maxWeaponAnimScale->current).value) {
           *(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                     0x48 + paVar2->animIndex[local_14] * 0x78) = fVar4;
+                     0x48 + scriptCommand_00->animIndex[i] * 0x78) = fVar2;
         }
         else {
-          if (fVar4 - 1.0 <= 0.0) {
+          if (fVar2 - 1.0 <= 0.0) {
             local_24 = 1.0 - (bg_maxWeaponAnimScale->current).value;
           }
           else {
             local_24 = (bg_maxWeaponAnimScale->current).value + 1.0;
           }
           *(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                     0x48 + paVar2->animIndex[local_14] * 0x78) = local_24;
+                     0x48 + scriptCommand_00->animIndex[i] * 0x78) = local_24;
         }
       }
     }
     else {
-      fVar4 = (float)*(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0x54 + paVar2->animIndex[local_14] * 0x78) /
-              (float)ppVar1->weaponTime;
-      if (ABS(fVar4 - 1.0) < (bg_maxWeaponAnimScale->current).value ||
-          ABS(fVar4 - 1.0) == (bg_maxWeaponAnimScale->current).value) {
+      fVar2 = (float)*(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0x54 + scriptCommand_00->animIndex[i] * 0x78) /
+              (float)ps_00->weaponTime;
+      if (ABS(fVar2 - 1.0) < (bg_maxWeaponAnimScale->current).value ||
+          ABS(fVar2 - 1.0) == (bg_maxWeaponAnimScale->current).value) {
         *(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x48
-                  + paVar2->animIndex[local_14] * 0x78) = fVar4;
+                  + scriptCommand_00->animIndex[i] * 0x78) = fVar2;
       }
       else {
-        if (fVar4 - 1.0 <= 0.0) {
+        if (fVar2 - 1.0 <= 0.0) {
           local_20 = 1.0 - (bg_maxWeaponAnimScale->current).value;
         }
         else {
           local_20 = (bg_maxWeaponAnimScale->current).value + 1.0;
         }
         *(float *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x48
-                  + paVar2->animIndex[local_14] * 0x78) = local_20;
+                  + scriptCommand_00->animIndex[i] * 0x78) = local_20;
       }
     }
   }
-  if (paVar2 == (animScriptCommand_t *)0x0) {
-    iVar3 = -1;
+  if (scriptCommand_00 == (animScriptCommand_t *)0x0) {
+    iVar1 = -1;
   }
   else {
-    iVar3 = BG_ExecuteCommand(ppVar1,paVar2,1,param_3,param_4);
+    iVar1 = BG_ExecuteCommand(ps_00,scriptCommand_00,1,isContinue,force);
   }
-  return iVar3;
+  return iVar1;
 }
 
 
@@ -3235,7 +3228,7 @@ BG_AnimScriptEvent(pmove_t *param_1,scriptAnimEventTypes_t param_2,int param_3,i
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_SetConditionValue(int param_1,int param_2,ulong64 param_3)
+void __cdecl BG_SetConditionValue(int client,int condition,ulong64 value)
 
 {
   code *pcVar1;
@@ -3252,7 +3245,7 @@ void __cdecl BG_SetConditionValue(int param_1,int param_2,ulong64 param_3)
       return;
     }
   }
-  if ((0x16 < param_2) || (param_2 < 0)) {
+  if ((0x16 < condition) || (condition < 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd7a,0,
                              "%s\n\t(condition) = %i");
     if (!bVar2) {
@@ -3261,7 +3254,7 @@ void __cdecl BG_SetConditionValue(int param_1,int param_2,ulong64 param_3)
       return;
     }
   }
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)client) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd7c,0,
                              "client doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3270,13 +3263,13 @@ void __cdecl BG_SetConditionValue(int param_1,int param_2,ulong64 param_3)
       return;
     }
   }
-  *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + param_1 * 0x5c8
-           + 0x598 + param_2 * 4) = (int)param_3;
+  *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + client * 0x5c8
+           + 0x598 + condition * 4) = (int)value;
   if (*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-               param_1 * 0x5c8 + 0x598 + param_2 * 4) != (int)param_3) {
-    iVar3 = G_IsServerGameSystem(param_1);
+               client * 0x5c8 + 0x598 + condition * 4) != (int)value) {
+    iVar3 = G_IsServerGameSystem(client);
     if (iVar3 != 0) {
-      if (0x1f < (uint)param_1) {
+      if (0x1f < (uint)client) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd85,
                                  0,"client doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
         if (!bVar2) {
@@ -3287,8 +3280,8 @@ void __cdecl BG_SetConditionValue(int param_1,int param_2,ulong64 param_3)
       }
       iVar3 = BG_GetConditionBit((clientInfo_t *)
                                  (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
-                                          + 8) + 0xc0 + param_1 * 0x5c8),param_2);
-      BG_GetConditionString(param_2,iVar3);
+                                          + 8) + 0xc0 + client * 0x5c8),condition);
+      BG_GetConditionString(condition,iVar3);
       Com_Printf(0x13,"condition: %s: %s\n");
     }
   }
@@ -3298,7 +3291,7 @@ void __cdecl BG_SetConditionValue(int param_1,int param_2,ulong64 param_3)
 
 // 0040C420  BG_SetConditionBit  (bgame/bg_animation.cpp:3475)
 
-void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
+void __cdecl BG_SetConditionBit(int client,int condition,int value)
 
 {
   code *pcVar1;
@@ -3315,7 +3308,7 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (animConditionsTable[param_2].type != ANIM_CONDTYPE_BITFLAGS) {
+  if (animConditionsTable[condition].type != ANIM_CONDTYPE_BITFLAGS) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd99,0,
                              "%s");
     if (!bVar2) {
@@ -3324,7 +3317,7 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)client) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd9b,0,
                              "client doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3333,7 +3326,7 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (0x1f < param_3) {
+  if (0x1f < value) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd9c,0,
                              "%s");
     if (!bVar2) {
@@ -3342,7 +3335,7 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
       return;
     }
   }
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)client) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xd9f,0,
                              "client doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3352,16 +3345,16 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
     }
   }
   iVar3 = Com_BitCheckAssert((uint *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
-                                                       _tls_index * 4) + 8) + param_1 * 0x5c8 +
-                                      0x598 + param_2 * 4),param_3,0xfffffff);
+                                                       _tls_index * 4) + 8) + client * 0x5c8 + 0x598
+                                     + condition * 4),value,0xfffffff);
   if (iVar3 == 0) {
-    iVar3 = G_IsServerGameSystem(param_1);
+    iVar3 = G_IsServerGameSystem(client);
     if (iVar3 != 0) {
-      BG_GetConditionString(param_2,param_3);
+      BG_GetConditionString(condition,value);
       Com_Printf(0x13,"condition: %s: %s\n");
     }
   }
-  if (0x1f < (uint)param_1) {
+  if (0x1f < (uint)client) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xdaa,0,
                              "client doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -3371,10 +3364,10 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
     }
   }
   *(undefined4 *)
-   (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + param_1 * 0x5c8 +
-    0x598 + param_2 * 4) = 0;
+   (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + client * 0x5c8 + 0x598
+   + condition * 4) = 0;
   Com_BitSetAssert((uint *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
-                            + param_1 * 0x5c8 + 0x598 + param_2 * 4),param_3,0xfffffff);
+                            + client * 0x5c8 + 0x598 + condition * 4),value,0xfffffff);
   return;
 }
 
@@ -3383,14 +3376,14 @@ void __cdecl BG_SetConditionBit(int param_1,int param_2,int param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_GetConditionValue(clientInfo_t *param_1,int param_2)
+int __cdecl BG_GetConditionValue(clientInfo_t *ci,int condition)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((0x16 < param_2) || (param_2 < 0)) {
+  if ((0x16 < condition) || (condition < 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xdba,0,
                              "%s\n\t(condition) = %i");
     if (!bVar2) {
@@ -3399,7 +3392,7 @@ int __cdecl BG_GetConditionValue(clientInfo_t *param_1,int param_2)
       return iVar3;
     }
   }
-  return param_1->clientConditions[param_2];
+  return ci->clientConditions[condition];
 }
 
 
@@ -3407,38 +3400,39 @@ int __cdecl BG_GetConditionValue(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_GetConditionBit(clientInfo_t *param_1,int param_2)
+int __cdecl BG_GetConditionBit(clientInfo_t *ci,int condition)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_c;
+  uint i;
+  int value;
   
-  if (((0x16 < param_2) || (param_2 < 0)) &&
+  if (((0x16 < condition) || (condition < 0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xdc9,0,
                                "%s\n\t(condition) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((animConditionsTable[param_2].type != ANIM_CONDTYPE_BITFLAGS) &&
+  if ((animConditionsTable[condition].type != ANIM_CONDTYPE_BITFLAGS) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xdca,0,
                                "%s\n\t(animConditionsTable[condition].type) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0x1f < local_c) {
+    if (0x1f < i) {
       return 0;
     }
-    iVar3 = Com_BitCheckAssert(param_1->clientConditions + param_2,local_c,0xfffffff);
+    iVar3 = Com_BitCheckAssert(ci->clientConditions + condition,i,0xfffffff);
     if (iVar3 != 0) break;
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  return local_c;
+  return i;
 }
 
 
@@ -3446,44 +3440,43 @@ int __cdecl BG_GetConditionBit(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-scriptAnimMoveTypes_t __cdecl BG_GetAnimMoveType(clientInfo_t *param_1)
+scriptAnimMoveTypes_t __cdecl BG_GetAnimMoveType(clientInfo_t *ci)
 
 {
-  return (scriptAnimMoveTypes_t)param_1->moveType;
+  return (scriptAnimMoveTypes_t)ci->moveType;
 }
 
 
 // 0040C820  BG_GetAnimationForIndex  (bgame/bg_animation.cpp:3563)
 
-animation_s * __cdecl BG_GetAnimationForIndex(int param_1,int param_2)
+animation_s * __cdecl BG_GetAnimationForIndex(int client,int index)
 
 {
   if (*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x1e000)
-      <= (uint)param_2) {
+      <= (uint)index) {
     Com_Error(ERR_DROP,"\x15BG_GetAnimationForIndex: index out of bounds");
   }
   return (animation_s *)
-         (param_2 * 0x78 + **(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
-         );
+         (index * 0x78 + **(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8));
 }
 
 
 // 0040C880  BG_GetPlayerStateWeaponIndex  (bgame/bg_animation.cpp:3572)
 
-int __cdecl BG_GetPlayerStateWeaponIndex(pmove_t *param_1)
+int __cdecl BG_GetPlayerStateWeaponIndex(pmove_t *pm)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  int weapIndex;
   
-  if ((param_1->ps->weapFlags & 2U) == 0) {
-    local_8 = (uint)param_1->ps->weapon;
+  if ((pm->ps->weapFlags & 2U) == 0) {
+    weapIndex = (int)pm->ps->weapon;
   }
   else {
-    local_8 = param_1->ps->offHandIndex;
-    if ((local_8 == 0) &&
+    weapIndex = pm->ps->offHandIndex;
+    if ((weapIndex == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xdfa,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -3491,19 +3484,19 @@ int __cdecl BG_GetPlayerStateWeaponIndex(pmove_t *param_1)
       return iVar3;
     }
   }
-  return local_8;
+  return weapIndex;
 }
 
 
 // 0040C8F0  BG_AnimUpdatePlayerStateConditions  (bgame/bg_animation.cpp:3601)
 
-void __cdecl BG_AnimUpdatePlayerStateConditions(pmove_t *param_1)
+void __cdecl BG_AnimUpdatePlayerStateConditions(pmove_t *pmove)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x17; local_8 = local_8 + 1) {
-    (*localClientConditionUpdateFunc[local_8])(param_1);
+  for (i = 0; i < 0x17; i = i + 1) {
+    (*localClientConditionUpdateFunc[i])(pmove);
   }
   return;
 }
@@ -3513,12 +3506,13 @@ void __cdecl BG_AnimUpdatePlayerStateConditions(pmove_t *param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_IsCrouchingAnim(clientInfo_t *param_1,int param_2)
+int __cdecl BG_IsCrouchingAnim(clientInfo_t *ci,int animNum)
 
 {
   animation_s *paVar1;
+  animation_s *anim;
   
-  paVar1 = BG_GetAnimationForIndex(param_1->clientNum,param_2 & 0xfffffbff);
+  paVar1 = BG_GetAnimationForIndex(ci->clientNum,animNum & 0xfffffbff);
   return (uint)((paVar1->stance & 2U) != 0);
 }
 
@@ -3527,12 +3521,13 @@ int __cdecl BG_IsCrouchingAnim(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_IsAds(clientInfo_t *param_1,int param_2)
+int __cdecl BG_IsAds(clientInfo_t *ci,int animNum)
 
 {
   animation_s *paVar1;
+  animation_s *anim;
   
-  paVar1 = BG_GetAnimationForIndex(param_1->clientNum,param_2 & 0xfffffbff);
+  paVar1 = BG_GetAnimationForIndex(ci->clientNum,animNum & 0xfffffbff);
   return (uint)((paVar1->movestatus & 2U) != 0);
 }
 
@@ -3541,12 +3536,13 @@ int __cdecl BG_IsAds(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_IsProneAnim(clientInfo_t *param_1,int param_2)
+int __cdecl BG_IsProneAnim(clientInfo_t *ci,int animNum)
 
 {
   animation_s *paVar1;
+  animation_s *anim;
   
-  paVar1 = BG_GetAnimationForIndex(param_1->clientNum,param_2 & 0xfffffbff);
+  paVar1 = BG_GetAnimationForIndex(ci->clientNum,animNum & 0xfffffbff);
   return (uint)((paVar1->stance & 4U) != 0);
 }
 
@@ -3555,12 +3551,13 @@ int __cdecl BG_IsProneAnim(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_IsKnifeMeleeAnim(clientInfo_t *param_1,int param_2)
+int __cdecl BG_IsKnifeMeleeAnim(clientInfo_t *ci,int animNum)
 
 {
   animation_s *paVar1;
+  animation_s *anim;
   
-  paVar1 = BG_GetAnimationForIndex(param_1->clientNum,param_2 & 0xfffffbff);
+  paVar1 = BG_GetAnimationForIndex(ci->clientNum,animNum & 0xfffffbff);
   return (uint)((paVar1->flags & 0x400U) != 0);
 }
 
@@ -3569,13 +3566,14 @@ int __cdecl BG_IsKnifeMeleeAnim(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_IsGrenadeAnim(clientInfo_t *param_1,int param_2)
+int __cdecl BG_IsGrenadeAnim(clientInfo_t *ci,int animNum)
 
 {
   animation_s *paVar1;
   int iVar2;
+  animation_s *anim;
   
-  paVar1 = BG_GetAnimationForIndex(param_1->clientNum,param_2 & 0xfffffbff);
+  paVar1 = BG_GetAnimationForIndex(ci->clientNum,animNum & 0xfffffbff);
   if ((bg_drawGrenadeInHand->current).enabled == false) {
     iVar2 = 0;
   }
@@ -3593,12 +3591,12 @@ int __cdecl BG_IsGrenadeAnim(clientInfo_t *param_1,int param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_IsSliding(clientInfo_t *param_1)
+int __cdecl BG_IsSliding(clientInfo_t *ci)
 
 {
   scriptAnimMoveTypes_t sVar1;
   
-  sVar1 = BG_GetAnimMoveType(param_1);
+  sVar1 = BG_GetAnimMoveType(ci);
   return (uint)(sVar1 == ANIM_MT_SLIDE);
 }
 
@@ -3608,228 +3606,242 @@ int __cdecl BG_IsSliding(clientInfo_t *param_1)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-BG_SetNewAnimation(int param_1,clientInfo_t *param_2,lerpFrame_t *param_3,int param_4,
-                  entityState_s *param_5)
+BG_SetNewAnimation(int localClientNum,clientInfo_t *ci,lerpFrame_t *lf,int newAnimation,
+                  entityState_s *es)
 
 {
   uint uVar1;
   animation_s *paVar2;
-  uint uVar3;
-  XAnimTree_s *pXVar4;
-  XAnim_s *pXVar5;
-  code *pcVar6;
-  bool bVar7;
-  bool bVar8;
-  DObj *pDVar9;
-  int iVar10;
-  int iVar11;
-  int iVar12;
-  int iVar13;
-  uint uVar14;
-  uint uVar15;
-  bool bVar16;
-  float fVar17;
-  int local_44;
-  float local_38;
-  int local_34;
-  animation_s *local_18;
+  uint animNum;
+  XAnimTree_s *tree;
+  XAnim_s *anims;
+  code *pcVar3;
+  bool bVar4;
+  bool bVar5;
+  DObj *obj_00;
+  int iVar6;
+  int iVar7;
+  int iVar8;
+  int iVar9;
+  uint animIndex_00;
+  uint animIndex_01;
+  bool bVar10;
+  float fVar11;
+  float knifeStartTime;
+  animation_s *oldanim;
+  int firstAnim;
+  int transitionMin;
+  DObj *obj;
+  int oldAnimNum;
+  float fStartTime;
+  int cycleLen;
+  uint animIndex;
+  int crouchMatch;
+  int stanceTransitionTime;
+  int oldAnimTime;
+  int bLegsAnim;
+  int setTime;
+  animation_s *anim;
+  XAnimTree_s *pAnimTree;
+  XAnim_s *pXAnims;
+  int proneMatch;
+  int bNew;
   
-  local_44 = -1;
-  local_38 = 0.0;
+  transitionMin = -1;
+  fStartTime = 0.0;
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
-     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xeb3,0,
-                               "%s"), !bVar7)) {
-    pcVar6 = (code *)swi(3);
-    (*pcVar6)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xeb3,0,
+                               "%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  pDVar9 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                        8) + 0xa0))(param_5->number,param_1);
-  if (pDVar9 != (DObj *)0x0) {
-    uVar1 = (param_5->lerp).eFlags;
-    paVar2 = param_3->animation;
-    uVar3 = param_3->animationNumber;
-    bVar7 = param_3 == &param_2->legs;
-    bVar16 = param_3->animation == (animation_s *)0x0;
-    param_3->animationNumber = param_4;
-    uVar15 = param_4 & 0xfffffbff;
+  obj_00 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                        8) + 0xa0))(es->number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    uVar1 = (es->lerp).eFlags;
+    paVar2 = lf->animation;
+    animNum = lf->animationNumber;
+    bVar4 = lf == &ci->legs;
+    bVar10 = lf->animation == (animation_s *)0x0;
+    lf->animationNumber = newAnimation;
+    animIndex_01 = newAnimation & 0xfffffbff;
     if (*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                 0x1e000) <= uVar15) {
+                 0x1e000) <= animIndex_01) {
       Com_Error(ERR_DROP,"\x15Player animation index out of range (%i): %i");
     }
-    pXVar4 = param_2->pXAnimTree;
-    pXVar5 = *(XAnim_s **)
-              (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
-    if (uVar15 == 0) {
-      local_18 = (animation_s *)0x0;
-      param_3->animation = (animation_s *)0x0;
-      param_3->animationTime = 200;
+    tree = ci->pXAnimTree;
+    anims = *(XAnim_s **)
+             (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
+    if (animIndex_01 == 0) {
+      anim = (animation_s *)0x0;
+      lf->animation = (animation_s *)0x0;
+      lf->animationTime = 200;
     }
     else {
-      local_18 = (animation_s *)
-                 (uVar15 * 0x78 +
-                 **(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8));
-      param_3->animation = local_18;
-      if ((local_18->initialLerp < 0) &&
+      anim = (animation_s *)
+             (animIndex_01 * 0x78 +
+             **(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8));
+      lf->animation = anim;
+      if ((anim->initialLerp < 0) &&
          (-1 < *(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                        0x44 + uVar15 * 0x78))) {
-        param_3->animationTime =
+                        0x44 + animIndex_01 * 0x78))) {
+        lf->animationTime =
              *(int *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                      0x44 + uVar15 * 0x78);
+                      0x44 + animIndex_01 * 0x78);
       }
       else {
-        param_3->animationTime = local_18->initialLerp;
+        lf->animationTime = anim->initialLerp;
       }
       if (-1 < (bg_blendTimeOverride->current).integer) {
-        param_3->animationTime = (bg_blendTimeOverride->current).integer;
+        lf->animationTime = (bg_blendTimeOverride->current).integer;
       }
-      iVar10 = BG_IsCrouchingAnim(param_2,uVar3);
-      iVar11 = BG_IsCrouchingAnim(param_2,uVar15);
-      iVar12 = BG_IsProneAnim(param_2,uVar3);
-      iVar13 = BG_IsProneAnim(param_2,uVar15);
-      if ((bVar7) && ((iVar11 != iVar10 || (iVar13 != iVar12)))) {
-        param_2->stanceTransitionTime =
+      iVar6 = BG_IsCrouchingAnim(ci,animNum);
+      iVar7 = BG_IsCrouchingAnim(ci,animIndex_01);
+      iVar8 = BG_IsProneAnim(ci,animNum);
+      iVar9 = BG_IsProneAnim(ci,animIndex_01);
+      if ((bVar4) && ((iVar7 != iVar6 || (iVar9 != iVar8)))) {
+        ci->stanceTransitionTime =
              *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4) +
              400;
       }
     }
-    if (((bVar16) && (bVar7)) || (bVar8 = Demo_IsPaused(), bVar8)) {
-      param_3->animationTime = 0;
+    if (((bVar10) && (bVar4)) || (bVar5 = Demo_IsPaused(), bVar5)) {
+      lf->animationTime = 0;
     }
     else {
-      if ((local_18 == (animation_s *)0x0) || (param_3->animationTime < 0)) {
-        if ((local_18 == (animation_s *)0x0) || ((local_18->flags & 4U) == 0)) {
+      if ((anim == (animation_s *)0x0) || (lf->animationTime < 0)) {
+        if ((anim == (animation_s *)0x0) || ((anim->flags & 4U) == 0)) {
           if ((((paVar2 == (animation_s *)0x0) || ((paVar2->flags & 0x8000000U) == 0)) ||
-              (local_18 == (animation_s *)0x0)) ||
-             ((local_18->moveSpeed == 0.0 && (local_18->rotSpeed == 0.0)))) {
-            if ((local_18 == (animation_s *)0x0) || (local_18->moveSpeed == 0.0)) {
+              (anim == (animation_s *)0x0)) || ((anim->moveSpeed == 0.0 && (anim->rotSpeed == 0.0)))
+             ) {
+            if ((anim == (animation_s *)0x0) || (anim->moveSpeed == 0.0)) {
               if ((paVar2 == (animation_s *)0x0) || (paVar2->moveSpeed == 0.0)) {
-                local_44 = 0xa7;
+                transitionMin = 0xa7;
               }
               else {
-                local_44 = 0x10b;
+                transitionMin = 0x10b;
               }
             }
             else {
-              local_44 = 0x85;
+              transitionMin = 0x85;
             }
           }
           else {
-            local_44 = 0x10b;
+            transitionMin = 0x10b;
           }
         }
         else {
-          local_44 = 0;
+          transitionMin = 0;
         }
       }
-      iVar10 = param_2->stanceTransitionTime -
-               *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4)
-      ;
-      if (local_44 < iVar10) {
-        local_44 = iVar10;
+      iVar6 = ci->stanceTransitionTime -
+              *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4);
+      if (transitionMin < iVar6) {
+        transitionMin = iVar6;
       }
-      if (param_3->animationTime < local_44) {
-        param_3->animationTime = local_44;
+      if (lf->animationTime < transitionMin) {
+        lf->animationTime = transitionMin;
       }
     }
-    if (((local_18 != (animation_s *)0x0) && (local_18->moveSpeed != 0.0)) &&
-       (bVar8 = XAnimIsLooped(pXVar5,uVar15), bVar8)) {
-      uVar14 = uVar3 & 0xfffffbff;
+    if (((anim != (animation_s *)0x0) && (anim->moveSpeed != 0.0)) &&
+       (bVar5 = XAnimIsLooped(anims,animIndex_01), bVar5)) {
+      animIndex_00 = animNum & 0xfffffbff;
       if (((paVar2 == (animation_s *)0x0) || (paVar2->moveSpeed == 0.0)) ||
-         (bVar8 = XAnimIsLooped(pXVar5,uVar14), !bVar8)) {
-        if (bVar16) {
-          bVar8 = XAnimIsPrimitive(pXVar5,uVar14);
-          if (bVar8) {
-            local_34 = XAnimGetLengthMsec(pXVar5,uVar14);
-            local_34 = local_34 + 200;
+         (bVar5 = XAnimIsLooped(anims,animIndex_00), !bVar5)) {
+        if (bVar10) {
+          bVar5 = XAnimIsPrimitive(anims,animIndex_00);
+          if (bVar5) {
+            iVar6 = XAnimGetLengthMsec(anims,animIndex_00);
+            cycleLen = iVar6 + 200;
           }
           else {
-            local_34 = 1000;
+            cycleLen = 1000;
           }
-          local_38 = (float)(*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
-                                                       _tls_index * 4) + 8) + 4) % local_34) /
-                     (float)local_34 + (float)param_2->clientNum * 0.36;
-          local_38 = local_38 - (float)(int)local_38;
+          fVar11 = (float)(*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
+                                                     _tls_index * 4) + 8) + 4) % cycleLen) /
+                   (float)cycleLen + (float)ci->clientNum * 0.36;
+          fStartTime = fVar11 - (float)(int)fVar11;
         }
       }
       else {
-        local_38 = XAnimGetTime(pXVar4,uVar14);
+        fStartTime = XAnimGetTime(tree,animIndex_00);
       }
     }
     if (paVar2 != (animation_s *)0x0) {
-      XAnimClearTreeGoalWeights(pXVar4,uVar3 & 0xfffffbff,(float)param_3->animationTime * 0.001,-1);
+      XAnimClearTreeGoalWeights(tree,animNum & 0xfffffbff,(float)lf->animationTime * 0.001,-1);
     }
-    if (uVar15 == 0) {
-      if (!bVar7) {
+    if (animIndex_01 == 0) {
+      if (!bVar4) {
         XAnimSetCompleteGoalWeight
-                  (pDVar9,(uint)*(ushort *)
+                  (obj_00,(uint)*(ushort *)
                                  (**(int **)(*(int *)((int)ThreadLocalStoragePointer +
                                                      _tls_index * 4) + 8) + 0x8d374),0.0,
-                   (float)param_3->animationTime * 0.001,1.0,0,0,0,-1);
+                   (float)lf->animationTime * 0.001,1.0,0,0,0,-1);
         XAnimSetCompleteGoalWeight
-                  (pDVar9,(uint)*(ushort *)
+                  (obj_00,(uint)*(ushort *)
                                  (**(int **)(*(int *)((int)ThreadLocalStoragePointer +
                                                      _tls_index * 4) + 8) + 0x8d376),1.0,
-                   (float)param_3->animationTime * 0.001,1.0,0,0,0,-1);
+                   (float)lf->animationTime * 0.001,1.0,0,0,0,-1);
       }
     }
     else {
-      if ((!bVar7) && (param_2->leftHandGun != 0)) {
-        param_2->leftHandGun = 0;
-        param_2->dobjDirty = 1;
+      if ((!bVar4) && (ci->leftHandGun != 0)) {
+        ci->leftHandGun = 0;
+        ci->dobjDirty = 1;
       }
-      if ((local_18->flags & 0x100U) == 0) {
-        if (((local_18->moveSpeed != 0.0) && (fVar17 = XAnimGetWeight(pXVar4,uVar15), fVar17 == 0.0)
-            ) || (bVar16)) {
-          bVar16 = true;
+      if ((anim->flags & 0x100U) == 0) {
+        if (((anim->moveSpeed != 0.0) && (fVar11 = XAnimGetWeight(tree,animIndex_01), fVar11 == 0.0)
+            ) || (bVar10)) {
+          bVar10 = true;
         }
         else {
-          bVar16 = false;
+          bVar10 = false;
         }
-        if (param_1 < 0) {
+        if (localClientNum < 0) {
           XAnimSetCompleteGoalWeight
-                    (pDVar9,uVar15,1.0,(float)param_3->animationTime * 0.001,1.0,0,
-                     local_18->noteType,(uint)!bVar7,-1);
+                    (obj_00,animIndex_01,1.0,(float)lf->animationTime * 0.001,1.0,0,anim->noteType,
+                     (uint)!bVar4,-1);
         }
         else {
           XAnimSetCompleteGoalWeight
-                    (pDVar9,uVar15,1.0,(float)param_3->animationTime * 0.001,1.0,0,
-                     local_18->noteType | 2,(uint)!bVar7,-1);
+                    (obj_00,animIndex_01,1.0,(float)lf->animationTime * 0.001,1.0,0,
+                     anim->noteType | 2,(uint)!bVar4,-1);
         }
-        bVar8 = Demo_IsPaused();
-        if ((bVar8) && ((local_18->flags & 0x400U) != 0)) {
-          XAnimSetTime(pXVar4,uVar15,0.1,-1);
+        bVar5 = Demo_IsPaused();
+        if ((bVar5) && ((anim->flags & 0x400U) != 0)) {
+          XAnimSetTime(tree,animIndex_01,0.1,-1);
         }
-        else if (bVar16) {
-          XAnimSetTime(pXVar4,uVar15,local_38,-1);
+        else if (bVar10) {
+          XAnimSetTime(tree,animIndex_01,fStartTime,-1);
         }
       }
       else {
-        bVar16 = XAnimIsLooped(pXVar5,uVar15);
-        if (bVar16) {
+        bVar10 = XAnimIsLooped(anims,animIndex_01);
+        if (bVar10) {
           Com_Error(ERR_DROP,"death animation \'%s\' is looping");
         }
         if ((uVar1 & 0x10) == 0) {
-          XAnimSetGoalWeightKnobAll(pDVar9,uVar15,0,1.0,0.0,1.0,0,0,0,-1);
-          XAnimSetTime(pXVar4,uVar15,1.0,-1);
+          XAnimSetGoalWeightKnobAll(obj_00,animIndex_01,0,1.0,0.0,1.0,0,0,0,-1);
+          XAnimSetTime(tree,animIndex_01,1.0,-1);
         }
         else {
           XAnimSetCompleteGoalWeight
-                    (pDVar9,uVar15,1.0,(float)param_3->animationTime * 0.001,1.0,0,0,0,-1);
+                    (obj_00,animIndex_01,1.0,(float)lf->animationTime * 0.001,1.0,0,0,0,-1);
         }
       }
-      if (!bVar7) {
+      if (!bVar4) {
         XAnimSetCompleteGoalWeight
-                  (pDVar9,(uint)*(ushort *)
+                  (obj_00,(uint)*(ushort *)
                                  (**(int **)(*(int *)((int)ThreadLocalStoragePointer +
                                                      _tls_index * 4) + 8) + 0x8d374),1.0,
-                   (float)param_3->animationTime * 0.001,1.0,0,local_18->noteType,0,-1);
+                   (float)lf->animationTime * 0.001,1.0,0,anim->noteType,0,-1);
         XAnimSetCompleteGoalWeight
-                  (pDVar9,(uint)*(ushort *)
+                  (obj_00,(uint)*(ushort *)
                                  (**(int **)(*(int *)((int)ThreadLocalStoragePointer +
                                                      _tls_index * 4) + 8) + 0x8d376),0.01,
-                   (float)param_3->animationTime * 0.001,1.0,0,local_18->noteType,0,-1);
+                   (float)lf->animationTime * 0.001,1.0,0,anim->noteType,0,-1);
       }
     }
   }
@@ -3842,8 +3854,8 @@ BG_SetNewAnimation(int param_1,clientInfo_t *param_2,lerpFrame_t *param_3,int pa
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-BG_RunLerpFrameRate(int param_1,clientInfo_t *param_2,lerpFrame_t *param_3,int param_4,
-                   entityState_s *param_5)
+BG_RunLerpFrameRate(int localClientNum,clientInfo_t *ci,lerpFrame_t *lf,int newAnimation,
+                   entityState_s *es)
 
 {
   code *pcVar1;
@@ -3856,18 +3868,18 @@ BG_RunLerpFrameRate(int param_1,clientInfo_t *param_2,lerpFrame_t *param_3,int p
   float local_38;
   float *local_34;
   float *local_30;
-  float local_2c;
-  undefined4 local_28;
-  float local_24;
-  int local_20;
-  float local_1c;
-  animation_s *local_18;
-  animation_s *local_14;
-  int local_10;
-  XAnimTree_s *local_c;
-  undefined4 local_8;
+  float fScaleMax;
+  int bNewAnim;
+  float moveSpeed;
+  int isScriptEventAnim;
+  float rotSpeed;
+  animation_s *anim;
+  animation_s *oldAnim;
+  int isLadderAnim;
+  XAnimTree_s *pAnimTree;
+  XAnim_s *pXAnims;
   
-  local_28 = 0;
+  bNewAnim = 0;
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0xf96,0,
@@ -3876,138 +3888,137 @@ BG_RunLerpFrameRate(int param_1,clientInfo_t *param_2,lerpFrame_t *param_3,int p
     (*pcVar1)();
     return;
   }
-  if ((param_3->animation == (animation_s *)0x0) || ((param_3->animation->flags & 2U) == 0)) {
+  if ((lf->animation == (animation_s *)0x0) || ((lf->animation->flags & 2U) == 0)) {
     local_68 = 0;
   }
   else {
     local_68 = 1;
   }
-  local_10 = local_68;
-  if ((param_3->animation == (animation_s *)0x0) || ((param_3->animation->flags & 0x800U) == 0)) {
+  isLadderAnim = local_68;
+  if ((lf->animation == (animation_s *)0x0) || ((lf->animation->flags & 0x800U) == 0)) {
     local_6c = 0;
   }
   else {
     local_6c = 1;
   }
-  local_20 = local_6c;
-  local_14 = param_3->animation;
-  local_c = param_2->pXAnimTree;
-  local_8 = *(undefined4 *)
+  isScriptEventAnim = local_6c;
+  oldAnim = lf->animation;
+  pAnimTree = ci->pXAnimTree;
+  pXAnims = *(XAnim_s **)
              (**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x8d36c);
-  if ((param_4 != param_3->animationNumber) ||
-     ((param_3->animation == (animation_s *)0x0 && ((param_4 & 0xfffffbffU) != 0)))) {
-    BG_SetNewAnimation(param_1,param_2,param_3,param_4,param_5);
-    local_28 = 1;
+  if ((newAnimation != lf->animationNumber) ||
+     ((lf->animation == (animation_s *)0x0 && ((newAnimation & 0xfffffbffU) != 0)))) {
+    BG_SetNewAnimation(localClientNum,ci,lf,newAnimation,es);
+    bNewAnim = 1;
   }
-  if (((param_4 & 0xfffffbffU) != 0) && (param_3->animation != (animation_s *)0x0)) {
-    local_18 = param_3->animation;
-    if (local_18->forceAnimRate <= 0.0) {
-      if ((local_18 == (animation_s *)0x0) ||
-         (((local_18->rotSpeed == 0.0 && (local_18->moveSpeed == 0.0)) ||
-          (param_3->oldFrameSnapshotTime == 0)))) {
-        param_3->animSpeedScale = 1.0;
-        param_3->oldFrameSnapshotTime =
+  if (((newAnimation & 0xfffffbffU) != 0) && (lf->animation != (animation_s *)0x0)) {
+    anim = lf->animation;
+    if (anim->forceAnimRate <= 0.0) {
+      if ((anim == (animation_s *)0x0) ||
+         (((anim->rotSpeed == 0.0 && (anim->moveSpeed == 0.0)) || (lf->oldFrameSnapshotTime == 0))))
+      {
+        lf->animSpeedScale = 1.0;
+        lf->oldFrameSnapshotTime =
              *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 8);
-        param_3->oldFramePos[0] = (param_5->lerp).pos.trBase[0];
-        param_3->oldFramePos[1] = (param_5->lerp).pos.trBase[1];
-        param_3->oldFramePos[2] = (param_5->lerp).pos.trBase[2];
-        param_3->oldFrameYaw = (param_5->lerp).apos.trBase[1];
+        lf->oldFramePos[0] = (es->lerp).pos.trBase[0];
+        lf->oldFramePos[1] = (es->lerp).pos.trBase[1];
+        lf->oldFramePos[2] = (es->lerp).pos.trBase[2];
+        lf->oldFrameYaw = (es->lerp).apos.trBase[1];
       }
       else if (*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 8)
-               != param_3->oldFrameSnapshotTime) {
-        if (local_10 == 0) {
-          local_40 = (param_5->lerp).pos.trBase[0] - param_3->oldFramePos[0];
-          local_3c = (param_5->lerp).pos.trBase[1] - param_3->oldFramePos[1];
-          local_24 = Vec2Length(&local_40);
+               != lf->oldFrameSnapshotTime) {
+        if (isLadderAnim == 0) {
+          local_40 = (es->lerp).pos.trBase[0] - lf->oldFramePos[0];
+          local_3c = (es->lerp).pos.trBase[1] - lf->oldFramePos[1];
+          moveSpeed = Vec2Length(&local_40);
         }
         else {
-          local_38 = param_3->oldFramePos[2] - (param_5->lerp).pos.trBase[2];
-          local_24 = ABS(local_38);
+          local_38 = lf->oldFramePos[2] - (es->lerp).pos.trBase[2];
+          moveSpeed = ABS(local_38);
         }
-        local_24 = local_24 /
+        moveSpeed = moveSpeed /
+                    ((float)(*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
+                                                       _tls_index * 4) + 8) + 8) -
+                            lf->oldFrameSnapshotTime) * 0.001);
+        fVar3 = AngleNormalize180(lf->oldFrameYaw - (es->lerp).apos.trBase[1]);
+        rotSpeed = ABS(fVar3) /
                    ((float)(*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
                                                       _tls_index * 4) + 8) + 8) -
-                           param_3->oldFrameSnapshotTime) * 0.001);
-        fVar3 = AngleNormalize180(param_3->oldFrameYaw - (param_5->lerp).apos.trBase[1]);
-        local_1c = ABS(fVar3) /
-                   ((float)(*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
-                                                      _tls_index * 4) + 8) + 8) -
-                           param_3->oldFrameSnapshotTime) * 0.001);
-        if (((local_18->moveSpeed == 0.0) && (local_18->rotSpeed == 0.0)) &&
+                           lf->oldFrameSnapshotTime) * 0.001);
+        if (((anim->moveSpeed == 0.0) && (anim->rotSpeed == 0.0)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                      0xfc8,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_18->moveSpeed == 0.0) {
-          param_3->animSpeedScale = local_1c / local_18->rotSpeed;
-          if (param_3->animSpeedScale <= 1.0) {
-            if (param_3->animSpeedScale <= 0.4 && param_3->animSpeedScale != 0.4) {
-              param_3->animSpeedScale = 0.4;
+        if (anim->moveSpeed == 0.0) {
+          lf->animSpeedScale = rotSpeed / anim->rotSpeed;
+          if (lf->animSpeedScale <= 1.0) {
+            if (lf->animSpeedScale <= 0.4 && lf->animSpeedScale != 0.4) {
+              lf->animSpeedScale = 0.4;
             }
           }
           else {
-            param_3->animSpeedScale = 1.0;
+            lf->animSpeedScale = 1.0;
           }
         }
         else {
-          param_3->animSpeedScale = local_24 / local_18->moveSpeed;
+          lf->animSpeedScale = moveSpeed / anim->moveSpeed;
         }
-        param_3->oldFrameSnapshotTime =
+        lf->oldFrameSnapshotTime =
              *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 8);
-        if (local_20 != 0) {
-          param_3->animSpeedScale = 1.0;
+        if (isScriptEventAnim != 0) {
+          lf->animSpeedScale = 1.0;
         }
-        param_3->oldFramePos[0] = (param_5->lerp).pos.trBase[0];
-        param_3->oldFramePos[1] = (param_5->lerp).pos.trBase[1];
-        param_3->oldFramePos[2] = (param_5->lerp).pos.trBase[2];
-        param_3->oldFrameYaw = (param_5->lerp).apos.trBase[1];
-        if (0.1 < param_3->animSpeedScale || param_3->animSpeedScale == 0.1) {
-          if (2.0 < param_3->animSpeedScale) {
-            if ((local_18->flags & 2U) == 0) {
-              if (local_18->moveSpeed <= 150.0) {
-                if (20.0 < local_18->moveSpeed || local_18->moveSpeed == 20.0) {
-                  local_2c = 3.0 - ((local_18->moveSpeed - 20.0) * 1.0) / 130.0;
-                  if (local_2c < param_3->animSpeedScale) {
-                    param_3->animSpeedScale = local_2c;
+        lf->oldFramePos[0] = (es->lerp).pos.trBase[0];
+        lf->oldFramePos[1] = (es->lerp).pos.trBase[1];
+        lf->oldFramePos[2] = (es->lerp).pos.trBase[2];
+        lf->oldFrameYaw = (es->lerp).apos.trBase[1];
+        if (0.1 < lf->animSpeedScale || lf->animSpeedScale == 0.1) {
+          if (2.0 < lf->animSpeedScale) {
+            if ((anim->flags & 2U) == 0) {
+              if (anim->moveSpeed <= 150.0) {
+                if (20.0 < anim->moveSpeed || anim->moveSpeed == 20.0) {
+                  fScaleMax = 3.0 - ((anim->moveSpeed - 20.0) * 1.0) / 130.0;
+                  if (fScaleMax < lf->animSpeedScale) {
+                    lf->animSpeedScale = fScaleMax;
                   }
                 }
-                else if (3.0 < param_3->animSpeedScale) {
-                  param_3->animSpeedScale = 3.0;
+                else if (3.0 < lf->animSpeedScale) {
+                  lf->animSpeedScale = 3.0;
                 }
               }
               else {
-                param_3->animSpeedScale = 2.0;
+                lf->animSpeedScale = 2.0;
               }
             }
-            else if (4.0 < param_3->animSpeedScale) {
-              param_3->animSpeedScale = 4.0;
+            else if (4.0 < lf->animSpeedScale) {
+              lf->animSpeedScale = 4.0;
             }
           }
         }
-        else if ((0.01 < param_3->animSpeedScale || param_3->animSpeedScale == 0.01) ||
-                (local_10 == 0)) {
-          param_3->animSpeedScale = 0.1;
+        else if ((0.01 < lf->animSpeedScale || lf->animSpeedScale == 0.01) || (isLadderAnim == 0)) {
+          lf->animSpeedScale = 0.1;
         }
         else {
-          param_3->animSpeedScale = 0.0;
+          lf->animSpeedScale = 0.0;
         }
       }
     }
     else {
-      param_3->animSpeedScale = local_18->forceAnimRate;
-      local_34 = param_3->oldFramePos;
-      local_30 = (param_5->lerp).pos.trBase;
+      lf->animSpeedScale = anim->forceAnimRate;
+      local_34 = lf->oldFramePos;
+      local_30 = (es->lerp).pos.trBase;
       *local_34 = *local_30;
-      param_3->oldFramePos[1] = (param_5->lerp).pos.trBase[1];
-      param_3->oldFramePos[2] = (param_5->lerp).pos.trBase[2];
-      param_3->oldFrameYaw = (param_5->lerp).apos.trBase[1];
-      param_3->oldFrameSnapshotTime =
+      lf->oldFramePos[1] = (es->lerp).pos.trBase[1];
+      lf->oldFramePos[2] = (es->lerp).pos.trBase[2];
+      lf->oldFrameYaw = (es->lerp).apos.trBase[1];
+      lf->oldFrameSnapshotTime =
            *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 8);
     }
-    if (param_3->animationNumber != 0) {
-      XAnimSetAnimRate(local_c,param_3->animationNumber & 0xfffffbff,param_3->animSpeedScale);
+    if (lf->animationNumber != 0) {
+      XAnimSetAnimRate(pAnimTree,lf->animationNumber & 0xfffffbff,lf->animSpeedScale);
     }
   }
   return;
@@ -4016,12 +4027,13 @@ BG_RunLerpFrameRate(int param_1,clientInfo_t *param_2,lerpFrame_t *param_3,int p
 
 // 0040EA90  BG_PlayerAnimation_VerifyAnim  (bgame/bg_animation.cpp:4135)
 
-void __cdecl BG_PlayerAnimation_VerifyAnim(XAnimTree_s *param_1,lerpFrame_t *param_2)
+void __cdecl BG_PlayerAnimation_VerifyAnim(XAnimTree_s *pAnimTree,lerpFrame_t *lf)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  XAnim_s *pXAnims;
   
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
@@ -4031,8 +4043,8 @@ void __cdecl BG_PlayerAnimation_VerifyAnim(XAnimTree_s *param_1,lerpFrame_t *par
     (*pcVar1)();
     return;
   }
-  if (param_2->animationNumber == 0) {
-    if ((param_2->animation != (animation_s *)0x0) &&
+  if (lf->animationNumber == 0) {
+    if ((lf->animation != (animation_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x103d
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -4041,11 +4053,11 @@ void __cdecl BG_PlayerAnimation_VerifyAnim(XAnimTree_s *param_1,lerpFrame_t *par
     }
   }
   else {
-    fVar3 = XAnimGetWeight(param_1,param_2->animationNumber & 0xfffffbff);
+    fVar3 = XAnimGetWeight(pAnimTree,lf->animationNumber & 0xfffffbff);
     if (fVar3 == 0.0) {
-      param_2->animationNumber = 0;
-      param_2->animation = (animation_s *)0x0;
-      param_2->animationTime = 0xa7;
+      lf->animationNumber = 0;
+      lf->animation = (animation_s *)0x0;
+      lf->animationTime = 0xa7;
     }
   }
   return;
@@ -4055,14 +4067,16 @@ void __cdecl BG_PlayerAnimation_VerifyAnim(XAnimTree_s *param_1,lerpFrame_t *par
 // 0040F410  BG_SwingAngles  (bgame/bg_animation.cpp:4176)
 
 void __cdecl
-BG_SwingAngles(float param_1,float param_2,float param_3,float param_4,float *param_5,int *param_6)
+BG_SwingAngles(float destination,float swingTolerance,float clampTolerance,float speed,float *angle,
+              int *swinging)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_10;
-  float local_8;
+  float move;
+  float swing;
+  float scale;
   
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
@@ -4072,54 +4086,55 @@ BG_SwingAngles(float param_1,float param_2,float param_3,float param_4,float *pa
     (*pcVar1)();
     return;
   }
-  if ((*param_6 == 0) &&
-     ((fVar3 = AngleNormalize180(*param_5 - param_1), param_2 < fVar3 || (fVar3 < -param_2)))) {
-    *param_6 = 1;
+  if ((*swinging == 0) &&
+     ((fVar3 = AngleNormalize180(*angle - destination), swingTolerance < fVar3 ||
+      (fVar3 < -swingTolerance)))) {
+    *swinging = 1;
   }
-  if (*param_6 != 0) {
-    fVar3 = AngleNormalize180(param_1 - *param_5);
-    local_8 = ABS(fVar3) * 0.05;
-    if (local_8 < 0.5) {
-      local_8 = 0.5;
+  if (*swinging != 0) {
+    fVar3 = AngleNormalize180(destination - *angle);
+    scale = ABS(fVar3) * 0.05;
+    if (scale < 0.5) {
+      scale = 0.5;
     }
     if (fVar3 < 0.0) {
       if (fVar3 < 0.0) {
-        local_10 = (float)*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4
-                                                    ) + 8) + 0xc) * local_8 * -param_4;
-        if (fVar3 < local_10) {
-          *param_6 = 1;
+        move = (float)*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
+                                       8) + 0xc) * scale * -speed;
+        if (fVar3 < move) {
+          *swinging = 1;
         }
         else {
-          *param_6 = 0;
-          local_10 = fVar3;
+          *swinging = 0;
+          move = fVar3;
         }
-        fVar3 = AngleNormalize360(*param_5 + local_10);
-        *param_5 = fVar3;
+        fVar3 = AngleNormalize360(*angle + move);
+        *angle = fVar3;
       }
     }
     else {
-      local_10 = (float)*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
-                                         + 8) + 0xc) * local_8 * param_4;
-      if (local_10 < fVar3) {
-        *param_6 = 1;
+      move = (float)*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8)
+                            + 0xc) * scale * speed;
+      if (move < fVar3) {
+        *swinging = 1;
       }
       else {
-        *param_6 = 0;
-        local_10 = fVar3;
+        *swinging = 0;
+        move = fVar3;
       }
-      fVar3 = AngleNormalize360(*param_5 + local_10);
-      *param_5 = fVar3;
+      fVar3 = AngleNormalize360(*angle + move);
+      *angle = fVar3;
     }
-    fVar3 = AngleNormalize180(param_1 - *param_5);
-    if (fVar3 <= param_3) {
-      if (fVar3 < -param_3) {
-        fVar3 = AngleNormalize360(param_1 + param_3);
-        *param_5 = fVar3;
+    fVar3 = AngleNormalize180(destination - *angle);
+    if (fVar3 <= clampTolerance) {
+      if (fVar3 < -clampTolerance) {
+        fVar3 = AngleNormalize360(destination + clampTolerance);
+        *angle = fVar3;
       }
     }
     else {
-      fVar3 = AngleNormalize360(param_1 - param_3);
-      *param_5 = fVar3;
+      fVar3 = AngleNormalize360(destination - clampTolerance);
+      *angle = fVar3;
     }
   }
   return;
@@ -4130,208 +4145,210 @@ BG_SwingAngles(float param_1,float param_2,float param_3,float param_4,float *pa
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_PlayerAngles(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_PlayerAngles(entityState_s *es,clientInfo_t *ci)
 
 {
   float fVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  float fVar5;
-  float local_34;
+  float fVar2;
+  code *pcVar3;
+  bool bVar4;
+  int iVar5;
+  float destination;
+  bool bTeleportBit;
+  float swingSpeed;
   float local_2c;
-  float local_24;
+  float clampTolerance;
   float local_1c;
-  float local_14;
-  float local_10;
+  float dest;
+  float MAX_PITCH_FRACTION;
+  float fLeanFrac;
+  float moveDir;
   
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x10bd,0
-                               ,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x10bd,0
+                               ,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  GetLeanFraction(param_2->lerpLean);
-  fVar1 = param_2->lerpMoveDir;
+  GetLeanFraction(ci->lerpLean);
+  fVar1 = ci->lerpMoveDir;
   if ((0 < (bg_teleportAlignTime->current).integer) &&
-     (bVar3 = ((param_1->lerp).eFlags & 2U) != 0, bVar3 != (bool)(char)param_2[1].nextValid)) {
-    param_2[1].infoValid =
+     (bVar4 = ((es->lerp).eFlags & 2U) != 0, bVar4 != (bool)(char)ci[1].nextValid)) {
+    ci[1].infoValid =
          *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4);
-    *(bool *)&param_2[1].nextValid = bVar3;
+    *(bool *)&ci[1].nextValid = bVar4;
   }
-  local_14 = param_2->playerAngles[0];
-  fVar5 = AngleNormalize360(param_2->playerAngles[1]);
+  fVar2 = ci->playerAngles[0];
+  destination = AngleNormalize360(ci->playerAngles[1]);
   if ((player_topDownCamMode->current).integer < 1) {
-    if (((param_1->lerp).eFlags & 8U) == 0) {
-      local_34 = (bg_swingSpeed->current).value;
+    if (((es->lerp).eFlags & 8U) == 0) {
+      swingSpeed = (bg_swingSpeed->current).value;
     }
     else {
-      local_34 = (bg_proneSwingSpeed->current).value;
+      swingSpeed = (bg_proneSwingSpeed->current).value;
     }
   }
   else {
-    local_34 = 1.0;
+    swingSpeed = 1.0;
   }
-  if (((param_1->lerp).eFlags & 0x300U) == 0) {
-    if (((param_1->lerp).u.actor.team == 5) || ((param_1->lerp).u.actor.team == 6)) {
-      (param_2->torso).yawing = 1;
-      (param_2->torso).pitching = 1;
-      (param_2->legs).yawing = 1;
+  if (((es->lerp).eFlags & 0x300U) == 0) {
+    if (((es->lerp).u.actor.team == 5) || ((es->lerp).u.actor.team == 6)) {
+      (ci->torso).yawing = 1;
+      (ci->torso).pitching = 1;
+      (ci->legs).yawing = 1;
     }
-    else if (((param_1->lerp).eFlags & 0x8000U) == 0) {
-      if ((param_1->lerp).u.actor.team == 1) {
+    else if (((es->lerp).eFlags & 0x8000U) == 0) {
+      if ((es->lerp).u.actor.team == 1) {
         if (((bg_teleportAlignTime->current).integer < 1) ||
-           (param_2[1].infoValid <=
+           (ci[1].infoValid <=
             *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 4) -
             (bg_teleportAlignTime->current).integer)) {
-          iVar4 = BG_GetConditionValue(param_2,0xb);
-          if (iVar4 != 0) {
-            (param_2->torso).yawing = 1;
-            (param_2->torso).pitching = 1;
+          iVar5 = BG_GetConditionValue(ci,0xb);
+          if (iVar5 != 0) {
+            (ci->torso).yawing = 1;
+            (ci->torso).pitching = 1;
           }
         }
         else {
-          (param_2->torso).yawing = 1;
-          (param_2->torso).pitching = 1;
-          (param_2->legs).yawing = 1;
+          (ci->torso).yawing = 1;
+          (ci->torso).pitching = 1;
+          (ci->legs).yawing = 1;
         }
       }
       else {
-        (param_2->torso).yawing = 1;
-        (param_2->torso).pitching = 1;
-        (param_2->legs).yawing = 1;
+        (ci->torso).yawing = 1;
+        (ci->torso).pitching = 1;
+        (ci->legs).yawing = 1;
       }
     }
     else {
-      (param_2->torso).yawing = 1;
-      (param_2->torso).pitching = 1;
-      (param_2->legs).yawing = 1;
+      (ci->torso).yawing = 1;
+      (ci->torso).pitching = 1;
+      (ci->legs).yawing = 1;
     }
   }
   else {
-    (param_2->torso).yawing = 1;
-    (param_2->torso).pitching = 1;
-    (param_2->legs).yawing = 1;
+    (ci->torso).yawing = 1;
+    (ci->torso).pitching = 1;
+    (ci->legs).yawing = 1;
   }
-  local_1c = fVar5 + fVar1;
-  local_2c = fVar5;
-  if (((param_1->lerp).eFlags & 0x40000U) == 0) {
-    if (((param_1->lerp).u.actor.team == 5) || ((param_1->lerp).u.actor.team == 6)) {
-      local_24 = 0.0;
+  local_1c = destination + fVar1;
+  local_2c = destination;
+  if (((es->lerp).eFlags & 0x40000U) == 0) {
+    if (((es->lerp).u.actor.team == 5) || ((es->lerp).u.actor.team == 6)) {
+      clampTolerance = 0.0;
       local_2c = local_1c;
     }
-    else if (((param_1->lerp).eFlags & 0x8000U) == 0) {
-      if (param_2->needsRevive == 0) {
-        if (((param_1->lerp).eFlags & 8U) == 0) {
-          if (((param_1->lerp).eFlags & 0x40U) == 0) {
-            if (((param_1->lerp).eFlags & 0x80000U) == 0) {
-              local_2c = (player_move_factor_on_torso->current).value * fVar1 + fVar5;
+    else if (((es->lerp).eFlags & 0x8000U) == 0) {
+      if (ci->needsRevive == 0) {
+        if (((es->lerp).eFlags & 8U) == 0) {
+          if (((es->lerp).eFlags & 0x40U) == 0) {
+            if (((es->lerp).eFlags & 0x80000U) == 0) {
+              local_2c = (player_move_factor_on_torso->current).value * fVar1 + destination;
             }
-            local_24 = 90.0;
+            clampTolerance = 90.0;
           }
           else {
-            local_24 = 45.0;
+            clampTolerance = 45.0;
           }
         }
         else {
-          local_24 = 90.0;
+          clampTolerance = 90.0;
         }
       }
       else {
-        local_24 = 45.0;
-        local_1c = fVar5;
+        clampTolerance = 45.0;
+        local_1c = destination;
       }
     }
     else {
-      local_24 = 90.0;
-      local_1c = fVar5;
+      clampTolerance = 90.0;
+      local_1c = destination;
     }
   }
   else {
-    local_24 = 90.0;
-    local_1c = fVar5;
+    clampTolerance = 90.0;
+    local_1c = destination;
   }
-  BG_SwingAngles(local_2c,0.0,local_24,local_34,&(param_2->torso).yawAngle,&(param_2->torso).yawing)
-  ;
+  BG_SwingAngles(local_2c,0.0,clampTolerance,swingSpeed,&(ci->torso).yawAngle,&(ci->torso).yawing);
   if ((**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x1153,0
-                               ,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x1153,0
+                               ,"%s"), !bVar4)) {
+    pcVar3 = (code *)swi(3);
+    (*pcVar3)();
     return;
   }
-  if (((param_1->lerp).eFlags & 0x40000U) == 0) {
+  if (((es->lerp).eFlags & 0x40000U) == 0) {
     if ((*(uint *)(**(int **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x5c
-                  + ((param_1->un2).animState.state & 0xfffffbffU) * 0x78) & 0x30) == 0) {
-      if ((param_2->legs).yawing == 0) {
-        if (((param_1->lerp).eFlags & 8U) == 0) {
-          if (((param_1->lerp).eFlags & 4U) == 0) {
-            BG_SwingAngles(local_1c,(bg_legYawTolerance->current).value,150.0,local_34,
-                           &(param_2->legs).yawAngle,&(param_2->legs).yawing);
+                  + ((es->un2).animState.state & 0xfffffbffU) * 0x78) & 0x30) == 0) {
+      if ((ci->legs).yawing == 0) {
+        if (((es->lerp).eFlags & 8U) == 0) {
+          if (((es->lerp).eFlags & 4U) == 0) {
+            BG_SwingAngles(local_1c,(bg_legYawTolerance->current).value,150.0,swingSpeed,
+                           &(ci->legs).yawAngle,&(ci->legs).yawing);
           }
           else {
-            BG_SwingAngles(local_1c,(bg_legYawCrouchTolerance->current).value,150.0,local_34,
-                           &(param_2->legs).yawAngle,&(param_2->legs).yawing);
+            BG_SwingAngles(local_1c,(bg_legYawCrouchTolerance->current).value,150.0,swingSpeed,
+                           &(ci->legs).yawAngle,&(ci->legs).yawing);
           }
         }
         else {
-          BG_SwingAngles(local_1c,(bg_legYawProneTolerance->current).value,150.0,local_34,
-                         &(param_2->legs).yawAngle,&(param_2->legs).yawing);
+          BG_SwingAngles(local_1c,(bg_legYawProneTolerance->current).value,150.0,swingSpeed,
+                         &(ci->legs).yawAngle,&(ci->legs).yawing);
         }
       }
       else {
-        BG_SwingAngles(local_1c,0.0,150.0,local_34,&(param_2->legs).yawAngle,&(param_2->legs).yawing
-                      );
+        BG_SwingAngles(local_1c,0.0,150.0,swingSpeed,&(ci->legs).yawAngle,&(ci->legs).yawing);
       }
     }
     else {
-      (param_2->legs).yawing = 0;
-      BG_SwingAngles(fVar5,0.0,150.0,local_34,&(param_2->legs).yawAngle,&(param_2->legs).yawing);
+      (ci->legs).yawing = 0;
+      BG_SwingAngles(destination,0.0,150.0,swingSpeed,&(ci->legs).yawAngle,&(ci->legs).yawing);
     }
   }
   else {
-    BG_SwingAngles(local_1c,0.0,150.0,local_34,&(param_2->legs).yawAngle,&(param_2->legs).yawing);
+    BG_SwingAngles(local_1c,0.0,150.0,swingSpeed,&(ci->legs).yawAngle,&(ci->legs).yawing);
   }
-  if (((param_1->lerp).eFlags & 0x300U) == 0) {
-    if (((param_1->lerp).u.actor.team == 5) || ((param_1->lerp).u.actor.team == 6)) {
-      (param_2->torso).yawAngle = fVar5 + fVar1;
-      (param_2->legs).yawAngle = fVar5 + fVar1;
+  if (((es->lerp).eFlags & 0x300U) == 0) {
+    if (((es->lerp).u.actor.team == 5) || ((es->lerp).u.actor.team == 6)) {
+      (ci->torso).yawAngle = destination + fVar1;
+      (ci->legs).yawAngle = destination + fVar1;
     }
   }
   else {
-    (param_2->torso).yawAngle = fVar5;
-    (param_2->legs).yawAngle = fVar5;
+    (ci->torso).yawAngle = destination;
+    (ci->legs).yawAngle = destination;
   }
-  local_10 = 2.0;
-  bVar3 = IKImport_GetVar_IK_Enable();
-  if (bVar3) {
-    local_10 = IK_MAX_PITCH_FRACTION;
+  MAX_PITCH_FRACTION = 2.0;
+  bVar4 = IKImport_GetVar_IK_Enable();
+  if (bVar4) {
+    MAX_PITCH_FRACTION = IK_MAX_PITCH_FRACTION;
   }
-  if (((param_1->lerp).eFlags & 0x40000U) == 0) {
-    if (((param_1->lerp).eFlags & 0x300U) == 0) {
-      if (((param_1->lerp).u.actor.team == 5) || ((param_1->lerp).u.actor.team == 6)) {
-        local_14 = 0.0;
+  if (((es->lerp).eFlags & 0x40000U) == 0) {
+    if (((es->lerp).eFlags & 0x300U) == 0) {
+      if (((es->lerp).u.actor.team == 5) || ((es->lerp).u.actor.team == 6)) {
+        dest = 0.0;
       }
-      else if ((param_1->lerp).eFlags == 0x8000) {
-        local_14 = 0.0;
+      else if ((es->lerp).eFlags == 0x8000) {
+        dest = 0.0;
       }
-      else if (local_14 <= 180.0) {
-        local_14 = local_14 * local_10;
+      else if (fVar2 <= 180.0) {
+        dest = fVar2 * MAX_PITCH_FRACTION;
       }
       else {
-        local_14 = (local_14 + -360.0) * local_10;
+        dest = (fVar2 + -360.0) * MAX_PITCH_FRACTION;
       }
     }
     else {
-      local_14 = 0.0;
+      dest = 0.0;
     }
   }
   else {
-    local_14 = 0.0;
+    dest = 0.0;
   }
-  BG_SwingAngles(local_14,0.0,45.0,0.15,&(param_2->torso).pitchAngle,&(param_2->torso).pitching);
+  BG_SwingAngles(dest,0.0,45.0,0.15,&(ci->torso).pitchAngle,&(ci->torso).pitching);
   return;
 }
 
@@ -4340,13 +4357,13 @@ void __cdecl BG_PlayerAngles(entityState_s *param_1,clientInfo_t *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_AnimPlayerConditions(entityState_s *param_1,clientInfo_t *param_2)
+void __cdecl BG_AnimPlayerConditions(entityState_s *es,clientInfo_t *ci)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x17; local_8 = local_8 + 1) {
-    (*clientConditionUpdateFunc[local_8])(param_1,param_2);
+  for (i = 0; i < 0x17; i = i + 1) {
+    (*clientConditionUpdateFunc[i])(es,ci);
   }
   return;
 }
@@ -4357,8 +4374,7 @@ void __cdecl BG_AnimPlayerConditions(entityState_s *param_1,clientInfo_t *param_
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-BG_Player_DoControllersInternal
-          (entityState_s *param_1,clientInfo_t *param_2,controller_info_t *param_3)
+BG_Player_DoControllersInternal(entityState_s *es,clientInfo_t *ci,controller_info_t *info)
 
 {
   byte bVar1;
@@ -4368,83 +4384,87 @@ BG_Player_DoControllersInternal
   float fVar5;
   uint local_114;
   uint local_110;
-  float local_98;
+  int lean_direction_2;
+  int lean_direction;
+  int seatNum;
+  float tag_origin_offset;
   float local_94;
-  float local_88;
+  float c;
+  float vHeadAngles;
   float local_84;
   float local_80;
-  float local_7c;
+  float vTorsoAngles;
   float local_78;
   float local_74;
-  float local_70;
+  float tag_origin_angles;
   float local_6c;
   float local_68;
-  float local_64 [18];
-  int local_1c;
+  float angles [18];
+  int moveType;
   int local_18;
-  float local_10;
-  int local_c;
-  uint local_8;
+  float s;
+  float fLeanFrac;
+  int i;
+  int clientNum;
   
-  if (((param_1->lerp).eFlags & 0x300U) == 0) {
-    if ((((param_1->lerp).eFlags & 0x4000U) == 0) ||
-       ((bVar1 = (param_1->lerp).u.player.vehicleSeat, bVar1 != 0 && ((bVar1 == 0 || (4 < bVar1)))))
-       ) {
-      local_8 = (uint)param_1->clientNum;
-      local_70 = 0.0;
+  if (((es->lerp).eFlags & 0x300U) == 0) {
+    if ((((es->lerp).eFlags & 0x4000U) == 0) ||
+       ((bVar1 = (es->lerp).u.player.vehicleSeat, bVar1 != 0 && ((bVar1 == 0 || (4 < bVar1)))))) {
+      clientNum = (int)es->clientNum;
+      tag_origin_angles = 0.0;
       local_68 = 0.0;
-      local_7c = 0.0;
+      vTorsoAngles = 0.0;
       local_74 = 0.0;
-      local_88 = param_2->playerAngles[0];
-      local_84 = param_2->playerAngles[1];
-      local_80 = param_2->playerAngles[2];
-      local_6c = (param_2->legs).yawAngle;
-      local_78 = (param_2->torso).yawAngle;
-      local_1c = (int)param_2->moveType;
-      local_18 = *(int *)((int)&param_2->moveType + 4);
-      if ((local_1c == 0x18) && (local_18 == 0)) {
-        memset((uchar *)param_3,'\0',0x60);
+      vHeadAngles = ci->playerAngles[0];
+      local_84 = ci->playerAngles[1];
+      local_80 = ci->playerAngles[2];
+      local_6c = (ci->legs).yawAngle;
+      local_78 = (ci->torso).yawAngle;
+      moveType = (int)ci->moveType;
+      local_18 = *(int *)((int)&ci->moveType + 4);
+      if ((moveType == 0x18) && (local_18 == 0)) {
+        memset((uchar *)info,'\0',0x60);
       }
       else {
-        if (((((int)param_2->moveType != 5) || (*(int *)((int)&param_2->moveType + 4) != 0)) &&
-            (((int)param_2->moveType != 6 || (*(int *)((int)&param_2->moveType + 4) != 0)))) &&
-           (local_7c = (param_2->torso).pitchAngle, ((param_1->lerp).eFlags & 8U) != 0)) {
-          local_7c = AngleNormalize180(local_7c);
-          if (0.0 <= local_7c) {
-            local_7c = local_7c * 0.0;
+        if (((((int)ci->moveType != 5) || (*(int *)((int)&ci->moveType + 4) != 0)) &&
+            (((int)ci->moveType != 6 || (*(int *)((int)&ci->moveType + 4) != 0)))) &&
+           (vTorsoAngles = (ci->torso).pitchAngle, ((es->lerp).eFlags & 8U) != 0)) {
+          vTorsoAngles = AngleNormalize180(vTorsoAngles);
+          if (0.0 <= vTorsoAngles) {
+            vTorsoAngles = vTorsoAngles * 0.0;
           }
           else {
-            local_7c = local_7c * 0.5;
+            vTorsoAngles = vTorsoAngles * 0.5;
           }
         }
-        AnglesSubtract(&local_88,&local_7c,&local_88);
-        AnglesSubtract(&local_7c,&local_70,&local_7c);
-        local_98 = 0.0;
+        AnglesSubtract(&vHeadAngles,&vTorsoAngles,&vHeadAngles);
+        AnglesSubtract(&vTorsoAngles,&tag_origin_angles,&vTorsoAngles);
+        tag_origin_offset = 0.0;
         local_94 = 0.0;
-        local_10 = GetLeanFraction(param_2->lerpLean);
-        local_74 = local_10 * 50.0 * 0.925;
-        local_80 = local_10 * 50.0 * 0.925;
-        if (local_10 != 0.0) {
-          local_110 = (uint)(0.0 < local_10);
-          if (((param_1->lerp).eFlags & 4U) == 0) {
-            local_94 = -local_10 * *(float *)((int)&player_lean_shift->current + local_110 * 4) +
+        fLeanFrac = GetLeanFraction(ci->lerpLean);
+        local_74 = fLeanFrac * 50.0 * 0.925;
+        local_80 = fLeanFrac * 50.0 * 0.925;
+        if (fLeanFrac != 0.0) {
+          local_110 = (uint)(0.0 < fLeanFrac);
+          if (((es->lerp).eFlags & 4U) == 0) {
+            local_94 = -fLeanFrac * *(float *)((int)&player_lean_shift->current + local_110 * 4) +
                        0.0;
           }
           else {
-            local_94 = -local_10 *
+            local_94 = -fLeanFrac *
                        *(float *)((int)&player_lean_shift_crouch->current + local_110 * 4) + 0.0;
           }
         }
-        if (((param_1->lerp).eFlags & 0x40000U) == 0) {
-          local_6c = AngleNormalize180(local_6c - param_2->playerAngles[1]);
+        if (((es->lerp).eFlags & 0x40000U) == 0) {
+          local_6c = AngleNormalize180(local_6c - ci->playerAngles[1]);
         }
-        local_64[0xf] = 0.0;
-        local_64[0x10] = 0.0;
-        local_64[0x11] = 0.0;
-        if (((param_1->lerp).eFlags & 8U) == 0) {
-          if (local_10 != 0.0) {
-            local_114 = (uint)(0.0 < local_10);
-            if (((param_1->lerp).eFlags & 4U) == 0) {
+        angles[0xf] = 0.0;
+        angles[0x10] = 0.0;
+        angles[0x11] = 0.0;
+        if (((es->lerp).eFlags & 8U) == 0) {
+          if (fLeanFrac != 0.0) {
+            local_114 = (uint)(0.0 < fLeanFrac);
+            if (((es->lerp).eFlags & 4U) == 0) {
               local_74 = local_74 * *(float *)((int)&player_lean_rotate->current + local_114 * 4);
               local_80 = local_80 * *(float *)((int)&player_lean_rotate->current + local_114 * 4);
             }
@@ -4455,85 +4475,83 @@ BG_Player_DoControllersInternal
                          *(float *)((int)&player_lean_rotate_crouch->current + local_114 * 4);
             }
           }
-          local_68 = local_10 * 50.0 * 0.075 + local_68;
-          local_64[0] = local_7c * (player_AimBlend_Back_Low->current).value;
-          local_64[1] = local_78 * (player_AimBlend_Back_Low->current).vector[1];
-          local_64[2] = local_74 * (player_AimBlend_Back_Low->current).vector[2];
-          if (((param_1->un2).animState.fAimUpDown != 0.0) ||
-             ((param_1->un2).animState.fAimLeftRight != 0.0)) {
-            fVar5 = AngleNormalize180((param_1->un2).animState.fAimUpDown -
-                                      (param_1->un2).animState.fAimLeftRight);
-            local_64[0] = local_64[0] + fVar5;
+          local_68 = fLeanFrac * 50.0 * 0.075 + local_68;
+          angles[0] = vTorsoAngles * (player_AimBlend_Back_Low->current).value;
+          angles[1] = local_78 * (player_AimBlend_Back_Low->current).vector[1];
+          angles[2] = local_74 * (player_AimBlend_Back_Low->current).vector[2];
+          if (((es->un2).animState.fAimUpDown != 0.0) || ((es->un2).animState.fAimLeftRight != 0.0))
+          {
+            fVar5 = AngleNormalize180((es->un2).animState.fAimUpDown -
+                                      (es->un2).animState.fAimLeftRight);
+            angles[0] = angles[0] + fVar5;
           }
-          local_64[3] = local_7c * (player_AimBlend_Back_Mid->current).value;
-          local_64[4] = local_78 * (player_AimBlend_Back_Mid->current).vector[1];
-          local_64[5] = local_74 * (player_AimBlend_Back_Mid->current).vector[2];
-          local_64[6] = local_7c * (player_AimBlend_Back_Up->current).value;
-          local_64[7] = local_78 * (player_AimBlend_Back_Up->current).vector[1];
-          local_64[8] = local_74 * (player_AimBlend_Back_Up->current).vector[2];
-          local_64[0xf] = local_7c * (player_AimBlend_Pelvis->current).value;
-          local_64[0x10] = local_78 * (player_AimBlend_Pelvis->current).vector[1];
-          local_64[0x11] = local_74 * (player_AimBlend_Pelvis->current).vector[2];
+          angles[3] = vTorsoAngles * (player_AimBlend_Back_Mid->current).value;
+          angles[4] = local_78 * (player_AimBlend_Back_Mid->current).vector[1];
+          angles[5] = local_74 * (player_AimBlend_Back_Mid->current).vector[2];
+          angles[6] = vTorsoAngles * (player_AimBlend_Back_Up->current).value;
+          angles[7] = local_78 * (player_AimBlend_Back_Up->current).vector[1];
+          angles[8] = local_74 * (player_AimBlend_Back_Up->current).vector[2];
+          angles[0xf] = vTorsoAngles * (player_AimBlend_Pelvis->current).value;
+          angles[0x10] = local_78 * (player_AimBlend_Pelvis->current).vector[1];
+          angles[0x11] = local_74 * (player_AimBlend_Pelvis->current).vector[2];
         }
         else {
-          if (local_10 != 0.0) {
+          if (fLeanFrac != 0.0) {
             local_80 = local_80 * 0.5;
           }
-          local_70 = local_70 + (param_1->un2).animState.fAimLeftRight;
+          tag_origin_angles = tag_origin_angles + (es->un2).animState.fAimLeftRight;
           fVar2 = (float10)fcos((float10)(local_78 * 0.017453292));
           fVar4 = (float10)fsin((float10)(local_78 * 0.017453292));
-          local_98 = (1.0 - (float)fVar2) * 0.0 + 0.0;
+          tag_origin_offset = (1.0 - (float)fVar2) * 0.0 + 0.0;
           local_94 = (float)fVar4 * 0.0 + local_94;
-          if (0.0 < local_10 * (float)fVar4) {
-            local_94 = -local_10 * (1.0 - (float)fVar2) * 16.0 + local_94;
+          if (0.0 < fLeanFrac * (float)fVar4) {
+            local_94 = -fLeanFrac * (1.0 - (float)fVar2) * 16.0 + local_94;
           }
-          local_64[0] = 0.0;
-          local_64[1] = local_78 * 0.3 + local_74 * -1.2;
-          local_64[2] = local_74 * 0.3;
-          if (((param_1->un2).animState.fAimUpDown != 0.0) ||
-             ((param_1->un2).animState.fAimLeftRight != 0.0)) {
-            fVar5 = AngleNormalize180((param_1->un2).animState.fAimUpDown -
-                                      (param_1->un2).animState.fAimLeftRight);
-            local_64[0] = local_64[0] + fVar5;
+          angles[0] = 0.0;
+          angles[1] = local_78 * 0.3 + local_74 * -1.2;
+          angles[2] = local_74 * 0.3;
+          if (((es->un2).animState.fAimUpDown != 0.0) || ((es->un2).animState.fAimLeftRight != 0.0))
+          {
+            fVar5 = AngleNormalize180((es->un2).animState.fAimUpDown -
+                                      (es->un2).animState.fAimLeftRight);
+            angles[0] = angles[0] + fVar5;
           }
-          local_64[3] = 0.0;
-          local_64[4] = local_78 * 0.3 - local_74 * 0.2;
-          local_64[5] = local_74 * 0.2;
-          local_64[6] = 0.0;
-          local_64[7] = local_78 * 0.3 - local_74 * -1.0;
-          local_64[8] = local_74 * -0.2;
+          angles[3] = 0.0;
+          angles[4] = local_78 * 0.3 - local_74 * 0.2;
+          angles[5] = local_74 * 0.2;
+          angles[6] = 0.0;
+          angles[7] = local_78 * 0.3 - local_74 * -1.0;
+          angles[8] = local_74 * -0.2;
         }
-        local_64[9] = local_88 * (player_AimBlend_Neck->current).value;
-        local_64[10] = local_84 * (player_AimBlend_Neck->current).vector[1];
-        local_64[0xb] = local_80 * (player_AimBlend_Neck->current).vector[2];
-        local_64[0xc] = local_88 * (player_AimBlend_Head->current).value;
-        local_64[0xd] = local_84 * (player_AimBlend_Head->current).vector[1];
-        local_64[0xe] = local_80 * (player_AimBlend_Head->current).vector[2];
-        if (((param_1->un2).animState.fAimLeftRight != 0.0) ||
-           ((param_1->un2).animState.fAimUpDown != 0.0)) {
-          AngleNormalize180((param_1->un2).animState.fAimLeftRight -
-                            (param_1->un2).animState.fAimUpDown);
+        angles[9] = vHeadAngles * (player_AimBlend_Neck->current).value;
+        angles[10] = local_84 * (player_AimBlend_Neck->current).vector[1];
+        angles[0xb] = local_80 * (player_AimBlend_Neck->current).vector[2];
+        angles[0xc] = vHeadAngles * (player_AimBlend_Head->current).value;
+        angles[0xd] = local_84 * (player_AimBlend_Head->current).vector[1];
+        angles[0xe] = local_80 * (player_AimBlend_Head->current).vector[2];
+        if (((es->un2).animState.fAimLeftRight != 0.0) || ((es->un2).animState.fAimUpDown != 0.0)) {
+          AngleNormalize180((es->un2).animState.fAimLeftRight - (es->un2).animState.fAimUpDown);
         }
-        for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-          pafVar3 = param_3->angles + local_c;
-          (*pafVar3)[0] = local_64[local_c * 3];
-          (*pafVar3)[1] = local_64[local_c * 3 + 1];
-          (*pafVar3)[2] = local_64[local_c * 3 + 2];
+        for (i = 0; i < 6; i = i + 1) {
+          pafVar3 = info->angles + i;
+          (*pafVar3)[0] = angles[i * 3];
+          (*pafVar3)[1] = angles[i * 3 + 1];
+          (*pafVar3)[2] = angles[i * 3 + 2];
         }
-        param_3->tag_origin_angles[0] = local_70;
-        param_3->tag_origin_angles[1] = local_6c;
-        param_3->tag_origin_angles[2] = local_68;
-        param_3->tag_origin_offset[0] = local_98;
-        param_3->tag_origin_offset[1] = local_94;
-        param_3->tag_origin_offset[2] = 0.0;
+        info->tag_origin_angles[0] = tag_origin_angles;
+        info->tag_origin_angles[1] = local_6c;
+        info->tag_origin_angles[2] = local_68;
+        info->tag_origin_offset[0] = tag_origin_offset;
+        info->tag_origin_offset[1] = local_94;
+        info->tag_origin_offset[2] = 0.0;
       }
     }
     else {
-      memset((uchar *)param_3,'\0',0x60);
+      memset((uchar *)info,'\0',0x60);
     }
   }
   else {
-    memset((uchar *)param_3,'\0',0x60);
+    memset((uchar *)info,'\0',0x60);
   }
   return;
 }
@@ -4541,22 +4559,23 @@ BG_Player_DoControllersInternal
 
 // 0040D910  BG_LerpAngles  (bgame/bg_animation.cpp:4841)
 
-void __cdecl BG_LerpAngles(float *param_1,float param_2,float *param_3)
+void __cdecl BG_LerpAngles(float *angles_goal,float maxAngleChange,float *angles)
 
 {
-  int local_8;
+  float diff;
+  int i;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    if (param_1[local_8] - param_3[local_8] <= param_2) {
-      if (-param_2 <= param_1[local_8] - param_3[local_8]) {
-        param_3[local_8] = param_1[local_8];
+  for (i = 0; i < 3; i = i + 1) {
+    if (angles_goal[i] - angles[i] <= maxAngleChange) {
+      if (-maxAngleChange <= angles_goal[i] - angles[i]) {
+        angles[i] = angles_goal[i];
       }
       else {
-        param_3[local_8] = param_3[local_8] - param_2;
+        angles[i] = angles[i] - maxAngleChange;
       }
     }
     else {
-      param_3[local_8] = param_3[local_8] + param_2;
+      angles[i] = angles[i] + maxAngleChange;
     }
   }
   return;
@@ -4565,30 +4584,31 @@ void __cdecl BG_LerpAngles(float *param_1,float param_2,float *param_3)
 
 // 0040CAB0  BG_LerpOffset  (bgame/bg_animation.cpp:4871)
 
-void __cdecl BG_LerpOffset(float *param_1,float param_2,float *param_3)
+void __cdecl BG_LerpOffset(float *offset_goal,float maxOffsetChange,float *offset)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
+  float error;
   
-  fVar1 = *param_1 - *param_3;
-  fVar2 = param_1[1] - param_3[1];
-  fVar3 = param_1[2] - param_3[2];
+  fVar1 = *offset_goal - *offset;
+  fVar2 = offset_goal[1] - offset[1];
+  fVar3 = offset_goal[2] - offset[2];
   fVar4 = fVar1 * fVar1 + fVar2 * fVar2 + fVar3 * fVar3;
   if (fVar4 != 0.0) {
     fVar4 = I_rsqrt(fVar4);
-    fVar4 = fVar4 * param_2;
+    fVar4 = fVar4 * maxOffsetChange;
     if (1.0 <= fVar4) {
-      *param_3 = *param_1;
-      param_3[1] = param_1[1];
-      param_3[2] = param_1[2];
+      *offset = *offset_goal;
+      offset[1] = offset_goal[1];
+      offset[2] = offset_goal[2];
     }
     else {
-      *param_3 = fVar4 * fVar1 + *param_3;
-      param_3[1] = fVar4 * fVar2 + param_3[1];
-      param_3[2] = fVar4 * fVar3 + param_3[2];
+      *offset = fVar4 * fVar1 + *offset;
+      offset[1] = fVar4 * fVar2 + offset[1];
+      offset[2] = fVar4 * fVar3 + offset[2];
     }
   }
   return;
@@ -4599,39 +4619,38 @@ void __cdecl BG_LerpOffset(float *param_1,float param_2,float *param_3)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_Player_DoControllersSetup(entityState_s *param_1,clientInfo_t *param_2,int param_3)
+void __cdecl BG_Player_DoControllersSetup(entityState_s *es,clientInfo_t *ci,int frametime)
 
 {
-  uint local_78;
-  controller_info_t local_74;
-  float local_10;
-  uint local_c;
-  int local_8;
+  int local_78;
+  controller_info_t info;
+  float maxAngleChange;
+  int time;
+  int i;
   
-  if (((param_1->lerp).eFlags & 8U) == 0) {
-    local_c = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                       0x14 + param_1->number * 4) - param_3;
+  if (((es->lerp).eFlags & 8U) == 0) {
+    time = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x14 +
+                   es->number * 4) - frametime;
     *(uint *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x14 +
-             param_1->number * 4) = ((int)local_c < 1) - 1 & local_c;
+             es->number * 4) = (time < 1) - 1 & time;
   }
   else {
-    local_c = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                       0x14 + param_1->number * 4) + param_3;
-    local_78 = local_c;
-    if (499 < (int)local_c) {
+    time = *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x14 +
+                   es->number * 4) + frametime;
+    local_78 = time;
+    if (499 < time) {
       local_78 = 500;
     }
-    *(uint *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x14 +
-             param_1->number * 4) = local_78;
+    *(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x14 +
+            es->number * 4) = local_78;
   }
-  BG_Player_DoControllersInternal(param_1,param_2,&local_74);
-  local_10 = (float)param_3 * 0.3;
-  for (local_8 = 0; local_8 < 6; local_8 = local_8 + 1) {
-    BG_LerpAngles(local_74.angles[local_8],local_10,(param_2->control).angles[local_8]);
+  BG_Player_DoControllersInternal(es,ci,&info);
+  maxAngleChange = (float)frametime * 0.3;
+  for (i = 0; i < 6; i = i + 1) {
+    BG_LerpAngles(info.angles[i],maxAngleChange,(ci->control).angles[i]);
   }
-  BG_LerpAngles(local_74.tag_origin_angles,local_10,(param_2->control).tag_origin_angles);
-  BG_LerpOffset(local_74.tag_origin_offset,(float)param_3 * 0.1,(param_2->control).tag_origin_offset
-               );
+  BG_LerpAngles(info.tag_origin_angles,maxAngleChange,(ci->control).tag_origin_angles);
+  BG_LerpOffset(info.tag_origin_offset,(float)frametime * 0.1,(ci->control).tag_origin_offset);
   return;
 }
 
@@ -4640,22 +4659,23 @@ void __cdecl BG_Player_DoControllersSetup(entityState_s *param_1,clientInfo_t *p
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_PlayerAnimation(int param_1,entityState_s *param_2,clientInfo_t *param_3)
+void __cdecl BG_PlayerAnimation(int localClientNum,entityState_s *es,clientInfo_t *ci)
 
 {
-  XAnimTree_s *pXVar1;
+  XAnimTree_s *pAnimTree_00;
+  XAnimTree_s *pAnimTree;
   
-  BG_PlayerAngles(param_2,param_3);
-  BG_AnimPlayerConditions(param_2,param_3);
-  pXVar1 = param_3->pXAnimTree;
-  BG_PlayerAnimation_VerifyAnim(pXVar1,&param_3->legs);
-  BG_PlayerAnimation_VerifyAnim(pXVar1,&param_3->torso);
-  if ((param_3->leftHandGun != 0) && (((param_3->torso).animationNumber & 0xfffffbffU) == 0)) {
-    param_3->leftHandGun = 0;
-    param_3->dobjDirty = 1;
+  BG_PlayerAngles(es,ci);
+  BG_AnimPlayerConditions(es,ci);
+  pAnimTree_00 = ci->pXAnimTree;
+  BG_PlayerAnimation_VerifyAnim(pAnimTree_00,&ci->legs);
+  BG_PlayerAnimation_VerifyAnim(pAnimTree_00,&ci->torso);
+  if ((ci->leftHandGun != 0) && (((ci->torso).animationNumber & 0xfffffbffU) == 0)) {
+    ci->leftHandGun = 0;
+    ci->dobjDirty = 1;
   }
-  BG_RunLerpFrameRate(param_1,param_3,&param_3->legs,(param_2->un2).animState.state,param_2);
-  BG_RunLerpFrameRate(param_1,param_3,&param_3->torso,(param_2->un2).anim.torsoAnim,param_2);
+  BG_RunLerpFrameRate(localClientNum,ci,&ci->legs,(es->un2).animState.state,es);
+  BG_RunLerpFrameRate(localClientNum,ci,&ci->torso,(es->un2).anim.torsoAnim,es);
   return;
 }
 
@@ -4664,24 +4684,23 @@ void __cdecl BG_PlayerAnimation(int param_1,entityState_s *param_2,clientInfo_t 
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl BG_GetPlayerWeaponForDObj(int param_1,entityState_s *param_2,clientInfo_t *param_3)
+int __cdecl BG_GetPlayerWeaponForDObj(int localClientNum,entityState_s *es,clientInfo_t *ci)
 
 {
-  uint local_8;
+  int iClientWeapon;
   
-  local_8 = (uint)(param_2->lerp).u.player.primaryWeapon;
-  if (((param_2->lerp).eFlags & 0x300U) != 0) {
-    local_8 = 0;
+  iClientWeapon = (int)(es->lerp).u.player.primaryWeapon;
+  if (((es->lerp).eFlags & 0x300U) != 0) {
+    iClientWeapon = 0;
   }
-  if (((((param_2->lerp).eFlags & 0x4000U) != 0) && (((param_2->lerp).eFlags2 & 0x10000000U) == 0))
-     && (((param_2->lerp).u.player.vehicleSeat < 5 || (10 < (param_2->lerp).u.player.vehicleSeat))))
-  {
-    local_8 = 0;
+  if (((((es->lerp).eFlags & 0x4000U) != 0) && (((es->lerp).eFlags2 & 0x10000000U) == 0)) &&
+     (((es->lerp).u.player.vehicleSeat < 5 || (10 < (es->lerp).u.player.vehicleSeat)))) {
+    iClientWeapon = 0;
   }
-  if (param_2->eType == 2) {
-    local_8 = 0;
+  if (es->eType == 2) {
+    iClientWeapon = 0;
   }
-  return local_8;
+  return iClientWeapon;
 }
 
 
@@ -4689,22 +4708,20 @@ int __cdecl BG_GetPlayerWeaponForDObj(int param_1,entityState_s *param_2,clientI
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl
-BG_GetPlayerOffhandWeaponForDObj(int param_1,entityState_s *param_2,clientInfo_t *param_3)
+int __cdecl BG_GetPlayerOffhandWeaponForDObj(int localClientNum,entityState_s *es,clientInfo_t *ci)
 
 {
-  uint local_8;
+  int iClientWeapon;
   
-  local_8 = (uint)(param_2->lerp).u.player.offhandWeapon;
-  if (((param_2->lerp).eFlags & 0x300U) != 0) {
-    local_8 = 0;
+  iClientWeapon = (int)(es->lerp).u.player.offhandWeapon;
+  if (((es->lerp).eFlags & 0x300U) != 0) {
+    iClientWeapon = 0;
   }
-  if (((((param_2->lerp).eFlags & 0x4000U) != 0) && (((param_2->lerp).eFlags2 & 0x10000000U) == 0))
-     && (((param_2->lerp).u.player.vehicleSeat < 5 || (10 < (param_2->lerp).u.player.vehicleSeat))))
-  {
-    local_8 = 0;
+  if (((((es->lerp).eFlags & 0x4000U) != 0) && (((es->lerp).eFlags2 & 0x10000000U) == 0)) &&
+     (((es->lerp).u.player.vehicleSeat < 5 || (10 < (es->lerp).u.player.vehicleSeat)))) {
+    iClientWeapon = 0;
   }
-  return local_8;
+  return iClientWeapon;
 }
 
 
@@ -4713,8 +4730,8 @@ BG_GetPlayerOffhandWeaponForDObj(int param_1,entityState_s *param_2,clientInfo_t
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-BG_UpdatePlayerDObj(int param_1,DObj *param_2,entityState_s *param_3,clientInfo_t *param_4,
-                   int param_5)
+BG_UpdatePlayerDObj(int localClientNum,DObj *pDObj,entityState_s *es,clientInfo_t *ci,
+                   int attachIgnoreCollision)
 
 {
   code *pcVar1;
@@ -4724,31 +4741,34 @@ BG_UpdatePlayerDObj(int param_1,DObj *param_2,entityState_s *param_3,clientInfo_
   uint uVar5;
   WeaponDef *pWVar6;
   WeaponVariantDef *pWVar7;
-  byte local_151;
-  int local_150;
-  int local_14c;
-  uint local_148;
-  uint local_144;
-  byte local_13d;
-  uint local_13c;
-  DObj *local_138;
-  int local_134;
-  int local_130;
-  int local_12c;
-  uint local_128;
-  WeaponDef *local_124;
-  WeaponVariantDef *local_120;
-  uint local_11c;
-  uint local_118;
-  int local_114;
-  XAnimTree_s *local_110;
-  uint local_10c;
-  WeaponDef *local_108;
-  int local_104;
+  WeaponVariantDef *weapVariantDefStowed;
+  WeaponDef *weapDefDW;
+  WeaponVariantDef *weapVariantDefDW;
+  uchar boneIndex_2;
+  int b;
+  XModel *model;
+  int m;
+  int iStowedWeaponModelIndex;
+  uchar boneIndex;
+  int iNumModels;
+  DObj *dobj;
+  int ikActive;
+  int tagIndex;
+  uint iClientOffhandWeapon;
+  int lastWeaponModel;
+  WeaponDef *weapDefStowed;
+  WeaponVariantDef *weapVariantDef;
+  uint iClientWeapon;
+  int firstWeaponModel;
+  int i;
+  XAnimTree_s *pAnimTree;
+  int objExists;
+  WeaponDef *weapDef;
+  int dobjModels;
   undefined2 uStack_100;
   undefined1 auStack_fe [250];
   
-  local_134 = 0;
+  ikActive = 0;
   BG_CheckThread();
   if ((*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x13a8,0
@@ -4757,21 +4777,19 @@ BG_UpdatePlayerDObj(int param_1,DObj *param_2,entityState_s *param_3,clientInfo_
     (*pcVar1)();
     return;
   }
-  local_10c = (uint)(param_2 != (DObj *)0x0);
-  local_11c = BG_GetPlayerWeaponForDObj(param_1,param_3,param_4);
-  local_12c = BG_GetPlayerOffhandWeaponForDObj(param_1,param_3,param_4);
-  local_110 = param_4->pXAnimTree;
-  local_144 = 0;
-  local_124 = BG_GetWeaponDef((uint)(param_3->lerp).u.player.stowedWeapon);
-  if ((local_110 == (XAnimTree_s *)0x0) ||
-     ((param_4->infoValid != 0 && (param_4->model[0] != '\0')))) {
-    if (local_10c != 0) {
-      if ((((param_4->iDObjWeapon == local_11c) && (param_4->weaponModel == param_3->weaponModel))
-          && (param_4->iDObjMeleeWeapon == (uint)(param_3->lerp).u.player.meleeWeapon)) &&
-         ((param_4->meleeWeaponModel == (param_3->lerp).u.player.meleeWeaponModel &&
-          (param_4->dobjDirty == 0)))) {
-        pXVar3 = DObjGetTree(param_2);
-        if (local_110 == pXVar3) {
+  objExists = (int)(pDObj != (DObj *)0x0);
+  iClientWeapon = BG_GetPlayerWeaponForDObj(localClientNum,es,ci);
+  iClientOffhandWeapon = BG_GetPlayerOffhandWeaponForDObj(localClientNum,es,ci);
+  pAnimTree = ci->pXAnimTree;
+  iStowedWeaponModelIndex = 0;
+  weapDefStowed = BG_GetWeaponDef((uint)(es->lerp).u.player.stowedWeapon);
+  if ((pAnimTree == (XAnimTree_s *)0x0) || ((ci->infoValid != 0 && (ci->model[0] != '\0')))) {
+    if (objExists != 0) {
+      if ((((ci->iDObjWeapon == iClientWeapon) && (ci->weaponModel == es->weaponModel)) &&
+          (ci->iDObjMeleeWeapon == (uint)(es->lerp).u.player.meleeWeapon)) &&
+         ((ci->meleeWeaponModel == (es->lerp).u.player.meleeWeaponModel && (ci->dobjDirty == 0)))) {
+        pXVar3 = DObjGetTree(pDObj);
+        if (pAnimTree == pXVar3) {
           return;
         }
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x13c5
@@ -4783,41 +4801,40 @@ BG_UpdatePlayerDObj(int param_1,DObj *param_2,entityState_s *param_3,clientInfo_
         (*pcVar1)();
         return;
       }
-      local_134 = DObjHasIKActiveFlag(param_2);
+      ikActive = DObjHasIKActiveFlag(pDObj);
       (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xa4))
-                (param_3->number,param_1);
+                (es->number,localClientNum);
     }
-    param_4->iDObjMeleeWeapon = (uint)(param_3->lerp).u.player.meleeWeapon;
-    param_4->meleeWeaponModel = (param_3->lerp).u.player.meleeWeaponModel;
-    param_4->iDObjOffhandWeapon = (uint)(param_3->lerp).u.player.offhandWeapon;
-    param_4->offhandWeaponModel = (param_3->lerp).u.player.offhandWeaponModel;
-    local_13c = 0;
+    ci->iDObjMeleeWeapon = (uint)(es->lerp).u.player.meleeWeapon;
+    ci->meleeWeaponModel = (es->lerp).u.player.meleeWeaponModel;
+    ci->iDObjOffhandWeapon = (uint)(es->lerp).u.player.offhandWeapon;
+    ci->offhandWeaponModel = (es->lerp).u.player.offhandWeaponModel;
+    iNumModels = 0;
     iVar4 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                        0x94))(param_4->model);
-    (&local_104)[local_13c * 2] = iVar4;
-    if (((&local_104)[local_13c * 2] == 0) &&
+                        0x94))(ci->model);
+    (&dobjModels)[iNumModels * 2] = iVar4;
+    if (((&dobjModels)[iNumModels * 2] == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x13dc
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    (&uStack_100)[local_13c * 4] = 0;
-    auStack_fe[local_13c * 8] = 0;
-    local_13c = local_13c + 1;
-    param_4->iDObjWeapon = local_11c;
-    param_4->weaponModel = param_3->weaponModel;
-    local_118 = local_13c;
+    (&uStack_100)[iNumModels * 4] = 0;
+    auStack_fe[iNumModels * 8] = 0;
+    iNumModels = iNumModels + 1;
+    ci->iDObjWeapon = iClientWeapon;
+    ci->weaponModel = es->weaponModel;
+    firstWeaponModel = iNumModels;
     if (*(int *)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x9c) !=
         0) {
-      local_13c = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) +
-                                       8) + 0x9c))(&local_104,local_13c & 0xffff,param_4);
-      local_13c = local_13c & 0xffff;
+      uVar5 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
+                          0x9c))(&dobjModels,iNumModels & 0xffff,ci);
+      iNumModels = uVar5 & 0xffff;
     }
-    local_128 = local_13c;
-    for (local_114 = 0; (local_114 < 6 && (param_4->attachModelNames[local_114][0] != '\0'));
-        local_114 = local_114 + 1) {
-      if ((0x1f < (int)local_13c) &&
+    lastWeaponModel = iNumModels;
+    for (i = 0; (i < 6 && (ci->attachModelNames[i][0] != '\0')); i = i + 1) {
+      if ((0x1f < iNumModels) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                    0x13f1,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -4825,108 +4842,106 @@ BG_UpdatePlayerDObj(int param_1,DObj *param_2,entityState_s *param_3,clientInfo_
         return;
       }
       iVar4 = (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) +
-                          0x94))(param_4->attachModelNames + local_114);
-      (&local_104)[local_13c * 2] = iVar4;
-      if (((&local_104)[local_13c * 2] == 0) &&
+                          0x94))(ci->attachModelNames + i);
+      (&dobjModels)[iNumModels * 2] = iVar4;
+      if (((&dobjModels)[iNumModels * 2] == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",
                                    0x13f3,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      uVar5 = SL_FindString(param_4->attachTagNames[local_114],SCRIPTINSTANCE_SERVER);
-      (&uStack_100)[local_13c * 4] = (short)uVar5;
-      auStack_fe[local_13c * 8] = (1 << ((byte)local_114 & 0x1f) & param_5) != 0;
-      if (((param_3->lerp).u.player.stowedWeapon != 0) &&
-         (iVar4 = I_strcmp(param_4->attachModelNames[local_114],(*local_124->worldModel)->name),
-         iVar4 == 0)) {
-        local_144 = local_13c;
+      uVar5 = SL_FindString(ci->attachTagNames[i],SCRIPTINSTANCE_SERVER);
+      (&uStack_100)[iNumModels * 4] = (short)uVar5;
+      auStack_fe[iNumModels * 8] = (1 << ((byte)i & 0x1f) & attachIgnoreCollision) != 0;
+      if (((es->lerp).u.player.stowedWeapon != 0) &&
+         (iVar4 = I_strcmp(ci->attachModelNames[i],(*weapDefStowed->worldModel)->name), iVar4 == 0))
+      {
+        iStowedWeaponModelIndex = iNumModels;
       }
-      local_13c = local_13c + 1;
+      iNumModels = iNumModels + 1;
     }
-    if (local_110 != (XAnimTree_s *)0x0) {
+    if (pAnimTree != (XAnimTree_s *)0x0) {
       (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0x98))
-                (&local_104,local_13c & 0xffff,local_110,param_3->number,param_1,param_4);
-      param_4->dobjDirty = 0;
-      local_138 = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer +
-                                                        _tls_index * 4) + 8) + 0xa0))
-                                    (param_3->number,param_1);
-      param_3->partBits[0] = 0;
-      param_3->partBits[1] = 0;
-      param_3->partBits[2] = 0;
-      param_3->partBits[3] = 0;
-      param_3->partBits[4] = 0;
-      local_120 = BG_GetWeaponVariantDef((uint)param_3->weapon);
-      local_108 = BG_GetWeaponDef((uint)param_3->weapon);
-      if (local_108->inventoryType == WEAPINVENTORY_ALTMODE) {
-        local_120 = BG_GetWeaponVariantDef((uint)(param_3->lerp).u.player.primaryWeapon);
+                (&dobjModels,iNumModels & 0xffff,pAnimTree,es->number,localClientNum,ci);
+      ci->dobjDirty = 0;
+      dobj = (DObj *)(**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4)
+                                          + 8) + 0xa0))(es->number,localClientNum);
+      es->partBits[0] = 0;
+      es->partBits[1] = 0;
+      es->partBits[2] = 0;
+      es->partBits[3] = 0;
+      es->partBits[4] = 0;
+      weapVariantDef = BG_GetWeaponVariantDef((uint)es->weapon);
+      weapDef = BG_GetWeaponDef((uint)es->weapon);
+      if (weapDef->inventoryType == WEAPINVENTORY_ALTMODE) {
+        weapVariantDef = BG_GetWeaponVariantDef((uint)(es->lerp).u.player.primaryWeapon);
       }
-      if (param_4->hideWeapon == false) {
-        for (local_130 = 0; (local_130 < 0x20 && (local_120->hideTags[local_130] != 0));
-            local_130 = local_130 + 1) {
-          local_13d = 0xfe;
-          iVar4 = DObjGetBoneIndex(local_138,(uint)local_120->hideTags[local_130],&local_13d,-1);
+      if (ci->hideWeapon == false) {
+        for (tagIndex = 0; (tagIndex < 0x20 && (weapVariantDef->hideTags[tagIndex] != 0));
+            tagIndex = tagIndex + 1) {
+          boneIndex = 0xfe;
+          iVar4 = DObjGetBoneIndex(dobj,(uint)weapVariantDef->hideTags[tagIndex],&boneIndex,-1);
           if (iVar4 != 0) {
-            param_3->partBits[(int)(uint)local_13d >> 5] =
-                 0x80000000U >> (local_13d & 0x1f) | param_3->partBits[(int)(uint)local_13d >> 5];
+            es->partBits[(int)(uint)boneIndex >> 5] =
+                 0x80000000U >> (boneIndex & 0x1f) | es->partBits[(int)(uint)boneIndex >> 5];
           }
         }
-        if ((local_108->bDualWield != false) && (param_4->usingKnife == false)) {
-          pWVar7 = BG_GetWeaponVariantDef(local_108->dualWieldWeaponIndex);
-          pWVar6 = BG_GetWeaponDef(local_108->dualWieldWeaponIndex);
-          for (local_130 = 0; (local_130 < 0x20 && (pWVar7->hideTags[local_130] != 0));
-              local_130 = local_130 + 1) {
-            local_13d = 0xfe;
+        if ((weapDef->bDualWield != false) && (ci->usingKnife == false)) {
+          pWVar7 = BG_GetWeaponVariantDef(weapDef->dualWieldWeaponIndex);
+          pWVar6 = BG_GetWeaponDef(weapDef->dualWieldWeaponIndex);
+          for (tagIndex = 0; (tagIndex < 0x20 && (pWVar7->hideTags[tagIndex] != 0));
+              tagIndex = tagIndex + 1) {
+            boneIndex = 0xfe;
             iVar4 = DObjGetModelBoneIndex
-                              (local_138,(*pWVar6->worldModel)->name,
-                               (uint)pWVar7->hideTags[local_130],&local_13d);
+                              (dobj,(*pWVar6->worldModel)->name,(uint)pWVar7->hideTags[tagIndex],
+                               &boneIndex);
             if (iVar4 != 0) {
-              param_3->partBits[(int)(uint)local_13d >> 5] =
-                   0x80000000U >> (local_13d & 0x1f) | param_3->partBits[(int)(uint)local_13d >> 5];
+              es->partBits[(int)(uint)boneIndex >> 5] =
+                   0x80000000U >> (boneIndex & 0x1f) | es->partBits[(int)(uint)boneIndex >> 5];
             }
           }
         }
       }
       else {
-        for (local_148 = local_118; (int)local_148 < (int)local_128; local_148 = local_148 + 1) {
-          local_14c = (&local_104)[local_148 * 2];
-          for (local_150 = 0; local_150 < (int)(uint)*(byte *)(local_14c + 4);
-              local_150 = local_150 + 1) {
-            local_151 = 0xfe;
-            iVar4 = DObjGetBoneIndex(local_138,
-                                     (uint)*(ushort *)(*(int *)(local_14c + 8) + local_150 * 2),
-                                     &local_151,-1);
+        for (m = firstWeaponModel; m < lastWeaponModel; m = m + 1) {
+          model = (XModel *)(&dobjModels)[m * 2];
+          for (b = 0; b < (int)(uint)model->numBones; b = b + 1) {
+            boneIndex_2 = 0xfe;
+            iVar4 = DObjGetBoneIndex(dobj,(uint)(model->field5_0x8).localBoneNames[b],&boneIndex_2,
+                                     -1);
             if (iVar4 != 0) {
-              param_3->partBits[(int)(uint)local_151 >> 5] =
-                   0x80000000U >> (local_151 & 0x1f) | param_3->partBits[(int)(uint)local_151 >> 5];
+              es->partBits[(int)(uint)boneIndex_2 >> 5] =
+                   0x80000000U >> (boneIndex_2 & 0x1f) | es->partBits[(int)(uint)boneIndex_2 >> 5];
             }
           }
         }
-        Com_Memcpy(param_4->weaponHideBits,param_3->partBits,0x14);
+        Com_Memcpy(ci->weaponHideBits,es->partBits,0x14);
       }
-      if ((param_3->lerp).u.player.stowedWeapon != 0) {
-        pWVar7 = BG_GetWeaponVariantDef((uint)(param_3->lerp).u.player.stowedWeapon);
-        for (local_130 = 0; (local_130 < 0x20 && (pWVar7->hideTags[local_130] != 0));
-            local_130 = local_130 + 1) {
-          local_13d = 0xfe;
+      if ((es->lerp).u.player.stowedWeapon != 0) {
+        pWVar7 = BG_GetWeaponVariantDef((uint)(es->lerp).u.player.stowedWeapon);
+        for (tagIndex = 0; (tagIndex < 0x20 && (pWVar7->hideTags[tagIndex] != 0));
+            tagIndex = tagIndex + 1) {
+          boneIndex = 0xfe;
           iVar4 = DObjGetModelBoneIndex
-                            (local_138,local_144,(uint)pWVar7->hideTags[local_130],&local_13d);
+                            (dobj,iStowedWeaponModelIndex,(uint)pWVar7->hideTags[tagIndex],
+                             &boneIndex);
           if (iVar4 != 0) {
-            param_3->partBits[(int)(uint)local_13d >> 5] =
-                 0x80000000U >> (local_13d & 0x1f) | param_3->partBits[(int)(uint)local_13d >> 5];
+            es->partBits[(int)(uint)boneIndex >> 5] =
+                 0x80000000U >> (boneIndex & 0x1f) | es->partBits[(int)(uint)boneIndex >> 5];
           }
         }
       }
-      DObjSetHidePartBits(local_138,param_3->partBits);
+      DObjSetHidePartBits(dobj,es->partBits);
       if ((bg_enableIKActiveFix->current).enabled != false) {
-        DObjSetIKActiveFlag(local_138,local_134);
+        DObjSetIKActiveFlag(dobj,ikActive);
       }
     }
   }
   else {
-    XAnimClearTree(local_110);
+    XAnimClearTree(pAnimTree);
     (**(code **)(*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) + 0xa4))
-              (param_3->number,param_1);
+              (es->number,localClientNum);
   }
   return;
 }
@@ -4971,13 +4986,14 @@ void __cdecl BG_FindAnims(void)
 
 // 004103A0  BG_FindAnimTree  (bgame/bg_animation.cpp:5276)
 
-scr_animtree_t __cdecl BG_FindAnimTree(char *param_1,int param_2)
+scr_animtree_t __cdecl BG_FindAnimTree(char *filename,int bEnforceExists)
 
 {
   scr_animtree_t sVar1;
+  scr_animtree_t tree;
   
-  sVar1 = Scr_FindAnimTree(SCRIPTINSTANCE_SERVER,param_1);
-  if ((sVar1.anims == (XAnim_s *)0x0) && (param_2 != 0)) {
+  sVar1 = Scr_FindAnimTree(SCRIPTINSTANCE_SERVER,filename);
+  if ((sVar1.anims == (XAnim_s *)0x0) && (bEnforceExists != 0)) {
     Com_Error(ERR_DROP,"\x15Could not find animation tree \'%s\'");
   }
   return (scr_animtree_t)sVar1.anims;
@@ -5030,16 +5046,16 @@ void __cdecl BG_FindAnimTrees(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl BG_LoadAnim(char *param_1)
+void __cdecl BG_LoadAnim(char *levelName)
 
 {
   code *pcVar1;
   bool bVar2;
-  LargeLocal local_10;
-  loadAnim_t *local_8;
+  LargeLocal playerAnims_large_local;
+  loadAnim_t *playerAnims;
   
-  LargeLocal::LargeLocal(&local_10,0x12000);
-  local_8 = LargeLocal::GetBuf(&local_10);
+  LargeLocal::LargeLocal(&playerAnims_large_local,0x12000);
+  playerAnims = LargeLocal::GetBuf(&playerAnims_large_local);
   BG_CheckThread();
   if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_animation.cpp",0x14cb,0,
@@ -5055,7 +5071,7 @@ void __cdecl BG_LoadAnim(char *param_1)
   BG_AnimParseAnimScript
             ((animScriptData_t *)
              **(undefined4 **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8),
-             local_8,&iNumPlayerAnims,param_1);
+             playerAnims,&iNumPlayerAnims,levelName);
   Scr_PrecacheAnimTrees
             (SCRIPTINSTANCE_SERVER,
              *(_func___cdecl_void_ptr_int **)
@@ -5065,18 +5081,18 @@ void __cdecl BG_LoadAnim(char *param_1)
              *(bgs_t_conflict **)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) ==
              &level_bgs);
   BG_FindAnimTrees();
-  LargeLocal::~LargeLocal(&local_10);
+  LargeLocal::~LargeLocal(&playerAnims_large_local);
   return;
 }
 
 
 // 004127C0  BG_PostLoadAnim  (bgame/bg_animation.cpp:5339)
 
-void __cdecl BG_PostLoadAnim(char *param_1)
+void __cdecl BG_PostLoadAnim(char *levelName)
 
 {
   Scr_EndLoadAnimTrees(SCRIPTINSTANCE_SERVER);
-  BG_FinalizePlayerAnims(param_1);
+  BG_FinalizePlayerAnims(levelName);
   return;
 }
 

@@ -2,57 +2,55 @@
 
 // 00C2CBF0  _mbtowc_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtowc.c:55)
 
-int __cdecl _mbtowc_l(wchar_t *param_1,char *param_2,uint param_3,localeinfo_struct *param_4)
+int __cdecl _mbtowc_l(wchar_t *pwc,char *s,uint n,localeinfo_struct *plocinfo)
 
 {
   int iVar1;
   int *piVar2;
-  _LocaleUpdate local_14;
+  _LocaleUpdate _loc_update;
   
-  if ((param_2 != (char *)0x0) && (param_3 != 0)) {
-    if (*param_2 != '\0') {
-      _LocaleUpdate::_LocaleUpdate(&local_14,param_4);
-      if ((local_14.localeinfo.locinfo)->lc_handle[2] != 0) {
-        iVar1 = _isleadbyte_l((uint)(byte)*param_2,&local_14.localeinfo);
+  if ((s != (char *)0x0) && (n != 0)) {
+    if (*s != '\0') {
+      _LocaleUpdate::_LocaleUpdate(&_loc_update,plocinfo);
+      if ((_loc_update.localeinfo.locinfo)->lc_handle[2] != 0) {
+        iVar1 = _isleadbyte_l((uint)(byte)*s,&_loc_update.localeinfo);
         if (iVar1 == 0) {
-          iVar1 = MultiByteToWideChar((local_14.localeinfo.locinfo)->lc_codepage,9,param_2,1,param_1
-                                      ,(uint)(param_1 != (wchar_t *)0x0));
+          iVar1 = MultiByteToWideChar((_loc_update.localeinfo.locinfo)->lc_codepage,9,s,1,pwc,
+                                      (uint)(pwc != (wchar_t *)0x0));
           if (iVar1 != 0) goto LAB_00c2cc3f;
         }
         else {
-          iVar1 = (local_14.localeinfo.locinfo)->mb_cur_max;
-          if ((((1 < iVar1) && (iVar1 <= (int)param_3)) &&
-              (iVar1 = MultiByteToWideChar((local_14.localeinfo.locinfo)->lc_codepage,9,param_2,
-                                           iVar1,param_1,(uint)(param_1 != (wchar_t *)0x0)),
-              iVar1 != 0)) ||
-             (((uint)(local_14.localeinfo.locinfo)->mb_cur_max <= param_3 && (param_2[1] != '\0'))))
-          {
-            iVar1 = (local_14.localeinfo.locinfo)->mb_cur_max;
-            if (local_14.updated == false) {
+          iVar1 = (_loc_update.localeinfo.locinfo)->mb_cur_max;
+          if ((((1 < iVar1) && (iVar1 <= (int)n)) &&
+              (iVar1 = MultiByteToWideChar((_loc_update.localeinfo.locinfo)->lc_codepage,9,s,iVar1,
+                                           pwc,(uint)(pwc != (wchar_t *)0x0)), iVar1 != 0)) ||
+             (((uint)(_loc_update.localeinfo.locinfo)->mb_cur_max <= n && (s[1] != '\0')))) {
+            iVar1 = (_loc_update.localeinfo.locinfo)->mb_cur_max;
+            if (_loc_update.updated == false) {
               return iVar1;
             }
-            (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+            (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
             return iVar1;
           }
         }
         piVar2 = _errno();
         *piVar2 = 0x2a;
-        if (local_14.updated != false) {
-          (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+        if (_loc_update.updated != false) {
+          (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
         }
         return -1;
       }
-      if (param_1 != (wchar_t *)0x0) {
-        *param_1 = (ushort)(byte)*param_2;
+      if (pwc != (wchar_t *)0x0) {
+        *pwc = (ushort)(byte)*s;
       }
 LAB_00c2cc3f:
-      if (local_14.updated != false) {
-        (local_14.ptd)->_ownlocale = (local_14.ptd)->_ownlocale & 0xfffffffd;
+      if (_loc_update.updated != false) {
+        (_loc_update.ptd)->_ownlocale = (_loc_update.ptd)->_ownlocale & 0xfffffffd;
       }
       return 1;
     }
-    if (param_1 != (wchar_t *)0x0) {
-      *param_1 = L'\0';
+    if (pwc != (wchar_t *)0x0) {
+      *pwc = L'\0';
     }
   }
   return 0;
@@ -61,12 +59,12 @@ LAB_00c2cc3f:
 
 // 00C2CD07  mbtowc  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mbtowc.c:123)
 
-int __cdecl mbtowc(wchar_t *param_1,char *param_2,uint param_3)
+int __cdecl mbtowc(wchar_t *pwc,char *s,uint n)
 
 {
   int iVar1;
   
-  iVar1 = _mbtowc_l(param_1,param_2,param_3,(localeinfo_struct *)0x0);
+  iVar1 = _mbtowc_l(pwc,s,n,(localeinfo_struct *)0x0);
   return iVar1;
 }
 

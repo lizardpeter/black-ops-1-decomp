@@ -18,24 +18,26 @@ Glasses * __cdecl GetGlasses_LoadObj(void)
 
 // 00998200  GetGlasses_FastFile  (glass/glass_load_obj.cpp:828)
 
-/* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "XAssetType": Some values do not have unique names */
 
 Glasses * __cdecl GetGlasses_FastFile(void)
 
 {
   int iVar1;
-  XAssetHeader local_8;
+  XAssetHeader header;
   
-  iVar1 = DB_GetAllXAssetOfType(ASSET_TYPE_GLASSES,&local_8,1);
+  iVar1 = DB_GetAllXAssetOfType(ASSET_TYPE_GLASSES,&header,1);
   if (iVar1 < 1) {
-    local_8.xmodelPieces = (XModelPieces *)0x0;
+    header.xmodelPieces = (XModelPieces *)0x0;
   }
-  return (Glasses *)local_8.xmodelPieces;
+  return (Glasses *)header.xmodelPieces;
 }
 
 
 // 00998230  GetGlasses  (glass/glass_load_obj.cpp:839)
+
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 Glasses * __cdecl GetGlasses(void)
 

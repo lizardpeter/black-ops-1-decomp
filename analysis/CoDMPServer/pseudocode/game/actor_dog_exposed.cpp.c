@@ -2,10 +2,12 @@
 
 // 008EE490  Actor_Dog_Exposed_Start  (game/actor_dog_exposed.cpp:31)
 
+/* WARNING: Variable defined which should be unmapped: ePrevState */
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl Actor_Dog_Exposed_Start(actor_s *param_1,ai_state_t param_2)
 
@@ -15,6 +17,8 @@ bool __cdecl Actor_Dog_Exposed_Start(actor_s *param_1,ai_state_t param_2)
   undefined1 uVar3;
   ai_substate_t in_ECX;
   actor_s *in_EDX;
+  ai_state_t ePrevState;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x22,0
@@ -45,6 +49,8 @@ void __cdecl Actor_Dog_Exposed_Finish(actor_s *param_1,ai_state_t param_2)
 
 {
   int in_ECX;
+  ai_state_t eNextState;
+  actor_s *self;
   
   *(undefined1 *)(in_ECX + 0x152) = 0;
   *(undefined1 *)(in_ECX + 0x151) = 0;
@@ -55,16 +61,20 @@ void __cdecl Actor_Dog_Exposed_Finish(actor_s *param_1,ai_state_t param_2)
 
 // 008EE550  Actor_Dog_Exposed_Suspend  (game/actor_dog_exposed.cpp:65)
 
+/* WARNING: Variable defined which should be unmapped: eNextState */
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl Actor_Dog_Exposed_Suspend(actor_s *param_1,ai_state_t param_2)
 
 {
   ai_state_t in_ECX;
   actor_s *in_EDX;
+  ai_state_t eNextState;
+  actor_s *self;
   
   Actor_Dog_Exposed_Finish(in_EDX,in_ECX);
   return;
@@ -78,7 +88,7 @@ void __cdecl Actor_Dog_Exposed_Suspend(actor_s *param_1,ai_state_t param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Actor_Dog_IsInSyncedMelee(actor_s *param_1,sentient_s *param_2)
+int __cdecl Actor_Dog_IsInSyncedMelee(actor_s *self,sentient_s *enemy)
 
 {
   code *pcVar1;
@@ -86,16 +96,16 @@ int __cdecl Actor_Dog_IsInSyncedMelee(actor_s *param_1,sentient_s *param_2)
   int iVar3;
   gentity_s *pgVar4;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x4f
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_2 != (sentient_s *)0x0) &&
-      (iVar3 = EntHandle::isDefined(&param_2->syncedMeleeEnt), iVar3 != 0)) &&
-     (pgVar4 = EntHandle::ent(&param_2->syncedMeleeEnt), pgVar4 == param_1->ent)) {
+  if (((enemy != (sentient_s *)0x0) &&
+      (iVar3 = EntHandle::isDefined(&enemy->syncedMeleeEnt), iVar3 != 0)) &&
+     (pgVar4 = EntHandle::ent(&enemy->syncedMeleeEnt), pgVar4 == self->ent)) {
     return 1;
   }
   return 0;
@@ -109,7 +119,7 @@ int __cdecl Actor_Dog_IsInSyncedMelee(actor_s *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_Dog_Attack(actor_s *param_1)
+void __cdecl Actor_Dog_Attack(actor_s *self)
 
 {
   code *pcVar1;
@@ -118,23 +128,23 @@ void __cdecl Actor_Dog_Attack(actor_s *param_1)
   actor_s *unaff_EBP;
   scriptAnimAIFunctionTypes_t unaff_retaddr;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x5d
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->sentient == (sentient_s *)0x0) &&
+  if ((self->sentient == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x5e
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  iVar3 = EntHandle::isDefined(&param_1->sentient->targetEnt);
+  iVar3 = EntHandle::isDefined(&self->sentient->targetEnt);
   if (iVar3 != 0) {
-    if (((AnimScriptList *)param_1->pAnimScriptFunc == &g_scr_data.dogAnim) &&
+    if (((AnimScriptList *)self->pAnimScriptFunc == &g_scr_data.dogAnim) &&
        (iVar3 = Actor_IsAnimScriptAlive(unaff_EBP), iVar3 == 0)) {
       Actor_KillAnimScript(unaff_EBP);
     }
@@ -147,6 +157,7 @@ void __cdecl Actor_Dog_Attack(actor_s *param_1)
 
 // 008EEC60  Actor_FindPathToGoalNearestNode  (game/actor_dog_exposed.cpp:112)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -156,41 +167,42 @@ void __cdecl Actor_FindPathToGoalNearestNode(actor_s *param_1)
 
 {
   actor_s *in_ECX;
+  actor_s *self;
   actor_goal_s *paVar1;
-  pathnode_t *local_320;
-  pathsort_t local_31c [64];
-  sentient_s *local_1c;
-  int local_18;
-  path_t *local_14;
-  float local_10;
+  pathnode_t *nodeTo;
+  pathsort_t nodes [64];
+  sentient_s *enemy;
+  int nodeCount;
+  pathnode_t *nodeFrom;
+  float targetOrigin;
   float local_c;
   float local_8;
   
   paVar1 = &in_ECX->codeGoal;
-  local_10 = paVar1->pos[0];
+  targetOrigin = paVar1->pos[0];
   local_c = (in_ECX->codeGoal).pos[1];
   local_8 = (in_ECX->codeGoal).pos[2];
   if (in_ECX->codeGoalSrc == AI_GOAL_SRC_ENEMY) {
     local_8 = local_8 + 64.0;
   }
-  local_1c = Actor_GetTargetSentient(in_ECX);
-  if (local_1c == (sentient_s *)0x0) {
-    local_320 = Path_NearestNode(&local_10,local_31c,-2,(in_ECX->codeGoal).radius,&local_18,0x40,
-                                 NEAREST_NODE_DO_HEIGHT_CHECK);
+  enemy = Actor_GetTargetSentient(in_ECX);
+  if (enemy == (sentient_s *)0x0) {
+    nodeTo = Path_NearestNode(&targetOrigin,nodes,-2,(in_ECX->codeGoal).radius,&nodeCount,0x40,
+                              NEAREST_NODE_DO_HEIGHT_CHECK);
   }
   else {
-    local_320 = Sentient_NearestNode((sentient_s *)in_ECX);
+    nodeTo = Sentient_NearestNode((sentient_s *)in_ECX);
   }
-  if (local_320 == (pathnode_t *)0x0) {
+  if (nodeTo == (pathnode_t *)0x0) {
     Actor_FindPathToGoalDirect(in_ECX);
   }
   else {
-    local_14 = (path_t *)Sentient_NearestNode((sentient_s *)in_ECX);
-    if (local_14 != (path_t *)0x0) {
+    nodeFrom = Sentient_NearestNode((sentient_s *)in_ECX);
+    if ((path_t *)nodeFrom != (path_t *)0x0) {
       Path_FindPathGetCloseAsPossible
-                (local_14,(team_t)(in_ECX->ent->r).currentOrigin,local_320,
-                 (local_320->constant).vOrigin,(pathnode_t *)&DAT_00000001,(float *)in_ECX,
-                 (int)paVar1);
+                ((path_t *)nodeFrom,(team_t)(in_ECX->ent->r).currentOrigin,nodeTo,
+                 (nodeTo->constant).vOrigin,(pathnode_t *)&DAT_00000001,(float *)in_ECX,(int)paVar1)
+      ;
     }
   }
   return;
@@ -200,55 +212,58 @@ void __cdecl Actor_FindPathToGoalNearestNode(actor_s *param_1)
 // 008EF330  Actor_SetMeleeAttackSpot  (game/actor_dog_exposed.cpp:160)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: enemyPosition */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Actor_SetMeleeAttackSpot(actor_s *param_1,float *param_2,float *param_3)
+bool __cdecl Actor_SetMeleeAttackSpot(actor_s *attackPosition,float *param_2,float *param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
+  char *pszText;
   int *in_ECX;
   actor_s *in_EDX;
+  float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
-  float fVar8;
-  int iVar9;
-  gentity_s *local_e8;
+  int iVar8;
+  float *enemyPosition;
+  actor_s *self;
+  gentity_s *dropPosition;
   sentient_s *local_e4;
   float local_e0;
-  float local_dc [3];
-  col_context_t local_d0;
-  int local_a8;
-  float local_a4;
-  int local_a0;
-  int local_9c;
-  float local_98;
+  float endPos [3];
+  col_context_t context;
+  int currentOccupier;
+  float currentValue;
+  int currentIndex;
+  int j;
+  float dirFromEnemy;
   float local_94;
-  float local_90;
+  float mins;
   float local_8c;
   undefined4 local_88;
-  sentient_s *local_84;
-  float local_80;
-  float local_7c;
+  sentient_s *enemy;
+  float bestFraction;
+  float maxs;
   float local_78;
   float local_74;
-  float4 local_70;
+  float4 trace;
   float local_60;
   char local_46;
   char local_45;
   uint local_38;
   float afStack_34 [4];
   int aiStack_24 [4];
-  gentity_s *local_14;
+  gentity_s *bestPosition;
   sentient_s *local_10;
   AISpecies local_c;
-  int local_8;
+  int i;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((in_ECX == (int *)0x0) &&
@@ -265,140 +280,139 @@ bool __cdecl Actor_SetMeleeAttackSpot(actor_s *param_1,float *param_2,float *par
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_70.v[0] = 0.0;
-  local_70.v[1] = 0.0;
-  local_70.v[2] = 0.0;
-  local_70.v[3] = 0.0;
-  local_80 = 0.0;
-  local_84 = Actor_GetTargetSentient(in_EDX);
-  local_98 = *(float *)(*in_ECX + 0x124) - (float)in_EDX->ent;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  bestFraction = 0.0;
+  enemy = Actor_GetTargetSentient(in_EDX);
+  dirFromEnemy = *(float *)(*in_ECX + 0x124) - (float)in_EDX->ent;
   local_94 = *(float *)(*in_ECX + 0x128) - (float)in_EDX->sentient;
-  Vec2Normalize(&local_98);
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    afStack_34[local_8] =
-         local_98 * meleeAttackOffsets[local_8][0] + local_94 * meleeAttackOffsets[local_8][1];
-    aiStack_24[local_8] = local_8;
+  Vec2Normalize(&dirFromEnemy);
+  for (i = 0; i < 4; i = i + 1) {
+    afStack_34[i] = dirFromEnemy * meleeAttackOffsets[i][0] + local_94 * meleeAttackOffsets[i][1];
+    aiStack_24[i] = i;
   }
-  for (local_8 = 1; local_8 < 4; local_8 = local_8 + 1) {
-    local_a4 = afStack_34[aiStack_24[local_8]];
-    local_a0 = aiStack_24[local_8];
-    iVar9 = local_8;
-    while ((local_9c = iVar9 + -1, -1 < local_9c && (afStack_34[aiStack_24[local_9c]] <= local_a4)))
-    {
-      aiStack_24[iVar9] = aiStack_24[local_9c];
-      iVar9 = local_9c;
+  for (i = 1; i < 4; i = i + 1) {
+    currentValue = afStack_34[aiStack_24[i]];
+    currentIndex = aiStack_24[i];
+    iVar8 = i;
+    while ((j = iVar8 + -1, -1 < j && (afStack_34[aiStack_24[j]] <= currentValue))) {
+      aiStack_24[iVar8] = aiStack_24[j];
+      iVar8 = j;
     }
-    aiStack_24[iVar9] = local_a0;
+    aiStack_24[iVar8] = currentIndex;
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if (local_84->meleeAttackerSpot[local_8] == *(int *)*in_ECX) {
-      local_84->meleeAttackerSpot[local_8] = 0;
+  for (i = 0; i < 4; i = i + 1) {
+    if (enemy->meleeAttackerSpot[i] == *(int *)*in_ECX) {
+      enemy->meleeAttackerSpot[i] = 0;
       break;
     }
   }
-  param_1->species = in_EDX->species;
-  local_90 = -15.0;
+  attackPosition->species = in_EDX->species;
+  mins = -15.0;
   local_8c = -15.0;
   local_88 = 0x41900000;
-  local_7c = 15.0;
+  maxs = 15.0;
   local_78 = 15.0;
   local_74 = 48.0;
-  local_8 = 0;
+  i = 0;
   do {
-    if (3 < local_8) {
+    if (3 < i) {
 LAB_008efaa1:
-      if (local_8 == 4) {
-        if (local_80 <= 0.95) {
+      if (i == 4) {
+        if (bestFraction <= 0.95) {
           return false;
         }
-        param_1->ent = local_14;
-        param_1->sentient = local_10;
-        param_1->species = local_c;
+        attackPosition->ent = bestPosition;
+        attackPosition->sentient = local_10;
+        attackPosition->species = local_c;
       }
-      if (((ai_debugMeleeAttackSpots->current).enabled != false) && (local_84 != (sentient_s *)0x0))
-      {
-        G_DebugCircle((float *)param_1,15.0,colorYellow,0,1,0);
-        iVar9 = 0;
-        pcVar4 = va("%i");
-        G_AddDebugString((float *)param_1,colorYellow,0.7,pcVar4,iVar9);
-        G_DebugLine((float *)param_1,(float *)in_EDX,colorGreen,0);
+      if (((ai_debugMeleeAttackSpots->current).enabled != false) && (enemy != (sentient_s *)0x0)) {
+        G_DebugCircle((float *)attackPosition,15.0,colorYellow,0,1,0);
+        iVar8 = 0;
+        pszText = va("%i");
+        G_AddDebugString((float *)attackPosition,colorYellow,0.7,pszText,iVar8);
+        G_DebugLine((float *)attackPosition,(float *)in_EDX,colorGreen,0);
       }
       return true;
     }
-    local_a8 = local_84->meleeAttackerSpot[aiStack_24[local_8]];
-    if ((0x3ff < local_a8) &&
+    currentOccupier = enemy->meleeAttackerSpot[aiStack_24[i]];
+    if ((0x3ff < currentOccupier) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",
                                  0xe9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    iVar9 = aiStack_24[local_8];
-    fVar5 = (float)in_ECX[0x3a8];
-    param_1->ent = (gentity_s *)(fVar5 * meleeAttackOffsets[iVar9][0] + (float)in_EDX->ent);
-    param_1->sentient =
-         (sentient_s *)(fVar5 * meleeAttackOffsets[iVar9][1] + (float)in_EDX->sentient);
-    if (local_a8 < 1) {
+    iVar8 = aiStack_24[i];
+    fVar4 = (float)in_ECX[0x3a8];
+    attackPosition->ent = (gentity_s *)(fVar4 * meleeAttackOffsets[iVar8][0] + (float)in_EDX->ent);
+    attackPosition->sentient =
+         (sentient_s *)(fVar4 * meleeAttackOffsets[iVar8][1] + (float)in_EDX->sentient);
+    if (currentOccupier < 1) {
 LAB_008ef822:
-      col_context_t::col_context_t(&local_d0);
-      G_TraceCapsule((trace_t *)&local_70,(float *)param_1,&local_90,&local_7c,(float *)param_1,
-                     (local_84->ent->s).number,0x20000,&local_d0);
+      col_context_t::col_context_t(&context);
+      G_TraceCapsule((trace_t *)&trace,(float *)attackPosition,&mins,&maxs,(float *)attackPosition,
+                     (enemy->ent->s).number,0x20000,&context);
       if ((local_45 == '\0') && (local_46 == '\0')) {
-        G_TraceCapsule((trace_t *)&local_70,(float *)param_1,&local_90,&local_7c,(float *)in_EDX,
-                       (local_84->ent->s).number,0x2800011,&local_d0);
+        G_TraceCapsule((trace_t *)&trace,(float *)attackPosition,&mins,&maxs,(float *)in_EDX,
+                       (enemy->ent->s).number,0x2800011,&context);
       }
       if ((local_60 < 1.0) && ((ai_debugMeleeAttackSpots->current).enabled != false)) {
-        Vec3Lerp((float *)param_1,(float *)in_EDX,local_60,local_dc);
-        G_DebugStar(local_dc,colorYellow,1);
+        Vec3Lerp((float *)attackPosition,(float *)in_EDX,local_60,endPos);
+        G_DebugStar(endPos,colorYellow,1);
       }
       if (((local_60 == 1.0) && (local_45 == '\0')) && (local_46 == '\0')) {
-        local_e8 = param_1->ent;
-        local_e4 = param_1->sentient;
-        local_e0 = (float)param_1->species - DROP_AMOUNT;
-        G_TraceCapsule((trace_t *)&local_70,(float *)param_1,&local_90,actorMaxs,(float *)&local_e8,
-                       (local_84->ent->s).number,0x2800011,&local_d0);
+        dropPosition = attackPosition->ent;
+        local_e4 = attackPosition->sentient;
+        local_e0 = (float)attackPosition->species - DROP_AMOUNT;
+        G_TraceCapsule((trace_t *)&trace,(float *)attackPosition,&mins,actorMaxs,
+                       (float *)&dropPosition,(enemy->ent->s).number,0x2800011,&context);
         if (((local_60 < 1.0) && (local_46 == '\0')) && (local_45 == '\0')) {
-          param_1->species = (AISpecies)(((float)param_1->species - DROP_AMOUNT * local_60) + 1.0);
-          local_84->meleeAttackerSpot[aiStack_24[local_8]] = *(int *)*in_ECX;
+          attackPosition->species =
+               (AISpecies)(((float)attackPosition->species - DROP_AMOUNT * local_60) + 1.0);
+          enemy->meleeAttackerSpot[aiStack_24[i]] = *(int *)*in_ECX;
           goto LAB_008efaa1;
         }
         if ((ai_debugMeleeAttackSpots->current).enabled != false) {
-          G_DebugLine((float *)param_1,(float *)&local_e8,colorRed,0);
+          G_DebugLine((float *)attackPosition,(float *)&dropPosition,colorRed,0);
         }
       }
       else {
-        if (local_80 < local_60) {
-          local_80 = local_60;
-          local_14 = param_1->ent;
-          local_10 = param_1->sentient;
-          local_c = param_1->species;
+        if (bestFraction < local_60) {
+          bestFraction = local_60;
+          bestPosition = attackPosition->ent;
+          local_10 = attackPosition->sentient;
+          local_c = attackPosition->species;
         }
         if ((ai_debugMeleeAttackSpots->current).enabled != false) {
-          G_DebugLine((float *)param_1,(float *)in_EDX,colorRed,0);
+          G_DebugLine((float *)attackPosition,(float *)in_EDX,colorRed,0);
         }
       }
     }
     else {
-      if ((g_entities[local_a8].r.inuse == '\0') &&
+      if ((g_entities[currentOccupier].r.inuse == '\0') &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",
                                    0xef,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      fVar5 = g_entities[local_a8].r.currentOrigin[0] - (float)param_1->ent;
-      fVar6 = g_entities[local_a8].r.currentOrigin[1] - (float)param_1->sentient;
-      fVar7 = *(float *)(*in_ECX + 0x124) - (float)param_1->ent;
-      fVar8 = *(float *)(*in_ECX + 0x128) - (float)param_1->sentient;
-      if (fVar7 * fVar7 + fVar8 * fVar8 < fVar5 * fVar5 + fVar6 * fVar6) goto LAB_008ef822;
+      fVar4 = g_entities[currentOccupier].r.currentOrigin[0] - (float)attackPosition->ent;
+      fVar5 = g_entities[currentOccupier].r.currentOrigin[1] - (float)attackPosition->sentient;
+      fVar6 = *(float *)(*in_ECX + 0x124) - (float)attackPosition->ent;
+      fVar7 = *(float *)(*in_ECX + 0x128) - (float)attackPosition->sentient;
+      if (fVar6 * fVar6 + fVar7 * fVar7 < fVar4 * fVar4 + fVar5 * fVar5) goto LAB_008ef822;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 008EFB80  Actor_UpdateMeleeGoalPos  (game/actor_dog_exposed.cpp:337)
 
+/* WARNING: Variable defined which should be unmapped: goalPos */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -411,6 +425,8 @@ void __cdecl Actor_UpdateMeleeGoalPos(actor_s *param_1,float *param_2)
   bool bVar2;
   int in_ECX;
   undefined4 *in_EDX;
+  float *goalPos;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x154,
@@ -448,7 +464,7 @@ void __cdecl Actor_UpdateMeleeGoalPos(actor_s *param_1,float *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-float __cdecl Actor_Dog_GetEnemyPos(actor_s *param_1,sentient_s *param_2,float *param_3)
+float __cdecl Actor_Dog_GetEnemyPos(actor_s *self,sentient_s *enemy,float *enemyPos)
 
 {
   gentity_s *pgVar1;
@@ -458,9 +474,11 @@ float __cdecl Actor_Dog_GetEnemyPos(actor_s *param_1,sentient_s *param_2,float *
   int iVar5;
   float *pfVar6;
   float10 fVar7;
-  float local_8;
+  float ATTACK_ANIM_TIME;
+  float ATTACK_DIST_BUFFER;
+  float bufferedAttackDist;
   
-  if (param_2 == (sentient_s *)0x0) {
+  if (enemy == (sentient_s *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x18c,
                              0,"%s");
     if (!bVar4) {
@@ -469,7 +487,7 @@ float __cdecl Actor_Dog_GetEnemyPos(actor_s *param_1,sentient_s *param_2,float *
       return (float)fVar7;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (enemyPos == (float *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",0x18d,
                              0,"%s");
     if (!bVar4) {
@@ -478,43 +496,46 @@ float __cdecl Actor_Dog_GetEnemyPos(actor_s *param_1,sentient_s *param_2,float *
       return (float)fVar7;
     }
   }
-  pgVar1 = param_2->ent;
-  *param_3 = (pgVar1->r).currentOrigin[0];
-  param_3[1] = (pgVar1->r).currentOrigin[1];
-  param_3[2] = (pgVar1->r).currentOrigin[2];
-  local_8 = param_1->meleeAttackDist + 15.0;
-  if (param_2->ent->client != (gclient_s *)0x0) {
-    pgVar2 = param_2->ent->client;
+  pgVar1 = enemy->ent;
+  *enemyPos = (pgVar1->r).currentOrigin[0];
+  enemyPos[1] = (pgVar1->r).currentOrigin[1];
+  enemyPos[2] = (pgVar1->r).currentOrigin[2];
+  bufferedAttackDist = self->meleeAttackDist + 15.0;
+  if (enemy->ent->client != (gclient_s *)0x0) {
+    pgVar2 = enemy->ent->client;
     pfVar6 = (pgVar2->ps).velocity;
     if (1.0 < *pfVar6 * *pfVar6 + (pgVar2->ps).velocity[1] * (pgVar2->ps).velocity[1]) {
-      pgVar2 = param_2->ent->client;
-      *param_3 = (pgVar2->ps).velocity[0] * 0.25 + *param_3;
-      param_3[1] = (pgVar2->ps).velocity[1] * 0.25 + param_3[1];
-      param_3[2] = (pgVar2->ps).velocity[2] * 0.25 + param_3[2];
-      local_8 = local_8 + 15.0;
+      pgVar2 = enemy->ent->client;
+      *enemyPos = (pgVar2->ps).velocity[0] * 0.25 + *enemyPos;
+      enemyPos[1] = (pgVar2->ps).velocity[1] * 0.25 + enemyPos[1];
+      enemyPos[2] = (pgVar2->ps).velocity[2] * 0.25 + enemyPos[2];
+      bufferedAttackDist = bufferedAttackDist + 15.0;
     }
-    iVar5 = EntHandle::isDefined(&param_2->ent->sentient->syncedMeleeEnt);
+    iVar5 = EntHandle::isDefined(&enemy->ent->sentient->syncedMeleeEnt);
     if (iVar5 != 0) {
-      param_3[2] = param_3[2] + 64.0;
+      enemyPos[2] = enemyPos[2] + 64.0;
     }
   }
-  return local_8;
+  return bufferedAttackDist;
 }
 
 
 // 008EE570  Actor_Dog_PointNearAttackPoint  (game/actor_dog_exposed.cpp:421)
 
-bool __cdecl Actor_Dog_PointNearAttackPoint(float *param_1,float *param_2,float param_3)
+bool __cdecl Actor_Dog_PointNearAttackPoint(float *buffer,float *param_2,float param_3)
 
 {
   bool bVar1;
   float *in_ECX;
   float *in_EDX;
+  float *vGoalPos;
+  float *vPoint;
+  float deltaHeight;
   
   if ((in_ECX[2] - in_EDX[2]) * (in_ECX[2] - in_EDX[2]) <=
       dog_max_attack_height * dog_max_attack_height) {
     bVar1 = (*in_EDX - *in_ECX) * (*in_EDX - *in_ECX) +
-            (in_EDX[1] - in_ECX[1]) * (in_EDX[1] - in_ECX[1]) <= (float)param_1 * (float)param_1;
+            (in_EDX[1] - in_ECX[1]) * (in_EDX[1] - in_ECX[1]) <= (float)buffer * (float)buffer;
   }
   else {
     bVar1 = false;
@@ -537,27 +558,30 @@ bool __cdecl Actor_Dog_ObstacleInPath(actor_s *param_1)
   int iVar1;
   int iVar2;
   int *in_ECX;
-  float local_101c;
+  actor_s *self;
+  float end;
   float local_1018;
   float local_1014;
-  int local_100c [1025];
-  int local_8;
+  int numEnts;
+  int entList [1024];
+  gentity_s *ent;
+  int i;
   
-  local_8 = 0x8eedad;
-  local_101c = (float)in_ECX[0x3e] * 32.0 + *(float *)(*in_ECX + 0x124);
+  i = 0x8eedad;
+  end = (float)in_ECX[0x3e] * 32.0 + *(float *)(*in_ECX + 0x124);
   local_1018 = (float)in_ECX[0x3f] * 32.0 + *(float *)(*in_ECX + 0x128);
   local_1014 = (float)in_ECX[0x40] * 32.0 + *(float *)(*in_ECX + 300) + 20.0;
-  iVar2 = CM_AreaEntities(&local_101c,&local_101c,local_100c,0x400,0x200000);
-  local_8 = 0;
+  iVar2 = CM_AreaEntities(&end,&end,entList,0x400,0x200000);
+  i = 0;
   while( true ) {
-    if (iVar2 <= local_8) {
+    if (iVar2 <= i) {
       return false;
     }
-    iVar1 = local_100c[local_8];
+    iVar1 = entList[i];
     if ((((g_entities[iVar1].r.inuse != '\0') && ((g_entities[iVar1].r.contents & 1U) != 0)) &&
         ((g_entities[iVar1].s.lerp.eFlags & 0x20U) == 0)) &&
        ((g_entities[iVar1].r.contents & 0x100U) == 0)) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -575,14 +599,16 @@ float __cdecl Actor_Dog_GetDeltaTurnYaw(actor_s *param_1)
 {
   int *in_ECX;
   float fVar1;
-  float local_14;
+  actor_s *self;
+  float lookAheadYaw;
+  float lookAheadAngles;
   float local_10;
-  float local_8;
+  float currentYaw;
   
-  vectoangles((float *)(in_ECX + 0x367),&local_14);
+  vectoangles((float *)(in_ECX + 0x367),&lookAheadAngles);
   fVar1 = AngleNormalize180(local_10);
-  local_8 = AngleNormalize180(*(float *)(*in_ECX + 0x134));
-  fVar1 = AngleNormalize180(fVar1 - local_8);
+  currentYaw = AngleNormalize180(*(float *)(*in_ECX + 0x134));
+  fVar1 = AngleNormalize180(fVar1 - currentYaw);
   return fVar1;
 }
 
@@ -603,6 +629,8 @@ bool __cdecl Actor_Dog_ShouldTurn(actor_s *param_1)
   float fVar3;
   actor_s *in_stack_fffffff0;
   actor_s *paVar4;
+  actor_s *self;
+  float angle;
   
   if (*(int *)(in_ECX + 0x214) == 0x3ed2e0c) {
     iVar2 = Actor_IsAnimScriptAlive(in_stack_fffffff0);
@@ -644,108 +672,108 @@ LAB_008eefd2:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_Dog_IsEnemyInAttackRange(actor_s *param_1,sentient_s *param_2,int *param_3)
+int __cdecl Actor_Dog_IsEnemyInAttackRange(actor_s *self,sentient_s *enemy,int *goalPosSet)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float *pfVar4;
-  actor_s *paVar5;
+  float *buffer;
+  actor_s *attackPosition;
   float *in_stack_ffffff38;
   float in_stack_ffffff3c;
-  col_context_t local_a8;
-  float local_80;
+  col_context_t context;
+  float mins;
   float local_7c;
   undefined4 local_78;
-  float4 local_74;
+  float4 trace;
   float local_64;
   int local_58;
   ushort local_54;
   char local_4a;
   char local_49;
   uint local_3c;
-  float local_38;
+  float enemyToMe;
   float local_34;
-  float local_30;
-  float local_2c;
+  float cos45;
+  float enemyToAttackSpot;
   float local_28;
-  float local_24;
+  float enemyPos;
   float local_20;
-  uint local_18;
-  float *local_14;
-  gentity_s *local_10;
+  int enemyInAttackRange;
+  float bufferedAttackDist;
+  gentity_s *attackPos;
   sentient_s *local_c;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",
                                0x21b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (sentient_s *)0x0) &&
+  if ((enemy == (sentient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",
                                0x21c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (int *)0x0) &&
+  if ((goalPosSet == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_dog_exposed.cpp",
                                0x21d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_18 = 0;
-  pfVar4 = (float *)Actor_Dog_GetEnemyPos(param_1,param_2,&local_24);
-  *param_3 = 0;
-  param_1->useEnemyGoal = false;
-  param_1->useMeleeAttackSpot = false;
-  local_14 = pfVar4;
-  bVar2 = Actor_Dog_PointNearAttackPoint(pfVar4,in_stack_ffffff38,in_stack_ffffff3c);
-  local_18 = (uint)bVar2;
-  if (local_18 != 0) {
-    param_1->useEnemyGoal = true;
-    param_1->useMeleeAttackSpot = true;
+  enemyInAttackRange = 0;
+  buffer = (float *)Actor_Dog_GetEnemyPos(self,enemy,&enemyPos);
+  *goalPosSet = 0;
+  self->useEnemyGoal = false;
+  self->useMeleeAttackSpot = false;
+  bufferedAttackDist = (float)buffer;
+  bVar2 = Actor_Dog_PointNearAttackPoint(buffer,in_stack_ffffff38,in_stack_ffffff3c);
+  enemyInAttackRange = (int)bVar2;
+  if (enemyInAttackRange != 0) {
+    self->useEnemyGoal = true;
+    self->useMeleeAttackSpot = true;
   }
-  paVar5 = (actor_s *)&local_10;
-  bVar2 = Actor_SetMeleeAttackSpot(paVar5,pfVar4,in_stack_ffffff38);
+  attackPosition = (actor_s *)&attackPos;
+  bVar2 = Actor_SetMeleeAttackSpot(attackPosition,buffer,in_stack_ffffff38);
   if (bVar2) {
-    if (local_18 != 0) {
-      local_30 = 0.707;
-      local_2c = (float)local_10 - local_24;
+    if (enemyInAttackRange != 0) {
+      cos45 = 0.707;
+      enemyToAttackSpot = (float)attackPos - enemyPos;
       local_28 = (float)local_c - local_20;
-      Vec2Normalize(&local_2c);
-      local_38 = (param_1->ent->r).currentOrigin[0] - local_24;
-      local_34 = (param_1->ent->r).currentOrigin[1] - local_20;
-      Vec2Normalize(&local_38);
-      local_18 = (uint)(local_30 < local_2c * local_38 + local_28 * local_34);
+      Vec2Normalize(&enemyToAttackSpot);
+      enemyToMe = (self->ent->r).currentOrigin[0] - enemyPos;
+      local_34 = (self->ent->r).currentOrigin[1] - local_20;
+      Vec2Normalize(&enemyToMe);
+      enemyInAttackRange = (int)(cos45 < enemyToAttackSpot * enemyToMe + local_28 * local_34);
     }
-    Actor_UpdateMeleeGoalPos(paVar5,pfVar4);
-    *param_3 = 1;
+    Actor_UpdateMeleeGoalPos(attackPosition,buffer);
+    *goalPosSet = 1;
   }
-  else if (local_18 != 0) {
-    local_74.v[0] = 0.0;
-    local_74.v[1] = 0.0;
-    local_74.v[2] = 0.0;
-    local_74.v[3] = 0.0;
-    local_80 = -15.0;
+  else if (enemyInAttackRange != 0) {
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    mins = -15.0;
     local_7c = -15.0;
     local_78 = 0x41900000;
-    col_context_t::col_context_t(&local_a8);
-    G_TraceCapsule((trace_t *)&local_74,(param_1->ent->r).currentOrigin,&local_80,actorMaxs,
-                   &local_24,(param_2->ent->s).number,0x2820011,&local_a8);
-    if ((local_58 == 1) && ((uint)local_54 == (param_2->ent->s).number)) {
-      local_18 = 1;
+    col_context_t::col_context_t(&context);
+    G_TraceCapsule((trace_t *)&trace,(self->ent->r).currentOrigin,&mins,actorMaxs,&enemyPos,
+                   (enemy->ent->s).number,0x2820011,&context);
+    if ((local_58 == 1) && ((uint)local_54 == (enemy->ent->s).number)) {
+      enemyInAttackRange = 1;
     }
     else if ((local_64 < 1.0) || ((local_49 != '\0' || (local_4a != '\0')))) {
-      local_18 = 0;
+      enemyInAttackRange = 0;
     }
   }
-  return local_18;
+  return enemyInAttackRange;
 }
 
 
@@ -774,13 +802,15 @@ actor_think_result_t __cdecl Actor_Dog_Exposed_Think(actor_s *param_1)
   ai_orient_mode_t aVar10;
   int local_4c;
   int local_48;
-  int local_20;
-  bool local_19;
-  sentient_s *local_18;
-  int local_14;
-  float local_10;
-  int local_c;
-  int local_8;
+  actor_s *self;
+  PIXProfile pixProfile;
+  int goalPosSet;
+  bool noDodge;
+  sentient_s *enemy;
+  int enemyInAttackRange;
+  float MAX_MOVE_DIST_SQ;
+  int enemyInGoal;
+  int attackScriptRunning;
   
   paVar8 = (actor_s *)0x8ee6a5;
   PIXBeginNamedEvent(-1,"dogexposedthink");
@@ -804,13 +834,13 @@ actor_think_result_t __cdecl Actor_Dog_Exposed_Think(actor_s *param_1)
       return aVar3;
     }
   }
-  local_14 = 0;
-  local_20 = 0;
-  local_8 = 0;
-  local_19 = true;
+  enemyInAttackRange = 0;
+  goalPosSet = 0;
+  attackScriptRunning = 0;
+  noDodge = true;
   in_ECX->pszDebugInfo = "exposed";
   Actor_PreThink(in_stack_ffffffac);
-  local_18 = Actor_GetTargetSentient(in_stack_ffffffac);
+  enemy = Actor_GetTargetSentient(in_stack_ffffffac);
   if ((((AnimScriptList *)in_ECX->pAnimScriptFunc == &g_scr_data.dogAnim) &&
       (iVar4 = Actor_IsAnimScriptAlive(in_stack_ffffffac), iVar4 != 0)) &&
      (in_ECX->safeToChangeScript == false)) {
@@ -819,46 +849,46 @@ actor_think_result_t __cdecl Actor_Dog_Exposed_Think(actor_s *param_1)
   else {
     local_48 = 0;
   }
-  local_8 = local_48;
+  attackScriptRunning = local_48;
   if (local_48 == 0) {
     paVar8 = (actor_s *)0x8ee78f;
     Actor_OrientPitchToGround(in_ECX->ent,1);
   }
-  if ((local_8 == 0) && (local_18 != (sentient_s *)0x0)) {
+  if ((attackScriptRunning == 0) && (enemy != (sentient_s *)0x0)) {
     paVar8 = in_ECX;
-    local_14 = Actor_Dog_IsEnemyInAttackRange(in_ECX,local_18,&local_20);
+    enemyInAttackRange = Actor_Dog_IsEnemyInAttackRange(in_ECX,enemy,&goalPosSet);
   }
-  if ((local_18 == (sentient_s *)0x0) ||
+  if ((enemy == (sentient_s *)0x0) ||
      (bVar2 = Actor_PointAtGoal((float *)in_stack_ffffffac,in_stack_ffffffb0), !bVar2)) {
     local_4c = 0;
   }
   else {
     local_4c = 1;
   }
-  local_c = local_4c;
+  enemyInGoal = local_4c;
   if (local_4c == 0) {
     in_ECX->useEnemyGoal = false;
     in_ECX->useMeleeAttackSpot = false;
   }
-  if (local_20 == 0) {
+  if (goalPosSet == 0) {
     Actor_UpdateGoalPos(in_stack_ffffffac);
   }
-  local_10 = 225.0;
+  MAX_MOVE_DIST_SQ = 225.0;
   bVar2 = Actor_HasPath(in_stack_ffffffac);
   if ((bVar2) &&
      (fVar6 = (in_ECX->Path).vFinalGoal[0] - (in_ECX->codeGoal).pos[0],
      fVar7 = (in_ECX->Path).vFinalGoal[1] - (in_ECX->codeGoal).pos[1],
-     local_10 < fVar6 * fVar6 + fVar7 * fVar7)) {
+     MAX_MOVE_DIST_SQ < fVar6 * fVar6 + fVar7 * fVar7)) {
     Actor_ClearPath(in_stack_ffffffac);
   }
-  if ((local_18 == (sentient_s *)0x0) || (in_ECX->useEnemyGoal != false)) {
+  if ((enemy == (sentient_s *)0x0) || (in_ECX->useEnemyGoal != false)) {
     Actor_FindPathToGoalDirect(in_stack_ffffffac);
   }
   else {
     bVar2 = Actor_HasPath(in_stack_ffffffac);
     if (!bVar2) {
       Actor_FindPathToGoalNearestNode(in_stack_ffffffac);
-      local_19 = false;
+      noDodge = false;
     }
   }
   bVar2 = Actor_HasPath(in_stack_ffffffac);
@@ -867,21 +897,21 @@ actor_think_result_t __cdecl Actor_Dog_Exposed_Think(actor_s *param_1)
       Actor_UpdateGoalPos(in_stack_ffffffac);
       Actor_FindPathToGoalDirect(in_stack_ffffffac);
     }
-    if ((local_18 != (sentient_s *)0x0) && (bVar2 = Actor_HasPath(in_stack_ffffffac), !bVar2)) {
+    if ((enemy != (sentient_s *)0x0) && (bVar2 = Actor_HasPath(in_stack_ffffffac), !bVar2)) {
       Actor_FindPathToGoalNearestNode(in_stack_ffffffac);
-      local_19 = false;
+      noDodge = false;
     }
   }
-  in_ECX->noDodgeMove = local_19;
+  in_ECX->noDodgeMove = noDodge;
   if (in_ECX->flashBanged != 0) {
     paVar8 = (actor_s *)0x8ee946;
-    iVar4 = Actor_Dog_IsInSyncedMelee(in_ECX,local_18);
+    iVar4 = Actor_Dog_IsInSyncedMelee(in_ECX,enemy);
     if (iVar4 == 0) {
       Actor_Exposed_FlashBanged(in_stack_ffffffac);
       goto LAB_008eeaf4;
     }
   }
-  if ((local_8 == 0) && (local_14 == 0)) {
+  if ((attackScriptRunning == 0) && (enemyInAttackRange == 0)) {
     bVar2 = Actor_HasPath(in_stack_ffffffac);
     if (bVar2) {
       bVar2 = Actor_IsMoving(in_stack_ffffffac);

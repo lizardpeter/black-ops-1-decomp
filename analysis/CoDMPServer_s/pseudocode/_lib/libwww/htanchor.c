@@ -99,42 +99,42 @@ int _HTAnchor_findAddress(undefined4 param_1)
 
 {
   byte bVar1;
-  char *pcVar2;
-  void *pvVar3;
-  undefined4 uVar4;
-  int iVar5;
+  char *pBlock;
+  void *pBlock_00;
+  undefined4 uVar2;
+  int iVar3;
+  byte *pBlock_01;
+  int iVar4;
+  byte *pbVar5;
   byte *pbVar6;
-  int iVar7;
-  byte *pbVar8;
-  byte *pbVar9;
-  undefined4 *puVar10;
-  int *piVar11;
-  bool bVar12;
+  undefined4 *puVar7;
+  int *piVar8;
+  bool bVar9;
   undefined4 local_4;
   
-  pcVar2 = (char *)_HTParse("",2);
-  if (*pcVar2 != '\0') {
-    pvVar3 = (void *)_HTParse("",0x1d);
-    uVar4 = _HTAnchor_findAddress(pvVar3);
-    iVar5 = _HTAnchor_findChild(uVar4,pcVar2);
-    if (pvVar3 != (void *)0x0) {
-      free(pvVar3);
+  pBlock = (char *)_HTParse("",2);
+  if (*pBlock != '\0') {
+    pBlock_00 = (void *)_HTParse("",0x1d);
+    uVar2 = _HTAnchor_findAddress(pBlock_00);
+    iVar3 = _HTAnchor_findChild(uVar2,pBlock);
+    if (pBlock_00 != (void *)0x0) {
+      free(pBlock_00);
     }
-    free(pcVar2);
-    return iVar5;
+    free(pBlock);
+    return iVar3;
   }
   local_4 = 0;
   _HTSACopy(param_1);
-  free(pcVar2);
-  pbVar6 = (byte *)_HTSimplify(&local_4);
-  iVar5 = 0;
-  bVar1 = *pbVar6;
-  pbVar9 = pbVar6;
+  free(pBlock);
+  pBlock_01 = (byte *)_HTSimplify(&local_4);
+  iVar3 = 0;
+  bVar1 = *pBlock_01;
+  pbVar6 = pBlock_01;
   while (bVar1 != 0) {
-    iVar5 = (int)(iVar5 * 3 + (uint)bVar1) % 599;
-    pbVar8 = pbVar9 + 1;
-    pbVar9 = pbVar9 + 1;
-    bVar1 = *pbVar8;
+    iVar3 = (int)(iVar3 * 3 + (uint)bVar1) % 599;
+    pbVar5 = pbVar6 + 1;
+    pbVar6 = pbVar6 + 1;
+    bVar1 = *pbVar5;
   }
   if ((DAT_03547760 == 0) && (DAT_03547760 = _HTMemory_calloc(599), DAT_03547760 == 0)) {
     if (DAT_03547718 != (code *)0x0) {
@@ -144,43 +144,43 @@ int _HTAnchor_findAddress(undefined4 param_1)
                     /* WARNING: Subroutine does not return */
     abort();
   }
-  puVar10 = (undefined4 *)(DAT_03547760 + iVar5 * 4);
-  if (*(int *)(DAT_03547760 + iVar5 * 4) == 0) {
-    puVar10 = (undefined4 *)(DAT_03547760 + iVar5 * 4);
-    uVar4 = _HTList_new();
-    *puVar10 = uVar4;
+  puVar7 = (undefined4 *)(DAT_03547760 + iVar3 * 4);
+  if (*(int *)(DAT_03547760 + iVar3 * 4) == 0) {
+    puVar7 = (undefined4 *)(DAT_03547760 + iVar3 * 4);
+    uVar2 = _HTList_new();
+    *puVar7 = uVar2;
   }
-  piVar11 = (int *)*puVar10;
+  piVar8 = (int *)*puVar7;
   do {
-    if (((piVar11 == (int *)0x0) || (piVar11 = (int *)piVar11[1], piVar11 == (int *)0x0)) ||
-       (iVar5 = *piVar11, iVar5 == 0)) {
-      iVar5 = FUN_00888280();
-      *(byte **)(iVar5 + 0x28) = pbVar6;
-      _HTList_addObject(iVar5);
-      return iVar5;
+    if (((piVar8 == (int *)0x0) || (piVar8 = (int *)piVar8[1], piVar8 == (int *)0x0)) ||
+       (iVar3 = *piVar8, iVar3 == 0)) {
+      iVar3 = FUN_00888280();
+      *(byte **)(iVar3 + 0x28) = pBlock_01;
+      _HTList_addObject(iVar3);
+      return iVar3;
     }
-    pbVar9 = *(byte **)(iVar5 + 0x28);
-    pbVar8 = pbVar6;
+    pbVar6 = *(byte **)(iVar3 + 0x28);
+    pbVar5 = pBlock_01;
     do {
-      bVar1 = *pbVar9;
-      bVar12 = bVar1 < *pbVar8;
-      if (bVar1 != *pbVar8) {
+      bVar1 = *pbVar6;
+      bVar9 = bVar1 < *pbVar5;
+      if (bVar1 != *pbVar5) {
 LAB_00888596:
-        iVar7 = (1 - (uint)bVar12) - (uint)(bVar12 != 0);
+        iVar4 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
         goto LAB_0088859b;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar9[1];
-      bVar12 = bVar1 < pbVar8[1];
-      if (bVar1 != pbVar8[1]) goto LAB_00888596;
-      pbVar9 = pbVar9 + 2;
-      pbVar8 = pbVar8 + 2;
+      bVar1 = pbVar6[1];
+      bVar9 = bVar1 < pbVar5[1];
+      if (bVar1 != pbVar5[1]) goto LAB_00888596;
+      pbVar6 = pbVar6 + 2;
+      pbVar5 = pbVar5 + 2;
     } while (bVar1 != 0);
-    iVar7 = 0;
+    iVar4 = 0;
 LAB_0088859b:
-    if (iVar7 == 0) {
-      free(pbVar6);
-      return iVar5;
+    if (iVar4 == 0) {
+      free(pBlock_01);
+      return iVar3;
     }
   } while( true );
 }
@@ -192,22 +192,22 @@ int _HTAnchor_findChildAndLink(undefined4 param_1,undefined4 param_2)
 
 {
   int iVar1;
-  void *pvVar2;
-  void *pvVar3;
-  undefined4 uVar4;
+  void *pBlock;
+  void *pBlock_00;
+  undefined4 uVar2;
   char *in_ECX;
   
   iVar1 = _HTAnchor_findChild(param_1);
   if (((iVar1 != 0) && (in_ECX != (char *)0x0)) && (*in_ECX != '\0')) {
-    pvVar2 = (void *)_HTAnchor_expandedAddress();
-    pvVar3 = (void *)_HTParse(pvVar2,0x1f);
-    uVar4 = _HTAnchor_findAddress(pvVar3);
-    _HTLink_add(uVar4,param_2,0);
-    if (pvVar3 != (void *)0x0) {
-      free(pvVar3);
+    pBlock = (void *)_HTAnchor_expandedAddress();
+    pBlock_00 = (void *)_HTParse(pBlock,0x1f);
+    uVar2 = _HTAnchor_findAddress(pBlock_00);
+    _HTLink_add(uVar2,param_2,0);
+    if (pBlock_00 != (void *)0x0) {
+      free(pBlock_00);
     }
-    if (pvVar2 != (void *)0x0) {
-      free(pvVar2);
+    if (pBlock != (void *)0x0) {
+      free(pBlock);
     }
   }
   return iVar1;
@@ -220,34 +220,34 @@ undefined4 _HTAnchor_deleteAll(void)
 
 {
   void *pvVar1;
-  void *pvVar2;
-  void *pvVar3;
-  int *piVar4;
-  int iVar5;
+  void *pBlock;
+  void *pBlock_00;
+  int *piVar2;
+  int iVar3;
   
   if (DAT_03547760 == (void *)0x0) {
     return 0;
   }
-  iVar5 = 0;
-  pvVar3 = DAT_03547760;
+  iVar3 = 0;
+  pBlock_00 = DAT_03547760;
   do {
-    piVar4 = *(int **)(iVar5 + (int)pvVar3);
-    if (piVar4 != (int *)0x0) {
-      while ((piVar4 = (int *)piVar4[1], pvVar3 = DAT_03547760, piVar4 != (int *)0x0 &&
-             (*piVar4 != 0))) {
+    piVar2 = *(int **)(iVar3 + (int)pBlock_00);
+    if (piVar2 != (int *)0x0) {
+      while ((piVar2 = (int *)piVar2[1], pBlock_00 = DAT_03547760, piVar2 != (int *)0x0 &&
+             (*piVar2 != 0))) {
         FUN_00888770();
       }
     }
-    pvVar2 = *(void **)(iVar5 + (int)pvVar3);
-    while (pvVar2 != (void *)0x0) {
-      pvVar1 = *(void **)((int)pvVar2 + 4);
-      free(pvVar2);
-      pvVar2 = pvVar1;
+    pBlock = *(void **)(iVar3 + (int)pBlock_00);
+    while (pBlock != (void *)0x0) {
+      pvVar1 = *(void **)((int)pBlock + 4);
+      free(pBlock);
+      pBlock = pvVar1;
     }
-    iVar5 = iVar5 + 4;
-  } while (iVar5 < 0x95c);
-  if (pvVar3 != (void *)0x0) {
-    free(pvVar3);
+    iVar3 = iVar3 + 4;
+  } while (iVar3 < 0x95c);
+  if (pBlock_00 != (void *)0x0) {
+    free(pBlock_00);
   }
   DAT_03547760 = (void *)0x0;
   return 1;
@@ -724,18 +724,18 @@ void _HTAnchor_setLastModified(undefined4 param_1,undefined4 param_2)
 undefined8 _HTAnchor_age(void)
 
 {
-  char *pcVar1;
-  long lVar2;
+  char *nptr;
+  long lVar1;
   int unaff_ESI;
   
   if (unaff_ESI != 0) {
     if (((*(uint *)(unaff_ESI + 0x88) & *(uint *)(unaff_ESI + 0x8c)) == 0xffffffff) &&
        (*(int *)(unaff_ESI + 0x30) != 0)) {
-      pcVar1 = (char *)_HTAssocList_findObject("age");
-      if (pcVar1 != (char *)0x0) {
-        lVar2 = atol(pcVar1);
-        *(long *)(unaff_ESI + 0x88) = lVar2;
-        *(long *)(unaff_ESI + 0x8c) = lVar2 >> 0x1f;
+      nptr = (char *)_HTAssocList_findObject("age");
+      if (nptr != (char *)0x0) {
+        lVar1 = atol(nptr);
+        *(long *)(unaff_ESI + 0x88) = lVar1;
+        *(long *)(unaff_ESI + 0x8c) = lVar1 >> 0x1f;
       }
     }
     return *(undefined8 *)(unaff_ESI + 0x88);

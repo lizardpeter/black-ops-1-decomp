@@ -9,6 +9,7 @@ int __cdecl scal_quant(float param_1,float *param_2,int param_3)
   int iVar1;
   float *in_EDX;
   int iVar2;
+  float in;
   
   iVar2 = in_EAX + -1;
   iVar1 = 0;
@@ -45,9 +46,11 @@ int __cdecl scal_quant(float param_1,float *param_2,int param_3)
 
 // 007DCB10  vq_nbest  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/vq.c:97)
 
+/* WARNING: Variable defined which should be unmapped: dist */
+
 void __cdecl
-vq_nbest(float *param_1,float *param_2,int param_3,int param_4,float *param_5,int param_6,
-        int *param_7,float *param_8,char *param_9)
+vq_nbest(float *codebook,float *len,int entries,int E,float *N,int nbest,int *best_dist,
+        float *param_8,char *param_9)
 
 {
   float fVar1;
@@ -57,63 +60,66 @@ vq_nbest(float *param_1,float *param_2,int param_3,int param_4,float *param_5,in
   float *pfVar5;
   float *pfVar6;
   int *piVar7;
-  float fStack_c;
-  int iStack_8;
-  int iStack_4;
+  float *in;
+  float dist;
+  int used;
+  int i;
+  char *stack;
   
-  iStack_8 = 0;
-  iStack_4 = 0;
-  pfVar6 = param_2;
-  if (0 < param_4) {
+  i = 0;
+  stack = (char *)0x0;
+  pfVar6 = len;
+  if (0 < E) {
     do {
-      fStack_c = 0.0;
+      used = 0;
       iVar3 = 0;
-      if (3 < param_3) {
-        iVar4 = (param_3 - 4U >> 2) + 1;
+      if (3 < entries) {
+        iVar4 = (entries - 4U >> 2) + 1;
         iVar3 = iVar4 * 4;
-        pfVar2 = param_1 + 2;
+        pfVar2 = codebook + 2;
         pfVar5 = pfVar6;
         do {
           pfVar6 = pfVar5 + 4;
           iVar4 = iVar4 + -1;
-          fStack_c = pfVar2[1] * pfVar5[3] +
-                     pfVar5[2] * *pfVar2 + pfVar2[-1] * pfVar5[1] + pfVar2[-2] * *pfVar5 + fStack_c;
+          used = (int)(pfVar2[1] * pfVar5[3] +
+                      pfVar5[2] * *pfVar2 +
+                      pfVar2[-1] * pfVar5[1] + pfVar2[-2] * *pfVar5 + (float)used);
           pfVar2 = pfVar2 + 4;
           pfVar5 = pfVar6;
-          param_2 = pfVar6;
+          len = pfVar6;
         } while (iVar4 != 0);
       }
-      for (; iVar3 < param_3; iVar3 = iVar3 + 1) {
+      for (; iVar3 < entries; iVar3 = iVar3 + 1) {
         fVar1 = *pfVar6;
         pfVar6 = pfVar6 + 1;
-        fStack_c = param_1[iVar3] * fVar1 + fStack_c;
-        param_2 = pfVar6;
+        used = (int)(codebook[iVar3] * fVar1 + (float)used);
+        len = pfVar6;
       }
-      fStack_c = param_5[iStack_4] * 0.5 - fStack_c;
-      if ((iStack_4 < param_6) || (fStack_c < param_8[param_6 + -1])) {
-        iVar3 = param_6 + -1;
+      fVar1 = N[(int)stack] * 0.5 - (float)used;
+      if (((int)stack < nbest) || (fVar1 < param_8[nbest + -1])) {
+        iVar3 = nbest + -1;
         if (3 < iVar3) {
-          iVar4 = param_6 + -3;
-          piVar7 = param_7 + iVar4;
-          pfVar2 = param_8 + param_6 + -2;
+          iVar4 = nbest + -3;
+          piVar7 = best_dist + iVar4;
+          pfVar2 = param_8 + nbest + -2;
           do {
-            if ((iVar3 <= iStack_8) && (*pfVar2 <= fStack_c)) goto LAB_007dcd08;
+            if ((iVar3 <= i) && (*pfVar2 <= fVar1)) goto LAB_007dcd08;
             pfVar2[1] = *pfVar2;
-            piVar7[2] = *(int *)(((int)param_7 - (int)param_8) + (int)pfVar2);
-            pfVar6 = param_2;
-            if ((iVar4 + 1 <= iStack_8) && (pfVar2[-1] <= fStack_c)) {
+            piVar7[2] = *(int *)(((int)best_dist - (int)param_8) + (int)pfVar2);
+            pfVar6 = len;
+            if ((iVar4 + 1 <= i) && (pfVar2[-1] <= fVar1)) {
               iVar3 = iVar3 + -1;
               goto LAB_007dcd08;
             }
             *pfVar2 = pfVar2[-1];
-            *(int *)(((int)param_7 - (int)param_8) + (int)pfVar2) = *piVar7;
-            if ((iVar4 <= iStack_8) && (pfVar2[-2] <= fStack_c)) {
+            *(int *)(((int)best_dist - (int)param_8) + (int)pfVar2) = *piVar7;
+            if ((iVar4 <= i) && (pfVar2[-2] <= fVar1)) {
               iVar3 = iVar3 + -2;
               goto LAB_007dcd08;
             }
             pfVar2[-1] = pfVar2[-2];
             *piVar7 = piVar7[-1];
-            if ((iVar4 + -1 <= iStack_8) && (pfVar2[-3] <= fStack_c)) {
+            if ((iVar4 + -1 <= i) && (pfVar2[-3] <= fVar1)) {
               iVar3 = iVar3 + -3;
               goto LAB_007dcd08;
             }
@@ -129,21 +135,21 @@ vq_nbest(float *param_1,float *param_2,int param_3,int param_4,float *param_5,in
           pfVar2 = param_8 + iVar3 + -1;
           iVar4 = iVar3;
           do {
-            if ((iVar4 <= iStack_8) && (iVar3 = iVar4, *pfVar2 <= fStack_c)) break;
+            if ((iVar4 <= i) && (iVar3 = iVar4, *pfVar2 <= fVar1)) break;
             iVar3 = iVar4 + -1;
             pfVar2[1] = *pfVar2;
-            param_7[iVar4] = *(int *)((int)pfVar2 + ((int)param_7 - (int)param_8));
+            best_dist[iVar4] = *(int *)((int)pfVar2 + ((int)best_dist - (int)param_8));
             pfVar2 = pfVar2 + -1;
             iVar4 = iVar3;
           } while (0 < iVar3);
         }
 LAB_007dcd08:
-        param_8[iVar3] = fStack_c;
-        iStack_8 = iStack_8 + 1;
-        param_7[iVar3] = iStack_4;
+        param_8[iVar3] = fVar1;
+        i = i + 1;
+        best_dist[iVar3] = (int)stack;
       }
-      iStack_4 = iStack_4 + 1;
-    } while (iStack_4 < param_4);
+      stack = stack + 1;
+    } while ((int)stack < E);
   }
   return;
 }
@@ -151,9 +157,11 @@ LAB_007dcd08:
 
 // 007DCD40  vq_nbest_sign  (<external>/projects_pc/cod/codsrc/speex-1.1.9/libspeex/vq.c:131)
 
+/* WARNING: Variable defined which should be unmapped: dist */
+
 void __cdecl
-vq_nbest_sign(float *param_1,float *param_2,int param_3,int param_4,float *param_5,int param_6,
-             int *param_7,float *param_8,char *param_9)
+vq_nbest_sign(float *codebook,float *len,int entries,int E,float *N,int nbest,int *best_dist,
+             float *param_8,char *param_9)
 
 {
   float fVar1;
@@ -164,68 +172,71 @@ vq_nbest_sign(float *param_1,float *param_2,int param_3,int param_4,float *param
   float *pfVar6;
   int *piVar7;
   bool bVar8;
-  float fStack_10;
-  int iStack_c;
-  int iStack_4;
+  float *in;
+  float dist;
+  int used;
+  int sign;
+  int i;
+  char *stack;
   
-  iStack_c = 0;
-  iStack_4 = 0;
-  pfVar6 = param_2;
-  if (0 < param_4) {
+  sign = 0;
+  stack = (char *)0x0;
+  pfVar6 = len;
+  if (0 < E) {
     do {
-      fStack_10 = 0.0;
+      used = 0;
       iVar3 = 0;
-      if (3 < param_3) {
-        iVar4 = (param_3 - 4U >> 2) + 1;
+      if (3 < entries) {
+        iVar4 = (entries - 4U >> 2) + 1;
         iVar3 = iVar4 * 4;
-        pfVar2 = param_1 + 2;
+        pfVar2 = codebook + 2;
         pfVar5 = pfVar6;
         do {
           pfVar6 = pfVar5 + 4;
           iVar4 = iVar4 + -1;
-          fStack_10 = pfVar2[1] * pfVar5[3] +
+          used = (int)(pfVar2[1] * pfVar5[3] +
                       pfVar5[2] * *pfVar2 +
-                      pfVar2[-1] * pfVar5[1] + pfVar2[-2] * *pfVar5 + fStack_10;
+                      pfVar2[-1] * pfVar5[1] + pfVar2[-2] * *pfVar5 + (float)used);
           pfVar2 = pfVar2 + 4;
           pfVar5 = pfVar6;
-          param_2 = pfVar6;
+          len = pfVar6;
         } while (iVar4 != 0);
       }
-      for (; iVar3 < param_3; iVar3 = iVar3 + 1) {
+      for (; iVar3 < entries; iVar3 = iVar3 + 1) {
         fVar1 = *pfVar6;
         pfVar6 = pfVar6 + 1;
-        fStack_10 = param_1[iVar3] * fVar1 + fStack_10;
-        param_2 = pfVar6;
+        used = (int)(codebook[iVar3] * fVar1 + (float)used);
+        len = pfVar6;
       }
-      bVar8 = fStack_10 <= 0.0;
+      bVar8 = (float)used <= 0.0;
       if (!bVar8) {
-        fStack_10 = -fStack_10;
+        used = (int)-(float)used;
       }
-      fStack_10 = param_5[iStack_4] * 0.5 + fStack_10;
-      if ((iStack_4 < param_6) || (fStack_10 < param_8[param_6 + -1])) {
-        iVar3 = param_6 + -1;
+      fVar1 = N[(int)stack] * 0.5 + (float)used;
+      if (((int)stack < nbest) || (fVar1 < param_8[nbest + -1])) {
+        iVar3 = nbest + -1;
         if (3 < iVar3) {
-          iVar4 = param_6 + -3;
-          piVar7 = param_7 + iVar4;
-          pfVar2 = param_8 + param_6 + -2;
+          iVar4 = nbest + -3;
+          piVar7 = best_dist + iVar4;
+          pfVar2 = param_8 + nbest + -2;
           do {
-            if ((iVar3 <= iStack_c) && (*pfVar2 <= fStack_10)) goto LAB_007dcf5f;
+            if ((iVar3 <= sign) && (*pfVar2 <= fVar1)) goto LAB_007dcf5f;
             pfVar2[1] = *pfVar2;
-            piVar7[2] = *(int *)(((int)param_7 - (int)param_8) + (int)pfVar2);
-            pfVar6 = param_2;
-            if ((iVar4 + 1 <= iStack_c) && (pfVar2[-1] <= fStack_10)) {
+            piVar7[2] = *(int *)(((int)best_dist - (int)param_8) + (int)pfVar2);
+            pfVar6 = len;
+            if ((iVar4 + 1 <= sign) && (pfVar2[-1] <= fVar1)) {
               iVar3 = iVar3 + -1;
               goto LAB_007dcf5f;
             }
             *pfVar2 = pfVar2[-1];
-            *(int *)(((int)param_7 - (int)param_8) + (int)pfVar2) = *piVar7;
-            if ((iVar4 <= iStack_c) && (pfVar2[-2] <= fStack_10)) {
+            *(int *)(((int)best_dist - (int)param_8) + (int)pfVar2) = *piVar7;
+            if ((iVar4 <= sign) && (pfVar2[-2] <= fVar1)) {
               iVar3 = iVar3 + -2;
               goto LAB_007dcf5f;
             }
             pfVar2[-1] = pfVar2[-2];
             *piVar7 = piVar7[-1];
-            if ((iVar4 + -1 <= iStack_c) && (pfVar2[-3] <= fStack_10)) {
+            if ((iVar4 + -1 <= sign) && (pfVar2[-3] <= fVar1)) {
               iVar3 = iVar3 + -3;
               goto LAB_007dcf5f;
             }
@@ -241,24 +252,24 @@ vq_nbest_sign(float *param_1,float *param_2,int param_3,int param_4,float *param
           pfVar2 = param_8 + iVar3 + -1;
           iVar4 = iVar3;
           do {
-            if ((iVar4 <= iStack_c) && (iVar3 = iVar4, *pfVar2 <= fStack_10)) break;
+            if ((iVar4 <= sign) && (iVar3 = iVar4, *pfVar2 <= fVar1)) break;
             iVar3 = iVar4 + -1;
             pfVar2[1] = *pfVar2;
-            param_7[iVar4] = *(int *)(((int)param_7 - (int)param_8) + (int)pfVar2);
+            best_dist[iVar4] = *(int *)(((int)best_dist - (int)param_8) + (int)pfVar2);
             pfVar2 = pfVar2 + -1;
             iVar4 = iVar3;
           } while (0 < iVar3);
         }
 LAB_007dcf5f:
-        param_8[iVar3] = fStack_10;
-        iStack_c = iStack_c + 1;
-        param_7[iVar3] = iStack_4;
+        param_8[iVar3] = fVar1;
+        sign = sign + 1;
+        best_dist[iVar3] = (int)stack;
         if (bVar8) {
-          param_7[iVar3] = param_4 + iStack_4;
+          best_dist[iVar3] = (int)(stack + E);
         }
       }
-      iStack_4 = iStack_4 + 1;
-    } while (iStack_4 < param_4);
+      stack = stack + 1;
+    } while ((int)stack < E);
   }
   return;
 }

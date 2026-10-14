@@ -4,29 +4,30 @@
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-uint __cdecl
-CScr_SpawnFXInternal(int param_1,int param_2,float (*param_3) [3],float *param_4,int param_5)
+uint __cdecl CScr_SpawnFXInternal(int localClientNum,int fxId,float (*axis) [3],float *pos,int time)
 
 {
-  FxEffectDef *pFVar1;
-  code *pcVar2;
-  bool bVar3;
-  cgs_t *pcVar4;
-  uint uVar5;
+  FxEffectDef *def;
+  code *pcVar1;
+  bool bVar2;
+  cgs_t *pcVar3;
+  uint uVar4;
+  FxEffectDef *fxDef;
+  cgs_t *cgs;
   
-  pcVar4 = CG_GetLocalClientStaticGlobals(param_1);
-  pFVar1 = pcVar4->fxs[param_2];
-  if (pFVar1 == (FxEffectDef *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x5b,
+  pcVar3 = CG_GetLocalClientStaticGlobals(localClientNum);
+  def = pcVar3->fxs[fxId];
+  if (def == (FxEffectDef *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x5b,
                              0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      uVar5 = (*pcVar2)();
-      return uVar5;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar4 = (*pcVar1)();
+      return uVar4;
     }
   }
-  uVar5 = FX_SpawnOrientedEffect(param_1,pFVar1,param_5,param_4,param_3,0x3ff);
-  return uVar5;
+  uVar4 = FX_SpawnOrientedEffect(localClientNum,def,time,pos,axis,0x3ff);
+  return uVar4;
 }
 
 
@@ -37,12 +38,15 @@ void __cdecl CScr_DeleteFX(void)
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  uint uVar4;
+  int localClientNum_00;
+  uint hEffect;
+  int localClientNum;
+  int intFxPtr;
+  uint h;
   
-  iVar3 = CScr_GetLocalClientNum(0);
-  uVar4 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
-  if ((iVar3 < 0) || (1 < iVar3)) {
+  localClientNum_00 = CScr_GetLocalClientNum(0);
+  hEffect = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
+  if ((localClientNum_00 < 0) || (1 < localClientNum_00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x76,
                              0,"localClientNum not in [0, MAX_LOCAL_CLIENTS]\n\t%i not in [%i, %i]")
     ;
@@ -52,37 +56,39 @@ void __cdecl CScr_DeleteFX(void)
       return;
     }
   }
-  FX_ThroughWithEffect(iVar3,uVar4,true);
+  FX_ThroughWithEffect(localClientNum_00,hEffect,true);
   return;
 }
 
 
 // 004FC5F0  CScr_SpawnFX  (cgame_mp/cg_scr_main_mp.cpp:146)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl CScr_SpawnFX(void)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  uint uVar4;
-  float fVar5;
-  float local_54 [3];
-  int local_48;
-  int local_44;
-  uint local_40;
-  float local_3c [3];
-  int local_30;
-  float local_2c [6];
+  char *error;
+  uint uVar3;
+  float fVar4;
+  float pos [3];
+  int iTime;
+  int localClientNum;
+  int numParams;
+  float angles [3];
+  int fxId;
+  float axis [6];
   float local_14 [3];
-  float local_8;
+  float vecLength;
   
-  local_40 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
-  if (((int)local_40 < 4) || (6 < (int)local_40)) {
+  numParams = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
+  if ((numParams < 4) || (6 < numParams)) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"Incorrect number of parameters",false);
   }
-  local_44 = CScr_GetLocalClientNum(0);
-  if ((local_44 < 0) || (1 < local_44)) {
+  localClientNum = CScr_GetLocalClientNum(0);
+  if ((localClientNum < 0) || (1 < localClientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0xa1,
                              0,"localClientNum not in [0, MAX_LOCAL_CLIENTS]\n\t%i not in [%i, %i]")
     ;
@@ -92,21 +98,21 @@ void __cdecl CScr_SpawnFX(void)
       return;
     }
   }
-  local_30 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
-  if ((local_30 < 1) || (0xc3 < local_30)) {
-    pcVar3 = va("CScr_PlayFX: invalid effect id %d");
-    Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar3,false);
+  fxId = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
+  if ((fxId < 1) || (0xc3 < fxId)) {
+    error = va("CScr_PlayFX: invalid effect id %d");
+    Scr_Error(SCRIPTINSTANCE_CLIENT,error,false);
   }
-  Scr_GetVector(2,local_54,SCRIPTINSTANCE_CLIENT);
-  fVar5 = Scr_GetFloat(3,SCRIPTINSTANCE_CLIENT);
-  local_48 = (int)ROUND(fVar5 * 1000.0 + 9.313226e-10);
-  if (local_40 == 4) {
-    CScr_SetFxAngles(0,(float (*) [3])local_2c,local_3c);
-    uVar4 = CScr_SpawnFXInternal(local_44,local_30,(float (*) [3])local_2c,local_54,local_48);
-    Scr_AddInt(uVar4,SCRIPTINSTANCE_CLIENT);
+  Scr_GetVector(2,pos,SCRIPTINSTANCE_CLIENT);
+  fVar4 = Scr_GetFloat(3,SCRIPTINSTANCE_CLIENT);
+  iTime = (int)ROUND(fVar4 * 1000.0 + 9.313226e-10);
+  if (numParams == 4) {
+    CScr_SetFxAngles(0,(float (*) [3])axis,angles);
+    uVar3 = CScr_SpawnFXInternal(localClientNum,fxId,(float (*) [3])axis,pos,iTime);
+    Scr_AddInt(uVar3,SCRIPTINSTANCE_CLIENT);
   }
   else {
-    if ((local_40 != 5) && (local_40 != 6)) {
+    if ((numParams != 5) && (numParams != 6)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0xb3,1,"%s\n\t(numParams) = %i");
       if (!bVar2) {
@@ -115,18 +121,18 @@ void __cdecl CScr_SpawnFX(void)
         return;
       }
     }
-    Scr_GetVector(4,local_2c,SCRIPTINSTANCE_CLIENT);
-    local_8 = Vec3Normalize(local_2c);
-    if (local_8 == 0.0) {
-      CScr_FxParamError(local_44,4,"playFx called with (0 0 0) forward direction",local_30);
+    Scr_GetVector(4,axis,SCRIPTINSTANCE_CLIENT);
+    vecLength = Vec3Normalize(axis);
+    if (vecLength == 0.0) {
+      CScr_FxParamError(localClientNum,4,"playFx called with (0 0 0) forward direction",fxId);
     }
-    if (local_40 == 5) {
-      CScr_SetFxAngles(1,(float (*) [3])local_2c,local_3c);
-      uVar4 = CScr_SpawnFXInternal(local_44,local_30,(float (*) [3])local_2c,local_54,local_48);
-      Scr_AddInt(uVar4,SCRIPTINSTANCE_CLIENT);
+    if (numParams == 5) {
+      CScr_SetFxAngles(1,(float (*) [3])axis,angles);
+      uVar3 = CScr_SpawnFXInternal(localClientNum,fxId,(float (*) [3])axis,pos,iTime);
+      Scr_AddInt(uVar3,SCRIPTINSTANCE_CLIENT);
     }
     else {
-      if (local_40 != 6) {
+      if (numParams != 6) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0xc1,1,"%s\n\t(numParams) = %i");
         if (!bVar2) {
@@ -136,13 +142,13 @@ void __cdecl CScr_SpawnFX(void)
         }
       }
       Scr_GetVector(5,local_14,SCRIPTINSTANCE_CLIENT);
-      local_8 = Vec3Normalize(local_14);
-      if (local_8 == 0.0) {
-        CScr_FxParamError(local_44,5,"playFx called with (0 0 0) up direction",local_30);
+      vecLength = Vec3Normalize(local_14);
+      if (vecLength == 0.0) {
+        CScr_FxParamError(localClientNum,5,"playFx called with (0 0 0) up direction",fxId);
       }
-      CScr_SetFxAngles(2,(float (*) [3])local_2c,local_3c);
-      uVar4 = CScr_SpawnFXInternal(local_44,local_30,(float (*) [3])local_2c,local_54,local_48);
-      Scr_AddInt(uVar4,SCRIPTINSTANCE_CLIENT);
+      CScr_SetFxAngles(2,(float (*) [3])axis,angles);
+      uVar3 = CScr_SpawnFXInternal(localClientNum,fxId,(float (*) [3])axis,pos,iTime);
+      Scr_AddInt(uVar3,SCRIPTINSTANCE_CLIENT);
     }
   }
   return;
@@ -168,23 +174,23 @@ void __cdecl CScr_PlayFXOnTag(void)
   undefined2 local_38;
   uint local_32;
   undefined2 local_2e;
-  uint local_2c;
+  uint entref;
   undefined2 local_28;
-  uint local_24;
-  uint local_20;
-  int local_1c;
-  FxEffectDef *local_18;
-  uint local_14;
-  char *local_10;
-  cgs_t *local_c;
-  int local_8;
+  uint tagName;
+  uint effectHandle;
+  int localClientNum;
+  FxEffectDef *fxDef;
+  int numParams;
+  char *name;
+  cgs_t *cgs;
+  int fxId;
   
-  local_14 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
-  if (local_14 != 4) {
+  numParams = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
+  if (numParams != 4) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"Incorrect number of parameters for playfxontag",false);
   }
-  local_1c = CScr_GetLocalClientNum(0);
-  local_8 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
+  localClientNum = CScr_GetLocalClientNum(0);
+  fxId = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
   sVar5 = Scr_GetEntityRef((uint)local_54,SCRIPT_INSTANCE_MAX);
   local_4a = *sVar5._0_4_;
   local_46 = (undefined2)sVar5._0_4_[1];
@@ -192,33 +198,33 @@ void __cdecl CScr_PlayFXOnTag(void)
   local_38 = local_46;
   local_32 = local_4a;
   local_2e = local_46;
-  local_2c = local_4a;
+  entref = local_4a;
   local_28 = local_46;
-  pDVar3 = Com_GetClientDObj(local_4a & 0xffff,local_1c);
+  pDVar3 = Com_GetClientDObj(local_4a & 0xffff,localClientNum);
   if (pDVar3 == (DObj *)0x0) {
     pcVar4 = va(
                "CScr_PlayFX: invalid entity for local client %i, either not in the snapshot for the client or dobj does not exist yet"
                );
     Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar4,false);
   }
-  if ((local_8 < 1) || (0xc3 < local_8)) {
+  if ((fxId < 1) || (0xc3 < fxId)) {
     pcVar4 = va("CScr_PlayFX: invalid effect id %d");
     Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar4,false);
   }
-  local_c = CG_GetLocalClientStaticGlobals(local_1c);
-  local_18 = local_c->fxs[local_8];
-  if ((local_18 == (FxEffectDef *)0x0) &&
+  cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+  fxDef = cgs->fxs[fxId];
+  if ((fxDef == (FxEffectDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0xfb,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24 = Scr_GetConstLowercaseString(3,SCRIPTINSTANCE_CLIENT);
-  local_10 = SL_ConvertToString(local_24,SCRIPTINSTANCE_CLIENT);
-  local_24 = SL_FindLowercaseString(local_10,SCRIPTINSTANCE_SERVER);
-  local_20 = CG_PlayBoltedEffect(local_1c,local_18,local_2c & 0xffff,local_24);
-  Scr_AddInt(local_20,SCRIPTINSTANCE_CLIENT);
+  tagName = Scr_GetConstLowercaseString(3,SCRIPTINSTANCE_CLIENT);
+  name = SL_ConvertToString(tagName,SCRIPTINSTANCE_CLIENT);
+  tagName = SL_FindLowercaseString(name,SCRIPTINSTANCE_SERVER);
+  effectHandle = CG_PlayBoltedEffect(localClientNum,fxDef,entref & 0xffff,tagName);
+  Scr_AddInt(effectHandle,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -261,23 +267,24 @@ void __cdecl CScr_PlayViewmodelFX(void)
   bool bVar2;
   cg_s *pcVar3;
   int iVar4;
-  char *pcVar5;
-  uint uVar6;
-  uchar *puVar7;
-  uchar local_1d;
-  int local_1c;
-  uint local_18;
-  int local_14;
-  cgs_t *local_10;
-  int local_c;
-  uint local_8;
+  char *error;
+  uint uVar5;
+  uchar *boneIndex_00;
+  uint handle;
+  uchar boneIndex;
+  int weaponNum;
+  int nparams;
+  int localClientNum;
+  cgs_t *cgs;
+  int fxId;
+  int realTagName;
   
-  local_18 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
-  if (local_18 != 3) {
+  nparams = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
+  if (nparams != 3) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"PlayViewmodelFX() called with wrong params.\n",false);
   }
-  local_14 = CScr_GetLocalClientNum(0);
-  if ((local_14 < 0) || (1 < local_14)) {
+  localClientNum = CScr_GetLocalClientNum(0);
+  if ((localClientNum < 0) || (1 < localClientNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x113
                              ,0,"localClientNum not in [0, MAX_LOCAL_CLIENTS]\n\t%i not in [%i, %i]"
                             );
@@ -287,8 +294,8 @@ void __cdecl CScr_PlayViewmodelFX(void)
       return;
     }
   }
-  local_c = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
-  if ((local_c < 0) || (0xc4 < local_c)) {
+  fxId = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
+  if ((fxId < 0) || (0xc4 < fxId)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x116
                              ,0,"fxId not in [0, MAX_EFFECT_NAMES]\n\t%i not in [%i, %i]");
     if (!bVar2) {
@@ -297,12 +304,12 @@ void __cdecl CScr_PlayViewmodelFX(void)
       return;
     }
   }
-  local_8 = CScr_GetConstServerString(2);
-  if (local_8 == 0) {
+  realTagName = CScr_GetConstServerString(2);
+  if (realTagName == 0) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"PlayViewmodelFX(): unable to find viewmodel tag.\n",false);
   }
-  local_10 = CG_GetLocalClientStaticGlobals(local_14);
-  if (local_10 == (cgs_t *)0x0) {
+  cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+  if (cgs == (cgs_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x11f
                              ,0,"%s");
     if (!bVar2) {
@@ -311,23 +318,23 @@ void __cdecl CScr_PlayViewmodelFX(void)
       return;
     }
   }
-  pcVar3 = CG_GetLocalClientGlobals(local_14);
-  local_1c = BG_GetViewmodelWeaponIndex(&pcVar3->predictedPlayerState);
-  local_1d = 0xfe;
-  puVar7 = &local_1d;
-  uVar6 = local_8;
-  iVar4 = CG_WeaponDObjHandle(local_14);
-  iVar4 = CG_GetBoneIndex(local_14,iVar4,uVar6,puVar7);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  weaponNum = BG_GetViewmodelWeaponIndex(&pcVar3->predictedPlayerState);
+  boneIndex = 0xfe;
+  boneIndex_00 = &boneIndex;
+  uVar5 = realTagName;
+  iVar4 = CG_WeaponDObjHandle(localClientNum);
+  iVar4 = CG_GetBoneIndex(localClientNum,iVar4,uVar5,boneIndex_00);
   if (iVar4 == 0) {
-    SL_ConvertToString(local_8,SCRIPTINSTANCE_SERVER);
-    BG_WeaponName(local_1c);
-    pcVar5 = va("PlayViewmodelFX(): viewmodel weapon \'%s\', does not have bone \'%s\'");
-    Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar5,false);
+    SL_ConvertToString(realTagName,SCRIPTINSTANCE_SERVER);
+    BG_WeaponName(weaponNum);
+    error = va("PlayViewmodelFX(): viewmodel weapon \'%s\', does not have bone \'%s\'");
+    Scr_Error(SCRIPTINSTANCE_CLIENT,error,false);
   }
-  uVar6 = local_8;
-  iVar4 = CG_WeaponDObjHandle(local_14);
-  uVar6 = CG_PlayBoltedEffect(local_14,local_10->fxs[local_c],iVar4,uVar6);
-  Scr_AddInt(uVar6,SCRIPTINSTANCE_CLIENT);
+  uVar5 = realTagName;
+  iVar4 = CG_WeaponDObjHandle(localClientNum);
+  uVar5 = CG_PlayBoltedEffect(localClientNum,cgs->fxs[fxId],iVar4,uVar5);
+  Scr_AddInt(uVar5,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -414,6 +421,9 @@ void __cdecl CScr_IsSpectating(void)
   int iVar3;
   cg_s *pcVar4;
   uint uVar5;
+  cg_s *cgameGlob;
+  int localClientNum;
+  playerState_s *ps;
   
   iVar3 = CScr_GetLocalClientNum(0);
   pcVar4 = CG_GetLocalClientGlobals(iVar3);
@@ -468,45 +478,46 @@ void __cdecl CScr_IsSpectating(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScrCmd_IsBurning(scr_entref_t param_1)
+void __cdecl CScrCmd_IsBurning(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  centity_s *local_10;
-  int local_8;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
+  int isBurning;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x185,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_10 = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_10 = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_10 = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  local_8 = 0;
-  if ((((local_10->currentState).eFlags2 & 0x200000U) != 0) || (local_10->isBurning != 0)) {
-    local_8 = 1;
+  isBurning = 0;
+  if ((((pSelf->currentState).eFlags2 & 0x200000U) != 0) || (pSelf->isBurning != 0)) {
+    isBurning = 1;
   }
-  Scr_AddBool(local_8,SCRIPTINSTANCE_CLIENT);
+  Scr_AddBool(isBurning,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -538,26 +549,29 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CPlayerCmd_HasPerk(scr_entref_t param_1)
+void __cdecl CPlayerCmd_HasPerk(scr_entref_t entref)
 
 {
   bool bVar1;
   char *pcVar2;
-  uint uVar3;
-  cg_s *pcVar4;
+  uint perkIndex_00;
+  cg_s *pcVar3;
+  char *perkName;
+  cg_s *cGameGlob;
+  uint perkIndex;
   
-  if (0x1f < param_1.entnum) {
+  if (0x1f < entref.entnum) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"hasperk() can only be called on players",false);
   }
   pcVar2 = Scr_GetString(0,SCRIPTINSTANCE_CLIENT);
-  uVar3 = BG_GetPerkIndexForName(pcVar2);
-  if (uVar3 == 0x34) {
+  perkIndex_00 = BG_GetPerkIndexForName(pcVar2);
+  if (perkIndex_00 == 0x34) {
     pcVar2 = va("Unknown perk: %s\n");
     Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar2,false);
   }
-  pcVar4 = CG_GetLocalClientGlobals(0);
-  bVar1 = BG_HasPerk((uint *)((int)(pcVar4->bgs).clientinfo + (uint)param_1.entnum * 0x5c8 + 0x44),
-                     uVar3);
+  pcVar3 = CG_GetLocalClientGlobals(0);
+  bVar1 = BG_HasPerk((uint *)((int)(pcVar3->bgs).clientinfo + (uint)entref.entnum * 0x5c8 + 0x44),
+                     perkIndex_00);
   Scr_AddBool((uint)bVar1,SCRIPTINSTANCE_CLIENT);
   return;
 }
@@ -570,45 +584,46 @@ void __cdecl CPlayerCmd_HasPerk(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetVehicleHealth(scr_entref_t param_1)
+void __cdecl CScr_GetVehicleHealth(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  float fVar5;
-  centity_s *local_c;
+  float value;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x1bd,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if ((local_c->nextState).eType != 0xe) {
+  if ((pSelf->nextState).eType != 0xe) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"GetVehicleHealth() can only be called on vehicles",false);
   }
-  fVar5 = CG_VehGetHealthPercentageEntity(local_c);
-  Scr_AddFloat(fVar5,SCRIPTINSTANCE_CLIENT);
+  value = CG_VehGetHealthPercentageEntity(pSelf);
+  Scr_AddFloat(value,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -620,45 +635,46 @@ void __cdecl CScr_GetVehicleHealth(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetLeftTreadHealth(scr_entref_t param_1)
+void __cdecl CScr_GetLeftTreadHealth(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  float fVar5;
-  centity_s *local_c;
+  float value;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x1d6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if ((local_c->nextState).eType != 0xe) {
+  if ((pSelf->nextState).eType != 0xe) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"GetLeftTreadHealth() can only be called on vehicles",false);
   }
-  fVar5 = CG_VehGetHealthPercentageLeftTread(local_c);
-  Scr_AddFloat(fVar5,SCRIPTINSTANCE_CLIENT);
+  value = CG_VehGetHealthPercentageLeftTread(pSelf);
+  Scr_AddFloat(value,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -670,43 +686,44 @@ void __cdecl CScr_GetLeftTreadHealth(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetHeliDamageState(scr_entref_t param_1)
+void __cdecl CScr_GetHeliDamageState(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  centity_s *local_c;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x1ef,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if ((local_c->nextState).eType != 0xc) {
+  if ((pSelf->nextState).eType != 0xc) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"GetHeliDamageState() can only be called on helicopters",false);
   }
-  Scr_AddInt((uint)(local_c->nextState).un1.scale,SCRIPTINSTANCE_CLIENT);
+  Scr_AddInt((uint)(pSelf->nextState).un1.scale,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -718,45 +735,46 @@ void __cdecl CScr_GetHeliDamageState(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetRightTreadHealth(scr_entref_t param_1)
+void __cdecl CScr_GetRightTreadHealth(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  float fVar5;
-  centity_s *local_c;
+  float value;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x208,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if ((local_c->nextState).eType != 0xe) {
+  if ((pSelf->nextState).eType != 0xe) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"GetRightTreadHealth() can only be called on vehicles",false);
   }
-  fVar5 = CG_VehGetHealthPercentageRightTread(local_c);
-  Scr_AddFloat(fVar5,SCRIPTINSTANCE_CLIENT);
+  value = CG_VehGetHealthPercentageRightTread(pSelf);
+  Scr_AddFloat(value,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -768,40 +786,44 @@ void __cdecl CScr_GetRightTreadHealth(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetInKillcam(scr_entref_t param_1)
+void __cdecl CScr_GetInKillcam(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int iVar4;
-  cg_s *pcVar5;
+  int localClientNum_00;
+  cg_s *pcVar4;
+  centity_s *pSelf;
+  cg_s *cGameGlob;
+  int localClientNum;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x222,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      CG_GetLocalClientGlobals((uint)param_1.client);
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      CG_GetLocalClientGlobals((uint)entref.client);
     }
     else {
-      CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
   }
-  iVar4 = CScr_GetLocalClientNum(0);
-  pcVar5 = CG_GetLocalClientGlobals(iVar4);
-  Scr_AddInt(pcVar5->inKillCam,SCRIPTINSTANCE_CLIENT);
+  localClientNum_00 = CScr_GetLocalClientNum(0);
+  pcVar4 = CG_GetLocalClientGlobals(localClientNum_00);
+  Scr_AddInt(pcVar4->inKillCam,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -813,45 +835,46 @@ void __cdecl CScr_GetInKillcam(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetAnimState(scr_entref_t param_1)
+void __cdecl CScr_GetAnimState(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  char *pcVar5;
-  centity_s *local_c;
+  char *value;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x239,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if (((local_c->nextState).eType != 0x11) && ((local_c->nextState).eType != 0x13)) {
+  if (((pSelf->nextState).eType != 0x11) && ((pSelf->nextState).eType != 0x13)) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"GetAnimState() can only be called on actors",false);
   }
-  pcVar5 = BG_Actor_GetAnimStateName((local_c->nextState).un2.animState.state);
-  Scr_AddString(pcVar5,SCRIPTINSTANCE_CLIENT);
+  value = BG_Actor_GetAnimStateName((pSelf->nextState).un2.animState.state);
+  Scr_AddString(value,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -863,45 +886,46 @@ void __cdecl CScr_GetAnimState(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetAnimStateCategory(scr_entref_t param_1)
+void __cdecl CScr_GetAnimStateCategory(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  char *pcVar5;
-  centity_s *local_c;
+  char *value;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x251,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if (((local_c->nextState).eType != 0x11) && ((local_c->nextState).eType != 0x13)) {
+  if (((pSelf->nextState).eType != 0x11) && ((pSelf->nextState).eType != 0x13)) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"GetAnimStateCategory() can only be called on actors",false);
   }
-  pcVar5 = BG_Actor_GetAnimStateCategoryName((local_c->nextState).un2.animState.state);
-  Scr_AddString(pcVar5,SCRIPTINSTANCE_CLIENT);
+  value = BG_Actor_GetAnimStateCategoryName((pSelf->nextState).un2.animState.state);
+  Scr_AddString(value,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -921,9 +945,16 @@ void __cdecl CScr_GetTotalAmmo(void)
   uint uVar3;
   int iVar4;
   cg_s *pcVar5;
-  char *pcVar6;
-  playerState_s *ppVar7;
-  int iVar8;
+  char *name;
+  playerState_s *ps_00;
+  int iVar6;
+  char *weaponName;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int ammoStock;
+  int roundsInClip;
+  int weapIdx;
+  playerState_s *ps;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar3 == 2) {
@@ -938,8 +969,8 @@ void __cdecl CScr_GetTotalAmmo(void)
         return;
       }
     }
-    pcVar6 = Scr_GetString(1,SCRIPTINSTANCE_CLIENT);
-    if (pcVar6 == (char *)0x0) {
+    name = Scr_GetString(1,SCRIPTINSTANCE_CLIENT);
+    if (name == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x273,0,"%s");
       if (!bVar2) {
@@ -948,11 +979,11 @@ void __cdecl CScr_GetTotalAmmo(void)
         return;
       }
     }
-    ppVar7 = CG_GetPredictedPlayerState(iVar4);
-    uVar3 = BG_FindWeaponIndexForName(pcVar6);
-    iVar4 = BG_GetAmmoInClip(ppVar7,uVar3);
-    iVar8 = BG_GetTotalAmmoReserve(ppVar7,uVar3);
-    Scr_AddInt(iVar4 + iVar8,SCRIPTINSTANCE_CLIENT);
+    ps_00 = CG_GetPredictedPlayerState(iVar4);
+    uVar3 = BG_FindWeaponIndexForName(name);
+    iVar4 = BG_GetAmmoInClip(ps_00,uVar3);
+    iVar6 = BG_GetTotalAmmoReserve(ps_00,uVar3);
+    Scr_AddInt(iVar4 + iVar6,SCRIPTINSTANCE_CLIENT);
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -976,15 +1007,18 @@ void __cdecl CScr_GetCurrentWeapon(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int iVar4;
-  cg_s *pcVar5;
-  WeaponVariantDef *pWVar6;
+  int localClientNum_00;
+  cg_s *pcVar4;
+  WeaponVariantDef *pWVar5;
+  cg_s *cgameGlob;
+  int localClientNum;
+  WeaponVariantDef *varDef;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar3 == 1) {
-    iVar4 = CScr_GetLocalClientNum(0);
-    pcVar5 = CG_GetLocalClientGlobals(iVar4);
-    if (pcVar5 == (cg_s *)0x0) {
+    localClientNum_00 = CScr_GetLocalClientNum(0);
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum_00);
+    if (pcVar4 == (cg_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x295,0,"%s");
       if (!bVar2) {
@@ -993,8 +1027,8 @@ void __cdecl CScr_GetCurrentWeapon(void)
         return;
       }
     }
-    pWVar6 = BG_GetWeaponVariantDef((uint)(pcVar5->predictedPlayerState).weapon);
-    if (pWVar6 == (WeaponVariantDef *)0x0) {
+    pWVar5 = BG_GetWeaponVariantDef((uint)(pcVar4->predictedPlayerState).weapon);
+    if (pWVar5 == (WeaponVariantDef *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x299,0,"%s");
       if (!bVar2) {
@@ -1003,7 +1037,7 @@ void __cdecl CScr_GetCurrentWeapon(void)
         return;
       }
     }
-    if (pWVar6->szInternalName == (char *)0x0) {
+    if (pWVar5->szInternalName == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x29a,0,"%s");
       if (!bVar2) {
@@ -1012,7 +1046,7 @@ void __cdecl CScr_GetCurrentWeapon(void)
         return;
       }
     }
-    Scr_AddString(pWVar6->szInternalName,SCRIPTINSTANCE_CLIENT);
+    Scr_AddString(pWVar5->szInternalName,SCRIPTINSTANCE_CLIENT);
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -1036,16 +1070,20 @@ void __cdecl CScr_GetCurrentWeaponIncludingMelee(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  int iVar4;
-  cg_s *pcVar5;
-  WeaponVariantDef *pWVar6;
-  ushort local_14;
+  int localClientNum_00;
+  cg_s *pcVar4;
+  WeaponVariantDef *pWVar5;
+  cg_s *cgameGlob;
+  ushort weapon;
+  int localClientNum;
+  WeaponVariantDef *varDef;
+  playerState_s *ps;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar3 == 1) {
-    iVar4 = CScr_GetLocalClientNum(0);
-    pcVar5 = CG_GetLocalClientGlobals(iVar4);
-    if (pcVar5 == (cg_s *)0x0) {
+    localClientNum_00 = CScr_GetLocalClientNum(0);
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum_00);
+    if (pcVar4 == (cg_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x2ba,0,"%s");
       if (!bVar2) {
@@ -1054,16 +1092,16 @@ void __cdecl CScr_GetCurrentWeaponIncludingMelee(void)
         return;
       }
     }
-    if ((((pcVar5->predictedPlayerState).weaponstate == 0x11) ||
-        ((pcVar5->predictedPlayerState).weaponstate == 0x12)) ||
-       ((pcVar5->predictedPlayerState).weaponstate == 0x13)) {
-      local_14 = (ushort)(pcVar5->predictedPlayerState).meleeWeapon;
+    if ((((pcVar4->predictedPlayerState).weaponstate == 0x11) ||
+        ((pcVar4->predictedPlayerState).weaponstate == 0x12)) ||
+       ((pcVar4->predictedPlayerState).weaponstate == 0x13)) {
+      weapon = (ushort)(pcVar4->predictedPlayerState).meleeWeapon;
     }
     else {
-      local_14 = (pcVar5->predictedPlayerState).weapon;
+      weapon = (pcVar4->predictedPlayerState).weapon;
     }
-    pWVar6 = BG_GetWeaponVariantDef((uint)local_14);
-    if (pWVar6 == (WeaponVariantDef *)0x0) {
+    pWVar5 = BG_GetWeaponVariantDef((uint)weapon);
+    if (pWVar5 == (WeaponVariantDef *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x2c4,0,"%s");
       if (!bVar2) {
@@ -1072,7 +1110,7 @@ void __cdecl CScr_GetCurrentWeaponIncludingMelee(void)
         return;
       }
     }
-    if (pWVar6->szInternalName == (char *)0x0) {
+    if (pWVar5->szInternalName == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x2c5,0,"%s");
       if (!bVar2) {
@@ -1081,7 +1119,7 @@ void __cdecl CScr_GetCurrentWeaponIncludingMelee(void)
         return;
       }
     }
-    Scr_AddString(pWVar6->szInternalName,SCRIPTINSTANCE_CLIENT);
+    Scr_AddString(pWVar5->szInternalName,SCRIPTINSTANCE_CLIENT);
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -1107,14 +1145,18 @@ void __cdecl CScr_HasWeapon(void)
   uint uVar3;
   int iVar4;
   cg_s *pcVar5;
-  char *pcVar6;
+  char *name;
+  char *weaponName;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int weapIdx;
   
   uVar3 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar3 == 2) {
     iVar4 = CScr_GetLocalClientNum(0);
     pcVar5 = CG_GetLocalClientGlobals(iVar4);
-    pcVar6 = Scr_GetString(1,SCRIPTINSTANCE_CLIENT);
-    if ((pcVar6 == (char *)0x0) &&
+    name = Scr_GetString(1,SCRIPTINSTANCE_CLIENT);
+    if ((name == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x2e3,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1128,7 +1170,7 @@ void __cdecl CScr_HasWeapon(void)
       (*pcVar1)();
       return;
     }
-    uVar3 = BG_FindWeaponIndexForName(pcVar6);
+    uVar3 = BG_FindWeaponIndexForName(name);
     if ((uVar3 != 0) &&
        (iVar4 = BG_PlayerHasWeapon(&pcVar5->predictedPlayerState,uVar3), iVar4 != 0)) {
       Scr_AddBool(1,SCRIPTINSTANCE_CLIENT);
@@ -1158,6 +1200,9 @@ void __cdecl CScr_SetLocalRadarEnabled(void)
   uint uVar1;
   int iVar2;
   cg_s *pcVar3;
+  int enabled;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
@@ -1191,18 +1236,18 @@ void __cdecl CScr_SetLocalRadarPosition(void)
 
 {
   uint uVar1;
-  float local_18;
+  float origin;
   float local_14;
-  cg_s *local_c;
-  int local_8;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
-    local_8 = CScr_GetLocalClientNum(0);
-    local_c = CG_GetLocalClientGlobals(local_8);
-    Scr_GetVector(1,&local_18,SCRIPTINSTANCE_CLIENT);
-    local_c->compassScrambler[0xd].handle = (int)local_18;
-    local_c->compassScrambler[0xe].pos[0] = local_14;
+    localClientNum = CScr_GetLocalClientNum(0);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    Scr_GetVector(1,&origin,SCRIPTINSTANCE_CLIENT);
+    cgameGlob->compassScrambler[0xd].handle = (int)origin;
+    cgameGlob->compassScrambler[0xe].pos[0] = local_14;
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -1227,20 +1272,20 @@ void __cdecl CScr_SetExtraCamEntity(void)
   int iVar2;
   scr_entref_t sVar3;
   undefined1 local_3c [40];
-  cg_s *local_14;
-  int local_10;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
-    local_10 = CScr_GetLocalClientNum(0);
-    local_14 = CG_GetLocalClientGlobals(local_10);
+    localClientNum = CScr_GetLocalClientNum(0);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
     iVar2 = Scr_GetType(1,SCRIPTINSTANCE_CLIENT);
     if (iVar2 == 0) {
-      local_14->compassScrambler[0xb].pos[1] = 1.43353e-42;
+      cgameGlob->compassScrambler[0xb].pos[1] = 1.43353e-42;
     }
     else {
       sVar3 = Scr_GetEntityRef((uint)local_3c,SCRIPTINSTANCE_CLIENT);
-      local_14->compassScrambler[0xb].pos[1] = (float)(*sVar3._0_4_ & 0xffff);
+      cgameGlob->compassScrambler[0xb].pos[1] = (float)(*sVar3._0_4_ & 0xffff);
     }
   }
   else {
@@ -1265,6 +1310,9 @@ void __cdecl CScr_SetExtraCamActive(void)
   uint uVar1;
   int iVar2;
   cg_s *pcVar3;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int active;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
@@ -1301,14 +1349,16 @@ void __cdecl CScr_GetExtraCamStatic(void)
 
 {
   uint uVar1;
-  int iVar2;
-  cg_s *pcVar3;
+  int localClientNum_00;
+  cg_s *pcVar2;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 1) {
-    iVar2 = CScr_GetLocalClientNum(0);
-    pcVar3 = CG_GetLocalClientGlobals(iVar2);
-    if (pcVar3->compassScrambler[0xb].handle == 0) {
+    localClientNum_00 = CScr_GetLocalClientNum(0);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum_00);
+    if (pcVar2->compassScrambler[0xb].handle == 0) {
       Scr_AddInt(0,SCRIPTINSTANCE_CLIENT);
     }
     else {
@@ -1337,6 +1387,9 @@ void __cdecl CScr_SetExtraCamStatic(void)
   uint uVar1;
   int iVar2;
   cg_s *pcVar3;
+  cg_s *cgameGlob;
+  int localClientNum;
+  int active;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
@@ -1373,20 +1426,20 @@ void __cdecl CScr_SetExtraCamOrigin(void)
 
 {
   uint uVar1;
-  float local_18;
+  float origin;
   float local_14;
   int local_10;
-  cg_s *local_c;
-  int local_8;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
-    local_8 = CScr_GetLocalClientNum(0);
-    local_c = CG_GetLocalClientGlobals(local_8);
-    Scr_GetVector(1,&local_18,SCRIPTINSTANCE_CLIENT);
-    local_c->compassScrambler[0xc].pos[0] = local_18;
-    local_c->compassScrambler[0xc].pos[1] = local_14;
-    local_c->compassScrambler[0xc].startTime = local_10;
+    localClientNum = CScr_GetLocalClientNum(0);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    Scr_GetVector(1,&origin,SCRIPTINSTANCE_CLIENT);
+    cgameGlob->compassScrambler[0xc].pos[0] = origin;
+    cgameGlob->compassScrambler[0xc].pos[1] = local_14;
+    cgameGlob->compassScrambler[0xc].startTime = local_10;
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -1408,20 +1461,22 @@ void __cdecl CScr_SetExtraCamAngles(void)
 
 {
   uint uVar1;
-  int iVar2;
-  cg_s *pcVar3;
-  float local_10;
+  int localClientNum_00;
+  cg_s *pcVar2;
+  cg_s *cgameGlob;
+  int localClientNum;
+  float angles;
   float local_c;
   float local_8;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 2) {
-    iVar2 = CScr_GetLocalClientNum(0);
-    pcVar3 = CG_GetLocalClientGlobals(iVar2);
-    Scr_GetVector(1,&local_10,SCRIPTINSTANCE_CLIENT);
-    pcVar3->compassScrambler[0xc].handle = (int)local_10;
-    pcVar3->compassScrambler[0xd].pos[0] = local_c;
-    pcVar3->compassScrambler[0xd].pos[1] = local_8;
+    localClientNum_00 = CScr_GetLocalClientNum(0);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum_00);
+    Scr_GetVector(1,&angles,SCRIPTINSTANCE_CLIENT);
+    pcVar2->compassScrambler[0xc].handle = (int)angles;
+    pcVar2->compassScrambler[0xd].pos[0] = local_c;
+    pcVar2->compassScrambler[0xd].pos[1] = local_8;
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -1443,14 +1498,16 @@ void __cdecl CScr_IsCameraSpikeToggled(void)
 
 {
   uint uVar1;
-  int iVar2;
-  cg_s *pcVar3;
+  int localClientNum_00;
+  cg_s *pcVar2;
+  cg_s *cgameGlob;
+  int localClientNum;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 == 1) {
-    iVar2 = CScr_GetLocalClientNum(0);
-    pcVar3 = CG_GetLocalClientGlobals(iVar2);
-    if (((pcVar3->predictedPlayerState).weapFlags & 0x200000U) == 0) {
+    localClientNum_00 = CScr_GetLocalClientNum(0);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum_00);
+    if (((pcVar2->predictedPlayerState).weapFlags & 0x200000U) == 0) {
       Scr_AddInt(0,SCRIPTINSTANCE_CLIENT);
     }
     else {
@@ -1468,27 +1525,32 @@ void __cdecl CScr_IsCameraSpikeToggled(void)
 
 // 004FE0D0  CScr_GetGridFromPos  (cgame_mp/cg_scr_main_mp.cpp:1045)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl CScr_GetGridFromPos(void)
 
 {
-  int iVar1;
-  float *pfVar2;
-  char *pcVar3;
-  float local_18 [3];
-  char local_c [4];
-  uint local_8;
+  int localClientNum;
+  float *pos_00;
+  char *gridName_00;
+  float pos [3];
+  char gridName [4];
+  int argc;
   
-  local_8 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
-  if (local_8 != 2) {
+  argc = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
+  if (argc != 2) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"CGScr_GetGridByPos( <clientNum> <pos> ) takes 2 parameters",
               false);
   }
-  Scr_GetVector(1,local_18,SCRIPTINSTANCE_CLIENT);
-  pcVar3 = local_c;
-  pfVar2 = local_18;
-  iVar1 = CScr_GetLocalClientNum(0);
-  CG_GetGridFromPos(iVar1,pfVar2,pcVar3);
-  Scr_AddString(local_c,SCRIPTINSTANCE_CLIENT);
+  Scr_GetVector(1,pos,SCRIPTINSTANCE_CLIENT);
+  gridName_00 = gridName;
+  pos_00 = pos;
+  localClientNum = CScr_GetLocalClientNum(0);
+  CG_GetGridFromPos(localClientNum,pos_00,gridName_00);
+  Scr_AddString(gridName,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -1499,17 +1561,20 @@ void __cdecl CScr_CompassScale(void)
 
 {
   uint uVar1;
-  int iVar2;
-  int iVar3;
+  int value;
+  int value_00;
+  int duration;
+  int difference;
+  int argc;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 != 2) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"CScr_CompassScale( <diff> <dur> ) takes 2 parameters",false);
   }
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
-  iVar3 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
-  Dvar_SetInt(compassScaleDiff,iVar2);
-  Dvar_SetInt(compassScaleDuration,iVar3);
+  value = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
+  value_00 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
+  Dvar_SetInt(compassScaleDiff,value);
+  Dvar_SetInt(compassScaleDuration,value_00);
   return;
 }
 
@@ -1520,15 +1585,17 @@ void __cdecl CScr_ResetCompassScale(void)
 
 {
   uint uVar1;
-  int iVar2;
+  int value;
+  int duration;
+  int argc;
   
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 != 1) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"CScr_ResetCompassScale( <dur> ) takes 1 parameter",false);
   }
-  iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
+  value = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
   Dvar_SetBool(compassScaleReset,true);
-  Dvar_SetInt(compassScaleDuration,iVar2);
+  Dvar_SetInt(compassScaleDuration,value);
   return;
 }
 
@@ -1537,10 +1604,10 @@ void __cdecl CScr_ResetCompassScale(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl CScr_AddTeamName(team_t param_1)
+void __cdecl CScr_AddTeamName(team_t team)
 
 {
-  switch(param_1) {
+  switch(team) {
   case TEAM_BAD:
     Scr_AddString("free",SCRIPTINSTANCE_CLIENT);
     break;
@@ -1568,14 +1635,16 @@ void __cdecl CScr_GetLocalPlayerTeam(void)
 
 {
   bool bVar1;
-  int iVar2;
-  cg_s *pcVar3;
+  int localClientNum_00;
+  cg_s *pcVar2;
+  cg_s *cGameGlob;
+  int localClientNum;
   
-  iVar2 = CScr_GetLocalClientNum(0);
-  bVar1 = CL_LocalClient_IsActive(iVar2);
+  localClientNum_00 = CScr_GetLocalClientNum(0);
+  bVar1 = CL_LocalClient_IsActive(localClientNum_00);
   if (bVar1) {
-    pcVar3 = CG_GetLocalClientGlobals(iVar2);
-    CScr_AddTeamName(*(team_t *)((int)(pcVar3->bgs).clientinfo + pcVar3->clientNum * 0x5c8 + 0x2c));
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum_00);
+    CScr_AddTeamName(*(team_t *)((int)(pcVar2->bgs).clientinfo + pcVar2->clientNum * 0x5c8 + 0x2c));
   }
   else {
     Scr_AddUndefined(SCRIPTINSTANCE_CLIENT);
@@ -1586,7 +1655,7 @@ void __cdecl CScr_GetLocalPlayerTeam(void)
 
 // 004FE300  CScr_GetFunctionProjectSpecific  (cgame_mp/cg_scr_main_mp.cpp:1197)
 
-_func___cdecl_void * __cdecl CScr_GetFunctionProjectSpecific(char **param_1,int *param_2)
+_func___cdecl_void * __cdecl CScr_GetFunctionProjectSpecific(char **pName,int *type)
 
 {
   byte bVar1;
@@ -1594,15 +1663,16 @@ _func___cdecl_void * __cdecl CScr_GetFunctionProjectSpecific(char **param_1,int 
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x19 < local_8) {
+    if (0x19 < i) {
       return (_func___cdecl_void *)0x0;
     }
-    local_10 = (byte *)client_project_functions[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)client_project_functions[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -1621,11 +1691,11 @@ LAB_004fe37c:
     local_1c = 0;
 LAB_004fe384:
     if (local_1c == 0) {
-      *param_1 = client_project_functions[local_8].actionString;
-      *param_2 = client_project_functions[local_8].type;
-      return client_project_functions[local_8].actionFunc;
+      *pName = client_project_functions[i].actionString;
+      *type = client_project_functions[i].type;
+      return client_project_functions[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1637,44 +1707,47 @@ LAB_004fe384:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScrCmd_GetOwner(scr_entref_t param_1)
+void __cdecl CScrCmd_GetOwner(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  int iVar5;
-  centity_s *pcVar6;
-  centity_s *local_14;
+  int localClientNum_00;
+  centity_s *cent;
+  centity_s *pSelf;
+  int localClientNum;
+  fake_centity_s *pFake;
+  int ownerIndex;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x4cb,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_14 = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_14 = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_14 = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  iVar5 = CScr_GetLocalClientNum(0);
-  pcVar6 = CG_GetEntity(iVar5,(int)(uint)(local_14->nextState).faction.iHeadIconTeam >> 2);
-  CScr_AddEntity(pcVar6,iVar5);
+  localClientNum_00 = CScr_GetLocalClientNum(0);
+  cent = CG_GetEntity(localClientNum_00,(int)(uint)(pSelf->nextState).faction.iHeadIconTeam >> 2);
+  CScr_AddEntity(cent,localClientNum_00);
   return;
 }
 
@@ -1686,44 +1759,48 @@ void __cdecl CScrCmd_GetOwner(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CScr_UpdateTagInternal(centity_s *param_1,uint param_2,cached_tag_mat_t *param_3)
+int __cdecl CScr_UpdateTagInternal(centity_s *ent,uint tagName,cached_tag_mat_t *cachedTag)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   cg_s *pcVar4;
-  DObj *pDVar5;
-  char *pcVar6;
+  DObj *obj_00;
+  char *error;
+  XModel *model;
+  cg_s *cgameGlob_2;
+  DObj *obj;
+  cg_s *cgameGlob;
   
-  if ((param_1 == (centity_s *)0x0) &&
+  if ((ent == (centity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x4d4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  pcVar4 = CG_GetLocalClientGlobals((uint)(param_1->pose).localClientNum);
-  if ((((param_1->nextState).number != param_3->entnum) || (pcVar4->time != param_3->time)) ||
-     (param_2 != param_3->name)) {
-    pDVar5 = Com_GetClientDObj((param_1->nextState).number,(uint)(param_1->pose).localClientNum);
-    if (pDVar5 == (DObj *)0x0) {
+  pcVar4 = CG_GetLocalClientGlobals((uint)(ent->pose).localClientNum);
+  if ((((ent->nextState).number != cachedTag->entnum) || (pcVar4->time != cachedTag->time)) ||
+     (tagName != cachedTag->name)) {
+    obj_00 = Com_GetClientDObj((ent->nextState).number,(uint)(ent->pose).localClientNum);
+    if (obj_00 == (DObj *)0x0) {
       Scr_ObjectError("entity has no model defined",SCRIPTINSTANCE_SERVER);
       return 0;
     }
     iVar3 = CG_DObjGetWorldTagMatrix
-                      (&param_1->pose,pDVar5,param_2,param_3->tagMat,param_3->tagMat[3]);
+                      (&ent->pose,obj_00,tagName,cachedTag->tagMat,cachedTag->tagMat[3]);
     if (iVar3 == 0) {
-      DObjGetModel(pDVar5,0);
-      SL_ConvertToString(param_2,SCRIPTINSTANCE_CLIENT);
-      pcVar6 = va("tag \'%s\' does not exist in model \'%s\' (or any attached submodels)");
-      Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar6,false);
+      DObjGetModel(obj_00,0);
+      SL_ConvertToString(tagName,SCRIPTINSTANCE_CLIENT);
+      error = va("tag \'%s\' does not exist in model \'%s\' (or any attached submodels)");
+      Scr_Error(SCRIPTINSTANCE_CLIENT,error,false);
       return 0;
     }
-    pcVar4 = CG_GetLocalClientGlobals((uint)(param_1->pose).localClientNum);
-    param_3->entnum = (param_1->nextState).number;
-    param_3->time = pcVar4->time;
-    param_3->name = (ushort)param_2;
+    pcVar4 = CG_GetLocalClientGlobals((uint)(ent->pose).localClientNum);
+    cachedTag->entnum = (ent->nextState).number;
+    cachedTag->time = pcVar4->time;
+    cachedTag->name = (ushort)tagName;
   }
   return 1;
 }
@@ -1736,44 +1813,47 @@ int __cdecl CScr_UpdateTagInternal(centity_s *param_1,uint param_2,cached_tag_ma
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetTagOrigin(scr_entref_t param_1)
+void __cdecl CScr_GetTagOrigin(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  char *pcVar5;
-  centity_s *local_10;
+  char *str;
+  uint tagName;
+  centity_s *pSelf;
+  char *name;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x508,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_10 = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_10 = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_10 = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
   uVar3 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_CLIENT);
-  pcVar5 = SL_ConvertToString(uVar3,SCRIPTINSTANCE_CLIENT);
-  uVar3 = SL_FindLowercaseString(pcVar5,SCRIPTINSTANCE_SERVER);
-  CScr_UpdateTagInternal(local_10,uVar3,&cg_cachedTagMat);
+  str = SL_ConvertToString(uVar3,SCRIPTINSTANCE_CLIENT);
+  uVar3 = SL_FindLowercaseString(str,SCRIPTINSTANCE_SERVER);
+  CScr_UpdateTagInternal(pSelf,uVar3,&cg_cachedTagMat);
   Scr_AddVector(cg_cachedTagMat.tagMat[3],SCRIPTINSTANCE_CLIENT);
   return;
 }
@@ -1786,52 +1866,54 @@ void __cdecl CScr_GetTagOrigin(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetTagAngles(scr_entref_t param_1)
+void __cdecl CScr_GetTagAngles(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  char *pcVar5;
-  centity_s *local_1c;
-  float local_14 [3];
-  fake_centity_s *local_8;
+  char *str;
+  uint tagName;
+  centity_s *pSelf;
+  char *name;
+  float angles [3];
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x522,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_1c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_1c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (param_1.entnum < 0x400) {
-      local_8 = (fake_centity_s *)0x0;
+    if (entref.entnum < 0x400) {
+      pFake = (fake_centity_s *)0x0;
     }
     else {
-      local_8 = CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+      pFake = CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_1c = (centity_s *)0x0;
-    local_8 = (fake_centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
+    pFake = (fake_centity_s *)0x0;
   }
   uVar3 = Scr_GetConstLowercaseString(0,SCRIPTINSTANCE_CLIENT);
-  pcVar5 = SL_ConvertToString(uVar3,SCRIPTINSTANCE_CLIENT);
-  uVar3 = SL_FindLowercaseString(pcVar5,SCRIPTINSTANCE_SERVER);
-  CScr_UpdateTagInternal(local_1c,uVar3,&cg_cachedTagMat);
-  AxisToAngles(cg_cachedTagMat.tagMat,local_14);
-  Scr_AddVector(local_14,SCRIPTINSTANCE_CLIENT);
+  str = SL_ConvertToString(uVar3,SCRIPTINSTANCE_CLIENT);
+  uVar3 = SL_FindLowercaseString(str,SCRIPTINSTANCE_SERVER);
+  CScr_UpdateTagInternal(pSelf,uVar3,&cg_cachedTagMat);
+  AxisToAngles(cg_cachedTagMat.tagMat,angles);
+  Scr_AddVector(angles,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -1843,20 +1925,26 @@ void __cdecl CScr_GetTagAngles(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScrCmd_ShellShock(scr_entref_t param_1)
+void __cdecl CScrCmd_ShellShock(scr_entref_t entref)
 
 {
   uint uVar1;
   int iVar2;
   char *pcVar3;
   char *pcVar4;
-  cg_s *pcVar5;
-  shellshock_parms_t *psVar6;
-  float fVar7;
-  int iVar8;
-  int local_8;
+  cg_s *cgameGlob_00;
+  shellshock_parms_t *parms;
+  float fVar5;
+  int duration_00;
+  int duration;
+  char *shock;
+  cg_s *cgameGlob;
+  centity_s *cent;
+  int localClientNum;
+  char *configString;
+  int id;
   
-  CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+  CG_GetEntity((uint)entref.client,(uint)entref.entnum);
   uVar1 = Scr_GetNumParam(SCRIPTINSTANCE_CLIENT);
   if (uVar1 < 3) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,
@@ -1865,30 +1953,30 @@ void __cdecl CScrCmd_ShellShock(scr_entref_t param_1)
   }
   iVar2 = CScr_GetLocalClientNum(0);
   pcVar3 = Scr_GetString(1,SCRIPTINSTANCE_CLIENT);
-  fVar7 = Scr_GetFloat(2,SCRIPTINSTANCE_CLIENT);
-  iVar8 = (int)ROUND(fVar7 * 1000.0 + 9.313226e-10);
-  if ((iVar8 < 0) || (60000 < iVar8)) {
+  fVar5 = Scr_GetFloat(2,SCRIPTINSTANCE_CLIENT);
+  duration_00 = (int)ROUND(fVar5 * 1000.0 + 9.313226e-10);
+  if ((duration_00 < 0) || (60000 < duration_00)) {
     pcVar4 = va("duration %g should be >= 0 and <= 60");
     Scr_ParamError(1,pcVar4,SCRIPTINSTANCE_CLIENT);
   }
-  pcVar5 = CG_GetLocalClientGlobals(iVar2);
-  local_8 = 1;
+  cgameGlob_00 = CG_GetLocalClientGlobals(iVar2);
+  id = 1;
   while( true ) {
-    if (0xf < local_8) {
+    if (0xf < id) {
       pcVar3 = va(
                  "shellshock \'%s\' was not precached.  You need to precache it in the server script before calling it on the client.\n"
                  );
       Scr_Error(SCRIPTINSTANCE_CLIENT,pcVar3,false);
       return;
     }
-    pcVar4 = CL_GetConfigString(local_8 + 0x9e4);
+    pcVar4 = CL_GetConfigString(id + 0x9e4);
     iVar2 = I_stricmp(pcVar4,pcVar3);
     if (iVar2 == 0) break;
-    local_8 = local_8 + 1;
+    id = id + 1;
   }
-  iVar2 = pcVar5->time;
-  psVar6 = BG_GetShellshockParms(local_8);
-  CG_StartShellShock(pcVar5,psVar6,iVar2,iVar8);
+  iVar2 = cgameGlob_00->time;
+  parms = BG_GetShellshockParms(id);
+  CG_StartShellShock(cgameGlob_00,parms,iVar2,duration_00);
   return;
 }
 
@@ -1900,13 +1988,15 @@ void __cdecl CScrCmd_ShellShock(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_SetEnemyGlobalScrambler(scr_entref_t param_1)
+void __cdecl CScr_SetEnemyGlobalScrambler(scr_entref_t entref)
 
 {
   cg_s *pcVar1;
   int iVar2;
+  cg_s *cgameGlob;
+  int active;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)param_1.client);
+  pcVar1 = CG_GetLocalClientGlobals((uint)entref.client);
   iVar2 = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
   pcVar1->compassScrambler[0xe].startTime = iVar2;
   return;
@@ -1920,13 +2010,15 @@ void __cdecl CScr_SetEnemyGlobalScrambler(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_SetEnemyScramblerAmount(scr_entref_t param_1)
+void __cdecl CScr_SetEnemyScramblerAmount(scr_entref_t entref)
 
 {
   cg_s *pcVar1;
   float fVar2;
+  float alphaAmount;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)param_1.client);
+  pcVar1 = CG_GetLocalClientGlobals((uint)entref.client);
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_CLIENT);
   if ((fVar2 < 0.0) || (1.0 < fVar2)) {
     Scr_Error("float value must be between 0 and 1",false);
@@ -1943,13 +2035,15 @@ void __cdecl CScr_SetEnemyScramblerAmount(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_SetFriendlyScramblerAmount(scr_entref_t param_1)
+void __cdecl CScr_SetFriendlyScramblerAmount(scr_entref_t entref)
 
 {
   cg_s *pcVar1;
   float fVar2;
+  float alphaAmount;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)param_1.client);
+  pcVar1 = CG_GetLocalClientGlobals((uint)entref.client);
   fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_CLIENT);
   if ((fVar2 < 0.0) || (1.0 < fVar2)) {
     Scr_Error("float value must be between 0 and 1",false);
@@ -1966,12 +2060,13 @@ void __cdecl CScr_SetFriendlyScramblerAmount(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetFriendlyScramblerAmount(scr_entref_t param_1)
+void __cdecl CScr_GetFriendlyScramblerAmount(scr_entref_t entref)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)param_1.client);
+  pcVar1 = CG_GetLocalClientGlobals((uint)entref.client);
   Scr_AddFloat(pcVar1->compassScrambler[0xf].pos[0],SCRIPTINSTANCE_CLIENT);
   return;
 }
@@ -1984,12 +2079,13 @@ void __cdecl CScr_GetFriendlyScramblerAmount(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetEnemyScramblerAmount(scr_entref_t param_1)
+void __cdecl CScr_GetEnemyScramblerAmount(scr_entref_t entref)
 
 {
   cg_s *pcVar1;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)param_1.client);
+  pcVar1 = CG_GetLocalClientGlobals((uint)entref.client);
   Scr_AddFloat((float)pcVar1->compassScrambler[0xe].handle,SCRIPTINSTANCE_CLIENT);
   return;
 }
@@ -2002,15 +2098,16 @@ void __cdecl CScr_GetEnemyScramblerAmount(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_IsScrambled(scr_entref_t param_1)
+void __cdecl CScr_IsScrambled(scr_entref_t entref)
 
 {
   cg_s *pcVar1;
-  uint local_8;
+  cg_s *cgameGlob;
+  int IsScrambled;
   
-  pcVar1 = CG_GetLocalClientGlobals((uint)param_1.client);
-  local_8 = (uint)(0.01 < (float)pcVar1->compassScrambler[0xe].handle);
-  Scr_AddBool(local_8,SCRIPTINSTANCE_CLIENT);
+  pcVar1 = CG_GetLocalClientGlobals((uint)entref.client);
+  IsScrambled = (int)(0.01 < (float)pcVar1->compassScrambler[0xe].handle);
+  Scr_AddBool(IsScrambled,SCRIPTINSTANCE_CLIENT);
   return;
 }
 
@@ -2022,7 +2119,7 @@ void __cdecl CScr_IsScrambled(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_SetNearestEnemyScrambler(scr_entref_t param_1)
+void __cdecl CScr_SetNearestEnemyScrambler(scr_entref_t entref)
 
 {
   scr_entref_t sVar1;
@@ -2033,8 +2130,8 @@ void __cdecl CScr_SetNearestEnemyScrambler(scr_entref_t param_1)
   ushort local_1c;
   uint local_16;
   ushort local_12;
-  centity_s *local_10;
-  uint local_c;
+  centity_s *cent;
+  uint scramblerEntity;
   ushort local_8;
   
   sVar1 = Scr_GetEntityRef((uint)local_30,SCRIPTINSTANCE_SERVER);
@@ -2044,67 +2141,91 @@ void __cdecl CScr_SetNearestEnemyScrambler(scr_entref_t param_1)
   local_1c = local_22;
   local_16 = local_26;
   local_12 = local_22;
-  local_c = local_26;
+  scramblerEntity = local_26;
   local_8 = local_22;
-  local_10 = CG_GetEntity((uint)local_22,local_26 & 0xffff);
-  CG_AddEnemyScrambler((uint)param_1.client,local_10);
+  cent = CG_GetEntity((uint)local_22,local_26 & 0xffff);
+  CG_AddEnemyScrambler((uint)entref.client,cent);
   return;
 }
 
 
 // 004FECD0  CScr_ClearNearestEnemyScrambler  (cgame_mp/cg_scr_main_mp.cpp:1563)
 
-void __cdecl CScr_ClearNearestEnemyScrambler(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CScr_ClearNearestEnemyScrambler(scr_entref_t entref)
 
 {
-  CG_ClearNearestEnemyScrambler((uint)param_1.client);
+  CG_ClearNearestEnemyScrambler((uint)entref.client);
   return;
 }
 
 
 // 004FECF0  CScr_AddFriendlyScrambler  (cgame_mp/cg_scr_main_mp.cpp:1583)
 
-void __cdecl CScr_AddFriendlyScrambler(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CScr_AddFriendlyScrambler(scr_entref_t entref)
 
 {
-  int iVar1;
-  float fVar2;
-  float fVar3;
+  int handle;
+  float x;
+  float y;
+  int scramblerHandle;
+  float scramblerY;
+  float scramblerX;
   
-  fVar2 = Scr_GetFloat(0,SCRIPTINSTANCE_CLIENT);
-  fVar3 = Scr_GetFloat(1,SCRIPTINSTANCE_CLIENT);
-  iVar1 = Scr_GetInt(2,SCRIPTINSTANCE_CLIENT);
-  CG_AddFriendlyScrambler((uint)param_1.client,fVar2,fVar3,iVar1);
+  x = Scr_GetFloat(0,SCRIPTINSTANCE_CLIENT);
+  y = Scr_GetFloat(1,SCRIPTINSTANCE_CLIENT);
+  handle = Scr_GetInt(2,SCRIPTINSTANCE_CLIENT);
+  CG_AddFriendlyScrambler((uint)entref.client,x,y,handle);
   return;
 }
 
 
 // 004FED50  CScr_RemoveFriendlyScrambler  (cgame_mp/cg_scr_main_mp.cpp:1609)
 
-void __cdecl CScr_RemoveFriendlyScrambler(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CScr_RemoveFriendlyScrambler(scr_entref_t entref)
 
 {
-  int iVar1;
+  int handle;
+  int scramblerHandle;
   
-  iVar1 = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
-  CG_RemoveFriendlyScrambler((uint)param_1.client,iVar1);
+  handle = Scr_GetInt(0,SCRIPTINSTANCE_CLIENT);
+  CG_RemoveFriendlyScrambler((uint)entref.client,handle);
   return;
 }
 
 
 // 004FED80  CScr_RemoveAllFriendlyScramblers  (cgame_mp/cg_scr_main_mp.cpp:1629)
 
-void __cdecl CScr_RemoveAllFriendlyScramblers(scr_entref_t param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CScr_RemoveAllFriendlyScramblers(scr_entref_t entref)
 
 {
-  CG_RemoveAllFriendlyScramblers((uint)param_1.client);
+  CG_RemoveAllFriendlyScramblers((uint)entref.client);
   return;
 }
 
 
 // 004FEDA0  CScr_HasTacticalMaskOverlay  (cgame_mp/cg_scr_main_mp.cpp:1644)
 
-void __cdecl CScr_HasTacticalMaskOverlay(scr_entref_t param_1)
+void __cdecl CScr_HasTacticalMaskOverlay(scr_entref_t entref)
 
 {
   bool bVar1;
@@ -2127,45 +2248,46 @@ void __cdecl CScr_HasTacticalMaskOverlay(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetStance(scr_entref_t param_1)
+void __cdecl CScr_GetStance(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
-  centity_s *local_c;
+  centity_s *pSelf;
+  fake_centity_s *pFake;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x67f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if (local_c->nextValid == 0) {
+  if (pSelf->nextValid == 0) {
     Scr_Error("GetStance can not be used on a player that is not in the snapshot.",false);
   }
-  if (((local_c->nextState).eType == 1) || ((local_c->nextState).eType == 5)) {
-    if (((local_c->nextState).lerp.eFlags & 8U) == 0) {
-      if (((local_c->nextState).lerp.eFlags & 4U) == 0) {
+  if (((pSelf->nextState).eType == 1) || ((pSelf->nextState).eType == 5)) {
+    if (((pSelf->nextState).lerp.eFlags & 8U) == 0) {
+      if (((pSelf->nextState).lerp.eFlags & 4U) == 0) {
         Scr_AddConstString((uint)cscr_const.stand,SCRIPTINSTANCE_SERVER);
       }
       else {
@@ -2190,43 +2312,47 @@ void __cdecl CScr_GetStance(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_SetFlagAsAway(scr_entref_t param_1)
+void __cdecl CScr_SetFlagAsAway(scr_entref_t entref)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   cg_s *pcVar4;
+  int localClientNum_00;
   int iVar5;
-  int iVar6;
-  byte bVar7;
-  centity_s *local_1c;
+  byte bVar6;
+  centity_s *pSelf;
+  cg_s *cgameGlob;
+  int localClientNum;
+  fake_centity_s *pFake;
+  int away;
   
-  if (param_1.classnum == 0) {
-    if ((0x5ff < param_1.entnum) &&
+  if (entref.classnum == 0) {
+    if ((0x5ff < entref.entnum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                  0x6a6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    uVar3 = CG_GetClientNumForLocalClient((uint)param_1.client);
-    if (uVar3 == param_1.entnum) {
-      pcVar4 = CG_GetLocalClientGlobals((uint)param_1.client);
-      local_1c = &pcVar4->predictedPlayerEntity;
+    uVar3 = CG_GetClientNumForLocalClient((uint)entref.client);
+    if (uVar3 == entref.entnum) {
+      pcVar4 = CG_GetLocalClientGlobals((uint)entref.client);
+      pSelf = &pcVar4->predictedPlayerEntity;
     }
     else {
-      local_1c = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
+      pSelf = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
     }
-    if (0x3ff < param_1.entnum) {
-      CG_GetFakeEntity((uint)param_1.client,(uint)param_1.entnum);
+    if (0x3ff < entref.entnum) {
+      CG_GetFakeEntity((uint)entref.client,(uint)entref.entnum);
     }
   }
   else {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"not an entity",false);
-    local_1c = (centity_s *)0x0;
+    pSelf = (centity_s *)0x0;
   }
-  if (local_1c->nextValid == 0) {
+  if (pSelf->nextValid == 0) {
     Scr_Error(SCRIPTINSTANCE_CLIENT,"SetFlagAsAway must be called on a valid entity",false);
   }
   else {
@@ -2235,15 +2361,15 @@ void __cdecl CScr_SetFlagAsAway(scr_entref_t param_1)
       Scr_Error(SCRIPTINSTANCE_CLIENT,"Not enough parameters supplied to SetFlagAsAway",false);
     }
     else {
-      iVar5 = CScr_GetLocalClientNum(0);
-      iVar6 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
-      pcVar4 = CG_GetLocalClientGlobals(iVar5);
-      bVar7 = (local_1c->nextState).faction.iHeadIconTeam & 3;
-      if (bVar7 == 2) {
-        pcVar4[1].activeSnapshots[0].ps.commandTime = (uint)(iVar6 != 0);
+      localClientNum_00 = CScr_GetLocalClientNum(0);
+      iVar5 = Scr_GetInt(1,SCRIPTINSTANCE_CLIENT);
+      pcVar4 = CG_GetLocalClientGlobals(localClientNum_00);
+      bVar6 = (pSelf->nextState).faction.iHeadIconTeam & 3;
+      if (bVar6 == 2) {
+        pcVar4[1].activeSnapshots[0].ps.commandTime = (uint)(iVar5 != 0);
       }
-      else if (bVar7 == 1) {
-        pcVar4[1].activeSnapshots[0].ps.pm_type = (uint)(iVar6 != 0);
+      else if (bVar6 == 1) {
+        pcVar4[1].activeSnapshots[0].ps.pm_type = (uint)(iVar5 != 0);
       }
     }
   }
@@ -2258,18 +2384,20 @@ void __cdecl CScr_SetFlagAsAway(scr_entref_t param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetParentEntity(scr_entref_t param_1)
+void __cdecl CScr_GetParentEntity(scr_entref_t entref)
 
 {
   centity_s *pcVar1;
+  centity_s *cent;
+  centity_s *parent;
   
-  pcVar1 = CG_GetEntity((uint)param_1.client,(uint)param_1.entnum);
-  pcVar1 = CG_EntGetLinkToParent((uint)param_1.client,pcVar1);
+  pcVar1 = CG_GetEntity((uint)entref.client,(uint)entref.entnum);
+  pcVar1 = CG_EntGetLinkToParent((uint)entref.client,pcVar1);
   if (pcVar1 == (centity_s *)0x0) {
     Scr_AddUndefined(SCRIPTINSTANCE_CLIENT);
   }
   else {
-    CScr_AddEntity(pcVar1,(uint)param_1.client);
+    CScr_AddEntity(pcVar1,(uint)entref.client);
   }
   return;
 }
@@ -2277,7 +2405,7 @@ void __cdecl CScr_GetParentEntity(scr_entref_t param_1)
 
 // 004FF150  CScr_GetMethodProjectSpecific  (cgame_mp/cg_scr_main_mp.cpp:1788)
 
-_func___cdecl_void_scr_entref_t * __cdecl CScr_GetMethodProjectSpecific(char **param_1,int *param_2)
+_func___cdecl_void_scr_entref_t * __cdecl CScr_GetMethodProjectSpecific(char **pName,int *type)
 
 {
   byte bVar1;
@@ -2285,15 +2413,16 @@ _func___cdecl_void_scr_entref_t * __cdecl CScr_GetMethodProjectSpecific(char **p
   int local_1c;
   byte *local_14;
   byte *local_10;
-  uint local_8;
+  char *name;
+  uint i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x1c < local_8) {
+    if (0x1c < i) {
       return (_func___cdecl_void_scr_entref_t *)0x0;
     }
-    local_10 = (byte *)client_project_methods[local_8].actionString;
-    local_14 = (byte *)*param_1;
+    local_10 = (byte *)client_project_methods[i].actionString;
+    local_14 = (byte *)*pName;
     do {
       bVar1 = *local_14;
       bVar2 = bVar1 < *local_10;
@@ -2312,107 +2441,111 @@ LAB_004ff1cc:
     local_1c = 0;
 LAB_004ff1d4:
     if (local_1c == 0) {
-      *param_1 = client_project_methods[local_8].actionString;
-      *param_2 = client_project_methods[local_8].type;
-      return client_project_methods[local_8].actionFunc;
+      *pName = client_project_methods[i].actionString;
+      *type = client_project_methods[i].type;
+      return client_project_methods[i].actionFunc;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 004FF220  CScr_SetUniqueClientScripts  (cgame_mp/cg_scr_main_mp.cpp:1808)
 
-void __cdecl CScr_SetUniqueClientScripts(ScriptFunctions *param_1)
+void __cdecl CScr_SetUniqueClientScripts(ScriptFunctions *functions)
 
 {
-  cg_scr_data.delete_ = CScr_SetScriptAndLabel(param_1,"codescripts/delete","main",1);
-  cg_scr_data.initstructs = CScr_SetScriptAndLabel(param_1,"codescripts/struct","initstructs",1);
-  cg_scr_data.createstruct = CScr_SetScriptAndLabel(param_1,"codescripts/struct","createstruct",1);
-  cg_scr_data.findstruct = CScr_SetScriptAndLabel(param_1,"codescripts/struct","findstruct",1);
+  cg_scr_data.delete_ = CScr_SetScriptAndLabel(functions,"codescripts/delete","main",1);
+  cg_scr_data.initstructs = CScr_SetScriptAndLabel(functions,"codescripts/struct","initstructs",1);
+  cg_scr_data.createstruct = CScr_SetScriptAndLabel(functions,"codescripts/struct","createstruct",1)
+  ;
+  cg_scr_data.findstruct = CScr_SetScriptAndLabel(functions,"codescripts/struct","findstruct",1);
   cg_scr_data.clientsysstatechange =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","statechange",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","statechange",1);
   cg_scr_data.maprestart =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","maprestart",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","maprestart",1);
   cg_scr_data.localclientconnect =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","localclientconnect",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","localclientconnect",1);
   cg_scr_data.localclientdisconnect =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","localclientdisconnect",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","localclientdisconnect",1);
   cg_scr_data.entityspawned =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","entityspawned",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","entityspawned",1);
   cg_scr_data.playerspawned =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","playerspawned",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","playerspawned",1);
   cg_scr_data.clientFlagCB =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","client_flag_callback",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","client_flag_callback",1);
   cg_scr_data.clientFlagAsValCB =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","client_flagasval_callback",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","client_flagasval_callback",1)
+  ;
   cg_scr_data.destructible_callback =
        CScr_SetScriptAndLabel
-                 (param_1,"clientscripts/_destructible","CodeCallback_DestructibleEvent",0);
+                 (functions,"clientscripts/_destructible","CodeCallback_DestructibleEvent",0);
   cg_scr_data.corpse_callback =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","CodeCallback_CreatingCorpse",1)
-  ;
+       CScr_SetScriptAndLabel
+                 (functions,"clientscripts/mp/_callbacks","CodeCallback_CreatingCorpse",1);
   cg_scr_data.playerFootstep =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","CodeCallback_PlayerFootstep",1)
-  ;
+       CScr_SetScriptAndLabel
+                 (functions,"clientscripts/mp/_callbacks","CodeCallback_PlayerFootstep",1);
   cg_scr_data.playerJump =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","CodeCallback_PlayerJump",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","CodeCallback_PlayerJump",1);
   cg_scr_data.playerLand =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","CodeCallback_PlayerLand",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","CodeCallback_PlayerLand",1);
   cg_scr_data.playerFoliage =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","CodeCallback_PlayerFoliage",1);
-  cg_scr_mp_data.dogstep = CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_dogs","playDogstep",1);
+       CScr_SetScriptAndLabel
+                 (functions,"clientscripts/mp/_callbacks","CodeCallback_PlayerFoliage",1);
+  cg_scr_mp_data.dogstep =
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_dogs","playDogstep",1);
   cg_scr_data.levelnotify =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","level_notify",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","level_notify",1);
   cg_scr_data.dogSoundNotify =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_dogs","soundNotify",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_dogs","soundNotify",1);
   cg_scr_mp_data.airsupport =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","airsupport",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","airsupport",1);
   cg_scr_mp_data.demo_jump =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","demo_jump",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","demo_jump",1);
   cg_scr_mp_data.demo_playerSwitch =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","demo_player_switch",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","demo_player_switch",1);
   cg_scr_data.entityshutdownCB =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","entityshutdown_callback",1);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","entityshutdown_callback",1);
   cg_scr_data.glassSmash =
-       CScr_SetScriptAndLabel(param_1,"clientscripts/mp/_callbacks","glass_smash",0);
+       CScr_SetScriptAndLabel(functions,"clientscripts/mp/_callbacks","glass_smash",0);
   return;
 }
 
 
 // 004FF520  CG_SendSwimNotify  (cgame_mp/cg_scr_main_mp.cpp:1848)
 
-void __cdecl CG_SendSwimNotify(int param_1,int param_2,int param_3)
+void __cdecl CG_SendSwimNotify(int localClientNum,int clientNum,int start)
 
 {
   ushort uVar1;
   
   uVar1 = cscr_const.swimming_end;
-  if (param_3 != 0) {
+  if (start != 0) {
     uVar1 = cscr_const.swimming_begin;
   }
-  CScr_NotifyNum(param_1,param_2,0,(uint)uVar1,0);
+  CScr_NotifyNum(localClientNum,clientNum,0,(uint)uVar1,0);
   return;
 }
 
 
 // 004FF620  GetField  (cgame_mp/cg_scr_main_mp.cpp:1853)
 
-int __cdecl GetField(int *param_1,int param_2)
+int __cdecl GetField(int *i,int size)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_2 == 1) {
-    iVar3 = (int)(char)*param_1;
+  if (size == 1) {
+    iVar3 = (int)(char)*i;
   }
-  else if (param_2 == 2) {
-    iVar3 = (int)(short)*param_1;
+  else if (size == 2) {
+    iVar3 = (int)(short)*i;
   }
-  else if (param_2 == 4) {
-    iVar3 = *param_1;
+  else if (size == 4) {
+    iVar3 = *i;
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x745
@@ -2435,15 +2568,18 @@ int __cdecl GetField(int *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetEntityByIndex(centity_s *param_1,cent_field_s *param_2)
+void __cdecl CScr_GetEntityByIndex(centity_s *cent,cent_field_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  centity_s *pcVar4;
+  uint entityIndex;
+  centity_s *cent_00;
+  centity_s *ent;
+  uchar *b;
+  uint index;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x74b
                              ,0,"%s");
     if (!bVar2) {
@@ -2452,7 +2588,7 @@ void __cdecl CScr_GetEntityByIndex(centity_s *param_1,cent_field_s *param_2)
       return;
     }
   }
-  if (param_2 == (cent_field_s *)0x0) {
+  if (pField == (cent_field_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x74c
                              ,0,"%s");
     if (!bVar2) {
@@ -2461,10 +2597,10 @@ void __cdecl CScr_GetEntityByIndex(centity_s *param_1,cent_field_s *param_2)
       return;
     }
   }
-  uVar3 = GetField((int *)((int)(param_1->pose).origin + param_2->ofs + -0x30),param_2->size[0]);
-  if (uVar3 < 0x3fe) {
-    pcVar4 = CG_GetEntity((uint)(param_1->pose).localClientNum,uVar3);
-    CScr_AddEntity(pcVar4,(uint)(param_1->pose).localClientNum);
+  entityIndex = GetField((int *)((int)(cent->pose).origin + pField->ofs + -0x30),pField->size[0]);
+  if (entityIndex < 0x3fe) {
+    cent_00 = CG_GetEntity((uint)(cent->pose).localClientNum,entityIndex);
+    CScr_AddEntity(cent_00,(uint)(cent->pose).localClientNum);
   }
   return;
 }
@@ -2477,16 +2613,18 @@ void __cdecl CScr_GetEntityByIndex(centity_s *param_1,cent_field_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-team_t __cdecl GetTeam(centity_s *param_1)
+team_t __cdecl GetTeam(centity_s *cent)
 
 {
   code *pcVar1;
   bool bVar2;
   team_t tVar3;
-  int iVar4;
-  cg_s *pcVar5;
+  int localClientNum_00;
+  cg_s *pcVar4;
+  cg_s *cgameGlob;
+  int localClientNum;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x75a
                              ,0,"%s");
     if (!bVar2) {
@@ -2495,9 +2633,9 @@ team_t __cdecl GetTeam(centity_s *param_1)
       return tVar3;
     }
   }
-  if ((param_1->nextState).eType == 1) {
-    iVar4 = CL_GetFirstActiveLocalClient();
-    if ((iVar4 < 0) || (1 < iVar4)) {
+  if ((cent->nextState).eType == 1) {
+    localClientNum_00 = CL_GetFirstActiveLocalClient();
+    if ((localClientNum_00 < 0) || (1 < localClientNum_00)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",
                                0x760,0,
                                "localClientNum not in [0, MAX_LOCAL_CLIENTS]\n\t%i not in [%i, %i]")
@@ -2508,19 +2646,17 @@ team_t __cdecl GetTeam(centity_s *param_1)
         return tVar3;
       }
     }
-    pcVar5 = CG_GetLocalClientGlobals(iVar4);
-    if (*(int *)((int)(pcVar5->bgs).clientinfo + (uint)(param_1->nextState).clientNum * 0x5c8) == 0)
-    {
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum_00);
+    if (*(int *)((int)(pcVar4->bgs).clientinfo + (uint)(cent->nextState).clientNum * 0x5c8) == 0) {
       tVar3 = TEAM_BAD;
     }
     else {
       tVar3 = *(team_t *)
-               ((int)(pcVar5->bgs).clientinfo + (uint)(param_1->nextState).clientNum * 0x5c8 + 0x2c)
-      ;
+               ((int)(pcVar4->bgs).clientinfo + (uint)(cent->nextState).clientNum * 0x5c8 + 0x2c);
     }
   }
   else {
-    tVar3 = (param_1->nextState).faction.iHeadIconTeam & TEAM_SPECTATOR;
+    tVar3 = (cent->nextState).faction.iHeadIconTeam & TEAM_SPECTATOR;
   }
   return tVar3;
 }
@@ -2533,14 +2669,14 @@ team_t __cdecl GetTeam(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_GetTeamName(centity_s *param_1,cent_field_s *param_2)
+void __cdecl CScr_GetTeamName(centity_s *cent,cent_field_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  team_t tVar3;
+  team_t team;
   
-  if (param_1 == (centity_s *)0x0) {
+  if (cent == (centity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x76e
                              ,0,"%s");
     if (!bVar2) {
@@ -2549,7 +2685,7 @@ void __cdecl CScr_GetTeamName(centity_s *param_1,cent_field_s *param_2)
       return;
     }
   }
-  if (param_2 == (cent_field_s *)0x0) {
+  if (pField == (cent_field_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x76f
                              ,0,"%s");
     if (!bVar2) {
@@ -2558,22 +2694,22 @@ void __cdecl CScr_GetTeamName(centity_s *param_1,cent_field_s *param_2)
       return;
     }
   }
-  tVar3 = GetTeam(param_1);
-  CScr_AddTeamName(tVar3);
+  team = GetTeam(cent);
+  CScr_AddTeamName(team);
   return;
 }
 
 
 // 004FF7E0  CScr_GetFootTag  (cgame_mp/cg_scr_main_mp.cpp:1922)
 
-ushort __cdecl CScr_GetFootTag(eFoot param_1)
+ushort __cdecl CScr_GetFootTag(eFoot foot)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if (FOOTSTEP_REARLEFT < param_1) {
+  if (FOOTSTEP_REARLEFT < foot) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_scr_main_mp.cpp",0x783
                              ,0,"foot doesn\'t index FOOTSTEP_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2582,7 +2718,7 @@ ushort __cdecl CScr_GetFootTag(eFoot param_1)
       return uVar3;
     }
   }
-  return *footTags[param_1];
+  return *footTags[foot];
 }
 
 
@@ -2593,24 +2729,26 @@ ushort __cdecl CScr_GetFootTag(eFoot param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CScr_PlayDogstepSound(int param_1,centity_s *param_2,eFoot param_3)
+void __cdecl CScr_PlayDogstepSound(int localClientNum,centity_s *cent,eFoot foot)
 
 {
   ushort uVar1;
-  DObj *pDVar2;
-  int iVar3;
-  uint uVar4;
-  char *pcVar5;
-  float (*pafVar6) [3];
-  float *pfVar7;
-  float local_50;
+  DObj *obj_00;
+  int iVar2;
+  uint uVar3;
+  char *value;
+  float (*tagMat) [3];
+  float *origin;
+  ushort t;
+  DObj *obj;
+  float start;
   float local_4c;
   float local_48;
-  float local_44;
+  float end;
   float local_40;
   float local_3c;
-  int local_38;
-  float local_34 [9];
+  int surfType;
+  float footMatrix [9];
   float local_10;
   float local_c;
   float local_8;
@@ -2618,38 +2756,37 @@ void __cdecl CScr_PlayDogstepSound(int param_1,centity_s *param_2,eFoot param_3)
   if (cg_scr_mp_data.dogstep == 0) {
     return;
   }
-  pDVar2 = Com_GetClientDObj((param_2->nextState).number,param_1);
-  if (pDVar2 != (DObj *)0x0) {
-    pfVar7 = &local_10;
-    pafVar6 = (float (*) [3])local_34;
-    uVar1 = CScr_GetFootTag(param_3);
-    iVar3 = CG_DObjGetWorldTagMatrix(&param_2->pose,pDVar2,(uint)uVar1,pafVar6,pfVar7);
-    if (iVar3 != 0) goto LAB_004ff8b2;
+  obj_00 = Com_GetClientDObj((cent->nextState).number,localClientNum);
+  if (obj_00 != (DObj *)0x0) {
+    origin = &local_10;
+    tagMat = (float (*) [3])footMatrix;
+    uVar1 = CScr_GetFootTag(foot);
+    iVar2 = CG_DObjGetWorldTagMatrix(&cent->pose,obj_00,(uint)uVar1,tagMat,origin);
+    if (iVar2 != 0) goto LAB_004ff8b2;
   }
-  local_10 = (param_2->pose).origin[0];
-  local_c = (param_2->pose).origin[1];
-  local_8 = (param_2->pose).origin[2];
+  local_10 = (cent->pose).origin[0];
+  local_c = (cent->pose).origin[1];
+  local_8 = (cent->pose).origin[2];
 LAB_004ff8b2:
-  local_50 = local_10;
+  start = local_10;
   local_4c = local_c;
   local_48 = local_8 + footprintGroundTraceUp;
-  local_44 = local_10;
+  end = local_10;
   local_40 = local_c;
   local_3c = local_8 - footprintGroundTraceDown;
-  uVar4 = CM_TracePointDown(&local_50,&local_44,0x811,0x3f00000,&local_10,(float *)0x0,(float *)0x0)
-  ;
-  local_38 = (int)(uVar4 & 0x3f00000) >> 0x14;
-  if ((((param_2->currentState).eFlags2 & 0x200000U) == 0) && (param_2->isBurning == 0)) {
+  uVar3 = CM_TracePointDown(&start,&end,0x811,0x3f00000,&local_10,(float *)0x0,(float *)0x0);
+  surfType = (int)(uVar3 & 0x3f00000) >> 0x14;
+  if ((((cent->currentState).eFlags2 & 0x200000U) == 0) && (cent->isBurning == 0)) {
     Scr_AddInt(0,SCRIPTINSTANCE_CLIENT);
   }
   else {
     Scr_AddInt(1,SCRIPTINSTANCE_CLIENT);
   }
-  pcVar5 = Com_SurfaceTypeToName(local_38);
-  Scr_AddString(pcVar5,SCRIPTINSTANCE_CLIENT);
+  value = Com_SurfaceTypeToName(surfType);
+  Scr_AddString(value,SCRIPTINSTANCE_CLIENT);
   Scr_AddVector(&local_10,SCRIPTINSTANCE_CLIENT);
-  CScr_AddEntity(param_2,param_1);
-  Scr_AddInt(param_1,SCRIPTINSTANCE_CLIENT);
+  CScr_AddEntity(cent,localClientNum);
+  Scr_AddInt(localClientNum,SCRIPTINSTANCE_CLIENT);
   uVar1 = Scr_ExecThread(SCRIPTINSTANCE_CLIENT,cg_scr_mp_data.dogstep,5);
   Scr_FreeThread(uVar1,SCRIPTINSTANCE_CLIENT);
   return;

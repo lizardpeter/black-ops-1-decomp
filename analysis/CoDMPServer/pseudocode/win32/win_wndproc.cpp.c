@@ -2,44 +2,47 @@
 
 // 007E0920  LowLevelKeyboardProc  (win32/win_wndproc.cpp:43)
 
-long __cdecl LowLevelKeyboardProc(int param_1,uint param_2,long param_3)
+long __cdecl LowLevelKeyboardProc(int nCode,uint wParam,long lParam)
 
 {
   SHORT SVar1;
   LRESULT LVar2;
+  tagKBDLLHOOKSTRUCT *hook;
+  bool isControlKeyDown;
   
-  if ((param_1 == 0) && (g_blockHook != 0)) {
+  if ((nCode == 0) && (g_blockHook != 0)) {
     SVar1 = GetAsyncKeyState(0x11);
-    if ((*(int *)param_3 == 0x1b) && (SVar1 < 0)) {
+    if ((*(int *)lParam == 0x1b) && (SVar1 < 0)) {
       return 1;
     }
-    if ((*(int *)param_3 == 9) && ((*(uint *)(param_3 + 8) & 0x20) != 0)) {
+    if ((*(int *)lParam == 9) && ((*(uint *)(lParam + 8) & 0x20) != 0)) {
       return 1;
     }
-    if ((*(int *)param_3 == 0xd) && ((*(uint *)(param_3 + 8) & 0x20) != 0)) {
+    if ((*(int *)lParam == 0xd) && ((*(uint *)(lParam + 8) & 0x20) != 0)) {
       return 1;
     }
-    if ((*(int *)param_3 == 0x5b) || (*(int *)param_3 == 0x5c)) {
+    if ((*(int *)lParam == 0x5b) || (*(int *)lParam == 0x5c)) {
       return 1;
     }
   }
-  LVar2 = CallNextHookEx((HHOOK)0x0,param_1,param_2,param_3);
+  LVar2 = CallNextHookEx((HHOOK)0x0,nCode,wParam,lParam);
   return LVar2;
 }
 
 
 // 007E08E0  Sys_SetBlockSystemHotkeys  (win32/win_wndproc.cpp:74)
 
-void __cdecl Sys_SetBlockSystemHotkeys(int param_1)
+void __cdecl Sys_SetBlockSystemHotkeys(int block)
 
 {
   HMODULE hmod;
+  HINSTANCE__ *module;
   
   if (g_wv.lowLevelKeyboardHook == (HHOOK__ *)0x0) {
     hmod = GetModuleHandleA((LPCSTR)0x0);
     g_wv.lowLevelKeyboardHook = (HHOOK__ *)SetWindowsHookExA(0xd,LowLevelKeyboardProc,hmod,0);
   }
-  g_blockHook = param_1;
+  g_blockHook = block;
   return;
 }
 
@@ -62,7 +65,8 @@ void __cdecl Sys_UpdateHotkeyBlock(void)
 
 {
   bool bVar1;
-  undefined4 uStack_8;
+  uint uStack_8;
+  bool block;
   
   uStack_8 = 0x1000000;
   if (g_wv.activeApp == 0) {
@@ -82,14 +86,15 @@ void __cdecl Sys_UpdateHotkeyBlock(void)
 
 // 007E11B0  VID_AppActivate  (win32/win_wndproc.cpp:199)
 
-void __cdecl VID_AppActivate(ulong param_1,int param_2)
+void __cdecl VID_AppActivate(ulong activeState,int minimize)
 
 {
   undefined4 local_c;
+  bool isActive;
   
-  g_wv.isMinimized = param_2;
+  g_wv.isMinimized = minimize;
   Key_ClearStates(0);
-  if ((param_1 == 0) || (g_wv.isMinimized != 0)) {
+  if ((activeState == 0) || (g_wv.isMinimized != 0)) {
     local_c = 0;
   }
   else {
@@ -107,13 +112,13 @@ void __cdecl VID_AppActivate(ulong param_1,int param_2)
 
 // 007E1390  IsNumLockAffectedVK  (win32/win_wndproc.cpp:409)
 
-ulong __cdecl IsNumLockAffectedVK(uint param_1)
+ulong __cdecl IsNumLockAffectedVK(uint wParam)
 
 {
   ulong uVar1;
   
-  if ((param_1 < 0x60) || (0x69 < param_1)) {
-    if (param_1 == 0x6e) {
+  if ((wParam < 0x60) || (0x69 < wParam)) {
+    if (wParam == 0x6e) {
       uVar1 = 1;
     }
     else {
@@ -129,63 +134,67 @@ ulong __cdecl IsNumLockAffectedVK(uint param_1)
 
 // 007E1340  AdustKeyForNumericKeypad  (win32/win_wndproc.cpp:421)
 
-ulong __cdecl AdustKeyForNumericKeypad(ulong param_1,uint param_2,ulong param_3)
+ulong __cdecl AdustKeyForNumericKeypad(ulong key,uint wParam,ulong extended)
 
 {
   clientUIActive_t *pcVar1;
   ulong uVar2;
+  clientUIActive_t *cl;
   
   pcVar1 = CL_GetLocalClientUIGlobals(0);
-  if (((pcVar1->keyCatchers & 0x11U) != 0) && (param_3 == 0)) {
-    uVar2 = IsNumLockAffectedVK(param_2);
-    param_1 = ~-(uint)(uVar2 != 0) & param_1;
+  if (((pcVar1->keyCatchers & 0x11U) != 0) && (extended == 0)) {
+    uVar2 = IsNumLockAffectedVK(wParam);
+    key = ~-(uint)(uVar2 != 0) & key;
   }
-  return param_1;
+  return key;
 }
 
 
 // 007E1230  MapKey  (win32/win_wndproc.cpp:444)
 
-uchar __cdecl MapKey(long param_1,uint param_2)
+uchar __cdecl MapKey(long key,uint wParam)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   UINT UVar4;
-  uint uVar5;
-  ulong local_14;
-  int local_8;
+  uint extended_00;
+  ulong result;
+  ulong scan;
+  ulong extended;
+  int i;
   
-  if ((param_1 >> 0x10 & 0xffU) == 0x29) {
+  if ((key >> 0x10 & 0xffU) == 0x29) {
     uVar3 = '~';
   }
   else {
-    local_14 = 0;
-    uVar5 = param_1 >> 0x18 & 1;
-    if ((param_2 != 0) && (param_2 < 0x92)) {
-      local_14 = AdustKeyForNumericKeypad((uint)virtualKeyConvert[param_2][uVar5],param_2,uVar5);
+    result = 0;
+    extended_00 = key >> 0x18 & 1;
+    if ((wParam != 0) && (wParam < 0x92)) {
+      result = AdustKeyForNumericKeypad
+                         ((uint)virtualKeyConvert[wParam][extended_00],wParam,extended_00);
     }
-    if (local_14 == 0) {
-      UVar4 = MapVirtualKeyA(param_2,2);
-      local_14 = UVar4 & 0xff;
-      if (0x7f < local_14) {
-        for (local_8 = 0; extendedVirtualKeyConvert[local_8][0] != '\0'; local_8 = local_8 + 1) {
-          if (local_14 == extendedVirtualKeyConvert[local_8][0]) {
-            local_14 = (ulong)extendedVirtualKeyConvert[local_8][1];
+    if (result == 0) {
+      UVar4 = MapVirtualKeyA(wParam,2);
+      result = UVar4 & 0xff;
+      if (0x7f < result) {
+        for (i = 0; extendedVirtualKeyConvert[i][0] != '\0'; i = i + 1) {
+          if (result == extendedVirtualKeyConvert[i][0]) {
+            result = (ulong)extendedVirtualKeyConvert[i][1];
             break;
           }
         }
       }
     }
-    if ((0xff < local_14) &&
+    if ((0xff < result) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_wndproc.cpp",0x1e5,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return uVar3;
     }
-    uVar3 = (uchar)local_14;
+    uVar3 = (uchar)result;
   }
   return uVar3;
 }
@@ -193,7 +202,7 @@ uchar __cdecl MapKey(long param_1,uint param_2)
 
 // 007E0A50  MainWndProc  (win32/win_wndproc.cpp:503)
 
-long __cdecl MainWndProc(HWND__ *param_1,uint param_2,uint param_3,long param_4)
+long __cdecl MainWndProc(HWND__ *hWnd,uint uMsg,uint wParam,long lParam)
 
 {
   code *pcVar1;
@@ -205,18 +214,19 @@ long __cdecl MainWndProc(HWND__ *param_1,uint param_2,uint param_3,long param_4)
   int iVar6;
   HANDLE pvVar7;
   DWORD DVar8;
-  uint local_64;
-  tagMONITORINFO local_5c;
-  tagRECT local_34;
-  tagRECT local_24;
-  DWORD local_14;
-  int local_10;
-  int local_c;
-  byte local_5;
+  int buttons;
+  HMONITOR__ *monitorHandle;
+  tagMONITORINFO monitorInfo;
+  tagRECT rc;
+  tagRECT r;
+  int style;
+  int yPos;
+  int xPos;
+  uchar code;
   
   SetThreadExecutionState(2);
-  if (param_2 == MSH_MOUSEWHEEL) {
-    if ((int)param_3 < 1) {
+  if (uMsg == MSH_MOUSEWHEEL) {
+    if ((int)wParam < 1) {
       Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,0xcd,1,0,(void *)0x0);
       Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,0xcd,0,0,(void *)0x0);
     }
@@ -224,21 +234,21 @@ long __cdecl MainWndProc(HWND__ *param_1,uint param_2,uint param_3,long param_4)
       Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,0xce,1,0,(void *)0x0);
       Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,0xce,0,0,(void *)0x0);
     }
-    LVar3 = DefWindowProcA((HWND)param_1,param_2,param_3,param_4);
+    LVar3 = DefWindowProcA((HWND)hWnd,uMsg,wParam,lParam);
     return LVar3;
   }
-  if (param_2 < 0x101) {
-    if (param_2 == 0x100) {
+  if (uMsg < 0x101) {
+    if (uMsg == 0x100) {
 LAB_007e0fa3:
-      local_5 = MapKey(param_4,param_3);
-      if (local_5 != 0) {
-        Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,(uint)local_5,1,0,(void *)0x0);
+      code = MapKey(lParam,wParam);
+      if (code != 0) {
+        Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,(uint)code,1,0,(void *)0x0);
       }
       return 0;
     }
-    switch(param_2) {
+    switch(uMsg) {
     case 1:
-      g_wv.hWnd = param_1;
+      g_wv.hWnd = hWnd;
       if ((r_reflectionProbeGenerate == (dvar_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_wndproc.cpp",0x225
                                    ,0,"%s"), !bVar2)) {
@@ -269,16 +279,16 @@ LAB_007e0fa3:
       break;
     case 3:
       if ((r_fullscreen->current).enabled == false) {
-        local_c = (int)(short)param_4;
-        local_10 = (int)(short)((uint)param_4 >> 0x10);
-        local_24.left = 0;
-        local_24.top = 0;
-        local_24.right = 1;
-        local_24.bottom = 1;
-        local_14 = GetWindowLongA((HWND)param_1,-0x10);
-        AdjustWindowRect(&local_24,local_14,0);
-        Dvar_SetInt(vid_xpos,local_c + local_24.left);
-        Dvar_SetInt(vid_ypos,local_10 + local_24.top);
+        xPos = (int)(short)lParam;
+        yPos = (int)(short)((uint)lParam >> 0x10);
+        r.left = 0;
+        r.top = 0;
+        r.right = 1;
+        r.bottom = 1;
+        style = GetWindowLongA((HWND)hWnd,-0x10);
+        AdjustWindowRect(&r,style,0);
+        Dvar_SetInt(vid_xpos,xPos + r.left);
+        Dvar_SetInt(vid_ypos,yPos + r.top);
         Dvar_ClearModified(vid_xpos);
         Dvar_ClearModified(vid_ypos);
         if (g_wv.activeApp != 0) {
@@ -290,7 +300,7 @@ LAB_007e0fa3:
       }
       break;
     case 6:
-      VID_AppActivate(param_3 & 0xffff,param_3 >> 0x10);
+      VID_AppActivate(wParam & 0xffff,wParam >> 0x10);
       break;
     case 7:
       if ((r_autopriority->current).enabled != false) {
@@ -312,48 +322,48 @@ LAB_007e0fa3:
       Cbuf_AddText(0,"quit\n");
       return 0;
     case 0x11:
-      if (param_4 == 1) {
+      if (lParam == 1) {
         return 1;
       }
       break;
     case 0x16:
-      if (param_4 == 1) {
+      if (lParam == 1) {
         Com_Quit_f();
       }
       break;
     case 0x7e:
-      hMonitor = MonitorFromWindow((HWND)param_1,2);
-      local_5c.cbSize = 0x28;
-      GetMonitorInfoA(hMonitor,&local_5c);
-      GetWindowRect((HWND)param_1,&local_34);
-      if ((local_34.right - local_34.left == local_5c.rcMonitor.right - local_5c.rcMonitor.left) &&
-         (local_34.bottom - local_34.top == local_5c.rcMonitor.bottom - local_5c.rcMonitor.top)) {
-        MoveWindow((HWND)param_1,local_5c.rcMonitor.left,local_5c.rcMonitor.top,
-                   local_34.right - local_34.left,local_34.bottom - local_34.top,1);
+      hMonitor = MonitorFromWindow((HWND)hWnd,2);
+      monitorInfo.cbSize = 0x28;
+      GetMonitorInfoA(hMonitor,&monitorInfo);
+      GetWindowRect((HWND)hWnd,&rc);
+      if ((rc.right - rc.left == monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left) &&
+         (rc.bottom - rc.top == monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top)) {
+        MoveWindow((HWND)hWnd,monitorInfo.rcMonitor.left,monitorInfo.rcMonitor.top,
+                   rc.right - rc.left,rc.bottom - rc.top,1);
       }
       IN_RecenterMouse();
     }
   }
-  else if (param_2 < 0x113) {
-    if (param_2 == 0x112) {
-      if (param_3 == 0xf140) {
+  else if (uMsg < 0x113) {
+    if (uMsg == 0x112) {
+      if (wParam == 0xf140) {
         return 0;
       }
     }
     else {
-      switch(param_2) {
+      switch(uMsg) {
       case 0x101:
       case 0x105:
-        local_5 = MapKey(param_4,param_3);
-        if (local_5 != 0) {
-          Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,(uint)local_5,0,0,(void *)0x0);
+        code = MapKey(lParam,wParam);
+        if (code != 0) {
+          Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,(uint)code,0,0,(void *)0x0);
         }
         return 0;
       case 0x102:
-        Sys_QueEvent(g_wv.sysMsgTime,SE_CHAR,param_3,0,0,(void *)0x0);
+        Sys_QueEvent(g_wv.sysMsgTime,SE_CHAR,wParam,0,0,(void *)0x0);
         break;
       case 0x104:
-        if (param_3 == 0xd) {
+        if (wParam == 0xd) {
           cVar5 = CL_GetLocalClientConnectionState(0);
           if (cVar5 == CA_LOADING) {
             return 0;
@@ -369,7 +379,7 @@ LAB_007e0fa3:
     }
   }
   else {
-    switch(param_2) {
+    switch(uMsg) {
     case 0x200:
     case 0x201:
     case 0x202:
@@ -379,23 +389,23 @@ LAB_007e0fa3:
     case 0x208:
     case 0x20b:
     case 0x20c:
-      local_64 = (uint)((param_3 & 1) != 0);
-      if ((param_3 & 2) != 0) {
-        local_64 = local_64 | 2;
+      buttons = (int)((wParam & 1) != 0);
+      if ((wParam & 2) != 0) {
+        buttons = buttons | 2;
       }
-      if ((param_3 & 0x10) != 0) {
-        local_64 = local_64 | 4;
+      if ((wParam & 0x10) != 0) {
+        buttons = buttons | 4;
       }
-      if ((param_3 & 0x20) != 0) {
-        local_64 = local_64 | 8;
+      if ((wParam & 0x20) != 0) {
+        buttons = buttons | 8;
       }
-      if ((param_3 & 0x40) != 0) {
-        local_64 = local_64 | 0x10;
+      if ((wParam & 0x40) != 0) {
+        buttons = buttons | 0x10;
       }
-      IN_MouseEvent(local_64);
+      IN_MouseEvent(buttons);
       break;
     case 0x20a:
-      if ((short)(param_3 >> 0x10) < 1) {
+      if ((short)(wParam >> 0x10) < 1) {
         Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,0xcd,1,0,(void *)0x0);
         Sys_QueEvent(g_wv.sysMsgTime,SE_KEY,0xcd,0,0,(void *)0x0);
       }
@@ -405,12 +415,12 @@ LAB_007e0fa3:
       }
       break;
     case 0x218:
-      if ((param_3 == 0) || (param_3 == 1)) {
+      if ((wParam == 0) || (wParam == 1)) {
         return 0x424d5144;
       }
     }
   }
-  LVar3 = DefWindowProcA((HWND)param_1,param_2,param_3,param_4);
+  LVar3 = DefWindowProcA((HWND)hWnd,uMsg,wParam,lParam);
   return LVar3;
 }
 

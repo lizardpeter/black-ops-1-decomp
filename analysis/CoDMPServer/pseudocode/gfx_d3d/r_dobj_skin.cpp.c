@@ -2,17 +2,19 @@
 
 // 00AF4A50  R_AllocSkinnedCachedVerts  (gfx_d3d/r_dobj_skin.cpp:50)
 
-int __cdecl R_AllocSkinnedCachedVerts(int param_1,bool param_2)
+int __cdecl R_AllocSkinnedCachedVerts(int vertCount,bool highPriority)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int iVar4;
+  uint uVar4;
   int iVar5;
-  int local_10;
+  uint offset;
+  uint size;
+  uint MAX_SKINNED_CACHE_VERTICES;
   
-  if ((param_1 < 1) &&
+  if ((vertCount < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x36,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -20,40 +22,40 @@ int __cdecl R_AllocSkinnedCachedVerts(int param_1,bool param_2)
     return iVar3;
   }
   if ((r_drawSkinnedModels->current).enabled == false) {
-    local_10 = -1;
+    offset = 0xffffffff;
   }
   else if (gfxBuf.skinnedCacheLockAddr == (uchar *)0x0) {
-    local_10 = -1;
+    offset = 0xffffffff;
   }
   else {
     g_skinErrorFlags.field0_0x0 = (r_SkinConditions_u_0)(r_SkinConditions_u_0_s_0)0x0;
-    iVar3 = param_1 * 0x20;
-    iVar5 = (-(uint)param_2 & 0x1400) + 0x3ec00;
+    iVar3 = vertCount * 0x20;
+    iVar5 = (-(uint)highPriority & 0x1400) + 0x3ec00;
     do {
-      local_10 = frontEndDataOut->skinnedCacheVb->used;
-      if ((uint)(iVar5 * 0x20) < (uint)(local_10 + iVar3)) {
-        local_10 = iVar5 * 0x20;
+      offset = frontEndDataOut->skinnedCacheVb->used;
+      if ((uint)(iVar5 * 0x20) < offset + iVar3) {
+        offset = iVar5 * 0x20;
         break;
       }
       LOCK();
-      iVar4 = frontEndDataOut->skinnedCacheVb->used;
-      if (local_10 == iVar4) {
-        frontEndDataOut->skinnedCacheVb->used = local_10 + iVar3;
-        iVar4 = local_10;
+      uVar4 = frontEndDataOut->skinnedCacheVb->used;
+      if (offset == uVar4) {
+        frontEndDataOut->skinnedCacheVb->used = offset + iVar3;
+        uVar4 = offset;
       }
       UNLOCK();
-    } while (iVar4 != local_10);
-    if (0x6aacc0 < (uint)(local_10 + iVar3)) {
+    } while (uVar4 != offset);
+    if (0x6aacc0 < offset + iVar3) {
       g_skinErrorFlags.field0_0x0 = (r_SkinConditions_u_0)((uint)g_skinErrorFlags.field0_0x0 | 2);
     }
-    if (0x7d8000 < (uint)(local_10 + iVar3)) {
+    if (0x7d8000 < offset + iVar3) {
       g_skinErrorFlags.field0_0x0 = (r_SkinConditions_u_0)((uint)g_skinErrorFlags.field0_0x0 | 1);
     }
-    if ((uint)(iVar5 * 0x20) < (uint)(local_10 + iVar3)) {
-      local_10 = -1;
+    if ((uint)(iVar5 * 0x20) < offset + iVar3) {
+      offset = 0xffffffff;
     }
   }
-  return local_10;
+  return offset;
 }
 
 
@@ -63,8 +65,8 @@ int __cdecl R_AllocSkinnedCachedVerts(int param_1,bool param_2)
 /* WARNING: Removing unreachable block (ram,0x00af4cc9) */
 
 int __cdecl
-R_PreSkinXSurface(DObj *param_1,XSurface *param_2,GfxModelSurfaceInfo *param_3,uint *param_4,
-                 uchar *param_5)
+R_PreSkinXSurface(DObj *obj,XSurface *surf,GfxModelSurfaceInfo *surfaceInfo,uint *numSkinnedVerts,
+                 uchar *surfPos)
 
 {
   code *pcVar1;
@@ -82,47 +84,47 @@ R_PreSkinXSurface(DObj *param_1,XSurface *param_2,GfxModelSurfaceInfo *param_3,u
   undefined4 local_18;
   char local_11;
   
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0xa5,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (XSurface *)0x0) &&
+  if ((surf == (XSurface *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0xa6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (GfxModelSurfaceInfo *)0x0) &&
+  if ((surfaceInfo == (GfxModelSurfaceInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0xa7,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2->flags & 0x80) == 0) {
-    if (((param_2->flags & 0x80) == 0) &&
+  if ((surf->flags & 0x80) == 0) {
+    if (((surf->flags & 0x80) == 0) &&
        (local_11 = (useFastFile->current).enabled, (bool)local_11 != false)) {
       local_18 = 1;
     }
     else {
       local_18 = 0;
     }
-    if (((char)local_18 != '\0') && (param_2->vertListCount == '\x01')) {
-      param_2->vertList = param_2->vertList;
-      param_5[0] = 0xfe;
-      param_5[1] = 0xff;
-      param_5[2] = 0xff;
-      param_5[3] = 0xff;
-      local_1c = param_5;
-      *(float *)(param_5 + 0x34) = 1.0;
-      local_20 = DObjGetRotTransArray(param_1);
-      local_20 = local_20 + param_3->boneIndex;
-      local_24 = (uint)(param_2->vertList->boneOffset >> 6);
-      local_28 = (param_3->field0_0x0).baseMat + local_24;
+    if (((char)local_18 != '\0') && (surf->vertListCount == '\x01')) {
+      surf->vertList = surf->vertList;
+      surfPos[0] = 0xfe;
+      surfPos[1] = 0xff;
+      surfPos[2] = 0xff;
+      surfPos[3] = 0xff;
+      local_1c = surfPos;
+      *(float *)(surfPos + 0x34) = 1.0;
+      local_20 = DObjGetRotTransArray(obj);
+      local_20 = local_20 + surfaceInfo->boneIndex;
+      local_24 = (uint)(surf->vertList->boneOffset >> 6);
+      local_28 = (surfaceInfo->field0_0x0).baseMat + local_24;
       ConvertQuatToInverseSkelMat(local_28,&local_70);
       local_74 = local_20 + local_24;
       ConvertQuatToSkelMat(local_74,&local_c0);
@@ -134,8 +136,8 @@ R_PreSkinXSurface(DObj *param_1,XSurface *param_2,GfxModelSurfaceInfo *param_3,u
       return 0x38;
     }
   }
-  *(uint *)param_5 = *param_4;
-  *param_4 = (uint)param_2->vertCount + *param_4;
+  *(uint *)surfPos = *numSkinnedVerts;
+  *numSkinnedVerts = (uint)surf->vertCount + *numSkinnedVerts;
   return 0x18;
 }
 
@@ -146,7 +148,7 @@ R_PreSkinXSurface(DObj *param_1,XSurface *param_2,GfxModelSurfaceInfo *param_3,u
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAnimMat *param_3)
+uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *sceneEnt,DObj *obj,DObjAnimMat *boneMatrix)
 
 {
   int iVar1;
@@ -158,8 +160,8 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
   byte bVar7;
   byte bVar8;
   long *plVar9;
-  ulong uVar10;
-  uchar *puVar11;
+  ulong count;
+  uchar *dst;
   uint local_1d24;
   int *local_1d20;
   int local_1d18;
@@ -204,28 +206,28 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  if (((param_1->cull).skinnedSurfs.firstSurf != (void *)0x0) &&
+  if (((sceneEnt->cull).skinnedSurfs.firstSurf != (void *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x139,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((param_2 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x13a,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((param_3 == (DObjAnimMat *)0x0) &&
+  if ((boneMatrix == (DObjAnimMat *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x13b,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((((useFastFile->current).enabled == false) && (iVar5 = DObjBad(param_2), iVar5 != 0)) &&
+  if ((((useFastFile->current).enabled == false) && (iVar5 = DObjBad(obj), iVar5 != 0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x13e,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -235,7 +237,7 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
   local_1c24 = local_1c20;
   local_1c28 = 0;
   local_1c2c = 0;
-  local_1c30 = DObjGetNumModels(param_2);
+  local_1c30 = DObjGetNumModels(obj);
   if (local_1c30 == 0) {
     return 0;
   }
@@ -246,14 +248,14 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
   for (local_1c60 = 0; local_1c60 < 5; local_1c60 = local_1c60 + 1) {
     local_1c88[local_1c60] = 0;
   }
-  DObjGetHidePartBits(param_2,local_1ca4);
+  DObjGetHidePartBits(obj,local_1ca4);
   local_1c74 = scene.def.viewOffset[0];
   local_1c70 = scene.def.viewOffset[1];
   local_1c6c = scene.def.viewOffset[2];
   local_1ca8 = 0;
   do {
     if (local_1c30 <= local_1ca8) {
-      iVar5 = DObjSkelAreBonesUpToDate(param_2,(int *)local_1c88);
+      iVar5 = DObjSkelAreBonesUpToDate(obj,(int *)local_1c88);
       if ((iVar5 == 0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",
                                    0x22a,0,"%s"), !bVar3)) {
@@ -306,15 +308,15 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
         else {
           iVar5 = R_AllocSkinnedCachedVerts
                             (local_1c28,
-                             (frontEndDataOut->gfxEnts[param_1->gfxEntIndex].renderFxFlags & 1) != 0
-                            );
+                             (frontEndDataOut->gfxEnts[sceneEnt->gfxEntIndex].renderFxFlags & 1) !=
+                             0);
           if (iVar5 < 0) {
             R_WarnOncePerFrame(R_WARN_MAX_SKINNED_CACHE_VERTICES);
             return 0;
           }
           local_1d18 = -0x7fffffff;
           if (gfxBuf.fastSkin != false) {
-            pGVar6 = CG_GetSkinCacheEntry((param_1->info).pose);
+            pGVar6 = CG_GetSkinCacheEntry((sceneEnt->info).pose);
             if (((pGVar6->ageCount < 3) &&
                 (gfxBuf.skinnedCacheNormalsFrameCount - pGVar6->frameCount == 1)) &&
                (pGVar6->numSkinnedVerts == local_1c28)) {
@@ -359,13 +361,13 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
           }
         }
       }
-      uVar10 = (int)local_1c24 - (int)local_1c20;
+      count = (int)local_1c24 - (int)local_1c20;
       plVar9 = &frontEndDataOut->surfPos;
       LOCK();
       uVar4 = *plVar9;
-      *plVar9 = *plVar9 + uVar10;
+      *plVar9 = *plVar9 + count;
       UNLOCK();
-      if (uVar4 + uVar10 < 0x40001) {
+      if (uVar4 + count < 0x40001) {
         if (((uVar4 & 3) != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",
                                      0x356,0,"%s"), !bVar3)) {
@@ -373,9 +375,9 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
           uVar4 = (*pcVar2)();
           return uVar4;
         }
-        puVar11 = frontEndDataOut->surfsBuffer + uVar4;
-        (param_1->cull).skinnedSurfs.firstSurf = puVar11;
-        memcpy(puVar11,(uchar *)local_1c20,uVar10);
+        dst = frontEndDataOut->surfsBuffer + uVar4;
+        (sceneEnt->cull).skinnedSurfs.firstSurf = dst;
+        memcpy(dst,(uchar *)local_1c20,count);
         if ((local_1c34 == 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",
                                      0x373,0,"%s"), !bVar3)) {
@@ -384,24 +386,24 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
           return uVar4;
         }
         if ((r_xdebug->current).integer != 0) {
-          R_XModelDebug(param_2,(int *)local_1c88);
+          R_XModelDebug(obj,(int *)local_1c88);
         }
         if (local_1c28 != 0) {
           local_1c68 = (undefined2)local_1c34;
-          local_1c8c = param_3;
-          local_1c90 = puVar11;
+          local_1c8c = boneMatrix;
+          local_1c90 = dst;
           Sys_AddWorkerCmdInternal(&r_model_skinWorkerCmd,&local_1c90,(WorkerCmdConditional *)0x0);
         }
       }
       else {
-        DObjGetName(param_2);
+        DObjGetName(obj);
         Com_PrintWarning(1,"FAILED to allocate surfs on frame %u: DObj %s needs %i surfs\n");
         R_WarnOncePerFrame(R_WARN_MAX_SCENE_SURFS_SIZE);
         local_1c34 = 0;
       }
       return local_1c34;
     }
-    local_1cb0 = DObjGetModel(param_2,local_1ca8);
+    local_1cb0 = DObjGetModel(obj,local_1ca8);
     if ((local_1cb0 == (XModel *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x175
                                  ,0,"%s"), !bVar3)) {
@@ -410,11 +412,11 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
       return uVar4;
     }
     local_1cac = XModelNumBones(local_1cb0);
-    local_1cb4 = (int)(param_1->cull).lods[local_1ca8];
+    local_1cb4 = (int)(sceneEnt->cull).lods[local_1ca8];
     if (-1 < local_1cb4) {
       local_1cbc = CONCAT31(local_1cbc._1_3_,(undefined1)local_1c2c);
       local_1cc0.baseMat = XModelGetBasePose(local_1cb0);
-      local_1cbc = CONCAT22(param_1->gfxEntIndex,
+      local_1cbc = CONCAT22(sceneEnt->gfxEntIndex,
                             CONCAT11((undefined1)local_1cac,(undefined1)local_1cbc));
       local_1cb8 = local_1cb8 & 0xffff0000;
       local_1cc8 = XModelGetSurfaces(local_1cb0,&local_1cc4,local_1cb4);
@@ -467,17 +469,17 @@ uint __cdecl R_SkinSceneDObjModels(GfxSceneEntity *param_1,DObj *param_2,DObjAni
                auStack_1c5c[7 - local_1ccc] << (bVar8 & 0x1f) |
                auStack_1c5c[8 - local_1ccc] >> (bVar7 & 0x1f);
         }
-        iVar5 = DObjIsRecorded(param_2);
+        iVar5 = DObjIsRecorded(obj);
         if (iVar5 != 0) {
-          DObjSkelSetSkel(param_2,(int *)local_1cf8);
+          DObjSkelSetSkel(obj,(int *)local_1cf8);
         }
         if ((r_useHidePartbits->current).enabled == false) {
 LAB_00af4323:
           for (local_1d04 = 0; local_1d04 < 5; local_1d04 = local_1d04 + 1) {
             local_1c88[local_1d04] = local_1c88[local_1d04] | local_1cf8[local_1d04];
           }
-          iVar5 = R_PreSkinXSurface(param_2,local_1ce0,(GfxModelSurfaceInfo *)&local_1cc0,
-                                    &local_1c28,(uchar *)local_1c24);
+          iVar5 = R_PreSkinXSurface(obj,local_1ce0,(GfxModelSurfaceInfo *)&local_1cc0,&local_1c28,
+                                    (uchar *)local_1c24);
           local_1c24[1] = (int)(local_1cc4 + local_1cdc);
           *(GfxModelSurfaceInfo_u_0 *)(local_1c24 + 2) = local_1cc0;
           local_1c24[3] = local_1cbc;
@@ -510,13 +512,13 @@ LAB_00af4323:
 
 // 00AF3AD0  R_FlagXModelAsSkinned  (gfx_d3d/r_dobj_skin.cpp:953)
 
-void __cdecl R_FlagXModelAsSkinned(GfxSceneEntity *param_1,uint param_2)
+void __cdecl R_FlagXModelAsSkinned(GfxSceneEntity *sceneEnt,uint surfaceCount)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1->cull).state != 3) {
+  if ((sceneEnt->cull).state != 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x3ba,0,
                              "%s\n\t(sceneEnt->cull.state) = %i");
     if (!bVar2) {
@@ -525,7 +527,7 @@ void __cdecl R_FlagXModelAsSkinned(GfxSceneEntity *param_1,uint param_2)
       return;
     }
   }
-  (param_1->cull).state = param_2 + 4;
+  (sceneEnt->cull).state = surfaceCount + 4;
   return;
 }
 
@@ -533,50 +535,52 @@ void __cdecl R_FlagXModelAsSkinned(GfxSceneEntity *param_1,uint param_2)
 // 00AF3B20  R_SkinSceneDObj  (gfx_d3d/r_dobj_skin.cpp:1004)
 
 void __cdecl
-R_SkinSceneDObj(GfxSceneEntity *param_1,GfxSceneEntity *param_2,DObj *param_3,DObjAnimMat *param_4,
-               int param_5)
+R_SkinSceneDObj(GfxSceneEntity *sceneEnt,GfxSceneEntity *localSceneEnt,DObj *obj,
+               DObjAnimMat *boneMatrix,int waitForCullState)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  uint state;
+  uint surfaceCount;
   
-  if ((param_2 == (GfxSceneEntity *)0x0) &&
+  if ((localSceneEnt == (GfxSceneEntity *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x3f0,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (DObjAnimMat *)0x0) &&
+  if ((boneMatrix == (DObjAnimMat *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x3f1,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x3f2,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->cull).state < 4) {
+  if ((localSceneEnt->cull).state < 4) {
     LOCK();
-    uVar3 = (param_1->cull).state;
+    uVar3 = (sceneEnt->cull).state;
     if (uVar3 == 2) {
-      (param_1->cull).state = 3;
+      (sceneEnt->cull).state = 3;
       uVar3 = 2;
     }
     UNLOCK();
     if (uVar3 == 2) {
-      uVar3 = R_SkinSceneDObjModels(param_2,param_3,param_4);
-      R_FlagXModelAsSkinned(param_2,uVar3);
+      uVar3 = R_SkinSceneDObjModels(localSceneEnt,obj,boneMatrix);
+      R_FlagXModelAsSkinned(localSceneEnt,uVar3);
     }
-    else if (param_5 != 0) {
+    else if (waitForCullState != 0) {
       do {
-        uVar3 = (param_1->cull).state;
+        uVar3 = (sceneEnt->cull).state;
         if ((uVar3 < 3) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",
                                      0x413,0,"%s\n\t(state) = %i"), !bVar2)) {
@@ -600,36 +604,37 @@ R_SkinSceneDObj(GfxSceneEntity *param_1,GfxSceneEntity *param_2,DObj *param_3,DO
 
 // 00AF5040  R_SkinGfxEntityCmd  (gfx_d3d/r_dobj_skin.cpp:1085)
 
-void __cdecl R_SkinGfxEntityCmd(void *param_1)
+void __cdecl R_SkinGfxEntityCmd(void *data)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObjAnimMat *pDVar3;
-  DObj *local_14;
-  GfxSceneEntity *local_10;
-  GfxSceneEntity *local_c;
-  void *local_8;
+  DObjAnimMat *boneMatrix_00;
+  DObjAnimMat *boneMatrix;
+  DObj *obj;
+  GfxSceneEntity *localSceneEnt;
+  GfxSceneEntity *sceneEnt;
+  GfxSceneEntity **pSceneEnt;
   
-  if ((param_1 == (void *)0x0) &&
+  if ((data == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x444,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1;
-  local_c = *(GfxSceneEntity **)param_1;
-  pDVar3 = R_UpdateSceneEntBounds(local_c,&local_10,&local_14,0);
-  if (pDVar3 != (DObjAnimMat *)0x0) {
-    if ((local_10 == (GfxSceneEntity *)0x0) &&
+  pSceneEnt = data;
+  sceneEnt = *(GfxSceneEntity **)data;
+  boneMatrix_00 = R_UpdateSceneEntBounds(sceneEnt,&localSceneEnt,&obj,0);
+  if (boneMatrix_00 != (DObjAnimMat *)0x0) {
+    if ((localSceneEnt == (GfxSceneEntity *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp",0x453
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    R_SkinSceneDObj(local_c,local_10,local_14,pDVar3,0);
+    R_SkinSceneDObj(sceneEnt,localSceneEnt,obj,boneMatrix_00,0);
   }
   return;
 }
@@ -637,32 +642,28 @@ void __cdecl R_SkinGfxEntityCmd(void *param_1)
 
 // 00AF4DF0  QuatMultiplyInverse  (universal/com_math.h:1712)
 
-void __cdecl QuatMultiplyInverse(float *param_1,float *param_2,float *param_3)
+void __cdecl QuatMultiplyInverse(float *in1,float *in2,float *out)
 
 {
-  *param_3 = ((-*param_1 * param_2[3] + param_1[3] * *param_2) - param_1[2] * param_2[1]) +
-             param_1[1] * param_2[2];
-  param_3[1] = (-param_1[1] * param_2[3] + param_1[2] * *param_2 + param_1[3] * param_2[1]) -
-               *param_1 * param_2[2];
-  param_3[2] = (-param_1[2] * param_2[3] - param_1[1] * *param_2) + *param_1 * param_2[1] +
-               param_1[3] * param_2[2];
-  param_3[3] = param_1[3] * param_2[3] + *param_1 * *param_2 + param_1[1] * param_2[1] +
-               param_1[2] * param_2[2];
+  *out = ((-*in1 * in2[3] + in1[3] * *in2) - in1[2] * in2[1]) + in1[1] * in2[2];
+  out[1] = (-in1[1] * in2[3] + in1[2] * *in2 + in1[3] * in2[1]) - *in1 * in2[2];
+  out[2] = (-in1[2] * in2[3] - in1[1] * *in2) + *in1 * in2[1] + in1[3] * in2[2];
+  out[3] = in1[3] * in2[3] + *in1 * *in2 + in1[1] * in2[1] + in1[2] * in2[2];
   return;
 }
 
 
 // 00AF4F60  R_TransformSkelMat  (universal/com_math.h:1824)
 
-void __cdecl R_TransformSkelMat(float *param_1,DObjSkelMat *param_2,float *param_3)
+void __cdecl R_TransformSkelMat(float *in1,DObjSkelMat *in2,float *out_3)
 
 {
-  *param_3 = *param_1 * param_2->axis[0][0] + param_1[1] * param_2->axis[1][0] +
-             param_1[2] * param_2->axis[2][0] + param_2->origin[0];
-  param_3[1] = *param_1 * param_2->axis[0][1] + param_1[1] * param_2->axis[1][1] +
-               param_1[2] * param_2->axis[2][1] + param_2->origin[1];
-  param_3[2] = *param_1 * param_2->axis[0][2] + param_1[1] * param_2->axis[1][2] +
-               param_1[2] * param_2->axis[2][2] + param_2->origin[2];
+  *out_3 = *in1 * in2->axis[0][0] + in1[1] * in2->axis[1][0] + in1[2] * in2->axis[2][0] +
+           in2->origin[0];
+  out_3[1] = *in1 * in2->axis[0][1] + in1[1] * in2->axis[1][1] + in1[2] * in2->axis[2][1] +
+             in2->origin[1];
+  out_3[2] = *in1 * in2->axis[0][2] + in1[1] * in2->axis[1][2] + in1[2] * in2->axis[2][2] +
+             in2->origin[2];
   return;
 }
 

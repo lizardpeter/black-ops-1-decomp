@@ -4,10 +4,10 @@
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Pregame_SetState(pregameStateEnum param_1)
+void __cdecl Pregame_SetState(pregameStateEnum s)
 
 {
-  pregameG.state = param_1;
+  pregameG.state = s;
   return;
 }
 
@@ -29,10 +29,10 @@ bool __cdecl Pregame_isEnabled(void)
 
 {
   bool bVar1;
-  int iVar2;
+  int licensetype;
   
-  iVar2 = SV_GetLicenseType();
-  bVar1 = SV_IsServerRanked(iVar2);
+  licensetype = SV_GetLicenseType();
+  bVar1 = SV_IsServerRanked(licensetype);
   if (bVar1) {
     bVar1 = true;
   }
@@ -98,14 +98,14 @@ void __cdecl Pregame_ResetData(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Pregame_ResetDataForClient(uint param_1)
+void __cdecl Pregame_ResetDataForClient(uint clientNum)
 
 {
   code *pcVar1;
   pregameClient *ppVar2;
   bool bVar3;
   
-  if (0x1f < param_1) {
+  if (0x1f < clientNum) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\pregame.cpp",0x46,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar3) {
@@ -114,43 +114,43 @@ void __cdecl Pregame_ResetDataForClient(uint param_1)
       return;
     }
   }
-  pregameG.clients[param_1].pregame_team = TEAM_BAD;
-  ppVar2 = pregameG.clients + param_1;
+  pregameG.clients[clientNum].pregame_team = TEAM_BAD;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[0] = '\0';
   ppVar2->pregame_class[1] = '\0';
   ppVar2->pregame_class[2] = '\0';
   ppVar2->pregame_class[3] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[4] = '\0';
   ppVar2->pregame_class[5] = '\0';
   ppVar2->pregame_class[6] = '\0';
   ppVar2->pregame_class[7] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[8] = '\0';
   ppVar2->pregame_class[9] = '\0';
   ppVar2->pregame_class[10] = '\0';
   ppVar2->pregame_class[0xb] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[0xc] = '\0';
   ppVar2->pregame_class[0xd] = '\0';
   ppVar2->pregame_class[0xe] = '\0';
   ppVar2->pregame_class[0xf] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[0x10] = '\0';
   ppVar2->pregame_class[0x11] = '\0';
   ppVar2->pregame_class[0x12] = '\0';
   ppVar2->pregame_class[0x13] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[0x14] = '\0';
   ppVar2->pregame_class[0x15] = '\0';
   ppVar2->pregame_class[0x16] = '\0';
   ppVar2->pregame_class[0x17] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[0x18] = '\0';
   ppVar2->pregame_class[0x19] = '\0';
   ppVar2->pregame_class[0x1a] = '\0';
   ppVar2->pregame_class[0x1b] = '\0';
-  ppVar2 = pregameG.clients + param_1;
+  ppVar2 = pregameG.clients + clientNum;
   ppVar2->pregame_class[0x1c] = '\0';
   ppVar2->pregame_class[0x1d] = '\0';
   ppVar2->pregame_class[0x1e] = '\0';
@@ -195,14 +195,14 @@ void __cdecl Pregame_RegisterDvars(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-int __cdecl Pregame_GetAssignedPregameTeam(uint param_1)
+int __cdecl Pregame_GetAssignedPregameTeam(uint clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (0x1f < param_1) {
+  if (0x1f < clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\pregame.cpp",0x5a,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -211,7 +211,7 @@ int __cdecl Pregame_GetAssignedPregameTeam(uint param_1)
       return iVar3;
     }
   }
-  return pregameG.clients[param_1].pregame_team;
+  return pregameG.clients[clientNum].pregame_team;
 }
 
 
@@ -219,13 +219,13 @@ int __cdecl Pregame_GetAssignedPregameTeam(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Pregame_SetAssignedPregameClass(uint param_1,char *param_2)
+void __cdecl Pregame_SetAssignedPregameClass(uint clientNum,char *pclass)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x1f < param_1) {
+  if (0x1f < clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\pregame.cpp",0x60,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -234,7 +234,7 @@ void __cdecl Pregame_SetAssignedPregameClass(uint param_1,char *param_2)
       return;
     }
   }
-  I_strncpyz(pregameG.clients[param_1].pregame_class,param_2,0x20);
+  I_strncpyz(pregameG.clients[clientNum].pregame_class,pclass,0x20);
   return;
 }
 
@@ -243,13 +243,13 @@ void __cdecl Pregame_SetAssignedPregameClass(uint param_1,char *param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl Pregame_SetAssignedPregameTeam(uint param_1,team_t param_2)
+void __cdecl Pregame_SetAssignedPregameTeam(uint clientNum,team_t pteam)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x1f < param_1) {
+  if (0x1f < clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\pregame.cpp",0x66,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -258,7 +258,7 @@ void __cdecl Pregame_SetAssignedPregameTeam(uint param_1,team_t param_2)
       return;
     }
   }
-  pregameG.clients[param_1].pregame_team = param_2;
+  pregameG.clients[clientNum].pregame_team = pteam;
   return;
 }
 
@@ -267,14 +267,14 @@ void __cdecl Pregame_SetAssignedPregameTeam(uint param_1,team_t param_2)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-char * __cdecl Pregame_GetAssignedPregameClass(uint param_1)
+char * __cdecl Pregame_GetAssignedPregameClass(uint clientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0x1f < param_1) {
+  if (0x1f < clientNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game_mp\\pregame.cpp",0x6c,0,
                              "clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -283,6 +283,6 @@ char * __cdecl Pregame_GetAssignedPregameClass(uint param_1)
       return pcVar3;
     }
   }
-  return pregameG.clients[param_1].pregame_class;
+  return pregameG.clients[clientNum].pregame_class;
 }
 

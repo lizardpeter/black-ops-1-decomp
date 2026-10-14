@@ -2,13 +2,14 @@
 
 // 00910AC0  Actor_SetDesiredLookAngles  (game/actor_orientation.cpp:27)
 
-void __cdecl Actor_SetDesiredLookAngles(ai_orient_t *param_1,float param_2,float param_3)
+void __cdecl Actor_SetDesiredLookAngles(ai_orient_t *fPitch,float fYaw,float param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   int in_ECX;
   float fVar3;
+  ai_orient_t *pOrient;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",0x20,0
@@ -19,9 +20,9 @@ void __cdecl Actor_SetDesiredLookAngles(ai_orient_t *param_1,float param_2,float
       return;
     }
   }
-  fVar3 = AngleNormalize360((float)param_1);
+  fVar3 = AngleNormalize360((float)fPitch);
   *(float *)(in_ECX + 4) = fVar3;
-  fVar3 = AngleNormalize360(param_2);
+  fVar3 = AngleNormalize360(fYaw);
   *(float *)(in_ECX + 8) = fVar3;
   return;
 }
@@ -29,13 +30,14 @@ void __cdecl Actor_SetDesiredLookAngles(ai_orient_t *param_1,float param_2,float
 
 // 00910B20  Actor_SetDesiredBodyAngle  (game/actor_orientation.cpp:45)
 
-void __cdecl Actor_SetDesiredBodyAngle(ai_orient_t *param_1,float param_2)
+void __cdecl Actor_SetDesiredBodyAngle(ai_orient_t *fAngle,float param_2)
 
 {
   code *pcVar1;
   bool bVar2;
   int in_ECX;
   float fVar3;
+  ai_orient_t *pOrient;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",0x31,0
@@ -46,7 +48,7 @@ void __cdecl Actor_SetDesiredBodyAngle(ai_orient_t *param_1,float param_2)
       return;
     }
   }
-  fVar3 = AngleNormalize360((float)param_1);
+  fVar3 = AngleNormalize360((float)fAngle);
   *(float *)(in_ECX + 0xc) = fVar3;
   return;
 }
@@ -54,13 +56,16 @@ void __cdecl Actor_SetDesiredBodyAngle(ai_orient_t *param_1,float param_2)
 
 // 00910B70  Actor_SetDesiredAngles  (game/actor_orientation.cpp:61)
 
-void __cdecl Actor_SetDesiredAngles(ai_orient_t *param_1,float param_2,float param_3)
+/* WARNING: Variable defined which should be unmapped: pOrient */
+
+void __cdecl Actor_SetDesiredAngles(ai_orient_t *fPitch,float fYaw,float param_3)
 
 {
   float in_ECX;
+  ai_orient_t *pOrient;
   
-  Actor_SetDesiredLookAngles(param_1,param_2,in_ECX);
-  Actor_SetDesiredBodyAngle((ai_orient_t *)param_2,(float)param_1);
+  Actor_SetDesiredLookAngles(fPitch,fYaw,in_ECX);
+  Actor_SetDesiredBodyAngle((ai_orient_t *)fYaw,(float)fPitch);
   return;
 }
 
@@ -72,14 +77,15 @@ void __cdecl Actor_SetDesiredAngles(ai_orient_t *param_1,float param_2,float par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetLookAngles(actor_s *param_1,float param_2,float param_3)
+void __cdecl Actor_SetLookAngles(actor_s *fPitch,float fYaw,float param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   int in_ECX;
   float fVar3;
-  float local_10;
+  actor_s *self;
+  float vLookAngles;
   undefined4 local_c;
   undefined4 local_8;
   
@@ -92,14 +98,14 @@ void __cdecl Actor_SetLookAngles(actor_s *param_1,float param_2,float param_3)
       return;
     }
   }
-  fVar3 = AngleNormalize360((float)param_1);
+  fVar3 = AngleNormalize360((float)fPitch);
   *(float *)(in_ECX + 0xf0) = fVar3;
-  local_10 = *(float *)(in_ECX + 0xf0);
-  fVar3 = AngleNormalize360(param_2);
+  vLookAngles = *(float *)(in_ECX + 0xf0);
+  fVar3 = AngleNormalize360(fYaw);
   *(float *)(in_ECX + 0xf4) = fVar3;
   local_c = *(undefined4 *)(in_ECX + 0xf4);
   local_8 = 0;
-  AngleVectors(&local_10,(float *)(in_ECX + 0xf8),(float *)(in_ECX + 0x104),
+  AngleVectors(&vLookAngles,(float *)(in_ECX + 0xf8),(float *)(in_ECX + 0x104),
                (float *)(in_ECX + 0x110));
   return;
 }
@@ -112,7 +118,7 @@ void __cdecl Actor_SetLookAngles(actor_s *param_1,float param_2,float param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_SetBodyAngle(actor_s *param_1,float param_2)
+void __cdecl Actor_SetBodyAngle(actor_s *fAngle,float param_2)
 
 {
   int *piVar1;
@@ -120,6 +126,8 @@ void __cdecl Actor_SetBodyAngle(actor_s *param_1,float param_2)
   bool bVar3;
   undefined4 *in_ECX;
   float fVar4;
+  actor_s *self;
+  gentity_s *ent;
   
   if (in_ECX == (undefined4 *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",0x69,0
@@ -141,7 +149,7 @@ void __cdecl Actor_SetBodyAngle(actor_s *param_1,float param_2)
     }
   }
   piVar1[0x4c] = 0;
-  fVar4 = AngleNormalize360((float)param_1);
+  fVar4 = AngleNormalize360((float)fAngle);
   piVar1[0x4d] = (int)fVar4;
   piVar1[0x4e] = 0;
   if ((ai_debugAnimDeltas->current).integer == *piVar1) {
@@ -153,33 +161,36 @@ void __cdecl Actor_SetBodyAngle(actor_s *param_1,float param_2)
 
 // 00910D50  Actor_ChangeAngles  (game/actor_orientation.cpp:130)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_ChangeAngles(actor_s *param_1,float param_2,float param_3)
+void __cdecl Actor_ChangeAngles(actor_s *fPitch,float fYaw,float param_3)
 
 {
   int *in_ECX;
-  ai_orient_t *paVar1;
-  ai_orient_t *paVar2;
-  actor_s *paVar3;
+  ai_orient_t *fPitch_00;
+  ai_orient_t *fPitch_01;
+  actor_s *fAngle;
+  actor_s *self;
   
-  paVar1 = (ai_orient_t *)((float)in_ECX[0x48] + (float)param_1);
-  Actor_SetDesiredAngles(paVar1,(float)in_ECX[0x4a] + param_2,(float)in_ECX);
-  paVar2 = (ai_orient_t *)((float)in_ECX[0x4c] + (float)param_1);
-  Actor_SetDesiredAngles(paVar2,(float)in_ECX[0x4e] + param_2,(float)paVar1);
-  paVar3 = (actor_s *)(*(float *)(*in_ECX + 0x134) + param_2);
-  Actor_SetBodyAngle(paVar3,(float)paVar2);
-  Actor_SetLookAngles((actor_s *)((float)in_ECX[0x3c] + (float)param_1),
-                      (float)in_ECX[0x3d] + param_2,(float)paVar3);
+  fPitch_00 = (ai_orient_t *)((float)in_ECX[0x48] + (float)fPitch);
+  Actor_SetDesiredAngles(fPitch_00,(float)in_ECX[0x4a] + fYaw,(float)in_ECX);
+  fPitch_01 = (ai_orient_t *)((float)in_ECX[0x4c] + (float)fPitch);
+  Actor_SetDesiredAngles(fPitch_01,(float)in_ECX[0x4e] + fYaw,(float)fPitch_00);
+  fAngle = (actor_s *)(*(float *)(*in_ECX + 0x134) + fYaw);
+  Actor_SetBodyAngle(fAngle,(float)fPitch_01);
+  Actor_SetLookAngles((actor_s *)((float)in_ECX[0x3c] + (float)fPitch),(float)in_ECX[0x3d] + fYaw,
+                      (float)fAngle);
   return;
 }
 
 
 // 00910E30  Actor_UpdateLookAngles  (game/actor_orientation.cpp:144)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -189,93 +200,104 @@ void __cdecl Actor_UpdateLookAngles(actor_s *param_1)
 
 {
   float in_ECX;
-  actor_s *paVar1;
-  undefined4 local_14;
-  undefined4 local_8;
+  actor_s *fPitch_00;
+  actor_s *self;
+  float delta;
+  float fPitch;
+  float fYaw;
+  ai_orient_t *pOrient;
   
   if (*(int *)((int)in_ECX + 300) == 0) {
-    local_8 = (int)in_ECX + 0x11c;
+    pOrient = (ai_orient_t *)((int)in_ECX + 0x11c);
   }
   else {
-    local_8 = (int)in_ECX + 300;
+    pOrient = (ai_orient_t *)((int)in_ECX + 300);
   }
-  local_14 = AngleNormalize180(*(float *)(local_8 + 4) - *(float *)((int)in_ECX + 0xf0));
-  if (local_14 <= 40.0) {
-    if (local_14 < -40.0) {
-      local_14 = -40.0;
+  delta = AngleNormalize180(pOrient->fDesiredLookPitch - *(float *)((int)in_ECX + 0xf0));
+  if (delta <= 40.0) {
+    if (delta < -40.0) {
+      delta = -40.0;
     }
   }
   else {
-    local_14 = 40.0;
+    delta = 40.0;
   }
-  paVar1 = (actor_s *)(*(float *)((int)in_ECX + 0xf0) + local_14);
-  local_14 = AngleNormalize180(*(float *)(local_8 + 8) - *(float *)((int)in_ECX + 0xf4));
-  if (local_14 <= 40.0) {
-    if (local_14 < -40.0) {
-      local_14 = -40.0;
+  fPitch_00 = (actor_s *)(*(float *)((int)in_ECX + 0xf0) + delta);
+  delta = AngleNormalize180(pOrient->fDesiredLookYaw - *(float *)((int)in_ECX + 0xf4));
+  if (delta <= 40.0) {
+    if (delta < -40.0) {
+      delta = -40.0;
     }
   }
   else {
-    local_14 = 40.0;
+    delta = 40.0;
   }
-  Actor_SetLookAngles(paVar1,*(float *)((int)in_ECX + 0xf4) + local_14,in_ECX);
+  Actor_SetLookAngles(fPitch_00,*(float *)((int)in_ECX + 0xf4) + delta,in_ECX);
   return;
 }
 
 
 // 00910FF0  CalcYaw  (game/actor_orientation.cpp:180)
 
-void __cdecl CalcYaw(float param_1,float *param_2,float *param_3,float param_4)
+void __cdecl CalcYaw(float dt,float *yaw,float *yawVeloc,float yawAccel)
 
 {
   float fVar1;
+  float yawVelocNew;
   
-  fVar1 = param_4 * param_1 + *param_3;
-  *param_2 = ((*param_3 + fVar1) * param_1) / 2.0 + *param_2;
-  *param_3 = fVar1;
+  fVar1 = yawAccel * dt + *yawVeloc;
+  *yaw = ((*yawVeloc + fVar1) * dt) / 2.0 + *yaw;
+  *yawVeloc = fVar1;
   return;
 }
 
 
 // 00911050  StepYaw  (game/actor_orientation.cpp:188)
 
-void __cdecl StepYaw(float param_1,float *param_2,float *param_3,float param_4,float param_5)
+void __cdecl StepYaw(float dt,float *yaw,float *yawVeloc,float targetYaw,float targetVeloc)
 
 {
+  float yawAccel;
   float fVar1;
-  float fVar2;
   float local_34;
   float local_30;
   float local_2c;
-  float local_14;
+  float timeToEnd;
+  float timeToMid;
+  float angleDelta;
+  float timeToAccel;
+  float maxVeloc;
+  float decel;
+  float timeToDecel;
+  float accel;
   
-  fVar2 = AngleDelta(param_4,*param_2);
-  if (0.0 <= fVar2) {
+  fVar1 = AngleDelta(targetYaw,*yaw);
+  if (0.0 <= fVar1) {
     local_2c = (ai_angularYawAccelRate->current).value;
   }
   else {
     local_2c = -(float)(ai_angularYawAccelRate->current).unsignedInt;
   }
-  fVar1 = -local_2c * (ai_angularYawDecelFactor->current).value;
-  local_14 = SQRT(((fVar2 * -2.0 * local_2c * fVar1 + param_5 * param_5 * local_2c) -
-                  *param_3 * *param_3 * fVar1) / (local_2c - fVar1));
-  if (fVar2 < 0.0) {
-    local_14 = -local_14;
+  yawAccel = -local_2c * (ai_angularYawDecelFactor->current).value;
+  maxVeloc = SQRT(((fVar1 * -2.0 * local_2c * yawAccel + targetVeloc * targetVeloc * local_2c) -
+                  *yawVeloc * *yawVeloc * yawAccel) / (local_2c - yawAccel));
+  if (fVar1 < 0.0) {
+    maxVeloc = -maxVeloc;
   }
-  local_30 = (local_14 - *param_3) / local_2c;
-  if (0.0 <= local_30 - param_1) {
-    local_30 = param_1;
+  local_30 = (maxVeloc - *yawVeloc) / local_2c;
+  if (0.0 <= local_30 - dt) {
+    local_30 = dt;
   }
   if (0.0 < local_30) {
-    CalcYaw(local_30,param_2,param_3,local_2c);
-    param_1 = param_1 - local_30;
+    CalcYaw(local_30,yaw,yawVeloc,local_2c);
+    dt = dt - local_30;
   }
-  local_34 = (param_5 - local_14) / fVar1;
-  if (0.0 <= local_34 - param_1) {
-    local_34 = param_1;
+  local_34 = (targetVeloc - maxVeloc) / yawAccel;
+  if (0.0 <= local_34 - dt) {
+    local_34 = dt;
   }
   if (0.0 < local_34) {
-    CalcYaw(local_34,param_2,param_3,fVar1);
+    CalcYaw(local_34,yaw,yawVeloc,yawAccel);
   }
   return;
 }
@@ -296,15 +318,17 @@ void __cdecl Actor_UpdateBodyAngle(actor_s *param_1)
   int *in_ECX;
   float fVar3;
   float in_stack_ffffffb8;
-  float local_28;
+  actor_s *self;
+  float maxTurnRate;
+  float desiredDir;
   float local_24;
   float local_20;
-  float local_1c;
+  float angles;
   int local_18;
   undefined4 local_14;
-  float local_10;
-  actor_s *local_c;
-  float local_8;
+  float delta;
+  float fYaw;
+  float fYawVeloc;
   
   if (in_ECX[0x4b] == 0) {
     in_ECX[0x4f] = in_ECX[0x4a];
@@ -312,23 +336,23 @@ void __cdecl Actor_UpdateBodyAngle(actor_s *param_1)
   else {
     in_ECX[0x4f] = in_ECX[0x4e];
   }
-  local_10 = AngleNormalize180((float)in_ECX[0x4f] - *(float *)(*in_ECX + 0x134));
-  if ((local_10 == 0.0) && (in_ECX[0x38d] != 0)) {
+  delta = AngleNormalize180((float)in_ECX[0x4f] - *(float *)(*in_ECX + 0x134));
+  if ((delta == 0.0) && (in_ECX[0x38d] != 0)) {
     Scr_Notify((gentity_s *)*in_ECX,scr_const.orientdone,0);
     in_ECX[0x38d] = 0;
   }
   if (1 < (ai_showPaths->current).integer) {
     local_18 = in_ECX[0x4f];
-    local_1c = 0.0;
+    angles = 0.0;
     local_14 = 0;
-    AngleVectors(&local_1c,&local_28,(float *)0x0,(float *)0x0);
+    AngleVectors(&angles,&desiredDir,(float *)0x0,(float *)0x0);
     iVar2 = *in_ECX;
-    local_28 = local_28 * 10.0 + *(float *)(iVar2 + 0x124);
+    desiredDir = desiredDir * 10.0 + *(float *)(iVar2 + 0x124);
     local_24 = local_24 * 10.0 + *(float *)(iVar2 + 0x128);
     local_20 = local_20 * 10.0 + *(float *)(iVar2 + 300);
   }
-  local_8 = 0.0;
-  local_c = *(actor_s **)(*in_ECX + 0x134);
+  fYawVeloc = 0.0;
+  fYaw = *(float *)(*in_ECX + 0x134);
   if ((ai_angularYawEnabled->current).enabled == false) {
     iVar2 = BG_ActorIsProne((actor_prone_info_s *)(in_ECX + 0x54),level.time);
     if (iVar2 == 0) {
@@ -339,24 +363,26 @@ void __cdecl Actor_UpdateBodyAngle(actor_s *param_1)
     }
     fVar3 = in_stack_ffffffb8 / 20.0;
     fVar1 = fVar3;
-    if ((local_10 <= fVar3) && (fVar1 = local_10, local_10 < -fVar3)) {
+    if ((delta <= fVar3) && (fVar1 = delta, delta < -fVar3)) {
       fVar1 = -fVar3;
     }
-    local_10 = fVar1;
-    local_c = (actor_s *)(*(float *)(*in_ECX + 0x134) + local_10);
+    delta = fVar1;
+    fYaw = *(float *)(*in_ECX + 0x134) + delta;
   }
   else {
-    local_c = *(actor_s **)(*in_ECX + 0x134);
-    local_8 = (float)in_ECX[0x5f2];
-    StepYaw(0.05,(float *)&local_c,&local_8,(float)in_ECX[0x4f],0.0);
+    fYaw = *(float *)(*in_ECX + 0x134);
+    fYawVeloc = (float)in_ECX[0x5f2];
+    StepYaw(0.05,&fYaw,&fYawVeloc,(float)in_ECX[0x4f],0.0);
   }
-  Actor_SetBodyAngle(local_c,in_stack_ffffffb8);
-  in_ECX[0x5f2] = (int)local_8;
+  Actor_SetBodyAngle((actor_s *)fYaw,in_stack_ffffffb8);
+  in_ECX[0x5f2] = (int)fYawVeloc;
   return;
 }
 
 
 // 00911520  Actor_FaceVector  (game/actor_orientation.cpp:300)
+
+/* WARNING: Variable defined which should be unmapped: v */
 
 void __cdecl Actor_FaceVector(ai_orient_t *param_1,float *param_2)
 
@@ -364,7 +390,9 @@ void __cdecl Actor_FaceVector(ai_orient_t *param_1,float *param_2)
   code *pcVar1;
   bool bVar2;
   float *in_EDX;
-  ai_orient_t *local_10;
+  float *v;
+  ai_orient_t *pOrient;
+  ai_orient_t *vAngle;
   float local_c;
   
   if ((*in_EDX == 0.0) && (in_EDX[1] == 0.0)) {
@@ -376,14 +404,16 @@ void __cdecl Actor_FaceVector(ai_orient_t *param_1,float *param_2)
       return;
     }
   }
-  vectoangles(in_EDX,(float *)&local_10);
-  Actor_SetDesiredAngles(local_10,local_c,(float)in_EDX);
+  vectoangles(in_EDX,(float *)&vAngle);
+  Actor_SetDesiredAngles(vAngle,local_c,(float)in_EDX);
   return;
 }
 
 
 // 00911F50  Actor_FaceMotion  (game/actor_orientation.cpp:318)
 
+/* WARNING: Variable defined which should be unmapped: pOrient */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -397,9 +427,11 @@ void __cdecl Actor_FaceMotion(actor_s *param_1,ai_orient_t *param_2)
   int iVar3;
   float *in_ECX;
   actor_s *in_EDX;
-  float local_1c;
+  ai_orient_t *pOrient;
+  actor_s *self;
+  float vDir;
   float local_18;
-  float local_10;
+  float forward;
   float local_c;
   
   if ((in_ECX == (float *)0x0) &&
@@ -425,14 +457,14 @@ void __cdecl Actor_FaceMotion(actor_s *param_1,ai_orient_t *param_2)
       Actor_GetMoveHistoryAverage(in_EDX,in_ECX);
     }
     else {
-      local_1c = in_ECX[0x98];
+      vDir = in_ECX[0x98];
       local_18 = in_ECX[0x99];
     }
-    if ((local_1c != 0.0) || (local_18 != 0.0)) {
+    if ((vDir != 0.0) || (local_18 != 0.0)) {
       if (*(char *)(in_ECX + 0x89) == '\0') {
-        Vec2Normalize(&local_1c);
-        YawVectors((float)in_EDX->legsAnim,&local_10,(float *)0x0);
-        if (0.9 <= local_10 * local_1c + local_c * local_18) goto LAB_00912104;
+        Vec2Normalize(&vDir);
+        YawVectors((float)in_EDX->legsAnim,&forward,(float *)0x0);
+        if (0.9 <= forward * vDir + local_c * local_18) goto LAB_00912104;
       }
       Actor_FaceVector((ai_orient_t *)in_EDX,in_ECX);
       return;
@@ -461,7 +493,8 @@ void __cdecl Actor_SetAnglesToLikelyEnemyPath(actor_s *param_1)
   code *pcVar3;
   bool bVar4;
   int *in_ECX;
-  float local_10;
+  actor_s *self;
+  float vDelta;
   float local_c;
   float local_8;
   
@@ -485,17 +518,17 @@ void __cdecl Actor_SetAnglesToLikelyEnemyPath(actor_s *param_1)
   }
   iVar1 = *in_ECX;
   iVar2 = in_ECX[0x5b3];
-  local_10 = *(float *)(iVar2 + 0x14) - *(float *)(iVar1 + 0x124);
+  vDelta = *(float *)(iVar2 + 0x14) - *(float *)(iVar1 + 0x124);
   local_c = *(float *)(iVar2 + 0x18) - *(float *)(iVar1 + 0x128);
   local_8 = *(float *)(iVar2 + 0x1c) - *(float *)(iVar1 + 300);
-  if (local_10 * local_10 + local_c * local_c < 1.0) {
+  if (vDelta * vDelta + local_c * local_c < 1.0) {
     iVar1 = *in_ECX;
     in_ECX[0x5ae] = *(int *)(iVar1 + 0x130);
     in_ECX[0x5af] = *(int *)(iVar1 + 0x134);
     in_ECX[0x5b0] = *(int *)(iVar1 + 0x138);
   }
   else {
-    vectoangles(&local_10,(float *)(in_ECX + 0x5ae));
+    vectoangles(&vDelta,(float *)(in_ECX + 0x5ae));
   }
   return;
 }
@@ -503,10 +536,11 @@ void __cdecl Actor_SetAnglesToLikelyEnemyPath(actor_s *param_1)
 
 // 009116F0  Actor_GetAnglesToLikelyEnemyPath  (game/actor_orientation.cpp:392)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 bool __cdecl Actor_GetAnglesToLikelyEnemyPath(actor_s *param_1)
 
@@ -517,17 +551,22 @@ bool __cdecl Actor_GetAnglesToLikelyEnemyPath(actor_s *param_1)
   int iVar4;
   gentity_s *pgVar5;
   actor_s *in_ECX;
+  actor_s *self;
   sentient_s *in_stack_ffffffa4;
-  int local_40;
-  sentient_s *local_34;
-  float local_30;
-  float local_2c;
-  sentient_s *local_28;
-  actor_s *local_20;
-  float local_14 [3];
-  undefined4 local_8;
+  int i;
+  pathnode_t *node;
+  int RECALC_INTERVAL;
+  sentient_s *enemy;
+  float fDistSqrd;
+  float fMinDistSqrd;
+  sentient_s *pFacingEnemy;
+  int iTeamFlags;
+  sentient_info_t *pInfo;
+  pathnode_t *nearestNodeToSelf;
+  float vEnemyPos [3];
+  int CHECK_INTERVAL;
   
-  local_8 = 500;
+  CHECK_INTERVAL = 500;
   if (in_ECX->sentient->bIgnoreAll == false) {
     tVar2 = Sentient_EnemyTeam(in_ECX->sentient->eTeam);
     if (in_ECX->faceLikelyEnemyPathNode == (pathnode_t *)0x0) {
@@ -550,41 +589,40 @@ bool __cdecl Actor_GetAnglesToLikelyEnemyPath(actor_s *param_1)
       }
     }
     in_ECX->faceLikelyEnemyPathNode = (pathnode_t *)0x0;
-    local_28 = (sentient_s *)0x0;
-    local_2c = 3.4028235e+38;
-    local_34 = level.sentients;
-    for (local_40 = 0; local_40 < 0x30; local_40 = local_40 + 1) {
-      if ((((local_34->inuse != false) &&
-           ((1 << ((byte)local_34->eTeam & 0x1f) & 1 << ((byte)tVar2 & 0x1f)) != 0)) &&
+    pFacingEnemy = (sentient_s *)0x0;
+    fMinDistSqrd = 3.4028235e+38;
+    enemy = level.sentients;
+    for (i = 0; i < 0x30; i = i + 1) {
+      if ((((enemy->inuse != false) &&
+           ((1 << ((byte)enemy->eTeam & 0x1f) & 1 << ((byte)tVar2 & 0x1f)) != 0)) &&
           (iVar4 = Actor_CheckIgnore((sentient_s *)in_ECX,in_stack_ffffffa4), iVar4 == 0)) &&
          ((iVar4 = EntHandle::isDefined(&in_ECX->sentient->scriptOwner), iVar4 == 0 ||
-          (pgVar5 = EntHandle::ent(&in_ECX->sentient->scriptOwner), local_34->ent != pgVar5)))) {
+          (pgVar5 = EntHandle::ent(&in_ECX->sentient->scriptOwner), enemy->ent != pgVar5)))) {
         Sentient_GetOrigin((sentient_s *)in_ECX,(float *)in_stack_ffffffa4);
-        local_30 = Vec3DistanceSq(local_14,(in_ECX->ent->r).currentOrigin);
-        if (local_34->ent->client != (gclient_s *)0x0) {
-          local_30 = local_30 * 0.25;
+        fDistSqrd = Vec3DistanceSq(vEnemyPos,(in_ECX->ent->r).currentOrigin);
+        if (enemy->ent->client != (gclient_s *)0x0) {
+          fDistSqrd = fDistSqrd * 0.25;
         }
-        if (local_30 < local_2c) {
-          local_2c = local_30;
-          local_28 = local_34;
+        if (fDistSqrd < fMinDistSqrd) {
+          fMinDistSqrd = fDistSqrd;
+          pFacingEnemy = enemy;
         }
       }
-      local_34 = local_34 + 1;
+      enemy = enemy + 1;
     }
-    if (local_28 == (sentient_s *)0x0) {
+    if (pFacingEnemy == (sentient_s *)0x0) {
       in_ECX->faceLikelyEnemyPathNeedRecalculateTime = level.time + 500;
       in_ECX->faceLikelyEnemyPathNeedCheckTime = in_ECX->faceLikelyEnemyPathNeedRecalculateTime;
       bVar1 = false;
     }
     else {
-      if (local_2c <= local_28->maxVisibleDist * local_28->maxVisibleDist) {
-        local_20 = (actor_s *)0x0;
+      if (fMinDistSqrd <= pFacingEnemy->maxVisibleDist * pFacingEnemy->maxVisibleDist) {
+        pInfo = (sentient_info_t *)0x0;
       }
       else {
-        local_20 = (actor_s *)(in_ECX->sentientInfo + ((int)local_28 - (int)level.sentients) / 0x90)
-        ;
+        pInfo = in_ECX->sentientInfo + ((int)pFacingEnemy - (int)level.sentients) / 0x90;
       }
-      ppVar3 = Path_FindFacingNode((sentient_s *)local_20,(sentient_s *)in_ECX,
+      ppVar3 = Path_FindFacingNode((sentient_s *)pInfo,(sentient_s *)in_ECX,
                                    (sentient_info_t *)in_stack_ffffffa4);
       if (ppVar3 == (pathnode_t *)0x0) {
         in_ECX->faceLikelyEnemyPathNeedRecalculateTime = level.time + 3000;
@@ -593,7 +631,7 @@ bool __cdecl Actor_GetAnglesToLikelyEnemyPath(actor_s *param_1)
       }
       else {
         in_ECX->faceLikelyEnemyPathNode = ppVar3;
-        Actor_SetAnglesToLikelyEnemyPath(local_20);
+        Actor_SetAnglesToLikelyEnemyPath((actor_s *)pInfo);
         in_ECX->faceLikelyEnemyPathNeedRecalculateTime = level.time + 3000;
         in_ECX->faceLikelyEnemyPathNeedCheckTime = level.time + 500;
         bVar1 = true;
@@ -609,6 +647,8 @@ bool __cdecl Actor_GetAnglesToLikelyEnemyPath(actor_s *param_1)
 
 // 00911A00  Actor_FaceLikelyEnemyPath  (game/actor_orientation.cpp:525)
 
+/* WARNING: Variable defined which should be unmapped: pOrient */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -617,24 +657,27 @@ bool __cdecl Actor_GetAnglesToLikelyEnemyPath(actor_s *param_1)
 void __cdecl Actor_FaceLikelyEnemyPath(actor_s *param_1,ai_orient_t *param_2)
 
 {
-  pathnode_t *ppVar1;
-  bool bVar2;
-  int iVar3;
+  pathnode_t *node_00;
+  bool bVar1;
+  int iVar2;
   pathnode_t *in_ECX;
   actor_s *in_EDX;
+  ai_orient_t *pOrient;
+  actor_s *self;
+  pathnode_t *node;
   
   if ((int)in_ECX[0x2d].dynamic.pOwner <= level.time) {
-    bVar2 = Actor_GetAnglesToLikelyEnemyPath(in_EDX);
-    if (bVar2) {
+    bVar1 = Actor_GetAnglesToLikelyEnemyPath(in_EDX);
+    if (bVar1) {
       Actor_SetDesiredAngles
                 (*(ai_orient_t **)&in_ECX[0x2d].constant.wChainId,
                  *(float *)&in_ECX[0x2d].constant.wChainParent,(float)in_EDX);
     }
     else {
-      ppVar1 = *(pathnode_t **)(*(int *)&(in_ECX->constant).spawnflags + 0x60);
-      if (((ppVar1 != (pathnode_t *)0x0) && (iVar3 = Path_IsValidClaimNode(ppVar1), iVar3 != 0)) &&
-         (bVar2 = Actor_PointNearNode((float *)in_EDX,in_ECX), bVar2)) {
-        Actor_SetDesiredAngles((ai_orient_t *)0x0,(ppVar1->constant).fAngle,(float)in_EDX);
+      node_00 = *(pathnode_t **)(*(int *)&(in_ECX->constant).spawnflags + 0x60);
+      if (((node_00 != (pathnode_t *)0x0) && (iVar2 = Path_IsValidClaimNode(node_00), iVar2 != 0))
+         && (bVar1 = Actor_PointNearNode((float *)in_EDX,in_ECX), bVar1)) {
+        Actor_SetDesiredAngles((ai_orient_t *)0x0,(node_00->constant).fAngle,(float)in_EDX);
       }
     }
   }
@@ -656,8 +699,10 @@ void __cdecl Actor_FaceLikelyEnemyPath(actor_s *param_1,ai_orient_t *param_2)
 /* WARNING: Removing unreachable block (ram,0x00911cb0) */
 /* WARNING: Removing unreachable block (ram,0x00911d25) */
 /* WARNING: Removing unreachable block (ram,0x00911d30) */
-/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: pOrient */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -674,7 +719,12 @@ void __cdecl Actor_FaceEnemy(actor_s *param_1,ai_orient_t *param_2)
   float fVar6;
   float fVar7;
   actor_s *paVar8;
-  float local_10;
+  ai_orient_t *pOrient;
+  actor_s *self;
+  pathnode_t *node;
+  sentient_s *enemy;
+  sentient_info_t *pInfo;
+  float v;
   float local_c;
   
   if ((in_ECX == (ai_orient_t *)0x0) &&
@@ -702,7 +752,7 @@ void __cdecl Actor_FaceEnemy(actor_s *param_1,ai_orient_t *param_2)
        (pcVar1 = (char *)((int)in_ECX + (((int)psVar5 - (int)level.sentients) / 0x90) * 0x28 + 0xf20
                          ), *pcVar1 != '\0')) {
       Actor_GetTargetPosition(paVar8,(float *)in_EDX);
-      fVar6 = local_10 - *(float *)(in_ECX->eMode + 0x124);
+      fVar6 = v - *(float *)(in_ECX->eMode + 0x124);
       fVar7 = local_c - *(float *)(in_ECX->eMode + 0x128);
       if (1.0 <= fVar6 * fVar6 + fVar7 * fVar7) {
         Actor_FaceVector((ai_orient_t *)paVar8,(float *)in_EDX);
@@ -722,6 +772,8 @@ void __cdecl Actor_FaceEnemy(actor_s *param_1,ai_orient_t *param_2)
 
 // 00912130  Actor_FaceEnemyOrMotion  (game/actor_orientation.cpp:665)
 
+/* WARNING: Variable defined which should be unmapped: pOrient */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -734,15 +786,18 @@ void __cdecl Actor_FaceEnemyOrMotion(actor_s *param_1,ai_orient_t *param_2)
   code *pcVar2;
   bool bVar3;
   gentity_s *pgVar4;
-  actor_s *paVar5;
-  int iVar6;
+  actor_s *vOrg;
+  int iVar5;
   ai_orient_t *in_ECX;
   actor_s *in_EDX;
-  float fVar7;
-  float local_1c;
+  float fVar6;
+  ai_orient_t *pOrient;
+  actor_s *self;
+  float enemyDistSqrd;
+  float vEnemyDir;
   float local_18;
   float local_14;
-  float local_10;
+  float vEnemyPos;
   float local_c;
   float local_8;
   
@@ -765,23 +820,23 @@ void __cdecl Actor_FaceEnemyOrMotion(actor_s *param_1,ai_orient_t *param_2)
     pgVar4 = Actor_GetTargetEntity(in_EDX);
     if ((pgVar4 != (gentity_s *)0x0) && (bVar3 = Actor_CanSeeEnemy(in_EDX), bVar3)) {
       Actor_GetTargetPosition(in_EDX,(float *)in_ECX);
-      fVar7 = Vec3DistanceSq((float *)(in_ECX->eMode + 0x124),&local_10);
-      if (122500.0 < fVar7) {
+      fVar6 = Vec3DistanceSq((float *)(in_ECX->eMode + 0x124),&vEnemyPos);
+      if (122500.0 < fVar6) {
         Actor_FaceMotion(in_EDX,in_ECX);
         return;
       }
       aVar1 = in_ECX->eMode;
-      local_1c = local_10 - *(float *)(aVar1 + 0x124);
+      vEnemyDir = vEnemyPos - *(float *)(aVar1 + 0x124);
       local_18 = local_c - *(float *)(aVar1 + 0x128);
       local_14 = local_8 - *(float *)(aVar1 + 300);
-      Vec3Normalize(&local_1c);
-      paVar5 = (actor_s *)(in_ECX->eMode + 0x124);
-      iVar6 = Path_MayFaceEnemy((path_t *)paVar5,(float *)in_EDX,(float *)in_ECX);
-      if (iVar6 != 0) {
-        Actor_FaceEnemy(paVar5,(ai_orient_t *)in_EDX);
+      Vec3Normalize(&vEnemyDir);
+      vOrg = (actor_s *)(in_ECX->eMode + 0x124);
+      iVar5 = Path_MayFaceEnemy((path_t *)vOrg,(float *)in_EDX,(float *)in_ECX);
+      if (iVar5 != 0) {
+        Actor_FaceEnemy(vOrg,(ai_orient_t *)in_EDX);
         return;
       }
-      Actor_FaceMotion(paVar5,(ai_orient_t *)in_EDX);
+      Actor_FaceMotion(vOrg,(ai_orient_t *)in_EDX);
       return;
     }
     Actor_FaceMotion(in_EDX,in_ECX);
@@ -795,6 +850,8 @@ void __cdecl Actor_FaceEnemyOrMotion(actor_s *param_1,ai_orient_t *param_2)
 
 // 009122E0  Actor_FaceEnemyOrMotionSidestep  (game/actor_orientation.cpp:726)
 
+/* WARNING: Variable defined which should be unmapped: pOrient */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -809,11 +866,13 @@ void __cdecl Actor_FaceEnemyOrMotionSidestep(actor_s *param_1,ai_orient_t *param
   int iVar4;
   ai_orient_t *in_ECX;
   actor_s *in_EDX;
-  actor_s *paVar5;
-  float local_1c;
+  actor_s *vOrg;
+  ai_orient_t *pOrient;
+  actor_s *self;
+  float vEnemyDir;
   float local_18;
   float local_14;
-  float local_10;
+  float vEnemyPos;
   float local_c;
   float local_8;
   
@@ -839,17 +898,17 @@ void __cdecl Actor_FaceEnemyOrMotionSidestep(actor_s *param_1,ai_orient_t *param
   if ((bVar3) && (((float)in_ECX[0x24].eMode != 0.0 || (in_ECX[0x24].fDesiredLookPitch != 0.0)))) {
     Actor_GetTargetPosition(in_EDX,(float *)in_ECX);
     aVar1 = in_ECX->eMode;
-    local_1c = local_10 - *(float *)(aVar1 + 0x124);
+    vEnemyDir = vEnemyPos - *(float *)(aVar1 + 0x124);
     local_18 = local_c - *(float *)(aVar1 + 0x128);
     local_14 = local_8 - *(float *)(aVar1 + 300);
-    Vec3Normalize(&local_1c);
-    paVar5 = (actor_s *)(in_ECX->eMode + 0x124);
-    iVar4 = Path_MayFaceEnemy((path_t *)paVar5,(float *)in_EDX,(float *)in_ECX);
+    Vec3Normalize(&vEnemyDir);
+    vOrg = (actor_s *)(in_ECX->eMode + 0x124);
+    iVar4 = Path_MayFaceEnemy((path_t *)vOrg,(float *)in_EDX,(float *)in_ECX);
     if (iVar4 == 0) {
-      Actor_FaceMotion(paVar5,(ai_orient_t *)in_EDX);
+      Actor_FaceMotion(vOrg,(ai_orient_t *)in_EDX);
     }
     else {
-      Actor_FaceEnemy(paVar5,(ai_orient_t *)in_EDX);
+      Actor_FaceEnemy(vOrg,(ai_orient_t *)in_EDX);
     }
   }
   else {
@@ -861,6 +920,7 @@ void __cdecl Actor_FaceEnemyOrMotionSidestep(actor_s *param_1,ai_orient_t *param
 
 // 00911DB0  Actor_DecideOrientation  (game/actor_orientation.cpp:764)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -869,67 +929,69 @@ void __cdecl Actor_FaceEnemyOrMotionSidestep(actor_s *param_1,ai_orient_t *param
 void __cdecl Actor_DecideOrientation(actor_s *param_1)
 
 {
-  pathnode_t *ppVar1;
-  code *pcVar2;
-  ai_orient_t *paVar3;
-  bool bVar4;
-  int iVar5;
-  char *pcVar6;
+  pathnode_t *node_00;
+  code *pcVar1;
+  ai_orient_t *paVar2;
+  bool bVar3;
+  int iVar4;
+  char *fmt;
   ai_orient_t *in_ECX;
-  actor_s *paVar7;
-  float *local_8;
+  actor_s *paVar5;
+  actor_s *self;
+  pathnode_t *node;
+  ai_orient_t *pOrient;
   
   if ((in_ECX == (ai_orient_t *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",
-                               0x303,0,"%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",
+                               0x303,0,"%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   if ((in_ECX->fDesiredLookPitch == 0.0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",
-                               0x304,0,"%s"), !bVar4)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",
+                               0x304,0,"%s"), !bVar3)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   *(undefined1 *)&in_ECX[0xe2].fDesiredBodyYaw = 0;
   if (in_ECX[0x12].fDesiredBodyYaw == 0.0) {
-    paVar3 = in_ECX + 0x11;
+    paVar2 = in_ECX + 0x11;
   }
   else {
-    paVar3 = in_ECX + 0x12;
+    paVar2 = in_ECX + 0x12;
   }
-  local_8 = &paVar3->fDesiredBodyYaw;
-  paVar7 = (actor_s *)((int)*local_8 + -1);
-  switch(paVar7) {
+  pOrient = (ai_orient_t *)&paVar2->fDesiredBodyYaw;
+  paVar5 = (actor_s *)(pOrient->eMode - AI_ORIENT_DONT_CHANGE);
+  switch(paVar5) {
   case (actor_s *)0x0:
     break;
   case (actor_s *)0x1:
-    Actor_FaceMotion(paVar7,in_ECX);
+    Actor_FaceMotion(paVar5,in_ECX);
     break;
   case (actor_s *)0x2:
-    Actor_FaceEnemy(paVar7,in_ECX);
+    Actor_FaceEnemy(paVar5,in_ECX);
     break;
   case (actor_s *)0x3:
-    Actor_FaceEnemyOrMotion(paVar7,in_ECX);
+    Actor_FaceEnemyOrMotion(paVar5,in_ECX);
     break;
   case (actor_s *)0x4:
-    Actor_FaceEnemyOrMotionSidestep(paVar7,in_ECX);
+    Actor_FaceEnemyOrMotionSidestep(paVar5,in_ECX);
     break;
   case (actor_s *)0x5:
-    ppVar1 = *(pathnode_t **)((int)in_ECX->fDesiredLookPitch + 0x60);
-    if ((ppVar1 != (pathnode_t *)0x0) && (iVar5 = Path_IsValidClaimNode(ppVar1), iVar5 != 0)) {
-      Actor_SetDesiredAngles((ai_orient_t *)0x0,(ppVar1->constant).fAngle,(float)paVar7);
+    node_00 = *(pathnode_t **)((int)in_ECX->fDesiredLookPitch + 0x60);
+    if ((node_00 != (pathnode_t *)0x0) && (iVar4 = Path_IsValidClaimNode(node_00), iVar4 != 0)) {
+      Actor_SetDesiredAngles((ai_orient_t *)0x0,(node_00->constant).fAngle,(float)paVar5);
     }
     break;
   default:
-    pcVar6 = va("invalid orient mode %i (code = %i, script = %i)");
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",0x33e,
-                             0,pcVar6);
-    if (!bVar4) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    fmt = va("invalid orient mode %i (code = %i, script = %i)");
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",0x33e,
+                             0,fmt);
+    if (!bVar3) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
@@ -952,6 +1014,8 @@ void __cdecl Actor_SetOrientMode(actor_s *param_1,ai_orient_mode_t param_2)
   int iVar3;
   int in_ECX;
   int in_EDX;
+  ai_orient_mode_t eMode;
+  actor_s *self;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_orientation.cpp",
@@ -988,6 +1052,7 @@ void __cdecl Actor_ClearScriptOrient(actor_s *param_1)
 
 {
   int in_ECX;
+  actor_s *self;
   
   if (*(int *)(in_ECX + 300) == 0) {
     *(undefined4 *)(in_ECX + 300) = *(undefined4 *)(in_ECX + 0x11c);

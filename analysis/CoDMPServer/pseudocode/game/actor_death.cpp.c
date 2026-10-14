@@ -2,10 +2,12 @@
 
 // 008EE070  Actor_Death_Start  (game/actor_death.cpp:28)
 
-/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Variable defined which should be unmapped: ePrevState */
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl Actor_Death_Start(actor_s *param_1,ai_state_t param_2)
 
@@ -16,6 +18,8 @@ bool __cdecl Actor_Death_Start(actor_s *param_1,ai_state_t param_2)
   int iVar4;
   pathnode_t *in_ECX;
   actor_s *in_EDX;
+  ai_state_t ePrevState;
+  actor_s *self;
   
   if (in_ECX == (pathnode_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_death.cpp",0x20,0,"%s")
@@ -71,6 +75,7 @@ bool __cdecl Actor_Death_Start(actor_s *param_1,ai_state_t param_2)
 
 // 008EE3A0  Actor_Death_Cleanup  (game/actor_death.cpp:64)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -83,6 +88,7 @@ void __cdecl Actor_Death_Cleanup(actor_s *param_1)
   bool bVar2;
   actor_s *in_ECX;
   ai_event_t unaff_EBP;
+  actor_s *self;
   
   if (in_ECX == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_death.cpp",0x41,0,"%s")
@@ -129,6 +135,7 @@ void __cdecl Actor_Death_Cleanup(actor_s *param_1)
 
 // 008EE200  Actor_Death_Think  (game/actor_death.cpp:90)
 
+/* WARNING: Variable defined which should be unmapped: self */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -142,30 +149,30 @@ actor_think_result_t __cdecl Actor_Death_Think(actor_s *param_1)
   actor_think_result_t aVar3;
   int iVar4;
   DWORD DVar5;
-  actor_s *extraout_var;
-  actor_s *paVar6;
+  actor_s *in_ECX;
+  actor_s *self;
   ai_orient_mode_t in_stack_ffffffe0;
   actor_think_result_t local_c;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"deaththink");
-  paVar6 = extraout_var;
-  if ((extraout_var == (actor_s *)0x0) &&
+  if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_death.cpp",0x5f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     aVar3 = (*pcVar1)();
     return aVar3;
   }
-  paVar6->pszDebugInfo = "death";
-  if ((paVar6->eSubState[paVar6->stateLevel] == STATE_DEATH_PRECLEANUP) &&
-     (799 < level.time - paVar6->iStateTime)) {
-    Actor_Death_Cleanup(paVar6);
-    Actor_SetSubState(paVar6,in_stack_ffffffe0);
+  in_ECX->pszDebugInfo = "death";
+  if ((in_ECX->eSubState[in_ECX->stateLevel] == STATE_DEATH_PRECLEANUP) &&
+     (799 < level.time - in_ECX->iStateTime)) {
+    Actor_Death_Cleanup(in_ECX);
+    Actor_SetSubState(in_ECX,in_stack_ffffffe0);
   }
-  if ((paVar6->pAnimScriptFunc == &g_animScriptTable[paVar6->species]->death) &&
-     (iVar4 = Actor_IsAnimScriptAlive(paVar6), iVar4 == 0)) {
-    if (paVar6->eSubState[paVar6->stateLevel] == STATE_DEATH_PRECLEANUP) {
-      Actor_Death_Cleanup(paVar6);
+  if ((in_ECX->pAnimScriptFunc == &g_animScriptTable[in_ECX->species]->death) &&
+     (iVar4 = Actor_IsAnimScriptAlive(in_ECX), iVar4 == 0)) {
+    if (in_ECX->eSubState[in_ECX->stateLevel] == STATE_DEATH_PRECLEANUP) {
+      Actor_Death_Cleanup(in_ECX);
     }
     local_c = ACTOR_THINK_MOVE_TO_BODY_QUEUE;
     DVar5 = GetCurrentThreadId();
@@ -174,12 +181,12 @@ actor_think_result_t __cdecl Actor_Death_Think(actor_s *param_1)
     }
   }
   else {
-    Actor_SetOrientMode(paVar6,in_stack_ffffffe0);
-    Actor_AnimDeath(paVar6);
-    Actor_PostThink(paVar6);
-    if (paVar6->iStateTime + 500 <= level.time) {
-      (paVar6->ent->r).contents = paVar6->deathContents;
-      SV_LinkEntity(paVar6->ent);
+    Actor_SetOrientMode(in_ECX,in_stack_ffffffe0);
+    Actor_AnimDeath(in_ECX);
+    Actor_PostThink(in_ECX);
+    if (in_ECX->iStateTime + 500 <= level.time) {
+      (in_ECX->ent->r).contents = in_ECX->deathContents;
+      SV_LinkEntity(in_ECX->ent);
     }
     DVar5 = GetCurrentThreadId();
     if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {

@@ -3,28 +3,31 @@
 // 00B6A510  prescan_quantize  (jpeg-6/jquant2.c:226)
 
 void __cdecl
-prescan_quantize(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+prescan_quantize(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
   short *psVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var2;
   uint uVar3;
-  int local_10;
-  byte *local_c;
-  uint local_8;
+  ushort *histp;
+  uint width;
+  my_cquantizer *cquantize;
+  int row;
+  uchar *ptr;
+  uint col;
   
-  p_Var2 = param_1->cquantize[1].finish_pass;
-  uVar3 = param_1->output_width;
-  for (local_10 = 0; local_10 < param_4; local_10 = local_10 + 1) {
-    local_c = param_2[local_10];
-    for (local_8 = uVar3; local_8 != 0; local_8 = local_8 - 1) {
-      psVar1 = (short *)(*(int *)(p_Var2 + ((int)(uint)*local_c >> 3) * 4) +
-                         ((int)(uint)local_c[1] >> 2) * 0x40 + ((int)(uint)local_c[2] >> 3) * 2);
+  p_Var2 = cinfo->cquantize[1].finish_pass;
+  uVar3 = cinfo->output_width;
+  for (row = 0; row < num_rows; row = row + 1) {
+    ptr = input_buf[row];
+    for (col = uVar3; col != 0; col = col - 1) {
+      psVar1 = (short *)(*(int *)(p_Var2 + ((int)(uint)*ptr >> 3) * 4) +
+                         ((int)(uint)ptr[1] >> 2) * 0x40 + ((int)(uint)ptr[2] >> 3) * 2);
       *psVar1 = *psVar1 + 1;
       if (*psVar1 == 0) {
         *psVar1 = *psVar1 + -1;
       }
-      local_c = local_c + 3;
+      ptr = ptr + 3;
     }
   }
   return;
@@ -33,92 +36,96 @@ prescan_quantize(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3
 
 // 00B6BBC0  find_biggest_color_pop  (jpeg-6/jquant2.c:276)
 
-box * __cdecl find_biggest_color_pop(box *param_1,int param_2)
+box * __cdecl find_biggest_color_pop(box *boxlist,int numboxes)
 
 {
-  box *local_14;
-  box *local_10;
-  int local_c;
-  int local_8;
+  box *boxp;
+  box *which;
+  long maxc;
+  int i;
   
-  local_c = 0;
-  local_10 = (box *)0x0;
-  local_14 = param_1;
-  for (local_8 = 0; local_8 < param_2; local_8 = local_8 + 1) {
-    if ((local_c < local_14->colorcount) && (0 < local_14->volume)) {
-      local_10 = local_14;
-      local_c = local_14->colorcount;
+  maxc = 0;
+  which = (box *)0x0;
+  boxp = boxlist;
+  for (i = 0; i < numboxes; i = i + 1) {
+    if ((maxc < boxp->colorcount) && (0 < boxp->volume)) {
+      which = boxp;
+      maxc = boxp->colorcount;
     }
-    local_14 = local_14 + 1;
+    boxp = boxp + 1;
   }
-  return local_10;
+  return which;
 }
 
 
 // 00B6BC30  find_biggest_volume  (jpeg-6/jquant2.c:296)
 
-box * __cdecl find_biggest_volume(box *param_1,int param_2)
+box * __cdecl find_biggest_volume(box *boxlist,int numboxes)
 
 {
-  box *local_14;
-  box *local_10;
-  int local_c;
-  int local_8;
+  box *boxp;
+  box *which;
+  int i;
+  long maxv;
   
-  local_8 = 0;
-  local_10 = (box *)0x0;
-  local_14 = param_1;
-  for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
-    if (local_8 < local_14->volume) {
-      local_10 = local_14;
-      local_8 = local_14->volume;
+  maxv = 0;
+  which = (box *)0x0;
+  boxp = boxlist;
+  for (i = 0; i < numboxes; i = i + 1) {
+    if (maxv < boxp->volume) {
+      which = boxp;
+      maxv = boxp->volume;
     }
-    local_14 = local_14 + 1;
+    boxp = boxp + 1;
   }
-  return local_10;
+  return which;
 }
 
 
 // 00B6B4F0  update_box  (jpeg-6/jquant2.c:316)
 
-void __cdecl update_box(jpeg_decompress_struct *param_1,box *param_2)
+void __cdecl update_box(jpeg_decompress_struct *cinfo,box *boxp)
 
 {
-  short sVar1;
+  ushort uVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var2;
   int iVar3;
   int iVar4;
   int iVar5;
-  int local_40;
-  short *local_3c;
-  int local_34;
-  int local_30;
-  int local_28;
-  int local_24;
-  int local_1c;
-  int local_18;
-  long local_14;
-  int local_10;
-  int local_c;
+  int c2min;
+  ushort *histp;
+  long dist1;
+  int c0max;
+  int c1min;
+  my_cquantizer *cquantize;
+  int c2;
+  int c1;
+  long dist2;
+  int c1max;
+  int c2max;
+  long ccount;
+  int c0;
+  int c0min;
+  long dist0;
   
-  p_Var2 = param_1->cquantize[1].finish_pass;
-  local_c = param_2->c0min;
-  local_34 = param_2->c0max;
-  local_30 = param_2->c1min;
-  local_1c = param_2->c1max;
-  local_40 = param_2->c2min;
-  local_18 = param_2->c2max;
-  local_10 = local_c;
-  if (local_c < local_34) {
-    for (; local_24 = local_30, local_10 <= local_34; local_10 = local_10 + 1) {
-      for (; local_24 <= local_1c; local_24 = local_24 + 1) {
-        local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_24 * 0x40 + local_40 * 2);
-        for (local_28 = local_40; local_28 <= local_18; local_28 = local_28 + 1) {
-          sVar1 = *local_3c;
-          local_3c = local_3c + 1;
-          if (sVar1 != 0) {
-            local_c = local_10;
-            param_2->c0min = local_10;
+  p_Var2 = cinfo->cquantize[1].finish_pass;
+  c0min = boxp->c0min;
+  c0max = boxp->c0max;
+  c1min = boxp->c1min;
+  c1max = boxp->c1max;
+  c2min = boxp->c2min;
+  c2max = boxp->c2max;
+  c0 = c0min;
+  if (c0min < c0max) {
+    for (; c1 = c1min, c0 <= c0max; c0 = c0 + 1) {
+      for (; c1 <= c1max; c1 = c1 + 1) {
+        histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1 * 0x40 + c2min * 2);
+        for (c2 = c2min; c2 <= c2max; c2 = c2 + 1) {
+          uVar1 = *histp;
+          histp = histp + 1;
+          if (uVar1 != 0) {
+            c0min = c0;
+            boxp->c0min = c0;
             goto LAB_00b6b5dd;
           }
         }
@@ -126,17 +133,17 @@ void __cdecl update_box(jpeg_decompress_struct *param_1,box *param_2)
     }
   }
 LAB_00b6b5dd:
-  local_10 = local_34;
-  if (local_c < local_34) {
-    for (; local_24 = local_30, local_c <= local_10; local_10 = local_10 + -1) {
-      for (; local_24 <= local_1c; local_24 = local_24 + 1) {
-        local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_24 * 0x40 + local_40 * 2);
-        for (local_28 = local_40; local_28 <= local_18; local_28 = local_28 + 1) {
-          sVar1 = *local_3c;
-          local_3c = local_3c + 1;
-          if (sVar1 != 0) {
-            local_34 = local_10;
-            param_2->c0max = local_10;
+  c0 = c0max;
+  if (c0min < c0max) {
+    for (; c1 = c1min, c0min <= c0; c0 = c0 + -1) {
+      for (; c1 <= c1max; c1 = c1 + 1) {
+        histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1 * 0x40 + c2min * 2);
+        for (c2 = c2min; c2 <= c2max; c2 = c2 + 1) {
+          uVar1 = *histp;
+          histp = histp + 1;
+          if (uVar1 != 0) {
+            c0max = c0;
+            boxp->c0max = c0;
             goto LAB_00b6b67b;
           }
         }
@@ -144,17 +151,17 @@ LAB_00b6b5dd:
     }
   }
 LAB_00b6b67b:
-  local_24 = local_30;
-  if (local_30 < local_1c) {
-    for (; local_24 <= local_1c; local_24 = local_24 + 1) {
-      for (local_10 = local_c; local_10 <= local_34; local_10 = local_10 + 1) {
-        local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_24 * 0x40 + local_40 * 2);
-        for (local_28 = local_40; local_28 <= local_18; local_28 = local_28 + 1) {
-          sVar1 = *local_3c;
-          local_3c = local_3c + 1;
-          if (sVar1 != 0) {
-            local_30 = local_24;
-            param_2->c1min = local_24;
+  c1 = c1min;
+  if (c1min < c1max) {
+    for (; c1 <= c1max; c1 = c1 + 1) {
+      for (c0 = c0min; c0 <= c0max; c0 = c0 + 1) {
+        histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1 * 0x40 + c2min * 2);
+        for (c2 = c2min; c2 <= c2max; c2 = c2 + 1) {
+          uVar1 = *histp;
+          histp = histp + 1;
+          if (uVar1 != 0) {
+            c1min = c1;
+            boxp->c1min = c1;
             goto LAB_00b6b719;
           }
         }
@@ -162,17 +169,17 @@ LAB_00b6b67b:
     }
   }
 LAB_00b6b719:
-  local_24 = local_1c;
-  if (local_30 < local_1c) {
-    for (; local_30 <= local_24; local_24 = local_24 + -1) {
-      for (local_10 = local_c; local_10 <= local_34; local_10 = local_10 + 1) {
-        local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_24 * 0x40 + local_40 * 2);
-        for (local_28 = local_40; local_28 <= local_18; local_28 = local_28 + 1) {
-          sVar1 = *local_3c;
-          local_3c = local_3c + 1;
-          if (sVar1 != 0) {
-            local_1c = local_24;
-            param_2->c1max = local_24;
+  c1 = c1max;
+  if (c1min < c1max) {
+    for (; c1min <= c1; c1 = c1 + -1) {
+      for (c0 = c0min; c0 <= c0max; c0 = c0 + 1) {
+        histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1 * 0x40 + c2min * 2);
+        for (c2 = c2min; c2 <= c2max; c2 = c2 + 1) {
+          uVar1 = *histp;
+          histp = histp + 1;
+          if (uVar1 != 0) {
+            c1max = c1;
+            boxp->c1max = c1;
             goto LAB_00b6b7b7;
           }
         }
@@ -180,194 +187,207 @@ LAB_00b6b719:
     }
   }
 LAB_00b6b7b7:
-  local_28 = local_40;
-  if (local_40 < local_18) {
-    for (; local_28 <= local_18; local_28 = local_28 + 1) {
-      for (local_10 = local_c; local_10 <= local_34; local_10 = local_10 + 1) {
-        local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_30 * 0x40 + local_28 * 2);
-        for (local_24 = local_30; local_24 <= local_1c; local_24 = local_24 + 1) {
-          if (*local_3c != 0) {
-            local_40 = local_28;
-            param_2->c2min = local_28;
+  c2 = c2min;
+  if (c2min < c2max) {
+    for (; c2 <= c2max; c2 = c2 + 1) {
+      for (c0 = c0min; c0 <= c0max; c0 = c0 + 1) {
+        histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1min * 0x40 + c2 * 2);
+        for (c1 = c1min; c1 <= c1max; c1 = c1 + 1) {
+          if (*histp != 0) {
+            c2min = c2;
+            boxp->c2min = c2;
             goto LAB_00b6b855;
           }
-          local_3c = local_3c + 0x20;
+          histp = histp + 0x20;
         }
       }
     }
   }
 LAB_00b6b855:
-  local_28 = local_18;
-  if (local_40 < local_18) {
-    for (; local_40 <= local_28; local_28 = local_28 + -1) {
-      for (local_10 = local_c; local_10 <= local_34; local_10 = local_10 + 1) {
-        local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_30 * 0x40 + local_28 * 2);
-        for (local_24 = local_30; local_24 <= local_1c; local_24 = local_24 + 1) {
-          if (*local_3c != 0) {
-            local_18 = local_28;
-            param_2->c2max = local_28;
+  c2 = c2max;
+  if (c2min < c2max) {
+    for (; c2min <= c2; c2 = c2 + -1) {
+      for (c0 = c0min; c0 <= c0max; c0 = c0 + 1) {
+        histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1min * 0x40 + c2 * 2);
+        for (c1 = c1min; c1 <= c1max; c1 = c1 + 1) {
+          if (*histp != 0) {
+            c2max = c2;
+            boxp->c2max = c2;
             goto LAB_00b6b8f3;
           }
-          local_3c = local_3c + 0x20;
+          histp = histp + 0x20;
         }
       }
     }
   }
 LAB_00b6b8f3:
-  iVar4 = (local_34 - local_c) * 8;
-  iVar5 = (local_1c - local_30) * 0xc;
-  iVar3 = (local_18 - local_40) * 0x10;
-  param_2->volume = iVar4 * iVar4 + iVar5 * iVar5 + iVar3 * iVar3;
-  local_14 = 0;
-  for (local_10 = local_c; local_10 <= local_34; local_10 = local_10 + 1) {
-    for (local_24 = local_30; local_24 <= local_1c; local_24 = local_24 + 1) {
-      local_3c = (short *)(*(int *)(p_Var2 + local_10 * 4) + local_24 * 0x40 + local_40 * 2);
-      for (local_28 = local_40; local_28 <= local_18; local_28 = local_28 + 1) {
-        if (*local_3c != 0) {
-          local_14 = local_14 + 1;
+  iVar4 = (c0max - c0min) * 8;
+  iVar5 = (c1max - c1min) * 0xc;
+  iVar3 = (c2max - c2min) * 0x10;
+  boxp->volume = iVar4 * iVar4 + iVar5 * iVar5 + iVar3 * iVar3;
+  ccount = 0;
+  for (c0 = c0min; c0 <= c0max; c0 = c0 + 1) {
+    for (c1 = c1min; c1 <= c1max; c1 = c1 + 1) {
+      histp = (ushort *)(*(int *)(p_Var2 + c0 * 4) + c1 * 0x40 + c2min * 2);
+      for (c2 = c2min; c2 <= c2max; c2 = c2 + 1) {
+        if (*histp != 0) {
+          ccount = ccount + 1;
         }
-        local_3c = local_3c + 1;
+        histp = histp + 1;
       }
     }
   }
-  param_2->colorcount = local_14;
+  boxp->colorcount = ccount;
   return;
 }
 
 
 // 00B6B9E0  median_cut  (jpeg-6/jquant2.c:427)
 
-int __cdecl median_cut(jpeg_decompress_struct *param_1,box *param_2,int param_3,int param_4)
+int __cdecl median_cut(jpeg_decompress_struct *cinfo,box *boxlist,int numboxes,int desired_colors)
 
 {
-  box *pbVar1;
-  int iVar2;
-  box *local_20;
-  int local_14;
-  int local_c;
+  box *boxp;
+  int iVar1;
+  int lb;
+  box *b1;
+  int c2;
+  int c1;
+  int cmax;
+  box *b2;
+  int n;
+  int c0;
   
   while( true ) {
-    if (param_4 <= param_3) {
-      return param_3;
+    if (desired_colors <= numboxes) {
+      return numboxes;
     }
-    if (param_3 * 2 - param_4 == 0 || param_3 * 2 < param_4) {
-      local_20 = find_biggest_color_pop(param_2,param_3);
+    if (numboxes * 2 - desired_colors == 0 || numboxes * 2 < desired_colors) {
+      b1 = find_biggest_color_pop(boxlist,numboxes);
     }
     else {
-      local_20 = find_biggest_volume(param_2,param_3);
+      b1 = find_biggest_volume(boxlist,numboxes);
     }
-    if (local_20 == (box *)0x0) break;
-    pbVar1 = param_2 + param_3;
-    pbVar1->c0max = local_20->c0max;
-    pbVar1->c1max = local_20->c1max;
-    pbVar1->c2max = local_20->c2max;
-    pbVar1->c0min = local_20->c0min;
-    pbVar1->c1min = local_20->c1min;
-    pbVar1->c2min = local_20->c2min;
-    local_14 = (local_20->c1max - local_20->c1min) * 0xc;
-    iVar2 = (local_20->c2max - local_20->c2min) * 0x10;
-    local_c = 1;
-    if (local_14 < iVar2) {
-      local_c = 2;
-      local_14 = iVar2;
+    if (b1 == (box *)0x0) break;
+    boxp = boxlist + numboxes;
+    boxp->c0max = b1->c0max;
+    boxp->c1max = b1->c1max;
+    boxp->c2max = b1->c2max;
+    boxp->c0min = b1->c0min;
+    boxp->c1min = b1->c1min;
+    boxp->c2min = b1->c2min;
+    cmax = (b1->c1max - b1->c1min) * 0xc;
+    iVar1 = (b1->c2max - b1->c2min) * 0x10;
+    n = 1;
+    if (cmax < iVar1) {
+      n = 2;
+      cmax = iVar1;
     }
-    if (local_14 < (local_20->c0max - local_20->c0min) * 8) {
-      local_c = 0;
+    if (cmax < (b1->c0max - b1->c0min) * 8) {
+      n = 0;
     }
-    if (local_c == 0) {
-      iVar2 = (local_20->c0max + local_20->c0min) / 2;
-      local_20->c0max = iVar2;
-      pbVar1->c0min = iVar2 + 1;
+    if (n == 0) {
+      iVar1 = (b1->c0max + b1->c0min) / 2;
+      b1->c0max = iVar1;
+      boxp->c0min = iVar1 + 1;
     }
-    else if (local_c == 1) {
-      iVar2 = (local_20->c1max + local_20->c1min) / 2;
-      local_20->c1max = iVar2;
-      pbVar1->c1min = iVar2 + 1;
+    else if (n == 1) {
+      iVar1 = (b1->c1max + b1->c1min) / 2;
+      b1->c1max = iVar1;
+      boxp->c1min = iVar1 + 1;
     }
-    else if (local_c == 2) {
-      iVar2 = (local_20->c2max + local_20->c2min) / 2;
-      local_20->c2max = iVar2;
-      pbVar1->c2min = iVar2 + 1;
+    else if (n == 2) {
+      iVar1 = (b1->c2max + b1->c2min) / 2;
+      b1->c2max = iVar1;
+      boxp->c2min = iVar1 + 1;
     }
-    update_box(param_1,local_20);
-    update_box(param_1,pbVar1);
-    param_3 = param_3 + 1;
+    update_box(cinfo,b1);
+    update_box(cinfo,boxp);
+    numboxes = numboxes + 1;
   }
-  return param_3;
+  return numboxes;
 }
 
 
 // 00B6BC90  compute_color  (jpeg-6/jquant2.c:501)
 
-void __cdecl compute_color(jpeg_decompress_struct *param_1,box *param_2,int param_3)
+void __cdecl compute_color(jpeg_decompress_struct *cinfo,box *boxp,int icolor)
 
 {
   uint uVar1;
   int iVar2;
-  int local_48;
-  ushort *local_3c;
-  int local_38;
-  int local_28;
-  int local_24;
-  int local_18;
-  int local_14;
-  int local_8;
+  long c2total;
+  int c2min;
+  ushort *histp;
+  long total;
+  int c0max;
+  int c1min;
+  my_cquantizer *cquantize;
+  int c2;
+  int c1;
+  int c1max;
+  int c2max;
+  long c0total;
+  int c0;
+  int c0min;
+  long count;
+  long c1total;
   
-  local_38 = 0;
-  local_18 = 0;
-  local_8 = 0;
-  local_48 = 0;
-  for (local_14 = param_2->c0min; local_24 = param_2->c1min, local_14 <= param_2->c0max;
-      local_14 = local_14 + 1) {
-    for (; local_24 <= param_2->c1max; local_24 = local_24 + 1) {
-      local_3c = (ushort *)
-                 (*(int *)(param_1->cquantize[1].finish_pass + local_14 * 4) + local_24 * 0x40 +
-                 param_2->c2min * 2);
-      for (local_28 = param_2->c2min; local_28 <= param_2->c2max; local_28 = local_28 + 1) {
-        uVar1 = (uint)*local_3c;
-        local_3c = local_3c + 1;
+  total = 0;
+  c0total = 0;
+  c1total = 0;
+  c2total = 0;
+  for (c0 = boxp->c0min; c1 = boxp->c1min, c0 <= boxp->c0max; c0 = c0 + 1) {
+    for (; c1 <= boxp->c1max; c1 = c1 + 1) {
+      histp = (ushort *)
+              (*(int *)(cinfo->cquantize[1].finish_pass + c0 * 4) + c1 * 0x40 + boxp->c2min * 2);
+      for (c2 = boxp->c2min; c2 <= boxp->c2max; c2 = c2 + 1) {
+        uVar1 = (uint)*histp;
+        histp = histp + 1;
         if (uVar1 != 0) {
-          local_38 = local_38 + uVar1;
-          local_18 = (local_14 * 8 + 4) * uVar1 + local_18;
-          local_8 = (local_24 * 4 + 2) * uVar1 + local_8;
-          local_48 = (local_28 * 8 + 4) * uVar1 + local_48;
+          total = total + uVar1;
+          c0total = (c0 * 8 + 4) * uVar1 + c0total;
+          c1total = (c1 * 4 + 2) * uVar1 + c1total;
+          c2total = (c2 * 8 + 4) * uVar1 + c2total;
         }
       }
     }
   }
-  iVar2 = local_38 >> 1;
-  (*param_1->colormap)[param_3] = (uchar)((iVar2 + local_18) / local_38);
-  param_1->colormap[1][param_3] = (uchar)((iVar2 + local_8) / local_38);
-  param_1->colormap[2][param_3] = (uchar)((iVar2 + local_48) / local_38);
+  iVar2 = total >> 1;
+  (*cinfo->colormap)[icolor] = (uchar)((iVar2 + c0total) / total);
+  cinfo->colormap[1][icolor] = (uchar)((iVar2 + c1total) / total);
+  cinfo->colormap[2][icolor] = (uchar)((iVar2 + c2total) / total);
   return;
 }
 
 
 // 00B6B3F0  select_colors  (jpeg-6/jquant2.c:541)
 
-void __cdecl select_colors(jpeg_decompress_struct *param_1,int param_2)
+void __cdecl select_colors(jpeg_decompress_struct *cinfo,int desired_colors)
 
 {
-  box *pbVar1;
-  int iVar2;
-  int local_8;
+  box *boxp;
+  int iVar1;
+  int numboxes;
+  box *boxlist;
+  int i;
   
-  pbVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,param_2 << 5);
-  pbVar1->c0min = 0;
-  pbVar1->c0max = 0x1f;
-  pbVar1->c1min = 0;
-  pbVar1->c1max = 0x3f;
-  pbVar1->c2min = 0;
-  pbVar1->c2max = 0x1f;
-  update_box(param_1,pbVar1);
-  iVar2 = median_cut(param_1,pbVar1,1,param_2);
-  for (local_8 = 0; local_8 < iVar2; local_8 = local_8 + 1) {
-    compute_color(param_1,pbVar1 + local_8,local_8);
+  boxp = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,desired_colors << 5);
+  boxp->c0min = 0;
+  boxp->c0max = 0x1f;
+  boxp->c1min = 0;
+  boxp->c1max = 0x3f;
+  boxp->c2min = 0;
+  boxp->c2max = 0x1f;
+  update_box(cinfo,boxp);
+  iVar1 = median_cut(cinfo,boxp,1,desired_colors);
+  for (i = 0; i < iVar1; i = i + 1) {
+    compute_color(cinfo,boxp + i,i);
   }
-  param_1->actual_number_of_colors = iVar2;
-  param_1->err->msg_code = 0x60;
-  (param_1->err->msg_parm).i[0] = iVar2;
-  (*param_1->err->emit_message)((jpeg_common_struct *)param_1,1);
+  cinfo->actual_number_of_colors = iVar1;
+  cinfo->err->msg_code = 0x60;
+  (cinfo->err->msg_parm).i[0] = iVar1;
+  (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,1);
   return;
 }
 
@@ -375,113 +395,116 @@ void __cdecl select_colors(jpeg_decompress_struct *param_1,int param_2)
 // 00B6A910  find_nearby_colors  (jpeg-6/jquant2.c:656)
 
 int __cdecl
-find_nearby_colors(jpeg_decompress_struct *param_1,int param_2,int param_3,int param_4,
-                  uchar *param_5)
+find_nearby_colors(jpeg_decompress_struct *cinfo,int minc0,int minc1,int minc2,uchar *colorlist)
 
 {
   int iVar1;
   int iVar2;
   uint uVar3;
-  int local_430;
-  int aiStack_42c [257];
-  int local_28;
-  int local_24;
-  int local_20;
-  int local_1c;
-  uint local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int centerc1;
+  int maxc1;
+  int centerc2;
+  long tdist;
+  long max_dist;
+  long alStack_42c [257];
+  int numcolors;
+  int maxc2;
+  int centerc0;
+  int i;
+  int x;
+  int maxc0;
+  int ncolors;
+  long min_dist;
+  long minmaxdist;
   
-  local_28 = param_1->actual_number_of_colors;
-  local_14 = param_2 + 0x18;
-  local_20 = param_2 + param_2 + 0x18 >> 1;
-  iVar2 = param_3 + 0x1c;
-  local_24 = param_4 + 0x18;
-  local_8 = 0x7fffffff;
-  for (local_1c = 0; local_1c < local_28; local_1c = local_1c + 1) {
-    uVar3 = (uint)(*param_1->colormap)[local_1c];
-    if ((int)uVar3 < param_2) {
-      local_c = (uVar3 - param_2) * (uVar3 - param_2);
-      local_430 = (uVar3 - local_14) * (uVar3 - local_14);
+  numcolors = cinfo->actual_number_of_colors;
+  maxc0 = minc0 + 0x18;
+  centerc0 = minc0 + minc0 + 0x18 >> 1;
+  iVar2 = minc1 + 0x1c;
+  maxc2 = minc2 + 0x18;
+  minmaxdist = 0x7fffffff;
+  for (i = 0; i < numcolors; i = i + 1) {
+    uVar3 = (uint)(*cinfo->colormap)[i];
+    if ((int)uVar3 < minc0) {
+      min_dist = (uVar3 - minc0) * (uVar3 - minc0);
+      max_dist = (uVar3 - maxc0) * (uVar3 - maxc0);
     }
-    else if (local_14 < (int)uVar3) {
-      local_c = (uVar3 - local_14) * (uVar3 - local_14);
-      local_430 = (uVar3 - param_2) * (uVar3 - param_2);
+    else if (maxc0 < (int)uVar3) {
+      min_dist = (uVar3 - maxc0) * (uVar3 - maxc0);
+      max_dist = (uVar3 - minc0) * (uVar3 - minc0);
     }
     else {
-      local_c = 0;
-      if (local_20 < (int)uVar3) {
-        local_430 = (uVar3 - param_2) * (uVar3 - param_2);
+      min_dist = 0;
+      if (centerc0 < (int)uVar3) {
+        max_dist = (uVar3 - minc0) * (uVar3 - minc0);
       }
       else {
-        local_430 = (uVar3 - local_14) * (uVar3 - local_14);
+        max_dist = (uVar3 - maxc0) * (uVar3 - maxc0);
       }
     }
-    uVar3 = (uint)param_1->colormap[1][local_1c];
-    if ((int)uVar3 < param_3) {
-      iVar1 = (uVar3 - param_3) * 3;
-      local_c = iVar1 * iVar1 + local_c;
+    uVar3 = (uint)cinfo->colormap[1][i];
+    if ((int)uVar3 < minc1) {
+      iVar1 = (uVar3 - minc1) * 3;
+      min_dist = iVar1 * iVar1 + min_dist;
       iVar1 = (uVar3 - iVar2) * 3;
-      local_430 = iVar1 * iVar1 + local_430;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
     else if (iVar2 < (int)uVar3) {
       iVar1 = (uVar3 - iVar2) * 3;
-      local_c = iVar1 * iVar1 + local_c;
-      iVar1 = (uVar3 - param_3) * 3;
-      local_430 = iVar1 * iVar1 + local_430;
+      min_dist = iVar1 * iVar1 + min_dist;
+      iVar1 = (uVar3 - minc1) * 3;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
-    else if (param_3 + iVar2 >> 1 < (int)uVar3) {
-      iVar1 = (uVar3 - param_3) * 3;
-      local_430 = iVar1 * iVar1 + local_430;
+    else if (minc1 + iVar2 >> 1 < (int)uVar3) {
+      iVar1 = (uVar3 - minc1) * 3;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
     else {
       iVar1 = (uVar3 - iVar2) * 3;
-      local_430 = iVar1 * iVar1 + local_430;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
-    local_18 = (uint)param_1->colormap[2][local_1c];
-    if ((int)local_18 < param_4) {
-      iVar1 = (local_18 - param_4) * 2;
-      local_c = iVar1 * iVar1 + local_c;
-      iVar1 = (local_18 - local_24) * 2;
-      local_430 = iVar1 * iVar1 + local_430;
+    x = (int)cinfo->colormap[2][i];
+    if (x < minc2) {
+      iVar1 = (x - minc2) * 2;
+      min_dist = iVar1 * iVar1 + min_dist;
+      iVar1 = (x - maxc2) * 2;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
-    else if (local_24 < (int)local_18) {
-      iVar1 = (local_18 - local_24) * 2;
-      local_c = iVar1 * iVar1 + local_c;
-      iVar1 = (local_18 - param_4) * 2;
-      local_430 = iVar1 * iVar1 + local_430;
+    else if (maxc2 < x) {
+      iVar1 = (x - maxc2) * 2;
+      min_dist = iVar1 * iVar1 + min_dist;
+      iVar1 = (x - minc2) * 2;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
-    else if (param_4 + param_4 + 0x18 >> 1 < (int)local_18) {
-      iVar1 = (local_18 - param_4) * 2;
-      local_430 = iVar1 * iVar1 + local_430;
+    else if (minc2 + minc2 + 0x18 >> 1 < x) {
+      iVar1 = (x - minc2) * 2;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
     else {
-      iVar1 = (local_18 - local_24) * 2;
-      local_430 = iVar1 * iVar1 + local_430;
+      iVar1 = (x - maxc2) * 2;
+      max_dist = iVar1 * iVar1 + max_dist;
     }
-    aiStack_42c[local_1c] = local_c;
-    if (local_430 < local_8) {
-      local_8 = local_430;
-    }
-  }
-  local_10 = 0;
-  for (local_1c = 0; local_1c < local_28; local_1c = local_1c + 1) {
-    if (aiStack_42c[local_1c] <= local_8) {
-      param_5[local_10] = (uchar)local_1c;
-      local_10 = local_10 + 1;
+    alStack_42c[i] = min_dist;
+    if (max_dist < minmaxdist) {
+      minmaxdist = max_dist;
     }
   }
-  return local_10;
+  ncolors = 0;
+  for (i = 0; i < numcolors; i = i + 1) {
+    if (alStack_42c[i] <= minmaxdist) {
+      colorlist[ncolors] = (uchar)i;
+      ncolors = ncolors + 1;
+    }
+  }
+  return ncolors;
 }
 
 
 // 00B6AD30  find_best_colors  (jpeg-6/jquant2.c:783)
 
 void __cdecl
-find_best_colors(jpeg_decompress_struct *param_1,int param_2,int param_3,int param_4,int param_5,
-                uchar *param_6,uchar *param_7)
+find_best_colors(jpeg_decompress_struct *cinfo,int minc0,int minc1,int minc2,int numcolors,
+                uchar *colorlist,uchar *bestcolor)
 
 {
   byte bVar1;
@@ -490,57 +513,61 @@ find_best_colors(jpeg_decompress_struct *param_1,int param_2,int param_3,int par
   int iVar4;
   int iVar5;
   int iVar6;
-  int *local_244;
-  int local_240;
-  int local_23c;
-  int local_234;
-  int local_22c;
-  byte *local_228;
-  int local_224;
-  int local_220;
-  int local_21c;
-  int local_214 [128];
-  int local_14;
-  int local_10;
-  int local_8;
+  long *bptr;
+  long xx2;
+  long dist1;
+  int icolor;
+  long xx0;
+  long inc2;
+  int ic0;
+  uchar *cptr;
+  int ic2;
+  long dist2;
+  long xx1;
+  long inc1;
+  long bestdist [128];
+  int i;
+  long dist0;
+  long inc0;
+  int ic1;
   
-  local_244 = local_214;
-  for (local_14 = 0x7f; -1 < local_14; local_14 = local_14 + -1) {
-    *local_244 = 0x7fffffff;
-    local_244 = local_244 + 1;
+  bptr = bestdist;
+  for (i = 0x7f; -1 < i; i = i + -1) {
+    *bptr = 0x7fffffff;
+    bptr = bptr + 1;
   }
-  for (local_14 = 0; local_14 < param_5; local_14 = local_14 + 1) {
-    bVar1 = param_6[local_14];
-    iVar4 = param_2 - (uint)(*param_1->colormap)[bVar1];
-    iVar5 = param_3 - (uint)param_1->colormap[1][bVar1];
+  for (i = 0; i < numcolors; i = i + 1) {
+    bVar1 = colorlist[i];
+    iVar4 = minc0 - (uint)(*cinfo->colormap)[bVar1];
+    iVar5 = minc1 - (uint)cinfo->colormap[1][bVar1];
     iVar6 = iVar5 * 3;
-    iVar2 = param_4 - (uint)param_1->colormap[2][bVar1];
+    iVar2 = minc2 - (uint)cinfo->colormap[2][bVar1];
     iVar3 = iVar2 * 2;
-    local_10 = iVar3 * iVar3 + iVar6 * iVar6 + iVar4 * iVar4;
-    local_234 = iVar4 * 0x10 + 0x40;
-    local_244 = local_214;
-    local_228 = param_7;
-    for (local_22c = 3; -1 < local_22c; local_22c = local_22c + -1) {
-      local_23c = local_10;
-      local_21c = iVar5 * 0x48 + 0x90;
-      for (local_8 = 7; -1 < local_8; local_8 = local_8 + -1) {
-        local_220 = local_23c;
-        local_240 = iVar2 * 0x40 + 0x100;
-        for (local_224 = 3; -1 < local_224; local_224 = local_224 + -1) {
-          if (local_220 < *local_244) {
-            *local_244 = local_220;
-            *local_228 = bVar1;
+    dist0 = iVar3 * iVar3 + iVar6 * iVar6 + iVar4 * iVar4;
+    xx0 = iVar4 * 0x10 + 0x40;
+    bptr = bestdist;
+    cptr = bestcolor;
+    for (ic0 = 3; -1 < ic0; ic0 = ic0 + -1) {
+      dist1 = dist0;
+      xx1 = iVar5 * 0x48 + 0x90;
+      for (ic1 = 7; -1 < ic1; ic1 = ic1 + -1) {
+        dist2 = dist1;
+        xx2 = iVar2 * 0x40 + 0x100;
+        for (ic2 = 3; -1 < ic2; ic2 = ic2 + -1) {
+          if (dist2 < *bptr) {
+            *bptr = dist2;
+            *cptr = bVar1;
           }
-          local_220 = local_220 + local_240;
-          local_240 = local_240 + 0x200;
-          local_244 = local_244 + 1;
-          local_228 = local_228 + 1;
+          dist2 = dist2 + xx2;
+          xx2 = xx2 + 0x200;
+          bptr = bptr + 1;
+          cptr = cptr + 1;
         }
-        local_23c = local_23c + local_21c;
-        local_21c = local_21c + 0x120;
+        dist1 = dist1 + xx1;
+        xx1 = xx1 + 0x120;
       }
-      local_10 = local_10 + local_234;
-      local_234 = local_234 + 0x80;
+      dist0 = dist0 + xx0;
+      xx0 = xx0 + 0x80;
     }
   }
   return;
@@ -551,41 +578,41 @@ find_best_colors(jpeg_decompress_struct *param_1,int param_2,int param_3,int par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl fill_inverse_cmap(jpeg_decompress_struct *param_1,int param_2,int param_3,int param_4)
+void __cdecl fill_inverse_cmap(jpeg_decompress_struct *cinfo,int c0,int c1,int c2)
 
 {
-  byte local_1bc [132];
-  _func___cdecl_void_jpeg_decompress_struct_ptr *local_138;
-  int local_134;
-  int local_130;
-  byte *local_12c;
-  jpeg_color_quantizer *local_128;
-  int local_124;
-  int local_120;
-  short *local_11c;
-  int local_118;
-  int local_114;
-  int local_110;
-  uchar local_10c [260];
+  uchar bestcolor [132];
+  uchar **histogram;
+  int minc0;
+  int ic0;
+  uchar *cptr;
+  my_cquantizer *cquantize;
+  int minc2;
+  int ic2;
+  ushort *cachep;
+  int numcolors;
+  int minc1;
+  int ic1;
+  uchar colorlist [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_128 = param_1->cquantize;
-  local_138 = local_128[1].finish_pass;
-  local_134 = (param_2 >> 2) * 0x20 + 4;
-  local_114 = (param_3 >> 3) * 0x20 + 2;
-  local_124 = (param_4 >> 2) * 0x20 + 4;
-  local_118 = find_nearby_colors(param_1,local_134,local_114,local_124,local_10c);
-  find_best_colors(param_1,local_134,local_114,local_124,local_118,local_10c,local_1bc);
-  local_12c = local_1bc;
-  for (local_130 = 0; local_130 < 4; local_130 = local_130 + 1) {
-    for (local_110 = 0; local_110 < 8; local_110 = local_110 + 1) {
-      local_11c = (short *)(*(int *)(local_138 + ((param_2 >> 2) * 4 + local_130) * 4) +
-                            ((param_3 >> 3) * 8 + local_110) * 0x40 + (param_4 >> 2) * 8);
-      for (local_120 = 0; local_120 < 4; local_120 = local_120 + 1) {
-        *local_11c = *local_12c + 1;
-        local_11c = local_11c + 1;
-        local_12c = local_12c + 1;
+  cquantize = (my_cquantizer *)cinfo->cquantize;
+  histogram = cquantize->colorindex;
+  minc0 = (c0 >> 2) * 0x20 + 4;
+  minc1 = (c1 >> 3) * 0x20 + 2;
+  minc2 = (c2 >> 2) * 0x20 + 4;
+  numcolors = find_nearby_colors(cinfo,minc0,minc1,minc2,colorlist);
+  find_best_colors(cinfo,minc0,minc1,minc2,numcolors,colorlist,bestcolor);
+  cptr = bestcolor;
+  for (ic0 = 0; ic0 < 4; ic0 = ic0 + 1) {
+    for (ic1 = 0; ic1 < 8; ic1 = ic1 + 1) {
+      cachep = (ushort *)
+               (histogram[(c0 >> 2) * 4 + ic0] + (c2 >> 2) * 8 + ((c1 >> 3) * 8 + ic1) * 0x40);
+      for (ic2 = 0; ic2 < 4; ic2 = ic2 + 1) {
+        *cachep = *cptr + 1;
+        cachep = cachep + 1;
+        cptr = cptr + 1;
       }
     }
   }
@@ -596,7 +623,7 @@ void __cdecl fill_inverse_cmap(jpeg_decompress_struct *param_1,int param_2,int p
 // 00B6A5F0  pass2_no_dither  (jpeg-6/jquant2.c:918)
 
 void __cdecl
-pass2_no_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+pass2_no_dither(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
   short *psVar1;
@@ -605,29 +632,35 @@ pass2_no_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,
   uint uVar4;
   byte *pbVar5;
   byte *pbVar6;
-  uchar *local_2c;
-  byte *local_24;
-  int local_10;
-  uint local_8;
+  uchar *outptr;
+  uint width;
+  uchar *inptr;
+  my_cquantizer *cquantize;
+  ushort *cachep;
+  int c2;
+  int c1;
+  int row;
+  int c0;
+  uint col;
   
-  p_Var3 = param_1->cquantize[1].finish_pass;
-  uVar4 = param_1->output_width;
-  for (local_10 = 0; local_10 < param_4; local_10 = local_10 + 1) {
-    local_24 = param_2[local_10];
-    local_2c = param_3[local_10];
-    for (local_8 = uVar4; local_8 != 0; local_8 = local_8 - 1) {
-      bVar2 = *local_24;
-      pbVar5 = local_24 + 1;
-      pbVar6 = local_24 + 2;
-      local_24 = local_24 + 3;
+  p_Var3 = cinfo->cquantize[1].finish_pass;
+  uVar4 = cinfo->output_width;
+  for (row = 0; row < num_rows; row = row + 1) {
+    inptr = input_buf[row];
+    outptr = output_buf[row];
+    for (col = uVar4; col != 0; col = col - 1) {
+      bVar2 = *inptr;
+      pbVar5 = inptr + 1;
+      pbVar6 = inptr + 2;
+      inptr = inptr + 3;
       psVar1 = (short *)(*(int *)(p_Var3 + ((int)(uint)bVar2 >> 3) * 4) +
                          ((int)(uint)*pbVar5 >> 2) * 0x40 + ((int)(uint)*pbVar6 >> 3) * 2);
       if (*psVar1 == 0) {
-        fill_inverse_cmap(param_1,(int)(uint)bVar2 >> 3,(int)(uint)*pbVar5 >> 2,
+        fill_inverse_cmap(cinfo,(int)(uint)bVar2 >> 3,(int)(uint)*pbVar5 >> 2,
                           (int)(uint)*pbVar6 >> 3);
       }
-      *local_2c = (char)*psVar1 + 0xff;
-      local_2c = local_2c + 1;
+      *outptr = (char)*psVar1 + 0xff;
+      outptr = outptr + 1;
     }
   }
   return;
@@ -637,7 +670,7 @@ pass2_no_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,
 // 00B6AFF0  pass2_fs_dither  (jpeg-6/jquant2.c:952)
 
 void __cdecl
-pass2_fs_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,int param_4)
+pass2_fs_dither(jpeg_decompress_struct *cinfo,uchar **input_buf,uchar **output_buf,int num_rows)
 
 {
   ushort *puVar1;
@@ -655,100 +688,106 @@ pass2_fs_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,
   int iVar13;
   int iVar14;
   int iVar15;
-  uchar local_6c;
-  int local_68;
-  int local_5c;
-  uchar *local_58;
-  int local_54;
-  int local_50;
-  byte *local_44;
-  int local_38;
-  int local_30;
-  int local_2c;
-  int local_28;
-  _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *local_24;
-  int local_20;
-  int local_18;
-  int local_14;
-  int local_10;
-  uint local_8;
+  int delta;
+  int bnexterr;
+  int pixcode;
+  int bpreverr2;
+  int *error_limit;
+  int cur0;
+  uchar *outptr;
+  int dir;
+  int bpreverr1;
+  uint width;
+  uchar *range_limit;
+  uchar *inptr;
+  uchar *colormap2;
+  my_cquantizer *cquantize;
+  int bpreverr0;
+  ushort *cachep;
+  int row;
+  int cur2;
+  int belowerr1;
+  short *errorptr;
+  int dir3;
+  uchar *colormap1;
+  int cur1;
+  int belowerr0;
+  int belowerr2;
+  uchar *colormap0;
+  uint col;
   
-  pjVar5 = param_1->cquantize;
+  pjVar5 = cinfo->cquantize;
   p_Var6 = pjVar5[1].finish_pass;
-  uVar7 = param_1->output_width;
-  puVar8 = param_1->sample_range_limit;
+  uVar7 = cinfo->output_width;
+  puVar8 = cinfo->sample_range_limit;
   p_Var9 = pjVar5[2].finish_pass;
-  puVar10 = *param_1->colormap;
-  puVar11 = param_1->colormap[1];
-  puVar12 = param_1->colormap[2];
-  for (local_30 = 0; local_30 < param_4; local_30 = local_30 + 1) {
-    local_44 = param_2[local_30];
-    local_58 = param_3[local_30];
+  puVar10 = *cinfo->colormap;
+  puVar11 = cinfo->colormap[1];
+  puVar12 = cinfo->colormap[2];
+  for (row = 0; row < num_rows; row = row + 1) {
+    inptr = input_buf[row];
+    outptr = output_buf[row];
     if (*(char *)&pjVar5[2].color_quantize == '\0') {
-      local_54 = 1;
-      local_20 = 3;
-      local_24 = pjVar5[2].start_pass;
+      dir = 1;
+      dir3 = 3;
+      errorptr = (short *)pjVar5[2].start_pass;
       *(undefined1 *)&pjVar5[2].color_quantize = 1;
     }
     else {
-      local_44 = local_44 + (uVar7 - 1) * 3;
-      local_58 = local_58 + (uVar7 - 1);
-      local_54 = -1;
-      local_20 = -3;
-      local_24 = pjVar5[2].start_pass + (uVar7 + 1) * 6;
+      inptr = inptr + (uVar7 - 1) * 3;
+      outptr = outptr + (uVar7 - 1);
+      dir = -1;
+      dir3 = -3;
+      errorptr = (short *)(pjVar5[2].start_pass + (uVar7 + 1) * 6);
       *(undefined1 *)&pjVar5[2].color_quantize = 0;
     }
-    local_2c = 0;
-    local_18 = 0;
-    local_5c = 0;
-    local_10 = 0;
-    local_28 = 0;
-    local_14 = 0;
-    local_68 = 0;
-    local_50 = 0;
-    local_38 = 0;
-    for (local_8 = uVar7; local_8 != 0; local_8 = local_8 - 1) {
-      bVar2 = puVar8[(uint)*local_44 +
-                     *(int *)(p_Var9 + (local_5c + 8 + (int)*(short *)(local_24 + local_20 * 2) >> 4
-                                       ) * 4)];
-      bVar3 = puVar8[(uint)local_44[1] +
-                     *(int *)(p_Var9 + (local_18 + 8 +
-                                        (int)*(short *)(local_24 + (local_20 + 1) * 2) >> 4) * 4)];
-      bVar4 = puVar8[(uint)local_44[2] +
-                     *(int *)(p_Var9 + (local_2c + 8 +
-                                        (int)*(short *)(local_24 + (local_20 + 2) * 2) >> 4) * 4)];
+    cur2 = 0;
+    cur1 = 0;
+    cur0 = 0;
+    belowerr2 = 0;
+    belowerr1 = 0;
+    belowerr0 = 0;
+    bpreverr2 = 0;
+    bpreverr1 = 0;
+    bpreverr0 = 0;
+    for (col = uVar7; col != 0; col = col - 1) {
+      bVar2 = puVar8[(uint)*inptr + *(int *)(p_Var9 + (cur0 + 8 + (int)errorptr[dir3] >> 4) * 4)];
+      bVar3 = puVar8[(uint)inptr[1] +
+                     *(int *)(p_Var9 + (cur1 + 8 + (int)errorptr[dir3 + 1] >> 4) * 4)];
+      bVar4 = puVar8[(uint)inptr[2] +
+                     *(int *)(p_Var9 + (cur2 + 8 + (int)errorptr[dir3 + 2] >> 4) * 4)];
       iVar13 = (int)(uint)bVar2 >> 3;
       iVar14 = (int)(uint)bVar3 >> 2;
       iVar15 = (int)(uint)bVar4 >> 3;
       puVar1 = (ushort *)(*(int *)(p_Var6 + iVar13 * 4) + iVar14 * 0x40 + iVar15 * 2);
       if (*puVar1 == 0) {
-        fill_inverse_cmap(param_1,iVar13,iVar14,iVar15);
+        fill_inverse_cmap(cinfo,iVar13,iVar14,iVar15);
       }
       iVar15 = *puVar1 - 1;
-      local_6c = (uchar)iVar15;
-      *local_58 = local_6c;
+      pixcode._0_1_ = (uchar)iVar15;
+      *outptr = (uchar)pixcode;
       iVar13 = (uint)bVar2 - (uint)puVar10[iVar15];
       iVar14 = (uint)bVar3 - (uint)puVar11[iVar15];
       iVar15 = (uint)bVar4 - (uint)puVar12[iVar15];
-      *(short *)local_24 = (short)local_38 + (short)iVar13 * 3;
-      local_38 = local_14 + iVar13 * 5;
-      local_5c = iVar13 * 7;
-      *(short *)(local_24 + 2) = (short)local_50 + (short)iVar14 * 3;
-      local_50 = local_28 + iVar14 * 5;
-      local_18 = iVar14 * 7;
-      *(short *)(local_24 + 4) = (short)local_68 + (short)iVar15 * 3;
-      local_68 = local_10 + iVar15 * 5;
-      local_2c = iVar15 * 7;
-      local_44 = local_44 + local_20;
-      local_58 = local_58 + local_54;
-      local_24 = local_24 + local_20 * 2;
-      local_28 = iVar14;
-      local_14 = iVar13;
-      local_10 = iVar15;
+      *errorptr = (short)bpreverr0 + (short)iVar13 * 3;
+      bpreverr0 = belowerr0 + iVar13 * 5;
+      cur0 = iVar13 * 7;
+      errorptr[1] = (short)bpreverr1 + (short)iVar14 * 3;
+      bpreverr1 = belowerr1 + iVar14 * 5;
+      cur1 = iVar14 * 7;
+      errorptr[2] = (short)bpreverr2 + (short)iVar15 * 3;
+      bpreverr2 = belowerr2 + iVar15 * 5;
+      cur2 = iVar15 * 7;
+      inptr = inptr + dir3;
+      outptr = outptr + dir;
+      errorptr = errorptr + dir3;
+      belowerr1 = iVar14;
+      belowerr0 = iVar13;
+      belowerr2 = iVar15;
     }
-    *(short *)local_24 = (short)local_38;
-    *(short *)(local_24 + 2) = (short)local_50;
-    *(short *)(local_24 + 4) = (short)local_68;
+    *errorptr = (short)bpreverr0;
+    errorptr[1] = (short)bpreverr1;
+    errorptr[2] = (short)bpreverr2;
   }
   return;
 }
@@ -756,34 +795,36 @@ pass2_fs_dither(jpeg_decompress_struct *param_1,uchar **param_2,uchar **param_3,
 
 // 00B6A270  init_error_limit  (jpeg-6/jquant2.c:1110)
 
-void __cdecl init_error_limit(jpeg_decompress_struct *param_1)
+void __cdecl init_error_limit(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
   void *pvVar2;
   _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var3;
-  int local_14;
-  uint local_8;
+  int out;
+  int *table;
+  my_cquantizer *cquantize;
+  int in;
   
-  pjVar1 = param_1->cquantize;
-  pvVar2 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x7fc);
+  pjVar1 = cinfo->cquantize;
+  pvVar2 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x7fc);
   p_Var3 = (_func___cdecl_void_jpeg_decompress_struct_ptr *)((int)pvVar2 + 0x3fc);
   pjVar1[2].finish_pass = p_Var3;
-  local_14 = 0;
-  for (local_8 = 0; (int)local_8 < 0x10; local_8 = local_8 + 1) {
-    *(int *)(p_Var3 + local_8 * 4) = local_14;
-    *(int *)(p_Var3 + local_8 * -4) = -local_14;
-    local_14 = local_14 + 1;
+  out = 0;
+  for (in = 0; in < 0x10; in = in + 1) {
+    *(int *)(p_Var3 + in * 4) = out;
+    *(int *)(p_Var3 + in * -4) = -out;
+    out = out + 1;
   }
-  while ((int)local_8 < 0x30) {
-    *(int *)(p_Var3 + local_8 * 4) = local_14;
-    *(int *)(p_Var3 + local_8 * -4) = -local_14;
-    local_8 = local_8 + 1;
-    local_14 = (uint)((local_8 & 1) == 0) + local_14;
+  while (in < 0x30) {
+    *(int *)(p_Var3 + in * 4) = out;
+    *(int *)(p_Var3 + in * -4) = -out;
+    in = in + 1;
+    out = (uint)((in & 1U) == 0) + out;
   }
-  for (; (int)local_8 < 0x100; local_8 = local_8 + 1) {
-    *(int *)(p_Var3 + local_8 * 4) = local_14;
-    *(int *)(p_Var3 + local_8 * -4) = -local_14;
+  for (; in < 0x100; in = in + 1) {
+    *(int *)(p_Var3 + in * 4) = out;
+    *(int *)(p_Var3 + in * -4) = -out;
   }
   return;
 }
@@ -791,14 +832,15 @@ void __cdecl init_error_limit(jpeg_decompress_struct *param_1)
 
 // 00B6B3B0  finish_pass1  (jpeg-6/jquant2.c:1144)
 
-void __cdecl finish_pass1(jpeg_decompress_struct *param_1)
+void __cdecl finish_pass1(jpeg_decompress_struct *cinfo)
 
 {
   jpeg_color_quantizer *pjVar1;
+  my_cquantizer *cquantize;
   
-  pjVar1 = param_1->cquantize;
-  param_1->colormap = (uchar **)pjVar1[1].start_pass;
-  select_colors(param_1,(int)pjVar1[1].color_quantize);
+  pjVar1 = cinfo->cquantize;
+  cinfo->colormap = (uchar **)pjVar1[1].start_pass;
+  select_colors(cinfo,(int)pjVar1[1].color_quantize);
   *(undefined1 *)&pjVar1[1].new_color_map = 1;
   return;
 }
@@ -806,49 +848,51 @@ void __cdecl finish_pass1(jpeg_decompress_struct *param_1)
 
 // 00B6A370  start_pass_2_quant  (jpeg-6/jquant2.c:1168)
 
-void __cdecl start_pass_2_quant(jpeg_decompress_struct *param_1,uchar param_2)
+void __cdecl start_pass_2_quant(jpeg_decompress_struct *cinfo,uchar is_pre_scan)
 
 {
   jpeg_color_quantizer *pjVar1;
   _func___cdecl_void_jpeg_decompress_struct_ptr *p_Var2;
   int iVar3;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var4;
-  uint uVar5;
-  int local_8;
+  uint bytestozero;
+  uint arraysize;
+  my_cquantizer *cquantize;
+  int i;
   
-  pjVar1 = param_1->cquantize;
+  pjVar1 = cinfo->cquantize;
   p_Var2 = pjVar1[1].finish_pass;
-  if (param_1->dither_mode != JDITHER_NONE) {
-    param_1->dither_mode = JDITHER_FS;
+  if (cinfo->dither_mode != JDITHER_NONE) {
+    cinfo->dither_mode = JDITHER_FS;
   }
-  if (param_2 == '\0') {
-    if (param_1->dither_mode == JDITHER_FS) {
+  if (is_pre_scan == '\0') {
+    if (cinfo->dither_mode == JDITHER_FS) {
       pjVar1->color_quantize = pass2_fs_dither;
     }
     else {
       pjVar1->color_quantize = pass2_no_dither;
     }
     pjVar1->finish_pass = GamerProfile_WriteSettings;
-    iVar3 = param_1->actual_number_of_colors;
+    iVar3 = cinfo->actual_number_of_colors;
     if (iVar3 < 1) {
-      param_1->err->msg_code = 0x38;
-      (param_1->err->msg_parm).i[0] = 1;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x38;
+      (cinfo->err->msg_parm).i[0] = 1;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     if (0x100 < iVar3) {
-      param_1->err->msg_code = 0x39;
-      (param_1->err->msg_parm).i[0] = 0x100;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x39;
+      (cinfo->err->msg_parm).i[0] = 0x100;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    if (param_1->dither_mode == JDITHER_FS) {
-      uVar5 = (param_1->output_width + 2) * 6;
+    if (cinfo->dither_mode == JDITHER_FS) {
+      bytestozero = (cinfo->output_width + 2) * 6;
       if (pjVar1[2].start_pass == (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)0x0) {
-        p_Var4 = (*param_1->mem->alloc_large)((jpeg_common_struct *)param_1,1,uVar5);
+        p_Var4 = (*cinfo->mem->alloc_large)((jpeg_common_struct *)cinfo,1,bytestozero);
         pjVar1[2].start_pass = p_Var4;
       }
-      R_SetBlackProbe((uchar *)pjVar1[2].start_pass,uVar5);
+      R_SetBlackProbe((uchar *)pjVar1[2].start_pass,bytestozero);
       if (pjVar1[2].finish_pass == (_func___cdecl_void_jpeg_decompress_struct_ptr *)0x0) {
-        init_error_limit(param_1);
+        init_error_limit(cinfo);
       }
       *(undefined1 *)&pjVar1[2].color_quantize = 0;
     }
@@ -859,8 +903,8 @@ void __cdecl start_pass_2_quant(jpeg_decompress_struct *param_1,uchar param_2)
     *(undefined1 *)&pjVar1[1].new_color_map = 1;
   }
   if (*(char *)&pjVar1[1].new_color_map != '\0') {
-    for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-      R_SetBlackProbe(*(uchar **)(p_Var2 + local_8 * 4),0x1000);
+    for (i = 0; i < 0x20; i = i + 1) {
+      R_SetBlackProbe(*(uchar **)(p_Var2 + i * 4),0x1000);
     }
     *(undefined1 *)&pjVar1[1].new_color_map = 0;
   }
@@ -870,17 +914,19 @@ void __cdecl start_pass_2_quant(jpeg_decompress_struct *param_1,uchar param_2)
 
 // 00B6BE30  new_color_map_2_quant  (jpeg-6/jquant2.c:1231)
 
-void __cdecl new_color_map_2_quant(jpeg_decompress_struct *param_1)
+void __cdecl new_color_map_2_quant(jpeg_decompress_struct *cinfo)
 
 {
-  *(undefined1 *)&param_1->cquantize[1].new_color_map = 1;
+  my_cquantizer *cquantize;
+  
+  *(undefined1 *)&cinfo->cquantize[1].new_color_map = 1;
   return;
 }
 
 
 // 00B6A090  jinit_2pass_quantizer  (jpeg-6/jquant2.c:1245)
 
-void __cdecl jinit_2pass_quantizer(jpeg_decompress_struct *param_1)
+void __cdecl jinit_2pass_quantizer(jpeg_decompress_struct *cinfo)
 
 {
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *p_Var1;
@@ -889,53 +935,55 @@ void __cdecl jinit_2pass_quantizer(jpeg_decompress_struct *param_1)
   void *pvVar4;
   uchar **ppuVar5;
   _func___cdecl_void_jpeg_decompress_struct_ptr_uchar *p_Var6;
-  int local_8;
+  int desired;
+  my_cquantizer *cquantize;
+  int i;
   
-  pjVar2 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x2c);
-  param_1->cquantize = pjVar2;
+  pjVar2 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x2c);
+  cinfo->cquantize = pjVar2;
   pjVar2->start_pass = start_pass_2_quant;
   pjVar2->new_color_map = new_color_map_2_quant;
   pjVar2[2].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)0x0;
   pjVar2[2].finish_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr *)0x0;
-  if (param_1->out_color_components != 3) {
-    param_1->err->msg_code = 0x2f;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->out_color_components != 3) {
+    cinfo->err->msg_code = 0x2f;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  p_Var3 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x80);
+  p_Var3 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x80);
   pjVar2[1].finish_pass = p_Var3;
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    pvVar4 = (*param_1->mem->alloc_large)((jpeg_common_struct *)param_1,1,0x1000);
-    *(void **)(pjVar2[1].finish_pass + local_8 * 4) = pvVar4;
+  for (i = 0; i < 0x20; i = i + 1) {
+    pvVar4 = (*cinfo->mem->alloc_large)((jpeg_common_struct *)cinfo,1,0x1000);
+    *(void **)(pjVar2[1].finish_pass + i * 4) = pvVar4;
   }
   *(undefined1 *)&pjVar2[1].new_color_map = 1;
-  if (param_1->enable_2pass_quant == '\0') {
+  if (cinfo->enable_2pass_quant == '\0') {
     pjVar2[1].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)0x0;
   }
   else {
     p_Var1 = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar_ptr_ptr_uchar_ptr_ptr_int *)
-             param_1->desired_number_of_colors;
+             cinfo->desired_number_of_colors;
     if ((int)p_Var1 < 8) {
-      param_1->err->msg_code = 0x38;
-      (param_1->err->msg_parm).i[0] = 8;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x38;
+      (cinfo->err->msg_parm).i[0] = 8;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
     if (0x100 < (int)p_Var1) {
-      param_1->err->msg_code = 0x39;
-      (param_1->err->msg_parm).i[0] = 0x100;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x39;
+      (cinfo->err->msg_parm).i[0] = 0x100;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    ppuVar5 = (*param_1->mem->alloc_sarray)((jpeg_common_struct *)param_1,1,(uint)p_Var1,3);
+    ppuVar5 = (*cinfo->mem->alloc_sarray)((jpeg_common_struct *)cinfo,1,(uint)p_Var1,3);
     pjVar2[1].start_pass = (_func___cdecl_void_jpeg_decompress_struct_ptr_uchar *)ppuVar5;
     pjVar2[1].color_quantize = p_Var1;
   }
-  if (param_1->dither_mode != JDITHER_NONE) {
-    param_1->dither_mode = JDITHER_FS;
+  if (cinfo->dither_mode != JDITHER_NONE) {
+    cinfo->dither_mode = JDITHER_FS;
   }
-  if (param_1->dither_mode == JDITHER_FS) {
-    p_Var6 = (*param_1->mem->alloc_large)
-                       ((jpeg_common_struct *)param_1,1,(param_1->output_width + 2) * 6);
+  if (cinfo->dither_mode == JDITHER_FS) {
+    p_Var6 = (*cinfo->mem->alloc_large)((jpeg_common_struct *)cinfo,1,(cinfo->output_width + 2) * 6)
+    ;
     pjVar2[2].start_pass = p_Var6;
-    init_error_limit(param_1);
+    init_error_limit(cinfo);
   }
   return;
 }

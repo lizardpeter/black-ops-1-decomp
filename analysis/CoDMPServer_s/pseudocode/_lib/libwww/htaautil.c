@@ -36,40 +36,40 @@ int _HTAA_updateNode(undefined4 param_1,int param_2,undefined4 param_3)
 
 {
   int iVar1;
-  uchar *puVar2;
+  uchar *string;
   undefined1 *extraout_EAX;
-  void *pvVar3;
-  int *piVar4;
+  void *pBlock;
+  int *piVar2;
   
   if ((param_2 == 0) || (iVar1 = FUN_0088ca90("basic"), iVar1 == 0)) {
     return 0;
   }
-  puVar2 = (uchar *)_HTParse("",8);
-  strchr(puVar2,':');
+  string = (uchar *)_HTParse("",8);
+  strchr(string,':');
   iVar1 = 0x50;
   if (extraout_EAX != (undefined1 *)0x0) {
     *extraout_EAX = 0;
     iVar1 = atoi(extraout_EAX + 1);
   }
-  iVar1 = _HTUTree_new(puVar2,iVar1,FUN_0088cc30);
-  if (puVar2 != (uchar *)0x0) {
-    free(puVar2);
+  iVar1 = _HTUTree_new(string,iVar1,FUN_0088cc30);
+  if (string != (uchar *)0x0) {
+    free(string);
   }
   if (iVar1 != 0) {
-    pvVar3 = (void *)_HTParse("",5);
-    piVar4 = (int *)_HTUTree_findNode(pvVar3);
-    if (((piVar4 == (int *)0x0) || (*piVar4 == 0)) || (iVar1 = strcasecomp(), iVar1 != 0)) {
-      piVar4 = (int *)FUN_0088cb70(param_3);
+    pBlock = (void *)_HTParse("",5);
+    piVar2 = (int *)_HTUTree_findNode(pBlock);
+    if (((piVar2 == (int *)0x0) || (*piVar2 == 0)) || (iVar1 = strcasecomp(), iVar1 != 0)) {
+      piVar2 = (int *)FUN_0088cb70(param_3);
       iVar1 = _HTUTree_addNode();
     }
     else {
       iVar1 = FUN_0088cbd0();
     }
-    if (pvVar3 != (void *)0x0) {
-      free(pvVar3);
+    if (pBlock != (void *)0x0) {
+      free(pBlock);
     }
     if (iVar1 == 1) {
-      return piVar4[1];
+      return piVar2[1];
     }
   }
   return 0;
@@ -82,34 +82,34 @@ undefined4 _HTAA_deleteNode(undefined4 param_1,undefined4 param_2,int param_3)
 
 {
   int iVar1;
-  uchar *puVar2;
+  uchar *string;
   undefined1 *extraout_EAX;
-  void *pvVar3;
-  undefined4 uVar4;
+  void *pBlock;
+  undefined4 uVar2;
   
   if ((param_3 == 0) || (iVar1 = FUN_0088ca90("basic"), iVar1 == 0)) {
     return 0;
   }
-  puVar2 = (uchar *)_HTParse("",8);
-  strchr(puVar2,':');
+  string = (uchar *)_HTParse("",8);
+  strchr(string,':');
   iVar1 = 0x50;
   if (extraout_EAX != (undefined1 *)0x0) {
     *extraout_EAX = 0;
     iVar1 = atoi(extraout_EAX + 1);
   }
-  iVar1 = _HTUTree_new(puVar2,iVar1,FUN_0088cc30);
-  if (puVar2 != (uchar *)0x0) {
-    free(puVar2);
+  iVar1 = _HTUTree_new(string,iVar1,FUN_0088cc30);
+  if (string != (uchar *)0x0) {
+    free(string);
   }
   if (iVar1 == 0) {
     return 0;
   }
-  pvVar3 = (void *)_HTParse("",5);
-  uVar4 = _HTUTree_deleteNode(iVar1,pvVar3);
-  if (pvVar3 != (void *)0x0) {
-    free(pvVar3);
+  pBlock = (void *)_HTParse("",5);
+  uVar2 = _HTUTree_deleteNode(iVar1,pBlock);
+  if (pBlock != (void *)0x0) {
+    free(pBlock);
   }
-  return uVar4;
+  return uVar2;
 }
 
 
@@ -118,25 +118,25 @@ undefined4 _HTAA_deleteNode(undefined4 param_1,undefined4 param_2,int param_3)
 undefined4 _HTAA_beforeFilter(int param_1,undefined4 param_2)
 
 {
-  void *pvVar1;
-  int *piVar2;
-  int iVar3;
-  undefined4 uVar4;
+  void *pBlock;
+  int *piVar1;
+  int iVar2;
+  undefined4 uVar3;
   
-  pvVar1 = (void *)_HTAnchor_address();
+  pBlock = (void *)_HTAnchor_address();
   if (param_1 == 0) {
-    uVar4 = 0;
+    uVar3 = 0;
   }
   else {
-    uVar4 = *(undefined4 *)(param_1 + 0xb4);
+    uVar3 = *(undefined4 *)(param_1 + 0xb4);
   }
-  piVar2 = (int *)FUN_0088cc90(0,uVar4,pvVar1);
-  if (pvVar1 != (void *)0x0) {
-    free(pvVar1);
+  piVar1 = (int *)FUN_0088cc90(0,uVar3,pBlock);
+  if (pBlock != (void *)0x0) {
+    free(pBlock);
   }
-  if (((piVar2 != (int *)0x0) && (*piVar2 != 0)) && (iVar3 = FUN_0088ca90(*piVar2), iVar3 != 0)) {
-    uVar4 = (**(code **)(iVar3 + 4))(param_1,piVar2[1],param_2);
-    return uVar4;
+  if (((piVar1 != (int *)0x0) && (*piVar1 != 0)) && (iVar2 = FUN_0088ca90(*piVar1), iVar2 != 0)) {
+    uVar3 = (**(code **)(iVar2 + 4))(param_1,piVar1[1],param_2);
+    return uVar3;
   }
   return 0;
 }

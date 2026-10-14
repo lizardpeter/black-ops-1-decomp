@@ -22,10 +22,10 @@ col_context_t * __thiscall col_context_t::col_context_t(col_context_t *this)
 
 // 006B4F00  col_context_t  (qcommon/cm_trace.cpp:41)
 
-col_context_t * __thiscall col_context_t::col_context_t(col_context_t *this,int param_1)
+col_context_t * __thiscall col_context_t::col_context_t(col_context_t *this,int _mask)
 
 {
-  this->mask = param_1;
+  this->mask = _mask;
   this->prims = (col_prim_t *)0x0;
   this->nprims = 0;
   this->ignoreEntParams = (IgnoreEntParams *)0x0;
@@ -41,10 +41,10 @@ col_context_t * __thiscall col_context_t::col_context_t(col_context_t *this,int 
 
 // 006B4F80  init_locational  (qcommon/cm_trace.cpp:49)
 
-void __thiscall col_context_t::init_locational(col_context_t *this,int param_1)
+void __thiscall col_context_t::init_locational(col_context_t *this,int ent0)
 
 {
-  this->passEntityNum0 = param_1;
+  this->passEntityNum0 = ent0;
   this->locational = 1;
   this->staticmodels = 1;
   return;
@@ -53,11 +53,11 @@ void __thiscall col_context_t::init_locational(col_context_t *this,int param_1)
 
 // 006B4FB0  init_locational  (qcommon/cm_trace.cpp:55)
 
-void __thiscall col_context_t::init_locational(col_context_t *this,int param_1,int param_2)
+void __thiscall col_context_t::init_locational(col_context_t *this,int ent0,int ent1)
 
 {
-  this->passEntityNum0 = param_1;
-  this->passEntityNum1 = param_2;
+  this->passEntityNum0 = ent0;
+  this->passEntityNum1 = ent1;
   this->locational = 1;
   this->staticmodels = 1;
   return;
@@ -66,29 +66,29 @@ void __thiscall col_context_t::init_locational(col_context_t *this,int param_1,i
 
 // 006B4FF0  Trace_GetEntityHitId  (qcommon/cm_trace.cpp:62)
 
-ushort __cdecl Trace_GetEntityHitId(trace_t *param_1)
+ushort __cdecl Trace_GetEntityHitId(trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if ((param_1 == (trace_t *)0x0) &&
+  if ((trace == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x3f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if ((param_1->hitType == TRACE_HITTYPE_DYNENT_MODEL) ||
-     (param_1->hitType == TRACE_HITTYPE_DYNENT_BRUSH)) {
+  if ((trace->hitType == TRACE_HITTYPE_DYNENT_MODEL) ||
+     (trace->hitType == TRACE_HITTYPE_DYNENT_BRUSH)) {
     uVar3 = 0x3fe;
   }
-  else if (param_1->hitType == TRACE_HITTYPE_GLASS) {
+  else if (trace->hitType == TRACE_HITTYPE_GLASS) {
     uVar3 = 0x3fe;
   }
-  else if (param_1->hitType == TRACE_HITTYPE_ENTITY) {
-    uVar3 = param_1->hitId;
+  else if (trace->hitType == TRACE_HITTYPE_ENTITY) {
+    uVar3 = trace->hitId;
   }
   else {
     uVar3 = 0x3ff;
@@ -99,15 +99,15 @@ ushort __cdecl Trace_GetEntityHitId(trace_t *param_1)
 
 // 006B5070  Trace_GetDynEntHitId  (qcommon/cm_trace.cpp:80)
 
-ushort __cdecl Trace_GetDynEntHitId(trace_t *param_1,DynEntityDrawType *param_2)
+ushort __cdecl Trace_GetDynEntHitId(trace_t *trace,DynEntityDrawType *drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  ushort local_8;
+  ushort dynEntId;
   
-  if (param_1 == (trace_t *)0x0) {
+  if (trace == (trace_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x51,0,"%s")
     ;
     if (!bVar2) {
@@ -116,7 +116,7 @@ ushort __cdecl Trace_GetDynEntHitId(trace_t *param_1,DynEntityDrawType *param_2)
       return uVar3;
     }
   }
-  if (param_2 == (DynEntityDrawType *)0x0) {
+  if (drawType == (DynEntityDrawType *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x52,0,"%s")
     ;
     if (!bVar2) {
@@ -125,11 +125,11 @@ ushort __cdecl Trace_GetDynEntHitId(trace_t *param_1,DynEntityDrawType *param_2)
       return uVar3;
     }
   }
-  local_8 = 0xffff;
-  if (param_1->hitType == TRACE_HITTYPE_DYNENT_MODEL) {
-    *param_2 = DYNENT_DRAW_MODEL;
-    local_8 = param_1->hitId;
-    if (cm.dynEntCount[0] <= local_8) {
+  dynEntId = 0xffff;
+  if (trace->hitType == TRACE_HITTYPE_DYNENT_MODEL) {
+    *drawType = DYNENT_DRAW_MODEL;
+    dynEntId = trace->hitId;
+    if (cm.dynEntCount[0] <= dynEntId) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x5a,0,
                                "dynEntId doesn\'t index cm.dynEntCount[DynEntGetClientCollType( DYNENT_DRAW_MODEL )]\n\t%i not in [0, %i)"
                               );
@@ -140,10 +140,10 @@ ushort __cdecl Trace_GetDynEntHitId(trace_t *param_1,DynEntityDrawType *param_2)
       }
     }
   }
-  if (param_1->hitType == TRACE_HITTYPE_DYNENT_BRUSH) {
-    *param_2 = DYNENT_DRAW_BRUSH;
-    local_8 = param_1->hitId;
-    if (cm.dynEntCount[1] <= local_8) {
+  if (trace->hitType == TRACE_HITTYPE_DYNENT_BRUSH) {
+    *drawType = DYNENT_DRAW_BRUSH;
+    dynEntId = trace->hitId;
+    if (cm.dynEntCount[1] <= dynEntId) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x61,0,
                                "dynEntId doesn\'t index cm.dynEntCount[DynEntGetClientCollType( DYNENT_DRAW_BRUSH )]\n\t%i not in [0, %i)"
                               );
@@ -154,21 +154,21 @@ ushort __cdecl Trace_GetDynEntHitId(trace_t *param_1,DynEntityDrawType *param_2)
       }
     }
   }
-  return local_8;
+  return dynEntId;
 }
 
 
 // 006B51A0  Trace_GetGlassHitId  (qcommon/cm_trace.cpp:105)
 
-int __cdecl Trace_GetGlassHitId(trace_t *param_1)
+int __cdecl Trace_GetGlassHitId(trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  int id;
   
-  if (param_1 == (trace_t *)0x0) {
+  if (trace == (trace_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x6a,0,"%s")
     ;
     if (!bVar2) {
@@ -177,24 +177,25 @@ int __cdecl Trace_GetGlassHitId(trace_t *param_1)
       return iVar3;
     }
   }
-  local_8 = 0xffffffff;
-  if (param_1->hitType == TRACE_HITTYPE_GLASS) {
-    local_8 = (uint)param_1->hitId;
+  id = -1;
+  if (trace->hitType == TRACE_HITTYPE_GLASS) {
+    id = (int)trace->hitId;
   }
-  return local_8;
+  return id;
 }
 
 
 // 006B51F0  CM_GetTraceThreadInfo  (qcommon/cm_trace.cpp:121)
 
-void __cdecl CM_GetTraceThreadInfo(TraceThreadInfo *param_1)
+void __cdecl CM_GetTraceThreadInfo(TraceThreadInfo *threadInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   int *piVar3;
+  TraceThreadInfo *value;
   
-  if (param_1 == (TraceThreadInfo *)0x0) {
+  if (threadInfo == (TraceThreadInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7c,0,"%s")
     ;
     if (!bVar2) {
@@ -214,12 +215,12 @@ void __cdecl CM_GetTraceThreadInfo(TraceThreadInfo *param_1)
     }
   }
   *piVar3 = *piVar3 + 1;
-  (param_1->checkcount).global = *piVar3;
-  (param_1->checkcount).partitions = (int *)piVar3[1];
-  param_1->box_brush = (cbrush_t *)piVar3[2];
-  param_1->box_model = (cmodel_t *)piVar3[3];
-  param_1->geoms = (PhysGeomList **)piVar3[4];
-  if (((param_1->checkcount).partitions == (int *)0x0) && (cm.partitionCount != 0)) {
+  (threadInfo->checkcount).global = *piVar3;
+  (threadInfo->checkcount).partitions = (int *)piVar3[1];
+  threadInfo->box_brush = (cbrush_t *)piVar3[2];
+  threadInfo->box_model = (cmodel_t *)piVar3[3];
+  threadInfo->geoms = (PhysGeomList **)piVar3[4];
+  if (((threadInfo->checkcount).partitions == (int *)0x0) && (cm.partitionCount != 0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x84,0,"%s")
     ;
     if (!bVar2) {
@@ -243,12 +244,13 @@ uchar * __cdecl CM_GetClipMap(void)
 
 // 006B53A0  CM_GetBox  (qcommon/cm_trace.cpp:144)
 
-void __cdecl CM_GetBox(cbrush_t **param_1,cmodel_t **param_2,PhysGeomList ***param_3)
+void __cdecl CM_GetBox(cbrush_t **box_brush,cmodel_t **box_model,PhysGeomList ***geoms)
 
 {
   code *pcVar1;
   bool bVar2;
   void *pvVar3;
+  TraceThreadInfo *value;
   
   pvVar3 = Sys_GetValue(3);
   if (pvVar3 == (void *)0x0) {
@@ -278,10 +280,10 @@ void __cdecl CM_GetBox(cbrush_t **param_1,cmodel_t **param_2,PhysGeomList ***par
       return;
     }
   }
-  *param_1 = *(cbrush_t **)((int)pvVar3 + 8);
-  *param_2 = *(cmodel_t **)((int)pvVar3 + 0xc);
-  if (param_3 != (PhysGeomList ***)0x0) {
-    *param_3 = *(PhysGeomList ***)((int)pvVar3 + 0x10);
+  *box_brush = *(cbrush_t **)((int)pvVar3 + 8);
+  *box_model = *(cmodel_t **)((int)pvVar3 + 0xc);
+  if (geoms != (PhysGeomList ***)0x0) {
+    *geoms = *(PhysGeomList ***)((int)pvVar3 + 0x10);
   }
   return;
 }
@@ -289,41 +291,41 @@ void __cdecl CM_GetBox(cbrush_t **param_1,cmodel_t **param_2,PhysGeomList ***par
 
 // 006B52D0  CM_TempBoxModel  (qcommon/cm_trace.cpp:173)
 
-uint __cdecl CM_TempBoxModel(float *param_1,float *param_2,int param_3)
+uint __cdecl CM_TempBoxModel(float *mins,float *maxs,int contents)
 
 {
-  cbrush_t *local_c;
-  cmodel_t *local_8;
+  cbrush_t *box_brush;
+  cmodel_t *box_model;
   
-  CM_GetBox(&local_c,&local_8,(PhysGeomList ***)0x0);
-  local_8->mins[0] = *param_1;
-  local_8->mins[1] = param_1[1];
-  local_8->mins[2] = param_1[2];
-  local_8->maxs[0] = *param_2;
-  local_8->maxs[1] = param_2[1];
-  local_8->maxs[2] = param_2[2];
-  local_c->mins[0] = *param_1;
-  local_c->mins[1] = param_1[1];
-  local_c->mins[2] = param_1[2];
-  local_c->maxs[0] = *param_2;
-  local_c->maxs[1] = param_2[1];
-  local_c->maxs[2] = param_2[2];
-  local_c->contents = param_3;
+  CM_GetBox(&box_brush,&box_model,(PhysGeomList ***)0x0);
+  box_model->mins[0] = *mins;
+  box_model->mins[1] = mins[1];
+  box_model->mins[2] = mins[2];
+  box_model->maxs[0] = *maxs;
+  box_model->maxs[1] = maxs[1];
+  box_model->maxs[2] = maxs[2];
+  box_brush->mins[0] = *mins;
+  box_brush->mins[1] = mins[1];
+  box_brush->mins[2] = mins[2];
+  box_brush->maxs[0] = *maxs;
+  box_brush->maxs[1] = maxs[1];
+  box_brush->maxs[2] = maxs[2];
+  box_brush->contents = contents;
   return 0x3fff;
 }
 
 
 // 006B5480  CM_TempBrushModel  (qcommon/cm_trace.cpp:191)
 
-uint __cdecl CM_TempBrushModel(PhysGeomList *param_1)
+uint __cdecl CM_TempBrushModel(PhysGeomList *geoms)
 
 {
-  cbrush_t *local_10;
-  cmodel_t *local_c;
-  PhysGeomList **local_8;
+  cbrush_t *box_brush;
+  cmodel_t *box_model;
+  PhysGeomList **geoms_model;
   
-  CM_GetBox(&local_10,&local_c,&local_8);
-  *local_8 = param_1;
+  CM_GetBox(&box_brush,&box_model,&geoms_model);
+  *geoms_model = geoms;
   return 0x4000;
 }
 
@@ -333,18 +335,18 @@ uint __cdecl CM_TempBrushModel(PhysGeomList *param_1)
 /* WARNING: Removing unreachable block (ram,0x006b54b9) */
 /* WARNING: Removing unreachable block (ram,0x006b54de) */
 
-bool __cdecl CM_ClipHandleIsValid(uint param_1)
+bool __cdecl CM_ClipHandleIsValid(uint handle)
 
 {
   bool bVar1;
   
-  if (param_1 < cm.numSubModels) {
+  if (handle < cm.numSubModels) {
     bVar1 = true;
   }
-  else if (param_1 == 0x3fff) {
+  else if (handle == 0x3fff) {
     bVar1 = true;
   }
-  else if (param_1 == 0x4000) {
+  else if (handle == 0x4000) {
     bVar1 = true;
   }
   else {
@@ -356,20 +358,20 @@ bool __cdecl CM_ClipHandleIsValid(uint param_1)
 
 // 006B5510  CM_ClipHandleToModel  (qcommon/cm_trace.cpp:216)
 
-cmodel_t * __cdecl CM_ClipHandleToModel(uint param_1)
+cmodel_t * __cdecl CM_ClipHandleToModel(uint handle)
 
 {
   code *pcVar1;
   bool bVar2;
   cmodel_t *pcVar3;
-  cbrush_t *local_c;
-  cmodel_t *local_8;
+  cbrush_t *box_brush;
+  cmodel_t *box_model;
   
-  if (param_1 < cm.numSubModels) {
-    local_8 = cm.cmodels + param_1;
+  if (handle < cm.numSubModels) {
+    box_model = cm.cmodels + handle;
   }
   else {
-    if ((param_1 != 0x3fff) && (param_1 != 0x4000)) {
+    if ((handle != 0x3fff) && (handle != 0x4000)) {
       va("handle: %d, cm.numSubModels: %d");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xdf,0,
                                "%s\n\t%s");
@@ -379,71 +381,77 @@ cmodel_t * __cdecl CM_ClipHandleToModel(uint param_1)
         return pcVar3;
       }
     }
-    CM_GetBox(&local_c,&local_8,(PhysGeomList ***)0x0);
+    CM_GetBox(&box_brush,&box_model,(PhysGeomList ***)0x0);
   }
-  return local_8;
+  return box_model;
 }
 
 
 // 006B55A0  CM_ContentsOfModel  (qcommon/cm_trace.cpp:231)
 
-int __cdecl CM_ContentsOfModel(uint param_1)
+int __cdecl CM_ContentsOfModel(uint handle)
 
 {
   cmodel_t *pcVar1;
+  I_spuDmaSave save;
+  cmodel_t *cmod;
   
-  pcVar1 = CM_ClipHandleToModel(param_1);
+  pcVar1 = CM_ClipHandleToModel(handle);
   return (pcVar1->leaf).brushContents | (pcVar1->leaf).terrainContents;
 }
 
 
 // 006B6430  CM_TestBoxInBrush  (qcommon/cm_trace.cpp:247)
 
-void __cdecl CM_TestBoxInBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *param_3)
+void __cdecl CM_TestBoxInBrush(traceWork_t *tw,cbrush_t *brush,trace_t *trace)
 
 {
   cplane_s *pcVar1;
   code *pcVar2;
   bool bVar3;
   float fVar4;
-  cbrushside_t *local_18;
-  uint local_8;
+  cbrushside_t *localSide;
+  I_spuDmaSave save;
+  float d1;
+  cbrushside_t *side;
+  cplane_s *plane;
+  float dist;
+  float offsetDotNormal;
+  int i;
   
-  if ((((((param_1->extents).start.vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->extents).start.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->extents).start.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((tw->extents).start.vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((tw->extents).start.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((tw->extents).start.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xff,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((param_1->extents).end.vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->extents).end.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->extents).end.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((tw->extents).end.vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((tw->extents).end.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((tw->extents).end.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x100,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1->bounds[0].vec.v[0] < param_2->maxs[0]) &&
-      (param_1->bounds[0].vec.v[1] < param_2->maxs[1])) &&
-     ((param_1->bounds[0].vec.v[2] < param_2->maxs[2] &&
-      (((param_2->mins[0] < param_1->bounds[1].vec.v[0] &&
-        (param_2->mins[1] < param_1->bounds[1].vec.v[1])) &&
-       (param_2->mins[2] < param_1->bounds[1].vec.v[2])))))) {
-    local_18 = param_2->sides;
-    local_8 = param_2->numsides;
-    if (((int)local_8 < 0) &&
+  if (((tw->bounds[0].vec.v[0] < brush->maxs[0]) && (tw->bounds[0].vec.v[1] < brush->maxs[1])) &&
+     ((tw->bounds[0].vec.v[2] < brush->maxs[2] &&
+      (((brush->mins[0] < tw->bounds[1].vec.v[0] && (brush->mins[1] < tw->bounds[1].vec.v[1])) &&
+       (brush->mins[2] < tw->bounds[1].vec.v[2])))))) {
+    side = brush->sides;
+    i = brush->numsides;
+    if ((i < 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x115,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    for (; local_8 != 0; local_8 = local_8 - 1) {
-      pcVar1 = local_18->plane;
+    for (; i != 0; i = i + -1) {
+      pcVar1 = side->plane;
       if ((((uint)pcVar1->dist & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x11c,
                                    0,"%s"), !bVar3)) {
@@ -451,7 +459,7 @@ void __cdecl CM_TestBoxInBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *p
         (*pcVar2)();
         return;
       }
-      if ((((uint)param_1->radius & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)tw->radius & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x11d,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -467,14 +475,14 @@ void __cdecl CM_TestBoxInBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *p
         (*pcVar2)();
         return;
       }
-      if ((((uint)param_1->offsetZ & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)tw->offsetZ & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x121,
                                    0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      fVar4 = pcVar1->dist + param_1->radius + ABS(pcVar1->normal[2] * param_1->offsetZ);
+      fVar4 = pcVar1->dist + tw->radius + ABS(pcVar1->normal[2] * tw->offsetZ);
       if ((((uint)fVar4 & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x124,
                                    0,"%s"), !bVar3)) {
@@ -482,9 +490,9 @@ void __cdecl CM_TestBoxInBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *p
         (*pcVar2)();
         return;
       }
-      fVar4 = ((param_1->extents).start.vec.v[0] * pcVar1->normal[0] +
-               (param_1->extents).start.vec.v[1] * pcVar1->normal[1] +
-              (param_1->extents).start.vec.v[2] * pcVar1->normal[2]) - fVar4;
+      fVar4 = ((tw->extents).start.vec.v[0] * pcVar1->normal[0] +
+               (tw->extents).start.vec.v[1] * pcVar1->normal[1] +
+              (tw->extents).start.vec.v[2] * pcVar1->normal[2]) - fVar4;
       if ((((uint)fVar4 & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x128,
                                    0,"%s"), !bVar3)) {
@@ -495,13 +503,13 @@ void __cdecl CM_TestBoxInBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *p
       if (0.0 < fVar4) {
         return;
       }
-      local_18 = local_18 + 1;
+      side = side + 1;
     }
-    param_3->startsolid = true;
-    param_3->allsolid = true;
-    param_3->fraction = 0.0;
-    param_3->cflags = param_2->contents;
-    param_3->sflags = 0;
+    trace->startsolid = true;
+    trace->allsolid = true;
+    trace->fraction = 0.0;
+    trace->cflags = brush->contents;
+    trace->sflags = 0;
   }
   return;
 }
@@ -509,17 +517,22 @@ void __cdecl CM_TestBoxInBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *p
 
 // 006B6270  CM_TestInLeafBrushNode_r  (qcommon/cm_trace.cpp:320)
 
-void __cdecl
-CM_TestInLeafBrushNode_r(traceWork_t *param_1,cLeafBrushNode_s *param_2,trace_t *param_3)
+void __cdecl CM_TestInLeafBrushNode_r(traceWork_t *tw,cLeafBrushNode_s *node,trace_t *trace)
 
 {
   float fVar1;
   ushort *puVar2;
   code *pcVar3;
   bool bVar4;
-  int local_18;
+  I_spuDmaSave save_2;
+  I_spuDmaSave save;
+  int k;
+  cbrush_t *b;
+  cLeafBrushNode_s *localNode;
+  ushort *brushes;
+  int brushnum;
   
-  if ((param_2 == (cLeafBrushNode_s *)0x0) &&
+  if ((node == (cLeafBrushNode_s *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x146,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -527,38 +540,36 @@ CM_TestInLeafBrushNode_r(traceWork_t *param_1,cLeafBrushNode_s *param_2,trace_t 
     return;
   }
   do {
-    if ((param_2->contents & param_1->contents) == 0) {
+    if ((node->contents & tw->contents) == 0) {
       return;
     }
-    if (param_2->leafBrushCount != 0) {
-      if (0 < param_2->leafBrushCount) {
-        puVar2 = (param_2->data).leaf.brushes;
-        local_18 = 0;
-        while ((local_18 < param_2->leafBrushCount &&
-               (((cm.brushes[puVar2[local_18]].contents & param_1->contents) == 0 ||
-                (CM_TestBoxInBrush(param_1,cm.brushes + puVar2[local_18],param_3),
-                param_3->allsolid == false))))) {
-          local_18 = local_18 + 1;
+    if (node->leafBrushCount != 0) {
+      if (0 < node->leafBrushCount) {
+        puVar2 = (node->data).leaf.brushes;
+        k = 0;
+        while ((k < node->leafBrushCount &&
+               (((cm.brushes[puVar2[k]].contents & tw->contents) == 0 ||
+                (CM_TestBoxInBrush(tw,cm.brushes + puVar2[k],trace), trace->allsolid == false))))) {
+          k = k + 1;
         }
         return;
       }
-      CM_TestInLeafBrushNode_r(param_1,param_2 + 1,param_3);
-      if (param_3->allsolid != false) {
+      CM_TestInLeafBrushNode_r(tw,node + 1,trace);
+      if (trace->allsolid != false) {
         return;
       }
     }
-    fVar1 = param_1->bounds[0].vec.v[param_2->axis];
-    if (fVar1 < (param_2->data).children.dist || fVar1 == (param_2->data).children.dist) {
-      if (((param_2->data).children.dist <= param_1->bounds[1].vec.v[param_2->axis]) &&
-         (CM_TestInLeafBrushNode_r
-                    (param_1,param_2 + (param_2->data).children.childOffset[0],param_3),
-         param_3->allsolid != false)) {
+    fVar1 = tw->bounds[0].vec.v[node->axis];
+    if (fVar1 < (node->data).children.dist || fVar1 == (node->data).children.dist) {
+      if (((node->data).children.dist <= tw->bounds[1].vec.v[node->axis]) &&
+         (CM_TestInLeafBrushNode_r(tw,node + (node->data).children.childOffset[0],trace),
+         trace->allsolid != false)) {
         return;
       }
-      param_2 = param_2 + (param_2->data).children.childOffset[1];
+      node = node + (node->data).children.childOffset[1];
     }
     else {
-      param_2 = param_2 + (param_2->data).children.childOffset[0];
+      node = node + (node->data).children.childOffset[0];
     }
   } while( true );
 }
@@ -566,56 +577,56 @@ CM_TestInLeafBrushNode_r(traceWork_t *param_1,cLeafBrushNode_s *param_2,trace_t 
 
 // 006BFA00  Vec3Mad  (universal/com_vector.h:328)
 
-void __cdecl Vec3Mad(float *param_1,float param_2,float *param_3,float *param_4)
+void __cdecl Vec3Mad(float *start,float scale,float *dir,float *result)
 
 {
-  *param_4 = param_2 * *param_3 + *param_1;
-  param_4[1] = param_2 * param_3[1] + param_1[1];
-  param_4[2] = param_2 * param_3[2] + param_1[2];
+  *result = scale * *dir + *start;
+  result[1] = scale * dir[1] + start[1];
+  result[2] = scale * dir[2] + start[2];
   return;
 }
 
 
 // 006BFA60  Vec3ScaleMad  (universal/com_vector.h:335)
 
-void __cdecl Vec3ScaleMad(float param_1,float *param_2,float param_3,float *param_4,float *param_5)
+void __cdecl Vec3ScaleMad(float scale0,float *dir0,float scale1,float *dir1,float *result)
 
 {
-  *param_5 = param_1 * *param_2 + param_3 * *param_4;
-  param_5[1] = param_1 * param_2[1] + param_3 * param_4[1];
-  param_5[2] = param_1 * param_2[2] + param_3 * param_4[2];
+  *result = scale0 * *dir0 + scale1 * *dir1;
+  result[1] = scale0 * dir0[1] + scale1 * dir1[1];
+  result[2] = scale0 * dir0[2] + scale1 * dir1[2];
   return;
 }
 
 
 // 006B61B0  CM_TestInLeafBrushNode  (qcommon/cm_trace.cpp:379)
 
-int __cdecl CM_TestInLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_3)
+int __cdecl CM_TestInLeafBrushNode(traceWork_t *tw,cLeaf_s *leaf,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  if ((param_2->leafBrushNode == 0) &&
+  if ((leaf->leafBrushNode == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x17e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (2 < local_8) {
-      CM_TestInLeafBrushNode_r(param_1,cm.leafbrushNodes + param_2->leafBrushNode,param_3);
-      return (uint)param_3->allsolid;
+    if (2 < i) {
+      CM_TestInLeafBrushNode_r(tw,cm.leafbrushNodes + leaf->leafBrushNode,trace);
+      return (uint)trace->allsolid;
     }
-    if (param_1->bounds[1].vec.v[local_8] <= param_2->mins[local_8]) break;
-    if (param_2->maxs[local_8] <= param_1->bounds[0].vec.v[local_8]) {
+    if (tw->bounds[1].vec.v[i] <= leaf->mins[i]) break;
+    if (leaf->maxs[i] <= tw->bounds[0].vec.v[i]) {
       return 0;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return 0;
 }
@@ -623,15 +634,15 @@ int __cdecl CM_TestInLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,trace_t
 
 // 006B6150  CM_TestInLeaf  (qcommon/cm_trace.cpp:397)
 
-void __cdecl CM_TestInLeaf(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_3)
+void __cdecl CM_TestInLeaf(traceWork_t *tw,cLeaf_s *leaf,trace_t *trace)
 
 {
   int iVar1;
   
-  if ((((param_2->brushContents & param_1->contents) == 0) ||
-      (iVar1 = CM_TestInLeafBrushNode(param_1,param_2,param_3), iVar1 == 0)) &&
-     ((param_2->terrainContents & param_1->contents) != 0)) {
-    CM_MeshTestInLeaf(param_1,param_2,param_3);
+  if ((((leaf->brushContents & tw->contents) == 0) ||
+      (iVar1 = CM_TestInLeafBrushNode(tw,leaf,trace), iVar1 == 0)) &&
+     ((leaf->terrainContents & tw->contents) != 0)) {
+    CM_MeshTestInLeaf(tw,leaf,trace);
   }
   return;
 }
@@ -639,7 +650,7 @@ void __cdecl CM_TestInLeaf(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_
 
 // 006B6A40  CM_TestCapsuleInCapsule  (qcommon/cm_trace.cpp:417)
 
-void __cdecl CM_TestCapsuleInCapsule(traceWork_t *param_1,trace_t *param_2)
+void __cdecl CM_TestCapsuleInCapsule(traceWork_t *tw,trace_t *trace)
 
 {
   float fVar1;
@@ -651,34 +662,36 @@ void __cdecl CM_TestCapsuleInCapsule(traceWork_t *param_1,trace_t *param_2)
   float fVar7;
   float fVar8;
   float local_98;
+  float halfwidth;
+  float r;
+  float offs;
+  float halfheight;
   float afStack_5c [6];
-  float local_44;
-  float local_40;
-  float local_3c [4];
+  float radius;
+  float fTotalHalfHeight;
+  float offset [4];
   float local_2c;
   float local_28;
-  float local_24;
+  float tmp;
   float local_20;
   float local_1c;
-  int local_18;
-  float local_14;
+  int i;
+  float bottom;
   float local_10;
   float local_c;
-  float local_8;
+  float fHeightDiff;
   
-  fVar1 = (param_1->extents).start.vec.v[0];
-  fVar2 = (param_1->extents).start.vec.v[1];
-  fVar5 = (param_1->extents).start.vec.v[2] + param_1->offsetZ;
-  local_14 = (param_1->extents).start.vec.v[0];
-  local_10 = (param_1->extents).start.vec.v[1];
-  local_c = (param_1->extents).start.vec.v[2] - param_1->offsetZ;
-  for (local_18 = 0; local_18 < 3; local_18 = local_18 + 1) {
-    local_3c[local_18] =
-         (((param_1->threadInfo).box_model)->mins[local_18] +
-         ((param_1->threadInfo).box_model)->maxs[local_18]) * 0.5;
-    afStack_5c[local_18] = ((param_1->threadInfo).box_model)->mins[local_18] - local_3c[local_18];
-    afStack_5c[local_18 + 3] =
-         ((param_1->threadInfo).box_model)->maxs[local_18] - local_3c[local_18];
+  fVar1 = (tw->extents).start.vec.v[0];
+  fVar2 = (tw->extents).start.vec.v[1];
+  fVar5 = (tw->extents).start.vec.v[2] + tw->offsetZ;
+  bottom = (tw->extents).start.vec.v[0];
+  local_10 = (tw->extents).start.vec.v[1];
+  local_c = (tw->extents).start.vec.v[2] - tw->offsetZ;
+  for (i = 0; i < 3; i = i + 1) {
+    offset[i] = (((tw->threadInfo).box_model)->mins[i] + ((tw->threadInfo).box_model)->maxs[i]) *
+                0.5;
+    afStack_5c[i] = ((tw->threadInfo).box_model)->mins[i] - offset[i];
+    afStack_5c[i + 3] = ((tw->threadInfo).box_model)->maxs[i] - offset[i];
   }
   if (afStack_5c[3] <= afStack_5c[5]) {
     local_98 = afStack_5c[3];
@@ -686,28 +699,28 @@ void __cdecl CM_TestCapsuleInCapsule(traceWork_t *param_1,trace_t *param_2)
   else {
     local_98 = afStack_5c[5];
   }
-  local_44 = local_98;
+  radius = local_98;
   fVar6 = afStack_5c[5] - local_98;
-  fVar7 = (param_1->radius + local_98) * (param_1->radius + local_98);
-  fVar8 = (local_3c[2] + fVar6) - fVar5;
-  if (fVar7 <= (local_3c[0] - fVar1) * (local_3c[0] - fVar1) +
-               (local_3c[1] - fVar2) * (local_3c[1] - fVar2) + fVar8 * fVar8) {
-    fVar8 = (local_3c[2] + fVar6) - local_c;
-    if (fVar7 <= (local_3c[0] - local_14) * (local_3c[0] - local_14) +
-                 (local_3c[1] - local_10) * (local_3c[1] - local_10) + fVar8 * fVar8) {
-      local_3c[3] = local_3c[0];
-      local_2c = local_3c[1];
-      local_28 = local_3c[2] - fVar6;
+  fVar7 = (tw->radius + local_98) * (tw->radius + local_98);
+  fVar8 = (offset[2] + fVar6) - fVar5;
+  if (fVar7 <= (offset[0] - fVar1) * (offset[0] - fVar1) + (offset[1] - fVar2) * (offset[1] - fVar2)
+               + fVar8 * fVar8) {
+    fVar8 = (offset[2] + fVar6) - local_c;
+    if (fVar7 <= (offset[0] - bottom) * (offset[0] - bottom) +
+                 (offset[1] - local_10) * (offset[1] - local_10) + fVar8 * fVar8) {
+      offset[3] = offset[0];
+      local_2c = offset[1];
+      local_28 = offset[2] - fVar6;
       fVar5 = local_28 - fVar5;
-      if (fVar7 <= (local_3c[0] - fVar1) * (local_3c[0] - fVar1) +
-                   (local_3c[1] - fVar2) * (local_3c[1] - fVar2) + fVar5 * fVar5) {
-        local_24 = local_3c[0] - local_14;
-        local_20 = local_3c[1] - local_10;
+      if (fVar7 <= (offset[0] - fVar1) * (offset[0] - fVar1) +
+                   (offset[1] - fVar2) * (offset[1] - fVar2) + fVar5 * fVar5) {
+        tmp = offset[0] - bottom;
+        local_20 = offset[1] - local_10;
         local_1c = local_28 - local_c;
-        if (fVar7 <= local_24 * local_24 + local_20 * local_20 + local_1c * local_1c) {
-          local_8 = (param_1->extents).start.vec.v[2] - local_3c[2];
-          local_40 = (fVar6 + (param_1->size).vec.v[2]) - param_1->radius;
-          if (local_40 < 0.0) {
+        if (fVar7 <= tmp * tmp + local_20 * local_20 + local_1c * local_1c) {
+          fHeightDiff = (tw->extents).start.vec.v[2] - offset[2];
+          fTotalHalfHeight = (fVar6 + (tw->size).vec.v[2]) - tw->radius;
+          if (fTotalHalfHeight < 0.0) {
             bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0x1e7,0,"%s");
             if (!bVar4) {
@@ -716,42 +729,42 @@ void __cdecl CM_TestCapsuleInCapsule(traceWork_t *param_1,trace_t *param_2)
               return;
             }
           }
-          if (ABS(local_8) <= local_40) {
-            if ((fVar1 - local_3c[0]) * (fVar1 - local_3c[0]) +
-                (fVar2 - local_3c[1]) * (fVar2 - local_3c[1]) + 0.0 < fVar7) {
-              param_2->startsolid = true;
-              param_2->allsolid = true;
-              param_2->fraction = 0.0;
-              param_2->sflags = 0;
+          if (ABS(fHeightDiff) <= fTotalHalfHeight) {
+            if ((fVar1 - offset[0]) * (fVar1 - offset[0]) +
+                (fVar2 - offset[1]) * (fVar2 - offset[1]) + 0.0 < fVar7) {
+              trace->startsolid = true;
+              trace->allsolid = true;
+              trace->fraction = 0.0;
+              trace->sflags = 0;
             }
           }
         }
         else {
-          param_2->startsolid = true;
-          param_2->allsolid = true;
-          param_2->fraction = 0.0;
-          param_2->sflags = 0;
+          trace->startsolid = true;
+          trace->allsolid = true;
+          trace->fraction = 0.0;
+          trace->sflags = 0;
         }
       }
       else {
-        param_2->startsolid = true;
-        param_2->allsolid = true;
-        param_2->fraction = 0.0;
-        param_2->sflags = 0;
+        trace->startsolid = true;
+        trace->allsolid = true;
+        trace->fraction = 0.0;
+        trace->sflags = 0;
       }
     }
     else {
-      param_2->startsolid = true;
-      param_2->allsolid = true;
-      param_2->fraction = 0.0;
-      param_2->sflags = 0;
+      trace->startsolid = true;
+      trace->allsolid = true;
+      trace->fraction = 0.0;
+      trace->sflags = 0;
     }
   }
   else {
-    param_2->startsolid = true;
-    param_2->allsolid = true;
-    param_2->fraction = 0.0;
-    param_2->sflags = 0;
+    trace->startsolid = true;
+    trace->allsolid = true;
+    trace->fraction = 0.0;
+    trace->sflags = 0;
   }
   return;
 }
@@ -761,69 +774,70 @@ void __cdecl CM_TestCapsuleInCapsule(traceWork_t *param_1,trace_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CM_PositionTest(traceWork_t *param_1,trace_t *param_2,col_context_t *param_3)
+void __cdecl CM_PositionTest(traceWork_t *tw,trace_t *trace,col_context_t *context)
 
 {
   code *pcVar1;
   bool bVar2;
-  leafList_s local_848;
-  ushort local_81c [1026];
+  I_spuDmaSave save;
+  leafList_s ll;
+  ushort leafs [1026];
   uint local_18;
-  int local_14;
-  cbrush_t *local_10;
-  int local_c;
-  col_prim_t *local_8;
+  int i_2;
+  cbrush_t *brush;
+  int i;
+  col_prim_t *prim;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_3->nprims == 0) {
-    if (param_2->allsolid == false) {
-      local_848.bounds[0][0] = (param_1->extents).start.vec.v[0] - (param_1->size).vec.v[0];
-      local_848.bounds[0][1] = (param_1->extents).start.vec.v[1] - (param_1->size).vec.v[1];
-      local_848.bounds[0][2] = (param_1->extents).start.vec.v[2] - (param_1->size).vec.v[2];
-      local_848.bounds[1][0] = (param_1->extents).start.vec.v[0] + (param_1->size).vec.v[0];
-      local_848.bounds[1][1] = (param_1->extents).start.vec.v[1] + (param_1->size).vec.v[1];
-      local_848.bounds[1][2] = (param_1->extents).start.vec.v[2] + (param_1->size).vec.v[2];
-      for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-        local_848.bounds[0][local_14] = local_848.bounds[0][local_14] - 1.0;
-        local_848.bounds[1][local_14] = local_848.bounds[1][local_14] + 1.0;
+  if (context->nprims == 0) {
+    if (trace->allsolid == false) {
+      ll.bounds[0][0] = (tw->extents).start.vec.v[0] - (tw->size).vec.v[0];
+      ll.bounds[0][1] = (tw->extents).start.vec.v[1] - (tw->size).vec.v[1];
+      ll.bounds[0][2] = (tw->extents).start.vec.v[2] - (tw->size).vec.v[2];
+      ll.bounds[1][0] = (tw->extents).start.vec.v[0] + (tw->size).vec.v[0];
+      ll.bounds[1][1] = (tw->extents).start.vec.v[1] + (tw->size).vec.v[1];
+      ll.bounds[1][2] = (tw->extents).start.vec.v[2] + (tw->size).vec.v[2];
+      for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+        ll.bounds[0][i_2] = ll.bounds[0][i_2] - 1.0;
+        ll.bounds[1][i_2] = ll.bounds[1][i_2] + 1.0;
       }
-      local_848.count = 0;
-      local_848.maxcount = 0x400;
-      local_848.list = local_81c;
-      local_848.lastLeaf = 0;
-      local_848.overflowed = 0;
-      CM_BoxLeafnums_r(&local_848,0);
-      if (local_848.count != 0) {
-        local_14 = 0;
-        while ((local_14 < local_848.count && (param_2->allsolid == false))) {
-          CM_TestInLeaf(param_1,cm.leafs + local_81c[local_14],param_2);
-          local_14 = local_14 + 1;
+      ll.count = 0;
+      ll.maxcount = 0x400;
+      ll.list = leafs;
+      ll.lastLeaf = 0;
+      ll.overflowed = 0;
+      CM_BoxLeafnums_r(&ll,0);
+      if (ll.count != 0) {
+        i_2 = 0;
+        while ((i_2 < ll.count && (trace->allsolid == false))) {
+          CM_TestInLeaf(tw,cm.leafs + leafs[i_2],trace);
+          i_2 = i_2 + 1;
         }
       }
     }
   }
   else {
-    local_8 = param_3->prims;
-    local_c = 0;
-    while ((local_c < param_3->nprims && (param_2->allsolid == false))) {
-      if (local_8->type == 0) {
-        CM_MeshTest(param_1,(local_8->field1_0x4).tree,param_2);
+    prim = context->prims;
+    i = 0;
+    while ((i < context->nprims && (trace->allsolid == false))) {
+      if (prim->type == 0) {
+        CM_MeshTest(tw,(prim->field1_0x4).tree,trace);
       }
       else {
-        if ((local_8->type != 1) &&
+        if ((prim->type != 1) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0x20c,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_10 = (local_8->field1_0x4).brush;
-        if ((local_10->contents & param_1->contents) != 0) {
-          CM_TestBoxInBrush(param_1,local_10,param_2);
+        brush = (prim->field1_0x4).brush;
+        if ((brush->contents & tw->contents) != 0) {
+          CM_TestBoxInBrush(tw,brush,trace);
         }
       }
-      local_c = local_c + 1;
-      local_8 = local_8 + 1;
+      i = i + 1;
+      prim = prim + 1;
     }
   }
   return;
@@ -834,7 +848,7 @@ void __cdecl CM_PositionTest(traceWork_t *param_1,trace_t *param_2,col_context_t
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t *param_3)
+void __cdecl CM_TraceThroughBrush(traceWork_t *tw,cbrush_t *brush,trace_t *trace)
 
 {
   cplane_s *pcVar1;
@@ -846,72 +860,79 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
   float local_12c;
   float local_128;
   float local_124;
-  cbrushside_t *local_70;
-  int local_6c;
-  float local_64;
-  cbrushside_t *local_50;
-  cbrushside_t local_4c;
-  cplane_s local_40;
+  I_spuDmaSave save;
+  float d1;
+  cbrushside_t *side;
+  int j;
+  cplane_s *plane;
+  float enterFrac;
+  float delta;
+  bool allsolid;
+  float frac;
+  float dist;
+  cbrushside_t *leadside;
+  cbrushside_t axialSide;
+  cplane_s axialPlane;
   uint local_2c;
-  float local_28;
-  float local_24;
-  cbrush_t *local_20;
-  float local_1c;
-  int local_18;
-  float local_14;
-  float local_10;
-  uint local_c;
+  float sign;
+  float d2;
+  float *bounds;
+  float f;
+  int index;
+  float leaveFrac;
+  float offsetDotNormal;
+  int i;
+  cplane_s *leadPlane;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((((((param_1->extents).start.vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->extents).start.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->extents).start.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((tw->extents).start.vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((tw->extents).start.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((tw->extents).start.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x252,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((param_1->extents).end.vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->extents).end.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->extents).end.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((tw->extents).end.vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((tw->extents).end.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((tw->extents).end.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x253,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_64 = 0.0;
-  local_14 = param_3->fraction;
+  enterFrac = 0.0;
+  leaveFrac = trace->fraction;
   bVar3 = true;
-  local_50 = (cbrushside_t *)0x0;
-  local_28 = -1.0;
-  local_20 = param_2;
-  local_18 = 0;
+  leadside = (cbrushside_t *)0x0;
+  sign = -1.0;
+  bounds = brush->mins;
+  index = 0;
   while( true ) {
-    if ((((((uint)local_20->mins[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_20->mins[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_20->mins[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x26e,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((((param_1->radiusOffset).vec.u[0] & 0x7f800000) == 0x7f800000) ||
-         (((param_1->radiusOffset).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-        (((param_1->radiusOffset).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((tw->radiusOffset).vec.u[0] & 0x7f800000) == 0x7f800000) ||
+         (((tw->radiusOffset).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+        (((tw->radiusOffset).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x26f,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    for (local_6c = 0; local_6c < 3; local_6c = local_6c + 1) {
-      fVar5 = ((((TraceExtents *)(param_1->bounds + 3))->start).vec.v[local_6c] -
-              local_20->mins[local_6c]) * local_28 - param_1->bounds[2].vec.v[local_6c];
-      local_24 = (param_1->bounds[4].vec.v[local_6c] - local_20->mins[local_6c]) * local_28 -
-                 param_1->bounds[2].vec.v[local_6c];
+    for (j = 0; j < 3; j = j + 1) {
+      fVar5 = ((((TraceExtents *)(tw->bounds + 3))->start).vec.v[j] - bounds[j]) * sign -
+              tw->bounds[2].vec.v[j];
+      d2 = (tw->bounds[4].vec.v[j] - bounds[j]) * sign - tw->bounds[2].vec.v[j];
       if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x275,
                                    0,"%s"), !bVar4)) {
@@ -919,7 +940,7 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         (*pcVar2)();
         return;
       }
-      if ((((uint)local_24 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)d2 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x276,
                                    0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -927,16 +948,16 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         return;
       }
       if (fVar5 <= 0.0) {
-        if (0.0 < local_24) {
-          local_128 = fVar5 * param_1->bounds[5].vec.v[local_6c] * local_28;
-          if (local_128 <= local_64) {
+        if (0.0 < d2) {
+          local_128 = fVar5 * tw->bounds[5].vec.v[j] * sign;
+          if (local_128 <= enterFrac) {
             return;
           }
           bVar3 = false;
-          if (0.0 <= local_128 - local_14) {
-            local_128 = local_14;
+          if (0.0 <= local_128 - leaveFrac) {
+            local_128 = leaveFrac;
           }
-          local_14 = local_128;
+          leaveFrac = local_128;
         }
       }
       else {
@@ -944,38 +965,38 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         if (0.125 - fVar5 < 0.0) {
           local_124 = 0.125;
         }
-        if (local_124 <= local_24) {
+        if (local_124 <= d2) {
           return;
         }
-        fVar5 = (fVar5 - 0.125) * param_1->bounds[5].vec.v[local_6c] * local_28;
-        if (local_14 <= fVar5) {
+        fVar5 = (fVar5 - 0.125) * tw->bounds[5].vec.v[j] * sign;
+        if (leaveFrac <= fVar5) {
           return;
         }
-        if (0.0 < local_24) {
+        if (0.0 < d2) {
           bVar3 = false;
         }
-        if ((local_64 < fVar5) || (fVar5 = local_64, local_50 == (cbrushside_t *)0x0)) {
-          local_64 = fVar5;
-          local_4c.cflags = param_2->axial_cflags[local_18][local_6c];
-          local_4c.sflags = param_2->axial_sflags[local_18][local_6c];
-          local_40.normal[0] = 0.0;
-          local_40.normal[1] = 0.0;
-          local_40.normal[2] = 0.0;
-          local_40.normal[local_6c] = local_28;
-          local_4c.plane = &local_40;
-          local_50 = &local_4c;
+        if ((enterFrac < fVar5) || (fVar5 = enterFrac, leadside == (cbrushside_t *)0x0)) {
+          enterFrac = fVar5;
+          axialSide.cflags = brush->axial_cflags[index][j];
+          axialSide.sflags = brush->axial_sflags[index][j];
+          axialPlane.normal[0] = 0.0;
+          axialPlane.normal[1] = 0.0;
+          axialPlane.normal[2] = 0.0;
+          axialPlane.normal[j] = sign;
+          axialSide.plane = &axialPlane;
+          leadside = &axialSide;
         }
       }
     }
-    if (local_18 != 0) break;
-    local_28 = 1.0;
-    local_20 = (cbrush_t *)param_2->maxs;
-    local_18 = 1;
+    if (index != 0) break;
+    sign = 1.0;
+    bounds = brush->maxs;
+    index = 1;
   }
-  if (param_2->numsides != 0) {
-    local_70 = param_2->sides;
-    for (local_c = param_2->numsides; local_c != 0; local_c = local_c - 1) {
-      pcVar1 = local_70->plane;
+  if (brush->numsides != 0) {
+    side = brush->sides;
+    for (i = brush->numsides; i != 0; i = i + -1) {
+      pcVar1 = side->plane;
       if ((((uint)pcVar1->dist & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2b0,
                                    0,"%s"), !bVar4)) {
@@ -983,7 +1004,7 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         (*pcVar2)();
         return;
       }
-      if ((((uint)param_1->radius & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)tw->radius & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2b1,
                                    0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -999,15 +1020,15 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         (*pcVar2)();
         return;
       }
-      if ((((uint)param_1->offsetZ & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)tw->offsetZ & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2b5,
                                    0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_10 = ABS(pcVar1->normal[2] * param_1->offsetZ);
-      fVar5 = pcVar1->dist + param_1->radius + local_10;
+      offsetDotNormal = ABS(pcVar1->normal[2] * tw->offsetZ);
+      fVar5 = pcVar1->dist + tw->radius + offsetDotNormal;
       if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2b8,
                                    0,"%s"), !bVar4)) {
@@ -1015,12 +1036,12 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         (*pcVar2)();
         return;
       }
-      fVar6 = ((param_1->extents).start.vec.v[0] * pcVar1->normal[0] +
-               (param_1->extents).start.vec.v[1] * pcVar1->normal[1] +
-              (param_1->extents).start.vec.v[2] * pcVar1->normal[2]) - fVar5;
-      local_24 = ((param_1->extents).end.vec.v[0] * pcVar1->normal[0] +
-                  (param_1->extents).end.vec.v[1] * pcVar1->normal[1] +
-                 (param_1->extents).end.vec.v[2] * pcVar1->normal[2]) - fVar5;
+      fVar6 = ((tw->extents).start.vec.v[0] * pcVar1->normal[0] +
+               (tw->extents).start.vec.v[1] * pcVar1->normal[1] +
+              (tw->extents).start.vec.v[2] * pcVar1->normal[2]) - fVar5;
+      d2 = ((tw->extents).end.vec.v[0] * pcVar1->normal[0] +
+            (tw->extents).end.vec.v[1] * pcVar1->normal[1] +
+           (tw->extents).end.vec.v[2] * pcVar1->normal[2]) - fVar5;
       if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2bd,
                                    0,"%s"), !bVar4)) {
@@ -1028,7 +1049,7 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         (*pcVar2)();
         return;
       }
-      if ((((uint)local_24 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)d2 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2be,
                                    0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -1036,8 +1057,8 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         return;
       }
       if (fVar6 <= 0.0) {
-        if (0.0 < local_24) {
-          fVar5 = fVar6 - local_24;
+        if (0.0 < d2) {
+          fVar5 = fVar6 - d2;
           if ((0.0 <= fVar5) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                        0x2dc,0,"%s"), !bVar3)) {
@@ -1045,7 +1066,7 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
             (*pcVar2)();
             return;
           }
-          if ((local_14 * fVar5 < fVar6) && (local_14 = fVar6 / fVar5, local_14 <= local_64)) {
+          if ((leaveFrac * fVar5 < fVar6) && (leaveFrac = fVar6 / fVar5, leaveFrac <= enterFrac)) {
             return;
           }
           bVar3 = false;
@@ -1056,13 +1077,13 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
         if (0.125 - fVar6 < 0.0) {
           local_12c = 0.125;
         }
-        if (local_12c <= local_24) {
+        if (local_12c <= d2) {
           return;
         }
-        if (0.0 < local_24) {
+        if (0.0 < d2) {
           bVar3 = false;
         }
-        fVar5 = fVar6 - local_24;
+        fVar5 = fVar6 - d2;
         if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
            (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0x2c9,0,"%s"), !bVar4)) {
@@ -1077,45 +1098,45 @@ void __cdecl CM_TraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,trace_t
           (*pcVar2)();
           return;
         }
-        local_1c = fVar6 - 0.125;
-        if (local_64 * fVar5 < local_1c) {
-          local_64 = local_1c / fVar5;
-          if (local_14 <= local_64) {
+        f = fVar6 - 0.125;
+        if (enterFrac * fVar5 < f) {
+          enterFrac = f / fVar5;
+          if (leaveFrac <= enterFrac) {
             return;
           }
         }
-        else if (local_50 != (cbrushside_t *)0x0) goto LAB_006b8253;
-        local_50 = local_70;
+        else if (leadside != (cbrushside_t *)0x0) goto LAB_006b8253;
+        leadside = side;
       }
 LAB_006b8253:
-      local_70 = local_70 + 1;
+      side = side + 1;
     }
   }
-  param_3->cflags = param_2->contents;
-  if (local_50 == (cbrushside_t *)0x0) {
-    param_3->startsolid = true;
+  trace->cflags = brush->contents;
+  if (leadside == (cbrushside_t *)0x0) {
+    trace->startsolid = true;
     if (bVar3) {
-      param_3->allsolid = true;
-      param_3->fraction = 0.0;
+      trace->allsolid = true;
+      trace->fraction = 0.0;
     }
-    param_3->sflags = param_2->axial_sflags[1][2];
-    param_3->cflags = param_2->axial_cflags[1][2];
+    trace->sflags = brush->axial_sflags[1][2];
+    trace->cflags = brush->axial_cflags[1][2];
   }
   else {
-    param_3->fraction = local_64;
-    if (((param_3->fraction < 0.0) || (1.0 < param_3->fraction)) &&
+    trace->fraction = enterFrac;
+    if (((trace->fraction < 0.0) || (1.0 < trace->fraction)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x2fd,1,
                                  "%s\n\t(trace->fraction) = %g"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    pcVar1 = local_50->plane;
-    (param_3->normal).vec.v[0] = pcVar1->normal[0];
-    (param_3->normal).vec.v[1] = pcVar1->normal[1];
-    (param_3->normal).vec.v[2] = pcVar1->normal[2];
-    param_3->sflags = local_50->sflags;
-    param_3->walkable = false;
+    pcVar1 = leadside->plane;
+    (trace->normal).vec.v[0] = pcVar1->normal[0];
+    (trace->normal).vec.v[1] = pcVar1->normal[1];
+    (trace->normal).vec.v[2] = pcVar1->normal[2];
+    trace->sflags = leadside->sflags;
+    trace->walkable = false;
   }
   return;
 }
@@ -1125,8 +1146,7 @@ LAB_006b8253:
 
 void __cdecl
 CM_TraceThroughLeafBrushNode_r
-          (traceWork_t *param_1,cLeafBrushNode_s *param_2,float *param_3,float *param_4,
-          trace_t *param_5)
+          (traceWork_t *tw,cLeafBrushNode_s *node,float *p1_,float *p2,trace_t *trace)
 
 {
   code *pcVar1;
@@ -1138,134 +1158,138 @@ CM_TraceThroughLeafBrushNode_r
   float local_7c;
   float local_78;
   float local_74;
-  uint local_64;
-  float local_54;
-  int local_50;
-  float local_48 [4];
-  float local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
-  ushort *local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  uint local_18;
-  float local_14;
+  I_spuDmaSave save;
+  cLeafBrushNode_s *localNode;
+  int side;
+  float diff;
+  float t;
+  float t1;
+  float frac;
+  int k;
+  cbrush_t *b;
+  float p1 [4];
+  float offset;
+  float tmax;
+  float t2;
+  float frac2;
+  ushort *brushes;
+  float absDiff;
+  float invDist;
+  float tmin;
+  int brushnum;
+  float mid;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (cLeafBrushNode_s *)0x0) &&
+  if ((node == (cLeafBrushNode_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x32b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_48[0] = *param_3;
-  local_48[1] = param_3[1];
-  local_48[2] = param_3[2];
-  local_48[3] = param_3[3];
+  p1[0] = *p1_;
+  p1[1] = p1_[1];
+  p1[2] = p1_[2];
+  p1[3] = p1_[3];
   while( true ) {
     while( true ) {
       while( true ) {
-        if ((param_2->contents & param_1->contents) == 0) {
+        if ((node->contents & tw->contents) == 0) {
           return;
         }
-        if (param_2->leafBrushCount != 0) {
-          if (0 < param_2->leafBrushCount) {
-            local_28 = (param_2->data).leaf.brushes;
-            for (local_50 = 0; local_50 < param_2->leafBrushCount; local_50 = local_50 + 1) {
-              local_18 = (uint)local_28[local_50];
-              if ((cm.brushes[local_18].contents & param_1->contents) != 0) {
-                CM_TraceThroughBrush(param_1,cm.brushes + local_18,param_5);
+        if (node->leafBrushCount != 0) {
+          if (0 < node->leafBrushCount) {
+            brushes = (node->data).leaf.brushes;
+            for (k = 0; k < node->leafBrushCount; k = k + 1) {
+              brushnum = (int)brushes[k];
+              if ((cm.brushes[brushnum].contents & tw->contents) != 0) {
+                CM_TraceThroughBrush(tw,cm.brushes + brushnum,trace);
               }
             }
             return;
           }
-          CM_TraceThroughLeafBrushNode_r(param_1,param_2 + 1,local_48,param_4,param_5);
+          CM_TraceThroughLeafBrushNode_r(tw,node + 1,p1,p2,trace);
         }
-        local_7c = local_48[param_2->axis] - (param_2->data).children.dist;
-        local_30 = param_4[param_2->axis] - (param_2->data).children.dist;
-        local_38 = (param_1->bounds[-1].vec.v[param_2->axis] + 0.125) -
-                   (param_2->data).children.range;
-        local_74 = local_30;
-        if (0.0 <= local_7c - local_30) {
+        local_7c = p1[node->axis] - (node->data).children.dist;
+        t2 = p2[node->axis] - (node->data).children.dist;
+        offset = (tw->bounds[-1].vec.v[node->axis] + 0.125) - (node->data).children.range;
+        local_74 = t2;
+        if (0.0 <= local_7c - t2) {
           local_74 = local_7c;
         }
-        local_34 = local_74;
-        local_78 = local_30;
-        if (0.0 <= local_30 - local_7c) {
+        tmax = local_74;
+        local_78 = t2;
+        if (0.0 <= t2 - local_7c) {
           local_78 = local_7c;
         }
-        local_1c = local_78;
-        if (local_78 < local_38) break;
-        if (local_74 <= -local_38) {
+        tmin = local_78;
+        if (local_78 < offset) break;
+        if (local_74 <= -offset) {
           return;
         }
-        param_2 = param_2 + (param_2->data).children.childOffset[0];
+        node = node + (node->data).children.childOffset[0];
       }
-      if (-local_38 < local_74) break;
-      param_2 = param_2 + (param_2->data).children.childOffset[1];
+      if (-offset < local_74) break;
+      node = node + (node->data).children.childOffset[1];
     }
-    if (param_5->fraction <= local_48[3]) break;
-    fVar3 = local_30 - local_7c;
-    local_24 = ABS(fVar3);
-    if (local_24 <= 4.7683716e-07) {
-      local_64 = 0;
-      local_54 = 1.0;
-      local_2c = 0.0;
+    if (trace->fraction <= p1[3]) break;
+    fVar3 = t2 - local_7c;
+    absDiff = ABS(fVar3);
+    if (absDiff <= 4.7683716e-07) {
+      side = 0;
+      frac = 1.0;
+      frac2 = 0.0;
     }
     else {
       if (0.0 <= fVar3) {
         local_7c = -local_7c;
       }
-      local_20 = 1.0 / local_24;
-      local_2c = (local_7c - local_38) * local_20;
-      local_54 = (local_7c + local_38) * local_20;
+      invDist = 1.0 / absDiff;
+      frac2 = (local_7c - offset) * invDist;
+      frac = (local_7c + offset) * invDist;
       local_80 = (uint)(0.0 <= fVar3);
-      local_64 = local_80;
+      side = local_80;
     }
-    if ((local_54 < 0.0) &&
+    if ((frac < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x375,0,
                                  "frac >= 0.0f\n\t%g, %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (1.0 - local_54 < 0.0) {
+    if (1.0 - frac < 0.0) {
       local_84 = 1.0;
     }
     else {
-      local_84 = local_54;
+      local_84 = frac;
     }
-    local_14 = (*param_4 - local_48[0]) * local_84 + local_48[0];
-    local_10 = (param_4[1] - local_48[1]) * local_84 + local_48[1];
-    local_c = (param_4[2] - local_48[2]) * local_84 + local_48[2];
-    local_8 = (param_4[3] - local_48[3]) * local_84 + local_48[3];
+    mid = (*p2 - p1[0]) * local_84 + p1[0];
+    local_10 = (p2[1] - p1[1]) * local_84 + p1[1];
+    local_c = (p2[2] - p1[2]) * local_84 + p1[2];
+    local_8 = (p2[3] - p1[3]) * local_84 + p1[3];
     CM_TraceThroughLeafBrushNode_r
-              (param_1,param_2 + *(ushort *)((int)&param_2->data + local_64 * 2 + 8),local_48,
-               &local_14,param_5);
-    if ((1.0000005 < local_2c) &&
+              (tw,node + *(ushort *)((int)&node->data + side * 2 + 8),p1,&mid,trace);
+    if ((1.0000005 < frac2) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x37f,0,
                                  "frac2 <= 1.0f + TRACE_EPSILON\n\t%g, %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_2c - 0.0 < 0.0) {
+    if (frac2 - 0.0 < 0.0) {
       local_88 = 0.0;
     }
     else {
-      local_88 = local_2c;
+      local_88 = frac2;
     }
-    local_2c = local_88;
-    local_48[0] = (*param_4 - local_48[0]) * local_88 + local_48[0];
-    local_48[1] = (param_4[1] - local_48[1]) * local_88 + local_48[1];
-    local_48[2] = (param_4[2] - local_48[2]) * local_88 + local_48[2];
-    local_48[3] = (param_4[3] - local_48[3]) * local_88 + local_48[3];
-    param_2 = param_2 + *(ushort *)((int)param_2 + (1 - local_64) * 2 + 0x10);
+    frac2 = local_88;
+    p1[0] = (*p2 - p1[0]) * local_88 + p1[0];
+    p1[1] = (p2[1] - p1[1]) * local_88 + p1[1];
+    p1[2] = (p2[2] - p1[2]) * local_88 + p1[2];
+    p1[3] = (p2[3] - p1[3]) * local_88 + p1[3];
+    node = node + *(ushort *)((int)node + (1 - side) * 2 + 0x10);
   }
   return;
 }
@@ -1273,57 +1297,57 @@ CM_TraceThroughLeafBrushNode_r
 
 // 006B73B0  CM_TraceThroughLeafBrushNode  (qcommon/cm_trace.cpp:908)
 
-bool __cdecl CM_TraceThroughLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_3)
+bool __cdecl CM_TraceThroughLeafBrushNode(traceWork_t *tw,cLeaf_s *leaf,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  float local_40;
+  float absmin;
   float local_3c;
   float local_38;
-  float local_30;
+  I_spuDmaSave save;
+  float start;
   float local_2c;
   float local_28;
   undefined4 local_24;
-  float local_20;
+  float end;
   float local_1c;
   float local_18;
   float local_14;
-  float local_10;
+  float absmax;
   float local_c;
   float local_8;
   
-  if ((param_2->leafBrushNode == 0) &&
+  if ((leaf->leafBrushNode == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x393,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_40 = param_2->mins[0] - (param_1->size).vec.v[0];
-  local_3c = param_2->mins[1] - (param_1->size).vec.v[1];
-  local_38 = param_2->mins[2] - (param_1->size).vec.v[2];
-  local_10 = param_2->maxs[0] + (param_1->size).vec.v[0];
-  local_c = param_2->maxs[1] + (param_1->size).vec.v[1];
-  local_8 = param_2->maxs[2] + (param_1->size).vec.v[2];
-  iVar4 = intersect_extents_aabb(&param_1->extents,&local_40,&local_10,param_3->fraction);
+  absmin = leaf->mins[0] - (tw->size).vec.v[0];
+  local_3c = leaf->mins[1] - (tw->size).vec.v[1];
+  local_38 = leaf->mins[2] - (tw->size).vec.v[2];
+  absmax = leaf->maxs[0] + (tw->size).vec.v[0];
+  local_c = leaf->maxs[1] + (tw->size).vec.v[1];
+  local_8 = leaf->maxs[2] + (tw->size).vec.v[2];
+  iVar4 = intersect_extents_aabb(&tw->extents,&absmin,&absmax,trace->fraction);
   if (iVar4 == 0) {
     bVar2 = false;
   }
   else {
-    local_30 = (param_1->extents).start.vec.v[0];
-    local_2c = (param_1->extents).start.vec.v[1];
-    local_28 = (param_1->extents).start.vec.v[2];
-    local_20 = (param_1->extents).end.vec.v[0];
-    local_1c = (param_1->extents).end.vec.v[1];
-    local_18 = (param_1->extents).end.vec.v[2];
+    start = (tw->extents).start.vec.v[0];
+    local_2c = (tw->extents).start.vec.v[1];
+    local_28 = (tw->extents).start.vec.v[2];
+    end = (tw->extents).end.vec.v[0];
+    local_1c = (tw->extents).end.vec.v[1];
+    local_18 = (tw->extents).end.vec.v[2];
     local_24 = 0;
-    local_14 = param_3->fraction;
-    CM_TraceThroughLeafBrushNode_r
-              (param_1,cm.leafbrushNodes + param_2->leafBrushNode,&local_30,&local_20,param_3);
-    bVar2 = param_3->fraction == 0.0;
+    local_14 = trace->fraction;
+    CM_TraceThroughLeafBrushNode_r(tw,cm.leafbrushNodes + leaf->leafBrushNode,&start,&end,trace);
+    bVar2 = trace->fraction == 0.0;
   }
   return bVar2;
 }
@@ -1331,21 +1355,22 @@ bool __cdecl CM_TraceThroughLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,
 
 // 006B72E0  CM_TraceThroughLeaf  (qcommon/cm_trace.cpp:932)
 
-void __cdecl CM_TraceThroughLeaf(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_3)
+void __cdecl CM_TraceThroughLeaf(traceWork_t *tw,cLeaf_s *leaf,trace_t *trace)
 
 {
   bool bVar1;
-  int local_8;
+  I_spuDmaSave save;
+  CollisionAabbTree *aabbTree;
+  int k;
   
-  if ((param_3->fraction != 0.0) &&
-     ((((param_2->brushContents & param_1->contents) == 0 ||
-       (bVar1 = CM_TraceThroughLeafBrushNode(param_1,param_2,param_3), !bVar1)) &&
-      ((param_2->terrainContents & param_1->contents) != 0)))) {
-    local_8 = 0;
-    while ((local_8 < (int)(uint)param_2->collAabbCount && (param_3->fraction != 0.0))) {
-      CM_TraceThroughAabbTree
-                (param_1,cm.aabbTrees + (uint)param_2->firstCollAabbIndex + local_8,param_3);
-      local_8 = local_8 + 1;
+  if ((trace->fraction != 0.0) &&
+     ((((leaf->brushContents & tw->contents) == 0 ||
+       (bVar1 = CM_TraceThroughLeafBrushNode(tw,leaf,trace), !bVar1)) &&
+      ((leaf->terrainContents & tw->contents) != 0)))) {
+    k = 0;
+    while ((k < (int)(uint)leaf->collAabbCount && (trace->fraction != 0.0))) {
+      CM_TraceThroughAabbTree(tw,cm.aabbTrees + (uint)leaf->firstCollAabbIndex + k,trace);
+      k = k + 1;
     }
   }
   return;
@@ -1354,21 +1379,26 @@ void __cdecl CM_TraceThroughLeaf(traceWork_t *param_1,cLeaf_s *param_2,trace_t *
 
 // 006B88F0  CM_TestInTempBrush  (qcommon/cm_trace.cpp:969)
 
-void __cdecl CM_TestInTempBrush(traceWork_t *param_1,trace_t *param_2)
+void __cdecl CM_TestInTempBrush(traceWork_t *tw,trace_t *trace)
 
 {
   PhysGeomList *pPVar1;
-  BrushWrapper *pBVar2;
-  PhysGeomInfo *pPVar3;
-  uint local_10;
+  BrushWrapper *brush_00;
+  PhysGeomInfo *pPVar2;
+  cbrush_t *brush;
+  PhysGeomInfo *info;
+  I_spuDmaSave save_2;
+  uint i;
+  I_spuDmaSave save;
+  PhysGeomList *geoms;
   
-  pPVar1 = *(param_1->threadInfo).geoms;
-  local_10 = 0;
-  while ((local_10 < pPVar1->count &&
-         (((pPVar3 = pPVar1->geoms + local_10, pPVar3->brush == (BrushWrapper *)0x0 ||
-           (pBVar2 = pPVar3->brush, (pBVar2->contents & param_1->contents) == 0)) ||
-          (CM_TestBoxInBrush(param_1,(cbrush_t *)pBVar2,param_2), param_2->allsolid == false))))) {
-    local_10 = local_10 + 1;
+  pPVar1 = *(tw->threadInfo).geoms;
+  i = 0;
+  while ((i < pPVar1->count &&
+         (((pPVar2 = pPVar1->geoms + i, pPVar2->brush == (BrushWrapper *)0x0 ||
+           (brush_00 = pPVar2->brush, (brush_00->contents & tw->contents) == 0)) ||
+          (CM_TestBoxInBrush(tw,(cbrush_t *)brush_00,trace), trace->allsolid == false))))) {
+    i = i + 1;
   }
   return;
 }
@@ -1376,23 +1406,27 @@ void __cdecl CM_TestInTempBrush(traceWork_t *param_1,trace_t *param_2)
 
 // 006B8980  CM_TraceThroughTempBrush  (qcommon/cm_trace.cpp:990)
 
-void __cdecl CM_TraceThroughTempBrush(traceWork_t *param_1,trace_t *param_2)
+void __cdecl CM_TraceThroughTempBrush(traceWork_t *tw,trace_t *trace)
 
 {
   PhysGeomList *pPVar1;
-  BrushWrapper *pBVar2;
-  PhysGeomInfo *pPVar3;
-  uint local_10;
+  BrushWrapper *brush_00;
+  PhysGeomInfo *pPVar2;
+  cbrush_t *brush;
+  PhysGeomInfo *info;
+  I_spuDmaSave save_2;
+  uint i;
+  I_spuDmaSave save;
+  PhysGeomList *geoms;
   
-  if (param_2->fraction != 0.0) {
-    pPVar1 = *(param_1->threadInfo).geoms;
-    local_10 = 0;
-    while ((local_10 < pPVar1->count &&
-           (((pPVar3 = pPVar1->geoms + local_10, pPVar3->brush == (BrushWrapper *)0x0 ||
-             (pBVar2 = pPVar3->brush, (pBVar2->contents & param_1->contents) == 0)) ||
-            (CM_TraceThroughBrush(param_1,(cbrush_t *)pBVar2,param_2), param_2->fraction != 0.0)))))
-    {
-      local_10 = local_10 + 1;
+  if (trace->fraction != 0.0) {
+    pPVar1 = *(tw->threadInfo).geoms;
+    i = 0;
+    while ((i < pPVar1->count &&
+           (((pPVar2 = pPVar1->geoms + i, pPVar2->brush == (BrushWrapper *)0x0 ||
+             (brush_00 = pPVar2->brush, (brush_00->contents & tw->contents) == 0)) ||
+            (CM_TraceThroughBrush(tw,(cbrush_t *)brush_00,trace), trace->fraction != 0.0))))) {
+      i = i + 1;
     }
   }
   return;
@@ -1401,26 +1435,31 @@ void __cdecl CM_TraceThroughTempBrush(traceWork_t *param_1,trace_t *param_2)
 
 // 006BD690  CM_SightTraceThroughTempBrush  (qcommon/cm_trace.cpp:1019)
 
-int __cdecl CM_SightTraceThroughTempBrush(traceWork_t *param_1,trace_t *param_2)
+int __cdecl CM_SightTraceThroughTempBrush(traceWork_t *tw,trace_t *trace)
 
 {
   PhysGeomList *pPVar1;
-  BrushWrapper *pBVar2;
-  PhysGeomInfo *pPVar3;
-  int iVar4;
-  uint local_10;
+  BrushWrapper *brush_00;
+  PhysGeomInfo *pPVar2;
+  int iVar3;
+  cbrush_t *brush;
+  PhysGeomInfo *info;
+  I_spuDmaSave save_2;
+  uint i;
+  I_spuDmaSave save;
+  PhysGeomList *geoms;
   
-  pPVar1 = *(param_1->threadInfo).geoms;
-  local_10 = 0;
+  pPVar1 = *(tw->threadInfo).geoms;
+  i = 0;
   while( true ) {
-    if (pPVar1->count <= local_10) {
+    if (pPVar1->count <= i) {
       return 0;
     }
-    pPVar3 = pPVar1->geoms + local_10;
-    if (((pPVar3->brush != (BrushWrapper *)0x0) &&
-        (pBVar2 = pPVar3->brush, (pBVar2->contents & param_1->contents) != 0)) &&
-       (iVar4 = CM_SightTraceThroughBrush(param_1,(cbrush_t *)pBVar2,1,param_2), iVar4 != 0)) break;
-    local_10 = local_10 + 1;
+    pPVar2 = pPVar1->geoms + i;
+    if (((pPVar2->brush != (BrushWrapper *)0x0) &&
+        (brush_00 = pPVar2->brush, (brush_00->contents & tw->contents) != 0)) &&
+       (iVar3 = CM_SightTraceThroughBrush(tw,(cbrush_t *)brush_00,1,trace), iVar3 != 0)) break;
+    i = i + 1;
   }
   return -1;
 }
@@ -1430,8 +1469,7 @@ int __cdecl CM_SightTraceThroughTempBrush(traceWork_t *param_1,trace_t *param_2)
 
 int __cdecl
 CM_TraceSphereThroughSphere
-          (traceWork_t *param_1,float *param_2,float *param_3,float *param_4,float param_5,
-          trace_t *param_6)
+          (traceWork_t *tw,float *vStart,float *vEnd,float *vStationary,float radius,trace_t *trace)
 
 {
   float fVar1;
@@ -1441,24 +1479,30 @@ CM_TraceSphereThroughSphere
   float fVar5;
   float fVar6;
   float local_54;
-  float local_20;
+  float fDiscriminant;
+  float fEntry;
+  float fRadiusSqrd;
+  float fC;
+  float fB;
+  float fA;
+  float vNormal;
   float local_1c;
   float local_18;
-  float local_14;
+  float vDelta;
   float local_10;
   float local_c;
-  float local_8;
+  float fDeltaLen;
   
-  local_14 = *param_2 - *param_4;
-  local_10 = param_2[1] - param_4[1];
-  local_c = param_2[2] - param_4[2];
-  fVar5 = (param_5 + param_1->radius) * (param_5 + param_1->radius);
-  fVar6 = (local_14 * local_14 + local_10 * local_10 + local_c * local_c) - fVar5;
+  vDelta = *vStart - *vStationary;
+  local_10 = vStart[1] - vStationary[1];
+  local_c = vStart[2] - vStationary[2];
+  fVar5 = (radius + tw->radius) * (radius + tw->radius);
+  fVar6 = (vDelta * vDelta + local_10 * local_10 + local_c * local_c) - fVar5;
   if (0.0 < fVar6) {
-    fVar5 = (param_1->delta).vec.v[0] * local_14 + (param_1->delta).vec.v[1] * local_10 +
-            (param_1->delta).vec.v[2] * local_c;
+    fVar5 = (tw->delta).vec.v[0] * vDelta + (tw->delta).vec.v[1] * local_10 +
+            (tw->delta).vec.v[2] * local_c;
     if (fVar5 < 0.0) {
-      fVar1 = param_1->deltaLenSq;
+      fVar1 = tw->deltaLenSq;
       if ((fVar1 <= 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x43a,
                                    0,"%s\n\t(tw->deltaLenSq) = %g"), !bVar3)) {
@@ -1468,29 +1512,29 @@ CM_TraceSphereThroughSphere
       }
       fVar6 = fVar5 * fVar5 - fVar1 * fVar6;
       if (0.0 <= fVar6) {
-        local_8 = Vec3NormalizeTo(&local_14,&local_20);
-        local_54 = (-fVar5 - SQRT(fVar6)) / fVar1 + (local_8 * 0.125) / fVar5;
-        if (param_6->fraction <= local_54) {
+        fDeltaLen = Vec3NormalizeTo(&vDelta,&vNormal);
+        local_54 = (-fVar5 - SQRT(fVar6)) / fVar1 + (fDeltaLen * 0.125) / fVar5;
+        if (trace->fraction <= local_54) {
           iVar4 = 1;
         }
         else {
           if (local_54 - 0.0 < 0.0) {
             local_54 = 0.0;
           }
-          param_6->fraction = local_54;
-          if (((param_6->fraction < 0.0) || (1.0 < param_6->fraction)) &&
+          trace->fraction = local_54;
+          if (((trace->fraction < 0.0) || (1.0 < trace->fraction)) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                        0x447,1,"%s\n\t(trace->fraction) = %g"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             iVar4 = (*pcVar2)();
             return iVar4;
           }
-          (param_6->normal).vec.v[0] = local_20;
-          (param_6->normal).vec.v[1] = local_1c;
-          (param_6->normal).vec.v[2] = local_18;
-          param_6->cflags = ((param_1->threadInfo).box_brush)->contents;
-          param_6->walkable = false;
-          param_6->sflags = 0;
+          (trace->normal).vec.v[0] = vNormal;
+          (trace->normal).vec.v[1] = local_1c;
+          (trace->normal).vec.v[2] = local_18;
+          trace->cflags = ((tw->threadInfo).box_brush)->contents;
+          trace->walkable = false;
+          trace->sflags = 0;
           iVar4 = 0;
         }
       }
@@ -1503,16 +1547,16 @@ CM_TraceSphereThroughSphere
     }
   }
   else {
-    param_6->fraction = 0.0;
-    param_6->startsolid = true;
-    param_6->walkable = false;
-    Vec3NormalizeTo(&local_14,(float *)param_6);
-    param_6->cflags = ((param_1->threadInfo).box_brush)->contents;
-    param_6->sflags = 0;
-    if ((*param_3 - *param_4) * (*param_3 - *param_4) +
-        (param_3[1] - param_4[1]) * (param_3[1] - param_4[1]) +
-        (param_3[2] - param_4[2]) * (param_3[2] - param_4[2]) <= fVar5) {
-      param_6->allsolid = true;
+    trace->fraction = 0.0;
+    trace->startsolid = true;
+    trace->walkable = false;
+    Vec3NormalizeTo(&vDelta,(float *)trace);
+    trace->cflags = ((tw->threadInfo).box_brush)->contents;
+    trace->sflags = 0;
+    if ((*vEnd - *vStationary) * (*vEnd - *vStationary) +
+        (vEnd[1] - vStationary[1]) * (vEnd[1] - vStationary[1]) +
+        (vEnd[2] - vStationary[2]) * (vEnd[2] - vStationary[2]) <= fVar5) {
+      trace->allsolid = true;
     }
     iVar4 = 0;
   }
@@ -1524,7 +1568,8 @@ CM_TraceSphereThroughSphere
 
 int __cdecl
 CM_TraceCylinderThroughCylinder
-          (traceWork_t *param_1,float *param_2,float param_3,float param_4,trace_t *param_5)
+          (traceWork_t *tw,float *vStationary,float fStationaryHalfHeight,float radius,
+          trace_t *trace)
 
 {
   code *pcVar1;
@@ -1536,24 +1581,32 @@ CM_TraceCylinderThroughCylinder
   float fVar7;
   float fVar8;
   float local_80;
-  float local_20;
+  float fDiscriminant;
+  float fEntry;
+  float fRadiusSqrd;
+  float fHitHeight;
+  float fEpsilon;
+  float fTotalHeight;
+  float fC;
+  float fB;
+  float fA;
+  float vNormal;
   float local_1c;
   float local_18;
-  float local_14;
+  float vDelta;
   float local_10;
   float local_c;
-  float local_8;
+  float fDeltaLen;
   
-  local_14 = (param_1->extents).start.vec.v[0] - *param_2;
-  local_10 = (param_1->extents).start.vec.v[1] - param_2[1];
-  local_c = (param_1->extents).start.vec.v[2] - param_2[2];
-  fVar6 = (local_14 * local_14 + local_10 * local_10) -
-          (param_4 + param_1->radius) * (param_4 + param_1->radius);
+  vDelta = (tw->extents).start.vec.v[0] - *vStationary;
+  local_10 = (tw->extents).start.vec.v[1] - vStationary[1];
+  local_c = (tw->extents).start.vec.v[2] - vStationary[2];
+  fVar6 = (vDelta * vDelta + local_10 * local_10) - (radius + tw->radius) * (radius + tw->radius);
   if (0.0 < fVar6) {
-    fVar7 = (param_1->delta).vec.v[0] * local_14 + (param_1->delta).vec.v[1] * local_10;
+    fVar7 = (tw->delta).vec.v[0] * vDelta + (tw->delta).vec.v[1] * local_10;
     if (fVar7 < 0.0) {
-      fVar8 = (param_1->delta).vec.v[0] * (param_1->delta).vec.v[0] +
-              (param_1->delta).vec.v[1] * (param_1->delta).vec.v[1];
+      fVar8 = (tw->delta).vec.v[0] * (tw->delta).vec.v[0] +
+              (tw->delta).vec.v[1] * (tw->delta).vec.v[1];
       if ((fVar8 <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x481,
                                    0,"%s\n\t(fA) = %g"), !bVar2)) {
@@ -1564,17 +1617,17 @@ CM_TraceCylinderThroughCylinder
       fVar6 = fVar7 * fVar7 - fVar8 * fVar6;
       if (0.0 <= fVar6) {
         local_c = 0.0;
-        local_8 = Vec3NormalizeTo(&local_14,&local_20);
-        fVar4 = (local_8 * 0.125) / fVar7;
+        fDeltaLen = Vec3NormalizeTo(&vDelta,&vNormal);
+        fVar4 = (fDeltaLen * 0.125) / fVar7;
         local_80 = (-fVar7 - SQRT(fVar6)) / fVar8 + fVar4;
-        if (param_5->fraction <= local_80) {
+        if (trace->fraction <= local_80) {
           iVar3 = 1;
         }
         else {
-          fVar5 = ((param_1->size).vec.v[2] - param_1->radius) + param_3;
-          fVar6 = (param_1->extents).start.vec.v[2];
-          fVar7 = (param_1->delta).vec.v[2];
-          fVar8 = param_2[2];
+          fVar5 = ((tw->size).vec.v[2] - tw->radius) + fStationaryHalfHeight;
+          fVar6 = (tw->extents).start.vec.v[2];
+          fVar7 = (tw->delta).vec.v[2];
+          fVar8 = vStationary[2];
           if ((fVar5 < 0.0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                        0x490,0,"%s"), !bVar2)) {
@@ -1586,20 +1639,20 @@ CM_TraceCylinderThroughCylinder
             if (local_80 - 0.0 < 0.0) {
               local_80 = 0.0;
             }
-            param_5->fraction = local_80;
-            if (((param_5->fraction < 0.0) || (1.0 < param_5->fraction)) &&
+            trace->fraction = local_80;
+            if (((trace->fraction < 0.0) || (1.0 < trace->fraction)) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                          0x495,1,"%s\n\t(trace->fraction) = %g"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               iVar3 = (*pcVar1)();
               return iVar3;
             }
-            (param_5->normal).vec.v[0] = local_20;
-            (param_5->normal).vec.v[1] = local_1c;
-            (param_5->normal).vec.v[2] = local_18;
-            param_5->cflags = ((param_1->threadInfo).box_brush)->contents;
-            param_5->sflags = 0;
-            param_5->walkable = false;
+            (trace->normal).vec.v[0] = vNormal;
+            (trace->normal).vec.v[1] = local_1c;
+            (trace->normal).vec.v[2] = local_18;
+            trace->cflags = ((tw->threadInfo).box_brush)->contents;
+            trace->sflags = 0;
+            trace->walkable = false;
             iVar3 = 0;
           }
           else {
@@ -1616,7 +1669,7 @@ CM_TraceCylinderThroughCylinder
     }
   }
   else {
-    fVar6 = ((param_1->size).vec.v[2] - param_1->radius) + param_3;
+    fVar6 = ((tw->size).vec.v[2] - tw->radius) + fStationaryHalfHeight;
     if ((fVar6 < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x468,0,
                                  "%s"), !bVar2)) {
@@ -1625,16 +1678,16 @@ CM_TraceCylinderThroughCylinder
       return iVar3;
     }
     if (ABS(local_c) <= fVar6) {
-      param_5->fraction = 0.0;
-      param_5->startsolid = true;
-      param_5->walkable = false;
+      trace->fraction = 0.0;
+      trace->startsolid = true;
+      trace->walkable = false;
       local_c = 0.0;
-      Vec3NormalizeTo(&local_14,(float *)param_5);
-      param_5->cflags = ((param_1->threadInfo).box_brush)->contents;
-      param_5->sflags = 0;
-      local_14 = (param_1->extents).end.vec.v[0] - *param_2;
-      local_10 = (param_1->extents).end.vec.v[1] - param_2[1];
-      local_c = (param_1->extents).end.vec.v[2] - param_2[2];
+      Vec3NormalizeTo(&vDelta,(float *)trace);
+      trace->cflags = ((tw->threadInfo).box_brush)->contents;
+      trace->sflags = 0;
+      vDelta = (tw->extents).end.vec.v[0] - *vStationary;
+      local_10 = (tw->extents).end.vec.v[1] - vStationary[1];
+      local_c = (tw->extents).end.vec.v[2] - vStationary[2];
       if ((fVar6 < 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x475,
                                    0,"%s"), !bVar2)) {
@@ -1643,7 +1696,7 @@ CM_TraceCylinderThroughCylinder
         return iVar3;
       }
       if (ABS(local_c) <= fVar6) {
-        param_5->allsolid = true;
+        trace->allsolid = true;
       }
       iVar3 = 0;
     }
@@ -1657,108 +1710,105 @@ CM_TraceCylinderThroughCylinder
 
 // 006B8A30  CM_TraceCapsuleThroughCapsule  (qcommon/cm_trace.cpp:1193)
 
-void __cdecl CM_TraceCapsuleThroughCapsule(traceWork_t *param_1,trace_t *param_2)
+void __cdecl CM_TraceCapsuleThroughCapsule(traceWork_t *tw,trace_t *trace)
 
 {
   int iVar1;
   float local_b8;
-  float local_84;
+  float endtop;
   float local_80;
   float local_7c;
-  float local_78;
+  float starttop;
   float local_74;
   float local_70;
-  float local_6c;
-  float local_68;
+  float halfwidth;
+  float top;
   undefined4 local_64;
   float local_60;
-  float local_5c;
-  float local_58;
+  float offs;
+  float halfheight;
   float afStack_54 [6];
-  float local_3c;
-  float local_38 [4];
+  float radius;
+  float offset [4];
   float local_28;
   float local_24;
-  float local_20;
+  float startbottom;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
+  int i;
+  float bottom;
   undefined4 local_c;
   float local_8;
   
-  if (((((param_1->bounds[0].vec.v[0] <= ((param_1->threadInfo).box_model)->maxs[0] + 1.0) &&
-        (param_1->bounds[0].vec.v[1] <= ((param_1->threadInfo).box_model)->maxs[1] + 1.0)) &&
-       (param_1->bounds[0].vec.v[2] <= ((param_1->threadInfo).box_model)->maxs[2] + 1.0)) &&
-      ((((param_1->threadInfo).box_model)->mins[0] - 1.0 <= param_1->bounds[1].vec.v[0] &&
-       (((param_1->threadInfo).box_model)->mins[1] - 1.0 <= param_1->bounds[1].vec.v[1])))) &&
-     (((param_1->threadInfo).box_model)->mins[2] - 1.0 <= param_1->bounds[1].vec.v[2])) {
-    local_78 = (param_1->extents).start.vec.v[0];
-    local_74 = (param_1->extents).start.vec.v[1];
-    local_70 = (param_1->extents).start.vec.v[2] + param_1->offsetZ;
-    local_20 = (param_1->extents).start.vec.v[0];
-    local_1c = (param_1->extents).start.vec.v[1];
-    local_18 = (param_1->extents).start.vec.v[2] - param_1->offsetZ;
-    local_84 = (param_1->extents).end.vec.v[0];
-    local_80 = (param_1->extents).end.vec.v[1];
-    local_7c = (param_1->extents).end.vec.v[2] + param_1->offsetZ;
-    local_38[3] = (param_1->extents).end.vec.v[0];
-    local_28 = (param_1->extents).end.vec.v[1];
-    local_24 = (param_1->extents).end.vec.v[2] - param_1->offsetZ;
-    for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-      local_38[local_14] =
-           (((param_1->threadInfo).box_model)->mins[local_14] +
-           ((param_1->threadInfo).box_model)->maxs[local_14]) * 0.5;
-      afStack_54[local_14] = ((param_1->threadInfo).box_model)->mins[local_14] - local_38[local_14];
-      afStack_54[local_14 + 3] =
-           ((param_1->threadInfo).box_model)->maxs[local_14] - local_38[local_14];
+  if (((((tw->bounds[0].vec.v[0] <= ((tw->threadInfo).box_model)->maxs[0] + 1.0) &&
+        (tw->bounds[0].vec.v[1] <= ((tw->threadInfo).box_model)->maxs[1] + 1.0)) &&
+       (tw->bounds[0].vec.v[2] <= ((tw->threadInfo).box_model)->maxs[2] + 1.0)) &&
+      ((((tw->threadInfo).box_model)->mins[0] - 1.0 <= tw->bounds[1].vec.v[0] &&
+       (((tw->threadInfo).box_model)->mins[1] - 1.0 <= tw->bounds[1].vec.v[1])))) &&
+     (((tw->threadInfo).box_model)->mins[2] - 1.0 <= tw->bounds[1].vec.v[2])) {
+    starttop = (tw->extents).start.vec.v[0];
+    local_74 = (tw->extents).start.vec.v[1];
+    local_70 = (tw->extents).start.vec.v[2] + tw->offsetZ;
+    startbottom = (tw->extents).start.vec.v[0];
+    local_1c = (tw->extents).start.vec.v[1];
+    local_18 = (tw->extents).start.vec.v[2] - tw->offsetZ;
+    endtop = (tw->extents).end.vec.v[0];
+    local_80 = (tw->extents).end.vec.v[1];
+    local_7c = (tw->extents).end.vec.v[2] + tw->offsetZ;
+    offset[3] = (tw->extents).end.vec.v[0];
+    local_28 = (tw->extents).end.vec.v[1];
+    local_24 = (tw->extents).end.vec.v[2] - tw->offsetZ;
+    for (i = 0; i < 3; i = i + 1) {
+      offset[i] = (((tw->threadInfo).box_model)->mins[i] + ((tw->threadInfo).box_model)->maxs[i]) *
+                  0.5;
+      afStack_54[i] = ((tw->threadInfo).box_model)->mins[i] - offset[i];
+      afStack_54[i + 3] = ((tw->threadInfo).box_model)->maxs[i] - offset[i];
     }
-    local_6c = afStack_54[3];
-    local_58 = afStack_54[5];
+    halfwidth = afStack_54[3];
+    halfheight = afStack_54[5];
     if (afStack_54[3] <= afStack_54[5]) {
       local_b8 = afStack_54[3];
     }
     else {
       local_b8 = afStack_54[5];
     }
-    local_3c = local_b8;
-    local_5c = afStack_54[5] - local_b8;
-    local_68 = local_38[0];
-    local_64 = local_38[1];
-    local_60 = local_38[2] + local_5c;
-    local_10 = local_38[0];
-    local_c = local_38[1];
-    local_8 = local_38[2] - local_5c;
+    radius = local_b8;
+    offs = afStack_54[5] - local_b8;
+    top = offset[0];
+    local_64 = offset[1];
+    local_60 = offset[2] + offs;
+    bottom = offset[0];
+    local_c = offset[1];
+    local_8 = offset[2] - offs;
     if (local_18 <= local_60) {
       if (local_70 < local_8) {
-        iVar1 = CM_TraceSphereThroughSphere(param_1,&local_78,&local_84,&local_10,local_b8,param_2);
+        iVar1 = CM_TraceSphereThroughSphere(tw,&starttop,&endtop,&bottom,local_b8,trace);
         if (iVar1 == 0) {
           return;
         }
-        if ((param_1->delta).vec.v[2] <= 0.0) {
+        if ((tw->delta).vec.v[2] <= 0.0) {
           return;
         }
       }
     }
     else {
-      iVar1 = CM_TraceSphereThroughSphere(param_1,&local_20,local_38 + 3,&local_68,local_b8,param_2)
-      ;
+      iVar1 = CM_TraceSphereThroughSphere(tw,&startbottom,offset + 3,&top,local_b8,trace);
       if (iVar1 == 0) {
         return;
       }
-      if (0.0 <= (param_1->delta).vec.v[2]) {
+      if (0.0 <= (tw->delta).vec.v[2]) {
         return;
       }
     }
-    iVar1 = CM_TraceCylinderThroughCylinder(param_1,local_38,local_5c,local_3c,param_2);
+    iVar1 = CM_TraceCylinderThroughCylinder(tw,offset,offs,radius,trace);
     if (iVar1 != 0) {
       if (local_24 <= local_60) {
         if ((local_7c < local_8) && (local_8 <= local_70)) {
-          CM_TraceSphereThroughSphere(param_1,&local_78,&local_84,&local_10,local_3c,param_2);
+          CM_TraceSphereThroughSphere(tw,&starttop,&endtop,&bottom,radius,trace);
         }
       }
       else if (local_18 <= local_60) {
-        CM_TraceSphereThroughSphere(param_1,&local_20,local_38 + 3,&local_68,local_3c,param_2);
+        CM_TraceSphereThroughSphere(tw,&startbottom,offset + 3,&top,radius,trace);
       }
     }
   }
@@ -1768,8 +1818,7 @@ void __cdecl CM_TraceCapsuleThroughCapsule(traceWork_t *param_1,trace_t *param_2
 
 // 006B9890  CM_TraceThroughTree  (qcommon/cm_trace.cpp:1290)
 
-void __cdecl
-CM_TraceThroughTree(traceWork_t *param_1,int param_2,float *param_3,float *param_4,trace_t *param_5)
+void __cdecl CM_TraceThroughTree(traceWork_t *tw,int num,float *p1_,float *p2,trace_t *trace)
 
 {
   cNode_t *pcVar1;
@@ -1783,126 +1832,131 @@ CM_TraceThroughTree(traceWork_t *param_1,int param_2,float *param_3,float *param
   float local_68;
   float local_64;
   float local_60;
-  uint local_54;
-  float local_44;
-  float local_40;
-  float local_38 [4];
-  float local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
+  cNode_t *node;
+  int side;
+  float diff;
+  cplane_s *plane;
+  float t;
+  float t1;
+  float frac;
+  I_spuDmaSave save;
+  float p1 [4];
+  float offset;
+  float t2;
+  float frac2;
+  float absDiff;
+  float invDist;
+  float mid;
   float local_10;
   float local_c;
   float local_8;
   
-  local_38[0] = *param_3;
-  local_38[1] = param_3[1];
-  local_38[2] = param_3[2];
-  local_38[3] = param_3[3];
+  p1[0] = *p1_;
+  p1[1] = p1_[1];
+  p1[2] = p1_[2];
+  p1[3] = p1_[3];
   while( true ) {
     while( true ) {
       while( true ) {
-        if (param_2 < 0) {
-          CM_TraceThroughLeaf(param_1,cm.leafs + (-1 - param_2),param_5);
+        if (num < 0) {
+          CM_TraceThroughLeaf(tw,cm.leafs + (-1 - num),trace);
           return;
         }
-        pcVar1 = cm.nodes + param_2;
+        pcVar1 = cm.nodes + num;
         pcVar2 = pcVar1->plane;
         if (pcVar2->type < 3) {
-          local_44 = local_38[pcVar2->type] - pcVar2->dist;
-          local_24 = param_4[pcVar2->type] - pcVar2->dist;
-          local_28 = param_1->bounds[-1].vec.v[pcVar2->type] + 0.125;
+          t1 = p1[pcVar2->type] - pcVar2->dist;
+          t2 = p2[pcVar2->type] - pcVar2->dist;
+          offset = tw->bounds[-1].vec.v[pcVar2->type] + 0.125;
         }
         else {
-          local_44 = (pcVar2->normal[0] * local_38[0] + pcVar2->normal[1] * local_38[1] +
-                     pcVar2->normal[2] * local_38[2]) - pcVar2->dist;
-          local_24 = (pcVar2->normal[0] * *param_4 + pcVar2->normal[1] * param_4[1] +
-                     pcVar2->normal[2] * param_4[2]) - pcVar2->dist;
-          if (param_1->isPoint == false) {
-            local_28 = param_1->boundingRadius + 0.125;
+          t1 = (pcVar2->normal[0] * p1[0] + pcVar2->normal[1] * p1[1] + pcVar2->normal[2] * p1[2]) -
+               pcVar2->dist;
+          t2 = (pcVar2->normal[0] * *p2 + pcVar2->normal[1] * p2[1] + pcVar2->normal[2] * p2[2]) -
+               pcVar2->dist;
+          if (tw->isPoint == false) {
+            offset = tw->boundingRadius + 0.125;
           }
           else {
-            local_28 = 0.125;
+            offset = 0.125;
           }
         }
-        if (local_24 - local_44 < 0.0) {
-          local_60 = local_24;
+        if (t2 - t1 < 0.0) {
+          local_60 = t2;
         }
         else {
-          local_60 = local_44;
+          local_60 = t1;
         }
-        if (local_60 < local_28) break;
-        param_2 = (int)pcVar1->children[0];
+        if (local_60 < offset) break;
+        num = (int)pcVar1->children[0];
       }
-      if (local_44 - local_24 < 0.0) {
-        local_64 = local_24;
+      if (t1 - t2 < 0.0) {
+        local_64 = t2;
       }
       else {
-        local_64 = local_44;
+        local_64 = t1;
       }
-      if (-local_28 < local_64) break;
-      param_2 = (int)pcVar1->children[1];
+      if (-offset < local_64) break;
+      num = (int)pcVar1->children[1];
     }
-    if (param_5->fraction <= local_38[3]) break;
-    fVar5 = local_24 - local_44;
-    local_1c = ABS(fVar5);
-    if (local_1c <= 4.7683716e-07) {
-      local_54 = 0;
-      local_40 = 1.0;
-      local_20 = 0.0;
+    if (trace->fraction <= p1[3]) break;
+    fVar5 = t2 - t1;
+    absDiff = ABS(fVar5);
+    if (absDiff <= 4.7683716e-07) {
+      side = 0;
+      frac = 1.0;
+      frac2 = 0.0;
     }
     else {
       if (fVar5 < 0.0) {
-        local_68 = local_44;
+        local_68 = t1;
       }
       else {
-        local_68 = -local_44;
+        local_68 = -t1;
       }
-      local_18 = 1.0 / local_1c;
-      local_20 = (local_68 - local_28) * local_18;
-      local_40 = (local_68 + local_28) * local_18;
+      invDist = 1.0 / absDiff;
+      frac2 = (local_68 - offset) * invDist;
+      frac = (local_68 + offset) * invDist;
       local_6c = (uint)(0.0 <= fVar5);
-      local_54 = local_6c;
+      side = local_6c;
     }
-    if ((local_40 < 0.0) &&
+    if ((frac < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x562,0,
                                  "%s"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (1.0 - local_40 < 0.0) {
+    if (1.0 - frac < 0.0) {
       local_70 = 1.0;
     }
     else {
-      local_70 = local_40;
+      local_70 = frac;
     }
-    local_14 = (*param_4 - local_38[0]) * local_70 + local_38[0];
-    local_10 = (param_4[1] - local_38[1]) * local_70 + local_38[1];
-    local_c = (param_4[2] - local_38[2]) * local_70 + local_38[2];
-    local_8 = (param_4[3] - local_38[3]) * local_70 + local_38[3];
-    CM_TraceThroughTree(param_1,(int)pcVar1->children[local_54],local_38,&local_14,param_5);
-    if ((1.0 < local_20) &&
+    mid = (*p2 - p1[0]) * local_70 + p1[0];
+    local_10 = (p2[1] - p1[1]) * local_70 + p1[1];
+    local_c = (p2[2] - p1[2]) * local_70 + p1[2];
+    local_8 = (p2[3] - p1[3]) * local_70 + p1[3];
+    CM_TraceThroughTree(tw,(int)pcVar1->children[side],p1,&mid,trace);
+    if ((1.0 < frac2) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x56d,0,
                                  "%s\n\t(frac) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if (local_20 - 0.0 < 0.0) {
+    if (frac2 - 0.0 < 0.0) {
       local_74 = 0.0;
     }
     else {
-      local_74 = local_20;
+      local_74 = frac2;
     }
-    local_20 = local_74;
-    local_38[0] = (*param_4 - local_38[0]) * local_74 + local_38[0];
-    local_38[1] = (param_4[1] - local_38[1]) * local_74 + local_38[1];
-    local_38[2] = (param_4[2] - local_38[2]) * local_74 + local_38[2];
-    local_38[3] = (param_4[3] - local_38[3]) * local_74 + local_38[3];
-    param_2 = (int)pcVar1->children[local_54 ^ 1];
+    frac2 = local_74;
+    p1[0] = (*p2 - p1[0]) * local_74 + p1[0];
+    p1[1] = (p2[1] - p1[1]) * local_74 + p1[1];
+    p1[2] = (p2[2] - p1[2]) * local_74 + p1[2];
+    p1[3] = (p2[3] - p1[3]) * local_74 + p1[3];
+    num = (int)pcVar1->children[side ^ 1];
   }
   return;
 }
@@ -1912,8 +1966,7 @@ CM_TraceThroughTree(traceWork_t *param_1,int param_2,float *param_3,float *param
 
 void __cdecl
 CM_TraceThroughPrimitives
-          (traceWork_t *param_1,float *param_2,float *param_3,trace_t *param_4,
-          col_context_t *param_5)
+          (traceWork_t *tw,float *p1_,float *p2,trace_t *trace,col_context_t *context)
 
 {
   code *pcVar1;
@@ -1960,66 +2013,67 @@ CM_TraceThroughPrimitives
   undefined1 *local_34;
   float *local_30;
   undefined1 *local_2c;
-  cbrush_t *local_20;
-  float local_1c;
-  dmaterial_t *local_18;
-  CollisionAabbTree *local_14;
-  int local_c;
-  col_prim_t *local_8;
+  cbrush_t *brush;
+  float oldFraction;
+  dmaterial_t *materialInfo;
+  CollisionAabbTree *tree;
+  I_spuDmaSave save;
+  int i;
+  col_prim_t *prim;
   
-  if (param_4->fraction != 0.0) {
-    local_8 = param_5->prims;
-    local_c = 0;
-    while ((local_c < param_5->nprims && (param_4->allsolid == false))) {
-      if (local_8->type == 0) {
-        local_14 = (local_8->field1_0x4).tree;
-        local_18 = cm.materials + local_14->materialIndex;
-        if ((param_1->contents & local_18->contentFlags) != 0) {
-          local_30 = local_14->halfSize;
+  if (trace->fraction != 0.0) {
+    prim = context->prims;
+    i = 0;
+    while ((i < context->nprims && (trace->allsolid == false))) {
+      if (prim->type == 0) {
+        tree = (prim->field1_0x4).tree;
+        materialInfo = cm.materials + tree->materialIndex;
+        if ((tw->contents & materialInfo->contentFlags) != 0) {
+          local_30 = tree->halfSize;
           local_2c = local_d4;
           local_c8 = 0;
           local_34 = local_e4;
           local_d8 = 0;
-          local_54 = &param_1->midpoint;
-          local_5c = (local_54->vec).v[0] - local_14->origin[0];
-          local_4c = (param_1->midpoint).vec.v[1] - local_14->origin[1];
-          local_48 = (param_1->midpoint).vec.v[2] - local_14->origin[2];
-          local_58 = &param_1->size;
+          local_54 = &tw->midpoint;
+          local_5c = (local_54->vec).v[0] - tree->origin[0];
+          local_4c = (tw->midpoint).vec.v[1] - tree->origin[1];
+          local_48 = (tw->midpoint).vec.v[2] - tree->origin[2];
+          local_58 = &tw->size;
           local_44 = *local_30 + (local_58->vec).v[0];
-          local_40 = local_14->halfSize[1] + (param_1->size).vec.v[1];
-          local_3c = local_14->halfSize[2] + (param_1->size).vec.v[2];
+          local_40 = tree->halfSize[1] + (tw->size).vec.v[1];
+          local_3c = tree->halfSize[2] + (tw->size).vec.v[2];
           local_60 = ABS(local_5c);
-          local_64 = (param_1->halfDeltaAbs).vec.v[0];
+          local_64 = (tw->halfDeltaAbs).vec.v[0];
           if (local_60 <= local_44 + local_64) {
             local_6c = ABS(local_4c);
-            local_70 = (param_1->halfDeltaAbs).vec.v[1];
+            local_70 = (tw->halfDeltaAbs).vec.v[1];
             local_68 = local_4c;
             if (local_6c <= local_40 + local_70) {
               local_78 = ABS(local_48);
-              local_7c = (param_1->halfDeltaAbs).vec.v[2];
+              local_7c = (tw->halfDeltaAbs).vec.v[2];
               local_74 = local_48;
               if (local_78 <= local_3c + local_7c) {
-                if (param_1->axialCullOnly == false) {
-                  local_80 = (param_1->halfDelta).vec.v[1];
-                  local_84 = (param_1->halfDelta).vec.v[2];
+                if (tw->axialCullOnly == false) {
+                  local_80 = (tw->halfDelta).vec.v[1];
+                  local_84 = (tw->halfDelta).vec.v[2];
                   local_88 = local_80 * local_48 - local_84 * local_4c;
                   local_8c = ABS(local_88);
-                  local_90 = (param_1->halfDeltaAbs).vec.v[2];
-                  local_94 = (param_1->halfDeltaAbs).vec.v[1];
+                  local_90 = (tw->halfDeltaAbs).vec.v[2];
+                  local_94 = (tw->halfDeltaAbs).vec.v[1];
                   if (local_8c <= local_40 * local_90 + local_3c * local_94) {
-                    local_98 = (param_1->halfDelta).vec.v[2];
-                    local_9c = (param_1->halfDelta).vec.v[0];
+                    local_98 = (tw->halfDelta).vec.v[2];
+                    local_9c = (tw->halfDelta).vec.v[0];
                     local_a0 = local_98 * local_5c - local_9c * local_48;
                     local_a4 = ABS(local_a0);
-                    local_a8 = (param_1->halfDeltaAbs).vec.v[0];
-                    local_ac = (param_1->halfDeltaAbs).vec.v[2];
+                    local_a8 = (tw->halfDeltaAbs).vec.v[0];
+                    local_ac = (tw->halfDeltaAbs).vec.v[2];
                     if (local_a4 <= local_3c * local_a8 + local_44 * local_ac) {
-                      local_b0 = (param_1->halfDelta).vec.v[0];
-                      local_b4 = (param_1->halfDelta).vec.v[1];
+                      local_b0 = (tw->halfDelta).vec.v[0];
+                      local_b4 = (tw->halfDelta).vec.v[1];
                       local_b8 = local_b0 * local_4c - local_b4 * local_5c;
                       local_bc = ABS(local_b8);
-                      local_c0 = (param_1->halfDeltaAbs).vec.v[1];
-                      local_c4 = (param_1->halfDeltaAbs).vec.v[0];
+                      local_c0 = (tw->halfDeltaAbs).vec.v[1];
+                      local_c4 = (tw->halfDeltaAbs).vec.v[0];
                       if (local_bc <= local_44 * local_c0 + local_40 * local_c4) {
                         bVar2 = false;
                       }
@@ -2052,33 +2106,33 @@ CM_TraceThroughPrimitives
           }
           local_50 = local_5c;
           if (!bVar2) {
-            local_1c = param_4->fraction;
-            CM_TraceThroughPartition(param_1,(local_14->u).firstChildIndex,param_4);
-            if (param_4->fraction <= local_1c && local_1c != param_4->fraction) {
-              param_4->sflags = local_18->surfaceFlags;
-              param_4->cflags = local_18->contentFlags;
+            oldFraction = trace->fraction;
+            CM_TraceThroughPartition(tw,(tree->u).firstChildIndex,trace);
+            if (trace->fraction <= oldFraction && oldFraction != trace->fraction) {
+              trace->sflags = materialInfo->surfaceFlags;
+              trace->cflags = materialInfo->contentFlags;
             }
           }
         }
       }
       else {
-        if ((local_8->type != 1) &&
+        if ((prim->type != 1) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0x5a6,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        local_20 = (local_8->field1_0x4).brush;
-        if ((local_20->contents & param_1->contents) != 0) {
-          CM_TraceThroughBrush(param_1,local_20,param_4);
+        brush = (prim->field1_0x4).brush;
+        if ((brush->contents & tw->contents) != 0) {
+          CM_TraceThroughBrush(tw,brush,trace);
         }
       }
-      if (param_4->fraction == 0.0) {
+      if (trace->fraction == 0.0) {
         return;
       }
-      local_c = local_c + 1;
-      local_8 = local_8 + 1;
+      i = i + 1;
+      prim = prim + 1;
     }
   }
   return;
@@ -2087,15 +2141,15 @@ CM_TraceThroughPrimitives
 
 // 006BA760  TransposeMatrix  (universal/com_math.h:1440)
 
-void __cdecl TransposeMatrix(float (*param_1) [3],float (*param_2) [3])
+void __cdecl TransposeMatrix(float (*matrix) [3],float (*transpose) [3])
 
 {
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      param_2[local_8][local_c] = param_1[local_c][local_8];
+  for (i = 0; i < 3; i = i + 1) {
+    for (j = 0; j < 3; j = j + 1) {
+      transpose[i][j] = matrix[j][i];
     }
   }
   return;
@@ -2104,34 +2158,37 @@ void __cdecl TransposeMatrix(float (*param_1) [3],float (*param_2) [3])
 
 // 006BA7C0  RotatePoint  (universal/com_math.h:1453)
 
-void __cdecl RotatePoint(float *param_1,float (*param_2) [3])
+void __cdecl RotatePoint(float *point,float (*mat) [3])
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   
-  fVar1 = *param_1;
-  fVar2 = param_1[1];
-  fVar3 = param_1[2];
-  *param_1 = (*param_2)[0] * fVar1 + (*param_2)[1] * fVar2 + (*param_2)[2] * fVar3;
-  param_1[1] = param_2[1][0] * fVar1 + param_2[1][1] * fVar2 + param_2[1][2] * fVar3;
-  param_1[2] = param_2[2][0] * fVar1 + param_2[2][1] * fVar2 + param_2[2][2] * fVar3;
+  fVar1 = *point;
+  fVar2 = point[1];
+  fVar3 = point[2];
+  *point = (*mat)[0] * fVar1 + (*mat)[1] * fVar2 + (*mat)[2] * fVar3;
+  point[1] = mat[1][0] * fVar1 + mat[1][1] * fVar2 + mat[1][2] * fVar3;
+  point[2] = mat[2][0] * fVar1 + mat[2][1] * fVar2 + mat[2][2] * fVar3;
   return;
 }
 
 
 // 006BA3D0  CM_SetAxialCullOnly  (qcommon/cm_trace.cpp:1458)
 
-void __cdecl CM_SetAxialCullOnly(traceWork_t *param_1)
+void __cdecl CM_SetAxialCullOnly(traceWork_t *tw)
 
 {
-  param_1->axialCullOnly =
-       (param_1->bounds[1].vec.v[0] - param_1->bounds[0].vec.v[0]) *
-       (param_1->bounds[1].vec.v[1] - param_1->bounds[0].vec.v[1]) *
-       (param_1->bounds[1].vec.v[2] - param_1->bounds[0].vec.v[2]) <
-       (param_1->size).vec.v[0] * (param_1->size).vec.v[1] * (param_1->size).vec.v[2] * 16.0 *
-       param_1->deltaLen;
+  float totalVolume;
+  float boxOctantVolume;
+  float twiceSweptVolume;
+  
+  tw->axialCullOnly =
+       (tw->bounds[1].vec.v[0] - tw->bounds[0].vec.v[0]) *
+       (tw->bounds[1].vec.v[1] - tw->bounds[0].vec.v[1]) *
+       (tw->bounds[1].vec.v[2] - tw->bounds[0].vec.v[2]) <
+       (tw->size).vec.v[0] * (tw->size).vec.v[1] * (tw->size).vec.v[2] * 16.0 * tw->deltaLen;
   return;
 }
 
@@ -2141,8 +2198,8 @@ void __cdecl CM_SetAxialCullOnly(traceWork_t *param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,uint param_6,
-        int param_7,col_context_t *param_8)
+CM_Trace(trace_t *results,float *start,float *end,float *mins,float *maxs,uint model,int brushmask,
+        col_context_t *context)
 
 {
   float *pfVar1;
@@ -2154,7 +2211,8 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
   cmodel_t *pcVar7;
   DWORD DVar8;
   float local_174;
-  float4 local_124;
+  cmodel_t *cmod;
+  float4 tw;
   float afStack_114 [4];
   float afStack_104 [4];
   float afStack_f4 [4];
@@ -2176,21 +2234,23 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
   float local_5c;
   TraceThreadInfo local_58;
   uint local_44;
-  float afStack_40 [4];
-  float local_30;
+  float afStack_40 [3];
+  float oldFrac;
+  float start_;
   float local_2c;
   float local_28;
   undefined4 local_24;
-  int local_20;
-  int local_1c;
-  float local_14;
+  int oldSurfaceFlags;
+  int i;
+  PIXProfile pix;
+  float end_;
   float local_10;
   float local_c;
   float local_8;
   
   local_44 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"CM_Trace");
-  traceWork_t::traceWork_t((traceWork_t *)&local_124);
+  traceWork_t::traceWork_t((traceWork_t *)&tw);
   if ((cm.numNodes == 0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x5db,0,
                                "%s"), !bVar6)) {
@@ -2198,54 +2258,50 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
     (*pcVar3)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x5dc,0,
                                "%s"), !bVar6)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x5dd,0,
                                "%s"), !bVar6)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x5de,0,
                                "%s"), !bVar6)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  pcVar7 = CM_ClipHandleToModel(param_6);
-  local_6c = param_7;
-  for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-    if ((param_5[local_1c] < param_4[local_1c]) &&
+  pcVar7 = CM_ClipHandleToModel(model);
+  local_6c = brushmask;
+  for (i = 0; i < 3; i = i + 1) {
+    if ((maxs[i] < mins[i]) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x5eb,0,
                                  "%s"), !bVar6)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    afStack_40[local_1c] = (param_4[local_1c] + param_5[local_1c]) * 0.5;
-    *(float *)((int)&local_e4 + local_1c * 4) = param_5[local_1c] - afStack_40[local_1c];
-    *(float *)((int)&local_a4 + local_1c * 4) = param_2[local_1c] + afStack_40[local_1c];
-    *(float *)((int)local_94 + local_1c * 4) = param_3[local_1c] + afStack_40[local_1c];
-    afStack_114[local_1c] =
-         (*(float *)((int)&local_a4 + local_1c * 4) + *(float *)((int)local_94 + local_1c * 4)) *
-         0.5;
-    *(float *)((int)&local_124 + local_1c * 4) =
-         *(float *)((int)local_94 + local_1c * 4) - *(float *)((int)&local_a4 + local_1c * 4);
-    afStack_104[local_1c] = *(float *)((int)&local_124 + local_1c * 4) * 0.5;
-    afStack_f4[local_1c] = ABS(afStack_104[local_1c]);
+    afStack_40[i] = (mins[i] + maxs[i]) * 0.5;
+    *(float *)((int)&local_e4 + i * 4) = maxs[i] - afStack_40[i];
+    *(float *)((int)&local_a4 + i * 4) = start[i] + afStack_40[i];
+    *(float *)((int)local_94 + i * 4) = end[i] + afStack_40[i];
+    afStack_114[i] = (*(float *)((int)&local_a4 + i * 4) + *(float *)((int)local_94 + i * 4)) * 0.5;
+    *(float *)((int)&tw + i * 4) =
+         *(float *)((int)local_94 + i * 4) - *(float *)((int)&local_a4 + i * 4);
+    afStack_104[i] = *(float *)((int)&tw + i * 4) * 0.5;
+    afStack_f4[i] = ABS(afStack_104[i]);
   }
   CM_CalcTraceExtents((TraceExtents *)&local_a4);
-  local_70 = local_124.v[0] * local_124.v[0] + local_124.v[1] * local_124.v[1] +
-             local_124.v[2] * local_124.v[2];
+  local_70 = tw.v[0] * tw.v[0] + tw.v[1] * tw.v[1] + tw.v[2] * tw.v[2];
   local_74 = SQRT(local_70);
   if (local_e4.v[0] <= local_e4.v[2]) {
     local_174 = local_e4.v[0];
@@ -2256,16 +2312,16 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
   local_64 = local_174;
   local_5c = Abs((phys_vec3 *)&local_e4);
   local_60 = local_e4.v[2] - local_64;
-  for (local_1c = 0; local_1c < 2; local_1c = local_1c + 1) {
-    fVar2 = *(float *)((int)local_94 + local_1c * 4);
-    pfVar1 = (float *)((int)&local_a4 + local_1c * 4);
+  for (i = 0; i < 2; i = i + 1) {
+    fVar2 = *(float *)((int)local_94 + i * 4);
+    pfVar1 = (float *)((int)&local_a4 + i * 4);
     if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
-      afStack_d4[local_1c] = *(float *)((int)local_94 + local_1c * 4) - local_64;
-      afStack_c4[local_1c] = *(float *)((int)&local_a4 + local_1c * 4) + local_64;
+      afStack_d4[i] = *(float *)((int)local_94 + i * 4) - local_64;
+      afStack_c4[i] = *(float *)((int)&local_a4 + i * 4) + local_64;
     }
     else {
-      afStack_d4[local_1c] = *(float *)((int)&local_a4 + local_1c * 4) - local_64;
-      afStack_c4[local_1c] = *(float *)((int)local_94 + local_1c * 4) + local_64;
+      afStack_d4[i] = *(float *)((int)&local_a4 + i * 4) - local_64;
+      afStack_c4[i] = *(float *)((int)local_94 + i * 4) + local_64;
     }
   }
   if ((local_e4.v[2] - local_64 < 0.0) &&
@@ -2283,12 +2339,12 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
   }
   afStack_c4[2] = (float)uVar5 + local_60 + local_64;
   afStack_d4[2] = ((float)uVar4 - local_60) - local_64;
-  CM_SetAxialCullOnly((traceWork_t *)&local_124);
+  CM_SetAxialCullOnly((traceWork_t *)&tw);
   CM_GetTraceThreadInfo(&local_58);
-  local_20 = param_1->sflags;
-  afStack_40[3] = param_1->fraction;
-  param_1->sflags = -1;
-  if (((*param_2 == *param_3) && (param_2[1] == param_3[1])) && (param_2[2] == param_3[2])) {
+  oldSurfaceFlags = results->sflags;
+  oldFrac = results->fraction;
+  results->sflags = -1;
+  if (((*start == *end) && (start[1] == end[1])) && (start[2] == end[2])) {
     bVar6 = true;
   }
   else {
@@ -2297,14 +2353,14 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
   if (bVar6) {
     local_68 = 0;
     local_66 = (doublesided_raycasts->current).enabled;
-    if (param_6 == 0) {
-      CM_PositionTest((traceWork_t *)&local_124,param_1,param_8);
+    if (model == 0) {
+      CM_PositionTest((traceWork_t *)&tw,results,context);
     }
-    else if (param_6 == 0x3fff) {
+    else if (model == 0x3fff) {
       if (((local_58.box_brush)->contents & local_6c) != 0) {
-        CM_TestCapsuleInCapsule((traceWork_t *)&local_124,param_1);
+        CM_TestCapsuleInCapsule((traceWork_t *)&tw,results);
       }
-      if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x635,
                                    0,"%s"), !bVar6)) {
         pcVar3 = (code *)swi(3);
@@ -2312,16 +2368,16 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
         return;
       }
     }
-    else if (param_6 == 0x4000) {
-      if (param_1->allsolid == false) {
-        CM_TestInTempBrush((traceWork_t *)&local_124,param_1);
+    else if (model == 0x4000) {
+      if (results->allsolid == false) {
+        CM_TestInTempBrush((traceWork_t *)&tw,results);
       }
     }
     else {
-      if (param_1->allsolid == false) {
-        CM_TestInLeaf((traceWork_t *)&local_124,&pcVar7->leaf,param_1);
+      if (results->allsolid == false) {
+        CM_TestInLeaf((traceWork_t *)&tw,&pcVar7->leaf,results);
       }
-      if ((((uint)param_1->fraction & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)results->fraction & 0x7f800000) == 0x7f800000) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x641,
                                    0,"%s"), !bVar6)) {
         pcVar3 = (code *)swi(3);
@@ -2364,39 +2420,39 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
     fStack_b4 = local_64;
     fStack_b0 = local_64;
     fStack_ac = local_64 + local_60;
-    if (param_6 == 0) {
-      local_30 = local_a4.v[0];
+    if (model == 0) {
+      start_ = local_a4.v[0];
       local_2c = local_a4.v[1];
       local_28 = local_a4.v[2];
       local_24 = 0;
-      local_14 = (float)local_94[0]._0_4_;
+      end_ = (float)local_94[0]._0_4_;
       local_10 = (float)local_94[0]._4_4_;
       local_c = (float)local_94[0]._8_4_;
-      local_8 = param_1->fraction;
-      if (param_8->nprims == 0) {
-        CM_TraceThroughTree((traceWork_t *)&local_124,0,&local_30,&local_14,param_1);
+      local_8 = results->fraction;
+      if (context->nprims == 0) {
+        CM_TraceThroughTree((traceWork_t *)&tw,0,&start_,&end_,results);
       }
       else {
-        CM_TraceThroughPrimitives((traceWork_t *)&local_124,&local_30,&local_14,param_1,param_8);
+        CM_TraceThroughPrimitives((traceWork_t *)&tw,&start_,&end_,results,context);
       }
     }
-    else if (param_6 == 0x3fff) {
+    else if (model == 0x3fff) {
       if (((local_58.box_brush)->contents & local_6c) != 0) {
-        CM_TraceCapsuleThroughCapsule((traceWork_t *)&local_124,param_1);
+        CM_TraceCapsuleThroughCapsule((traceWork_t *)&tw,results);
       }
     }
-    else if (param_6 == 0x4000) {
-      CM_TraceThroughTempBrush((traceWork_t *)&local_124,param_1);
+    else if (model == 0x4000) {
+      CM_TraceThroughTempBrush((traceWork_t *)&tw,results);
     }
     else {
-      CM_TraceThroughLeaf((traceWork_t *)&local_124,&pcVar7->leaf,param_1);
+      CM_TraceThroughLeaf((traceWork_t *)&tw,&pcVar7->leaf,results);
     }
   }
-  if ((param_1->walkable == false) && (param_1->startsolid == false)) {
-    param_1->walkable = 0.7 <= (param_1->normal).vec.v[2];
+  if ((results->walkable == false) && (results->startsolid == false)) {
+    results->walkable = 0.7 <= (results->normal).vec.v[2];
   }
-  if (param_1->fraction < afStack_40[3]) {
-    if ((param_1->sflags == -1) &&
+  if (results->fraction < oldFrac) {
+    if ((results->sflags == -1) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x68a,0,
                                  "%s"), !bVar6)) {
       pcVar3 = (code *)swi(3);
@@ -2405,14 +2461,14 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
     }
   }
   else {
-    if (((param_1->sflags != -1) && (param_1->fraction != afStack_40[3])) &&
+    if (((results->sflags != -1) && (results->fraction != oldFrac)) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x685,0,
                                  "%s"), !bVar6)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    param_1->sflags = local_20;
+    results->sflags = oldSurfaceFlags;
   }
   DVar8 = GetCurrentThreadId();
   if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -2425,14 +2481,14 @@ CM_Trace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *pa
 // 006BA4C0  CM_BoxTrace  (qcommon/cm_trace.cpp:1767)
 
 void __cdecl
-CM_BoxTrace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,int param_6
-           ,col_context_t *param_7)
+CM_BoxTrace(trace_t *results,float *start,float *end,float *mins,float *maxs,int brushmask,
+           col_context_t *context)
 
 {
-  memset((uchar *)param_1,'\0',0x38);
-  param_1->fraction = 1.0;
-  param_1->boneIndex = 0xfe;
-  CM_Trace(param_1,param_2,param_3,param_4,param_5,0,param_6,param_7);
+  memset((uchar *)results,'\0',0x38);
+  results->fraction = 1.0;
+  results->boneIndex = 0xfe;
+  CM_Trace(results,start,end,mins,maxs,0,brushmask,context);
   return;
 }
 
@@ -2441,24 +2497,25 @@ CM_BoxTrace(trace_t *param_1,float *param_2,float *param_3,float *param_4,float 
 
 void __cdecl
 CM_TransformedBoxTraceRotated
-          (trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,uint param_6
-          ,int param_7,float *param_8,float (*param_9) [3])
+          (trace_t *results,float *start,float *end,float *mins,float *maxs,uint model,int brushmask
+          ,float *origin,float (*matrix) [3])
 
 {
   code *pcVar1;
   bool bVar2;
-  col_context_t local_98;
-  float local_70 [9];
-  undefined4 local_4c;
-  float local_48 [6];
+  float halfwidth;
+  col_context_t context;
+  float transpose [9];
+  float halfheight;
+  float symetricSize [6];
   float afStack_30 [3];
-  float local_24 [3];
-  float local_18 [3];
-  int local_c;
-  float local_8;
+  float end_l [3];
+  float start_l [3];
+  int i;
+  float oldFraction;
   
-  col_context_t::col_context_t(&local_98);
-  if (param_4 == (float *)0x0) {
+  col_context_t::col_context_t(&context);
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x712,0,"%s"
                             );
     if (!bVar2) {
@@ -2467,7 +2524,7 @@ CM_TransformedBoxTraceRotated
       return;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x713,0,"%s"
                             );
     if (!bVar2) {
@@ -2476,27 +2533,28 @@ CM_TransformedBoxTraceRotated
       return;
     }
   }
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    local_48[local_c + 6] = (param_4[local_c] + param_5[local_c]) * 0.5;
-    local_48[local_c] = param_4[local_c] - local_48[local_c + 6];
-    local_48[local_c + 3] = param_5[local_c] - local_48[local_c + 6];
-    local_48[local_c + 0xc] = param_2[local_c] + local_48[local_c + 6];
-    local_48[local_c + 9] = param_3[local_c] + local_48[local_c + 6];
+  for (i = 0; i < 3; i = i + 1) {
+    symetricSize[i + 6] = (mins[i] + maxs[i]) * 0.5;
+    symetricSize[i] = mins[i] - symetricSize[i + 6];
+    symetricSize[i + 3] = maxs[i] - symetricSize[i + 6];
+    symetricSize[i + 0xc] = start[i] + symetricSize[i + 6];
+    symetricSize[i + 9] = end[i] + symetricSize[i + 6];
   }
-  local_18[0] = local_18[0] - *param_8;
-  local_18[1] = local_18[1] - param_8[1];
-  local_18[2] = local_18[2] - param_8[2];
-  local_24[0] = local_24[0] - *param_8;
-  local_24[1] = local_24[1] - param_8[1];
-  local_24[2] = local_24[2] - param_8[2];
-  local_4c = local_48[5];
-  RotatePoint(local_48 + 0xc,param_9);
-  RotatePoint(local_48 + 9,param_9);
-  local_8 = param_1->fraction;
-  CM_Trace(param_1,local_48 + 0xc,local_48 + 9,local_48,local_48 + 3,param_6,param_7,&local_98);
-  if (param_1->fraction <= local_8 && local_8 != param_1->fraction) {
-    TransposeMatrix(param_9,(float (*) [3])local_70);
-    RotatePoint((float *)param_1,(float (*) [3])local_70);
+  start_l[0] = start_l[0] - *origin;
+  start_l[1] = start_l[1] - origin[1];
+  start_l[2] = start_l[2] - origin[2];
+  end_l[0] = end_l[0] - *origin;
+  end_l[1] = end_l[1] - origin[1];
+  end_l[2] = end_l[2] - origin[2];
+  halfheight = symetricSize[5];
+  RotatePoint(symetricSize + 0xc,matrix);
+  RotatePoint(symetricSize + 9,matrix);
+  oldFraction = results->fraction;
+  CM_Trace(results,symetricSize + 0xc,symetricSize + 9,symetricSize,symetricSize + 3,model,brushmask
+           ,&context);
+  if (results->fraction <= oldFraction && oldFraction != results->fraction) {
+    TransposeMatrix(matrix,(float (*) [3])transpose);
+    RotatePoint((float *)results,(float (*) [3])transpose);
   }
   return;
 }
@@ -2506,25 +2564,25 @@ CM_TransformedBoxTraceRotated
 
 void __cdecl
 CM_TransformedBoxTrace
-          (trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,uint param_6
-          ,int param_7,float *param_8,float *param_9)
+          (trace_t *results,float *start,float *end,float *mins,float *maxs,uint model,int brushmask
+          ,float *origin,float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_9c [9];
-  undefined4 local_78;
-  col_context_t local_74;
-  undefined4 local_4c;
-  float local_48 [6];
+  float matrix [9];
+  float halfwidth;
+  col_context_t context;
+  float halfheight;
+  float symetricSize [6];
   float afStack_30 [3];
-  float local_24 [3];
-  float local_18 [3];
-  int local_c;
-  float local_8;
+  float end_l [3];
+  float start_l [3];
+  int i;
+  float oldFraction;
   
-  col_context_t::col_context_t(&local_74);
-  if (param_4 == (float *)0x0) {
+  col_context_t::col_context_t(&context);
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x74d,0,"%s"
                             );
     if (!bVar2) {
@@ -2533,7 +2591,7 @@ CM_TransformedBoxTrace
       return;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x74e,0,"%s"
                             );
     if (!bVar2) {
@@ -2542,30 +2600,30 @@ CM_TransformedBoxTrace
       return;
     }
   }
-  if (((*param_9 == 0.0) && (param_9[1] == 0.0)) && (param_9[2] == 0.0)) {
-    for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-      local_48[local_c + 6] = (param_4[local_c] + param_5[local_c]) * 0.5;
-      local_48[local_c] = param_4[local_c] - local_48[local_c + 6];
-      local_48[local_c + 3] = param_5[local_c] - local_48[local_c + 6];
-      local_48[local_c + 0xc] = param_2[local_c] + local_48[local_c + 6];
-      local_48[local_c + 9] = param_3[local_c] + local_48[local_c + 6];
+  if (((*angles == 0.0) && (angles[1] == 0.0)) && (angles[2] == 0.0)) {
+    for (i = 0; i < 3; i = i + 1) {
+      symetricSize[i + 6] = (mins[i] + maxs[i]) * 0.5;
+      symetricSize[i] = mins[i] - symetricSize[i + 6];
+      symetricSize[i + 3] = maxs[i] - symetricSize[i + 6];
+      symetricSize[i + 0xc] = start[i] + symetricSize[i + 6];
+      symetricSize[i + 9] = end[i] + symetricSize[i + 6];
     }
-    local_18[0] = local_18[0] - *param_8;
-    local_18[1] = local_18[1] - param_8[1];
-    local_18[2] = local_18[2] - param_8[2];
-    local_24[0] = local_24[0] - *param_8;
-    local_24[1] = local_24[1] - param_8[1];
-    local_24[2] = local_24[2] - param_8[2];
-    local_78 = local_48[3];
-    local_4c = local_48[5];
-    local_8 = param_1->fraction;
-    CM_Trace(param_1,local_48 + 0xc,local_48 + 9,local_48,local_48 + 3,param_6,param_7,&local_74);
+    start_l[0] = start_l[0] - *origin;
+    start_l[1] = start_l[1] - origin[1];
+    start_l[2] = start_l[2] - origin[2];
+    end_l[0] = end_l[0] - *origin;
+    end_l[1] = end_l[1] - origin[1];
+    end_l[2] = end_l[2] - origin[2];
+    halfwidth = symetricSize[3];
+    halfheight = symetricSize[5];
+    oldFraction = results->fraction;
+    CM_Trace(results,symetricSize + 0xc,symetricSize + 9,symetricSize,symetricSize + 3,model,
+             brushmask,&context);
   }
   else {
-    AnglesToAxis(param_9,(float (*) [3])local_9c);
+    AnglesToAxis(angles,(float (*) [3])matrix);
     CM_TransformedBoxTraceRotated
-              (param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,
-               (float (*) [3])local_9c);
+              (results,start,end,mins,maxs,model,brushmask,origin,(float (*) [3])matrix);
   }
   return;
 }
@@ -2575,21 +2633,20 @@ CM_TransformedBoxTrace
 
 void __cdecl
 CM_TransformedBoxTraceExternal
-          (trace_t *param_1,float *param_2,float *param_3,float *param_4,float *param_5,uint param_6
-          ,int param_7,float *param_8,float *param_9)
+          (trace_t *results,float *start,float *end,float *mins,float *maxs,uint model,int brushmask
+          ,float *origin,float *angles)
 
 {
-  memset((uchar *)param_1,'\0',0x38);
-  param_1->fraction = 1.0;
-  CM_TransformedBoxTrace(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
+  memset((uchar *)results,'\0',0x38);
+  results->fraction = 1.0;
+  CM_TransformedBoxTrace(results,start,end,mins,maxs,model,brushmask,origin,angles);
   return;
 }
 
 
 // 006BAB80  CM_SightTraceThroughBrush  (qcommon/cm_trace.cpp:1922)
 
-int __cdecl
-CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,trace_t *param_4)
+int __cdecl CM_SightTraceThroughBrush(traceWork_t *tw,cbrush_t *brush,int brushNum,trace_t *trace)
 
 {
   cplane_s *pcVar1;
@@ -2602,62 +2659,69 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
   float fVar8;
   float local_f0;
   float local_ec;
-  cbrushside_t *local_3c;
-  int local_38;
-  float local_30;
-  float local_20;
-  cbrush_t *local_18;
-  float local_10;
-  uint local_8;
+  float d1;
+  cbrushside_t *side;
+  int j;
+  cplane_s *plane;
+  float enterFrac;
+  float delta;
+  float frac;
+  float dist;
+  float sign;
+  float d2;
+  float *bounds;
+  int index;
+  float leaveFrac;
+  float offsetDotNormal;
+  int i;
   
-  local_3c = (cbrushside_t *)0x0;
-  if ((((((param_1->extents).start.vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->extents).start.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->extents).start.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  side = (cbrushside_t *)0x0;
+  if ((((((tw->extents).start.vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((tw->extents).start.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((tw->extents).start.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x793,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if ((((((param_1->extents).end.vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->extents).end.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->extents).end.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((tw->extents).end.vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((tw->extents).end.vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((tw->extents).end.vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x794,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  local_30 = 0.0;
-  local_10 = 1.0;
-  local_20 = -1.0;
-  local_18 = param_2;
+  enterFrac = 0.0;
+  leaveFrac = 1.0;
+  sign = -1.0;
+  bounds = brush->mins;
   bVar3 = false;
   while( true ) {
-    if ((((((uint)local_18->mins[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_18->mins[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_18->mins[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7ab,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    if ((((((param_1->radiusOffset).vec.u[0] & 0x7f800000) == 0x7f800000) ||
-         (((param_1->radiusOffset).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-        (((param_1->radiusOffset).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((tw->radiusOffset).vec.u[0] & 0x7f800000) == 0x7f800000) ||
+         (((tw->radiusOffset).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+        (((tw->radiusOffset).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7ac,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    for (local_38 = 0; local_38 < 3; local_38 = local_38 + 1) {
-      fVar6 = ((((TraceExtents *)(param_1->bounds + 3))->start).vec.v[local_38] -
-              local_18->mins[local_38]) * local_20 - param_1->bounds[2].vec.v[local_38];
-      fVar7 = (param_1->bounds[4].vec.v[local_38] - local_18->mins[local_38]) * local_20 -
-              param_1->bounds[2].vec.v[local_38];
+    for (j = 0; j < 3; j = j + 1) {
+      fVar6 = ((((TraceExtents *)(tw->bounds + 3))->start).vec.v[j] - bounds[j]) * sign -
+              tw->bounds[2].vec.v[j];
+      fVar7 = (tw->bounds[4].vec.v[j] - bounds[j]) * sign - tw->bounds[2].vec.v[j];
       if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7b2,
                                    0,"%s"), !bVar4)) {
@@ -2674,40 +2738,40 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
       }
       if (fVar6 <= 0.0) {
         if (0.0 < fVar7) {
-          local_f0 = fVar6 * param_1->bounds[5].vec.v[local_38] * local_20;
-          if (local_f0 <= local_30) {
+          local_f0 = fVar6 * tw->bounds[5].vec.v[j] * sign;
+          if (local_f0 <= enterFrac) {
             return 0;
           }
-          if (0.0 <= local_f0 - local_10) {
-            local_f0 = local_10;
+          if (0.0 <= local_f0 - leaveFrac) {
+            local_f0 = leaveFrac;
           }
-          local_10 = local_f0;
+          leaveFrac = local_f0;
         }
       }
       else {
         if (0.0 < fVar7) {
           return 0;
         }
-        local_ec = fVar6 * param_1->bounds[5].vec.v[local_38] * local_20;
-        if (local_10 <= local_ec) {
+        local_ec = fVar6 * tw->bounds[5].vec.v[j] * sign;
+        if (leaveFrac <= local_ec) {
           return 0;
         }
-        if (0.0 <= local_30 - local_ec) {
-          local_ec = local_30;
+        if (0.0 <= enterFrac - local_ec) {
+          local_ec = enterFrac;
         }
-        local_30 = local_ec;
+        enterFrac = local_ec;
       }
     }
     if (bVar3) break;
-    local_20 = 1.0;
-    local_18 = (cbrush_t *)param_2->maxs;
+    sign = 1.0;
+    bounds = brush->maxs;
     bVar3 = true;
   }
-  local_8 = param_2->numsides;
-  if (local_8 != 0) {
-    local_3c = param_2->sides;
+  i = brush->numsides;
+  if (i != 0) {
+    side = brush->sides;
   }
-  if (((int)local_8 < 0) &&
+  if ((i < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7d2,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -2715,13 +2779,13 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
     return iVar5;
   }
   while( true ) {
-    if (local_8 == 0) {
-      param_4->cflags = param_2->contents;
-      param_4->fraction = local_30;
-      param_4->sflags = 0;
-      return param_3 + 1;
+    if (i == 0) {
+      trace->cflags = brush->contents;
+      trace->fraction = enterFrac;
+      trace->sflags = 0;
+      return brushNum + 1;
     }
-    pcVar1 = local_3c->plane;
+    pcVar1 = side->plane;
     if ((((uint)pcVar1->dist & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7d7,0,
                                  "%s"), !bVar3)) {
@@ -2729,7 +2793,7 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    if ((((uint)param_1->radius & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)tw->radius & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7d8,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -2745,14 +2809,14 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    if ((((uint)param_1->offsetZ & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)tw->offsetZ & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7dc,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    fVar6 = pcVar1->dist + param_1->radius + ABS(pcVar1->normal[2] * param_1->offsetZ);
+    fVar6 = pcVar1->dist + tw->radius + ABS(pcVar1->normal[2] * tw->offsetZ);
     if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7df,0,
                                  "%s"), !bVar3)) {
@@ -2760,12 +2824,12 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    fVar7 = ((param_1->extents).start.vec.v[0] * pcVar1->normal[0] +
-             (param_1->extents).start.vec.v[1] * pcVar1->normal[1] +
-            (param_1->extents).start.vec.v[2] * pcVar1->normal[2]) - fVar6;
-    fVar6 = ((param_1->extents).end.vec.v[0] * pcVar1->normal[0] +
-             (param_1->extents).end.vec.v[1] * pcVar1->normal[1] +
-            (param_1->extents).end.vec.v[2] * pcVar1->normal[2]) - fVar6;
+    fVar7 = ((tw->extents).start.vec.v[0] * pcVar1->normal[0] +
+             (tw->extents).start.vec.v[1] * pcVar1->normal[1] +
+            (tw->extents).start.vec.v[2] * pcVar1->normal[2]) - fVar6;
+    fVar6 = ((tw->extents).end.vec.v[0] * pcVar1->normal[0] +
+             (tw->extents).end.vec.v[1] * pcVar1->normal[1] +
+            (tw->extents).end.vec.v[2] * pcVar1->normal[2]) - fVar6;
     if ((((uint)fVar7 & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x7e4,0,
                                  "%s"), !bVar3)) {
@@ -2786,7 +2850,7 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
           iVar5 = (*pcVar2)();
           return iVar5;
         }
-        if ((local_10 * fVar6 < fVar7) && (local_10 = fVar7 / fVar6, local_10 <= local_30)) {
+        if ((leaveFrac * fVar6 < fVar7) && (leaveFrac = fVar7 / fVar6, leaveFrac <= enterFrac)) {
           return 0;
         }
       }
@@ -2810,12 +2874,12 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
         iVar5 = (*pcVar2)();
         return iVar5;
       }
-      if ((local_30 * fVar8 < fVar7) && (local_30 = fVar7 / fVar8, local_10 <= local_30)) {
+      if ((enterFrac * fVar8 < fVar7) && (enterFrac = fVar7 / fVar8, leaveFrac <= enterFrac)) {
         return 0;
       }
     }
-    local_8 = local_8 - 1;
-    local_3c = local_3c + 1;
+    i = i + -1;
+    side = side + 1;
   }
   pcVar2 = (code *)swi(3);
   iVar5 = (*pcVar2)();
@@ -2825,7 +2889,7 @@ CM_SightTraceThroughBrush(traceWork_t *param_1,cbrush_t *param_2,int param_3,tra
 
 // 006BB730  CM_SightTracePointThroughBrush  (qcommon/cm_trace.cpp:2058)
 
-int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param_2)
+int __cdecl CM_SightTracePointThroughBrush(TraceExtents *extents,cbrush_t *brush)
 
 {
   cplane_s *pcVar1;
@@ -2838,51 +2902,59 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
   float fVar8;
   float local_d0;
   float local_cc;
-  cbrushside_t *local_3c;
-  int local_38;
-  float local_30;
-  float local_1c;
-  cbrush_t *local_14;
-  float local_c;
-  uint local_8;
+  float d1;
+  cbrushside_t *side;
+  int j;
+  cplane_s *plane;
+  float enterFrac;
+  float delta;
+  float frac;
+  I_spuDmaSave save;
+  float dist;
+  float sign;
+  float d2;
+  float *bounds;
+  int index;
+  float leaveFrac;
+  int i;
   
-  local_3c = (cbrushside_t *)0x0;
-  if ((((((param_1->start).vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->start).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->start).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  side = (cbrushside_t *)0x0;
+  if ((((((extents->start).vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((extents->start).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((extents->start).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x81a,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if ((((((param_1->end).vec.u[0] & 0x7f800000) == 0x7f800000) ||
-       (((param_1->end).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
-      (((param_1->end).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((extents->end).vec.u[0] & 0x7f800000) == 0x7f800000) ||
+       (((extents->end).vec.u[1] & 0x7f800000) == 0x7f800000)) ||
+      (((extents->end).vec.u[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x81b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  local_30 = 0.0;
-  local_c = 1.0;
-  local_1c = -1.0;
-  local_14 = param_2;
+  enterFrac = 0.0;
+  leaveFrac = 1.0;
+  sign = -1.0;
+  bounds = brush->mins;
   bVar3 = false;
   while( true ) {
-    if ((((((uint)local_14->mins[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_14->mins[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_14->mins[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x829,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    for (local_38 = 0; local_38 < 3; local_38 = local_38 + 1) {
-      fVar6 = ((param_1->start).vec.v[local_38] - local_14->mins[local_38]) * local_1c;
-      fVar7 = ((param_1->end).vec.v[local_38] - local_14->mins[local_38]) * local_1c;
+    for (j = 0; j < 3; j = j + 1) {
+      fVar6 = ((extents->start).vec.v[j] - bounds[j]) * sign;
+      fVar7 = ((extents->end).vec.v[j] - bounds[j]) * sign;
       if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x82f,
                                    0,"%s"), !bVar4)) {
@@ -2899,40 +2971,40 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
       }
       if (fVar6 <= 0.0) {
         if (0.0 < fVar7) {
-          local_d0 = fVar6 * (param_1->invDelta).vec.v[local_38] * local_1c;
-          if (local_d0 <= local_30) {
+          local_d0 = fVar6 * (extents->invDelta).vec.v[j] * sign;
+          if (local_d0 <= enterFrac) {
             return 0;
           }
-          if (0.0 <= local_d0 - local_c) {
-            local_d0 = local_c;
+          if (0.0 <= local_d0 - leaveFrac) {
+            local_d0 = leaveFrac;
           }
-          local_c = local_d0;
+          leaveFrac = local_d0;
         }
       }
       else {
         if (0.0 < fVar7) {
           return 0;
         }
-        local_cc = fVar6 * (param_1->invDelta).vec.v[local_38] * local_1c;
-        if (local_c <= local_cc) {
+        local_cc = fVar6 * (extents->invDelta).vec.v[j] * sign;
+        if (leaveFrac <= local_cc) {
           return 0;
         }
-        if (0.0 <= local_30 - local_cc) {
-          local_cc = local_30;
+        if (0.0 <= enterFrac - local_cc) {
+          local_cc = enterFrac;
         }
-        local_30 = local_cc;
+        enterFrac = local_cc;
       }
     }
     if (bVar3) break;
-    local_1c = 1.0;
-    local_14 = (cbrush_t *)param_2->maxs;
+    sign = 1.0;
+    bounds = brush->maxs;
     bVar3 = true;
   }
-  local_8 = param_2->numsides;
-  if (local_8 != 0) {
-    local_3c = param_2->sides;
+  i = brush->numsides;
+  if (i != 0) {
+    side = brush->sides;
   }
-  if (((int)local_8 < 0) &&
+  if ((i < 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x850,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -2940,10 +3012,10 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
     return iVar5;
   }
   while( true ) {
-    if (local_8 == 0) {
+    if (i == 0) {
       return 1;
     }
-    pcVar1 = local_3c->plane;
+    pcVar1 = side->plane;
     if ((((uint)pcVar1->dist & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x855,0,
                                  "%s"), !bVar3)) {
@@ -2968,12 +3040,12 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    fVar7 = ((param_1->start).vec.v[0] * pcVar1->normal[0] +
-             (param_1->start).vec.v[1] * pcVar1->normal[1] +
-            (param_1->start).vec.v[2] * pcVar1->normal[2]) - fVar6;
-    fVar6 = ((param_1->end).vec.v[0] * pcVar1->normal[0] +
-             (param_1->end).vec.v[1] * pcVar1->normal[1] +
-            (param_1->end).vec.v[2] * pcVar1->normal[2]) - fVar6;
+    fVar7 = ((extents->start).vec.v[0] * pcVar1->normal[0] +
+             (extents->start).vec.v[1] * pcVar1->normal[1] +
+            (extents->start).vec.v[2] * pcVar1->normal[2]) - fVar6;
+    fVar6 = ((extents->end).vec.v[0] * pcVar1->normal[0] +
+             (extents->end).vec.v[1] * pcVar1->normal[1] +
+            (extents->end).vec.v[2] * pcVar1->normal[2]) - fVar6;
     if ((((uint)fVar7 & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x85f,0,
                                  "%s"), !bVar3)) break;
@@ -2994,7 +3066,7 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
           iVar5 = (*pcVar2)();
           return iVar5;
         }
-        if ((local_c * fVar6 < fVar7) && (local_c = fVar7 / fVar6, local_c <= local_30)) {
+        if ((leaveFrac * fVar6 < fVar7) && (leaveFrac = fVar7 / fVar6, leaveFrac <= enterFrac)) {
           return 0;
         }
       }
@@ -3018,12 +3090,12 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
         iVar5 = (*pcVar2)();
         return iVar5;
       }
-      if ((local_30 * fVar8 < fVar7) && (local_30 = fVar7 / fVar8, local_c <= local_30)) {
+      if ((enterFrac * fVar8 < fVar7) && (enterFrac = fVar7 / fVar8, leaveFrac <= enterFrac)) {
         return 0;
       }
     }
-    local_8 = local_8 - 1;
-    local_3c = local_3c + 1;
+    i = i + -1;
+    side = side + 1;
   }
   pcVar2 = (code *)swi(3);
   iVar5 = (*pcVar2)();
@@ -3035,8 +3107,7 @@ int __cdecl CM_SightTracePointThroughBrush(TraceExtents *param_1,cbrush_t *param
 
 int __cdecl
 CM_SightTraceThroughLeafBrushNode_r
-          (traceWork_t *param_1,cLeafBrushNode_s *param_2,float *param_3,float *param_4,
-          trace_t *param_5)
+          (traceWork_t *tw,cLeafBrushNode_s *remoteNode,float *p1_,float *p2,trace_t *trace)
 
 {
   ushort *puVar1;
@@ -3050,143 +3121,152 @@ CM_SightTraceThroughLeafBrushNode_r
   float local_98;
   float local_94;
   float local_90;
-  uint local_58;
-  float local_48;
-  int local_44;
-  float local_40 [4];
-  float local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
-  float local_20;
-  int local_1c;
-  float local_18;
-  uint local_14;
-  float local_10;
+  I_spuDmaSave save_3;
+  cbrush_t *b;
+  I_spuDmaSave save_2;
+  ushort *brushes;
+  cLeafBrushNode_s *node;
+  I_spuDmaSave save;
+  int side;
+  float diff;
+  float t;
+  float t1;
+  float frac;
+  int k;
+  float p1 [3];
+  float offset;
+  float tmax;
+  float t2;
+  float frac2;
+  float absDiff;
+  float invDist;
+  int hitNum;
+  float tmin;
+  int brushnum;
+  float mid;
   float local_c;
   float local_8;
   
-  if ((param_2 == (cLeafBrushNode_s *)0x0) &&
+  if ((remoteNode == (cLeafBrushNode_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x89c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  local_40[0] = *param_3;
-  local_40[1] = param_3[1];
-  local_40[2] = param_3[2];
+  p1[0] = *p1_;
+  p1[1] = p1_[1];
+  p1[2] = p1_[2];
   do {
-    if ((param_2->contents & param_1->contents) == 0) {
+    if ((remoteNode->contents & tw->contents) == 0) {
       return 0;
     }
-    if (param_2->leafBrushCount != 0) {
-      if (0 < param_2->leafBrushCount) {
-        puVar1 = (param_2->data).leaf.brushes;
-        local_44 = 0;
+    if (remoteNode->leafBrushCount != 0) {
+      if (0 < remoteNode->leafBrushCount) {
+        puVar1 = (remoteNode->data).leaf.brushes;
+        k = 0;
         do {
-          if (param_2->leafBrushCount <= local_44) {
+          if (remoteNode->leafBrushCount <= k) {
             return 0;
           }
-          local_14 = (uint)puVar1[local_44];
-          if ((cm.brushes[local_14].contents & param_1->contents) != 0) {
-            iVar4 = CM_SightTraceThroughBrush(param_1,cm.brushes + local_14,local_14,param_5);
+          brushnum = (int)puVar1[k];
+          if ((cm.brushes[brushnum].contents & tw->contents) != 0) {
+            iVar4 = CM_SightTraceThroughBrush(tw,cm.brushes + brushnum,brushnum,trace);
             if (iVar4 != 0) {
               return iVar4;
             }
-            local_1c = 0;
+            hitNum = 0;
           }
-          local_44 = local_44 + 1;
+          k = k + 1;
         } while( true );
       }
-      local_1c = CM_SightTraceThroughLeafBrushNode_r(param_1,param_2 + 1,local_40,param_4,param_5);
-      if (local_1c != 0) {
-        return local_1c;
+      hitNum = CM_SightTraceThroughLeafBrushNode_r(tw,remoteNode + 1,p1,p2,trace);
+      if (hitNum != 0) {
+        return hitNum;
       }
     }
-    local_98 = local_40[param_2->axis] - (param_2->data).children.dist;
-    local_2c = param_4[param_2->axis] - (param_2->data).children.dist;
-    local_40[3] = (param_1->bounds[-1].vec.v[param_2->axis] + 0.125) -
-                  (param_2->data).children.range;
-    local_90 = local_2c;
-    if (0.0 <= local_98 - local_2c) {
+    local_98 = p1[remoteNode->axis] - (remoteNode->data).children.dist;
+    t2 = p2[remoteNode->axis] - (remoteNode->data).children.dist;
+    offset = (tw->bounds[-1].vec.v[remoteNode->axis] + 0.125) - (remoteNode->data).children.range;
+    local_90 = t2;
+    if (0.0 <= local_98 - t2) {
       local_90 = local_98;
     }
-    local_30 = local_90;
-    local_94 = local_2c;
-    if (0.0 <= local_2c - local_98) {
+    tmax = local_90;
+    local_94 = t2;
+    if (0.0 <= t2 - local_98) {
       local_94 = local_98;
     }
-    local_18 = local_94;
-    if (local_94 < local_40[3]) {
-      if (-local_40[3] < local_90) {
-        fVar5 = local_2c - local_98;
-        local_24 = ABS(fVar5);
-        if (local_24 <= 4.7683716e-07) {
-          local_58 = 0;
-          local_48 = 1.0;
-          local_28 = 0.0;
+    tmin = local_94;
+    if (local_94 < offset) {
+      if (-offset < local_90) {
+        fVar5 = t2 - local_98;
+        absDiff = ABS(fVar5);
+        if (absDiff <= 4.7683716e-07) {
+          side = 0;
+          frac = 1.0;
+          frac2 = 0.0;
         }
         else {
           if (0.0 <= fVar5) {
             local_98 = -local_98;
           }
-          local_20 = 1.0 / local_24;
-          local_28 = (local_98 - local_40[3]) * local_20;
-          local_48 = (local_98 + local_40[3]) * local_20;
+          invDist = 1.0 / absDiff;
+          frac2 = (local_98 - offset) * invDist;
+          frac = (local_98 + offset) * invDist;
           local_9c = (uint)(0.0 <= fVar5);
-          local_58 = local_9c;
+          side = local_9c;
         }
-        if ((local_48 < 0.0) &&
+        if ((frac < 0.0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0x8eb,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           iVar4 = (*pcVar2)();
           return iVar4;
         }
-        if (1.0 - local_48 < 0.0) {
+        if (1.0 - frac < 0.0) {
           local_a0 = 1.0;
         }
         else {
-          local_a0 = local_48;
+          local_a0 = frac;
         }
-        local_10 = (*param_4 - local_40[0]) * local_a0 + local_40[0];
-        local_c = (param_4[1] - local_40[1]) * local_a0 + local_40[1];
-        local_8 = (param_4[2] - local_40[2]) * local_a0 + local_40[2];
-        local_1c = CM_SightTraceThroughLeafBrushNode_r
-                             (param_1,param_2 + *(ushort *)((int)&param_2->data + local_58 * 2 + 8),
-                              local_40,&local_10,param_5);
-        if (local_1c != 0) {
-          return local_1c;
+        mid = (*p2 - p1[0]) * local_a0 + p1[0];
+        local_c = (p2[1] - p1[1]) * local_a0 + p1[1];
+        local_8 = (p2[2] - p1[2]) * local_a0 + p1[2];
+        hitNum = CM_SightTraceThroughLeafBrushNode_r
+                           (tw,remoteNode + *(ushort *)((int)&remoteNode->data + side * 2 + 8),p1,
+                            &mid,trace);
+        if (hitNum != 0) {
+          return hitNum;
         }
-        if ((1.0001 < local_28) &&
+        if ((1.0001 < frac2) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0x8f6,0,"%s\n\t(frac2) = %g"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           iVar4 = (*pcVar2)();
           return iVar4;
         }
-        if (local_28 - 0.0 < 0.0) {
+        if (frac2 - 0.0 < 0.0) {
           local_a4 = 0.0;
         }
         else {
-          local_a4 = local_28;
+          local_a4 = frac2;
         }
-        local_28 = local_a4;
-        local_40[0] = (*param_4 - local_40[0]) * local_a4 + local_40[0];
-        local_40[1] = (param_4[1] - local_40[1]) * local_a4 + local_40[1];
-        local_40[2] = (param_4[2] - local_40[2]) * local_a4 + local_40[2];
-        param_2 = param_2 + *(ushort *)((int)param_2 + (1 - local_58) * 2 + 0x10);
+        frac2 = local_a4;
+        p1[0] = (*p2 - p1[0]) * local_a4 + p1[0];
+        p1[1] = (p2[1] - p1[1]) * local_a4 + p1[1];
+        p1[2] = (p2[2] - p1[2]) * local_a4 + p1[2];
+        remoteNode = remoteNode + *(ushort *)((int)remoteNode + (1 - side) * 2 + 0x10);
       }
       else {
-        param_2 = param_2 + (param_2->data).children.childOffset[1];
+        remoteNode = remoteNode + (remoteNode->data).children.childOffset[1];
       }
     }
     else {
-      if (local_90 <= -local_40[3]) {
+      if (local_90 <= -offset) {
         return 0;
       }
-      param_2 = param_2 + (param_2->data).children.childOffset[0];
+      remoteNode = remoteNode + (remoteNode->data).children.childOffset[0];
     }
   } while( true );
 }
@@ -3194,22 +3274,22 @@ CM_SightTraceThroughLeafBrushNode_r
 
 // 006BC6C0  CM_SightTraceThroughLeafBrushNode  (qcommon/cm_trace.cpp:2307)
 
-int __cdecl
-CM_SightTraceThroughLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_3)
+int __cdecl CM_SightTraceThroughLeafBrushNode(traceWork_t *tw,cLeaf_s *leaf,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_24;
+  float absmin;
   float local_20;
   float local_1c;
-  cLeafBrushNode_s *local_14;
-  float local_10;
+  I_spuDmaSave save;
+  cLeafBrushNode_s *leafNode;
+  float absmax;
   float local_c;
   float local_8;
   
-  if (param_2->leafBrushNode == 0) {
+  if (leaf->leafBrushNode == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x908,0,"%s"
                             );
     if (!bVar2) {
@@ -3218,21 +3298,20 @@ CM_SightTraceThroughLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,trace_t 
       return iVar3;
     }
   }
-  local_24 = param_2->mins[0] - (param_1->size).vec.v[0];
-  local_20 = param_2->mins[1] - (param_1->size).vec.v[1];
-  local_1c = param_2->mins[2] - (param_1->size).vec.v[2];
-  local_10 = param_2->maxs[0] + (param_1->size).vec.v[0];
-  local_c = param_2->maxs[1] + (param_1->size).vec.v[1];
-  local_8 = param_2->maxs[2] + (param_1->size).vec.v[2];
-  iVar3 = intersect_extents_aabb(&param_1->extents,&local_24,&local_10,1.0);
+  absmin = leaf->mins[0] - (tw->size).vec.v[0];
+  local_20 = leaf->mins[1] - (tw->size).vec.v[1];
+  local_1c = leaf->mins[2] - (tw->size).vec.v[2];
+  absmax = leaf->maxs[0] + (tw->size).vec.v[0];
+  local_c = leaf->maxs[1] + (tw->size).vec.v[1];
+  local_8 = leaf->maxs[2] + (tw->size).vec.v[2];
+  iVar3 = intersect_extents_aabb(&tw->extents,&absmin,&absmax,1.0);
   if (iVar3 == 0) {
     iVar3 = 0;
   }
   else {
-    local_14 = cm.leafbrushNodes + param_2->leafBrushNode;
     iVar3 = CM_SightTraceThroughLeafBrushNode_r
-                      (param_1,local_14,(float *)&param_1->extents,(float *)&(param_1->extents).end,
-                       param_3);
+                      (tw,cm.leafbrushNodes + leaf->leafBrushNode,(float *)&tw->extents,
+                       (float *)&(tw->extents).end,trace);
   }
   return iVar3;
 }
@@ -3240,29 +3319,31 @@ CM_SightTraceThroughLeafBrushNode(traceWork_t *param_1,cLeaf_s *param_2,trace_t 
 
 // 006BC5A0  CM_SightTraceThroughLeaf  (qcommon/cm_trace.cpp:2324)
 
-int __cdecl CM_SightTraceThroughLeaf(traceWork_t *param_1,cLeaf_s *param_2,trace_t *param_3)
+int __cdecl CM_SightTraceThroughLeaf(traceWork_t *tw,cLeaf_s *leaf,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  CollisionAabbTree *tree;
+  I_spuDmaSave save;
+  int hitnum;
+  int k;
   
-  if (((param_2->brushContents & param_1->contents) == 0) ||
-     (iVar3 = CM_SightTraceThroughLeafBrushNode(param_1,param_2,param_3), iVar3 == 0)) {
-    if ((param_3->fraction != 1.0) &&
+  if (((leaf->brushContents & tw->contents) == 0) ||
+     (iVar3 = CM_SightTraceThroughLeafBrushNode(tw,leaf,trace), iVar3 == 0)) {
+    if ((trace->fraction != 1.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x921,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if ((param_2->terrainContents & param_1->contents) != 0) {
-      for (local_8 = 0; local_8 < (int)(uint)param_2->collAabbCount; local_8 = local_8 + 1) {
-        CM_SightTraceThroughAabbTree
-                  (param_1,cm.aabbTrees + (uint)param_2->firstCollAabbIndex + local_8,param_3);
-        if (param_3->fraction != 1.0) {
-          return param_2->firstCollAabbIndex + 1 + (uint)cm.numBrushes + local_8;
+    if ((leaf->terrainContents & tw->contents) != 0) {
+      for (k = 0; k < (int)(uint)leaf->collAabbCount; k = k + 1) {
+        CM_SightTraceThroughAabbTree(tw,cm.aabbTrees + (uint)leaf->firstCollAabbIndex + k,trace);
+        if (trace->fraction != 1.0) {
+          return leaf->firstCollAabbIndex + 1 + (uint)cm.numBrushes + k;
         }
       }
     }
@@ -3276,8 +3357,7 @@ int __cdecl CM_SightTraceThroughLeaf(traceWork_t *param_1,cLeaf_s *param_2,trace
 
 int __cdecl
 CM_SightTraceSphereThroughSphere
-          (traceWork_t *param_1,float *param_2,float *param_3,float *param_4,float param_5,
-          trace_t *param_6)
+          (traceWork_t *tw,float *vStart,float *vEnd,float *vStationary,float radius,trace_t *trace)
 
 {
   float fVar1;
@@ -3285,25 +3365,32 @@ CM_SightTraceSphereThroughSphere
   float fVar3;
   float fVar4;
   uint local_48;
-  float local_20 [3];
-  float local_14;
+  float fDiscriminant;
+  float fEntry;
+  float fRadiusSqrd;
+  float fC;
+  float fB;
+  float fA;
+  float vNormal [3];
+  float vDelta;
   float local_10;
   float local_c;
+  float fDeltaLen;
   
-  local_14 = *param_2 - *param_4;
-  local_10 = param_2[1] - param_4[1];
-  local_c = param_2[2] - param_4[2];
-  fVar2 = (local_14 * local_14 + local_10 * local_10 + local_c * local_c) -
-          (param_5 + param_1->radius) * (param_5 + param_1->radius);
+  vDelta = *vStart - *vStationary;
+  local_10 = vStart[1] - vStationary[1];
+  local_c = vStart[2] - vStationary[2];
+  fVar2 = (vDelta * vDelta + local_10 * local_10 + local_c * local_c) -
+          (radius + tw->radius) * (radius + tw->radius);
   if (0.0 < fVar2) {
-    fVar3 = (param_1->delta).vec.v[0] * local_14 + (param_1->delta).vec.v[1] * local_10 +
-            (param_1->delta).vec.v[2] * local_c;
+    fVar3 = (tw->delta).vec.v[0] * vDelta + (tw->delta).vec.v[1] * local_10 +
+            (tw->delta).vec.v[2] * local_c;
     if (fVar3 < 0.0) {
-      fVar1 = param_1->deltaLenSq;
+      fVar1 = tw->deltaLenSq;
       fVar2 = fVar3 * fVar3 - fVar1 * fVar2;
       if (0.0 <= fVar2) {
-        fVar4 = Vec3NormalizeTo(&local_14,local_20);
-        local_48 = (uint)(param_6->fraction <=
+        fVar4 = Vec3NormalizeTo(&vDelta,vNormal);
+        local_48 = (uint)(trace->fraction <=
                          (-fVar3 - SQRT(fVar2)) / fVar1 + (fVar3 * 0.125) / fVar4);
       }
       else {
@@ -3325,7 +3412,8 @@ CM_SightTraceSphereThroughSphere
 
 int __cdecl
 CM_SightTraceCylinderThroughCylinder
-          (traceWork_t *param_1,float *param_2,float param_3,float param_4,trace_t *param_5)
+          (traceWork_t *tw,float *vStationary,float fStationaryHalfHeight,float radius,
+          trace_t *trace)
 
 {
   float fVar1;
@@ -3339,33 +3427,41 @@ CM_SightTraceCylinderThroughCylinder
   float fVar9;
   uint local_70;
   uint local_6c;
-  float local_20 [3];
-  float local_14;
+  float fDiscriminant;
+  float fEntry;
+  float fRadiusSqrd;
+  float fHitHeight;
+  float fEpsilon;
+  float fTotalHeight;
+  float fC;
+  float fB;
+  float fA;
+  float vNormal [3];
+  float vDelta;
   float local_10;
   float local_c;
-  float local_8;
+  float fDeltaLen;
   
-  local_14 = (param_1->extents).start.vec.v[0] - *param_2;
-  local_10 = (param_1->extents).start.vec.v[1] - param_2[1];
-  local_c = (param_1->extents).start.vec.v[2] - param_2[2];
-  fVar7 = (local_14 * local_14 + local_10 * local_10) -
-          (param_4 + param_1->radius) * (param_4 + param_1->radius);
+  vDelta = (tw->extents).start.vec.v[0] - *vStationary;
+  local_10 = (tw->extents).start.vec.v[1] - vStationary[1];
+  local_c = (tw->extents).start.vec.v[2] - vStationary[2];
+  fVar7 = (vDelta * vDelta + local_10 * local_10) - (radius + tw->radius) * (radius + tw->radius);
   if (0.0 < fVar7) {
-    fVar8 = (param_1->delta).vec.v[0] * local_14 + (param_1->delta).vec.v[1] * local_10;
+    fVar8 = (tw->delta).vec.v[0] * vDelta + (tw->delta).vec.v[1] * local_10;
     if (fVar8 < 0.0) {
-      fVar9 = (param_1->delta).vec.v[0] * (param_1->delta).vec.v[0] +
-              (param_1->delta).vec.v[1] * (param_1->delta).vec.v[1];
+      fVar9 = (tw->delta).vec.v[0] * (tw->delta).vec.v[0] +
+              (tw->delta).vec.v[1] * (tw->delta).vec.v[1];
       fVar7 = fVar8 * fVar8 - fVar9 * fVar7;
       if (0.0 <= fVar7) {
         local_c = 0.0;
-        local_8 = Vec3NormalizeTo(&local_14,local_20);
-        fVar5 = (fVar8 * 0.125) / local_8;
+        fDeltaLen = Vec3NormalizeTo(&vDelta,vNormal);
+        fVar5 = (fVar8 * 0.125) / fDeltaLen;
         fVar7 = (-fVar8 - SQRT(fVar7)) / fVar9 + fVar5;
-        if (fVar7 < param_5->fraction) {
-          fVar6 = ((param_1->size).vec.v[2] - param_1->radius) + param_3;
-          fVar8 = (param_1->extents).start.vec.v[2];
-          fVar9 = (param_1->delta).vec.v[2];
-          fVar1 = param_2[2];
+        if (fVar7 < trace->fraction) {
+          fVar6 = ((tw->size).vec.v[2] - tw->radius) + fStationaryHalfHeight;
+          fVar8 = (tw->extents).start.vec.v[2];
+          fVar9 = (tw->delta).vec.v[2];
+          fVar1 = vStationary[2];
           if ((fVar6 < 0.0) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                        0x997,0,"%s"), !bVar3)) {
@@ -3389,7 +3485,7 @@ CM_SightTraceCylinderThroughCylinder
     }
   }
   else {
-    fVar7 = ((param_1->size).vec.v[2] - param_1->radius) + param_3;
+    fVar7 = ((tw->size).vec.v[2] - tw->radius) + fStationaryHalfHeight;
     if ((fVar7 < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x97f,0,
                                  "%s"), !bVar3)) {
@@ -3405,117 +3501,112 @@ CM_SightTraceCylinderThroughCylinder
 
 // 006BD730  CM_SightTraceCapsuleThroughCapsule  (qcommon/cm_trace.cpp:2470)
 
-int __cdecl CM_SightTraceCapsuleThroughCapsule(traceWork_t *param_1,trace_t *param_2)
+int __cdecl CM_SightTraceCapsuleThroughCapsule(traceWork_t *tw,trace_t *trace)
 
 {
   int iVar1;
   float local_b8;
-  float local_84;
+  float endtop;
   float local_80;
   float local_7c;
-  float local_78;
+  float starttop;
   float local_74;
   float local_70;
-  float local_6c;
-  float local_68;
+  float halfwidth;
+  float top;
   undefined4 local_64;
   float local_60;
-  float local_5c;
-  float local_58;
+  float offs;
+  float halfheight;
   float afStack_54 [6];
-  float local_3c;
-  float local_38 [4];
+  float radius;
+  float offset [4];
   float local_28;
   float local_24;
-  float local_20;
+  float startbottom;
   float local_1c;
   float local_18;
-  int local_14;
-  float local_10;
+  int i;
+  float bottom;
   undefined4 local_c;
   float local_8;
   
-  if (((((((param_1->threadInfo).box_model)->maxs[0] + 1.0 < param_1->bounds[0].vec.v[0]) ||
-        (((param_1->threadInfo).box_model)->maxs[1] + 1.0 < param_1->bounds[0].vec.v[1])) ||
-       (((param_1->threadInfo).box_model)->maxs[2] + 1.0 < param_1->bounds[0].vec.v[2])) ||
-      ((param_1->bounds[1].vec.v[0] < ((param_1->threadInfo).box_model)->mins[0] - 1.0 ||
-       (param_1->bounds[1].vec.v[1] < ((param_1->threadInfo).box_model)->mins[1] - 1.0)))) ||
-     (param_1->bounds[1].vec.v[2] < ((param_1->threadInfo).box_model)->mins[2] - 1.0)) {
+  if (((((((tw->threadInfo).box_model)->maxs[0] + 1.0 < tw->bounds[0].vec.v[0]) ||
+        (((tw->threadInfo).box_model)->maxs[1] + 1.0 < tw->bounds[0].vec.v[1])) ||
+       (((tw->threadInfo).box_model)->maxs[2] + 1.0 < tw->bounds[0].vec.v[2])) ||
+      ((tw->bounds[1].vec.v[0] < ((tw->threadInfo).box_model)->mins[0] - 1.0 ||
+       (tw->bounds[1].vec.v[1] < ((tw->threadInfo).box_model)->mins[1] - 1.0)))) ||
+     (tw->bounds[1].vec.v[2] < ((tw->threadInfo).box_model)->mins[2] - 1.0)) {
     return 0;
   }
-  local_78 = (param_1->extents).start.vec.v[0];
-  local_74 = (param_1->extents).start.vec.v[1];
-  local_70 = (param_1->extents).start.vec.v[2] + param_1->offsetZ;
-  local_20 = (param_1->extents).start.vec.v[0];
-  local_1c = (param_1->extents).start.vec.v[1];
-  local_18 = (param_1->extents).start.vec.v[2] - param_1->offsetZ;
-  local_84 = (param_1->extents).end.vec.v[0];
-  local_80 = (param_1->extents).end.vec.v[1];
-  local_7c = (param_1->extents).end.vec.v[2] + param_1->offsetZ;
-  local_38[3] = (param_1->extents).end.vec.v[0];
-  local_28 = (param_1->extents).end.vec.v[1];
-  local_24 = (param_1->extents).end.vec.v[2] - param_1->offsetZ;
-  for (local_14 = 0; local_14 < 3; local_14 = local_14 + 1) {
-    local_38[local_14] =
-         (((param_1->threadInfo).box_model)->mins[local_14] +
-         ((param_1->threadInfo).box_model)->maxs[local_14]) * 0.5;
-    afStack_54[local_14] = ((param_1->threadInfo).box_model)->mins[local_14] - local_38[local_14];
-    afStack_54[local_14 + 3] =
-         ((param_1->threadInfo).box_model)->maxs[local_14] - local_38[local_14];
+  starttop = (tw->extents).start.vec.v[0];
+  local_74 = (tw->extents).start.vec.v[1];
+  local_70 = (tw->extents).start.vec.v[2] + tw->offsetZ;
+  startbottom = (tw->extents).start.vec.v[0];
+  local_1c = (tw->extents).start.vec.v[1];
+  local_18 = (tw->extents).start.vec.v[2] - tw->offsetZ;
+  endtop = (tw->extents).end.vec.v[0];
+  local_80 = (tw->extents).end.vec.v[1];
+  local_7c = (tw->extents).end.vec.v[2] + tw->offsetZ;
+  offset[3] = (tw->extents).end.vec.v[0];
+  local_28 = (tw->extents).end.vec.v[1];
+  local_24 = (tw->extents).end.vec.v[2] - tw->offsetZ;
+  for (i = 0; i < 3; i = i + 1) {
+    offset[i] = (((tw->threadInfo).box_model)->mins[i] + ((tw->threadInfo).box_model)->maxs[i]) *
+                0.5;
+    afStack_54[i] = ((tw->threadInfo).box_model)->mins[i] - offset[i];
+    afStack_54[i + 3] = ((tw->threadInfo).box_model)->maxs[i] - offset[i];
   }
-  local_6c = afStack_54[3];
-  local_58 = afStack_54[5];
+  halfwidth = afStack_54[3];
+  halfheight = afStack_54[5];
   if (afStack_54[3] <= afStack_54[5]) {
     local_b8 = afStack_54[3];
   }
   else {
     local_b8 = afStack_54[5];
   }
-  local_3c = local_b8;
-  local_5c = afStack_54[5] - local_b8;
-  local_68 = local_38[0];
-  local_64 = local_38[1];
-  local_60 = local_38[2] + local_5c;
-  local_10 = local_38[0];
-  local_c = local_38[1];
-  local_8 = local_38[2] - local_5c;
+  radius = local_b8;
+  offs = afStack_54[5] - local_b8;
+  top = offset[0];
+  local_64 = offset[1];
+  local_60 = offset[2] + offs;
+  bottom = offset[0];
+  local_c = offset[1];
+  local_8 = offset[2] - offs;
   if (local_18 <= local_60) {
     if (local_70 < local_8) {
-      iVar1 = CM_SightTraceSphereThroughSphere
-                        (param_1,&local_78,&local_84,&local_10,local_b8,param_2);
+      iVar1 = CM_SightTraceSphereThroughSphere(tw,&starttop,&endtop,&bottom,local_b8,trace);
       if (iVar1 == 0) {
         return -1;
       }
-      if ((param_1->delta).vec.v[2] <= 0.0) {
+      if ((tw->delta).vec.v[2] <= 0.0) {
         return 0;
       }
     }
   }
   else {
-    iVar1 = CM_SightTraceSphereThroughSphere
-                      (param_1,&local_20,local_38 + 3,&local_68,local_b8,param_2);
+    iVar1 = CM_SightTraceSphereThroughSphere(tw,&startbottom,offset + 3,&top,local_b8,trace);
     if (iVar1 == 0) {
       return -1;
     }
-    if (0.0 <= (param_1->delta).vec.v[2]) {
+    if (0.0 <= (tw->delta).vec.v[2]) {
       return 0;
     }
   }
-  iVar1 = CM_SightTraceCylinderThroughCylinder(param_1,local_38,local_5c,local_3c,param_2);
+  iVar1 = CM_SightTraceCylinderThroughCylinder(tw,offset,offs,radius,trace);
   if (iVar1 == 0) {
     iVar1 = -1;
   }
   else {
     if (local_24 <= local_60) {
       if (((local_7c < local_8) && (local_8 <= local_70)) &&
-         (iVar1 = CM_SightTraceSphereThroughSphere
-                            (param_1,&local_78,&local_84,&local_10,local_3c,param_2), iVar1 == 0)) {
+         (iVar1 = CM_SightTraceSphereThroughSphere(tw,&starttop,&endtop,&bottom,radius,trace),
+         iVar1 == 0)) {
         return -1;
       }
     }
     else if ((local_18 <= local_60) &&
-            (iVar1 = CM_SightTraceSphereThroughSphere
-                               (param_1,&local_20,local_38 + 3,&local_68,local_3c,param_2),
+            (iVar1 = CM_SightTraceSphereThroughSphere(tw,&startbottom,offset + 3,&top,radius,trace),
             iVar1 == 0)) {
       return -1;
     }
@@ -3527,9 +3618,7 @@ int __cdecl CM_SightTraceCapsuleThroughCapsule(traceWork_t *param_1,trace_t *par
 
 // 006BC0A0  CM_SightTraceThroughTree  (qcommon/cm_trace.cpp:2571)
 
-int __cdecl
-CM_SightTraceThroughTree
-          (traceWork_t *param_1,int param_2,float *param_3,float *param_4,trace_t *param_5)
+int __cdecl CM_SightTraceThroughTree(traceWork_t *tw,int num,float *p1_,float *p2,trace_t *trace)
 
 {
   cNode_t *pcVar1;
@@ -3544,120 +3633,128 @@ CM_SightTraceThroughTree
   float local_74;
   float local_70;
   float local_6c;
-  uint local_50;
-  float local_40;
-  float local_3c;
-  float local_34 [5];
-  float local_20;
-  float local_1c;
-  float local_18;
-  int local_14;
-  float local_10;
+  I_spuDmaSave save_2;
+  cLeaf_s *leaf;
+  cNode_t *node;
+  int side;
+  float diff;
+  cplane_s *plane;
+  float t;
+  float t1;
+  float frac;
+  I_spuDmaSave save;
+  float p1 [3];
+  float offset;
+  float t2;
+  float frac2;
+  float absDiff;
+  float invDist;
+  int hitNum;
+  float mid;
   float local_c;
   float local_8;
   
-  local_34[0] = *param_3;
-  local_34[1] = param_3[1];
-  local_34[2] = param_3[2];
+  p1[0] = *p1_;
+  p1[1] = p1_[1];
+  p1[2] = p1_[2];
   while( true ) {
     while( true ) {
       while( true ) {
-        if (param_2 < 0) {
-          iVar5 = CM_SightTraceThroughLeaf(param_1,cm.leafs + (-1 - param_2),param_5);
+        if (num < 0) {
+          iVar5 = CM_SightTraceThroughLeaf(tw,cm.leafs + (-1 - num),trace);
           return iVar5;
         }
-        pcVar1 = cm.nodes + param_2;
+        pcVar1 = cm.nodes + num;
         pcVar2 = pcVar1->plane;
         if (pcVar2->type < 3) {
-          local_40 = local_34[pcVar2->type] - pcVar2->dist;
-          local_34[4] = param_4[pcVar2->type] - pcVar2->dist;
-          local_34[3] = param_1->bounds[-1].vec.v[pcVar2->type] + 0.125;
+          t1 = p1[pcVar2->type] - pcVar2->dist;
+          t2 = p2[pcVar2->type] - pcVar2->dist;
+          offset = tw->bounds[-1].vec.v[pcVar2->type] + 0.125;
         }
         else {
-          local_40 = (pcVar2->normal[0] * local_34[0] + pcVar2->normal[1] * local_34[1] +
-                     pcVar2->normal[2] * local_34[2]) - pcVar2->dist;
-          local_34[4] = (pcVar2->normal[0] * *param_4 + pcVar2->normal[1] * param_4[1] +
-                        pcVar2->normal[2] * param_4[2]) - pcVar2->dist;
-          if (param_1->isPoint == false) {
-            local_34[3] = param_1->boundingRadius + 0.125;
+          t1 = (pcVar2->normal[0] * p1[0] + pcVar2->normal[1] * p1[1] + pcVar2->normal[2] * p1[2]) -
+               pcVar2->dist;
+          t2 = (pcVar2->normal[0] * *p2 + pcVar2->normal[1] * p2[1] + pcVar2->normal[2] * p2[2]) -
+               pcVar2->dist;
+          if (tw->isPoint == false) {
+            offset = tw->boundingRadius + 0.125;
           }
           else {
-            local_34[3] = 0.125;
+            offset = 0.125;
           }
         }
-        if (local_34[4] - local_40 < 0.0) {
-          local_6c = local_34[4];
+        if (t2 - t1 < 0.0) {
+          local_6c = t2;
         }
         else {
-          local_6c = local_40;
+          local_6c = t1;
         }
-        if (local_6c < local_34[3]) break;
-        param_2 = (int)pcVar1->children[0];
+        if (local_6c < offset) break;
+        num = (int)pcVar1->children[0];
       }
-      if (local_40 - local_34[4] < 0.0) {
-        local_70 = local_34[4];
+      if (t1 - t2 < 0.0) {
+        local_70 = t2;
       }
       else {
-        local_70 = local_40;
+        local_70 = t1;
       }
-      if (-local_34[3] < local_70) break;
-      param_2 = (int)pcVar1->children[1];
+      if (-offset < local_70) break;
+      num = (int)pcVar1->children[1];
     }
-    fVar6 = local_34[4] - local_40;
-    local_1c = ABS(fVar6);
-    if (local_1c <= 4.7683716e-07) {
-      local_50 = 0;
-      local_3c = 1.0;
-      local_20 = 0.0;
+    fVar6 = t2 - t1;
+    absDiff = ABS(fVar6);
+    if (absDiff <= 4.7683716e-07) {
+      side = 0;
+      frac = 1.0;
+      frac2 = 0.0;
     }
     else {
       if (fVar6 < 0.0) {
-        local_74 = local_40;
+        local_74 = t1;
       }
       else {
-        local_74 = -local_40;
+        local_74 = -t1;
       }
-      local_18 = 1.0 / local_1c;
-      local_20 = (local_74 - local_34[3]) * local_18;
-      local_3c = (local_74 + local_34[3]) * local_18;
+      invDist = 1.0 / absDiff;
+      frac2 = (local_74 - offset) * invDist;
+      frac = (local_74 + offset) * invDist;
       local_78 = (uint)(0.0 <= fVar6);
-      local_50 = local_78;
+      side = local_78;
     }
-    if ((local_3c < 0.0) &&
+    if ((frac < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xa5f,0,
                                  "%s"), !bVar4)) break;
-    if (1.0 - local_3c < 0.0) {
+    if (1.0 - frac < 0.0) {
       local_7c = 1.0;
     }
     else {
-      local_7c = local_3c;
+      local_7c = frac;
     }
-    local_10 = (*param_4 - local_34[0]) * local_7c + local_34[0];
-    local_c = (param_4[1] - local_34[1]) * local_7c + local_34[1];
-    local_8 = (param_4[2] - local_34[2]) * local_7c + local_34[2];
-    local_14 = CM_SightTraceThroughTree
-                         (param_1,(int)pcVar1->children[local_50],local_34,&local_10,param_5);
-    if (local_14 != 0) {
-      return local_14;
+    mid = (*p2 - p1[0]) * local_7c + p1[0];
+    local_c = (p2[1] - p1[1]) * local_7c + p1[1];
+    local_8 = (p2[2] - p1[2]) * local_7c + p1[2];
+    hitNum = CM_SightTraceThroughTree(tw,(int)pcVar1->children[side],p1,&mid,trace);
+    if (hitNum != 0) {
+      return hitNum;
     }
-    if ((1.0 < local_20) &&
+    if ((1.0 < frac2) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xa6b,0,
                                  "%s\n\t(frac2) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       iVar5 = (*pcVar3)();
       return iVar5;
     }
-    if (local_20 - 0.0 < 0.0) {
+    if (frac2 - 0.0 < 0.0) {
       local_80 = 0.0;
     }
     else {
-      local_80 = local_20;
+      local_80 = frac2;
     }
-    local_20 = local_80;
-    local_34[0] = (*param_4 - local_34[0]) * local_80 + local_34[0];
-    local_34[1] = (param_4[1] - local_34[1]) * local_80 + local_34[1];
-    local_34[2] = (param_4[2] - local_34[2]) * local_80 + local_34[2];
-    param_2 = (int)pcVar1->children[local_50 ^ 1];
+    frac2 = local_80;
+    p1[0] = (*p2 - p1[0]) * local_80 + p1[0];
+    p1[1] = (p2[1] - p1[1]) * local_80 + p1[1];
+    p1[2] = (p2[2] - p1[2]) * local_80 + p1[2];
+    num = (int)pcVar1->children[side ^ 1];
   }
   pcVar3 = (code *)swi(3);
   iVar5 = (*pcVar3)();
@@ -3670,8 +3767,8 @@ CM_SightTraceThroughTree
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float *param_5,
-                uint param_6,int param_7)
+CM_BoxSightTrace(int oldHitNum,float *start,float *end,float *mins,float *maxs,uint model,
+                int brushmask)
 
 {
   code *pcVar1;
@@ -3680,7 +3777,8 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
   int iVar4;
   cmodel_t *pcVar5;
   float local_188;
-  float4 local_144;
+  cmodel_t *cmod;
+  float4 tw;
   float afStack_134 [4];
   float afStack_124 [4];
   float afStack_114 [4];
@@ -3702,20 +3800,20 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
   float local_7c;
   TraceThreadInfo local_78;
   float afStack_60 [3];
-  float4 local_54;
+  float4 trace;
   float local_44;
   undefined1 local_2a;
   undefined1 local_29;
   uint local_1c;
-  int local_c;
-  int local_8;
+  int i;
+  int hitNum;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  traceWork_t::traceWork_t((traceWork_t *)&local_144);
-  local_54.v[0] = 0.0;
-  local_54.v[1] = 0.0;
-  local_54.v[2] = 0.0;
-  local_54.v[3] = 0.0;
+  traceWork_t::traceWork_t((traceWork_t *)&tw);
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
   if ((cm.numNodes == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xa7f,0,
                                "%s"), !bVar3)) {
@@ -3723,46 +3821,44 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((mins == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xa80,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((maxs == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xa81,0,
                                "%s"), !bVar3)) {
     pcVar1 = (code *)swi(3);
     iVar4 = (*pcVar1)();
     return iVar4;
   }
-  pcVar5 = CM_ClipHandleToModel(param_6);
+  pcVar5 = CM_ClipHandleToModel(model);
   local_44 = 1.0;
   local_29 = 0;
   local_2a = 0;
-  local_8c = param_7;
-  for (local_c = 0; local_c < 3; local_c = local_c + 1) {
-    if ((param_5[local_c] < param_4[local_c]) &&
+  local_8c = brushmask;
+  for (i = 0; i < 3; i = i + 1) {
+    if ((maxs[i] < mins[i]) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xa92,0,
                                  "%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       iVar4 = (*pcVar1)();
       return iVar4;
     }
-    afStack_60[local_c] = (param_4[local_c] + param_5[local_c]) * 0.5;
-    *(float *)((int)&local_104 + local_c * 4) = param_5[local_c] - afStack_60[local_c];
-    *(float *)(local_c4 + local_c * 4) = param_2[local_c] + afStack_60[local_c];
-    local_b4[local_c] = param_3[local_c] + afStack_60[local_c];
-    afStack_134[local_c] = (*(float *)(local_c4 + local_c * 4) + local_b4[local_c]) * 0.5;
-    *(float *)((int)&local_144 + local_c * 4) =
-         local_b4[local_c] - *(float *)(local_c4 + local_c * 4);
-    afStack_124[local_c] = *(float *)((int)&local_144 + local_c * 4) * 0.5;
-    afStack_114[local_c] = ABS(afStack_124[local_c]);
+    afStack_60[i] = (mins[i] + maxs[i]) * 0.5;
+    *(float *)((int)&local_104 + i * 4) = maxs[i] - afStack_60[i];
+    *(float *)(local_c4 + i * 4) = start[i] + afStack_60[i];
+    local_b4[i] = end[i] + afStack_60[i];
+    afStack_134[i] = (*(float *)(local_c4 + i * 4) + local_b4[i]) * 0.5;
+    *(float *)((int)&tw + i * 4) = local_b4[i] - *(float *)(local_c4 + i * 4);
+    afStack_124[i] = *(float *)((int)&tw + i * 4) * 0.5;
+    afStack_114[i] = ABS(afStack_124[i]);
   }
   CM_CalcTraceExtents((TraceExtents *)local_c4);
-  local_90 = local_144.v[0] * local_144.v[0] + local_144.v[1] * local_144.v[1] +
-             local_144.v[2] * local_144.v[2];
+  local_90 = tw.v[0] * tw.v[0] + tw.v[1] * tw.v[1] + tw.v[2] * tw.v[2];
   local_94 = SQRT(local_90);
   if (local_104.v[0] <= local_104.v[2]) {
     local_188 = local_104.v[0];
@@ -3773,15 +3869,14 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
   local_84 = local_188;
   local_7c = Abs((phys_vec3 *)&local_104);
   local_80 = local_104.v[2] - local_84;
-  for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-    if (local_b4[local_c] < *(float *)(local_c4 + local_c * 4) ||
-        local_b4[local_c] == *(float *)(local_c4 + local_c * 4)) {
-      afStack_f4[local_c] = local_b4[local_c] - local_84;
-      afStack_e4[local_c] = *(float *)(local_c4 + local_c * 4) + local_84;
+  for (i = 0; i < 2; i = i + 1) {
+    if (local_b4[i] < *(float *)(local_c4 + i * 4) || local_b4[i] == *(float *)(local_c4 + i * 4)) {
+      afStack_f4[i] = local_b4[i] - local_84;
+      afStack_e4[i] = *(float *)(local_c4 + i * 4) + local_84;
     }
     else {
-      afStack_f4[local_c] = *(float *)(local_c4 + local_c * 4) - local_84;
-      afStack_e4[local_c] = local_b4[local_c] + local_84;
+      afStack_f4[i] = *(float *)(local_c4 + i * 4) - local_84;
+      afStack_e4[i] = local_b4[i] + local_84;
     }
   }
   if ((local_104.v[2] - local_84 < 0.0) &&
@@ -3798,7 +3893,7 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
   }
   afStack_e4[2] = (float)local_c4._8_4_ + local_80 + local_84;
   afStack_f4[2] = (fVar2 - local_80) - local_84;
-  CM_SetAxialCullOnly((traceWork_t *)&local_144);
+  CM_SetAxialCullOnly((traceWork_t *)&tw);
   if ((local_104.v[0] < 0.0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xac4,0,
                                "%s"), !bVar3)) {
@@ -3833,34 +3928,32 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
   fStack_d0 = local_84;
   fStack_cc = local_84 + local_80;
   CM_GetTraceThreadInfo(&local_78);
-  if (param_6 == 0) {
-    local_8 = 0;
-    if ((0 < param_1) && (iVar4 = param_1 + -1, iVar4 < (int)(uint)cm.numBrushes)) {
-      local_8 = CM_SightTraceThroughBrush
-                          ((traceWork_t *)&local_144,cm.brushes + iVar4,iVar4,(trace_t *)&local_54);
+  if (model == 0) {
+    hitNum = 0;
+    if ((0 < oldHitNum) && (iVar4 = oldHitNum + -1, iVar4 < (int)(uint)cm.numBrushes)) {
+      hitNum = CM_SightTraceThroughBrush
+                         ((traceWork_t *)&tw,cm.brushes + iVar4,iVar4,(trace_t *)&trace);
     }
-    if (local_8 == 0) {
-      local_8 = CM_SightTraceThroughTree
-                          ((traceWork_t *)&local_144,0,(float *)local_c4,local_b4,
-                           (trace_t *)&local_54);
+    if (hitNum == 0) {
+      hitNum = CM_SightTraceThroughTree
+                         ((traceWork_t *)&tw,0,(float *)local_c4,local_b4,(trace_t *)&trace);
     }
   }
-  else if (param_6 == 0x3fff) {
+  else if (model == 0x3fff) {
     if (((local_78.box_brush)->contents & local_8c) == 0) {
-      local_8 = 0;
+      hitNum = 0;
     }
     else {
-      local_8 = CM_SightTraceCapsuleThroughCapsule((traceWork_t *)&local_144,(trace_t *)&local_54);
+      hitNum = CM_SightTraceCapsuleThroughCapsule((traceWork_t *)&tw,(trace_t *)&trace);
     }
   }
-  else if (param_6 == 0x4000) {
-    local_8 = CM_SightTraceThroughTempBrush((traceWork_t *)&local_144,(trace_t *)&local_54);
+  else if (model == 0x4000) {
+    hitNum = CM_SightTraceThroughTempBrush((traceWork_t *)&tw,(trace_t *)&trace);
   }
   else {
-    local_8 = CM_SightTraceThroughLeaf((traceWork_t *)&local_144,&pcVar5->leaf,(trace_t *)&local_54)
-    ;
+    hitNum = CM_SightTraceThroughLeaf((traceWork_t *)&tw,&pcVar5->leaf,(trace_t *)&trace);
   }
-  return local_8;
+  return hitNum;
 }
 
 
@@ -3868,17 +3961,20 @@ CM_BoxSightTrace(int param_1,float *param_2,float *param_3,float *param_4,float 
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl CM_SightTracePoint(int param_1,float *param_2,float *param_3,col_context_t *param_4)
+int __cdecl CM_SightTracePoint(int oldHitNum,float *start,float *end,col_context_t *context)
 
 {
   float *pfVar1;
   float fVar2;
-  CollisionAabbTree *pCVar3;
-  bool bVar4;
-  int iVar5;
-  int local_150;
-  col_prim_t *local_14c;
-  float4 local_13c;
+  CollisionAabbTree *aabbTree;
+  bool bVar3;
+  int iVar4;
+  int brushnum;
+  dmaterial_t *materialInfo;
+  CollisionAabbTree *tree;
+  int i_2;
+  col_prim_t *prim;
+  float4 tw;
   float afStack_12c [4];
   float afStack_11c [4];
   float afStack_10c [4];
@@ -3892,7 +3988,7 @@ int __cdecl CM_SightTracePoint(int param_1,float *param_2,float *param_3,col_con
   float4 local_ac [2];
   float local_8c;
   float local_88;
-  uint local_84;
+  int local_84;
   undefined1 local_80;
   undefined1 local_7f;
   undefined1 local_7e;
@@ -3900,70 +3996,64 @@ int __cdecl CM_SightTracePoint(int param_1,float *param_2,float *param_3,col_con
   undefined4 local_78;
   undefined4 local_74;
   TraceThreadInfo local_70;
-  float4 local_58;
+  float4 trace;
   float local_48;
   undefined1 local_2e;
   undefined1 local_2d;
   uint local_20;
-  int local_1c;
-  float local_18;
+  int i;
+  float mn;
   float local_14;
   float local_10;
-  int local_c;
-  uint local_8;
+  int hitNum;
+  int brushmask;
   
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
-  traceWork_t::traceWork_t((traceWork_t *)&local_13c);
-  local_c = 0;
-  local_58.v[0] = 0.0;
-  local_58.v[1] = 0.0;
-  local_58.v[2] = 0.0;
-  local_58.v[3] = 0.0;
-  local_8 = param_4->mask;
-  local_bc.v[0] = *param_2;
-  local_bc.v[1] = param_2[1];
-  local_bc.v[2] = param_2[2];
-  local_ac[0]._0_4_ = *param_3;
-  local_ac[0]._4_4_ = param_3[1];
-  local_ac[0]._8_4_ = param_3[2];
+  traceWork_t::traceWork_t((traceWork_t *)&tw);
+  hitNum = 0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  brushmask = context->mask;
+  local_bc.v[0] = *start;
+  local_bc.v[1] = start[1];
+  local_bc.v[2] = start[2];
+  local_ac[0]._0_4_ = *end;
+  local_ac[0]._4_4_ = end[1];
+  local_ac[0]._8_4_ = end[2];
   CM_CalcTraceExtents((TraceExtents *)&local_bc);
-  if (((param_1 < 1) || ((int)(uint)cm.numBrushes <= param_1 + -1)) ||
-     (iVar5 = CM_SightTracePointThroughBrush((TraceExtents *)&local_bc,cm.brushes + param_1 + -1),
-     iVar5 == 0)) {
+  if (((oldHitNum < 1) || ((int)(uint)cm.numBrushes <= oldHitNum + -1)) ||
+     (iVar4 = CM_SightTracePointThroughBrush((TraceExtents *)&local_bc,cm.brushes + oldHitNum + -1),
+     iVar4 == 0)) {
     local_48 = 1.0;
     local_2d = 0;
     local_2e = 0;
-    for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-      auStack_fc[local_1c] = 0;
-      afStack_12c[local_1c] =
-           (*(float *)((int)&local_bc + local_1c * 4) + *(float *)((int)local_ac + local_1c * 4)) *
-           0.5;
-      *(float *)((int)&local_13c + local_1c * 4) =
-           *(float *)((int)local_ac + local_1c * 4) - *(float *)((int)&local_bc + local_1c * 4);
-      afStack_11c[local_1c] = *(float *)((int)&local_13c + local_1c * 4) * 0.5;
-      afStack_10c[local_1c] = ABS(afStack_11c[local_1c]);
+    for (i = 0; i < 3; i = i + 1) {
+      auStack_fc[i] = 0;
+      afStack_12c[i] =
+           (*(float *)((int)&local_bc + i * 4) + *(float *)((int)local_ac + i * 4)) * 0.5;
+      *(float *)((int)&tw + i * 4) =
+           *(float *)((int)local_ac + i * 4) - *(float *)((int)&local_bc + i * 4);
+      afStack_11c[i] = *(float *)((int)&tw + i * 4) * 0.5;
+      afStack_10c[i] = ABS(afStack_11c[i]);
     }
-    local_84 = local_8;
-    local_88 = local_13c.v[0] * local_13c.v[0] + local_13c.v[1] * local_13c.v[1] +
-               local_13c.v[2] * local_13c.v[2];
+    local_84 = brushmask;
+    local_88 = tw.v[0] * tw.v[0] + tw.v[1] * tw.v[1] + tw.v[2] * tw.v[2];
     local_8c = SQRT(local_88);
     local_7c = 0;
     local_74 = 0;
     local_78 = 0;
-    for (local_1c = 0; local_1c < 3; local_1c = local_1c + 1) {
-      fVar2 = *(float *)((int)local_ac + local_1c * 4);
-      pfVar1 = (float *)((int)&local_bc + local_1c * 4);
+    for (i = 0; i < 3; i = i + 1) {
+      fVar2 = *(float *)((int)local_ac + i * 4);
+      pfVar1 = (float *)((int)&local_bc + i * 4);
       if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
-        *(undefined4 *)((int)&local_ec + local_1c * 4) =
-             *(undefined4 *)((int)local_ac + local_1c * 4);
-        *(undefined4 *)((int)&local_dc + local_1c * 4) =
-             *(undefined4 *)((int)&local_bc + local_1c * 4);
+        *(undefined4 *)((int)&local_ec + i * 4) = *(undefined4 *)((int)local_ac + i * 4);
+        *(undefined4 *)((int)&local_dc + i * 4) = *(undefined4 *)((int)&local_bc + i * 4);
       }
       else {
-        *(undefined4 *)((int)&local_ec + local_1c * 4) =
-             *(undefined4 *)((int)&local_bc + local_1c * 4);
-        *(undefined4 *)((int)&local_dc + local_1c * 4) =
-             *(undefined4 *)((int)local_ac + local_1c * 4);
+        *(undefined4 *)((int)&local_ec + i * 4) = *(undefined4 *)((int)&local_bc + i * 4);
+        *(undefined4 *)((int)&local_dc + i * 4) = *(undefined4 *)((int)local_ac + i * 4);
       }
     }
     local_7f = 0;
@@ -3973,50 +4063,48 @@ int __cdecl CM_SightTracePoint(int param_1,float *param_2,float *param_3,col_con
     uStack_c8 = 0;
     uStack_c4 = 0;
     CM_GetTraceThreadInfo(&local_70);
-    if (param_4->nprims == 0) {
-      param_1 = CM_SightTraceThroughTree
-                          ((traceWork_t *)&local_13c,0,local_bc.v,local_ac[0].v,(trace_t *)&local_58
-                          );
+    if (context->nprims == 0) {
+      oldHitNum = CM_SightTraceThroughTree
+                            ((traceWork_t *)&tw,0,local_bc.v,local_ac[0].v,(trace_t *)&trace);
     }
     else {
-      local_14c = param_4->prims;
-      for (local_150 = 0; param_1 = local_c, local_150 < param_4->nprims; local_150 = local_150 + 1)
-      {
-        if (local_14c->type == 0) {
-          pCVar3 = (local_14c->field1_0x4).tree;
-          local_18 = pCVar3->origin[0] - pCVar3->halfSize[0];
-          local_14 = pCVar3->origin[1] - pCVar3->halfSize[1];
-          local_10 = pCVar3->origin[2] - pCVar3->halfSize[2];
-          if ((cm.materials[pCVar3->materialIndex].contentFlags & local_8) != 0) {
-            if (((pCVar3->origin[0] + pCVar3->halfSize[0] < local_ec.v[0]) ||
-                (pCVar3->origin[1] + pCVar3->halfSize[1] < local_ec.v[1])) ||
-               ((pCVar3->origin[2] + pCVar3->halfSize[2] < local_ec.v[2] ||
-                (((local_dc.v[0] < local_18 || (local_dc.v[1] < local_14)) ||
-                 (local_dc.v[2] < local_10)))))) {
-              bVar4 = false;
+      prim = context->prims;
+      for (i_2 = 0; oldHitNum = hitNum, i_2 < context->nprims; i_2 = i_2 + 1) {
+        if (prim->type == 0) {
+          aabbTree = (prim->field1_0x4).tree;
+          mn = aabbTree->origin[0] - aabbTree->halfSize[0];
+          local_14 = aabbTree->origin[1] - aabbTree->halfSize[1];
+          local_10 = aabbTree->origin[2] - aabbTree->halfSize[2];
+          if ((cm.materials[aabbTree->materialIndex].contentFlags & brushmask) != 0) {
+            if (((aabbTree->origin[0] + aabbTree->halfSize[0] < local_ec.v[0]) ||
+                (aabbTree->origin[1] + aabbTree->halfSize[1] < local_ec.v[1])) ||
+               ((aabbTree->origin[2] + aabbTree->halfSize[2] < local_ec.v[2] ||
+                (((local_dc.v[0] < mn || (local_dc.v[1] < local_14)) || (local_dc.v[2] < local_10)))
+                ))) {
+              bVar3 = false;
             }
             else {
-              bVar4 = true;
+              bVar3 = true;
             }
-            if ((bVar4) &&
-               (CM_SightTraceThroughAabbTree((traceWork_t *)&local_13c,pCVar3,(trace_t *)&local_58),
+            if ((bVar3) &&
+               (CM_SightTraceThroughAabbTree((traceWork_t *)&tw,aabbTree,(trace_t *)&trace),
                local_48 < 1.0)) {
               return cm.numBrushes + 1;
             }
           }
         }
-        else if (((((local_14c->field1_0x4).brush)->contents & local_8) != 0) &&
-                (local_c = CM_SightTraceThroughBrush
-                                     ((traceWork_t *)&local_13c,(local_14c->field1_0x4).brush,
-                                      ((int)(local_14c->field1_0x4).tree - (int)cm.brushes) / 0x60,
-                                      (trace_t *)&local_58), local_c != 0)) {
-          return local_c;
+        else if (((((prim->field1_0x4).brush)->contents & brushmask) != 0) &&
+                (hitNum = CM_SightTraceThroughBrush
+                                    ((traceWork_t *)&tw,(prim->field1_0x4).brush,
+                                     ((int)(prim->field1_0x4).tree - (int)cm.brushes) / 0x60,
+                                     (trace_t *)&trace), hitNum != 0)) {
+          return hitNum;
         }
-        local_14c = local_14c + 1;
+        prim = prim + 1;
       }
     }
   }
-  return param_1;
+  return oldHitNum;
 }
 
 
@@ -4024,25 +4112,25 @@ int __cdecl CM_SightTracePoint(int param_1,float *param_2,float *param_3,col_con
 
 int __cdecl
 CM_TransformedBoxSightTrace
-          (int param_1,float *param_2,float *param_3,float *param_4,float *param_5,uint param_6,
-          int param_7,float *param_8,float *param_9)
+          (int hitNum,float *start,float *end,float *mins,float *maxs,uint model,int brushmask,
+          float *origin,float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int local_a0;
-  float local_74 [9];
-  undefined4 local_50;
-  undefined4 local_4c;
-  float local_48 [6];
+  float matrix [9];
+  float halfwidth;
+  float halfheight;
+  float symetricSize [6];
   float afStack_30 [3];
-  float local_24 [3];
-  float local_18 [3];
-  int local_c;
-  int local_8;
+  float end_l [3];
+  float start_l [3];
+  int rotated;
+  int i;
   
-  if (param_4 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xb81,0,"%s"
                             );
     if (!bVar2) {
@@ -4051,7 +4139,7 @@ CM_TransformedBoxSightTrace
       return iVar3;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xb82,0,"%s"
                             );
     if (!bVar2) {
@@ -4060,35 +4148,35 @@ CM_TransformedBoxSightTrace
       return iVar3;
     }
   }
-  for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-    local_48[local_8 + 6] = (param_4[local_8] + param_5[local_8]) * 0.5;
-    local_48[local_8] = param_4[local_8] - local_48[local_8 + 6];
-    local_48[local_8 + 3] = param_5[local_8] - local_48[local_8 + 6];
-    local_48[local_8 + 0xc] = param_2[local_8] + local_48[local_8 + 6];
-    local_48[local_8 + 9] = param_3[local_8] + local_48[local_8 + 6];
+  for (i = 0; i < 3; i = i + 1) {
+    symetricSize[i + 6] = (mins[i] + maxs[i]) * 0.5;
+    symetricSize[i] = mins[i] - symetricSize[i + 6];
+    symetricSize[i + 3] = maxs[i] - symetricSize[i + 6];
+    symetricSize[i + 0xc] = start[i] + symetricSize[i + 6];
+    symetricSize[i + 9] = end[i] + symetricSize[i + 6];
   }
-  local_18[0] = local_18[0] - *param_8;
-  local_18[1] = local_18[1] - param_8[1];
-  local_18[2] = local_18[2] - param_8[2];
-  local_24[0] = local_24[0] - *param_8;
-  local_24[1] = local_24[1] - param_8[1];
-  local_24[2] = local_24[2] - param_8[2];
-  if (((*param_9 == 0.0) && (param_9[1] == 0.0)) && (param_9[2] == 0.0)) {
+  start_l[0] = start_l[0] - *origin;
+  start_l[1] = start_l[1] - origin[1];
+  start_l[2] = start_l[2] - origin[2];
+  end_l[0] = end_l[0] - *origin;
+  end_l[1] = end_l[1] - origin[1];
+  end_l[2] = end_l[2] - origin[2];
+  if (((*angles == 0.0) && (angles[1] == 0.0)) && (angles[2] == 0.0)) {
     local_a0 = 0;
   }
   else {
     local_a0 = 1;
   }
-  local_c = local_a0;
-  local_50 = local_48[3];
-  local_4c = local_48[5];
+  rotated = local_a0;
+  halfwidth = symetricSize[3];
+  halfheight = symetricSize[5];
   if (local_a0 != 0) {
-    AnglesToAxis(param_9,(float (*) [3])local_74);
-    RotatePoint(local_48 + 0xc,(float (*) [3])local_74);
-    RotatePoint(local_48 + 9,(float (*) [3])local_74);
+    AnglesToAxis(angles,(float (*) [3])matrix);
+    RotatePoint(symetricSize + 0xc,(float (*) [3])matrix);
+    RotatePoint(symetricSize + 9,(float (*) [3])matrix);
   }
-  iVar3 = CM_BoxSightTrace(param_1,local_48 + 0xc,local_48 + 9,local_48,local_48 + 3,param_6,param_7
-                          );
+  iVar3 = CM_BoxSightTrace(hitNum,symetricSize + 0xc,symetricSize + 9,symetricSize,symetricSize + 3,
+                           model,brushmask);
   return iVar3;
 }
 
@@ -4098,14 +4186,14 @@ CM_TransformedBoxSightTrace
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 int __cdecl
-CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *param_5,
-                 float *param_6,float *param_7)
+CM_TracePointDown(float *start,float *end,int contentmask,int surf_type,float *endpos,
+                 float *fraction,float *normal)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float4 local_144;
+  float4 tw;
   float afStack_134 [4];
   float afStack_124 [4];
   float afStack_114 [4];
@@ -4130,28 +4218,28 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
   undefined4 local_80;
   undefined4 local_7c;
   TraceThreadInfo local_78;
-  float local_64;
+  float start_;
   float local_60;
   float local_5c;
   undefined4 local_58;
-  int local_54;
-  float4 local_50;
+  int i;
+  float4 results;
   float local_40;
   uint local_3c;
   char local_25;
   uint local_18;
-  float local_14;
+  float end_;
   float local_10;
   float local_c;
   float local_8;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  traceWork_t::traceWork_t((traceWork_t *)&local_144);
-  if (param_1 == (float *)0x0) {
+  results.v[0] = 0.0;
+  results.v[1] = 0.0;
+  results.v[2] = 0.0;
+  results.v[3] = 0.0;
+  traceWork_t::traceWork_t((traceWork_t *)&tw);
+  if (start == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xbae,0,"%s"
                             );
     if (!bVar2) {
@@ -4160,7 +4248,7 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
       return iVar3;
     }
   }
-  if (param_2 == (float *)0x0) {
+  if (end == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xbaf,0,"%s"
                             );
     if (!bVar2) {
@@ -4169,9 +4257,8 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
       return iVar3;
     }
   }
-  if (((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000))
+     || (((uint)start[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xbb0,0,"%s"
                             );
     if (!bVar2) {
@@ -4180,9 +4267,8 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
       return iVar3;
     }
   }
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)end[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xbb1,0,"%s"
                             );
     if (!bVar2) {
@@ -4191,7 +4277,7 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
       return iVar3;
     }
   }
-  memset((uchar *)local_50.u,'\0',0x38);
+  memset((uchar *)results.u,'\0',0x38);
   local_40 = 1.0;
   if (cm.numNodes == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xbb6,0,"%s"
@@ -4202,22 +4288,19 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
       return iVar3;
     }
   }
-  local_8c = param_3;
-  for (local_54 = 0; local_54 < 3; local_54 = local_54 + 1) {
-    auStack_104[local_54] = 0;
-    *(float *)((int)&local_c4 + local_54 * 4) = param_1[local_54];
-    *(float *)((int)local_b4 + local_54 * 4) = param_2[local_54];
-    afStack_134[local_54] =
-         (*(float *)((int)&local_c4 + local_54 * 4) + *(float *)((int)local_b4 + local_54 * 4)) *
-         0.5;
-    *(float *)((int)&local_144 + local_54 * 4) =
-         *(float *)((int)local_b4 + local_54 * 4) - *(float *)((int)&local_c4 + local_54 * 4);
-    afStack_124[local_54] = *(float *)((int)&local_144 + local_54 * 4) * 0.5;
-    afStack_114[local_54] = ABS(afStack_124[local_54]);
+  local_8c = contentmask;
+  for (i = 0; i < 3; i = i + 1) {
+    auStack_104[i] = 0;
+    *(float *)((int)&local_c4 + i * 4) = start[i];
+    *(float *)((int)local_b4 + i * 4) = end[i];
+    afStack_134[i] = (*(float *)((int)&local_c4 + i * 4) + *(float *)((int)local_b4 + i * 4)) * 0.5;
+    *(float *)((int)&tw + i * 4) =
+         *(float *)((int)local_b4 + i * 4) - *(float *)((int)&local_c4 + i * 4);
+    afStack_124[i] = *(float *)((int)&tw + i * 4) * 0.5;
+    afStack_114[i] = ABS(afStack_124[i]);
   }
   CM_CalcTraceExtents((TraceExtents *)&local_c4);
-  local_90 = local_144.v[0] * local_144.v[0] + local_144.v[1] * local_144.v[1] +
-             local_144.v[2] * local_144.v[2];
+  local_90 = tw.v[0] * tw.v[0] + tw.v[1] * tw.v[1] + tw.v[2] * tw.v[2];
   local_94 = SQRT(local_90);
   local_84 = 0;
   local_7c = 0;
@@ -4234,44 +4317,44 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
     local_ec = local_c4.v[2];
     local_dc = (float)local_b4[0]._8_4_;
   }
-  CM_SetAxialCullOnly((traceWork_t *)&local_144);
+  CM_SetAxialCullOnly((traceWork_t *)&tw);
   CM_GetTraceThreadInfo(&local_78);
   local_88 = 1;
   local_86 = 0;
   local_d4 = 0.0;
   local_d0 = 0.0;
   local_cc = 0.0;
-  local_64 = local_c4.v[0];
+  start_ = local_c4.v[0];
   local_60 = local_c4.v[1];
   local_5c = local_c4.v[2];
   local_58 = 0;
-  local_14 = (float)local_b4[0]._0_4_;
+  end_ = (float)local_b4[0]._0_4_;
   local_10 = (float)local_b4[0]._4_4_;
   local_c = (float)local_b4[0]._8_4_;
   local_8 = local_40;
-  CM_TraceThroughTree((traceWork_t *)&local_144,0,&local_64,&local_14,(trace_t *)&local_50);
-  if (param_6 != (float *)0x0) {
-    *param_6 = local_40;
+  CM_TraceThroughTree((traceWork_t *)&tw,0,&start_,&end_,(trace_t *)&results);
+  if (fraction != (float *)0x0) {
+    *fraction = local_40;
   }
-  if (param_7 != (float *)0x0) {
-    *param_7 = local_50.v[0];
-    param_7[1] = local_50.v[1];
-    param_7[2] = local_50.v[2];
+  if (normal != (float *)0x0) {
+    *normal = results.v[0];
+    normal[1] = results.v[1];
+    normal[2] = results.v[2];
   }
-  if ((local_40 == 1.0) || ((local_3c & param_4) == 0)) {
+  if ((local_40 == 1.0) || ((local_3c & surf_type) == 0)) {
     if (local_25 == '\0') {
       local_3c = 0;
     }
     else {
-      *param_5 = *param_1;
-      param_5[1] = param_1[1];
-      param_5[2] = param_1[2];
+      *endpos = *start;
+      endpos[1] = start[1];
+      endpos[2] = start[2];
     }
   }
   else {
-    *param_5 = local_40 * local_144.v[0] + *param_1;
-    param_5[1] = local_40 * local_144.v[1] + param_1[1];
-    param_5[2] = local_40 * local_144.v[2] + param_1[2];
+    *endpos = local_40 * tw.v[0] + *start;
+    endpos[1] = local_40 * tw.v[1] + start[1];
+    endpos[2] = local_40 * tw.v[2] + start[2];
   }
   return local_3c;
 }
@@ -4285,196 +4368,195 @@ CM_TracePointDown(float *param_1,float *param_2,int param_3,int param_4,float *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CM_GetWaterHeight(float *param_1,float param_2,float param_3)
+float __cdecl CM_GetWaterHeight(float *pos,float z_up,float z_down)
 
 {
   int iVar1;
   float local_cc;
-  float local_c0 [2];
+  float p [2];
   float local_b8;
-  float4 local_b4;
+  float4 clip;
   float local_a4;
   float local_a0;
   float local_9c;
   undefined4 local_84;
   undefined4 local_80;
   undefined4 local_7c;
-  float4 local_74;
+  float4 trace;
   float local_64;
   uint local_3c;
-  svEntity_s *local_38;
-  float local_34;
+  svEntity_s *check;
+  float start;
   float local_30;
   float local_2c;
-  float local_28;
+  float end;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18 [2];
+  float waterHeight;
+  float hitPos [2];
   float local_10;
-  int local_8;
+  int surfType;
+  int entnum;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_1c = R_WaterSimulationGetHeight(param_1);
-  local_34 = *param_1;
-  local_30 = param_1[1];
-  local_2c = param_1[2] + param_2;
-  local_28 = *param_1;
-  local_24 = param_1[1];
-  local_20 = param_1[2] + param_3;
-  local_8 = (waterbrush_entity->current).integer;
-  if (0 < local_8) {
-    TraceExtents::TraceExtents((TraceExtents *)&local_b4);
-    local_74.v[0] = 0.0;
-    local_74.v[1] = 0.0;
-    local_74.v[2] = 0.0;
-    local_74.v[3] = 0.0;
-    memset((uchar *)local_74.u,'\0',0x38);
+  waterHeight = R_WaterSimulationGetHeight(pos);
+  start = *pos;
+  local_30 = pos[1];
+  local_2c = pos[2] + z_up;
+  end = *pos;
+  local_24 = pos[1];
+  local_20 = pos[2] + z_down;
+  entnum = (waterbrush_entity->current).integer;
+  if (0 < entnum) {
+    TraceExtents::TraceExtents((TraceExtents *)&clip);
+    trace.v[0] = 0.0;
+    trace.v[1] = 0.0;
+    trace.v[2] = 0.0;
+    trace.v[3] = 0.0;
+    memset((uchar *)trace.u,'\0',0x38);
     local_64 = 1.0;
-    local_38 = sv.svEntities + local_8;
+    check = sv.svEntities + entnum;
     local_80 = 0xffffffff;
-    local_b4.v[0] = local_34;
-    local_b4.v[1] = local_30;
-    local_b4.v[2] = local_2c;
-    local_a4 = local_28;
+    clip.v[0] = start;
+    clip.v[1] = local_30;
+    clip.v[2] = local_2c;
+    local_a4 = end;
     local_a0 = local_24;
     local_9c = local_20;
-    CM_CalcTraceExtents((TraceExtents *)&local_b4);
+    CM_CalcTraceExtents((TraceExtents *)&clip);
     local_7c = 0;
     local_84 = 0;
-    SV_TracePointToEntity((pointtrace_t *)&local_b4,local_38,(trace_t *)&local_74);
+    SV_TracePointToEntity((pointtrace_t *)&clip,check,(trace_t *)&trace);
     if (local_64 < 1.0) {
-      Vec3Lerp(&local_34,&local_28,local_64,local_c0);
-      if (local_1c < local_b8) {
-        local_1c = local_b8;
+      Vec3Lerp(&start,&end,local_64,p);
+      if (waterHeight < local_b8) {
+        waterHeight = local_b8;
       }
     }
   }
-  iVar1 = CM_TracePointDown(&local_34,&local_28,0x20,0x3f00000,local_18,(float *)0x0,(float *)0x0);
+  iVar1 = CM_TracePointDown(&start,&end,0x20,0x3f00000,hitPos,(float *)0x0,(float *)0x0);
   if (iVar1 != 0) {
-    if (local_10 - local_1c < 0.0) {
-      local_cc = local_1c;
+    if (local_10 - waterHeight < 0.0) {
+      local_cc = waterHeight;
     }
     else {
       local_cc = local_10;
     }
-    local_1c = local_cc;
+    waterHeight = local_cc;
   }
-  return local_1c;
+  return waterHeight;
 }
 
 
 // 006BF420  calc_closest  (qcommon/cm_trace.cpp:3116)
 
-void __cdecl
-calc_closest(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+void __cdecl calc_closest(float *v0,float *v1,float *v2,float *p,float *res)
 
 {
   float fVar1;
-  float local_8c;
+  float pv0;
   float local_88;
   float local_84;
-  float local_80 [3];
-  float local_74;
-  float local_70;
+  float v02perp [3];
+  float y21;
+  float v21;
   float local_6c;
   float local_68;
-  float local_64;
-  float local_60;
+  float x21;
+  float v10;
   float local_5c;
   float local_58;
-  float local_54;
-  float local_50;
-  float local_4c;
-  float local_48;
-  float local_44;
-  float local_40;
+  float x10;
+  float d_sqr02;
+  float d_sqr21;
+  float y10;
+  float d_sqr10;
+  float v02;
   float local_3c;
   float local_38;
-  float local_34;
+  float pv1;
   float local_30;
   float local_2c;
-  float local_28;
-  float local_24;
-  float local_20 [3];
-  float local_14;
-  float local_10;
+  float x02;
+  float v02v10;
+  float v21perp [3];
+  float y02;
+  float v10perp;
   float local_c;
   float local_8;
   
-  local_60 = *param_2 - *param_1;
-  local_5c = param_2[1] - param_1[1];
-  local_58 = param_2[2] - param_1[2];
-  local_8c = *param_4 - *param_1;
-  local_88 = param_4[1] - param_1[1];
-  local_84 = param_4[2] - param_1[2];
-  local_54 = local_8c * local_60 + local_88 * local_5c + local_84 * local_58;
-  local_40 = *param_1 - *param_3;
-  local_3c = param_1[1] - param_3[1];
-  local_38 = param_1[2] - param_3[2];
-  local_28 = local_8c * local_40 + local_88 * local_3c + local_84 * local_38;
-  if ((local_28 < 0.0) || (0.0 < local_54)) {
-    local_50 = local_40 * local_40 + local_3c * local_3c + local_38 * local_38;
-    local_28 = local_28 + local_50;
-    local_44 = local_60 * local_60 + local_5c * local_5c + local_58 * local_58;
-    local_70 = *param_3 - *param_2;
-    local_6c = param_3[1] - param_2[1];
-    local_68 = param_3[2] - param_2[2];
-    local_34 = *param_4 - *param_2;
-    local_30 = param_4[1] - param_2[1];
-    local_2c = param_4[2] - param_2[2];
-    local_64 = local_34 * local_70 + local_30 * local_6c + local_2c * local_68;
-    if ((local_54 < local_44) || (0.0 < local_64)) {
-      local_4c = local_70 * local_70 + local_6c * local_6c + local_68 * local_68;
-      if ((local_64 < local_4c) || (0.0 < local_28)) {
-        local_24 = local_40 * local_60 + local_3c * local_5c + local_38 * local_58;
-        fVar1 = -local_24;
-        local_10 = local_44 * local_40 + fVar1 * local_60;
-        local_c = local_44 * local_3c + fVar1 * local_5c;
-        local_8 = local_44 * local_38 + fVar1 * local_58;
-        local_48 = local_8c * local_10 + local_88 * local_c + local_84 * local_8;
-        if ((local_48 < 0.0) || ((local_54 < 0.0 || (local_44 < local_54)))) {
-          Vec3ScaleMad(local_4c,&local_60,
-                       -(local_60 * local_70 + local_5c * local_6c + local_58 * local_68),&local_70,
-                       local_20);
-          local_74 = Vec3Dot(&local_34,local_20);
-          if ((local_74 < 0.0) || ((local_64 < 0.0 || (local_4c < local_64)))) {
-            Vec3ScaleMad(-local_50,&local_60,local_24,&local_40,local_80);
-            local_14 = Vec3Dot(&local_8c,local_80);
-            if ((local_14 < 0.0) || ((local_28 < 0.0 || (local_50 < local_28)))) {
-              Vec3Copy(param_4,param_5);
+  v10 = *v1 - *v0;
+  local_5c = v1[1] - v0[1];
+  local_58 = v1[2] - v0[2];
+  pv0 = *p - *v0;
+  local_88 = p[1] - v0[1];
+  local_84 = p[2] - v0[2];
+  x10 = pv0 * v10 + local_88 * local_5c + local_84 * local_58;
+  v02 = *v0 - *v2;
+  local_3c = v0[1] - v2[1];
+  local_38 = v0[2] - v2[2];
+  fVar1 = pv0 * v02 + local_88 * local_3c + local_84 * local_38;
+  if ((fVar1 < 0.0) || (0.0 < x10)) {
+    d_sqr02 = v02 * v02 + local_3c * local_3c + local_38 * local_38;
+    x02 = fVar1 + d_sqr02;
+    d_sqr10 = v10 * v10 + local_5c * local_5c + local_58 * local_58;
+    v21 = *v2 - *v1;
+    local_6c = v2[1] - v1[1];
+    local_68 = v2[2] - v1[2];
+    pv1 = *p - *v1;
+    local_30 = p[1] - v1[1];
+    local_2c = p[2] - v1[2];
+    x21 = pv1 * v21 + local_30 * local_6c + local_2c * local_68;
+    if ((x10 < d_sqr10) || (0.0 < x21)) {
+      d_sqr21 = v21 * v21 + local_6c * local_6c + local_68 * local_68;
+      if ((x21 < d_sqr21) || (0.0 < x02)) {
+        v02v10 = v02 * v10 + local_3c * local_5c + local_38 * local_58;
+        fVar1 = -v02v10;
+        v10perp = d_sqr10 * v02 + fVar1 * v10;
+        local_c = d_sqr10 * local_3c + fVar1 * local_5c;
+        local_8 = d_sqr10 * local_38 + fVar1 * local_58;
+        y10 = pv0 * v10perp + local_88 * local_c + local_84 * local_8;
+        if ((y10 < 0.0) || ((x10 < 0.0 || (d_sqr10 < x10)))) {
+          Vec3ScaleMad(d_sqr21,&v10,-(v10 * v21 + local_5c * local_6c + local_58 * local_68),&v21,
+                       v21perp);
+          y21 = Vec3Dot(&pv1,v21perp);
+          if ((y21 < 0.0) || ((x21 < 0.0 || (d_sqr21 < x21)))) {
+            Vec3ScaleMad(-d_sqr02,&v10,v02v10,&v02,v02perp);
+            y02 = Vec3Dot(&pv0,v02perp);
+            if ((y02 < 0.0) || ((x02 < 0.0 || (d_sqr02 < x02)))) {
+              Vec3Copy(p,res);
             }
             else {
-              Vec3Mad(param_3,local_28 / local_50,&local_40,param_5);
+              Vec3Mad(v2,x02 / d_sqr02,&v02,res);
             }
           }
           else {
-            Vec3Mad(param_2,local_64 / local_4c,&local_70,param_5);
+            Vec3Mad(v1,x21 / d_sqr21,&v21,res);
           }
         }
         else {
-          local_54 = local_54 / local_44;
-          *param_5 = local_54 * local_60 + *param_1;
-          param_5[1] = local_54 * local_5c + param_1[1];
-          param_5[2] = local_54 * local_58 + param_1[2];
+          fVar1 = x10 / d_sqr10;
+          *res = fVar1 * v10 + *v0;
+          res[1] = fVar1 * local_5c + v0[1];
+          res[2] = fVar1 * local_58 + v0[2];
         }
       }
       else {
-        *param_5 = *param_3;
-        param_5[1] = param_3[1];
-        param_5[2] = param_3[2];
+        *res = *v2;
+        res[1] = v2[1];
+        res[2] = v2[2];
       }
     }
     else {
-      *param_5 = *param_2;
-      param_5[1] = param_2[1];
-      param_5[2] = param_2[2];
+      *res = *v1;
+      res[1] = v1[1];
+      res[2] = v1[2];
     }
   }
   else {
-    *param_5 = *param_1;
-    param_5[1] = param_1[1];
-    param_5[2] = param_1[2];
+    *res = *v0;
+    res[1] = v0[1];
+    res[2] = v0[2];
   }
   return;
 }
@@ -4482,7 +4564,7 @@ calc_closest(float *param_1,float *param_2,float *param_3,float *param_4,float *
 
 // 006BFAE0  is_inside  (qcommon/cm_trace.cpp:3183)
 
-bool __cdecl is_inside(float *param_1,float *param_2,float *param_3,float *param_4)
+bool __cdecl is_inside(float *a,float *b,float *n,float *p)
 
 {
   bool bVar1;
@@ -4498,31 +4580,33 @@ bool __cdecl is_inside(float *param_1,float *param_2,float *param_3,float *param
   uint local_44;
   int local_40;
   int local_3c;
-  int local_14;
-  int local_c;
+  int i2;
+  float alfa;
+  int i1;
+  float denom;
   
-  if (ABS(*param_3) <= ABS(param_3[1])) {
-    local_c = 0;
-    if (ABS(param_3[1]) <= ABS(param_3[2])) {
+  if (ABS(*n) <= ABS(n[1])) {
+    i1 = 0;
+    if (ABS(n[1]) <= ABS(n[2])) {
       local_40 = 1;
     }
     else {
       local_40 = 2;
     }
-    local_14 = local_40;
+    i2 = local_40;
   }
   else {
-    local_c = 1;
-    if (ABS(*param_3) <= ABS(param_3[2])) {
+    i1 = 1;
+    if (ABS(*n) <= ABS(n[2])) {
       local_3c = 0;
     }
     else {
       local_3c = 2;
     }
-    local_14 = local_3c;
+    i2 = local_3c;
   }
-  fVar2 = param_2[local_c] * param_1[local_14] - param_2[local_14] * param_1[local_c];
-  fVar3 = param_4[local_c] * param_1[local_14] - param_4[local_14] * param_1[local_c];
+  fVar2 = b[i1] * a[i2] - b[i2] * a[i1];
+  fVar3 = p[i1] * a[i2] - p[i2] * a[i1];
   if (0.0 <= fVar3) {
     local_48 = (uint)(0.0 < fVar3);
     local_44 = local_48;
@@ -4538,7 +4622,7 @@ bool __cdecl is_inside(float *param_1,float *param_2,float *param_3,float *param
     local_4c = 0xffffffff;
   }
   if (local_44 == local_4c) {
-    fVar3 = param_4[local_14] * param_2[local_c] - param_4[local_c] * param_2[local_14];
+    fVar3 = p[i2] * b[i1] - p[i1] * b[i2];
     if (0.0 <= fVar3) {
       local_58 = (uint)(0.0 < fVar3);
       local_54 = local_58;
@@ -4569,50 +4653,50 @@ bool __cdecl is_inside(float *param_1,float *param_2,float *param_3,float *param
 
 // 006BFDA0  point_in_triangle  (qcommon/cm_trace.cpp:3207)
 
-bool __cdecl
-point_in_triangle(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+bool __cdecl point_in_triangle(float *p,float *v0,float *v1,float *v2,float *n)
 
 {
   bool bVar1;
-  float local_50;
+  float v2_v0;
   float local_4c;
   float local_48;
-  float local_44;
+  float p_v2;
   float local_40;
   float local_3c;
-  float local_38;
+  float v1_v2;
   float local_34;
   float local_30;
-  float local_2c;
+  float v0_v2;
   float local_28;
   float local_24;
-  float local_20;
+  float v1_v0;
   float local_1c;
   float local_18;
-  float local_14;
+  float p_v0;
   float local_10;
   float local_c;
+  bool res;
   
-  local_20 = *param_3 - *param_2;
-  local_1c = param_3[1] - param_2[1];
-  local_18 = param_3[2] - param_2[2];
-  local_50 = *param_4 - *param_2;
-  local_4c = param_4[1] - param_2[1];
-  local_48 = param_4[2] - param_2[2];
-  local_14 = *param_1 - *param_2;
-  local_10 = param_1[1] - param_2[1];
-  local_c = param_1[2] - param_2[2];
-  local_38 = *param_3 - *param_4;
-  local_34 = param_3[1] - param_4[1];
-  local_30 = param_3[2] - param_4[2];
-  local_2c = *param_2 - *param_4;
-  local_28 = param_2[1] - param_4[1];
-  local_24 = param_2[2] - param_4[2];
-  local_44 = *param_1 - *param_4;
-  local_40 = param_1[1] - param_4[1];
-  local_3c = param_1[2] - param_4[2];
-  bVar1 = is_inside(&local_20,&local_50,param_5,&local_14);
-  if ((bVar1) && (bVar1 = is_inside(&local_38,&local_2c,param_5,&local_44), bVar1)) {
+  v1_v0 = *v1 - *v0;
+  local_1c = v1[1] - v0[1];
+  local_18 = v1[2] - v0[2];
+  v2_v0 = *v2 - *v0;
+  local_4c = v2[1] - v0[1];
+  local_48 = v2[2] - v0[2];
+  p_v0 = *p - *v0;
+  local_10 = p[1] - v0[1];
+  local_c = p[2] - v0[2];
+  v1_v2 = *v1 - *v2;
+  local_34 = v1[1] - v2[1];
+  local_30 = v1[2] - v2[2];
+  v0_v2 = *v0 - *v2;
+  local_28 = v0[1] - v2[1];
+  local_24 = v0[2] - v2[2];
+  p_v2 = *p - *v2;
+  local_40 = p[1] - v2[1];
+  local_3c = p[2] - v2[2];
+  bVar1 = is_inside(&v1_v0,&v2_v0,n,&p_v0);
+  if ((bVar1) && (bVar1 = is_inside(&v1_v2,&v0_v2,n,&p_v2), bVar1)) {
     return true;
   }
   return false;
@@ -4623,94 +4707,101 @@ point_in_triangle(float *param_1,float *param_2,float *param_3,float *param_4,fl
 
 bool __cdecl
 trace_sphere_through_triangle
-          (float *param_1,float *param_2,float *param_3,float param_4,float *param_5,float *param_6,
-          float *param_7,float *param_8)
+          (float *c0,float *dir,float *t,float r,float *v0,float *v1,float *v2,float *n)
 
 {
   bool bVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  float local_6c;
-  float local_3c;
+  float _t_2;
+  float _d1;
+  float _d0;
+  float _t;
+  float d1;
+  float c;
+  float d;
+  float root1;
+  float offs;
+  float d0;
+  float b;
+  float r2;
+  float proj;
   float local_38;
   float local_34;
-  float local_30;
-  float local_2c;
+  float ndir2;
+  float c1;
   float local_28;
   float local_24;
-  float local_20;
+  float closest;
   float local_1c;
   float local_18;
+  float root2;
   
-  fVar4 = *param_3;
-  local_2c = fVar4 * *param_2 + *param_1;
-  local_28 = fVar4 * param_2[1] + param_1[1];
-  local_24 = fVar4 * param_2[2] + param_1[2];
-  fVar3 = -(*param_8 * *param_5 + param_8[1] * param_5[1] + param_8[2] * param_5[2]);
-  fVar4 = *param_8 * *param_1 + param_8[1] * param_1[1] + param_8[2] * param_1[2] + fVar3;
-  if (-param_4 < fVar4) {
-    if (*param_8 * local_2c + param_8[1] * local_28 + param_8[2] * local_24 + fVar3 < param_4) {
+  fVar4 = *t;
+  c1 = fVar4 * *dir + *c0;
+  local_28 = fVar4 * dir[1] + c0[1];
+  local_24 = fVar4 * dir[2] + c0[2];
+  fVar3 = -(*n * *v0 + n[1] * v0[1] + n[2] * v0[2]);
+  fVar4 = *n * *c0 + n[1] * c0[1] + n[2] * c0[2] + fVar3;
+  if (-r < fVar4) {
+    if (*n * c1 + n[1] * local_28 + n[2] * local_24 + fVar3 < r) {
       if (fVar4 <= 0.0) {
-        local_3c = fVar4 * *param_8 + *param_1;
-        local_38 = fVar4 * param_8[1] + param_1[1];
-        local_34 = fVar4 * param_8[2] + param_1[2];
+        proj = fVar4 * *n + *c0;
+        local_38 = fVar4 * n[1] + c0[1];
+        local_34 = fVar4 * n[2] + c0[2];
       }
       else {
-        if (fVar4 <= param_4) {
+        if (fVar4 <= r) {
           fVar4 = -fVar4;
-          local_3c = fVar4 * *param_8 + *param_1;
-          local_38 = fVar4 * param_8[1] + param_1[1];
-          local_34 = fVar4 * param_8[2] + param_1[2];
-          local_6c = 0.0;
+          proj = fVar4 * *n + *c0;
+          local_38 = fVar4 * n[1] + c0[1];
+          local_34 = fVar4 * n[2] + c0[2];
+          _t = 0.0;
         }
         else {
-          fVar4 = -param_4;
-          local_3c = fVar4 * *param_8 + *param_1;
-          local_38 = fVar4 * param_8[1] + param_1[1];
-          local_34 = fVar4 * param_8[2] + param_1[2];
-          local_6c = *param_8 * local_3c + param_8[1] * local_38 + param_8[2] * local_34 + fVar3;
-          local_6c = local_6c /
-                     (local_6c -
-                     (*param_8 * (local_3c + *param_2) + param_8[1] * (local_38 + param_2[1]) +
-                      param_8[2] * (local_34 + param_2[2]) + fVar3));
-          local_3c = local_6c * *param_2 + local_3c;
-          local_38 = local_6c * param_2[1] + local_38;
-          local_34 = local_6c * param_2[2] + local_34;
+          fVar4 = -r;
+          proj = fVar4 * *n + *c0;
+          local_38 = fVar4 * n[1] + c0[1];
+          local_34 = fVar4 * n[2] + c0[2];
+          fVar4 = *n * proj + n[1] * local_38 + n[2] * local_34 + fVar3;
+          _t = fVar4 / (fVar4 - (*n * (proj + *dir) + n[1] * (local_38 + dir[1]) +
+                                 n[2] * (local_34 + dir[2]) + fVar3));
+          proj = _t * *dir + proj;
+          local_38 = _t * dir[1] + local_38;
+          local_34 = _t * dir[2] + local_34;
         }
-        bVar1 = point_in_triangle(&local_3c,param_5,param_6,param_7,param_8);
+        bVar1 = point_in_triangle(&proj,v0,v1,v2,n);
         if (bVar1) {
-          *param_3 = local_6c;
+          *t = _t;
           return true;
         }
       }
-      fVar2 = -*param_3;
-      fVar4 = fVar2 * *param_2;
-      fVar3 = fVar2 * param_2[1];
-      fVar2 = fVar2 * param_2[2];
-      local_30 = fVar4 * fVar4 + fVar3 * fVar3 + fVar2 * fVar2;
-      calc_closest(param_5,param_6,param_7,&local_3c,&local_20);
-      local_20 = local_20 - *param_1;
-      local_1c = local_1c - param_1[1];
-      local_18 = local_18 - param_1[2];
-      fVar3 = fVar4 * local_20 + fVar3 * local_1c + fVar2 * local_18;
+      fVar2 = -*t;
+      fVar4 = fVar2 * *dir;
+      fVar3 = fVar2 * dir[1];
+      fVar2 = fVar2 * dir[2];
+      ndir2 = fVar4 * fVar4 + fVar3 * fVar3 + fVar2 * fVar2;
+      calc_closest(v0,v1,v2,&proj,&closest);
+      closest = closest - *c0;
+      local_1c = local_1c - c0[1];
+      local_18 = local_18 - c0[2];
+      fVar3 = fVar4 * closest + fVar3 * local_1c + fVar2 * local_18;
       fVar4 = fVar3 * fVar3 +
-              local_30 *
-              (param_4 * param_4 - (local_20 * local_20 + local_1c * local_1c + local_18 * local_18)
-              );
+              ndir2 * (r * r - (closest * closest + local_1c * local_1c + local_18 * local_18));
       if (0.0 < fVar4) {
         fVar4 = SQRT(fVar4);
         fVar2 = fVar3 * -1.0 - fVar4;
-        if (((fVar3 * -1.0 + fVar4 < 0.0) || (local_30 < fVar2)) ||
-           (local_30 * local_30 + 0.0001 <= fVar2)) {
+        if (((fVar3 * -1.0 + fVar4 < 0.0) || (ndir2 < fVar2)) || (ndir2 * ndir2 + 0.0001 <= fVar2))
+        {
           bVar1 = false;
         }
         else {
-          if (0.0 <= -fVar2 / local_30) {
-            *param_3 = 0.0;
+          if (0.0 <= -fVar2 / ndir2) {
+            *t = 0.0;
           }
           else {
-            *param_3 = -(-fVar2 / local_30) * *param_3;
+            *t = -(-fVar2 / ndir2) * *t;
           }
           bVar1 = true;
         }
@@ -4734,75 +4825,72 @@ trace_sphere_through_triangle
 
 void __cdecl
 trace_sphere_through_partition
-          (float *param_1,float *param_2,float *param_3,float param_4,CollisionAabbTree *param_5,
-          float *param_6,int *param_7)
+          (float *c,float *dir,float *t,float r,CollisionAabbTree *tree,float *hitn,int *sflags)
 
 {
   bool bVar1;
   float (*pafVar2) [3];
-  int local_70;
-  float local_6c;
+  int triIndex;
+  float v0;
   float local_68;
   float local_64;
-  float local_60;
+  float v0_v2;
   float local_5c;
   float local_58;
-  float local_54;
+  float ndir;
   float local_50;
   float local_4c;
-  float local_48;
+  float un;
   float local_44;
   float local_40;
-  float local_3c;
+  float v2;
   float local_38;
   float local_34;
-  float local_30;
+  float v1;
   float local_2c;
   float local_28;
-  char local_21;
-  float local_20 [3];
-  CollisionPartition *local_14;
-  float local_10;
+  bool hitb;
+  float n [3];
+  CollisionPartition *partition;
+  float v0_v1;
   float local_c;
   float local_8;
   
-  local_21 = '\0';
-  Vec3NormalizeTo(param_2,&local_54);
-  local_14 = cm.partitions + (param_5->u).firstChildIndex;
-  for (local_70 = local_14->firstTri;
-      local_70 < (int)((uint)local_14->triCount + local_14->firstTri); local_70 = local_70 + 1) {
-    pafVar2 = cm.verts + cm.triIndices[local_70 * 3];
-    local_6c = (*pafVar2)[0];
+  hitb = false;
+  Vec3NormalizeTo(dir,&ndir);
+  partition = cm.partitions + (tree->u).firstChildIndex;
+  for (triIndex = partition->firstTri;
+      triIndex < (int)((uint)partition->triCount + partition->firstTri); triIndex = triIndex + 1) {
+    pafVar2 = cm.verts + cm.triIndices[triIndex * 3];
+    v0 = (*pafVar2)[0];
     local_68 = (*pafVar2)[1];
     local_64 = (*pafVar2)[2];
-    pafVar2 = cm.verts + cm.triIndices[local_70 * 3 + 1];
-    local_30 = (*pafVar2)[0];
+    pafVar2 = cm.verts + cm.triIndices[triIndex * 3 + 1];
+    v1 = (*pafVar2)[0];
     local_2c = (*pafVar2)[1];
     local_28 = (*pafVar2)[2];
-    pafVar2 = cm.verts + cm.triIndices[local_70 * 3 + 2];
-    local_3c = (*pafVar2)[0];
+    pafVar2 = cm.verts + cm.triIndices[triIndex * 3 + 2];
+    v2 = (*pafVar2)[0];
     local_38 = (*pafVar2)[1];
     local_34 = (*pafVar2)[2];
-    local_10 = local_6c - local_30;
+    v0_v1 = v0 - v1;
     local_c = local_68 - local_2c;
     local_8 = local_64 - local_28;
-    local_60 = local_6c - local_3c;
+    v0_v2 = v0 - v2;
     local_5c = local_68 - local_38;
     local_58 = local_64 - local_34;
-    Vec3Cross(&local_60,&local_10,local_20);
-    Vec3NormalizeTo(local_20,&local_48);
-    if ((local_54 * local_48 + local_50 * local_44 + local_4c * local_40 < 0.0) &&
-       (bVar1 = trace_sphere_through_triangle
-                          (param_1,param_2,param_3,param_4,&local_6c,&local_30,&local_3c,&local_48),
-       bVar1)) {
-      *param_6 = local_48;
-      param_6[1] = local_44;
-      param_6[2] = local_40;
-      local_21 = '\x01';
+    Vec3Cross(&v0_v2,&v0_v1,n);
+    Vec3NormalizeTo(n,&un);
+    if ((ndir * un + local_50 * local_44 + local_4c * local_40 < 0.0) &&
+       (bVar1 = trace_sphere_through_triangle(c,dir,t,r,&v0,&v1,&v2,&un), bVar1)) {
+      *hitn = un;
+      hitn[1] = local_44;
+      hitn[2] = local_40;
+      hitb = true;
     }
   }
-  if (local_21 != '\0') {
-    *param_7 = cm.materials[param_5->materialIndex].surfaceFlags;
+  if (hitb != false) {
+    *sflags = cm.materials[tree->materialIndex].surfaceFlags;
   }
   return;
 }
@@ -4814,8 +4902,8 @@ trace_sphere_through_partition
 
 void __cdecl
 trace_sphere_through_brush
-          (float *param_1,float *param_2,float *param_3,float param_4,cbrush_t *param_5,
-          float *param_6,int *param_7,clipMap_t *param_8)
+          (float *c0,float *dir,float *t,float r,cbrush_t *brush,float *hitn,int *sflags,
+          clipMap_t *pClipMap)
 
 {
   cplane_s *pcVar1;
@@ -4830,90 +4918,96 @@ trace_sphere_through_brush
   float local_ec;
   float local_e8;
   float local_e4;
-  cbrushside_t *local_8c;
-  int local_88;
-  float local_80;
-  cbrushside_t *local_6c;
-  cbrushside_t local_68;
-  cplane_s local_5c;
+  float d1;
+  cbrushside_t *side;
+  int j;
+  cplane_s *plane;
+  float enterFrac;
+  float delta;
+  float frac;
+  int allsolid;
+  float dist;
+  cbrushside_t *leadside;
+  cbrushside_t axialSide;
+  cplane_s axialPlane;
   uint local_48;
-  float local_44;
-  float local_40;
-  cbrush_t *local_3c;
-  float local_38 [4];
-  int local_28;
-  float local_24 [4];
-  uint local_14;
-  float local_10;
+  float sign;
+  float d2;
+  float *bounds;
+  float c1 [3];
+  float f;
+  int index;
+  float inv_neg_dir [3];
+  float leaveFrac;
+  int i;
+  float neg_dir;
   float local_c;
   float local_8;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*c0 & 0x7f800000) == 0x7f800000) || (((uint)c0[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)c0[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd2b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*dir & 0x7f800000) == 0x7f800000) || (((uint)dir[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)dir[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd2c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_38[0] = *param_1 + *param_2;
-  local_38[1] = param_1[1] + param_2[1];
-  local_38[2] = param_1[2] + param_2[2];
-  local_10 = -*param_2;
-  local_c = -param_2[1];
-  local_8 = -param_2[2];
-  if (local_10 == 0.0) {
+  c1[0] = *c0 + *dir;
+  c1[1] = c0[1] + dir[1];
+  c1[2] = c0[2] + dir[2];
+  neg_dir = -*dir;
+  local_c = -dir[1];
+  local_8 = -dir[2];
+  if (neg_dir == 0.0) {
     local_e4 = 0.0;
   }
   else {
-    local_e4 = 1.0 / local_10;
+    local_e4 = 1.0 / neg_dir;
   }
-  local_24[0] = local_e4;
+  inv_neg_dir[0] = local_e4;
   if (local_c == 0.0) {
     local_e8 = 0.0;
   }
   else {
     local_e8 = 1.0 / local_c;
   }
-  local_24[1] = local_e8;
+  inv_neg_dir[1] = local_e8;
   if (local_8 == 0.0) {
     local_ec = 0.0;
   }
   else {
     local_ec = 1.0 / local_8;
   }
-  local_24[2] = local_ec;
-  local_80 = 0.0;
-  local_24[3] = *param_3;
+  inv_neg_dir[2] = local_ec;
+  enterFrac = 0.0;
+  leaveFrac = *t;
   bVar3 = true;
-  local_6c = (cbrushside_t *)0x0;
-  local_44 = -1.0;
-  local_3c = param_5;
-  local_28 = 0;
+  leadside = (cbrushside_t *)0x0;
+  sign = -1.0;
+  bounds = brush->mins;
+  index = 0;
   while( true ) {
-    if ((((((uint)local_3c->mins[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_3c->mins[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_3c->mins[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd4e,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    for (local_88 = 0; local_88 < 3; local_88 = local_88 + 1) {
-      fVar5 = (param_1[local_88] - local_3c->mins[local_88]) * local_44 - param_4;
-      local_40 = (local_38[local_88] - local_3c->mins[local_88]) * local_44 - param_4;
+    for (j = 0; j < 3; j = j + 1) {
+      fVar5 = (c0[j] - bounds[j]) * sign - r;
+      d2 = (c1[j] - bounds[j]) * sign - r;
       if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd54,
                                    0,"%s"), !bVar4)) {
@@ -4921,7 +5015,7 @@ trace_sphere_through_brush
         (*pcVar2)();
         return;
       }
-      if ((((uint)local_40 & 0x7f800000) == 0x7f800000) &&
+      if ((((uint)d2 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd55,
                                    0,"%s"), !bVar4)) {
         pcVar2 = (code *)swi(3);
@@ -4929,16 +5023,16 @@ trace_sphere_through_brush
         return;
       }
       if (fVar5 <= 0.0) {
-        if (0.0 < local_40) {
-          local_f4 = fVar5 * local_24[local_88] * local_44;
-          if (local_f4 <= local_80) {
+        if (0.0 < d2) {
+          local_f4 = fVar5 * inv_neg_dir[j] * sign;
+          if (local_f4 <= enterFrac) {
             return;
           }
           bVar3 = false;
-          if (0.0 <= local_f4 - local_24[3]) {
-            local_f4 = local_24[3];
+          if (0.0 <= local_f4 - leaveFrac) {
+            local_f4 = leaveFrac;
           }
-          local_24[3] = local_f4;
+          leaveFrac = local_f4;
         }
       }
       else {
@@ -4946,42 +5040,42 @@ trace_sphere_through_brush
         if (0.125 - fVar5 < 0.0) {
           local_f0 = 0.125;
         }
-        if (local_f0 <= local_40) {
+        if (local_f0 <= d2) {
           return;
         }
-        fVar5 = (fVar5 - 0.125) * local_24[local_88] * local_44;
-        if (local_24[3] <= fVar5) {
+        fVar5 = (fVar5 - 0.125) * inv_neg_dir[j] * sign;
+        if (leaveFrac <= fVar5) {
           return;
         }
-        if (0.0 < local_40) {
+        if (0.0 < d2) {
           bVar3 = false;
         }
-        if ((local_80 < fVar5) || (fVar5 = local_80, local_6c == (cbrushside_t *)0x0)) {
-          local_80 = fVar5;
-          local_68.cflags = param_5->axial_cflags[local_28][local_88];
-          local_68.sflags = param_5->axial_sflags[local_28][local_88];
-          local_5c.normal[0] = 0.0;
-          local_5c.normal[1] = 0.0;
-          local_5c.normal[2] = 0.0;
-          local_5c.normal[local_88] = local_44;
-          local_68.plane = &local_5c;
-          local_6c = &local_68;
+        if ((enterFrac < fVar5) || (fVar5 = enterFrac, leadside == (cbrushside_t *)0x0)) {
+          enterFrac = fVar5;
+          axialSide.cflags = brush->axial_cflags[index][j];
+          axialSide.sflags = brush->axial_sflags[index][j];
+          axialPlane.normal[0] = 0.0;
+          axialPlane.normal[1] = 0.0;
+          axialPlane.normal[2] = 0.0;
+          axialPlane.normal[j] = sign;
+          axialSide.plane = &axialPlane;
+          leadside = &axialSide;
         }
       }
     }
-    if (local_28 != 0) break;
-    local_44 = 1.0;
-    local_3c = (cbrush_t *)param_5->maxs;
-    local_28 = 1;
+    if (index != 0) break;
+    sign = 1.0;
+    bounds = brush->maxs;
+    index = 1;
   }
-  if (param_5->numsides == 0) {
-    local_8c = (cbrushside_t *)0x0;
+  if (brush->numsides == 0) {
+    side = (cbrushside_t *)0x0;
   }
   else {
-    local_8c = param_5->sides;
+    side = brush->sides;
   }
-  local_14 = param_5->numsides;
-  if (((int)local_14 < 0) &&
+  i = brush->numsides;
+  if ((i < 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd85,0,
                                "%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
@@ -4989,24 +5083,24 @@ trace_sphere_through_brush
     return;
   }
   do {
-    if (local_14 == 0) {
-      if (local_6c == (cbrushside_t *)0x0) {
+    if (i == 0) {
+      if (leadside == (cbrushside_t *)0x0) {
         if (bVar3) {
-          *param_3 = 0.0;
+          *t = 0.0;
         }
-        *param_7 = 0;
+        *sflags = 0;
       }
       else {
-        *param_3 = local_80;
-        *param_7 = local_6c->sflags;
-        pcVar1 = local_6c->plane;
-        *param_6 = pcVar1->normal[0];
-        param_6[1] = pcVar1->normal[1];
-        param_6[2] = pcVar1->normal[2];
+        *t = enterFrac;
+        *sflags = leadside->sflags;
+        pcVar1 = leadside->plane;
+        *hitn = pcVar1->normal[0];
+        hitn[1] = pcVar1->normal[1];
+        hitn[2] = pcVar1->normal[2];
       }
       return;
     }
-    pcVar1 = local_8c->plane;
+    pcVar1 = side->plane;
     if ((((uint)pcVar1->dist & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd8a,0,
                                  "%s"), !bVar4)) {
@@ -5023,7 +5117,7 @@ trace_sphere_through_brush
       (*pcVar2)();
       return;
     }
-    fVar5 = pcVar1->dist + param_4;
+    fVar5 = pcVar1->dist + r;
     if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd8f,0,
                                  "%s"), !bVar4)) {
@@ -5031,10 +5125,10 @@ trace_sphere_through_brush
       (*pcVar2)();
       return;
     }
-    fVar6 = (*param_1 * pcVar1->normal[0] + param_1[1] * pcVar1->normal[1] +
-            param_1[2] * pcVar1->normal[2]) - fVar5;
-    local_40 = (local_38[0] * pcVar1->normal[0] + local_38[1] * pcVar1->normal[1] +
-               local_38[2] * pcVar1->normal[2]) - fVar5;
+    fVar6 = (*c0 * pcVar1->normal[0] + c0[1] * pcVar1->normal[1] + c0[2] * pcVar1->normal[2]) -
+            fVar5;
+    d2 = (c1[0] * pcVar1->normal[0] + c1[1] * pcVar1->normal[1] + c1[2] * pcVar1->normal[2]) - fVar5
+    ;
     if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd94,0,
                                  "%s"), !bVar4)) {
@@ -5042,7 +5136,7 @@ trace_sphere_through_brush
       (*pcVar2)();
       return;
     }
-    if ((((uint)local_40 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)d2 & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xd95,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
@@ -5050,8 +5144,8 @@ trace_sphere_through_brush
       return;
     }
     if (fVar6 <= 0.0) {
-      if (0.0 < local_40) {
-        fVar5 = fVar6 - local_40;
+      if (0.0 < d2) {
+        fVar5 = fVar6 - d2;
         if ((0.0 <= fVar5) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0xdb3,0,"%s"), !bVar3)) {
@@ -5059,8 +5153,7 @@ trace_sphere_through_brush
           (*pcVar2)();
           return;
         }
-        if ((local_24[3] * fVar5 < fVar6) && (local_24[3] = fVar6 / fVar5, local_24[3] <= local_80))
-        {
+        if ((leaveFrac * fVar5 < fVar6) && (leaveFrac = fVar6 / fVar5, leaveFrac <= enterFrac)) {
           return;
         }
         bVar3 = false;
@@ -5071,13 +5164,13 @@ trace_sphere_through_brush
       if (0.125 - fVar6 < 0.0) {
         local_f8 = 0.125;
       }
-      if (local_f8 <= local_40) {
+      if (local_f8 <= d2) {
         return;
       }
-      if (0.0 < local_40) {
+      if (0.0 < d2) {
         bVar3 = false;
       }
-      fVar5 = fVar6 - local_40;
+      fVar5 = fVar6 - d2;
       if ((((uint)fVar5 & 0x7f800000) == 0x7f800000) &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xda0,
                                    0,"%s"), !bVar4)) {
@@ -5092,19 +5185,19 @@ trace_sphere_through_brush
         (*pcVar2)();
         return;
       }
-      local_38[3] = fVar6 - 0.125;
-      if (local_80 * fVar5 < local_38[3]) {
-        local_80 = local_38[3] / fVar5;
-        if (local_24[3] <= local_80) {
+      f = fVar6 - 0.125;
+      if (enterFrac * fVar5 < f) {
+        enterFrac = f / fVar5;
+        if (leaveFrac <= enterFrac) {
           return;
         }
       }
-      else if (local_6c != (cbrushside_t *)0x0) goto LAB_006c0fa5;
-      local_6c = local_8c;
+      else if (leadside != (cbrushside_t *)0x0) goto LAB_006c0fa5;
+      leadside = side;
     }
 LAB_006c0fa5:
-    local_14 = local_14 - 1;
-    local_8c = local_8c + 1;
+    i = i + -1;
+    side = side + 1;
   } while( true );
 }
 
@@ -5113,11 +5206,10 @@ LAB_006c0fa5:
 
 void __cdecl
 trace_sphere_through_brush
-          (float *param_1,float *param_2,float *param_3,float param_4,cbrush_t *param_5,
-          float *param_6,int *param_7)
+          (float *c0,float *dir,float *t,float r,cbrush_t *brush,float *hitn,int *sflags)
 
 {
-  trace_sphere_through_brush(param_1,param_2,param_3,param_4,param_5,param_6,param_7,&cm);
+  trace_sphere_through_brush(c0,dir,t,r,brush,hitn,sflags,&cm);
   return;
 }
 
@@ -5126,14 +5218,14 @@ trace_sphere_through_brush
 
 void __cdecl
 trace_point_through_brush
-          (float *param_1,float *param_2,float *param_3,cbrush_t *param_4,float *param_5,
-          int *param_6,clipMap_t *param_7)
+          (float *c0,float *dir,float *t,cbrush_t *brush,float *hitn,int *sflags,clipMap_t *pClipMap
+          )
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((*param_3 < 0.0) || (1.0 < *param_3)) {
+  if ((*t < 0.0) || (1.0 < *t)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xde4,0,"%s"
                             );
     if (!bVar2) {
@@ -5142,8 +5234,8 @@ trace_point_through_brush
       return;
     }
   }
-  trace_sphere_through_brush(param_1,param_2,param_3,0.0,param_4,param_5,param_6,param_7);
-  if ((*param_3 < 0.0) || (1.0 < *param_3)) {
+  trace_sphere_through_brush(c0,dir,t,0.0,brush,hitn,sflags,pClipMap);
+  if ((*t < 0.0) || (1.0 < *t)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xdf9,0,"%s"
                             );
     if (!bVar2) {
@@ -5159,37 +5251,37 @@ trace_point_through_brush
 // 006C15D0  trace_point_through_triangle  (qcommon/cm_trace.cpp:3581)
 
 bool __cdecl
-trace_point_through_triangle
-          (float *param_1,float *param_2,float *param_3,float *param_4,float *param_5,float param_6,
-          float *param_7)
+trace_point_through_triangle(float *p0,float *u0,float *v0,float *v1,float *v2,float cur_t,float *t)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   float fVar4;
-  float local_54;
+  float b_;
+  float det;
+  float c2;
   float local_50;
   float local_4c;
-  float local_48;
+  float c1;
   float local_44;
   float local_40;
-  float local_3c;
+  float rs;
   float local_38;
   float local_34;
-  float local_30;
+  float cr_rs_c2;
   float local_2c;
   float local_28;
-  float local_24;
-  float local_20;
+  float a_;
+  float c0;
   float local_1c;
   float local_18;
-  float local_14;
+  float cr_c0_c1;
   float local_10;
   float local_c;
-  float local_8;
+  float t_;
   
-  if ((param_6 < 0.0) || (1.0 < param_6)) {
+  if ((cur_t < 0.0) || (1.0 < cur_t)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xdfe,0,"%s"
                             );
     if (!bVar2) {
@@ -5198,36 +5290,36 @@ trace_point_through_triangle
       return (bool)uVar3;
     }
   }
-  local_20 = *param_4 - *param_3;
-  local_1c = param_4[1] - param_3[1];
-  local_18 = param_4[2] - param_3[2];
-  local_48 = *param_5 - *param_3;
-  local_44 = param_5[1] - param_3[1];
-  local_40 = param_5[2] - param_3[2];
-  local_54 = -*param_2;
-  local_50 = -param_2[1];
-  local_4c = -param_2[2];
-  Vec3Cross(&local_20,&local_48,&local_14);
-  fVar4 = local_14 * local_54 + local_10 * local_50 + local_c * local_4c;
+  c0 = *v1 - *v0;
+  local_1c = v1[1] - v0[1];
+  local_18 = v1[2] - v0[2];
+  c1 = *v2 - *v0;
+  local_44 = v2[1] - v0[1];
+  local_40 = v2[2] - v0[2];
+  c2 = -*u0;
+  local_50 = -u0[1];
+  local_4c = -u0[2];
+  Vec3Cross(&c0,&c1,&cr_c0_c1);
+  fVar4 = cr_c0_c1 * c2 + local_10 * local_50 + local_c * local_4c;
   if (0.0001 <= ABS(fVar4)) {
-    local_3c = *param_1 - *param_3;
-    local_38 = param_1[1] - param_3[1];
-    local_34 = param_1[2] - param_3[2];
-    local_8 = (local_14 * local_3c + local_10 * local_38 + local_c * local_34) / fVar4;
-    if ((local_8 < 0.0) || (param_6 < local_8)) {
+    rs = *p0 - *v0;
+    local_38 = p0[1] - v0[1];
+    local_34 = p0[2] - v0[2];
+    t_ = (cr_c0_c1 * rs + local_10 * local_38 + local_c * local_34) / fVar4;
+    if ((t_ < 0.0) || (cur_t < t_)) {
       bVar2 = false;
     }
     else {
-      Vec3Cross(&local_3c,&local_54,&local_30);
-      local_24 = -(local_30 * local_48 + local_2c * local_44 + local_28 * local_40) / fVar4;
-      if (0.0 <= local_24) {
-        fVar4 = (local_30 * local_20 + local_2c * local_1c + local_28 * local_18) / fVar4;
-        if ((fVar4 < 0.0) || (1.0 < local_24 + fVar4)) {
+      Vec3Cross(&rs,&c2,&cr_rs_c2);
+      a_ = -(cr_rs_c2 * c1 + local_2c * local_44 + local_28 * local_40) / fVar4;
+      if (0.0 <= a_) {
+        fVar4 = (cr_rs_c2 * c0 + local_2c * local_1c + local_28 * local_18) / fVar4;
+        if ((fVar4 < 0.0) || (1.0 < a_ + fVar4)) {
           bVar2 = false;
         }
         else {
-          *param_7 = local_8;
-          if ((local_8 < 0.0) || (1.0 < local_8)) {
+          *t = t_;
+          if ((t_ < 0.0) || (1.0 < t_)) {
             bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",
                                      0xe1c,0,"%s");
             if (!bVar2) {
@@ -5255,65 +5347,66 @@ trace_point_through_triangle
 
 void __cdecl
 trace_sphere_through_partition
-          (float *param_1,float *param_2,float *param_3,float param_4,CollisionPartition *param_5,
-          float *param_6,int *param_7,clipMap_t *param_8)
+          (float *p,float *dir,float *t,float r,CollisionPartition *partition,float *hitn,int *hint,
+          clipMap_t *pClipMap)
 
 {
   ushort *puVar1;
   code *pcVar2;
   bool bVar3;
   float (*pafVar4) [3];
-  int local_5c;
-  float local_58;
+  ushort *indicies;
+  int triIndex;
+  float v0;
   float local_54;
   float local_50;
-  float local_4c;
+  float v0_v2;
   float local_48;
   float local_44;
-  float local_40;
+  float un;
   float local_3c;
   float local_38;
-  float local_34;
+  float v2;
   float local_30;
   float local_2c;
-  float local_28;
+  float v1;
   float local_24;
   float local_20;
-  float local_1c;
+  float n;
   float local_18;
   float local_14;
-  float local_10;
+  float v0_v1;
   float local_c;
   float local_8;
   
-  local_5c = param_5->firstTri;
+  triIndex = partition->firstTri;
   do {
-    if ((int)((uint)param_5->triCount + param_5->firstTri) <= local_5c) {
+    if ((int)((uint)partition->triCount + partition->firstTri) <= triIndex) {
       return;
     }
-    puVar1 = param_8->triIndices + local_5c * 3;
-    pafVar4 = param_8->verts + *puVar1;
-    local_58 = (*pafVar4)[0];
+    puVar1 = pClipMap->triIndices + triIndex * 3;
+    pafVar4 = pClipMap->verts + *puVar1;
+    v0 = (*pafVar4)[0];
     local_54 = (*pafVar4)[1];
     local_50 = (*pafVar4)[2];
-    pafVar4 = param_8->verts + puVar1[1];
-    local_28 = (*pafVar4)[0];
+    pafVar4 = pClipMap->verts + puVar1[1];
+    v1 = (*pafVar4)[0];
     local_24 = (*pafVar4)[1];
     local_20 = (*pafVar4)[2];
-    pafVar4 = param_8->verts + puVar1[2];
-    local_34 = (*pafVar4)[0];
+    pafVar4 = pClipMap->verts + puVar1[2];
+    v2 = (*pafVar4)[0];
     local_30 = (*pafVar4)[1];
     local_2c = (*pafVar4)[2];
-    local_10 = local_58 - local_28;
+    v0_v1 = v0 - v1;
     local_c = local_54 - local_24;
     local_8 = local_50 - local_20;
-    local_4c = local_58 - local_34;
+    v0_v2 = v0 - v2;
     local_48 = local_54 - local_30;
     local_44 = local_50 - local_2c;
-    Vec3Cross(&local_4c,&local_10,&local_1c);
-    Vec3NormalizeTo(&local_1c,&local_40);
-    if (*param_2 * local_1c + param_2[1] * local_18 + param_2[2] * local_14 < 0.0) {
-      if ((*param_3 < 0.0) || (1.0 < *param_3)) {
+    Vec3Cross(&v0_v2,&v0_v1,&n);
+    Vec3NormalizeTo(&n,&un);
+    if (*dir * n + dir[1] * local_18 + dir[2] * local_14 < 0.0) {
+      if ((*t < 0.0) || (1.0 < *t)) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe39,0,
                                  "%s");
         if (!bVar3) {
@@ -5322,16 +5415,15 @@ trace_sphere_through_partition
           return;
         }
       }
-      bVar3 = trace_sphere_through_triangle
-                        (param_1,param_2,param_3,param_4,&local_58,&local_28,&local_34,&local_40);
+      bVar3 = trace_sphere_through_triangle(p,dir,t,r,&v0,&v1,&v2,&un);
       if (bVar3) {
-        *param_6 = local_40;
-        param_6[1] = local_3c;
-        param_6[2] = local_38;
-        *param_7 = (uint)param_8->numBrushes + local_5c;
+        *hitn = un;
+        hitn[1] = local_3c;
+        hitn[2] = local_38;
+        *hint = (uint)pClipMap->numBrushes + triIndex;
       }
     }
-    local_5c = local_5c + 1;
+    triIndex = triIndex + 1;
   } while( true );
 }
 
@@ -5340,61 +5432,62 @@ trace_sphere_through_partition
 
 void __cdecl
 trace_point_through_partition
-          (float *param_1,float *param_2,float *param_3,CollisionPartition *param_4,float *param_5,
-          int *param_6,clipMap_t *param_7)
+          (float *p,float *dir,float *t,CollisionPartition *partition,float *hitn,int *hint,
+          clipMap_t *pClipMap)
 
 {
   ushort *puVar1;
   code *pcVar2;
   bool bVar3;
   float (*pafVar4) [3];
-  int local_50;
-  float local_4c;
+  ushort *indicies;
+  int triIndex;
+  float v0;
   float local_48;
   float local_44;
-  float local_40;
+  float v0_v2;
   float local_3c;
   float local_38;
-  float local_34;
+  float v2;
   float local_30;
   float local_2c;
-  float local_28;
+  float v1;
   float local_24;
   float local_20;
-  float local_1c;
+  float n;
   float local_18;
   float local_14;
-  float local_10;
+  float v0_v1;
   float local_c;
   float local_8;
   
-  local_50 = param_4->firstTri;
+  triIndex = partition->firstTri;
   do {
-    if ((int)((uint)param_4->triCount + param_4->firstTri) <= local_50) {
+    if ((int)((uint)partition->triCount + partition->firstTri) <= triIndex) {
       return;
     }
-    puVar1 = param_7->triIndices + local_50 * 3;
-    pafVar4 = param_7->verts + *puVar1;
-    local_4c = (*pafVar4)[0];
+    puVar1 = pClipMap->triIndices + triIndex * 3;
+    pafVar4 = pClipMap->verts + *puVar1;
+    v0 = (*pafVar4)[0];
     local_48 = (*pafVar4)[1];
     local_44 = (*pafVar4)[2];
-    pafVar4 = param_7->verts + puVar1[1];
-    local_28 = (*pafVar4)[0];
+    pafVar4 = pClipMap->verts + puVar1[1];
+    v1 = (*pafVar4)[0];
     local_24 = (*pafVar4)[1];
     local_20 = (*pafVar4)[2];
-    pafVar4 = param_7->verts + puVar1[2];
-    local_34 = (*pafVar4)[0];
+    pafVar4 = pClipMap->verts + puVar1[2];
+    v2 = (*pafVar4)[0];
     local_30 = (*pafVar4)[1];
     local_2c = (*pafVar4)[2];
-    local_10 = local_4c - local_28;
+    v0_v1 = v0 - v1;
     local_c = local_48 - local_24;
     local_8 = local_44 - local_20;
-    local_40 = local_4c - local_34;
+    v0_v2 = v0 - v2;
     local_3c = local_48 - local_30;
     local_38 = local_44 - local_2c;
-    Vec3Cross(&local_40,&local_10,&local_1c);
-    if (*param_2 * local_1c + param_2[1] * local_18 + param_2[2] * local_14 < 0.0) {
-      if ((*param_3 < 0.0) || (1.0 < *param_3)) {
+    Vec3Cross(&v0_v2,&v0_v1,&n);
+    if (*dir * n + dir[1] * local_18 + dir[2] * local_14 < 0.0) {
+      if ((*t < 0.0) || (1.0 < *t)) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe54,0,
                                  "%s");
         if (!bVar3) {
@@ -5403,14 +5496,13 @@ trace_point_through_partition
           return;
         }
       }
-      bVar3 = trace_point_through_triangle
-                        (param_1,param_2,&local_4c,&local_28,&local_34,*param_3,param_3);
+      bVar3 = trace_point_through_triangle(p,dir,&v0,&v1,&v2,*t,t);
       if (bVar3) {
-        Vec3NormalizeTo(&local_1c,param_5);
-        *param_6 = (uint)param_7->numBrushes + local_50;
+        Vec3NormalizeTo(&n,hitn);
+        *hint = (uint)pClipMap->numBrushes + triIndex;
       }
     }
-    local_50 = local_50 + 1;
+    triIndex = triIndex + 1;
   } while( true );
 }
 
@@ -5418,252 +5510,8 @@ trace_point_through_partition
 // 006C1D80  trace_point_vs_env  (qcommon/cm_trace.cpp:3688)
 
 void __cdecl
-trace_point_vs_env(trace_t *param_1,float *param_2,float *param_3,col_context_t *param_4,
-                  int *param_5,clipMap_t *param_6)
-
-{
-  float fVar1;
-  cbrush_t *pcVar2;
-  code *pcVar3;
-  bool bVar4;
-  float (*pafVar5) [3];
-  int local_a8;
-  float local_a4;
-  float local_a0;
-  float local_9c;
-  float local_98 [3];
-  float local_8c;
-  float local_88;
-  float local_84;
-  ushort *local_7c;
-  int local_78;
-  cbrush_t *local_70;
-  float local_6c;
-  float local_68;
-  float local_64;
-  float local_60;
-  float local_5c;
-  float local_58;
-  col_prim_t *local_54;
-  float local_50;
-  float local_4c;
-  float local_48;
-  float local_44;
-  float local_40;
-  float local_3c;
-  float local_38;
-  float local_34;
-  float local_30;
-  float local_2c;
-  float local_28;
-  float local_24;
-  char local_1d;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
-  
-  local_60 = *param_3 - *param_2;
-  local_5c = param_3[1] - param_2[1];
-  local_58 = param_3[2] - param_2[2];
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe6e,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
-    return;
-  }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe6f,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
-    return;
-  }
-  if ((((((uint)local_60 & 0x7f800000) == 0x7f800000) ||
-       (((uint)local_5c & 0x7f800000) == 0x7f800000)) ||
-      (((uint)local_58 & 0x7f800000) == 0x7f800000)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe70,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
-    return;
-  }
-  memset((uchar *)param_1,'\0',0x38);
-  param_1->fraction = 1.0;
-  param_1->boneIndex = 0xfe;
-  local_1d = '\0';
-  if (0 < *param_5) {
-    if (*param_5 < (int)(uint)param_6->numBrushes) {
-      local_70 = param_6->brushes + *param_5;
-      trace_point_through_brush
-                (param_2,&local_60,&param_1->fraction,local_70,(float *)param_1,&param_1->sflags,
-                 param_6);
-      if (param_1->fraction <= 1.0 && param_1->fraction != 1.0) {
-        if ((param_1 == (trace_t *)0x0) &&
-           (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,
-                                     0,"%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
-          return;
-        }
-        param_1->hitType = TRACE_HITTYPE_ENTITY;
-        param_1->hitId = 0x3fe;
-        local_1d = '\x01';
-      }
-    }
-    else {
-      local_78 = *param_5 - (uint)param_6->numBrushes;
-      local_7c = param_6->triIndices + local_78 * 3;
-      pafVar5 = param_6->verts + *local_7c;
-      local_6c = (*pafVar5)[0];
-      local_68 = (*pafVar5)[1];
-      local_64 = (*pafVar5)[2];
-      pafVar5 = param_6->verts + local_7c[1];
-      local_1c = (*pafVar5)[0];
-      local_18 = (*pafVar5)[1];
-      local_14 = (*pafVar5)[2];
-      pafVar5 = param_6->verts + local_7c[2];
-      local_2c = (*pafVar5)[0];
-      local_28 = (*pafVar5)[1];
-      local_24 = (*pafVar5)[2];
-      bVar4 = trace_point_through_triangle
-                        (param_2,&local_60,&local_6c,&local_1c,&local_2c,1.0,&param_1->fraction);
-      if (bVar4) {
-        local_8c = local_6c - local_1c;
-        local_88 = local_68 - local_18;
-        local_84 = local_64 - local_14;
-        local_a4 = local_6c - local_2c;
-        local_a0 = local_68 - local_28;
-        local_9c = local_64 - local_24;
-        Vec3Cross(&local_a4,&local_8c,local_98);
-        Vec3NormalizeTo(local_98,(float *)param_1);
-        if ((param_1 == (trace_t *)0x0) &&
-           (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,
-                                     0,"%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
-          return;
-        }
-        param_1->hitType = TRACE_HITTYPE_ENTITY;
-        param_1->hitId = 0x3fe;
-        local_1d = '\x01';
-      }
-    }
-  }
-  if (local_1d == '\0') {
-    *param_5 = -1;
-  }
-  Vec3Min(param_2,param_3,&local_44);
-  Vec3Max(param_2,param_3,&local_38);
-  local_54 = param_4->prims;
-  for (local_a8 = 0; local_a8 < param_4->nprims; local_a8 = local_a8 + 1) {
-    if (local_54->type == 0) {
-      pcVar2 = (local_54->field1_0x4).brush;
-      local_10 = pcVar2->mins[0] - pcVar2->maxs[0];
-      local_c = pcVar2->mins[1] - pcVar2->maxs[1];
-      local_8 = pcVar2->mins[2] - pcVar2->maxs[2];
-      local_50 = pcVar2->mins[0] + pcVar2->maxs[0];
-      local_4c = pcVar2->mins[1] + pcVar2->maxs[1];
-      local_48 = pcVar2->mins[2] + pcVar2->maxs[2];
-      if ((((local_50 < local_44) || (local_4c < local_40)) || (local_48 < local_3c)) ||
-         (((local_38 < local_10 || (local_34 < local_c)) || (local_30 < local_8)))) {
-        bVar4 = false;
-      }
-      else {
-        bVar4 = true;
-      }
-      if ((bVar4) &&
-         (fVar1 = param_1->fraction,
-         trace_point_through_partition
-                   (param_2,&local_60,&param_1->fraction,param_6->partitions + pcVar2->numsides,
-                    (float *)param_1,param_5,param_6),
-         param_1->fraction <= fVar1 && fVar1 != param_1->fraction)) {
-        param_1->sflags = param_6->materials[(ushort)pcVar2->contents].surfaceFlags;
-      }
-    }
-    else {
-      pcVar2 = (local_54->field1_0x4).brush;
-      if ((((pcVar2->maxs[0] < local_44) || (pcVar2->maxs[1] < local_40)) ||
-          (pcVar2->maxs[2] < local_3c)) ||
-         (((local_38 < pcVar2->mins[0] || (local_34 < pcVar2->mins[1])) ||
-          (local_30 < pcVar2->mins[2])))) {
-        bVar4 = false;
-      }
-      else {
-        bVar4 = true;
-      }
-      if ((bVar4) &&
-         (fVar1 = param_1->fraction,
-         trace_point_through_brush
-                   (param_2,&local_60,&param_1->fraction,pcVar2,(float *)param_1,&param_1->sflags,
-                    param_6), param_1->fraction <= fVar1 && fVar1 != param_1->fraction)) {
-        *param_5 = ((int)(local_54->field1_0x4).tree - (int)param_6->brushes) / 0x60;
-      }
-    }
-    local_54 = local_54 + 1;
-  }
-  if (1.0 < param_1->fraction || param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
-       (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
-      return;
-    }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
-  }
-  else {
-    if ((param_1 == (trace_t *)0x0) &&
-       (bVar4 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
-      return;
-    }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
-  }
-  return;
-}
-
-
-// 006C26C0  trace_point_vs_env  (qcommon/cm_trace.cpp:3791)
-
-void __cdecl
-trace_point_vs_env(trace_t *param_1,float *param_2,float *param_3,col_context_t *param_4,
-                  int *param_5)
-
-{
-  trace_point_vs_env(param_1,param_2,param_3,param_4,param_5,&cm);
-  return;
-}
-
-
-// 006C26F0  trace_point_vs_env  (qcommon/cm_trace.cpp:3800)
-
-void __cdecl
-trace_point_vs_env(trace_t *param_1,float *param_2,float *param_3,col_context_t *param_4,
-                  int *param_5,uchar *param_6)
-
-{
-  trace_point_vs_env(param_1,param_2,param_3,param_4,param_5,(clipMap_t *)param_6);
-  return;
-}
-
-
-// 006C2720  trace_sphere_vs_env  (qcommon/cm_trace.cpp:3805)
-
-void __cdecl
-trace_sphere_vs_env(trace_t *param_1,float *param_2,float *param_3,float param_4,
-                   col_context_t *param_5,int *param_6,clipMap_t *param_7)
+trace_point_vs_env(trace_t *trace,float *start,float *end,col_context_t *context,int *index_hint,
+                  clipMap_t *pClipMap)
 
 {
   ushort *puVar1;
@@ -5672,181 +5520,437 @@ trace_sphere_vs_env(trace_t *param_1,float *param_2,float *param_3,float param_4
   code *pcVar4;
   bool bVar5;
   float (*pafVar6) [3];
-  int local_b4;
+  float old_fraction_2;
+  I_spuDmaSave save_4;
+  cbrush_t *brush_2;
+  dmaterial_t *mat;
+  float old_fraction;
+  CollisionPartition *partition;
+  CollisionAabbTree *tree;
+  I_spuDmaSave save_3;
+  int i;
+  float v0_v2;
+  float local_a0;
   float local_9c;
-  float local_98;
-  float local_94;
-  float local_90;
-  float local_8c;
+  float n [3];
+  float v0_v1;
   float local_88;
   float local_84;
-  float local_80;
-  float local_7c;
-  col_prim_t *local_78;
-  float local_74;
-  float local_70;
-  float local_6c;
+  I_spuDmaSave save_2;
+  ushort *indicies;
+  int tid;
+  I_spuDmaSave save;
+  cbrush_t *brush;
+  float v0;
   float local_68;
   float local_64;
-  float local_60;
+  float dir;
   float local_5c;
   float local_58;
-  float local_54;
-  float local_50;
+  col_prim_t *prim;
+  float mx;
   float local_4c;
   float local_48;
-  char local_41;
+  float bounds;
   float local_40;
   float local_3c;
   float local_38;
   float local_34;
   float local_30;
-  float local_2c;
+  float v2;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  bool bHintFound;
+  float v1;
   float local_18;
   float local_14;
-  float local_10;
+  float mn;
   float local_c;
   float local_8;
   
-  local_90 = *param_3 - *param_2;
-  local_8c = param_3[1] - param_2[1];
-  local_88 = param_3[2] - param_2[2];
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xee3,0,
+  dir = *end - *start;
+  local_5c = end[1] - start[1];
+  local_58 = end[2] - start[2];
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe6e,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xee4,0,
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe6f,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  if ((((((uint)local_90 & 0x7f800000) == 0x7f800000) ||
-       (((uint)local_8c & 0x7f800000) == 0x7f800000)) ||
-      (((uint)local_88 & 0x7f800000) == 0x7f800000)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xee5,0,
+  if ((((((uint)dir & 0x7f800000) == 0x7f800000) || (((uint)local_5c & 0x7f800000) == 0x7f800000))
+      || (((uint)local_58 & 0x7f800000) == 0x7f800000)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xe70,0,
                                "%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     (*pcVar4)();
     return;
   }
-  param_1->fraction = 1.0;
-  local_41 = '\0';
-  if (0 < *param_6) {
-    if (*param_6 < (int)(uint)param_7->numBrushes) {
-      trace_sphere_through_brush
-                (param_2,&local_90,&param_1->fraction,param_4,param_7->brushes + *param_6,
-                 (float *)param_1,&param_1->sflags,param_7);
-      if (param_1->fraction <= 1.0 && param_1->fraction != 1.0) {
-        if ((param_1 == (trace_t *)0x0) &&
+  memset((uchar *)trace,'\0',0x38);
+  trace->fraction = 1.0;
+  trace->boneIndex = 0xfe;
+  bHintFound = false;
+  if (0 < *index_hint) {
+    if (*index_hint < (int)(uint)pClipMap->numBrushes) {
+      trace_point_through_brush
+                (start,&dir,&trace->fraction,pClipMap->brushes + *index_hint,(float *)trace,
+                 &trace->sflags,pClipMap);
+      if (trace->fraction <= 1.0 && trace->fraction != 1.0) {
+        if ((trace == (trace_t *)0x0) &&
            (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,
                                      0,"%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        param_1->hitType = TRACE_HITTYPE_ENTITY;
-        param_1->hitId = 0x3fe;
-        local_41 = '\x01';
+        trace->hitType = TRACE_HITTYPE_ENTITY;
+        trace->hitId = 0x3fe;
+        bHintFound = true;
       }
     }
     else {
-      puVar1 = param_7->triIndices + (*param_6 - (uint)param_7->numBrushes) * 3;
-      pafVar6 = param_7->verts + *puVar1;
-      local_9c = (*pafVar6)[0];
-      local_98 = (*pafVar6)[1];
-      local_94 = (*pafVar6)[2];
-      pafVar6 = param_7->verts + puVar1[1];
-      local_34 = (*pafVar6)[0];
-      local_30 = (*pafVar6)[1];
-      local_2c = (*pafVar6)[2];
-      pafVar6 = param_7->verts + puVar1[2];
-      local_50 = (*pafVar6)[0];
-      local_4c = (*pafVar6)[1];
-      local_48 = (*pafVar6)[2];
-      local_10 = local_9c - local_34;
-      local_c = local_98 - local_30;
-      local_8 = local_94 - local_2c;
-      local_84 = local_9c - local_50;
-      local_80 = local_98 - local_4c;
-      local_7c = local_94 - local_48;
-      Vec3Cross(&local_84,&local_10,&local_1c);
-      Vec3Normalize(&local_1c);
-      bVar5 = trace_sphere_through_triangle
-                        (param_2,&local_90,&param_1->fraction,param_4,&local_9c,&local_34,&local_50,
-                         &local_1c);
+      puVar1 = pClipMap->triIndices + (*index_hint - (uint)pClipMap->numBrushes) * 3;
+      pafVar6 = pClipMap->verts + *puVar1;
+      v0 = (*pafVar6)[0];
+      local_68 = (*pafVar6)[1];
+      local_64 = (*pafVar6)[2];
+      pafVar6 = pClipMap->verts + puVar1[1];
+      v1 = (*pafVar6)[0];
+      local_18 = (*pafVar6)[1];
+      local_14 = (*pafVar6)[2];
+      pafVar6 = pClipMap->verts + puVar1[2];
+      v2 = (*pafVar6)[0];
+      local_28 = (*pafVar6)[1];
+      local_24 = (*pafVar6)[2];
+      bVar5 = trace_point_through_triangle(start,&dir,&v0,&v1,&v2,1.0,&trace->fraction);
       if (bVar5) {
-        (param_1->normal).vec.v[0] = local_1c;
-        (param_1->normal).vec.v[1] = local_18;
-        (param_1->normal).vec.v[2] = local_14;
-        if ((param_1 == (trace_t *)0x0) &&
+        v0_v1 = v0 - v1;
+        local_88 = local_68 - local_18;
+        local_84 = local_64 - local_14;
+        v0_v2 = v0 - v2;
+        local_a0 = local_68 - local_28;
+        local_9c = local_64 - local_24;
+        Vec3Cross(&v0_v2,&v0_v1,n);
+        Vec3NormalizeTo(n,(float *)trace);
+        if ((trace == (trace_t *)0x0) &&
            (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,
                                      0,"%s"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        param_1->hitType = TRACE_HITTYPE_ENTITY;
-        param_1->hitId = 0x3fe;
-        local_41 = '\x01';
+        trace->hitType = TRACE_HITTYPE_ENTITY;
+        trace->hitId = 0x3fe;
+        bHintFound = true;
       }
     }
   }
-  if (local_41 == '\0') {
-    *param_6 = -1;
+  if (bHintFound == false) {
+    *index_hint = -1;
   }
-  local_40 = param_4;
-  local_3c = param_4;
-  local_38 = param_4;
-  Vec3Min(param_2,param_3,&local_68);
-  local_68 = local_68 - local_40;
-  local_64 = local_64 - local_3c;
-  local_60 = local_60 - local_38;
-  Vec3Max(param_2,param_3,&local_5c);
-  local_5c = local_5c + local_40;
-  local_58 = local_58 + local_3c;
-  local_54 = local_54 + local_38;
-  local_78 = param_5->prims;
-  for (local_b4 = 0; local_b4 < param_5->nprims; local_b4 = local_b4 + 1) {
-    if (local_78->type == 0) {
-      pcVar3 = (local_78->field1_0x4).brush;
-      local_28 = pcVar3->mins[0] - pcVar3->maxs[0];
-      local_24 = pcVar3->mins[1] - pcVar3->maxs[1];
-      local_20 = pcVar3->mins[2] - pcVar3->maxs[2];
-      local_74 = pcVar3->mins[0] + pcVar3->maxs[0];
-      local_70 = pcVar3->mins[1] + pcVar3->maxs[1];
-      local_6c = pcVar3->mins[2] + pcVar3->maxs[2];
-      if ((((local_74 < local_68) || (local_70 < local_64)) || (local_6c < local_60)) ||
-         (((local_5c < local_28 || (local_58 < local_24)) || (local_54 < local_20)))) {
+  Vec3Min(start,end,&bounds);
+  Vec3Max(start,end,&local_38);
+  prim = context->prims;
+  for (i = 0; i < context->nprims; i = i + 1) {
+    if (prim->type == 0) {
+      pcVar3 = (prim->field1_0x4).brush;
+      mn = pcVar3->mins[0] - pcVar3->maxs[0];
+      local_c = pcVar3->mins[1] - pcVar3->maxs[1];
+      local_8 = pcVar3->mins[2] - pcVar3->maxs[2];
+      mx = pcVar3->mins[0] + pcVar3->maxs[0];
+      local_4c = pcVar3->mins[1] + pcVar3->maxs[1];
+      local_48 = pcVar3->mins[2] + pcVar3->maxs[2];
+      if ((((mx < bounds) || (local_4c < local_40)) || (local_48 < local_3c)) ||
+         (((local_38 < mn || (local_34 < local_c)) || (local_30 < local_8)))) {
         bVar5 = false;
       }
       else {
         bVar5 = true;
       }
       if ((bVar5) &&
-         (fVar2 = param_1->fraction,
-         trace_sphere_through_partition
-                   (param_2,&local_90,&param_1->fraction,param_4,
-                    param_7->partitions + pcVar3->numsides,(float *)param_1,param_6,param_7),
-         param_1->fraction <= fVar2 && fVar2 != param_1->fraction)) {
-        param_1->sflags = param_7->materials[(ushort)pcVar3->contents].surfaceFlags;
+         (fVar2 = trace->fraction,
+         trace_point_through_partition
+                   (start,&dir,&trace->fraction,pClipMap->partitions + pcVar3->numsides,
+                    (float *)trace,index_hint,pClipMap),
+         trace->fraction <= fVar2 && fVar2 != trace->fraction)) {
+        trace->sflags = pClipMap->materials[(ushort)pcVar3->contents].surfaceFlags;
       }
     }
     else {
-      pcVar3 = (local_78->field1_0x4).brush;
-      if ((((pcVar3->maxs[0] < local_68) || (pcVar3->maxs[1] < local_64)) ||
+      pcVar3 = (prim->field1_0x4).brush;
+      if ((((pcVar3->maxs[0] < bounds) || (pcVar3->maxs[1] < local_40)) ||
+          (pcVar3->maxs[2] < local_3c)) ||
+         (((local_38 < pcVar3->mins[0] || (local_34 < pcVar3->mins[1])) ||
+          (local_30 < pcVar3->mins[2])))) {
+        bVar5 = false;
+      }
+      else {
+        bVar5 = true;
+      }
+      if ((bVar5) &&
+         (fVar2 = trace->fraction,
+         trace_point_through_brush
+                   (start,&dir,&trace->fraction,pcVar3,(float *)trace,&trace->sflags,pClipMap),
+         trace->fraction <= fVar2 && fVar2 != trace->fraction)) {
+        *index_hint = ((int)(prim->field1_0x4).tree - (int)pClipMap->brushes) / 0x60;
+      }
+    }
+    prim = prim + 1;
+  }
+  if (1.0 < trace->fraction || trace->fraction == 1.0) {
+    if ((trace == (trace_t *)0x0) &&
+       (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
+                                 "%s"), !bVar5)) {
+      pcVar4 = (code *)swi(3);
+      (*pcVar4)();
+      return;
+    }
+    trace->hitType = TRACE_HITTYPE_NONE;
+    trace->hitId = 0;
+  }
+  else {
+    if ((trace == (trace_t *)0x0) &&
+       (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
+                                 "%s"), !bVar5)) {
+      pcVar4 = (code *)swi(3);
+      (*pcVar4)();
+      return;
+    }
+    trace->hitType = TRACE_HITTYPE_ENTITY;
+    trace->hitId = 0x3fe;
+  }
+  return;
+}
+
+
+// 006C26C0  trace_point_vs_env  (qcommon/cm_trace.cpp:3791)
+
+void __cdecl
+trace_point_vs_env(trace_t *trace,float *start,float *end,col_context_t *context,int *index_hint)
+
+{
+  trace_point_vs_env(trace,start,end,context,index_hint,&cm);
+  return;
+}
+
+
+// 006C26F0  trace_point_vs_env  (qcommon/cm_trace.cpp:3800)
+
+void __cdecl
+trace_point_vs_env(trace_t *trace,float *start,float *end,col_context_t *context,int *index_hint,
+                  uchar *pClipMap)
+
+{
+  trace_point_vs_env(trace,start,end,context,index_hint,(clipMap_t *)pClipMap);
+  return;
+}
+
+
+// 006C2720  trace_sphere_vs_env  (qcommon/cm_trace.cpp:3805)
+
+void __cdecl
+trace_sphere_vs_env(trace_t *trace,float *start,float *end,float radius,col_context_t *context,
+                   int *index_hint,clipMap_t *pClipMap)
+
+{
+  ushort *puVar1;
+  float fVar2;
+  cbrush_t *pcVar3;
+  code *pcVar4;
+  bool bVar5;
+  float (*pafVar6) [3];
+  float old_fraction_2;
+  I_spuDmaSave save_4;
+  cbrush_t *brush_2;
+  dmaterial_t *mat;
+  float old_fraction;
+  CollisionPartition *partition;
+  CollisionAabbTree *tree;
+  I_spuDmaSave save_3;
+  int i;
+  I_spuDmaSave save_2;
+  ushort *indicies;
+  int tid;
+  I_spuDmaSave save;
+  cbrush_t *brush;
+  float v0;
+  float local_98;
+  float local_94;
+  float dir;
+  float local_8c;
+  float local_88;
+  float v0_v2;
+  float local_80;
+  float local_7c;
+  col_prim_t *prim;
+  float mx;
+  float local_70;
+  float local_6c;
+  float bounds;
+  float local_64;
+  float local_60;
+  float local_5c;
+  float local_58;
+  float local_54;
+  float v2;
+  float local_4c;
+  float local_48;
+  bool bHintFound;
+  float boxSize;
+  float local_3c;
+  float local_38;
+  float v1;
+  float local_30;
+  float local_2c;
+  float mn;
+  float local_24;
+  float local_20;
+  float n;
+  float local_18;
+  float local_14;
+  float v0_v1;
+  float local_c;
+  float local_8;
+  
+  dir = *end - *start;
+  local_8c = end[1] - start[1];
+  local_88 = end[2] - start[2];
+  if ((((((uint)*start & 0x7f800000) == 0x7f800000) || (((uint)start[1] & 0x7f800000) == 0x7f800000)
+       ) || (((uint)start[2] & 0x7f800000) == 0x7f800000)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xee3,0,
+                               "%s"), !bVar5)) {
+    pcVar4 = (code *)swi(3);
+    (*pcVar4)();
+    return;
+  }
+  if ((((((uint)*end & 0x7f800000) == 0x7f800000) || (((uint)end[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)end[2] & 0x7f800000) == 0x7f800000)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xee4,0,
+                               "%s"), !bVar5)) {
+    pcVar4 = (code *)swi(3);
+    (*pcVar4)();
+    return;
+  }
+  if ((((((uint)dir & 0x7f800000) == 0x7f800000) || (((uint)local_8c & 0x7f800000) == 0x7f800000))
+      || (((uint)local_88 & 0x7f800000) == 0x7f800000)) &&
+     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0xee5,0,
+                               "%s"), !bVar5)) {
+    pcVar4 = (code *)swi(3);
+    (*pcVar4)();
+    return;
+  }
+  trace->fraction = 1.0;
+  bHintFound = false;
+  if (0 < *index_hint) {
+    if (*index_hint < (int)(uint)pClipMap->numBrushes) {
+      trace_sphere_through_brush
+                (start,&dir,&trace->fraction,radius,pClipMap->brushes + *index_hint,(float *)trace,
+                 &trace->sflags,pClipMap);
+      if (trace->fraction <= 1.0 && trace->fraction != 1.0) {
+        if ((trace == (trace_t *)0x0) &&
+           (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,
+                                     0,"%s"), !bVar5)) {
+          pcVar4 = (code *)swi(3);
+          (*pcVar4)();
+          return;
+        }
+        trace->hitType = TRACE_HITTYPE_ENTITY;
+        trace->hitId = 0x3fe;
+        bHintFound = true;
+      }
+    }
+    else {
+      puVar1 = pClipMap->triIndices + (*index_hint - (uint)pClipMap->numBrushes) * 3;
+      pafVar6 = pClipMap->verts + *puVar1;
+      v0 = (*pafVar6)[0];
+      local_98 = (*pafVar6)[1];
+      local_94 = (*pafVar6)[2];
+      pafVar6 = pClipMap->verts + puVar1[1];
+      v1 = (*pafVar6)[0];
+      local_30 = (*pafVar6)[1];
+      local_2c = (*pafVar6)[2];
+      pafVar6 = pClipMap->verts + puVar1[2];
+      v2 = (*pafVar6)[0];
+      local_4c = (*pafVar6)[1];
+      local_48 = (*pafVar6)[2];
+      v0_v1 = v0 - v1;
+      local_c = local_98 - local_30;
+      local_8 = local_94 - local_2c;
+      v0_v2 = v0 - v2;
+      local_80 = local_98 - local_4c;
+      local_7c = local_94 - local_48;
+      Vec3Cross(&v0_v2,&v0_v1,&n);
+      Vec3Normalize(&n);
+      bVar5 = trace_sphere_through_triangle(start,&dir,&trace->fraction,radius,&v0,&v1,&v2,&n);
+      if (bVar5) {
+        (trace->normal).vec.v[0] = n;
+        (trace->normal).vec.v[1] = local_18;
+        (trace->normal).vec.v[2] = local_14;
+        if ((trace == (trace_t *)0x0) &&
+           (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,
+                                     0,"%s"), !bVar5)) {
+          pcVar4 = (code *)swi(3);
+          (*pcVar4)();
+          return;
+        }
+        trace->hitType = TRACE_HITTYPE_ENTITY;
+        trace->hitId = 0x3fe;
+        bHintFound = true;
+      }
+    }
+  }
+  if (bHintFound == false) {
+    *index_hint = -1;
+  }
+  boxSize = radius;
+  local_3c = radius;
+  local_38 = radius;
+  Vec3Min(start,end,&bounds);
+  bounds = bounds - boxSize;
+  local_64 = local_64 - local_3c;
+  local_60 = local_60 - local_38;
+  Vec3Max(start,end,&local_5c);
+  local_5c = local_5c + boxSize;
+  local_58 = local_58 + local_3c;
+  local_54 = local_54 + local_38;
+  prim = context->prims;
+  for (i = 0; i < context->nprims; i = i + 1) {
+    if (prim->type == 0) {
+      pcVar3 = (prim->field1_0x4).brush;
+      mn = pcVar3->mins[0] - pcVar3->maxs[0];
+      local_24 = pcVar3->mins[1] - pcVar3->maxs[1];
+      local_20 = pcVar3->mins[2] - pcVar3->maxs[2];
+      mx = pcVar3->mins[0] + pcVar3->maxs[0];
+      local_70 = pcVar3->mins[1] + pcVar3->maxs[1];
+      local_6c = pcVar3->mins[2] + pcVar3->maxs[2];
+      if ((((mx < bounds) || (local_70 < local_64)) || (local_6c < local_60)) ||
+         (((local_5c < mn || (local_58 < local_24)) || (local_54 < local_20)))) {
+        bVar5 = false;
+      }
+      else {
+        bVar5 = true;
+      }
+      if ((bVar5) &&
+         (fVar2 = trace->fraction,
+         trace_sphere_through_partition
+                   (start,&dir,&trace->fraction,radius,pClipMap->partitions + pcVar3->numsides,
+                    (float *)trace,index_hint,pClipMap),
+         trace->fraction <= fVar2 && fVar2 != trace->fraction)) {
+        trace->sflags = pClipMap->materials[(ushort)pcVar3->contents].surfaceFlags;
+      }
+    }
+    else {
+      pcVar3 = (prim->field1_0x4).brush;
+      if ((((pcVar3->maxs[0] < bounds) || (pcVar3->maxs[1] < local_64)) ||
           (pcVar3->maxs[2] < local_60)) ||
          (((local_5c < pcVar3->mins[0] || (local_58 < pcVar3->mins[1])) ||
           (local_54 < pcVar3->mins[2])))) {
@@ -5856,37 +5960,36 @@ trace_sphere_vs_env(trace_t *param_1,float *param_2,float *param_3,float param_4
         bVar5 = true;
       }
       if ((bVar5) &&
-         (fVar2 = param_1->fraction,
+         (fVar2 = trace->fraction,
          trace_sphere_through_brush
-                   (param_2,&local_90,&param_1->fraction,param_4,pcVar3,(float *)param_1,
-                    &param_1->sflags,param_7),
-         param_1->fraction <= fVar2 && fVar2 != param_1->fraction)) {
-        *param_6 = ((int)(local_78->field1_0x4).tree - (int)param_7->brushes) / 0x60;
+                   (start,&dir,&trace->fraction,radius,pcVar3,(float *)trace,&trace->sflags,pClipMap
+                   ), trace->fraction <= fVar2 && fVar2 != trace->fraction)) {
+        *index_hint = ((int)(prim->field1_0x4).tree - (int)pClipMap->brushes) / 0x60;
       }
     }
-    local_78 = local_78 + 1;
+    prim = prim + 1;
   }
-  if (1.0 < param_1->fraction || param_1->fraction == 1.0) {
-    if ((param_1 == (trace_t *)0x0) &&
+  if (1.0 < trace->fraction || trace->fraction == 1.0) {
+    if ((trace == (trace_t *)0x0) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
                                  "%s"), !bVar5)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_NONE;
-    param_1->hitId = 0;
+    trace->hitType = TRACE_HITTYPE_NONE;
+    trace->hitId = 0;
   }
   else {
-    if ((param_1 == (trace_t *)0x0) &&
+    if ((trace == (trace_t *)0x0) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_public.h",0xaf,0,
                                  "%s"), !bVar5)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    param_1->hitType = TRACE_HITTYPE_ENTITY;
-    param_1->hitId = 0x3fe;
+    trace->hitType = TRACE_HITTYPE_ENTITY;
+    trace->hitId = 0x3fe;
   }
   return;
 }
@@ -5895,18 +5998,18 @@ trace_sphere_vs_env(trace_t *param_1,float *param_2,float *param_3,float param_4
 // 006C3160  trace_sphere_vs_env  (qcommon/cm_trace.cpp:3912)
 
 void __cdecl
-trace_sphere_vs_env(trace_t *param_1,float *param_2,float *param_3,float param_4,
-                   col_context_t *param_5,int *param_6,uchar *param_7)
+trace_sphere_vs_env(trace_t *trace,float *start,float *end,float radius,col_context_t *context,
+                   int *index_hint,uchar *pClipMap)
 
 {
-  trace_sphere_vs_env(param_1,param_2,param_3,param_4,param_5,param_6,(clipMap_t *)param_7);
+  trace_sphere_vs_env(trace,start,end,radius,context,index_hint,(clipMap_t *)pClipMap);
   return;
 }
 
 
 // 006C3190  collide_segment_brush  (qcommon/cm_trace.cpp:4092)
 
-int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_3)
+int __cdecl collide_segment_brush(float *p0,float *p1,cbrush_t *brush)
 
 {
   cplane_s *pcVar1;
@@ -5920,32 +6023,41 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
   float local_84;
   float local_80;
   float local_7c;
-  cbrushside_t *local_38;
-  int local_34;
-  float local_2c;
-  float local_1c;
-  cbrush_t *local_14;
-  float local_c;
-  uint local_8;
+  float diff;
+  float invDelta;
+  float d1;
+  cbrushside_t *side;
+  int j;
+  cplane_s *plane;
+  float enterFrac;
+  float delta;
+  float frac;
+  float dist;
+  float sign;
+  float d2;
+  float *bounds;
+  int index;
+  float leaveFrac;
+  int i;
   
-  local_2c = 0.0;
-  local_c = 1.0;
-  local_1c = -1.0;
-  local_14 = param_3;
+  enterFrac = 0.0;
+  leaveFrac = 1.0;
+  sign = -1.0;
+  bounds = brush->mins;
   bVar4 = false;
   while( true ) {
-    if ((((((uint)local_14->mins[0] & 0x7f800000) == 0x7f800000) ||
-         (((uint)local_14->mins[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)local_14->mins[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*bounds & 0x7f800000) == 0x7f800000) ||
+         (((uint)bounds[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)bounds[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x1015,0
                                  ,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    for (local_34 = 0; local_34 < 3; local_34 = local_34 + 1) {
-      fVar6 = (param_1[local_34] - local_14->mins[local_34]) * local_1c;
-      fVar7 = (param_2[local_34] - local_14->mins[local_34]) * local_1c;
+    for (j = 0; j < 3; j = j + 1) {
+      fVar6 = (p0[j] - bounds[j]) * sign;
+      fVar7 = (p1[j] - bounds[j]) * sign;
       if ((((uint)fVar6 & 0x7f800000) == 0x7f800000) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x101a
                                    ,0,"%s"), !bVar3)) {
@@ -5960,46 +6072,46 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
         iVar5 = (*pcVar2)();
         return iVar5;
       }
-      if (param_1[local_34] - param_2[local_34] == 0.0) {
+      if (p0[j] - p1[j] == 0.0) {
         local_7c = 0.0;
       }
       else {
-        local_7c = 1.0 / (param_1[local_34] - param_2[local_34]);
+        local_7c = 1.0 / (p0[j] - p1[j]);
       }
       if (fVar6 <= 0.0) {
         if (0.0 < fVar7) {
-          local_84 = fVar6 * local_7c * local_1c;
-          if (local_84 <= local_2c) {
+          local_84 = fVar6 * local_7c * sign;
+          if (local_84 <= enterFrac) {
             return 0;
           }
-          if (0.0 <= local_84 - local_c) {
-            local_84 = local_c;
+          if (0.0 <= local_84 - leaveFrac) {
+            local_84 = leaveFrac;
           }
-          local_c = local_84;
+          leaveFrac = local_84;
         }
       }
       else {
         if (0.0 < fVar7) {
           return 0;
         }
-        local_80 = fVar6 * local_7c * local_1c;
-        if (local_c <= local_80) {
+        local_80 = fVar6 * local_7c * sign;
+        if (leaveFrac <= local_80) {
           return 0;
         }
-        if (0.0 <= local_2c - local_80) {
-          local_80 = local_2c;
+        if (0.0 <= enterFrac - local_80) {
+          local_80 = enterFrac;
         }
-        local_2c = local_80;
+        enterFrac = local_80;
       }
     }
     if (bVar4) break;
-    local_1c = 1.0;
-    local_14 = (cbrush_t *)param_3->maxs;
+    sign = 1.0;
+    bounds = brush->maxs;
     bVar4 = true;
   }
-  local_8 = param_3->numsides;
-  local_38 = param_3->sides;
-  if (((int)local_8 < 0) &&
+  i = brush->numsides;
+  side = brush->sides;
+  if ((i < 0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x103c,0,
                                "%s"), !bVar4)) {
     pcVar2 = (code *)swi(3);
@@ -6007,10 +6119,10 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
     return iVar5;
   }
   while( true ) {
-    if (local_8 == 0) {
+    if (i == 0) {
       return 1;
     }
-    pcVar1 = local_38->plane;
+    pcVar1 = side->plane;
     if ((((uint)pcVar1->dist & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x1041,0
                                  ,"%s"), !bVar4)) {
@@ -6035,10 +6147,10 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
       iVar5 = (*pcVar2)();
       return iVar5;
     }
-    fVar7 = (*param_1 * pcVar1->normal[0] + param_1[1] * pcVar1->normal[1] +
-            param_1[2] * pcVar1->normal[2]) - fVar6;
-    fVar6 = (*param_2 * pcVar1->normal[0] + param_2[1] * pcVar1->normal[1] +
-            param_2[2] * pcVar1->normal[2]) - fVar6;
+    fVar7 = (*p0 * pcVar1->normal[0] + p0[1] * pcVar1->normal[1] + p0[2] * pcVar1->normal[2]) -
+            fVar6;
+    fVar6 = (*p1 * pcVar1->normal[0] + p1[1] * pcVar1->normal[1] + p1[2] * pcVar1->normal[2]) -
+            fVar6;
     if ((((uint)fVar7 & 0x7f800000) == 0x7f800000) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x104b,0
                                  ,"%s"), !bVar4)) break;
@@ -6059,7 +6171,7 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
           iVar5 = (*pcVar2)();
           return iVar5;
         }
-        if ((local_c * fVar6 < fVar7) && (local_c = fVar7 / fVar6, local_c <= local_2c)) {
+        if ((leaveFrac * fVar6 < fVar7) && (leaveFrac = fVar7 / fVar6, leaveFrac <= enterFrac)) {
           return 0;
         }
       }
@@ -6083,12 +6195,12 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
         iVar5 = (*pcVar2)();
         return iVar5;
       }
-      if ((local_2c * fVar8 < fVar7) && (local_2c = fVar7 / fVar8, local_c <= local_2c)) {
+      if ((enterFrac * fVar8 < fVar7) && (enterFrac = fVar7 / fVar8, leaveFrac <= enterFrac)) {
         return 0;
       }
     }
-    local_8 = local_8 - 1;
-    local_38 = local_38 + 1;
+    i = i + -1;
+    side = side + 1;
   }
   pcVar2 = (code *)swi(3);
   iVar5 = (*pcVar2)();
@@ -6098,57 +6210,59 @@ int __cdecl collide_segment_brush(float *param_1,float *param_2,cbrush_t *param_
 
 // 006C38F0  collide_segment_triangle  (qcommon/cm_trace.cpp:4205)
 
-int __cdecl
-collide_segment_triangle(float *param_1,float *param_2,float *param_3,float *param_4,float *param_5)
+int __cdecl collide_segment_triangle(float *p0,float *u0,float *v0,float *v1,float *v2)
 
 {
   int iVar1;
   float fVar2;
   float fVar3;
-  float local_54;
+  float b_;
+  float det;
+  float c2;
   float local_50;
   float local_4c;
-  float local_48;
+  float c1;
   float local_44;
   float local_40;
-  float local_3c;
+  float rs;
   float local_38;
   float local_34;
-  float local_30;
+  float cr_rs_c2;
   float local_2c;
   float local_28;
-  float local_20;
+  float a_;
+  float c0;
   float local_1c;
   float local_18;
-  float local_14;
+  float cr_c0_c1;
   float local_10;
   float local_c;
-  float local_8;
+  float t_;
   
-  local_20 = *param_4 - *param_3;
-  local_1c = param_4[1] - param_3[1];
-  local_18 = param_4[2] - param_3[2];
-  local_48 = *param_5 - *param_3;
-  local_44 = param_5[1] - param_3[1];
-  local_40 = param_5[2] - param_3[2];
-  local_54 = -*param_2;
-  local_50 = -param_2[1];
-  local_4c = -param_2[2];
-  Vec3Cross(&local_20,&local_48,&local_14);
-  fVar2 = local_14 * local_54 + local_10 * local_50 + local_c * local_4c;
+  c0 = *v1 - *v0;
+  local_1c = v1[1] - v0[1];
+  local_18 = v1[2] - v0[2];
+  c1 = *v2 - *v0;
+  local_44 = v2[1] - v0[1];
+  local_40 = v2[2] - v0[2];
+  c2 = -*u0;
+  local_50 = -u0[1];
+  local_4c = -u0[2];
+  Vec3Cross(&c0,&c1,&cr_c0_c1);
+  fVar2 = cr_c0_c1 * c2 + local_10 * local_50 + local_c * local_4c;
   if (0.0001 <= ABS(fVar2)) {
-    local_3c = *param_1 - *param_3;
-    local_38 = param_1[1] - param_3[1];
-    local_34 = param_1[2] - param_3[2];
-    local_8 = (local_14 * local_3c + local_10 * local_38 + local_c * local_34) / fVar2;
-    if ((local_8 < 0.0) || (1.0 < local_8)) {
+    rs = *p0 - *v0;
+    local_38 = p0[1] - v0[1];
+    local_34 = p0[2] - v0[2];
+    t_ = (cr_c0_c1 * rs + local_10 * local_38 + local_c * local_34) / fVar2;
+    if ((t_ < 0.0) || (1.0 < t_)) {
       iVar1 = 0;
     }
     else {
-      Vec3Cross(&local_3c,&local_54,&local_30);
-      fVar3 = -(local_30 * local_48 + local_2c * local_44 + local_28 * local_40) / fVar2;
+      Vec3Cross(&rs,&c2,&cr_rs_c2);
+      fVar3 = -(cr_rs_c2 * c1 + local_2c * local_44 + local_28 * local_40) / fVar2;
       if (0.0 <= fVar3) {
-        fVar2 = (local_30 * local_20 + local_2c * local_1c + local_28 * local_18) / fVar2;
+        fVar2 = (cr_rs_c2 * c0 + local_2c * local_1c + local_28 * local_18) / fVar2;
         if ((fVar2 < 0.0) || (1.0 < fVar3 + fVar2)) {
           iVar1 = 0;
         }
@@ -6170,7 +6284,7 @@ collide_segment_triangle(float *param_1,float *param_2,float *param_3,float *par
 
 // 006C3B60  collide_segment  (qcommon/cm_trace.cpp:4241)
 
-int __cdecl collide_segment(float *param_1,float *param_2,col_context_t *param_3)
+int __cdecl collide_segment(float *p0,float *p1,col_context_t *context)
 
 {
   CollisionAabbTree *pCVar1;
@@ -6179,95 +6293,96 @@ int __cdecl collide_segment(float *param_1,float *param_2,col_context_t *param_3
   int iVar4;
   CollisionPartition *pCVar5;
   float (*pafVar6) [3];
-  int local_98;
-  int local_90;
-  float local_8c;
+  int ti;
+  CollisionPartition *partition;
+  int i;
+  float v0;
   float local_88;
   float local_84;
-  float local_80;
+  float ud;
   float local_7c;
   float local_78;
-  float local_74;
+  float v0_v2;
   float local_70;
   float local_6c;
-  col_prim_t *local_68;
-  float local_64;
+  col_prim_t *prim;
+  float mx;
   float local_60;
   float local_5c;
-  float local_58;
+  float v2;
   float local_54;
   float local_50;
-  float local_4c;
+  float bounds;
   float local_48;
   float local_44;
   float local_40;
   float local_3c;
   float local_38;
-  float local_34;
+  float v1;
   float local_30;
   float local_2c;
-  float local_28 [3];
-  float local_1c;
+  float n [3];
+  float mn;
   float local_18;
   float local_14;
-  float local_10;
+  float v0_v1;
   float local_c;
   float local_8;
   
-  local_68 = param_3->prims;
-  local_80 = *param_2 - *param_1;
-  local_7c = param_2[1] - param_1[1];
-  local_78 = param_2[2] - param_1[2];
-  Vec3Min(param_1,param_2,&local_4c);
-  Vec3Max(param_1,param_2,&local_40);
-  local_90 = 0;
+  prim = context->prims;
+  ud = *p1 - *p0;
+  local_7c = p1[1] - p0[1];
+  local_78 = p1[2] - p0[2];
+  Vec3Min(p0,p1,&bounds);
+  Vec3Max(p0,p1,&local_40);
+  i = 0;
   do {
-    if (param_3->nprims <= local_90) {
+    if (context->nprims <= i) {
       return 0;
     }
-    if (local_68->type == 0) {
-      pCVar1 = (local_68->field1_0x4).tree;
-      pCVar2 = (local_68->field1_0x4).tree;
-      local_1c = pCVar2->origin[0] - pCVar1->halfSize[0];
+    if (prim->type == 0) {
+      pCVar1 = (prim->field1_0x4).tree;
+      pCVar2 = (prim->field1_0x4).tree;
+      mn = pCVar2->origin[0] - pCVar1->halfSize[0];
       local_18 = pCVar2->origin[1] - pCVar1->halfSize[1];
       local_14 = pCVar2->origin[2] - pCVar1->halfSize[2];
-      pCVar1 = (local_68->field1_0x4).tree;
-      pCVar2 = (local_68->field1_0x4).tree;
-      local_64 = pCVar2->origin[0] + pCVar1->halfSize[0];
+      pCVar1 = (prim->field1_0x4).tree;
+      pCVar2 = (prim->field1_0x4).tree;
+      mx = pCVar2->origin[0] + pCVar1->halfSize[0];
       local_60 = pCVar2->origin[1] + pCVar1->halfSize[1];
       local_5c = pCVar2->origin[2] + pCVar1->halfSize[2];
-      if ((((local_64 < local_4c) || (local_60 < local_48)) || (local_5c < local_44)) ||
-         (((local_40 < local_1c || (local_3c < local_18)) || (local_38 < local_14)))) {
+      if ((((mx < bounds) || (local_60 < local_48)) || (local_5c < local_44)) ||
+         (((local_40 < mn || (local_3c < local_18)) || (local_38 < local_14)))) {
         bVar3 = false;
       }
       else {
         bVar3 = true;
       }
       if (bVar3) {
-        pCVar5 = cm.partitions + ((local_68->field1_0x4).brush)->numsides;
-        for (local_98 = pCVar5->firstTri;
-            local_98 < (int)((uint)pCVar5->triCount + pCVar5->firstTri); local_98 = local_98 + 1) {
-          pafVar6 = cm.verts + cm.triIndices[local_98 * 3];
-          local_8c = (*pafVar6)[0];
+        pCVar5 = cm.partitions + ((prim->field1_0x4).brush)->numsides;
+        for (ti = pCVar5->firstTri; ti < (int)((uint)pCVar5->triCount + pCVar5->firstTri);
+            ti = ti + 1) {
+          pafVar6 = cm.verts + cm.triIndices[ti * 3];
+          v0 = (*pafVar6)[0];
           local_88 = (*pafVar6)[1];
           local_84 = (*pafVar6)[2];
-          pafVar6 = cm.verts + cm.triIndices[local_98 * 3 + 1];
-          local_34 = (*pafVar6)[0];
+          pafVar6 = cm.verts + cm.triIndices[ti * 3 + 1];
+          v1 = (*pafVar6)[0];
           local_30 = (*pafVar6)[1];
           local_2c = (*pafVar6)[2];
-          pafVar6 = cm.verts + cm.triIndices[local_98 * 3 + 2];
-          local_58 = (*pafVar6)[0];
+          pafVar6 = cm.verts + cm.triIndices[ti * 3 + 2];
+          v2 = (*pafVar6)[0];
           local_54 = (*pafVar6)[1];
           local_50 = (*pafVar6)[2];
-          local_10 = local_8c - local_34;
+          v0_v1 = v0 - v1;
           local_c = local_88 - local_30;
           local_8 = local_84 - local_2c;
-          local_74 = local_8c - local_58;
+          v0_v2 = v0 - v2;
           local_70 = local_88 - local_54;
           local_6c = local_84 - local_50;
-          Vec3Cross(&local_74,&local_10,local_28);
-          Vec3Normalize(local_28);
-          iVar4 = collide_segment_triangle(param_1,&local_80,&local_8c,&local_34,&local_58);
+          Vec3Cross(&v0_v2,&v0_v1,n);
+          Vec3Normalize(n);
+          iVar4 = collide_segment_triangle(p0,&ud,&v0,&v1,&v2);
           if (iVar4 != 0) {
             return 1;
           }
@@ -6275,20 +6390,20 @@ int __cdecl collide_segment(float *param_1,float *param_2,col_context_t *param_3
       }
     }
     else {
-      iVar4 = collide_segment_brush(param_1,param_2,(local_68->field1_0x4).brush);
+      iVar4 = collide_segment_brush(p0,p1,(prim->field1_0x4).brush);
       if (iVar4 != 0) {
         return 1;
       }
     }
-    local_90 = local_90 + 1;
-    local_68 = local_68 + 1;
+    i = i + 1;
+    prim = prim + 1;
   } while( true );
 }
 
 
 // 006C3FB0  CM_TestPointInBrushModel  (qcommon/cm_trace.cpp:4286)
 
-bool __cdecl CM_TestPointInBrushModel(float *param_1,int param_2,float *param_3)
+bool __cdecl CM_TestPointInBrushModel(float *point,int brushmodel,float *trans)
 
 {
   cplane_s *pcVar1;
@@ -6299,13 +6414,21 @@ bool __cdecl CM_TestPointInBrushModel(float *param_1,int param_2,float *param_3)
   float fVar6;
   float fVar7;
   float fVar8;
-  uint local_2c;
+  cplane_s *plane;
+  float d;
+  uint i;
+  cLeafBrushNode_s *node;
+  I_spuDmaSave save;
+  cbrush_t *brush;
+  cmodel_t *cmod;
+  ushort *brushes;
+  int brushnum;
   
-  pcVar3 = CM_ClipHandleToModel(param_2);
+  pcVar3 = CM_ClipHandleToModel(brushmodel);
   pcVar4 = cm.brushes + **(ushort **)&cm.leafbrushNodes[(pcVar3->leaf).leafBrushNode].data;
-  fVar5 = *param_1 - *param_3;
-  fVar6 = param_1[1] - param_3[1];
-  fVar7 = param_1[2] - param_3[2];
+  fVar5 = *point - *trans;
+  fVar6 = point[1] - trans[1];
+  fVar7 = point[2] - trans[2];
   if (((pcVar4->maxs[0] <= fVar5) || (pcVar4->maxs[1] <= fVar6)) || (pcVar4->maxs[2] <= fVar7)) {
     bVar2 = false;
   }
@@ -6314,8 +6437,8 @@ bool __cdecl CM_TestPointInBrushModel(float *param_1,int param_2,float *param_3)
     bVar2 = false;
   }
   else {
-    for (local_2c = 0; local_2c < pcVar4->numsides; local_2c = local_2c + 1) {
-      pcVar1 = pcVar4->sides[local_2c].plane;
+    for (i = 0; i < pcVar4->numsides; i = i + 1) {
+      pcVar1 = pcVar4->sides[i].plane;
       fVar8 = fVar5 * pcVar1->normal[0] + fVar6 * pcVar1->normal[1] + fVar7 * pcVar1->normal[2];
       if (pcVar1->dist <= fVar8 && fVar8 != pcVar1->dist) {
         return false;
@@ -6329,48 +6452,49 @@ bool __cdecl CM_TestPointInBrushModel(float *param_1,int param_2,float *param_3)
 
 // 006C4130  CM_GetWaterForce  (qcommon/cm_trace.cpp:4315)
 
-bool __cdecl CM_GetWaterForce(float *param_1,float *param_2,float *param_3)
+bool __cdecl CM_GetWaterForce(float *pt,float *dir,float *force)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int local_8;
+  int brushmodel;
+  int i;
   
-  if ((param_1 == (float *)0x0) &&
+  if ((pt == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x10dc,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 == (float *)0x0) &&
+  if ((dir == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x10dd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((force == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x10de,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (num_undertow_volumes <= local_8) {
+    if (num_undertow_volumes <= i) {
       return false;
     }
-    bVar2 = CM_TestPointInBrushModel(param_1,undertow_volumes[local_8],undertow_origins[local_8]);
+    bVar2 = CM_TestPointInBrushModel(pt,undertow_volumes[i],undertow_origins[i]);
     if (bVar2) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  *param_2 = undertow_forces[local_8][0];
-  param_2[1] = undertow_forces[local_8][1];
-  param_2[2] = undertow_forces[local_8][2];
-  *param_3 = undertow_forces[local_8][3];
+  *dir = undertow_forces[i][0];
+  dir[1] = undertow_forces[i][1];
+  dir[2] = undertow_forces[i][2];
+  *force = undertow_forces[i][3];
   return true;
 }
 
@@ -6379,65 +6503,66 @@ bool __cdecl CM_GetWaterForce(float *param_1,float *param_2,float *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl CM_GetHeliHeight(float *param_1,float param_2,float *param_3)
+bool __cdecl CM_GetHeliHeight(float *pt,float checkdist,float *result)
 
 {
-  uint uVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  float4 local_68;
+  uint model;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  int brushmodel;
+  float4 results;
   float local_58;
   undefined2 local_42;
   uint local_30;
-  int local_2c;
-  float local_28 [2];
+  int i;
+  float helipt [2];
   float local_20;
-  float local_1c;
+  float start;
   float local_18;
   float local_14;
-  float local_10;
+  float end;
   float local_c;
   float local_8;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == (float *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x10f4,0,
-                               "%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    uVar4 = (*pcVar2)();
-    return (bool)uVar4;
+  if ((result == (float *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cm_trace.cpp",0x10f4,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    uVar3 = (*pcVar1)();
+    return (bool)uVar3;
   }
-  local_1c = *param_1;
-  local_18 = param_1[1];
-  local_10 = *param_1;
-  local_c = param_1[1];
-  local_14 = param_1[2] + param_2;
-  local_8 = param_1[2] - param_2;
-  local_2c = 0;
+  start = *pt;
+  local_18 = pt[1];
+  end = *pt;
+  local_c = pt[1];
+  local_14 = pt[2] + checkdist;
+  local_8 = pt[2] - checkdist;
+  i = 0;
   do {
-    if (num_heli_height_lock_patches <= local_2c) {
+    if (num_heli_height_lock_patches <= i) {
       return false;
     }
-    if (heli_height_lock_patches[local_2c].enabled != 0) {
-      uVar1 = heli_height_lock_patches[local_2c].brushmodel;
-      local_68.v[0] = 0.0;
-      local_68.v[1] = 0.0;
-      local_68.v[2] = 0.0;
-      local_68.v[3] = 0.0;
-      memset((uchar *)local_68.u,'\0',0x38);
+    if (heli_height_lock_patches[i].enabled != 0) {
+      model = heli_height_lock_patches[i].brushmodel;
+      results.v[0] = 0.0;
+      results.v[1] = 0.0;
+      results.v[2] = 0.0;
+      results.v[3] = 0.0;
+      memset((uchar *)results.u,'\0',0x38);
       local_58 = 1.0;
       local_42 = 0xfe;
       CM_TransformedBoxTrace
-                ((trace_t *)&local_68,&local_1c,&local_10,vec3_origin,vec3_origin,uVar1,-1,
-                 heli_height_lock_patches[local_2c].origin,vec3_origin);
+                ((trace_t *)&results,&start,&end,vec3_origin,vec3_origin,model,-1,
+                 heli_height_lock_patches[i].origin,vec3_origin);
       if (local_58 != 1.0) {
-        Vec3Lerp(&local_1c,&local_10,local_58,local_28);
-        *param_3 = local_20;
+        Vec3Lerp(&start,&end,local_58,helipt);
+        *result = local_20;
         return true;
       }
     }
-    local_2c = local_2c + 1;
+    i = i + 1;
   } while( true );
 }
 

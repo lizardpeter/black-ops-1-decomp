@@ -2,7 +2,7 @@
 
 // 00B14720  R_SetViewParmsForLight  (gfx_d3d/r_spotshadow.cpp:18)
 
-void __cdecl R_SetViewParmsForLight(GfxLight *param_1,GfxViewParms *param_2,float param_3)
+void __cdecl R_SetViewParmsForLight(GfxLight *light,GfxViewParms *viewParms,float nearPlaneBias)
 
 {
   float fVar1;
@@ -26,24 +26,24 @@ void __cdecl R_SetViewParmsForLight(GfxLight *param_1,GfxViewParms *param_2,floa
   float *local_18;
   float (*local_14) [3];
   
-  local_14 = param_2->axis;
-  local_18 = param_1->dir;
+  local_14 = viewParms->axis;
+  local_18 = light->dir;
   (*local_14)[0] = -*local_18;
-  param_2->axis[0][1] = -param_1->dir[1];
-  param_2->axis[0][2] = -param_1->dir[2];
-  PerpendicularVector(param_2->axis[0],param_2->axis[2]);
-  Vec3Cross(param_2->axis[2],param_2->axis[0],param_2->axis[1]);
-  local_1c = param_2->origin;
-  local_20 = param_1->origin;
+  viewParms->axis[0][1] = -light->dir[1];
+  viewParms->axis[0][2] = -light->dir[2];
+  PerpendicularVector(viewParms->axis[0],viewParms->axis[2]);
+  Vec3Cross(viewParms->axis[2],viewParms->axis[0],viewParms->axis[1]);
+  local_1c = viewParms->origin;
+  local_20 = light->origin;
   *local_1c = *local_20;
-  param_2->origin[1] = param_1->origin[1];
-  param_2->origin[2] = param_1->origin[2];
-  param_2->origin[3] = 1.0;
-  MatrixForViewer(param_2->origin,param_2->axis,(float (*) [4])local_60);
+  viewParms->origin[1] = light->origin[1];
+  viewParms->origin[2] = light->origin[2];
+  viewParms->origin[3] = 1.0;
+  MatrixForViewer(viewParms->origin,viewParms->axis,(float (*) [4])local_60);
   memset((uchar *)&local_a0,'\0',0x40);
-  dVar4 = (double)param_1->angles[2];
+  dVar4 = (double)light->angles[2];
   __libm_sse2_sin((double)CONCAT44(in_stack_ffffff34,in_stack_ffffff30));
-  dVar5 = (double)param_1->angles[2];
+  dVar5 = (double)light->angles[2];
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff34,in_stack_ffffff30));
   local_a0 = (float)dVar5;
   local_9c = -(float)dVar4;
@@ -51,26 +51,26 @@ void __cdecl R_SetViewParmsForLight(GfxLight *param_1,GfxViewParms *param_2,floa
   local_64 = 0x3f800000;
   local_90 = (float)dVar4;
   local_8c = local_a0;
-  MatrixMultiply44((float (*) [4])local_60,(float (*) [4])&local_a0,(float (*) [4])param_2);
+  MatrixMultiply44((float (*) [4])local_60,(float (*) [4])&local_a0,(float (*) [4])viewParms);
   if ((sm_showSpotAxis->current).enabled != false) {
-    R_AddDebugAxis(&frontEndDataOut->debugGlobals,param_2->origin,param_2->axis,100.0,1);
+    R_AddDebugAxis(&frontEndDataOut->debugGlobals,viewParms->origin,viewParms->axis,100.0,1);
   }
-  if ((param_1->canUseShadowMap == '\0') &&
+  if ((light->canUseShadowMap == '\0') &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x3c,0
                                ,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1->cosHalfFovOuter <= 0.0) ||
-      (1.0 < param_1->cosHalfFovOuter || param_1->cosHalfFovOuter == 1.0)) &&
+  if (((light->cosHalfFovOuter <= 0.0) ||
+      (1.0 < light->cosHalfFovOuter || light->cosHalfFovOuter == 1.0)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x3d,0
                                ,"%s\n\t(light->cosHalfFovOuter) = %g"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  fVar1 = param_1->cosHalfFovOuter;
+  fVar1 = light->cosHalfFovOuter;
   local_c0 = fVar1;
   if (0.0 <= fVar1 - 0.999) {
     local_c0 = 0.999;
@@ -83,10 +83,10 @@ void __cdecl R_SetViewParmsForLight(GfxLight *param_1,GfxViewParms *param_2,floa
   }
   local_c4 = SQRT(1.0 - local_c4 * local_c4) / local_c4;
   FinitePerspectiveMatrix
-            (local_c4,local_c4,param_3 + 1.0,param_1->radius,
-             (float (*) [4])&param_2->projectionMatrix);
-  R_SetupViewProjectionMatrices(param_2,false);
-  param_2->depthHackNearClip = (param_2->projectionMatrix).m[3][2];
+            (local_c4,local_c4,nearPlaneBias + 1.0,light->radius,
+             (float (*) [4])&viewParms->projectionMatrix);
+  R_SetupViewProjectionMatrices(viewParms,false);
+  viewParms->depthHackNearClip = (viewParms->projectionMatrix).m[3][2];
   return;
 }
 
@@ -95,8 +95,8 @@ void __cdecl R_SetViewParmsForLight(GfxLight *param_1,GfxViewParms *param_2,floa
 
 void __cdecl
 R_GetSpotShadowLookupMatrix
-          (GfxViewParms *param_1,int param_2,int param_3,uint param_4,uint param_5,
-          GfxMatrix *param_6)
+          (GfxViewParms *shadowViewParms,int usingGridTiling,int usingFullShadowBuffer,
+          uint spotShadowIndex,uint tileCount,GfxMatrix *lookupMatrix)
 
 {
   code *pcVar1;
@@ -105,128 +105,136 @@ R_GetSpotShadowLookupMatrix
   float fVar4;
   float fVar5;
   float fVar6;
-  float local_24;
-  float local_1c;
-  float local_10;
-  float local_c;
+  float gridCellSizeTS;
+  uint tIndex;
+  uint sIndex;
+  float x0;
+  float xScale;
+  float x1;
+  float xShift;
+  float yShift;
+  float y1;
+  float y0;
+  float yScale;
   
-  if ((param_5 == 0) &&
+  if ((tileCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x53,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 == 0) {
-    local_24 = 0.0;
-    local_1c = 1.0;
-    local_10 = (1.0 / (float)param_5) * (float)param_4;
-    local_c = 1.0 / (float)param_5 + local_10;
+  if (usingGridTiling == 0) {
+    x0 = 0.0;
+    x1 = 1.0;
+    y1 = (1.0 / (float)tileCount) * (float)spotShadowIndex;
+    y0 = 1.0 / (float)tileCount + y1;
   }
-  else if (param_3 == 0) {
-    local_24 = (float)(param_4 + (param_4 >> 1) * -2) * 0.5;
-    local_1c = local_24 + 0.5;
-    local_10 = (float)(param_4 >> 1) * 0.5;
-    local_c = local_10 + 0.5;
+  else if (usingFullShadowBuffer == 0) {
+    x0 = (float)(spotShadowIndex + (spotShadowIndex >> 1) * -2) * 0.5;
+    x1 = x0 + 0.5;
+    y1 = (float)(spotShadowIndex >> 1) * 0.5;
+    y0 = y1 + 0.5;
   }
   else {
-    local_24 = 0.0;
-    local_1c = 1.0;
-    local_10 = 0.0;
-    local_c = 1.0;
+    x0 = 0.0;
+    x1 = 1.0;
+    y1 = 0.0;
+    y0 = 1.0;
   }
-  fVar3 = (local_1c - local_24) * 0.5;
-  fVar4 = (local_1c + local_24) * 0.5;
-  fVar5 = (local_10 - local_c) * 0.5;
-  fVar6 = (local_10 + local_c) * 0.5;
-  param_6->m[0][0] =
-       (param_1->viewProjectionMatrix).m[0][0] * fVar3 +
-       (param_1->viewProjectionMatrix).m[0][3] * fVar4;
-  param_6->m[1][0] =
-       (param_1->viewProjectionMatrix).m[1][0] * fVar3 +
-       (param_1->viewProjectionMatrix).m[1][3] * fVar4;
-  param_6->m[2][0] =
-       (param_1->viewProjectionMatrix).m[2][0] * fVar3 +
-       (param_1->viewProjectionMatrix).m[2][3] * fVar4;
-  param_6->m[3][0] =
-       (param_1->viewProjectionMatrix).m[3][0] * fVar3 +
-       (param_1->viewProjectionMatrix).m[3][3] * fVar4;
-  param_6->m[0][1] =
-       (param_1->viewProjectionMatrix).m[0][1] * fVar5 +
-       (param_1->viewProjectionMatrix).m[0][3] * fVar6;
-  param_6->m[1][1] =
-       (param_1->viewProjectionMatrix).m[1][1] * fVar5 +
-       (param_1->viewProjectionMatrix).m[1][3] * fVar6;
-  param_6->m[2][1] =
-       (param_1->viewProjectionMatrix).m[2][1] * fVar5 +
-       (param_1->viewProjectionMatrix).m[2][3] * fVar6;
-  param_6->m[3][1] =
-       (param_1->viewProjectionMatrix).m[3][1] * fVar5 +
-       (param_1->viewProjectionMatrix).m[3][3] * fVar6;
-  param_6->m[0][2] = (param_1->viewProjectionMatrix).m[0][2];
-  param_6->m[1][2] = (param_1->viewProjectionMatrix).m[1][2];
-  param_6->m[2][2] = (param_1->viewProjectionMatrix).m[2][2];
-  param_6->m[3][2] = (param_1->viewProjectionMatrix).m[3][2];
-  param_6->m[0][3] = (param_1->viewProjectionMatrix).m[0][3];
-  param_6->m[1][3] = (param_1->viewProjectionMatrix).m[1][3];
-  param_6->m[2][3] = (param_1->viewProjectionMatrix).m[2][3];
-  param_6->m[3][3] = (param_1->viewProjectionMatrix).m[3][3];
+  fVar3 = (x1 - x0) * 0.5;
+  fVar4 = (x1 + x0) * 0.5;
+  fVar5 = (y1 - y0) * 0.5;
+  fVar6 = (y1 + y0) * 0.5;
+  lookupMatrix->m[0][0] =
+       (shadowViewParms->viewProjectionMatrix).m[0][0] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[0][3] * fVar4;
+  lookupMatrix->m[1][0] =
+       (shadowViewParms->viewProjectionMatrix).m[1][0] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[1][3] * fVar4;
+  lookupMatrix->m[2][0] =
+       (shadowViewParms->viewProjectionMatrix).m[2][0] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[2][3] * fVar4;
+  lookupMatrix->m[3][0] =
+       (shadowViewParms->viewProjectionMatrix).m[3][0] * fVar3 +
+       (shadowViewParms->viewProjectionMatrix).m[3][3] * fVar4;
+  lookupMatrix->m[0][1] =
+       (shadowViewParms->viewProjectionMatrix).m[0][1] * fVar5 +
+       (shadowViewParms->viewProjectionMatrix).m[0][3] * fVar6;
+  lookupMatrix->m[1][1] =
+       (shadowViewParms->viewProjectionMatrix).m[1][1] * fVar5 +
+       (shadowViewParms->viewProjectionMatrix).m[1][3] * fVar6;
+  lookupMatrix->m[2][1] =
+       (shadowViewParms->viewProjectionMatrix).m[2][1] * fVar5 +
+       (shadowViewParms->viewProjectionMatrix).m[2][3] * fVar6;
+  lookupMatrix->m[3][1] =
+       (shadowViewParms->viewProjectionMatrix).m[3][1] * fVar5 +
+       (shadowViewParms->viewProjectionMatrix).m[3][3] * fVar6;
+  lookupMatrix->m[0][2] = (shadowViewParms->viewProjectionMatrix).m[0][2];
+  lookupMatrix->m[1][2] = (shadowViewParms->viewProjectionMatrix).m[1][2];
+  lookupMatrix->m[2][2] = (shadowViewParms->viewProjectionMatrix).m[2][2];
+  lookupMatrix->m[3][2] = (shadowViewParms->viewProjectionMatrix).m[3][2];
+  lookupMatrix->m[0][3] = (shadowViewParms->viewProjectionMatrix).m[0][3];
+  lookupMatrix->m[1][3] = (shadowViewParms->viewProjectionMatrix).m[1][3];
+  lookupMatrix->m[2][3] = (shadowViewParms->viewProjectionMatrix).m[2][3];
+  lookupMatrix->m[3][3] = (shadowViewParms->viewProjectionMatrix).m[3][3];
   return;
 }
 
 
 // 00B14120  R_AddSpotShadowEntCmd  (gfx_d3d/r_spotshadow.cpp:150)
 
-void __cdecl R_AddSpotShadowEntCmd(void *param_1)
+void __cdecl R_AddSpotShadowEntCmd(void *data)
 
 {
   code *pcVar1;
   bool bVar2;
-  DObjAnimMat *pDVar3;
-  DObj *local_30;
-  GfxSceneEntity *local_2c;
-  int local_28;
-  float local_24;
+  DObjAnimMat *boneMatrix_00;
+  DObjAnimMat *boneMatrix;
+  DObj *obj;
+  GfxSceneEntity *localSceneEnt;
+  GfxLight *localLight;
+  float boxHalfSize;
   float local_20;
   float local_1c;
-  GfxSceneEntity *local_18;
-  float local_14;
+  GfxSceneEntity *sceneEnt;
+  float boxCenter;
   float local_10;
   float local_c;
-  void *local_8;
+  GfxSpotShadowEntCmd *cmd;
   
-  local_8 = param_1;
-  local_18 = *(GfxSceneEntity **)param_1;
-  pDVar3 = R_UpdateSceneEntBounds(local_18,&local_2c,&local_30,1);
-  if (pDVar3 == (DObjAnimMat *)0x0) {
-    if (local_2c != (GfxSceneEntity *)0x0) {
-      CG_UsedDObjCalcPose((local_2c->info).pose);
+  cmd = data;
+  sceneEnt = *(GfxSceneEntity **)data;
+  boneMatrix_00 = R_UpdateSceneEntBounds(sceneEnt,&localSceneEnt,&obj,1);
+  if (boneMatrix_00 == (DObjAnimMat *)0x0) {
+    if (localSceneEnt != (GfxSceneEntity *)0x0) {
+      CG_UsedDObjCalcPose((localSceneEnt->info).pose);
     }
   }
   else {
-    if ((local_2c == (GfxSceneEntity *)0x0) &&
+    if ((localSceneEnt == (GfxSceneEntity *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0xb3
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_28 = *(int *)((int)local_8 + 4);
-    local_14 = ((local_2c->cull).mins[0] + (local_2c->cull).maxs[0]) * 0.5;
-    local_10 = ((local_2c->cull).mins[1] + (local_2c->cull).maxs[1]) * 0.5;
-    local_c = ((local_2c->cull).mins[2] + (local_2c->cull).maxs[2]) * 0.5;
-    local_24 = local_14 - (local_2c->cull).mins[0];
-    local_20 = local_10 - (local_2c->cull).mins[1];
-    local_1c = local_c - (local_2c->cull).mins[2];
-    bVar2 = CullBoxFromCone((float *)(local_28 + 0x1c),(float *)(local_28 + 0x10),
-                            *(float *)(local_28 + 0x2c),&local_14,&local_24);
+    localLight = cmd->light;
+    boxCenter = ((localSceneEnt->cull).mins[0] + (localSceneEnt->cull).maxs[0]) * 0.5;
+    local_10 = ((localSceneEnt->cull).mins[1] + (localSceneEnt->cull).maxs[1]) * 0.5;
+    local_c = ((localSceneEnt->cull).mins[2] + (localSceneEnt->cull).maxs[2]) * 0.5;
+    boxHalfSize = boxCenter - (localSceneEnt->cull).mins[0];
+    local_20 = local_10 - (localSceneEnt->cull).mins[1];
+    local_1c = local_c - (localSceneEnt->cull).mins[2];
+    bVar2 = CullBoxFromCone(localLight->origin,localLight->dir,localLight->cosHalfFovOuter,
+                            &boxCenter,&boxHalfSize);
     if (bVar2) {
-      CG_UsedDObjCalcPose((local_2c->info).pose);
+      CG_UsedDObjCalcPose((localSceneEnt->info).pose);
     }
     else {
-      CG_CullIn((local_2c->info).pose);
-      R_SkinSceneDObj(local_18,local_2c,local_30,pDVar3,0);
-      R_AddSceneDObj((uint)local_2c->entnum,*(int *)(local_28 + 0x38) + 3);
+      CG_CullIn((localSceneEnt->info).pose);
+      R_SkinSceneDObj(sceneEnt,localSceneEnt,obj,boneMatrix_00,0);
+      R_AddSceneDObj((uint)localSceneEnt->entnum,localLight->spotShadowIndex + 3);
     }
   }
   return;
@@ -237,42 +245,47 @@ void __cdecl R_AddSpotShadowEntCmd(void *param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl R_AddSpotShadowModelEntities(int param_1,uint param_2,GfxLight *param_3)
+void __cdecl R_AddSpotShadowModelEntities(int localClientNum,uint primaryLightIndex,GfxLight *light)
 
 {
   int iVar1;
   uint uVar2;
-  GfxEntity *local_1c;
-  int local_18;
-  int local_c;
+  GfxSceneModel *sceneModel;
+  GfxEntity *gfxEnt;
+  int sceneEntIndex;
+  uint gfxEntIndex;
+  uint entnum;
+  int cmd;
   GfxLight *local_8;
   
-  local_1c = (GfxEntity *)0x0;
-  local_8 = param_3;
-  for (local_18 = 0; local_18 < scene.sceneDObjCount; local_18 = local_18 + 1) {
-    local_c = local_18 * 0x84 + 0xa9ce830;
-    uVar2 = (uint)scene.sceneDObj[local_18].gfxEntIndex;
+  gfxEnt = (GfxEntity *)0x0;
+  local_8 = light;
+  for (sceneEntIndex = 0; sceneEntIndex < scene.sceneDObjCount; sceneEntIndex = sceneEntIndex + 1) {
+    cmd = sceneEntIndex * 0x84 + 0xa9ce830;
+    uVar2 = (uint)scene.sceneDObj[sceneEntIndex].gfxEntIndex;
     if ((uVar2 == 0) ||
-       (local_1c = frontEndDataOut->gfxEnts + uVar2, (local_1c->renderFxFlags & 1) == 0)) {
-      uVar2 = (uint)scene.sceneDObj[local_18].entnum;
+       (gfxEnt = frontEndDataOut->gfxEnts + uVar2, (gfxEnt->renderFxFlags & 1) == 0)) {
+      uVar2 = (uint)scene.sceneDObj[sceneEntIndex].entnum;
       if ((uVar2 == gfxCfg.entnumNone) ||
-         (iVar1 = R_IsEntityVisibleToPrimaryLight(param_1,uVar2,param_2), iVar1 == 0)) {
-        if ((local_1c != (GfxEntity *)0x0) && ((local_1c->renderFxFlags & 0x20) != 0)) {
-          Sys_AddWorkerCmdInternal(&r_spot_shadow_entWorkerCmd,&local_c,(WorkerCmdConditional *)0x0)
-          ;
+         (iVar1 = R_IsEntityVisibleToPrimaryLight(localClientNum,uVar2,primaryLightIndex),
+         iVar1 == 0)) {
+        if ((gfxEnt != (GfxEntity *)0x0) && ((gfxEnt->renderFxFlags & 0x20) != 0)) {
+          Sys_AddWorkerCmdInternal(&r_spot_shadow_entWorkerCmd,&cmd,(WorkerCmdConditional *)0x0);
         }
       }
       else {
-        Sys_AddWorkerCmdInternal(&r_spot_shadow_entWorkerCmd,&local_c,(WorkerCmdConditional *)0x0);
+        Sys_AddWorkerCmdInternal(&r_spot_shadow_entWorkerCmd,&cmd,(WorkerCmdConditional *)0x0);
       }
     }
   }
-  for (local_18 = 0; local_18 < scene.sceneModelCount; local_18 = local_18 + 1) {
-    uVar2 = (uint)scene.sceneModel[local_18].gfxEntIndex;
+  for (sceneEntIndex = 0; sceneEntIndex < scene.sceneModelCount; sceneEntIndex = sceneEntIndex + 1)
+  {
+    uVar2 = (uint)scene.sceneModel[sceneEntIndex].gfxEntIndex;
     if ((((uVar2 == 0) || ((frontEndDataOut->gfxEnts[uVar2].renderFxFlags & 1) == 0)) &&
-        (uVar2 = (uint)scene.sceneModel[local_18].entnum, uVar2 != gfxCfg.entnumNone)) &&
-       (iVar1 = R_IsEntityVisibleToPrimaryLight(param_1,uVar2,param_2), iVar1 != 0)) {
-      scene.dpvs.entVisData[param_3->spotShadowIndex + 3][uVar2] = '\x01';
+        (uVar2 = (uint)scene.sceneModel[sceneEntIndex].entnum, uVar2 != gfxCfg.entnumNone)) &&
+       (iVar1 = R_IsEntityVisibleToPrimaryLight(localClientNum,uVar2,primaryLightIndex), iVar1 != 0)
+       ) {
+      scene.dpvs.entVisData[light->spotShadowIndex + 3][uVar2] = '\x01';
     }
   }
   return;
@@ -283,119 +296,125 @@ void __cdecl R_AddSpotShadowModelEntities(int param_1,uint param_2,GfxLight *par
 
 bool __cdecl
 R_AddSpotShadowsForLight
-          (GfxViewInfo *param_1,GfxLight *param_2,uint param_3,uint param_4,float param_5)
+          (GfxViewInfo *viewInfo,GfxLight *light,uint shadowableLightIndex,uint totalSpotLightCount,
+          float spotShadowFade)
 
 {
-  GfxViewParms *pGVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  undefined1 uVar5;
-  uchar uVar6;
-  int iVar7;
-  int iVar8;
-  float fVar9;
+  GfxViewParms *viewParms;
+  uint spotShadowIndex_00;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  uchar uVar4;
+  int iVar5;
+  int iVar6;
+  float fVar7;
   float local_3c;
-  uint local_10;
+  int qualitySpotShadow;
+  int usingFullSpotShadowBuffer;
+  int usingGridTiling;
+  uint tileCount;
+  GfxSpotShadow *spotShadow;
+  uint spotShadowIndex;
   
-  if (param_2 == (GfxLight *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x113,0,
+  if (light == (GfxLight *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x113,0,
                              "%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
-  if ((param_2->type != '\x02') && (param_2->type != '\x03')) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x114,0,
+  if ((light->type != '\x02') && (light->type != '\x03')) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x114,0,
                              "%s\n\t(light->type) = %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
-  uVar2 = frontEndDataOut->spotShadowCount;
-  if (3 < uVar2) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x117,0,
+  spotShadowIndex_00 = frontEndDataOut->spotShadowCount;
+  if (3 < spotShadowIndex_00) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x117,0,
                              "spotShadowIndex doesn\'t index R_SPOTSHADOW_TILE_COUNT\n\t%i not in [0, %i)"
                             );
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      uVar5 = (*pcVar3)();
-      return (bool)uVar5;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
   frontEndDataOut->spotShadowCount = frontEndDataOut->spotShadowCount + 1;
-  param_2->spotShadowIndex = uVar2;
-  pGVar1 = &frontEndDataOut->spotShadows[uVar2].shadowViewParms;
-  uVar6 = truncate_cast<unsigned_char>(param_3);
-  *(uchar *)pGVar1[1].projectionMatrix.m[0] = uVar6;
-  pGVar1[1].projectionMatrix.m[0][1] = (float)param_2;
-  pGVar1[1].projectionMatrix.m[0][2] = param_5;
-  *(byte *)((int)pGVar1[1].projectionMatrix.m[0] + 1) =
-       *(byte *)((int)pGVar1[1].projectionMatrix.m[0] + 1) & 0xfe;
+  light->spotShadowIndex = spotShadowIndex_00;
+  viewParms = &frontEndDataOut->spotShadows[spotShadowIndex_00].shadowViewParms;
+  uVar4 = truncate_cast<unsigned_char>(shadowableLightIndex);
+  *(uchar *)viewParms[1].projectionMatrix.m[0] = uVar4;
+  viewParms[1].projectionMatrix.m[0][1] = (float)light;
+  viewParms[1].projectionMatrix.m[0][2] = spotShadowFade;
+  *(byte *)((int)viewParms[1].projectionMatrix.m[0] + 1) =
+       *(byte *)((int)viewParms[1].projectionMatrix.m[0] + 1) & 0xfe;
   if ((sm_qualitySpotShadow->current).enabled != false) {
-    iVar7 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
+    iVar5 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
                                (rgp.world)->sunPrimaryLightIndex,0x20);
-    if (iVar7 == 0) {
-      bVar4 = true;
+    if (iVar5 == 0) {
+      bVar2 = true;
       goto LAB_00b14455;
     }
   }
-  bVar4 = false;
+  bVar2 = false;
 LAB_00b14455:
-  if ((bVar4) && (uVar2 < 2)) {
-    pGVar1[1].projectionMatrix.m[1][3] = 0.0;
-    pGVar1[1].projectionMatrix.m[2][0] = (float)(dx.sunShadowPartitionRes * uVar2);
-    pGVar1[1].projectionMatrix.m[2][1] = (float)dx.sunShadowPartitionRes;
-    pGVar1[1].projectionMatrix.m[2][2] = (float)dx.sunShadowPartitionRes;
-    pGVar1[1].projectionMatrix.m[2][3] = (float)gfxRenderTargets[0xe].image;
-    *(undefined1 *)(pGVar1[1].projectionMatrix.m[1] + 2) = 0xe;
-    iVar7 = dx.sunShadowPartitionRes << 1;
-    fVar9 = (float)dx.sunShadowPartitionRes;
-    iVar8 = dx.sunShadowPartitionRes << 1;
-    pGVar1[1].projectionMatrix.m[3][0] = 0.25 / (float)dx.sunShadowPartitionRes;
-    pGVar1[1].projectionMatrix.m[3][1] = 0.5 / (float)iVar7;
-    pGVar1[1].projectionMatrix.m[3][2] = 0.5 / fVar9;
-    pGVar1[1].projectionMatrix.m[3][3] = -0.25 / (float)iVar8;
-    pGVar1[1].viewProjectionMatrix.m[0][0] = (float)(uint)(uVar2 == 0);
-    pGVar1[1].viewProjectionMatrix.m[0][1] = (float)(uVar2 * 0x24 + 0xb52b0d8);
-    local_10 = 2;
+  if ((bVar2) && (spotShadowIndex_00 < 2)) {
+    viewParms[1].projectionMatrix.m[1][3] = 0.0;
+    viewParms[1].projectionMatrix.m[2][0] = (float)(dx.sunShadowPartitionRes * spotShadowIndex_00);
+    viewParms[1].projectionMatrix.m[2][1] = (float)dx.sunShadowPartitionRes;
+    viewParms[1].projectionMatrix.m[2][2] = (float)dx.sunShadowPartitionRes;
+    viewParms[1].projectionMatrix.m[2][3] = (float)gfxRenderTargets[0xe].image;
+    *(undefined1 *)(viewParms[1].projectionMatrix.m[1] + 2) = 0xe;
+    iVar5 = dx.sunShadowPartitionRes << 1;
+    fVar7 = (float)dx.sunShadowPartitionRes;
+    iVar6 = dx.sunShadowPartitionRes << 1;
+    viewParms[1].projectionMatrix.m[3][0] = 0.25 / (float)dx.sunShadowPartitionRes;
+    viewParms[1].projectionMatrix.m[3][1] = 0.5 / (float)iVar5;
+    viewParms[1].projectionMatrix.m[3][2] = 0.5 / fVar7;
+    viewParms[1].projectionMatrix.m[3][3] = -0.25 / (float)iVar6;
+    viewParms[1].viewProjectionMatrix.m[0][0] = (float)(uint)(spotShadowIndex_00 == 0);
+    viewParms[1].viewProjectionMatrix.m[0][1] = (float)(spotShadowIndex_00 * 0x24 + 0xb52b0d8);
+    tileCount = 2;
   }
   else {
-    pGVar1[1].projectionMatrix.m[1][3] = 0.0;
-    pGVar1[1].projectionMatrix.m[2][0] = (float)(uVar2 << 9);
-    pGVar1[1].projectionMatrix.m[2][1] = 7.17465e-43;
-    pGVar1[1].projectionMatrix.m[2][2] = 7.17465e-43;
-    pGVar1[1].projectionMatrix.m[2][3] = (float)gfxRenderTargets[0xf].image;
-    *(undefined1 *)(pGVar1[1].projectionMatrix.m[1] + 2) = 0xf;
-    pGVar1[1].projectionMatrix.m[3][0] = 0.00048828125;
-    pGVar1[1].projectionMatrix.m[3][1] = 0.00024414062;
-    pGVar1[1].projectionMatrix.m[3][2] = 0.0009765625;
-    pGVar1[1].projectionMatrix.m[3][3] = -0.00012207031;
-    if (bVar4) {
-      pGVar1[1].viewProjectionMatrix.m[0][0] = (float)(uint)(uVar2 == 2);
+    viewParms[1].projectionMatrix.m[1][3] = 0.0;
+    viewParms[1].projectionMatrix.m[2][0] = (float)(spotShadowIndex_00 << 9);
+    viewParms[1].projectionMatrix.m[2][1] = 7.17465e-43;
+    viewParms[1].projectionMatrix.m[2][2] = 7.17465e-43;
+    viewParms[1].projectionMatrix.m[2][3] = (float)gfxRenderTargets[0xf].image;
+    *(undefined1 *)(viewParms[1].projectionMatrix.m[1] + 2) = 0xf;
+    viewParms[1].projectionMatrix.m[3][0] = 0.00048828125;
+    viewParms[1].projectionMatrix.m[3][1] = 0.00024414062;
+    viewParms[1].projectionMatrix.m[3][2] = 0.0009765625;
+    viewParms[1].projectionMatrix.m[3][3] = -0.00012207031;
+    if (bVar2) {
+      viewParms[1].viewProjectionMatrix.m[0][0] = (float)(uint)(spotShadowIndex_00 == 2);
     }
     else {
-      pGVar1[1].viewProjectionMatrix.m[0][0] = (float)(uint)(uVar2 == 0);
+      viewParms[1].viewProjectionMatrix.m[0][0] = (float)(uint)(spotShadowIndex_00 == 0);
     }
-    pGVar1[1].viewProjectionMatrix.m[0][1] = (float)(uVar2 * 0x24 + 0xb52b048);
-    local_10 = 4;
+    viewParms[1].viewProjectionMatrix.m[0][1] = (float)(spotShadowIndex_00 * 0x24 + 0xb52b048);
+    tileCount = 4;
   }
-  iVar7 = R_IsPrimaryLight(param_3);
-  if (iVar7 == 0) {
+  iVar5 = R_IsPrimaryLight(shadowableLightIndex);
+  if (iVar5 == 0) {
     local_3c = scene.dynamicSpotLightNearPlaneOffset;
   }
   else {
     local_3c = 0.0;
   }
-  R_SetViewParmsForLight(param_2,pGVar1,local_3c);
-  R_GetSpotShadowLookupMatrix(pGVar1,0,0,uVar2,local_10,&pGVar1[1].viewMatrix);
-  iVar7 = R_IsPrimaryLight(param_3);
-  if (iVar7 != 0) {
-    R_AddSpotShadowModelEntities(param_1->localClientNum,param_3,param_2);
+  R_SetViewParmsForLight(light,viewParms,local_3c);
+  R_GetSpotShadowLookupMatrix(viewParms,0,0,spotShadowIndex_00,tileCount,&viewParms[1].viewMatrix);
+  iVar5 = R_IsPrimaryLight(shadowableLightIndex);
+  if (iVar5 != 0) {
+    R_AddSpotShadowModelEntities(viewInfo->localClientNum,shadowableLightIndex,light);
   }
   return true;
 }
@@ -405,7 +424,7 @@ LAB_00b14455:
 
 void __cdecl
 R_GenerateSortedPrimarySpotShadowDrawSurfs
-          (GfxViewInfo *param_1,int param_2,uint param_3,uint param_4)
+          (GfxViewInfo *viewInfo,int viewIndex,uint spotShadowIndex,uint shadowableLightIndex)
 
 {
   code *pcVar1;
@@ -414,7 +433,7 @@ R_GenerateSortedPrimarySpotShadowDrawSurfs
   DWORD DVar4;
   
   uVar3 = Com_GetPrimaryLightCount();
-  if (uVar3 <= param_4) {
+  if (uVar3 <= shadowableLightIndex) {
     Com_GetPrimaryLightCount();
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",0x1b3,0,
                              "shadowableLightIndex doesn\'t index Com_GetPrimaryLightCount()\n\t%i not in [0, %i)"
@@ -426,19 +445,19 @@ R_GenerateSortedPrimarySpotShadowDrawSurfs
     }
   }
   PIXBeginNamedEvent(-1,"bsp surfaces");
-  R_AddAllBspDrawSurfacesSpotShadow(param_3,param_4);
+  R_AddAllBspDrawSurfacesSpotShadow(spotShadowIndex,shadowableLightIndex);
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"static model surfaces");
-  R_AddAllStaticModelSurfacesSpotShadow(param_2,param_3,param_4);
+  R_AddAllStaticModelSurfacesSpotShadow(viewIndex,spotShadowIndex,shadowableLightIndex);
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"scene ent surfaces");
-  R_AddAllSceneEntSurfacesSpotShadow(param_1,param_3,param_4);
+  R_AddAllSceneEntSurfacesSpotShadow(viewInfo,spotShadowIndex,shadowableLightIndex);
   DVar4 = GetCurrentThreadId();
   if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -449,90 +468,97 @@ R_GenerateSortedPrimarySpotShadowDrawSurfs
 
 // 00B15210  R_EmitSpotShadowMapSurfs  (gfx_d3d/r_spotshadow.cpp:451)
 
-void __cdecl R_EmitSpotShadowMapSurfs(GfxViewInfo *param_1)
+void __cdecl R_EmitSpotShadowMapSurfs(GfxViewInfo *viewInfo)
 
 {
-  GfxDrawSurfListInfo *pGVar1;
-  GfxLight *pGVar2;
-  code *pcVar3;
-  GfxBackEndData *pGVar4;
-  bool bVar5;
+  GfxDrawSurfListInfo *info_00;
+  GfxLight *pGVar1;
+  code *pcVar2;
+  GfxBackEndData *pGVar3;
+  bool bVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  DWORD DVar8;
-  uint local_8;
+  DWORD DVar7;
+  int firstDrawSurf;
+  GfxDrawSurfListInfo *info;
+  GfxSpotShadow *spotShadow;
+  uint spotShadowIndex;
   
   PIXBeginNamedEvent(-1,"emit spot shadow map surfs");
-  local_8 = 0;
+  spotShadowIndex = 0;
   while( true ) {
-    pGVar4 = frontEndDataOut;
-    if (frontEndDataOut->spotShadowCount <= local_8) {
-      DVar8 = GetCurrentThreadId();
-      if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    pGVar3 = frontEndDataOut;
+    if (frontEndDataOut->spotShadowCount <= spotShadowIndex) {
+      DVar7 = GetCurrentThreadId();
+      if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    pGVar1 = param_1->drawList + local_8 + 10;
-    R_InitDrawSurfListInfo(pGVar1);
-    pGVar1->baseTechType = gfxMetrics.shadowmapBuildTechType;
-    pGVar1->viewInfo = param_1;
-    pGVar2 = pGVar4->spotShadows[local_8].light;
-    pGVar1->viewOrigin[0] = pGVar2->origin[0];
-    pGVar1->viewOrigin[1] = pGVar2->origin[1];
-    pGVar1->viewOrigin[2] = pGVar2->origin[2];
-    pGVar1->viewOrigin[3] = 1.0;
-    if ((pGVar1->cameraView != 0) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",
-                                 0x1df,0,"%s"), !bVar5)) break;
-    iVar7 = frontEndDataOut->drawSurfCount;
-    iVar6 = R_IsPrimaryLight((uint)pGVar4->spotShadows[local_8].shadowableLightIndex);
-    if (iVar6 == 0) {
-      iVar7 = R_IsDynamicShadowedLight((uint)pGVar4->spotShadows[local_8].shadowableLightIndex);
-      if ((iVar7 == 0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",
-                                   0x1ef,0,"%s"), !bVar5)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+    info_00 = viewInfo->drawList + spotShadowIndex + 10;
+    R_InitDrawSurfListInfo(info_00);
+    info_00->baseTechType = gfxMetrics.shadowmapBuildTechType;
+    info_00->viewInfo = viewInfo;
+    pGVar1 = pGVar3->spotShadows[spotShadowIndex].light;
+    info_00->viewOrigin[0] = pGVar1->origin[0];
+    info_00->viewOrigin[1] = pGVar1->origin[1];
+    info_00->viewOrigin[2] = pGVar1->origin[2];
+    info_00->viewOrigin[3] = 1.0;
+    if ((info_00->cameraView != 0) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",
+                                 0x1df,0,"%s"), !bVar4)) break;
+    iVar6 = frontEndDataOut->drawSurfCount;
+    iVar5 = R_IsPrimaryLight((uint)pGVar3->spotShadows[spotShadowIndex].shadowableLightIndex);
+    if (iVar5 == 0) {
+      iVar6 = R_IsDynamicShadowedLight
+                        ((uint)pGVar3->spotShadows[spotShadowIndex].shadowableLightIndex);
+      if ((iVar6 == 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_spotshadow.cpp",
+                                   0x1ef,0,"%s"), !bVar4)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
       if (frontEndDataOut->emissiveSpotLightCount == 1) {
         R_EmitShadowedLightPartitionSurfs
-                  (param_1,frontEndDataOut->emissiveSpotDrawSurfCount,
-                   frontEndDataOut->emissiveSpotDrawSurfs,pGVar1);
+                  (viewInfo,frontEndDataOut->emissiveSpotDrawSurfCount,
+                   frontEndDataOut->emissiveSpotDrawSurfs,info_00);
       }
     }
     else {
-      R_MergeAndEmitDrawSurfLists(local_8 * 3 + 0x1b,1,frontEndDataOut);
-      R_MergeAndEmitDrawSurfLists(local_8 * 3 + 0x1c,2,frontEndDataOut);
-      pGVar1->drawSurfs = frontEndDataOut->drawSurfs + iVar7;
-      pGVar1->drawSurfCount = frontEndDataOut->drawSurfCount - iVar7;
+      R_MergeAndEmitDrawSurfLists(spotShadowIndex * 3 + 0x1b,1,frontEndDataOut);
+      R_MergeAndEmitDrawSurfLists(spotShadowIndex * 3 + 0x1c,2,frontEndDataOut);
+      info_00->drawSurfs = frontEndDataOut->drawSurfs + iVar6;
+      info_00->drawSurfCount = frontEndDataOut->drawSurfCount - iVar6;
     }
-    local_8 = local_8 + 1;
+    spotShadowIndex = spotShadowIndex + 1;
   }
-  pcVar3 = (code *)swi(3);
-  (*pcVar3)();
+  pcVar2 = (code *)swi(3);
+  (*pcVar2)();
   return;
 }
 
 
 // 00B15040  R_GenerateAllSortedSpotShadowDrawSurfs  (gfx_d3d/r_spotshadow.cpp:512)
 
-void __cdecl R_GenerateAllSortedSpotShadowDrawSurfs(GfxViewInfo *param_1,int param_2)
+void __cdecl R_GenerateAllSortedSpotShadowDrawSurfs(GfxViewInfo *viewInfo,int viewIndex)
 
 {
   int iVar1;
-  uint local_8;
+  uchar shadowableLightIndex;
+  uint spotShadowIndex;
   
-  for (local_8 = 0; local_8 < frontEndDataOut->spotShadowCount; local_8 = local_8 + 1) {
-    iVar1 = R_IsPrimaryLight((uint)frontEndDataOut->spotShadows[local_8].shadowableLightIndex);
+  for (spotShadowIndex = 0; spotShadowIndex < frontEndDataOut->spotShadowCount;
+      spotShadowIndex = spotShadowIndex + 1) {
+    iVar1 = R_IsPrimaryLight((uint)frontEndDataOut->spotShadows[spotShadowIndex].
+                                   shadowableLightIndex);
     if (iVar1 != 0) {
       R_GenerateSortedPrimarySpotShadowDrawSurfs
-                (param_1,param_2,local_8,
-                 (uint)frontEndDataOut->spotShadows[local_8].shadowableLightIndex);
+                (viewInfo,viewIndex,spotShadowIndex,
+                 (uint)frontEndDataOut->spotShadows[spotShadowIndex].shadowableLightIndex);
     }
   }
-  R_EmitSpotShadowMapSurfs(param_1);
+  R_EmitSpotShadowMapSurfs(viewInfo);
   return;
 }
 

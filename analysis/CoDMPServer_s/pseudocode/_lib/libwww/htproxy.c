@@ -146,84 +146,84 @@ undefined4 _HTProxy_find(void)
   undefined4 *puVar4;
   uchar *puVar5;
   int in_EAX;
-  byte *pbVar6;
-  uchar *puVar7;
+  byte *pBlock;
+  uchar *string;
   undefined1 *extraout_EAX;
-  byte *pbVar8;
-  int iVar9;
-  uchar *puVar10;
-  byte *pbVar11;
-  undefined4 *puVar12;
-  uchar *puVar13;
-  bool bVar14;
-  bool bVar15;
+  byte *pbVar6;
+  int iVar7;
+  uchar *puVar8;
+  byte *pbVar9;
+  undefined4 *puVar10;
+  uchar *puVar11;
+  bool bVar12;
+  bool bVar13;
   int iStack_c;
   
-  bVar15 = false;
+  bVar13 = false;
   if ((in_EAX == 0) || (_DAT_03547804 == (undefined4 *)0x0)) {
     return 0;
   }
-  pbVar6 = (byte *)_HTParse("",0x10);
+  pBlock = (byte *)_HTParse("",0x10);
   if (_DAT_0354780c != (undefined4 *)0x0) {
-    puVar7 = (uchar *)_HTParse("",8);
+    string = (uchar *)_HTParse("",8);
     iStack_c = 0;
-    strchr(puVar7,':');
+    strchr(string,':');
     if (extraout_EAX != (undefined1 *)0x0) {
       *extraout_EAX = 0;
       if (extraout_EAX[1] != '\0') {
         iStack_c = atoi(extraout_EAX + 1);
       }
     }
-    puVar12 = _DAT_0354780c;
-    if (*puVar7 != '\0') {
+    puVar10 = _DAT_0354780c;
+    if (*string != '\0') {
 LAB_0089dfd1:
       do {
-        if (((puVar12 == (undefined4 *)0x0) ||
-            (puVar12 = (undefined4 *)puVar12[1], puVar12 == (undefined4 *)0x0)) ||
-           (puVar4 = (undefined4 *)*puVar12, puVar4 == (undefined4 *)0x0)) break;
-        pbVar8 = (byte *)*puVar4;
-        pbVar11 = pbVar6;
-        if (pbVar8 != (byte *)0x0) {
+        if (((puVar10 == (undefined4 *)0x0) ||
+            (puVar10 = (undefined4 *)puVar10[1], puVar10 == (undefined4 *)0x0)) ||
+           (puVar4 = (undefined4 *)*puVar10, puVar4 == (undefined4 *)0x0)) break;
+        pbVar6 = (byte *)*puVar4;
+        pbVar9 = pBlock;
+        if (pbVar6 != (byte *)0x0) {
           do {
-            bVar1 = *pbVar8;
-            bVar14 = bVar1 < *pbVar11;
-            if (bVar1 != *pbVar11) {
+            bVar1 = *pbVar6;
+            bVar12 = bVar1 < *pbVar9;
+            if (bVar1 != *pbVar9) {
 LAB_0089e018:
-              iVar9 = (1 - (uint)bVar14) - (uint)(bVar14 != 0);
+              iVar7 = (1 - (uint)bVar12) - (uint)(bVar12 != 0);
               goto LAB_0089e01d;
             }
             if (bVar1 == 0) break;
-            bVar1 = pbVar8[1];
-            bVar14 = bVar1 < pbVar11[1];
-            if (bVar1 != pbVar11[1]) goto LAB_0089e018;
-            pbVar8 = pbVar8 + 2;
-            pbVar11 = pbVar11 + 2;
+            bVar1 = pbVar6[1];
+            bVar12 = bVar1 < pbVar9[1];
+            if (bVar1 != pbVar9[1]) goto LAB_0089e018;
+            pbVar6 = pbVar6 + 2;
+            pbVar9 = pbVar9 + 2;
           } while (bVar1 != 0);
-          iVar9 = 0;
+          iVar7 = 0;
 LAB_0089e01d:
-          if (iVar9 != 0) goto LAB_0089dfd1;
+          if (iVar7 != 0) goto LAB_0089dfd1;
         }
         if ((puVar4[2] == 0) || (puVar4[2] == iStack_c)) {
           puVar5 = (uchar *)puVar4[1];
-          puVar10 = puVar5;
+          puVar8 = puVar5;
           do {
-            puVar13 = puVar10;
-            puVar10 = puVar13 + 1;
-          } while (*puVar13 != '\0');
-          puVar10 = puVar7;
+            puVar11 = puVar8;
+            puVar8 = puVar11 + 1;
+          } while (*puVar11 != '\0');
+          puVar8 = string;
           do {
-            uVar2 = *puVar10;
-            puVar10 = puVar10 + 1;
+            uVar2 = *puVar8;
+            puVar8 = puVar8 + 1;
           } while (uVar2 != '\0');
-          puVar10 = puVar7 + ((int)puVar10 - (int)(puVar7 + 1));
+          puVar8 = string + ((int)puVar8 - (int)(string + 1));
           do {
-            if ((puVar13 < puVar5) || (puVar10 < puVar7)) break;
-            uVar2 = *puVar13;
-            uVar3 = *puVar10;
-            puVar10 = puVar10 + -1;
-            puVar13 = puVar13 + -1;
+            if ((puVar11 < puVar5) || (puVar8 < string)) break;
+            uVar2 = *puVar11;
+            uVar3 = *puVar8;
+            puVar8 = puVar8 + -1;
+            puVar11 = puVar11 + -1;
           } while (uVar2 == uVar3);
-          if ((puVar13 == puVar5 + -1) && ((puVar10 == puVar7 + -1 || (*puVar10 == '.'))))
+          if ((puVar11 == puVar5 + -1) && ((puVar8 == string + -1 || (*puVar8 == '.'))))
           goto LAB_0089e07d;
         }
       } while( true );
@@ -231,51 +231,51 @@ LAB_0089e01d:
     goto LAB_0089e089;
   }
 LAB_0089e0e5:
-  puVar12 = _DAT_03547804;
+  puVar10 = _DAT_03547804;
   if (_DAT_03547810 != 0) {
 LAB_0089e0ed:
-    if (pbVar6 != (byte *)0x0) {
-      free(pbVar6);
+    if (pBlock != (byte *)0x0) {
+      free(pBlock);
     }
     return 0;
   }
 LAB_0089e0b0:
   do {
-    if (((puVar12 == (undefined4 *)0x0) ||
-        (puVar12 = (undefined4 *)puVar12[1], puVar12 == (undefined4 *)0x0)) ||
-       (puVar4 = (undefined4 *)*puVar12, puVar4 == (undefined4 *)0x0)) goto LAB_0089e11c;
-    pbVar8 = (byte *)*puVar4;
-    pbVar11 = pbVar6;
+    if (((puVar10 == (undefined4 *)0x0) ||
+        (puVar10 = (undefined4 *)puVar10[1], puVar10 == (undefined4 *)0x0)) ||
+       (puVar4 = (undefined4 *)*puVar10, puVar4 == (undefined4 *)0x0)) goto LAB_0089e11c;
+    pbVar6 = (byte *)*puVar4;
+    pbVar9 = pBlock;
     do {
-      bVar1 = *pbVar8;
-      bVar15 = bVar1 < *pbVar11;
-      if (bVar1 != *pbVar11) {
+      bVar1 = *pbVar6;
+      bVar13 = bVar1 < *pbVar9;
+      if (bVar1 != *pbVar9) {
 LAB_0089e103:
-        iVar9 = (1 - (uint)bVar15) - (uint)(bVar15 != 0);
+        iVar7 = (1 - (uint)bVar13) - (uint)(bVar13 != 0);
         goto LAB_0089e108;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar8[1];
-      bVar15 = bVar1 < pbVar11[1];
-      if (bVar1 != pbVar11[1]) goto LAB_0089e103;
-      pbVar8 = pbVar8 + 2;
-      pbVar11 = pbVar11 + 2;
+      bVar1 = pbVar6[1];
+      bVar13 = bVar1 < pbVar9[1];
+      if (bVar1 != pbVar9[1]) goto LAB_0089e103;
+      pbVar6 = pbVar6 + 2;
+      pbVar9 = pbVar9 + 2;
     } while (bVar1 != 0);
-    iVar9 = 0;
+    iVar7 = 0;
 LAB_0089e108:
-  } while (iVar9 != 0);
+  } while (iVar7 != 0);
   _HTSACopy(puVar4[1]);
 LAB_0089e11c:
-  if (pbVar6 != (byte *)0x0) {
-    free(pbVar6);
+  if (pBlock != (byte *)0x0) {
+    free(pBlock);
   }
   return 0;
 LAB_0089e07d:
-  bVar15 = true;
+  bVar13 = true;
 LAB_0089e089:
-  free(puVar7);
-  if (bVar15) {
-    puVar12 = _DAT_03547804;
+  free(string);
+  if (bVar13) {
+    puVar10 = _DAT_03547804;
     if (_DAT_03547810 == 0) goto LAB_0089e0ed;
     goto LAB_0089e0b0;
   }
@@ -293,46 +293,46 @@ undefined4 _HTGateway_find(void)
   byte bVar1;
   undefined4 *puVar2;
   int in_EAX;
+  byte *pBlock;
   byte *pbVar3;
-  byte *pbVar4;
-  int iVar5;
-  byte *pbVar6;
-  undefined4 *puVar7;
-  bool bVar8;
+  int iVar4;
+  byte *pbVar5;
+  undefined4 *puVar6;
+  bool bVar7;
   
   if ((in_EAX == 0) || (_DAT_03547808 == (undefined4 *)0x0)) {
     return 0;
   }
-  pbVar3 = (byte *)_HTParse("",0x10);
-  puVar7 = _DAT_03547808;
+  pBlock = (byte *)_HTParse("",0x10);
+  puVar6 = _DAT_03547808;
   do {
-    if (((puVar7 == (undefined4 *)0x0) ||
-        (puVar7 = (undefined4 *)puVar7[1], puVar7 == (undefined4 *)0x0)) ||
-       (puVar2 = (undefined4 *)*puVar7, puVar2 == (undefined4 *)0x0)) goto LAB_0089e1c1;
-    pbVar4 = (byte *)*puVar2;
-    pbVar6 = pbVar3;
+    if (((puVar6 == (undefined4 *)0x0) ||
+        (puVar6 = (undefined4 *)puVar6[1], puVar6 == (undefined4 *)0x0)) ||
+       (puVar2 = (undefined4 *)*puVar6, puVar2 == (undefined4 *)0x0)) goto LAB_0089e1c1;
+    pbVar3 = (byte *)*puVar2;
+    pbVar5 = pBlock;
     do {
-      bVar1 = *pbVar4;
-      bVar8 = bVar1 < *pbVar6;
-      if (bVar1 != *pbVar6) {
+      bVar1 = *pbVar3;
+      bVar7 = bVar1 < *pbVar5;
+      if (bVar1 != *pbVar5) {
 LAB_0089e1a8:
-        iVar5 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
+        iVar4 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
         goto LAB_0089e1ad;
       }
       if (bVar1 == 0) break;
-      bVar1 = pbVar4[1];
-      bVar8 = bVar1 < pbVar6[1];
-      if (bVar1 != pbVar6[1]) goto LAB_0089e1a8;
-      pbVar4 = pbVar4 + 2;
-      pbVar6 = pbVar6 + 2;
+      bVar1 = pbVar3[1];
+      bVar7 = bVar1 < pbVar5[1];
+      if (bVar1 != pbVar5[1]) goto LAB_0089e1a8;
+      pbVar3 = pbVar3 + 2;
+      pbVar5 = pbVar5 + 2;
     } while (bVar1 != 0);
-    iVar5 = 0;
+    iVar4 = 0;
 LAB_0089e1ad:
-  } while (iVar5 != 0);
+  } while (iVar4 != 0);
   _HTSACopy(puVar2[1]);
 LAB_0089e1c1:
-  if (pbVar3 != (byte *)0x0) {
-    free(pbVar3);
+  if (pBlock != (byte *)0x0) {
+    free(pBlock);
   }
   return 0;
 }
@@ -347,123 +347,123 @@ void _HTProxy_getEnvVar(void)
 
 {
   undefined *puVar1;
-  void *pvVar2;
-  char cVar3;
+  void *pBlock;
+  char cVar2;
+  char *pcVar3;
   char *pcVar4;
-  char *pcVar5;
-  uchar *puVar6;
+  uchar *string;
   undefined1 *extraout_EAX;
-  uint uVar7;
-  undefined **ppuVar8;
-  char *pcVar9;
-  char *pcVar10;
-  int iVar11;
+  uint uVar5;
+  undefined **ppuVar6;
+  char *pcVar7;
+  char *pcVar8;
+  int iVar9;
   undefined4 uStack_58;
   char acStack_54 [6];
   char acStack_4e [74];
   uint uStack_4;
   
   uStack_4 = __security_cookie ^ (uint)&uStack_58;
-  ppuVar8 = &PTR_s_http_00ac0f0c;
+  ppuVar6 = &PTR_s_http_00ac0f0c;
   puVar1 = PTR_s_http_00ac0f0c;
   while (puVar1 != (undefined *)0x0) {
-    pcVar4 = *ppuVar8;
-    iVar11 = -(int)pcVar4;
+    pcVar3 = *ppuVar6;
+    iVar9 = -(int)pcVar3;
     do {
-      cVar3 = *pcVar4;
-      pcVar4[(int)(acStack_54 + iVar11)] = cVar3;
-      pcVar4 = pcVar4 + 1;
-    } while (cVar3 != '\0');
-    pcVar4 = (char *)((int)&uStack_58 + 3);
+      cVar2 = *pcVar3;
+      pcVar3[(int)(acStack_54 + iVar9)] = cVar2;
+      pcVar3 = pcVar3 + 1;
+    } while (cVar2 != '\0');
+    pcVar3 = (char *)((int)&uStack_58 + 3);
     do {
-      pcVar5 = pcVar4;
-      pcVar4 = pcVar5 + 1;
-    } while (pcVar5[1] != '\0');
-    builtin_strncpy(pcVar5 + 1,"_proxy",7);
-    pcVar4 = getenv(acStack_54);
-    if ((pcVar4 == (char *)0x0) || (*pcVar4 == '\0')) {
-      pcVar4 = acStack_54;
-      iVar11 = toupper((int)acStack_54[0]);
-      cVar3 = (char)iVar11;
-      acStack_54[0] = cVar3;
-      while (cVar3 != '\0') {
-        pcVar5 = pcVar4 + 1;
-        pcVar4 = pcVar4 + 1;
-        iVar11 = toupper((int)*pcVar5);
-        cVar3 = (char)iVar11;
-        *pcVar4 = cVar3;
+      pcVar4 = pcVar3;
+      pcVar3 = pcVar4 + 1;
+    } while (pcVar4[1] != '\0');
+    builtin_strncpy(pcVar4 + 1,"_proxy",7);
+    pcVar3 = getenv(acStack_54);
+    if ((pcVar3 == (char *)0x0) || (*pcVar3 == '\0')) {
+      pcVar3 = acStack_54;
+      iVar9 = toupper((int)acStack_54[0]);
+      cVar2 = (char)iVar9;
+      acStack_54[0] = cVar2;
+      while (cVar2 != '\0') {
+        pcVar4 = pcVar3 + 1;
+        pcVar3 = pcVar3 + 1;
+        iVar9 = toupper((int)*pcVar4);
+        cVar2 = (char)iVar9;
+        *pcVar3 = cVar2;
       }
-      pcVar4 = getenv(acStack_54);
-      if ((pcVar4 == (char *)0x0) || (*pcVar4 == '\0')) {
+      pcVar3 = getenv(acStack_54);
+      if ((pcVar3 == (char *)0x0) || (*pcVar3 == '\0')) {
         acStack_54[4] = 0;
-        pcVar4 = *ppuVar8;
+        pcVar3 = *ppuVar6;
         builtin_strncpy(acStack_54,"WWW_",4);
-        pcVar5 = pcVar4;
+        pcVar4 = pcVar3;
         do {
-          cVar3 = *pcVar5;
-          pcVar5 = pcVar5 + 1;
-        } while (cVar3 != '\0');
-        pcVar10 = (char *)((int)&uStack_58 + 3);
+          cVar2 = *pcVar4;
+          pcVar4 = pcVar4 + 1;
+        } while (cVar2 != '\0');
+        pcVar8 = (char *)((int)&uStack_58 + 3);
         do {
-          pcVar9 = pcVar10 + 1;
-          pcVar10 = pcVar10 + 1;
-        } while (*pcVar9 != '\0');
-        pcVar9 = pcVar4;
-        for (uVar7 = (uint)((int)pcVar5 - (int)pcVar4) >> 2; uVar7 != 0; uVar7 = uVar7 - 1) {
-          *(undefined4 *)pcVar10 = *(undefined4 *)pcVar9;
-          pcVar9 = pcVar9 + 4;
-          pcVar10 = pcVar10 + 4;
+          pcVar7 = pcVar8 + 1;
+          pcVar8 = pcVar8 + 1;
+        } while (*pcVar7 != '\0');
+        pcVar7 = pcVar3;
+        for (uVar5 = (uint)((int)pcVar4 - (int)pcVar3) >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
+          *(undefined4 *)pcVar8 = *(undefined4 *)pcVar7;
+          pcVar7 = pcVar7 + 4;
+          pcVar8 = pcVar8 + 4;
         }
-        for (uVar7 = (int)pcVar5 - (int)pcVar4 & 3; uVar7 != 0; uVar7 = uVar7 - 1) {
-          *pcVar10 = *pcVar9;
-          pcVar9 = pcVar9 + 1;
-          pcVar10 = pcVar10 + 1;
+        for (uVar5 = (int)pcVar4 - (int)pcVar3 & 3; uVar5 != 0; uVar5 = uVar5 - 1) {
+          *pcVar8 = *pcVar7;
+          pcVar7 = pcVar7 + 1;
+          pcVar8 = pcVar8 + 1;
         }
-        pcVar4 = (char *)((int)&uStack_58 + 3);
+        pcVar3 = (char *)((int)&uStack_58 + 3);
         do {
-          pcVar5 = pcVar4;
-          pcVar4 = pcVar5 + 1;
-        } while (pcVar5[1] != '\0');
-        builtin_strncpy(pcVar5 + 1,"_GATEWAY",9);
-        pcVar4 = getenv(acStack_54);
-        if (((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) &&
-           ((puVar1 = *ppuVar8, _DAT_03547808 != 0 ||
+          pcVar4 = pcVar3;
+          pcVar3 = pcVar4 + 1;
+        } while (pcVar4[1] != '\0');
+        builtin_strncpy(pcVar4 + 1,"_GATEWAY",9);
+        pcVar3 = getenv(acStack_54);
+        if (((pcVar3 != (char *)0x0) && (*pcVar3 != '\0')) &&
+           ((puVar1 = *ppuVar6, _DAT_03547808 != 0 ||
             (_DAT_03547808 = _HTList_new(), _DAT_03547808 != 0)))) {
-          FUN_0089daa0(_DAT_03547808,puVar1,pcVar4);
+          FUN_0089daa0(_DAT_03547808,puVar1,pcVar3);
         }
       }
       else {
-        _HTProxy_add(*ppuVar8,pcVar4);
+        _HTProxy_add(*ppuVar6,pcVar3);
       }
     }
     else {
-      _HTProxy_add(*ppuVar8,pcVar4);
+      _HTProxy_add(*ppuVar6,pcVar3);
     }
-    ppuVar8 = ppuVar8 + 1;
-    puVar1 = *ppuVar8;
+    ppuVar6 = ppuVar6 + 1;
+    puVar1 = *ppuVar6;
   }
-  pcVar4 = getenv("no_proxy");
-  if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
+  pcVar3 = getenv("no_proxy");
+  if ((pcVar3 != (char *)0x0) && (*pcVar3 != '\0')) {
     uStack_58 = (void *)0x0;
-    _HTSACopy(pcVar4);
-    pvVar2 = uStack_58;
-    puVar6 = (uchar *)_HTNextField(&uStack_58);
-    while (puVar6 != (uchar *)0x0) {
-      strchr(puVar6,':');
-      iVar11 = 0;
+    _HTSACopy(pcVar3);
+    pBlock = uStack_58;
+    string = (uchar *)_HTNextField(&uStack_58);
+    while (string != (uchar *)0x0) {
+      strchr(string,':');
+      iVar9 = 0;
       if (extraout_EAX != (undefined1 *)0x0) {
         *extraout_EAX = 0;
         if (extraout_EAX[1] != '\0') {
-          iVar11 = atoi(extraout_EAX + 1);
+          iVar9 = atoi(extraout_EAX + 1);
         }
       }
       if ((_DAT_0354780c != 0) || (_DAT_0354780c = _HTList_new(), _DAT_0354780c != 0)) {
-        FUN_0089dc10(_DAT_0354780c,puVar6,iVar11);
+        FUN_0089dc10(_DAT_0354780c,string,iVar9);
       }
-      puVar6 = (uchar *)_HTNextField(&uStack_58);
+      string = (uchar *)_HTNextField(&uStack_58);
     }
-    if (pvVar2 != (void *)0x0) {
-      free(pvVar2);
+    if (pBlock != (void *)0x0) {
+      free(pBlock);
     }
   }
   return;

@@ -16,16 +16,21 @@
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 void __cdecl
-R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint param_3,bool param_4)
+R_Rope_GenerateVerts_Internal
+          (RopeGenerateVertsCmd *cmd,uint sceneIndex,uint drawsurfRegion,bool forceLowResLOD)
 
 {
-  code *pcVar1;
-  GfxPackedVertex *pGVar2;
-  bool bVar3;
+  float fVar1;
+  float fVar2;
+  float fVar3;
   float *pfVar4;
-  uint uVar5;
-  float *pfVar6;
-  float fVar7;
+  code *pcVar5;
+  GfxPackedVertex *pGVar6;
+  bool bVar7;
+  float *pfVar8;
+  uint uVar9;
+  float *pfVar10;
+  float fVar11;
   uint local_530;
   uint local_528;
   uint local_520;
@@ -47,363 +52,355 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
   uint local_348;
   PackedUnitVec local_318;
   PackedUnitVec local_2fc;
-  phys_vec3 local_21c;
+  phys_vec3 distVec_2;
   float local_20c;
   float local_208;
   float local_204;
-  float local_200;
+  float nrm3;
   float local_1fc;
   float local_1f8;
   float local_1f4;
-  float local_1f0;
-  float local_1ec;
+  float invHalfCircumfenceTimes4;
+  float segDiff;
   float local_1e8;
   float local_1e4;
   undefined4 local_1e0;
-  float local_1dc;
+  float cameraVec;
   float local_1d8;
   float local_1d4;
   float local_1d0;
-  float local_1cc;
+  float nrm0;
   float local_1c8;
   float local_1c4;
   float local_1c0;
-  float local_1bc;
+  float nrm4;
   float local_1b8;
   float local_1b4;
   float local_1b0;
-  float local_1ac;
+  float perpUpDir;
   float local_1a8;
   float local_1a4;
   float local_1a0;
-  float local_19c;
+  float tpos3;
   float local_198;
   float local_194;
   float local_190;
-  float local_18c;
+  float lerpedRadius;
   float local_188;
   float local_184;
   float local_180;
-  float local_17c;
+  float basePos;
   float local_178;
   float local_174;
   float local_170;
-  float local_16c;
+  float tpos0;
   float local_168;
   float local_164;
   float local_160;
-  float local_15c;
+  float nrm1;
   float local_158;
   float local_154;
   float local_150;
-  float local_14c;
+  float tpos4;
   float local_148;
   float local_144;
   float local_140;
-  float local_13c;
-  float local_138;
+  float alpha;
+  float perpDir;
   float local_134;
   float local_130;
   float local_12c;
-  float local_128;
+  float tpos1;
   float local_124;
   float local_120;
   float local_11c;
-  int local_118;
-  float local_114;
-  undefined4 local_110;
-  int local_10c;
-  r_double_index_t *local_108;
-  char local_101;
-  float local_100;
-  int local_fc;
-  float local_f8;
+  int i;
+  float endRadius;
+  r_double_index_t workingIndex;
+  int indexPairIter;
+  r_double_index_t *baseIndices;
+  bool useLowResLOD;
+  float ropeTextureUDist;
+  int segIter;
+  float distVec;
   float local_f4;
   float local_f0;
-  float local_ec;
-  int local_e8;
-  float (*local_e4) [4];
-  float local_e0;
+  undefined4 local_ec;
+  int INDEX_COUNT;
+  float4 *baseArgs;
+  float dist;
   float local_dc;
   float local_d8;
   float local_d4;
-  float local_d0;
+  float beamWorldEnd;
   float local_cc;
   float local_c8;
   undefined4 local_c4;
-  uint local_c0;
-  ushort *local_bc;
-  float local_b8;
+  uint primaryLightIndex;
+  ushort *templateIndices;
+  float ropeCenter;
   float local_b4;
   float local_b0;
   undefined4 local_ac;
-  float local_a8;
+  float radius;
   float local_a4;
   float local_a0;
   float local_9c;
-  VisualRope *local_98;
-  float local_94;
-  int local_90;
-  short local_8c;
-  float local_88;
+  VisualRope *vrope;
+  float beginRadius;
+  int vertexCount;
+  ushort offset;
+  float prePos;
   float local_84;
   float local_80;
   float local_7c;
-  uint local_78;
-  GfxPackedVertex *local_74;
-  int local_70;
-  r_double_index_t *local_6c;
-  float local_68;
+  int indexCount;
+  GfxPackedVertex *verts;
+  int segCount;
+  r_double_index_t *indices;
+  float beamWorldBegin;
   float local_64;
   float local_60;
   float local_5c;
-  GfxColor local_58;
-  uint local_54;
-  float local_50;
-  int local_4c;
-  ushort local_48 [2];
-  float (*local_44) [4];
-  int local_40;
-  GfxPackedVertex *local_3c;
-  float local_38;
+  GfxColor lerpedColor;
+  uint argOffset;
+  uint lightHandle;
+  int SLICE_COUNT;
+  ushort baseVertex;
+  float4 *args;
+  int TRI_COUNT;
+  GfxPackedVertex *baseVerts;
+  float radiusVec;
   float local_34;
   float local_30;
   undefined4 local_2c;
-  RopeRenderInfo *local_28;
-  float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  uint local_10;
-  float *local_c;
-  int local_8;
+  RopeRenderInfo *ropeInfo;
+  SpuDmaBuffer argsOutBuf;
+  int vropeIter;
   
-  local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   R_BeginCodeMeshVerts();
-  local_c = (float *)0x0;
-  if ((param_1 == (RopeGenerateVertsCmd *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rope_render.cpp",0x58,
-                               0,"%s"), !bVar3)) {
-    pcVar1 = (code *)swi(3);
-    (*pcVar1)();
+  if ((cmd == (RopeGenerateVertsCmd *)0x0) &&
+     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rope_render.cpp",0x58,
+                               0,"%s"), !bVar7)) {
+    pcVar5 = (code *)swi(3);
+    (*pcVar5)();
     return;
   }
-  if ((param_1->ropeInfo == (RopeRenderInfo *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rope_render.cpp",0x59,
-                               0,"%s"), !bVar3)) {
-    pcVar1 = (code *)swi(3);
-    (*pcVar1)();
+  if ((cmd->ropeInfo == (RopeRenderInfo *)0x0) &&
+     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rope_render.cpp",0x59,
+                               0,"%s"), !bVar7)) {
+    pcVar5 = (code *)swi(3);
+    (*pcVar5)();
     return;
   }
-  local_28 = param_1->ropeInfo;
-  local_20 = param_1->vieworg[0];
-  local_1c = param_1->vieworg[1];
-  local_18 = param_1->vieworg[2];
-  local_14 = 0.0;
-  for (local_8 = 0; local_8 != local_28->ropeCount; local_8 = local_8 + 1) {
-    local_98 = local_28->ropes + local_8;
-    if (((uint)local_98->visibilityFlags & 1 << ((byte)param_2 & 0x1f)) != 0) {
-      local_94 = local_98->beginRadius;
-      local_114 = local_98->endRadius;
-      local_70 = local_98->segmentCount;
-      local_c = local_98->segmentVerts;
-      local_68 = *local_c;
-      local_64 = local_c[1];
-      local_60 = local_c[2];
+  ropeInfo = cmd->ropeInfo;
+  fVar1 = cmd->vieworg[0];
+  fVar2 = cmd->vieworg[1];
+  fVar3 = cmd->vieworg[2];
+  for (vropeIter = 0; vropeIter != ropeInfo->ropeCount; vropeIter = vropeIter + 1) {
+    vrope = ropeInfo->ropes + vropeIter;
+    if (((uint)vrope->visibilityFlags & 1 << ((byte)sceneIndex & 0x1f)) != 0) {
+      beginRadius = vrope->beginRadius;
+      endRadius = vrope->endRadius;
+      segCount = vrope->segmentCount;
+      pfVar4 = vrope->segmentVerts;
+      beamWorldBegin = *pfVar4;
+      local_64 = pfVar4[1];
+      local_60 = pfVar4[2];
       local_5c = 0.0;
-      pfVar4 = local_c + local_70 * 3;
-      local_d0 = *pfVar4;
-      local_cc = pfVar4[1];
-      local_c8 = pfVar4[2];
+      pfVar8 = pfVar4 + segCount * 3;
+      beamWorldEnd = *pfVar8;
+      local_cc = pfVar8[1];
+      local_c8 = pfVar8[2];
       local_c4 = 0;
-      local_b8 = (local_68 + local_d0) * (float)0x3f000000;
+      ropeCenter = (beamWorldBegin + beamWorldEnd) * (float)0x3f000000;
       local_b4 = (local_64 + local_cc) * (float)0x3f000000;
       local_b0 = (local_60 + local_c8) * (float)0x3f000000;
       local_ac = 0;
-      local_38 = (local_68 - local_d0) * (float)0x3f000000;
+      radiusVec = (beamWorldBegin - beamWorldEnd) * (float)0x3f000000;
       local_34 = (local_64 - local_cc) * (float)0x3f000000;
       local_30 = (local_60 - local_c8) * (float)0x3f000000;
       local_2c = 0;
-      local_9c = local_38 * local_38 + local_34 * local_34 + local_30 * local_30 + 0.0;
-      local_a8 = SQRT(local_9c);
+      local_9c = radiusVec * radiusVec + local_34 * local_34 + local_30 * local_30 + 0.0;
+      radius = SQRT(local_9c);
       local_a4 = SQRT(local_9c);
       local_a0 = SQRT(local_9c);
       local_9c = SQRT(local_9c);
-      local_f8 = local_20 - local_b8;
-      local_f4 = local_1c - local_b4;
-      local_f0 = local_18 - local_b0;
-      local_ec = local_14 - 0.0;
-      local_d4 = local_f8 * local_f8 + local_f4 * local_f4 + local_f0 * local_f0 +
-                 local_ec * local_ec;
-      local_e0 = SQRT(local_d4);
+      distVec = fVar1 - ropeCenter;
+      local_f4 = fVar2 - local_b4;
+      local_f0 = fVar3 - local_b0;
+      local_ec = 0;
+      local_d4 = distVec * distVec + local_f4 * local_f4 + local_f0 * local_f0 + 0.0;
+      dist = SQRT(local_d4);
       local_dc = SQRT(local_d4);
       local_d8 = SQRT(local_d4);
       local_d4 = SQRT(local_d4);
-      local_c0 = R_GetNonSunPrimaryLightForBox((GfxViewInfo *)0x0,&local_b8,&local_38);
-      if (local_c0 == 0) {
-        local_c0 = (rgp.world)->sunPrimaryLightIndex;
+      primaryLightIndex = R_GetNonSunPrimaryLightForBox((GfxViewInfo *)0x0,&ropeCenter,&radiusVec);
+      if (primaryLightIndex == 0) {
+        primaryLightIndex = (rgp.world)->sunPrimaryLightIndex;
       }
-      local_50 = (float)R_AllocModelLighting_PrimaryLight
-                                  (&local_b8,local_c0,false,local_98->lightingHandle,&lightingInfo);
-      if (local_50 != 0.0) {
-        bVar3 = gRopeLOD < local_e0 - local_a8;
-        local_101 = param_4 || bVar3;
-        local_4c = (-(uint)(byte)local_101 & 0xfffffffd) + 4;
-        local_40 = local_4c * 2;
-        local_e8 = local_4c * 6;
-        if (param_4 || bVar3) {
+      lightHandle = R_AllocModelLighting_PrimaryLight
+                              (&ropeCenter,primaryLightIndex,false,vrope->lightingHandle,
+                               &lightingInfo);
+      if (lightHandle != 0) {
+        bVar7 = gRopeLOD < dist - radius;
+        useLowResLOD = forceLowResLOD || bVar7;
+        SLICE_COUNT = (-(uint)useLowResLOD & 0xfffffffd) + 4;
+        TRI_COUNT = SLICE_COUNT * 2;
+        INDEX_COUNT = SLICE_COUNT * 6;
+        if (forceLowResLOD || bVar7) {
           local_508 = templateIndices_low;
         }
         else {
           local_508 = templateIndices_high;
         }
-        local_bc = local_508;
-        local_78 = local_70 * local_e8;
-        local_90 = (local_70 + 1) * ((-(uint)(byte)local_101 & 0xfffffffd) + 5);
-        bVar3 = R_ReserveCodeMeshIndices(local_78,&local_108);
-        if (((!bVar3) || (bVar3 = R_ReserveCodeMeshVerts(local_90,local_48), !bVar3)) ||
-           (bVar3 = R_ReserveCodeMeshArgs(1,&local_54), !bVar3)) break;
-        local_6c = local_108;
-        local_10c = 0;
-        for (local_fc = 0; local_fc < local_70; local_fc = local_fc + 1) {
-          local_8c = ((short)local_4c + 1) * (short)local_fc;
-          for (local_118 = 0; local_118 < local_e8; local_118 = local_118 + 2) {
-            local_110 = CONCAT22(local_48[0] + local_bc[local_118 + 1] + local_8c,
-                                 local_48[0] + local_bc[local_118] + local_8c);
-            *(undefined4 *)local_108[local_10c].value = local_110;
-            local_10c = local_10c + 1;
+        templateIndices = local_508;
+        indexCount = segCount * INDEX_COUNT;
+        vertexCount = (segCount + 1) * ((-(uint)useLowResLOD & 0xfffffffd) + 5);
+        bVar7 = R_ReserveCodeMeshIndices(indexCount,&baseIndices);
+        if (((!bVar7) || (bVar7 = R_ReserveCodeMeshVerts(vertexCount,&baseVertex), !bVar7)) ||
+           (bVar7 = R_ReserveCodeMeshArgs(1,&argOffset), !bVar7)) break;
+        indices = baseIndices;
+        indexPairIter = 0;
+        for (segIter = 0; segIter < segCount; segIter = segIter + 1) {
+          offset = ((short)SLICE_COUNT + 1) * (short)segIter;
+          for (i = 0; i < INDEX_COUNT; i = i + 2) {
+            workingIndex.value[1] = baseVertex + templateIndices[i + 1] + offset;
+            workingIndex.value[0] = baseVertex + templateIndices[i] + offset;
+            *&baseIndices[indexPairIter].value = workingIndex.value;
+            indexPairIter = indexPairIter + 1;
           }
         }
-        if ((local_10c != (int)local_78 / 2) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rope_render.cpp"
-                                     ,0xe1,0,"%d,%d"), !bVar3)) {
-          pcVar1 = (code *)swi(3);
-          (*pcVar1)();
+        if ((indexPairIter != indexCount / 2) &&
+           (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_rope_render.cpp"
+                                     ,0xe1,0,"%d,%d"), !bVar7)) {
+          pcVar5 = (code *)swi(3);
+          (*pcVar5)();
           return;
         }
-        local_74 = R_GetCodeMeshVerts(local_48[0]);
-        local_88 = local_68;
+        verts = R_GetCodeMeshVerts(baseVertex);
+        prePos = beamWorldBegin;
         local_84 = local_64;
         local_80 = local_60;
         local_7c = local_5c;
-        local_58.packed = 0xffffffff;
-        local_100 = 0.0;
-        local_3c = local_74;
-        for (local_fc = 0; local_fc <= local_70; local_fc = local_fc + 1) {
-          local_13c = (float)local_fc / (float)local_70;
-          local_18c = (local_114 - local_94) * local_13c + local_94;
-          local_1f0 = 0.25 / (local_18c * 3.1415927);
-          pfVar4 = local_c + local_fc * 3;
-          local_17c = *pfVar4;
-          local_178 = pfVar4[1];
-          local_174 = pfVar4[2];
+        lerpedColor.packed = 0xffffffff;
+        ropeTextureUDist = 0.0;
+        baseVerts = verts;
+        for (segIter = 0; segIter <= segCount; segIter = segIter + 1) {
+          alpha = (float)segIter / (float)segCount;
+          lerpedRadius = (endRadius - beginRadius) * alpha + beginRadius;
+          invHalfCircumfenceTimes4 = 0.25 / (lerpedRadius * 3.1415927);
+          pfVar8 = pfVar4 + segIter * 3;
+          basePos = *pfVar8;
+          local_178 = pfVar8[1];
+          local_174 = pfVar8[2];
           local_170 = 0.0;
-          if (local_fc == 0) {
-            local_1ec = local_c[3] - local_17c;
-            local_1e8 = local_c[4] - local_178;
-            local_1e4 = local_c[5] - local_174;
+          if (segIter == 0) {
+            segDiff = pfVar4[3] - basePos;
+            local_1e8 = pfVar4[4] - local_178;
+            local_1e4 = pfVar4[5] - local_174;
           }
-          else if (local_fc == local_70) {
-            pfVar4 = local_c + (local_fc + -1) * 3;
-            local_1ec = local_17c - *pfVar4;
-            local_1e8 = local_178 - pfVar4[1];
-            local_1e4 = local_174 - pfVar4[2];
+          else if (segIter == segCount) {
+            pfVar8 = pfVar4 + (segIter + -1) * 3;
+            segDiff = basePos - *pfVar8;
+            local_1e8 = local_178 - pfVar8[1];
+            local_1e4 = local_174 - pfVar8[2];
           }
           else {
-            pfVar6 = local_c + (local_fc + -1) * 3;
-            pfVar4 = local_c + (local_fc + 1) * 3;
-            local_1ec = *pfVar4 - *pfVar6;
-            local_1e8 = pfVar4[1] - pfVar6[1];
-            local_1e4 = pfVar4[2] - pfVar6[2];
+            pfVar10 = pfVar4 + (segIter + -1) * 3;
+            pfVar8 = pfVar4 + (segIter + 1) * 3;
+            segDiff = *pfVar8 - *pfVar10;
+            local_1e8 = pfVar8[1] - pfVar10[1];
+            local_1e4 = pfVar8[2] - pfVar10[2];
           }
           local_1e0 = 0;
-          local_188 = local_18c;
-          local_184 = local_18c;
-          local_180 = local_18c;
-          Vec3NormalizeTo(&local_1ec,&local_1ec);
+          local_188 = lerpedRadius;
+          local_184 = lerpedRadius;
+          local_180 = lerpedRadius;
+          Vec3NormalizeTo(&segDiff,&segDiff);
           local_1e0 = 0;
-          local_1dc = local_17c - local_20;
-          local_1d8 = local_178 - local_1c;
-          local_1d4 = local_174 - local_18;
-          local_1d0 = local_170 - local_14;
-          local_138 = local_17c - local_20;
-          local_134 = local_178 - local_1c;
-          local_130 = local_174 - local_18;
-          local_12c = local_170 - local_14;
-          Vec3Cross(&local_1ec,&local_1dc,&local_138);
+          cameraVec = basePos - fVar1;
+          local_1d8 = local_178 - fVar2;
+          local_1d4 = local_174 - fVar3;
+          local_1d0 = local_170 - 0.0;
+          perpDir = basePos - fVar1;
+          local_134 = local_178 - fVar2;
+          local_130 = local_174 - fVar3;
+          local_12c = local_170 - 0.0;
+          Vec3Cross(&segDiff,&cameraVec,&perpDir);
           local_12c = 0.0;
-          Vec3NormalizeTo(&local_138,&local_138);
+          Vec3NormalizeTo(&perpDir,&perpDir);
           local_12c = 0.0;
-          Vec3Cross(&local_1ec,&local_138,&local_1ac);
+          Vec3Cross(&segDiff,&perpDir,&perpUpDir);
           local_1a0 = 0.0;
-          Vec3NormalizeTo(&local_1ac,&local_1ac);
+          Vec3NormalizeTo(&perpUpDir,&perpUpDir);
           local_1a0 = 0.0;
-          local_21c.x = local_17c - local_88;
-          local_21c.y = local_178 - local_84;
-          local_21c.z = local_174 - local_80;
+          distVec_2.x = basePos - prePos;
+          distVec_2.y = local_178 - local_84;
+          distVec_2.z = local_174 - local_80;
           local_7c = local_170 - local_7c;
-          local_88 = local_21c.x;
-          local_84 = local_21c.y;
-          local_80 = local_21c.z;
-          fVar7 = Abs(&local_21c);
-          local_100 = fVar7 * local_1f0 + local_100;
-          local_88 = local_17c;
+          prePos = distVec_2.x;
+          local_84 = distVec_2.y;
+          local_80 = distVec_2.z;
+          fVar11 = Abs(&distVec_2);
+          ropeTextureUDist = fVar11 * invHalfCircumfenceTimes4 + ropeTextureUDist;
+          prePos = basePos;
           local_84 = local_178;
           local_80 = local_174;
           local_7c = local_170;
-          local_1cc = -local_138;
+          nrm0 = -perpDir;
           local_1c8 = -local_134;
           local_1c4 = -local_130;
           local_1c0 = -local_12c;
-          local_16c = local_1cc * local_18c + local_17c;
+          tpos0 = nrm0 * lerpedRadius + basePos;
           local_168 = local_1c8 * local_188 + local_178;
           local_164 = local_1c4 * local_184 + local_174;
           local_160 = local_1c0 * local_180 + local_170;
-          local_15c = local_138;
+          nrm1 = perpDir;
           local_158 = local_134;
           local_154 = local_130;
           local_150 = local_12c;
-          local_128 = local_138 * local_18c + local_17c;
+          tpos1 = perpDir * lerpedRadius + basePos;
           local_124 = local_134 * local_188 + local_178;
           local_120 = local_130 * local_184 + local_174;
           local_11c = local_12c * local_180 + local_170;
-          local_21c.w = local_1ac * local_18c + local_17c;
+          distVec_2.w = perpUpDir * lerpedRadius + basePos;
           local_20c = local_1a8 * local_188 + local_178;
           local_208 = local_1a4 * local_184 + local_174;
           local_204 = local_1a0 * local_180 + local_170;
-          local_200 = local_1ac * (float)0x3f3504f3 + local_1cc * (float)0x3f3504f3;
+          nrm3 = perpUpDir * (float)0x3f3504f3 + nrm0 * (float)0x3f3504f3;
           local_1fc = local_1a8 * (float)0x3f3504f3 + local_1c8 * (float)0x3f3504f3;
           local_1f8 = local_1a4 * (float)0x3f3504f3 + local_1c4 * (float)0x3f3504f3;
           local_1f4 = local_1a0 * (float)0x3f3504f3 + local_1c0 * (float)0x3f3504f3;
-          local_19c = local_200 * local_18c + local_17c;
+          tpos3 = nrm3 * lerpedRadius + basePos;
           local_198 = local_1fc * local_188 + local_178;
           local_194 = local_1f8 * local_184 + local_174;
           local_190 = local_1f4 * local_180 + local_170;
-          local_1bc = local_1ac * (float)0x3f3504f3 + local_138 * (float)0x3f3504f3;
+          nrm4 = perpUpDir * (float)0x3f3504f3 + perpDir * (float)0x3f3504f3;
           local_1b8 = local_1a8 * (float)0x3f3504f3 + local_134 * (float)0x3f3504f3;
           local_1b4 = local_1a4 * (float)0x3f3504f3 + local_130 * (float)0x3f3504f3;
           local_1b0 = local_1a0 * (float)0x3f3504f3 + local_12c * (float)0x3f3504f3;
-          local_14c = local_1bc * local_18c + local_17c;
+          tpos4 = nrm4 * lerpedRadius + basePos;
           local_148 = local_1b8 * local_188 + local_178;
           local_144 = local_1b4 * local_184 + local_174;
           local_140 = local_1b0 * local_180 + local_170;
-          local_74->xyz[0] = local_16c;
-          local_74->xyz[1] = local_168;
-          local_74->xyz[2] = local_164;
-          local_74->color = local_58;
-          local_74->binormalSign = 1.0;
+          verts->xyz[0] = tpos0;
+          verts->xyz[1] = local_168;
+          verts->xyz[2] = local_164;
+          verts->color = lerpedColor;
+          verts->binormalSign = 1.0;
           local_2fc.array[1] = (char)(int)(local_1c8 * 127.0 + 127.5);
-          local_2fc.array[0] = (char)(int)(local_1cc * 127.0 + 127.5);
+          local_2fc.array[0] = (char)(int)(nrm0 * 127.0 + 127.5);
           local_2fc.array[2] = (char)(int)(local_1c4 * 127.0 + 127.5);
           local_2fc.array[3] = 0x3f;
-          local_74->normal = local_2fc;
+          verts->normal = local_2fc;
           local_318.array[1] = (char)(int)(local_1e8 * 127.0 + 127.5);
-          local_318.array[0] = (char)(int)(local_1ec * 127.0 + 127.5);
+          local_318.array[0] = (char)(int)(segDiff * 127.0 + 127.5);
           local_318.array[2] = (char)(int)(local_1e4 * 127.0 + 127.5);
           local_318.array[3] = 0x3f;
-          local_74->tangent = local_318;
-          uVar5 = (int)local_100 >> 0x10;
-          local_348 = (int)((int)local_100 << 1 ^ 0x80000000U) >> 0xe;
+          verts->tangent = local_318;
+          uVar9 = (int)ropeTextureUDist >> 0x10;
+          local_348 = (int)((int)ropeTextureUDist << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_348) {
             local_348 = 0x3fff;
           }
@@ -413,25 +410,25 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
           else {
             local_510 = local_348;
           }
-          (local_74->texCoord).packed = uVar5 & 0xc000 | local_510 & 0x3fff;
-          pGVar2 = local_74 + 1;
-          if (local_101 == '\0') {
-            local_74[1].xyz[0] = local_19c;
-            local_74[1].xyz[1] = local_198;
-            local_74[1].xyz[2] = local_194;
-            local_74[1].color = local_58;
-            local_74[1].binormalSign = 1.0;
+          (verts->texCoord).packed = uVar9 & 0xc000 | local_510 & 0x3fff;
+          pGVar6 = verts + 1;
+          if (useLowResLOD == false) {
+            verts[1].xyz[0] = tpos3;
+            verts[1].xyz[1] = local_198;
+            verts[1].xyz[2] = local_194;
+            verts[1].color = lerpedColor;
+            verts[1].binormalSign = 1.0;
             local_368.array[1] = (char)(int)(local_1fc * 127.0 + 127.5);
-            local_368.array[0] = (char)(int)(local_200 * 127.0 + 127.5);
+            local_368.array[0] = (char)(int)(nrm3 * 127.0 + 127.5);
             local_368.array[2] = (char)(int)(local_1f8 * 127.0 + 127.5);
             local_368.array[3] = 0x3f;
-            local_74[1].normal = local_368;
+            verts[1].normal = local_368;
             local_384.array[1] = (char)(int)(local_1e8 * 127.0 + 127.5);
-            local_384.array[0] = (char)(int)(local_1ec * 127.0 + 127.5);
+            local_384.array[0] = (char)(int)(segDiff * 127.0 + 127.5);
             local_384.array[2] = (char)(int)(local_1e4 * 127.0 + 127.5);
             local_384.array[3] = 0x3f;
-            local_74[1].tangent = local_384;
-            local_3b4 = (int)((int)local_100 << 1 ^ 0x80000000U) >> 0xe;
+            verts[1].tangent = local_384;
+            local_3b4 = (int)((int)ropeTextureUDist << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_3b4) {
               local_3b4 = 0x3fff;
             }
@@ -441,23 +438,23 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
             else {
               local_518 = local_3b4;
             }
-            local_74[1].texCoord.packed = (uVar5 & 0xc000 | local_518 & 0x3fff) + 0x32660000;
-            local_74[2].xyz[0] = local_21c.w;
-            local_74[2].xyz[1] = local_20c;
-            local_74[2].xyz[2] = local_208;
-            local_74[2].color = local_58;
-            local_74[2].binormalSign = 1.0;
+            verts[1].texCoord.packed = (uVar9 & 0xc000 | local_518 & 0x3fff) + 0x32660000;
+            verts[2].xyz[0] = distVec_2.w;
+            verts[2].xyz[1] = local_20c;
+            verts[2].xyz[2] = local_208;
+            verts[2].color = lerpedColor;
+            verts[2].binormalSign = 1.0;
             local_3d4.array[1] = (char)(int)(local_1a8 * 127.0 + 127.5);
-            local_3d4.array[0] = (char)(int)(local_1ac * 127.0 + 127.5);
+            local_3d4.array[0] = (char)(int)(perpUpDir * 127.0 + 127.5);
             local_3d4.array[2] = (char)(int)(local_1a4 * 127.0 + 127.5);
             local_3d4.array[3] = 0x3f;
-            local_74[2].normal = local_3d4;
+            verts[2].normal = local_3d4;
             local_3f0.array[1] = (char)(int)(local_1e8 * 127.0 + 127.5);
-            local_3f0.array[0] = (char)(int)(local_1ec * 127.0 + 127.5);
+            local_3f0.array[0] = (char)(int)(segDiff * 127.0 + 127.5);
             local_3f0.array[2] = (char)(int)(local_1e4 * 127.0 + 127.5);
             local_3f0.array[3] = 0x3f;
-            local_74[2].tangent = local_3f0;
-            local_420 = (int)((int)local_100 << 1 ^ 0x80000000U) >> 0xe;
+            verts[2].tangent = local_3f0;
+            local_420 = (int)((int)ropeTextureUDist << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_420) {
               local_420 = 0x3fff;
             }
@@ -467,23 +464,23 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
             else {
               local_520 = local_420;
             }
-            local_74[2].texCoord.packed = (uVar5 & 0xc000 | local_520 & 0x3fff) + 0x36660000;
-            local_74[3].xyz[0] = local_14c;
-            local_74[3].xyz[1] = local_148;
-            local_74[3].xyz[2] = local_144;
-            local_74[3].color = local_58;
-            local_74[3].binormalSign = 1.0;
+            verts[2].texCoord.packed = (uVar9 & 0xc000 | local_520 & 0x3fff) + 0x36660000;
+            verts[3].xyz[0] = tpos4;
+            verts[3].xyz[1] = local_148;
+            verts[3].xyz[2] = local_144;
+            verts[3].color = lerpedColor;
+            verts[3].binormalSign = 1.0;
             local_440.array[1] = (char)(int)(local_1b8 * 127.0 + 127.5);
-            local_440.array[0] = (char)(int)(local_1bc * 127.0 + 127.5);
+            local_440.array[0] = (char)(int)(nrm4 * 127.0 + 127.5);
             local_440.array[2] = (char)(int)(local_1b4 * 127.0 + 127.5);
             local_440.array[3] = 0x3f;
-            local_74[3].normal = local_440;
+            verts[3].normal = local_440;
             local_45c.array[1] = (char)(int)(local_1e8 * 127.0 + 127.5);
-            local_45c.array[0] = (char)(int)(local_1ec * 127.0 + 127.5);
+            local_45c.array[0] = (char)(int)(segDiff * 127.0 + 127.5);
             local_45c.array[2] = (char)(int)(local_1e4 * 127.0 + 127.5);
             local_45c.array[3] = 0x3f;
-            local_74[3].tangent = local_45c;
-            local_48c = (int)((int)local_100 << 1 ^ 0x80000000U) >> 0xe;
+            verts[3].tangent = local_45c;
+            local_48c = (int)((int)ropeTextureUDist << 1 ^ 0x80000000U) >> 0xe;
             if (0x3ffe < (int)local_48c) {
               local_48c = 0x3fff;
             }
@@ -493,26 +490,26 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
             else {
               local_528 = local_48c;
             }
-            local_74[3].texCoord.packed = (uVar5 & 0xc000 | local_528 & 0x3fff) + 0x3a660000;
-            pGVar2 = local_74 + 4;
+            verts[3].texCoord.packed = (uVar9 & 0xc000 | local_528 & 0x3fff) + 0x3a660000;
+            pGVar6 = verts + 4;
           }
-          local_74 = pGVar2;
-          local_74->xyz[0] = local_128;
-          local_74->xyz[1] = local_124;
-          local_74->xyz[2] = local_120;
-          local_74->color = local_58;
-          local_74->binormalSign = 1.0;
+          verts = pGVar6;
+          verts->xyz[0] = tpos1;
+          verts->xyz[1] = local_124;
+          verts->xyz[2] = local_120;
+          verts->color = lerpedColor;
+          verts->binormalSign = 1.0;
           local_4ac.array[1] = (char)(int)(local_134 * 127.0 + 127.5);
-          local_4ac.array[0] = (char)(int)(local_138 * 127.0 + 127.5);
+          local_4ac.array[0] = (char)(int)(perpDir * 127.0 + 127.5);
           local_4ac.array[2] = (char)(int)(local_130 * 127.0 + 127.5);
           local_4ac.array[3] = 0x3f;
-          local_74->normal = local_4ac;
+          verts->normal = local_4ac;
           local_4c8.array[1] = (char)(int)(local_1e8 * 127.0 + 127.5);
-          local_4c8.array[0] = (char)(int)(local_1ec * 127.0 + 127.5);
+          local_4c8.array[0] = (char)(int)(segDiff * 127.0 + 127.5);
           local_4c8.array[2] = (char)(int)(local_1e4 * 127.0 + 127.5);
           local_4c8.array[3] = 0x3f;
-          local_74->tangent = local_4c8;
-          local_4f8 = (int)((int)local_100 << 1 ^ 0x80000000U) >> 0xe;
+          verts->tangent = local_4c8;
+          local_4f8 = (int)((int)ropeTextureUDist << 1 ^ 0x80000000U) >> 0xe;
           if (0x3ffe < (int)local_4f8) {
             local_4f8 = 0x3fff;
           }
@@ -522,17 +519,18 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
           else {
             local_530 = local_4f8;
           }
-          (local_74->texCoord).packed = (uVar5 & 0xc000 | local_530 & 0x3fff) + 0x3c000000;
-          local_74 = local_74 + 1;
+          (verts->texCoord).packed = (uVar9 & 0xc000 | local_530 & 0x3fff) + 0x3c000000;
+          verts = verts + 1;
         }
-        local_e4 = R_GetCodeMeshArgs(local_54);
-        (*local_e4)[0] = local_50;
-        (*local_e4)[1] = local_50;
-        (*local_e4)[2] = local_50;
-        (*local_e4)[3] = local_50;
-        local_44 = local_e4;
-        R_AddRopeCodeMeshDrawSurf(local_98->material,local_108,local_78,local_54,1,local_c0,param_3)
-        ;
+        baseArgs = (float4 *)R_GetCodeMeshArgs(argOffset);
+        baseArgs->u[0] = lightHandle;
+        baseArgs->u[1] = lightHandle;
+        baseArgs->u[2] = lightHandle;
+        baseArgs->u[3] = lightHandle;
+        args = baseArgs;
+        R_AddRopeCodeMeshDrawSurf
+                  (vrope->material,baseIndices,indexCount,argOffset,1,primaryLightIndex,
+                   drawsurfRegion);
       }
     }
   }
@@ -544,10 +542,10 @@ R_Rope_GenerateVerts_Internal(RopeGenerateVertsCmd *param_1,uint param_2,uint pa
 
 // 00A7E5A0  R_Rope_GenerateVerts_Camera  (gfx_d3d/r_rope_render.cpp:393)
 
-void __cdecl R_Rope_GenerateVerts_Camera(RopeGenerateVertsCmd *param_1)
+void __cdecl R_Rope_GenerateVerts_Camera(RopeGenerateVertsCmd *cmd)
 
 {
-  R_Rope_GenerateVerts_Internal(param_1,0,9,false);
+  R_Rope_GenerateVerts_Internal(cmd,0,9,false);
   return;
 }
 
@@ -564,7 +562,7 @@ void __cdecl R_Rope_ClearAll(void)
 
 // 00A80DB0  R_Rope_Add  (gfx_d3d/r_rope_render.cpp:416)
 
-void __cdecl R_Rope_Add(VisualRope *param_1)
+void __cdecl R_Rope_Add(VisualRope *vropeIn)
 
 {
   code *pcVar1;
@@ -572,13 +570,14 @@ void __cdecl R_Rope_Add(VisualRope *param_1)
   bool bVar3;
   int iVar4;
   VisualRope *pVVar5;
+  VisualRope *vr;
   
   iVar2 = g_ropeInfo.ropeCount;
   if (g_ropeInfo.ropeCount != 0x60) {
     pVVar5 = g_ropeInfo.ropes + g_ropeInfo.ropeCount;
     for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
-      pVVar5->beginRadius = param_1->beginRadius;
-      param_1 = (VisualRope *)&param_1->endRadius;
+      pVVar5->beginRadius = vropeIn->beginRadius;
+      vropeIn = (VisualRope *)&vropeIn->endRadius;
       pVVar5 = (VisualRope *)&pVVar5->endRadius;
     }
     g_ropeInfo.ropes[iVar2].drawSurf = (GfxDrawSurf *)0x0;
@@ -606,21 +605,21 @@ RopeRenderInfo * __cdecl R_Rope_GetInfo(void)
 
 // 00A80E40  R_Rope_CalcVisibility  (gfx_d3d/r_rope_render.cpp:435)
 
-uchar __cdecl R_Rope_CalcVisibility(float *param_1,int param_2)
+uchar __cdecl R_Rope_CalcVisibility(float *minmax,int localClientNum)
 
 {
   int iVar1;
-  undefined4 local_c;
-  undefined1 local_5;
+  int sceneIdx;
+  uchar visFlag;
   
-  local_5 = 0;
-  for (local_c = 0; (int)local_c < 3; local_c = local_c + 1) {
-    iVar1 = R_CullBoxCurDpvs_SceneSelect(param_1,param_2,local_c);
+  visFlag = '\0';
+  for (sceneIdx = 0; sceneIdx < 3; sceneIdx = sceneIdx + 1) {
+    iVar1 = R_CullBoxCurDpvs_SceneSelect(minmax,localClientNum,sceneIdx);
     if (iVar1 == 0) {
-      local_5 = local_5 | (byte)(1 << ((byte)local_c & 0x1f));
+      visFlag = visFlag | (byte)(1 << ((byte)sceneIdx & 0x1f));
     }
   }
-  return local_5;
+  return visFlag;
 }
 
 

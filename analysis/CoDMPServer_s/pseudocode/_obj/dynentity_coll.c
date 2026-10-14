@@ -13,17 +13,17 @@ void __cdecl DynEnt_ClearCollWorld(DynEntityCollType param_1)
   float *extraout_ECX;
   ushort *puVar2;
   int iVar3;
+  float *dst;
   float *pfVar4;
   float *pfVar5;
-  float *pfVar6;
   
   if (cm.isInUse != 0) {
     iVar3 = in_EAX * 0x501c;
-    pfVar4 = (float *)(&DAT_011995c8 + iVar3);
-    pfVar6 = (float *)0x0;
-    pfVar5 = pfVar4;
-    memset((uchar *)pfVar4,'\0',0x501c);
-    CM_ModelBounds(0,pfVar5,pfVar6);
+    dst = (float *)(&DAT_011995c8 + iVar3);
+    pfVar5 = (float *)0x0;
+    pfVar4 = dst;
+    memset((uchar *)dst,'\0',0x501c);
+    CM_ModelBounds(0,pfVar4,pfVar5);
     uVar1 = 2;
     *(undefined2 *)(&DAT_011995e0 + iVar3) = 2;
     puVar2 = (ushort *)(&DAT_01199612 + iVar3);
@@ -32,11 +32,10 @@ void __cdecl DynEnt_ClearCollWorld(DynEntityCollType param_1)
       *puVar2 = uVar1;
       puVar2 = puVar2 + 10;
     } while (uVar1 < 0x3ff);
-    uVar1 = (ushort)(*extraout_ECX - *pfVar4 <= extraout_ECX[1] - *(float *)(&DAT_011995cc + iVar3))
-    ;
+    uVar1 = (ushort)(*extraout_ECX - *dst <= extraout_ECX[1] - *(float *)(&DAT_011995cc + iVar3));
     *(ushort *)(&DAT_011995fc + iVar3) = uVar1;
     *(float *)(&DAT_011995f8 + iVar3) =
-         (*(float *)(&DAT_011995d4 + (uint)uVar1 * 4 + iVar3) + pfVar4[uVar1]) * 0.5;
+         (*(float *)(&DAT_011995d4 + (uint)uVar1 * 4 + iVar3) + dst[uVar1]) * 0.5;
   }
   return;
 }

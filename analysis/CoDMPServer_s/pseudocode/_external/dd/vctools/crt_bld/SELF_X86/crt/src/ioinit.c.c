@@ -18,8 +18,8 @@ int __cdecl _ioinit(void)
   int *piVar7;
   int iVar8;
   _STARTUPINFOA _Stack_68;
-  uint uStack_24;
-  byte *pbStack_20;
+  int fh;
+  int *posfhnd;
   undefined4 uStack_c;
   undefined4 uStack_8;
   
@@ -49,14 +49,14 @@ LAB_0096d336:
     if ((_Stack_68.cbReserved2 != 0) && ((int *)_Stack_68.lpReserved2 != (int *)0x0)) {
       iVar8 = *(int *)_Stack_68.lpReserved2;
       pbVar6 = (byte *)((int)_Stack_68.lpReserved2 + 4);
-      pbStack_20 = pbVar6 + iVar8;
+      posfhnd = (int *)(pbVar6 + iVar8);
       if (0x7ff < iVar8) {
         iVar8 = 0x800;
       }
-      uStack_24 = 1;
+      fh = 1;
       while ((iVar5 = iVar8, _nhandle < iVar8 &&
              (puVar2 = _calloc_crt(0x20,0x40), iVar5 = _nhandle, puVar2 != (undefined4 *)0x0))) {
-        *(undefined4 **)(&__pioinfo + uStack_24 * 4) = puVar2;
+        *(undefined4 **)(&__pioinfo + fh * 4) = puVar2;
         _nhandle = _nhandle + 0x20;
         puVar1 = puVar2;
         for (; puVar2 < puVar1 + 0x200; puVar2 = puVar2 + 0x10) {
@@ -69,29 +69,28 @@ LAB_0096d336:
           *(undefined1 *)((int)puVar2 + 0x26) = 10;
           puVar2[0xe] = 0;
           *(undefined1 *)(puVar2 + 0xd) = 0;
-          puVar1 = *(undefined4 **)(&__pioinfo + uStack_24 * 4);
+          puVar1 = *(undefined4 **)(&__pioinfo + fh * 4);
         }
-        uStack_24 = uStack_24 + 1;
+        fh = fh + 1;
       }
-      uStack_24 = 0;
+      fh = 0;
       if (0 < iVar5) {
         do {
-          pvVar4 = *(HANDLE *)pbStack_20;
+          pvVar4 = (HANDLE)*posfhnd;
           if ((((pvVar4 != (HANDLE)0xffffffff) && (pvVar4 != (HANDLE)0xfffffffe)) &&
               ((*pbVar6 & 1) != 0)) &&
              (((*pbVar6 & 8) != 0 || (DVar3 = GetFileType(pvVar4), DVar3 != 0)))) {
-            puVar2 = (undefined4 *)
-                     ((uStack_24 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uStack_24 >> 5) * 4));
-            *puVar2 = *(undefined4 *)pbStack_20;
-            *(byte *)(puVar2 + 1) = *pbVar6;
-            iVar8 = __crtInitCritSecAndSpinCount((_RTL_CRITICAL_SECTION *)(puVar2 + 3),4000);
+            piVar7 = (int *)((fh & 0x1fU) * 0x40 + *(int *)(&__pioinfo + (fh >> 5) * 4));
+            *piVar7 = *posfhnd;
+            *(byte *)(piVar7 + 1) = *pbVar6;
+            iVar8 = __crtInitCritSecAndSpinCount((_RTL_CRITICAL_SECTION *)(piVar7 + 3),4000);
             if (iVar8 == 0) goto LAB_0096d336;
-            puVar2[2] = puVar2[2] + 1;
+            piVar7[2] = piVar7[2] + 1;
           }
-          uStack_24 = uStack_24 + 1;
+          fh = fh + 1;
           pbVar6 = pbVar6 + 1;
-          pbStack_20 = pbStack_20 + 4;
-        } while ((int)uStack_24 < iVar5);
+          posfhnd = posfhnd + 1;
+        } while (fh < iVar5);
       }
     }
     iVar8 = 0;

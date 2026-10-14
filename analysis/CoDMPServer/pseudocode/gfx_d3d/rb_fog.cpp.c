@@ -2,7 +2,7 @@
 
 // 00B1C740  R_SetFrameFog  (gfx_d3d/rb_fog.cpp:11)
 
-void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
+void __cdecl R_SetFrameFog(GfxCmdBufInput *input,GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
@@ -32,11 +32,11 @@ void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
   float local_14;
   
   if ((r_fog->current).enabled == false) {
-    R_SetInputCodeConstant(param_1,0x38,0.0,0.0,0.0,0.0);
-    R_SetInputCodeConstant(param_1,0x39,0.0,0.0,0.0,0.0);
+    R_SetInputCodeConstant(input,0x38,0.0,0.0,0.0,0.0);
+    R_SetInputCodeConstant(input,0x39,0.0,0.0,0.0,0.0);
   }
   else {
-    local_14 = param_1[1].consts[2][0];
+    local_14 = input[1].consts[2][0];
     if (local_14 == 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_fog.cpp",0x19,0,"%s")
       ;
@@ -47,8 +47,8 @@ void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
       }
     }
     local_18 = (int)local_14 + 0x16cbe4;
-    R_SetInputCodeConstantFromVec4(param_1,0x3d,(float *)((int)local_14 + 0x16cc0c));
-    R_SetInputCodeConstantFromVec4(param_1,0x3c,(float *)(local_18 + 0x38));
+    R_SetInputCodeConstantFromVec4(input,0x3d,(float *)((int)local_14 + 0x16cc0c));
+    R_SetInputCodeConstantFromVec4(input,0x3c,(float *)(local_18 + 0x38));
     local_1c = 1e+07;
     local_20 = *(float *)(local_18 + 0x44) * 0.017453292;
     dVar3 = (double)local_20;
@@ -65,19 +65,20 @@ void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
     local_38 = local_1c;
     local_34 = 0.0;
     local_30 = 0.0;
-    R_SetInputCodeConstantFromVec4(param_1,0x3b,&local_3c);
+    R_SetInputCodeConstantFromVec4(input,0x3b,&local_3c);
     local_40 = (float *)(local_18 + 8);
     local_50 = *local_40;
     local_4c = *(undefined4 *)(local_18 + 0xc);
     local_48 = *(undefined4 *)(local_18 + 0x10);
     local_44 = *(undefined4 *)(local_18 + 0x14);
-    R_SetInputCodeConstantFromVec4(param_1,0x3a,&local_50);
-    local_54 = (param_2->field0_0x0).cullViewInfo.viewParms.origin[2] - *(float *)(local_18 + 0x24);
+    R_SetInputCodeConstantFromVec4(input,0x3a,&local_50);
+    local_54 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2] - *(float *)(local_18 + 0x24)
+    ;
     local_58 = *(float *)(local_18 + 0x1c);
     local_6c[4] = *(float *)(local_18 + 0x4c);
     if (local_58 == 0.0) {
-      R_SetInputCodeConstant(param_1,0x38,0.0,0.0,0.0,0.0);
-      R_SetInputCodeConstant(param_1,0x39,0.0,0.0,0.0,0.0);
+      R_SetInputCodeConstant(input,0x38,0.0,0.0,0.0,0.0);
+      R_SetInputCodeConstant(input,0x39,0.0,0.0,0.0,0.0);
     }
     else {
       local_6c[3] = 0.0;
@@ -113,8 +114,8 @@ void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
         __libm_sse2_log(in_stack_ffffff70);
         local_38 = local_38 * (float)dVar3;
       }
-      R_SetInputCodeConstantFromVec4(param_1,0x38,&local_3c);
-      R_SetInputCodeConstantFromVec4(param_1,0x39,local_6c);
+      R_SetInputCodeConstantFromVec4(input,0x38,&local_3c);
+      R_SetInputCodeConstantFromVec4(input,0x39,local_6c);
     }
   }
   return;

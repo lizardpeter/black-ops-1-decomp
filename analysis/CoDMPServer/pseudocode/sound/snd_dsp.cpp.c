@@ -2,16 +2,16 @@
 
 // 009428A0  IS_NAN  (universal/com_math.h:43)
 
-int __cdecl IS_NAN(float param_1)
+int __cdecl IS_NAN(float x)
 
 {
-  return (uint)(((uint)param_1 & 0x7f800000) == 0x7f800000);
+  return (uint)(((uint)x & 0x7f800000) == 0x7f800000);
 }
 
 
 // 00942BC0  I_dcbt  (universal/prefetch.h:61)
 
-void __cdecl I_dcbt(int param_1,void *param_2)
+void __cdecl I_dcbt(int offset,void *base)
 
 {
   return;
@@ -20,16 +20,16 @@ void __cdecl I_dcbt(int param_1,void *param_2)
 
 // 00944A20  I_fsel  (universal/com_math.h:88)
 
-float __cdecl I_fsel(float param_1,float param_2,float param_3)
+float __cdecl I_fsel(float comparand,float valGE,float valLT)
 
 {
   undefined4 local_8;
   
-  if (param_1 < 0.0) {
-    local_8 = param_3;
+  if (comparand < 0.0) {
+    local_8 = valLT;
   }
   else {
-    local_8 = param_2;
+    local_8 = valGE;
   }
   return local_8;
 }
@@ -37,7 +37,7 @@ float __cdecl I_fsel(float param_1,float param_2,float param_3)
 
 // 00942944  SND_DspMul  (sound/snd_dsp.cpp:127)
 
-void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl SND_DspMul(uint count,float *a,float *b,float *c)
 
 {
   float *pfVar1;
@@ -47,8 +47,8 @@ void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_
   float *pfVar5;
   float *pfVar6;
   
-  pfVar3 = param_2;
-  if ((param_1 & 3) != 0) {
+  pfVar3 = a;
+  if ((count & 3) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x80,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -56,7 +56,7 @@ void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_
       return;
     }
   }
-  if (((uint)param_2 & 0xf) != 0) {
+  if (((uint)a & 0xf) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x81,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -64,7 +64,7 @@ void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)b & 0xf) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x82,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -72,7 +72,7 @@ void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_
       return;
     }
   }
-  if (((uint)param_4 & 0xf) != 0) {
+  if (((uint)c & 0xf) != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x83,0,"%s");
     if (!bVar4) {
       pcVar2 = (code *)swi(3);
@@ -80,21 +80,21 @@ void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_
       return;
     }
   }
-  param_2 = (float *)0x0;
-  if (param_1 != 0) {
-    pfVar6 = param_4 + 2;
-    pfVar5 = param_3 + 1;
+  a = (float *)0x0;
+  if (count != 0) {
+    pfVar6 = c + 2;
+    pfVar5 = b + 1;
     do {
-      pfVar6[-2] = pfVar3[(int)param_2] * pfVar5[-1];
-      *(float *)(((int)param_4 - (int)param_3) + (int)pfVar5) =
-           *(float *)(((int)pfVar3 - (int)param_3) + (int)pfVar5) * *pfVar5;
-      pfVar1 = param_2 + 1;
-      *pfVar6 = *(float *)(((int)pfVar3 - (int)param_4) + (int)pfVar6) * pfVar5[1];
-      pfVar6[1] = pfVar3[(int)param_2 + 3] * pfVar5[2];
+      pfVar6[-2] = pfVar3[(int)a] * pfVar5[-1];
+      *(float *)(((int)c - (int)b) + (int)pfVar5) =
+           *(float *)(((int)pfVar3 - (int)b) + (int)pfVar5) * *pfVar5;
+      pfVar1 = a + 1;
+      *pfVar6 = *(float *)(((int)pfVar3 - (int)c) + (int)pfVar6) * pfVar5[1];
+      pfVar6[1] = pfVar3[(int)a + 3] * pfVar5[2];
       pfVar6 = pfVar6 + 4;
       pfVar5 = pfVar5 + 4;
-      param_2 = pfVar1;
-    } while (pfVar1 < param_1);
+      a = pfVar1;
+    } while (pfVar1 < count);
   }
   return;
 }
@@ -102,7 +102,7 @@ void __cdecl SND_DspMul(uint param_1,float *param_2,float *param_3,float *param_
 
 // 00942A5F  SND_DspScale  (sound/snd_dsp.cpp:159)
 
-void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3)
+void __cdecl SND_DspScale(uint count,float a,float *c)
 
 {
   code *pcVar1;
@@ -110,7 +110,7 @@ void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3)
   float *pfVar3;
   int iVar4;
   
-  if ((param_1 & 3) != 0) {
+  if ((count & 3) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0xa0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -118,7 +118,7 @@ void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3)
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)c & 0xf) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0xa1,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -126,14 +126,14 @@ void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3)
       return;
     }
   }
-  if (param_1 != 0) {
-    pfVar3 = param_3 + 2;
-    iVar4 = (param_1 - 1 >> 2) + 1;
+  if (count != 0) {
+    pfVar3 = c + 2;
+    iVar4 = (count - 1 >> 2) + 1;
     do {
-      pfVar3[-2] = pfVar3[-2] * param_2;
-      pfVar3[-1] = pfVar3[-1] * param_2;
-      *pfVar3 = param_2 * *pfVar3;
-      pfVar3[1] = pfVar3[1] * param_2;
+      pfVar3[-2] = pfVar3[-2] * a;
+      pfVar3[-1] = pfVar3[-1] * a;
+      *pfVar3 = a * *pfVar3;
+      pfVar3[1] = pfVar3[1] * a;
       pfVar3 = pfVar3 + 4;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
@@ -144,7 +144,7 @@ void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3)
 
 // 00942B07  SND_DspScaleCache  (sound/snd_dsp.cpp:173)
 
-void __cdecl SND_DspScaleCache(uint param_1,float param_2,float *param_3)
+void __cdecl SND_DspScaleCache(uint count,float a,float *c)
 
 {
   code *pcVar1;
@@ -152,29 +152,29 @@ void __cdecl SND_DspScaleCache(uint param_1,float param_2,float *param_3)
   uint uVar3;
   int iVar4;
   
-  if (((param_1 & 0x1f) != 0) &&
+  if (((count & 0x1f) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0xae,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((uint)param_3 & 0x1f) != 0) &&
+  if ((((uint)c & 0x1f) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0xaf,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  for (uVar3 = param_1 >> 5; uVar3 != 0; uVar3 = uVar3 - 1) {
-    I_dcbt(0x80,param_3);
+  for (uVar3 = count >> 5; uVar3 != 0; uVar3 = uVar3 - 1) {
+    I_dcbt(0x80,c);
     iVar4 = 8;
     do {
-      *param_3 = *param_3 * param_2;
-      param_3[1] = param_2 * param_3[1];
-      param_3[2] = param_2 * param_3[2];
-      param_3[3] = param_2 * param_3[3];
-      param_3 = param_3 + 4;
+      *c = *c * a;
+      c[1] = a * c[1];
+      c[2] = a * c[2];
+      c[3] = a * c[3];
+      c = c + 4;
       iVar4 = iVar4 + -1;
     } while (iVar4 != 0);
   }
@@ -184,34 +184,34 @@ void __cdecl SND_DspScaleCache(uint param_1,float param_2,float *param_3)
 
 // 00942BD7  SND_DspScale  (sound/snd_dsp.cpp:199)
 
-void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3,float *param_4)
+void __cdecl SND_DspScale(uint count,float a,float *b,float *c)
 
 {
   float *pfVar1;
   code *pcVar2;
   bool bVar3;
   
-  if (((param_1 & 3) != 0) &&
+  if (((count & 3) != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",200,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((uint)param_4 & 0xf) != 0) &&
+  if ((((uint)c & 0xf) != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0xc9,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pfVar1 = param_3 + param_1;
-  for (; param_3 < pfVar1; param_3 = param_3 + 4) {
-    *param_4 = *param_3 * param_2;
-    param_4[1] = param_3[1] * param_2;
-    param_4[2] = param_3[2] * param_2;
-    param_4[3] = param_3[3] * param_2;
-    param_4 = param_4 + 4;
+  pfVar1 = b + count;
+  for (; b < pfVar1; b = b + 4) {
+    *c = *b * a;
+    c[1] = b[1] * a;
+    c[2] = b[2] * a;
+    c[3] = b[3] * a;
+    c = c + 4;
   }
   return;
 }
@@ -219,7 +219,7 @@ void __cdecl SND_DspScale(uint param_1,float param_2,float *param_3,float *param
 
 // 00942C82  SND_DspSum  (sound/snd_dsp.cpp:262)
 
-void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
+void __cdecl SND_DspSum(uint count,float *a,float *c)
 
 {
   code *pcVar1;
@@ -228,7 +228,7 @@ void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
   int iVar4;
   float *pfVar5;
   
-  if ((param_1 & 3) != 0) {
+  if ((count & 3) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x107,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -236,7 +236,7 @@ void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (((uint)param_2 & 0xf) != 0) {
+  if (((uint)a & 0xf) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x108,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -244,7 +244,7 @@ void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (((uint)param_3 & 0xf) != 0) {
+  if (((uint)c & 0xf) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x109,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -252,7 +252,7 @@ void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (param_2 == param_3) {
+  if (a == c) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x10a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -260,13 +260,13 @@ void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
       return;
     }
   }
-  if (param_1 != 0) {
-    pfVar5 = param_2 + 3;
-    pfVar3 = param_3 + 1;
-    iVar4 = (param_1 - 1 >> 2) + 1;
+  if (count != 0) {
+    pfVar5 = a + 3;
+    pfVar3 = c + 1;
+    iVar4 = (count - 1 >> 2) + 1;
     do {
       pfVar3[-1] = pfVar5[-3] + pfVar3[-1];
-      *pfVar3 = *(float *)(((int)param_2 - (int)param_3) + (int)pfVar3) + *pfVar3;
+      *pfVar3 = *(float *)(((int)a - (int)c) + (int)pfVar3) + *pfVar3;
       pfVar3[1] = pfVar5[-1] + pfVar3[1];
       pfVar3[2] = pfVar3[2] + *pfVar5;
       pfVar3 = pfVar3 + 4;
@@ -280,32 +280,31 @@ void __cdecl SND_DspSum(uint param_1,float *param_2,float *param_3)
 
 // 00942D77  SND_DspOnePoleFilterMono  (sound/snd_dsp.cpp:306)
 
-void __cdecl
-SND_DspOnePoleFilterMono(uint param_1,float *param_2,float param_3,float param_4,float *param_5)
+void __cdecl SND_DspOnePoleFilterMono(uint count,float *frames,float b0,float a1,float *y1)
 
 {
   float *pfVar1;
   int iVar2;
   float *pfVar3;
   
-  pfVar3 = param_2 + 1;
-  pfVar1 = param_2 + param_1;
-  *param_2 = *param_2 * param_3 - *param_5 * param_4;
+  pfVar3 = frames + 1;
+  pfVar1 = frames + count;
+  *frames = *frames * b0 - *y1 * a1;
   if (pfVar3 != pfVar1) {
-    iVar2 = (int)param_2 - (int)pfVar3;
+    iVar2 = (int)frames - (int)pfVar3;
     do {
-      *pfVar3 = *pfVar3 * param_3 - *(float *)(iVar2 + (int)pfVar3) * param_4;
+      *pfVar3 = *pfVar3 * b0 - *(float *)(iVar2 + (int)pfVar3) * a1;
       pfVar3 = pfVar3 + 1;
     } while (pfVar3 != pfVar1);
   }
-  *param_5 = pfVar1[-1];
+  *y1 = pfVar1[-1];
   return;
 }
 
 
 // 00942860  cosf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:399)
 
-float __cdecl cosf(float param_1)
+float __cdecl cosf(float _X)
 
 {
   float10 extraout_ST0;
@@ -317,7 +316,7 @@ float __cdecl cosf(float param_1)
 
 // 00944170  logf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:409)
 
-float __cdecl logf(float param_1)
+float __cdecl logf(float _X)
 
 {
   float10 extraout_ST0;
@@ -329,7 +328,7 @@ float __cdecl logf(float param_1)
 
 // 00942FE0  powf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:417)
 
-float __cdecl powf(float param_1,float param_2)
+float __cdecl powf(float _X,float _Y)
 
 {
   float10 extraout_ST0;
@@ -341,7 +340,7 @@ float __cdecl powf(float param_1,float param_2)
 
 // 00942880  sinf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:419)
 
-float __cdecl sinf(float param_1)
+float __cdecl sinf(float _X)
 
 {
   float10 extraout_ST0;
@@ -354,7 +353,7 @@ float __cdecl sinf(float param_1)
 // 00942DF3  SND_OcclusionLpfCoef  (sound/snd_dsp.cpp:422)
 
 void __cdecl
-SND_OcclusionLpfCoef(float param_1,float param_2,float param_3,float *param_4,float *param_5)
+SND_OcclusionLpfCoef(float occlusionLevel,float occlusionRatio,float sampleRate,float *b0,float *a1)
 
 {
   code *pcVar1;
@@ -364,8 +363,11 @@ SND_OcclusionLpfCoef(float param_1,float param_2,float param_3,float *param_4,fl
   float fVar5;
   float fVar6;
   float fVar7;
+  float k;
+  float g;
+  float x;
   
-  if (param_3 <= 100.0) {
+  if (sampleRate <= 100.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x1a8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -373,7 +375,7 @@ SND_OcclusionLpfCoef(float param_1,float param_2,float param_3,float *param_4,fl
       return;
     }
   }
-  if (100000.0 <= param_3) {
+  if (100000.0 <= sampleRate) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x1a9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -381,23 +383,23 @@ SND_OcclusionLpfCoef(float param_1,float param_2,float param_3,float *param_4,fl
       return;
     }
   }
-  fVar4 = I_fclamp(param_1,-80.0,0.0);
+  fVar4 = I_fclamp(occlusionLevel,-80.0,0.0);
   if (-1e-06 <= fVar4) {
-    *param_4 = 1.0;
-    *param_5 = 0.0;
+    *b0 = 1.0;
+    *a1 = 0.0;
   }
   else {
-    fVar5 = I_fclamp(param_2,0.0,0.99);
+    fVar5 = I_fclamp(occlusionRatio,0.0,0.99);
     fVar6 = powf(10.0,fVar5 * fVar4 * 0.05);
     fVar5 = powf(10.0,(1.0 - fVar5) * fVar4 * 0.1);
-    fVar7 = cosf(31415.928 / param_3);
+    fVar7 = cosf(31415.928 / sampleRate);
     fVar4 = (1.0 - fVar7) * fVar5;
     fVar4 = sqrtf((fVar4 + fVar4) - fVar5 * (1.0 - fVar7 * fVar7) * fVar5);
     fVar4 = ((1.0 - fVar7 * fVar5) - fVar4) / (1.0 - fVar5);
-    *param_4 = (1.0 - fVar4) * fVar6;
-    *param_5 = -fVar4;
+    *b0 = (1.0 - fVar4) * fVar6;
+    *a1 = -fVar4;
   }
-  iVar3 = IS_NAN(*param_4);
+  iVar3 = IS_NAN(*b0);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x1c1,0,"%s");
     if (!bVar2) {
@@ -406,7 +408,7 @@ SND_OcclusionLpfCoef(float param_1,float param_2,float param_3,float *param_4,fl
       return;
     }
   }
-  iVar3 = IS_NAN(*param_5);
+  iVar3 = IS_NAN(*a1);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x1c2,0,"%s");
     if (!bVar2) {
@@ -421,7 +423,7 @@ SND_OcclusionLpfCoef(float param_1,float param_2,float param_3,float *param_4,fl
 
 // 00942840  sqrtf  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:423)
 
-float __cdecl sqrtf(float param_1)
+float __cdecl sqrtf(float val)
 
 {
   float10 extraout_ST0;
@@ -433,16 +435,16 @@ float __cdecl sqrtf(float param_1)
 
 // 009428D0  I_fmax  (universal/com_math.h:471)
 
-float __cdecl I_fmax(float param_1,float param_2)
+float __cdecl I_fmax(float x,float y)
 
 {
   undefined4 local_8;
   
-  if (param_1 - param_2 < 0.0) {
-    local_8 = param_2;
+  if (x - y < 0.0) {
+    local_8 = y;
   }
   else {
-    local_8 = param_1;
+    local_8 = x;
   }
   return local_8;
 }
@@ -450,16 +452,16 @@ float __cdecl I_fmax(float param_1,float param_2)
 
 // 00942910  I_fmin  (universal/com_math.h:477)
 
-float __cdecl I_fmin(float param_1,float param_2)
+float __cdecl I_fmin(float x,float y)
 
 {
   undefined4 local_8;
   
-  if (param_2 - param_1 < 0.0) {
-    local_8 = param_2;
+  if (y - x < 0.0) {
+    local_8 = y;
   }
   else {
-    local_8 = param_1;
+    local_8 = x;
   }
   return local_8;
 }
@@ -467,23 +469,23 @@ float __cdecl I_fmin(float param_1,float param_2)
 
 // 00943000  I_fclamp  (universal/com_math.h:505)
 
-float __cdecl I_fclamp(float param_1,float param_2,float param_3)
+float __cdecl I_fclamp(float val,float min,float max)
 
 {
   undefined4 local_c;
   undefined4 local_8;
   
-  if (param_1 - param_3 < 0.0) {
-    local_8 = param_1;
+  if (val - max < 0.0) {
+    local_8 = val;
   }
   else {
-    local_8 = param_3;
+    local_8 = max;
   }
-  if (param_2 - param_1 < 0.0) {
+  if (min - val < 0.0) {
     local_c = local_8;
   }
   else {
-    local_c = param_2;
+    local_c = min;
   }
   return local_c;
 }
@@ -491,18 +493,17 @@ float __cdecl I_fclamp(float param_1,float param_2,float param_3)
 
 // 00942DE0  fabs  (<external>/Program Files (x86)/Microsoft Visual Studio 9.0/VC/include/math.h:510)
 
-float __cdecl fabs(float param_1)
+float __cdecl fabs(float f)
 
 {
-  return ABS(param_1);
+  return ABS(f);
 }
 
 
 // 0094305F  SND_DspBiquadInPlace  (sound/snd_dsp.cpp:625)
 
 void __cdecl
-SND_DspBiquadInPlace
-          (snd_dsp_biquad_coef *param_1,snd_dsp_biquad_state *param_2,uint param_3,float *param_4)
+SND_DspBiquadInPlace(snd_dsp_biquad_coef *coef,snd_dsp_biquad_state *state,uint count,float *input)
 
 {
   float *pfVar1;
@@ -520,33 +521,33 @@ SND_DspBiquadInPlace
   float fVar13;
   
   uVar8 = 0;
-  if (param_3 != 0) {
-    fVar2 = param_1->s[2];
-    fVar3 = param_1->s[1];
-    fVar4 = param_1->s[0];
-    fVar5 = param_1->s[3];
-    fVar6 = param_1->s[4];
-    fVar13 = param_2->y[0];
-    fVar7 = param_2->x[0];
-    fVar9 = param_2->y[1];
-    fVar10 = param_2->x[1];
+  if (count != 0) {
+    fVar2 = coef->s[2];
+    fVar3 = coef->s[1];
+    fVar4 = coef->s[0];
+    fVar5 = coef->s[3];
+    fVar6 = coef->s[4];
+    fVar13 = state->y[0];
+    fVar7 = state->x[0];
+    fVar9 = state->y[1];
+    fVar10 = state->x[1];
     do {
       fVar12 = fVar10;
       fVar11 = fVar9;
       fVar10 = fVar7;
       fVar9 = fVar13;
-      pfVar1 = param_4 + uVar8;
+      pfVar1 = input + uVar8;
       fVar7 = *pfVar1;
       uVar8 = uVar8 + 1;
       fVar13 = ((fVar3 * fVar10 + fVar4 * fVar7 + fVar2 * fVar12) - fVar5 * fVar9) - fVar6 * fVar11;
       *pfVar1 = fVar13;
-    } while (uVar8 < param_3);
-    param_2->x[1] = fVar10;
-    param_2->x[2] = fVar12;
-    param_2->x[0] = fVar7;
-    param_2->y[1] = fVar9;
-    param_2->y[2] = fVar11;
-    param_2->y[0] = fVar13;
+    } while (uVar8 < count);
+    state->x[1] = fVar10;
+    state->x[2] = fVar12;
+    state->x[0] = fVar7;
+    state->y[1] = fVar9;
+    state->y[2] = fVar11;
+    state->y[0] = fVar13;
   }
   return;
 }
@@ -554,7 +555,7 @@ SND_DspBiquadInPlace
 
 // 009449AD  SND_DspBiquadDenormal  (sound/snd_dsp.cpp:808)
 
-void __cdecl SND_DspBiquadDenormal(snd_dsp_biquad_state *param_1)
+void __cdecl SND_DspBiquadDenormal(snd_dsp_biquad_state *state)
 
 {
   int iVar1;
@@ -564,16 +565,16 @@ void __cdecl SND_DspBiquadDenormal(snd_dsp_biquad_state *param_1)
   
   iVar1 = 0;
   do {
-    fVar3 = param_1->y[iVar1];
+    fVar3 = state->y[iVar1];
     fVar4 = 0.0;
     fVar2 = fabs(fVar3);
     fVar3 = I_fsel(fVar2 - 5.9604643e-12,fVar3,fVar4);
-    param_1->y[iVar1] = fVar3;
-    fVar3 = param_1->x[iVar1];
+    state->y[iVar1] = fVar3;
+    fVar3 = state->x[iVar1];
     fVar4 = 0.0;
     fVar2 = fabs(fVar3);
     fVar3 = I_fsel(fVar2 - 5.9604643e-12,fVar3,fVar4);
-    param_1->x[iVar1] = fVar3;
+    state->x[iVar1] = fVar3;
     iVar1 = iVar1 + 1;
   } while (iVar1 < 3);
   return;
@@ -582,17 +583,17 @@ void __cdecl SND_DspBiquadDenormal(snd_dsp_biquad_state *param_1)
 
 // 00944A4F  SND_DspBiquadNanCheck  (sound/snd_dsp.cpp:819)
 
-void __cdecl SND_DspBiquadNanCheck(snd_dsp_biquad_state *param_1)
+void __cdecl SND_DspBiquadNanCheck(snd_dsp_biquad_state *state)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    iVar3 = IS_NAN(param_1->y[local_8]);
+    iVar3 = IS_NAN(state->y[i]);
     if (iVar3 != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x336,0,"%s")
       ;
@@ -602,7 +603,7 @@ void __cdecl SND_DspBiquadNanCheck(snd_dsp_biquad_state *param_1)
         return;
       }
     }
-    iVar3 = IS_NAN(param_1->x[local_8]);
+    iVar3 = IS_NAN(state->x[i]);
     if (iVar3 != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x337,0,"%s")
       ;
@@ -612,22 +613,22 @@ void __cdecl SND_DspBiquadNanCheck(snd_dsp_biquad_state *param_1)
         return;
       }
     }
-    local_8 = local_8 + 1;
-  } while (local_8 < 3);
+    i = i + 1;
+  } while (i < 3);
   return;
 }
 
 
 // 00943140  SND_DspBiquadNormalize  (sound/snd_dsp.cpp:837)
 
-void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad_coef *param_3)
+void __cdecl SND_DspBiquadNormalize(float *a,float *b,snd_dsp_biquad_coef *coef)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  iVar3 = IS_NAN(*param_2);
+  iVar3 = IS_NAN(*b);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x346,0,"%s");
     if (!bVar2) {
@@ -636,7 +637,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_2[1]);
+  iVar3 = IS_NAN(b[1]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x347,0,"%s");
     if (!bVar2) {
@@ -645,7 +646,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_2[2]);
+  iVar3 = IS_NAN(b[2]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x348,0,"%s");
     if (!bVar2) {
@@ -654,7 +655,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(*param_1);
+  iVar3 = IS_NAN(*a);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x349,0,"%s");
     if (!bVar2) {
@@ -663,7 +664,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_1[1]);
+  iVar3 = IS_NAN(a[1]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x34a,0,"%s");
     if (!bVar2) {
@@ -672,7 +673,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_1[2]);
+  iVar3 = IS_NAN(a[2]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x34b,0,"%s");
     if (!bVar2) {
@@ -681,12 +682,12 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  param_3->s[0] = *param_2 / *param_1;
-  param_3->s[1] = param_2[1] / *param_1;
-  param_3->s[2] = param_2[2] / *param_1;
-  param_3->s[3] = param_1[1] / *param_1;
-  param_3->s[4] = param_1[2] / *param_1;
-  iVar3 = IS_NAN(param_3->s[0]);
+  coef->s[0] = *b / *a;
+  coef->s[1] = b[1] / *a;
+  coef->s[2] = b[2] / *a;
+  coef->s[3] = a[1] / *a;
+  coef->s[4] = a[2] / *a;
+  iVar3 = IS_NAN(coef->s[0]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x358,0,"%s");
     if (!bVar2) {
@@ -695,7 +696,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_3->s[1]);
+  iVar3 = IS_NAN(coef->s[1]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x359,0,"%s");
     if (!bVar2) {
@@ -704,7 +705,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_3->s[2]);
+  iVar3 = IS_NAN(coef->s[2]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x35a,0,"%s");
     if (!bVar2) {
@@ -713,7 +714,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_3->s[3]);
+  iVar3 = IS_NAN(coef->s[3]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x35b,0,"%s");
     if (!bVar2) {
@@ -722,7 +723,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
       return;
     }
   }
-  iVar3 = IS_NAN(param_3->s[4]);
+  iVar3 = IS_NAN(coef->s[4]);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x35c,0,"%s");
     if (!bVar2) {
@@ -737,9 +738,7 @@ void __cdecl SND_DspBiquadNormalize(float *param_1,float *param_2,snd_dsp_biquad
 
 // 0094338F  SND_DspBiquadHShelve  (sound/snd_dsp.cpp:870)
 
-void __cdecl
-SND_DspBiquadHShelve
-          (float param_1,float param_2,float param_3,float param_4,snd_dsp_biquad_coef *param_5)
+void __cdecl SND_DspBiquadHShelve(float Fs,float db,float Fhz,float q,snd_dsp_biquad_coef *coef)
 
 {
   code *pcVar1;
@@ -747,17 +746,17 @@ SND_DspBiquadHShelve
   int iVar3;
   float fVar4;
   float fVar5;
+  float val;
   float fVar6;
   float fVar7;
-  float fVar8;
-  float local_1c;
+  float a;
   float local_18;
   float local_14;
-  float local_10;
+  float b;
   float local_c;
   float local_8;
   
-  if (param_1 <= 1000.0) {
+  if (Fs <= 1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x367,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -765,7 +764,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  if (100000.0 <= param_1) {
+  if (100000.0 <= Fs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x368,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -773,7 +772,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  fVar4 = (param_3 / param_1) * 2.0;
+  fVar4 = (Fhz / Fs) * 2.0;
   if (fVar4 < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x36c,0,"%s");
     if (!bVar2) {
@@ -791,7 +790,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  if (param_4 <= 0.0) {
+  if (q <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x36e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -799,7 +798,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  if (32.0 <= param_4) {
+  if (32.0 <= q) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x36f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -807,7 +806,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  iVar3 = IS_NAN(param_4);
+  iVar3 = IS_NAN(q);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x370,0,"%s");
     if (!bVar2) {
@@ -816,7 +815,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  if (50.0 <= param_2) {
+  if (50.0 <= db) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x371,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -824,7 +823,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  if (param_2 <= -1000.0) {
+  if (db <= -1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x372,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -832,7 +831,7 @@ SND_DspBiquadHShelve
       return;
     }
   }
-  iVar3 = IS_NAN(param_2);
+  iVar3 = IS_NAN(db);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x373,0,"%s");
     if (!bVar2) {
@@ -842,30 +841,28 @@ SND_DspBiquadHShelve
     }
   }
   fVar4 = I_fmax(fVar4,1e-06);
-  fVar6 = powf(10.0,param_2 * 0.025);
-  fVar7 = sinf(fVar4 * 3.1415927);
-  fVar8 = cosf(fVar4 * 3.1415927);
-  fVar4 = sqrtf(fVar6);
-  local_14 = fVar4 * (fVar7 / (param_4 + param_4)) * 2.0;
-  fVar4 = fVar6 - 1.0;
-  fVar5 = fVar4 * fVar8;
-  fVar7 = fVar6 + 1.0;
-  local_10 = (fVar7 + local_14 + fVar5) * fVar6;
-  local_c = (fVar7 * fVar8 + fVar4) * fVar6 * -2.0;
-  local_8 = ((fVar7 + fVar5) - local_14) * fVar6;
-  local_1c = (fVar7 - fVar5) + local_14;
-  local_18 = (fVar4 - fVar7 * fVar8) * 2.0;
-  local_14 = (fVar7 - fVar5) - local_14;
-  SND_DspBiquadNormalize(&local_1c,&local_10,param_5);
+  val = powf(10.0,db * 0.025);
+  fVar6 = sinf(fVar4 * 3.1415927);
+  fVar7 = cosf(fVar4 * 3.1415927);
+  fVar4 = sqrtf(val);
+  local_14 = fVar4 * (fVar6 / (q + q)) * 2.0;
+  fVar4 = val - 1.0;
+  fVar5 = fVar4 * fVar7;
+  fVar6 = val + 1.0;
+  b = (fVar6 + local_14 + fVar5) * val;
+  local_c = (fVar6 * fVar7 + fVar4) * val * -2.0;
+  local_8 = ((fVar6 + fVar5) - local_14) * val;
+  a = (fVar6 - fVar5) + local_14;
+  local_18 = (fVar4 - fVar6 * fVar7) * 2.0;
+  local_14 = (fVar6 - fVar5) - local_14;
+  SND_DspBiquadNormalize(&a,&b,coef);
   return;
 }
 
 
 // 0094368C  SND_DspBiquadLShelve  (sound/snd_dsp.cpp:913)
 
-void __cdecl
-SND_DspBiquadLShelve
-          (float param_1,float param_2,float param_3,float param_4,snd_dsp_biquad_coef *param_5)
+void __cdecl SND_DspBiquadLShelve(float Fs,float db,float Fhz,float q,snd_dsp_biquad_coef *coef)
 
 {
   code *pcVar1;
@@ -873,17 +870,17 @@ SND_DspBiquadLShelve
   int iVar3;
   float fVar4;
   float fVar5;
+  float val;
   float fVar6;
   float fVar7;
-  float fVar8;
-  float local_1c;
+  float a;
   float local_18;
   float local_14;
-  float local_10;
+  float b;
   float local_c;
   float local_8;
   
-  if (param_1 <= 1000.0) {
+  if (Fs <= 1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x392,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -891,7 +888,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  if (100000.0 <= param_1) {
+  if (100000.0 <= Fs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x393,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -899,7 +896,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  fVar4 = (param_3 / param_1) * 2.0;
+  fVar4 = (Fhz / Fs) * 2.0;
   if (fVar4 < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x397,0,"%s");
     if (!bVar2) {
@@ -917,7 +914,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  if (param_4 <= 0.0) {
+  if (q <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x399,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -925,7 +922,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  if (32.0 <= param_4) {
+  if (32.0 <= q) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x39a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -933,7 +930,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  iVar3 = IS_NAN(param_4);
+  iVar3 = IS_NAN(q);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x39b,0,"%s");
     if (!bVar2) {
@@ -942,7 +939,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  if (50.0 <= param_2) {
+  if (50.0 <= db) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x39c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -950,7 +947,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  if (param_2 <= -1000.0) {
+  if (db <= -1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x39d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -958,7 +955,7 @@ SND_DspBiquadLShelve
       return;
     }
   }
-  iVar3 = IS_NAN(param_2);
+  iVar3 = IS_NAN(db);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x39e,0,"%s");
     if (!bVar2) {
@@ -968,30 +965,28 @@ SND_DspBiquadLShelve
     }
   }
   fVar4 = I_fmax(fVar4,1e-06);
-  fVar6 = powf(10.0,param_2 * 0.025);
-  fVar7 = sinf(fVar4 * 3.1415927);
-  fVar8 = cosf(fVar4 * 3.1415927);
-  fVar4 = sqrtf(fVar6);
-  local_14 = fVar4 * (fVar7 / (param_4 + param_4)) * 2.0;
-  fVar5 = fVar6 - 1.0;
-  fVar7 = fVar6 + 1.0;
-  fVar4 = fVar5 * fVar8;
-  local_10 = (local_14 + (fVar7 - fVar4)) * fVar6;
-  local_8 = ((fVar7 - fVar4) - local_14) * fVar6;
-  local_c = (fVar5 - fVar7 * fVar8) * fVar6 * 2.0;
-  local_18 = (fVar7 * fVar8 + fVar5) * -2.0;
-  local_1c = local_14 + fVar4 + fVar7;
-  local_14 = (fVar4 + fVar7) - local_14;
-  SND_DspBiquadNormalize(&local_1c,&local_10,param_5);
+  val = powf(10.0,db * 0.025);
+  fVar6 = sinf(fVar4 * 3.1415927);
+  fVar7 = cosf(fVar4 * 3.1415927);
+  fVar4 = sqrtf(val);
+  local_14 = fVar4 * (fVar6 / (q + q)) * 2.0;
+  fVar5 = val - 1.0;
+  fVar6 = val + 1.0;
+  fVar4 = fVar5 * fVar7;
+  b = (local_14 + (fVar6 - fVar4)) * val;
+  local_8 = ((fVar6 - fVar4) - local_14) * val;
+  local_c = (fVar5 - fVar6 * fVar7) * val * 2.0;
+  local_18 = (fVar6 * fVar7 + fVar5) * -2.0;
+  a = local_14 + fVar4 + fVar6;
+  local_14 = (fVar4 + fVar6) - local_14;
+  SND_DspBiquadNormalize(&a,&b,coef);
   return;
 }
 
 
 // 00943989  SND_DspBiquadPeak  (sound/snd_dsp.cpp:956)
 
-void __cdecl
-SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
-                 snd_dsp_biquad_coef *param_5)
+void __cdecl SND_DspBiquadPeak(float Fs,float db,float Fhz,float q,snd_dsp_biquad_coef *coef)
 
 {
   code *pcVar1;
@@ -1000,14 +995,14 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
   float fVar4;
   float fVar5;
   float fVar6;
-  float local_1c;
+  float a;
   float local_18;
   float local_14;
-  float local_10;
+  float b;
   float local_c;
   float local_8;
   
-  if (param_1 <= 1000.0) {
+  if (Fs <= 1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3bd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1015,7 +1010,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  if (100000.0 <= param_1) {
+  if (100000.0 <= Fs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3be,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1023,7 +1018,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  fVar4 = (param_3 / param_1) * 2.0;
+  fVar4 = (Fhz / Fs) * 2.0;
   if (fVar4 < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c2,0,"%s");
     if (!bVar2) {
@@ -1041,7 +1036,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  if (param_4 <= 0.0) {
+  if (q <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1049,7 +1044,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  if (32.0 <= param_4) {
+  if (32.0 <= q) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c5,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1057,7 +1052,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  iVar3 = IS_NAN(param_4);
+  iVar3 = IS_NAN(q);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c6,0,"%s");
     if (!bVar2) {
@@ -1066,7 +1061,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  if (50.0 <= param_2) {
+  if (50.0 <= db) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1074,7 +1069,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  if (param_2 <= -1000.0) {
+  if (db <= -1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c8,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1082,7 +1077,7 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
       return;
     }
   }
-  iVar3 = IS_NAN(param_2);
+  iVar3 = IS_NAN(db);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3c9,0,"%s");
     if (!bVar2) {
@@ -1092,27 +1087,26 @@ SND_DspBiquadPeak(float param_1,float param_2,float param_3,float param_4,
     }
   }
   fVar5 = I_fmax(fVar4,1e-06);
-  fVar6 = powf(10.0,param_2 * 0.025);
+  fVar6 = powf(10.0,db * 0.025);
   fVar4 = sinf(fVar5 * 3.1415927);
-  fVar4 = fVar4 / (param_4 + param_4);
+  fVar4 = fVar4 / (q + q);
   local_18 = cosf(fVar5 * 3.1415927);
   local_8 = fVar4 * fVar6;
   fVar4 = fVar4 / fVar6;
-  local_10 = local_8 + 1.0;
+  b = local_8 + 1.0;
   local_8 = 1.0 - local_8;
   local_18 = local_18 * -2.0;
-  local_1c = fVar4 + 1.0;
+  a = fVar4 + 1.0;
   local_14 = 1.0 - fVar4;
   local_c = local_18;
-  SND_DspBiquadNormalize(&local_1c,&local_10,param_5);
+  SND_DspBiquadNormalize(&a,&b,coef);
   return;
 }
 
 
 // 00943C2F  SND_DspBiquadBpf  (sound/snd_dsp.cpp:999)
 
-void __cdecl
-SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *param_4)
+void __cdecl SND_DspBiquadBpf(float Fs,float Fhz,float q,snd_dsp_biquad_coef *coef)
 
 {
   code *pcVar1;
@@ -1120,12 +1114,12 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
   int iVar3;
   float fVar4;
   float fVar5;
-  float local_1c;
+  float a;
   float local_18;
   float local_14;
-  float local_10 [3];
+  float b [3];
   
-  if (param_1 <= 1000.0) {
+  if (Fs <= 1000.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",1000,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1133,7 +1127,7 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
       return;
     }
   }
-  if (100000.0 <= param_1) {
+  if (100000.0 <= Fs) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3e9,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1141,7 +1135,7 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
       return;
     }
   }
-  fVar4 = (param_2 / param_1) * 2.0;
+  fVar4 = (Fhz / Fs) * 2.0;
   if (fVar4 < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3ed,0,"%s");
     if (!bVar2) {
@@ -1159,7 +1153,7 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
       return;
     }
   }
-  if (param_3 <= 0.0) {
+  if (q <= 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3ef,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1167,7 +1161,7 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
       return;
     }
   }
-  if (32.0 < param_3) {
+  if (32.0 < q) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3f0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1175,7 +1169,7 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
       return;
     }
   }
-  iVar3 = IS_NAN(param_3);
+  iVar3 = IS_NAN(q);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x3f1,0,"%s");
     if (!bVar2) {
@@ -1186,76 +1180,76 @@ SND_DspBiquadBpf(float param_1,float param_2,float param_3,snd_dsp_biquad_coef *
   }
   fVar5 = I_fmax(fVar4,1e-06);
   fVar4 = sinf(fVar5 * 3.1415927);
-  fVar4 = fVar4 / (param_3 + param_3);
+  fVar4 = fVar4 / (q + q);
   local_18 = cosf(fVar5 * 3.1415927);
-  local_10[2] = -fVar4;
-  local_10[1] = 0.0;
-  local_1c = fVar4 + 1.0;
+  b[2] = -fVar4;
+  b[1] = 0.0;
+  a = fVar4 + 1.0;
   local_18 = local_18 * -2.0;
   local_14 = 1.0 - fVar4;
-  local_10[0] = fVar4;
-  SND_DspBiquadNormalize(&local_1c,local_10,param_4);
+  b[0] = fVar4;
+  SND_DspBiquadNormalize(&a,b,coef);
   return;
 }
 
 
 // 00943DFF  SND_DspPolyDistortion  (sound/snd_dsp.cpp:1070)
 
-void __cdecl SND_DspPolyDistortion(uint param_1,float param_2,float *param_3,float *param_4)
+void __cdecl SND_DspPolyDistortion(uint count,float amount,float *frame,float *temp)
 
 {
   float fVar1;
-  float fVar2;
-  float *pfVar3;
+  float a;
+  float *pfVar2;
   
-  fVar1 = I_fclamp(param_2,0.0,1.0);
-  SND_DspMul(param_1,param_3,param_3,param_4);
-  pfVar3 = param_3;
-  fVar2 = cosf(fVar1 * 1.5707964);
-  SND_DspScale(param_1,fVar2,pfVar3);
-  pfVar3 = param_4;
+  fVar1 = I_fclamp(amount,0.0,1.0);
+  SND_DspMul(count,frame,frame,temp);
+  pfVar2 = frame;
+  a = cosf(fVar1 * 1.5707964);
+  SND_DspScale(count,a,pfVar2);
+  pfVar2 = temp;
   fVar1 = sinf(fVar1 * 1.5707964);
-  SND_DspScale(param_1,fVar1,pfVar3);
-  SND_DspSum(param_1,param_4,param_3);
+  SND_DspScale(count,fVar1,pfVar2);
+  SND_DspSum(count,temp,frame);
   return;
 }
 
 
 // 00943E83  SND_DspClip  (sound/snd_dsp.cpp:1086)
 
-void __cdecl SND_DspClip(uint param_1,float *param_2,float param_3,float param_4)
+void __cdecl SND_DspClip(uint count,float *c,float minimum,float maximum)
 
 {
   float *pfVar1;
   int iVar2;
   float fVar3;
   
-  if (param_1 != 0) {
-    pfVar1 = param_2 + 2;
-    iVar2 = (param_1 - 1 >> 2) + 1;
+  if (count != 0) {
+    pfVar1 = c + 2;
+    iVar2 = (count - 1 >> 2) + 1;
     do {
-      fVar3 = I_fmin(param_4,pfVar1[-2]);
+      fVar3 = I_fmin(maximum,pfVar1[-2]);
       pfVar1[-2] = fVar3;
-      fVar3 = I_fmin(param_4,pfVar1[-1]);
+      fVar3 = I_fmin(maximum,pfVar1[-1]);
       pfVar1[-1] = fVar3;
-      fVar3 = I_fmin(param_4,*pfVar1);
+      fVar3 = I_fmin(maximum,*pfVar1);
       *pfVar1 = fVar3;
-      fVar3 = I_fmin(param_4,pfVar1[1]);
+      fVar3 = I_fmin(maximum,pfVar1[1]);
       pfVar1[1] = fVar3;
       pfVar1 = pfVar1 + 4;
       iVar2 = iVar2 + -1;
     } while (iVar2 != 0);
-    if (param_1 != 0) {
-      pfVar1 = param_2 + 2;
-      iVar2 = (param_1 - 1 >> 2) + 1;
+    if (count != 0) {
+      pfVar1 = c + 2;
+      iVar2 = (count - 1 >> 2) + 1;
       do {
-        fVar3 = I_fmax(param_3,pfVar1[-2]);
+        fVar3 = I_fmax(minimum,pfVar1[-2]);
         pfVar1[-2] = fVar3;
-        fVar3 = I_fmax(param_3,pfVar1[-1]);
+        fVar3 = I_fmax(minimum,pfVar1[-1]);
         pfVar1[-1] = fVar3;
-        fVar3 = I_fmax(param_3,*pfVar1);
+        fVar3 = I_fmax(minimum,*pfVar1);
         *pfVar1 = fVar3;
-        fVar3 = I_fmax(param_3,pfVar1[1]);
+        fVar3 = I_fmax(minimum,pfVar1[1]);
         pfVar1[1] = fVar3;
         pfVar1 = pfVar1 + 4;
         iVar2 = iVar2 + -1;
@@ -1268,7 +1262,7 @@ void __cdecl SND_DspClip(uint param_1,float *param_2,float param_3,float param_4
 
 // 00944088  SND_DspDecayConstant  (sound/snd_dsp.cpp:1106)
 
-float __cdecl SND_DspDecayConstant(float param_1,float param_2,float param_3)
+float __cdecl SND_DspDecayConstant(float time,float dt,float targetAmplitude)
 
 {
   code *pcVar1;
@@ -1277,7 +1271,7 @@ float __cdecl SND_DspDecayConstant(float param_1,float param_2,float param_3)
   float10 fVar4;
   float fVar5;
   
-  if (param_1 < 0.0) {
+  if (time < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x453,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1285,7 +1279,7 @@ float __cdecl SND_DspDecayConstant(float param_1,float param_2,float param_3)
       return (float)fVar4;
     }
   }
-  iVar3 = IS_NAN(param_1);
+  iVar3 = IS_NAN(time);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x454,0,"%s");
     if (!bVar2) {
@@ -1294,7 +1288,7 @@ float __cdecl SND_DspDecayConstant(float param_1,float param_2,float param_3)
       return (float)fVar4;
     }
   }
-  if (param_2 < 0.0) {
+  if (dt < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x455,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1302,7 +1296,7 @@ float __cdecl SND_DspDecayConstant(float param_1,float param_2,float param_3)
       return (float)fVar4;
     }
   }
-  iVar3 = IS_NAN(param_2);
+  iVar3 = IS_NAN(dt);
   if (iVar3 != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x456,0,"%s");
     if (!bVar2) {
@@ -1311,54 +1305,56 @@ float __cdecl SND_DspDecayConstant(float param_1,float param_2,float param_3)
       return (float)fVar4;
     }
   }
-  if (param_1 <= param_2) {
+  if (time <= dt) {
     return 0.0;
   }
-  fVar5 = logf(param_3);
-  return -((param_2 / param_1) * fVar5);
+  fVar5 = logf(targetAmplitude);
+  return -((dt / time) * fVar5);
 }
 
 
 // 00943F6B  SND_DspSquelch  (sound/snd_dsp.cpp:1135)
 
 void __cdecl
-SND_DspSquelch(snd_dsp_squelch_param *param_1,snd_dsp_squelch_state *param_2,float param_3,
-              uint param_4,float *param_5)
+SND_DspSquelch(snd_dsp_squelch_param *param,snd_dsp_squelch_state *state,float frameRate,
+              uint frameCount,float *input)
 
 {
   float *pfVar1;
-  float fVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  uint uVar6;
+  float y;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  uint uVar5;
+  float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
+  float ITG;
+  float ITH;
   
-  fVar8 = SND_DspDecayConstant(param_1->tg,1.0 / param_3,0.0056234132);
-  fVar2 = param_1->th;
-  uVar6 = 0;
-  if (param_4 != 0) {
+  fVar7 = SND_DspDecayConstant(param->tg,1.0 / frameRate,0.0056234132);
+  y = param->th;
+  uVar5 = 0;
+  if (frameCount != 0) {
     do {
-      pfVar1 = param_5 + uVar6;
-      fVar9 = fabs(*pfVar1);
-      fVar9 = I_fmax(fVar9,fVar2);
-      uVar6 = uVar6 + 1;
-      fVar9 = 1.0 - fVar9;
-      fVar7 = (fVar9 * fVar9 * fVar9 * fVar9 * fVar9 * fVar9 * (1.0 / fVar2) + 1.0) * fVar8 +
-              param_2->g * (1.0 - fVar8);
-      fVar9 = *pfVar1;
-      param_2->g = fVar7;
-      *pfVar1 = fVar9 * fVar7;
-    } while (uVar6 < param_4);
+      pfVar1 = input + uVar5;
+      fVar8 = fabs(*pfVar1);
+      fVar8 = I_fmax(fVar8,y);
+      uVar5 = uVar5 + 1;
+      fVar8 = 1.0 - fVar8;
+      fVar6 = (fVar8 * fVar8 * fVar8 * fVar8 * fVar8 * fVar8 * (1.0 / y) + 1.0) * fVar7 +
+              state->g * (1.0 - fVar7);
+      fVar8 = *pfVar1;
+      state->g = fVar6;
+      *pfVar1 = fVar8 * fVar6;
+    } while (uVar5 < frameCount);
   }
-  iVar5 = IS_NAN(param_2->g);
-  if (iVar5 != 0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x47e,0,"%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  iVar4 = IS_NAN(state->g);
+  if (iVar4 != 0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x47e,0,"%s");
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
@@ -1369,17 +1365,17 @@ SND_DspSquelch(snd_dsp_squelch_param *param_1,snd_dsp_squelch_state *param_2,flo
 // 00944186  SND_DspFutzMono  (sound/snd_dsp.cpp:1162)
 
 void __cdecl
-SND_DspFutzMono(snd_dsp_futz_param *param_1,snd_dsp_futz_state *param_2,float param_3,uint param_4,
-               float *param_5,float *param_6,float *param_7)
+SND_DspFutzMono(snd_dsp_futz_param *param,snd_dsp_futz_state *state,float rate,uint count,
+               float *input,float *tempa,float *tempb)
 
 {
   code *pcVar1;
   bool bVar2;
-  snd_dsp_biquad_coef local_2c;
-  snd_dsp_biquad_coef local_18;
+  snd_dsp_biquad_coef ls;
+  snd_dsp_biquad_coef bpf;
   
-  if (1.52879e-05 <= param_1->blend) {
-    if (param_1->blend < 0.0) {
+  if (1.52879e-05 <= param->blend) {
+    if (param->blend < 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x490,0,"%s")
       ;
       if (!bVar2) {
@@ -1388,7 +1384,7 @@ SND_DspFutzMono(snd_dsp_futz_param *param_1,snd_dsp_futz_state *param_2,float pa
         return;
       }
     }
-    if (1.0 < param_1->blend) {
+    if (1.0 < param->blend) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x491,0,"%s")
       ;
       if (!bVar2) {
@@ -1397,18 +1393,18 @@ SND_DspFutzMono(snd_dsp_futz_param *param_1,snd_dsp_futz_state *param_2,float pa
         return;
       }
     }
-    SND_DspScale(param_4,param_1->pregain,param_5,param_6);
-    SND_DspPolyDistortion(param_4,param_1->distortion,param_6,param_7);
-    SND_DspClip(param_4,param_6,-param_1->preclip,param_1->preclip);
-    SND_DspBiquadBpf(param_3,param_1->bpfF,param_1->bpfQ,&local_18);
-    SND_DspBiquadInPlace(&local_18,&param_2->bpf,param_4,param_6);
-    SND_DspBiquadLShelve(param_3,param_1->lsG,param_1->lsF,param_1->lsQ,&local_2c);
-    SND_DspBiquadInPlace(&local_2c,&param_2->ls,param_4,param_6);
-    SND_DspSquelch(&param_1->squelch,&param_2->squelch,param_3,param_4,param_6);
-    SND_DspScale(param_4,param_1->postgain * param_1->blend,param_6);
-    SND_DspScale(param_4,1.0 - param_1->blend,param_5);
-    SND_DspSum(param_4,param_6,param_5);
-    SND_DspClip(param_4,param_5,-param_1->postclip,param_1->postclip);
+    SND_DspScale(count,param->pregain,input,tempa);
+    SND_DspPolyDistortion(count,param->distortion,tempa,tempb);
+    SND_DspClip(count,tempa,-param->preclip,param->preclip);
+    SND_DspBiquadBpf(rate,param->bpfF,param->bpfQ,&bpf);
+    SND_DspBiquadInPlace(&bpf,&state->bpf,count,tempa);
+    SND_DspBiquadLShelve(rate,param->lsG,param->lsF,param->lsQ,&ls);
+    SND_DspBiquadInPlace(&ls,&state->ls,count,tempa);
+    SND_DspSquelch(&param->squelch,&state->squelch,rate,count,tempa);
+    SND_DspScale(count,param->postgain * param->blend,tempa);
+    SND_DspScale(count,1.0 - param->blend,input);
+    SND_DspSum(count,tempa,input);
+    SND_DspClip(count,input,-param->postclip,param->postclip);
   }
   return;
 }
@@ -1416,7 +1412,7 @@ SND_DspFutzMono(snd_dsp_futz_param *param_1,snd_dsp_futz_state *param_2,float pa
 
 // 0094434A  SND_DspInterleave  (sound/snd_dsp.cpp:1243)
 
-void __cdecl SND_DspInterleave(uint param_1,uint param_2,float *param_3,float *param_4)
+void __cdecl SND_DspInterleave(uint channel_count,uint frame_count,float *in,float *out)
 
 {
   float fVar1;
@@ -1425,24 +1421,24 @@ void __cdecl SND_DspInterleave(uint param_1,uint param_2,float *param_3,float *p
   float *pfVar4;
   uint local_8;
   
-  if (param_1 != 0) {
-    local_8 = param_1;
-    uVar2 = param_2;
-    pfVar4 = param_4;
-    pfVar3 = param_3;
+  if (channel_count != 0) {
+    local_8 = channel_count;
+    uVar2 = frame_count;
+    pfVar4 = out;
+    pfVar3 = in;
     do {
       for (; uVar2 != 0; uVar2 = uVar2 - 1) {
-        fVar1 = *param_3;
-        param_3 = param_3 + 1;
-        *param_4 = fVar1;
-        param_4 = param_4 + param_1;
+        fVar1 = *in;
+        in = in + 1;
+        *out = fVar1;
+        out = out + channel_count;
       }
-      param_3 = pfVar3 + param_2;
-      param_4 = pfVar4 + 1;
+      in = pfVar3 + frame_count;
+      out = pfVar4 + 1;
       local_8 = local_8 - 1;
-      uVar2 = param_2;
-      pfVar4 = param_4;
-      pfVar3 = param_3;
+      uVar2 = frame_count;
+      pfVar4 = out;
+      pfVar3 = in;
     } while (local_8 != 0);
   }
   return;
@@ -1451,7 +1447,7 @@ void __cdecl SND_DspInterleave(uint param_1,uint param_2,float *param_3,float *p
 
 // 00944397  SND_DspUninterleave  (sound/snd_dsp.cpp:1259)
 
-void __cdecl SND_DspUninterleave(uint param_1,uint param_2,float *param_3,float *param_4)
+void __cdecl SND_DspUninterleave(uint channel_count,uint frame_count,float *in,float *out)
 
 {
   float fVar1;
@@ -1460,24 +1456,24 @@ void __cdecl SND_DspUninterleave(uint param_1,uint param_2,float *param_3,float 
   float *pfVar4;
   uint local_8;
   
-  if (param_1 != 0) {
-    local_8 = param_1;
-    uVar2 = param_2;
-    pfVar4 = param_3;
-    pfVar3 = param_4;
+  if (channel_count != 0) {
+    local_8 = channel_count;
+    uVar2 = frame_count;
+    pfVar4 = in;
+    pfVar3 = out;
     do {
       for (; uVar2 != 0; uVar2 = uVar2 - 1) {
-        fVar1 = *param_3;
-        param_3 = param_3 + param_1;
-        *param_4 = fVar1;
-        param_4 = param_4 + 1;
+        fVar1 = *in;
+        in = in + channel_count;
+        *out = fVar1;
+        out = out + 1;
       }
-      param_4 = pfVar3 + param_2;
-      param_3 = pfVar4 + 1;
+      out = pfVar3 + frame_count;
+      in = pfVar4 + 1;
       local_8 = local_8 - 1;
-      uVar2 = param_2;
-      pfVar4 = param_3;
-      pfVar3 = param_4;
+      uVar2 = frame_count;
+      pfVar4 = in;
+      pfVar3 = out;
     } while (local_8 != 0);
   }
   return;
@@ -1486,47 +1482,48 @@ void __cdecl SND_DspUninterleave(uint param_1,uint param_2,float *param_3,float 
 
 // 009443E4  SND_DspLog  (sound/snd_dsp.cpp:1326)
 
-float __cdecl SND_DspLog(float param_1)
+float __cdecl SND_DspLog(float m)
 
 {
   float fVar1;
   
-  fVar1 = (param_1 - 1.0) / (param_1 + 1.0);
+  fVar1 = (m - 1.0) / (m + 1.0);
   return fVar1 * fVar1 * fVar1 * 0.33333334 + fVar1;
 }
 
 
 // 00944403  SND_DspExp  (sound/snd_dsp.cpp:1347)
 
-float __cdecl SND_DspExp(float param_1)
+float __cdecl SND_DspExp(float x)
 
 {
   float fVar1;
   float fVar2;
+  float s;
+  float t;
   
-  fVar1 = param_1 * param_1 * param_1;
-  fVar2 = fVar1 * param_1;
-  return fVar2 * param_1 * 0.008333334 +
-         fVar2 * 0.041666668 + fVar1 * 0.16666667 + param_1 * param_1 * 0.5 + param_1 + 1.0;
+  fVar1 = x * x * x;
+  fVar2 = fVar1 * x;
+  return fVar2 * x * 0.008333334 + fVar2 * 0.041666668 + fVar1 * 0.16666667 + x * x * 0.5 + x + 1.0;
 }
 
 
 // 0094446B  SND_DspDynamoDenormal  (sound/snd_dsp.cpp:1377)
 
-void __cdecl SND_DspDynamoDenormal(snd_dsp_dynamo_state *param_1)
+void __cdecl SND_DspDynamoDenormal(snd_dsp_dynamo_state *state)
 
 {
   float *pfVar1;
   
-  pfVar1 = &param_1->yfilter;
+  pfVar1 = &state->yfilter;
   if (*pfVar1 <= 1.52879e-05 && *pfVar1 != 1.52879e-05) {
     *pfVar1 = 0.0;
   }
-  pfVar1 = &param_1->gfilter;
+  pfVar1 = &state->gfilter;
   if (*pfVar1 <= 1.52879e-05 && *pfVar1 != 1.52879e-05) {
     *pfVar1 = 0.0;
   }
-  pfVar1 = &param_1->g;
+  pfVar1 = &state->g;
   if (*pfVar1 <= 1.52879e-05 && *pfVar1 != 1.52879e-05) {
     *pfVar1 = 0.0;
   }
@@ -1537,131 +1534,136 @@ void __cdecl SND_DspDynamoDenormal(snd_dsp_dynamo_state *param_1)
 // 009444AA  SND_DspDynamo  (sound/snd_dsp.cpp:1403)
 
 void __cdecl
-SND_DspDynamo(uint param_1,float param_2,float param_3,float param_4,float param_5,float param_6,
-             snd_dsp_dynamo_state *param_7,float *param_8,float *param_9)
+SND_DspDynamo(uint frameCount,float sampleRate,float TH,float R,float TA,float TR,
+             snd_dsp_dynamo_state *state,float *input,float *gain)
 
 {
   uint *puVar1;
   code *pcVar2;
-  float fVar3;
-  snd_dsp_dynamo_state *psVar4;
-  bool bVar5;
-  int iVar6;
+  float x;
+  snd_dsp_dynamo_state *dst;
+  bool bVar3;
+  int iVar4;
+  float *pfVar5;
+  uint uVar6;
   float *pfVar7;
-  uint uVar8;
-  float *pfVar9;
+  float fVar8;
+  float fVar9;
   float fVar10;
   float fVar11;
   float fVar12;
-  float fVar13;
-  float fVar14;
+  float *end;
+  float iTH;
+  float y;
+  float *output;
+  float T;
   
-  if (((int)(0x3c0 % (ulonglong)param_1) != 0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x57c,0,"%s")
-     , !bVar5)) {
+  if (((int)(0x3c0 % (ulonglong)frameCount) != 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x57c,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_1 * 4 & 0x7f) != 0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x57d,0,"%s")
-     , !bVar5)) {
+  if (((frameCount * 4 & 0x7f) != 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x57d,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  puVar1 = &param_7->offset;
-  psVar4 = (snd_dsp_dynamo_state *)(param_7->lookahead + *puVar1);
-  if ((puVar1 <= psVar4) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x582,0,"%s")
-     , !bVar5)) {
+  puVar1 = &state->offset;
+  dst = (snd_dsp_dynamo_state *)(state->lookahead + *puVar1);
+  if ((puVar1 <= dst) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x582,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((psVar4 < param_7) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x583,0,"%s")
-     , !bVar5)) {
+  if ((dst < state) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x583,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  memcpy((uchar *)psVar4,(uchar *)param_8,param_1 * 4);
-  uVar8 = (*puVar1 + param_1) % 0x3c0;
-  *puVar1 = uVar8;
-  pfVar9 = param_7->lookahead + uVar8;
-  if ((param_3 == 0.0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x589,0,"%s")
-     , !bVar5)) {
+  memcpy((uchar *)dst,(uchar *)input,frameCount * 4);
+  uVar6 = (*puVar1 + frameCount) % 0x3c0;
+  *puVar1 = uVar6;
+  pfVar7 = state->lookahead + uVar6;
+  if ((TH == 0.0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x589,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  fVar3 = 1.0 / param_4;
-  fVar10 = SND_DspDecayConstant(param_6,1.0 / param_2,0.0056234132);
-  fVar11 = SND_DspDecayConstant(param_5,1.0 / param_2,0.0056234132);
-  fVar12 = SND_DspLog(param_3);
-  fVar12 = SND_DspExp((fVar3 - 1.0) * fVar12);
-  iVar6 = IS_NAN(fVar3);
-  if ((iVar6 != 0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x593,0,"%s")
-     , !bVar5)) {
+  x = 1.0 / R;
+  fVar8 = SND_DspDecayConstant(TR,1.0 / sampleRate,0.0056234132);
+  fVar9 = SND_DspDecayConstant(TA,1.0 / sampleRate,0.0056234132);
+  fVar10 = SND_DspLog(TH);
+  fVar10 = SND_DspExp((x - 1.0) * fVar10);
+  iVar4 = IS_NAN(x);
+  if ((iVar4 != 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x593,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  iVar6 = IS_NAN(fVar12);
-  if ((iVar6 != 0) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x594,0,"%s")
-     , !bVar5)) {
+  iVar4 = IS_NAN(fVar10);
+  if ((iVar4 != 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x594,0,"%s")
+     , !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((fVar11 < 0.0) || (1.0 < fVar11)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x595,0,
-                               "SA not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar5)) {
+  if (((fVar9 < 0.0) || (1.0 < fVar9)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x595,0,
+                               "SA not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((fVar10 < 0.0) || (1.0 < fVar10)) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x596,0,
-                               "SR not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar5)) {
+  if (((fVar8 < 0.0) || (1.0 < fVar8)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x596,0,
+                               "SR not in [0.0f, 1.0f]\n\t%g not in [%g, %g]"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  *param_9 = fVar12;
-  pfVar7 = pfVar9 + param_1;
-  for (; pfVar9 != pfVar7; pfVar9 = pfVar9 + 2) {
-    fVar13 = fabs(psVar4->lookahead[0]);
-    fVar13 = param_7->yfilter * 0.99 + fVar13 * 0.00999999;
-    param_7->yfilter = fVar13;
-    if (fVar13 <= param_3) {
-      param_7->g = fVar12;
+  *gain = fVar10;
+  pfVar5 = pfVar7 + frameCount;
+  for (; pfVar7 != pfVar5; pfVar7 = pfVar7 + 2) {
+    fVar11 = fabs(dst->lookahead[0]);
+    fVar11 = state->yfilter * 0.99 + fVar11 * 0.00999999;
+    state->yfilter = fVar11;
+    if (fVar11 <= TH) {
+      state->g = fVar10;
     }
     else {
-      fVar13 = SND_DspLog(fVar13 * (1.0 / param_3));
-      fVar13 = SND_DspExp(fVar13 * fVar3);
-      param_7->g = (fVar13 / param_7->yfilter) * fVar12 * param_3;
+      fVar11 = SND_DspLog(fVar11 * (1.0 / TH));
+      fVar11 = SND_DspExp(fVar11 * x);
+      state->g = (fVar11 / state->yfilter) * fVar10 * TH;
     }
-    *param_8 = param_7->gfilter * *pfVar9;
-    fVar13 = I_fmin(*param_9,param_7->gfilter);
-    *param_9 = fVar13;
-    fVar13 = fVar10;
-    if (param_7->g < param_7->gfilter) {
-      fVar13 = fVar11;
+    *input = state->gfilter * *pfVar7;
+    fVar11 = I_fmin(*gain,state->gfilter);
+    *gain = fVar11;
+    fVar11 = fVar8;
+    if (state->g < state->gfilter) {
+      fVar11 = fVar9;
     }
-    param_7->gfilter = param_7->g * fVar13 + (1.0 - fVar13) * param_7->gfilter;
-    fVar14 = fabs(psVar4->lookahead[1]);
-    psVar4 = (snd_dsp_dynamo_state *)(psVar4->lookahead + 2);
-    param_7->yfilter = fVar14 * 0.00999999 + param_7->yfilter * 0.99;
-    param_8[1] = param_7->gfilter * pfVar9[1];
-    param_8 = param_8 + 2;
-    param_7->gfilter = (1.0 - fVar13) * param_7->gfilter + param_7->g * fVar13;
+    state->gfilter = state->g * fVar11 + (1.0 - fVar11) * state->gfilter;
+    fVar12 = fabs(dst->lookahead[1]);
+    dst = (snd_dsp_dynamo_state *)(dst->lookahead + 2);
+    state->yfilter = fVar12 * 0.00999999 + state->yfilter * 0.99;
+    input[1] = state->gfilter * pfVar7[1];
+    input = input + 2;
+    state->gfilter = (1.0 - fVar11) * state->gfilter + state->g * fVar11;
   }
-  SND_DspDynamoDenormal(param_7);
+  SND_DspDynamoDenormal(state);
   return;
 }
 
@@ -1669,29 +1671,28 @@ SND_DspDynamo(uint param_1,float param_2,float param_3,float param_4,float param
 // 009448EC  SND_DspFxSourceMono  (sound/snd_dsp.cpp:1665)
 
 void __cdecl
-SND_DspFxSourceMono(snd_dsp_source_params *param_1,snd_dsp_source_state *param_2,uint param_3,
-                   float *param_4,float *param_5,float *param_6)
+SND_DspFxSourceMono(snd_dsp_source_params *params,snd_dsp_source_state *state,uint frameCount,
+                   float *frames,float *tempa,float *tempb)
 
 {
   snd_dsp_source_params *psVar1;
-  snd_dsp_source_state *psVar2;
-  float local_8;
+  snd_dsp_source_state *y1;
+  float b0;
   
-  psVar2 = param_2;
-  psVar1 = param_1;
-  if (param_1->lpfAttenuation <= -1.52879e-05 && param_1->lpfAttenuation != -1.52879e-05) {
+  y1 = state;
+  psVar1 = params;
+  if (params->lpfAttenuation <= -1.52879e-05 && params->lpfAttenuation != -1.52879e-05) {
     PIXBeginNamedEvent(0xffffff,"lpf");
     SND_OcclusionLpfCoef
-              (psVar1->lpfAttenuation,psVar1->lpfRatio,psVar1->frameRate,&local_8,(float *)&param_1)
-    ;
-    SND_DspOnePoleFilterMono(param_3,param_4,local_8,(float)param_1,&psVar2->lpfy);
+              (psVar1->lpfAttenuation,psVar1->lpfRatio,psVar1->frameRate,&b0,(float *)&params);
+    SND_DspOnePoleFilterMono(frameCount,frames,b0,(float)params,&y1->lpfy);
     PIXEndNamedEvent();
   }
-  param_1 = (snd_dsp_source_params *)&psVar1->futz;
-  if (1.52879e-05 < ((snd_dsp_futz_param *)param_1)->blend) {
+  params = (snd_dsp_source_params *)&psVar1->futz;
+  if (1.52879e-05 < ((snd_dsp_futz_param *)params)->blend) {
     PIXBeginNamedEvent(0xffffff,"futz");
-    SND_DspFutzMono((snd_dsp_futz_param *)param_1,&psVar2->futz,psVar1->frameRate,param_3,param_4,
-                    param_5,param_6);
+    SND_DspFutzMono((snd_dsp_futz_param *)params,&y1->futz,psVar1->frameRate,frameCount,frames,tempa
+                    ,tempb);
     PIXEndNamedEvent();
   }
   return;
@@ -1702,24 +1703,24 @@ SND_DspFxSourceMono(snd_dsp_source_params *param_1,snd_dsp_source_state *param_2
 
 void __cdecl
 SND_DspFxMasterNoVoiceSingleChannel
-          (uint param_1,float param_2,float *param_3,snd_dsp_master_no_voice_params *param_4,
-          snd_dsp_master_no_voice_state *param_5,snd_dsp_meters *param_6)
+          (uint frameCount,float frameRate,float *frames,snd_dsp_master_no_voice_params *params,
+          snd_dsp_master_no_voice_state *state,snd_dsp_meters *meters)
 
 {
   float fVar1;
   
   PIXBeginNamedEvent(0xffffff,"comp");
-  if (1.52879e-05 < param_4->compE) {
-    fVar1 = fabs(param_4->compPG - 1.0);
+  if (1.52879e-05 < params->compE) {
+    fVar1 = fabs(params->compPG - 1.0);
     if (1.52879e-05 < fVar1) {
-      SND_DspScale(param_1,param_4->compPG,param_3);
+      SND_DspScale(frameCount,params->compPG,frames);
     }
-    SND_DspDynamo(param_1,param_2,param_4->compT,param_4->compR,param_4->compTA,param_4->compTR,
-                  &param_5->comp,param_3,
-                  (float *)(-(uint)(param_6 != (snd_dsp_meters *)0x0) & (uint)&param_6->dyn1Gain));
-    fVar1 = fabs(param_4->compMG - 1.0);
+    SND_DspDynamo(frameCount,frameRate,params->compT,params->compR,params->compTA,params->compTR,
+                  &state->comp,frames,
+                  (float *)(-(uint)(meters != (snd_dsp_meters *)0x0) & (uint)&meters->dyn1Gain));
+    fVar1 = fabs(params->compMG - 1.0);
     if (1.52879e-05 < fVar1) {
-      SND_DspScale(param_1,param_4->compMG,param_3);
+      SND_DspScale(frameCount,params->compMG,frames);
     }
   }
   PIXEndNamedEvent();
@@ -1731,8 +1732,8 @@ SND_DspFxMasterNoVoiceSingleChannel
 
 void __cdecl
 SND_DspFxMasterSingleChannel
-          (uint param_1,float param_2,float *param_3,snd_dsp_master_params *param_4,
-          snd_dsp_master_state *param_5,snd_dsp_meters *param_6)
+          (uint frameCount,float frameRate,float *frames,snd_dsp_master_params *params,
+          snd_dsp_master_state *state,snd_dsp_meters *meters)
 
 {
   code *pcVar1;
@@ -1741,9 +1742,9 @@ SND_DspFxMasterSingleChannel
   snd_dsp_master_state *psVar4;
   snd_dsp_biquad_state *psVar5;
   float fVar6;
-  snd_dsp_biquad_coef local_18;
+  snd_dsp_biquad_coef low;
   
-  if (param_4 == (snd_dsp_master_params *)0x0) {
+  if (params == (snd_dsp_master_params *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x83b,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1751,7 +1752,7 @@ SND_DspFxMasterSingleChannel
       return;
     }
   }
-  if (param_5 == (snd_dsp_master_state *)0x0) {
+  if (state == (snd_dsp_master_state *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x83c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1759,7 +1760,7 @@ SND_DspFxMasterSingleChannel
       return;
     }
   }
-  if (param_6 == (snd_dsp_meters *)0x0) {
+  if (meters == (snd_dsp_meters *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_dsp.cpp",0x83d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1767,76 +1768,76 @@ SND_DspFxMasterSingleChannel
       return;
     }
   }
-  SND_DspScaleCache(param_1,param_4->eqG,param_3);
+  SND_DspScaleCache(frameCount,params->eqG,frames);
   PIXBeginNamedEvent(-1,"eq");
-  if (param_4->lowE <= 1.52879e-05) {
-    psVar4 = param_5;
+  if (params->lowE <= 1.52879e-05) {
+    psVar4 = state;
     for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
       (psVar4->low).y[0] = 0.0;
       psVar4 = (snd_dsp_master_state *)((psVar4->low).y + 1);
     }
   }
   else {
-    SND_DspBiquadLShelve(param_2,param_4->lowG,param_4->lowF,param_4->lowQ,&local_18);
-    SND_DspBiquadInPlace(&local_18,&param_5->low,param_1,param_3);
-    SND_DspBiquadDenormal(&param_5->low);
-    SND_DspBiquadNanCheck(&param_5->low);
+    SND_DspBiquadLShelve(frameRate,params->lowG,params->lowF,params->lowQ,&low);
+    SND_DspBiquadInPlace(&low,&state->low,frameCount,frames);
+    SND_DspBiquadDenormal(&state->low);
+    SND_DspBiquadNanCheck(&state->low);
   }
-  if (param_4->peak1E <= 1.52879e-05) {
-    psVar5 = &param_5->peak1;
+  if (params->peak1E <= 1.52879e-05) {
+    psVar5 = &state->peak1;
     for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
       psVar5->y[0] = 0.0;
       psVar5 = (snd_dsp_biquad_state *)(psVar5->y + 1);
     }
   }
   else {
-    SND_DspBiquadPeak(param_2,param_4->peak1G,param_4->peak1F,param_4->peak1Q,&local_18);
-    psVar5 = &param_5->peak1;
-    SND_DspBiquadInPlace(&local_18,psVar5,param_1,param_3);
+    SND_DspBiquadPeak(frameRate,params->peak1G,params->peak1F,params->peak1Q,&low);
+    psVar5 = &state->peak1;
+    SND_DspBiquadInPlace(&low,psVar5,frameCount,frames);
     SND_DspBiquadDenormal(psVar5);
     SND_DspBiquadNanCheck(psVar5);
   }
-  if (param_4->peak2E <= 1.52879e-05) {
-    psVar5 = &param_5->peak2;
+  if (params->peak2E <= 1.52879e-05) {
+    psVar5 = &state->peak2;
     for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
       psVar5->y[0] = 0.0;
       psVar5 = (snd_dsp_biquad_state *)(psVar5->y + 1);
     }
   }
   else {
-    SND_DspBiquadPeak(param_2,param_4->peak2G,param_4->peak2F,param_4->peak2Q,&local_18);
-    psVar5 = &param_5->peak2;
-    SND_DspBiquadInPlace(&local_18,psVar5,param_1,param_3);
+    SND_DspBiquadPeak(frameRate,params->peak2G,params->peak2F,params->peak2Q,&low);
+    psVar5 = &state->peak2;
+    SND_DspBiquadInPlace(&low,psVar5,frameCount,frames);
     SND_DspBiquadDenormal(psVar5);
     SND_DspBiquadNanCheck(psVar5);
   }
-  if (param_4->hiE <= 1.52879e-05) {
-    psVar5 = &param_5->hi;
+  if (params->hiE <= 1.52879e-05) {
+    psVar5 = &state->hi;
     for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
       psVar5->y[0] = 0.0;
       psVar5 = (snd_dsp_biquad_state *)(psVar5->y + 1);
     }
   }
   else {
-    SND_DspBiquadHShelve(param_2,param_4->hiG,param_4->hiF,param_4->hiQ,&local_18);
-    psVar5 = &param_5->hi;
-    SND_DspBiquadInPlace(&local_18,psVar5,param_1,param_3);
+    SND_DspBiquadHShelve(frameRate,params->hiG,params->hiF,params->hiQ,&low);
+    psVar5 = &state->hi;
+    SND_DspBiquadInPlace(&low,psVar5,frameCount,frames);
     SND_DspBiquadDenormal(psVar5);
     SND_DspBiquadNanCheck(psVar5);
   }
   PIXEndNamedEvent();
   PIXBeginNamedEvent(-1,"limit");
-  if (1.52879e-05 < param_4->limitE) {
-    fVar6 = fabs(param_4->limitPG - 1.0);
+  if (1.52879e-05 < params->limitE) {
+    fVar6 = fabs(params->limitPG - 1.0);
     if (1.52879e-05 < fVar6) {
-      SND_DspScale(param_1,param_4->limitPG,param_3);
+      SND_DspScale(frameCount,params->limitPG,frames);
     }
-    SND_DspDynamo(param_1,param_2,param_4->limitT,param_4->limitR,param_4->limitTA,param_4->limitTR,
-                  &param_5->limit,param_3,
-                  (float *)(-(uint)(param_6 != (snd_dsp_meters *)0x0) & (uint)&param_6->dyn2Gain));
-    fVar6 = fabs(param_4->limitMG - 1.0);
+    SND_DspDynamo(frameCount,frameRate,params->limitT,params->limitR,params->limitTA,params->limitTR
+                  ,&state->limit,frames,
+                  (float *)(-(uint)(meters != (snd_dsp_meters *)0x0) & (uint)&meters->dyn2Gain));
+    fVar6 = fabs(params->limitMG - 1.0);
     if (1.52879e-05 < fVar6) {
-      SND_DspScale(param_1,param_4->limitMG,param_3);
+      SND_DspScale(frameCount,params->limitMG,frames);
     }
   }
   PIXEndNamedEvent();

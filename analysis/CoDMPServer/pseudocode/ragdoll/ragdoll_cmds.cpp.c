@@ -2,21 +2,22 @@
 
 // 00864B50  Ragdoll_ResetBodiesUsingDef  (ragdoll/ragdoll_cmds.cpp:16)
 
-void __cdecl Ragdoll_ResetBodiesUsingDef(int param_1)
+void __cdecl Ragdoll_ResetBodiesUsingDef(int def)
 
 {
   code *pcVar1;
   bool bVar2;
-  int *piVar3;
-  phys_free_list<RagdollBody> *local_8;
+  int *body_00;
+  RagdollBody *body;
+  phys_free_list<RagdollBody> *body_i;
   
-  local_8 = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
+  body_i = (phys_free_list<RagdollBody> *)g_ragdoll_body_pool.m_dummy_head.m_next_T_internal;
   do {
-    if (local_8 == &g_ragdoll_body_pool) {
+    if (body_i == &g_ragdoll_body_pool) {
       return;
     }
-    piVar3 = &local_8->m_list_count;
-    bVar2 = Ragdoll_BodyInUse((RagdollBody *)piVar3);
+    body_00 = &body_i->m_list_count;
+    bVar2 = Ragdoll_BodyInUse((RagdollBody *)body_00);
     if (!bVar2) {
       bVar2 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll_cmds.cpp",0x14,
                         "Ragdoll_BodyInUse( body )","");
@@ -26,11 +27,11 @@ void __cdecl Ragdoll_ResetBodiesUsingDef(int param_1)
         return;
       }
     }
-    bVar2 = Ragdoll_BodyBound((RagdollBody *)piVar3);
+    bVar2 = Ragdoll_BodyBound((RagdollBody *)body_00);
     if (bVar2) {
-      Ragdoll_BodyNewState((RagdollBody *)piVar3,BS_DOBJ_WAIT);
+      Ragdoll_BodyNewState((RagdollBody *)body_00,BS_DOBJ_WAIT);
     }
-    local_8 = (phys_free_list<RagdollBody> *)(local_8->m_dummy_head).m_next_T_internal;
+    body_i = (phys_free_list<RagdollBody> *)(body_i->m_dummy_head).m_next_T_internal;
   } while( true );
 }
 
@@ -41,12 +42,13 @@ void __cdecl Ragdoll_Clear_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
+  int ragdoll;
   
   iVar1 = Cmd_Argc();
   if (1 < iVar1) {
-    pcVar2 = Cmd_Argv(1);
-    iVar1 = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    iVar1 = atoi(nptr);
     if ((-1 < iVar1) && (iVar1 < 2)) {
       memset(&ragdollDefs + iVar1 * 0xf08,'\0',0xf08);
       Ragdoll_ResetBodiesUsingDef(iVar1);
@@ -58,37 +60,38 @@ void __cdecl Ragdoll_Clear_f(void)
 
 // 00865470  Ragdoll_ReadAxis  (ragdoll/ragdoll_cmds.cpp:60)
 
-bool __cdecl Ragdoll_ReadAxis(int param_1,float *param_2)
+bool __cdecl Ragdoll_ReadAxis(int arg,float *dest)
 
 {
   char cVar1;
   int iVar2;
-  uint local_c;
-  char *local_8;
+  bool negate;
+  uint idx;
+  char *argv;
   
   iVar2 = Cmd_Argc();
-  if (iVar2 < param_1) {
+  if (iVar2 < arg) {
     Com_Printf(0xe,"Ragdoll: Missing axis arg %d\n");
-    *param_2 = 0.0;
-    param_2[1] = 0.0;
-    param_2[2] = 0.0;
+    *dest = 0.0;
+    dest[1] = 0.0;
+    dest[2] = 0.0;
   }
   else {
-    local_8 = Cmd_Argv(param_1);
-    cVar1 = *local_8;
+    argv = Cmd_Argv(arg);
+    cVar1 = *argv;
     if (cVar1 == '-') {
-      local_8 = local_8 + 1;
+      argv = argv + 1;
     }
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      iVar2 = I_stricmp(local_8,axisTable[local_c].name);
+    for (idx = 0; idx < 4; idx = idx + 1) {
+      iVar2 = I_stricmp(argv,axisTable[idx].name);
       if (iVar2 == 0) {
-        *param_2 = axisTable[local_c].axis[0];
-        param_2[1] = axisTable[local_c].axis[1];
-        param_2[2] = axisTable[local_c].axis[2];
+        *dest = axisTable[idx].axis[0];
+        dest[1] = axisTable[idx].axis[1];
+        dest[2] = axisTable[idx].axis[2];
         if (cVar1 == '-') {
-          *param_2 = -*param_2;
-          param_2[1] = -param_2[1];
-          param_2[2] = -param_2[2];
+          *dest = -*dest;
+          dest[1] = -dest[1];
+          dest[2] = -dest[2];
         }
         return true;
       }
@@ -101,32 +104,33 @@ bool __cdecl Ragdoll_ReadAxis(int param_1,float *param_2)
 
 // 00864F20  Ragdoll_ReadGeomType  (ragdoll/ragdoll_cmds.cpp:112)
 
-bool __cdecl Ragdoll_ReadGeomType(int param_1,BoneDef *param_2)
+bool __cdecl Ragdoll_ReadGeomType(int arg,BoneDef *bone)
 
 {
   char cVar1;
   int iVar2;
+  char *s1;
   char *pcVar3;
-  char *pcVar4;
   char *local_24;
-  PhysicsGeomType local_8;
+  char *name;
+  uint idx;
   
   iVar2 = Cmd_Argc();
-  if (iVar2 < param_1) {
+  if (iVar2 < arg) {
     Com_Printf(0xe,"Ragdoll: Missing geom type arg %d\n");
   }
   else {
-    pcVar3 = Cmd_Argv(param_1);
-    for (local_8 = PHYS_GEOM_NONE; local_8 < PHYS_GEOM_POINT; local_8 = local_8 + PHYS_GEOM_BOX) {
-      local_24 = geomNames[local_8];
-      pcVar4 = local_24 + 1;
+    s1 = Cmd_Argv(arg);
+    for (idx = 0; idx < 6; idx = idx + 1) {
+      local_24 = geomNames[idx];
+      pcVar3 = local_24 + 1;
       do {
         cVar1 = *local_24;
         local_24 = local_24 + 1;
       } while (cVar1 != '\0');
-      iVar2 = I_strnicmp(geomNames[local_8],pcVar3,(int)local_24 - (int)pcVar4);
+      iVar2 = I_strnicmp(geomNames[idx],s1,(int)local_24 - (int)pcVar3);
       if (iVar2 == 0) {
-        param_2->geomType = local_8;
+        bone->geomType = idx;
         return true;
       }
     }
@@ -141,65 +145,70 @@ bool __cdecl Ragdoll_ReadGeomType(int param_1,BoneDef *param_2)
 void __cdecl Ragdoll_Bone_f(void)
 
 {
-  BoneDef *pBVar1;
-  bool bVar2;
-  int iVar3;
-  char *pcVar4;
+  BoneDef *bone_00;
+  bool bVar1;
+  int iVar2;
+  char *pcVar3;
+  int iVar4;
   int iVar5;
-  int iVar6;
-  double dVar7;
-  int local_c;
+  double dVar6;
+  int ragdoll;
+  RagdollDef *def;
+  int parentBone;
+  char *name;
+  int i;
+  BoneDef *bone;
   
-  iVar3 = Cmd_Argc();
-  if (0xb < iVar3) {
-    pcVar4 = Cmd_Argv(1);
-    iVar3 = atoi(pcVar4);
-    if ((-1 < iVar3) && (iVar3 < 2)) {
-      iVar5 = iVar3 * 0xf08;
-      if (*(int *)(&DAT_09c3b094 + iVar5) < 0xe) {
-        pBVar1 = (BoneDef *)(iVar5 + 0x9c3b098 + *(int *)(&DAT_09c3b094 + iVar5) * 0x50);
-        for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-          pBVar1->animBoneNames[local_c] = 0;
-          pcVar4 = Cmd_Argv(local_c + 2);
-          I_strncpyz(pBVar1->animBoneTextNames[local_c],pcVar4,0x14);
+  iVar2 = Cmd_Argc();
+  if (0xb < iVar2) {
+    pcVar3 = Cmd_Argv(1);
+    iVar2 = atoi(pcVar3);
+    if ((-1 < iVar2) && (iVar2 < 2)) {
+      iVar4 = iVar2 * 0xf08;
+      if (*(int *)(&DAT_09c3b094 + iVar4) < 0xe) {
+        bone_00 = (BoneDef *)(iVar4 + 0x9c3b098 + *(int *)(&DAT_09c3b094 + iVar4) * 0x50);
+        for (i = 0; i < 2; i = i + 1) {
+          bone_00->animBoneNames[i] = 0;
+          pcVar3 = Cmd_Argv(i + 2);
+          I_strncpyz(bone_00->animBoneTextNames[i],pcVar3,0x14);
         }
-        pcVar4 = Cmd_Argv(4);
-        dVar7 = atof(pcVar4);
-        pBVar1->radius = (float)dVar7;
-        pcVar4 = Cmd_Argv(5);
-        dVar7 = atof(pcVar4);
-        pBVar1->percent = (float)dVar7;
-        pcVar4 = Cmd_Argv(6);
-        dVar7 = atof(pcVar4);
-        pBVar1->mass = (float)dVar7;
-        pcVar4 = Cmd_Argv(7);
-        dVar7 = atof(pcVar4);
-        pBVar1->friction = (float)dVar7;
-        pBVar1->mass = pBVar1->mass * 0.001;
-        pcVar4 = Cmd_Argv(8);
-        iVar6 = atoi(pcVar4);
-        if (iVar6 == -1) {
-          pBVar1->parentBone = -1;
+        pcVar3 = Cmd_Argv(4);
+        dVar6 = atof(pcVar3);
+        bone_00->radius = (float)dVar6;
+        pcVar3 = Cmd_Argv(5);
+        dVar6 = atof(pcVar3);
+        bone_00->percent = (float)dVar6;
+        pcVar3 = Cmd_Argv(6);
+        dVar6 = atof(pcVar3);
+        bone_00->mass = (float)dVar6;
+        pcVar3 = Cmd_Argv(7);
+        dVar6 = atof(pcVar3);
+        bone_00->friction = (float)dVar6;
+        bone_00->mass = bone_00->mass * 0.001;
+        pcVar3 = Cmd_Argv(8);
+        iVar5 = atoi(pcVar3);
+        if (iVar5 == -1) {
+          bone_00->parentBone = -1;
         }
         else {
-          if (*(int *)(&DAT_09c3b094 + iVar5) <= iVar6) {
+          if (*(int *)(&DAT_09c3b094 + iVar4) <= iVar5) {
             Com_Printf(0xe,"Ragdoll: Child bones must come after parent bones: %d\n");
             return;
           }
-          pBVar1->parentBone = iVar6;
+          bone_00->parentBone = iVar5;
         }
-        pcVar4 = Cmd_Argv(9);
-        iVar6 = atoi(pcVar4);
-        pBVar1->mirror = iVar6 != 0;
-        bVar2 = Ragdoll_ReadGeomType(10,pBVar1);
-        if (bVar2) {
-          pcVar4 = Cmd_Argv(0xb);
-          dVar7 = atof(pcVar4);
-          pBVar1->buoyancy = (float)dVar7;
-          bVar2 = Ragdoll_ValidatePrecalcBoneDef((RagdollDef *)(&ragdollDefs + iVar5),pBVar1);
-          if (bVar2) {
-            *(int *)(&DAT_09c3b094 + iVar5) = *(int *)(&DAT_09c3b094 + iVar5) + 1;
-            Ragdoll_ResetBodiesUsingDef(iVar3);
+        pcVar3 = Cmd_Argv(9);
+        iVar5 = atoi(pcVar3);
+        bone_00->mirror = iVar5 != 0;
+        bVar1 = Ragdoll_ReadGeomType(10,bone_00);
+        if (bVar1) {
+          pcVar3 = Cmd_Argv(0xb);
+          dVar6 = atof(pcVar3);
+          bone_00->buoyancy = (float)dVar6;
+          bVar1 = Ragdoll_ValidatePrecalcBoneDef((RagdollDef *)(&ragdollDefs + iVar4),bone_00);
+          if (bVar1) {
+            *(int *)(&DAT_09c3b094 + iVar4) = *(int *)(&DAT_09c3b094 + iVar4) + 1;
+            Ragdoll_ResetBodiesUsingDef(iVar2);
           }
           else {
             Com_Printf(0xe,"Ragdoll: Bone %d validation failed\n");
@@ -217,24 +226,24 @@ void __cdecl Ragdoll_Bone_f(void)
 
 // 00865110  Ragdoll_ReadJointType  (ragdoll/ragdoll_cmds.cpp:225)
 
-bool __cdecl Ragdoll_ReadJointType(int param_1,JointDef *param_2)
+bool __cdecl Ragdoll_ReadJointType(int arg,JointDef *joint)
 
 {
   int iVar1;
-  char *pcVar2;
-  JointType local_8;
+  char *s0;
+  char *name;
+  uint idx;
   
   iVar1 = Cmd_Argc();
-  if (iVar1 < param_1) {
+  if (iVar1 < arg) {
     Com_Printf(0xe,"Ragdoll: Missing joint type arg %d\n");
   }
   else {
-    pcVar2 = Cmd_Argv(param_1);
-    for (local_8 = RAGDOLL_JOINT_NONE; local_8 < (RAGDOLL_JOINT_SWIVEL|RAGDOLL_JOINT_HINGE);
-        local_8 = local_8 + RAGDOLL_JOINT_HINGE) {
-      iVar1 = I_stricmp(pcVar2,jointNames[local_8]);
+    s0 = Cmd_Argv(arg);
+    for (idx = 0; idx < 3; idx = idx + 1) {
+      iVar1 = I_stricmp(s0,jointNames[idx]);
       if (iVar1 == 0) {
-        param_2->type = local_8;
+        joint->type = idx;
         return true;
       }
     }
@@ -249,33 +258,36 @@ bool __cdecl Ragdoll_ReadJointType(int param_1,JointDef *param_2)
 void __cdecl Ragdoll_Joint_f(void)
 
 {
-  JointDef *pJVar1;
-  bool bVar2;
-  int iVar3;
-  char *pcVar4;
+  JointDef *joint_00;
+  bool bVar1;
+  int iVar2;
+  char *pcVar3;
+  int iVar4;
   int iVar5;
-  int iVar6;
+  int ragdoll;
+  RagdollDef *def;
+  JointDef *joint;
   
-  iVar3 = Cmd_Argc();
-  if (3 < iVar3) {
-    pcVar4 = Cmd_Argv(1);
-    iVar3 = atoi(pcVar4);
-    if ((-1 < iVar3) && (iVar3 < 2)) {
-      iVar5 = iVar3 * 0xf08;
-      if (*(int *)(&DAT_09c3b61c + iVar5) < 0x1c) {
-        pJVar1 = (JointDef *)(iVar5 + 0x9c3b620 + *(int *)(&DAT_09c3b61c + iVar5) * 0x54);
-        pcVar4 = Cmd_Argv(2);
-        iVar6 = atoi(pcVar4);
-        pJVar1->bone = (uchar)iVar6;
-        if ((int)(uint)pJVar1->bone < *(int *)(&DAT_09c3b094 + iVar5)) {
-          if (pJVar1->bone == '\0') {
+  iVar2 = Cmd_Argc();
+  if (3 < iVar2) {
+    pcVar3 = Cmd_Argv(1);
+    iVar2 = atoi(pcVar3);
+    if ((-1 < iVar2) && (iVar2 < 2)) {
+      iVar4 = iVar2 * 0xf08;
+      if (*(int *)(&DAT_09c3b61c + iVar4) < 0x1c) {
+        joint_00 = (JointDef *)(iVar4 + 0x9c3b620 + *(int *)(&DAT_09c3b61c + iVar4) * 0x54);
+        pcVar3 = Cmd_Argv(2);
+        iVar5 = atoi(pcVar3);
+        joint_00->bone = (uchar)iVar5;
+        if ((int)(uint)joint_00->bone < *(int *)(&DAT_09c3b094 + iVar4)) {
+          if (joint_00->bone == '\0') {
             Com_Printf(0xe,"Ragdoll: Joint referenced bone with no parent (0)\n");
           }
           else {
-            bVar2 = Ragdoll_ReadJointType(3,pJVar1);
-            if (bVar2) {
-              *(int *)(&DAT_09c3b61c + iVar5) = *(int *)(&DAT_09c3b61c + iVar5) + 1;
-              Ragdoll_ResetBodiesUsingDef(iVar3);
+            bVar1 = Ragdoll_ReadJointType(3,joint_00);
+            if (bVar1) {
+              *(int *)(&DAT_09c3b61c + iVar4) = *(int *)(&DAT_09c3b61c + iVar4) + 1;
+              Ragdoll_ResetBodiesUsingDef(iVar2);
             }
           }
         }
@@ -381,6 +393,10 @@ void __cdecl Ragdoll_Limit_f(void)
   float local_64;
   float local_50;
   float local_48;
+  int ragdoll;
+  RagdollDef *def;
+  JointDef *joint;
+  int jointNum;
   
   iVar3 = Cmd_Argc();
   if (6 < iVar3) {
@@ -452,14 +468,14 @@ void __cdecl Ragdoll_Limit_f(void)
 
 // 00864BF0  Ragdoll_BodyBound  (ragdoll/ragdoll.h:305)
 
-bool __cdecl Ragdoll_BodyBound(RagdollBody *param_1)
+bool __cdecl Ragdoll_BodyBound(RagdollBody *body)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (RagdollBody *)0x0) {
+  if (body == (RagdollBody *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\ragdoll\\ragdoll.h",0x132,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -467,7 +483,7 @@ bool __cdecl Ragdoll_BodyBound(RagdollBody *param_1)
       return (bool)uVar3;
     }
   }
-  return 1 < (int)param_1->state;
+  return 1 < (int)body->state;
 }
 
 
@@ -481,7 +497,10 @@ void __cdecl Ragdoll_Selfpair_f(void)
   char *pcVar3;
   int iVar4;
   int iVar5;
-  int local_8;
+  int ragdoll;
+  RagdollDef *def;
+  SelfPairDef *pair;
+  int i;
   
   iVar2 = Cmd_Argc();
   if (3 < iVar2) {
@@ -491,11 +510,11 @@ void __cdecl Ragdoll_Selfpair_f(void)
       iVar4 = iVar2 * 0xf08;
       if (*(int *)(&DAT_09c3bf50 + iVar4) < 0x21) {
         iVar1 = iVar4 + 0x9c3bf54 + *(int *)(&DAT_09c3bf50 + iVar4) * 2;
-        for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-          pcVar3 = Cmd_Argv(local_8 + 2);
+        for (i = 0; i < 2; i = i + 1) {
+          pcVar3 = Cmd_Argv(i + 2);
           iVar5 = atoi(pcVar3);
-          *(char *)(iVar1 + local_8) = (char)iVar5;
-          if (*(int *)(&DAT_09c3b094 + iVar4) < (int)(uint)*(byte *)(iVar1 + local_8)) {
+          *(char *)(iVar1 + i) = (char)iVar5;
+          if (*(int *)(&DAT_09c3b094 + iVar4) < (int)(uint)*(byte *)(iVar1 + i)) {
             Com_Printf(0xe,"Ragdoll: Bad self collision pair bone %d\n");
             return;
           }
@@ -523,6 +542,10 @@ void __cdecl Ragdoll_BaseLerpBone_f(void)
   int iVar4;
   int local_58;
   int local_40;
+  int ragdoll;
+  RagdollDef *def;
+  char *name;
+  BaseLerpBoneDef *bone;
   
   iVar1 = Cmd_Argc();
   if (2 < iVar1) {
@@ -611,6 +634,10 @@ void __cdecl Ragdoll_PinBone_f(void)
   char *pcVar3;
   uint uVar4;
   int iVar5;
+  int ragdoll;
+  RagdollDef *def;
+  char *name;
+  BaseLerpBoneDef *bone;
   
   iVar2 = Cmd_Argc();
   if (2 < iVar2) {

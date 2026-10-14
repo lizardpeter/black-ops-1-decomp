@@ -2,84 +2,82 @@
 
 // 00810540  _tr_init  (zlib/trees.cpp:388)
 
-void __cdecl _tr_init(internal_state *param_1)
+void __cdecl _tr_init(internal_state *s)
 
 {
   int unaff_EBP;
   
   GamerProfile_WriteSettings(unaff_EBP);
-  (param_1->l_desc).dyn_tree = param_1->dyn_ltree;
-  (param_1->l_desc).stat_desc = &static_l_desc;
-  (param_1->d_desc).dyn_tree = param_1->dyn_dtree;
-  (param_1->d_desc).stat_desc = &static_d_desc;
-  (param_1->bl_desc).dyn_tree = param_1->bl_tree;
-  (param_1->bl_desc).stat_desc = &static_bl_desc;
-  param_1->bi_buf = 0;
-  param_1->bi_valid = 0;
-  param_1->last_eob_len = 8;
-  init_block(param_1);
+  (s->l_desc).dyn_tree = s->dyn_ltree;
+  (s->l_desc).stat_desc = &static_l_desc;
+  (s->d_desc).dyn_tree = s->dyn_dtree;
+  (s->d_desc).stat_desc = &static_d_desc;
+  (s->bl_desc).dyn_tree = s->bl_tree;
+  (s->bl_desc).stat_desc = &static_bl_desc;
+  s->bi_buf = 0;
+  s->bi_valid = 0;
+  s->last_eob_len = 8;
+  init_block(s);
   return;
 }
 
 
 // 008105E0  init_block  (zlib/trees.cpp:416)
 
-void __cdecl init_block(internal_state *param_1)
+void __cdecl init_block(internal_state *s)
 
 {
-  int local_8;
+  int n;
   
-  for (local_8 = 0; local_8 < 0x11e; local_8 = local_8 + 1) {
-    param_1->dyn_ltree[local_8].fc.freq = 0;
+  for (n = 0; n < 0x11e; n = n + 1) {
+    s->dyn_ltree[n].fc.freq = 0;
   }
-  for (local_8 = 0; local_8 < 0x1e; local_8 = local_8 + 1) {
-    param_1->dyn_dtree[local_8].fc.freq = 0;
+  for (n = 0; n < 0x1e; n = n + 1) {
+    s->dyn_dtree[n].fc.freq = 0;
   }
-  for (local_8 = 0; local_8 < 0x13; local_8 = local_8 + 1) {
-    param_1->bl_tree[local_8].fc.freq = 0;
+  for (n = 0; n < 0x13; n = n + 1) {
+    s->bl_tree[n].fc.freq = 0;
   }
-  param_1->dyn_ltree[0x100].fc.freq = 1;
-  param_1->static_len = 0;
-  param_1->opt_len = 0;
-  param_1->matches = 0;
-  param_1->last_lit = 0;
+  s->dyn_ltree[0x100].fc.freq = 1;
+  s->static_len = 0;
+  s->opt_len = 0;
+  s->matches = 0;
+  s->last_lit = 0;
   return;
 }
 
 
 // 00811410  pqdownheap  (zlib/trees.cpp:459)
 
-void __cdecl pqdownheap(internal_state *param_1,ct_data_s *param_2,int param_3)
+void __cdecl pqdownheap(internal_state *s,ct_data_s *tree,int k)
 
 {
   int iVar1;
-  int local_c;
+  int j;
+  int v;
   
-  iVar1 = param_1->heap[param_3];
-  while (local_c = param_3 * 2, local_c <= param_1->heap_len) {
-    if ((local_c < param_1->heap_len) &&
-       ((param_2[param_1->heap[param_3 * 2 + 1]].fc.freq <
-         param_2[param_1->heap[param_3 * 2]].fc.freq ||
-        ((param_2[param_1->heap[param_3 * 2 + 1]].fc.freq ==
-          param_2[param_1->heap[param_3 * 2]].fc.freq &&
-         (param_1->depth[param_1->heap[param_3 * 2 + 1]] <=
-          param_1->depth[param_1->heap[param_3 * 2]])))))) {
-      local_c = local_c + 1;
+  iVar1 = s->heap[k];
+  while (j = k * 2, j <= s->heap_len) {
+    if ((j < s->heap_len) &&
+       ((tree[s->heap[k * 2 + 1]].fc.freq < tree[s->heap[k * 2]].fc.freq ||
+        ((tree[s->heap[k * 2 + 1]].fc.freq == tree[s->heap[k * 2]].fc.freq &&
+         (s->depth[s->heap[k * 2 + 1]] <= s->depth[s->heap[k * 2]])))))) {
+      j = j + 1;
     }
-    if ((param_2[iVar1].fc.freq < param_2[param_1->heap[local_c]].fc.freq) ||
-       ((param_2[iVar1].fc.freq == param_2[param_1->heap[local_c]].fc.freq &&
-        (param_1->depth[iVar1] <= param_1->depth[param_1->heap[local_c]])))) break;
-    param_1->heap[param_3] = param_1->heap[local_c];
-    param_3 = local_c;
+    if ((tree[iVar1].fc.freq < tree[s->heap[j]].fc.freq) ||
+       ((tree[iVar1].fc.freq == tree[s->heap[j]].fc.freq &&
+        (s->depth[iVar1] <= s->depth[s->heap[j]])))) break;
+    s->heap[k] = s->heap[j];
+    k = j;
   }
-  param_1->heap[param_3] = iVar1;
+  s->heap[k] = iVar1;
   return;
 }
 
 
 // 008115A0  gen_bitlen  (zlib/trees.cpp:491)
 
-void __cdecl gen_bitlen(internal_state *param_1,tree_desc_s *param_2)
+void __cdecl gen_bitlen(internal_state *s,tree_desc_s *desc)
 
 {
   ushort uVar1;
@@ -88,77 +86,83 @@ void __cdecl gen_bitlen(internal_state *param_1,tree_desc_s *param_2)
   ct_data_s *pcVar4;
   int *piVar5;
   int iVar6;
-  uint uVar7;
+  int iVar7;
   int iVar8;
-  uint uVar9;
-  int iVar10;
-  int local_28;
-  uint local_24;
-  int local_14;
-  uint local_c;
-  int local_8;
+  int iVar9;
+  ct_data_s *stree;
+  int m;
+  int max_code;
+  ct_data_s *tree;
+  int xbits;
+  int bits;
+  int max_length;
+  ushort f;
+  int base;
+  int overflow;
+  int *extra;
+  int n;
+  int h;
   
-  pcVar2 = param_2->dyn_tree;
-  iVar3 = param_2->max_code;
-  pcVar4 = param_2->stat_desc->static_tree;
-  piVar5 = param_2->stat_desc->extra_bits;
-  iVar6 = param_2->stat_desc->extra_base;
-  uVar7 = param_2->stat_desc->max_length;
-  local_14 = 0;
-  for (local_24 = 0; (int)local_24 < 0x10; local_24 = local_24 + 1) {
-    param_1->bl_count[local_24] = 0;
+  pcVar2 = desc->dyn_tree;
+  iVar3 = desc->max_code;
+  pcVar4 = desc->stat_desc->static_tree;
+  piVar5 = desc->stat_desc->extra_bits;
+  iVar6 = desc->stat_desc->extra_base;
+  iVar9 = desc->stat_desc->max_length;
+  overflow = 0;
+  for (bits = 0; bits < 0x10; bits = bits + 1) {
+    s->bl_count[bits] = 0;
   }
-  pcVar2[param_1->heap[param_1->heap_max]].dl.dad = 0;
-  iVar10 = param_1->heap_max;
-  while (local_8 = iVar10 + 1, local_8 < 0x23d) {
-    iVar8 = param_1->heap[iVar10 + 1];
-    local_24 = pcVar2[pcVar2[iVar8].dl.dad].dl.dad + 1;
-    if ((int)uVar7 < (int)local_24) {
-      local_14 = local_14 + 1;
-      local_24 = uVar7;
+  pcVar2[s->heap[s->heap_max]].dl.dad = 0;
+  iVar8 = s->heap_max;
+  while (h = iVar8 + 1, h < 0x23d) {
+    iVar7 = s->heap[iVar8 + 1];
+    bits = pcVar2[pcVar2[iVar7].dl.dad].dl.dad + 1;
+    if (iVar9 < bits) {
+      overflow = overflow + 1;
+      bits = iVar9;
     }
-    pcVar2[iVar8].dl.dad = (ushort)local_24;
-    iVar10 = local_8;
-    if (iVar8 <= iVar3) {
-      param_1->bl_count[local_24] = param_1->bl_count[local_24] + 1;
-      local_28 = 0;
-      if (iVar6 <= iVar8) {
-        local_28 = piVar5[iVar8 - iVar6];
+    pcVar2[iVar7].dl.dad = (ushort)bits;
+    iVar8 = h;
+    if (iVar7 <= iVar3) {
+      s->bl_count[bits] = s->bl_count[bits] + 1;
+      xbits = 0;
+      if (iVar6 <= iVar7) {
+        xbits = piVar5[iVar7 - iVar6];
       }
-      uVar1 = pcVar2[iVar8].fc.freq;
-      param_1->opt_len = (uint)uVar1 * (local_24 + local_28) + param_1->opt_len;
+      uVar1 = pcVar2[iVar7].fc.freq;
+      s->opt_len = (uint)uVar1 * (bits + xbits) + s->opt_len;
       if (pcVar4 != (ct_data_s *)0x0) {
-        param_1->static_len =
-             (uint)uVar1 * ((uint)pcVar4[iVar8].dl.dad + local_28) + param_1->static_len;
+        s->static_len = (uint)uVar1 * ((uint)pcVar4[iVar7].dl.dad + xbits) + s->static_len;
       }
     }
   }
-  local_24 = uVar7;
-  if (local_14 != 0) {
+  bits = iVar9;
+  if (overflow != 0) {
     do {
       do {
-        uVar9 = local_24;
-        local_24 = uVar9 - 1;
-      } while (param_1->bl_count[uVar9 - 1] == 0);
-      param_1->bl_count[uVar9 - 1] = param_1->bl_count[uVar9 - 1] - 1;
-      param_1->bl_count[uVar9] = param_1->bl_count[uVar9] + 2;
-      param_1->bl_count[uVar7] = param_1->bl_count[uVar7] - 1;
-      local_14 = local_14 + -2;
-      local_24 = uVar7;
-    } while (0 < local_14);
-    for (; local_24 != 0; local_24 = local_24 - 1) {
-      local_c = (uint)param_1->bl_count[local_24];
-      while (local_c != 0) {
-        iVar10 = local_8 + -1;
-        iVar6 = param_1->heap[local_8 + -1];
-        local_8 = iVar10;
+        iVar6 = bits;
+        bits = iVar6 + -1;
+      } while (s->bl_count[iVar6 + -1] == 0);
+      s->bl_count[iVar6 + -1] = s->bl_count[iVar6 + -1] - 1;
+      s->bl_count[iVar6] = s->bl_count[iVar6] + 2;
+      s->bl_count[iVar9] = s->bl_count[iVar9] - 1;
+      overflow = overflow + -2;
+      bits = iVar9;
+    } while (0 < overflow);
+    for (; bits != 0; bits = bits + -1) {
+      n = (int)s->bl_count[bits];
+      while (n != 0) {
+        iVar9 = h + -1;
+        iVar6 = s->heap[h + -1];
+        h = iVar9;
         if (iVar6 <= iVar3) {
-          if (pcVar2[iVar6].dl.dad != local_24) {
-            param_1->opt_len =
-                 (local_24 - pcVar2[iVar6].dl.dad) * (uint)pcVar2[iVar6].fc.freq + param_1->opt_len;
-            pcVar2[iVar6].dl.dad = (ushort)local_24;
+          if ((uint)pcVar2[iVar6].dl.dad != bits) {
+            s->opt_len = (bits - (uint)pcVar2[iVar6].dl.dad) * (uint)pcVar2[iVar6].fc.freq +
+                         s->opt_len;
+            pcVar2[iVar6].dl.dad = (ushort)bits;
           }
-          local_c = local_c - 1;
+          n = n + -1;
         }
       }
     }
@@ -171,30 +175,31 @@ void __cdecl gen_bitlen(internal_state *param_1,tree_desc_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl gen_codes(ct_data_s *param_1,int param_2,ushort *param_3)
+void __cdecl gen_codes(ct_data_s *tree,int max_code,ushort *bl_count)
 
 {
   ushort uVar1;
   uint uVar2;
+  int len;
   ushort auStack_34 [16];
   uint local_14;
-  int local_10;
-  ushort local_c;
-  int local_8;
+  int bits;
+  ushort code;
+  int n;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = 0;
-  for (local_10 = 1; local_10 < 0x10; local_10 = local_10 + 1) {
-    local_c = (local_c + param_3[local_10 + -1]) * 2;
-    auStack_34[local_10] = local_c;
+  code = 0;
+  for (bits = 1; bits < 0x10; bits = bits + 1) {
+    code = (code + bl_count[bits + -1]) * 2;
+    auStack_34[bits] = code;
   }
-  for (local_8 = 0; local_8 <= param_2; local_8 = local_8 + 1) {
-    uVar2 = (uint)param_1[local_8].dl.dad;
+  for (n = 0; n <= max_code; n = n + 1) {
+    uVar2 = (uint)tree[n].dl.dad;
     if (uVar2 != 0) {
       uVar1 = auStack_34[uVar2];
       auStack_34[uVar2] = auStack_34[uVar2] + 1;
       uVar2 = bi_reverse((uint)uVar1,uVar2);
-      param_1[local_8].fc.freq = (ushort)uVar2;
+      tree[n].fc.freq = (ushort)uVar2;
     }
   }
   return;
@@ -203,151 +208,156 @@ void __cdecl gen_codes(ct_data_s *param_1,int param_2,ushort *param_3)
 
 // 00811070  build_tree  (zlib/trees.cpp:615)
 
-void __cdecl build_tree(internal_state *param_1,tree_desc_s *param_2)
+void __cdecl build_tree(internal_state *s,tree_desc_s *desc)
 
 {
+  ct_data_s *tree_00;
   ct_data_s *pcVar1;
-  ct_data_s *pcVar2;
+  int iVar2;
   int iVar3;
-  int iVar4;
   uchar local_25;
   int local_24;
-  int local_18;
-  int local_14;
-  int local_c;
+  ct_data_s *stree;
+  int m;
+  int node;
+  int max_code;
+  ct_data_s *tree;
+  int n;
+  int elems;
   
-  pcVar1 = param_2->dyn_tree;
-  pcVar2 = param_2->stat_desc->static_tree;
-  local_18 = param_2->stat_desc->elems;
-  local_14 = -1;
-  param_1->heap_len = 0;
-  param_1->heap_max = 0x23d;
-  for (local_c = 0; local_c < local_18; local_c = local_c + 1) {
-    if (pcVar1[local_c].fc.freq == 0) {
-      pcVar1[local_c].dl.dad = 0;
+  tree_00 = desc->dyn_tree;
+  pcVar1 = desc->stat_desc->static_tree;
+  node = desc->stat_desc->elems;
+  max_code = -1;
+  s->heap_len = 0;
+  s->heap_max = 0x23d;
+  for (n = 0; n < node; n = n + 1) {
+    if (tree_00[n].fc.freq == 0) {
+      tree_00[n].dl.dad = 0;
     }
     else {
-      local_14 = local_c;
-      param_1->heap_len = param_1->heap_len + 1;
-      param_1->heap[param_1->heap_len] = local_c;
-      param_1->depth[local_c] = '\0';
+      max_code = n;
+      s->heap_len = s->heap_len + 1;
+      s->heap[s->heap_len] = n;
+      s->depth[n] = '\0';
     }
   }
-  while (param_1->heap_len < 2) {
-    if (local_14 < 2) {
-      local_24 = local_14 + 1;
-      local_14 = local_24;
+  while (s->heap_len < 2) {
+    if (max_code < 2) {
+      local_24 = max_code + 1;
+      max_code = local_24;
     }
     else {
       local_24 = 0;
     }
-    param_1->heap_len = param_1->heap_len + 1;
-    param_1->heap[param_1->heap_len] = local_24;
-    pcVar1[local_24].fc.freq = 1;
-    param_1->depth[local_24] = '\0';
-    param_1->opt_len = param_1->opt_len - 1;
-    if (pcVar2 != (ct_data_s *)0x0) {
-      param_1->static_len = param_1->static_len - (uint)pcVar2[local_24].dl.dad;
+    s->heap_len = s->heap_len + 1;
+    s->heap[s->heap_len] = local_24;
+    tree_00[local_24].fc.freq = 1;
+    s->depth[local_24] = '\0';
+    s->opt_len = s->opt_len - 1;
+    if (pcVar1 != (ct_data_s *)0x0) {
+      s->static_len = s->static_len - (uint)pcVar1[local_24].dl.dad;
     }
   }
-  param_2->max_code = local_14;
-  for (local_c = param_1->heap_len / 2; 0 < local_c; local_c = local_c + -1) {
-    pqdownheap(param_1,pcVar1,local_c);
+  desc->max_code = max_code;
+  for (n = s->heap_len / 2; 0 < n; n = n + -1) {
+    pqdownheap(s,tree_00,n);
   }
   do {
-    iVar3 = param_1->heap[1];
-    param_1->heap[1] = param_1->heap[param_1->heap_len];
-    param_1->heap_len = param_1->heap_len + -1;
-    pqdownheap(param_1,pcVar1,1);
-    iVar4 = param_1->heap[1];
-    param_1->heap_max = param_1->heap_max + -1;
-    param_1->heap[param_1->heap_max] = iVar3;
-    param_1->heap_max = param_1->heap_max + -1;
-    param_1->heap[param_1->heap_max] = iVar4;
-    pcVar1[local_18].fc.freq = pcVar1[iVar3].fc.freq + pcVar1[iVar4].fc.freq;
-    if (param_1->depth[iVar3] < param_1->depth[iVar4]) {
-      local_25 = param_1->depth[iVar4];
+    iVar2 = s->heap[1];
+    s->heap[1] = s->heap[s->heap_len];
+    s->heap_len = s->heap_len + -1;
+    pqdownheap(s,tree_00,1);
+    iVar3 = s->heap[1];
+    s->heap_max = s->heap_max + -1;
+    s->heap[s->heap_max] = iVar2;
+    s->heap_max = s->heap_max + -1;
+    s->heap[s->heap_max] = iVar3;
+    tree_00[node].fc.freq = tree_00[iVar2].fc.freq + tree_00[iVar3].fc.freq;
+    if (s->depth[iVar2] < s->depth[iVar3]) {
+      local_25 = s->depth[iVar3];
     }
     else {
-      local_25 = param_1->depth[iVar3];
+      local_25 = s->depth[iVar2];
     }
-    param_1->depth[local_18] = local_25 + '\x01';
-    pcVar1[iVar4].dl.dad = (ushort)local_18;
-    pcVar1[iVar3].dl.dad = (ushort)local_18;
-    param_1->heap[1] = local_18;
-    local_18 = local_18 + 1;
-    pqdownheap(param_1,pcVar1,1);
-  } while (1 < param_1->heap_len);
-  param_1->heap_max = param_1->heap_max + -1;
-  param_1->heap[param_1->heap_max] = param_1->heap[1];
-  gen_bitlen(param_1,param_2);
-  gen_codes(pcVar1,local_14,param_1->bl_count);
+    s->depth[node] = local_25 + '\x01';
+    tree_00[iVar3].dl.dad = (ushort)node;
+    tree_00[iVar2].dl.dad = (ushort)node;
+    s->heap[1] = node;
+    node = node + 1;
+    pqdownheap(s,tree_00,1);
+  } while (1 < s->heap_len);
+  s->heap_max = s->heap_max + -1;
+  s->heap[s->heap_max] = s->heap[1];
+  gen_bitlen(s,desc);
+  gen_codes(tree_00,max_code,s->bl_count);
   return;
 }
 
 
 // 00811A40  scan_tree  (zlib/trees.cpp:701)
 
-void __cdecl scan_tree(internal_state *param_1,ct_data_s *param_2,int param_3)
+void __cdecl scan_tree(internal_state *s,ct_data_s *tree,int max_code)
 
 {
   ushort uVar1;
   uint uVar2;
-  int local_20;
-  int local_1c;
-  uint local_18;
-  uint local_14;
-  int local_c;
-  int local_8;
+  int max_count;
+  int min_count;
+  int prevlen;
+  int nextlen;
+  int curlen;
+  int n;
+  int count;
   
-  local_18 = 0xffffffff;
-  uVar1 = (param_2->dl).dad;
-  local_8 = 0;
-  local_20 = 7;
-  local_1c = 4;
+  prevlen = -1;
+  uVar1 = (tree->dl).dad;
+  count = 0;
+  max_count = 7;
+  min_count = 4;
   if (uVar1 == 0) {
-    local_20 = 0x8a;
-    local_1c = 3;
+    max_count = 0x8a;
+    min_count = 3;
   }
-  param_2[param_3 + 1].dl.dad = 0xffff;
-  local_14 = (uint)uVar1;
-  for (local_c = 0; local_c <= param_3; local_c = local_c + 1) {
-    uVar2 = (uint)param_2[local_c + 1].dl.dad;
-    local_8 = local_8 + 1;
-    if ((local_20 <= local_8) || (local_14 != uVar2)) {
-      if (local_8 < local_1c) {
-        param_1->bl_tree[local_14].fc.freq = param_1->bl_tree[local_14].fc.freq + (short)local_8;
+  tree[max_code + 1].dl.dad = 0xffff;
+  nextlen = (uint)uVar1;
+  for (n = 0; n <= max_code; n = n + 1) {
+    uVar2 = (uint)tree[n + 1].dl.dad;
+    count = count + 1;
+    if ((max_count <= count) || (nextlen != uVar2)) {
+      if (count < min_count) {
+        s->bl_tree[nextlen].fc.freq = s->bl_tree[nextlen].fc.freq + (short)count;
       }
-      else if (local_14 == 0) {
-        if (local_8 < 0xb) {
-          param_1->bl_tree[0x11].fc.freq = param_1->bl_tree[0x11].fc.freq + 1;
+      else if (nextlen == 0) {
+        if (count < 0xb) {
+          s->bl_tree[0x11].fc.freq = s->bl_tree[0x11].fc.freq + 1;
         }
         else {
-          param_1->bl_tree[0x12].fc.freq = param_1->bl_tree[0x12].fc.freq + 1;
+          s->bl_tree[0x12].fc.freq = s->bl_tree[0x12].fc.freq + 1;
         }
       }
       else {
-        if (local_14 != local_18) {
-          param_1->bl_tree[local_14].fc.freq = param_1->bl_tree[local_14].fc.freq + 1;
+        if (nextlen != prevlen) {
+          s->bl_tree[nextlen].fc.freq = s->bl_tree[nextlen].fc.freq + 1;
         }
-        param_1->bl_tree[0x10].fc.freq = param_1->bl_tree[0x10].fc.freq + 1;
+        s->bl_tree[0x10].fc.freq = s->bl_tree[0x10].fc.freq + 1;
       }
-      local_8 = 0;
-      local_18 = local_14;
+      count = 0;
+      prevlen = nextlen;
       if (uVar2 == 0) {
-        local_20 = 0x8a;
-        local_1c = 3;
+        max_count = 0x8a;
+        min_count = 3;
       }
-      else if (local_14 == uVar2) {
-        local_20 = 6;
-        local_1c = 3;
+      else if (nextlen == uVar2) {
+        max_count = 6;
+        min_count = 3;
       }
       else {
-        local_20 = 7;
-        local_1c = 4;
+        max_count = 7;
+        min_count = 4;
       }
     }
-    local_14 = uVar2;
+    nextlen = uVar2;
   }
   return;
 }
@@ -355,206 +365,200 @@ void __cdecl scan_tree(internal_state *param_1,ct_data_s *param_2,int param_3)
 
 // 008120E0  send_tree  (zlib/trees.cpp:743)
 
-void __cdecl send_tree(internal_state *param_1,ct_data_s *param_2,int param_3)
+void __cdecl send_tree(internal_state *s,ct_data_s *tree,int max_code)
 
 {
   ushort uVar1;
   uint uVar2;
   int iVar3;
   uint uVar4;
-  int local_20;
-  int local_1c;
-  uint local_18;
-  uint local_14;
-  int local_c;
-  int local_8;
+  int val_8;
+  int len_8;
+  int val_7;
+  int len_7;
+  int val_6;
+  int len_6;
+  int val_5;
+  int len_5;
+  int val_4;
+  int len_4;
+  int val_3;
+  int len_3;
+  int val_2;
+  int len_2;
+  int val;
+  int len;
+  int max_count;
+  int min_count;
+  int prevlen;
+  int nextlen;
+  int curlen;
+  int n;
+  int count;
   
-  local_18 = 0xffffffff;
-  local_8 = 0;
-  local_20 = 7;
-  local_1c = 4;
-  if ((param_2->dl).dad == 0) {
-    local_20 = 0x8a;
-    local_1c = 3;
+  prevlen = -1;
+  count = 0;
+  max_count = 7;
+  min_count = 4;
+  if ((tree->dl).dad == 0) {
+    max_count = 0x8a;
+    min_count = 3;
   }
-  local_14 = (uint)(param_2->dl).dad;
-  for (local_c = 0; local_c <= param_3; local_c = local_c + 1) {
-    uVar2 = (uint)param_2[local_c + 1].dl.dad;
-    iVar3 = local_8 + 1;
-    if ((local_20 <= iVar3) || (local_14 != uVar2)) {
-      if (iVar3 < local_1c) {
+  nextlen = (uint)(tree->dl).dad;
+  for (n = 0; n <= max_code; n = n + 1) {
+    uVar2 = (uint)tree[n + 1].dl.dad;
+    iVar3 = count + 1;
+    if ((max_count <= iVar3) || (nextlen != uVar2)) {
+      if (iVar3 < min_count) {
         do {
-          local_8 = iVar3;
-          uVar4 = (uint)param_1->bl_tree[local_14].dl.dad;
-          if ((int)(0x10 - uVar4) < param_1->bi_valid) {
-            uVar1 = param_1->bl_tree[local_14].fc.freq;
-            param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f))
-            ;
-            param_1->bi_valid = (uVar4 - 0x10) + param_1->bi_valid;
+          count = iVar3;
+          uVar4 = (uint)s->bl_tree[nextlen].dl.dad;
+          if ((int)(0x10 - uVar4) < s->bi_valid) {
+            uVar1 = s->bl_tree[nextlen].fc.freq;
+            s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = (uVar4 - 0x10) + s->bi_valid;
           }
           else {
-            param_1->bi_buf =
-                 param_1->bi_buf |
-                 param_1->bl_tree[local_14].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-            param_1->bi_valid = param_1->bi_valid + uVar4;
+            s->bi_buf = s->bi_buf | s->bl_tree[nextlen].fc.freq << ((byte)s->bi_valid & 0x1f);
+            s->bi_valid = s->bi_valid + uVar4;
           }
-          iVar3 = local_8 + -1;
-        } while (local_8 + -1 != 0);
+          iVar3 = count + -1;
+        } while (count + -1 != 0);
       }
-      else if (local_14 == 0) {
+      else if (nextlen == 0) {
         if (iVar3 < 0xb) {
-          uVar4 = (uint)param_1->bl_tree[0x11].dl.dad;
-          if ((int)(0x10 - uVar4) < param_1->bi_valid) {
-            uVar1 = param_1->bl_tree[0x11].fc.freq;
-            param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f))
-            ;
-            param_1->bi_valid = (uVar4 - 0x10) + param_1->bi_valid;
+          uVar4 = (uint)s->bl_tree[0x11].dl.dad;
+          if ((int)(0x10 - uVar4) < s->bi_valid) {
+            uVar1 = s->bl_tree[0x11].fc.freq;
+            s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = (uVar4 - 0x10) + s->bi_valid;
           }
           else {
-            param_1->bi_buf =
-                 param_1->bi_buf |
-                 param_1->bl_tree[0x11].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-            param_1->bi_valid = param_1->bi_valid + uVar4;
+            s->bi_buf = s->bi_buf | s->bl_tree[0x11].fc.freq << ((byte)s->bi_valid & 0x1f);
+            s->bi_valid = s->bi_valid + uVar4;
           }
-          if (param_1->bi_valid < 0xe) {
-            param_1->bi_buf =
-                 param_1->bi_buf | (ushort)(local_8 + -2 << ((byte)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = param_1->bi_valid + 3;
+          if (s->bi_valid < 0xe) {
+            s->bi_buf = s->bi_buf | (ushort)(count + -2 << ((byte)s->bi_valid & 0x1f));
+            s->bi_valid = s->bi_valid + 3;
           }
           else {
-            param_1->bi_buf =
-                 param_1->bi_buf | (ushort)(local_8 - 2U << ((byte)param_1->bi_valid & 0x1f));
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf =
-                 (ushort)((int)(local_8 - 2U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = param_1->bi_valid + -0xd;
+            s->bi_buf = s->bi_buf | (ushort)(count - 2U << ((byte)s->bi_valid & 0x1f));
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(count - 2U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = s->bi_valid + -0xd;
           }
         }
         else {
-          uVar4 = (uint)param_1->bl_tree[0x12].dl.dad;
-          if ((int)(0x10 - uVar4) < param_1->bi_valid) {
-            uVar1 = param_1->bl_tree[0x12].fc.freq;
-            param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f))
-            ;
-            param_1->bi_valid = (uVar4 - 0x10) + param_1->bi_valid;
+          uVar4 = (uint)s->bl_tree[0x12].dl.dad;
+          if ((int)(0x10 - uVar4) < s->bi_valid) {
+            uVar1 = s->bl_tree[0x12].fc.freq;
+            s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = (uVar4 - 0x10) + s->bi_valid;
           }
           else {
-            param_1->bi_buf =
-                 param_1->bi_buf |
-                 param_1->bl_tree[0x12].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-            param_1->bi_valid = param_1->bi_valid + uVar4;
+            s->bi_buf = s->bi_buf | s->bl_tree[0x12].fc.freq << ((byte)s->bi_valid & 0x1f);
+            s->bi_valid = s->bi_valid + uVar4;
           }
-          if (param_1->bi_valid < 10) {
-            param_1->bi_buf =
-                 param_1->bi_buf | (ushort)(local_8 + -10 << ((byte)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = param_1->bi_valid + 7;
+          if (s->bi_valid < 10) {
+            s->bi_buf = s->bi_buf | (ushort)(count + -10 << ((byte)s->bi_valid & 0x1f));
+            s->bi_valid = s->bi_valid + 7;
           }
           else {
-            param_1->bi_buf =
-                 param_1->bi_buf | (ushort)(local_8 - 10U << ((byte)param_1->bi_valid & 0x1f));
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf =
-                 (ushort)((int)(local_8 - 10U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f))
-            ;
-            param_1->bi_valid = param_1->bi_valid + -9;
+            s->bi_buf = s->bi_buf | (ushort)(count - 10U << ((byte)s->bi_valid & 0x1f));
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(count - 10U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = s->bi_valid + -9;
           }
         }
       }
       else {
-        if (local_14 != local_18) {
-          uVar4 = (uint)param_1->bl_tree[local_14].dl.dad;
-          iVar3 = local_8;
-          if ((int)(0x10 - uVar4) < param_1->bi_valid) {
-            uVar1 = param_1->bl_tree[local_14].fc.freq;
-            param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f))
-            ;
-            param_1->bi_valid = (uVar4 - 0x10) + param_1->bi_valid;
+        if (nextlen != prevlen) {
+          uVar4 = (uint)s->bl_tree[nextlen].dl.dad;
+          iVar3 = count;
+          if ((int)(0x10 - uVar4) < s->bi_valid) {
+            uVar1 = s->bl_tree[nextlen].fc.freq;
+            s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = (uVar4 - 0x10) + s->bi_valid;
           }
           else {
-            param_1->bi_buf =
-                 param_1->bi_buf |
-                 param_1->bl_tree[local_14].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-            param_1->bi_valid = param_1->bi_valid + uVar4;
+            s->bi_buf = s->bi_buf | s->bl_tree[nextlen].fc.freq << ((byte)s->bi_valid & 0x1f);
+            s->bi_valid = s->bi_valid + uVar4;
           }
         }
-        local_8 = iVar3;
-        uVar4 = (uint)param_1->bl_tree[0x10].dl.dad;
-        if ((int)(0x10 - uVar4) < param_1->bi_valid) {
-          uVar1 = param_1->bl_tree[0x10].fc.freq;
-          param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-          param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-          param_1->pending = param_1->pending + 1;
-          param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-          param_1->pending = param_1->pending + 1;
-          param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-          param_1->bi_valid = (uVar4 - 0x10) + param_1->bi_valid;
+        count = iVar3;
+        uVar4 = (uint)s->bl_tree[0x10].dl.dad;
+        if ((int)(0x10 - uVar4) < s->bi_valid) {
+          uVar1 = s->bl_tree[0x10].fc.freq;
+          s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+          s->pending_buf[s->pending] = (uchar)s->bi_buf;
+          s->pending = s->pending + 1;
+          s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+          s->pending = s->pending + 1;
+          s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+          s->bi_valid = (uVar4 - 0x10) + s->bi_valid;
         }
         else {
-          param_1->bi_buf =
-               param_1->bi_buf | param_1->bl_tree[0x10].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-          param_1->bi_valid = param_1->bi_valid + uVar4;
+          s->bi_buf = s->bi_buf | s->bl_tree[0x10].fc.freq << ((byte)s->bi_valid & 0x1f);
+          s->bi_valid = s->bi_valid + uVar4;
         }
-        if (param_1->bi_valid < 0xf) {
-          param_1->bi_buf =
-               param_1->bi_buf | (ushort)(local_8 + -3 << ((byte)param_1->bi_valid & 0x1f));
-          param_1->bi_valid = param_1->bi_valid + 2;
+        if (s->bi_valid < 0xf) {
+          s->bi_buf = s->bi_buf | (ushort)(count + -3 << ((byte)s->bi_valid & 0x1f));
+          s->bi_valid = s->bi_valid + 2;
         }
         else {
-          param_1->bi_buf =
-               param_1->bi_buf | (ushort)(local_8 - 3U << ((byte)param_1->bi_valid & 0x1f));
-          param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-          param_1->pending = param_1->pending + 1;
-          param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-          param_1->pending = param_1->pending + 1;
-          param_1->bi_buf =
-               (ushort)((int)(local_8 - 3U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-          param_1->bi_valid = param_1->bi_valid + -0xe;
+          s->bi_buf = s->bi_buf | (ushort)(count - 3U << ((byte)s->bi_valid & 0x1f));
+          s->pending_buf[s->pending] = (uchar)s->bi_buf;
+          s->pending = s->pending + 1;
+          s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+          s->pending = s->pending + 1;
+          s->bi_buf = (ushort)((int)(count - 3U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+          s->bi_valid = s->bi_valid + -0xe;
         }
       }
-      local_8 = 0;
-      local_18 = local_14;
-      iVar3 = local_8;
+      count = 0;
+      prevlen = nextlen;
+      iVar3 = count;
       if (uVar2 == 0) {
-        local_20 = 0x8a;
-        local_1c = 3;
+        max_count = 0x8a;
+        min_count = 3;
       }
-      else if (local_14 == uVar2) {
-        local_20 = 6;
-        local_1c = 3;
+      else if (nextlen == uVar2) {
+        max_count = 6;
+        min_count = 3;
       }
       else {
-        local_20 = 7;
-        local_1c = 4;
+        max_count = 7;
+        min_count = 4;
       }
     }
-    local_8 = iVar3;
-    local_14 = uVar2;
+    count = iVar3;
+    nextlen = uVar2;
   }
   return;
 }
@@ -562,264 +566,273 @@ void __cdecl send_tree(internal_state *param_1,ct_data_s *param_2,int param_3)
 
 // 00811980  build_bl_tree  (zlib/trees.cpp:791)
 
-int __cdecl build_bl_tree(internal_state *param_1)
+int __cdecl build_bl_tree(internal_state *s)
 
 {
-  int local_8;
+  int max_blindex;
   
-  scan_tree(param_1,param_1->dyn_ltree,(param_1->l_desc).max_code);
-  scan_tree(param_1,param_1->dyn_dtree,(param_1->d_desc).max_code);
-  build_tree(param_1,&param_1->bl_desc);
-  local_8 = 0x12;
-  while ((2 < local_8 && (param_1->bl_tree["\x10\x11\x12"[local_8]].dl.dad == 0))) {
-    local_8 = local_8 + -1;
+  scan_tree(s,s->dyn_ltree,(s->l_desc).max_code);
+  scan_tree(s,s->dyn_dtree,(s->d_desc).max_code);
+  build_tree(s,&s->bl_desc);
+  max_blindex = 0x12;
+  while ((2 < max_blindex && (s->bl_tree["\x10\x11\x12"[max_blindex]].dl.dad == 0))) {
+    max_blindex = max_blindex + -1;
   }
-  param_1->opt_len = (local_8 + 1) * 3 + 0xe + param_1->opt_len;
-  return local_8;
+  s->opt_len = (max_blindex + 1) * 3 + 0xe + s->opt_len;
+  return max_blindex;
 }
 
 
 // 00811BE0  send_all_trees  (zlib/trees.cpp:825)
 
-void __cdecl send_all_trees(internal_state *param_1,int param_2,int param_3,int param_4)
+void __cdecl send_all_trees(internal_state *s,int lcodes,int dcodes,int blcodes)
 
 {
   ushort uVar1;
-  int local_8;
+  int val_4;
+  int len_4;
+  int val_3;
+  int len_3;
+  int val_2;
+  int len_2;
+  int val;
+  int len;
+  int rank;
   
-  if (param_1->bi_valid < 0xc) {
-    param_1->bi_buf =
-         param_1->bi_buf | (ushort)(param_2 + -0x101 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + 5;
+  if (s->bi_valid < 0xc) {
+    s->bi_buf = s->bi_buf | (ushort)(lcodes + -0x101 << ((byte)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + 5;
   }
   else {
-    param_1->bi_buf =
-         param_1->bi_buf | (ushort)(param_2 - 0x101U << ((byte)param_1->bi_valid & 0x1f));
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf =
-         (ushort)((int)(param_2 - 0x101U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + -0xb;
+    s->bi_buf = s->bi_buf | (ushort)(lcodes - 0x101U << ((byte)s->bi_valid & 0x1f));
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)((int)(lcodes - 0x101U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + -0xb;
   }
-  if (param_1->bi_valid < 0xc) {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(param_3 + -1 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + 5;
+  if (s->bi_valid < 0xc) {
+    s->bi_buf = s->bi_buf | (ushort)(dcodes + -1 << ((byte)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + 5;
   }
   else {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(param_3 - 1U << ((byte)param_1->bi_valid & 0x1f));
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf =
-         (ushort)((int)(param_3 - 1U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + -0xb;
+    s->bi_buf = s->bi_buf | (ushort)(dcodes - 1U << ((byte)s->bi_valid & 0x1f));
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)((int)(dcodes - 1U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + -0xb;
   }
-  if (param_1->bi_valid < 0xd) {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(param_4 + -4 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + 4;
+  if (s->bi_valid < 0xd) {
+    s->bi_buf = s->bi_buf | (ushort)(blcodes + -4 << ((byte)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + 4;
   }
   else {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(param_4 - 4U << ((byte)param_1->bi_valid & 0x1f));
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf =
-         (ushort)((int)(param_4 - 4U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + -0xc;
+    s->bi_buf = s->bi_buf | (ushort)(blcodes - 4U << ((byte)s->bi_valid & 0x1f));
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)((int)(blcodes - 4U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + -0xc;
   }
-  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-    if (param_1->bi_valid < 0xe) {
-      param_1->bi_buf =
-           param_1->bi_buf |
-           param_1->bl_tree["\x10\x11\x12"[local_8]].dl.dad << ((byte)param_1->bi_valid & 0x1f);
-      param_1->bi_valid = param_1->bi_valid + 3;
+  for (rank = 0; rank < blcodes; rank = rank + 1) {
+    if (s->bi_valid < 0xe) {
+      s->bi_buf = s->bi_buf | s->bl_tree["\x10\x11\x12"[rank]].dl.dad << ((byte)s->bi_valid & 0x1f);
+      s->bi_valid = s->bi_valid + 3;
     }
     else {
-      uVar1 = param_1->bl_tree["\x10\x11\x12"[local_8]].dl.dad;
-      param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-      param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-      param_1->pending = param_1->pending + 1;
-      param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-      param_1->pending = param_1->pending + 1;
-      param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-      param_1->bi_valid = param_1->bi_valid + -0xd;
+      uVar1 = s->bl_tree["\x10\x11\x12"[rank]].dl.dad;
+      s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+      s->pending_buf[s->pending] = (uchar)s->bi_buf;
+      s->pending = s->pending + 1;
+      s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+      s->pending = s->pending + 1;
+      s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+      s->bi_valid = s->bi_valid + -0xd;
     }
   }
-  send_tree(param_1,param_1->dyn_ltree,param_2 + -1);
-  send_tree(param_1,param_1->dyn_dtree,param_3 + -1);
+  send_tree(s,s->dyn_ltree,lcodes + -1);
+  send_tree(s,s->dyn_dtree,dcodes + -1);
   return;
 }
 
 
 // 008106B0  _tr_stored_block  (zlib/trees.cpp:852)
 
-void __cdecl _tr_stored_block(internal_state *param_1,char *param_2,ulong param_3,int param_4)
+void __cdecl _tr_stored_block(internal_state *s,char *buf,ulong stored_len,int eof)
 
 {
-  if (param_1->bi_valid < 0xe) {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(param_4 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + 3;
+  int val;
+  int len;
+  
+  if (s->bi_valid < 0xe) {
+    s->bi_buf = s->bi_buf | (ushort)(eof << ((byte)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + 3;
   }
   else {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(param_4 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf = (ushort)((int)(param_4 & 0xffffU) >> (0x10U - (char)param_1->bi_valid & 0x1f))
-    ;
-    param_1->bi_valid = param_1->bi_valid + -0xd;
+    s->bi_buf = s->bi_buf | (ushort)(eof << ((byte)s->bi_valid & 0x1f));
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)((int)(eof & 0xffffU) >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + -0xd;
   }
-  copy_block(param_1,param_2,param_3,1);
+  copy_block(s,buf,stored_len,1);
   return;
 }
 
 
 // 008107F0  _tr_align  (zlib/trees.cpp:873)
 
-void __cdecl _tr_align(internal_state *param_1)
+void __cdecl _tr_align(internal_state *s)
 
 {
-  if (param_1->bi_valid < 0xe) {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(2 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + 3;
+  int val_4;
+  int len_4;
+  int val_3;
+  int len_3;
+  int val_2;
+  int len_2;
+  int val;
+  int len;
+  
+  if (s->bi_valid < 0xe) {
+    s->bi_buf = s->bi_buf | (ushort)(2 << ((byte)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + 3;
   }
   else {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(2 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf = (ushort)(2 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + -0xd;
+    s->bi_buf = s->bi_buf | (ushort)(2 << ((byte)s->bi_valid & 0x1f));
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)(2 >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + -0xd;
   }
-  if (param_1->bi_valid < 10) {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(0 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + 7;
+  if (s->bi_valid < 10) {
+    s->bi_buf = s->bi_buf | (ushort)(0 << ((byte)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + 7;
   }
   else {
-    param_1->bi_buf = param_1->bi_buf | (ushort)(0 << ((byte)param_1->bi_valid & 0x1f));
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf = (ushort)(0 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = param_1->bi_valid + -9;
+    s->bi_buf = s->bi_buf | (ushort)(0 << ((byte)s->bi_valid & 0x1f));
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)(0 >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = s->bi_valid + -9;
   }
-  bi_flush(param_1);
-  if ((param_1->last_eob_len + 0xb) - param_1->bi_valid < 9) {
-    if (param_1->bi_valid < 0xe) {
-      param_1->bi_buf = param_1->bi_buf | (ushort)(2 << ((byte)param_1->bi_valid & 0x1f));
-      param_1->bi_valid = param_1->bi_valid + 3;
+  bi_flush(s);
+  if ((s->last_eob_len + 0xb) - s->bi_valid < 9) {
+    if (s->bi_valid < 0xe) {
+      s->bi_buf = s->bi_buf | (ushort)(2 << ((byte)s->bi_valid & 0x1f));
+      s->bi_valid = s->bi_valid + 3;
     }
     else {
-      param_1->bi_buf = param_1->bi_buf | (ushort)(2 << ((byte)param_1->bi_valid & 0x1f));
-      param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-      param_1->pending = param_1->pending + 1;
-      param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-      param_1->pending = param_1->pending + 1;
-      param_1->bi_buf = (ushort)(2 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-      param_1->bi_valid = param_1->bi_valid + -0xd;
+      s->bi_buf = s->bi_buf | (ushort)(2 << ((byte)s->bi_valid & 0x1f));
+      s->pending_buf[s->pending] = (uchar)s->bi_buf;
+      s->pending = s->pending + 1;
+      s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+      s->pending = s->pending + 1;
+      s->bi_buf = (ushort)(2 >> (0x10U - (char)s->bi_valid & 0x1f));
+      s->bi_valid = s->bi_valid + -0xd;
     }
-    if (param_1->bi_valid < 10) {
-      param_1->bi_buf = param_1->bi_buf | (ushort)(0 << ((byte)param_1->bi_valid & 0x1f));
-      param_1->bi_valid = param_1->bi_valid + 7;
+    if (s->bi_valid < 10) {
+      s->bi_buf = s->bi_buf | (ushort)(0 << ((byte)s->bi_valid & 0x1f));
+      s->bi_valid = s->bi_valid + 7;
     }
     else {
-      param_1->bi_buf = param_1->bi_buf | (ushort)(0 << ((byte)param_1->bi_valid & 0x1f));
-      param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-      param_1->pending = param_1->pending + 1;
-      param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-      param_1->pending = param_1->pending + 1;
-      param_1->bi_buf = (ushort)(0 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-      param_1->bi_valid = param_1->bi_valid + -9;
+      s->bi_buf = s->bi_buf | (ushort)(0 << ((byte)s->bi_valid & 0x1f));
+      s->pending_buf[s->pending] = (uchar)s->bi_buf;
+      s->pending = s->pending + 1;
+      s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+      s->pending = s->pending + 1;
+      s->bi_buf = (ushort)(0 >> (0x10U - (char)s->bi_valid & 0x1f));
+      s->bi_valid = s->bi_valid + -9;
     }
-    bi_flush(param_1);
+    bi_flush(s);
   }
-  param_1->last_eob_len = 7;
+  s->last_eob_len = 7;
   return;
 }
 
 
 // 00810CB0  _tr_flush_block  (zlib/trees.cpp:901)
 
-void __cdecl _tr_flush_block(internal_state *param_1,char *param_2,ulong param_3,int param_4)
+void __cdecl _tr_flush_block(internal_state *s,char *buf,ulong stored_len,int eof)
 
 {
-  uint local_10;
-  int local_c;
-  uint local_8;
+  int val_2;
+  int len_2;
+  int val;
+  int len;
+  ulong opt_lenb;
+  int max_blindex;
+  ulong static_lenb;
   
-  local_c = 0;
-  if (param_1->level < 1) {
-    local_8 = param_3 + 5;
-    local_10 = local_8;
+  max_blindex = 0;
+  if (s->level < 1) {
+    static_lenb = stored_len + 5;
+    opt_lenb = static_lenb;
   }
   else {
-    if ((param_3 != 0) && (param_1->strm->data_type == 2)) {
-      set_data_type(param_1);
+    if ((stored_len != 0) && (s->strm->data_type == 2)) {
+      set_data_type(s);
     }
-    build_tree(param_1,&param_1->l_desc);
-    build_tree(param_1,&param_1->d_desc);
-    local_c = build_bl_tree(param_1);
-    local_10 = param_1->opt_len + 10 >> 3;
-    local_8 = param_1->static_len + 10 >> 3;
-    if (local_8 <= local_10) {
-      local_10 = local_8;
+    build_tree(s,&s->l_desc);
+    build_tree(s,&s->d_desc);
+    max_blindex = build_bl_tree(s);
+    opt_lenb = s->opt_len + 10 >> 3;
+    static_lenb = s->static_len + 10 >> 3;
+    if (static_lenb <= opt_lenb) {
+      opt_lenb = static_lenb;
     }
   }
-  if ((local_10 < param_3 + 4) || (param_2 == (char *)0x0)) {
-    if ((param_1->strategy == 4) || (local_8 == local_10)) {
-      if (param_1->bi_valid < 0xe) {
-        param_1->bi_buf =
-             param_1->bi_buf | (ushort)(param_4 + 2 << ((byte)param_1->bi_valid & 0x1f));
-        param_1->bi_valid = param_1->bi_valid + 3;
+  if ((opt_lenb < stored_len + 4) || (buf == (char *)0x0)) {
+    if ((s->strategy == 4) || (static_lenb == opt_lenb)) {
+      if (s->bi_valid < 0xe) {
+        s->bi_buf = s->bi_buf | (ushort)(eof + 2 << ((byte)s->bi_valid & 0x1f));
+        s->bi_valid = s->bi_valid + 3;
       }
       else {
-        param_1->bi_buf =
-             param_1->bi_buf | (ushort)(param_4 + 2U << ((byte)param_1->bi_valid & 0x1f));
-        param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-        param_1->pending = param_1->pending + 1;
-        param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-        param_1->pending = param_1->pending + 1;
-        param_1->bi_buf =
-             (ushort)((int)(param_4 + 2U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-        param_1->bi_valid = param_1->bi_valid + -0xd;
+        s->bi_buf = s->bi_buf | (ushort)(eof + 2U << ((byte)s->bi_valid & 0x1f));
+        s->pending_buf[s->pending] = (uchar)s->bi_buf;
+        s->pending = s->pending + 1;
+        s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+        s->pending = s->pending + 1;
+        s->bi_buf = (ushort)((int)(eof + 2U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+        s->bi_valid = s->bi_valid + -0xd;
       }
-      compress_block(param_1,static_ltree,static_dtree);
+      compress_block(s,static_ltree,static_dtree);
     }
     else {
-      if (param_1->bi_valid < 0xe) {
-        param_1->bi_buf =
-             param_1->bi_buf | (ushort)(param_4 + 4 << ((byte)param_1->bi_valid & 0x1f));
-        param_1->bi_valid = param_1->bi_valid + 3;
+      if (s->bi_valid < 0xe) {
+        s->bi_buf = s->bi_buf | (ushort)(eof + 4 << ((byte)s->bi_valid & 0x1f));
+        s->bi_valid = s->bi_valid + 3;
       }
       else {
-        param_1->bi_buf =
-             param_1->bi_buf | (ushort)(param_4 + 4U << ((byte)param_1->bi_valid & 0x1f));
-        param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-        param_1->pending = param_1->pending + 1;
-        param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-        param_1->pending = param_1->pending + 1;
-        param_1->bi_buf =
-             (ushort)((int)(param_4 + 4U & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-        param_1->bi_valid = param_1->bi_valid + -0xd;
+        s->bi_buf = s->bi_buf | (ushort)(eof + 4U << ((byte)s->bi_valid & 0x1f));
+        s->pending_buf[s->pending] = (uchar)s->bi_buf;
+        s->pending = s->pending + 1;
+        s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+        s->pending = s->pending + 1;
+        s->bi_buf = (ushort)((int)(eof + 4U & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+        s->bi_valid = s->bi_valid + -0xd;
       }
-      send_all_trees(param_1,(param_1->l_desc).max_code + 1,(param_1->d_desc).max_code + 1,
-                     local_c + 1);
-      compress_block(param_1,param_1->dyn_ltree,param_1->dyn_dtree);
+      send_all_trees(s,(s->l_desc).max_code + 1,(s->d_desc).max_code + 1,max_blindex + 1);
+      compress_block(s,s->dyn_ltree,s->dyn_dtree);
     }
   }
   else {
-    _tr_stored_block(param_1,param_2,param_3,param_4);
+    _tr_stored_block(s,buf,stored_len,eof);
   }
-  init_block(param_1);
-  if (param_4 != 0) {
-    bi_windup(param_1);
+  init_block(s);
+  if (eof != 0) {
+    bi_windup(s);
   }
   return;
 }
@@ -827,7 +840,7 @@ void __cdecl _tr_flush_block(internal_state *param_1,char *param_2,ulong param_3
 
 // 00812B50  compress_block  (zlib/trees.cpp:1045)
 
-void __cdecl compress_block(internal_state *param_1,ct_data_s *param_2,ct_data_s *param_3)
+void __cdecl compress_block(internal_state *s,ct_data_s *ltree,ct_data_s *dtree)
 
 {
   ushort uVar1;
@@ -837,66 +850,79 @@ void __cdecl compress_block(internal_state *param_1,ct_data_s *param_2,ct_data_s
   uint uVar5;
   uint uVar6;
   byte local_49;
-  uint local_10;
+  int val_6;
+  int len_6;
+  int val_5;
+  int len_5;
+  int val_4;
+  int len_4;
+  int val_3;
+  int len_3;
+  int val_2;
+  int len_2;
+  int val;
+  int len;
+  uint dist;
+  int lc;
+  uint lx;
+  uint code;
+  int extra;
   
-  local_10 = 0;
-  if (param_1->last_lit != 0) {
+  lx = 0;
+  if (s->last_lit != 0) {
     do {
-      uVar3 = (uint)param_1->d_buf[local_10];
-      uVar6 = (uint)param_1->l_buf[local_10];
-      local_10 = local_10 + 1;
+      uVar3 = (uint)s->d_buf[lx];
+      uVar6 = (uint)s->l_buf[lx];
+      lx = lx + 1;
       if (uVar3 == 0) {
-        uVar3 = (uint)param_2[uVar6].dl.dad;
-        if ((int)(0x10 - uVar3) < param_1->bi_valid) {
-          uVar1 = param_2[uVar6].fc.freq;
-          param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-          param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-          param_1->pending = param_1->pending + 1;
-          param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-          param_1->pending = param_1->pending + 1;
-          param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-          param_1->bi_valid = (uVar3 - 0x10) + param_1->bi_valid;
+        uVar3 = (uint)ltree[uVar6].dl.dad;
+        if ((int)(0x10 - uVar3) < s->bi_valid) {
+          uVar1 = ltree[uVar6].fc.freq;
+          s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+          s->pending_buf[s->pending] = (uchar)s->bi_buf;
+          s->pending = s->pending + 1;
+          s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+          s->pending = s->pending + 1;
+          s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+          s->bi_valid = (uVar3 - 0x10) + s->bi_valid;
         }
         else {
-          param_1->bi_buf =
-               param_1->bi_buf | param_2[uVar6].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-          param_1->bi_valid = param_1->bi_valid + uVar3;
+          s->bi_buf = s->bi_buf | ltree[uVar6].fc.freq << ((byte)s->bi_valid & 0x1f);
+          s->bi_valid = s->bi_valid + uVar3;
         }
       }
       else {
         uVar4 = (uint)""[uVar6];
-        uVar5 = (uint)param_2[uVar4 + 0x101].dl.dad;
-        if ((int)(0x10 - uVar5) < param_1->bi_valid) {
-          uVar1 = param_2[uVar4 + 0x101].fc.freq;
-          param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-          param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-          param_1->pending = param_1->pending + 1;
-          param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-          param_1->pending = param_1->pending + 1;
-          param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-          param_1->bi_valid = (uVar5 - 0x10) + param_1->bi_valid;
+        uVar5 = (uint)ltree[uVar4 + 0x101].dl.dad;
+        if ((int)(0x10 - uVar5) < s->bi_valid) {
+          uVar1 = ltree[uVar4 + 0x101].fc.freq;
+          s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+          s->pending_buf[s->pending] = (uchar)s->bi_buf;
+          s->pending = s->pending + 1;
+          s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+          s->pending = s->pending + 1;
+          s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+          s->bi_valid = (uVar5 - 0x10) + s->bi_valid;
         }
         else {
-          param_1->bi_buf =
-               param_1->bi_buf | param_2[uVar4 + 0x101].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-          param_1->bi_valid = param_1->bi_valid + uVar5;
+          s->bi_buf = s->bi_buf | ltree[uVar4 + 0x101].fc.freq << ((byte)s->bi_valid & 0x1f);
+          s->bi_valid = s->bi_valid + uVar5;
         }
         iVar2 = extra_lbits[uVar4];
         if (iVar2 != 0) {
           uVar6 = uVar6 - base_length[uVar4];
-          if (0x10 - iVar2 < param_1->bi_valid) {
-            param_1->bi_buf = param_1->bi_buf | (ushort)(uVar6 << ((byte)param_1->bi_valid & 0x1f));
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf =
-                 (ushort)((int)(uVar6 & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = iVar2 + -0x10 + param_1->bi_valid;
+          if (0x10 - iVar2 < s->bi_valid) {
+            s->bi_buf = s->bi_buf | (ushort)(uVar6 << ((byte)s->bi_valid & 0x1f));
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(uVar6 & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = iVar2 + -0x10 + s->bi_valid;
           }
           else {
-            param_1->bi_buf = param_1->bi_buf | (ushort)(uVar6 << ((byte)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = param_1->bi_valid + iVar2;
+            s->bi_buf = s->bi_buf | (ushort)(uVar6 << ((byte)s->bi_valid & 0x1f));
+            s->bi_valid = s->bi_valid + iVar2;
           }
         }
         uVar6 = uVar3 - 1;
@@ -907,123 +933,119 @@ void __cdecl compress_block(internal_state *param_1,ct_data_s *param_2,ct_data_s
           local_49 = ""[(uVar6 >> 7) + 0x100];
         }
         uVar3 = (uint)local_49;
-        uVar4 = (uint)param_3[uVar3].dl.dad;
-        if ((int)(0x10 - uVar4) < param_1->bi_valid) {
-          uVar1 = param_3[uVar3].fc.freq;
-          param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-          param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-          param_1->pending = param_1->pending + 1;
-          param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-          param_1->pending = param_1->pending + 1;
-          param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-          param_1->bi_valid = (uVar4 - 0x10) + param_1->bi_valid;
+        uVar4 = (uint)dtree[uVar3].dl.dad;
+        if ((int)(0x10 - uVar4) < s->bi_valid) {
+          uVar1 = dtree[uVar3].fc.freq;
+          s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+          s->pending_buf[s->pending] = (uchar)s->bi_buf;
+          s->pending = s->pending + 1;
+          s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+          s->pending = s->pending + 1;
+          s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+          s->bi_valid = (uVar4 - 0x10) + s->bi_valid;
         }
         else {
-          param_1->bi_buf =
-               param_1->bi_buf | param_3[uVar3].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-          param_1->bi_valid = param_1->bi_valid + uVar4;
+          s->bi_buf = s->bi_buf | dtree[uVar3].fc.freq << ((byte)s->bi_valid & 0x1f);
+          s->bi_valid = s->bi_valid + uVar4;
         }
         iVar2 = extra_dbits[uVar3];
         if (iVar2 != 0) {
           uVar6 = uVar6 - base_dist[uVar3];
-          if (0x10 - iVar2 < param_1->bi_valid) {
-            param_1->bi_buf = param_1->bi_buf | (ushort)(uVar6 << ((byte)param_1->bi_valid & 0x1f));
-            param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-            param_1->pending = param_1->pending + 1;
-            param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-            param_1->pending = param_1->pending + 1;
-            param_1->bi_buf =
-                 (ushort)((int)(uVar6 & 0xffff) >> (0x10U - (char)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = iVar2 + -0x10 + param_1->bi_valid;
+          if (0x10 - iVar2 < s->bi_valid) {
+            s->bi_buf = s->bi_buf | (ushort)(uVar6 << ((byte)s->bi_valid & 0x1f));
+            s->pending_buf[s->pending] = (uchar)s->bi_buf;
+            s->pending = s->pending + 1;
+            s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+            s->pending = s->pending + 1;
+            s->bi_buf = (ushort)((int)(uVar6 & 0xffff) >> (0x10U - (char)s->bi_valid & 0x1f));
+            s->bi_valid = iVar2 + -0x10 + s->bi_valid;
           }
           else {
-            param_1->bi_buf = param_1->bi_buf | (ushort)(uVar6 << ((byte)param_1->bi_valid & 0x1f));
-            param_1->bi_valid = param_1->bi_valid + iVar2;
+            s->bi_buf = s->bi_buf | (ushort)(uVar6 << ((byte)s->bi_valid & 0x1f));
+            s->bi_valid = s->bi_valid + iVar2;
           }
         }
       }
-    } while (local_10 < param_1->last_lit);
+    } while (lx < s->last_lit);
   }
-  uVar6 = (uint)param_2[0x100].dl.dad;
-  if ((int)(0x10 - uVar6) < param_1->bi_valid) {
-    uVar1 = param_2[0x100].fc.freq;
-    param_1->bi_buf = param_1->bi_buf | uVar1 << ((byte)param_1->bi_valid & 0x1f);
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)param_1->bi_valid & 0x1f));
-    param_1->bi_valid = (uVar6 - 0x10) + param_1->bi_valid;
+  uVar6 = (uint)ltree[0x100].dl.dad;
+  if ((int)(0x10 - uVar6) < s->bi_valid) {
+    uVar1 = ltree[0x100].fc.freq;
+    s->bi_buf = s->bi_buf | uVar1 << ((byte)s->bi_valid & 0x1f);
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = (ushort)((int)(uint)uVar1 >> (0x10U - (char)s->bi_valid & 0x1f));
+    s->bi_valid = (uVar6 - 0x10) + s->bi_valid;
   }
   else {
-    param_1->bi_buf = param_1->bi_buf | param_2[0x100].fc.freq << ((byte)param_1->bi_valid & 0x1f);
-    param_1->bi_valid = param_1->bi_valid + uVar6;
+    s->bi_buf = s->bi_buf | ltree[0x100].fc.freq << ((byte)s->bi_valid & 0x1f);
+    s->bi_valid = s->bi_valid + uVar6;
   }
-  param_1->last_eob_len = (uint)param_2[0x100].dl.dad;
+  s->last_eob_len = (uint)ltree[0x100].dl.dad;
   return;
 }
 
 
 // 00813340  set_data_type  (zlib/trees.cpp:1096)
 
-void __cdecl set_data_type(internal_state *param_1)
+void __cdecl set_data_type(internal_state *s)
 
 {
-  int local_8;
+  int n;
   
-  for (local_8 = 0; (local_8 < 9 && (param_1->dyn_ltree[local_8].fc.freq == 0));
-      local_8 = local_8 + 1) {
+  for (n = 0; (n < 9 && (s->dyn_ltree[n].fc.freq == 0)); n = n + 1) {
   }
-  if (local_8 == 9) {
-    for (local_8 = 0xe; (local_8 < 0x20 && (param_1->dyn_ltree[local_8].fc.freq == 0));
-        local_8 = local_8 + 1) {
+  if (n == 9) {
+    for (n = 0xe; (n < 0x20 && (s->dyn_ltree[n].fc.freq == 0)); n = n + 1) {
     }
   }
-  param_1->strm->data_type = (uint)(local_8 == 0x20);
+  s->strm->data_type = (uint)(n == 0x20);
   return;
 }
 
 
 // 008133C0  bi_reverse  (zlib/trees.cpp:1115)
 
-uint __cdecl bi_reverse(uint param_1,int param_2)
+uint __cdecl bi_reverse(uint code,int len)
 
 {
   uint uVar1;
   uint uVar2;
-  undefined4 local_8;
+  uint res;
   
-  local_8 = 0;
-  uVar1 = local_8;
+  res = 0;
+  uVar1 = res;
   do {
-    local_8 = uVar1;
-    uVar2 = param_1 & 1;
-    param_1 = param_1 >> 1;
-    param_2 = param_2 + -1;
-    uVar1 = (uVar2 | local_8) << 1;
-  } while (0 < param_2);
-  return uVar2 | local_8 & 0x7fffffff;
+    res = uVar1;
+    uVar2 = code & 1;
+    code = code >> 1;
+    len = len + -1;
+    uVar1 = (uVar2 | res) << 1;
+  } while (0 < len);
+  return uVar2 | res & 0x7fffffff;
 }
 
 
 // 00813400  bi_flush  (zlib/trees.cpp:1128)
 
-void __cdecl bi_flush(internal_state *param_1)
+void __cdecl bi_flush(internal_state *s)
 
 {
-  if (param_1->bi_valid == 0x10) {
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf = 0;
-    param_1->bi_valid = 0;
+  if (s->bi_valid == 0x10) {
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
+    s->bi_buf = 0;
+    s->bi_valid = 0;
   }
-  else if (7 < param_1->bi_valid) {
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->bi_buf = param_1->bi_buf >> 8;
-    param_1->bi_valid = param_1->bi_valid + -8;
+  else if (7 < s->bi_valid) {
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->bi_buf = s->bi_buf >> 8;
+    s->bi_valid = s->bi_valid + -8;
   }
   return;
 }
@@ -1031,52 +1053,52 @@ void __cdecl bi_flush(internal_state *param_1)
 
 // 008134F0  bi_windup  (zlib/trees.cpp:1144)
 
-void __cdecl bi_windup(internal_state *param_1)
+void __cdecl bi_windup(internal_state *s)
 
 {
-  if (param_1->bi_valid < 9) {
-    if (0 < param_1->bi_valid) {
-      param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-      param_1->pending = param_1->pending + 1;
+  if (s->bi_valid < 9) {
+    if (0 < s->bi_valid) {
+      s->pending_buf[s->pending] = (uchar)s->bi_buf;
+      s->pending = s->pending + 1;
     }
   }
   else {
-    param_1->pending_buf[param_1->pending] = (uchar)param_1->bi_buf;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = (uchar)(param_1->bi_buf >> 8);
-    param_1->pending = param_1->pending + 1;
+    s->pending_buf[s->pending] = (uchar)s->bi_buf;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = (uchar)(s->bi_buf >> 8);
+    s->pending = s->pending + 1;
   }
-  param_1->bi_buf = 0;
-  param_1->bi_valid = 0;
+  s->bi_buf = 0;
+  s->bi_valid = 0;
   return;
 }
 
 
 // 008135B0  copy_block  (zlib/trees.cpp:1162)
 
-void __cdecl copy_block(internal_state *param_1,char *param_2,uint param_3,int param_4)
+void __cdecl copy_block(internal_state *s,char *buf,uint len,int header)
 
 {
   byte bVar1;
   
-  bi_windup(param_1);
-  param_1->last_eob_len = 8;
-  if (param_4 != 0) {
-    param_1->pending_buf[param_1->pending] = (byte)param_3;
-    param_1->pending = param_1->pending + 1;
-    bVar1 = (byte)(param_3 >> 8);
-    param_1->pending_buf[param_1->pending] = bVar1;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = ~(byte)param_3;
-    param_1->pending = param_1->pending + 1;
-    param_1->pending_buf[param_1->pending] = ~bVar1;
-    param_1->pending = param_1->pending + 1;
+  bi_windup(s);
+  s->last_eob_len = 8;
+  if (header != 0) {
+    s->pending_buf[s->pending] = (byte)len;
+    s->pending = s->pending + 1;
+    bVar1 = (byte)(len >> 8);
+    s->pending_buf[s->pending] = bVar1;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = ~(byte)len;
+    s->pending = s->pending + 1;
+    s->pending_buf[s->pending] = ~bVar1;
+    s->pending = s->pending + 1;
   }
-  while (param_3 != 0) {
-    param_1->pending_buf[param_1->pending] = *param_2;
-    param_1->pending = param_1->pending + 1;
-    param_2 = param_2 + 1;
-    param_3 = param_3 - 1;
+  while (len != 0) {
+    s->pending_buf[s->pending] = *buf;
+    s->pending = s->pending + 1;
+    buf = buf + 1;
+    len = len - 1;
   }
   return;
 }

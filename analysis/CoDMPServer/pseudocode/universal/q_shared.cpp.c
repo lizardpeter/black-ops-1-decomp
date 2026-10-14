@@ -15,12 +15,13 @@ void __cdecl TRACK_q_shared(void)
 
 // 007D16E0  ColorIndex  (universal/q_shared.cpp:140)
 
-uchar __cdecl ColorIndex(uchar param_1)
+uchar __cdecl ColorIndex(uchar c)
 
 {
   byte bVar1;
+  uchar index;
   
-  bVar1 = param_1 - 0x30;
+  bVar1 = c - 0x30;
   if (0x10 < bVar1) {
     bVar1 = 7;
   }
@@ -30,32 +31,32 @@ uchar __cdecl ColorIndex(uchar param_1)
 
 // 007D1710  Com_GetFilenameSubString  (universal/q_shared.cpp:149)
 
-char * __cdecl Com_GetFilenameSubString(char *param_1)
+char * __cdecl Com_GetFilenameSubString(char *pathname)
 
 {
-  char *local_8;
+  char *last;
   
-  local_8 = param_1;
-  for (; *param_1 != '\0'; param_1 = param_1 + 1) {
-    if ((*param_1 == '/') || (*param_1 == '\\')) {
-      local_8 = param_1 + 1;
+  last = pathname;
+  for (; *pathname != '\0'; pathname = pathname + 1) {
+    if ((*pathname == '/') || (*pathname == '\\')) {
+      last = pathname + 1;
     }
   }
-  return local_8;
+  return last;
 }
 
 
 // 007D1760  Com_GetExtensionSubString  (universal/q_shared.cpp:198)
 
-char * __cdecl Com_GetExtensionSubString(char *param_1)
+char * __cdecl Com_GetExtensionSubString(char *filename)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  char *local_8;
+  char *substr;
   
-  if (param_1 == (char *)0x0) {
+  if (filename == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0xc9,0,
                              "%s");
     if (!bVar2) {
@@ -64,35 +65,36 @@ char * __cdecl Com_GetExtensionSubString(char *param_1)
       return pcVar3;
     }
   }
-  local_8 = (char *)0x0;
-  for (; *param_1 != '\0'; param_1 = param_1 + 1) {
-    if (*param_1 == '.') {
-      local_8 = param_1;
+  substr = (char *)0x0;
+  for (; *filename != '\0'; filename = filename + 1) {
+    if (*filename == '.') {
+      substr = filename;
     }
-    else if ((*param_1 == '/') || (*param_1 == '\\')) {
-      local_8 = (char *)0x0;
+    else if ((*filename == '/') || (*filename == '\\')) {
+      substr = (char *)0x0;
     }
   }
-  if (local_8 == (char *)0x0) {
-    local_8 = param_1;
+  if (substr == (char *)0x0) {
+    substr = filename;
   }
-  return local_8;
+  return substr;
 }
 
 
 // 007D17F0  Com_StripExtension  (universal/q_shared.cpp:224)
 
-void __cdecl Com_StripExtension(char *param_1,char *param_2)
+void __cdecl Com_StripExtension(char *in,char *out)
 
 {
   char *pcVar1;
+  char *extension;
   
-  pcVar1 = Com_GetExtensionSubString(param_1);
-  for (; param_1 != pcVar1; param_1 = param_1 + 1) {
-    *param_2 = *param_1;
-    param_2 = param_2 + 1;
+  pcVar1 = Com_GetExtensionSubString(in);
+  for (; in != pcVar1; in = in + 1) {
+    *out = *in;
+    out = out + 1;
   }
-  *param_2 = '\0';
+  *out = '\0';
   return;
 }
 
@@ -101,94 +103,101 @@ void __cdecl Com_StripExtension(char *param_1,char *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Com_DefaultExtension(char *param_1,int param_2,char *param_3)
+void __cdecl Com_DefaultExtension(char *path,int maxSize,char *extension)
 
 {
   char *pcVar1;
   char *local_54;
-  char *local_50;
-  char local_4c [68];
+  char *src;
+  char oldPath [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_54 = param_1;
+  local_54 = path;
   pcVar1 = local_54;
   do {
     local_54 = pcVar1;
     pcVar1 = local_54 + 1;
   } while (*local_54 != '\0');
-  while ((local_50 = local_54 + -1, *local_50 != '/' && (local_50 != param_1))) {
-    local_54 = local_50;
-    if (*local_50 == '.') {
+  while ((src = local_54 + -1, *src != '/' && (src != path))) {
+    local_54 = src;
+    if (*src == '.') {
       return;
     }
   }
-  I_strncpyz(local_4c,param_1,0x40);
-  Com_sprintf(param_1,param_2,"%s%s");
+  I_strncpyz(oldPath,path,0x40);
+  Com_sprintf(path,maxSize,"%s%s");
   return;
 }
 
 
 // 007D18F0  BigShort  (universal/q_shared.cpp:300)
 
-short __cdecl BigShort(short param_1)
+short __cdecl BigShort(short l)
 
 {
   short sVar1;
   
-  sVar1 = (*_BigShort)(param_1);
+  sVar1 = (*_BigShort)(l);
   return sVar1;
 }
 
 
 // 007D1910  LittleLong64  (universal/q_shared.cpp:312)
 
-ulong64 __cdecl LittleLong64(ulong64 param_1)
+ulong64 __cdecl LittleLong64(ulong64 l)
 
 {
   ulong64 uVar1;
   
-  uVar1 = (*_LittleLong64)(param_1);
+  uVar1 = (*_LittleLong64)(l);
   return uVar1;
 }
 
 
 // 007D1930  ShortSwap  (universal/q_shared.cpp:359)
 
-short __cdecl ShortSwap(short param_1)
+short __cdecl ShortSwap(short l)
 
 {
-  return CONCAT11((char)param_1,(char)((ushort)param_1 >> 8));
+  uchar b1;
+  uchar b2;
+  
+  return CONCAT11((char)l,(char)((ushort)l >> 8));
 }
 
 
 // 007D1970  ShortNoSwap  (universal/q_shared.cpp:370)
 
-short __cdecl ShortNoSwap(short param_1)
+short __cdecl ShortNoSwap(short l)
 
 {
-  return param_1;
+  return l;
 }
 
 
 // 007D1980  LongSwap  (universal/q_shared.cpp:376)
 
-int __cdecl LongSwap(int param_1)
+int __cdecl LongSwap(int l)
 
 {
   byte bVar1;
   byte bVar2;
+  uchar b1;
+  uchar b3;
+  uchar b4;
+  uchar b2;
   
-  bVar1 = (byte)((uint)param_1 >> 0x10);
-  bVar2 = (byte)((uint)param_1 >> 0x18);
-  return (uint)CONCAT12(bVar2,CONCAT11(bVar1,(char)param_1)) * 0x1000000 +
-         ((uint)param_1 >> 8 & 0xff) * 0x10000 + (uint)bVar1 * 0x100 + (uint)bVar2;
+  bVar1 = (byte)((uint)l >> 0x10);
+  bVar2 = (byte)((uint)l >> 0x18);
+  return (uint)CONCAT12(bVar2,CONCAT11(bVar1,(char)l)) * 0x1000000 + ((uint)l >> 8 & 0xff) * 0x10000
+         + (uint)bVar1 * 0x100 + (uint)bVar2;
 }
 
 
 // 007D19E0  Long64Swap  (universal/q_shared.cpp:395)
 
-ulong64 __cdecl Long64Swap(ulong64 param_1)
+ulong64 __cdecl Long64Swap(ulong64 l)
 
 {
   byte extraout_AL;
@@ -211,6 +220,14 @@ ulong64 __cdecl Long64Swap(ulong64 param_1)
   uint uVar3;
   uint uVar4;
   uint uVar5;
+  uchar b1;
+  uchar b3;
+  uchar b7;
+  uchar b4;
+  uchar b2;
+  uchar b6;
+  uchar b8;
+  uchar b5;
   
   _aullshr();
   _aullshr();
@@ -243,59 +260,59 @@ ulong64 __cdecl Long64Swap(ulong64 param_1)
 
 // 007D1B30  Long64NoSwap  (universal/q_shared.cpp:412)
 
-ulong64 __cdecl Long64NoSwap(ulong64 param_1)
+ulong64 __cdecl Long64NoSwap(ulong64 ll)
 
 {
-  return param_1;
+  return ll;
 }
 
 
 // 007D1B40  FloatReadSwap  (universal/q_shared.cpp:418)
 
-float __cdecl FloatReadSwap(int param_1)
+float __cdecl FloatReadSwap(int n)
 
 {
-  undefined1 local_c;
+  undefined1 dat1;
   undefined1 uStack_b;
   undefined1 uStack_a;
   undefined1 uStack_9;
-  undefined4 local_8;
+  undefined4 dat2;
   
-  uStack_9 = (undefined1)((uint)param_1 >> 0x18);
-  uStack_a = (undefined1)((uint)param_1 >> 0x10);
-  uStack_b = (undefined1)((uint)param_1 >> 8);
-  local_c = (undefined1)param_1;
-  local_8 = (float)CONCAT13(local_c,CONCAT12(uStack_b,CONCAT11(uStack_a,uStack_9)));
-  return local_8;
+  uStack_9 = (undefined1)((uint)n >> 0x18);
+  uStack_a = (undefined1)((uint)n >> 0x10);
+  uStack_b = (undefined1)((uint)n >> 8);
+  dat1 = (undefined1)n;
+  dat2 = (float)CONCAT13(dat1,CONCAT12(uStack_b,CONCAT11(uStack_a,uStack_9)));
+  return dat2;
 }
 
 
 // 007D1B70  FloatReadNoSwap  (universal/q_shared.cpp:436)
 
-float __cdecl FloatReadNoSwap(int param_1)
+float __cdecl FloatReadNoSwap(int n)
 
 {
-  return (float)param_1;
+  return (float)n;
 }
 
 
 // 007D1B90  FloatWriteSwap  (universal/q_shared.cpp:442)
 
-int __cdecl FloatWriteSwap(float param_1)
+int __cdecl FloatWriteSwap(float f)
 
 {
-  undefined1 local_c;
+  undefined1 dat1;
   undefined1 uStack_b;
   undefined1 uStack_a;
   undefined1 uStack_9;
-  undefined4 local_8;
+  undefined4 dat2;
   
-  uStack_9 = (undefined1)((uint)param_1 >> 0x18);
-  uStack_a = (undefined1)((uint)param_1 >> 0x10);
-  uStack_b = (undefined1)((uint)param_1 >> 8);
-  local_c = SUB41(param_1,0);
-  local_8 = CONCAT13(local_c,CONCAT12(uStack_b,CONCAT11(uStack_a,uStack_9)));
-  return local_8;
+  uStack_9 = (undefined1)((uint)f >> 0x18);
+  uStack_a = (undefined1)((uint)f >> 0x10);
+  uStack_b = (undefined1)((uint)f >> 8);
+  dat1 = SUB41(f,0);
+  dat2 = CONCAT13(dat1,CONCAT12(uStack_b,CONCAT11(uStack_a,uStack_9)));
+  return dat2;
 }
 
 
@@ -345,24 +362,24 @@ void __cdecl Swap_Init(void)
 
 // 007D1CA0  I_atoi64  (universal/q_shared.cpp:523)
 
-long64 __cdecl I_atoi64(char *param_1)
+long64 __cdecl I_atoi64(char *str)
 
 {
   long64 lVar1;
   
-  lVar1 = _atoi64(param_1);
+  lVar1 = _atoi64(str);
   return lVar1;
 }
 
 
 // 007D1CC0  I_islower  (universal/q_shared.cpp:539)
 
-bool __cdecl I_islower(int param_1)
+bool __cdecl I_islower(int c)
 
 {
   undefined1 local_8;
   
-  if ((param_1 < 0x61) || (0x7a < param_1)) {
+  if ((c < 0x61) || (0x7a < c)) {
     local_8 = false;
   }
   else {
@@ -374,12 +391,12 @@ bool __cdecl I_islower(int param_1)
 
 // 007D1CF0  I_isupper  (universal/q_shared.cpp:545)
 
-bool __cdecl I_isupper(int param_1)
+bool __cdecl I_isupper(int c)
 
 {
   undefined1 local_8;
   
-  if ((param_1 < 0x41) || (0x5a < param_1)) {
+  if ((c < 0x41) || (0x5a < c)) {
     local_8 = false;
   }
   else {
@@ -391,12 +408,12 @@ bool __cdecl I_isupper(int param_1)
 
 // 007D1D20  I_isalpha  (universal/q_shared.cpp:551)
 
-bool __cdecl I_isalpha(int param_1)
+bool __cdecl I_isalpha(int c)
 
 {
   undefined1 local_8;
   
-  if (((param_1 < 0x61) || (0x7a < param_1)) && ((param_1 < 0x41 || (0x5a < param_1)))) {
+  if (((c < 0x61) || (0x7a < c)) && ((c < 0x41 || (0x5a < c)))) {
     local_8 = false;
   }
   else {
@@ -408,12 +425,12 @@ bool __cdecl I_isalpha(int param_1)
 
 // 007D1D60  I_isdigit  (universal/q_shared.cpp:557)
 
-bool __cdecl I_isdigit(int param_1)
+bool __cdecl I_isdigit(int c)
 
 {
   undefined1 local_8;
   
-  if ((param_1 < 0x30) || (0x39 < param_1)) {
+  if ((c < 0x30) || (0x39 < c)) {
     local_8 = false;
   }
   else {
@@ -425,13 +442,13 @@ bool __cdecl I_isdigit(int param_1)
 
 // 007D1D90  I_isalnum  (universal/q_shared.cpp:563)
 
-bool __cdecl I_isalnum(int param_1)
+bool __cdecl I_isalnum(int c)
 
 {
   bool bVar1;
   
-  bVar1 = I_isalpha(param_1);
-  if ((!bVar1) && (bVar1 = I_isdigit(param_1), !bVar1)) {
+  bVar1 = I_isalpha(c);
+  if ((!bVar1) && (bVar1 = I_isdigit(c), !bVar1)) {
     return false;
   }
   return true;
@@ -440,14 +457,14 @@ bool __cdecl I_isalnum(int param_1)
 
 // 007D1DE0  I_isforfilename  (universal/q_shared.cpp:569)
 
-bool __cdecl I_isforfilename(int param_1)
+bool __cdecl I_isforfilename(int c)
 
 {
   bool bVar1;
   undefined1 local_8;
   
-  bVar1 = I_isalnum(param_1);
-  if (((bVar1) || (param_1 == 0x5f)) || (param_1 == 0x2d)) {
+  bVar1 = I_isalnum(c);
+  if (((bVar1) || (c == 0x5f)) || (c == 0x2d)) {
     local_8 = true;
   }
   else {
@@ -459,52 +476,52 @@ bool __cdecl I_isforfilename(int param_1)
 
 // 007D1E20  I_strncpyz  (universal/q_shared.cpp:585)
 
-void __cdecl I_strncpyz(char *param_1,char *param_2,int param_3)
+void __cdecl I_strncpyz(char *dest,char *src,int destsize)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *local_10;
-  int local_c;
-  char *local_8;
+  uchar *q;
+  int n;
+  uchar *p;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((src == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x24a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((dest == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x24b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 < 1) &&
+  if ((destsize < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x24c,0,
                                "%s\n\t(destsize) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 != (char *)0x0) {
-    if (param_2 == (char *)0x0) {
-      *param_1 = '\0';
+  if (dest != (char *)0x0) {
+    if (src == (char *)0x0) {
+      *dest = '\0';
     }
     else {
-      local_8 = param_2 + -1;
-      local_10 = param_1 + -1;
-      local_c = param_3 + 1;
+      p = (uchar *)(src + -1);
+      q = (uchar *)(dest + -1);
+      n = destsize + 1;
       do {
-        local_c = local_c + -1;
-        if (local_c == 0) break;
-        local_8 = local_8 + 1;
-        local_10 = local_10 + 1;
-        *local_10 = *local_8;
-      } while (*local_10 != '\0');
-      param_1[param_3 + -1] = '\0';
+        n = n + -1;
+        if (n == 0) break;
+        p = p + 1;
+        q = q + 1;
+        *q = *p;
+      } while (*q != '\0');
+      dest[destsize + -1] = '\0';
     }
   }
   return;
@@ -513,56 +530,56 @@ void __cdecl I_strncpyz(char *param_1,char *param_2,int param_3)
 
 // 007D1F30  I_strnicmp  (universal/q_shared.cpp:650)
 
-int __cdecl I_strnicmp(char *param_1,char *param_2,int param_3)
+int __cdecl I_strnicmp(char *s0,char *s1,int n)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_c;
-  uint local_8;
+  int c1;
+  int c0;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((s0 == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x28d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((s1 == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x28e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {
-    iVar3 = (int)param_2 - (int)param_1;
+  if ((s0 == (char *)0x0) || (s1 == (char *)0x0)) {
+    iVar3 = (int)s1 - (int)s0;
   }
   else {
     do {
-      local_8 = (uint)(byte)*param_1;
-      local_c = (uint)(byte)*param_2;
-      param_1 = param_1 + 1;
-      param_2 = param_2 + 1;
-      if (param_3 == 0) {
+      c0 = (int)(byte)*s0;
+      c1 = (int)(byte)*s1;
+      s0 = s0 + 1;
+      s1 = s1 + 1;
+      if (n == 0) {
         return 0;
       }
-      if (local_8 != local_c) {
-        bVar2 = I_isupper(local_8);
+      if (c0 != c1) {
+        bVar2 = I_isupper(c0);
         if (bVar2) {
-          local_8 = local_8 + 0x20;
+          c0 = c0 + 0x20;
         }
-        bVar2 = I_isupper(local_c);
+        bVar2 = I_isupper(c1);
         if (bVar2) {
-          local_c = local_c + 0x20;
+          c1 = c1 + 0x20;
         }
-        if (local_8 != local_c) {
-          return (uint)(local_c <= local_8) * 2 + -1;
+        if (c0 != c1) {
+          return (uint)((uint)c1 <= (uint)c0) * 2 + -1;
         }
       }
-      param_3 = param_3 + -1;
-    } while (local_8 != 0);
+      n = n + -1;
+    } while (c0 != 0);
     iVar3 = 0;
   }
   return iVar3;
@@ -571,7 +588,7 @@ int __cdecl I_strnicmp(char *param_1,char *param_2,int param_3)
 
 // 007D2050  I_strncmp  (universal/q_shared.cpp:688)
 
-int __cdecl I_strncmp(char *param_1,char *param_2,int param_3)
+int __cdecl I_strncmp(char *s0,char *s1,int n)
 
 {
   char cVar1;
@@ -579,37 +596,39 @@ int __cdecl I_strncmp(char *param_1,char *param_2,int param_3)
   code *pcVar3;
   bool bVar4;
   int iVar5;
+  int c1;
+  int c0;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((s0 == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2b3,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((s1 == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2b4,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((param_1 == (char *)0x0) || (param_2 == (char *)0x0)) {
-    iVar5 = (int)param_2 - (int)param_1;
+  if ((s0 == (char *)0x0) || (s1 == (char *)0x0)) {
+    iVar5 = (int)s1 - (int)s0;
   }
   else {
     do {
-      cVar1 = *param_1;
-      param_1 = param_1 + 1;
-      cVar2 = *param_2;
-      param_2 = param_2 + 1;
-      if (param_3 == 0) {
+      cVar1 = *s0;
+      s0 = s0 + 1;
+      cVar2 = *s1;
+      s1 = s1 + 1;
+      if (n == 0) {
         return 0;
       }
       if (cVar1 != cVar2) {
         return (uint)(cVar2 <= cVar1) * 2 + -1;
       }
-      param_3 = param_3 + -1;
+      n = n + -1;
     } while (cVar1 != '\0');
     iVar5 = 0;
   }
@@ -619,7 +638,7 @@ int __cdecl I_strncmp(char *param_1,char *param_2,int param_3)
 
 // 007D2120  I_stristr  (universal/q_shared.cpp:717)
 
-char * __cdecl I_stristr(char *param_1,char *param_2)
+char * __cdecl I_stristr(char *s0,char *substr)
 
 {
   code *pcVar1;
@@ -627,33 +646,33 @@ char * __cdecl I_stristr(char *param_1,char *param_2)
   char *pcVar3;
   int iVar4;
   int iVar5;
-  int local_c;
-  int local_8;
+  int s0Char;
+  int substrChar;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((s0 == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2d1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((substr == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2d2,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {
-    for (local_c = 0; param_1[local_c] != '\0'; local_c = local_c + 1) {
-      local_8 = -1;
+  if ((s0 != (char *)0x0) && (substr != (char *)0x0)) {
+    for (s0Char = 0; s0[s0Char] != '\0'; s0Char = s0Char + 1) {
+      substrChar = -1;
       do {
-        local_8 = local_8 + 1;
-        if (param_2[local_8] == '\0') {
-          return param_1 + local_c;
+        substrChar = substrChar + 1;
+        if (substr[substrChar] == '\0') {
+          return s0 + s0Char;
         }
-        iVar4 = tolower((int)param_1[local_c + local_8]);
-        iVar5 = tolower((int)param_2[local_8]);
+        iVar4 = tolower((int)s0[s0Char + substrChar]);
+        iVar5 = tolower((int)substr[substrChar]);
       } while (iVar4 == iVar5);
     }
   }
@@ -663,14 +682,14 @@ char * __cdecl I_stristr(char *param_1,char *param_2)
 
 // 007D2220  I_stricmp  (universal/q_shared.cpp:746)
 
-int __cdecl I_stricmp(char *param_1,char *param_2)
+int __cdecl I_stricmp(char *s0,char *s1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (s0 == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2eb,0,
                              "%s");
     if (!bVar2) {
@@ -679,7 +698,7 @@ int __cdecl I_stricmp(char *param_1,char *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (s1 == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2ec,0,
                              "%s");
     if (!bVar2) {
@@ -688,21 +707,21 @@ int __cdecl I_stricmp(char *param_1,char *param_2)
       return iVar3;
     }
   }
-  iVar3 = I_strnicmp(param_1,param_2,0x7fffffff);
+  iVar3 = I_strnicmp(s0,s1,0x7fffffff);
   return iVar3;
 }
 
 
 // 007D22A0  I_strcmp  (universal/q_shared.cpp:755)
 
-int __cdecl I_strcmp(char *param_1,char *param_2)
+int __cdecl I_strcmp(char *s0,char *s1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (char *)0x0) {
+  if (s0 == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2f4,0,
                              "%s");
     if (!bVar2) {
@@ -711,7 +730,7 @@ int __cdecl I_strcmp(char *param_1,char *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (s1 == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x2f5,0,
                              "%s");
     if (!bVar2) {
@@ -720,14 +739,14 @@ int __cdecl I_strcmp(char *param_1,char *param_2)
       return iVar3;
     }
   }
-  iVar3 = I_strncmp(param_1,param_2,0x7fffffff);
+  iVar3 = I_strncmp(s0,s1,0x7fffffff);
   return iVar3;
 }
 
 
 // 007D2320  I_stricmpwild  (universal/q_shared.cpp:763)
 
-int __cdecl I_stricmpwild(char *param_1,char *param_2)
+int __cdecl I_stricmpwild(char *wild,char *s)
 
 {
   char cVar1;
@@ -736,15 +755,18 @@ int __cdecl I_stricmpwild(char *param_1,char *param_2)
   bool bVar4;
   int iVar5;
   int iVar6;
+  char charWild;
+  int delta;
+  char charRef;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((wild == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x300,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((param_2 == (char *)0x0) &&
+  if ((s == (char *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x301,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -752,18 +774,18 @@ int __cdecl I_stricmpwild(char *param_1,char *param_2)
     return iVar5;
   }
   do {
-    cVar1 = *param_1;
+    cVar1 = *wild;
     if (cVar1 == '*') {
-      if (param_1[1] == '\0') {
+      if (wild[1] == '\0') {
         return 0;
       }
-      if ((*param_2 != '\0') && (iVar5 = I_stricmpwild(param_1,param_2 + 1), iVar5 == 0)) {
+      if ((*s != '\0') && (iVar5 = I_stricmpwild(wild,s + 1), iVar5 == 0)) {
         return 0;
       }
     }
     else {
-      cVar2 = *param_2;
-      param_2 = param_2 + 1;
+      cVar2 = *s;
+      s = s + 1;
       if ((cVar1 != cVar2) && (cVar1 != '?')) {
         iVar5 = tolower((int)cVar1);
         iVar6 = tolower((int)cVar2);
@@ -772,7 +794,7 @@ int __cdecl I_stricmpwild(char *param_1,char *param_2)
         }
       }
     }
-    param_1 = param_1 + 1;
+    wild = wild + 1;
     if (cVar1 == '\0') {
       return 0;
     }
@@ -782,51 +804,51 @@ int __cdecl I_stricmpwild(char *param_1,char *param_2)
 
 // 007D2440  I_strlwr  (universal/q_shared.cpp:801)
 
-char * __cdecl I_strlwr(char *param_1)
+char * __cdecl I_strlwr(char *s)
 
 {
   bool bVar1;
-  char *local_8;
+  char *iter;
   
-  for (local_8 = param_1; *local_8 != '\0'; local_8 = local_8 + 1) {
-    bVar1 = I_isupper((int)*local_8);
+  for (iter = s; *iter != '\0'; iter = iter + 1) {
+    bVar1 = I_isupper((int)*iter);
     if (bVar1) {
-      *local_8 = *local_8 + ' ';
+      *iter = *iter + ' ';
     }
   }
-  return param_1;
+  return s;
 }
 
 
 // 007D2490  I_strupr  (universal/q_shared.cpp:816)
 
-char * __cdecl I_strupr(char *param_1)
+char * __cdecl I_strupr(char *s)
 
 {
   bool bVar1;
-  char *local_8;
+  char *iter;
   
-  for (local_8 = param_1; *local_8 != '\0'; local_8 = local_8 + 1) {
-    bVar1 = I_islower((int)*local_8);
+  for (iter = s; *iter != '\0'; iter = iter + 1) {
+    bVar1 = I_islower((int)*iter);
     if (bVar1) {
-      *local_8 = *local_8 + -0x20;
+      *iter = *iter + -0x20;
     }
   }
-  return param_1;
+  return s;
 }
 
 
 // 007D24E0  I_iscsym  (universal/q_shared.cpp:831)
 
-int __cdecl I_iscsym(int param_1)
+int __cdecl I_iscsym(int c)
 
 {
   int iVar1;
   
-  if ((param_1 < 0x61) || (0x7a < param_1)) {
-    if ((param_1 < 0x41) || (0x5a < param_1)) {
-      if ((param_1 < 0x30) || (0x39 < param_1)) {
-        if (param_1 == 0x5f) {
+  if ((c < 0x61) || (0x7a < c)) {
+    if ((c < 0x41) || (0x5a < c)) {
+      if ((c < 0x30) || (0x39 < c)) {
+        if (c == 0x5f) {
           iVar1 = 1;
         }
         else {
@@ -850,7 +872,7 @@ int __cdecl I_iscsym(int param_1)
 
 // 007D2530  I_strncat  (universal/q_shared.cpp:843)
 
-void __cdecl I_strncat(char *param_1,int param_2,char *param_3)
+void __cdecl I_strncat(char *dest,int size,char *src)
 
 {
   char cVar1;
@@ -858,8 +880,9 @@ void __cdecl I_strncat(char *param_1,int param_2,char *param_3)
   bool bVar3;
   int iVar4;
   char *local_c;
+  int destLen;
   
-  if (param_2 == 4) {
+  if (size == 4) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x34e,0,
                              "%s");
     if (!bVar3) {
@@ -868,120 +891,130 @@ void __cdecl I_strncat(char *param_1,int param_2,char *param_3)
       return;
     }
   }
-  local_c = param_1;
+  local_c = dest;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  iVar4 = (int)local_c - (int)(param_1 + 1);
-  if (param_2 <= iVar4) {
+  iVar4 = (int)local_c - (int)(dest + 1);
+  if (size <= iVar4) {
     Com_Error(ERR_FATAL,"\x15I_strncat: already overflowed");
   }
-  I_strncpyz(param_1 + iVar4,param_3,param_2 - iVar4);
+  I_strncpyz(dest + iVar4,src,size - iVar4);
   return;
 }
 
 
 // 007D25D0  I_DrawStrlen  (universal/q_shared.cpp:857)
 
-int __cdecl I_DrawStrlen(char *param_1)
+int __cdecl I_DrawStrlen(char *str)
 
 {
-  char *local_c;
-  int local_8;
+  char *s;
+  int count;
   
-  local_c = param_1;
-  local_8 = 0;
-  while (*local_c != '\0') {
-    if ((((local_c == (char *)0x0) || (*local_c != '^')) || (local_c[1] == '\0')) ||
-       (((local_c[1] == '^' || (local_c[1] < '0')) || ('@' < local_c[1])))) {
-      local_8 = local_8 + 1;
-      local_c = local_c + 1;
+  s = str;
+  count = 0;
+  while (*s != '\0') {
+    if ((((s == (char *)0x0) || (*s != '^')) || (s[1] == '\0')) ||
+       (((s[1] == '^' || (s[1] < '0')) || ('@' < s[1])))) {
+      count = count + 1;
+      s = s + 1;
     }
     else {
-      local_c = local_c + 2;
+      s = s + 2;
     }
   }
-  return local_8;
+  return count;
 }
 
 
 // 007D2660  I_CleanStr  (universal/q_shared.cpp:879)
 
-char * __cdecl I_CleanStr(char *param_1)
+char * __cdecl I_CleanStr(char *string)
 
 {
   char cVar1;
   bool bVar2;
-  char *local_14;
-  char *local_c;
+  char *d;
+  char c;
+  char *s;
+  int keep_cleaning;
   
   do {
-    local_14 = param_1;
+    d = string;
     bVar2 = false;
-    for (local_c = param_1; cVar1 = *local_c, cVar1 != '\0'; local_c = local_c + 1) {
-      if (((((local_c == (char *)0x0) || (*local_c != '^')) || (local_c[1] == '\0')) ||
-          ((local_c[1] == '^' || (local_c[1] < '0')))) || ('@' < local_c[1])) {
+    for (s = string; cVar1 = *s, cVar1 != '\0'; s = s + 1) {
+      if (((((s == (char *)0x0) || (*s != '^')) || (s[1] == '\0')) ||
+          ((s[1] == '^' || (s[1] < '0')))) || ('@' < s[1])) {
         if (('\x1f' < cVar1) && (cVar1 < '\x7f')) {
-          *local_14 = cVar1;
-          local_14 = local_14 + 1;
+          *d = cVar1;
+          d = d + 1;
         }
       }
       else {
-        local_c = local_c + 1;
+        s = s + 1;
         bVar2 = true;
       }
     }
-    *local_14 = '\0';
+    *d = '\0';
   } while (bVar2);
-  return param_1;
+  return string;
 }
 
 
 // 007D2730  I_CleanChar  (universal/q_shared.cpp:912)
 
-char __cdecl I_CleanChar(char param_1)
+char __cdecl I_CleanChar(char character)
 
 {
-  if (param_1 == -0x6e) {
-    param_1 = '\'';
+  int altApostrophe;
+  
+  if (character == -0x6e) {
+    character = '\'';
   }
-  return param_1;
+  return character;
 }
 
 
 // 007D2760  Com_sprintf  (universal/q_shared.cpp:923)
 
-int __cdecl Com_sprintf(char *param_1,int param_2,char *param_3)
+int __cdecl Com_sprintf(char *dest,int size,char *fmt)
 
 {
   int iVar1;
+  char *argptr;
+  int len;
   
-  iVar1 = _vsnprintf(param_1,param_2,param_3,&stack0x00000010);
-  param_1[param_2 + -1] = '\0';
+  iVar1 = _vsnprintf(dest,size,fmt,&stack0x00000010);
+  dest[size + -1] = '\0';
   return iVar1;
 }
 
 
 // 007D27A0  Com_sprintfPos  (universal/q_shared.cpp:938)
 
-int __cdecl Com_sprintfPos(char *param_1,int param_2,int *param_3,char *param_4)
+int __cdecl Com_sprintfPos(char *dest,int destSize,int *destPos,char *fmt)
 
 {
   int iVar1;
   uint uVar2;
-  uint uVar3;
+  uint count;
+  char *argptr;
+  int len;
+  char *destMod;
+  int destModSize;
   
-  if (*param_3 < param_2 + -1) {
-    iVar1 = *param_3;
-    uVar3 = param_2 - *param_3;
-    uVar2 = _vsnprintf(param_1 + iVar1,uVar3,param_4,&stack0x00000014);
-    (param_1 + iVar1)[uVar3 - 1] = '\0';
-    if ((uVar2 == uVar3) || (uVar2 == 0xffffffff)) {
-      *param_3 = param_2 + -1;
+  if (*destPos < destSize + -1) {
+    iVar1 = *destPos;
+    count = destSize - *destPos;
+    uVar2 = _vsnprintf(dest + iVar1,count,fmt,&stack0x00000014);
+    (dest + iVar1)[count - 1] = '\0';
+    if ((uVar2 == count) || (uVar2 == 0xffffffff)) {
+      *destPos = destSize + -1;
     }
     else {
-      *param_3 = *param_3 + uVar2;
+      *destPos = *destPos + uVar2;
     }
   }
   else {
@@ -993,16 +1026,17 @@ int __cdecl Com_sprintfPos(char *param_1,int param_2,int *param_3,char *param_4)
 
 // 007D2830  CanKeepStringPointer  (universal/q_shared.cpp:965)
 
-int __cdecl CanKeepStringPointer(char *param_1)
+int __cdecl CanKeepStringPointer(char *string)
 
 {
   int iVar1;
   char *pcVar2;
-  char local_5;
+  va_info_t *info;
+  char stack;
   
-  if ((param_1 < &local_5) || (&stack0x00001ffb <= param_1)) {
+  if ((string < &stack) || (&stack0x00001ffb <= string)) {
     pcVar2 = Sys_GetValue(1);
-    if ((param_1 < pcVar2) || (pcVar2 + 0xfff < param_1)) {
+    if ((string < pcVar2) || (pcVar2 + 0xfff < string)) {
       iVar1 = 1;
     }
     else {
@@ -1018,16 +1052,17 @@ int __cdecl CanKeepStringPointer(char *param_1)
 
 // 007D2960  strreverse  (universal/q_shared.cpp:990)
 
-void __cdecl strreverse(char *param_1,char *param_2)
+void __cdecl strreverse(char *begin,char *end)
 
 {
   char cVar1;
+  char aux;
   
-  for (; param_1 < param_2; param_1 = param_1 + 1) {
-    cVar1 = *param_2;
-    *param_2 = *param_1;
-    param_2 = param_2 + -1;
-    *param_1 = cVar1;
+  for (; begin < end; begin = begin + 1) {
+    cVar1 = *end;
+    *end = *begin;
+    end = end + -1;
+    *begin = cVar1;
   }
   return;
 }
@@ -1035,18 +1070,18 @@ void __cdecl strreverse(char *param_1,char *param_2)
 
 // 007D2880  I_itoa  (universal/q_shared.cpp:1001)
 
-char * __cdecl I_itoa(int param_1,char *param_2,int param_3)
+char * __cdecl I_itoa(int value,char *buf,int bufsize)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   uint local_10;
-  uint local_c;
-  char *local_8;
+  uint uvalue;
+  char *p;
   
-  local_8 = param_2;
-  if (param_3 < 0xc) {
+  p = buf;
+  if (bufsize < 0xc) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x3ec,0,
                              "%s");
     if (!bVar2) {
@@ -1055,74 +1090,79 @@ char * __cdecl I_itoa(int param_1,char *param_2,int param_3)
       return pcVar3;
     }
   }
-  if (param_3 < 0xc) {
-    *param_2 = '0';
-    param_2[1] = '\0';
+  if (bufsize < 0xc) {
+    *buf = '0';
+    buf[1] = '\0';
   }
   else {
-    if (param_1 < 0) {
-      local_10 = -param_1;
+    if (value < 0) {
+      local_10 = -value;
     }
     else {
-      local_10 = param_1;
+      local_10 = value;
     }
-    local_c = local_10;
-    pcVar3 = local_8;
+    uvalue = local_10;
+    pcVar3 = p;
     do {
-      local_8 = pcVar3;
-      *local_8 = (char)((ulonglong)local_c % 10) + '0';
-      pcVar3 = local_8 + 1;
-      local_c = local_c / 10;
-    } while (local_c != 0);
-    if (param_1 < 0) {
+      p = pcVar3;
+      *p = (char)((ulonglong)uvalue % 10) + '0';
+      pcVar3 = p + 1;
+      uvalue = uvalue / 10;
+    } while (uvalue != 0);
+    if (value < 0) {
       *pcVar3 = '-';
-      pcVar3 = local_8 + 2;
+      pcVar3 = p + 2;
     }
-    local_8 = pcVar3;
-    *local_8 = '\0';
-    strreverse(param_2,local_8 + -1);
+    p = pcVar3;
+    *p = '\0';
+    strreverse(buf,p + -1);
   }
-  return param_2;
+  return buf;
 }
 
 
 // 007D29A0  va  (universal/q_shared.cpp:1118)
 
-char * __cdecl va(char *param_1)
+char * __cdecl va(char *format)
 
 {
   void *pvVar1;
-  char *pcVar2;
-  int iVar3;
-  uint uVar4;
+  char *string;
+  int iVar2;
+  uint uVar3;
+  va_info_t *info;
+  char *argptr;
+  char *buf;
+  int len;
+  int index;
   
   pvVar1 = Sys_GetValue(1);
-  iVar3 = *(int *)((int)pvVar1 + 0x1000);
-  uVar4 = *(int *)((int)pvVar1 + 0x1000) + 1U & 0x80000003;
-  if ((int)uVar4 < 0) {
-    uVar4 = (uVar4 - 1 | 0xfffffffc) + 1;
+  iVar2 = *(int *)((int)pvVar1 + 0x1000);
+  uVar3 = *(int *)((int)pvVar1 + 0x1000) + 1U & 0x80000003;
+  if ((int)uVar3 < 0) {
+    uVar3 = (uVar3 - 1 | 0xfffffffc) + 1;
   }
-  *(uint *)((int)pvVar1 + 0x1000) = uVar4;
-  pcVar2 = (char *)(iVar3 * 0x400 + (int)pvVar1);
-  iVar3 = _vsnprintf(pcVar2,0x400,param_1,&stack0x00000008);
-  pcVar2[0x3ff] = '\0';
-  if ((iVar3 < 0) || (0x3ff < iVar3)) {
-    pcVar2[0x3ff] = '\0';
+  *(uint *)((int)pvVar1 + 0x1000) = uVar3;
+  string = (char *)(iVar2 * 0x400 + (int)pvVar1);
+  iVar2 = _vsnprintf(string,0x400,format,&stack0x00000008);
+  string[0x3ff] = '\0';
+  if ((iVar2 < 0) || (0x3ff < iVar2)) {
+    string[0x3ff] = '\0';
     Com_Error(ERR_DROP,"\x15Attempted to overrun string in call to va(): \'%s\'");
   }
-  return pcVar2;
+  return string;
 }
 
 
 // 007D2A60  Com_InitThreadData  (universal/q_shared.cpp:1152)
 
-void __cdecl Com_InitThreadData(int param_1)
+void __cdecl Com_InitThreadData(int threadContext)
 
 {
-  Sys_SetValue(1,va_info + param_1);
-  Sys_SetValue(2,g_com_error + param_1);
-  Sys_SetValue(3,g_traceThreadInfo + param_1);
-  if (param_1 == 1) {
+  Sys_SetValue(1,va_info + threadContext);
+  Sys_SetValue(2,g_com_error + threadContext);
+  Sys_SetValue(3,g_traceThreadInfo + threadContext);
+  if (threadContext == 1) {
     Sys_SetValue(4,g_cmd_args + 1);
   }
   else {
@@ -1137,49 +1177,49 @@ void __cdecl Com_InitThreadData(int param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl Info_ValueForKey(char *param_1,char *param_2)
+char * __cdecl Info_ValueForKey(char *s,char *key)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  char (*local_2014) [8192];
-  char (*local_2010) [8192];
-  char local_200c [8196];
+  char *o;
+  char *result;
+  char pkey [8196];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 != (char *)0x0) && (param_2 != (char *)0x0)) {
+  if ((s != (char *)0x0) && (key != (char *)0x0)) {
     valueindex = valueindex + 1U & 0x80000001;
     if (valueindex < 0) {
       valueindex = (valueindex - 1U | 0xfffffffe) + 1;
     }
-    if (*param_1 == '\\') {
-      param_1 = param_1 + 1;
+    if (*s == '\\') {
+      s = s + 1;
     }
     while( true ) {
-      local_2014 = (char (*) [8192])local_200c;
-      while (*param_1 != '\\') {
-        if (*param_1 == '\0') {
+      o = pkey;
+      while (*s != '\\') {
+        if (*s == '\0') {
           return "";
         }
-        (*local_2014)[0] = *param_1;
-        local_2014 = (char (*) [8192])((int)local_2014 + 1);
-        param_1 = param_1 + 1;
-        if (0x1fff < (int)local_2014 - (int)local_200c) {
+        *o = *s;
+        o = o + 1;
+        s = s + 1;
+        if (0x1fff < (int)o - (int)pkey) {
           Com_Error(ERR_DROP,"\x15Info_ValueForKey: oversize key %d");
         }
       }
-      (*local_2014)[0] = '\0';
+      *o = '\0';
       bVar2 = Sys_IsMainThread();
       if (bVar2) {
-        local_2010 = value1[0] + valueindex;
+        result = value1[0][valueindex];
       }
       else {
         bVar2 = Sys_IsServerThread();
         if (bVar2) {
-          local_2010 = value1[2] + valueindex;
+          result = value1[2][valueindex];
         }
         else {
           bVar2 = Sys_IsRenderThread();
@@ -1190,26 +1230,26 @@ char * __cdecl Info_ValueForKey(char *param_1,char *param_2)
             pcVar3 = (char *)(*pcVar1)();
             return pcVar3;
           }
-          local_2010 = value1[1] + valueindex;
+          result = value1[1][valueindex];
         }
       }
-      local_2014 = local_2010;
-      pcVar3 = param_1;
-      while ((param_1 = pcVar3 + 1, *param_1 != '\\' && (*param_1 != '\0'))) {
-        (*local_2014)[0] = *param_1;
-        local_2014 = (char (*) [8192])(*local_2014 + 1);
-        pcVar3 = param_1;
-        if (0x1fff < (int)local_2014 - (int)local_2010) {
+      o = result;
+      pcVar3 = s;
+      while ((s = pcVar3 + 1, *s != '\\' && (*s != '\0'))) {
+        *o = *s;
+        o = o + 1;
+        pcVar3 = s;
+        if (0x1fff < (int)o - (int)result) {
           Com_Error(ERR_DROP,"\x15Info_ValueForKey: oversize key %d");
         }
       }
-      (*local_2014)[0] = '\0';
-      iVar4 = I_stricmp(param_2,local_200c);
+      *o = '\0';
+      iVar4 = I_stricmp(key,pkey);
       if (iVar4 == 0) {
-        return *local_2010;
+        return result;
       }
-      if (*param_1 == '\0') break;
-      param_1 = pcVar3 + 2;
+      if (*s == '\0') break;
+      s = pcVar3 + 2;
     }
   }
   return "";
@@ -1218,38 +1258,38 @@ char * __cdecl Info_ValueForKey(char *param_1,char *param_2)
 
 // 007D2D40  Info_NextPair  (universal/q_shared.cpp:1316)
 
-void __cdecl Info_NextPair(char **param_1,char *param_2,char *param_3)
+void __cdecl Info_NextPair(char **head,char *key,char *value)
 
 {
-  char *local_c;
-  char *local_8;
+  char *o;
+  char *s;
   
-  local_8 = *param_1;
-  if (*local_8 == '\\') {
-    local_8 = local_8 + 1;
+  s = *head;
+  if (*s == '\\') {
+    s = s + 1;
   }
-  *param_2 = '\0';
-  *param_3 = '\0';
-  local_c = param_2;
+  *key = '\0';
+  *value = '\0';
+  o = key;
   while( true ) {
-    if (*local_8 == '\\') {
-      *local_c = '\0';
-      local_c = param_3;
-      while ((local_8 = local_8 + 1, *local_8 != '\\' && (*local_8 != '\0'))) {
-        *local_c = *local_8;
-        local_c = local_c + 1;
+    if (*s == '\\') {
+      *o = '\0';
+      o = value;
+      while ((s = s + 1, *s != '\\' && (*s != '\0'))) {
+        *o = *s;
+        o = o + 1;
       }
-      *local_c = '\0';
-      *param_1 = local_8;
+      *o = '\0';
+      *head = s;
       return;
     }
-    if (*local_8 == '\0') break;
-    *local_c = *local_8;
-    local_c = local_c + 1;
-    local_8 = local_8 + 1;
+    if (*s == '\0') break;
+    *o = *s;
+    o = o + 1;
+    s = s + 1;
   }
-  *local_c = '\0';
-  *param_1 = local_8;
+  *o = '\0';
+  *head = s;
   return;
 }
 
@@ -1258,7 +1298,7 @@ void __cdecl Info_NextPair(char **param_1,char *param_2,char *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Info_RemoveKey(char *param_1,char *param_2)
+void __cdecl Info_RemoveKey(char *s,char *key)
 
 {
   char cVar1;
@@ -1271,47 +1311,48 @@ void __cdecl Info_RemoveKey(char *param_1,char *param_2)
   byte *local_82c;
   byte *local_828;
   char *local_818;
-  byte *local_814;
-  byte local_80c [1024];
-  char local_40c [1028];
+  char *o;
+  char *start;
+  byte pkey [1024];
+  char value [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_818 = param_1;
+  local_818 = s;
   do {
     cVar1 = *local_818;
     local_818 = local_818 + 1;
   } while (cVar1 != '\0');
-  if (0x3ff < (uint)((int)local_818 - (int)(param_1 + 1))) {
+  if (0x3ff < (uint)((int)local_818 - (int)(s + 1))) {
     Com_Error(ERR_DROP,"\x15Info_RemoveKey: oversize infostring");
   }
-  strchr((uchar *)param_2,'\\');
+  strchr((uchar *)key,'\\');
   if (extraout_EAX == 0) {
     do {
-      local_840 = param_1;
-      if (*param_1 == '\\') {
-        param_1 = param_1 + 1;
+      local_840 = s;
+      if (*s == '\\') {
+        s = s + 1;
       }
-      local_814 = local_80c;
-      for (; *param_1 != '\\'; param_1 = param_1 + 1) {
-        if (*param_1 == '\0') {
+      o = (char *)pkey;
+      for (; *s != '\\'; s = s + 1) {
+        if (*s == '\0') {
           return;
         }
-        *local_814 = *param_1;
-        local_814 = local_814 + 1;
+        *o = *s;
+        o = o + 1;
       }
-      *local_814 = 0;
-      local_814 = (byte *)local_40c;
-      while ((param_1 = param_1 + 1, *param_1 != '\\' && (*param_1 != '\0'))) {
-        if (*param_1 == '\0') {
+      *o = '\0';
+      o = value;
+      while ((s = s + 1, *s != '\\' && (*s != '\0'))) {
+        if (*s == '\0') {
           return;
         }
-        *local_814 = *param_1;
-        local_814 = local_814 + 1;
+        *o = *s;
+        o = o + 1;
       }
-      *local_814 = '\0';
-      local_828 = local_80c;
-      local_82c = (byte *)param_2;
+      *o = '\0';
+      local_828 = pkey;
+      local_82c = (byte *)key;
       do {
         bVar2 = *local_82c;
         bVar3 = bVar2 < *local_828;
@@ -1330,7 +1371,7 @@ LAB_007d2ffc:
       local_834 = 0;
 LAB_007d3007:
       if (local_834 == 0) {
-        local_83c = param_1;
+        local_83c = s;
         do {
           cVar1 = *local_83c;
           *local_840 = cVar1;
@@ -1339,7 +1380,7 @@ LAB_007d3007:
         } while (cVar1 != '\0');
         return;
       }
-    } while (*param_1 != '\0');
+    } while (*s != '\0');
   }
   return;
 }
@@ -1350,7 +1391,7 @@ LAB_007d3007:
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Info_RemoveKey_Big(char *param_1,char *param_2)
+void __cdecl Info_RemoveKey_Big(char *s,char *key)
 
 {
   char cVar1;
@@ -1363,47 +1404,48 @@ void __cdecl Info_RemoveKey_Big(char *param_1,char *param_2)
   byte *local_402c;
   byte *local_4028;
   char *local_4018;
-  byte *local_4014;
-  byte local_400c [8192];
-  char local_200c [8196];
+  char *o;
+  char *start;
+  byte pkey [8192];
+  char value [8196];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4018 = param_1;
+  local_4018 = s;
   do {
     cVar1 = *local_4018;
     local_4018 = local_4018 + 1;
   } while (cVar1 != '\0');
-  if (0x3fff < (uint)((int)local_4018 - (int)(param_1 + 1))) {
+  if (0x3fff < (uint)((int)local_4018 - (int)(s + 1))) {
     Com_Error(ERR_DROP,"\x15Info_RemoveKey_Big: oversize infostring");
   }
-  strchr((uchar *)param_2,'\\');
+  strchr((uchar *)key,'\\');
   if (extraout_EAX == 0) {
     do {
-      local_4040 = param_1;
-      if (*param_1 == '\\') {
-        param_1 = param_1 + 1;
+      local_4040 = s;
+      if (*s == '\\') {
+        s = s + 1;
       }
-      local_4014 = local_400c;
-      for (; *param_1 != '\\'; param_1 = param_1 + 1) {
-        if (*param_1 == '\0') {
+      o = (char *)pkey;
+      for (; *s != '\\'; s = s + 1) {
+        if (*s == '\0') {
           return;
         }
-        *local_4014 = *param_1;
-        local_4014 = local_4014 + 1;
+        *o = *s;
+        o = o + 1;
       }
-      *local_4014 = 0;
-      local_4014 = (byte *)local_200c;
-      while ((param_1 = param_1 + 1, *param_1 != '\\' && (*param_1 != '\0'))) {
-        if (*param_1 == '\0') {
+      *o = '\0';
+      o = value;
+      while ((s = s + 1, *s != '\\' && (*s != '\0'))) {
+        if (*s == '\0') {
           return;
         }
-        *local_4014 = *param_1;
-        local_4014 = local_4014 + 1;
+        *o = *s;
+        o = o + 1;
       }
-      *local_4014 = '\0';
-      local_4028 = local_400c;
-      local_402c = (byte *)param_2;
+      *o = '\0';
+      local_4028 = pkey;
+      local_402c = (byte *)key;
       do {
         bVar2 = *local_402c;
         bVar3 = bVar2 < *local_4028;
@@ -1422,7 +1464,7 @@ LAB_007d3290:
       local_4034 = 0;
 LAB_007d329b:
       if (local_4034 == 0) {
-        local_403c = param_1;
+        local_403c = s;
         do {
           cVar1 = *local_403c;
           *local_4040 = cVar1;
@@ -1431,7 +1473,7 @@ LAB_007d329b:
         } while (cVar1 != '\0');
         return;
       }
-    } while (*param_1 != '\0');
+    } while (*s != '\0');
   }
   return;
 }
@@ -1439,16 +1481,16 @@ LAB_007d329b:
 
 // 007D3340  Info_Validate  (universal/q_shared.cpp:1479)
 
-int __cdecl Info_Validate(char *param_1)
+int __cdecl Info_Validate(char *s)
 
 {
   int extraout_EAX;
   int iVar1;
   int extraout_EAX_00;
   
-  strchr((uchar *)param_1,'\"');
+  strchr((uchar *)s,'\"');
   if (extraout_EAX == 0) {
-    strchr((uchar *)param_1,';');
+    strchr((uchar *)s,';');
     if (extraout_EAX_00 == 0) {
       iVar1 = 1;
     }
@@ -1467,7 +1509,7 @@ int __cdecl Info_Validate(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Info_SetValueForKey(char *param_1,char *param_2,char *param_3)
+void __cdecl Info_SetValueForKey(char *s,char *key,char *value)
 
 {
   char cVar1;
@@ -1484,61 +1526,61 @@ void __cdecl Info_SetValueForKey(char *param_1,char *param_2,char *param_3)
   char *local_840;
   char *local_830;
   char *local_820;
-  int local_81c;
-  char local_814 [1028];
-  int local_410;
-  char local_40c;
+  int j;
+  char c;
+  char cleanValue [1028];
+  int len;
+  char newi;
   undefined1 auStack_40b [1023];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == (char *)0x0) &&
+  if ((value == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x5e4,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_820 = param_1;
+  local_820 = s;
   do {
     cVar1 = *local_820;
     local_820 = local_820 + 1;
   } while (cVar1 != '\0');
-  if ((uint)((int)local_820 - (int)(param_1 + 1)) < 0x400) {
-    local_81c = 0;
-    for (local_8 = 0; (local_8 < 0x3ff && (cVar1 = param_3[local_8], cVar1 != '\0'));
-        local_8 = local_8 + 1) {
+  if ((uint)((int)local_820 - (int)(s + 1)) < 0x400) {
+    j = 0;
+    for (i = 0; (i < 0x3ff && (cVar1 = value[i], cVar1 != '\0')); i = i + 1) {
       if ((cVar1 != '\\') && ((cVar1 != ';' && (cVar1 != '\"')))) {
-        if ((0x3ff < local_81c) &&
+        if ((0x3ff < j) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",
                                      0x5f5,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_814[local_81c] = cVar1;
-        local_81c = local_81c + 1;
+        cleanValue[j] = cVar1;
+        j = j + 1;
       }
     }
-    if ((0x3ff < local_81c) &&
+    if ((0x3ff < j) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x5fa,
                                  0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_814[local_81c] = '\0';
-    strchr((uchar *)param_2,'\\');
+    cleanValue[j] = '\0';
+    strchr((uchar *)key,'\\');
     if (extraout_EAX == 0) {
-      strchr((uchar *)param_2,';');
+      strchr((uchar *)key,';');
       if (extraout_EAX_00 == 0) {
-        strchr((uchar *)param_2,'\"');
+        strchr((uchar *)key,'\"');
         if (extraout_EAX_01 == 0) {
-          Info_RemoveKey(param_1,param_2);
-          if (local_814[0] != '\0') {
-            local_410 = Com_sprintf(&local_40c,0x400,"\\%s\\%s");
-            if (local_410 < 1) {
+          Info_RemoveKey(s,key);
+          if (cleanValue[0] != '\0') {
+            len = Com_sprintf(&newi,0x400,"\\%s\\%s");
+            if (len < 1) {
               bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",
                                        0x61a,0,
                                        "Info buffer length exceeded, not including key/value pair in response\n"
@@ -1553,30 +1595,30 @@ void __cdecl Info_SetValueForKey(char *param_1,char *param_2,char *param_3)
                         );
             }
             else {
-              local_830 = &local_40c;
+              local_830 = &newi;
               do {
                 cVar1 = *local_830;
                 local_830 = local_830 + 1;
               } while (cVar1 != '\0');
-              local_840 = param_1;
+              local_840 = s;
               do {
                 cVar1 = *local_840;
                 local_840 = local_840 + 1;
               } while (cVar1 != '\0');
-              if (local_830 + (int)(local_840 + (-(int)(param_1 + 1) - (int)auStack_40b)) <
-                  (char *)0x401) {
-                local_850 = &local_40c;
+              if (local_830 + (int)(local_840 + (-(int)(s + 1) - (int)auStack_40b)) < (char *)0x401)
+              {
+                local_850 = &newi;
                 do {
                   cVar1 = *local_850;
                   local_850 = local_850 + 1;
                 } while (cVar1 != '\0');
-                uVar5 = (int)local_850 - (int)&local_40c;
-                local_864 = param_1 + -1;
+                uVar5 = (int)local_850 - (int)&newi;
+                local_864 = s + -1;
                 do {
                   pcVar4 = local_864 + 1;
                   local_864 = local_864 + 1;
                 } while (*pcVar4 != '\0');
-                pcVar4 = &local_40c;
+                pcVar4 = &newi;
                 for (uVar6 = uVar5 >> 2; uVar6 != 0; uVar6 = uVar6 - 1) {
                   *(undefined4 *)local_864 = *(undefined4 *)pcVar4;
                   pcVar4 = pcVar4 + 4;
@@ -1661,7 +1703,7 @@ void __cdecl Info_SetValueForKey(char *param_1,char *param_2,char *param_3)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Info_SetValueForKey_Big(char *param_1,char *param_2,char *param_3)
+void __cdecl Info_SetValueForKey_Big(char *s,char *key,char *value)
 
 {
   char cVar1;
@@ -1678,91 +1720,91 @@ void __cdecl Info_SetValueForKey_Big(char *param_1,char *param_2,char *param_3)
   char *local_8040;
   char *local_8030;
   char *local_8020;
-  int local_801c;
-  char local_8014 [16388];
-  int local_4010;
-  char local_400c;
+  int j;
+  char c;
+  char cleanValue [16388];
+  int len;
+  char newi;
   undefined1 auStack_400b [16383];
   uint local_c;
-  int local_8;
+  int i;
   
-  local_8 = 0x7d38ad;
+  i = 0x7d38ad;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == (char *)0x0) &&
+  if ((value == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x63a,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_8020 = param_1;
+  local_8020 = s;
   do {
     cVar1 = *local_8020;
     local_8020 = local_8020 + 1;
   } while (cVar1 != '\0');
-  if ((uint)((int)local_8020 - (int)(param_1 + 1)) < 0x4000) {
-    local_801c = 0;
-    for (local_8 = 0; (local_8 < 0x3fff && (cVar1 = param_3[local_8], cVar1 != '\0'));
-        local_8 = local_8 + 1) {
+  if ((uint)((int)local_8020 - (int)(s + 1)) < 0x4000) {
+    j = 0;
+    for (i = 0; (i < 0x3fff && (cVar1 = value[i], cVar1 != '\0')); i = i + 1) {
       if ((cVar1 != '\\') && ((cVar1 != ';' && (cVar1 != '\"')))) {
-        if ((0x3fff < local_801c) &&
+        if ((0x3fff < j) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",
                                      0x64a,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_8014[local_801c] = cVar1;
-        local_801c = local_801c + 1;
+        cleanValue[j] = cVar1;
+        j = j + 1;
       }
     }
-    if ((0x3fff < local_801c) &&
+    if ((0x3fff < j) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x64f,
                                  0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8014[local_801c] = '\0';
-    strchr((uchar *)param_2,'\\');
+    cleanValue[j] = '\0';
+    strchr((uchar *)key,'\\');
     if (extraout_EAX == 0) {
-      strchr((uchar *)param_2,';');
+      strchr((uchar *)key,';');
       if (extraout_EAX_00 == 0) {
-        strchr((uchar *)param_2,'\"');
+        strchr((uchar *)key,'\"');
         if (extraout_EAX_01 == 0) {
-          Info_RemoveKey_Big(param_1,param_2);
-          if (local_8014[0] != '\0') {
-            local_4010 = Com_sprintf(&local_400c,0x4000,"\\%s\\%s");
-            if (local_4010 < 1) {
+          Info_RemoveKey_Big(s,key);
+          if (cleanValue[0] != '\0') {
+            len = Com_sprintf(&newi,0x4000,"\\%s\\%s");
+            if (len < 1) {
               Com_Printf(0x10,
                          "\x15Info buffer length exceeded, not including key/value pair in response\n"
                         );
             }
             else {
-              local_8030 = &local_400c;
+              local_8030 = &newi;
               do {
                 cVar1 = *local_8030;
                 local_8030 = local_8030 + 1;
               } while (cVar1 != '\0');
-              local_8040 = param_1;
+              local_8040 = s;
               do {
                 cVar1 = *local_8040;
                 local_8040 = local_8040 + 1;
               } while (cVar1 != '\0');
-              if (local_8030 + (int)(local_8040 + (-(int)(param_1 + 1) - (int)auStack_400b)) <
+              if (local_8030 + (int)(local_8040 + (-(int)(s + 1) - (int)auStack_400b)) <
                   (char *)0x4001) {
-                local_8050 = &local_400c;
+                local_8050 = &newi;
                 do {
                   cVar1 = *local_8050;
                   local_8050 = local_8050 + 1;
                 } while (cVar1 != '\0');
-                uVar4 = (int)local_8050 - (int)&local_400c;
-                local_8064 = param_1 + -1;
+                uVar4 = (int)local_8050 - (int)&newi;
+                local_8064 = s + -1;
                 do {
                   pcVar6 = local_8064 + 1;
                   local_8064 = local_8064 + 1;
                 } while (*pcVar6 != '\0');
-                pcVar6 = &local_400c;
+                pcVar6 = &newi;
                 for (uVar5 = uVar4 >> 2; uVar5 != 0; uVar5 = uVar5 - 1) {
                   *(undefined4 *)local_8064 = *(undefined4 *)pcVar6;
                   pcVar6 = pcVar6 + 4;
@@ -1809,9 +1851,9 @@ void __cdecl Info_SetValueForKey_Big(char *param_1,char *param_2,char *param_3)
 /* WARNING: Removing unreachable block (ram,0x007d3f5e) */
 
 int __cdecl
-KeyValueToField(uchar *param_1,cspField_t *param_2,char *param_3,int param_4,
-               _func___cdecl_int_uchar_ptr_char_ptr_int_int *param_5,
-               _func___cdecl_void_uchar_ptr_char_ptr *param_6)
+KeyValueToField(uchar *pStruct,cspField_t *pField,char *pszKeyValue,int iMaxFieldTypes,
+               _func___cdecl_int_uchar_ptr_char_ptr_int_int *parseSpecialFieldType,
+               _func___cdecl_void_uchar_ptr_char_ptr *parseStrcpy)
 
 {
   code *pcVar1;
@@ -1823,54 +1865,54 @@ KeyValueToField(uchar *param_1,cspField_t *param_2,char *param_3,int param_4,
   char *pcVar6;
   int iVar7;
   double dVar8;
-  char local_210c [256];
-  char local_200c [8192];
+  char presetName [256];
+  char xModelName [8192];
   uint local_c;
-  undefined4 local_8;
+  XModel *xmodel;
   
-  local_8 = 0x7d3d7d;
+  xmodel = (XModel *)0x7d3d7d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2->iFieldType < 0xf) {
-    switch(param_2->iFieldType) {
+  if (pField->iFieldType < 0xf) {
+    switch(pField->iFieldType) {
     case 0:
-      (*param_6)(param_1 + param_2->iOffset,param_3);
+      (*parseStrcpy)(pStruct + pField->iOffset,pszKeyValue);
       break;
     case 1:
-      I_strncpyz((char *)(param_1 + param_2->iOffset),param_3,0x400);
+      I_strncpyz((char *)(pStruct + pField->iOffset),pszKeyValue,0x400);
       break;
     case 2:
-      I_strncpyz((char *)(param_1 + param_2->iOffset),param_3,0x40);
+      I_strncpyz((char *)(pStruct + pField->iOffset),pszKeyValue,0x40);
       break;
     case 3:
-      I_strncpyz((char *)(param_1 + param_2->iOffset),param_3,0x100);
+      I_strncpyz((char *)(pStruct + pField->iOffset),pszKeyValue,0x100);
       break;
     case 4:
-      iVar7 = atoi(param_3);
-      *(int *)(param_1 + param_2->iOffset) = iVar7;
+      iVar7 = atoi(pszKeyValue);
+      *(int *)(pStruct + pField->iOffset) = iVar7;
       break;
     case 5:
-      iVar7 = atoi(param_3);
-      param_1[param_2->iOffset] = iVar7 != 0;
+      iVar7 = atoi(pszKeyValue);
+      pStruct[pField->iOffset] = iVar7 != 0;
       break;
     case 6:
-      iVar7 = atoi(param_3);
-      *(uint *)(param_1 + param_2->iOffset) = (uint)(iVar7 != 0);
+      iVar7 = atoi(pszKeyValue);
+      *(uint *)(pStruct + pField->iOffset) = (uint)(iVar7 != 0);
       break;
     case 7:
-      dVar8 = atof(param_3);
-      *(float *)(param_1 + param_2->iOffset) = (float)dVar8;
+      dVar8 = atof(pszKeyValue);
+      *(float *)(pStruct + pField->iOffset) = (float)dVar8;
       break;
     case 8:
-      atof(param_3);
+      atof(pszKeyValue);
       _ftol2_sse();
-      *(undefined4 *)(param_1 + param_2->iOffset) = extraout_EAX;
+      *(undefined4 *)(pStruct + pField->iOffset) = extraout_EAX;
       break;
     case 9:
       break;
     case 10:
-      I_strncpyz(local_200c,param_3,0x2000);
-      pXVar3 = R_RegisterModel(local_200c);
-      *(XModel **)(param_1 + param_2->iOffset) = pXVar3;
+      I_strncpyz(xModelName,pszKeyValue,0x2000);
+      pXVar3 = R_RegisterModel(xModelName);
+      *(XModel **)(pStruct + pField->iOffset) = pXVar3;
       if (pXVar3 == (XModel *)0x0) {
         return 0;
       }
@@ -1879,16 +1921,16 @@ KeyValueToField(uchar *param_1,cspField_t *param_2,char *param_3,int param_4,
     case 0xc:
       break;
     case 0xd:
-      I_strncpyz(local_210c,param_3,0xf5);
-      pPVar4 = PhysPreset_Register(local_210c);
-      *(PhysPreset **)(param_1 + param_2->iOffset) = pPVar4;
+      I_strncpyz(presetName,pszKeyValue,0xf5);
+      pPVar4 = PhysPreset_Register(presetName);
+      *(PhysPreset **)(pStruct + pField->iOffset) = pPVar4;
       break;
     case 0xe:
-      uVar5 = SL_GetLowercaseString(param_3,0,SCRIPTINSTANCE_SERVER);
-      *(short *)(param_1 + param_2->iOffset) = (short)uVar5;
+      uVar5 = SL_GetLowercaseString(pszKeyValue,0,SCRIPTINSTANCE_SERVER);
+      *(short *)(pStruct + pField->iOffset) = (short)uVar5;
       break;
     default:
-      if (param_2->iFieldType < 0) {
+      if (pField->iFieldType < 0) {
         pcVar6 = va("Negative field type %i given to ParseConfigStringToStruct\n");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x6ec,
                                  0,pcVar6);
@@ -1912,7 +1954,7 @@ KeyValueToField(uchar *param_1,cspField_t *param_2,char *param_3,int param_4,
     }
   }
   else {
-    if ((param_4 < 1) || (param_4 <= param_2->iFieldType)) {
+    if ((iMaxFieldTypes < 1) || (iMaxFieldTypes <= pField->iFieldType)) {
       pcVar6 = va("Bad field type %i\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x6f9,0,
                                pcVar6);
@@ -1924,14 +1966,14 @@ KeyValueToField(uchar *param_1,cspField_t *param_2,char *param_3,int param_4,
       iVar7 = (*pcVar1)();
       return iVar7;
     }
-    if ((param_5 == (_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0) &&
+    if ((parseSpecialFieldType == (_func___cdecl_int_uchar_ptr_char_ptr_int_int *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x6f3,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar7 = (*pcVar1)();
       return iVar7;
     }
-    iVar7 = (*param_5)(param_1,param_3,param_2->iFieldType,param_2->iOffset);
+    iVar7 = (*parseSpecialFieldType)(pStruct,pszKeyValue,pField->iFieldType,pField->iOffset);
     if (iVar7 == 0) {
       return 0;
     }
@@ -1944,34 +1986,36 @@ KeyValueToField(uchar *param_1,cspField_t *param_2,char *param_3,int param_4,
 
 int __cdecl
 ParseConfigStringToStruct
-          (uchar *param_1,cspField_t *param_2,int param_3,char *param_4,int param_5,
-          _func___cdecl_int_uchar_ptr_char_ptr_int_int *param_6,
-          _func___cdecl_void_uchar_ptr_char_ptr *param_7)
+          (uchar *pStruct,cspField_t *pFieldList,int iNumFields,char *pszBuffer,int iMaxFieldTypes,
+          _func___cdecl_int_uchar_ptr_char_ptr_int_int *parseSpecialFieldType,
+          _func___cdecl_void_uchar_ptr_char_ptr *parseStrCpy)
 
 {
-  char *pcVar1;
-  int iVar2;
-  byte local_d;
-  cspField_t *local_c;
-  int local_8;
+  char *pszKeyValue_00;
+  int iVar1;
+  char *pszKeyValue;
+  bool error;
+  cspField_t *pField;
+  int iField;
   
-  local_d = 0;
-  local_c = param_2;
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-    pcVar1 = Info_ValueForKey(param_4,local_c->szName);
-    if (*pcVar1 != '\0') {
-      iVar2 = KeyValueToField(param_1,local_c,pcVar1,param_5,param_6,param_7);
-      local_d = local_d | 1U - (iVar2 != 0);
+  error = false;
+  pField = pFieldList;
+  for (iField = 0; iField < iNumFields; iField = iField + 1) {
+    pszKeyValue_00 = Info_ValueForKey(pszBuffer,pField->szName);
+    if (*pszKeyValue_00 != '\0') {
+      iVar1 = KeyValueToField(pStruct,pField,pszKeyValue_00,iMaxFieldTypes,parseSpecialFieldType,
+                              parseStrCpy);
+      error = (bool)(error | 1U - (iVar1 != 0));
     }
-    local_c = local_c + 1;
+    pField = pField + 1;
   }
-  if ((local_8 == param_3) && (local_d == 0)) {
-    iVar2 = 1;
+  if ((iField == iNumFields) && (error == false)) {
+    iVar1 = 1;
   }
   else {
-    iVar2 = 0;
+    iVar1 = 0;
   }
-  return iVar2;
+  return iVar1;
 }
 
 
@@ -1982,17 +2026,17 @@ ParseConfigStringToStruct
 
 int __cdecl
 ParseConfigStringToStructMerged
-          (uchar *param_1,cspField_t *param_2,int param_3,char *param_4,char **param_5,
-          char **param_6,char *param_7,int param_8,
-          _func___cdecl_int_uchar_ptr_char_ptr_int_int *param_9,
-          _func___cdecl_void_uchar_ptr_char_ptr *param_10,
-          _func___cdecl_int_char_ptr_char_ptr_ptr_char_ptr_int *param_11)
+          (uchar *pStruct,cspField_t *pFieldList,int iNumFields,char *mergedName,char **pszBuffer,
+          char **sourceName,char *pszMergedBuffer,int iMaxFieldTypes,
+          _func___cdecl_int_uchar_ptr_char_ptr_int_int *parseSpecialFieldType,
+          _func___cdecl_void_uchar_ptr_char_ptr *parseStrCpy,
+          _func___cdecl_int_char_ptr_char_ptr_ptr_char_ptr_int *parseMergeSpecialCase)
 
 {
   byte bVar1;
-  char *pcVar2;
-  bool bVar3;
-  int iVar4;
+  char *src;
+  bool bVar2;
+  int iVar3;
   int local_6090;
   byte *local_6088;
   byte *local_6084;
@@ -2008,52 +2052,52 @@ ParseConfigStringToStructMerged
   int local_6040;
   byte *local_6038;
   byte *local_6034;
-  int local_6030;
-  byte local_602c [8199];
-  byte local_4025;
-  byte local_4024 [8196];
-  byte *local_2020;
-  byte local_201c [8192];
+  int m;
+  byte value2 [8199];
+  bool error;
+  byte value1 [8196];
+  char *mergedValue;
+  byte value0 [8192];
   uint local_1c;
-  cspField_t *local_18;
-  int local_14;
-  byte *local_10 [3];
+  cspField_t *pField;
+  int iField;
+  byte *value [3];
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10[0] = local_201c;
-  local_10[1] = local_4024;
-  local_10[2] = local_602c;
-  local_4025 = 0;
-  local_14 = 0;
-  local_18 = param_2;
+  value[0] = value0;
+  value[1] = value1;
+  value[2] = value2;
+  error = false;
+  iField = 0;
+  pField = pFieldList;
   do {
-    if (param_3 <= local_14) {
-      if ((local_14 == param_3) && (local_4025 == 0)) {
-        iVar4 = 1;
+    if (iNumFields <= iField) {
+      if ((iField == iNumFields) && (error == false)) {
+        iVar3 = 1;
       }
       else {
-        iVar4 = 0;
+        iVar3 = 0;
       }
-      return iVar4;
+      return iVar3;
     }
-    for (local_6030 = 0; local_6030 < 3; local_6030 = local_6030 + 1) {
-      iVar4 = 0x2000;
-      pcVar2 = Info_ValueForKey(param_5[local_6030],local_18->szName);
-      I_strncpyz((char *)local_10[local_6030],pcVar2,iVar4);
+    for (m = 0; m < 3; m = m + 1) {
+      iVar3 = 0x2000;
+      src = Info_ValueForKey(pszBuffer[m],pField->szName);
+      I_strncpyz((char *)value[m],src,iVar3);
     }
-    local_6034 = local_10[2];
-    local_6038 = local_10[1];
+    local_6034 = value[2];
+    local_6038 = value[1];
     do {
       bVar1 = *local_6038;
-      bVar3 = bVar1 < *local_6034;
+      bVar2 = bVar1 < *local_6034;
       if (bVar1 != *local_6034) {
 LAB_007d4261:
-        local_6040 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+        local_6040 = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
         goto LAB_007d426c;
       }
       if (bVar1 == 0) break;
       bVar1 = local_6038[1];
-      bVar3 = bVar1 < local_6034[1];
+      bVar2 = bVar1 < local_6034[1];
       if (bVar1 != local_6034[1]) goto LAB_007d4261;
       local_6038 = local_6038 + 2;
       local_6034 = local_6034 + 2;
@@ -2061,22 +2105,22 @@ LAB_007d4261:
     local_6040 = 0;
 LAB_007d426c:
     if (local_6040 == 0) {
-      local_2020 = local_10[1];
+      mergedValue = (char *)value[1];
     }
     else {
-      local_6048 = local_10[2];
-      local_604c = local_10[0];
+      local_6048 = value[2];
+      local_604c = value[0];
       do {
         bVar1 = *local_604c;
-        bVar3 = bVar1 < *local_6048;
+        bVar2 = bVar1 < *local_6048;
         if (bVar1 != *local_6048) {
 LAB_007d42ff:
-          local_6054 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+          local_6054 = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
           goto LAB_007d430a;
         }
         if (bVar1 == 0) break;
         bVar1 = local_604c[1];
-        bVar3 = bVar1 < local_6048[1];
+        bVar2 = bVar1 < local_6048[1];
         if (bVar1 != local_6048[1]) goto LAB_007d42ff;
         local_604c = local_604c + 2;
         local_6048 = local_6048 + 2;
@@ -2084,19 +2128,19 @@ LAB_007d42ff:
       local_6054 = 0;
 LAB_007d430a:
       if (local_6054 == 0) {
-        local_605c = local_10[1];
-        local_6060 = local_10[0];
+        local_605c = value[1];
+        local_6060 = value[0];
         do {
           bVar1 = *local_6060;
-          bVar3 = bVar1 < *local_605c;
+          bVar2 = bVar1 < *local_605c;
           if (bVar1 != *local_605c) {
 LAB_007d4393:
-            local_6068 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+            local_6068 = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
             goto LAB_007d439e;
           }
           if (bVar1 == 0) break;
           bVar1 = local_6060[1];
-          bVar3 = bVar1 < local_605c[1];
+          bVar2 = bVar1 < local_605c[1];
           if (bVar1 != local_605c[1]) goto LAB_007d4393;
           local_6060 = local_6060 + 2;
           local_605c = local_605c + 2;
@@ -2104,23 +2148,23 @@ LAB_007d4393:
         local_6068 = 0;
 LAB_007d439e:
         if (local_6068 != 0) {
-          local_2020 = local_10[1];
+          mergedValue = (char *)value[1];
           goto LAB_007d4556;
         }
       }
-      local_6070 = local_10[1];
-      local_6074 = local_10[0];
+      local_6070 = value[1];
+      local_6074 = value[0];
       do {
         bVar1 = *local_6074;
-        bVar3 = bVar1 < *local_6070;
+        bVar2 = bVar1 < *local_6070;
         if (bVar1 != *local_6070) {
 LAB_007d4431:
-          local_607c = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+          local_607c = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
           goto LAB_007d443c;
         }
         if (bVar1 == 0) break;
         bVar1 = local_6074[1];
-        bVar3 = bVar1 < local_6070[1];
+        bVar2 = bVar1 < local_6070[1];
         if (bVar1 != local_6070[1]) goto LAB_007d4431;
         local_6074 = local_6074 + 2;
         local_6070 = local_6070 + 2;
@@ -2128,19 +2172,19 @@ LAB_007d4431:
       local_607c = 0;
 LAB_007d443c:
       if (local_607c == 0) {
-        local_6084 = local_10[2];
-        local_6088 = local_10[0];
+        local_6084 = value[2];
+        local_6088 = value[0];
         do {
           bVar1 = *local_6088;
-          bVar3 = bVar1 < *local_6084;
+          bVar2 = bVar1 < *local_6084;
           if (bVar1 != *local_6084) {
 LAB_007d44c5:
-            local_6090 = (1 - (uint)bVar3) - (uint)(bVar3 != 0);
+            local_6090 = (1 - (uint)bVar2) - (uint)(bVar2 != 0);
             goto LAB_007d44d0;
           }
           if (bVar1 == 0) break;
           bVar1 = local_6088[1];
-          bVar3 = bVar1 < local_6084[1];
+          bVar2 = bVar1 < local_6084[1];
           if (bVar1 != local_6084[1]) goto LAB_007d44c5;
           local_6088 = local_6088 + 2;
           local_6084 = local_6084 + 2;
@@ -2148,44 +2192,45 @@ LAB_007d44c5:
         local_6090 = 0;
 LAB_007d44d0:
         if (local_6090 != 0) {
-          local_2020 = local_10[2];
+          mergedValue = (char *)value[2];
           goto LAB_007d4556;
         }
       }
-      iVar4 = (*param_11)(local_18->szName,(char **)local_10,(char *)local_10[0],0x2000);
-      if (iVar4 == 0) {
+      iVar3 = (*parseMergeSpecialCase)(pField->szName,(char **)value,(char *)value[0],0x2000);
+      if (iVar3 == 0) {
         Com_PrintError(1,
                        "Could not merge field \'%s\' for merged asset \'%s\'.\nBase: %s -> %s\nLeft: %s -> %s\nRight: %s -> %s\n"
                       );
-        local_4025 = 1;
+        error = true;
       }
-      local_2020 = local_10[0];
+      mergedValue = (char *)value[0];
     }
 LAB_007d4556:
-    if (*local_2020 != 0) {
-      Info_SetValueForKey_Big(param_7,local_18->szName,(char *)local_2020);
-      bVar1 = local_4025;
-      iVar4 = KeyValueToField(param_1,local_18,(char *)local_2020,param_8,param_9,param_10);
-      local_4025 = bVar1 | 1U - (iVar4 != 0);
+    if (*mergedValue != '\0') {
+      Info_SetValueForKey_Big(pszMergedBuffer,pField->szName,mergedValue);
+      bVar2 = error;
+      iVar3 = KeyValueToField(pStruct,pField,mergedValue,iMaxFieldTypes,parseSpecialFieldType,
+                              parseStrCpy);
+      error = (bool)(bVar2 | 1U - (iVar3 != 0));
     }
-    local_14 = local_14 + 1;
-    local_18 = local_18 + 1;
+    iField = iField + 1;
+    pField = pField + 1;
   } while( true );
 }
 
 
 // 007D45F0  GetLeanFraction  (universal/q_shared.cpp:1932)
 
-float __cdecl GetLeanFraction(float param_1)
+float __cdecl GetLeanFraction(float fFrac)
 
 {
-  return (2.0 - ABS(param_1)) * param_1;
+  return (2.0 - ABS(fFrac)) * fFrac;
 }
 
 
 // 007D4610  UnGetLeanFraction  (universal/q_shared.cpp:1945)
 
-float __cdecl UnGetLeanFraction(float param_1)
+float __cdecl UnGetLeanFraction(float fFrac)
 
 {
   code *pcVar1;
@@ -2193,7 +2238,7 @@ float __cdecl UnGetLeanFraction(float param_1)
   float10 fVar3;
   float10 extraout_ST0;
   
-  if (param_1 < 0.0) {
+  if (fFrac < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x79a,0,
                              "%s");
     if (!bVar2) {
@@ -2202,7 +2247,7 @@ float __cdecl UnGetLeanFraction(float param_1)
       return (float)fVar3;
     }
   }
-  if (1.0 < param_1) {
+  if (1.0 < fFrac) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x79b,0,
                              "%s");
     if (!bVar2) {
@@ -2219,27 +2264,28 @@ float __cdecl UnGetLeanFraction(float param_1)
 // 007D46A0  AddLeanToPosition  (universal/q_shared.cpp:1961)
 
 void __cdecl
-AddLeanToPosition(float *param_1,float param_2,float param_3,float param_4,float param_5)
+AddLeanToPosition(float *position,float fViewYaw,float fLeanFrac,float fViewRoll,float fLeanDist)
 
 {
   float fVar1;
-  float local_1c;
+  float fLean;
+  float vRight;
   float local_18;
   float local_14;
-  float local_10;
+  float vAng;
   float local_c;
   float local_8;
   
-  if (param_3 != 0.0) {
-    fVar1 = GetLeanFraction(param_3);
-    local_10 = 0.0;
-    local_c = param_2;
-    local_8 = fVar1 * param_4;
-    AngleVectors(&local_10,(float *)0x0,&local_1c,(float *)0x0);
-    fVar1 = fVar1 * param_5;
-    *param_1 = fVar1 * local_1c + *param_1;
-    param_1[1] = fVar1 * local_18 + param_1[1];
-    param_1[2] = fVar1 * local_14 + param_1[2];
+  if (fLeanFrac != 0.0) {
+    fVar1 = GetLeanFraction(fLeanFrac);
+    vAng = 0.0;
+    local_c = fViewYaw;
+    local_8 = fVar1 * fViewRoll;
+    AngleVectors(&vAng,(float *)0x0,&vRight,(float *)0x0);
+    fVar1 = fVar1 * fLeanDist;
+    *position = fVar1 * vRight + *position;
+    position[1] = fVar1 * local_18 + position[1];
+    position[2] = fVar1 * local_14 + position[2];
   }
   return;
 }
@@ -2247,13 +2293,13 @@ AddLeanToPosition(float *param_1,float param_2,float param_3,float param_4,float
 
 // 007D4770  OrientationPosToWorldPos  (universal/q_shared.cpp:1992)
 
-void __cdecl OrientationPosToWorldPos(orientation_t *param_1,float *param_2,float *param_3)
+void __cdecl OrientationPosToWorldPos(orientation_t *orient,float *pos,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == param_3) {
+  if (pos == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x7c9,0,
                              "%s");
     if (!bVar2) {
@@ -2262,25 +2308,25 @@ void __cdecl OrientationPosToWorldPos(orientation_t *param_1,float *param_2,floa
       return;
     }
   }
-  *param_3 = *param_2 * param_1->axis[0][0] + param_1->origin[0] + param_2[1] * param_1->axis[1][0]
-             + param_2[2] * param_1->axis[2][0];
-  param_3[1] = *param_2 * param_1->axis[0][1] + param_1->origin[1] +
-               param_2[1] * param_1->axis[1][1] + param_2[2] * param_1->axis[2][1];
-  param_3[2] = *param_2 * param_1->axis[0][2] + param_1->origin[2] +
-               param_2[1] * param_1->axis[1][2] + param_2[2] * param_1->axis[2][2];
+  *out = *pos * orient->axis[0][0] + orient->origin[0] + pos[1] * orient->axis[1][0] +
+         pos[2] * orient->axis[2][0];
+  out[1] = *pos * orient->axis[0][1] + orient->origin[1] + pos[1] * orient->axis[1][1] +
+           pos[2] * orient->axis[2][1];
+  out[2] = *pos * orient->axis[0][2] + orient->origin[2] + pos[1] * orient->axis[1][2] +
+           pos[2] * orient->axis[2][2];
   return;
 }
 
 
 // 007D4880  OrientationDirToWorldDir  (universal/q_shared.cpp:2001)
 
-void __cdecl OrientationDirToWorldDir(orientation_t *param_1,float *param_2,float *param_3)
+void __cdecl OrientationDirToWorldDir(orientation_t *orient,float *dir,float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == param_3) {
+  if (dir == out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x7d2,0,
                              "%s");
     if (!bVar2) {
@@ -2289,12 +2335,9 @@ void __cdecl OrientationDirToWorldDir(orientation_t *param_1,float *param_2,floa
       return;
     }
   }
-  *param_3 = *param_2 * param_1->axis[0][0] + param_2[1] * param_1->axis[1][0] +
-             param_2[2] * param_1->axis[2][0];
-  param_3[1] = *param_2 * param_1->axis[0][1] + param_2[1] * param_1->axis[1][1] +
-               param_2[2] * param_1->axis[2][1];
-  param_3[2] = *param_2 * param_1->axis[0][2] + param_2[1] * param_1->axis[1][2] +
-               param_2[2] * param_1->axis[2][2];
+  *out = *dir * orient->axis[0][0] + dir[1] * orient->axis[1][0] + dir[2] * orient->axis[2][0];
+  out[1] = *dir * orient->axis[0][1] + dir[1] * orient->axis[1][1] + dir[2] * orient->axis[2][1];
+  out[2] = *dir * orient->axis[0][2] + dir[1] * orient->axis[1][2] + dir[2] * orient->axis[2][2];
   return;
 }
 
@@ -2302,13 +2345,13 @@ void __cdecl OrientationDirToWorldDir(orientation_t *param_1,float *param_2,floa
 // 007D4970  OrientationConcatenate  (universal/q_shared.cpp:2071)
 
 void __cdecl
-OrientationConcatenate(orientation_t *param_1,orientation_t *param_2,orientation_t *param_3)
+OrientationConcatenate(orientation_t *orFirst,orientation_t *orSecond,orientation_t *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_3 == param_1) {
+  if (out == orFirst) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x818,0,
                              "%s");
     if (!bVar2) {
@@ -2317,7 +2360,7 @@ OrientationConcatenate(orientation_t *param_1,orientation_t *param_2,orientation
       return;
     }
   }
-  if (param_3 == param_2) {
+  if (out == orSecond) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\q_shared.cpp",0x819,0,
                              "%s");
     if (!bVar2) {
@@ -2326,55 +2369,52 @@ OrientationConcatenate(orientation_t *param_1,orientation_t *param_2,orientation
       return;
     }
   }
-  OrientationDirToWorldDir(param_2,param_1->axis[0],param_3->axis[0]);
-  OrientationDirToWorldDir(param_2,param_1->axis[1],param_3->axis[1]);
-  OrientationDirToWorldDir(param_2,param_1->axis[2],param_3->axis[2]);
-  OrientationPosToWorldPos(param_2,param_1->origin,param_3->origin);
+  OrientationDirToWorldDir(orSecond,orFirst->axis[0],out->axis[0]);
+  OrientationDirToWorldDir(orSecond,orFirst->axis[1],out->axis[1]);
+  OrientationDirToWorldDir(orSecond,orFirst->axis[2],out->axis[2]);
+  OrientationPosToWorldPos(orSecond,orFirst->origin,out->origin);
   return;
 }
 
 
 // 007D4A40  OrientationInvert  (universal/q_shared.cpp:2083)
 
-void __cdecl OrientationInvert(orientation_t *param_1,orientation_t *param_2)
+void __cdecl OrientationInvert(orientation_t *orient,orientation_t *out)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   
-  param_2->axis[0][0] = param_1->axis[0][0];
-  param_2->axis[0][1] = param_1->axis[1][0];
-  param_2->axis[0][2] = param_1->axis[2][0];
-  param_2->axis[1][0] = param_1->axis[0][1];
-  param_2->axis[1][1] = param_1->axis[1][1];
-  param_2->axis[1][2] = param_1->axis[2][1];
-  param_2->axis[2][0] = param_1->axis[0][2];
-  param_2->axis[2][1] = param_1->axis[1][2];
-  param_2->axis[2][2] = param_1->axis[2][2];
-  fVar1 = 0.0 - param_1->origin[0];
-  fVar2 = 0.0 - param_1->origin[1];
-  fVar3 = 0.0 - param_1->origin[2];
-  param_2->origin[0] =
-       fVar1 * param_2->axis[0][0] + fVar2 * param_2->axis[1][0] + fVar3 * param_2->axis[2][0];
-  param_2->origin[1] =
-       fVar1 * param_2->axis[0][1] + fVar2 * param_2->axis[1][1] + fVar3 * param_2->axis[2][1];
-  param_2->origin[2] =
-       fVar1 * param_2->axis[0][2] + fVar2 * param_2->axis[1][2] + fVar3 * param_2->axis[2][2];
+  out->axis[0][0] = orient->axis[0][0];
+  out->axis[0][1] = orient->axis[1][0];
+  out->axis[0][2] = orient->axis[2][0];
+  out->axis[1][0] = orient->axis[0][1];
+  out->axis[1][1] = orient->axis[1][1];
+  out->axis[1][2] = orient->axis[2][1];
+  out->axis[2][0] = orient->axis[0][2];
+  out->axis[2][1] = orient->axis[1][2];
+  out->axis[2][2] = orient->axis[2][2];
+  fVar1 = 0.0 - orient->origin[0];
+  fVar2 = 0.0 - orient->origin[1];
+  fVar3 = 0.0 - orient->origin[2];
+  out->origin[0] = fVar1 * out->axis[0][0] + fVar2 * out->axis[1][0] + fVar3 * out->axis[2][0];
+  out->origin[1] = fVar1 * out->axis[0][1] + fVar2 * out->axis[1][1] + fVar3 * out->axis[2][1];
+  out->origin[2] = fVar1 * out->axis[0][2] + fVar2 * out->axis[1][2] + fVar3 * out->axis[2][2];
   return;
 }
 
 
 // 007D4BA0  Com_IsLegacyXModelName  (universal/q_shared.cpp:2164)
 
-int __cdecl Com_IsLegacyXModelName(char *param_1)
+int __cdecl Com_IsLegacyXModelName(char *name)
 
 {
   int iVar1;
   int local_8;
   
-  iVar1 = I_strnicmp(param_1,"xmodel",6);
-  if ((iVar1 == 0) && ((param_1[6] == '/' || (param_1[6] == '\\')))) {
+  iVar1 = I_strnicmp(name,"xmodel",6);
+  if ((iVar1 == 0) && ((name[6] == '/' || (name[6] == '\\')))) {
     local_8 = 1;
   }
   else {
@@ -2386,21 +2426,22 @@ int __cdecl Com_IsLegacyXModelName(char *param_1)
 
 // 007D4BF0  CMD_GetAnalogButtonValue  (universal/q_shared.cpp:2171)
 
-float __cdecl CMD_GetAnalogButtonValue(usercmd_s *param_1,int param_2)
+float __cdecl CMD_GetAnalogButtonValue(usercmd_s *cmd,int whichBit)
 
 {
   float fVar1;
   bool bVar2;
-  int local_14;
-  uint local_10;
-  int local_8;
+  int i;
+  int val;
+  int maxVal;
+  int numBits;
   
-  local_8 = 1;
-  if (param_2 == 0x13) {
-    local_8 = 3;
+  numBits = 1;
+  if (whichBit == 0x13) {
+    numBits = 3;
   }
-  if (local_8 == 1) {
-    bVar2 = bitarray<51>::testBit(&param_1->button_bits,param_2);
+  if (numBits == 1) {
+    bVar2 = bitarray<51>::testBit(&cmd->button_bits,whichBit);
     if (bVar2) {
       fVar1 = 1.0;
     }
@@ -2409,14 +2450,14 @@ float __cdecl CMD_GetAnalogButtonValue(usercmd_s *param_1,int param_2)
     }
   }
   else {
-    local_10 = 0;
-    for (local_14 = 0; local_14 < local_8; local_14 = local_14 + 1) {
-      bVar2 = bitarray<51>::testBit(&param_1->button_bits,param_2 + local_14);
+    val = 0;
+    for (i = 0; i < numBits; i = i + 1) {
+      bVar2 = bitarray<51>::testBit(&cmd->button_bits,whichBit + i);
       if (bVar2) {
-        local_10 = 1 << ((byte)local_14 & 0x1f) | local_10;
+        val = 1 << ((byte)i & 0x1f) | val;
       }
     }
-    fVar1 = (float)(int)local_10 / (float)((1 << (sbyte)local_8) + -1);
+    fVar1 = (float)val / (float)((1 << (sbyte)numBits) + -1);
   }
   return fVar1;
 }

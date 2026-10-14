@@ -3,8 +3,9 @@
 // 008636B0  R_DepthPrepass  (gfx_d3d/rb_depthprepass.cpp:281)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
+/* WARNING: Variable defined which should be unmapped: cmdBuf */
 
-void __cdecl R_DepthPrepass(uchar param_1,GfxViewInfo *param_2,GfxCmdBuf *param_3)
+void __cdecl R_DepthPrepass(uchar renderTargetId,GfxViewInfo *param_2,GfxCmdBuf *param_3)
 
 {
   void *in_ECX;
@@ -13,6 +14,7 @@ void __cdecl R_DepthPrepass(uchar param_1,GfxViewInfo *param_2,GfxCmdBuf *param_
   GfxViewParms *in_stack_ffffe558;
   GfxCmdBuf *in_stack_ffffe55c;
   GfxCmdBuf *in_stack_ffffe560;
+  GfxCmdBuf *cmdBuf;
   
   if ((r_reflectionProbeGenerate->current).enabled == false) {
     R_InitCmdBufSourceState

@@ -2,25 +2,31 @@
 
 // 008BE020  node1_  (clientscript/cscr_parsetree.cpp:60)
 
-sval_u __cdecl node1_(scriptInstance_t param_1,int param_2)
+sval_u __cdecl node1_(scriptInstance_t inst,int val1)
 
 {
-  return (sval_u)param_2;
+  sval_u result;
+  
+  return (sval_u)val1;
 }
 
 
 // 0058CB50  node_pos  (clientscript/cscr_parsetree.cpp:69)
 
-sval_u __cdecl node_pos(uint param_1)
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
+sval_u __cdecl node_pos(uint pool)
 
 {
-  return (sval_u)param_1;
+  XAssetHeader header;
+  
+  return (sval_u)pool;
 }
 
 
 // 008BE040  Scr_InitAllocNode  (clientscript/cscr_parsetree.cpp:78)
 
-void __cdecl Scr_InitAllocNode(scriptInstance_t param_1)
+void __cdecl Scr_InitAllocNode(scriptInstance_t inst)
 
 {
   code *pcVar1;
@@ -28,7 +34,7 @@ void __cdecl Scr_InitAllocNode(scriptInstance_t param_1)
   HunkUser *pHVar3;
   undefined3 in_stack_00000005;
   
-  if (g_allocNodeUser[_param_1] != (HunkUser *)0x0) {
+  if (g_allocNodeUser[_inst] != (HunkUser *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_parsetree.cpp",
                              0x4f,0,"%s");
     if (!bVar2) {
@@ -38,21 +44,21 @@ void __cdecl Scr_InitAllocNode(scriptInstance_t param_1)
     }
   }
   pHVar3 = Hunk_UserCreate(0x10000,HU_SCHEME_DEFAULT,0,(void *)0x0,"Scr_InitAllocNode",7);
-  g_allocNodeUser[_param_1] = pHVar3;
+  g_allocNodeUser[_inst] = pHVar3;
   return;
 }
 
 
 // 008BE0A0  Scr_ShutdownAllocNode  (clientscript/cscr_parsetree.cpp:85)
 
-void __cdecl Scr_ShutdownAllocNode(scriptInstance_t param_1)
+void __cdecl Scr_ShutdownAllocNode(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  if (g_allocNodeUser[_param_1] != (HunkUser *)0x0) {
-    Hunk_UserDestroy(g_allocNodeUser[_param_1]);
-    g_allocNodeUser[_param_1] = (HunkUser *)0x0;
+  if (g_allocNodeUser[_inst] != (HunkUser *)0x0) {
+    Hunk_UserDestroy(g_allocNodeUser[_inst]);
+    g_allocNodeUser[_inst] = (HunkUser *)0x0;
   }
   return;
 }
@@ -60,7 +66,7 @@ void __cdecl Scr_ShutdownAllocNode(scriptInstance_t param_1)
 
 // 008BE110  Scr_AllocNode  (clientscript/cscr_parsetree.cpp:94)
 
-sval_u * __cdecl Scr_AllocNode(scriptInstance_t param_1,int param_2)
+sval_u * __cdecl Scr_AllocNode(scriptInstance_t inst,int size)
 
 {
   code *pcVar1;
@@ -68,7 +74,7 @@ sval_u * __cdecl Scr_AllocNode(scriptInstance_t param_1,int param_2)
   sval_u *psVar3;
   undefined3 in_stack_00000005;
   
-  if (g_allocNodeUser[_param_1] == (HunkUser *)0x0) {
+  if (g_allocNodeUser[_inst] == (HunkUser *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_parsetree.cpp",
                              0x5f,0,"%s");
     if (!bVar2) {
@@ -77,80 +83,84 @@ sval_u * __cdecl Scr_AllocNode(scriptInstance_t param_1,int param_2)
       return psVar3;
     }
   }
-  psVar3 = Hunk_UserAlloc(g_allocNodeUser[_param_1],param_2 << 2,4,(char *)0x0);
+  psVar3 = Hunk_UserAlloc(g_allocNodeUser[_inst],size << 2,4,(char *)0x0);
   return psVar3;
 }
 
 
 // 008BE0E0  node0  (clientscript/cscr_parsetree.cpp:101)
 
-sval_u __cdecl node0(scriptInstance_t param_1,uchar param_2)
+sval_u __cdecl node0(scriptInstance_t inst,uchar type)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,1);
-  psVar1->type = param_2;
+  psVar1 = Scr_AllocNode(inst,1);
+  psVar1->type = type;
   return (sval_u)psVar1.stringValue;
 }
 
 
 // 008BE170  node1  (clientscript/cscr_parsetree.cpp:111)
 
-sval_u __cdecl node1(scriptInstance_t param_1,uchar param_2,sval_u param_3)
+sval_u __cdecl node1(scriptInstance_t inst,uchar type,sval_u val1)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,2);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
+  psVar1 = Scr_AllocNode(inst,2);
+  psVar1->type = type;
+  psVar1[1] = val1;
   return (sval_u)psVar1.stringValue;
 }
 
 
 // 008BE1A0  node2  (clientscript/cscr_parsetree.cpp:122)
 
-sval_u __cdecl node2(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4)
+sval_u __cdecl node2(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,3);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
+  psVar1 = Scr_AllocNode(inst,3);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
   return (sval_u)psVar1.stringValue;
 }
 
 
 // 008BE1E0  node2_  (clientscript/cscr_parsetree.cpp:134)
 
-sval_u __cdecl node2_(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+sval_u __cdecl node2_(scriptInstance_t inst,sval_u val1,sval_u val2)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,2);
-  *psVar1 = param_2;
-  psVar1[1] = param_3;
+  psVar1 = Scr_AllocNode(inst,2);
+  *psVar1 = val1;
+  psVar1[1] = val2;
   return (sval_u)psVar1.stringValue;
 }
 
 
 // 008BE210  node3  (clientscript/cscr_parsetree.cpp:145)
 
-sval_u __cdecl
-node3(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5)
+sval_u __cdecl node3(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,4);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
-  psVar1[3] = param_5;
+  psVar1 = Scr_AllocNode(inst,4);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
+  psVar1[3] = val3;
   return (sval_u)((scr_block_s *)psVar1).stringValue;
 }
 
@@ -158,18 +168,18 @@ node3(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_
 // 008BE250  node4  (clientscript/cscr_parsetree.cpp:170)
 
 sval_u __cdecl
-node4(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-     sval_u param_6)
+node4(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3,sval_u val4)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,5);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
-  psVar1[3] = param_5;
-  psVar1[4] = param_6;
+  psVar1 = Scr_AllocNode(inst,5);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
+  psVar1[3] = val3;
+  psVar1[4] = val4;
   return (sval_u)((scr_block_s *)psVar1).stringValue;
 }
 
@@ -177,19 +187,19 @@ node4(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_
 // 008BE2A0  node5  (clientscript/cscr_parsetree.cpp:197)
 
 sval_u __cdecl
-node5(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-     sval_u param_6,sval_u param_7)
+node5(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3,sval_u val4,sval_u val5)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,6);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
-  psVar1[3] = param_5;
-  psVar1[4] = param_6;
-  psVar1[5] = param_7;
+  psVar1 = Scr_AllocNode(inst,6);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
+  psVar1[3] = val3;
+  psVar1[4] = val4;
+  psVar1[5] = val5;
   return (sval_u)((scr_block_s *)psVar1).stringValue;
 }
 
@@ -197,20 +207,21 @@ node5(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_
 // 008BE300  node6  (clientscript/cscr_parsetree.cpp:212)
 
 sval_u __cdecl
-node6(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-     sval_u param_6,sval_u param_7,sval_u param_8)
+node6(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3,sval_u val4,sval_u val5,
+     sval_u val6)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,7);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
-  psVar1[3] = param_5;
-  psVar1[4] = param_6;
-  psVar1[5] = param_7;
-  psVar1[6] = param_8;
+  psVar1 = Scr_AllocNode(inst,7);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
+  psVar1[3] = val3;
+  psVar1[4] = val4;
+  psVar1[5] = val5;
+  psVar1[6] = val6;
   return (sval_u)((scr_block_s *)psVar1).stringValue;
 }
 
@@ -218,21 +229,22 @@ node6(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_
 // 008BE360  node7  (clientscript/cscr_parsetree.cpp:228)
 
 sval_u __cdecl
-node7(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-     sval_u param_6,sval_u param_7,sval_u param_8,sval_u param_9)
+node7(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3,sval_u val4,sval_u val5,
+     sval_u val6,sval_u val7)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,8);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
-  psVar1[3] = param_5;
-  psVar1[4] = param_6;
-  psVar1[5] = param_7;
-  psVar1[6] = param_8;
-  psVar1[7] = param_9;
+  psVar1 = Scr_AllocNode(inst,8);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
+  psVar1[3] = val3;
+  psVar1[4] = val4;
+  psVar1[5] = val5;
+  psVar1[6] = val6;
+  psVar1[7] = val7;
   return (sval_u)((scr_block_s *)psVar1).stringValue;
 }
 
@@ -240,38 +252,41 @@ node7(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_
 // 008BE3D0  node8  (clientscript/cscr_parsetree.cpp:245)
 
 sval_u __cdecl
-node8(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-     sval_u param_6,sval_u param_7,sval_u param_8,sval_u param_9,sval_u param_10)
+node8(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3,sval_u val4,sval_u val5,
+     sval_u val6,sval_u val7,sval_u val8)
 
 {
   sval_u *psVar1;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,9);
-  psVar1->type = param_2;
-  psVar1[1] = param_3;
-  psVar1[2] = param_4;
-  psVar1[3] = param_5;
-  psVar1[4] = param_6;
-  psVar1[5] = param_7;
-  psVar1[6] = param_8;
-  psVar1[7] = param_9;
-  psVar1[8] = param_10;
+  psVar1 = Scr_AllocNode(inst,9);
+  psVar1->type = type;
+  psVar1[1] = val1;
+  psVar1[2] = val2;
+  psVar1[3] = val3;
+  psVar1[4] = val4;
+  psVar1[5] = val5;
+  psVar1[6] = val6;
+  psVar1[7] = val7;
+  psVar1[8] = val8;
   return (sval_u)((scr_block_s *)psVar1).stringValue;
 }
 
 
 // 008BE440  linked_list_end  (clientscript/cscr_parsetree.cpp:263)
 
-sval_u __cdecl linked_list_end(scriptInstance_t param_1,sval_u param_2)
+sval_u __cdecl linked_list_end(scriptInstance_t inst,sval_u val)
 
 {
   sval_u *psVar1;
   sval_u *psVar2;
+  sval_u *node;
+  sval_u result;
   
-  psVar1 = Scr_AllocNode(param_1,2);
-  *psVar1 = param_2;
+  psVar1 = Scr_AllocNode(inst,2);
+  *psVar1 = val;
   psVar1[1].stringValue = 0;
-  psVar2 = Scr_AllocNode(param_1,2);
+  psVar2 = Scr_AllocNode(inst,2);
   psVar2->node = psVar1;
   psVar2[1].node = psVar1;
   return (sval_u)psVar2.stringValue;
@@ -280,42 +295,46 @@ sval_u __cdecl linked_list_end(scriptInstance_t param_1,sval_u param_2)
 
 // 008BE4A0  prepend_node  (clientscript/cscr_parsetree.cpp:278)
 
-sval_u __cdecl prepend_node(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+sval_u __cdecl prepend_node(scriptInstance_t inst,sval_u val1,sval_u val2)
 
 {
   sval_u *psVar1;
+  sval_u *node;
   
-  psVar1 = Scr_AllocNode(param_1,2);
-  *psVar1 = param_2;
-  psVar1[1] = *param_3.node;
-  *(sval_u **)param_3.codePosValue = psVar1;
-  return (sval_u)param_3.stringValue;
+  psVar1 = Scr_AllocNode(inst,2);
+  *psVar1 = val1;
+  psVar1[1] = *val2.node;
+  *(sval_u **)val2.codePosValue = psVar1;
+  return (sval_u)val2.stringValue;
 }
 
 
 // 008BE4E0  append_node  (clientscript/cscr_parsetree.cpp:290)
 
-sval_u __cdecl append_node(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+sval_u __cdecl append_node(scriptInstance_t inst,sval_u val1,sval_u val2)
 
 {
   sval_u *psVar1;
+  sval_u *node;
   
-  psVar1 = Scr_AllocNode(param_1,2);
-  *psVar1 = param_3;
+  psVar1 = Scr_AllocNode(inst,2);
+  *psVar1 = val2;
   psVar1[1].stringValue = 0;
-  *(sval_u **)((param_2.block)->localVarsCreateCount + 4) = psVar1;
-  (param_2.block)->localVarsCreateCount = (int)psVar1;
-  return (sval_u)param_2.stringValue;
+  *(sval_u **)((val1.block)->localVarsCreateCount + 4) = psVar1;
+  (val1.block)->localVarsCreateCount = (int)psVar1;
+  return (sval_u)val1.stringValue;
 }
 
 
 // 008BE530  Scr_ClearDebugExpr  (clientscript/cscr_parsetree.cpp:352)
 
-void __cdecl Scr_ClearDebugExpr(scriptInstance_t param_1,debugger_sval_s *param_2)
+void __cdecl Scr_ClearDebugExpr(scriptInstance_t inst,debugger_sval_s *debugExprHead)
 
 {
-  for (; param_2 != (debugger_sval_s *)0x0; param_2 = param_2->next) {
-    Scr_ClearDebugExprValue(param_1,(sval_u *)(param_2 + 1));
+  sval_u val;
+  
+  for (; debugExprHead != (debugger_sval_s *)0x0; debugExprHead = debugExprHead->next) {
+    Scr_ClearDebugExprValue(inst,(sval_u *)(debugExprHead + 1));
   }
   return;
 }
@@ -323,35 +342,39 @@ void __cdecl Scr_ClearDebugExpr(scriptInstance_t param_1,debugger_sval_s *param_
 
 // 008BE570  Scr_AllocDebugExpr  (clientscript/cscr_parsetree.cpp:371)
 
-sval_u __cdecl Scr_AllocDebugExpr(scriptInstance_t param_1,uchar param_2,int param_3,char *param_4)
+sval_u __cdecl Scr_AllocDebugExpr(scriptInstance_t inst,uchar type,int size,char *name)
 
 {
   debugger_sval_s *pdVar1;
+  debugger_sval_s *debugExprHead;
+  sval_u result;
   
-  pdVar1 = Z_Malloc(param_3 + 4,param_4,0);
+  pdVar1 = Z_Malloc(size + 4,name,0);
   pdVar1->next = g_debugExprHead;
   g_debugExprHead = pdVar1;
-  *(uchar *)&pdVar1[1].next = param_2;
+  *(uchar *)&pdVar1[1].next = type;
   return (sval_u)(char *)(pdVar1 + 1);
 }
 
 
 // 008BE5C0  Scr_FreeDebugExpr  (clientscript/cscr_parsetree.cpp:401)
 
-void __cdecl Scr_FreeDebugExpr(scriptInstance_t param_1,ScriptExpression_t *param_2)
+void __cdecl Scr_FreeDebugExpr(scriptInstance_t inst,ScriptExpression_t *expr)
 
 {
   debugger_sval_s *pdVar1;
   code *pcVar2;
   bool bVar3;
   undefined3 in_stack_00000005;
-  debugger_sval_s *local_10;
+  debugger_sval_s *debugExprHead;
+  sval_u val;
+  debugger_sval_s *nextDebugExprHead;
   
-  if (param_2->breakonExpr != 0) {
-    gScrVmDebugPub[_param_1].checkBreakon = gScrVmDebugPub[_param_1].checkBreakon + -1;
+  if (expr->breakonExpr != 0) {
+    gScrVmDebugPub[_inst].checkBreakon = gScrVmDebugPub[_inst].checkBreakon + -1;
   }
-  local_10 = param_2->exprHead;
-  if (local_10 == (debugger_sval_s *)0x0) {
+  debugExprHead = expr->exprHead;
+  if (debugExprHead == (debugger_sval_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_parsetree.cpp",
                              0x19a,0,"%s");
     if (!bVar3) {
@@ -360,11 +383,11 @@ void __cdecl Scr_FreeDebugExpr(scriptInstance_t param_1,ScriptExpression_t *para
       return;
     }
   }
-  while (local_10 != (debugger_sval_s *)0x0) {
-    Scr_FreeDebugExprValue(param_1,(sval_u *)(local_10 + 1));
-    pdVar1 = local_10->next;
-    Z_Free(local_10,0);
-    local_10 = pdVar1;
+  while (debugExprHead != (debugger_sval_s *)0x0) {
+    Scr_FreeDebugExprValue(inst,(sval_u *)(debugExprHead + 1));
+    pdVar1 = debugExprHead->next;
+    Z_Free(debugExprHead,0);
+    debugExprHead = pdVar1;
   }
   return;
 }
@@ -372,55 +395,57 @@ void __cdecl Scr_FreeDebugExpr(scriptInstance_t param_1,ScriptExpression_t *para
 
 // 008BE670  debugger_node0  (clientscript/cscr_parsetree.cpp:463)
 
-sval_u __cdecl debugger_node0(scriptInstance_t param_1,uchar param_2)
+sval_u __cdecl debugger_node0(scriptInstance_t inst,uchar type)
 
 {
   sval_u sVar1;
   
-  sVar1 = Scr_AllocDebugExpr(param_1,param_2,4,"debugger_node0");
+  sVar1 = Scr_AllocDebugExpr(inst,type,4,"debugger_node0");
   return (sval_u)sVar1.stringValue;
 }
 
 
 // 008BE6A0  debugger_node1  (clientscript/cscr_parsetree.cpp:475)
 
-sval_u __cdecl debugger_node1(scriptInstance_t param_1,uchar param_2,sval_u param_3)
+sval_u __cdecl debugger_node1(scriptInstance_t inst,uchar type,sval_u val1)
 
 {
   sval_u sVar1;
+  sval_u result;
   
-  sVar1 = Scr_AllocDebugExpr(param_1,param_2,8,"debugger_node1");
-  (sVar1.block)->localVarsCreateCount = (int)param_3;
+  sVar1 = Scr_AllocDebugExpr(inst,type,8,"debugger_node1");
+  (sVar1.block)->localVarsCreateCount = (int)val1;
   return (sval_u)sVar1.stringValue;
 }
 
 
 // 008BE6E0  debugger_node2  (clientscript/cscr_parsetree.cpp:491)
 
-sval_u __cdecl debugger_node2(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4)
+sval_u __cdecl debugger_node2(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2)
 
 {
   sval_u sVar1;
+  sval_u result;
   
-  sVar1 = Scr_AllocDebugExpr(param_1,param_2,0xc,"debugger_node2");
-  (sVar1.block)->localVarsCreateCount = (int)param_3;
-  (sVar1.block)->localVarsPublicCount = (int)param_4;
+  sVar1 = Scr_AllocDebugExpr(inst,type,0xc,"debugger_node2");
+  (sVar1.block)->localVarsCreateCount = (int)val1;
+  (sVar1.block)->localVarsPublicCount = (int)val2;
   return (sval_u)sVar1.stringValue;
 }
 
 
 // 008BE720  debugger_node3  (clientscript/cscr_parsetree.cpp:508)
 
-sval_u __cdecl
-debugger_node3(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5)
+sval_u __cdecl debugger_node3(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3)
 
 {
   sval_u sVar1;
+  sval_u result;
   
-  sVar1 = Scr_AllocDebugExpr(param_1,param_2,0x10,"debugger_node3");
-  (sVar1.block)->localVarsCreateCount = (int)param_3;
-  (sVar1.block)->localVarsPublicCount = (int)param_4;
-  (sVar1.block)->localVarsCount = (int)param_5;
+  sVar1 = Scr_AllocDebugExpr(inst,type,0x10,"debugger_node3");
+  (sVar1.block)->localVarsCreateCount = (int)val1;
+  (sVar1.block)->localVarsPublicCount = (int)val2;
+  (sVar1.block)->localVarsCount = (int)val3;
   return (sval_u)sVar1.stringValue;
 }
 
@@ -428,46 +453,50 @@ debugger_node3(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u para
 // 008BE770  debugger_node4  (clientscript/cscr_parsetree.cpp:526)
 
 sval_u __cdecl
-debugger_node4(scriptInstance_t param_1,uchar param_2,sval_u param_3,sval_u param_4,sval_u param_5,
-              sval_u param_6)
+debugger_node4(scriptInstance_t inst,uchar type,sval_u val1,sval_u val2,sval_u val3,sval_u val4)
 
 {
   sval_u sVar1;
+  sval_u result;
   
-  sVar1 = Scr_AllocDebugExpr(param_1,param_2,0x14,"debugger_node4");
-  (sVar1.block)->localVarsCreateCount = (int)param_3;
-  (sVar1.block)->localVarsPublicCount = (int)param_4;
-  (sVar1.block)->localVarsCount = (int)param_5;
-  *(sval_u *)(sVar1.block)->localVarsInitBits = param_6;
+  sVar1 = Scr_AllocDebugExpr(inst,type,0x14,"debugger_node4");
+  (sVar1.block)->localVarsCreateCount = (int)val1;
+  (sVar1.block)->localVarsPublicCount = (int)val2;
+  (sVar1.block)->localVarsCount = (int)val3;
+  *(sval_u *)(sVar1.block)->localVarsInitBits = val4;
   return (sval_u)sVar1.stringValue;
 }
 
 
 // 008BE7D0  debugger_prepend_node  (clientscript/cscr_parsetree.cpp:586)
 
-sval_u __cdecl debugger_prepend_node(scriptInstance_t param_1,sval_u param_2,sval_u param_3)
+sval_u __cdecl debugger_prepend_node(scriptInstance_t inst,sval_u val1,sval_u val2)
 
 {
   sval_u sVar1;
+  sval_u *node;
+  sval_u val;
+  sval_u val2node;
   
-  sVar1 = debugger_node2(param_1,'\0',param_2,*param_3.node);
-  (param_3.block)->abortLevel = (int)&(sVar1.block)->localVarsCreateCount;
-  return (sval_u)param_3.stringValue;
+  sVar1 = debugger_node2(inst,'\0',val1,*val2.node);
+  (val2.block)->abortLevel = (int)&(sVar1.block)->localVarsCreateCount;
+  return (sval_u)val2.stringValue;
 }
 
 
 // 008BE820  debugger_buffer  (clientscript/cscr_parsetree.cpp:607)
 
-sval_u __cdecl
-debugger_buffer(scriptInstance_t param_1,uchar param_2,char *param_3,int param_4,int param_5)
+sval_u __cdecl debugger_buffer(scriptInstance_t inst,uchar type,char *buf,int size,int alignment)
 
 {
   code *pcVar1;
   bool bVar2;
   sval_u sVar3;
-  uchar *puVar4;
+  uchar *dst;
+  sval_u result;
+  char *bufCopy;
   
-  if ((param_5 - 1U & param_5) != 0) {
+  if ((alignment - 1U & alignment) != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_parsetree.cpp",
                              0x263,0,"%s");
     if (!bVar2) {
@@ -476,29 +505,29 @@ debugger_buffer(scriptInstance_t param_1,uchar param_2,char *param_3,int param_4
       return (sval_u)sVar3.stringValue;
     }
   }
-  sVar3 = Scr_AllocDebugExpr(param_1,param_2,param_4 + 8 + (param_5 - 1U),"debugger_buffer");
-  puVar4 = (uchar *)(sVar3.stringValue + param_5 + 7 & ~(param_5 - 1U));
-  memcpy(puVar4,(uchar *)param_3,param_4);
-  (sVar3.block)->localVarsCreateCount = (int)puVar4;
+  sVar3 = Scr_AllocDebugExpr(inst,type,size + 8 + (alignment - 1U),"debugger_buffer");
+  dst = (uchar *)(sVar3.stringValue + alignment + 7 & ~(alignment - 1U));
+  memcpy(dst,(uchar *)buf,size);
+  (sVar3.block)->localVarsCreateCount = (int)dst;
   return (sval_u)sVar3.stringValue;
 }
 
 
 // 008BE8D0  debugger_string  (clientscript/cscr_parsetree.cpp:628)
 
-sval_u __cdecl debugger_string(scriptInstance_t param_1,uchar param_2,char *param_3)
+sval_u __cdecl debugger_string(scriptInstance_t inst,uchar type,char *s)
 
 {
   char cVar1;
   sval_u sVar2;
   char *local_c;
   
-  local_c = param_3;
+  local_c = s;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  sVar2 = debugger_buffer(param_1,param_2,param_3,local_c + (1 - (int)(param_3 + 1)),1);
+  sVar2 = debugger_buffer(inst,type,s,local_c + (1 - (int)(s + 1)),1);
   return (sval_u)sVar2.stringValue;
 }
 

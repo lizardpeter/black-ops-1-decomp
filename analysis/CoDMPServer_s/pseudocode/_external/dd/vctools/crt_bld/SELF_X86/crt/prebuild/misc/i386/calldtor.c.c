@@ -2,14 +2,14 @@
 
 // 00990F11  CallDestructExceptionObject  (line unknown)
 
-void __cdecl CallDestructExceptionObject(_EXCEPTION_RECORD *param_1,int param_2)
+void __cdecl CallDestructExceptionObject(_EXCEPTION_RECORD *pExcept,int fThrowNotAllowed)
 
 {
   int iVar1;
   
-  if ((param_1->ExceptionCode == -0x1f928c9d) &&
+  if ((pExcept->ExceptionCode == -0x1f928c9d) &&
      (iVar1 = _IsNonwritableInCurrentImage((uchar *)&_pDestructExceptionObject), iVar1 != 0)) {
-    __DestructExceptionObject((EHExceptionRecord *)param_1,(uchar)param_2);
+    __DestructExceptionObject((EHExceptionRecord *)pExcept,(uchar)fThrowNotAllowed);
   }
   return;
 }

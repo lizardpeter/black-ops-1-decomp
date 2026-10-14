@@ -20,22 +20,21 @@ void __cdecl DynEntPieces_RegisterDvars(void)
 
 // 005BCB80  DynEntPieces_AddDrawSurfs  (DynEntity/DynEntity_pieces.cpp:48)
 
-void __cdecl DynEntPieces_AddDrawSurfs(int param_1)
+void __cdecl DynEntPieces_AddDrawSurfs(int localClientNum)
 
 {
-  GfxScaledPlacement local_28;
-  int local_8;
+  GfxScaledPlacement placement;
+  int i;
   
-  for (local_8 = 0; local_8 < numPieces; local_8 = local_8 + 1) {
-    if (g_breakablePieces[local_8].active != false) {
+  for (i = 0; i < numPieces; i = i + 1) {
+    if (g_breakablePieces[i].active != false) {
       Sys_EnterCriticalSection(CRITSECT_PHYSICS);
       Phys_ObjGetInterpolatedState
-                (g_breakablePieces[local_8].physObjId,local_28.base.origin,(float *)&local_28);
-      local_28.scale = 1.0;
+                (g_breakablePieces[i].physObjId,placement.base.origin,(float *)&placement);
+      placement.scale = 1.0;
       Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
       R_FilterXModelIntoScene
-                (g_breakablePieces[local_8].model,&local_28,0,
-                 &g_breakablePieces[local_8].lightingHandle,0.0);
+                (g_breakablePieces[i].model,&placement,0,&g_breakablePieces[i].lightingHandle,0.0);
     }
   }
   return;
@@ -46,71 +45,76 @@ void __cdecl DynEntPieces_AddDrawSurfs(int param_1)
 
 int __cdecl
 DynEntPieces_SpawnPhysObj
-          (char *param_1,int param_2,float *param_3,float *param_4,float *param_5,float *param_6,
-          float *param_7,float *param_8,PhysPreset *param_9)
+          (char *modelName,int stype,float *mins,float *maxs,float *position,float *quat,
+          float *velocity,float *angularVelocity,PhysPreset *physPreset)
 
 {
-  int iVar1;
-  gjk_base_t *pgVar2;
-  gjk_geom_list_t local_c;
+  int id;
+  gjk_base_t *geom;
+  int physObjId;
+  gjk_geom_list_t gjk_geom_list;
   
   if (numPieces < 100) {
-    if (param_9 == (PhysPreset *)0x0) {
+    if (physPreset == (PhysPreset *)0x0) {
       Com_PrintWarning(1,"Failed to spawn pieces model \'%s\'.  It is missing physics preset.\n");
-      iVar1 = 0;
+      id = 0;
     }
     else {
-      local_c.m_first_geom = (gjk_base_t *)0x0;
-      local_c.m_geom_count = 0;
-      pgVar2 = create_aabb_gjk_geom
-                         (param_3,param_4,param_2,
-                          (gjk_collision_visitor *)&g_empty_collision_visitor);
-      gjk_geom_list_t::add_geom(&local_c,pgVar2);
-      iVar1 = Phys_ObjCreate(0,param_5,param_6,param_7,param_9,&local_c,true,-1);
-      if (iVar1 == 0) {
+      gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+      gjk_geom_list.m_geom_count = 0;
+      geom = create_aabb_gjk_geom
+                       (mins,maxs,stype,(gjk_collision_visitor *)&g_empty_collision_visitor);
+      gjk_geom_list_t::add_geom(&gjk_geom_list,geom);
+      id = Phys_ObjCreate(0,position,quat,velocity,physPreset,&gjk_geom_list,true,-1);
+      if (id == 0) {
         Com_PrintWarning(1,"Failed to create physics object for \'%s\'.\n");
-        iVar1 = 0;
+        id = 0;
       }
       else {
-        Phys_ObjSetAngularVelocity(iVar1,param_8);
+        Phys_ObjSetAngularVelocity(id,angularVelocity);
       }
     }
   }
   else {
     Com_PrintWarning(1,"Failed to spawn pieces model \'%s\'.  It is missing physics preset.\n");
-    iVar1 = 0;
+    id = 0;
   }
-  return iVar1;
+  return id;
 }
 
 
 // 005BCFC0  DynEntPieces_CalcForceDir  (DynEntity/DynEntity_pieces.cpp:103)
 
-void __cdecl DynEntPieces_CalcForceDir(float *param_1,float param_2,float *param_3)
+void __cdecl DynEntPieces_CalcForceDir(float *hitDir,float spreadFraction,float *forceDir)
 
 {
   int iVar1;
-  float local_10;
+  float outDir;
   float local_c;
   float local_8;
   
   iVar1 = rand();
-  local_10 = ((float)iVar1 / 32767.0) * 2.0 - 1.0;
+  outDir = ((float)iVar1 / 32767.0) * 2.0 - 1.0;
   iVar1 = rand();
   local_c = ((float)iVar1 / 32767.0) * 2.0 - 1.0;
   iVar1 = rand();
   local_8 = ((float)iVar1 / 32767.0) * 2.0 - 1.0;
-  Vec3Lerp(param_1,&local_10,param_2,param_3);
+  Vec3Lerp(hitDir,&outDir,spreadFraction,forceDir);
   return;
 }
 
 
 // 005BCC30  DynEntPieces_SpawnPhysicsModel  (DynEntity/DynEntity_pieces.cpp:114)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 bool __cdecl
 DynEntPieces_SpawnPhysicsModel
-          (int param_1,XModel *param_2,float *param_3,float *param_4,float (*param_5) [3],
-          float *param_6,float *param_7,PhysPreset *param_8)
+          (int localClientNum,XModel *model,float *offset,float *origin,float (*axis) [3],
+          float *hitPos,float *hitDir,PhysPreset *physPreset)
 
 {
   code *pcVar1;
@@ -118,28 +122,28 @@ DynEntPieces_SpawnPhysicsModel
   undefined1 uVar3;
   char *local_78;
   PhysPreset *local_74;
-  float local_68 [3];
-  float local_5c;
+  float forceDir [3];
+  float velocity;
   float local_58;
   float local_54;
-  float local_50;
+  float angularVelocity;
   float local_4c;
   float local_48;
-  int local_44;
-  float local_40;
+  int physObjId;
+  float mins;
   float local_3c;
   float local_38;
-  float local_34 [4];
-  int local_24;
-  float local_20;
+  float quat [4];
+  int stype;
+  float maxs;
   float local_1c;
   float local_18;
-  float local_14;
+  float worldOffset;
   float local_10;
   float local_c;
-  PhysPreset *local_8;
+  PhysPreset *preset;
   
-  if (param_2 == (XModel *)0x0) {
+  if (model == (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_pieces.cpp",
                              0x7b,0,"%s");
     if (!bVar2) {
@@ -148,52 +152,52 @@ DynEntPieces_SpawnPhysicsModel
       return (bool)uVar3;
     }
   }
-  XModelGetBounds(param_2,&local_40,&local_20);
-  if (((local_40 == local_20) || (local_3c == local_1c)) || (local_38 == local_18)) {
+  XModelGetBounds(model,&mins,&maxs);
+  if (((mins == maxs) || (local_3c == local_1c)) || (local_38 == local_18)) {
     Com_PrintWarning(1,"Failed to spawn pieces model \'%s\'.  No bounds.\n");
     bVar2 = false;
   }
   else {
-    MatrixTransformVector(param_3,param_5,&local_14);
-    local_14 = local_14 + *param_4;
-    local_10 = local_10 + param_4[1];
-    local_c = local_c + param_4[2];
-    AxisToQuat(param_5,local_34);
-    local_5c = (float)(dynEntPieces_velocity->current).integer;
+    MatrixTransformVector(offset,axis,&worldOffset);
+    worldOffset = worldOffset + *origin;
+    local_10 = local_10 + origin[1];
+    local_c = local_c + origin[2];
+    AxisToQuat(axis,quat);
+    velocity = (float)(dynEntPieces_velocity->current).integer;
     local_58 = (dynEntPieces_velocity->current).vector[1];
-    local_50 = (float)(dynEntPieces_angularVelocity->current).integer;
+    angularVelocity = (float)(dynEntPieces_angularVelocity->current).integer;
     local_4c = (dynEntPieces_angularVelocity->current).vector[1];
     local_48 = (dynEntPieces_angularVelocity->current).vector[2];
-    if (param_8 == (PhysPreset *)0x0) {
-      local_74 = param_2->physPreset;
+    if (physPreset == (PhysPreset *)0x0) {
+      local_74 = model->physPreset;
     }
     else {
-      local_74 = param_8;
+      local_74 = physPreset;
     }
-    local_8 = local_74;
+    preset = local_74;
     local_54 = (dynEntPieces_velocity->current).vector[2] + local_74->piecesUpwardVelocity;
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    if (param_2->collSurfs == (XModelCollSurf_s *)0x0) {
+    if (model->collSurfs == (XModelCollSurf_s *)0x0) {
       local_78 = "t";
     }
     else {
-      local_78 = (char *)param_2->collSurfs->surfFlags;
+      local_78 = (char *)model->collSurfs->surfFlags;
     }
-    local_24 = (int)((uint)local_78 & 0x3f00000) >> 0x14;
-    local_44 = DynEntPieces_SpawnPhysObj
-                         (param_2->name,local_24,&local_40,&local_20,&local_14,local_34,&local_5c,
-                          &local_50,param_2->physPreset);
+    stype = (int)((uint)local_78 & 0x3f00000) >> 0x14;
+    physObjId = DynEntPieces_SpawnPhysObj
+                          (model->name,stype,&mins,&maxs,&worldOffset,quat,&velocity,
+                           &angularVelocity,model->physPreset);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
-    if (local_44 == 0) {
+    if (physObjId == 0) {
       bVar2 = false;
     }
     else {
-      DynEntPieces_CalcForceDir(param_7,local_8->piecesSpreadFraction,local_68);
+      DynEntPieces_CalcForceDir(hitDir,preset->piecesSpreadFraction,forceDir);
       Phys_ObjBulletImpact
-                (local_44,param_6,local_68,(dynEntPieces_impactForce->current).value,
-                 local_8->bulletForceScale);
-      g_breakablePieces[numPieces].physObjId = local_44;
-      g_breakablePieces[numPieces].model = param_2;
+                (physObjId,hitPos,forceDir,(dynEntPieces_impactForce->current).value,
+                 preset->bulletForceScale);
+      g_breakablePieces[numPieces].physObjId = physObjId;
+      g_breakablePieces[numPieces].model = model;
       g_breakablePieces[numPieces].lightingHandle = 0;
       g_breakablePieces[numPieces].active = true;
       numPieces = numPieces + 1;
@@ -208,15 +212,15 @@ DynEntPieces_SpawnPhysicsModel
 
 void __cdecl
 DynEntPieces_SpawnPieces
-          (int param_1,XModelPieces *param_2,float *param_3,float (*param_4) [3],float *param_5,
-          float *param_6)
+          (int localClientNum,XModelPieces *pieces,float *origin,float (*axis) [3],float *hitPos,
+          float *hitDir)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int pieceIndex;
   
-  if (param_2 == (XModelPieces *)0x0) {
+  if (pieces == (XModelPieces *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_pieces.cpp",
                              0xac,0,"%s");
     if (!bVar2) {
@@ -225,10 +229,10 @@ DynEntPieces_SpawnPieces
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_2->numpieces; local_8 = local_8 + 1) {
+  for (pieceIndex = 0; pieceIndex < pieces->numpieces; pieceIndex = pieceIndex + 1) {
     DynEntPieces_SpawnPhysicsModel
-              (param_1,param_2->pieces[local_8].model,param_2->pieces[local_8].offset,param_3,
-               param_4,param_5,param_6,(PhysPreset *)0x0);
+              (localClientNum,pieces->pieces[pieceIndex].model,pieces->pieces[pieceIndex].offset,
+               origin,axis,hitPos,hitDir,(PhysPreset *)0x0);
   }
   return;
 }

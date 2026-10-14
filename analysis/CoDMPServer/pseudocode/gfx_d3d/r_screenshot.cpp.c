@@ -13,14 +13,14 @@ void __cdecl TRACK_r_screenshot(void)
 
 // 00ABE480  R_ScreenshotFilename  (gfx_d3d/r_screenshot.cpp:165)
 
-void __cdecl R_ScreenshotFilename(int param_1,char *param_2,char *param_3)
+void __cdecl R_ScreenshotFilename(int lastNumber,char *extension,char *fileName)
 
 {
-  if ((param_1 < 0) || (9999 < param_1)) {
-    Com_sprintf(param_3,0x100,"screenshots/shot9999.%s");
+  if ((lastNumber < 0) || (9999 < lastNumber)) {
+    Com_sprintf(fileName,0x100,"screenshots/shot9999.%s");
   }
   else {
-    Com_sprintf(param_3,0x100,"screenshots/shot%04i.%s");
+    Com_sprintf(fileName,0x100,"screenshots/shot%04i.%s");
   }
   return;
 }
@@ -29,7 +29,7 @@ void __cdecl R_ScreenshotFilename(int param_1,char *param_2,char *param_3)
 // 00ABD550  R_DownsamplePixelData  (gfx_d3d/r_screenshot.cpp:183)
 
 void __cdecl
-R_DownsamplePixelData(int param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar *param_6)
+R_DownsamplePixelData(int oldSize,int newSize,int stride,int bytesPerPixel,uchar *src,uchar *dst)
 
 {
   byte bVar1;
@@ -38,38 +38,40 @@ R_DownsamplePixelData(int param_1,int param_2,int param_3,int param_4,uchar *par
   uchar local_5c;
   uchar local_48;
   uchar local_34;
-  int local_18;
-  int local_14;
-  int local_10;
+  int nextSample;
+  float colorScale;
+  int residual;
+  int column;
+  int color;
   int local_c;
   int local_8;
   
-  fVar3 = 1.0 / (float)param_1;
-  local_18 = param_2;
-  for (local_14 = 0; local_14 < param_2; local_14 = local_14 + 1) {
-    local_10 = (uint)*param_5 * local_18;
-    local_c = (uint)param_5[1] * local_18;
-    local_8 = (uint)param_5[2] * local_18;
-    for (; param_5 = param_5 + param_3 * param_4,
-        local_18 + param_2 == param_1 || (local_18 + param_2) - param_1 < 0;
-        local_18 = local_18 + param_2) {
-      local_10 = (uint)*param_5 * param_2 + local_10;
-      local_c = (uint)param_5[1] * param_2 + local_c;
-      local_8 = (uint)param_5[2] * param_2 + local_8;
+  fVar3 = 1.0 / (float)oldSize;
+  residual = newSize;
+  for (column = 0; column < newSize; column = column + 1) {
+    color = (uint)*src * residual;
+    local_c = (uint)src[1] * residual;
+    local_8 = (uint)src[2] * residual;
+    for (; src = src + stride * bytesPerPixel,
+        residual + newSize == oldSize || (residual + newSize) - oldSize < 0;
+        residual = residual + newSize) {
+      color = (uint)*src * newSize + color;
+      local_c = (uint)src[1] * newSize + local_c;
+      local_8 = (uint)src[2] * newSize + local_8;
     }
-    local_18 = (local_18 + param_2) - param_1;
-    bVar1 = param_5[1];
-    bVar2 = param_5[2];
-    local_34 = (uchar)(int)ROUND((float)(int)((param_2 - local_18) * (uint)*param_5 + local_10) *
-                                 fVar3 + 9.313226e-10);
-    *param_6 = local_34;
-    local_48 = (uchar)(int)ROUND((float)(int)((param_2 - local_18) * (uint)bVar1 + local_c) * fVar3
+    residual = (residual + newSize) - oldSize;
+    bVar1 = src[1];
+    bVar2 = src[2];
+    local_34 = (uchar)(int)ROUND((float)(int)((newSize - residual) * (uint)*src + color) * fVar3 +
+                                 9.313226e-10);
+    *dst = local_34;
+    local_48 = (uchar)(int)ROUND((float)(int)((newSize - residual) * (uint)bVar1 + local_c) * fVar3
                                  + 9.313226e-10);
-    param_6[1] = local_48;
-    local_5c = (uchar)(int)ROUND((float)(int)((param_2 - local_18) * (uint)bVar2 + local_8) * fVar3
+    dst[1] = local_48;
+    local_5c = (uchar)(int)ROUND((float)(int)((newSize - residual) * (uint)bVar2 + local_8) * fVar3
                                  + 9.313226e-10);
-    param_6[2] = local_5c;
-    param_6 = param_6 + param_3 * param_4;
+    dst[2] = local_5c;
+    dst = dst + stride * bytesPerPixel;
   }
   return;
 }
@@ -78,7 +80,7 @@ R_DownsamplePixelData(int param_1,int param_2,int param_3,int param_4,uchar *par
 // 00ABD720  R_UpsamplePixelData  (gfx_d3d/r_screenshot.cpp:225)
 
 void __cdecl
-R_UpsamplePixelData(int param_1,int param_2,int param_3,int param_4,uchar *param_5,uchar *param_6)
+R_UpsamplePixelData(int oldSize,int newSize,int stride,int bytesPerPixel,uchar *src,uchar *dst)
 
 {
   int iVar1;
@@ -89,54 +91,56 @@ R_UpsamplePixelData(int param_1,int param_2,int param_3,int param_4,uchar *param
   uchar local_58;
   uchar local_44;
   uchar local_30;
-  int local_1c;
-  byte *local_10;
-  int local_c;
-  int local_8;
+  int backwardWeight;
+  int nextSample;
+  float colorScale;
+  uchar *currSrc;
+  int column;
+  int forwardWeight;
   
-  iVar1 = param_3 * param_4;
-  local_10 = param_5 + (param_1 + -1) * iVar1;
-  param_6 = param_6 + (param_2 + -1) * iVar1;
-  local_10[iVar1] = *local_10;
-  local_10[iVar1 + 1] = local_10[1];
-  local_10[iVar1 + 2] = local_10[2];
-  local_8 = param_2 - param_1;
-  local_1c = param_2 + param_1;
-  fVar2 = 0.5 / (float)param_2;
-  local_c = param_2;
-  while (local_c = local_c + -1, -1 < local_c) {
-    if (local_10 < param_5) {
-      local_6c = (uchar)(int)ROUND((float)(int)((uint)*param_5 * (local_1c + local_8)) * fVar2 +
-                                   9.313226e-10);
-      *param_6 = local_6c;
-      local_80 = (uchar)(int)ROUND((float)(int)((uint)param_5[1] * (local_1c + local_8)) * fVar2 +
-                                   9.313226e-10);
-      param_6[1] = local_80;
-      local_94 = (uchar)(int)ROUND((float)(int)((uint)param_5[2] * (local_1c + local_8)) * fVar2 +
-                                   9.313226e-10);
-      param_6[2] = local_94;
+  iVar1 = stride * bytesPerPixel;
+  currSrc = src + (oldSize + -1) * iVar1;
+  dst = dst + (newSize + -1) * iVar1;
+  currSrc[iVar1] = *currSrc;
+  currSrc[iVar1 + 1] = currSrc[1];
+  currSrc[iVar1 + 2] = currSrc[2];
+  forwardWeight = newSize - oldSize;
+  backwardWeight = newSize + oldSize;
+  fVar2 = 0.5 / (float)newSize;
+  column = newSize;
+  while (column = column + -1, -1 < column) {
+    if (currSrc < src) {
+      local_6c = (uchar)(int)ROUND((float)(int)((uint)*src * (backwardWeight + forwardWeight)) *
+                                   fVar2 + 9.313226e-10);
+      *dst = local_6c;
+      local_80 = (uchar)(int)ROUND((float)(int)((uint)src[1] * (backwardWeight + forwardWeight)) *
+                                   fVar2 + 9.313226e-10);
+      dst[1] = local_80;
+      local_94 = (uchar)(int)ROUND((float)(int)((uint)src[2] * (backwardWeight + forwardWeight)) *
+                                   fVar2 + 9.313226e-10);
+      dst[2] = local_94;
     }
     else {
-      local_30 = (uchar)(int)ROUND((float)(int)((uint)*local_10 * local_1c +
-                                               (uint)local_10[iVar1] * local_8) * fVar2 +
+      local_30 = (uchar)(int)ROUND((float)(int)((uint)*currSrc * backwardWeight +
+                                               (uint)currSrc[iVar1] * forwardWeight) * fVar2 +
                                    9.313226e-10);
-      *param_6 = local_30;
-      local_44 = (uchar)(int)ROUND((float)(int)((uint)local_10[1] * local_1c +
-                                               (uint)local_10[iVar1 + 1] * local_8) * fVar2 +
+      *dst = local_30;
+      local_44 = (uchar)(int)ROUND((float)(int)((uint)currSrc[1] * backwardWeight +
+                                               (uint)currSrc[iVar1 + 1] * forwardWeight) * fVar2 +
                                    9.313226e-10);
-      param_6[1] = local_44;
-      local_58 = (uchar)(int)ROUND((float)(int)((uint)local_10[2] * local_1c +
-                                               (uint)local_10[iVar1 + 2] * local_8) * fVar2 +
+      dst[1] = local_44;
+      local_58 = (uchar)(int)ROUND((float)(int)((uint)currSrc[2] * backwardWeight +
+                                               (uint)currSrc[iVar1 + 2] * forwardWeight) * fVar2 +
                                    9.313226e-10);
-      param_6[2] = local_58;
+      dst[2] = local_58;
     }
-    param_6 = param_6 + -iVar1;
-    local_1c = local_1c + param_1 * 2;
-    local_8 = local_8 + param_1 * -2;
-    if (local_8 < 0) {
-      local_1c = local_1c + param_2 * -2;
-      local_8 = local_8 + param_2 * 2;
-      local_10 = local_10 + -iVar1;
+    dst = dst + -iVar1;
+    backwardWeight = backwardWeight + oldSize * 2;
+    forwardWeight = forwardWeight + oldSize * -2;
+    if (forwardWeight < 0) {
+      backwardWeight = backwardWeight + newSize * -2;
+      forwardWeight = forwardWeight + newSize * 2;
+      currSrc = currSrc + -iVar1;
     }
   }
   return;
@@ -146,50 +150,50 @@ R_UpsamplePixelData(int param_1,int param_2,int param_3,int param_4,uchar *param
 // 00ABD370  R_ResampleImage  (gfx_d3d/r_screenshot.cpp:274)
 
 void __cdecl
-R_ResampleImage(int param_1,int param_2,int param_3,int param_4,int param_5,uchar *param_6)
+R_ResampleImage(int oldWidth,int oldHeight,int newWidth,int newHeight,int bytesPerPixel,uchar *data)
 
 {
-  uchar *local_14;
-  int local_10;
-  uchar *local_c;
-  int local_8;
+  uchar *src;
+  int row;
+  uchar *dst;
+  int col;
   
-  if (param_3 < param_1) {
-    local_14 = param_6;
-    local_c = param_6;
-    for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-      R_DownsamplePixelData(param_1,param_3,1,param_5,local_14,local_c);
-      local_14 = local_14 + param_1 * param_5;
-      local_c = local_c + param_3 * param_5;
+  if (newWidth < oldWidth) {
+    src = data;
+    dst = data;
+    for (row = 0; row < oldHeight; row = row + 1) {
+      R_DownsamplePixelData(oldWidth,newWidth,1,bytesPerPixel,src,dst);
+      src = src + oldWidth * bytesPerPixel;
+      dst = dst + newWidth * bytesPerPixel;
     }
   }
-  else if (param_1 < param_3) {
-    local_14 = param_6 + (param_2 + -1) * param_1 * param_5;
-    local_c = param_6 + (param_2 + -1) * param_3 * param_5;
-    local_10 = param_2;
-    while (local_10 = local_10 + -1, -1 < local_10) {
-      R_UpsamplePixelData(param_1,param_3,1,param_5,local_14,local_c);
-      local_14 = local_14 + -(param_1 * param_5);
-      local_c = local_c + -(param_3 * param_5);
+  else if (oldWidth < newWidth) {
+    src = data + (oldHeight + -1) * oldWidth * bytesPerPixel;
+    dst = data + (oldHeight + -1) * newWidth * bytesPerPixel;
+    row = oldHeight;
+    while (row = row + -1, -1 < row) {
+      R_UpsamplePixelData(oldWidth,newWidth,1,bytesPerPixel,src,dst);
+      src = src + -(oldWidth * bytesPerPixel);
+      dst = dst + -(newWidth * bytesPerPixel);
     }
   }
-  if (param_4 < param_2) {
-    local_14 = param_6;
-    local_c = param_6;
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      R_DownsamplePixelData(param_2,param_4,param_3,param_5,local_14,local_c);
-      local_14 = local_14 + param_5;
-      local_c = local_c + param_5;
+  if (newHeight < oldHeight) {
+    src = data;
+    dst = data;
+    for (col = 0; col < newWidth; col = col + 1) {
+      R_DownsamplePixelData(oldHeight,newHeight,newWidth,bytesPerPixel,src,dst);
+      src = src + bytesPerPixel;
+      dst = dst + bytesPerPixel;
     }
   }
-  else if (param_2 < param_4) {
-    local_14 = param_6 + (param_3 + -1) * param_5;
-    local_c = param_6 + (param_3 + -1) * param_5;
-    local_8 = param_3;
-    while (local_8 = local_8 + -1, -1 < local_8) {
-      R_UpsamplePixelData(param_2,param_4,param_3,param_5,local_14,local_c);
-      local_14 = local_14 + -param_5;
-      local_c = local_c + -param_5;
+  else if (oldHeight < newHeight) {
+    src = data + (newWidth + -1) * bytesPerPixel;
+    dst = data + (newWidth + -1) * bytesPerPixel;
+    col = newWidth;
+    while (col = col + -1, -1 < col) {
+      R_UpsamplePixelData(oldHeight,newHeight,newWidth,bytesPerPixel,src,dst);
+      src = src + -bytesPerPixel;
+      dst = dst + -bytesPerPixel;
     }
   }
   return;
@@ -198,141 +202,143 @@ R_ResampleImage(int param_1,int param_2,int param_3,int param_4,int param_5,ucha
 
 // 00ABD9F0  R_GetFrontBufferData  (gfx_d3d/r_screenshot.cpp:328)
 
-bool __cdecl
-R_GetFrontBufferData(int param_1,int param_2,int param_3,int param_4,int param_5,uchar *param_6)
+bool __cdecl R_GetFrontBufferData(int x,int y,int width,int height,int bytesPerPixel,uchar *buffer)
 
 {
-  IDirect3DTexture9 *pIVar1;
+  IDirect3DSurface9 *pIVar1;
   bool bVar2;
   BOOL BVar3;
-  tagMONITORINFO local_70;
-  int local_48;
-  int local_44;
+  IDirect3DSurface9 *varCopy_3;
+  IDirect3DSurface9 *varCopy_2;
+  IDirect3DSurface9 *varCopy;
+  tagMONITORINFO monitorInfo;
+  HRESULT hr;
+  int lockedRect;
   uchar *local_40;
-  uchar *local_3c;
-  uchar *local_38;
-  HMONITOR local_34;
-  uint local_30;
-  int local_2c;
+  uchar *dstPixel;
+  uchar *srcPixel;
+  HMONITOR__ *monitor;
+  int surfHeight;
+  int sourceRect;
   int local_28;
   int local_24;
   int local_20;
-  uint local_1c;
-  int local_18;
-  tagPOINT local_14;
-  IDirect3DTexture9 *local_c;
-  int local_8;
+  int surfWidth;
+  int row;
+  tagPOINT pt;
+  IDirect3DSurface9 *surface;
+  int col;
   
-  local_c = (IDirect3DTexture9 *)0x0;
-  local_14.x = param_1;
-  local_14.y = param_2;
+  surface = (IDirect3DSurface9 *)0x0;
+  pt.x = x;
+  pt.y = y;
   if (vidConfig.isFullscreen == 0) {
-    local_34 = MonitorFromWindow((HWND)dx.windows[0].hwnd,2);
-    local_70.cbSize = 0x28;
-    BVar3 = GetMonitorInfoA(local_34,&local_70);
+    monitor = (HMONITOR__ *)MonitorFromWindow((HWND)dx.windows[0].hwnd,2);
+    monitorInfo.cbSize = 0x28;
+    BVar3 = GetMonitorInfoA((HMONITOR)monitor,&monitorInfo);
     if (BVar3 == 0) {
       Com_PrintError(8,"ERROR: cannot take screenshot: couldn\'t get screen dimensions\n");
       return false;
     }
-    ClientToScreen((HWND)dx.windows[0].hwnd,&local_14);
-    if ((((local_14.x < local_70.rcMonitor.left) || (local_14.y < local_70.rcMonitor.top)) ||
-        (local_70.rcMonitor.right < local_14.x + param_3)) ||
-       (local_70.rcMonitor.bottom < local_14.y + param_4)) {
+    ClientToScreen((HWND)dx.windows[0].hwnd,&pt);
+    if ((((pt.x < monitorInfo.rcMonitor.left) || (pt.y < monitorInfo.rcMonitor.top)) ||
+        (monitorInfo.rcMonitor.right < pt.x + width)) ||
+       (monitorInfo.rcMonitor.bottom < pt.y + height)) {
       Com_PrintError(8,"ERROR: cannot take screenshot: game window is partially off-screen\n");
       return false;
     }
-    local_1c = local_70.rcMonitor.right - local_70.rcMonitor.left;
-    local_30 = local_70.rcMonitor.bottom - local_70.rcMonitor.top;
-    local_14.x = local_14.x - local_70.rcMonitor.left;
-    local_14.y = local_14.y - local_70.rcMonitor.top;
+    surfWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+    surfHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+    pt.x = pt.x - monitorInfo.rcMonitor.left;
+    pt.y = pt.y - monitorInfo.rcMonitor.top;
   }
   else {
-    local_1c = vidConfig.displayWidth;
-    local_30 = vidConfig.displayHeight;
+    surfWidth = vidConfig.displayWidth;
+    surfHeight = vidConfig.displayHeight;
   }
-  local_48 = (**(code **)((int)*dx.device + 0x90))(dx.device,local_1c,local_30,0x15,3,&local_c,0);
-  if (local_48 < 0) {
-    R_ErrorDescription(local_48);
+  hr = (**(code **)((int)*dx.device + 0x90))(dx.device,surfWidth,surfHeight,0x15,3,&surface,0);
+  if (hr < 0) {
+    R_ErrorDescription(hr);
     Com_PrintError(8,
                    "ERROR: cannot take screenshot: couldn\'t create the off-screen surface: %s (0x%08x)\n"
                   );
     bVar2 = false;
   }
   else {
-    local_48 = (**(code **)((int)*dx.windows[0].swapChain + 0x10))(dx.windows[0].swapChain,local_c);
-    if (local_48 < 0) {
+    hr = (**(code **)((int)*dx.windows[0].swapChain + 0x10))(dx.windows[0].swapChain,surface);
+    if (hr < 0) {
       do {
         if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
           RB_LogPrint("surface->Release()\n");
         }
-        pIVar1 = local_c;
-        local_c = (IDirect3DTexture9 *)0x0;
+        pIVar1 = surface;
+        surface = (IDirect3DSurface9 *)0x0;
         R_ReleaseAndSetNULL<IDirect3DTexture9>
-                  (pIVar1,"surface","C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",
-                   0x17f);
+                  ((IDirect3DTexture9 *)pIVar1,"surface",
+                   "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x17f);
       } while (alwaysfails != 0);
-      R_ErrorDescription(local_48);
+      R_ErrorDescription(hr);
       Com_PrintError(8,
                      "ERROR: cannot take screenshot: couldn\'t create the off-screen surface: %s (0x%08x)\n"
                     );
       bVar2 = false;
     }
     else {
-      local_2c = local_14.x;
-      local_24 = local_14.x + param_3;
-      local_28 = local_14.y;
-      local_20 = local_14.y + param_4;
-      local_48 = (**(code **)((int)*local_c + 0x34))(local_c,&local_44,&local_2c,0x10);
-      if (local_48 < 0) {
+      sourceRect = pt.x;
+      local_24 = pt.x + width;
+      local_28 = pt.y;
+      local_20 = pt.y + height;
+      hr = (**(code **)((int)*surface + 0x34))(surface,&lockedRect,&sourceRect,0x10);
+      if (hr < 0) {
         do {
           if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
             RB_LogPrint("surface->Release()\n");
           }
-          pIVar1 = local_c;
-          local_c = (IDirect3DTexture9 *)0x0;
+          pIVar1 = surface;
+          surface = (IDirect3DSurface9 *)0x0;
           R_ReleaseAndSetNULL<IDirect3DTexture9>
-                    (pIVar1,"surface","C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp"
-                     ,0x18b);
+                    ((IDirect3DTexture9 *)pIVar1,"surface",
+                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x18b);
         } while (alwaysfails != 0);
-        R_ErrorDescription(local_48);
+        R_ErrorDescription(hr);
         Com_PrintError(8,"ERROR: cannot take screenshot: LockRect failed: %s (0x%08x)\n");
         bVar2 = false;
       }
       else {
-        local_38 = local_40;
-        local_3c = param_6;
-        if (param_5 == 3) {
-          for (local_18 = 0; local_18 < param_4; local_18 = local_18 + 1) {
-            for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-              *local_3c = *local_38;
-              local_3c[1] = local_38[1];
-              local_3c[2] = local_38[2];
-              local_3c = local_3c + 3;
-              local_38 = local_38 + 4;
+        srcPixel = local_40;
+        dstPixel = buffer;
+        if (bytesPerPixel == 3) {
+          for (row = 0; row < height; row = row + 1) {
+            for (col = 0; col < width; col = col + 1) {
+              *dstPixel = *srcPixel;
+              dstPixel[1] = srcPixel[1];
+              dstPixel[2] = srcPixel[2];
+              dstPixel = dstPixel + 3;
+              srcPixel = srcPixel + 4;
             }
-            local_38 = local_38 + local_44 + param_3 * -4;
+            srcPixel = srcPixel + lockedRect + width * -4;
           }
         }
-        else if (local_44 == param_3 << 2) {
-          Com_Memcpy(param_6,local_40,param_3 * param_4 * 4);
+        else if (lockedRect == width << 2) {
+          Com_Memcpy(buffer,local_40,width * height * 4);
         }
         else {
-          for (local_18 = 0; local_18 < param_4; local_18 = local_18 + 1) {
-            Com_Memcpy(local_3c,local_38,param_3 << 2);
-            local_3c = local_3c + param_3 * 4;
-            local_38 = local_38 + local_44;
+          for (row = 0; row < height; row = row + 1) {
+            Com_Memcpy(dstPixel,srcPixel,width << 2);
+            dstPixel = dstPixel + width * 4;
+            srcPixel = srcPixel + lockedRect;
           }
         }
-        (**(code **)((int)*local_c + 0x38))(local_c);
+        (**(code **)((int)*surface + 0x38))(surface);
         do {
           if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
             RB_LogPrint("surface->Release()\n");
           }
-          pIVar1 = local_c;
-          local_c = (IDirect3DTexture9 *)0x0;
+          pIVar1 = surface;
+          surface = (IDirect3DSurface9 *)0x0;
           R_ReleaseAndSetNULL<IDirect3DTexture9>
-                    (pIVar1,"surface","C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp"
-                     ,0x1bc);
+                    ((IDirect3DTexture9 *)pIVar1,"surface",
+                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x1bc);
         } while (alwaysfails != 0);
         bVar2 = true;
       }
@@ -344,27 +350,29 @@ R_GetFrontBufferData(int param_1,int param_2,int param_3,int param_4,int param_5
 
 // 00ABECC0  half2float  (gfx_d3d/r_screenshot.cpp:462)
 
-uint __cdecl half2float(ushort param_1)
+uint __cdecl half2float(ushort h)
 
 {
-  return mantissatable[offsettable[(int)(uint)param_1 >> 10] + (param_1 & 0x3ff)] +
-         exponenttable[(int)(uint)param_1 >> 10];
+  uint f;
+  
+  return mantissatable[offsettable[(int)(uint)h >> 10] + (h & 0x3ff)] +
+         exponenttable[(int)(uint)h >> 10];
 }
 
 
 // 00ABEE40  convertmantissa  (gfx_d3d/r_screenshot.cpp:468)
 
-uint __cdecl convertmantissa(uint param_1)
+uint __cdecl convertmantissa(uint i)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  uint m;
+  uint e;
   
-  local_8 = 0;
-  for (local_c = param_1 << 0xd; (local_c & 0x800000) == 0; local_c = local_c << 1) {
-    local_8 = local_8 + -0x800000;
+  e = 0;
+  for (m = i << 0xd; (m & 0x800000) == 0; m = m << 1) {
+    e = e - 0x800000;
   }
-  return local_c & 0xff7fffff | local_8 + 0x38800000U;
+  return m & 0xff7fffff | e + 0x38800000;
 }
 
 
@@ -374,28 +382,28 @@ void __cdecl initHalfToFloat(void)
 
 {
   uint uVar1;
-  uint local_8;
+  int i;
   
   mantissatable[0] = 0;
-  for (local_8 = 1; (int)local_8 < 0x400; local_8 = local_8 + 1) {
-    uVar1 = convertmantissa(local_8);
-    mantissatable[local_8] = uVar1;
+  for (i = 1; i < 0x400; i = i + 1) {
+    uVar1 = convertmantissa(i);
+    mantissatable[i] = uVar1;
   }
-  for (local_8 = 0x400; (int)local_8 < 0x800; local_8 = local_8 + 1) {
-    mantissatable[local_8] = (local_8 + -0x400) * 0x2000 + 0x38000000;
+  for (i = 0x400; i < 0x800; i = i + 1) {
+    mantissatable[i] = (i + -0x400) * 0x2000 + 0x38000000;
   }
   exponenttable[0] = 0;
   exponenttable[0x20] = 0x80000000;
-  for (local_8 = 1; (int)local_8 < 0x1f; local_8 = local_8 + 1) {
-    exponenttable[local_8] = local_8 << 0x17;
+  for (i = 1; i < 0x1f; i = i + 1) {
+    exponenttable[i] = i << 0x17;
   }
-  for (local_8 = 0x21; (int)local_8 < 0x3f; local_8 = local_8 + 1) {
-    exponenttable[local_8] = (local_8 + -0x20) * 0x800000 + 0x80000000;
+  for (i = 0x21; i < 0x3f; i = i + 1) {
+    exponenttable[i] = (i + -0x20) * 0x800000 + 0x80000000;
   }
   exponenttable[0x1f] = 0x47800000;
   exponenttable[0x3f] = 0xc7800000;
-  for (local_8 = 0; (int)local_8 < 0x40; local_8 = local_8 + 1) {
-    offsettable[local_8] = 0x400;
+  for (i = 0; i < 0x40; i = i + 1) {
+    offsettable[i] = 0x400;
   }
   offsettable[0] = 0;
   offsettable[0x20] = 0;
@@ -406,110 +414,127 @@ void __cdecl initHalfToFloat(void)
 // 00ABEA70  R_GetBackBufferDataHDR  (gfx_d3d/r_screenshot.cpp:515)
 
 bool __cdecl
-R_GetBackBufferDataHDR(int param_1,int param_2,int param_3,int param_4,int param_5,float *param_6)
+R_GetBackBufferDataHDR(int x,int y,int width,int height,int bytesPerPixel,float *buffer)
 
 {
-  ushort uVar1;
-  ushort uVar2;
-  IDirect3DSurface9 *pIVar3;
-  bool bVar4;
-  int iVar5;
+  ushort *puVar1;
+  ushort h;
+  ushort h_00;
+  IDirect3DSurface9 *pIVar2;
+  bool bVar3;
+  int hr_00;
+  float fVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
-  float fVar8;
-  int local_40;
-  int local_34;
-  int local_30;
-  float *local_2c;
-  int local_28;
-  int local_24;
+  float gf;
+  ushort r;
+  uint rr;
+  uint gg;
+  ushort g;
+  ushort b;
+  uint bb;
+  float rf;
+  ushort a;
+  float bf;
+  int i;
+  IDirect3DSurface9 *surface1;
+  HRESULT hr;
+  int lockedRect;
+  ushort *local_30;
+  float *dstPixel;
+  uchar *srcPixel;
+  int sourceRect;
   int local_20;
   int local_1c;
   int local_18;
-  int local_14;
-  IDirect3DSurface9 *local_10;
-  int local_c;
-  int local_8;
+  int row;
+  IDirect3DSurface9 *surf;
+  ushort *bitss;
+  int col;
   
   initHalfToFloat();
   Sleep(1000);
-  pIVar3 = gfxRenderTargets[0x10].surface.color;
-  local_10 = gfxRenderTargets[2].surface.color;
+  pIVar2 = gfxRenderTargets[0x10].surface.color;
+  surf = gfxRenderTargets[2].surface.color;
   (**(code **)((int)*dx.device + 0x80))
             (dx.device,gfxRenderTargets[2].surface.color,gfxRenderTargets[0x10].surface.color);
-  local_24 = param_1;
-  local_1c = param_1 + param_3;
-  local_20 = param_2 + 2;
-  local_18 = local_20 + param_4;
-  iVar5 = (**(code **)((int)*pIVar3 + 0x34))(pIVar3,&local_34,&local_24,0x10);
-  if (iVar5 < 0) {
-    R_ErrorDescription(iVar5);
+  sourceRect = x;
+  local_1c = x + width;
+  local_20 = y + 2;
+  local_18 = local_20 + height;
+  hr_00 = (**(code **)((int)*pIVar2 + 0x34))(pIVar2,&lockedRect,&sourceRect,0x10);
+  if (hr_00 < 0) {
+    R_ErrorDescription(hr_00);
     Com_PrintError(8,"ERROR: cannot take screenshot: LockRect failed: %s (0x%08x)\n");
-    bVar4 = false;
+    bVar3 = false;
   }
   else {
-    local_28 = local_30;
-    local_2c = param_6;
-    local_c = local_30;
-    for (local_14 = 0; local_14 < param_4; local_14 = local_14 + 1) {
-      local_c = local_28;
-      local_40 = 0;
-      for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-        iVar5 = local_40 * 2;
-        uVar1 = *(ushort *)(local_c + 2 + local_40 * 2);
-        uVar2 = *(ushort *)(local_c + 4 + local_40 * 2);
-        local_40 = local_40 + 4;
-        fVar6 = (float)half2float(*(ushort *)(local_c + iVar5));
-        fVar7 = (float)half2float(uVar1);
-        fVar8 = (float)half2float(uVar2);
-        *local_2c = fVar6 * fVar6 * 16.0;
-        local_2c[1] = fVar7 * fVar7 * 16.0;
-        local_2c[2] = fVar8 * fVar8 * 16.0;
-        local_2c[3] = 1.0;
-        local_2c = local_2c + 4;
+    srcPixel = (uchar *)local_30;
+    dstPixel = buffer;
+    bitss = local_30;
+    for (row = 0; row < height; row = row + 1) {
+      bitss = (ushort *)srcPixel;
+      i = 0;
+      for (col = 0; col < width; col = col + 1) {
+        puVar1 = bitss + i;
+        h = bitss[i + 1];
+        h_00 = bitss[i + 2];
+        i = i + 4;
+        fVar4 = (float)half2float(*puVar1);
+        fVar5 = (float)half2float(h);
+        fVar6 = (float)half2float(h_00);
+        *dstPixel = fVar4 * fVar4 * 16.0;
+        dstPixel[1] = fVar5 * fVar5 * 16.0;
+        dstPixel[2] = fVar6 * fVar6 * 16.0;
+        dstPixel[3] = 1.0;
+        dstPixel = dstPixel + 4;
       }
-      local_28 = local_28 + local_34;
+      srcPixel = srcPixel + lockedRect;
     }
-    (**(code **)((int)*pIVar3 + 0x38))(pIVar3);
-    bVar4 = true;
+    (**(code **)((int)*pIVar2 + 0x38))(pIVar2);
+    bVar3 = true;
   }
-  return bVar4;
+  return bVar3;
 }
 
 
 // 00ABD290  R_TakeResampledScreenshot  (gfx_d3d/r_screenshot.cpp:713)
 
-uchar * __cdecl R_TakeResampledScreenshot(int param_1,int param_2,int param_3,int param_4)
+uchar * __cdecl R_TakeResampledScreenshot(int width,int height,int bytesPerPixel,int headerSize)
 
 {
   bool bVar1;
-  uchar *puVar2;
+  uchar *buffer_00;
   uint local_18;
   uint local_14;
+  uchar *buffer;
+  int maxHeight;
+  int maxWidth;
   
-  if (param_1 < (int)vidConfig.displayWidth) {
+  if (width < (int)vidConfig.displayWidth) {
     local_14 = vidConfig.displayWidth;
   }
   else {
-    local_14 = param_1;
+    local_14 = width;
   }
-  if (param_2 < (int)vidConfig.displayHeight) {
+  if (height < (int)vidConfig.displayHeight) {
     local_18 = vidConfig.displayHeight;
   }
   else {
-    local_18 = param_2;
+    local_18 = height;
   }
-  puVar2 = Z_Malloc(local_14 * local_18 * param_3 + param_4,"R_ScreenShot",0x17);
-  bVar1 = R_GetFrontBufferData(0,0,vidConfig.displayWidth,vidConfig.displayHeight,param_3,puVar2);
+  buffer_00 = Z_Malloc(local_14 * local_18 * bytesPerPixel + headerSize,"R_ScreenShot",0x17);
+  bVar1 = R_GetFrontBufferData
+                    (0,0,vidConfig.displayWidth,vidConfig.displayHeight,bytesPerPixel,buffer_00);
   if (bVar1) {
-    R_ResampleImage(vidConfig.displayWidth,vidConfig.displayHeight,param_1,param_2,param_3,
-                    puVar2 + param_4);
+    R_ResampleImage(vidConfig.displayWidth,vidConfig.displayHeight,width,height,bytesPerPixel,
+                    buffer_00 + headerSize);
   }
   else {
-    Z_Free(puVar2,0x17);
-    puVar2 = (uchar *)0x0;
+    Z_Free(buffer_00,0x17);
+    buffer_00 = (uchar *)0x0;
   }
-  return puVar2;
+  return buffer_00;
 }
 
 
@@ -520,38 +545,39 @@ uchar * __cdecl R_TakeResampledScreenshot(int param_1,int param_2,int param_3,in
 void __cdecl R_LevelShot(void)
 
 {
-  uchar *puVar1;
-  char local_10c [260];
+  uchar *buffer_00;
+  uchar *buffer;
+  char checkname [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sprintf(local_10c,"levelshots/%s.tga");
-  puVar1 = R_TakeResampledScreenshot(0x80,0x80,3,0x12);
-  if (puVar1 != (uchar *)0x0) {
-    puVar1[0] = '\0';
-    puVar1[1] = '\0';
-    puVar1[2] = '\0';
-    puVar1[3] = '\0';
-    puVar1[4] = '\0';
-    puVar1[5] = '\0';
-    puVar1[6] = '\0';
-    puVar1[7] = '\0';
-    puVar1[8] = '\0';
-    puVar1[9] = '\0';
-    puVar1[10] = '\0';
-    puVar1[0xb] = '\0';
-    puVar1[0xc] = '\0';
-    puVar1[0xd] = '\0';
-    puVar1[0xe] = '\0';
-    puVar1[0xf] = '\0';
-    puVar1[0x10] = '\0';
-    puVar1[0x11] = '\0';
-    puVar1[2] = '\x02';
-    puVar1[0xc] = 0x80;
-    puVar1[0xe] = 0x80;
-    puVar1[0x10] = '\x18';
-    FS_WriteFile(local_10c,puVar1,0xc012);
-    Z_Free(puVar1,0x17);
+  sprintf(checkname,"levelshots/%s.tga");
+  buffer_00 = R_TakeResampledScreenshot(0x80,0x80,3,0x12);
+  if (buffer_00 != (uchar *)0x0) {
+    buffer_00[0] = '\0';
+    buffer_00[1] = '\0';
+    buffer_00[2] = '\0';
+    buffer_00[3] = '\0';
+    buffer_00[4] = '\0';
+    buffer_00[5] = '\0';
+    buffer_00[6] = '\0';
+    buffer_00[7] = '\0';
+    buffer_00[8] = '\0';
+    buffer_00[9] = '\0';
+    buffer_00[10] = '\0';
+    buffer_00[0xb] = '\0';
+    buffer_00[0xc] = '\0';
+    buffer_00[0xd] = '\0';
+    buffer_00[0xe] = '\0';
+    buffer_00[0xf] = '\0';
+    buffer_00[0x10] = '\0';
+    buffer_00[0x11] = '\0';
+    buffer_00[2] = '\x02';
+    buffer_00[0xc] = 0x80;
+    buffer_00[0xe] = 0x80;
+    buffer_00[0x10] = '\x18';
+    FS_WriteFile(checkname,buffer_00,0xc012);
+    Z_Free(buffer_00,0x17);
     Com_Printf(8,"Wrote %s\n");
   }
   return;
@@ -562,23 +588,23 @@ void __cdecl R_LevelShot(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_SaveGameShot(char *param_1)
+void __cdecl R_SaveGameShot(char *saveName)
 
 {
-  char local_114 [256];
+  char filename [256];
   uint local_14;
-  uchar *local_10;
-  int local_c;
-  int local_8;
+  uchar *pixels;
+  int width;
+  int height;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = 0x200;
-  local_8 = 0x200;
-  sprintf(local_114,"%s.jpg");
-  local_10 = R_TakeResampledScreenshot(local_c,local_8,3,0);
-  if (local_10 != (uchar *)0x0) {
-    R_SaveJpg(local_114,0x5a,local_c,local_8,local_10,(uchar *)0x0);
-    Z_Free(local_10,0x17);
+  width = 0x200;
+  height = 0x200;
+  sprintf(filename,"%s.jpg");
+  pixels = R_TakeResampledScreenshot(width,height,3,0);
+  if (pixels != (uchar *)0x0) {
+    R_SaveJpg(filename,0x5a,width,height,pixels,(uchar *)0x0);
+    Z_Free(pixels,0x17);
   }
   return;
 }
@@ -588,106 +614,107 @@ void __cdecl R_SaveGameShot(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl R_TakeScreenshot(char *param_1,_D3DXIMAGE_FILEFORMAT param_2)
+bool __cdecl R_TakeScreenshot(char *filename,_D3DXIMAGE_FILEFORMAT format)
 
 {
-  IDirect3DTexture9 *pIVar1;
+  IDirect3DSurface9 *pIVar1;
   bool bVar2;
   BOOL BVar3;
   int iVar4;
-  tagMONITORINFO local_168;
-  int local_140;
-  uint local_13c;
-  uint local_138;
-  char local_134 [260];
+  IDirect3DSurface9 *varCopy_2;
+  IDirect3DSurface9 *varCopy;
+  tagMONITORINFO monitorInfo;
+  HRESULT hr;
+  int width;
+  int height;
+  char ospath [260];
   uint local_30;
-  HMONITOR local_2c;
-  uint local_28;
-  int local_24;
+  HMONITOR__ *monitor;
+  int surfHeight;
+  int sourceRect;
   int local_20;
   int local_1c;
   int local_18;
-  uint local_14;
-  tagPOINT local_10;
-  IDirect3DTexture9 *local_8;
+  int surfWidth;
+  tagPOINT pt;
+  IDirect3DSurface9 *surface;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (IDirect3DTexture9 *)0x0;
-  local_13c = vidConfig.displayWidth;
-  local_138 = vidConfig.displayHeight;
-  local_10.x = 0;
-  local_10.y = 0;
+  surface = (IDirect3DSurface9 *)0x0;
+  width = vidConfig.displayWidth;
+  height = vidConfig.displayHeight;
+  pt.x = 0;
+  pt.y = 0;
   if (vidConfig.isFullscreen == 0) {
-    local_2c = MonitorFromWindow((HWND)dx.windows[0].hwnd,2);
-    local_168.cbSize = 0x28;
-    BVar3 = GetMonitorInfoA(local_2c,&local_168);
+    monitor = (HMONITOR__ *)MonitorFromWindow((HWND)dx.windows[0].hwnd,2);
+    monitorInfo.cbSize = 0x28;
+    BVar3 = GetMonitorInfoA((HMONITOR)monitor,&monitorInfo);
     if (BVar3 == 0) {
       Com_PrintError(8,"ERROR: cannot take screenshot: couldn\'t get screen dimensions\n");
       return false;
     }
-    ClientToScreen((HWND)dx.windows[0].hwnd,&local_10);
-    if ((((local_10.x < local_168.rcMonitor.left) || (local_10.y < local_168.rcMonitor.top)) ||
-        (local_168.rcMonitor.right < (int)(local_10.x + local_13c))) ||
-       (local_168.rcMonitor.bottom < (int)(local_10.y + local_138))) {
+    ClientToScreen((HWND)dx.windows[0].hwnd,&pt);
+    if ((((pt.x < monitorInfo.rcMonitor.left) || (pt.y < monitorInfo.rcMonitor.top)) ||
+        (monitorInfo.rcMonitor.right < pt.x + width)) ||
+       (monitorInfo.rcMonitor.bottom < pt.y + height)) {
       Com_PrintError(8,"ERROR: cannot take screenshot: game window is partially off-screen\n");
       return false;
     }
-    local_14 = local_168.rcMonitor.right - local_168.rcMonitor.left;
-    local_28 = local_168.rcMonitor.bottom - local_168.rcMonitor.top;
-    local_10.x = local_10.x - local_168.rcMonitor.left;
-    local_10.y = local_10.y - local_168.rcMonitor.top;
+    surfWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+    surfHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+    pt.x = pt.x - monitorInfo.rcMonitor.left;
+    pt.y = pt.y - monitorInfo.rcMonitor.top;
   }
   else {
-    local_14 = vidConfig.displayWidth;
-    local_28 = vidConfig.displayHeight;
+    surfWidth = vidConfig.displayWidth;
+    surfHeight = vidConfig.displayHeight;
   }
-  local_140 = (**(code **)((int)*dx.device + 0x90))(dx.device,local_14,local_28,0x15,3,&local_8,0);
-  if (local_140 < 0) {
-    R_ErrorDescription(local_140);
+  hr = (**(code **)((int)*dx.device + 0x90))(dx.device,surfWidth,surfHeight,0x15,3,&surface,0);
+  if (hr < 0) {
+    R_ErrorDescription(hr);
     Com_PrintError(8,
                    "ERROR: cannot take screenshot: couldn\'t create the off-screen surface: %s (0x%08x)\n"
                   );
     bVar2 = false;
   }
   else {
-    local_140 = (**(code **)((int)*dx.windows[0].swapChain + 0x10))(dx.windows[0].swapChain,local_8)
-    ;
-    if (local_140 < 0) {
+    hr = (**(code **)((int)*dx.windows[0].swapChain + 0x10))(dx.windows[0].swapChain,surface);
+    if (hr < 0) {
       do {
         if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
           RB_LogPrint("surface->Release()\n");
         }
-        pIVar1 = local_8;
-        local_8 = (IDirect3DTexture9 *)0x0;
+        pIVar1 = surface;
+        surface = (IDirect3DSurface9 *)0x0;
         R_ReleaseAndSetNULL<IDirect3DTexture9>
-                  (pIVar1,"surface","C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",
-                   0x3b9);
+                  ((IDirect3DTexture9 *)pIVar1,"surface",
+                   "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x3b9);
       } while (alwaysfails != 0);
-      R_ErrorDescription(local_140);
+      R_ErrorDescription(hr);
       Com_PrintError(8,
                      "ERROR: cannot take screenshot: couldn\'t create the off-screen surface: %s (0x%08x)\n"
                     );
       bVar2 = false;
     }
     else {
-      local_24 = local_10.x;
-      local_1c = local_10.x + local_13c;
-      local_20 = local_10.y;
-      local_18 = local_10.y + local_138;
-      FS_BuildOSPath(fs_gamedir,(char *)0x0,param_1,local_134);
-      iVar4 = FS_CreatePath(local_134);
+      sourceRect = pt.x;
+      local_1c = pt.x + width;
+      local_20 = pt.y;
+      local_18 = pt.y + height;
+      FS_BuildOSPath(fs_gamedir,(char *)0x0,filename,ospath);
+      iVar4 = FS_CreatePath(ospath);
       if (iVar4 == 0) {
-        _D3DXSaveSurfaceToFileA_20(local_134,param_2,local_8,0,&local_24);
+        _D3DXSaveSurfaceToFileA_20(ospath,format,surface,0,&sourceRect);
       }
       do {
         if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
           RB_LogPrint("surface->Release()\n");
         }
-        pIVar1 = local_8;
-        local_8 = (IDirect3DTexture9 *)0x0;
+        pIVar1 = surface;
+        surface = (IDirect3DSurface9 *)0x0;
         R_ReleaseAndSetNULL<IDirect3DTexture9>
-                  (pIVar1,"surface","C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",
-                   0x3c8);
+                  ((IDirect3DTexture9 *)pIVar1,"surface",
+                   "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x3c8);
       } while (alwaysfails != 0);
       bVar2 = true;
     }
@@ -698,27 +725,27 @@ bool __cdecl R_TakeScreenshot(char *param_1,_D3DXIMAGE_FILEFORMAT param_2)
 
 // 00ABDE00  R_TakeScreenshotJpgCallback  (gfx_d3d/r_screenshot.cpp:975)
 
-void __cdecl R_TakeScreenshotJpgCallback(void *param_1)
+void __cdecl R_TakeScreenshotJpgCallback(void *param)
 
 {
-  R_TakeScreenshot(param_1,D3DXIFF_JPG);
+  R_TakeScreenshot(param,D3DXIFF_JPG);
   return;
 }
 
 
 // 00ABE150  R_TakeScreenshotTgaCallback  (gfx_d3d/r_screenshot.cpp:980)
 
-void __cdecl R_TakeScreenshotTgaCallback(void *param_1)
+void __cdecl R_TakeScreenshotTgaCallback(void *param)
 
 {
-  R_TakeScreenshot(param_1,D3DXIFF_TGA);
+  R_TakeScreenshot(param,D3DXIFF_TGA);
   return;
 }
 
 
 // 00ABE170  R_ScreenshotCommand  (gfx_d3d/r_screenshot.cpp:987)
 
-void __cdecl R_ScreenshotCommand(GfxScreenshotType param_1)
+void __cdecl R_ScreenshotCommand(GfxScreenshotType type)
 
 {
   byte bVar1;
@@ -735,13 +762,14 @@ void __cdecl R_ScreenshotCommand(GfxScreenshotType param_1)
   int local_60;
   byte *local_58;
   byte *local_54;
-  char *local_8;
+  int silent;
+  char *extension;
   
-  if (param_1 == R_SCREENSHOT_JPG) {
-    local_8 = "jpg";
+  if (type == R_SCREENSHOT_JPG) {
+    extension = "jpg";
   }
   else {
-    if (param_1 != R_SCREENSHOT_TGA) {
+    if (type != R_SCREENSHOT_TGA) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x3ec,
                                1,"unhandled case");
       if (bVar3) {
@@ -751,7 +779,7 @@ void __cdecl R_ScreenshotCommand(GfxScreenshotType param_1)
       (*pcVar2)();
       return;
     }
-    local_8 = "tga";
+    extension = "tga";
   }
   local_54 = (byte *)0xc7afa4;
   local_58 = (byte *)Cmd_Argv(1);
@@ -823,7 +851,7 @@ LAB_00abe32b:
       iVar4 = Cmd_Argc();
       if ((iVar4 != 2) || (local_88 == 0)) {
         for (; lastNumber < 10000; lastNumber = lastNumber + 1) {
-          R_ScreenshotFilename(lastNumber,local_8,filename);
+          R_ScreenshotFilename(lastNumber,extension,filename);
           iVar4 = FS_FileExists(filename);
           if (iVar4 == 0) break;
         }
@@ -837,11 +865,11 @@ LAB_00abe32b:
         Cmd_Argv(1);
         Com_sprintf(filename,0x100,"screenshots/%s.%s");
       }
-      if (param_1 == R_SCREENSHOT_JPG) {
+      if (type == R_SCREENSHOT_JPG) {
         RB_Resource_CallbackParam(R_TakeScreenshotJpgCallback,filename);
       }
       else {
-        if (param_1 != R_SCREENSHOT_TGA) {
+        if (type != R_SCREENSHOT_TGA) {
           bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",
                                    0x42f,1,"unhandled case");
           if (bVar3) {
@@ -864,22 +892,22 @@ LAB_00abe32b:
 
 // 00ABE660  R_BeginHiResShot  (gfx_d3d/r_screenshot.cpp:1082)
 
-void __cdecl R_BeginHiResShot(int param_1)
+void __cdecl R_BeginHiResShot(int tiles)
 
 {
   rg.renderHiResShot = 1;
-  rg.hiResShotTiles = param_1;
+  rg.hiResShotTiles = tiles;
   return;
 }
 
 
 // 00ABE680  R_UpdateHiResShot  (gfx_d3d/r_screenshot.cpp:1088)
 
-void __cdecl R_UpdateHiResShot(float param_1,float param_2)
+void __cdecl R_UpdateHiResShot(float row,float col)
 
 {
-  rg.hiResShotRow = param_1;
-  rg.hiResShotCol = param_2;
+  rg.hiResShotRow = row;
+  rg.hiResShotCol = col;
   return;
 }
 
@@ -898,7 +926,7 @@ void __cdecl R_EndHiResShot(void)
 // 00ABF260  R_CubemapShotCalcReflectionFactor  (gfx_d3d/r_screenshot.cpp:1103)
 
 uchar __cdecl
-R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float param_4,float param_5)
+R_CubemapShotCalcReflectionFactor(int shotIndex,int colIndex,int rowIndex,float n0,float n1)
 
 {
   code *pcVar1;
@@ -908,11 +936,12 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
   float fVar5;
   float fVar6;
   uchar local_4c;
-  float local_14;
+  float dir;
   float local_10;
   float local_c;
+  float refraction;
   
-  if (param_1 < 1) {
+  if (shotIndex < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x453,0,
                              "%s\n\t(shotIndex) = %i");
     if (!bVar2) {
@@ -921,7 +950,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if (6 < param_1) {
+  if (6 < shotIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x454,0,
                              "%s\n\t(shotIndex) = %i");
     if (!bVar2) {
@@ -930,7 +959,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if (param_2 < 0) {
+  if (colIndex < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x455,0,
                              "%s\n\t(colIndex) = %i");
     if (!bVar2) {
@@ -939,7 +968,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if ((int)(uint)gfxMetrics.cubemapShotRes <= param_2) {
+  if ((int)(uint)gfxMetrics.cubemapShotRes <= colIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x456,0,
                              "%s\n\t(colIndex) = %i");
     if (!bVar2) {
@@ -948,7 +977,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if (param_3 < 0) {
+  if (rowIndex < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x457,0,
                              "%s\n\t(rowIndex) = %i");
     if (!bVar2) {
@@ -957,7 +986,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if ((int)(uint)gfxMetrics.cubemapShotRes <= param_3) {
+  if ((int)(uint)gfxMetrics.cubemapShotRes <= rowIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x458,0,
                              "%s\n\t(rowIndex) = %i");
     if (!bVar2) {
@@ -966,7 +995,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if (param_4 == 0.0) {
+  if (n0 == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x459,0,
                              "%s\n\t(n0) = %g");
     if (!bVar2) {
@@ -975,7 +1004,7 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
       return uVar3;
     }
   }
-  if (param_5 == 0.0) {
+  if (n1 == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x45a,0,
                              "%s\n\t(n1) = %g");
     if (!bVar2) {
@@ -985,16 +1014,16 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
     }
   }
   fVar4 = (float)gfxMetrics.cubemapShotRes * 0.5;
-  fVar5 = ((float)param_2 - (float)gfxMetrics.cubemapShotRes * 0.5) + 0.5;
-  fVar6 = ((float)param_3 - (float)gfxMetrics.cubemapShotRes * 0.5) + 0.5;
-  local_14 = fVar6 * cubemapShotAxis[param_1][2][0] +
-             fVar5 * cubemapShotAxis[param_1][1][0] + fVar4 * cubemapShotAxis[param_1][0][0];
-  local_10 = fVar6 * cubemapShotAxis[param_1][2][1] +
-             fVar5 * cubemapShotAxis[param_1][1][1] + fVar4 * cubemapShotAxis[param_1][0][1];
-  local_c = fVar6 * cubemapShotAxis[param_1][2][2] +
-            fVar5 * cubemapShotAxis[param_1][1][2] + fVar4 * cubemapShotAxis[param_1][0][2];
-  Vec3Normalize(&local_14);
-  fVar4 = FresnelTerm(param_4,param_5,local_c);
+  fVar5 = ((float)colIndex - (float)gfxMetrics.cubemapShotRes * 0.5) + 0.5;
+  fVar6 = ((float)rowIndex - (float)gfxMetrics.cubemapShotRes * 0.5) + 0.5;
+  dir = fVar6 * cubemapShotAxis[shotIndex][2][0] +
+        fVar5 * cubemapShotAxis[shotIndex][1][0] + fVar4 * cubemapShotAxis[shotIndex][0][0];
+  local_10 = fVar6 * cubemapShotAxis[shotIndex][2][1] +
+             fVar5 * cubemapShotAxis[shotIndex][1][1] + fVar4 * cubemapShotAxis[shotIndex][0][1];
+  local_c = fVar6 * cubemapShotAxis[shotIndex][2][2] +
+            fVar5 * cubemapShotAxis[shotIndex][1][2] + fVar4 * cubemapShotAxis[shotIndex][0][2];
+  Vec3Normalize(&dir);
+  fVar4 = FresnelTerm(n0,n1,local_c);
   local_4c = (uchar)(int)ROUND(fVar4 * 255.0 + 9.313226e-10);
   return local_4c;
 }
@@ -1002,18 +1031,21 @@ R_CubemapShotCalcReflectionFactor(int param_1,int param_2,int param_3,float para
 
 // 00ABFC40  R_CubemapFaceNormalize  (gfx_d3d/r_screenshot.cpp:1131)
 
-void __cdecl R_CubemapFaceNormalize(float *param_1,int param_2,float *param_3)
+void __cdecl R_CubemapFaceNormalize(float *inbuffer,int size,float *average)
 
 {
-  int local_18;
-  float *local_14;
+  int i;
+  float *src;
+  float r;
+  float g;
+  float b;
   
-  local_14 = param_1;
-  for (local_18 = 0; local_18 < param_2 * param_2; local_18 = local_18 + 1) {
-    *local_14 = *local_14 * *param_3;
-    local_14[1] = local_14[1] * param_3[1];
-    local_14[2] = local_14[2] * param_3[2];
-    local_14 = local_14 + 4;
+  src = inbuffer;
+  for (i = 0; i < size * size; i = i + 1) {
+    *src = *src * *average;
+    src[1] = src[1] * average[1];
+    src[2] = src[2] * average[2];
+    src = src + 4;
   }
   return;
 }
@@ -1021,36 +1053,36 @@ void __cdecl R_CubemapFaceNormalize(float *param_1,int param_2,float *param_3)
 
 // 00ABFCE0  R_CubemapShotRotateClockwise  (gfx_d3d/r_screenshot.cpp:1148)
 
-void __cdecl R_CubemapShotRotateClockwise(float *param_1,float *param_2,int param_3)
+void __cdecl R_CubemapShotRotateClockwise(float *inbuffer,float *tmpbuffer,int size)
 
 {
   float *pfVar1;
   float *pfVar2;
-  int local_18;
-  int local_14;
-  int local_10;
-  float *local_c;
-  float *local_8;
+  int i;
+  int x;
+  int y;
+  float *dstpixel;
+  float *srcpixel;
   
-  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {
-    for (local_14 = 0; local_14 < param_3; local_14 = local_14 + 1) {
-      pfVar1 = param_1 + (local_10 * param_3 + local_14) * 4;
-      pfVar2 = param_2 + (local_14 * param_3 + ((param_3 + -1) - local_10)) * 4;
+  for (y = 0; y < size; y = y + 1) {
+    for (x = 0; x < size; x = x + 1) {
+      pfVar1 = inbuffer + (y * size + x) * 4;
+      pfVar2 = tmpbuffer + (x * size + ((size + -1) - y)) * 4;
       *pfVar2 = *pfVar1;
       pfVar2[1] = pfVar1[1];
       pfVar2[2] = pfVar1[2];
       pfVar2[3] = pfVar1[3];
     }
   }
-  local_8 = param_2;
-  local_c = param_1;
-  for (local_18 = 0; local_18 < param_3 * param_3; local_18 = local_18 + 1) {
-    *local_c = *local_8;
-    local_c[1] = local_8[1];
-    local_c[2] = local_8[2];
-    local_c[3] = local_8[3];
-    local_8 = local_8 + 4;
-    local_c = local_c + 4;
+  srcpixel = tmpbuffer;
+  dstpixel = inbuffer;
+  for (i = 0; i < size * size; i = i + 1) {
+    *dstpixel = *srcpixel;
+    dstpixel[1] = srcpixel[1];
+    dstpixel[2] = srcpixel[2];
+    dstpixel[3] = srcpixel[3];
+    srcpixel = srcpixel + 4;
+    dstpixel = dstpixel + 4;
   }
   return;
 }
@@ -1058,36 +1090,36 @@ void __cdecl R_CubemapShotRotateClockwise(float *param_1,float *param_2,int para
 
 // 00ABFE00  R_CubemapShotRotateAntiClockwise  (gfx_d3d/r_screenshot.cpp:1182)
 
-void __cdecl R_CubemapShotRotateAntiClockwise(float *param_1,float *param_2,int param_3)
+void __cdecl R_CubemapShotRotateAntiClockwise(float *inbuffer,float *tmpbuffer,int size)
 
 {
   float *pfVar1;
   float *pfVar2;
-  int local_18;
-  int local_14;
-  int local_10;
-  float *local_c;
-  float *local_8;
+  int i;
+  int x;
+  int y;
+  float *dstpixel;
+  float *srcpixel;
   
-  for (local_10 = 0; local_10 < param_3; local_10 = local_10 + 1) {
-    for (local_14 = 0; local_14 < param_3; local_14 = local_14 + 1) {
-      pfVar1 = param_1 + (local_10 * param_3 + local_14) * 4;
-      pfVar2 = param_2 + (((param_3 + -1) - local_14) * param_3 + local_10) * 4;
+  for (y = 0; y < size; y = y + 1) {
+    for (x = 0; x < size; x = x + 1) {
+      pfVar1 = inbuffer + (y * size + x) * 4;
+      pfVar2 = tmpbuffer + (((size + -1) - x) * size + y) * 4;
       *pfVar2 = *pfVar1;
       pfVar2[1] = pfVar1[1];
       pfVar2[2] = pfVar1[2];
       pfVar2[3] = pfVar1[3];
     }
   }
-  local_8 = param_2;
-  local_c = param_1;
-  for (local_18 = 0; local_18 < param_3 * param_3; local_18 = local_18 + 1) {
-    *local_c = *local_8;
-    local_c[1] = local_8[1];
-    local_c[2] = local_8[2];
-    local_c[3] = local_8[3];
-    local_8 = local_8 + 4;
-    local_c = local_c + 4;
+  srcpixel = tmpbuffer;
+  dstpixel = inbuffer;
+  for (i = 0; i < size * size; i = i + 1) {
+    *dstpixel = *srcpixel;
+    dstpixel[1] = srcpixel[1];
+    dstpixel[2] = srcpixel[2];
+    dstpixel[3] = srcpixel[3];
+    srcpixel = srcpixel + 4;
+    dstpixel = dstpixel + 4;
   }
   return;
 }
@@ -1095,7 +1127,7 @@ void __cdecl R_CubemapShotRotateAntiClockwise(float *param_1,float *param_2,int 
 
 // 00ABFF20  R_CubemapShotFlipVertical  (gfx_d3d/r_screenshot.cpp:1216)
 
-void __cdecl R_CubemapShotFlipVertical(float *param_1,int param_2)
+void __cdecl R_CubemapShotFlipVertical(float *buffer,int size)
 
 {
   float *pfVar1;
@@ -1104,13 +1136,19 @@ void __cdecl R_CubemapShotFlipVertical(float *param_1,int param_2)
   float fVar4;
   float fVar5;
   float fVar6;
-  int local_24;
-  int local_20;
+  int x;
+  int y;
+  float tmp0;
+  float tmp1;
+  float tmp2;
+  float *dstpixel;
+  float tmp3;
+  float *srcpixel;
   
-  for (local_20 = 0; local_20 < param_2 / 2; local_20 = local_20 + 1) {
-    for (local_24 = 0; local_24 < param_2; local_24 = local_24 + 1) {
-      pfVar1 = param_1 + (local_20 * param_2 + local_24) * 4;
-      pfVar2 = param_1 + (((param_2 + -1) - local_20) * param_2 + local_24) * 4;
+  for (y = 0; y < size / 2; y = y + 1) {
+    for (x = 0; x < size; x = x + 1) {
+      pfVar1 = buffer + (y * size + x) * 4;
+      pfVar2 = buffer + (((size + -1) - y) * size + x) * 4;
       fVar3 = *pfVar1;
       fVar4 = pfVar1[1];
       fVar5 = pfVar1[2];
@@ -1131,7 +1169,7 @@ void __cdecl R_CubemapShotFlipVertical(float *param_1,int param_2)
 
 // 00AC0040  R_CubemapShotFlipHorizontal  (gfx_d3d/r_screenshot.cpp:1243)
 
-void __cdecl R_CubemapShotFlipHorizontal(float *param_1,int param_2)
+void __cdecl R_CubemapShotFlipHorizontal(float *buffer,int size)
 
 {
   float *pfVar1;
@@ -1140,13 +1178,19 @@ void __cdecl R_CubemapShotFlipHorizontal(float *param_1,int param_2)
   float fVar4;
   float fVar5;
   float fVar6;
-  int local_24;
-  int local_20;
+  int x;
+  int y;
+  float tmp0;
+  float tmp1;
+  float tmp2;
+  float *dstpixel;
+  float tmp3;
+  float *srcpixel;
   
-  for (local_20 = 0; local_20 < param_2; local_20 = local_20 + 1) {
-    for (local_24 = 0; local_24 < param_2 / 2; local_24 = local_24 + 1) {
-      pfVar1 = param_1 + (local_20 * param_2 + local_24) * 4;
-      pfVar2 = param_1 + (((param_2 + -1) - local_24) + local_20 * param_2) * 4;
+  for (y = 0; y < size; y = y + 1) {
+    for (x = 0; x < size / 2; x = x + 1) {
+      pfVar1 = buffer + (y * size + x) * 4;
+      pfVar2 = buffer + (((size + -1) - x) + y * size) * 4;
       fVar3 = *pfVar1;
       fVar4 = pfVar1[1];
       fVar5 = pfVar1[2];
@@ -1167,13 +1211,13 @@ void __cdecl R_CubemapShotFlipHorizontal(float *param_1,int param_2)
 
 // 00ABEA00  R_CubemapShotCopySurfaceToBufferHDR  (gfx_d3d/r_screenshot.cpp:1299)
 
-void __cdecl R_CubemapShotCopySurfaceToBufferHDR(float *param_1,int param_2)
+void __cdecl R_CubemapShotCopySurfaceToBufferHDR(float *buffer,int bufferSizeInBytes)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 < 1) {
+  if (bufferSizeInBytes < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x516,0,
                              "%s\n\t(bufferSizeInBytes) = %i");
     if (!bVar2) {
@@ -1184,20 +1228,20 @@ void __cdecl R_CubemapShotCopySurfaceToBufferHDR(float *param_1,int param_2)
   }
   R_GetBackBufferDataHDR
             ((uint)gfxMetrics.cubemapShotPixelBorder,(uint)gfxMetrics.cubemapShotPixelBorder,
-             (uint)gfxMetrics.cubemapShotRes,(uint)gfxMetrics.cubemapShotRes,4,param_1);
+             (uint)gfxMetrics.cubemapShotRes,(uint)gfxMetrics.cubemapShotRes,4,buffer);
   return;
 }
 
 
 // 00ABF030  R_CubemapShotWriteTargaHeader  (gfx_d3d/r_screenshot.cpp:1332)
 
-void __cdecl R_CubemapShotWriteTargaHeader(int param_1,uchar *param_2)
+void __cdecl R_CubemapShotWriteTargaHeader(int res,uchar *fileBuffer)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 < 1) {
+  if (res < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x536,0,
                              "%s\n\t(res) = %i");
     if (!bVar2) {
@@ -1206,52 +1250,54 @@ void __cdecl R_CubemapShotWriteTargaHeader(int param_1,uchar *param_2)
       return;
     }
   }
-  param_2[0] = '\0';
-  param_2[1] = '\0';
-  param_2[2] = '\0';
-  param_2[3] = '\0';
-  param_2[4] = '\0';
-  param_2[5] = '\0';
-  param_2[6] = '\0';
-  param_2[7] = '\0';
-  param_2[8] = '\0';
-  param_2[9] = '\0';
-  param_2[10] = '\0';
-  param_2[0xb] = '\0';
-  param_2[0xc] = '\0';
-  param_2[0xd] = '\0';
-  param_2[0xe] = '\0';
-  param_2[0xf] = '\0';
-  param_2[0x10] = '\0';
-  param_2[0x11] = '\0';
-  param_2[2] = '\x02';
-  param_2[0xc] = (uchar)param_1;
-  param_2[0xd] = (uchar)((uint)param_1 >> 8);
-  param_2[0xe] = param_2[0xc];
-  param_2[0xf] = param_2[0xd];
-  param_2[0x10] = ' ';
+  fileBuffer[0] = '\0';
+  fileBuffer[1] = '\0';
+  fileBuffer[2] = '\0';
+  fileBuffer[3] = '\0';
+  fileBuffer[4] = '\0';
+  fileBuffer[5] = '\0';
+  fileBuffer[6] = '\0';
+  fileBuffer[7] = '\0';
+  fileBuffer[8] = '\0';
+  fileBuffer[9] = '\0';
+  fileBuffer[10] = '\0';
+  fileBuffer[0xb] = '\0';
+  fileBuffer[0xc] = '\0';
+  fileBuffer[0xd] = '\0';
+  fileBuffer[0xe] = '\0';
+  fileBuffer[0xf] = '\0';
+  fileBuffer[0x10] = '\0';
+  fileBuffer[0x11] = '\0';
+  fileBuffer[2] = '\x02';
+  fileBuffer[0xc] = (uchar)res;
+  fileBuffer[0xd] = (uchar)((uint)res >> 8);
+  fileBuffer[0xe] = fileBuffer[0xc];
+  fileBuffer[0xf] = fileBuffer[0xd];
+  fileBuffer[0x10] = ' ';
   return;
 }
 
 
 // 00ABF0C0  R_CubemapShotCopyBufferToTarga  (gfx_d3d/r_screenshot.cpp:1349)
 
-void __cdecl R_CubemapShotCopyBufferToTarga(uchar *param_1,uchar *param_2)
+void __cdecl R_CubemapShotCopyBufferToTarga(uchar *srcBuffer,uchar *targa)
 
 {
   int iVar1;
   int iVar2;
-  int local_10;
-  int local_c;
+  int srcIndex;
+  int colIndex;
+  int rowIndex;
+  int dstIndex;
   
-  for (local_c = 0; local_c < (int)(uint)gfxMetrics.cubemapShotRes; local_c = local_c + 1) {
-    for (local_10 = 0; local_10 < (int)(uint)gfxMetrics.cubemapShotRes; local_10 = local_10 + 1) {
-      iVar2 = ((uint)gfxMetrics.cubemapShotRes * local_c + local_10) * 4;
-      iVar1 = ((uint)gfxMetrics.cubemapShotRes * local_c + local_10) * 4;
-      param_2[iVar1 + 0x14] = param_1[iVar2 + 2];
-      param_2[iVar1 + 0x13] = param_1[iVar2 + 1];
-      param_2[iVar1 + 0x12] = param_1[iVar2];
-      param_2[iVar1 + 0x15] = param_1[iVar2 + 3];
+  for (rowIndex = 0; rowIndex < (int)(uint)gfxMetrics.cubemapShotRes; rowIndex = rowIndex + 1) {
+    for (colIndex = 0; colIndex < (int)(uint)gfxMetrics.cubemapShotRes; colIndex = colIndex + 1) {
+      iVar2 = ((uint)gfxMetrics.cubemapShotRes * rowIndex + colIndex) * 4;
+      iVar1 = ((uint)gfxMetrics.cubemapShotRes * rowIndex + colIndex) * 4;
+      targa[iVar1 + 0x14] = srcBuffer[iVar2 + 2];
+      targa[iVar1 + 0x13] = srcBuffer[iVar2 + 1];
+      targa[iVar1 + 0x12] = srcBuffer[iVar2];
+      targa[iVar1 + 0x15] = srcBuffer[iVar2 + 3];
     }
   }
   return;
@@ -1260,18 +1306,19 @@ void __cdecl R_CubemapShotCopyBufferToTarga(uchar *param_1,uchar *param_2)
 
 // 00ABF190  R_CubemapShotApplyFresnelToTarga  (gfx_d3d/r_screenshot.cpp:1374)
 
-void __cdecl
-R_CubemapShotApplyFresnelToTarga(CubemapShot param_1,float param_2,float param_3,uchar *param_4)
+void __cdecl R_CubemapShotApplyFresnelToTarga(CubemapShot shotIndex,float n0,float n1,uchar *targa)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar uVar3;
   uint uVar4;
-  int local_14;
-  int local_10;
+  int colIndex;
+  int rowIndex;
+  int dstIndex;
+  uchar reflectionFactor;
   
-  if (((int)param_1 < 1) || (6 < (int)param_1)) {
+  if (((int)shotIndex < 1) || (6 < (int)shotIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x565,0,
                              "%s\n\t(shotIndex) = %i");
     if (!bVar2) {
@@ -1280,11 +1327,11 @@ R_CubemapShotApplyFresnelToTarga(CubemapShot param_1,float param_2,float param_3
       return;
     }
   }
-  for (local_10 = 0; local_10 < (int)(uint)gfxMetrics.cubemapShotRes; local_10 = local_10 + 1) {
-    for (local_14 = 0; local_14 < (int)(uint)gfxMetrics.cubemapShotRes; local_14 = local_14 + 1) {
+  for (rowIndex = 0; rowIndex < (int)(uint)gfxMetrics.cubemapShotRes; rowIndex = rowIndex + 1) {
+    for (colIndex = 0; colIndex < (int)(uint)gfxMetrics.cubemapShotRes; colIndex = colIndex + 1) {
       uVar4 = (uint)gfxMetrics.cubemapShotRes;
-      uVar3 = R_CubemapShotCalcReflectionFactor(param_1,local_14,local_10,param_2,param_3);
-      param_4[(uVar4 * local_10 + local_14) * 4 + 0x15] = uVar3;
+      uVar3 = R_CubemapShotCalcReflectionFactor(shotIndex,colIndex,rowIndex,n0,n1);
+      targa[(uVar4 * rowIndex + colIndex) * 4 + 0x15] = uVar3;
     }
   }
   return;
@@ -1293,16 +1340,18 @@ R_CubemapShotApplyFresnelToTarga(CubemapShot param_1,float param_2,float param_3
 
 // 00ABE8E0  R_CopyCubemapShot  (gfx_d3d/r_screenshot.cpp:1395)
 
-void __cdecl R_CopyCubemapShot(CubemapShot param_1)
+void __cdecl R_CopyCubemapShot(CubemapShot shotIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   float *pfVar4;
-  int iVar5;
+  int size;
+  int imgIndex;
+  int sizeInBytes;
   
-  if (((int)param_1 < 1) || (6 < (int)param_1)) {
+  if (((int)shotIndex < 1) || (6 < (int)shotIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x577,0,
                              "%s\n\t(shotIndex) = %i");
     if (!bVar2) {
@@ -1311,10 +1360,10 @@ void __cdecl R_CopyCubemapShot(CubemapShot param_1)
       return;
     }
   }
-  iVar5 = (uint)gfxMetrics.cubemapShotRes * (uint)gfxMetrics.cubemapShotRes * 0x10;
-  puVar3 = Z_VirtualAlloc(iVar5,"R_CopyCubemapShotHDR",0x17);
-  cubeShotGlob.pixels[param_1 + CUBEMAPSHOT_UP] = puVar3;
-  if (cubeShotGlob.pixels[param_1 + CUBEMAPSHOT_UP] == (uchar *)0x0) {
+  size = (uint)gfxMetrics.cubemapShotRes * (uint)gfxMetrics.cubemapShotRes * 0x10;
+  puVar3 = Z_VirtualAlloc(size,"R_CopyCubemapShotHDR",0x17);
+  cubeShotGlob.pixels[shotIndex + CUBEMAPSHOT_UP] = puVar3;
+  if (cubeShotGlob.pixels[shotIndex + CUBEMAPSHOT_UP] == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x57c,1,
                              "%s");
     if (!bVar2) {
@@ -1323,9 +1372,9 @@ void __cdecl R_CopyCubemapShot(CubemapShot param_1)
       return;
     }
   }
-  pfVar4 = Z_VirtualAlloc(iVar5,"R_CopyCubemapShotHDRcorrected",0x17);
-  cubeShotGlob.pixelsHDR[param_1 + CUBEMAPSHOT_UP] = pfVar4;
-  if (cubeShotGlob.pixelsHDR[param_1 + CUBEMAPSHOT_UP] == (float *)0x0) {
+  pfVar4 = Z_VirtualAlloc(size,"R_CopyCubemapShotHDRcorrected",0x17);
+  cubeShotGlob.pixelsHDR[shotIndex + CUBEMAPSHOT_UP] = pfVar4;
+  if (cubeShotGlob.pixelsHDR[shotIndex + CUBEMAPSHOT_UP] == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x57e,1,
                              "%s");
     if (!bVar2) {
@@ -1334,48 +1383,51 @@ void __cdecl R_CopyCubemapShot(CubemapShot param_1)
       return;
     }
   }
-  R_CubemapShotCopySurfaceToBufferHDR((float *)cubeShotGlob.pixels[param_1 + CUBEMAPSHOT_UP],iVar5);
+  R_CubemapShotCopySurfaceToBufferHDR((float *)cubeShotGlob.pixels[shotIndex + CUBEMAPSHOT_UP],size)
+  ;
   return;
 }
 
 
 // 00ABEF00  R_CubemapShotWriteTargaFile  (gfx_d3d/r_screenshot.cpp:1417)
 
-void __cdecl
-R_CubemapShotWriteTargaFile(char *param_1,CubemapShot param_2,float param_3,float param_4)
+void __cdecl R_CubemapShotWriteTargaFile(char *filename,CubemapShot shotIndex,float n0,float n1)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
-  uchar *puVar4;
+  int size;
+  code *pcVar1;
+  bool bVar2;
+  uchar *fileBuffer;
+  int imgIndex;
+  int fileSize;
+  uchar *targa;
   
-  if (((int)param_2 < 1) || (6 < (int)param_2)) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x58f,0,
+  if (((int)shotIndex < 1) || (6 < (int)shotIndex)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x58f,0,
                              "%s\n\t(shotIndex) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  iVar1 = (uint)gfxMetrics.cubemapShotRes * (uint)gfxMetrics.cubemapShotRes * 4 + 0x12;
-  puVar4 = Z_VirtualAlloc(iVar1,"R_CubemapShotWriteTargaFile",0x17);
-  if (puVar4 == (uchar *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x594,1,
+  size = (uint)gfxMetrics.cubemapShotRes * (uint)gfxMetrics.cubemapShotRes * 4 + 0x12;
+  fileBuffer = Z_VirtualAlloc(size,"R_CubemapShotWriteTargaFile",0x17);
+  if (fileBuffer == (uchar *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x594,1,
                              "%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  R_CubemapShotWriteTargaHeader((uint)gfxMetrics.cubemapShotRes,puVar4);
-  R_CubemapShotCopyBufferToTarga(cubeShotGlob.pixels[param_2 - CUBEMAPSHOT_RIGHT],puVar4);
-  R_CubemapShotApplyFresnelToTarga(param_2,param_3,param_4,puVar4);
-  FS_WriteFile(param_1,puVar4,iVar1);
-  Z_VirtualFree(puVar4,0x17);
-  Z_VirtualFree(cubeShotGlob.pixels[param_2 - CUBEMAPSHOT_RIGHT],0x17);
+  R_CubemapShotWriteTargaHeader((uint)gfxMetrics.cubemapShotRes,fileBuffer);
+  R_CubemapShotCopyBufferToTarga(cubeShotGlob.pixels[shotIndex - CUBEMAPSHOT_RIGHT],fileBuffer);
+  R_CubemapShotApplyFresnelToTarga(shotIndex,n0,n1,fileBuffer);
+  FS_WriteFile(filename,fileBuffer,size);
+  Z_VirtualFree(fileBuffer,0x17);
+  Z_VirtualFree(cubeShotGlob.pixels[shotIndex - CUBEMAPSHOT_RIGHT],0x17);
   return;
 }
 
@@ -1387,7 +1439,10 @@ void __cdecl R_CubemapShotSetInitialState(void)
 {
   int iVar1;
   int iVar2;
-  int iVar3;
+  int hr_00;
+  int semaphore_2;
+  HRESULT hr;
+  int semaphore;
   
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x02');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x02');
@@ -1399,13 +1454,13 @@ void __cdecl R_CubemapShotSetInitialState(void)
                );
   }
   iVar2 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar3 = (**(code **)((int)*dx.device + 0xac))(dx.device,0,0,7,0xffff00ff,0x3f800000,0);
+  hr_00 = (**(code **)((int)*dx.device + 0xac))(dx.device,0,0,7,0xffff00ff,0x3f800000,0);
   if (iVar2 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar3 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar3);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp (%i) dx.device->Clear( 0, 0, 0x00000001l | 0x00000002l | 0x00000004l, ((D3DCOLOR)((((255)&0xff)<<24)|(((255)&0xff)<<16)|(((0)&0xff)<<8)|((255)&0xff))), (( 1/(((((( 1/(((((0 || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((0 || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) || ( 1/(((((( 1/(((((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) && 1) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) && 1)&~1) == 0)))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((((0 || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((0 || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) || ( 1/(((((( 1/(((((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) && 1) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1)) ? (0x7fffffff) : (-0x7fffffff)) * (((( 1/(((-0x7fffffff))/(0x7fffffff)) == 1) || 0 || ( 1/(((-0x7fffffff))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) && 1)&~1) == 0)))/(0x7fffffff)) == 1))&~1) == 0)))/(0x7fffffff)) == 1) ? 0.0f : 1.0f), 0 ) failed: %s\n"
              );
@@ -1430,13 +1485,13 @@ void __cdecl R_CubemapShotRestoreState(void)
 
 // 00ABE6C0  R_BeginCubemapShot  (gfx_d3d/r_screenshot.cpp:1458)
 
-void __cdecl R_BeginCubemapShot(int param_1,int param_2)
+void __cdecl R_BeginCubemapShot(int pixelWidthHeight,int pixelBorder)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 < 1) {
+  if (pixelWidthHeight < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x5b3,0,
                              "%s\n\t(pixelWidthHeight) = %i");
     if (!bVar2) {
@@ -1445,7 +1500,7 @@ void __cdecl R_BeginCubemapShot(int param_1,int param_2)
       return;
     }
   }
-  if (0xffff < param_1) {
+  if (0xffff < pixelWidthHeight) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x5b4,0,
                              "%s\n\t(pixelWidthHeight) = %i");
     if (!bVar2) {
@@ -1454,7 +1509,7 @@ void __cdecl R_BeginCubemapShot(int param_1,int param_2)
       return;
     }
   }
-  if (param_2 < 0) {
+  if (pixelBorder < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x5b5,0,
                              "%s\n\t(pixelBorder) = %i");
     if (!bVar2) {
@@ -1463,7 +1518,7 @@ void __cdecl R_BeginCubemapShot(int param_1,int param_2)
       return;
     }
   }
-  if (param_1 <= param_2) {
+  if (pixelWidthHeight <= pixelBorder) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_screenshot.cpp",0x5b6,0,
                              "%s\n\t(pixelBorder) = %i");
     if (!bVar2) {
@@ -1472,8 +1527,8 @@ void __cdecl R_BeginCubemapShot(int param_1,int param_2)
       return;
     }
   }
-  gfxMetrics.cubemapShotRes = (ushort)param_1;
-  gfxMetrics.cubemapShotPixelBorder = (ushort)param_2;
+  gfxMetrics.cubemapShotRes = (ushort)pixelWidthHeight;
+  gfxMetrics.cubemapShotPixelBorder = (ushort)pixelBorder;
   R_CubemapShotSetInitialState();
   return;
 }
@@ -1481,10 +1536,10 @@ void __cdecl R_BeginCubemapShot(int param_1,int param_2)
 
 // 00ABE8C0  R_EndCubemapShot  (gfx_d3d/r_screenshot.cpp:1475)
 
-void __cdecl R_EndCubemapShot(CubemapShot param_1)
+void __cdecl R_EndCubemapShot(CubemapShot shotIndex)
 
 {
-  R_CopyCubemapShot(param_1);
+  R_CopyCubemapShot(shotIndex);
   R_CubemapShotRestoreState();
   return;
 }
@@ -1492,10 +1547,10 @@ void __cdecl R_EndCubemapShot(CubemapShot param_1)
 
 // 00ABEED0  R_SaveCubemapShot  (gfx_d3d/r_screenshot.cpp:1485)
 
-void __cdecl R_SaveCubemapShot(char *param_1,CubemapShot param_2,float param_3,float param_4)
+void __cdecl R_SaveCubemapShot(char *filename,CubemapShot shotIndex,float n0,float n1)
 
 {
-  R_CubemapShotWriteTargaFile(param_1,param_2,param_3,param_4);
+  R_CubemapShotWriteTargaFile(filename,shotIndex,n0,n1);
   return;
 }
 
@@ -1505,56 +1560,69 @@ void __cdecl R_SaveCubemapShot(char *param_1,CubemapShot param_2,float param_3,f
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_CreateReflectionRawDataFromCubemapShot(DiskGfxReflectionProbe *param_1,int param_2)
+void __cdecl
+R_CreateReflectionRawDataFromCubemapShot(DiskGfxReflectionProbe *probeRawData,int downSampleRes)
 
 {
-  uint uVar1;
-  int iVar2;
+  uint size;
+  int iVar1;
   int local_27ac;
   int local_27a8;
   float local_27a4;
   float local_27a0;
   float local_279c;
-  int local_2798;
-  int local_2790;
-  int local_278c;
-  int local_2784;
-  int local_2780;
-  int local_277c;
-  int local_2778;
-  uchar *local_2764;
-  float local_2748;
+  int imgIndex_5;
+  int res_2;
+  int i_2;
+  int imgIndex_4;
+  int res;
+  int i;
+  int imgIndex_3;
+  int imgIndex_2;
+  int imgIndex;
+  char g_bUseSolidAngle;
+  int dstType;
+  float g_BaseFilterAngle;
+  int mipcount;
+  uchar *rawPixels;
+  int probeRes;
+  float g_InitialMipAngle;
+  int cubebaseRes;
+  float g_MipAnglePerLevelScale;
+  int g_FixupType;
+  int g_FilterType;
+  float average;
   float local_2744;
   float local_2740;
-  CCubeMapProcessor local_273c;
+  CCubeMapProcessor cubeMapProcessor;
   uint local_c;
-  undefined4 local_8;
+  int g_FixupWidth;
   
-  local_8 = 0xabf5dd;
+  g_FixupWidth = 0xabf5dd;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar1 = (uint)gfxMetrics.cubemapShotRes;
-  local_2764 = param_1->pixels;
+  size = (uint)gfxMetrics.cubemapShotRes;
+  rawPixels = probeRawData->pixels;
   R_CubemapShotRotateAntiClockwise
-            (cubeShotGlob.pixelsHDR[0],cubeShotGlob.pixelsHDRcorrected[0],uVar1);
-  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[0],uVar1);
-  R_CubemapShotRotateClockwise(cubeShotGlob.pixelsHDR[1],cubeShotGlob.pixelsHDRcorrected[1],uVar1);
-  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[1],uVar1);
-  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[2],uVar1);
-  R_CubemapShotFlipHorizontal(cubeShotGlob.pixelsHDR[3],uVar1);
+            (cubeShotGlob.pixelsHDR[0],cubeShotGlob.pixelsHDRcorrected[0],size);
+  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[0],size);
+  R_CubemapShotRotateClockwise(cubeShotGlob.pixelsHDR[1],cubeShotGlob.pixelsHDRcorrected[1],size);
+  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[1],size);
+  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[2],size);
+  R_CubemapShotFlipHorizontal(cubeShotGlob.pixelsHDR[3],size);
   R_CubemapShotRotateAntiClockwise
-            (cubeShotGlob.pixelsHDR[4],cubeShotGlob.pixelsHDRcorrected[4],uVar1);
-  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[4],uVar1);
+            (cubeShotGlob.pixelsHDR[4],cubeShotGlob.pixelsHDRcorrected[4],size);
+  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[4],size);
   R_CubemapShotRotateAntiClockwise
-            (cubeShotGlob.pixelsHDR[5],cubeShotGlob.pixelsHDRcorrected[5],uVar1);
-  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[5],uVar1);
-  R_GetAverageSecondaryLightingAtPoint(param_1->origin,&local_2748);
-  if (local_2748 <= 0.0) {
+            (cubeShotGlob.pixelsHDR[5],cubeShotGlob.pixelsHDRcorrected[5],size);
+  R_CubemapShotFlipVertical(cubeShotGlob.pixelsHDR[5],size);
+  R_GetAverageSecondaryLightingAtPoint(probeRawData->origin,&average);
+  if (average <= 0.0) {
     local_279c = 0.0;
   }
   else {
-    local_279c = 1.0 / local_2748;
+    local_279c = 1.0 / average;
   }
-  local_2748 = local_279c;
+  average = local_279c;
   if (local_2744 <= 0.0) {
     local_27a0 = 0.0;
   }
@@ -1569,68 +1637,70 @@ void __cdecl R_CreateReflectionRawDataFromCubemapShot(DiskGfxReflectionProbe *pa
     local_27a4 = 1.0 / local_2740;
   }
   local_2740 = local_27a4;
-  for (local_2778 = 0; local_2778 < 6; local_2778 = local_2778 + 1) {
-    R_CubemapFaceNormalize(cubeShotGlob.pixelsHDR[local_2778],uVar1,&local_2748);
+  for (imgIndex = 0; imgIndex < 6; imgIndex = imgIndex + 1) {
+    R_CubemapFaceNormalize(cubeShotGlob.pixelsHDR[imgIndex],size,&average);
   }
-  CCubeMapProcessor::CCubeMapProcessor(&local_273c);
-  CCubeMapProcessor::Init(&local_273c,uVar1,param_2,0x10,4);
-  for (local_277c = 0; local_277c < 6; local_277c = local_277c + 1) {
+  CCubeMapProcessor::CCubeMapProcessor(&cubeMapProcessor);
+  CCubeMapProcessor::Init(&cubeMapProcessor,size,downSampleRes,0x10,4);
+  for (imgIndex_2 = 0; imgIndex_2 < 6; imgIndex_2 = imgIndex_2 + 1) {
     CCubeMapProcessor::SetInputFaceData
-              (&local_273c,local_277c,0x1e,4,uVar1 << 4,cubeShotGlob.pixelsHDR[local_277c],63.9,1.0,
-               1.0);
+              (&cubeMapProcessor,imgIndex_2,0x1e,4,size << 4,cubeShotGlob.pixelsHDR[imgIndex_2],63.9
+               ,1.0,1.0);
   }
-  local_8 = 3;
+  g_FixupWidth = 3;
   CCubeMapProcessor::InitiateFiltering
-            (&local_273c,90.112 / (float)param_2,(90.112 / (float)param_2) * 2.0,2.0,3,2,3,'\x01');
-  while (iVar2 = CCubeMapProcessor::GetStatus(&local_273c), iVar2 == 1) {
+            (&cubeMapProcessor,90.112 / (float)downSampleRes,(90.112 / (float)downSampleRes) * 2.0,
+             2.0,3,2,3,'\x01');
+  while (iVar1 = CCubeMapProcessor::GetStatus(&cubeMapProcessor), iVar1 == 1) {
     Sleep(200);
   }
-  for (local_2780 = 0; local_2780 < 6; local_2780 = local_2780 + 1) {
-    for (local_2784 = 0; local_2784 < 1; local_2784 = local_2784 + 1) {
-      local_27a8 = local_273c.m_OutputSurface[local_2784][local_2780].m_Width;
+  for (imgIndex_3 = 0; imgIndex_3 < 6; imgIndex_3 = imgIndex_3 + 1) {
+    for (i = 0; i < 1; i = i + 1) {
+      local_27a8 = cubeMapProcessor.m_OutputSurface[i][imgIndex_3].m_Width;
       if (local_27a8 < 5) {
         local_27a8 = 4;
       }
       CCubeMapProcessor::GetOutputFaceData
-                (&local_273c,local_2780,local_2784,100,4,local_27a8,local_2764,0.125,2.0);
-      local_2764 = local_2764 + (local_27a8 * local_27a8) / 2;
+                (&cubeMapProcessor,imgIndex_3,i,100,4,local_27a8,rawPixels,0.125,2.0);
+      rawPixels = rawPixels + (local_27a8 * local_27a8) / 2;
     }
   }
-  for (local_278c = 0; local_278c < 6; local_278c = local_278c + 1) {
-    for (local_2790 = 1; local_2790 < local_273c.m_NumMipLevels; local_2790 = local_2790 + 1) {
-      local_27ac = local_273c.m_OutputSurface[local_2790][local_278c].m_Width;
+  for (imgIndex_4 = 0; imgIndex_4 < 6; imgIndex_4 = imgIndex_4 + 1) {
+    for (i_2 = 1; i_2 < cubeMapProcessor.m_NumMipLevels; i_2 = i_2 + 1) {
+      local_27ac = cubeMapProcessor.m_OutputSurface[i_2][imgIndex_4].m_Width;
       if (local_27ac < 5) {
         local_27ac = 4;
       }
       CCubeMapProcessor::GetOutputFaceData
-                (&local_273c,local_278c,local_2790,100,4,local_27ac,local_2764,0.125,2.0);
-      local_2764 = local_2764 + (local_27ac * local_27ac) / 2;
+                (&cubeMapProcessor,imgIndex_4,i_2,100,4,local_27ac,rawPixels,0.125,2.0);
+      rawPixels = rawPixels + (local_27ac * local_27ac) / 2;
     }
   }
-  for (local_2798 = 0; local_2798 < 6; local_2798 = local_2798 + 1) {
-    Z_VirtualFree(cubeShotGlob.pixelsHDR[local_2798],0x17);
-    Z_VirtualFree(cubeShotGlob.pixelsHDRcorrected[local_2798],0x17);
+  for (imgIndex_5 = 0; imgIndex_5 < 6; imgIndex_5 = imgIndex_5 + 1) {
+    Z_VirtualFree(cubeShotGlob.pixelsHDR[imgIndex_5],0x17);
+    Z_VirtualFree(cubeShotGlob.pixelsHDRcorrected[imgIndex_5],0x17);
   }
-  CCubeMapProcessor::~CCubeMapProcessor(&local_273c);
+  CCubeMapProcessor::~CCubeMapProcessor(&cubeMapProcessor);
   return;
 }
 
 
 // 00AC0340  R_GetDirForCubemapPixel  (gfx_d3d/r_screenshot.cpp:1795)
 
-void __cdecl R_GetDirForCubemapPixel(int param_1,float param_2,float param_3,float *param_4)
+void __cdecl R_GetDirForCubemapPixel(int faceIndex,float x,float y,float *dir)
 
 {
   int iVar1;
+  int shotIndex;
   
-  iVar1 = param_1 + 1;
-  *param_4 = param_2 * cubemapShotAxis[iVar1][1][0] + cubemapShotAxis[iVar1][0][0];
-  param_4[1] = param_2 * cubemapShotAxis[iVar1][1][1] + cubemapShotAxis[iVar1][0][1];
-  param_4[2] = param_2 * cubemapShotAxis[iVar1][1][2] + cubemapShotAxis[iVar1][0][2];
-  *param_4 = param_3 * cubemapShotAxis[iVar1][2][0] + *param_4;
-  param_4[1] = param_3 * cubemapShotAxis[iVar1][2][1] + param_4[1];
-  param_4[2] = param_3 * cubemapShotAxis[iVar1][2][2] + param_4[2];
-  Vec3Normalize(param_4);
+  iVar1 = faceIndex + 1;
+  *dir = x * cubemapShotAxis[iVar1][1][0] + cubemapShotAxis[iVar1][0][0];
+  dir[1] = x * cubemapShotAxis[iVar1][1][1] + cubemapShotAxis[iVar1][0][1];
+  dir[2] = x * cubemapShotAxis[iVar1][1][2] + cubemapShotAxis[iVar1][0][2];
+  *dir = y * cubemapShotAxis[iVar1][2][0] + *dir;
+  dir[1] = y * cubemapShotAxis[iVar1][2][1] + dir[1];
+  dir[2] = y * cubemapShotAxis[iVar1][2][2] + dir[2];
+  Vec3Normalize(dir);
   return;
 }
 
@@ -1639,8 +1709,7 @@ void __cdecl R_GetDirForCubemapPixel(int param_1,float param_2,float param_3,flo
 
 void __cdecl
 R_CubemapLightingForDir
-          (float (**param_1) [3],int param_2,int param_3,float *param_4,float *param_5,
-          uchar *param_6)
+          (float (**linearColors) [3],int width,int height,float *dir,float *baseColor,uchar *pixel)
 
 {
   float (*pafVar1) [3];
@@ -1656,41 +1725,41 @@ R_CubemapLightingForDir
   undefined4 in_stack_ffffff80;
   uchar local_6c;
   uchar local_58;
-  int local_30;
-  int local_2c;
-  int local_28;
-  int local_24;
-  float local_20;
+  int faceIndex;
+  int sampleCount;
+  int x;
+  int y;
+  float color;
   float local_1c;
   float local_18;
-  float local_14;
+  float sourceDir;
   float local_10;
   float local_c;
-  float local_8;
+  float facing;
   
-  local_20 = 0.0;
+  color = 0.0;
   local_1c = 0.0;
   local_18 = 0.0;
-  local_2c = 0;
-  for (local_30 = 0; local_30 < 6; local_30 = local_30 + 1) {
-    for (local_24 = 0; local_24 < param_3; local_24 = local_24 + 1) {
-      for (local_28 = 0; local_28 < param_2; local_28 = local_28 + 1) {
+  sampleCount = 0;
+  for (faceIndex = 0; faceIndex < 6; faceIndex = faceIndex + 1) {
+    for (y = 0; y < height; y = y + 1) {
+      for (x = 0; x < width; x = x + 1) {
         R_GetDirForCubemapPixel
-                  (local_30,(((float)local_28 + 0.5) * 2.0) / (float)param_2 - 1.0,
-                   (((float)local_24 + 0.5) * 2.0) / (float)param_3 - 1.0,&local_14);
-        local_8 = *param_4 * local_14 + param_4[1] * local_10 + param_4[2] * local_c;
-        if (0.0 < local_8) {
-          pafVar1 = param_1[local_30] + local_24 * param_2 + local_28;
-          local_20 = local_8 * (*pafVar1)[0] + local_20;
-          local_1c = local_8 * (*pafVar1)[1] + local_1c;
-          local_18 = local_8 * (*pafVar1)[2] + local_18;
-          local_2c = local_2c + 1;
+                  (faceIndex,(((float)x + 0.5) * 2.0) / (float)width - 1.0,
+                   (((float)y + 0.5) * 2.0) / (float)height - 1.0,&sourceDir);
+        facing = *dir * sourceDir + dir[1] * local_10 + dir[2] * local_c;
+        if (0.0 < facing) {
+          pafVar1 = linearColors[faceIndex] + y * width + x;
+          color = facing * (*pafVar1)[0] + color;
+          local_1c = facing * (*pafVar1)[1] + local_1c;
+          local_18 = facing * (*pafVar1)[2] + local_18;
+          sampleCount = sampleCount + 1;
         }
       }
     }
   }
-  fVar7 = 1.0 / (float)local_2c;
-  dVar4 = (double)(fVar7 * local_20);
+  fVar7 = 1.0 / (float)sampleCount;
+  dVar4 = (double)(fVar7 * color);
   __libm_sse2_pow((double)CONCAT44(in_stack_ffffff78,in_stack_ffffff74),
                   (double)CONCAT44(in_stack_ffffff80,in_stack_ffffff7c));
   dVar5 = (double)(fVar7 * local_1c);
@@ -1699,24 +1768,24 @@ R_CubemapLightingForDir
   dVar6 = (double)(fVar7 * local_18);
   __libm_sse2_pow((double)CONCAT44(in_stack_ffffff78,in_stack_ffffff74),
                   (double)CONCAT44(in_stack_ffffff80,in_stack_ffffff7c));
-  fVar7 = (float)dVar4 * *param_5;
-  fVar2 = (float)dVar5 * param_5[1];
-  fVar3 = (float)dVar6 * param_5[2];
+  fVar7 = (float)dVar4 * *baseColor;
+  fVar2 = (float)dVar5 * baseColor[1];
+  fVar3 = (float)dVar6 * baseColor[2];
   if (0.0 <= fVar7 - 1.0) {
     fVar7 = 1.0;
   }
   local_58 = (uchar)(int)ROUND(fVar7 * 255.0 + 9.313226e-10);
-  param_6[2] = local_58;
+  pixel[2] = local_58;
   if (0.0 <= fVar2 - 1.0) {
     fVar2 = 1.0;
   }
   local_6c = (uchar)(int)ROUND(fVar2 * 255.0 + 9.313226e-10);
-  param_6[1] = local_6c;
+  pixel[1] = local_6c;
   if (0.0 <= fVar3 - 1.0) {
     fVar3 = 1.0;
   }
-  *param_6 = (uchar)(int)ROUND(fVar3 * 255.0 + 9.313226e-10);
-  param_6[3] = 0xff;
+  *pixel = (uchar)(int)ROUND(fVar3 * 255.0 + 9.313226e-10);
+  pixel[3] = 0xff;
   return;
 }
 
@@ -1724,23 +1793,22 @@ R_CubemapLightingForDir
 // 00AC0230  R_CubemapLighting  (gfx_d3d/r_screenshot.cpp:1846)
 
 void __cdecl
-R_CubemapLighting(float (**param_1) [3],int param_2,int param_3,float *param_4,uchar **param_5)
+R_CubemapLighting(float (**linearColors) [3],int width,int height,float *baseColor,uchar **pixels)
 
 {
-  float local_1c [3];
-  int local_10;
-  int local_c;
-  int local_8;
+  float dir [3];
+  int faceIndex;
+  int x;
+  int y;
   
-  for (local_10 = 0; local_10 < 6; local_10 = local_10 + 1) {
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      for (local_c = 0; local_c < param_2; local_c = local_c + 1) {
+  for (faceIndex = 0; faceIndex < 6; faceIndex = faceIndex + 1) {
+    for (y = 0; y < height; y = y + 1) {
+      for (x = 0; x < width; x = x + 1) {
         R_GetDirForCubemapPixel
-                  (local_10,(((float)local_c + 0.5) * 2.0) / (float)param_2 - 1.0,
-                   (((float)local_8 + 0.5) * 2.0) / (float)param_3 - 1.0,local_1c);
+                  (faceIndex,(((float)x + 0.5) * 2.0) / (float)width - 1.0,
+                   (((float)y + 0.5) * 2.0) / (float)height - 1.0,dir);
         R_CubemapLightingForDir
-                  (param_1,param_2,param_3,local_1c,param_4,
-                   param_5[local_10] + (param_2 * local_8 + local_c) * 4);
+                  (linearColors,width,height,dir,baseColor,pixels[faceIndex] + (width * y + x) * 4);
       }
     }
   }
@@ -1751,7 +1819,7 @@ R_CubemapLighting(float (**param_1) [3],int param_2,int param_3,float *param_4,u
 // 00AC0830  R_CubemapShotExtractLinearLight  (gfx_d3d/r_screenshot.cpp:1866)
 
 void __cdecl
-R_CubemapShotExtractLinearLight(uchar **param_1,int param_2,int param_3,float (**param_4) [3])
+R_CubemapShotExtractLinearLight(uchar **pixels,int width,int height,float (**linearColors) [3])
 
 {
   double dVar1;
@@ -1759,32 +1827,32 @@ R_CubemapShotExtractLinearLight(uchar **param_1,int param_2,int param_3,float (*
   float in_stack_ffffffd8;
   float in_stack_ffffffdc;
   float in_stack_ffffffe0;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int faceIndex;
+  int x;
+  int y;
+  int pixelIndex;
   
-  for (local_14 = 0; local_14 < 6; local_14 = local_14 + 1) {
-    local_8 = 0;
-    for (local_c = 0; local_c < param_3; local_c = local_c + 1) {
-      for (local_10 = 0; local_10 < param_2; local_10 = local_10 + 1) {
-        dVar1 = (double)((float)param_1[local_14][local_8 * 4 + 2] * 0.003921569);
+  for (faceIndex = 0; faceIndex < 6; faceIndex = faceIndex + 1) {
+    pixelIndex = 0;
+    for (y = 0; y < height; y = y + 1) {
+      for (x = 0; x < width; x = x + 1) {
+        dVar1 = (double)((float)pixels[faceIndex][pixelIndex * 4 + 2] * 0.003921569);
         __libm_sse2_pow((double)CONCAT44(in_stack_ffffffd8,in_stack_ffffffd4),
                         (double)CONCAT44(in_stack_ffffffe0,in_stack_ffffffdc));
-        param_4[local_14][local_8][0] = (float)dVar1;
-        in_stack_ffffffe0 = (float)param_1[local_14][local_8 * 4 + 1] * 0.003921569;
+        linearColors[faceIndex][pixelIndex][0] = (float)dVar1;
+        in_stack_ffffffe0 = (float)pixels[faceIndex][pixelIndex * 4 + 1] * 0.003921569;
         dVar1 = (double)in_stack_ffffffe0;
         __libm_sse2_pow((double)CONCAT44(in_stack_ffffffd8,in_stack_ffffffd4),
                         (double)CONCAT44(in_stack_ffffffe0,in_stack_ffffffdc));
         in_stack_ffffffdc = (float)dVar1;
-        param_4[local_14][local_8][1] = in_stack_ffffffdc;
-        in_stack_ffffffd8 = (float)param_1[local_14][local_8 * 4] * 0.003921569;
+        linearColors[faceIndex][pixelIndex][1] = in_stack_ffffffdc;
+        in_stack_ffffffd8 = (float)pixels[faceIndex][pixelIndex * 4] * 0.003921569;
         dVar1 = (double)in_stack_ffffffd8;
         __libm_sse2_pow((double)CONCAT44(in_stack_ffffffd8,in_stack_ffffffd4),
                         (double)CONCAT44(in_stack_ffffffe0,in_stack_ffffffdc));
         in_stack_ffffffd4 = (float)dVar1;
-        param_4[local_14][local_8][2] = in_stack_ffffffd4;
-        local_8 = local_8 + 1;
+        linearColors[faceIndex][pixelIndex][2] = in_stack_ffffffd4;
+        pixelIndex = pixelIndex + 1;
       }
     }
   }
@@ -1794,11 +1862,12 @@ R_CubemapShotExtractLinearLight(uchar **param_1,int param_2,int param_3,float (*
 
 // 00AC0160  R_LightingFromCubemapShots  (gfx_d3d/r_screenshot.cpp:1889)
 
-void __cdecl R_LightingFromCubemapShots(float *param_1)
+void __cdecl R_LightingFromCubemapShots(float *baseColor)
 
 {
   int iVar1;
-  float (*local_1c) [3];
+  int pixelsPerFace;
+  float (*linearColors) [3];
   float (*local_18) [3];
   float (*local_14) [3];
   float (*local_10) [3];
@@ -1806,18 +1875,18 @@ void __cdecl R_LightingFromCubemapShots(float *param_1)
   float (*local_8) [3];
   
   iVar1 = (uint)gfxMetrics.cubemapShotRes * (uint)gfxMetrics.cubemapShotRes;
-  local_1c = Z_VirtualAlloc(iVar1 * 0x48,"R_LightingFromCubemapShot",0x17);
-  local_18 = local_1c + iVar1;
+  linearColors = Z_VirtualAlloc(iVar1 * 0x48,"R_LightingFromCubemapShot",0x17);
+  local_18 = linearColors + iVar1;
   local_14 = local_18 + iVar1;
   local_10 = local_14 + iVar1;
   local_c = local_10 + iVar1;
   local_8 = local_c + iVar1;
   R_CubemapShotExtractLinearLight
             (cubeShotGlob.pixels,(uint)gfxMetrics.cubemapShotRes,(uint)gfxMetrics.cubemapShotRes,
-             &local_1c);
-  R_CubemapLighting(&local_1c,(uint)gfxMetrics.cubemapShotRes,(uint)gfxMetrics.cubemapShotRes,
-                    param_1,cubeShotGlob.pixels);
-  Z_VirtualFree(local_1c,0x17);
+             &linearColors);
+  R_CubemapLighting(&linearColors,(uint)gfxMetrics.cubemapShotRes,(uint)gfxMetrics.cubemapShotRes,
+                    baseColor,cubeShotGlob.pixels);
+  Z_VirtualFree(linearColors,0x17);
   return;
 }
 

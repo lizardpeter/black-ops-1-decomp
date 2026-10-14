@@ -7,6 +7,7 @@ void __cdecl R_GenerateOutdoorImage(GfxImage *param_1)
 {
   _D3DFORMAT unaff_ESI;
   int unaff_EDI;
+  GfxImage *outdoorImage;
   
   outdoorGlob.pic = (uchar *)_Hunk_AllocateTempMemoryInternal();
   Outdoor_ComputeTexels();

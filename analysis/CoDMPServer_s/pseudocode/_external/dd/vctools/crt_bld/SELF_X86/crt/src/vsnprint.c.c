@@ -2,36 +2,35 @@
 
 // 0095B955  _vsnprintf_l  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c:107)
 
-int __cdecl
-_vsnprintf_l(char *param_1,uint param_2,char *param_3,localeinfo_struct *param_4,char *param_5)
+int __cdecl _vsnprintf_l(char *string,uint count,char *format,localeinfo_struct *plocinfo,char *ap)
 
 {
   int *piVar1;
   int iVar2;
-  _iobuf local_24;
+  _iobuf str;
   
-  if (param_3 == (char *)0x0) {
+  if (format == (char *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = -1;
   }
-  else if ((param_2 == 0) || (param_1 != (char *)0x0)) {
-    local_24._cnt = 0x7fffffff;
-    if (param_2 < 0x80000000) {
-      local_24._cnt = param_2;
+  else if ((count == 0) || (string != (char *)0x0)) {
+    str._cnt = 0x7fffffff;
+    if (count < 0x80000000) {
+      str._cnt = count;
     }
-    local_24._flag = 0x42;
-    local_24._base = param_1;
-    local_24._ptr = param_1;
-    iVar2 = _output_l(&local_24,param_3,param_4,param_5);
-    if (param_1 != (char *)0x0) {
-      local_24._cnt = local_24._cnt - 1;
-      if (local_24._cnt < 0) {
-        _flsbuf(0,&local_24);
+    str._flag = 0x42;
+    str._base = string;
+    str._ptr = string;
+    iVar2 = _output_l(&str,format,plocinfo,ap);
+    if (string != (char *)0x0) {
+      str._cnt = str._cnt - 1;
+      if (str._cnt < 0) {
+        _flsbuf(0,&str);
       }
       else {
-        *local_24._ptr = '\0';
+        *str._ptr = '\0';
       }
     }
   }
@@ -47,12 +46,12 @@ _vsnprintf_l(char *param_1,uint param_2,char *param_3,localeinfo_struct *param_4
 
 // 0095BA08  _vsnprintf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/vsprintf.c:187)
 
-int __cdecl _vsnprintf(char *param_1,uint param_2,char *param_3,char *param_4)
+int __cdecl _vsnprintf(char *string,uint count,char *format,char *ap)
 
 {
   int iVar1;
   
-  iVar1 = _vsnprintf_l(param_1,param_2,param_3,(localeinfo_struct *)0x0,param_4);
+  iVar1 = _vsnprintf_l(string,count,format,(localeinfo_struct *)0x0,ap);
   return iVar1;
 }
 

@@ -23,29 +23,29 @@ LiveSteamP2P * __thiscall LiveSteamP2P::LiveSteamP2P(LiveSteamP2P *this)
 // 0097FD90  SendPacketToSteamID  (live/live_steamp2p.cpp:12)
 
 void __thiscall
-LiveSteamP2P::SendPacketToSteamID(LiveSteamP2P *this,CSteamID param_1,void *param_2,uint param_3)
+LiveSteamP2P::SendPacketToSteamID(LiveSteamP2P *this,CSteamID remoteID,void *data,uint datasize)
 
 {
   undefined4 *puVar1;
   
   puVar1 = (undefined4 *)SteamNetworking();
   (**(code **)*puVar1)
-            (param_1.m_steamid.m_comp.m_unAccountID,param_1.m_steamid.m_unAll64Bits._4_4_,param_2,
-             param_3,2,0,puVar1,this);
+            (remoteID.m_steamid.m_comp.m_unAccountID,remoteID.m_steamid.m_unAll64Bits._4_4_,data,
+             datasize,2,0,puVar1,this);
   return;
 }
 
 
 // 0097FDD0  IsDataAvailable  (live/live_steamp2p.cpp:17)
 
-bool __thiscall LiveSteamP2P::IsDataAvailable(LiveSteamP2P *this,uint *param_1)
+bool __thiscall LiveSteamP2P::IsDataAvailable(LiveSteamP2P *this,uint *messageSize)
 
 {
   undefined1 uVar1;
   int *piVar2;
   
   piVar2 = (int *)SteamNetworking();
-  uVar1 = (**(code **)(*piVar2 + 4))(param_1,0,piVar2,this);
+  uVar1 = (**(code **)(*piVar2 + 4))(messageSize,0,piVar2,this);
   return (bool)uVar1;
 }
 
@@ -53,22 +53,22 @@ bool __thiscall LiveSteamP2P::IsDataAvailable(LiveSteamP2P *this,uint *param_1)
 // 0097FE00  ReadPacket  (live/live_steamp2p.cpp:22)
 
 bool __thiscall
-LiveSteamP2P::ReadPacket
-          (LiveSteamP2P *this,void *param_1,uint param_2,uint *param_3,CSteamID *param_4)
+LiveSteamP2P::ReadPacket(LiveSteamP2P *this,void *buf,uint bufsize,uint *msgsize,CSteamID *remoteID)
 
 {
   undefined1 uVar1;
   int *piVar2;
   
   piVar2 = (int *)SteamNetworking();
-  uVar1 = (**(code **)(*piVar2 + 8))(param_1,param_2,param_3,param_4,0,piVar2,this);
+  uVar1 = (**(code **)(*piVar2 + 8))(buf,bufsize,msgsize,remoteID,0,piVar2,this);
   return (bool)uVar1;
 }
 
 
 // 0097FE40  OnSessionRequest  (live/live_steamp2p.cpp:32)
 
-void __thiscall LiveSteamP2P::OnSessionRequest(LiveSteamP2P *this,P2PSessionRequest_t *param_1)
+void __thiscall
+LiveSteamP2P::OnSessionRequest(LiveSteamP2P *this,P2PSessionRequest_t *sessionRequest)
 
 {
   int *piVar1;
@@ -76,8 +76,8 @@ void __thiscall LiveSteamP2P::OnSessionRequest(LiveSteamP2P *this,P2PSessionRequ
   Com_DPrintf(0,"Received session request from %llu\n");
   piVar1 = (int *)SteamNetworking();
   (**(code **)(*piVar1 + 0xc))
-            ((param_1->m_steamIDRemote).m_steamid.m_comp.m_unAccountID,
-             *(undefined4 *)((int)&(param_1->m_steamIDRemote).m_steamid + 4),piVar1,this);
+            ((sessionRequest->m_steamIDRemote).m_steamid.m_comp.m_unAccountID,
+             *(undefined4 *)((int)&(sessionRequest->m_steamIDRemote).m_steamid + 4),piVar1,this);
   return;
 }
 
@@ -88,16 +88,15 @@ void __thiscall LiveSteamP2P::OnSessionRequest(LiveSteamP2P *this,P2PSessionRequ
 
 void __thiscall
 CCallback<LiveSteamP2P,P2PSessionRequest_t,0>::Register
-          (CCallback<LiveSteamP2P,P2PSessionRequest_t,0> *this,LiveSteamP2P *param_1,
-          pmf_98940daa param_2)
+          (CCallback<LiveSteamP2P,P2PSessionRequest_t,0> *this,LiveSteamP2P *pObj,pmf_98940daa func)
 
 {
-  if ((param_1 != (LiveSteamP2P *)0x0) && (param_2 != (pmf_98940daa)0x0)) {
+  if ((pObj != (LiveSteamP2P *)0x0) && (func != (pmf_98940daa)0x0)) {
     if ((this->_padding_ & 1) != 0) {
       SteamAPI_UnregisterCallback(this);
     }
-    this->m_pObj = param_1;
-    this->m_Func = param_2;
+    this->m_pObj = pObj;
+    this->m_Func = func;
     SteamAPI_RegisterCallback(this,0x4b2);
   }
   return;

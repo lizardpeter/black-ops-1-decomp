@@ -3,160 +3,159 @@
 // 00ADFA20  lzopro_lzo1x_1_11_compress_core  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/plzo1x_c.ch:36)
 
 ulong __cdecl
-lzopro_lzo1x_1_11_compress_core
-          (uchar *param_1,ulong param_2,uchar *param_3,ulong *param_4,void *param_5)
+lzopro_lzo1x_1_11_compress_core(uchar *in,ulong in_len,uchar *out,ulong *out_len,void *wrkmem)
 
 {
   byte bVar1;
   char cVar2;
-  byte *pbVar3;
+  uchar *puVar3;
   byte *pbVar4;
   uint uVar5;
-  byte *local_3c;
-  uint local_34;
-  uint local_2c;
-  byte *local_28;
-  uint local_24;
-  byte *local_18;
-  byte *local_14;
-  byte *local_10;
+  uchar *m;
+  uchar *end;
+  ulong t_2;
+  ulong dindex;
+  ulong m_len;
+  uchar *m_pos;
+  ulong m_off;
+  ulong t;
+  uchar *op;
+  uchar *ip;
+  uchar *ii;
   
-  local_18 = param_3;
-  local_10 = param_1;
-  pbVar4 = param_1 + 3;
+  op = out;
+  ii = in;
+  pbVar4 = in + 3;
   do {
-    local_14 = pbVar4;
-    if (0x11 < (uint)((int)local_14 - (int)local_10)) {
-      if (0x1e < (uint)((int)local_14 - (int)local_10)) {
-        local_14 = local_14 + 1;
+    ip = pbVar4;
+    if (0x11 < (uint)((int)ip - (int)ii)) {
+      if (0x1e < (uint)((int)ip - (int)ii)) {
+        ip = ip + 1;
       }
-      local_14 = local_14 + 1;
+      ip = ip + 1;
     }
-    pbVar4 = local_14 + 1;
+    pbVar4 = ip + 1;
     while( true ) {
-      if (param_1 + (param_2 - 0xd) <= pbVar4) {
-        *param_4 = (int)local_18 - (int)param_3;
-        return (int)(param_1 + param_2) - (int)local_10;
+      if (in + (in_len - 0xd) <= pbVar4) {
+        *out_len = (int)op - (int)out;
+        return (int)(in + in_len) - (int)ii;
       }
       uVar5 = ((uint)*pbVar4 ^ (uint)pbVar4[1] << 3 ^ (uint)pbVar4[2] << 8) * 0x21 >> 5 & 0xfff;
-      local_14._0_2_ = SUB42(pbVar4,0);
-      local_24 = ((uint)pbVar4 & 0xffff) - (uint)*(ushort *)((int)param_5 + uVar5 * 2) & 0xffff;
-      *(undefined2 *)((int)param_5 + uVar5 * 2) = local_14._0_2_;
-      if (((local_24 == 0) || (0xbfff < local_24)) ||
-         ((uint)((int)pbVar4 - (int)param_1) < local_24)) break;
-      local_28 = pbVar4 + -local_24;
-      if ((0x800 < local_24) && (local_28[3] != pbVar4[3])) {
-        local_24 = ((uint)pbVar4 & 0xffff) - (uint)*(ushort *)((int)param_5 + (uVar5 ^ 0xfff) * 2) &
-                   0xffff;
-        *(undefined2 *)((int)param_5 + (uVar5 ^ 0xfff) * 2) = local_14._0_2_;
-        if (((local_24 == 0) ||
-            ((0xbfff < local_24 || ((uint)((int)pbVar4 - (int)param_1) < local_24)))) ||
-           ((local_28 = pbVar4 + -local_24, 0x800 < local_24 && (local_28[3] != pbVar4[3])))) break;
+      ip._0_2_ = SUB42(pbVar4,0);
+      m_off = ((uint)pbVar4 & 0xffff) - (uint)*(ushort *)((int)wrkmem + uVar5 * 2) & 0xffff;
+      *(undefined2 *)((int)wrkmem + uVar5 * 2) = ip._0_2_;
+      if (((m_off == 0) || (0xbfff < m_off)) || ((uint)((int)pbVar4 - (int)in) < m_off)) break;
+      m_pos = pbVar4 + -m_off;
+      if ((0x800 < m_off) && (m_pos[3] != pbVar4[3])) {
+        m_off = ((uint)pbVar4 & 0xffff) - (uint)*(ushort *)((int)wrkmem + (uVar5 ^ 0xfff) * 2) &
+                0xffff;
+        *(undefined2 *)((int)wrkmem + (uVar5 ^ 0xfff) * 2) = ip._0_2_;
+        if (((m_off == 0) || ((0xbfff < m_off || ((uint)((int)pbVar4 - (int)in) < m_off)))) ||
+           ((m_pos = pbVar4 + -m_off, 0x800 < m_off && (m_pos[3] != pbVar4[3])))) break;
       }
-      if ((*(short *)local_28 != *(short *)pbVar4) || (local_28[2] != pbVar4[2])) break;
-      local_34 = (int)pbVar4 - (int)local_10;
-      if (local_34 != 0) {
-        if (local_34 < 4) {
-          local_18[-2] = local_18[-2] | (byte)local_34;
-          *(undefined4 *)local_18 = *(undefined4 *)local_10;
-          local_18 = local_18 + local_34;
-          local_10 = pbVar4;
+      if ((*(short *)m_pos != *(short *)pbVar4) || (m_pos[2] != pbVar4[2])) break;
+      uVar5 = (int)pbVar4 - (int)ii;
+      if (uVar5 != 0) {
+        t_2._0_1_ = (byte)uVar5;
+        if (uVar5 < 4) {
+          op[-2] = op[-2] | (byte)t_2;
+          *(undefined4 *)op = *(undefined4 *)ii;
+          op = op + uVar5;
+          ii = pbVar4;
         }
         else {
-          if (local_34 < 0x13) {
-            *local_18 = (byte)local_34 - 3;
-            local_18 = local_18 + 1;
+          if (uVar5 < 0x13) {
+            *op = (byte)t_2 - 3;
+            op = op + 1;
           }
           else {
-            local_34 = local_34 + 0xed;
-            pbVar3 = local_18;
+            t_2 = uVar5 + 0xed;
+            puVar3 = op;
             do {
-              local_18 = pbVar3;
-              *local_18 = 0;
-              local_34 = local_34 - 0xff;
-              pbVar3 = local_18 + 1;
-            } while (0xff < local_34);
-            local_18[1] = (byte)local_34;
-            local_18 = local_18 + 2;
+              op = puVar3;
+              *op = '\0';
+              t_2 = t_2 - 0xff;
+              puVar3 = op + 1;
+            } while (0xff < t_2);
+            op[1] = (byte)t_2;
+            op = op + 2;
           }
           do {
-            *(undefined4 *)local_18 = *(undefined4 *)local_10;
-            local_18 = local_18 + 4;
-            local_10 = local_10 + 4;
-          } while (local_10 < pbVar4);
-          local_18 = local_18 + -((int)local_10 - (int)pbVar4);
-          local_10 = pbVar4;
+            *(undefined4 *)op = *(undefined4 *)ii;
+            op = op + 4;
+            ii = ii + 4;
+          } while (ii < pbVar4);
+          op = op + -((int)ii - (int)pbVar4);
+          ii = pbVar4;
         }
       }
-      local_14 = pbVar4 + 4;
-      if (((((local_28[3] == pbVar4[3]) &&
-            (bVar1 = *local_14, local_14 = pbVar4 + 5, local_28[4] == bVar1)) &&
-           (bVar1 = *local_14, local_14 = pbVar4 + 6, local_28[5] == bVar1)) &&
-          ((bVar1 = *local_14, local_14 = pbVar4 + 7, local_28[6] == bVar1 &&
-           (bVar1 = *local_14, local_14 = pbVar4 + 8, local_28[7] == bVar1)))) &&
-         (bVar1 = *local_14, local_14 = pbVar4 + 9, local_28[8] == bVar1)) {
-        for (local_3c = local_28 + 9; (local_14 < param_1 + param_2 && (*local_3c == *local_14));
-            local_3c = local_3c + 1) {
-          local_14 = local_14 + 1;
+      ip = pbVar4 + 4;
+      if (((((m_pos[3] == pbVar4[3]) && (bVar1 = *ip, ip = pbVar4 + 5, m_pos[4] == bVar1)) &&
+           (bVar1 = *ip, ip = pbVar4 + 6, m_pos[5] == bVar1)) &&
+          ((bVar1 = *ip, ip = pbVar4 + 7, m_pos[6] == bVar1 &&
+           (bVar1 = *ip, ip = pbVar4 + 8, m_pos[7] == bVar1)))) &&
+         (bVar1 = *ip, ip = pbVar4 + 9, m_pos[8] == bVar1)) {
+        for (m = m_pos + 9; (ip < in + in_len && (*m == *ip)); m = m + 1) {
+          ip = ip + 1;
         }
-        local_2c = (int)local_14 - (int)local_10;
-        if (local_24 < 0x4001) {
-          local_24 = local_24 - 1;
-          if (local_2c < 0x22) {
-            *local_18 = (char)local_2c - 2U | 0x20;
-            local_18 = local_18 + 1;
+        uVar5 = (int)ip - (int)ii;
+        if (m_off < 0x4001) {
+          m_off = m_off - 1;
+          if (uVar5 < 0x22) {
+            *op = (char)uVar5 - 2U | 0x20;
+            op = op + 1;
           }
           else {
-            local_2c = local_2c - 0x21;
-            *local_18 = 0x20;
-            local_18 = local_18 + 1;
+            m_len = uVar5 - 0x21;
+            *op = ' ';
+            op = op + 1;
 LAB_00adff36:
-            while (0xff < local_2c) {
-              local_2c = local_2c - 0xff;
-              *local_18 = 0;
-              local_18 = local_18 + 1;
+            while (0xff < m_len) {
+              m_len = m_len - 0xff;
+              *op = '\0';
+              op = op + 1;
             }
-            *local_18 = (byte)local_2c;
-            local_18 = local_18 + 1;
+            *op = (uchar)m_len;
+            op = op + 1;
           }
         }
         else {
-          local_24 = local_24 - 0x4000;
-          if (9 < local_2c) {
-            local_2c = local_2c - 9;
-            *local_18 = (byte)((local_24 & 0x4000) >> 0xb) | 0x10;
-            local_18 = local_18 + 1;
+          m_off = m_off - 0x4000;
+          if (9 < uVar5) {
+            m_len = uVar5 - 9;
+            *op = (byte)((m_off & 0x4000) >> 0xb) | 0x10;
+            op = op + 1;
             goto LAB_00adff36;
           }
-          *local_18 = (byte)((local_24 & 0x4000) >> 0xb) | 0x10 | (char)local_2c - 2U;
-          local_18 = local_18 + 1;
+          *op = (byte)((m_off & 0x4000) >> 0xb) | 0x10 | (char)uVar5 - 2U;
+          op = op + 1;
         }
 LAB_00adff6c:
-        *local_18 = (byte)((local_24 & 0x3f) << 2);
-        local_18[1] = (byte)(local_24 >> 6);
+        *op = (uchar)((m_off & 0x3f) << 2);
+        op[1] = (uchar)(m_off >> 6);
       }
       else {
-        local_14 = local_14 + -1;
-        cVar2 = (char)local_14 - (char)local_10;
-        if (0x800 < local_24) {
-          if (local_24 < 0x4001) {
-            local_24 = local_24 - 1;
-            *local_18 = cVar2 - 2U | 0x20;
-            local_18 = local_18 + 1;
+        ip = ip + -1;
+        cVar2 = (char)ip - (char)ii;
+        if (0x800 < m_off) {
+          if (m_off < 0x4001) {
+            m_off = m_off - 1;
+            *op = cVar2 - 2U | 0x20;
+            op = op + 1;
           }
           else {
-            local_24 = local_24 - 0x4000;
-            *local_18 = (byte)((local_24 & 0x4000) >> 0xb) | 0x10 | cVar2 - 2U;
-            local_18 = local_18 + 1;
+            m_off = m_off - 0x4000;
+            *op = (byte)((m_off & 0x4000) >> 0xb) | 0x10 | cVar2 - 2U;
+            op = op + 1;
           }
           goto LAB_00adff6c;
         }
-        *local_18 = (cVar2 + -1) * ' ' | (byte)((local_24 - 1 & 7) << 2);
-        local_18[1] = (byte)(local_24 - 1 >> 3);
+        *op = (cVar2 + -1) * ' ' | (byte)((m_off - 1 & 7) << 2);
+        op[1] = (uchar)(m_off - 1 >> 3);
       }
-      local_18 = local_18 + 2;
-      pbVar4 = local_14;
-      local_10 = local_14;
+      op = op + 2;
+      pbVar4 = ip;
+      ii = ip;
     }
   } while( true );
 }
@@ -165,15 +164,12 @@ LAB_00adff6c:
 // 00ADF870  __lzopro_lzo_init_v2  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/pinit.c:38)
 
 int __cdecl
-__lzopro_lzo_init_v2
-          (uint param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-          int param_8,int param_9,int param_10)
+__lzopro_lzo_init_v2(uint v,int s1,int s2,int s3,int s4,int s5,int s6,int s7,int s8,int s9)
 
 {
   int iVar1;
   
-  iVar1 = __lzo_init_v2(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9,
-                        param_10);
+  iVar1 = __lzo_init_v2(v,s1,s2,s3,s4,s5,s6,s7,s8,s9);
   return iVar1;
 }
 
@@ -185,3844 +181,3843 @@ __lzopro_lzo_init_v2
 int __cdecl _lzo_config_check(void)
 
 {
+  int r;
+  
   return 0;
 }
 
 
 // 00ADFFC0  lzopro_lzo1x_decompress  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/plzo1x_d.ch:85)
 
-int __cdecl
-lzopro_lzo1x_decompress(uchar *param_1,ulong param_2,uchar *param_3,ulong *param_4,void *param_5)
+int __cdecl lzopro_lzo1x_decompress(uchar *in,ulong in_len,uchar *out,ulong *out_len,void *wrkmem)
 
 {
-  byte bVar1;
-  ushort *puVar2;
-  byte *pbVar3;
-  uint uVar4;
-  ushort *puVar5;
+  ushort uVar1;
+  ulong uVar2;
+  uchar *puVar3;
+  uchar *puVar4;
+  uint uVar5;
+  ushort *puVar6;
   int local_28;
-  uint local_20;
-  byte *local_1c;
-  int local_14;
-  ushort *local_10;
-  ushort *local_c;
+  ulong t_2;
+  uchar *m_pos;
+  ulong t;
+  uint state;
+  uchar *op;
+  uchar *ip;
   
-  *param_4 = 0;
-  local_10 = (ushort *)param_3;
-  local_c = (ushort *)param_1;
-  local_14 = 0x100;
-  if (0x11 < *param_1) {
-    local_c = (ushort *)(param_1 + 1);
-    uVar4 = *param_1 - 0x11;
-    local_14 = (-(uint)(uVar4 < 4) & 0xfffffe00) + 0x200;
-    for (; 3 < uVar4; uVar4 = uVar4 - 4) {
-      *(undefined4 *)local_10 = *(undefined4 *)local_c;
-      local_10 = local_10 + 2;
-      local_c = local_c + 2;
+  *out_len = 0;
+  op = out;
+  ip = in;
+  state = 0x100;
+  if (0x11 < *in) {
+    ip = in + 1;
+    uVar5 = *in - 0x11;
+    state = (-(uint)(uVar5 < 4) & 0xfffffe00) + 0x200;
+    for (; 3 < uVar5; uVar5 = uVar5 - 4) {
+      *(undefined4 *)op = *(undefined4 *)ip;
+      op = op + 4;
+      ip = ip + 4;
     }
-    for (; uVar4 != 0; uVar4 = uVar4 - 1) {
-      *(byte *)local_10 = (byte)*local_c;
-      local_10 = (ushort *)((int)local_10 + 1);
-      local_c = (ushort *)((int)local_c + 1);
+    for (; uVar5 != 0; uVar5 = uVar5 - 1) {
+      *op = *ip;
+      op = op + 1;
+      ip = ip + 1;
     }
   }
 LAB_00ae008f:
-  puVar2 = local_c;
-  puVar5 = (ushort *)((int)local_c + 1);
-  uVar4 = (uint)(byte)*local_c;
-  switch(local_14 + (uint)(byte)*local_c) {
+  puVar3 = ip;
+  puVar6 = (ushort *)(ip + 1);
+  uVar5 = (uint)*ip;
+  switch(state + *ip) {
   case 0:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -1);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *(byte *)local_10 = (byte)*puVar2;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar2 + 1);
+    puVar3 = op + (uint)(byte)*puVar6 * -4 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
     }
     else {
-      *local_10 = *puVar2;
+      *(undefined2 *)op = *(undefined2 *)puVar3;
     }
-    local_10 = local_10 + 1;
+    op = op + 2;
     break;
   case 1:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -1);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *(byte *)local_10 = (byte)*puVar5;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar5 + 1);
+    puVar4 = op + (uint)(byte)*puVar6 * -4 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
     }
     else {
-      *local_10 = *puVar5;
+      *(undefined2 *)op = *(undefined2 *)puVar4;
     }
-    local_10 = local_10 + 1;
+    op = op + 2;
     goto LAB_00ae87a3;
   case 2:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -1);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *(byte *)local_10 = (byte)*puVar5;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar5 + 1);
+    puVar4 = op + (uint)(byte)*puVar6 * -4 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
     }
     else {
-      *local_10 = *puVar5;
+      *(undefined2 *)op = *(undefined2 *)puVar4;
     }
-    local_10 = local_10 + 1;
+    op = op + 2;
     goto LAB_00ae881b;
   case 3:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -1);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *(byte *)local_10 = (byte)*puVar5;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar5 + 1);
+    puVar4 = op + (uint)(byte)*puVar6 * -4 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
     }
     else {
-      *local_10 = *puVar5;
+      *(undefined2 *)op = *(undefined2 *)puVar4;
     }
-    local_10 = local_10 + 1;
+    op = op + 2;
     goto LAB_00ae8895;
   case 4:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -1];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -2);
+    op = op + 2;
     break;
   case 5:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -1];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -2);
+    op = op + 2;
     goto LAB_00ae87a3;
   case 6:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -1];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -2);
+    op = op + 2;
     goto LAB_00ae881b;
   case 7:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -1];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -2);
+    op = op + 2;
     goto LAB_00ae8895;
   case 8:
-    *local_10 = *(ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -3);
+    op = op + 2;
     break;
   case 9:
-    *local_10 = *(ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -3);
+    op = op + 2;
     goto LAB_00ae87a3;
   case 10:
-    *local_10 = *(ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -3);
+    op = op + 2;
     goto LAB_00ae881b;
   case 0xb:
-    *local_10 = *(ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -3);
+    op = op + 2;
     goto LAB_00ae8895;
   case 0xc:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -2];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -4);
+    op = op + 2;
     break;
   case 0xd:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -2];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -4);
+    op = op + 2;
     goto LAB_00ae87a3;
   case 0xe:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -2];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -4);
+    op = op + 2;
     goto LAB_00ae881b;
   case 0xf:
-    *local_10 = local_10[(uint)*(byte *)puVar5 * -2 + -2];
-    local_10 = local_10 + 1;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)*puVar6 * -4 + -4);
+    op = op + 2;
     goto LAB_00ae8895;
   case 0x10:
   case 0x110:
   case 0x210:
-    local_20 = 0;
-    uVar4 = local_20;
+    t_2 = 0;
+    uVar2 = t_2;
     do {
-      local_c = puVar5;
-      local_20 = uVar4;
-      uVar4 = local_20 + 0xff;
-      puVar5 = (ushort *)((int)local_c + 1);
-    } while ((byte)*local_c == 0);
-    local_20 = local_20 + (byte)*local_c;
-    pbVar3 = (byte *)((int)local_10 + (-0x4000 - ((int)(uint)*(ushort *)((int)local_c + 1) >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    *(byte *)(local_10 + 4) = pbVar3[8];
-    local_10 = (ushort *)((int)local_10 + 9);
-    pbVar3 = pbVar3 + 9;
-    for (; 3 < local_20; local_20 = local_20 - 4) {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10 = local_10 + 2;
-      pbVar3 = pbVar3 + 4;
+      ip = (uchar *)puVar6;
+      t_2 = uVar2;
+      uVar2 = t_2 + 0xff;
+      puVar6 = (ushort *)(ip + 1);
+    } while (*ip == '\0');
+    uVar5 = t_2 + *ip;
+    puVar3 = op + (-0x4000 - ((int)(uint)*(ushort *)(ip + 1) >> 2));
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+    op[8] = puVar3[8];
+    op = op + 9;
+    puVar3 = puVar3 + 9;
+    for (; 3 < uVar5; uVar5 = uVar5 - 4) {
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      op = op + 4;
+      puVar3 = puVar3 + 4;
     }
-    for (; puVar5 = (ushort *)((int)local_c + 3), local_20 != 0; local_20 = local_20 - 1) {
-      *(byte *)local_10 = *pbVar3;
-      local_10 = (ushort *)((int)local_10 + 1);
-      pbVar3 = pbVar3 + 1;
+    for (; puVar6 = (ushort *)(ip + 3), uVar5 != 0; uVar5 = uVar5 - 1) {
+      *op = *puVar3;
+      op = op + 1;
+      puVar3 = puVar3 + 1;
     }
   default:
 switchD_00ae00c0_default:
-    local_c = puVar5;
-    local_14 = 0x100;
-    local_20 = (byte)local_c[-1] & 3;
-    if (((byte)local_c[-1] & 3) != 0) {
+    ip = (uchar *)puVar6;
+    state = 0x100;
+    t_2 = ip[-2] & 3;
+    if ((ip[-2] & 3) != 0) {
       do {
-        *(byte *)local_10 = (byte)*local_c;
-        local_10 = (ushort *)((int)local_10 + 1);
-        local_c = (ushort *)((int)local_c + 1);
-        local_20 = local_20 - 1;
-      } while (local_20 != 0);
-      local_14 = 0;
+        *op = *ip;
+        op = op + 1;
+        ip = ip + 1;
+        t_2 = t_2 - 1;
+      } while (t_2 != 0);
+      state = 0;
     }
     goto LAB_00ae008f;
   case 0x11:
   case 0x111:
   case 0x211:
-    puVar2 = (ushort *)((int)local_10 - ((int)(uint)*puVar5 >> 2));
-    puVar5 = (ushort *)((int)local_c + 3);
-    if (puVar2 == local_10) {
-      *param_4 = (int)local_10 - (int)param_3;
-      if (puVar5 == (ushort *)(param_1 + param_2)) {
+    puVar3 = op + -((int)(uint)*puVar6 >> 2);
+    puVar6 = (ushort *)(ip + 3);
+    if (puVar3 == op) {
+      *out_len = (int)op - (int)out;
+      if (puVar6 == (ushort *)(in + in_len)) {
         local_28 = 0;
       }
       else {
-        local_28 = (-(uint)(puVar5 < param_1 + param_2) & 0xfffffffc) - 4;
+        local_28 = (-(uint)(puVar6 < in + in_len) & 0xfffffffc) - 4;
       }
       return local_28;
     }
-    *local_10 = puVar2[-0x2000];
-    *(byte *)(local_10 + 1) = (byte)puVar2[-0x1fff];
-    local_10 = (ushort *)((int)local_10 + 3);
+    *(undefined2 *)op = *(undefined2 *)(puVar3 + -0x4000);
+    op[2] = puVar3[-0x3ffe];
+    op = op + 3;
     goto switchD_00ae00c0_default;
   case 0x12:
   case 0x112:
   case 0x212:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (-0x4000 - ((int)(uint)*puVar5 >> 2)))
-    ;
-    local_10 = local_10 + 2;
-    puVar5 = (ushort *)((int)local_c + 3);
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x4000 - ((int)(uint)*puVar6 >> 2)));
+    op = op + 4;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x13:
   case 0x113:
   case 0x213:
-    pbVar3 = (byte *)((int)local_10 + (-0x4000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x4000 - ((int)(uint)uVar1 >> 2)));
+    op[4] = (op + (-0x4000 - ((int)(uint)uVar1 >> 2)))[4];
+    op = op + 5;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x14:
   case 0x114:
   case 0x214:
-    pbVar3 = (byte *)((int)local_10 + (-0x4000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x4000 - ((int)(uint)uVar1 >> 2)));
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (-0x4000 - ((int)(uint)uVar1 >> 2)) + 4);
+    op = op + 6;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x15:
   case 0x115:
   case 0x215:
-    pbVar3 = (byte *)((int)local_10 + (-0x4000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
-    puVar5 = (ushort *)((int)local_c + 3);
+    puVar3 = op + (-0x4000 - ((int)(uint)*puVar6 >> 2));
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x16:
   case 0x116:
   case 0x216:
-    pbVar3 = (byte *)((int)local_10 + (-0x4000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x4000 - ((int)(uint)uVar1 >> 2)));
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (-0x4000 - ((int)(uint)uVar1 >> 2)) + 4);
+    op = op + 8;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x17:
   case 0x117:
   case 0x217:
-    pbVar3 = (byte *)((int)local_10 + (-0x4000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    *(byte *)(local_10 + 4) = pbVar3[8];
-    local_10 = (ushort *)((int)local_10 + 9);
-    puVar5 = (ushort *)((int)local_c + 3);
+    puVar3 = op + (-0x4000 - ((int)(uint)*puVar6 >> 2));
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+    op[8] = puVar3[8];
+    op = op + 9;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x18:
   case 0x118:
   case 0x218:
-    local_20 = 0;
-    uVar4 = local_20;
+    t_2 = 0;
+    uVar2 = t_2;
     do {
-      local_c = puVar5;
-      local_20 = uVar4;
-      uVar4 = local_20 + 0xff;
-      puVar5 = (ushort *)((int)local_c + 1);
-    } while ((byte)*local_c == 0);
-    local_20 = local_20 + (byte)*local_c;
-    pbVar3 = (byte *)((int)local_10 + (-0x8000 - ((int)(uint)*(ushort *)((int)local_c + 1) >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    *(byte *)(local_10 + 4) = pbVar3[8];
-    local_10 = (ushort *)((int)local_10 + 9);
-    pbVar3 = pbVar3 + 9;
-    for (; 3 < local_20; local_20 = local_20 - 4) {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10 = local_10 + 2;
-      pbVar3 = pbVar3 + 4;
+      ip = (uchar *)puVar6;
+      t_2 = uVar2;
+      uVar2 = t_2 + 0xff;
+      puVar6 = (ushort *)(ip + 1);
+    } while (*ip == '\0');
+    uVar5 = t_2 + *ip;
+    puVar3 = op + (-0x8000 - ((int)(uint)*(ushort *)(ip + 1) >> 2));
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+    op[8] = puVar3[8];
+    op = op + 9;
+    puVar3 = puVar3 + 9;
+    for (; 3 < uVar5; uVar5 = uVar5 - 4) {
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      op = op + 4;
+      puVar3 = puVar3 + 4;
     }
-    for (; puVar5 = (ushort *)((int)local_c + 3), local_20 != 0; local_20 = local_20 - 1) {
-      *(byte *)local_10 = *pbVar3;
-      local_10 = (ushort *)((int)local_10 + 1);
-      pbVar3 = pbVar3 + 1;
+    for (; puVar6 = (ushort *)(ip + 3), uVar5 != 0; uVar5 = uVar5 - 1) {
+      *op = *puVar3;
+      op = op + 1;
+      puVar3 = puVar3 + 1;
     }
     goto switchD_00ae00c0_default;
   case 0x19:
   case 0x119:
   case 0x219:
-    puVar2 = (ushort *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)));
-    *local_10 = *puVar2;
-    *(byte *)(local_10 + 1) = (byte)puVar2[1];
-    local_10 = (ushort *)((int)local_10 + 3);
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (-0x8000 - ((int)(uint)uVar1 >> 2)));
+    op[2] = (op + (-0x8000 - ((int)(uint)uVar1 >> 2)))[2];
+    op = op + 3;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x1a:
   case 0x11a:
   case 0x21a:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)))
-    ;
-    local_10 = local_10 + 2;
-    puVar5 = (ushort *)((int)local_c + 3);
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x8000 - ((int)(uint)*puVar6 >> 2)));
+    op = op + 4;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x1b:
   case 0x11b:
   case 0x21b:
-    pbVar3 = (byte *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x8000 - ((int)(uint)uVar1 >> 2)));
+    op[4] = (op + (-0x8000 - ((int)(uint)uVar1 >> 2)))[4];
+    op = op + 5;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x1c:
   case 0x11c:
   case 0x21c:
-    pbVar3 = (byte *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x8000 - ((int)(uint)uVar1 >> 2)));
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (-0x8000 - ((int)(uint)uVar1 >> 2)) + 4);
+    op = op + 6;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x1d:
   case 0x11d:
   case 0x21d:
-    pbVar3 = (byte *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
-    puVar5 = (ushort *)((int)local_c + 3);
+    puVar3 = op + (-0x8000 - ((int)(uint)*puVar6 >> 2));
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x1e:
   case 0x11e:
   case 0x21e:
-    pbVar3 = (byte *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
-    puVar5 = (ushort *)((int)local_c + 3);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (-0x8000 - ((int)(uint)uVar1 >> 2)));
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (-0x8000 - ((int)(uint)uVar1 >> 2)) + 4);
+    op = op + 8;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x1f:
   case 0x11f:
   case 0x21f:
-    pbVar3 = (byte *)((int)local_10 + (-0x8000 - ((int)(uint)*puVar5 >> 2)));
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    *(byte *)(local_10 + 4) = pbVar3[8];
-    local_10 = (ushort *)((int)local_10 + 9);
-    puVar5 = (ushort *)((int)local_c + 3);
+    puVar3 = op + (-0x8000 - ((int)(uint)*puVar6 >> 2));
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+    op[8] = puVar3[8];
+    op = op + 9;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x20:
   case 0x120:
   case 0x220:
-    local_20 = 0;
-    uVar4 = local_20;
+    t_2 = 0;
+    uVar2 = t_2;
     do {
-      local_c = puVar5;
-      local_20 = uVar4;
-      uVar4 = local_20 + 0xff;
-      puVar5 = (ushort *)((int)local_c + 1);
-    } while ((byte)*local_c == 0);
-    local_20 = local_20 + (byte)*local_c;
-    local_1c = (byte *)((int)local_10 + (-1 - ((int)(uint)*(ushort *)((int)local_c + 1) >> 2)));
-    puVar5 = (ushort *)((int)local_c + 3);
-    if ((int)local_10 - (int)local_1c < 4) {
-      *(byte *)local_10 = *local_1c;
-      *(byte *)((int)local_10 + 1) = local_1c[1];
-      *(byte *)(local_10 + 1) = local_1c[2];
-      *(byte *)((int)local_10 + 3) = local_1c[3];
-      *(byte *)(local_10 + 2) = local_1c[4];
-      *(byte *)((int)local_10 + 5) = local_1c[5];
-      *(byte *)(local_10 + 3) = local_1c[6];
-      *(byte *)((int)local_10 + 7) = local_1c[7];
-      *(byte *)(local_10 + 4) = local_1c[8];
-      *(byte *)((int)local_10 + 9) = local_1c[9];
-      *(byte *)(local_10 + 5) = local_1c[10];
-      *(byte *)((int)local_10 + 0xb) = local_1c[0xb];
-      *(byte *)(local_10 + 6) = local_1c[0xc];
-      *(byte *)((int)local_10 + 0xd) = local_1c[0xd];
-      *(byte *)(local_10 + 7) = local_1c[0xe];
-      *(byte *)((int)local_10 + 0xf) = local_1c[0xf];
-      *(byte *)(local_10 + 8) = local_1c[0x10];
-      *(byte *)((int)local_10 + 0x11) = local_1c[0x11];
-      *(byte *)(local_10 + 9) = local_1c[0x12];
-      *(byte *)((int)local_10 + 0x13) = local_1c[0x13];
-      *(byte *)(local_10 + 10) = local_1c[0x14];
-      *(byte *)((int)local_10 + 0x15) = local_1c[0x15];
-      *(byte *)(local_10 + 0xb) = local_1c[0x16];
-      *(byte *)((int)local_10 + 0x17) = local_1c[0x17];
-      *(byte *)(local_10 + 0xc) = local_1c[0x18];
-      *(byte *)((int)local_10 + 0x19) = local_1c[0x19];
-      *(byte *)(local_10 + 0xd) = local_1c[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = local_1c[0x1b];
-      *(byte *)(local_10 + 0xe) = local_1c[0x1c];
-      *(byte *)((int)local_10 + 0x1d) = local_1c[0x1d];
-      *(byte *)(local_10 + 0xf) = local_1c[0x1e];
-      *(byte *)((int)local_10 + 0x1f) = local_1c[0x1f];
-      *(byte *)(local_10 + 0x10) = local_1c[0x20];
-      local_10 = (ushort *)((int)local_10 + 0x21);
-      local_1c = local_1c + 0x21;
+      ip = (uchar *)puVar6;
+      t_2 = uVar2;
+      uVar2 = t_2 + 0xff;
+      puVar6 = (ushort *)(ip + 1);
+    } while (*ip == '\0');
+    t_2 = t_2 + *ip;
+    puVar3 = op + (-1 - ((int)(uint)*(ushort *)(ip + 1) >> 2));
+    puVar6 = (ushort *)(ip + 3);
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
+      op[0x1c] = puVar3[0x1c];
+      op[0x1d] = puVar3[0x1d];
+      op[0x1e] = puVar3[0x1e];
+      op[0x1f] = puVar3[0x1f];
+      op[0x20] = puVar3[0x20];
+      op = op + 0x21;
+      m_pos = puVar3 + 0x21;
       do {
-        *(byte *)local_10 = *local_1c;
-        local_10 = (ushort *)((int)local_10 + 1);
-        local_1c = local_1c + 1;
-        local_20 = local_20 - 1;
-      } while (local_20 != 0);
+        *op = *m_pos;
+        op = op + 1;
+        m_pos = m_pos + 1;
+        t_2 = t_2 - 1;
+      } while (t_2 != 0);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)local_1c;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_1c + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(local_1c + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(local_1c + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(local_1c + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(local_1c + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(local_1c + 0x18);
-      *(undefined4 *)(local_10 + 0xe) = *(undefined4 *)(local_1c + 0x1c);
-      *(byte *)(local_10 + 0x10) = local_1c[0x20];
-      local_10 = (ushort *)((int)local_10 + 0x21);
-      local_1c = local_1c + 0x21;
-      for (; 3 < local_20; local_20 = local_20 - 4) {
-        *(undefined4 *)local_10 = *(undefined4 *)local_1c;
-        local_10 = local_10 + 2;
-        local_1c = local_1c + 4;
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
+      *(undefined4 *)(op + 0x1c) = *(undefined4 *)(puVar3 + 0x1c);
+      op[0x20] = puVar3[0x20];
+      op = op + 0x21;
+      puVar3 = puVar3 + 0x21;
+      for (; 3 < t_2; t_2 = t_2 - 4) {
+        *(undefined4 *)op = *(undefined4 *)puVar3;
+        op = op + 4;
+        puVar3 = puVar3 + 4;
       }
-      for (; local_20 != 0; local_20 = local_20 - 1) {
-        *(byte *)local_10 = *local_1c;
-        local_10 = (ushort *)((int)local_10 + 1);
-        local_1c = local_1c + 1;
+      for (; t_2 != 0; t_2 = t_2 - 1) {
+        *op = *puVar3;
+        op = op + 1;
+        puVar3 = puVar3 + 1;
       }
     }
     goto switchD_00ae00c0_default;
   case 0x21:
   case 0x121:
   case 0x221:
-    puVar2 = (ushort *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *(byte *)local_10 = (byte)*puVar2;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar2 + 1);
-      *(byte *)(local_10 + 1) = (byte)puVar2[1];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
     }
     else {
-      *local_10 = *puVar2;
-      *(byte *)(local_10 + 1) = (byte)puVar2[1];
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      op[2] = puVar3[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 3;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x22:
   case 0x122:
   case 0x222:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
+      *(undefined4 *)op = *(undefined4 *)puVar3;
     }
-    local_10 = local_10 + 2;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 4;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x23:
   case 0x123:
   case 0x223:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(byte *)(local_10 + 2) = pbVar3[4];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      op[4] = puVar3[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 5;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x24:
   case 0x124:
   case 0x224:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 3;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 6;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x25:
   case 0x125:
   case 0x225:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
-      *(byte *)(local_10 + 3) = pbVar3[6];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      op[6] = puVar3[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 7;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x26:
   case 0x126:
   case 0x226:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 4;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 8;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x27:
   case 0x127:
   case 0x227:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(byte *)(local_10 + 4) = pbVar3[8];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      op[8] = puVar3[8];
     }
-    local_10 = (ushort *)((int)local_10 + 9);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 9;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x28:
   case 0x128:
   case 0x228:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      local_10[4] = *(ushort *)(pbVar3 + 8);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined2 *)(op + 8) = *(undefined2 *)(puVar3 + 8);
     }
-    local_10 = local_10 + 5;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 10;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x29:
   case 0x129:
   case 0x229:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      local_10[4] = *(ushort *)(pbVar3 + 8);
-      *(byte *)(local_10 + 5) = pbVar3[10];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined2 *)(op + 8) = *(undefined2 *)(puVar3 + 8);
+      op[10] = puVar3[10];
     }
-    local_10 = (ushort *)((int)local_10 + 0xb);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0xb;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x2a:
   case 0x12a:
   case 0x22a:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
     }
-    local_10 = local_10 + 6;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0xc;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x2b:
   case 299:
   case 0x22b:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      op[0xc] = puVar3[0xc];
     }
-    local_10 = (ushort *)((int)local_10 + 0xd);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0xd;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x2c:
   case 300:
   case 0x22c:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      local_10[6] = *(ushort *)(pbVar3 + 0xc);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined2 *)(op + 0xc) = *(undefined2 *)(puVar3 + 0xc);
     }
-    local_10 = local_10 + 7;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0xe;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x2d:
   case 0x12d:
   case 0x22d:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      local_10[6] = *(ushort *)(pbVar3 + 0xc);
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined2 *)(op + 0xc) = *(undefined2 *)(puVar3 + 0xc);
+      op[0xe] = puVar3[0xe];
     }
-    local_10 = (ushort *)((int)local_10 + 0xf);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0xf;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x2e:
   case 0x12e:
   case 0x22e:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
     }
-    local_10 = local_10 + 8;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x10;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x2f:
   case 0x12f:
   case 0x22f:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      op[0x10] = puVar3[0x10];
     }
-    local_10 = (ushort *)((int)local_10 + 0x11);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x11;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x30:
   case 0x130:
   case 0x230:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      local_10[8] = *(ushort *)(pbVar3 + 0x10);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined2 *)(op + 0x10) = *(undefined2 *)(puVar3 + 0x10);
     }
-    local_10 = local_10 + 9;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x12;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x31:
   case 0x131:
   case 0x231:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      local_10[8] = *(ushort *)(pbVar3 + 0x10);
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined2 *)(op + 0x10) = *(undefined2 *)(puVar3 + 0x10);
+      op[0x12] = puVar3[0x12];
     }
-    local_10 = (ushort *)((int)local_10 + 0x13);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x13;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x32:
   case 0x132:
   case 0x232:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
     }
-    local_10 = local_10 + 10;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x14;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x33:
   case 0x133:
   case 0x233:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      op[0x14] = puVar3[0x14];
     }
-    local_10 = (ushort *)((int)local_10 + 0x15);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x15;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x34:
   case 0x134:
   case 0x234:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      local_10[10] = *(ushort *)(pbVar3 + 0x14);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined2 *)(op + 0x14) = *(undefined2 *)(puVar3 + 0x14);
     }
-    local_10 = local_10 + 0xb;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x16;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x35:
   case 0x135:
   case 0x235:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      local_10[10] = *(ushort *)(pbVar3 + 0x14);
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined2 *)(op + 0x14) = *(undefined2 *)(puVar3 + 0x14);
+      op[0x16] = puVar3[0x16];
     }
-    local_10 = (ushort *)((int)local_10 + 0x17);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x17;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x36:
   case 0x136:
   case 0x236:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
     }
-    local_10 = local_10 + 0xc;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x18;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x37:
   case 0x137:
   case 0x237:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      op[0x18] = puVar3[0x18];
     }
-    local_10 = (ushort *)((int)local_10 + 0x19);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x19;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x38:
   case 0x138:
   case 0x238:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      local_10[0xc] = *(ushort *)(pbVar3 + 0x18);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined2 *)(op + 0x18) = *(undefined2 *)(puVar3 + 0x18);
     }
-    local_10 = local_10 + 0xd;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x1a;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x39:
   case 0x139:
   case 0x239:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      local_10[0xc] = *(ushort *)(pbVar3 + 0x18);
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined2 *)(op + 0x18) = *(undefined2 *)(puVar3 + 0x18);
+      op[0x1a] = puVar3[0x1a];
     }
-    local_10 = (ushort *)((int)local_10 + 0x1b);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x1b;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x3a:
   case 0x13a:
   case 0x23a:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = pbVar3[0x1b];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(pbVar3 + 0x18);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
     }
-    local_10 = local_10 + 0xe;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x1c;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x3b:
   case 0x13b:
   case 0x23b:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = pbVar3[0x1b];
-      *(byte *)(local_10 + 0xe) = pbVar3[0x1c];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
+      op[0x1c] = puVar3[0x1c];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(pbVar3 + 0x18);
-      *(byte *)(local_10 + 0xe) = pbVar3[0x1c];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
+      op[0x1c] = puVar3[0x1c];
     }
-    local_10 = (ushort *)((int)local_10 + 0x1d);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x1d;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x3c:
   case 0x13c:
   case 0x23c:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = pbVar3[0x1b];
-      *(byte *)(local_10 + 0xe) = pbVar3[0x1c];
-      *(byte *)((int)local_10 + 0x1d) = pbVar3[0x1d];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
+      op[0x1c] = puVar3[0x1c];
+      op[0x1d] = puVar3[0x1d];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(pbVar3 + 0x18);
-      local_10[0xe] = *(ushort *)(pbVar3 + 0x1c);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
+      *(undefined2 *)(op + 0x1c) = *(undefined2 *)(puVar3 + 0x1c);
     }
-    local_10 = local_10 + 0xf;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x1e;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x3d:
   case 0x13d:
   case 0x23d:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = pbVar3[0x1b];
-      *(byte *)(local_10 + 0xe) = pbVar3[0x1c];
-      *(byte *)((int)local_10 + 0x1d) = pbVar3[0x1d];
-      *(byte *)(local_10 + 0xf) = pbVar3[0x1e];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
+      op[0x1c] = puVar3[0x1c];
+      op[0x1d] = puVar3[0x1d];
+      op[0x1e] = puVar3[0x1e];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(pbVar3 + 0x18);
-      local_10[0xe] = *(ushort *)(pbVar3 + 0x1c);
-      *(byte *)(local_10 + 0xf) = pbVar3[0x1e];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
+      *(undefined2 *)(op + 0x1c) = *(undefined2 *)(puVar3 + 0x1c);
+      op[0x1e] = puVar3[0x1e];
     }
-    local_10 = (ushort *)((int)local_10 + 0x1f);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x1f;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x3e:
   case 0x13e:
   case 0x23e:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = pbVar3[0x1b];
-      *(byte *)(local_10 + 0xe) = pbVar3[0x1c];
-      *(byte *)((int)local_10 + 0x1d) = pbVar3[0x1d];
-      *(byte *)(local_10 + 0xf) = pbVar3[0x1e];
-      *(byte *)((int)local_10 + 0x1f) = pbVar3[0x1f];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
+      op[0x1c] = puVar3[0x1c];
+      op[0x1d] = puVar3[0x1d];
+      op[0x1e] = puVar3[0x1e];
+      op[0x1f] = puVar3[0x1f];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(pbVar3 + 0x18);
-      *(undefined4 *)(local_10 + 0xe) = *(undefined4 *)(pbVar3 + 0x1c);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
+      *(undefined4 *)(op + 0x1c) = *(undefined4 *)(puVar3 + 0x1c);
     }
-    local_10 = local_10 + 0x10;
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x20;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x3f:
   case 0x13f:
   case 0x23f:
-    pbVar3 = (byte *)((int)local_10 + (-1 - ((int)(uint)*puVar5 >> 2)));
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
-      *(byte *)(local_10 + 4) = pbVar3[8];
-      *(byte *)((int)local_10 + 9) = pbVar3[9];
-      *(byte *)(local_10 + 5) = pbVar3[10];
-      *(byte *)((int)local_10 + 0xb) = pbVar3[0xb];
-      *(byte *)(local_10 + 6) = pbVar3[0xc];
-      *(byte *)((int)local_10 + 0xd) = pbVar3[0xd];
-      *(byte *)(local_10 + 7) = pbVar3[0xe];
-      *(byte *)((int)local_10 + 0xf) = pbVar3[0xf];
-      *(byte *)(local_10 + 8) = pbVar3[0x10];
-      *(byte *)((int)local_10 + 0x11) = pbVar3[0x11];
-      *(byte *)(local_10 + 9) = pbVar3[0x12];
-      *(byte *)((int)local_10 + 0x13) = pbVar3[0x13];
-      *(byte *)(local_10 + 10) = pbVar3[0x14];
-      *(byte *)((int)local_10 + 0x15) = pbVar3[0x15];
-      *(byte *)(local_10 + 0xb) = pbVar3[0x16];
-      *(byte *)((int)local_10 + 0x17) = pbVar3[0x17];
-      *(byte *)(local_10 + 0xc) = pbVar3[0x18];
-      *(byte *)((int)local_10 + 0x19) = pbVar3[0x19];
-      *(byte *)(local_10 + 0xd) = pbVar3[0x1a];
-      *(byte *)((int)local_10 + 0x1b) = pbVar3[0x1b];
-      *(byte *)(local_10 + 0xe) = pbVar3[0x1c];
-      *(byte *)((int)local_10 + 0x1d) = pbVar3[0x1d];
-      *(byte *)(local_10 + 0xf) = pbVar3[0x1e];
-      *(byte *)((int)local_10 + 0x1f) = pbVar3[0x1f];
-      *(byte *)(local_10 + 0x10) = pbVar3[0x20];
+    puVar3 = op + (-1 - ((int)(uint)*puVar6 >> 2));
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
+      op[8] = puVar3[8];
+      op[9] = puVar3[9];
+      op[10] = puVar3[10];
+      op[0xb] = puVar3[0xb];
+      op[0xc] = puVar3[0xc];
+      op[0xd] = puVar3[0xd];
+      op[0xe] = puVar3[0xe];
+      op[0xf] = puVar3[0xf];
+      op[0x10] = puVar3[0x10];
+      op[0x11] = puVar3[0x11];
+      op[0x12] = puVar3[0x12];
+      op[0x13] = puVar3[0x13];
+      op[0x14] = puVar3[0x14];
+      op[0x15] = puVar3[0x15];
+      op[0x16] = puVar3[0x16];
+      op[0x17] = puVar3[0x17];
+      op[0x18] = puVar3[0x18];
+      op[0x19] = puVar3[0x19];
+      op[0x1a] = puVar3[0x1a];
+      op[0x1b] = puVar3[0x1b];
+      op[0x1c] = puVar3[0x1c];
+      op[0x1d] = puVar3[0x1d];
+      op[0x1e] = puVar3[0x1e];
+      op[0x1f] = puVar3[0x1f];
+      op[0x20] = puVar3[0x20];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-      *(undefined4 *)(local_10 + 4) = *(undefined4 *)(pbVar3 + 8);
-      *(undefined4 *)(local_10 + 6) = *(undefined4 *)(pbVar3 + 0xc);
-      *(undefined4 *)(local_10 + 8) = *(undefined4 *)(pbVar3 + 0x10);
-      *(undefined4 *)(local_10 + 10) = *(undefined4 *)(pbVar3 + 0x14);
-      *(undefined4 *)(local_10 + 0xc) = *(undefined4 *)(pbVar3 + 0x18);
-      *(undefined4 *)(local_10 + 0xe) = *(undefined4 *)(pbVar3 + 0x1c);
-      *(byte *)(local_10 + 0x10) = pbVar3[0x20];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
+      *(undefined4 *)(op + 8) = *(undefined4 *)(puVar3 + 8);
+      *(undefined4 *)(op + 0xc) = *(undefined4 *)(puVar3 + 0xc);
+      *(undefined4 *)(op + 0x10) = *(undefined4 *)(puVar3 + 0x10);
+      *(undefined4 *)(op + 0x14) = *(undefined4 *)(puVar3 + 0x14);
+      *(undefined4 *)(op + 0x18) = *(undefined4 *)(puVar3 + 0x18);
+      *(undefined4 *)(op + 0x1c) = *(undefined4 *)(puVar3 + 0x1c);
+      op[0x20] = puVar3[0x20];
     }
-    local_10 = (ushort *)((int)local_10 + 0x21);
-    puVar5 = (ushort *)((int)local_c + 3);
+    op = op + 0x21;
+    puVar6 = (ushort *)(ip + 3);
     goto switchD_00ae00c0_default;
   case 0x40:
   case 0x140:
   case 0x240:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *(byte *)local_10 = (byte)*puVar2;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar2 + 1);
-      *(byte *)(local_10 + 1) = (byte)puVar2[1];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
     }
     else {
-      *local_10 = *puVar2;
-      *(byte *)(local_10 + 1) = (byte)puVar2[1];
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      op[2] = puVar3[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     break;
   case 0x41:
   case 0x141:
   case 0x241:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *(byte *)local_10 = (byte)*puVar5;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar5 + 1);
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
     }
     else {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x42:
   case 0x142:
   case 0x242:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *(byte *)local_10 = (byte)*puVar5;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar5 + 1);
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
     }
     else {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x43:
   case 0x143:
   case 0x243:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *(byte *)local_10 = (byte)*puVar5;
-      *(byte *)((int)local_10 + 1) = *(byte *)((int)puVar5 + 1);
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
     }
     else {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x44:
   case 0x144:
   case 0x244:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      *(byte *)(local_10 + 1) = (byte)puVar2[1];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      op[2] = puVar3[2];
     }
     else {
-      *local_10 = *puVar2;
-      *(byte *)(local_10 + 1) = (byte)puVar2[1];
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      op[2] = puVar3[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     break;
   case 0x45:
   case 0x145:
   case 0x245:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
     else {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x46:
   case 0x146:
   case 0x246:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
     else {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x47:
   case 0x147:
   case 0x247:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
     else {
-      *local_10 = *puVar5;
-      *(byte *)(local_10 + 1) = (byte)puVar5[1];
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      op[2] = puVar4[2];
     }
-    local_10 = (ushort *)((int)local_10 + 3);
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x48:
   case 0x148:
   case 0x248:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    *local_10 = *puVar2;
-    *(byte *)(local_10 + 1) = (byte)puVar2[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -3);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -3)[2];
+    op = op + 3;
     break;
   case 0x49:
   case 0x149:
   case 0x249:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -3);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -3)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x4a:
   case 0x14a:
   case 0x24a:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -3);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -3)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x4b:
   case 0x14b:
   case 0x24b:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -3);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -3)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x4c:
   case 0x14c:
   case 0x24c:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -2];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -4)[2];
+    op = op + 3;
     break;
   case 0x4d:
   case 0x14d:
   case 0x24d:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -2];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -4)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x4e:
   case 0x14e:
   case 0x24e:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -2];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -4)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x4f:
   case 0x14f:
   case 0x24f:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -2];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -4)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x50:
   case 0x150:
   case 0x250:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *local_10 = *puVar2;
-    *(byte *)(local_10 + 1) = (byte)puVar2[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -5)[2];
+    op = op + 3;
     break;
   case 0x51:
   case 0x151:
   case 0x251:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -5)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x52:
   case 0x152:
   case 0x252:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -5)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x53:
   case 0x153:
   case 0x253:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -5)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x54:
   case 0x154:
   case 0x254:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -3];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -6)[2];
+    op = op + 3;
     break;
   case 0x55:
   case 0x155:
   case 0x255:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -3];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -6)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x56:
   case 0x156:
   case 0x256:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -3];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -6)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x57:
   case 0x157:
   case 599:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -3];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -6)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x58:
   case 0x158:
   case 600:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *local_10 = *puVar2;
-    *(byte *)(local_10 + 1) = (byte)puVar2[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -7)[2];
+    op = op + 3;
     break;
   case 0x59:
   case 0x159:
   case 0x259:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -7)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x5a:
   case 0x15a:
   case 0x25a:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -7)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x5b:
   case 0x15b:
   case 0x25b:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -7)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x5c:
   case 0x15c:
   case 0x25c:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -4];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -8)[2];
+    op = op + 3;
     break;
   case 0x5d:
   case 0x15d:
   case 0x25d:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -4];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -8)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x5e:
   case 0x15e:
   case 0x25e:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -4];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -8)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x5f:
   case 0x15f:
   case 0x25f:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -4 + -4];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[2] = (op + (uint)(byte)uVar1 * -8 + -8)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x60:
   case 0x160:
   case 0x260:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
+      *(undefined4 *)op = *(undefined4 *)puVar3;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     break;
   case 0x61:
   case 0x161:
   case 0x261:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x62:
   case 0x162:
   case 0x262:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae881b;
   case 99:
   case 0x163:
   case 0x263:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae8895;
   case 100:
   case 0x164:
   case 0x264:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
+      *(undefined4 *)op = *(undefined4 *)puVar3;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     break;
   case 0x65:
   case 0x165:
   case 0x265:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x66:
   case 0x166:
   case 0x266:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x67:
   case 0x167:
   case 0x267:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x68:
   case 0x168:
   case 0x268:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
+      *(undefined4 *)op = *(undefined4 *)puVar3;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     break;
   case 0x69:
   case 0x169:
   case 0x269:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x6a:
   case 0x16a:
   case 0x26a:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x6b:
   case 0x16b:
   case 0x26b:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
+      *(undefined4 *)op = *(undefined4 *)puVar4;
     }
-    local_10 = local_10 + 2;
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x6c:
   case 0x16c:
   case 0x26c:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -2);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -4);
+    op = op + 4;
     break;
   case 0x6d:
   case 0x16d:
   case 0x26d:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -2);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -4);
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x6e:
   case 0x16e:
   case 0x26e:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -2);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -4);
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x6f:
   case 0x16f:
   case 0x26f:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -2);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -4);
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x70:
   case 0x170:
   case 0x270:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -5);
+    op = op + 4;
     break;
   case 0x71:
   case 0x171:
   case 0x271:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -5);
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x72:
   case 0x172:
   case 0x272:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -5);
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x73:
   case 0x173:
   case 0x273:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -5);
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x74:
   case 0x174:
   case 0x274:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -6);
+    op = op + 4;
     break;
   case 0x75:
   case 0x175:
   case 0x275:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -6);
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x76:
   case 0x176:
   case 0x276:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -6);
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x77:
   case 0x177:
   case 0x277:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -3);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -6);
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x78:
   case 0x178:
   case 0x278:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -7);
+    op = op + 4;
     break;
   case 0x79:
   case 0x179:
   case 0x279:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -7);
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x7a:
   case 0x17a:
   case 0x27a:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -7);
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x7b:
   case 0x17b:
   case 0x27b:
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -7);
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x7c:
   case 0x17c:
   case 0x27c:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -4);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -8);
+    op = op + 4;
     break;
   case 0x7d:
   case 0x17d:
   case 0x27d:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -4);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -8);
+    op = op + 4;
     goto LAB_00ae87a3;
   case 0x7e:
   case 0x17e:
   case 0x27e:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -4);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -8);
+    op = op + 4;
     goto LAB_00ae881b;
   case 0x7f:
   case 0x17f:
   case 0x27f:
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)*(byte *)puVar5 * -4 + -4);
-    local_10 = local_10 + 2;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)*puVar6 * -8 + -8);
+    op = op + 4;
     goto LAB_00ae8895;
   case 0x80:
   case 0x180:
   case 0x280:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(byte *)(local_10 + 2) = pbVar3[4];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      op[4] = puVar3[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     break;
   case 0x81:
   case 0x181:
   case 0x281:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(byte *)(local_10 + 2) = pbVar3[4];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x82:
   case 0x182:
   case 0x282:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(byte *)(local_10 + 2) = pbVar3[4];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x83:
   case 0x183:
   case 0x283:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(byte *)(local_10 + 2) = pbVar3[4];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x84:
   case 0x184:
   case 0x284:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      *(byte *)(local_10 + 2) = (byte)puVar2[2];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      op[4] = puVar3[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      *(byte *)(local_10 + 2) = (byte)puVar2[2];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      op[4] = puVar3[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     break;
   case 0x85:
   case 0x185:
   case 0x285:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x86:
   case 0x186:
   case 0x286:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x87:
   case 0x187:
   case 0x287:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x88:
   case 0x188:
   case 0x288:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      *(byte *)(local_10 + 2) = (byte)puVar2[2];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      op[4] = puVar3[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      *(byte *)(local_10 + 2) = (byte)puVar2[2];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      op[4] = puVar3[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     break;
   case 0x89:
   case 0x189:
   case 0x289:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x8a:
   case 0x18a:
   case 0x28a:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x8b:
   case 0x18b:
   case 0x28b:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      op[4] = puVar4[4];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(byte *)(local_10 + 2) = (byte)puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      op[4] = puVar4[4];
     }
-    local_10 = (ushort *)((int)local_10 + 5);
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x8c:
   case 0x18c:
   case 0x28c:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -4)[4];
+    op = op + 5;
     break;
   case 0x8d:
   case 0x18d:
   case 0x28d:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -4)[4];
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x8e:
   case 0x18e:
   case 0x28e:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -4)[4];
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x8f:
   case 399:
   case 0x28f:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -4)[4];
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x90:
   case 400:
   case 0x290:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -5)[4];
+    op = op + 5;
     break;
   case 0x91:
   case 0x191:
   case 0x291:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -5)[4];
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x92:
   case 0x192:
   case 0x292:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -5)[4];
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x93:
   case 0x193:
   case 0x293:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -5)[4];
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x94:
   case 0x194:
   case 0x294:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -6)[4];
+    op = op + 5;
     break;
   case 0x95:
   case 0x195:
   case 0x295:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -6)[4];
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x96:
   case 0x196:
   case 0x296:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -6)[4];
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x97:
   case 0x197:
   case 0x297:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -6)[4];
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x98:
   case 0x198:
   case 0x298:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -7)[4];
+    op = op + 5;
     break;
   case 0x99:
   case 0x199:
   case 0x299:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -7)[4];
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x9a:
   case 0x19a:
   case 0x29a:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -7)[4];
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x9b:
   case 0x19b:
   case 0x29b:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(byte *)(local_10 + 2) = pbVar3[4];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -7)[4];
+    op = op + 5;
     goto LAB_00ae8895;
   case 0x9c:
   case 0x19c:
   case 0x29c:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -8)[4];
+    op = op + 5;
     break;
   case 0x9d:
   case 0x19d:
   case 0x29d:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -8)[4];
+    op = op + 5;
     goto LAB_00ae87a3;
   case 0x9e:
   case 0x19e:
   case 0x29e:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -8)[4];
+    op = op + 5;
     goto LAB_00ae881b;
   case 0x9f:
   case 0x19f:
   case 0x29f:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(byte *)(local_10 + 2) = (byte)(local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = (ushort *)((int)local_10 + 5);
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    op[4] = (op + (uint)(byte)uVar1 * -8 + -8)[4];
+    op = op + 5;
     goto LAB_00ae8895;
   case 0xa0:
   case 0x1a0:
   case 0x2a0:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     break;
   case 0xa1:
   case 0x1a1:
   case 0x2a1:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xa2:
   case 0x1a2:
   case 0x2a2:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xa3:
   case 0x1a3:
   case 0x2a3:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xa4:
   case 0x1a4:
   case 0x2a4:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      local_10[2] = puVar2[2];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      local_10[2] = puVar2[2];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     break;
   case 0xa5:
   case 0x1a5:
   case 0x2a5:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xa6:
   case 0x1a6:
   case 0x2a6:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xa7:
   case 0x1a7:
   case 0x2a7:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xa8:
   case 0x1a8:
   case 0x2a8:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      local_10[2] = puVar2[2];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      local_10[2] = puVar2[2];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     break;
   case 0xa9:
   case 0x1a9:
   case 0x2a9:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xaa:
   case 0x1aa:
   case 0x2aa:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xab:
   case 0x1ab:
   case 0x2ab:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 3;
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xac:
   case 0x1ac:
   case 0x2ac:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 6;
     break;
   case 0xad:
   case 0x1ad:
   case 0x2ad:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xae:
   case 0x1ae:
   case 0x2ae:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xaf:
   case 0x1af:
   case 0x2af:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -2)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xb0:
   case 0x1b0:
   case 0x2b0:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 6;
     break;
   case 0xb1:
   case 0x1b1:
   case 0x2b1:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xb2:
   case 0x1b2:
   case 0x2b2:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xb3:
   case 0x1b3:
   case 0x2b3:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xb4:
   case 0x1b4:
   case 0x2b4:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 6;
     break;
   case 0xb5:
   case 0x1b5:
   case 0x2b5:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xb6:
   case 0x1b6:
   case 0x2b6:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xb7:
   case 0x1b7:
   case 0x2b7:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -3)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xb8:
   case 0x1b8:
   case 0x2b8:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 6;
     break;
   case 0xb9:
   case 0x1b9:
   case 0x2b9:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xba:
   case 0x1ba:
   case 0x2ba:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xbb:
   case 0x1bb:
   case 699:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xbc:
   case 0x1bc:
   case 700:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 6;
     break;
   case 0xbd:
   case 0x1bd:
   case 0x2bd:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 6;
     goto LAB_00ae87a3;
   case 0xbe:
   case 0x1be:
   case 0x2be:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 6;
     goto LAB_00ae881b;
   case 0xbf:
   case 0x1bf:
   case 0x2bf:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    local_10[2] = (local_10 + (uint)bVar1 * -4 + -4)[2];
-    local_10 = local_10 + 3;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined2 *)(op + 4) = *(undefined2 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 6;
     goto LAB_00ae8895;
   case 0xc0:
   case 0x1c0:
   case 0x2c0:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
-      *(byte *)(local_10 + 3) = pbVar3[6];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      op[6] = puVar3[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     break;
   case 0xc1:
   case 0x1c1:
   case 0x2c1:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
-      *(byte *)(local_10 + 3) = pbVar3[6];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xc2:
   case 0x1c2:
   case 0x2c2:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
-      *(byte *)(local_10 + 3) = pbVar3[6];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xc3:
   case 0x1c3:
   case 0x2c3:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      local_10[2] = *(ushort *)(pbVar3 + 4);
-      *(byte *)(local_10 + 3) = pbVar3[6];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xc4:
   case 0x1c4:
   case 0x2c4:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      local_10[2] = puVar2[2];
-      *(byte *)(local_10 + 3) = (byte)puVar2[3];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      op[6] = puVar3[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      local_10[2] = puVar2[2];
-      *(byte *)(local_10 + 3) = (byte)puVar2[3];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      op[6] = puVar3[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     break;
   case 0xc5:
   case 0x1c5:
   case 0x2c5:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xc6:
   case 0x1c6:
   case 0x2c6:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae881b;
   case 199:
   case 0x1c7:
   case 0x2c7:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae8895;
   case 200:
   case 0x1c8:
   case 0x2c8:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      local_10[2] = puVar2[2];
-      *(byte *)(local_10 + 3) = (byte)puVar2[3];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      op[6] = puVar3[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      local_10[2] = puVar2[2];
-      *(byte *)(local_10 + 3) = (byte)puVar2[3];
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      op[6] = puVar3[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     break;
   case 0xc9:
   case 0x1c9:
   case 0x2c9:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xca:
   case 0x1ca:
   case 0x2ca:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xcb:
   case 0x1cb:
   case 0x2cb:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      local_10[2] = puVar5[2];
-      *(byte *)(local_10 + 3) = (byte)puVar5[3];
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      op[6] = puVar4[6];
     }
-    local_10 = (ushort *)((int)local_10 + 7);
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xcc:
   case 0x1cc:
   case 0x2cc:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -2;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-    local_10[2] = puVar2[2];
-    *(byte *)(local_10 + 3) = (byte)puVar2[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -4;
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
     break;
   case 0xcd:
   case 0x1cd:
   case 0x2cd:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -2;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -4;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xce:
   case 0x1ce:
   case 0x2ce:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -2;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -4;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xcf:
   case 0x1cf:
   case 0x2cf:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -2;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -4;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xd0:
   case 0x1d0:
   case 0x2d0:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -5;
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
     break;
   case 0xd1:
   case 0x1d1:
   case 0x2d1:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -5;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xd2:
   case 0x1d2:
   case 0x2d2:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -5;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xd3:
   case 0x1d3:
   case 0x2d3:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -5;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xd4:
   case 0x1d4:
   case 0x2d4:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -3;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-    local_10[2] = puVar2[2];
-    *(byte *)(local_10 + 3) = (byte)puVar2[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -6;
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
     break;
   case 0xd5:
   case 0x1d5:
   case 0x2d5:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -3;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -6;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xd6:
   case 0x1d6:
   case 0x2d6:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -3;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -6;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xd7:
   case 0x1d7:
   case 0x2d7:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -3;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -6;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xd8:
   case 0x1d8:
   case 0x2d8:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -7;
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
     break;
   case 0xd9:
   case 0x1d9:
   case 0x2d9:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -7;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xda:
   case 0x1da:
   case 0x2da:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -7;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xdb:
   case 0x1db:
   case 0x2db:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    local_10[2] = *(ushort *)(pbVar3 + 4);
-    *(byte *)(local_10 + 3) = pbVar3[6];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -7;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xdc:
   case 0x1dc:
   case 0x2dc:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -4;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-    local_10[2] = puVar2[2];
-    *(byte *)(local_10 + 3) = (byte)puVar2[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -8;
+    *(undefined4 *)op = *(undefined4 *)puVar3;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+    op[6] = puVar3[6];
+    op = op + 7;
     break;
   case 0xdd:
   case 0x1dd:
   case 0x2dd:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -4;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -8;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae87a3;
   case 0xde:
   case 0x1de:
   case 0x2de:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -4;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -8;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae881b;
   case 0xdf:
   case 0x1df:
   case 0x2df:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -4;
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = puVar5[2];
-    *(byte *)(local_10 + 3) = (byte)puVar5[3];
-    local_10 = (ushort *)((int)local_10 + 7);
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -8;
+    *(undefined4 *)op = *(undefined4 *)puVar4;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+    op[6] = puVar4[6];
+    op = op + 7;
     goto LAB_00ae8895;
   case 0xe0:
   case 0x1e0:
   case 0x2e0:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar3 < 4) {
+      *op = *puVar3;
+      op[1] = puVar3[1];
+      op[2] = puVar3[2];
+      op[3] = puVar3[3];
+      op[4] = puVar3[4];
+      op[5] = puVar3[5];
+      op[6] = puVar3[6];
+      op[7] = puVar3[7];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     break;
   case 0xe1:
   case 0x1e1:
   case 0x2e1:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
+      op[6] = puVar4[6];
+      op[7] = puVar4[7];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xe2:
   case 0x1e2:
   case 0x2e2:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
+      op[6] = puVar4[6];
+      op[7] = puVar4[7];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xe3:
   case 0x1e3:
   case 0x2e3:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -1);
-    if ((int)local_10 - (int)pbVar3 < 4) {
-      *(byte *)local_10 = *pbVar3;
-      *(byte *)((int)local_10 + 1) = pbVar3[1];
-      *(byte *)(local_10 + 1) = pbVar3[2];
-      *(byte *)((int)local_10 + 3) = pbVar3[3];
-      *(byte *)(local_10 + 2) = pbVar3[4];
-      *(byte *)((int)local_10 + 5) = pbVar3[5];
-      *(byte *)(local_10 + 3) = pbVar3[6];
-      *(byte *)((int)local_10 + 7) = pbVar3[7];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -1;
+    if ((int)op - (int)puVar4 < 4) {
+      *op = *puVar4;
+      op[1] = puVar4[1];
+      op[2] = puVar4[2];
+      op[3] = puVar4[3];
+      op[4] = puVar4[4];
+      op[5] = puVar4[5];
+      op[6] = puVar4[6];
+      op[7] = puVar4[7];
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xe4:
   case 0x1e4:
   case 0x2e4:
-    puVar2 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      local_10[2] = puVar2[2];
-      local_10[3] = puVar2[3];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar3 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar2 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     break;
   case 0xe5:
   case 0x1e5:
   case 0x2e5:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      local_10[3] = puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar4 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar5 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xe6:
   case 0x1e6:
   case 0x2e6:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      local_10[3] = puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar4 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar5 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xe7:
   case 0x1e7:
   case 0x2e7:
-    puVar5 = local_10 + (uint)*(byte *)puVar5 * -4 + -1;
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      local_10[3] = puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -2;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar4 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar5 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xe8:
   case 0x1e8:
   case 0x2e8:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar2 < 4) {
-      *local_10 = *puVar2;
-      local_10[1] = puVar2[1];
-      local_10[2] = puVar2[2];
-      local_10[3] = puVar2[3];
+    puVar3 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar3 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar3;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar3 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar3 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar3 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar2;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar2 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar3;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar3 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     break;
   case 0xe9:
   case 0x1e9:
   case 0x2e9:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      local_10[3] = puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar4 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar5 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xea:
   case 0x1ea:
   case 0x2ea:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      local_10[3] = puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar4 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar5 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xeb:
   case 0x1eb:
   case 0x2eb:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -3);
-    if ((int)local_10 - (int)puVar5 < 4) {
-      *local_10 = *puVar5;
-      local_10[1] = puVar5[1];
-      local_10[2] = puVar5[2];
-      local_10[3] = puVar5[3];
+    puVar4 = op + (uint)(byte)*puVar6 * -8 + -3;
+    if ((int)op - (int)puVar4 < 4) {
+      *(undefined2 *)op = *(undefined2 *)puVar4;
+      *(undefined2 *)(op + 2) = *(undefined2 *)(puVar4 + 2);
+      *(undefined2 *)(op + 4) = *(undefined2 *)(puVar4 + 4);
+      *(undefined2 *)(op + 6) = *(undefined2 *)(puVar4 + 6);
     }
     else {
-      *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-      *(undefined4 *)(local_10 + 2) = *(undefined4 *)(puVar5 + 2);
+      *(undefined4 *)op = *(undefined4 *)puVar4;
+      *(undefined4 *)(op + 4) = *(undefined4 *)(puVar4 + 4);
     }
-    local_10 = local_10 + 4;
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xec:
   case 0x1ec:
   case 0x2ec:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 8;
     break;
   case 0xed:
   case 0x1ed:
   case 0x2ed:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xee:
   case 0x1ee:
   case 0x2ee:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xef:
   case 0x1ef:
   case 0x2ef:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -2 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -4 + 4);
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xf0:
   case 0x1f0:
   case 0x2f0:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 8;
     break;
   case 0xf1:
   case 0x1f1:
   case 0x2f1:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xf2:
   case 0x1f2:
   case 0x2f2:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xf3:
   case 499:
   case 0x2f3:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -5);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -5 + 4);
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xf4:
   case 500:
   case 0x2f4:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 8;
     break;
   case 0xf5:
   case 0x1f5:
   case 0x2f5:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xf6:
   case 0x1f6:
   case 0x2f6:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xf7:
   case 0x1f7:
   case 0x2f7:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -3 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -6 + 4);
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xf8:
   case 0x1f8:
   case 0x2f8:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 8;
     break;
   case 0xf9:
   case 0x1f9:
   case 0x2f9:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xfa:
   case 0x1fa:
   case 0x2fa:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xfb:
   case 0x1fb:
   case 0x2fb:
-    pbVar3 = (byte *)((int)local_10 + (uint)*(byte *)puVar5 * -8 + -7);
-    *(undefined4 *)local_10 = *(undefined4 *)pbVar3;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(pbVar3 + 4);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -7 + 4);
+    op = op + 8;
     goto LAB_00ae8895;
   case 0xfc:
   case 0x1fc:
   case 0x2fc:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 8;
     break;
   case 0xfd:
   case 0x1fd:
   case 0x2fd:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 8;
     goto LAB_00ae87a3;
   case 0xfe:
   case 0x1fe:
   case 0x2fe:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 8;
     goto LAB_00ae881b;
   case 0xff:
   case 0x1ff:
   case 0x2ff:
-    bVar1 = *(byte *)puVar5;
-    *(undefined4 *)local_10 = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)(local_10 + (uint)bVar1 * -4 + -4 + 2);
-    local_10 = local_10 + 4;
+    uVar1 = *puVar6;
+    *(undefined4 *)op = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(op + (uint)(byte)uVar1 * -8 + -8 + 4);
+    op = op + 8;
     goto LAB_00ae8895;
   case 0x100:
     do {
-      local_c = puVar5;
-      local_20 = uVar4;
-      uVar4 = local_20 + 0xff;
-      puVar5 = (ushort *)((int)local_c + 1);
-    } while ((byte)*local_c == 0);
-    local_20 = local_20 + (byte)*local_c;
-    *(undefined4 *)local_10 = *(undefined4 *)((int)local_c + 1);
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    *(undefined4 *)(local_10 + 6) = *(undefined4 *)((int)local_c + 0xd);
-    local_10[8] = *(ushort *)((int)local_c + 0x11);
-    local_10 = local_10 + 9;
-    local_c = (ushort *)((int)local_c + 0x13);
-    for (; 3 < local_20; local_20 = local_20 - 4) {
-      *(undefined4 *)local_10 = *(undefined4 *)local_c;
-      local_10 = local_10 + 2;
-      local_c = local_c + 2;
+      ip = (uchar *)puVar6;
+      t_2 = uVar5;
+      uVar5 = t_2 + 0xff;
+      puVar6 = (ushort *)(ip + 1);
+    } while (*ip == '\0');
+    uVar5 = t_2 + *ip;
+    *(undefined4 *)op = *(undefined4 *)(ip + 1);
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    *(undefined4 *)(op + 0xc) = *(undefined4 *)(ip + 0xd);
+    *(undefined2 *)(op + 0x10) = *(undefined2 *)(ip + 0x11);
+    op = op + 0x12;
+    ip = ip + 0x13;
+    for (; 3 < uVar5; uVar5 = uVar5 - 4) {
+      *(undefined4 *)op = *(undefined4 *)ip;
+      op = op + 4;
+      ip = ip + 4;
     }
-    for (; local_20 != 0; local_20 = local_20 - 1) {
-      *(byte *)local_10 = (byte)*local_c;
-      local_10 = (ushort *)((int)local_10 + 1);
-      local_c = (ushort *)((int)local_c + 1);
+    for (; uVar5 != 0; uVar5 = uVar5 - 1) {
+      *op = *ip;
+      op = op + 1;
+      ip = ip + 1;
     }
-    local_14 = 0x200;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x101:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10 = local_10 + 2;
-    local_c = (ushort *)((int)local_c + 5);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    op = op + 4;
+    ip = ip + 5;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x102:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(byte *)(local_10 + 2) = *(byte *)((int)local_c + 5);
-    local_10 = (ushort *)((int)local_10 + 5);
-    local_c = local_c + 3;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    op[4] = ip[5];
+    op = op + 5;
+    ip = ip + 6;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x103:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = *(ushort *)((int)local_c + 5);
-    local_10 = local_10 + 3;
-    local_c = (ushort *)((int)local_c + 7);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(ip + 5);
+    op = op + 6;
+    ip = ip + 7;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x104:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    local_10[2] = *(ushort *)((int)local_c + 5);
-    *(byte *)(local_10 + 3) = *(byte *)((int)local_c + 7);
-    local_10 = (ushort *)((int)local_10 + 7);
-    local_c = local_c + 4;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined2 *)(op + 4) = *(undefined2 *)(ip + 5);
+    op[6] = ip[7];
+    op = op + 7;
+    ip = ip + 8;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x105:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    local_10 = local_10 + 4;
-    local_c = (ushort *)((int)local_c + 9);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    op = op + 8;
+    ip = ip + 9;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x106:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(byte *)(local_10 + 4) = *(byte *)((int)local_c + 9);
-    local_10 = (ushort *)((int)local_10 + 9);
-    local_c = local_c + 5;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    op[8] = ip[9];
+    op = op + 9;
+    ip = ip + 10;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x107:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    local_10[4] = *(ushort *)((int)local_c + 9);
-    local_10 = local_10 + 5;
-    local_c = (ushort *)((int)local_c + 0xb);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined2 *)(op + 8) = *(undefined2 *)(ip + 9);
+    op = op + 10;
+    ip = ip + 0xb;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x108:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    local_10[4] = *(ushort *)((int)local_c + 9);
-    *(byte *)(local_10 + 5) = *(byte *)((int)local_c + 0xb);
-    local_10 = (ushort *)((int)local_10 + 0xb);
-    local_c = local_c + 6;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined2 *)(op + 8) = *(undefined2 *)(ip + 9);
+    op[10] = ip[0xb];
+    op = op + 0xb;
+    ip = ip + 0xc;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x109:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    local_10 = local_10 + 6;
-    local_c = (ushort *)((int)local_c + 0xd);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    op = op + 0xc;
+    ip = ip + 0xd;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x10a:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    *(byte *)(local_10 + 6) = *(byte *)((int)local_c + 0xd);
-    local_10 = (ushort *)((int)local_10 + 0xd);
-    local_c = local_c + 7;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    op[0xc] = ip[0xd];
+    op = op + 0xd;
+    ip = ip + 0xe;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x10b:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    local_10[6] = *(ushort *)((int)local_c + 0xd);
-    local_10 = local_10 + 7;
-    local_c = (ushort *)((int)local_c + 0xf);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    *(undefined2 *)(op + 0xc) = *(undefined2 *)(ip + 0xd);
+    op = op + 0xe;
+    ip = ip + 0xf;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x10c:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    local_10[6] = *(ushort *)((int)local_c + 0xd);
-    *(byte *)(local_10 + 7) = *(byte *)((int)local_c + 0xf);
-    local_10 = (ushort *)((int)local_10 + 0xf);
-    local_c = local_c + 8;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    *(undefined2 *)(op + 0xc) = *(undefined2 *)(ip + 0xd);
+    op[0xe] = ip[0xf];
+    op = op + 0xf;
+    ip = ip + 0x10;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x10d:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    *(undefined4 *)(local_10 + 6) = *(undefined4 *)((int)local_c + 0xd);
-    local_10 = local_10 + 8;
-    local_c = (ushort *)((int)local_c + 0x11);
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    *(undefined4 *)(op + 0xc) = *(undefined4 *)(ip + 0xd);
+    op = op + 0x10;
+    ip = ip + 0x11;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x10e:
-    *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-    *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-    *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-    *(undefined4 *)(local_10 + 6) = *(undefined4 *)((int)local_c + 0xd);
-    *(byte *)(local_10 + 8) = *(byte *)((int)local_c + 0x11);
-    local_10 = (ushort *)((int)local_10 + 0x11);
-    local_c = local_c + 9;
-    local_14 = 0x200;
+    *(undefined4 *)op = *(undefined4 *)puVar6;
+    *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+    *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+    *(undefined4 *)(op + 0xc) = *(undefined4 *)(ip + 0xd);
+    op[0x10] = ip[0x11];
+    op = op + 0x11;
+    ip = ip + 0x12;
+    state = 0x200;
     goto LAB_00ae008f;
   case 0x10f:
     goto switchD_00ae00c0_caseD_10f;
   case 0x200:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x801);
-    *local_10 = *puVar2;
-    *(byte *)(local_10 + 1) = (byte)puVar2[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x801);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x801)[2];
+    op = op + 3;
     break;
   case 0x201:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x801);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x801);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x801)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x202:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x801);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x801);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x801)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x203:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x801);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x801);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x801)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x204:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x401];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x401)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x802);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x802)[2];
+    op = op + 3;
     break;
   case 0x205:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x401];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x401)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x802);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x802)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x206:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x401];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x401)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x802);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x802)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x207:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x401];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x401)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x802);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x802)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x208:
-    puVar2 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x803);
-    *local_10 = *puVar2;
-    *(byte *)(local_10 + 1) = (byte)puVar2[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x803);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x803)[2];
+    op = op + 3;
     break;
   case 0x209:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x803);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x803);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x803)[2];
+    op = op + 3;
     goto LAB_00ae87a3;
   case 0x20a:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x803);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x803);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x803)[2];
+    op = op + 3;
     goto LAB_00ae881b;
   case 0x20b:
-    puVar5 = (ushort *)((int)local_10 + (uint)*(byte *)puVar5 * -4 + -0x803);
-    *local_10 = *puVar5;
-    *(byte *)(local_10 + 1) = (byte)puVar5[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x803);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x803)[2];
+    op = op + 3;
     goto LAB_00ae8895;
   case 0x20c:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x402];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x402)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x804);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x804)[2];
+    op = op + 3;
     break;
   case 0x20d:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x402];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x402)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x804);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x804)[2];
+    op = op + 3;
 LAB_00ae87a3:
-    local_c = local_c + 1;
-    *(byte *)local_10 = (byte)*local_c;
-    local_10 = (ushort *)((int)local_10 + 1);
-    local_c = (ushort *)((int)puVar2 + 3);
-    local_14 = 0;
+    ip = ip + 2;
+    *op = *ip;
+    op = op + 1;
+    ip = puVar3 + 3;
+    state = 0;
     goto LAB_00ae008f;
   case 0x20e:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x402];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x402)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x804);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x804)[2];
+    op = op + 3;
 LAB_00ae881b:
-    local_c = local_c + 1;
-    *local_10 = *local_c;
-    local_10 = local_10 + 1;
-    local_c = puVar2 + 2;
-    local_14 = 0;
+    ip = ip + 2;
+    *(undefined2 *)op = *(undefined2 *)ip;
+    op = op + 2;
+    ip = puVar3 + 4;
+    state = 0;
     goto LAB_00ae008f;
   case 0x20f:
-    bVar1 = *(byte *)puVar5;
-    *local_10 = local_10[(uint)bVar1 * -2 + -0x402];
-    *(byte *)(local_10 + 1) = (byte)(local_10 + (uint)bVar1 * -2 + -0x402)[1];
-    local_10 = (ushort *)((int)local_10 + 3);
+    uVar1 = *puVar6;
+    *(undefined2 *)op = *(undefined2 *)(op + (uint)(byte)uVar1 * -4 + -0x804);
+    op[2] = (op + (uint)(byte)uVar1 * -4 + -0x804)[2];
+    op = op + 3;
 LAB_00ae8895:
-    local_c = local_c + 1;
-    *local_10 = *local_c;
-    *(byte *)(local_10 + 1) = (byte)puVar2[2];
-    local_10 = (ushort *)((int)local_10 + 3);
-    local_c = (ushort *)((int)puVar2 + 5);
-    local_14 = 0;
+    ip = ip + 2;
+    *(undefined2 *)op = *(undefined2 *)ip;
+    op[2] = puVar3[4];
+    op = op + 3;
+    ip = puVar3 + 5;
+    state = 0;
     goto LAB_00ae008f;
   }
-  local_c = local_c + 1;
-  local_14 = 0x100;
+  ip = ip + 2;
+  state = 0x100;
   goto LAB_00ae008f;
 switchD_00ae00c0_caseD_10f:
-  *(undefined4 *)local_10 = *(undefined4 *)puVar5;
-  *(undefined4 *)(local_10 + 2) = *(undefined4 *)((int)local_c + 5);
-  *(undefined4 *)(local_10 + 4) = *(undefined4 *)((int)local_c + 9);
-  *(undefined4 *)(local_10 + 6) = *(undefined4 *)((int)local_c + 0xd);
-  local_10[8] = *(ushort *)((int)local_c + 0x11);
-  local_10 = local_10 + 9;
-  local_c = (ushort *)((int)local_c + 0x13);
-  local_14 = 0x200;
+  *(undefined4 *)op = *(undefined4 *)puVar6;
+  *(undefined4 *)(op + 4) = *(undefined4 *)(ip + 5);
+  *(undefined4 *)(op + 8) = *(undefined4 *)(ip + 9);
+  *(undefined4 *)(op + 0xc) = *(undefined4 *)(ip + 0xd);
+  *(undefined2 *)(op + 0x10) = *(undefined2 *)(ip + 0x11);
+  op = op + 0x12;
+  ip = ip + 0x13;
+  state = 0x200;
   goto LAB_00ae008f;
 }
 
 
 // 00ADF7B0  __lzo_init_v2  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/lzo_init.c:115)
 
-int __cdecl
-__lzo_init_v2(uint param_1,int param_2,int param_3,int param_4,int param_5,int param_6,int param_7,
-             int param_8,int param_9,int param_10)
+int __cdecl __lzo_init_v2(uint v,int s1,int s2,int s3,int s4,int s5,int s6,int s7,int s8,int s9)
 
 {
   bool bVar1;
   int iVar2;
+  int r;
   
-  if (param_1 == 0) {
+  if (v == 0) {
     iVar2 = -1;
   }
   else {
-    if ((((((param_2 == -1) || (param_2 == 2)) && ((param_3 == -1 || (param_3 == 4)))) &&
-         ((param_4 == -1 || (param_4 == 4)))) && ((param_5 == -1 || (param_5 == 4)))) &&
-       (((((param_6 == -1 || (param_6 == 4)) && ((param_7 == -1 || (param_7 == 4)))) &&
-         ((param_8 == -1 || (param_8 == 4)))) &&
-        (((param_9 == -1 || (param_9 == 4)) && ((param_10 == -1 || (param_10 == 0x18)))))))) {
+    if ((((((s1 == -1) || (s1 == 2)) && ((s2 == -1 || (s2 == 4)))) && ((s3 == -1 || (s3 == 4)))) &&
+        ((s4 == -1 || (s4 == 4)))) &&
+       (((((s5 == -1 || (s5 == 4)) && ((s6 == -1 || (s6 == 4)))) && ((s7 == -1 || (s7 == 4)))) &&
+        (((s8 == -1 || (s8 == 4)) && ((s9 == -1 || (s9 == 0x18)))))))) {
       bVar1 = true;
     }
     else {
@@ -4042,59 +4037,59 @@ __lzo_init_v2(uint param_1,int param_2,int param_3,int param_4,int param_5,int p
 // 00ADF8B0  lzopro_lzo1x_1_11_compress  (<external>/projects_pc/cod/sdk/lzopro-2.02/src/plzo1x_c.ch:262)
 
 int __cdecl
-lzopro_lzo1x_1_11_compress(uchar *param_1,ulong param_2,uchar *param_3,ulong *param_4,void *param_5)
+lzopro_lzo1x_1_11_compress(uchar *in,ulong in_len,uchar *out,ulong *out_len,void *wrkmem)
 
 {
   uchar *puVar1;
-  uint local_14;
-  uchar *local_10;
-  uchar *local_c;
-  ulong local_8;
+  ulong tt;
+  uchar *ii;
+  uchar *op;
+  ulong t;
   
-  local_c = param_3;
-  if (param_2 < 0xe) {
-    local_8 = param_2;
+  op = out;
+  if (in_len < 0xe) {
+    t = in_len;
   }
   else {
-    local_8 = lzopro_lzo1x_1_11_compress_core(param_1,param_2,param_3,param_4,param_5);
-    local_c = param_3 + *param_4;
+    t = lzopro_lzo1x_1_11_compress_core(in,in_len,out,out_len,wrkmem);
+    op = out + *out_len;
   }
-  if (local_8 != 0) {
-    local_10 = param_1 + (param_2 - local_8);
-    if ((local_c == param_3) && (local_8 < 0xef)) {
-      *local_c = (byte)local_8 + 0x11;
-      local_c = local_c + 1;
+  if (t != 0) {
+    ii = in + (in_len - t);
+    if ((op == out) && (t < 0xef)) {
+      *op = (byte)t + 0x11;
+      op = op + 1;
     }
-    else if (local_8 < 4) {
-      local_c[-2] = local_c[-2] | (byte)local_8;
+    else if (t < 4) {
+      op[-2] = op[-2] | (byte)t;
     }
-    else if (local_8 < 0x13) {
-      *local_c = (byte)local_8 - 3;
-      local_c = local_c + 1;
+    else if (t < 0x13) {
+      *op = (byte)t - 3;
+      op = op + 1;
     }
     else {
-      local_14 = local_8 - 0x12;
-      *local_c = '\0';
-      puVar1 = local_c;
-      while (local_c = puVar1 + 1, 0xff < local_14) {
-        local_14 = local_14 - 0xff;
-        *local_c = '\0';
-        puVar1 = local_c;
+      tt = t - 0x12;
+      *op = '\0';
+      puVar1 = op;
+      while (op = puVar1 + 1, 0xff < tt) {
+        tt = tt - 0xff;
+        *op = '\0';
+        puVar1 = op;
       }
-      *local_c = (uchar)local_14;
-      local_c = puVar1 + 2;
+      *op = (uchar)tt;
+      op = puVar1 + 2;
     }
     do {
-      *local_c = *local_10;
-      local_c = local_c + 1;
-      local_10 = local_10 + 1;
-      local_8 = local_8 - 1;
-    } while (local_8 != 0);
+      *op = *ii;
+      op = op + 1;
+      ii = ii + 1;
+      t = t - 1;
+    } while (t != 0);
   }
-  *local_c = '\x11';
-  local_c[1] = '\0';
-  local_c[2] = '\0';
-  *param_4 = (ulong)(local_c + (3 - (int)param_3));
+  *op = '\x11';
+  op[1] = '\0';
+  op[2] = '\0';
+  *out_len = (ulong)(op + (3 - (int)out));
   return 0;
 }
 

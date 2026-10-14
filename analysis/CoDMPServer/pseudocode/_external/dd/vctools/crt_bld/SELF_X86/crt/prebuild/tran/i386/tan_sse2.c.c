@@ -2,7 +2,7 @@
 
 // 00C0C56A  __libm_sse2_tan  (line unknown)
 
-double __cdecl __libm_sse2_tan(double param_1)
+double __cdecl __libm_sse2_tan(double x)
 
 {
   ushort uVar1;

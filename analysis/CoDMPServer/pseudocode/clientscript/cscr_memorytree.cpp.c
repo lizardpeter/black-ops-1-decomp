@@ -24,19 +24,20 @@ void __cdecl TRACK_scr_memorytree(void)
 
 // 008B91E0  MT_GetSubTreeSize  (clientscript/cscr_memorytree.cpp:106)
 
-int __cdecl MT_GetSubTreeSize(scriptInstance_t param_1,int param_2)
+int __cdecl MT_GetSubTreeSize(scriptInstance_t inst,int nodeNum)
 
 {
   int iVar1;
   int iVar2;
   undefined3 in_stack_00000005;
+  MemoryNode *node;
   
-  if (param_2 == 0) {
+  if (nodeNum == 0) {
     iVar1 = 0;
   }
   else {
-    iVar2 = MT_GetSubTreeSize(param_1,(uint)gScrMemTreeGlob[_param_1].nodes[param_2].prev);
-    iVar1 = MT_GetSubTreeSize(param_1,(uint)gScrMemTreeGlob[_param_1].nodes[param_2].next);
+    iVar2 = MT_GetSubTreeSize(inst,(uint)gScrMemTreeGlob[_inst].nodes[nodeNum].prev);
+    iVar1 = MT_GetSubTreeSize(inst,(uint)gScrMemTreeGlob[_inst].nodes[nodeNum].next);
     iVar1 = iVar2 + 1 + iVar1;
   }
   return iVar1;
@@ -45,17 +46,18 @@ int __cdecl MT_GetSubTreeSize(scriptInstance_t param_1,int param_2)
 
 // 008B9240  MT_NodeInfoString  (clientscript/cscr_memorytree.cpp:119)
 
-char * __cdecl MT_NodeInfoString(scriptInstance_t param_1,uint param_2)
+char * __cdecl MT_NodeInfoString(scriptInstance_t inst,uint nodeNum)
 
 {
   undefined3 in_stack_00000005;
   char *local_c;
+  int type;
   
-  if (gScrMemTreeDebugGlob[_param_1].mt_usage[param_2] == '\0') {
+  if (gScrMemTreeDebugGlob[_inst].mt_usage[nodeNum] == '\0') {
     local_c = "<FREE>";
   }
   else {
-    SL_DebugConvertToString(param_2,param_1);
+    SL_DebugConvertToString(nodeNum,inst);
     local_c = va("%s: \'%s\' (%d)");
   }
   return local_c;
@@ -64,44 +66,47 @@ char * __cdecl MT_NodeInfoString(scriptInstance_t param_1,uint param_2)
 
 // 008B8EB0  MT_DumpTree  (clientscript/cscr_memorytree.cpp:131)
 
-void __cdecl MT_DumpTree(scriptInstance_t param_1)
+void __cdecl MT_DumpTree(scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   undefined3 in_stack_00000005;
-  uint local_80;
-  int local_7c;
-  int local_74;
-  int local_70;
-  int local_6c [24];
-  uint local_c;
-  int local_8;
+  int subTreeSize;
+  uint nodeNum;
+  int size;
+  int subTreeBuckets;
+  int totalAllocBuckets;
+  int totalAlloc;
+  int mt_type_usage [24];
+  int type;
+  int totalBuckets;
   
-  memset((uchar *)local_6c,'\0',0x5c);
+  memset((uchar *)mt_type_usage,'\0',0x5c);
   Com_Printf(0x18,"********************************\n");
-  local_70 = 0;
-  local_74 = 0;
-  for (local_80 = 0; local_80 < 0x10000; local_80 = local_80 + 1) {
-    local_c = (uint)gScrMemTreeDebugGlob[_param_1].mt_usage[local_80];
-    if (local_c != 0) {
-      MT_NodeInfoString(param_1,local_80);
+  totalAlloc = 0;
+  totalAllocBuckets = 0;
+  for (nodeNum = 0; nodeNum < 0x10000; nodeNum = nodeNum + 1) {
+    type = (int)gScrMemTreeDebugGlob[_inst].mt_usage[nodeNum];
+    if (type != 0) {
+      MT_NodeInfoString(inst,nodeNum);
       Com_Printf(0x18,"%s\n");
-      local_70 = local_70 + 1;
-      local_74 = (1 << (*(byte *)(_param_1 * 0x20000 + 0x9d4a088 + local_80) & 0x1f)) + local_74;
-      local_6c[local_c] =
-           (1 << (*(byte *)(_param_1 * 0x20000 + 0x9d4a088 + local_80) & 0x1f)) + local_6c[local_c];
+      totalAlloc = totalAlloc + 1;
+      totalAllocBuckets =
+           (1 << (*(byte *)(_inst * 0x20000 + 0x9d4a088 + nodeNum) & 0x1f)) + totalAllocBuckets;
+      mt_type_usage[type] =
+           (1 << (*(byte *)(_inst * 0x20000 + 0x9d4a088 + nodeNum) & 0x1f)) + mt_type_usage[type];
     }
   }
-  if ((gScrMemTreeGlob[_param_1].totalAlloc != local_70) &&
+  if ((gScrMemTreeGlob[_inst].totalAlloc != totalAlloc) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0xa4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((gScrMemTreeGlob[_param_1].totalAllocBuckets != local_74) &&
+  if ((gScrMemTreeGlob[_inst].totalAllocBuckets != totalAllocBuckets) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0xa5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -109,15 +114,14 @@ void __cdecl MT_DumpTree(scriptInstance_t param_1)
     return;
   }
   Com_Printf(0x18,"********************************\n");
-  local_8 = gScrMemTreeGlob[_param_1].totalAllocBuckets;
-  for (local_7c = 0; local_7c < 0x11; local_7c = local_7c + 1) {
-    iVar3 = MT_GetSubTreeSize(param_1,(uint)*(ushort *)
-                                             (_param_1 * 0x100380 + 0x9e7a400 + local_7c * 2));
-    local_8 = local_8 + (1 << ((byte)local_7c & 0x1f)) * iVar3;
+  totalBuckets = gScrMemTreeGlob[_inst].totalAllocBuckets;
+  for (size = 0; size < 0x11; size = size + 1) {
+    iVar3 = MT_GetSubTreeSize(inst,(uint)*(ushort *)(_inst * 0x100380 + 0x9e7a400 + size * 2));
+    totalBuckets = totalBuckets + (1 << ((byte)size & 0x1f)) * iVar3;
     Com_Printf(0x18,"%d subtree has %d * %d = %d free buckets\n");
   }
   Com_Printf(0x18,"********************************\n");
-  for (local_c = 1; (int)local_c < 0x17; local_c = local_c + 1) {
+  for (type = 1; type < 0x17; type = type + 1) {
     Com_Printf(0x18,"\'%s\' allocated: %d\n");
   }
   Com_Printf(0x18,"********************************\n");
@@ -125,7 +129,7 @@ void __cdecl MT_DumpTree(scriptInstance_t param_1)
   Com_Printf(0x18,"total memory free buckets: %d\n");
   Com_Printf(0x18,"********************************\n");
   Com_Printf(0x18,"avg alloc: %f\n");
-  if ((local_8 != 0xffff) &&
+  if ((totalBuckets != 0xffff) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0xce,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -138,44 +142,43 @@ void __cdecl MT_DumpTree(scriptInstance_t param_1)
 
 // 008B92B0  Scr_GetStringUsage  (clientscript/cscr_memorytree.cpp:213)
 
-uint __cdecl Scr_GetStringUsage(scriptInstance_t param_1)
+uint __cdecl Scr_GetStringUsage(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
   
-  return gScrMemTreeGlob[_param_1].totalAllocBuckets;
+  return gScrMemTreeGlob[_inst].totalAllocBuckets;
 }
 
 
 // 008B9400  MT_InitBits  (clientscript/cscr_memorytree.cpp:219)
 
-void __cdecl MT_InitBits(scriptInstance_t param_1)
+void __cdecl MT_InitBits(scriptInstance_t inst)
 
 {
-  char cVar1;
-  byte bVar2;
   undefined3 in_stack_00000005;
-  undefined4 local_c;
-  undefined4 local_8;
+  int bits;
+  int temp;
+  int i;
   
-  for (local_8 = 0; (int)local_8 < 0x100; local_8 = local_8 + 1) {
-    cVar1 = '\0';
-    for (local_c = local_8; local_c != 0; local_c = (int)local_c >> 1) {
-      if ((local_c & 1) != 0) {
-        cVar1 = cVar1 + '\x01';
+  for (i = 0; i < 0x100; i = i + 1) {
+    bits = 0;
+    for (temp = i; temp != 0; temp = temp >> 1) {
+      if ((temp & 1U) != 0) {
+        bits = bits + 1;
       }
     }
-    *(char *)(_param_1 * 0x100380 + 0x9e7a200 + local_8) = cVar1;
-    bVar2 = 8;
-    while (((1 << (bVar2 & 0x1f)) - 1U & local_8) != 0) {
-      bVar2 = bVar2 - 1;
+    *(undefined1 *)(_inst * 0x100380 + 0x9e7a200 + i) = (undefined1)bits;
+    bits = 8;
+    while (((1 << ((byte)bits & 0x1f)) - 1U & i) != 0) {
+      bits = bits + -1;
     }
-    *(byte *)(_param_1 * 0x100380 + 0x9e7a100 + local_8) = bVar2;
-    cVar1 = '\0';
-    for (local_c = local_8; local_c != 0; local_c = (int)local_c >> 1) {
-      cVar1 = cVar1 + '\x01';
+    *(byte *)(_inst * 0x100380 + 0x9e7a100 + i) = (byte)bits;
+    bits = 0;
+    for (temp = i; temp != 0; temp = temp >> 1) {
+      bits = bits + 1;
     }
-    *(char *)(_param_1 * 0x100380 + 0x9e7a300 + local_8) = cVar1;
+    *(undefined1 *)(_inst * 0x100380 + 0x9e7a300 + i) = (undefined1)bits;
   }
   return;
 }
@@ -183,19 +186,20 @@ void __cdecl MT_InitBits(scriptInstance_t param_1)
 
 // 008B9820  MT_GetScore  (clientscript/cscr_memorytree.cpp:254)
 
-int __cdecl MT_GetScore(scriptInstance_t param_1,int param_2)
+int __cdecl MT_GetScore(scriptInstance_t inst,int num)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  byte bVar5;
+  uint uVar5;
   uint uVar6;
-  uint uVar7;
   undefined3 in_stack_00000005;
+  int bits;
+  int score;
   
-  if (param_2 == 0) {
+  if (num == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x105,0,"%s");
     if (!bVar2) {
@@ -204,8 +208,8 @@ int __cdecl MT_GetScore(scriptInstance_t param_1,int param_2)
       return iVar3;
     }
   }
-  uVar6 = 0x10000 - param_2;
-  if (uVar6 == 0) {
+  uVar5 = 0x10000 - num;
+  if (uVar5 == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x107,0,"%s");
     if (!bVar2) {
@@ -214,21 +218,21 @@ int __cdecl MT_GetScore(scriptInstance_t param_1,int param_2)
       return iVar3;
     }
   }
-  uVar7 = uVar6 & 0xff;
-  uVar4 = uVar6 >> 8 & 0xff;
-  bVar5 = *(byte *)(_param_1 * 0x100380 + 0x9e7a100 + uVar7);
-  if (uVar7 == 0) {
-    bVar5 = *(char *)(_param_1 * 0x100380 + 0x9e7a100 + uVar4) + bVar5;
+  uVar6 = uVar5 & 0xff;
+  uVar4 = uVar5 >> 8 & 0xff;
+  bits._0_1_ = *(byte *)(_inst * 0x100380 + 0x9e7a100 + uVar6);
+  if (uVar6 == 0) {
+    bits._0_1_ = *(char *)(_inst * 0x100380 + 0x9e7a100 + uVar4) + (byte)bits;
   }
-  return (1 << (bVar5 & 0x1f)) +
-         (uVar6 - ((uint)*(byte *)(_param_1 * 0x100380 + 0x9e7a200 + uVar7) +
-                  (uint)*(byte *)(_param_1 * 0x100380 + 0x9e7a200 + uVar4)));
+  return (1 << ((byte)bits & 0x1f)) +
+         (uVar5 - ((uint)*(byte *)(_inst * 0x100380 + 0x9e7a200 + uVar6) +
+                  (uint)*(byte *)(_inst * 0x100380 + 0x9e7a200 + uVar4)));
 }
 
 
 // 008B94F0  MT_AddMemoryNode  (clientscript/cscr_memorytree.cpp:282)
 
-void __cdecl MT_AddMemoryNode(scriptInstance_t param_1,int param_2,int param_3)
+void __cdecl MT_AddMemoryNode(scriptInstance_t inst,int newNode,int size)
 
 {
   MemoryNode *pMVar1;
@@ -239,33 +243,35 @@ void __cdecl MT_AddMemoryNode(scriptInstance_t param_1,int param_2,int param_3)
   int iVar6;
   int iVar7;
   undefined3 in_stack_00000005;
-  uint local_1c;
-  uint local_18;
-  MemoryNode *local_10;
-  int local_c;
+  int node;
+  int nodeNum;
+  int newScore;
+  ushort *parentNode;
+  int level;
+  int score;
   
-  if (((param_3 < 0) || (0x10 < param_3)) &&
+  if (((size < 0) || (0x10 < size)) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x122,0,"%s"), !bVar5)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_10 = (MemoryNode *)(_param_1 * 0x100380 + 0x9e7a400 + param_3 * 2);
-  local_1c = (uint)local_10->prev;
-  if (local_1c != 0) {
-    iVar6 = MT_GetScore(param_1,param_2);
-    local_18 = 0;
-    local_c = 0x10000;
+  parentNode = (ushort *)(_inst * 0x100380 + 0x9e7a400 + size * 2);
+  node = (int)*parentNode;
+  if (node != 0) {
+    iVar6 = MT_GetScore(inst,newNode);
+    nodeNum = 0;
+    level = 0x10000;
     do {
-      if ((param_2 == local_1c) &&
+      if ((newNode == node) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                    ,0x12f,0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      iVar7 = MT_GetScore(param_1,local_1c);
+      iVar7 = MT_GetScore(inst,node);
       if ((iVar7 == iVar6) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                    ,0x132,0,"%s"), !bVar5)) {
@@ -275,82 +281,82 @@ void __cdecl MT_AddMemoryNode(scriptInstance_t param_1,int param_2,int param_3)
       }
       if (iVar7 < iVar6) {
         while( true ) {
-          if ((local_1c != local_10->prev) &&
+          if ((node != (uint)*parentNode) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                        ,0x138,0,"%s"), !bVar5)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
           }
-          if ((local_1c == param_2) &&
+          if ((node == newNode) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                        ,0x139,0,"%s"), !bVar5)) break;
-          local_10->prev = (ushort)param_2;
-          pMVar1 = gScrMemTreeGlob[_param_1].nodes + local_1c;
-          pMVar2 = gScrMemTreeGlob[_param_1].nodes + param_2;
+          *parentNode = (ushort)newNode;
+          pMVar1 = gScrMemTreeGlob[_inst].nodes + node;
+          pMVar2 = gScrMemTreeGlob[_inst].nodes + newNode;
           uVar4 = pMVar1->next;
           pMVar2->prev = pMVar1->prev;
           pMVar2->next = uVar4;
           pMVar2->padding[0] = pMVar1->padding[0];
           pMVar2->padding[1] = pMVar1->padding[1];
           pMVar2->padding[2] = pMVar1->padding[2];
-          if (local_1c == 0) {
+          if (node == 0) {
             return;
           }
-          local_c = local_c >> 1;
-          if ((local_1c == local_18) &&
+          level = level >> 1;
+          if ((node == nodeNum) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                        ,0x142,0,"%s"), !bVar5)) {
             pcVar3 = (code *)swi(3);
             (*pcVar3)();
             return;
           }
-          if ((int)local_1c < (int)local_18) {
-            local_10 = gScrMemTreeGlob[_param_1].nodes + param_2;
-            iVar6 = -local_c;
+          if (node < nodeNum) {
+            parentNode = &gScrMemTreeGlob[_inst].nodes[newNode].prev;
+            iVar6 = -level;
           }
           else {
-            local_10 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + param_2 * 0x10);
-            iVar6 = local_c;
+            parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + newNode * 0x10);
+            iVar6 = level;
           }
-          local_18 = local_18 + iVar6;
-          param_2 = local_1c;
-          local_1c = (uint)local_10->prev;
+          nodeNum = nodeNum + iVar6;
+          newNode = node;
+          node = (int)*parentNode;
         }
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      local_c = local_c >> 1;
-      if ((param_2 == local_18) &&
+      level = level >> 1;
+      if ((newNode == nodeNum) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                    ,0x154,0,"%s"), !bVar5)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      if (param_2 < (int)local_18) {
-        local_10 = gScrMemTreeGlob[_param_1].nodes + local_1c;
-        iVar7 = -local_c;
+      if (newNode < nodeNum) {
+        parentNode = &gScrMemTreeGlob[_inst].nodes[node].prev;
+        iVar7 = -level;
       }
       else {
-        local_10 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + local_1c * 0x10);
-        iVar7 = local_c;
+        parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + node * 0x10);
+        iVar7 = level;
       }
-      local_18 = local_18 + iVar7;
-      local_1c = (uint)local_10->prev;
-    } while (local_1c != 0);
+      nodeNum = nodeNum + iVar7;
+      node = (int)*parentNode;
+    } while (node != 0);
   }
-  local_10->prev = (ushort)param_2;
-  gScrMemTreeGlob[_param_1].nodes[param_2].prev = 0;
-  *(undefined2 *)(_param_1 * 0x100380 + 0x9d7a102 + param_2 * 0x10) = 0;
+  *parentNode = (ushort)newNode;
+  gScrMemTreeGlob[_inst].nodes[newNode].prev = 0;
+  *(undefined2 *)(_inst * 0x100380 + 0x9d7a102 + newNode * 0x10) = 0;
   return;
 }
 
 
 // 008BA1A0  MT_RemoveMemoryNode  (clientscript/cscr_memorytree.cpp:362)
 
-bool __cdecl MT_RemoveMemoryNode(scriptInstance_t param_1,int param_2,int param_3)
+bool __cdecl MT_RemoveMemoryNode(scriptInstance_t inst,int oldNode,int size)
 
 {
   MemoryNode *pMVar1;
@@ -365,70 +371,72 @@ bool __cdecl MT_RemoveMemoryNode(scriptInstance_t param_1,int param_2,int param_
   int iVar10;
   int iVar11;
   undefined3 in_stack_00000005;
-  uint local_3c;
-  undefined4 local_28;
+  int node;
+  undefined4 oldNodeValue;
   uint local_24;
   uint local_20;
   uint local_1c;
-  int local_18;
-  MemoryNode *local_14;
-  int local_8;
+  int nodeNum;
+  ushort *parentNode;
+  int prevScore;
+  int nextScore;
+  int level;
   
-  if (((param_3 < 0) || (0x10 < param_3)) &&
+  if (((size < 0) || (0x10 < size)) &&
      (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x174,0,"%s"), !bVar8)) {
     pcVar7 = (code *)swi(3);
     uVar9 = (*pcVar7)();
     return (bool)uVar9;
   }
-  local_18 = 0;
-  local_8 = 0x10000;
-  local_14 = (MemoryNode *)(_param_1 * 0x100380 + 0x9e7a400 + param_3 * 2);
-  uVar2 = local_14->prev;
+  nodeNum = 0;
+  level = 0x10000;
+  parentNode = (ushort *)(_inst * 0x100380 + 0x9e7a400 + size * 2);
+  uVar2 = *parentNode;
   while( true ) {
-    local_3c = (uint)uVar2;
-    if (local_3c == 0) {
+    node = (int)uVar2;
+    if (node == 0) {
       return false;
     }
-    if (param_2 == local_3c) break;
-    if (param_2 == local_18) {
+    if (oldNode == node) break;
+    if (oldNode == nodeNum) {
       return false;
     }
-    local_8 = local_8 >> 1;
-    if (param_2 < local_18) {
-      local_14 = gScrMemTreeGlob[_param_1].nodes + local_3c;
-      iVar10 = -local_8;
+    level = level >> 1;
+    if (oldNode < nodeNum) {
+      parentNode = &gScrMemTreeGlob[_inst].nodes[node].prev;
+      iVar10 = -level;
     }
     else {
-      local_14 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + local_3c * 0x10);
-      iVar10 = local_8;
+      parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + node * 0x10);
+      iVar10 = level;
     }
-    local_18 = local_18 + iVar10;
-    uVar2 = local_14->prev;
+    nodeNum = nodeNum + iVar10;
+    uVar2 = *parentNode;
   }
-  pMVar1 = gScrMemTreeGlob[_param_1].nodes + param_2;
-  local_28._0_2_ = pMVar1->prev;
-  local_28._2_2_ = pMVar1->next;
+  pMVar1 = gScrMemTreeGlob[_inst].nodes + oldNode;
+  oldNodeValue._0_2_ = pMVar1->prev;
+  oldNodeValue._2_2_ = pMVar1->next;
   local_24 = pMVar1->padding[0];
   local_20 = pMVar1->padding[1];
   local_1c = pMVar1->padding[2];
   while( true ) {
-    if ((ushort)local_28 == 0) {
-      param_2 = (int)local_28._2_2_;
-      local_14->prev = local_28._2_2_;
-      if (param_2 == 0) {
+    if ((ushort)oldNodeValue == 0) {
+      oldNode = (int)oldNodeValue._2_2_;
+      *parentNode = oldNodeValue._2_2_;
+      if (oldNode == 0) {
         return true;
       }
-      local_14 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + param_2 * 0x10);
+      parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + oldNode * 0x10);
     }
-    else if (local_28._2_2_ == 0) {
-      param_2 = local_28 & 0xffff;
-      local_14->prev = (ushort)local_28;
-      local_14 = gScrMemTreeGlob[_param_1].nodes + param_2;
+    else if (oldNodeValue._2_2_ == 0) {
+      oldNode = oldNodeValue & 0xffff;
+      *parentNode = (ushort)oldNodeValue;
+      parentNode = &gScrMemTreeGlob[_inst].nodes[oldNode].prev;
     }
     else {
-      iVar10 = MT_GetScore(param_1,local_28 & 0xffff);
-      iVar11 = MT_GetScore(param_1,(uint)local_28._2_2_);
+      iVar10 = MT_GetScore(inst,oldNodeValue & 0xffff);
+      iVar11 = MT_GetScore(inst,(uint)oldNodeValue._2_2_);
       if ((iVar10 == iVar11) &&
          (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                    ,0x197,0,"%s"), !bVar8)) {
@@ -437,32 +445,32 @@ bool __cdecl MT_RemoveMemoryNode(scriptInstance_t param_1,int param_2,int param_
         return (bool)uVar9;
       }
       if (iVar10 < iVar11) {
-        param_2 = (int)local_28._2_2_;
-        local_14->prev = local_28._2_2_;
-        local_14 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + param_2 * 0x10);
+        oldNode = (int)oldNodeValue._2_2_;
+        *parentNode = oldNodeValue._2_2_;
+        parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + oldNode * 0x10);
       }
       else {
-        param_2 = local_28 & 0xffff;
-        local_14->prev = (ushort)local_28;
-        local_14 = gScrMemTreeGlob[_param_1].nodes + param_2;
+        oldNode = oldNodeValue & 0xffff;
+        *parentNode = (ushort)oldNodeValue;
+        parentNode = &gScrMemTreeGlob[_inst].nodes[oldNode].prev;
       }
     }
-    if ((param_2 == 0) &&
+    if ((oldNode == 0) &&
        (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                  ,0x1a6,0,"%s"), !bVar8)) break;
-    pMVar1 = gScrMemTreeGlob[_param_1].nodes + param_2;
+    pMVar1 = gScrMemTreeGlob[_inst].nodes + oldNode;
     uVar3._0_2_ = pMVar1->prev;
     uVar3._2_2_ = pMVar1->next;
     uVar4 = pMVar1->padding[0];
     uVar5 = pMVar1->padding[1];
     uVar6 = pMVar1->padding[2];
-    pMVar1 = gScrMemTreeGlob[_param_1].nodes + param_2;
-    pMVar1->prev = (ushort)local_28;
-    pMVar1->next = local_28._2_2_;
+    pMVar1 = gScrMemTreeGlob[_inst].nodes + oldNode;
+    pMVar1->prev = (ushort)oldNodeValue;
+    pMVar1->next = oldNodeValue._2_2_;
     pMVar1->padding[0] = local_24;
     pMVar1->padding[1] = local_20;
     pMVar1->padding[2] = local_1c;
-    local_28 = uVar3;
+    oldNodeValue = uVar3;
     local_24 = uVar4;
     local_20 = uVar5;
     local_1c = uVar6;
@@ -475,7 +483,7 @@ bool __cdecl MT_RemoveMemoryNode(scriptInstance_t param_1,int param_2,int param_
 
 // 008B9BD0  MT_RemoveHeadMemoryNode  (clientscript/cscr_memorytree.cpp:452)
 
-void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t param_1,int param_2)
+void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t inst,int size)
 
 {
   MemoryNode *pMVar1;
@@ -488,14 +496,16 @@ void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t param_1,int param_2)
   int iVar8;
   int iVar9;
   undefined3 in_stack_00000005;
-  uint local_34;
-  undefined4 local_20;
+  int oldNode;
+  undefined4 oldNodeValue;
   uint local_1c;
   uint local_18;
   uint local_14;
-  MemoryNode *local_10;
+  ushort *parentNode;
+  int prevScore;
+  int nextScore;
   
-  if ((param_2 < 0) || (0x10 < param_2)) {
+  if ((size < 0) || (0x10 < size)) {
     bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x1cc,0,"%s");
     if (!bVar7) {
@@ -504,31 +514,30 @@ void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t param_1,int param_2)
       return;
     }
   }
-  local_10 = (MemoryNode *)(_param_1 * 0x100380 + 0x9e7a400 + param_2 * 2);
-  pMVar1 = gScrMemTreeGlob[_param_1].nodes +
-           *(ushort *)(_param_1 * 0x100380 + 0x9e7a400 + param_2 * 2);
-  local_20._0_2_ = pMVar1->prev;
-  local_20._2_2_ = pMVar1->next;
+  parentNode = (ushort *)(_inst * 0x100380 + 0x9e7a400 + size * 2);
+  pMVar1 = gScrMemTreeGlob[_inst].nodes + *(ushort *)(_inst * 0x100380 + 0x9e7a400 + size * 2);
+  oldNodeValue._0_2_ = pMVar1->prev;
+  oldNodeValue._2_2_ = pMVar1->next;
   local_1c = pMVar1->padding[0];
   local_18 = pMVar1->padding[1];
   local_14 = pMVar1->padding[2];
   do {
-    if ((ushort)local_20 == 0) {
-      local_34 = (uint)local_20._2_2_;
-      local_10->prev = local_20._2_2_;
-      if (local_34 == 0) {
+    if ((ushort)oldNodeValue == 0) {
+      oldNode = (int)oldNodeValue._2_2_;
+      *parentNode = oldNodeValue._2_2_;
+      if (oldNode == 0) {
         return;
       }
-      local_10 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + local_34 * 0x10);
+      parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + oldNode * 0x10);
     }
-    else if (local_20._2_2_ == 0) {
-      local_34 = local_20 & 0xffff;
-      local_10->prev = (ushort)local_20;
-      local_10 = gScrMemTreeGlob[_param_1].nodes + local_34;
+    else if (oldNodeValue._2_2_ == 0) {
+      oldNode = oldNodeValue & 0xffff;
+      *parentNode = (ushort)oldNodeValue;
+      parentNode = &gScrMemTreeGlob[_inst].nodes[oldNode].prev;
     }
     else {
-      iVar8 = MT_GetScore(param_1,local_20 & 0xffff);
-      iVar9 = MT_GetScore(param_1,(uint)local_20._2_2_);
+      iVar8 = MT_GetScore(inst,oldNodeValue & 0xffff);
+      iVar9 = MT_GetScore(inst,(uint)oldNodeValue._2_2_);
       if (iVar8 == iVar9) {
         bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                  ,0x1e9,0,"%s");
@@ -539,17 +548,17 @@ void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t param_1,int param_2)
         }
       }
       if (iVar8 < iVar9) {
-        local_34 = (uint)local_20._2_2_;
-        local_10->prev = local_20._2_2_;
-        local_10 = (MemoryNode *)(_param_1 * 0x100380 + 0x9d7a102 + local_34 * 0x10);
+        oldNode = (int)oldNodeValue._2_2_;
+        *parentNode = oldNodeValue._2_2_;
+        parentNode = (ushort *)(_inst * 0x100380 + 0x9d7a102 + oldNode * 0x10);
       }
       else {
-        local_34 = local_20 & 0xffff;
-        local_10->prev = (ushort)local_20;
-        local_10 = gScrMemTreeGlob[_param_1].nodes + local_34;
+        oldNode = oldNodeValue & 0xffff;
+        *parentNode = (ushort)oldNodeValue;
+        parentNode = &gScrMemTreeGlob[_inst].nodes[oldNode].prev;
       }
     }
-    if (local_34 == 0) {
+    if (oldNode == 0) {
       bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x1f8,0,"%s");
       if (!bVar7) {
@@ -558,19 +567,19 @@ void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t param_1,int param_2)
         return;
       }
     }
-    pMVar1 = gScrMemTreeGlob[_param_1].nodes + local_34;
+    pMVar1 = gScrMemTreeGlob[_inst].nodes + oldNode;
     uVar2._0_2_ = pMVar1->prev;
     uVar2._2_2_ = pMVar1->next;
     uVar3 = pMVar1->padding[0];
     uVar4 = pMVar1->padding[1];
     uVar5 = pMVar1->padding[2];
-    pMVar1 = gScrMemTreeGlob[_param_1].nodes + local_34;
-    pMVar1->prev = (ushort)local_20;
-    pMVar1->next = local_20._2_2_;
+    pMVar1 = gScrMemTreeGlob[_inst].nodes + oldNode;
+    pMVar1->prev = (ushort)oldNodeValue;
+    pMVar1->next = oldNodeValue._2_2_;
     pMVar1->padding[0] = local_1c;
     pMVar1->padding[1] = local_18;
     pMVar1->padding[2] = local_14;
-    local_20 = uVar2;
+    oldNodeValue = uVar2;
     local_1c = uVar3;
     local_18 = uVar4;
     local_14 = uVar5;
@@ -580,27 +589,27 @@ void __cdecl MT_RemoveHeadMemoryNode(scriptInstance_t param_1,int param_2)
 
 // 008B92D0  MT_Init  (clientscript/cscr_memorytree.cpp:514)
 
-void __cdecl MT_Init(scriptInstance_t param_1)
+void __cdecl MT_Init(scriptInstance_t inst)
 
 {
   undefined3 in_stack_00000005;
-  int local_8;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_MEMORY_TREE);
-  gScrMemTreePub[_param_1].mt_buffer = (char *)(gScrMemTreeGlob + _param_1);
-  MT_InitBits(param_1);
-  for (local_8 = 0; local_8 < 0x11; local_8 = local_8 + 1) {
-    *(undefined2 *)(_param_1 * 0x100380 + 0x9e7a400 + local_8 * 2) = 0;
+  gScrMemTreePub[_inst].mt_buffer = (char *)(gScrMemTreeGlob + _inst);
+  MT_InitBits(inst);
+  for (i = 0; i < 0x11; i = i + 1) {
+    *(undefined2 *)(_inst * 0x100380 + 0x9e7a400 + i * 2) = 0;
   }
-  gScrMemTreeGlob[_param_1].nodes[0].prev = 0;
-  gScrMemTreeGlob[_param_1].nodes[0].next = 0;
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    MT_AddMemoryNode(param_1,1 << ((byte)local_8 & 0x1f),local_8);
+  gScrMemTreeGlob[_inst].nodes[0].prev = 0;
+  gScrMemTreeGlob[_inst].nodes[0].next = 0;
+  for (i = 0; i < 0x10; i = i + 1) {
+    MT_AddMemoryNode(inst,1 << ((byte)i & 0x1f),i);
   }
-  gScrMemTreeGlob[_param_1].totalAlloc = 0;
-  gScrMemTreeGlob[_param_1].totalAllocBuckets = 0;
-  memset(gScrMemTreeDebugGlob[_param_1].mt_usage,'\0',0x10000);
-  memset(gScrMemTreeDebugGlob[_param_1].mt_usage_size,'\0',0x10000);
+  gScrMemTreeGlob[_inst].totalAlloc = 0;
+  gScrMemTreeGlob[_inst].totalAllocBuckets = 0;
+  memset(gScrMemTreeDebugGlob[_inst].mt_usage,'\0',0x10000);
+  memset(gScrMemTreeDebugGlob[_inst].mt_usage_size,'\0',0x10000);
   Sys_LeaveCriticalSection(CRITSECT_MEMORY_TREE);
   return;
 }
@@ -608,16 +617,16 @@ void __cdecl MT_Init(scriptInstance_t param_1)
 
 // 008B9E40  MT_Error  (clientscript/cscr_memorytree.cpp:554)
 
-void __cdecl MT_Error(scriptInstance_t param_1,char *param_2,int param_3)
+void __cdecl MT_Error(scriptInstance_t inst,char *funcName,int numBytes)
 
 {
   bool bVar1;
   
-  MT_DumpTree(param_1);
+  MT_DumpTree(inst);
   Com_Printf(0x18,"%s: failed memory allocation of %d bytes for script usage\n");
   bVar1 = Sys_IsServerThread();
   if (bVar1) {
-    Scr_TerminalError("failed memory allocation for script usage",param_1);
+    Scr_TerminalError("failed memory allocation for script usage",inst);
   }
   else {
     Com_Error(ERR_DROP,"\x15%s: failed allocation of %d bytes for script usage");
@@ -628,7 +637,7 @@ void __cdecl MT_Error(scriptInstance_t param_1,char *param_2,int param_3)
 
 // 008B9EA0  MT_GetSize  (clientscript/cscr_memorytree.cpp:571)
 
-int __cdecl MT_GetSize(scriptInstance_t param_1,int param_2)
+int __cdecl MT_GetSize(scriptInstance_t inst,int numBytes)
 
 {
   code *pcVar1;
@@ -636,25 +645,26 @@ int __cdecl MT_GetSize(scriptInstance_t param_1,int param_2)
   int iVar3;
   uint uVar4;
   undefined3 in_stack_00000005;
+  int numBuckets;
   
-  if ((param_2 < 1) &&
+  if ((numBytes < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x23e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_2 < 0x10000) {
-    iVar3 = ((int)(param_2 + 0xf + (param_2 + 0xf >> 0x1f & 0xfU)) >> 4) + -1;
+  if (numBytes < 0x10000) {
+    iVar3 = ((int)(numBytes + 0xf + (numBytes + 0xf >> 0x1f & 0xfU)) >> 4) + -1;
     if (iVar3 < 0x100) {
-      uVar4 = (uint)*(byte *)(_param_1 * 0x100380 + 0x9e7a300 + iVar3);
+      uVar4 = (uint)*(byte *)(_inst * 0x100380 + 0x9e7a300 + iVar3);
     }
     else {
-      uVar4 = *(byte *)(_param_1 * 0x100380 + 0x9e7a300 + (iVar3 >> 8)) + 8;
+      uVar4 = *(byte *)(_inst * 0x100380 + 0x9e7a300 + (iVar3 >> 8)) + 8;
     }
   }
   else {
-    MT_Error(param_1,"MT_GetSize: max allocation exceeded",param_2);
+    MT_Error(inst,"MT_GetSize: max allocation exceeded",numBytes);
     uVar4 = 0;
   }
   return uVar4;
@@ -663,18 +673,20 @@ int __cdecl MT_GetSize(scriptInstance_t param_1,int param_2)
 
 // 008B9910  MT_AllocIndex  (clientscript/cscr_memorytree.cpp:590)
 
-ushort __cdecl MT_AllocIndex(scriptInstance_t param_1,int param_2,int param_3)
+ushort __cdecl MT_AllocIndex(scriptInstance_t inst,int numBytes,int type)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   int iVar4;
-  uint uVar5;
+  uint nodeNum_00;
   undefined3 in_stack_00000005;
-  int local_8;
+  int nodeNum;
+  int size;
+  int newSize;
   
-  iVar4 = MT_GetSize(param_1,param_2);
+  iVar4 = MT_GetSize(inst,numBytes);
   if (((iVar4 < 0) || (0x10 < iVar4)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,599,0,"%s"), !bVar2)) {
@@ -683,44 +695,44 @@ ushort __cdecl MT_AllocIndex(scriptInstance_t param_1,int param_2,int param_3)
     return uVar3;
   }
   Sys_EnterCriticalSection(CRITSECT_MEMORY_TREE);
-  local_8 = iVar4;
+  newSize = iVar4;
   while( true ) {
-    if (0x10 < local_8) {
+    if (0x10 < newSize) {
       Sys_LeaveCriticalSection(CRITSECT_MEMORY_TREE);
-      MT_Error(param_1,"MT_AllocIndex",param_2);
+      MT_Error(inst,"MT_AllocIndex",numBytes);
       return 0;
     }
-    uVar3 = *(ushort *)(_param_1 * 0x100380 + 0x9e7a400 + local_8 * 2);
-    uVar5 = (uint)uVar3;
-    if (uVar5 != 0) break;
-    local_8 = local_8 + 1;
+    uVar3 = *(ushort *)(_inst * 0x100380 + 0x9e7a400 + newSize * 2);
+    nodeNum_00 = (uint)uVar3;
+    if (nodeNum_00 != 0) break;
+    newSize = newSize + 1;
   }
-  MT_RemoveHeadMemoryNode(param_1,local_8);
-  while (local_8 != iVar4) {
-    local_8 = local_8 + -1;
-    MT_AddMemoryNode(param_1,(1 << ((byte)local_8 & 0x1f)) + uVar5,local_8);
+  MT_RemoveHeadMemoryNode(inst,newSize);
+  while (newSize != iVar4) {
+    newSize = newSize + -1;
+    MT_AddMemoryNode(inst,(1 << ((byte)newSize & 0x1f)) + nodeNum_00,newSize);
   }
-  if ((0xffff < uVar5) &&
+  if ((0xffff < nodeNum_00) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x26e,0,"%s\n\t(nodeNum) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  gScrMemTreeGlob[_param_1].totalAlloc = gScrMemTreeGlob[_param_1].totalAlloc + 1;
-  gScrMemTreeGlob[_param_1].avgAlloc = gScrMemTreeGlob[_param_1].avgAlloc + 1;
-  gScrMemTreeGlob[_param_1].avgAllocBytes = gScrMemTreeGlob[_param_1].avgAllocBytes + param_2;
-  gScrMemTreeGlob[_param_1].totalAllocBuckets =
-       (1 << ((byte)iVar4 & 0x1f)) + gScrMemTreeGlob[_param_1].totalAllocBuckets;
-  if ((param_3 == 0) &&
+  gScrMemTreeGlob[_inst].totalAlloc = gScrMemTreeGlob[_inst].totalAlloc + 1;
+  gScrMemTreeGlob[_inst].avgAlloc = gScrMemTreeGlob[_inst].avgAlloc + 1;
+  gScrMemTreeGlob[_inst].avgAllocBytes = gScrMemTreeGlob[_inst].avgAllocBytes + numBytes;
+  gScrMemTreeGlob[_inst].totalAllocBuckets =
+       (1 << ((byte)iVar4 & 0x1f)) + gScrMemTreeGlob[_inst].totalAllocBuckets;
+  if ((type == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x276,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (gScrMemTreeDebugGlob[_param_1].mt_usage[uVar5] != '\0') {
-    MT_NodeInfoString(param_1,uVar5);
+  if (gScrMemTreeDebugGlob[_inst].mt_usage[nodeNum_00] != '\0') {
+    MT_NodeInfoString(inst,nodeNum_00);
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x277,0,"%s\n\t(MT_NodeInfoString( inst, nodeNum )) = %s");
     if (!bVar2) {
@@ -729,8 +741,8 @@ ushort __cdecl MT_AllocIndex(scriptInstance_t param_1,int param_2,int param_3)
       return uVar3;
     }
   }
-  if (*(char *)(_param_1 * 0x20000 + 0x9d4a088 + uVar5) != '\0') {
-    MT_NodeInfoString(param_1,uVar5);
+  if (*(char *)(_inst * 0x20000 + 0x9d4a088 + nodeNum_00) != '\0') {
+    MT_NodeInfoString(inst,nodeNum_00);
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x278,0,"%s\n\t(MT_NodeInfoString( inst, nodeNum )) = %s");
     if (!bVar2) {
@@ -739,8 +751,8 @@ ushort __cdecl MT_AllocIndex(scriptInstance_t param_1,int param_2,int param_3)
       return uVar3;
     }
   }
-  gScrMemTreeDebugGlob[_param_1].mt_usage[uVar5] = (uchar)param_3;
-  *(byte *)(_param_1 * 0x20000 + 0x9d4a088 + uVar5) = (byte)iVar4;
+  gScrMemTreeDebugGlob[_inst].mt_usage[nodeNum_00] = (uchar)type;
+  *(byte *)(_inst * 0x20000 + 0x9d4a088 + nodeNum_00) = (byte)iVar4;
   Sys_LeaveCriticalSection(CRITSECT_MEMORY_TREE);
   return uVar3;
 }
@@ -748,17 +760,18 @@ ushort __cdecl MT_AllocIndex(scriptInstance_t param_1,int param_2,int param_3)
 
 // 008B9F50  MT_FreeIndex  (clientscript/cscr_memorytree.cpp:658)
 
-void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
+void __cdecl MT_FreeIndex(scriptInstance_t inst,uint nodeNum,int numBytes)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   undefined3 in_stack_00000005;
-  uint local_c;
+  int size;
+  int lowBit;
   
-  local_c = MT_GetSize(param_1,param_3);
-  if (((int)local_c < 0) || (0x10 < (int)local_c)) {
+  size = MT_GetSize(inst,numBytes);
+  if ((size < 0) || (0x10 < size)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x29a,0,"%s");
     if (!bVar2) {
@@ -767,7 +780,7 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
       return;
     }
   }
-  if ((param_2 == 0) || (0xffff < param_2)) {
+  if ((nodeNum == 0) || (0xffff < nodeNum)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x29b,0,"%s");
     if (!bVar2) {
@@ -777,10 +790,10 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
     }
   }
   Sys_EnterCriticalSection(CRITSECT_MEMORY_TREE);
-  gScrMemTreeGlob[_param_1].totalAlloc = gScrMemTreeGlob[_param_1].totalAlloc + -1;
-  gScrMemTreeGlob[_param_1].totalAllocBuckets =
-       gScrMemTreeGlob[_param_1].totalAllocBuckets - (1 << ((byte)local_c & 0x1f));
-  if (gScrMemTreeDebugGlob[_param_1].mt_usage[param_2] == '\0') {
+  gScrMemTreeGlob[_inst].totalAlloc = gScrMemTreeGlob[_inst].totalAlloc + -1;
+  gScrMemTreeGlob[_inst].totalAllocBuckets =
+       gScrMemTreeGlob[_inst].totalAllocBuckets - (1 << ((byte)size & 0x1f));
+  if (gScrMemTreeDebugGlob[_inst].mt_usage[nodeNum] == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x2ab,0,"%s");
     if (!bVar2) {
@@ -789,8 +802,8 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
       return;
     }
   }
-  if (*(byte *)(_param_1 * 0x20000 + 0x9d4a088 + param_2) != local_c) {
-    MT_NodeInfoString(param_1,param_2);
+  if ((uint)*(byte *)(_inst * 0x20000 + 0x9d4a088 + nodeNum) != size) {
+    MT_NodeInfoString(inst,nodeNum);
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x2ac,0,"%s\n\t(MT_NodeInfoString( inst, nodeNum )) = %s");
     if (!bVar2) {
@@ -799,10 +812,10 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
       return;
     }
   }
-  gScrMemTreeDebugGlob[_param_1].mt_usage[param_2] = '\0';
-  *(undefined1 *)(_param_1 * 0x20000 + 0x9d4a088 + param_2) = 0;
+  gScrMemTreeDebugGlob[_inst].mt_usage[nodeNum] = '\0';
+  *(undefined1 *)(_inst * 0x20000 + 0x9d4a088 + nodeNum) = 0;
   while( true ) {
-    if (0x10 < (int)local_c) {
+    if (0x10 < size) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x2b3,0,"%s");
       if (!bVar2) {
@@ -811,8 +824,8 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
         return;
       }
     }
-    uVar3 = 1 << ((byte)local_c & 0x1f);
-    if (param_2 != (~(uVar3 - 1) & param_2)) {
+    uVar3 = 1 << ((byte)size & 0x1f);
+    if (nodeNum != (~(uVar3 - 1) & nodeNum)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp"
                                ,0x2b6,0,"%s");
       if (!bVar2) {
@@ -821,13 +834,13 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
         return;
       }
     }
-    if (local_c == 0x10) break;
-    bVar2 = MT_RemoveMemoryNode(param_1,param_2 ^ uVar3,local_c);
+    if (size == 0x10) break;
+    bVar2 = MT_RemoveMemoryNode(inst,nodeNum ^ uVar3,size);
     if (!bVar2) break;
-    param_2 = ~uVar3 & param_2;
-    local_c = local_c + 1;
+    nodeNum = ~uVar3 & nodeNum;
+    size = size + 1;
   }
-  MT_AddMemoryNode(param_1,param_2,local_c);
+  MT_AddMemoryNode(inst,nodeNum,size);
   Sys_LeaveCriticalSection(CRITSECT_MEMORY_TREE);
   return;
 }
@@ -835,28 +848,28 @@ void __cdecl MT_FreeIndex(scriptInstance_t param_1,uint param_2,int param_3)
 
 // 008BA490  MT_Alloc  (clientscript/cscr_memorytree.cpp:769)
 
-void * __cdecl MT_Alloc(int param_1,int param_2,scriptInstance_t param_3)
+void * __cdecl MT_Alloc(int numBytes,int type,scriptInstance_t inst)
 
 {
   ushort uVar1;
   undefined3 in_stack_0000000d;
   
-  uVar1 = MT_AllocIndex(param_3,param_1,param_2);
-  return gScrMemTreeGlob[_param_3].nodes + uVar1;
+  uVar1 = MT_AllocIndex(inst,numBytes,type);
+  return gScrMemTreeGlob[_inst].nodes + uVar1;
 }
 
 
 // 008BA4D0  MT_Free  (clientscript/cscr_memorytree.cpp:775)
 
-void __cdecl MT_Free(void *param_1,int param_2,scriptInstance_t param_3)
+void __cdecl MT_Free(void *p,int numBytes,scriptInstance_t inst)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined3 in_stack_0000000d;
   
-  if (((int)param_1 - (int)(gScrMemTreeGlob + _param_3) >> 4 < 0) ||
-     (0xffff < (int)param_1 - (int)(gScrMemTreeGlob + _param_3) >> 4)) {
+  if (((int)p - (int)(gScrMemTreeGlob + _inst) >> 4 < 0) ||
+     (0xffff < (int)p - (int)(gScrMemTreeGlob + _inst) >> 4)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_memorytree.cpp",
                              0x308,0,"%s\n\t((MemoryNode *) p - gScrMemTreeGlob[inst].nodes) = %i");
     if (!bVar2) {
@@ -865,21 +878,21 @@ void __cdecl MT_Free(void *param_1,int param_2,scriptInstance_t param_3)
       return;
     }
   }
-  MT_FreeIndex(param_3,(int)param_1 - (int)(gScrMemTreeGlob + _param_3) >> 4,param_2);
+  MT_FreeIndex(inst,(int)p - (int)(gScrMemTreeGlob + _inst) >> 4,numBytes);
   return;
 }
 
 
 // 008BA580  MT_Realloc  (clientscript/cscr_memorytree.cpp:808)
 
-int __cdecl MT_Realloc(scriptInstance_t param_1,int param_2,int param_3)
+int __cdecl MT_Realloc(scriptInstance_t inst,int oldNumBytes,int newNumbytes)
 
 {
   int iVar1;
   int iVar2;
   
-  iVar1 = MT_GetSize(param_1,param_2);
-  iVar2 = MT_GetSize(param_1,param_3);
+  iVar1 = MT_GetSize(inst,oldNumBytes);
+  iVar2 = MT_GetSize(inst,newNumbytes);
   return (uint)(iVar2 <= iVar1);
 }
 

@@ -680,80 +680,80 @@ PC_ExpandBuiltinDefine
   token_s tVar1;
   int iVar2;
   token_s *in_EAX;
-  token_s *ptVar3;
-  char *pcVar4;
+  token_s *string;
+  char *pcVar3;
+  token_s *ptVar4;
   token_s *ptVar5;
   token_s *ptVar6;
-  token_s *ptVar7;
   long64 lStack_c;
   
-  ptVar3 = PC_CopyToken(in_EAX);
-  ptVar5 = ptVar3;
+  string = PC_CopyToken(in_EAX);
+  ptVar4 = string;
   switch(*(undefined4 *)(param_2 + 8)) {
   case 1:
-    sprintf((char *)ptVar3,"%d");
-    *(int *)(ptVar3 + 0x408) = *(int *)(in_EAX + 0x420);
+    sprintf((char *)string,"%d");
+    *(int *)(string + 0x408) = *(int *)(in_EAX + 0x420);
     iVar2 = *(int *)(in_EAX + 0x420);
-    *(token_s **)param_3 = ptVar3;
-    *(double *)(ptVar3 + 0x410) = (double)iVar2;
-    *(undefined4 *)(ptVar3 + 0x400) = 3;
-    *(undefined4 *)(ptVar3 + 0x404) = 0x1008;
-    *param_4 = ptVar3;
+    *(token_s **)param_3 = string;
+    *(double *)(string + 0x410) = (double)iVar2;
+    *(undefined4 *)(string + 0x400) = 3;
+    *(undefined4 *)(string + 0x404) = 0x1008;
+    *param_4 = string;
     return 1;
   case 2:
-    ptVar7 = *(token_s **)(param_1 + 0x84);
-    ptVar6 = ptVar3;
+    ptVar6 = *(token_s **)(param_1 + 0x84);
+    ptVar5 = string;
     do {
-      tVar1 = *ptVar7;
-      *ptVar6 = tVar1;
-      ptVar7 = ptVar7 + 1;
+      tVar1 = *ptVar6;
+      *ptVar5 = tVar1;
       ptVar6 = ptVar6 + 1;
-    } while (tVar1 != (token_s)0x0);
-    *(undefined4 *)(ptVar3 + 0x400) = 4;
-    do {
-      tVar1 = *ptVar5;
       ptVar5 = ptVar5 + 1;
+    } while (tVar1 != (token_s)0x0);
+    *(undefined4 *)(string + 0x400) = 4;
+    do {
+      tVar1 = *ptVar4;
+      ptVar4 = ptVar4 + 1;
     } while (tVar1 != (token_s)0x0);
     break;
   case 3:
     lStack_c = _time64((long64 *)0x0);
-    pcVar4 = _ctime64(&lStack_c);
-    *(undefined2 *)ptVar3 = 0x22;
+    pcVar3 = _ctime64(&lStack_c);
+    *(undefined2 *)string = 0x22;
     strncat();
     strncat();
-    ptVar5 = ptVar3 + -1;
+    ptVar4 = string + -1;
     do {
-      ptVar7 = ptVar5 + 1;
-      ptVar5 = ptVar5 + 1;
-    } while (*ptVar7 != (token_s)0x0);
-    *(undefined2 *)ptVar5 = 0x22;
-    free(pcVar4);
-    *(undefined4 *)(ptVar3 + 0x400) = 4;
-    ptVar5 = ptVar3;
+      ptVar6 = ptVar4 + 1;
+      ptVar4 = ptVar4 + 1;
+    } while (*ptVar6 != (token_s)0x0);
+    *(undefined2 *)ptVar4 = 0x22;
+    free(pcVar3);
+    *(undefined4 *)(string + 0x400) = 4;
+    ptVar4 = string;
     do {
-      tVar1 = *ptVar5;
-      ptVar5 = ptVar5 + 1;
+      tVar1 = *ptVar4;
+      ptVar4 = ptVar4 + 1;
     } while (tVar1 != (token_s)0x0);
-    *(int *)(ptVar3 + 0x404) = (int)ptVar5 - (int)(ptVar3 + 1);
-    *(token_s **)param_3 = ptVar3;
-    *param_4 = ptVar3;
+    *(int *)(string + 0x404) = (int)ptVar4 - (int)(string + 1);
+    *(token_s **)param_3 = string;
+    *param_4 = string;
     return 1;
   case 4:
     lStack_c = _time64((long64 *)0x0);
-    pcVar4 = _ctime64(&lStack_c);
-    *(undefined2 *)ptVar3 = 0x22;
+    pcVar3 = _ctime64(&lStack_c);
+    *(undefined2 *)string = 0x22;
     strncat();
-    ptVar7 = ptVar3 + -1;
+    ptVar6 = string + -1;
     do {
-      ptVar6 = ptVar7 + 1;
-      ptVar7 = ptVar7 + 1;
-    } while (*ptVar6 != (token_s)0x0);
-    *(undefined2 *)ptVar7 = 0x22;
-    free(pcVar4);
-    *(undefined4 *)(ptVar3 + 0x400) = 4;
+      ptVar5 = ptVar6 + 1;
+      ptVar6 = ptVar6 + 1;
+    } while (*ptVar5 != (token_s)0x0);
+    *(undefined2 *)ptVar6 = 0x22;
+    free(pcVar3);
+    *(undefined4 *)(string + 0x400) = 4;
     do {
-      tVar1 = *ptVar5;
-      ptVar5 = ptVar5 + 1;
+      tVar1 = *ptVar4;
+      ptVar4 = ptVar4 + 1;
     } while (tVar1 != (token_s)0x0);
     break;
   default:
@@ -761,9 +761,9 @@ PC_ExpandBuiltinDefine
     *(undefined4 *)param_3 = 0;
     return 1;
   }
-  *(int *)(ptVar3 + 0x404) = (int)ptVar5 - (int)(ptVar3 + 1);
-  *(token_s **)param_3 = ptVar3;
-  *param_4 = ptVar3;
+  *(int *)(string + 0x404) = (int)ptVar4 - (int)(string + 1);
+  *(token_s **)param_3 = string;
+  *param_4 = string;
   return 1;
 }
 
@@ -1451,11 +1451,11 @@ define_s * __cdecl PC_DefineFromString(char *param_1)
   script_s *psVar4;
   int iVar5;
   int iVar6;
-  int *piVar7;
+  int *pBlock;
   char *in_EDX;
   char *unaff_ESI;
-  int iVar8;
-  define_s *pdVar9;
+  int iVar7;
+  define_s *pdVar8;
   int unaff_EDI;
   source_s asStack_4d4 [132];
   script_s *psStack_450;
@@ -1474,42 +1474,42 @@ define_s * __cdecl PC_DefineFromString(char *param_1)
   psStack_450 = psVar4;
   pvStack_444 = GetClearedMemory(0x1000);
   iVar5 = PC_Directive_define(asStack_4d4);
-  iVar8 = numtokens;
+  iVar7 = numtokens;
   iVar2 = iStack_44c;
   while (iVar2 != 0) {
     iStack_44c = *(int *)(iVar2 + 0x428);
     if (*(int *)(iVar2 + -4) == 0x12345678) {
       free((int *)(iVar2 + -4));
     }
-    iVar8 = iVar8 + -1;
+    iVar7 = iVar7 + -1;
     iVar2 = iStack_44c;
   }
-  pdVar9 = (define_s *)0x0;
+  pdVar8 = (define_s *)0x0;
   iVar6 = 0;
   do {
     if (*(int *)((int)pvStack_444 + iVar6 * 4) != 0) {
-      pdVar9 = *(define_s **)((int)pvStack_444 + iVar6 * 4);
+      pdVar8 = *(define_s **)((int)pvStack_444 + iVar6 * 4);
       break;
     }
     iVar6 = iVar6 + 1;
   } while (iVar6 < 0x400);
-  numtokens = iVar8;
+  numtokens = iVar7;
   iStack_44c = iVar2;
   if (*(int *)((int)pvStack_444 + -4) == 0x12345678) {
     free((void *)((int)pvStack_444 + -4));
   }
   if ((*(int *)(psVar4 + 0x70) != 0) &&
-     (piVar7 = (int *)(*(int *)(psVar4 + 0x70) + -4), *piVar7 == 0x12345678)) {
-    free(piVar7);
+     (pBlock = (int *)(*(int *)(psVar4 + 0x70) + -4), *pBlock == 0x12345678)) {
+    free(pBlock);
   }
   if (*(int *)(psVar4 + -4) == 0x12345678) {
     free(psVar4 + -4);
   }
   if (0 < iVar5) {
-    return pdVar9;
+    return pdVar8;
   }
   if (iStack_448 != 0) {
-    PC_FreeDefine(pdVar9);
+    PC_FreeDefine(pdVar8);
   }
   return (define_s *)0x0;
 }
@@ -3046,7 +3046,7 @@ source_s * __cdecl LoadSourceFile(char *param_1)
   script_s *psVar1;
   undefined4 *puVar2;
   void *pvVar3;
-  source_s *psVar4;
+  source_s *dst;
   
   psVar1 = LoadScriptFile(param_1);
   if (psVar1 == (script_s *)0x0) {
@@ -3057,9 +3057,9 @@ source_s * __cdecl LoadSourceFile(char *param_1)
   if (puVar2 != (undefined4 *)0x0) {
     Com_Memset(puVar2,0,0x4d4);
     *puVar2 = 0x12345678;
-    psVar4 = (source_s *)(puVar2 + 1);
-    memset((uchar *)psVar4,'\0',0x4d0);
-    strncpy((uchar *)psVar4,(uchar *)param_1,0x40);
+    dst = (source_s *)(puVar2 + 1);
+    memset((uchar *)dst,'\0',0x4d0);
+    strncpy((uchar *)dst,(uchar *)param_1,0x40);
     puVar2[0x22] = psVar1;
     puVar2[0x23] = 0;
     puVar2[0x24] = 0;
@@ -3067,8 +3067,8 @@ source_s * __cdecl LoadSourceFile(char *param_1)
     puVar2[0x27] = 0;
     pvVar3 = GetClearedMemory(0x1000);
     puVar2[0x25] = pvVar3;
-    PC_AddGlobalDefinesToSource(psVar4);
-    return psVar4;
+    PC_AddGlobalDefinesToSource(dst);
+    return dst;
   }
                     /* WARNING: Subroutine does not return */
   FUN_00699280();

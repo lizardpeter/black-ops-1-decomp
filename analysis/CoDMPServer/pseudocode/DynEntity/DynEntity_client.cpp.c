@@ -2,14 +2,14 @@
 
 // 005AEEB0  DynEnt_GetEntityDef  (DynEntity/dynentity_load_obj.h:59)
 
-DynEntityDef * __cdecl DynEnt_GetEntityDef(ushort param_1,DynEntityDrawType param_2)
+DynEntityDef * __cdecl DynEnt_GetEntityDef(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityDef *pDVar3;
   
-  if (cm.dynEntCount[param_2] <= param_1) {
+  if (cm.dynEntCount[drawType] <= dynEntId) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\dynentity\\DynEntity_load_obj.h",
                              0x3c,0,
                              "dynEntId doesn\'t index cm.dynEntCount[DynEntGetClientCollType( drawType )]\n\t%i not in [0, %i)"
@@ -20,20 +20,20 @@ DynEntityDef * __cdecl DynEnt_GetEntityDef(ushort param_1,DynEntityDrawType para
       return pDVar3;
     }
   }
-  return cm.dynEntDefList[param_2] + param_1;
+  return cm.dynEntDefList[drawType] + dynEntId;
 }
 
 
 // 005AEF10  DynEnt_GetClientEntity  (DynEntity/dynentity_load_obj.h:66)
 
-DynEntityClient * __cdecl DynEnt_GetClientEntity(ushort param_1,DynEntityDrawType param_2)
+DynEntityClient * __cdecl DynEnt_GetClientEntity(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityClient *pDVar3;
   
-  if (cm.dynEntCount[param_2] <= param_1) {
+  if (cm.dynEntCount[drawType] <= dynEntId) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\dynentity\\DynEntity_load_obj.h",
                              0x43,0,
                              "dynEntId doesn\'t index cm.dynEntCount[DynEntGetClientCollType( drawType )]\n\t%i not in [0, %i)"
@@ -44,7 +44,7 @@ DynEntityClient * __cdecl DynEnt_GetClientEntity(ushort param_1,DynEntityDrawTyp
       return pDVar3;
     }
   }
-  return cm.dynEntClientList[param_2] + param_1;
+  return cm.dynEntClientList[drawType] + dynEntId;
 }
 
 
@@ -88,14 +88,14 @@ void __cdecl DynEntCl_RegisterDvars(void)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-DynEntityColl * __cdecl DynEnt_GetEntityColl(DynEntityCollType param_1,ushort param_2)
+DynEntityColl * __cdecl DynEnt_GetEntityColl(DynEntityCollType collType,ushort dynEntId)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityColl *pDVar3;
   
-  if (DYNENT_COLL_SERVER_BRUSH < param_1) {
+  if (DYNENT_COLL_SERVER_BRUSH < collType) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\dynentity\\DynEntity_load_obj.h",
                              0x57,0,"collType doesn\'t index DYNENT_COLL_COUNT\n\t%i not in [0, %i)"
                             );
@@ -105,7 +105,7 @@ DynEntityColl * __cdecl DynEnt_GetEntityColl(DynEntityCollType param_1,ushort pa
       return pDVar3;
     }
   }
-  if (cm.dynEntCount[param_1] <= param_2) {
+  if (cm.dynEntCount[collType] <= dynEntId) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\dynentity\\DynEntity_load_obj.h",
                              0x58,0,
                              "dynEntId doesn\'t index cm.dynEntCount[collType]\n\t%i not in [0, %i)"
@@ -116,18 +116,18 @@ DynEntityColl * __cdecl DynEnt_GetEntityColl(DynEntityCollType param_1,ushort pa
       return pDVar3;
     }
   }
-  return cm.dynEntCollList[param_1] + param_2;
+  return cm.dynEntCollList[collType] + dynEntId;
 }
 
 
 // 005AE0D0  DynEntCl_IsHealthGone  (DynEntity/DynEntity_client.cpp:93)
 
-bool __cdecl DynEntCl_IsHealthGone(DynEntityDef *param_1,DynEntityClient *param_2)
+bool __cdecl DynEntCl_IsHealthGone(DynEntityDef *dynEntDef,DynEntityClient *dynEntClient)
 
 {
   bool bVar1;
   
-  if ((param_1->health < 1) || (0 < param_2->health)) {
+  if ((dynEntDef->health < 1) || (0 < dynEntClient->health)) {
     bVar1 = false;
   }
   else {
@@ -183,16 +183,16 @@ broad_phase_group * __thiscall broad_phase_base::get_bpg(broad_phase_base *this)
 
 // 005AE090  DynEntCl_GetCurrentXModel  (DynEntity/DynEntity_client.cpp:102)
 
-XModel * __cdecl DynEntCl_GetCurrentXModel(DynEntityDef *param_1,DynEntityClient *param_2)
+XModel * __cdecl DynEntCl_GetCurrentXModel(DynEntityDef *dynEntDef,DynEntityClient *dynEntClient)
 
 {
   bool bVar1;
   
-  if ((param_1->destroyedxModel != (XModel *)0x0) &&
-     (bVar1 = DynEntCl_IsHealthGone(param_1,param_2), bVar1)) {
-    return param_1->destroyedxModel;
+  if ((dynEntDef->destroyedxModel != (XModel *)0x0) &&
+     (bVar1 = DynEntCl_IsHealthGone(dynEntDef,dynEntClient), bVar1)) {
+    return dynEntDef->destroyedxModel;
   }
-  return param_1->xModel;
+  return dynEntDef->xModel;
 }
 
 
@@ -204,7 +204,7 @@ XModel * __cdecl DynEntCl_GetCurrentXModel(DynEntityDef *param_1,DynEntityClient
 /* WARNING: Removing unreachable block (ram,0x005af80c) */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-float __cdecl DynEntCl_UpdateBModelWorldBounds(DynEntityDef *param_1,GfxPlacement *param_2)
+float __cdecl DynEntCl_UpdateBModelWorldBounds(DynEntityDef *dynEntDef,GfxPlacement *pose)
 
 {
   float fVar1;
@@ -225,7 +225,7 @@ float __cdecl DynEntCl_UpdateBModelWorldBounds(DynEntityDef *param_1,GfxPlacemen
   uint local_1a4;
   uint local_1a0;
   uint local_19c;
-  float local_2c;
+  float axis;
   float local_28;
   float local_24;
   float local_20;
@@ -234,20 +234,20 @@ float __cdecl DynEntCl_UpdateBModelWorldBounds(DynEntityDef *param_1,GfxPlacemen
   float local_14;
   float local_10;
   float local_c;
-  GfxBrushModel *local_8;
+  GfxBrushModel *bmodel;
   
-  local_8 = R_GetBrushModel((uint)param_1->brushModel);
-  fVar3 = local_8->bounds[0][0];
-  fVar4 = local_8->bounds[0][1];
-  fVar5 = local_8->bounds[0][2];
-  fVar6 = local_8->bounds[1][0];
-  fVar7 = local_8->bounds[1][1];
-  fVar8 = local_8->bounds[1][2];
-  UnitQuatToAxis(param_2->quat,(float (*) [3])&local_2c);
-  fVar9 = param_2->origin[0];
-  fVar1 = param_2->origin[1];
-  fVar2 = param_2->origin[2];
-  if (0.0 <= local_2c) {
+  bmodel = R_GetBrushModel((uint)dynEntDef->brushModel);
+  fVar3 = bmodel->bounds[0][0];
+  fVar4 = bmodel->bounds[0][1];
+  fVar5 = bmodel->bounds[0][2];
+  fVar6 = bmodel->bounds[1][0];
+  fVar7 = bmodel->bounds[1][1];
+  fVar8 = bmodel->bounds[1][2];
+  UnitQuatToAxis(pose->quat,(float (*) [3])&axis);
+  fVar9 = pose->origin[0];
+  fVar1 = pose->origin[1];
+  fVar2 = pose->origin[2];
+  if (0.0 <= axis) {
     local_19c = 0;
   }
   else {
@@ -301,31 +301,31 @@ float __cdecl DynEntCl_UpdateBModelWorldBounds(DynEntityDef *param_1,GfxPlacemen
   else {
     local_1c4 = 0xffffffff;
   }
-  (local_8->writable).mins[0] =
+  (bmodel->writable).mins[0] =
        (float)(~local_1bc & (uint)fVar5 | local_1bc & (uint)fVar8) * local_14 +
        (float)(~local_1ac & (uint)fVar4 | local_1ac & (uint)fVar7) * local_20 +
-       (float)(~local_19c & (uint)fVar3 | local_19c & (uint)fVar6) * local_2c + fVar9;
-  (local_8->writable).mins[1] =
+       (float)(~local_19c & (uint)fVar3 | local_19c & (uint)fVar6) * axis + fVar9;
+  (bmodel->writable).mins[1] =
        (float)(~local_1c0 & (uint)fVar5 | local_1c0 & (uint)fVar8) * local_10 +
        (float)(~local_1b0 & (uint)fVar4 | local_1b0 & (uint)fVar7) * local_1c +
        (float)(~local_1a0 & (uint)fVar3 | local_1a0 & (uint)fVar6) * local_28 + fVar1;
-  (local_8->writable).mins[2] =
+  (bmodel->writable).mins[2] =
        (float)(~local_1c4 & (uint)fVar5 | local_1c4 & (uint)fVar8) * local_c +
        (float)(~local_1b4 & (uint)fVar4 | local_1b4 & (uint)fVar7) * local_18 +
        (float)(~local_1a4 & (uint)fVar3 | local_1a4 & (uint)fVar6) * local_24 + fVar2;
-  (local_8->writable).maxs[0] =
+  (bmodel->writable).maxs[0] =
        (float)(~local_1bc & (uint)fVar8 | local_1bc & (uint)fVar5) * local_14 +
        (float)(~local_1ac & (uint)fVar7 | local_1ac & (uint)fVar4) * local_20 +
-       (float)(~local_19c & (uint)fVar6 | local_19c & (uint)fVar3) * local_2c + fVar9;
-  (local_8->writable).maxs[1] =
+       (float)(~local_19c & (uint)fVar6 | local_19c & (uint)fVar3) * axis + fVar9;
+  (bmodel->writable).maxs[1] =
        (float)(~local_1c0 & (uint)fVar8 | local_1c0 & (uint)fVar5) * local_10 +
        (float)(~local_1b0 & (uint)fVar7 | local_1b0 & (uint)fVar4) * local_1c +
        (float)(~local_1a0 & (uint)fVar6 | local_1a0 & (uint)fVar3) * local_28 + fVar1;
-  (local_8->writable).maxs[2] =
+  (bmodel->writable).maxs[2] =
        (float)(~local_1c4 & (uint)fVar8 | local_1c4 & (uint)fVar5) * local_c +
        (float)(~local_1b4 & (uint)fVar7 | local_1b4 & (uint)fVar4) * local_18 +
        (float)(~local_1a4 & (uint)fVar6 | local_1a4 & (uint)fVar3) * local_24 + fVar2;
-  fVar9 = RadiusFromBounds(local_8->bounds[0],local_8->bounds[1]);
+  fVar9 = RadiusFromBounds(bmodel->bounds[0],bmodel->bounds[1]);
   return fVar9;
 }
 
@@ -338,15 +338,15 @@ float __cdecl DynEntCl_UpdateBModelWorldBounds(DynEntityDef *param_1,GfxPlacemen
 /* WARNING: Removing unreachable block (ram,0x005ae976) */
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl DynEntCl_LinkModel(ushort param_1)
+void __cdecl DynEntCl_LinkModel(ushort dynEntId)
 
 {
   float fVar1;
   float fVar2;
   code *pcVar3;
   bool bVar4;
-  DynEntityPose *pDVar5;
-  float fVar6;
+  DynEntityPose *quat;
+  float fVar5;
   uint local_208;
   uint local_204;
   uint local_200;
@@ -356,13 +356,14 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
   uint local_1e8;
   uint local_1e4;
   uint local_1e0;
-  float local_a8;
+  DynEntityPose *dynEntPose;
+  float modelBoundsVec3;
   float local_a4;
   float local_a0;
   float local_9c;
   float local_98;
   float local_94;
-  float local_90;
+  float worldBoundsFloat4;
   float local_8c;
   float local_88;
   float local_84;
@@ -370,10 +371,10 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
   float local_7c;
   float local_78;
   float local_74;
-  XModel *local_70;
-  DynEntityClient *local_6c;
-  DynEntityDef *local_68;
-  float local_64;
+  XModel *model;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  float modelAxis;
   float local_60;
   float local_5c;
   float local_58;
@@ -382,13 +383,13 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
   float local_4c;
   float local_48;
   float local_44;
-  float local_40;
+  float worldBoundsVec3;
   float local_3c;
   float local_38;
   float local_34;
   float local_30;
   float local_2c;
-  float local_28;
+  float modelBoundsFloat4;
   float local_24;
   float local_20;
   undefined4 local_1c;
@@ -399,21 +400,21 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_68 = DynEnt_GetEntityDef(param_1,DYNENT_DRAW_MODEL);
-  pDVar5 = DynEnt_GetClientPose(param_1,DYNENT_DRAW_MODEL);
-  local_6c = DynEnt_GetClientEntity(param_1,DYNENT_DRAW_MODEL);
-  local_70 = DynEntCl_GetCurrentXModel(local_68,local_6c);
-  if ((local_70 == (XModel *)0x0) &&
+  dynEntDef = DynEnt_GetEntityDef(dynEntId,DYNENT_DRAW_MODEL);
+  quat = DynEnt_GetClientPose(dynEntId,DYNENT_DRAW_MODEL);
+  dynEntClient = DynEnt_GetClientEntity(dynEntId,DYNENT_DRAW_MODEL);
+  model = DynEntCl_GetCurrentXModel(dynEntDef,dynEntClient);
+  if ((model == (XModel *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x94,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  fVar6 = XModelGetRadius(local_70);
-  pDVar5->radius = fVar6;
-  XModelGetBounds(local_70,&local_a8,&local_9c);
-  local_28 = local_a8;
+  fVar5 = XModelGetRadius(model);
+  quat->radius = fVar5;
+  XModelGetBounds(model,&modelBoundsVec3,&local_9c);
+  modelBoundsFloat4 = modelBoundsVec3;
   local_24 = local_a4;
   local_20 = local_a0;
   local_1c = 0;
@@ -421,11 +422,11 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
   local_14 = local_98;
   local_10 = local_94;
   local_c = 0;
-  UnitQuatToAxis((float *)pDVar5,(float (*) [3])&local_64);
-  fVar6 = (pDVar5->pose).origin[0];
-  fVar1 = (pDVar5->pose).origin[1];
-  fVar2 = (pDVar5->pose).origin[2];
-  if (0.0 <= local_64) {
+  UnitQuatToAxis((float *)quat,(float (*) [3])&modelAxis);
+  fVar5 = (quat->pose).origin[0];
+  fVar1 = (quat->pose).origin[1];
+  fVar2 = (quat->pose).origin[2];
+  if (0.0 <= modelAxis) {
     local_1e0 = 0;
   }
   else {
@@ -479,34 +480,41 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
   else {
     local_208 = 0xffffffff;
   }
-  local_90 = (float)(~local_200 & (uint)local_20 | local_200 & (uint)local_10) * local_4c +
-             (float)(~local_1f0 & (uint)local_24 | local_1f0 & (uint)local_14) * local_58 +
-             (float)(~local_1e0 & (uint)local_28 | local_1e0 & (uint)local_18) * local_64 + fVar6;
+  worldBoundsFloat4 =
+       (float)(~local_200 & (uint)local_20 | local_200 & (uint)local_10) * local_4c +
+       (float)(~local_1f0 & (uint)local_24 | local_1f0 & (uint)local_14) * local_58 +
+       (float)(~local_1e0 & (uint)modelBoundsFloat4 | local_1e0 & (uint)local_18) * modelAxis +
+       fVar5;
   local_8c = (float)(~local_204 & (uint)local_20 | local_204 & (uint)local_10) * local_48 +
              (float)(~local_1f4 & (uint)local_24 | local_1f4 & (uint)local_14) * local_54 +
-             (float)(~local_1e4 & (uint)local_28 | local_1e4 & (uint)local_18) * local_60 + fVar1;
+             (float)(~local_1e4 & (uint)modelBoundsFloat4 | local_1e4 & (uint)local_18) * local_60 +
+             fVar1;
   local_88 = (float)(~local_208 & (uint)local_20 | local_208 & (uint)local_10) * local_44 +
              (float)(~local_1f8 & (uint)local_24 | local_1f8 & (uint)local_14) * local_50 +
-             (float)(~local_1e8 & (uint)local_28 | local_1e8 & (uint)local_18) * local_5c + fVar2;
-  local_84 = local_20 * 0.0 + local_24 * 0.0 + local_28 * 0.0 + 0.0;
+             (float)(~local_1e8 & (uint)modelBoundsFloat4 | local_1e8 & (uint)local_18) * local_5c +
+             fVar2;
+  local_84 = local_20 * 0.0 + local_24 * 0.0 + modelBoundsFloat4 * 0.0 + 0.0;
   local_80 = (float)(~local_200 & (uint)local_10 | local_200 & (uint)local_20) * local_4c +
              (float)(~local_1f0 & (uint)local_14 | local_1f0 & (uint)local_24) * local_58 +
-             (float)(~local_1e0 & (uint)local_18 | local_1e0 & (uint)local_28) * local_64 + fVar6;
+             (float)(~local_1e0 & (uint)local_18 | local_1e0 & (uint)modelBoundsFloat4) * modelAxis
+             + fVar5;
   local_7c = (float)(~local_204 & (uint)local_10 | local_204 & (uint)local_20) * local_48 +
              (float)(~local_1f4 & (uint)local_14 | local_1f4 & (uint)local_24) * local_54 +
-             (float)(~local_1e4 & (uint)local_18 | local_1e4 & (uint)local_28) * local_60 + fVar1;
+             (float)(~local_1e4 & (uint)local_18 | local_1e4 & (uint)modelBoundsFloat4) * local_60 +
+             fVar1;
   local_78 = (float)(~local_208 & (uint)local_10 | local_208 & (uint)local_20) * local_44 +
              (float)(~local_1f8 & (uint)local_14 | local_1f8 & (uint)local_24) * local_50 +
-             (float)(~local_1e8 & (uint)local_18 | local_1e8 & (uint)local_28) * local_5c + fVar2;
+             (float)(~local_1e8 & (uint)local_18 | local_1e8 & (uint)modelBoundsFloat4) * local_5c +
+             fVar2;
   local_74 = local_10 * 0.0 + local_14 * 0.0 + local_18 * 0.0 + 0.0;
-  local_40 = local_90;
+  worldBoundsVec3 = worldBoundsFloat4;
   local_3c = local_8c;
   local_38 = local_88;
   local_34 = local_80;
   local_30 = local_7c;
   local_2c = local_78;
-  DynEnt_LinkEntity(DYNENT_COLL_CLIENT_FIRST,param_1,&local_40,&local_34);
-  R_LinkDynEnt((uint)param_1,DYNENT_DRAW_MODEL,&local_40,&local_34);
+  DynEnt_LinkEntity(DYNENT_COLL_CLIENT_FIRST,dynEntId,&worldBoundsVec3,&local_34);
+  R_LinkDynEnt((uint)dynEntId,DYNENT_DRAW_MODEL,&worldBoundsVec3,&local_34);
   return;
 }
 
@@ -515,25 +523,26 @@ void __cdecl DynEntCl_LinkModel(ushort param_1)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl DynEntCl_LinkBrush(ushort param_1)
+void __cdecl DynEntCl_LinkBrush(ushort dynEntId)
 
 {
   code *pcVar1;
   bool bVar2;
-  DynEntityPose *pDVar3;
-  float fVar4;
-  float local_24;
+  DynEntityPose *pose;
+  float fVar3;
+  DynEntityPose *dynEntPose;
+  float absMaxs;
   float local_20;
   float local_1c;
-  DynEntityDef *local_18;
-  GfxBrushModel *local_14;
-  float local_10;
+  DynEntityDef *dynEntDef;
+  GfxBrushModel *bmodel;
+  float absMins;
   float local_c;
   float local_8;
   
-  local_18 = DynEnt_GetEntityDef(param_1,DYNENT_DRAW_BRUSH);
-  pDVar3 = DynEnt_GetClientPose(param_1,DYNENT_DRAW_BRUSH);
-  if (local_18->xModel != (XModel *)0x0) {
+  dynEntDef = DynEnt_GetEntityDef(dynEntId,DYNENT_DRAW_BRUSH);
+  pose = DynEnt_GetClientPose(dynEntId,DYNENT_DRAW_BRUSH);
+  if (dynEntDef->xModel != (XModel *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0xb2,0,"%s");
     if (!bVar2) {
@@ -542,17 +551,17 @@ void __cdecl DynEntCl_LinkBrush(ushort param_1)
       return;
     }
   }
-  fVar4 = DynEntCl_UpdateBModelWorldBounds(local_18,&pDVar3->pose);
-  pDVar3->radius = fVar4;
-  local_14 = R_GetBrushModel((uint)local_18->brushModel);
-  local_10 = (local_14->writable).mins[0];
-  local_c = (local_14->writable).mins[1];
-  local_8 = (local_14->writable).mins[2];
-  local_24 = (local_14->writable).maxs[0];
-  local_20 = (local_14->writable).maxs[1];
-  local_1c = (local_14->writable).maxs[2];
-  DynEnt_LinkEntity(DYNENT_COLL_CLIENT_BRUSH,param_1,&local_10,&local_24);
-  R_LinkDynEnt((uint)param_1,DYNENT_DRAW_BRUSH,&local_10,&local_24);
+  fVar3 = DynEntCl_UpdateBModelWorldBounds(dynEntDef,&pose->pose);
+  pose->radius = fVar3;
+  bmodel = R_GetBrushModel((uint)dynEntDef->brushModel);
+  absMins = (bmodel->writable).mins[0];
+  local_c = (bmodel->writable).mins[1];
+  local_8 = (bmodel->writable).mins[2];
+  absMaxs = (bmodel->writable).maxs[0];
+  local_20 = (bmodel->writable).maxs[1];
+  local_1c = (bmodel->writable).maxs[2];
+  DynEnt_LinkEntity(DYNENT_COLL_CLIENT_BRUSH,dynEntId,&absMins,&absMaxs);
+  R_LinkDynEnt((uint)dynEntId,DYNENT_DRAW_BRUSH,&absMins,&absMaxs);
   return;
 }
 
@@ -561,31 +570,39 @@ void __cdecl DynEntCl_LinkBrush(ushort param_1)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl DynEntCl_UnlinkEntity(ushort param_1,DynEntityDrawType param_2)
+void __cdecl DynEntCl_UnlinkEntity(ushort dynEntId,DynEntityDrawType drawType)
 
 {
-  DynEnt_UnlinkEntity(param_2,param_1);
-  R_UnlinkDynEnt((uint)param_1,param_2);
+  DynEnt_UnlinkEntity(drawType,dynEntId);
+  R_UnlinkDynEnt((uint)dynEntId,drawType);
   return;
 }
 
 
 // 005AFD20  DynEnt_DestroyPhysics  (DynEntity/DynEntity_client.cpp:197)
 
-void __cdecl DynEnt_DestroyPhysics(PhysWorld param_1,DynEntityDef *param_2,DynEntityClient *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl
+DynEnt_DestroyPhysics(PhysWorld worldIndex,DynEntityDef *dynEntDef,DynEntityClient *dynEntClient)
 
 {
-  int iVar1;
-  int local_c;
+  int id;
+  short cindex;
+  int i;
+  int physObjId;
   
-  if (param_3->physObjId != 0) {
-    iVar1 = param_3->physObjId;
-    param_3->physObjId = 0;
-    Phys_ObjDestroy(0,iVar1);
+  if (dynEntClient->physObjId != 0) {
+    id = dynEntClient->physObjId;
+    dynEntClient->physObjId = 0;
+    Phys_ObjDestroy(0,id);
   }
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    if (param_2->physConstraints[local_c] != 0x1ff) {
-      cm.constraints[param_2->physConstraints[local_c]].constraintHandle = 0;
+  for (i = 0; i < 4; i = i + 1) {
+    if (dynEntDef->physConstraints[i] != 0x1ff) {
+      cm.constraints[dynEntDef->physConstraints[i]].constraintHandle = 0;
     }
   }
   return;
@@ -596,50 +613,53 @@ void __cdecl DynEnt_DestroyPhysics(PhysWorld param_1,DynEntityDef *param_2,DynEn
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
-void __cdecl DynEntCl_Shutdown(int param_1)
+void __cdecl DynEntCl_Shutdown(int localClientNum)
 
 {
   ushort uVar1;
   int iVar2;
   DynEntityClient *pDVar3;
   DynEntityDef *pDVar4;
-  int local_20;
-  DynEntityDrawType local_1c;
-  ushort local_8;
+  int i;
+  uint drawType;
+  DynEntityCollType collType;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  ushort dynEntCount;
+  ushort dynEntId;
   
   iVar2 = CL_LocalClient_GetActiveCount();
-  if ((iVar2 != 0) && (iVar2 = CL_GetFirstActiveLocalClient(), param_1 == iVar2)) {
+  if ((iVar2 != 0) && (iVar2 = CL_GetFirstActiveLocalClient(), localClientNum == iVar2)) {
     DynEnt_ResetBurning();
     DynEnt_ResetFading();
-    for (local_8 = cm.originalDynEntCount; local_8 < cm.dynEntCount[0]; local_8 = local_8 + 1) {
-      pDVar3 = DynEnt_GetClientEntity(local_8,DYNENT_DRAW_MODEL);
+    for (dynEntId = cm.originalDynEntCount; dynEntId < cm.dynEntCount[0]; dynEntId = dynEntId + 1) {
+      pDVar3 = DynEnt_GetClientEntity(dynEntId,DYNENT_DRAW_MODEL);
       if (pDVar3->physObjId != 0) {
-        pDVar4 = DynEnt_GetEntityDef(local_8,DYNENT_DRAW_MODEL);
+        pDVar4 = DynEnt_GetEntityDef(dynEntId,DYNENT_DRAW_MODEL);
         DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,pDVar4,pDVar3);
       }
       if ((pDVar3->flags & 1) != 0) {
-        DynEntCl_UnlinkEntity(local_8,DYNENT_DRAW_MODEL);
+        DynEntCl_UnlinkEntity(dynEntId,DYNENT_DRAW_MODEL);
       }
     }
     cm.dynEntCount[0] = cm.originalDynEntCount;
-    for (local_1c = DYNENT_DRAW_MODEL; local_1c < DYNENT_DRAW_COUNT;
-        local_1c = local_1c + DYNENT_DRAW_BRUSH) {
-      uVar1 = DynEnt_GetEntityCount(local_1c);
-      for (local_8 = 0; local_8 < uVar1; local_8 = local_8 + 1) {
-        pDVar4 = DynEnt_GetEntityDef(local_8,local_1c);
-        pDVar3 = DynEnt_GetClientEntity(local_8,local_1c);
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+      uVar1 = DynEnt_GetEntityCount(drawType);
+      for (dynEntId = 0; dynEntId < uVar1; dynEntId = dynEntId + 1) {
+        pDVar4 = DynEnt_GetEntityDef(dynEntId,drawType);
+        pDVar3 = DynEnt_GetClientEntity(dynEntId,drawType);
         if (pDVar3->physObjId != 0) {
           DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,pDVar4,pDVar3);
         }
         if ((pDVar3->flags & 1) != 0) {
-          DynEntCl_UnlinkEntity(local_8,local_1c);
+          DynEntCl_UnlinkEntity(dynEntId,drawType);
         }
       }
-      DynEnt_ClearCollWorld(local_1c);
+      DynEnt_ClearCollWorld(drawType);
     }
     numExtraDynEnts = 0;
-    for (local_20 = 0; local_20 < 0x100; local_20 = local_20 + 1) {
-      usedExtraDynEnts[local_20] = '\0';
+    for (i = 0; i < 0x100; i = i + 1) {
+      usedExtraDynEnts[i] = '\0';
     }
   }
   return;
@@ -722,8 +742,12 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 // 005AFF70  DynEntCl_InitEntities  (DynEntity/DynEntity_client.cpp:286)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEntCl_InitEntities(int param_1)
+void __cdecl DynEntCl_InitEntities(int localClientNum)
 
 {
   code *pcVar1;
@@ -732,84 +756,90 @@ void __cdecl DynEntCl_InitEntities(int param_1)
   int iVar4;
   DynEntityClient *pDVar5;
   DynEntityDef *pDVar6;
-  DynEntityDef *pDVar7;
-  DynEntityPose *pDVar8;
-  DynEntityColl *pDVar9;
-  int local_2c;
-  DynEntityDrawType local_24;
-  ushort local_c;
+  DynEntityDef *dynEntDef_00;
+  DynEntityPose *pDVar7;
+  DynEntityColl *pDVar8;
+  int i;
+  DynEntityPose *dynEntPose;
+  uint drawType;
+  DynEntityProps *dynEntProps;
+  DynEntityCollType collType;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  ushort dynEntCount;
+  ushort dynEntId;
+  DynEntityColl *dynEntColl;
   
   iVar4 = CL_GetFirstActiveLocalClient();
-  if ((param_1 == iVar4) && ((r_reflectionProbeGenerate->current).enabled == false)) {
+  if ((localClientNum == iVar4) && ((r_reflectionProbeGenerate->current).enabled == false)) {
     DynEnt_ResetBurning();
     DynEnt_ResetFading();
-    for (local_c = cm.originalDynEntCount; local_c < cm.dynEntCount[0]; local_c = local_c + 1) {
-      pDVar5 = DynEnt_GetClientEntity(local_c,DYNENT_DRAW_MODEL);
+    for (dynEntId = cm.originalDynEntCount; dynEntId < cm.dynEntCount[0]; dynEntId = dynEntId + 1) {
+      pDVar5 = DynEnt_GetClientEntity(dynEntId,DYNENT_DRAW_MODEL);
       if (pDVar5->physObjId != 0) {
-        pDVar6 = DynEnt_GetEntityDef(local_c,DYNENT_DRAW_MODEL);
+        pDVar6 = DynEnt_GetEntityDef(dynEntId,DYNENT_DRAW_MODEL);
         DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,pDVar6,pDVar5);
       }
-      DynEntCl_UnlinkEntity(local_c,DYNENT_DRAW_MODEL);
+      DynEntCl_UnlinkEntity(dynEntId,DYNENT_DRAW_MODEL);
     }
     cm.dynEntCount[0] = cm.originalDynEntCount;
-    for (local_24 = DYNENT_DRAW_MODEL; local_24 < DYNENT_DRAW_COUNT;
-        local_24 = local_24 + DYNENT_DRAW_BRUSH) {
-      DynEnt_ClearCollWorld(local_24);
-      uVar3 = DynEnt_GetEntityCount(local_24);
-      for (local_c = 0; local_c < uVar3; local_c = local_c + 1) {
-        pDVar7 = DynEnt_GetEntityDef(local_c,local_24);
-        pDVar8 = DynEnt_GetClientPose(local_c,local_24);
-        pDVar5 = DynEnt_GetClientEntity(local_c,local_24);
-        pDVar9 = DynEnt_GetEntityColl(local_24,local_c);
-        pDVar6 = pDVar7;
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+      DynEnt_ClearCollWorld(drawType);
+      uVar3 = DynEnt_GetEntityCount(drawType);
+      for (dynEntId = 0; dynEntId < uVar3; dynEntId = dynEntId + 1) {
+        dynEntDef_00 = DynEnt_GetEntityDef(dynEntId,drawType);
+        pDVar7 = DynEnt_GetClientPose(dynEntId,drawType);
+        pDVar5 = DynEnt_GetClientEntity(dynEntId,drawType);
+        pDVar8 = DynEnt_GetEntityColl(drawType,dynEntId);
+        pDVar6 = dynEntDef_00;
         for (iVar4 = 7; pDVar6 = (DynEntityDef *)&pDVar6->pose, iVar4 != 0; iVar4 = iVar4 + -1) {
-          (pDVar8->pose).quat[0] = ((GfxPlacement *)pDVar6)->quat[0];
-          pDVar8 = (DynEntityPose *)((pDVar8->pose).quat + 1);
+          (pDVar7->pose).quat[0] = ((GfxPlacement *)pDVar6)->quat[0];
+          pDVar7 = (DynEntityPose *)((pDVar7->pose).quat + 1);
         }
         if (pDVar5->physObjId != 0) {
-          DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,pDVar7,pDVar5);
+          DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,dynEntDef_00,pDVar5);
         }
-        pDVar9->nextEntInSector = 0;
-        pDVar9->sector = 0;
+        pDVar8->nextEntInSector = 0;
+        pDVar8->sector = 0;
         pDVar5->flags = 2;
-        pDVar5->health = pDVar7->health;
-        DynEnt_GetEntityProps(pDVar7->type);
+        pDVar5->health = dynEntDef_00->health;
+        DynEnt_GetEntityProps(dynEntDef_00->type);
         pDVar5->flags = pDVar5->flags | 1;
-        if (local_24 == DYNENT_DRAW_MODEL) {
-          DynEntCl_LinkModel(local_c);
+        if (drawType == 0) {
+          DynEntCl_LinkModel(dynEntId);
         }
         else {
-          if ((local_24 != DYNENT_DRAW_BRUSH) &&
+          if ((drawType != 1) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                        ,0x171,0,"%s\n\t(drawType) = %i"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          DynEntCl_LinkBrush(local_c);
+          DynEntCl_LinkBrush(dynEntId);
         }
-        if (((pDVar7->physPreset != (PhysPreset *)0x0) && ((pDVar7->physPreset->flags & 1U) != 0))
-           && ((pDVar7->physPreset->flags & 2U) == 0)) {
-          DynEnt_CalcPhysPreset(pDVar7);
+        if (((dynEntDef_00->physPreset != (PhysPreset *)0x0) &&
+            ((dynEntDef_00->physPreset->flags & 1U) != 0)) &&
+           ((dynEntDef_00->physPreset->flags & 2U) == 0)) {
+          DynEnt_CalcPhysPreset(dynEntDef_00);
         }
       }
     }
-    for (local_24 = DYNENT_DRAW_MODEL; local_24 < DYNENT_DRAW_COUNT;
-        local_24 = local_24 + DYNENT_DRAW_BRUSH) {
-      uVar3 = DynEnt_GetEntityCount(local_24);
-      for (local_c = 0; local_c < uVar3; local_c = local_c + 1) {
-        pDVar6 = DynEnt_GetEntityDef(local_c,local_24);
-        pDVar8 = DynEnt_GetClientPose(local_c,local_24);
-        pDVar5 = DynEnt_GetClientEntity(local_c,local_24);
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+      uVar3 = DynEnt_GetEntityCount(drawType);
+      for (dynEntId = 0; dynEntId < uVar3; dynEntId = dynEntId + 1) {
+        pDVar6 = DynEnt_GetEntityDef(dynEntId,drawType);
+        pDVar7 = DynEnt_GetClientPose(dynEntId,drawType);
+        pDVar5 = DynEnt_GetClientEntity(dynEntId,drawType);
         if (((pDVar6->flags & 1U) != 0) && (pDVar5->physObjId == 0)) {
-          iVar4 = DynEntCl_CreatePhysObj(pDVar6,pDVar5,&pDVar8->pose);
+          iVar4 = DynEntCl_CreatePhysObj(pDVar6,pDVar5,&pDVar7->pose);
           pDVar5->physObjId = iVar4;
         }
       }
     }
     numExtraDynEnts = 0;
-    for (local_2c = 0; local_2c < 0x100; local_2c = local_2c + 1) {
-      usedExtraDynEnts[local_2c] = '\0';
+    for (i = 0; i < 0x100; i = i + 1) {
+      usedExtraDynEnts[i] = '\0';
     }
   }
   return;
@@ -838,33 +868,41 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 005B0370  DynEntCl_DestroyEntityModel  (DynEntity/DynEntity_client.cpp:406)
 
-void __cdecl DynEntCl_DestroyEntityModel(ushort param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl DynEntCl_DestroyEntityModel(ushort id)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort uVar3;
-  DynEntityClient *pDVar4;
-  uint uVar5;
+  ushort absDynEntId_00;
+  DynEntityClient *pDVar3;
+  uint uVar4;
+  int extraId;
+  ushort absDynEntId;
+  int count;
   
-  pDVar4 = cm.dynEntClientList[0] + param_1;
-  pDVar4->flags = 0;
-  pDVar4->health = -1;
-  if ((pDVar4->physObjId != 0) && (pDVar4->physObjId != -1)) {
-    Phys_ObjDestroy(0,pDVar4->physObjId);
+  pDVar3 = cm.dynEntClientList[0] + id;
+  pDVar3->flags = 0;
+  pDVar3->health = -1;
+  if ((pDVar3->physObjId != 0) && (pDVar3->physObjId != -1)) {
+    Phys_ObjDestroy(0,pDVar3->physObjId);
   }
-  uVar3 = DynEnt_GetClientAbsId(param_1,DYNENT_DRAW_MODEL);
-  DynEntCl_RemoveFromFadeList(uVar3);
-  pDVar4->physObjId = 0;
-  if ((pDVar4->flags | 8) != 0) {
-    DynEntCl_SetBurning(param_1,DYNENT_DRAW_MODEL,false);
+  absDynEntId_00 = DynEnt_GetClientAbsId(id,DYNENT_DRAW_MODEL);
+  DynEntCl_RemoveFromFadeList(absDynEntId_00);
+  pDVar3->physObjId = 0;
+  if ((pDVar3->flags | 8) != 0) {
+    DynEntCl_SetBurning(id,DYNENT_DRAW_MODEL,false);
   }
-  DynEntCl_UnlinkEntity(param_1,DYNENT_DRAW_MODEL);
-  if ((uint)param_1 == cm.dynEntCount[0] - 1) {
+  DynEntCl_UnlinkEntity(id,DYNENT_DRAW_MODEL);
+  if ((uint)id == cm.dynEntCount[0] - 1) {
     cm.dynEntCount[0] = cm.dynEntCount[0] - 1;
   }
-  uVar5 = (uint)cm.originalDynEntCount;
-  if (usedExtraDynEnts[param_1 - uVar5] != '\x01') {
+  uVar4 = (uint)cm.originalDynEntCount;
+  if (usedExtraDynEnts[id - uVar4] != '\x01') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x1b2,0,"%s");
     if (!bVar2) {
@@ -873,7 +911,7 @@ void __cdecl DynEntCl_DestroyEntityModel(ushort param_1)
       return;
     }
   }
-  usedExtraDynEnts[param_1 - uVar5] = '\0';
+  usedExtraDynEnts[id - uVar4] = '\0';
   numExtraDynEnts = numExtraDynEnts + -1;
   if (numExtraDynEnts < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
@@ -903,51 +941,59 @@ void __cdecl DynEntCl_CleanUpOldModels(void)
   cg_s *pcVar3;
   DynEntityPose *pDVar4;
   float local_50;
-  int local_34;
-  float local_2c;
-  ushort local_28;
-  int local_20;
-  float afStack_1c [4];
-  int local_c;
-  ushort local_8;
+  int i;
+  DynEntityPose *dynEntPose;
+  float distSq;
+  ushort id;
+  cg_s *cgameGlob;
+  int localClientNum;
+  float afStack_1c [3];
+  float furthestDistSq;
+  int numPlayers;
+  ushort furthestId;
   
-  local_c = 0;
-  for (local_20 = 0; local_20 < 1; local_20 = local_20 + 1) {
-    bVar2 = CL_LocalClient_IsActive(local_20);
+  numPlayers = 0;
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    bVar2 = CL_LocalClient_IsActive(localClientNum);
     if (bVar2) {
-      pcVar3 = CG_GetLocalClientGlobals(local_20);
-      iVar1 = local_c;
-      afStack_1c[local_c * 3] = (pcVar3->refdef).vieworg[0];
+      pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+      iVar1 = numPlayers;
+      afStack_1c[numPlayers * 3] = (pcVar3->refdef).vieworg[0];
       afStack_1c[iVar1 * 3 + 1] = (pcVar3->refdef).vieworg[1];
       afStack_1c[iVar1 * 3 + 2] = (pcVar3->refdef).vieworg[2];
-      local_c = local_c + 1;
+      numPlayers = numPlayers + 1;
     }
   }
-  afStack_1c[3] = 0.0;
-  local_8 = 0xffff;
-  for (local_28 = cm.originalDynEntCount; local_28 < cm.dynEntCount[0]; local_28 = local_28 + 1) {
-    pDVar4 = DynEnt_GetClientPose(local_28,DYNENT_DRAW_MODEL);
-    local_2c = 3.4028235e+38;
-    for (local_34 = 0; local_34 < local_c; local_34 = local_34 + 1) {
-      local_50 = Vec3DistanceSq((pDVar4->pose).origin,afStack_1c + local_34 * 3);
-      if (local_2c - local_50 < 0.0) {
-        local_50 = local_2c;
+  furthestDistSq = 0.0;
+  furthestId = 0xffff;
+  for (id = cm.originalDynEntCount; id < cm.dynEntCount[0]; id = id + 1) {
+    pDVar4 = DynEnt_GetClientPose(id,DYNENT_DRAW_MODEL);
+    distSq = 3.4028235e+38;
+    for (i = 0; i < numPlayers; i = i + 1) {
+      local_50 = Vec3DistanceSq((pDVar4->pose).origin,afStack_1c + i * 3);
+      if (distSq - local_50 < 0.0) {
+        local_50 = distSq;
       }
-      local_2c = local_50;
+      distSq = local_50;
     }
-    if (afStack_1c[3] < local_2c) {
-      afStack_1c[3] = local_2c;
-      local_8 = local_28;
+    if (furthestDistSq < distSq) {
+      furthestDistSq = distSq;
+      furthestId = id;
     }
   }
-  if (local_8 != 0xffff) {
-    DynEntCl_DestroyEntityModel(local_8);
+  if (furthestId != 0xffff) {
+    DynEntCl_DestroyEntityModel(furthestId);
   }
   return;
 }
 
 
 // 005B1E60  DynEntCl_AddEntityModel  (DynEntity/DynEntity_client.cpp:493)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 ushort __cdecl DynEntCl_AddEntityModel(void)
 
@@ -956,22 +1002,23 @@ ushort __cdecl DynEntCl_AddEntityModel(void)
   bool bVar2;
   ushort uVar3;
   uint uVar4;
-  int local_c;
-  int local_8;
+  int extraDynEntLimit;
+  int id;
   
-  local_c = (dynEnt_spawnedLimit->current).integer;
+  extraDynEntLimit = (dynEnt_spawnedLimit->current).integer;
   bVar2 = CL_IsRenderingSplitScreen();
   if ((bVar2) && ((zombietron->current).enabled == false)) {
-    local_c = local_c / 2;
+    extraDynEntLimit = extraDynEntLimit / 2;
   }
-  if ((local_c < numExtraDynEnts) && (DynEntCl_CleanUpOldModels(), numExtraDynEnts == 0x100)) {
+  if ((extraDynEntLimit < numExtraDynEnts) &&
+     (DynEntCl_CleanUpOldModels(), numExtraDynEnts == 0x100)) {
     return 0xffff;
   }
-  local_8 = 0;
+  id = 0;
   do {
-    if (0xff < local_8) {
+    if (0xff < id) {
 LAB_005b1ef2:
-      uVar4 = (uint)cm.originalDynEntCount + local_8;
+      uVar4 = (uint)cm.originalDynEntCount + id;
       numExtraDynEnts = numExtraDynEnts + 1;
       if (((int)(uint)cm.dynEntCount[0] < (int)uVar4) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
@@ -983,30 +1030,30 @@ LAB_005b1ef2:
       if (uVar4 == cm.dynEntCount[0]) {
         cm.dynEntCount[0] = cm.dynEntCount[0] + 1;
       }
-      local_8._0_2_ = (ushort)uVar4;
-      return (ushort)local_8;
+      id._0_2_ = (ushort)uVar4;
+      return (ushort)id;
     }
-    if (usedExtraDynEnts[local_8] == '\0') {
-      usedExtraDynEnts[local_8] = '\x01';
+    if (usedExtraDynEnts[id] == '\0') {
+      usedExtraDynEnts[id] = '\x01';
       goto LAB_005b1ef2;
     }
-    local_8 = local_8 + 1;
+    id = id + 1;
   } while( true );
 }
 
 
 // 005B0EA0  DynEnt_GetDamage  (DynEntity/DynEntity_client.cpp:527)
 
-int __cdecl DynEnt_GetDamage(DynEntityClient *param_1,DynEntityDef *param_2)
+int __cdecl DynEnt_GetDamage(DynEntityClient *dynEntClient,DynEntityDef *dynEntDef)
 
 {
   int iVar1;
   
-  if (param_2->health < 1) {
+  if (dynEntDef->health < 1) {
     iVar1 = 0;
   }
   else {
-    iVar1 = param_2->health - param_1->health;
+    iVar1 = dynEntDef->health - dynEntClient->health;
   }
   return iVar1;
 }
@@ -1019,36 +1066,37 @@ int __cdecl DynEnt_GetDamage(DynEntityClient *param_1,DynEntityDef *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEnt_FixupLightConstraints(int param_1,int param_2,int param_3)
+void __cdecl DynEnt_FixupLightConstraints(int localClientNum,int entnum,int primaryLightIndex)
 
 {
-  DynEntityPose *pDVar1;
-  float local_4c [9];
-  float local_28;
+  DynEntityPose *quat;
+  DynEntityPose *dynEntPose;
+  float dynent_mat [9];
+  float offset;
   float local_24;
   float local_20;
-  float local_1c [3];
-  centity_s *local_10;
-  PhysConstraint *local_c;
-  int local_8;
+  float forward [3];
+  centity_s *light_cent;
+  PhysConstraint *c;
+  int i;
   
-  for (local_8 = 0; local_8 < cm.num_constraints; local_8 = local_8 + 1) {
-    local_c = cm.constraints + local_8;
-    if ((local_c->type == CONSTRAINT_LIGHT) && (local_c->target_index2 == param_3)) {
-      local_c->centity_num[param_1] = param_2;
-      local_10 = CG_GetEntity(param_1,param_2);
-      if (local_c->target_index1 < 0) {
+  for (i = 0; i < cm.num_constraints; i = i + 1) {
+    c = cm.constraints + i;
+    if ((c->type == CONSTRAINT_LIGHT) && (c->target_index2 == primaryLightIndex)) {
+      c->centity_num[localClientNum] = entnum;
+      light_cent = CG_GetEntity(localClientNum,entnum);
+      if (c->target_index1 < 0) {
         Com_Error(ERR_DROP,"Bad Light constraint at (%g %g %g) linked to entity at (%g %g %g)");
       }
-      pDVar1 = DynEnt_GetClientPose((ushort)local_c->target_index1);
-      UnitQuatToAxis((float *)pDVar1,(float (*) [3])local_4c);
-      local_28 = (local_10->pose).origin[0] - (pDVar1->pose).origin[0];
-      local_24 = (local_10->pose).origin[1] - (pDVar1->pose).origin[1];
-      local_20 = (local_10->pose).origin[2] - (pDVar1->pose).origin[2];
-      MatrixTransposeTransformVector(&local_28,(float (*) [3])local_4c,local_c->offset);
-      AngleVectors((local_10->pose).angles,local_1c,(float *)0x0,(float *)0x0);
-      MatrixTransposeTransformVector(local_1c,(float (*) [3])local_4c,local_c->dir);
-      local_c->constraintHandle = 1;
+      quat = DynEnt_GetClientPose((ushort)c->target_index1);
+      UnitQuatToAxis((float *)quat,(float (*) [3])dynent_mat);
+      offset = (light_cent->pose).origin[0] - (quat->pose).origin[0];
+      local_24 = (light_cent->pose).origin[1] - (quat->pose).origin[1];
+      local_20 = (light_cent->pose).origin[2] - (quat->pose).origin[2];
+      MatrixTransposeTransformVector(&offset,(float (*) [3])dynent_mat,c->offset);
+      AngleVectors((light_cent->pose).angles,forward,(float *)0x0,(float *)0x0);
+      MatrixTransposeTransformVector(forward,(float (*) [3])dynent_mat,c->dir);
+      c->constraintHandle = 1;
     }
   }
   return;
@@ -1062,41 +1110,44 @@ void __cdecl DynEnt_FixupLightConstraints(int param_1,int param_2,int param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEnt_UpdateLightConstraint(int param_1,DynEntityDef *param_2,DynEntityPose *param_3)
+void __cdecl
+DynEnt_UpdateLightConstraint(int localClientNum,DynEntityDef *dynEntDef,DynEntityPose *dynEntPose)
 
 {
   PhysConstraint *pPVar1;
   int iVar2;
-  centity_s *pcVar3;
-  float local_64 [9];
-  float local_40;
+  centity_s *ent;
+  centity_s *cent;
+  int entnum;
+  float dynent_mat [9];
+  float origin;
   float local_3c;
   float local_38;
-  int local_34;
-  float local_30;
+  int cindex;
+  float rotated_offset;
   float local_2c;
   float local_28;
-  float local_24 [3];
-  int local_18;
-  float local_14 [3];
-  int local_8;
+  float angles [3];
+  int i;
+  float rotated_dir [3];
+  int clientindex;
   
-  for (local_18 = 0; pPVar1 = cm.constraints, local_18 < 4; local_18 = local_18 + 1) {
-    iVar2 = (int)param_2->physConstraints[local_18];
+  for (i = 0; pPVar1 = cm.constraints, i < 4; i = i + 1) {
+    iVar2 = (int)dynEntDef->physConstraints[i];
     if ((iVar2 != 0x1ff) && (cm.constraints[iVar2].type == CONSTRAINT_LIGHT)) {
-      local_34 = iVar2;
-      for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-        if (0 < pPVar1[iVar2].centity_num[local_8]) {
-          pcVar3 = CG_GetEntity(local_8,pPVar1[iVar2].centity_num[local_8]);
-          UnitQuatToAxis((float *)param_3,(float (*) [3])local_64);
-          MatrixTransformVector(pPVar1[iVar2].offset,(float (*) [3])local_64,&local_30);
-          local_40 = (param_3->pose).origin[0] + local_30;
-          local_3c = (param_3->pose).origin[1] + local_2c;
-          local_38 = (param_3->pose).origin[2] + local_28;
-          CG_SetOrigin(pcVar3,&local_40);
-          MatrixTransformVector(pPVar1[iVar2].dir,(float (*) [3])local_64,local_14);
-          vectoangles(local_14,local_24);
-          CG_SetAngle(pcVar3,local_24);
+      cindex = iVar2;
+      for (clientindex = 0; clientindex < 1; clientindex = clientindex + 1) {
+        if (0 < pPVar1[iVar2].centity_num[clientindex]) {
+          ent = CG_GetEntity(clientindex,pPVar1[iVar2].centity_num[clientindex]);
+          UnitQuatToAxis((float *)dynEntPose,(float (*) [3])dynent_mat);
+          MatrixTransformVector(pPVar1[iVar2].offset,(float (*) [3])dynent_mat,&rotated_offset);
+          origin = (dynEntPose->pose).origin[0] + rotated_offset;
+          local_3c = (dynEntPose->pose).origin[1] + local_2c;
+          local_38 = (dynEntPose->pose).origin[2] + local_28;
+          CG_SetOrigin(ent,&origin);
+          MatrixTransformVector(pPVar1[iVar2].dir,(float (*) [3])dynent_mat,rotated_dir);
+          vectoangles(rotated_dir,angles);
+          CG_SetAngle(ent,angles);
         }
       }
     }
@@ -1112,79 +1163,88 @@ void __cdecl DynEnt_UpdateLightConstraint(int param_1,DynEntityDef *param_2,DynE
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEnt_UpdateConstraints(int param_1,DynEntityClient *param_2,DynEntityDef *param_3)
+void __cdecl
+DynEnt_UpdateConstraints(int localClientNum,DynEntityClient *dynEntClient,DynEntityDef *dynEntDef)
 
 {
   short sVar1;
-  int iVar2;
-  PhysConstraint *pPVar3;
-  bool bVar4;
-  int iVar5;
-  cg_s *pcVar6;
-  centity_s *pcVar7;
-  int local_28;
-  int local_c;
+  int entityIndex;
+  PhysConstraint *pPVar2;
+  bool bVar3;
+  int iVar4;
+  cg_s *pcVar5;
+  centity_s *pcVar6;
+  centity_s *light;
+  int entnum;
+  int clientindex;
+  rope_t *rope;
+  PhysObjUserData *userData1;
+  cg_s *cgameGlob;
+  bool removeConstraint;
+  short cindex;
+  int i;
+  int damage;
   
-  iVar5 = DynEnt_GetDamage(param_2,param_3);
-  if (iVar5 != 0) {
-    for (local_c = 0; pPVar3 = cm.constraints, local_c < 4; local_c = local_c + 1) {
-      sVar1 = param_3->physConstraints[local_c];
+  iVar4 = DynEnt_GetDamage(dynEntClient,dynEntDef);
+  if (iVar4 != 0) {
+    for (i = 0; pPVar2 = cm.constraints, i < 4; i = i + 1) {
+      sVar1 = dynEntDef->physConstraints[i];
       if (sVar1 != 0x1ff) {
         if (((cm.constraints[sVar1].constraintHandle == 0) ||
-            (cm.constraints[sVar1].min_health == 0)) || (iVar5 <= cm.constraints[sVar1].min_health))
+            (cm.constraints[sVar1].min_health == 0)) || (iVar4 <= cm.constraints[sVar1].min_health))
         {
-          bVar4 = false;
+          bVar3 = false;
         }
         else {
-          bVar4 = true;
+          bVar3 = true;
         }
         if ((cm.constraints[sVar1].constraintHandle != 0) && (cm.constraints[sVar1].timeout != 0)) {
-          pcVar6 = CG_GetLocalClientGlobals(param_1);
-          if (pPVar3[sVar1].timeout + param_2->physicsStartTime < pcVar6->time) {
-            bVar4 = true;
+          pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+          if (pPVar2[sVar1].timeout + dynEntClient->physicsStartTime < pcVar5->time) {
+            bVar3 = true;
           }
         }
-        if (bVar4) {
-          if (param_2->physObjId != 0) {
-            *(undefined4 *)(*(int *)param_2->physObjId + 0x110) = 3;
-            Phys_ObjAddCollFlags(param_2->physObjId,0x1c7);
+        if (bVar3) {
+          if (dynEntClient->physObjId != 0) {
+            *(undefined4 *)(*(int *)dynEntClient->physObjId + 0x110) = 3;
+            Phys_ObjAddCollFlags(dynEntClient->physObjId,0x1c7);
           }
-          if (pPVar3[sVar1].type == CONSTRAINT_POINT) {
-            phys_sys::destroy((rigid_body_constraint_point *)pPVar3[sVar1].constraintHandle);
+          if (pPVar2[sVar1].type == CONSTRAINT_POINT) {
+            phys_sys::destroy((rigid_body_constraint_point *)pPVar2[sVar1].constraintHandle);
           }
-          else if ((pPVar3[sVar1].type == CONSTRAINT_DISTANCE) ||
-                  (pPVar3[sVar1].type == CONSTRAINT_ROPE)) {
-            bVar4 = Rope_IsValid(pPVar3[sVar1].rope_index);
-            if (bVar4) {
-              if ((g_ropes[pPVar3[sVar1].rope_index].m_flags & 0x20U) == 0) {
-                Rope_RemoveAnchor(pPVar3[sVar1].rope_index,0);
+          else if ((pPVar2[sVar1].type == CONSTRAINT_DISTANCE) ||
+                  (pPVar2[sVar1].type == CONSTRAINT_ROPE)) {
+            bVar3 = Rope_IsValid(pPVar2[sVar1].rope_index);
+            if (bVar3) {
+              if ((g_ropes[pPVar2[sVar1].rope_index].m_flags & 0x20U) == 0) {
+                Rope_RemoveAnchor(pPVar2[sVar1].rope_index,0);
               }
               else {
-                Rope_RemoveAnchor(pPVar3[sVar1].rope_index,
-                                  g_ropes[pPVar3[sVar1].rope_index].m_num_particles + -1);
+                Rope_RemoveAnchor(pPVar2[sVar1].rope_index,
+                                  g_ropes[pPVar2[sVar1].rope_index].m_num_particles + -1);
               }
             }
-            pPVar3[sVar1].rope_index = -1;
-            phys_sys::destroy((rigid_body_constraint_distance *)pPVar3[sVar1].constraintHandle);
+            pPVar2[sVar1].rope_index = -1;
+            phys_sys::destroy((rigid_body_constraint_distance *)pPVar2[sVar1].constraintHandle);
           }
-          else if (pPVar3[sVar1].type == CONSTRAINT_HINGE) {
-            phys_sys::destroy((rigid_body_constraint_hinge *)pPVar3[sVar1].constraintHandle);
+          else if (pPVar2[sVar1].type == CONSTRAINT_HINGE) {
+            phys_sys::destroy((rigid_body_constraint_hinge *)pPVar2[sVar1].constraintHandle);
           }
-          else if (pPVar3[sVar1].type == CONSTRAINT_LIGHT) {
-            for (local_28 = 0; local_28 < 1; local_28 = local_28 + 1) {
-              iVar2 = pPVar3[sVar1].centity_num[local_28];
-              if (iVar2 != -1) {
-                bVar4 = CL_LocalClient_IsActive(local_28);
-                if (bVar4) {
-                  pcVar7 = CG_GetEntity(local_28,iVar2);
-                  if (pcVar7 != (centity_s *)0x0) {
-                    (pcVar7->nextState).lerp.u.turret.gunAngles[1] = 0.0;
+          else if (pPVar2[sVar1].type == CONSTRAINT_LIGHT) {
+            for (clientindex = 0; clientindex < 1; clientindex = clientindex + 1) {
+              entityIndex = pPVar2[sVar1].centity_num[clientindex];
+              if (entityIndex != -1) {
+                bVar3 = CL_LocalClient_IsActive(clientindex);
+                if (bVar3) {
+                  pcVar6 = CG_GetEntity(clientindex,entityIndex);
+                  if (pcVar6 != (centity_s *)0x0) {
+                    (pcVar6->nextState).lerp.u.turret.gunAngles[1] = 0.0;
                   }
                 }
               }
             }
           }
-          pPVar3[sVar1].constraintHandle = 0;
+          pPVar2[sVar1].constraintHandle = 0;
         }
       }
     }
@@ -1196,74 +1256,79 @@ void __cdecl DynEnt_UpdateConstraints(int param_1,DynEntityClient *param_2,DynEn
 // 005B0770  DynEntCl_ProcessEntities  (DynEntity/DynEntity_client.cpp:763)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEntCl_ProcessEntities(int param_1,int param_2)
+void __cdecl DynEntCl_ProcessEntities(int localClientNum,int time)
 
 {
   bool bVar1;
   DynEntityPose *pDVar2;
   int iVar3;
   DWORD DVar4;
-  float local_20;
+  DynEntityPose *dynEntPose;
+  float origin;
   float local_1c;
   float local_18;
-  DynEntityClient *local_14;
-  DynEntityDef *local_10;
-  ushort local_c;
-  ushort local_8;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  ushort dynEntCount;
+  ushort dynEntId;
   
   if ((r_reflectionProbeGenerate->current).enabled == false) {
     PIXBeginNamedEvent(-1,"process dyn ents");
-    local_c = DynEnt_GetEntityCount(DYNENT_COLL_CLIENT_FIRST);
-    for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-      local_14 = DynEnt_GetClientEntity(local_8,DYNENT_DRAW_MODEL);
-      if (((local_14->flags & 1) != 0) && (local_14->physObjId != 0)) {
-        local_10 = DynEnt_GetEntityDef(local_8,DYNENT_DRAW_MODEL);
-        bVar1 = Phys_ObjIsAsleep(local_14->physObjId);
+    dynEntCount = DynEnt_GetEntityCount(DYNENT_COLL_CLIENT_FIRST);
+    for (dynEntId = 0; dynEntId < dynEntCount; dynEntId = dynEntId + 1) {
+      dynEntClient = DynEnt_GetClientEntity(dynEntId,DYNENT_DRAW_MODEL);
+      if (((dynEntClient->flags & 1) != 0) && (dynEntClient->physObjId != 0)) {
+        dynEntDef = DynEnt_GetEntityDef(dynEntId,DYNENT_DRAW_MODEL);
+        bVar1 = Phys_ObjIsAsleep(dynEntClient->physObjId);
         if (bVar1) {
-          DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,local_10,local_14);
+          DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,dynEntDef,dynEntClient);
         }
         else {
-          pDVar2 = DynEnt_GetClientPose(local_8,DYNENT_DRAW_MODEL);
-          Phys_ObjGetInterpolatedState(local_14->physObjId,&local_20,(float *)pDVar2);
-          DynEnt_UpdateConstraints(param_1,local_14,local_10);
-          iVar3 = VecNCompareCustomEpsilon(&local_20,(pDVar2->pose).origin,0.01,3);
+          pDVar2 = DynEnt_GetClientPose(dynEntId,DYNENT_DRAW_MODEL);
+          Phys_ObjGetInterpolatedState(dynEntClient->physObjId,&origin,(float *)pDVar2);
+          DynEnt_UpdateConstraints(localClientNum,dynEntClient,dynEntDef);
+          iVar3 = VecNCompareCustomEpsilon(&origin,(pDVar2->pose).origin,0.01,3);
           if (iVar3 == 0) {
-            (pDVar2->pose).origin[0] = local_20;
+            (pDVar2->pose).origin[0] = origin;
             (pDVar2->pose).origin[1] = local_1c;
             (pDVar2->pose).origin[2] = local_18;
-            DynEntCl_LinkModel(local_8);
+            DynEntCl_LinkModel(dynEntId);
           }
-          DynEnt_UpdateLightConstraint(param_1,local_10,pDVar2);
+          DynEnt_UpdateLightConstraint(localClientNum,dynEntDef,pDVar2);
         }
       }
     }
-    local_c = DynEnt_GetEntityCount(DYNENT_COLL_CLIENT_BRUSH);
-    for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-      local_14 = DynEnt_GetClientEntity(local_8,DYNENT_DRAW_BRUSH);
-      if (((local_14->flags & 1) != 0) && (local_14->physObjId != 0)) {
-        local_10 = DynEnt_GetEntityDef(local_8,DYNENT_DRAW_BRUSH);
-        bVar1 = Phys_ObjIsAsleep(local_14->physObjId);
+    dynEntCount = DynEnt_GetEntityCount(DYNENT_COLL_CLIENT_BRUSH);
+    for (dynEntId = 0; dynEntId < dynEntCount; dynEntId = dynEntId + 1) {
+      dynEntClient = DynEnt_GetClientEntity(dynEntId,DYNENT_DRAW_BRUSH);
+      if (((dynEntClient->flags & 1) != 0) && (dynEntClient->physObjId != 0)) {
+        dynEntDef = DynEnt_GetEntityDef(dynEntId,DYNENT_DRAW_BRUSH);
+        bVar1 = Phys_ObjIsAsleep(dynEntClient->physObjId);
         if (bVar1) {
-          DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,local_10,local_14);
+          DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,dynEntDef,dynEntClient);
         }
         else {
-          pDVar2 = DynEnt_GetClientPose(local_8,DYNENT_DRAW_BRUSH);
-          Phys_ObjGetInterpolatedState(local_14->physObjId,&local_20,(float *)pDVar2);
-          DynEnt_UpdateConstraints(param_1,local_14,local_10);
-          iVar3 = VecNCompareCustomEpsilon(&local_20,(pDVar2->pose).origin,0.01,3);
+          pDVar2 = DynEnt_GetClientPose(dynEntId,DYNENT_DRAW_BRUSH);
+          Phys_ObjGetInterpolatedState(dynEntClient->physObjId,&origin,(float *)pDVar2);
+          DynEnt_UpdateConstraints(localClientNum,dynEntClient,dynEntDef);
+          iVar3 = VecNCompareCustomEpsilon(&origin,(pDVar2->pose).origin,0.01,3);
           if (iVar3 == 0) {
-            (pDVar2->pose).origin[0] = local_20;
+            (pDVar2->pose).origin[0] = origin;
             (pDVar2->pose).origin[1] = local_1c;
             (pDVar2->pose).origin[2] = local_18;
-            DynEntCl_LinkBrush(local_8);
+            DynEntCl_LinkBrush(dynEntId);
           }
-          DynEnt_UpdateLightConstraint(param_1,local_10,pDVar2);
+          DynEnt_UpdateLightConstraint(localClientNum,dynEntDef,pDVar2);
         }
       }
     }
     DynEnt_UpdateBurning();
-    DynEnt_UpdateFading(param_2);
+    DynEnt_UpdateFading(time);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -1280,7 +1345,7 @@ void __cdecl DynEntCl_ProcessEntities(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEnt_SetupConstraints(DynEntityDef *param_1)
+void __cdecl DynEnt_SetupConstraints(DynEntityDef *dynEntDef)
 
 {
   code *pcVar1;
@@ -1356,7 +1421,7 @@ void __cdecl DynEnt_SetupConstraints(DynEntityDef *param_1)
     if (3 < local_14) {
       return;
     }
-    local_18 = param_1->physConstraints[local_14];
+    local_18 = dynEntDef->physConstraints[local_14];
     if (local_18 != 0x1ff) {
       if ((cm.constraints == (PhysConstraint *)0x0) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
@@ -1511,7 +1576,7 @@ LAB_005b12fc:
               }
               else {
                 AnglesToAxis(local_1c->dir,(float (*) [3])local_110);
-                UnitQuatToAxis((param_1->pose).quat,(float (*) [3])local_134);
+                UnitQuatToAxis((dynEntDef->pose).quat,(float (*) [3])local_134);
                 MatrixTranspose((float (*) [3])local_134,(float (*) [3])local_158);
                 MatrixMultiply((float (*) [3])local_110,(float (*) [3])local_158,
                                (float (*) [3])local_17c);
@@ -1546,13 +1611,13 @@ LAB_005b12fc:
 
 // 005B1B40  add_geom  (physics/phys_colgeom.h:1028)
 
-void __thiscall gjk_geom_list_t::add_geom(gjk_geom_list_t *this,gjk_base_t *param_1)
+void __thiscall gjk_geom_list_t::add_geom(gjk_geom_list_t *this,gjk_base_t *geom)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gjk_base_t *)0x0) {
+  if (geom == (gjk_base_t *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_colgeom.h",0x405,0,
                              "%s");
     if (!bVar2) {
@@ -1561,8 +1626,8 @@ void __thiscall gjk_geom_list_t::add_geom(gjk_geom_list_t *this,gjk_base_t *para
       return;
     }
   }
-  param_1->m_next_geom = this->m_first_geom;
-  this->m_first_geom = param_1;
+  geom->m_next_geom = this->m_first_geom;
+  this->m_first_geom = geom;
   this->m_geom_count = this->m_geom_count + 1;
   return;
 }
@@ -1570,56 +1635,63 @@ void __thiscall gjk_geom_list_t::add_geom(gjk_geom_list_t *this,gjk_base_t *para
 
 // 005B1730  DynEnt_GetSurfaceType  (DynEntity/DynEntity_client.cpp:1092)
 
-int __cdecl DynEnt_GetSurfaceType(DynEntityDef *param_1)
+int __cdecl DynEnt_GetSurfaceType(DynEntityDef *dynEntDef)
 
 {
-  uint local_c;
+  int surfaceFlags;
+  int surfaceType;
   
-  local_c = 0;
-  if (param_1->xModel == (XModel *)0x0) {
-    if (param_1->brushModel < cm.numSubModels) {
-      local_c = CM_ModelSurfaceFlags((uint)param_1->brushModel);
+  surfaceFlags = 0;
+  if (dynEntDef->xModel == (XModel *)0x0) {
+    if (dynEntDef->brushModel < cm.numSubModels) {
+      surfaceFlags = CM_ModelSurfaceFlags((uint)dynEntDef->brushModel);
     }
   }
-  else if (param_1->xModel->collSurfs != (XModelCollSurf_s *)0x0) {
-    local_c = param_1->xModel->collSurfs->surfFlags;
+  else if (dynEntDef->xModel->collSurfs != (XModelCollSurf_s *)0x0) {
+    surfaceFlags = dynEntDef->xModel->collSurfs->surfFlags;
   }
-  return (int)(local_c & 0x3f00000) >> 0x14;
+  return (int)(surfaceFlags & 0x3f00000U) >> 0x14;
 }
 
 
 // 005B17B0  DynEnt_CalcPhysPreset  (DynEntity/DynEntity_client.cpp:1111)
 
-void __cdecl DynEnt_CalcPhysPreset(DynEntityDef *param_1)
+void __cdecl DynEnt_CalcPhysPreset(DynEntityDef *dynEntDef)
 
 {
-  PhysPreset *pPVar1;
-  float local_2c;
+  PhysPreset *physPreset_00;
+  PhysPreset *physPreset;
+  float mins;
   float local_28;
   float local_24;
-  float local_20;
+  float maxs;
   float local_1c;
   float local_18;
-  float local_14;
+  float dims;
   float local_10;
   float local_c;
-  int local_8;
+  int surfaceType;
   
-  pPVar1 = param_1->physPreset;
-  DynEnt_GetLocalBounds(param_1,&local_2c,&local_20);
-  local_14 = local_20 - local_2c;
+  physPreset_00 = dynEntDef->physPreset;
+  DynEnt_GetLocalBounds(dynEntDef,&mins,&maxs);
+  dims = maxs - mins;
   local_10 = local_1c - local_28;
   local_c = local_18 - local_24;
-  local_8 = DynEnt_GetSurfaceType(param_1);
-  Phys_CalcPreset(pPVar1,&local_14,local_8);
+  surfaceType = DynEnt_GetSurfaceType(dynEntDef);
+  Phys_CalcPreset(physPreset_00,&dims,surfaceType);
   return;
 }
 
 
 // 005B1830  DynEntCl_CreatePhysObj  (DynEntity/DynEntity_client.cpp:1125)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 int __cdecl
-DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlacement *param_3)
+DynEntCl_CreatePhysObj(DynEntityDef *dynEntDef,DynEntityClient *dynEntClient,GfxPlacement *pose)
 
 {
   code *pcVar1;
@@ -1629,14 +1701,20 @@ DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlaceme
   DynEntityProps *pDVar5;
   broad_phase_info *pbVar6;
   broad_phase_group *pbVar7;
-  broad_phase_info *local_34;
-  gjk_collision_visitor local_1c;
+  int flags_2;
+  broad_phase_info *bpi_2;
+  broad_phase_group *bpg;
+  broad_phase_info *bpi;
+  int flags;
+  int localClientNum;
+  ushort absId;
+  gjk_collision_visitor collision_visitor;
   gjk_geom_list_t *local_18;
-  int local_14;
-  gjk_geom_list_t local_10;
-  int local_8;
+  int physId;
+  gjk_geom_list_t gjk_geom_list;
+  PhysObjUserData *phys_user_data;
   
-  if (param_1 == (DynEntityDef *)0x0) {
+  if (dynEntDef == (DynEntityDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x468,0,"%s");
     if (!bVar2) {
@@ -1645,7 +1723,7 @@ DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlaceme
       return iVar4;
     }
   }
-  if (param_2 == (DynEntityClient *)0x0) {
+  if (dynEntClient == (DynEntityClient *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x469,0,"%s");
     if (!bVar2) {
@@ -1654,7 +1732,7 @@ DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlaceme
       return iVar4;
     }
   }
-  pDVar5 = DynEnt_GetEntityProps(param_1->type);
+  pDVar5 = DynEnt_GetEntityProps(dynEntDef->type);
   if (pDVar5->usePhysics == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x46a,0,"%s");
@@ -1664,7 +1742,7 @@ DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlaceme
       return iVar4;
     }
   }
-  if (param_1->physPreset == (PhysPreset *)0x0) {
+  if (dynEntDef->physPreset == (PhysPreset *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x46b,0,"%s");
     if (!bVar2) {
@@ -1673,36 +1751,36 @@ DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlaceme
       return iVar4;
     }
   }
-  local_10.m_first_geom = (gjk_base_t *)0x0;
-  local_10.m_geom_count = 0;
-  local_1c = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
-  local_18 = &local_10;
-  create_gjk_geom(param_1,&local_1c,0x280ec93);
-  local_14 = Phys_ObjCreate(0,param_3->origin,param_3->quat,vec3_origin,param_1->physPreset,
-                            &local_10,true,-1);
-  param_2->physObjId = local_14;
-  if (local_14 == 0) {
+  gjk_geom_list.m_first_geom = (gjk_base_t *)0x0;
+  gjk_geom_list.m_geom_count = 0;
+  collision_visitor = (gjk_collision_visitor)create_gjk_geom_collision_visitor::vftable;
+  local_18 = &gjk_geom_list;
+  create_gjk_geom(dynEntDef,&collision_visitor,0x280ec93);
+  physId = Phys_ObjCreate(0,pose->origin,pose->quat,vec3_origin,dynEntDef->physPreset,&gjk_geom_list
+                          ,true,-1);
+  dynEntClient->physObjId = physId;
+  if (physId == 0) {
     Com_PrintWarning(1,"DynEntCl_CreatePhysObj: Unable to create physics object.\n");
-    local_14 = 0;
+    physId = 0;
   }
   else {
-    local_8 = param_2->physObjId;
-    if ((*(uint *)(*(int *)(local_8 + 0xa0) + 0x30) & 1) == 0) {
-      pbVar7 = broad_phase_base::get_bpg(*(broad_phase_base **)(local_8 + 0xa0));
-      for (local_34 = pbVar7->m_list_bpi_head; local_34 != (broad_phase_info *)0x0;
-          local_34 = (broad_phase_info *)local_34->_padding_) {
-        local_34->_padding_ = local_34->_padding_ | 4;
+    phys_user_data = (PhysObjUserData *)dynEntClient->physObjId;
+    if ((phys_user_data->m_bpb->m_flags & 1) == 0) {
+      pbVar7 = broad_phase_base::get_bpg(phys_user_data->m_bpb);
+      for (bpi_2 = pbVar7->m_list_bpi_head; bpi_2 != (broad_phase_info *)0x0;
+          bpi_2 = (broad_phase_info *)bpi_2->_padding_) {
+        bpi_2->_padding_ = bpi_2->_padding_ | 4;
       }
     }
     else {
-      pbVar6 = broad_phase_base::get_bpi(*(broad_phase_base **)(local_8 + 0xa0));
+      pbVar6 = broad_phase_base::get_bpi(phys_user_data->m_bpb);
       pbVar6->_padding_ = pbVar6->_padding_ | 4;
     }
-    DynEnt_SetupConstraints(param_1);
-    uVar3 = DynEnt_GetAbsId(param_1);
+    DynEnt_SetupConstraints(dynEntDef);
+    uVar3 = DynEnt_GetAbsId(dynEntDef);
     CScr_NotifyNum(0,(uint)uVar3,4,(uint)cscr_const.touch,0);
   }
-  return local_14;
+  return physId;
 }
 
 
@@ -1710,7 +1788,7 @@ DynEntCl_CreatePhysObj(DynEntityDef *param_1,DynEntityClient *param_2,GfxPlaceme
 
 void * __thiscall
 create_gjk_geom_collision_visitor::allocate
-          (create_gjk_geom_collision_visitor *this,int param_1,int param_2,bool param_3)
+          (create_gjk_geom_collision_visitor *this,int size,int alignment,bool no_error)
 
 {
   code *pcVar1;
@@ -1732,10 +1810,10 @@ create_gjk_geom_collision_visitor::allocate
 
 void __thiscall
 create_gjk_geom_collision_visitor::query_create_epilog
-          (create_gjk_geom_collision_visitor *this,gjk_base_t *param_1)
+          (create_gjk_geom_collision_visitor *this,gjk_base_t *gjk_geom_2)
 
 {
-  gjk_geom_list_t::add_geom(this->gjk_geom_list,param_1);
+  gjk_geom_list_t::add_geom(this->gjk_geom_list,gjk_geom_2);
   return;
 }
 
@@ -1743,29 +1821,39 @@ create_gjk_geom_collision_visitor::query_create_epilog
 // 005B1BC0  DynEntCl_CreateEntityModel  (DynEntity/DynEntity_client.cpp:1186)
 
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 ushort __cdecl
 DynEntCl_CreateEntityModel
-          (XModel *param_1,float *param_2,float *param_3,float *param_4,float *param_5,int param_6,
-          PhysPreset *param_7)
+          (XModel *model,float *quat,float *origin,float *hitPos,float *hitDir,int mod,
+          PhysPreset *preset)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  DynEntityDef *pDVar4;
-  DynEntityClient *pDVar5;
-  DynEntityColl *pDVar6;
-  DynEntityPose *pDVar7;
-  DynEntityProps *pDVar8;
-  int iVar9;
-  DynEntityDef *pDVar10;
-  DynEntityPose *pDVar11;
+  DynEntityDef *dynEntDef;
+  DynEntityClient *dynEntClient_00;
+  DynEntityColl *pDVar4;
+  DynEntityPose *pose;
+  DynEntityProps *pDVar5;
+  int iVar6;
+  DynEntityDef *pDVar7;
+  DynEntityPose *pDVar8;
   PhysPreset *local_30;
-  int local_24;
+  int i;
+  DynEntityPose *dynEntPose;
+  DynEntityProps *dynEntProps;
+  DynEntityCollType collType;
+  DynEntityClient *dynEntClient;
+  ushort dynEntId;
+  DynEntityColl *dynEntColl;
   
-  if (((param_1 == (XModel *)0x0) ||
-      ((param_1->physPreset == (PhysPreset *)0x0 && (param_7 == (PhysPreset *)0x0)))) &&
+  if (((model == (XModel *)0x0) ||
+      ((model->physPreset == (PhysPreset *)0x0 && (preset == (PhysPreset *)0x0)))) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x4aa,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1777,56 +1865,56 @@ DynEntCl_CreateEntityModel
     uVar3 = 0xffff;
   }
   else {
-    pDVar4 = DynEnt_GetEntityDef(uVar3,DYNENT_DRAW_MODEL);
-    memset((uchar *)pDVar4,'\0',0x54);
-    pDVar4->type = DYNENT_TYPE_CLUTTER;
-    (pDVar4->pose).origin[0] = *param_3;
-    (pDVar4->pose).origin[1] = param_3[1];
-    (pDVar4->pose).origin[2] = param_3[2];
-    (pDVar4->pose).quat[0] = *param_2;
-    (pDVar4->pose).quat[1] = param_2[1];
-    (pDVar4->pose).quat[2] = param_2[2];
-    (pDVar4->pose).quat[3] = param_2[3];
-    pDVar4->xModel = param_1;
-    if (param_1->physPreset == (PhysPreset *)0x0) {
-      local_30 = param_7;
+    dynEntDef = DynEnt_GetEntityDef(uVar3,DYNENT_DRAW_MODEL);
+    memset((uchar *)dynEntDef,'\0',0x54);
+    dynEntDef->type = DYNENT_TYPE_CLUTTER;
+    (dynEntDef->pose).origin[0] = *origin;
+    (dynEntDef->pose).origin[1] = origin[1];
+    (dynEntDef->pose).origin[2] = origin[2];
+    (dynEntDef->pose).quat[0] = *quat;
+    (dynEntDef->pose).quat[1] = quat[1];
+    (dynEntDef->pose).quat[2] = quat[2];
+    (dynEntDef->pose).quat[3] = quat[3];
+    dynEntDef->xModel = model;
+    if (model->physPreset == (PhysPreset *)0x0) {
+      local_30 = preset;
     }
     else {
-      local_30 = param_1->physPreset;
+      local_30 = model->physPreset;
     }
-    pDVar4->physPreset = local_30;
-    pDVar4->health = 0;
-    pDVar4->contents = param_1->contents;
-    pDVar4->flags = pDVar4->flags | 2;
-    for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-      pDVar4->physConstraints[local_24] = 0x1ff;
+    dynEntDef->physPreset = local_30;
+    dynEntDef->health = 0;
+    dynEntDef->contents = model->contents;
+    dynEntDef->flags = dynEntDef->flags | 2;
+    for (i = 0; i < 4; i = i + 1) {
+      dynEntDef->physConstraints[i] = 0x1ff;
     }
-    pDVar5 = DynEnt_GetClientEntity(uVar3,DYNENT_DRAW_MODEL);
-    pDVar6 = DynEnt_GetEntityColl(DYNENT_COLL_CLIENT_FIRST,uVar3);
-    pDVar7 = DynEnt_GetClientPose(uVar3,DYNENT_DRAW_MODEL);
-    pDVar11 = pDVar7;
-    pDVar10 = pDVar4;
-    for (iVar9 = 7; pDVar10 = (DynEntityDef *)&pDVar10->pose, iVar9 != 0; iVar9 = iVar9 + -1) {
-      (pDVar11->pose).quat[0] = ((GfxPlacement *)pDVar10)->quat[0];
-      pDVar11 = (DynEntityPose *)((pDVar11->pose).quat + 1);
+    dynEntClient_00 = DynEnt_GetClientEntity(uVar3,DYNENT_DRAW_MODEL);
+    pDVar4 = DynEnt_GetEntityColl(DYNENT_COLL_CLIENT_FIRST,uVar3);
+    pose = DynEnt_GetClientPose(uVar3,DYNENT_DRAW_MODEL);
+    pDVar8 = pose;
+    pDVar7 = dynEntDef;
+    for (iVar6 = 7; pDVar7 = (DynEntityDef *)&pDVar7->pose, iVar6 != 0; iVar6 = iVar6 + -1) {
+      (pDVar8->pose).quat[0] = ((GfxPlacement *)pDVar7)->quat[0];
+      pDVar8 = (DynEntityPose *)((pDVar8->pose).quat + 1);
     }
-    if (pDVar5->physObjId != 0) {
-      DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,pDVar4,pDVar5);
+    if (dynEntClient_00->physObjId != 0) {
+      DynEnt_DestroyPhysics(PHYS_WORLD_DYNENT,dynEntDef,dynEntClient_00);
     }
-    pDVar5->flags = 2;
-    pDVar5->health = pDVar4->health;
-    pDVar5->fadeTime = 0;
-    pDVar8 = DynEnt_GetEntityProps(pDVar4->type);
-    pDVar5->flags = pDVar5->flags | 1;
-    pDVar6->nextEntInSector = 0;
-    pDVar6->sector = 0;
+    dynEntClient_00->flags = 2;
+    dynEntClient_00->health = dynEntDef->health;
+    dynEntClient_00->fadeTime = 0;
+    pDVar5 = DynEnt_GetEntityProps(dynEntDef->type);
+    dynEntClient_00->flags = dynEntClient_00->flags | 1;
+    pDVar4->nextEntInSector = 0;
+    pDVar4->sector = 0;
     DynEntCl_LinkModel(uVar3);
-    if (pDVar8->usePhysics != false) {
-      if (pDVar5->physObjId == 0) {
-        iVar9 = DynEntCl_CreatePhysObj(pDVar4,pDVar5,&pDVar7->pose);
-        pDVar5->physObjId = iVar9;
+    if (pDVar5->usePhysics != false) {
+      if (dynEntClient_00->physObjId == 0) {
+        iVar6 = DynEntCl_CreatePhysObj(dynEntDef,dynEntClient_00,&pose->pose);
+        dynEntClient_00->physObjId = iVar6;
       }
-      Phys_ObjAddCustomForce(pDVar5->physObjId,param_4,param_5,param_6,pDVar4->physPreset);
+      Phys_ObjAddCustomForce(dynEntClient_00->physObjId,hitPos,hitDir,mod,dynEntDef->physPreset);
     }
   }
   return uVar3;
@@ -1839,8 +1927,8 @@ DynEntCl_CreateEntityModel
 
 void __cdecl
 DynEntCl_PointTrace_r
-          (DynEntityDrawType param_1,pointtrace_t *param_2,uint param_3,float *param_4,
-          float *param_5,trace_t *param_6)
+          (DynEntityDrawType drawType,pointtrace_t *clip,uint sectorIndex,float *p1,float *p2,
+          trace_t *results)
 
 {
   code *pcVar1;
@@ -1848,139 +1936,147 @@ DynEntCl_PointTrace_r
   DynEntityCollSector *pDVar3;
   DynEntityColl *pDVar4;
   DynEntityClient *pDVar5;
-  DynEntityDef *pDVar6;
-  uint uVar7;
-  DynEntityPose *pDVar8;
-  int iVar9;
-  float fVar10;
+  DynEntityDef *dynEntDef_00;
+  uint uVar6;
+  DynEntityPose *pose;
+  int iVar7;
+  float fVar8;
   uint local_5c;
   uint local_58;
   float local_54;
-  ushort local_44;
-  float local_24 [4];
-  float local_14;
+  DynEntityPose *dynEntPose;
+  int side;
+  DynEntityCollSector *sector;
+  ushort listIndex;
+  float t1;
+  float frac;
+  DynEntityCollType collType;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  float t2;
+  DynEntityColl *dynEntColl;
+  float p [4];
+  float mid;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (pointtrace_t *)0x0) &&
+  if ((clip == (pointtrace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x508,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((p1 == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x509,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((p2 == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x50a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x50b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((1.0 < param_6->fraction) &&
+  if ((1.0 < results->fraction) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x50c,0,"%s\n\t(results->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_24[0] = *param_4;
-  local_24[1] = param_4[1];
-  local_24[2] = param_4[2];
-  local_24[3] = param_4[3];
+  p[0] = *p1;
+  p[1] = p1[1];
+  p[2] = p1[2];
+  p[3] = p1[3];
   while( true ) {
     while( true ) {
-      if ((param_3 == 0) ||
-         (pDVar3 = DynEnt_GetCollSector(param_1,param_3),
-         (pDVar3->contents & param_2->contentmask) == 0)) {
+      if ((sectorIndex == 0) ||
+         (pDVar3 = DynEnt_GetCollSector(drawType,sectorIndex),
+         (pDVar3->contents & clip->contentmask) == 0)) {
         return;
       }
-      local_44 = pDVar3->entListHead;
-      while (local_44 != 0) {
-        pDVar4 = DynEnt_GetEntityColl(param_1,local_44 - 1);
-        pDVar5 = DynEnt_GetClientEntity(local_44 - 1,param_1);
+      listIndex = pDVar3->entListHead;
+      while (listIndex != 0) {
+        pDVar4 = DynEnt_GetEntityColl(drawType,listIndex - 1);
+        pDVar5 = DynEnt_GetClientEntity(listIndex - 1,drawType);
         if (((pDVar5->flags & 2) != 0) && ((pDVar5->flags & 1) != 0)) {
-          pDVar6 = DynEnt_GetEntityDef(local_44 - 1,param_1);
-          uVar7 = DynEnt_GetContents(pDVar6);
-          if ((uVar7 & param_2->contentmask) != 0) {
-            pDVar8 = DynEnt_GetClientPose(local_44 - 1,param_1);
-            iVar9 = intersect_extents_sphere
-                              (&param_2->extents,(pDVar8->pose).origin,pDVar8->radius,
-                               param_6->fraction);
-            if (iVar9 != 0) {
-              if (param_1 == DYNENT_DRAW_MODEL) {
-                DynEnt_PointTraceToModel(pDVar6,&pDVar8->pose,param_2,param_6);
+          dynEntDef_00 = DynEnt_GetEntityDef(listIndex - 1,drawType);
+          uVar6 = DynEnt_GetContents(dynEntDef_00);
+          if ((uVar6 & clip->contentmask) != 0) {
+            pose = DynEnt_GetClientPose(listIndex - 1,drawType);
+            iVar7 = intersect_extents_sphere
+                              (&clip->extents,(pose->pose).origin,pose->radius,results->fraction);
+            if (iVar7 != 0) {
+              if (drawType == DYNENT_DRAW_MODEL) {
+                DynEnt_PointTraceToModel(dynEntDef_00,&pose->pose,clip,results);
               }
               else {
-                if ((param_1 != DYNENT_DRAW_BRUSH) &&
+                if ((drawType != DYNENT_DRAW_BRUSH) &&
                    (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                              ,0x533,0,"%s\n\t(drawType) = %i"), !bVar2)) {
                   pcVar1 = (code *)swi(3);
                   (*pcVar1)();
                   return;
                 }
-                DynEnt_PointTraceToBrush(pDVar6,&pDVar8->pose,param_2,param_6);
+                DynEnt_PointTraceToBrush(dynEntDef_00,&pose->pose,clip,results);
               }
-              if (param_6->fraction == 0.0) {
+              if (results->fraction == 0.0) {
                 return;
               }
             }
           }
         }
-        local_44 = pDVar4->nextEntInSector;
+        listIndex = pDVar4->nextEntInSector;
       }
-      fVar10 = local_24[(pDVar3->tree).axis] - (pDVar3->tree).dist;
-      local_54 = param_5[(pDVar3->tree).axis] - (pDVar3->tree).dist;
-      if (fVar10 * local_54 < 0.0) break;
-      if (0.0 <= local_54 - fVar10) {
-        local_54 = fVar10;
+      fVar8 = p[(pDVar3->tree).axis] - (pDVar3->tree).dist;
+      local_54 = p2[(pDVar3->tree).axis] - (pDVar3->tree).dist;
+      if (fVar8 * local_54 < 0.0) break;
+      if (0.0 <= local_54 - fVar8) {
+        local_54 = fVar8;
       }
       local_58 = (uint)(local_54 < 0.0);
-      param_3 = (uint)(pDVar3->tree).child[local_58];
+      sectorIndex = (uint)(pDVar3->tree).child[local_58];
     }
-    if (param_6->fraction <= local_24[3]) {
+    if (results->fraction <= p[3]) {
       return;
     }
-    fVar10 = fVar10 / (fVar10 - local_54);
-    if ((fVar10 < 0.0) &&
+    fVar8 = fVar8 / (fVar8 - local_54);
+    if ((fVar8 < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0x548,0,"%s"), !bVar2)) break;
-    if ((1.0 < fVar10) &&
+    if ((1.0 < fVar8) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0x549,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_14 = (*param_5 - local_24[0]) * fVar10 + local_24[0];
-    local_10 = (param_5[1] - local_24[1]) * fVar10 + local_24[1];
-    local_c = (param_5[2] - local_24[2]) * fVar10 + local_24[2];
-    local_8 = (param_5[3] - local_24[3]) * fVar10 + local_24[3];
+    mid = (*p2 - p[0]) * fVar8 + p[0];
+    local_10 = (p2[1] - p[1]) * fVar8 + p[1];
+    local_c = (p2[2] - p[2]) * fVar8 + p[2];
+    local_8 = (p2[3] - p[3]) * fVar8 + p[3];
     local_5c = (uint)(0.0 <= local_54);
-    DynEntCl_PointTrace_r
-              (param_1,param_2,(uint)(pDVar3->tree).child[local_5c],local_24,&local_14,param_6);
-    if (param_6->fraction == 0.0) {
+    DynEntCl_PointTrace_r(drawType,clip,(uint)(pDVar3->tree).child[local_5c],p,&mid,results);
+    if (results->fraction == 0.0) {
       return;
     }
-    param_3 = (uint)*(ushort *)((int)pDVar3 + (1 - local_5c) * 2 + 8);
-    local_24[0] = local_14;
-    local_24[1] = local_10;
-    local_24[2] = local_c;
-    local_24[3] = local_8;
+    sectorIndex = (uint)*(ushort *)((int)pDVar3 + (1 - local_5c) * 2 + 8);
+    p[0] = mid;
+    p[1] = local_10;
+    p[2] = local_c;
+    p[3] = local_8;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -1990,67 +2086,70 @@ DynEntCl_PointTrace_r
 
 // 005B2110  DynEntCl_PointTrace  (DynEntity/DynEntity_client.cpp:1373)
 
-void __cdecl DynEntCl_PointTrace(pointtrace_t *param_1,trace_t *param_2)
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+
+void __cdecl DynEntCl_PointTrace(pointtrace_t *clip,trace_t *results)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float local_24;
+  PIXProfile pixProfile;
+  float start;
   float local_20;
   float local_1c;
   undefined4 local_18;
-  float local_14;
+  float end;
   float local_10;
   float local_c;
   float local_8;
   
   PIXBeginNamedEvent(-1,"dyn_pointtrace");
-  if ((param_1 == (pointtrace_t *)0x0) &&
+  if ((clip == (pointtrace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x564,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (trace_t *)0x0) &&
+  if ((results == (trace_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x565,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((1.0 < param_2->fraction) &&
+  if ((1.0 < results->fraction) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x566,0,"%s\n\t(results->fraction) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->fraction == 0.0) {
+  if (results->fraction == 0.0) {
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    local_24 = (param_1->extents).start.vec.v[0];
-    local_20 = (param_1->extents).start.vec.v[1];
-    local_1c = (param_1->extents).start.vec.v[2];
-    local_14 = (param_1->extents).end.vec.v[0];
-    local_10 = (param_1->extents).end.vec.v[1];
-    local_c = (param_1->extents).end.vec.v[2];
+    start = (clip->extents).start.vec.v[0];
+    local_20 = (clip->extents).start.vec.v[1];
+    local_1c = (clip->extents).start.vec.v[2];
+    end = (clip->extents).end.vec.v[0];
+    local_10 = (clip->extents).end.vec.v[1];
+    local_c = (clip->extents).end.vec.v[2];
     local_18 = 0;
-    local_8 = param_2->fraction;
-    DynEntCl_PointTrace_r(DYNENT_DRAW_BRUSH,param_1,1,&local_24,&local_14,param_2);
-    if (param_2->fraction == 0.0) {
+    local_8 = results->fraction;
+    DynEntCl_PointTrace_r(DYNENT_DRAW_BRUSH,clip,1,&start,&end,results);
+    if (results->fraction == 0.0) {
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      DynEntCl_PointTrace_r(DYNENT_DRAW_MODEL,param_1,1,&local_24,&local_14,param_2);
+      DynEntCl_PointTrace_r(DYNENT_DRAW_MODEL,clip,1,&start,&end,results);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -2063,13 +2162,13 @@ void __cdecl DynEntCl_PointTrace(pointtrace_t *param_1,trace_t *param_2)
 
 // 005B0680  MatrixTransposeTransformVector  (universal/com_math.h:1422)
 
-void __cdecl MatrixTransposeTransformVector(float *param_1,float (*param_2) [3],float *param_3)
+void __cdecl MatrixTransposeTransformVector(float *in1,float (*in2) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in1 == out) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x58f,0,"%s"
                             );
     if (!bVar2) {
@@ -2078,9 +2177,9 @@ void __cdecl MatrixTransposeTransformVector(float *param_1,float (*param_2) [3],
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * (*param_2)[1] + param_1[2] * (*param_2)[2];
-  param_3[1] = *param_1 * param_2[1][0] + param_1[1] * param_2[1][1] + param_1[2] * param_2[1][2];
-  param_3[2] = *param_1 * param_2[2][0] + param_1[1] * param_2[2][1] + param_1[2] * param_2[2][2];
+  *out = *in1 * (*in2)[0] + in1[1] * (*in2)[1] + in1[2] * (*in2)[2];
+  out[1] = *in1 * in2[1][0] + in1[1] * in2[1][1] + in1[2] * in2[1][2];
+  out[2] = *in1 * in2[2][0] + in1[1] * in2[2][1] + in1[2] * in2[2][2];
   return;
 }
 
@@ -2090,7 +2189,7 @@ void __cdecl MatrixTransposeTransformVector(float *param_1,float (*param_2) [3],
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 void __cdecl
-DynEntCl_AreaEntities_r(DynEntityDrawType param_1,uint param_2,DynEntityAreaParms *param_3)
+DynEntCl_AreaEntities_r(DynEntityDrawType drawType,uint sectorIndex,DynEntityAreaParms *areaParms)
 
 {
   float fVar1;
@@ -2098,57 +2197,64 @@ DynEntCl_AreaEntities_r(DynEntityDrawType param_1,uint param_2,DynEntityAreaParm
   code *pcVar3;
   bool bVar4;
   DynEntityCollSector *pDVar5;
-  DynEntityColl *pDVar6;
-  DynEntityClient *pDVar7;
-  DynEntityDef *pDVar8;
-  ushort local_1c;
+  DynEntityColl *dynEntColl_00;
+  DynEntityClient *pDVar6;
+  DynEntityDef *dynEntDef_00;
+  DynEntityCollSector *sector;
+  ushort listIndex;
+  DynEntityCollType collType;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  DynEntityColl *dynEntColl;
+  uint nextSectorIndex;
   
-  if ((param_3 == (DynEntityAreaParms *)0x0) &&
+  if ((areaParms == (DynEntityAreaParms *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x628,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  while ((param_2 != 0 &&
-         (pDVar5 = DynEnt_GetCollSector(param_1,param_2),
-         (pDVar5->contents & param_3->contentMask) != 0))) {
-    local_1c = pDVar5->entListHead;
-    while (local_1c != 0) {
-      pDVar6 = DynEnt_GetEntityColl(param_1,local_1c - 1);
-      pDVar7 = DynEnt_GetClientEntity(local_1c - 1,param_1);
-      if (((pDVar7->flags & 2) != 0) && ((pDVar7->flags & 1) != 0)) {
-        pDVar8 = DynEnt_GetEntityDef(local_1c - 1,param_1);
-        bVar4 = DynEnt_EntityInArea(pDVar8,pDVar6,param_3->mins,param_3->maxs,param_3->contentMask);
+  while ((sectorIndex != 0 &&
+         (pDVar5 = DynEnt_GetCollSector(drawType,sectorIndex),
+         (pDVar5->contents & areaParms->contentMask) != 0))) {
+    listIndex = pDVar5->entListHead;
+    while (listIndex != 0) {
+      dynEntColl_00 = DynEnt_GetEntityColl(drawType,listIndex - 1);
+      pDVar6 = DynEnt_GetClientEntity(listIndex - 1,drawType);
+      if (((pDVar6->flags & 2) != 0) && ((pDVar6->flags & 1) != 0)) {
+        dynEntDef_00 = DynEnt_GetEntityDef(listIndex - 1,drawType);
+        bVar4 = DynEnt_EntityInArea(dynEntDef_00,dynEntColl_00,areaParms->mins,areaParms->maxs,
+                                    areaParms->contentMask);
         if (bVar4) {
-          if (param_3->count == param_3->maxCount) {
+          if (areaParms->count == areaParms->maxCount) {
             return;
           }
-          param_3->list[param_3->count] = local_1c - 1;
-          param_3->count = param_3->count + 1;
+          areaParms->list[areaParms->count] = listIndex - 1;
+          areaParms->count = areaParms->count + 1;
         }
       }
-      local_1c = pDVar6->nextEntInSector;
+      listIndex = dynEntColl_00->nextEntInSector;
     }
-    if (param_3->maxs[(pDVar5->tree).axis] < (pDVar5->tree).dist ||
-        param_3->maxs[(pDVar5->tree).axis] == (pDVar5->tree).dist) {
-      if ((pDVar5->tree).dist <= param_3->mins[(pDVar5->tree).axis]) {
+    if (areaParms->maxs[(pDVar5->tree).axis] < (pDVar5->tree).dist ||
+        areaParms->maxs[(pDVar5->tree).axis] == (pDVar5->tree).dist) {
+      if ((pDVar5->tree).dist <= areaParms->mins[(pDVar5->tree).axis]) {
         return;
       }
       uVar2 = (pDVar5->tree).child[1];
     }
     else {
       fVar1 = (pDVar5->tree).dist;
-      if (fVar1 < param_3->mins[(pDVar5->tree).axis] || fVar1 == param_3->mins[(pDVar5->tree).axis])
-      {
+      if (fVar1 < areaParms->mins[(pDVar5->tree).axis] ||
+          fVar1 == areaParms->mins[(pDVar5->tree).axis]) {
         uVar2 = (pDVar5->tree).child[0];
       }
       else {
         uVar2 = (pDVar5->tree).child[1];
-        DynEntCl_AreaEntities_r(param_1,(uint)(pDVar5->tree).child[0],param_3);
+        DynEntCl_AreaEntities_r(drawType,(uint)(pDVar5->tree).child[0],areaParms);
       }
     }
-    param_2 = (uint)uVar2;
+    sectorIndex = (uint)uVar2;
   }
   return;
 }
@@ -2156,18 +2262,20 @@ DynEntCl_AreaEntities_r(DynEntityDrawType param_1,uint param_2,DynEntityAreaParm
 
 // 005B2A60  DynEntCl_AreaEntities  (DynEntity/DynEntity_client.cpp:1636)
 
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+
 ushort __cdecl
 DynEntCl_AreaEntities
-          (DynEntityDrawType param_1,float *param_2,float *param_3,int param_4,ushort param_5,
-          ushort *param_6)
+          (DynEntityDrawType drawType,float *mins,float *maxs,int contentMask,ushort dynEntMaxCount,
+          ushort *dynEntList)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  DynEntityAreaParms local_18;
+  DynEntityAreaParms areaParms;
   
-  if (param_2 == (float *)0x0) {
+  if (mins == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x669,0,"%s");
     if (!bVar2) {
@@ -2176,7 +2284,7 @@ DynEntCl_AreaEntities
       return uVar3;
     }
   }
-  if (param_3 == (float *)0x0) {
+  if (maxs == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x66a,0,"%s");
     if (!bVar2) {
@@ -2185,7 +2293,7 @@ DynEntCl_AreaEntities
       return uVar3;
     }
   }
-  if (param_5 == 0) {
+  if (dynEntMaxCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x66b,0,"%s\n\t(dynEntMaxCount) = %i");
     if (!bVar2) {
@@ -2194,7 +2302,7 @@ DynEntCl_AreaEntities
       return uVar3;
     }
   }
-  if (param_6 == (ushort *)0x0) {
+  if (dynEntList == (ushort *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x66c,0,"%s");
     if (!bVar2) {
@@ -2203,14 +2311,14 @@ DynEntCl_AreaEntities
       return uVar3;
     }
   }
-  local_18.mins = param_2;
-  local_18.maxs = param_3;
-  local_18.contentMask = param_4;
-  local_18.list = param_6;
-  local_18.maxCount = param_5;
-  local_18.count = 0;
-  DynEntCl_AreaEntities_r(param_1,1,&local_18);
-  return local_18.count;
+  areaParms.mins = mins;
+  areaParms.maxs = maxs;
+  areaParms.contentMask = contentMask;
+  areaParms.list = dynEntList;
+  areaParms.maxCount = dynEntMaxCount;
+  areaParms.count = 0;
+  DynEntCl_AreaEntities_r(drawType,1,&areaParms);
+  return areaParms.count;
 }
 
 
@@ -2221,18 +2329,18 @@ DynEntCl_AreaEntities
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEntCl_PlayEventFx(FxEffectDef *param_1,float *param_2,float (*param_3) [3])
+void __cdecl DynEntCl_PlayEventFx(FxEffectDef *def,float *origin,float (*axis) [3])
 
 {
   bool bVar1;
   cg_s *pcVar2;
-  int local_8;
+  int localClientNum;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    bVar1 = CL_LocalClient_IsActive(local_8);
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    bVar1 = CL_LocalClient_IsActive(localClientNum);
     if (bVar1) {
-      pcVar2 = CG_GetLocalClientGlobals(local_8);
-      FX_PlayOrientedEffect(local_8,param_1,pcVar2->time,param_2,param_3);
+      pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+      FX_PlayOrientedEffect(localClientNum,def,pcVar2->time,origin,axis);
     }
   }
   return;
@@ -2247,22 +2355,23 @@ void __cdecl DynEntCl_PlayEventFx(FxEffectDef *param_1,float *param_2,float (*pa
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DynEntCl_PlayImpactEffects(int param_1,int param_2,int param_3,float *param_4,float *param_5)
+DynEntCl_PlayImpactEffects
+          (int localClientNum,int sourceEntityNum,int surfType,float *hitPos,float *hitNormal)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_38;
+  float axis;
   float local_34;
   float local_30;
   float local_2c [3];
   float local_20 [3];
-  centity_s *local_14;
-  uint local_10;
-  WeaponDef *local_c;
-  FxEffectDef *local_8;
+  centity_s *attacker;
+  uint hitSound;
+  WeaponDef *weaponDef;
+  FxEffectDef *hitFx;
   
-  if ((0x1e < (uint)param_3) &&
+  if ((0x1e < (uint)surfType) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x690,0,"surfType doesn\'t index SURF_TYPECOUNT\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -2270,61 +2379,61 @@ DynEntCl_PlayImpactEffects(int param_1,int param_2,int param_3,float *param_4,fl
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((hitPos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x691,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((hitNormal == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x692,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = CG_GetEntity(param_1,param_2);
-  local_c = BG_GetWeaponDef((uint)(local_14->nextState).weapon);
-  if ((local_c == (WeaponDef *)0x0) &&
+  attacker = CG_GetEntity(localClientNum,sourceEntityNum);
+  weaponDef = BG_GetWeaponDef((uint)(attacker->nextState).weapon);
+  if ((weaponDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x697,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = (FxEffectDef *)0x0;
-  local_10 = 0;
-  switch(local_c->impactType) {
+  hitFx = (FxEffectDef *)0x0;
+  hitSound = 0;
+  switch(weaponDef->impactType) {
   case IMPACT_TYPE_BULLET_SMALL:
-    local_8 = (cgMedia.fx)->table->nonflesh[param_3];
-    local_10 = cgMedia.bulletHitSmallSound[param_3];
+    hitFx = (cgMedia.fx)->table->nonflesh[surfType];
+    hitSound = cgMedia.bulletHitSmallSound[surfType];
     break;
   case IMPACT_TYPE_BULLET_LARGE:
-    local_8 = (cgMedia.fx)->table[3].nonflesh[param_3];
-    local_10 = cgMedia.bulletHitLargeSound[param_3];
+    hitFx = (cgMedia.fx)->table[3].nonflesh[surfType];
+    hitSound = cgMedia.bulletHitLargeSound[surfType];
     break;
   case IMPACT_TYPE_BULLET_AP:
-    local_8 = (cgMedia.fx)->table[7].nonflesh[param_3];
-    local_10 = cgMedia.bulletHitAPSound[param_3];
+    hitFx = (cgMedia.fx)->table[7].nonflesh[surfType];
+    hitSound = cgMedia.bulletHitAPSound[surfType];
     break;
   case IMPACT_TYPE_BULLET_XTREME:
-    local_8 = (cgMedia.fx)->table[9].nonflesh[param_3];
-    local_10 = cgMedia.bulletHitXTremeSound[param_3];
+    hitFx = (cgMedia.fx)->table[9].nonflesh[surfType];
+    hitSound = cgMedia.bulletHitXTremeSound[surfType];
     break;
   case IMPACT_TYPE_SHOTGUN:
-    local_8 = (cgMedia.fx)->table[5].nonflesh[param_3];
-    local_10 = cgMedia.shotgunHitSound[param_3];
+    hitFx = (cgMedia.fx)->table[5].nonflesh[surfType];
+    hitSound = cgMedia.shotgunHitSound[surfType];
   }
-  if ((local_8 != (FxEffectDef *)0x0) &&
-     (((*param_5 != 0.0 || (param_5[1] != 0.0)) || (param_5[2] != 0.0)))) {
-    local_38 = *param_5;
-    local_34 = param_5[1];
-    local_30 = param_5[2];
-    CG_RandomEffectAxis(&local_38,local_2c,local_20);
-    DynEntCl_PlayEventFx(local_8,param_4,(float (*) [3])&local_38);
+  if ((hitFx != (FxEffectDef *)0x0) &&
+     (((*hitNormal != 0.0 || (hitNormal[1] != 0.0)) || (hitNormal[2] != 0.0)))) {
+    axis = *hitNormal;
+    local_34 = hitNormal[1];
+    local_30 = hitNormal[2];
+    CG_RandomEffectAxis(&axis,local_2c,local_20);
+    DynEntCl_PlayEventFx(hitFx,hitPos,(float (*) [3])&axis);
   }
-  CG_PlaySound(param_1,0x3fe,param_4,0,false,1.0,local_10);
+  CG_PlaySound(localClientNum,0x3fe,hitPos,0,false,1.0,hitSound);
   return;
 }
 
@@ -2336,28 +2445,31 @@ DynEntCl_PlayImpactEffects(int param_1,int param_2,int param_3,float *param_4,fl
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEntCl_TurnOffLight(DynEntityDef *param_1)
+void __cdecl DynEntCl_TurnOffLight(DynEntityDef *dynEntDef)
 
 {
   short sVar1;
-  int iVar2;
-  PhysConstraint *pPVar3;
-  bool bVar4;
-  centity_s *pcVar5;
-  int local_14;
-  int local_8;
+  int entityIndex;
+  PhysConstraint *pPVar2;
+  bool bVar3;
+  centity_s *pcVar4;
+  centity_s *light;
+  int entnum;
+  int clientindex;
+  short cindex;
+  int i;
   
-  for (local_8 = 0; pPVar3 = cm.constraints, local_8 < 4; local_8 = local_8 + 1) {
-    sVar1 = param_1->physConstraints[local_8];
+  for (i = 0; pPVar2 = cm.constraints, i < 4; i = i + 1) {
+    sVar1 = dynEntDef->physConstraints[i];
     if ((sVar1 != 0x1ff) && (cm.constraints[sVar1].type == CONSTRAINT_LIGHT)) {
-      for (local_14 = 0; local_14 < 1; local_14 = local_14 + 1) {
-        iVar2 = pPVar3[sVar1].centity_num[local_14];
-        if (iVar2 != -1) {
-          bVar4 = CL_LocalClient_IsActive(local_14);
-          if (bVar4) {
-            pcVar5 = CG_GetEntity(local_14,iVar2);
-            if (pcVar5 != (centity_s *)0x0) {
-              (pcVar5->nextState).lerp.u.turret.gunAngles[1] = 0.0;
+      for (clientindex = 0; clientindex < 1; clientindex = clientindex + 1) {
+        entityIndex = pPVar2[sVar1].centity_num[clientindex];
+        if (entityIndex != -1) {
+          bVar3 = CL_LocalClient_IsActive(clientindex);
+          if (bVar3) {
+            pcVar4 = CG_GetEntity(clientindex,entityIndex);
+            if (pcVar4 != (centity_s *)0x0) {
+              (pcVar4->nextState).lerp.u.turret.gunAngles[1] = 0.0;
             }
           }
         }
@@ -2370,14 +2482,15 @@ void __cdecl DynEntCl_TurnOffLight(DynEntityDef *param_1)
 
 // 005B2C40  DynEntCl_Damage  (DynEntity/DynEntity_client.cpp:1798)
 
+/* WARNING: Variable defined which should be unmapped: cgameGlob */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DynEntCl_Damage(int param_1,ushort param_2,DynEntityDrawType param_3,float *param_4,float *param_5,
-               int param_6)
+DynEntCl_Damage(int localClientNum,ushort dynEntId,DynEntityDrawType drawType,float *hitPos,
+               float *hitDir,int damage)
 
 {
   code *pcVar1;
@@ -2385,34 +2498,39 @@ DynEntCl_Damage(int param_1,ushort param_2,DynEntityDrawType param_3,float *para
   ushort uVar3;
   int iVar4;
   cg_s *pcVar5;
-  DynEntityDef *pDVar6;
-  DynEntityClient *pDVar7;
-  DynEntityProps *pDVar8;
-  DynEntityPose *pDVar9;
-  float local_28 [9];
+  DynEntityDef *dynEntDef_00;
+  DynEntityClient *pDVar6;
+  DynEntityProps *pDVar7;
+  DynEntityPose *pDVar8;
+  DynEntityPose *dynEntPose;
+  cg_s *cgameGlob;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  ushort absId;
+  float axis [9];
   
-  if ((param_2 == 0xffff) &&
+  if ((dynEntId == 0xffff) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x70e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((hitPos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x70f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((hitDir == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x710,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 < 1) &&
+  if ((damage < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x711,0,"%s\n\t(damage) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2420,60 +2538,62 @@ DynEntCl_Damage(int param_1,ushort param_2,DynEntityDrawType param_3,float *para
     return;
   }
   iVar4 = CL_GetFirstActiveLocalClient();
-  if (param_1 == iVar4) {
-    pcVar5 = CG_GetLocalClientGlobals(param_1);
-    pDVar6 = DynEnt_GetEntityDef(param_2,param_3);
-    pDVar7 = DynEnt_GetClientEntity(param_2,param_3);
-    if (((pDVar7->flags & 3) == 0) &&
+  if (localClientNum == iVar4) {
+    pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+    dynEntDef_00 = DynEnt_GetEntityDef(dynEntId,drawType);
+    pDVar6 = DynEnt_GetClientEntity(dynEntId,drawType);
+    if (((pDVar6->flags & 3) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0x71c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)(pcVar5);
       return;
     }
-    pDVar7->health = pDVar7->health - param_6;
-    pDVar8 = DynEnt_GetEntityProps(pDVar6->type);
-    if (pDVar8->destroyable == false) {
-      if ((0 < pDVar7->health + param_6) && (pDVar7->health < 0)) {
-        uVar3 = DynEnt_GetClientAbsId(param_2,param_3);
-        CScr_NotifyNum(param_1,(uint)uVar3,4,(uint)cscr_const.death,0);
-        if (pDVar6->destroyFx != (FxEffectDef *)0x0) {
-          pDVar9 = DynEnt_GetClientPose(param_2,param_3);
-          UnitQuatToAxis((float *)pDVar9,(float (*) [3])local_28);
-          DynEntCl_PlayEventFx(pDVar6->destroyFx,(pDVar9->pose).origin,(float (*) [3])local_28);
+    pDVar6->health = pDVar6->health - damage;
+    pDVar7 = DynEnt_GetEntityProps(dynEntDef_00->type);
+    if (pDVar7->destroyable == false) {
+      if ((0 < pDVar6->health + damage) && (pDVar6->health < 0)) {
+        uVar3 = DynEnt_GetClientAbsId(dynEntId,drawType);
+        CScr_NotifyNum(localClientNum,(uint)uVar3,4,(uint)cscr_const.death,0);
+        if (dynEntDef_00->destroyFx != (FxEffectDef *)0x0) {
+          pDVar8 = DynEnt_GetClientPose(dynEntId,drawType);
+          UnitQuatToAxis((float *)pDVar8,(float (*) [3])axis);
+          DynEntCl_PlayEventFx(dynEntDef_00->destroyFx,(pDVar8->pose).origin,(float (*) [3])axis);
         }
-        if (pDVar6->destroySound != 0) {
-          pDVar9 = DynEnt_GetClientPose(param_2,param_3);
-          CG_PlaySound(param_1,0x3fe,(pDVar9->pose).origin,0,false,1.0,pDVar6->destroySound);
+        if (dynEntDef_00->destroySound != 0) {
+          pDVar8 = DynEnt_GetClientPose(dynEntId,drawType);
+          CG_PlaySound(localClientNum,0x3fe,(pDVar8->pose).origin,0,false,1.0,
+                       dynEntDef_00->destroySound);
         }
-        DynEntCl_TurnOffLight(pDVar6);
+        DynEntCl_TurnOffLight(dynEntDef_00);
       }
     }
-    else if (pDVar7->health < 1) {
-      pDVar7->flags = pDVar7->flags & 0xfffc;
-      if (pDVar7->physObjId != 0) {
-        Phys_ObjDestroy(0,pDVar7->physObjId);
-        pDVar7->physObjId = 0;
+    else if (pDVar6->health < 1) {
+      pDVar6->flags = pDVar6->flags & 0xfffc;
+      if (pDVar6->physObjId != 0) {
+        Phys_ObjDestroy(0,pDVar6->physObjId);
+        pDVar6->physObjId = 0;
       }
-      DynEntCl_UnlinkEntity(param_2,param_3);
-      if ((pDVar6->destroyFx != (FxEffectDef *)0x0) ||
-         (pDVar6->destroyPieces != (XModelPieces *)0x0)) {
-        pDVar9 = DynEnt_GetClientPose(param_2,param_3);
-        UnitQuatToAxis((float *)pDVar9,(float (*) [3])local_28);
-        if (pDVar6->destroyFx != (FxEffectDef *)0x0) {
-          DynEntCl_PlayEventFx(pDVar6->destroyFx,(pDVar9->pose).origin,(float (*) [3])local_28);
+      DynEntCl_UnlinkEntity(dynEntId,drawType);
+      if ((dynEntDef_00->destroyFx != (FxEffectDef *)0x0) ||
+         (dynEntDef_00->destroyPieces != (XModelPieces *)0x0)) {
+        pDVar8 = DynEnt_GetClientPose(dynEntId,drawType);
+        UnitQuatToAxis((float *)pDVar8,(float (*) [3])axis);
+        if (dynEntDef_00->destroyFx != (FxEffectDef *)0x0) {
+          DynEntCl_PlayEventFx(dynEntDef_00->destroyFx,(pDVar8->pose).origin,(float (*) [3])axis);
         }
-        if (pDVar6->destroyPieces != (XModelPieces *)0x0) {
+        if (dynEntDef_00->destroyPieces != (XModelPieces *)0x0) {
           DynEntPieces_SpawnPieces
-                    (param_1,pDVar6->destroyPieces,(pDVar9->pose).origin,(float (*) [3])local_28,
-                     param_4,param_5);
+                    (localClientNum,dynEntDef_00->destroyPieces,(pDVar8->pose).origin,
+                     (float (*) [3])axis,hitPos,hitDir);
         }
       }
-      if (pDVar6->destroySound != 0) {
-        pDVar9 = DynEnt_GetClientPose(param_2,param_3);
-        CG_PlaySound(param_1,0x3fe,(pDVar9->pose).origin,0,false,1.0,pDVar6->destroySound);
+      if (dynEntDef_00->destroySound != 0) {
+        pDVar8 = DynEnt_GetClientPose(dynEntId,drawType);
+        CG_PlaySound(localClientNum,0x3fe,(pDVar8->pose).origin,0,false,1.0,
+                     dynEntDef_00->destroySound);
       }
-      DynEntCl_TurnOffLight(pDVar6);
+      DynEntCl_TurnOffLight(dynEntDef_00);
     }
   }
   return;
@@ -2487,24 +2607,25 @@ DynEntCl_Damage(int param_1,ushort param_2,DynEntityDrawType param_3,float *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl DynEntCl_EventNeedsProcessed(int param_1,int param_2)
+bool __cdecl DynEntCl_EventNeedsProcessed(int localClientNum,int sourceEntityNum)
 
 {
   bool bVar1;
   cg_s *pcVar2;
   int iVar3;
+  cg_s *cgameGlob;
   
-  pcVar2 = CG_GetLocalClientGlobalsForEnt(param_1,param_2);
+  pcVar2 = CG_GetLocalClientGlobalsForEnt(localClientNum,sourceEntityNum);
   if (pcVar2 == (cg_s *)0x0) {
     iVar3 = CL_GetFirstActiveLocalClient();
-    if (param_1 != iVar3) {
+    if (localClientNum != iVar3) {
       return false;
     }
   }
   else {
-    pcVar2 = CG_GetLocalClientGlobals(param_1);
+    pcVar2 = CG_GetLocalClientGlobals(localClientNum);
     if ((((pcVar2->nextSnap->ps).otherFlags & 6U) == 0) ||
-       (param_2 != (uint)(pcVar2->nextSnap->ps).clientNum)) {
+       (sourceEntityNum != (uint)(pcVar2->nextSnap->ps).clientNum)) {
       bVar1 = false;
     }
     else {
@@ -2525,51 +2646,52 @@ bool __cdecl DynEntCl_EventNeedsProcessed(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl DynEntCl_PlayBoltedFX(FxEffectDef *param_1,ushort param_2)
+uint __cdecl DynEntCl_PlayBoltedFX(FxEffectDef *fx,ushort absDynEntId)
 
 {
   bool bVar1;
   cg_s *pcVar2;
-  int local_10;
-  uint local_8;
+  int localClientNum;
+  cg_s *cgameGlob;
+  uint retHandle;
   
-  local_8 = 0;
-  for (local_10 = 0; local_10 < 1; local_10 = local_10 + 1) {
-    bVar1 = CL_LocalClient_IsActive(local_10);
+  retHandle = 0;
+  for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+    bVar1 = CL_LocalClient_IsActive(localClientNum);
     if (bVar1) {
-      pcVar2 = CG_GetLocalClientGlobals(local_10);
-      if (local_8 == 0) {
-        local_8 = FX_PlayBoltedEffect_DynEnt(local_10,param_1,pcVar2->time,(uint)param_2);
+      pcVar2 = CG_GetLocalClientGlobals(localClientNum);
+      if (retHandle == 0) {
+        retHandle = FX_PlayBoltedEffect_DynEnt(localClientNum,fx,pcVar2->time,(uint)absDynEntId);
       }
       else {
-        FX_PlayBoltedEffect_DynEnt(local_10,param_1,pcVar2->time,(uint)param_2);
+        FX_PlayBoltedEffect_DynEnt(localClientNum,fx,pcVar2->time,(uint)absDynEntId);
       }
     }
   }
-  if (local_8 == 0) {
-    local_8 = 0;
+  if (retHandle == 0) {
+    retHandle = 0;
   }
-  return local_8;
+  return retHandle;
 }
 
 
 // 005B30E0  DynEntCl_RemoveFromFadeList  (DynEntity/DynEntity_client.cpp:1953)
 
-void __cdecl DynEntCl_RemoveFromFadeList(ushort param_1)
+void __cdecl DynEntCl_RemoveFromFadeList(ushort absDynEntId)
 
 {
   int iVar1;
   undefined2 uVar2;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < gNumFadingDynEnts; local_8 = local_8 + 1) {
-    if (gDynEntFadeData[local_8].id == param_1) {
+  for (i = 0; i < gNumFadingDynEnts; i = i + 1) {
+    if (gDynEntFadeData[i].id == absDynEntId) {
       gNumFadingDynEnts = gNumFadingDynEnts + -1;
       uVar2 = *(undefined2 *)&gDynEntFadeData[gNumFadingDynEnts].field_0x2;
       iVar1 = gDynEntFadeData[gNumFadingDynEnts].startTime;
-      gDynEntFadeData[local_8].id = gDynEntFadeData[gNumFadingDynEnts].id;
-      *(undefined2 *)&gDynEntFadeData[local_8].field_0x2 = uVar2;
-      gDynEntFadeData[local_8].startTime = iVar1;
+      gDynEntFadeData[i].id = gDynEntFadeData[gNumFadingDynEnts].id;
+      *(undefined2 *)&gDynEntFadeData[i].field_0x2 = uVar2;
+      gDynEntFadeData[i].startTime = iVar1;
     }
   }
   return;
@@ -2583,41 +2705,41 @@ void __cdecl DynEntCl_RemoveFromFadeList(ushort param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEntCl_SetFadeOut(ushort param_1,DynEntityDrawType param_2)
+void __cdecl DynEntCl_SetFadeOut(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  DynEntityDrawType local_24;
-  ushort local_20 [2];
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  ushort local_8;
+  DynEntityDrawType drawType_2;
+  ushort id;
+  int dynEntTime;
+  int i;
+  int currentTime;
+  int oldestTime;
+  int oldestDynEntIndex;
+  ushort absDynEntId;
   
-  local_8 = DynEnt_GetClientAbsId(param_1,param_2);
+  absDynEntId = DynEnt_GetClientAbsId(dynEntId,drawType);
   if (gNumFadingDynEnts < 0x20) {
-    gDynEntFadeData[gNumFadingDynEnts].id = local_8;
+    gDynEntFadeData[gNumFadingDynEnts].id = absDynEntId;
     pcVar3 = CG_GetLocalClientGlobals(0);
     gDynEntFadeData[gNumFadingDynEnts].startTime = pcVar3->time;
     gNumFadingDynEnts = gNumFadingDynEnts + 1;
   }
   else {
-    local_10 = -1000000;
-    local_c = 0;
+    oldestTime = -1000000;
+    oldestDynEntIndex = 0;
     pcVar3 = CG_GetLocalClientGlobals(0);
-    local_14 = pcVar3->time;
-    for (local_18 = 0; local_18 < gNumFadingDynEnts; local_18 = local_18 + 1) {
-      local_1c = local_14 - gDynEntFadeData[local_18].startTime;
-      if (local_10 < local_1c) {
-        local_c = local_18;
-        local_10 = local_1c;
+    currentTime = pcVar3->time;
+    for (i = 0; i < gNumFadingDynEnts; i = i + 1) {
+      dynEntTime = currentTime - gDynEntFadeData[i].startTime;
+      if (oldestTime < dynEntTime) {
+        oldestDynEntIndex = i;
+        oldestTime = dynEntTime;
       }
     }
-    if (local_10 < -999999) {
+    if (oldestTime < -999999) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x7c3,0,"%s");
       if (!bVar2) {
@@ -2626,11 +2748,11 @@ void __cdecl DynEntCl_SetFadeOut(ushort param_1,DynEntityDrawType param_2)
         return;
       }
     }
-    if (-1000000 < local_10) {
-      DynEnt_GetClientIdDrawType(gDynEntFadeData[local_c].id,local_20,&local_24);
-      gDynEntFadeData[local_c].id = local_8;
-      gDynEntFadeData[local_c].startTime = local_14;
-      DynEntCl_DestroyEntityModel(local_20[0]);
+    if (-1000000 < oldestTime) {
+      DynEnt_GetClientIdDrawType(gDynEntFadeData[oldestDynEntIndex].id,&id,&drawType_2);
+      gDynEntFadeData[oldestDynEntIndex].id = absDynEntId;
+      gDynEntFadeData[oldestDynEntIndex].startTime = currentTime;
+      DynEntCl_DestroyEntityModel(id);
     }
   }
   return;
@@ -2639,21 +2761,21 @@ void __cdecl DynEntCl_SetFadeOut(ushort param_1,DynEntityDrawType param_2)
 
 // 005B32B0  DynEnt_UpdateFading  (DynEntity/DynEntity_client.cpp:2003)
 
-void __cdecl DynEnt_UpdateFading(int param_1)
+void __cdecl DynEnt_UpdateFading(int currentTime)
 
 {
-  DynEntityDrawType local_14;
-  ushort local_10 [2];
-  DynEntityClient *local_c;
-  int local_8;
+  DynEntityDrawType drawType;
+  ushort id;
+  DynEntityClient *dynEntClient;
+  int i;
   
-  for (local_8 = 0; local_8 < gNumFadingDynEnts; local_8 = local_8 + 1) {
-    local_c = DynEnt_GetClientEntity(gDynEntFadeData[local_8].id);
-    if ((25000 < param_1 - gDynEntFadeData[local_8].startTime) &&
-       (local_c->fadeTime = ((short)param_1 - (short)gDynEntFadeData[local_8].startTime) + 0x9e58,
-       1000 < local_c->fadeTime)) {
-      DynEnt_GetClientIdDrawType(gDynEntFadeData[local_8].id,local_10,&local_14);
-      DynEntCl_DestroyEntityModel(local_10[0]);
+  for (i = 0; i < gNumFadingDynEnts; i = i + 1) {
+    dynEntClient = DynEnt_GetClientEntity(gDynEntFadeData[i].id);
+    if ((25000 < currentTime - gDynEntFadeData[i].startTime) &&
+       (dynEntClient->fadeTime = ((short)currentTime - (short)gDynEntFadeData[i].startTime) + 0x9e58
+       , 1000 < dynEntClient->fadeTime)) {
+      DynEnt_GetClientIdDrawType(gDynEntFadeData[i].id,&id,&drawType);
+      DynEntCl_DestroyEntityModel(id);
     }
   }
   return;
@@ -2662,15 +2784,16 @@ void __cdecl DynEnt_UpdateFading(int param_1)
 
 // 005B3360  DynEntCl_GetFadeTime  (DynEntity/DynEntity_client.cpp:2029)
 
-float __cdecl DynEntCl_GetFadeTime(ushort param_1,DynEntityDrawType param_2)
+float __cdecl DynEntCl_GetFadeTime(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   DynEntityClient *pDVar1;
   float fVar2;
   float local_14;
   float local_c;
+  DynEntityClient *dynEntClient;
   
-  pDVar1 = DynEnt_GetClientEntity(param_1,param_2);
+  pDVar1 = DynEnt_GetClientEntity(dynEntId,drawType);
   fVar2 = (float)pDVar1->fadeTime / 1000.0;
   local_c = fVar2;
   if (0.0 <= fVar2 - 1.0) {
@@ -2688,66 +2811,78 @@ float __cdecl DynEntCl_GetFadeTime(ushort param_1,DynEntityDrawType param_2)
 
 // 005B3400  DynEntCl_SetBurning  (DynEntity/DynEntity_client.cpp:2051)
 
-void __cdecl DynEntCl_SetBurning(ushort param_1,DynEntityDrawType param_2,bool param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl DynEntCl_SetBurning(ushort dynEntId,DynEntityDrawType drawType,bool burning)
 
 {
   DynEnt_BurnData *pDVar1;
   undefined2 uVar2;
-  ushort uVar3;
-  DynEntityClient *pDVar4;
-  uint uVar5;
-  FxEffect *pFVar6;
-  DynEntityDef *pDVar7;
-  DynEntityPose *pDVar8;
-  int iVar9;
-  int local_2c;
+  ushort absDynEntId_00;
+  DynEntityClient *dynEntClient_00;
+  uint uVar3;
+  FxEffect *pFVar4;
+  DynEntityDef *dynEntDef_00;
+  DynEntityPose *pose;
+  int iVar5;
+  int i;
+  DynEntityPose *dynEntPose;
+  DynEntityDef *dynEntDef;
+  FxEffectDef *fxdef;
+  uint fx;
+  bool inwater;
+  DynEntityClient *dynEntClient;
+  ushort absDynEntId;
   
-  pDVar4 = DynEnt_GetClientEntity(param_1,param_2);
-  uVar3 = DynEnt_GetClientAbsId(param_1,param_2);
-  if (param_3) {
-    if ((pDVar4->flags & 8) == 0) {
+  dynEntClient_00 = DynEnt_GetClientEntity(dynEntId,drawType);
+  absDynEntId_00 = DynEnt_GetClientAbsId(dynEntId,drawType);
+  if (burning) {
+    if ((dynEntClient_00->flags & 8) == 0) {
       if ((_S2 & 1) == 0) {
         _S2 = _S2 | 1;
         fxdefsm = FX_Register("destructibles/fx_dest_fire_trail_sm");
       }
-      uVar5 = DynEntCl_PlayBoltedFX(fxdefsm,uVar3);
-      pFVar6 = UniqueHandleToEffect(0,uVar5);
-      if (pFVar6 != (FxEffect *)0x0) {
-        pDVar4->flags = pDVar4->flags | 8;
+      uVar3 = DynEntCl_PlayBoltedFX(fxdefsm,absDynEntId_00);
+      pFVar4 = UniqueHandleToEffect(0,uVar3);
+      if (pFVar4 != (FxEffect *)0x0) {
+        dynEntClient_00->flags = dynEntClient_00->flags | 8;
         if (gNumBurningDynEnts < 0x10) {
           pDVar1 = gDynEntBurnData + gNumBurningDynEnts;
-          gDynEntBurnData[gNumBurningDynEnts].fx = uVar5;
-          pDVar1->id = uVar3;
+          gDynEntBurnData[gNumBurningDynEnts].fx = uVar3;
+          pDVar1->id = absDynEntId_00;
           gNumBurningDynEnts = gNumBurningDynEnts + 1;
         }
         else {
           FX_ThroughWithEffect(0,gDynEntBurnData[0].fx,true);
-          gDynEntBurnData[0].id = uVar3;
-          gDynEntBurnData[0].fx = uVar5;
+          gDynEntBurnData[0].id = absDynEntId_00;
+          gDynEntBurnData[0].fx = uVar3;
         }
       }
     }
-    else if ((pDVar4->physObjId == 0) && (pDVar4->health < -0x32)) {
-      pDVar7 = DynEnt_GetEntityDef(param_1,param_2);
-      pDVar8 = DynEnt_GetClientPose(param_1,param_2);
-      iVar9 = DynEntCl_CreatePhysObj(pDVar7,pDVar4,&pDVar8->pose);
-      pDVar4->physObjId = iVar9;
+    else if ((dynEntClient_00->physObjId == 0) && (dynEntClient_00->health < -0x32)) {
+      dynEntDef_00 = DynEnt_GetEntityDef(dynEntId,drawType);
+      pose = DynEnt_GetClientPose(dynEntId,drawType);
+      iVar5 = DynEntCl_CreatePhysObj(dynEntDef_00,dynEntClient_00,&pose->pose);
+      dynEntClient_00->physObjId = iVar5;
     }
   }
   else {
-    for (local_2c = 0; local_2c < gNumBurningDynEnts; local_2c = local_2c + 1) {
-      if (gDynEntBurnData[local_2c].id == uVar3) {
+    for (i = 0; i < gNumBurningDynEnts; i = i + 1) {
+      if (gDynEntBurnData[i].id == absDynEntId_00) {
         gNumBurningDynEnts = gNumBurningDynEnts + -1;
-        FX_ThroughWithEffect(0,gDynEntBurnData[local_2c].fx,true);
-        gDynEntBurnData[local_2c].fx = 0;
+        FX_ThroughWithEffect(0,gDynEntBurnData[i].fx,true);
+        gDynEntBurnData[i].fx = 0;
         uVar2 = *(undefined2 *)&gDynEntBurnData[gNumBurningDynEnts].field_0x2;
-        uVar5 = gDynEntBurnData[gNumBurningDynEnts].fx;
-        gDynEntBurnData[local_2c].id = gDynEntBurnData[gNumBurningDynEnts].id;
-        *(undefined2 *)&gDynEntBurnData[local_2c].field_0x2 = uVar2;
-        gDynEntBurnData[local_2c].fx = uVar5;
+        uVar3 = gDynEntBurnData[gNumBurningDynEnts].fx;
+        gDynEntBurnData[i].id = gDynEntBurnData[gNumBurningDynEnts].id;
+        *(undefined2 *)&gDynEntBurnData[i].field_0x2 = uVar2;
+        gDynEntBurnData[i].fx = uVar3;
       }
     }
-    pDVar4->flags = pDVar4->flags & 0xfff7;
+    dynEntClient_00->flags = dynEntClient_00->flags & 0xfff7;
   }
   return;
 }
@@ -2775,61 +2910,71 @@ void __cdecl DynEnt_ResetBurning(void)
 
 // 005B3650  DynEnt_UpdateBurning  (DynEntity/DynEntity_client.cpp:2148)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl DynEnt_UpdateBurning(void)
 
 {
   uint uVar1;
   undefined2 uVar2;
-  DynEntityClient *pDVar3;
-  FxEffect *pFVar4;
-  int iVar5;
-  DynEntityDef *pDVar6;
-  DynEntityPose *pDVar7;
-  DynEntityProps *pDVar8;
-  int iVar9;
-  ushort local_14;
-  int local_8;
+  DynEntityClient *dynEntClient_00;
+  FxEffect *pFVar3;
+  int iVar4;
+  DynEntityDef *dynEntDef_00;
+  DynEntityPose *pose;
+  DynEntityProps *pDVar5;
+  int iVar6;
+  DynEntityPose *dynEntPose;
+  DynEntityDef *dynEntDef;
+  int idHash;
+  int playedTime;
+  int adjustedPlayedTime;
+  DynEntityClient *dynEntClient;
+  int i;
   
-  for (local_8 = 0; local_8 < gNumBurningDynEnts; local_8 = local_8 + 1) {
-    pDVar3 = DynEnt_GetClientEntity(gDynEntBurnData[local_8].id);
-    pFVar4 = UniqueHandleToEffect(0,gDynEntBurnData[local_8].fx);
-    if (pFVar4 == (FxEffect *)0x0) {
+  for (i = 0; i < gNumBurningDynEnts; i = i + 1) {
+    dynEntClient_00 = DynEnt_GetClientEntity(gDynEntBurnData[i].id);
+    pFVar3 = UniqueHandleToEffect(0,gDynEntBurnData[i].fx);
+    if (pFVar3 == (FxEffect *)0x0) {
       gNumBurningDynEnts = gNumBurningDynEnts + -1;
       uVar2 = *(undefined2 *)&gDynEntBurnData[gNumBurningDynEnts].field_0x2;
       uVar1 = gDynEntBurnData[gNumBurningDynEnts].fx;
-      gDynEntBurnData[local_8].id = gDynEntBurnData[gNumBurningDynEnts].id;
-      *(undefined2 *)&gDynEntBurnData[local_8].field_0x2 = uVar2;
-      gDynEntBurnData[local_8].fx = uVar1;
-      pDVar3->flags = pDVar3->flags & 0xfff7;
+      gDynEntBurnData[i].id = gDynEntBurnData[gNumBurningDynEnts].id;
+      *(undefined2 *)&gDynEntBurnData[i].field_0x2 = uVar2;
+      gDynEntBurnData[i].fx = uVar1;
+      dynEntClient_00->flags = dynEntClient_00->flags & 0xfff7;
     }
     else {
-      iVar5 = FX_GetEffectPlayedTime(0,gDynEntBurnData[local_8].fx);
-      iVar9 = iVar5 - (int)((uint)gDynEntBurnData[local_8].id * 0xd431) % 5000;
-      if (((2000 < iVar9) && (iVar9 < 0x9c4)) && (pDVar3->physObjId == 0)) {
-        pDVar6 = DynEnt_GetEntityDef(gDynEntBurnData[local_8].id);
-        pDVar7 = DynEnt_GetClientPose(gDynEntBurnData[local_8].id);
-        pDVar8 = DynEnt_GetEntityProps(pDVar6->type);
-        if (pDVar8->usePhysics != false) {
-          iVar9 = DynEntCl_CreatePhysObj(pDVar6,pDVar3,&pDVar7->pose);
-          pDVar3->physObjId = iVar9;
+      iVar4 = FX_GetEffectPlayedTime(0,gDynEntBurnData[i].fx);
+      iVar6 = iVar4 - (int)((uint)gDynEntBurnData[i].id * 0xd431) % 5000;
+      if (((2000 < iVar6) && (iVar6 < 0x9c4)) && (dynEntClient_00->physObjId == 0)) {
+        dynEntDef_00 = DynEnt_GetEntityDef(gDynEntBurnData[i].id);
+        pose = DynEnt_GetClientPose(gDynEntBurnData[i].id);
+        pDVar5 = DynEnt_GetEntityProps(dynEntDef_00->type);
+        if (pDVar5->usePhysics != false) {
+          iVar6 = DynEntCl_CreatePhysObj(dynEntDef_00,dynEntClient_00,&pose->pose);
+          dynEntClient_00->physObjId = iVar6;
         }
       }
-      if ((int)(uint)pDVar3->burnTime < iVar5) {
-        local_14 = (ushort)iVar5;
-        pDVar3->burnTime = local_14;
-        if (30000 < pDVar3->burnTime) {
-          pDVar3->burnTime = 30000;
+      if ((int)(uint)dynEntClient_00->burnTime < iVar4) {
+        playedTime._0_2_ = (ushort)iVar4;
+        dynEntClient_00->burnTime = (ushort)playedTime;
+        if (30000 < dynEntClient_00->burnTime) {
+          dynEntClient_00->burnTime = 30000;
         }
       }
-      if ((5000 < iVar5) && ((4 < gNumBurningDynEnts || (20000 < iVar5)))) {
+      if ((5000 < iVar4) && ((4 < gNumBurningDynEnts || (20000 < iVar4)))) {
         gNumBurningDynEnts = gNumBurningDynEnts + -1;
-        FX_ThroughWithEffect(0,gDynEntBurnData[local_8].fx,true);
+        FX_ThroughWithEffect(0,gDynEntBurnData[i].fx,true);
         uVar2 = *(undefined2 *)&gDynEntBurnData[gNumBurningDynEnts].field_0x2;
         uVar1 = gDynEntBurnData[gNumBurningDynEnts].fx;
-        gDynEntBurnData[local_8].id = gDynEntBurnData[gNumBurningDynEnts].id;
-        *(undefined2 *)&gDynEntBurnData[local_8].field_0x2 = uVar2;
-        gDynEntBurnData[local_8].fx = uVar1;
-        pDVar3->flags = pDVar3->flags & 0xfff7;
+        gDynEntBurnData[i].id = gDynEntBurnData[gNumBurningDynEnts].id;
+        *(undefined2 *)&gDynEntBurnData[i].field_0x2 = uVar2;
+        gDynEntBurnData[i].fx = uVar1;
+        dynEntClient_00->flags = dynEntClient_00->flags & 0xfff7;
       }
     }
   }
@@ -2839,46 +2984,51 @@ void __cdecl DynEnt_UpdateBurning(void)
 
 // 005B3860  DynEntCl_FlameDamage  (DynEntity/DynEntity_client.cpp:2200)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
 DynEntCl_FlameDamage
-          (int param_1,ushort param_2,DynEntityDrawType param_3,float *param_4,float *param_5,
-          int param_6)
+          (int localClientNum,ushort dynEntId,DynEntityDrawType drawType,float *hitPos,float *hitVel
+          ,int damage)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_20;
+  float hitDir;
   float local_1c;
   float local_18;
-  DynEntityProps *local_14;
-  DynEntityClient *local_10;
-  DynEntityDef *local_c;
-  int local_8;
+  DynEntityProps *dynEntProps;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  int surfaceType;
   
-  if ((param_2 == 0xffff) &&
+  if ((dynEntId == 0xffff) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x89d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((hitPos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x89e,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((hitVel == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x89f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 < 1) &&
+  if ((damage < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x8a0,0,"%s\n\t(damage) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2886,22 +3036,22 @@ DynEntCl_FlameDamage
     return;
   }
   iVar3 = CL_GetFirstActiveLocalClient();
-  if (param_1 == iVar3) {
-    local_c = DynEnt_GetEntityDef(param_2,param_3);
-    local_10 = DynEnt_GetClientEntity(param_2,param_3);
-    local_14 = DynEnt_GetEntityProps(local_c->type);
-    local_8 = DynEnt_GetSurfaceType(local_c);
-    bVar2 = Com_SurfaceBurns(local_8);
-    if ((bVar2) && ((local_10->flags & 3) != 0)) {
-      DynEntCl_Damage(param_1,param_2,param_3,param_4,param_5,param_6);
-      DynEntCl_SetBurning(param_2,param_3,true);
-      if ((local_14->usePhysics != false) && (local_10->physObjId != 0)) {
-        local_20 = *param_5;
-        local_1c = param_5[1];
-        local_18 = param_5[2];
-        fVar4 = Vec3Normalize(&local_20);
+  if (localClientNum == iVar3) {
+    dynEntDef = DynEnt_GetEntityDef(dynEntId,drawType);
+    dynEntClient = DynEnt_GetClientEntity(dynEntId,drawType);
+    dynEntProps = DynEnt_GetEntityProps(dynEntDef->type);
+    surfaceType = DynEnt_GetSurfaceType(dynEntDef);
+    bVar2 = Com_SurfaceBurns(surfaceType);
+    if ((bVar2) && ((dynEntClient->flags & 3) != 0)) {
+      DynEntCl_Damage(localClientNum,dynEntId,drawType,hitPos,hitVel,damage);
+      DynEntCl_SetBurning(dynEntId,drawType,true);
+      if ((dynEntProps->usePhysics != false) && (dynEntClient->physObjId != 0)) {
+        hitDir = *hitVel;
+        local_1c = hitVel[1];
+        local_18 = hitVel[2];
+        fVar4 = Vec3Normalize(&hitDir);
         if (0.01 < fVar4) {
-          Phys_ObjBulletImpact(local_10->physObjId,param_4,&local_20,50.0,1.0);
+          Phys_ObjBulletImpact(dynEntClient->physObjId,hitPos,&hitDir,50.0,1.0);
         }
       }
     }
@@ -2912,14 +3062,15 @@ DynEntCl_FlameDamage
 
 // 005B3A50  DynEntCl_SetBurnFrac  (DynEntity/DynEntity_client.cpp:2239)
 
-void __cdecl DynEntCl_SetBurnFrac(ushort param_1,DynEntityDrawType param_2,float param_3)
+void __cdecl DynEntCl_SetBurnFrac(ushort dynEntId,DynEntityDrawType drawType,float frac)
 
 {
   code *pcVar1;
   bool bVar2;
   DynEntityClient *pDVar3;
+  DynEntityClient *dynEntClient;
   
-  if ((param_3 < 0.0) || (1.0 < param_3)) {
+  if ((frac < 0.0) || (1.0 < frac)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                              0x8c0,0,"%s\n\t(frac) = %g");
     if (!bVar2) {
@@ -2928,23 +3079,24 @@ void __cdecl DynEntCl_SetBurnFrac(ushort param_1,DynEntityDrawType param_2,float
       return;
     }
   }
-  pDVar3 = DynEnt_GetClientEntity(param_1,param_2);
-  pDVar3->burnTime = (ushort)(int)(param_3 * 5000.0);
+  pDVar3 = DynEnt_GetClientEntity(dynEntId,drawType);
+  pDVar3->burnTime = (ushort)(int)(frac * 5000.0);
   return;
 }
 
 
 // 005B3AE0  DynEntCl_GetBurnTime  (DynEntity/DynEntity_client.cpp:2247)
 
-float __cdecl DynEntCl_GetBurnTime(ushort param_1,DynEntityDrawType param_2)
+float __cdecl DynEntCl_GetBurnTime(ushort dynEntId,DynEntityDrawType drawType)
 
 {
   DynEntityClient *pDVar1;
   float fVar2;
   float local_14;
   float local_c;
+  DynEntityClient *dynEntClient;
   
-  pDVar1 = DynEnt_GetClientEntity(param_1,param_2);
+  pDVar1 = DynEnt_GetClientEntity(dynEntId,drawType);
   fVar2 = (float)pDVar1->burnTime / 5000.0;
   local_c = fVar2;
   if (0.0 <= fVar2 - 1.0) {
@@ -2967,94 +3119,98 @@ float __cdecl DynEntCl_GetBurnTime(ushort param_1,DynEntityDrawType param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEntCl_MeleeEvent(int param_1,int param_2)
+void __cdecl DynEntCl_MeleeEvent(int localClientNum,int attackerEntNum)
 
 {
   ushort uVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  centity_s *pcVar5;
+  int damage_00;
+  code *pcVar2;
+  bool bVar3;
+  centity_s *pcVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
   float local_70;
-  float local_4c;
+  centity_s *attacker;
+  int damage;
+  bool result;
+  float range;
+  float right;
   float local_48;
   float local_44;
-  float local_40;
+  float end;
   float local_3c;
   float local_38;
-  float local_34;
+  float forward;
   float local_30;
   float local_2c;
-  float local_28;
+  float up;
   float local_24;
   float local_20;
-  uint local_1c;
-  float local_18;
+  int weaponIndex;
+  float eyePos;
   float local_14;
   float local_10;
-  uint local_c;
-  WeaponDef *local_8;
+  uint traceIndex;
+  WeaponDef *weapDef;
   
-  pcVar5 = CG_GetEntity(param_1,param_2);
-  if (((pcVar5->nextState).eType == 1) ||
-     (bVar4 = BG_IsUseAsMeleeWeapon((uint)(pcVar5->nextState).weapon), bVar4)) {
-    uVar1 = (pcVar5->nextState).weapon;
+  pcVar4 = CG_GetEntity(localClientNum,attackerEntNum);
+  if (((pcVar4->nextState).eType == 1) ||
+     (bVar3 = BG_IsUseAsMeleeWeapon((uint)(pcVar4->nextState).weapon), bVar3)) {
+    uVar1 = (pcVar4->nextState).weapon;
   }
   else {
-    uVar1 = (pcVar5->nextState).lerp.u.player.meleeWeapon;
+    uVar1 = (pcVar4->nextState).lerp.u.player.meleeWeapon;
   }
-  local_1c = (uint)uVar1;
-  if (local_1c != 0) {
-    local_8 = BG_GetWeaponDef(local_1c);
-    iVar2 = local_8->iMeleeDamage;
-    CG_CalcEyePoint(param_1,param_2,&local_18);
-    CG_GetViewDirection(param_1,param_2,&local_34,&local_4c,&local_28);
-    bVar4 = BG_IsBayonetWeapon(local_1c);
-    if (bVar4) {
+  weaponIndex = (int)uVar1;
+  if (weaponIndex != 0) {
+    weapDef = BG_GetWeaponDef(weaponIndex);
+    damage_00 = weapDef->iMeleeDamage;
+    CG_CalcEyePoint(localClientNum,attackerEntNum,&eyePos);
+    CG_GetViewDirection(localClientNum,attackerEntNum,&forward,&right,&up);
+    bVar3 = BG_IsBayonetWeapon(weaponIndex);
+    if (bVar3) {
       local_70 = (player_bayonetRange->current).value;
     }
     else {
       local_70 = (player_meleeRange->current).value;
     }
-    for (local_c = 0; local_c < 5; local_c = local_c + 1) {
+    for (traceIndex = 0; traceIndex < 5; traceIndex = traceIndex + 1) {
       if ((player_meleeRange == (dvar_s *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
-                                   ,0x8ef,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
+                                   ,0x8ef,0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
       if ((player_meleeWidth == (dvar_s *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
-                                   ,0x8f0,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
+                                   ,0x8f0,0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
       if ((player_meleeHeight == (dvar_s *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
-                                   ,0x8f1,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
+                                   ,0x8f1,0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
       if ((player_bayonetRange == (dvar_s *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
-                                   ,0x8f2,0,"%s"), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
+                                   ,0x8f2,0,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      fVar6 = (player_meleeWidth->current).value * traceOffsets[local_c][0];
-      fVar7 = (player_meleeHeight->current).value * traceOffsets[local_c][1];
-      local_40 = fVar7 * local_28 + fVar6 * local_4c + local_70 * local_34 + local_18;
-      local_3c = fVar7 * local_24 + fVar6 * local_48 + local_70 * local_30 + local_14;
-      local_38 = fVar7 * local_20 + fVar6 * local_44 + local_70 * local_2c + local_10;
-      bVar4 = DynEntCl_DynEntImpactEvent
-                        (param_1,(pcVar5->nextState).number,&local_18,&local_40,iVar2,true);
-      if (bVar4) {
+      fVar5 = (player_meleeWidth->current).value * traceOffsets[traceIndex][0];
+      fVar6 = (player_meleeHeight->current).value * traceOffsets[traceIndex][1];
+      end = fVar6 * up + fVar5 * right + local_70 * forward + eyePos;
+      local_3c = fVar6 * local_24 + fVar5 * local_48 + local_70 * local_30 + local_14;
+      local_38 = fVar6 * local_20 + fVar5 * local_44 + local_70 * local_2c + local_10;
+      bVar3 = DynEntCl_DynEntImpactEvent
+                        (localClientNum,(pcVar4->nextState).number,&eyePos,&end,damage_00,true);
+      if (bVar3) {
         return;
       }
     }
@@ -3072,82 +3228,84 @@ void __cdecl DynEntCl_MeleeEvent(int param_1,int param_2)
 
 void __cdecl
 DynEntCl_EntityImpactEvent
-          (trace_t *param_1,int param_2,int param_3,float *param_4,float *param_5,bool param_6)
+          (trace_t *trace,int localClientNum,int sourceEntityNum,float *start,float *hitPos,
+          bool isMelee)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
   float fVar4;
-  float local_38;
-  float local_34;
+  float presetBulletForceScale;
+  float force;
   float local_30;
   float local_2c;
-  uint local_28;
-  int local_24;
-  float local_1c;
+  uint boneName;
+  int id;
+  PIXProfile pixProfile;
+  float hitDir;
   float local_18;
   float local_14;
-  DObj *local_10;
-  PhysPreset *local_c;
-  centity_s *local_8;
+  DObj *obj;
+  PhysPreset *physPreset;
+  centity_s *cent;
   
   PIXBeginNamedEvent(-1,"DynEntCl_EntityImpactEvent");
-  if (param_1->hitType == TRACE_HITTYPE_ENTITY) {
-    bVar2 = DynEntCl_EventNeedsProcessed(param_2,param_3);
+  if (trace->hitType == TRACE_HITTYPE_ENTITY) {
+    bVar2 = DynEntCl_EventNeedsProcessed(localClientNum,sourceEntityNum);
     if (bVar2) {
-      local_8 = CG_GetEntity(param_2,(uint)param_1->hitId);
-      if ((local_8 == (centity_s *)0x0) &&
+      cent = CG_GetEntity(localClientNum,(uint)trace->hitId);
+      if ((cent == (centity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                    ,0x90e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_8->pose).isRagdoll != '\0') {
-        MapHitLocationToRagdollBoneName((uint)param_1->partGroup,&local_28);
-        local_24 = Ragdoll_GetRBForBone((uint)param_1->hitId,local_28);
-        if (local_24 != 0) {
-          local_34 = *param_5 - *param_4;
-          local_30 = param_5[1] - param_4[1];
-          local_2c = param_5[2] - param_4[2];
-          Vec3Normalize(&local_34);
+      if ((cent->pose).isRagdoll != '\0') {
+        MapHitLocationToRagdollBoneName((uint)trace->partGroup,&boneName);
+        id = Ragdoll_GetRBForBone((uint)trace->hitId,boneName);
+        if (id != 0) {
+          force = *hitPos - *start;
+          local_30 = hitPos[1] - start[1];
+          local_2c = hitPos[2] - start[2];
+          Vec3Normalize(&force);
           fVar4 = scale * (dynEnt_bulletForce->current).value;
-          local_34 = fVar4 * local_34;
+          force = fVar4 * force;
           local_30 = fVar4 * local_30;
           local_2c = fVar4 * local_2c;
-          Phys_ObjAddForce(local_24,param_5,&local_34,false);
+          Phys_ObjAddForce(id,hitPos,&force,false);
         }
       }
-      if (((local_8->pose).physObjId == -1) || ((local_8->pose).physObjId == 0)) {
+      if (((cent->pose).physObjId == -1) || ((cent->pose).physObjId == 0)) {
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
-        local_1c = *param_5 - *param_4;
-        local_18 = param_5[1] - param_4[1];
-        local_14 = param_5[2] - param_4[2];
-        Vec3Normalize(&local_1c);
-        if (param_6) {
-          CG_PlaySound(param_2,0x3fe,param_5,0,false,1.0,cgMedia.meleeKnifeHitOther);
+        hitDir = *hitPos - *start;
+        local_18 = hitPos[1] - start[1];
+        local_14 = hitPos[2] - start[2];
+        Vec3Normalize(&hitDir);
+        if (isMelee) {
+          CG_PlaySound(localClientNum,0x3fe,hitPos,0,false,1.0,cgMedia.meleeKnifeHitOther);
         }
         else {
           DynEntCl_PlayImpactEffects
-                    (param_2,param_3,(int)(param_1->sflags & 0x3f00000U) >> 0x14,param_5,
-                     (float *)param_1);
+                    (localClientNum,sourceEntityNum,(int)(trace->sflags & 0x3f00000U) >> 0x14,hitPos
+                     ,(float *)trace);
         }
-        local_10 = Com_GetClientDObj((local_8->nextState).number,param_2);
-        if (local_10 != (DObj *)0x0) {
-          local_c = DObjGetPhysPreset(local_10);
-          local_38 = 1.0;
-          if (local_c != (PhysPreset *)0x0) {
-            local_38 = local_c->bulletForceScale;
+        obj = Com_GetClientDObj((cent->nextState).number,localClientNum);
+        if (obj != (DObj *)0x0) {
+          physPreset = DObjGetPhysPreset(obj);
+          presetBulletForceScale = 1.0;
+          if (physPreset != (PhysPreset *)0x0) {
+            presetBulletForceScale = physPreset->bulletForceScale;
           }
           Phys_ObjBulletImpact
-                    ((local_8->pose).physObjId,param_5,&local_1c,(dynEnt_bulletForce->current).value
-                     ,local_38);
+                    ((cent->pose).physObjId,hitPos,&hitDir,(dynEnt_bulletForce->current).value,
+                     presetBulletForceScale);
         }
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3182,7 +3340,7 @@ DynEntCl_EntityImpactEvent
 
 bool __cdecl
 DynEntCl_DynEntImpactEvent
-          (int param_1,int param_2,float *param_3,float *param_4,int param_5,bool param_6)
+          (int localClientNum,int sourceEntityNum,float *start,float *end,int damage,bool isMelee)
 
 {
   code *pcVar1;
@@ -3191,9 +3349,10 @@ DynEntCl_DynEntImpactEvent
   cg_s *pcVar4;
   DWORD DVar5;
   DynEntityProps *pDVar6;
-  DynEntityPose *pDVar7;
-  int iVar8;
-  float4 local_b4;
+  DynEntityPose *pose;
+  int iVar7;
+  DynEntityPose *dynEntPose;
+  float4 clip;
   float local_a4;
   float local_a0;
   float local_9c;
@@ -3201,52 +3360,53 @@ DynEntCl_DynEntImpactEvent
   undefined4 local_80;
   undefined4 local_7c;
   undefined4 local_78;
-  float local_6c;
+  PIXProfile pixProfile;
+  float hitDir;
   float local_68;
   float local_64;
-  DynEntityDrawType local_60;
-  cg_s *local_5c;
-  DynEntityClient *local_58;
-  DynEntityDef *local_54;
-  float4 local_50;
+  DynEntityDrawType drawType;
+  cg_s *cgameGlob;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  float4 trace;
   float local_40;
   uint local_3c;
   uint local_18;
-  float local_14 [3];
-  ushort local_8;
+  float hitPos [3];
+  ushort dynEntId;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"DynEntCl_DynEntImpactEvent");
-  TraceExtents::TraceExtents((TraceExtents *)&local_b4);
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  if ((param_3 == (float *)0x0) &&
+  TraceExtents::TraceExtents((TraceExtents *)&clip);
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if ((start == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x94b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((end == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x94c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_5 < 0) &&
+  if ((damage < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x94d,0,"%s\n\t(damage) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_5c = CG_GetLocalClientGlobalsForEnt(param_1,param_2);
-  if (local_5c == (cg_s *)0x0) {
-    iVar8 = CL_GetFirstActiveLocalClient();
-    if (param_1 != iVar8) {
+  cgameGlob = CG_GetLocalClientGlobalsForEnt(localClientNum,sourceEntityNum);
+  if (cgameGlob == (cg_s *)0x0) {
+    iVar7 = CL_GetFirstActiveLocalClient();
+    if (localClientNum != iVar7) {
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -3255,9 +3415,9 @@ DynEntCl_DynEntImpactEvent
     }
   }
   else {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
     if ((((pcVar4->nextSnap->ps).otherFlags & 6U) == 0) ||
-       (param_2 != (uint)(pcVar4->nextSnap->ps).clientNum)) {
+       (sourceEntityNum != (uint)(pcVar4->nextSnap->ps).clientNum)) {
       bVar2 = false;
     }
     else {
@@ -3275,22 +3435,22 @@ DynEntCl_DynEntImpactEvent
       return false;
     }
   }
-  memset((uchar *)local_50.u,'\0',0x38);
+  memset((uchar *)trace.u,'\0',0x38);
   local_40 = 1.0;
-  local_b4.v[0] = *param_3;
-  local_b4.v[1] = param_3[1];
-  local_b4.v[2] = param_3[2];
-  local_a4 = *param_4;
-  local_a0 = param_4[1];
-  local_9c = param_4[2];
-  CM_CalcTraceExtents((TraceExtents *)&local_b4);
+  clip.v[0] = *start;
+  clip.v[1] = start[1];
+  clip.v[2] = start[2];
+  local_a4 = *end;
+  local_a0 = end[1];
+  local_9c = end[2];
+  CM_CalcTraceExtents((TraceExtents *)&clip);
   local_84 = 0;
   local_80 = 0x802013;
   local_7c = 1;
   local_78 = 0;
-  DynEntCl_PointTrace((pointtrace_t *)&local_b4,(trace_t *)&local_50);
-  local_8 = Trace_GetDynEntHitId((trace_t *)&local_50,&local_60);
-  if (local_8 == 0xffff) {
+  DynEntCl_PointTrace((pointtrace_t *)&clip,(trace_t *)&trace);
+  dynEntId = Trace_GetDynEntHitId((trace_t *)&trace,&drawType);
+  if (dynEntId == 0xffff) {
     DVar5 = GetCurrentThreadId();
     if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -3298,43 +3458,43 @@ DynEntCl_DynEntImpactEvent
     bVar2 = false;
   }
   else {
-    local_54 = DynEnt_GetEntityDef(local_8,local_60);
-    local_58 = DynEnt_GetClientEntity(local_8,local_60);
-    if (((local_58->flags & 1) == 0) &&
+    dynEntDef = DynEnt_GetEntityDef(dynEntId,drawType);
+    dynEntClient = DynEnt_GetClientEntity(dynEntId,drawType);
+    if (((dynEntClient->flags & 1) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0x970,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    Vec3Lerp(param_3,param_4,local_40,local_14);
-    if (param_6) {
-      CG_PlaySound(param_1,0x3fe,local_14,0,false,1.0,cgMedia.meleeHit);
+    Vec3Lerp(start,end,local_40,hitPos);
+    if (isMelee) {
+      CG_PlaySound(localClientNum,0x3fe,hitPos,0,false,1.0,cgMedia.meleeHit);
     }
     else {
       DynEntCl_PlayImpactEffects
-                (param_1,param_2,(int)(local_3c & 0x3f00000) >> 0x14,local_14,local_50.v);
+                (localClientNum,sourceEntityNum,(int)(local_3c & 0x3f00000) >> 0x14,hitPos,trace.v);
     }
-    if ((local_54->flags & 4U) == 0) {
-      local_6c = *param_4 - *param_3;
-      local_68 = param_4[1] - param_3[1];
-      local_64 = param_4[2] - param_3[2];
-      Vec3Normalize(&local_6c);
-      pDVar6 = DynEnt_GetEntityProps(local_54->type);
+    if ((dynEntDef->flags & 4U) == 0) {
+      hitDir = *end - *start;
+      local_68 = end[1] - start[1];
+      local_64 = end[2] - start[2];
+      Vec3Normalize(&hitDir);
+      pDVar6 = DynEnt_GetEntityProps(dynEntDef->type);
       if (pDVar6->usePhysics != false) {
-        pDVar7 = DynEnt_GetClientPose(local_8,local_60);
-        if (local_58->physObjId == 0) {
-          iVar8 = DynEntCl_CreatePhysObj(local_54,local_58,&pDVar7->pose);
-          local_58->physObjId = iVar8;
+        pose = DynEnt_GetClientPose(dynEntId,drawType);
+        if (dynEntClient->physObjId == 0) {
+          iVar7 = DynEntCl_CreatePhysObj(dynEntDef,dynEntClient,&pose->pose);
+          dynEntClient->physObjId = iVar7;
         }
-        if (local_58->physObjId != 0) {
+        if (dynEntClient->physObjId != 0) {
           Phys_ObjBulletImpact
-                    (local_58->physObjId,local_14,&local_6c,(dynEnt_bulletForce->current).value,
-                     local_54->physPreset->bulletForceScale);
+                    (dynEntClient->physObjId,hitPos,&hitDir,(dynEnt_bulletForce->current).value,
+                     dynEntDef->physPreset->bulletForceScale);
         }
       }
-      if (param_5 != 0) {
-        DynEntCl_Damage(param_1,local_8,local_60,local_14,&local_6c,param_5);
+      if (damage != 0) {
+        DynEntCl_Damage(localClientNum,dynEntId,drawType,hitPos,&hitDir,damage);
       }
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3361,8 +3521,8 @@ DynEntCl_DynEntImpactEvent
 
 uint __cdecl
 DynEntCl_GetClosestEntities
-          (DynEntityDrawType param_1,float *param_2,float *param_3,float *param_4,ushort *param_5,
-          bool param_6)
+          (DynEntityDrawType drawType,float *radiusMins,float *radiusMaxs,float *origin,
+          ushort *hitEnts,bool isCylinder)
 
 {
   code *pcVar1;
@@ -3370,20 +3530,20 @@ DynEntCl_GetClosestEntities
   ushort uVar3;
   uint uVar4;
   float fVar5;
-  uint local_8018;
-  RagdollSortStruct local_8014 [4096];
-  DynEntityClient *local_10;
-  uint local_c;
-  DynEntityColl *local_8;
+  uint hitCount;
+  RagdollSortStruct hitEntsSorter [4096];
+  DynEntityClient *dynEntClient;
+  uint hitIndex;
+  DynEntityColl *dynEntColl;
   
-  local_8 = (DynEntityColl *)0x5b52cd;
-  uVar3 = DynEntCl_AreaEntities(param_1,param_2,param_3,0x802013,0x1000,param_5);
-  local_8018 = (uint)uVar3;
-  if ((dynEnt_explodeMaxEnts->current).unsignedInt < local_8018) {
-    for (local_c = 0; local_c < local_8018; local_c = local_c + 1) {
-      *(ushort *)&local_8014[local_c].body = param_5[local_c];
-      local_10 = DynEnt_GetClientEntity(param_5[local_c],param_1);
-      if ((local_10->flags & 1) == 0) {
+  dynEntColl = (DynEntityColl *)0x5b52cd;
+  uVar3 = DynEntCl_AreaEntities(drawType,radiusMins,radiusMaxs,0x802013,0x1000,hitEnts);
+  hitCount = (uint)uVar3;
+  if ((dynEnt_explodeMaxEnts->current).unsignedInt < hitCount) {
+    for (hitIndex = 0; hitIndex < hitCount; hitIndex = hitIndex + 1) {
+      *(ushort *)&hitEntsSorter[hitIndex].body = hitEnts[hitIndex];
+      dynEntClient = DynEnt_GetClientEntity(hitEnts[hitIndex],drawType);
+      if ((dynEntClient->flags & 1) == 0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0x9a8,0,"%s");
         if (!bVar2) {
@@ -3392,23 +3552,23 @@ DynEntCl_GetClosestEntities
           return uVar4;
         }
       }
-      local_8 = DynEnt_GetEntityColl(param_1,param_5[local_c]);
-      if (param_6) {
-        fVar5 = DynEnt_GetCylindricalRadiusDistSqr(local_8,param_4);
-        local_8014[local_c].distSq = fVar5;
+      dynEntColl = DynEnt_GetEntityColl(drawType,hitEnts[hitIndex]);
+      if (isCylinder) {
+        fVar5 = DynEnt_GetCylindricalRadiusDistSqr(dynEntColl,origin);
+        hitEntsSorter[hitIndex].distSq = fVar5;
       }
       else {
-        fVar5 = DynEnt_GetRadiusDistSqr(local_8,param_4);
-        local_8014[local_c].distSq = fVar5;
+        fVar5 = DynEnt_GetRadiusDistSqr(dynEntColl,origin);
+        hitEntsSorter[hitIndex].distSq = fVar5;
       }
     }
     std::
     _Sort<RagdollSortStruct_*,int,bool_(__cdecl*)(RagdollSortStruct_const_&,RagdollSortStruct_const_&)>
-              (local_8014,local_8014 + local_8018,
-               (int)(local_8014 + local_8018) - (int)local_8014 >> 3,
+              (hitEntsSorter,hitEntsSorter + hitCount,
+               (int)(hitEntsSorter + hitCount) - (int)hitEntsSorter >> 3,
                Ragdoll_CompareRagdollsForExplosion);
-    local_8018 = (uint)*(ushort *)&dynEnt_explodeMaxEnts->current;
-    if (local_8018 != (dynEnt_explodeMaxEnts->current).integer) {
+    hitCount = (uint)*(ushort *)&dynEnt_explodeMaxEnts->current;
+    if (hitCount != (dynEnt_explodeMaxEnts->current).integer) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x9b4,0,"%s");
       if (!bVar2) {
@@ -3417,11 +3577,11 @@ DynEntCl_GetClosestEntities
         return uVar4;
       }
     }
-    for (local_c = 0; local_c < local_8018; local_c = local_c + 1) {
-      param_5[local_c] = *(ushort *)&local_8014[local_c].body;
+    for (hitIndex = 0; hitIndex < hitCount; hitIndex = hitIndex + 1) {
+      hitEnts[hitIndex] = *(ushort *)&hitEntsSorter[hitIndex].body;
     }
   }
-  return local_8018;
+  return hitCount;
 }
 
 
@@ -3429,202 +3589,208 @@ DynEntCl_GetClosestEntities
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 void __cdecl
 DynEntCl_ExplosionEvent
-          (int param_1,bool param_2,float *param_3,float param_4,float param_5,float *param_6,
-          float param_7,int param_8,int param_9)
+          (int localClientNum,bool isCylinder,float *origin,float innerRadius,float outerRadius,
+          float *impulse,float inScale,int innerDamage,int outerDamage)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  DynEntityPose *pDVar4;
-  DynEntityProps *pDVar5;
-  int iVar6;
-  float fVar7;
-  float local_2074;
-  float local_206c;
+  DynEntityPose *pose;
+  DynEntityProps *pDVar4;
+  int iVar5;
+  float fVar6;
+  int damage;
+  DynEntityPose *dynEntPose;
+  float distSqr;
+  uint hitCount;
+  float radiusMaxs;
   float local_2068;
   float local_2064;
-  float local_2060;
+  float hitDir;
   float local_205c;
   float local_2058;
-  DynEntityDrawType local_2054;
-  DynEntityClient *local_2050;
-  float local_204c;
+  uint drawType;
+  DynEntityClient *dynEntClient;
+  float hitForce;
   float local_2048;
   float local_2044;
-  DynEntityDef *local_2040;
-  float local_203c;
-  float local_2038;
+  DynEntityDef *dynEntDef;
+  float invRange;
+  float centerOfMass;
   float local_2034;
   float local_2030;
-  ushort local_202c [4096];
+  ushort hitEnts [4096];
   uint local_2c;
-  float local_28;
-  uint local_24;
-  float local_20;
+  float magnitude;
+  uint hitIndex;
+  float radiusMins;
   float local_1c;
   float local_18;
-  float local_14;
-  float local_10;
-  DynEntityColl *local_c;
-  float local_8;
+  float innerRadiusSqr;
+  float scale;
+  DynEntityColl *dynEntColl;
+  float outerRadiusSqr;
   
-  local_8 = 8.383752e-39;
+  outerRadiusSqr = 8.383752e-39;
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_3 == (float *)0x0) &&
+  if ((origin == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x9d3,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 < 0.0) &&
+  if ((innerRadius < 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x9d4,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 < param_4) &&
+  if ((outerRadius < innerRadius) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x9d5,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_8 < 0) &&
+  if ((innerDamage < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x9d6,0,"%s\n\t(innerDamage) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_9 < 0) &&
+  if ((outerDamage < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0x9d7,0,"%s\n\t(outerDamage) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = DynEntCl_EventNeedsProcessed(param_1,0x3ff);
-  if ((bVar2) && (param_5 != 0.0)) {
-    Rope_ExplosionEvent(param_3,param_4,param_5,param_8,param_9);
-    local_8 = param_5 * param_5;
-    local_14 = param_4 * param_4;
-    local_203c = 0.0;
-    if (local_14 < local_8) {
-      local_203c = 1.0 / (param_4 - param_5);
+  bVar2 = DynEntCl_EventNeedsProcessed(localClientNum,0x3ff);
+  if ((bVar2) && (outerRadius != 0.0)) {
+    Rope_ExplosionEvent(origin,innerRadius,outerRadius,innerDamage,outerDamage);
+    outerRadiusSqr = outerRadius * outerRadius;
+    innerRadiusSqr = innerRadius * innerRadius;
+    invRange = 0.0;
+    if (innerRadiusSqr < outerRadiusSqr) {
+      invRange = 1.0 / (innerRadius - outerRadius);
     }
-    local_18 = -(param_5 * 1.4142135);
-    local_20 = *param_3 + local_18;
-    local_1c = param_3[1] + local_18;
-    local_18 = param_3[2] + local_18;
-    local_2064 = param_5 * 1.4142135;
-    local_206c = *param_3 + local_2064;
-    local_2068 = param_3[1] + local_2064;
-    local_2064 = param_3[2] + local_2064;
-    if (param_2) {
+    local_18 = -(outerRadius * 1.4142135);
+    radiusMins = *origin + local_18;
+    local_1c = origin[1] + local_18;
+    local_18 = origin[2] + local_18;
+    local_2064 = outerRadius * 1.4142135;
+    radiusMaxs = *origin + local_2064;
+    local_2068 = origin[1] + local_2064;
+    local_2064 = origin[2] + local_2064;
+    if (isCylinder) {
       local_18 = -3.4028235e+38;
       local_2064 = 3.4028235e+38;
     }
-    for (local_2054 = DYNENT_DRAW_MODEL; local_2054 < DYNENT_DRAW_COUNT;
-        local_2054 = local_2054 + DYNENT_DRAW_BRUSH) {
+    for (drawType = 0; drawType < 2; drawType = drawType + 1) {
       uVar3 = DynEntCl_GetClosestEntities
-                        (local_2054,&local_20,&local_206c,param_3,local_202c,param_2);
-      for (local_24 = 0; local_24 < uVar3; local_24 = local_24 + 1) {
-        local_2040 = DynEnt_GetEntityDef(local_202c[local_24],local_2054);
-        local_2050 = DynEnt_GetClientEntity(local_202c[local_24],local_2054);
-        if ((local_2040->flags & 8U) == 0) {
-          if (((local_2050->flags & 1) == 0) &&
+                        (drawType,&radiusMins,&radiusMaxs,origin,hitEnts,isCylinder);
+      for (hitIndex = 0; hitIndex < uVar3; hitIndex = hitIndex + 1) {
+        dynEntDef = DynEnt_GetEntityDef(hitEnts[hitIndex],drawType);
+        dynEntClient = DynEnt_GetClientEntity(hitEnts[hitIndex],drawType);
+        if ((dynEntDef->flags & 8U) == 0) {
+          if (((dynEntClient->flags & 1) == 0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                        ,0x9fd,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          pDVar4 = DynEnt_GetClientPose(local_202c[local_24],local_2054);
-          local_c = DynEnt_GetEntityColl(local_2054,local_202c[local_24]);
-          if (param_2) {
-            local_2074 = DynEnt_GetCylindricalRadiusDistSqr(local_c,param_3);
+          pose = DynEnt_GetClientPose(hitEnts[hitIndex],drawType);
+          dynEntColl = DynEnt_GetEntityColl(drawType,hitEnts[hitIndex]);
+          if (isCylinder) {
+            distSqr = DynEnt_GetCylindricalRadiusDistSqr(dynEntColl,origin);
           }
           else {
-            local_2074 = DynEnt_GetRadiusDistSqr(local_c,param_3);
+            distSqr = DynEnt_GetRadiusDistSqr(dynEntColl,origin);
           }
-          if (local_2074 < local_8) {
-            local_10 = param_7;
-            if (local_14 < local_2074) {
-              if ((local_8 <= local_14) &&
+          if (distSqr < outerRadiusSqr) {
+            scale = inScale;
+            if (innerRadiusSqr < distSqr) {
+              if ((outerRadiusSqr <= innerRadiusSqr) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                            ,0xa0d,1,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
                 (*pcVar1)();
                 return;
               }
-              local_10 = (SQRT(local_2074) - param_5) * local_203c * local_10;
+              scale = (SQRT(distSqr) - outerRadius) * invRange * scale;
             }
-            if ((local_10 < 0.0) &&
+            if ((scale < 0.0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                          ,0xa10,1,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
               (*pcVar1)();
               return;
             }
-            local_2060 = (pDVar4->pose).origin[0] - *param_3;
-            local_205c = (pDVar4->pose).origin[1] - param_3[1];
-            local_2058 = (pDVar4->pose).origin[2] - param_3[2];
-            local_2038 = (pDVar4->pose).origin[0];
-            local_2034 = (pDVar4->pose).origin[1];
-            local_2030 = (pDVar4->pose).origin[2];
-            if (((*param_6 == 0.0) && (param_6[1] == 0.0)) && (param_6[2] == 0.0)) {
+            hitDir = (pose->pose).origin[0] - *origin;
+            local_205c = (pose->pose).origin[1] - origin[1];
+            local_2058 = (pose->pose).origin[2] - origin[2];
+            centerOfMass = (pose->pose).origin[0];
+            local_2034 = (pose->pose).origin[1];
+            local_2030 = (pose->pose).origin[2];
+            if (((*impulse == 0.0) && (impulse[1] == 0.0)) && (impulse[2] == 0.0)) {
               bVar2 = true;
             }
             else {
               bVar2 = false;
             }
             if (bVar2) {
-              if (param_2) {
+              if (isCylinder) {
                 local_2058 = 0.0;
               }
-              Vec3Normalize(&local_2060);
+              Vec3Normalize(&hitDir);
               local_2058 = local_2058 + (dynEnt_explodeUpbias->current).value;
-              Vec3Normalize(&local_2060);
+              Vec3Normalize(&hitDir);
             }
             else {
-              local_2060 = *param_6;
-              local_205c = param_6[1];
-              local_2058 = param_6[2];
+              hitDir = *impulse;
+              local_205c = impulse[1];
+              local_2058 = impulse[2];
             }
-            pDVar5 = DynEnt_GetEntityProps(local_2040->type);
-            if (pDVar5->usePhysics != false) {
-              if (local_2050->physObjId == 0) {
-                iVar6 = DynEntCl_CreatePhysObj(local_2040,local_2050,&pDVar4->pose);
-                local_2050->physObjId = iVar6;
+            pDVar4 = DynEnt_GetEntityProps(dynEntDef->type);
+            if (pDVar4->usePhysics != false) {
+              if (dynEntClient->physObjId == 0) {
+                iVar5 = DynEntCl_CreatePhysObj(dynEntDef,dynEntClient,&pose->pose);
+                dynEntClient->physObjId = iVar5;
               }
-              if ((local_2050->physObjId != 0) &&
-                 (local_28 = local_10 * local_2040->physPreset->explosiveForceScale *
-                             (dynEnt_explodeForce->current).value,
-                 (dynEnt_explodeMinForce->current).value <= local_28 &&
-                 local_28 != (dynEnt_explodeMinForce->current).value)) {
-                local_204c = local_28 * local_2060;
-                local_2048 = local_28 * local_205c;
-                local_2044 = local_28 * local_2058;
-                Phys_ObjGetCenterOfMass(local_2050->physObjId,&local_2038);
-                fVar7 = flrand(-1.0,1.0);
-                local_2038 = fVar7 * (dynEnt_explodeSpinScale->current).value + local_2038;
-                fVar7 = flrand(-1.0,1.0);
-                local_2034 = fVar7 * (dynEnt_explodeSpinScale->current).value + local_2034;
-                fVar7 = flrand(-1.0,1.0);
-                local_2030 = fVar7 * (dynEnt_explodeSpinScale->current).value + local_2030;
-                Phys_ObjAddForce(local_2050->physObjId,&local_2038,&local_204c,false);
+              if ((dynEntClient->physObjId != 0) &&
+                 (magnitude = scale * dynEntDef->physPreset->explosiveForceScale *
+                              (dynEnt_explodeForce->current).value,
+                 (dynEnt_explodeMinForce->current).value <= magnitude &&
+                 magnitude != (dynEnt_explodeMinForce->current).value)) {
+                hitForce = magnitude * hitDir;
+                local_2048 = magnitude * local_205c;
+                local_2044 = magnitude * local_2058;
+                Phys_ObjGetCenterOfMass(dynEntClient->physObjId,&centerOfMass);
+                fVar6 = flrand(-1.0,1.0);
+                centerOfMass = fVar6 * (dynEnt_explodeSpinScale->current).value + centerOfMass;
+                fVar6 = flrand(-1.0,1.0);
+                local_2034 = fVar6 * (dynEnt_explodeSpinScale->current).value + local_2034;
+                fVar6 = flrand(-1.0,1.0);
+                local_2030 = fVar6 * (dynEnt_explodeSpinScale->current).value + local_2030;
+                Phys_ObjAddForce(dynEntClient->physObjId,&centerOfMass,&hitForce,false);
               }
             }
-            iVar6 = (int)((float)(param_8 - param_9) * local_10 + (float)param_9);
-            if (iVar6 != 0) {
-              DynEntCl_Damage(param_1,local_202c[local_24],local_2054,&local_2038,&local_2060,iVar6)
+            iVar5 = (int)((float)(innerDamage - outerDamage) * scale + (float)outerDamage);
+            if (iVar5 != 0) {
+              DynEntCl_Damage(localClientNum,hitEnts[hitIndex],drawType,&centerOfMass,&hitDir,iVar5)
               ;
             }
           }
@@ -3638,6 +3804,7 @@ DynEntCl_ExplosionEvent
 
 // 005B5500  DynEntCl_DestroyEvent  (DynEntity/DynEntity_client.cpp:2623)
 
+/* WARNING: Variable defined which should be unmapped: cgameGlob */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -3645,76 +3812,81 @@ DynEntCl_ExplosionEvent
 
 void __cdecl
 DynEntCl_DestroyEvent
-          (int param_1,ushort param_2,DynEntityDrawType param_3,float *param_4,float *param_5)
+          (int localClientNum,ushort dynEntId,DynEntityDrawType drawType,float *hitPos,float *hitDir
+          )
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
-  DynEntityDef *pDVar4;
-  DynEntityClient *pDVar5;
-  DynEntityPose *pDVar6;
-  float local_28 [9];
+  DynEntityDef *dynEntDef_00;
+  DynEntityClient *pDVar4;
+  DynEntityPose *quat;
+  DynEntityPose *dynEntPose;
+  cg_s *cgameGlob;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  float axis [9];
   
-  if ((param_2 == 0xffff) &&
+  if ((dynEntId == 0xffff) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0xa46,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((hitPos == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0xa47,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((hitDir == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp",
                                0xa48,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = DynEntCl_EventNeedsProcessed(param_1,0x3ff);
+  bVar2 = DynEntCl_EventNeedsProcessed(localClientNum,0x3ff);
   if (bVar2) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    pDVar4 = DynEnt_GetEntityDef(param_2,param_3);
-    pDVar5 = DynEnt_GetClientEntity(param_2,param_3);
-    if (((pDVar5->flags & 1) != 0) &&
+    pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+    dynEntDef_00 = DynEnt_GetEntityDef(dynEntId,drawType);
+    pDVar4 = DynEnt_GetClientEntity(dynEntId,drawType);
+    if (((pDVar4->flags & 1) != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0xa52,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((pDVar5->flags & 2) == 0) &&
+    if (((pDVar4->flags & 2) == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\DynEntity\\DynEntity_client.cpp"
                                  ,0xa53,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)(pcVar3);
       return;
     }
-    pDVar5->flags = pDVar5->flags & 0xfffd;
-    DynEntCl_UnlinkEntity(param_2,param_3);
-    pDVar6 = DynEnt_GetClientPose(param_2,param_3);
-    if ((pDVar4->destroyFx != (FxEffectDef *)0x0) || (pDVar4->destroyPieces != (XModelPieces *)0x0))
-    {
-      UnitQuatToAxis((float *)pDVar6,(float (*) [3])local_28);
+    pDVar4->flags = pDVar4->flags & 0xfffd;
+    DynEntCl_UnlinkEntity(dynEntId,drawType);
+    quat = DynEnt_GetClientPose(dynEntId,drawType);
+    if ((dynEntDef_00->destroyFx != (FxEffectDef *)0x0) ||
+       (dynEntDef_00->destroyPieces != (XModelPieces *)0x0)) {
+      UnitQuatToAxis((float *)quat,(float (*) [3])axis);
     }
-    if (pDVar4->destroyFx != (FxEffectDef *)0x0) {
-      DynEntCl_PlayEventFx(pDVar4->destroyFx,(pDVar6->pose).origin,(float (*) [3])local_28);
+    if (dynEntDef_00->destroyFx != (FxEffectDef *)0x0) {
+      DynEntCl_PlayEventFx(dynEntDef_00->destroyFx,(quat->pose).origin,(float (*) [3])axis);
     }
-    if (pDVar4->destroyPieces != (XModelPieces *)0x0) {
+    if (dynEntDef_00->destroyPieces != (XModelPieces *)0x0) {
       DynEntPieces_SpawnPieces
-                (param_1,pDVar4->destroyPieces,(pDVar6->pose).origin,(float (*) [3])local_28,param_4
-                 ,param_5);
+                (localClientNum,dynEntDef_00->destroyPieces,(quat->pose).origin,(float (*) [3])axis,
+                 hitPos,hitDir);
     }
-    if (pDVar4->destroySound != 0) {
-      CG_PlaySound(param_1,0x3fe,(pDVar6->pose).origin,0,false,1.0,pDVar4->destroySound);
+    if (dynEntDef_00->destroySound != 0) {
+      CG_PlaySound(localClientNum,0x3fe,(quat->pose).origin,0,false,1.0,dynEntDef_00->destroySound);
     }
-    DynEntCl_TurnOffLight(pDVar4);
+    DynEntCl_TurnOffLight(dynEntDef_00);
   }
   return;
 }
@@ -3722,7 +3894,7 @@ DynEntCl_DestroyEvent
 
 // 005B5740  CreateRopes  (DynEntity/DynEntity_client.cpp:2667)
 
-void __cdecl CreateRopes(int param_1)
+void __cdecl CreateRopes(int localClientNum)
 
 {
   PhysConstraint *pPVar1;
@@ -3731,79 +3903,75 @@ void __cdecl CreateRopes(int param_1)
   int iVar4;
   float *pfVar5;
   int iVar6;
-  rope_constraint_e rVar7;
-  float local_18;
-  float local_14;
-  int local_c;
-  int local_8;
+  rope_constraint_e type;
+  float rope_width;
+  float force_scale;
+  int i;
+  int rope_index;
   
-  bVar2 = CL_LocalClient_IsFirstActive(param_1);
+  bVar2 = CL_LocalClient_IsFirstActive(localClientNum);
   if ((bVar2) && (Rope_Reset(), (r_reflectionProbeGenerate->current).enabled == false)) {
-    local_8 = 0;
-    for (local_c = 0; pPVar1 = cm.constraints, local_c < cm.num_constraints; local_c = local_c + 1)
-    {
-      if (cm.constraints[local_c].type == CONSTRAINT_ROPE) {
-        local_18 = cm.constraints[local_c].minAngle;
-        if (local_18 <= 0.0) {
-          local_18 = 1.8;
+    rope_index = 0;
+    for (i = 0; pPVar1 = cm.constraints, i < cm.num_constraints; i = i + 1) {
+      if (cm.constraints[i].type == CONSTRAINT_ROPE) {
+        rope_width = cm.constraints[i].minAngle;
+        if (rope_width <= 0.0) {
+          rope_width = 1.8;
         }
-        local_14 = cm.constraints[local_c].scale[0];
-        if (local_14 <= 0.0) {
-          local_14 = 1.0;
+        force_scale = cm.constraints[i].scale[0];
+        if (force_scale <= 0.0) {
+          force_scale = 1.0;
         }
-        Rope_Create(local_8,cm.constraints[local_c].pos,cm.constraints[local_c].pos2,
-                    cm.constraints[local_c].distance,0.9,local_18,local_14,1);
-        if ((pPVar1[local_c].attach_point_type1 == ATTACH_POINT_ENT) &&
-           (pPVar1[local_c].target_index1 != -1)) {
-          Rope_AddEntAnchor(local_8,0,pPVar1[local_c].pos,pPVar1[local_c].target_index1,0);
+        Rope_Create(rope_index,cm.constraints[i].pos,cm.constraints[i].pos2,
+                    cm.constraints[i].distance,0.9,rope_width,force_scale,1);
+        if ((pPVar1[i].attach_point_type1 == ATTACH_POINT_ENT) && (pPVar1[i].target_index1 != -1)) {
+          Rope_AddEntAnchor(rope_index,0,pPVar1[i].pos,pPVar1[i].target_index1,0);
         }
-        else if (pPVar1[local_c].attach_point_type1 == ATTACH_POINT_DYNENT) {
-          Rope_AddDynEntAnchor(local_8,0,pPVar1[local_c].pos,pPVar1[local_c].target_index1);
+        else if (pPVar1[i].attach_point_type1 == ATTACH_POINT_DYNENT) {
+          Rope_AddDynEntAnchor(rope_index,0,pPVar1[i].pos,pPVar1[i].target_index1);
         }
-        else if (pPVar1[local_c].attach_point_type1 == ATTACH_POINT_WORLD) {
-          Rope_AddAnchor(local_8,0,pPVar1[local_c].pos,-1,-1,ROPE_WORLD_CONSTRAINT);
+        else if (pPVar1[i].attach_point_type1 == ATTACH_POINT_WORLD) {
+          Rope_AddAnchor(rope_index,0,pPVar1[i].pos,-1,-1,ROPE_WORLD_CONSTRAINT);
         }
-        if ((pPVar1[local_c].attach_point_type2 == ATTACH_POINT_ENT) &&
-           (pPVar1[local_c].target_index2 != -1)) {
+        if ((pPVar1[i].attach_point_type2 == ATTACH_POINT_ENT) && (pPVar1[i].target_index2 != -1)) {
           iVar6 = 0;
-          iVar4 = pPVar1[local_c].target_index2;
-          pfVar5 = pPVar1[local_c].pos2;
-          iVar3 = Rope_GetNumParticles(local_8);
-          Rope_AddEntAnchor(local_8,iVar3 + -1,pfVar5,iVar4,iVar6);
+          iVar4 = pPVar1[i].target_index2;
+          pfVar5 = pPVar1[i].pos2;
+          iVar3 = Rope_GetNumParticles(rope_index);
+          Rope_AddEntAnchor(rope_index,iVar3 + -1,pfVar5,iVar4,iVar6);
         }
-        else if (pPVar1[local_c].attach_point_type2 == ATTACH_POINT_DYNENT) {
-          iVar4 = pPVar1[local_c].target_index2;
-          pfVar5 = pPVar1[local_c].pos2;
-          iVar3 = Rope_GetNumParticles(local_8);
-          Rope_AddDynEntAnchor(local_8,iVar3 + -1,pfVar5,iVar4);
+        else if (pPVar1[i].attach_point_type2 == ATTACH_POINT_DYNENT) {
+          iVar4 = pPVar1[i].target_index2;
+          pfVar5 = pPVar1[i].pos2;
+          iVar3 = Rope_GetNumParticles(rope_index);
+          Rope_AddDynEntAnchor(rope_index,iVar3 + -1,pfVar5,iVar4);
         }
-        else if (pPVar1[local_c].attach_point_type2 == ATTACH_POINT_WORLD) {
-          if (((pPVar1[local_c].pos[0] == pPVar1[local_c].pos2[0]) &&
-              (pPVar1[local_c].pos[1] == pPVar1[local_c].pos2[1])) &&
-             (pPVar1[local_c].pos[2] == pPVar1[local_c].pos2[2])) {
+        else if (pPVar1[i].attach_point_type2 == ATTACH_POINT_WORLD) {
+          if (((pPVar1[i].pos[0] == pPVar1[i].pos2[0]) && (pPVar1[i].pos[1] == pPVar1[i].pos2[1]))
+             && (pPVar1[i].pos[2] == pPVar1[i].pos2[2])) {
             bVar2 = true;
           }
           else {
             bVar2 = false;
           }
           if (!bVar2) {
-            rVar7 = ROPE_WORLD_CONSTRAINT;
+            type = ROPE_WORLD_CONSTRAINT;
             iVar6 = -1;
             iVar3 = -1;
-            pfVar5 = pPVar1[local_c].pos2;
-            iVar4 = Rope_GetNumParticles(local_8);
-            Rope_AddAnchor(local_8,iVar4 + -1,pfVar5,iVar3,iVar6,rVar7);
+            pfVar5 = pPVar1[i].pos2;
+            iVar4 = Rope_GetNumParticles(rope_index);
+            Rope_AddAnchor(rope_index,iVar4 + -1,pfVar5,iVar3,iVar6,type);
           }
         }
-        if (pPVar1[local_c].material != (Material *)0x0) {
-          Rope_SetMaterial(local_8,pPVar1[local_c].material);
+        if (pPVar1[i].material != (Material *)0x0) {
+          Rope_SetMaterial(rope_index,pPVar1[i].material);
         }
-        if ((pPVar1[local_c].flags & 1U) != 0) {
-          Rope_SetFlag(local_8,1,1);
+        if ((pPVar1[i].flags & 1U) != 0) {
+          Rope_SetFlag(rope_index,1,1);
         }
-        Rope_Settle(local_8);
-        pPVar1[local_c].rope_index = local_8;
-        local_8 = local_8 + 1;
+        Rope_Settle(rope_index);
+        pPVar1[i].rope_index = rope_index;
+        rope_index = rope_index + 1;
       }
     }
   }
@@ -3813,65 +3981,65 @@ void __cdecl CreateRopes(int param_1)
 
 // 005B5A50  MapHitLocationToRagdollBoneName  (DynEntity/DynEntity_client.cpp:2785)
 
-void __cdecl MapHitLocationToRagdollBoneName(hitLocation_t param_1,uint *param_2)
+void __cdecl MapHitLocationToRagdollBoneName(hitLocation_t hitLoc,uint *boneName)
 
 {
   uint uVar1;
   
-  *param_2 = 0;
-  switch(param_1) {
+  *boneName = 0;
+  switch(hitLoc) {
   case HITLOC_HELMET:
   case HITLOC_HEAD:
     uVar1 = SL_FindLowercaseString("j_head",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_NECK:
     uVar1 = SL_FindLowercaseString("j_neck",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_TORSO_UPR:
     uVar1 = SL_FindLowercaseString("j_spineupper",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_TORSO_LWR:
     uVar1 = SL_FindLowercaseString("j_spinelower",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_R_ARM_UPR:
     uVar1 = SL_FindLowercaseString("j_elbow_ri",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_L_ARM_UPR:
     uVar1 = SL_FindLowercaseString("j_elbow_le",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_R_ARM_LWR:
   case HITLOC_R_HAND:
     uVar1 = SL_FindLowercaseString("j_wrist_ri",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_L_ARM_LWR:
   case HITLOC_L_HAND:
     uVar1 = SL_FindLowercaseString("j_wrist_le",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_R_LEG_UPR:
     uVar1 = SL_FindLowercaseString("j_knee_ri",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_L_LEG_UPR:
     uVar1 = SL_FindLowercaseString("j_knee_le",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_R_LEG_LWR:
   case HITLOC_R_FOOT:
     uVar1 = SL_FindLowercaseString("j_ankle_ri",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
     break;
   case HITLOC_L_LEG_LWR:
   case HITLOC_L_FOOT:
     uVar1 = SL_FindLowercaseString("j_ankle_le",SCRIPTINSTANCE_SERVER);
-    *param_2 = uVar1;
+    *boneName = uVar1;
   }
   return;
 }

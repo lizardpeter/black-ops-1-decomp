@@ -13,14 +13,14 @@ phys_transient_allocator * __cdecl contact_point_info::get_cpi_allocator(void)
 
 void __thiscall
 rigid_body_constraint_contact::verify_constraint
-          (rigid_body_constraint_contact *this,rigid_body *param_1,rigid_body *param_2)
+          (rigid_body_constraint_contact *this,rigid_body *b1_,rigid_body *b2_)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((rigid_body *)this->_padding_ != param_1) || ((rigid_body *)this->_padding_ != param_2)) &&
-     (((rigid_body *)this->_padding_ != param_2 || ((rigid_body *)this->_padding_ != param_1)))) {
+  if ((((rigid_body *)this->_padding_ != b1_) || ((rigid_body *)this->_padding_ != b2_)) &&
+     (((rigid_body *)this->_padding_ != b2_ || ((rigid_body *)this->_padding_ != b1_)))) {
     bVar2 = _tlAssert("source/rbc_def_contact.cpp",0xe,
                       "(b1 == b1_ && b2 == b2_) || (b1 == b2_ && b2 == b1_)","");
     if (bVar2) {
@@ -29,8 +29,8 @@ rigid_body_constraint_contact::verify_constraint
       return;
     }
   }
-  physics_system::validate_member(g_physics_system,param_1);
-  physics_system::validate_member(g_physics_system,param_2);
+  physics_system::validate_member(g_physics_system,b1_);
+  physics_system::validate_member(g_physics_system,b2_);
   PMM_VALIDATE(&this[-1].m_avl_key,0x38,4);
   return;
 }
@@ -40,8 +40,8 @@ rigid_body_constraint_contact::verify_constraint
 
 pulse_sum_contact * __thiscall
 pulse_sum_constraint_solver::create_pulse_sum_contact
-          (pulse_sum_constraint_solver *this,rigid_body *param_1,rigid_body *param_2,
-          contact_point_info *param_3,float param_4)
+          (pulse_sum_constraint_solver *this,rigid_body *b1,rigid_body *b2,contact_point_info *cpi,
+          float delta_t)
 
 {
   code *pcVar1;
@@ -49,10 +49,10 @@ pulse_sum_constraint_solver::create_pulse_sum_contact
   pulse_sum_contact *ppVar3;
   
   ppVar3 = phys_transient_allocator::allocate
-                     (&this->m_solver_memory_allocator,param_3->m_point_pair_count * 0xd0 + 0x60,
-                      0x10,1,SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
+                     (&this->m_solver_memory_allocator,cpi->m_point_pair_count * 0xd0 + 0x60,0x10,1,
+                      SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
   if (ppVar3 == (pulse_sum_contact *)0x0) {
-    if ((param_3->m_flags & 8) == 0) {
+    if ((cpi->m_flags & 8) == 0) {
       if (((pai_create_pulse_sum_contact.m_hits_total_count <
             pai_create_pulse_sum_contact.m_max_hits_total) ||
           (pai_create_pulse_sum_contact.m_max_hits_total == 0)) &&
@@ -88,8 +88,8 @@ pulse_sum_constraint_solver::create_pulse_sum_contact
   else {
     phys_link_list<pulse_sum_contact>::add(&this->m_list_pulse_sum_contact,ppVar3);
     ppVar3->m_list_pscp = (pulse_sum_contact_point *)(ppVar3 + 1);
-    ppVar3->m_list_pscp_count = param_3->m_point_pair_count;
-    pulse_sum_contact::set(ppVar3,param_1,param_2,param_3,param_4);
+    ppVar3->m_list_pscp_count = cpi->m_point_pair_count;
+    pulse_sum_contact::set(ppVar3,b1,b2,cpi,delta_t);
   }
   return ppVar3;
 }
@@ -99,7 +99,7 @@ pulse_sum_constraint_solver::create_pulse_sum_contact
 
 void __thiscall
 rigid_body_constraint_contact::setup_constraint
-          (rigid_body_constraint_contact *this,pulse_sum_constraint_solver *param_1,float param_2)
+          (rigid_body_constraint_contact *this,pulse_sum_constraint_solver *psys,float delta_t)
 
 {
   contact_point_info *this_00;
@@ -109,7 +109,7 @@ rigid_body_constraint_contact::setup_constraint
   for (; this_00 != (contact_point_info *)0x0; this_00 = this_00->m_next_link) {
     contact_point_info::check_surface_properties(this_00);
     pulse_sum_constraint_solver::create_pulse_sum_contact
-              (param_1,(rigid_body *)this->_padding_,(rigid_body *)this->_padding_,this_00,param_2);
+              (psys,(rigid_body *)this->_padding_,(rigid_body *)this->_padding_,this_00,delta_t);
   }
   return;
 }
@@ -132,7 +132,7 @@ rigid_body_constraint_contact::~rigid_body_constraint_contact(rigid_body_constra
 void __thiscall
 phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
 ::remove(phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
-         *this,rigid_body_pair_key *param_1)
+         *this,rigid_body_pair_key *key)
 
 {
   rigid_body_constraint_contact **pprVar1;
@@ -153,12 +153,12 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
   **pppVar13;
   uint uVar14;
   int iVar15;
-  char *pcVar16;
+  char *expr;
   phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
-  *local_104 [64];
+  *the_stack [64];
   
-  pppVar13 = local_104;
-  local_104[0] = this;
+  pppVar13 = the_stack;
+  the_stack[0] = this;
   while( true ) {
     while( true ) {
       prVar9 = (*pppVar13)->m_tree_root;
@@ -169,18 +169,18 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
         (*pcVar7)();
         return;
       }
-      if ((0xff < (int)((int)pppVar13 + (8 - (int)local_104) & 0xfffffff8U)) &&
+      if ((0xff < (int)((int)pppVar13 + (8 - (int)the_stack) & 0xfffffff8U)) &&
          (bVar8 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                             0xa2,"cur_item + 1 - the_stack < 32",""), bVar8)) {
         pcVar7 = (code *)swi(3);
         (*pcVar7)();
         return;
       }
-      prVar2 = param_1->m_b1;
+      prVar2 = key->m_b1;
       prVar3 = (prVar9->m_avl_key).m_b1;
       bVar8 = prVar2 < prVar3;
       if (prVar2 == prVar3) {
-        bVar8 = param_1->m_b2 < (prVar9->m_avl_key).m_b2;
+        bVar8 = key->m_b2 < (prVar9->m_avl_key).m_b2;
       }
       if (!bVar8) break;
       pppVar13[1] = (phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
@@ -192,7 +192,7 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
     prVar3 = (prVar9->m_avl_key).m_b1;
     bVar8 = prVar3 < prVar2;
     if (prVar3 == prVar2) {
-      bVar8 = (prVar9->m_avl_key).m_b2 < param_1->m_b2;
+      bVar8 = (prVar9->m_avl_key).m_b2 < key->m_b2;
     }
     if (!bVar8) break;
     pppVar13[1] = (phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_body_constraint_contact::avl_tree_accessor>
@@ -201,9 +201,9 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
                    *)&(prVar9->m_avl_tree_node).m_right;
     pppVar13 = pppVar13 + 2;
   }
-  if (((param_1->m_b1 != (prVar9->m_avl_key).m_b1) || (param_1->m_b2 != (prVar9->m_avl_key).m_b2))
-     && (bVar8 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                           0xb0,"key == accessor::get_avl_key(root)",""), bVar8)) {
+  if (((key->m_b1 != (prVar9->m_avl_key).m_b1) || (key->m_b2 != (prVar9->m_avl_key).m_b2)) &&
+     (bVar8 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",0xb0,
+                        "key == accessor::get_avl_key(root)",""), bVar8)) {
     pcVar7 = (code *)swi(3);
     (*pcVar7)();
     return;
@@ -224,7 +224,7 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
                  *)pprVar1;
     pppVar13 = pppVar12;
     while (prVar9 != (rigid_body_constraint_contact *)0x0) {
-      if ((0xff < (int)((int)pppVar13 + (8 - (int)local_104) & 0xfffffff8U)) &&
+      if ((0xff < (int)((int)pppVar13 + (8 - (int)the_stack) & 0xfffffff8U)) &&
          (bVar8 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
                             0xbf,"cur_item + 1 - the_stack < 32",""), bVar8)) {
         pcVar7 = (code *)swi(3);
@@ -249,7 +249,7 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
                  *)pprVar1;
   }
   ppVar4->m_tree_root = prVar9;
-  if (local_104 < pppVar13) {
+  if (the_stack < pppVar13) {
     do {
       ppVar4 = pppVar13[-2];
       piVar11 = &(ppVar4->m_tree_root->m_avl_tree_node).m_balance;
@@ -283,13 +283,13 @@ phys_inplace_avl_tree<rigid_body_pair_key,rigid_body_constraint_contact,rigid_bo
         ppVar4->m_tree_root = prVar9;
         iVar15 = (prVar9->m_avl_tree_node).m_balance;
         if ((iVar15 != 0) && (iVar15 != 1)) {
-          pcVar16 = 
+          expr = 
           "accessor::get_avl_node(root)->m_balance == 0 || accessor::get_avl_node(root)->m_balance == +1"
           ;
           iVar15 = 0xda;
 LAB_00a25785:
           bVar8 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_avl_tree.h",
-                            iVar15,pcVar16,"");
+                            iVar15,expr,"");
           if (bVar8) {
             pcVar7 = (code *)swi(3);
             (*pcVar7)();
@@ -323,14 +323,14 @@ LAB_00a25785:
         ppVar4->m_tree_root = prVar9;
         iVar15 = (prVar9->m_avl_tree_node).m_balance;
         if ((iVar15 != 0) && (iVar15 != -1)) {
-          pcVar16 = 
+          expr = 
           "accessor::get_avl_node(root)->m_balance == 0 || accessor::get_avl_node(root)->m_balance == -1"
           ;
           iVar15 = 0xe1;
           goto LAB_00a25785;
         }
       }
-    } while (((ppVar4->m_tree_root->m_avl_tree_node).m_balance == 0) && (local_104 < pppVar13));
+    } while (((ppVar4->m_tree_root->m_avl_tree_node).m_balance == 0) && (the_stack < pppVar13));
   }
   return;
 }
@@ -339,8 +339,7 @@ LAB_00a25785:
 // 00A252E0  add  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:229)
 
 void __thiscall
-phys_link_list<pulse_sum_contact>::add
-          (phys_link_list<pulse_sum_contact> *this,pulse_sum_contact *param_1)
+phys_link_list<pulse_sum_contact>::add(phys_link_list<pulse_sum_contact> *this,pulse_sum_contact *p)
 
 {
   code *pcVar1;
@@ -355,10 +354,10 @@ phys_link_list<pulse_sum_contact>::add
       return;
     }
   }
-  *(undefined4 *)param_1 = 0;
+  *(undefined4 *)p = 0;
   this->m_alloc_count = this->m_alloc_count + 1;
-  *this->m_last_next_ptr = param_1;
-  this->m_last_next_ptr = (pulse_sum_contact **)param_1;
+  *this->m_last_next_ptr = p;
+  this->m_last_next_ptr = (pulse_sum_contact **)p;
   return;
 }
 

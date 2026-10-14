@@ -116,50 +116,50 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 00712660  SV_ExpandNewlines  (server_mp/sv_main_mp.cpp:281)
 
-char * __cdecl SV_ExpandNewlines(char *param_1)
+char * __cdecl SV_ExpandNewlines(char *in)
 
 {
-  uint local_8;
+  uint l;
   
-  local_8 = 0;
+  l = 0;
   do {
     while( true ) {
-      if ((*param_1 == '\0') || (0x3fc < local_8)) {
-        string[local_8] = '\0';
+      if ((*in == '\0') || (0x3fc < l)) {
+        string[l] = '\0';
         return string;
       }
-      if (*param_1 != '\n') break;
-      string[local_8] = '\\';
-      string[local_8 + 1] = 'n';
-      local_8 = local_8 + 2;
+      if (*in != '\n') break;
+      string[l] = '\\';
+      string[l + 1] = 'n';
+      l = l + 2;
 LAB_007126ed:
-      param_1 = param_1 + 1;
+      in = in + 1;
     }
-    if ((*param_1 != '\x14') && (*param_1 != '\x15')) {
-      string[local_8] = *param_1;
-      local_8 = local_8 + 1;
+    if ((*in != '\x14') && (*in != '\x15')) {
+      string[l] = *in;
+      l = l + 1;
       goto LAB_007126ed;
     }
-    param_1 = param_1 + 1;
+    in = in + 1;
   } while( true );
 }
 
 
 // 00712C40  SV_IsFirstTokenEqual  (server_mp/sv_main_mp.cpp:319)
 
-int __cdecl SV_IsFirstTokenEqual(char *param_1,char *param_2)
+int __cdecl SV_IsFirstTokenEqual(char *str1,char *str2)
 
 {
   int local_8;
   
-  for (; (((*param_1 != '\0' && (*param_2 != '\0')) && (*param_1 != ' ')) && (*param_2 != ' '));
-      param_2 = param_2 + 1) {
-    if (*param_1 != *param_2) {
+  for (; (((*str1 != '\0' && (*str2 != '\0')) && (*str1 != ' ')) && (*str2 != ' ')); str2 = str2 + 1
+      ) {
+    if (*str1 != *str2) {
       return 0;
     }
-    param_1 = param_1 + 1;
+    str1 = str1 + 1;
   }
-  if (((*param_1 == '\0') || (*param_1 == ' ')) && ((*param_2 == '\0' || (*param_2 == ' ')))) {
+  if (((*str1 == '\0') || (*str1 == ' ')) && ((*str2 == '\0' || (*str2 == ' ')))) {
     local_8 = 1;
   }
   else {
@@ -177,7 +177,7 @@ int __cdecl SV_IsFirstTokenEqual(char *param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl SV_CanReplaceServerCommand(client_t *param_1,char *param_2)
+int __cdecl SV_CanReplaceServerCommand(client_t *client,char *cmd)
 
 {
   byte bVar1;
@@ -188,29 +188,29 @@ int __cdecl SV_CanReplaceServerCommand(client_t *param_1,char *param_2)
   int local_20;
   byte *local_18;
   byte *local_14;
-  uint local_8;
+  int index;
+  int i;
   
-  local_8 = param_1->reliableSent;
+  i = client->reliableSent;
   do {
     do {
       do {
-        local_8 = local_8 + 1;
-        if (param_1->reliableSequence < (int)local_8) {
+        i = i + 1;
+        if (client->reliableSequence < i) {
           return -1;
         }
-        uVar5 = local_8 & 0x7f;
-      } while (param_1->reliableCommandInfo[uVar5].type == 0);
-      if ((param_1->reliableCommandInfo[uVar5].type != 1) &&
+        uVar5 = i & 0x7f;
+      } while (client->reliableCommandInfo[uVar5].type == 0);
+      if ((client->reliableCommandInfo[uVar5].type != 1) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",
                                    0x15e,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         iVar4 = (*pcVar2)();
         return iVar4;
       }
-    } while ((*param_2 != *param_1->reliableCommandInfo[uVar5].cmd) ||
-            (('w' < *param_2 && (*param_2 < '{'))));
-    local_14 = (byte *)(param_1->reliableCommandInfo[uVar5].cmd + 1);
-    local_18 = (byte *)(param_2 + 1);
+    } while ((*cmd != *client->reliableCommandInfo[uVar5].cmd) || (('w' < *cmd && (*cmd < '{'))));
+    local_14 = (byte *)(client->reliableCommandInfo[uVar5].cmd + 1);
+    local_18 = (byte *)(cmd + 1);
     do {
       bVar1 = *local_18;
       bVar3 = bVar1 < *local_14;
@@ -229,26 +229,26 @@ LAB_00712b42:
     local_20 = 0;
 LAB_00712b4a:
     if (local_20 == 0) {
-      return local_8;
+      return i;
     }
-    switch(*param_2) {
+    switch(*cmd) {
     case 'C':
     case 'a':
     case 'q':
     case 't':
-      return local_8;
+      return i;
     case 'd':
     case 'v':
-      if ((param_2[1] != ' ') &&
+      if ((cmd[1] != ' ') &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",
                                    0x17a,0,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         iVar4 = (*pcVar2)();
         return iVar4;
       }
-      iVar4 = SV_IsFirstTokenEqual(param_2 + 2,param_1->reliableCommandInfo[uVar5].cmd + 2);
+      iVar4 = SV_IsFirstTokenEqual(cmd + 2,client->reliableCommandInfo[uVar5].cmd + 2);
       if (iVar4 != 0) {
-        return local_8;
+        return i;
       }
     }
   } while( true );
@@ -263,31 +263,33 @@ LAB_00712b4a:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_CullIgnorableServerCommands(client_t *param_1)
+void __cdecl SV_CullIgnorableServerCommands(client_t *client)
 
 {
   svscmd_info_t *psVar1;
   svscmd_info_t *psVar2;
   uint uVar3;
-  uint local_14;
-  uint local_8;
+  int from;
+  int fromIndex;
+  int toIndex;
+  int to;
   
-  local_14 = param_1->reliableSent + 1;
-  local_8 = local_14;
-  for (; (int)local_14 <= param_1->reliableSequence; local_14 = local_14 + 1) {
-    uVar3 = local_14 & 0x7f;
-    if (param_1->reliableCommandInfo[uVar3].type != 0) {
-      if ((local_8 & 0x7f) != uVar3) {
-        psVar1 = param_1->reliableCommandInfo + uVar3;
-        psVar2 = param_1->reliableCommandInfo + (local_8 & 0x7f);
+  from = client->reliableSent + 1;
+  to = from;
+  for (; from <= client->reliableSequence; from = from + 1) {
+    uVar3 = from & 0x7f;
+    if (client->reliableCommandInfo[uVar3].type != 0) {
+      if ((to & 0x7fU) != uVar3) {
+        psVar1 = client->reliableCommandInfo + uVar3;
+        psVar2 = client->reliableCommandInfo + (to & 0x7fU);
         psVar2->cmd = psVar1->cmd;
         psVar2->time = psVar1->time;
         psVar2->type = psVar1->type;
       }
-      local_8 = local_8 + 1;
+      to = to + 1;
     }
   }
-  param_1->reliableSequence = local_8 - 1;
+  client->reliableSequence = to + -1;
   return;
 }
 
@@ -320,61 +322,63 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_AddServerCommand(client_t *param_1,svscmd_type param_2,char *param_3)
+void __cdecl SV_AddServerCommand(client_t *client,svscmd_type type,char *cmd)
 
 {
   svscmd_info_t *psVar1;
   svscmd_info_t *psVar2;
   uint uVar3;
   uint uVar4;
-  uint local_14;
-  int local_c;
-  uint local_8;
+  int ackIndex;
+  int from;
+  int index;
+  int i;
+  int to;
   
-  if (((param_1->bIsTestClient == 0) && (param_1->bIsDemoClient == 0)) &&
-     (((param_1->reliableSequence - param_1->reliableAcknowledge < 0x40 &&
-       ((param_1->header).state == 5)) ||
-      (SV_CullIgnorableServerCommands(param_1), param_2 != SV_CMD_CAN_IGNORE)))) {
-    local_8 = SV_CanReplaceServerCommand(param_1,param_3);
-    local_14 = local_8;
-    if ((int)local_8 < 0) {
-      param_1->reliableSequence = param_1->reliableSequence + 1;
+  if (((client->bIsTestClient == 0) && (client->bIsDemoClient == 0)) &&
+     (((client->reliableSequence - client->reliableAcknowledge < 0x40 &&
+       ((client->header).state == 5)) ||
+      (SV_CullIgnorableServerCommands(client), type != SV_CMD_CAN_IGNORE)))) {
+    to = SV_CanReplaceServerCommand(client,cmd);
+    from = to;
+    if (to < 0) {
+      client->reliableSequence = client->reliableSequence + 1;
     }
     else {
-      while (local_14 = local_14 + 1, (int)local_14 <= param_1->reliableSequence) {
-        psVar1 = param_1->reliableCommandInfo + (local_14 & 0x7f);
-        psVar2 = param_1->reliableCommandInfo + (local_8 & 0x7f);
+      while (from = from + 1, from <= client->reliableSequence) {
+        psVar1 = client->reliableCommandInfo + (from & 0x7f);
+        psVar2 = client->reliableCommandInfo + (to & 0x7f);
         psVar2->cmd = psVar1->cmd;
         psVar2->time = psVar1->time;
         psVar2->type = psVar1->type;
-        local_8 = local_8 + 1;
+        to = to + 1;
       }
     }
-    if (param_1->reliableSequence - param_1->reliableAcknowledge == 0x81) {
+    if (client->reliableSequence - client->reliableAcknowledge == 0x81) {
       Com_Printf(0xf,"===== pending server commands =====\n");
-      local_c = param_1->reliableAcknowledge;
-      while (local_c = local_c + 1, local_c <= param_1->reliableSequence) {
+      i = client->reliableAcknowledge;
+      while (i = i + 1, i <= client->reliableSequence) {
         Com_Printf(0xf,"cmd %5d: %8d: %s\n");
       }
       Com_Printf(0xf,"cmd %5d: %8d: %s\n");
-      NET_OutOfBandPrint(NS_MAXCLIENTS,(param_1->header).netchan.remoteAddress,"disconnect");
-      SV_DelayDropClient(param_1,"EXE_SERVERCOMMANDOVERFLOW");
-      param_2 = SV_CMD_RELIABLE;
-      param_3 = va("%c \"EXE_SERVERCOMMANDOVERFLOW\"");
+      NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,"disconnect");
+      SV_DelayDropClient(client,"EXE_SERVERCOMMANDOVERFLOW");
+      type = SV_CMD_RELIABLE;
+      cmd = va("%c \"EXE_SERVERCOMMANDOVERFLOW\"");
     }
-    uVar4 = param_1->reliableSequence & 0x7f;
+    uVar4 = client->reliableSequence & 0x7f;
     MSG_WriteReliableCommandToBuffer
-              (param_3,&param_1->reliableCommandInfo[uVar4].cmd,param_1->reliableCommandBuffer,
-               0x4000,&param_1->reliableCommandBufferNext);
-    param_1->reliableCommandInfo[uVar4].time = svs.time;
-    param_1->reliableCommandInfo[uVar4].type = param_2;
-    uVar3 = param_1->reliableAcknowledge + 1U & 0x7f;
+              (cmd,&client->reliableCommandInfo[uVar4].cmd,client->reliableCommandBuffer,0x4000,
+               &client->reliableCommandBufferNext);
+    client->reliableCommandInfo[uVar4].time = svs.time;
+    client->reliableCommandInfo[uVar4].type = type;
+    uVar3 = client->reliableAcknowledge + 1U & 0x7f;
     if (((uVar3 != uVar4) &&
-        (param_1->reliableCommandInfo[uVar4].cmd <= param_1->reliableCommandInfo[uVar3].cmd)) &&
-       (param_1->reliableCommandInfo[uVar3].cmd <
-        param_1->reliableCommandBuffer + param_1->reliableCommandBufferNext)) {
-      NET_OutOfBandPrint(NS_MAXCLIENTS,(param_1->header).netchan.remoteAddress,"disconnect");
-      SV_DelayDropClient(param_1,"EXE_SERVERCOMMANDOVERFLOW");
+        (client->reliableCommandInfo[uVar4].cmd <= client->reliableCommandInfo[uVar3].cmd)) &&
+       (client->reliableCommandInfo[uVar3].cmd <
+        client->reliableCommandBuffer + client->reliableCommandBufferNext)) {
+      NET_OutOfBandPrint(NS_MAXCLIENTS,(client->header).netchan.remoteAddress,"disconnect");
+      SV_DelayDropClient(client,"EXE_SERVERCOMMANDOVERFLOW");
     }
   }
   return;
@@ -389,30 +393,31 @@ void __cdecl SV_AddServerCommand(client_t *param_1,svscmd_type param_2,char *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_SendServerCommand(client_t *param_1,svscmd_type param_2,char *param_3)
+void __cdecl SV_SendServerCommand(client_t *cl,svscmd_type type,char *fmt)
 
 {
   int iVar1;
-  client_t *local_10;
-  int local_c;
+  client_t *client;
+  int j;
+  char *argptr;
   
-  _vsnprintf((char *)tempServerCommandBuf,0x10000,param_3,&stack0x00000010);
-  if (param_1 == (client_t *)0x0) {
+  _vsnprintf((char *)tempServerCommandBuf,0x10000,fmt,&stack0x00000010);
+  if (cl == (client_t *)0x0) {
     iVar1 = strncmp((char *)tempServerCommandBuf,"print",5);
     if (iVar1 == 0) {
       SV_ExpandNewlines((char *)tempServerCommandBuf);
       Com_Printf(0xf,"broadcast: %s\n");
     }
-    local_10 = svs.clients;
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if (3 < (local_10->header).state) {
-        SV_AddServerCommand(local_10,param_2,(char *)tempServerCommandBuf);
+    client = svs.clients;
+    for (j = 0; j < (com_maxclients->current).integer; j = j + 1) {
+      if (3 < (client->header).state) {
+        SV_AddServerCommand(client,type,(char *)tempServerCommandBuf);
       }
-      local_10 = (client_t *)(local_10[1].userinfo + 0x3d8);
+      client = (client_t *)(client[1].userinfo + 0x3d8);
     }
   }
   else {
-    SV_AddServerCommand(param_1,param_2,(char *)tempServerCommandBuf);
+    SV_AddServerCommand(cl,type,(char *)tempServerCommandBuf);
   }
   return;
 }
@@ -426,31 +431,31 @@ void __cdecl SV_SendServerCommand(client_t *param_1,svscmd_type param_2,char *pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-client_t * __cdecl SV_FindClientByAddress(netadr_t param_1,int param_2)
+client_t * __cdecl SV_FindClientByAddress(netadr_t from,int qport)
 
 {
   int iVar1;
-  client_t *local_10;
-  int local_c;
+  client_t *cl;
+  int i;
   
-  local_c = 0;
-  local_10 = svs.clients;
+  i = 0;
+  cl = svs.clients;
   while( true ) {
-    if ((com_maxclients->current).integer <= local_c) {
+    if ((com_maxclients->current).integer <= i) {
       return (client_t *)0x0;
     }
-    if ((((local_10->header).state != 0) &&
-        (iVar1 = NET_CompareBaseAdr(param_1,(local_10->header).netchan.remoteAddress), iVar1 != 0))
-       && ((local_10->header).netchan.qport == param_2)) break;
-    local_c = local_c + 1;
-    local_10 = (client_t *)(local_10[1].userinfo + 0x3d8);
+    if ((((cl->header).state != 0) &&
+        (iVar1 = NET_CompareBaseAdr(from,(cl->header).netchan.remoteAddress), iVar1 != 0)) &&
+       ((cl->header).netchan.qport == qport)) break;
+    i = i + 1;
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
-  if ((local_10->header).netchan.remoteAddress.port == param_1.port) {
-    return local_10;
+  if ((cl->header).netchan.remoteAddress.port == from.port) {
+    return cl;
   }
   Com_Printf(0xf,"SV_ReadPackets: fixing up a translated port\n");
-  (local_10->header).netchan.remoteAddress.port = param_1.port;
-  return local_10;
+  (cl->header).netchan.remoteAddress.port = from.port;
+  return cl;
 }
 
 
@@ -462,30 +467,32 @@ client_t * __cdecl SV_FindClientByAddress(netadr_t param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_VoicePacket(netadr_t param_1,msg_t *param_2)
+void __cdecl SV_VoicePacket(netadr_t from,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  client_t *pcVar4;
+  int qport_00;
+  client_t *cl_00;
+  client_t *cl;
+  int qport;
   
-  iVar3 = MSG_ReadShort(param_2);
-  pcVar4 = SV_FindClientByAddress(param_1,iVar3);
-  if ((pcVar4 != (client_t *)0x0) && ((pcVar4->header).state != 1)) {
-    pcVar4->lastPacketTime = svs.time;
-    if ((pcVar4->header).state < 5) {
-      SV_PreGameUserVoice(pcVar4,param_2);
+  qport_00 = MSG_ReadShort(msg);
+  cl_00 = SV_FindClientByAddress(from,qport_00);
+  if ((cl_00 != (client_t *)0x0) && ((cl_00->header).state != 1)) {
+    cl_00->lastPacketTime = svs.time;
+    if ((cl_00->header).state < 5) {
+      SV_PreGameUserVoice(cl_00,msg);
     }
     else {
-      if ((pcVar4->gentity == (gentity_s *)0x0) &&
+      if ((cl_00->gentity == (gentity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",
                                    0x25e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      SV_UserVoice(pcVar4,param_2);
+      SV_UserVoice(cl_00,msg);
     }
   }
   return;
@@ -496,8 +503,9 @@ void __cdecl SV_VoicePacket(netadr_t param_1,msg_t *param_2)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SVC_Status(netadr_t param_1,bdSecurityID *param_2)
+void __cdecl SVC_Status(netadr_t from,bdSecurityID *secID)
 
 {
   uchar uVar1;
@@ -505,32 +513,32 @@ void __cdecl SVC_Status(netadr_t param_1,bdSecurityID *param_2)
   bool bVar3;
   char *pcVar4;
   int iVar5;
-  char *pcVar6;
+  char *base;
   uchar *local_8484;
   uchar *local_8474;
   uchar *local_8468;
   uchar *local_8464;
-  int local_8460;
-  char local_845c [1024];
-  uchar local_805c [16388];
-  char *local_4058;
-  uchar local_4054;
+  int i;
+  char keywords [1024];
+  uchar infostring [16388];
+  char *refIwdNames;
+  uchar finalString;
   undefined4 local_4053;
   undefined4 local_404f;
   uchar auStack_404b [16427];
-  char *local_20;
-  char *local_1c;
-  uchar *local_18;
-  char *local_14;
-  undefined4 local_10;
-  int local_c;
+  char *gamedir;
+  char *password;
+  char *ptr;
+  char *serverinfomessage;
+  int serverModded;
+  int count;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10 = 0;
-  memset(&local_4054,'\0',0x4029);
+  serverModded = 0;
+  memset(&finalString,'\0',0x4029);
   local_8464 = (uchar *)Dvar_InfoString(0,4);
-  local_8468 = local_805c;
+  local_8468 = infostring;
   do {
     uVar1 = *local_8464;
     *local_8468 = uVar1;
@@ -539,9 +547,9 @@ void __cdecl SVC_Status(netadr_t param_1,bdSecurityID *param_2)
   } while (uVar1 != '\0');
   bVar3 = Dvar_GetBool("fs_restrict");
   if (bVar3) {
-    Info_ValueForKey((char *)local_805c,"sv_keywords");
-    Com_sprintf(local_845c,0x400,"demo %s");
-    Info_SetValueForKey((char *)local_805c,"sv_keywords",local_845c);
+    Info_ValueForKey((char *)infostring,"sv_keywords");
+    Com_sprintf(keywords,0x400,"demo %s");
+    Info_SetValueForKey((char *)infostring,"sv_keywords",keywords);
   }
   bVar3 = Sys_IsServerThread();
   if (!bVar3) {
@@ -553,34 +561,34 @@ void __cdecl SVC_Status(netadr_t param_1,bdSecurityID *param_2)
       return;
     }
   }
-  local_1c = Dvar_GetString("g_password");
-  if ((local_1c == (char *)0x0) || (*local_1c == '\0')) {
-    Info_SetValueForKey((char *)local_805c,"pswrd","0");
+  password = Dvar_GetString("g_password");
+  if ((password == (char *)0x0) || (*password == '\0')) {
+    Info_SetValueForKey((char *)infostring,"pswrd","0");
   }
   else {
-    Info_SetValueForKey((char *)local_805c,"pswrd","1");
+    Info_SetValueForKey((char *)infostring,"pswrd","1");
   }
-  local_14 = Dvar_GetString("ui_serverinfomessage");
-  if ((local_14 != (char *)0x0) && (*local_14 != '\0')) {
-    Info_SetValueForKey((char *)local_805c,"ui_serverinfomessage",local_14);
+  serverinfomessage = Dvar_GetString("ui_serverinfomessage");
+  if ((serverinfomessage != (char *)0x0) && (*serverinfomessage != '\0')) {
+    Info_SetValueForKey((char *)infostring,"ui_serverinfomessage",serverinfomessage);
   }
   pcVar4 = Dvar_GetString("sv_geolocation");
-  Info_SetValueForKey((char *)local_805c,"geolocation",pcVar4);
-  local_20 = Dvar_GetString("fs_game");
-  if (((sv_pure->current).enabled == false) || ((local_20 != (char *)0x0 && (*local_20 != '\0')))) {
-    local_10 = 1;
+  Info_SetValueForKey((char *)infostring,"geolocation",pcVar4);
+  gamedir = Dvar_GetString("fs_game");
+  if (((sv_pure->current).enabled == false) || ((gamedir != (char *)0x0 && (*gamedir != '\0')))) {
+    serverModded = 1;
   }
   else {
-    local_4058 = Dvar_GetString("sv_referencedIwdNames");
-    if (*local_4058 != '\0') {
-      SV_Cmd_TokenizeString(local_4058);
-      local_c = SV_Cmd_Argc();
-      for (local_8460 = 0; local_8460 < local_c; local_8460 = local_8460 + 1) {
-        pcVar6 = "main";
-        pcVar4 = SV_Cmd_Argv(local_8460);
-        iVar5 = FS_iwIwd(pcVar4,pcVar6);
+    refIwdNames = Dvar_GetString("sv_referencedIwdNames");
+    if (*refIwdNames != '\0') {
+      SV_Cmd_TokenizeString(refIwdNames);
+      count = SV_Cmd_Argc();
+      for (i = 0; i < count; i = i + 1) {
+        base = "main";
+        pcVar4 = SV_Cmd_Argv(i);
+        iVar5 = FS_iwIwd(pcVar4,base);
         if (iVar5 == 0) {
-          local_10 = 1;
+          serverModded = 1;
           break;
         }
       }
@@ -588,23 +596,23 @@ void __cdecl SVC_Status(netadr_t param_1,bdSecurityID *param_2)
     }
   }
   pcVar4 = va("%i");
-  Info_SetValueForKey((char *)local_805c,"mod",pcVar4);
-  local_4054 = '\x05';
-  local_4053 = *(undefined4 *)param_2->ab;
-  local_404f = *(undefined4 *)(param_2->ab + 4);
-  local_18 = auStack_404b;
-  local_8474 = local_805c;
+  Info_SetValueForKey((char *)infostring,"mod",pcVar4);
+  finalString = '\x05';
+  local_4053 = *(undefined4 *)secID->ab;
+  local_404f = *(undefined4 *)(secID->ab + 4);
+  ptr = (char *)auStack_404b;
+  local_8474 = infostring;
   do {
     uVar1 = *local_8474;
     local_8474 = local_8474 + 1;
   } while (uVar1 != '\0');
-  memcpy(local_18,local_805c,(int)local_8474 - (int)(local_805c + 1));
-  local_8484 = local_805c;
+  memcpy((uchar *)ptr,infostring,(int)local_8474 - (int)(infostring + 1));
+  local_8484 = infostring;
   do {
     uVar1 = *local_8484;
     local_8484 = local_8484 + 1;
   } while (uVar1 != '\0');
-  dwRawSendTo(&param_1,&local_4054,(uint)(local_8484 + (9 - (int)(local_805c + 1))));
+  dwRawSendTo(&from,&finalString,(uint)(local_8484 + (9 - (int)(infostring + 1))));
   return;
 }
 
@@ -619,7 +627,7 @@ void __cdecl SVC_Status(netadr_t param_1,bdSecurityID *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SVC_StatusScoreBoard(netadr_t param_1,bdSecurityID *param_2)
+void __cdecl SVC_StatusScoreBoard(netadr_t from,bdSecurityID *secID)
 
 {
   uchar uVar1;
@@ -631,16 +639,17 @@ void __cdecl SVC_StatusScoreBoard(netadr_t param_1,bdSecurityID *param_2)
   uchar *local_448c;
   uchar *local_4488;
   uchar *local_4478;
-  char local_4470 [32];
-  int local_4450;
-  uchar local_444c;
+  client_t *cl;
+  char playerName [32];
+  int playerLength;
+  uchar finalString;
   undefined4 local_444b;
   undefined4 local_4447;
   uchar auStack_4443 [16427];
-  uchar *local_418;
-  int local_414;
-  ulong local_410;
-  uchar local_40c [1028];
+  char *ptr;
+  int i;
+  int statusLength;
+  uchar player [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -653,20 +662,20 @@ void __cdecl SVC_StatusScoreBoard(netadr_t param_1,bdSecurityID *param_2)
     return;
   }
   memset(tempServerMsgBuf,'\0',0x10000);
-  memset(&local_444c,'\0',0x4000);
-  local_410 = 0;
-  for (local_414 = 0; local_414 < (com_maxclients->current).integer; local_414 = local_414 + 1) {
-    piVar5 = (int *)(local_414 * 0x84d00 + (int)svs.clients);
+  memset(&finalString,'\0',0x4000);
+  statusLength = 0;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    piVar5 = (int *)(i * 0x84d00 + (int)svs.clients);
     if (2 < *piVar5) {
       if ((char)piVar5[0x1564] == '\0') {
-        _snprintf(local_4470,0x20,"%s");
+        _snprintf(playerName,0x20,"%s");
       }
       else {
-        _snprintf(local_4470,0x20,"[%s]%s");
+        _snprintf(playerName,0x20,"[%s]%s");
       }
       if (gameInitialized == 0) {
         G_GetClientRank(((int)piVar5 - (int)svs.clients) / 0x84d00);
-        Com_sprintf((char *)local_40c,0x400,"%i %i %i %i %i %i %i %s\n");
+        Com_sprintf((char *)player,0x400,"%i %i %i %i %i %i %i %s\n");
       }
       else {
         G_GetClientDeaths(((int)piVar5 - (int)svs.clients) / 0x84d00);
@@ -675,38 +684,38 @@ void __cdecl SVC_StatusScoreBoard(netadr_t param_1,bdSecurityID *param_2)
         G_GetClientScore(((int)piVar5 - (int)svs.clients) / 0x84d00);
         G_GetClientRank(((int)piVar5 - (int)svs.clients) / 0x84d00);
         G_GetClientTeam(((int)piVar5 - (int)svs.clients) / 0x84d00);
-        Com_sprintf((char *)local_40c,0x400,"%i %i %i %i %i %i %i %s\n");
+        Com_sprintf((char *)player,0x400,"%i %i %i %i %i %i %i %s\n");
       }
-      local_4478 = local_40c;
+      local_4478 = player;
       do {
         uVar1 = *local_4478;
         local_4478 = local_4478 + 1;
       } while (uVar1 != '\0');
-      local_4450 = (int)local_4478 - (int)(local_40c + 1);
-      if (0xffff < (int)(local_410 + local_4450)) break;
-      local_4488 = local_40c;
-      local_448c = tempServerMsgBuf + local_410;
+      playerLength = (int)local_4478 - (int)(player + 1);
+      if (0xffff < statusLength + playerLength) break;
+      local_4488 = player;
+      local_448c = tempServerMsgBuf + statusLength;
       do {
         uVar1 = *local_4488;
         *local_448c = uVar1;
         local_4488 = local_4488 + 1;
         local_448c = local_448c + 1;
       } while (uVar1 != '\0');
-      local_410 = local_410 + local_4450;
+      statusLength = statusLength + playerLength;
     }
   }
-  local_444c = '\a';
-  local_444b = *(undefined4 *)param_2->ab;
-  local_4447 = *(undefined4 *)(param_2->ab + 4);
-  local_418 = auStack_4443;
-  memcpy(local_418,tempServerMsgBuf,local_410);
+  finalString = '\a';
+  local_444b = *(undefined4 *)secID->ab;
+  local_4447 = *(undefined4 *)(secID->ab + 4);
+  ptr = (char *)auStack_4443;
+  memcpy((uchar *)ptr,tempServerMsgBuf,statusLength);
   local_4498 = tempServerMsgBuf;
   puVar3 = local_4498;
   do {
     local_4498 = puVar3;
     puVar3 = local_4498 + 1;
   } while (*local_4498 != '\0');
-  dwRawSendTo(&param_1,&local_444c,(uint)(local_4498 + -0x985f4f7));
+  dwRawSendTo(&from,&finalString,(uint)(local_4498 + -0x985f4f7));
   return;
 }
 
@@ -725,7 +734,7 @@ void __cdecl SVC_StatusScoreBoard(netadr_t param_1,bdSecurityID *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SVC_Info(netadr_t param_1,bdSecurityID *param_2,bool param_3)
+void __cdecl SVC_Info(netadr_t from,bdSecurityID *secID,bool quick)
 
 {
   char cVar1;
@@ -735,40 +744,42 @@ void __cdecl SVC_Info(netadr_t param_1,bdSecurityID *param_2,bool param_3)
   int iVar5;
   pregameStateEnum pVar6;
   char *pcVar7;
-  char *pcVar8;
+  char *base;
   uchar *local_870;
   uchar *local_860;
   char *local_84c;
-  uint local_844;
-  uchar local_83c [1028];
-  char *local_438;
-  int local_434;
-  char *local_430;
-  int local_42c;
-  int local_428;
-  char *local_424;
-  uint local_420;
-  uchar *local_41c;
-  int local_418;
-  undefined4 local_414;
-  int local_410;
-  char local_40c;
+  char *country;
+  int clientCount;
+  int friendlyfire;
+  uchar infostring [1028];
+  char *refIwdNames;
+  int hardcore;
+  char *gamedir;
+  int killcam;
+  int maxclients;
+  char *password;
+  int privateClientCount;
+  char *ptr;
+  int i;
+  int serverModded;
+  int count;
+  char response;
   undefined4 local_40b;
   undefined4 local_407;
   uchar auStack_403 [1019];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_414 = 0;
-  local_420 = 0;
-  local_418 = 0;
-  while (iVar5 = Com_GetPrivateClients(), local_418 < iVar5) {
-    if (2 < *(int *)((int)svs.clients + local_418 * 0x84d00)) {
-      local_420 = local_420 + 1;
+  serverModded = 0;
+  privateClientCount = 0;
+  i = 0;
+  while (iVar5 = Com_GetPrivateClients(), i < iVar5) {
+    if (2 < *(int *)((int)svs.clients + i * 0x84d00)) {
+      privateClientCount = privateClientCount + 1;
     }
-    local_418 = local_418 + 1;
+    i = i + 1;
   }
-  if (((com_maxclients->current).unsignedInt <= local_420) &&
+  if (((com_maxclients->current).unsignedInt <= (uint)privateClientCount) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",0x4fd,
                                0,
                                "privateClientCount doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
@@ -777,15 +788,14 @@ void __cdecl SVC_Info(netadr_t param_1,bdSecurityID *param_2,bool param_3)
     (*pcVar3)();
     return;
   }
-  local_844 = local_420;
-  for (local_418 = Com_GetPrivateClients(); local_418 < (com_maxclients->current).integer;
-      local_418 = local_418 + 1) {
-    if ((*(int *)((int)svs.clients + local_418 * 0x84d00 + 0x63914) == 0) &&
-       (2 < *(int *)((int)svs.clients + local_418 * 0x84d00))) {
-      local_844 = local_844 + 1;
+  clientCount = privateClientCount;
+  for (i = Com_GetPrivateClients(); i < (com_maxclients->current).integer; i = i + 1) {
+    if ((*(int *)((int)svs.clients + i * 0x84d00 + 0x63914) == 0) &&
+       (2 < *(int *)((int)svs.clients + i * 0x84d00))) {
+      clientCount = clientCount + 1;
     }
   }
-  local_83c[0] = '\0';
+  infostring[0] = '\0';
   local_84c = (sv_mapname->current).string;
   pcVar7 = local_84c + 1;
   do {
@@ -795,79 +805,78 @@ void __cdecl SVC_Info(netadr_t param_1,bdSecurityID *param_2,bool param_3)
   if (local_84c != pcVar7) {
     if (((xblive_wagermatch != (dvar_s *)0x0) && ((xblive_wagermatch->current).enabled != false)) &&
        (pVar6 = Pregame_GetState(), pVar6 == PREGAME_GAMESTARTED)) {
-      local_844 = (sv_maxclients->current).integer;
+      clientCount = (sv_maxclients->current).integer;
     }
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"protocol",pcVar7);
-    if (local_844 != 0) {
+    Info_SetValueForKey((char *)infostring,"protocol",pcVar7);
+    if (clientCount != 0) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"clients",pcVar7);
+      Info_SetValueForKey((char *)infostring,"clients",pcVar7);
     }
     iVar5 = Com_GetPrivateClients();
-    local_428 = (int)(sv_maxclients->current).string - (iVar5 - local_420);
-    if (0 < local_428) {
+    maxclients = (int)(sv_maxclients->current).string - (iVar5 - privateClientCount);
+    if (0 < maxclients) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"sv_maxclients",pcVar7);
+      Info_SetValueForKey((char *)infostring,"sv_maxclients",pcVar7);
     }
     if (((sv_pure->current).enabled != false) || (fs_numServerIwds != 0)) {
-      Info_SetValueForKey((char *)local_83c,"pure","1");
+      Info_SetValueForKey((char *)infostring,"pure","1");
     }
     if ((sv_minPing->current).integer != 0) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"minPing",pcVar7);
+      Info_SetValueForKey((char *)infostring,"minPing",pcVar7);
     }
     if ((sv_maxPing->current).integer != 0) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"maxPing",pcVar7);
+      Info_SetValueForKey((char *)infostring,"maxPing",pcVar7);
     }
-    local_430 = Dvar_GetString("fs_game");
-    if (*local_430 != '\0') {
-      Info_SetValueForKey((char *)local_83c,"game",local_430);
+    gamedir = Dvar_GetString("fs_game");
+    if (*gamedir != '\0') {
+      Info_SetValueForKey((char *)infostring,"game",gamedir);
     }
     if ((sv_allowAnonymous->current).enabled != false) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"sv_allowAnonymous",pcVar7);
+      Info_SetValueForKey((char *)infostring,"sv_allowAnonymous",pcVar7);
     }
     if ((sv_disableClientConsole->current).enabled != false) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"con_disabled",pcVar7);
+      Info_SetValueForKey((char *)infostring,"con_disabled",pcVar7);
     }
-    local_424 = Dvar_GetString("g_password");
-    if ((local_424 != (char *)0x0) && (*local_424 != '\0')) {
-      Info_SetValueForKey((char *)local_83c,"pswrd","1");
+    password = Dvar_GetString("g_password");
+    if ((password != (char *)0x0) && (*password != '\0')) {
+      Info_SetValueForKey((char *)infostring,"pswrd","1");
     }
     iVar5 = Dvar_GetInt("scr_team_fftype");
     if (iVar5 != 0) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"ff",pcVar7);
+      Info_SetValueForKey((char *)infostring,"ff",pcVar7);
     }
-    local_42c = Dvar_GetInt("scr_killcam");
-    if (local_42c != 0) {
+    killcam = Dvar_GetInt("scr_killcam");
+    if (killcam != 0) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"kc",pcVar7);
+      Info_SetValueForKey((char *)infostring,"kc",pcVar7);
     }
-    local_434 = Dvar_GetInt("scr_hardcore");
-    if (local_434 != 0) {
+    hardcore = Dvar_GetInt("scr_hardcore");
+    if (hardcore != 0) {
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"hc",pcVar7);
+      Info_SetValueForKey((char *)infostring,"hc",pcVar7);
     }
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"hw",pcVar7);
-    if (((sv_pure->current).enabled == false) ||
-       ((local_430 != (char *)0x0 && (*local_430 != '\0')))) {
-      local_414 = 1;
+    Info_SetValueForKey((char *)infostring,"hw",pcVar7);
+    if (((sv_pure->current).enabled == false) || ((gamedir != (char *)0x0 && (*gamedir != '\0')))) {
+      serverModded = 1;
     }
     else {
-      local_438 = Dvar_GetString("sv_referencedIwdNames");
-      if (*local_438 != '\0') {
-        SV_Cmd_TokenizeString(local_438);
-        local_410 = SV_Cmd_Argc();
-        for (local_418 = 0; local_418 < local_410; local_418 = local_418 + 1) {
-          pcVar8 = "main";
-          pcVar7 = SV_Cmd_Argv(local_418);
-          iVar5 = FS_iwIwd(pcVar7,pcVar8);
+      refIwdNames = Dvar_GetString("sv_referencedIwdNames");
+      if (*refIwdNames != '\0') {
+        SV_Cmd_TokenizeString(refIwdNames);
+        count = SV_Cmd_Argc();
+        for (i = 0; i < count; i = i + 1) {
+          base = "main";
+          pcVar7 = SV_Cmd_Argv(i);
+          iVar5 = FS_iwIwd(pcVar7,base);
           if (iVar5 == 0) {
-            local_414 = 1;
+            serverModded = 1;
             break;
           }
         }
@@ -875,58 +884,58 @@ void __cdecl SVC_Info(netadr_t param_1,bdSecurityID *param_2,bool param_3)
       }
     }
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"mod",pcVar7);
+    Info_SetValueForKey((char *)infostring,"mod",pcVar7);
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"voice",pcVar7);
+    Info_SetValueForKey((char *)infostring,"voice",pcVar7);
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"pb",pcVar7);
+    Info_SetValueForKey((char *)infostring,"pb",pcVar7);
     Dvar_GetInt("scr_testclients");
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"bots",pcVar7);
+    Info_SetValueForKey((char *)infostring,"bots",pcVar7);
     SV_GetLicenseType();
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"licensetype",pcVar7);
+    Info_SetValueForKey((char *)infostring,"licensetype",pcVar7);
     pcVar7 = va("%i");
-    Info_SetValueForKey((char *)local_83c,"wager",pcVar7);
+    Info_SetValueForKey((char *)infostring,"wager",pcVar7);
     Dvar_GetString("sv_geolocation");
     pcVar7 = va("%s");
-    Info_SetValueForKey((char *)local_83c,"geolocation",pcVar7);
+    Info_SetValueForKey((char *)infostring,"geolocation",pcVar7);
     bVar4 = Dvar_GetBool("xblive_wagermatch");
     if (bVar4) {
       Dvar_GetInt("scr_wagerbet");
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"wagerbet",pcVar7);
+      Info_SetValueForKey((char *)infostring,"wagerbet",pcVar7);
     }
     bVar4 = Dvar_GetBool("playlist_enabled");
     if (bVar4) {
       Dvar_GetInt("playlist");
       pcVar7 = va("%i");
-      Info_SetValueForKey((char *)local_83c,"playlist",pcVar7);
+      Info_SetValueForKey((char *)infostring,"playlist",pcVar7);
     }
     if ((xblive_basictraining != (dvar_s *)0x0) &&
        ((xblive_basictraining->current).enabled != false)) {
-      Info_SetValueForKey((char *)local_83c,"basic","1");
+      Info_SetValueForKey((char *)infostring,"basic","1");
     }
     bVar4 = Dvar_GetBool("custom_class_name");
     if (bVar4) {
-      Info_SetValueForKey((char *)local_83c,"customclass","1");
+      Info_SetValueForKey((char *)infostring,"customclass","1");
     }
-    local_40c = (-param_3 & 6U) + 3;
-    local_40b = *(undefined4 *)param_2->ab;
-    local_407 = *(undefined4 *)(param_2->ab + 4);
-    local_41c = auStack_403;
-    local_860 = local_83c;
+    response = (-quick & 6U) + 3;
+    local_40b = *(undefined4 *)secID->ab;
+    local_407 = *(undefined4 *)(secID->ab + 4);
+    ptr = (char *)auStack_403;
+    local_860 = infostring;
     do {
       uVar2 = *local_860;
       local_860 = local_860 + 1;
     } while (uVar2 != '\0');
-    memcpy(local_41c,local_83c,(ulong)(local_860 + (1 - (int)(local_83c + 1))));
-    local_870 = local_83c;
+    memcpy((uchar *)ptr,infostring,(ulong)(local_860 + (1 - (int)(infostring + 1))));
+    local_870 = infostring;
     do {
       uVar2 = *local_870;
       local_870 = local_870 + 1;
     } while (uVar2 != '\0');
-    dwRawSendTo(&param_1,&local_40c,(uint)(local_870 + (10 - (int)(local_83c + 1))));
+    dwRawSendTo(&from,&response,(uint)(local_870 + (10 - (int)(infostring + 1))));
   }
   return;
 }
@@ -942,177 +951,175 @@ void __cdecl SVC_Info(netadr_t param_1,bdSecurityID *param_2,bool param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_ConnectionlessPacket(netadr_t param_1,msg_t *param_2)
+void __cdecl SV_ConnectionlessPacket(netadr_t from,msg_t *msg)
 
 {
-  netadr_t nVar1;
-  netadr_t nVar2;
-  netadr_t nVar3;
-  netadr_t nVar4;
-  netadr_t nVar5;
-  netadr_t nVar6;
-  netadr_t nVar7;
-  netadr_t nVar8;
-  netadr_t nVar9;
-  netadr_t nVar10;
-  int iVar11;
-  char *pcVar12;
+  netadr_t a;
+  netadr_t a_00;
+  netadr_t a_01;
+  netadr_t from_00;
+  netadr_t from_01;
+  netadr_t from_02;
+  netadr_t from_03;
+  netadr_t adr;
+  netadr_t a_02;
+  netadr_t from_04;
+  int iVar1;
+  char *s0;
   char *local_420;
-  client_t *local_41c;
-  char local_414 [1024];
-  int local_14;
-  char *local_10;
-  int local_c;
+  client_t *cl;
+  char *c;
+  char strBuf [1024];
+  int clientIndex;
+  char *s;
+  int i;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_14 = -1;
-  MSG_BeginReading(param_2);
-  MSG_ReadLong(param_2);
-  SV_Netchan_AddOOBProfilePacket(param_2->cursize);
-  iVar11 = I_strnicmp((char *)(param_2->data + 4),"pb_",3);
-  if (iVar11 == 0) {
-    local_41c = svs.clients;
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if ((((local_41c->header).state != 0) &&
-          (nVar1._10_2_ = param_1._10_2_, nVar1.port = param_1.port, nVar1.ip[0] = param_1.ip[0],
-          nVar1.ip[1] = param_1.ip[1], nVar1.ip[2] = param_1.ip[2], nVar1.ip[3] = param_1.ip[3],
-          nVar1.type = param_1.type, nVar1.addrHandleIndex = param_1.addrHandleIndex,
-          iVar11 = NET_CompareBaseAdr(nVar1,(local_41c->header).netchan.remoteAddress), iVar11 != 0)
-          ) && ((local_41c->header).netchan.remoteAddress.port == param_1.port)) {
-        local_14 = local_c;
+  clientIndex = -1;
+  MSG_BeginReading(msg);
+  MSG_ReadLong(msg);
+  SV_Netchan_AddOOBProfilePacket(msg->cursize);
+  iVar1 = I_strnicmp((char *)(msg->data + 4),"pb_",3);
+  if (iVar1 == 0) {
+    cl = svs.clients;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if ((((cl->header).state != 0) &&
+          (a._10_2_ = from._10_2_, a.port = from.port, a.ip[0] = from.ip[0], a.ip[1] = from.ip[1],
+          a.ip[2] = from.ip[2], a.ip[3] = from.ip[3], a.type = from.type,
+          a.addrHandleIndex = from.addrHandleIndex,
+          iVar1 = NET_CompareBaseAdr(a,(cl->header).netchan.remoteAddress), iVar1 != 0)) &&
+         ((cl->header).netchan.remoteAddress.port == from.port)) {
+        clientIndex = i;
         break;
       }
-      local_41c = (client_t *)(local_41c[1].userinfo + 0x3d8);
+      cl = (client_t *)(cl[1].userinfo + 0x3d8);
     }
-    if (((param_2->data[7] != 'C') && (param_2->data[7] != '1')) && (param_2->data[7] != 'J')) {
-      PbSvAddEvent(0xd,local_14,param_2->cursize + -4,(char *)(param_2->data + 4));
+    if (((msg->data[7] != 'C') && (msg->data[7] != '1')) && (msg->data[7] != 'J')) {
+      PbSvAddEvent(0xd,clientIndex,msg->cursize + -4,(char *)(msg->data + 4));
     }
   }
   else {
-    local_10 = MSG_ReadStringLine(param_2,local_414,0x400);
-    SV_Cmd_TokenizeString(local_10);
-    pcVar12 = SV_Cmd_Argv(0);
+    s = MSG_ReadStringLine(msg,strBuf,0x400);
+    SV_Cmd_TokenizeString(s);
+    s0 = SV_Cmd_Argv(0);
     if ((sv_packet_info->current).enabled == false) {
-      iVar11 = I_stricmp(pcVar12,"v");
-      if (iVar11 == 0) {
-        nVar4._10_2_ = param_1._10_2_;
-        nVar4.port = param_1.port;
-        nVar4.ip[0] = param_1.ip[0];
-        nVar4.ip[1] = param_1.ip[1];
-        nVar4.ip[2] = param_1.ip[2];
-        nVar4.ip[3] = param_1.ip[3];
-        nVar4.type = param_1.type;
-        nVar4.addrHandleIndex = param_1.addrHandleIndex;
-        SV_VoicePacket(nVar4,param_2);
+      iVar1 = I_stricmp(s0,"v");
+      if (iVar1 == 0) {
+        from_00._10_2_ = from._10_2_;
+        from_00.port = from.port;
+        from_00.ip[0] = from.ip[0];
+        from_00.ip[1] = from.ip[1];
+        from_00.ip[2] = from.ip[2];
+        from_00.ip[3] = from.ip[3];
+        from_00.type = from.type;
+        from_00.addrHandleIndex = from.addrHandleIndex;
+        SV_VoicePacket(from_00,msg);
       }
       else {
-        iVar11 = I_stricmp(pcVar12,"getinfo");
-        if (iVar11 != 0) {
-          iVar11 = I_stricmp(pcVar12,"getchallenge");
-          if (iVar11 == 0) {
-            nVar7._10_2_ = param_1._10_2_;
-            nVar7.port = param_1.port;
-            nVar7.ip[0] = param_1.ip[0];
-            nVar7.ip[1] = param_1.ip[1];
-            nVar7.ip[2] = param_1.ip[2];
-            nVar7.ip[3] = param_1.ip[3];
-            nVar7.type = param_1.type;
-            nVar7.addrHandleIndex = param_1.addrHandleIndex;
-            SV_GetChallenge(nVar7);
+        iVar1 = I_stricmp(s0,"getinfo");
+        if (iVar1 != 0) {
+          iVar1 = I_stricmp(s0,"getchallenge");
+          if (iVar1 == 0) {
+            from_03._10_2_ = from._10_2_;
+            from_03.port = from.port;
+            from_03.ip[0] = from.ip[0];
+            from_03.ip[1] = from.ip[1];
+            from_03.ip[2] = from.ip[2];
+            from_03.ip[3] = from.ip[3];
+            from_03.type = from.type;
+            from_03.addrHandleIndex = from.addrHandleIndex;
+            SV_GetChallenge(from_03);
           }
           else {
-            iVar11 = I_stricmp(pcVar12,"connect");
-            if (iVar11 == 0) {
-              nVar8._10_2_ = param_1._10_2_;
-              nVar8.port = param_1.port;
-              nVar8.ip[0] = param_1.ip[0];
-              nVar8.ip[1] = param_1.ip[1];
-              nVar8.ip[2] = param_1.ip[2];
-              nVar8.ip[3] = param_1.ip[3];
-              nVar8.type = param_1.type;
-              nVar8.addrHandleIndex = param_1.addrHandleIndex;
-              iVar11 = NET_IsLocalAddress(nVar8);
-              if (iVar11 == 0) {
-                nVar9._10_2_ = param_1._10_2_;
-                nVar9.port = param_1.port;
-                nVar9.ip[0] = param_1.ip[0];
-                nVar9.ip[1] = param_1.ip[1];
-                nVar9.ip[2] = param_1.ip[2];
-                nVar9.ip[3] = param_1.ip[3];
-                nVar9.type = param_1.type;
-                nVar9.addrHandleIndex = param_1.addrHandleIndex;
-                local_420 = NET_AdrToString(nVar9);
+            iVar1 = I_stricmp(s0,"connect");
+            if (iVar1 == 0) {
+              adr._10_2_ = from._10_2_;
+              adr.port = from.port;
+              adr.ip[0] = from.ip[0];
+              adr.ip[1] = from.ip[1];
+              adr.ip[2] = from.ip[2];
+              adr.ip[3] = from.ip[3];
+              adr.type = from.type;
+              adr.addrHandleIndex = from.addrHandleIndex;
+              iVar1 = NET_IsLocalAddress(adr);
+              if (iVar1 == 0) {
+                a_02._10_2_ = from._10_2_;
+                a_02.port = from.port;
+                a_02.ip[0] = from.ip[0];
+                a_02.ip[1] = from.ip[1];
+                a_02.ip[2] = from.ip[2];
+                a_02.ip[3] = from.ip[3];
+                a_02.type = from.type;
+                a_02.addrHandleIndex = from.addrHandleIndex;
+                local_420 = NET_AdrToString(a_02);
               }
               else {
                 local_420 = "localhost";
               }
-              PbPassConnectString(local_420,(char *)param_2->data);
-              nVar10._10_2_ = param_1._10_2_;
-              nVar10.port = param_1.port;
-              nVar10.ip[0] = param_1.ip[0];
-              nVar10.ip[1] = param_1.ip[1];
-              nVar10.ip[2] = param_1.ip[2];
-              nVar10.ip[3] = param_1.ip[3];
-              nVar10.type = param_1.type;
-              nVar10.addrHandleIndex = param_1.addrHandleIndex;
-              SV_DirectConnect(nVar10);
+              PbPassConnectString(local_420,(char *)msg->data);
+              from_04._10_2_ = from._10_2_;
+              from_04.port = from.port;
+              from_04.ip[0] = from.ip[0];
+              from_04.ip[1] = from.ip[1];
+              from_04.ip[2] = from.ip[2];
+              from_04.ip[3] = from.ip[3];
+              from_04.type = from.type;
+              from_04.addrHandleIndex = from.addrHandleIndex;
+              SV_DirectConnect(from_04);
             }
             else {
-              iVar11 = I_stricmp(pcVar12,"dwcr");
-              if (iVar11 == 0) {
-                nVar5._10_2_ = param_1._10_2_;
-                nVar5.port = param_1.port;
-                nVar5.ip[0] = param_1.ip[0];
-                nVar5.ip[1] = param_1.ip[1];
-                nVar5.ip[2] = param_1.ip[2];
-                nVar5.ip[3] = param_1.ip[3];
-                nVar5.type = param_1.type;
-                nVar5.addrHandleIndex = param_1.addrHandleIndex;
-                SV_HandleDWChallengeResponse(nVar5,param_2);
+              iVar1 = I_stricmp(s0,"dwcr");
+              if (iVar1 == 0) {
+                from_01._10_2_ = from._10_2_;
+                from_01.port = from.port;
+                from_01.ip[0] = from.ip[0];
+                from_01.ip[1] = from.ip[1];
+                from_01.ip[2] = from.ip[2];
+                from_01.ip[3] = from.ip[3];
+                from_01.type = from.type;
+                from_01.addrHandleIndex = from.addrHandleIndex;
+                SV_HandleDWChallengeResponse(from_01,msg);
               }
               else {
-                iVar11 = I_stricmp(pcVar12,"steamauth");
-                if (iVar11 == 0) {
-                  nVar6._10_2_ = param_1._10_2_;
-                  nVar6.port = param_1.port;
-                  nVar6.ip[0] = param_1.ip[0];
-                  nVar6.ip[1] = param_1.ip[1];
-                  nVar6.ip[2] = param_1.ip[2];
-                  nVar6.ip[3] = param_1.ip[3];
-                  nVar6.type = param_1.type;
-                  nVar6.addrHandleIndex = param_1.addrHandleIndex;
-                  SV_SteamAuthClient(nVar6,param_2);
+                iVar1 = I_stricmp(s0,"steamauth");
+                if (iVar1 == 0) {
+                  from_02._10_2_ = from._10_2_;
+                  from_02.port = from.port;
+                  from_02.ip[0] = from.ip[0];
+                  from_02.ip[1] = from.ip[1];
+                  from_02.ip[2] = from.ip[2];
+                  from_02.ip[3] = from.ip[3];
+                  from_02.type = from.type;
+                  from_02.addrHandleIndex = from.addrHandleIndex;
+                  SV_SteamAuthClient(from_02,msg);
                 }
                 else {
-                  iVar11 = I_stricmp(pcVar12,"rcon");
-                  if (iVar11 == 0) {
-                    NET_DeferPacketToClient(&param_1,param_2);
+                  iVar1 = I_stricmp(s0,"rcon");
+                  if (iVar1 == 0) {
+                    NET_DeferPacketToClient(&from,msg);
                   }
                   else {
-                    iVar11 = I_stricmp(pcVar12,"disconnect");
-                    if (iVar11 != 0) {
-                      iVar11 = I_stricmp(pcVar12,"XX");
-                      if (iVar11 == 0) {
-                        local_41c = svs.clients;
-                        for (local_c = 0; local_c < (com_maxclients->current).integer;
-                            local_c = local_c + 1) {
-                          if ((((local_41c->header).state != 0) &&
-                              (nVar2._10_2_ = param_1._10_2_, nVar2.port = param_1.port,
-                              nVar2.ip[0] = param_1.ip[0], nVar2.ip[1] = param_1.ip[1],
-                              nVar2.ip[2] = param_1.ip[2], nVar2.ip[3] = param_1.ip[3],
-                              nVar2.type = param_1.type,
-                              nVar2.addrHandleIndex = param_1.addrHandleIndex,
-                              iVar11 = NET_CompareBaseAdr(nVar2,(local_41c->header).netchan.
-                                                                remoteAddress), iVar11 != 0)) &&
-                             (local_41c->lastPacketTime < svs.time)) {
-                            local_41c->lastPacketTime = svs.time;
+                    iVar1 = I_stricmp(s0,"disconnect");
+                    if (iVar1 != 0) {
+                      iVar1 = I_stricmp(s0,"XX");
+                      if (iVar1 == 0) {
+                        cl = svs.clients;
+                        for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+                          if ((((cl->header).state != 0) &&
+                              (a_00._10_2_ = from._10_2_, a_00.port = from.port,
+                              a_00.ip[0] = from.ip[0], a_00.ip[1] = from.ip[1],
+                              a_00.ip[2] = from.ip[2], a_00.ip[3] = from.ip[3],
+                              a_00.type = from.type, a_00.addrHandleIndex = from.addrHandleIndex,
+                              iVar1 = NET_CompareBaseAdr(a_00,(cl->header).netchan.remoteAddress),
+                              iVar1 != 0)) && (cl->lastPacketTime < svs.time)) {
+                            cl->lastPacketTime = svs.time;
                           }
-                          local_41c = (client_t *)(local_41c[1].userinfo + 0x3d8);
+                          cl = (client_t *)(cl[1].userinfo + 0x3d8);
                         }
                       }
                       else {
-                        NET_DeferPacketToClient(&param_1,param_2);
+                        NET_DeferPacketToClient(&from,msg);
                       }
                     }
                   }
@@ -1124,15 +1131,15 @@ void __cdecl SV_ConnectionlessPacket(netadr_t param_1,msg_t *param_2)
       }
     }
     else {
-      nVar3._10_2_ = param_1._10_2_;
-      nVar3.port = param_1.port;
-      nVar3.ip[0] = param_1.ip[0];
-      nVar3.ip[1] = param_1.ip[1];
-      nVar3.ip[2] = param_1.ip[2];
-      nVar3.ip[3] = param_1.ip[3];
-      nVar3.type = param_1.type;
-      nVar3.addrHandleIndex = param_1.addrHandleIndex;
-      NET_AdrToString(nVar3);
+      a_01._10_2_ = from._10_2_;
+      a_01.port = from.port;
+      a_01.ip[0] = from.ip[0];
+      a_01.ip[1] = from.ip[1];
+      a_01.ip[2] = from.ip[2];
+      a_01.ip[3] = from.ip[3];
+      a_01.type = from.type;
+      a_01.addrHandleIndex = from.addrHandleIndex;
+      NET_AdrToString(a_01);
       Com_Printf(0xf,"SV packet %s : %s\n");
     }
     SV_Cmd_EndTokenizedString();
@@ -1149,13 +1156,15 @@ void __cdecl SV_ConnectionlessPacket(netadr_t param_1,msg_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_PacketEvent(netadr_t param_1,msg_t *param_2)
+void __cdecl SV_PacketEvent(netadr_t from,msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  client_t *pcVar4;
+  client_t *cl_00;
+  client_t *cl;
+  int qport;
   
   bVar2 = Sys_IsServerThread();
   if ((!bVar2) && (sv.smp != false)) {
@@ -1167,31 +1176,31 @@ void __cdecl SV_PacketEvent(netadr_t param_1,msg_t *param_2)
       return;
     }
   }
-  if ((param_2->cursize < 4) || (*(int *)param_2->data != -1)) {
+  if ((msg->cursize < 4) || (*(int *)msg->data != -1)) {
     SV_ResetSkeletonCache();
-    MSG_BeginReading(param_2);
-    MSG_ReadLong(param_2);
-    iVar3 = MSG_ReadShort(param_2);
-    pcVar4 = SV_FindClientByAddress(param_1,iVar3);
-    if (pcVar4 == (client_t *)0x0) {
-      NET_OutOfBandPrint(NS_MAXCLIENTS,param_1,"disconnect");
+    MSG_BeginReading(msg);
+    MSG_ReadLong(msg);
+    iVar3 = MSG_ReadShort(msg);
+    cl_00 = SV_FindClientByAddress(from,iVar3);
+    if (cl_00 == (client_t *)0x0) {
+      NET_OutOfBandPrint(NS_MAXCLIENTS,from,"disconnect");
     }
     else {
-      iVar3 = Netchan_Process(&(pcVar4->header).netchan,param_2);
+      iVar3 = Netchan_Process(&(cl_00->header).netchan,msg);
       if (iVar3 != 0) {
-        iVar3 = MSG_ReadByte(param_2);
-        pcVar4->serverId = iVar3;
-        iVar3 = MSG_ReadLong(param_2);
-        pcVar4->messageAcknowledge = iVar3;
-        if (pcVar4->messageAcknowledge < 0) {
+        iVar3 = MSG_ReadByte(msg);
+        cl_00->serverId = iVar3;
+        iVar3 = MSG_ReadLong(msg);
+        cl_00->messageAcknowledge = iVar3;
+        if (cl_00->messageAcknowledge < 0) {
           Com_Printf(0xf,"Invalid reliableAcknowledge message from %s - reliableAcknowledge is %i\n"
                     );
         }
         else {
-          iVar3 = MSG_ReadLong(param_2);
-          pcVar4->reliableAcknowledge = iVar3;
-          if (pcVar4->reliableSequence - pcVar4->reliableAcknowledge < 0x80) {
-            if ((pcVar4->header).state != 1) {
+          iVar3 = MSG_ReadLong(msg);
+          cl_00->reliableAcknowledge = iVar3;
+          if (cl_00->reliableSequence - cl_00->reliableAcknowledge < 0x80) {
+            if ((cl_00->header).state != 1) {
               if (*(int *)(*(int *)((int)ThreadLocalStoragePointer + _tls_index * 4) + 8) != 0) {
                 bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp"
                                          ,0x774,0,"%s\n\t(bgs) = %p");
@@ -1201,22 +1210,22 @@ void __cdecl SV_PacketEvent(netadr_t param_1,msg_t *param_2)
                   return;
                 }
               }
-              pcVar4->lastPacketTime = svs.time;
-              SV_ExecuteClientMessage(pcVar4,param_2);
+              cl_00->lastPacketTime = svs.time;
+              SV_ExecuteClientMessage(cl_00,msg);
             }
           }
           else {
             Com_Printf(0xf,
                        "Out of range reliableAcknowledge message from %s - cl->reliableSequence is %i, reliableAcknowledge is %i\n"
                       );
-            pcVar4->reliableAcknowledge = pcVar4->reliableSequence;
+            cl_00->reliableAcknowledge = cl_00->reliableSequence;
           }
         }
       }
     }
   }
   else {
-    SV_ConnectionlessPacket(param_1,param_2);
+    SV_ConnectionlessPacket(from,msg);
   }
   return;
 }
@@ -1234,13 +1243,15 @@ void __cdecl SV_CalcPings(void)
 
 {
   int *piVar1;
-  int local_1c;
-  int local_10;
-  int local_c;
-  int local_8;
+  int j;
+  client_t *cl;
+  int delta;
+  int total;
+  int i;
+  int count;
   
-  for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-    piVar1 = (int *)(local_c * 0x84d00 + (int)svs.clients);
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    piVar1 = (int *)(i * 0x84d00 + (int)svs.clients);
     if (*piVar1 == 5) {
       if (piVar1[0x155b] == 0) {
         if ((sv_showPingSpam->current).integer != 0) {
@@ -1249,16 +1260,15 @@ void __cdecl SV_CalcPings(void)
         piVar1[0x14c3d] = 999;
       }
       else {
-        local_10 = 0;
-        local_8 = 0;
-        for (local_1c = 0; local_1c < 0x20; local_1c = local_1c + 1) {
-          if (0 < piVar1[local_1c * 0x9b3 + 0x1f8c]) {
-            local_8 = local_8 + 1;
-            local_10 = local_10 +
-                       (piVar1[local_1c * 0x9b3 + 0x1f8c] - piVar1[local_1c * 0x9b3 + 0x1f8b]);
+        total = 0;
+        count = 0;
+        for (j = 0; j < 0x20; j = j + 1) {
+          if (0 < piVar1[j * 0x9b3 + 0x1f8c]) {
+            count = count + 1;
+            total = total + (piVar1[j * 0x9b3 + 0x1f8c] - piVar1[j * 0x9b3 + 0x1f8b]);
           }
         }
-        if (local_8 == 0) {
+        if (count == 0) {
           if (piVar1[8] == 0) {
             piVar1[0x14c3d] = 0;
           }
@@ -1270,7 +1280,7 @@ void __cdecl SV_CalcPings(void)
           }
         }
         else {
-          piVar1[0x14c3d] = local_10 / local_8;
+          piVar1[0x14c3d] = total / count;
           if (999 < piVar1[0x14c3d]) {
             if ((sv_showPingSpam->current).integer != 0) {
               Com_DPrintf(0xf,"Giving %s a 999 ping - >999 calculated ping:\n");
@@ -1296,14 +1306,13 @@ void __cdecl SV_CalcPings(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_FreeClientScriptId(client_t *param_1)
+void __cdecl SV_FreeClientScriptId(client_t *cl)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((com_maxclients->current).unsignedInt <= (uint)(((int)param_1 - (int)svs.clients) / 0x84d00))
-  {
+  if ((com_maxclients->current).unsignedInt <= (uint)(((int)cl - (int)svs.clients) / 0x84d00)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",0x80c,0,
                              "cl - svs.clients doesn\'t index com_maxclients->current.integer\n\t%i not in [0, %i)"
                             );
@@ -1314,7 +1323,7 @@ void __cdecl SV_FreeClientScriptId(client_t *param_1)
     }
   }
   Com_Printf(0xf,"SV_FreeClientScriptId: %d, %d -> 0\n");
-  if (param_1->scriptId == 0) {
+  if (cl->scriptId == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",0x812,0,
                              "%s");
     if (!bVar2) {
@@ -1323,8 +1332,8 @@ void __cdecl SV_FreeClientScriptId(client_t *param_1)
       return;
     }
   }
-  Scr_FreeValue(SCRIPTINSTANCE_SERVER,param_1->scriptId);
-  param_1->scriptId = 0;
+  Scr_FreeValue(SCRIPTINSTANCE_SERVER,cl->scriptId);
+  cl->scriptId = 0;
   return;
 }
 
@@ -1344,49 +1353,53 @@ void __cdecl SV_CheckTimeouts(void)
   int iVar2;
   int iVar3;
   int iVar4;
-  client_t *local_1c;
-  int local_8;
+  client_t *cl;
+  int connectdroppoint;
+  PIXProfile pixProfile;
+  int zombiepoint;
+  int droppoint;
+  int clientNum;
   
   PIXBeginNamedEvent(-1,"SV_CheckTimeouts");
   iVar2 = svs.time + (sv_timeout->current).integer * -1000;
   iVar3 = svs.time + (sv_connectTimeout->current).integer * -1000;
   iVar4 = svs.time + (sv_zombietime->current).integer * -1000;
-  local_1c = svs.clients;
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    if (svs.time < local_1c->lastPacketTime) {
-      local_1c->lastPacketTime = svs.time;
+  cl = svs.clients;
+  for (clientNum = 0; clientNum < (com_maxclients->current).integer; clientNum = clientNum + 1) {
+    if (svs.time < cl->lastPacketTime) {
+      cl->lastPacketTime = svs.time;
     }
-    if ((local_1c->bIsTestClient == 0) && (local_1c->bIsDemoClient == 0)) {
-      if (((local_1c->header).state == 1) && (local_1c->lastPacketTime < iVar4)) {
+    if ((cl->bIsTestClient == 0) && (cl->bIsDemoClient == 0)) {
+      if (((cl->header).state == 1) && (cl->lastPacketTime < iVar4)) {
         Com_Printf(0xf,"Going from CS_ZOMBIE to CS_FREE for client #%i\n");
-        (local_1c->header).state = 0;
-        local_1c->lastPacketTime = 0;
-        dwCloseConnection(&(local_1c->header).netchan.remoteAddress);
+        (cl->header).state = 0;
+        cl->lastPacketTime = 0;
+        dwCloseConnection(&(cl->header).netchan.remoteAddress);
       }
-      else if (((local_1c->header).state == 5) && (local_1c->lastPacketTime < iVar2)) {
-        local_1c->timeoutCount = local_1c->timeoutCount + 1;
-        if (5 < local_1c->timeoutCount) {
+      else if (((cl->header).state == 5) && (cl->lastPacketTime < iVar2)) {
+        cl->timeoutCount = cl->timeoutCount + 1;
+        if (5 < cl->timeoutCount) {
           Com_Printf(0xf,"Timing out ACTIVE client #%i(%s)\n");
-          SV_DropClient(local_1c,"EXE_TIMEDOUT",true,true);
+          SV_DropClient(cl,"EXE_TIMEDOUT",true,true);
         }
       }
-      else if (((local_1c->header).state < 2) || (iVar3 <= local_1c->lastPacketTime)) {
-        local_1c->timeoutCount = 0;
+      else if (((cl->header).state < 2) || (iVar3 <= cl->lastPacketTime)) {
+        cl->timeoutCount = 0;
       }
       else {
-        local_1c->timeoutCount = local_1c->timeoutCount + 1;
-        if (5 < local_1c->timeoutCount) {
+        cl->timeoutCount = cl->timeoutCount + 1;
+        if (5 < cl->timeoutCount) {
           Com_Printf(0xf,"Timing out client #%i(%s), state was %i\n");
-          SV_DropClient(local_1c,"EXE_TIMEDOUT",true,true);
+          SV_DropClient(cl,"EXE_TIMEDOUT",true,true);
         }
       }
     }
-    else if ((local_1c->header).state == 1) {
+    else if ((cl->header).state == 1) {
       Com_Printf(0,"Going zombie --> free for client %s(%s)\n");
-      (local_1c->header).state = 0;
-      local_1c->lastPacketTime = 0;
+      (cl->header).state = 0;
+      cl->lastPacketTime = 0;
     }
-    local_1c = (client_t *)(local_1c[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1408,23 +1421,23 @@ int __cdecl SV_CheckPaused(void)
 
 {
   int iVar1;
-  client_t *local_10;
-  int local_c;
-  int local_8;
+  client_t *cl;
+  int i;
+  int count;
   
   if ((cl_paused->current).integer == 0) {
     iVar1 = 0;
   }
   else {
-    local_8 = 0;
-    local_10 = svs.clients;
-    for (local_c = 0; local_c < (com_maxclients->current).integer; local_c = local_c + 1) {
-      if (2 < (local_10->header).state) {
-        local_8 = local_8 + 1;
+    count = 0;
+    cl = svs.clients;
+    for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+      if (2 < (cl->header).state) {
+        count = count + 1;
       }
-      local_10 = (client_t *)(local_10[1].userinfo + 0x3d8);
+      cl = (client_t *)(cl[1].userinfo + 0x3d8);
     }
-    if (local_8 < 2) {
+    if (count < 2) {
       Dvar_SetInt(sv_paused,1);
       iVar1 = 1;
     }
@@ -1439,7 +1452,13 @@ int __cdecl SV_CheckPaused(void)
 
 // 00715580  SV_PostFrame  (server_mp/sv_main_mp.cpp:2264)
 
-void __cdecl SV_PostFrame(int param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl SV_PostFrame(int controllerIndex)
 
 {
   Scr_UpdateDebugger(SCRIPTINSTANCE_SERVER);
@@ -1456,35 +1475,35 @@ void __cdecl SV_PostFrame(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_UpdatePerformanceFrame(int param_1)
+void __cdecl SV_UpdatePerformanceFrame(int time)
 
 {
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int total;
+  int maxTime;
+  int minTime;
+  int i;
   
-  local_c = 0x7fffffff;
-  local_10 = 0;
-  serverPreviousFrameTimes[serverDebugFrame % 10] = param_1;
+  minTime = 0x7fffffff;
+  maxTime = 0;
+  serverPreviousFrameTimes[serverDebugFrame % 10] = time;
   serverDebugFrame = serverDebugFrame + 1;
   if (9 < serverDebugFrame) {
-    local_14 = 0;
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      local_14 = local_14 + serverPreviousFrameTimes[local_8];
-      if (serverPreviousFrameTimes[local_8] < local_c) {
-        local_c = serverPreviousFrameTimes[local_8];
+    total = 0;
+    for (i = 0; i < 10; i = i + 1) {
+      total = total + serverPreviousFrameTimes[i];
+      if (serverPreviousFrameTimes[i] < minTime) {
+        minTime = serverPreviousFrameTimes[i];
       }
-      if (local_10 < serverPreviousFrameTimes[local_8]) {
-        local_10 = serverPreviousFrameTimes[local_8];
+      if (maxTime < serverPreviousFrameTimes[i]) {
+        maxTime = serverPreviousFrameTimes[i];
       }
     }
-    sv.serverFrameTime = (int)((float)local_14 / 10.0);
-    if (local_c < 1) {
-      local_c = 1;
+    sv.serverFrameTime = (int)((float)total / 10.0);
+    if (minTime < 1) {
+      minTime = 1;
     }
-    sv.serverFrameTimeMin = local_c;
-    sv.serverFrameTimeMax = local_10;
+    sv.serverFrameTimeMin = minTime;
+    sv.serverFrameTimeMax = maxTime;
   }
   return;
 }
@@ -1503,6 +1522,7 @@ void __cdecl SV_RunFrame(void)
 {
   int iVar1;
   int iVar2;
+  int start;
   
   iVar1 = Sys_Milliseconds();
   SV_ResetSkeletonCache();
@@ -1529,24 +1549,24 @@ void __cdecl SV_UpdateBots(void)
 
 {
   int local_48;
-  client_t *local_44;
-  usercmd_s local_40;
+  client_t *cl;
+  usercmd_s botcmd;
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   for (local_48 = 0; local_48 < 2; local_48 = local_48 + 1) {
-    local_40.button_bits.array[local_48] = 0;
+    botcmd.button_bits.array[local_48] = 0;
   }
   SV_ResetSkeletonCache();
-  local_44 = svs.clients;
-  for (local_8 = 0; local_8 < (com_maxclients->current).integer; local_8 = local_8 + 1) {
-    if (((((local_44->header).state != 0) && ((local_44->header).state != 2)) &&
-        (local_44->bIsTestClient != 0)) && (local_44->bIsDemoClient == 0)) {
-      SV_BotThink(local_44,&local_40);
-      SV_ClientThink(local_44,&local_40);
+  cl = svs.clients;
+  for (i = 0; i < (com_maxclients->current).integer; i = i + 1) {
+    if (((((cl->header).state != 0) && ((cl->header).state != 2)) && (cl->bIsTestClient != 0)) &&
+       (cl->bIsDemoClient == 0)) {
+      SV_BotThink(cl,&botcmd);
+      SV_ClientThink(cl,&botcmd);
     }
-    local_44 = (client_t *)(local_44[1].userinfo + 0x3d8);
+    cl = (client_t *)(cl[1].userinfo + 0x3d8);
   }
   return;
 }
@@ -1604,7 +1624,13 @@ void __cdecl SV_RunEventLoop(void)
 
 // 007152F0  SV_ServerThread  (server_mp/sv_main_mp.cpp:2524)
 
-void __cdecl SV_ServerThread(uint param_1)
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl SV_ServerThread(uint threadContext)
 
 {
   code *pcVar1;
@@ -1620,12 +1646,12 @@ void __cdecl SV_ServerThread(uint param_1)
   LARGE_INTEGER local_24;
   DWORD local_1c;
   undefined4 local_18;
-  uint local_14;
+  uint runStart;
   int local_10;
-  int local_c;
-  int local_8;
+  int timeout;
+  int start;
   
-  if ((param_1 != 10) &&
+  if ((threadContext != 10) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",0x9e0,
                                0,"threadContext == THREAD_CONTEXT_SERVER\n\t%i, %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -1642,20 +1668,20 @@ void __cdecl SV_ServerThread(uint param_1)
   Sys_ServerCompleted();
   do {
     GamerProfile_WriteSettings(1);
-    local_c = (int)(1000 / (longlong)(sv_network_fps->current).integer);
+    timeout = (int)(1000 / (longlong)(sv_network_fps->current).integer);
     PIXBeginNamedEvent(-1,"wait start server");
     iVar3 = Sys_Milliseconds();
-    g_checkServerTime = iVar3 + local_c;
+    g_checkServerTime = iVar3 + timeout;
     if ((sv_assistWorkers->current).enabled == false) {
-      g_startServer = Sys_WaitStartServer(local_c);
-      local_8 = g_startServer;
+      g_startServer = Sys_WaitStartServer(timeout);
+      start = g_startServer;
     }
     else {
-      local_8 = Sys_WaitStartServer(0);
-      while ((g_startServer = local_8, local_8 == 0 &&
+      start = Sys_WaitStartServer(0);
+      while ((g_startServer = start, start == 0 &&
              (iVar3 = Sys_Milliseconds(), iVar3 < g_checkServerTime))) {
         Sys_AssistSingle();
-        local_8 = Sys_WaitStartServer(0);
+        start = Sys_WaitStartServer(0);
       }
     }
     local_1c = GetCurrentThreadId();
@@ -1669,12 +1695,12 @@ void __cdecl SV_ServerThread(uint param_1)
     if (bVar2) {
       TaskManager2_PickUpDeferredTasks();
     }
-    if (local_8 != 0) {
+    if (start != 0) {
       SV_IncServerThreadOwnsGame();
       SV_CalcPings();
       PIXBeginNamedEvent(0xffff00,"SERVER: Frame");
       QueryPerformanceCounter(&local_24);
-      local_14 = local_24.s.LowPart;
+      runStart = local_24.s.LowPart;
       local_10 = local_24.s.HighPart;
       SV_PreFrame();
       PIXBeginNamedEvent(0xff00,"SERVER: run frame");
@@ -1692,9 +1718,9 @@ void __cdecl SV_ServerThread(uint param_1)
         _D3DPERF_EndEvent_0();
       }
       QueryPerformanceCounter(&local_3c);
-      gRunFrameTicks._0_4_ = local_3c.s.LowPart - local_14;
+      gRunFrameTicks._0_4_ = local_3c.s.LowPart - runStart;
       gRunFrameTicks._4_4_ =
-           (local_3c.s.HighPart - local_10) - (uint)(local_3c.s.LowPart < local_14);
+           (local_3c.s.HighPart - local_10) - (uint)(local_3c.s.LowPart < runStart);
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1747,7 +1773,7 @@ void __cdecl SV_WaitServer(void)
   bool bVar2;
   int iVar3;
   DWORD DVar4;
-  uint local_8;
+  int timeout;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -1777,8 +1803,8 @@ void __cdecl SV_WaitServer(void)
     PIXBeginNamedEvent(-1,"wait server");
     bVar2 = Sys_AssistNeeded();
     while( true ) {
-      local_8 = (uint)!bVar2;
-      iVar3 = Sys_WaitServer(local_8);
+      timeout = (int)!bVar2;
+      iVar3 = Sys_WaitServer(timeout);
       if (iVar3 != 0) break;
       Com_CheckSyncFrame();
       Sys_AssistSingle();
@@ -1864,7 +1890,7 @@ bool __cdecl SV_CheckOverflow(void)
 {
   bool bVar1;
   char *pcVar2;
-  char local_4c [68];
+  char mapname [68];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -1879,7 +1905,7 @@ bool __cdecl SV_CheckOverflow(void)
                   bVar1 = false;
                 }
                 else {
-                  I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+                  I_strncpyz(mapname,(sv_mapname->current).string,0x40);
                   Com_Shutdown("EXE_SERVERRESTARTMISC\x15numSnapshotClients");
                   pcVar2 = va("map %s\n");
                   Cbuf_AddText(0,pcVar2);
@@ -1887,7 +1913,7 @@ bool __cdecl SV_CheckOverflow(void)
                 }
               }
               else {
-                I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+                I_strncpyz(mapname,(sv_mapname->current).string,0x40);
                 Com_Shutdown("EXE_SERVERRESTARTMISC\x15nextCachedSnapshotFrames");
                 pcVar2 = va("map %s\n");
                 Cbuf_AddText(0,pcVar2);
@@ -1895,7 +1921,7 @@ bool __cdecl SV_CheckOverflow(void)
               }
             }
             else {
-              I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+              I_strncpyz(mapname,(sv_mapname->current).string,0x40);
               Com_Shutdown("EXE_SERVERRESTARTMISC\x15nextArchivedSnapshotBuffer");
               pcVar2 = va("map %s\n");
               Cbuf_AddText(0,pcVar2);
@@ -1903,7 +1929,7 @@ bool __cdecl SV_CheckOverflow(void)
             }
           }
           else {
-            I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+            I_strncpyz(mapname,(sv_mapname->current).string,0x40);
             Com_Shutdown("EXE_SERVERRESTARTMISC\x15nextArchivedSnapshotFrames");
             pcVar2 = va("map %s\n");
             Cbuf_AddText(0,pcVar2);
@@ -1911,7 +1937,7 @@ bool __cdecl SV_CheckOverflow(void)
           }
         }
         else {
-          I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+          I_strncpyz(mapname,(sv_mapname->current).string,0x40);
           Com_Shutdown("EXE_SERVERRESTARTMISC\x15nextCachedSnapshotClients");
           pcVar2 = va("map %s\n");
           Cbuf_AddText(0,pcVar2);
@@ -1919,7 +1945,7 @@ bool __cdecl SV_CheckOverflow(void)
         }
       }
       else {
-        I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+        I_strncpyz(mapname,(sv_mapname->current).string,0x40);
         Com_Shutdown("EXE_SERVERRESTARTMISC\x15nextCachedSnapshotEntities");
         pcVar2 = va("map %s\n");
         Cbuf_AddText(0,pcVar2);
@@ -1927,7 +1953,7 @@ bool __cdecl SV_CheckOverflow(void)
       }
     }
     else {
-      I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+      I_strncpyz(mapname,(sv_mapname->current).string,0x40);
       Com_Shutdown("EXE_SERVERRESTARTMISC\x15numSnapshotEntities");
       pcVar2 = va("map %s\n");
       Cbuf_AddText(0,pcVar2);
@@ -1935,7 +1961,7 @@ bool __cdecl SV_CheckOverflow(void)
     }
   }
   else {
-    I_strncpyz(local_4c,(sv_mapname->current).string,0x40);
+    I_strncpyz(mapname,(sv_mapname->current).string,0x40);
     Com_Shutdown("EXE_SERVERRESTARTTIMEWRAP");
     pcVar2 = va("map %s\n");
     Cbuf_AddText(0,pcVar2);
@@ -1947,13 +1973,19 @@ bool __cdecl SV_CheckOverflow(void)
 
 // 00715840  SV_PreFrame  (server_mp/sv_main_mp.cpp:2885)
 
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl SV_PreFrame(void)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  char *pcVar4;
+  char *val;
   
   PIXBeginNamedEvent(0xff00ff,"SERVER: bots");
   SV_UpdateBots();
@@ -1969,8 +2001,8 @@ void __cdecl SV_PreFrame(void)
     return;
   }
   if ((dvar_modifiedFlags & 4U) != 0) {
-    pcVar4 = Dvar_InfoString(0,4);
-    SV_SetConfigstring(0,pcVar4);
+    val = Dvar_InfoString(0,4);
+    SV_SetConfigstring(0,val);
     dvar_modifiedFlags = dvar_modifiedFlags & 0xfffffffb;
   }
   if ((dvar_modifiedFlags & 0x100U) != 0) {
@@ -1989,12 +2021,13 @@ void __cdecl SV_PreFrame(void)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl SV_FrameInternal(int param_1,int param_2)
+void __cdecl SV_FrameInternal(int controllerIndex,int msec)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int frameMsec;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -2004,7 +2037,7 @@ void __cdecl SV_FrameInternal(int param_1,int param_2)
     (*pcVar1)();
     return;
   }
-  if ((param_2 < 0) &&
+  if ((msec < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\server_mp\\sv_main_mp.cpp",0xb71,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2019,7 +2052,7 @@ void __cdecl SV_FrameInternal(int param_1,int param_2)
     (*pcVar1)();
     return;
   }
-  sv.timeResidual = sv.timeResidual + param_2;
+  sv.timeResidual = sv.timeResidual + msec;
   if ((iVar3 <= sv.timeResidual) && (bVar2 = SV_CheckOverflow(), !bVar2)) {
     if (sv.smp != false) {
       SV_WakeServer();
@@ -2066,8 +2099,9 @@ void __cdecl SV_FrameInternal(int param_1,int param_2)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl SV_Frame(int param_1,int param_2)
+int __cdecl SV_Frame(int controllerIndex,int msec)
 
 {
   int iVar1;
@@ -2081,7 +2115,7 @@ int __cdecl SV_Frame(int param_1,int param_2)
       }
       iVar1 = SV_CheckPaused();
       if (iVar1 == 0) {
-        SV_FrameInternal(param_1,param_2);
+        SV_FrameInternal(controllerIndex,msec);
       }
       else {
         SV_WaitServer();
@@ -2098,7 +2132,7 @@ int __cdecl SV_Frame(int param_1,int param_2)
     sv.killServer = false;
     sv.killReason = (char *)0x0;
   }
-  return param_2;
+  return msec;
 }
 
 
@@ -2109,12 +2143,13 @@ int __cdecl SV_Frame(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SV_AllowPackets(bool param_1)
+void __cdecl SV_AllowPackets(bool allow)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  PIXProfile pp;
   
   bVar2 = Sys_IsMainThread();
   if ((!bVar2) &&
@@ -2127,7 +2162,7 @@ void __cdecl SV_AllowPackets(bool param_1)
   PIXBeginNamedEvent(-1,"SV_AllowPackets");
   Sys_WaitServerNetworkCompleted();
   Sys_ResetServerAllowNetworkEvent();
-  sv.allowNetPackets = param_1;
+  sv.allowNetPackets = allow;
   Sys_SetServerAllowNetworkEvent();
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {

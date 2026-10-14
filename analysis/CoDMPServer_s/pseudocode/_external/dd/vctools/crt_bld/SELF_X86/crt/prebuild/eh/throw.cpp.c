@@ -2,31 +2,28 @@
 
 // 00965851  _CxxThrowException  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/throw.cpp:95)
 
-void __cdecl _CxxThrowException(void *param_1,_s__ThrowInfo *param_2)
+void __cdecl _CxxThrowException(void *pExceptionObject,_s__ThrowInfo *pThrowInfo)
 
 {
   int iVar1;
   EHExceptionRecord *pEVar2;
-  DWORD *pDVar3;
-  DWORD aDStack_24 [4];
-  DWORD DStack_14;
-  undefined *puStack_10;
-  void *pvStack_c;
-  _s__ThrowInfo *p_Stack_8;
+  EHExceptionRecord *pEVar3;
+  EHExceptionRecord ThisException;
   
   pEVar2 = &ExceptionTemplate;
-  pDVar3 = aDStack_24;
+  pEVar3 = &ThisException;
   for (iVar1 = 8; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *pDVar3 = pEVar2->ExceptionCode;
+    pEVar3->ExceptionCode = pEVar2->ExceptionCode;
     pEVar2 = (EHExceptionRecord *)&pEVar2->ExceptionFlags;
-    pDVar3 = pDVar3 + 1;
+    pEVar3 = (EHExceptionRecord *)&pEVar3->ExceptionFlags;
   }
-  pvStack_c = param_1;
-  p_Stack_8 = param_2;
-  if ((param_2 != (_s__ThrowInfo *)0x0) && ((param_2->attributes & 8) != 0)) {
-    puStack_10 = &DAT_01994000;
+  ThisException.params.pExceptionObject = pExceptionObject;
+  ThisException.params.pThrowInfo = (_s_ThrowInfo *)pThrowInfo;
+  if ((pThrowInfo != (_s__ThrowInfo *)0x0) && ((pThrowInfo->attributes & 8) != 0)) {
+    ThisException.params.magicNumber = (ulong)&DAT_01994000;
   }
-  RaiseException(aDStack_24[0],aDStack_24[1],DStack_14,(ULONG_PTR *)&puStack_10);
+  RaiseException(ThisException.ExceptionCode,ThisException.ExceptionFlags,
+                 ThisException.NumberParameters,&ThisException.params.magicNumber);
   return;
 }
 

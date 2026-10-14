@@ -1019,12 +1019,12 @@ bdSocketRouter::processPacket
 {
   undefined1 *puVar1;
   bool bVar2;
-  uchar *puVar3;
-  bdDTLSAssociationStatus bVar4;
-  int *piVar5;
-  bdSecurityID *pbVar6;
-  char *pcVar7;
-  uint uVar8;
+  uchar *src;
+  bdDTLSAssociationStatus bVar3;
+  int *piVar4;
+  bdSecurityID *pbVar5;
+  char *pcVar6;
+  uint uVar7;
   bdDTLSAssociation *local_142c;
   bdReference<bdByteBuffer> local_135c [4];
   undefined1 *local_1358;
@@ -1118,8 +1118,8 @@ bdSocketRouter::processPacket
         local_8._0_1_ = 1;
         local_18 = bdDTLSAssociation::receiveFrom
                              (local_488,param_2,param_3,local_18,param_1,param_3,param_4);
-        bVar4 = bdDTLSAssociation::getStatus(local_488);
-        uStack_14 = CONCAT13(bVar4 == 2,(uint3)uStack_14);
+        bVar3 = bdDTLSAssociation::getStatus(local_488);
+        uStack_14 = CONCAT13(bVar3 == 2,(uint3)uStack_14);
         local_8 = (uint)local_8._1_3_ << 8;
         bdDTLSAssociation::~bdDTLSAssociation(local_488);
       }
@@ -1147,8 +1147,8 @@ bdSocketRouter::processPacket
     local_489 = bdDTLSCookieEcho::deserialize(local_558,param_3,local_18,0,&local_490);
     if ((bool)local_489) {
       bdSecurityID::bdSecurityID(local_560);
-      puVar3 = bdDTLSCookieEcho::getSecID(local_558);
-      memcpy((uchar *)local_560,puVar3,8);
+      src = bdDTLSCookieEcho::getSecID(local_558);
+      memcpy((uchar *)local_560,src,8);
       bVar2 = tryToFindConnection(this,param_3,&param_4,local_560,param_2,param_1,(int *)&local_18,
                                   true);
       if (!bVar2) {
@@ -1171,8 +1171,8 @@ bdSocketRouter::processPacket
         local_8._0_1_ = 3;
         local_18 = bdDTLSAssociation::receiveFrom
                              (local_9a0,param_2,param_3,local_18,param_1,param_3,param_4);
-        bVar4 = bdDTLSAssociation::getStatus(local_9a0);
-        uStack_14 = CONCAT13(bVar4 == 2,(uint3)uStack_14);
+        bVar3 = bdDTLSAssociation::getStatus(local_9a0);
+        uStack_14 = CONCAT13(bVar3 == 2,(uint3)uStack_14);
         local_8 = CONCAT31(local_8._1_3_,2);
         bdDTLSAssociation::~bdDTLSAssociation(local_9a0);
       }
@@ -1223,8 +1223,8 @@ bdSocketRouter::processPacket
         local_8._0_1_ = 5;
         local_18 = bdDTLSAssociation::receiveFrom
                              (local_e08,param_2,param_3,local_18,param_1,param_3,param_4);
-        bVar4 = bdDTLSAssociation::getStatus(local_e08);
-        uStack_14 = CONCAT13(bVar4 == 2,(uint3)uStack_14);
+        bVar3 = bdDTLSAssociation::getStatus(local_e08);
+        uStack_14 = CONCAT13(bVar3 == 2,(uint3)uStack_14);
         local_8 = CONCAT31(local_8._1_3_,4);
         bdDTLSAssociation::~bdDTLSAssociation(local_e08);
       }
@@ -1243,10 +1243,10 @@ bdSocketRouter::processPacket
     local_edd = '\0';
     for (local_ee4 = 0; (local_edd == '\0' && (local_ee4 < *(uint *)(this + 0x14)));
         local_ee4 = local_ee4 + 1) {
-      piVar5 = *(int **)(*(int *)(this + 0xc) + local_ee4 * 4);
+      piVar4 = *(int **)(*(int *)(this + 0xc) + local_ee4 * 4);
       local_1340 = &stack0xffffeba4;
       bdAddr::bdAddr((bdAddr *)&stack0xffffeba4,param_2);
-      local_edd = (**(code **)(*piVar5 + 4))(*(undefined4 *)(this + 8));
+      local_edd = (**(code **)(*piVar4 + 4))(*(undefined4 *)(this + 8));
     }
   }
   if (uStack_14._3_1_ != '\0') {
@@ -1282,13 +1282,13 @@ bdSocketRouter::processPacket
     bdLogMessage(0,"info/","bdSocket/socket",
                  "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdSocketRouter.cpp",
                  "bdSocketRouter::processPacket",0x2a3,"New incoming DTLS connection from %s.");
-    piVar5 = (int *)bdDTLSAssociation::getAddrHandle(local_f10);
+    piVar4 = (int *)bdDTLSAssociation::getAddrHandle(local_f10);
     local_8 = 9;
-    bdEndpoint::getSecID((bdEndpoint *)(*piVar5 + 8));
-    piVar5 = (int *)bdDTLSAssociation::getAddrHandle(local_f10);
+    bdEndpoint::getSecID((bdEndpoint *)(*piVar4 + 8));
+    piVar4 = (int *)bdDTLSAssociation::getAddrHandle(local_f10);
     local_8._0_1_ = 10;
     local_1358 = &stack0xffffebb0;
-    bdEndpoint::getCommonAddr((bdEndpoint *)(*piVar5 + 8));
+    bdEndpoint::getCommonAddr((bdEndpoint *)(*piVar4 + 8));
     bdEndpoint::bdEndpoint(local_ef0);
     local_8._0_1_ = 0xc;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(local_135c);
@@ -1300,10 +1300,10 @@ bdSocketRouter::processPacket
     if (!(bool)local_f09) {
       bdEndpoint::getCommonAddr(local_ef0);
       bdCommonAddrInfo::getInfo();
-      uVar8 = 0x12;
-      pcVar7 = local_1324;
-      pbVar6 = bdEndpoint::getSecID(local_ef0);
-      bdSecurityInfo::toString(pbVar6,pcVar7,uVar8);
+      uVar7 = 0x12;
+      pcVar6 = local_1324;
+      pbVar5 = bdEndpoint::getSecID(local_ef0);
+      bdSecurityInfo::toString(pbVar5,pcVar6,uVar7);
       bdLogMessage(2,"err/","bdSocket/socket",
                    "C:\\projects_pc\\cod\\codsrc\\DemonWare\\bdSocket\\bdSocketRouter.cpp",
                    "bdSocketRouter::processPacket",0x2ae,

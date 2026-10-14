@@ -292,13 +292,13 @@ int _HTHost_newWParse(undefined4 param_1,int param_2,undefined2 param_3)
 
 {
   undefined2 uVar1;
-  uchar *puVar2;
+  uchar *string;
   int extraout_EAX;
-  int iVar3;
+  int iVar2;
   undefined1 *extraout_EAX_00;
-  long lVar4;
-  char *pcVar5;
-  uchar *puVar6;
+  long lVar3;
+  char *nptr;
+  uchar *dst;
   int local_24;
   uchar *local_1c;
   
@@ -307,41 +307,41 @@ int _HTHost_newWParse(undefined4 param_1,int param_2,undefined2 param_3)
   if (local_24 == 0) {
     local_24 = param_2;
   }
-  puVar2 = (uchar *)_HTParse(local_24,"",8);
-  if ((puVar2 != (uchar *)0x0) && (strchr(puVar2,'@'), local_1c = puVar2, extraout_EAX != 0)) {
+  string = (uchar *)_HTParse(local_24,"",8);
+  if ((string != (uchar *)0x0) && (strchr(string,'@'), local_1c = string, extraout_EAX != 0)) {
     local_1c = (uchar *)(extraout_EAX + 1);
   }
   if ((local_1c == (uchar *)0x0) || (*local_1c == '\0')) {
     _HTRequest_addError(param_1,1,0,0x34,0,0,"HTHost_newWParse");
-    _HTMemory_free(puVar2);
-    iVar3 = 0;
+    _HTMemory_free(string);
+    iVar2 = 0;
   }
   else {
     strchr(local_1c,':');
     if (extraout_EAX_00 != (undefined1 *)0x0) {
       *extraout_EAX_00 = 0;
-      pcVar5 = extraout_EAX_00 + 1;
-      if ((*pcVar5 != '\0') && (iVar3 = isdigit((int)*pcVar5), iVar3 != 0)) {
-        lVar4 = atol(pcVar5);
-        param_3 = (undefined2)lVar4;
+      nptr = extraout_EAX_00 + 1;
+      if ((*nptr != '\0') && (iVar2 = isdigit((int)*nptr), iVar2 != 0)) {
+        lVar3 = atol(nptr);
+        param_3 = (undefined2)lVar3;
       }
     }
-    iVar3 = _HTHost_new(local_1c,param_3);
-    if (iVar3 == 0) {
+    iVar2 = _HTHost_new(local_1c,param_3);
+    if (iVar2 == 0) {
       uRam00000078 = 0xfffffffe;
-      iVar3 = 0;
+      iVar2 = 0;
     }
     else {
-      puVar6 = (uchar *)(iVar3 + 0x7c);
-      memset(puVar6,'\0',0x10);
-      puVar6[0] = '\x02';
-      puVar6[1] = '\0';
+      dst = (uchar *)(iVar2 + 0x7c);
+      memset(dst,'\0',0x10);
+      dst[0] = '\x02';
+      dst[1] = '\0';
       uVar1 = htons(param_3);
-      *(undefined2 *)(iVar3 + 0x7e) = uVar1;
-      _HTMemory_free(puVar2);
+      *(undefined2 *)(iVar2 + 0x7e) = uVar1;
+      _HTMemory_free(string);
     }
   }
-  return iVar3;
+  return iVar2;
 }
 
 

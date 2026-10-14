@@ -277,18 +277,18 @@ void __cdecl Mark_ScriptStringArray(int param_1)
 void __cdecl Load_XAnimIndices(bool param_1)
 
 {
-  ulong uVar1;
-  StreamDelayInfo *pSVar2;
-  XAnimParts *pXVar3;
+  ulong count;
+  StreamDelayInfo *dst;
+  XAnimParts *pXVar1;
   
-  pXVar3 = varXAnimParts;
+  pXVar1 = varXAnimParts;
   if (*(ushort *)(varXAnimParts + 0xe) < 0x100) {
     if (*(int *)varXAnimIndices == 0) {
       return;
     }
     *(StreamDelayInfo **)varXAnimIndices = DAT_00fdf754;
-    uVar1 = *(ulong *)(pXVar3 + 0x2c);
-    pSVar2 = DAT_00fdf754;
+    count = *(ulong *)(pXVar1 + 0x2c);
+    dst = DAT_00fdf754;
     varbyte = (uchar *)DAT_00fdf754;
   }
   else {
@@ -297,25 +297,25 @@ void __cdecl Load_XAnimIndices(bool param_1)
     }
     varushort = (ushort *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
     *(ushort **)varXAnimIndices = varushort;
-    uVar1 = *(int *)(pXVar3 + 0x2c) * 2;
-    pSVar2 = (StreamDelayInfo *)varushort;
+    count = *(int *)(pXVar1 + 0x2c) * 2;
+    dst = (StreamDelayInfo *)varushort;
   }
-  DAT_00fdf754 = pSVar2;
-  if (uVar1 != 0) {
+  DAT_00fdf754 = dst;
+  if (count != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)pSVar2,uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+      DB_LoadXFileData((uchar *)dst,count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)pSVar2,'\0',uVar1);
-      DAT_00fdf754 = pSVar2 + uVar1;
+      memset((uchar *)dst,'\0',count);
+      DAT_00fdf754 = dst + count;
       return;
     }
-    (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar2;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+    (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = pSVar2 + uVar1;
+    DAT_00fdf754 = dst + count;
   }
   return;
 }
@@ -328,32 +328,32 @@ void __cdecl Load_XAnimIndices(bool param_1)
 void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool param_1)
 
 {
-  ulong uVar1;
+  ulong count;
   
   if (*(ushort *)(varXAnimParts + 0xe) < 0x100) {
     varbyte = (uchar *)varXAnimDynamicIndicesDeltaQuat;
-    uVar1 = *(ushort *)varXAnimDeltaPartQuat + 1;
+    count = *(ushort *)varXAnimDeltaPartQuat + 1;
   }
   else {
-    uVar1 = (uint)*(ushort *)varXAnimDeltaPartQuat * 2 + 2;
+    count = (uint)*(ushort *)varXAnimDeltaPartQuat * 2 + 2;
     varUnsignedShort = (ushort *)varXAnimDynamicIndicesDeltaQuat;
   }
-  if (uVar1 != 0) {
+  if (count != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)varXAnimDynamicIndicesDeltaQuat,uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+      DB_LoadXFileData((uchar *)varXAnimDynamicIndicesDeltaQuat,count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)varXAnimDynamicIndicesDeltaQuat,'\0',uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+      memset((uchar *)varXAnimDynamicIndicesDeltaQuat,'\0',count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
     (&g_streamDelayArray)[g_streamDelayIndex * 2] =
          (StreamDelayInfo *)varXAnimDynamicIndicesDeltaQuat;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = DAT_00fdf754 + uVar1;
+    DAT_00fdf754 = DAT_00fdf754 + count;
   }
   return;
 }
@@ -366,9 +366,9 @@ void __cdecl Load_XAnimDynamicIndicesDeltaQuat(bool param_1)
 void __cdecl Load_XAnimDeltaPartQuatDataFrames(bool param_1)
 
 {
-  ulong uVar1;
-  int iVar2;
-  StreamDelayInfo *pSVar3;
+  ulong count;
+  int iVar1;
+  StreamDelayInfo *dst;
   undefined1 unaff_DI;
   
   if (g_streamPosIndex - 1 < 3) {
@@ -389,32 +389,32 @@ void __cdecl Load_XAnimDeltaPartQuatDataFrames(bool param_1)
   varXAnimDynamicIndicesDeltaQuat = (XAnimDynamicIndices *)(varXAnimDeltaPartQuatDataFrames + 4);
   Load_XAnimDynamicIndicesDeltaQuat((bool)unaff_DI);
   if (*(int *)varXAnimDeltaPartQuatDataFrames != 0) {
-    pSVar3 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
-    *(StreamDelayInfo **)varXAnimDeltaPartQuatDataFrames = pSVar3;
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
+    *(StreamDelayInfo **)varXAnimDeltaPartQuatDataFrames = dst;
     if (*(ushort *)varXAnimDeltaPartQuat == 0) {
-      iVar2 = 0;
+      iVar1 = 0;
     }
     else {
-      iVar2 = *(ushort *)varXAnimDeltaPartQuat + 1;
+      iVar1 = *(ushort *)varXAnimDeltaPartQuat + 1;
     }
-    uVar1 = iVar2 * 4;
-    varXQuat2 = (short *)pSVar3;
-    DAT_00fdf754 = pSVar3;
-    if (iVar2 != 0) {
+    count = iVar1 * 4;
+    varXQuat2 = (short *)dst;
+    DAT_00fdf754 = dst;
+    if (iVar1 != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar3,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + iVar2 * 4;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + iVar1 * 4;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar3,'\0',uVar1);
-        DAT_00fdf754 = pSVar3 + iVar2 * 4;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + iVar1 * 4;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar3 + iVar2 * 4;
+      DAT_00fdf754 = dst + iVar1 * 4;
     }
   }
   return;
@@ -511,31 +511,31 @@ void __cdecl Load_XAnimDeltaPart(bool param_1)
 void __cdecl Load_XAnimDynamicIndicesTrans(bool param_1)
 
 {
-  ulong uVar1;
+  ulong count;
   
   if (*(ushort *)(varXAnimParts + 0xe) < 0x100) {
     varbyte = (uchar *)varXAnimDynamicIndicesTrans;
-    uVar1 = *(ushort *)varXAnimPartTrans + 1;
+    count = *(ushort *)varXAnimPartTrans + 1;
   }
   else {
-    uVar1 = (uint)*(ushort *)varXAnimPartTrans * 2 + 2;
+    count = (uint)*(ushort *)varXAnimPartTrans * 2 + 2;
     varUnsignedShort = (ushort *)varXAnimDynamicIndicesTrans;
   }
-  if (uVar1 != 0) {
+  if (count != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)varXAnimDynamicIndicesTrans,uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+      DB_LoadXFileData((uchar *)varXAnimDynamicIndicesTrans,count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)varXAnimDynamicIndicesTrans,'\0',uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+      memset((uchar *)varXAnimDynamicIndicesTrans,'\0',count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
     (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varXAnimDynamicIndicesTrans;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = DAT_00fdf754 + uVar1;
+    DAT_00fdf754 = DAT_00fdf754 + count;
   }
   return;
 }
@@ -549,60 +549,60 @@ void __cdecl Load_XAnimDynamicFrames(bool param_1)
 
 {
   ushort uVar1;
-  ulong uVar2;
-  StreamDelayInfo *pSVar3;
-  XAnimPartTrans *pXVar4;
-  int iVar5;
+  ulong count;
+  StreamDelayInfo *dst;
+  XAnimPartTrans *pXVar2;
+  int iVar3;
   
-  pXVar4 = varXAnimPartTrans;
+  pXVar2 = varXAnimPartTrans;
   if (varXAnimPartTrans[2] == (XAnimPartTrans)0x0) {
     if (*(int *)varXAnimDynamicFrames == 0) {
       return;
     }
     varUShortVec = (ushort *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
     *(ushort **)varXAnimDynamicFrames = varUShortVec;
-    uVar1 = *(ushort *)pXVar4;
+    uVar1 = *(ushort *)pXVar2;
     if (uVar1 == 0) {
-      iVar5 = 0;
+      iVar3 = 0;
     }
     else {
-      iVar5 = uVar1 + 1;
+      iVar3 = uVar1 + 1;
     }
-    uVar2 = iVar5 * 6;
-    pSVar3 = (StreamDelayInfo *)varUShortVec;
+    count = iVar3 * 6;
+    dst = (StreamDelayInfo *)varUShortVec;
   }
   else {
     if (*(int *)varXAnimDynamicFrames == 0) {
       return;
     }
     *(StreamDelayInfo **)varXAnimDynamicFrames = DAT_00fdf754;
-    uVar1 = *(ushort *)pXVar4;
+    uVar1 = *(ushort *)pXVar2;
     if (uVar1 == 0) {
-      iVar5 = 0;
+      iVar3 = 0;
     }
     else {
-      iVar5 = uVar1 + 1;
+      iVar3 = uVar1 + 1;
     }
-    uVar2 = iVar5 * 3;
-    pSVar3 = DAT_00fdf754;
+    count = iVar3 * 3;
+    dst = DAT_00fdf754;
     varByteVec = (uchar *)DAT_00fdf754;
   }
-  DAT_00fdf754 = pSVar3;
-  if (uVar2 != 0) {
+  DAT_00fdf754 = dst;
+  if (count != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)pSVar3,uVar2);
-      DAT_00fdf754 = DAT_00fdf754 + uVar2;
+      DB_LoadXFileData((uchar *)dst,count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)pSVar3,'\0',uVar2);
-      DAT_00fdf754 = pSVar3 + uVar2;
+      memset((uchar *)dst,'\0',count);
+      DAT_00fdf754 = dst + count;
       return;
     }
-    (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+    (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = pSVar3 + uVar2;
+    DAT_00fdf754 = dst + count;
   }
   return;
 }
@@ -721,12 +721,12 @@ void __cdecl Load_XAnimParts(bool param_1)
 {
   ulong uVar1;
   uint uVar2;
-  uint uVar3;
+  uint count;
   int unaff_ESI;
-  StreamDelayInfo *pSVar4;
+  StreamDelayInfo *pSVar3;
   uint unaff_EDI;
-  XAnimParts *pXVar5;
-  undefined1 uVar6;
+  XAnimParts *pXVar4;
+  undefined1 uVar5;
   
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
@@ -744,194 +744,194 @@ void __cdecl Load_XAnimParts(bool param_1)
   DAT_00fdf754 = (StreamDelayInfo *)((int)DAT_00fdf754 + 0x68);
   DB_PushStreamPos(unaff_EDI);
   varXString = (char **)varXAnimParts;
-  uVar6 = (undefined1)unaff_EDI;
-  Load_XString((bool)uVar6);
+  uVar5 = (undefined1)unaff_EDI;
+  Load_XString((bool)uVar5);
   if (*(int *)(varXAnimParts + 0x40) != 0) {
     varScriptString = (ushort *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
     DAT_00fdf754 = (StreamDelayInfo *)varScriptString;
     *(ushort **)(varXAnimParts + 0x40) = varScriptString;
-    Load_ScriptStringArray((bool)uVar6,unaff_ESI);
+    Load_ScriptStringArray((bool)uVar5,unaff_ESI);
   }
   if (*(int *)(varXAnimParts + 0x60) != 0) {
     varXAnimNotifyInfo = (XAnimNotifyInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
     DAT_00fdf754 = (StreamDelayInfo *)varXAnimNotifyInfo;
     *(XAnimNotifyInfo **)(varXAnimParts + 0x60) = varXAnimNotifyInfo;
-    Load_XAnimNotifyInfoArray((bool)uVar6,unaff_ESI);
+    Load_XAnimNotifyInfoArray((bool)uVar5,unaff_ESI);
   }
   if (*(int *)(varXAnimParts + 100) != 0) {
     varXAnimDeltaPart = (XAnimDeltaPart *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
     DAT_00fdf754 = (StreamDelayInfo *)varXAnimDeltaPart;
     *(XAnimDeltaPart **)(varXAnimParts + 100) = varXAnimDeltaPart;
-    Load_XAnimDeltaPart((bool)uVar6);
+    Load_XAnimDeltaPart((bool)uVar5);
   }
-  pSVar4 = DAT_00fdf754;
-  pXVar5 = varXAnimParts;
+  pSVar3 = DAT_00fdf754;
+  pXVar4 = varXAnimParts;
   if (*(int *)(varXAnimParts + 0x44) != 0) {
     uVar2 = (uint)*(ushort *)(varXAnimParts + 4);
     *(StreamDelayInfo **)(varXAnimParts + 0x44) = DAT_00fdf754;
-    varbyte = (uchar *)pSVar4;
+    varbyte = (uchar *)pSVar3;
     if (uVar2 != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar2);
-          pSVar4 = pSVar4 + uVar2;
-          DAT_00fdf754 = pSVar4;
+          memset((uchar *)pSVar3,'\0',uVar2);
+          pSVar3 = pSVar3 + uVar2;
+          DAT_00fdf754 = pSVar3;
         }
         else {
-          (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar4;
+          (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
           (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
           g_streamDelayIndex = g_streamDelayIndex + 1;
-          pSVar4 = pSVar4 + uVar2;
-          DAT_00fdf754 = pSVar4;
+          pSVar3 = pSVar3 + uVar2;
+          DAT_00fdf754 = pSVar3;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar2);
-        pSVar4 = DAT_00fdf754 + uVar2;
-        pXVar5 = varXAnimParts;
-        DAT_00fdf754 = pSVar4;
+        DB_LoadXFileData((uchar *)pSVar3,uVar2);
+        pSVar3 = DAT_00fdf754 + uVar2;
+        pXVar4 = varXAnimParts;
+        DAT_00fdf754 = pSVar3;
       }
     }
   }
   uVar2 = g_streamDelayIndex;
-  if (*(int *)(pXVar5 + 0x48) != 0) {
-    pSVar4 = (StreamDelayInfo *)((uint)(pSVar4 + 1) & 0xfffffffe);
-    uVar1 = (uint)*(ushort *)(pXVar5 + 6) * 2;
-    DAT_00fdf754 = pSVar4;
-    *(StreamDelayInfo **)(pXVar5 + 0x48) = pSVar4;
-    varshort = (short *)pSVar4;
-    if (*(ushort *)(pXVar5 + 6) != 0) {
+  if (*(int *)(pXVar4 + 0x48) != 0) {
+    pSVar3 = (StreamDelayInfo *)((uint)(pSVar3 + 1) & 0xfffffffe);
+    uVar1 = (uint)*(ushort *)(pXVar4 + 6) * 2;
+    DAT_00fdf754 = pSVar3;
+    *(StreamDelayInfo **)(pXVar4 + 0x48) = pSVar3;
+    varshort = (short *)pSVar3;
+    if (*(ushort *)(pXVar4 + 6) != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar1);
+          memset((uchar *)pSVar3,'\0',uVar1);
         }
         else {
-          (&g_streamDelayArray)[uVar2 * 2] = pSVar4;
+          (&g_streamDelayArray)[uVar2 * 2] = pSVar3;
           (&DAT_0117facc)[uVar2 * 2] = uVar1;
           uVar2 = uVar2 + 1;
           g_streamDelayIndex = uVar2;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar1);
+        DB_LoadXFileData((uchar *)pSVar3,uVar1);
         uVar2 = g_streamDelayIndex;
-        pSVar4 = DAT_00fdf754;
-        pXVar5 = varXAnimParts;
+        pSVar3 = DAT_00fdf754;
+        pXVar4 = varXAnimParts;
       }
-      pSVar4 = pSVar4 + uVar1;
-      DAT_00fdf754 = pSVar4;
+      pSVar3 = pSVar3 + uVar1;
+      DAT_00fdf754 = pSVar3;
     }
   }
-  if (*(int *)(pXVar5 + 0x4c) != 0) {
-    pSVar4 = (StreamDelayInfo *)((uint)(pSVar4 + 3) & 0xfffffffc);
-    uVar1 = (uint)*(ushort *)(pXVar5 + 8) * 4;
-    DAT_00fdf754 = pSVar4;
-    *(StreamDelayInfo **)(pXVar5 + 0x4c) = pSVar4;
-    varint = (int *)pSVar4;
-    if (*(ushort *)(pXVar5 + 8) != 0) {
+  if (*(int *)(pXVar4 + 0x4c) != 0) {
+    pSVar3 = (StreamDelayInfo *)((uint)(pSVar3 + 3) & 0xfffffffc);
+    uVar1 = (uint)*(ushort *)(pXVar4 + 8) * 4;
+    DAT_00fdf754 = pSVar3;
+    *(StreamDelayInfo **)(pXVar4 + 0x4c) = pSVar3;
+    varint = (int *)pSVar3;
+    if (*(ushort *)(pXVar4 + 8) != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar1);
+          memset((uchar *)pSVar3,'\0',uVar1);
         }
         else {
-          (&g_streamDelayArray)[uVar2 * 2] = pSVar4;
+          (&g_streamDelayArray)[uVar2 * 2] = pSVar3;
           (&DAT_0117facc)[uVar2 * 2] = uVar1;
           uVar2 = uVar2 + 1;
           g_streamDelayIndex = uVar2;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar1);
+        DB_LoadXFileData((uchar *)pSVar3,uVar1);
         uVar2 = g_streamDelayIndex;
-        pSVar4 = DAT_00fdf754;
-        pXVar5 = varXAnimParts;
+        pSVar3 = DAT_00fdf754;
+        pXVar4 = varXAnimParts;
       }
-      pSVar4 = pSVar4 + uVar1;
-      DAT_00fdf754 = pSVar4;
+      pSVar3 = pSVar3 + uVar1;
+      DAT_00fdf754 = pSVar3;
     }
   }
-  if (*(int *)(pXVar5 + 0x50) != 0) {
-    pSVar4 = (StreamDelayInfo *)((uint)(pSVar4 + 1) & 0xfffffffe);
-    uVar1 = *(int *)(pXVar5 + 0x28) * 2;
-    DAT_00fdf754 = pSVar4;
-    *(StreamDelayInfo **)(pXVar5 + 0x50) = pSVar4;
-    varshort = (short *)pSVar4;
+  if (*(int *)(pXVar4 + 0x50) != 0) {
+    pSVar3 = (StreamDelayInfo *)((uint)(pSVar3 + 1) & 0xfffffffe);
+    uVar1 = *(int *)(pXVar4 + 0x28) * 2;
+    DAT_00fdf754 = pSVar3;
+    *(StreamDelayInfo **)(pXVar4 + 0x50) = pSVar3;
+    varshort = (short *)pSVar3;
     if (uVar1 != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar1);
+          memset((uchar *)pSVar3,'\0',uVar1);
         }
         else {
-          (&g_streamDelayArray)[uVar2 * 2] = pSVar4;
+          (&g_streamDelayArray)[uVar2 * 2] = pSVar3;
           (&DAT_0117facc)[uVar2 * 2] = uVar1;
           uVar2 = uVar2 + 1;
           g_streamDelayIndex = uVar2;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar1);
+        DB_LoadXFileData((uchar *)pSVar3,uVar1);
         uVar2 = g_streamDelayIndex;
-        pSVar4 = DAT_00fdf754;
-        pXVar5 = varXAnimParts;
+        pSVar3 = DAT_00fdf754;
+        pXVar4 = varXAnimParts;
       }
-      pSVar4 = pSVar4 + uVar1;
-      DAT_00fdf754 = pSVar4;
+      pSVar3 = pSVar3 + uVar1;
+      DAT_00fdf754 = pSVar3;
     }
   }
-  if (*(int *)(pXVar5 + 0x54) != 0) {
-    uVar3 = (uint)*(ushort *)(pXVar5 + 10);
-    DAT_00fdf754 = pSVar4;
-    *(StreamDelayInfo **)(pXVar5 + 0x54) = pSVar4;
-    varbyte = (uchar *)pSVar4;
-    if (uVar3 != 0) {
+  if (*(int *)(pXVar4 + 0x54) != 0) {
+    count = (uint)*(ushort *)(pXVar4 + 10);
+    DAT_00fdf754 = pSVar3;
+    *(StreamDelayInfo **)(pXVar4 + 0x54) = pSVar3;
+    varbyte = (uchar *)pSVar3;
+    if (count != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar3);
+          memset((uchar *)pSVar3,'\0',count);
         }
         else {
-          (&g_streamDelayArray)[uVar2 * 2] = pSVar4;
-          (&DAT_0117facc)[uVar2 * 2] = uVar3;
+          (&g_streamDelayArray)[uVar2 * 2] = pSVar3;
+          (&DAT_0117facc)[uVar2 * 2] = count;
           uVar2 = uVar2 + 1;
           g_streamDelayIndex = uVar2;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar3);
+        DB_LoadXFileData((uchar *)pSVar3,count);
         uVar2 = g_streamDelayIndex;
-        pSVar4 = DAT_00fdf754;
-        pXVar5 = varXAnimParts;
+        pSVar3 = DAT_00fdf754;
+        pXVar4 = varXAnimParts;
       }
-      pSVar4 = pSVar4 + uVar3;
-      DAT_00fdf754 = pSVar4;
+      pSVar3 = pSVar3 + count;
+      DAT_00fdf754 = pSVar3;
     }
   }
-  if (*(int *)(pXVar5 + 0x58) != 0) {
-    pSVar4 = (StreamDelayInfo *)((uint)(pSVar4 + 3) & 0xfffffffc);
-    uVar1 = (uint)*(ushort *)(pXVar5 + 0xc) * 4;
-    DAT_00fdf754 = pSVar4;
-    *(StreamDelayInfo **)(pXVar5 + 0x58) = pSVar4;
-    varint = (int *)pSVar4;
-    if (*(ushort *)(pXVar5 + 0xc) != 0) {
+  if (*(int *)(pXVar4 + 0x58) != 0) {
+    pSVar3 = (StreamDelayInfo *)((uint)(pSVar3 + 3) & 0xfffffffc);
+    uVar1 = (uint)*(ushort *)(pXVar4 + 0xc) * 4;
+    DAT_00fdf754 = pSVar3;
+    *(StreamDelayInfo **)(pXVar4 + 0x58) = pSVar3;
+    varint = (int *)pSVar3;
+    if (*(ushort *)(pXVar4 + 0xc) != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar1);
+          memset((uchar *)pSVar3,'\0',uVar1);
         }
         else {
-          (&g_streamDelayArray)[uVar2 * 2] = pSVar4;
+          (&g_streamDelayArray)[uVar2 * 2] = pSVar3;
           (&DAT_0117facc)[uVar2 * 2] = uVar1;
           g_streamDelayIndex = uVar2 + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar1);
-        pSVar4 = DAT_00fdf754;
-        pXVar5 = varXAnimParts;
+        DB_LoadXFileData((uchar *)pSVar3,uVar1);
+        pSVar3 = DAT_00fdf754;
+        pXVar4 = varXAnimParts;
       }
-      DAT_00fdf754 = pSVar4 + uVar1;
+      DAT_00fdf754 = pSVar3 + uVar1;
     }
   }
-  varXAnimIndices = (XAnimIndices *)(pXVar5 + 0x5c);
-  Load_XAnimIndices((bool)uVar6);
+  varXAnimIndices = (XAnimIndices *)(pXVar4 + 0x5c);
+  Load_XAnimIndices((bool)uVar5);
   DB_PopStreamPos();
   return;
 }
@@ -1313,18 +1313,18 @@ void __cdecl Load_SndDriverGlobalsPtr(bool param_1)
 void __cdecl Load_PackIndex(bool param_1)
 
 {
-  ulong uVar1;
-  PackIndex *pPVar2;
-  StreamDelayInfo *pSVar3;
+  ulong count;
+  PackIndex *pPVar1;
+  StreamDelayInfo *dst;
   uint unaff_EDI;
   
-  pPVar2 = varPackIndex;
+  pPVar1 = varPackIndex;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
       *(undefined8 *)varPackIndex = 0;
-      *(undefined8 *)(pPVar2 + 8) = 0;
-      *(undefined8 *)(pPVar2 + 0x10) = 0;
-      *(undefined4 *)(pPVar2 + 0x18) = 0;
+      *(undefined8 *)(pPVar1 + 8) = 0;
+      *(undefined8 *)(pPVar1 + 0x10) = 0;
+      *(undefined4 *)(pPVar1 + 0x18) = 0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varPackIndex;
@@ -1334,36 +1334,36 @@ void __cdecl Load_PackIndex(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varPackIndex,0x1c);
-    pPVar2 = varPackIndex;
+    pPVar1 = varPackIndex;
   }
   DAT_00fdf754 = (StreamDelayInfo *)((int)DAT_00fdf754 + 0x1c);
   DB_PushStreamPos(unaff_EDI);
-  varXString = (char **)pPVar2;
+  varXString = (char **)pPVar1;
   Load_XString(SUB41(unaff_EDI,0));
-  pPVar2 = varPackIndex;
+  pPVar1 = varPackIndex;
   if (*(int *)(varPackIndex + 0x18) != 0) {
-    pSVar3 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
-    *(StreamDelayInfo **)(varPackIndex + 0x18) = pSVar3;
-    uVar1 = *(int *)(pPVar2 + 0xc) * 0xc;
-    varPackIndexEntry = (PackIndexEntry *)pSVar3;
-    DAT_00fdf754 = pSVar3;
-    if (uVar1 != 0) {
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
+    *(StreamDelayInfo **)(varPackIndex + 0x18) = dst;
+    count = *(int *)(pPVar1 + 0xc) * 0xc;
+    varPackIndexEntry = (PackIndexEntry *)dst;
+    DAT_00fdf754 = dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar3,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + uVar1;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         DB_PopStreamPos();
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar3,'\0',uVar1);
-        DAT_00fdf754 = pSVar3 + uVar1;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         DB_PopStreamPos();
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar3 + uVar1;
+      DAT_00fdf754 = dst + count;
     }
   }
   DB_PopStreamPos();
@@ -1564,16 +1564,16 @@ void __cdecl Load_LoadedSound(bool param_1)
 void __cdecl Load_PrimedSound(bool param_1)
 
 {
-  ulong uVar1;
-  PrimedSound *pPVar2;
-  StreamDelayInfo *pSVar3;
+  ulong count;
+  PrimedSound *pPVar1;
+  StreamDelayInfo *dst;
   uint unaff_EDI;
   
-  pPVar2 = varPrimedSound;
+  pPVar1 = varPrimedSound;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
       *(undefined8 *)varPrimedSound = 0;
-      *(undefined4 *)(pPVar2 + 8) = 0;
+      *(undefined4 *)(pPVar1 + 8) = 0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varPrimedSound;
@@ -1583,35 +1583,35 @@ void __cdecl Load_PrimedSound(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varPrimedSound,0xc);
-    pPVar2 = varPrimedSound;
+    pPVar1 = varPrimedSound;
   }
   DAT_00fdf754 = (StreamDelayInfo *)((int)DAT_00fdf754 + 0xc);
-  varXString = (char **)pPVar2;
+  varXString = (char **)pPVar1;
   Load_XString(SUB41(unaff_EDI,0));
   DB_PushStreamPos(unaff_EDI);
   if (*(int *)(varPrimedSound + 4) != 0) {
-    uVar1 = *(ulong *)(varPrimedSound + 8);
-    pSVar3 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 0x7ff) & 0xfffff800);
-    DAT_00fdf754 = pSVar3;
-    *(StreamDelayInfo **)(varPrimedSound + 4) = pSVar3;
-    varchar_align_2048 = (char *)pSVar3;
-    if (uVar1 != 0) {
+    count = *(ulong *)(varPrimedSound + 8);
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 0x7ff) & 0xfffff800);
+    DAT_00fdf754 = dst;
+    *(StreamDelayInfo **)(varPrimedSound + 4) = dst;
+    varchar_align_2048 = (char *)dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar3,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + uVar1;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         DB_PopStreamPos();
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar3,'\0',uVar1);
-        DAT_00fdf754 = pSVar3 + uVar1;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         DB_PopStreamPos();
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar3 + uVar1;
+      DAT_00fdf754 = dst + count;
     }
   }
   DB_PopStreamPos();
@@ -2073,19 +2073,19 @@ void __cdecl Load_SndPatch(bool param_1)
 
 {
   int iVar1;
-  ulong uVar2;
-  SndPatch *pSVar3;
+  ulong count;
+  SndPatch *pSVar2;
   int unaff_ESI;
-  StreamDelayInfo *pSVar4;
+  StreamDelayInfo *dst;
   uint unaff_EDI;
-  undefined1 uVar5;
+  undefined1 uVar3;
   
-  pSVar3 = varSndPatch;
+  pSVar2 = varSndPatch;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
       *(undefined8 *)varSndPatch = 0;
-      *(undefined8 *)(pSVar3 + 8) = 0;
-      *(undefined4 *)(pSVar3 + 0x10) = 0;
+      *(undefined8 *)(pSVar2 + 8) = 0;
+      *(undefined4 *)(pSVar2 + 0x10) = 0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varSndPatch;
@@ -2095,53 +2095,53 @@ void __cdecl Load_SndPatch(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varSndPatch,0x14);
-    pSVar3 = varSndPatch;
+    pSVar2 = varSndPatch;
   }
   DAT_00fdf754 = (StreamDelayInfo *)((int)DAT_00fdf754 + 0x14);
   DB_PushStreamPos(unaff_EDI);
-  uVar5 = (undefined1)unaff_EDI;
-  varXString = (char **)pSVar3;
-  Load_XString((bool)uVar5);
-  pSVar3 = varSndPatch;
-  pSVar4 = DAT_00fdf754;
+  uVar3 = (undefined1)unaff_EDI;
+  varXString = (char **)pSVar2;
+  Load_XString((bool)uVar3);
+  pSVar2 = varSndPatch;
+  dst = DAT_00fdf754;
   if (*(int *)(varSndPatch + 8) != 0) {
     iVar1 = *(int *)(varSndPatch + 4);
-    pSVar4 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
-    uVar2 = iVar1 * 4;
-    DAT_00fdf754 = pSVar4;
-    *(StreamDelayInfo **)(varSndPatch + 8) = pSVar4;
-    varuint = (uint *)pSVar4;
-    if (uVar2 != 0) {
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
+    count = iVar1 * 4;
+    DAT_00fdf754 = dst;
+    *(StreamDelayInfo **)(varSndPatch + 8) = dst;
+    varuint = (uint *)dst;
+    if (count != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar4,'\0',uVar2);
+          memset((uchar *)dst,'\0',count);
         }
         else {
-          (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar4;
-          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+          (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+          (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
           g_streamDelayIndex = g_streamDelayIndex + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pSVar4,uVar2);
-        pSVar3 = varSndPatch;
-        pSVar4 = DAT_00fdf754;
+        DB_LoadXFileData((uchar *)dst,count);
+        pSVar2 = varSndPatch;
+        dst = DAT_00fdf754;
       }
-      pSVar4 = pSVar4 + iVar1 * 4;
-      DAT_00fdf754 = pSVar4;
+      dst = dst + iVar1 * 4;
+      DAT_00fdf754 = dst;
     }
   }
-  iVar1 = *(int *)(pSVar3 + 0x10);
+  iVar1 = *(int *)(pSVar2 + 0x10);
   if (iVar1 != 0) {
     if (iVar1 == -1) {
-      varSoundFile = (SoundFile *)((uint)(pSVar4 + 3) & 0xfffffffc);
+      varSoundFile = (SoundFile *)((uint)(dst + 3) & 0xfffffffc);
       DAT_00fdf754 = (StreamDelayInfo *)varSoundFile;
-      *(SoundFile **)(pSVar3 + 0x10) = varSoundFile;
-      Load_SoundFileArray((bool)uVar5,unaff_ESI);
+      *(SoundFile **)(pSVar2 + 0x10) = varSoundFile;
+      Load_SoundFileArray((bool)uVar3,unaff_ESI);
       DB_PopStreamPos();
       return;
     }
-    *(uint *)(pSVar3 + 0x10) =
+    *(uint *)(pSVar2 + 0x10) =
          (iVar1 - 1U & 0x1fffffff) + *(int *)(g_streamBlocks + (iVar1 - 1U >> 0x1d) * 8);
   }
   DB_PopStreamPos();
@@ -2490,47 +2490,47 @@ void __cdecl Load_XSurface(bool param_1)
   int unaff_ESI;
   XSurface *pXVar6;
   undefined1 unaff_DI;
+  GfxPackedVertex *dst;
   GfxPackedVertex *pGVar7;
-  GfxPackedVertex *pGVar8;
   
   varXSurfaceVertexInfo = &varXSurface->vertInfo;
   Load_XSurfaceVertexInfo((bool)unaff_DI);
-  pGVar7 = DAT_00fdf754;
+  dst = DAT_00fdf754;
   pXVar6 = varXSurface;
-  pGVar8 = varXSurface->verts0;
-  if (pGVar8 != (GfxPackedVertex *)0x0) {
-    if (pGVar8 == (GfxPackedVertex *)0xffffffff) {
+  pGVar7 = varXSurface->verts0;
+  if (pGVar7 != (GfxPackedVertex *)0x0) {
+    if (pGVar7 == (GfxPackedVertex *)0xffffffff) {
       uVar4 = (uint)varXSurface->vertCount;
-      pGVar7 = (GfxPackedVertex *)((uint)((int)&DAT_00fdf754->binormalSign + 3) & 0xfffffff0);
+      dst = (GfxPackedVertex *)((uint)((int)&DAT_00fdf754->binormalSign + 3) & 0xfffffff0);
       uVar5 = uVar4 * 0x20;
-      DAT_00fdf754 = pGVar7;
-      varXSurface->verts0 = pGVar7;
-      varGfxPackedVertex0 = pGVar7;
+      DAT_00fdf754 = dst;
+      varXSurface->verts0 = dst;
+      varGfxPackedVertex0 = dst;
       if (uVar4 != 0) {
         if (g_streamPosIndex - 1 < 3) {
           if (g_streamPosIndex == 1) {
-            memset((uchar *)pGVar7,'\0',uVar5);
-            pGVar7 = pGVar7 + uVar4;
-            DAT_00fdf754 = pGVar7;
+            memset((uchar *)dst,'\0',uVar5);
+            dst = dst + uVar4;
+            DAT_00fdf754 = dst;
           }
           else {
-            (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar7;
+            (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
             (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
             g_streamDelayIndex = g_streamDelayIndex + 1;
-            pGVar7 = pGVar7 + uVar4;
-            DAT_00fdf754 = pGVar7;
+            dst = dst + uVar4;
+            DAT_00fdf754 = dst;
           }
         }
         else {
-          DB_LoadXFileData((uchar *)pGVar7,uVar5);
-          pGVar7 = DAT_00fdf754 + uVar4;
+          DB_LoadXFileData((uchar *)dst,uVar5);
+          dst = DAT_00fdf754 + uVar4;
           pXVar6 = varXSurface;
-          DAT_00fdf754 = pGVar7;
+          DAT_00fdf754 = dst;
         }
       }
     }
     else {
-      puVar3 = (undefined1 *)((int)&pGVar8[-1].tangent + 3);
+      puVar3 = (undefined1 *)((int)&pGVar7[-1].tangent + 3);
       varXSurface->verts0 =
            (GfxPackedVertex *)
            (((uint)puVar3 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar3 >> 0x1d) * 8));
@@ -2539,12 +2539,12 @@ void __cdecl Load_XSurface(bool param_1)
   pXVar1 = pXVar6->vertList;
   if (pXVar1 != (XRigidVertList *)0x0) {
     if (pXVar1 == (XRigidVertList *)0xffffffff) {
-      varXRigidVertList = (XRigidVertList *)((uint)((int)pGVar7->xyz + 3U) & 0xfffffffc);
+      varXRigidVertList = (XRigidVertList *)((uint)((int)dst->xyz + 3U) & 0xfffffffc);
       DAT_00fdf754 = (GfxPackedVertex *)varXRigidVertList;
       pXVar6->vertList = varXRigidVertList;
       Load_XRigidVertListArray((bool)unaff_DI,unaff_ESI);
       pXVar6 = varXSurface;
-      pGVar7 = DAT_00fdf754;
+      dst = DAT_00fdf754;
     }
     else {
       puVar3 = (undefined1 *)((int)&pXVar1[-1].collisionTree + 3);
@@ -2556,26 +2556,26 @@ void __cdecl Load_XSurface(bool param_1)
   puVar2 = pXVar6->triIndices;
   if (puVar2 != (ushort *)0x0) {
     if (puVar2 == (ushort *)0xffffffff) {
-      pGVar8 = (GfxPackedVertex *)((uint)((int)&pGVar7->binormalSign + 3) & 0xfffffff0);
-      pXVar6->triIndices = (ushort *)pGVar8;
+      pGVar7 = (GfxPackedVertex *)((uint)((int)&dst->binormalSign + 3) & 0xfffffff0);
+      pXVar6->triIndices = (ushort *)pGVar7;
       uVar5 = (uint)pXVar6->triCount * 6;
-      varr_index16_t = (ushort *)pGVar8;
-      DAT_00fdf754 = pGVar8;
+      varr_index16_t = (ushort *)pGVar7;
+      DAT_00fdf754 = pGVar7;
       if (uVar5 != 0) {
         if (2 < g_streamPosIndex - 1) {
-          DB_LoadXFileData((uchar *)pGVar8,uVar5);
+          DB_LoadXFileData((uchar *)pGVar7,uVar5);
           DAT_00fdf754 = (GfxPackedVertex *)((int)DAT_00fdf754->xyz + uVar5);
           return;
         }
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pGVar8,'\0',uVar5);
-          DAT_00fdf754 = (GfxPackedVertex *)((int)pGVar8->xyz + uVar5);
+          memset((uchar *)pGVar7,'\0',uVar5);
+          DAT_00fdf754 = (GfxPackedVertex *)((int)pGVar7->xyz + uVar5);
           return;
         }
-        (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar8;
+        (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar7;
         (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
         g_streamDelayIndex = g_streamDelayIndex + 1;
-        DAT_00fdf754 = (GfxPackedVertex *)((int)pGVar8->xyz + uVar5);
+        DAT_00fdf754 = (GfxPackedVertex *)((int)pGVar7->xyz + uVar5);
         return;
       }
     }
@@ -2667,53 +2667,53 @@ void __cdecl Load_GfxTextureLoad(bool param_1)
 void __cdecl Load_GfxImageLoadDef(bool param_1)
 
 {
-  ulong uVar1;
-  GfxImageLoadDef *pGVar2;
+  ulong count;
+  GfxImageLoadDef *pGVar1;
+  uint uVar2;
   uint uVar3;
-  uint uVar4;
   
-  uVar4 = g_streamPosIndex;
-  uVar3 = g_streamDelayIndex;
-  pGVar2 = varGfxImageLoadDef;
+  uVar3 = g_streamPosIndex;
+  uVar2 = g_streamDelayIndex;
+  pGVar1 = varGfxImageLoadDef;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
-      pGVar2->levelCount = '\0';
-      pGVar2->flags = '\0';
-      *(undefined2 *)&pGVar2->field_0x2 = 0;
-      pGVar2->format = 0;
-      pGVar2->resourceSize = 0;
+      pGVar1->levelCount = '\0';
+      pGVar1->flags = '\0';
+      *(undefined2 *)&pGVar1->field_0x2 = 0;
+      pGVar1->format = 0;
+      pGVar1->resourceSize = 0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varGfxImageLoadDef;
       (&DAT_0117facc)[g_streamDelayIndex * 2] = 0xc;
-      uVar3 = g_streamDelayIndex + 1;
-      g_streamDelayIndex = uVar3;
+      uVar2 = g_streamDelayIndex + 1;
+      g_streamDelayIndex = uVar2;
     }
   }
   else {
     DB_LoadXFileData(&varGfxImageLoadDef->levelCount,0xc);
-    pGVar2 = varGfxImageLoadDef;
-    uVar3 = g_streamDelayIndex;
-    uVar4 = g_streamPosIndex;
+    pGVar1 = varGfxImageLoadDef;
+    uVar2 = g_streamDelayIndex;
+    uVar3 = g_streamPosIndex;
   }
   DAT_00fdf754 = DAT_00fdf754 + 0xc;
-  uVar1 = pGVar2->resourceSize;
-  varbyte = pGVar2->data;
-  if (uVar1 != 0) {
-    if (2 < uVar4 - 1) {
-      DB_LoadXFileData(varbyte,uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+  count = pGVar1->resourceSize;
+  varbyte = pGVar1->data;
+  if (count != 0) {
+    if (2 < uVar3 - 1) {
+      DB_LoadXFileData(varbyte,count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
-    if (uVar4 == 1) {
-      memset(varbyte,'\0',uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar1;
+    if (uVar3 == 1) {
+      memset(varbyte,'\0',count);
+      DAT_00fdf754 = DAT_00fdf754 + count;
       return;
     }
-    (&g_streamDelayArray)[uVar3 * 2] = (StreamDelayInfo *)varbyte;
-    (&DAT_0117facc)[uVar3 * 2] = uVar1;
-    g_streamDelayIndex = uVar3 + 1;
-    DAT_00fdf754 = DAT_00fdf754 + uVar1;
+    (&g_streamDelayArray)[uVar2 * 2] = (StreamDelayInfo *)varbyte;
+    (&DAT_0117facc)[uVar2 * 2] = count;
+    g_streamDelayIndex = uVar2 + 1;
+    DAT_00fdf754 = DAT_00fdf754 + count;
   }
   return;
 }
@@ -2976,31 +2976,31 @@ void __cdecl Load_water_t(bool param_1)
 void __cdecl Load_GfxVertexShaderLoadDef(bool param_1)
 
 {
-  ulong uVar1;
-  StreamDelayInfo *pSVar2;
-  uint uVar3;
+  ulong count;
+  StreamDelayInfo *dst;
+  uint uVar1;
   
-  uVar3 = (uint)varGfxVertexShaderLoadDef->programSize;
-  pSVar2 = (StreamDelayInfo *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
-  uVar1 = uVar3 * 4;
-  DAT_00fdf754 = pSVar2;
-  varGfxVertexShaderLoadDef->program = (ulong *)pSVar2;
-  varDWORD = (ulong *)pSVar2;
-  if (uVar3 != 0) {
+  uVar1 = (uint)varGfxVertexShaderLoadDef->programSize;
+  dst = (StreamDelayInfo *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
+  count = uVar1 * 4;
+  DAT_00fdf754 = dst;
+  varGfxVertexShaderLoadDef->program = (ulong *)dst;
+  varDWORD = (ulong *)dst;
+  if (uVar1 != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)pSVar2,uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar3 * 4;
+      DB_LoadXFileData((uchar *)dst,count);
+      DAT_00fdf754 = DAT_00fdf754 + uVar1 * 4;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)pSVar2,'\0',uVar1);
-      DAT_00fdf754 = pSVar2 + uVar3 * 4;
+      memset((uchar *)dst,'\0',count);
+      DAT_00fdf754 = dst + uVar1 * 4;
       return;
     }
-    (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar2;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+    (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = pSVar2 + uVar3 * 4;
+    DAT_00fdf754 = dst + uVar1 * 4;
   }
   return;
 }
@@ -3013,31 +3013,31 @@ void __cdecl Load_GfxVertexShaderLoadDef(bool param_1)
 void __cdecl Load_GfxPixelShaderLoadDef(bool param_1)
 
 {
-  ulong uVar1;
-  StreamDelayInfo *pSVar2;
-  uint uVar3;
+  ulong count;
+  StreamDelayInfo *dst;
+  uint uVar1;
   
-  uVar3 = (uint)varGfxPixelShaderLoadDef->programSize;
-  pSVar2 = (StreamDelayInfo *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
-  uVar1 = uVar3 * 4;
-  DAT_00fdf754 = pSVar2;
-  varGfxPixelShaderLoadDef->program = (ulong *)pSVar2;
-  varDWORD = (ulong *)pSVar2;
-  if (uVar3 != 0) {
+  uVar1 = (uint)varGfxPixelShaderLoadDef->programSize;
+  dst = (StreamDelayInfo *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
+  count = uVar1 * 4;
+  DAT_00fdf754 = dst;
+  varGfxPixelShaderLoadDef->program = (ulong *)dst;
+  varDWORD = (ulong *)dst;
+  if (uVar1 != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)pSVar2,uVar1);
-      DAT_00fdf754 = DAT_00fdf754 + uVar3 * 4;
+      DB_LoadXFileData((uchar *)dst,count);
+      DAT_00fdf754 = DAT_00fdf754 + uVar1 * 4;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)pSVar2,'\0',uVar1);
-      DAT_00fdf754 = pSVar2 + uVar3 * 4;
+      memset((uchar *)dst,'\0',count);
+      DAT_00fdf754 = dst + uVar1 * 4;
       return;
     }
-    (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar2;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+    (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = pSVar2 + uVar3 * 4;
+    DAT_00fdf754 = dst + uVar1 * 4;
   }
   return;
 }
@@ -3594,9 +3594,9 @@ void __cdecl Load_Material(bool param_1)
   int unaff_ESI;
   Material *pMVar6;
   uint unaff_EDI;
+  MaterialConstantDef *dst;
   MaterialConstantDef *pMVar7;
-  MaterialConstantDef *pMVar8;
-  bool bVar9;
+  bool bVar8;
   
   pMVar6 = varMaterial;
   if (g_streamPosIndex - 1 < 3) {
@@ -3615,12 +3615,12 @@ void __cdecl Load_Material(bool param_1)
   }
   DAT_00fdf754 = (MaterialConstantDef *)((int)DAT_00fdf754 + 0xc0);
   DB_PushStreamPos(unaff_EDI);
-  bVar9 = SUB41(unaff_EDI,0);
+  bVar8 = SUB41(unaff_EDI,0);
   varMaterialInfo = &pMVar6->info;
   varXString = (char **)pMVar6;
-  Load_XString(bVar9);
+  Load_XString(bVar8);
   varMaterialTechniqueSetPtr = (MaterialTechniqueSet **)&varMaterial->field8_0xb0;
-  Load_MaterialTechniqueSetPtr(bVar9);
+  Load_MaterialTechniqueSetPtr(bVar8);
   pMVar6 = varMaterial;
   pMVar1 = varMaterial->textureTable;
   if (pMVar1 != (MaterialTextureDef *)0x0) {
@@ -3629,7 +3629,7 @@ void __cdecl Load_Material(bool param_1)
            (MaterialTextureDef *)((uint)((int)&DAT_00fdf754->nameHash + 3) & 0xfffffffc);
       DAT_00fdf754 = (MaterialConstantDef *)varMaterialTextureDef;
       varMaterial->textureTable = varMaterialTextureDef;
-      Load_MaterialTextureDefArray(bVar9,unaff_ESI);
+      Load_MaterialTextureDefArray(bVar8,unaff_ESI);
       pMVar6 = varMaterial;
     }
     else {
@@ -3639,41 +3639,41 @@ void __cdecl Load_Material(bool param_1)
            (((uint)puVar3 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar3 >> 0x1d) * 8));
     }
   }
-  pMVar7 = DAT_00fdf754;
-  pMVar8 = (pMVar6->field10_0xb8).localConstantTable;
-  if (pMVar8 != (MaterialConstantDef *)0x0) {
-    if (pMVar8 == (MaterialConstantDef *)0xffffffff) {
+  dst = DAT_00fdf754;
+  pMVar7 = (pMVar6->field10_0xb8).localConstantTable;
+  if (pMVar7 != (MaterialConstantDef *)0x0) {
+    if (pMVar7 == (MaterialConstantDef *)0xffffffff) {
       uVar4 = (uint)pMVar6->constantCount;
-      pMVar7 = (MaterialConstantDef *)((uint)(DAT_00fdf754->name + 0xb) & 0xfffffff0);
+      dst = (MaterialConstantDef *)((uint)(DAT_00fdf754->name + 0xb) & 0xfffffff0);
       uVar5 = uVar4 * 0x20;
-      DAT_00fdf754 = pMVar7;
-      (pMVar6->field10_0xb8).localConstantTable = pMVar7;
-      varMaterialConstantDef = pMVar7;
+      DAT_00fdf754 = dst;
+      (pMVar6->field10_0xb8).localConstantTable = dst;
+      varMaterialConstantDef = dst;
       if (uVar4 != 0) {
         if (g_streamPosIndex - 1 < 3) {
           if (g_streamPosIndex == 1) {
-            memset((uchar *)pMVar7,'\0',uVar5);
-            pMVar7 = pMVar7 + uVar4;
-            DAT_00fdf754 = pMVar7;
+            memset((uchar *)dst,'\0',uVar5);
+            dst = dst + uVar4;
+            DAT_00fdf754 = dst;
           }
           else {
-            (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pMVar7;
+            (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
             (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
             g_streamDelayIndex = g_streamDelayIndex + 1;
-            pMVar7 = pMVar7 + uVar4;
-            DAT_00fdf754 = pMVar7;
+            dst = dst + uVar4;
+            DAT_00fdf754 = dst;
           }
         }
         else {
-          DB_LoadXFileData((uchar *)pMVar7,uVar5);
-          pMVar7 = DAT_00fdf754 + uVar4;
+          DB_LoadXFileData((uchar *)dst,uVar5);
+          dst = DAT_00fdf754 + uVar4;
           pMVar6 = varMaterial;
-          DAT_00fdf754 = pMVar7;
+          DAT_00fdf754 = dst;
         }
       }
     }
     else {
-      puVar3 = (undefined1 *)((int)pMVar8[-1].literal + 0xf);
+      puVar3 = (undefined1 *)((int)pMVar7[-1].literal + 0xf);
       (pMVar6->field10_0xb8).localConstantTable =
            (MaterialConstantDef *)
            (((uint)puVar3 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar3 >> 0x1d) * 8));
@@ -3682,28 +3682,28 @@ void __cdecl Load_Material(bool param_1)
   pGVar2 = pMVar6->stateBitsTable;
   if (pGVar2 != (GfxStateBits *)0x0) {
     if (pGVar2 == (GfxStateBits *)0xffffffff) {
-      pMVar8 = (MaterialConstantDef *)((uint)((int)&pMVar7->nameHash + 3) & 0xfffffffc);
-      pMVar6->stateBitsTable = (GfxStateBits *)pMVar8;
+      pMVar7 = (MaterialConstantDef *)((uint)((int)&dst->nameHash + 3) & 0xfffffffc);
+      pMVar6->stateBitsTable = (GfxStateBits *)pMVar7;
       uVar5 = (uint)pMVar6->stateBitsCount * 8;
-      varGfxStateBits = (GfxStateBits *)pMVar8;
-      DAT_00fdf754 = pMVar8;
+      varGfxStateBits = (GfxStateBits *)pMVar7;
+      DAT_00fdf754 = pMVar7;
       if (pMVar6->stateBitsCount != 0) {
         if (2 < g_streamPosIndex - 1) {
-          DB_LoadXFileData((uchar *)pMVar8,uVar5);
+          DB_LoadXFileData((uchar *)pMVar7,uVar5);
           DAT_00fdf754 = (MaterialConstantDef *)(DAT_00fdf754->name + (uVar5 - 4));
           DB_PopStreamPos();
           return;
         }
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pMVar8,'\0',uVar5);
-          DAT_00fdf754 = (MaterialConstantDef *)(pMVar8->name + (uVar5 - 4));
+          memset((uchar *)pMVar7,'\0',uVar5);
+          DAT_00fdf754 = (MaterialConstantDef *)(pMVar7->name + (uVar5 - 4));
           DB_PopStreamPos();
           return;
         }
-        (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pMVar8;
+        (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pMVar7;
         (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
         g_streamDelayIndex = g_streamDelayIndex + 1;
-        DAT_00fdf754 = (MaterialConstantDef *)(pMVar8->name + (uVar5 - 4));
+        DAT_00fdf754 = (MaterialConstantDef *)(pMVar7->name + (uVar5 - 4));
         DB_PopStreamPos();
         return;
       }
@@ -4635,31 +4635,31 @@ void __cdecl Load_XModelCollSurf(bool param_1)
 {
   int iVar1;
   XModelCollSurf_s *pXVar2;
-  XModelCollTri_s *pXVar3;
-  ulong uVar4;
+  XModelCollTri_s *dst;
+  ulong count;
   
   pXVar2 = varXModelCollSurf;
-  pXVar3 = (XModelCollTri_s *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
-  varXModelCollSurf->collTris = pXVar3;
+  dst = (XModelCollTri_s *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
+  varXModelCollSurf->collTris = dst;
   iVar1 = pXVar2->numCollTris;
-  uVar4 = iVar1 * 0x30;
-  varXModelCollTri = pXVar3;
-  DAT_00fdf754 = pXVar3;
-  if (uVar4 != 0) {
+  count = iVar1 * 0x30;
+  varXModelCollTri = dst;
+  DAT_00fdf754 = dst;
+  if (count != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)pXVar3,uVar4);
+      DB_LoadXFileData((uchar *)dst,count);
       DAT_00fdf754 = DAT_00fdf754 + iVar1;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)pXVar3,'\0',uVar4);
-      DAT_00fdf754 = pXVar3 + iVar1;
+      memset((uchar *)dst,'\0',count);
+      DAT_00fdf754 = dst + iVar1;
       return;
     }
-    (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pXVar3;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar4;
+    (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = pXVar3 + iVar1;
+    DAT_00fdf754 = dst + iVar1;
   }
   return;
 }
@@ -4701,32 +4701,32 @@ void __cdecl Load_XModelStreamInfo(bool param_1)
 
 {
   XModel *pXVar1;
-  XModelHighMipBounds *pXVar2;
-  uint uVar3;
-  ulong uVar4;
+  XModelHighMipBounds *dst;
+  uint uVar2;
+  ulong count;
   
   pXVar1 = varXModel;
-  pXVar2 = (XModelHighMipBounds *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
-  varXModelStreamInfo->highMipBounds = pXVar2;
-  uVar3 = (uint)pXVar1->numsurfs;
-  uVar4 = uVar3 * 0x10;
-  varXModelHighMipBounds = pXVar2;
-  DAT_00fdf754 = pXVar2;
-  if (uVar3 != 0) {
+  dst = (XModelHighMipBounds *)((int)DAT_00fdf754 + 3U & 0xfffffffc);
+  varXModelStreamInfo->highMipBounds = dst;
+  uVar2 = (uint)pXVar1->numsurfs;
+  count = uVar2 * 0x10;
+  varXModelHighMipBounds = dst;
+  DAT_00fdf754 = dst;
+  if (uVar2 != 0) {
     if (2 < g_streamPosIndex - 1) {
-      DB_LoadXFileData((uchar *)pXVar2,uVar4);
-      DAT_00fdf754 = DAT_00fdf754 + uVar3;
+      DB_LoadXFileData((uchar *)dst,count);
+      DAT_00fdf754 = DAT_00fdf754 + uVar2;
       return;
     }
     if (g_streamPosIndex == 1) {
-      memset((uchar *)pXVar2,'\0',uVar4);
-      DAT_00fdf754 = pXVar2 + uVar3;
+      memset((uchar *)dst,'\0',count);
+      DAT_00fdf754 = dst + uVar2;
       return;
     }
-    (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pXVar2;
-    (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar4;
+    (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+    (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
     g_streamDelayIndex = g_streamDelayIndex + 1;
-    DAT_00fdf754 = pXVar2 + uVar3;
+    DAT_00fdf754 = dst + uVar2;
   }
   return;
 }
@@ -5545,45 +5545,45 @@ void __cdecl Mark_XModelPieceArray(int param_1)
 void __cdecl Load_pathnode_constant_t(bool param_1)
 
 {
-  ulong uVar1;
-  pathnode_constant_t *ppVar2;
-  XAssetList *pXVar3;
-  StreamDelayInfo *pSVar4;
+  ulong count;
+  pathnode_constant_t *ppVar1;
+  XAssetList *pXVar2;
+  StreamDelayInfo *dst;
   
-  pXVar3 = varXAssetList;
-  ppVar2 = varpathnode_constant_t;
+  pXVar2 = varXAssetList;
+  ppVar1 = varpathnode_constant_t;
   *(undefined2 *)(varpathnode_constant_t + 6) =
        *(undefined2 *)
         (*(int *)(varXAssetList + 4) + (uint)*(ushort *)(varpathnode_constant_t + 6) * 4);
-  *(undefined2 *)(ppVar2 + 8) =
-       *(undefined2 *)(*(int *)(pXVar3 + 4) + (uint)*(ushort *)(ppVar2 + 8) * 4);
-  *(undefined2 *)(ppVar2 + 10) =
-       *(undefined2 *)(*(int *)(pXVar3 + 4) + (uint)*(ushort *)(ppVar2 + 10) * 4);
-  *(undefined2 *)(ppVar2 + 0xc) =
-       *(undefined2 *)(*(int *)(pXVar3 + 4) + (uint)*(ushort *)(ppVar2 + 0xc) * 4);
-  varScriptString = (ushort *)(ppVar2 + 0xe);
-  *varScriptString = *(undefined2 *)(*(int *)(pXVar3 + 4) + (uint)*(ushort *)(ppVar2 + 0xe) * 4);
-  if (*(int *)(ppVar2 + 0x40) != 0) {
-    pSVar4 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
-    *(StreamDelayInfo **)(ppVar2 + 0x40) = pSVar4;
-    uVar1 = (uint)*(ushort *)(ppVar2 + 0x3e) * 0xc;
-    varpathlink_t = (pathlink_s *)pSVar4;
-    DAT_00fdf754 = pSVar4;
-    if (uVar1 != 0) {
+  *(undefined2 *)(ppVar1 + 8) =
+       *(undefined2 *)(*(int *)(pXVar2 + 4) + (uint)*(ushort *)(ppVar1 + 8) * 4);
+  *(undefined2 *)(ppVar1 + 10) =
+       *(undefined2 *)(*(int *)(pXVar2 + 4) + (uint)*(ushort *)(ppVar1 + 10) * 4);
+  *(undefined2 *)(ppVar1 + 0xc) =
+       *(undefined2 *)(*(int *)(pXVar2 + 4) + (uint)*(ushort *)(ppVar1 + 0xc) * 4);
+  varScriptString = (ushort *)(ppVar1 + 0xe);
+  *varScriptString = *(undefined2 *)(*(int *)(pXVar2 + 4) + (uint)*(ushort *)(ppVar1 + 0xe) * 4);
+  if (*(int *)(ppVar1 + 0x40) != 0) {
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
+    *(StreamDelayInfo **)(ppVar1 + 0x40) = dst;
+    count = (uint)*(ushort *)(ppVar1 + 0x3e) * 0xc;
+    varpathlink_t = (pathlink_s *)dst;
+    DAT_00fdf754 = dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar4,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + uVar1;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar4,'\0',uVar1);
-        DAT_00fdf754 = pSVar4 + uVar1;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar4;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar4 + uVar1;
+      DAT_00fdf754 = dst + count;
     }
   }
   return;
@@ -5625,13 +5625,13 @@ void __cdecl Load_pathnode_tree_nodes_t(bool param_1)
 
 {
   int iVar1;
-  ulong uVar2;
-  pathnode_tree_nodes_t *ppVar3;
-  uint uVar4;
-  StreamDelayInfo *pSVar5;
+  ulong count;
+  pathnode_tree_nodes_t *ppVar2;
+  uint uVar3;
+  StreamDelayInfo *dst;
   
-  uVar4 = g_streamPosIndex;
-  ppVar3 = varpathnode_tree_nodes_t;
+  uVar3 = g_streamPosIndex;
+  ppVar2 = varpathnode_tree_nodes_t;
   if (param_1) {
     if (g_streamPosIndex - 1 < 3) {
       if (g_streamPosIndex == 1) {
@@ -5648,32 +5648,32 @@ void __cdecl Load_pathnode_tree_nodes_t(bool param_1)
     else {
       DB_LoadXFileData((uchar *)varpathnode_tree_nodes_t,8);
       DAT_00fdf754 = DAT_00fdf754 + 8;
-      ppVar3 = varpathnode_tree_nodes_t;
-      uVar4 = g_streamPosIndex;
+      ppVar2 = varpathnode_tree_nodes_t;
+      uVar3 = g_streamPosIndex;
     }
   }
-  if (*(int *)(ppVar3 + 4) != 0) {
-    iVar1 = *(int *)ppVar3;
-    pSVar5 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
-    uVar2 = iVar1 * 2;
-    DAT_00fdf754 = pSVar5;
-    *(StreamDelayInfo **)(ppVar3 + 4) = pSVar5;
-    varushort = (ushort *)pSVar5;
-    if (uVar2 != 0) {
-      if (2 < uVar4 - 1) {
-        DB_LoadXFileData((uchar *)pSVar5,uVar2);
+  if (*(int *)(ppVar2 + 4) != 0) {
+    iVar1 = *(int *)ppVar2;
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
+    count = iVar1 * 2;
+    DAT_00fdf754 = dst;
+    *(StreamDelayInfo **)(ppVar2 + 4) = dst;
+    varushort = (ushort *)dst;
+    if (count != 0) {
+      if (2 < uVar3 - 1) {
+        DB_LoadXFileData((uchar *)dst,count);
         DAT_00fdf754 = DAT_00fdf754 + iVar1 * 2;
         return;
       }
-      if (uVar4 == 1) {
-        memset((uchar *)pSVar5,'\0',uVar2);
-        DAT_00fdf754 = pSVar5 + iVar1 * 2;
+      if (uVar3 == 1) {
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + iVar1 * 2;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar5;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar5 + iVar1 * 2;
+      DAT_00fdf754 = dst + iVar1 * 2;
     }
   }
   return;
@@ -7017,17 +7017,17 @@ void __cdecl Mark_DynEntityDefArray(int param_1)
 void __cdecl Load_MapEnts(bool param_1)
 
 {
-  ulong uVar1;
-  StreamDelayInfo *pSVar2;
-  MapEnts *pMVar3;
+  ulong count;
+  StreamDelayInfo *dst;
+  MapEnts *pMVar1;
   uint unaff_EDI;
   
-  pMVar3 = varMapEnts;
+  pMVar1 = varMapEnts;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
-      pMVar3->name = (char *)0x0;
-      pMVar3->entityString = (char *)0x0;
-      pMVar3->numEntityChars = 0;
+      pMVar1->name = (char *)0x0;
+      pMVar1->entityString = (char *)0x0;
+      pMVar1->numEntityChars = 0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varMapEnts;
@@ -7037,34 +7037,34 @@ void __cdecl Load_MapEnts(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varMapEnts,0xc);
-    pMVar3 = varMapEnts;
+    pMVar1 = varMapEnts;
   }
   DAT_00fdf754 = (StreamDelayInfo *)((int)DAT_00fdf754 + 0xc);
   DB_PushStreamPos(unaff_EDI);
-  varXString = &pMVar3->name;
+  varXString = &pMVar1->name;
   Load_XString(SUB41(unaff_EDI,0));
-  pSVar2 = DAT_00fdf754;
+  dst = DAT_00fdf754;
   if (varMapEnts->entityString != (char *)0x0) {
-    uVar1 = varMapEnts->numEntityChars;
+    count = varMapEnts->numEntityChars;
     varMapEnts->entityString = (char *)DAT_00fdf754;
-    varchar = (char *)pSVar2;
-    if (uVar1 != 0) {
+    varchar = (char *)dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar2,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + uVar1;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         DB_PopStreamPos();
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar2,'\0',uVar1);
-        DAT_00fdf754 = pSVar2 + uVar1;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         DB_PopStreamPos();
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar2;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar2 + uVar1;
+      DAT_00fdf754 = dst + count;
     }
   }
   DB_PopStreamPos();
@@ -7213,42 +7213,42 @@ void __cdecl Load_cNode_tArray(bool param_1,int param_2)
 void __cdecl Load_cLeafBrushNodeLeaf_t(bool param_1)
 
 {
-  ulong uVar1;
-  cLeafBrushNode_s *pcVar2;
-  uint uVar3;
-  StreamDelayInfo *pSVar4;
-  int iVar5;
+  ulong count;
+  cLeafBrushNode_s *pcVar1;
+  uint uVar2;
+  StreamDelayInfo *dst;
+  int iVar3;
   
-  pcVar2 = varcLeafBrushNode_t;
+  pcVar1 = varcLeafBrushNode_t;
   if (varcLeafBrushNodeLeaf_t->brushes == (ushort *)0xffffffff) {
-    pSVar4 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
-    varcLeafBrushNodeLeaf_t->brushes = (ushort *)pSVar4;
-    iVar5 = (int)pcVar2->leafBrushCount;
-    uVar1 = iVar5 * 2;
-    varLeafBrush = (ushort *)pSVar4;
-    DAT_00fdf754 = pSVar4;
-    if (uVar1 != 0) {
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
+    varcLeafBrushNodeLeaf_t->brushes = (ushort *)dst;
+    iVar3 = (int)pcVar1->leafBrushCount;
+    count = iVar3 * 2;
+    varLeafBrush = (ushort *)dst;
+    DAT_00fdf754 = dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar4,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + iVar5 * 2;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + iVar3 * 2;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar4,'\0',uVar1);
-        DAT_00fdf754 = pSVar4 + iVar5 * 2;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + iVar3 * 2;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar4;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar4 + iVar5 * 2;
+      DAT_00fdf754 = dst + iVar3 * 2;
       return;
     }
   }
   else {
-    uVar3 = (int)varcLeafBrushNodeLeaf_t->brushes - 1;
+    uVar2 = (int)varcLeafBrushNodeLeaf_t->brushes - 1;
     varcLeafBrushNodeLeaf_t->brushes =
-         (ushort *)((uVar3 & 0x1fffffff) + *(int *)(g_streamBlocks + (uVar3 >> 0x1d) * 8));
+         (ushort *)((uVar2 & 0x1fffffff) + *(int *)(g_streamBlocks + (uVar2 >> 0x1d) * 8));
   }
   return;
 }
@@ -8609,12 +8609,12 @@ void __cdecl Load_ComBurnableCellArray(bool param_1,int param_2)
 void __cdecl Load_ComWorld(bool param_1)
 
 {
-  ulong uVar1;
-  ComWorld *pCVar2;
+  ulong count;
+  ComWorld *pCVar1;
   int unaff_ESI;
-  ComPrimaryLight *pCVar3;
+  ComPrimaryLight *dst;
   uint unaff_EDI;
-  undefined1 uVar4;
+  undefined1 uVar2;
   
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
@@ -8632,47 +8632,47 @@ void __cdecl Load_ComWorld(bool param_1)
   DAT_00fdf754 = (ComPrimaryLight *)((int)DAT_00fdf754 + 0x40);
   DB_PushStreamPos(unaff_EDI);
   varXString = &varComWorld->name;
-  uVar4 = (undefined1)unaff_EDI;
-  Load_XString((bool)uVar4);
+  uVar2 = (undefined1)unaff_EDI;
+  Load_XString((bool)uVar2);
   if (varComWorld->primaryLights != (ComPrimaryLight *)0x0) {
     varComPrimaryLight = (ComPrimaryLight *)((uint)&DAT_00fdf754->priority & 0xfffffffc);
     DAT_00fdf754 = varComPrimaryLight;
     varComWorld->primaryLights = varComPrimaryLight;
-    Load_ComPrimaryLightArray((bool)uVar4,unaff_ESI);
+    Load_ComPrimaryLightArray((bool)uVar2,unaff_ESI);
   }
-  pCVar2 = varComWorld;
-  pCVar3 = DAT_00fdf754;
+  pCVar1 = varComWorld;
+  dst = DAT_00fdf754;
   if (varComWorld->waterCells != (ComWaterCell *)0x0) {
-    pCVar3 = (ComPrimaryLight *)((uint)&DAT_00fdf754->priority & 0xfffffffc);
-    uVar1 = varComWorld->numWaterCells * 8;
-    DAT_00fdf754 = pCVar3;
-    varComWorld->waterCells = (ComWaterCell *)pCVar3;
-    varComWaterCell = (ComWaterCell *)pCVar3;
-    if (uVar1 != 0) {
+    dst = (ComPrimaryLight *)((uint)&DAT_00fdf754->priority & 0xfffffffc);
+    count = varComWorld->numWaterCells * 8;
+    DAT_00fdf754 = dst;
+    varComWorld->waterCells = (ComWaterCell *)dst;
+    varComWaterCell = (ComWaterCell *)dst;
+    if (count != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pCVar3,'\0',uVar1);
+          memset((uchar *)dst,'\0',count);
         }
         else {
-          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pCVar3;
-          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+          (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
           g_streamDelayIndex = g_streamDelayIndex + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pCVar3,uVar1);
-        pCVar2 = varComWorld;
-        pCVar3 = DAT_00fdf754;
+        DB_LoadXFileData((uchar *)dst,count);
+        pCVar1 = varComWorld;
+        dst = DAT_00fdf754;
       }
-      pCVar3 = (ComPrimaryLight *)(pCVar3->_pad + (uVar1 - 6));
-      DAT_00fdf754 = pCVar3;
+      dst = (ComPrimaryLight *)(dst->_pad + (count - 6));
+      DAT_00fdf754 = dst;
     }
   }
-  if (pCVar2->burnableCells != (ComBurnableCell *)0x0) {
-    varComBurnableCell = (ComBurnableCell *)((uint)&pCVar3->priority & 0xfffffffc);
+  if (pCVar1->burnableCells != (ComBurnableCell *)0x0) {
+    varComBurnableCell = (ComBurnableCell *)((uint)&dst->priority & 0xfffffffc);
     DAT_00fdf754 = (ComPrimaryLight *)varComBurnableCell;
-    pCVar2->burnableCells = varComBurnableCell;
-    Load_ComBurnableCellArray((bool)uVar4,unaff_ESI);
+    pCVar1->burnableCells = varComBurnableCell;
+    Load_ComBurnableCellArray((bool)uVar2,unaff_ESI);
   }
   DB_PopStreamPos();
   return;
@@ -9234,29 +9234,29 @@ void __cdecl Load_enumDvarDef_ptr(bool param_1)
 void __cdecl Load_MenuCell(bool param_1)
 
 {
-  ulong uVar1;
-  StreamDelayInfo *pSVar2;
+  ulong count;
+  StreamDelayInfo *dst;
   
-  pSVar2 = DAT_00fdf754;
+  dst = DAT_00fdf754;
   if (*(int *)(varMenuCell + 8) != 0) {
-    uVar1 = *(ulong *)(varMenuCell + 4);
+    count = *(ulong *)(varMenuCell + 4);
     *(StreamDelayInfo **)(varMenuCell + 8) = DAT_00fdf754;
-    varchar = (char *)pSVar2;
-    if (uVar1 != 0) {
+    varchar = (char *)dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar2,uVar1);
-        DAT_00fdf754 = DAT_00fdf754 + uVar1;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar2,'\0',uVar1);
-        DAT_00fdf754 = pSVar2 + uVar1;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar2;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar2 + uVar1;
+      DAT_00fdf754 = dst + count;
     }
   }
   return;
@@ -12794,17 +12794,17 @@ void __cdecl Mark_EmblemSetPtr(void)
 void __cdecl Load_RawFile(bool param_1)
 
 {
-  StreamDelayInfo *pSVar1;
-  RawFile *pRVar2;
+  StreamDelayInfo *dst;
+  RawFile *pRVar1;
   uint unaff_EDI;
-  ulong uVar3;
+  ulong count;
   
-  pRVar2 = varRawFile;
+  pRVar1 = varRawFile;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
-      pRVar2->name = (char *)0x0;
-      pRVar2->len = 0;
-      pRVar2->buffer = (char *)0x0;
+      pRVar1->name = (char *)0x0;
+      pRVar1->len = 0;
+      pRVar1->buffer = (char *)0x0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varRawFile;
@@ -12814,34 +12814,34 @@ void __cdecl Load_RawFile(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varRawFile,0xc);
-    pRVar2 = varRawFile;
+    pRVar1 = varRawFile;
   }
   DAT_00fdf754 = (StreamDelayInfo *)((int)DAT_00fdf754 + 0xc);
   DB_PushStreamPos(unaff_EDI);
-  varXString = &pRVar2->name;
+  varXString = &pRVar1->name;
   Load_XString(SUB41(unaff_EDI,0));
-  pSVar1 = DAT_00fdf754;
+  dst = DAT_00fdf754;
   if (varRawFile->buffer != (char *)0x0) {
-    uVar3 = varRawFile->len + 1;
+    count = varRawFile->len + 1;
     varRawFile->buffer = (char *)DAT_00fdf754;
-    varConstChar = (char *)pSVar1;
-    if (uVar3 != 0) {
+    varConstChar = (char *)dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar1,uVar3);
-        DAT_00fdf754 = DAT_00fdf754 + uVar3;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         DB_PopStreamPos();
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar1,'\0',uVar3);
-        DAT_00fdf754 = pSVar1 + uVar3;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         DB_PopStreamPos();
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar1;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar3;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar1 + uVar3;
+      DAT_00fdf754 = dst + count;
     }
   }
   DB_PopStreamPos();
@@ -13075,21 +13075,21 @@ void __cdecl Load_StringTableCellArray(bool param_1,int param_2)
 void __cdecl Load_StringTable(bool param_1)
 
 {
-  ulong uVar1;
+  ulong count;
   int unaff_ESI;
-  StringTable *pSVar2;
-  StringTableCell *pSVar3;
+  StringTable *pSVar1;
+  StringTableCell *dst;
   uint unaff_EDI;
-  bool bVar4;
+  bool bVar2;
   
-  pSVar2 = varStringTable;
+  pSVar1 = varStringTable;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
-      pSVar2->name = (char *)0x0;
-      pSVar2->columnCount = 0;
-      pSVar2->rowCount = 0;
-      pSVar2->values = (StringTableCell *)0x0;
-      pSVar2->cellIndex = (short *)0x0;
+      pSVar1->name = (char *)0x0;
+      pSVar1->columnCount = 0;
+      pSVar1->rowCount = 0;
+      pSVar1->values = (StringTableCell *)0x0;
+      pSVar1->cellIndex = (short *)0x0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varStringTable;
@@ -13099,42 +13099,42 @@ void __cdecl Load_StringTable(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varStringTable,0x14);
-    pSVar2 = varStringTable;
+    pSVar1 = varStringTable;
   }
   DAT_00fdf754 = (StringTableCell *)((int)DAT_00fdf754 + 0x14);
   DB_PushStreamPos(unaff_EDI);
-  bVar4 = SUB41(unaff_EDI,0);
-  varXString = &pSVar2->name;
-  Load_XString(bVar4);
+  bVar2 = SUB41(unaff_EDI,0);
+  varXString = &pSVar1->name;
+  Load_XString(bVar2);
   if (varStringTable->values != (StringTableCell *)0x0) {
     varStringTableCell = (StringTableCell *)((uint)((int)&DAT_00fdf754->string + 3) & 0xfffffffc);
     DAT_00fdf754 = varStringTableCell;
     varStringTable->values = varStringTableCell;
-    Load_StringTableCellArray(bVar4,unaff_ESI);
+    Load_StringTableCellArray(bVar2,unaff_ESI);
   }
   if (varStringTable->cellIndex != (short *)0x0) {
-    pSVar3 = (StringTableCell *)((uint)((int)&DAT_00fdf754->string + 1) & 0xfffffffe);
-    uVar1 = varStringTable->rowCount * varStringTable->columnCount * 2;
-    DAT_00fdf754 = pSVar3;
-    varStringTable->cellIndex = (short *)pSVar3;
-    varshort = (short *)pSVar3;
-    if (uVar1 != 0) {
+    dst = (StringTableCell *)((uint)((int)&DAT_00fdf754->string + 1) & 0xfffffffe);
+    count = varStringTable->rowCount * varStringTable->columnCount * 2;
+    DAT_00fdf754 = dst;
+    varStringTable->cellIndex = (short *)dst;
+    varshort = (short *)dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar3,uVar1);
-        DAT_00fdf754 = (StringTableCell *)((int)&DAT_00fdf754->string + uVar1);
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = (StringTableCell *)((int)&DAT_00fdf754->string + count);
         DB_PopStreamPos();
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar3,'\0',uVar1);
-        DAT_00fdf754 = (StringTableCell *)((int)&pSVar3->string + uVar1);
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = (StringTableCell *)((int)&dst->string + count);
         DB_PopStreamPos();
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pSVar3;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = (StringTableCell *)((int)&pSVar3->string + uVar1);
+      DAT_00fdf754 = (StringTableCell *)((int)&dst->string + count);
     }
   }
   DB_PopStreamPos();
@@ -13635,35 +13635,35 @@ void __cdecl Load_GfxReflectionProbe(bool param_1)
 {
   uint uVar1;
   GfxReflectionProbe *pGVar2;
-  StreamDelayInfo *pSVar3;
+  StreamDelayInfo *dst;
   bool unaff_DI;
-  ulong uVar4;
+  ulong count;
   
   varGfxImagePtr = &varGfxReflectionProbe->reflectionImage;
   Load_GfxImagePtr(unaff_DI);
   pGVar2 = varGfxReflectionProbe;
   if (varGfxReflectionProbe->probeVolumes != (GfxReflectionProbeVolumeData *)0x0) {
-    pSVar3 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
-    varGfxReflectionProbe->probeVolumes = (GfxReflectionProbeVolumeData *)pSVar3;
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
+    varGfxReflectionProbe->probeVolumes = (GfxReflectionProbeVolumeData *)dst;
     uVar1 = pGVar2->probeVolumeCount;
-    uVar4 = uVar1 * 0x60;
-    varGfxReflectionProbeVolumeData = (GfxReflectionProbeVolumeData *)pSVar3;
-    DAT_00fdf754 = pSVar3;
-    if (uVar4 != 0) {
+    count = uVar1 * 0x60;
+    varGfxReflectionProbeVolumeData = (GfxReflectionProbeVolumeData *)dst;
+    DAT_00fdf754 = dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar3,uVar4);
+        DB_LoadXFileData((uchar *)dst,count);
         DAT_00fdf754 = DAT_00fdf754 + uVar1 * 0x60;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar3,'\0',uVar4);
-        DAT_00fdf754 = pSVar3 + uVar1 * 0x60;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + uVar1 * 0x60;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar4;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar3 + uVar1 * 0x60;
+      DAT_00fdf754 = dst + uVar1 * 0x60;
     }
   }
   return;
@@ -13733,34 +13733,34 @@ void __cdecl Load_GfxAabbTree(bool param_1)
 
 {
   ushort *puVar1;
-  ulong uVar2;
-  StreamDelayInfo *pSVar3;
-  uint uVar4;
+  ulong count;
+  StreamDelayInfo *dst;
+  uint uVar2;
   
   puVar1 = varGfxAabbTree->smodelIndexes;
   if (puVar1 != (ushort *)0x0) {
     if (puVar1 == (ushort *)0xffffffff) {
-      uVar4 = (uint)varGfxAabbTree->smodelIndexCount;
-      pSVar3 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
-      uVar2 = uVar4 * 2;
-      DAT_00fdf754 = pSVar3;
-      varGfxAabbTree->smodelIndexes = (ushort *)pSVar3;
-      varStaticModelIndex = (ushort *)pSVar3;
-      if (uVar4 != 0) {
+      uVar2 = (uint)varGfxAabbTree->smodelIndexCount;
+      dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 1) & 0xfffffffe);
+      count = uVar2 * 2;
+      DAT_00fdf754 = dst;
+      varGfxAabbTree->smodelIndexes = (ushort *)dst;
+      varStaticModelIndex = (ushort *)dst;
+      if (uVar2 != 0) {
         if (2 < g_streamPosIndex - 1) {
-          DB_LoadXFileData((uchar *)pSVar3,uVar2);
-          DAT_00fdf754 = DAT_00fdf754 + uVar4 * 2;
+          DB_LoadXFileData((uchar *)dst,count);
+          DAT_00fdf754 = DAT_00fdf754 + uVar2 * 2;
           return;
         }
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pSVar3,'\0',uVar2);
-          DAT_00fdf754 = pSVar3 + uVar4 * 2;
+          memset((uchar *)dst,'\0',count);
+          DAT_00fdf754 = dst + uVar2 * 2;
           return;
         }
-        (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar3;
-        (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+        (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+        (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
         g_streamDelayIndex = g_streamDelayIndex + 1;
-        DAT_00fdf754 = pSVar3 + uVar4 * 2;
+        DAT_00fdf754 = dst + uVar2 * 2;
         return;
       }
     }
@@ -13809,14 +13809,14 @@ void __cdecl Load_GfxCell(bool param_1)
 
 {
   int iVar1;
-  ulong uVar2;
+  ulong count;
   int unaff_ESI;
-  GfxCell *pGVar3;
-  uint uVar4;
+  GfxCell *pGVar2;
+  uint count_00;
   undefined1 unaff_DI;
-  GfxPortal *pGVar5;
+  GfxPortal *dst;
   
-  pGVar3 = varGfxCell;
+  pGVar2 = varGfxCell;
   if (param_1) {
     if (g_streamPosIndex - 1 < 3) {
       if (g_streamPosIndex == 1) {
@@ -13833,71 +13833,71 @@ void __cdecl Load_GfxCell(bool param_1)
     else {
       DB_LoadXFileData((uchar *)varGfxCell,0x38);
       DAT_00fdf754 = (GfxPortal *)(DAT_00fdf754->hullAxis + 1);
-      pGVar3 = varGfxCell;
+      pGVar2 = varGfxCell;
     }
   }
-  if (pGVar3->aabbTree != (GfxAabbTree *)0x0) {
+  if (pGVar2->aabbTree != (GfxAabbTree *)0x0) {
     varGfxAabbTree = (GfxAabbTree *)((uint)&(DAT_00fdf754->writable).hullPointCount & 0xfffffffc);
     DAT_00fdf754 = (GfxPortal *)varGfxAabbTree;
-    pGVar3->aabbTree = varGfxAabbTree;
+    pGVar2->aabbTree = varGfxAabbTree;
     Load_GfxAabbTreeArray((bool)unaff_DI,unaff_ESI);
-    pGVar3 = varGfxCell;
+    pGVar2 = varGfxCell;
   }
-  if (pGVar3->portals != (GfxPortal *)0x0) {
+  if (pGVar2->portals != (GfxPortal *)0x0) {
     varGfxPortal = (GfxPortal *)((uint)&(DAT_00fdf754->writable).hullPointCount & 0xfffffffc);
     DAT_00fdf754 = varGfxPortal;
-    pGVar3->portals = varGfxPortal;
+    pGVar2->portals = varGfxPortal;
     Load_GfxPortalArray((bool)unaff_DI,unaff_ESI);
-    pGVar3 = varGfxCell;
+    pGVar2 = varGfxCell;
   }
-  pGVar5 = DAT_00fdf754;
-  if (pGVar3->cullGroups != (int *)0x0) {
-    iVar1 = pGVar3->cullGroupCount;
-    pGVar5 = (GfxPortal *)((uint)&(DAT_00fdf754->writable).hullPointCount & 0xfffffffc);
-    uVar2 = iVar1 * 4;
-    DAT_00fdf754 = pGVar5;
-    pGVar3->cullGroups = (int *)pGVar5;
-    varint = (int *)pGVar5;
-    if (uVar2 != 0) {
+  dst = DAT_00fdf754;
+  if (pGVar2->cullGroups != (int *)0x0) {
+    iVar1 = pGVar2->cullGroupCount;
+    dst = (GfxPortal *)((uint)&(DAT_00fdf754->writable).hullPointCount & 0xfffffffc);
+    count = iVar1 * 4;
+    DAT_00fdf754 = dst;
+    pGVar2->cullGroups = (int *)dst;
+    varint = (int *)dst;
+    if (count != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pGVar5,'\0',uVar2);
+          memset((uchar *)dst,'\0',count);
         }
         else {
-          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar5;
-          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+          (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
           g_streamDelayIndex = g_streamDelayIndex + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pGVar5,uVar2);
-        pGVar3 = varGfxCell;
-        pGVar5 = DAT_00fdf754;
+        DB_LoadXFileData((uchar *)dst,count);
+        pGVar2 = varGfxCell;
+        dst = DAT_00fdf754;
       }
-      pGVar5 = (GfxPortal *)((pGVar5->plane).coeffs + iVar1 + -3);
-      DAT_00fdf754 = pGVar5;
+      dst = (GfxPortal *)((dst->plane).coeffs + iVar1 + -3);
+      DAT_00fdf754 = dst;
     }
   }
-  if (pGVar3->reflectionProbes != (uchar *)0x0) {
-    pGVar3->reflectionProbes = (uchar *)pGVar5;
-    uVar4 = (uint)pGVar3->reflectionProbeCount;
-    varbyte = (uchar *)pGVar5;
-    DAT_00fdf754 = pGVar5;
-    if (uVar4 != 0) {
+  if (pGVar2->reflectionProbes != (uchar *)0x0) {
+    pGVar2->reflectionProbes = (uchar *)dst;
+    count_00 = (uint)pGVar2->reflectionProbeCount;
+    varbyte = (uchar *)dst;
+    DAT_00fdf754 = dst;
+    if (count_00 != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pGVar5,uVar4);
-        DAT_00fdf754 = (GfxPortal *)((int)(DAT_00fdf754->plane).coeffs + (uVar4 - 0xc));
+        DB_LoadXFileData((uchar *)dst,count_00);
+        DAT_00fdf754 = (GfxPortal *)((int)(DAT_00fdf754->plane).coeffs + (count_00 - 0xc));
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pGVar5,'\0',uVar4);
-        DAT_00fdf754 = (GfxPortal *)((int)(pGVar5->plane).coeffs + (uVar4 - 0xc));
+        memset((uchar *)dst,'\0',count_00);
+        DAT_00fdf754 = (GfxPortal *)((int)(dst->plane).coeffs + (count_00 - 0xc));
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar5;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar4;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count_00;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = (GfxPortal *)((int)(pGVar5->plane).coeffs + (uVar4 - 0xc));
+      DAT_00fdf754 = (GfxPortal *)((int)(dst->plane).coeffs + (count_00 - 0xc));
     }
   }
   return;
@@ -13937,51 +13937,51 @@ void __cdecl Load_GfxCellArray(bool param_1,int param_2)
 void __cdecl Load_GfxPortal(bool param_1)
 
 {
-  ulong uVar1;
-  undefined1 *puVar2;
-  uint uVar3;
-  GfxPortal *pGVar4;
-  GfxCell *pGVar5;
+  ulong count;
+  undefined1 *puVar1;
+  uint uVar2;
+  GfxPortal *pGVar3;
+  GfxCell *pGVar4;
   
-  pGVar4 = varGfxPortal;
-  pGVar5 = varGfxPortal->cell;
-  if (pGVar5 != (GfxCell *)0x0) {
-    if (pGVar5 == (GfxCell *)0xffffffff) {
+  pGVar3 = varGfxPortal;
+  pGVar4 = varGfxPortal->cell;
+  if (pGVar4 != (GfxCell *)0x0) {
+    if (pGVar4 == (GfxCell *)0xffffffff) {
       varGfxCell = (GfxCell *)((uint)((int)DAT_00fdf754->mins + 3) & 0xfffffffc);
       DAT_00fdf754 = varGfxCell;
       varGfxPortal->cell = varGfxCell;
       Load_GfxCell(true);
-      pGVar4 = varGfxPortal;
+      pGVar3 = varGfxPortal;
     }
     else {
-      puVar2 = (undefined1 *)((int)&pGVar5[-1].reflectionProbes + 3);
+      puVar1 = (undefined1 *)((int)&pGVar4[-1].reflectionProbes + 3);
       varGfxPortal->cell =
            (GfxCell *)
-           (((uint)puVar2 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar2 >> 0x1d) * 8));
+           (((uint)puVar1 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar1 >> 0x1d) * 8));
     }
   }
-  if (pGVar4->vertices != (float (*) [3])0x0) {
-    uVar3 = (uint)pGVar4->vertexCount;
-    pGVar5 = (GfxCell *)((uint)((int)DAT_00fdf754->mins + 3) & 0xfffffffc);
-    uVar1 = uVar3 * 0xc;
-    DAT_00fdf754 = pGVar5;
-    pGVar4->vertices = (float (*) [3])pGVar5;
-    varvec3_t = (float *)pGVar5;
-    if (uVar1 != 0) {
+  if (pGVar3->vertices != (float (*) [3])0x0) {
+    uVar2 = (uint)pGVar3->vertexCount;
+    pGVar4 = (GfxCell *)((uint)((int)DAT_00fdf754->mins + 3) & 0xfffffffc);
+    count = uVar2 * 0xc;
+    DAT_00fdf754 = pGVar4;
+    pGVar3->vertices = (float (*) [3])pGVar4;
+    varvec3_t = (float *)pGVar4;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pGVar5,uVar1);
-        DAT_00fdf754 = (GfxCell *)(DAT_00fdf754->mins + uVar3 * 3);
+        DB_LoadXFileData((uchar *)pGVar4,count);
+        DAT_00fdf754 = (GfxCell *)(DAT_00fdf754->mins + uVar2 * 3);
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pGVar5,'\0',uVar1);
-        DAT_00fdf754 = (GfxCell *)(pGVar5->mins + uVar3 * 3);
+        memset((uchar *)pGVar4,'\0',count);
+        DAT_00fdf754 = (GfxCell *)(pGVar4->mins + uVar2 * 3);
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar5;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar4;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = (GfxCell *)(pGVar5->mins + uVar3 * 3);
+      DAT_00fdf754 = (GfxCell *)(pGVar4->mins + uVar2 * 3);
     }
   }
   return;
@@ -14052,36 +14052,36 @@ void __cdecl Load_GfxWorldVertexData(bool param_1)
   GfxWorldDraw *pGVar2;
   GfxWorldVertexData *pGVar3;
   int unaff_ESI;
-  GfxWorldVertex *pGVar4;
+  GfxWorldVertex *dst;
   void *unaff_EDI;
-  ulong uVar5;
+  ulong count;
   
   pGVar3 = varGfxWorldVertexData;
   pGVar2 = varGfxWorldDraw;
   if (varGfxWorldVertexData->vertices != (GfxWorldVertex *)0x0) {
-    pGVar4 = (GfxWorldVertex *)((uint)((int)DAT_00fdf754->xyz + 3) & 0xfffffffc);
-    varGfxWorldVertexData->vertices = pGVar4;
+    dst = (GfxWorldVertex *)((uint)((int)DAT_00fdf754->xyz + 3) & 0xfffffffc);
+    varGfxWorldVertexData->vertices = dst;
     uVar1 = pGVar2->vertexCount;
-    uVar5 = uVar1 * 0x2c;
-    varGfxWorldVertex0 = pGVar4;
-    DAT_00fdf754 = pGVar4;
-    if (uVar5 != 0) {
+    count = uVar1 * 0x2c;
+    varGfxWorldVertex0 = dst;
+    DAT_00fdf754 = dst;
+    if (count != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pGVar4,'\0',uVar5);
+          memset((uchar *)dst,'\0',count);
         }
         else {
-          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar4;
-          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
+          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+          (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
           g_streamDelayIndex = g_streamDelayIndex + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pGVar4,uVar5);
+        DB_LoadXFileData((uchar *)dst,count);
         pGVar3 = varGfxWorldVertexData;
-        pGVar4 = DAT_00fdf754;
+        dst = DAT_00fdf754;
       }
-      DAT_00fdf754 = pGVar4 + uVar1;
+      DAT_00fdf754 = dst + uVar1;
     }
   }
   varGfxVertexBuffer = &pGVar3->worldVb;
@@ -14097,40 +14097,40 @@ void __cdecl Load_GfxWorldVertexData(bool param_1)
 void __cdecl Load_GfxWorldVertexLayerData(bool param_1)
 
 {
-  ulong uVar1;
-  GfxWorldDraw *pGVar2;
-  GfxWorldVertexLayerData *pGVar3;
+  ulong count;
+  GfxWorldDraw *pGVar1;
+  GfxWorldVertexLayerData *pGVar2;
   int unaff_ESI;
-  StreamDelayInfo *pSVar4;
+  StreamDelayInfo *pSVar3;
   void *unaff_EDI;
   
-  pSVar4 = DAT_00fdf754;
-  pGVar3 = varGfxWorldVertexLayerData;
-  pGVar2 = varGfxWorldDraw;
+  pSVar3 = DAT_00fdf754;
+  pGVar2 = varGfxWorldVertexLayerData;
+  pGVar1 = varGfxWorldDraw;
   if (varGfxWorldVertexLayerData->data != (uchar *)0x0) {
     varGfxWorldVertexLayerData->data = (uchar *)DAT_00fdf754;
-    uVar1 = pGVar2->vertexLayerDataSize;
+    count = pGVar1->vertexLayerDataSize;
     varbyte = (uchar *)DAT_00fdf754;
-    if (uVar1 != 0) {
+    if (count != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)DAT_00fdf754,'\0',uVar1);
+          memset((uchar *)DAT_00fdf754,'\0',count);
         }
         else {
           (&g_streamDelayArray)[g_streamDelayIndex * 2] = DAT_00fdf754;
-          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+          (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
           g_streamDelayIndex = g_streamDelayIndex + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)DAT_00fdf754,uVar1);
-        pGVar3 = varGfxWorldVertexLayerData;
-        pSVar4 = DAT_00fdf754;
+        DB_LoadXFileData((uchar *)DAT_00fdf754,count);
+        pGVar2 = varGfxWorldVertexLayerData;
+        pSVar3 = DAT_00fdf754;
       }
-      DAT_00fdf754 = pSVar4 + uVar1;
+      DAT_00fdf754 = pSVar3 + count;
     }
   }
-  varGfxVertexBuffer = &pGVar3->layerVb;
+  varGfxVertexBuffer = &pGVar2->layerVb;
   Load_VertexBuffer((IDirect3DVertexBuffer9 **)(varGfxWorldDraw->vld).data,unaff_EDI,unaff_ESI);
   return;
 }
@@ -14436,30 +14436,30 @@ void __cdecl Load_GfxShadowGeometryArray(bool param_1,int param_2)
 void __cdecl Load_GfxWaterBuffer(bool param_1)
 
 {
-  StreamDelayInfo *pSVar1;
-  uint uVar2;
+  StreamDelayInfo *dst;
+  uint count;
   
   if (varGfxWaterBuffer->buffer != (float (*) [4])0x0) {
-    pSVar1 = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
-    uVar2 = varGfxWaterBuffer->bufferSize & 0xfffffff0;
-    DAT_00fdf754 = pSVar1;
-    varGfxWaterBuffer->buffer = (float (*) [4])pSVar1;
-    varvec4_t = (float *)pSVar1;
-    if (uVar2 != 0) {
+    dst = (StreamDelayInfo *)((uint)(DAT_00fdf754 + 3) & 0xfffffffc);
+    count = varGfxWaterBuffer->bufferSize & 0xfffffff0;
+    DAT_00fdf754 = dst;
+    varGfxWaterBuffer->buffer = (float (*) [4])dst;
+    varvec4_t = (float *)dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pSVar1,uVar2);
-        DAT_00fdf754 = DAT_00fdf754 + uVar2;
+        DB_LoadXFileData((uchar *)dst,count);
+        DAT_00fdf754 = DAT_00fdf754 + count;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pSVar1,'\0',uVar2);
-        DAT_00fdf754 = pSVar1 + uVar2;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + count;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = pSVar1;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pSVar1 + uVar2;
+      DAT_00fdf754 = dst + count;
     }
   }
   return;
@@ -14499,33 +14499,33 @@ void __cdecl Load_GfxLightRegionHull(bool param_1)
 
 {
   uint uVar1;
-  ulong uVar2;
-  GfxLightRegionHull *pGVar3;
-  GfxLightRegionAxis *pGVar4;
+  ulong count;
+  GfxLightRegionHull *pGVar2;
+  GfxLightRegionAxis *dst;
   
-  pGVar3 = varGfxLightRegionHull;
+  pGVar2 = varGfxLightRegionHull;
   if (varGfxLightRegionHull->axis != (GfxLightRegionAxis *)0x0) {
-    pGVar4 = (GfxLightRegionAxis *)((uint)((int)DAT_00fdf754->dir + 3) & 0xfffffffc);
-    varGfxLightRegionHull->axis = pGVar4;
-    uVar1 = pGVar3->axisCount;
-    uVar2 = uVar1 * 0x14;
-    varGfxLightRegionAxis = pGVar4;
-    DAT_00fdf754 = pGVar4;
-    if (uVar2 != 0) {
+    dst = (GfxLightRegionAxis *)((uint)((int)DAT_00fdf754->dir + 3) & 0xfffffffc);
+    varGfxLightRegionHull->axis = dst;
+    uVar1 = pGVar2->axisCount;
+    count = uVar1 * 0x14;
+    varGfxLightRegionAxis = dst;
+    DAT_00fdf754 = dst;
+    if (count != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pGVar4,uVar2);
+        DB_LoadXFileData((uchar *)dst,count);
         DAT_00fdf754 = DAT_00fdf754 + uVar1;
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pGVar4,'\0',uVar2);
-        DAT_00fdf754 = pGVar4 + uVar1;
+        memset((uchar *)dst,'\0',count);
+        DAT_00fdf754 = dst + uVar1;
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar4;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = pGVar4 + uVar1;
+      DAT_00fdf754 = dst + uVar1;
     }
   }
   return;
@@ -14543,52 +14543,52 @@ void __cdecl Load_GfxLightRegionArray(bool param_1,int param_2)
   uint uVar1;
   GfxLightRegion *pGVar2;
   int unaff_ESI;
-  ulong uVar3;
-  GfxLightRegionHull *pGVar4;
+  ulong count;
+  GfxLightRegionHull *pGVar3;
   void *unaff_EDI;
-  GfxLightRegionHull *pGVar5;
+  GfxLightRegionHull *dst;
   int local_4;
   
   Load_Stream(true,unaff_EDI,unaff_ESI);
   pGVar2 = varGfxLightRegion;
-  pGVar5 = DAT_00fdf754;
+  dst = DAT_00fdf754;
   local_4 = in_EAX;
   if (0 < in_EAX) {
     do {
       varGfxLightRegion = pGVar2;
       if (pGVar2->hulls != (GfxLightRegionHull *)0x0) {
         uVar1 = pGVar2->hullCount;
-        pGVar5 = (GfxLightRegionHull *)((uint)((int)pGVar5->kdopMidPoint + 3) & 0xfffffffc);
-        uVar3 = uVar1 * 0x50;
-        DAT_00fdf754 = pGVar5;
-        pGVar2->hulls = pGVar5;
-        varGfxLightRegionHull = pGVar5;
-        if (uVar3 != 0) {
+        dst = (GfxLightRegionHull *)((uint)((int)dst->kdopMidPoint + 3) & 0xfffffffc);
+        count = uVar1 * 0x50;
+        DAT_00fdf754 = dst;
+        pGVar2->hulls = dst;
+        varGfxLightRegionHull = dst;
+        if (count != 0) {
           if (g_streamPosIndex - 1 < 3) {
             if (g_streamPosIndex == 1) {
-              memset((uchar *)pGVar5,'\0',uVar3);
+              memset((uchar *)dst,'\0',count);
             }
             else {
-              (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar5;
-              (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar3;
+              (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+              (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
               g_streamDelayIndex = g_streamDelayIndex + 1;
             }
           }
           else {
-            DB_LoadXFileData((uchar *)pGVar5,uVar3);
-            pGVar5 = DAT_00fdf754;
+            DB_LoadXFileData((uchar *)dst,count);
+            dst = DAT_00fdf754;
           }
-          pGVar5 = pGVar5 + uVar1;
-          DAT_00fdf754 = pGVar5;
+          dst = dst + uVar1;
+          DAT_00fdf754 = dst;
         }
-        pGVar4 = varGfxLightRegionHull;
+        pGVar3 = varGfxLightRegionHull;
         if (0 < (int)uVar1) {
           do {
-            varGfxLightRegionHull = pGVar4;
+            varGfxLightRegionHull = pGVar3;
             Load_GfxLightRegionHull(SUB41(unaff_EDI,0));
-            pGVar4 = pGVar4 + 1;
+            pGVar3 = pGVar3 + 1;
             uVar1 = uVar1 - 1;
-            pGVar5 = DAT_00fdf754;
+            dst = DAT_00fdf754;
           } while (uVar1 != 0);
         }
       }
@@ -15309,103 +15309,103 @@ void __cdecl Load_GfxWorldDpvsPlanes(bool param_1)
   int iVar1;
   GfxWorld *pGVar2;
   GfxWorldDpvsPlanes *pGVar3;
+  cplane_s *dst;
   cplane_s *pcVar4;
-  cplane_s *pcVar5;
   uint unaff_EDI;
-  ulong uVar6;
+  ulong uVar5;
   
-  pcVar4 = DAT_00fdf754;
+  dst = DAT_00fdf754;
   pGVar3 = varGfxWorldDpvsPlanes;
   pGVar2 = varGfxWorld;
-  pcVar5 = varGfxWorldDpvsPlanes->planes;
-  if (pcVar5 != (cplane_s *)0x0) {
-    if (pcVar5 == (cplane_s *)0xffffffff) {
-      pcVar4 = (cplane_s *)((uint)((int)DAT_00fdf754->normal + 3) & 0xfffffffc);
-      varGfxWorldDpvsPlanes->planes = pcVar4;
+  pcVar4 = varGfxWorldDpvsPlanes->planes;
+  if (pcVar4 != (cplane_s *)0x0) {
+    if (pcVar4 == (cplane_s *)0xffffffff) {
+      dst = (cplane_s *)((uint)((int)DAT_00fdf754->normal + 3) & 0xfffffffc);
+      varGfxWorldDpvsPlanes->planes = dst;
       iVar1 = pGVar2->planeCount;
-      uVar6 = iVar1 * 0x14;
-      varcplane_t = pcVar4;
-      DAT_00fdf754 = pcVar4;
-      if (uVar6 != 0) {
+      uVar5 = iVar1 * 0x14;
+      varcplane_t = dst;
+      DAT_00fdf754 = dst;
+      if (uVar5 != 0) {
         if (g_streamPosIndex - 1 < 3) {
           if (g_streamPosIndex == 1) {
-            memset((uchar *)pcVar4,'\0',uVar6);
-            pcVar4 = pcVar4 + iVar1;
-            DAT_00fdf754 = pcVar4;
+            memset((uchar *)dst,'\0',uVar5);
+            dst = dst + iVar1;
+            DAT_00fdf754 = dst;
           }
           else {
-            (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pcVar4;
-            (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar6;
+            (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)dst;
+            (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
             g_streamDelayIndex = g_streamDelayIndex + 1;
-            pcVar4 = pcVar4 + iVar1;
-            DAT_00fdf754 = pcVar4;
+            dst = dst + iVar1;
+            DAT_00fdf754 = dst;
           }
         }
         else {
-          DB_LoadXFileData((uchar *)pcVar4,uVar6);
-          pcVar4 = DAT_00fdf754 + iVar1;
+          DB_LoadXFileData((uchar *)dst,uVar5);
+          dst = DAT_00fdf754 + iVar1;
           pGVar3 = varGfxWorldDpvsPlanes;
-          DAT_00fdf754 = pcVar4;
+          DAT_00fdf754 = dst;
         }
       }
     }
     else {
       varGfxWorldDpvsPlanes->planes =
            (cplane_s *)
-           (((uint)(pcVar5[-1].pad + 1) & 0x1fffffff) +
-           *(int *)(g_streamBlocks + ((uint)(pcVar5[-1].pad + 1) >> 0x1d) * 8));
+           (((uint)(pcVar4[-1].pad + 1) & 0x1fffffff) +
+           *(int *)(g_streamBlocks + ((uint)(pcVar4[-1].pad + 1) >> 0x1d) * 8));
     }
   }
   pGVar2 = varGfxWorld;
   if (pGVar3->nodes != (ushort *)0x0) {
-    pcVar5 = (cplane_s *)((uint)((int)pcVar4->normal + 1) & 0xfffffffe);
-    pGVar3->nodes = (ushort *)pcVar5;
-    uVar6 = pGVar2->nodeCount * 2;
-    varushort = (ushort *)pcVar5;
-    DAT_00fdf754 = pcVar5;
-    if (uVar6 != 0) {
+    pcVar4 = (cplane_s *)((uint)((int)dst->normal + 1) & 0xfffffffe);
+    pGVar3->nodes = (ushort *)pcVar4;
+    uVar5 = pGVar2->nodeCount * 2;
+    varushort = (ushort *)pcVar4;
+    DAT_00fdf754 = pcVar4;
+    if (uVar5 != 0) {
       if (g_streamPosIndex - 1 < 3) {
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pcVar5,'\0',uVar6);
+          memset((uchar *)pcVar4,'\0',uVar5);
         }
         else {
-          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pcVar5;
-          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar6;
+          (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pcVar4;
+          (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
           g_streamDelayIndex = g_streamDelayIndex + 1;
         }
       }
       else {
-        DB_LoadXFileData((uchar *)pcVar5,uVar6);
+        DB_LoadXFileData((uchar *)pcVar4,uVar5);
         pGVar3 = varGfxWorldDpvsPlanes;
-        pcVar5 = DAT_00fdf754;
+        pcVar4 = DAT_00fdf754;
       }
-      DAT_00fdf754 = (cplane_s *)((int)pcVar5->normal + uVar6);
+      DAT_00fdf754 = (cplane_s *)((int)pcVar4->normal + uVar5);
     }
   }
   DB_PushStreamPos(unaff_EDI);
   if (pGVar3->sceneEntCellBits != (uint *)0x0) {
-    pcVar5 = (cplane_s *)((uint)((int)DAT_00fdf754->normal + 3) & 0xfffffffc);
-    uVar6 = pGVar3->cellCount * 0x800;
-    DAT_00fdf754 = pcVar5;
-    pGVar3->sceneEntCellBits = (uint *)pcVar5;
-    varraw_uint = (uint *)pcVar5;
-    if (uVar6 != 0) {
+    pcVar4 = (cplane_s *)((uint)((int)DAT_00fdf754->normal + 3) & 0xfffffffc);
+    uVar5 = pGVar3->cellCount * 0x800;
+    DAT_00fdf754 = pcVar4;
+    pGVar3->sceneEntCellBits = (uint *)pcVar4;
+    varraw_uint = (uint *)pcVar4;
+    if (uVar5 != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pcVar5,uVar6);
-        DAT_00fdf754 = (cplane_s *)((int)DAT_00fdf754 + uVar6);
+        DB_LoadXFileData((uchar *)pcVar4,uVar5);
+        DAT_00fdf754 = (cplane_s *)((int)DAT_00fdf754 + uVar5);
         DB_PopStreamPos();
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pcVar5,'\0',uVar6);
-        DAT_00fdf754 = (cplane_s *)((int)pcVar5 + uVar6);
+        memset((uchar *)pcVar4,'\0',uVar5);
+        DAT_00fdf754 = (cplane_s *)((int)pcVar4 + uVar5);
         DB_PopStreamPos();
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pcVar5;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar6;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pcVar4;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar5;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = (cplane_s *)((int)pcVar5 + uVar6);
+      DAT_00fdf754 = (cplane_s *)((int)pcVar4 + uVar5);
     }
   }
   DB_PopStreamPos();
@@ -16549,22 +16549,22 @@ void __cdecl Load_Font(bool param_1)
 
 {
   int iVar1;
-  ulong uVar2;
-  undefined1 *puVar3;
-  Font_s *pFVar4;
-  Glyph *pGVar5;
+  ulong count;
+  undefined1 *puVar2;
+  Font_s *pFVar3;
+  Glyph *pGVar4;
   uint unaff_EDI;
-  bool bVar6;
+  bool bVar5;
   
-  pFVar4 = varFont;
+  pFVar3 = varFont;
   if (g_streamPosIndex - 1 < 3) {
     if (g_streamPosIndex == 1) {
-      pFVar4->fontName = (char *)0x0;
-      pFVar4->pixelHeight = 0;
-      pFVar4->glyphCount = 0;
-      pFVar4->material = (Material *)0x0;
-      pFVar4->glowMaterial = (Material *)0x0;
-      pFVar4->glyphs = (Glyph *)0x0;
+      pFVar3->fontName = (char *)0x0;
+      pFVar3->pixelHeight = 0;
+      pFVar3->glyphCount = 0;
+      pFVar3->material = (Material *)0x0;
+      pFVar3->glowMaterial = (Material *)0x0;
+      pFVar3->glyphs = (Glyph *)0x0;
     }
     else {
       (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)varFont;
@@ -16574,53 +16574,53 @@ void __cdecl Load_Font(bool param_1)
   }
   else {
     DB_LoadXFileData((uchar *)varFont,0x18);
-    pFVar4 = varFont;
+    pFVar3 = varFont;
   }
   DAT_00fdf754 = (Glyph *)((int)DAT_00fdf754 + 0x18);
   DB_PushStreamPos(unaff_EDI);
-  bVar6 = SUB41(unaff_EDI,0);
-  varXString = &pFVar4->fontName;
-  Load_XString(bVar6);
+  bVar5 = SUB41(unaff_EDI,0);
+  varXString = &pFVar3->fontName;
+  Load_XString(bVar5);
   varMaterialHandle = &varFont->material;
-  Load_MaterialHandle(bVar6);
+  Load_MaterialHandle(bVar5);
   varMaterialHandle = &varFont->glowMaterial;
-  Load_MaterialHandle(bVar6);
-  pFVar4 = varFont;
-  pGVar5 = varFont->glyphs;
-  if (pGVar5 != (Glyph *)0x0) {
-    if (pGVar5 == (Glyph *)0xffffffff) {
-      pGVar5 = (Glyph *)((uint)&DAT_00fdf754->y0 & 0xfffffffc);
-      varFont->glyphs = pGVar5;
-      iVar1 = pFVar4->glyphCount;
-      uVar2 = iVar1 * 0x18;
-      varGlyph = pGVar5;
-      DAT_00fdf754 = pGVar5;
-      if (uVar2 != 0) {
+  Load_MaterialHandle(bVar5);
+  pFVar3 = varFont;
+  pGVar4 = varFont->glyphs;
+  if (pGVar4 != (Glyph *)0x0) {
+    if (pGVar4 == (Glyph *)0xffffffff) {
+      pGVar4 = (Glyph *)((uint)&DAT_00fdf754->y0 & 0xfffffffc);
+      varFont->glyphs = pGVar4;
+      iVar1 = pFVar3->glyphCount;
+      count = iVar1 * 0x18;
+      varGlyph = pGVar4;
+      DAT_00fdf754 = pGVar4;
+      if (count != 0) {
         if (2 < g_streamPosIndex - 1) {
-          DB_LoadXFileData((uchar *)pGVar5,uVar2);
+          DB_LoadXFileData((uchar *)pGVar4,count);
           DAT_00fdf754 = DAT_00fdf754 + iVar1;
           DB_PopStreamPos();
           return;
         }
         if (g_streamPosIndex == 1) {
-          memset((uchar *)pGVar5,'\0',uVar2);
-          DAT_00fdf754 = pGVar5 + iVar1;
+          memset((uchar *)pGVar4,'\0',count);
+          DAT_00fdf754 = pGVar4 + iVar1;
           DB_PopStreamPos();
           return;
         }
-        (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar5;
-        (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar2;
+        (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar4;
+        (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
         g_streamDelayIndex = g_streamDelayIndex + 1;
-        DAT_00fdf754 = pGVar5 + iVar1;
+        DAT_00fdf754 = pGVar4 + iVar1;
         DB_PopStreamPos();
         return;
       }
     }
     else {
-      puVar3 = (undefined1 *)((int)&pGVar5[-1].t1 + 3);
+      puVar2 = (undefined1 *)((int)&pGVar4[-1].t1 + 3);
       varFont->glyphs =
-           (Glyph *)(((uint)puVar3 & 0x1fffffff) +
-                    *(int *)(g_streamBlocks + ((uint)puVar3 >> 0x1d) * 8));
+           (Glyph *)(((uint)puVar2 & 0x1fffffff) +
+                    *(int *)(g_streamBlocks + ((uint)puVar2 >> 0x1d) * 8));
     }
   }
   DB_PopStreamPos();
@@ -16776,52 +16776,52 @@ void __cdecl Load_GlassDef(bool param_1)
 void __cdecl Load_Glass(bool param_1)
 
 {
-  ulong uVar1;
-  Glass *pGVar2;
-  undefined1 *puVar3;
-  GlassDef *pGVar4;
+  ulong count;
+  Glass *pGVar1;
+  undefined1 *puVar2;
+  GlassDef *pGVar3;
   bool unaff_DI;
-  uint uVar5;
+  uint uVar4;
   
-  pGVar2 = varGlass;
-  pGVar4 = varGlass->glassDef;
-  if (pGVar4 != (GlassDef *)0x0) {
-    if (pGVar4 == (GlassDef *)0xffffffff) {
+  pGVar1 = varGlass;
+  pGVar3 = varGlass->glassDef;
+  if (pGVar3 != (GlassDef *)0x0) {
+    if (pGVar3 == (GlassDef *)0xffffffff) {
       varGlassDef = (GlassDef *)((uint)((int)&DAT_00fdf754->name + 3) & 0xfffffffc);
       DAT_00fdf754 = varGlassDef;
       varGlass->glassDef = varGlassDef;
       Load_GlassDef(unaff_DI);
-      pGVar2 = varGlass;
+      pGVar1 = varGlass;
     }
     else {
-      puVar3 = (undefined1 *)((int)&pGVar4[-1].shatterEffect + 3);
+      puVar2 = (undefined1 *)((int)&pGVar3[-1].shatterEffect + 3);
       varGlass->glassDef =
            (GlassDef *)
-           (((uint)puVar3 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar3 >> 0x1d) * 8));
+           (((uint)puVar2 & 0x1fffffff) + *(int *)(g_streamBlocks + ((uint)puVar2 >> 0x1d) * 8));
     }
   }
-  if (pGVar2->outline != (float (*) [2])0x0) {
-    uVar5 = (uint)pGVar2->numOutlineVerts;
-    pGVar4 = (GlassDef *)((uint)((int)&DAT_00fdf754->name + 3) & 0xfffffffc);
-    uVar1 = uVar5 * 8;
-    DAT_00fdf754 = pGVar4;
-    pGVar2->outline = (float (*) [2])pGVar4;
-    varvec2_t = (float *)pGVar4;
-    if (uVar5 != 0) {
+  if (pGVar1->outline != (float (*) [2])0x0) {
+    uVar4 = (uint)pGVar1->numOutlineVerts;
+    pGVar3 = (GlassDef *)((uint)((int)&DAT_00fdf754->name + 3) & 0xfffffffc);
+    count = uVar4 * 8;
+    DAT_00fdf754 = pGVar3;
+    pGVar1->outline = (float (*) [2])pGVar3;
+    varvec2_t = (float *)pGVar3;
+    if (uVar4 != 0) {
       if (2 < g_streamPosIndex - 1) {
-        DB_LoadXFileData((uchar *)pGVar4,uVar1);
-        DAT_00fdf754 = (GlassDef *)(&DAT_00fdf754->name + uVar5 * 2);
+        DB_LoadXFileData((uchar *)pGVar3,count);
+        DAT_00fdf754 = (GlassDef *)(&DAT_00fdf754->name + uVar4 * 2);
         return;
       }
       if (g_streamPosIndex == 1) {
-        memset((uchar *)pGVar4,'\0',uVar1);
-        DAT_00fdf754 = (GlassDef *)(&pGVar4->name + uVar5 * 2);
+        memset((uchar *)pGVar3,'\0',count);
+        DAT_00fdf754 = (GlassDef *)(&pGVar3->name + uVar4 * 2);
         return;
       }
-      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar4;
-      (&DAT_0117facc)[g_streamDelayIndex * 2] = uVar1;
+      (&g_streamDelayArray)[g_streamDelayIndex * 2] = (StreamDelayInfo *)pGVar3;
+      (&DAT_0117facc)[g_streamDelayIndex * 2] = count;
       g_streamDelayIndex = g_streamDelayIndex + 1;
-      DAT_00fdf754 = (GlassDef *)(&pGVar4->name + uVar5 * 2);
+      DAT_00fdf754 = (GlassDef *)(&pGVar3->name + uVar4 * 2);
     }
   }
   return;

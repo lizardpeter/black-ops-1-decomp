@@ -6,6 +6,7 @@ void __cdecl jinit_memory_mgr(jpeg_common_struct *param_1)
 
 {
   jpeg_memory_mgr *pjVar1;
+  jpeg_common_struct *cinfo;
   
   param_1->mem = (jpeg_memory_mgr *)0x0;
   if (jpeg_alloc_overrides.malloc == (_func___cdecl_void_ptr_uint *)0x0) {

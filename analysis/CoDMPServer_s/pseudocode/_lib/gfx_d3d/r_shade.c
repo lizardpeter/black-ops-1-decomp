@@ -2,29 +2,31 @@
 
 // 0084B5A0  R_SetupPassPerPrimArgs  (gfx_d3d/r_shade.cpp:341)
 
-void __cdecl R_SetupPassPerPrimArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassPerPrimArgs(void)
 
 {
   byte bVar1;
-  ushort uVar2;
+  short sVar2;
   uint uVar3;
   MaterialShaderArgument *unaff_ESI;
   GfxCmdBufContext *unaff_EDI;
-  MaterialShaderArgument *pMVar4;
+  short *psVar4;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
-  bVar1 = (param_1.field0_0x0._s_0.state)->pass->perPrimArgCount;
+  bVar1 = *(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xc);
   if (bVar1 != 0) {
-    pMVar4 = ((param_1.field0_0x0._s_0.state)->pass->field7_0x10).localArgs;
+    psVar4 = *(short **)(*(int *)(in_stack_00000008 + 0xd0) + 0x10);
     uVar3 = (uint)bVar1;
-    uVar2 = pMVar4->type;
-    while (uVar2 == 3) {
+    sVar2 = *psVar4;
+    while (sVar2 == 3) {
       R_SetVertexShaderConstantFromCode_New(unaff_EDI,unaff_ESI);
-      pMVar4 = pMVar4 + 1;
+      psVar4 = psVar4 + 4;
       uVar3 = uVar3 - 1;
       if (uVar3 == 0) {
         return;
       }
-      uVar2 = pMVar4->type;
+      sVar2 = *psVar4;
     }
   }
   return;
@@ -33,15 +35,18 @@ void __cdecl R_SetupPassPerPrimArgs(GfxCmdBufContext param_1)
 
 // 0084B5E0  R_SetupPassPerObjectArgs  (gfx_d3d/r_shade.cpp:354)
 
-void __cdecl R_SetupPassPerObjectArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassPerObjectArgs(void)
 
 {
   byte bVar1;
   MaterialShaderArgument *in_ECX;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
-  bVar1 = (param_1.field0_0x0._s_0.state)->pass->perObjArgCount;
+  bVar1 = *(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xd);
   if (bVar1 != 0) {
-    R_SetPassShaderObjectArguments(&param_1,(uint)bVar1,in_ECX);
+    R_SetPassShaderObjectArguments
+              ((GfxCmdBufContext *)((int)&context.field0_0x0 + 4),(uint)bVar1,in_ECX);
   }
   return;
 }
@@ -49,14 +54,16 @@ void __cdecl R_SetupPassPerObjectArgs(GfxCmdBufContext param_1)
 
 // 0084B7B0  R_SetupPassPixelShaderArgs  (gfx_d3d/r_shade.cpp:473)
 
-void __cdecl R_SetupPassPixelShaderArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassPixelShaderArgs(void)
 
 {
   byte bVar1;
   MaterialShaderArgument *unaff_ESI;
   uint unaff_EDI;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
-  bVar1 = (param_1.field0_0x0._s_0.state)->pass->stableArgCount;
+  bVar1 = *(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xe);
   if (bVar1 != 0) {
     R_SetPassPixelShaderStableArguments((GfxCmdBufContext *)(uint)bVar1,unaff_EDI,unaff_ESI);
   }
@@ -66,16 +73,21 @@ void __cdecl R_SetupPassPixelShaderArgs(GfxCmdBufContext param_1)
 
 // 0084B7F0  R_SetupPassVertexShaderArgs  (gfx_d3d/r_shade.cpp:654)
 
-void __cdecl R_SetupPassVertexShaderArgs(GfxCmdBufContext param_1)
+/* WARNING: Variable defined which should be unmapped: context */
+
+void __cdecl R_SetupPassVertexShaderArgs(void)
 
 {
   byte bVar1;
   uint unaff_ESI;
-  MaterialShaderArgument *unaff_retaddr;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
-  bVar1 = (param_1.field0_0x0._s_0.state)->pass->stableArgCount;
+  bVar1 = *(byte *)(*(int *)(in_stack_00000008 + 0xd0) + 0xe);
   if (bVar1 != 0) {
-    R_SetPassVertexShaderStableArguments((GfxCmdBufContext *)(uint)bVar1,unaff_ESI,unaff_retaddr);
+    R_SetPassVertexShaderStableArguments
+              ((GfxCmdBufContext *)(uint)bVar1,unaff_ESI,
+               (MaterialShaderArgument *)context.field0_0x0._s_0.source);
   }
   return;
 }
@@ -83,6 +95,7 @@ void __cdecl R_SetupPassVertexShaderArgs(GfxCmdBufContext param_1)
 
 // 0084B910  R_SetPixelSamplerFromMaterial  (gfx_d3d/r_shade.cpp:739)
 
+/* WARNING: Variable defined which should be unmapped: samplerState */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
 MaterialTextureDef * __cdecl
@@ -95,9 +108,10 @@ R_SetPixelSamplerFromMaterial
   dvar_s *pdVar3;
   MaterialTextureDef *in_EAX;
   int in_ECX;
-  GfxImage *unaff_ESI;
+  MaterialTextureDef *unaff_ESI;
   WorkerCmdConditional *unaff_EDI;
-  GfxImage *local_8;
+  uchar samplerState;
+  Material *material;
   Material *local_4;
   
   pdVar3 = r_drawWater;
@@ -108,60 +122,56 @@ R_SetPixelSamplerFromMaterial
     uVar2 = in_EAX->nameHash;
   }
   if (in_EAX->semantic == '\v') {
-    local_8 = (in_EAX->u).image;
+    material = (Material *)(in_EAX->u).image;
     GVar1 = (GfxTexture)(((param_1->field0_0x0)._s_0.source)->sceneDef).floatTime;
-    if (((float)local_8->texture != (float)GVar1) &&
-       (local_8->texture = GVar1, (pdVar3->current).enabled != false)) {
-      Sys_AddWorkerCmdInternal(&r_waterWorkerCmd,&local_8,unaff_EDI);
+    if (((float)*(GfxTexture *)&material->info != (float)GVar1) &&
+       (*(GfxTexture *)&material->info = GVar1, (pdVar3->current).enabled != false)) {
+      Sys_AddWorkerCmdInternal(&r_waterWorkerCmd,&material,unaff_EDI);
     }
   }
-  local_8 = (GfxImage *)CONCAT31(local_8._1_3_,in_EAX->samplerState);
+  material = (Material *)CONCAT31(material._1_3_,in_EAX->samplerState);
   if (rg.hasAnyImageOverrides != false) {
-    R_OverrideImage(&unaff_EDI->address,(MaterialTextureDef *)unaff_ESI);
+    R_OverrideImage(&unaff_EDI->address,unaff_ESI);
   }
-  R_SetSampler((GfxCmdBufContext)(param_1->field0_0x0)._s_0,(uint)local_8,(uchar)unaff_EDI,unaff_ESI
-              );
+  R_SetSampler();
   return in_EAX;
 }
 
 
 // 0084BA10  R_SetPassShaderStableArguments  (gfx_d3d/r_shade.cpp:803)
 
+/* WARNING: Variable defined which should be unmapped: image */
+
 void __cdecl
 R_SetPassShaderStableArguments
-          (GfxCmdBufContext *param_1,uint param_2,MaterialShaderArgument *param_3)
+          (GfxCmdBufContext *argCount,uint param_2,MaterialShaderArgument *param_3)
 
 {
   short sVar1;
-  Material *pMVar2;
-  GfxCmdBufState *pGVar3;
-  IDirect3DDevice9 *pIVar4;
-  undefined4 uVar5;
-  int iVar6;
-  GfxCmdBufSourceState *pGVar7;
-  GfxCodeImageRenderTarget GVar8;
-  GfxCmdBufContext *pGVar9;
+  GfxCmdBufState *pGVar2;
+  IDirect3DDevice9 *pIVar3;
+  undefined4 uVar4;
+  GfxCmdBufSourceState *pGVar5;
   short *in_EAX;
-  uint uVar10;
-  GfxImage *unaff_ESI;
-  MaterialConstantDef *pMVar11;
+  uint uVar6;
+  MaterialTextureDef *unaff_ESI;
+  MaterialConstantDef *pMVar7;
   MaterialShaderArgument *unaff_EDI;
+  GfxImage *image;
   
-  pGVar9 = param_1;
   sVar1 = *in_EAX;
-  pMVar2 = ((param_1->field0_0x0)._s_0.state)->material;
-  pMVar11 = (pMVar2->field10_0xb8).localConstantTable;
+  pMVar7 = (((argCount->field0_0x0)._s_0.state)->material->field10_0xb8).localConstantTable;
   while( true ) {
     if (sVar1 != 0) {
       sVar1 = *in_EAX;
       while (sVar1 == 1) {
-        uVar10 = (uint)(ushort)in_EAX[1];
-        pGVar3 = (param_1->field0_0x0)._s_0.state;
-        uVar5 = *(undefined4 *)(in_EAX + 2);
-        *(undefined4 *)(pGVar3->vertexShaderConstState + uVar10) = 0xffffffff;
-        *(undefined4 *)((int)pGVar3->vertexShaderConstState + uVar10 * 8 + 4) = 0xffffffff;
-        pIVar4 = (pGVar3->prim).field0_0x0.device;
-        (**(code **)((int)*pIVar4 + 0x178))(pIVar4,uVar10,uVar5,1);
+        uVar6 = (uint)(ushort)in_EAX[1];
+        pGVar2 = (argCount->field0_0x0)._s_0.state;
+        uVar4 = *(undefined4 *)(in_EAX + 2);
+        *(undefined4 *)(pGVar2->vertexShaderConstState + uVar6) = 0xffffffff;
+        *(undefined4 *)((int)pGVar2->vertexShaderConstState + uVar6 * 8 + 4) = 0xffffffff;
+        pIVar3 = (pGVar2->prim).field0_0x0.device;
+        (**(code **)((int)*pIVar3 + 0x178))(pIVar3,uVar6,uVar4,1);
         in_EAX = in_EAX + 4;
         param_2 = param_2 - 1;
         if (param_2 == 0) {
@@ -171,7 +181,7 @@ R_SetPassShaderStableArguments
       }
       sVar1 = *in_EAX;
       while (sVar1 == 2) {
-        R_SetPixelSamplerFromMaterial(param_1,unaff_EDI,(MaterialTextureDef *)unaff_ESI);
+        R_SetPixelSamplerFromMaterial(argCount,unaff_EDI,unaff_ESI);
         in_EAX = in_EAX + 4;
         param_2 = param_2 - 1;
         if (param_2 == 0) {
@@ -191,29 +201,20 @@ R_SetPassShaderStableArguments
         sVar1 = *in_EAX;
       }
       sVar1 = *in_EAX;
-      param_1 = (GfxCmdBufContext *)pMVar2;
       while( true ) {
         if (sVar1 != 4) {
           return;
         }
-        iVar6 = *(int *)(in_EAX + 2);
-        pGVar7 = (pGVar9->field0_0x0)._s_0.source;
-        if (((pGVar7->input).codeImageRenderTargetControl[iVar6].packed & 0x100) == 0) {
-          uVar10 = (uint)param_1 >> 8;
-          param_1 = (GfxCmdBufContext *)
-                    CONCAT31((int3)uVar10,(pGVar7->input).codeImageSamplerStates[iVar6]);
-          if ((pGVar7->input).codeImages[iVar6] == (GfxImage *)0x0) {
-            R_TextureFromCodeError(pGVar9,(uint)unaff_EDI);
+        pGVar5 = (argCount->field0_0x0)._s_0.source;
+        if (((pGVar5->input).codeImageRenderTargetControl[*(int *)(in_EAX + 2)].packed & 0x100) == 0
+           ) {
+          if ((pGVar5->input).codeImages[*(int *)(in_EAX + 2)] == (GfxImage *)0x0) {
+            R_TextureFromCodeError(argCount,(uint)unaff_EDI);
           }
-          R_SetSampler((GfxCmdBufContext)(pGVar9->field0_0x0)._s_0,(uint)param_1,(uchar)unaff_EDI,
-                       unaff_ESI);
+          R_SetSampler();
         }
         else {
-          GVar8._4_4_ = unaff_ESI;
-          GVar8.packed = (uint)unaff_EDI;
-          R_SetTextureSamplerCodeImageRenderTarget
-                    ((GfxCmdBufContext)(pGVar9->field0_0x0)._s_0,
-                     (pGVar7->input).codeImageRenderTargetControl[iVar6].packed,GVar8);
+          R_SetTextureSamplerCodeImageRenderTarget();
         }
         in_EAX = in_EAX + 4;
         param_2 = param_2 - 1;
@@ -222,17 +223,17 @@ R_SetPassShaderStableArguments
       }
       return;
     }
-    uVar10 = pMVar11->nameHash;
-    while (uVar10 != *(uint *)(in_EAX + 2)) {
-      pMVar11 = pMVar11 + 1;
-      uVar10 = pMVar11->nameHash;
+    uVar6 = pMVar7->nameHash;
+    while (uVar6 != *(uint *)(in_EAX + 2)) {
+      pMVar7 = pMVar7 + 1;
+      uVar6 = pMVar7->nameHash;
     }
-    uVar10 = (uint)(ushort)in_EAX[1];
-    pGVar3 = (param_1->field0_0x0)._s_0.state;
-    *(undefined4 *)(pGVar3->vertexShaderConstState + uVar10) = 0xffffffff;
-    *(undefined4 *)((int)pGVar3->vertexShaderConstState + uVar10 * 8 + 4) = 0xffffffff;
-    pIVar4 = (pGVar3->prim).field0_0x0.device;
-    (**(code **)((int)*pIVar4 + 0x178))(pIVar4,uVar10,pMVar11->literal,1);
+    uVar6 = (uint)(ushort)in_EAX[1];
+    pGVar2 = (argCount->field0_0x0)._s_0.state;
+    *(undefined4 *)(pGVar2->vertexShaderConstState + uVar6) = 0xffffffff;
+    *(undefined4 *)((int)pGVar2->vertexShaderConstState + uVar6 * 8 + 4) = 0xffffffff;
+    pIVar3 = (pGVar2->prim).field0_0x0.device;
+    (**(code **)((int)*pIVar3 + 0x178))(pIVar3,uVar6,pMVar7->literal,1);
     in_EAX = in_EAX + 4;
     param_2 = param_2 - 1;
     if (param_2 == 0) break;
@@ -248,6 +249,7 @@ int __cdecl R_ReserveIndexData(GfxCmdBufPrimState *param_1,int param_2)
 
 {
   int in_EAX;
+  GfxCmdBufPrimState *state;
   
   if ((gfxBuf.dynamicIndexBuffer)->total < (gfxBuf.dynamicIndexBuffer)->used + in_EAX * 3) {
     (gfxBuf.dynamicIndexBuffer)->used = 0;
@@ -262,37 +264,38 @@ int __cdecl R_ReserveIndexData(GfxCmdBufPrimState *param_1,int param_2)
 
 // 0084BC30  R_SetIndexData  (gfx_d3d/r_shade.cpp:962)
 
-int __cdecl R_SetIndexData(GfxCmdBufPrimState *param_1,ushort *param_2,int param_3)
+int __cdecl R_SetIndexData(GfxCmdBufPrimState *indices,ushort *param_2,int param_3)
 
 {
   IDirect3DIndexBuffer9 *pIVar1;
   int in_EAX;
   int iVar2;
-  uchar *puVar3;
-  int iVar4;
+  uchar *dst;
+  int iVar3;
   uchar *unaff_EBX;
   undefined4 *unaff_ESI;
   GfxCmdBufPrimState *unaff_EDI;
-  undefined1 local_8 [8];
+  GfxCmdBufPrimState *state;
+  undefined1 bufferData [8];
   
   iVar2 = R_ReserveIndexData(unaff_EDI,(int)unaff_ESI);
   pIVar1 = (gfxBuf.dynamicIndexBuffer)->buffer;
-  puVar3 = (uchar *)((-(uint)((gfxBuf.dynamicIndexBuffer)->used != 0) & 0xfffff000) + 0x2000);
-  iVar4 = (**(code **)((int)*pIVar1 + 0x2c))
-                    (pIVar1,(gfxBuf.dynamicIndexBuffer)->used * 2,in_EAX * 6,local_8);
-  if (iVar4 < 0) {
+  dst = (uchar *)((-(uint)((gfxBuf.dynamicIndexBuffer)->used != 0) & 0xfffff000) + 0x2000);
+  iVar3 = (**(code **)((int)*pIVar1 + 0x2c))
+                    (pIVar1,(gfxBuf.dynamicIndexBuffer)->used * 2,in_EAX * 6,bufferData);
+  if (iVar3 < 0) {
                     /* WARNING: Subroutine does not return */
-    R_FatalLockError(iVar4);
+    R_FatalLockError(iVar3);
   }
-  if (puVar3 != (uchar *)0x0) {
-    memcpy(puVar3,unaff_EBX,in_EAX * 6);
+  if (dst != (uchar *)0x0) {
+    memcpy(dst,unaff_EBX,in_EAX * 6);
   }
   (**(code **)((int)*pIVar1 + 0x30))(pIVar1);
   if ((IDirect3DIndexBuffer9 *)unaff_ESI[1] != pIVar1) {
     unaff_ESI[1] = pIVar1;
     (**(code **)(*(int *)*unaff_ESI + 0x1a0))((int *)*unaff_ESI,pIVar1);
   }
-  if (puVar3 != (uchar *)0x0) {
+  if (dst != (uchar *)0x0) {
     (gfxBuf.dynamicIndexBuffer)->used = (gfxBuf.dynamicIndexBuffer)->used + in_EAX * 3;
   }
   return iVar2;
@@ -346,56 +349,52 @@ void __cdecl R_UpdateVertexDecl(GfxCmdBufState *param_1)
 
 // 0084BD90  R_SetupPass  (gfx_d3d/r_shade.cpp:1366)
 
-void __cdecl R_SetupPass(GfxCmdBufContext param_1,uint param_2)
+void __cdecl R_SetupPass(void)
 
 {
-  uint *puVar1;
-  MaterialPixelShader **ppMVar2;
-  MaterialPass *pMVar3;
-  GfxStateBits *pGVar4;
-  GfxCmdBufState *pGVar5;
-  GfxCmdBufState *pGVar6;
-  MaterialPixelShader *pMVar7;
-  IDirect3DDevice9 *pIVar8;
-  undefined4 uVar9;
-  uint in_ECX;
-  IDirect3DPixelShader9 *pIVar10;
-  int iVar11;
+  int iVar1;
+  int iVar2;
+  GfxCmdBufState *pGVar3;
+  GfxCmdBufState *pGVar4;
+  int in_ECX;
+  undefined4 uVar5;
+  int iVar6;
   MaterialShaderArgument *unaff_EDI;
+  GfxCmdBufContext context;
+  int in_stack_00000008;
   
-  uVar9 = param_1.field0_0x0._s_0.state;
-  pMVar3 = (param_1.field0_0x0._s_0.state)->technique->passArray + in_ECX;
-  (param_1.field0_0x0._s_0.state)->pass = pMVar3;
-  (param_1.field0_0x0._s_0.state)->passIndex = in_ECX;
-  iVar11 = (param_1.field0_0x0._s_0.state)->material->stateBitsEntry
-           [(param_1.field0_0x0._s_0.state)->techType] + in_ECX;
-  pGVar4 = (param_1.field0_0x0._s_0.state)->material->stateBitsTable;
-  pGVar5 = (GfxCmdBufState *)pGVar4[iVar11].loadBits[1];
-  pGVar6 = (GfxCmdBufState *)pGVar4[iVar11].loadBits[0];
-  puVar1 = (param_1.field0_0x0._s_0.state)->refStateBits;
-  if (pGVar6 != (GfxCmdBufState *)*puVar1) {
-    R_ChangeState_0(pGVar6,(uint)unaff_EDI);
-    *puVar1 = (uint)pGVar6;
+  iVar1 = *(int *)(in_stack_00000008 + 0xcc) + 8 + in_ECX * 0x14;
+  *(int *)(in_stack_00000008 + 0xd0) = iVar1;
+  *(int *)(in_stack_00000008 + 0xd4) = in_ECX;
+  iVar6 = (uint)*(byte *)(*(int *)(in_stack_00000008 + 0xc4) + 0x28 +
+                         (uint)*(byte *)(in_stack_00000008 + 200)) + in_ECX;
+  iVar2 = *(int *)(*(int *)(in_stack_00000008 + 0xc4) + 0xbc);
+  pGVar3 = *(GfxCmdBufState **)(iVar2 + iVar6 * 8 + 4);
+  pGVar4 = *(GfxCmdBufState **)(iVar2 + iVar6 * 8);
+  if (pGVar4 != *(GfxCmdBufState **)(in_stack_00000008 + 0x10ec)) {
+    R_ChangeState_0(pGVar4,(uint)unaff_EDI);
+    *(GfxCmdBufState **)(in_stack_00000008 + 0x10ec) = pGVar4;
   }
-  if (pGVar5 != (GfxCmdBufState *)((GfxCmdBufState *)uVar9)->refStateBits[1]) {
-    R_ChangeState_1(pGVar5,(uint)unaff_EDI);
-    ((GfxCmdBufState *)uVar9)->refStateBits[1] = (uint)pGVar5;
+  if (pGVar3 != *(GfxCmdBufState **)(in_stack_00000008 + 0x10f0)) {
+    R_ChangeState_1(pGVar3,(uint)unaff_EDI);
+    *(GfxCmdBufState **)(in_stack_00000008 + 0x10f0) = pGVar3;
   }
-  pMVar7 = (pMVar3->field2_0x8).pixelShader;
-  ppMVar2 = &(param_1.field0_0x0._s_0.state)->pixelShader;
-  if ((param_1.field0_0x0._s_0.state)->pixelShader != pMVar7) {
-    pIVar8 = ((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device;
-    if (pMVar7 == (MaterialPixelShader *)0x0) {
-      pIVar10 = (IDirect3DPixelShader9 *)0x0;
+  iVar2 = *(int *)(iVar1 + 8);
+  if (*(int *)(in_stack_00000008 + 0x10fc) != iVar2) {
+    if (iVar2 == 0) {
+      uVar5 = 0;
     }
     else {
-      pIVar10 = (pMVar7->prog).ps;
+      uVar5 = *(undefined4 *)(iVar2 + 4);
     }
-    (**(code **)((int)*pIVar8 + 0x1ac))(pIVar8,pIVar10);
-    *ppMVar2 = pMVar7;
+    (**(code **)(**(int **)(in_stack_00000008 + 0x90) + 0x1ac))
+              (*(int **)(in_stack_00000008 + 0x90),uVar5);
+    *(int *)(in_stack_00000008 + 0x10fc) = iVar2;
   }
-  if (pMVar3->stableArgCount != 0) {
-    R_SetPassShaderStableArguments(&param_1,(uint)pMVar3->stableArgCount,unaff_EDI);
+  if (*(byte *)(iVar1 + 0xe) != 0) {
+    R_SetPassShaderStableArguments
+              ((GfxCmdBufContext *)((int)&context.field0_0x0 + 4),(uint)*(byte *)(iVar1 + 0xe),
+               unaff_EDI);
   }
   return;
 }
@@ -410,27 +409,27 @@ int __cdecl R_SetVertexData(GfxCmdBufState *param_1,void *param_2,int param_3,in
   int iVar2;
   long lVar3;
   int in_EAX;
-  uchar *puVar4;
-  int iVar5;
-  uchar *puVar6;
-  undefined1 local_4 [4];
+  uchar *count;
+  int iVar4;
+  void *data;
+  uchar *dst;
+  undefined1 state [4];
   
-  puVar4 = (uchar *)(in_EAX * 0x20);
+  count = (uchar *)(in_EAX * 0x20);
   pIVar1 = (gfxBuf.dynamicVertexBuffer)->buffer;
   iVar2 = (gfxBuf.dynamicVertexBuffer)->used;
-  puVar6 = puVar4;
-  iVar5 = (**(code **)((int)*pIVar1 + 0x2c))
-                    (pIVar1,(gfxBuf.dynamicVertexBuffer)->used,puVar4,local_4);
-  if (iVar5 < 0) {
+  dst = count;
+  iVar4 = (**(code **)((int)*pIVar1 + 0x2c))(pIVar1,(gfxBuf.dynamicVertexBuffer)->used,count,state);
+  if (iVar4 < 0) {
                     /* WARNING: Subroutine does not return */
-    R_FatalLockError(iVar5);
+    R_FatalLockError(iVar4);
   }
-  if (puVar6 != (uchar *)0x0) {
-    memcpy(puVar6,(uchar *)((-(uint)(iVar2 != 0) & 0xfffff000) + 0x2000),(ulong)puVar4);
+  if (dst != (uchar *)0x0) {
+    memcpy(dst,(uchar *)((-(uint)(iVar2 != 0) & 0xfffff000) + 0x2000),(ulong)count);
   }
   (**(code **)((int)*pIVar1 + 0x30))(pIVar1);
   lVar3 = (gfxBuf.dynamicVertexBuffer)->used;
-  (gfxBuf.dynamicVertexBuffer)->used = (long)(puVar4 + (gfxBuf.dynamicVertexBuffer)->used);
+  (gfxBuf.dynamicVertexBuffer)->used = (long)(count + (gfxBuf.dynamicVertexBuffer)->used);
   return lVar3;
 }
 

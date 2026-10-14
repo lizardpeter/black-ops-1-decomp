@@ -677,30 +677,30 @@ void __cdecl Com_Parse1DMatrix(char **param_1,int param_2,float *param_3)
   byte *pbVar3;
   int iVar4;
   int iVar5;
-  char *pcVar6;
+  char *nptr;
+  byte *pbVar6;
   byte *pbVar7;
-  byte *pbVar8;
   char **unaff_EDI;
-  bool bVar9;
-  double dVar10;
+  bool bVar8;
+  double dVar9;
   
   pbVar3 = (byte *)Com_Parse(unaff_EDI);
-  pbVar8 = &s__;
-  pbVar7 = pbVar3;
+  pbVar7 = &s__;
+  pbVar6 = pbVar3;
   do {
-    bVar1 = *pbVar7;
-    bVar9 = bVar1 < *pbVar8;
-    if (bVar1 != *pbVar8) {
+    bVar1 = *pbVar6;
+    bVar8 = bVar1 < *pbVar7;
+    if (bVar1 != *pbVar7) {
 LAB_006aadf8:
-      iVar4 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
+      iVar4 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
       goto LAB_006aadfd;
     }
     if (bVar1 == 0) break;
-    bVar1 = pbVar7[1];
-    bVar9 = bVar1 < pbVar8[1];
-    if (bVar1 != pbVar8[1]) goto LAB_006aadf8;
+    bVar1 = pbVar6[1];
+    bVar8 = bVar1 < pbVar7[1];
+    if (bVar1 != pbVar7[1]) goto LAB_006aadf8;
+    pbVar6 = pbVar6 + 2;
     pbVar7 = pbVar7 + 2;
-    pbVar8 = pbVar8 + 2;
   } while (bVar1 != 0);
   iVar4 = 0;
 LAB_006aadfd:
@@ -717,9 +717,9 @@ LAB_006aadfd:
       *in_EAX = *(undefined4 *)(iVar5 + 0x420);
       *(undefined4 *)(iVar5 + 0x404) = uVar2;
     }
-    pcVar6 = (char *)FUN_006aa5f0();
-    dVar10 = atof(pcVar6);
-    param_1[iVar4] = (char *)(float)dVar10;
+    nptr = (char *)FUN_006aa5f0();
+    dVar9 = atof(nptr);
+    param_1[iVar4] = (char *)(float)dVar9;
     iVar4 = iVar4 + 1;
   } while (iVar4 < 3);
   iVar4 = FUN_006a9e90();
@@ -731,22 +731,22 @@ LAB_006aadfd:
     *(undefined4 *)(iVar4 + 0x404) = uVar2;
   }
   pbVar3 = (byte *)FUN_006aa5f0();
-  pbVar8 = &s__;
-  pbVar7 = pbVar3;
+  pbVar7 = &s__;
+  pbVar6 = pbVar3;
   do {
-    bVar1 = *pbVar7;
-    bVar9 = bVar1 < *pbVar8;
-    if (bVar1 != *pbVar8) {
+    bVar1 = *pbVar6;
+    bVar8 = bVar1 < *pbVar7;
+    if (bVar1 != *pbVar7) {
 LAB_006aaed3:
-      iVar4 = (1 - (uint)bVar9) - (uint)(bVar9 != 0);
+      iVar4 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
       goto LAB_006aaed8;
     }
     if (bVar1 == 0) break;
-    bVar1 = pbVar7[1];
-    bVar9 = bVar1 < pbVar8[1];
-    if (bVar1 != pbVar8[1]) goto LAB_006aaed3;
+    bVar1 = pbVar6[1];
+    bVar8 = bVar1 < pbVar7[1];
+    if (bVar1 != pbVar7[1]) goto LAB_006aaed3;
+    pbVar6 = pbVar6 + 2;
     pbVar7 = pbVar7 + 2;
-    pbVar8 = pbVar8 + 2;
   } while (bVar1 != 0);
   iVar4 = 0;
 LAB_006aaed8:

@@ -1128,7 +1128,7 @@ void __thiscall bdNetImpl::dispatchAll(bdNetImpl *this)
 bdReference<bdCommonAddr> __thiscall bdNetImpl::getLocalCommonAddr(bdNetImpl *this)
 
 {
-  bdReference<bdCommonAddr> bVar1;
+  bdReference<bdCommonAddr> other_3;
   bdCommonAddr *in_stack_00000004;
   bdReference<bdByteBuffer> local_18;
   bdReference<bdAddrHandle> local_14;
@@ -1142,9 +1142,9 @@ bdReference<bdCommonAddr> __thiscall bdNetImpl::getLocalCommonAddr(bdNetImpl *th
   local_8 = 1;
   ExceptionList = &local_10;
   if (this->m_socketRouter != (bdSocketRouter *)0x0) {
-    bVar1 = bdSocketRouter::getLocalCommonAddr(this->m_socketRouter);
+    other_3 = bdSocketRouter::getLocalCommonAddr(this->m_socketRouter);
     local_8._0_1_ = 2;
-    bdReference<bdAddrHandle>::operator=(&local_14,(bdReference<bdAddrHandle> *)bVar1.m_ptr);
+    bdReference<bdAddrHandle>::operator=(&local_14,(bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = CONCAT31(local_8._1_3_,1);
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_18);
   }

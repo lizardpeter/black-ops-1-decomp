@@ -2,7 +2,7 @@
 
 // 0095B6D0  strstr  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/INTEL/strstr.asm:45)
 
-void __cdecl strstr(uchar *param_1,uchar *param_2)
+void __cdecl strstr(uchar *str1,uchar *str2)
 
 {
   uchar *puVar1;
@@ -16,14 +16,14 @@ void __cdecl strstr(uchar *param_1,uchar *param_2)
   uint *puVar9;
   uchar *puVar10;
   
-  uVar3 = *param_2;
+  uVar3 = *str2;
   if (uVar3 == '\0') {
     return;
   }
-  if (param_2[1] == '\0') {
-    while (((uint)param_1 & 3) != 0) {
-      uVar4 = *(uint *)param_1;
-      param_1 = (uchar *)((int)param_1 + 1);
+  if (str2[1] == '\0') {
+    while (((uint)str1 & 3) != 0) {
+      uVar4 = *(uint *)str1;
+      str1 = (uchar *)((int)str1 + 1);
       if ((uchar)uVar4 == uVar3) {
         return;
       }
@@ -33,12 +33,12 @@ void __cdecl strstr(uchar *param_1,uchar *param_2)
     }
     while( true ) {
       while( true ) {
-        uVar4 = *(uint *)param_1;
+        uVar4 = *(uint *)str1;
         uVar8 = uVar4 ^ CONCAT22(CONCAT11(uVar3,uVar3),CONCAT11(uVar3,uVar3));
         uVar6 = uVar4 ^ 0xffffffff ^ uVar4 + 0x7efefeff;
-        puVar9 = (uint *)((int)param_1 + 4);
+        puVar9 = (uint *)((int)str1 + 4);
         if (((uVar8 ^ 0xffffffff ^ uVar8 + 0x7efefeff) & 0x81010100) != 0) break;
-        param_1 = (uchar *)puVar9;
+        str1 = (uchar *)puVar9;
         if ((uVar6 & 0x81010100) != 0) {
           if ((uVar6 & 0x1010100) != 0) {
             return;
@@ -48,7 +48,7 @@ void __cdecl strstr(uchar *param_1,uchar *param_2)
           }
         }
       }
-      uVar4 = *(uint *)param_1;
+      uVar4 = *(uint *)str1;
       if ((uchar)uVar4 == uVar3) {
         return;
       }
@@ -71,7 +71,7 @@ void __cdecl strstr(uchar *param_1,uchar *param_2)
       if (uVar5 == uVar3) {
         return;
       }
-      param_1 = (uchar *)puVar9;
+      str1 = (uchar *)puVar9;
       if (uVar5 == '\0') {
         return;
       }
@@ -79,18 +79,18 @@ void __cdecl strstr(uchar *param_1,uchar *param_2)
     return;
   }
   do {
-    uVar5 = *param_1;
+    uVar5 = *str1;
     do {
-      while (param_1 = param_1 + 1, uVar5 != uVar3) {
+      while (str1 = str1 + 1, uVar5 != uVar3) {
         if (uVar5 == '\0') {
           return;
         }
-        uVar5 = *param_1;
+        uVar5 = *str1;
       }
-      uVar5 = *param_1;
-      puVar10 = param_1 + 1;
-      puVar7 = param_2;
-    } while (uVar5 != param_2[1]);
+      uVar5 = *str1;
+      puVar10 = str1 + 1;
+      puVar7 = str2;
+    } while (uVar5 != str2[1]);
     do {
       if (puVar7[2] == '\0') {
         return;

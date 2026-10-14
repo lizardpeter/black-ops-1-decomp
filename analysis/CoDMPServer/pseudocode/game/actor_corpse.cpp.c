@@ -7,17 +7,18 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetActorCorpseIndex(gentity_s *param_1)
+int __cdecl G_GetActorCorpseIndex(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int entnum;
+  int i;
   
-  for (local_8 = 0; local_8 < 8; local_8 = local_8 + 1) {
-    if (*(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4) == (param_1->s).number) {
-      return local_8;
+  for (i = 0; i < 8; i = i + 1) {
+    if (*(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4) == (ent->s).number) {
+      return i;
     }
   }
   bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x3c,0,
@@ -38,7 +39,7 @@ int __cdecl G_GetActorCorpseIndex(gentity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_GetFreeActorCorpseIndex(int param_1)
+int __cdecl G_GetFreeActorCorpseIndex(int reuse)
 
 {
   code *pcVar1;
@@ -47,115 +48,115 @@ int __cdecl G_GetFreeActorCorpseIndex(int param_1)
   float fVar4;
   sentient_s *in_stack_ffffff94;
   float *in_stack_ffffff98;
-  float local_5c;
+  float vRefDir;
   float local_58;
   float local_54;
-  float local_50;
-  float local_4c;
+  float farthestBehindDistSq;
+  float vRefPos;
   float local_48;
   float local_44;
-  int local_40;
-  int local_3c;
-  char local_35;
-  float local_34;
-  gentity_s *local_30;
-  int local_2c;
-  int local_28;
-  float local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
+  int farthestIndex;
+  int bestIndex;
+  bool use2DDist;
+  float farthestDistSq;
+  gentity_s *ent;
+  int farthest90DegreeIndex;
+  int i;
+  float distSq;
+  float farthest90DegreeDistSq;
+  float dot;
+  float vDelta;
   float local_14;
   float local_10;
-  int local_c;
-  int local_8;
+  int farthestBehindIndex;
+  int found;
   
-  local_50 = -1.0;
-  local_c = 0;
-  local_20 = -1.0;
-  local_2c = 0;
-  local_34 = -1.0;
-  local_40 = 0;
-  local_30 = G_Find((gentity_s *)0x0,0x164,scr_const.player);
-  if (local_30 == (gentity_s *)0x0) {
-    local_35 = '\x01';
+  farthestBehindDistSq = -1.0;
+  farthestBehindIndex = 0;
+  farthest90DegreeDistSq = -1.0;
+  farthest90DegreeIndex = 0;
+  farthestDistSq = -1.0;
+  farthestIndex = 0;
+  ent = G_Find((gentity_s *)0x0,0x164,scr_const.player);
+  if (ent == (gentity_s *)0x0) {
+    use2DDist = true;
     local_54 = 0.0;
-    local_5c = 0.0;
+    vRefDir = 0.0;
     local_58 = 1.0;
     local_44 = 0.0;
     local_48 = 0.0;
-    local_4c = 0.0;
+    vRefPos = 0.0;
   }
   else {
     Sentient_GetEyePosition(in_stack_ffffff94,in_stack_ffffff98);
-    G_GetPlayerViewDirection(local_30,&local_5c,(float *)0x0,(float *)0x0);
-    local_35 = '\x01';
+    G_GetPlayerViewDirection(ent,&vRefDir,(float *)0x0,(float *)0x0);
+    use2DDist = true;
     local_54 = 0.0;
-    fVar4 = Vec3Normalize(&local_5c);
+    fVar4 = Vec3Normalize(&vRefDir);
     if (fVar4 == 0.0) {
-      local_35 = '\0';
-      G_GetPlayerViewDirection(local_30,&local_5c,(float *)0x0,(float *)0x0);
+      use2DDist = false;
+      G_GetPlayerViewDirection(ent,&vRefDir,(float *)0x0,(float *)0x0);
     }
   }
-  local_8 = 0;
-  for (local_28 = 0; local_28 < level.actorCorpseCount; local_28 = local_28 + 1) {
-    if (*(int *)(g_scr_data.actorCorpseInfo + local_28 * 0x5e0 + 4) == -1) {
-      if (param_1 != 0) {
-        return local_28;
+  found = 0;
+  for (i = 0; i < level.actorCorpseCount; i = i + 1) {
+    if (*(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4) == -1) {
+      if (reuse != 0) {
+        return i;
       }
     }
     else {
-      local_8 = 1;
-      local_30 = level.gentities + *(int *)(g_scr_data.actorCorpseInfo + local_28 * 0x5e0 + 4);
-      local_18 = (local_30->r).currentOrigin[0] - local_4c;
-      local_14 = (local_30->r).currentOrigin[1] - local_48;
-      local_10 = (local_30->r).currentOrigin[2] - local_44;
-      if (local_35 != '\0') {
+      found = 1;
+      ent = level.gentities + *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4);
+      vDelta = (ent->r).currentOrigin[0] - vRefPos;
+      local_14 = (ent->r).currentOrigin[1] - local_48;
+      local_10 = (ent->r).currentOrigin[2] - local_44;
+      if (use2DDist != false) {
         local_10 = 0.0;
       }
-      local_24 = local_18 * local_18 + local_14 * local_14 + local_10 * local_10;
-      local_1c = local_18 * local_5c + local_14 * local_58 + local_10 * local_54;
-      if ((local_1c < 0.0) && (local_50 < local_24)) {
-        local_c = local_28;
-        local_50 = local_24;
+      distSq = vDelta * vDelta + local_14 * local_14 + local_10 * local_10;
+      dot = vDelta * vRefDir + local_14 * local_58 + local_10 * local_54;
+      if ((dot < 0.0) && (farthestBehindDistSq < distSq)) {
+        farthestBehindIndex = i;
+        farthestBehindDistSq = distSq;
       }
-      if ((local_1c * local_1c <= local_24 * 0.5) && (local_20 < local_24)) {
-        local_2c = local_28;
-        local_20 = local_24;
+      if ((dot * dot <= distSq * 0.5) && (farthest90DegreeDistSq < distSq)) {
+        farthest90DegreeIndex = i;
+        farthest90DegreeDistSq = distSq;
       }
-      if (local_34 < local_24) {
-        local_40 = local_28;
-        local_34 = local_24;
+      if (farthestDistSq < distSq) {
+        farthestIndex = i;
+        farthestDistSq = distSq;
       }
     }
   }
-  if (local_8 == 0) {
-    if (((param_1 != 0) && (level.actorCorpseCount != 0)) &&
+  if (found == 0) {
+    if (((reuse != 0) && (level.actorCorpseCount != 0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0xa5,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_3c = -1;
+    bestIndex = -1;
   }
   else {
-    if (local_50 == -1.0) {
-      if (local_20 == -1.0) {
-        local_3c = local_40;
+    if (farthestBehindDistSq == -1.0) {
+      if (farthest90DegreeDistSq == -1.0) {
+        bestIndex = farthestIndex;
       }
       else {
-        local_3c = local_2c;
+        bestIndex = farthest90DegreeIndex;
       }
     }
     else {
-      local_3c = local_c;
+      bestIndex = farthestBehindIndex;
     }
-    local_30 = level.gentities + *(int *)(g_scr_data.actorCorpseInfo + local_3c * 0x5e0 + 4);
-    G_FreeEntity(local_30);
-    *(undefined4 *)(g_scr_data.actorCorpseInfo + local_3c * 0x5e0 + 4) = 0xffffffff;
+    ent = level.gentities + *(int *)(g_scr_data.actorCorpseInfo + bestIndex * 0x5e0 + 4);
+    G_FreeEntity(ent);
+    *(undefined4 *)(g_scr_data.actorCorpseInfo + bestIndex * 0x5e0 + 4) = 0xffffffff;
   }
-  return local_3c;
+  return bestIndex;
 }
 
 
@@ -169,17 +170,18 @@ int __cdecl G_GetFreeActorCorpseIndex(int param_1)
 void __cdecl G_RemoveOneActorCorpse(void)
 
 {
-  int local_8;
+  gentity_s *ent;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (level.actorCorpseCount <= local_8) {
+    if (level.actorCorpseCount <= i) {
       return;
     }
-    if (-1 < *(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4)) break;
-    local_8 = local_8 + 1;
+    if (-1 < *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4)) break;
+    i = i + 1;
   }
-  G_FreeEntity(level.gentities + *(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4));
+  G_FreeEntity(level.gentities + *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4));
   return;
 }
 
@@ -194,11 +196,12 @@ void __cdecl G_RemoveOneActorCorpse(void)
 void __cdecl G_RemoveAllActorCorpses(void)
 
 {
-  int local_8;
+  gentity_s *ent;
+  int i;
   
-  for (local_8 = 0; local_8 < level.actorCorpseCount; local_8 = local_8 + 1) {
-    if (-1 < *(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4)) {
-      G_FreeEntity(level.gentities + *(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4));
+  for (i = 0; i < level.actorCorpseCount; i = i + 1) {
+    if (-1 < *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4)) {
+      G_FreeEntity(level.gentities + *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4));
     }
   }
   return;
@@ -212,26 +215,27 @@ void __cdecl G_RemoveAllActorCorpses(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_RemoveActorCorpses(int param_1)
+void __cdecl G_RemoveActorCorpses(int allowedCorpseCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  gentity_s *ent;
+  int i;
   
-  if (((param_1 < 0) || (8 < param_1)) &&
+  if (((allowedCorpseCount < 0) || (8 < allowedCorpseCount)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0xe8,0,
                                "%s\n\t(allowedCorpseCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  for (local_8 = param_1; local_8 < level.actorCorpseCount; local_8 = local_8 + 1) {
-    if (-1 < *(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4)) {
-      G_FreeEntity(level.gentities + *(int *)(g_scr_data.actorCorpseInfo + local_8 * 0x5e0 + 4));
+  for (i = allowedCorpseCount; i < level.actorCorpseCount; i = i + 1) {
+    if (-1 < *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4)) {
+      G_FreeEntity(level.gentities + *(int *)(g_scr_data.actorCorpseInfo + i * 0x5e0 + 4));
     }
   }
-  level.actorCorpseCount = param_1;
+  level.actorCorpseCount = allowedCorpseCount;
   return;
 }
 
@@ -249,7 +253,8 @@ void __cdecl G_UpdateActorCorpses(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
+  int actorCorpseCount;
+  int zombietronCorpseCount;
   
   if (((uint)g_skinErrorFlags.field0_0x0 >> 1 & 1) != 0) {
     if ((zombiemode->current).enabled == false) {
@@ -260,21 +265,21 @@ void __cdecl G_UpdateActorCorpses(void)
     }
   }
   if (((uint)g_skinErrorFlags.field0_0x0 & 1) == 0) {
-    local_c = (ai_corpseCount->current).integer;
+    actorCorpseCount = (ai_corpseCount->current).integer;
     iVar3 = Dvar_GetInt("ai_zombietronCorpseCount");
     bVar2 = Dvar_GetBool("zombietron");
     if ((bVar2) && (0 < iVar3)) {
-      local_c = iVar3;
+      actorCorpseCount = iVar3;
     }
-    if (((local_c < 1) || (8 < local_c)) &&
+    if (((actorCorpseCount < 1) || (8 < actorCorpseCount)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",300,0,
                                  "%s\n\t(actorCorpseCount) = %i"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (level.actorCorpseCount != local_c) {
-      G_RemoveActorCorpses(local_c);
+    if (level.actorCorpseCount != actorCorpseCount) {
+      G_RemoveActorCorpses(actorCorpseCount);
     }
   }
   return;
@@ -288,15 +293,16 @@ void __cdecl G_UpdateActorCorpses(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorCorpse_Free(gentity_s *param_1)
+void __cdecl ActorCorpse_Free(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int actorCorpseIndex;
   
-  iVar3 = G_GetActorCorpseIndex(param_1);
-  if (*(int *)(g_scr_data.actorCorpseInfo + iVar3 * 0x5e0 + 4) != (param_1->s).number) {
+  iVar3 = G_GetActorCorpseIndex(ent);
+  if (*(int *)(g_scr_data.actorCorpseInfo + iVar3 * 0x5e0 + 4) != (ent->s).number) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x191,0,
                              "%s");
     if (!bVar2) {
@@ -320,133 +326,129 @@ void __cdecl ActorCorpse_Free(gentity_s *param_1)
 
 float __cdecl
 Actor_SetBodyPlantAngle
-          (int param_1,int param_2,float *param_3,float *param_4,float *param_5,float *param_6)
+          (int iEntNum,int iClipMask,float *vOrigin,float *vCenter,float *vDir,float *pfAngle)
 
 {
   bool bVar1;
   float fVar2;
-  col_context_t local_c8;
-  float local_a0;
+  col_context_t context;
+  float vPointA;
   float local_9c;
   float local_98;
-  float local_94;
+  float vEnd;
   float local_90;
   float local_8c;
-  float local_88;
-  float local_84;
-  float4 local_80;
+  float fEndDown;
+  float fSize;
+  float4 trace;
   float local_70;
   char local_55;
   uint local_48;
-  float local_44 [4];
+  float vMins [4];
   float local_34;
   float local_30;
-  float local_2c;
+  float vStart;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
+  float fStartUp;
+  float vDelta;
   float local_18;
   float local_14;
-  float local_10;
+  float vMaxs;
   float local_c;
   float local_8;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_80.v[0] = 0.0;
-  local_80.v[1] = 0.0;
-  local_80.v[2] = 0.0;
-  local_80.v[3] = 0.0;
-  local_20 = 30.0;
-  local_88 = 30.0;
-  local_84 = 4.1;
-  local_44[0] = -4.0;
-  local_44[1] = -4.0;
-  local_44[2] = 0.0;
-  local_10 = 4.0;
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  fStartUp = 30.0;
+  fEndDown = 30.0;
+  fSize = 4.1;
+  vMins[0] = -4.0;
+  vMins[1] = -4.0;
+  vMins[2] = 0.0;
+  vMaxs = 4.0;
   local_c = 4.0;
   local_8 = 8.0;
-  col_context_t::col_context_t(&local_c8);
-  if (g_entities[param_1].actor != (actor_s *)0x0) {
-    bVar1 = CL_IsLastActiveLocalClient((g_entities[param_1].actor)->species);
+  col_context_t::col_context_t(&context);
+  if (g_entities[iEntNum].actor != (actor_s *)0x0) {
+    bVar1 = CL_IsLastActiveLocalClient((g_entities[iEntNum].actor)->species);
     if (bVar1) {
-      local_88 = 45.0;
+      fEndDown = 45.0;
     }
   }
-  local_2c = *param_3;
-  local_28 = param_3[1];
-  local_24 = param_3[2] + local_20;
-  fVar2 = 15.0 - local_84;
-  local_94 = fVar2 * *param_5 + local_2c;
-  local_90 = fVar2 * param_5[1] + local_28;
-  local_8c = fVar2 * param_5[2] + local_24;
-  G_TraceCapsule((trace_t *)&local_80,&local_2c,local_44,&local_10,&local_94,param_1,param_2,
-                 &local_c8);
+  vStart = *vOrigin;
+  local_28 = vOrigin[1];
+  local_24 = vOrigin[2] + fStartUp;
+  fVar2 = 15.0 - fSize;
+  vEnd = fVar2 * *vDir + vStart;
+  local_90 = fVar2 * vDir[1] + local_28;
+  local_8c = fVar2 * vDir[2] + local_24;
+  G_TraceCapsule((trace_t *)&trace,&vStart,vMins,&vMaxs,&vEnd,iEntNum,iClipMask,&context);
   if (local_70 == 0.0) {
-    *param_6 = 0.0;
-    fVar2 = param_4[2];
+    *pfAngle = 0.0;
+    fVar2 = vCenter[2];
   }
   else {
-    Vec3Lerp(&local_2c,&local_94,local_70,&local_2c);
-    local_94 = local_2c;
+    Vec3Lerp(&vStart,&vEnd,local_70,&vStart);
+    vEnd = vStart;
     local_90 = local_28;
-    local_8c = param_3[2] - local_88;
-    G_TraceCapsule((trace_t *)&local_80,&local_2c,local_44,&local_10,&local_94,param_1,param_2,
-                   &local_c8);
+    local_8c = vOrigin[2] - fEndDown;
+    G_TraceCapsule((trace_t *)&trace,&vStart,vMins,&vMaxs,&vEnd,iEntNum,iClipMask,&context);
     if ((local_55 != '\0') || (1.0 <= local_70)) {
-      local_a0 = *param_4;
-      local_9c = param_4[1];
-      local_98 = param_4[2];
+      vPointA = *vCenter;
+      local_9c = vCenter[1];
+      local_98 = vCenter[2];
     }
     else {
-      Vec3Lerp(&local_2c,&local_94,local_70,&local_a0);
+      Vec3Lerp(&vStart,&vEnd,local_70,&vPointA);
     }
-    local_2c = *param_3;
-    local_28 = param_3[1];
-    local_24 = param_3[2] + local_20;
-    fVar2 = -(15.0 - local_84);
-    local_94 = fVar2 * *param_5 + local_2c;
-    local_90 = fVar2 * param_5[1] + local_28;
-    local_8c = fVar2 * param_5[2] + local_24;
-    G_TraceCapsule((trace_t *)&local_80,&local_2c,local_44,&local_10,&local_94,param_1,param_2,
-                   &local_c8);
+    vStart = *vOrigin;
+    local_28 = vOrigin[1];
+    local_24 = vOrigin[2] + fStartUp;
+    fVar2 = -(15.0 - fSize);
+    vEnd = fVar2 * *vDir + vStart;
+    local_90 = fVar2 * vDir[1] + local_28;
+    local_8c = fVar2 * vDir[2] + local_24;
+    G_TraceCapsule((trace_t *)&trace,&vStart,vMins,&vMaxs,&vEnd,iEntNum,iClipMask,&context);
     if (local_70 == 0.0) {
-      *param_6 = 0.0;
-      fVar2 = param_4[2];
+      *pfAngle = 0.0;
+      fVar2 = vCenter[2];
     }
     else {
-      Vec3Lerp(&local_2c,&local_94,local_70,&local_2c);
-      local_94 = local_2c;
+      Vec3Lerp(&vStart,&vEnd,local_70,&vStart);
+      vEnd = vStart;
       local_90 = local_28;
-      local_8c = param_3[2] - local_88;
-      G_TraceCapsule((trace_t *)&local_80,&local_2c,local_44,&local_10,&local_94,param_1,param_2,
-                     &local_c8);
+      local_8c = vOrigin[2] - fEndDown;
+      G_TraceCapsule((trace_t *)&trace,&vStart,vMins,&vMaxs,&vEnd,iEntNum,iClipMask,&context);
       if ((local_55 != '\0') || (1.0 <= local_70)) {
-        local_44[3] = *param_4;
-        local_34 = param_4[1];
-        local_30 = param_4[2];
+        vMins[3] = *vCenter;
+        local_34 = vCenter[1];
+        local_30 = vCenter[2];
       }
       else {
-        Vec3Lerp(&local_2c,&local_94,local_70,local_44 + 3);
+        Vec3Lerp(&vStart,&vEnd,local_70,vMins + 3);
       }
-      if (((local_a0 == local_44[3]) && (local_9c == local_34)) && (local_98 == local_30)) {
+      if (((vPointA == vMins[3]) && (local_9c == local_34)) && (local_98 == local_30)) {
         bVar1 = true;
       }
       else {
         bVar1 = false;
       }
       if (bVar1) {
-        *param_6 = 0.0;
+        *pfAngle = 0.0;
       }
       else {
-        local_1c = local_a0 - local_44[3];
+        vDelta = vPointA - vMins[3];
         local_18 = local_9c - local_34;
         local_14 = local_98 - local_30;
-        fVar2 = vectopitch(&local_1c);
+        fVar2 = vectopitch(&vDelta);
         fVar2 = AngleNormalize180(fVar2);
-        *param_6 = fVar2;
+        *pfAngle = fVar2;
       }
-      fVar2 = (param_4[2] + local_98 + local_30) / 3.0;
+      fVar2 = (vCenter[2] + local_98 + local_30) / 3.0;
     }
   }
   return fVar2;
@@ -457,31 +459,31 @@ Actor_SetBodyPlantAngle
 
 void __cdecl
 Actor_GetBodyPlantAngles
-          (int param_1,int param_2,float *param_3,float param_4,float *param_5,float *param_6,
-          float *param_7)
+          (int iEntNum,int iClipMask,float *vOrigin,float fYaw,float *pfPitch,float *pfRoll,
+          float *pfHeight)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  int local_6c;
-  col_context_t local_68;
-  float local_40;
+  int hitnum;
+  col_context_t context;
+  float vEnd;
   float local_3c;
   float local_38;
-  float local_34 [3];
-  float local_28;
-  float local_24;
-  float local_20 [3];
-  float local_14;
+  float vRight [3];
+  float fEndDown;
+  float fHeight;
+  float vForward [3];
+  float vStart;
   float local_10;
   float local_c;
-  float local_8;
+  float fStartUp;
   
-  local_8 = 30.0;
-  local_28 = 30.0;
-  if (param_5 == (float *)0x0) {
+  fStartUp = 30.0;
+  fEndDown = 30.0;
+  if (pfPitch == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x211,0,
                              "%s");
     if (!bVar2) {
@@ -490,41 +492,41 @@ Actor_GetBodyPlantAngles
       return;
     }
   }
-  local_14 = *param_3;
-  local_10 = param_3[1];
-  local_c = param_3[2] + local_8;
-  local_40 = *param_3;
-  local_3c = param_3[1];
-  local_38 = param_3[2] - local_28;
-  YawVectors(param_4,local_20,local_34);
-  local_24 = Actor_SetBodyPlantAngle(param_1,param_2,param_3,param_3,local_20,param_5);
-  if (param_6 != (float *)0x0) {
-    if (30.0 <= ABS(*param_5)) {
-      *param_6 = 0.0;
+  vStart = *vOrigin;
+  local_10 = vOrigin[1];
+  local_c = vOrigin[2] + fStartUp;
+  vEnd = *vOrigin;
+  local_3c = vOrigin[1];
+  local_38 = vOrigin[2] - fEndDown;
+  YawVectors(fYaw,vForward,vRight);
+  fHeight = Actor_SetBodyPlantAngle(iEntNum,iClipMask,vOrigin,vOrigin,vForward,pfPitch);
+  if (pfRoll != (float *)0x0) {
+    if (30.0 <= ABS(*pfPitch)) {
+      *pfRoll = 0.0;
     }
     else {
-      fVar4 = Actor_SetBodyPlantAngle(param_1,param_2,param_3,param_3,local_34,param_6);
-      local_24 = (fVar4 + local_24) * 0.5;
+      fVar4 = Actor_SetBodyPlantAngle(iEntNum,iClipMask,vOrigin,vOrigin,vRight,pfRoll);
+      fHeight = (fVar4 + fHeight) * 0.5;
     }
   }
-  if (param_7 != (float *)0x0) {
-    local_24 = local_24 - param_3[2];
-    if (local_24 < 0.0) {
-      local_14 = *param_3;
-      local_10 = param_3[1];
-      local_c = param_3[2];
-      local_40 = *param_3;
-      local_3c = param_3[1];
-      local_38 = param_3[2] - 1.0;
-      col_context_t::col_context_t(&local_68,param_2);
-      local_68.passEntityNum0 = param_1;
-      local_6c = -1;
-      iVar3 = SV_SightTraceCapsule(&local_6c,&local_14,actorMins,actorMaxs,&local_40,&local_68);
+  if (pfHeight != (float *)0x0) {
+    fHeight = fHeight - vOrigin[2];
+    if (fHeight < 0.0) {
+      vStart = *vOrigin;
+      local_10 = vOrigin[1];
+      local_c = vOrigin[2];
+      vEnd = *vOrigin;
+      local_3c = vOrigin[1];
+      local_38 = vOrigin[2] - 1.0;
+      col_context_t::col_context_t(&context,iClipMask);
+      context.passEntityNum0 = iEntNum;
+      hitnum = -1;
+      iVar3 = SV_SightTraceCapsule(&hitnum,&vStart,actorMins,actorMaxs,&vEnd,&context);
       if (iVar3 != 0) {
-        local_24 = 0.0;
+        fHeight = 0.0;
       }
     }
-    *param_7 = local_24;
+    *pfHeight = fHeight;
   }
   return;
 }
@@ -537,7 +539,7 @@ Actor_GetBodyPlantAngles
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_OrientCorpseToGround(gentity_s *param_1,int param_2)
+void __cdecl Actor_OrientCorpseToGround(gentity_s *self,int bLerp)
 
 {
   actor_s *paVar1;
@@ -550,36 +552,36 @@ void __cdecl Actor_OrientCorpseToGround(gentity_s *param_1,int param_2)
   float local_6c;
   float local_58;
   float local_38;
-  float local_18;
-  float local_14;
-  float local_10;
-  actor_prone_info_s *local_c;
-  uint local_8;
+  float fNewRoll;
+  float fNewPitch;
+  float fNewHeight;
+  actor_prone_info_s *pProneInfo;
+  int iClipMask;
   
-  if ((((param_1->s).eType != 0x13) && ((param_1->s).eType != 0x11)) &&
+  if ((((self->s).eType != 0x13) && ((self->s).eType != 0x11)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x259,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  paVar1 = param_1->actor;
-  local_c = &paVar1->ProneInfo;
-  if (local_c->bCorpseOrientation != false) {
-    local_8 = param_1->clipmask & 0xfdff7fff;
-    if (param_2 == 0) {
+  paVar1 = self->actor;
+  pProneInfo = &paVar1->ProneInfo;
+  if (pProneInfo->bCorpseOrientation != false) {
+    iClipMask = self->clipmask & 0xfdff7fff;
+    if (bLerp == 0) {
       Actor_GetBodyPlantAngles
-                ((param_1->s).number,local_8,(param_1->r).currentOrigin,
-                 (param_1->r).currentAngles[1],&(paVar1->ProneInfo).field6_0x10.fTorsoPitch,
+                ((self->s).number,iClipMask,(self->r).currentOrigin,(self->r).currentAngles[1],
+                 &(paVar1->ProneInfo).field6_0x10.fTorsoPitch,
                  &(paVar1->ProneInfo).field7_0x14.fWaistPitch,&(paVar1->ProneInfo).fBodyHeight);
     }
     else {
       Actor_GetBodyPlantAngles
-                ((param_1->s).number,local_8,(param_1->r).currentOrigin,
-                 (param_1->r).currentAngles[1],&local_14,&local_18,&local_10);
-      fVar4 = AngleNormalize180(local_14 - (local_c->field6_0x10).fTorsoPitch);
+                ((self->s).number,iClipMask,(self->r).currentOrigin,(self->r).currentAngles[1],
+                 &fNewPitch,&fNewRoll,&fNewHeight);
+      fVar4 = AngleNormalize180(fNewPitch - (pProneInfo->field6_0x10).fTorsoPitch);
       if (ABS(fVar4) <= 12.0) {
-        local_38 = local_14;
+        local_38 = fNewPitch;
       }
       else {
         if (fVar4 < 0.0) {
@@ -588,12 +590,12 @@ void __cdecl Actor_OrientCorpseToGround(gentity_s *param_1,int param_2)
         else {
           local_70 = 1.0;
         }
-        local_38 = local_70 * 12.0 + (local_c->field6_0x10).fTorsoPitch;
+        local_38 = local_70 * 12.0 + (pProneInfo->field6_0x10).fTorsoPitch;
       }
-      (local_c->field6_0x10).fTorsoPitch = local_38;
-      fVar4 = AngleNormalize180(local_18 - (local_c->field7_0x14).fWaistPitch);
+      (pProneInfo->field6_0x10).fTorsoPitch = local_38;
+      fVar4 = AngleNormalize180(fNewRoll - (pProneInfo->field7_0x14).fWaistPitch);
       if (ABS(fVar4) <= 12.0) {
-        local_58 = local_18;
+        local_58 = fNewRoll;
       }
       else {
         if (fVar4 < 0.0) {
@@ -602,12 +604,12 @@ void __cdecl Actor_OrientCorpseToGround(gentity_s *param_1,int param_2)
         else {
           local_74 = 1.0;
         }
-        local_58 = local_74 * 12.0 + (local_c->field7_0x14).fWaistPitch;
+        local_58 = local_74 * 12.0 + (pProneInfo->field7_0x14).fWaistPitch;
       }
-      (local_c->field7_0x14).fWaistPitch = local_58;
-      fVar4 = local_10 - local_c->fBodyHeight;
+      (pProneInfo->field7_0x14).fWaistPitch = local_58;
+      fVar4 = fNewHeight - pProneInfo->fBodyHeight;
       if (ABS(fVar4) <= 0.6) {
-        local_6c = local_10;
+        local_6c = fNewHeight;
       }
       else {
         if (fVar4 < 0.0) {
@@ -616,9 +618,9 @@ void __cdecl Actor_OrientCorpseToGround(gentity_s *param_1,int param_2)
         else {
           local_78 = 1.0;
         }
-        local_6c = local_78 * 0.6 + local_c->fBodyHeight;
+        local_6c = local_78 * 0.6 + pProneInfo->fBodyHeight;
       }
-      local_c->fBodyHeight = local_6c;
+      pProneInfo->fBodyHeight = local_6c;
     }
   }
   return;
@@ -632,7 +634,7 @@ void __cdecl Actor_OrientCorpseToGround(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_OrientPitchToGround(gentity_s *param_1,int param_2)
+void __cdecl Actor_OrientPitchToGround(gentity_s *self,int bLerp)
 
 {
   actor_s *paVar1;
@@ -644,35 +646,35 @@ void __cdecl Actor_OrientPitchToGround(gentity_s *param_1,int param_2)
   float local_50;
   float local_48;
   float local_34;
-  float local_14;
-  float local_10;
-  actor_prone_info_s *local_c;
-  uint local_8;
+  float fNewPitch;
+  float fNewHeight;
+  actor_prone_info_s *pProneInfo;
+  int iClipMask;
   
-  if (((param_1->s).eType != 0x11) &&
+  if (((self->s).eType != 0x11) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x288,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  paVar1 = param_1->actor;
-  local_c = &paVar1->ProneInfo;
+  paVar1 = self->actor;
+  pProneInfo = &paVar1->ProneInfo;
   if ((paVar1->ProneInfo).orientPitch != false) {
-    local_8 = param_1->clipmask & 0xfdff7fff;
-    if (param_2 == 0) {
+    iClipMask = self->clipmask & 0xfdff7fff;
+    if (bLerp == 0) {
       Actor_GetBodyPlantAngles
-                ((param_1->s).number,local_8,(param_1->r).currentOrigin,
-                 (param_1->r).currentAngles[1],&(paVar1->ProneInfo).field6_0x10.fTorsoPitch,
-                 (float *)0x0,&(paVar1->ProneInfo).fBodyHeight);
+                ((self->s).number,iClipMask,(self->r).currentOrigin,(self->r).currentAngles[1],
+                 &(paVar1->ProneInfo).field6_0x10.fTorsoPitch,(float *)0x0,
+                 &(paVar1->ProneInfo).fBodyHeight);
     }
     else {
       Actor_GetBodyPlantAngles
-                ((param_1->s).number,local_8,(param_1->r).currentOrigin,
-                 (param_1->r).currentAngles[1],&local_14,(float *)0x0,&local_10);
-      fVar4 = AngleNormalize180(local_14 - (local_c->field6_0x10).fTorsoPitch);
+                ((self->s).number,iClipMask,(self->r).currentOrigin,(self->r).currentAngles[1],
+                 &fNewPitch,(float *)0x0,&fNewHeight);
+      fVar4 = AngleNormalize180(fNewPitch - (pProneInfo->field6_0x10).fTorsoPitch);
       if (ABS(fVar4) <= 12.0) {
-        local_34 = local_14;
+        local_34 = fNewPitch;
       }
       else {
         if (fVar4 < 0.0) {
@@ -681,12 +683,12 @@ void __cdecl Actor_OrientPitchToGround(gentity_s *param_1,int param_2)
         else {
           local_50 = 1.0;
         }
-        local_34 = local_50 * 12.0 + (local_c->field6_0x10).fTorsoPitch;
+        local_34 = local_50 * 12.0 + (pProneInfo->field6_0x10).fTorsoPitch;
       }
-      (local_c->field6_0x10).fTorsoPitch = local_34;
-      fVar4 = local_10 - local_c->fBodyHeight;
+      (pProneInfo->field6_0x10).fTorsoPitch = local_34;
+      fVar4 = fNewHeight - pProneInfo->fBodyHeight;
       if (ABS(fVar4) <= 0.6) {
-        local_48 = local_10;
+        local_48 = fNewHeight;
       }
       else {
         if (fVar4 < 0.0) {
@@ -695,12 +697,12 @@ void __cdecl Actor_OrientPitchToGround(gentity_s *param_1,int param_2)
         else {
           local_54 = 1.0;
         }
-        local_48 = local_54 * 0.6 + local_c->fBodyHeight;
+        local_48 = local_54 * 0.6 + pProneInfo->fBodyHeight;
       }
-      local_c->fBodyHeight = local_48;
+      pProneInfo->fBodyHeight = local_48;
       floor();
       _ftol2_sse();
-      (param_1->s).lerp.u.player.offhandWeapon = extraout_AX;
+      (self->s).lerp.u.player.offhandWeapon = extraout_AX;
     }
   }
   return;
@@ -709,154 +711,164 @@ void __cdecl Actor_OrientPitchToGround(gentity_s *param_1,int param_2)
 
 // 008ED980  Actor_BecomeCorpse  (game/actor_corpse.cpp:801)
 
+/* WARNING: Enum "trType_t": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Actor_BecomeCorpse(gentity_s *param_1)
+int __cdecl Actor_BecomeCorpse(gentity_s *self)
 
 {
   float fVar1;
-  actor_s *paVar2;
-  code *pcVar3;
-  bool bVar4;
-  gentity_s *pgVar5;
-  int iVar6;
-  DObj *pDVar7;
-  XAnimTree_s *pXVar8;
-  uint uVar9;
-  int local_8;
+  actor_s *actor_00;
+  code *pcVar2;
+  bool bVar3;
+  gentity_s *ent;
+  int iVar4;
+  DObj *obj;
+  XAnimTree_s *from;
+  uint src;
+  XAnimTree_s *tree;
+  DObj *dobj;
+  int bWasProne;
+  trType_t origType;
+  int actorIndex;
+  gentity_s *body;
+  int bOrient;
+  int corpseIndex;
+  actor_s *actor;
+  corpseInfo_t *corpseInfo;
+  int axis;
   
-  paVar2 = param_1->actor;
-  G_GetActorIndex(paVar2);
-  BG_ActorIsProne(&paVar2->ProneInfo,level.time);
-  Actor_EventListener_RemoveEntity((param_1->s).number);
-  pgVar5 = G_SpawnActorClone();
-  AssignToSmallerType<int>(&(pgVar5->s).lerp.useCount,pgVar5->useCount + 1);
-  (pgVar5->s).lerp.eFlags =
-       (param_1->s).lerp.eFlags & 0xfffffffdU | (pgVar5->s).lerp.eFlags & 2U | 0x40010;
-  G_SetOrigin(pgVar5,(param_1->r).currentOrigin);
-  G_SetAngle(pgVar5,(param_1->r).currentAngles);
-  (pgVar5->s).lerp.pos.trType = '\x06';
-  (pgVar5->s).lerp.pos.trTime = level.time;
-  (pgVar5->s).lerp.pos.trDelta[0] = (param_1->s).lerp.pos.trDelta[0];
-  (pgVar5->s).lerp.pos.trDelta[1] = (param_1->s).lerp.pos.trDelta[1];
-  (pgVar5->s).lerp.pos.trDelta[2] = (param_1->s).lerp.pos.trDelta[2];
-  if ((((((uint)(pgVar5->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(pgVar5->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(pgVar5->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x348,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar6 = (*pcVar3)();
-    return iVar6;
+  actor_00 = self->actor;
+  G_GetActorIndex(actor_00);
+  BG_ActorIsProne(&actor_00->ProneInfo,level.time);
+  Actor_EventListener_RemoveEntity((self->s).number);
+  ent = G_SpawnActorClone();
+  AssignToSmallerType<int>(&(ent->s).lerp.useCount,ent->useCount + 1);
+  (ent->s).lerp.eFlags = (self->s).lerp.eFlags & 0xfffffffdU | (ent->s).lerp.eFlags & 2U | 0x40010;
+  G_SetOrigin(ent,(self->r).currentOrigin);
+  G_SetAngle(ent,(self->r).currentAngles);
+  (ent->s).lerp.pos.trType = '\x06';
+  (ent->s).lerp.pos.trTime = level.time;
+  (ent->s).lerp.pos.trDelta[0] = (self->s).lerp.pos.trDelta[0];
+  (ent->s).lerp.pos.trDelta[1] = (self->s).lerp.pos.trDelta[1];
+  (ent->s).lerp.pos.trDelta[2] = (self->s).lerp.pos.trDelta[2];
+  if ((((((uint)(ent->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(ent->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(ent->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x348,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  pgVar5->physicsObject = '\x01';
-  (pgVar5->s).eType = 0x13;
-  pDVar7 = Com_GetServerDObj((param_1->s).number);
-  pXVar8 = DObjGetTree(pDVar7);
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    fVar1 = (pgVar5->s).lerp.pos.trDelta[local_8];
+  ent->physicsObject = '\x01';
+  (ent->s).eType = 0x13;
+  obj = Com_GetServerDObj((self->s).number);
+  from = DObjGetTree(obj);
+  for (axis = 0; axis < 2; axis = axis + 1) {
+    fVar1 = (ent->s).lerp.pos.trDelta[axis];
     if ((g_clonePlayerMaxVelocity->current).value <= fVar1 &&
         fVar1 != (g_clonePlayerMaxVelocity->current).value) {
-      (pgVar5->s).lerp.pos.trDelta[local_8] = (float)(g_clonePlayerMaxVelocity->current).integer;
+      (ent->s).lerp.pos.trDelta[axis] = (float)(g_clonePlayerMaxVelocity->current).integer;
     }
   }
-  if ((((((uint)(pgVar5->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(pgVar5->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(pgVar5->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x355,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar6 = (*pcVar3)();
-    return iVar6;
+  if ((((((uint)(ent->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(ent->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(ent->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x355,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  (pgVar5->field36_0x21c).item[0].ammoCount = level.time;
-  iVar6 = G_GetFreeActorCorpseIndex(1);
-  iVar6 = iVar6 * 0x5e0;
-  *(int *)(g_scr_data.actorCorpseInfo + iVar6 + 4) = (pgVar5->s).number;
-  *(int *)(g_scr_data.actorCorpseInfo + iVar6 + 8) = level.time;
-  g_scr_data.actorCorpseInfo[iVar6 + 0x5d8] = 1;
-  XAnimCloneAnimTree(pXVar8,*(XAnimTree_s **)(g_scr_data.actorCorpseInfo + iVar6));
-  (pgVar5->s).groundEntityNum = 0x3ff;
-  if (((pgVar5->r).svFlags != '\0') &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x365,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar6 = (*pcVar3)();
-    return iVar6;
+  (ent->field36_0x21c).item[0].ammoCount = level.time;
+  iVar4 = G_GetFreeActorCorpseIndex(1);
+  iVar4 = iVar4 * 0x5e0;
+  *(int *)(g_scr_data.actorCorpseInfo + iVar4 + 4) = (ent->s).number;
+  *(int *)(g_scr_data.actorCorpseInfo + iVar4 + 8) = level.time;
+  g_scr_data.actorCorpseInfo[iVar4 + 0x5d8] = 1;
+  XAnimCloneAnimTree(from,*(XAnimTree_s **)(g_scr_data.actorCorpseInfo + iVar4));
+  (ent->s).groundEntityNum = 0x3ff;
+  if (((ent->r).svFlags != '\0') &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x365,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  (pgVar5->r).svFlags = '\x02';
-  (pgVar5->r).mins[0] = (param_1->r).mins[0];
-  (pgVar5->r).mins[1] = (param_1->r).mins[1];
-  (pgVar5->r).mins[2] = (param_1->r).mins[2];
-  (pgVar5->r).maxs[0] = (param_1->r).maxs[0];
-  (pgVar5->r).maxs[1] = (param_1->r).maxs[1];
-  (pgVar5->r).maxs[2] = (param_1->r).maxs[2];
-  (pgVar5->r).absmin[0] = (param_1->r).absmin[0];
-  (pgVar5->r).absmin[1] = (param_1->r).absmin[1];
-  (pgVar5->r).absmin[2] = (param_1->r).absmin[2];
-  (pgVar5->r).absmax[0] = (param_1->r).absmax[0];
-  (pgVar5->r).absmax[1] = (param_1->r).absmax[1];
-  (pgVar5->r).absmax[2] = (param_1->r).absmax[2];
-  (pgVar5->s).un2.animState.state = (param_1->s).un2.animState.state;
-  (pgVar5->s).un2.animState.fLeanAmount = (param_1->s).un2.animState.fLeanAmount;
-  (pgVar5->s).un2.animState.fAimUpDown = (param_1->s).un2.animState.fAimUpDown;
-  (pgVar5->s).un2.animState.fAimLeftRight = (param_1->s).un2.animState.fAimLeftRight;
-  pgVar5->clipmask = 0x10001;
-  (pgVar5->r).contents = 0x4004000;
-  pgVar5->nextthink = level.time + 300;
-  pgVar5->handler = '\x03';
-  pgVar5->model = param_1->model;
-  (pgVar5->s).enemyModel = (param_1->s).enemyModel;
-  (pgVar5->s).lerp.u.turret.gunAngles[0] = (param_1->s).lerp.u.turret.gunAngles[0];
-  (pgVar5->s).lerp.u.turret.gunAngles[2] = (param_1->s).lerp.u.turret.gunAngles[2];
-  param_1->physicsObject = '\x01';
-  bVar4 = Com_IsRagdollTrajectory(&(pgVar5->s).lerp.pos);
-  if (bVar4) {
-    uVar9 = (uint)(pgVar5->s).lerp.pos.trType;
-    if ((0xe < uVar9) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x37f,0
-                                 ,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      iVar6 = (*pcVar3)();
-      return iVar6;
+  (ent->r).svFlags = '\x02';
+  (ent->r).mins[0] = (self->r).mins[0];
+  (ent->r).mins[1] = (self->r).mins[1];
+  (ent->r).mins[2] = (self->r).mins[2];
+  (ent->r).maxs[0] = (self->r).maxs[0];
+  (ent->r).maxs[1] = (self->r).maxs[1];
+  (ent->r).maxs[2] = (self->r).maxs[2];
+  (ent->r).absmin[0] = (self->r).absmin[0];
+  (ent->r).absmin[1] = (self->r).absmin[1];
+  (ent->r).absmin[2] = (self->r).absmin[2];
+  (ent->r).absmax[0] = (self->r).absmax[0];
+  (ent->r).absmax[1] = (self->r).absmax[1];
+  (ent->r).absmax[2] = (self->r).absmax[2];
+  (ent->s).un2.animState.state = (self->s).un2.animState.state;
+  (ent->s).un2.animState.fLeanAmount = (self->s).un2.animState.fLeanAmount;
+  (ent->s).un2.animState.fAimUpDown = (self->s).un2.animState.fAimUpDown;
+  (ent->s).un2.animState.fAimLeftRight = (self->s).un2.animState.fAimLeftRight;
+  ent->clipmask = 0x10001;
+  (ent->r).contents = 0x4004000;
+  ent->nextthink = level.time + 300;
+  ent->handler = '\x03';
+  ent->model = self->model;
+  (ent->s).enemyModel = (self->s).enemyModel;
+  (ent->s).lerp.u.turret.gunAngles[0] = (self->s).lerp.u.turret.gunAngles[0];
+  (ent->s).lerp.u.turret.gunAngles[2] = (self->s).lerp.u.turret.gunAngles[2];
+  self->physicsObject = '\x01';
+  bVar3 = Com_IsRagdollTrajectory(&(ent->s).lerp.pos);
+  if (bVar3) {
+    src = (uint)(ent->s).lerp.pos.trType;
+    if ((0xe < src) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x37f,0
+                                 ,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
-    G_SetOrigin(param_1,(pgVar5->r).currentOrigin);
-    AssignToSmallerType<unsigned_char>(&(pgVar5->s).lerp.pos.trType,uVar9);
-    if ((0xe < (param_1->s).lerp.pos.trType) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x382,0
-                                 ,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      iVar6 = (*pcVar3)();
-      return iVar6;
+    G_SetOrigin(self,(ent->r).currentOrigin);
+    AssignToSmallerType<unsigned_char>(&(ent->s).lerp.pos.trType,src);
+    if ((0xe < (self->s).lerp.pos.trType) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x382,0
+                                 ,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
   else {
-    G_SetOrigin(param_1,(pgVar5->r).currentOrigin);
-    (pgVar5->s).lerp.pos.trType = '\0';
+    G_SetOrigin(self,(ent->r).currentOrigin);
+    (ent->s).lerp.pos.trType = '\0';
   }
-  Actor_Free(paVar2);
-  if ((param_1->actor != (actor_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x38c,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar6 = (*pcVar3)();
-    return iVar6;
+  Actor_Free(actor_00);
+  if ((self->actor != (actor_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x38c,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  if ((param_1->sentient != (sentient_s *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x38d,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    iVar6 = (*pcVar3)();
-    return iVar6;
+  if ((self->sentient != (sentient_s *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_corpse.cpp",0x38d,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    iVar4 = (*pcVar2)();
+    return iVar4;
   }
-  ScrNotify_FaceEvent(param_1,scr_const.death);
-  Scr_Notify(param_1,scr_const.death,0);
-  Scr_FreeEntityNum((param_1->s).number,0,SCRIPTINSTANCE_SERVER);
-  G_DObjUpdate(pgVar5);
-  SV_LinkEntity(pgVar5);
+  ScrNotify_FaceEvent(self,scr_const.death);
+  Scr_Notify(self,scr_const.death,0);
+  Scr_FreeEntityNum((self->s).number,0,SCRIPTINSTANCE_SERVER);
+  G_DObjUpdate(ent);
+  SV_LinkEntity(ent);
   return 0;
 }
 

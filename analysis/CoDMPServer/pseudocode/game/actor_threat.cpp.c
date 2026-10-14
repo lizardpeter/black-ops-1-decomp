@@ -12,6 +12,7 @@ void __cdecl _dynamic_initializer_for__AI_THREAT_DISTANCE_RATE__(void)
 
 // 0091FB10  Actor_CheckIgnore  (game/actor_threat.cpp:134)
 
+/* WARNING: Variable defined which should be unmapped: enemy */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
@@ -26,6 +27,8 @@ int __cdecl Actor_CheckIgnore(sentient_s *param_1,sentient_s *param_2)
   int in_ECX;
   int in_EDX;
   int in_stack_fffffff0;
+  sentient_s *enemy;
+  sentient_s *self;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x87,0,
@@ -86,6 +89,8 @@ int __cdecl Actor_GetThreatBias(int param_1,int param_2)
   int iVar3;
   int in_ECX;
   int in_EDX;
+  int groupEnemy;
+  int groupSelf;
   
   if ((in_ECX < 0) || (g_threatBias.threatGroupCount <= in_ECX)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x114,0,
@@ -111,6 +116,8 @@ int __cdecl Actor_GetThreatBias(int param_1,int param_2)
 
 // 0091FC90  Actor_FlagEnemyUnattackable  (game/actor_threat.cpp:289)
 
+/* WARNING: Variable defined which should be unmapped: self */
+/* WARNING: Variable defined which should be unmapped: enemy */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -123,6 +130,8 @@ void __cdecl Actor_FlagEnemyUnattackable(actor_s *param_1)
   bool bVar2;
   sentient_s *psVar3;
   actor_s *in_ECX;
+  actor_s *self;
+  sentient_s *enemy;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x124,0,
@@ -149,8 +158,8 @@ void __cdecl Actor_FlagEnemyUnattackable(actor_s *param_1)
 
 // 0091FD50  Actor_CaresAboutInfo  (game/actor_threat.cpp:313)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -162,6 +171,10 @@ int __cdecl Actor_CaresAboutInfo(actor_s *param_1,sentient_s *param_2)
   int iVar3;
   int in_ECX;
   int in_EDX;
+  sentient_s *pOther;
+  actor_s *self;
+  int lastKnownPosTime;
+  sentient_info_t *pInfo;
   
   if (in_EDX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x13f,0,
@@ -190,15 +203,15 @@ int __cdecl Actor_CaresAboutInfo(actor_s *param_1,sentient_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DebugResetThreatStrings(actor_s *param_1)
+void __cdecl DebugResetThreatStrings(actor_s *self)
 
 {
   code *pcVar1;
   bool bVar2;
   int local_c;
-  int local_8;
+  int i;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x155,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -206,7 +219,7 @@ void __cdecl DebugResetThreatStrings(actor_s *param_1)
     return;
   }
   if (((ai_debugThreatSelection->current).enabled == false) ||
-     ((ai_debugEntIndex->current).integer != (param_1->ent->s).number)) {
+     ((ai_debugEntIndex->current).integer != (self->ent->s).number)) {
     local_c = 1;
   }
   else {
@@ -214,8 +227,8 @@ void __cdecl DebugResetThreatStrings(actor_s *param_1)
   }
   g_skipDebugString = local_c;
   if (local_c == 0) {
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      g_threatDebugStrings[local_8][0] = '\0';
+    for (i = 0; i < 10; i = i + 1) {
+      g_threatDebugStrings[i][0] = '\0';
     }
   }
   return;
@@ -224,11 +237,11 @@ void __cdecl DebugResetThreatStrings(actor_s *param_1)
 
 // 00920ED0  DebugSetThreatString  (game/actor_threat.cpp:353)
 
-void __cdecl DebugSetThreatString(ThreatDebugStringCategory param_1,int param_2)
+void __cdecl DebugSetThreatString(ThreatDebugStringCategory category,int threat)
 
 {
-  if ((g_skipDebugString == 0) && (param_2 != 0)) {
-    sprintf(g_threatDebugStrings[param_1],"%s %d");
+  if ((g_skipDebugString == 0) && (threat != 0)) {
+    sprintf(g_threatDebugStrings[category],"%s %d");
   }
   return;
 }
@@ -236,11 +249,11 @@ void __cdecl DebugSetThreatString(ThreatDebugStringCategory param_1,int param_2)
 
 // 00920F10  DebugSetThreatStringFromString  (game/actor_threat.cpp:365)
 
-void __cdecl DebugSetThreatStringFromString(ThreatDebugStringCategory param_1,char *param_2)
+void __cdecl DebugSetThreatStringFromString(ThreatDebugStringCategory category,char *string)
 
 {
-  if ((g_skipDebugString == 0) && (param_2 != (char *)0x0)) {
-    sprintf(g_threatDebugStrings[param_1],"%s %s");
+  if ((g_skipDebugString == 0) && (string != (char *)0x0)) {
+    sprintf(g_threatDebugStrings[category],"%s %s");
   }
   return;
 }
@@ -253,7 +266,7 @@ void __cdecl DebugSetThreatStringFromString(ThreatDebugStringCategory param_1,ch
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-void __cdecl DebugThreatStringAll(actor_s *param_1,sentient_s *param_2,int param_3)
+void __cdecl DebugThreatStringAll(actor_s *self,sentient_s *enemy,int threat)
 
 {
   code *pcVar1;
@@ -261,17 +274,17 @@ void __cdecl DebugThreatStringAll(actor_s *param_1,sentient_s *param_2,int param
   sentient_s *psVar3;
   sentient_s *psVar4;
   sentient_s *psVar5;
-  int local_34;
-  float local_30 [2];
+  int i;
+  float displayPos [2];
   float local_28;
-  sentient_s *local_24;
-  float local_20 [3];
-  float local_14;
+  float fraction;
+  float start [3];
+  float color;
   float local_10;
   undefined4 local_c;
   float local_8;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x17f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -279,15 +292,15 @@ void __cdecl DebugThreatStringAll(actor_s *param_1,sentient_s *param_2,int param
     return;
   }
   if (((ai_debugThreatSelection->current).enabled != false) &&
-     ((ai_debugEntIndex->current).integer == (param_1->ent->s).number)) {
-    if ((param_2 == (sentient_s *)0x0) &&
+     ((ai_debugEntIndex->current).integer == (self->ent->s).number)) {
+    if ((enemy == (sentient_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x183,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar3 = (sentient_s *)((float)param_3 / 7000.0);
+    psVar3 = (sentient_s *)((float)threat / 7000.0);
     psVar5 = psVar3;
     if (0.0 <= (float)psVar3 - 1.0) {
       psVar5 = (sentient_s *)1.0;
@@ -296,19 +309,19 @@ void __cdecl DebugThreatStringAll(actor_s *param_1,sentient_s *param_2,int param
     if (0.0 <= 0.0 - (float)psVar3) {
       psVar4 = (sentient_s *)0x0;
     }
-    local_14 = (float)psVar4 * 0.5 + 0.5;
+    color = (float)psVar4 * 0.5 + 0.5;
     local_c = 0;
     local_8 = 1.0;
-    local_24 = psVar4;
-    local_10 = local_14;
+    fraction = (float)psVar4;
+    local_10 = color;
     Sentient_GetDebugEyePosition(psVar4,(float *)psVar5);
     Sentient_GetDebugEyePosition(psVar4,(float *)psVar5);
     G_DebugLineWithDuration
-              (local_20,local_30,&local_14,0,(ai_threatUpdateInterval->current).integer / 0x32);
+              (start,displayPos,&color,0,(ai_threatUpdateInterval->current).integer / 0x32);
     local_28 = local_28 + 32.0;
-    for (local_34 = 0; local_34 < 10; local_34 = local_34 + 1) {
-      if (g_threatDebugStrings[local_34][0] != '\0') {
-        G_AddDebugString(local_30,&local_14,0.5,g_threatDebugStrings[local_34],
+    for (i = 0; i < 10; i = i + 1) {
+      if (g_threatDebugStrings[i][0] != '\0') {
+        G_AddDebugString(displayPos,&color,0.5,g_threatDebugStrings[i],
                          (ai_threatUpdateInterval->current).integer / 0x32);
       }
       local_28 = local_28 + 8.0;
@@ -325,17 +338,16 @@ void __cdecl DebugThreatStringAll(actor_s *param_1,sentient_s *param_2,int param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-DebugThreatStringSimple(actor_s *param_1,gentity_s *param_2,char *param_3,float *param_4)
+void __cdecl DebugThreatStringSimple(actor_s *self,gentity_s *enemy,char *string,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   sentient_s *in_stack_ffffffe0;
   float *in_stack_ffffffe4;
-  float local_10 [3];
+  float start [3];
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x1a6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -343,15 +355,15 @@ DebugThreatStringSimple(actor_s *param_1,gentity_s *param_2,char *param_3,float 
     return;
   }
   if (((ai_debugThreatSelection->current).enabled != false) &&
-     ((ai_debugEntIndex->current).integer == (param_1->ent->s).number)) {
-    if ((param_2 == (gentity_s *)0x0) &&
+     ((ai_debugEntIndex->current).integer == (self->ent->s).number)) {
+    if ((enemy == (gentity_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x1aa,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3 == (char *)0x0) &&
+    if ((string == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x1ab,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -359,13 +371,13 @@ DebugThreatStringSimple(actor_s *param_1,gentity_s *param_2,char *param_3,float 
       return;
     }
     Sentient_GetDebugEyePosition(in_stack_ffffffe0,in_stack_ffffffe4);
-    if (param_2->sentient != (sentient_s *)0x0) {
+    if (enemy->sentient != (sentient_s *)0x0) {
       Sentient_GetDebugEyePosition(in_stack_ffffffe0,in_stack_ffffffe4);
     }
     G_DebugLineWithDuration
-              (local_10,(float *)&stack0xffffffe4,param_4,0,
+              (start,(float *)&stack0xffffffe4,color,0,
                (ai_threatUpdateInterval->current).integer / 0x32);
-    G_AddDebugString((float *)&stack0xffffffe4,param_4,1.0,param_3,
+    G_AddDebugString((float *)&stack0xffffffe4,color,1.0,string,
                      (ai_threatUpdateInterval->current).integer / 0x32);
   }
   return;
@@ -380,46 +392,45 @@ DebugThreatStringSimple(actor_s *param_1,gentity_s *param_2,char *param_3,float 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DebugThreatNodes(actor_s *param_1,sentient_s *param_2,pathnode_t *param_3,pathnode_t *param_4,
-                float *param_5)
+DebugThreatNodes(actor_s *self,sentient_s *enemy,pathnode_t *selfNode,pathnode_t *enemyNode,
+                float *color)
 
 {
   sentient_s *in_stack_ffffffd0;
   float *in_stack_ffffffd4;
-  float local_28 [3];
-  float local_1c;
+  float viewPos [3];
+  float start;
   float local_18;
   float local_14;
-  float local_10;
+  float end;
   float local_c;
   float local_8;
   
   if (((ai_debugThreatSelection->current).enabled != false) &&
-     ((ai_debugEntIndex->current).integer == (param_1->ent->s).number)) {
-    CL_GetDebugViewPos(local_28);
-    if (param_3 == (pathnode_t *)0x0) {
+     ((ai_debugEntIndex->current).integer == (self->ent->s).number)) {
+    CL_GetDebugViewPos(viewPos);
+    if (selfNode == (pathnode_t *)0x0) {
       Sentient_GetDebugEyePosition(in_stack_ffffffd0,in_stack_ffffffd4);
     }
     else {
-      Path_DrawDebugNode(local_28,param_3);
-      in_stack_ffffffd4 = (param_3->constant).vOrigin;
-      local_1c = *in_stack_ffffffd4;
-      local_18 = (param_3->constant).vOrigin[1];
-      local_14 = (param_3->constant).vOrigin[2];
+      Path_DrawDebugNode(viewPos,selfNode);
+      in_stack_ffffffd4 = (selfNode->constant).vOrigin;
+      start = *in_stack_ffffffd4;
+      local_18 = (selfNode->constant).vOrigin[1];
+      local_14 = (selfNode->constant).vOrigin[2];
     }
-    if (param_4 == (pathnode_t *)0x0) {
+    if (enemyNode == (pathnode_t *)0x0) {
       Sentient_GetDebugEyePosition(in_stack_ffffffd0,in_stack_ffffffd4);
     }
     else {
-      Path_DrawDebugNode(local_28,param_4);
-      local_10 = (param_4->constant).vOrigin[0];
-      local_c = (param_4->constant).vOrigin[1];
-      local_8 = (param_4->constant).vOrigin[2];
+      Path_DrawDebugNode(viewPos,enemyNode);
+      end = (enemyNode->constant).vOrigin[0];
+      local_c = (enemyNode->constant).vOrigin[1];
+      local_8 = (enemyNode->constant).vOrigin[2];
     }
     local_14 = local_14 + 16.0;
     local_8 = local_8 + 16.0;
-    G_DebugLineWithDuration
-              (&local_1c,&local_10,param_5,1,(ai_threatUpdateInterval->current).integer / 0x32);
+    G_DebugLineWithDuration(&start,&end,color,1,(ai_threatUpdateInterval->current).integer / 0x32);
   }
   return;
 }
@@ -427,13 +438,14 @@ DebugThreatNodes(actor_s *param_1,sentient_s *param_2,pathnode_t *param_3,pathno
 
 // 00921160  Actor_ThreatFromScariness  (game/actor_threat.cpp:499)
 
-int __cdecl Actor_ThreatFromScariness(float param_1)
+int __cdecl Actor_ThreatFromScariness(float fScariness)
 
 {
   int local_10;
   int local_c;
+  int threat;
   
-  local_c = (int)(param_1 * -100.0);
+  local_c = (int)(fScariness * -100.0);
   if (999 < local_c) {
     local_c = 1000;
   }
@@ -450,15 +462,17 @@ int __cdecl Actor_ThreatFromScariness(float param_1)
 
 // 009211D0  Actor_ThreatFromDistance  (game/actor_threat.cpp:517)
 
-int __cdecl Actor_ThreatFromDistance(float param_1)
+int __cdecl Actor_ThreatFromDistance(float fDistance)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *string;
+  float closeness;
+  int threat;
   
-  if (param_1 < 0.0) {
+  if (fDistance < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x206,0,
                              "%s");
     if (!bVar2) {
@@ -467,11 +481,11 @@ int __cdecl Actor_ThreatFromDistance(float param_1)
       return iVar3;
     }
   }
-  if (param_1 < 2500.0) {
-    iVar3 = (int)ROUND(AI_THREAT_DISTANCE_RATE * (2500.0 - param_1) * (2500.0 - param_1) +
+  if (fDistance < 2500.0) {
+    iVar3 = (int)ROUND(AI_THREAT_DISTANCE_RATE * (2500.0 - fDistance) * (2500.0 - fDistance) +
                        9.313226e-10);
-    pcVar4 = va("%d (%0.1f)");
-    DebugSetThreatStringFromString(TDS_DIST_THREAT,pcVar4);
+    string = va("%d (%0.1f)");
+    DebugSetThreatStringFromString(TDS_DIST_THREAT,string);
   }
   else {
     iVar3 = 0;
@@ -482,18 +496,25 @@ int __cdecl Actor_ThreatFromDistance(float param_1)
 
 // 009212A0  Actor_CanBePathedTo  (game/actor_threat.cpp:541)
 
+/* WARNING: Variable defined which should be unmapped: enemy */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Actor_CanBePathedTo(actor_s *param_1,sentient_s *param_2,int param_3)
+int __cdecl Actor_CanBePathedTo(actor_s *isCurrentEnemy,sentient_s *param_2,int param_3)
 
 {
   pathnode_t *ppVar1;
   int in_ECX;
   sentient_s *in_EDX;
   float fVar2;
+  sentient_s *enemy;
+  actor_s *self;
+  float current_dist;
+  pathnode_t *enemyNode;
+  sentient_info_t *pInfo;
+  float bufferedAttackDist;
   
   ppVar1 = Sentient_NearestNode(in_EDX);
   if (ppVar1 != (pathnode_t *)0x0) {
@@ -502,7 +523,7 @@ int __cdecl Actor_CanBePathedTo(actor_s *param_1,sentient_s *param_2,int param_3
       *(int *)(in_ECX + 0xe30) = level.time;
       return 1;
     }
-    if ((param_1 != (actor_s *)0x0) &&
+    if ((isCurrentEnemy != (actor_s *)0x0) &&
        (level.time - *(int *)(in_ECX + 0xe30) < (ai_noPathToEnemyGiveupTime->current).integer)) {
       return 1;
     }
@@ -513,25 +534,30 @@ int __cdecl Actor_CanBePathedTo(actor_s *param_1,sentient_s *param_2,int param_3
 
 // 00921360  Actor_IsFullyAware  (game/actor_threat.cpp:578)
 
+/* WARNING: Variable defined which should be unmapped: enemy */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Actor_IsFullyAware(actor_s *param_1,sentient_s *param_2,int param_3)
+int __cdecl Actor_IsFullyAware(actor_s *isCurrentEnemy,sentient_s *param_2,int param_3)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  pathnode_t *ppVar4;
+  pathnode_t *node1;
   actor_s *in_ECX;
   sentient_s *in_EDX;
-  float fVar5;
-  pathnode_t *local_10;
-  uint local_c;
+  float fVar4;
+  sentient_s *enemy;
+  actor_s *self;
+  pathnode_t *enemyNode;
+  pathnode_t *myNode;
+  int isFullyAware;
+  sentient_info_t *pInfo;
   
-  local_c = 0;
+  isFullyAware = 0;
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x246,0,
                                "%s"), !bVar2)) {
@@ -547,63 +573,65 @@ int __cdecl Actor_IsFullyAware(actor_s *param_1,sentient_s *param_2,int param_3)
     return iVar3;
   }
   iVar3 = ((int)in_EDX - (int)level.sentients) / 0x90;
-  if (param_1 == (actor_s *)0x0) {
-    local_c = (uint)(level.time - in_ECX->sentientInfo[iVar3].lastKnownPosTime < 10000);
+  if (isCurrentEnemy == (actor_s *)0x0) {
+    isFullyAware = (int)(level.time - in_ECX->sentientInfo[iVar3].lastKnownPosTime < 10000);
   }
   else {
-    fVar5 = Vec3DistanceSq(in_ECX->sentientInfo[iVar3].vLastKnownPos,(in_EDX->ent->r).currentOrigin)
+    fVar4 = Vec3DistanceSq(in_ECX->sentientInfo[iVar3].vLastKnownPos,(in_EDX->ent->r).currentOrigin)
     ;
-    if (fVar5 < 4096.0) {
+    if (fVar4 < 4096.0) {
       if (in_ECX->sentient->pClaimedNode == (pathnode_t *)0x0) {
-        local_10 = Sentient_NearestNode(in_EDX);
+        myNode = Sentient_NearestNode(in_EDX);
       }
       else {
-        local_10 = in_ECX->sentient->pClaimedNode;
+        myNode = in_ECX->sentient->pClaimedNode;
       }
-      ppVar4 = Sentient_NearestNode(in_EDX);
-      if (((local_10 != (pathnode_t *)0x0) && (ppVar4 != (pathnode_t *)0x0)) &&
-         (iVar3 = Path_NodesVisible(local_10,ppVar4), iVar3 != 0)) {
-        DebugThreatNodes(in_ECX,in_EDX,local_10,ppVar4,colorBlue);
-        local_c = 1;
+      node1 = Sentient_NearestNode(in_EDX);
+      if (((myNode != (pathnode_t *)0x0) && (node1 != (pathnode_t *)0x0)) &&
+         (iVar3 = Path_NodesVisible(myNode,node1), iVar3 != 0)) {
+        DebugThreatNodes(in_ECX,in_EDX,myNode,node1,colorBlue);
+        isFullyAware = 1;
       }
     }
   }
-  return local_c;
+  return isFullyAware;
 }
 
 
 // 00921600  Actor_ThreatFromVisibilityAndAwareness  (game/actor_threat.cpp:626)
 
-int __cdecl Actor_ThreatFromVisibilityAndAwareness(int param_1,int param_2,int param_3)
+int __cdecl Actor_ThreatFromVisibilityAndAwareness(int friendlyTimingOut,int param_2,int param_3)
 
 {
-  char *pcVar1;
+  char *string;
   int in_ECX;
   int in_EDX;
-  int local_8;
+  int isFullyAware;
+  int isVisible;
+  int threat;
   
-  local_8 = 0;
+  threat = 0;
   if (in_ECX == 0) {
     if (in_EDX == 0) {
-      if (param_1 != 0) {
-        local_8 = 0xfa;
+      if (friendlyTimingOut != 0) {
+        threat = 0xfa;
       }
     }
     else {
-      local_8 = 500;
+      threat = 500;
     }
   }
   else {
-    local_8 = 1000;
+    threat = 1000;
   }
   if (in_ECX == 0) {
-    DebugSetThreatString(TDS_AWARENESS,local_8);
+    DebugSetThreatString(TDS_AWARENESS,threat);
   }
   else {
-    pcVar1 = va("%d (visible)");
-    DebugSetThreatStringFromString(TDS_AWARENESS,pcVar1);
+    string = va("%d (visible)");
+    DebugSetThreatStringFromString(TDS_AWARENESS,string);
   }
-  return local_8;
+  return threat;
 }
 
 
@@ -614,7 +642,7 @@ int __cdecl Actor_ThreatFromVisibilityAndAwareness(int param_1,int param_2,int p
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-int __cdecl Actor_ThreatFromAttackerCount(actor_s *param_1,sentient_s *param_2,int param_3)
+int __cdecl Actor_ThreatFromAttackerCount(actor_s *isCurrentEnemy,sentient_s *param_2,int param_3)
 
 {
   code *pcVar1;
@@ -625,7 +653,10 @@ int __cdecl Actor_ThreatFromAttackerCount(actor_s *param_1,sentient_s *param_2,i
   int in_EDX;
   int local_20;
   int local_1c;
-  int local_8;
+  sentient_s *enemy;
+  actor_s *self;
+  int effectiveAttackerCount;
+  int threat;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x28e,0,
@@ -641,7 +672,7 @@ int __cdecl Actor_ThreatFromAttackerCount(actor_s *param_1,sentient_s *param_2,i
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_1 == (actor_s *)0x0) {
+  if (isCurrentEnemy == (actor_s *)0x0) {
     local_1c = *(int *)(in_EDX + 0x2c);
   }
   else {
@@ -651,30 +682,31 @@ int __cdecl Actor_ThreatFromAttackerCount(actor_s *param_1,sentient_s *param_2,i
   if (local_20 < -1000) {
     local_20 = -1000;
   }
-  local_8 = local_20;
+  threat = local_20;
   iVar3 = EntHandle::isDefined((EntHandle *)(in_EDX + 0x34));
   if ((iVar3 != 0) &&
      (pgVar4 = EntHandle::ent((EntHandle *)(in_EDX + 0x34)), (gentity_s *)*in_ECX != pgVar4)) {
-    local_8 = local_20 + -10000;
+    threat = local_20 + -10000;
   }
   bVar2 = CL_IsLastActiveLocalClient(in_ECX[2]);
-  if (((bVar2) && (param_1 == (actor_s *)0x0)) &&
+  if (((bVar2) && (isCurrentEnemy == (actor_s *)0x0)) &&
      ((ai_maxAttackerCount->current).integer <= local_1c)) {
-    local_8 = local_8 + -10000;
+    threat = threat + -10000;
   }
-  DebugSetThreatString(TDS_ATTACKER_COUNT,local_8);
-  return local_8;
+  DebugSetThreatString(TDS_ATTACKER_COUNT,threat);
+  return threat;
 }
 
 
 // 009217B0  Actor_ShouldIgnoreFromAttackerCount  (game/actor_threat.cpp:676)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
-bool __cdecl Actor_ShouldIgnoreFromAttackerCount(actor_s *param_1,sentient_s *param_2,int param_3)
+bool __cdecl
+Actor_ShouldIgnoreFromAttackerCount(actor_s *isCurrentEnemy,sentient_s *param_2,int param_3)
 
 {
   code *pcVar1;
@@ -682,6 +714,9 @@ bool __cdecl Actor_ShouldIgnoreFromAttackerCount(actor_s *param_1,sentient_s *pa
   undefined1 uVar3;
   int in_ECX;
   int in_EDX;
+  sentient_s *enemy;
+  actor_s *self;
+  int effectiveAttackerCount;
   
   if ((in_ECX == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x2a7,0,
@@ -697,7 +732,7 @@ bool __cdecl Actor_ShouldIgnoreFromAttackerCount(actor_s *param_1,sentient_s *pa
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((isCurrentEnemy == (actor_s *)0x0) &&
      ((ai_maxAttackerCount->current).integer <= *(int *)(in_EDX + 0x2c))) {
     bVar2 = true;
   }
@@ -711,41 +746,45 @@ bool __cdecl Actor_ShouldIgnoreFromAttackerCount(actor_s *param_1,sentient_s *pa
 // 00921860  Actor_ThreatBonusForCurrentEnemy  (game/actor_threat.cpp:697)
 
 int __cdecl
-Actor_ThreatBonusForCurrentEnemy(int param_1,int param_2,int param_3,int param_4,int param_5)
+Actor_ThreatBonusForCurrentEnemy
+          (int friendlyTimingOut,int isPlayer,int isDamaged,int param_4,int param_5)
 
 {
   int in_ECX;
   int in_EDX;
-  undefined4 local_8;
+  int isFullyAware;
+  int isCurrentEnemy;
+  int threat;
   
-  local_8 = 0;
+  threat = 0;
   if (in_ECX != 0) {
     if (in_EDX == 0) {
-      if (param_1 == 0) {
-        local_8 = 0xfa;
+      if (friendlyTimingOut == 0) {
+        threat = 0xfa;
       }
       else {
-        local_8 = 200;
+        threat = 200;
       }
     }
-    else if ((param_2 == 0) || (param_3 == 0)) {
-      local_8 = 500;
+    else if ((isPlayer == 0) || (isDamaged == 0)) {
+      threat = 500;
     }
     else {
-      local_8 = 1000;
+      threat = 1000;
     }
   }
-  DebugSetThreatString(TDS_CUR_ENEMY_BONUS,local_8);
-  return local_8;
+  DebugSetThreatString(TDS_CUR_ENEMY_BONUS,threat);
+  return threat;
 }
 
 
 // 009218D0  Actor_ThreatCoveringFire  (game/actor_threat.cpp:725)
 
+/* WARNING: Variable defined which should be unmapped: enemy */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
-/* WARNING: Enum "nodeType": Some values do not have unique names */
 
 int __cdecl Actor_ThreatCoveringFire(actor_s *param_1,sentient_s *param_2)
 
@@ -757,6 +796,10 @@ int __cdecl Actor_ThreatCoveringFire(actor_s *param_1,sentient_s *param_2)
   int iVar5;
   int *in_ECX;
   actor_s *in_EDX;
+  sentient_s *enemy;
+  actor_s *self;
+  pathnode_t *node;
+  actor_s *actor;
   
   if ((in_ECX == (int *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x2d6,0,
@@ -815,7 +858,9 @@ int __cdecl Actor_ThreatFlashed(sentient_s *param_1)
   bool bVar2;
   int iVar3;
   int *in_ECX;
-  int local_c;
+  sentient_s *enemy;
+  int flashed;
+  actor_s *actor;
   
   if (in_ECX == (int *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x30a,0,
@@ -826,11 +871,11 @@ int __cdecl Actor_ThreatFlashed(sentient_s *param_1)
       return iVar3;
     }
   }
-  local_c = 0;
+  flashed = 0;
   if (*(int *)(*in_ECX + 0x148) != 0) {
-    local_c = *(int *)(*(int *)(*in_ECX + 0x148) + 0x17cc);
+    flashed = *(int *)(*(int *)(*in_ECX + 0x148) + 0x17cc);
   }
-  if (local_c == 0) {
+  if (flashed == 0) {
     iVar3 = 0;
   }
   else {
@@ -848,16 +893,16 @@ int __cdecl Actor_ThreatFlashed(sentient_s *param_1)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-float __cdecl
-Sentient_GetScarinessForDistance(sentient_s *param_1,sentient_s *param_2,float param_3)
+float __cdecl Sentient_GetScarinessForDistance(sentient_s *self,sentient_s *enemy,float fDist)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
-  float local_8;
+  float fLerpFactor;
+  float fAccuracy;
   
-  if (param_1 == (sentient_s *)0x0) {
+  if (self == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x330,0,
                              "%s");
     if (!bVar2) {
@@ -866,7 +911,7 @@ Sentient_GetScarinessForDistance(sentient_s *param_1,sentient_s *param_2,float p
       return (float)fVar3;
     }
   }
-  if (param_1->ent == (gentity_s *)0x0) {
+  if (self->ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x331,0,
                              "%s");
     if (!bVar2) {
@@ -875,7 +920,7 @@ Sentient_GetScarinessForDistance(sentient_s *param_1,sentient_s *param_2,float p
       return (float)fVar3;
     }
   }
-  if (param_2 == (sentient_s *)0x0) {
+  if (enemy == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x332,0,
                              "%s");
     if (!bVar2) {
@@ -884,7 +929,7 @@ Sentient_GetScarinessForDistance(sentient_s *param_1,sentient_s *param_2,float p
       return (float)fVar3;
     }
   }
-  if (param_3 < 0.0) {
+  if (fDist < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x333,0,
                              "%s");
     if (!bVar2) {
@@ -893,29 +938,29 @@ Sentient_GetScarinessForDistance(sentient_s *param_1,sentient_s *param_2,float p
       return (float)fVar3;
     }
   }
-  if ((ai_playerNearRange->current).value < param_3) {
-    if (((ai_playerFarRange->current).value <= param_3) ||
+  if ((ai_playerNearRange->current).value < fDist) {
+    if (((ai_playerFarRange->current).value <= fDist) ||
        ((ai_playerNearAccuracy->current).value == (ai_playerFarAccuracy->current).value)) {
-      local_8 = (ai_playerFarAccuracy->current).value;
+      fAccuracy = (ai_playerFarAccuracy->current).value;
     }
     else {
-      local_8 = ((ai_playerFarAccuracy->current).value - (ai_playerNearAccuracy->current).value) *
-                ((param_3 - (ai_playerNearRange->current).value) /
-                ((ai_playerFarRange->current).value - (ai_playerNearRange->current).value)) +
-                (ai_playerNearAccuracy->current).value;
+      fAccuracy = ((ai_playerFarAccuracy->current).value - (ai_playerNearAccuracy->current).value) *
+                  ((fDist - (ai_playerNearRange->current).value) /
+                  ((ai_playerFarRange->current).value - (ai_playerNearRange->current).value)) +
+                  (ai_playerNearAccuracy->current).value;
     }
   }
   else {
-    local_8 = (ai_playerNearAccuracy->current).value;
+    fAccuracy = (ai_playerNearAccuracy->current).value;
   }
-  return local_8 * 5.0;
+  return fAccuracy * 5.0;
 }
 
 
 // 00920A90  Actor_UpdateSingleThreat  (game/actor_threat.cpp:850)
 
-/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
@@ -934,21 +979,32 @@ int __cdecl Actor_UpdateSingleThreat(actor_s *param_1,sentient_s *param_2)
   int iVar10;
   int iVar11;
   int iVar12;
-  char *pcVar13;
+  char *string;
   actor_s *in_ECX;
-  actor_s *paVar14;
+  actor_s *isCurrentEnemy_00;
   sentient_s *in_EDX;
+  sentient_s *fDist;
+  float fVar13;
+  float fVar14;
   sentient_s *psVar15;
-  float fVar16;
-  sentient_s *psVar17;
+  actor_s *paVar16;
+  actor_s *paVar17;
   actor_s *paVar18;
-  actor_s *paVar19;
-  actor_s *paVar20;
   actor_s *in_stack_ffffffb0;
   int in_stack_ffffffb4;
-  float local_2c;
-  actor_s *local_20;
-  int local_c;
+  sentient_s *enemy;
+  actor_s *self;
+  int isPlayer;
+  float scariness;
+  int isFullyAware;
+  int isVisible;
+  int friendlyTimingOut;
+  sentient_info_t *pInfo;
+  float enemyDist;
+  int threatBiasScore;
+  int isCurrentEnemy;
+  int threat;
+  int isDamaged;
   
   if ((in_ECX == (actor_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x355,0,
@@ -964,7 +1020,7 @@ int __cdecl Actor_UpdateSingleThreat(actor_s *param_1,sentient_s *param_2)
     iVar6 = (*pcVar4)();
     return iVar6;
   }
-  local_20 = (actor_s *)0x0;
+  friendlyTimingOut = 0;
   psVar1 = in_ECX->sentientInfo + ((int)in_EDX - (int)level.sentients) / 0x90;
   if ((in_ECX->bPacifist == 0) ||
      ((psVar1->iLastAttackMeTime != 0 &&
@@ -974,26 +1030,27 @@ int __cdecl Actor_UpdateSingleThreat(actor_s *param_1,sentient_s *param_2)
       iVar6 = -0x80000000;
     }
     else {
-      psVar15 = (sentient_s *)Vec3Distance((in_ECX->ent->r).currentOrigin,psVar1->vLastKnownPos);
+      fDist = (sentient_s *)Vec3Distance((in_ECX->ent->r).currentOrigin,psVar1->vLastKnownPos);
       psVar7 = Actor_GetTargetSentient(in_stack_ffffffb0);
-      paVar14 = (actor_s *)(uint)(in_EDX == psVar7);
-      paVar20 = paVar14;
+      isCurrentEnemy_00 = (actor_s *)(uint)(in_EDX == psVar7);
+      paVar18 = isCurrentEnemy_00;
       bVar5 = Actor_ShouldIgnoreFromAttackerCount
-                        (paVar14,(sentient_s *)in_stack_ffffffb0,in_stack_ffffffb4);
+                        (isCurrentEnemy_00,(sentient_s *)in_stack_ffffffb0,in_stack_ffffffb4);
       if (bVar5) {
         iVar6 = -0x80000000;
       }
       else {
-        paVar18 = (actor_s *)0x920bf7;
-        paVar19 = paVar14;
-        iVar8 = Actor_CanBePathedTo(paVar14,(sentient_s *)paVar20,(int)in_stack_ffffffb0);
+        paVar16 = (actor_s *)0x920bf7;
+        paVar17 = isCurrentEnemy_00;
+        iVar8 = Actor_CanBePathedTo(isCurrentEnemy_00,(sentient_s *)paVar18,(int)in_stack_ffffffb0);
         if (iVar8 == 0) {
           iVar6 = -0x80000000;
         }
         else {
           if (((psVar1->VisCache).bVisible == false) &&
-             (paVar18 = paVar14,
-             iVar8 = Actor_IsFullyAware(paVar14,(sentient_s *)paVar19,(int)paVar20), iVar8 == 0)) {
+             (paVar16 = isCurrentEnemy_00,
+             iVar8 = Actor_IsFullyAware(isCurrentEnemy_00,(sentient_s *)paVar17,(int)paVar18),
+             iVar8 == 0)) {
             bVar5 = false;
           }
           else {
@@ -1002,38 +1059,40 @@ int __cdecl Actor_UpdateSingleThreat(actor_s *param_1,sentient_s *param_2)
           psVar7 = (sentient_s *)(uint)(in_EDX->ent->client != (gclient_s *)0x0);
           iVar8 = in_EDX->ent->health;
           iVar2 = in_EDX->ent->maxHealth;
-          if ((!bVar5) && (paVar14 != (actor_s *)0x0)) {
-            local_20 = (actor_s *)(uint)(level.time - psVar1->lastKnownPosTime < 10000);
+          if ((!bVar5) && (isCurrentEnemy_00 != (actor_s *)0x0)) {
+            friendlyTimingOut = (int)(level.time - psVar1->lastKnownPosTime < 10000);
           }
-          if ((bVar5) || (local_20 != (actor_s *)0x0)) {
-            local_2c = Sentient_GetScarinessForDistance(in_ECX->sentient,in_EDX,(float)psVar15);
-            fVar16 = Sentient_GetScarinessForDistance(in_EDX,in_ECX->sentient,(float)psVar15);
-            local_2c = local_2c - fVar16;
+          if ((bVar5) || (friendlyTimingOut != 0)) {
+            fVar13 = Sentient_GetScarinessForDistance(in_ECX->sentient,in_EDX,(float)fDist);
+            fVar14 = Sentient_GetScarinessForDistance(in_EDX,in_ECX->sentient,(float)fDist);
+            scariness = fVar13 - fVar14;
           }
           else {
-            local_2c = 0.0;
+            scariness = 0.0;
           }
           DebugResetThreatStrings(in_ECX);
           DebugSetThreatString(TDS_THREATBIAS_GROUP,iVar6);
           DebugSetThreatString(TDS_THREATBIAS,in_EDX->iThreatBias);
           iVar3 = in_EDX->iThreatBias;
-          iVar9 = Actor_ThreatFromVisibilityAndAwareness((int)local_20,(int)paVar18,(int)paVar19);
-          iVar10 = Actor_ThreatFromScariness(local_2c);
-          psVar17 = psVar15;
-          iVar11 = Actor_ThreatFromDistance((float)psVar15);
-          iVar12 = Actor_ThreatFromAttackerCount(paVar14,psVar17,(int)local_2c);
-          local_c = Actor_ThreatBonusForCurrentEnemy
-                              ((int)local_20,(int)psVar7,(uint)((double)iVar8 < (double)iVar2 * 0.8)
-                               ,(int)paVar14,(int)psVar17);
-          local_c = local_c + iVar12 + iVar11 + iVar10 + iVar9 + iVar6 + iVar3;
-          if (256.0 < (float)psVar15) {
-            iVar6 = Actor_ThreatCoveringFire(local_20,psVar7);
-            local_c = iVar6 + local_c;
+          iVar9 = Actor_ThreatFromVisibilityAndAwareness
+                            (friendlyTimingOut,(int)paVar16,(int)paVar17);
+          iVar10 = Actor_ThreatFromScariness(scariness);
+          psVar15 = fDist;
+          iVar11 = Actor_ThreatFromDistance((float)fDist);
+          iVar12 = Actor_ThreatFromAttackerCount(isCurrentEnemy_00,psVar15,(int)scariness);
+          iVar8 = Actor_ThreatBonusForCurrentEnemy
+                            (friendlyTimingOut,(int)psVar7,
+                             (uint)((double)iVar8 < (double)iVar2 * 0.8),(int)isCurrentEnemy_00,
+                             (int)psVar15);
+          threat = iVar8 + iVar12 + iVar11 + iVar10 + iVar9 + iVar6 + iVar3;
+          if (256.0 < (float)fDist) {
+            iVar6 = Actor_ThreatCoveringFire((actor_s *)friendlyTimingOut,psVar7);
+            threat = iVar6 + threat;
           }
-          iVar6 = Actor_ThreatFlashed((sentient_s *)local_20);
-          iVar6 = iVar6 + local_c;
-          pcVar13 = va("%d (%0.3f)");
-          DebugSetThreatStringFromString(TDS_TOTAL_THREAT,pcVar13);
+          iVar6 = Actor_ThreatFlashed((sentient_s *)friendlyTimingOut);
+          iVar6 = iVar6 + threat;
+          string = va("%d (%0.3f)");
+          DebugSetThreatStringFromString(TDS_TOTAL_THREAT,string);
           DebugThreatStringAll(in_ECX,in_EDX,iVar6);
         }
       }
@@ -1061,6 +1120,7 @@ void __cdecl Actor_InitThreatUpdateInterval(actor_s *param_1)
   bool bVar2;
   int iVar3;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x3bb,0,
@@ -1098,6 +1158,7 @@ void __cdecl Actor_IncrementThreatTime(actor_s *param_1)
   code *pcVar1;
   bool bVar2;
   int in_ECX;
+  actor_s *self;
   
   if (in_ECX == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp",0x3cf,0,
@@ -1156,25 +1217,38 @@ void __cdecl Actor_UpdateThreat(actor_s *param_1)
   bool bVar3;
   bool bVar4;
   DWORD DVar5;
+  gentity_s *enemy_00;
   gentity_s *pgVar6;
-  gentity_s *pgVar7;
-  char *pcVar8;
+  char *pcVar7;
+  int iVar8;
   int iVar9;
-  int iVar10;
-  gentity_s *pgVar11;
-  vehicle_info_t *pvVar12;
+  gentity_s *pgVar10;
+  vehicle_info_t *pvVar11;
   uint extraout_EAX;
-  sentient_s *psVar13;
+  sentient_s *psVar12;
   actor_s *in_ECX;
   uint extraout_EDX;
   actor_s *unaff_ESI;
-  float *pfVar14;
-  char cVar15;
+  float *pfVar13;
+  char cVar14;
   sentient_s *in_stack_ffffff74;
-  char local_2d;
-  int local_2c;
-  sentient_s *local_24;
-  gentity_s *local_20;
+  actor_s *self;
+  vehicle_info_t *info;
+  gentity_s *veh;
+  bool usingTurret;
+  PIXProfile pixProfile;
+  bool goodEnemyOnly;
+  int maxThreat;
+  gentity_s *scriptTargetEnt;
+  sentient_s *enemy;
+  gentity_s *pScariestEnemy;
+  int iEnemyTeam;
+  bool goodEnemy;
+  int iTeamFlags;
+  sentient_info_t *pInfo;
+  bool seenRecently;
+  bool attackedMeRecently;
+  int threat;
   
   PIXBeginNamedEvent(-1,"Actor_UpdateThreat");
   if ((in_ECX == (actor_s *)0x0) &&
@@ -1208,155 +1282,155 @@ void __cdecl Actor_UpdateThreat(actor_s *param_1)
   if ((ai_showPotentialThreatDir->current).enabled != false) {
     Actor_PotentialThreat_Debug(in_ECX);
   }
-  pgVar6 = Actor_GetScriptTargetEntity(unaff_ESI);
+  enemy_00 = Actor_GetScriptTargetEntity(unaff_ESI);
   if (in_ECX->sentient->bIgnoreAll == false) {
-    if ((pgVar6 == (gentity_s *)0x0) || (in_ECX->sentient->entityTargetThreat != 1.0)) {
+    if ((enemy_00 == (gentity_s *)0x0) || (in_ECX->sentient->entityTargetThreat != 1.0)) {
       Sentient_EnemyTeam(in_ECX->sentient->eTeam);
-      local_2c = -0x7fffffff;
-      local_20 = (gentity_s *)0x0;
-      local_2d = '\0';
+      maxThreat = -0x7fffffff;
+      pScariestEnemy = (gentity_s *)0x0;
+      goodEnemyOnly = false;
       in_ECX->hasThreateningEnemy = 0;
-      local_24 = Sentient_FirstSentient((int)unaff_ESI);
-      while (local_24 != (sentient_s *)0x0) {
-        iVar9 = ((int)local_24 - (int)level.sentients) / 0x90;
-        if (in_ECX->sentientInfo[iVar9].lastKnownPosTime < 1) {
-          DebugThreatStringSimple(in_ECX,local_24->ent,"unaware",colorRed);
+      enemy = Sentient_FirstSentient((int)unaff_ESI);
+      while (enemy != (sentient_s *)0x0) {
+        iVar8 = ((int)enemy - (int)level.sentients) / 0x90;
+        if (in_ECX->sentientInfo[iVar8].lastKnownPosTime < 1) {
+          DebugThreatStringSimple(in_ECX,enemy->ent,"unaware",colorRed);
         }
-        else if (((local_24->ent->flags & 4U) == 0) &&
-                (iVar10 = Actor_CheckIgnore((sentient_s *)unaff_ESI,in_stack_ffffff74), iVar10 == 0)
-                ) {
-          if ((local_24->ent->client == (gclient_s *)0x0) ||
-             ((local_24->ent->client->sess).sessionState == SESS_STATE_PLAYING)) {
-            if (in_ECX->sentient != local_24) {
-              iVar10 = EntHandle::isDefined(&in_ECX->sentient->scriptOwner);
-              if ((iVar10 == 0) ||
-                 (pgVar7 = EntHandle::ent(&in_ECX->sentient->scriptOwner), local_24->ent != pgVar7))
-              {
-                if ((local_24 != (sentient_s *)0x0) &&
-                   (((local_24->ent->actor != (actor_s *)0x0 &&
-                     (iVar10 = EntHandle::isDefined(&in_ECX->sentient->scriptOwner), iVar10 != 0))
-                    && (iVar10 = EntHandle::isDefined(&local_24->scriptOwner), iVar10 != 0)))) {
-                  pgVar7 = EntHandle::ent(&in_ECX->sentient->scriptOwner);
-                  pgVar11 = EntHandle::ent(&local_24->scriptOwner);
-                  if (pgVar7 == pgVar11) {
-                    DebugThreatStringSimple(in_ECX,local_24->ent,"same owner so friendly",colorRed);
+        else if (((enemy->ent->flags & 4U) == 0) &&
+                (iVar9 = Actor_CheckIgnore((sentient_s *)unaff_ESI,in_stack_ffffff74), iVar9 == 0))
+        {
+          if ((enemy->ent->client == (gclient_s *)0x0) ||
+             ((enemy->ent->client->sess).sessionState == SESS_STATE_PLAYING)) {
+            if (in_ECX->sentient != enemy) {
+              iVar9 = EntHandle::isDefined(&in_ECX->sentient->scriptOwner);
+              if ((iVar9 == 0) ||
+                 (pgVar6 = EntHandle::ent(&in_ECX->sentient->scriptOwner), enemy->ent != pgVar6)) {
+                if ((enemy != (sentient_s *)0x0) &&
+                   (((enemy->ent->actor != (actor_s *)0x0 &&
+                     (iVar9 = EntHandle::isDefined(&in_ECX->sentient->scriptOwner), iVar9 != 0)) &&
+                    (iVar9 = EntHandle::isDefined(&enemy->scriptOwner), iVar9 != 0)))) {
+                  pgVar6 = EntHandle::ent(&in_ECX->sentient->scriptOwner);
+                  pgVar10 = EntHandle::ent(&enemy->scriptOwner);
+                  if (pgVar6 == pgVar10) {
+                    DebugThreatStringSimple(in_ECX,enemy->ent,"same owner so friendly",colorRed);
                     goto LAB_00920289;
                   }
                 }
-                if ((local_24 == (sentient_s *)0x0) || (local_24->ent->actor == (actor_s *)0x0)) {
-                  if ((local_24->ent->client != (gclient_s *)0x0) &&
-                     (((local_24->ent->client->ps).eFlags & 0x4000U) != 0)) {
-                    iVar10 = (int)(local_24->ent->client->ps).viewlocked_entNum;
-                    if ((iVar10 * 0x2f8 == -0x3cf2940) &&
+                if ((enemy == (sentient_s *)0x0) || (enemy->ent->actor == (actor_s *)0x0)) {
+                  if ((enemy->ent->client != (gclient_s *)0x0) &&
+                     (((enemy->ent->client->ps).eFlags & 0x4000U) != 0)) {
+                    iVar9 = (int)(enemy->ent->client->ps).viewlocked_entNum;
+                    if ((iVar9 * 0x2f8 == -0x3cf2940) &&
                        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_threat.cpp"
                                                  ,0x471,0,"%s"), !bVar4)) {
                       pcVar2 = (code *)swi(3);
                       (*pcVar2)();
                       return;
                     }
-                    pvVar12 = BG_GetVehicleInfo((int)(g_entities[iVar10].scr_vehicle)->infoIdx);
-                    if (pvVar12->remoteControl == 0) {
-                      DebugThreatStringSimple(in_ECX,local_24->ent,"client in vehicle",colorRed);
+                    pvVar11 = BG_GetVehicleInfo((int)(g_entities[iVar9].scr_vehicle)->infoIdx);
+                    if (pvVar11->remoteControl == 0) {
+                      DebugThreatStringSimple(in_ECX,enemy->ent,"client in vehicle",colorRed);
                       goto LAB_00920289;
                     }
                   }
                   if ((((perk_dogsAttackGhost->current).enabled == false) &&
-                      (local_24->ent->client != (gclient_s *)0x0)) &&
-                     (pgVar1 = local_24->ent->client, _allshl(),
+                      (enemy->ent->client != (gclient_s *)0x0)) &&
+                     (pgVar1 = enemy->ent->client, _allshl(),
                      (extraout_EAX & (pgVar1->ps).perks[0]) != 0 ||
                      (extraout_EDX & (pgVar1->ps).perks[1]) != 0)) {
-                    DebugThreatStringSimple(in_ECX,local_24->ent,"client has ghost perk",colorRed);
+                    DebugThreatStringSimple(in_ECX,enemy->ent,"client has ghost perk",colorRed);
                   }
-                  else if ((local_24->ent->client == (gclient_s *)0x0) ||
-                          ((local_24->ent->client->flags & 1U) == 0)) {
-                    if ((in_ECX->sentientInfo[iVar9].VisCache.iLastVisTime == 0) ||
-                       (9999 < level.time - in_ECX->sentientInfo[iVar9].VisCache.iLastVisTime)) {
+                  else if ((enemy->ent->client == (gclient_s *)0x0) ||
+                          ((enemy->ent->client->flags & 1U) == 0)) {
+                    if ((in_ECX->sentientInfo[iVar8].VisCache.iLastVisTime == 0) ||
+                       (9999 < level.time - in_ECX->sentientInfo[iVar8].VisCache.iLastVisTime)) {
                       bVar4 = false;
                     }
                     else {
                       bVar4 = true;
                     }
-                    if ((in_ECX->sentientInfo[iVar9].iLastAttackMeTime == 0) ||
-                       (9999 < level.time - in_ECX->sentientInfo[iVar9].iLastAttackMeTime)) {
+                    if ((in_ECX->sentientInfo[iVar8].iLastAttackMeTime == 0) ||
+                       (9999 < level.time - in_ECX->sentientInfo[iVar8].iLastAttackMeTime)) {
                       bVar3 = false;
                     }
                     else {
                       bVar3 = true;
                     }
                     if (((bVar4) || (bVar3)) &&
-                       (in_ECX->sentientInfo[iVar9].attackTime <= level.time)) {
+                       (in_ECX->sentientInfo[iVar8].attackTime <= level.time)) {
                       in_stack_ffffff74 = (sentient_s *)&DAT_00000001;
                     }
                     else {
                       in_stack_ffffff74 = (sentient_s *)0x0;
                     }
-                    cVar15 = (char)in_stack_ffffff74;
+                    cVar14 = (char)in_stack_ffffff74;
                     in_ECX->hasThreateningEnemy = (int)in_stack_ffffff74;
-                    if ((cVar15 == '\0') && (local_2d != '\0')) {
-                      DebugThreatStringSimple(in_ECX,local_24->ent,"goodOnly",colorRed);
+                    if ((cVar14 == '\0') && (goodEnemyOnly != false)) {
+                      DebugThreatStringSimple(in_ECX,enemy->ent,"goodOnly",colorRed);
                     }
                     else {
-                      iVar9 = Actor_UpdateSingleThreat(unaff_ESI,in_stack_ffffff74);
-                      if (iVar9 == -0x80000000) {
-                        DebugThreatStringSimple(in_ECX,local_24->ent,"ignoreme",colorRed);
+                      iVar8 = Actor_UpdateSingleThreat(unaff_ESI,in_stack_ffffff74);
+                      if (iVar8 == -0x80000000) {
+                        DebugThreatStringSimple(in_ECX,enemy->ent,"ignoreme",colorRed);
                       }
-                      else if (((local_2c < iVar9) || ((local_2d == '\0' && (cVar15 != '\0')))) ||
-                              ((iVar10 = SentientHandle::isDefined(&in_ECX->pFavoriteEnemy),
-                               iVar10 != 0 &&
-                               (psVar13 = SentientHandle::sentient(&in_ECX->pFavoriteEnemy),
-                               local_24 == psVar13)))) {
-                        iVar10 = SentientHandle::isDefined(&in_ECX->pFavoriteEnemy);
-                        local_2c = iVar9;
-                        if ((iVar10 != 0) &&
-                           (psVar13 = SentientHandle::sentient(&in_ECX->pFavoriteEnemy),
-                           local_24 == psVar13)) {
-                          local_2c = 0x7ffffffe;
+                      else if (((maxThreat < iVar8) ||
+                               ((goodEnemyOnly == false && (cVar14 != '\0')))) ||
+                              ((iVar9 = SentientHandle::isDefined(&in_ECX->pFavoriteEnemy),
+                               iVar9 != 0 &&
+                               (psVar12 = SentientHandle::sentient(&in_ECX->pFavoriteEnemy),
+                               enemy == psVar12)))) {
+                        iVar9 = SentientHandle::isDefined(&in_ECX->pFavoriteEnemy);
+                        maxThreat = iVar8;
+                        if ((iVar9 != 0) &&
+                           (psVar12 = SentientHandle::sentient(&in_ECX->pFavoriteEnemy),
+                           enemy == psVar12)) {
+                          maxThreat = 0x7ffffffe;
                         }
-                        local_20 = local_24->ent;
-                        local_2d = cVar15;
+                        pScariestEnemy = enemy->ent;
+                        goodEnemyOnly = (bool)cVar14;
                       }
                     }
                   }
                   else {
-                    DebugThreatStringSimple(in_ECX,local_24->ent,"client has no clip",colorRed);
+                    DebugThreatStringSimple(in_ECX,enemy->ent,"client has no clip",colorRed);
                   }
                 }
                 else {
-                  DebugThreatStringSimple(in_ECX,local_24->ent,"same owner so friendly",colorRed);
+                  DebugThreatStringSimple(in_ECX,enemy->ent,"same owner so friendly",colorRed);
                 }
               }
               else {
-                DebugThreatStringSimple(in_ECX,local_24->ent,"client is owner",colorRed);
+                DebugThreatStringSimple(in_ECX,enemy->ent,"client is owner",colorRed);
               }
             }
           }
           else {
-            DebugThreatStringSimple(in_ECX,local_24->ent,"client not-playing",colorRed);
+            DebugThreatStringSimple(in_ECX,enemy->ent,"client not-playing",colorRed);
           }
         }
         else {
-          DebugThreatStringSimple(in_ECX,local_24->ent,"ignoreme",colorRed);
+          DebugThreatStringSimple(in_ECX,enemy->ent,"ignoreme",colorRed);
         }
 LAB_00920289:
-        local_24 = Sentient_NextSentient((sentient_s *)unaff_ESI,(int)in_stack_ffffff74);
+        enemy = Sentient_NextSentient((sentient_s *)unaff_ESI,(int)in_stack_ffffff74);
       }
-      if (pgVar6 == (gentity_s *)0x0) {
-        if (local_20 != (gentity_s *)0x0) {
-          DebugThreatStringSimple(in_ECX,local_20,"enemy",colorGreen);
+      if (enemy_00 == (gentity_s *)0x0) {
+        if (pScariestEnemy != (gentity_s *)0x0) {
+          DebugThreatStringSimple(in_ECX,pScariestEnemy,"enemy",colorGreen);
         }
       }
-      else if (in_ECX->sentient->entityTargetThreat <= (float)local_2c / 7000.0) {
-        pfVar14 = colorYellow;
-        pcVar8 = va("enemy (%0.3f)");
-        DebugThreatStringSimple(in_ECX,pgVar6,pcVar8,pfVar14);
-        if (local_20 != (gentity_s *)0x0) {
-          DebugThreatStringSimple(in_ECX,local_20,"enemy",colorGreen);
+      else if (in_ECX->sentient->entityTargetThreat <= (float)maxThreat / 7000.0) {
+        pfVar13 = colorYellow;
+        pcVar7 = va("enemy (%0.3f)");
+        DebugThreatStringSimple(in_ECX,enemy_00,pcVar7,pfVar13);
+        if (pScariestEnemy != (gentity_s *)0x0) {
+          DebugThreatStringSimple(in_ECX,pScariestEnemy,"enemy",colorGreen);
         }
       }
       else {
-        pfVar14 = colorGreen;
-        pcVar8 = va("scripted enemy (%0.3f)");
-        DebugThreatStringSimple(in_ECX,pgVar6,pcVar8,pfVar14);
+        pfVar13 = colorGreen;
+        pcVar7 = va("scripted enemy (%0.3f)");
+        DebugThreatStringSimple(in_ECX,enemy_00,pcVar7,pfVar13);
       }
       Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)unaff_ESI,(int)in_stack_ffffff74);
       DVar5 = GetCurrentThreadId();
@@ -1365,9 +1439,9 @@ LAB_00920289:
       }
     }
     else {
-      pfVar14 = colorGreen;
-      pcVar8 = va("scripted enemy (%0.3f)");
-      DebugThreatStringSimple(in_ECX,pgVar6,pcVar8,pfVar14);
+      pfVar13 = colorGreen;
+      pcVar7 = va("scripted enemy (%0.3f)");
+      DebugThreatStringSimple(in_ECX,enemy_00,pcVar7,pfVar13);
       Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)unaff_ESI,(int)in_stack_ffffff74);
       DVar5 = GetCurrentThreadId();
       if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1376,13 +1450,13 @@ LAB_00920289:
     }
   }
   else {
-    pgVar7 = Actor_GetTargetEntity(unaff_ESI);
-    if (pgVar7 != (gentity_s *)0x0) {
-      pgVar7 = Actor_GetTargetEntity(unaff_ESI);
-      if (pgVar7 == pgVar6) {
-        pfVar14 = colorGreen;
-        pcVar8 = va("scripted enemy (%0.3f)");
-        DebugThreatStringSimple(in_ECX,pgVar6,pcVar8,pfVar14);
+    pgVar6 = Actor_GetTargetEntity(unaff_ESI);
+    if (pgVar6 != (gentity_s *)0x0) {
+      pgVar6 = Actor_GetTargetEntity(unaff_ESI);
+      if (pgVar6 == enemy_00) {
+        pfVar13 = colorGreen;
+        pcVar7 = va("scripted enemy (%0.3f)");
+        DebugThreatStringSimple(in_ECX,enemy_00,pcVar7,pfVar13);
       }
       else {
         Sentient_SetEnemy((sentient_s *)&DAT_00000001,(gentity_s *)unaff_ESI,(int)in_stack_ffffff74)
@@ -1400,18 +1474,21 @@ LAB_00920289:
 
 // 00921C30  Actor_SetPotentialThreat  (game/actor_threat.cpp:1264)
 
-void __cdecl Actor_SetPotentialThreat(potential_threat_t *param_1,float param_2)
+/* WARNING: Variable defined which should be unmapped: self */
+
+void __cdecl Actor_SetPotentialThreat(potential_threat_t *yaw,float param_2)
 
 {
   undefined1 *in_ECX;
   undefined4 unaff_EBP;
   double dVar1;
+  potential_threat_t *self;
   
   *in_ECX = 1;
-  dVar1 = (double)((float)param_1 * 0.017453292);
+  dVar1 = (double)((float)yaw * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(unaff_EBP,in_ECX));
   *(float *)(in_ECX + 4) = (float)dVar1;
-  dVar1 = (double)((float)param_1 * 0.017453292);
+  dVar1 = (double)((float)yaw * 0.017453292);
   __libm_sse2_sin((double)CONCAT44(unaff_EBP,in_ECX));
   *(float *)(in_ECX + 8) = (float)dVar1;
   return;
@@ -1424,6 +1501,7 @@ void __cdecl Actor_ClearPotentialThreat(potential_threat_t *param_1)
 
 {
   undefined1 *in_ECX;
+  potential_threat_t *self;
   
   *in_ECX = 0;
   return;
@@ -1437,22 +1515,23 @@ void __cdecl Actor_ClearPotentialThreat(potential_threat_t *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Actor_PotentialThreat_Debug(actor_s *param_1)
+void __cdecl Actor_PotentialThreat_Debug(actor_s *self)
 
 {
   sentient_s *in_stack_ffffffe4;
   float *in_stack_ffffffe8;
-  float local_10;
+  float largePotentialThreatVector;
   float local_c;
   
   Sentient_GetDebugEyePosition(in_stack_ffffffe4,in_stack_ffffffe8);
-  if ((param_1->potentialThreat).isEnabled == false) {
+  if ((self->potentialThreat).isEnabled == false) {
     G_AddDebugString((float *)&stack0xffffffe4,colorWhite,1.0,"No Threat",1);
   }
   else {
-    local_10 = (param_1->potentialThreat).direction[0] * 32.0 + (float)in_stack_ffffffe4;
-    local_c = (param_1->potentialThreat).direction[1] * 32.0 + (float)in_stack_ffffffe8;
-    G_DebugLine((float *)&stack0xffffffe4,&local_10,colorRed,0);
+    largePotentialThreatVector =
+         (self->potentialThreat).direction[0] * 32.0 + (float)in_stack_ffffffe4;
+    local_c = (self->potentialThreat).direction[1] * 32.0 + (float)in_stack_ffffffe8;
+    G_DebugLine((float *)&stack0xffffffe4,&largePotentialThreatVector,colorRed,0);
   }
   return;
 }

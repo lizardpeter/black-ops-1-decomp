@@ -66,36 +66,36 @@ int FUN_00bfaa30(undefined4 param_1,int param_2)
 undefined4 __cdecl der_encode_set(int param_1,uint param_2,undefined4 param_3,undefined4 param_4)
 
 {
+  undefined4 *base;
   undefined4 *puVar1;
-  undefined4 *puVar2;
-  undefined4 uVar3;
-  int iVar4;
-  uint uVar5;
+  undefined4 uVar2;
+  int iVar3;
+  uint uVar4;
+  undefined4 *puVar5;
   undefined4 *puVar6;
-  undefined4 *puVar7;
   
-  puVar1 = tom_game_calloc(param_2,0x20);
-  if (puVar1 != (undefined4 *)0x0) {
-    uVar5 = 0;
+  base = tom_game_calloc(param_2,0x20);
+  if (base != (undefined4 *)0x0) {
+    uVar4 = 0;
     if (param_2 != 0) {
-      puVar2 = puVar1;
+      puVar1 = base;
       do {
-        puVar6 = (undefined4 *)((int)puVar2 + (param_1 - (int)puVar1));
-        puVar7 = puVar2;
-        for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
-          *puVar7 = *puVar6;
+        puVar5 = (undefined4 *)((int)puVar1 + (param_1 - (int)base));
+        puVar6 = puVar1;
+        for (iVar3 = 8; iVar3 != 0; iVar3 = iVar3 + -1) {
+          *puVar6 = *puVar5;
+          puVar5 = puVar5 + 1;
           puVar6 = puVar6 + 1;
-          puVar7 = puVar7 + 1;
         }
-        puVar2[3] = uVar5;
-        uVar5 = uVar5 + 1;
-        puVar2 = puVar2 + 8;
-      } while (uVar5 < param_2);
+        puVar1[3] = uVar4;
+        uVar4 = uVar4 + 1;
+        puVar1 = puVar1 + 8;
+      } while (uVar4 < param_2);
     }
-    qsort(puVar1,param_2,0x20,FUN_00bfaa30);
-    uVar3 = der_encode_sequence_ex(puVar1,param_2,param_3,param_4,0xe);
-    tom_game_free(puVar1);
-    return uVar3;
+    qsort(base,param_2,0x20,FUN_00bfaa30);
+    uVar2 = der_encode_sequence_ex(base,param_2,param_3,param_4,0xe);
+    tom_game_free(base);
+    return uVar2;
   }
   return 0xd;
 }

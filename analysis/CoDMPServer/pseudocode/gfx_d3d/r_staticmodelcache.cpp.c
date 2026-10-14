@@ -14,32 +14,35 @@ void __cdecl TRACK_r_staticmodelcache(void)
 
 void __cdecl
 SMC_FreeCachedSurface_r
-          (static_model_tree_t *param_1,static_model_leaf_t *param_2,int param_3,int param_4)
+          (static_model_tree_t *tree,static_model_leaf_t *leafs,int nodeIndex,int levelsToLeaf)
 
 {
   static_model_leaf_t *psVar1;
   int iVar2;
+  GfxCachedSModelSurf *cachedSurf;
+  int index;
+  static_model_node_list_t *freenode;
   
-  if (param_1->nodes[param_3].usedVerts == 0) {
-    psVar1 = param_2 + (param_3 + 1 << ((byte)param_4 & 0x1f)) + -0x20;
+  if (tree->nodes[nodeIndex].usedVerts == 0) {
+    psVar1 = leafs + (nodeIndex + 1 << ((byte)levelsToLeaf & 0x1f)) + -0x20;
     ((psVar1->freenode).next)->prev = (static_model_node_list_t *)(psVar1->cachedSurf).baseVertIndex
     ;
     ((psVar1->freenode).prev)->next = (psVar1->freenode).next;
   }
   else {
-    param_1->nodes[param_3].usedVerts = 0;
-    if (param_1->nodes[param_3].inuse == false) {
-      SMC_FreeCachedSurface_r(param_1,param_2,param_3 * 2 + 1,param_4 + -1);
-      SMC_FreeCachedSurface_r(param_1,param_2,param_3 * 2 + 2,param_4 + -1);
+    tree->nodes[nodeIndex].usedVerts = 0;
+    if (tree->nodes[nodeIndex].inuse == false) {
+      SMC_FreeCachedSurface_r(tree,leafs,nodeIndex * 2 + 1,levelsToLeaf + -1);
+      SMC_FreeCachedSurface_r(tree,leafs,nodeIndex * 2 + 2,levelsToLeaf + -1);
     }
     else {
-      iVar2 = (param_3 + 1 << ((byte)param_4 & 0x1f)) + -0x20;
-      if ((&param_2->cachedSurf)[iVar2].smodelIndex != 0xffff) {
-        ((rgp.world)->dpvs).smodelDrawInsts[(&param_2->cachedSurf)[iVar2].smodelIndex].
-        smodelCacheIndex[(&param_2->cachedSurf)[iVar2].lodIndex] = 0;
-        (&param_2->cachedSurf)[iVar2].smodelIndex = 0xffff;
+      iVar2 = (nodeIndex + 1 << ((byte)levelsToLeaf & 0x1f)) + -0x20;
+      if ((&leafs->cachedSurf)[iVar2].smodelIndex != 0xffff) {
+        ((rgp.world)->dpvs).smodelDrawInsts[(&leafs->cachedSurf)[iVar2].smodelIndex].
+        smodelCacheIndex[(&leafs->cachedSurf)[iVar2].lodIndex] = 0;
+        (&leafs->cachedSurf)[iVar2].smodelIndex = 0xffff;
       }
-      param_1->nodes[param_3].inuse = false;
+      tree->nodes[nodeIndex].inuse = false;
     }
   }
   return;
@@ -48,57 +51,60 @@ SMC_FreeCachedSurface_r
 
 // 00AC9110  SMC_ForceFreeBlock  (gfx_d3d/r_staticmodelcache.cpp:414)
 
-bool __cdecl SMC_ForceFreeBlock(uint param_1)
+bool __cdecl SMC_ForceFreeBlock(uint smcIndex)
 
 {
-  static_model_tree_t *psVar1;
-  code *pcVar2;
-  bool bVar3;
-  undefined1 uVar4;
-  int iVar5;
-  static_model_leaf_t *psVar6;
+  static_model_tree_t *tree_00;
+  code *pcVar1;
+  bool bVar2;
+  undefined1 uVar3;
+  int iVar4;
+  static_model_leaf_t *leafs_00;
+  static_model_tree_t *tree;
+  static_model_leaf_t *leafs;
+  static_model_tree_list_t *treenode;
   
-  psVar1 = (static_model_tree_t *)s_cache.usedlist[param_1].prev;
-  if (psVar1 == (static_model_tree_t *)(s_cache.usedlist + param_1)) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
+  tree_00 = (static_model_tree_t *)s_cache.usedlist[smcIndex].prev;
+  if (tree_00 == (static_model_tree_t *)(s_cache.usedlist + smcIndex)) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                              0x1a5,0,"%s");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      uVar4 = (*pcVar2)();
-      return (bool)uVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      uVar3 = (*pcVar1)();
+      return (bool)uVar3;
     }
   }
-  if (rg.frontEndFrameCount - psVar1->frameCount < 4) {
-    bVar3 = false;
+  if (rg.frontEndFrameCount - tree_00->frameCount < 4) {
+    bVar2 = false;
   }
   else {
-    if (psVar1->nodes[0].usedVerts < 1) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
+    if (tree_00->nodes[0].usedVerts < 1) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x1b0,0,"%s\n\t(tree->nodes[0].usedVerts) = %i");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        uVar4 = (*pcVar2)();
-        return (bool)uVar4;
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        uVar3 = (*pcVar1)();
+        return (bool)uVar3;
       }
     }
-    iVar5 = (int)(psVar1[-0xaefe4].nodes + 0x35) / 0x108;
-    psVar6 = s_cache.leafs[iVar5];
-    SMC_FreeCachedSurface_r(psVar1,psVar6,0,5);
-    ((psVar1->usedlist).next)->prev = (psVar1->usedlist).prev;
-    ((psVar1->usedlist).prev)->next = (psVar1->usedlist).next;
-    (psVar6->freenode).prev = (static_model_node_list_t *)(param_1 * 0x30 + 0xb4b7240);
-    s_cache.leafs[iVar5][0].freenode.next = s_cache.freelist[param_1][0].next;
-    ((psVar6->freenode).prev)->next = (static_model_node_list_t *)psVar6;
-    (s_cache.leafs[iVar5][0].freenode.next)->prev = (static_model_node_list_t *)psVar6;
-    bVar3 = true;
+    iVar4 = (int)(tree_00[-0xaefe4].nodes + 0x35) / 0x108;
+    leafs_00 = s_cache.leafs[iVar4];
+    SMC_FreeCachedSurface_r(tree_00,leafs_00,0,5);
+    ((tree_00->usedlist).next)->prev = (tree_00->usedlist).prev;
+    ((tree_00->usedlist).prev)->next = (tree_00->usedlist).next;
+    (leafs_00->freenode).prev = (static_model_node_list_t *)(smcIndex * 0x30 + 0xb4b7240);
+    s_cache.leafs[iVar4][0].freenode.next = s_cache.freelist[smcIndex][0].next;
+    ((leafs_00->freenode).prev)->next = (static_model_node_list_t *)leafs_00;
+    (s_cache.leafs[iVar4][0].freenode.next)->prev = (static_model_node_list_t *)leafs_00;
+    bVar2 = true;
   }
-  return bVar3;
+  return bVar2;
 }
 
 
 // 00AC8DE0  SMC_GetFreeBlockOfSize  (gfx_d3d/r_staticmodelcache.cpp:463)
 
-bool __cdecl SMC_GetFreeBlockOfSize(uint param_1,uint param_2)
+bool __cdecl SMC_GetFreeBlockOfSize(uint smcIndex,uint listIndex)
 
 {
   int *piVar1;
@@ -110,8 +116,15 @@ bool __cdecl SMC_GetFreeBlockOfSize(uint param_1,uint param_2)
   uint uVar7;
   int iVar8;
   static_model_tree_list_t *psVar9;
+  static_model_node_list_t *block;
+  static_model_tree_t *tree;
+  static_model_leaf_t *leafs;
+  static_model_node_list_t *freelist;
+  int index;
+  int levelsToLeaf;
+  int treeIndex;
   
-  if ((5 < param_2) &&
+  if ((5 < listIndex) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x1d8,0,
                                "listIndex doesn\'t index ARRAY_COUNT( s_cache.freelist[smcIndex] )\n\t%i not in [0, %i)"
@@ -120,29 +133,29 @@ bool __cdecl SMC_GetFreeBlockOfSize(uint param_1,uint param_2)
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((*(int *)(param_1 * 0x30 + 0xb4b7244 + param_2 * 8) !=
-       param_1 * 0x30 + 0xb4b7240 + param_2 * 8) &&
+  if ((*(int *)(smcIndex * 0x30 + 0xb4b7244 + listIndex * 8) !=
+       smcIndex * 0x30 + 0xb4b7240 + listIndex * 8) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x1d9,0,"%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((*(int *)(param_1 * 0x30 + 0xb4b7240 + param_2 * 8) !=
-       param_1 * 0x30 + 0xb4b7240 + param_2 * 8) &&
+  if ((*(int *)(smcIndex * 0x30 + 0xb4b7240 + listIndex * 8) !=
+       smcIndex * 0x30 + 0xb4b7240 + listIndex * 8) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x1da,0,"%s"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if (param_2 == 0) {
-    bVar5 = SMC_ForceFreeBlock(param_1);
+  if (listIndex == 0) {
+    bVar5 = SMC_ForceFreeBlock(smcIndex);
   }
   else {
-    piVar1 = (int *)(param_1 * 0x30 + 0xb4b7238 + param_2 * 8);
+    piVar1 = (int *)(smcIndex * 0x30 + 0xb4b7238 + listIndex * 8);
     if (((int *)piVar1[1] == piVar1) &&
-       (bVar5 = SMC_GetFreeBlockOfSize(param_1,param_2 - 1), !bVar5)) {
+       (bVar5 = SMC_GetFreeBlockOfSize(smcIndex,listIndex - 1), !bVar5)) {
       return false;
     }
     piVar3 = (int *)piVar1[1];
@@ -166,10 +179,10 @@ bool __cdecl SMC_GetFreeBlockOfSize(uint param_1,uint param_2)
       return (bool)uVar6;
     }
     psVar9 = &s_cache.trees[uVar7].usedlist;
-    if (param_2 == 1) {
+    if (listIndex == 1) {
       ((static_model_tree_list_t *)&psVar9->prev)->prev =
-           (static_model_tree_list_t *)(param_1 * 8 + 0xb4b7300);
-      s_cache.trees[uVar7].usedlist.next = s_cache.usedlist[param_1].next;
+           (static_model_tree_list_t *)(smcIndex * 8 + 0xb4b7300);
+      s_cache.trees[uVar7].usedlist.next = s_cache.usedlist[smcIndex].next;
       ((static_model_tree_list_t *)&psVar9->prev)->prev->next = psVar9;
       (s_cache.trees[uVar7].usedlist.next)->prev = psVar9;
     }
@@ -191,13 +204,13 @@ bool __cdecl SMC_GetFreeBlockOfSize(uint param_1,uint param_2)
       uVar6 = (*pcVar4)();
       return (bool)uVar6;
     }
-    iVar2 = param_1 * 0x30 + 0xb4b7240 + param_2 * 8;
+    iVar2 = smcIndex * 0x30 + 0xb4b7240 + listIndex * 8;
     *piVar3 = iVar2;
     piVar3[1] = *(int *)(iVar2 + 4);
     *(int **)(*piVar3 + 4) = piVar3;
     *(int **)piVar3[1] = piVar3;
-    piVar1 = (int *)(iVar8 + ((1 << (5U - (char)param_2 & 0x1f)) + uVar7) * 8);
-    iVar8 = param_1 * 0x30 + 0xb4b7240 + param_2 * 8;
+    piVar1 = (int *)(iVar8 + ((1 << (5U - (char)listIndex & 0x1f)) + uVar7) * 8);
+    iVar8 = smcIndex * 0x30 + 0xb4b7240 + listIndex * 8;
     *piVar1 = iVar8;
     piVar1[1] = *(int *)(iVar8 + 4);
     *(int **)(*piVar1 + 4) = piVar1;
@@ -210,14 +223,14 @@ bool __cdecl SMC_GetFreeBlockOfSize(uint param_1,uint param_2)
 
 // 00AC8270  SMC_GetLeaf  (gfx_d3d/r_staticmodelcache.cpp:542)
 
-static_model_leaf_t * __cdecl SMC_GetLeaf(uint param_1)
+static_model_leaf_t * __cdecl SMC_GetLeaf(uint cacheIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   static_model_leaf_t *psVar3;
   
-  if (param_1 == 0) {
+  if (cacheIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                              0x221,0,"%s");
     if (!bVar2) {
@@ -226,29 +239,39 @@ static_model_leaf_t * __cdecl SMC_GetLeaf(uint param_1)
       return psVar3;
     }
   }
-  return (static_model_leaf_t *)(s_cache.trees[0x1ff].nodes + param_1 * 2 + 0x3d);
+  return (static_model_leaf_t *)(s_cache.trees[0x1ff].nodes + cacheIndex * 2 + 0x3d);
 }
 
 
 // 00AC8B10  SMC_Allocate  (gfx_d3d/r_staticmodelcache.cpp:558)
 
-ushort __cdecl SMC_Allocate(uint param_1,uint param_2)
+ushort __cdecl SMC_Allocate(uint smcIndex,uint bitCount)
 
 {
   int *piVar1;
   code *pcVar2;
   bool bVar3;
   ushort uVar4;
+  uint listIndex_00;
   uint uVar5;
-  uint uVar6;
-  int iVar7;
-  uint uVar8;
-  static_model_leaf_t *psVar9;
-  int iVar10;
-  static_model_tree_list_t *psVar11;
-  uint local_24;
+  int iVar6;
+  uint uVar7;
+  static_model_leaf_t *psVar8;
+  int iVar9;
+  static_model_tree_list_t *psVar10;
+  static_model_node_list_t *block;
+  uint listIndex;
+  static_model_tree_t *tree;
+  uint nodeIndex;
+  GfxCachedSModelSurf *cachedSurf;
+  static_model_leaf_t *leafs;
+  static_model_node_list_t *freelist;
+  uint index;
+  ushort cacheIndex;
+  uint levelsToLeaf;
+  uint treeIndex;
   
-  if (((param_2 < 4) || (9 < param_2)) &&
+  if (((bitCount < 4) || (9 < bitCount)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x23b,0,
                                "bitCount not in [SMC_MIN_ALLOC_BITS, SMC_MAX_ALLOC_BITS]\n\t%i not in [%i, %i]"
@@ -257,16 +280,17 @@ ushort __cdecl SMC_Allocate(uint param_1,uint param_2)
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  uVar5 = 9 - param_2;
-  iVar10 = param_1 * 0x30 + 0xb4b7240 + uVar5 * 8;
-  if ((*(int *)(iVar10 + 4) == iVar10) && (bVar3 = SMC_GetFreeBlockOfSize(param_1,uVar5), !bVar3)) {
+  listIndex_00 = 9 - bitCount;
+  iVar9 = smcIndex * 0x30 + 0xb4b7240 + listIndex_00 * 8;
+  if ((*(int *)(iVar9 + 4) == iVar9) &&
+     (bVar3 = SMC_GetFreeBlockOfSize(smcIndex,listIndex_00), !bVar3)) {
     return 0;
   }
-  piVar1 = *(int **)(iVar10 + 4);
+  piVar1 = *(int **)(iVar9 + 4);
   *(int *)piVar1[1] = *piVar1;
   *(int *)(*piVar1 + 4) = piVar1[1];
-  uVar6 = (int)((int)(piVar1 + -0x2d25c90) + ((int)(piVar1 + -0x2d25c90) >> 0x1f & 0xffU)) >> 8;
-  if ((0x1ff < uVar6) &&
+  uVar5 = (int)((int)(piVar1 + -0x2d25c90) + ((int)(piVar1 + -0x2d25c90) >> 0x1f & 0xffU)) >> 8;
+  if ((0x1ff < uVar5) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x254,0,
                                "treeIndex doesn\'t index ARRAY_COUNT( s_cache.trees )\n\t%i not in [0, %i)"
@@ -275,18 +299,18 @@ ushort __cdecl SMC_Allocate(uint param_1,uint param_2)
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  iVar10 = uVar6 * 0x108;
-  psVar11 = &s_cache.trees[uVar6].usedlist;
-  if (uVar5 == 0) {
-    ((static_model_tree_list_t *)&psVar11->prev)->prev =
-         (static_model_tree_list_t *)(param_1 * 8 + 0xb4b7300);
-    s_cache.trees[uVar6].usedlist.next = s_cache.usedlist[param_1].next;
-    ((static_model_tree_list_t *)&psVar11->prev)->prev->next = psVar11;
-    (s_cache.trees[uVar6].usedlist.next)->prev = psVar11;
+  iVar9 = uVar5 * 0x108;
+  psVar10 = &s_cache.trees[uVar5].usedlist;
+  if (listIndex_00 == 0) {
+    ((static_model_tree_list_t *)&psVar10->prev)->prev =
+         (static_model_tree_list_t *)(smcIndex * 8 + 0xb4b7300);
+    s_cache.trees[uVar5].usedlist.next = s_cache.usedlist[smcIndex].next;
+    ((static_model_tree_list_t *)&psVar10->prev)->prev->next = psVar10;
+    (s_cache.trees[uVar5].usedlist.next)->prev = psVar10;
   }
-  iVar7 = uVar6 * 0x100 + 0xb497240;
-  uVar8 = (int)(((int)piVar1 - iVar7) + ((int)piVar1 - iVar7 >> 0x1f & 7U)) >> 3;
-  if ((0x1f < uVar8) &&
+  iVar6 = uVar5 * 0x100 + 0xb497240;
+  uVar7 = (int)(((int)piVar1 - iVar6) + ((int)piVar1 - iVar6 >> 0x1f & 7U)) >> 3;
+  if ((0x1f < uVar7) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x265,0,
                                "index doesn\'t index ARRAY_COUNT( s_cache.leafs[treeIndex] )\n\t%i not in [0, %i)"
@@ -295,15 +319,15 @@ ushort __cdecl SMC_Allocate(uint param_1,uint param_2)
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  if ((piVar1 != (int *)(iVar7 + uVar8 * 8)) &&
+  if ((piVar1 != (int *)(iVar6 + uVar7 * 8)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x266,0,"%s\n\t(index) = %i"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  local_24 = (uVar8 + 0x20 >> (5U - (char)uVar5 & 0x1f)) - 1;
-  if ((0x3e < local_24) &&
+  nodeIndex = (uVar7 + 0x20 >> (5U - (char)listIndex_00 & 0x1f)) - 1;
+  if ((0x3e < nodeIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x26e,0,
                                "nodeIndex doesn\'t index ARRAY_COUNT( tree->nodes )\n\t%i not in [0, %i)"
@@ -312,67 +336,64 @@ ushort __cdecl SMC_Allocate(uint param_1,uint param_2)
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  *(undefined1 *)(iVar10 + 0xb47624e + local_24 * 4) = 1;
-  for (; *(short *)(iVar10 + 0xb47624c + local_24 * 4) =
-              *(short *)(iVar10 + 0xb47624c + local_24 * 4) + (short)(1 << ((byte)param_2 & 0x1f)),
-      local_24 != 0; local_24 = local_24 - 1 >> 1) {
+  *(undefined1 *)(iVar9 + 0xb47624e + nodeIndex * 4) = 1;
+  for (; *(short *)(iVar9 + 0xb47624c + nodeIndex * 4) =
+              *(short *)(iVar9 + 0xb47624c + nodeIndex * 4) + (short)(1 << ((byte)bitCount & 0x1f)),
+      nodeIndex != 0; nodeIndex = nodeIndex - 1 >> 1) {
   }
-  uVar4 = (short)(uVar6 << 5) + 1 + (short)uVar8;
-  psVar9 = SMC_GetLeaf((uint)uVar4);
-  if (((static_model_leaf_t *)(iVar7 + uVar8 * 8) != psVar9) &&
+  uVar4 = (short)(uVar5 << 5) + 1 + (short)uVar7;
+  psVar8 = SMC_GetLeaf((uint)uVar4);
+  if (((static_model_leaf_t *)(iVar6 + uVar7 * 8) != psVar8) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x280,0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  *(uint *)(iVar7 + uVar8 * 8) = uVar6 * 0x200 + uVar8 * 0x10;
+  *(uint *)(iVar6 + uVar7 * 8) = uVar5 * 0x200 + uVar7 * 0x10;
   return uVar4;
 }
 
 
 // 00AC82B0  SetupTransformUnitVec  (gfx_d3d/r_staticmodelcache.cpp:679)
 
-void __cdecl SetupTransformUnitVec(float4 *param_1,int (*param_2) [3])
+void __cdecl SetupTransformUnitVec(float4 *mtx,int (*fixedMtx) [3])
 
 {
-  (*param_2)[0] = (int)ROUND(param_1->v[0] * 32768.0);
-  (*param_2)[1] = (int)ROUND(param_1->v[1] * 32768.0);
-  (*param_2)[2] = (int)ROUND(param_1->v[2] * 32768.0);
-  param_2[1][0] = (int)ROUND(param_1[1].v[0] * 32768.0);
-  param_2[1][1] = (int)ROUND(*(float *)((int)param_1 + 0x14) * 32768.0);
-  param_2[1][2] = (int)ROUND(*(float *)((int)param_1 + 0x18) * 32768.0);
-  param_2[2][0] = (int)ROUND(param_1[2].v[0] * 32768.0);
-  param_2[2][1] = (int)ROUND(*(float *)((int)param_1 + 0x24) * 32768.0);
-  param_2[2][2] = (int)ROUND(*(float *)((int)param_1 + 0x28) * 32768.0);
+  (*fixedMtx)[0] = (int)ROUND(mtx->v[0] * 32768.0);
+  (*fixedMtx)[1] = (int)ROUND(mtx->v[1] * 32768.0);
+  (*fixedMtx)[2] = (int)ROUND(mtx->v[2] * 32768.0);
+  fixedMtx[1][0] = (int)ROUND(mtx[1].v[0] * 32768.0);
+  fixedMtx[1][1] = (int)ROUND(*(float *)((int)mtx + 0x14) * 32768.0);
+  fixedMtx[1][2] = (int)ROUND(*(float *)((int)mtx + 0x18) * 32768.0);
+  fixedMtx[2][0] = (int)ROUND(mtx[2].v[0] * 32768.0);
+  fixedMtx[2][1] = (int)ROUND(*(float *)((int)mtx + 0x24) * 32768.0);
+  fixedMtx[2][2] = (int)ROUND(*(float *)((int)mtx + 0x28) * 32768.0);
   return;
 }
 
 
 // 00AC85A0  LocalTransformUnitVec  (gfx_d3d/r_staticmodelcache.cpp:697)
 
-PackedUnitVec __cdecl LocalTransformUnitVec(PackedUnitVec param_1,int (*param_2) [3])
+PackedUnitVec __cdecl LocalTransformUnitVec(PackedUnitVec in,int (*fixedMtx) [3])
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
-  PackedUnitVec local_14;
+  PackedUnitVec out;
   
-  iVar1 = ((param_1.packed & 0xff) - 0x7f) * (param_1.array[3] + 0xc0);
-  iVar3 = ((param_1.packed >> 8 & 0xff) - 0x7f) * (param_1.array[3] + 0xc0);
-  iVar2 = ((param_1.packed >> 0x10 & 0xff) - 0x7f) * (param_1.array[3] + 0xc0);
-  local_14.array[1] =
-       (char)(iVar1 * (*param_2)[1] + iVar3 * param_2[1][1] + 0x3fc00000 + iVar2 * param_2[2][1] >>
-             0x17);
-  local_14.array[0] =
-       (char)(iVar1 * (*param_2)[0] + iVar3 * param_2[1][0] + 0x3fc00000 + iVar2 * param_2[2][0] >>
-             0x17);
-  local_14.array[2] =
-       (char)(iVar1 * (*param_2)[2] + iVar3 * param_2[1][2] + 0x3fc00000 + iVar2 * param_2[2][2] >>
-             0x17);
-  local_14.array[3] = 0x40;
-  return (PackedUnitVec)local_14.packed;
+  iVar1 = ((in.packed & 0xff) - 0x7f) * (in.array[3] + 0xc0);
+  iVar3 = ((in.packed >> 8 & 0xff) - 0x7f) * (in.array[3] + 0xc0);
+  iVar2 = ((in.packed >> 0x10 & 0xff) - 0x7f) * (in.array[3] + 0xc0);
+  out.array[1] = (char)(iVar1 * (*fixedMtx)[1] + iVar3 * fixedMtx[1][1] + 0x3fc00000 +
+                        iVar2 * fixedMtx[2][1] >> 0x17);
+  out.array[0] = (char)(iVar1 * (*fixedMtx)[0] + iVar3 * fixedMtx[1][0] + 0x3fc00000 +
+                        iVar2 * fixedMtx[2][0] >> 0x17);
+  out.array[2] = (char)(iVar1 * (*fixedMtx)[2] + iVar3 * fixedMtx[1][2] + 0x3fc00000 +
+                        iVar2 * fixedMtx[2][2] >> 0x17);
+  out.array[3] = 0x40;
+  return (PackedUnitVec)out.packed;
 }
 
 
@@ -380,27 +401,28 @@ PackedUnitVec __cdecl LocalTransformUnitVec(PackedUnitVec param_1,int (*param_2)
 
 void __cdecl
 R_SkinXSurfaceStaticVerts
-          (float4 *param_1,int (*param_2) [3],uint param_3,uint param_4,GfxPackedVertex *param_5,
-          uint param_6,GfxSModelCachedVertex *param_7)
+          (float4 *useAxis,int (*normAxis) [3],uint baseVertIndex,uint vertCount,
+          GfxPackedVertex *srcVertArray,uint smodelIndex,GfxSModelCachedVertex *verts)
 
 {
   PackedUnitVec PVar1;
-  GfxPackedVertex *pGVar2;
-  PackedLightingCoords local_c;
-  uint local_8;
+  GfxPackedVertex *in1;
+  GfxPackedVertex *srcVert;
+  PackedLightingCoords packedBaseLighting;
+  uint vertIndex;
   
-  R_GetPackedStaticModelLightingCoords(param_6,&local_c);
-  for (local_8 = 0; local_8 < param_4; local_8 = local_8 + 1) {
-    pGVar2 = param_5 + local_8;
-    R_TransformSkelMat(pGVar2->xyz,(DObjSkelMat *)param_1,param_7[local_8].xyz);
-    PVar1 = LocalTransformUnitVec(pGVar2->normal,param_2);
-    param_7[local_8].normal = PVar1;
-    param_7[local_8].color = pGVar2->color;
-    param_7[local_8].texCoord = pGVar2->texCoord;
-    PVar1 = LocalTransformUnitVec(pGVar2->tangent,param_2);
-    param_7[local_8].tangent = PVar1;
-    local_c.array[3] = ((byte)((int)pGVar2->binormalSign >> 0x1e) & 0xfe) + 2;
-    param_7[local_8].baseLighting.packed = (uint)local_c;
+  R_GetPackedStaticModelLightingCoords(smodelIndex,&packedBaseLighting);
+  for (vertIndex = 0; vertIndex < vertCount; vertIndex = vertIndex + 1) {
+    in1 = srcVertArray + vertIndex;
+    R_TransformSkelMat(in1->xyz,(DObjSkelMat *)useAxis,verts[vertIndex].xyz);
+    PVar1 = LocalTransformUnitVec(in1->normal,normAxis);
+    verts[vertIndex].normal = PVar1;
+    verts[vertIndex].color = in1->color;
+    verts[vertIndex].texCoord = in1->texCoord;
+    PVar1 = LocalTransformUnitVec(in1->tangent,normAxis);
+    verts[vertIndex].tangent = PVar1;
+    packedBaseLighting.array[3] = ((byte)((int)in1->binormalSign >> 0x1e) & 0xfe) + 2;
+    verts[vertIndex].baseLighting = packedBaseLighting;
   }
   return;
 }
@@ -408,82 +430,87 @@ R_SkinXSurfaceStaticVerts
 
 // 00AC9360  R_CacheStaticModelIndices  (gfx_d3d/r_staticmodelcache.cpp:788)
 
-void __cdecl R_CacheStaticModelIndices(uint param_1,uint param_2,uint param_3)
+void __cdecl R_CacheStaticModelIndices(uint smodelIndex,uint lod,uint cacheBaseVertIndex)
 
 {
-  XModel *pXVar1;
-  code *pcVar2;
-  XSurface *pXVar3;
-  bool bVar4;
+  XModel *model_00;
+  code *pcVar1;
+  XSurface *pXVar2;
+  bool bVar3;
+  uint uVar4;
   uint uVar5;
-  uint uVar6;
-  uint local_30;
-  ushort *local_1c;
-  uint local_18;
-  XSurface *local_10;
-  ushort *local_c;
-  uint local_8;
+  uint surfIndex;
+  uint baseVertIndex;
+  uint baseIndex;
+  XModel *model;
+  uint surfCount;
+  uint *twoSrcIndices;
+  int iterationCount;
+  XSurface *xsurf;
+  XSurface *surfs;
+  uint *twoDstIndices;
+  uint twoBaseOffsets;
   
-  pXVar1 = ((rgp.world)->dpvs).smodelDrawInsts[param_1].model;
-  XModelGetSurfaces(pXVar1,&local_10,param_2);
-  uVar5 = XModelGetSurfCount(pXVar1,param_2);
-  local_30 = 0;
+  model_00 = ((rgp.world)->dpvs).smodelDrawInsts[smodelIndex].model;
+  XModelGetSurfaces(model_00,&surfs,lod);
+  uVar4 = XModelGetSurfCount(model_00,lod);
+  surfIndex = 0;
   do {
-    pXVar3 = local_10;
-    if (uVar5 <= local_30) {
+    pXVar2 = surfs;
+    if (uVar4 <= surfIndex) {
       return;
     }
-    uVar6 = local_10[local_30].baseVertIndex + param_3;
-    local_8 = uVar6 * 0x10000 | uVar6 & 0xffff;
-    local_1c = local_10[local_30].triIndices;
-    uVar6 = (uint)local_10[local_30].baseTriIndex * 3 + param_3 * 4;
-    if (0xfffff < uVar6) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
+    uVar5 = surfs[surfIndex].baseVertIndex + cacheBaseVertIndex;
+    twoBaseOffsets = uVar5 * 0x10000 | uVar5 & 0xffff;
+    twoSrcIndices = (uint *)surfs[surfIndex].triIndices;
+    uVar5 = (uint)surfs[surfIndex].baseTriIndex * 3 + cacheBaseVertIndex * 4;
+    if (0xfffff < uVar5) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x33b,0,"%s");
-      if (!bVar4) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar3) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    if (0x100000 < (uint)pXVar3[local_30].triCount * 3 + uVar6) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
+    if (0x100000 < (uint)pXVar2[surfIndex].triCount * 3 + uVar5) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x33c,0,"%s");
-      if (!bVar4) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar3) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    local_c = gfxBuf.smodelCache.indices + uVar6;
-    local_18 = pXVar3[local_30].triCount / 2;
-    if (local_18 * 2 - (uint)pXVar3[local_30].triCount != 0) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
+    twoDstIndices = (uint *)(gfxBuf.smodelCache.indices + uVar5);
+    iterationCount = pXVar2[surfIndex].triCount / 2;
+    if (iterationCount * 2 - (uint)pXVar2[surfIndex].triCount != 0) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x343,0,"%s");
-      if (!bVar4) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar3) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
-    if (local_18 == 0) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
+    if (iterationCount == 0) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x344,0,"%s");
-      if (!bVar4) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      if (!bVar3) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
     do {
-      *(uint *)local_c = local_8 + *(int *)local_1c;
-      *(uint *)(local_c + 2) = local_8 + *(int *)(local_1c + 2);
-      *(uint *)(local_c + 4) = local_8 + *(int *)(local_1c + 4);
-      local_c = local_c + 6;
-      local_1c = local_1c + 6;
-      local_18 = local_18 - 1;
-    } while (local_18 != 0);
-    local_30 = local_30 + 1;
+      *twoDstIndices = twoBaseOffsets + *twoSrcIndices;
+      twoDstIndices[1] = twoBaseOffsets + twoSrcIndices[1];
+      twoDstIndices[2] = twoBaseOffsets + twoSrcIndices[2];
+      twoDstIndices = twoDstIndices + 3;
+      twoSrcIndices = twoSrcIndices + 3;
+      iterationCount = iterationCount + -1;
+    } while (iterationCount != 0);
+    surfIndex = surfIndex + 1;
   } while( true );
 }
 
@@ -492,13 +519,13 @@ void __cdecl R_CacheStaticModelIndices(uint param_1,uint param_2,uint param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
+void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *skinCmd)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
-  float4 local_d4;
+  float4 useAxis;
   float local_c4;
   float local_c0;
   float local_bc;
@@ -511,10 +538,10 @@ void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
   float local_a0;
   float local_9c;
   undefined4 local_98;
-  GfxStaticModelDrawInst *local_90;
-  uint local_8c;
-  uint local_88;
-  float4 local_84;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  uint surfIndex;
+  int baseVertIndex;
+  float4 normAxis;
   float local_74;
   float local_70;
   float local_6c;
@@ -524,16 +551,16 @@ void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
   float local_5c;
   undefined4 local_58;
   uint local_44;
-  static_model_leaf_t *local_40;
-  uint local_3c;
-  static_model_leaf_t *local_38;
-  GfxSModelCachedVertex *local_34;
-  XSurface *local_30;
-  int local_2c [9];
-  XSurface *local_8;
+  GfxCachedSModelSurf *cachedSurf;
+  uint surfCount;
+  static_model_leaf_t *leaf;
+  GfxSModelCachedVertex *verts;
+  XSurface *xsurf;
+  int fixedNormAxis [9];
+  XSurface *surfs;
   
   local_44 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (SkinCachedStaticModelCmd *)0x0) {
+  if (skinCmd == (SkinCachedStaticModelCmd *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                              0x364,0,"%s");
     if (!bVar3) {
@@ -551,10 +578,10 @@ void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
       return;
     }
   }
-  local_34 = frontEndDataOut->smcPatchVerts + param_1->firstPatchVert;
-  local_40 = SMC_GetLeaf((uint)param_1->cacheIndex);
-  local_38 = local_40;
-  if (((rgp.world)->dpvs).smodelCount <= (uint)(local_40->cachedSurf).smodelIndex) {
+  verts = frontEndDataOut->smcPatchVerts + skinCmd->firstPatchVert;
+  cachedSurf = (GfxCachedSModelSurf *)SMC_GetLeaf((uint)skinCmd->cacheIndex);
+  leaf = (static_model_leaf_t *)cachedSurf;
+  if (((rgp.world)->dpvs).smodelCount <= (uint)cachedSurf->smodelIndex) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                              0x36d,0,
                              "cachedSurf->smodelIndex doesn\'t index rgp.world->dpvs.smodelCount\n\t%i not in [0, %i)"
@@ -565,47 +592,47 @@ void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
       return;
     }
   }
-  local_90 = ((rgp.world)->dpvs).smodelDrawInsts + (local_40->cachedSurf).smodelIndex;
-  local_84.v[0] = (local_90->placement).axis[0][0];
-  local_84.v[1] = (local_90->placement).axis[0][1];
-  local_84.v[2] = (local_90->placement).axis[0][2];
-  local_84.v[3] = 0.0;
-  local_74 = (local_90->placement).axis[1][0];
-  local_70 = (local_90->placement).axis[1][1];
-  local_6c = (local_90->placement).axis[1][2];
+  smodelDrawInst = ((rgp.world)->dpvs).smodelDrawInsts + cachedSurf->smodelIndex;
+  normAxis.v[0] = (smodelDrawInst->placement).axis[0][0];
+  normAxis.v[1] = (smodelDrawInst->placement).axis[0][1];
+  normAxis.v[2] = (smodelDrawInst->placement).axis[0][2];
+  normAxis.v[3] = 0.0;
+  local_74 = (smodelDrawInst->placement).axis[1][0];
+  local_70 = (smodelDrawInst->placement).axis[1][1];
+  local_6c = (smodelDrawInst->placement).axis[1][2];
   local_68 = 0;
-  local_64 = (local_90->placement).axis[2][0];
-  local_60 = (local_90->placement).axis[2][1];
-  local_5c = (local_90->placement).axis[2][2];
+  local_64 = (smodelDrawInst->placement).axis[2][0];
+  local_60 = (smodelDrawInst->placement).axis[2][1];
+  local_5c = (smodelDrawInst->placement).axis[2][2];
   local_58 = 0;
-  fVar1 = (local_90->placement).scale;
-  local_d4.v[0] = fVar1 * local_84.v[0];
-  local_d4.v[1] = fVar1 * local_84.v[1];
-  local_d4.v[2] = fVar1 * local_84.v[2];
-  local_d4.v[3] = fVar1 * 0.0;
-  local_b8 = (local_90->placement).scale;
+  fVar1 = (smodelDrawInst->placement).scale;
+  useAxis.v[0] = fVar1 * normAxis.v[0];
+  useAxis.v[1] = fVar1 * normAxis.v[1];
+  useAxis.v[2] = fVar1 * normAxis.v[2];
+  useAxis.v[3] = fVar1 * 0.0;
+  local_b8 = (smodelDrawInst->placement).scale;
   local_c4 = local_b8 * local_74;
   local_c0 = local_b8 * local_70;
   local_bc = local_b8 * local_6c;
   local_b8 = local_b8 * 0.0;
-  local_a8 = (local_90->placement).scale;
+  local_a8 = (smodelDrawInst->placement).scale;
   local_b4 = local_a8 * local_64;
   local_b0 = local_a8 * local_60;
   local_ac = local_a8 * local_5c;
   local_a8 = local_a8 * 0.0;
-  local_a4 = (local_90->placement).origin[0];
-  local_a0 = (local_90->placement).origin[1];
-  local_9c = (local_90->placement).origin[2];
+  local_a4 = (smodelDrawInst->placement).origin[0];
+  local_a0 = (smodelDrawInst->placement).origin[1];
+  local_9c = (smodelDrawInst->placement).origin[2];
   local_98 = 0;
-  SetupTransformUnitVec(&local_84,(int (*) [3])local_2c);
-  local_3c = XModelGetSurfCount(local_90->model,(uint)(local_40->cachedSurf).lodIndex);
-  XModelGetSurfaces(local_90->model,&local_8,(uint)(local_40->cachedSurf).lodIndex);
-  for (local_8c = 0; local_8c < local_3c; local_8c = local_8c + 1) {
-    local_30 = local_8 + local_8c;
-    local_88 = (int)&((local_40->freenode).prev)->prev + (uint)local_30->baseVertIndex;
+  SetupTransformUnitVec(&normAxis,(int (*) [3])fixedNormAxis);
+  surfCount = XModelGetSurfCount(smodelDrawInst->model,(uint)cachedSurf->lodIndex);
+  XModelGetSurfaces(smodelDrawInst->model,&surfs,(uint)cachedSurf->lodIndex);
+  for (surfIndex = 0; surfIndex < surfCount; surfIndex = surfIndex + 1) {
+    xsurf = surfs + surfIndex;
+    baseVertIndex = (uint)xsurf->baseVertIndex + cachedSurf->baseVertIndex;
     R_SkinXSurfaceStaticVerts
-              (&local_d4,(int (*) [3])local_2c,local_88,(uint)local_30->vertCount,local_30->verts0,
-               (uint)(local_40->cachedSurf).smodelIndex,local_34 + local_30->baseVertIndex);
+              (&useAxis,(int (*) [3])fixedNormAxis,baseVertIndex,(uint)xsurf->vertCount,
+               xsurf->verts0,(uint)cachedSurf->smodelIndex,verts + xsurf->baseVertIndex);
   }
   return;
 }
@@ -613,15 +640,16 @@ void __cdecl R_SkinCachedStaticModelCmd(SkinCachedStaticModelCmd *param_1)
 
 // 00AC8680  R_GetCachedSModelSurf  (gfx_d3d/r_staticmodelcache.cpp:916)
 
-GfxCachedSModelSurf * __cdecl R_GetCachedSModelSurf(uint param_1)
+GfxCachedSModelSurf * __cdecl R_GetCachedSModelSurf(uint cacheIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxCachedSModelSurf *pGVar3;
   static_model_leaf_t *psVar4;
+  static_model_leaf_t *leaf;
   
-  if (param_1 == 0) {
+  if (cacheIndex == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                              0x397,0,"%s");
     if (!bVar2) {
@@ -630,7 +658,7 @@ GfxCachedSModelSurf * __cdecl R_GetCachedSModelSurf(uint param_1)
       return pGVar3;
     }
   }
-  psVar4 = SMC_GetLeaf(param_1);
+  psVar4 = SMC_GetLeaf(cacheIndex);
   if (((rgp.world)->dpvs).smodelCount <= (uint)(psVar4->cachedSurf).smodelIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                              0x39a,0,
@@ -650,7 +678,7 @@ GfxCachedSModelSurf * __cdecl R_GetCachedSModelSurf(uint param_1)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-ushort __cdecl R_CacheStaticModelSurface(uint param_1,uint param_2,XModelLodInfo *param_3)
+ushort __cdecl R_CacheStaticModelSurface(uint smcIndex,uint smodelIndex,XModelLodInfo *lodInfo)
 
 {
   code *pcVar1;
@@ -660,18 +688,22 @@ ushort __cdecl R_CacheStaticModelSurface(uint param_1,uint param_2,XModelLodInfo
   int iVar5;
   static_model_leaf_t *psVar6;
   static_model_tree_list_t *psVar7;
-  ushort local_c;
+  static_model_tree_t *tree;
+  GfxCachedSModelSurf *cachedSurf;
+  static_model_leaf_t *leaf;
+  ushort cacheIndex;
+  ushort skinSmodelCmd;
   ushort local_a;
-  int local_8;
+  uint cachedVertsNeeded;
   
-  if ((param_3 == (XModelLodInfo *)0x0) &&
+  if ((lodInfo == (XModelLodInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x3af,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return uVar3;
   }
-  if (((param_3->smcAllocBits < 4) || (9 < param_3->smcAllocBits)) &&
+  if (((lodInfo->smcAllocBits < 4) || (9 < lodInfo->smcAllocBits)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
                                0x3b0,0,
                                "lodInfo->smcAllocBits not in [SMC_MIN_ALLOC_BITS, SMC_MAX_ALLOC_BITS]\n\t%i not in [%i, %i]"
@@ -700,15 +732,15 @@ ushort __cdecl R_CacheStaticModelSurface(uint param_1,uint param_2,XModelLodInfo
     uVar3 = 0;
   }
   else {
-    uVar3 = ((rgp.world)->dpvs).smodelDrawInsts[param_2].smodelCacheIndex[param_3->lod];
+    uVar3 = ((rgp.world)->dpvs).smodelDrawInsts[smodelIndex].smodelCacheIndex[lodInfo->lod];
     if (uVar3 == 0) {
-      local_8 = 1 << (param_3->smcAllocBits & 0x1f);
+      cachedVertsNeeded = 1 << (lodInfo->smcAllocBits & 0x1f);
       if ((frontEndDataOut->smcPatchCount == 0x100) ||
-         (0x2000 < frontEndDataOut->smcPatchVertsUsed + local_8)) {
+         (0x2000 < frontEndDataOut->smcPatchVertsUsed + cachedVertsNeeded)) {
         uVar3 = 0;
       }
       else {
-        uVar3 = SMC_Allocate(param_1,(uint)param_3->smcAllocBits);
+        uVar3 = SMC_Allocate(smcIndex,(uint)lodInfo->smcAllocBits);
         if (uVar3 == 0) {
           uVar3 = 0;
         }
@@ -717,15 +749,17 @@ ushort __cdecl R_CacheStaticModelSurface(uint param_1,uint param_2,XModelLodInfo
           frontEndDataOut->smcPatchCount = frontEndDataOut->smcPatchCount + 1;
           psVar6 = SMC_GetLeaf((uint)uVar3);
           uVar4 = truncate_cast<unsigned_short>((uint)uVar3);
-          ((rgp.world)->dpvs).smodelDrawInsts[param_2].smodelCacheIndex[param_3->lod] = uVar4;
-          uVar4 = truncate_cast<unsigned_short>(param_2);
+          ((rgp.world)->dpvs).smodelDrawInsts[smodelIndex].smodelCacheIndex[lodInfo->lod] = uVar4;
+          uVar4 = truncate_cast<unsigned_short>(smodelIndex);
           (psVar6->cachedSurf).smodelIndex = uVar4;
-          (psVar6->cachedSurf).lodIndex = (ushort)param_3->lod;
-          local_c = uVar3;
+          (psVar6->cachedSurf).lodIndex = (ushort)lodInfo->lod;
+          skinSmodelCmd = uVar3;
           local_a = truncate_cast<unsigned_short>(frontEndDataOut->smcPatchVertsUsed);
-          frontEndDataOut->smcPatchVertsUsed = frontEndDataOut->smcPatchVertsUsed + local_8;
+          frontEndDataOut->smcPatchVertsUsed =
+               frontEndDataOut->smcPatchVertsUsed + cachedVertsNeeded;
           Sys_AddWorkerCmdInternal
-                    (&r_skin_cached_staticmodelWorkerCmd,&local_c,(WorkerCmdConditional *)0x0);
+                    (&r_skin_cached_staticmodelWorkerCmd,&skinSmodelCmd,(WorkerCmdConditional *)0x0)
+          ;
           R_CacheStaticModelIndices
                     ((uint)(psVar6->cachedSurf).smodelIndex,(uint)(psVar6->cachedSurf).lodIndex,
                      (psVar6->cachedSurf).baseVertIndex);
@@ -738,8 +772,8 @@ ushort __cdecl R_CacheStaticModelSurface(uint param_1,uint param_2,XModelLodInfo
           ((static_model_tree_list_t *)&psVar7->prev)->prev->next =
                s_cache.trees[iVar5].usedlist.next;
           ((static_model_tree_list_t *)&psVar7->prev)->prev =
-               (static_model_tree_list_t *)(param_1 * 8 + 0xb4b7300);
-          s_cache.trees[iVar5].usedlist.next = s_cache.usedlist[param_1].next;
+               (static_model_tree_list_t *)(smcIndex * 8 + 0xb4b7300);
+          s_cache.trees[iVar5].usedlist.next = s_cache.usedlist[smcIndex].next;
           ((static_model_tree_list_t *)&psVar7->prev)->prev->next = psVar7;
           (s_cache.trees[iVar5].usedlist.next)->prev = psVar7;
         }
@@ -756,8 +790,8 @@ ushort __cdecl R_CacheStaticModelSurface(uint param_1,uint param_2,XModelLodInfo
         ((static_model_tree_list_t *)&psVar7->prev)->prev->next = s_cache.trees[iVar5].usedlist.next
         ;
         ((static_model_tree_list_t *)&psVar7->prev)->prev =
-             (static_model_tree_list_t *)(param_1 * 8 + 0xb4b7300);
-        s_cache.trees[iVar5].usedlist.next = s_cache.usedlist[param_1].next;
+             (static_model_tree_list_t *)(smcIndex * 8 + 0xb4b7300);
+        s_cache.trees[iVar5].usedlist.next = s_cache.usedlist[smcIndex].next;
         ((static_model_tree_list_t *)&psVar7->prev)->prev->next = psVar7;
         (s_cache.trees[iVar5].usedlist.next)->prev = psVar7;
       }
@@ -781,6 +815,7 @@ void __cdecl R_AllocStaticModelCache(void)
 {
   code *pcVar1;
   bool bVar2;
+  int size;
   
   if (gfxBuf.smodelCacheVb != (IDirect3DVertexBuffer9 *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp",
@@ -803,31 +838,31 @@ void __cdecl SMC_ClearCache(void)
 {
   int iVar1;
   static_model_node_list_t *psVar2;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint treeIter;
+  uint leafIter;
+  uint listIter;
+  uint smcIter;
   
-  for (local_14 = 0; local_14 < 0x200; local_14 = local_14 + 1) {
-    for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {
-      *(undefined2 *)(local_14 * 0x100 + 0xb497246 + local_10 * 8) = 0xffff;
+  for (treeIter = 0; treeIter < 0x200; treeIter = treeIter + 1) {
+    for (leafIter = 0; leafIter < 0x20; leafIter = leafIter + 1) {
+      *(undefined2 *)(treeIter * 0x100 + 0xb497246 + leafIter * 8) = 0xffff;
     }
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    s_cache.usedlist[local_8].prev = (static_model_tree_list_t *)(local_8 * 8 + 0xb4b7300);
-    s_cache.usedlist[local_8].next = (static_model_tree_list_t *)(local_8 * 8 + 0xb4b7300);
-    for (local_c = 0; local_c < 6; local_c = local_c + 1) {
-      *(uint *)(local_8 * 0x30 + 0xb4b7240 + local_c * 8) = local_8 * 0x30 + 0xb4b7240 + local_c * 8
-      ;
-      *(uint *)(local_8 * 0x30 + 0xb4b7244 + local_c * 8) = local_8 * 0x30 + 0xb4b7240 + local_c * 8
-      ;
+  for (smcIter = 0; smcIter < 4; smcIter = smcIter + 1) {
+    s_cache.usedlist[smcIter].prev = (static_model_tree_list_t *)(smcIter * 8 + 0xb4b7300);
+    s_cache.usedlist[smcIter].next = (static_model_tree_list_t *)(smcIter * 8 + 0xb4b7300);
+    for (listIter = 0; listIter < 6; listIter = listIter + 1) {
+      *(uint *)(smcIter * 0x30 + 0xb4b7240 + listIter * 8) =
+           smcIter * 0x30 + 0xb4b7240 + listIter * 8;
+      *(uint *)(smcIter * 0x30 + 0xb4b7244 + listIter * 8) =
+           smcIter * 0x30 + 0xb4b7240 + listIter * 8;
     }
-    for (local_14 = 0; local_14 < 0x80; local_14 = local_14 + 1) {
-      iVar1 = local_8 * 0x80 + local_14;
+    for (treeIter = 0; treeIter < 0x80; treeIter = treeIter + 1) {
+      iVar1 = smcIter * 0x80 + treeIter;
       psVar2 = (static_model_node_list_t *)(s_cache.leafs + iVar1);
       (((static_model_leaf_t *)&psVar2->prev)->freenode).prev =
-           (static_model_node_list_t *)(local_8 * 0x30 + 0xb4b7240);
-      s_cache.leafs[iVar1][0].freenode.next = s_cache.freelist[local_8][0].next;
+           (static_model_node_list_t *)(smcIter * 0x30 + 0xb4b7240);
+      s_cache.leafs[iVar1][0].freenode.next = s_cache.freelist[smcIter][0].next;
       ((((static_model_leaf_t *)&psVar2->prev)->freenode).prev)->next = psVar2;
       (s_cache.leafs[iVar1][0].freenode.next)->prev = psVar2;
     }
@@ -852,36 +887,38 @@ void __cdecl R_InitStaticModelCache(void)
 void __cdecl R_FlushStaticModelCache(void)
 
 {
-  static_model_tree_t *psVar1;
-  static_model_tree_list_t *psVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  static_model_leaf_t *psVar6;
-  uint local_c;
+  static_model_tree_t *tree_00;
+  static_model_tree_list_t *psVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  static_model_leaf_t *leafs_00;
+  static_model_tree_t *tree;
+  uint smcIter;
+  static_model_leaf_t *leafs;
   
   if (s_cache.usedlist[0].next != (static_model_tree_list_t *)0x0) {
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      while (s_cache.usedlist[local_c].next != (static_model_tree_list_t *)(local_c * 8 + 0xb4b7300)
+    for (smcIter = 0; smcIter < 4; smcIter = smcIter + 1) {
+      while (s_cache.usedlist[smcIter].next != (static_model_tree_list_t *)(smcIter * 8 + 0xb4b7300)
             ) {
-        if ((s_cache.usedlist[local_c].next == (static_model_tree_list_t *)0x0) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp"
-                                     ,0x479,0,"%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
+        if ((s_cache.usedlist[smcIter].next == (static_model_tree_list_t *)0x0) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp"
+                                     ,0x479,0,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        psVar1 = (static_model_tree_t *)s_cache.usedlist[local_c].next;
-        iVar5 = (int)(psVar1[-0xaefe4].nodes + 0x35) / 0x108;
-        psVar6 = s_cache.leafs[iVar5];
-        SMC_FreeCachedSurface_r(psVar1,psVar6,0,5);
-        psVar2 = s_cache.usedlist[local_c].next;
-        psVar2->next->prev = psVar2->prev;
-        psVar2->prev->next = psVar2->next;
-        (psVar6->freenode).prev = (static_model_node_list_t *)(local_c * 0x30 + 0xb4b7240);
-        s_cache.leafs[iVar5][0].freenode.next = s_cache.freelist[local_c][0].next;
-        ((psVar6->freenode).prev)->next = (static_model_node_list_t *)psVar6;
-        (s_cache.leafs[iVar5][0].freenode.next)->prev = (static_model_node_list_t *)psVar6;
+        tree_00 = (static_model_tree_t *)s_cache.usedlist[smcIter].next;
+        iVar4 = (int)(tree_00[-0xaefe4].nodes + 0x35) / 0x108;
+        leafs_00 = s_cache.leafs[iVar4];
+        SMC_FreeCachedSurface_r(tree_00,leafs_00,0,5);
+        psVar1 = s_cache.usedlist[smcIter].next;
+        psVar1->next->prev = psVar1->prev;
+        psVar1->prev->next = psVar1->next;
+        (leafs_00->freenode).prev = (static_model_node_list_t *)(smcIter * 0x30 + 0xb4b7240);
+        s_cache.leafs[iVar4][0].freenode.next = s_cache.freelist[smcIter][0].next;
+        ((leafs_00->freenode).prev)->next = (static_model_node_list_t *)leafs_00;
+        (s_cache.leafs[iVar4][0].freenode.next)->prev = (static_model_node_list_t *)leafs_00;
       }
     }
     SMC_ClearCache();
@@ -896,12 +933,13 @@ void __cdecl R_ClearAllStaticModelCacheRefs(void)
 
 {
   uint uVar1;
-  uint local_8;
+  uint smodelCount;
+  uint smodelIndex;
   
   if (rgp.world != (GfxWorld *)0x0) {
     uVar1 = ((rgp.world)->dpvs).smodelCount;
-    for (local_8 = 0; local_8 < uVar1; local_8 = local_8 + 1) {
-      R_UncacheStaticModel(local_8);
+    for (smodelIndex = 0; smodelIndex < uVar1; smodelIndex = smodelIndex + 1) {
+      R_UncacheStaticModel(smodelIndex);
     }
   }
   return;
@@ -910,26 +948,30 @@ void __cdecl R_ClearAllStaticModelCacheRefs(void)
 
 // 00AC98D0  R_UncacheStaticModel  (gfx_d3d/r_staticmodelcache.cpp:1203)
 
-void __cdecl R_UncacheStaticModel(uint param_1)
+void __cdecl R_UncacheStaticModel(uint smodelIndex)
 
 {
   GfxStaticModelDrawInst *pGVar1;
   code *pcVar2;
   bool bVar3;
   static_model_leaf_t *psVar4;
-  uint uVar5;
-  uint local_c;
+  uint cacheIndex_00;
+  GfxStaticModelDrawInst *smodelDrawInst;
+  GfxCachedSModelSurf *cachedSurf;
+  static_model_leaf_t *leaf;
+  uint lod;
+  uint cacheIndex;
   
   pGVar1 = ((rgp.world)->dpvs).smodelDrawInsts;
-  local_c = 0;
+  lod = 0;
   do {
-    if (3 < local_c) {
+    if (3 < lod) {
       return;
     }
-    uVar5 = (uint)pGVar1[param_1].smodelCacheIndex[local_c];
-    if (uVar5 != 0) {
-      psVar4 = SMC_GetLeaf(uVar5);
-      if (((psVar4->cachedSurf).smodelIndex != param_1) &&
+    cacheIndex_00 = (uint)pGVar1[smodelIndex].smodelCacheIndex[lod];
+    if (cacheIndex_00 != 0) {
+      psVar4 = SMC_GetLeaf(cacheIndex_00);
+      if (((psVar4->cachedSurf).smodelIndex != smodelIndex) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_staticmodelcache.cpp"
                                    ,0x4c9,0,"cachedSurf->smodelIndex == smodelIndex\n\t%i, %i"),
          !bVar3)) {
@@ -938,9 +980,9 @@ void __cdecl R_UncacheStaticModel(uint param_1)
         return;
       }
       (psVar4->cachedSurf).smodelIndex = 0xffff;
-      pGVar1[param_1].smodelCacheIndex[local_c] = 0;
+      pGVar1[smodelIndex].smodelCacheIndex[lod] = 0;
     }
-    local_c = local_c + 1;
+    lod = lod + 1;
   } while( true );
 }
 
@@ -951,6 +993,7 @@ void __cdecl R_ShutdownStaticModelCache(void)
 
 {
   IDirect3DVertexBuffer9 *pIVar1;
+  IDirect3DVertexBuffer9 *varCopy;
   
   R_FlushStaticModelCache();
   pIVar1 = gfxBuf.smodelCacheVb;
@@ -978,31 +1021,37 @@ void __cdecl R_StaticModelCacheStats_f(void)
   uint uVar2;
   XModelLodInfo *pXVar3;
   uint uVar4;
-  uint local_24;
-  int local_20;
-  uint local_18;
-  uint local_c;
-  XSurface *local_8;
+  XModelLodInfo *lodInfo;
+  uint usedCount;
+  uint lodIter;
+  uint allocCount;
+  uint surfCount;
+  uint smodelIter;
+  uint lodCount;
+  GfxStaticModelDrawInst *drawInst;
+  uint surfIter;
+  XSurface *surfs;
   
   if (rgp.world != (GfxWorld *)0x0) {
-    local_20 = 0;
-    for (local_18 = 0; local_18 < ((rgp.world)->dpvs).smodelCount; local_18 = local_18 + 1) {
+    allocCount = 0;
+    for (smodelIter = 0; smodelIter < ((rgp.world)->dpvs).smodelCount; smodelIter = smodelIter + 1)
+    {
       pGVar1 = ((rgp.world)->dpvs).smodelDrawInsts;
-      uVar2 = XModelGetNumLods(pGVar1[local_18].model);
-      for (local_24 = 0; local_24 < uVar2; local_24 = local_24 + 1) {
-        if (pGVar1[local_18].smodelCacheIndex[local_24] != 0) {
-          pXVar3 = XModelGetLodInfo(pGVar1[local_18].model,local_24);
-          local_20 = (1 << (pXVar3->smcAllocBits & 0x1f)) + local_20;
-          uVar4 = XModelGetSurfCount(pGVar1[local_18].model,local_24);
-          XModelGetSurfaces(pGVar1[local_18].model,&local_8,local_24);
-          for (local_c = 0; local_c < uVar4; local_c = local_c + 1) {
-            XSurfaceGetNumVerts(local_8 + local_c);
+      uVar2 = XModelGetNumLods(pGVar1[smodelIter].model);
+      for (lodIter = 0; lodIter < uVar2; lodIter = lodIter + 1) {
+        if (pGVar1[smodelIter].smodelCacheIndex[lodIter] != 0) {
+          pXVar3 = XModelGetLodInfo(pGVar1[smodelIter].model,lodIter);
+          allocCount = (1 << (pXVar3->smcAllocBits & 0x1f)) + allocCount;
+          uVar4 = XModelGetSurfCount(pGVar1[smodelIter].model,lodIter);
+          XModelGetSurfaces(pGVar1[smodelIter].model,&surfs,lodIter);
+          for (surfIter = 0; surfIter < uVar4; surfIter = surfIter + 1) {
+            XSurfaceGetNumVerts(surfs + surfIter);
           }
         }
       }
     }
     Com_Printf(8,"%.2f%% of cache is currently allocated.\n");
-    if (local_20 != 0) {
+    if (allocCount != 0) {
       Com_Printf(8,"%.2f%% allocated cache vertices are used.\n");
     }
   }

@@ -14,62 +14,62 @@ void __cdecl TRACK_rb_showcollision(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl BuildFrustumPlanes(GfxViewParms *param_1,cplane_s *param_2)
+void __cdecl BuildFrustumPlanes(GfxViewParms *viewParms,cplane_s *frustumPlanes)
 
 {
   code *pcVar1;
   bool bVar2;
   cplane_s *pcVar3;
   uchar local_80;
-  DpvsPlane local_74 [5];
+  DpvsPlane dpvsFrustumPlanes [5];
   uint local_c;
-  uint local_8;
+  uint planeIndex;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (GfxViewParms *)0x0) &&
+  if ((viewParms == (GfxViewParms *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",
                                0x3f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (cplane_s *)0x0) &&
+  if ((frustumPlanes == (cplane_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",
                                0x40,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  R_FrustumClipPlanes(&param_1->viewProjectionMatrix,frustumSidePlanes,5,local_74);
-  local_8 = 0;
+  R_FrustumClipPlanes(&viewParms->viewProjectionMatrix,frustumSidePlanes,5,dpvsFrustumPlanes);
+  planeIndex = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < planeIndex) {
       return;
     }
-    pcVar3 = param_2 + local_8;
-    pcVar3->normal[0] = local_74[local_8].coeffs[0];
-    pcVar3->normal[1] = local_74[local_8].coeffs[1];
-    pcVar3->normal[2] = local_74[local_8].coeffs[2];
-    pcVar3->dist = local_74[local_8].coeffs[3];
-    if ((param_2[local_8].dist != param_2[local_8].dist) &&
+    pcVar3 = frustumPlanes + planeIndex;
+    pcVar3->normal[0] = dpvsFrustumPlanes[planeIndex].coeffs[0];
+    pcVar3->normal[1] = dpvsFrustumPlanes[planeIndex].coeffs[1];
+    pcVar3->normal[2] = dpvsFrustumPlanes[planeIndex].coeffs[2];
+    pcVar3->dist = dpvsFrustumPlanes[planeIndex].coeffs[3];
+    if ((frustumPlanes[planeIndex].dist != frustumPlanes[planeIndex].dist) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",
                                  0x47,0,"%s"), !bVar2)) break;
-    param_2[local_8].dist = param_2[local_8].dist * -1.0;
-    if (param_2[local_8].normal[0] == 1.0) {
+    frustumPlanes[planeIndex].dist = frustumPlanes[planeIndex].dist * -1.0;
+    if (frustumPlanes[planeIndex].normal[0] == 1.0) {
       local_80 = '\0';
     }
-    else if (param_2[local_8].normal[1] == 1.0) {
+    else if (frustumPlanes[planeIndex].normal[1] == 1.0) {
       local_80 = '\x01';
     }
-    else if (param_2[local_8].normal[2] == 1.0) {
+    else if (frustumPlanes[planeIndex].normal[2] == 1.0) {
       local_80 = '\x02';
     }
     else {
       local_80 = '\x03';
     }
-    param_2[local_8].type = local_80;
-    SetPlaneSignbits(param_2 + local_8);
-    local_8 = local_8 + 1;
+    frustumPlanes[planeIndex].type = local_80;
+    SetPlaneSignbits(frustumPlanes + planeIndex);
+    planeIndex = planeIndex + 1;
   }
   pcVar1 = (code *)swi(3);
   (*pcVar1)();
@@ -79,17 +79,18 @@ void __cdecl BuildFrustumPlanes(GfxViewParms *param_1,cplane_s *param_2)
 
 // 00B2BA10  RB_DrawCollisionPoly  (gfx_d3d/rb_showcollision.cpp:80)
 
-void __cdecl RB_DrawCollisionPoly(int param_1,float (*param_2) [3],float *param_3)
+void __cdecl RB_DrawCollisionPoly(int numPoints,float (*points) [3],float *colorFloat)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_14;
-  int local_10;
-  int local_c;
-  GfxColor local_8;
+  int tessVertIndex;
+  int vertCount;
+  int vertIndex;
+  int vertIndexPrev;
+  GfxColor color;
   
-  if (param_1 < 3) {
+  if (numPoints < 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",0x57
                              ,0,"%s");
     if (!bVar2) {
@@ -98,7 +99,7 @@ void __cdecl RB_DrawCollisionPoly(int param_1,float (*param_2) [3],float *param_
       return;
     }
   }
-  if (param_2 == (float (*) [3])0x0) {
+  if (points == (float (*) [3])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",0x58
                              ,0,"%s");
     if (!bVar2) {
@@ -109,33 +110,33 @@ void __cdecl RB_DrawCollisionPoly(int param_1,float (*param_2) [3],float *param_
   }
   if (((r_showCollisionPolyType->current).integer == 2) ||
      ((r_showCollisionPolyType->current).integer == 0)) {
-    R_ConvertColorToBytes(param_3,local_8.array);
+    R_ConvertColorToBytes(colorFloat,color.array);
     RB_BeginSurface(rgp.whiteMaterial,'\x04');
     R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_DEBUG);
-    RB_CheckTessOverflow(param_1,(param_1 + -2) * 3);
-    for (local_10 = 0; local_10 < param_1; local_10 = local_10 + 1) {
-      RB_SetPolyVert(param_2[local_10],local_8,tess.vertexCount + local_10);
+    RB_CheckTessOverflow(numPoints,(numPoints + -2) * 3);
+    for (vertIndex = 0; vertIndex < numPoints; vertIndex = vertIndex + 1) {
+      RB_SetPolyVert(points[vertIndex],color,tess.vertexCount + vertIndex);
     }
-    for (local_10 = 2; local_10 < param_1; local_10 = local_10 + 1) {
+    for (vertIndex = 2; vertIndex < numPoints; vertIndex = vertIndex + 1) {
       tess.indices[tess.indexCount] = (ushort)tess.vertexCount;
-      tess.indices[tess.indexCount + 1] = (short)tess.vertexCount + (short)local_10;
-      tess.indices[tess.indexCount + 2] = (short)tess.vertexCount + -1 + (short)local_10;
+      tess.indices[tess.indexCount + 1] = (short)tess.vertexCount + (short)vertIndex;
+      tess.indices[tess.indexCount + 2] = (short)tess.vertexCount + -1 + (short)vertIndex;
       tess.indexCount = tess.indexCount + 3;
     }
-    tess.vertexCount = tess.vertexCount + param_1;
+    tess.vertexCount = tess.vertexCount + numPoints;
     RB_EndTessSurface();
   }
   if (((r_showCollisionPolyType->current).integer == 1) ||
      ((r_showCollisionPolyType->current).integer == 0)) {
-    local_14 = 0;
-    local_c = param_1 + -1;
-    for (local_10 = 0; local_10 < param_1; local_10 = local_10 + 1) {
-      local_14 = RB_AddDebugLine(param_2[local_c],param_2[local_10],param_3,
-                                 (r_showCollisionDepthTest->current).enabled,local_14,0xaa5,
-                                 debugLineVerts);
-      local_c = local_10;
+    vertCount = 0;
+    vertIndexPrev = numPoints + -1;
+    for (vertIndex = 0; vertIndex < numPoints; vertIndex = vertIndex + 1) {
+      vertCount = RB_AddDebugLine(points[vertIndexPrev],points[vertIndex],colorFloat,
+                                  (r_showCollisionDepthTest->current).enabled,vertCount,0xaa5,
+                                  debugLineVerts);
+      vertIndexPrev = vertIndex;
     }
-    RB_EndDebugLines(local_14 / 2,debugLineVerts);
+    RB_EndDebugLines(vertCount / 2,debugLineVerts);
   }
   return;
 }
@@ -145,14 +146,17 @@ void __cdecl RB_DrawCollisionPoly(int param_1,float (*param_2) [3],float *param_
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl RB_ShowCollision(GfxViewParms *param_1)
+void __cdecl RB_ShowCollision(GfxViewParms *viewParms)
 
 {
-  int iVar1;
-  code *pcVar2;
-  bool bVar3;
+  int contentMask_00;
+  code *pcVar1;
+  bool bVar2;
   uchar local_94;
-  cplane_s local_84 [4];
+  cplane_s *nearPlane;
+  int contentMask;
+  cplane_s *farPlane;
+  cplane_s frustumPlanes [4];
   float local_34;
   float local_30;
   float local_2c;
@@ -161,16 +165,16 @@ void __cdecl RB_ShowCollision(GfxViewParms *param_1)
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == (GfxViewParms *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",
-                               0x87,0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((viewParms == (GfxViewParms *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_showcollision.cpp",
+                               0x87,0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
   if ((r_showCollision->current).integer != 0) {
-    iVar1 = showCollisionContentMasks[(r_showCollision->current).integer];
-    BuildFrustumPlanes(param_1,local_84);
+    contentMask_00 = showCollisionContentMasks[(r_showCollision->current).integer];
+    BuildFrustumPlanes(viewParms,frustumPlanes);
     local_20.normal[0] = local_34 * -1.0;
     local_20.normal[1] = local_30 * -1.0;
     local_20.normal[2] = local_2c * -1.0;
@@ -191,7 +195,7 @@ void __cdecl RB_ShowCollision(GfxViewParms *param_1)
     SetPlaneSignbits(&local_20);
     if (((r_showCollisionGroups->current).integer == 1) ||
        ((r_showCollisionGroups->current).integer == 0)) {
-      CM_ShowBrushCollision(iVar1,local_84,6,RB_DrawCollisionPoly);
+      CM_ShowBrushCollision(contentMask_00,frustumPlanes,6,RB_DrawCollisionPoly);
     }
     if (tess.indexCount != 0) {
       RB_EndTessSurface();

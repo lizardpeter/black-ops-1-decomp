@@ -5,12 +5,12 @@
 undefined4 * _HTFTPDir_new(undefined4 param_1)
 
 {
-  undefined4 *puVar1;
-  int iVar2;
+  undefined4 *pBlock;
+  int iVar1;
   undefined4 unaff_EDI;
   
-  puVar1 = (undefined4 *)_HTMemory_calloc(1);
-  if (puVar1 == (undefined4 *)0x0) {
+  pBlock = (undefined4 *)_HTMemory_calloc(1);
+  if (pBlock == (undefined4 *)0x0) {
     if (DAT_03547718 != (code *)0x0) {
       (*DAT_03547718)("HTFTPDir",
                       "C:\\projects_pc\\cod\\codsrc\\libs\\libwww\\Library\\src\\HTFTPDir.c",0x11a);
@@ -18,18 +18,18 @@ undefined4 * _HTFTPDir_new(undefined4 param_1)
                     /* WARNING: Subroutine does not return */
     abort();
   }
-  *puVar1 = &PTR_s_FTPDir_009d4578;
-  puVar1[1] = unaff_EDI;
-  puVar1[2] = param_1;
-  puVar1[3] = 0;
-  iVar2 = _HTDir_new();
-  puVar1[4] = iVar2;
-  puVar1[5] = 1;
-  if (iVar2 == 0) {
-    free(puVar1);
+  *pBlock = &PTR_s_FTPDir_009d4578;
+  pBlock[1] = unaff_EDI;
+  pBlock[2] = param_1;
+  pBlock[3] = 0;
+  iVar1 = _HTDir_new();
+  pBlock[4] = iVar1;
+  pBlock[5] = 1;
+  if (iVar1 == 0) {
+    free(pBlock);
     DAT_034f8f30 = &PTR_s_ErrorStream_009d42d4;
     return &DAT_034f8f30;
   }
-  return puVar1;
+  return pBlock;
 }
 

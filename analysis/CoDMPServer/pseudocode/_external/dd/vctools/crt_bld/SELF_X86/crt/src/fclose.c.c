@@ -5,34 +5,34 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl fclose(_iobuf *param_1)
+int __cdecl fclose(_iobuf *stream)
 
 {
   int *piVar1;
-  int local_20;
+  int result;
   
-  local_20 = -1;
-  if (param_1 == (_iobuf *)0x0) {
+  result = -1;
+  if (stream == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    local_20 = -1;
+    result = -1;
   }
-  else if ((param_1->_flag & 0x40) == 0) {
-    _lock_file(param_1);
-    local_20 = _fclose_nolock(param_1);
+  else if ((stream->_flag & 0x40) == 0) {
+    _lock_file(stream);
+    result = _fclose_nolock(stream);
     FUN_00c1168b();
   }
   else {
-    param_1->_flag = 0;
+    stream->_flag = 0;
   }
-  return local_20;
+  return result;
 }
 
 
 // 00C115A0  _fclose_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/fclose.c:86)
 
-int __cdecl _fclose_nolock(_iobuf *param_1)
+int __cdecl _fclose_nolock(_iobuf *str)
 
 {
   int *piVar1;
@@ -40,27 +40,27 @@ int __cdecl _fclose_nolock(_iobuf *param_1)
   int iVar3;
   
   iVar3 = -1;
-  if (param_1 == (_iobuf *)0x0) {
+  if (str == (_iobuf *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar3 = -1;
   }
   else {
-    if ((param_1->_flag & 0x83) != 0) {
-      iVar3 = _flush(param_1);
-      _freebuf(param_1);
-      iVar2 = _fileno(param_1);
+    if ((str->_flag & 0x83) != 0) {
+      iVar3 = _flush(str);
+      _freebuf(str);
+      iVar2 = _fileno(str);
       iVar2 = _close(iVar2);
       if (iVar2 < 0) {
         iVar3 = -1;
       }
-      else if (param_1->_tmpfname != (char *)0x0) {
-        free(param_1->_tmpfname);
-        param_1->_tmpfname = (char *)0x0;
+      else if (str->_tmpfname != (char *)0x0) {
+        free(str->_tmpfname);
+        str->_tmpfname = (char *)0x0;
       }
     }
-    param_1->_flag = 0;
+    str->_flag = 0;
   }
   return iVar3;
 }

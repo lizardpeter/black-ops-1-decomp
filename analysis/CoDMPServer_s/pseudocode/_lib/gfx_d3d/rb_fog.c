@@ -2,7 +2,7 @@
 
 // 0085E9A0  R_SetFrameFog  (gfx_d3d/rb_fog.cpp:11)
 
-void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
+void __cdecl R_SetFrameFog(GfxCmdBufInput *viewInfo,GfxViewInfo *param_2)
 
 {
   undefined4 uVar1;
@@ -63,7 +63,7 @@ void __cdecl R_SetFrameFog(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
   *(undefined4 *)(unaff_ESI + 0x3a4) = uVar1;
   *(undefined4 *)(unaff_ESI + 0x3a8) = uVar2;
   *(undefined4 *)(unaff_ESI + 0x3ac) = uVar3;
-  fVar11 = param_1->consts[0x10][2];
+  fVar11 = viewInfo->consts[0x10][2];
   fVar8 = *(float *)(iVar6 + 0x16cc08);
   fVar4 = *(float *)(iVar6 + 0x16cc00);
   if (fVar4 != 0.0) {

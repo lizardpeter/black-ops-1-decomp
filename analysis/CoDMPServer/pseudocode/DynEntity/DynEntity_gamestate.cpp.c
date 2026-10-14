@@ -4,12 +4,12 @@
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WritePosition(msg_t *param_1,float *param_2)
+void __cdecl MSG_WritePosition(msg_t *msg,float *origin)
 
 {
-  MSG_WriteBits(param_1,(int)*param_2,0x20);
-  MSG_WriteBits(param_1,(int)param_2[1],0x20);
-  MSG_WriteBits(param_1,(int)param_2[2],0x20);
+  MSG_WriteBits(msg,(int)*origin,0x20);
+  MSG_WriteBits(msg,(int)origin[1],0x20);
+  MSG_WriteBits(msg,(int)origin[2],0x20);
   return;
 }
 
@@ -18,17 +18,18 @@ void __cdecl MSG_WritePosition(msg_t *param_1,float *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_ReadPosition(msg_t *param_1,float *param_2)
+void __cdecl MSG_ReadPosition(msg_t *msg,float *origin)
 
 {
   float fVar1;
+  int temp;
   
-  fVar1 = (float)MSG_ReadBits(param_1,0x20);
-  *param_2 = fVar1;
-  fVar1 = (float)MSG_ReadBits(param_1,0x20);
-  param_2[1] = fVar1;
-  fVar1 = (float)MSG_ReadBits(param_1,0x20);
-  param_2[2] = fVar1;
+  fVar1 = (float)MSG_ReadBits(msg,0x20);
+  *origin = fVar1;
+  fVar1 = (float)MSG_ReadBits(msg,0x20);
+  origin[1] = fVar1;
+  fVar1 = (float)MSG_ReadBits(msg,0x20);
+  origin[2] = fVar1;
   return;
 }
 
@@ -37,13 +38,15 @@ void __cdecl MSG_ReadPosition(msg_t *param_1,float *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteQuat(msg_t *param_1,float *param_2)
+void __cdecl MSG_WriteQuat(msg_t *msg,float *quat)
 
 {
-  MSG_WriteByte(param_1,(int)(*param_2 * 128.0) + 0x80);
-  MSG_WriteByte(param_1,(int)(param_2[1] * 128.0) + 0x80);
-  MSG_WriteByte(param_1,(int)(param_2[2] * 128.0) + 0x80);
-  MSG_WriteByte(param_1,(int)(param_2[3] * 128.0) + 0x80);
+  int temp;
+  
+  MSG_WriteByte(msg,(int)(*quat * 128.0) + 0x80);
+  MSG_WriteByte(msg,(int)(quat[1] * 128.0) + 0x80);
+  MSG_WriteByte(msg,(int)(quat[2] * 128.0) + 0x80);
+  MSG_WriteByte(msg,(int)(quat[3] * 128.0) + 0x80);
   return;
 }
 
@@ -52,84 +55,85 @@ void __cdecl MSG_WriteQuat(msg_t *param_1,float *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_ReadQuat(msg_t *param_1,float *param_2)
+void __cdecl MSG_ReadQuat(msg_t *msg,float *quat)
 
 {
   int iVar1;
+  int temp;
   
-  iVar1 = MSG_ReadByte(param_1);
-  *param_2 = (float)(iVar1 + -0x80) / 128.0;
-  iVar1 = MSG_ReadByte(param_1);
-  param_2[1] = (float)(iVar1 + -0x80) / 128.0;
-  iVar1 = MSG_ReadByte(param_1);
-  param_2[2] = (float)(iVar1 + -0x80) / 128.0;
-  iVar1 = MSG_ReadByte(param_1);
-  param_2[3] = (float)(iVar1 + -0x80) / 128.0;
-  Vec4Normalize(param_2);
+  iVar1 = MSG_ReadByte(msg);
+  *quat = (float)(iVar1 + -0x80) / 128.0;
+  iVar1 = MSG_ReadByte(msg);
+  quat[1] = (float)(iVar1 + -0x80) / 128.0;
+  iVar1 = MSG_ReadByte(msg);
+  quat[2] = (float)(iVar1 + -0x80) / 128.0;
+  iVar1 = MSG_ReadByte(msg);
+  quat[3] = (float)(iVar1 + -0x80) / 128.0;
+  Vec4Normalize(quat);
   return;
 }
 
 
 // 005B82A0  DynEnt_WriteGameState  (DynEntity/DynEntity_gamestate.cpp:69)
 
-/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl DynEnt_WriteGameState(msg_t *param_1)
+void __cdecl DynEnt_WriteGameState(msg_t *msg)
 
 {
   int iVar1;
-  char *pcVar2;
-  float local_40 [3];
-  float local_34 [3];
-  ushort local_28;
-  DynEntityDrawType local_24;
-  DynEntityDrawType local_20;
-  DynEntityPose *local_1c;
-  DynEntityClient *local_18;
-  int local_14;
-  DynEntityDef *local_10;
-  ushort local_c;
-  ushort local_8;
+  char *msg_00;
+  float tvel [3];
+  float avel [3];
+  ushort absDynEntId;
+  uint drawType;
+  DynEntityCollType collType;
+  DynEntityPose *dynEntClientPose;
+  DynEntityClient *dynEntClient;
+  uint sizeAtStart;
+  DynEntityDef *dynEntDef;
+  ushort dynEntCount;
+  ushort dynEntId;
   
-  local_14 = param_1->cursize;
-  for (local_24 = DYNENT_DRAW_MODEL; local_24 < DYNENT_DRAW_COUNT;
-      local_24 = local_24 + DYNENT_DRAW_BRUSH) {
-    local_20 = local_24;
-    local_c = DynEnt_GetEntityCount(local_24);
-    if (local_24 == DYNENT_DRAW_MODEL) {
-      local_c = cm.originalDynEntCount;
+  sizeAtStart = msg->cursize;
+  for (drawType = 0; drawType < 2; drawType = drawType + 1) {
+    collType = drawType;
+    dynEntCount = DynEnt_GetEntityCount(drawType);
+    if (drawType == 0) {
+      dynEntCount = cm.originalDynEntCount;
     }
-    for (local_8 = 0; local_8 < local_c; local_8 = local_8 + 1) {
-      local_10 = DynEnt_GetEntityDef(local_8,local_24);
-      local_18 = DynEnt_GetClientEntity(local_8,local_24);
-      local_28 = DynEnt_GetClientAbsId(local_8,local_24);
-      local_1c = DynEnt_GetClientPose(local_8,local_24);
-      if ((local_18->flags & 1) != 0) {
-        iVar1 = VecNCompareCustomEpsilon((local_10->pose).origin,(local_1c->pose).origin,0.01,3);
+    for (dynEntId = 0; dynEntId < dynEntCount; dynEntId = dynEntId + 1) {
+      dynEntDef = DynEnt_GetEntityDef(dynEntId,drawType);
+      dynEntClient = DynEnt_GetClientEntity(dynEntId,drawType);
+      absDynEntId = DynEnt_GetClientAbsId(dynEntId,drawType);
+      dynEntClientPose = DynEnt_GetClientPose(dynEntId,drawType);
+      if ((dynEntClient->flags & 1) != 0) {
+        iVar1 = VecNCompareCustomEpsilon
+                          ((dynEntDef->pose).origin,(dynEntClientPose->pose).origin,0.01,3);
         if (iVar1 == 0) {
-          MSG_WriteShort(param_1,(uint)local_28);
-          MSG_WritePosition(param_1,(local_1c->pose).origin);
-          MSG_WriteQuat(param_1,(float *)local_1c);
+          MSG_WriteShort(msg,(uint)absDynEntId);
+          MSG_WritePosition(msg,(dynEntClientPose->pose).origin);
+          MSG_WriteQuat(msg,(float *)dynEntClientPose);
           Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-          if (local_18->physObjId == 0) {
-            MSG_WriteBit0(param_1);
+          if (dynEntClient->physObjId == 0) {
+            MSG_WriteBit0(msg);
           }
           else {
-            MSG_WriteBit1(param_1);
-            Phys_ObjGetVelocities(local_18->physObjId,local_40,local_34);
-            MSG_WritePosition(param_1,local_40);
-            MSG_WritePosition(param_1,local_34);
+            MSG_WriteBit1(msg);
+            Phys_ObjGetVelocities(dynEntClient->physObjId,tvel,avel);
+            MSG_WritePosition(msg,tvel);
+            MSG_WritePosition(msg,avel);
           }
           Sys_LeaveCriticalSection(CRITSECT_PHYSICS);
         }
       }
     }
   }
-  MSG_WriteShort(param_1,-1);
+  MSG_WriteShort(msg,-1);
   iVar1 = 0;
-  pcVar2 = va("--\nDynEnt_WriteGameState wrote %i bytes\n--\n");
-  Com_PrintMessage(0,pcVar2,iVar1);
+  msg_00 = va("--\nDynEnt_WriteGameState wrote %i bytes\n--\n");
+  Com_PrintMessage(0,msg_00,iVar1);
   return;
 }
 
@@ -137,65 +141,70 @@ void __cdecl DynEnt_WriteGameState(msg_t *param_1)
 // 005B85A0  DynEnt_ReadGameState  (DynEntity/DynEntity_gamestate.cpp:129)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DynEnt_ReadGameState(msg_t *param_1,int param_2)
+void __cdecl DynEnt_ReadGameState(msg_t *msg,int localClientNum)
 
 {
   bool bVar1;
   int iVar2;
-  DynEntityPose *pDVar3;
-  DynEntityDrawType local_50;
-  DynEntityClient *local_4c;
-  DynEntityDef *local_48;
-  ushort local_44 [2];
-  float local_40;
+  DynEntityPose *pose;
+  DynEntityPose *dynEntPose;
+  DynEntityDrawType drawType;
+  DynEntityClient *dynEntClient;
+  DynEntityDef *dynEntDef;
+  ushort id;
+  float origin;
   float local_3c;
   float local_38;
-  float local_34;
+  float quat;
   float local_30;
   float local_2c;
   float local_28;
-  float local_24 [3];
-  float local_18 [3];
-  int local_c;
-  ushort local_8;
+  float tvel [3];
+  float avel [3];
+  int inPhysics;
+  ushort absDynEntId;
   
-  iVar2 = MSG_ReadShort(param_1);
-  local_8 = (ushort)iVar2;
-  while (local_8 != 0xffff) {
-    MSG_ReadPosition(param_1,&local_40);
-    MSG_ReadQuat(param_1,&local_34);
-    local_c = MSG_ReadBit(param_1);
-    if (local_c != 0) {
-      MSG_ReadPosition(param_1,local_24);
-      MSG_ReadPosition(param_1,local_18);
+  iVar2 = MSG_ReadShort(msg);
+  absDynEntId = (ushort)iVar2;
+  while (absDynEntId != 0xffff) {
+    MSG_ReadPosition(msg,&origin);
+    MSG_ReadQuat(msg,&quat);
+    inPhysics = MSG_ReadBit(msg);
+    if (inPhysics != 0) {
+      MSG_ReadPosition(msg,tvel);
+      MSG_ReadPosition(msg,avel);
     }
-    bVar1 = CL_LocalClient_IsFirstActive(param_2);
+    bVar1 = CL_LocalClient_IsFirstActive(localClientNum);
     if (bVar1) {
-      local_4c = DynEnt_GetClientEntity(local_8);
-      local_48 = DynEnt_GetEntityDef(local_8);
-      DynEnt_GetClientIdDrawType(local_8,local_44,&local_50);
-      pDVar3 = DynEnt_GetClientPose(local_44[0],local_50);
-      (pDVar3->pose).origin[0] = local_40;
-      (pDVar3->pose).origin[1] = local_3c;
-      (pDVar3->pose).origin[2] = local_38;
-      (pDVar3->pose).quat[0] = local_34;
-      (pDVar3->pose).quat[1] = local_30;
-      (pDVar3->pose).quat[2] = local_2c;
-      (pDVar3->pose).quat[3] = local_28;
-      if (local_c != 0) {
-        if (local_4c->physObjId == 0) {
-          iVar2 = DynEntCl_CreatePhysObj(local_48,local_4c,&pDVar3->pose);
-          local_4c->physObjId = iVar2;
+      dynEntClient = DynEnt_GetClientEntity(absDynEntId);
+      dynEntDef = DynEnt_GetEntityDef(absDynEntId);
+      DynEnt_GetClientIdDrawType(absDynEntId,&id,&drawType);
+      pose = DynEnt_GetClientPose(id,drawType);
+      (pose->pose).origin[0] = origin;
+      (pose->pose).origin[1] = local_3c;
+      (pose->pose).origin[2] = local_38;
+      (pose->pose).quat[0] = quat;
+      (pose->pose).quat[1] = local_30;
+      (pose->pose).quat[2] = local_2c;
+      (pose->pose).quat[3] = local_28;
+      if (inPhysics != 0) {
+        if (dynEntClient->physObjId == 0) {
+          iVar2 = DynEntCl_CreatePhysObj(dynEntDef,dynEntClient,&pose->pose);
+          dynEntClient->physObjId = iVar2;
         }
-        if (local_4c->physObjId != 0) {
-          Phys_ObjSetVelocity(local_4c->physObjId,local_24);
-          Phys_ObjSetAngularVelocity(local_4c->physObjId,local_18);
+        if (dynEntClient->physObjId != 0) {
+          Phys_ObjSetVelocity(dynEntClient->physObjId,tvel);
+          Phys_ObjSetAngularVelocity(dynEntClient->physObjId,avel);
         }
       }
     }
-    iVar2 = MSG_ReadShort(param_1);
-    local_8 = (ushort)iVar2;
+    iVar2 = MSG_ReadShort(msg);
+    absDynEntId = (ushort)iVar2;
   }
   return;
 }
@@ -203,20 +212,21 @@ void __cdecl DynEnt_ReadGameState(msg_t *param_1,int param_2)
 
 // 005B8880  Vec4Normalize  (universal/com_vector.h:724)
 
-float __cdecl Vec4Normalize(float *param_1)
+float __cdecl Vec4Normalize(float *v)
 
 {
   float fVar1;
   float fVar2;
+  float ilength;
+  float length;
   
-  fVar1 = SQRT(*param_1 * *param_1 + param_1[1] * param_1[1] + param_1[2] * param_1[2] +
-               param_1[3] * param_1[3]);
+  fVar1 = SQRT(*v * *v + v[1] * v[1] + v[2] * v[2] + v[3] * v[3]);
   if (fVar1 != 0.0) {
     fVar2 = 1.0 / fVar1;
-    *param_1 = *param_1 * fVar2;
-    param_1[1] = param_1[1] * fVar2;
-    param_1[2] = param_1[2] * fVar2;
-    param_1[3] = param_1[3] * fVar2;
+    *v = *v * fVar2;
+    v[1] = v[1] * fVar2;
+    v[2] = v[2] * fVar2;
+    v[3] = v[3] * fVar2;
   }
   return fVar1;
 }

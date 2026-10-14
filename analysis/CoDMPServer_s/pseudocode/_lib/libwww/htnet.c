@@ -51,24 +51,24 @@ undefined4 _HTNetCall_addBefore(int param_1,int param_2,int param_3)
 undefined4 _HTNetCall_deleteBefore(void)
 
 {
+  undefined4 *pBlock;
   undefined4 *puVar1;
   undefined4 *puVar2;
-  undefined4 *puVar3;
   
-  puVar2 = DAT_03547724;
-  puVar3 = puVar2;
+  puVar1 = DAT_03547724;
+  puVar2 = puVar1;
   if (DAT_03547724 != (undefined4 *)0x0) {
-    while (((puVar3 != (undefined4 *)0x0 &&
-            (puVar3 = (undefined4 *)puVar3[1], puVar3 != (undefined4 *)0x0)) &&
-           (puVar1 = (undefined4 *)*puVar3, puVar1 != (undefined4 *)0x0))) {
-      if ((undefined1 *)*puVar1 == &LAB_00891510) {
+    while (((puVar2 != (undefined4 *)0x0 &&
+            (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
+           (pBlock = (undefined4 *)*puVar2, pBlock != (undefined4 *)0x0))) {
+      if ((undefined1 *)*pBlock == &LAB_00891510) {
         _HTList_removeObject();
-        if ((void *)puVar1[1] != (void *)0x0) {
-          free((void *)puVar1[1]);
+        if ((void *)pBlock[1] != (void *)0x0) {
+          free((void *)pBlock[1]);
         }
-        puVar1[1] = 0;
-        free(puVar1);
-        puVar3 = puVar2;
+        pBlock[1] = 0;
+        free(pBlock);
+        puVar2 = puVar1;
       }
     }
     return 0;
@@ -82,30 +82,30 @@ undefined4 _HTNetCall_deleteBefore(void)
 undefined4 _HTNetCall_deleteAfterAll(void)
 
 {
-  void *pvVar1;
+  void *pBlock;
   undefined4 *in_EAX;
-  undefined4 *puVar2;
+  undefined4 *puVar1;
   
-  puVar2 = in_EAX;
+  puVar1 = in_EAX;
   if (in_EAX == (undefined4 *)0x0) {
     return 0;
   }
-  while (((puVar2 != (undefined4 *)0x0 &&
-          (puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0)) &&
-         (pvVar1 = (void *)*puVar2, pvVar1 != (void *)0x0))) {
-    if (*(void **)((int)pvVar1 + 4) != (void *)0x0) {
-      free(*(void **)((int)pvVar1 + 4));
+  while (((puVar1 != (undefined4 *)0x0 &&
+          (puVar1 = (undefined4 *)puVar1[1], puVar1 != (undefined4 *)0x0)) &&
+         (pBlock = (void *)*puVar1, pBlock != (void *)0x0))) {
+    if (*(void **)((int)pBlock + 4) != (void *)0x0) {
+      free(*(void **)((int)pBlock + 4));
     }
-    *(undefined4 *)((int)pvVar1 + 4) = 0;
-    free(pvVar1);
+    *(undefined4 *)((int)pBlock + 4) = 0;
+    free(pBlock);
   }
   do {
-    puVar2 = (undefined4 *)in_EAX[1];
+    puVar1 = (undefined4 *)in_EAX[1];
     if (in_EAX != (undefined4 *)0x0) {
       free(in_EAX);
     }
-    in_EAX = puVar2;
-  } while (puVar2 != (undefined4 *)0x0);
+    in_EAX = puVar1;
+  } while (puVar1 != (undefined4 *)0x0);
   return 1;
 }
 
@@ -116,41 +116,41 @@ int _HTNetCall_executeBefore(int *param_1,int param_2)
 
 {
   undefined4 *puVar1;
-  void *pvVar2;
-  int iVar3;
-  void *pvVar4;
-  int iVar5;
+  void *pBlock;
+  int iVar2;
+  void *pvVar3;
+  int iVar4;
   
-  iVar5 = 0;
-  if ((param_2 == 0) || (iVar3 = *(int *)(param_2 + 0xd0), iVar3 == 0)) {
-    pvVar4 = (void *)0x0;
+  iVar4 = 0;
+  if ((param_2 == 0) || (iVar2 = *(int *)(param_2 + 0xd0), iVar2 == 0)) {
+    pvVar3 = (void *)0x0;
   }
   else {
-    pvVar2 = *(void **)(iVar3 + 0x24);
-    pvVar4 = pvVar2;
-    if ((pvVar2 != (void *)0x0) ||
-       (pvVar2 = *(void **)(iVar3 + 0x28), pvVar4 = pvVar2, pvVar2 != (void *)0x0))
+    pBlock = *(void **)(iVar2 + 0x24);
+    pvVar3 = pBlock;
+    if ((pBlock != (void *)0x0) ||
+       (pBlock = *(void **)(iVar2 + 0x28), pvVar3 = pBlock, pBlock != (void *)0x0))
     goto LAB_0088558e;
   }
-  pvVar2 = (void *)_HTAnchor_address();
+  pBlock = (void *)_HTAnchor_address();
 LAB_0088558e:
-  if (((param_1 != (int *)0x0) && (param_2 != 0)) && (pvVar2 != (void *)0x0)) {
+  if (((param_1 != (int *)0x0) && (param_2 != 0)) && (pBlock != (void *)0x0)) {
     while ((param_1 = (int *)param_1[1], param_1 != (int *)0x0 &&
            (puVar1 = (undefined4 *)*param_1, puVar1 != (undefined4 *)0x0))) {
-      if ((puVar1[1] == 0) || (iVar3 = _HTStrMatch(), iVar3 != 0)) {
-        iVar5 = (*(code *)*puVar1)(param_2,puVar1[3],0);
-        if (iVar5 != 0) break;
-        pvVar4 = (void *)_HTAnchor_physical();
-        if (pvVar4 != (void *)0x0) {
-          pvVar2 = pvVar4;
+      if ((puVar1[1] == 0) || (iVar2 = _HTStrMatch(), iVar2 != 0)) {
+        iVar4 = (*(code *)*puVar1)(param_2,puVar1[3],0);
+        if (iVar4 != 0) break;
+        pvVar3 = (void *)_HTAnchor_physical();
+        if (pvVar3 != (void *)0x0) {
+          pBlock = pvVar3;
         }
       }
     }
   }
-  if ((pvVar4 == (void *)0x0) && (pvVar2 != (void *)0x0)) {
-    free(pvVar2);
+  if ((pvVar3 == (void *)0x0) && (pBlock != (void *)0x0)) {
+    free(pBlock);
   }
-  return iVar5;
+  return iVar4;
 }
 
 
@@ -203,23 +203,23 @@ undefined4 _HTNetCall_addAfter(int param_1,int param_2,int param_3,int param_4,i
 undefined4 _HTNetCall_deleteAfter(int param_1)
 
 {
-  int *piVar1;
+  int *pBlock;
+  undefined4 *puVar1;
   undefined4 *puVar2;
-  undefined4 *puVar3;
   
-  puVar2 = DAT_03547728;
-  if ((DAT_03547728 != (undefined4 *)0x0) && (puVar3 = puVar2, param_1 != 0)) {
-    while ((puVar3 != (undefined4 *)0x0 &&
-           ((puVar3 = (undefined4 *)puVar3[1], puVar3 != (undefined4 *)0x0 &&
-            (piVar1 = (int *)*puVar3, piVar1 != (int *)0x0))))) {
-      if (*piVar1 == param_1) {
+  puVar1 = DAT_03547728;
+  if ((DAT_03547728 != (undefined4 *)0x0) && (puVar2 = puVar1, param_1 != 0)) {
+    while ((puVar2 != (undefined4 *)0x0 &&
+           ((puVar2 = (undefined4 *)puVar2[1], puVar2 != (undefined4 *)0x0 &&
+            (pBlock = (int *)*puVar2, pBlock != (int *)0x0))))) {
+      if (*pBlock == param_1) {
         _HTList_removeObject();
-        if ((void *)piVar1[1] != (void *)0x0) {
-          free((void *)piVar1[1]);
+        if ((void *)pBlock[1] != (void *)0x0) {
+          free((void *)pBlock[1]);
         }
-        piVar1[1] = 0;
-        free(piVar1);
-        puVar3 = puVar2;
+        pBlock[1] = 0;
+        free(pBlock);
+        puVar2 = puVar1;
       }
     }
     return 0;

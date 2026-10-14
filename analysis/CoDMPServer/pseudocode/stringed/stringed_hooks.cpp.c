@@ -93,32 +93,32 @@ void __cdecl SEH_UpdateLanguageInfo(void)
 
 {
   int iVar1;
-  int local_c;
-  int local_8;
+  int iNumLanguages;
+  int i;
   
   _Dvar_RegisterInt(loc_language->name,0,0,0xc,0x21,"Language");
   _Dvar_RegisterBool(loc_forceEnglish->name,false,0x21,"Force english language");
   SEH_UpdateCurrentLanguage();
-  local_c = 0;
-  for (local_8 = 0; local_8 < 0xd; local_8 = local_8 + 1) {
-    iVar1 = FS_LanguageHasAssets(local_8);
+  iNumLanguages = 0;
+  for (i = 0; i < 0xd; i = i + 1) {
+    iVar1 = FS_LanguageHasAssets(i);
     if (iVar1 == 0) {
-      g_languages[local_8].bPresent = 0;
+      g_languages[i].bPresent = 0;
     }
     else {
-      g_languages[local_8].bPresent = 1;
-      local_c = local_c + 1;
+      g_languages[i].bPresent = 1;
+      iNumLanguages = iNumLanguages + 1;
     }
   }
-  if (local_c < 1) {
+  if (iNumLanguages < 1) {
     Com_PrintError(0x10,"ERROR: No languages available because no localized assets were found\n");
   }
   iVar1 = SEH_StringEd_SetLanguageStrings((loc_language->current).integer);
   if (iVar1 == 0) {
-    for (local_8 = 0; local_8 < 0xd; local_8 = local_8 + 1) {
-      Dvar_SetInt(loc_language,local_8);
+    for (i = 0; i < 0xd; i = i + 1) {
+      Dvar_SetInt(loc_language,i);
       SEH_UpdateCurrentLanguage();
-      iVar1 = SEH_StringEd_SetLanguageStrings(local_8);
+      iVar1 = SEH_StringEd_SetLanguageStrings(i);
       if (iVar1 != 0) {
         return;
       }
@@ -132,20 +132,20 @@ void __cdecl SEH_UpdateLanguageInfo(void)
 
 // 00723C70  SEH_VerifyLanguageSelection  (stringed/stringed_hooks.cpp:262)
 
-int __cdecl SEH_VerifyLanguageSelection(int param_1)
+int __cdecl SEH_VerifyLanguageSelection(int iLanguageSelection)
 
 {
-  int local_8;
+  int i;
   
-  if (g_languages[param_1].bPresent == 0) {
-    for (local_8 = 0; local_8 < 0xd; local_8 = local_8 + 1) {
-      if (g_languages[(param_1 + local_8) % 0xd].bPresent != 0) {
-        return (param_1 + local_8) % 0xd;
+  if (g_languages[iLanguageSelection].bPresent == 0) {
+    for (i = 0; i < 0xd; i = i + 1) {
+      if (g_languages[(iLanguageSelection + i) % 0xd].bPresent != 0) {
+        return (iLanguageSelection + i) % 0xd;
       }
     }
-    param_1 = 0;
+    iLanguageSelection = 0;
   }
-  return param_1;
+  return iLanguageSelection;
 }
 
 
@@ -171,13 +171,14 @@ void __cdecl SEH_Shutdown_StringEd(void)
 
 // 00723D00  SEH_StringEd_SetLanguageStrings  (stringed/stringed_hooks.cpp:312)
 
-int __cdecl SEH_StringEd_SetLanguageStrings(int param_1)
+int __cdecl SEH_StringEd_SetLanguageStrings(int iLanguage)
 
 {
   int iVar1;
   char *pcVar2;
+  char *pszError;
   
-  if (g_languages[param_1].bPresent == 0) {
+  if (g_languages[iLanguage].bPresent == 0) {
     iVar1 = 0;
   }
   else {
@@ -189,11 +190,11 @@ int __cdecl SEH_StringEd_SetLanguageStrings(int param_1)
       if (((fs_ignoreLocalized->current).enabled == false) &&
          ((loc_warnings->current).enabled != false)) {
         if ((loc_warningsAsErrors->current).enabled == false) {
-          SEH_GetLanguageName(param_1);
+          SEH_GetLanguageName(iLanguage);
           Com_PrintWarning(0x10,"WARNING: Could not load localization strings for %s: %s\n");
         }
         else {
-          SEH_GetLanguageName(param_1);
+          SEH_GetLanguageName(iLanguage);
           Com_Error(ERR_LOCALIZATION,"Could not load localization strings for %s: %s");
         }
       }
@@ -220,15 +221,17 @@ void __cdecl _dynamic_initializer_for__overrideLocalizedEntryList__(void)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-char * __cdecl SE_GetString_FastFile(char *param_1)
+char * __cdecl SE_GetString_FastFile(char *psPackageAndStringReference)
 
 {
   XAssetHeader XVar1;
   char *local_14;
+  LocalizeEntry *localize;
+  char *value;
   
-  local_14 = GetString(param_1);
+  local_14 = GetString(psPackageAndStringReference);
   if (local_14 == (char *)0x0) {
-    XVar1 = DB_FindXAssetHeader(ASSET_TYPE_LOCALIZE_ENTRY,param_1,true,-1);
+    XVar1 = DB_FindXAssetHeader(ASSET_TYPE_LOCALIZE_ENTRY,psPackageAndStringReference,true,-1);
     if (XVar1.xmodelPieces == (XModelPieces *)0x0) {
       local_14 = (char *)0x0;
     }
@@ -242,7 +245,7 @@ char * __cdecl SE_GetString_FastFile(char *param_1)
 
 // 00723DC0  SE_GetString  (stringed/stringed_hooks.cpp:358)
 
-char * __cdecl SE_GetString(char *param_1)
+char * __cdecl SE_GetString(char *psPackageAndStringReference)
 
 {
   char *pcVar1;
@@ -254,35 +257,35 @@ char * __cdecl SE_GetString(char *param_1)
   else {
     local_c = SE_GetString_FastFile;
   }
-  pcVar1 = (char *)(*local_c)(param_1);
+  pcVar1 = (char *)(*local_c)(psPackageAndStringReference);
   return pcVar1;
 }
 
 
 // 00723E60  SEH_StringEd_GetString  (stringed/stringed_hooks.cpp:369)
 
-char * __cdecl SEH_StringEd_GetString(char *param_1)
+char * __cdecl SEH_StringEd_GetString(char *pszReference)
 
 {
   if ((((loc_translate != (dvar_s *)0x0) && ((loc_translate->current).enabled != false)) &&
-      (*param_1 != '\0')) && ((*param_1 == '\0' || (param_1[1] != '\0')))) {
-    param_1 = SE_GetString(param_1);
+      (*pszReference != '\0')) && ((*pszReference == '\0' || (pszReference[1] != '\0')))) {
+    pszReference = SE_GetString(pszReference);
   }
-  return param_1;
+  return pszReference;
 }
 
 
 // 00723EB0  SEH_SafeTranslateString  (stringed/stringed_hooks.cpp:391)
 
-char * __cdecl SEH_SafeTranslateString(char *param_1)
+char * __cdecl SEH_SafeTranslateString(char *pszReference)
 
 {
-  char *local_8;
+  char *pszTranslation;
   
-  local_8 = SEH_StringEd_GetString(param_1);
-  if (local_8 == (char *)0x0) {
+  pszTranslation = SEH_StringEd_GetString(pszReference);
+  if (pszTranslation == (char *)0x0) {
     if ((loc_warnings->current).enabled == false) {
-      I_strncpyz(szErrorString,param_1,0x400);
+      I_strncpyz(szErrorString,pszReference,0x400);
     }
     else {
       if ((loc_warningsAsErrors->current).enabled == false) {
@@ -292,44 +295,45 @@ char * __cdecl SEH_SafeTranslateString(char *param_1)
         Com_Error(ERR_LOCALIZATION,"Could not translate exe string \"%s\"");
       }
       builtin_strncpy(szErrorString,"^1UNLOCALIZED(^7",0x11);
-      I_strncat(szErrorString,0x400,param_1);
+      I_strncat(szErrorString,0x400,pszReference);
       I_strncat(szErrorString,0x400,"^1)^7");
     }
-    local_8 = szErrorString;
+    pszTranslation = szErrorString;
   }
-  return local_8;
+  return pszTranslation;
 }
 
 
 // 00724C50  SEH_GetLocalizedTokenReference  (stringed/stringed_hooks.cpp:425)
 
 int __cdecl
-SEH_GetLocalizedTokenReference(char *param_1,char *param_2,char *param_3,msgLocErrType_t param_4)
+SEH_GetLocalizedTokenReference
+          (char *token,char *reference,char *messageType,msgLocErrType_t errType)
 
 {
   undefined3 in_stack_00000011;
-  char *local_8;
+  char *translation;
   
-  local_8 = SEH_StringEd_GetString(param_2);
-  if (local_8 == (char *)0x0) {
+  translation = SEH_StringEd_GetString(reference);
+  if (translation == (char *)0x0) {
     if ((loc_warnings == (dvar_s *)0x0) || ((loc_warnings->current).enabled == false)) {
-      local_8 = va("%s");
+      translation = va("%s");
     }
     else {
       if (((loc_warningsAsErrors == (dvar_s *)0x0) ||
-          ((loc_warningsAsErrors->current).enabled == false)) || (_param_4 == 1)) {
+          ((loc_warningsAsErrors->current).enabled == false)) || (_errType == 1)) {
         Com_PrintWarning(0x10,"WARNING: Could not translate part of %s: \"%s\"\n");
       }
       else {
         Com_Error(ERR_LOCALIZATION,"Could not translate part of %s: \"%s\"");
       }
-      local_8 = va("^1UNLOCALIZED(^7%s^1)^7");
+      translation = va("^1UNLOCALIZED(^7%s^1)^7");
     }
-    if (_param_4 == 1) {
+    if (_errType == 1) {
       return 0;
     }
   }
-  I_strncpyz(param_1,local_8,0x400);
+  I_strncpyz(token,translation,0x400);
   return 1;
 }
 
@@ -338,36 +342,36 @@ SEH_GetLocalizedTokenReference(char *param_1,char *param_2,char *param_3,msgLocE
 
 bool __thiscall
 EXT_List<LocalizeEntry>::Remove
-          (EXT_List<LocalizeEntry> *this,EXT_Link<LocalizeEntry> *param_1,bool param_2)
+          (EXT_List<LocalizeEntry> *this,EXT_Link<LocalizeEntry> *Link,bool DeleteData)
 
 {
-  if ((param_1->m_Last == (EXT_Link<LocalizeEntry> *)0x0) ||
-     (param_1->m_Next == (EXT_Link<LocalizeEntry> *)0x0)) {
-    if ((param_1 == this->m_Head) && (param_1 == this->m_Tail)) {
+  if ((Link->m_Last == (EXT_Link<LocalizeEntry> *)0x0) ||
+     (Link->m_Next == (EXT_Link<LocalizeEntry> *)0x0)) {
+    if ((Link == this->m_Head) && (Link == this->m_Tail)) {
       this->m_Head = (EXT_Link<LocalizeEntry> *)0x0;
       this->m_Tail = (EXT_Link<LocalizeEntry> *)0x0;
     }
-    else if (param_1 == this->m_Head) {
-      param_1->m_Next->m_Last = (EXT_Link<LocalizeEntry> *)0x0;
-      this->m_Head = param_1->m_Next;
+    else if (Link == this->m_Head) {
+      Link->m_Next->m_Last = (EXT_Link<LocalizeEntry> *)0x0;
+      this->m_Head = Link->m_Next;
     }
-    else if (param_1 == this->m_Tail) {
-      param_1->m_Last->m_Next = (EXT_Link<LocalizeEntry> *)0x0;
-      this->m_Tail = param_1->m_Last;
+    else if (Link == this->m_Tail) {
+      Link->m_Last->m_Next = (EXT_Link<LocalizeEntry> *)0x0;
+      this->m_Tail = Link->m_Last;
     }
   }
   else {
-    param_1->m_Last->m_Next = param_1->m_Next;
-    param_1->m_Next->m_Last = param_1->m_Last;
+    Link->m_Last->m_Next = Link->m_Next;
+    Link->m_Next->m_Last = Link->m_Last;
   }
-  if (param_2) {
-    if (param_1->m_Data != (LocalizeEntry *)0x0) {
-      operator_delete(param_1->m_Data);
+  if (DeleteData) {
+    if (Link->m_Data != (LocalizeEntry *)0x0) {
+      operator_delete(Link->m_Data);
     }
-    param_1->m_Data = (LocalizeEntry *)0x0;
+    Link->m_Data = (LocalizeEntry *)0x0;
   }
-  if ((param_1 != (EXT_Link<LocalizeEntry> *)0x0) && (param_1 != (EXT_Link<LocalizeEntry> *)0x0)) {
-    operator_delete(param_1);
+  if ((Link != (EXT_Link<LocalizeEntry> *)0x0) && (Link != (EXT_Link<LocalizeEntry> *)0x0)) {
+    operator_delete(Link);
   }
   this->m_Count = this->m_Count - 1;
   return true;
@@ -376,20 +380,22 @@ EXT_List<LocalizeEntry>::Remove
 
 // 00724620  SEH_ParseDirective  (stringed/stringed_hooks.cpp:462)
 
-void __cdecl SEH_ParseDirective(char *param_1,char *param_2,char *param_3)
+void __cdecl SEH_ParseDirective(char *directive,char *resultName,char *resultArg0)
 
 {
   int extraout_EAX;
+  int len;
+  char *argpos;
   
-  strstr((uchar *)param_1,":");
+  strstr((uchar *)directive,":");
   if (extraout_EAX == 0) {
-    I_strncpyz(param_2,param_1,0x100);
-    *param_3 = '\0';
+    I_strncpyz(resultName,directive,0x100);
+    *resultArg0 = '\0';
   }
   else {
-    memcpy((uchar *)param_2,(uchar *)param_1,extraout_EAX - (int)param_1);
-    param_2[extraout_EAX - (int)param_1] = '\0';
-    I_strncpyz(param_3,(char *)(extraout_EAX + 1),0x100);
+    memcpy((uchar *)resultName,(uchar *)directive,extraout_EAX - (int)directive);
+    resultName[extraout_EAX - (int)directive] = '\0';
+    I_strncpyz(resultArg0,(char *)(extraout_EAX + 1),0x100);
   }
   return;
 }
@@ -399,36 +405,36 @@ void __cdecl SEH_ParseDirective(char *param_1,char *param_2,char *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SEH_GetBindingForDirective(int param_1,char *param_2,char *param_3)
+void __cdecl SEH_GetBindingForDirective(int localClientNum,char *directive,char *result)
 
 {
   int iVar1;
-  char local_20c [256];
-  char local_10c [260];
+  char arg0 [256];
+  char name [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = UI_GetKeyBindingLocalizedString(param_1,param_2,param_3,0);
+  iVar1 = UI_GetKeyBindingLocalizedString(localClientNum,directive,result,0);
   if (iVar1 != 0) {
-    UI_FilterStringForButtonAnimation(param_3,0x100);
+    UI_FilterStringForButtonAnimation(result,0x100);
     return;
   }
-  SEH_ParseDirective(param_2,local_10c,local_20c);
-  iVar1 = I_stricmp(local_10c,"gocrouch");
+  SEH_ParseDirective(directive,name,arg0);
+  iVar1 = I_stricmp(name,"gocrouch");
   if (iVar1 == 0) {
-    iVar1 = UI_GetKeyBindingLocalizedString(param_1,"togglecrouch",param_3,0);
+    iVar1 = UI_GetKeyBindingLocalizedString(localClientNum,"togglecrouch",result,0);
     if (iVar1 != 0) {
-      UI_FilterStringForButtonAnimation(param_3,0x100);
+      UI_FilterStringForButtonAnimation(result,0x100);
       return;
     }
-    iVar1 = UI_GetKeyBindingLocalizedString(param_1,"+movedown",param_3,0);
+    iVar1 = UI_GetKeyBindingLocalizedString(localClientNum,"+movedown",result,0);
     if (iVar1 != 0) {
-      UI_FilterStringForButtonAnimation(param_3,0x100);
+      UI_FilterStringForButtonAnimation(result,0x100);
       return;
     }
   }
   UI_SafeTranslateString("KEY_UNBOUND");
-  Com_sprintf(param_3,0x100,"\"%s\"");
+  Com_sprintf(result,0x100,"\"%s\"");
   return;
 }
 
@@ -440,7 +446,7 @@ void __cdecl SEH_GetBindingForDirective(int param_1,char *param_2,char *param_3)
 /* WARNING: Removing unreachable block (ram,0x007240b6) */
 
 bool __cdecl
-SEH_ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *param_4,uint param_5)
+SEH_ReplaceDirective(int localClientNum,uint *searchPos,uint *dstLen,char *dstString,uint size)
 
 {
   uint uVar1;
@@ -449,31 +455,36 @@ SEH_ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *param_4,uint 
   code *pcVar4;
   bool bVar5;
   undefined1 uVar6;
-  uchar *extraout_EAX;
-  int extraout_EAX_00;
+  uchar *str1;
+  char *extraout_EAX;
   char *pcVar7;
-  ulong uVar8;
-  ulong uVar9;
-  uchar *puVar10;
+  ulong count;
+  ulong count_00;
+  uchar *dst;
   uchar *local_650;
   char *local_640;
   char *local_630;
-  uchar local_614 [256];
-  uchar local_514 [1028];
-  undefined4 local_110;
-  uchar local_10c [256];
+  int directiveLen;
+  char *startTokenPos;
+  uint newStringLen;
+  int bindingLen;
+  int endLen;
+  uchar keyBinding [256];
+  uchar srcString [1028];
+  int beginLen;
+  uchar directive [256];
   uint local_c;
-  int local_8;
+  char *endTokenPos;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((0x400 < param_5) &&
+  if ((0x400 < size) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_hooks.cpp",
                                0x217,0,"%s\n\t(size) = %i"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((0x3ff < *param_3) &&
+  if ((0x3ff < *dstLen) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_hooks.cpp",
                                0x219,0,
                                "*dstLen doesn\'t index MAX_STRING_CHARS\n\t%i not in [0, %i)"),
@@ -482,20 +493,20 @@ SEH_ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *param_4,uint 
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  if ((*param_3 < *param_2) &&
+  if ((*dstLen < *searchPos) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_hooks.cpp",
                                0x21a,0,"*searchPos <= *dstLen\n\t%i, %i"), !bVar5)) {
     pcVar4 = (code *)swi(3);
     uVar6 = (*pcVar4)();
     return (bool)uVar6;
   }
-  local_630 = param_4;
+  local_630 = dstString;
   do {
     cVar2 = *local_630;
     local_630 = local_630 + 1;
   } while (cVar2 != '\0');
-  if (*param_3 != (int)local_630 - (int)(param_4 + 1)) {
-    local_640 = param_4;
+  if (*dstLen != (int)local_630 - (int)(dstString + 1)) {
+    local_640 = dstString;
     do {
       cVar2 = *local_640;
       local_640 = local_640 + 1;
@@ -508,60 +519,60 @@ SEH_ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *param_4,uint 
       return (bool)uVar6;
     }
   }
-  memcpy(local_514,(uchar *)param_4,*param_3);
-  local_514[*param_3] = '\0';
-  strstr(local_514 + *param_2,(uchar *)"[{");
-  if (extraout_EAX == (uchar *)0x0) {
+  memcpy(srcString,(uchar *)dstString,*dstLen);
+  srcString[*dstLen] = '\0';
+  strstr(srcString + *searchPos,(uchar *)"[{");
+  if (str1 == (uchar *)0x0) {
     bVar5 = false;
   }
   else {
-    strstr(extraout_EAX,(uchar *)"}]");
-    if (extraout_EAX_00 == 0) {
+    strstr(str1,(uchar *)"}]");
+    if (extraout_EAX == (char *)0x0) {
       pcVar7 = va("No end token to match begin token in string \'%s\'");
       Com_Error(ERR_DROP,pcVar7);
       bVar5 = false;
     }
     else {
-      uVar8 = (extraout_EAX_00 - (int)extraout_EAX) - 2;
-      local_8 = extraout_EAX_00;
-      if (((int)uVar8 < 0) &&
+      pcVar7 = extraout_EAX + (-2 - (int)str1);
+      endTokenPos = extraout_EAX;
+      if (((int)pcVar7 < 0) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_hooks.cpp"
                                    ,0x22f,1,"%s\n\t(directiveLen) = %i"), !bVar5)) {
         pcVar4 = (code *)swi(3);
         uVar6 = (*pcVar4)();
         return (bool)uVar6;
       }
-      if (uVar8 == 0) {
+      if (pcVar7 == (char *)0x0) {
         pcVar7 = va("Directive empty in string \'%s\'");
         Com_Error(ERR_DROP,pcVar7);
         bVar5 = false;
       }
       else {
-        memcpy(local_10c,extraout_EAX + 2,uVar8);
-        local_10c[(extraout_EAX_00 - (int)extraout_EAX) + -2] = '\0';
-        SEH_GetBindingForDirective(param_1,(char *)local_10c,(char *)local_614);
-        local_650 = local_614;
+        memcpy(directive,str1 + 2,(ulong)pcVar7);
+        directive[(int)pcVar7] = '\0';
+        SEH_GetBindingForDirective(localClientNum,(char *)directive,(char *)keyBinding);
+        local_650 = keyBinding;
         do {
           uVar3 = *local_650;
           local_650 = local_650 + 1;
         } while (uVar3 != '\0');
-        uVar9 = (int)local_650 - (int)(local_614 + 1);
-        uVar1 = (*param_3 - uVar8) + -4 + uVar9;
-        if (param_5 < uVar1 + 1) {
+        count = (int)local_650 - (int)(keyBinding + 1);
+        uVar1 = (*dstLen - (int)pcVar7) + -4 + count;
+        if (size < uVar1 + 1) {
           pcVar7 = va("String too long to add key binding: %s\n");
           Com_Error(ERR_DROP,pcVar7);
           bVar5 = false;
         }
         else {
-          local_110 = (int)extraout_EAX - (int)local_514;
-          puVar10 = (uchar *)(param_4 + local_110);
-          memcpy(puVar10,local_614,uVar9);
-          uVar8 = (uVar1 - local_110) - uVar9;
-          memcpy(puVar10 + uVar9,(uchar *)(local_8 + 2),uVar8);
-          (puVar10 + uVar9)[uVar8] = '\0';
-          *param_2 = local_110 + uVar9;
-          *param_3 = uVar1;
-          if ((*param_3 < *param_2) &&
+          beginLen = (int)str1 - (int)srcString;
+          dst = (uchar *)(dstString + beginLen);
+          memcpy(dst,keyBinding,count);
+          count_00 = (uVar1 - beginLen) - count;
+          memcpy(dst + count,(uchar *)(endTokenPos + 2),count_00);
+          (dst + count)[count_00] = '\0';
+          *searchPos = beginLen + count;
+          *dstLen = uVar1;
+          if ((*dstLen < *searchPos) &&
              (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\stringed\\stringed_hooks.cpp"
                                        ,0x255,1,"*searchPos <= *dstLen\n\t%i, %i"), !bVar5)) {
             pcVar4 = (code *)swi(3);
@@ -579,11 +590,11 @@ SEH_ReplaceDirective(int param_1,uint *param_2,uint *param_3,char *param_4,uint 
 
 // 007250E0  Empty  (<external>/projects_pc/cod/codsrc/common/ext_list.h:537)
 
-void __thiscall EXT_List<LocalizeEntry>::Empty(EXT_List<LocalizeEntry> *this,bool param_1)
+void __thiscall EXT_List<LocalizeEntry>::Empty(EXT_List<LocalizeEntry> *this,bool DeleteData)
 
 {
   while (this->m_Tail != (EXT_Link<LocalizeEntry> *)0x0) {
-    Remove(this,this->m_Tail,param_1);
+    Remove(this,this->m_Tail,DeleteData);
   }
   return;
 }
@@ -591,51 +602,53 @@ void __thiscall EXT_List<LocalizeEntry>::Empty(EXT_List<LocalizeEntry> *this,boo
 
 // 00723FB0  SEH_ReplaceDirectiveInStringWithBinding  (stringed/stringed_hooks.cpp:603)
 
-int __cdecl SEH_ReplaceDirectiveInStringWithBinding(int param_1,char *param_2,char *param_3)
+int __cdecl
+SEH_ReplaceDirectiveInStringWithBinding(int localClientNum,char *translatedString,char *finalString)
 
 {
   char cVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *fmt;
+  int iVar3;
   char *local_10;
-  ulong local_c;
-  uint local_8;
+  uint stringLen;
+  uint searchPos;
   
-  local_10 = param_2;
+  local_10 = translatedString;
   do {
     cVar1 = *local_10;
     local_10 = local_10 + 1;
   } while (cVar1 != '\0');
-  local_c = (int)local_10 - (int)(param_2 + 1);
-  if (local_c + 1 < 0x401) {
-    memcpy((uchar *)param_3,(uchar *)param_2,local_c);
-    param_3[local_c] = '\0';
-    local_8 = 0;
+  stringLen = (int)local_10 - (int)(translatedString + 1);
+  if (stringLen + 1 < 0x401) {
+    memcpy((uchar *)finalString,(uchar *)translatedString,stringLen);
+    finalString[stringLen] = '\0';
+    searchPos = 0;
     do {
-      bVar2 = SEH_ReplaceDirective(param_1,&local_8,&local_c,param_3,0x400);
+      bVar2 = SEH_ReplaceDirective(localClientNum,&searchPos,&stringLen,finalString,0x400);
     } while (bVar2);
-    iVar4 = 1;
+    iVar3 = 1;
   }
   else {
-    pcVar3 = va("Translated string too long to process\n");
-    Com_Error(ERR_DROP,pcVar3);
-    iVar4 = 0;
+    fmt = va("Translated string too long to process\n");
+    Com_Error(ERR_DROP,fmt);
+    iVar3 = 0;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
 // 007246B0  SEH_LocalizeTextMessage  (stringed/stringed_hooks.cpp:673)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: pszString */
 
-char * __cdecl SEH_LocalizeTextMessage(char *param_1,char *param_2,msgLocErrType_t param_3)
+char * __cdecl
+SEH_LocalizeTextMessage(char *pszInputBuffer,char *pszMessageType,msgLocErrType_t errType)
 
 {
   char cVar1;
-  char (*pacVar2) [1024];
-  int iVar3;
+  int iVar2;
   undefined3 in_stack_0000000d;
   char *local_884;
   char *local_880;
@@ -646,127 +659,129 @@ char * __cdecl SEH_LocalizeTextMessage(char *param_1,char *param_2,msgLocErrType
   char *local_854;
   char *local_850;
   char *local_840;
-  char local_83c [1024];
-  char local_43c [1028];
+  char szInsertBuf [1024];
+  char szTokenBuf [1028];
   uint local_38;
-  int local_34;
-  int local_30;
-  int local_2c;
-  int local_28;
-  uint local_24;
-  int local_20;
-  char *local_1c;
-  int local_18;
-  char *local_14;
-  int local_10;
+  int bLocOn;
+  int iTokenLen;
+  int iInsertLevel;
+  int iLen;
+  int bInsertEnabled;
+  int insertIndex;
+  char *pszIn;
+  int bLocSkipped;
+  char *pszTokenStart;
+  int i;
+  char *pszString;
+  int digit;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
   iCurrString = (iCurrString + 1) % 10;
   memset((uchar *)(szStrings + iCurrString),'\0',0x400);
-  pacVar2 = szStrings + iCurrString;
-  local_28 = 0;
-  local_34 = 1;
-  local_24 = 1;
-  local_2c = 0;
-  local_20 = 1;
-  local_18 = 0;
-  local_14 = param_1;
-  local_1c = param_1;
+  pszString = szStrings[iCurrString];
+  iLen = 0;
+  bLocOn = 1;
+  bInsertEnabled = 1;
+  iInsertLevel = 0;
+  insertIndex = 1;
+  bLocSkipped = 0;
+  pszTokenStart = pszInputBuffer;
+  pszIn = pszInputBuffer;
   do {
     while( true ) {
-      if (*local_14 == '\0') {
-        if (local_18 != 0) {
-          for (local_10 = 0; local_10 < local_28; local_10 = local_10 + 1) {
-            if ((*pacVar2)[local_10] == '\x16') {
-              (*pacVar2)[local_10] = '%';
+      if (*pszTokenStart == '\0') {
+        if (bLocSkipped != 0) {
+          for (i = 0; i < iLen; i = i + 1) {
+            if (pszString[i] == '\x16') {
+              pszString[i] = '%';
             }
           }
         }
-        return *pacVar2;
+        return pszString;
       }
-      if ((((*local_1c == '\0') || (*local_1c == '\x14')) || (*local_1c == '\x15')) ||
-         (*local_1c == '\x16')) break;
-      local_1c = local_1c + 1;
+      if ((((*pszIn == '\0') || (*pszIn == '\x14')) || (*pszIn == '\x15')) || (*pszIn == '\x16'))
+      break;
+      pszIn = pszIn + 1;
     }
-    if (local_14 < local_1c) {
-      local_30 = (int)local_1c - (int)local_14;
-      I_strncpyz(local_43c,local_14,local_30 + 1);
-      if (local_34 != 0) {
-        iVar3 = SEH_GetLocalizedTokenReference(local_43c,local_43c,param_2,param_3);
-        if (iVar3 == 0) {
+    if (pszTokenStart < pszIn) {
+      iTokenLen = (int)pszIn - (int)pszTokenStart;
+      I_strncpyz(szTokenBuf,pszTokenStart,iTokenLen + 1);
+      if (bLocOn != 0) {
+        iVar2 = SEH_GetLocalizedTokenReference(szTokenBuf,szTokenBuf,pszMessageType,errType);
+        if (iVar2 == 0) {
           return (char *)0x0;
         }
-        local_840 = local_43c;
+        local_840 = szTokenBuf;
         do {
           cVar1 = *local_840;
           local_840 = local_840 + 1;
         } while (cVar1 != '\0');
-        local_30 = (int)local_840 - (int)(local_43c + 1);
+        iTokenLen = (int)local_840 - (int)(szTokenBuf + 1);
       }
-      if (0x3ff < local_28 + local_30) {
+      if (0x3ff < iLen + iTokenLen) {
         if (((loc_warnings != (dvar_s *)0x0) && ((loc_warnings->current).enabled != false)) &&
            ((loc_warningsAsErrors != (dvar_s *)0x0 &&
-            (((loc_warningsAsErrors->current).enabled != false && (_param_3 != 1)))))) {
+            (((loc_warningsAsErrors->current).enabled != false && (_errType != 1)))))) {
           Com_Error(ERR_DROP,"%s too long when translated: \"%s\"");
         }
         Com_Printf(0x10,"%s too long when translated: \"%s\"\n");
       }
-      for (local_10 = 0; local_10 < local_30 + -2; local_10 = local_10 + 1) {
-        iVar3 = strncmp(local_43c + local_10,"&&",2);
-        if ((iVar3 == 0) && (iVar3 = isdigit((int)local_43c[local_10 + 2]), iVar3 != 0)) {
-          if (local_24 == 0) {
-            local_43c[local_10] = '\x16';
-            local_18 = 1;
+      for (i = 0; i < iTokenLen + -2; i = i + 1) {
+        iVar2 = strncmp(szTokenBuf + i,"&&",2);
+        if ((iVar2 == 0) && (iVar2 = isdigit((int)szTokenBuf[i + 2]), iVar2 != 0)) {
+          if (bInsertEnabled == 0) {
+            szTokenBuf[i] = '\x16';
+            bLocSkipped = 1;
           }
           else {
-            local_2c = local_2c + 1;
+            iInsertLevel = iInsertLevel + 1;
           }
         }
       }
-      if ((0 < local_2c) && (0 < local_28)) {
-        local_10 = 0;
+      if ((0 < iInsertLevel) && (0 < iLen)) {
+        i = 0;
 LAB_0072493b:
-        if (local_10 < local_28 + -2) {
-          iVar3 = strncmp(*pacVar2 + local_10,"&&",2);
-          if ((iVar3 != 0) || (iVar3 = isdigit((int)(*pacVar2)[local_10 + 2]), iVar3 == 0)) break;
-          cVar1 = (*pacVar2)[local_10 + 2];
-          if (cVar1 == 0x30) {
+        if (i < iLen + -2) {
+          iVar2 = strncmp(pszString + i,"&&",2);
+          if ((iVar2 != 0) || (iVar2 = isdigit((int)pszString[i + 2]), iVar2 == 0)) break;
+          digit = pszString[i + 2] + -0x30;
+          if (digit == 0) {
             Com_Printf(0x10,"%s cannot have &&0 as conversion format: \"%s\"\n");
           }
-          if (cVar1 + -0x30 != local_20) break;
-          local_850 = *pacVar2 + local_10 + 3;
-          local_854 = local_83c;
+          if (digit != insertIndex) break;
+          local_850 = pszString + i + 3;
+          local_854 = szInsertBuf;
           do {
             cVar1 = *local_850;
             *local_854 = cVar1;
             local_850 = local_850 + 1;
             local_854 = local_854 + 1;
           } while (cVar1 != '\0');
-          (*pacVar2)[local_10] = '\0';
-          local_20 = local_20 + 1;
+          pszString[i] = '\0';
+          insertIndex = insertIndex + 1;
         }
-        local_860 = local_43c;
-        local_864 = *pacVar2 + local_10;
+        local_860 = szTokenBuf;
+        local_864 = pszString + i;
         do {
           cVar1 = *local_860;
           *local_864 = cVar1;
           local_860 = local_860 + 1;
           local_864 = local_864 + 1;
         } while (cVar1 != '\0');
-        local_870 = local_83c;
-        local_874 = *pacVar2 + local_10 + local_30;
+        local_870 = szInsertBuf;
+        local_874 = pszString + i + iTokenLen;
         do {
           cVar1 = *local_870;
           *local_874 = cVar1;
           local_870 = local_870 + 1;
           local_874 = local_874 + 1;
         } while (cVar1 != '\0');
-        local_28 = local_28 + -3;
-        local_2c = local_2c + -1;
+        iLen = iLen + -3;
+        iInsertLevel = iInsertLevel + -1;
         goto LAB_00724b84;
       }
-      local_880 = local_43c;
-      local_884 = *pacVar2 + local_28;
+      local_880 = szTokenBuf;
+      local_884 = pszString + iLen;
       do {
         cVar1 = *local_880;
         *local_884 = cVar1;
@@ -774,37 +789,37 @@ LAB_0072493b:
         local_884 = local_884 + 1;
       } while (cVar1 != '\0');
 LAB_00724b84:
-      local_28 = local_28 + local_30;
+      iLen = iLen + iTokenLen;
     }
-    if (*local_1c == '\x14') {
-      local_34 = 1;
-      local_1c = local_1c + 1;
+    if (*pszIn == '\x14') {
+      bLocOn = 1;
+      pszIn = pszIn + 1;
     }
-    else if (*local_1c == '\x15') {
-      local_34 = 0;
-      local_1c = local_1c + 1;
+    else if (*pszIn == '\x15') {
+      bLocOn = 0;
+      pszIn = pszIn + 1;
     }
-    cVar1 = *local_1c;
+    cVar1 = *pszIn;
     if (cVar1 == '\x16') {
-      local_1c = local_1c + 1;
+      pszIn = pszIn + 1;
     }
-    local_24 = (uint)(cVar1 != '\x16');
-    local_14 = local_1c;
+    bInsertEnabled = (int)(cVar1 != '\x16');
+    pszTokenStart = pszIn;
   } while( true );
-  local_10 = local_10 + 1;
+  i = i + 1;
   goto LAB_0072493b;
 }
 
 
 // 00724D30  Japanese_ValidShiftJISCode  (stringed/stringed_hooks.cpp:954)
 
-bool __cdecl Japanese_ValidShiftJISCode(uint param_1,uint param_2)
+bool __cdecl Japanese_ValidShiftJISCode(uint _iHi,uint _iLo)
 
 {
   bool bVar1;
   
-  if ((((param_1 < 0x81) || (0x9f < param_1)) && ((param_1 < 0xe0 || (0xef < param_1)))) ||
-     (((param_2 < 0x40 || (0x7e < param_2)) && ((param_2 < 0x80 || (0xfc < param_2)))))) {
+  if ((((_iHi < 0x81) || (0x9f < _iHi)) && ((_iHi < 0xe0 || (0xef < _iHi)))) ||
+     (((_iLo < 0x40 || (0x7e < _iLo)) && ((_iLo < 0x80 || (0xfc < _iLo)))))) {
     bVar1 = false;
   }
   else {
@@ -816,12 +831,12 @@ bool __cdecl Japanese_ValidShiftJISCode(uint param_1,uint param_2)
 
 // 00724ED0  Japanese_IsTrailingPunctuation  (stringed/stringed_hooks.cpp:974)
 
-bool __cdecl Japanese_IsTrailingPunctuation(uint param_1)
+bool __cdecl Japanese_IsTrailingPunctuation(uint uiCode)
 
 {
   bool bVar1;
   
-  if ((param_1 < 0x8140) || (0x8151 < param_1)) {
+  if ((uiCode < 0x8140) || (0x8151 < uiCode)) {
     bVar1 = false;
   }
   else {
@@ -833,73 +848,77 @@ bool __cdecl Japanese_IsTrailingPunctuation(uint param_1)
 
 // 00724D80  SEH_DecodeLetter  (stringed/stringed_hooks.cpp:1069)
 
-uint __cdecl SEH_DecodeLetter(uint param_1,uint param_2,int *param_3,int *param_4)
+uint __cdecl
+SEH_DecodeLetter(uint firstChar,uint secondChar,int *usedCount,int *pbIsTrailingPunctuation)
 
 {
   bool bVar1;
-  uint uVar2;
-  int iVar3;
-  uint uVar4;
+  uint _iHi;
+  int iVar2;
+  uint uVar3;
   int local_14;
+  uint uiLetter;
   
-  uVar2 = param_1 & 0xff;
-  uVar4 = param_2 & 0xff;
-  iVar3 = Language_IsAsian();
-  if (iVar3 != 0) {
-    iVar3 = SEH_GetCurrentLanguage();
-    if (iVar3 == 10) {
-      if ((((uVar2 < 0xb0) || (200 < uVar2)) || (uVar4 < 0xa1)) || (0xfe < uVar4)) {
+  _iHi = firstChar & 0xff;
+  uVar3 = secondChar & 0xff;
+  iVar2 = Language_IsAsian();
+  if (iVar2 != 0) {
+    iVar2 = SEH_GetCurrentLanguage();
+    if (iVar2 == 10) {
+      if ((((_iHi < 0xb0) || (200 < _iHi)) || (uVar3 < 0xa1)) || (0xfe < uVar3)) {
         bVar1 = false;
       }
       else {
         bVar1 = true;
       }
       if (bVar1) {
-        uVar4 = uVar2 * 0x100 + uVar4;
-        *param_3 = 2;
-        if (param_4 == (int *)0x0) {
-          return uVar4;
+        uVar3 = _iHi * 0x100 + uVar3;
+        *usedCount = 2;
+        if (pbIsTrailingPunctuation == (int *)0x0) {
+          return uVar3;
         }
-        *param_4 = 0;
-        return uVar4;
+        *pbIsTrailingPunctuation = 0;
+        return uVar3;
       }
     }
-    else if ((iVar3 == 0xb) && (bVar1 = Japanese_ValidShiftJISCode(uVar2,uVar4), bVar1)) {
-      uVar4 = uVar2 * 0x100 + uVar4;
-      *param_3 = 2;
-      if (param_4 == (int *)0x0) {
-        return uVar4;
+    else if ((iVar2 == 0xb) && (bVar1 = Japanese_ValidShiftJISCode(_iHi,uVar3), bVar1)) {
+      uVar3 = _iHi * 0x100 + uVar3;
+      *usedCount = 2;
+      if (pbIsTrailingPunctuation == (int *)0x0) {
+        return uVar3;
       }
-      bVar1 = Japanese_IsTrailingPunctuation(uVar4);
-      *param_4 = (uint)bVar1;
-      return uVar4;
+      bVar1 = Japanese_IsTrailingPunctuation(uVar3);
+      *pbIsTrailingPunctuation = (uint)bVar1;
+      return uVar3;
     }
   }
-  *param_3 = 1;
-  if (param_4 != (int *)0x0) {
-    if (((uVar2 == 0x21) || (uVar2 == 0x3f)) ||
-       ((uVar2 == 0x2c || (((uVar2 == 0x2e || (uVar2 == 0x3b)) || (uVar2 == 0x3a)))))) {
+  *usedCount = 1;
+  if (pbIsTrailingPunctuation != (int *)0x0) {
+    if (((_iHi == 0x21) || (_iHi == 0x3f)) ||
+       ((_iHi == 0x2c || (((_iHi == 0x2e || (_iHi == 0x3b)) || (_iHi == 0x3a)))))) {
       local_14 = 1;
     }
     else {
       local_14 = 0;
     }
-    *param_4 = local_14;
+    *pbIsTrailingPunctuation = local_14;
   }
-  return uVar2;
+  return _iHi;
 }
 
 
 // 00724EF0  SEH_ReadCharFromString  (stringed/stringed_hooks.cpp:1159)
 
-uint __cdecl SEH_ReadCharFromString(char **param_1,int *param_2)
+uint __cdecl SEH_ReadCharFromString(char **text,int *isTrailingPunctuation)
 
 {
   uint uVar1;
-  int local_c [2];
+  int usedCount;
+  uint letter;
   
-  uVar1 = SEH_DecodeLetter((uint)(byte)**param_1,(uint)(byte)(*param_1)[1],local_c,param_2);
-  *param_1 = *param_1 + local_c[0];
+  uVar1 = SEH_DecodeLetter((uint)(byte)**text,(uint)(byte)(*text)[1],&usedCount,
+                           isTrailingPunctuation);
+  *text = *text + usedCount;
   return uVar1;
 }
 
@@ -915,44 +934,44 @@ int __cdecl Language_IsAsian(void)
 
 // 00724F40  SEH_PrintStrlen  (stringed/stringed_hooks.cpp:1211)
 
-int __cdecl SEH_PrintStrlen(char *param_1)
+int __cdecl SEH_PrintStrlen(char *string)
 
 {
   uint uVar1;
-  int local_c;
-  char *local_8;
+  uint c;
+  int len;
+  char *p;
   
-  if (param_1 == (char *)0x0) {
-    local_c = 0;
+  if (string == (char *)0x0) {
+    len = 0;
   }
   else {
-    local_c = 0;
-    local_8 = param_1;
-    while (*local_8 != '\0') {
-      uVar1 = SEH_ReadCharFromString(&local_8,(int *)0x0);
-      if ((((uVar1 == 0x5e) && (local_8 != (char *)0x0)) && (*local_8 != '^')) &&
-         (('/' < *local_8 && (*local_8 < 'A')))) {
-        local_8 = local_8 + 1;
+    len = 0;
+    p = string;
+    while (*p != '\0') {
+      uVar1 = SEH_ReadCharFromString(&p,(int *)0x0);
+      if ((((uVar1 == 0x5e) && (p != (char *)0x0)) && (*p != '^')) && (('/' < *p && (*p < 'A')))) {
+        p = p + 1;
       }
       else if ((uVar1 != 10) && (uVar1 != 0xd)) {
-        local_c = local_c + 1;
+        len = len + 1;
       }
     }
   }
-  return local_c;
+  return len;
 }
 
 
 // 00724FD0  SEH_GetLanguageName  (stringed/stringed_hooks.cpp:1256)
 
-char * __cdecl SEH_GetLanguageName(int param_1)
+char * __cdecl SEH_GetLanguageName(int iLanguage)
 
 {
   char *pcVar1;
   
   pcVar1 = g_languages[0].pszName;
-  if ((-1 < param_1) && (param_1 < 0xd)) {
-    pcVar1 = g_languages[param_1].pszName;
+  if ((-1 < iLanguage) && (iLanguage < 0xd)) {
+    pcVar1 = g_languages[iLanguage].pszName;
   }
   return pcVar1;
 }
@@ -960,14 +979,14 @@ char * __cdecl SEH_GetLanguageName(int param_1)
 
 // 00725000  SEH_GetLanguageNameAbbr  (stringed/stringed_hooks.cpp:1272)
 
-char * __cdecl SEH_GetLanguageNameAbbr(int param_1)
+char * __cdecl SEH_GetLanguageNameAbbr(int iLanguage)
 
 {
   char *pcVar1;
   
   pcVar1 = g_languages[0].pszNameAbbr;
-  if ((-1 < param_1) && (param_1 < 0xd)) {
-    pcVar1 = g_languages[param_1].pszNameAbbr;
+  if ((-1 < iLanguage) && (iLanguage < 0xd)) {
+    pcVar1 = g_languages[iLanguage].pszNameAbbr;
   }
   return pcVar1;
 }
@@ -975,23 +994,23 @@ char * __cdecl SEH_GetLanguageNameAbbr(int param_1)
 
 // 00725030  SEH_GetLanguageIndexForName  (stringed/stringed_hooks.cpp:1288)
 
-int __cdecl SEH_GetLanguageIndexForName(char *param_1,int *param_2)
+int __cdecl SEH_GetLanguageIndexForName(char *pszLanguageName,int *piLanguageIndex)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xc < local_8) {
-      *param_2 = 0;
+    if (0xc < i) {
+      *piLanguageIndex = 0;
       return 0;
     }
-    iVar1 = I_stricmp(param_1,g_languages[local_8].pszName);
+    iVar1 = I_stricmp(pszLanguageName,g_languages[i].pszName);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  *param_2 = local_8;
+  *piLanguageIndex = i;
   return 1;
 }
 

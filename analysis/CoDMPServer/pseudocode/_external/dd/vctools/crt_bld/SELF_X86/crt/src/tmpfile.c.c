@@ -5,7 +5,7 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _tmpnam_helper(char *param_1,uint param_2,int param_3,ulong param_4,char **param_5)
+int __cdecl _tmpnam_helper(char *s,uint sz,int buffer_no,ulong tmp_max,char **ret)
 
 {
   int iVar1;
@@ -13,132 +13,133 @@ int __cdecl _tmpnam_helper(char *param_1,uint param_2,int param_3,ulong param_4,
   int iVar3;
   _tiddata *p_Var4;
   uint extraout_EAX;
+  char *buf;
   char *pcVar5;
-  char *pcVar6;
   ulong in_stack_ffffffcc;
-  int local_20;
+  int saved_errno;
+  int retval;
   
-  local_20 = 0;
+  retval = 0;
   piVar2 = _errno();
   iVar1 = *piVar2;
   iVar3 = _mtinitlocknum(2);
   if (iVar3 == 0) {
-    *param_5 = (char *)0x0;
+    *ret = (char *)0x0;
     piVar2 = _errno();
-    local_20 = *piVar2;
+    retval = *piVar2;
   }
   else {
     _lock(2);
-    if (param_3 == 0) {
-      pcVar5 = tmpnam_buf;
-      pcVar6 = (char *)0xe;
+    if (buffer_no == 0) {
+      buf = tmpnam_buf;
+      pcVar5 = (char *)0xe;
     }
     else {
-      pcVar5 = tmpnam_s_buf;
-      pcVar6 = (char *)0x12;
+      buf = tmpnam_s_buf;
+      pcVar5 = (char *)0x12;
     }
-    if (*pcVar5 != '\0') goto LAB_00c17e3f;
-    init_namebuf(param_3);
+    if (*buf != '\0') goto LAB_00c17e3f;
+    init_namebuf(buffer_no);
     do {
-      iVar3 = _access_s(pcVar5,0);
+      iVar3 = _access_s(buf,0);
       if (iVar3 != 0) {
-        if (param_1 == (char *)0x0) {
+        if (s == (char *)0x0) {
           p_Var4 = _getptd_noexit();
           if (p_Var4 == (_tiddata *)0x0) {
 LAB_00c17e73:
-            local_20 = 0xc;
+            retval = 0xc;
             break;
           }
           if (p_Var4->_namebuf0 == (char *)0x0) {
-            pcVar6 = _malloc_crt(0xe);
-            p_Var4->_namebuf0 = pcVar6;
-            if (pcVar6 == (char *)0x0) goto LAB_00c17e73;
+            pcVar5 = _malloc_crt(0xe);
+            p_Var4->_namebuf0 = pcVar5;
+            if (pcVar5 == (char *)0x0) goto LAB_00c17e73;
           }
-          param_1 = p_Var4->_namebuf0;
-          param_2 = 0xe;
+          s = p_Var4->_namebuf0;
+          sz = 0xe;
         }
-        else if ((param_3 != 0) && (strlen((uchar *)pcVar5), param_2 <= extraout_EAX)) {
-          local_20 = 0x22;
-          if (param_2 != 0) {
-            *param_1 = '\0';
+        else if ((buffer_no != 0) && (strlen((uchar *)buf), sz <= extraout_EAX)) {
+          retval = 0x22;
+          if (sz != 0) {
+            *s = '\0';
           }
           break;
         }
-        iVar3 = strcpy_s(param_1,param_2,pcVar5);
+        iVar3 = strcpy_s(s,sz,buf);
         if (iVar3 != 0) {
           _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
         }
         break;
       }
 LAB_00c17e3f:
-      iVar3 = genfname(pcVar6,param_4,in_stack_ffffffcc);
+      iVar3 = genfname(pcVar5,tmp_max,in_stack_ffffffcc);
     } while (iVar3 == 0);
     FUN_00c17f00();
-    *param_5 = param_1;
+    *ret = s;
     piVar2 = _errno();
-    if (local_20 == 0) {
+    if (retval == 0) {
       *piVar2 = iVar1;
     }
     else {
-      *piVar2 = local_20;
+      *piVar2 = retval;
     }
   }
-  return local_20;
+  return retval;
 }
 
 
 // 00C17F16  tmpnam  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c:264)
 
-char * __cdecl tmpnam(char *param_1)
+char * __cdecl tmpnam(char *s)
 
 {
-  char *local_8;
+  char *ret;
   
-  local_8 = (char *)0x0;
-  _tmpnam_helper(param_1,0xffffffff,0,0x7fff,&local_8);
-  return local_8;
+  ret = (char *)0x0;
+  _tmpnam_helper(s,0xffffffff,0,0x7fff,&ret);
+  return ret;
 }
 
 
 // 00C17C60  init_namebuf  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/tmpfile.c:470)
 
-void __cdecl init_namebuf(int param_1)
+void __cdecl init_namebuf(int flag)
 
 {
   int iVar1;
   char *pcVar2;
-  ulong uVar3;
-  char *pcVar4;
-  char *pcVar5;
-  uint uVar6;
+  ulong val;
+  char *sizeInTChars;
+  char *_Dst;
+  uint _SizeInBytes;
   
-  uVar6 = 0;
-  if (param_1 == 0) {
-    uVar6 = 0xe;
-    pcVar5 = tmpnam_buf;
+  _SizeInBytes = 0;
+  if (flag == 0) {
+    _SizeInBytes = 0xe;
+    _Dst = tmpnam_buf;
   }
   else {
-    if (param_1 == 1) {
-      pcVar5 = tmpfile_buf;
+    if (flag == 1) {
+      _Dst = tmpfile_buf;
     }
     else {
-      pcVar5 = (char *)param_1;
-      if (param_1 != 2) goto LAB_00c17c96;
-      pcVar5 = tmpnam_s_buf;
+      _Dst = (char *)flag;
+      if (flag != 2) goto LAB_00c17c96;
+      _Dst = tmpnam_s_buf;
     }
-    uVar6 = 0x12;
+    _SizeInBytes = 0x12;
   }
 LAB_00c17c96:
-  iVar1 = strcpy_s(pcVar5,uVar6,"\\");
+  iVar1 = strcpy_s(_Dst,_SizeInBytes,"\\");
   if (iVar1 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  pcVar2 = pcVar5 + 1;
-  if ((*pcVar5 != '\\') && (*pcVar5 != '/')) {
+  pcVar2 = _Dst + 1;
+  if ((*_Dst != '\\') && (*_Dst != '/')) {
     *pcVar2 = '\\';
-    pcVar2 = pcVar5 + 2;
+    pcVar2 = _Dst + 2;
   }
-  if (param_1 == 1) {
+  if (flag == 1) {
     *pcVar2 = 't';
   }
   else {
@@ -146,13 +147,13 @@ LAB_00c17c96:
   }
   pcVar2 = pcVar2 + 1;
   iVar1 = 0x20;
-  pcVar4 = pcVar5 + (uVar6 - (int)pcVar2);
-  uVar3 = getpid();
-  iVar1 = _ultoa_s(uVar3,pcVar2,(uint)pcVar4,iVar1);
+  sizeInTChars = _Dst + (_SizeInBytes - (int)pcVar2);
+  val = getpid();
+  iVar1 = _ultoa_s(val,pcVar2,(uint)sizeInTChars,iVar1);
   if (iVar1 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  iVar1 = strcat_s(pcVar5,uVar6,".");
+  iVar1 = strcat_s(_Dst,_SizeInBytes,".");
   if (iVar1 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
@@ -164,30 +165,30 @@ LAB_00c17c96:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl genfname(char *param_1,uint param_2,ulong param_3)
+int __cdecl genfname(char *fnameSize,uint tmp_max,ulong param_3)
 
 {
   uchar *puVar1;
   ulong uVar2;
   int iVar3;
   uchar *in_ECX;
-  char local_10 [8];
+  char pext [8];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   puVar1 = _mbsrchr(in_ECX,0x2e);
   puVar1 = puVar1 + 1;
-  if ((puVar1 < in_ECX) || (param_1 <= puVar1 + -(int)in_ECX)) {
+  if ((puVar1 < in_ECX) || (fnameSize <= puVar1 + -(int)in_ECX)) {
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
   else {
     uVar2 = strtoul((char *)puVar1,(char **)0x0,0x20);
-    if (uVar2 + 1 < param_2) {
-      iVar3 = _ultoa_s(uVar2 + 1,local_10,8,0x20);
+    if (uVar2 + 1 < tmp_max) {
+      iVar3 = _ultoa_s(uVar2 + 1,pext,8,0x20);
       if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }
-      iVar3 = strcpy_s((char *)puVar1,(uint)(param_1 + ((int)in_ECX - (int)puVar1)),local_10);
+      iVar3 = strcpy_s((char *)puVar1,(uint)(fnameSize + ((int)in_ECX - (int)puVar1)),pext);
       if (iVar3 != 0) {
         _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       }

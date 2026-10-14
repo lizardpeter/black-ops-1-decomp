@@ -2,21 +2,21 @@
 
 // 0095FBF4  _mkdir  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/mkdir.c:37)
 
-int __cdecl _mkdir(char *param_1)
+int __cdecl _mkdir(char *path)
 
 {
   BOOL BVar1;
-  ulong uVar2;
+  ulong oserrno;
   
-  BVar1 = CreateDirectoryA(param_1,(LPSECURITY_ATTRIBUTES)0x0);
+  BVar1 = CreateDirectoryA(path,(LPSECURITY_ATTRIBUTES)0x0);
   if (BVar1 == 0) {
-    uVar2 = GetLastError();
+    oserrno = GetLastError();
   }
   else {
-    uVar2 = 0;
+    oserrno = 0;
   }
-  if (uVar2 != 0) {
-    _dosmaperr(uVar2);
+  if (oserrno != 0) {
+    _dosmaperr(oserrno);
     return -1;
   }
   return 0;

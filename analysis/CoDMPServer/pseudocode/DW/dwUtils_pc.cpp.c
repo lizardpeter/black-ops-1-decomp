@@ -2,16 +2,18 @@
 
 // 005A90F0  dwGetOnlineUserID  (DW/dwUtils_pc.cpp:61)
 
-bool __cdecl dwGetOnlineUserID(int param_1,ulong64 *param_2)
+bool __cdecl dwGetOnlineUserID(int controllerIndex,ulong64 *userID)
 
 {
+  bool ok;
+  
   if (((int)g_bdUserID == 0) && (g_bdUserID._4_4_ == 0)) {
-    *(undefined4 *)param_2 = 0;
-    *(undefined4 *)((int)param_2 + 4) = 0;
+    *(undefined4 *)userID = 0;
+    *(undefined4 *)((int)userID + 4) = 0;
   }
   else {
-    *(int *)param_2 = (int)g_bdUserID;
-    *(int *)((int)param_2 + 4) = g_bdUserID._4_4_;
+    *(int *)userID = (int)g_bdUserID;
+    *(int *)((int)userID + 4) = g_bdUserID._4_4_;
   }
   return true;
 }
@@ -19,27 +21,29 @@ bool __cdecl dwGetOnlineUserID(int param_1,ulong64 *param_2)
 
 // 005A9140  dwGetOnlineUserName  (DW/dwUtils_pc.cpp:83)
 
-bool __cdecl dwGetOnlineUserName(int param_1,char *param_2,uint param_3)
+bool __cdecl dwGetOnlineUserName(int controllerIndex,char *buf,uint bufsize)
 
 {
-  char *pcVar1;
+  char *src;
+  bool ok;
   
-  memset((uchar *)param_2,'\0',param_3);
-  pcVar1 = LiveSteam_GetClientPersonaName(true);
-  I_strncpyz(param_2,pcVar1,param_3);
+  memset((uchar *)buf,'\0',bufsize);
+  src = LiveSteam_GetClientPersonaName(true);
+  I_strncpyz(buf,src,bufsize);
   return true;
 }
 
 
 // 005A9180  dwXnaddrtonetadr  (DW/dwUtils_pc.cpp:115)
 
-void __cdecl dwXnaddrtonetadr(uchar *param_1,netadr_t *param_2,netadr_t *param_3)
+void __cdecl dwXnaddrtonetadr(uchar *xnaddr,netadr_t *privadr,netadr_t *pubadr)
 
 {
   code *pcVar1;
   bool bVar2;
+  uchar *tptr;
   
-  if ((param_2 == (netadr_t *)0x0) && (param_3 == (netadr_t *)0x0)) {
+  if ((privadr == (netadr_t *)0x0) && (pubadr == (netadr_t *)0x0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils_pc.cpp",0x74,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -47,15 +51,15 @@ void __cdecl dwXnaddrtonetadr(uchar *param_1,netadr_t *param_2,netadr_t *param_3
       return;
     }
   }
-  if (param_2 != (netadr_t *)0x0) {
-    *(undefined4 *)param_2->ip = *(undefined4 *)param_1;
-    param_2->port = *(ushort *)(param_1 + 4);
-    param_2->type = NA_IP;
+  if (privadr != (netadr_t *)0x0) {
+    *(undefined4 *)privadr->ip = *(undefined4 *)xnaddr;
+    privadr->port = *(ushort *)(xnaddr + 4);
+    privadr->type = NA_IP;
   }
-  if (param_3 != (netadr_t *)0x0) {
-    *(undefined4 *)param_3->ip = *(undefined4 *)(param_1 + 0x12);
-    param_3->port = *(ushort *)(param_1 + 0x16);
-    param_3->type = NA_IP;
+  if (pubadr != (netadr_t *)0x0) {
+    *(undefined4 *)pubadr->ip = *(undefined4 *)(xnaddr + 0x12);
+    pubadr->port = *(ushort *)(xnaddr + 0x16);
+    pubadr->type = NA_IP;
   }
   return;
 }
@@ -67,34 +71,34 @@ void __cdecl dwXnaddrtonetadr(uchar *param_1,netadr_t *param_2,netadr_t *param_3
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-uint __cdecl SV_SendClientChallenge(uint param_1,uint param_2,ulong64 param_3)
+uint __cdecl SV_SendClientChallenge(uint nonce,uint challenge,ulong64 userID)
 
 {
   bdTrulyRandomImpl *this;
   bdRemoteTask *pbVar1;
-  uint local_50;
-  uint local_4c;
-  msg_t local_48;
-  uchar local_18 [16];
+  uint randNum;
+  uint retval;
+  msg_t challengemessage;
+  uchar buff [16];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4c = 0;
-  MSG_Init(&local_48,local_18,0xd);
+  retval = 0;
+  MSG_Init(&challengemessage,buff,0xd);
   this = bdSingleton<bdTrulyRandomImpl>::getInstance();
-  local_50 = bdTrulyRandomImpl::getRandomUInt(this);
+  randNum = bdTrulyRandomImpl::getRandomUInt(this);
   Com_DPrintf(0xf,
               "Client bdID:\t%llu\nClient challenge:\t%u\nServer challenge:\t%u\nClient nonce:\t%u\n"
              );
-  MSG_WriteByte(&local_48,1);
-  MSG_WriteData(&local_48,&param_1,4);
-  MSG_WriteData(&local_48,&param_2,4);
-  MSG_WriteData(&local_48,&local_50,4);
-  pbVar1 = dwMessaging_SendDeferredInstantMessage(param_3,local_18,0xd);
+  MSG_WriteByte(&challengemessage,1);
+  MSG_WriteData(&challengemessage,&nonce,4);
+  MSG_WriteData(&challengemessage,&challenge,4);
+  MSG_WriteData(&challengemessage,&randNum,4);
+  pbVar1 = dwMessaging_SendDeferredInstantMessage(userID,buff,0xd);
   if (pbVar1 != (bdRemoteTask *)0x0) {
-    local_4c = local_50;
+    retval = randNum;
   }
-  return local_4c;
+  return retval;
 }
 
 
@@ -103,21 +107,21 @@ uint __cdecl SV_SendClientChallenge(uint param_1,uint param_2,ulong64 param_3)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl CL_HandleSVDWChallenge(uint param_1,uint param_2,uint param_3)
+void __cdecl CL_HandleSVDWChallenge(uint nonce,uint serverchallenge,uint clientchallenge)
 
 {
-  netadr_t nVar1;
-  netsrc_t nVar2;
-  bool bVar3;
-  netadrtype_t nVar4;
-  undefined4 uVar5;
-  undefined4 uVar6;
-  int iVar7;
-  uchar local_bc;
+  netadr_t adr;
+  netsrc_t sock;
+  bool bVar1;
+  netadrtype_t nVar2;
+  undefined4 uVar3;
+  undefined4 uVar4;
+  int iVar5;
+  uchar msgBuffer;
   uchar local_bb [127];
   uint local_3c;
-  msg_t local_38;
-  clientConnection_t *local_8;
+  msg_t msg;
+  clientConnection_t *clc;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
   if (cl_senddwchallenge == (dvar_s *)0x0) {
@@ -127,39 +131,39 @@ void __cdecl CL_HandleSVDWChallenge(uint param_1,uint param_2,uint param_3)
     ;
   }
   if ((cl_senddwchallenge != (dvar_s *)0x0) && ((cl_senddwchallenge->current).enabled != false)) {
-    local_8 = (clientConnection_t *)0x0;
-    local_8 = CL_GetLocalClientConnection(0);
-    if (local_8 != (clientConnection_t *)0x0) {
-      if (local_8->nonce == 0) {
+    clc = (clientConnection_t *)0x0;
+    clc = CL_GetLocalClientConnection(0);
+    if (clc != (clientConnection_t *)0x0) {
+      if (clc->nonce == 0) {
         Com_DPrintf(0xe,
                     "Er, we got a serverchallenge message, but not record of having sent a clientchallenge. Ask Ewan.\n"
                    );
       }
-      else if (*(uint *)&local_8->field_0xaff44 == param_1) {
-        if (local_8->nonce == param_3) {
-          local_8->clientChallenge = param_2;
-          local_8 = CL_GetLocalClientConnection(0);
-          local_bc = '\0';
+      else if (*(uint *)&clc->field_0xaff44 == nonce) {
+        if (clc->nonce == clientchallenge) {
+          clc->clientChallenge = serverchallenge;
+          clc = CL_GetLocalClientConnection(0);
+          msgBuffer = '\0';
           memset(local_bb,'\0',0x7f);
-          MSG_Init(&local_38,&local_bc,0x80);
-          MSG_WriteString(&local_38,"dwcr");
-          MSG_WriteShort(&local_38,local_8->qport);
+          MSG_Init(&msg,&msgBuffer,0x80);
+          MSG_WriteString(&msg,"dwcr");
+          MSG_WriteShort(&msg,clc->qport);
           Com_DPrintf(0xe,"DWCHALLENGERESPONSE: Sending serverchallenge %u back to server\n");
-          MSG_WriteData(&local_38,&local_8->clientChallenge,4);
-          nVar4 = (local_8->serverAddress).type;
-          uVar5 = *(undefined4 *)(local_8->serverAddress).ip;
-          uVar6 = *(undefined4 *)&(local_8->serverAddress).port;
-          iVar7 = (local_8->serverAddress).addrHandleIndex;
-          nVar2 = Com_LocalClient_GetNetworkID(0);
-          nVar1.ip[0] = (char)uVar5;
-          nVar1.ip[1] = (char)((uint)uVar5 >> 8);
-          nVar1.ip[2] = (char)((uint)uVar5 >> 0x10);
-          nVar1.ip[3] = (char)((uint)uVar5 >> 0x18);
-          nVar1.type = nVar4;
-          nVar1._8_4_ = uVar6;
-          nVar1.addrHandleIndex = iVar7;
-          bVar3 = NET_OutOfBandData(nVar2,nVar1,local_38.data,local_38.cursize);
-          if (!bVar3) {
+          MSG_WriteData(&msg,&clc->clientChallenge,4);
+          nVar2 = (clc->serverAddress).type;
+          uVar3 = *(undefined4 *)(clc->serverAddress).ip;
+          uVar4 = *(undefined4 *)&(clc->serverAddress).port;
+          iVar5 = (clc->serverAddress).addrHandleIndex;
+          sock = Com_LocalClient_GetNetworkID(0);
+          adr.ip[0] = (char)uVar3;
+          adr.ip[1] = (char)((uint)uVar3 >> 8);
+          adr.ip[2] = (char)((uint)uVar3 >> 0x10);
+          adr.ip[3] = (char)((uint)uVar3 >> 0x18);
+          adr.type = nVar2;
+          adr._8_4_ = uVar4;
+          adr.addrHandleIndex = iVar5;
+          bVar1 = NET_OutOfBandData(sock,adr,msg.data,msg.cursize);
+          if (!bVar1) {
             Com_DPrintf(0xe,"CHALLENGERESPONSE: Couldn\'t send challengeresponse to server\n");
           }
         }
@@ -183,7 +187,7 @@ void __cdecl CL_HandleSVDWChallenge(uint param_1,uint param_2,uint param_3)
 
 // 005A9500  Com_GametypeToInt  (DW/dwUtils_pc.cpp:277)
 
-uint __cdecl Com_GametypeToInt(char *param_1)
+uint __cdecl Com_GametypeToInt(char *gametype)
 
 {
   char cVar1;
@@ -192,52 +196,53 @@ uint __cdecl Com_GametypeToInt(char *param_1)
   uint uVar4;
   int iVar5;
   char *local_18;
-  int local_14;
-  int local_10;
-  uint local_8;
+  int i;
+  int stringlen;
+  short temp;
+  uint retval;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((gametype == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils_pc.cpp",0x116,0,"%s")
      , !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return uVar4;
   }
-  local_18 = param_1;
+  local_18 = gametype;
   do {
     cVar1 = *local_18;
     local_18 = local_18 + 1;
   } while (cVar1 != '\0');
-  local_10 = (int)local_18 - (int)(param_1 + 1);
-  local_8 = 0;
-  if (6 < local_10) {
+  stringlen = (int)local_18 - (int)(gametype + 1);
+  retval = 0;
+  if (6 < stringlen) {
     Com_PrintWarning(0,"Can only pack %i chars, stringlen is %i\n");
-    local_10 = 6;
+    stringlen = 6;
   }
-  while (local_14 = local_10 + -1, -1 < local_14) {
-    iVar5 = tolower((int)param_1[local_14]);
-    local_8 = (int)(short)((short)iVar5 + -0x60) | local_8;
-    local_10 = local_14;
-    if (local_14 != 0) {
-      local_8 = local_8 << 5;
+  while (i = stringlen + -1, -1 < i) {
+    iVar5 = tolower((int)gametype[i]);
+    retval = (int)(short)((short)iVar5 + -0x60) | retval;
+    stringlen = i;
+    if (i != 0) {
+      retval = retval << 5;
     }
   }
-  return local_8;
+  return retval;
 }
 
 
 // 005A95F0  Com_IntToGametype  (DW/dwUtils_pc.cpp:302)
 
-void __cdecl Com_IntToGametype(char *param_1,uint param_2)
+void __cdecl Com_IntToGametype(char *gametype_out,uint gametype_in)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  byte local_9;
-  short local_8;
+  char c;
+  short charcount;
   
-  if (param_1 == (char *)0x0) {
+  if (gametype_out == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\Dw\\dwUtils_pc.cpp",0x130,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -245,13 +250,13 @@ void __cdecl Com_IntToGametype(char *param_1,uint param_2)
       return;
     }
   }
-  for (local_8 = 5; -1 < local_8; local_8 = local_8 + -1) {
-    uVar3 = param_2 >> ((char)local_8 * '\x05' & 0x1fU);
-    local_9 = (byte)uVar3 & 0x1f;
+  for (charcount = 5; -1 < charcount; charcount = charcount + -1) {
+    uVar3 = gametype_in >> ((char)charcount * '\x05' & 0x1fU);
+    c = (byte)uVar3 & 0x1f;
     if ((uVar3 & 0x1f) != 0) {
-      local_9 = local_9 + 0x60;
+      c = c + 0x60;
     }
-    param_1[local_8] = local_9;
+    gametype_out[charcount] = c;
   }
   return;
 }

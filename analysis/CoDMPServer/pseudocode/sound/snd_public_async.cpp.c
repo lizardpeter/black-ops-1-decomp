@@ -7,79 +7,80 @@
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SND_PlayInternal(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *param_5,
-                float *param_6,bool param_7,snd_playback *param_8)
+SND_PlayInternal(uint id,int fadeTimeMs,float attenuation,SndEntHandle entHandle,float *position,
+                float *direction,bool notify,snd_playback *playback)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  snd_command *psVar5;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
-  if ((((0x5ff < (param_4.handle & 0xfffU)) && ((param_4.handle & 0xfffU) != 0xfff)) &&
-      ((param_4.handle & 0xfffU) != 0xffe)) &&
+  if ((((0x5ff < (entHandle.handle & 0xfffU)) && ((entHandle.handle & 0xfffU) != 0xfff)) &&
+      ((entHandle.handle & 0xfffU) != 0xffe)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",0x42
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((0x5ff < (param_4.handle & 0xfffU)) && ((param_4.handle & 0xfffU) != 0xfff)) &&
-     ((param_4.handle & 0xfffU) != 0xffe)) {
+  if (((0x5ff < (entHandle.handle & 0xfffU)) && ((entHandle.handle & 0xfffU) != 0xfff)) &&
+     ((entHandle.handle & 0xfffU) != 0xffe)) {
     Com_Error(ERR_DROP,"Invalid sound handle");
   }
   iVar3 = SND_Active();
-  if ((iVar3 != 0) && (param_1 != 0)) {
-    if ((0x7ffe < param_2) &&
+  if ((iVar3 != 0) && (id != 0)) {
+    if ((0x7ffe < fadeTimeMs) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x58,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_2 < -0x7ffe) &&
+    if ((fadeTimeMs < -0x7ffe) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x59,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((uint)param_3 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x5a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3 < 0.0) &&
+    if ((attenuation < 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x5b,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((1.0 < param_3) &&
+    if ((1.0 < attenuation) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x5c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_5 != (float *)0x0) &&
-        (((((uint)*param_5 & 0x7f800000) == 0x7f800000 ||
-          (((uint)param_5[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_5[2] & 0x7f800000) == 0x7f800000)))) &&
+    if (((position != (float *)0x0) &&
+        (((((uint)*position & 0x7f800000) == 0x7f800000 ||
+          (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)position[2] & 0x7f800000) == 0x7f800000)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x5f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_6 != (float *)0x0) &&
-       ((((((uint)*param_6 & 0x7f800000) == 0x7f800000 ||
-          (((uint)param_6[1] & 0x7f800000) == 0x7f800000)) ||
-         (((uint)param_6[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((direction != (float *)0x0) &&
+       ((((((uint)*direction & 0x7f800000) == 0x7f800000 ||
+          (((uint)direction[1] & 0x7f800000) == 0x7f800000)) ||
+         (((uint)direction[2] & 0x7f800000) == 0x7f800000)) &&
         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                   99,0,"%s"), !bVar2)))) {
       pcVar1 = (code *)swi(3);
@@ -88,68 +89,68 @@ SND_PlayInternal(uint param_1,int param_2,float param_3,SndEntHandle param_4,flo
     }
     if (((snd_assert_on_enqueue != (dvar_s *)0x0) && ((snd_assert_on_enqueue->current).integer != 0)
         ) && ((*(snd_assert_on_enqueue->current).string != '\0' &&
-              ((uVar4 = SND_HashName((snd_assert_on_enqueue->current).string), uVar4 == param_1 &&
+              ((uVar4 = SND_HashName((snd_assert_on_enqueue->current).string), uVar4 == id &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp"
                                          ,0x68,0,"%s"), !bVar2)))))) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_8 != (snd_playback *)0x0) && (param_8->id == -1)) &&
+    if (((playback != (snd_playback *)0x0) && (playback->id == -1)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x6d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar5 = SND_GetNewCommand();
-    if (psVar5 != (snd_command *)0x0) {
-      psVar5->type = SND_COMMAND_PLAY;
-      (psVar5->context).play.alias = param_1;
-      (psVar5->context).play.fadeTimeMs = param_2;
-      (psVar5->context).play.attenuation = param_3;
-      (psVar5->context).play.entHandle = param_4;
-      *(uint *)((int)&psVar5->context + 0x10) = (uint)param_7;
-      (psVar5->context).play.playback = param_8;
-      if (param_5 == (float *)0x0) {
-        (psVar5->context).play.position[0] = 0.0;
-        (psVar5->context).play.position[1] = 0.0;
-        (psVar5->context).play.position[2] = 0.0;
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_PLAY;
+      (cmd_00->context).play.alias = id;
+      (cmd_00->context).play.fadeTimeMs = fadeTimeMs;
+      (cmd_00->context).play.attenuation = attenuation;
+      (cmd_00->context).play.entHandle = entHandle;
+      *(uint *)((int)&cmd_00->context + 0x10) = (uint)notify;
+      (cmd_00->context).play.playback = playback;
+      if (position == (float *)0x0) {
+        (cmd_00->context).play.position[0] = 0.0;
+        (cmd_00->context).play.position[1] = 0.0;
+        (cmd_00->context).play.position[2] = 0.0;
       }
       else {
-        if ((((((uint)*param_5 & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_5[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_5[2] & 0x7f800000) == 0x7f800000)) &&
+        if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+             (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp"
                                      ,0x7e,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        (psVar5->context).play.position[0] = *param_5;
-        (psVar5->context).play.position[1] = param_5[1];
-        (psVar5->context).play.position[2] = param_5[2];
+        (cmd_00->context).play.position[0] = *position;
+        (cmd_00->context).play.position[1] = position[1];
+        (cmd_00->context).play.position[2] = position[2];
       }
-      if (param_6 == (float *)0x0) {
-        (psVar5->context).play.direction[0] = 0.0;
-        (psVar5->context).play.direction[1] = 0.0;
-        (psVar5->context).play.direction[2] = 0.0;
+      if (direction == (float *)0x0) {
+        (cmd_00->context).play.direction[0] = 0.0;
+        (cmd_00->context).play.direction[1] = 0.0;
+        (cmd_00->context).play.direction[2] = 0.0;
       }
       else {
-        if ((((((uint)*param_6 & 0x7f800000) == 0x7f800000) ||
-             (((uint)param_6[1] & 0x7f800000) == 0x7f800000)) ||
-            (((uint)param_6[2] & 0x7f800000) == 0x7f800000)) &&
+        if ((((((uint)*direction & 0x7f800000) == 0x7f800000) ||
+             (((uint)direction[1] & 0x7f800000) == 0x7f800000)) ||
+            (((uint)direction[2] & 0x7f800000) == 0x7f800000)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp"
                                      ,0x88,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        (psVar5->context).play.direction[0] = *param_6;
-        (psVar5->context).play.direction[1] = param_6[1];
-        (psVar5->context).play.direction[2] = param_6[2];
+        (cmd_00->context).play.direction[0] = *direction;
+        (cmd_00->context).play.direction[1] = direction[1];
+        (cmd_00->context).play.direction[2] = direction[2];
       }
-      SND_CommandPush(psVar5);
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -158,12 +159,15 @@ SND_PlayInternal(uint param_1,int param_2,float param_3,SndEntHandle param_4,flo
 
 // 0094B120  SND_Play  (sound/snd_public_async.cpp:157)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 void __cdecl
-SND_Play(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *param_5,float *param_6,
-        bool param_7)
+SND_Play(uint id,int fadeTimeMs,float attenuation,SndEntHandle entHandle,float *position,
+        float *direction,bool notify)
 
 {
-  SND_PlayInternal(param_1,param_2,param_3,param_4,param_5,param_6,param_7,(snd_playback *)0x0);
+  SND_PlayInternal(id,fadeTimeMs,attenuation,entHandle,position,direction,notify,(snd_playback *)0x0
+                  );
   return;
 }
 
@@ -172,21 +176,22 @@ SND_Play(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *para
 
 /* WARNING: Removing unreachable block (ram,0x0094b167) */
 /* WARNING: Removing unreachable block (ram,0x0094b18c) */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SND_Play(char *param_1,int param_2,float param_3,SndEntHandle param_4,float *param_5,float *param_6,
-        bool param_7)
+SND_Play(char *alias,int fadeTimeMs,float attenuation,SndEntHandle entHandle,float *position,
+        float *direction,bool notify)
 
 {
   int iVar1;
-  uint uVar2;
-  snd_playback *psVar3;
+  uint id;
+  snd_playback *playback;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
-    psVar3 = (snd_playback *)0x0;
-    uVar2 = SND_FindAliasId(param_1);
-    SND_PlayInternal(uVar2,param_2,param_3,param_4,param_5,param_6,param_7,psVar3);
+    playback = (snd_playback *)0x0;
+    id = SND_FindAliasId(alias);
+    SND_PlayInternal(id,fadeTimeMs,attenuation,entHandle,position,direction,notify,playback);
   }
   return;
 }
@@ -194,27 +199,30 @@ SND_Play(char *param_1,int param_2,float param_3,SndEntHandle param_4,float *par
 
 // 0094B1D0  SND_Playback  (sound/snd_public_async.cpp:190)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+
 int __cdecl
-SND_Playback(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *param_5,
-            float *param_6,bool param_7)
+SND_Playback(uint alias,int fadeTimeMs,float attenuation,SndEntHandle entHandle,float *position,
+            float *direction,bool notify)
 
 {
   int iVar1;
-  snd_playback *psVar2;
+  snd_playback *playback_00;
   int local_c;
+  snd_playback *playback;
   
   iVar1 = SND_Active();
   if (iVar1 == 0) {
     local_c = -1;
   }
   else {
-    psVar2 = SND_AllocatePlayback();
-    SND_PlayInternal(param_1,param_2,param_3,param_4,param_5,param_6,param_7,psVar2);
-    if (psVar2 == (snd_playback *)0x0) {
+    playback_00 = SND_AllocatePlayback();
+    SND_PlayInternal(alias,fadeTimeMs,attenuation,entHandle,position,direction,notify,playback_00);
+    if (playback_00 == (snd_playback *)0x0) {
       local_c = -1;
     }
     else {
-      local_c = psVar2->id;
+      local_c = playback_00->id;
     }
   }
   return local_c;
@@ -227,18 +235,19 @@ SND_Playback(uint param_1,int param_2,float param_3,SndEntHandle param_4,float *
 /* WARNING: Removing unreachable block (ram,0x0094b27d) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopSoundAliasOnEnt(SndEntHandle param_1,uint param_2)
+void __cdecl SND_StopSoundAliasOnEnt(SndEntHandle ent,uint alias_name)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_STOP_ALIAS;
-    (psVar2->context).stop_alias.ent = param_1;
-    (psVar2->context).stop_alias.alias_name = param_2;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_STOP_ALIAS;
+    (cmd_00->context).stop_alias.ent = ent;
+    (cmd_00->context).stop_alias.alias_name = alias_name;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -250,17 +259,18 @@ void __cdecl SND_StopSoundAliasOnEnt(SndEntHandle param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x0094b2fd) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopSoundsOnEnt(SndEntHandle param_1)
+void __cdecl SND_StopSoundsOnEnt(SndEntHandle ent)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_STOP_ENT;
-    (psVar2->context).stop_alias.ent = param_1;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_STOP_ENT;
+    (cmd_00->context).stop_alias.ent = ent;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -272,17 +282,18 @@ void __cdecl SND_StopSoundsOnEnt(SndEntHandle param_1)
 /* WARNING: Removing unreachable block (ram,0x0094b36d) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_NotifyCinematicStart(float param_1)
+void __cdecl SND_NotifyCinematicStart(float volume)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_CINEMATIC_START;
-    (psVar2->context).play.alias = (uint)param_1;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_CINEMATIC_START;
+    (cmd_00->context).play.alias = (uint)volume;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -298,12 +309,13 @@ void __cdecl SND_NotifyCinematicEnd(void)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_CINEMATIC_END;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_CINEMATIC_END;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -315,17 +327,18 @@ void __cdecl SND_NotifyCinematicEnd(void)
 /* WARNING: Removing unreachable block (ram,0x0094b45d) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_DisconnectListener(int param_1)
+void __cdecl SND_DisconnectListener(int listener)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_DISCONNECT_LISTENER;
-    (psVar2->context).set_listener.listener = param_1;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_DISCONNECT_LISTENER;
+    (cmd_00->context).set_listener.listener = listener;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -337,21 +350,21 @@ void __cdecl SND_DisconnectListener(int param_1)
 /* WARNING: Removing unreachable block (ram,0x0094b4d2) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl
-SND_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*param_5) [3])
+void __cdecl SND_SetListener(int listener,int clientNum,team_t team,float *origin,float (*axis) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
-  float fVar5;
+  snd_command *cmd_00;
+  float fVar4;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    fVar5 = Abs((phys_vec3 *)param_5);
-    if ((fVar5 <= 0.99998474) || (fVar5 = Abs((phys_vec3 *)param_5), 1.0000153 <= fVar5)) {
-      Abs((phys_vec3 *)param_5);
+    fVar4 = Abs((phys_vec3 *)axis);
+    if ((fVar4 <= 0.99998474) || (fVar4 = Abs((phys_vec3 *)axis), 1.0000153 <= fVar4)) {
+      Abs((phys_vec3 *)axis);
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x14f,0,"%s\n\t(Vec3Length(axis[0])) = %g");
       if (!bVar2) {
@@ -360,25 +373,25 @@ SND_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*pa
         return;
       }
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_SET_LISTENER;
-      (psVar4->context).set_listener.listener = param_1;
-      (psVar4->context).play.fadeTimeMs = param_2;
-      (psVar4->context).set_listener.team = param_3;
-      (psVar4->context).set_listener.origin[0] = *param_4;
-      (psVar4->context).play.notify = (int)param_4[1];
-      (psVar4->context).play.position[0] = param_4[2];
-      (psVar4->context).play.position[1] = (*param_5)[0];
-      (psVar4->context).play.position[2] = (*param_5)[1];
-      (psVar4->context).play.direction[0] = (*param_5)[2];
-      (psVar4->context).play.direction[1] = param_5[1][0];
-      (psVar4->context).play.direction[2] = param_5[1][1];
-      (psVar4->context).play.playback = (snd_playback *)param_5[1][2];
-      (psVar4->context).alias_name.id = (uint)param_5[2][0];
-      (psVar4->context).set_listener.axis[2][1] = param_5[2][1];
-      (psVar4->context).set_listener.axis[2][2] = param_5[2][2];
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SET_LISTENER;
+      (cmd_00->context).set_listener.listener = listener;
+      (cmd_00->context).play.fadeTimeMs = clientNum;
+      (cmd_00->context).set_listener.team = team;
+      (cmd_00->context).set_listener.origin[0] = *origin;
+      (cmd_00->context).play.notify = (int)origin[1];
+      (cmd_00->context).play.position[0] = origin[2];
+      (cmd_00->context).play.position[1] = (*axis)[0];
+      (cmd_00->context).play.position[2] = (*axis)[1];
+      (cmd_00->context).play.direction[0] = (*axis)[2];
+      (cmd_00->context).play.direction[1] = axis[1][0];
+      (cmd_00->context).play.direction[2] = axis[1][1];
+      (cmd_00->context).play.playback = (snd_playback *)axis[1][2];
+      (cmd_00->context).alias_name.id = (uint)axis[2][0];
+      (cmd_00->context).set_listener.axis[2][1] = axis[2][1];
+      (cmd_00->context).set_listener.axis[2][2] = axis[2][2];
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -391,19 +404,20 @@ SND_SetListener(int param_1,int param_2,team_t param_3,float *param_4,float (*pa
 /* WARNING: Removing unreachable block (ram,0x0094b67d) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopSounds(snd_stop_sound_flags param_1)
+void __cdecl SND_StopSounds(snd_stop_sound_flags flags)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
-    psVar2 = SND_GetNewCommand();
-    if (psVar2 != (snd_command *)0x0) {
-      psVar2->type = SND_COMMAND_STOP_SOUNDS;
-      (psVar2->context).play.alias = param_1;
-      SND_CommandPush(psVar2);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_STOP_SOUNDS;
+      (cmd_00->context).play.alias = flags;
+      SND_CommandPush(cmd_00);
     }
     SND_UpdateWait();
   }
@@ -421,12 +435,13 @@ void __cdecl SND_FadeIn(void)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_FADE_IN;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_FADE_IN;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -442,12 +457,13 @@ void __cdecl SND_FadeOut(void)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_FADE_OUT;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_FADE_OUT;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -460,31 +476,34 @@ void __cdecl SND_FadeOut(void)
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl
-SND_SetEnvironmentEffects(int param_1,char *param_2,float param_3,float param_4,int param_5)
+SND_SetEnvironmentEffects(int priority,char *preset,float drylevel,float wetlevel,int fademsec)
 
 {
   int iVar1;
-  uint uVar2;
-  snd_radverb *psVar3;
-  snd_command *psVar4;
+  uint id_00;
+  snd_radverb *psVar2;
+  snd_command *cmd_00;
+  snd_radverb *radverb;
+  snd_command *cmd;
+  uint id;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
-    uVar2 = SND_HashName(param_2);
-    psVar3 = SND_GetRadverb(uVar2);
-    if ((psVar3 == (snd_radverb *)0x0) ||
-       ((psVar3->id == g_snd.defaultHash && (uVar2 != g_snd.defaultHash)))) {
+    id_00 = SND_HashName(preset);
+    psVar2 = SND_GetRadverb(id_00);
+    if ((psVar2 == (snd_radverb *)0x0) ||
+       ((psVar2->id == g_snd.defaultHash && (id_00 != g_snd.defaultHash)))) {
       Com_PrintError(9,"Missing radverb %s\n");
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_SET_ENVIRONMENT_EFFECTS;
-      (psVar4->context).set_listener.listener = param_1;
-      (psVar4->context).stop_alias.alias_name = uVar2;
-      (psVar4->context).play.attenuation = param_3;
-      (psVar4->context).set_listener.origin[0] = param_4;
-      (psVar4->context).play.notify = param_5;
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SET_ENVIRONMENT_EFFECTS;
+      (cmd_00->context).set_listener.listener = priority;
+      (cmd_00->context).stop_alias.alias_name = id_00;
+      (cmd_00->context).play.attenuation = drylevel;
+      (cmd_00->context).set_listener.origin[0] = wetlevel;
+      (cmd_00->context).play.notify = fademsec;
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -497,18 +516,19 @@ SND_SetEnvironmentEffects(int param_1,char *param_2,float param_3,float param_4,
 /* WARNING: Removing unreachable block (ram,0x0094b8cd) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_DeactivateEnvironmentEffects(int param_1,int param_2)
+void __cdecl SND_DeactivateEnvironmentEffects(int priority,int fademsec)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_DEACTIVATE_ENVIRONMENT_EFFECTS;
-    (psVar2->context).set_listener.listener = param_1;
-    (psVar2->context).play.fadeTimeMs = param_2;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_DEACTIVATE_ENVIRONMENT_EFFECTS;
+    (cmd_00->context).set_listener.listener = priority;
+    (cmd_00->context).play.fadeTimeMs = fademsec;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -520,29 +540,30 @@ void __cdecl SND_DeactivateEnvironmentEffects(int param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x0094b998) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetPlaybackAttenuation(int param_1,float param_2)
+void __cdecl SND_SetPlaybackAttenuation(int id,float attenuation)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)attenuation & 0x7f800000) == 0x7f800000) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x1e6,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_SET_PLAYBACK_ATTENUATION;
-      (psVar4->context).set_listener.listener = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = param_2;
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SET_PLAYBACK_ATTENUATION;
+      (cmd_00->context).set_listener.listener = id;
+      (cmd_00->context).set_playback_attenuation.attenuation = attenuation;
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -555,29 +576,30 @@ void __cdecl SND_SetPlaybackAttenuation(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x0094ba68) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetPlaybackAttenuationRate(int param_1,float param_2)
+void __cdecl SND_SetPlaybackAttenuationRate(int id,float rate)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)rate & 0x7f800000) == 0x7f800000) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x1ff,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_SET_PLAYBACK_ATTENUATION_RATE;
-      (psVar4->context).set_listener.listener = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = param_2;
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SET_PLAYBACK_ATTENUATION_RATE;
+      (cmd_00->context).set_listener.listener = id;
+      (cmd_00->context).set_playback_attenuation.attenuation = rate;
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -590,29 +612,30 @@ void __cdecl SND_SetPlaybackAttenuationRate(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x0094bb38) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetPlaybackPitch(int param_1,float param_2)
+void __cdecl SND_SetPlaybackPitch(int playbackId,float pitch)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)pitch & 0x7f800000) == 0x7f800000) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x218,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_SET_PLAYBACK_PITCH;
-      (psVar4->context).set_listener.listener = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = param_2;
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SET_PLAYBACK_PITCH;
+      (cmd_00->context).set_listener.listener = playbackId;
+      (cmd_00->context).set_playback_attenuation.attenuation = pitch;
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -625,29 +648,30 @@ void __cdecl SND_SetPlaybackPitch(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x0094bc08) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetPlaybackPitchRate(int param_1,float param_2)
+void __cdecl SND_SetPlaybackPitchRate(int playbackId,float rate)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((uint)param_2 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)rate & 0x7f800000) == 0x7f800000) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x231,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_SET_PLAYBACK_PITCH_RATE;
-      (psVar4->context).set_listener.listener = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = param_2;
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SET_PLAYBACK_PITCH_RATE;
+      (cmd_00->context).set_listener.listener = playbackId;
+      (cmd_00->context).set_playback_attenuation.attenuation = rate;
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -660,17 +684,18 @@ void __cdecl SND_SetPlaybackPitchRate(int param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x0094bc8d) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopPlayback(int param_1)
+void __cdecl SND_StopPlayback(int playbackId)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_STOP_PLAYBACK;
-    (psVar2->context).set_listener.listener = param_1;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_STOP_PLAYBACK;
+    (cmd_00->context).set_listener.listener = playbackId;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -682,42 +707,43 @@ void __cdecl SND_StopPlayback(int param_1)
 /* WARNING: Removing unreachable block (ram,0x0094bd9b) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetSnapshot(snd_snapshot_type param_1,char *param_2,float param_3,float param_4)
+void __cdecl SND_SetSnapshot(snd_snapshot_type type,char *snapshotName,float length,float amount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   snd_snapshot *psVar4;
-  snd_command *psVar5;
-  uint local_8;
+  snd_command *cmd_00;
+  snd_command *cmd;
+  uint id;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((param_2 == (char *)0x0) || (*param_2 == '\0')) {
-      param_2 = "default";
+    if ((snapshotName == (char *)0x0) || (*snapshotName == '\0')) {
+      snapshotName = "default";
     }
-    if ((((uint)param_3 & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)length & 0x7f800000) == 0x7f800000) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x265,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_8 = SND_HashName(param_2);
-    psVar4 = SND_GetSnapshotById(local_8);
+    id = SND_HashName(snapshotName);
+    psVar4 = SND_GetSnapshotById(id);
     if (psVar4 == (snd_snapshot *)0x0) {
       Com_PrintError(9,"Could not find group snapshot %s\n");
-      local_8 = g_snd.defaultHash;
+      id = g_snd.defaultHash;
     }
-    psVar5 = SND_GetNewCommand();
-    if (psVar5 != (snd_command *)0x0) {
-      psVar5->type = SND_COMMAND_SNAPSHOT;
-      (psVar5->context).snapshot.type = param_1;
-      (psVar5->context).stop_alias.alias_name = local_8;
-      (psVar5->context).play.attenuation = param_3;
-      (psVar5->context).set_listener.origin[0] = param_4;
-      SND_CommandPush(psVar5);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_SNAPSHOT;
+      (cmd_00->context).snapshot.type = type;
+      (cmd_00->context).stop_alias.alias_name = id;
+      (cmd_00->context).play.attenuation = length;
+      (cmd_00->context).set_listener.origin[0] = amount;
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -729,29 +755,33 @@ void __cdecl SND_SetSnapshot(snd_snapshot_type param_1,char *param_2,float param
 /* WARNING: Removing unreachable block (ram,0x0094be88) */
 /* WARNING: Removing unreachable block (ram,0x0094bead) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl SND_SetEntState(SndEntHandle param_1)
+void __cdecl SND_SetEntState(SndEntHandle handle)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar2 = SND_Active();
-  if ((((iVar2 != 0) && (((uint)param_1.handle >> 0x15 & 1) == 0)) &&
-      ((param_1.handle & 0xfffU) != 0xfff)) &&
-     (((bVar1 = CL_LocalClient_IsCUIFlagSet((uint)param_1.handle >> 0x13 & 3,0x20), bVar1 &&
-       (bVar1 = CG_SoundEntInUse(param_1), bVar1)) &&
-      ((uVar3 = CG_SoundGetUseCount(param_1), ((uint)param_1.handle >> 0xc & 0x7f) == (uVar3 & 0x7f)
-       && (psVar4 = SND_GetNewCommand(), psVar4 != (snd_command *)0x0)))))) {
-    psVar4->type = SND_COMMAND_SET_ENT_STATE;
-    (psVar4->context).stop_alias.ent = param_1;
+  if ((((iVar2 != 0) && (((uint)handle.handle >> 0x15 & 1) == 0)) &&
+      ((handle.handle & 0xfffU) != 0xfff)) &&
+     (((bVar1 = CL_LocalClient_IsCUIFlagSet((uint)handle.handle >> 0x13 & 3,0x20), bVar1 &&
+       (bVar1 = CG_SoundEntInUse(handle), bVar1)) &&
+      ((uVar3 = CG_SoundGetUseCount(handle), ((uint)handle.handle >> 0xc & 0x7f) == (uVar3 & 0x7f)
+       && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)))))) {
+    cmd_00->type = SND_COMMAND_SET_ENT_STATE;
+    (cmd_00->context).stop_alias.ent = handle;
     CG_GetSoundEntityOrientation
-              (param_1,&(psVar4->context).set_playback_attenuation.attenuation,
-               (float (*) [3])((psVar4->context).set_listener.axis[0] + 1),
-               (psVar4->context).set_listener.origin + 1);
-    SND_CommandPush(psVar4);
+              (handle,&(cmd_00->context).set_playback_attenuation.attenuation,
+               (float (*) [3])((cmd_00->context).set_listener.axis[0] + 1),
+               (cmd_00->context).set_listener.origin + 1);
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -763,33 +793,34 @@ void __cdecl SND_SetEntState(SndEntHandle param_1)
 /* WARNING: Removing unreachable block (ram,0x0094bfd6) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_PlayLoopAt(uint param_1,float *param_2)
+void __cdecl SND_PlayLoopAt(uint id,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x2b9,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_PLAY_LOOP_AT;
-      (psVar4->context).play.alias = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = *param_2;
-      (psVar4->context).play.attenuation = param_2[1];
-      (psVar4->context).play.entHandle = *(SndEntHandle *)(param_2 + 2);
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_PLAY_LOOP_AT;
+      (cmd_00->context).play.alias = id;
+      (cmd_00->context).set_playback_attenuation.attenuation = *origin;
+      (cmd_00->context).play.attenuation = origin[1];
+      (cmd_00->context).play.entHandle = *(SndEntHandle *)(origin + 2);
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -802,33 +833,34 @@ void __cdecl SND_PlayLoopAt(uint param_1,float *param_2)
 /* WARNING: Removing unreachable block (ram,0x0094c116) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopLoopAt(uint param_1,float *param_2)
+void __cdecl SND_StopLoopAt(uint id,float *origin)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x2d0,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_STOP_LOOP_AT;
-      (psVar4->context).play.alias = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = *param_2;
-      (psVar4->context).play.attenuation = param_2[1];
-      (psVar4->context).play.entHandle = *(SndEntHandle *)(param_2 + 2);
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_STOP_LOOP_AT;
+      (cmd_00->context).play.alias = id;
+      (cmd_00->context).set_playback_attenuation.attenuation = *origin;
+      (cmd_00->context).play.attenuation = origin[1];
+      (cmd_00->context).play.entHandle = *(SndEntHandle *)(origin + 2);
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -841,45 +873,46 @@ void __cdecl SND_StopLoopAt(uint param_1,float *param_2)
 /* WARNING: Removing unreachable block (ram,0x0094c2e4) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_PlayLineAt(uint param_1,float *param_2,float *param_3)
+void __cdecl SND_PlayLineAt(uint id,float *origin0,float *origin1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin0 & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin0[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin0[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x2e7,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin1 & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin1[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin1[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x2e8,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_PLAY_LINE_AT;
-      (psVar4->context).play.alias = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = *param_2;
-      (psVar4->context).play.attenuation = param_2[1];
-      (psVar4->context).play.entHandle = *(SndEntHandle *)(param_2 + 2);
-      (psVar4->context).set_listener.origin[1] = *param_3;
-      (psVar4->context).play.position[0] = param_3[1];
-      (psVar4->context).play.position[1] = param_3[2];
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_PLAY_LINE_AT;
+      (cmd_00->context).play.alias = id;
+      (cmd_00->context).set_playback_attenuation.attenuation = *origin0;
+      (cmd_00->context).play.attenuation = origin0[1];
+      (cmd_00->context).play.entHandle = *(SndEntHandle *)(origin0 + 2);
+      (cmd_00->context).set_listener.origin[1] = *origin1;
+      (cmd_00->context).play.position[0] = origin1[1];
+      (cmd_00->context).play.position[1] = origin1[2];
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -892,45 +925,46 @@ void __cdecl SND_PlayLineAt(uint param_1,float *param_2,float *param_3)
 /* WARNING: Removing unreachable block (ram,0x0094c4d4) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_StopLineAt(uint param_1,float *param_2,float *param_3)
+void __cdecl SND_StopLineAt(uint id,float *origin0,float *origin1)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  snd_command *psVar4;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar3 = SND_Active();
   if (iVar3 != 0) {
-    if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin0 & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin0[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin0[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x2ff,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-         (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-        (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+    if ((((((uint)*origin1 & 0x7f800000) == 0x7f800000) ||
+         (((uint)origin1[1] & 0x7f800000) == 0x7f800000)) ||
+        (((uint)origin1[2] & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x300,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar4 = SND_GetNewCommand();
-    if (psVar4 != (snd_command *)0x0) {
-      psVar4->type = SND_COMMAND_STOP_LINE_AT;
-      (psVar4->context).play.alias = param_1;
-      (psVar4->context).set_playback_attenuation.attenuation = *param_2;
-      (psVar4->context).play.attenuation = param_2[1];
-      (psVar4->context).play.entHandle = *(SndEntHandle *)(param_2 + 2);
-      (psVar4->context).set_listener.origin[1] = *param_3;
-      (psVar4->context).play.position[0] = param_3[1];
-      (psVar4->context).play.position[1] = param_3[2];
-      SND_CommandPush(psVar4);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_STOP_LINE_AT;
+      (cmd_00->context).play.alias = id;
+      (cmd_00->context).set_playback_attenuation.attenuation = *origin0;
+      (cmd_00->context).play.attenuation = origin0[1];
+      (cmd_00->context).play.entHandle = *(SndEntHandle *)(origin0 + 2);
+      (cmd_00->context).set_listener.origin[1] = *origin1;
+      (cmd_00->context).play.position[0] = origin1[1];
+      (cmd_00->context).play.position[1] = origin1[2];
+      SND_CommandPush(cmd_00);
     }
   }
   return;
@@ -943,40 +977,41 @@ void __cdecl SND_StopLineAt(uint param_1,float *param_2,float *param_3)
 /* WARNING: Removing unreachable block (ram,0x0094c5a0) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetContext(char *param_1,char *param_2)
+void __cdecl SND_SetContext(char *type,char *value)
 
 {
   int iVar1;
   uint uVar2;
-  uint uVar3;
-  snd_command *psVar4;
+  uint type_00;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
-    uVar2 = SND_HashName(param_1);
+    uVar2 = SND_HashName(type);
     iVar1 = SND_FindContextIndex(uVar2);
     if (iVar1 < 0) {
       Com_PrintError(9,"Unknown sound context %s\n");
     }
     else {
-      uVar2 = SND_HashName(param_2);
+      uVar2 = SND_HashName(value);
       if (uVar2 != 0) {
-        uVar2 = SND_HashName(param_2);
-        uVar3 = SND_HashName(param_1);
-        iVar1 = SND_FindContextValueIndex(uVar3,uVar2);
+        uVar2 = SND_HashName(value);
+        type_00 = SND_HashName(type);
+        iVar1 = SND_FindContextValueIndex(type_00,uVar2);
         if (iVar1 < 0) {
           Com_PrintError(9,"Unknown sound context %s\n");
           return;
         }
       }
-      psVar4 = SND_GetNewCommand();
-      if (psVar4 != (snd_command *)0x0) {
-        psVar4->type = SND_COMMAND_SET_CONTEXT;
-        uVar2 = SND_HashName(param_1);
-        (psVar4->context).play.alias = uVar2;
-        uVar2 = SND_HashName(param_2);
-        (psVar4->context).stop_alias.alias_name = uVar2;
-        SND_CommandPush(psVar4);
+      cmd_00 = SND_GetNewCommand();
+      if (cmd_00 != (snd_command *)0x0) {
+        cmd_00->type = SND_COMMAND_SET_CONTEXT;
+        uVar2 = SND_HashName(type);
+        (cmd_00->context).play.alias = uVar2;
+        uVar2 = SND_HashName(value);
+        (cmd_00->context).stop_alias.alias_name = uVar2;
+        SND_CommandPush(cmd_00);
       }
     }
   }
@@ -990,17 +1025,18 @@ void __cdecl SND_SetContext(char *param_1,char *param_2)
 /* WARNING: Removing unreachable block (ram,0x0094c6ad) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_SetScriptTimescale(float param_1)
+void __cdecl SND_SetScriptTimescale(float value)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_SCRIPT_TIMESCALE;
-    (psVar2->context).play.alias = (uint)param_1;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_SCRIPT_TIMESCALE;
+    (cmd_00->context).play.alias = (uint)value;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -1012,32 +1048,32 @@ void __cdecl SND_SetScriptTimescale(float param_1)
 /* WARNING: Removing unreachable block (ram,0x0094c724) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_ent_state * __cdecl SND_FindEntState(SndEntHandle param_1,bool param_2)
+snd_ent_state * __cdecl SND_FindEntState(SndEntHandle handle,bool createNew)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_ent_state *psVar3;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  SndEntHandle *local_8;
+  uint i_3;
+  uint i_2;
+  uint i;
+  snd_ent_state *state;
   
-  if (((param_1.handle & 0xfffU) == 0xfff) &&
+  if (((handle.handle & 0xfffU) == 0xfff) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x34a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     psVar3 = (snd_ent_state *)(*pcVar1)();
     return psVar3;
   }
-  if ((((uint)param_1.handle >> 0x15 & 1) != 0) &&
+  if ((((uint)handle.handle >> 0x15 & 1) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x34b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     psVar3 = (snd_ent_state *)(*pcVar1)();
     return psVar3;
   }
-  if ((0x5ff < (param_1.handle & 0xfffU)) &&
+  if ((0x5ff < (handle.handle & 0xfffU)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x34c,0,
                                "handle.field.entIndex doesn\'t index ARRAY_COUNT(g_snd.entStateIndex)\n\t%i not in [0, %i)"
@@ -1046,9 +1082,9 @@ snd_ent_state * __cdecl SND_FindEntState(SndEntHandle param_1,bool param_2)
     psVar3 = (snd_ent_state *)(*pcVar1)();
     return psVar3;
   }
-  if (((((uint)param_1.handle >> 0x15 & 1) == 0) && ((param_1.handle & 0xfffU) != 0xfff)) &&
-     ((param_1.handle & 0xfffU) != 0xffe)) {
-    if ((0x5ff < (param_1.handle & 0xfffU)) &&
+  if (((((uint)handle.handle >> 0x15 & 1) == 0) && ((handle.handle & 0xfffU) != 0xfff)) &&
+     ((handle.handle & 0xfffU) != 0xffe)) {
+    if ((0x5ff < (handle.handle & 0xfffU)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x356,0,
                                  "handle.field.entIndex doesn\'t index MAX_LOCAL_CENTITIES\n\t%i not in [0, %i)"
@@ -1057,68 +1093,67 @@ snd_ent_state * __cdecl SND_FindEntState(SndEntHandle param_1,bool param_2)
       psVar3 = (snd_ent_state *)(*pcVar1)();
       return psVar3;
     }
-    if (0x600 < (param_1.handle & 0xfffU)) {
+    if (0x600 < (handle.handle & 0xfffU)) {
       Com_Error(ERR_DROP,"Invalid sound handle");
     }
-    local_8 = &g_snd.entStateIndex[param_1.handle & 0xfff]->handle;
-    for (local_c = 0;
-        ((local_8 != (SndEntHandle *)0x0 && (param_1.handle != local_8->handle)) && (local_c < 100))
-        ; local_c = local_c + 1) {
-      if ((0x31 < local_c) &&
+    state = g_snd.entStateIndex[handle.handle & 0xfff];
+    for (i = 0; ((state != (snd_ent_state *)0x0 && (handle.handle != (state->handle).handle)) &&
+                (i < 100)); i = i + 1) {
+      if ((0x31 < i) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x363,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         psVar3 = (snd_ent_state *)(*pcVar1)();
         return psVar3;
       }
-      if ((local_8 == (SndEntHandle *)local_8[0x11].handle) &&
+      if ((state == state->next) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x364,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         psVar3 = (snd_ent_state *)(*pcVar1)();
         return psVar3;
       }
-      if (((param_1.handle & 0xfffU) != (local_8->handle & 0xfffU)) &&
+      if (((handle.handle & 0xfffU) != ((state->handle).handle & 0xfffU)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x365,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         psVar3 = (snd_ent_state *)(*pcVar1)();
         return psVar3;
       }
-      if ((local_8[0x10].handle == 0) &&
+      if ((state->lastUsed == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x366,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         psVar3 = (snd_ent_state *)(*pcVar1)();
         return psVar3;
       }
-      local_8 = (SndEntHandle *)local_8[0x11].handle;
+      state = state->next;
     }
-    if ((param_2) && (local_8 == (SndEntHandle *)0x0)) {
-      for (local_10 = 0; local_10 < 0x128; local_10 = local_10 + 1) {
-        if (g_snd.entState[local_10].lastUsed == 0) {
-          local_8 = &g_snd.entState[local_10].handle;
-          if ((local_8 == &g_snd.entStateIndex[param_1.handle & 0xfff]->handle) &&
+    if ((createNew) && (state == (snd_ent_state *)0x0)) {
+      for (i_2 = 0; i_2 < 0x128; i_2 = i_2 + 1) {
+        if (g_snd.entState[i_2].lastUsed == 0) {
+          state = g_snd.entState + i_2;
+          if ((&state->handle == &g_snd.entStateIndex[handle.handle & 0xfff]->handle) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp"
                                        ,0x372,0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             psVar3 = (snd_ent_state *)(*pcVar1)();
             return psVar3;
           }
-          g_snd.entState[local_10].lastUsed = g_snd.frame;
-          *local_8 = param_1;
-          g_snd.entState[local_10].next = g_snd.entStateIndex[param_1.handle & 0xfff];
-          g_snd.entStateIndex[param_1.handle & 0xfff] = (snd_ent_state *)local_8;
+          g_snd.entState[i_2].lastUsed = g_snd.frame;
+          state->handle = handle;
+          g_snd.entState[i_2].next = g_snd.entStateIndex[handle.handle & 0xfff];
+          g_snd.entStateIndex[handle.handle & 0xfff] = state;
           break;
         }
       }
-      if (local_8 == (SndEntHandle *)0x0) {
+      if (state == (snd_ent_state *)0x0) {
         Com_Printf(9,"Out of ent state cache entries at time %d\n");
-        for (local_14 = 0; local_14 < 0x128; local_14 = local_14 + 1) {
+        for (i_3 = 0; i_3 < 0x128; i_3 = i_3 + 1) {
           Com_Printf(9,"%d - %x %d %d\n");
         }
       }
-      if ((local_8 == (SndEntHandle *)0x0) &&
+      if ((state == (snd_ent_state *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    900,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1128,9 +1163,9 @@ snd_ent_state * __cdecl SND_FindEntState(SndEntHandle param_1,bool param_2)
     }
   }
   else {
-    local_8 = (SndEntHandle *)0x0;
+    state = (snd_ent_state *)0x0;
   }
-  return (snd_ent_state *)local_8;
+  return state;
 }
 
 
@@ -1140,81 +1175,82 @@ snd_ent_state * __cdecl SND_FindEntState(SndEntHandle param_1,bool param_2)
 /* WARNING: Removing unreachable block (ram,0x0094cb34) */
 
 void __cdecl
-SND_UpdateEntState(SndEntHandle param_1,float *param_2,float *param_3,float (*param_4) [3])
+SND_UpdateEntState(SndEntHandle handle,float *origin,float *velocity,float (*orientation) [3])
 
 {
   code *pcVar1;
   bool bVar2;
   snd_ent_state *psVar3;
+  snd_ent_state *state;
   
-  if ((((uint)param_1.handle >> 0x15 & 1) != 0) &&
+  if ((((uint)handle.handle >> 0x15 & 1) != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x392,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+       (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x393,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*velocity & 0x7f800000) == 0x7f800000) ||
+       (((uint)velocity[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)velocity[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x394,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)(*param_4)[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(*param_4)[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(*param_4)[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(*orientation)[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(*orientation)[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(*orientation)[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x395,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)param_4[1][0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1][1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[1][2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)orientation[1][0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)orientation[1][1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)orientation[1][2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x396,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)param_4[2][0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[2][1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2][2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)orientation[2][0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)orientation[2][1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)orientation[2][2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x397,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  psVar3 = SND_FindEntState(param_1,true);
+  psVar3 = SND_FindEntState(handle,true);
   if (psVar3 != (snd_ent_state *)0x0) {
-    if (((psVar3->handle).handle != param_1.handle) &&
+    if (((psVar3->handle).handle != handle.handle) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x39d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    psVar3->origin[0] = *param_2;
-    psVar3->origin[1] = param_2[1];
-    psVar3->origin[2] = param_2[2];
-    psVar3->velocity[0] = *param_3;
-    psVar3->velocity[1] = param_3[1];
-    psVar3->velocity[2] = param_3[2];
-    Vec3PackNormAxis(param_4,psVar3->orientation);
+    psVar3->origin[0] = *origin;
+    psVar3->origin[1] = origin[1];
+    psVar3->origin[2] = origin[2];
+    psVar3->velocity[0] = *velocity;
+    psVar3->velocity[1] = velocity[1];
+    psVar3->velocity[2] = velocity[2];
+    Vec3PackNormAxis(orientation,psVar3->orientation);
   }
   return;
 }
@@ -1226,23 +1262,24 @@ SND_UpdateEntState(SndEntHandle param_1,float *param_2,float *param_3,float (*pa
 /* WARNING: Removing unreachable block (ram,0x0094cf34) */
 
 bool __cdecl
-SND_GetEntState(SndEntHandle param_1,float *param_2,float *param_3,float (*param_4) [3])
+SND_GetEntState(SndEntHandle handle,float *origin,float *velocity,float (*orientation) [3])
 
 {
   snd_ent_state *psVar1;
+  snd_ent_state *state;
   
-  psVar1 = SND_FindEntState(param_1,false);
+  psVar1 = SND_FindEntState(handle,false);
   if (psVar1 == (snd_ent_state *)0x0) {
-    SND_EntStateRequest(param_1);
+    SND_EntStateRequest(handle);
   }
   else {
-    *param_2 = psVar1->origin[0];
-    param_2[1] = psVar1->origin[1];
-    param_2[2] = psVar1->origin[2];
-    *param_3 = psVar1->velocity[0];
-    param_3[1] = psVar1->velocity[1];
-    param_3[2] = psVar1->velocity[2];
-    Vec3PackNormAxis(psVar1->orientation,param_4);
+    *origin = psVar1->origin[0];
+    origin[1] = psVar1->origin[1];
+    origin[2] = psVar1->origin[2];
+    *velocity = psVar1->velocity[0];
+    velocity[1] = psVar1->velocity[1];
+    velocity[2] = psVar1->velocity[2];
+    Vec3PackNormAxis(psVar1->orientation,orientation);
   }
   return psVar1 != (snd_ent_state *)0x0;
 }
@@ -1254,10 +1291,10 @@ SND_GetEntState(SndEntHandle param_1,float *param_2,float *param_3,float (*param
 /* WARNING: Removing unreachable block (ram,0x0094d001) */
 
 void __cdecl
-SNDL_SetEntState(SndEntHandle param_1,float *param_2,float *param_3,float (*param_4) [3])
+SNDL_SetEntState(SndEntHandle handle,float *origin,float *velocity,float (*orientation) [3])
 
 {
-  SND_UpdateEntState(param_1,param_2,param_3,param_4);
+  SND_UpdateEntState(handle,origin,velocity,orientation);
   return;
 }
 
@@ -1275,75 +1312,75 @@ void __cdecl SND_EntStateFrame(void)
   bool bVar2;
   snd_ent_state *psVar3;
   DWORD DVar4;
-  uint local_2c;
-  snd_ent_state **local_24;
-  uint local_1c;
-  uint local_14;
-  uint local_10;
-  snd_ent_state *local_c;
-  uint local_8;
+  uint j_2;
+  bool removed;
+  snd_ent_state **list;
+  snd_ent_state *state_3;
+  uint i_3;
+  snd_ent_state *state_2;
+  uint i_2;
+  uint j;
+  snd_ent_state *state;
+  uint i;
   
   PIXBeginNamedEvent(0xffffff,"SND_EntStateFrame");
-  for (local_8 = 0; local_8 < 0x600; local_8 = local_8 + 1) {
-    local_c = g_snd.entStateIndex[local_8];
-    for (local_10 = 0; (local_c != (snd_ent_state *)0x0 && (local_10 < 100));
-        local_10 = local_10 + 1) {
-      if ((0x31 < local_10) &&
+  for (i = 0; i < 0x600; i = i + 1) {
+    state = g_snd.entStateIndex[i];
+    for (j = 0; (state != (snd_ent_state *)0x0 && (j < 100)); j = j + 1) {
+      if ((0x31 < j) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x3d3,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_8 != ((local_c->handle).handle & 0xfffU)) &&
+      if ((i != ((state->handle).handle & 0xfffU)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x3d4,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_c == local_c->next) &&
+      if ((state == state->next) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x3d5,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((local_c->lastUsed == 0) &&
+      if ((state->lastUsed == 0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x3d6,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_c = local_c->next;
+      state = state->next;
     }
   }
-  for (local_14 = 0; local_14 < 0x4a; local_14 = local_14 + 1) {
-    if ((((g_snd.voiceAliasHash[local_14] != 0) &&
-         (((uint)g_snd.voice[local_14].sndEnt.handle >> 0x15 & 1) == 0)) &&
-        ((g_snd.voice[local_14].sndEnt.handle & 0xfffU) != 0xfff)) &&
-       (psVar3 = SND_FindEntState(g_snd.voice[local_14].sndEnt,false),
-       psVar3 != (snd_ent_state *)0x0)) {
+  for (i_2 = 0; i_2 < 0x4a; i_2 = i_2 + 1) {
+    if ((((g_snd.voiceAliasHash[i_2] != 0) &&
+         (((uint)g_snd.voice[i_2].sndEnt.handle >> 0x15 & 1) == 0)) &&
+        ((g_snd.voice[i_2].sndEnt.handle & 0xfffU) != 0xfff)) &&
+       (psVar3 = SND_FindEntState(g_snd.voice[i_2].sndEnt,false), psVar3 != (snd_ent_state *)0x0)) {
       if (psVar3->lastUsed != g_snd.frame) {
-        SND_EntStateRequest(g_snd.voice[local_14].sndEnt);
+        SND_EntStateRequest(g_snd.voice[i_2].sndEnt);
       }
       psVar3->lastUsed = g_snd.frame;
     }
   }
-  local_1c = 0;
+  i_3 = 0;
   do {
-    if (0x127 < local_1c) {
+    if (0x127 < i_3) {
       DVar4 = GetCurrentThreadId();
       if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
       return;
     }
-    psVar3 = g_snd.entState + local_1c;
-    if ((g_snd.entState[local_1c].lastUsed != 0) &&
-       (2 < g_snd.frame - g_snd.entState[local_1c].lastUsed)) {
-      if ((g_snd.frame < g_snd.entState[local_1c].lastUsed) &&
+    psVar3 = g_snd.entState + i_3;
+    if ((g_snd.entState[i_3].lastUsed != 0) && (2 < g_snd.frame - g_snd.entState[i_3].lastUsed)) {
+      if ((g_snd.frame < g_snd.entState[i_3].lastUsed) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                    0x3f6,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -1359,16 +1396,16 @@ void __cdecl SND_EntStateFrame(void)
         (*pcVar1)();
         return;
       }
-      local_24 = g_snd.entStateIndex + ((psVar3->handle).handle & 0xfff);
+      list = g_snd.entStateIndex + ((psVar3->handle).handle & 0xfff);
       bVar2 = false;
-      local_2c = 0;
+      j_2 = 0;
       while( true ) {
-        if ((*local_24 == (snd_ent_state *)0x0) || (99 < local_2c)) goto LAB_0094d37c;
-        if (*local_24 == psVar3) break;
-        local_24 = &(*local_24)->next;
-        local_2c = local_2c + 1;
+        if ((*list == (snd_ent_state *)0x0) || (99 < j_2)) goto LAB_0094d37c;
+        if (*list == psVar3) break;
+        list = &(*list)->next;
+        j_2 = j_2 + 1;
       }
-      *local_24 = (*local_24)->next;
+      *list = (*list)->next;
       bVar2 = true;
 LAB_0094d37c:
       if ((!bVar2) &&
@@ -1378,10 +1415,10 @@ LAB_0094d37c:
         (*pcVar1)();
         return;
       }
-      g_snd.entState[local_1c].lastUsed = 0;
-      g_snd.entState[local_1c].next = (snd_ent_state *)0x0;
+      g_snd.entState[i_3].lastUsed = 0;
+      g_snd.entState[i_3].next = (snd_ent_state *)0x0;
     }
-    local_1c = local_1c + 1;
+    i_3 = i_3 + 1;
   } while( true );
 }
 
@@ -1393,14 +1430,14 @@ LAB_0094d37c:
 void __cdecl SND_ResetEntState(void)
 
 {
-  uint local_c;
-  uint local_8;
+  uint i_2;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x128; local_8 = local_8 + 1) {
-    g_snd.entState[local_8].lastUsed = 0;
+  for (i = 0; i < 0x128; i = i + 1) {
+    g_snd.entState[i].lastUsed = 0;
   }
-  for (local_c = 0; local_c < 0x600; local_c = local_c + 1) {
-    g_snd.entStateIndex[local_c] = (snd_ent_state *)0x0;
+  for (i_2 = 0; i_2 < 0x600; i_2 = i_2 + 1) {
+    g_snd.entStateIndex[i_2] = (snd_ent_state *)0x0;
   }
   return;
 }
@@ -1411,16 +1448,17 @@ void __cdecl SND_ResetEntState(void)
 /* WARNING: Removing unreachable block (ram,0x0094d47d) */
 /* WARNING: Removing unreachable block (ram,0x0094d4a2) */
 
-void __cdecl SND_EntStateRequest(SndEntHandle param_1)
+void __cdecl SND_EntStateRequest(SndEntHandle handle)
 
 {
-  snd_notify *psVar1;
+  snd_notify *cmd_00;
+  snd_notify *cmd;
   
-  psVar1 = SND_GetNewNotify();
-  if (psVar1 != (snd_notify *)0x0) {
-    psVar1->type = SND_NOTIFY_ENT_UPDATE;
-    (psVar1->context).ent_update.handle = param_1;
-    SND_NotifyPush(psVar1);
+  cmd_00 = SND_GetNewNotify();
+  if (cmd_00 != (snd_notify *)0x0) {
+    cmd_00->type = SND_NOTIFY_ENT_UPDATE;
+    (cmd_00->context).ent_update.handle = handle;
+    SND_NotifyPush(cmd_00);
   }
   return;
 }
@@ -1431,17 +1469,18 @@ void __cdecl SND_EntStateRequest(SndEntHandle param_1)
 /* WARNING: Removing unreachable block (ram,0x0094d4ed) */
 /* WARNING: Removing unreachable block (ram,0x0094d512) */
 
-void __cdecl SND_SubtitleNotify(char *param_1,uint param_2)
+void __cdecl SND_SubtitleNotify(char *subtitle,uint lengthMs)
 
 {
-  snd_notify *psVar1;
+  snd_notify *cmd_00;
+  snd_notify *cmd;
   
-  psVar1 = SND_GetNewNotify();
-  if (psVar1 != (snd_notify *)0x0) {
-    psVar1->type = SND_NOTIFY_SUBTITLE;
-    (psVar1->context).subtitle.subtitle = param_1;
-    (psVar1->context).subtitle.lengthMs = param_2;
-    SND_NotifyPush(psVar1);
+  cmd_00 = SND_GetNewNotify();
+  if (cmd_00 != (snd_notify *)0x0) {
+    cmd_00->type = SND_NOTIFY_SUBTITLE;
+    (cmd_00->context).subtitle.subtitle = subtitle;
+    (cmd_00->context).subtitle.lengthMs = lengthMs;
+    SND_NotifyPush(cmd_00);
   }
   return;
 }
@@ -1452,17 +1491,18 @@ void __cdecl SND_SubtitleNotify(char *param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x0094d55d) */
 /* WARNING: Removing unreachable block (ram,0x0094d582) */
 
-void __cdecl SND_LengthNotify(uint param_1,uint param_2)
+void __cdecl SND_LengthNotify(uint ent,uint lengthMs)
 
 {
-  snd_notify *psVar1;
+  snd_notify *cmd_00;
+  snd_notify *cmd;
   
-  psVar1 = SND_GetNewNotify();
-  if (psVar1 != (snd_notify *)0x0) {
-    psVar1->type = SND_NOTIFY_LENGTH;
-    (psVar1->context).length.ent = param_1;
-    (psVar1->context).subtitle.lengthMs = param_2;
-    SND_NotifyPush(psVar1);
+  cmd_00 = SND_GetNewNotify();
+  if (cmd_00 != (snd_notify *)0x0) {
+    cmd_00->type = SND_NOTIFY_LENGTH;
+    (cmd_00->context).length.ent = ent;
+    (cmd_00->context).subtitle.lengthMs = lengthMs;
+    SND_NotifyPush(cmd_00);
   }
   return;
 }
@@ -1473,25 +1513,26 @@ void __cdecl SND_LengthNotify(uint param_1,uint param_2)
 /* WARNING: Removing unreachable block (ram,0x0094d5cd) */
 /* WARNING: Removing unreachable block (ram,0x0094d5f2) */
 
-void __cdecl SND_FreePlaybackNotify(snd_playback *param_1)
+void __cdecl SND_FreePlaybackNotify(snd_playback *playback)
 
 {
   code *pcVar1;
   bool bVar2;
-  snd_notify *psVar3;
+  snd_notify *cmd_00;
+  snd_notify *cmd;
   
-  if ((param_1 == (snd_playback *)0x0) &&
+  if ((playback == (snd_playback *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                0x46a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  psVar3 = SND_GetNewNotify();
-  if (psVar3 != (snd_notify *)0x0) {
-    psVar3->type = SND_NOTIFY_PLAYBACK_FREE;
-    (psVar3->context).playback_update.playback = param_1;
-    SND_NotifyPush(psVar3);
+  cmd_00 = SND_GetNewNotify();
+  if (cmd_00 != (snd_notify *)0x0) {
+    cmd_00->type = SND_NOTIFY_PLAYBACK_FREE;
+    (cmd_00->context).playback_update.playback = playback;
+    SND_NotifyPush(cmd_00);
   }
   return;
 }
@@ -1504,10 +1545,10 @@ void __cdecl SND_FreePlaybackNotify(snd_playback *param_1)
 void __cdecl SND_ResetPlaybacks(void)
 
 {
-  uint local_8;
+  uint i;
   
-  for (local_8 = 0; local_8 < 0x94; local_8 = local_8 + 1) {
-    g_snd.playbacks[local_8].id = -1;
+  for (i = 0; i < 0x94; i = i + 1) {
+    g_snd.playbacks[i].id = -1;
   }
   return;
 }
@@ -1523,32 +1564,32 @@ snd_playback * __cdecl SND_AllocatePlayback(void)
 
 {
   int iVar1;
-  uint local_c;
-  snd_playback *local_8;
+  uint i;
+  snd_playback *playback;
   
-  local_8 = (snd_playback *)0x0;
+  playback = (snd_playback *)0x0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_PLAYBACK_ALLOC);
-  local_c = 0;
+  i = 0;
   do {
-    if (0x93 < local_c) {
+    if (0x93 < i) {
 LAB_0094d76b:
-      if (local_8 == (snd_playback *)0x0) {
+      if (playback == (snd_playback *)0x0) {
         Com_PrintError(9,"ran out of playbacks\n");
       }
       Sys_LeaveCriticalSection(CRITSECT_SOUND_PLAYBACK_ALLOC);
-      return local_8;
+      return playback;
     }
-    if (g_snd.playbacks[local_c].id == -1) {
+    if (g_snd.playbacks[i].id == -1) {
       iVar1 = SND_AcquirePlaybackId();
-      g_snd.playbacks[local_c].id = iVar1;
-      g_snd.playbacks[local_c].attenuation = 1.0;
-      g_snd.playbacks[local_c].lengthMs = 0;
-      g_snd.playbacks[local_c].playedMs = 0;
-      local_8 = g_snd.playbacks + local_c;
+      g_snd.playbacks[i].id = iVar1;
+      g_snd.playbacks[i].attenuation = 1.0;
+      g_snd.playbacks[i].lengthMs = 0;
+      g_snd.playbacks[i].playedMs = 0;
+      playback = g_snd.playbacks + i;
       g_snd.playbacksInUse = g_snd.playbacksInUse + 1;
       goto LAB_0094d76b;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1559,14 +1600,14 @@ LAB_0094d76b:
 /* WARNING: Removing unreachable block (ram,0x0094d7d1) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_FreePlayback(snd_playback *param_1)
+void __cdecl SND_FreePlayback(snd_playback *playback)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 != (snd_playback *)0x0) {
-    if ((0x93 < (uint)((int)&param_1[-0xa0965e].playedMs >> 4)) &&
+  if (playback != (snd_playback *)0x0) {
+    if ((0x93 < (uint)((int)&playback[-0xa0965e].playedMs >> 4)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
                                  0x4a9,0,
                                  "playback-g_snd.playbacks doesn\'t index SND_PLAYBACK_COUNT\n\t%i not in [0, %i)"
@@ -1575,7 +1616,7 @@ void __cdecl SND_FreePlayback(snd_playback *param_1)
       (*pcVar1)();
       return;
     }
-    param_1->id = -1;
+    playback->id = -1;
     g_snd.playbacksInUse = g_snd.playbacksInUse - 1;
   }
   return;
@@ -1588,51 +1629,52 @@ void __cdecl SND_FreePlayback(snd_playback *param_1)
 /* WARNING: Removing unreachable block (ram,0x0094d894) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-snd_playback * __cdecl SND_FindPlayback(int param_1)
+snd_playback * __cdecl SND_FindPlayback(int playbackId)
 
 {
-  uint local_c;
-  snd_playback *local_8;
+  uint i;
+  snd_playback *playback;
   
-  local_8 = (snd_playback *)0x0;
+  playback = (snd_playback *)0x0;
   Sys_EnterCriticalSection(CRITSECT_SOUND_PLAYBACK_ALLOC);
-  local_c = 0;
+  i = 0;
   do {
-    if (0x93 < local_c) {
+    if (0x93 < i) {
 LAB_0094d8e4:
       Sys_LeaveCriticalSection(CRITSECT_SOUND_PLAYBACK_ALLOC);
-      return local_8;
+      return playback;
     }
-    if (g_snd.playbacks[local_c].id == param_1) {
-      local_8 = g_snd.playbacks + local_c;
+    if (g_snd.playbacks[i].id == playbackId) {
+      playback = g_snd.playbacks + i;
       goto LAB_0094d8e4;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0094D840  SND_IsPlaying  (sound/snd_public_async.cpp:1224)
 
-bool __cdecl SND_IsPlaying(int param_1)
+bool __cdecl SND_IsPlaying(int playbackId)
 
 {
   snd_playback *psVar1;
   
-  psVar1 = SND_FindPlayback(param_1);
+  psVar1 = SND_FindPlayback(playbackId);
   return psVar1 != (snd_playback *)0x0;
 }
 
 
 // 0094D900  SND_GetPlaybackTime  (sound/snd_public_async.cpp:1230)
 
-int __cdecl SND_GetPlaybackTime(int param_1)
+int __cdecl SND_GetPlaybackTime(int playbackId)
 
 {
   snd_playback *psVar1;
   int local_c;
+  snd_playback *playback;
   
-  psVar1 = SND_FindPlayback(param_1);
+  psVar1 = SND_FindPlayback(playbackId);
   if (psVar1 == (snd_playback *)0x0) {
     local_c = 0;
   }
@@ -1645,14 +1687,15 @@ int __cdecl SND_GetPlaybackTime(int param_1)
 
 // 0094D940  SND_GetKnownLength  (sound/snd_public_async.cpp:1238)
 
-bool __cdecl SND_GetKnownLength(int param_1,int *param_2)
+bool __cdecl SND_GetKnownLength(int playbackId,int *msec)
 
 {
   snd_playback *psVar1;
   bool local_c;
+  snd_playback *playback;
   
-  psVar1 = SND_FindPlayback(param_1);
-  if ((psVar1 == (snd_playback *)0x0) || (*param_2 = psVar1->lengthMs, psVar1->lengthMs == 0)) {
+  psVar1 = SND_FindPlayback(playbackId);
+  if ((psVar1 == (snd_playback *)0x0) || (*msec = psVar1->lengthMs, psVar1->lengthMs == 0)) {
     local_c = false;
   }
   else {
@@ -1663,6 +1706,8 @@ bool __cdecl SND_GetKnownLength(int param_1,int *param_2)
 
 
 // 0094DA80  SND_Frame  (sound/snd_public_async.cpp:1258)
+
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
 void __cdecl SND_Frame(void)
 
@@ -1725,12 +1770,12 @@ void __cdecl SND_Update(void)
 
 {
   int iVar1;
-  undefined1 local_8 [4];
+  undefined1 unused [4];
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
     Sys_AssistAndWaitWorkerCmdInternal(&updatesound_workerWorkerCmd);
-    Sys_AddWorkerCmdInternal(&updatesound_workerWorkerCmd,local_8,(WorkerCmdConditional *)0x0);
+    Sys_AddWorkerCmdInternal(&updatesound_workerWorkerCmd,unused,(WorkerCmdConditional *)0x0);
   }
   return;
 }
@@ -1774,18 +1819,20 @@ void __cdecl _dynamic_initializer_for__updatesound_workerModule__(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl updatesound_workerCallback(jqBatch *param_1)
+int __cdecl updatesound_workerCallback(jqBatch *batch)
 
 {
-  void *pvVar1;
-  DWORD DVar2;
+  void *data_00;
+  DWORD DVar1;
+  void *data;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"updatesound_worker");
-  pvVar1 = jqLockData(param_1);
-  jqUnlockData(param_1,pvVar1);
+  data_00 = jqLockData(batch);
+  jqUnlockData(batch,data_00);
   SND_Frame();
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -1802,14 +1849,15 @@ void __cdecl SND_GameReset(void)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
-    psVar2 = SND_GetNewCommand();
-    if (psVar2 != (snd_command *)0x0) {
-      psVar2->type = SND_COMMAND_GAME_RESET;
-      SND_CommandPush(psVar2);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_GAME_RESET;
+      SND_CommandPush(cmd_00);
     }
     SND_UpdateWait();
   }
@@ -1825,21 +1873,22 @@ void __cdecl SND_GameReset(void)
 /* WARNING: Removing unreachable block (ram,0x0094dc8f) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_BeginFrame(bool param_1,bool param_2,float param_3,uint param_4,uint param_5)
+void __cdecl SND_BeginFrame(bool isMature,bool isPaused,float timescale,uint cgTime,uint seed)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
-  if ((iVar1 != 0) && (psVar2 = SND_GetNewCommand(), psVar2 != (snd_command *)0x0)) {
-    psVar2->type = SND_COMMAND_SET_GAME_STATE;
-    (psVar2->context).set_game_state.is_mature = param_1;
-    (psVar2->context).set_game_state.is_paused = param_2;
-    (psVar2->context).set_playback_attenuation.attenuation = param_3;
-    (psVar2->context).set_game_state.cg_time = param_4;
-    (psVar2->context).set_game_state.seed = param_5;
-    SND_CommandPush(psVar2);
+  if ((iVar1 != 0) && (cmd_00 = SND_GetNewCommand(), cmd_00 != (snd_command *)0x0)) {
+    cmd_00->type = SND_COMMAND_SET_GAME_STATE;
+    (cmd_00->context).set_game_state.is_mature = isMature;
+    (cmd_00->context).set_game_state.is_paused = isPaused;
+    (cmd_00->context).set_playback_attenuation.attenuation = timescale;
+    (cmd_00->context).set_game_state.cg_time = cgTime;
+    (cmd_00->context).set_game_state.seed = seed;
+    SND_CommandPush(cmd_00);
   }
   return;
 }
@@ -1853,15 +1902,16 @@ void __cdecl SND_EndFrame(void)
 
 {
   int iVar1;
-  snd_command *psVar2;
+  snd_command *cmd_00;
+  snd_command *cmd;
   
   iVar1 = SND_Active();
   if (iVar1 != 0) {
     SND_NotifyPump();
-    psVar2 = SND_GetNewCommand();
-    if (psVar2 != (snd_command *)0x0) {
-      psVar2->type = SND_COMMAND_UPDATE_LOOPS;
-      SND_CommandPush(psVar2);
+    cmd_00 = SND_GetNewCommand();
+    if (cmd_00 != (snd_command *)0x0) {
+      cmd_00->type = SND_COMMAND_UPDATE_LOOPS;
+      SND_CommandPush(cmd_00);
     }
   }
   return;

@@ -28,6 +28,7 @@ uint __cdecl R_AllocSceneDObj(void)
   long lVar2;
   bool bVar3;
   uint uVar4;
+  uint sceneEntIndex;
   
   if (!rg.registered) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xbc,0,"%s");
@@ -67,6 +68,7 @@ uint __cdecl R_AllocSceneModel(void)
   long lVar2;
   bool bVar3;
   uint uVar4;
+  uint sceneEntIndex;
   
   if (!rg.registered) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xcf,0,"%s");
@@ -99,12 +101,13 @@ uint __cdecl R_AllocSceneModel(void)
 
 // 00A5BBF0  R_AllocTextureOverride  (gfx_d3d/r_scene.cpp:227)
 
-int __cdecl R_AllocTextureOverride(uint param_1,GfxImage *param_2,GfxImage *param_3,int param_4)
+int __cdecl
+R_AllocTextureOverride(uint modelIndexMask,GfxImage *img1,GfxImage *img2,int prevOverride)
 
 {
   int iVar1;
   
-  iVar1 = R_AllocTextureOverride((Material *)0x0,param_1,param_2,param_3,param_4);
+  iVar1 = R_AllocTextureOverride((Material *)0x0,modelIndexMask,img1,img2,prevOverride);
   return iVar1;
 }
 
@@ -113,16 +116,17 @@ int __cdecl R_AllocTextureOverride(uint param_1,GfxImage *param_2,GfxImage *para
 
 int __cdecl
 R_AllocTextureOverride
-          (Material *param_1,uint param_2,GfxImage *param_3,GfxImage *param_4,int param_5)
+          (Material *material,uint modelIndexMask,GfxImage *img1,GfxImage *img2,int prevOverride)
 
 {
   long lVar1;
   bool bVar2;
   long *plVar3;
   ushort uVar4;
+  short texOver;
   
-  if ((((param_3 != (GfxImage *)0x0) && (param_4 != (GfxImage *)0x0)) && (param_3 != param_4)) &&
-     (bVar2 = R_StreamTouchImageAndCheck(param_4,0), bVar2)) {
+  if ((((img1 != (GfxImage *)0x0) && (img2 != (GfxImage *)0x0)) && (img1 != img2)) &&
+     (bVar2 = R_StreamTouchImageAndCheck(img2,0), bVar2)) {
     plVar3 = &frontEndDataOut->textureOverrideCount;
     LOCK();
     lVar1 = *plVar3;
@@ -130,20 +134,20 @@ R_AllocTextureOverride
     UNLOCK();
     uVar4 = (ushort)lVar1;
     if (uVar4 < 0x100) {
-      frontEndDataOut->textureOverrides[(short)uVar4].material = param_1;
-      frontEndDataOut->textureOverrides[(short)uVar4].img1 = param_3;
-      frontEndDataOut->textureOverrides[(short)uVar4].img2 = param_4;
-      frontEndDataOut->textureOverrides[(short)uVar4].dobjModelMask = (ushort)param_2;
-      frontEndDataOut->textureOverrides[(short)uVar4].prev = (short)param_5;
-      param_5 = (int)(short)uVar4;
+      frontEndDataOut->textureOverrides[(short)uVar4].material = material;
+      frontEndDataOut->textureOverrides[(short)uVar4].img1 = img1;
+      frontEndDataOut->textureOverrides[(short)uVar4].img2 = img2;
+      frontEndDataOut->textureOverrides[(short)uVar4].dobjModelMask = (ushort)modelIndexMask;
+      frontEndDataOut->textureOverrides[(short)uVar4].prev = (short)prevOverride;
+      prevOverride = (int)(short)uVar4;
     }
     else {
       frontEndDataOut->textureOverrideCount = 0x100;
       R_WarnOncePerFrame(R_WARN_TEXTURE_OVERRIDES);
-      param_5 = -1;
+      prevOverride = -1;
     }
   }
-  return param_5;
+  return prevOverride;
 }
 
 
@@ -156,6 +160,7 @@ uint __cdecl R_AllocSceneBrush(void)
   long lVar2;
   bool bVar3;
   uint uVar4;
+  uint sceneEntIndex;
   
   if (!rg.registered) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x125,0,"%s")
@@ -190,7 +195,7 @@ uint __cdecl R_AllocSceneBrush(void)
 
 // 00A5BD20  R_GetBrushModel  (gfx_d3d/r_scene.cpp:308)
 
-GfxBrushModel * __cdecl R_GetBrushModel(uint param_1)
+GfxBrushModel * __cdecl R_GetBrushModel(uint modelIndex)
 
 {
   code *pcVar1;
@@ -206,7 +211,7 @@ GfxBrushModel * __cdecl R_GetBrushModel(uint param_1)
       return pGVar3;
     }
   }
-  if ((uint)(rgp.world)->modelCount <= param_1) {
+  if ((uint)(rgp.world)->modelCount <= modelIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x136,0,
                              "modelIndex doesn\'t index rgp.world->modelCount\n\t%i not in [0, %i)")
     ;
@@ -216,7 +221,7 @@ GfxBrushModel * __cdecl R_GetBrushModel(uint param_1)
       return pGVar3;
     }
   }
-  return (rgp.world)->models + param_1;
+  return (rgp.world)->models + modelIndex;
 }
 
 
@@ -224,15 +229,17 @@ GfxBrushModel * __cdecl R_GetBrushModel(uint param_1)
 
 void __cdecl
 R_AddBrushModelToSceneFromAngles
-          (GfxBrushModel *param_1,float *param_2,float *param_3,uint param_4,
-          ShaderConstantSet *param_5)
+          (GfxBrushModel *bmodel,float *origin,float *angles,uint entnum,
+          ShaderConstantSet *constants)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  uint sceneEntIndex;
+  GfxSceneBrush *sceneBrush;
   
-  if ((param_1 == (GfxBrushModel *)0x0) &&
+  if ((bmodel == (GfxBrushModel *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x13f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -240,16 +247,16 @@ R_AddBrushModelToSceneFromAngles
     return;
   }
   if (((((r_drawEntities->current).enabled != false) && ((r_drawBModels->current).enabled != false))
-      && (param_1->surfaceCount != 0)) && (uVar3 = R_AllocSceneBrush(), uVar3 < 0x400)) {
-    scene.sceneBrush[uVar3].bmodel = param_1;
-    scene.sceneBrush[uVar3].entnum = (ushort)param_4;
-    scene.sceneBrush[uVar3].placement.origin[0] = *param_2;
-    scene.sceneBrush[uVar3].placement.origin[1] = param_2[1];
-    scene.sceneBrush[uVar3].placement.origin[2] = param_2[2];
-    AnglesToQuat(param_3,scene.sceneBrush[uVar3].placement.quat);
+      && (bmodel->surfaceCount != 0)) && (uVar3 = R_AllocSceneBrush(), uVar3 < 0x400)) {
+    scene.sceneBrush[uVar3].bmodel = bmodel;
+    scene.sceneBrush[uVar3].entnum = (ushort)entnum;
+    scene.sceneBrush[uVar3].placement.origin[0] = *origin;
+    scene.sceneBrush[uVar3].placement.origin[1] = origin[1];
+    scene.sceneBrush[uVar3].placement.origin[2] = origin[2];
+    AnglesToQuat(angles,scene.sceneBrush[uVar3].placement.quat);
     scene.sceneBrush[uVar3].brushConstantSet =
          (ShaderConstantSet *)
-         (-(uint)((r_shader_constant_set_enable->current).enabled != false) & (uint)param_5);
+         (-(uint)((r_shader_constant_set_enable->current).enabled != false) & (uint)constants);
   }
   return;
 }
@@ -258,23 +265,26 @@ R_AddBrushModelToSceneFromAngles
 // 00A5BF50  R_AddGlassBrushToScene  (gfx_d3d/r_scene.cpp:347)
 
 void __cdecl
-R_AddGlassBrushToScene(GfxBrushModel *param_1,float *param_2,float *param_3,Material *param_4)
+R_AddGlassBrushToScene
+          (GfxBrushModel *bmodel,float *origin,float *angles,Material *altStreamingMaterial)
 
 {
   code *pcVar1;
   GfxSceneGlassBrush *pGVar2;
   long lVar3;
   bool bVar4;
-  GfxSceneGlassBrush *pGVar5;
+  GfxSceneGlassBrush *quat;
+  GfxSceneGlassBrush *glassBrush;
+  uint glassIndex;
   
-  if ((param_1 == (GfxBrushModel *)0x0) &&
+  if ((bmodel == (GfxBrushModel *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x15f,0,
                                "%s"), !bVar4)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->surfaceCount != 0) {
+  if (bmodel->surfaceCount != 0) {
     if ((rg.inFrame == false) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x164,0,
                                  "%s"), !bVar4)) {
@@ -286,15 +296,15 @@ R_AddGlassBrushToScene(GfxBrushModel *param_1,float *param_2,float *param_3,Mate
     LOCK();
     UNLOCK();
     if ((uint)scene.glassBrushCount < 0x400) {
-      pGVar5 = scene.glassBrush + scene.glassBrushCount;
+      quat = scene.glassBrush + scene.glassBrushCount;
       pGVar2 = scene.glassBrush + scene.glassBrushCount;
       scene.glassBrushCount = scene.glassBrushCount + 1;
-      pGVar2->bmodel = param_1;
-      scene.glassBrush[lVar3].altStreamingMaterial = param_4;
-      scene.glassBrush[lVar3].placement.origin[0] = *param_2;
-      scene.glassBrush[lVar3].placement.origin[1] = param_2[1];
-      scene.glassBrush[lVar3].placement.origin[2] = param_2[2];
-      AnglesToQuat(param_3,(float *)pGVar5);
+      pGVar2->bmodel = bmodel;
+      scene.glassBrush[lVar3].altStreamingMaterial = altStreamingMaterial;
+      scene.glassBrush[lVar3].placement.origin[0] = *origin;
+      scene.glassBrush[lVar3].placement.origin[1] = origin[1];
+      scene.glassBrush[lVar3].placement.origin[2] = origin[2];
+      AnglesToQuat(angles,(float *)quat);
     }
     else {
       scene.glassBrushCount = 0x400;
@@ -307,11 +317,17 @@ R_AddGlassBrushToScene(GfxBrushModel *param_1,float *param_2,float *param_3,Mate
 
 // 00A5C060  R_AddDObjToScene  (gfx_d3d/r_scene.cpp:391)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 void __cdecl
-R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float *param_5,
-                float param_6,float param_7,float param_8,float param_9,int param_10,int param_11,
-                ShaderConstantSet *param_12,ShaderConstantSet *param_13,float param_14,
-                float param_15)
+R_AddDObjToScene(DObj *obj,cpose_t *pose,uint entnum,uint renderFxFlags,float *lightingOrigin,
+                float materialTime,float materialTime2,float burnFraction,float wetness,
+                int altXModel,int textureOverrideIndex,ShaderConstantSet *dobjConstantSet,
+                ShaderConstantSet *dobjConstantSetExtraCam,float lightingOriginToleranceSq,
+                float scale)
 
 {
   GfxEntity *pGVar1;
@@ -329,11 +345,18 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
   uchar local_60;
   float local_5c;
   float local_58;
-  int local_34;
-  uchar local_1c;
-  ushort local_14;
-  uint local_10;
-  int local_c;
+  int n;
+  GfxEntity *gfxEnt2;
+  GfxSceneModel *sceneModel;
+  XModel *model;
+  float radius;
+  GfxEntity *gfxEnt;
+  uint constSetIndex;
+  GfxSceneEntity *sceneEnt;
+  uint sceneEntIndex;
+  uint gfxEntIndex;
+  uint gfxEntIndex2;
+  uint constSetIndexEC;
   
   bVar3 = Sys_IsMainThread();
   if ((!bVar3) &&
@@ -343,21 +366,21 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
     (*pcVar2)();
     return;
   }
-  if ((param_1 == (DObj *)0x0) &&
+  if ((obj == (DObj *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x193,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_2 == (cpose_t *)0x0) &&
+  if ((pose == (cpose_t *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x194,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((gfxCfg.entCount <= param_3) &&
+  if ((gfxCfg.entCount <= entnum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x195,0,
                                "entnum doesn\'t index gfxCfg.entCount\n\t%i not in [0, %i)"), !bVar3
      )) {
@@ -365,120 +388,119 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
     (*pcVar2)();
     return;
   }
-  if (((r_drawEntities->current).enabled != false) && (scene.dpvs.sceneDObjIndex[param_3] == 0xffff)
-     ) {
-    for (local_34 = 0; iVar4 = DObjGetNumModels(param_1), local_34 < iVar4; local_34 = local_34 + 1)
-    {
-      pXVar5 = DObjGetModel(param_1,local_34);
+  if (((r_drawEntities->current).enabled != false) && (scene.dpvs.sceneDObjIndex[entnum] == 0xffff))
+  {
+    for (n = 0; iVar4 = DObjGetNumModels(obj), n < iVar4; n = n + 1) {
+      pXVar5 = DObjGetModel(obj,n);
       if ((pXVar5->flags & 0x100000U) != 0) {
-        param_4 = param_4 | 0x400000;
+        renderFxFlags = renderFxFlags | 0x400000;
         break;
       }
     }
-    if ((scene.dpvs.sceneDObjIndex[param_3] != 0xffff) &&
+    if ((scene.dpvs.sceneDObjIndex[entnum] != 0xffff) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1b8,0,
                                  "%s\n\t(scene.dpvs.sceneDObjIndex[entnum]) = %i"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((((param_6 != 0.0) || (param_4 != 0)) || (0.0 < param_8)) ||
-       ((param_9 != 0.0 || (-1 < param_11)))) {
+    if ((((materialTime != 0.0) || (renderFxFlags != 0)) || (0.0 < burnFraction)) ||
+       ((wetness != 0.0 || (-1 < textureOverrideIndex)))) {
       plVar9 = &frontEndDataOut->gfxEntCount;
       LOCK();
-      local_10 = *plVar9;
+      gfxEntIndex = *plVar9;
       *plVar9 = *plVar9 + 1;
       UNLOCK();
-      if (0xff < local_10) {
+      if (0xff < gfxEntIndex) {
         frontEndDataOut->gfxEntCount = 0x100;
         R_WarnOncePerFrame(R_WARN_KNOWN_SPECIAL_MODELS);
         return;
       }
-      pGVar1 = frontEndDataOut->gfxEnts + local_10;
-      pGVar1->materialTime = param_6;
+      pGVar1 = frontEndDataOut->gfxEnts + gfxEntIndex;
+      pGVar1->materialTime = materialTime;
       if ((r_swrk_override_enable->current).enabled == false) {
-        local_58 = param_8;
+        local_58 = burnFraction;
       }
       else {
         local_58 = (float)(r_swrk_override_characterCharredAmount->current).integer;
       }
       pGVar1->destructibleBurnAmount = local_58;
       pGVar1->destructibleFadeAmount = 0.0;
-      pGVar1->renderFxFlags = param_4;
-      pGVar1->wetness = param_9;
-      pGVar1->textureOverrideIndex = param_11;
-      if (param_7 == 0.0) {
-        local_c = 0;
+      pGVar1->renderFxFlags = renderFxFlags;
+      pGVar1->wetness = wetness;
+      pGVar1->textureOverrideIndex = textureOverrideIndex;
+      if (materialTime2 == 0.0) {
+        gfxEntIndex2 = 0;
       }
       else {
         plVar9 = &frontEndDataOut->gfxEntCount;
         LOCK();
-        local_c = *plVar9;
+        gfxEntIndex2 = *plVar9;
         *plVar9 = *plVar9 + 1;
         UNLOCK();
-        if (0xff < local_10) {
+        if (0xff < gfxEntIndex) {
           frontEndDataOut->gfxEntCount = 0x100;
           R_WarnOncePerFrame(R_WARN_KNOWN_SPECIAL_MODELS);
           return;
         }
-        pGVar1 = frontEndDataOut->gfxEnts + local_c;
-        pGVar1->materialTime = param_7;
+        pGVar1 = frontEndDataOut->gfxEnts + gfxEntIndex2;
+        pGVar1->materialTime = materialTime2;
         if ((r_swrk_override_enable->current).enabled == false) {
-          local_5c = param_8;
+          local_5c = burnFraction;
         }
         else {
           local_5c = (float)(r_swrk_override_characterCharredAmount->current).integer;
         }
         pGVar1->destructibleBurnAmount = local_5c;
         pGVar1->destructibleFadeAmount = 0.0;
-        pGVar1->renderFxFlags = param_4;
-        pGVar1->wetness = param_9;
-        pGVar1->textureOverrideIndex = param_11;
+        pGVar1->renderFxFlags = renderFxFlags;
+        pGVar1->wetness = wetness;
+        pGVar1->textureOverrideIndex = textureOverrideIndex;
       }
     }
     else {
-      local_10 = 0;
-      local_c._0_2_ = 0;
+      gfxEntIndex = 0;
+      gfxEntIndex2._0_2_ = 0;
     }
-    if (((param_12 == (ShaderConstantSet *)0x0) ||
+    if (((dobjConstantSet == (ShaderConstantSet *)0x0) ||
         ((r_shader_constant_set_enable->current).enabled == false)) ||
-       (bVar3 = R_ShaderConstantSetIsUsed(param_12), !bVar3)) {
+       (bVar3 = R_ShaderConstantSetIsUsed(dobjConstantSet), !bVar3)) {
       local_60 = '\0';
     }
     else {
-      uVar6 = R_ShaderConstantSet_CopyToFrontEndDataOut(param_12);
+      uVar6 = R_ShaderConstantSet_CopyToFrontEndDataOut(dobjConstantSet);
       local_60 = (uchar)uVar6;
     }
-    local_1c = local_60;
-    local_64 = local_1c;
-    if (((param_13 != (ShaderConstantSet *)0x0) &&
+    constSetIndex._0_1_ = local_60;
+    local_64 = (uchar)constSetIndex;
+    if (((dobjConstantSetExtraCam != (ShaderConstantSet *)0x0) &&
         ((r_shader_constant_set_enable->current).enabled != false)) &&
-       (bVar3 = R_ShaderConstantSetIsUsed(param_13), bVar3)) {
-      uVar6 = R_ShaderConstantSet_CopyToFrontEndDataOut(param_13);
+       (bVar3 = R_ShaderConstantSetIsUsed(dobjConstantSetExtraCam), bVar3)) {
+      uVar6 = R_ShaderConstantSet_CopyToFrontEndDataOut(dobjConstantSetExtraCam);
       local_64 = (uchar)uVar6;
     }
-    if ((((param_4 & 4) == 0) && (pXVar7 = DObjGetTree(param_1), pXVar7 == (XAnimTree_s *)0x0)) &&
-       (iVar4 = DObjGetNumModels(param_1), iVar4 == 1)) {
+    if ((((renderFxFlags & 4) == 0) && (pXVar7 = DObjGetTree(obj), pXVar7 == (XAnimTree_s *)0x0)) &&
+       (iVar4 = DObjGetNumModels(obj), iVar4 == 1)) {
       uVar6 = R_AllocSceneModel();
       if (uVar6 < 0x400) {
-        pXVar5 = DObjGetModel(param_1,0);
+        pXVar5 = DObjGetModel(obj,0);
         scene.sceneModel[uVar6].model = pXVar5;
-        scene.sceneModel[uVar6].obj = param_1;
-        scene.sceneModel[uVar6].entnum = (ushort)param_3;
-        local_14 = (ushort)uVar6;
-        scene.dpvs.sceneXModelIndex[param_3] = local_14;
-        pRVar8 = Ragdoll_HandleBody((int)param_2);
+        scene.sceneModel[uVar6].obj = obj;
+        scene.sceneModel[uVar6].entnum = (ushort)entnum;
+        sceneEntIndex._0_2_ = (ushort)uVar6;
+        scene.dpvs.sceneXModelIndex[entnum] = (ushort)sceneEntIndex;
+        pRVar8 = Ragdoll_HandleBody((int)pose);
         scene.sceneModel[uVar6].cachedLightingHandle = (ushort *)pRVar8;
-        scene.sceneModel[uVar6].lightingOriginToleranceSq = param_14;
+        scene.sceneModel[uVar6].lightingOriginToleranceSq = lightingOriginToleranceSq;
         fVar10 = XModelGetRadius(pXVar5);
-        CG_GetPoseOrigin(param_2,scene.sceneModel[uVar6].placement.base.origin);
-        CG_GetPoseQuat(param_2,(float *)&scene.sceneModel[uVar6].placement);
-        scene.sceneModel[uVar6].placement.scale = param_15;
+        CG_GetPoseOrigin(pose,scene.sceneModel[uVar6].placement.base.origin);
+        CG_GetPoseQuat(pose,(float *)&scene.sceneModel[uVar6].placement);
+        scene.sceneModel[uVar6].placement.scale = scale;
         scene.sceneModel[uVar6].radius = fVar10;
-        scene.sceneModel[uVar6].lightingOrigin[0] = *param_5;
-        scene.sceneModel[uVar6].lightingOrigin[1] = param_5[1];
-        scene.sceneModel[uVar6].lightingOrigin[2] = param_5[2];
-        scene.sceneModel[uVar6].gfxEntIndex = (ushort)local_10;
+        scene.sceneModel[uVar6].lightingOrigin[0] = *lightingOrigin;
+        scene.sceneModel[uVar6].lightingOrigin[1] = lightingOrigin[1];
+        scene.sceneModel[uVar6].lightingOrigin[2] = lightingOrigin[2];
+        scene.sceneModel[uVar6].gfxEntIndex = (ushort)gfxEntIndex;
         scene.sceneModel[uVar6].modelShaderConstantSetIndex = local_60;
         scene.sceneModel[uVar6].modelShaderConstantSetIndexExtraCam = local_64;
       }
@@ -486,11 +508,11 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
     else {
       uVar6 = R_AllocSceneDObj();
       if (uVar6 < 0x400) {
-        scene.sceneDObj[uVar6].obj = param_1;
-        scene.sceneDObj[uVar6].entnum = (ushort)param_3;
-        local_14 = (ushort)uVar6;
-        scene.dpvs.sceneDObjIndex[param_3] = local_14;
-        scene.sceneDObj[uVar6].info.pose = param_2;
+        scene.sceneDObj[uVar6].obj = obj;
+        scene.sceneDObj[uVar6].entnum = (ushort)entnum;
+        sceneEntIndex._0_2_ = (ushort)uVar6;
+        scene.dpvs.sceneDObjIndex[entnum] = (ushort)sceneEntIndex;
+        scene.sceneDObj[uVar6].info.pose = pose;
         if ((scene.sceneDObj[uVar6].cull.state != 0) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x21c
                                      ,1,"%s\n\t(sceneEnt->cull.state) = %i"), !bVar3)) {
@@ -498,10 +520,10 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
           (*pcVar2)();
           return;
         }
-        fVar11 = DObjGetRadius(param_1);
-        CG_GetPoseOrigin(param_2,scene.sceneDObj[uVar6].placement.base.origin);
-        CG_GetPoseQuat(param_2,(float *)&scene.sceneDObj[uVar6].placement);
-        scene.sceneDObj[uVar6].placement.scale = param_15;
+        fVar11 = DObjGetRadius(obj);
+        CG_GetPoseOrigin(pose,scene.sceneDObj[uVar6].placement.base.origin);
+        CG_GetPoseQuat(pose,(float *)&scene.sceneDObj[uVar6].placement);
+        scene.sceneDObj[uVar6].placement.scale = scale;
         fVar10 = -fVar11;
         scene.sceneDObj[uVar6].cull.mins[0] =
              scene.sceneDObj[uVar6].placement.base.origin[0] + fVar10;
@@ -515,15 +537,15 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
              scene.sceneDObj[uVar6].placement.base.origin[1] + fVar11;
         scene.sceneDObj[uVar6].cull.maxs[2] =
              scene.sceneDObj[uVar6].placement.base.origin[2] + fVar11;
-        scene.sceneDObj[uVar6].lightingOrigin[0] = *param_5;
-        scene.sceneDObj[uVar6].lightingOrigin[1] = param_5[1];
-        scene.sceneDObj[uVar6].lightingOrigin[2] = param_5[2];
-        scene.sceneDObj[uVar6].gfxEntIndex = (ushort)local_10;
-        scene.sceneDObj[uVar6].gfxEntIndex2 = (ushort)local_c;
-        scene.sceneDObj[uVar6].altXModelIndex = (char)param_10 + '\x01';
+        scene.sceneDObj[uVar6].lightingOrigin[0] = *lightingOrigin;
+        scene.sceneDObj[uVar6].lightingOrigin[1] = lightingOrigin[1];
+        scene.sceneDObj[uVar6].lightingOrigin[2] = lightingOrigin[2];
+        scene.sceneDObj[uVar6].gfxEntIndex = (ushort)gfxEntIndex;
+        scene.sceneDObj[uVar6].gfxEntIndex2 = (ushort)gfxEntIndex2;
+        scene.sceneDObj[uVar6].altXModelIndex = (char)altXModel + '\x01';
         scene.sceneDObj[uVar6].entShaderConstantSetIndex = local_60;
         scene.sceneDObj[uVar6].entShaderConstantSetIndexExtraCam = local_64;
-        scene.sceneDObj[uVar6].lightingOriginToleranceSq = param_14;
+        scene.sceneDObj[uVar6].lightingOriginToleranceSq = lightingOriginToleranceSq;
         CG_PredictiveSkinCEntity(scene.sceneDObj + uVar6);
       }
     }
@@ -534,14 +556,14 @@ R_AddDObjToScene(DObj *param_1,cpose_t *param_2,uint param_3,uint param_4,float 
 
 // 00A5DD20  Material_GetTechniqueSet  (gfx_d3d/r_material.h:552)
 
-MaterialTechniqueSet * __cdecl Material_GetTechniqueSet(Material *param_1)
+MaterialTechniqueSet * __cdecl Material_GetTechniqueSet(Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   MaterialTechniqueSet *pMVar3;
   
-  if (param_1 == (Material *)0x0) {
+  if (material == (Material *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.h",0x229,0,"%s"
                             );
     if (!bVar2) {
@@ -550,7 +572,7 @@ MaterialTechniqueSet * __cdecl Material_GetTechniqueSet(Material *param_1)
       return pMVar3;
     }
   }
-  if ((param_1->field8_0xb0).localTechniqueSet == (MaterialTechniqueSet *)0x0) {
+  if ((material->field8_0xb0).localTechniqueSet == (MaterialTechniqueSet *)0x0) {
     va(
       "material \'%s\' missing techset. If you are building fastfile, check Launcher for error messages."
       );
@@ -562,21 +584,23 @@ MaterialTechniqueSet * __cdecl Material_GetTechniqueSet(Material *param_1)
       return pMVar3;
     }
   }
-  return (param_1->field8_0xb0).localTechniqueSet;
+  return (material->field8_0xb0).localTechniqueSet;
 }
 
 
 // 00A5DCA0  Material_GetTechnique  (gfx_d3d/r_material.h:564)
 
-MaterialTechnique * __cdecl Material_GetTechnique(Material *param_1,uchar param_2)
+MaterialTechnique * __cdecl Material_GetTechnique(Material *material,uchar techType)
 
 {
   code *pcVar1;
   bool bVar2;
   MaterialTechniqueSet *pMVar3;
   MaterialTechnique *pMVar4;
+  MaterialTechnique *technique;
+  MaterialTechniqueSet *techSet;
   
-  pMVar3 = Material_GetTechniqueSet(param_1);
+  pMVar3 = Material_GetTechniqueSet(material);
   if (pMVar3 == (MaterialTechniqueSet *)0x0) {
     va("material \'%s\' missing techset. %d tech %d");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.h",0x24c,0,
@@ -587,32 +611,34 @@ MaterialTechnique * __cdecl Material_GetTechnique(Material *param_1,uchar param_
       return pMVar4;
     }
   }
-  return pMVar3->techniques[param_2];
+  return pMVar3->techniques[techType];
 }
 
 
 // 00A5C890  R_AddParticleCloudToScene  (gfx_d3d/r_scene.cpp:567)
 
-GfxParticleCloud * __cdecl R_AddParticleCloudToScene(Material *param_1)
+GfxParticleCloud * __cdecl R_AddParticleCloudToScene(Material *material)
 
 {
-  uint uVar1;
-  bool bVar2;
-  long *plVar3;
-  GfxParticleCloud *pGVar4;
+  uint cloudIndex_00;
+  bool bVar1;
+  long *plVar2;
+  GfxParticleCloud *pGVar3;
+  GfxParticleCloud *cloud;
+  uint cloudIndex;
   
-  plVar3 = &frontEndDataOut->cloudCount;
+  plVar2 = &frontEndDataOut->cloudCount;
   LOCK();
-  uVar1 = *plVar3;
-  *plVar3 = *plVar3 + 1;
+  cloudIndex_00 = *plVar2;
+  *plVar2 = *plVar2 + 1;
   UNLOCK();
-  if (uVar1 < 0x100) {
-    bVar2 = R_AddParticleCloudDrawSurf(uVar1,param_1);
-    if (bVar2) {
-      pGVar4 = frontEndDataOut->clouds + uVar1;
+  if (cloudIndex_00 < 0x100) {
+    bVar1 = R_AddParticleCloudDrawSurf(cloudIndex_00,material);
+    if (bVar1) {
+      pGVar3 = frontEndDataOut->clouds + cloudIndex_00;
     }
     else {
-      pGVar4 = (GfxParticleCloud *)0x0;
+      pGVar3 = (GfxParticleCloud *)0x0;
     }
   }
   else {
@@ -620,26 +646,24 @@ GfxParticleCloud * __cdecl R_AddParticleCloudToScene(Material *param_1)
     frontEndDataOut->cloudCount = frontEndDataOut->cloudCount + -1;
     UNLOCK();
     R_WarnOncePerFrame(R_WARN_MAX_CLOUDS);
-    pGVar4 = (GfxParticleCloud *)0x0;
+    pGVar3 = (GfxParticleCloud *)0x0;
   }
-  return pGVar4;
+  return pGVar3;
 }
 
 
 // 00A5C920  R_AddOmniLightToScene  (gfx_d3d/r_scene.cpp:590)
 
 void __cdecl
-R_AddOmniLightToScene
-          (float *param_1,float (*param_2) [3],float param_3,float param_4,float param_5,
-          float param_6)
+R_AddOmniLightToScene(float *org,float (*axis) [3],float radius,float r,float g,float b)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
-  GfxLight *pGVar4;
-  double dVar5;
-  float fVar6;
+  GfxLight *dst;
+  double dVar4;
+  float fVar5;
   double in_stack_ffffff90;
   undefined4 in_stack_ffffff98;
   undefined4 in_stack_ffffff9c;
@@ -662,111 +686,111 @@ R_AddOmniLightToScene
       (*pcVar1)();
       return;
     }
-    if (0.0 < param_3) {
+    if (0.0 < radius) {
       if (scene.addedLightCount < 0x20) {
         if (rg.isNotRenderingFullScreen == false) {
           local_20 = (r_dlightMaxFullScreenRadius->current).value;
-          if (0.0 <= local_20 - param_3) {
-            local_20 = param_3;
+          if (0.0 <= local_20 - radius) {
+            local_20 = radius;
           }
-          param_3 = local_20;
+          radius = local_20;
         }
         else {
           local_18 = (r_dlightMaxNonFullScreenRadius->current).value;
-          if (0.0 <= local_18 - param_3) {
-            local_18 = param_3;
+          if (0.0 <= local_18 - radius) {
+            local_18 = radius;
           }
-          param_3 = local_18;
+          radius = local_18;
         }
         for (local_28 = 0; iVar2 = scene.addedLightCount, local_28 < scene.addedLightCount;
             local_28 = local_28 + 1) {
           if (((scene.addedLight[local_28].type == '\x03') &&
-              (ABS(param_3 - scene.addedLight[local_28].radius) < 10.0)) &&
-             (fVar6 = Vec3DistanceSq(param_1,scene.addedLight[local_28].origin), fVar6 < 100.0)) {
+              (ABS(radius - scene.addedLight[local_28].radius) < 10.0)) &&
+             (fVar5 = Vec3DistanceSq(org,scene.addedLight[local_28].origin), fVar5 < 100.0)) {
             scene.addedLight[local_28].origin[0] =
-                 *param_1 * 0.5 + scene.addedLight[local_28].origin[0] * 0.5;
+                 *org * 0.5 + scene.addedLight[local_28].origin[0] * 0.5;
             scene.addedLight[local_28].origin[1] =
-                 param_1[1] * 0.5 + scene.addedLight[local_28].origin[1] * 0.5;
+                 org[1] * 0.5 + scene.addedLight[local_28].origin[1] * 0.5;
             scene.addedLight[local_28].origin[2] =
-                 param_1[2] * 0.5 + scene.addedLight[local_28].origin[2] * 0.5;
+                 org[2] * 0.5 + scene.addedLight[local_28].origin[2] * 0.5;
             local_40 = scene.addedLight[local_28].radius;
-            if (0.0 <= param_3 - local_40) {
-              local_40 = param_3;
+            if (0.0 <= radius - local_40) {
+              local_40 = radius;
             }
             scene.addedLight[local_28].radius = local_40;
-            if (param_4 <= 0.04045) {
-              local_44 = param_4 / 12.92;
+            if (r <= 0.04045) {
+              local_44 = r / 12.92;
             }
             else {
-              dVar5 = (double)((param_4 + 0.055) / 1.055);
+              dVar4 = (double)((r + 0.055) / 1.055);
               __libm_sse2_pow(in_stack_ffffff90,
                               (double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-              local_44 = (float)dVar5;
+              local_44 = (float)dVar4;
             }
             scene.addedLight[local_28].diffuseColor[0] =
                  scene.addedLight[local_28].diffuseColor[0] + local_44;
-            if (param_5 <= 0.04045) {
-              local_48 = param_5 / 12.92;
+            if (g <= 0.04045) {
+              local_48 = g / 12.92;
             }
             else {
-              dVar5 = (double)((param_5 + 0.055) / 1.055);
+              dVar4 = (double)((g + 0.055) / 1.055);
               __libm_sse2_pow(in_stack_ffffff90,
                               (double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-              local_48 = (float)dVar5;
+              local_48 = (float)dVar4;
             }
             scene.addedLight[local_28].diffuseColor[1] =
                  scene.addedLight[local_28].diffuseColor[1] + local_48;
-            if (param_6 <= 0.04045) {
-              local_4c = param_6 / 12.92;
+            if (b <= 0.04045) {
+              local_4c = b / 12.92;
             }
             else {
-              dVar5 = (double)((param_6 + 0.055) / 1.055);
+              dVar4 = (double)((b + 0.055) / 1.055);
               __libm_sse2_pow(in_stack_ffffff90,
                               (double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-              local_4c = (float)dVar5;
+              local_4c = (float)dVar4;
             }
             scene.addedLight[local_28].diffuseColor[2] =
                  scene.addedLight[local_28].diffuseColor[2] + local_4c;
             return;
           }
         }
-        pGVar4 = scene.addedLight + scene.addedLightCount;
+        dst = scene.addedLight + scene.addedLightCount;
         scene.addedLightCount = scene.addedLightCount + 1;
-        memset(&pGVar4->type,'\0',0x170);
+        memset(&dst->type,'\0',0x170);
         scene.addedLight[iVar2].def = rgp.dlightDef;
-        pGVar4->type = '\x03';
-        scene.addedLight[iVar2].origin[0] = *param_1;
-        scene.addedLight[iVar2].origin[1] = param_1[1];
-        scene.addedLight[iVar2].origin[2] = param_1[2];
-        scene.addedLight[iVar2].radius = param_3;
-        scene.addedLight[iVar2].color[0] = param_4;
-        scene.addedLight[iVar2].color[1] = param_5;
-        scene.addedLight[iVar2].color[2] = param_6;
+        dst->type = '\x03';
+        scene.addedLight[iVar2].origin[0] = *org;
+        scene.addedLight[iVar2].origin[1] = org[1];
+        scene.addedLight[iVar2].origin[2] = org[2];
+        scene.addedLight[iVar2].radius = radius;
+        scene.addedLight[iVar2].color[0] = r;
+        scene.addedLight[iVar2].color[1] = g;
+        scene.addedLight[iVar2].color[2] = b;
         scene.addedLight[iVar2].canUseShadowMap = '\0';
         scene.addedLight[iVar2].spotShadowIndex = 0xffffffff;
-        if (param_6 <= 0.04045) {
-          local_58 = param_6 / 12.92;
+        if (b <= 0.04045) {
+          local_58 = b / 12.92;
         }
         else {
-          dVar5 = (double)((param_6 + 0.055) / 1.055);
+          dVar4 = (double)((b + 0.055) / 1.055);
           __libm_sse2_pow(in_stack_ffffff90,(double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-          local_58 = (float)dVar5;
+          local_58 = (float)dVar4;
         }
-        if (param_5 <= 0.04045) {
-          local_5c = param_5 / 12.92;
+        if (g <= 0.04045) {
+          local_5c = g / 12.92;
         }
         else {
-          dVar5 = (double)((param_5 + 0.055) / 1.055);
+          dVar4 = (double)((g + 0.055) / 1.055);
           __libm_sse2_pow(in_stack_ffffff90,(double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-          local_5c = (float)dVar5;
+          local_5c = (float)dVar4;
         }
-        if (param_4 <= 0.04045) {
-          local_60 = param_4 / 12.92;
+        if (r <= 0.04045) {
+          local_60 = r / 12.92;
         }
         else {
-          dVar5 = (double)((param_4 + 0.055) / 1.055);
+          dVar4 = (double)((r + 0.055) / 1.055);
           __libm_sse2_pow(in_stack_ffffff90,(double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-          local_60 = (float)dVar5;
+          local_60 = (float)dVar4;
         }
         scene.addedLight[iVar2].diffuseColor[0] = local_60;
         scene.addedLight[iVar2].diffuseColor[1] = local_5c;
@@ -785,9 +809,7 @@ R_AddOmniLightToScene
 // 00A5CF00  R_AddSpotLightToScene  (gfx_d3d/r_scene.cpp:656)
 
 void __cdecl
-R_AddSpotLightToScene
-          (float *param_1,float (*param_2) [3],float param_3,float param_4,float param_5,
-          float param_6)
+R_AddSpotLightToScene(float *org,float (*axis) [3],float radius,float r,float g,float b)
 
 {
   float fVar1;
@@ -798,23 +820,31 @@ R_AddSpotLightToScene
   code *pcVar6;
   int iVar7;
   bool bVar8;
-  GfxLight *pGVar9;
-  float fVar10;
-  float fVar11;
-  double dVar12;
+  GfxLight *light;
+  float fVar9;
+  float dynamicSpotLightNearPlaneOffset;
+  double dVar10;
   undefined4 in_stack_ffffff90;
-  float *pfVar13;
+  float *pfVar11;
   undefined4 in_stack_ffffff94;
-  float *pfVar14;
+  float *pfVar12;
   undefined4 in_stack_ffffff98;
   undefined4 in_stack_ffffff9c;
   float local_58;
   float local_54;
   float local_50;
+  float spotLightFovOuter;
+  float spotLightFovInner;
+  float spotLightOffset;
+  float in_radius;
+  float in_cutOn;
+  GfxLight *dl;
+  float in_nearEdge;
+  float in_farEdge;
   
-  fVar1 = (*param_2)[0];
-  fVar2 = (*param_2)[1];
-  fVar3 = (*param_2)[2];
+  fVar1 = (*axis)[0];
+  fVar2 = (*axis)[1];
+  fVar3 = (*axis)[2];
   if ((((r_enableFlashlight->current).integer == 0) && (rg.registered)) &&
      (rgp.world != (GfxWorld *)0x0)) {
     if ((!rg.inFrame) &&
@@ -825,65 +855,68 @@ R_AddSpotLightToScene
       return;
     }
     iVar7 = scene.addedLightCount;
-    if (0.0 < param_3) {
+    if (0.0 < radius) {
       if (scene.addedLightCount < 0x20) {
-        pGVar9 = scene.addedLight + scene.addedLightCount;
+        light = scene.addedLight + scene.addedLightCount;
         scene.addedLightCount = scene.addedLightCount + 1;
-        memset(&pGVar9->type,'\0',0x170);
+        memset(&light->type,'\0',0x170);
         scene.addedLight[iVar7].exponent = 1;
-        pGVar9->type = '\x02';
+        light->type = '\x02';
         fVar4 = (r_flashLightRange->current).value;
-        dVar12 = (double)(((r_flashLightEndRadius->current).value -
+        dVar10 = (double)(((r_flashLightEndRadius->current).value -
                           (r_flashLightStartRadius->current).value) / fVar4);
         __libm_sse2_atan((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90));
-        fVar10 = (float)dVar12;
+        fVar9 = (float)dVar10;
         fVar5 = (r_spotLightFovInnerFraction->current).value;
-        dVar12 = (double)fVar10;
+        dVar10 = (double)fVar9;
         __libm_sse2_tan((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90));
-        fVar11 = (r_flashLightStartRadius->current).value / (float)dVar12;
+        dynamicSpotLightNearPlaneOffset = (r_flashLightStartRadius->current).value / (float)dVar10;
         scene.addedLight[iVar7].canUseShadowMap = '\x01';
         scene.addedLight[iVar7].spotShadowIndex = 0xffffffff;
-        pGVar9->type = '\x02';
+        light->type = '\x02';
         scene.addedLight[iVar7].cullDist = (short)(int)fVar4;
-        scene.addedLight[iVar7].origin[0] = *param_1;
-        scene.addedLight[iVar7].origin[1] = param_1[1];
-        scene.addedLight[iVar7].origin[2] = param_1[2];
+        scene.addedLight[iVar7].origin[0] = *org;
+        scene.addedLight[iVar7].origin[1] = org[1];
+        scene.addedLight[iVar7].origin[2] = org[2];
         scene.addedLight[iVar7].dir[0] = fVar1 * -1.0;
         scene.addedLight[iVar7].dir[1] = fVar2 * -1.0;
         scene.addedLight[iVar7].dir[2] = fVar3 * -1.0;
         scene.addedLight[iVar7].origin[0] =
-             fVar11 * scene.addedLight[iVar7].dir[0] + scene.addedLight[iVar7].origin[0];
+             dynamicSpotLightNearPlaneOffset * scene.addedLight[iVar7].dir[0] +
+             scene.addedLight[iVar7].origin[0];
         scene.addedLight[iVar7].origin[1] =
-             fVar11 * scene.addedLight[iVar7].dir[1] + scene.addedLight[iVar7].origin[1];
+             dynamicSpotLightNearPlaneOffset * scene.addedLight[iVar7].dir[1] +
+             scene.addedLight[iVar7].origin[1];
         scene.addedLight[iVar7].origin[2] =
-             fVar11 * scene.addedLight[iVar7].dir[2] + scene.addedLight[iVar7].origin[2];
-        scene.addedLight[iVar7].radius = fVar4 + fVar11;
-        if (param_6 <= 0.04045) {
-          local_50 = param_6 / 12.92;
+             dynamicSpotLightNearPlaneOffset * scene.addedLight[iVar7].dir[2] +
+             scene.addedLight[iVar7].origin[2];
+        scene.addedLight[iVar7].radius = fVar4 + dynamicSpotLightNearPlaneOffset;
+        if (b <= 0.04045) {
+          local_50 = b / 12.92;
         }
         else {
-          dVar12 = (double)((param_6 + 0.055) / 1.055);
+          dVar10 = (double)((b + 0.055) / 1.055);
           __libm_sse2_pow((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90),
                           (double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-          local_50 = (float)dVar12;
+          local_50 = (float)dVar10;
         }
-        if (param_5 <= 0.04045) {
-          local_54 = param_5 / 12.92;
+        if (g <= 0.04045) {
+          local_54 = g / 12.92;
         }
         else {
-          dVar12 = (double)((param_5 + 0.055) / 1.055);
+          dVar10 = (double)((g + 0.055) / 1.055);
           __libm_sse2_pow((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90),
                           (double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-          local_54 = (float)dVar12;
+          local_54 = (float)dVar10;
         }
-        if (param_4 <= 0.04045) {
-          local_58 = param_4 / 12.92;
+        if (r <= 0.04045) {
+          local_58 = r / 12.92;
         }
         else {
-          dVar12 = (double)((param_4 + 0.055) / 1.055);
+          dVar10 = (double)((r + 0.055) / 1.055);
           __libm_sse2_pow((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90),
                           (double)CONCAT44(in_stack_ffffff9c,in_stack_ffffff98));
-          local_58 = (float)dVar12;
+          local_58 = (float)dVar10;
         }
         scene.addedLight[iVar7].diffuseColor[0] = local_58;
         scene.addedLight[iVar7].diffuseColor[1] = local_54;
@@ -892,17 +925,17 @@ R_AddSpotLightToScene
         scene.addedLight[iVar7].diffuseColor[0] = fVar1 * scene.addedLight[iVar7].diffuseColor[0];
         scene.addedLight[iVar7].diffuseColor[1] = fVar1 * scene.addedLight[iVar7].diffuseColor[1];
         scene.addedLight[iVar7].diffuseColor[2] = fVar1 * scene.addedLight[iVar7].diffuseColor[2];
-        pfVar13 = scene.addedLight[iVar7].specularColor;
-        pfVar14 = scene.addedLight[iVar7].diffuseColor;
-        *pfVar13 = *pfVar14;
+        pfVar11 = scene.addedLight[iVar7].specularColor;
+        pfVar12 = scene.addedLight[iVar7].diffuseColor;
+        *pfVar11 = *pfVar12;
         scene.addedLight[iVar7].specularColor[1] = scene.addedLight[iVar7].diffuseColor[1];
         scene.addedLight[iVar7].specularColor[2] = scene.addedLight[iVar7].diffuseColor[2];
-        dVar12 = (double)(fVar10 * fVar5);
-        __libm_sse2_cos((double)CONCAT44(pfVar14,pfVar13));
-        scene.addedLight[iVar7].cosHalfFovInner = (float)dVar12;
-        dVar12 = (double)fVar10;
-        __libm_sse2_cos((double)CONCAT44(pfVar14,pfVar13));
-        scene.addedLight[iVar7].cosHalfFovOuter = (float)dVar12;
+        dVar10 = (double)(fVar9 * fVar5);
+        __libm_sse2_cos((double)CONCAT44(pfVar12,pfVar11));
+        scene.addedLight[iVar7].cosHalfFovInner = (float)dVar10;
+        dVar10 = (double)fVar9;
+        __libm_sse2_cos((double)CONCAT44(pfVar12,pfVar11));
+        scene.addedLight[iVar7].cosHalfFovOuter = (float)dVar10;
         scene.addedLight[iVar7].angles[0] = 0.0;
         scene.addedLight[iVar7].angles[1] = 0.0;
         scene.addedLight[iVar7].angles[2] = 0.0;
@@ -919,15 +952,14 @@ R_AddSpotLightToScene
         scene.addedLight[iVar7].falloff[2] = (fVar4 - 0.0) * 0.0 + 0.0;
         scene.addedLight[iVar7].falloff[3] = (fVar4 - 0.0) * 0.0 + 0.0;
         SpotLightViewMatrixDir3
-                  (*param_2,param_2[1],param_2[2],(float (*) [4])&scene.addedLight[iVar7].viewMatrix
-                  );
+                  (*axis,axis[1],axis[2],(float (*) [4])&scene.addedLight[iVar7].viewMatrix);
         SpotLightProjectionMatrix
                   (scene.addedLight[iVar7].cosHalfFovOuter,scene.addedLight[iVar7].falloff[0],
                    scene.addedLight[iVar7].falloff[1],
                    (float (*) [4])&scene.addedLight[iVar7].projMatrix);
         scene.addedLight[iVar7].def = rgp.flashLightDef;
-        scene.dynamicSpotLightNearPlaneOffset = fVar11;
-        R_CalcSpotLightPlanes(pGVar9,fVar11,scene.dynamicSpotLightPlanes);
+        scene.dynamicSpotLightNearPlaneOffset = dynamicSpotLightNearPlaneOffset;
+        R_CalcSpotLightPlanes(light,dynamicSpotLightNearPlaneOffset,scene.dynamicSpotLightPlanes);
       }
       else {
         R_WarnOncePerFrame(R_WARN_MAX_DLIGHTS);
@@ -940,63 +972,63 @@ R_AddSpotLightToScene
 
 // 00B16F60  R_AddStaticModelDebugString  (gfx_d3d/r_add_staticmodel.cpp:673)
 
-void __cdecl R_AddStaticModelDebugString(float *param_1,char *param_2)
+void __cdecl R_AddStaticModelDebugString(float *origin_2,char *string_2)
 
 {
-  R_AddScaledDebugString(&frontEndDataOut->debugGlobals,rg.debugViewParms,param_1,colorCyan,param_2)
-  ;
+  R_AddScaledDebugString
+            (&frontEndDataOut->debugGlobals,rg.debugViewParms,origin_2,colorCyan,string_2);
   return;
 }
 
 
 // 00A61850  lerp  (gfx_d3d/r_scene.cpp:849)
 
-float __cdecl lerp(float param_1,float param_2,float param_3)
+float __cdecl lerp(float from,float to,float t)
 
 {
-  return (param_2 - param_1) * param_3 + param_1;
+  return (to - from) * t + from;
 }
 
 
 // 00A61870  lerp  (gfx_d3d/r_scene.cpp:854)
 
-void __cdecl lerp(float (*param_1) [4],float (*param_2) [4],float (*param_3) [4],float param_4)
+void __cdecl lerp(float (*dest) [4],float (*from) [4],float (*to) [4],float t)
 
 {
   float fVar1;
   
-  fVar1 = lerp((*param_2)[0],(*param_3)[0],param_4);
-  (*param_1)[0] = fVar1;
-  fVar1 = lerp((*param_2)[1],(*param_3)[1],param_4);
-  (*param_1)[1] = fVar1;
-  fVar1 = lerp((*param_2)[2],(*param_3)[2],param_4);
-  (*param_1)[2] = fVar1;
-  fVar1 = lerp((*param_2)[3],(*param_3)[3],param_4);
-  (*param_1)[3] = fVar1;
+  fVar1 = lerp((*from)[0],(*to)[0],t);
+  (*dest)[0] = fVar1;
+  fVar1 = lerp((*from)[1],(*to)[1],t);
+  (*dest)[1] = fVar1;
+  fVar1 = lerp((*from)[2],(*to)[2],t);
+  (*dest)[2] = fVar1;
+  fVar1 = lerp((*from)[3],(*to)[3],t);
+  (*dest)[3] = fVar1;
   return;
 }
 
 
 // 00A61920  lerp  (gfx_d3d/r_scene.cpp:862)
 
-void __cdecl lerp(float (*param_1) [3],float (*param_2) [3],float (*param_3) [3],float param_4)
+void __cdecl lerp(float (*dest) [3],float (*from) [3],float (*to) [3],float t)
 
 {
   float fVar1;
   
-  fVar1 = lerp((*param_2)[0],(*param_3)[0],param_4);
-  (*param_1)[0] = fVar1;
-  fVar1 = lerp((*param_2)[1],(*param_3)[1],param_4);
-  (*param_1)[1] = fVar1;
-  fVar1 = lerp((*param_2)[2],(*param_3)[2],param_4);
-  (*param_1)[2] = fVar1;
+  fVar1 = lerp((*from)[0],(*to)[0],t);
+  (*dest)[0] = fVar1;
+  fVar1 = lerp((*from)[1],(*to)[1],t);
+  (*dest)[1] = fVar1;
+  fVar1 = lerp((*from)[2],(*to)[2],t);
+  (*dest)[2] = fVar1;
   return;
 }
 
 
 // 00A61530  R_UpdateFrameFog  (gfx_d3d/r_scene.cpp:869)
 
-void __cdecl R_UpdateFrameFog(int param_1)
+void __cdecl R_UpdateFrameFog(int localClientNum)
 
 {
   code *pcVar1;
@@ -1005,10 +1037,11 @@ void __cdecl R_UpdateFrameFog(int param_1)
   GfxFog *pGVar4;
   GfxFog *pGVar5;
   float fVar6;
-  float local_10;
-  int local_c;
+  float lerpPos;
+  int fadeTime;
+  GfxClientFog *f;
   
-  if ((3 < (uint)param_1) &&
+  if ((3 < (uint)localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x369,0,
                                "localClientNum doesn\'t index ARRAY_COUNT(rg.clientFogs)\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -1016,64 +1049,68 @@ void __cdecl R_UpdateFrameFog(int param_1)
     (*pcVar1)();
     return;
   }
-  if (scene.def.time < rg.clientFogs[param_1].settings[4].finishTime) {
-    local_c = rg.clientFogs[param_1].settings[4].finishTime -
-              rg.clientFogs[param_1].settings[4].startTime;
-    if (local_c < 1) {
-      local_c = 1;
+  if (scene.def.time < rg.clientFogs[localClientNum].settings[4].finishTime) {
+    fadeTime = rg.clientFogs[localClientNum].settings[4].finishTime -
+               rg.clientFogs[localClientNum].settings[4].startTime;
+    if (fadeTime < 1) {
+      fadeTime = 1;
     }
-    local_10 = (float)(scene.def.time - rg.clientFogs[param_1].settings[4].startTime) /
-               (float)local_c;
-    if (1.0 < local_10) {
-      local_10 = 1.0;
+    lerpPos = (float)(scene.def.time - rg.clientFogs[localClientNum].settings[4].startTime) /
+              (float)fadeTime;
+    if (1.0 < lerpPos) {
+      lerpPos = 1.0;
     }
-    rg.clientFogs[param_1].settings[2].fogStart =
-         (rg.clientFogs[param_1].settings[4].fogStart - rg.clientFogs[param_1].settings[3].fogStart)
-         * local_10 + rg.clientFogs[param_1].settings[3].fogStart;
-    rg.clientFogs[param_1].settings[2].heightDensity =
-         (rg.clientFogs[param_1].settings[4].heightDensity -
-         rg.clientFogs[param_1].settings[3].heightDensity) * local_10 +
-         rg.clientFogs[param_1].settings[3].heightDensity;
-    rg.clientFogs[param_1].settings[2].density =
-         (rg.clientFogs[param_1].settings[4].density - rg.clientFogs[param_1].settings[3].density) *
-         local_10 + rg.clientFogs[param_1].settings[3].density;
-    rg.clientFogs[param_1].settings[2].baseHeight =
-         (rg.clientFogs[param_1].settings[4].baseHeight -
-         rg.clientFogs[param_1].settings[3].baseHeight) * local_10 +
-         rg.clientFogs[param_1].settings[3].baseHeight;
-    lerp(&rg.clientFogs[param_1].settings[2].color,&rg.clientFogs[param_1].settings[3].color,
-         &rg.clientFogs[param_1].settings[4].color,local_10);
-    lerp(&rg.clientFogs[param_1].settings[2].sunFogColor,
-         &rg.clientFogs[param_1].settings[3].sunFogColor,
-         &rg.clientFogs[param_1].settings[4].sunFogColor,local_10);
-    lerp(&rg.clientFogs[param_1].settings[2].sunFogDir,&rg.clientFogs[param_1].settings[3].sunFogDir
-         ,&rg.clientFogs[param_1].settings[4].sunFogDir,local_10);
-    Vec3Normalize(rg.clientFogs[param_1].settings[2].sunFogDir);
-    fVar6 = lerp(rg.clientFogs[param_1].settings[3].sunFogStartAng,
-                 rg.clientFogs[param_1].settings[4].sunFogStartAng,local_10);
-    rg.clientFogs[param_1].settings[2].sunFogStartAng = fVar6;
-    fVar6 = lerp(rg.clientFogs[param_1].settings[3].sunFogEndAng,
-                 rg.clientFogs[param_1].settings[4].sunFogEndAng,local_10);
-    rg.clientFogs[param_1].settings[2].sunFogEndAng = fVar6;
-    rg.clientFogs[param_1].settings[2].maxDensity =
-         (rg.clientFogs[param_1].settings[4].maxDensity -
-         rg.clientFogs[param_1].settings[3].maxDensity) * local_10 +
-         rg.clientFogs[param_1].settings[3].maxDensity;
+    rg.clientFogs[localClientNum].settings[2].fogStart =
+         (rg.clientFogs[localClientNum].settings[4].fogStart -
+         rg.clientFogs[localClientNum].settings[3].fogStart) * lerpPos +
+         rg.clientFogs[localClientNum].settings[3].fogStart;
+    rg.clientFogs[localClientNum].settings[2].heightDensity =
+         (rg.clientFogs[localClientNum].settings[4].heightDensity -
+         rg.clientFogs[localClientNum].settings[3].heightDensity) * lerpPos +
+         rg.clientFogs[localClientNum].settings[3].heightDensity;
+    rg.clientFogs[localClientNum].settings[2].density =
+         (rg.clientFogs[localClientNum].settings[4].density -
+         rg.clientFogs[localClientNum].settings[3].density) * lerpPos +
+         rg.clientFogs[localClientNum].settings[3].density;
+    rg.clientFogs[localClientNum].settings[2].baseHeight =
+         (rg.clientFogs[localClientNum].settings[4].baseHeight -
+         rg.clientFogs[localClientNum].settings[3].baseHeight) * lerpPos +
+         rg.clientFogs[localClientNum].settings[3].baseHeight;
+    lerp(&rg.clientFogs[localClientNum].settings[2].color,
+         &rg.clientFogs[localClientNum].settings[3].color,
+         &rg.clientFogs[localClientNum].settings[4].color,lerpPos);
+    lerp(&rg.clientFogs[localClientNum].settings[2].sunFogColor,
+         &rg.clientFogs[localClientNum].settings[3].sunFogColor,
+         &rg.clientFogs[localClientNum].settings[4].sunFogColor,lerpPos);
+    lerp(&rg.clientFogs[localClientNum].settings[2].sunFogDir,
+         &rg.clientFogs[localClientNum].settings[3].sunFogDir,
+         &rg.clientFogs[localClientNum].settings[4].sunFogDir,lerpPos);
+    Vec3Normalize(rg.clientFogs[localClientNum].settings[2].sunFogDir);
+    fVar6 = lerp(rg.clientFogs[localClientNum].settings[3].sunFogStartAng,
+                 rg.clientFogs[localClientNum].settings[4].sunFogStartAng,lerpPos);
+    rg.clientFogs[localClientNum].settings[2].sunFogStartAng = fVar6;
+    fVar6 = lerp(rg.clientFogs[localClientNum].settings[3].sunFogEndAng,
+                 rg.clientFogs[localClientNum].settings[4].sunFogEndAng,lerpPos);
+    rg.clientFogs[localClientNum].settings[2].sunFogEndAng = fVar6;
+    rg.clientFogs[localClientNum].settings[2].maxDensity =
+         (rg.clientFogs[localClientNum].settings[4].maxDensity -
+         rg.clientFogs[localClientNum].settings[3].maxDensity) * lerpPos +
+         rg.clientFogs[localClientNum].settings[3].maxDensity;
   }
   else {
-    pGVar4 = rg.clientFogs[param_1].settings + 4;
-    pGVar5 = rg.clientFogs[param_1].settings + 2;
+    pGVar4 = rg.clientFogs[localClientNum].settings + 4;
+    pGVar5 = rg.clientFogs[localClientNum].settings + 2;
     for (iVar3 = 0x14; iVar3 != 0; iVar3 = iVar3 + -1) {
       pGVar5->startTime = pGVar4->startTime;
       pGVar4 = (GfxFog *)&pGVar4->finishTime;
       pGVar5 = (GfxFog *)&pGVar5->finishTime;
     }
   }
-  if ((rg.clientFogs[param_1].index == 0) || ((r_fog_disable->current).enabled != false)) {
+  if ((rg.clientFogs[localClientNum].index == 0) || ((r_fog_disable->current).enabled != false)) {
     memset((uchar *)&frontEndDataOut->fogSettings,'\0',0x50);
   }
   else {
-    pGVar4 = rg.clientFogs[param_1].settings + 2;
+    pGVar4 = rg.clientFogs[localClientNum].settings + 2;
     pGVar5 = &frontEndDataOut->fogSettings;
     for (iVar3 = 0x14; iVar3 != 0; iVar3 = iVar3 + -1) {
       pGVar5->startTime = pGVar4->startTime;
@@ -1102,45 +1139,45 @@ float __cdecl R_GetDefaultNearClip(void)
 
 // 00A61B60  R_SetupProjection  (gfx_d3d/r_scene.cpp:921)
 
-void __cdecl R_SetupProjection(float param_1,float param_2,GfxViewParms *param_3)
+void __cdecl R_SetupProjection(float tanHalfFovX,float tanHalfFovY,GfxViewParms *viewParms)
 
 {
   InfinitePerspectiveMatrix
-            (param_1,param_2,param_3->zNear,(float (*) [4])&param_3->projectionMatrix);
-  param_3->depthHackNearClip = -(float)(r_znear_depthhack->current).unsignedInt;
+            (tanHalfFovX,tanHalfFovY,viewParms->zNear,(float (*) [4])&viewParms->projectionMatrix);
+  viewParms->depthHackNearClip = -(float)(r_znear_depthhack->current).unsignedInt;
   return;
 }
 
 
 // 00A5D5B0  R_SetupViewProjectionMatrices  (gfx_d3d/r_scene.cpp:934)
 
-void __cdecl R_SetupViewProjectionMatrices(GfxViewParms *param_1,bool param_2)
+void __cdecl R_SetupViewProjectionMatrices(GfxViewParms *viewParms,bool offsetmatrix)
 
 {
-  if (((rg.renderHiResShot != 0) && (0 < rg.hiResShotTiles)) && (param_2)) {
-    (param_1->projectionMatrix).m[0][0] =
-         (float)rg.hiResShotTiles * (param_1->projectionMatrix).m[0][0];
-    (param_1->projectionMatrix).m[1][1] =
-         (float)rg.hiResShotTiles * (param_1->projectionMatrix).m[1][1];
-    (param_1->projectionMatrix).m[2][0] =
+  if (((rg.renderHiResShot != 0) && (0 < rg.hiResShotTiles)) && (offsetmatrix)) {
+    (viewParms->projectionMatrix).m[0][0] =
+         (float)rg.hiResShotTiles * (viewParms->projectionMatrix).m[0][0];
+    (viewParms->projectionMatrix).m[1][1] =
+         (float)rg.hiResShotTiles * (viewParms->projectionMatrix).m[1][1];
+    (viewParms->projectionMatrix).m[2][0] =
          (rg.hiResShotRow / (float)rg.hiResShotTiles +
          (rg.hiResShotRow + 1.0) / (float)rg.hiResShotTiles) /
          (rg.hiResShotRow / (float)rg.hiResShotTiles -
          (rg.hiResShotRow + 1.0) / (float)rg.hiResShotTiles);
-    (param_1->projectionMatrix).m[2][1] =
+    (viewParms->projectionMatrix).m[2][1] =
          (rg.hiResShotCol / (float)rg.hiResShotTiles +
          (rg.hiResShotCol + 1.0) / (float)rg.hiResShotTiles) /
          (-rg.hiResShotCol / (float)rg.hiResShotTiles +
          (rg.hiResShotCol + 1.0) / (float)rg.hiResShotTiles);
-    (param_1->projectionMatrix).m[2][0] =
-         (float)rg.hiResShotTiles + (param_1->projectionMatrix).m[2][0];
-    (param_1->projectionMatrix).m[2][1] =
-         (param_1->projectionMatrix).m[2][1] - (float)rg.hiResShotTiles;
+    (viewParms->projectionMatrix).m[2][0] =
+         (float)rg.hiResShotTiles + (viewParms->projectionMatrix).m[2][0];
+    (viewParms->projectionMatrix).m[2][1] =
+         (viewParms->projectionMatrix).m[2][1] - (float)rg.hiResShotTiles;
   }
-  MatrixMultiply44((float (*) [4])param_1,(float (*) [4])&param_1->projectionMatrix,
-                   (float (*) [4])&param_1->viewProjectionMatrix);
-  MatrixInverse44((float *)&param_1->viewProjectionMatrix,
-                  (float *)&param_1->inverseViewProjectionMatrix);
+  MatrixMultiply44((float (*) [4])viewParms,(float (*) [4])&viewParms->projectionMatrix,
+                   (float (*) [4])&viewParms->viewProjectionMatrix);
+  MatrixInverse44((float *)&viewParms->viewProjectionMatrix,
+                  (float *)&viewParms->inverseViewProjectionMatrix);
   return;
 }
 
@@ -1178,8 +1215,9 @@ ShadowType __cdecl R_DynamicShadowType(void)
 
 void __cdecl
 R_AddBModelSurfacesCamera
-          (BModelDrawInfo *param_1,GfxBrushModel *param_2,GfxDrawSurf **param_3,
-          GfxDrawSurf **param_4,uint param_5,float param_6,float param_7,uint param_8)
+          (BModelDrawInfo *bmodelInfo,GfxBrushModel *bmodel,GfxDrawSurf **drawSurfs,
+          GfxDrawSurf **lastDrawSurfs,uint reflectionProbeIndex,float burnAmt,float fadeAmt,
+          uint visLightsMask)
 
 {
   int iVar1;
@@ -1200,20 +1238,22 @@ R_AddBModelSurfacesCamera
   uint extraout_EDX_01;
   uint extraout_EDX_02;
   uint extraout_EDX_03;
-  uint local_2c;
-  uchar *local_14;
-  uint local_8;
+  uint surfId;
+  uint surfIndex;
+  uchar *modelSurf;
+  uint region;
+  uint count;
   
-  if ((param_2 == (GfxBrushModel *)0x0) &&
+  if ((bmodel == (GfxBrushModel *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x3e2,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     (*pcVar5)();
     return;
   }
-  local_2c = (uint)param_1->surfId;
-  local_14 = frontEndDataOut->surfsBuffer + local_2c * 4;
-  if ((7 < param_5) &&
+  surfId = (uint)bmodelInfo->surfId;
+  modelSurf = frontEndDataOut->surfsBuffer + surfId * 4;
+  if ((7 < reflectionProbeIndex) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",999,0,
                                "reflectionProbeIndex doesn\'t index 1 << MTL_SORT_ENVMAP_BITS\n\t%i not in [0, %i)"
                               ), !bVar6)) {
@@ -1229,12 +1269,12 @@ R_AddBModelSurfacesCamera
     (*pcVar5)();
     return;
   }
-  local_8 = 0;
+  count = 0;
   do {
-    if (param_2->surfaceCount <= local_8) {
+    if (bmodel->surfaceCount <= count) {
       return;
     }
-    iVar1 = *(int *)(*(int *)(local_14 + 4) + 0x30);
+    iVar1 = *(int *)(*(int *)(modelSurf + 4) + 0x30);
     _aullshr();
     _allmul();
     if ((*(int *)((int)rgp.sortedMaterials + extraout_EAX) != iVar1) &&
@@ -1246,13 +1286,13 @@ R_AddBModelSurfacesCamera
     }
     uVar7 = (uint)*(byte *)(iVar1 + 0xae);
     if (uVar7 != 3) {
-      if (param_4[uVar7] <= param_3[uVar7]) {
+      if (lastDrawSurfs[uVar7] <= drawSurfs[uVar7]) {
         R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
         return;
       }
-      *(float *)(local_14 + 0xc) = param_6;
-      *(float *)(local_14 + 0x10) = param_7;
-      if ((0xffff < local_2c) &&
+      *(float *)(modelSurf + 0xc) = burnAmt;
+      *(float *)(modelSurf + 0x10) = fadeAmt;
+      if ((0xffff < surfId) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x3fe,0
                                    ,
                                    "surfId doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
@@ -1268,19 +1308,18 @@ R_AddBModelSurfacesCamera
       _allshl();
       _allshl();
       _allshl();
-      pGVar4 = param_3[uVar7];
+      pGVar4 = drawSurfs[uVar7];
       *(uint *)pGVar4 =
-           (((uVar2 & 0xfe0f0000 | local_2c & 0xffff | extraout_EAX_00) & 0xf1ffffff |
-             extraout_EAX_01 | extraout_EAX_02) & 0xdfffffff | extraout_EAX_03) & 0xbfffffff |
-           extraout_EAX_04;
+           (((uVar2 & 0xfe0f0000 | surfId & 0xffff | extraout_EAX_00) & 0xf1ffffff | extraout_EAX_01
+            | extraout_EAX_02) & 0xdfffffff | extraout_EAX_03) & 0xbfffffff | extraout_EAX_04;
       *(uint *)((int)pGVar4 + 4) =
            (uVar3 & 0xff87ffff | 0x300000 | extraout_EDX | extraout_EDX_00) & 0xfff807ff |
            extraout_EDX_01 | extraout_EDX_02 | extraout_EDX_03;
-      param_3[uVar7] = param_3[uVar7] + 1;
+      drawSurfs[uVar7] = drawSurfs[uVar7] + 1;
     }
-    local_8 = local_8 + 1;
-    local_14 = local_14 + 0x14;
-    local_2c = local_2c + 5;
+    count = count + 1;
+    modelSurf = modelSurf + 0x14;
+    surfId = surfId + 5;
   } while( true );
 }
 
@@ -1288,68 +1327,69 @@ R_AddBModelSurfacesCamera
 // 00A5DAC0  R_AddBModelSurfaces  (gfx_d3d/r_scene.cpp:1042)
 
 GfxDrawSurf * __cdecl
-R_AddBModelSurfaces(BModelDrawInfo *param_1,GfxBrushModel *param_2,uchar param_3,
-                   GfxDrawSurf *param_4,GfxDrawSurf *param_5)
+R_AddBModelSurfaces(BModelDrawInfo *bmodelInfo,GfxBrushModel *bmodel,uchar techType,
+                   GfxDrawSurf *drawSurf,GfxDrawSurf *lastDrawSurf)
 
 {
-  Material *pMVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  GfxDrawSurf *pGVar5;
+  Material *material;
+  uint uVar1;
+  code *pcVar2;
+  bool bVar3;
+  GfxDrawSurf *pGVar4;
   int extraout_EAX;
-  MaterialTechnique *pMVar6;
-  uint local_28;
-  uchar *local_10;
-  uint local_8;
+  MaterialTechnique *pMVar5;
+  uint surfId;
+  uint surfIndex;
+  uchar *modelSurf;
+  uint count;
   
-  if ((param_2 == (GfxBrushModel *)0x0) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x41b,0,
-                               "%s"), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    pGVar5 = (GfxDrawSurf *)(*pcVar3)();
-    return pGVar5;
+  if ((bmodel == (GfxBrushModel *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x41b,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    pGVar4 = (GfxDrawSurf *)(*pcVar2)();
+    return pGVar4;
   }
-  local_28 = (uint)param_1->surfId;
-  local_10 = frontEndDataOut->surfsBuffer + local_28 * 4;
-  local_8 = 0;
+  surfId = (uint)bmodelInfo->surfId;
+  modelSurf = frontEndDataOut->surfsBuffer + surfId * 4;
+  count = 0;
   while( true ) {
-    if (param_2->surfaceCount <= local_8) {
-      return param_4;
+    if (bmodel->surfaceCount <= count) {
+      return drawSurf;
     }
-    if (param_5 <= param_4) break;
-    pMVar1 = *(Material **)(*(int *)(local_10 + 4) + 0x30);
+    if (lastDrawSurf <= drawSurf) break;
+    material = *(Material **)(*(int *)(modelSurf + 4) + 0x30);
     _aullshr();
     _allmul();
-    if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != pMVar1) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x42a,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      pGVar5 = (GfxDrawSurf *)(*pcVar3)();
-      return pGVar5;
+    if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != material) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x42a,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      pGVar4 = (GfxDrawSurf *)(*pcVar2)();
+      return pGVar4;
     }
-    pMVar6 = Material_GetTechnique(pMVar1,param_3);
-    if (pMVar6 != (MaterialTechnique *)0x0) {
-      if ((0xffff < local_28) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x42f,0
+    pMVar5 = Material_GetTechnique(material,techType);
+    if (pMVar5 != (MaterialTechnique *)0x0) {
+      if ((0xffff < surfId) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x42f,0
                                    ,
                                    "surfId doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
-                                  ), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        pGVar5 = (GfxDrawSurf *)(*pcVar3)();
-        return pGVar5;
+                                  ), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        pGVar4 = (GfxDrawSurf *)(*pcVar2)();
+        return pGVar4;
       }
-      uVar2 = *(uint *)((int)&(pMVar1->info).drawSurf + 4);
-      *(uint *)param_4 = *(uint *)&(pMVar1->info).drawSurf & 0xffff0000 | local_28 & 0xffff;
-      *(uint *)((int)param_4 + 4) = uVar2 & 0xff87ffff | 0x300000;
-      param_4 = param_4 + 1;
+      uVar1 = *(uint *)((int)&(material->info).drawSurf + 4);
+      *(uint *)drawSurf = *(uint *)&(material->info).drawSurf & 0xffff0000 | surfId & 0xffff;
+      *(uint *)((int)drawSurf + 4) = uVar1 & 0xff87ffff | 0x300000;
+      drawSurf = drawSurf + 1;
     }
-    local_8 = local_8 + 1;
-    local_10 = local_10 + 0x14;
-    local_28 = local_28 + 5;
+    count = count + 1;
+    modelSurf = modelSurf + 0x14;
+    surfId = surfId + 5;
   }
   R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
-  return param_4;
+  return drawSurf;
 }
 
 
@@ -1357,14 +1397,14 @@ R_AddBModelSurfaces(BModelDrawInfo *param_1,GfxBrushModel *param_2,uchar param_3
 
 /* WARNING: Enum "surfaceType_t": Some values do not have unique names */
 
-XSurface * __cdecl R_GetXSurface(void *param_1,surfaceType_t param_2)
+XSurface * __cdecl R_GetXSurface(void *modelSurf,surfaceType_t surfType)
 
 {
   code *pcVar1;
   bool bVar2;
   XSurface *pXVar3;
   
-  if (param_1 == (void *)0x0) {
+  if (modelSurf == (void *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x445,0,"%s")
     ;
     if (!bVar2) {
@@ -1373,7 +1413,7 @@ XSurface * __cdecl R_GetXSurface(void *param_1,surfaceType_t param_2)
       return pXVar3;
     }
   }
-  if ((param_2 < SF_BEGIN_XMODEL) || (SF_XMODEL_WATER < param_2)) {
+  if ((surfType < SF_BEGIN_XMODEL) || (SF_XMODEL_WATER < surfType)) {
     bVar2 = false;
   }
   else {
@@ -1388,16 +1428,16 @@ XSurface * __cdecl R_GetXSurface(void *param_1,surfaceType_t param_2)
       return pXVar3;
     }
   }
-  return *(XSurface **)((int)param_1 + 4);
+  return *(XSurface **)((int)modelSurf + 4);
 }
 
 
 // 00A5DDA0  R_SetEnablePlayerShadowFlag  (gfx_d3d/r_scene.cpp:1110)
 
-void __cdecl R_SetEnablePlayerShadowFlag(bool param_1)
+void __cdecl R_SetEnablePlayerShadowFlag(bool flag)
 
 {
-  rg.enablePlayerShadowFlag = param_1;
+  rg.enablePlayerShadowFlag = flag;
   return;
 }
 
@@ -1410,9 +1450,10 @@ void __cdecl R_SetEnablePlayerShadowFlag(bool param_1)
 
 void __cdecl
 R_AddXModelSurfacesCamera
-          (XModelDrawInfo *param_1,XModel *param_2,float *param_3,uint param_4,uint param_5,
-          uint param_6,int param_7,int param_8,GfxDrawSurf **param_9,GfxDrawSurf **param_10,
-          uint param_11,uint param_12,uint param_13)
+          (XModelDrawInfo *modelInfo,XModel *model,float *origin,uint gfxEntIndex,
+          uint lightingHandle,uint primaryLightIndex,int isShadowReceiver,int depthHack,
+          GfxDrawSurf **drawSurfs,GfxDrawSurf **lastDrawSurfs,uint reflectionProbeIndex,
+          uint constantSetIndex,uint visLightsMask)
 
 {
   GfxDrawSurf *pGVar1;
@@ -1439,46 +1480,48 @@ R_AddXModelSurfacesCamera
   undefined4 uVar7;
   undefined4 uVar8;
   undefined4 uVar9;
-  uint local_3c;
-  GfxDrawSurf local_34;
-  int local_28;
-  Material **local_24;
-  uint local_20;
-  int local_1c;
-  uint local_18;
-  uchar *local_14;
-  surfaceType_t local_10;
-  uint local_c;
-  uint local_8;
+  uint customIndex;
+  uint surfId;
+  int totalVertCount;
+  GfxDrawSurf drawSurf;
+  int totalTriCount;
+  Material **material;
+  uint subMatIndex;
+  int skinnedCachedOffset;
+  int lod;
+  uchar *modelSurf;
+  surfaceType_t surfType;
+  uint region;
+  uint numsurfs;
   
-  if ((param_5 == 0) &&
+  if ((lightingHandle == 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x47b,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_28 = 0;
-  if ((param_2 == (XModel *)0x0) &&
+  totalTriCount = 0;
+  if ((model == (XModel *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x482,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_3c = (uint)param_1->surfId;
-  local_14 = frontEndDataOut->surfsBuffer + local_3c * 4;
-  local_18 = (uint)param_1->lod;
-  local_8 = XModelGetSurfCount(param_2,local_18);
-  local_24 = XModelGetSkins(param_2,local_18);
-  if ((local_24 == (Material **)0x0) &&
+  surfId = (uint)modelInfo->surfId;
+  modelSurf = frontEndDataOut->surfsBuffer + surfId * 4;
+  lod = (int)modelInfo->lod;
+  numsurfs = XModelGetSurfCount(model,lod);
+  material = XModelGetSkins(model,lod);
+  if ((material == (Material **)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x48c,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((7 < param_11) &&
+  if ((7 < reflectionProbeIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x48e,0,
                                "reflectionProbeIndex doesn\'t index 1 << MTL_SORT_ENVMAP_BITS\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -1494,35 +1537,35 @@ R_AddXModelSurfacesCamera
     (*pcVar2)();
     return;
   }
-  local_20 = 0;
+  subMatIndex = 0;
   do {
-    if (local_8 <= local_20) {
+    if (numsurfs <= subMatIndex) {
 LAB_00a5e359:
       if ((r_showTriCounts->current).enabled == false) {
         if ((r_showVertCounts->current).enabled == false) {
           if ((r_showSurfCounts->current).enabled != false) {
             pcVar6 = va("%i");
-            R_AddStaticModelDebugString(param_3,pcVar6);
+            R_AddStaticModelDebugString(origin,pcVar6);
           }
         }
         else {
           pcVar6 = va("%i");
-          R_AddStaticModelDebugString(param_3,pcVar6);
+          R_AddStaticModelDebugString(origin,pcVar6);
         }
       }
       else {
         pcVar6 = va("%i");
-        R_AddStaticModelDebugString(param_3,pcVar6);
+        R_AddStaticModelDebugString(origin,pcVar6);
       }
       return;
     }
-    local_1c = *(int *)local_14;
-    if (local_1c == -3) {
-      local_3c = local_3c + 1;
-      local_14 = local_14 + 4;
+    skinnedCachedOffset = *(int *)modelSurf;
+    if (skinnedCachedOffset == -3) {
+      surfId = surfId + 1;
+      modelSurf = modelSurf + 4;
     }
     else {
-      if ((*local_24 == (Material *)0x0) &&
+      if ((*material == (Material *)0x0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x49d,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
@@ -1534,40 +1577,40 @@ LAB_00a5e359:
       uVar8 = 4;
       uVar7 = 0;
       _allmul();
-      if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != *local_24) &&
+      if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != *material) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x49e,0
                                    ,"%s"), !bVar3)) {
         pcVar2 = (code *)swi(3);
         (*pcVar2)();
         return;
       }
-      local_c = (uint)(*local_24)->cameraRegion;
-      if (local_c == 3) {
-        local_3c = local_3c + 0xe;
-        local_14 = local_14 + 0x38;
+      region = (uint)(*material)->cameraRegion;
+      if (region == 3) {
+        surfId = surfId + 0xe;
+        modelSurf = modelSurf + 0x38;
       }
       else {
-        if (param_10[local_c] <= param_9[local_c]) {
+        if (lastDrawSurfs[region] <= drawSurfs[region]) {
           R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
           goto LAB_00a5e359;
         }
-        if (local_1c == -2) {
-          local_10 = SF_BEGIN_XMODEL;
+        if (skinnedCachedOffset == -2) {
+          surfType = SF_BEGIN_XMODEL;
         }
         else {
-          if ((local_1c != -1) &&
+          if ((skinnedCachedOffset != -1) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                        0x4c8,0,"%s\n\t(skinnedCachedOffset) = %i"), !bVar3)) {
             pcVar2 = (code *)swi(3);
             (*pcVar2)();
             return;
           }
-          local_10 = SF_XMODEL_RIGID_SKINNED;
+          surfType = SF_XMODEL_RIGID_SKINNED;
         }
-        *(undefined2 *)(local_14 + 0xe) = (undefined2)param_4;
-        *(undefined2 *)(local_14 + 0x10) = (undefined2)param_5;
-        local_14[0x12] = '\0';
-        if ((0xffff < local_3c) &&
+        *(undefined2 *)(modelSurf + 0xe) = (undefined2)gfxEntIndex;
+        *(undefined2 *)(modelSurf + 0x10) = (undefined2)lightingHandle;
+        modelSurf[0x12] = '\0';
+        if ((0xffff < surfId) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x4d5
                                      ,0,
                                      "surfId doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
@@ -1576,53 +1619,53 @@ LAB_00a5e359:
           (*pcVar2)(uVar7,uVar8,uVar9);
           return;
         }
-        local_34.packed._0_4_ = *(undefined4 *)&((*local_24)->info).drawSurf;
-        local_34.packed._4_4_ = *(uint *)((int)&((*local_24)->info).drawSurf + 4);
+        drawSurf.packed._0_4_ = *(undefined4 *)&((*material)->info).drawSurf;
+        drawSurf.packed._4_4_ = *(uint *)((int)&((*material)->info).drawSurf + 4);
         _aullshr();
         _allshl();
-        local_34.packed._0_4_ = local_34.packed._0_4_ | extraout_EAX_00;
-        local_34.packed._4_4_ = local_34.packed._4_4_ & 0x3ffffff | extraout_EDX;
+        drawSurf.packed._0_4_ = drawSurf.packed._0_4_ | extraout_EAX_00;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0x3ffffff | extraout_EDX;
         _allshl();
-        local_34.packed._4_4_ = local_34.packed._4_4_ & 0xff87ffff | extraout_EDX_00;
-        local_34.packed._0_4_ =
-             (local_34.packed._0_4_ | extraout_EAX_01) & 0xffff0000 | local_3c & 0xffff;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0xff87ffff | extraout_EDX_00;
+        drawSurf.packed._0_4_ =
+             (drawSurf.packed._0_4_ | extraout_EAX_01) & 0xffff0000 | surfId & 0xffff;
         _allshl();
-        local_34.packed._0_4_ = local_34.packed._0_4_ & 0xf1ffffff | extraout_EAX_02;
-        local_34.packed._4_4_ = local_34.packed._4_4_ | extraout_EDX_01;
+        drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xf1ffffff | extraout_EAX_02;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_01;
         _allshl();
-        local_34.packed._0_4_ = local_34.packed._0_4_ & 0xfe0fffff | extraout_EAX_03;
-        local_34.packed._4_4_ = local_34.packed._4_4_ | extraout_EDX_02;
+        drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xfe0fffff | extraout_EAX_03;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_02;
         _allshl();
-        local_34.packed._0_4_ = local_34.packed._0_4_ | extraout_EAX_04;
-        local_34.packed._4_4_ = local_34.packed._4_4_ & 0xfff807ff | extraout_EDX_03;
-        R_XModelDrawSurfEncodeShaderConstantSet(&local_34,param_12);
+        drawSurf.packed._0_4_ = drawSurf.packed._0_4_ | extraout_EAX_04;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0xfff807ff | extraout_EDX_03;
+        R_XModelDrawSurfEncodeShaderConstantSet(&drawSurf,constantSetIndex);
         _allshl();
-        local_34.packed._0_4_ = local_34.packed._0_4_ & 0xdfffffff | extraout_EAX_05;
-        local_34.packed._4_4_ = local_34.packed._4_4_ | extraout_EDX_04;
+        drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xdfffffff | extraout_EAX_05;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_04;
         _allshl();
-        local_34.packed._0_4_ = local_34.packed._0_4_ & 0xbfffffff | extraout_EAX_06;
-        local_34.packed._4_4_ = local_34.packed._4_4_ | extraout_EDX_05;
-        pGVar1 = param_9[local_c];
-        *(undefined4 *)pGVar1 = local_34.packed._0_4_;
-        *(undefined4 *)((int)pGVar1 + 4) = local_34.packed._4_4_;
-        param_9[local_c] = param_9[local_c] + 1;
+        drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xbfffffff | extraout_EAX_06;
+        drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_05;
+        pGVar1 = drawSurfs[region];
+        *(undefined4 *)pGVar1 = drawSurf.packed._0_4_;
+        *(undefined4 *)((int)pGVar1 + 4) = drawSurf.packed._4_4_;
+        drawSurfs[region] = drawSurfs[region] + 1;
         if ((r_showTriCounts->current).enabled == false) {
           if ((r_showVertCounts->current).enabled != false) {
-            pXVar4 = R_GetXSurface(local_14,local_10);
+            pXVar4 = R_GetXSurface(modelSurf,surfType);
             XSurfaceGetNumVerts(pXVar4);
           }
         }
         else {
-          pXVar4 = R_GetXSurface(local_14,local_10);
+          pXVar4 = R_GetXSurface(modelSurf,surfType);
           iVar5 = XSurfaceGetNumTris(pXVar4);
-          local_28 = iVar5 + local_28;
+          totalTriCount = iVar5 + totalTriCount;
         }
-        local_3c = local_3c + 0xe;
-        local_14 = local_14 + 0x38;
+        surfId = surfId + 0xe;
+        modelSurf = modelSurf + 0x38;
       }
     }
-    local_20 = local_20 + 1;
-    local_24 = local_24 + 1;
+    subMatIndex = subMatIndex + 1;
+    material = material + 1;
   } while( true );
 }
 
@@ -1631,10 +1674,11 @@ LAB_00a5e359:
 
 /* WARNING: Removing unreachable block (ram,0x00a5e4db) */
 /* WARNING: Removing unreachable block (ram,0x00a5e504) */
+/* WARNING: Enum "surfaceType_t": Some values do not have unique names */
 
 GfxDrawSurf * __cdecl
-R_AddXModelSurfaces(XModelDrawInfo *param_1,XModel *param_2,uchar param_3,GfxDrawSurf *param_4,
-                   GfxDrawSurf *param_5)
+R_AddXModelSurfaces(XModelDrawInfo *modelInfo,XModel *model,uchar techType,GfxDrawSurf *drawSurf,
+                   GfxDrawSurf *lastDrawSurf)
 
 {
   ushort uVar1;
@@ -1652,42 +1696,46 @@ R_AddXModelSurfaces(XModelDrawInfo *param_1,XModel *param_2,uchar param_3,GfxDra
   undefined4 uVar10;
   undefined4 uVar11;
   undefined4 uVar12;
-  uint local_30;
-  Material **local_2c;
-  uint local_28;
-  uchar *local_10;
+  uint surfId;
+  Material **material;
+  uint subMatIndex;
+  int skinnedCachedOffset;
+  int lod;
+  uchar *modelSurf;
+  surfaceType_t surfType;
+  uint numsurfs;
   
-  if ((param_2 == (XModel *)0x0) &&
+  if ((model == (XModel *)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x51e,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     pGVar7 = (GfxDrawSurf *)(*pcVar5)();
     return pGVar7;
   }
-  local_30 = (uint)param_1->surfId;
-  local_10 = frontEndDataOut->surfsBuffer + local_30 * 4;
-  uVar1 = param_1->lod;
-  uVar8 = XModelGetSurfCount(param_2,(uint)uVar1);
-  local_2c = XModelGetSkins(param_2,(uint)uVar1);
-  if ((local_2c == (Material **)0x0) &&
+  surfId = (uint)modelInfo->surfId;
+  modelSurf = frontEndDataOut->surfsBuffer + surfId * 4;
+  uVar1 = modelInfo->lod;
+  uVar8 = XModelGetSurfCount(model,(uint)uVar1);
+  material = XModelGetSkins(model,(uint)uVar1);
+  if ((material == (Material **)0x0) &&
      (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x528,0,
                                "%s"), !bVar6)) {
     pcVar5 = (code *)swi(3);
     pGVar7 = (GfxDrawSurf *)(*pcVar5)();
     return pGVar7;
   }
-  local_28 = 0;
+  subMatIndex = 0;
   do {
-    if (uVar8 <= local_28) {
-      return param_4;
+    if (uVar8 <= subMatIndex) {
+      return drawSurf;
     }
-    iVar2 = *(int *)local_10;
+    iVar2 = *(int *)modelSurf;
     if (iVar2 == -3) {
-      local_30 = local_30 + 1;
-      local_10 = local_10 + 4;
+      surfId = surfId + 1;
+      modelSurf = modelSurf + 4;
     }
     else {
-      if ((*local_2c == (Material *)0x0) &&
+      if ((*material == (Material *)0x0) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x535,0
                                    ,"%s"), !bVar6)) {
         pcVar5 = (code *)swi(3);
@@ -1699,22 +1747,22 @@ R_AddXModelSurfaces(XModelDrawInfo *param_1,XModel *param_2,uchar param_3,GfxDra
       uVar11 = 4;
       uVar10 = 0;
       _allmul();
-      if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != *local_2c) &&
+      if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != *material) &&
          (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x536,0
                                    ,"%s"), !bVar6)) {
         pcVar5 = (code *)swi(3);
         pGVar7 = (GfxDrawSurf *)(*pcVar5)();
         return pGVar7;
       }
-      pMVar9 = Material_GetTechnique(*local_2c,param_3);
+      pMVar9 = Material_GetTechnique(*material,techType);
       if (pMVar9 == (MaterialTechnique *)0x0) {
-        local_30 = local_30 + 0xe;
-        local_10 = local_10 + 0x38;
+        surfId = surfId + 0xe;
+        modelSurf = modelSurf + 0x38;
       }
       else {
-        if (param_5 <= param_4) {
+        if (lastDrawSurf <= drawSurf) {
           R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
-          return param_4;
+          return drawSurf;
         }
         if (((iVar2 != -2) && (iVar2 != -1)) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x548
@@ -1723,7 +1771,7 @@ R_AddXModelSurfaces(XModelDrawInfo *param_1,XModel *param_2,uchar param_3,GfxDra
           pGVar7 = (GfxDrawSurf *)(*pcVar5)(uVar10,uVar11,uVar12);
           return pGVar7;
         }
-        if ((0xffff < local_30) &&
+        if ((0xffff < surfId) &&
            (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x551
                                      ,0,
                                      "surfId doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
@@ -1732,18 +1780,18 @@ R_AddXModelSurfaces(XModelDrawInfo *param_1,XModel *param_2,uchar param_3,GfxDra
           pGVar7 = (GfxDrawSurf *)(*pcVar5)();
           return pGVar7;
         }
-        uVar3 = *(uint *)&((*local_2c)->info).drawSurf;
-        uVar4 = *(uint *)((int)&((*local_2c)->info).drawSurf + 4);
+        uVar3 = *(uint *)&((*material)->info).drawSurf;
+        uVar4 = *(uint *)((int)&((*material)->info).drawSurf + 4);
         _allshl();
-        *(uint *)param_4 = (uVar3 | extraout_EAX_00) & 0xffff0000 | local_30 & 0xffff;
-        *(uint *)((int)param_4 + 4) = uVar4 & 0xff87ffff | extraout_EDX;
-        param_4 = param_4 + 1;
-        local_30 = local_30 + 0xe;
-        local_10 = local_10 + 0x38;
+        *(uint *)drawSurf = (uVar3 | extraout_EAX_00) & 0xffff0000 | surfId & 0xffff;
+        *(uint *)((int)drawSurf + 4) = uVar4 & 0xff87ffff | extraout_EDX;
+        drawSurf = drawSurf + 1;
+        surfId = surfId + 0xe;
+        modelSurf = modelSurf + 0x38;
       }
     }
-    local_28 = local_28 + 1;
-    local_2c = local_2c + 1;
+    subMatIndex = subMatIndex + 1;
+    material = material + 1;
   } while( true );
 }
 
@@ -1754,17 +1802,18 @@ R_AddXModelSurfaces(XModelDrawInfo *param_1,XModel *param_2,uchar param_3,GfxDra
 
 void __cdecl
 R_AddDObjSurfacesCamera
-          (GfxSceneEntity *param_1,uint param_2,uint param_3,GfxDrawSurf **param_4,
-          GfxDrawSurf **param_5,uint param_6,bool param_7)
+          (GfxSceneEntity *sceneEnt,uint lightingHandle,uint primaryLightIndex,
+          GfxDrawSurf **drawSurfs,GfxDrawSurf **lastDrawSurfs,uint visLightsMask,
+          bool isMissileCamera)
 
 {
-  DObj *pDVar1;
-  GfxDrawSurf *pGVar2;
-  code *pcVar3;
+  DObj *obj;
+  GfxDrawSurf *pGVar1;
+  code *pcVar2;
+  bool bVar3;
   bool bVar4;
-  bool bVar5;
-  XModel *pXVar6;
-  int iVar7;
+  XModel *pose;
+  int iVar5;
   int extraout_EAX;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
@@ -1773,9 +1822,9 @@ R_AddDObjSurfacesCamera
   uint extraout_EAX_04;
   uint extraout_EAX_05;
   uint extraout_EAX_06;
-  XSurface *pXVar8;
-  char *pcVar9;
-  uint uVar10;
+  XSurface *pXVar6;
+  char *pcVar7;
+  uint uVar8;
   uint extraout_EDX;
   uint extraout_EDX_00;
   uint extraout_EDX_01;
@@ -1783,272 +1832,277 @@ R_AddDObjSurfacesCamera
   uint extraout_EDX_03;
   uint extraout_EDX_04;
   uint extraout_EDX_05;
-  undefined1 uVar11;
-  float fVar12;
-  float fVar13;
-  undefined4 uVar14;
-  undefined4 uVar15;
-  float fVar16;
-  undefined4 uVar17;
+  undefined1 lodDistAutoGenerated;
+  float fVar9;
+  float fVar10;
+  undefined4 uVar11;
+  undefined4 uVar12;
+  float lodDist;
+  undefined4 uVar13;
   byte local_a1;
-  DObjAnimMat *local_78;
-  GfxDrawSurf local_6c;
-  int local_60;
-  r_global_permap_assets_t *local_5c;
-  XModel *local_58;
-  uint local_54;
-  int local_50;
-  uint local_4c;
-  int local_48;
-  GfxEntity *local_44;
-  int local_40;
-  uint local_3c;
-  int *local_38;
-  undefined4 local_34;
-  surfaceType_t local_30;
-  uint local_2c;
-  uint local_28;
-  uint local_24;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  uint local_14;
-  int *local_10;
-  undefined1 local_9;
-  int local_8;
+  uint customIndex;
+  bool infraredDraw;
+  uint surfId;
+  DObjAnimMat *boneMatrix;
+  int totalVertCount;
+  GfxDrawSurf drawSurf;
+  int totalTriCount;
+  r_global_permap_assets_t *material;
+  XModel *model;
+  uint subMatIndex;
+  uint surfSize;
+  uint gfxEntIndexToUse;
+  int skinnedCachedOffset;
+  GfxEntity *gfxEnt;
+  int lod;
+  uint depthHack;
+  int *modelSurf;
+  int isShadowReceiver;
+  surfaceType_t surfType;
+  uint region;
+  uint gfxEntIndex;
+  uint renderFxFlags;
+  uint numsurfs;
+  uint gfxEntIndex2;
+  uint modelIndex;
+  uint modelCount;
+  int *skinnedSurf;
+  bool iAmThePlayer;
+  int totalSurfCount;
   
-  local_34 = 0;
-  local_38 = (param_1->cull).skinnedSurfs.firstSurf;
-  if (local_38 != (int *)0x0) {
-    local_60 = 0;
-    local_8 = 0;
-    pDVar1 = param_1->obj;
-    if ((pDVar1 == (DObj *)0x0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x59f,0,
-                                 "%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+  isShadowReceiver = 0;
+  modelSurf = (sceneEnt->cull).skinnedSurfs.firstSurf;
+  if (modelSurf != (int *)0x0) {
+    totalTriCount = 0;
+    totalSurfCount = 0;
+    obj = sceneEnt->obj;
+    if ((obj == (DObj *)0x0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x59f,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    local_9 = DObjIsPlayerShadow(pDVar1);
-    if ((!(bool)local_9) || (rg.enablePlayerShadowFlag == false)) {
-      local_78 = DObjGetRotTransArray(pDVar1);
-      local_14 = DObjGetNumModels(pDVar1);
-      if ((7 < param_1->reflectionProbeIndex) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x5af,0
+    iAmThePlayer = DObjIsPlayerShadow(obj);
+    if ((!iAmThePlayer) || (rg.enablePlayerShadowFlag == false)) {
+      boneMatrix = DObjGetRotTransArray(obj);
+      modelCount = DObjGetNumModels(obj);
+      if ((7 < sceneEnt->reflectionProbeIndex) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x5af,0
                                    ,
                                    "sceneEnt->reflectionProbeIndex doesn\'t index 1 << MTL_SORT_ENVMAP_BITS\n\t%i not in [0, %i)"
-                                  ), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+                                  ), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
       if ((0x81 < gfxDrawMethod.emissiveTechType) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x5b2,0
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x5b2,0
                                    ,
                                    "gfxDrawMethod.emissiveTechType doesn\'t index TECHNIQUE_COUNT\n\t%i not in [0, %i)"
-                                  ), !bVar4)) {
-        pcVar3 = (code *)swi(3);
-        (*pcVar3)();
+                                  ), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        (*pcVar2)();
         return;
       }
-      local_4c = (uint)param_1->gfxEntIndex;
-      if (local_4c == 0) {
-        local_34 = 0;
-        local_3c = 0;
+      gfxEntIndexToUse = (uint)sceneEnt->gfxEntIndex;
+      if (gfxEntIndexToUse == 0) {
+        isShadowReceiver = 0;
+        depthHack = 0;
       }
       else {
-        local_44 = frontEndDataOut->gfxEnts + local_4c;
-        local_24 = local_44->renderFxFlags;
-        local_3c = (uint)((local_24 & 2) != 0);
+        gfxEnt = frontEndDataOut->gfxEnts + gfxEntIndexToUse;
+        renderFxFlags = gfxEnt->renderFxFlags;
+        depthHack = (uint)((renderFxFlags & 2) != 0);
       }
-      local_1c = (uint)param_1->gfxEntIndex2;
-      local_28 = local_4c;
-      for (local_18 = 0; local_18 < local_14; local_18 = local_18 + 1) {
-        if (param_1->altXModelIndex != '\0') {
-          if ((uint)param_1->altXModelIndex == local_18 + 1) {
-            local_4c = local_1c;
+      gfxEntIndex2 = (uint)sceneEnt->gfxEntIndex2;
+      gfxEntIndex = gfxEntIndexToUse;
+      for (modelIndex = 0; modelIndex < modelCount; modelIndex = modelIndex + 1) {
+        if (sceneEnt->altXModelIndex != '\0') {
+          if ((uint)sceneEnt->altXModelIndex == modelIndex + 1) {
+            gfxEntIndexToUse = gfxEntIndex2;
           }
           else {
-            local_4c = local_28;
+            gfxEntIndexToUse = gfxEntIndex;
           }
         }
-        local_40 = (int)(param_1->cull).lods[local_18];
-        if (local_40 < 0) {
-          pXVar6 = DObjGetModel(pDVar1,local_18);
-          iVar7 = XModelNumBones(pXVar6);
+        lod = (int)(sceneEnt->cull).lods[modelIndex];
+        if (lod < 0) {
+          pose = DObjGetModel(obj,modelIndex);
+          iVar5 = XModelNumBones(pose);
         }
         else {
-          local_58 = DObjGetModel(pDVar1,local_18);
-          if ((local_58 == (XModel *)0x0) &&
+          model = DObjGetModel(obj,modelIndex);
+          if ((model == (XModel *)0x0) &&
+             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
+                                       0x5e0,0,"%s"), !bVar3)) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
+            return;
+          }
+          numsurfs = XModelGetSurfCount(model,lod);
+          material = (r_global_permap_assets_t *)XModelGetSkins(model,lod);
+          bVar3 = false;
+          if ((gfxEntIndexToUse != 0) &&
+             ((frontEndDataOut->gfxEnts[gfxEntIndexToUse].renderFxFlags & 0x80) != 0)) {
+            bVar3 = true;
+          }
+          if ((material == (r_global_permap_assets_t *)0x0) &&
              (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
-                                       0x5e0,0,"%s"), !bVar4)) {
-            pcVar3 = (code *)swi(3);
-            (*pcVar3)();
+                                       0x5ee,0,"%s"), !bVar4)) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
             return;
           }
-          local_20 = XModelGetSurfCount(local_58,local_40);
-          local_5c = (r_global_permap_assets_t *)XModelGetSkins(local_58,local_40);
-          bVar4 = false;
-          if ((local_4c != 0) && ((frontEndDataOut->gfxEnts[local_4c].renderFxFlags & 0x80) != 0)) {
-            bVar4 = true;
-          }
-          if ((local_5c == (r_global_permap_assets_t *)0x0) &&
-             (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
-                                       0x5ee,0,"%s"), !bVar5)) {
-            pcVar3 = (code *)swi(3);
-            (*pcVar3)();
-            return;
-          }
-          for (local_54 = 0; local_54 < local_20; local_54 = local_54 + 1) {
-            if (bVar4) {
-              local_5c = (r_global_permap_assets_t *)&rgp.infraredWhite;
+          for (subMatIndex = 0; subMatIndex < numsurfs; subMatIndex = subMatIndex + 1) {
+            if (bVar3) {
+              material = (r_global_permap_assets_t *)&rgp.infraredWhite;
             }
-            local_10 = local_38;
-            local_48 = *local_38;
-            if (local_48 == -2) {
-              local_30 = SF_BEGIN_XMODEL;
-              local_50 = 0x38;
+            skinnedSurf = modelSurf;
+            skinnedCachedOffset = *modelSurf;
+            if (skinnedCachedOffset == -2) {
+              surfType = SF_BEGIN_XMODEL;
+              surfSize = 0x38;
 LAB_00a5ead3:
-              if ((local_5c->flameThrowerFXMaterial == (Material *)0x0) &&
-                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
-                                           ,0x60b,0,"%s"), !bVar5)) {
-                pcVar3 = (code *)swi(3);
-                (*pcVar3)();
+              if ((material->flameThrowerFXMaterial == (Material *)0x0) &&
+                 (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
+                                           ,0x60b,0,"%s"), !bVar4)) {
+                pcVar2 = (code *)swi(3);
+                (*pcVar2)();
                 return;
               }
               _aullshr();
-              uVar17 = 0;
-              uVar15 = 4;
-              uVar14 = 0;
+              uVar13 = 0;
+              uVar12 = 4;
+              uVar11 = 0;
               _allmul();
               if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) !=
-                   local_5c->flameThrowerFXMaterial) &&
-                 (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
-                                           ,0x60c,0,"%s"), !bVar5)) {
-                pcVar3 = (code *)swi(3);
-                (*pcVar3)();
+                   material->flameThrowerFXMaterial) &&
+                 (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
+                                           ,0x60c,0,"%s"), !bVar4)) {
+                pcVar2 = (code *)swi(3);
+                (*pcVar2)();
                 return;
               }
-              local_2c = (uint)local_5c->flameThrowerFXMaterial->cameraRegion;
-              if (local_2c != 3) {
-                if (param_5[local_2c] <= param_4[local_2c]) {
+              region = (uint)material->flameThrowerFXMaterial->cameraRegion;
+              if (region != 3) {
+                if (lastDrawSurfs[region] <= drawSurfs[region]) {
                   R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
                   break;
                 }
-                *(undefined2 *)((int)local_10 + 0xe) = (undefined2)local_4c;
-                *(undefined2 *)(local_10 + 4) = (undefined2)param_2;
-                *(undefined1 *)((int)local_10 + 0x12) = (undefined1)local_18;
-                uVar10 = (int)local_38 - (int)frontEndDataOut;
-                if (((uVar10 & 3) != 0) &&
-                   (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
-                                             ,0x634,0,"%s"), !bVar5)) {
-                  pcVar3 = (code *)swi(3);
-                  (*pcVar3)();
+                *(undefined2 *)((int)skinnedSurf + 0xe) = (undefined2)gfxEntIndexToUse;
+                *(undefined2 *)(skinnedSurf + 4) = (undefined2)lightingHandle;
+                *(undefined1 *)((int)skinnedSurf + 0x12) = (undefined1)modelIndex;
+                uVar8 = (int)modelSurf - (int)frontEndDataOut;
+                if (((uVar8 & 3) != 0) &&
+                   (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
+                                             ,0x634,0,"%s"), !bVar4)) {
+                  pcVar2 = (code *)swi(3);
+                  (*pcVar2)();
                   return;
                 }
-                uVar10 = uVar10 >> 2;
-                if ((0xffff < uVar10) &&
-                   (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
+                uVar8 = uVar8 >> 2;
+                if ((0xffff < uVar8) &&
+                   (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
                                              ,0x636,0,
                                              "surfId doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
-                                            ), !bVar5)) {
-                  pcVar3 = (code *)swi(3);
-                  (*pcVar3)(uVar14,uVar15,uVar17);
+                                            ), !bVar4)) {
+                  pcVar2 = (code *)swi(3);
+                  (*pcVar2)(uVar11,uVar12,uVar13);
                   return;
                 }
-                local_6c.packed._0_4_ =
-                     *(undefined4 *)&(local_5c->flameThrowerFXMaterial->info).drawSurf;
-                local_6c.packed._4_4_ =
-                     *(undefined4 *)((int)&(local_5c->flameThrowerFXMaterial->info).drawSurf + 4);
-                if ((local_4c != 0) &&
-                   (0.0 < frontEndDataOut->gfxEnts[local_4c].destructibleBurnAmount)) {
-                  local_6c.packed._4_4_ = local_6c.packed._4_4_ & 0xfe7fffff | 0x1000000;
+                drawSurf.packed._0_4_ =
+                     *(undefined4 *)&(material->flameThrowerFXMaterial->info).drawSurf;
+                drawSurf.packed._4_4_ =
+                     *(undefined4 *)((int)&(material->flameThrowerFXMaterial->info).drawSurf + 4);
+                if ((gfxEntIndexToUse != 0) &&
+                   (0.0 < frontEndDataOut->gfxEnts[gfxEntIndexToUse].destructibleBurnAmount)) {
+                  drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0xfe7fffff | 0x1000000;
                 }
                 _aullshr();
                 _allshl();
-                local_6c.packed._0_4_ = local_6c.packed._0_4_ | extraout_EAX_00;
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ & 0x3ffffff | extraout_EDX;
+                drawSurf.packed._0_4_ = drawSurf.packed._0_4_ | extraout_EAX_00;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0x3ffffff | extraout_EDX;
                 _allshl();
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ & 0xff87ffff | extraout_EDX_00;
-                local_6c.packed._0_4_ =
-                     (local_6c.packed._0_4_ | extraout_EAX_01) & 0xffff0000 | uVar10 & 0xffff;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0xff87ffff | extraout_EDX_00;
+                drawSurf.packed._0_4_ =
+                     (drawSurf.packed._0_4_ | extraout_EAX_01) & 0xffff0000 | uVar8 & 0xffff;
                 _allshl();
-                local_6c.packed._0_4_ = local_6c.packed._0_4_ & 0xf1ffffff | extraout_EAX_02;
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ | extraout_EDX_01;
+                drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xf1ffffff | extraout_EAX_02;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_01;
                 _allshl();
-                local_6c.packed._0_4_ = local_6c.packed._0_4_ & 0xfe0fffff | extraout_EAX_03;
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ | extraout_EDX_02;
+                drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xfe0fffff | extraout_EAX_03;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_02;
                 _allshl();
-                local_6c.packed._0_4_ = local_6c.packed._0_4_ | extraout_EAX_04;
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ & 0xfff807ff | extraout_EDX_03;
-                if (param_7) {
-                  local_a1 = param_1->entShaderConstantSetIndexExtraCam;
+                drawSurf.packed._0_4_ = drawSurf.packed._0_4_ | extraout_EAX_04;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ & 0xfff807ff | extraout_EDX_03;
+                if (isMissileCamera) {
+                  local_a1 = sceneEnt->entShaderConstantSetIndexExtraCam;
                 }
                 else {
-                  local_a1 = param_1->entShaderConstantSetIndex;
+                  local_a1 = sceneEnt->entShaderConstantSetIndex;
                 }
-                R_XModelDrawSurfEncodeShaderConstantSet(&local_6c,(uint)local_a1);
+                R_XModelDrawSurfEncodeShaderConstantSet(&drawSurf,(uint)local_a1);
                 _allshl();
-                local_6c.packed._0_4_ = local_6c.packed._0_4_ & 0xdfffffff | extraout_EAX_05;
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ | extraout_EDX_04;
+                drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xdfffffff | extraout_EAX_05;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_04;
                 _allshl();
-                local_6c.packed._0_4_ = local_6c.packed._0_4_ & 0xbfffffff | extraout_EAX_06;
-                local_6c.packed._4_4_ = local_6c.packed._4_4_ | extraout_EDX_05;
-                pGVar2 = param_4[local_2c];
-                *(undefined4 *)pGVar2 = local_6c.packed._0_4_;
-                *(undefined4 *)((int)pGVar2 + 4) = local_6c.packed._4_4_;
-                param_4[local_2c] = param_4[local_2c] + 1;
+                drawSurf.packed._0_4_ = drawSurf.packed._0_4_ & 0xbfffffff | extraout_EAX_06;
+                drawSurf.packed._4_4_ = drawSurf.packed._4_4_ | extraout_EDX_05;
+                pGVar1 = drawSurfs[region];
+                *(undefined4 *)pGVar1 = drawSurf.packed._0_4_;
+                *(undefined4 *)((int)pGVar1 + 4) = drawSurf.packed._4_4_;
+                drawSurfs[region] = drawSurfs[region] + 1;
                 if ((r_showTriCounts->current).enabled == false) {
                   if ((r_showVertCounts->current).enabled != false) {
-                    pXVar8 = R_GetXSurface(local_38,local_30);
-                    XSurfaceGetNumVerts(pXVar8);
+                    pXVar6 = R_GetXSurface(modelSurf,surfType);
+                    XSurfaceGetNumVerts(pXVar6);
                   }
                 }
                 else {
-                  pXVar8 = R_GetXSurface(local_38,local_30);
-                  iVar7 = XSurfaceGetNumTris(pXVar8);
-                  local_60 = iVar7 + local_60;
+                  pXVar6 = R_GetXSurface(modelSurf,surfType);
+                  iVar5 = XSurfaceGetNumTris(pXVar6);
+                  totalTriCount = iVar5 + totalTriCount;
                 }
               }
             }
             else {
-              if (local_48 != -3) {
-                local_30 = SF_XMODEL_SKINNED;
-                local_50 = 0x18;
+              if (skinnedCachedOffset != -3) {
+                surfType = SF_XMODEL_SKINNED;
+                surfSize = 0x18;
                 goto LAB_00a5ead3;
               }
-              local_50 = 4;
+              surfSize = 4;
             }
-            local_5c = (r_global_permap_assets_t *)&local_5c->electrifiedFXMaterial;
-            local_38 = (int *)((int)local_38 + local_50);
+            material = (r_global_permap_assets_t *)&material->electrifiedFXMaterial;
+            modelSurf = (int *)((int)modelSurf + surfSize);
           }
-          uVar11 = (local_58->flags & 0x80000U) != 0;
-          fVar16 = local_58->lodInfo[local_40].dist;
-          fVar12 = Vec3Distance(local_78->trans,rg.lodParms.origin);
-          fVar13 = I_fres((param_1->placement).scale);
-          ShodLodInfo(local_78->trans,local_40,(int)local_58->numLods,fVar13 * fVar12,fVar16,
-                      (bool)uVar11);
-          iVar7 = XModelNumBones(local_58);
-          local_8 = local_8 + local_20;
+          lodDistAutoGenerated = (model->flags & 0x80000U) != 0;
+          lodDist = model->lodInfo[lod].dist;
+          fVar9 = Vec3Distance(boneMatrix->trans,rg.lodParms.origin);
+          fVar10 = I_fres((sceneEnt->placement).scale);
+          ShodLodInfo(boneMatrix->trans,lod,(int)model->numLods,fVar10 * fVar9,lodDist,
+                      (bool)lodDistAutoGenerated);
+          iVar5 = XModelNumBones(model);
+          totalSurfCount = totalSurfCount + numsurfs;
         }
-        local_78 = local_78 + iVar7;
+        boneMatrix = boneMatrix + iVar5;
       }
       if ((r_showTriCounts->current).enabled == false) {
         if ((r_showVertCounts->current).enabled == false) {
           if ((r_showSurfCounts->current).enabled != false) {
-            pcVar9 = va("%i");
-            R_AddStaticModelDebugString((param_1->placement).base.origin,pcVar9);
+            pcVar7 = va("%i");
+            R_AddStaticModelDebugString((sceneEnt->placement).base.origin,pcVar7);
           }
         }
         else {
-          pcVar9 = va("%i");
-          R_AddStaticModelDebugString((param_1->placement).base.origin,pcVar9);
+          pcVar7 = va("%i");
+          R_AddStaticModelDebugString((sceneEnt->placement).base.origin,pcVar7);
         }
       }
       else {
-        pcVar9 = va("%i");
-        R_AddStaticModelDebugString((param_1->placement).base.origin,pcVar9);
+        pcVar7 = va("%i");
+        R_AddStaticModelDebugString((sceneEnt->placement).base.origin,pcVar7);
       }
     }
   }
@@ -2058,201 +2112,204 @@ LAB_00a5ead3:
 
 // 00A5F020  R_AddDObjSurfaces  (gfx_d3d/r_scene.cpp:1663)
 
+/* WARNING: Enum "surfaceType_t": Some values do not have unique names */
+
 GfxDrawSurf * __cdecl
-R_AddDObjSurfaces(GfxSceneEntity *param_1,uchar param_2,GfxDrawSurf *param_3,GfxDrawSurf *param_4)
+R_AddDObjSurfaces(GfxSceneEntity *sceneEnt,uchar techType,GfxDrawSurf *drawSurf,
+                 GfxDrawSurf *lastDrawSurf)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  DObj *pDVar4;
-  GfxDrawSurf *pGVar5;
-  XModel *pXVar6;
+  int localClientNum;
+  DObj *obj;
+  GfxDrawSurf *pGVar3;
+  XModel *model;
   int extraout_EAX;
-  MaterialTechnique *pMVar7;
-  uint uVar8;
+  MaterialTechnique *pMVar4;
+  uint uVar5;
   uint extraout_EAX_00;
   uint extraout_EAX_01;
   uint extraout_EAX_02;
   uint extraout_EDX;
   uint extraout_EDX_00;
   uint extraout_EDX_01;
-  undefined4 uVar9;
-  undefined4 uVar10;
-  undefined4 uVar11;
-  char local_71;
-  Material **local_54;
-  uint local_4c;
-  int local_48;
-  GfxDrawSurf local_44;
-  int local_38;
-  char local_31;
-  GfxEntity *local_30;
-  int local_2c;
-  uint local_28;
-  int *local_24;
-  undefined4 local_20;
-  uint local_1c;
-  uint local_18;
-  uint local_14;
-  uint local_10;
-  uint local_c;
-  int *local_8;
+  undefined4 uVar6;
+  undefined4 uVar7;
+  undefined4 uVar8;
+  bool local_71;
+  uint customIndex;
+  uint surfId;
+  Material **material;
+  uint subMatIndex;
+  uint surfSize;
+  GfxDrawSurf newDrawSurf;
+  int skinnedCachedOffset;
+  bool isShadowMapBuildTech;
+  GfxEntity *gfxEnt;
+  int lod;
+  uint depthHack;
+  int *modelSurf;
+  surfaceType_t surfType;
+  uint gfxEntIndex;
+  uint renderFxFlags;
+  uint numsurfs;
+  uint modelIndex;
+  uint modelCount;
+  int *skinnedSurf;
   
-  local_24 = (param_1->cull).skinnedSurfs.firstSurf;
-  if (local_24 != (int *)0x0) {
-    iVar3 = XModelNumBones((XModel *)(param_1->info).pose);
-    pDVar4 = Com_GetClientDObj((uint)param_1->entnum,iVar3);
-    if ((pDVar4 == (DObj *)0x0) &&
+  modelSurf = (sceneEnt->cull).skinnedSurfs.firstSurf;
+  if (modelSurf != (int *)0x0) {
+    localClientNum = XModelNumBones((XModel *)(sceneEnt->info).pose);
+    obj = Com_GetClientDObj((uint)sceneEnt->entnum,localClientNum);
+    if ((obj == (DObj *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x69f,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
-      pGVar5 = (GfxDrawSurf *)(*pcVar1)();
-      return pGVar5;
+      pGVar3 = (GfxDrawSurf *)(*pcVar1)();
+      return pGVar3;
     }
-    local_c = DObjGetNumModels(pDVar4);
-    if ((param_2 == '\x03') || (param_2 == '\x02')) {
-      local_71 = '\x01';
-    }
-    else {
-      local_71 = '\0';
-    }
-    local_31 = local_71;
-    local_1c = (uint)param_1->gfxEntIndex;
-    if (local_1c == 0) {
-      local_28 = 0;
+    modelCount = DObjGetNumModels(obj);
+    if ((techType == '\x03') || (techType == '\x02')) {
+      local_71 = true;
     }
     else {
-      local_30 = frontEndDataOut->gfxEnts + local_1c;
-      local_18 = local_30->renderFxFlags;
-      local_28 = (uint)((local_18 & 2) != 0);
+      local_71 = false;
     }
-    for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-      local_2c = (int)(param_1->cull).lods[local_10];
-      if (-1 < local_2c) {
-        pXVar6 = DObjGetModel(pDVar4,local_10);
-        if ((pXVar6 == (XModel *)0x0) &&
+    isShadowMapBuildTech = local_71;
+    gfxEntIndex = (uint)sceneEnt->gfxEntIndex;
+    if (gfxEntIndex == 0) {
+      depthHack = 0;
+    }
+    else {
+      gfxEnt = frontEndDataOut->gfxEnts + gfxEntIndex;
+      renderFxFlags = gfxEnt->renderFxFlags;
+      depthHack = (uint)((renderFxFlags & 2) != 0);
+    }
+    for (modelIndex = 0; modelIndex < modelCount; modelIndex = modelIndex + 1) {
+      lod = (int)(sceneEnt->cull).lods[modelIndex];
+      if (-1 < lod) {
+        model = DObjGetModel(obj,modelIndex);
+        if ((model == (XModel *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x6b8
                                      ,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
-          pGVar5 = (GfxDrawSurf *)(*pcVar1)();
-          return pGVar5;
+          pGVar3 = (GfxDrawSurf *)(*pcVar1)();
+          return pGVar3;
         }
-        local_14 = XModelGetSurfCount(pXVar6,local_2c);
-        local_54 = XModelGetSkins(pXVar6,local_2c);
-        if ((local_54 == (Material **)0x0) &&
+        numsurfs = XModelGetSurfCount(model,lod);
+        material = XModelGetSkins(model,lod);
+        if ((material == (Material **)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x6bc
                                      ,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
-          pGVar5 = (GfxDrawSurf *)(*pcVar1)();
-          return pGVar5;
+          pGVar3 = (GfxDrawSurf *)(*pcVar1)();
+          return pGVar3;
         }
-        for (local_4c = 0; local_4c < local_14; local_4c = local_4c + 1) {
-          local_8 = local_24;
-          local_38 = *local_24;
-          if (local_38 == -2) {
-            local_20 = 7;
-            local_48 = 0x38;
+        for (subMatIndex = 0; subMatIndex < numsurfs; subMatIndex = subMatIndex + 1) {
+          skinnedSurf = modelSurf;
+          skinnedCachedOffset = *modelSurf;
+          if (skinnedCachedOffset == -2) {
+            surfType = SF_BEGIN_XMODEL;
+            surfSize = 0x38;
 LAB_00a5f238:
-            if ((*local_54 == (Material *)0x0) &&
+            if ((*material == (Material *)0x0) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                          0x6d5,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
-              pGVar5 = (GfxDrawSurf *)(*pcVar1)();
-              return pGVar5;
+              pGVar3 = (GfxDrawSurf *)(*pcVar1)();
+              return pGVar3;
             }
             _aullshr();
-            uVar11 = 0;
-            uVar10 = 4;
-            uVar9 = 0;
+            uVar8 = 0;
+            uVar7 = 4;
+            uVar6 = 0;
             _allmul();
-            if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != *local_54) &&
+            if ((*(Material **)((int)rgp.sortedMaterials + extraout_EAX) != *material) &&
                (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                          0x6d6,0,"%s"), !bVar2)) {
               pcVar1 = (code *)swi(3);
-              pGVar5 = (GfxDrawSurf *)(*pcVar1)();
-              return pGVar5;
+              pGVar3 = (GfxDrawSurf *)(*pcVar1)();
+              return pGVar3;
             }
-            pMVar7 = Material_GetTechnique(*local_54,param_2);
-            if ((pMVar7 != (MaterialTechnique *)0x0) &&
-               ((local_31 == '\0' || ((((*local_54)->info).gameFlags & 0x40) != 0)))) {
-              if (param_4 <= param_3) {
+            pMVar4 = Material_GetTechnique(*material,techType);
+            if ((pMVar4 != (MaterialTechnique *)0x0) &&
+               ((isShadowMapBuildTech == false || ((((*material)->info).gameFlags & 0x40) != 0)))) {
+              if (lastDrawSurf <= drawSurf) {
                 R_WarnOncePerFrame(R_WARN_MAX_SCENE_DRAWSURFS);
                 break;
               }
-              local_44.packed._0_4_ = *(undefined4 *)&((*local_54)->info).drawSurf;
-              local_44.packed._4_4_ = *(uint *)((int)&((*local_54)->info).drawSurf + 4);
-              if ((param_1->gfxEntIndex != 0) &&
-                 (0.0 < frontEndDataOut->gfxEnts[param_1->gfxEntIndex].destructibleBurnAmount)) {
-                local_44.packed._4_4_ = local_44.packed._4_4_ & 0xfe7fffff | 0x1000000;
+              newDrawSurf.packed._0_4_ = *(undefined4 *)&((*material)->info).drawSurf;
+              newDrawSurf.packed._4_4_ = *(uint *)((int)&((*material)->info).drawSurf + 4);
+              if ((sceneEnt->gfxEntIndex != 0) &&
+                 (0.0 < frontEndDataOut->gfxEnts[sceneEnt->gfxEntIndex].destructibleBurnAmount)) {
+                newDrawSurf.packed._4_4_ = newDrawSurf.packed._4_4_ & 0xfe7fffff | 0x1000000;
               }
-              uVar8 = (int)local_24 - (int)frontEndDataOut;
-              if (((uVar8 & 3) != 0) &&
+              uVar5 = (int)modelSurf - (int)frontEndDataOut;
+              if (((uVar5 & 3) != 0) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
                                            ,0x6f3,0,"%s"), !bVar2)) {
                 pcVar1 = (code *)swi(3);
-                pGVar5 = (GfxDrawSurf *)(*pcVar1)(uVar9,uVar10,uVar11);
-                return pGVar5;
+                pGVar3 = (GfxDrawSurf *)(*pcVar1)(uVar6,uVar7,uVar8);
+                return pGVar3;
               }
-              uVar8 = uVar8 >> 2;
-              if ((0xffff < uVar8) &&
+              uVar5 = uVar5 >> 2;
+              if ((0xffff < uVar5) &&
                  (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp"
                                            ,0x6f5,0,
                                            "surfId doesn\'t index 1 << MTL_SORT_OBJECT_ID_BITS\n\t%i not in [0, %i)"
                                           ), !bVar2)) {
                 pcVar1 = (code *)swi(3);
-                pGVar5 = (GfxDrawSurf *)(*pcVar1)();
-                return pGVar5;
+                pGVar3 = (GfxDrawSurf *)(*pcVar1)();
+                return pGVar3;
               }
               _aullshr();
               _allshl();
-              local_44.packed._0_4_ = local_44.packed._0_4_ | extraout_EAX_00;
-              local_44.packed._4_4_ = local_44.packed._4_4_ & 0x3ffffff | extraout_EDX;
+              newDrawSurf.packed._0_4_ = newDrawSurf.packed._0_4_ | extraout_EAX_00;
+              newDrawSurf.packed._4_4_ = newDrawSurf.packed._4_4_ & 0x3ffffff | extraout_EDX;
               _allshl();
-              local_44.packed._4_4_ = local_44.packed._4_4_ & 0xff87ffff | extraout_EDX_00;
-              local_44.packed._0_4_ =
-                   (local_44.packed._0_4_ | extraout_EAX_01) & 0xffff0000 | uVar8 & 0xffff;
+              newDrawSurf.packed._4_4_ = newDrawSurf.packed._4_4_ & 0xff87ffff | extraout_EDX_00;
+              newDrawSurf.packed._0_4_ =
+                   (newDrawSurf.packed._0_4_ | extraout_EAX_01) & 0xffff0000 | uVar5 & 0xffff;
               _allshl();
-              local_44.packed._0_4_ = local_44.packed._0_4_ & 0xfe0fffff | extraout_EAX_02;
-              local_44.packed._4_4_ = local_44.packed._4_4_ | extraout_EDX_01;
+              newDrawSurf.packed._0_4_ = newDrawSurf.packed._0_4_ & 0xfe0fffff | extraout_EAX_02;
+              newDrawSurf.packed._4_4_ = newDrawSurf.packed._4_4_ | extraout_EDX_01;
               R_XModelDrawSurfEncodeShaderConstantSet
-                        (&local_44,(uint)param_1->entShaderConstantSetIndex);
-              *(undefined4 *)param_3 = local_44.packed._0_4_;
-              *(undefined4 *)((int)param_3 + 4) = local_44.packed._4_4_;
-              param_3 = param_3 + 1;
+                        (&newDrawSurf,(uint)sceneEnt->entShaderConstantSetIndex);
+              *(undefined4 *)drawSurf = newDrawSurf.packed._0_4_;
+              *(undefined4 *)((int)drawSurf + 4) = newDrawSurf.packed._4_4_;
+              drawSurf = drawSurf + 1;
             }
           }
           else {
-            if (local_38 != -3) {
-              local_20 = 9;
-              local_48 = 0x18;
+            if (skinnedCachedOffset != -3) {
+              surfType = SF_XMODEL_SKINNED;
+              surfSize = 0x18;
               goto LAB_00a5f238;
             }
-            local_48 = 4;
+            surfSize = 4;
           }
-          local_54 = local_54 + 1;
-          local_24 = (int *)((int)local_24 + local_48);
+          material = material + 1;
+          modelSurf = (int *)((int)modelSurf + surfSize);
         }
       }
     }
   }
-  return param_3;
+  return drawSurf;
 }
 
 
 // 00A5F800  R_SetInputCodeConstant  (gfx_d3d/r_state.h:1732)
 
 void __cdecl
-R_SetInputCodeConstant
-          (GfxCmdBufInput *param_1,uint param_2,float param_3,float param_4,float param_5,
-          float param_6)
+R_SetInputCodeConstant(GfxCmdBufInput *input,uint constant,float x,float y,float z,float w)
 
 {
   code *pcVar1;
   bool bVar2;
   float (*pafVar3) [4];
   
-  if (0xc4 < param_2) {
+  if (0xc4 < constant) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x6c5,0,
                              "constant doesn\'t index CONST_SRC_CODE_COUNT_FLOAT4\n\t%i not in [0, %i)"
                             );
@@ -2262,7 +2319,7 @@ R_SetInputCodeConstant
       return;
     }
   }
-  if (*(int *)(&s_codeConstUpdateFreq + param_2 * 4) != 2) {
+  if (*(int *)(&s_codeConstUpdateFreq + constant * 4) != 2) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x6c7,0,
                              "%s\n\t(constant) = %i");
     if (!bVar2) {
@@ -2271,7 +2328,7 @@ R_SetInputCodeConstant
       return;
     }
   }
-  if (param_2 < 0x2f) {
+  if (constant < 0x2f) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x6c9,0,
                              "%s\n\t(constant) = %i");
     if (!bVar2) {
@@ -2280,25 +2337,25 @@ R_SetInputCodeConstant
       return;
     }
   }
-  pafVar3 = param_1->consts + param_2;
-  (*pafVar3)[0] = param_3;
-  (*pafVar3)[1] = param_4;
-  (*pafVar3)[2] = param_5;
-  (*pafVar3)[3] = param_6;
+  pafVar3 = input->consts + constant;
+  (*pafVar3)[0] = x;
+  (*pafVar3)[1] = y;
+  (*pafVar3)[2] = z;
+  (*pafVar3)[3] = w;
   return;
 }
 
 
 // 00A5F8F0  R_SetInputCodeConstantFromVec4  (gfx_d3d/r_state.h:1743)
 
-void __cdecl R_SetInputCodeConstantFromVec4(GfxCmdBufInput *param_1,uint param_2,float *param_3)
+void __cdecl R_SetInputCodeConstantFromVec4(GfxCmdBufInput *input,uint constant,float *value)
 
 {
   code *pcVar1;
   bool bVar2;
   float (*pafVar3) [4];
   
-  if (0xc4 < param_2) {
+  if (0xc4 < constant) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x6d0,0,
                              "constant doesn\'t index CONST_SRC_CODE_COUNT_FLOAT4\n\t%i not in [0, %i)"
                             );
@@ -2308,7 +2365,7 @@ void __cdecl R_SetInputCodeConstantFromVec4(GfxCmdBufInput *param_1,uint param_2
       return;
     }
   }
-  if (*(int *)(&s_codeConstUpdateFreq + param_2 * 4) != 2) {
+  if (*(int *)(&s_codeConstUpdateFreq + constant * 4) != 2) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x6d2,0,
                              "%s\n\t(constant) = %i");
     if (!bVar2) {
@@ -2317,7 +2374,7 @@ void __cdecl R_SetInputCodeConstantFromVec4(GfxCmdBufInput *param_1,uint param_2
       return;
     }
   }
-  if (param_2 < 0x2f) {
+  if (constant < 0x2f) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x6d4,0,
                              "%s\n\t(constant) = %i");
     if (!bVar2) {
@@ -2326,24 +2383,25 @@ void __cdecl R_SetInputCodeConstantFromVec4(GfxCmdBufInput *param_1,uint param_2
       return;
     }
   }
-  pafVar3 = param_1->consts + param_2;
-  (*pafVar3)[0] = *param_3;
-  (*pafVar3)[1] = param_3[1];
-  (*pafVar3)[2] = param_3[2];
-  (*pafVar3)[3] = param_3[3];
+  pafVar3 = input->consts + constant;
+  (*pafVar3)[0] = *value;
+  (*pafVar3)[1] = value[1];
+  (*pafVar3)[2] = value[2];
+  (*pafVar3)[3] = value[3];
   return;
 }
 
 
 // 00A67DF0  R_SetInputCodeImageSamplerState  (gfx_d3d/r_state.h:1831)
 
-void __cdecl R_SetInputCodeImageSamplerState(GfxCmdBufInput *param_1,uint param_2,uchar param_3)
+void __cdecl
+R_SetInputCodeImageSamplerState(GfxCmdBufInput *input,uint codeTexture,uchar samplerState)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0x2a < param_2) {
+  if (0x2a < codeTexture) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x728,0,
                              "codeTexture doesn\'t index TEXTURE_SRC_CODE_COUNT\n\t%i not in [0, %i)"
                             );
@@ -2353,7 +2411,7 @@ void __cdecl R_SetInputCodeImageSamplerState(GfxCmdBufInput *param_1,uint param_
       return;
     }
   }
-  if ((param_3 & 7) == 0) {
+  if ((samplerState & 7) == 0) {
     va("R_SetCodeImageSamplerState %d %d");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x729,0,
                              "%s\n\t%s");
@@ -2363,28 +2421,28 @@ void __cdecl R_SetInputCodeImageSamplerState(GfxCmdBufInput *param_1,uint param_
       return;
     }
   }
-  *(uchar *)((int)param_1->codeImageRenderTargetControl + param_2 + 4) = param_3;
+  *(uchar *)((int)input->codeImageRenderTargetControl + codeTexture + 4) = samplerState;
   return;
 }
 
 
 // 00A64BC0  R_SetSceneComposition  (gfx_d3d/r_scene.cpp:2621)
 
-void __cdecl R_SetSceneComposition(GfxViewInfo *param_1,GfxSceneParms *param_2,bool param_3)
+void __cdecl R_SetSceneComposition(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms,bool extraCam)
 
 {
-  *(undefined1 *)((int)&(param_1->sceneComposition).additionalPostFX + 1) = 0x14;
-  *(undefined1 *)((int)&(param_1->sceneComposition).additionalPostFX + 2) = 0x13;
-  *(undefined1 *)((int)&(param_1->sceneComposition).additionalPostFX + 3) = 2;
-  (param_1->bloom).bloomTintScale[2] = 0.0;
-  *(undefined1 *)&(param_1->sceneComposition).additionalPostFX = 0x16;
-  if (param_3) {
-    *(undefined1 *)&(param_1->sceneComposition).renderingMode = 0x16;
-    *(undefined1 *)((int)&(param_1->sceneComposition).renderingMode + 1) = 0x16;
+  *(undefined1 *)((int)&(viewInfo->sceneComposition).additionalPostFX + 1) = 0x14;
+  *(undefined1 *)((int)&(viewInfo->sceneComposition).additionalPostFX + 2) = 0x13;
+  *(undefined1 *)((int)&(viewInfo->sceneComposition).additionalPostFX + 3) = 2;
+  (viewInfo->bloom).bloomTintScale[2] = 0.0;
+  *(undefined1 *)&(viewInfo->sceneComposition).additionalPostFX = 0x16;
+  if (extraCam) {
+    *(undefined1 *)&(viewInfo->sceneComposition).renderingMode = 0x16;
+    *(undefined1 *)((int)&(viewInfo->sceneComposition).renderingMode + 1) = 0x16;
   }
   else {
-    *(undefined1 *)&(param_1->sceneComposition).renderingMode = 3;
-    *(undefined1 *)((int)&(param_1->sceneComposition).renderingMode + 1) = 3;
+    *(undefined1 *)&(viewInfo->sceneComposition).renderingMode = 3;
+    *(undefined1 *)((int)&(viewInfo->sceneComposition).renderingMode + 1) = 3;
   }
   return;
 }
@@ -2392,13 +2450,16 @@ void __cdecl R_SetSceneComposition(GfxViewInfo *param_1,GfxSceneParms *param_2,b
 
 // 00A62530  R_CheckShadowMapVolumes  (gfx_d3d/r_scene.cpp:2923)
 
-void __cdecl R_CheckShadowMapVolumes(float *param_1)
+void __cdecl R_CheckShadowMapVolumes(float *position)
 
 {
   uint uVar1;
-  uint local_1c;
-  uint local_10;
-  uint local_c;
+  uint j;
+  uint control;
+  uint planeCount;
+  uint i;
+  uint planeIndex;
+  float dot;
   
   if ((sm_sunShadowSmall->current).enabled == false) {
     Dvar_SetBoolIfChanged(sm_sunShadowSmallEnable,false);
@@ -2409,13 +2470,13 @@ void __cdecl R_CheckShadowMapVolumes(float *param_1)
   Dvar_SetBoolIfChanged(sm_sunEnable,true);
   Dvar_SetBoolIfChanged(sm_spotEnable,true);
   if ((rgp.world)->shadowMapVolumeCount != 0) {
-    local_10 = 0;
+    i = 0;
     do {
-      uVar1 = (rgp.world)->shadowMapVolumes[local_10].control;
-      local_c = uVar1 & 0xffff;
-      local_1c = 0;
+      uVar1 = (rgp.world)->shadowMapVolumes[i].control;
+      planeIndex = uVar1 & 0xffff;
+      j = 0;
       while( true ) {
-        if ((uVar1 >> 0x10 & 0xff) + 1 <= local_1c) {
+        if ((uVar1 >> 0x10 & 0xff) + 1 <= j) {
           if ((uVar1 & 0x1000000) != 0) {
             Dvar_SetBoolIfChanged(sm_sunEnable,false);
           }
@@ -2428,15 +2489,15 @@ void __cdecl R_CheckShadowMapVolumes(float *param_1)
           Dvar_SetBoolIfChanged(sm_spotEnable,false);
           return;
         }
-        if ((rgp.world)->shadowMapVolumePlanes[local_c].plane[2] * param_1[2] +
-            (rgp.world)->shadowMapVolumePlanes[local_c].plane[1] * param_1[1] +
-            (rgp.world)->shadowMapVolumePlanes[local_c].plane[0] * *param_1 +
-            (rgp.world)->shadowMapVolumePlanes[local_c].plane[3] < 0.0) break;
-        local_c = local_c + 1;
-        local_1c = local_1c + 1;
+        if ((rgp.world)->shadowMapVolumePlanes[planeIndex].plane[2] * position[2] +
+            (rgp.world)->shadowMapVolumePlanes[planeIndex].plane[1] * position[1] +
+            (rgp.world)->shadowMapVolumePlanes[planeIndex].plane[0] * *position +
+            (rgp.world)->shadowMapVolumePlanes[planeIndex].plane[3] < 0.0) break;
+        planeIndex = planeIndex + 1;
+        j = j + 1;
       }
-      local_10 = local_10 + 1;
-    } while (local_10 < (rgp.world)->shadowMapVolumeCount);
+      i = i + 1;
+    } while (i < (rgp.world)->shadowMapVolumeCount);
   }
   return;
 }
@@ -2444,39 +2505,42 @@ void __cdecl R_CheckShadowMapVolumes(float *param_1)
 
 // 00A62A40  R_CheckExposureVolumes  (gfx_d3d/r_scene.cpp:2983)
 
-int __cdecl R_CheckExposureVolumes(float *param_1,float *param_2)
+int __cdecl R_CheckExposureVolumes(float *position,float *feather)
 
 {
   uint uVar1;
   float local_20;
-  uint local_1c;
-  uint local_10;
-  uint local_c;
+  uint j;
+  uint control;
+  uint planeCount;
+  uint i;
+  uint planeIndex;
+  float dot;
   
   if ((rgp.world)->exposureVolumeCount != 0) {
-    local_10 = 0;
+    i = 0;
     do {
-      uVar1 = (rgp.world)->exposureVolumes[local_10].control;
-      local_c = uVar1 & 0xffff;
-      local_1c = 0;
+      uVar1 = (rgp.world)->exposureVolumes[i].control;
+      planeIndex = uVar1 & 0xffff;
+      j = 0;
       while( true ) {
-        if ((uVar1 >> 0x10 & 0xff) + 1 <= local_1c) {
-          return local_10;
+        if ((uVar1 >> 0x10 & 0xff) + 1 <= j) {
+          return i;
         }
-        local_20 = (rgp.world)->exposureVolumePlanes[local_c].plane[2] * param_1[2] +
-                   (rgp.world)->exposureVolumePlanes[local_c].plane[1] * param_1[1] +
-                   (rgp.world)->exposureVolumePlanes[local_c].plane[0] * *param_1 +
-                   (rgp.world)->exposureVolumePlanes[local_c].plane[3];
+        local_20 = (rgp.world)->exposureVolumePlanes[planeIndex].plane[2] * position[2] +
+                   (rgp.world)->exposureVolumePlanes[planeIndex].plane[1] * position[1] +
+                   (rgp.world)->exposureVolumePlanes[planeIndex].plane[0] * *position +
+                   (rgp.world)->exposureVolumePlanes[planeIndex].plane[3];
         if (local_20 < 0.0) break;
-        if (*param_2 <= local_20 && local_20 != *param_2) {
-          local_20 = *param_2;
+        if (*feather <= local_20 && local_20 != *feather) {
+          local_20 = *feather;
         }
-        *param_2 = local_20;
-        local_c = local_c + 1;
-        local_1c = local_1c + 1;
+        *feather = local_20;
+        planeIndex = planeIndex + 1;
+        j = j + 1;
       }
-      local_10 = local_10 + 1;
-    } while (local_10 < (rgp.world)->exposureVolumeCount);
+      i = i + 1;
+    } while (i < (rgp.world)->exposureVolumeCount);
   }
   return -1;
 }
@@ -2484,7 +2548,7 @@ int __cdecl R_CheckExposureVolumes(float *param_1,float *param_2)
 
 // 00A62730  R_UpdateExposureValue  (gfx_d3d/r_scene.cpp:3026)
 
-void __cdecl R_UpdateExposureValue(refdef_s *param_1)
+void __cdecl R_UpdateExposureValue(refdef_s *refdef)
 
 {
   int iVar1;
@@ -2492,63 +2556,65 @@ void __cdecl R_UpdateExposureValue(refdef_s *param_1)
   float local_28;
   float local_24;
   float local_20;
-  float local_1c;
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
+  float lerpSpeed;
+  float lerpBaseDecrease;
+  float feather;
+  float targetExposure;
+  float lerpBaseIncrease;
+  int exposureId;
   
-  local_14 = 50.0;
-  iVar1 = R_CheckExposureVolumes(param_1->vieworg,&local_14);
+  feather = 50.0;
+  iVar1 = R_CheckExposureVolumes(refdef->vieworg,&feather);
   if (iVar1 == -1) {
-    local_10 = ((rgp.world)->sunParse).sunSettings[0].exposure;
-    local_c = 15.0;
-    local_18 = 20.0;
+    targetExposure = ((rgp.world)->sunParse).sunSettings[0].exposure;
+    lerpBaseIncrease = 15.0;
+    lerpBaseDecrease = 20.0;
   }
   else {
     if ((rgp.world)->exposureVolumes[iVar1].exposure == -1.0) {
-      local_10 = exposureSettings.exposureValues
-                 [(rgp.world)->exposureVolumes[iVar1].control >> 0x18].blackPoint[3];
+      targetExposure =
+           exposureSettings.exposureValues[(rgp.world)->exposureVolumes[iVar1].control >> 0x18].
+           blackPoint[3];
     }
     else {
-      local_10 = (rgp.world)->exposureVolumes[iVar1].exposure;
+      targetExposure = (rgp.world)->exposureVolumes[iVar1].exposure;
     }
-    local_20 = local_14 * (rgp.world)->exposureVolumes[iVar1].featherRange;
+    local_20 = feather * (rgp.world)->exposureVolumes[iVar1].featherRange;
     if (1.0 < local_20) {
       local_20 = 1.0;
     }
-    local_10 = (rgp.world)->exposureVolumes[iVar1].featherAdjust * local_20 + local_10;
+    targetExposure = (rgp.world)->exposureVolumes[iVar1].featherAdjust * local_20 + targetExposure;
     local_24 = (rgp.world)->exposureVolumes[iVar1].luminanceIncreaseScale * 15.0;
     local_28 = (rgp.world)->exposureVolumes[iVar1].luminanceDecreaseScale * 20.0;
     if (local_24 < 1.0) {
       local_24 = 1.0;
     }
-    local_c = local_24;
+    lerpBaseIncrease = local_24;
     if (local_28 < 1.0) {
       local_28 = 1.0;
     }
-    local_18 = local_28;
+    lerpBaseDecrease = local_28;
   }
-  if (param_1->exposure <= local_10) {
-    local_1c = local_18;
+  if (refdef->exposure <= targetExposure) {
+    lerpSpeed = lerpBaseDecrease;
   }
   else {
-    local_1c = local_c;
+    lerpSpeed = lerpBaseIncrease;
   }
-  if (1.0 <= local_1c) {
-    local_2c = local_1c;
+  if (1.0 <= lerpSpeed) {
+    local_2c = lerpSpeed;
   }
   else {
     local_2c = 1.0;
   }
-  param_1->exposure = ((local_2c - 1.0) * param_1->exposure + local_10) / local_2c;
-  (param_1->exposureValue).blackPoint[0] = 0.0;
-  (param_1->exposureValue).blackPoint[1] = 0.0;
-  (param_1->exposureValue).blackPoint[2] = 0.0;
-  (param_1->exposureValue).blackPoint[3] = param_1->exposure;
-  (param_1->exposureValue).whitePoint[0] = 8.0;
-  (param_1->exposureValue).whitePoint[1] = 8.0;
-  (param_1->exposureValue).whitePoint[2] = 8.0;
+  refdef->exposure = ((local_2c - 1.0) * refdef->exposure + targetExposure) / local_2c;
+  (refdef->exposureValue).blackPoint[0] = 0.0;
+  (refdef->exposureValue).blackPoint[1] = 0.0;
+  (refdef->exposureValue).blackPoint[2] = 0.0;
+  (refdef->exposureValue).blackPoint[3] = refdef->exposure;
+  (refdef->exposureValue).whitePoint[0] = 8.0;
+  (refdef->exposureValue).whitePoint[1] = 8.0;
+  (refdef->exposureValue).whitePoint[2] = 8.0;
   return;
 }
 
@@ -2557,98 +2623,98 @@ void __cdecl R_UpdateExposureValue(refdef_s *param_1)
 
 /* WARNING: Type propagation algorithm not settling */
 
-void __cdecl R_SetExposure(GfxViewInfo *param_1,refdef_s *param_2)
+void __cdecl R_SetExposure(GfxViewInfo *viewInfo,refdef_s *refdef)
 
 {
   float fVar1;
   
-  (param_1->exposureValue).linearEnd[0] = (param_2->exposureValue).blackPoint[0];
-  (param_1->exposureValue).linearEnd[1] = (param_2->exposureValue).blackPoint[1];
-  (param_1->exposureValue).linearEnd[2] = (param_2->exposureValue).blackPoint[2];
-  (param_1->exposureValue).linearEnd[3] = (param_2->exposureValue).blackPoint[3];
-  (param_1->exposureValue).remapStart[0] = (param_2->exposureValue).whitePoint[0];
-  (param_1->exposureValue).remapStart[1] = (param_2->exposureValue).whitePoint[1];
-  (param_1->exposureValue).remapStart[2] = (param_2->exposureValue).whitePoint[2];
-  (param_1->exposureValue).remapStart[3] = (param_2->exposureValue).whitePoint[3];
-  (param_1->exposureValue).remapEnd[0] = (param_2->exposureValue).linearStart[0];
-  (param_1->exposureValue).remapEnd[1] = (param_2->exposureValue).linearStart[1];
-  (param_1->exposureValue).remapEnd[2] = (param_2->exposureValue).linearStart[2];
-  (param_1->exposureValue).remapEnd[3] = (param_2->exposureValue).linearStart[3];
-  (param_1->exposureValue).scurveStart[0] = (param_2->exposureValue).linearEnd[0];
-  (param_1->exposureValue).scurveStart[1] = (param_2->exposureValue).linearEnd[1];
-  (param_1->exposureValue).scurveStart[2] = (param_2->exposureValue).linearEnd[2];
-  (param_1->exposureValue).scurveStart[3] = (param_2->exposureValue).linearEnd[3];
-  (param_1->exposureValue).scurveEnd[0] = (param_2->exposureValue).remapStart[0];
-  (param_1->exposureValue).scurveEnd[1] = (param_2->exposureValue).remapStart[1];
-  (param_1->exposureValue).scurveEnd[2] = (param_2->exposureValue).remapStart[2];
-  (param_1->exposureValue).scurveEnd[3] = (param_2->exposureValue).remapStart[3];
-  (param_1->exposureValue).bloomCurveLDR[0] = (param_2->exposureValue).remapEnd[0];
-  (param_1->exposureValue).bloomCurveLDR[1] = (param_2->exposureValue).remapEnd[1];
-  (param_1->exposureValue).bloomCurveLDR[2] = (param_2->exposureValue).remapEnd[2];
-  (param_1->exposureValue).bloomCurveLDR[3] = (param_2->exposureValue).remapEnd[3];
-  (param_1->exposureValue).bloomCurveHDR[0] = (param_2->exposureValue).scurveStart[0];
-  (param_1->exposureValue).bloomCurveHDR[1] = (param_2->exposureValue).scurveStart[1];
-  (param_1->exposureValue).bloomCurveHDR[2] = (param_2->exposureValue).scurveStart[2];
-  (param_1->exposureValue).bloomCurveHDR[3] = (param_2->exposureValue).scurveStart[3];
-  (param_1->exposureValue).bloomScale[0] = (param_2->exposureValue).scurveEnd[0];
-  (param_1->exposureValue).bloomScale[1] = (param_2->exposureValue).scurveEnd[1];
-  (param_1->exposureValue).bloomScale[2] = (param_2->exposureValue).scurveEnd[2];
-  (param_1->exposureValue).bloomScale[3] = (param_2->exposureValue).scurveEnd[3];
-  (param_1->exposureRemap).remapMul[0] = (param_2->exposureValue).bloomCurveLDR[0];
-  (param_1->exposureRemap).remapMul[1] = (param_2->exposureValue).bloomCurveLDR[1];
-  (param_1->exposureRemap).remapMul[2] = (param_2->exposureValue).bloomCurveLDR[2];
-  (param_1->exposureRemap).remapAdd[0] = (param_2->exposureValue).bloomCurveLDR[3];
-  (param_1->exposureRemap).remapAdd[1] = (param_2->exposureValue).bloomCurveHDR[0];
-  (param_1->exposureRemap).remapAdd[2] = (param_2->exposureValue).bloomCurveHDR[1];
-  *(float *)&param_1->sceneComposition = (param_2->exposureValue).bloomCurveHDR[2];
-  *(float *)&(param_1->sceneComposition).extraCam = (param_2->exposureValue).bloomCurveHDR[3];
-  (param_1->sceneComposition).sceneWindowU0 = (param_2->exposureValue).bloomScale[0];
-  (param_1->sceneComposition).sceneWindowV0 = (param_2->exposureValue).bloomScale[1];
-  (param_1->sceneComposition).sceneWindowU1 = (param_2->exposureValue).bloomScale[2];
-  (param_1->sceneComposition).sceneWindowV1 = (param_2->exposureValue).bloomScale[3];
+  (viewInfo->exposureValue).linearEnd[0] = (refdef->exposureValue).blackPoint[0];
+  (viewInfo->exposureValue).linearEnd[1] = (refdef->exposureValue).blackPoint[1];
+  (viewInfo->exposureValue).linearEnd[2] = (refdef->exposureValue).blackPoint[2];
+  (viewInfo->exposureValue).linearEnd[3] = (refdef->exposureValue).blackPoint[3];
+  (viewInfo->exposureValue).remapStart[0] = (refdef->exposureValue).whitePoint[0];
+  (viewInfo->exposureValue).remapStart[1] = (refdef->exposureValue).whitePoint[1];
+  (viewInfo->exposureValue).remapStart[2] = (refdef->exposureValue).whitePoint[2];
+  (viewInfo->exposureValue).remapStart[3] = (refdef->exposureValue).whitePoint[3];
+  (viewInfo->exposureValue).remapEnd[0] = (refdef->exposureValue).linearStart[0];
+  (viewInfo->exposureValue).remapEnd[1] = (refdef->exposureValue).linearStart[1];
+  (viewInfo->exposureValue).remapEnd[2] = (refdef->exposureValue).linearStart[2];
+  (viewInfo->exposureValue).remapEnd[3] = (refdef->exposureValue).linearStart[3];
+  (viewInfo->exposureValue).scurveStart[0] = (refdef->exposureValue).linearEnd[0];
+  (viewInfo->exposureValue).scurveStart[1] = (refdef->exposureValue).linearEnd[1];
+  (viewInfo->exposureValue).scurveStart[2] = (refdef->exposureValue).linearEnd[2];
+  (viewInfo->exposureValue).scurveStart[3] = (refdef->exposureValue).linearEnd[3];
+  (viewInfo->exposureValue).scurveEnd[0] = (refdef->exposureValue).remapStart[0];
+  (viewInfo->exposureValue).scurveEnd[1] = (refdef->exposureValue).remapStart[1];
+  (viewInfo->exposureValue).scurveEnd[2] = (refdef->exposureValue).remapStart[2];
+  (viewInfo->exposureValue).scurveEnd[3] = (refdef->exposureValue).remapStart[3];
+  (viewInfo->exposureValue).bloomCurveLDR[0] = (refdef->exposureValue).remapEnd[0];
+  (viewInfo->exposureValue).bloomCurveLDR[1] = (refdef->exposureValue).remapEnd[1];
+  (viewInfo->exposureValue).bloomCurveLDR[2] = (refdef->exposureValue).remapEnd[2];
+  (viewInfo->exposureValue).bloomCurveLDR[3] = (refdef->exposureValue).remapEnd[3];
+  (viewInfo->exposureValue).bloomCurveHDR[0] = (refdef->exposureValue).scurveStart[0];
+  (viewInfo->exposureValue).bloomCurveHDR[1] = (refdef->exposureValue).scurveStart[1];
+  (viewInfo->exposureValue).bloomCurveHDR[2] = (refdef->exposureValue).scurveStart[2];
+  (viewInfo->exposureValue).bloomCurveHDR[3] = (refdef->exposureValue).scurveStart[3];
+  (viewInfo->exposureValue).bloomScale[0] = (refdef->exposureValue).scurveEnd[0];
+  (viewInfo->exposureValue).bloomScale[1] = (refdef->exposureValue).scurveEnd[1];
+  (viewInfo->exposureValue).bloomScale[2] = (refdef->exposureValue).scurveEnd[2];
+  (viewInfo->exposureValue).bloomScale[3] = (refdef->exposureValue).scurveEnd[3];
+  (viewInfo->exposureRemap).remapMul[0] = (refdef->exposureValue).bloomCurveLDR[0];
+  (viewInfo->exposureRemap).remapMul[1] = (refdef->exposureValue).bloomCurveLDR[1];
+  (viewInfo->exposureRemap).remapMul[2] = (refdef->exposureValue).bloomCurveLDR[2];
+  (viewInfo->exposureRemap).remapAdd[0] = (refdef->exposureValue).bloomCurveLDR[3];
+  (viewInfo->exposureRemap).remapAdd[1] = (refdef->exposureValue).bloomCurveHDR[0];
+  (viewInfo->exposureRemap).remapAdd[2] = (refdef->exposureValue).bloomCurveHDR[1];
+  *(float *)&viewInfo->sceneComposition = (refdef->exposureValue).bloomCurveHDR[2];
+  *(float *)&(viewInfo->sceneComposition).extraCam = (refdef->exposureValue).bloomCurveHDR[3];
+  (viewInfo->sceneComposition).sceneWindowU0 = (refdef->exposureValue).bloomScale[0];
+  (viewInfo->sceneComposition).sceneWindowV0 = (refdef->exposureValue).bloomScale[1];
+  (viewInfo->sceneComposition).sceneWindowU1 = (refdef->exposureValue).bloomScale[2];
+  (viewInfo->sceneComposition).sceneWindowV1 = (refdef->exposureValue).bloomScale[3];
   if ((r_exposureTweak->current).enabled == false) {
-    Dvar_SetFloatIfChanged(r_exposureValue,(param_1->exposureValue).linearEnd[3]);
+    Dvar_SetFloatIfChanged(r_exposureValue,(viewInfo->exposureValue).linearEnd[3]);
   }
   else {
     fVar1 = (float)(r_exposureValue->current).integer;
-    (param_1->exposureValue).linearEnd[0] = 0.0;
-    (param_1->exposureValue).linearEnd[1] = 0.0;
-    (param_1->exposureValue).linearEnd[2] = 0.0;
-    (param_1->exposureValue).linearEnd[3] = fVar1;
-    (param_1->exposureValue).remapStart[0] = 8.0;
-    (param_1->exposureValue).remapStart[1] = 8.0;
-    (param_1->exposureValue).remapStart[2] = 8.0;
-    (param_1->exposureValue).remapStart[3] = 1.0;
+    (viewInfo->exposureValue).linearEnd[0] = 0.0;
+    (viewInfo->exposureValue).linearEnd[1] = 0.0;
+    (viewInfo->exposureValue).linearEnd[2] = 0.0;
+    (viewInfo->exposureValue).linearEnd[3] = fVar1;
+    (viewInfo->exposureValue).remapStart[0] = 8.0;
+    (viewInfo->exposureValue).remapStart[1] = 8.0;
+    (viewInfo->exposureValue).remapStart[2] = 8.0;
+    (viewInfo->exposureValue).remapStart[3] = 1.0;
   }
-  param_1[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[1][2] = param_2->postEmissiveBrightening
+  viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[1][2] = refdef->postEmissiveBrightening
   ;
-  (param_1->sceneComposition).framebufferWindowY0 =
-       (1.0 / ((param_1->exposureValue).remapStart[0] - (param_1->exposureValue).linearEnd[0])) *
-       (param_1->exposureValue).linearEnd[3];
-  (param_1->sceneComposition).framebufferWindowX1 =
-       (1.0 / ((param_1->exposureValue).remapStart[1] - (param_1->exposureValue).linearEnd[1])) *
-       (param_1->exposureValue).linearEnd[3];
-  (param_1->sceneComposition).framebufferWindowY1 =
-       (1.0 / ((param_1->exposureValue).remapStart[2] - (param_1->exposureValue).linearEnd[2])) *
-       (param_1->exposureValue).linearEnd[3];
-  (param_1->sceneComposition).opaqueShaderRemap =
-       (int)(-(param_1->exposureValue).linearEnd[0] *
-            (1.0 / ((param_1->exposureValue).remapStart[0] - (param_1->exposureValue).linearEnd[0]))
-            );
-  (param_1->sceneComposition).alphaShaderRemap =
-       (int)(-(param_1->exposureValue).linearEnd[1] *
-            (1.0 / ((param_1->exposureValue).remapStart[1] - (param_1->exposureValue).linearEnd[1]))
-            );
-  (param_1->sceneComposition).emissiveShaderRemap =
-       (int)(-(param_1->exposureValue).linearEnd[2] *
-            (1.0 / ((param_1->exposureValue).remapStart[2] - (param_1->exposureValue).linearEnd[2]))
-            );
-  (param_1->sceneComposition).framebufferWindowY0 = (param_1->exposureValue).linearEnd[3] / 8.0;
-  (param_1->sceneComposition).framebufferWindowX1 = (param_1->exposureValue).linearEnd[3] / 8.0;
-  (param_1->sceneComposition).framebufferWindowY1 = (param_1->exposureValue).linearEnd[3] / 8.0;
-  (param_1->sceneComposition).opaqueShaderRemap = 0;
-  (param_1->sceneComposition).alphaShaderRemap = 0;
-  (param_1->sceneComposition).emissiveShaderRemap = 0;
+  (viewInfo->sceneComposition).framebufferWindowY0 =
+       (1.0 / ((viewInfo->exposureValue).remapStart[0] - (viewInfo->exposureValue).linearEnd[0])) *
+       (viewInfo->exposureValue).linearEnd[3];
+  (viewInfo->sceneComposition).framebufferWindowX1 =
+       (1.0 / ((viewInfo->exposureValue).remapStart[1] - (viewInfo->exposureValue).linearEnd[1])) *
+       (viewInfo->exposureValue).linearEnd[3];
+  (viewInfo->sceneComposition).framebufferWindowY1 =
+       (1.0 / ((viewInfo->exposureValue).remapStart[2] - (viewInfo->exposureValue).linearEnd[2])) *
+       (viewInfo->exposureValue).linearEnd[3];
+  (viewInfo->sceneComposition).opaqueShaderRemap =
+       (int)(-(viewInfo->exposureValue).linearEnd[0] *
+            (1.0 / ((viewInfo->exposureValue).remapStart[0] - (viewInfo->exposureValue).linearEnd[0]
+                   )));
+  (viewInfo->sceneComposition).alphaShaderRemap =
+       (int)(-(viewInfo->exposureValue).linearEnd[1] *
+            (1.0 / ((viewInfo->exposureValue).remapStart[1] - (viewInfo->exposureValue).linearEnd[1]
+                   )));
+  (viewInfo->sceneComposition).emissiveShaderRemap =
+       (int)(-(viewInfo->exposureValue).linearEnd[2] *
+            (1.0 / ((viewInfo->exposureValue).remapStart[2] - (viewInfo->exposureValue).linearEnd[2]
+                   )));
+  (viewInfo->sceneComposition).framebufferWindowY0 = (viewInfo->exposureValue).linearEnd[3] / 8.0;
+  (viewInfo->sceneComposition).framebufferWindowX1 = (viewInfo->exposureValue).linearEnd[3] / 8.0;
+  (viewInfo->sceneComposition).framebufferWindowY1 = (viewInfo->exposureValue).linearEnd[3] / 8.0;
+  (viewInfo->sceneComposition).opaqueShaderRemap = 0;
+  (viewInfo->sceneComposition).alphaShaderRemap = 0;
+  (viewInfo->sceneComposition).emissiveShaderRemap = 0;
   return;
 }
 
@@ -2657,7 +2723,7 @@ void __cdecl R_SetExposure(GfxViewInfo *param_1,refdef_s *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_SetDepthOfField(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetDepthOfField(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   code *pcVar1;
@@ -2666,26 +2732,29 @@ void __cdecl R_SetDepthOfField(GfxViewInfo *param_1,GfxSceneParms *param_2)
   int iVar4;
   GfxDepthOfField *pGVar5;
   GfxDepthOfField *pGVar6;
-  char local_214 [516];
+  Font_s *font_2;
+  Font_s *font;
+  float textHeight;
+  char buff [516];
   uint local_10;
-  float local_c;
-  float local_8;
+  float x;
+  float y;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((r_dof_tweak->current).enabled == false) {
     if ((r_dof_enable->current).enabled == false) {
-      (param_1->dof).viewModelStart = 0.0;
-      (param_1->dof).viewModelEnd = 0.0;
-      (param_1->dof).nearStart = 0.0;
-      (param_1->dof).nearEnd = 0.0;
-      (param_1->dof).farStart = 0.0;
-      (param_1->dof).farEnd = 0.0;
-      (param_1->dof).nearBlur = 0.0;
-      (param_1->dof).farBlur = 0.0;
+      (viewInfo->dof).viewModelStart = 0.0;
+      (viewInfo->dof).viewModelEnd = 0.0;
+      (viewInfo->dof).nearStart = 0.0;
+      (viewInfo->dof).nearEnd = 0.0;
+      (viewInfo->dof).farStart = 0.0;
+      (viewInfo->dof).farEnd = 0.0;
+      (viewInfo->dof).nearBlur = 0.0;
+      (viewInfo->dof).farBlur = 0.0;
     }
     else {
-      pGVar5 = &param_2->dof;
-      pGVar6 = &param_1->dof;
+      pGVar5 = &sceneParms->dof;
+      pGVar6 = &viewInfo->dof;
       for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
         pGVar6->viewModelStart = pGVar5->viewModelStart;
         pGVar5 = (GfxDepthOfField *)&pGVar5->viewModelEnd;
@@ -2701,53 +2770,53 @@ void __cdecl R_SetDepthOfField(GfxViewInfo *param_1,GfxSceneParms *param_2)
       (*pcVar1)();
       return;
     }
-    (param_1->dof).viewModelStart = (float)(r_dof_viewModelStart->current).integer;
-    (param_1->dof).viewModelEnd = (float)(r_dof_viewModelEnd->current).integer;
-    (param_1->dof).nearStart = (float)(r_dof_nearStart->current).integer;
-    (param_1->dof).nearEnd = (float)(r_dof_nearEnd->current).integer;
-    (param_1->dof).farStart = (float)(r_dof_farStart->current).integer;
-    (param_1->dof).farEnd = (float)(r_dof_farEnd->current).integer;
-    (param_1->dof).nearBlur = (float)(r_dof_nearBlur->current).integer;
-    (param_1->dof).farBlur = (float)(r_dof_farBlur->current).integer;
+    (viewInfo->dof).viewModelStart = (float)(r_dof_viewModelStart->current).integer;
+    (viewInfo->dof).viewModelEnd = (float)(r_dof_viewModelEnd->current).integer;
+    (viewInfo->dof).nearStart = (float)(r_dof_nearStart->current).integer;
+    (viewInfo->dof).nearEnd = (float)(r_dof_nearEnd->current).integer;
+    (viewInfo->dof).farStart = (float)(r_dof_farStart->current).integer;
+    (viewInfo->dof).farEnd = (float)(r_dof_farEnd->current).integer;
+    (viewInfo->dof).nearBlur = (float)(r_dof_nearBlur->current).integer;
+    (viewInfo->dof).farBlur = (float)(r_dof_farBlur->current).integer;
   }
   if ((r_dof_showdebug->current).enabled != false) {
     pFVar3 = R_RegisterFont("fonts/consoleFont",1);
-    local_c = 60.0;
-    local_8 = 60.0;
-    _snprintf(local_214,0x200,"DOF.viewModelStart = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.viewModelEnd   = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.nearStart      = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.nearEnd        = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.farStart       = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.farEnd         = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.nearBlur       = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"DOF.farBlur        = %.2f");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0 + 25.0;
-    _snprintf(local_214,0x200,"r_dof_tweak        = %d");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
-    _snprintf(local_214,0x200,"r_dof_enable       = %d");
-    R_AddCmdDrawText(local_214,0x7fffffff,pFVar3,local_c,local_8,1.5,2.0,0.0,colorRed,0);
-    local_8 = local_8 + 25.0;
+    x = 60.0;
+    y = 60.0;
+    _snprintf(buff,0x200,"DOF.viewModelStart = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.viewModelEnd   = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.nearStart      = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.nearEnd        = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.farStart       = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.farEnd         = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.nearBlur       = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"DOF.farBlur        = %.2f");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0 + 25.0;
+    _snprintf(buff,0x200,"r_dof_tweak        = %d");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
+    _snprintf(buff,0x200,"r_dof_enable       = %d");
+    R_AddCmdDrawText(buff,0x7fffffff,pFVar3,x,y,1.5,2.0,0.0,colorRed,0);
+    y = y + 25.0;
   }
-  bVar2 = RB_UsingDepthOfFieldFX(param_1);
+  bVar2 = RB_UsingDepthOfFieldFX(viewInfo);
   if (bVar2) {
-    if ((*(char *)((int)&param_1[1].field0_0x0 + 0x14) != '\0') &&
+    if ((*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xcbf,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -2760,7 +2829,7 @@ void __cdecl R_SetDepthOfField(GfxViewInfo *param_1,GfxSceneParms *param_2)
                   "Depth of field used (enabled via r_dof_enable or r_dof_tweak) with no float-z buffer (r_floatz wasn\'t enabled when the renderer was started.)\n"
                  );
       }
-      param_1->needsFloatZ = true;
+      viewInfo->needsFloatZ = true;
     }
     if (((com_statmon->current).enabled != false) &&
        (pFVar3 = R_RegisterFont("fonts/consoleFont",1), (cg_draw2D->current).enabled != false)) {
@@ -2773,27 +2842,28 @@ void __cdecl R_SetDepthOfField(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65A40  R_SetDoubleVision  (gfx_d3d/r_scene.cpp:3317)
 
-void __cdecl R_SetDoubleVision(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetDoubleVision(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   bool bVar1;
-  Font_s *pFVar2;
-  int iVar3;
+  Font_s *font_00;
+  int iVar2;
+  GfxDoubleVision *pGVar3;
   GfxDoubleVision *pGVar4;
-  GfxDoubleVision *pGVar5;
+  Font_s *font;
   
-  pGVar4 = &param_2->doubleVision;
-  pGVar5 = &param_1->doubleVision;
-  for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-    pGVar5->direction[0] = pGVar4->direction[0];
+  pGVar3 = &sceneParms->doubleVision;
+  pGVar4 = &viewInfo->doubleVision;
+  for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+    pGVar4->direction[0] = pGVar3->direction[0];
+    pGVar3 = (GfxDoubleVision *)(pGVar3->direction + 1);
     pGVar4 = (GfxDoubleVision *)(pGVar4->direction + 1);
-    pGVar5 = (GfxDoubleVision *)(pGVar5->direction + 1);
   }
-  bVar1 = R_UsingDoubleVision(param_1);
+  bVar1 = R_UsingDoubleVision(viewInfo);
   if ((bVar1) && ((com_statmon->current).enabled != false)) {
-    pFVar2 = R_RegisterFont("fonts/consoleFont",1);
+    font_00 = R_RegisterFont("fonts/consoleFont",1);
     if ((cg_draw2D->current).enabled != false) {
-      R_AddCmdDrawText("DOUBLEVISION",0x7fffffff,pFVar2,0.0,320.0,1.5,2.0,0.0,colorRedFaded,0);
+      R_AddCmdDrawText("DOUBLEVISION",0x7fffffff,font_00,0.0,320.0,1.5,2.0,0.0,colorRedFaded,0);
     }
   }
   return;
@@ -2802,30 +2872,30 @@ void __cdecl R_SetDoubleVision(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65AF0  R_SetWaterSheetingFx  (gfx_d3d/r_scene.cpp:3332)
 
-void __cdecl R_SetWaterSheetingFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetWaterSheetingFx(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   int iVar1;
   GfxCompositeFx *pGVar2;
   GfxCompositeFx *pGVar3;
   
-  pGVar2 = &param_2->waterSheetingFx;
-  pGVar3 = &param_1->waterSheetingFx;
+  pGVar2 = &sceneParms->waterSheetingFx;
+  pGVar3 = &viewInfo->waterSheetingFx;
   for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
     pGVar3->distortionScale[0] = pGVar2->distortionScale[0];
     pGVar2 = (GfxCompositeFx *)(pGVar2->distortionScale + 1);
     pGVar3 = (GfxCompositeFx *)(pGVar3->distortionScale + 1);
   }
   if ((r_waterSheetingFX_enable->current).enabled != false) {
-    (param_1->waterSheetingFx).blurRadius = (float)(r_waterSheetingFX_radius->current).integer;
-    (param_1->waterSheetingFx).distortionMagnitude =
+    (viewInfo->waterSheetingFx).blurRadius = (float)(r_waterSheetingFX_radius->current).integer;
+    (viewInfo->waterSheetingFx).distortionMagnitude =
          (float)(r_waterSheetingFX_magnitude->current).integer;
-    (param_1->waterSheetingFx).distortionScale[0] =
+    (viewInfo->waterSheetingFx).distortionScale[0] =
          (float)(r_waterSheetingFX_distortionScaleFactor->current).integer;
-    (param_1->waterSheetingFx).distortionScale[1] =
+    (viewInfo->waterSheetingFx).distortionScale[1] =
          (r_waterSheetingFX_distortionScaleFactor->current).vector[1];
-    (param_1->waterSheetingFx).duration = 0;
-    (param_1->waterSheetingFx).frameRate = 0.0;
+    (viewInfo->waterSheetingFx).duration = 0;
+    (viewInfo->waterSheetingFx).frameRate = 0.0;
   }
   return;
 }
@@ -2833,26 +2903,26 @@ void __cdecl R_SetWaterSheetingFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65B90  R_SetFlameFx  (gfx_d3d/r_scene.cpp:3351)
 
-void __cdecl R_SetFlameFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetFlameFx(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   int iVar1;
   GfxCompositeFx *pGVar2;
   GfxCompositeFx *pGVar3;
   
-  pGVar2 = &param_2->flameFx;
-  pGVar3 = &param_1->flameFx;
+  pGVar2 = &sceneParms->flameFx;
+  pGVar3 = &viewInfo->flameFx;
   for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
     pGVar3->distortionScale[0] = pGVar2->distortionScale[0];
     pGVar2 = (GfxCompositeFx *)(pGVar2->distortionScale + 1);
     pGVar3 = (GfxCompositeFx *)(pGVar3->distortionScale + 1);
   }
   if ((r_flameFX_enable->current).enabled != false) {
-    (param_1->flameFx).distortionMagnitude = (float)(r_flameFX_magnitude->current).integer;
-    (param_1->flameFx).distortionScale[0] =
+    (viewInfo->flameFx).distortionMagnitude = (float)(r_flameFX_magnitude->current).integer;
+    (viewInfo->flameFx).distortionScale[0] =
          (float)(r_flameFX_distortionScaleFactor->current).integer;
-    (param_1->flameFx).distortionScale[1] = (r_flameFX_distortionScaleFactor->current).vector[1];
-    (param_1->flameFx).frameRate = (float)(r_flameFX_FPS->current).integer;
+    (viewInfo->flameFx).distortionScale[1] = (r_flameFX_distortionScaleFactor->current).vector[1];
+    (viewInfo->flameFx).frameRate = (float)(r_flameFX_FPS->current).integer;
   }
   return;
 }
@@ -2860,27 +2930,27 @@ void __cdecl R_SetFlameFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65C10  R_SetElectrifiedFx  (gfx_d3d/r_scene.cpp:3367)
 
-void __cdecl R_SetElectrifiedFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetElectrifiedFx(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   int iVar1;
   GfxCompositeFx *pGVar2;
   GfxCompositeFx *pGVar3;
   
-  pGVar2 = &param_2->electrifiedFx;
-  pGVar3 = &param_1->electrifiedFx;
+  pGVar2 = &sceneParms->electrifiedFx;
+  pGVar3 = &viewInfo->electrifiedFx;
   for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
     pGVar3->distortionScale[0] = pGVar2->distortionScale[0];
     pGVar2 = (GfxCompositeFx *)(pGVar2->distortionScale + 1);
     pGVar3 = (GfxCompositeFx *)(pGVar3->distortionScale + 1);
   }
   if ((r_flameFX_enable->current).enabled != false) {
-    (param_1->electrifiedFx).distortionMagnitude = (float)(r_flameFX_magnitude->current).integer;
-    (param_1->electrifiedFx).distortionScale[0] =
+    (viewInfo->electrifiedFx).distortionMagnitude = (float)(r_flameFX_magnitude->current).integer;
+    (viewInfo->electrifiedFx).distortionScale[0] =
          (float)(r_flameFX_distortionScaleFactor->current).integer;
-    (param_1->electrifiedFx).distortionScale[1] =
+    (viewInfo->electrifiedFx).distortionScale[1] =
          (r_flameFX_distortionScaleFactor->current).vector[1];
-    (param_1->electrifiedFx).frameRate = (float)(r_flameFX_FPS->current).integer;
+    (viewInfo->electrifiedFx).frameRate = (float)(r_flameFX_FPS->current).integer;
   }
   return;
 }
@@ -2888,27 +2958,27 @@ void __cdecl R_SetElectrifiedFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65C90  R_SetTransportedFx  (gfx_d3d/r_scene.cpp:3383)
 
-void __cdecl R_SetTransportedFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetTransportedFx(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   int iVar1;
   GfxCompositeFx *pGVar2;
   GfxCompositeFx *pGVar3;
   
-  pGVar2 = &param_2->transportedFx;
-  pGVar3 = &param_1->transportedFx;
+  pGVar2 = &sceneParms->transportedFx;
+  pGVar3 = &viewInfo->transportedFx;
   for (iVar1 = 0xb; iVar1 != 0; iVar1 = iVar1 + -1) {
     pGVar3->distortionScale[0] = pGVar2->distortionScale[0];
     pGVar2 = (GfxCompositeFx *)(pGVar2->distortionScale + 1);
     pGVar3 = (GfxCompositeFx *)(pGVar3->distortionScale + 1);
   }
   if ((r_flameFX_enable->current).enabled != false) {
-    (param_1->transportedFx).distortionMagnitude = (float)(r_flameFX_magnitude->current).integer;
-    (param_1->transportedFx).distortionScale[0] =
+    (viewInfo->transportedFx).distortionMagnitude = (float)(r_flameFX_magnitude->current).integer;
+    (viewInfo->transportedFx).distortionScale[0] =
          (float)(r_flameFX_distortionScaleFactor->current).integer;
-    (param_1->transportedFx).distortionScale[1] =
+    (viewInfo->transportedFx).distortionScale[1] =
          (r_flameFX_distortionScaleFactor->current).vector[1];
-    (param_1->transportedFx).frameRate = (float)(r_flameFX_FPS->current).integer;
+    (viewInfo->transportedFx).frameRate = (float)(r_flameFX_FPS->current).integer;
   }
   return;
 }
@@ -2916,7 +2986,7 @@ void __cdecl R_SetTransportedFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65D10  R_SetReviveFx  (gfx_d3d/r_scene.cpp:3402)
 
-void __cdecl R_SetReviveFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetReviveFx(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   undefined3 uVar1;
@@ -2926,8 +2996,8 @@ void __cdecl R_SetReviveFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
   GfxReviveFx *pGVar5;
   
   if ((r_reviveFX_debug->current).enabled == false) {
-    pGVar4 = &param_2->reviveFx;
-    pGVar5 = &param_1->reviveFx;
+    pGVar4 = &sceneParms->reviveFx;
+    pGVar5 = &viewInfo->reviveFx;
     for (iVar3 = 0xe; iVar3 != 0; iVar3 = iVar3 + -1) {
       uVar1 = *(undefined3 *)&pGVar4->field_0x1;
       pGVar5->enabled = pGVar4->enabled;
@@ -2937,23 +3007,23 @@ void __cdecl R_SetReviveFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
     }
   }
   else {
-    (param_1->reviveFx).enabled = true;
-    (param_1->reviveFx).reviveEdgeColorTemp = (float)(r_reviveFX_edgeColorTemp->current).integer;
-    (param_1->reviveFx).reviveEdgeSaturation = (float)(r_reviveFX_edgeSaturation->current).integer;
+    (viewInfo->reviveFx).enabled = true;
+    (viewInfo->reviveFx).reviveEdgeColorTemp = (float)(r_reviveFX_edgeColorTemp->current).integer;
+    (viewInfo->reviveFx).reviveEdgeSaturation = (float)(r_reviveFX_edgeSaturation->current).integer;
     pdVar2 = r_reviveFX_edgeScale;
-    (param_1->reviveFx).reviveEdgeScale[0] = (float)(r_reviveFX_edgeScale->current).integer;
-    (param_1->reviveFx).reviveEdgeScale[1] = (pdVar2->current).vector[1];
-    (param_1->reviveFx).reviveEdgeScale[2] = (pdVar2->current).vector[2];
+    (viewInfo->reviveFx).reviveEdgeScale[0] = (float)(r_reviveFX_edgeScale->current).integer;
+    (viewInfo->reviveFx).reviveEdgeScale[1] = (pdVar2->current).vector[1];
+    (viewInfo->reviveFx).reviveEdgeScale[2] = (pdVar2->current).vector[2];
     pdVar2 = r_reviveFX_edgeContrast;
-    (param_1->reviveFx).reviveEdgeContrast[0] = (float)(r_reviveFX_edgeContrast->current).integer;
-    (param_1->reviveFx).reviveEdgeContrast[1] = (pdVar2->current).vector[1];
-    (param_1->reviveFx).reviveEdgeContrast[2] = (pdVar2->current).vector[2];
+    (viewInfo->reviveFx).reviveEdgeContrast[0] = (float)(r_reviveFX_edgeContrast->current).integer;
+    (viewInfo->reviveFx).reviveEdgeContrast[1] = (pdVar2->current).vector[1];
+    (viewInfo->reviveFx).reviveEdgeContrast[2] = (pdVar2->current).vector[2];
     pdVar2 = r_reviveFX_edgeOffset;
-    (param_1->reviveFx).reviveEdgeOffset[0] = (float)(r_reviveFX_edgeOffset->current).integer;
-    (param_1->reviveFx).reviveEdgeOffset[1] = (pdVar2->current).vector[1];
-    (param_1->reviveFx).reviveEdgeOffset[2] = (pdVar2->current).vector[2];
-    (param_1->reviveFx).reviveEdgeMaskAdjust = (float)(r_reviveFX_edgeMaskAdjust->current).integer;
-    (param_1->reviveFx).reviveEdgeAmount = (float)(r_reviveFX_edgeAmount->current).integer;
+    (viewInfo->reviveFx).reviveEdgeOffset[0] = (float)(r_reviveFX_edgeOffset->current).integer;
+    (viewInfo->reviveFx).reviveEdgeOffset[1] = (pdVar2->current).vector[1];
+    (viewInfo->reviveFx).reviveEdgeOffset[2] = (pdVar2->current).vector[2];
+    (viewInfo->reviveFx).reviveEdgeMaskAdjust = (float)(r_reviveFX_edgeMaskAdjust->current).integer;
+    (viewInfo->reviveFx).reviveEdgeAmount = (float)(r_reviveFX_edgeAmount->current).integer;
   }
   return;
 }
@@ -2961,27 +3031,31 @@ void __cdecl R_SetReviveFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A65E50  R_SetGenericFilter  (gfx_d3d/r_scene.cpp:3420)
 
-void __cdecl R_SetGenericFilter(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetGenericFilter(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   GfxBackEndData *pGVar1;
   
-  memcpy((uchar *)&param_1->genericFilter,(uchar *)&param_2->genericFilter,0x10bc);
+  memcpy((uchar *)&viewInfo->genericFilter,(uchar *)&sceneParms->genericFilter,0x10bc);
   pGVar1 = frontEndDataOut;
-  (param_1->genericFilter).sunPosition[0] =
+  (viewInfo->genericFilter).sunPosition[0] =
        (frontEndDataOut->sunLight).dir[0] * 10000.0 +
-       (param_1->field0_0x0).cullViewInfo.viewParms.origin[0];
-  (param_1->genericFilter).sunPosition[1] =
-       (pGVar1->sunLight).dir[1] * 10000.0 + (param_1->field0_0x0).cullViewInfo.viewParms.origin[1];
-  (param_1->genericFilter).sunPosition[2] =
-       (pGVar1->sunLight).dir[2] * 10000.0 + (param_1->field0_0x0).cullViewInfo.viewParms.origin[2];
+       (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[0];
+  (viewInfo->genericFilter).sunPosition[1] =
+       (pGVar1->sunLight).dir[1] * 10000.0 + (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1]
+  ;
+  (viewInfo->genericFilter).sunPosition[2] =
+       (pGVar1->sunLight).dir[2] * 10000.0 + (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2]
+  ;
   return;
 }
 
 
 // 00A65F00  R_SetPoisonFx  (gfx_d3d/r_scene.cpp:3428)
 
-void __cdecl R_SetPoisonFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
+/* WARNING: Variable defined which should be unmapped: POISON_BLUR_SLOW */
+
+void __cdecl R_SetPoisonFx(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   float fVar1;
@@ -2990,32 +3064,37 @@ void __cdecl R_SetPoisonFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
   float fVar4;
   double dVar5;
   double dVar6;
-  undefined4 uVar7;
+  float POISON_BLUR_SLOW;
+  float blend;
+  float blur1;
+  float range;
+  float blur0;
+  float POISON_BLUR_FAST;
+  float base;
   
-  fVar3 = (param_2->poisonFx).curAmount;
-  (param_1->poisonFx).curAmountTarget = (param_2->poisonFx).curAmountTarget;
-  (param_1->poisonFx).curAmount = fVar3;
+  fVar2 = (sceneParms->poisonFx).curAmount;
+  (viewInfo->poisonFx).curAmountTarget = (sceneParms->poisonFx).curAmountTarget;
+  (viewInfo->poisonFx).curAmount = fVar2;
   if ((r_poisonFX_debug_enable->current).enabled != false) {
-    (param_1->poisonFx).curAmount = (float)(r_poisonFX_debug_amount->current).integer;
+    (viewInfo->poisonFx).curAmount = (float)(r_poisonFX_debug_amount->current).integer;
   }
-  if (0.0 < (param_1->poisonFx).curAmount) {
-    fVar3 = (r_poisonFX_pulse->current).value - 1.0;
-    if (fVar3 < 0.0) {
-      fVar3 = 0.0;
+  if (0.0 < (viewInfo->poisonFx).curAmount) {
+    blend = (r_poisonFX_pulse->current).value - 1.0;
+    if (blend < 0.0) {
+      blend = 0.0;
     }
-    fVar3 = (fVar3 * -2.0 + 3.0) * fVar3 * fVar3;
-    uVar7 = 0x40c00000;
-    fVar1 = (param_1->sceneDef).floatTime;
-    fVar2 = (r_poisonFX_blurMin->current).value;
+    fVar3 = (blend * -2.0 + 3.0) * blend * blend;
+    fVar2 = (viewInfo->sceneDef).floatTime;
+    fVar1 = (r_poisonFX_blurMin->current).value;
     fVar4 = (r_poisonFX_blurMax->current).value - (r_poisonFX_blurMin->current).value;
-    dVar5 = (double)(((param_1->sceneDef).floatTime / 6.0) * 3.1415927 * 2.5);
+    dVar5 = (double)(((viewInfo->sceneDef).floatTime / 6.0) * 3.1415927 * 2.5);
     __libm_sse2_sin((double)CONCAT44(fVar3,0x40c00000));
-    dVar6 = (double)((fVar1 / 3.0) * 3.1415927 * 2.5);
-    __libm_sse2_sin((double)CONCAT44(fVar3,uVar7));
-    param_1->blurRadius =
-         (1.0 - fVar3) * (((float)dVar5 * 0.5 + 0.5) * fVar4 + fVar2) +
-         fVar3 * (((float)dVar6 * 0.5 + 0.5) * fVar4 + fVar2);
-    param_1->blurRadius = param_1->blurRadius * (param_1->poisonFx).curAmount;
+    dVar6 = (double)((fVar2 / 3.0) * 3.1415927 * 2.5);
+    __libm_sse2_sin((double)CONCAT44(fVar3,0x40c00000));
+    viewInfo->blurRadius =
+         (1.0 - fVar3) * (((float)dVar5 * 0.5 + 0.5) * fVar4 + fVar1) +
+         fVar3 * (((float)dVar6 * 0.5 + 0.5) * fVar4 + fVar1);
+    viewInfo->blurRadius = viewInfo->blurRadius * (viewInfo->poisonFx).curAmount;
   }
   return;
 }
@@ -3023,7 +3102,7 @@ void __cdecl R_SetPoisonFx(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A66100  R_SetFilmInfo  (gfx_d3d/r_scene.cpp:3457)
 
-void __cdecl R_SetFilmInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetFilmInfo(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   code *pcVar1;
@@ -3033,7 +3112,7 @@ void __cdecl R_SetFilmInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
   GfxFilm *pGVar5;
   GfxFilm *pGVar6;
   
-  if (param_1 == (GfxViewInfo *)0x0) {
+  if (viewInfo == (GfxViewInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xd82,0,"%s")
     ;
     if (!bVar3) {
@@ -3042,7 +3121,7 @@ void __cdecl R_SetFilmInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
       return;
     }
   }
-  if (param_2 == (GfxSceneParms *)0x0) {
+  if (sceneParms == (GfxSceneParms *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xd83,0,"%s")
     ;
     if (!bVar3) {
@@ -3052,8 +3131,8 @@ void __cdecl R_SetFilmInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
     }
   }
   if ((r_filmUseTweaks->current).enabled == false) {
-    pGVar5 = &param_2->film;
-    pGVar6 = &param_1->film;
+    pGVar5 = &sceneParms->film;
+    pGVar6 = &viewInfo->film;
     for (iVar4 = 0x25; iVar4 != 0; iVar4 = iVar4 + -1) {
       pGVar6->filmMidStart = pGVar5->filmMidStart;
       pGVar5 = (GfxFilm *)&pGVar5->filmMidEnd;
@@ -3061,53 +3140,53 @@ void __cdecl R_SetFilmInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
     }
   }
   else {
-    (param_1->film).enabled = (r_filmTweakEnable->current).enabled;
+    (viewInfo->film).enabled = (r_filmTweakEnable->current).enabled;
     pdVar2 = r_filmTweakHue;
-    (param_1->film).filmHue[0] = (float)(r_filmTweakHue->current).integer;
-    (param_1->film).filmHue[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmHue[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmHue[0] = (float)(r_filmTweakHue->current).integer;
+    (viewInfo->film).filmHue[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmHue[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakSaturation;
-    (param_1->film).filmSaturation[0] = (float)(r_filmTweakSaturation->current).integer;
-    (param_1->film).filmSaturation[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmSaturation[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmSaturation[0] = (float)(r_filmTweakSaturation->current).integer;
+    (viewInfo->film).filmSaturation[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmSaturation[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakColorTemp;
-    (param_1->film).filmColorTemp[0] = (float)(r_filmTweakColorTemp->current).integer;
-    (param_1->film).filmColorTemp[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmColorTemp[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmColorTemp[0] = (float)(r_filmTweakColorTemp->current).integer;
+    (viewInfo->film).filmColorTemp[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmColorTemp[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakDarkTint;
-    (param_1->film).filmDarkTint[0] = (float)(r_filmTweakDarkTint->current).integer;
-    (param_1->film).filmDarkTint[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmDarkTint[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmDarkTint[0] = (float)(r_filmTweakDarkTint->current).integer;
+    (viewInfo->film).filmDarkTint[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmDarkTint[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakMidTint;
-    (param_1->film).filmMidTint[0] = (float)(r_filmTweakMidTint->current).integer;
-    (param_1->film).filmMidTint[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmMidTint[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmMidTint[0] = (float)(r_filmTweakMidTint->current).integer;
+    (viewInfo->film).filmMidTint[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmMidTint[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakLightTint;
-    (param_1->film).filmLightTint[0] = (float)(r_filmTweakLightTint->current).integer;
-    (param_1->film).filmLightTint[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmLightTint[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmLightTint[0] = (float)(r_filmTweakLightTint->current).integer;
+    (viewInfo->film).filmLightTint[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmLightTint[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakContrast;
-    (param_1->film).filmContrast[0] = (float)(r_filmTweakContrast->current).integer;
-    (param_1->film).filmContrast[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmContrast[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmContrast[0] = (float)(r_filmTweakContrast->current).integer;
+    (viewInfo->film).filmContrast[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmContrast[2] = (pdVar2->current).vector[2];
     pdVar2 = r_filmTweakBleach;
-    (param_1->film).filmBleach[0] = (float)(r_filmTweakBleach->current).integer;
-    (param_1->film).filmBleach[1] = (pdVar2->current).vector[1];
-    (param_1->film).filmBleach[2] = (pdVar2->current).vector[2];
-    (param_1->film).filmMidStart = (float)(r_filmTweakMidStart->current).integer;
-    (param_1->film).filmMidEnd = (float)(r_filmTweakMidEnd->current).integer;
-    (param_1->film).filmDarkFeather = (float)(r_filmTweakDarkFeather->current).integer;
-    (param_1->film).filmLightFeather = (float)(r_filmTweakLightFeather->current).integer;
-    (param_1->film).sCurveEnable = (float)(r_sCurveEnable->current).integer;
-    (param_1->film).sCurveShoulderStrength = (float)(r_sCurveShoulderStrength->current).integer;
-    (param_1->film).sCurveLinearStrength = (float)(r_sCurveLinearStrength->current).integer;
-    (param_1->film).sCurveLinearAngle = (float)(r_sCurveLinearAngle->current).integer;
-    (param_1->film).sCurveToeStrength = (float)(r_sCurveToeStrength->current).integer;
-    (param_1->film).sCurveToeNumerator = (float)(r_sCurveToeNumerator->current).integer;
-    (param_1->film).sCurveToeDenominator = (float)(r_sCurveToeDenominator->current).integer;
+    (viewInfo->film).filmBleach[0] = (float)(r_filmTweakBleach->current).integer;
+    (viewInfo->film).filmBleach[1] = (pdVar2->current).vector[1];
+    (viewInfo->film).filmBleach[2] = (pdVar2->current).vector[2];
+    (viewInfo->film).filmMidStart = (float)(r_filmTweakMidStart->current).integer;
+    (viewInfo->film).filmMidEnd = (float)(r_filmTweakMidEnd->current).integer;
+    (viewInfo->film).filmDarkFeather = (float)(r_filmTweakDarkFeather->current).integer;
+    (viewInfo->film).filmLightFeather = (float)(r_filmTweakLightFeather->current).integer;
+    (viewInfo->film).sCurveEnable = (float)(r_sCurveEnable->current).integer;
+    (viewInfo->film).sCurveShoulderStrength = (float)(r_sCurveShoulderStrength->current).integer;
+    (viewInfo->film).sCurveLinearStrength = (float)(r_sCurveLinearStrength->current).integer;
+    (viewInfo->film).sCurveLinearAngle = (float)(r_sCurveLinearAngle->current).integer;
+    (viewInfo->film).sCurveToeStrength = (float)(r_sCurveToeStrength->current).integer;
+    (viewInfo->film).sCurveToeNumerator = (float)(r_sCurveToeNumerator->current).integer;
+    (viewInfo->film).sCurveToeDenominator = (float)(r_sCurveToeDenominator->current).integer;
   }
   if (-1 < (r_filmTweakLut->current).integer) {
-    (param_1->film).filmLut = (float)(r_filmTweakLut->current).integer;
+    (viewInfo->film).filmLut = (float)(r_filmTweakLut->current).integer;
   }
   return;
 }
@@ -3117,7 +3196,7 @@ void __cdecl R_SetFilmInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 /* WARNING: Type propagation algorithm not settling */
 
-void __cdecl R_SetBloomInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetBloomInfo(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   float fVar1;
@@ -3133,11 +3212,19 @@ void __cdecl R_SetBloomInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
   float local_110;
   float local_10c;
   float local_108;
+  float tx;
+  float z;
+  float fs;
+  float tw;
+  float fe;
+  float ty;
+  float x;
+  float y;
   
   pdVar2 = r_bloomTintWeights;
   if ((r_bloomTweaks->current).enabled == false) {
-    pGVar4 = &param_2->bloom;
-    pfVar5 = (param_1->bloom).bloomCurveBreakpoint;
+    pGVar4 = &sceneParms->bloom;
+    pfVar5 = (viewInfo->bloom).bloomCurveBreakpoint;
     for (iVar3 = 0x6d; iVar3 != 0; iVar3 = iVar3 + -1) {
       *pfVar5 = pGVar4->bloomTintWeights[0];
       pGVar4 = (GfxBloom *)(pGVar4->bloomTintWeights + 1);
@@ -3145,160 +3232,160 @@ void __cdecl R_SetBloomInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
     }
   }
   else {
-    (param_1->bloom).bloomCurveBreakpoint[0] = (float)(r_bloomTintWeights->current).integer;
-    (param_1->bloom).bloomCurveBreakpoint[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveBreakpoint[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveBreakpoint[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveBreakpoint[0] = (float)(r_bloomTintWeights->current).integer;
+    (viewInfo->bloom).bloomCurveBreakpoint[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveBreakpoint[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveBreakpoint[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomColorScale;
-    (param_1->bloom).bloomCurveLoBlack[0] = (float)(r_bloomColorScale->current).integer;
-    (param_1->bloom).bloomCurveLoBlack[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveLoBlack[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveLoBlack[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveLoBlack[0] = (float)(r_bloomColorScale->current).integer;
+    (viewInfo->bloom).bloomCurveLoBlack[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveLoBlack[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveLoBlack[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomTintScale;
-    (param_1->bloom).bloomCurveLoGamma[0] = (float)(r_bloomTintScale->current).integer;
-    (param_1->bloom).bloomCurveLoGamma[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveLoGamma[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveLoGamma[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveLoGamma[0] = (float)(r_bloomTintScale->current).integer;
+    (viewInfo->bloom).bloomCurveLoGamma[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveLoGamma[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveLoGamma[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveBreakpoint;
-    (param_1->bloom).bloomCurveLoWhite[0] = (float)(r_bloomCurveBreakpoint->current).integer;
-    (param_1->bloom).bloomCurveLoWhite[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveLoWhite[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveLoWhite[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveLoWhite[0] = (float)(r_bloomCurveBreakpoint->current).integer;
+    (viewInfo->bloom).bloomCurveLoWhite[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveLoWhite[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveLoWhite[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveLoBlack;
-    (param_1->bloom).bloomCurveLoRemapBlack[0] = (float)(r_bloomCurveLoBlack->current).integer;
-    (param_1->bloom).bloomCurveLoRemapBlack[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveLoRemapBlack[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveLoRemapBlack[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveLoRemapBlack[0] = (float)(r_bloomCurveLoBlack->current).integer;
+    (viewInfo->bloom).bloomCurveLoRemapBlack[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveLoRemapBlack[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveLoRemapBlack[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveLoGamma;
-    (param_1->bloom).bloomCurveLoRemapWhite[0] = (float)(r_bloomCurveLoGamma->current).integer;
-    (param_1->bloom).bloomCurveLoRemapWhite[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveLoRemapWhite[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveLoRemapWhite[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveLoRemapWhite[0] = (float)(r_bloomCurveLoGamma->current).integer;
+    (viewInfo->bloom).bloomCurveLoRemapWhite[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveLoRemapWhite[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveLoRemapWhite[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveLoWhite;
-    (param_1->bloom).bloomCurveHiBlack[0] = (float)(r_bloomCurveLoWhite->current).integer;
-    (param_1->bloom).bloomCurveHiBlack[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveHiBlack[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveHiBlack[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveHiBlack[0] = (float)(r_bloomCurveLoWhite->current).integer;
+    (viewInfo->bloom).bloomCurveHiBlack[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveHiBlack[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveHiBlack[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveLoRemapBlack;
-    (param_1->bloom).bloomCurveHiGamma[0] = (float)(r_bloomCurveLoRemapBlack->current).integer;
-    (param_1->bloom).bloomCurveHiGamma[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveHiGamma[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveHiGamma[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveHiGamma[0] = (float)(r_bloomCurveLoRemapBlack->current).integer;
+    (viewInfo->bloom).bloomCurveHiGamma[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveHiGamma[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveHiGamma[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveLoRemapWhite;
-    (param_1->bloom).bloomCurveHiWhite[0] = (float)(r_bloomCurveLoRemapWhite->current).integer;
-    (param_1->bloom).bloomCurveHiWhite[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveHiWhite[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveHiWhite[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveHiWhite[0] = (float)(r_bloomCurveLoRemapWhite->current).integer;
+    (viewInfo->bloom).bloomCurveHiWhite[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveHiWhite[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveHiWhite[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveHiBlack;
-    (param_1->bloom).bloomCurveHiRemapBlack[0] = (float)(r_bloomCurveHiBlack->current).integer;
-    (param_1->bloom).bloomCurveHiRemapBlack[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveHiRemapBlack[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveHiRemapBlack[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveHiRemapBlack[0] = (float)(r_bloomCurveHiBlack->current).integer;
+    (viewInfo->bloom).bloomCurveHiRemapBlack[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveHiRemapBlack[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveHiRemapBlack[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveHiGamma;
-    (param_1->bloom).bloomCurveHiRemapWhite[0] = (float)(r_bloomCurveHiGamma->current).integer;
-    (param_1->bloom).bloomCurveHiRemapWhite[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomCurveHiRemapWhite[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomCurveHiRemapWhite[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomCurveHiRemapWhite[0] = (float)(r_bloomCurveHiGamma->current).integer;
+    (viewInfo->bloom).bloomCurveHiRemapWhite[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomCurveHiRemapWhite[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomCurveHiRemapWhite[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveHiWhite;
-    (param_1->bloom).bloomExpansionControl[0] = (float)(r_bloomCurveHiWhite->current).integer;
-    (param_1->bloom).bloomExpansionControl[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomExpansionControl[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomExpansionControl[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomExpansionControl[0] = (float)(r_bloomCurveHiWhite->current).integer;
+    (viewInfo->bloom).bloomExpansionControl[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomExpansionControl[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomExpansionControl[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveHiRemapBlack;
-    (param_1->bloom).bloomExpansionWeights[0] = (float)(r_bloomCurveHiRemapBlack->current).integer;
-    (param_1->bloom).bloomExpansionWeights[1] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomExpansionWeights[2] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomExpansionWeights[3] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomExpansionWeights[0] = (float)(r_bloomCurveHiRemapBlack->current).integer;
+    (viewInfo->bloom).bloomExpansionWeights[1] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomExpansionWeights[2] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomExpansionWeights[3] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomCurveHiRemapWhite;
-    (param_1->bloom).bloomExpansionSource = (r_bloomCurveHiRemapWhite->current).integer;
-    (param_1->bloom).bloomBlurRadius = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomPersistence = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakXLevels0[0] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomExpansionSource = (r_bloomCurveHiRemapWhite->current).integer;
+    (viewInfo->bloom).bloomBlurRadius = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomPersistence = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakXLevels0[0] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomExpansionControl;
-    (param_1->bloom).bloomStreakXLevels0[1] = (float)(r_bloomExpansionControl->current).integer;
-    (param_1->bloom).bloomStreakXLevels0[2] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakXLevels0[3] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakXLevels1[0] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakXLevels0[1] = (float)(r_bloomExpansionControl->current).integer;
+    (viewInfo->bloom).bloomStreakXLevels0[2] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakXLevels0[3] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakXLevels1[0] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomExpansionWeights;
-    (param_1->bloom).bloomStreakXLevels1[1] = (float)(r_bloomExpansionWeights->current).integer;
-    (param_1->bloom).bloomStreakXLevels1[2] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakXLevels1[3] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakXInnerTint[0] = (pdVar2->current).vector[3];
-    (param_1->bloom).bloomStreakXInnerTint[2] = (float)(r_bloomBlurRadius->current).integer;
-    (param_1->bloom).bloomStreakXInnerTint[1] = (float)(r_bloomExpansionSource->current).integer;
-    (param_1->bloom).bloomStreakXOuterTint[0] = (float)(r_bloomPersistence->current).integer;
+    (viewInfo->bloom).bloomStreakXLevels1[1] = (float)(r_bloomExpansionWeights->current).integer;
+    (viewInfo->bloom).bloomStreakXLevels1[2] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakXLevels1[3] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakXInnerTint[0] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakXInnerTint[2] = (float)(r_bloomBlurRadius->current).integer;
+    (viewInfo->bloom).bloomStreakXInnerTint[1] = (float)(r_bloomExpansionSource->current).integer;
+    (viewInfo->bloom).bloomStreakXOuterTint[0] = (float)(r_bloomPersistence->current).integer;
     pdVar2 = r_bloomStreakXLevels0;
-    (param_1->bloom).bloomStreakXOuterTint[1] = (float)(r_bloomStreakXLevels0->current).integer;
-    (param_1->bloom).bloomStreakXOuterTint[2] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakXTintControl[0] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakXTintControl[1] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakXOuterTint[1] = (float)(r_bloomStreakXLevels0->current).integer;
+    (viewInfo->bloom).bloomStreakXOuterTint[2] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakXTintControl[0] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakXTintControl[1] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomStreakXLevels1;
-    (param_1->bloom).bloomStreakXTintControl[2] = (float)(r_bloomStreakXLevels1->current).integer;
-    (param_1->bloom).bloomStreakXTintControl[3] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakXTint[0] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakXTint[1] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakXTintControl[2] = (float)(r_bloomStreakXLevels1->current).integer;
+    (viewInfo->bloom).bloomStreakXTintControl[3] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakXTint[0] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakXTint[1] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomStreakXInnerTint;
-    (param_1->bloom).bloomStreakXTint[2] = (float)(r_bloomStreakXInnerTint->current).integer;
-    (param_1->bloom).bloomStreakYLevels0[0] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakYLevels0[1] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakXTint[2] = (float)(r_bloomStreakXInnerTint->current).integer;
+    (viewInfo->bloom).bloomStreakYLevels0[0] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakYLevels0[1] = (pdVar2->current).vector[2];
     pdVar2 = r_bloomStreakXOuterTint;
-    (param_1->bloom).bloomStreakYLevels0[2] = (float)(r_bloomStreakXOuterTint->current).integer;
-    (param_1->bloom).bloomStreakYLevels0[3] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakYLevels1[0] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakYLevels0[2] = (float)(r_bloomStreakXOuterTint->current).integer;
+    (viewInfo->bloom).bloomStreakYLevels0[3] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakYLevels1[0] = (pdVar2->current).vector[2];
     pdVar2 = r_bloomStreakXTintControl;
-    (param_1->bloom).bloomStreakYLevels1[1] = (float)(r_bloomStreakXTintControl->current).integer;
-    (param_1->bloom).bloomStreakYLevels1[2] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakYLevels1[3] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakYInnerTint[0] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakYLevels1[1] = (float)(r_bloomStreakXTintControl->current).integer;
+    (viewInfo->bloom).bloomStreakYLevels1[2] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakYLevels1[3] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakYInnerTint[0] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomStreakXTint;
-    (param_1->bloom).bloomStreakYInnerTint[1] = (float)(r_bloomStreakXTint->current).integer;
-    (param_1->bloom).bloomStreakYInnerTint[2] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakYOuterTint[0] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakYInnerTint[1] = (float)(r_bloomStreakXTint->current).integer;
+    (viewInfo->bloom).bloomStreakYInnerTint[2] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakYOuterTint[0] = (pdVar2->current).vector[2];
     pdVar2 = r_bloomStreakYLevels0;
-    (param_1->bloom).bloomStreakYOuterTint[1] = (float)(r_bloomStreakYLevels0->current).integer;
-    (param_1->bloom).bloomStreakYOuterTint[2] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakYTintControl[0] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakYTintControl[1] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakYOuterTint[1] = (float)(r_bloomStreakYLevels0->current).integer;
+    (viewInfo->bloom).bloomStreakYOuterTint[2] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakYTintControl[0] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakYTintControl[1] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomStreakYLevels1;
-    (param_1->bloom).bloomStreakYTintControl[2] = (float)(r_bloomStreakYLevels1->current).integer;
-    (param_1->bloom).bloomStreakYTintControl[3] = (pdVar2->current).vector[1];
-    (param_1->bloom).bloomStreakYTint[0] = (pdVar2->current).vector[2];
-    (param_1->bloom).bloomStreakYTint[1] = (pdVar2->current).vector[3];
+    (viewInfo->bloom).bloomStreakYTintControl[2] = (float)(r_bloomStreakYLevels1->current).integer;
+    (viewInfo->bloom).bloomStreakYTintControl[3] = (pdVar2->current).vector[1];
+    (viewInfo->bloom).bloomStreakYTint[0] = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakYTint[1] = (pdVar2->current).vector[3];
     pdVar2 = r_bloomStreakYInnerTint;
-    (param_1->bloom).bloomStreakYTint[2] = (float)(r_bloomStreakYInnerTint->current).integer;
-    param_1->bloomExpansionXpos = (pdVar2->current).vector[1];
-    param_1->bloomExpansionYpos = (pdVar2->current).vector[2];
+    (viewInfo->bloom).bloomStreakYTint[2] = (float)(r_bloomStreakYInnerTint->current).integer;
+    viewInfo->bloomExpansionXpos = (pdVar2->current).vector[1];
+    viewInfo->bloomExpansionYpos = (pdVar2->current).vector[2];
     pdVar2 = r_bloomStreakYOuterTint;
-    (param_1->rbUI3D).viewport[0].x = (r_bloomStreakYOuterTint->current).integer;
-    (param_1->rbUI3D).viewport[0].y = (int)(pdVar2->current).vector[1];
-    (param_1->rbUI3D).viewport[0].width = (int)(pdVar2->current).vector[2];
+    (viewInfo->rbUI3D).viewport[0].x = (r_bloomStreakYOuterTint->current).integer;
+    (viewInfo->rbUI3D).viewport[0].y = (int)(pdVar2->current).vector[1];
+    (viewInfo->rbUI3D).viewport[0].width = (int)(pdVar2->current).vector[2];
     pdVar2 = r_bloomStreakYTintControl;
-    (param_1->rbUI3D).viewport[0].height = (r_bloomStreakYTintControl->current).integer;
-    (param_1->rbUI3D).viewport[1].x = (int)(pdVar2->current).vector[1];
-    (param_1->rbUI3D).viewport[1].y = (int)(pdVar2->current).vector[2];
-    (param_1->rbUI3D).viewport[1].width = (int)(pdVar2->current).vector[3];
+    (viewInfo->rbUI3D).viewport[0].height = (r_bloomStreakYTintControl->current).integer;
+    (viewInfo->rbUI3D).viewport[1].x = (int)(pdVar2->current).vector[1];
+    (viewInfo->rbUI3D).viewport[1].y = (int)(pdVar2->current).vector[2];
+    (viewInfo->rbUI3D).viewport[1].width = (int)(pdVar2->current).vector[3];
     pdVar2 = r_bloomStreakYTint;
-    (param_1->rbUI3D).viewport[1].height = (r_bloomStreakYTint->current).integer;
-    (param_1->rbUI3D).viewport[2].x = (int)(pdVar2->current).vector[1];
-    (param_1->rbUI3D).viewport[2].y = (int)(pdVar2->current).vector[2];
+    (viewInfo->rbUI3D).viewport[1].height = (r_bloomStreakYTint->current).integer;
+    (viewInfo->rbUI3D).viewport[2].x = (int)(pdVar2->current).vector[1];
+    (viewInfo->rbUI3D).viewport[2].y = (int)(pdVar2->current).vector[2];
   }
-  if ((param_1->bloom).bloomStreakXInnerTint[1] == 0.0) {
+  if ((viewInfo->bloom).bloomStreakXInnerTint[1] == 0.0) {
     fVar8 = ((rgp.world)->sun).sunFxPosition[0];
     fVar9 = ((rgp.world)->sun).sunFxPosition[1];
     fVar1 = ((rgp.world)->sun).sunFxPosition[2];
-    fVar6 = fVar8 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[0][3] +
-            fVar9 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[1][3] +
-            fVar1 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[2][3];
-    fVar7 = (fVar8 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[0][0] +
-             fVar9 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[1][0] +
-            fVar1 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[2][0]) /
+    fVar6 = fVar8 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[0][3] +
+            fVar9 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[1][3] +
+            fVar1 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[2][3];
+    fVar7 = (fVar8 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[0][0] +
+             fVar9 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[1][0] +
+            fVar1 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[2][0]) /
             fVar6;
-    fVar6 = (fVar8 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[0][1] +
-             fVar9 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[1][1] +
-            fVar1 * (param_1->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[2][1]) /
+    fVar6 = (fVar8 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[0][1] +
+             fVar9 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[1][1] +
+            fVar1 * (viewInfo->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[2][1]) /
             fVar6;
-    (param_1->rbUI3D).viewport[2].width = (int)(fVar7 * 0.5 + 0.5);
-    (param_1->rbUI3D).viewport[2].height = (int)(0.5 - fVar6 * 0.5);
+    (viewInfo->rbUI3D).viewport[2].width = (int)(fVar7 * 0.5 + 0.5);
+    (viewInfo->rbUI3D).viewport[2].height = (int)(0.5 - fVar6 * 0.5);
     local_108 = ABS(fVar7) * -4.0 - -4.0;
     local_110 = ABS(fVar6) * -4.0 - -4.0;
     if (local_108 < 0.0) {
@@ -3321,18 +3408,18 @@ void __cdecl R_SetBloomInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
     }
     fVar8 = local_10c * local_10c * (3.0 - local_10c * 2.0);
     fVar9 = local_114 * local_114 * (3.0 - local_114 * 2.0);
-    (param_1->bloom).bloomStreakXLevels1[1] =
-         fVar8 * fVar9 * (param_1->bloom).bloomStreakXLevels1[1];
-    (param_1->bloom).bloomStreakXLevels1[2] =
-         fVar8 * fVar9 * (param_1->bloom).bloomStreakXLevels1[2];
-    (param_1->bloom).bloomStreakXLevels1[3] =
-         fVar8 * fVar9 * (param_1->bloom).bloomStreakXLevels1[3];
-    (param_1->bloom).bloomStreakXInnerTint[0] =
-         fVar8 * fVar9 * (param_1->bloom).bloomStreakXInnerTint[0];
+    (viewInfo->bloom).bloomStreakXLevels1[1] =
+         fVar8 * fVar9 * (viewInfo->bloom).bloomStreakXLevels1[1];
+    (viewInfo->bloom).bloomStreakXLevels1[2] =
+         fVar8 * fVar9 * (viewInfo->bloom).bloomStreakXLevels1[2];
+    (viewInfo->bloom).bloomStreakXLevels1[3] =
+         fVar8 * fVar9 * (viewInfo->bloom).bloomStreakXLevels1[3];
+    (viewInfo->bloom).bloomStreakXInnerTint[0] =
+         fVar8 * fVar9 * (viewInfo->bloom).bloomStreakXInnerTint[0];
   }
   else {
-    (param_1->rbUI3D).viewport[2].width = (int)(param_1->bloom).bloomStreakXLevels0[3];
-    (param_1->rbUI3D).viewport[2].height = (int)(param_1->bloom).bloomStreakXLevels1[0];
+    (viewInfo->rbUI3D).viewport[2].width = (int)(viewInfo->bloom).bloomStreakXLevels0[3];
+    (viewInfo->rbUI3D).viewport[2].height = (int)(viewInfo->bloom).bloomStreakXLevels1[0];
   }
   return;
 }
@@ -3340,14 +3427,14 @@ void __cdecl R_SetBloomInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
 
 // 00A5F500  R_SetCharacterPrimaryLightScaleInfo  (gfx_d3d/r_scene.cpp:3605)
 
-void __cdecl R_SetCharacterPrimaryLightScaleInfo(GfxViewInfo *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetCharacterPrimaryLightScaleInfo(GfxViewInfo *viewInfo,GfxSceneParms *sceneParms)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   
-  if (param_1 == (GfxViewInfo *)0x0) {
+  if (viewInfo == (GfxViewInfo *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xe16,0,"%s")
     ;
     if (!bVar3) {
@@ -3356,7 +3443,7 @@ void __cdecl R_SetCharacterPrimaryLightScaleInfo(GfxViewInfo *param_1,GfxScenePa
       return;
     }
   }
-  if (param_2 == (GfxSceneParms *)0x0) {
+  if (sceneParms == (GfxSceneParms *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xe17,0,"%s")
     ;
     if (!bVar3) {
@@ -3366,18 +3453,19 @@ void __cdecl R_SetCharacterPrimaryLightScaleInfo(GfxViewInfo *param_1,GfxScenePa
     }
   }
   if ((r_heroLighting->current).enabled == false) {
-    (param_1->charPrimaryLightScale).diffuseScale = 1.0;
-    (param_1->charPrimaryLightScale).specularScale = 1.0;
+    (viewInfo->charPrimaryLightScale).diffuseScale = 1.0;
+    (viewInfo->charPrimaryLightScale).specularScale = 1.0;
   }
   else if ((r_primaryLightUseTweaks->current).enabled == false) {
-    fVar1 = (param_2->charPrimaryLightScale).specularScale;
-    (param_1->charPrimaryLightScale).diffuseScale = (param_2->charPrimaryLightScale).diffuseScale;
-    (param_1->charPrimaryLightScale).specularScale = fVar1;
+    fVar1 = (sceneParms->charPrimaryLightScale).specularScale;
+    (viewInfo->charPrimaryLightScale).diffuseScale =
+         (sceneParms->charPrimaryLightScale).diffuseScale;
+    (viewInfo->charPrimaryLightScale).specularScale = fVar1;
   }
   else {
-    (param_1->charPrimaryLightScale).diffuseScale =
+    (viewInfo->charPrimaryLightScale).diffuseScale =
          (float)(r_primaryLightTweakDiffuseStrength->current).integer;
-    (param_1->charPrimaryLightScale).specularScale =
+    (viewInfo->charPrimaryLightScale).specularScale =
          (float)(r_primaryLightTweakSpecularStrength->current).integer;
   }
   return;
@@ -3386,31 +3474,36 @@ void __cdecl R_SetCharacterPrimaryLightScaleInfo(GfxViewInfo *param_1,GfxScenePa
 
 // 00A671E0  R_SetFullSceneViewMesh  (gfx_d3d/r_scene.cpp:3628)
 
-void __cdecl R_SetFullSceneViewMesh(int param_1,GfxViewInfo *param_2)
+void __cdecl R_SetFullSceneViewMesh(int viewInfoIndex,GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
-  GfxQuadMeshData *pGVar3;
-  float fVar4;
-  float fVar5;
-  float fVar6;
-  float fVar7;
+  GfxQuadMeshData *quadMesh_00;
+  float x_00;
+  float y_00;
+  float w;
+  float h;
+  float width;
+  float height;
+  GfxQuadMeshData *quadMesh;
+  float x;
+  float y;
   
-  pGVar3 = gfxMeshGlob.fullSceneViewMesh + param_1;
-  param_2->fullSceneViewMesh = pGVar3;
-  fVar4 = (float)(param_2->field0_0x0).cullViewInfo.sceneViewport.x;
-  fVar5 = (float)(param_2->field0_0x0).cullViewInfo.sceneViewport.y;
-  fVar6 = (float)(param_2->field0_0x0).cullViewInfo.sceneViewport.width;
-  fVar7 = (float)(param_2->field0_0x0).cullViewInfo.sceneViewport.height;
-  if ((((pGVar3->x != fVar4) || (gfxMeshGlob.fullSceneViewMesh[param_1].y != fVar5)) ||
-      (gfxMeshGlob.fullSceneViewMesh[param_1].width != fVar6)) ||
-     (gfxMeshGlob.fullSceneViewMesh[param_1].height != fVar7)) {
+  quadMesh_00 = gfxMeshGlob.fullSceneViewMesh + viewInfoIndex;
+  viewInfo->fullSceneViewMesh = quadMesh_00;
+  x_00 = (float)(viewInfo->field0_0x0).cullViewInfo.sceneViewport.x;
+  y_00 = (float)(viewInfo->field0_0x0).cullViewInfo.sceneViewport.y;
+  w = (float)(viewInfo->field0_0x0).cullViewInfo.sceneViewport.width;
+  h = (float)(viewInfo->field0_0x0).cullViewInfo.sceneViewport.height;
+  if ((((quadMesh_00->x != x_00) || (gfxMeshGlob.fullSceneViewMesh[viewInfoIndex].y != y_00)) ||
+      (gfxMeshGlob.fullSceneViewMesh[viewInfoIndex].width != w)) ||
+     (gfxMeshGlob.fullSceneViewMesh[viewInfoIndex].height != h)) {
     R_SyncRenderThread();
-    R_SetQuadMesh(pGVar3,fVar4,fVar5,fVar6,fVar7,0.0,0.0,1.0,1.0,0xffffffff);
-    if ((((pGVar3->x != fVar4) || (gfxMeshGlob.fullSceneViewMesh[param_1].y != fVar5)) ||
-        ((gfxMeshGlob.fullSceneViewMesh[param_1].width != fVar6 ||
-         (gfxMeshGlob.fullSceneViewMesh[param_1].height != fVar7)))) &&
+    R_SetQuadMesh(quadMesh_00,x_00,y_00,w,h,0.0,0.0,1.0,1.0,0xffffffff);
+    if ((((quadMesh_00->x != x_00) || (gfxMeshGlob.fullSceneViewMesh[viewInfoIndex].y != y_00)) ||
+        ((gfxMeshGlob.fullSceneViewMesh[viewInfoIndex].width != w ||
+         (gfxMeshGlob.fullSceneViewMesh[viewInfoIndex].height != h)))) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xe40,1,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -3440,6 +3533,7 @@ int __cdecl R_DynamicFencePending(void)
 
 {
   int local_c;
+  uint currentFrame;
   
   if ((*frontEndDataOut->dynamicBufferCurrentFrame == 0) ||
      (frontEndDataOut->frameCount <= *frontEndDataOut->dynamicBufferCurrentFrame)) {
@@ -3454,10 +3548,10 @@ int __cdecl R_DynamicFencePending(void)
 
 // 00A5F650  R_SetEndTime  (gfx_d3d/r_scene.cpp:3785)
 
-void __cdecl R_SetEndTime(int param_1)
+void __cdecl R_SetEndTime(int endTime)
 
 {
-  rg.endTime = param_1;
+  rg.endTime = endTime;
   return;
 }
 
@@ -3484,13 +3578,13 @@ void __cdecl R_WaitEndTime(void)
 
 // 00A67350  R_GenerateSortedSunShadowDrawSurfs  (gfx_d3d/r_scene.cpp:3844)
 
-void __cdecl R_GenerateSortedSunShadowDrawSurfs(GfxViewInfo *param_1)
+void __cdecl R_GenerateSortedSunShadowDrawSurfs(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  R_MergeAndEmitSunShadowMapsSurfs(param_1);
+  R_MergeAndEmitSunShadowMapsSurfs(viewInfo);
   if (frontEndDataOut == (GfxBackEndData *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xf09,0,"%s")
     ;
@@ -3506,7 +3600,7 @@ void __cdecl R_GenerateSortedSunShadowDrawSurfs(GfxViewInfo *param_1)
 
 // 00A67390  R_AddEmissiveSpotLight  (gfx_d3d/r_scene.cpp:3885)
 
-void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *param_1)
+void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
@@ -3515,10 +3609,10 @@ void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *param_1)
   bool bVar4;
   int iVar5;
   GfxLight *pGVar6;
-  GfxLight *local_8;
+  GfxLight *spotLight;
   
   frontEndDataOut->emissiveSpotLightCount = 0;
-  if (*(char *)((int)&param_1[1].field0_0x0 + 0x14) == '\0') {
+  if (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0') {
     if (((r_dlightLimit->current).integer == 0) ||
        (gfxDrawMethod.drawScene != GFX_DRAW_SCENE_STANDARD)) {
       bVar4 = false;
@@ -3541,7 +3635,7 @@ void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *param_1)
         (*pcVar1)();
         return;
       }
-      local_8 = scene.addedLight;
+      spotLight = scene.addedLight;
       if ((scene.addedLight[0].type != '\x02') &&
          (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xf3f,0
                                    ,"%s"), !bVar4)) {
@@ -3551,12 +3645,12 @@ void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *param_1)
       }
       pGVar6 = &frontEndDataOut->emissiveSpotLight;
       for (iVar5 = 0x5c; iVar5 != 0; iVar5 = iVar5 + -1) {
-        uVar2 = local_8->canUseShadowMap;
-        sVar3 = local_8->cullDist;
-        pGVar6->type = local_8->type;
+        uVar2 = spotLight->canUseShadowMap;
+        sVar3 = spotLight->cullDist;
+        pGVar6->type = spotLight->type;
         pGVar6->canUseShadowMap = uVar2;
         pGVar6->cullDist = sVar3;
-        local_8 = (GfxLight *)local_8->color;
+        spotLight = (GfxLight *)spotLight->color;
         pGVar6 = (GfxLight *)pGVar6->color;
       }
       frontEndDataOut->emissiveSpotLightIndex = 0;
@@ -3564,7 +3658,7 @@ void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *param_1)
       frontEndDataOut->emissiveSpotDrawSurfs = (GfxDrawSurf *)0x0;
       frontEndDataOut->emissiveSpotLightCount = 1;
       if (scene.addedLight[0].canUseShadowMap != '\0') {
-        R_AddDynamicShadowableLight(param_1,scene.addedLight);
+        R_AddDynamicShadowableLight(viewInfo,scene.addedLight);
       }
     }
   }
@@ -3574,85 +3668,90 @@ void __cdecl R_AddEmissiveSpotLight(GfxViewInfo *param_1)
 
 // 00A607D0  R_GenerateMarkVertsForDynamicModels  (gfx_d3d/r_scene.cpp:3920)
 
-void __cdecl R_GenerateMarkVertsForDynamicModels(GfxLight *param_1,int param_2)
+void __cdecl R_GenerateMarkVertsForDynamicModels(GfxLight *visibleLights,int visibleLightCount)
 
 {
-  uchar uVar1;
-  code *pcVar2;
-  int iVar3;
-  bool bVar4;
-  RagdollBody *pRVar5;
-  int local_24;
-  uint local_1c;
-  int local_18;
-  ushort local_14;
-  ushort local_10;
-  int local_c;
-  int local_8;
+  uchar reflectionProbeIndex_00;
+  code *pcVar1;
+  int iVar2;
+  bool bVar3;
+  RagdollBody *pRVar4;
+  GfxSceneBrush *sceneBrushModel;
+  GfxSceneModel *sceneModel;
+  int dobjIndex;
+  uchar reflectionProbeIndex;
+  uint indexCount;
+  int brushModelIndex;
+  ushort entnum;
+  ushort lightHandle;
+  int modelIndex;
+  GfxSceneEntity *sceneEntity;
   
-  FX_BeginGeneratingMarkVertsForEntModels(scene.dpvs.localClientNum,&local_1c);
-  for (local_24 = 0; local_24 != scene.sceneDObjCount; local_24 = local_24 + 1) {
-    local_8 = local_24 * 0x84 + 0xa9ce830;
-    local_14 = scene.sceneDObj[local_24].entnum;
-    if ((local_14 < gfxCfg.entnumOrdinaryEnd) && ((scene.sceneDObjVisData[0][local_24] & 1) != 0)) {
-      pRVar5 = Ragdoll_HandleBody((int)scene.sceneDObj[local_24].info);
-      local_10 = (ushort)pRVar5->references;
+  FX_BeginGeneratingMarkVertsForEntModels(scene.dpvs.localClientNum,&indexCount);
+  for (dobjIndex = 0; dobjIndex != scene.sceneDObjCount; dobjIndex = dobjIndex + 1) {
+    sceneEntity = scene.sceneDObj + dobjIndex;
+    entnum = scene.sceneDObj[dobjIndex].entnum;
+    if ((entnum < gfxCfg.entnumOrdinaryEnd) && ((scene.sceneDObjVisData[0][dobjIndex] & 1) != 0)) {
+      pRVar4 = Ragdoll_HandleBody((int)scene.sceneDObj[dobjIndex].info);
+      lightHandle = (ushort)pRVar4->references;
       FX_GenerateMarkVertsForEntDObj
-                (scene.dpvs.localClientNum,(uint)local_14,&local_1c,local_10,
-                 *(uchar *)(local_8 + 0x7e),*(DObj **)(local_8 + 0x70),*(cpose_t **)(local_8 + 0x74)
-                 ,param_1,param_2);
+                (scene.dpvs.localClientNum,(uint)entnum,&indexCount,lightHandle,
+                 sceneEntity->reflectionProbeIndex,sceneEntity->obj,(sceneEntity->info).pose,
+                 visibleLights,visibleLightCount);
     }
   }
-  local_c = 0;
+  modelIndex = 0;
   do {
-    iVar3 = local_c;
-    if (local_c == scene.sceneModelCount) {
-      for (local_18 = 0; local_18 != scene.sceneBrushCount; local_18 = local_18 + 1) {
-        local_14 = scene.sceneBrush[local_18].entnum;
-        if ((local_14 < gfxCfg.entnumOrdinaryEnd) &&
-           ((scene.sceneBrushVisData[0][local_18] & 1) != 0)) {
+    iVar2 = modelIndex;
+    if (modelIndex == scene.sceneModelCount) {
+      for (brushModelIndex = 0; brushModelIndex != scene.sceneBrushCount;
+          brushModelIndex = brushModelIndex + 1) {
+        entnum = scene.sceneBrush[brushModelIndex].entnum;
+        if ((entnum < gfxCfg.entnumOrdinaryEnd) &&
+           ((scene.sceneBrushVisData[0][brushModelIndex] & 1) != 0)) {
           FX_GenerateMarkVertsForEntBrush
-                    (scene.dpvs.localClientNum,(uint)local_14,&local_1c,
-                     scene.sceneBrush[local_18].reflectionProbeIndex,
-                     &scene.sceneBrush[local_18].placement,param_1,param_2);
+                    (scene.dpvs.localClientNum,(uint)entnum,&indexCount,
+                     scene.sceneBrush[brushModelIndex].reflectionProbeIndex,
+                     &scene.sceneBrush[brushModelIndex].placement,visibleLights,visibleLightCount);
         }
       }
       FX_EndGeneratingMarkVertsForEntModels(scene.dpvs.localClientNum);
       return;
     }
-    local_14 = scene.sceneModel[local_c].entnum;
-    if ((local_14 < gfxCfg.entnumOrdinaryEnd) && ((scene.sceneModelVisData[0][local_c] & 1) != 0)) {
-      uVar1 = scene.sceneModel[local_c].reflectionProbeIndex;
-      if ((scene.sceneModel[local_c].cachedLightingHandle == (ushort *)0x0) &&
-         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xf75,0
-                                   ,"%s"), !bVar4)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    entnum = scene.sceneModel[modelIndex].entnum;
+    if ((entnum < gfxCfg.entnumOrdinaryEnd) && ((scene.sceneModelVisData[0][modelIndex] & 1) != 0))
+    {
+      reflectionProbeIndex_00 = scene.sceneModel[modelIndex].reflectionProbeIndex;
+      if ((scene.sceneModel[modelIndex].cachedLightingHandle == (ushort *)0x0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xf75,0
+                                   ,"%s"), !bVar3)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      if (scene.sceneModel[iVar3].obj != (DObj *)0x0) {
+      if (scene.sceneModel[iVar2].obj != (DObj *)0x0) {
         FX_GenerateMarkVertsForEntXModel
-                  (scene.dpvs.localClientNum,(uint)local_14,&local_1c,
-                   *scene.sceneModel[iVar3].cachedLightingHandle,uVar1,
-                   &scene.sceneModel[iVar3].placement,param_1,param_2);
+                  (scene.dpvs.localClientNum,(uint)entnum,&indexCount,
+                   *scene.sceneModel[iVar2].cachedLightingHandle,reflectionProbeIndex_00,
+                   &scene.sceneModel[iVar2].placement,visibleLights,visibleLightCount);
       }
     }
-    local_c = local_c + 1;
+    modelIndex = modelIndex + 1;
   } while( true );
 }
 
 
 // 00A67510  R_GetVisibleDLights  (gfx_d3d/r_scene.cpp:3980)
 
-int __cdecl R_GetVisibleDLights(GfxLight *param_1)
+int __cdecl R_GetVisibleDLights(GfxLight *visibleLights)
 
 {
   bool bVar1;
   DWORD DVar2;
-  int local_8;
+  int visibleLightCount;
   
   PIXBeginNamedEvent(-1,"R_GetVisibleDLights");
-  local_8 = 0;
+  visibleLightCount = 0;
   if (((r_dlightLimit->current).integer == 0) ||
      (gfxDrawMethod.drawScene != GFX_DRAW_SCENE_STANDARD)) {
     bVar1 = false;
@@ -3663,7 +3762,7 @@ int __cdecl R_GetVisibleDLights(GfxLight *param_1)
   if (bVar1) {
     R_CullDynamicPointLightsInCameraView();
     PIXBeginNamedEvent(-1,"lights partition");
-    local_8 = R_GetPointLightPartitions(param_1);
+    visibleLightCount = R_GetPointLightPartitions(visibleLights);
     DVar2 = GetCurrentThreadId();
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -3673,33 +3772,34 @@ int __cdecl R_GetVisibleDLights(GfxLight *param_1)
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return local_8;
+  return visibleLightCount;
 }
 
 
 // 00A675E0  R_GetLightSurfs  (gfx_d3d/r_scene.cpp:4000)
 
-void __cdecl R_GetLightSurfs(GfxLight *param_1,int param_2)
+void __cdecl R_GetLightSurfs(GfxLight *visibleLights,int visibleLightCount)
 
 {
   DWORD DVar1;
+  PIXProfile pp;
   
-  if (param_2 != 0) {
+  if (visibleLightCount != 0) {
     PIXBeginNamedEvent(-1,"R_GetLightSurfs");
     PIXBeginNamedEvent(-1,"light surfs bsp");
-    R_GetBspLightSurfs(param_1,param_2);
+    R_GetBspLightSurfs(visibleLights,visibleLightCount);
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"light surfs smodel");
-    R_GetStaticModelLightSurfs(param_1,param_2);
+    R_GetStaticModelLightSurfs(visibleLights,visibleLightCount);
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"light surfs scene ent");
-    R_GetSceneEntLightSurfs(param_1,param_2);
+    R_GetSceneEntLightSurfs(visibleLights,visibleLightCount);
     DVar1 = GetCurrentThreadId();
     if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -3717,12 +3817,14 @@ void __cdecl R_GetLightSurfs(GfxLight *param_1,int param_2)
 
 void __cdecl
 R_GetPointLightShadowSurfs
-          (GfxViewInfo *param_1,GfxVisibleLight *param_2,GfxLight *param_3,int param_4)
+          (GfxViewInfo *viewInfo,GfxVisibleLight *visibleLights,GfxLight *lights,int numLights)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  GfxVisibleLight *visibleLight;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"R_GetPointLightShadowSurfs");
   if (frontEndDataOut->emissiveSpotLightCount != 0) {
@@ -3748,22 +3850,22 @@ R_GetPointLightShadowSurfs
       (*pcVar1)();
       return;
     }
-    if ((param_4 < 1) &&
+    if ((numLights < 1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xfc5,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_3->type != '\x02') &&
+    if ((lights->type != '\x02') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xfc6,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    frontEndDataOut->emissiveSpotDrawSurfCount = param_2->drawSurfCount;
-    frontEndDataOut->emissiveSpotDrawSurfs = param_2->drawSurfs;
+    frontEndDataOut->emissiveSpotDrawSurfCount = visibleLights->drawSurfCount;
+    frontEndDataOut->emissiveSpotDrawSurfs = visibleLights->drawSurfs;
   }
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -3775,7 +3877,7 @@ R_GetPointLightShadowSurfs
 
 // 00A6B0E0  R_GetEmissiveTechnique  (gfx_d3d/r_scene.cpp:4046)
 
-uchar __cdecl R_GetEmissiveTechnique(GfxViewInfo *param_1,uchar param_2)
+uchar __cdecl R_GetEmissiveTechnique(GfxViewInfo *viewInfo,uchar baseTech)
 
 {
   code *pcVar1;
@@ -3784,7 +3886,7 @@ uchar __cdecl R_GetEmissiveTechnique(GfxViewInfo *param_1,uchar param_2)
   uint uVar4;
   int iVar5;
   
-  if (param_2 == '\x05') {
+  if (baseTech == '\x05') {
     if ((r_fullbright->current).enabled == false) {
       if ((frontEndDataOut->emissiveSpotLightCount != 0) &&
          ((r_spotLightShadows->current).enabled != false)) {
@@ -3803,37 +3905,38 @@ uchar __cdecl R_GetEmissiveTechnique(GfxViewInfo *param_1,uchar param_2)
           return '\x06';
         }
       }
-      param_2 = '\x05';
+      baseTech = '\x05';
     }
     else {
-      param_2 = '\x04';
+      baseTech = '\x04';
     }
   }
-  return param_2;
+  return baseTech;
 }
 
 
 // 00A678A0  R_SetSunShadowConstants  (gfx_d3d/r_scene.cpp:4067)
 
-void __cdecl R_SetSunShadowConstants(GfxCmdBufInput *param_1,GfxSunShadowProjection *param_2)
+void __cdecl R_SetSunShadowConstants(GfxCmdBufInput *input,GfxSunShadowProjection *sunProj)
 
 {
-  R_SetInputCodeConstantFromVec4(param_1,0x2f,param_2->switchPartition);
-  R_SetInputCodeConstantFromVec4(param_1,0x30,param_2->shadowmapScale);
+  R_SetInputCodeConstantFromVec4(input,0x2f,sunProj->switchPartition);
+  R_SetInputCodeConstantFromVec4(input,0x30,sunProj->shadowmapScale);
   return;
 }
 
 
 // 00A5F6C0  R_SetSunConstants  (gfx_d3d/r_scene.cpp:4075)
 
-void __cdecl R_SetSunConstants(GfxCmdBufInput *param_1,float param_2)
+void __cdecl R_SetSunConstants(GfxCmdBufInput *input,float sunVisibility)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
+  GfxLight *sun;
   
-  fVar1 = param_1[1].consts[2][0];
+  fVar1 = input[1].consts[2][0];
   if (*(char *)((int)fVar1 + 0x16cd30) != '\x01') {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0xff2,0,"%s")
     ;
@@ -3843,12 +3946,12 @@ void __cdecl R_SetSunConstants(GfxCmdBufInput *param_1,float param_2)
       return;
     }
   }
-  R_SetInputCodeConstantFromVec4(param_1,0x32,(float *)((int)fVar1 + 0x16cd40));
+  R_SetInputCodeConstantFromVec4(input,0x32,(float *)((int)fVar1 + 0x16cd40));
   R_SetInputCodeConstant
-            (param_1,0x33,*(float *)((int)fVar1 + 0x16cd7c),*(float *)((int)fVar1 + 0x16cd80),
+            (input,0x33,*(float *)((int)fVar1 + 0x16cd7c),*(float *)((int)fVar1 + 0x16cd80),
              *(float *)((int)fVar1 + 0x16cd84),1.0);
   R_SetInputCodeConstant
-            (param_1,0x34,*(float *)((int)fVar1 + 0x16cd8c),*(float *)((int)fVar1 + 0x16cd90),
+            (input,0x34,*(float *)((int)fVar1 + 0x16cd8c),*(float *)((int)fVar1 + 0x16cd90),
              *(float *)((int)fVar1 + 0x16cd94),1.0);
   return;
 }
@@ -3856,7 +3959,7 @@ void __cdecl R_SetSunConstants(GfxCmdBufInput *param_1,float param_2)
 
 // 00A678E0  R_SetHeroLighting  (gfx_d3d/r_scene.cpp:4101)
 
-void __cdecl R_SetHeroLighting(GfxCmdBufInput *param_1,GfxViewInfo *param_2,refdef_s *param_3)
+void __cdecl R_SetHeroLighting(GfxCmdBufInput *input,GfxViewInfo *viewInfo,refdef_s *refdef)
 
 {
   float local_180;
@@ -3940,8 +4043,8 @@ void __cdecl R_SetHeroLighting(GfxCmdBufInput *param_1,GfxViewInfo *param_2,refd
   local_ec = (r_heroLightScale->current).vector[2];
   local_e8 = (r_heroLightScale->current).vector[3];
   R_SetInputCodeConstant
-            (param_1,0xa9,(param_2->charPrimaryLightScale).diffuseScale,
-             (param_2->charPrimaryLightScale).specularScale,1.0,1.0);
+            (input,0xa9,(viewInfo->charPrimaryLightScale).diffuseScale,
+             (viewInfo->charPrimaryLightScale).specularScale,1.0,1.0);
   local_140 = local_f4;
   local_13c = 0.0;
   local_138 = 0.0;
@@ -3959,16 +4062,16 @@ void __cdecl R_SetHeroLighting(GfxCmdBufInput *param_1,GfxViewInfo *param_2,refd
   local_108 = 0;
   local_104 = 1.0;
   MatrixMultiply44((float (*) [4])local_e0,(float (*) [4])&local_140,(float (*) [4])&local_180);
-  R_SetInputCodeConstant(param_1,0xa6,local_180,local_170,local_160,0.0);
-  R_SetInputCodeConstant(param_1,0xa7,local_17c,local_16c,local_15c,0.0);
-  R_SetInputCodeConstant(param_1,0xa8,local_178,local_168,local_158,0.0);
+  R_SetInputCodeConstant(input,0xa6,local_180,local_170,local_160,0.0);
+  R_SetInputCodeConstant(input,0xa7,local_17c,local_16c,local_15c,0.0);
+  R_SetInputCodeConstant(input,0xa8,local_178,local_168,local_158,0.0);
   return;
 }
 
 
 // 00A5F9D0  R_SetHDRControlConstants  (gfx_d3d/r_scene.cpp:4159)
 
-void __cdecl R_SetHDRControlConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2)
+void __cdecl R_SetHDRControlConstants(GfxCmdBufInput *input,GfxViewInfo *viewInfo)
 
 {
   float fVar1;
@@ -4021,45 +4124,45 @@ void __cdecl R_SetHDRControlConstants(GfxCmdBufInput *param_1,GfxViewInfo *param
     local_14 = 1.0;
   }
   local_18 = local_14;
-  R_SetInputCodeConstant(param_1,0x89,(param_2->sceneComposition).framebufferWindowY0,0.0,0.0,0.0);
-  R_SetInputCodeConstant(param_1,0x8a,1.0,0.0,0.0,local_18);
+  R_SetInputCodeConstant(input,0x89,(viewInfo->sceneComposition).framebufferWindowY0,0.0,0.0,0.0);
+  R_SetInputCodeConstant(input,0x8a,1.0,0.0,0.0,local_18);
   if ((r_reflectionProbeGenerate->current).enabled != false) {
-    R_SetInputCodeConstant(param_1,0x89,0.0625,1.0,1.0,0.0);
-    R_SetInputCodeConstant(param_1,0x8a,0.0,0.0,0.0,0.0);
+    R_SetInputCodeConstant(input,0x89,0.0625,1.0,1.0,0.0);
+    R_SetInputCodeConstant(input,0x8a,0.0,0.0,0.0,0.0);
   }
-  local_1c = (param_2->exposureValue).linearEnd[3];
-  local_20 = (param_2->exposureValue).remapStart[0];
-  local_24 = (param_2->exposureValue).linearEnd[0];
-  local_28 = (param_2->exposureValue).remapEnd;
+  local_1c = (viewInfo->exposureValue).linearEnd[3];
+  local_20 = (viewInfo->exposureValue).remapStart[0];
+  local_24 = (viewInfo->exposureValue).linearEnd[0];
+  local_28 = (viewInfo->exposureValue).remapEnd;
   local_38[0] = *local_28;
-  local_38[1] = (param_2->exposureValue).remapEnd[1];
-  local_38[2] = (param_2->exposureValue).remapEnd[2];
-  local_38[3] = (param_2->exposureValue).remapEnd[3];
-  local_3c = (param_2->exposureValue).scurveStart;
+  local_38[1] = (viewInfo->exposureValue).remapEnd[1];
+  local_38[2] = (viewInfo->exposureValue).remapEnd[2];
+  local_38[3] = (viewInfo->exposureValue).remapEnd[3];
+  local_3c = (viewInfo->exposureValue).scurveStart;
   local_4c[0] = *local_3c;
-  local_4c[1] = (param_2->exposureValue).scurveStart[1];
-  local_4c[2] = (param_2->exposureValue).scurveStart[2];
-  local_4c[3] = (param_2->exposureValue).scurveStart[3];
-  local_50 = (param_2->exposureValue).scurveEnd;
+  local_4c[1] = (viewInfo->exposureValue).scurveStart[1];
+  local_4c[2] = (viewInfo->exposureValue).scurveStart[2];
+  local_4c[3] = (viewInfo->exposureValue).scurveStart[3];
+  local_50 = (viewInfo->exposureValue).scurveEnd;
   local_60[0] = *local_50;
-  local_60[1] = (param_2->exposureValue).scurveEnd[1];
-  local_60[2] = (param_2->exposureValue).scurveEnd[2];
-  local_60[3] = (param_2->exposureValue).scurveEnd[3];
-  local_64 = (param_2->exposureValue).bloomCurveLDR;
+  local_60[1] = (viewInfo->exposureValue).scurveEnd[1];
+  local_60[2] = (viewInfo->exposureValue).scurveEnd[2];
+  local_60[3] = (viewInfo->exposureValue).scurveEnd[3];
+  local_64 = (viewInfo->exposureValue).bloomCurveLDR;
   local_74[0] = *local_64;
-  local_74[1] = (param_2->exposureValue).bloomCurveLDR[1];
-  local_74[2] = (param_2->exposureValue).bloomCurveLDR[2];
-  local_74[3] = (param_2->exposureValue).bloomCurveLDR[3];
-  local_78 = (param_2->exposureValue).bloomCurveHDR;
+  local_74[1] = (viewInfo->exposureValue).bloomCurveLDR[1];
+  local_74[2] = (viewInfo->exposureValue).bloomCurveLDR[2];
+  local_74[3] = (viewInfo->exposureValue).bloomCurveLDR[3];
+  local_78 = (viewInfo->exposureValue).bloomCurveHDR;
   local_88[0] = *local_78;
-  local_88[1] = (param_2->exposureValue).bloomCurveHDR[1];
-  local_88[2] = (param_2->exposureValue).bloomCurveHDR[2];
-  local_88[3] = (param_2->exposureValue).bloomCurveHDR[3];
-  local_8c = (param_2->exposureValue).bloomScale;
+  local_88[1] = (viewInfo->exposureValue).bloomCurveHDR[1];
+  local_88[2] = (viewInfo->exposureValue).bloomCurveHDR[2];
+  local_88[3] = (viewInfo->exposureValue).bloomCurveHDR[3];
+  local_8c = (viewInfo->exposureValue).bloomScale;
   local_9c[0] = *local_8c;
-  local_9c[1] = (param_2->exposureValue).bloomScale[1];
-  local_9c[2] = (param_2->exposureValue).bloomScale[2];
-  local_9c[3] = (param_2->exposureValue).bloomScale[3];
+  local_9c[1] = (viewInfo->exposureValue).bloomScale[1];
+  local_9c[2] = (viewInfo->exposureValue).bloomScale[2];
+  local_9c[3] = (viewInfo->exposureValue).bloomScale[3];
   local_a0 = 0x3f800000;
   for (local_a4 = 0; local_a4 < 3; local_a4 = local_a4 + 1) {
     if (local_38[local_a4] <= 0.99998474) {
@@ -4114,49 +4217,49 @@ void __cdecl R_SetHDRControlConstants(GfxCmdBufInput *param_1,GfxViewInfo *param
     local_13c[local_a4] = 1.0 - local_74[local_a4];
   }
   fVar7 = 1.0 / (local_20 - local_24);
-  R_SetInputCodeConstant(param_1,0x79,fVar7 * local_1c,0.0,0.0,1.0);
-  R_SetInputCodeConstant(param_1,0x7a,-local_24 * fVar7,0.0,0.0,0.0);
-  R_SetInputCodeConstant(param_1,0x7b,local_c8[0],local_c8[1],local_c8[2],1.0);
-  R_SetInputCodeConstant(param_1,0x7c,local_d8[0],local_d8[1],local_d8[2],0.0);
-  R_SetInputCodeConstant(param_1,0x7d,local_e8[0],local_e8[1],local_e8[2],0.0);
-  R_SetInputCodeConstant(param_1,0x7e,local_fc[0],local_fc[1],local_fc[2],0.0);
-  R_SetInputCodeConstant(param_1,0x7f,local_10c[0],local_10c[1],local_10c[2],0.0);
-  R_SetInputCodeConstant(param_1,0x80,local_88[0],local_88[1],local_88[2],0.0);
-  R_SetInputCodeConstant(param_1,0x81,local_9c[0],local_9c[1],local_9c[2],0.0);
-  R_SetInputCodeConstant(param_1,0x82,local_11c[0],local_11c[1],local_11c[2],0.0);
-  R_SetInputCodeConstant(param_1,0x83,local_12c[0],local_12c[1],local_12c[2],0.0);
-  R_SetInputCodeConstant(param_1,0x84,local_13c[0],local_13c[1],local_13c[2],0.0);
+  R_SetInputCodeConstant(input,0x79,fVar7 * local_1c,0.0,0.0,1.0);
+  R_SetInputCodeConstant(input,0x7a,-local_24 * fVar7,0.0,0.0,0.0);
+  R_SetInputCodeConstant(input,0x7b,local_c8[0],local_c8[1],local_c8[2],1.0);
+  R_SetInputCodeConstant(input,0x7c,local_d8[0],local_d8[1],local_d8[2],0.0);
+  R_SetInputCodeConstant(input,0x7d,local_e8[0],local_e8[1],local_e8[2],0.0);
+  R_SetInputCodeConstant(input,0x7e,local_fc[0],local_fc[1],local_fc[2],0.0);
+  R_SetInputCodeConstant(input,0x7f,local_10c[0],local_10c[1],local_10c[2],0.0);
+  R_SetInputCodeConstant(input,0x80,local_88[0],local_88[1],local_88[2],0.0);
+  R_SetInputCodeConstant(input,0x81,local_9c[0],local_9c[1],local_9c[2],0.0);
+  R_SetInputCodeConstant(input,0x82,local_11c[0],local_11c[1],local_11c[2],0.0);
+  R_SetInputCodeConstant(input,0x83,local_12c[0],local_12c[1],local_12c[2],0.0);
+  R_SetInputCodeConstant(input,0x84,local_13c[0],local_13c[1],local_13c[2],0.0);
   dVar5 = (double)((r_waterWaveAngle->current).value * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   dVar6 = (double)((r_waterWaveAngle->current).value * 0.017453292);
   __libm_sse2_sin((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   fVar1 = 6.2831855 / (r_waterWaveWavelength->current).value;
   R_SetInputCodeConstant
-            (param_1,0x79,(float)dVar5 * fVar1,(float)dVar6 * fVar1,(float)dVar5,(float)dVar6);
+            (input,0x79,(float)dVar5 * fVar1,(float)dVar6 * fVar1,(float)dVar5,(float)dVar6);
   dVar5 = (double)((r_waterWaveAngle->current).vector[1] * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   dVar6 = (double)((r_waterWaveAngle->current).vector[1] * 0.017453292);
   __libm_sse2_sin((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   fVar2 = 6.2831855 / (r_waterWaveWavelength->current).vector[1];
   R_SetInputCodeConstant
-            (param_1,0x7a,(float)dVar5 * fVar2,(float)dVar6 * fVar2,(float)dVar5,(float)dVar6);
+            (input,0x7a,(float)dVar5 * fVar2,(float)dVar6 * fVar2,(float)dVar5,(float)dVar6);
   dVar5 = (double)((r_waterWaveAngle->current).vector[2] * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   dVar6 = (double)((r_waterWaveAngle->current).vector[2] * 0.017453292);
   __libm_sse2_sin((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   fVar3 = 6.2831855 / (r_waterWaveWavelength->current).vector[2];
   R_SetInputCodeConstant
-            (param_1,0x7b,(float)dVar5 * fVar3,(float)dVar6 * fVar3,(float)dVar5,(float)dVar6);
+            (input,0x7b,(float)dVar5 * fVar3,(float)dVar6 * fVar3,(float)dVar5,(float)dVar6);
   dVar5 = (double)((r_waterWaveAngle->current).vector[3] * 0.017453292);
   __libm_sse2_cos((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   dVar6 = (double)((r_waterWaveAngle->current).vector[3] * 0.017453292);
   __libm_sse2_sin((double)CONCAT44(in_stack_fffffe74,in_stack_fffffe70));
   fVar4 = 6.2831855 / (r_waterWaveWavelength->current).vector[3];
   R_SetInputCodeConstant
-            (param_1,0x7c,(float)dVar5 * fVar4,(float)dVar6 * fVar4,(float)dVar5,(float)dVar6);
-  fVar7 = (param_2->sceneDef).floatTime;
+            (input,0x7c,(float)dVar5 * fVar4,(float)dVar6 * fVar4,(float)dVar5,(float)dVar6);
+  fVar7 = (viewInfo->sceneDef).floatTime;
   R_SetInputCodeConstant
-            (param_1,0x7d,
+            (input,0x7d,
              SQRT(fVar1 * 386.22) * fVar7 * (r_waterWaveSpeed->current).value +
              (r_waterWavePhase->current).value,
              SQRT(fVar2 * 386.22) * fVar7 * (r_waterWaveSpeed->current).vector[1] +
@@ -4166,11 +4269,11 @@ void __cdecl R_SetHDRControlConstants(GfxCmdBufInput *param_1,GfxViewInfo *param
              SQRT(fVar4 * 386.22) * fVar7 * (r_waterWaveSpeed->current).vector[3] +
              (r_waterWavePhase->current).vector[3]);
   R_SetInputCodeConstant
-            (param_1,0x7e,(r_waterWaveAmplitude->current).value,
+            (input,0x7e,(r_waterWaveAmplitude->current).value,
              (r_waterWaveAmplitude->current).vector[1],(r_waterWaveAmplitude->current).vector[2],
              (r_waterWaveAmplitude->current).vector[3]);
   R_SetInputCodeConstant
-            (param_1,0x7f,(r_waterWaveSteepness->current).value,
+            (input,0x7f,(r_waterWaveSteepness->current).value,
              (r_waterWaveSteepness->current).vector[1],(r_waterWaveSteepness->current).vector[2],
              (r_waterWaveSteepness->current).vector[3]);
   return;
@@ -4184,7 +4287,7 @@ void __cdecl R_SetHDRControlConstants(GfxCmdBufInput *param_1,GfxViewInfo *param
 /* WARNING: Removing unreachable block (ram,0x00a67d9d) */
 /* WARNING: Removing unreachable block (ram,0x00a67dc1) */
 
-void __cdecl R_SetDLightsConstantsDefaults(GfxCmdBufInput *param_1)
+void __cdecl R_SetDLightsConstantsDefaults(GfxCmdBufInput *input)
 
 {
   code *pcVar1;
@@ -4192,25 +4295,25 @@ void __cdecl R_SetDLightsConstantsDefaults(GfxCmdBufInput *param_1)
   bool bVar3;
   
   pGVar2 = rgp.whiteImage;
-  if ((param_1 == (GfxCmdBufInput *)0x0) &&
+  if ((input == (GfxCmdBufInput *)0x0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,"%s")
      , !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->codeImages[0x1d] = pGVar2;
-  R_SetInputCodeImageSamplerState(param_1,0x11,'a');
+  input->codeImages[0x1d] = pGVar2;
+  R_SetInputCodeImageSamplerState(input,0x11,'a');
   pGVar2 = rgp.whiteImage;
-  if ((param_1 == (GfxCmdBufInput *)0x0) &&
+  if ((input == (GfxCmdBufInput *)0x0) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,"%s")
      , !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  param_1->codeImages[0x13] = pGVar2;
-  R_SetInputCodeImageSamplerState(param_1,7,'b');
+  input->codeImages[0x13] = pGVar2;
+  R_SetInputCodeImageSamplerState(input,7,'b');
   return;
 }
 
@@ -4229,7 +4332,9 @@ void __cdecl R_SetDLightsConstantsDefaults(GfxCmdBufInput *param_1)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 void __cdecl
-R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *param_3,int param_4)
+R_SetDLightsConstants
+          (GfxCmdBufInput *input,GfxViewInfo *viewInfo,GfxLight *visibleLights,int visibleLightCount
+          )
 
 {
   code *pcVar1;
@@ -4237,7 +4342,7 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
   int iVar3;
   GfxMatrix *pGVar4;
   float *pfVar5;
-  float fVar6;
+  float x;
   float local_2b0;
   float local_2ac;
   float local_2a8;
@@ -4457,32 +4562,32 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
   local_174 = (GfxSpotShadow *)0x0;
   local_178 = 0;
   do {
-    if (param_4 <= local_178) {
-      R_SetInputCodeConstant
-                (param_1,0x8b,local_80[0x18],local_80[0x19],local_80[0x1a],local_80[0x1b]);
-      R_SetInputCodeConstant
-                (param_1,0x8c,local_80[0x14],local_80[0x15],local_80[0x16],local_80[0x17]);
-      R_SetInputCodeConstant
-                (param_1,0x8d,local_80[0x10],local_80[0x11],local_80[0x12],local_80[0x13]);
-      R_SetInputCodeConstant(param_1,0x8e,local_80[0xc],local_80[0xd],local_80[0xe],local_80[0xf]);
-      R_SetInputCodeConstant(param_1,0x8f,local_80[8],local_80[9],local_80[10],local_80[0xb]);
-      R_SetInputCodeConstant(param_1,0x90,local_80[4],local_80[5],local_80[6],local_80[7]);
-      R_SetInputCodeConstant(param_1,0x91,local_80[0],local_80[1],local_80[2],local_80[3]);
-      if ((param_2->field0_0x0).cullViewInfo.viewParms.origin[3] == 0.0) {
+    if (visibleLightCount <= local_178) {
+      R_SetInputCodeConstant(input,0x8b,local_80[0x18],local_80[0x19],local_80[0x1a],local_80[0x1b])
+      ;
+      R_SetInputCodeConstant(input,0x8c,local_80[0x14],local_80[0x15],local_80[0x16],local_80[0x17])
+      ;
+      R_SetInputCodeConstant(input,0x8d,local_80[0x10],local_80[0x11],local_80[0x12],local_80[0x13])
+      ;
+      R_SetInputCodeConstant(input,0x8e,local_80[0xc],local_80[0xd],local_80[0xe],local_80[0xf]);
+      R_SetInputCodeConstant(input,0x8f,local_80[8],local_80[9],local_80[10],local_80[0xb]);
+      R_SetInputCodeConstant(input,0x90,local_80[4],local_80[5],local_80[6],local_80[7]);
+      R_SetInputCodeConstant(input,0x91,local_80[0],local_80[1],local_80[2],local_80[3]);
+      if ((viewInfo->field0_0x0).cullViewInfo.viewParms.origin[3] == 0.0) {
         local_1f8 = 0.0;
         local_1f4 = 0.0;
         local_1f0 = 0.0;
       }
       else {
-        local_1e8 = (param_2->field0_0x0).cullViewInfo.viewParms.origin;
+        local_1e8 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin;
         local_1f8 = *local_1e8;
-        local_1f4 = (param_2->field0_0x0).cullViewInfo.viewParms.origin[1];
-        local_1f0 = (param_2->field0_0x0).cullViewInfo.viewParms.origin[2];
+        local_1f4 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1];
+        local_1f0 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2];
       }
       local_1ec = 1.0;
       if (local_84 == (GfxLightDef *)0x0) {
         local_200 = rgp.whiteImage;
-        if (param_1 == (GfxCmdBufInput *)0x0) {
+        if (input == (GfxCmdBufInput *)0x0) {
           bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                    "%s");
           if (!bVar2) {
@@ -4491,12 +4596,12 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
             return;
           }
         }
-        param_1->codeImages[0x1d] = local_200;
-        R_SetInputCodeImageSamplerState(param_1,0x11,'a');
+        input->codeImages[0x1d] = local_200;
+        R_SetInputCodeImageSamplerState(input,0x11,'a');
       }
       else {
         local_1fc = (local_84->attenuation).image;
-        if (param_1 == (GfxCmdBufInput *)0x0) {
+        if (input == (GfxCmdBufInput *)0x0) {
           bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                    "%s");
           if (!bVar2) {
@@ -4505,12 +4610,12 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
             return;
           }
         }
-        param_1->codeImages[0x1d] = local_1fc;
-        R_SetInputCodeImageSamplerState(param_1,0x11,(local_84->attenuation).samplerState);
+        input->codeImages[0x1d] = local_1fc;
+        R_SetInputCodeImageSamplerState(input,0x11,(local_84->attenuation).samplerState);
       }
       if (local_174 == (GfxSpotShadow *)0x0) {
         local_248 = rgp.whiteImage;
-        if (param_1 == (GfxCmdBufInput *)0x0) {
+        if (input == (GfxCmdBufInput *)0x0) {
           bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                    "%s");
           if (!bVar2) {
@@ -4519,8 +4624,8 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
             return;
           }
         }
-        param_1->codeImages[0x13] = local_248;
-        R_SetInputCodeImageSamplerState(param_1,7,'b');
+        input->codeImages[0x13] = local_248;
+        R_SetInputCodeImageSamplerState(input,7,'b');
       }
       else {
         pGVar4 = &local_174->lookupMatrix;
@@ -4531,12 +4636,12 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
           pfVar5 = pfVar5 + 1;
         }
         MatrixTransformVector44(&local_1f8,&local_240,local_210);
-        R_SetInputCodeConstantFromVec4(param_1,0x9d,local_240);
-        R_SetInputCodeConstantFromVec4(param_1,0x9e,local_230);
-        R_SetInputCodeConstantFromVec4(param_1,0x9f,local_220);
-        R_SetInputCodeConstantFromVec4(param_1,0xa0,local_210);
+        R_SetInputCodeConstantFromVec4(input,0x9d,local_240);
+        R_SetInputCodeConstantFromVec4(input,0x9e,local_230);
+        R_SetInputCodeConstantFromVec4(input,0x9f,local_220);
+        R_SetInputCodeConstantFromVec4(input,0xa0,local_210);
         local_244 = local_174->image;
-        if (param_1 == (GfxCmdBufInput *)0x0) {
+        if (input == (GfxCmdBufInput *)0x0) {
           bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                    "%s");
           if (!bVar2) {
@@ -4545,11 +4650,11 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
             return;
           }
         }
-        param_1->codeImages[0x13] = local_244;
-        R_SetInputCodeImageSamplerState(param_1,7,'b');
-        R_SetInputCodeConstantFromVec4(param_1,0x47,local_174->pixelAdjust);
+        input->codeImages[0x13] = local_244;
+        R_SetInputCodeImageSamplerState(input,7,'b');
+        R_SetInputCodeConstantFromVec4(input,0x47,local_174->pixelAdjust);
       }
-      R_SetInputCodeConstantFromVec4(param_1,0x95,&local_c0);
+      R_SetInputCodeConstantFromVec4(input,0x95,&local_c0);
       if (local_e4 == local_ec) {
         local_24c = 1.0;
       }
@@ -4578,7 +4683,7 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
         local_264 = -local_f0 * (1.0 / (local_e8 - local_f0));
       }
       local_268 = local_264;
-      R_SetInputCodeConstant(param_1,0x96,local_24c,local_25c,local_254,local_264);
+      R_SetInputCodeConstant(input,0x96,local_24c,local_25c,local_254,local_264);
       MatrixTransformVector44(&local_b0,(float (*) [4])&local_130,&local_100);
       local_26c = &local_100;
       local_270 = &local_100;
@@ -4587,36 +4692,43 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
       local_f8 = -local_f8;
       MatrixMultiply44((float (*) [4])&local_130,(float (*) [4])&local_170,(float (*) [4])&local_2b0
                       );
-      R_SetInputCodeConstant(param_1,0x97,local_2b0,local_2a0,local_290,local_280);
-      R_SetInputCodeConstant(param_1,0x98,local_2ac,local_29c,local_28c,local_27c);
-      R_SetInputCodeConstant(param_1,0x99,local_2a8,local_298,local_288,local_278);
-      R_SetInputCodeConstant(param_1,0x9a,local_2a4,local_294,local_284,local_274);
-      R_SetInputCodeConstant(param_1,0x92,local_b0,local_ac,local_a8,1.0 / (local_d0 * local_d0));
-      R_SetInputCodeConstant(param_1,0x93,local_90,local_8c,local_88,1.0);
-      R_SetInputCodeConstant(param_1,0x94,local_9c,local_98,local_94,1.0);
-      R_SetInputCodeConstant(param_1,0x9b,local_cc,local_c8,local_c4,0.0);
-      fVar6 = 1.0 / (local_d8 - local_dc);
-      R_SetInputCodeConstant(param_1,0x9c,fVar6,-fVar6 * local_dc,0.0,local_d4);
+      R_SetInputCodeConstant(input,0x97,local_2b0,local_2a0,local_290,local_280);
+      R_SetInputCodeConstant(input,0x98,local_2ac,local_29c,local_28c,local_27c);
+      R_SetInputCodeConstant(input,0x99,local_2a8,local_298,local_288,local_278);
+      R_SetInputCodeConstant(input,0x9a,local_2a4,local_294,local_284,local_274);
+      R_SetInputCodeConstant(input,0x92,local_b0,local_ac,local_a8,1.0 / (local_d0 * local_d0));
+      R_SetInputCodeConstant(input,0x93,local_90,local_8c,local_88,1.0);
+      R_SetInputCodeConstant(input,0x94,local_9c,local_98,local_94,1.0);
+      R_SetInputCodeConstant(input,0x9b,local_cc,local_c8,local_c4,0.0);
+      x = 1.0 / (local_d8 - local_dc);
+      R_SetInputCodeConstant(input,0x9c,x,-x * local_dc,0.0,local_d4);
       return;
     }
-    if (param_3[local_178].type == '\x03') {
+    if (visibleLights[local_178].type == '\x03') {
       local_80[local_178 + 0x18] =
-           param_3[local_178].origin[0] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[0];
+           visibleLights[local_178].origin[0] -
+           (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[0];
       local_80[local_178 + 0x14] =
-           param_3[local_178].origin[1] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[1];
+           visibleLights[local_178].origin[1] -
+           (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1];
       local_80[local_178 + 0x10] =
-           param_3[local_178].origin[2] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[2];
-      local_80[local_178 + 0xc] = -1.0 / (param_3[local_178].radius * param_3[local_178].radius);
-      local_17c = 1.0 / (param_2->sceneComposition).framebufferWindowY0;
+           visibleLights[local_178].origin[2] -
+           (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2];
+      local_80[local_178 + 0xc] =
+           -1.0 / (visibleLights[local_178].radius * visibleLights[local_178].radius);
+      local_17c = 1.0 / (viewInfo->sceneComposition).framebufferWindowY0;
       local_80[local_178 + 8] =
-           param_3[local_178].diffuseColor[0] * (r_diffuseColorScale->current).value * local_17c;
+           visibleLights[local_178].diffuseColor[0] * (r_diffuseColorScale->current).value *
+           local_17c;
       local_80[local_178 + 4] =
-           param_3[local_178].diffuseColor[1] * (r_diffuseColorScale->current).value * local_17c;
+           visibleLights[local_178].diffuseColor[1] * (r_diffuseColorScale->current).value *
+           local_17c;
       local_80[local_178] =
-           param_3[local_178].diffuseColor[2] * (r_diffuseColorScale->current).value * local_17c;
+           visibleLights[local_178].diffuseColor[2] * (r_diffuseColorScale->current).value *
+           local_17c;
     }
     else {
-      if (param_3[local_178].type != '\x02') {
+      if (visibleLights[local_178].type != '\x02') {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x118a,0,
                                  "%s");
         if (!bVar2) {
@@ -4625,71 +4737,71 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
           return;
         }
       }
-      local_84 = param_3[local_178].def;
-      local_180 = (param_2->field0_0x0).cullViewInfo.viewParms.origin;
-      local_184 = param_3[local_178].origin;
+      local_84 = visibleLights[local_178].def;
+      local_180 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin;
+      local_184 = visibleLights[local_178].origin;
       local_b0 = *local_184 - *local_180;
-      local_ac = local_184[1] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[1];
-      local_a8 = local_184[2] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[2];
-      local_d0 = param_3[local_178].radius;
-      local_188 = param_3[local_178].attenuation;
+      local_ac = local_184[1] - (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1];
+      local_a8 = local_184[2] - (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2];
+      local_d0 = visibleLights[local_178].radius;
+      local_188 = visibleLights[local_178].attenuation;
       local_bc = local_188[1];
       local_b8 = local_188[2];
       local_b4 = local_188[3];
       local_c0 = *local_188 + 1.5287891e-05;
-      local_18c = param_3[local_178].dir;
+      local_18c = visibleLights[local_178].dir;
       local_cc = *local_18c;
       local_c8 = local_18c[1];
       local_c4 = local_18c[2];
-      local_d8 = param_3[local_178].cosHalfFovInner;
-      local_dc = param_3[local_178].cosHalfFovOuter;
-      local_e0 = param_3[local_178].exponent;
-      local_e4 = param_3[local_178].falloff[0];
-      local_e8 = param_3[local_178].falloff[1];
-      local_ec = param_3[local_178].falloff[2];
-      local_f0 = param_3[local_178].falloff[3];
-      local_190 = &param_3[local_178].viewMatrix;
+      local_d8 = visibleLights[local_178].cosHalfFovInner;
+      local_dc = visibleLights[local_178].cosHalfFovOuter;
+      local_e0 = visibleLights[local_178].exponent;
+      local_e4 = visibleLights[local_178].falloff[0];
+      local_e8 = visibleLights[local_178].falloff[1];
+      local_ec = visibleLights[local_178].falloff[2];
+      local_f0 = visibleLights[local_178].falloff[3];
+      local_190 = &visibleLights[local_178].viewMatrix;
       local_130 = (local_190->field0_0x0).m[0][0];
       local_12c = (local_190->field0_0x0).m[0][1];
       local_128 = (local_190->field0_0x0).m[0][2];
       local_124 = (local_190->field0_0x0).m[0][3];
       local_194 = &local_120;
-      local_198 = param_3[local_178].viewMatrix.field0_0x0.member + 4;
+      local_198 = visibleLights[local_178].viewMatrix.field0_0x0.member + 4;
       local_120 = *local_198;
       local_11c = local_198[1];
       local_118 = local_198[2];
       local_114 = local_198[3];
       local_19c = &local_110;
-      local_1a0 = param_3[local_178].viewMatrix.field0_0x0.member + 8;
+      local_1a0 = visibleLights[local_178].viewMatrix.field0_0x0.member + 8;
       local_110 = *local_1a0;
       local_10c = local_1a0[1];
       local_108 = local_1a0[2];
       local_104 = local_1a0[3];
       local_1a4 = &local_100;
-      local_1a8 = param_3[local_178].viewMatrix.field0_0x0.member + 0xc;
+      local_1a8 = visibleLights[local_178].viewMatrix.field0_0x0.member + 0xc;
       local_100 = *local_1a8;
       local_fc = local_1a8[1];
       local_f8 = local_1a8[2];
       local_f4 = local_1a8[3];
-      local_1ac = &param_3[local_178].projMatrix;
+      local_1ac = &visibleLights[local_178].projMatrix;
       local_170 = (local_1ac->field0_0x0).m[0][0];
       local_16c = (local_1ac->field0_0x0).m[0][1];
       local_168 = (local_1ac->field0_0x0).m[0][2];
       local_164 = (local_1ac->field0_0x0).m[0][3];
       local_1b0 = &local_160;
-      local_1b4 = param_3[local_178].projMatrix.field0_0x0.member + 4;
+      local_1b4 = visibleLights[local_178].projMatrix.field0_0x0.member + 4;
       local_160 = *local_1b4;
       local_15c = local_1b4[1];
       local_158 = local_1b4[2];
       local_154 = local_1b4[3];
       local_1b8 = &local_150;
-      local_1bc = param_3[local_178].projMatrix.field0_0x0.member + 8;
+      local_1bc = visibleLights[local_178].projMatrix.field0_0x0.member + 8;
       local_150 = *local_1bc;
       local_14c = local_1bc[1];
       local_148 = local_1bc[2];
       local_144 = local_1bc[3];
       local_1c0 = &local_140;
-      local_1c4 = param_3[local_178].projMatrix.field0_0x0.member + 0xc;
+      local_1c4 = visibleLights[local_178].projMatrix.field0_0x0.member + 0xc;
       local_140 = *local_1c4;
       local_13c = local_1c4[1];
       local_138 = local_1c4[2];
@@ -4698,9 +4810,9 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
           local_1c8 = local_1c8 + 1) {
         if (((frontEndDataOut->shadowableLights[local_1c8].type == '\x02') &&
             (frontEndDataOut->shadowableLights[local_1c8].spotShadowIndex != 0xffffffff)) &&
-           (param_3[local_178].def == frontEndDataOut->shadowableLights[local_1c8].def)) {
+           (visibleLights[local_178].def == frontEndDataOut->shadowableLights[local_1c8].def)) {
           local_1cc = frontEndDataOut->shadowableLights[local_1c8].origin;
-          local_1d0 = param_3[local_178].origin;
+          local_1d0 = visibleLights[local_178].origin;
           if (((*local_1d0 == *local_1cc) && (local_1d0[1] == local_1cc[1])) &&
              (local_1d0[2] == local_1cc[2])) {
             local_1d4 = 1;
@@ -4717,12 +4829,12 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
         }
       }
       local_1d8 = (r_diffuseColorScale->current).value;
-      local_1dc = param_3[local_178].diffuseColor;
+      local_1dc = visibleLights[local_178].diffuseColor;
       local_90 = local_1d8 * *local_1dc;
       local_8c = local_1d8 * local_1dc[1];
       local_88 = local_1d8 * local_1dc[2];
       local_1e0 = (r_specularColorScale->current).value;
-      local_1e4 = param_3[local_178].specularColor;
+      local_1e4 = visibleLights[local_178].specularColor;
       local_9c = local_1e0 * *local_1e4;
       local_98 = local_1e0 * local_1e4[1];
       local_94 = local_1e0 * local_1e4[2];
@@ -4734,23 +4846,26 @@ R_SetDLightsConstants(GfxCmdBufInput *param_1,GfxViewInfo *param_2,GfxLight *par
 
 // 00A6B190  R_DoesDrawSurfListInfoNeedFloatz  (gfx_d3d/r_scene.cpp:4676)
 
-bool __cdecl R_DoesDrawSurfListInfoNeedFloatz(GfxViewInfo *param_1,GfxDrawSurfListInfo *param_2)
+bool __cdecl
+R_DoesDrawSurfListInfoNeedFloatz(GfxViewInfo *viewInfo,GfxDrawSurfListInfo *emissiveInfo)
 
 {
   int extraout_EAX;
   MaterialTechnique *pMVar1;
-  uint local_c;
+  MaterialTechnique *technique;
+  uint surfIndex;
+  Material *material;
   
-  if ((!dx.supportsIntZ) || (*(char *)((int)&param_1[1].field0_0x0 + 0x14) != '\0')) {
-    for (local_c = 0; local_c != param_2->drawSurfCount; local_c = local_c + 1) {
+  if ((!dx.supportsIntZ) || (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0')) {
+    for (surfIndex = 0; surfIndex != emissiveInfo->drawSurfCount; surfIndex = surfIndex + 1) {
       _aullshr();
       _allmul();
       pMVar1 = Material_GetTechnique
                          (*(Material **)((int)rgp.sortedMaterials + extraout_EAX),
-                          param_2->baseTechType);
+                          emissiveInfo->baseTechType);
       if ((pMVar1 != (MaterialTechnique *)0x0) && ((pMVar1->flags & 0x40) != 0)) {
         if (gfxRenderTargets
-            [(-(uint)(*(char *)((int)&param_1[1].field0_0x0 + 0x14) != '\0') & 0x10) + 7].surface.
+            [(-(uint)(*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0') & 0x10) + 7].surface.
             color == (IDirect3DSurface9 *)0x0) {
           Com_Error(ERR_FATAL,
                     "Renderer attempted to use technique that uses floatz buffer, but it wasn\'t created.\n"
@@ -4770,20 +4885,21 @@ void __cdecl R_DrawCineWarning(void)
 
 {
   bool bVar1;
-  Font_s *pFVar2;
-  char *local_8;
+  Font_s *font_00;
+  Font_s *font;
+  char *msg;
   
   if ((com_statmon->current).enabled != false) {
     bVar1 = R_Cinematic_IsStarted();
     if (bVar1) {
-      local_8 = "CINE";
-      pFVar2 = R_RegisterFont("fonts/consoleFont",1);
+      msg = "CINE";
+      font_00 = R_RegisterFont("fonts/consoleFont",1);
       bVar1 = R_Cinematic_IsUnderrun();
       if (bVar1) {
-        local_8 = "CINE UNDERRUN!";
+        msg = "CINE UNDERRUN!";
       }
       if ((cg_draw2D->current).enabled != false) {
-        R_AddCmdDrawText(local_8,0x7fffffff,pFVar2,0.0,360.0,1.5,2.0,0.0,colorRedFaded,0);
+        R_AddCmdDrawText(msg,0x7fffffff,font_00,0.0,360.0,1.5,2.0,0.0,colorRedFaded,0);
       }
     }
   }
@@ -4795,67 +4911,68 @@ void __cdecl R_DrawCineWarning(void)
 
 void __cdecl
 R_SplitDrawSurfacesPrimarySortKey
-          (GfxDrawSurfListInfo *param_1,GfxDrawSurfListInfo *param_2,int param_3)
+          (GfxDrawSurfListInfo *srcList,GfxDrawSurfListInfo *destList,int sortkeyID)
 
 {
   uint extraout_EAX;
-  ushort local_8;
+  GfxDrawSurf *drawSurf;
+  ushort start;
   
-  for (local_8 = 0; (uint)local_8 < param_1->drawSurfCount; local_8 = local_8 + 1) {
+  for (start = 0; (uint)start < srcList->drawSurfCount; start = start + 1) {
     _aullshr();
-    if ((-1 < param_3) && ((param_3 < 0 || ((uint)param_3 <= (extraout_EAX & 0x3f))))) break;
+    if ((-1 < sortkeyID) && ((sortkeyID < 0 || ((uint)sortkeyID <= (extraout_EAX & 0x3f))))) break;
   }
-  param_2->drawSurfCount = param_1->drawSurfCount - (uint)local_8;
-  param_2->drawSurfs = param_1->drawSurfs + local_8;
-  param_1->drawSurfCount = (uint)local_8;
+  destList->drawSurfCount = srcList->drawSurfCount - (uint)start;
+  destList->drawSurfs = srcList->drawSurfs + start;
+  srcList->drawSurfCount = (uint)start;
   return;
 }
 
 
 // 00A69930  DrawLightDebug  (gfx_d3d/r_scene.cpp:4837)
 
-void __cdecl DrawLightDebug(GfxViewInfo *param_1,GfxLight *param_2,float *param_3)
+void __cdecl DrawLightDebug(GfxViewInfo *viewInfo,GfxLight *L,float *debugColor)
 
 {
-  float local_44;
+  float target;
   float local_40;
   float local_3c;
-  float local_38;
+  float mins;
   float local_34;
   float local_30;
-  float local_2c;
+  float ext;
   float local_28;
   float local_24;
-  float local_20;
+  float maxs;
   float local_1c;
   float local_18;
-  float local_14;
+  float lightColor;
   float local_10;
   float local_c;
   float local_8;
   
-  local_2c = 10.0;
+  ext = 10.0;
   local_28 = 10.0;
   local_24 = 10.0;
-  local_20 = param_2->origin[0] + 10.0;
-  local_1c = param_2->origin[1] + 10.0;
-  local_18 = param_2->origin[2] + 10.0;
-  local_38 = param_2->origin[0] + -10.0;
-  local_34 = param_2->origin[1] + -10.0;
-  local_30 = param_2->origin[2] + -10.0;
+  maxs = L->origin[0] + 10.0;
+  local_1c = L->origin[1] + 10.0;
+  local_18 = L->origin[2] + 10.0;
+  mins = L->origin[0] + -10.0;
+  local_34 = L->origin[1] + -10.0;
+  local_30 = L->origin[2] + -10.0;
   local_8 = 1.0;
-  local_14 = ((param_1->exposureValue).linearEnd[3] / 8.0) * param_2->color[0];
-  local_10 = ((param_1->exposureValue).linearEnd[3] / 8.0) * param_2->color[1];
-  local_c = ((param_1->exposureValue).linearEnd[3] / 8.0) * param_2->color[2];
-  R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_38,&local_20,param_3);
-  if (param_2->type == '\x02') {
-    local_44 = param_2->dir[0] * -20.0 + param_2->origin[0];
-    local_40 = param_2->dir[1] * -20.0 + param_2->origin[1];
-    local_3c = param_2->dir[2] * -20.0 + param_2->origin[2];
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,param_2->origin,&local_44,&local_14,0);
+  lightColor = ((viewInfo->exposureValue).linearEnd[3] / 8.0) * L->color[0];
+  local_10 = ((viewInfo->exposureValue).linearEnd[3] / 8.0) * L->color[1];
+  local_c = ((viewInfo->exposureValue).linearEnd[3] / 8.0) * L->color[2];
+  R_AddDebugBox(&frontEndDataOut->debugGlobals,&mins,&maxs,debugColor);
+  if (L->type == '\x02') {
+    target = L->dir[0] * -20.0 + L->origin[0];
+    local_40 = L->dir[1] * -20.0 + L->origin[1];
+    local_3c = L->dir[2] * -20.0 + L->origin[2];
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,L->origin,&target,&lightColor,0);
   }
   else {
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,&local_38,&local_20,&local_14,0);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,&mins,&maxs,&lightColor,0);
   }
   return;
 }
@@ -4866,20 +4983,21 @@ void __cdecl DrawLightDebug(GfxViewInfo *param_1,GfxLight *param_2,float *param_
 void __cdecl DrawOutdoorBoundsVolumeDebug(void)
 
 {
-  float local_18;
+  float boxColor;
   float local_14;
   float local_10;
   float local_c;
-  GfxOutdoorBounds *local_8;
+  GfxOutdoorBounds *outdoorBound;
   
   if (((r_showOutdoorVolumeDebug->current).enabled != false) && ((rgp.world)->numOutdoorBounds != 0)
      ) {
-    local_18 = 1.0;
+    boxColor = 1.0;
     local_14 = 1.0;
     local_10 = 1.0;
     local_c = 1.0;
-    local_8 = (rgp.world)->outdoorBounds;
-    R_AddDebugBox(&frontEndDataOut->debugGlobals,(float *)local_8,local_8->bounds[1],&local_18);
+    outdoorBound = (rgp.world)->outdoorBounds;
+    R_AddDebugBox(&frontEndDataOut->debugGlobals,(float *)outdoorBound,outdoorBound->bounds[1],
+                  &boxColor);
   }
   return;
 }
@@ -4887,92 +5005,92 @@ void __cdecl DrawOutdoorBoundsVolumeDebug(void)
 
 // 00A69C00  DrawSunDirectionDebug  (gfx_d3d/r_scene.cpp:4879)
 
-void __cdecl DrawSunDirectionDebug(float *param_1,float *param_2)
+void __cdecl DrawSunDirectionDebug(float *viewOrg,float *viewForward)
 
 {
-  float local_a8;
+  float boxColor;
   float local_a4;
   float local_a0;
   float local_9c;
-  float local_98;
+  float lineEnd;
   float local_94;
   float local_90;
-  float local_8c;
+  float zdir;
   float local_88;
   float local_84;
-  float local_80;
+  float sunColor;
   float local_7c;
   float local_78;
   float local_74;
-  float local_70;
+  float mins;
   float local_6c;
   float local_68;
-  float local_64 [12];
+  float zColor [12];
   float local_34;
   float local_30;
-  float local_2c;
+  float maxs;
   float local_28;
   float local_24;
-  float local_20;
+  float yColor;
   float local_1c;
   undefined4 local_18;
   float local_14;
-  float local_10;
+  float xdir;
   float local_c;
   float local_8;
   
   if ((r_showSunDirectionDebug->current).enabled != false) {
     if (!lastShowDebug) {
-      debugOrigin[0] = *param_2 * 100.0 + *param_1;
-      debugOrigin[1] = param_2[1] * 100.0 + param_1[1];
-      debugOrigin[2] = param_2[2] * 100.0 + param_1[2];
+      debugOrigin[0] = *viewForward * 100.0 + *viewOrg;
+      debugOrigin[1] = viewForward[1] * 100.0 + viewOrg[1];
+      debugOrigin[2] = viewForward[2] * 100.0 + viewOrg[2];
     }
-    local_98 = (frontEndDataOut->sunLight).dir[0] * 200.0 + debugOrigin[0];
+    lineEnd = (frontEndDataOut->sunLight).dir[0] * 200.0 + debugOrigin[0];
     local_94 = (frontEndDataOut->sunLight).dir[1] * 200.0 + debugOrigin[1];
     local_90 = (frontEndDataOut->sunLight).dir[2] * 200.0 + debugOrigin[2];
-    local_80 = 1.0;
+    sunColor = 1.0;
     local_7c = 1.0;
     local_78 = 1.0;
     local_74 = 1.0;
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,&local_98,&local_80,0);
-    local_a8 = 1.0;
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,&lineEnd,&sunColor,0);
+    boxColor = 1.0;
     local_a4 = 1.0;
     local_a0 = 1.0;
     local_9c = 1.0;
-    local_64[8] = 5.0;
-    local_64[9] = 5.0;
-    local_64[10] = 5.0;
-    local_2c = debugOrigin[0] + 5.0;
+    zColor[8] = 5.0;
+    zColor[9] = 5.0;
+    zColor[10] = 5.0;
+    maxs = debugOrigin[0] + 5.0;
     local_28 = debugOrigin[1] + 5.0;
     local_24 = debugOrigin[2] + 5.0;
-    local_70 = debugOrigin[0] + -5.0;
+    mins = debugOrigin[0] + -5.0;
     local_6c = debugOrigin[1] + -5.0;
     local_68 = debugOrigin[2] + -5.0;
-    R_AddDebugBox(&frontEndDataOut->debugGlobals,&local_70,&local_2c,&local_a8);
-    local_64[4] = 1.0;
-    local_64[5] = 0.0;
-    local_64[6] = 0.0;
-    local_64[7] = 1.0;
-    local_20 = 0.0;
+    R_AddDebugBox(&frontEndDataOut->debugGlobals,&mins,&maxs,&boxColor);
+    zColor[4] = 1.0;
+    zColor[5] = 0.0;
+    zColor[6] = 0.0;
+    zColor[7] = 1.0;
+    yColor = 0.0;
     local_1c = 1.0;
     local_18 = 0;
     local_14 = 1.0;
-    local_64[0] = 0.0;
-    local_64[1] = 0.0;
-    local_64[2] = 1.0;
-    local_64[3] = 1.0;
-    local_10 = debugOrigin[0] + 40.0;
+    zColor[0] = 0.0;
+    zColor[1] = 0.0;
+    zColor[2] = 1.0;
+    zColor[3] = 1.0;
+    xdir = debugOrigin[0] + 40.0;
     local_c = debugOrigin[1] + 0.0;
     local_8 = debugOrigin[2] + 0.0;
-    local_64[0xb] = debugOrigin[0] + 0.0;
+    zColor[0xb] = debugOrigin[0] + 0.0;
     local_34 = debugOrigin[1] + 40.0;
     local_30 = debugOrigin[2] + 0.0;
-    local_8c = debugOrigin[0] + 0.0;
+    zdir = debugOrigin[0] + 0.0;
     local_88 = debugOrigin[1] + 0.0;
     local_84 = debugOrigin[2] + 40.0;
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,&local_10,local_64 + 4,0);
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,local_64 + 0xb,&local_20,0);
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,&local_8c,local_64,0);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,&xdir,zColor + 4,0);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,zColor + 0xb,&yColor,0);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,debugOrigin,&zdir,zColor,0);
   }
   lastShowDebug = (r_showSunDirectionDebug->current).enabled;
   return;
@@ -5004,39 +5122,46 @@ void __cdecl R_SortAllCodeMeshSurfacesSunShadow(void)
 void __cdecl R_DrawFogParams(void)
 
 {
-  Font_s *pFVar1;
-  char local_8c [132];
+  Font_s *font_00;
+  float gMyX;
+  Font_s *font;
+  float gMyY;
+  float gMylineHeight;
+  GfxFog *f;
+  float x;
+  float y;
+  char text [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
   if ((r_drawDebugFogParams->current).enabled != false) {
-    pFVar1 = R_RegisterFont("fonts/consoleFont",1);
-    _snprintf(local_8c,0x80,"fog.startTime = %d");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,150.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.finishTime = %d");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,175.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.fogStart = %.4f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,200.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.density = %.4f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,225.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.maxDensity = %.4f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,250.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.heightDensity = %.4f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,275.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.baseHeight = %.4f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,300.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.colorScale = %.4");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,325.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.color = %.2f, %.2f, %.2f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,350.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.sunFogColor = %.2f %.2f %.2f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,375.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.sunFogDir = %.2f %.2f %.2f");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,400.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.sunFogStartAngle = %g");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,425.0,1.5,2.0,0.0,colorWhite,0);
-    _snprintf(local_8c,0x80,"fog.sunFogEndAngle = %g");
-    R_AddCmdDrawText(local_8c,0x80,pFVar1,100.0,450.0,1.5,2.0,0.0,colorWhite,0);
+    font_00 = R_RegisterFont("fonts/consoleFont",1);
+    _snprintf(text,0x80,"fog.startTime = %d");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,150.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.finishTime = %d");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,175.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.fogStart = %.4f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,200.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.density = %.4f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,225.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.maxDensity = %.4f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,250.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.heightDensity = %.4f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,275.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.baseHeight = %.4f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,300.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.colorScale = %.4");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,325.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.color = %.2f, %.2f, %.2f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,350.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.sunFogColor = %.2f %.2f %.2f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,375.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.sunFogDir = %.2f %.2f %.2f");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,400.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.sunFogStartAngle = %g");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,425.0,1.5,2.0,0.0,colorWhite,0);
+    _snprintf(text,0x80,"fog.sunFogEndAngle = %g");
+    R_AddCmdDrawText(text,0x80,font_00,100.0,450.0,1.5,2.0,0.0,colorWhite,0);
   }
   return;
 }
@@ -5048,13 +5173,13 @@ void __cdecl R_DrawFogParams(void)
 /* WARNING: Removing unreachable block (ram,0x00a60bc2) */
 /* WARNING: Removing unreachable block (ram,0x00a60be7) */
 
-void __cdecl R_SetSkyDynamicIntensity(float *param_1,GfxCmdBufInput *param_2)
+void __cdecl R_SetSkyDynamicIntensity(float *viewForward,GfxCmdBufInput *input)
 
 {
-  Font_s *pFVar1;
-  float fVar2;
+  Font_s *font;
+  float fVar1;
+  double dVar2;
   double dVar3;
-  double dVar4;
   double in_stack_ffffff70;
   float local_3c;
   float local_28;
@@ -5063,7 +5188,7 @@ void __cdecl R_SetSkyDynamicIntensity(float *param_1,GfxCmdBufInput *param_2)
   float local_1c;
   
   if ((r_reflectionProbeGenerate->current).enabled == false) {
-    fVar2 = param_1[2];
+    fVar1 = viewForward[2];
     if ((r_sky_intensity_useDebugValues->current).enabled == false) {
       local_1c = ((rgp.world)->skyDynIntensity).angle0;
       local_20 = ((rgp.world)->skyDynIntensity).angle1;
@@ -5076,16 +5201,16 @@ void __cdecl R_SetSkyDynamicIntensity(float *param_1,GfxCmdBufInput *param_2)
       local_24 = (r_sky_intensity_factor0->current).value;
       local_28 = (r_sky_intensity_factor1->current).value;
     }
-    dVar3 = (double)((90.0 - local_1c) * 0.017453292);
+    dVar2 = (double)((90.0 - local_1c) * 0.017453292);
     __libm_sse2_cos(in_stack_ffffff70);
-    dVar4 = (double)((90.0 - local_20) * 0.017453292);
+    dVar3 = (double)((90.0 - local_20) * 0.017453292);
     __libm_sse2_cos(in_stack_ffffff70);
-    local_3c = (float)dVar4 - (float)dVar3;
+    local_3c = (float)dVar3 - (float)dVar2;
     if (ABS(local_3c) <= 0.0001) {
       local_3c = 0.0;
     }
     else {
-      local_3c = (fVar2 - (float)dVar3) / local_3c;
+      local_3c = (fVar1 - (float)dVar2) / local_3c;
       if (0.0 <= local_3c) {
         if (1.0 < local_3c) {
           local_3c = 1.0;
@@ -5096,20 +5221,20 @@ void __cdecl R_SetSkyDynamicIntensity(float *param_1,GfxCmdBufInput *param_2)
       }
       local_3c = local_3c * local_3c;
     }
-    fVar2 = (1.0 - local_3c) * local_24 + local_28 * local_3c;
+    fVar1 = (1.0 - local_3c) * local_24 + local_28 * local_3c;
     if ((r_sky_intensity_showDebugDisplay->current).enabled != false) {
-      pFVar1 = R_RegisterFont("fonts/consoleFont",1);
+      font = R_RegisterFont("fonts/consoleFont",1);
       _snprintf(&stack0xffffff70,0x40,"intensity0 angle=%.2f factor=%.2f");
-      R_AddCmdDrawText(&stack0xffffff70,0x40,pFVar1,100.0,100.0,1.5,2.0,0.0,colorRed,0);
+      R_AddCmdDrawText(&stack0xffffff70,0x40,font,100.0,100.0,1.5,2.0,0.0,colorRed,0);
       _snprintf(&stack0xffffff70,0x40,"intensity1 angle=%.2f factor=%.2f");
-      R_AddCmdDrawText(&stack0xffffff70,0x40,pFVar1,100.0,120.0,1.5,2.0,0.0,colorRed,0);
+      R_AddCmdDrawText(&stack0xffffff70,0x40,font,100.0,120.0,1.5,2.0,0.0,colorRed,0);
       _snprintf(&stack0xffffff70,0x40,"intensity=%.2f interp=%.2f");
-      R_AddCmdDrawText(&stack0xffffff70,0x40,pFVar1,100.0,140.0,1.5,2.0,0.0,colorRed,0);
+      R_AddCmdDrawText(&stack0xffffff70,0x40,font,100.0,140.0,1.5,2.0,0.0,colorRed,0);
     }
-    R_SetInputCodeConstant(param_2,0xc2,fVar2,fVar2,fVar2,fVar2);
+    R_SetInputCodeConstant(input,0xc2,fVar1,fVar1,fVar1,fVar1);
   }
   else {
-    R_SetInputCodeConstant(param_2,0xc2,1.0,1.0,1.0,1.0);
+    R_SetInputCodeConstant(input,0xc2,1.0,1.0,1.0,1.0);
   }
   return;
 }
@@ -5123,6 +5248,10 @@ void __cdecl R_WaitForFXUpdateWorkerCmds(void)
 
 {
   DWORD DVar1;
+  PIXProfile pp_fx_update_remaining_ppu;
+  PIXProfile pp_fx_update_remaining;
+  PIXProfile pp_fx_update;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"R_WaitForFXUpdateWorkerCmds");
   PIXBeginNamedEvent(-1,"wait fx_update");
@@ -5157,7 +5286,8 @@ void __cdecl R_WaitForFXUpdateWorkerCmds(void)
 
 void __cdecl
 R_FinishDecalAndEmissiveDrawSurfs
-          (GfxViewInfo *param_1,GfxViewParms *param_2,GfxBackEndData *param_3,bool param_4)
+          (GfxViewInfo *viewInfo,GfxViewParms *viewParmsDraw,GfxBackEndData *backendData,
+          bool forMissileCamView)
 
 {
   int iVar1;
@@ -5165,7 +5295,13 @@ R_FinishDecalAndEmissiveDrawSurfs
   uchar uVar3;
   bool bVar4;
   DWORD DVar5;
-  GfxDrawSurfListInfo *pGVar6;
+  GfxDrawSurfListInfo *info;
+  GfxDrawSurfListInfo *reflectedInfo;
+  int firstDrawSurfCount;
+  GfxDrawSurfListInfo *decalInfo;
+  GfxDrawSurfListInfo *emissiveInfo;
+  PIXProfile pp;
+  GfxDrawSurfListInfo *cloakedInfo;
   
   PIXBeginNamedEvent(-1,"R_FinishDecalAndEmissiveDrawSurfs");
   PIXBeginNamedEvent(-1,"wait for fx_draw");
@@ -5188,30 +5324,30 @@ R_FinishDecalAndEmissiveDrawSurfs
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"set up decalInfo");
-  R_InitDrawSurfListInfo(param_1->drawList + 3);
-  param_1->drawList[3].baseTechType = gfxDrawMethod.baseTechType;
-  param_1->drawList[3].viewInfo = param_1;
-  param_1->drawList[3].viewOrigin[0] = param_2->origin[0];
-  param_1->drawList[3].viewOrigin[1] = param_2->origin[1];
-  param_1->drawList[3].viewOrigin[2] = param_2->origin[2];
-  param_1->drawList[3].viewOrigin[3] = param_2->origin[3];
-  param_1->drawList[3].cameraView = 1;
-  param_1->drawList[3].shaderHDRmode = (int)(param_1->bloom).bloomTintScale[0];
-  R_InitDrawSurfListInfo(param_1->drawList + 6);
-  param_1->drawList[6].baseTechType = '\n';
-  param_1->drawList[6].viewInfo = param_1;
-  param_1->drawList[6].viewOrigin[0] = param_2->origin[0];
-  param_1->drawList[6].viewOrigin[1] = param_2->origin[1];
-  param_1->drawList[6].viewOrigin[2] = param_2->origin[2];
-  param_1->drawList[6].viewOrigin[3] = param_2->origin[3];
-  param_1->drawList[6].cameraView = 1;
-  param_1->drawList[6].shaderHDRmode = 0;
-  iVar1 = param_3->drawSurfCount;
-  R_MergeAndEmitDrawSurfLists(3,7,param_3);
-  param_1->drawList[3].drawSurfs = param_3->drawSurfs + iVar1;
-  param_1->drawList[3].drawSurfCount = param_3->drawSurfCount - iVar1;
-  if (!param_4) {
-    R_SplitDrawSurfacesPrimarySortKey(param_1->drawList + 3,param_1->drawList + 6,0x3c);
+  R_InitDrawSurfListInfo(viewInfo->drawList + 3);
+  viewInfo->drawList[3].baseTechType = gfxDrawMethod.baseTechType;
+  viewInfo->drawList[3].viewInfo = viewInfo;
+  viewInfo->drawList[3].viewOrigin[0] = viewParmsDraw->origin[0];
+  viewInfo->drawList[3].viewOrigin[1] = viewParmsDraw->origin[1];
+  viewInfo->drawList[3].viewOrigin[2] = viewParmsDraw->origin[2];
+  viewInfo->drawList[3].viewOrigin[3] = viewParmsDraw->origin[3];
+  viewInfo->drawList[3].cameraView = 1;
+  viewInfo->drawList[3].shaderHDRmode = (int)(viewInfo->bloom).bloomTintScale[0];
+  R_InitDrawSurfListInfo(viewInfo->drawList + 6);
+  viewInfo->drawList[6].baseTechType = '\n';
+  viewInfo->drawList[6].viewInfo = viewInfo;
+  viewInfo->drawList[6].viewOrigin[0] = viewParmsDraw->origin[0];
+  viewInfo->drawList[6].viewOrigin[1] = viewParmsDraw->origin[1];
+  viewInfo->drawList[6].viewOrigin[2] = viewParmsDraw->origin[2];
+  viewInfo->drawList[6].viewOrigin[3] = viewParmsDraw->origin[3];
+  viewInfo->drawList[6].cameraView = 1;
+  viewInfo->drawList[6].shaderHDRmode = 0;
+  iVar1 = backendData->drawSurfCount;
+  R_MergeAndEmitDrawSurfLists(3,7,backendData);
+  viewInfo->drawList[3].drawSurfs = backendData->drawSurfs + iVar1;
+  viewInfo->drawList[3].drawSurfCount = backendData->drawSurfCount - iVar1;
+  if (!forMissileCamView) {
+    R_SplitDrawSurfacesPrimarySortKey(viewInfo->drawList + 3,viewInfo->drawList + 6,0x3c);
   }
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -5225,56 +5361,56 @@ R_FinishDecalAndEmissiveDrawSurfs
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"set up emissiveInfo");
-  pGVar6 = param_1->drawList + 4;
-  R_InitDrawSurfListInfo(pGVar6);
-  uVar3 = R_GetEmissiveTechnique(param_1,gfxDrawMethod.emissiveTechType);
-  param_1->drawList[4].baseTechType = uVar3;
-  param_1->drawList[4].viewInfo = param_1;
-  param_1->drawList[4].viewOrigin[0] = param_2->origin[0];
-  param_1->drawList[4].viewOrigin[1] = param_2->origin[1];
-  param_1->drawList[4].viewOrigin[2] = param_2->origin[2];
-  param_1->drawList[4].viewOrigin[3] = param_2->origin[3];
-  param_1->drawList[4].cameraView = 1;
-  param_1->drawList[4].shaderHDRmode = (int)(param_1->bloom).bloomTintScale[1];
-  if (param_3->emissiveSpotLightCount != 0) {
-    if ((param_3->emissiveSpotLightCount != 1) &&
+  info = viewInfo->drawList + 4;
+  R_InitDrawSurfListInfo(info);
+  uVar3 = R_GetEmissiveTechnique(viewInfo,gfxDrawMethod.emissiveTechType);
+  viewInfo->drawList[4].baseTechType = uVar3;
+  viewInfo->drawList[4].viewInfo = viewInfo;
+  viewInfo->drawList[4].viewOrigin[0] = viewParmsDraw->origin[0];
+  viewInfo->drawList[4].viewOrigin[1] = viewParmsDraw->origin[1];
+  viewInfo->drawList[4].viewOrigin[2] = viewParmsDraw->origin[2];
+  viewInfo->drawList[4].viewOrigin[3] = viewParmsDraw->origin[3];
+  viewInfo->drawList[4].cameraView = 1;
+  viewInfo->drawList[4].shaderHDRmode = (int)(viewInfo->bloom).bloomTintScale[1];
+  if (backendData->emissiveSpotLightCount != 0) {
+    if ((backendData->emissiveSpotLightCount != 1) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1494,0,
                                  "%s"), !bVar4)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    param_1->drawList[4].light = &param_3->emissiveSpotLight;
+    viewInfo->drawList[4].light = &backendData->emissiveSpotLight;
   }
-  iVar1 = param_3->drawSurfCount;
-  R_MergeAndEmitDrawSurfLists(10,6,param_3);
-  pGVar6->drawSurfs = param_3->drawSurfs + iVar1;
-  param_1->drawList[4].drawSurfCount = param_3->drawSurfCount - iVar1;
+  iVar1 = backendData->drawSurfCount;
+  R_MergeAndEmitDrawSurfLists(10,6,backendData);
+  info->drawSurfs = backendData->drawSurfs + iVar1;
+  viewInfo->drawList[4].drawSurfCount = backendData->drawSurfCount - iVar1;
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"set up reflectedInfo");
-  R_InitDrawSurfListInfo(param_1->drawList + 5);
-  param_1->drawList[5].baseTechType = '\t';
-  param_1->drawList[5].viewInfo = param_1;
-  param_1->drawList[5].viewOrigin[0] = param_2->origin[0];
-  param_1->drawList[5].viewOrigin[1] = param_2->origin[1];
-  param_1->drawList[5].viewOrigin[2] = param_2->origin[2];
-  param_1->drawList[5].viewOrigin[3] = param_2->origin[3];
-  param_1->drawList[5].cameraView = 1;
-  param_1->drawList[5].shaderHDRmode = 0;
-  iVar1 = param_3->drawSurfCount;
-  R_MergeAndEmitDrawSurfLists(0x10,3,param_3);
-  param_1->drawList[5].drawSurfs = param_3->drawSurfs + iVar1;
-  param_1->drawList[5].drawSurfCount = param_3->drawSurfCount - iVar1;
+  R_InitDrawSurfListInfo(viewInfo->drawList + 5);
+  viewInfo->drawList[5].baseTechType = '\t';
+  viewInfo->drawList[5].viewInfo = viewInfo;
+  viewInfo->drawList[5].viewOrigin[0] = viewParmsDraw->origin[0];
+  viewInfo->drawList[5].viewOrigin[1] = viewParmsDraw->origin[1];
+  viewInfo->drawList[5].viewOrigin[2] = viewParmsDraw->origin[2];
+  viewInfo->drawList[5].viewOrigin[3] = viewParmsDraw->origin[3];
+  viewInfo->drawList[5].cameraView = 1;
+  viewInfo->drawList[5].shaderHDRmode = 0;
+  iVar1 = backendData->drawSurfCount;
+  R_MergeAndEmitDrawSurfLists(0x10,3,backendData);
+  viewInfo->drawList[5].drawSurfs = backendData->drawSurfs + iVar1;
+  viewInfo->drawList[5].drawSurfCount = backendData->drawSurfCount - iVar1;
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (param_1->needsFloatZ == false) {
-    bVar4 = R_DoesDrawSurfListInfoNeedFloatz(param_1,pGVar6);
-    param_1->needsFloatZ = bVar4;
+  if (viewInfo->needsFloatZ == false) {
+    bVar4 = R_DoesDrawSurfListInfoNeedFloatz(viewInfo,info);
+    viewInfo->needsFloatZ = bVar4;
   }
   DVar5 = GetCurrentThreadId();
   if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -5298,8 +5434,8 @@ R_FinishDecalAndEmissiveDrawSurfs
 
 void __cdecl
 R_GenerateSortedDrawSurfs
-          (GfxSceneParms *param_1,GfxViewParms *param_2,GfxViewParms *param_3,int param_4,
-          refdef_s *param_5,bool param_6)
+          (GfxSceneParms *sceneParms,GfxViewParms *viewParmsDpvs,GfxViewParms *viewParmsDraw,
+          int frameTime,refdef_s *refdef,bool forMissileCamView)
 
 {
   code *pcVar1;
@@ -5307,52 +5443,61 @@ R_GenerateSortedDrawSurfs
   GfxViewInfo *pGVar3;
   GfxViewInfo *pGVar4;
   bool bVar5;
-  char *pcVar6;
-  DWORD DVar7;
-  uint uVar8;
-  int iVar9;
-  GfxDrawSurfListInfo *pGVar10;
-  GfxCmdBufInput_conflict *pGVar11;
-  GfxViewParms *pGVar12;
-  GfxSaveScreenFx *pGVar13;
+  char *Name;
+  DWORD DVar6;
+  uint uVar7;
+  int iVar8;
+  GfxDrawSurfListInfo *info;
+  GfxCmdBufInput_conflict *pGVar9;
+  GfxViewParms *pGVar10;
+  GfxSaveScreenFx *pGVar11;
   int unaff_EDI;
-  GfxCmdBufInput *pGVar14;
-  GfxViewInfo *pGVar15;
-  GfxSaveScreenFx *pGVar16;
+  GfxCmdBufInput *pGVar12;
+  GfxViewInfo *pGVar13;
+  GfxSaveScreenFx *pGVar14;
   float10 extraout_ST0;
   float10 extraout_ST0_00;
-  float fVar17;
+  float fVar15;
   byte local_271;
   uint local_270;
   bool local_269;
   int local_268;
   uint local_264;
   uint local_228;
-  int local_ac;
-  int local_a8;
-  uint local_a0;
-  float local_9c;
-  uint local_98;
-  uint local_8c;
-  uint local_88;
-  int local_7c;
-  char local_69;
-  DynSModelClient local_68;
-  GfxViewInfo *local_54;
-  uint local_50;
-  char local_49;
-  int local_48;
-  ShadowType local_44;
-  GfxViewInfo *local_40;
-  uchar local_3c [4];
+  PIXProfile pixProfile_2;
+  int i_2;
+  int partitionIndex;
+  PIXProfile pp;
+  uint i;
+  float bestError;
+  uint bestNum;
+  float error;
+  uint num;
+  uint bestDen;
+  uint den;
+  PIXProfile pixProfile;
+  GfxDrawSurfListInfo *litPunchThruInfo;
+  int pointLightCount;
+  int firstDrawSurfCount;
+  GfxDrawSurfListInfo *litPostResolveInfo;
+  GfxDrawSurfListInfo *litInfo;
+  bool usePreTess;
+  DynSModelClient smodelClient;
+  GfxViewInfo *viewInfo;
+  int viewInfoIndex;
+  bool forStereoRightEyeView;
+  int semaphore;
+  ShadowType dynamicShadowType;
+  SceneEntCmd sceneEntCmd;
+  uchar cmd [4];
   int local_38;
   GfxLight *local_18;
   int local_14;
-  char local_5;
+  bool extraCamActive;
   
-  pcVar6 = va("R_GenerateSortedDrawSurfs (cl=%d v=%d)");
-  PIXBeginNamedEvent(-1,pcVar6);
-  local_49 = '\0';
+  Name = va("R_GenerateSortedDrawSurfs (cl=%d v=%d)");
+  PIXBeginNamedEvent(-1,Name);
+  forStereoRightEyeView = false;
   if ((frontEndDataOut->viewInfoCount != rg.viewInfoCount) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x153b,0,
                                "%s"), !bVar5)) {
@@ -5360,11 +5505,11 @@ R_GenerateSortedDrawSurfs
     (*pcVar1)();
     return;
   }
-  uVar8 = rg.viewInfoCount;
-  local_50 = rg.viewInfoCount;
+  uVar7 = rg.viewInfoCount;
+  viewInfoIndex = rg.viewInfoCount;
   rg.viewInfoCount = rg.viewInfoCount + 1;
   frontEndDataOut->viewInfoCount = rg.viewInfoCount;
-  if ((3 < uVar8) &&
+  if ((3 < uVar7) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1541,1,
                                "viewInfoIndex doesn\'t index GFX_MAX_CLIENT_VIEWS\n\t%i not in [0, %i)"
                               ), !bVar5)) {
@@ -5372,39 +5517,39 @@ R_GenerateSortedDrawSurfs
     (*pcVar1)();
     return;
   }
-  frontEndDataOut->viewInfoIndex = local_50;
-  local_54 = (GfxViewInfo *)(local_50 * 0x38e0 + (int)frontEndDataOut->viewInfo);
-  *(bool *)((int)&local_54[1].field0_0x0 + 0x15) = local_50 == 0;
-  if ((!param_6) || (bVar5 = R_ExtraCam_UseShadowmap(), bVar5)) {
-    local_44 = R_DynamicShadowType();
+  frontEndDataOut->viewInfoIndex = viewInfoIndex;
+  viewInfo = (GfxViewInfo *)(viewInfoIndex * 0x38e0 + (int)frontEndDataOut->viewInfo);
+  *(bool *)((int)&viewInfo[1].field0_0x0 + 0x15) = viewInfoIndex == 0;
+  if ((!forMissileCamView) || (bVar5 = R_ExtraCam_UseShadowmap(), bVar5)) {
+    dynamicShadowType = R_DynamicShadowType();
   }
   else {
-    local_44 = SHADOW_NONE;
+    dynamicShadowType = SHADOW_NONE;
   }
-  local_54[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0] =
-       (float)(frontEndDataOut->dynSModelClientViewArray + local_50);
-  local_54[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1] =
+  viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0] =
+       (float)(frontEndDataOut->dynSModelClientViewArray + viewInfoIndex);
+  viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][1] =
        (float)&frontEndDataOut->dynSModelState;
-  GamerProfile_WriteSettings((int)local_54[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0]);
-  rg.isNotRenderingFullScreen = (bool)('\x01' - (param_1->isRenderingFullScreen != false));
+  GamerProfile_WriteSettings((int)viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0]);
+  rg.isNotRenderingFullScreen = (bool)('\x01' - (sceneParms->isRenderingFullScreen != false));
   rg.sunShadowFull = 1;
   rg.sunShadowmapScale = (sm_sunShadowScale->current).value;
-  local_8c = 1;
-  local_98 = 1;
-  local_9c = 1.0;
-  for (local_88 = 1; local_88 < 0xb; local_88 = local_88 + 1) {
+  bestDen = 1;
+  bestNum = 1;
+  bestError = 1.0;
+  for (den = 1; den < 0xb; den = den + 1) {
     floor();
     local_228 = (uint)(longlong)ROUND((float)extraout_ST0);
-    fVar17 = ABS((float)((float10)((longlong)ROUND((float)extraout_ST0) & 0xffffffff) /
-                         (float10)local_88 - (float10)rg.sunShadowmapScale));
-    if (fVar17 < local_9c) {
-      local_8c = local_88;
-      local_98 = local_228;
-      local_9c = fVar17;
+    fVar15 = ABS((float)((float10)((longlong)ROUND((float)extraout_ST0) & 0xffffffff) / (float10)den
+                        - (float10)rg.sunShadowmapScale));
+    if (fVar15 < bestError) {
+      bestDen = den;
+      bestNum = local_228;
+      bestError = fVar15;
     }
   }
-  rg.sunShadowmapScale = (float)((float10)local_98 / (float10)local_8c);
-  rg.sunShadowmapScaleNum = (float)local_98;
+  rg.sunShadowmapScale = (float)((float10)bestNum / (float10)bestDen);
+  rg.sunShadowmapScaleNum = (float)bestNum;
   ceil();
   local_264 = (uint)(longlong)ROUND((float)extraout_ST0_00);
   rg.sunShadowPartitionRatio = 4.0 / rg.sunShadowmapScale;
@@ -5417,110 +5562,110 @@ R_GenerateSortedDrawSurfs
     (*pcVar1)();
     return;
   }
-  if ((rg.correctedLodParms[param_1->localClientNum].valid == false) &&
+  if ((rg.correctedLodParms[sceneParms->localClientNum].valid == false) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x15a8,0,
                                "%s"), !bVar5)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pGVar11 = &gfxCmdBufInput;
-  pGVar14 = &local_54->input;
-  for (iVar9 = 0x3a4; iVar9 != 0; iVar9 = iVar9 + -1) {
-    pGVar14->consts[0][0] = pGVar11->consts[0][0];
-    pGVar11 = (GfxCmdBufInput_conflict *)(pGVar11->consts[0] + 1);
-    pGVar14 = (GfxCmdBufInput *)(pGVar14->consts[0] + 1);
+  pGVar9 = &gfxCmdBufInput;
+  pGVar12 = &viewInfo->input;
+  for (iVar8 = 0x3a4; iVar8 != 0; iVar8 = iVar8 + -1) {
+    pGVar12->consts[0][0] = pGVar9->consts[0][0];
+    pGVar9 = (GfxCmdBufInput_conflict *)(pGVar9->consts[0] + 1);
+    pGVar12 = (GfxCmdBufInput *)(pGVar12->consts[0] + 1);
   }
-  (local_54->exposureValue).whitePoint[2] = (float)frontEndDataOut;
-  (local_54->sceneDef).time = scene.def.time;
-  (local_54->sceneDef).floatTime = scene.def.floatTime;
-  (local_54->sceneDef).viewOffset[0] = scene.def.viewOffset[0];
-  (local_54->sceneDef).viewOffset[1] = scene.def.viewOffset[1];
-  (local_54->sceneDef).viewOffset[2] = scene.def.viewOffset[2];
-  pGVar12 = param_3;
-  pGVar15 = local_54;
-  for (iVar9 = 0x50; iVar9 != 0; iVar9 = iVar9 + -1) {
-    (pGVar15->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][0] = (pGVar12->viewMatrix).m[0][0];
-    pGVar12 = (GfxViewParms *)((pGVar12->viewMatrix).m[0] + 1);
-    pGVar15 = (GfxViewInfo *)((pGVar15->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0] + 1);
+  (viewInfo->exposureValue).whitePoint[2] = (float)frontEndDataOut;
+  (viewInfo->sceneDef).time = scene.def.time;
+  (viewInfo->sceneDef).floatTime = scene.def.floatTime;
+  (viewInfo->sceneDef).viewOffset[0] = scene.def.viewOffset[0];
+  (viewInfo->sceneDef).viewOffset[1] = scene.def.viewOffset[1];
+  (viewInfo->sceneDef).viewOffset[2] = scene.def.viewOffset[2];
+  pGVar10 = viewParmsDraw;
+  pGVar13 = viewInfo;
+  for (iVar8 = 0x50; iVar8 != 0; iVar8 = iVar8 + -1) {
+    (pGVar13->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0][0] = (pGVar10->viewMatrix).m[0][0];
+    pGVar10 = (GfxViewParms *)((pGVar10->viewMatrix).m[0] + 1);
+    pGVar13 = (GfxViewInfo *)((pGVar13->field0_0x0).cullViewInfo.viewParms.viewMatrix.m[0] + 1);
   }
-  (local_54->field0_0x0).cullViewInfo.sceneViewport.x = (param_1->sceneViewport).x;
-  (local_54->field0_0x0).cullViewInfo.sceneViewport.y = (param_1->sceneViewport).y;
-  (local_54->field0_0x0).cullViewInfo.sceneViewport.width = (param_1->sceneViewport).width;
-  (local_54->field0_0x0).cullViewInfo.sceneViewport.height = (param_1->sceneViewport).height;
-  (local_54->field0_0x0).cullViewInfo.displayViewport.x = (param_1->displayViewport).x;
-  (local_54->field0_0x0).cullViewInfo.displayViewport.y = (param_1->displayViewport).y;
-  (local_54->field0_0x0).cullViewInfo.displayViewport.width = (param_1->displayViewport).width;
-  (local_54->field0_0x0).cullViewInfo.displayViewport.height = (param_1->displayViewport).height;
-  (local_54->field0_0x0).cullViewInfo.scissorViewport.x = (param_1->scissorViewport).x;
-  (local_54->field0_0x0).cullViewInfo.scissorViewport.y = (param_1->scissorViewport).y;
-  (local_54->field0_0x0).cullViewInfo.scissorViewport.width = (param_1->scissorViewport).width;
-  (local_54->field0_0x0).cullViewInfo.scissorViewport.height = (param_1->scissorViewport).height;
-  local_54->dynamicShadowType = local_44;
-  local_54->localClientNum = param_1->localClientNum;
-  local_54->isRenderingFullScreen = (uint)param_1->isRenderingFullScreen;
-  local_54->playerTeleported = (uint)param_1->playerTeleported;
-  local_54->blurRadius = param_1->blurRadius;
-  *(bool *)((int)&local_54[1].field0_0x0 + 0x1c) = param_5->noLodCullOut;
-  local_54->needsFloatZ = false;
+  (viewInfo->field0_0x0).cullViewInfo.sceneViewport.x = (sceneParms->sceneViewport).x;
+  (viewInfo->field0_0x0).cullViewInfo.sceneViewport.y = (sceneParms->sceneViewport).y;
+  (viewInfo->field0_0x0).cullViewInfo.sceneViewport.width = (sceneParms->sceneViewport).width;
+  (viewInfo->field0_0x0).cullViewInfo.sceneViewport.height = (sceneParms->sceneViewport).height;
+  (viewInfo->field0_0x0).cullViewInfo.displayViewport.x = (sceneParms->displayViewport).x;
+  (viewInfo->field0_0x0).cullViewInfo.displayViewport.y = (sceneParms->displayViewport).y;
+  (viewInfo->field0_0x0).cullViewInfo.displayViewport.width = (sceneParms->displayViewport).width;
+  (viewInfo->field0_0x0).cullViewInfo.displayViewport.height = (sceneParms->displayViewport).height;
+  (viewInfo->field0_0x0).cullViewInfo.scissorViewport.x = (sceneParms->scissorViewport).x;
+  (viewInfo->field0_0x0).cullViewInfo.scissorViewport.y = (sceneParms->scissorViewport).y;
+  (viewInfo->field0_0x0).cullViewInfo.scissorViewport.width = (sceneParms->scissorViewport).width;
+  (viewInfo->field0_0x0).cullViewInfo.scissorViewport.height = (sceneParms->scissorViewport).height;
+  viewInfo->dynamicShadowType = dynamicShadowType;
+  viewInfo->localClientNum = sceneParms->localClientNum;
+  viewInfo->isRenderingFullScreen = (uint)sceneParms->isRenderingFullScreen;
+  viewInfo->playerTeleported = (uint)sceneParms->playerTeleported;
+  viewInfo->blurRadius = sceneParms->blurRadius;
+  *(bool *)((int)&viewInfo[1].field0_0x0 + 0x1c) = refdef->noLodCullOut;
+  viewInfo->needsFloatZ = false;
   (frontEndDataOut->sunShadow).sunShadowCount = 0;
   frontEndDataOut->spotShadowCount = 0;
-  Com_Memcpy(frontEndDataOut->shadowableLights,param_1->primaryLights,
+  Com_Memcpy(frontEndDataOut->shadowableLights,sceneParms->primaryLights,
              (rgp.world)->primaryLightCount * 0x170);
-  pGVar15 = local_54;
+  pGVar13 = viewInfo;
   frontEndDataOut->shadowableLightCount = (rgp.world)->primaryLightCount;
-  if (param_6) {
-    *(undefined1 *)((int)&local_54[1].field0_0x0 + 0x14) = 1;
-    *(undefined1 *)&(local_54->sceneComposition).renderingMode = 0x16;
+  if (forMissileCamView) {
+    *(undefined1 *)((int)&viewInfo[1].field0_0x0 + 0x14) = 1;
+    *(undefined1 *)&(viewInfo->sceneComposition).renderingMode = 0x16;
     pGVar2 = gfxRenderTargets[0x17].image;
-    if ((local_54 == (GfxViewInfo *)0xffffd970) &&
+    if ((viewInfo == (GfxViewInfo *)0xffffd970) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                  "%s"), !bVar5)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pGVar3 = local_54;
-    (pGVar15->input).codeImages[0x1f] = pGVar2;
+    pGVar3 = viewInfo;
+    (pGVar13->input).codeImages[0x1f] = pGVar2;
     pGVar2 = gfxRenderTargets[0x16].image;
-    if ((local_54 == (GfxViewInfo *)0xffffd970) &&
+    if ((viewInfo == (GfxViewInfo *)0xffffd970) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                  "%s"), !bVar5)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    pGVar15 = local_54;
+    pGVar13 = viewInfo;
     (pGVar3->input).codeImages[0x15] = pGVar2;
     pGVar2 = rgp.blackImage;
-    if ((local_54 == (GfxViewInfo *)0xffffd970) &&
+    if ((viewInfo == (GfxViewInfo *)0xffffd970) &&
        (bVar5 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x73a,0,
                                  "%s"), !bVar5)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    (pGVar15->input).codeImages[0x17] = pGVar2;
-    R_SetInputCodeConstant(&local_54->input,0xc3,1.0,1.0,1.0,1.0);
+    (pGVar13->input).codeImages[0x17] = pGVar2;
+    R_SetInputCodeConstant(&viewInfo->input,0xc3,1.0,1.0,1.0,1.0);
   }
   else {
-    if ((param_6) &&
+    if ((forMissileCamView) &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x15d8,0,
                                  "%s"), !bVar5)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    *(undefined1 *)((int)&local_54[1].field0_0x0 + 0x14) = 0;
-    *(undefined1 *)&(local_54->sceneComposition).renderingMode = 3;
-    R_SetInputCodeConstant(&local_54->input,0xc3,0.0,0.0,0.0,0.0);
+    *(undefined1 *)((int)&viewInfo[1].field0_0x0 + 0x14) = 0;
+    *(undefined1 *)&(viewInfo->sceneComposition).renderingMode = 3;
+    R_SetInputCodeConstant(&viewInfo->input,0xc3,0.0,0.0,0.0,0.0);
   }
   if ((r_debugShowPrimaryLights->current).enabled != false) {
-    for (local_a0 = 0; local_a0 < frontEndDataOut->shadowableLightCount; local_a0 = local_a0 + 1) {
-      DrawLightDebug(local_54,frontEndDataOut->shadowableLights + local_a0,colorWhite);
+    for (i = 0; i < frontEndDataOut->shadowableLightCount; i = i + 1) {
+      DrawLightDebug(viewInfo,frontEndDataOut->shadowableLights + i,colorWhite);
     }
   }
-  local_54->sunVisibility = param_1->sunVisibility;
+  viewInfo->sunVisibility = sceneParms->sunVisibility;
   scene.shadowableLightIsUsed[0] = 0;
   scene.shadowableLightIsUsed[1] = 0;
   scene.shadowableLightIsUsed[2] = 0;
@@ -5529,72 +5674,72 @@ R_GenerateSortedDrawSurfs
   scene.shadowableLightIsUsed[5] = 0;
   scene.shadowableLightIsUsed[6] = 0;
   scene.shadowableLightIsUsed[7] = 0;
-  R_SetHeroLighting(&local_54->input,local_54,param_5);
-  R_SetSkyDynamicIntensity((float *)((int)&local_54->field0_0x0 + 0x110),&local_54->input);
-  R_SetupDynamicModelLighting(&local_54->input);
-  R_SetFrameFog(&local_54->input,local_54);
-  R_SetSunConstants(&local_54->input,1.0);
-  DrawSunDirectionDebug(param_3->origin,param_3->axis[0]);
+  R_SetHeroLighting(&viewInfo->input,viewInfo,refdef);
+  R_SetSkyDynamicIntensity((float *)((int)&viewInfo->field0_0x0 + 0x110),&viewInfo->input);
+  R_SetupDynamicModelLighting(&viewInfo->input);
+  R_SetFrameFog(&viewInfo->input,viewInfo);
+  R_SetSunConstants(&viewInfo->input,1.0);
+  DrawSunDirectionDebug(viewParmsDraw->origin,viewParmsDraw->axis[0]);
   DrawOutdoorBoundsVolumeDebug();
-  R_SetDepthOfField(local_54,param_1);
-  R_SetFilmInfo(local_54,param_1);
-  R_SetBloomInfo(local_54,param_1);
-  R_SetCharacterPrimaryLightScaleInfo(local_54,param_1);
+  R_SetDepthOfField(viewInfo,sceneParms);
+  R_SetFilmInfo(viewInfo,sceneParms);
+  R_SetBloomInfo(viewInfo,sceneParms);
+  R_SetCharacterPrimaryLightScaleInfo(viewInfo,sceneParms);
   R_DrawCineWarning();
   R_DrawFogParams();
-  R_SetInputCodeConstant(&local_54->input,0x31,param_3->zNear * 0.984375,0.0,0.0,0.0);
-  R_SetFullSceneViewMesh(local_50,local_54);
-  R_SetupWorldSurfacesDpvs(param_2,-(uint)param_6 & 0x41);
-  R_SetViewFrustumPlanes(local_54);
-  R_SetDoubleVision(local_54,param_1);
-  R_SetWaterSheetingFx(local_54,param_1);
-  R_SetFlameFx(local_54,param_1);
-  R_SetReviveFx(local_54,param_1);
-  R_SetPoisonFx(local_54,param_1);
-  R_SetGenericFilter(local_54,param_1);
-  R_SetElectrifiedFx(local_54,param_1);
-  R_SetTransportedFx(local_54,param_1);
-  GlassCl_BeginGenerateVerts(param_1->localClientNum,local_50);
-  GlassCl_Update(param_1->localClientNum);
-  pGVar13 = &param_1->saveScreenFx;
-  pGVar16 = &local_54->saveScreenFx;
-  for (iVar9 = 0x15; iVar9 != 0; iVar9 = iVar9 + -1) {
-    (pGVar16->saveScreenParam).s0 = (pGVar13->saveScreenParam).s0;
-    pGVar13 = (GfxSaveScreenFx *)&(pGVar13->saveScreenParam).t0;
-    pGVar16 = (GfxSaveScreenFx *)&(pGVar16->saveScreenParam).t0;
+  R_SetInputCodeConstant(&viewInfo->input,0x31,viewParmsDraw->zNear * 0.984375,0.0,0.0,0.0);
+  R_SetFullSceneViewMesh(viewInfoIndex,viewInfo);
+  R_SetupWorldSurfacesDpvs(viewParmsDpvs,-(uint)forMissileCamView & 0x41);
+  R_SetViewFrustumPlanes(viewInfo);
+  R_SetDoubleVision(viewInfo,sceneParms);
+  R_SetWaterSheetingFx(viewInfo,sceneParms);
+  R_SetFlameFx(viewInfo,sceneParms);
+  R_SetReviveFx(viewInfo,sceneParms);
+  R_SetPoisonFx(viewInfo,sceneParms);
+  R_SetGenericFilter(viewInfo,sceneParms);
+  R_SetElectrifiedFx(viewInfo,sceneParms);
+  R_SetTransportedFx(viewInfo,sceneParms);
+  GlassCl_BeginGenerateVerts(sceneParms->localClientNum,viewInfoIndex);
+  GlassCl_Update(sceneParms->localClientNum);
+  pGVar11 = &sceneParms->saveScreenFx;
+  pGVar14 = &viewInfo->saveScreenFx;
+  for (iVar8 = 0x15; iVar8 != 0; iVar8 = iVar8 + -1) {
+    (pGVar14->saveScreenParam).s0 = (pGVar11->saveScreenParam).s0;
+    pGVar11 = (GfxSaveScreenFx *)&(pGVar11->saveScreenParam).t0;
+    pGVar14 = (GfxSaveScreenFx *)&(pGVar14->saveScreenParam).t0;
   }
-  R_SetSceneComposition(local_54,param_1,param_6);
-  R_SetExposure(local_54,param_5);
-  R_SetHDRControlConstants(&local_54->input,local_54);
+  R_SetSceneComposition(viewInfo,sceneParms,forMissileCamView);
+  R_SetExposure(viewInfo,refdef);
+  R_SetHDRControlConstants(&viewInfo->input,viewInfo);
   PIXBeginNamedEvent(-1,"R_InitialEntityCulling");
   R_InitialEntityCulling();
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"R_AddWorldSurfacesDpvs");
-  iVar9 = R_CellForPoint(param_2->origin);
-  R_AddWorldSurfacesDpvs(param_2,iVar9);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  iVar8 = R_CellForPoint(viewParmsDpvs->origin);
+  R_AddWorldSurfacesDpvs(viewParmsDpvs,iVar8);
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"WaitFXSpot");
   Sys_WaitWorkerCmdInternal(&fx_update_spotWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  R_AddEmissiveSpotLight(local_54);
+  R_AddEmissiveSpotLight(viewInfo);
   R_WaitForFXUpdateWorkerCmds();
-  if (param_6) {
+  if (forMissileCamView) {
     local_268 = 0;
   }
   else {
-    local_268 = R_GetVisibleDLights(local_54->visibleLights);
+    local_268 = R_GetVisibleDLights(viewInfo->visibleLights);
   }
-  local_54->visibleLightCount = local_268;
-  if (((frontEndDataOut->emissiveSpotLightCount != 0) && (local_54->visibleLightCount == 0)) &&
+  viewInfo->visibleLightCount = local_268;
+  if (((frontEndDataOut->emissiveSpotLightCount != 0) && (viewInfo->visibleLightCount == 0)) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1652,0,
                                "%s"), !bVar5)) {
     pcVar1 = (code *)swi(3);
@@ -5602,16 +5747,16 @@ R_GenerateSortedDrawSurfs
     return;
   }
   R_BeginAllStaticModelLighting();
-  local_5 = param_5->extraCamPosValid;
-  iVar9 = Sys_QueryD3DDeviceOKEvent();
-  if (iVar9 == 0) {
-    local_69 = '\0';
+  extraCamActive = refdef->extraCamPosValid;
+  iVar8 = Sys_QueryD3DDeviceOKEvent();
+  if (iVar8 == 0) {
+    usePreTess = false;
   }
   else {
-    local_69 = (r_pretess->current).enabled;
+    usePreTess = (r_pretess->current).enabled;
   }
-  if (local_69 != '\0') {
-    if ((local_5 == '\0') || (*(char *)((int)&local_54[1].field0_0x0 + 0x14) == '\0')) {
+  if (usePreTess != false) {
+    if ((extraCamActive == false) || (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0')) {
       local_269 = true;
     }
     else {
@@ -5621,15 +5766,15 @@ R_GenerateSortedDrawSurfs
   }
   PIXBeginNamedEvent(-1,"wait for r_dpvs_static");
   Sys_WaitWorkerCmdInternal(&r_dpvs_staticWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  R_AddSkyboxModel(param_3->origin);
+  R_AddSkyboxModel(viewParmsDraw->origin);
   PIXBeginNamedEvent(-1,"bsp surfaces");
   if (gfxDrawMethod.drawScene == GFX_DRAW_SCENE_STANDARD) {
     R_AddAllBspDrawSurfacesCamera
-              (local_54->localClientNum,local_54->visibleLights,local_54->visibleLightCount);
+              (viewInfo->localClientNum,viewInfo->visibleLights,viewInfo->visibleLightCount);
     if ((rgp.world)->sunPrimaryLightIndex != 0) {
       if ((sm_sunEnable->current).enabled == false) {
         Com_BitClearAssert(scene.shadowableLightIsUsed,(rgp.world)->sunPrimaryLightIndex,0x80);
@@ -5641,15 +5786,15 @@ R_GenerateSortedDrawSurfs
     Com_Memset(frontEndDataOut->shadowableLightHasShadowMap,0,0x20);
     bVar5 = R_GetAllowShadowMaps();
     if (bVar5) {
-      R_ChooseShadowedLights(local_54);
+      R_ChooseShadowedLights(viewInfo);
     }
-    R_UpdateDrawMethod(frontEndDataOut,local_54);
-    if ((local_44 == SHADOW_MAP) &&
-       (iVar9 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
-                                   (rgp.world)->sunPrimaryLightIndex,0x20), iVar9 != 0)) {
+    R_UpdateDrawMethod(frontEndDataOut,viewInfo);
+    if ((dynamicShadowType == SHADOW_MAP) &&
+       (iVar8 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
+                                   (rgp.world)->sunPrimaryLightIndex,0x20), iVar8 != 0)) {
       rg.drawSunShadow = 1;
-      R_SetupSunShadowMaps(param_2,&frontEndDataOut->sunShadow);
-      R_SetSunShadowConstants(&local_54->input,&(frontEndDataOut->sunShadow).sunProj);
+      R_SetupSunShadowMaps(viewParmsDpvs,&frontEndDataOut->sunShadow);
+      R_SetSunShadowConstants(&viewInfo->input,&(frontEndDataOut->sunShadow).sunProj);
       R_SunShadowMaps(&frontEndDataOut->sunShadow);
     }
   }
@@ -5661,163 +5806,163 @@ R_GenerateSortedDrawSurfs
   }
   R_AddAllBspDrawSurfacesCameraNonlit
             (((rgp.world)->dpvs).emissiveSurfsBegin,((rgp.world)->dpvs).emissiveSurfsEnd,10);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   R_AddAllStaticModelSurfacesCamera
-            (local_54->localClientNum,local_54->playerTeleported,local_54->visibleLights,
-             local_54->visibleLightCount,false);
+            (viewInfo->localClientNum,viewInfo->playerTeleported,viewInfo->visibleLights,
+             viewInfo->visibleLightCount,false);
   PIXBeginNamedEvent(-1,"DynEntPieces_AddDrawSurfs");
-  DynEntPieces_AddDrawSurfs(local_54->localClientNum);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DynEntPieces_AddDrawSurfs(viewInfo->localClientNum);
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"wait for r_dpvs_dynmodel");
   Sys_WaitWorkerCmdInternal(&r_dpvs_dynmodelWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"wait for r_dpvs_dynbrush");
   Sys_WaitWorkerCmdInternal(&r_dpvs_dynbrushWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"draw all dyn ent");
-  R_DrawAllDynEnt(local_54);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_DrawAllDynEnt(viewInfo);
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (((gfxDrawMethod.drawScene == GFX_DRAW_SCENE_STANDARD) && (local_44 == SHADOW_MAP)) &&
-     (iVar9 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
-                                 (rgp.world)->sunPrimaryLightIndex,0x20), iVar9 != 0)) {
+  if (((gfxDrawMethod.drawScene == GFX_DRAW_SCENE_STANDARD) && (dynamicShadowType == SHADOW_MAP)) &&
+     (iVar8 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
+                                 (rgp.world)->sunPrimaryLightIndex,0x20), iVar8 != 0)) {
     PIXBeginNamedEvent(-1,"wait for more r_dpvs_static");
     Sys_WaitWorkerCmdInternal(&r_dpvs_staticWorkerCmd);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"bsp surfaces");
-    R_AddAllBspDrawSurfacesSunShadow(local_54->localClientNum);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    R_AddAllBspDrawSurfacesSunShadow(viewInfo->localClientNum);
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     PIXBeginNamedEvent(-1,"static model surfaces");
-    R_AddAllStaticModelSurfacesSunShadow(local_50);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    R_AddAllStaticModelSurfacesSunShadow(viewInfoIndex);
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  local_48 = R_ReleaseDXDeviceOwnership();
-  FX_BeginMarks(local_54->localClientNum);
-  memset(local_3c,'\0',0x34);
-  local_38 = local_54->localClientNum;
-  local_18 = local_54->visibleLights;
-  local_14 = local_54->visibleLightCount;
-  Sys_AddWorkerCmdInternal(&fx_marks_drawWorkerCmd,local_3c,(WorkerCmdConditional *)0x0);
+  semaphore = R_ReleaseDXDeviceOwnership();
+  FX_BeginMarks(viewInfo->localClientNum);
+  memset(cmd,'\0',0x34);
+  local_38 = viewInfo->localClientNum;
+  local_18 = viewInfo->visibleLights;
+  local_14 = viewInfo->visibleLightCount;
+  Sys_AddWorkerCmdInternal(&fx_marks_drawWorkerCmd,cmd,(WorkerCmdConditional *)0x0);
   PIXBeginNamedEvent(-1,"wait for r_dpvs_sceneent r_dpvs_entity");
   Sys_WaitWorkerCmdInternal(&r_dpvs_sceneentWorkerCmd);
   Sys_WaitWorkerCmdInternal(&r_dpvs_entityWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"wait for r_spot_shadow_ent");
   Sys_WaitWorkerCmdInternal(&r_spot_shadow_entWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (local_48 != 0) {
+  if (semaphore != 0) {
     R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
   }
   PIXBeginNamedEvent(-1,"draw all scene ent");
-  R_DrawAllSceneEnt(local_54);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_DrawAllSceneEnt(viewInfo);
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"wait for dobj_skin");
   Sys_WaitWorkerCmdInternal(&dobj_skinWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"add workercmd r_add_sceneent");
-  local_40 = local_54;
-  Sys_AddWorkerCmdInternal(&r_add_sceneentWorkerCmd,&local_40,(WorkerCmdConditional *)0x0);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  sceneEntCmd.viewInfo = viewInfo;
+  Sys_AddWorkerCmdInternal(&r_add_sceneentWorkerCmd,&sceneEntCmd,(WorkerCmdConditional *)0x0);
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   R_SortAllStaticModelSurfacesCamera();
-  R_GetLightSurfs(local_54->visibleLights,local_54->visibleLightCount);
+  R_GetLightSurfs(viewInfo->visibleLights,viewInfo->visibleLightCount);
   R_GetPointLightShadowSurfs
-            (local_54,scene.visLightShadow,local_54->visibleLights,local_54->visibleLightCount);
-  if (local_54->visibleLightCount == 0) {
-    R_SetDLightsConstantsDefaults(&local_54->input);
+            (viewInfo,scene.visLightShadow,viewInfo->visibleLights,viewInfo->visibleLightCount);
+  if (viewInfo->visibleLightCount == 0) {
+    R_SetDLightsConstantsDefaults(&viewInfo->input);
   }
   else {
     R_SetDLightsConstants
-              (&local_54->input,local_54,local_54->visibleLights,local_54->visibleLightCount);
+              (&viewInfo->input,viewInfo,viewInfo->visibleLights,viewInfo->visibleLightCount);
   }
   if (gfxDrawMethod.drawScene == GFX_DRAW_SCENE_STANDARD) {
     PIXBeginNamedEvent(-1,"Sun Shadow");
-    if (local_44 == SHADOW_MAP) {
-      iVar9 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
+    if (dynamicShadowType == SHADOW_MAP) {
+      iVar8 = Com_BitCheckAssert(frontEndDataOut->shadowableLightHasShadowMap,
                                  (rgp.world)->sunPrimaryLightIndex,0x20);
-      if (iVar9 == 0) {
-        for (local_a8 = 0; local_a8 < 2; local_a8 = local_a8 + 1) {
-          R_InitDrawSurfListInfo(local_54->drawList + local_a8 + 8);
+      if (iVar8 == 0) {
+        for (partitionIndex = 0; partitionIndex < 2; partitionIndex = partitionIndex + 1) {
+          R_InitDrawSurfListInfo(viewInfo->drawList + partitionIndex + 8);
         }
       }
       else {
         PIXBeginNamedEvent(-1,"scene ent surfaces");
         R_AddAllSceneEntSurfacesSunShadow();
-        DVar7 = GetCurrentThreadId();
-        if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+        DVar6 = GetCurrentThreadId();
+        if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
         R_SortAllStaticModelSurfacesSunShadow();
         R_SortAllCodeMeshSurfacesSunShadow();
-        R_GenerateSortedSunShadowDrawSurfs(local_54);
+        R_GenerateSortedSunShadowDrawSurfs(viewInfo);
       }
-      R_GenerateAllSortedSpotShadowDrawSurfs(local_54,local_50);
+      R_GenerateAllSortedSpotShadowDrawSurfs(viewInfo,viewInfoIndex);
     }
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   R_SetAllStaticModelLighting();
-  local_68.localClientNum = local_54->localClientNum;
-  local_68.visBitsCamera = scene.dynSModelVisBitsCamera;
-  local_68.visBitsSunShadow = scene.dynSModelVisBitsSunShadow;
+  smodelClient.localClientNum = viewInfo->localClientNum;
+  smodelClient.visBitsCamera = scene.dynSModelVisBitsCamera;
+  smodelClient.visBitsSunShadow = scene.dynSModelVisBitsSunShadow;
   local_270 = ((rgp.world)->dpvs).dynamicSModelCount;
   if (0x800 < (int)local_270) {
     local_270 = 0x800;
   }
-  local_68.numDynSModel = local_270;
-  local_68.numDynSModelInMap = ((rgp.world)->dpvs).dynamicSModelCount;
+  smodelClient.numDynSModel = local_270;
+  smodelClient.numDynSModelInMap = ((rgp.world)->dpvs).dynamicSModelCount;
   R_DynSModelBuildClientView
-            (&local_68,
-             (DynSModelClientView *)local_54[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0]
+            (&smodelClient,
+             (DynSModelClientView *)viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[2][0]
              ,&frontEndDataOut->dynSModelState);
   PIXBeginNamedEvent(-1,"wait for r_add_sceneent");
   Sys_AssistAndWaitWorkerCmdInternal(&r_model_lightingWorkerCmd);
   Sys_AssistAndWaitWorkerCmdInternal(&r_add_sceneentWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (local_69 != '\0') {
-    if ((local_5 == '\0') || (*(char *)((int)&local_54[1].field0_0x0 + 0x14) != '\0')) {
+  if (usePreTess != false) {
+    if ((extraCamActive == false) || (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0')) {
       local_271 = 1;
     }
     else {
@@ -5825,73 +5970,73 @@ R_GenerateSortedDrawSurfs
     }
     GamerProfile_WriteSettings((uint)local_271);
   }
-  pGVar15 = local_54;
-  pGVar10 = local_54->drawList;
-  R_InitDrawSurfListInfo(pGVar10);
-  pGVar3 = local_54;
-  pGVar15->drawList[0].baseTechType = gfxDrawMethod.baseTechType;
-  pGVar15->drawList[0].viewInfo = local_54;
-  pGVar15->drawList[0].viewOrigin[0] = param_3->origin[0];
-  pGVar15->drawList[0].viewOrigin[1] = param_3->origin[1];
-  pGVar15->drawList[0].viewOrigin[2] = param_3->origin[2];
-  pGVar15->drawList[0].viewOrigin[3] = param_3->origin[3];
-  pGVar15->drawList[0].cameraView = 1;
-  pGVar15->drawList[0].shaderHDRmode = (int)(local_54->bloom).bloomColorScale[3];
-  R_InitDrawSurfListInfo(local_54->drawList + 2);
-  pGVar4 = local_54;
+  pGVar13 = viewInfo;
+  info = viewInfo->drawList;
+  R_InitDrawSurfListInfo(info);
+  pGVar3 = viewInfo;
+  pGVar13->drawList[0].baseTechType = gfxDrawMethod.baseTechType;
+  pGVar13->drawList[0].viewInfo = viewInfo;
+  pGVar13->drawList[0].viewOrigin[0] = viewParmsDraw->origin[0];
+  pGVar13->drawList[0].viewOrigin[1] = viewParmsDraw->origin[1];
+  pGVar13->drawList[0].viewOrigin[2] = viewParmsDraw->origin[2];
+  pGVar13->drawList[0].viewOrigin[3] = viewParmsDraw->origin[3];
+  pGVar13->drawList[0].cameraView = 1;
+  pGVar13->drawList[0].shaderHDRmode = (int)(viewInfo->bloom).bloomColorScale[3];
+  R_InitDrawSurfListInfo(viewInfo->drawList + 2);
+  pGVar4 = viewInfo;
   pGVar3->drawList[2].baseTechType = gfxDrawMethod.baseTechType;
-  pGVar3->drawList[2].viewInfo = local_54;
-  pGVar3->drawList[2].viewOrigin[0] = param_3->origin[0];
-  pGVar3->drawList[2].viewOrigin[1] = param_3->origin[1];
-  pGVar3->drawList[2].viewOrigin[2] = param_3->origin[2];
-  pGVar3->drawList[2].viewOrigin[3] = param_3->origin[3];
+  pGVar3->drawList[2].viewInfo = viewInfo;
+  pGVar3->drawList[2].viewOrigin[0] = viewParmsDraw->origin[0];
+  pGVar3->drawList[2].viewOrigin[1] = viewParmsDraw->origin[1];
+  pGVar3->drawList[2].viewOrigin[2] = viewParmsDraw->origin[2];
+  pGVar3->drawList[2].viewOrigin[3] = viewParmsDraw->origin[3];
   pGVar3->drawList[2].cameraView = 1;
-  pGVar3->drawList[2].shaderHDRmode = (int)(local_54->bloom).bloomColorScale[3];
-  R_InitDrawSurfListInfo(local_54->drawList + 1);
+  pGVar3->drawList[2].shaderHDRmode = (int)(viewInfo->bloom).bloomColorScale[3];
+  R_InitDrawSurfListInfo(viewInfo->drawList + 1);
   pGVar4->drawList[1].baseTechType = gfxDrawMethod.baseTechType;
-  pGVar4->drawList[1].viewInfo = local_54;
-  pGVar4->drawList[1].viewOrigin[0] = param_3->origin[0];
-  pGVar4->drawList[1].viewOrigin[1] = param_3->origin[1];
-  pGVar4->drawList[1].viewOrigin[2] = param_3->origin[2];
-  pGVar4->drawList[1].viewOrigin[3] = param_3->origin[3];
+  pGVar4->drawList[1].viewInfo = viewInfo;
+  pGVar4->drawList[1].viewOrigin[0] = viewParmsDraw->origin[0];
+  pGVar4->drawList[1].viewOrigin[1] = viewParmsDraw->origin[1];
+  pGVar4->drawList[1].viewOrigin[2] = viewParmsDraw->origin[2];
+  pGVar4->drawList[1].viewOrigin[3] = viewParmsDraw->origin[3];
   pGVar4->drawList[1].cameraView = 1;
-  pGVar4->drawList[1].shaderHDRmode = (int)(local_54->bloom).bloomColorScale[3];
+  pGVar4->drawList[1].shaderHDRmode = (int)(viewInfo->bloom).bloomColorScale[3];
   PIXBeginNamedEvent(-1,"water simulation render");
   if ((r_gfxopt_water_simulation->current).enabled == false) {
     R_WaterSimulationSwitchOff();
   }
-  else if (param_1->isRenderingFullScreen == false) {
+  else if (sceneParms->isRenderingFullScreen == false) {
     R_WaterSimulationSwitchOff();
   }
   else {
-    R_WaterSimulationRender(param_3->origin,param_4,pGVar15->drawList[0].viewInfoIndex);
+    R_WaterSimulationRender(viewParmsDraw->origin,frameTime,pGVar13->drawList[0].viewInfoIndex);
   }
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"set up litInfo");
-  iVar9 = frontEndDataOut->drawSurfCount;
+  iVar8 = frontEndDataOut->drawSurfCount;
   R_MergeAndEmitDrawSurfLists(0,3,frontEndDataOut);
-  pGVar10->drawSurfs = frontEndDataOut->drawSurfs + iVar9;
-  pGVar15->drawList[0].drawSurfCount = frontEndDataOut->drawSurfCount - iVar9;
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  info->drawSurfs = frontEndDataOut->drawSurfs + iVar8;
+  pGVar13->drawList[0].drawSurfCount = frontEndDataOut->drawSurfCount - iVar8;
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"split litInfo");
-  R_SplitDrawSurfacesPrimarySortKey(local_54->drawList,local_54->drawList + 1,0x10);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_SplitDrawSurfacesPrimarySortKey(viewInfo->drawList,viewInfo->drawList + 1,0x10);
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   R_DynSModelWaitWorker();
   if ((r_debugShowDynamicLights->current).enabled != false) {
-    for (local_ac = 0; local_ac < local_54->visibleLightCount; local_ac = local_ac + 1) {
-      DrawLightDebug(local_54,local_54->visibleLights + local_ac,colorGreen);
+    for (i_2 = 0; i_2 < viewInfo->visibleLightCount; i_2 = i_2 + 1) {
+      DrawLightDebug(viewInfo,viewInfo->visibleLights + i_2,colorGreen);
     }
   }
-  local_7c = 0;
+  pointLightCount = 0;
   if (((r_dlightLimit->current).integer == 0) ||
      (gfxDrawMethod.drawScene != GFX_DRAW_SCENE_STANDARD)) {
     bVar5 = false;
@@ -5899,42 +6044,44 @@ R_GenerateSortedDrawSurfs
   else {
     bVar5 = true;
   }
-  if ((bVar5) && (!param_6)) {
+  if ((bVar5) && (!forMissileCamView)) {
     PIXBeginNamedEvent(-1,"emit dlight surfs");
-    local_7c = R_EmitPointLightPartitionSurfs
-                         (local_54,local_54->visibleLights,local_54->visibleLightCount,
-                          param_2->origin);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    pointLightCount =
+         R_EmitPointLightPartitionSurfs
+                   (viewInfo,viewInfo->visibleLights,viewInfo->visibleLightCount,
+                    viewParmsDpvs->origin);
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  local_54->pointLightCount = local_7c;
-  if ((!param_6) && (local_49 == '\0')) {
-    if (param_5->localClientNum == 0) {
-      R_StreamUpdate(param_3->origin);
+  viewInfo->pointLightCount = pointLightCount;
+  if ((!forMissileCamView) && (forStereoRightEyeView == false)) {
+    if (refdef->localClientNum == 0) {
+      R_StreamUpdate(viewParmsDraw->origin);
     }
-    R_StreamUpdatePerClient(param_3->origin);
+    R_StreamUpdatePerClient(viewParmsDraw->origin);
   }
-  if (((local_54->localClientNum == 0) && (!param_6)) && (local_49 == '\0')) {
+  if (((viewInfo->localClientNum == 0) && (!forMissileCamView)) && (forStereoRightEyeView == false))
+  {
     GamerProfile_WriteSettings(unaff_EDI);
   }
-  if (!param_6) {
+  if (!forMissileCamView) {
     PIXBeginNamedEvent(-1,"DynEntCl_ProcessEntities");
-    DynEntCl_ProcessEntities(local_54->localClientNum,param_5->time);
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DynEntCl_ProcessEntities(viewInfo->localClientNum,refdef->time);
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   PIXBeginNamedEvent(-1,"wait for fx_marks_draw");
   Sys_WaitWorkerCmdInternal(&fx_marks_drawWorkerCmd);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  iVar9 = Sys_QueryD3DDeviceOKEvent();
-  if (iVar9 == 0) {
+  iVar8 = Sys_QueryD3DDeviceOKEvent();
+  if (iVar8 == 0) {
     bVar5 = false;
   }
   else if ((fx_marks == (dvar_s *)0x0) || ((fx_marks->current).enabled == false)) {
@@ -5947,31 +6094,31 @@ R_GenerateSortedDrawSurfs
     PIXBeginNamedEvent(-1,"Mark verts");
     if ((fx_marks_smodels->current).enabled != false) {
       FX_GenerateMarkVertsForStaticModels
-                (local_54->localClientNum,((rgp.world)->dpvs).smodelCount,
-                 ((rgp.world)->dpvs).smodelVisData[0],local_54->visibleLights,
-                 local_54->visibleLightCount);
+                (viewInfo->localClientNum,((rgp.world)->dpvs).smodelCount,
+                 ((rgp.world)->dpvs).smodelVisData[0],viewInfo->visibleLights,
+                 viewInfo->visibleLightCount);
     }
     if ((fx_marks_ents->current).enabled != false) {
-      R_GenerateMarkVertsForDynamicModels(local_54->visibleLights,local_54->visibleLightCount);
+      R_GenerateMarkVertsForDynamicModels(viewInfo->visibleLights,viewInfo->visibleLightCount);
     }
-    DVar7 = GetCurrentThreadId();
-    if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar6 = GetCurrentThreadId();
+    if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  R_FinishDecalAndEmissiveDrawSurfs(local_54,param_3,frontEndDataOut,param_6);
-  R_ShowCull(param_3->origin);
+  R_FinishDecalAndEmissiveDrawSurfs(viewInfo,viewParmsDraw,frontEndDataOut,forMissileCamView);
+  R_ShowCull(viewParmsDraw->origin);
   bVar5 = CL_IsRenderingSplitScreen();
-  if ((bVar5) && (uVar8 = FX_GetFrameTotalSeeThruDecalCount(local_54->localClientNum), uVar8 != 0))
+  if ((bVar5) && (uVar7 = FX_GetFrameTotalSeeThruDecalCount(viewInfo->localClientNum), uVar7 != 0))
   {
-    (local_54->exposureValue).linearStart[2] = 1.4013e-45;
+    (viewInfo->exposureValue).linearStart[2] = 1.4013e-45;
   }
   else {
-    (local_54->exposureValue).linearStart[2] = 0.0;
+    (viewInfo->exposureValue).linearStart[2] = 0.0;
   }
   GamerProfile_WriteSettings(unaff_EDI);
-  DVar7 = GetCurrentThreadId();
-  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar6 = GetCurrentThreadId();
+  if ((DVar6 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -6078,12 +6225,13 @@ void __cdecl R_ClearSceneDynSModelVisBits(void)
 
 // 00A61180  R_ClearScene  (gfx_d3d/r_scene.cpp:6661)
 
-void __cdecl R_ClearScene(int param_1)
+void __cdecl R_ClearScene(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  tlNamedEventMarker marker;
+  uint viewIndex;
   
   if (!rg.inFrame) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1a0b,0,"%s"
@@ -6107,15 +6255,15 @@ void __cdecl R_ClearScene(int param_1)
       }
     }
   }
-  scene.dpvs.localClientNum = param_1;
+  scene.dpvs.localClientNum = localClientNum;
   Com_Memset(scene.sceneDObj,0,scene.sceneDObjCount * 0x84);
   Com_Memset(scene.sceneModel,0,scene.sceneModelCount * 0x4c);
   Com_Memset(scene.sceneBrush,0,scene.sceneBrushCount * 0x2c);
   Com_Memset(scene.glassBrush,0,scene.glassBrushCount * 0x28);
   scene.addedLightCount = 0;
   memset((uchar *)scene.drawSurfCount,'\0',0x9c);
-  for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-    Com_Memset(scene.sceneModelVisData + local_8,1,scene.sceneModelCount);
+  for (viewIndex = 0; viewIndex < 7; viewIndex = viewIndex + 1) {
+    Com_Memset(scene.sceneModelVisData + viewIndex,1,scene.sceneModelCount);
   }
   scene.sceneDObjCount = 0;
   scene.sceneModelCount = 0;
@@ -6131,12 +6279,13 @@ void __cdecl R_ClearScene(int param_1)
 
 // 00A61330  R_ClearScene_For_ExtraCam  (gfx_d3d/r_scene.cpp:6705)
 
-void __cdecl R_ClearScene_For_ExtraCam(int param_1)
+void __cdecl R_ClearScene_For_ExtraCam(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint local_8;
+  tlNamedEventMarker marker;
+  uint viewIndex;
   
   if (!rg.inFrame) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1a37,0,"%s"
@@ -6160,10 +6309,10 @@ void __cdecl R_ClearScene_For_ExtraCam(int param_1)
       }
     }
   }
-  scene.dpvs.localClientNum = param_1;
+  scene.dpvs.localClientNum = localClientNum;
   scene.addedLightCount = 0;
-  for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-    Com_Memset(scene.sceneModelVisData + local_8,1,scene.sceneModelCount);
+  for (viewIndex = 0; viewIndex < 7; viewIndex = viewIndex + 1) {
+    Com_Memset(scene.sceneModelVisData + viewIndex,1,scene.sceneModelCount);
   }
   scene.drawSurfCount[6] = 0;
   scene.drawSurfCount[7] = 0;
@@ -6193,32 +6342,32 @@ int __cdecl R_GetLocalClientNum(void)
 
 // 00A619A0  R_SetViewParmsForScene  (gfx_d3d/r_scene.cpp:6759)
 
-void __cdecl R_SetViewParmsForScene(refdef_s *param_1,GfxViewParms *param_2)
+void __cdecl R_SetViewParmsForScene(refdef_s *refdef,GfxViewParms *viewParms)
 
 {
   float local_2c;
   float local_28;
   
-  memset((uchar *)param_2,'\0',0x140);
-  param_2->origin[0] = param_1->vieworg[0];
-  param_2->origin[1] = param_1->vieworg[1];
-  param_2->origin[2] = param_1->vieworg[2];
-  param_2->origin[3] = 1.0;
-  param_2->axis[0][0] = param_1->viewaxis[0][0];
-  param_2->axis[0][1] = param_1->viewaxis[0][1];
-  param_2->axis[0][2] = param_1->viewaxis[0][2];
-  param_2->axis[1][0] = param_1->viewaxis[1][0];
-  param_2->axis[1][1] = param_1->viewaxis[1][1];
-  param_2->axis[1][2] = param_1->viewaxis[1][2];
-  param_2->axis[2][0] = param_1->viewaxis[2][0];
-  param_2->axis[2][1] = param_1->viewaxis[2][1];
-  param_2->axis[2][2] = param_1->viewaxis[2][2];
-  MatrixForViewer(param_2->origin,param_2->axis,(float (*) [4])param_2);
-  if (param_1->zNear <= 0.0) {
+  memset((uchar *)viewParms,'\0',0x140);
+  viewParms->origin[0] = refdef->vieworg[0];
+  viewParms->origin[1] = refdef->vieworg[1];
+  viewParms->origin[2] = refdef->vieworg[2];
+  viewParms->origin[3] = 1.0;
+  viewParms->axis[0][0] = refdef->viewaxis[0][0];
+  viewParms->axis[0][1] = refdef->viewaxis[0][1];
+  viewParms->axis[0][2] = refdef->viewaxis[0][2];
+  viewParms->axis[1][0] = refdef->viewaxis[1][0];
+  viewParms->axis[1][1] = refdef->viewaxis[1][1];
+  viewParms->axis[1][2] = refdef->viewaxis[1][2];
+  viewParms->axis[2][0] = refdef->viewaxis[2][0];
+  viewParms->axis[2][1] = refdef->viewaxis[2][1];
+  viewParms->axis[2][2] = refdef->viewaxis[2][2];
+  MatrixForViewer(viewParms->origin,viewParms->axis,(float (*) [4])viewParms);
+  if (refdef->zNear <= 0.0) {
     local_28 = R_GetDefaultNearClip();
   }
   else {
-    local_28 = param_1->zNear;
+    local_28 = refdef->zNear;
   }
   if (1.0 - local_28 < 0.0) {
     local_2c = local_28;
@@ -6226,16 +6375,16 @@ void __cdecl R_SetViewParmsForScene(refdef_s *param_1,GfxViewParms *param_2)
   else {
     local_2c = 1.0;
   }
-  param_2->zNear = local_2c;
-  R_SetupProjection(param_1->tanHalfFovX,param_1->tanHalfFovY,param_2);
-  R_SetupViewProjectionMatrices(param_2,true);
+  viewParms->zNear = local_2c;
+  R_SetupProjection(refdef->tanHalfFovX,refdef->tanHalfFovY,viewParms);
+  R_SetupViewProjectionMatrices(viewParms,true);
   return;
 }
 
 
 // 00A6B280  R_SetSceneParms  (gfx_d3d/r_scene.cpp:6831)
 
-void __cdecl R_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
+void __cdecl R_SetSceneParms(refdef_s *refdef,GfxSceneParms *sceneParms)
 
 {
   float fVar1;
@@ -6262,8 +6411,10 @@ void __cdecl R_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
   GfxCompositeFx *pGVar20;
   GfxSaveScreenFx *pGVar21;
   bool local_10;
+  uint displayHeight;
+  uint displayWidth;
   
-  if (param_1 == (refdef_s *)0x0) {
+  if (refdef == (refdef_s *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1ab0,0,"%s"
                             );
     if (!bVar6) {
@@ -6272,7 +6423,7 @@ void __cdecl R_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
       return;
     }
   }
-  if (param_2 == (GfxSceneParms *)0x0) {
+  if (sceneParms == (GfxSceneParms *)0x0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1ab1,0,"%s"
                             );
     if (!bVar6) {
@@ -6281,7 +6432,7 @@ void __cdecl R_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
       return;
     }
   }
-  if (param_1->blurRadius < 0.0) {
+  if (refdef->blurRadius < 0.0) {
     bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1ab2,0,
                              "%s\n\t(refdef->blurRadius) = %g");
     if (!bVar6) {
@@ -6290,49 +6441,49 @@ void __cdecl R_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
       return;
     }
   }
-  param_2->localClientNum = param_1->localClientNum;
-  param_2->blurRadius = param_1->blurRadius;
-  pGVar8 = &param_1->dof;
-  pGVar15 = &param_2->dof;
+  sceneParms->localClientNum = refdef->localClientNum;
+  sceneParms->blurRadius = refdef->blurRadius;
+  pGVar8 = &refdef->dof;
+  pGVar15 = &sceneParms->dof;
   for (iVar7 = 8; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar15->viewModelStart = pGVar8->viewModelStart;
     pGVar8 = (GfxDepthOfField *)&pGVar8->viewModelEnd;
     pGVar15 = (GfxDepthOfField *)&pGVar15->viewModelEnd;
   }
-  pGVar9 = &param_1->visionset;
-  pGVar16 = &param_2->film;
+  pGVar9 = &refdef->visionset;
+  pGVar16 = &sceneParms->film;
   for (iVar7 = 0x25; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar16->filmMidStart = (pGVar9->film).filmMidStart;
     pGVar9 = (GfxVisionSet *)&(pGVar9->film).filmMidEnd;
     pGVar16 = (GfxFilm *)&pGVar16->filmMidEnd;
   }
-  fVar1 = (param_1->visionset).charPrimaryLightScale.specularScale;
-  (param_2->charPrimaryLightScale).diffuseScale =
-       (param_1->visionset).charPrimaryLightScale.diffuseScale;
-  (param_2->charPrimaryLightScale).specularScale = fVar1;
-  pGVar10 = &(param_1->visionset).bloom;
-  pGVar17 = &param_2->bloom;
+  fVar1 = (refdef->visionset).charPrimaryLightScale.specularScale;
+  (sceneParms->charPrimaryLightScale).diffuseScale =
+       (refdef->visionset).charPrimaryLightScale.diffuseScale;
+  (sceneParms->charPrimaryLightScale).specularScale = fVar1;
+  pGVar10 = &(refdef->visionset).bloom;
+  pGVar17 = &sceneParms->bloom;
   for (iVar7 = 0x6d; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar17->bloomTintWeights[0] = pGVar10->bloomTintWeights[0];
     pGVar10 = (GfxBloom *)(pGVar10->bloomTintWeights + 1);
     pGVar17 = (GfxBloom *)(pGVar17->bloomTintWeights + 1);
   }
-  pGVar13 = &param_1->waterSheetingFx;
-  pGVar20 = &param_2->waterSheetingFx;
+  pGVar13 = &refdef->waterSheetingFx;
+  pGVar20 = &sceneParms->waterSheetingFx;
   for (iVar7 = 0xb; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar20->distortionScale[0] = pGVar13->distortionScale[0];
     pGVar13 = (GfxCompositeFx *)(pGVar13->distortionScale + 1);
     pGVar20 = (GfxCompositeFx *)(pGVar20->distortionScale + 1);
   }
-  pGVar13 = &param_1->flameFx;
-  pGVar20 = &param_2->flameFx;
+  pGVar13 = &refdef->flameFx;
+  pGVar20 = &sceneParms->flameFx;
   for (iVar7 = 0xb; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar20->distortionScale[0] = pGVar13->distortionScale[0];
     pGVar13 = (GfxCompositeFx *)(pGVar13->distortionScale + 1);
     pGVar20 = (GfxCompositeFx *)(pGVar20->distortionScale + 1);
   }
-  pGVar11 = &(param_1->visionset).reviveFx;
-  pGVar18 = &param_2->reviveFx;
+  pGVar11 = &(refdef->visionset).reviveFx;
+  pGVar18 = &sceneParms->reviveFx;
   for (iVar7 = 0xe; iVar7 != 0; iVar7 = iVar7 + -1) {
     uVar3 = *(undefined3 *)&pGVar11->field_0x1;
     pGVar18->enabled = pGVar11->enabled;
@@ -6340,92 +6491,92 @@ void __cdecl R_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
     pGVar11 = (GfxReviveFx *)&pGVar11->reviveEdgeColorTemp;
     pGVar18 = (GfxReviveFx *)&pGVar18->reviveEdgeColorTemp;
   }
-  param_2->sunVisibility = param_1->sunVisibility;
-  pGVar12 = &param_1->doubleVision;
-  pGVar19 = &param_2->doubleVision;
+  sceneParms->sunVisibility = refdef->sunVisibility;
+  pGVar12 = &refdef->doubleVision;
+  pGVar19 = &sceneParms->doubleVision;
   for (iVar7 = 7; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar19->direction[0] = pGVar12->direction[0];
     pGVar12 = (GfxDoubleVision *)(pGVar12->direction + 1);
     pGVar19 = (GfxDoubleVision *)(pGVar19->direction + 1);
   }
-  memcpy((uchar *)&param_2->genericFilter,(uchar *)&param_1->genericFilter,0x10bc);
-  fVar1 = (param_1->poisonFx).curAmount;
-  (param_2->poisonFx).curAmountTarget = (param_1->poisonFx).curAmountTarget;
-  (param_2->poisonFx).curAmount = fVar1;
-  pGVar13 = &param_1->electrifiedFx;
-  pGVar20 = &param_2->electrifiedFx;
+  memcpy((uchar *)&sceneParms->genericFilter,(uchar *)&refdef->genericFilter,0x10bc);
+  fVar1 = (refdef->poisonFx).curAmount;
+  (sceneParms->poisonFx).curAmountTarget = (refdef->poisonFx).curAmountTarget;
+  (sceneParms->poisonFx).curAmount = fVar1;
+  pGVar13 = &refdef->electrifiedFx;
+  pGVar20 = &sceneParms->electrifiedFx;
   for (iVar7 = 0xb; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar20->distortionScale[0] = pGVar13->distortionScale[0];
     pGVar13 = (GfxCompositeFx *)(pGVar13->distortionScale + 1);
     pGVar20 = (GfxCompositeFx *)(pGVar20->distortionScale + 1);
   }
-  pGVar13 = &param_1->transportedFx;
-  pGVar20 = &param_2->transportedFx;
+  pGVar13 = &refdef->transportedFx;
+  pGVar20 = &sceneParms->transportedFx;
   for (iVar7 = 0xb; iVar7 != 0; iVar7 = iVar7 + -1) {
     pGVar20->distortionScale[0] = pGVar13->distortionScale[0];
     pGVar13 = (GfxCompositeFx *)(pGVar13->distortionScale + 1);
     pGVar20 = (GfxCompositeFx *)(pGVar20->distortionScale + 1);
   }
-  pGVar14 = &param_1->saveScreenFx;
-  pGVar21 = &param_2->saveScreenFx;
+  pGVar14 = &refdef->saveScreenFx;
+  pGVar21 = &sceneParms->saveScreenFx;
   for (iVar7 = 0x15; uVar5 = vidConfig.displayHeight, uVar4 = vidConfig.displayWidth, iVar7 != 0;
       iVar7 = iVar7 + -1) {
     (pGVar21->saveScreenParam).s0 = (pGVar14->saveScreenParam).s0;
     pGVar14 = (GfxSaveScreenFx *)&(pGVar14->saveScreenParam).t0;
     pGVar21 = (GfxSaveScreenFx *)&(pGVar21->saveScreenParam).t0;
   }
-  if ((param_1->width == vidConfig.displayWidth) && (param_1->height == vidConfig.displayHeight)) {
+  if ((refdef->width == vidConfig.displayWidth) && (refdef->height == vidConfig.displayHeight)) {
     local_10 = true;
   }
   else {
     local_10 = false;
   }
-  param_2->isRenderingFullScreen = local_10;
-  param_2->playerTeleported = param_1->playerTeleported != 0;
-  (param_2->displayViewport).x = param_1->x;
-  (param_2->displayViewport).y = param_1->y;
-  (param_2->displayViewport).width = param_1->width;
-  (param_2->displayViewport).height = param_1->height;
+  sceneParms->isRenderingFullScreen = local_10;
+  sceneParms->playerTeleported = refdef->playerTeleported != 0;
+  (sceneParms->displayViewport).x = refdef->x;
+  (sceneParms->displayViewport).y = refdef->y;
+  (sceneParms->displayViewport).width = refdef->width;
+  (sceneParms->displayViewport).height = refdef->height;
   _ftol2_sse();
-  (param_2->sceneViewport).x = extraout_EAX;
+  (sceneParms->sceneViewport).x = extraout_EAX;
   _ftol2_sse();
-  (param_2->sceneViewport).y = extraout_EAX_00;
-  (param_2->sceneViewport).width =
-       (int)(((longlong)(int)(param_1->x + param_1->width) * (longlong)(int)vidConfig.sceneWidth &
-             0xffffffffU) / (ulonglong)uVar4) - (param_2->sceneViewport).x;
-  (param_2->sceneViewport).height =
-       (int)(((longlong)(int)(param_1->y + param_1->height) * (longlong)(int)vidConfig.sceneHeight &
-             0xffffffffU) / (ulonglong)uVar5) - (param_2->sceneViewport).y;
-  if (param_1->useScissorViewport == false) {
-    (param_2->scissorViewport).x = (param_2->sceneViewport).x;
-    (param_2->scissorViewport).y = (param_2->sceneViewport).y;
-    (param_2->scissorViewport).width = (param_2->sceneViewport).width;
-    (param_2->scissorViewport).height = (param_2->sceneViewport).height;
+  (sceneParms->sceneViewport).y = extraout_EAX_00;
+  (sceneParms->sceneViewport).width =
+       (int)(((longlong)(int)(refdef->x + refdef->width) * (longlong)(int)vidConfig.sceneWidth &
+             0xffffffffU) / (ulonglong)uVar4) - (sceneParms->sceneViewport).x;
+  (sceneParms->sceneViewport).height =
+       (int)(((longlong)(int)(refdef->y + refdef->height) * (longlong)(int)vidConfig.sceneHeight &
+             0xffffffffU) / (ulonglong)uVar5) - (sceneParms->sceneViewport).y;
+  if (refdef->useScissorViewport == false) {
+    (sceneParms->scissorViewport).x = (sceneParms->sceneViewport).x;
+    (sceneParms->scissorViewport).y = (sceneParms->sceneViewport).y;
+    (sceneParms->scissorViewport).width = (sceneParms->sceneViewport).width;
+    (sceneParms->scissorViewport).height = (sceneParms->sceneViewport).height;
   }
   else {
-    (param_2->scissorViewport).x =
-         (int)(((longlong)(param_1->scissorViewport).x * (longlong)(int)vidConfig.sceneWidth &
+    (sceneParms->scissorViewport).x =
+         (int)(((longlong)(refdef->scissorViewport).x * (longlong)(int)vidConfig.sceneWidth &
                0xffffffffU) / (ulonglong)uVar4);
-    (param_2->scissorViewport).y =
-         (int)(((longlong)(param_1->scissorViewport).y * (longlong)(int)vidConfig.sceneHeight &
+    (sceneParms->scissorViewport).y =
+         (int)(((longlong)(refdef->scissorViewport).y * (longlong)(int)vidConfig.sceneHeight &
                0xffffffffU) / (ulonglong)uVar5);
-    (param_2->scissorViewport).width =
-         (int)(((longlong)((param_1->scissorViewport).x + (param_1->scissorViewport).width) *
+    (sceneParms->scissorViewport).width =
+         (int)(((longlong)((refdef->scissorViewport).x + (refdef->scissorViewport).width) *
                 (longlong)(int)vidConfig.sceneWidth & 0xffffffffU) / (ulonglong)uVar4) -
-         (param_2->scissorViewport).x;
-    (param_2->scissorViewport).height =
-         (int)(((longlong)((param_1->scissorViewport).y + (param_1->scissorViewport).height) *
+         (sceneParms->scissorViewport).x;
+    (sceneParms->scissorViewport).height =
+         (int)(((longlong)((refdef->scissorViewport).y + (refdef->scissorViewport).height) *
                 (longlong)(int)vidConfig.sceneHeight & 0xffffffffU) / (ulonglong)uVar5) -
-         (param_2->scissorViewport).y;
+         (sceneParms->scissorViewport).y;
   }
-  param_2->primaryLights = param_1->primaryLights;
+  sceneParms->primaryLights = refdef->primaryLights;
   return;
 }
 
 
 // 00A6BAB0  R_MissileCam_SetSceneParms  (gfx_d3d/r_scene.cpp:6906)
 
-void __cdecl R_MissileCam_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2)
+void __cdecl R_MissileCam_SetSceneParms(refdef_s *refdef,GfxSceneParms *sceneParms)
 
 {
   float fVar1;
@@ -6433,7 +6584,7 @@ void __cdecl R_MissileCam_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2
   bool bVar3;
   uint uVar4;
   
-  if (param_1 == (refdef_s *)0x0) {
+  if (refdef == (refdef_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1afb,0,"%s"
                             );
     if (!bVar3) {
@@ -6442,7 +6593,7 @@ void __cdecl R_MissileCam_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2
       return;
     }
   }
-  if (param_2 == (GfxSceneParms *)0x0) {
+  if (sceneParms == (GfxSceneParms *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1afc,0,"%s"
                             );
     if (!bVar3) {
@@ -6451,7 +6602,7 @@ void __cdecl R_MissileCam_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2
       return;
     }
   }
-  if (param_1->blurRadius < 0.0) {
+  if (refdef->blurRadius < 0.0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1afd,0,
                              "%s\n\t(refdef->blurRadius) = %g");
     if (!bVar3) {
@@ -6460,31 +6611,31 @@ void __cdecl R_MissileCam_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2
       return;
     }
   }
-  memset((uchar *)param_2,'\0',0x14e0);
-  param_2->localClientNum = param_1->localClientNum;
-  fVar1 = (param_1->visionset).charPrimaryLightScale.specularScale;
-  (param_2->charPrimaryLightScale).diffuseScale =
-       (param_1->visionset).charPrimaryLightScale.diffuseScale;
-  (param_2->charPrimaryLightScale).specularScale = fVar1;
-  param_2->isRenderingFullScreen = true;
-  param_2->playerTeleported = param_1->playerTeleported != 0;
-  (param_2->displayViewport).x = 0;
-  (param_2->displayViewport).y = 0;
+  memset((uchar *)sceneParms,'\0',0x14e0);
+  sceneParms->localClientNum = refdef->localClientNum;
+  fVar1 = (refdef->visionset).charPrimaryLightScale.specularScale;
+  (sceneParms->charPrimaryLightScale).diffuseScale =
+       (refdef->visionset).charPrimaryLightScale.diffuseScale;
+  (sceneParms->charPrimaryLightScale).specularScale = fVar1;
+  sceneParms->isRenderingFullScreen = true;
+  sceneParms->playerTeleported = refdef->playerTeleported != 0;
+  (sceneParms->displayViewport).x = 0;
+  (sceneParms->displayViewport).y = 0;
   uVar4 = R_ExtraCam_RenderTargetWidth();
-  (param_2->displayViewport).width = uVar4;
+  (sceneParms->displayViewport).width = uVar4;
   uVar4 = R_ExtraCam_RenderTargetHeight();
-  (param_2->displayViewport).height = uVar4;
-  (param_2->sceneViewport).x = 0;
-  (param_2->sceneViewport).y = 0;
+  (sceneParms->displayViewport).height = uVar4;
+  (sceneParms->sceneViewport).x = 0;
+  (sceneParms->sceneViewport).y = 0;
   uVar4 = R_ExtraCam_RenderTargetWidth();
-  (param_2->sceneViewport).width = uVar4;
+  (sceneParms->sceneViewport).width = uVar4;
   uVar4 = R_ExtraCam_RenderTargetHeight();
-  (param_2->sceneViewport).height = uVar4;
-  (param_2->scissorViewport).x = (param_2->sceneViewport).x;
-  (param_2->scissorViewport).y = (param_2->sceneViewport).y;
-  (param_2->scissorViewport).width = (param_2->sceneViewport).width;
-  (param_2->scissorViewport).height = (param_2->sceneViewport).height;
-  param_2->primaryLights = param_1->primaryLights;
+  (sceneParms->sceneViewport).height = uVar4;
+  (sceneParms->scissorViewport).x = (sceneParms->sceneViewport).x;
+  (sceneParms->scissorViewport).y = (sceneParms->sceneViewport).y;
+  (sceneParms->scissorViewport).width = (sceneParms->sceneViewport).width;
+  (sceneParms->scissorViewport).height = (sceneParms->sceneViewport).height;
+  sceneParms->primaryLights = refdef->primaryLights;
   return;
 }
 
@@ -6492,7 +6643,8 @@ void __cdecl R_MissileCam_SetSceneParms(refdef_s *param_1,GfxSceneParms *param_2
 // 00A61EB0  R_LerpDir  (gfx_d3d/r_scene.cpp:6978)
 
 void __cdecl
-R_LerpDir(float *param_1,float *param_2,int param_3,int param_4,int param_5,float *param_6)
+R_LerpDir(float *dirBegin,float *dirEnd,int beginLerpTime,int endLerpTime,int currTime,float *result
+         )
 
 {
   code *pcVar1;
@@ -6500,15 +6652,16 @@ R_LerpDir(float *param_1,float *param_2,int param_3,int param_4,int param_5,floa
   float fVar3;
   float local_1c;
   float local_c;
+  float lerpFraction;
   
-  if ((param_4 <= param_3) &&
+  if ((endLerpTime <= beginLerpTime) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1b45,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar3 = (float)(param_5 - param_3) / (float)(param_4 - param_3);
+  fVar3 = (float)(currTime - beginLerpTime) / (float)(endLerpTime - beginLerpTime);
   local_c = fVar3;
   if (0.0 <= fVar3 - 1.0) {
     local_c = 1.0;
@@ -6519,8 +6672,8 @@ R_LerpDir(float *param_1,float *param_2,int param_3,int param_4,int param_5,floa
   else {
     local_1c = 0.0;
   }
-  Vec3Lerp(param_1,param_2,local_1c,param_6);
-  Vec3Normalize(param_6);
+  Vec3Lerp(dirBegin,dirEnd,local_1c,result);
+  Vec3Normalize(result);
   return;
 }
 
@@ -6634,73 +6787,74 @@ LAB_00a61e92:
 
 // 00A61FA0  R_UpdateLodParms  (gfx_d3d/r_scene.cpp:7034)
 
-void __cdecl R_UpdateLodParms(refdef_s *param_1,GfxLodParms *param_2)
+void __cdecl R_UpdateLodParms(refdef_s *refdef,GfxLodParms *lodParms)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
+  float invFovScale;
   
   if ((r_lockPvs->current).enabled == false) {
-    param_2->origin[0] = param_1->vieworg[0];
-    param_2->origin[1] = param_1->vieworg[1];
-    param_2->origin[2] = param_1->vieworg[2];
+    lodParms->origin[0] = refdef->vieworg[0];
+    lodParms->origin[1] = refdef->vieworg[1];
+    lodParms->origin[2] = refdef->vieworg[2];
   }
   else {
-    param_2->origin[0] = lockPvsViewParms.origin[0];
-    param_2->origin[1] = lockPvsViewParms.origin[1];
-    param_2->origin[2] = lockPvsViewParms.origin[2];
+    lodParms->origin[0] = lockPvsViewParms.origin[0];
+    lodParms->origin[1] = lockPvsViewParms.origin[1];
+    lodParms->origin[2] = lockPvsViewParms.origin[2];
   }
-  param_2->extraCamOriginValid = param_1->extraCamPosValid;
-  param_2->extraCamOrigin[0] = param_1->extraCamPos[0];
-  param_2->extraCamOrigin[1] = param_1->extraCamPos[1];
-  param_2->extraCamOrigin[2] = param_1->extraCamPos[2];
-  fVar3 = param_1->tanHalfFovY * 2.118673;
+  lodParms->extraCamOriginValid = refdef->extraCamPosValid;
+  lodParms->extraCamOrigin[0] = refdef->extraCamPos[0];
+  lodParms->extraCamOrigin[1] = refdef->extraCamPos[1];
+  lodParms->extraCamOrigin[2] = refdef->extraCamPos[2];
+  fVar3 = refdef->tanHalfFovY * 2.118673;
   fVar1 = (r_lodScaleRigid->current).value;
   fVar2 = (r_lodBiasRigid->current).value;
-  if (fVar3 < param_2->ramp[0].appliedInvScale) {
-    if ((r_fovScaleThresholdRigid->current).value < param_2->ramp[0].appliedInvScale / fVar3) {
-      param_2->ramp[0].appliedInvScale = fVar3;
+  if (fVar3 < lodParms->ramp[0].appliedInvScale) {
+    if ((r_fovScaleThresholdRigid->current).value < lodParms->ramp[0].appliedInvScale / fVar3) {
+      lodParms->ramp[0].appliedInvScale = fVar3;
     }
   }
   else {
-    param_2->ramp[0].appliedInvScale = fVar3;
+    lodParms->ramp[0].appliedInvScale = fVar3;
   }
-  param_2->ramp[0].scale = fVar1 * param_2->ramp[0].appliedInvScale;
-  param_2->ramp[0].bias = fVar2 * param_2->ramp[0].appliedInvScale;
+  lodParms->ramp[0].scale = fVar1 * lodParms->ramp[0].appliedInvScale;
+  lodParms->ramp[0].bias = fVar2 * lodParms->ramp[0].appliedInvScale;
   fVar1 = (r_lodScaleSkinned->current).value;
   fVar2 = (r_lodBiasSkinned->current).value;
-  if (fVar3 < param_2->ramp[1].appliedInvScale) {
-    if ((r_fovScaleThresholdSkinned->current).value < param_2->ramp[1].appliedInvScale / fVar3) {
-      param_2->ramp[1].appliedInvScale = fVar3;
+  if (fVar3 < lodParms->ramp[1].appliedInvScale) {
+    if ((r_fovScaleThresholdSkinned->current).value < lodParms->ramp[1].appliedInvScale / fVar3) {
+      lodParms->ramp[1].appliedInvScale = fVar3;
     }
   }
   else {
-    param_2->ramp[1].appliedInvScale = fVar3;
+    lodParms->ramp[1].appliedInvScale = fVar3;
   }
-  param_2->ramp[1].scale = fVar1 * param_2->ramp[1].appliedInvScale;
-  param_2->ramp[1].bias = fVar2 * param_2->ramp[1].appliedInvScale;
-  param_2->valid = true;
+  lodParms->ramp[1].scale = fVar1 * lodParms->ramp[1].appliedInvScale;
+  lodParms->ramp[1].bias = fVar2 * lodParms->ramp[1].appliedInvScale;
+  lodParms->valid = true;
   return;
 }
 
 
 // 00A61470  R_SetLodOrigin  (gfx_d3d/r_scene.cpp:7121)
 
-void __cdecl R_SetLodOrigin(refdef_s *param_1)
+void __cdecl R_SetLodOrigin(refdef_s *refdef)
 
 {
   if (r_lockPvs->modified != false) {
     Dvar_ClearModified(r_lockPvs);
-    R_SetViewParmsForScene(param_1,&lockPvsViewParms);
+    R_SetViewParmsForScene(refdef,&lockPvsViewParms);
   }
-  R_UpdateLodParms(param_1,&rg.lodParms);
-  scene.def.viewOffset[0] = param_1->vieworg[0];
-  scene.def.viewOffset[1] = param_1->vieworg[1];
-  scene.def.viewOffset[2] = param_1->vieworg[2];
-  scene.def.time = param_1->time;
+  R_UpdateLodParms(refdef,&rg.lodParms);
+  scene.def.viewOffset[0] = refdef->vieworg[0];
+  scene.def.viewOffset[1] = refdef->vieworg[1];
+  scene.def.viewOffset[2] = refdef->vieworg[2];
+  scene.def.time = refdef->time;
   scene.def.floatTime = (float)scene.def.time * 0.001;
-  R_UpdateFrameFog(param_1->localClientNum);
+  R_UpdateFrameFog(refdef->localClientNum);
   R_UpdateFrameSun();
   return;
 }
@@ -6708,10 +6862,10 @@ void __cdecl R_SetLodOrigin(refdef_s *param_1)
 
 // 00A6B700  R_CorrectLodScale  (gfx_d3d/r_scene.cpp:7146)
 
-void __cdecl R_CorrectLodScale(refdef_s *param_1)
+void __cdecl R_CorrectLodScale(refdef_s *refdef)
 
 {
-  R_UpdateLodParms(param_1,rg.correctedLodParms + param_1->localClientNum);
+  R_UpdateLodParms(refdef,rg.correctedLodParms + refdef->localClientNum);
   return;
 }
 
@@ -6720,45 +6874,46 @@ void __cdecl R_CorrectLodScale(refdef_s *param_1)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_RenderScene(refdef_s *param_1,int param_2)
+void __cdecl R_RenderScene(refdef_s *refdef,int frameTime)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxViewParms *local_14fc;
-  GfxSceneParms local_14ec;
-  GfxViewParms *local_8;
+  GfxViewParms *viewParmsDpvs;
+  GfxSceneParms sceneParms;
+  GfxViewParms *viewParmsDraw;
   
-  local_8 = (GfxViewParms *)0xa621cd;
-  if ((param_1->tanHalfFovX <= 0.0) &&
+  viewParmsDraw = (GfxViewParms *)0xa621cd;
+  if ((refdef->tanHalfFovX <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c00,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->tanHalfFovY <= 0.0) &&
+  if ((refdef->tanHalfFovY <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c01,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->height == 0) &&
+  if ((refdef->height == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c02,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->width == 0) &&
+  if ((refdef->width == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c03,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((gfxCfg.maxClientViews <= (uint)param_1->localClientNum) &&
+  if ((gfxCfg.maxClientViews <= (uint)refdef->localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c04,0,
                                "refdef->localClientNum doesn\'t index gfxCfg.maxClientViews\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -6773,21 +6928,21 @@ void __cdecl R_RenderScene(refdef_s *param_1,int param_2)
     if (rgp.world == (GfxWorld *)0x0) {
       Com_Error(ERR_DROP,"\x15R_RenderScene: NULL worldmodel");
     }
-    rg.viewOrg[0] = param_1->vieworg[0];
-    rg.viewOrg[1] = param_1->vieworg[1];
-    rg.viewOrg[2] = param_1->vieworg[2];
-    rg.viewDir[0] = param_1->viewaxis[0][0];
-    rg.viewDir[1] = param_1->viewaxis[0][1];
-    rg.viewDir[2] = param_1->viewaxis[0][2];
+    rg.viewOrg[0] = refdef->vieworg[0];
+    rg.viewOrg[1] = refdef->vieworg[1];
+    rg.viewOrg[2] = refdef->vieworg[2];
+    rg.viewDir[0] = refdef->viewaxis[0][0];
+    rg.viewDir[1] = refdef->viewaxis[0][1];
+    rg.viewDir[2] = refdef->viewaxis[0][2];
     R_MaterialParameterTweakUpdate();
-    R_UpdateExposureValue(param_1);
-    R_CheckShadowMapVolumes(param_1->vieworg);
-    local_8 = R_AllocViewParms();
-    R_SetViewParmsForScene(param_1,local_8);
-    R_SetSceneParms(param_1,&local_14ec);
-    R_CorrectLodScale(param_1);
-    R_WorldLod_FrameUpdate(scene.def.floatTime,local_8->origin,param_1->localClientNum);
-    if ((scene.def.time != param_1->time) &&
+    R_UpdateExposureValue(refdef);
+    R_CheckShadowMapVolumes(refdef->vieworg);
+    viewParmsDraw = R_AllocViewParms();
+    R_SetViewParmsForScene(refdef,viewParmsDraw);
+    R_SetSceneParms(refdef,&sceneParms);
+    R_CorrectLodScale(refdef);
+    R_WorldLod_FrameUpdate(scene.def.floatTime,viewParmsDraw->origin,refdef->localClientNum);
+    if ((scene.def.time != refdef->time) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c2d,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -6802,15 +6957,15 @@ void __cdecl R_RenderScene(refdef_s *param_1,int param_2)
       return;
     }
     if ((r_lockPvs->current).enabled == false) {
-      local_14fc = local_8;
+      local_14fc = viewParmsDraw;
     }
     else {
       local_14fc = &lockPvsViewParms;
     }
-    frontEndDataOut->hideMatureContent = param_1->hideMatureContent;
-    frontEndDataOut->splitscreen = param_1->splitscreen;
+    frontEndDataOut->hideMatureContent = refdef->hideMatureContent;
+    frontEndDataOut->splitscreen = refdef->splitscreen;
     frontEndDataOut->extraCamLargeFrameSize = true;
-    R_GenerateSortedDrawSurfs(&local_14ec,local_14fc,local_8,param_2,param_1,false);
+    R_GenerateSortedDrawSurfs(&sceneParms,local_14fc,viewParmsDraw,frameTime,refdef,false);
   }
   return;
 }
@@ -6820,45 +6975,46 @@ void __cdecl R_RenderScene(refdef_s *param_1,int param_2)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl R_RenderMissileCam(refdef_s *param_1,int param_2)
+void __cdecl R_RenderMissileCam(refdef_s *refdef,int frameTime)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxViewParms *local_14fc;
-  GfxSceneParms local_14ec;
-  GfxViewParms *local_8;
+  GfxViewParms *viewParmsDpvs;
+  GfxSceneParms sceneParms;
+  GfxViewParms *viewParmsDraw;
   
-  local_8 = (GfxViewParms *)0xa6b73d;
-  if ((param_1->tanHalfFovX <= 0.0) &&
+  viewParmsDraw = (GfxViewParms *)0xa6b73d;
+  if ((refdef->tanHalfFovX <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c64,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->tanHalfFovY <= 0.0) &&
+  if ((refdef->tanHalfFovY <= 0.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c65,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->height == 0) &&
+  if ((refdef->height == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c66,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->width == 0) &&
+  if ((refdef->width == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c67,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((gfxCfg.maxClientViews <= (uint)param_1->localClientNum) &&
+  if ((gfxCfg.maxClientViews <= (uint)refdef->localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c68,0,
                                "refdef->localClientNum doesn\'t index gfxCfg.maxClientViews\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -6873,18 +7029,18 @@ void __cdecl R_RenderMissileCam(refdef_s *param_1,int param_2)
     if (rgp.world == (GfxWorld *)0x0) {
       Com_Error(ERR_DROP,"\x15R_RenderScene: NULL worldmodel");
     }
-    rg.viewOrg[0] = param_1->vieworg[0];
-    rg.viewOrg[1] = param_1->vieworg[1];
-    rg.viewOrg[2] = param_1->vieworg[2];
-    rg.viewDir[0] = param_1->viewaxis[0][0];
-    rg.viewDir[1] = param_1->viewaxis[0][1];
-    rg.viewDir[2] = param_1->viewaxis[0][2];
-    local_8 = R_AllocViewParms();
-    R_SetViewParmsForScene(param_1,local_8);
-    R_MissileCam_SetSceneParms(param_1,&local_14ec);
-    R_CorrectLodScale(param_1);
-    R_WorldLod_FrameUpdate(scene.def.floatTime,local_8->origin,param_1->localClientNum);
-    if ((scene.def.time != param_1->time) &&
+    rg.viewOrg[0] = refdef->vieworg[0];
+    rg.viewOrg[1] = refdef->vieworg[1];
+    rg.viewOrg[2] = refdef->vieworg[2];
+    rg.viewDir[0] = refdef->viewaxis[0][0];
+    rg.viewDir[1] = refdef->viewaxis[0][1];
+    rg.viewDir[2] = refdef->viewaxis[0][2];
+    viewParmsDraw = R_AllocViewParms();
+    R_SetViewParmsForScene(refdef,viewParmsDraw);
+    R_MissileCam_SetSceneParms(refdef,&sceneParms);
+    R_CorrectLodScale(refdef);
+    R_WorldLod_FrameUpdate(scene.def.floatTime,viewParmsDraw->origin,refdef->localClientNum);
+    if ((scene.def.time != refdef->time) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",0x1c90,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -6899,15 +7055,15 @@ void __cdecl R_RenderMissileCam(refdef_s *param_1,int param_2)
       return;
     }
     if ((r_lockPvs->current).enabled == false) {
-      local_14fc = local_8;
+      local_14fc = viewParmsDraw;
     }
     else {
       local_14fc = &lockPvsViewParms;
     }
-    frontEndDataOut->hideMatureContent = param_1->hideMatureContent;
-    frontEndDataOut->splitscreen = param_1->splitscreen;
-    frontEndDataOut->extraCamLargeFrameSize = param_1->extraCamLargeFrame;
-    R_GenerateSortedDrawSurfs(&local_14ec,local_14fc,local_8,param_2,param_1,true);
+    frontEndDataOut->hideMatureContent = refdef->hideMatureContent;
+    frontEndDataOut->splitscreen = refdef->splitscreen;
+    frontEndDataOut->extraCamLargeFrameSize = refdef->extraCamLargeFrame;
+    R_GenerateSortedDrawSurfs(&sceneParms,local_14fc,viewParmsDraw,frameTime,refdef,true);
     R_UI3D_SetupBackendData_UVConstants
               ((GfxUI3DBackend *)
                ((int)frontEndDataOut->viewInfo + frontEndDataOut->viewInfoIndex * 0x38e0 + 0x37e4));
@@ -6918,77 +7074,77 @@ void __cdecl R_RenderMissileCam(refdef_s *param_1,int param_2)
 
 // 00A6BC60  R_LinkDObjEntity  (gfx_d3d/r_scene.cpp:7338)
 
-void __cdecl R_LinkDObjEntity(int param_1,uint param_2,float *param_3,float param_4)
+void __cdecl R_LinkDObjEntity(int localClientNum,uint entnum,float *origin,float radius)
 
 {
-  R_FilterDObjIntoCells(param_1,param_2,param_3,param_4);
-  R_LinkSphereEntityToPrimaryLights(param_1,param_2,param_3,param_4);
+  R_FilterDObjIntoCells(localClientNum,entnum,origin,radius);
+  R_LinkSphereEntityToPrimaryLights(localClientNum,entnum,origin,radius);
   return;
 }
 
 
 // 00A6BCA0  R_LinkBModelEntity  (gfx_d3d/r_scene.cpp:7344)
 
-void __cdecl R_LinkBModelEntity(int param_1,uint param_2,GfxBrushModel *param_3)
+void __cdecl R_LinkBModelEntity(int localClientNum,uint entnum,GfxBrushModel *bmodel)
 
 {
-  R_FilterBModelIntoCells(param_1,param_2,param_3);
-  R_LinkBoxEntityToPrimaryLights(param_1,param_2,(float *)param_3,(param_3->writable).maxs);
+  R_FilterBModelIntoCells(localClientNum,entnum,bmodel);
+  R_LinkBoxEntityToPrimaryLights(localClientNum,entnum,(float *)bmodel,(bmodel->writable).maxs);
   return;
 }
 
 
 // 00A6BCE0  R_UnlinkEntity  (gfx_d3d/r_scene.cpp:7350)
 
-void __cdecl R_UnlinkEntity(int param_1,uint param_2)
+void __cdecl R_UnlinkEntity(int localClientNum,uint entnum)
 
 {
-  R_UnfilterEntFromCells(param_1,param_2);
-  R_UnlinkEntityFromPrimaryLights(param_1,param_2);
+  R_UnfilterEntFromCells(localClientNum,entnum);
+  R_UnlinkEntityFromPrimaryLights(localClientNum,entnum);
   return;
 }
 
 
 // 00A6BD10  R_LinkDynEnt  (gfx_d3d/r_scene.cpp:7359)
 
-void __cdecl R_LinkDynEnt(uint param_1,DynEntityDrawType param_2,float *param_3,float *param_4)
+void __cdecl R_LinkDynEnt(uint dynEntId,DynEntityDrawType drawType,float *mins,float *maxs)
 
 {
-  R_FilterDynEntIntoCells(param_1,param_2,param_3,param_4);
-  R_LinkDynEntToPrimaryLights(param_1,param_2,param_3,param_4);
+  R_FilterDynEntIntoCells(dynEntId,drawType,mins,maxs);
+  R_LinkDynEntToPrimaryLights(dynEntId,drawType,mins,maxs);
   return;
 }
 
 
 // 00A6BD50  R_UnlinkDynEnt  (gfx_d3d/r_scene.cpp:7365)
 
-void __cdecl R_UnlinkDynEnt(uint param_1,DynEntityDrawType param_2)
+void __cdecl R_UnlinkDynEnt(uint dynEntId,DynEntityDrawType drawType)
 
 {
-  R_UnfilterDynEntFromCells(param_1,param_2);
-  R_UnlinkDynEntFromPrimaryLights(param_1,param_2);
+  R_UnfilterDynEntFromCells(dynEntId,drawType);
+  R_UnlinkDynEntFromPrimaryLights(dynEntId,drawType);
   return;
 }
 
 
 // 00A6BD80  R_PvsLock_GetViewOrigin  (gfx_d3d/r_scene.cpp:7439)
 
-void __cdecl R_PvsLock_GetViewOrigin(float *param_1)
+void __cdecl R_PvsLock_GetViewOrigin(float *out)
 
 {
-  *param_1 = lockPvsViewParms.origin[0];
-  param_1[1] = lockPvsViewParms.origin[1];
-  param_1[2] = lockPvsViewParms.origin[2];
+  *out = lockPvsViewParms.origin[0];
+  out[1] = lockPvsViewParms.origin[1];
+  out[2] = lockPvsViewParms.origin[2];
   return;
 }
 
 
 // 00A6BDC0  R_PvsLock_GetViewAxis  (gfx_d3d/r_scene.cpp:7444)
 
-void __cdecl R_PvsLock_GetViewAxis(float (*param_1) [3])
+void __cdecl R_PvsLock_GetViewAxis(float (*out) [3])
 
 {
-  Vec3PackNormAxis(lockPvsViewParms.axis,param_1);
+  Vec3PackNormAxis(lockPvsViewParms.axis,out);
   return;
 }
 
@@ -6996,32 +7152,32 @@ void __cdecl R_PvsLock_GetViewAxis(float (*param_1) [3])
 // 00A6BDE0  ShodLodInfo  (gfx_d3d/r_scene.cpp:7521)
 
 void __cdecl
-ShodLodInfo(float *param_1,int param_2,int param_3,float param_4,float param_5,bool param_6)
+ShodLodInfo(float *origin,int lod,int numLods,float curDist,float lodDist,bool lodDistAutoGenerated)
 
 {
-  char *local_8;
+  char *s;
   
   if ((r_showLodInfo->current).integer != 0) {
-    local_8 = (char *)0x0;
+    s = (char *)0x0;
     switch((r_showLodInfo->current).integer) {
     case 1:
-      local_8 = va("%i/%i %.0f/%.0f\"");
+      s = va("%i/%i %.0f/%.0f\"");
       break;
     case 2:
-      local_8 = va("%i/%i");
+      s = va("%i/%i");
       break;
     case 3:
-      local_8 = va("%.0f\"");
+      s = va("%.0f\"");
       break;
     case 4:
-      if (param_6) {
-        local_8 = va("%i/%i %.0f/%.0f\"");
+      if (lodDistAutoGenerated) {
+        s = va("%i/%i %.0f/%.0f\"");
       }
     }
-    if (local_8 != (char *)0x0) {
+    if (s != (char *)0x0) {
       R_AddScaledDebugString
-                (&frontEndDataOut->debugGlobals,rg.debugViewParms,param_1,
-                 (float *)(&_bad_alloc_Message)[(uint)param_6 + param_3 * 2],local_8);
+                (&frontEndDataOut->debugGlobals,rg.debugViewParms,origin,
+                 (float *)(&_bad_alloc_Message)[(uint)lodDistAutoGenerated + numLods * 2],s);
     }
   }
   return;

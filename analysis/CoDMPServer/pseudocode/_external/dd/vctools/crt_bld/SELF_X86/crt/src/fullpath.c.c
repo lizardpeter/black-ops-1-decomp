@@ -4,55 +4,55 @@
 
 /* WARNING: Removing unreachable block (ram,0x00c29a4c) */
 
-char * __cdecl _fullpath(char *param_1,char *param_2,uint param_3)
+char * __cdecl _fullpath(char *UserBuf,char *path,uint maxlen)
 
 {
   DWORD DVar1;
   int *piVar2;
   char *pcVar3;
-  LPSTR local_c;
-  char *local_8;
+  LPSTR pfname;
+  char *buf;
   
-  if ((param_2 == (char *)0x0) || (*param_2 == '\0')) {
-    pcVar3 = _getcwd(param_1,param_3);
+  if ((path == (char *)0x0) || (*path == '\0')) {
+    pcVar3 = _getcwd(UserBuf,maxlen);
     return pcVar3;
   }
-  if (param_1 == (char *)0x0) {
-    DVar1 = GetFullPathNameA(param_2,0,(LPSTR)0x0,(LPSTR *)0x0);
+  if (UserBuf == (char *)0x0) {
+    DVar1 = GetFullPathNameA(path,0,(LPSTR)0x0,(LPSTR *)0x0);
     if (DVar1 == 0) goto LAB_00c29a2b;
-    if (param_3 <= DVar1) {
-      param_3 = DVar1;
+    if (maxlen <= DVar1) {
+      maxlen = DVar1;
     }
-    local_8 = calloc(param_3,1);
-    if (local_8 == (LPSTR)0x0) {
+    buf = calloc(maxlen,1);
+    if (buf == (char *)0x0) {
       piVar2 = _errno();
       *piVar2 = 0xc;
       return (char *)0x0;
     }
   }
   else {
-    if (param_3 == 0) {
+    if (maxlen == 0) {
       piVar2 = _errno();
       *piVar2 = 0x16;
       _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
       return (char *)0x0;
     }
-    local_8 = param_1;
+    buf = UserBuf;
   }
-  DVar1 = GetFullPathNameA(param_2,param_3,local_8,&local_c);
-  if (param_3 <= DVar1) {
-    if (param_1 == (char *)0x0) {
-      free(local_8);
+  DVar1 = GetFullPathNameA(path,maxlen,buf,&pfname);
+  if (maxlen <= DVar1) {
+    if (UserBuf == (char *)0x0) {
+      free(buf);
     }
     piVar2 = _errno();
     *piVar2 = 0x22;
     return (char *)0x0;
   }
   if (DVar1 != 0) {
-    return local_8;
+    return buf;
   }
-  if (param_1 == (char *)0x0) {
-    free(local_8);
+  if (UserBuf == (char *)0x0) {
+    free(buf);
   }
 LAB_00c29a2b:
   DVar1 = GetLastError();

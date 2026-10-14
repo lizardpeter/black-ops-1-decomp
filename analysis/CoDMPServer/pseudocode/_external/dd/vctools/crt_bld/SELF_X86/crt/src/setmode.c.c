@@ -2,7 +2,7 @@
 
 // 00C2E256  _setmode_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setmode.c:104)
 
-int __cdecl _setmode_nolock(int param_1,int param_2)
+int __cdecl _setmode_nolock(int fh,int mode)
 
 {
   int iVar1;
@@ -13,27 +13,27 @@ int __cdecl _setmode_nolock(int param_1,int param_2)
   byte bVar6;
   int iVar7;
   
-  piVar2 = (int *)(&__pioinfo + (param_1 >> 5) * 4);
-  iVar7 = (param_1 & 0x1fU) * 0x40;
+  piVar2 = (int *)(&__pioinfo + (fh >> 5) * 4);
+  iVar7 = (fh & 0x1fU) * 0x40;
   iVar1 = *piVar2 + iVar7;
   cVar3 = *(char *)(iVar1 + 0x24);
   bVar4 = *(byte *)(iVar1 + 4);
-  if (param_2 == 0x4000) {
+  if (mode == 0x4000) {
     *(byte *)(iVar1 + 4) = *(byte *)(iVar1 + 4) | 0x80;
     pbVar5 = (byte *)(*piVar2 + 0x24 + iVar7);
     *pbVar5 = *pbVar5 & 0x80;
   }
-  else if (param_2 == 0x8000) {
+  else if (mode == 0x8000) {
     *(byte *)(iVar1 + 4) = *(byte *)(iVar1 + 4) & 0x7f;
   }
   else {
-    if ((param_2 == 0x10000) || (param_2 == 0x20000)) {
+    if ((mode == 0x10000) || (mode == 0x20000)) {
       *(byte *)(iVar1 + 4) = *(byte *)(iVar1 + 4) | 0x80;
       pbVar5 = (byte *)(*piVar2 + 0x24 + iVar7);
       bVar6 = *pbVar5 & 0x82 | 2;
     }
     else {
-      if (param_2 != 0x40000) goto LAB_00c2e2f4;
+      if (mode != 0x40000) goto LAB_00c2e2f4;
       *(byte *)(iVar1 + 4) = *(byte *)(iVar1 + 4) | 0x80;
       pbVar5 = (byte *)(*piVar2 + 0x24 + iVar7);
       bVar6 = *pbVar5 & 0x81 | 1;
@@ -50,20 +50,20 @@ LAB_00c2e2f4:
 
 // 00C2E312  _get_fmode  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/setmode.c:159)
 
-int __cdecl _get_fmode(int *param_1)
+int __cdecl _get_fmode(int *pMode)
 
 {
   int *piVar1;
   int iVar2;
   
-  if (param_1 == (int *)0x0) {
+  if (pMode == (int *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     iVar2 = 0x16;
   }
   else {
-    *param_1 = _fmode;
+    *pMode = _fmode;
     iVar2 = 0;
   }
   return iVar2;

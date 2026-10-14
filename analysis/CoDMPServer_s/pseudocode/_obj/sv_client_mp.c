@@ -568,7 +568,7 @@ int __cdecl SV_IsBannedGuid(int param_1)
   char *lpAddress;
   int iVar3;
   int iVar4;
-  char *pcVar5;
+  char *nptr;
   char *local_4;
   
   if ((param_1 == 0) || (iVar3 = _FS_ReadFile(&local_4), lpAddress = local_4, iVar3 < 0)) {
@@ -583,9 +583,9 @@ int __cdecl SV_IsBannedGuid(int param_1)
       *(undefined1 *)(iVar4 + 0x408) = 0;
       *(undefined4 *)(iVar4 + 0x404) = *(undefined4 *)(iVar4 + 0x41c);
     }
-    pcVar5 = (char *)FUN_006aa5f0(&local_4,1);
-    if (*pcVar5 == '\0') goto LAB_0060b74c;
-    iVar4 = atoi(pcVar5);
+    nptr = (char *)FUN_006aa5f0(&local_4,1);
+    if (*nptr == '\0') goto LAB_0060b74c;
+    iVar4 = atoi(nptr);
     if (iVar4 == param_1) {
       iVar3 = 1;
 LAB_0060b74c:
@@ -690,11 +690,11 @@ void __cdecl SV_UnbanClient(char *param_1)
   void *pvVar6;
   int in_EAX;
   char *pcVar7;
-  uchar *puVar8;
+  uchar *dst;
+  int iVar8;
   int iVar9;
-  int iVar10;
   int unaff_EBP;
-  uchar *puVar11;
+  uchar *src;
   char *unaff_EDI;
   uchar *local_50;
   void *local_4c;
@@ -709,15 +709,15 @@ void __cdecl SV_UnbanClient(char *param_1)
       local_40[0] = '\0';
     }
     else {
-      iVar10 = 0x40;
-      iVar9 = in_EAX + -1;
+      iVar9 = 0x40;
+      iVar8 = in_EAX + -1;
       do {
-        cVar3 = *(char *)(iVar9 + 1);
-        iVar9 = iVar9 + 1;
-        local_40[(iVar9 - (in_EAX + -1)) + -1] = cVar3;
+        cVar3 = *(char *)(iVar8 + 1);
+        iVar8 = iVar8 + 1;
+        local_40[(iVar8 - (in_EAX + -1)) + -1] = cVar3;
         if (cVar3 == '\0') break;
-        iVar10 = iVar10 + -1;
-      } while (iVar10 != 0);
+        iVar9 = iVar9 + -1;
+      } while (iVar9 != 0);
       local_1 = 0;
     }
     I_CleanStr(local_40);
@@ -730,50 +730,50 @@ void __cdecl SV_UnbanClient(char *param_1)
     local_44 = (int)pcVar7 - (int)(local_40 + 1);
     local_48 = 0;
     while( true ) {
-      puVar8 = local_50;
-      local_50 = puVar8;
-      iVar9 = FUN_006a9e90();
-      iVar9 = *(int *)(iVar9 + 0x4280) * 0x428 + iVar9;
-      if (*(char *)(iVar9 + 0x408) != '\0') {
-        local_50 = *(uchar **)(iVar9 + 0x420);
-        *(undefined1 *)(iVar9 + 0x408) = 0;
-        *(undefined4 *)(iVar9 + 0x404) = *(undefined4 *)(iVar9 + 0x41c);
+      dst = local_50;
+      local_50 = dst;
+      iVar8 = FUN_006a9e90();
+      iVar8 = *(int *)(iVar8 + 0x4280) * 0x428 + iVar8;
+      if (*(char *)(iVar8 + 0x408) != '\0') {
+        local_50 = *(uchar **)(iVar8 + 0x420);
+        *(undefined1 *)(iVar8 + 0x408) = 0;
+        *(undefined4 *)(iVar8 + 0x404) = *(undefined4 *)(iVar8 + 0x41c);
       }
       pcVar7 = (char *)FUN_006aa5f0(&local_50,1);
-      iVar9 = local_44;
+      iVar8 = local_44;
       if (*pcVar7 == '\0') break;
       uVar4 = *local_50;
-      puVar11 = local_50;
+      src = local_50;
       while ((uVar4 != '\0' && ((char)uVar4 < '!'))) {
-        puVar1 = puVar11 + 1;
-        puVar11 = puVar11 + 1;
+        puVar1 = src + 1;
+        src = src + 1;
         uVar4 = *puVar1;
       }
-      iVar10 = I_strnicmp((char *)puVar11,unaff_EDI,unaff_EBP);
-      if ((iVar10 == 0) && ((puVar11[iVar9] == '\r' || (puVar11[iVar9] == '\n')))) {
+      iVar9 = I_strnicmp((char *)src,unaff_EDI,unaff_EBP);
+      if ((iVar9 == 0) && ((src[iVar8] == '\r' || (src[iVar8] == '\n')))) {
         bVar5 = true;
       }
       else {
         bVar5 = false;
       }
-      iVar9 = FUN_006a9e90();
+      iVar8 = FUN_006a9e90();
       pvVar6 = local_4c;
-      uVar4 = *puVar11;
+      uVar4 = *src;
       while (uVar4 != '\0') {
-        puVar11 = puVar11 + 1;
+        src = src + 1;
         if (uVar4 == '\n') {
-          piVar2 = (int *)(*(int *)(iVar9 + 0x4280) * 0x428 + iVar9 + 0x404);
+          piVar2 = (int *)(*(int *)(iVar8 + 0x4280) * 0x428 + iVar8 + 0x404);
           *piVar2 = *piVar2 + 1;
           break;
         }
-        uVar4 = *puVar11;
+        uVar4 = *src;
       }
-      local_50 = puVar11;
+      local_50 = src;
       if (bVar5) {
         local_48 = local_48 + 1;
-        memmove(puVar8,puVar11,(ulong)(lpAddress + (1 - (int)puVar11) + (int)local_4c));
-        local_4c = (void *)((int)pvVar6 + ((int)puVar8 - (int)puVar11));
-        local_50 = puVar8;
+        memmove(dst,src,(ulong)(lpAddress + (1 - (int)src) + (int)local_4c));
+        local_4c = (void *)((int)pvVar6 + ((int)dst - (int)src));
+        local_50 = dst;
       }
     }
     FS_WriteFile((char *)lpAddress,local_4c,(int)unaff_EDI);
@@ -1538,17 +1538,17 @@ void __cdecl SV_SendClientGameState(client_t *param_1)
 
 {
   byte *pbVar1;
-  client_t *pcVar2;
-  scrMemTreePub_t sVar3;
-  ushort uVar4;
-  undefined4 *puVar5;
-  short sVar6;
-  undefined1 auVar7 [16];
-  bool bVar8;
-  char *pcVar9;
-  int iVar10;
-  scrMemTreePub_t *psVar11;
-  DWORD DVar12;
+  client_t *dst;
+  scrMemTreePub_t sVar2;
+  ushort uVar3;
+  undefined4 *puVar4;
+  short sVar5;
+  undefined1 auVar6 [16];
+  bool bVar7;
+  char *pcVar8;
+  int iVar9;
+  scrMemTreePub_t *psVar10;
+  DWORD DVar11;
   int extraout_EAX;
   int extraout_EAX_00;
   msg_t *extraout_EAX_01;
@@ -1557,15 +1557,15 @@ void __cdecl SV_SendClientGameState(client_t *param_1)
   LargeLocal *this_00;
   LargeLocal *this_01;
   GlassesServer *this_02;
-  msg_t *pmVar13;
+  msg_t *pmVar12;
   char *unaff_ESI;
-  scrMemTreePub_t *psVar14;
-  int *piVar15;
+  scrMemTreePub_t *psVar13;
+  int *piVar14;
   FastCriticalSection *unaff_EDI;
-  int iVar16;
-  uint uVar17;
-  undefined1 uVar18;
-  char *pcVar19;
+  int iVar15;
+  uint uVar16;
+  undefined1 uVar17;
+  char *pcVar18;
   msg_t *pmStack_14c;
   int iStack_148;
   undefined4 auStack_144 [2];
@@ -1586,33 +1586,33 @@ void __cdecl SV_SendClientGameState(client_t *param_1)
   pmStack_110 = LargeLocalGetBuf(iStack_104,(int)unaff_EDI);
   if (*(int *)param_1 != 0) {
     if ((*(int *)(param_1 + 0x44) != 0) && (*(int *)(param_1 + 0x58) != 0)) {
-      pcVar19 = 
+      pcVar18 = 
       "Would have gone into INFINITE LOOP OF DOOM for client %s, unsentlength %i, state %i\n";
-      pcVar9 = va(
+      pcVar8 = va(
                  "Would have gone into INFINITE LOOP OF DOOM for client %s, unsentlength %i, state %i\n"
                  );
-      Com_DPrintf((int)pcVar9,pcVar19);
+      Com_DPrintf((int)pcVar8,pcVar18);
       va("Would have gone into INFINITE LOOP OF DOOM for client %s, unsentlength %i, state %i\n");
       LargeLocal::~LargeLocal(this);
       return;
     }
     do {
       if ((*(int *)(param_1 + 0x44) == 0) || (*(int *)(param_1 + 0x58) != 0)) break;
-      bVar8 = Netchan_TransmitNextFragment((netchan_t *)unaff_EDI);
+      bVar7 = Netchan_TransmitNextFragment((netchan_t *)unaff_EDI);
       if (*(int *)(param_1 + 0x44) == 0) {
-        pcVar2 = param_1 + (*(int *)(param_1 + 0x10) % 0x1c) * 10000 + 0x5774;
-        memset((uchar *)pcVar2,'\0',10000);
-        *(undefined4 *)(pcVar2 + 0x26f0) = DAT_01e5d4b8;
-        *(undefined4 *)(pcVar2 + 0x26f4) = DAT_01e5d4bc;
-        *(undefined4 *)(pcVar2 + 0x26f8) = DAT_01e5d4c0;
+        dst = param_1 + (*(int *)(param_1 + 0x10) % 0x1c) * 10000 + 0x5774;
+        memset((uchar *)dst,'\0',10000);
+        *(undefined4 *)(dst + 0x26f0) = DAT_01e5d4b8;
+        *(undefined4 *)(dst + 0x26f4) = DAT_01e5d4bc;
+        *(undefined4 *)(dst + 0x26f8) = DAT_01e5d4c0;
       }
-      if (!bVar8) {
-        pcVar19 = "Dropping client %s, unsentlength %i, state %i\n";
-        pcVar9 = va("Dropping client %s, unsentlength %i, state %i\n");
-        Com_DPrintf((int)pcVar9,pcVar19);
-        uVar18 = 0x68;
+      if (!bVar7) {
+        pcVar18 = "Dropping client %s, unsentlength %i, state %i\n";
+        pcVar8 = va("Dropping client %s, unsentlength %i, state %i\n");
+        Com_DPrintf((int)pcVar8,pcVar18);
+        uVar17 = 0x68;
         va("Dropping client %s, unsentlength %i, state %i\n");
-        SV_DropClient((client_t *)"EXE_TRANSMITERROR",(char *)0x0,true,(bool)uVar18);
+        SV_DropClient((client_t *)"EXE_TRANSMITERROR",(char *)0x0,true,(bool)uVar17);
         LargeLocal::~LargeLocal(this_01);
         return;
       }
@@ -1663,26 +1663,26 @@ void __cdecl SV_SendClientGameState(client_t *param_1)
   MSG_WriteString((msg_t *)unaff_EDI,unaff_ESI);
   if ((DAT_0268df84 != 2) || (3 < DAT_026a5fc8)) {
     uStack_10c = *(undefined4 *)(param_1 + 0x559c);
-    uVar17 = *(uint *)(param_1 + 0x5598);
+    uVar16 = *(uint *)(param_1 + 0x5598);
     if (iStack_134 < (int)(pcStack_130 + 4)) {
       auStack_144[0] = 1;
     }
     else {
-      *(uint *)(pcStack_130 + iStack_13c) = uVar17 ^ _DAT_01e5d3fc;
+      *(uint *)(pcStack_130 + iStack_13c) = uVar16 ^ _DAT_01e5d3fc;
       pcStack_130 = pcStack_130 + 4;
     }
     if (iStack_134 < (int)(pcStack_130 + 4)) {
       auStack_144[0] = 1;
     }
     else {
-      *(uint *)(pcStack_130 + iStack_13c) = uVar17 ^ _DAT_01e5d400;
+      *(uint *)(pcStack_130 + iStack_13c) = uVar16 ^ _DAT_01e5d400;
       pcStack_130 = pcStack_130 + 4;
     }
     if (iStack_134 < (int)(pcStack_130 + 4)) {
       auStack_144[0] = 1;
     }
     else {
-      *(uint *)(pcStack_130 + iStack_13c) = uVar17 ^ _DAT_01e5d404;
+      *(uint *)(pcStack_130 + iStack_13c) = uVar16 ^ _DAT_01e5d404;
       pcStack_130 = pcStack_130 + 4;
     }
   }
@@ -1700,114 +1700,114 @@ void __cdecl SV_SendClientGameState(client_t *param_1)
   else {
     auStack_144[0] = 1;
   }
-  pcVar9 = pcStack_130;
-  iVar16 = 0;
-  sVar6 = 0;
-  iVar10 = CCS_GetConfigStringNum((int)unaff_EDI);
+  pcVar8 = pcStack_130;
+  iVar15 = 0;
+  sVar5 = 0;
+  iVar9 = CCS_GetConfigStringNum((int)unaff_EDI);
   do {
-    if (iVar16 == 1) {
+    if (iVar15 == 1) {
 LAB_0060d472:
-      sVar6 = sVar6 + 1;
+      sVar5 = sVar5 + 1;
     }
-    else if (iVar10 == iVar16) {
-      if ((ushort)(&DAT_01dedf46)[iVar16] == 0) {
-        psVar14 = (scrMemTreePub_t *)0x0;
+    else if (iVar9 == iVar15) {
+      if ((ushort)(&DAT_01dedf46)[iVar15] == 0) {
+        psVar13 = (scrMemTreePub_t *)0x0;
       }
       else {
-        psVar14 = gScrMemTreePub + (uint)(ushort)(&DAT_01dedf46)[iVar16] * 0x10 + 4;
+        psVar13 = gScrMemTreePub + (uint)(ushort)(&DAT_01dedf46)[iVar15] * 0x10 + 4;
       }
-      if (iVar10 < 0x60b) {
-        psVar11 = (scrMemTreePub_t *)CCS_GetConfigStringValue((int)unaff_EDI);
+      if (iVar9 < 0x60b) {
+        psVar10 = (scrMemTreePub_t *)CCS_GetConfigStringValue((int)unaff_EDI);
         do {
-          sVar3 = *psVar11;
-          bVar8 = (byte)sVar3 < (byte)*psVar14;
-          if (sVar3 != *psVar14) {
+          sVar2 = *psVar10;
+          bVar7 = (byte)sVar2 < (byte)*psVar13;
+          if (sVar2 != *psVar13) {
 LAB_0060d440:
-            iVar10 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
+            iVar9 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
             goto LAB_0060d445;
           }
-          if (sVar3 == (scrMemTreePub_t)0x0) break;
-          sVar3 = psVar11[1];
-          bVar8 = (byte)sVar3 < (byte)psVar14[1];
-          if (sVar3 != psVar14[1]) goto LAB_0060d440;
-          psVar11 = psVar11 + 2;
-          psVar14 = psVar14 + 2;
-        } while (sVar3 != (scrMemTreePub_t)0x0);
-        iVar10 = 0;
+          if (sVar2 == (scrMemTreePub_t)0x0) break;
+          sVar2 = psVar10[1];
+          bVar7 = (byte)sVar2 < (byte)psVar13[1];
+          if (sVar2 != psVar13[1]) goto LAB_0060d440;
+          psVar10 = psVar10 + 2;
+          psVar13 = psVar13 + 2;
+        } while (sVar2 != (scrMemTreePub_t)0x0);
+        iVar9 = 0;
       }
       else {
-        pcVar9 = CCS_GetConfigStringValue((int)unaff_EDI);
-        iVar10 = I_strnicmp(pcVar9,(char *)unaff_EDI,(int)unaff_ESI);
+        pcVar8 = CCS_GetConfigStringValue((int)unaff_EDI);
+        iVar9 = I_strnicmp(pcVar8,(char *)unaff_EDI,(int)unaff_ESI);
       }
 LAB_0060d445:
-      if (iVar10 != 0) {
-        sVar6 = sVar6 + 1;
+      if (iVar9 != 0) {
+        sVar5 = sVar5 + 1;
       }
-      iVar10 = CCS_GetConfigStringNum((int)unaff_EDI);
-      pcVar9 = pcStack_130;
+      iVar9 = CCS_GetConfigStringNum((int)unaff_EDI);
+      pcVar8 = pcStack_130;
     }
-    else if ((&DAT_01dedf46)[iVar16] != DAT_01dedf44) goto LAB_0060d472;
-    iVar16 = iVar16 + 1;
-  } while (iVar16 < 0xcbc);
+    else if ((&DAT_01dedf46)[iVar15] != DAT_01dedf44) goto LAB_0060d472;
+    iVar15 = iVar15 + 1;
+  } while (iVar15 < 0xcbc);
   if (((*(int *)(param_1 + 0x20) == 2) && ((onlinegame->current).enabled != false)) &&
      ((sv_writeConfigStrings->current).enabled != false)) {
-    pcVar19 = "devOutput";
+    pcVar18 = "devOutput";
     va("configStrings_pc_%s_%s.csv");
-    iVar10 = FS_SV_FOpenFileWrite(pcVar19,(char *)unaff_EDI);
-    if (iVar10 == 0) goto LAB_0060d661;
+    iVar9 = FS_SV_FOpenFileWrite(pcVar18,(char *)unaff_EDI);
+    if (iVar9 == 0) goto LAB_0060d661;
     Com_Printf(0xf,"Starting writing config strings to file\n");
     if (DAT_04fad834 == 0) {
       sys_timeBase = timeGetTime();
       DAT_04fad834 = 1;
     }
-    DVar12 = timeGetTime();
-    pmStack_110 = (msg_t *)(DVar12 - sys_timeBase);
-    iVar16 = 0;
+    DVar11 = timeGetTime();
+    pmStack_110 = (msg_t *)(DVar11 - sys_timeBase);
+    iVar15 = 0;
     do {
-      switch(iVar16) {
+      switch(iVar15) {
       case 0:
       case 5:
       case 6:
       case 0xc:
         break;
       default:
-        if (((0x1f < iVar16 - 0x143U) && (0x1f < iVar16 - 0x163U)) &&
-           (uVar4 = (&DAT_01dedf46)[iVar16], uVar4 != DAT_01dedf44)) {
-          if (uVar4 == 0) {
-            psVar14 = (scrMemTreePub_t *)0x0;
+        if (((0x1f < iVar15 - 0x143U) && (0x1f < iVar15 - 0x163U)) &&
+           (uVar3 = (&DAT_01dedf46)[iVar15], uVar3 != DAT_01dedf44)) {
+          if (uVar3 == 0) {
+            psVar13 = (scrMemTreePub_t *)0x0;
           }
           else {
-            psVar14 = gScrMemTreePub + (uint)uVar4 * 0x10 + 4;
+            psVar13 = gScrMemTreePub + (uint)uVar3 * 0x10 + 4;
           }
-          strchr((uchar *)psVar14,'\"');
-          if ((extraout_EAX == 0) && (strchr((uchar *)psVar14,'\\'), extraout_EAX_00 == 0)) {
-            FS_Printf(iVar10,"%i,\"%s\"\n",iVar16);
+          strchr((uchar *)psVar13,'\"');
+          if ((extraout_EAX == 0) && (strchr((uchar *)psVar13,'\\'), extraout_EAX_00 == 0)) {
+            FS_Printf(iVar9,"%i,\"%s\"\n",iVar15);
           }
           else {
-            FS_Printf(iVar10,"%i,\"");
-            sVar3 = *psVar14;
-            while (sVar3 != (scrMemTreePub_t)0x0) {
-              if (*psVar14 == (scrMemTreePub_t)0x22) {
-                pcVar9 = "\"\"";
+            FS_Printf(iVar9,"%i,\"");
+            sVar2 = *psVar13;
+            while (sVar2 != (scrMemTreePub_t)0x0) {
+              if (*psVar13 == (scrMemTreePub_t)0x22) {
+                pcVar8 = "\"\"";
 LAB_0060d5ec:
-                FS_Printf(iVar10,pcVar9);
+                FS_Printf(iVar9,pcVar8);
               }
               else {
-                if (*psVar14 == (scrMemTreePub_t)0x5c) {
-                  pcVar9 = "\\";
+                if (*psVar13 == (scrMemTreePub_t)0x5c) {
+                  pcVar8 = "\\";
                   goto LAB_0060d5ec;
                 }
-                FS_Printf(iVar10,"%c");
+                FS_Printf(iVar9,"%c");
               }
-              psVar14 = psVar14 + 1;
-              sVar3 = *psVar14;
+              psVar13 = psVar13 + 1;
+              sVar2 = *psVar13;
             }
-            FS_Printf(iVar10,"\"\n");
+            FS_Printf(iVar9,"\"\n");
           }
         }
       }
-      iVar16 = iVar16 + 1;
-    } while (iVar16 < 0xcbc);
+      iVar15 = iVar15 + 1;
+    } while (iVar15 < 0xcbc);
     FS_FCloseFile((int)unaff_EDI);
     if (DAT_04fad834 == 0) {
       sys_timeBase = timeGetTime();
@@ -1815,7 +1815,7 @@ LAB_0060d5ec:
     }
     timeGetTime();
     Com_Printf(0xf,"Finished writing config strings to file (%i mec)\n");
-    pcVar9 = pcStack_130;
+    pcVar8 = pcStack_130;
   }
   else {
 LAB_0060d661:
@@ -1823,27 +1823,27 @@ LAB_0060d661:
       Com_Printf(0xf,"Could not write config strings to file\n");
     }
   }
-  if (iStack_134 < (int)(pcVar9 + 2)) {
+  if (iStack_134 < (int)(pcVar8 + 2)) {
     auStack_144[0] = 1;
   }
   else {
-    *(short *)(pcVar9 + iStack_13c) = sVar6;
-    pcStack_130 = pcVar9 + 2;
+    *(short *)(pcVar8 + iStack_13c) = sVar5;
+    pcStack_130 = pcVar8 + 2;
   }
   iStack_148 = 0;
   if (DAT_01f3b124 == 0) {
-    pmVar13 = (msg_t *)0x0;
+    pmVar12 = (msg_t *)0x0;
   }
   else {
     if (((*(int *)(DAT_01f3b124 + 4) < 1) || (*(int *)(DAT_01f3b124 + 8) < 1)) ||
-       (pcVar9 = (char *)**(int **)(DAT_01f3b124 + 0xc), pcVar9 == (char *)0x0)) {
-      pcVar9 = "";
+       (pcVar8 = (char *)**(int **)(DAT_01f3b124 + 0xc), pcVar8 == (char *)0x0)) {
+      pcVar8 = "";
     }
-    pmVar13 = (msg_t *)atoi(pcVar9);
+    pmVar12 = (msg_t *)atoi(pcVar8);
   }
   pmStack_110 = (msg_t *)0xffffffff;
   pmStack_14c = (msg_t *)0x0;
-  iVar10 = DAT_01f3b124;
+  iVar9 = DAT_01f3b124;
   do {
     if (pmStack_14c == (msg_t *)&DAT_00000001) {
       DAT_01d4d1b8 = 0;
@@ -1857,22 +1857,22 @@ LAB_0060d661:
       LOCK();
       DAT_01f57360 = DAT_01f57360 + -1;
       UNLOCK();
-      iVar10 = 0;
+      iVar9 = 0;
       if (0 < dvarCount) {
         do {
-          puVar5 = (undefined4 *)(&DAT_01f57368)[iVar10];
-          if ((*(byte *)(puVar5 + 3) & 8) != 0) {
-            pcVar9 = (char *)FUN_0069e6e0(*(undefined8 *)(puVar5 + 6),*(undefined8 *)(puVar5 + 8));
-            Info_SetValueForKey_Big(&DAT_01d4d1b8,(char *)*puVar5,pcVar9);
+          puVar4 = (undefined4 *)(&DAT_01f57368)[iVar9];
+          if ((*(byte *)(puVar4 + 3) & 8) != 0) {
+            pcVar8 = (char *)FUN_0069e6e0(*(undefined8 *)(puVar4 + 6),*(undefined8 *)(puVar4 + 8));
+            Info_SetValueForKey_Big(&DAT_01d4d1b8,(char *)*puVar4,pcVar8);
           }
-          iVar10 = iVar10 + 1;
-        } while (iVar10 < dvarCount);
+          iVar9 = iVar9 + 1;
+        } while (iVar9 < dvarCount);
       }
       psStack_114 = (scrMemTreePub_t *)&DAT_01d4d1b8;
 LAB_0060d9f6:
       if (pmStack_14c == pmStack_110 + 1) {
-        uVar17 = uStack_124 & 7;
-        if (uVar17 == 0) {
+        uVar16 = uStack_124 & 7;
+        if (uVar16 == 0) {
           if (iStack_134 <= (int)pcStack_130) {
             auStack_144[0] = 1;
             goto LAB_0060da93;
@@ -1882,7 +1882,7 @@ LAB_0060d9f6:
           pcStack_130 = pcStack_130 + 1;
         }
         pbVar1 = (byte *)(((int)uStack_124 >> 3) + iStack_13c);
-        *pbVar1 = *pbVar1 | '\x01' << (sbyte)uVar17;
+        *pbVar1 = *pbVar1 | '\x01' << (sbyte)uVar16;
         uStack_124 = uStack_124 + 1;
       }
       else {
@@ -1904,7 +1904,7 @@ LAB_0060da7b:
 LAB_0060da93:
       pmStack_110 = pmStack_14c;
       MSG_WriteBigString((msg_t *)auStack_144,(char *)unaff_EDI);
-      iVar10 = DAT_01f3b124;
+      iVar9 = DAT_01f3b124;
     }
     else {
       if ((ushort)(&DAT_01dedf46)[(int)pmStack_14c] == 0) {
@@ -1913,65 +1913,64 @@ LAB_0060da93:
       else {
         psStack_114 = gScrMemTreePub + (uint)(ushort)(&DAT_01dedf46)[(int)pmStack_14c] * 0x10 + 4;
       }
-      if ((pmVar13 != (msg_t *)0x0) && ((int)pmVar13 < (int)pmStack_14c)) {
+      if ((pmVar12 != (msg_t *)0x0) && ((int)pmVar12 < (int)pmStack_14c)) {
         Com_Error(ERR_DROP,
                   "Invalid line in the config string csv - config string indexes must only go up, but it went down and is now %i (line %i) - check the bottom of the file to see if it\'s corrupt"
-                  ,pmVar13);
-        iVar10 = DAT_01f3b124;
+                  ,pmVar12);
+        iVar9 = DAT_01f3b124;
       }
-      if (pmVar13 == pmStack_14c) {
-        if (((iVar10 == 0) || (*(int *)(iVar10 + 4) < 2)) ||
-           ((*(int *)(iVar10 + 8) <= iStack_148 ||
+      if (pmVar12 == pmStack_14c) {
+        if (((iVar9 == 0) || (*(int *)(iVar9 + 4) < 2)) ||
+           ((*(int *)(iVar9 + 8) <= iStack_148 ||
             ((iStack_148 < 0 ||
-             (pcVar9 = *(char **)(*(int *)(iVar10 + 0xc) + 8 + *(int *)(iVar10 + 4) * iStack_148 * 8
-                                 ), (scrMemTreePub_t *)pcVar9 == (scrMemTreePub_t *)0x0)))))) {
-          pcVar9 = "";
+             (pcVar8 = *(char **)(*(int *)(iVar9 + 0xc) + 8 + *(int *)(iVar9 + 4) * iStack_148 * 8),
+             (scrMemTreePub_t *)pcVar8 == (scrMemTreePub_t *)0x0)))))) {
+          pcVar8 = "";
         }
-        psVar14 = psStack_114;
+        psVar13 = psStack_114;
         if ((int)pmStack_14c < 0x60b) {
           do {
-            sVar3 = (scrMemTreePub_t)*pcVar9;
-            bVar8 = (byte)sVar3 < (byte)*psVar14;
-            if (sVar3 != *psVar14) {
+            sVar2 = (scrMemTreePub_t)*pcVar8;
+            bVar7 = (byte)sVar2 < (byte)*psVar13;
+            if (sVar2 != *psVar13) {
 LAB_0060d8d0:
-              iVar16 = (1 - (uint)bVar8) - (uint)(bVar8 != 0);
+              iVar15 = (1 - (uint)bVar7) - (uint)(bVar7 != 0);
               goto LAB_0060d8d5;
             }
-            if (sVar3 == (scrMemTreePub_t)0x0) break;
-            sVar3 = *(scrMemTreePub_t *)(pcVar9 + 1);
-            bVar8 = (byte)sVar3 < (byte)psVar14[1];
-            if (sVar3 != psVar14[1]) goto LAB_0060d8d0;
-            pcVar9 = pcVar9 + 2;
-            psVar14 = psVar14 + 2;
-          } while (sVar3 != (scrMemTreePub_t)0x0);
-          iVar16 = 0;
+            if (sVar2 == (scrMemTreePub_t)0x0) break;
+            sVar2 = *(scrMemTreePub_t *)(pcVar8 + 1);
+            bVar7 = (byte)sVar2 < (byte)psVar13[1];
+            if (sVar2 != psVar13[1]) goto LAB_0060d8d0;
+            pcVar8 = pcVar8 + 2;
+            psVar13 = psVar13 + 2;
+          } while (sVar2 != (scrMemTreePub_t)0x0);
+          iVar15 = 0;
 LAB_0060d8d5:
-          if (iVar16 != 0) goto LAB_0060d904;
-          iVar16 = iStack_148 + 1;
-          if (iVar10 != 0) {
-            if (((0 < *(int *)(iVar10 + 4)) && (iVar16 < *(int *)(iVar10 + 8))) && (-1 < iVar16)) {
-              pcVar9 = *(char **)(*(int *)(iVar10 + 0xc) + *(int *)(iVar10 + 4) * iVar16 * 8);
+          if (iVar15 != 0) goto LAB_0060d904;
+          iVar15 = iStack_148 + 1;
+          if (iVar9 != 0) {
+            if (((0 < *(int *)(iVar9 + 4)) && (iVar15 < *(int *)(iVar9 + 8))) && (-1 < iVar15)) {
+              pcVar8 = *(char **)(*(int *)(iVar9 + 0xc) + *(int *)(iVar9 + 4) * iVar15 * 8);
               goto LAB_0060d88a;
             }
             goto LAB_0060d88e;
           }
-          pmVar13 = (msg_t *)0x0;
-          iStack_148 = iVar16;
+          pmVar12 = (msg_t *)0x0;
+          iStack_148 = iVar15;
         }
         else {
-          iVar16 = I_strnicmp(pcVar9,(char *)unaff_EDI,(int)unaff_ESI);
-          if (iVar16 != 0) {
+          iVar15 = I_strnicmp(pcVar8,(char *)unaff_EDI,(int)unaff_ESI);
+          if (iVar15 != 0) {
 LAB_0060d904:
             if ((&DAT_01dedf46)[(int)pmStack_14c] != DAT_01dedf44) {
-              iVar16 = iStack_148 + 1;
-              if (iVar10 == 0) {
-                pmVar13 = (msg_t *)0x0;
-                iStack_148 = iVar16;
+              iVar15 = iStack_148 + 1;
+              if (iVar9 == 0) {
+                pmVar12 = (msg_t *)0x0;
+                iStack_148 = iVar15;
                 goto LAB_0060d9de;
               }
-              if (((0 < *(int *)(iVar10 + 4)) && (iVar16 < *(int *)(iVar10 + 8))) && (-1 < iVar16))
-              {
-                pcVar9 = *(char **)(*(int *)(iVar10 + 0xc) + *(int *)(iVar10 + 4) * iVar16 * 8);
+              if (((0 < *(int *)(iVar9 + 4)) && (iVar15 < *(int *)(iVar9 + 8))) && (-1 < iVar15)) {
+                pcVar8 = *(char **)(*(int *)(iVar9 + 0xc) + *(int *)(iVar9 + 4) * iVar15 * 8);
                 goto LAB_0060d9c4;
               }
               goto LAB_0060d9c8;
@@ -1989,50 +1988,50 @@ LAB_0060d904:
 LAB_0060d94d:
               uStack_124 = uStack_124 + 1;
             }
-            pmVar13 = pmStack_14c;
+            pmVar12 = pmStack_14c;
             MSG_WriteBits(pmStack_14c,0xc,(int)unaff_EDI);
             pmStack_110 = pmStack_14c;
-            MSG_WriteBigString(extraout_EAX_01,(char *)pmVar13);
-            iVar16 = iStack_148 + 1;
+            MSG_WriteBigString(extraout_EAX_01,(char *)pmVar12);
+            iVar15 = iStack_148 + 1;
             if (DAT_01f3b124 == 0) {
-              pmVar13 = (msg_t *)0x0;
-              iVar10 = DAT_01f3b124;
-              iStack_148 = iVar16;
+              pmVar12 = (msg_t *)0x0;
+              iVar9 = DAT_01f3b124;
+              iStack_148 = iVar15;
               goto LAB_0060d9de;
             }
-            if (((*(int *)(DAT_01f3b124 + 4) < 1) || (*(int *)(DAT_01f3b124 + 8) <= iVar16)) ||
-               (iVar16 < 0)) {
+            if (((*(int *)(DAT_01f3b124 + 4) < 1) || (*(int *)(DAT_01f3b124 + 8) <= iVar15)) ||
+               (iVar15 < 0)) {
 LAB_0060d9c8:
-              pcVar9 = "";
+              pcVar8 = "";
             }
             else {
-              pcVar9 = *(char **)(*(int *)(DAT_01f3b124 + 0xc) +
-                                 *(int *)(DAT_01f3b124 + 4) * iVar16 * 8);
+              pcVar8 = *(char **)(*(int *)(DAT_01f3b124 + 0xc) +
+                                 *(int *)(DAT_01f3b124 + 4) * iVar15 * 8);
 LAB_0060d9c4:
-              if (pcVar9 == (char *)0x0) goto LAB_0060d9c8;
+              if (pcVar8 == (char *)0x0) goto LAB_0060d9c8;
             }
             iStack_148 = iStack_148 + 1;
-            pmVar13 = (msg_t *)atoi(pcVar9);
-            iVar10 = DAT_01f3b124;
+            pmVar12 = (msg_t *)atoi(pcVar8);
+            iVar9 = DAT_01f3b124;
             goto LAB_0060d9de;
           }
-          iVar16 = iStack_148 + 1;
-          if (iVar10 == 0) {
-            pmVar13 = (msg_t *)0x0;
-            iStack_148 = iVar16;
+          iVar15 = iStack_148 + 1;
+          if (iVar9 == 0) {
+            pmVar12 = (msg_t *)0x0;
+            iStack_148 = iVar15;
             goto LAB_0060dab6;
           }
-          if (((*(int *)(iVar10 + 4) < 1) || (*(int *)(iVar10 + 8) <= iVar16)) || (iVar16 < 0)) {
+          if (((*(int *)(iVar9 + 4) < 1) || (*(int *)(iVar9 + 8) <= iVar15)) || (iVar15 < 0)) {
 LAB_0060d88e:
-            pcVar9 = "";
+            pcVar8 = "";
           }
           else {
-            pcVar9 = *(char **)(*(int *)(iVar10 + 0xc) + *(int *)(iVar10 + 4) * iVar16 * 8);
+            pcVar8 = *(char **)(*(int *)(iVar9 + 0xc) + *(int *)(iVar9 + 4) * iVar15 * 8);
 LAB_0060d88a:
-            if (pcVar9 == (char *)0x0) goto LAB_0060d88e;
+            if (pcVar8 == (char *)0x0) goto LAB_0060d88e;
           }
-          pmVar13 = (msg_t *)atoi(pcVar9);
-          iVar10 = DAT_01f3b124;
+          pmVar12 = (msg_t *)atoi(pcVar8);
+          iVar9 = DAT_01f3b124;
           iStack_148 = iStack_148 + 1;
         }
       }
@@ -2046,80 +2045,80 @@ LAB_0060dab6:
   } while ((int)pmStack_14c < 0xcbc);
   pmStack_110 = (msg_t *)(((int)param_1 - DAT_01e5d49c) / 0x7c2e8);
   memset(auStack_f0,'\0',0xe0);
-  piVar15 = (int *)&DAT_01def8c4;
-  iVar10 = iStack_134;
-  iVar16 = iStack_13c;
-  pcVar9 = pcStack_130;
+  piVar14 = (int *)&DAT_01def8c4;
+  iVar9 = iStack_134;
+  iVar15 = iStack_13c;
+  pcVar8 = pcStack_130;
   do {
-    auVar7 = auStack_100;
-    if (*piVar15 != 0) {
-      if ((int)pcVar9 < iVar10) {
-        pcVar9[iVar16] = '\x04';
-        pcStack_130 = pcVar9 + 1;
+    auVar6 = auStack_100;
+    if (*piVar14 != 0) {
+      if ((int)pcVar8 < iVar9) {
+        pcVar8[iVar15] = '\x04';
+        pcStack_130 = pcVar8 + 1;
       }
       else {
         auStack_144[0] = 1;
       }
       auStack_100._0_4_ = ((int)param_1 - DAT_01e5d49c) / 0x7c2e8;
       auStack_100._8_4_ = 0xffffffff;
-      auStack_100._13_3_ = auVar7._13_3_;
+      auStack_100._13_3_ = auVar6._13_3_;
       auStack_100[0xc] = 1;
       MSG_WriteEntity((SnapshotInfo_s *)auStack_100,(msg_t *)auStack_144,0,(entityState_s *)0x0,
                       (entityState_s *)unaff_EDI,(DeltaFlags)unaff_ESI);
       auStack_100[0xc] = 0;
-      iVar10 = iStack_134;
-      iVar16 = iStack_13c;
-      pcVar9 = pcStack_130;
+      iVar9 = iStack_134;
+      iVar15 = iStack_13c;
+      pcVar8 = pcStack_130;
     }
-    piVar15 = piVar15 + 0x5a;
-  } while ((int)piVar15 < 0x1e498c4);
-  if ((int)pcVar9 < iVar10) {
-    pcVar9[iVar16] = '\x03';
-    pcVar9 = pcVar9 + 1;
-    pcStack_130 = pcVar9;
+    piVar14 = piVar14 + 0x5a;
+  } while ((int)piVar14 < 0x1e498c4);
+  if ((int)pcVar8 < iVar9) {
+    pcVar8[iVar15] = '\x03';
+    pcVar8 = pcVar8 + 1;
+    pcStack_130 = pcVar8;
   }
   else {
     auStack_144[0] = 1;
   }
-  pcVar19 = pcVar9 + 4;
-  if (iVar10 < (int)pcVar19) {
+  pcVar18 = pcVar8 + 4;
+  if (iVar9 < (int)pcVar18) {
     auStack_144[0] = 1;
   }
   else {
-    *(uint *)(pcVar9 + iVar16) = DAT_01c5a798._4_4_ | DAT_01c5a784;
-    pcVar9 = pcVar19;
-    pcStack_130 = pcVar19;
+    *(uint *)(pcVar8 + iVar15) = DAT_01c5a798._4_4_ | DAT_01c5a784;
+    pcVar8 = pcVar18;
+    pcStack_130 = pcVar18;
   }
-  if ((int)pcVar9 < iVar10) {
-    pcVar9[iVar16] = '\x0e';
-    pcVar9 = pcVar9 + 1;
-    pcStack_130 = pcVar9;
+  if ((int)pcVar8 < iVar9) {
+    pcVar8[iVar15] = '\x0e';
+    pcVar8 = pcVar8 + 1;
+    pcStack_130 = pcVar8;
   }
   else {
     auStack_144[0] = 1;
   }
-  pcVar19 = pcVar9 + 4;
-  if (iVar10 < (int)pcVar19) {
+  pcVar18 = pcVar8 + 4;
+  if (iVar9 < (int)pcVar18) {
     auStack_144[0] = 1;
   }
   else {
-    *(int *)(pcVar9 + iVar16) = ((int)param_1 - DAT_01e5d49c) / 0x7c2e8;
-    iVar10 = iStack_134;
-    pcVar9 = pcVar19;
-    pcStack_130 = pcVar19;
+    *(int *)(pcVar8 + iVar15) = ((int)param_1 - DAT_01e5d49c) / 0x7c2e8;
+    iVar9 = iStack_134;
+    pcVar8 = pcVar18;
+    pcStack_130 = pcVar18;
   }
-  pcVar19 = pcVar9 + 4;
-  if (iVar10 < (int)pcVar19) {
+  pcVar18 = pcVar8 + 4;
+  if (iVar9 < (int)pcVar18) {
     auStack_144[0] = 1;
   }
   else {
-    *(undefined4 *)(pcVar9 + iVar16) = _DAT_01ded740;
-    pcVar9 = pcVar19;
-    pcStack_130 = pcVar19;
+    *(undefined4 *)(pcVar8 + iVar15) = _DAT_01ded740;
+    pcVar8 = pcVar18;
+    pcStack_130 = pcVar18;
   }
-  if ((int)pcVar9 < iVar10) {
-    pcVar9[iVar16] = '\x06';
-    pcStack_130 = pcVar9 + 1;
+  if ((int)pcVar8 < iVar9) {
+    pcVar8[iVar15] = '\x06';
+    pcStack_130 = pcVar8 + 1;
   }
   else {
     auStack_144[0] = 1;
@@ -2162,8 +2161,8 @@ LAB_0060dab6:
     uStack_124 = uStack_124 + 1;
     goto LAB_0060dd7d;
   }
-  uVar17 = uStack_124 & 7;
-  if (uVar17 == 0) {
+  uVar16 = uStack_124 & 7;
+  if (uVar16 == 0) {
     if ((int)pcStack_130 < iStack_134) {
       uStack_124 = (int)pcStack_130 * 8;
       pcStack_130[iStack_13c] = '\0';
@@ -2175,7 +2174,7 @@ LAB_0060dab6:
   else {
 LAB_0060dd4a:
     pbVar1 = (byte *)(((int)uStack_124 >> 3) + iStack_13c);
-    *pbVar1 = *pbVar1 | '\x01' << (sbyte)uVar17;
+    *pbVar1 = *pbVar1 | '\x01' << (sbyte)uVar16;
     uStack_124 = uStack_124 + 1;
   }
   UI_Gametype_Custom_WriteClassClientData((msg_t *)unaff_EDI);
@@ -2199,13 +2198,13 @@ LAB_0060dd7d:
   DAT_01e5d4ec = DAT_01ea9f60;
   _DAT_01e79c84 = DAT_01ea9f74;
   DAT_01e5d4e8 = DAT_01ea9f70;
-  iVar10 = *(int *)ThreadLocalStoragePointer;
+  iVar9 = *(int *)ThreadLocalStoragePointer;
   DAT_01e5d4e4 = DAT_01ea9f6c;
-  if (*(int *)(iVar10 + 0x54) == 0) {
-    DVar12 = GetCurrentThreadId();
-    *(DWORD *)(iVar10 + 0x54) = DVar12;
+  if (*(int *)(iVar9 + 0x54) == 0) {
+    DVar11 = GetCurrentThreadId();
+    *(DWORD *)(iVar9 + 0x54) = DVar11;
   }
-  if (*(int *)(iVar10 + 0x54) != DAT_01da49a4) {
+  if (*(int *)(iVar9 + 0x54) != DAT_01da49a4) {
     DAT_00adbb90 = uStack_108;
     return;
   }
@@ -2334,17 +2333,17 @@ void __cdecl SV_DoneDownload_f(client_t *param_1)
 void __cdecl SV_RetransmitDownload_f(client_t *param_1)
 
 {
-  char *pcVar1;
-  int iVar2;
+  char *nptr;
+  int iVar1;
   
   if (sv_cmd_args.argc[sv_cmd_args.nesting] < 2) {
-    pcVar1 = "";
+    nptr = "";
   }
   else {
-    pcVar1 = sv_cmd_args.argv[sv_cmd_args.nesting][1];
+    nptr = sv_cmd_args.argv[sv_cmd_args.nesting][1];
   }
-  iVar2 = atoi(pcVar1);
-  if (iVar2 == *(int *)(param_1 + 22000)) {
+  iVar1 = atoi(nptr);
+  if (iVar1 == *(int *)(param_1 + 22000)) {
     *(int *)(param_1 + 0x55f8) = *(int *)(param_1 + 22000);
   }
   return;
@@ -2358,28 +2357,28 @@ void __cdecl SV_RetransmitDownload_f(client_t *param_1)
 void __cdecl SV_NextDownload_f(client_t *param_1)
 
 {
-  char *pcVar1;
-  int iVar2;
-  uint uVar3;
+  char *nptr;
+  int iVar1;
+  uint uVar2;
   undefined1 unaff_DI;
   
   if (sv_cmd_args.argc[sv_cmd_args.nesting] < 2) {
-    pcVar1 = "";
+    nptr = "";
   }
   else {
-    pcVar1 = sv_cmd_args.argv[sv_cmd_args.nesting][1];
+    nptr = sv_cmd_args.argv[sv_cmd_args.nesting][1];
   }
-  iVar2 = atoi(pcVar1);
-  if (iVar2 != *(int *)(param_1 + 22000)) {
+  iVar1 = atoi(nptr);
+  if (iVar1 != *(int *)(param_1 + 22000)) {
     SV_DropClient((client_t *)"broken download",&DAT_00000001,true,(bool)unaff_DI);
     return;
   }
-  Com_DPrintf(0xa554b0,(char *)(((int)param_1 - DAT_01e5d49c) / 0x7c2e8),iVar2);
-  uVar3 = *(uint *)(param_1 + 22000) & 0x80000007;
-  if ((int)uVar3 < 0) {
-    uVar3 = (uVar3 - 1 | 0xfffffff8) + 1;
+  Com_DPrintf(0xa554b0,(char *)(((int)param_1 - DAT_01e5d49c) / 0x7c2e8),iVar1);
+  uVar2 = *(uint *)(param_1 + 22000) & 0x80000007;
+  if ((int)uVar2 < 0) {
+    uVar2 = (uVar2 - 1 | 0xfffffff8) + 1;
   }
-  if (*(int *)(param_1 + uVar3 * 4 + 0x561c) == 0) {
+  if (*(int *)(param_1 + uVar2 * 4 + 0x561c) == 0) {
     Com_Printf(0,"clientDownload: %d : file \"%s\" completed\n",
                ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,param_1 + 0x55a4);
     SV_CloseDownload(param_1);
@@ -2519,104 +2518,104 @@ void __cdecl SV_WWWRedirectClient(client_t *param_1,msg_t *param_2)
   client_t *pcVar1;
   uchar uVar2;
   char cVar3;
-  uchar *puVar4;
-  int iVar5;
-  uchar *puVar6;
+  uchar *str1;
+  int iVar4;
+  uchar *puVar5;
   int extraout_EAX;
-  char *pcVar7;
+  char *pcVar6;
   char *unaff_EBP;
-  int iVar8;
+  int iVar7;
   undefined4 *unaff_ESI;
   msg_t *unaff_EDI;
   char acStack_100 [255];
   undefined1 uStack_1;
   
-  puVar4 = (uchar *)(sv_wwwBaseURL->current).string;
-  puVar6 = puVar4;
+  str1 = (uchar *)(sv_wwwBaseURL->current).string;
+  puVar5 = str1;
   do {
-    uVar2 = *puVar6;
-    puVar6 = puVar6 + 1;
+    uVar2 = *puVar5;
+    puVar5 = puVar5 + 1;
   } while (uVar2 != '\0');
-  if (puVar6 != puVar4 + 1) {
-    strstr(puVar4,(uchar *)"://");
+  if (puVar5 != str1 + 1) {
+    strstr(str1,(uchar *)"://");
     if (extraout_EAX == 0) {
       Com_PrintWarning(0xf,"sv_wwwbaseurl was missing protocol:// specifier, prepending http://\n");
-      pcVar7 = va("%s%s","http://",puVar4);
-      if (pcVar7 == (char *)0x0) {
+      pcVar6 = va("%s%s","http://",str1);
+      if (pcVar6 == (char *)0x0) {
         acStack_100[0] = '\0';
       }
       else {
-        pcVar7 = pcVar7 + -1;
-        iVar8 = 0x100;
-        iVar5 = -1 - (int)pcVar7;
+        pcVar6 = pcVar6 + -1;
+        iVar7 = 0x100;
+        iVar4 = -1 - (int)pcVar6;
         do {
-          cVar3 = pcVar7[1];
-          pcVar7 = pcVar7 + 1;
-          pcVar7[(int)(acStack_100 + iVar5)] = cVar3;
+          cVar3 = pcVar6[1];
+          pcVar6 = pcVar6 + 1;
+          pcVar6[(int)(acStack_100 + iVar4)] = cVar3;
           if (cVar3 == '\0') break;
-          iVar8 = iVar8 + -1;
-        } while (iVar8 != 0);
+          iVar7 = iVar7 + -1;
+        } while (iVar7 != 0);
         uStack_1 = 0;
       }
       FUN_006a1a00();
     }
   }
-  pcVar7 = va("%s/%s",(sv_wwwBaseURL->current).integer,param_1 + 0x55a4);
+  pcVar6 = va("%s/%s",(sv_wwwBaseURL->current).integer,param_1 + 0x55a4);
   pcVar1 = param_1 + 0x5644;
   if (pcVar1 != (client_t *)0x0) {
-    if (pcVar7 == (char *)0x0) {
+    if (pcVar6 == (char *)0x0) {
       *pcVar1 = (client_t)0x0;
     }
     else {
-      pcVar7 = pcVar7 + -1;
-      iVar8 = 0x100;
-      iVar5 = 0x5643 - (int)pcVar7;
+      pcVar6 = pcVar6 + -1;
+      iVar7 = 0x100;
+      iVar4 = 0x5643 - (int)pcVar6;
       do {
-        cVar3 = pcVar7[1];
-        pcVar7 = pcVar7 + 1;
-        pcVar7[(int)(param_1 + iVar5)] = cVar3;
+        cVar3 = pcVar6[1];
+        pcVar6 = pcVar6 + 1;
+        pcVar6[(int)(param_1 + iVar4)] = cVar3;
         if (cVar3 == '\0') break;
-        iVar8 = iVar8 + -1;
-      } while (iVar8 != 0);
+        iVar7 = iVar7 + -1;
+      } while (iVar7 != 0);
       param_1[0x5743] = (client_t)0x0;
     }
   }
   Com_Printf(0xf,"Redirecting client \'%s\' to %s\n",param_1 + 0x5570,pcVar1);
-  iVar5 = unaff_ESI[5];
-  iVar8 = unaff_ESI[4];
+  iVar4 = unaff_ESI[5];
+  iVar7 = unaff_ESI[4];
   *(undefined4 *)(param_1 + 0x5748) = 1;
-  if (iVar5 < iVar8) {
-    *(undefined1 *)(iVar5 + unaff_ESI[2]) = 0xb;
-    unaff_ESI[5] = iVar5 + 1;
+  if (iVar4 < iVar7) {
+    *(undefined1 *)(iVar4 + unaff_ESI[2]) = 0xb;
+    unaff_ESI[5] = iVar4 + 1;
   }
   else {
     *unaff_ESI = 1;
   }
-  iVar5 = unaff_ESI[5] + 4;
-  if (iVar8 < iVar5) {
+  iVar4 = unaff_ESI[5] + 4;
+  if (iVar7 < iVar4) {
     *unaff_ESI = 1;
   }
   else {
     *(undefined4 *)(unaff_ESI[5] + unaff_ESI[2]) = 0xffffffff;
-    unaff_ESI[5] = iVar5;
+    unaff_ESI[5] = iVar4;
   }
   MSG_WriteString(unaff_EDI,unaff_EBP);
-  iVar8 = unaff_ESI[4];
-  iVar5 = unaff_ESI[5] + 4;
-  if (iVar8 < iVar5) {
+  iVar7 = unaff_ESI[4];
+  iVar4 = unaff_ESI[5] + 4;
+  if (iVar7 < iVar4) {
     *unaff_ESI = 1;
   }
   else {
     *(undefined4 *)(unaff_ESI[5] + unaff_ESI[2]) = *(undefined4 *)(param_1 + 0x55e8);
-    unaff_ESI[5] = iVar5;
+    unaff_ESI[5] = iVar4;
   }
-  iVar5 = unaff_ESI[5] + 4;
-  if (iVar8 < iVar5) {
+  iVar4 = unaff_ESI[5] + 4;
+  if (iVar7 < iVar4) {
     *unaff_ESI = 1;
   }
   else {
     *(undefined4 *)(unaff_ESI[5] + unaff_ESI[2]) = 0;
-    unaff_ESI[5] = iVar5;
+    unaff_ESI[5] = iVar4;
   }
   *(undefined4 *)(param_1 + 0x55a0) = 0;
   if (*(int *)(param_1 + 0x55e4) != 0) {
@@ -2685,66 +2684,66 @@ void __cdecl SV_WriteDownloadErrorMessage(client_t *param_1,msg_t *param_2,char 
 void __cdecl SV_WriteDownloadToClient(client_t *param_1,msg_t *param_2)
 
 {
-  ulong uVar1;
-  dvar_s *pdVar2;
-  int iVar3;
-  void *pvVar4;
-  int iVar5;
+  ulong count;
+  dvar_s *pdVar1;
+  int iVar2;
+  void *pvVar3;
+  int iVar4;
   char *unaff_ESI;
   msg_t *unaff_EDI;
-  uint uVar6;
-  client_t *pcVar7;
-  char *pcVar8;
-  int *piVar9;
-  char *pcVar10;
+  uint uVar5;
+  client_t *pcVar6;
+  char *pcVar7;
+  int *piVar8;
+  char *pcVar9;
   uint uStack_40c;
   int iStack_408;
   client_t acStack_404 [1028];
   
-  pcVar7 = param_1 + 0x55a4;
+  pcVar6 = param_1 + 0x55a4;
   if ((param_1[0x55a4] != (client_t)0x0) && (*(int *)(param_1 + 0x574c) == 0)) {
     if (*(int *)(param_1 + 0x55e4) == 0) {
       if ((sv_allowDownload->current).enabled == false) {
         Com_Printf(0xf,"clientDownload: %d : \"%s\" download disabled",
-                   ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,pcVar7);
+                   ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,pcVar6);
         if ((sv_pure->current).enabled == false) {
-          pcVar10 = "EXE_AUTODL_SERVERDISABLED\x15%s";
+          pcVar9 = "EXE_AUTODL_SERVERDISABLED\x15%s";
         }
         else {
-          pcVar10 = "EXE_AUTODL_SERVERDISABLED_PURE\x15%s";
+          pcVar9 = "EXE_AUTODL_SERVERDISABLED_PURE\x15%s";
         }
-        Com_sprintf(pcVar10,(int)pcVar7,(char *)unaff_EDI);
+        Com_sprintf(pcVar9,(int)pcVar6,(char *)unaff_EDI);
         SV_WriteDownloadErrorMessage(acStack_404,unaff_EDI,unaff_ESI);
         return;
       }
-      iVar3 = FS_iwIwd((char *)unaff_EDI,unaff_ESI);
-      if (iVar3 != 0) {
-        pcVar8 = (char *)0xf;
+      iVar2 = FS_iwIwd((char *)unaff_EDI,unaff_ESI);
+      if (iVar2 != 0) {
+        pcVar7 = (char *)0xf;
         Com_Printf(0xf,"clientDownload: %d : \"%s\" cannot download IW iwd files\n",
-                   ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,pcVar7);
-        pcVar10 = "EXE_CANTAUTODLGAMEPAK\x15%s";
-        Com_sprintf("EXE_CANTAUTODLGAMEPAK\x15%s",(int)pcVar7,pcVar8);
-        SV_WriteDownloadErrorMessage(acStack_404,(msg_t *)pcVar10,(char *)pcVar7);
+                   ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,pcVar6);
+        pcVar9 = "EXE_CANTAUTODLGAMEPAK\x15%s";
+        Com_sprintf("EXE_CANTAUTODLGAMEPAK\x15%s",(int)pcVar6,pcVar7);
+        SV_WriteDownloadErrorMessage(acStack_404,(msg_t *)pcVar9,(char *)pcVar6);
         return;
       }
-      piVar9 = (int *)0xf;
+      piVar8 = (int *)0xf;
       Com_Printf(0xf,"clientDownload: %d : beginning \"%s\"\n",
-                 ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,pcVar7);
-      iVar3 = FS_SV_FOpenFileRead((char *)0x0,(char *)(param_1 + 0x55e4),(int *)&uStack_40c,piVar9);
-      *(int *)(param_1 + 0x55e8) = iVar3;
-      pdVar2 = sv_wwwDownload;
-      if (iVar3 < 1) {
-        iVar3 = (int)param_1 - DAT_01e5d49c >> 0x1f;
-        iVar5 = ((int)param_1 - DAT_01e5d49c) / 0x7c2e8 + iVar3;
+                 ((int)param_1 - DAT_01e5d49c) / 0x7c2e8,pcVar6);
+      iVar2 = FS_SV_FOpenFileRead((char *)0x0,(char *)(param_1 + 0x55e4),(int *)&uStack_40c,piVar8);
+      *(int *)(param_1 + 0x55e8) = iVar2;
+      pdVar1 = sv_wwwDownload;
+      if (iVar2 < 1) {
+        iVar2 = (int)param_1 - DAT_01e5d49c >> 0x1f;
+        iVar4 = ((int)param_1 - DAT_01e5d49c) / 0x7c2e8 + iVar2;
         if (uStack_40c == 0xfffffffe) {
-          Com_DPrintf(0xa55860,(char *)(iVar5 - iVar3));
-          Com_sprintf("EXE_DOWNLOADSFULL\x15%s",(int)pcVar7,(char *)unaff_EDI);
+          Com_DPrintf(0xa55860,(char *)(iVar4 - iVar2));
+          Com_sprintf("EXE_DOWNLOADSFULL\x15%s",(int)pcVar6,(char *)unaff_EDI);
         }
         else {
-          pcVar10 = (char *)0xf;
-          Com_Printf(0xf,"clientDownload: %d : \"%s\" file not found on server\n",iVar5 - iVar3,
-                     pcVar7);
-          Com_sprintf("EXE_AUTODL_FILENOTONSERVER\x15%s",(int)pcVar7,pcVar10);
+          pcVar9 = (char *)0xf;
+          Com_Printf(0xf,"clientDownload: %d : \"%s\" file not found on server\n",iVar4 - iVar2,
+                     pcVar6);
+          Com_sprintf("EXE_AUTODL_FILENOTONSERVER\x15%s",(int)pcVar6,pcVar9);
         }
         SV_WriteDownloadErrorMessage(acStack_404,unaff_EDI,unaff_ESI);
         return;
@@ -2754,7 +2753,7 @@ void __cdecl SV_WriteDownloadToClient(client_t *param_1,msg_t *param_2)
       *(undefined4 *)(param_1 + 0x55f4) = 0;
       *(undefined4 *)(param_1 + 0x55ec) = 0;
       *(undefined4 *)(param_1 + 0x563c) = 0;
-      if (((pdVar2->current).enabled != false) && (*(int *)(param_1 + 0x5744) != 0)) {
+      if (((pdVar1->current).enabled != false) && (*(int *)(param_1 + 0x5744) != 0)) {
         if (*(int *)(param_1 + 0x5750) != 0) {
           *(undefined4 *)(param_1 + 0x5750) = 0;
           return;
@@ -2764,58 +2763,58 @@ void __cdecl SV_WriteDownloadToClient(client_t *param_1,msg_t *param_2)
       }
       *(undefined4 *)(param_1 + 0x5748) = 0;
     }
-    iVar3 = *(int *)(param_1 + 0x55f4) - *(int *)(param_1 + 22000);
+    iVar2 = *(int *)(param_1 + 0x55f4) - *(int *)(param_1 + 22000);
     while( true ) {
-      if ((7 < iVar3) || (*(int *)(param_1 + 0x55e8) == *(int *)(param_1 + 0x55ec)))
+      if ((7 < iVar2) || (*(int *)(param_1 + 0x55e8) == *(int *)(param_1 + 0x55ec)))
       goto LAB_0060e9ce;
-      uVar6 = *(uint *)(param_1 + 0x55f4) & 0x80000007;
-      if ((int)uVar6 < 0) {
-        uVar6 = (uVar6 - 1 | 0xfffffff8) + 1;
+      uVar5 = *(uint *)(param_1 + 0x55f4) & 0x80000007;
+      if ((int)uVar5 < 0) {
+        uVar5 = (uVar5 - 1 | 0xfffffff8) + 1;
       }
-      if (*(int *)(param_1 + uVar6 * 4 + 0x55fc) == 0) {
-        pvVar4 = malloc(0x800);
-        if (pvVar4 == (void *)0x0) {
+      if (*(int *)(param_1 + uVar5 * 4 + 0x55fc) == 0) {
+        pvVar3 = malloc(0x800);
+        if (pvVar3 == (void *)0x0) {
                     /* WARNING: Subroutine does not return */
           FUN_00699280();
         }
-        Com_Memset(pvVar4,0,0x800);
-        *(void **)(param_1 + uVar6 * 4 + 0x55fc) = pvVar4;
+        Com_Memset(pvVar3,0,0x800);
+        *(void **)(param_1 + uVar5 * 4 + 0x55fc) = pvVar3;
       }
-      iVar3 = FS_Read(*(void **)(param_1 + uVar6 * 4 + 0x55fc),0x800,*(int *)(param_1 + 0x55e4));
-      *(int *)(param_1 + uVar6 * 4 + 0x561c) = iVar3;
-      if (iVar3 < 0) break;
-      *(int *)(param_1 + 0x55ec) = *(int *)(param_1 + 0x55ec) + iVar3;
+      iVar2 = FS_Read(*(void **)(param_1 + uVar5 * 4 + 0x55fc),0x800,*(int *)(param_1 + 0x55e4));
+      *(int *)(param_1 + uVar5 * 4 + 0x561c) = iVar2;
+      if (iVar2 < 0) break;
+      *(int *)(param_1 + 0x55ec) = *(int *)(param_1 + 0x55ec) + iVar2;
       *(int *)(param_1 + 0x55f4) = *(int *)(param_1 + 0x55f4) + 1;
-      iVar3 = *(int *)(param_1 + 0x55f4) - *(int *)(param_1 + 22000);
+      iVar2 = *(int *)(param_1 + 0x55f4) - *(int *)(param_1 + 22000);
     }
     *(undefined4 *)(param_1 + 0x55ec) = *(undefined4 *)(param_1 + 0x55e8);
 LAB_0060e9ce:
     if (((*(int *)(param_1 + 0x55ec) == *(int *)(param_1 + 0x55e8)) &&
         (*(int *)(param_1 + 0x563c) == 0)) &&
        ((int)(*(uint *)(param_1 + 0x55f4) - *(int *)(param_1 + 22000)) < 8)) {
-      uVar6 = *(uint *)(param_1 + 0x55f4) & 0x80000007;
-      if ((int)uVar6 < 0) {
-        uVar6 = (uVar6 - 1 | 0xfffffff8) + 1;
+      uVar5 = *(uint *)(param_1 + 0x55f4) & 0x80000007;
+      if ((int)uVar5 < 0) {
+        uVar5 = (uVar5 - 1 | 0xfffffff8) + 1;
       }
-      *(undefined4 *)(param_1 + uVar6 * 4 + 0x561c) = 0;
+      *(undefined4 *)(param_1 + uVar5 * 4 + 0x561c) = 0;
       *(int *)(param_1 + 0x55f4) = *(int *)(param_1 + 0x55f4) + 1;
       *(undefined4 *)(param_1 + 0x563c) = 1;
     }
-    iVar3 = *(int *)(param_1 + 0x49d38);
+    iVar2 = *(int *)(param_1 + 0x49d38);
     if ((sv_maxRate->current).integer != 0) {
       if ((sv_maxRate->current).integer < 1000) {
         Dvar_SetIntFromSource(sv_maxRate,0,(DvarSetSource)unaff_EDI);
       }
-      if ((sv_maxRate->current).integer < iVar3) {
-        iVar3 = (sv_maxRate->current).integer;
+      if ((sv_maxRate->current).integer < iVar2) {
+        iVar2 = (sv_maxRate->current).integer;
       }
     }
-    if (iVar3 == 0) {
+    if (iVar2 == 0) {
       iStack_408 = 1;
     }
     else {
-      iVar3 = (*(int *)(param_1 + 0x49d3c) * iVar3) / 1000 + 0x800;
-      iStack_408 = (int)(iVar3 + (iVar3 >> 0x1f & 0x7ffU)) >> 0xb;
+      iVar2 = (*(int *)(param_1 + 0x49d3c) * iVar2) / 1000 + 0x800;
+      iStack_408 = (int)(iVar2 + (iVar2 >> 0x1f & 0x7ffU)) >> 0xb;
       if (iStack_408 < 0) {
         iStack_408 = 1;
       }
@@ -2838,54 +2837,54 @@ LAB_0060e9ce:
       if ((int)uStack_40c < 0) {
         uStack_40c = (uStack_40c - 1 | 0xfffffff8) + 1;
       }
-      iVar3 = *(int *)(param_2 + 0x14);
-      iVar5 = *(int *)(param_2 + 0x10);
-      if (iVar3 < iVar5) {
-        *(undefined1 *)(iVar3 + *(int *)(param_2 + 8)) = 0xb;
-        *(int *)(param_2 + 0x14) = iVar3 + 1;
+      iVar2 = *(int *)(param_2 + 0x14);
+      iVar4 = *(int *)(param_2 + 0x10);
+      if (iVar2 < iVar4) {
+        *(undefined1 *)(iVar2 + *(int *)(param_2 + 8)) = 0xb;
+        *(int *)(param_2 + 0x14) = iVar2 + 1;
       }
       else {
         *(undefined4 *)param_2 = 1;
       }
-      iVar3 = *(int *)(param_2 + 0x14) + 4;
-      if (iVar5 < iVar3) {
+      iVar2 = *(int *)(param_2 + 0x14) + 4;
+      if (iVar4 < iVar2) {
         *(undefined4 *)param_2 = 1;
       }
       else {
         *(undefined4 *)(*(int *)(param_2 + 0x14) + *(int *)(param_2 + 8)) =
              *(undefined4 *)(param_1 + 0x55f8);
-        *(int *)(param_2 + 0x14) = iVar3;
+        *(int *)(param_2 + 0x14) = iVar2;
       }
       if (*(int *)(param_1 + 0x55f8) == 0) {
-        iVar3 = *(int *)(param_2 + 0x14) + 4;
-        if (iVar5 < iVar3) {
+        iVar2 = *(int *)(param_2 + 0x14) + 4;
+        if (iVar4 < iVar2) {
           *(undefined4 *)param_2 = 1;
         }
         else {
           *(undefined4 *)(*(int *)(param_2 + 0x14) + *(int *)(param_2 + 8)) =
                *(undefined4 *)(param_1 + 0x55e8);
-          *(int *)(param_2 + 0x14) = iVar3;
+          *(int *)(param_2 + 0x14) = iVar2;
         }
       }
-      iVar3 = *(int *)(param_2 + 0x14) + 2;
-      if (iVar5 < iVar3) {
+      iVar2 = *(int *)(param_2 + 0x14) + 2;
+      if (iVar4 < iVar2) {
         *(undefined4 *)param_2 = 1;
       }
       else {
         *(undefined2 *)(*(int *)(param_2 + 0x14) + *(int *)(param_2 + 8)) =
              *(undefined2 *)(param_1 + uStack_40c * 4 + 0x561c);
-        *(int *)(param_2 + 0x14) = iVar3;
+        *(int *)(param_2 + 0x14) = iVar2;
       }
-      uVar1 = *(ulong *)(param_1 + uStack_40c * 4 + 0x561c);
-      if (uVar1 != 0) {
-        iVar3 = *(int *)(param_2 + 0x14) + uVar1;
-        if (iVar5 < iVar3) {
+      count = *(ulong *)(param_1 + uStack_40c * 4 + 0x561c);
+      if (count != 0) {
+        iVar2 = *(int *)(param_2 + 0x14) + count;
+        if (iVar4 < iVar2) {
           *(undefined4 *)param_2 = 1;
         }
         else {
           memcpy((uchar *)(*(int *)(param_2 + 8) + *(int *)(param_2 + 0x14)),
-                 *(uchar **)(param_1 + uStack_40c * 4 + 0x55fc),uVar1);
-          *(int *)(param_2 + 0x14) = iVar3;
+                 *(uchar **)(param_1 + uStack_40c * 4 + 0x55fc),count);
+          *(int *)(param_2 + 0x14) = iVar2;
         }
       }
       Com_DPrintf(0xa55930,(char *)(((int)param_1 - DAT_01e5d49c) / 0x7c2e8),

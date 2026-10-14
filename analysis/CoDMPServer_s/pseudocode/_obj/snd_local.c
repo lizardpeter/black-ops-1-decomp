@@ -141,40 +141,40 @@ void __cdecl SNDL_NotifyCinematicEnd(void)
 void __cdecl SNDL_DisconnectListener(int param_1)
 
 {
-  uchar *puVar1;
+  uchar *dst;
   int in_EAX;
-  int *piVar2;
-  int iVar3;
+  int *piVar1;
+  int iVar2;
   
-  iVar3 = in_EAX * 0x3c;
-  puVar1 = (uchar *)(&DAT_024deaf8 + in_EAX * 0xf);
-  memset(puVar1,'\0',0x3c);
+  iVar2 = in_EAX * 0x3c;
+  dst = (uchar *)(&DAT_024deaf8 + in_EAX * 0xf);
+  memset(dst,'\0',0x3c);
   (&DAT_024deb04)[in_EAX * 0xf] = 1.0;
   (&DAT_024deb08)[in_EAX * 0xf] = 0;
   (&DAT_024deb0c)[in_EAX * 0xf] = 0;
-  *(undefined4 *)(&DAT_024deb10 + iVar3) = 0;
-  *(float *)(&DAT_024deb14 + iVar3) = 1.0;
-  *(undefined4 *)(&DAT_024deb18 + iVar3) = 0;
-  *(undefined4 *)(&DAT_024deb1c + iVar3) = 0;
-  *(undefined4 *)(&DAT_024deb20 + iVar3) = 0;
-  *(float *)(&DAT_024deb24 + iVar3) = 1.0;
-  puVar1[0] = '\0';
-  puVar1[1] = '\0';
-  puVar1[2] = '\0';
-  puVar1[3] = '\0';
+  *(undefined4 *)(&DAT_024deb10 + iVar2) = 0;
+  *(float *)(&DAT_024deb14 + iVar2) = 1.0;
+  *(undefined4 *)(&DAT_024deb18 + iVar2) = 0;
+  *(undefined4 *)(&DAT_024deb1c + iVar2) = 0;
+  *(undefined4 *)(&DAT_024deb20 + iVar2) = 0;
+  *(float *)(&DAT_024deb24 + iVar2) = 1.0;
+  dst[0] = '\0';
+  dst[1] = '\0';
+  dst[2] = '\0';
+  dst[3] = '\0';
   (&DAT_024deafc)[in_EAX * 0xf] = 0;
   (&DAT_024deb00)[in_EAX * 0xf] = 0;
   if (DAT_024deb2c == '\0') {
-    iVar3 = 0;
-    piVar2 = &DAT_024deba0;
+    iVar2 = 0;
+    piVar1 = &DAT_024deba0;
     do {
-      if (((&DAT_024e73b0)[iVar3] != 0) && ((*(uint *)(*piVar2 + 0x14) >> 1 & 1) != 0)) {
-        SD_StopVoice(iVar3);
-        SND_ResetVoiceInfo(iVar3);
+      if (((&DAT_024e73b0)[iVar2] != 0) && ((*(uint *)(*piVar1 + 0x14) >> 1 & 1) != 0)) {
+        SD_StopVoice(iVar2);
+        SND_ResetVoiceInfo(iVar2);
       }
-      piVar2 = piVar2 + 0x76;
-      iVar3 = iVar3 + 1;
-    } while ((int)piVar2 < 0x24e7410);
+      piVar1 = piVar1 + 0x76;
+      iVar2 = iVar2 + 1;
+    } while ((int)piVar1 < 0x24e7410);
   }
   return;
 }

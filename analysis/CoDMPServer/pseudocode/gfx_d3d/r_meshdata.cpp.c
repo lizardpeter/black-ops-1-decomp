@@ -2,14 +2,16 @@
 
 // 00B283A0  R_BeginMeshVerts  (gfx_d3d/r_meshdata.cpp:23)
 
-void __cdecl R_BeginMeshVerts(GfxMeshData *param_1)
+void __cdecl R_BeginMeshVerts(GfxMeshData *mesh)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
+  IDirect3DVertexBuffer9 *vb;
+  int lockFlags;
   
-  if ((param_1->vb).verts != (uchar *)0x0) {
+  if ((mesh->vb).verts != (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x1b,0,
                              "%s");
     if (!bVar2) {
@@ -18,21 +20,21 @@ void __cdecl R_BeginMeshVerts(GfxMeshData *param_1)
       return;
     }
   }
-  puVar3 = R_LockVertexBuffer((param_1->vb).buffer,0,(param_1->vb).total,
-                              (-(uint)((param_1->vb).used != 0) & 0xfffff000) + 0x2000);
-  (param_1->vb).verts = puVar3;
+  puVar3 = R_LockVertexBuffer((mesh->vb).buffer,0,(mesh->vb).total,
+                              (-(uint)((mesh->vb).used != 0) & 0xfffff000) + 0x2000);
+  (mesh->vb).verts = puVar3;
   return;
 }
 
 
 // 00B28420  R_EndMeshVerts  (gfx_d3d/r_meshdata.cpp:35)
 
-void __cdecl R_EndMeshVerts(GfxMeshData *param_1)
+void __cdecl R_EndMeshVerts(GfxMeshData *mesh)
 
 {
-  if ((param_1->vb).verts != (uchar *)0x0) {
-    R_UnlockVertexBuffer((param_1->vb).buffer);
-    (param_1->vb).verts = (uchar *)0x0;
+  if ((mesh->vb).verts != (uchar *)0x0) {
+    R_UnlockVertexBuffer((mesh->vb).buffer);
+    (mesh->vb).verts = (uchar *)0x0;
   }
   return;
 }
@@ -41,15 +43,16 @@ void __cdecl R_EndMeshVerts(GfxMeshData *param_1)
 // 00B28450  R_ReserveMeshIndices  (gfx_d3d/r_meshdata.cpp:62)
 
 bool __cdecl
-R_ReserveMeshIndices(GfxMeshData *param_1,int param_2,r_double_index_t **param_3,bool param_4)
+R_ReserveMeshIndices(GfxMeshData *mesh,int indexCount,r_double_index_t **indicesOut,bool align)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  uint usedCodeMeshIndexCount;
   
-  if (param_2 < 0) {
+  if (indexCount < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x41,0,
                              "%s\n\t(indexCount) = %i");
     if (!bVar3) {
@@ -58,7 +61,7 @@ R_ReserveMeshIndices(GfxMeshData *param_1,int param_2,r_double_index_t **param_3
       return (bool)uVar4;
     }
   }
-  if ((param_2 & 1U) != 0) {
+  if ((indexCount & 1U) != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x42,0,
                              "%s\n\t(indexCount) = %i");
     if (!bVar3) {
@@ -67,7 +70,7 @@ R_ReserveMeshIndices(GfxMeshData *param_1,int param_2,r_double_index_t **param_3
       return (bool)uVar4;
     }
   }
-  if (param_3 == (r_double_index_t **)0x0) {
+  if (indicesOut == (r_double_index_t **)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x43,0,
                              "%s");
     if (!bVar3) {
@@ -76,7 +79,7 @@ R_ReserveMeshIndices(GfxMeshData *param_1,int param_2,r_double_index_t **param_3
       return (bool)uVar4;
     }
   }
-  if (param_1->totalIndexCount < param_1->indexCount) {
+  if (mesh->totalIndexCount < mesh->indexCount) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x44,0,
                              "%s");
     if (!bVar3) {
@@ -85,14 +88,14 @@ R_ReserveMeshIndices(GfxMeshData *param_1,int param_2,r_double_index_t **param_3
       return (bool)uVar4;
     }
   }
-  uVar1 = param_1->indexCount;
-  if (param_1->totalIndexCount < uVar1 + param_2) {
+  uVar1 = mesh->indexCount;
+  if (mesh->totalIndexCount < uVar1 + indexCount) {
     bVar3 = false;
   }
   else {
-    param_1->indexCount = uVar1 + param_2;
-    *param_3 = (r_double_index_t *)(param_1->indices + uVar1);
-    if (((uint)*param_3 & 3) != 0) {
+    mesh->indexCount = uVar1 + indexCount;
+    *indicesOut = (r_double_index_t *)(mesh->indices + uVar1);
+    if (((uint)*indicesOut & 3) != 0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x54,0,
                                "%s\n\t((uint)(*indicesOut)) = %i");
       if (!bVar3) {
@@ -109,7 +112,7 @@ R_ReserveMeshIndices(GfxMeshData *param_1,int param_2,r_double_index_t **param_3
 
 // 00B28580  R_ReserveMeshVerts  (gfx_d3d/r_meshdata.cpp:90)
 
-bool __cdecl R_ReserveMeshVerts(GfxMeshData *param_1,int param_2,ushort *param_3)
+bool __cdecl R_ReserveMeshVerts(GfxMeshData *mesh,int vertCount,ushort *baseVertex)
 
 {
   uint uVar1;
@@ -117,9 +120,12 @@ bool __cdecl R_ReserveMeshVerts(GfxMeshData *param_1,int param_2,ushort *param_3
   bool bVar3;
   undefined1 uVar4;
   GfxVertexBufferState *pGVar5;
-  ushort local_14;
+  int codeMeshVertCount;
+  GfxVertexBufferState *codeMeshVb;
+  int usedCodeMeshVertBytes;
+  int vertSizeTotal;
   
-  if (param_2 < 0) {
+  if (vertCount < 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x60,0,
                              "%s\n\t(vertCount) = %i");
     if (!bVar3) {
@@ -128,7 +134,7 @@ bool __cdecl R_ReserveMeshVerts(GfxMeshData *param_1,int param_2,ushort *param_3
       return (bool)uVar4;
     }
   }
-  if (param_3 == (ushort *)0x0) {
+  if (baseVertex == (ushort *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x61,0,
                              "%s");
     if (!bVar3) {
@@ -137,19 +143,19 @@ bool __cdecl R_ReserveMeshVerts(GfxMeshData *param_1,int param_2,ushort *param_3
       return (bool)uVar4;
     }
   }
-  pGVar5 = &param_1->vb;
-  if ((param_1->vb).verts == (uchar *)0x0) {
+  pGVar5 = &mesh->vb;
+  if ((mesh->vb).verts == (uchar *)0x0) {
     bVar3 = false;
   }
   else {
     uVar1 = pGVar5->used;
-    pGVar5->used = pGVar5->used + param_2 * param_1->vertSize;
-    if ((param_1->vb).total < pGVar5->used) {
+    pGVar5->used = pGVar5->used + vertCount * mesh->vertSize;
+    if ((mesh->vb).total < pGVar5->used) {
       bVar3 = false;
     }
     else {
-      local_14 = (ushort)(uVar1 / param_1->vertSize);
-      *param_3 = local_14;
+      codeMeshVertCount._0_2_ = (ushort)(uVar1 / mesh->vertSize);
+      *baseVertex = (ushort)codeMeshVertCount;
       bVar3 = true;
     }
   }
@@ -159,16 +165,16 @@ bool __cdecl R_ReserveMeshVerts(GfxMeshData *param_1,int param_2,ushort *param_3
 
 // 00B28650  R_GetMeshVerts  (gfx_d3d/r_meshdata.cpp:121)
 
-uchar * __cdecl R_GetMeshVerts(GfxMeshData *param_1,ushort param_2)
+uchar * __cdecl R_GetMeshVerts(GfxMeshData *mesh,ushort baseVertex)
 
 {
   uchar *puVar1;
   
-  if ((param_1->vb).verts == (uchar *)0x0) {
+  if ((mesh->vb).verts == (uchar *)0x0) {
     puVar1 = (uchar *)0x0;
   }
   else {
-    puVar1 = (param_1->vb).verts + (uint)param_2 * param_1->vertSize;
+    puVar1 = (mesh->vb).verts + (uint)baseVertex * mesh->vertSize;
   }
   return puVar1;
 }
@@ -176,11 +182,11 @@ uchar * __cdecl R_GetMeshVerts(GfxMeshData *param_1,ushort param_2)
 
 // 00B28680  R_ResetMesh  (gfx_d3d/r_meshdata.cpp:133)
 
-void __cdecl R_ResetMesh(GfxMeshData *param_1)
+void __cdecl R_ResetMesh(GfxMeshData *mesh)
 
 {
-  (param_1->vb).used = 0;
-  param_1->indexCount = 0;
+  (mesh->vb).used = 0;
+  mesh->indexCount = 0;
   return;
 }
 
@@ -188,67 +194,70 @@ void __cdecl R_ResetMesh(GfxMeshData *param_1)
 // 00B286A0  R_SetQuadMeshData  (gfx_d3d/r_meshdata.cpp:142)
 
 void __cdecl
-R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4,float param_5,
-                 float param_6,float param_7,float param_8,float param_9,ulong param_10)
+R_SetQuadMeshData(GfxMeshData *mesh,float x,float y,float w,float h,float s0,float t0,float s1,
+                 float t1,ulong color)
 
 {
   ushort *puVar1;
-  GfxVertex *pGVar2;
-  code *pcVar3;
-  bool bVar4;
+  GfxVertex *vert;
+  code *pcVar2;
+  bool bVar3;
+  GfxVertex *verts;
+  r_double_index_t *indices;
+  r_double_index_t index;
   
-  if (param_1 == (GfxMeshData *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x93,0,
+  if (mesh == (GfxMeshData *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x93,0,
                              "%s");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (param_1->vertSize != 0x20) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x94,0,
+  if (mesh->vertSize != 0x20) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x94,0,
                              "mesh->vertSize == sizeof( GfxVertex )\n\t%i, %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if ((param_1->vb).total != 0x80) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x95,0,
+  if ((mesh->vb).total != 0x80) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x95,0,
                              "mesh->vb.total == sizeof( GfxVertex ) * 4\n\t%i, %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if (param_1->totalIndexCount != 6) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x96,0,
+  if (mesh->totalIndexCount != 6) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0x96,0,
                              "mesh->totalIndexCount == 6\n\t%i, %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  R_BeginMeshVerts(param_1);
-  puVar1 = param_1->indices;
+  R_BeginMeshVerts(mesh);
+  puVar1 = mesh->indices;
   puVar1[0] = 3;
   puVar1[1] = 0;
   puVar1[2] = 2;
   puVar1[3] = 2;
   puVar1[4] = 0;
   puVar1[5] = 1;
-  pGVar2 = (GfxVertex *)(param_1->vb).verts;
-  R_SetVertex2d(pGVar2,param_2,param_3,param_6,param_7,param_10);
-  R_SetVertex2d(pGVar2 + 1,param_2 + param_4,param_3,param_8,param_7,param_10);
-  R_SetVertex2d(pGVar2 + 2,param_2 + param_4,param_3 + param_5,param_8,param_9,param_10);
-  R_SetVertex2d(pGVar2 + 3,param_2,param_3 + param_5,param_6,param_9,param_10);
-  R_EndMeshVerts(param_1);
-  param_1->indexCount = 6;
-  (param_1->vb).used = 0x80;
+  vert = (GfxVertex *)(mesh->vb).verts;
+  R_SetVertex2d(vert,x,y,s0,t0,color);
+  R_SetVertex2d(vert + 1,x + w,y,s1,t0,color);
+  R_SetVertex2d(vert + 2,x + w,y + h,s1,t1,color);
+  R_SetVertex2d(vert + 3,x,y + h,s0,t1,color);
+  R_EndMeshVerts(mesh);
+  mesh->indexCount = 6;
+  (mesh->vb).used = 0x80;
   return;
 }
 
@@ -256,14 +265,14 @@ R_SetQuadMeshData(GfxMeshData *param_1,float param_2,float param_3,float param_4
 // 00B288E0  R_SetQuadMesh  (gfx_d3d/r_meshdata.cpp:186)
 
 void __cdecl
-R_SetQuadMesh(GfxQuadMeshData *param_1,float param_2,float param_3,float param_4,float param_5,
-             float param_6,float param_7,float param_8,float param_9,ulong param_10)
+R_SetQuadMesh(GfxQuadMeshData *quadMesh,float x,float y,float w,float h,float s0,float t0,float s1,
+             float t1,ulong color)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxQuadMeshData *)0x0) {
+  if (quadMesh == (GfxQuadMeshData *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",0xbb,0,
                              "%s");
     if (!bVar2) {
@@ -272,46 +281,45 @@ R_SetQuadMesh(GfxQuadMeshData *param_1,float param_2,float param_3,float param_4
       return;
     }
   }
-  param_1->x = param_2;
-  param_1->y = param_3;
-  param_1->width = param_4;
-  param_1->height = param_5;
-  R_SetQuadMeshData(&param_1->meshData,param_2,param_3,param_4,param_5,param_6,param_7,param_8,
-                    param_9,param_10);
+  quadMesh->x = x;
+  quadMesh->y = y;
+  quadMesh->width = w;
+  quadMesh->height = h;
+  R_SetQuadMeshData(&quadMesh->meshData,x,y,w,h,s0,t0,s1,t1,color);
   return;
 }
 
 
 // 00B28990  R_DrawQuadMesh  (gfx_d3d/r_meshdata.cpp:197)
 
-void __cdecl R_DrawQuadMesh(GfxCmdBufContext param_1,Material *param_2,GfxMeshData *param_3)
+void __cdecl R_DrawQuadMesh(GfxCmdBufContext context,Material *material,GfxMeshData *quadMesh)
 
 {
   int iVar1;
-  GfxViewport local_20;
-  GfxDrawPrimArgs local_10;
+  GfxViewport viewport;
+  GfxDrawPrimArgs args;
   
-  iVar1 = R_BeginMaterial(param_1.field0_0x0._s_0.state,param_2,'\x04');
+  iVar1 = R_BeginMaterial(context.field0_0x0._s_0.state,material,'\x04');
   if (iVar1 != 0) {
-    ((param_1.field0_0x0._s_0.state)->prim).vertDeclType = VERTDECL_GENERIC;
-    R_Set2D(param_1.field0_0x0._s_0.source);
-    if (*(char *)(param_1.field0_0x0._s_0.source[1].matrices.matrix[0].m[2] + 2) != '\0') {
-      R_GetViewport(param_1.field0_0x0._s_0.source,&local_20);
-      R_SetViewport(param_1.field0_0x0._s_0.state,&local_20);
-      R_UpdateViewport(param_1.field0_0x0._s_0.source,&local_20);
+    ((context.field0_0x0._s_0.state)->prim).vertDeclType = VERTDECL_GENERIC;
+    R_Set2D(context.field0_0x0._s_0.source);
+    if (*(char *)(context.field0_0x0._s_0.source[1].matrices.matrix[0].m[2] + 2) != '\0') {
+      R_GetViewport(context.field0_0x0._s_0.source,&viewport);
+      R_SetViewport(context.field0_0x0._s_0.state,&viewport);
+      R_UpdateViewport(context.field0_0x0._s_0.source,&viewport);
     }
-    R_SetupPass(param_1,0);
-    R_UpdateVertexDecl(param_1.field0_0x0._s_0.state);
-    R_SetupPassPixelShaderArgs(param_1);
-    R_SetMeshStream(param_1.field0_0x0._s_0.state,param_3);
-    local_10.vertexCount = 4;
-    local_10.triCount = 2;
-    local_10.baseIndex = R_SetIndexData(&(param_1.field0_0x0._s_0.state)->prim,param_3->indices,2);
-    R_SetupPassPerObjectArgs(param_1);
-    R_SetupPassPerPrimArgs(param_1);
-    R_TrackPrims(&(param_1.field0_0x0._s_0.state)->prim,GFX_PRIM_STATS_CODE);
-    R_DrawIndexedPrimitive(&(param_1.field0_0x0._s_0.state)->prim,&local_10);
-    ((param_1.field0_0x0._s_0.state)->prim).primStats = (GfxPrimStats *)0x0;
+    R_SetupPass(context,0);
+    R_UpdateVertexDecl(context.field0_0x0._s_0.state);
+    R_SetupPassPixelShaderArgs(context);
+    R_SetMeshStream(context.field0_0x0._s_0.state,quadMesh);
+    args.vertexCount = 4;
+    args.triCount = 2;
+    args.baseIndex = R_SetIndexData(&(context.field0_0x0._s_0.state)->prim,quadMesh->indices,2);
+    R_SetupPassPerObjectArgs(context);
+    R_SetupPassPerPrimArgs(context);
+    R_TrackPrims(&(context.field0_0x0._s_0.state)->prim,GFX_PRIM_STATS_CODE);
+    R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
+    ((context.field0_0x0._s_0.state)->prim).primStats = (GfxPrimStats *)0x0;
   }
   return;
 }

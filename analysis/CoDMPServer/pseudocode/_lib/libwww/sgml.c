@@ -49,7 +49,7 @@ undefined4 FUN_00bee2e0(int param_1,char *param_2,int param_3)
   char *pcVar3;
   char *pcVar4;
   undefined4 uVar5;
-  char *pcVar6;
+  char *format;
   int local_30;
   int local_28;
   int local_20;
@@ -259,9 +259,9 @@ switchD_00bee341_caseD_5:
       goto switchD_00bee341_default;
     }
     _HTChunk_terminate(local_14);
-    pcVar6 = "%d";
+    format = "%d";
     pcVar4 = (char *)_HTChunk_data(local_14,"%d",local_1c);
-    iVar2 = sscanf(pcVar4,pcVar6);
+    iVar2 = sscanf(pcVar4,format);
     if (iVar2 == 1) {
       (**(code **)(*(int *)(param_1 + 8) + 0x10))(*(undefined4 *)(param_1 + 0xc),local_1c[0]);
     }
@@ -533,34 +533,34 @@ void FUN_00bef040(int param_1)
 
 {
   int iVar1;
-  uchar *puVar2;
-  int iVar3;
+  uchar *str2;
+  int iVar2;
   int extraout_EAX;
-  undefined4 uVar4;
+  undefined4 uVar3;
   int local_18;
   int local_8;
   
   iVar1 = *(int *)(*(int *)(param_1 + 4) + 8);
-  puVar2 = (uchar *)_HTChunk_data(*(undefined4 *)(param_1 + 0x1c));
+  str2 = (uchar *)_HTChunk_data(*(undefined4 *)(param_1 + 0x1c));
   local_18 = 0;
-  iVar3 = *(int *)(*(int *)(param_1 + 4) + 0xc);
+  iVar2 = *(int *)(*(int *)(param_1 + 4) + 0xc);
   while( true ) {
-    local_8 = iVar3;
+    local_8 = iVar2;
     if (local_8 <= local_18) {
-      uVar4 = _HTChunk_size(*(undefined4 *)(param_1 + 0x1c));
-      uVar4 = _HTChunk_data(*(undefined4 *)(param_1 + 0x1c),uVar4);
-      (**(code **)(*(int *)(param_1 + 8) + 0x30))(*(undefined4 *)(param_1 + 0xc),uVar4);
+      uVar3 = _HTChunk_size(*(undefined4 *)(param_1 + 0x1c));
+      uVar3 = _HTChunk_data(*(undefined4 *)(param_1 + 0x1c),uVar3);
+      (**(code **)(*(int *)(param_1 + 8) + 0x30))(*(undefined4 *)(param_1 + 0xc),uVar3);
       return;
     }
-    iVar3 = (local_8 - local_18) / 2 + local_18;
-    strcmp(*(uchar **)(iVar1 + iVar3 * 4),puVar2);
+    iVar2 = (local_8 - local_18) / 2 + local_18;
+    strcmp(*(uchar **)(iVar1 + iVar2 * 4),str2);
     if (extraout_EAX == 0) break;
     if (extraout_EAX < 0) {
-      local_18 = iVar3 + 1;
-      iVar3 = local_8;
+      local_18 = iVar2 + 1;
+      iVar2 = local_8;
     }
   }
-  (**(code **)(*(int *)(param_1 + 8) + 0x24))(*(undefined4 *)(param_1 + 0xc),iVar3);
+  (**(code **)(*(int *)(param_1 + 8) + 0x24))(*(undefined4 *)(param_1 + 0xc),iVar2);
   return;
 }
 

@@ -2,33 +2,33 @@
 
 // 00C1AA90  _startTwoArgErrorHandling  (line unknown)
 
-void __cdecl _startTwoArgErrorHandling(ulong param_1,ulong param_2,uint64 param_3,uint64 param_4)
+void __cdecl _startTwoArgErrorHandling(ulong savCW,ulong ret_addr,uint64 param1,uint64 param2)
 
 {
   int in_EDX;
   float10 in_ST0;
-  _exception local_24;
+  _exception arg_to_except87;
   
-  local_24.retval = (uint64)(double)in_ST0;
-  local_24.arg1 = param_3;
-  local_24.arg2 = param_4;
-  _87except(in_EDX,&local_24,(ushort *)&param_1);
+  arg_to_except87.retval = (uint64)(double)in_ST0;
+  arg_to_except87.arg1 = param1;
+  arg_to_except87.arg2 = param2;
+  _87except(in_EDX,&arg_to_except87,(ushort *)&savCW);
   return;
 }
 
 
 // 00C1AAA7  _startOneArgErrorHandling  (line unknown)
 
-void __cdecl _startOneArgErrorHandling(ulong param_1,ulong param_2,uint64 param_3)
+void __cdecl _startOneArgErrorHandling(ulong savCW,ulong ret_addr,uint64 param1)
 
 {
   int in_EDX;
   float10 in_ST0;
-  _exception local_24;
+  _exception arg_to_except87;
   
-  local_24.retval = (uint64)(double)in_ST0;
-  local_24.arg1 = param_3;
-  _87except(in_EDX,&local_24,(ushort *)&param_1);
+  arg_to_except87.retval = (uint64)(double)in_ST0;
+  arg_to_except87.arg1 = param1;
+  _87except(in_EDX,&arg_to_except87,(ushort *)&savCW);
   return;
 }
 

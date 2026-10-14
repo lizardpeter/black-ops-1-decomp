@@ -188,26 +188,26 @@ void __cdecl Demo_SaveToStreamBuffer(void *param_1,int param_2)
   int iVar2;
   int iVar3;
   char *unaff_ESI;
-  ulong uVar4;
-  undefined4 *puVar5;
+  ulong count;
+  undefined4 *puVar4;
   fileShareLocation unaff_EDI;
-  ulong uVar6;
-  undefined4 *puVar7;
+  ulong count_00;
+  undefined4 *puVar5;
   
   if (DAT_02841e24 == '\0') {
     return;
   }
   if (0x100000 < (int)(DAT_02841e1c + in_EAX)) {
-    uVar4 = 0x100000 - DAT_02841e1c;
-    uVar6 = in_EAX - uVar4;
-    memcpy(&DAT_02741e1c + DAT_02841e1c,param_1,uVar4);
-    memcpy(&DAT_02741e1c,(uchar *)(uVar4 + (int)param_1),uVar6);
+    count = 0x100000 - DAT_02841e1c;
+    count_00 = in_EAX - count;
+    memcpy(&DAT_02741e1c + DAT_02841e1c,param_1,count);
+    memcpy(&DAT_02741e1c,(uchar *)(count + (int)param_1),count_00);
     if ((int)DAT_02841e1c < DAT_02841e20) {
       LiveStorage_FileShare_AbortOperation(3,unaff_EDI);
       Demo_End(false);
     }
-    DAT_02841e1c = uVar6;
-    if (DAT_02841e20 < (int)uVar6) {
+    DAT_02841e1c = count_00;
+    if (DAT_02841e20 < (int)count_00) {
       LiveStorage_FileShare_AbortOperation(3,unaff_EDI);
       Demo_End(false);
     }
@@ -236,12 +236,12 @@ LAB_007cafd5:
   _DAT_02841e28 = DVar1 - sys_timeBase;
   iVar2 = Demo_GetCurrUsedBuffer();
   if ((fsShowStreamingGraph->current).enabled != false) {
-    puVar5 = &DAT_02741c38;
-    puVar7 = &DAT_02741c30;
+    puVar4 = &DAT_02741c38;
+    puVar5 = &DAT_02741c30;
     for (iVar3 = 0x76; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *puVar7 = *puVar5;
+      *puVar5 = *puVar4;
+      puVar4 = puVar4 + 1;
       puVar5 = puVar5 + 1;
-      puVar7 = puVar7 + 1;
     }
     DAT_02741e08 = 1;
     DAT_02741e10 = 1;
@@ -350,17 +350,17 @@ uint __cdecl Demo_WriteToStream(void *param_1,uint param_2,uint param_3)
   bool bVar1;
   int iVar2;
   int iVar3;
-  ulong uVar4;
-  undefined4 *puVar5;
+  ulong count;
+  undefined4 *puVar4;
   int unaff_EDI;
-  undefined4 *puVar6;
-  long64 lVar7;
+  undefined4 *puVar5;
+  long64 lVar6;
   int local_ac;
   int local_a8;
   char local_80 [128];
   
-  lVar7 = _time64((long64 *)0x0);
-  local_ac = (int)lVar7;
+  lVar6 = _time64((long64 *)0x0);
+  local_ac = (int)lVar6;
   local_a8 = local_ac >> 0x1f;
   _localtime64((long64 *)&local_ac);
   if (DAT_02841e20 == DAT_02841e1c) {
@@ -377,44 +377,44 @@ uint __cdecl Demo_WriteToStream(void *param_1,uint param_2,uint param_3)
   }
   _snprintf(local_80,0x80,"Demo_WriteToStream() called at %02d:%02d\n");
   if (DAT_02841e20 < DAT_02841e1c) {
-    uVar4 = DAT_02841e1c - DAT_02841e20;
+    count = DAT_02841e1c - DAT_02841e20;
     if (param_2 < (uint)(DAT_02841e1c - DAT_02841e20)) {
-      uVar4 = param_2;
+      count = param_2;
     }
-    memcpy(param_1,&DAT_02741e1c + DAT_02841e20,uVar4);
-    DAT_02841e20 = DAT_02841e20 + uVar4;
+    memcpy(param_1,&DAT_02741e1c + DAT_02841e20,count);
+    DAT_02841e20 = DAT_02841e20 + count;
   }
   else {
-    uVar4 = 0x100000 - DAT_02841e20;
-    if (param_2 < uVar4) {
+    count = 0x100000 - DAT_02841e20;
+    if (param_2 < count) {
       memcpy(param_1,&DAT_02741e1c + DAT_02841e20,param_2);
       DAT_02841e20 = DAT_02841e20 + param_2;
-      uVar4 = param_2;
+      count = param_2;
     }
     else {
-      memcpy(param_1,&DAT_02741e1c + DAT_02841e20,uVar4);
+      memcpy(param_1,&DAT_02741e1c + DAT_02841e20,count);
       DAT_02841e20 = 0;
     }
   }
-  if (uVar4 == 0) {
+  if (count == 0) {
     Com_Error(ERR_DROP,"Demo streaming buffer error.\n");
   }
   _snprintf(local_80,0x100,"Demo_WriteToStream() - BytesToUpload: %d\n");
   iVar2 = Demo_GetCurrUsedBuffer();
   if ((fsShowStreamingGraph->current).enabled != false) {
-    puVar5 = &DAT_02741c38;
-    puVar6 = &DAT_02741c30;
+    puVar4 = &DAT_02741c38;
+    puVar5 = &DAT_02741c30;
     for (iVar3 = 0x76; iVar3 != 0; iVar3 = iVar3 + -1) {
-      *puVar6 = *puVar5;
+      *puVar5 = *puVar4;
+      puVar4 = puVar4 + 1;
       puVar5 = puVar5 + 1;
-      puVar6 = puVar6 + 1;
     }
     DAT_02741e08 = 0;
     DAT_02741e10 = 1;
     _DAT_02741e0c = iVar2;
   }
-  Demo_RecordSentPacket(uVar4);
-  return uVar4;
+  Demo_RecordSentPacket(count);
+  return count;
 }
 
 
@@ -838,7 +838,7 @@ bool __cdecl Demo_ShouldFilterServerCommand(int param_1,char *param_2)
   int in_EAX;
   int iVar2;
   undefined1 *puVar3;
-  char *pcVar4;
+  char *nptr;
   int extraout_ECX;
   char **unaff_ESI;
   
@@ -866,8 +866,8 @@ bool __cdecl Demo_ShouldFilterServerCommand(int param_1,char *param_2)
   case 0x52:
     return false;
   case 100:
-    pcVar4 = Com_Parse(unaff_ESI);
-    atoi(pcVar4);
+    nptr = Com_Parse(unaff_ESI);
+    atoi(nptr);
     bVar1 = Demo_IsPlayerSpectating((int)unaff_ESI);
     if ((bVar1) || (8 < (int)(&DAT_026a6104)[in_EAX * 0x9ba])) {
       if ((0x8e3 < extraout_ECX) && (extraout_ECX < 0x9e4)) {
@@ -1039,7 +1039,7 @@ void __cdecl Demo_WritePlayerStates(msg_t *param_1)
   int iVar1;
   bool bVar2;
   int iVar3;
-  uchar *puVar4;
+  uchar *src;
   msg_t *unaff_ESI;
   undefined4 *unaff_EDI;
   int local_26f4;
@@ -1063,15 +1063,15 @@ void __cdecl Demo_WritePlayerStates(msg_t *param_1)
   if (0 < DAT_026a5fd0) {
     local_26f4 = 0;
     local_26f0 = 0;
-    puVar4 = &DAT_026a6100;
+    src = &DAT_026a6100;
     do {
       _DAT_0268de98 = (int *)(local_26f0 + DAT_01e5d49c);
       if ((*_DAT_0268de98 == 5) && (local_26f4 + _level != 0)) {
         _g_snapInfo = iVar3;
         MSG_WriteBit1(unaff_ESI);
         iVar1 = (&DAT_0272f914)[iVar3];
-        if ((((iVar1 == 2) || (iVar1 == 3)) && (8 < *(int *)(puVar4 + 4))) || (bVar2)) {
-          memcpy((uchar *)local_26ec,puVar4,0x26e8);
+        if ((((iVar1 == 2) || (iVar1 == 3)) && (8 < *(int *)(src + 4))) || (bVar2)) {
+          memcpy((uchar *)local_26ec,src,0x26e8);
           local_260c = local_260c | 2;
           local_2518 = 0xc;
         }
@@ -1091,17 +1091,17 @@ void __cdecl Demo_WritePlayerStates(msg_t *param_1)
             local_2564 = DAT_0272f9a8;
           }
           else {
-            local_2518 = (uint)(*(int *)(puVar4 + 4) < 9) * 2 + 0xc;
+            local_2518 = (uint)(*(int *)(src + 4) < 9) * 2 + 0xc;
           }
         }
         MSG_WriteDeltaPlayerstate
-                  (&g_snapInfo,DAT_01ea9f04,(int)puVar4,local_26ec,(playerState_s *)unaff_ESI);
+                  (&g_snapInfo,DAT_01ea9f04,(int)src,local_26ec,(playerState_s *)unaff_ESI);
         if ((((&DAT_0272f914)[iVar3] == 2) || ((&DAT_0272f914)[iVar3] == 3)) ||
-           (8 < *(int *)(puVar4 + 4))) {
-          memcpy(puVar4,(uchar *)local_26ec,0x26e8);
+           (8 < *(int *)(src + 4))) {
+          memcpy(src,(uchar *)local_26ec,0x26e8);
         }
         else {
-          memcpy(puVar4,(uchar *)(local_26f4 + _level),0x26e8);
+          memcpy(src,(uchar *)(local_26f4 + _level),0x26e8);
         }
       }
       else {
@@ -1121,7 +1121,7 @@ LAB_007cc084:
       local_26f4 = local_26f4 + 0x2a28;
       iVar3 = iVar3 + 1;
       local_26f0 = local_26f0 + 0x7c2e8;
-      puVar4 = puVar4 + 0x26e8;
+      src = src + 0x26e8;
     } while (iVar3 < DAT_026a5fd0);
   }
   _g_snapInfo = g_democlientindex;

@@ -14,46 +14,55 @@ void __cdecl TRACK_win_syscon(void)
 
 /* WARNING: Removing unreachable block (ram,0x007dea69) */
 
-long __cdecl ConWndProc(HWND__ *param_1,uint param_2,uint param_3,long param_4)
+long __cdecl ConWndProc(HWND__ *hWnd,uint uMsg,uint wParam,long lParam)
 
 {
   char cVar1;
   uint uVar2;
-  char *pcVar3;
-  LRESULT LVar4;
-  int cx;
+  char *ptr;
+  LRESULT LVar3;
+  int cx_00;
   char *local_30;
+  int cy;
+  char *cmdString;
+  int cx;
+  int x;
+  int y;
+  float sx;
+  int h;
+  int w;
+  float sy;
   
-  switch(param_2) {
+  switch(uMsg) {
   case 5:
-    uVar2 = (uint)param_4 >> 0x10;
-    cx = (param_4 & 0xffffU) - 0xf;
-    SetWindowPos((HWND)s_wcd.hwndBuffer,(HWND)0x0,5,0x46,cx,uVar2 - 100,0);
-    SetWindowPos((HWND)s_wcd.hwndInputLine,(HWND)0x0,5,uVar2 - 0x16,cx,0x14,0);
-    s_wcd.windowWidth = param_4 & 0xffffU;
+    uVar2 = (uint)lParam >> 0x10;
+    cx_00 = (lParam & 0xffffU) - 0xf;
+    SetWindowPos((HWND)s_wcd.hwndBuffer,(HWND)0x0,5,0x46,cx_00,uVar2 - 100,0);
+    SetWindowPos((HWND)s_wcd.hwndInputLine,(HWND)0x0,5,uVar2 - 0x16,cx_00,0x14,0);
+    s_wcd.windowWidth = lParam & 0xffffU;
     s_wcd.windowHeight = uVar2;
     break;
   case 6:
-    if ((param_3 & 0xffff) != 0) {
+    if ((wParam & 0xffff) != 0) {
       SetFocus((HWND)s_wcd.hwndInputLine);
     }
     break;
   case 0x10:
-    pcVar3 = Com_AllocEvent(5);
-    builtin_strncpy(pcVar3,"quit",5);
-    local_30 = pcVar3;
+    ptr = Com_AllocEvent(5);
+    builtin_strncpy(ptr,"quit",5);
+    local_30 = ptr;
     do {
       cVar1 = *local_30;
       local_30 = local_30 + 1;
     } while (cVar1 != '\0');
-    Sys_QueEvent(0,SE_CONSOLE,0,0,(int)(local_30 + (1 - (int)(pcVar3 + 1))),pcVar3);
+    Sys_QueEvent(0,SE_CONSOLE,0,0,(int)(local_30 + (1 - (int)(ptr + 1))),ptr);
     return 0;
   case 0x14:
-    LVar4 = DefWindowProcA((HWND)param_1,param_2,param_3,param_4);
-    return LVar4;
+    LVar3 = DefWindowProcA((HWND)hWnd,uMsg,wParam,lParam);
+    return LVar3;
   }
-  LVar4 = DefWindowProcA((HWND)param_1,param_2,param_3,param_4);
-  return LVar4;
+  LVar3 = DefWindowProcA((HWND)hWnd,uMsg,wParam,lParam);
+  return LVar3;
 }
 
 
@@ -61,7 +70,7 @@ long __cdecl ConWndProc(HWND__ *param_1,uint param_2,uint param_3,long param_4)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-long __cdecl InputLineWndProc(HWND__ *param_1,uint param_2,uint param_3,long param_4)
+long __cdecl InputLineWndProc(HWND__ *hWnd,uint uMsg,uint wParam,long lParam)
 
 {
   char *pcVar1;
@@ -69,19 +78,19 @@ long __cdecl InputLineWndProc(HWND__ *param_1,uint param_2,uint param_3,long par
   LRESULT LVar3;
   char *local_824;
   char *local_814;
-  char local_80c [1024];
-  CHAR local_40c [1028];
+  char displayBuffer [1024];
+  CHAR inputBuffer [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == 8) {
-    if ((HWND__ *)param_3 == s_wcd.hWnd) {
-      SetFocus((HWND)param_1);
+  if (uMsg == 8) {
+    if ((HWND__ *)wParam == s_wcd.hWnd) {
+      SetFocus((HWND)hWnd);
       return 0;
     }
   }
-  else if ((param_2 == 0x102) && (param_3 == 0xd)) {
-    GetWindowTextA((HWND)s_wcd.hwndInputLine,local_40c,0x400);
+  else if ((uMsg == 0x102) && (wParam == 0xd)) {
+    GetWindowTextA((HWND)s_wcd.hwndInputLine,inputBuffer,0x400);
     local_814 = s_wcd.consoleText;
     do {
       cVar2 = *local_814;
@@ -96,56 +105,58 @@ long __cdecl InputLineWndProc(HWND__ *param_1,uint param_2,uint param_3,long par
     local_824[0] = '\n';
     local_824[1] = '\0';
     SetWindowTextA((HWND)s_wcd.hwndInputLine,"");
-    Com_sprintf(local_80c,0x400,"]%s\n");
-    Sys_Print(local_80c);
+    Com_sprintf(displayBuffer,0x400,"]%s\n");
+    Sys_Print(displayBuffer);
     return 0;
   }
-  LVar3 = CallWindowProcA((WNDPROC)s_wcd.SysInputLineWndProc,(HWND)param_1,param_2,param_3,param_4);
+  LVar3 = CallWindowProcA((WNDPROC)s_wcd.SysInputLineWndProc,(HWND)hWnd,uMsg,wParam,lParam);
   return LVar3;
 }
 
 
 // 007DEAD0  Conbuf_CleanText  (win32/win_syscon.cpp:171)
 
-int __cdecl Conbuf_CleanText(char *param_1,char *param_2,int param_3)
+int __cdecl Conbuf_CleanText(char *source,char *target,int sizeofTarget)
 
 {
   char *pcVar1;
   char *pcVar2;
+  char *start;
+  char *last;
   
-  pcVar2 = param_2;
-  pcVar1 = param_2 + param_3 + -3;
-  while ((*param_1 != '\0' && (param_2 <= pcVar1))) {
-    if ((*param_1 == '\n') && (param_1[1] == '\r')) {
-      *param_2 = '\r';
-      param_2[1] = '\n';
-      param_2 = param_2 + 2;
-      param_1 = param_1 + 2;
+  pcVar2 = target;
+  pcVar1 = target + sizeofTarget + -3;
+  while ((*source != '\0' && (target <= pcVar1))) {
+    if ((*source == '\n') && (source[1] == '\r')) {
+      *target = '\r';
+      target[1] = '\n';
+      target = target + 2;
+      source = source + 2;
     }
-    else if (*param_1 == '\r') {
-      *param_2 = '\r';
-      param_2[1] = '\n';
-      param_2 = param_2 + 2;
-      param_1 = param_1 + 1;
+    else if (*source == '\r') {
+      *target = '\r';
+      target[1] = '\n';
+      target = target + 2;
+      source = source + 1;
     }
-    else if (*param_1 == '\n') {
-      *param_2 = '\r';
-      param_2[1] = '\n';
-      param_2 = param_2 + 2;
-      param_1 = param_1 + 1;
+    else if (*source == '\n') {
+      *target = '\r';
+      target[1] = '\n';
+      target = target + 2;
+      source = source + 1;
     }
-    else if ((((param_1 == (char *)0x0) || (*param_1 != '^')) || (param_1[1] == '\0')) ||
-            (((param_1[1] == '^' || (param_1[1] < '0')) || ('@' < param_1[1])))) {
-      *param_2 = *param_1;
-      param_2 = param_2 + 1;
-      param_1 = param_1 + 1;
+    else if ((((source == (char *)0x0) || (*source != '^')) || (source[1] == '\0')) ||
+            (((source[1] == '^' || (source[1] < '0')) || ('@' < source[1])))) {
+      *target = *source;
+      target = target + 1;
+      source = source + 1;
     }
     else {
-      param_1 = param_1 + 2;
+      source = source + 2;
     }
   }
-  *param_2 = '\0';
-  return (int)param_2 - (int)pcVar2;
+  *target = '\0';
+  return (int)target - (int)pcVar2;
 }
 
 
@@ -154,102 +165,103 @@ int __cdecl Conbuf_CleanText(char *param_1,char *param_2,int param_3)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Sys_CreateConsole(HINSTANCE__ *param_1)
+void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance)
 
 {
   ATOM AVar1;
   HWND pHVar2;
-  int nNumerator;
+  int iVar3;
   HANDLE lParam;
-  HDC hDC;
+  HDC__ *hDC;
   int nDenominator;
-  WNDCLASSA local_8060;
-  int local_8038;
-  char local_8034 [16384];
-  char *local_4034;
-  char *local_4030;
-  int local_402c;
-  HDC local_4028;
-  tagRECT local_4024;
-  int local_4014;
-  DWORD local_4010;
-  char local_400c [16388];
+  void *bmpHandle;
+  WNDCLASSA wc;
+  int sheight;
+  char cleanText [16384];
+  char *DEDCLASS;
+  char *WINDOWNAME;
+  int fontHeight;
+  HDC__ *dc;
+  tagRECT rect;
+  int swidth;
+  int DEDSTYLE;
+  char text [16388];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_4010 = 0x80ca0000;
-  local_4034 = "CoD Black Ops WinConsole";
-  local_4030 = "CoD Black Ops Console";
-  local_8060.hIcon = (HICON)0x0;
-  local_8060.hCursor = (HCURSOR)0x0;
-  local_8060.hbrBackground = (HBRUSH)0x0;
-  local_8060.lpszMenuName = (LPCSTR)0x0;
-  local_8060.lpszClassName = (LPCSTR)0x0;
-  local_8060.style = 0;
-  local_8060.lpfnWndProc = ConWndProc;
-  local_8060.cbClsExtra = 0;
-  local_8060.cbWndExtra = 0;
-  local_8060.hInstance = (HINSTANCE)param_1;
-  local_8060.hIcon = LoadIconA((HINSTANCE)param_1,&DAT_00000001);
-  local_8060.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-  local_8060.hbrBackground = (HBRUSH)&DAT_00000005;
-  local_8060.lpszMenuName = (LPCSTR)0x0;
-  local_8060.lpszClassName = local_4034;
-  AVar1 = RegisterClassA(&local_8060);
+  DEDSTYLE = -0x7f360000;
+  DEDCLASS = "CoD Black Ops WinConsole";
+  WINDOWNAME = "CoD Black Ops Console";
+  wc.hIcon = (HICON)0x0;
+  wc.hCursor = (HCURSOR)0x0;
+  wc.hbrBackground = (HBRUSH)0x0;
+  wc.lpszMenuName = (LPCSTR)0x0;
+  wc.lpszClassName = (LPCSTR)0x0;
+  wc.style = 0;
+  wc.lpfnWndProc = ConWndProc;
+  wc.cbClsExtra = 0;
+  wc.cbWndExtra = 0;
+  wc.hInstance = (HINSTANCE)hInstance;
+  wc.hIcon = LoadIconA((HINSTANCE)hInstance,&DAT_00000001);
+  wc.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  wc.hbrBackground = (HBRUSH)&DAT_00000005;
+  wc.lpszMenuName = (LPCSTR)0x0;
+  wc.lpszClassName = DEDCLASS;
+  AVar1 = RegisterClassA(&wc);
   if (AVar1 != 0) {
-    local_4024.left = 0;
-    local_4024.right = 0x26c;
-    local_4024.top = 0;
-    local_4024.bottom = 0x1c2;
-    AdjustWindowRect(&local_4024,local_4010,0);
+    rect.left = 0;
+    rect.right = 0x26c;
+    rect.top = 0;
+    rect.bottom = 0x1c2;
+    AdjustWindowRect(&rect,DEDSTYLE,0);
     pHVar2 = GetDesktopWindow();
-    local_4028 = GetDC(pHVar2);
-    local_4014 = GetDeviceCaps(local_4028,8);
-    local_8038 = GetDeviceCaps(local_4028,10);
-    hDC = local_4028;
+    dc = (HDC__ *)GetDC(pHVar2);
+    swidth = GetDeviceCaps((HDC)dc,8);
+    sheight = GetDeviceCaps((HDC)dc,10);
+    hDC = dc;
     pHVar2 = GetDesktopWindow();
-    ReleaseDC(pHVar2,hDC);
-    s_wcd.windowWidth = (local_4024.right - local_4024.left) + 1;
-    s_wcd.windowHeight = (local_4024.bottom - local_4024.top) + 1;
+    ReleaseDC(pHVar2,(HDC)hDC);
+    s_wcd.windowWidth = (rect.right - rect.left) + 1;
+    s_wcd.windowHeight = (rect.bottom - rect.top) + 1;
     s_wcd.hWnd = (HWND__ *)
-                 CreateWindowExA(0,local_4034,local_4030,local_4010,(local_4014 + -600) / 2,
-                                 (local_8038 + -0x1c2) / 2,(local_4024.right - local_4024.left) + 1,
-                                 (local_4024.bottom - local_4024.top) + 1,(HWND)0x0,(HMENU)0x0,
-                                 (HINSTANCE)param_1,(LPVOID)0x0);
+                 CreateWindowExA(0,DEDCLASS,WINDOWNAME,DEDSTYLE,(swidth + -600) / 2,
+                                 (sheight + -0x1c2) / 2,(rect.right - rect.left) + 1,
+                                 (rect.bottom - rect.top) + 1,(HWND)0x0,(HMENU)0x0,
+                                 (HINSTANCE)hInstance,(LPVOID)0x0);
     if (s_wcd.hWnd != (HWND__ *)0x0) {
-      local_4028 = GetDC((HWND)s_wcd.hWnd);
+      dc = (HDC__ *)GetDC((HWND)s_wcd.hWnd);
       nDenominator = 0x48;
-      nNumerator = GetDeviceCaps(local_4028,0x5a);
-      local_402c = MulDiv(8,nNumerator,nDenominator);
-      local_402c = -local_402c;
+      iVar3 = GetDeviceCaps((HDC)dc,0x5a);
+      iVar3 = MulDiv(8,iVar3,nDenominator);
+      fontHeight = -iVar3;
       s_wcd.hfBufferFont =
-           (HFONT__ *)CreateFontA(local_402c,0,0,0,300,0,0,0,1,0,0,0,0x31,"Courier New");
-      ReleaseDC((HWND)s_wcd.hWnd,local_4028);
+           (HFONT__ *)CreateFontA(fontHeight,0,0,0,300,0,0,0,1,0,0,0,0x31,"Courier New");
+      ReleaseDC((HWND)s_wcd.hWnd,(HDC)dc);
       lParam = LoadImageA((HINSTANCE)0x0,"codlogo.bmp",0,0,0,0x10);
       if (lParam != (HANDLE)0x0) {
         s_wcd.codLogo =
              (HWND__ *)
              CreateWindowExA(0,"Static",(LPCSTR)0x0,0x5000000e,5,5,0,0,(HWND)s_wcd.hWnd,
-                             (HMENU)&DAT_00000001,(HINSTANCE)param_1,(LPVOID)0x0);
+                             (HMENU)&DAT_00000001,(HINSTANCE)hInstance,(LPVOID)0x0);
         SendMessageA((HWND)s_wcd.codLogo,0x172,0,(LPARAM)lParam);
       }
       s_wcd.hwndInputLine =
            (HWND__ *)
            CreateWindowExA(0,"edit",(LPCSTR)0x0,0x50800080,6,400,0x260,0x14,(HWND)s_wcd.hWnd,
-                           (HMENU)0x65,(HINSTANCE)param_1,(LPVOID)0x0);
+                           (HMENU)0x65,(HINSTANCE)hInstance,(LPVOID)0x0);
       s_wcd.hwndBuffer =
            (HWND__ *)
            CreateWindowExA(0,"edit",(LPCSTR)0x0,0x50a00844,6,0x46,0x25e,0x144,(HWND)s_wcd.hWnd,
-                           (HMENU)0x64,(HINSTANCE)param_1,(LPVOID)0x0);
+                           (HMENU)0x64,(HINSTANCE)hInstance,(LPVOID)0x0);
       SendMessageA((HWND)s_wcd.hwndBuffer,0x30,(WPARAM)s_wcd.hfBufferFont,0);
       s_wcd.SysInputLineWndProc =
            (_func___cdecl_long_HWND___ptr_uint_uint_long *)
            SetWindowLongA((HWND)s_wcd.hwndInputLine,-4,0x7de300);
       SendMessageA((HWND)s_wcd.hwndInputLine,0x30,(WPARAM)s_wcd.hfBufferFont,0);
       SetFocus((HWND)s_wcd.hwndInputLine);
-      Con_GetTextCopy(local_400c,0x4000);
-      Conbuf_CleanText(local_400c,local_8034,0x4000);
-      SetWindowTextA((HWND)s_wcd.hwndBuffer,local_8034);
+      Con_GetTextCopy(text,0x4000);
+      Conbuf_CleanText(text,cleanText,0x4000);
+      SetWindowTextA((HWND)s_wcd.hwndBuffer,cleanText);
     }
   }
   return;
@@ -278,11 +290,11 @@ void __cdecl Sys_ShowConsole(void)
 {
   code *pcVar1;
   bool bVar2;
-  HMODULE pHVar3;
+  HMODULE hInstance;
   
   if (s_wcd.hWnd == (HWND__ *)0x0) {
-    pHVar3 = GetModuleHandleA((LPCSTR)0x0);
-    Sys_CreateConsole((HINSTANCE__ *)pHVar3);
+    hInstance = GetModuleHandleA((LPCSTR)0x0);
+    Sys_CreateConsole((HINSTANCE__ *)hInstance);
     if (s_wcd.hWnd == (HWND__ *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_syscon.cpp",0x17b,0,
                                "%s");
@@ -333,7 +345,7 @@ char * __cdecl Sys_ConsoleInput(void)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Conbuf_AppendText(char *param_1)
+void __cdecl Conbuf_AppendText(char *pMsg)
 
 {
   char cVar1;
@@ -342,12 +354,12 @@ void __cdecl Conbuf_AppendText(char *param_1)
   bool bVar4;
   char *local_8028;
   char *local_8018;
-  char local_8014 [32772];
+  char buffer [32772];
   uint local_10;
-  char *local_c;
-  ulong local_8;
+  char *msg;
+  int bufLen;
   
-  local_8 = 0x7ded5d;
+  bufLen = 0x7ded5d;
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   if (s_wcd.hwndBuffer == (HWND__ *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_syscon.cpp",0x19e,0,"%s"
@@ -358,48 +370,48 @@ void __cdecl Conbuf_AppendText(char *param_1)
       return;
     }
   }
-  local_8018 = param_1;
+  local_8018 = pMsg;
   do {
     cVar1 = *local_8018;
     local_8018 = local_8018 + 1;
   } while (cVar1 != '\0');
-  if ((uint)((int)local_8018 - (int)(param_1 + 1)) < 0x4000) {
-    local_c = param_1;
+  if ((uint)((int)local_8018 - (int)(pMsg + 1)) < 0x4000) {
+    msg = pMsg;
   }
   else {
-    local_8028 = param_1;
+    local_8028 = pMsg;
     pcVar3 = local_8028;
     do {
       local_8028 = pcVar3;
       pcVar3 = local_8028 + 1;
     } while (*local_8028 != '\0');
-    local_c = local_8028 + -0x3fff;
+    msg = local_8028 + -0x3fff;
   }
-  local_8 = Conbuf_CleanText(local_c,local_8014,0x8000);
-  s_totalChars = s_totalChars + local_8;
+  bufLen = Conbuf_CleanText(msg,buffer,0x8000);
+  s_totalChars = s_totalChars + bufLen;
   if (s_totalChars < 0x4001) {
     SendMessageA((HWND)s_wcd.hwndBuffer,0xb1,0xffff,0xffff);
   }
   else {
     SendMessageA((HWND)s_wcd.hwndBuffer,0xb1,0,-1);
-    s_totalChars = local_8;
+    s_totalChars = bufLen;
   }
   SendMessageA((HWND)s_wcd.hwndBuffer,0xb6,0,0xffff);
   SendMessageA((HWND)s_wcd.hwndBuffer,0xb7,0,0);
-  SendMessageA((HWND)s_wcd.hwndBuffer,0xc2,0,(LPARAM)local_8014);
+  SendMessageA((HWND)s_wcd.hwndBuffer,0xc2,0,(LPARAM)buffer);
   return;
 }
 
 
 // 007DEF20  Conbuf_AppendTextInMainThread  (win32/win_syscon.cpp:459)
 
-void __cdecl Conbuf_AppendTextInMainThread(char *param_1)
+void __cdecl Conbuf_AppendTextInMainThread(char *msg)
 
 {
   bool bVar1;
   
   if ((s_wcd.hwndBuffer != (HWND__ *)0x0) && (bVar1 = Sys_IsMainThread(), bVar1)) {
-    Conbuf_AppendText(param_1);
+    Conbuf_AppendText(msg);
   }
   return;
 }
@@ -407,20 +419,20 @@ void __cdecl Conbuf_AppendTextInMainThread(char *param_1)
 
 // 007DEF50  Sys_SetErrorText  (win32/win_syscon.cpp:476)
 
-void __cdecl Sys_SetErrorText(char *param_1)
+void __cdecl Sys_SetErrorText(char *buf)
 
 {
   HWND hWnd;
   char *lpCaption;
   UINT uType;
   
-  I_strncpyz(s_wcd.errorString,param_1,0x200);
+  I_strncpyz(s_wcd.errorString,buf,0x200);
   DestroyWindow((HWND)s_wcd.hwndInputLine);
   s_wcd.hwndInputLine = (HWND__ *)0x0;
   uType = 0x10;
   lpCaption = "Error";
   hWnd = GetActiveWindow();
-  MessageBoxA(hWnd,param_1,lpCaption,uType);
+  MessageBoxA(hWnd,buf,lpCaption,uType);
   return;
 }
 

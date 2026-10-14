@@ -18,6 +18,7 @@ char * __cdecl NET_ErrorString(void)
 {
   int iVar1;
   char *pcVar2;
+  int code;
   
   iVar1 = _WSAGetLastError_0();
   if (iVar1 < 0x2afa) {
@@ -167,42 +168,43 @@ switchD_007dc25a_caseD_2715:
 
 // 007DC520  Sys_StringToSockaddr  (win32/win_net.cpp:251)
 
-int __cdecl Sys_StringToSockaddr(char *param_1,sockaddr *param_2)
+int __cdecl Sys_StringToSockaddr(char *s,sockaddr *sadr)
 
 {
   bool bVar1;
   undefined4 uVar2;
   int iVar3;
+  hostent *h;
   
-  param_2->sa_family = 0;
-  param_2->sa_data[0] = '\0';
-  param_2->sa_data[1] = '\0';
-  param_2->sa_data[2] = '\0';
-  param_2->sa_data[3] = '\0';
-  param_2->sa_data[4] = '\0';
-  param_2->sa_data[5] = '\0';
-  param_2->sa_data[6] = '\0';
-  param_2->sa_data[7] = '\0';
-  param_2->sa_data[8] = '\0';
-  param_2->sa_data[9] = '\0';
-  param_2->sa_data[10] = '\0';
-  param_2->sa_data[0xb] = '\0';
-  param_2->sa_data[0xc] = '\0';
-  param_2->sa_data[0xd] = '\0';
-  param_2->sa_family = 2;
-  param_2->sa_data[0] = '\0';
-  param_2->sa_data[1] = '\0';
-  bVar1 = I_isdigit((int)*param_1);
+  sadr->sa_family = 0;
+  sadr->sa_data[0] = '\0';
+  sadr->sa_data[1] = '\0';
+  sadr->sa_data[2] = '\0';
+  sadr->sa_data[3] = '\0';
+  sadr->sa_data[4] = '\0';
+  sadr->sa_data[5] = '\0';
+  sadr->sa_data[6] = '\0';
+  sadr->sa_data[7] = '\0';
+  sadr->sa_data[8] = '\0';
+  sadr->sa_data[9] = '\0';
+  sadr->sa_data[10] = '\0';
+  sadr->sa_data[0xb] = '\0';
+  sadr->sa_data[0xc] = '\0';
+  sadr->sa_data[0xd] = '\0';
+  sadr->sa_family = 2;
+  sadr->sa_data[0] = '\0';
+  sadr->sa_data[1] = '\0';
+  bVar1 = I_isdigit((int)*s);
   if (bVar1) {
-    uVar2 = inet_addr(param_1);
-    *(undefined4 *)(param_2->sa_data + 2) = uVar2;
+    uVar2 = inet_addr(s);
+    *(undefined4 *)(sadr->sa_data + 2) = uVar2;
   }
   else {
-    iVar3 = gethostbyname(param_1);
+    iVar3 = gethostbyname(s);
     if (iVar3 == 0) {
       return 0;
     }
-    *(undefined4 *)(param_2->sa_data + 2) = *(undefined4 *)**(undefined4 **)(iVar3 + 0xc);
+    *(undefined4 *)(sadr->sa_data + 2) = *(undefined4 *)**(undefined4 **)(iVar3 + 0xc);
   }
   return 1;
 }
@@ -210,13 +212,13 @@ int __cdecl Sys_StringToSockaddr(char *param_1,sockaddr *param_2)
 
 // 007DC5A0  SockadrToNetadr  (win32/win_net.cpp:295)
 
-void __cdecl SockadrToNetadr(sockaddr *param_1,netadr_t *param_2)
+void __cdecl SockadrToNetadr(sockaddr *s,netadr_t *a)
 
 {
-  if (param_1->sa_family == 2) {
-    param_2->type = NA_IP;
-    *(undefined4 *)param_2->ip = *(undefined4 *)(param_1->sa_data + 2);
-    param_2->port = *(ushort *)param_1->sa_data;
+  if (s->sa_family == 2) {
+    a->type = NA_IP;
+    *(undefined4 *)a->ip = *(undefined4 *)(s->sa_data + 2);
+    a->port = *(ushort *)s->sa_data;
   }
   return;
 }
@@ -226,17 +228,17 @@ void __cdecl SockadrToNetadr(sockaddr *param_1,netadr_t *param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Sys_StringToAdr(char *param_1,netadr_t *param_2)
+int __cdecl Sys_StringToAdr(char *s,netadr_t *a)
 
 {
   int iVar1;
-  sockaddr local_18;
+  sockaddr sadr;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = Sys_StringToSockaddr(param_1,&local_18);
+  iVar1 = Sys_StringToSockaddr(s,&sadr);
   if (iVar1 != 0) {
-    SockadrToNetadr(&local_18,param_2);
+    SockadrToNetadr(&sadr,a);
   }
   return (uint)(iVar1 != 0);
 }
@@ -247,28 +249,30 @@ int __cdecl Sys_StringToAdr(char *param_1,netadr_t *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Sys_GetPacket(netadr_t *param_1,msg_t *param_2)
+int __cdecl Sys_GetPacket(netadr_t *net_from,msg_t *net_message)
 
 {
   bool bVar1;
   int iVar2;
+  sockaddr from;
+  int ret;
   
   bVar1 = G_ExitAfterToolComplete();
   if (bVar1) {
     iVar2 = 0;
   }
   else {
-    iVar2 = dwRecvFrom(param_1,param_2->data,param_2->maxsize);
+    iVar2 = dwRecvFrom(net_from,net_message->data,net_message->maxsize);
     if ((iVar2 == -2) || (iVar2 == -9)) {
       iVar2 = 0;
     }
-    else if (iVar2 == param_2->maxsize) {
-      NET_AdrToString(*param_1);
+    else if (iVar2 == net_message->maxsize) {
+      NET_AdrToString(*net_from);
       Com_Printf(0x10,"Oversize packet from %s\n");
       iVar2 = 0;
     }
     else {
-      param_2->cursize = iVar2;
+      net_message->cursize = iVar2;
       iVar2 = 1;
     }
   }
@@ -278,19 +282,21 @@ int __cdecl Sys_GetPacket(netadr_t *param_1,msg_t *param_2)
 
 // 007DC6F0  Sys_SendPacket  (win32/win_net.cpp:383)
 
-bool __cdecl Sys_SendPacket(int param_1,void *param_2,netadr_t param_3)
+bool __cdecl Sys_SendPacket(int length,void *data,netadr_t to)
 
 {
   bool bVar1;
   int iVar2;
+  int err;
+  int ret;
   
-  iVar2 = dwSendTo(param_1,param_2,param_3);
+  iVar2 = dwSendTo(length,data,to);
   if (iVar2 == -1) {
     iVar2 = _WSAGetLastError_0();
     if (iVar2 == 0x2733) {
       bVar1 = true;
     }
-    else if ((iVar2 == 0x2741) && (param_3.type == NA_BROADCAST)) {
+    else if ((iVar2 == 0x2741) && (to.type == NA_BROADCAST)) {
       bVar1 = true;
     }
     else {
@@ -300,7 +306,7 @@ bool __cdecl Sys_SendPacket(int param_1,void *param_2,netadr_t param_3)
     }
   }
   else if (iVar2 == -9) {
-    NET_AdrToString(param_3);
+    NET_AdrToString(to);
     Com_PrintError(0,"Failed to send packet to %s\n");
     bVar1 = false;
   }
@@ -313,31 +319,31 @@ bool __cdecl Sys_SendPacket(int param_1,void *param_2,netadr_t param_3)
 
 // 007DC7B0  Sys_IsLANAddress_IgnoreSubnet  (win32/win_net.cpp:598)
 
-int __cdecl Sys_IsLANAddress_IgnoreSubnet(netadr_t param_1)
+int __cdecl Sys_IsLANAddress_IgnoreSubnet(netadr_t adr)
 
 {
   int iVar1;
   
-  if (param_1.type == NA_LOOPBACK) {
+  if (adr.type == NA_LOOPBACK) {
     iVar1 = 1;
   }
-  else if (param_1.type == NA_BOT) {
+  else if (adr.type == NA_BOT) {
     iVar1 = 1;
   }
-  else if (param_1.type == NA_IP) {
-    if (param_1.ip[0] == '\n') {
+  else if (adr.type == NA_IP) {
+    if (adr.ip[0] == '\n') {
       iVar1 = 1;
     }
-    else if (param_1.ip[0] == '\x7f') {
+    else if (adr.ip[0] == '\x7f') {
       iVar1 = 1;
     }
-    else if ((param_1.ip[0] == 0xa9) && (param_1.ip[1] == 0xfe)) {
+    else if ((adr.ip[0] == 0xa9) && (adr.ip[1] == 0xfe)) {
       iVar1 = 1;
     }
-    else if ((param_1.ip[0] == 0xac) && ((param_1.ip[1] & 0xf0) == 0x10)) {
+    else if ((adr.ip[0] == 0xac) && ((adr.ip[1] & 0xf0) == 0x10)) {
       iVar1 = 1;
     }
-    else if ((param_1.ip[0] == 0xc0) && (param_1.ip[1] == 0xa8)) {
+    else if ((adr.ip[0] == 0xc0) && (adr.ip[1] == 0xa8)) {
       iVar1 = 1;
     }
     else {
@@ -353,17 +359,17 @@ int __cdecl Sys_IsLANAddress_IgnoreSubnet(netadr_t param_1)
 
 // 007DC870  Sys_IsLANAddress  (win32/win_net.cpp:665)
 
-int __cdecl Sys_IsLANAddress(netadr_t param_1)
+int __cdecl Sys_IsLANAddress(netadr_t adr)
 
 {
   int iVar1;
-  int local_c;
+  int i;
   
-  iVar1 = Sys_IsLANAddress_IgnoreSubnet(param_1);
+  iVar1 = Sys_IsLANAddress_IgnoreSubnet(adr);
   if (iVar1 == 0) {
-    for (local_c = 0; local_c < numIP; local_c = local_c + 1) {
-      if (((param_1.ip[0] == localIP[local_c][0]) && (param_1.ip[1] == localIP[local_c][1])) &&
-         (param_1.ip[2] == localIP[local_c][2])) {
+    for (i = 0; i < numIP; i = i + 1) {
+      if (((adr.ip[0] == localIP[i][0]) && (adr.ip[1] == localIP[i][1])) &&
+         (adr.ip[2] == localIP[i][2])) {
         return 1;
       }
     }
@@ -381,9 +387,9 @@ int __cdecl Sys_IsLANAddress(netadr_t param_1)
 void __cdecl Sys_ShowIP(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < numIP; local_8 = local_8 + 1) {
+  for (i = 0; i < numIP; i = i + 1) {
     Com_Printf(0x10,"IP: %i.%i.%i.%i\n");
   }
   return;
@@ -405,100 +411,97 @@ void __cdecl NET_OpenIP(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl dwPlatformInit(bdNetStartParams *param_1)
+int __cdecl dwPlatformInit(bdNetStartParams *params)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  int iVar3;
-  char local_138 [16];
-  <unnamed_type_inUn> local_128;
-  uint local_124;
-  <unnamed_type_inUn> local_120;
-  undefined1 local_11c [260];
+  char **ppcVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  char addrString [16];
+  bdInetAddr firstAddr;
+  int ip;
+  bdInetAddr forceAddr;
+  undefined1 hostname [260];
   uint local_18;
-  int local_14;
-  <unnamed_type_inUn> local_10;
-  int local_c;
-  int local_8;
+  hostent *hostInfo;
+  bdInetAddr bindAddr;
+  int n;
+  char *p;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar3 = gethostname(local_11c,0x100);
-  if (iVar3 == -1) {
-    iVar3 = -1;
+  iVar4 = gethostname(hostname,0x100);
+  if (iVar4 == -1) {
+    iVar4 = -1;
   }
   else {
-    local_14 = gethostbyname(local_11c);
-    if (local_14 == 0) {
-      iVar3 = -1;
+    hostInfo = (hostent *)gethostbyname(hostname);
+    if (hostInfo == (hostent *)0x0) {
+      iVar4 = -1;
     }
     else {
       Com_Printf(0x10,"Hostname: %s\n");
-      local_c = 0;
-      while( true ) {
-        local_8 = *(int *)(*(int *)(local_14 + 4) + local_c * 4);
-        local_c = local_c + 1;
-        if (local_8 == 0) break;
+      n = 0;
+      while (ppcVar1 = hostInfo->h_aliases + n, n = n + 1, *ppcVar1 != (char *)0x0) {
         Com_Printf(0x10,"Alias: %s\n");
       }
-      if (*(short *)(local_14 + 8) == 2) {
-        bdInetAddr::bdInetAddr((bdInetAddr *)&local_10.m_caddr);
-        if ((ip != (dvar_s *)0x0) &&
-           (iVar3 = I_strcmp((ip->current).string,"localhost"), iVar3 != 0)) {
-          param_1->m_useAnyIP = false;
-          bdInetAddr::bdInetAddr((bdInetAddr *)&local_120.m_caddr,(ip->current).string);
-          local_10 = local_120;
-          bdInetAddr::~bdInetAddr((bdInetAddr *)&local_120.m_caddr);
+      if (hostInfo->h_addrtype == 2) {
+        bdInetAddr::bdInetAddr(&bindAddr);
+        if ((::ip != (dvar_s *)0x0) &&
+           (iVar4 = I_strcmp((::ip->current).string,"localhost"), iVar4 != 0)) {
+          params->m_useAnyIP = false;
+          bdInetAddr::bdInetAddr(&forceAddr,(::ip->current).string);
+          bindAddr = forceAddr;
+          bdInetAddr::~bdInetAddr(&forceAddr);
         }
         if ((port != (dvar_s *)0x0) && ((port->current).integer != 0)) {
-          param_1->m_gamePort = *(ushort *)&port->current;
+          params->m_gamePort = *(ushort *)&port->current;
         }
-        bVar2 = bdInetAddr::isValid((bdInetAddr *)&local_10.m_caddr);
-        if (!bVar2) {
-          local_124 = *(uint *)**(undefined4 **)(local_14 + 0xc);
-          bdInetAddr::bdInetAddr((bdInetAddr *)&local_128.m_caddr,local_124);
-          local_10 = local_128;
-          bdInetAddr::~bdInetAddr((bdInetAddr *)&local_128.m_caddr);
+        bVar3 = bdInetAddr::isValid(&bindAddr);
+        if (!bVar3) {
+          bdInetAddr::bdInetAddr(&firstAddr,*(uint *)*hostInfo->h_addr_list);
+          bindAddr = firstAddr;
+          bdInetAddr::~bdInetAddr(&firstAddr);
         }
-        bVar2 = bdInetAddr::isValid((bdInetAddr *)&local_10.m_caddr);
-        if ((!bVar2) &&
-           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x48f,0
-                                     ,"%s"), !bVar2)) {
-          pcVar1 = (code *)swi(3);
-          iVar3 = (*pcVar1)();
-          return iVar3;
+        bVar3 = bdInetAddr::isValid(&bindAddr);
+        if ((!bVar3) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x48f,0
+                                     ,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          iVar4 = (*pcVar2)();
+          return iVar4;
         }
-        bVar2 = bdInetAddr::isValid((bdInetAddr *)&local_10.m_caddr);
-        if (bVar2) {
-          local_138[0] = '\0';
-          local_138[1] = '\0';
-          local_138[2] = '\0';
-          local_138[3] = '\0';
-          local_138[4] = '\0';
-          local_138[5] = '\0';
-          local_138[6] = '\0';
-          local_138[7] = '\0';
-          local_138[8] = '\0';
-          local_138[9] = '\0';
-          local_138[10] = '\0';
-          local_138[0xb] = '\0';
-          local_138[0xc] = '\0';
-          local_138[0xd] = '\0';
-          local_138[0xe] = '\0';
-          local_138[0xf] = 0;
-          bdInetAddr::toString((bdInetAddr *)&local_10.m_caddr,local_138,0x10);
+        bVar3 = bdInetAddr::isValid(&bindAddr);
+        if (bVar3) {
+          addrString[0] = '\0';
+          addrString[1] = '\0';
+          addrString[2] = '\0';
+          addrString[3] = '\0';
+          addrString[4] = '\0';
+          addrString[5] = '\0';
+          addrString[6] = '\0';
+          addrString[7] = '\0';
+          addrString[8] = '\0';
+          addrString[9] = '\0';
+          addrString[10] = '\0';
+          addrString[0xb] = '\0';
+          addrString[0xc] = '\0';
+          addrString[0xd] = '\0';
+          addrString[0xe] = '\0';
+          addrString[0xf] = 0;
+          bdInetAddr::toString(&bindAddr,addrString,0x10);
           Com_Printf(0,"Binding to %s:%u\n");
-          bdArray<bdInetAddr>::pushBack(&param_1->m_localAddresses,(bdInetAddr *)&local_10.m_caddr);
+          bdArray<bdInetAddr>::pushBack(&params->m_localAddresses,&bindAddr);
         }
-        bdInetAddr::~bdInetAddr((bdInetAddr *)&local_10.m_caddr);
-        iVar3 = 0;
+        bdInetAddr::~bdInetAddr(&bindAddr);
+        iVar4 = 0;
       }
       else {
-        iVar3 = -1;
+        iVar4 = -1;
       }
     }
   }
-  return iVar3;
+  return iVar4;
 }
 
 
@@ -507,34 +510,34 @@ int __cdecl dwPlatformInit(bdNetStartParams *param_1)
 int __cdecl NET_GetDvars(void)
 
 {
-  int local_8;
+  int modified;
   
-  local_8 = 0;
+  modified = 0;
   if ((net_noudp != (dvar_s *)0x0) && (net_noudp->modified != false)) {
-    local_8 = 1;
+    modified = 1;
   }
   net_noudp = _Dvar_RegisterBool("net_noudp",false,0x21,"Disable UDP");
   if ((net_socksEnabled != (dvar_s *)0x0) && (net_socksEnabled->modified != false)) {
-    local_8 = 1;
+    modified = 1;
   }
   net_socksEnabled = _Dvar_RegisterBool("net_socksEnabled",false,0x21,"Enable network sockets");
   if ((net_socksServer != (dvar_s *)0x0) && (net_socksServer->modified != false)) {
-    local_8 = 1;
+    modified = 1;
   }
   net_socksServer = _Dvar_RegisterString("net_socksServer","",0x21,"Network socket server");
   if ((net_socksPort != (dvar_s *)0x0) && (net_socksPort->modified != false)) {
-    local_8 = 1;
+    modified = 1;
   }
   net_socksPort = _Dvar_RegisterInt("net_socksPort",0x438,0,0xffff,0x21,"Network socket port");
   if ((net_socksUsername != (dvar_s *)0x0) && (net_socksUsername->modified != false)) {
-    local_8 = 1;
+    modified = 1;
   }
   net_socksUsername = _Dvar_RegisterString("net_socksUsername","",0x21,"Network socket username");
   if ((net_socksPassword != (dvar_s *)0x0) && (net_socksPassword->modified != false)) {
-    local_8 = 1;
+    modified = 1;
   }
   net_socksPassword = _Dvar_RegisterString("net_socksPassword","",0x21,"Network socket password");
-  return local_8;
+  return modified;
 }
 
 
@@ -555,26 +558,24 @@ void __cdecl Sys_CheckForNATOverflow(void)
 {
   bool bVar1;
   int iVar2;
-  int local_8;
+  int i;
   
   bVar1 = Dvar_GetBool("cl_socketpool_enabled");
   if (bVar1) {
     if (cl_nat_overflow_detected < 1) {
-      for (local_8 = 0; iVar2 = Dvar_GetInt("cl_socketpool_size"), local_8 < iVar2;
-          local_8 = local_8 + 1) {
-        if ((poolsockets[local_8].ready == 0) &&
-           (iVar2 = Sys_Milliseconds(), 2000 < iVar2 - poolsockets[local_8].sendtime)) {
+      for (i = 0; iVar2 = Dvar_GetInt("cl_socketpool_size"), i < iVar2; i = i + 1) {
+        if ((poolsockets[i].ready == 0) &&
+           (iVar2 = Sys_Milliseconds(), 2000 < iVar2 - poolsockets[i].sendtime)) {
           Com_Printf(0,"SOCKETPOOL: Timing out socket %i\n");
           iVar2 = Sys_Milliseconds();
           if (5000 < iVar2 - cl_socketpool_lastpacket_time) {
             cl_nat_overflow_detected = Sys_Milliseconds();
-            for (local_8 = 0; iVar2 = Dvar_GetInt("cl_socketpool_size"), local_8 < iVar2;
-                local_8 = local_8 + 1) {
-              poolsockets[local_8].ready = 1;
+            for (i = 0; iVar2 = Dvar_GetInt("cl_socketpool_size"), i < iVar2; i = i + 1) {
+              poolsockets[i].ready = 1;
             }
             return;
           }
-          poolsockets[local_8].ready = 1;
+          poolsockets[i].ready = 1;
         }
       }
     }
@@ -595,36 +596,35 @@ void __cdecl Sys_CheckForNATOverflow(void)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl Sys_SocketPool_GetPacket(netadr_t *param_1,msg_t *param_2)
+int __cdecl Sys_SocketPool_GetPacket(netadr_t *net_from,msg_t *net_message)
 
 {
   bool bVar1;
   int iVar2;
-  int local_28;
-  sockaddr local_24;
+  int i;
+  sockaddr from;
   uint local_14;
-  int local_10;
-  int local_c;
-  undefined4 local_8;
+  int err;
+  int ret;
+  int fromlen;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar1 = Sys_IsMainThread();
   if ((bVar1) && (bVar1 = Dvar_GetBool("cl_socketpool_enabled"), bVar1)) {
-    local_8 = 0x10;
-    for (local_28 = 0; iVar2 = Dvar_GetInt("cl_socketpool_size"), local_28 < iVar2;
-        local_28 = local_28 + 1) {
-      if (poolsockets[local_28].ready == 0) {
-        local_c = recvfrom(poolsockets[local_28].m_sock,param_2->data,param_2->maxsize,0,&local_24,
-                           &local_8);
-        if (local_c != -1) {
+    fromlen = 0x10;
+    for (i = 0; iVar2 = Dvar_GetInt("cl_socketpool_size"), i < iVar2; i = i + 1) {
+      if (poolsockets[i].ready == 0) {
+        ret = recvfrom(poolsockets[i].m_sock,net_message->data,net_message->maxsize,0,&from,&fromlen
+                      );
+        if (ret != -1) {
           cl_socketpool_lastpacket_time = Sys_Milliseconds();
-          SockadrToNetadr(&local_24,param_1);
-          poolsockets[local_28].ready = 1;
-          param_2->cursize = local_c;
+          SockadrToNetadr(&from,net_from);
+          poolsockets[i].ready = 1;
+          net_message->cursize = ret;
           return 1;
         }
-        local_10 = _WSAGetLastError_0();
-        if ((local_10 != 0x2733) && (local_10 != 0x2746)) {
+        err = _WSAGetLastError_0();
+        if ((err != 0x2733) && (err != 0x2746)) {
           NET_ErrorString();
           Com_PrintError(0x10,"NET_GetPacket: %s\n");
         }
@@ -637,23 +637,26 @@ int __cdecl Sys_SocketPool_GetPacket(netadr_t *param_1,msg_t *param_2)
 
 // 007DCEC0  NET_Config  (win32/win_net.cpp:1470)
 
-void __cdecl NET_Config(int param_1)
+void __cdecl NET_Config(int enableNetworking)
 
 {
   int iVar1;
   bool bVar2;
+  int start;
+  int stop;
+  int modified;
   
   iVar1 = NET_GetDvars();
   if ((net_noudp->current).enabled != false) {
-    param_1 = 0;
+    enableNetworking = 0;
   }
-  if ((param_1 != networkingEnabled) || (iVar1 != 0)) {
-    if (param_1 == networkingEnabled) {
-      bVar2 = param_1 != 0;
+  if ((enableNetworking != networkingEnabled) || (iVar1 != 0)) {
+    if (enableNetworking == networkingEnabled) {
+      bVar2 = enableNetworking != 0;
     }
     else {
-      bVar2 = param_1 == 0;
-      networkingEnabled = param_1;
+      bVar2 = enableNetworking == 0;
+      networkingEnabled = enableNetworking;
     }
     if (bVar2) {
       if ((ip_socket != 0) && (ip_socket != 0xffffffff)) {
@@ -665,7 +668,7 @@ void __cdecl NET_Config(int param_1)
         socks_socket = 0;
       }
     }
-    if ((param_1 != 0) && ((net_noudp->current).enabled == false)) {
+    if ((enableNetworking != 0) && ((net_noudp->current).enabled == false)) {
       NET_OpenIP();
       NET_SocketPool_Init();
     }
@@ -686,30 +689,30 @@ void __cdecl NET_Restart(void)
 
 // 007DD5D0  NET_Select  (win32/win_net.cpp:1590)
 
-int __cdecl NET_Select(uint param_1)
+int __cdecl NET_Select(uint socket)
 
 {
   int iVar1;
-  undefined4 local_224;
+  undefined4 readfds;
   uint local_220;
-  int local_118;
-  undefined4 local_114;
+  int err;
+  undefined4 writefds;
   uint local_110;
-  undefined4 local_c;
+  undefined4 time;
   undefined4 local_8;
   
-  local_224 = 1;
-  local_220 = param_1;
-  local_114 = 1;
-  local_110 = param_1;
-  local_c = 5;
+  readfds = 1;
+  local_220 = socket;
+  writefds = 1;
+  local_110 = socket;
+  time = 5;
   local_8 = 0;
-  local_118 = select(0,&local_224,&local_114,0,&local_c);
-  if (local_118 == 0) {
+  err = select(0,&readfds,&writefds,0,&time);
+  if (err == 0) {
     Com_Printf(0x10,"NET_Select: NET_Select: timeout\n");
     iVar1 = 0;
   }
-  else if (local_118 == -1) {
+  else if (err == -1) {
     NET_ErrorString();
     Com_PrintWarning(0x10,"WARNING: NET_Select: connect: %s\n");
     iVar1 = 0;
@@ -725,88 +728,88 @@ int __cdecl NET_Select(uint param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl NET_TCPIPSocket(char *param_1,int param_2,int param_3)
+int __cdecl NET_TCPIPSocket(char *net_interface,int port,int type)
 
 {
   int iVar1;
-  sockaddr local_24;
+  sockaddr address;
   uint local_14;
-  int local_10;
-  undefined4 local_c;
-  uint local_8;
+  int err;
+  int _true;
+  uint newsocket;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_c = 1;
-  if (param_1 == (char *)0x0) {
+  _true = 1;
+  if (net_interface == (char *)0x0) {
     Com_Printf(0x10,"Opening IP socket: localhost:%i\n");
   }
   else {
     Com_Printf(0x10,"Opening IP socket: %s:%i\n");
   }
-  local_8 = socket(2,1,6);
-  if (local_8 == 0xffffffff) {
-    local_10 = _WSAGetLastError_0();
-    if (local_10 != 0x273f) {
+  newsocket = socket(2,1,6);
+  if (newsocket == 0xffffffff) {
+    err = _WSAGetLastError_0();
+    if (err != 0x273f) {
       NET_ErrorString();
       Com_PrintWarning(0x10,"WARNING: NET_TCPIPSocket: socket: %s\n");
     }
-    local_8 = 0;
+    newsocket = 0;
   }
   else {
-    iVar1 = ioctlsocket(local_8,0x8004667e,&local_c);
+    iVar1 = ioctlsocket(newsocket,0x8004667e,&_true);
     if (iVar1 == -1) {
       NET_ErrorString();
       Com_PrintWarning(0x10,"WARNING: NET_TCPIPSocket: ioctl FIONBIO: %s\n");
-      local_8 = 0;
+      newsocket = 0;
     }
     else {
-      if (((param_1 == (char *)0x0) || (*param_1 == '\0')) ||
-         (iVar1 = I_stricmp(param_1,"localhost"), iVar1 == 0)) {
-        local_24.sa_data[2] = '\0';
-        local_24.sa_data[3] = '\0';
-        local_24.sa_data[4] = '\0';
-        local_24.sa_data[5] = '\0';
+      if (((net_interface == (char *)0x0) || (*net_interface == '\0')) ||
+         (iVar1 = I_stricmp(net_interface,"localhost"), iVar1 == 0)) {
+        address.sa_data[2] = '\0';
+        address.sa_data[3] = '\0';
+        address.sa_data[4] = '\0';
+        address.sa_data[5] = '\0';
       }
       else {
-        Sys_StringToSockaddr(param_1,&local_24);
+        Sys_StringToSockaddr(net_interface,&address);
       }
-      if (param_2 == -1) {
-        local_24.sa_data[0] = '\0';
-        local_24.sa_data[1] = '\0';
+      if (port == -1) {
+        address.sa_data[0] = '\0';
+        address.sa_data[1] = '\0';
       }
       else {
-        local_24.sa_data._0_2_ = htons(param_2 & 0xffff);
+        address.sa_data._0_2_ = htons(port & 0xffff);
       }
-      local_24.sa_family = 2;
-      if (param_3 == 0) {
-        iVar1 = bind(local_8,&local_24,0x10);
+      address.sa_family = 2;
+      if (type == 0) {
+        iVar1 = bind(newsocket,&address,0x10);
         if (iVar1 == -1) {
           NET_ErrorString();
           Com_PrintWarning(0x10,"WARNING: NET_TCPIPSocket: bind: %s\n");
-          closesocket(local_8);
-          local_8 = 0;
+          closesocket(newsocket);
+          newsocket = 0;
         }
       }
-      else if ((param_3 == 1) && (iVar1 = connect(local_8,&local_24,0x10), iVar1 == -1)) {
-        local_10 = _WSAGetLastError_0();
-        if (local_10 == 0x2733) {
-          iVar1 = NET_Select(local_8);
+      else if ((type == 1) && (iVar1 = connect(newsocket,&address,0x10), iVar1 == -1)) {
+        err = _WSAGetLastError_0();
+        if (err == 0x2733) {
+          iVar1 = NET_Select(newsocket);
           if (iVar1 == 0) {
             Com_PrintWarning(0x10,"WARNING: NET_TCPIPSocket: connect failed\n");
-            closesocket(local_8);
-            local_8 = 0;
+            closesocket(newsocket);
+            newsocket = 0;
           }
         }
         else {
           NET_ErrorString();
           Com_PrintWarning(0x10,"WARNING: NET_TCPIPSocket: connect: %s\n");
-          closesocket(local_8);
-          local_8 = 0;
+          closesocket(newsocket);
+          newsocket = 0;
         }
       }
     }
   }
-  return local_8;
+  return newsocket;
 }
 
 
@@ -815,15 +818,15 @@ int __cdecl NET_TCPIPSocket(char *param_1,int param_2,int param_3)
 void __cdecl NET_InitDebugStreams(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    ip_debugServerSocket[local_8] = 0;
-    ip_debugSocket[local_8] = 0;
+  for (i = 0; i < 2; i = i + 1) {
+    ip_debugServerSocket[i] = 0;
+    ip_debugSocket[i] = 0;
   }
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    sys_debugMessageType[local_8] = 0;
-    g_debugPacketPos[local_8] = 0;
+  for (i = 0; i < 1; i = i + 1) {
+    sys_debugMessageType[i] = 0;
+    g_debugPacketPos[i] = 0;
   }
   g_debugReadBytes = 0;
   g_debugReadBytesSent = 0;
@@ -851,6 +854,7 @@ void __cdecl NET_Init(void)
 
 {
   int iVar1;
+  int r;
   
   iVar1 = _WSAStartup_8(0x101,&winsockdata);
   if (iVar1 == 0) {
@@ -869,7 +873,7 @@ void __cdecl NET_Init(void)
 
 // 007DD680  Sys_DebugSocketError  (win32/win_net.cpp:1825)
 
-void __cdecl Sys_DebugSocketError(char *param_1)
+void __cdecl Sys_DebugSocketError(char *message)
 
 {
   NET_RestartDebug();
@@ -891,7 +895,7 @@ void __cdecl Sys_Listen_f(void)
   int iVar4;
   char *pcVar5;
   int *piVar6;
-  int local_8;
+  int i;
   int *piVar7;
   
   if ((com_sv_running->current).enabled == false) {
@@ -901,22 +905,22 @@ void __cdecl Sys_Listen_f(void)
     if (g_debugServer != 0) {
       Com_Error(ERR_DROP,"Net connection already started");
     }
-    piVar6 = &local_8;
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
+    piVar6 = &i;
+    for (i = 0; i < 2; i = i + 1) {
       piVar6[-1] = 0;
-      piVar6[-2] = local_8 + 0x712a;
+      piVar6[-2] = i + 0x712a;
       piVar6[-3] = (int)"127.0.0.1";
       piVar6[-4] = 0x7dd313;
       uVar3 = NET_TCPIPSocket((char *)piVar6[-3],piVar6[-2],piVar6[-1]);
-      ip_debugServerSocket[local_8] = uVar3;
-      if (ip_debugServerSocket[local_8] == 0) {
+      ip_debugServerSocket[i] = uVar3;
+      if (ip_debugServerSocket[i] == 0) {
         piVar6[-1] = (int)"Sys_Listen_f: failed to connect";
         piVar6[-2] = 0x7dd337;
         Sys_DebugSocketError((char *)piVar6[-1]);
         return;
       }
       piVar6[-1] = 5;
-      piVar6[-2] = ip_debugServerSocket[local_8];
+      piVar6[-2] = ip_debugServerSocket[i];
       piVar7 = piVar6 + -3;
       piVar6 = piVar6 + -3;
       *piVar7 = 0x7dd351;
@@ -1010,7 +1014,8 @@ void __cdecl Sys_Connect_f(void)
   int iVar3;
   uint uVar4;
   char *local_20;
-  int local_8;
+  char *address;
+  int i;
   
   if ((g_debugClient == 0) && (g_debugServer == 0)) {
     iVar3 = Cmd_Argc();
@@ -1020,10 +1025,10 @@ void __cdecl Sys_Connect_f(void)
     else {
       local_20 = Cmd_Argv(1);
     }
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      uVar4 = NET_TCPIPSocket(local_20,local_8 + 0x712a,1);
-      ip_debugSocket[local_8] = uVar4;
-      if (ip_debugSocket[local_8] == 0) {
+    for (i = 0; i < 2; i = i + 1) {
+      uVar4 = NET_TCPIPSocket(local_20,i + 0x712a,1);
+      ip_debugSocket[i] = uVar4;
+      if (ip_debugSocket[i] == 0) {
         Sys_DebugSocketError("Sys_Connect_f: failed to connect");
         return;
       }
@@ -1058,16 +1063,16 @@ void __cdecl NET_ShutdownDebug(void)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    if (ip_debugSocket[local_8] != 0) {
-      closesocket(ip_debugSocket[local_8]);
-      ip_debugSocket[local_8] = 0;
+  for (i = 0; i < 2; i = i + 1) {
+    if (ip_debugSocket[i] != 0) {
+      closesocket(ip_debugSocket[i]);
+      ip_debugSocket[i] = 0;
     }
-    if (ip_debugServerSocket[local_8] != 0) {
-      closesocket(ip_debugServerSocket[local_8]);
-      ip_debugServerSocket[local_8] = 0;
+    if (ip_debugServerSocket[i] != 0) {
+      closesocket(ip_debugServerSocket[i]);
+      ip_debugServerSocket[i] = 0;
     }
   }
   iVar1 = Sys_IsRemoteDebugClient();
@@ -1097,7 +1102,7 @@ void __cdecl Sys_SendDebugReadBytesInternal(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
+  char *message;
   
   if (g_debugReadBytes != g_debugReadBytesSent) {
     g_debugReadBytesSent = g_debugReadBytes;
@@ -1111,8 +1116,8 @@ void __cdecl Sys_SendDebugReadBytesInternal(void)
     iVar3 = send(ip_debugSocket[1],&g_debugReadBytes,4,0);
     if (iVar3 == -1) {
       NET_ErrorString();
-      pcVar4 = va("Sys_SendDebugReadBytes: %s");
-      Sys_DebugSocketError(pcVar4);
+      message = va("Sys_SendDebugReadBytes: %s");
+      Sys_DebugSocketError(message);
     }
   }
   return;
@@ -1121,10 +1126,10 @@ void __cdecl Sys_SendDebugReadBytesInternal(void)
 
 // 007DDAA0  Sys_SendDebugReadBytes  (win32/win_net.cpp:2024)
 
-void __cdecl Sys_SendDebugReadBytes(int param_1)
+void __cdecl Sys_SendDebugReadBytes(int read)
 
 {
-  g_debugReadBytes = g_debugReadBytes + param_1;
+  g_debugReadBytes = g_debugReadBytes + read;
   if (0x1fff < g_debugReadBytes - g_debugReadBytesSent) {
     Sys_SendDebugReadBytesInternal();
   }
@@ -1134,21 +1139,23 @@ void __cdecl Sys_SendDebugReadBytes(int param_1)
 
 // 007DD8D0  Sys_ReadDebugSocketData  (win32/win_net.cpp:2038)
 
-int __cdecl Sys_ReadDebugSocketData(void *param_1,int param_2,int param_3)
+int __cdecl Sys_ReadDebugSocketData(void *buffer,int len,int blocking)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int local_10;
-  void *local_c;
+  char *message;
+  int err;
+  int remaining;
+  char *buf;
+  int read;
   
-  local_10 = param_2;
-  local_c = param_1;
+  remaining = len;
+  buf = buffer;
   do {
     while( true ) {
-      if (local_10 == 0) {
+      if (remaining == 0) {
         return 1;
       }
       if ((ip_debugSocket[0] == 0) &&
@@ -1158,10 +1165,10 @@ int __cdecl Sys_ReadDebugSocketData(void *param_1,int param_2,int param_3)
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      iVar3 = recvfrom(ip_debugSocket[0],local_c,local_10,0,0,0);
+      iVar3 = recvfrom(ip_debugSocket[0],buf,remaining,0,0,0);
       if (iVar3 != 0) break;
 LAB_007dd958:
-      if (param_3 == 0) {
+      if (blocking == 0) {
         return 0;
       }
       Sys_SendDebugReadBytesInternal();
@@ -1175,22 +1182,22 @@ LAB_007dd958:
           return 0;
         }
         NET_ErrorString();
-        pcVar4 = va("Sys_ReadDebugSocketData: %s");
-        Sys_DebugSocketError(pcVar4);
+        message = va("Sys_ReadDebugSocketData: %s");
+        Sys_DebugSocketError(message);
         return 0;
       }
       goto LAB_007dd958;
     }
     Sys_SendDebugReadBytes(iVar3);
-    if ((local_10 < iVar3) &&
+    if ((remaining < iVar3) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x81d,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_10 = local_10 - iVar3;
-    local_c = (void *)((int)local_c + iVar3);
+    remaining = remaining - iVar3;
+    buf = buf + iVar3;
   } while( true );
 }
 
@@ -1200,10 +1207,10 @@ LAB_007dd958:
 int __cdecl Sys_ReadDebugSocketInt(void)
 
 {
-  int local_8;
+  int value;
   
-  Sys_ReadDebugSocketData(&local_8,4,1);
-  return local_8;
+  Sys_ReadDebugSocketData(&value,4,1);
+  return value;
 }
 
 
@@ -1218,13 +1225,13 @@ char * __cdecl Sys_ReadDebugSocketString(void)
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  uint local_1010;
-  char local_100c [4100];
+  int len;
+  char text [4100];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  Sys_ReadDebugSocketData(&local_1010,4,1);
-  if (0xfff < local_1010) {
+  Sys_ReadDebugSocketData(&len,4,1);
+  if (0xfff < (uint)len) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x842,0,
                              "%s\n\t(len) = %i");
     if (!bVar2) {
@@ -1233,9 +1240,9 @@ char * __cdecl Sys_ReadDebugSocketString(void)
       return pcVar3;
     }
   }
-  Sys_ReadDebugSocketData(local_100c,local_1010,1);
-  local_100c[local_1010] = '\0';
-  pcVar3 = CopyString(local_100c,"Sys_ReadDebugSocketString",0,SCRIPTINSTANCE_SERVER);
+  Sys_ReadDebugSocketData(text,len,1);
+  text[len] = '\0';
+  pcVar3 = CopyString(text,"Sys_ReadDebugSocketString",0,SCRIPTINSTANCE_SERVER);
   return pcVar3;
 }
 
@@ -1251,21 +1258,22 @@ int __cdecl Sys_DebugCanSend(void)
 
 // 007DDCD0  Sys_DebugSend  (win32/win_net.cpp:2154)
 
-void __cdecl Sys_DebugSend(int param_1,char *param_2,int param_3,char *param_4)
+void __cdecl Sys_DebugSend(int channel,char *buf,int len,char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  int local_c;
-  int local_8;
+  int err;
+  int debugReadBytesRemote;
+  int read;
   
-  if (ip_debugSocket[param_1] == 0) {
+  if (ip_debugSocket[channel] == 0) {
     Sys_DebugSocketError("Sys_DebugSend: Socket closed");
   }
   else {
-    g_debugWriteBytes = g_debugWriteBytes + param_3;
+    g_debugWriteBytes = g_debugWriteBytes + len;
     while (iVar3 = Sys_DebugCanSend(), iVar3 == 0) {
       while( true ) {
         if ((ip_debugSocket[1] == 0) &&
@@ -1275,9 +1283,9 @@ void __cdecl Sys_DebugSend(int param_1,char *param_2,int param_3,char *param_4)
           (*pcVar1)();
           return;
         }
-        local_8 = recvfrom(ip_debugSocket[1],&local_c,4,0,0,0);
-        if (local_8 == -1) break;
-        g_debugReadBytesRemote = local_c;
+        read = recvfrom(ip_debugSocket[1],&debugReadBytesRemote,4,0,0,0);
+        if (read == -1) break;
+        g_debugReadBytesRemote = debugReadBytesRemote;
       }
       iVar3 = _WSAGetLastError_0();
       if (iVar3 != 0x2733) {
@@ -1295,14 +1303,14 @@ void __cdecl Sys_DebugSend(int param_1,char *param_2,int param_3,char *param_4)
         NET_Sleep(1);
       }
     }
-    if ((ip_debugSocket[param_1] == 0) &&
+    if ((ip_debugSocket[channel] == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x893,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    while (iVar3 = send(ip_debugSocket[param_1],param_2,param_3,0), iVar3 == -1) {
+    while (iVar3 = send(ip_debugSocket[channel],buf,len,0), iVar3 == -1) {
       iVar3 = _WSAGetLastError_0();
       if (iVar3 != 0x2733) {
         NET_ErrorString();
@@ -1319,43 +1327,45 @@ void __cdecl Sys_DebugSend(int param_1,char *param_2,int param_3,char *param_4)
 
 // 007DDBA0  Sys_WriteDebugSocketData  (win32/win_net.cpp:2214)
 
-void __cdecl Sys_WriteDebugSocketData(void *param_1,int param_2)
+void __cdecl Sys_WriteDebugSocketData(void *buffer,int len)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_14;
-  ulong local_c;
+  int pos;
+  uchar *start;
+  int copyLen;
+  int maxCopyLen;
   
   if ((com_errorEntered == 0) && (iVar3 = Sys_IsRemoteDebugServer(), iVar3 != 0)) {
-    local_14 = g_debugPacketPos[0];
-    while (param_2 != 0) {
-      if ((param_2 < 1) &&
+    pos = g_debugPacketPos[0];
+    while (len != 0) {
+      if ((len < 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x8c0,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_c = param_2;
-      if ((int)(0x2000U - local_14) < param_2) {
-        local_c = 0x2000U - local_14;
+      copyLen = len;
+      if (0x2000 - pos < len) {
+        copyLen = 0x2000 - pos;
       }
-      memcpy(g_debugPacket[0] + local_14,param_1,local_c);
-      param_1 = (void *)((int)param_1 + local_c);
-      param_2 = param_2 - local_c;
-      local_14 = local_14 + local_c;
-      g_debugPacketPos[0] = local_14;
-      if ((0x2000 < local_14) &&
+      memcpy(g_debugPacket[0] + pos,buffer,copyLen);
+      buffer = (void *)((int)buffer + copyLen);
+      len = len - copyLen;
+      pos = pos + copyLen;
+      g_debugPacketPos[0] = pos;
+      if ((0x2000 < pos) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x8cb,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_14 == 0x2000) {
-        local_14 = 0;
+      if (pos == 0x2000) {
+        pos = 0;
         g_debugPacketPos[0] = 0;
         Sys_DebugSend(0,(char *)g_debugPacket,0x2000,"Sys_WriteDebugSocketData");
       }
@@ -1367,10 +1377,10 @@ void __cdecl Sys_WriteDebugSocketData(void *param_1,int param_2)
 
 // 007DDE90  Sys_WriteDebugSocketInt  (win32/win_net.cpp:2268)
 
-void __cdecl Sys_WriteDebugSocketInt(int param_1)
+void __cdecl Sys_WriteDebugSocketInt(int value)
 
 {
-  Sys_WriteDebugSocketData(&param_1,4);
+  Sys_WriteDebugSocketData(&value,4);
   return;
 }
 
@@ -1380,14 +1390,15 @@ void __cdecl Sys_WriteDebugSocketInt(int param_1)
 void __cdecl Sys_FlushDebugSocketData(void)
 
 {
-  int iVar1;
-  int local_8;
+  int len;
+  int pos;
+  int channel;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    iVar1 = g_debugPacketPos[local_8];
-    if (iVar1 != 0) {
-      g_debugPacketPos[local_8] = 0;
-      Sys_DebugSend(local_8,(char *)(g_debugPacket + local_8),iVar1,"Sys_FlushDebugSocketData");
+  for (channel = 0; channel < 1; channel = channel + 1) {
+    len = g_debugPacketPos[channel];
+    if (len != 0) {
+      g_debugPacketPos[channel] = 0;
+      Sys_DebugSend(channel,(char *)(g_debugPacket + channel),len,"Sys_FlushDebugSocketData");
     }
   }
   return;
@@ -1396,20 +1407,20 @@ void __cdecl Sys_FlushDebugSocketData(void)
 
 // 007DDF20  Sys_DebugSocketReady  (win32/win_net.cpp:2302)
 
-int __cdecl Sys_DebugSocketReady(int param_1)
+int __cdecl Sys_DebugSocketReady(int channel)
 
 {
-  return (uint)(ip_debugSocket[param_1] != 0);
+  return (uint)(ip_debugSocket[channel] != 0);
 }
 
 
 // 007DDF40  Sys_WriteDebugSocketMessageType  (win32/win_net.cpp:2315)
 
-void __cdecl Sys_WriteDebugSocketMessageType(uchar param_1)
+void __cdecl Sys_WriteDebugSocketMessageType(uchar type)
 
 {
   Sys_EnterCriticalSection(CRITSECT_DEBUG_SOCKET);
-  Sys_WriteDebugSocketData(&param_1,1);
+  Sys_WriteDebugSocketData(&type,1);
   return;
 }
 
@@ -1426,33 +1437,33 @@ void __cdecl Sys_EndWriteDebugSocket(void)
 
 // 007DDF70  Sys_WriteDebugSocketString  (win32/win_net.cpp:2345)
 
-void __cdecl Sys_WriteDebugSocketString(void *param_1)
+void __cdecl Sys_WriteDebugSocketString(void *text)
 
 {
   char cVar1;
   char *local_c;
-  int local_8;
+  int len;
   
-  local_c = param_1;
+  local_c = text;
   do {
     cVar1 = *local_c;
     local_c = local_c + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_c - ((int)param_1 + 1);
-  Sys_WriteDebugSocketData(&local_8,4);
-  Sys_WriteDebugSocketData(param_1,local_8);
+  len = (int)local_c - ((int)text + 1);
+  Sys_WriteDebugSocketData(&len,4);
+  Sys_WriteDebugSocketData(text,len);
   return;
 }
 
 
 // 007DE0F0  Sys_ReadDebugSocketMessageType  (win32/win_net.cpp:2360)
 
-int __cdecl Sys_ReadDebugSocketMessageType(uchar *param_1,int param_2)
+int __cdecl Sys_ReadDebugSocketMessageType(uchar *type,int blocking)
 
 {
   int iVar1;
   
-  iVar1 = Sys_ReadDebugSocketData(param_1,1,param_2);
+  iVar1 = Sys_ReadDebugSocketData(type,1,blocking);
   return iVar1;
 }
 
@@ -1466,41 +1477,42 @@ int __cdecl Sys_UpdateDebugSocket(void)
   bool bVar2;
   uint uVar3;
   int iVar4;
-  char *pcVar5;
-  byte local_9;
-  int local_8;
+  char *message;
+  int err;
+  uchar type;
+  int i;
   
   if (sys_debugMessageType[0] == 0) {
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      if (ip_debugSocket[local_8] == 0) {
-        if (ip_debugServerSocket[local_8] == 0) {
+    for (i = 0; i < 2; i = i + 1) {
+      if (ip_debugSocket[i] == 0) {
+        if (ip_debugServerSocket[i] == 0) {
           return 0;
         }
-        uVar3 = accept(ip_debugServerSocket[local_8],0,0);
-        ip_debugSocket[local_8] = uVar3;
-        if (ip_debugSocket[local_8] == 0xffffffff) {
-          ip_debugSocket[local_8] = 0;
+        uVar3 = accept(ip_debugServerSocket[i],0,0);
+        ip_debugSocket[i] = uVar3;
+        if (ip_debugSocket[i] == 0xffffffff) {
+          ip_debugSocket[i] = 0;
           iVar4 = _WSAGetLastError_0();
           if (iVar4 == 0x2733) {
             return 0;
           }
           NET_ErrorString();
-          pcVar5 = va("Sys_UpdateDebugSocket: %s\n");
-          Sys_DebugSocketError(pcVar5);
+          message = va("Sys_UpdateDebugSocket: %s\n");
+          Sys_DebugSocketError(message);
           return 0;
         }
       }
     }
-    iVar4 = Sys_ReadDebugSocketMessageType(&local_9,0);
+    iVar4 = Sys_ReadDebugSocketMessageType(&type,0);
     if (iVar4 != 0) {
-      if ((0x2d < local_9) &&
+      if ((0x2d < type) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_net.cpp",0x961,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar4 = (*pcVar1)();
         return iVar4;
       }
-      sys_debugMessageType[0] = (int)local_9;
+      sys_debugMessageType[0] = (int)type;
     }
   }
   return sys_debugMessageType[0];

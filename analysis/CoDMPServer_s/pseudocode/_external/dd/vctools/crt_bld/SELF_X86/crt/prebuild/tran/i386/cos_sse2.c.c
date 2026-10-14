@@ -2,7 +2,7 @@
 
 // 0098F71F  __libm_sse2_cos  (line unknown)
 
-double __cdecl __libm_sse2_cos(double param_1)
+double __cdecl __libm_sse2_cos(double x)
 
 {
   ushort uVar1;

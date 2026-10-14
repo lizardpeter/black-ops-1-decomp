@@ -651,20 +651,20 @@ void __cdecl Path_Init(int param_1)
 
 {
   uchar uVar1;
+  uchar *src;
   uchar *puVar2;
-  uchar *puVar3;
-  uchar *puVar4;
+  uchar *dst;
   char *unaff_EDI;
   
   if ((useFastFile->current).enabled == false) {
-    puVar2 = (uchar *)Dvar_GetString(unaff_EDI);
-    puVar3 = puVar2;
+    src = (uchar *)Dvar_GetString(unaff_EDI);
+    puVar2 = src;
     do {
-      uVar1 = *puVar3;
-      puVar3 = puVar3 + 1;
+      uVar1 = *puVar2;
+      puVar2 = puVar2 + 1;
     } while (uVar1 != '\0');
-    puVar4 = Hunk_AllocAlignInternal((int)(puVar3 + (1 - (int)(puVar2 + 1))),(int)unaff_EDI);
-    memcpy(puVar4,puVar2,(ulong)(puVar3 + (1 - (int)(puVar2 + 1))));
+    dst = Hunk_AllocAlignInternal((int)(puVar2 + (1 - (int)(src + 1))),(int)unaff_EDI);
+    memcpy(dst,src,(ulong)(puVar2 + (1 - (int)(src + 1))));
     if (param_1 == 0) {
       _DAT_01ab0088 = 0;
       _DAT_01ab0090 = 0;
@@ -676,7 +676,7 @@ void __cdecl Path_Init(int param_1)
       _DAT_01ab0088 = _DAT_01ab0088 & 0xffffffff00000000;
     }
     DAT_024da978 = 0;
-    _gameWorldMp = puVar4;
+    _gameWorldMp = dst;
     if (param_1 == 0) {
       Path_CreateNodes();
     }

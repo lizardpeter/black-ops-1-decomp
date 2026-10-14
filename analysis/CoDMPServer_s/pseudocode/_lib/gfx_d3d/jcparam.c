@@ -2,28 +2,33 @@
 
 // 0086ED70  jpeg_add_quant_table  (jpeg-6/jcparam.c:31)
 
+/* WARNING: Variable defined which should be unmapped: force_baseline */
+
 void __cdecl
 jpeg_add_quant_table
-          (jpeg_compress_struct *param_1,int param_2,uint *param_3,int param_4,uchar param_5)
+          (jpeg_compress_struct *which_tbl,int basic_table,uint *scale_factor,int param_4,
+          uchar param_5)
 
 {
   JQUANT_TBL *pJVar1;
   int iVar2;
   int iVar3;
   uint *puVar4;
+  jpeg_compress_struct *cinfo;
+  uchar force_baseline;
   
-  if (param_1->global_state != 100) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (which_tbl->global_state != 100) {
+    which_tbl->err->msg_code = 0x14;
+    (which_tbl->err->msg_parm).i[0] = which_tbl->global_state;
+    (*which_tbl->err->error_exit)((jpeg_common_struct *)which_tbl);
   }
-  if (param_1->quant_tbl_ptrs[param_2] == (JQUANT_TBL *)0x0) {
-    pJVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,0,0x82);
+  if (which_tbl->quant_tbl_ptrs[basic_table] == (JQUANT_TBL *)0x0) {
+    pJVar1 = (*which_tbl->mem->alloc_small)((jpeg_common_struct *)which_tbl,0,0x82);
     pJVar1->sent_table = '\0';
-    param_1->quant_tbl_ptrs[param_2] = pJVar1;
+    which_tbl->quant_tbl_ptrs[basic_table] = pJVar1;
   }
   iVar3 = 0;
-  puVar4 = param_3 + 2;
+  puVar4 = scale_factor + 2;
   do {
     iVar2 = (int)(puVar4[-2] * param_4 + 0x32) / 100;
     if (iVar2 < 1) {
@@ -32,7 +37,7 @@ jpeg_add_quant_table
     else if ((0x7fff < iVar2) || (0xff < iVar2)) {
       iVar2 = 0xff;
     }
-    *(short *)((int)param_1->quant_tbl_ptrs[param_2]->quantval + iVar3) = (short)iVar2;
+    *(short *)((int)which_tbl->quant_tbl_ptrs[basic_table]->quantval + iVar3) = (short)iVar2;
     iVar2 = (int)(puVar4[-1] * param_4 + 0x32) / 100;
     if (iVar2 < 1) {
       iVar2 = 1;
@@ -40,7 +45,7 @@ jpeg_add_quant_table
     else if ((0x7fff < iVar2) || (0xff < iVar2)) {
       iVar2 = 0xff;
     }
-    *(short *)((int)param_1->quant_tbl_ptrs[param_2]->quantval + iVar3 + 2) = (short)iVar2;
+    *(short *)((int)which_tbl->quant_tbl_ptrs[basic_table]->quantval + iVar3 + 2) = (short)iVar2;
     iVar2 = (int)(*puVar4 * param_4 + 0x32) / 100;
     if (iVar2 < 1) {
       iVar2 = 1;
@@ -48,7 +53,7 @@ jpeg_add_quant_table
     else if ((0x7fff < iVar2) || (0xff < iVar2)) {
       iVar2 = 0xff;
     }
-    *(short *)((int)param_1->quant_tbl_ptrs[param_2]->quantval + iVar3 + 4) = (short)iVar2;
+    *(short *)((int)which_tbl->quant_tbl_ptrs[basic_table]->quantval + iVar3 + 4) = (short)iVar2;
     iVar2 = (int)(puVar4[1] * param_4 + 0x32) / 100;
     if (iVar2 < 1) {
       iVar2 = 1;
@@ -56,16 +61,18 @@ jpeg_add_quant_table
     else if ((0x7fff < iVar2) || (0xff < iVar2)) {
       iVar2 = 0xff;
     }
-    *(short *)((int)param_1->quant_tbl_ptrs[param_2]->quantval + iVar3 + 6) = (short)iVar2;
+    *(short *)((int)which_tbl->quant_tbl_ptrs[basic_table]->quantval + iVar3 + 6) = (short)iVar2;
     iVar3 = iVar3 + 8;
     puVar4 = puVar4 + 4;
   } while (iVar3 < 0x80);
-  param_1->quant_tbl_ptrs[param_2]->sent_table = '\0';
+  which_tbl->quant_tbl_ptrs[basic_table]->sent_table = '\0';
   return;
 }
 
 
 // 0086EF00  jpeg_set_quality  (jpeg-6/jcparam.c:138)
+
+/* WARNING: Variable defined which should be unmapped: force_baseline */
 
 void __cdecl jpeg_set_quality(jpeg_compress_struct *param_1,int param_2,uchar param_3)
 
@@ -75,6 +82,7 @@ void __cdecl jpeg_set_quality(jpeg_compress_struct *param_1,int param_2,uchar pa
   uchar unaff_SI;
   jpeg_compress_struct *unaff_EDI;
   jpeg_compress_struct *pjVar2;
+  uchar force_baseline;
   
   if (in_EAX < 1) {
     iVar1 = 5000;

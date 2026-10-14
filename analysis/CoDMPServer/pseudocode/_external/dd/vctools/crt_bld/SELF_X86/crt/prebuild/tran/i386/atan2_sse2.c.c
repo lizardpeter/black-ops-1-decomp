@@ -2,7 +2,7 @@
 
 // 00C0E346  __libm_sse2_atan2  (line unknown)
 
-double __cdecl __libm_sse2_atan2(double param_1,double param_2)
+double __cdecl __libm_sse2_atan2(double y,double x)
 
 {
   undefined1 auVar1 [16];

@@ -2,28 +2,33 @@
 
 // 00620FA0  Fill_Clip  (game/g_items.cpp:34)
 
-void __cdecl Fill_Clip(playerState_s *param_1,uint param_2)
+void __cdecl Fill_Clip(playerState_s *ps,uint weapon)
 
 {
-  int iVar1;
-  uint uVar2;
+  int ammoIndex;
+  uint uVar1;
+  int iVar2;
   int iVar3;
   WeaponVariantDef *pWVar4;
-  int local_14;
+  WeaponVariantDef *weapVarDef;
+  int ammomove;
+  int maxclip;
+  int iAmmoIndex;
+  int inclip;
   
-  iVar1 = BG_AmmoForWeapon(param_2);
-  if ((param_2 != 0) && (uVar2 = BG_GetNumWeapons(), param_2 < uVar2)) {
-    iVar3 = BG_GetAmmoInClip(param_1,param_2);
-    local_14 = BG_GetClipSize(param_2);
-    local_14 = local_14 - iVar3;
-    iVar3 = BG_GetAmmoNotInClipForAmmoIndex(param_1,iVar1);
-    if (iVar3 < local_14) {
-      local_14 = BG_GetAmmoNotInClipForAmmoIndex(param_1,iVar1);
+  ammoIndex = BG_AmmoForWeapon(weapon);
+  if ((weapon != 0) && (uVar1 = BG_GetNumWeapons(), weapon < uVar1)) {
+    iVar2 = BG_GetAmmoInClip(ps,weapon);
+    iVar3 = BG_GetClipSize(weapon);
+    ammomove = iVar3 - iVar2;
+    iVar2 = BG_GetAmmoNotInClipForAmmoIndex(ps,ammoIndex);
+    if (iVar2 < ammomove) {
+      ammomove = BG_GetAmmoNotInClipForAmmoIndex(ps,ammoIndex);
     }
-    if (local_14 != 0) {
-      pWVar4 = BG_GetWeaponVariantDef(param_2);
-      BG_AddAmmoToPool(param_1,param_2,-local_14);
-      BG_AddAmmoToClip(param_1,pWVar4->iClipIndex,local_14);
+    if (ammomove != 0) {
+      pWVar4 = BG_GetWeaponVariantDef(weapon);
+      BG_AddAmmoToPool(ps,weapon,-ammomove);
+      BG_AddAmmoToClip(ps,pWVar4->iClipIndex,ammomove);
     }
   }
   return;
@@ -37,109 +42,117 @@ void __cdecl Fill_Clip(playerState_s *param_1,uint param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Add_Ammo(gentity_s *param_1,uint param_2,uchar param_3,int param_4,int param_5)
+int __cdecl Add_Ammo(gentity_s *ent,uint weaponIndex,uchar weaponModel,int count,int fillClip)
 
 {
-  gclient_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  WeaponDef *pWVar5;
-  WeaponVariantDef *pWVar6;
+  gclient_s *ps_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  WeaponDef *pWVar4;
+  WeaponVariantDef *pWVar5;
+  int iVar6;
   int iVar7;
   int iVar8;
-  int iVar9;
+  WeaponVariantDef *weapVarDef;
+  int oldClip;
+  bool clipOnly;
+  int maxWeaponAmmo;
+  int oldAmmo;
+  playerState_s *ps;
+  WeaponDef *weapDef;
   
-  if ((param_1 == (gentity_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x4d,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((ent == (gentity_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x4d,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_1->client == (gclient_s *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x4e,0,"%s"),
-     !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    iVar4 = (*pcVar2)();
-    return iVar4;
+  if ((ent->client == (gclient_s *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x4e,0,"%s"),
+     !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  pgVar1 = param_1->client;
-  pWVar5 = BG_GetWeaponDef(param_2);
-  pWVar6 = BG_GetWeaponVariantDef(param_2);
-  iVar4 = BG_PlayerHasWeapon(&pgVar1->ps,param_2);
-  if ((iVar4 == 0) && (pWVar5->offhandClass != OFFHAND_CLASS_FRAG_GRENADE)) {
-    iVar4 = 0;
+  ps_00 = ent->client;
+  pWVar4 = BG_GetWeaponDef(weaponIndex);
+  pWVar5 = BG_GetWeaponVariantDef(weaponIndex);
+  iVar3 = BG_PlayerHasWeapon(&ps_00->ps,weaponIndex);
+  if ((iVar3 == 0) && (pWVar4->offhandClass != OFFHAND_CLASS_FRAG_GRENADE)) {
+    iVar3 = 0;
   }
   else {
-    iVar4 = BG_GetAmmoNotInClip(&pgVar1->ps,param_2);
-    iVar7 = BG_GetAmmoInClip(&pgVar1->ps,param_2);
-    iVar8 = BG_GetAmmoPlayerMax(&pgVar1->ps,param_2,0);
-    BG_AddAmmoToPool(&pgVar1->ps,param_2,param_4);
-    iVar9 = BG_WeaponIsClipOnly(param_2);
-    bVar3 = iVar9 != 0;
-    if (bVar3) {
-      G_GivePlayerWeapon(&pgVar1->ps,param_2,param_3,(renderOptions_s)0x0);
+    iVar3 = BG_GetAmmoNotInClip(&ps_00->ps,weaponIndex);
+    iVar6 = BG_GetAmmoInClip(&ps_00->ps,weaponIndex);
+    iVar7 = BG_GetAmmoPlayerMax(&ps_00->ps,weaponIndex,0);
+    BG_AddAmmoToPool(&ps_00->ps,weaponIndex,count);
+    iVar8 = BG_WeaponIsClipOnly(weaponIndex);
+    bVar2 = iVar8 != 0;
+    if (bVar2) {
+      G_GivePlayerWeapon(&ps_00->ps,weaponIndex,weaponModel,(renderOptions_s)0x0);
     }
-    if ((param_5 != 0) || (bVar3)) {
-      Fill_Clip(&pgVar1->ps,param_2);
+    if ((fillClip != 0) || (bVar2)) {
+      Fill_Clip(&ps_00->ps,weaponIndex);
     }
-    if (bVar3) {
-      BG_SetAmmoInPool(&pgVar1->ps,param_2,0);
+    if (bVar2) {
+      BG_SetAmmoInPool(&ps_00->ps,weaponIndex,0);
     }
     else {
-      iVar9 = BG_GetAmmoNotInClip(&pgVar1->ps,param_2);
-      if (iVar8 < iVar9) {
-        BG_SetAmmoInPool(&pgVar1->ps,param_2,iVar8);
+      iVar8 = BG_GetAmmoNotInClip(&ps_00->ps,weaponIndex);
+      if (iVar7 < iVar8) {
+        BG_SetAmmoInPool(&ps_00->ps,weaponIndex,iVar7);
       }
     }
-    iVar8 = BG_GetAmmoInClip(&pgVar1->ps,param_2);
-    iVar9 = BG_GetClipSize(param_2);
-    if (iVar9 < iVar8) {
-      iVar8 = BG_GetClipSize(param_2);
-      BG_SetAmmoInClip(&pgVar1->ps,pWVar6->iClipIndex,iVar8);
+    iVar7 = BG_GetAmmoInClip(&ps_00->ps,weaponIndex);
+    iVar8 = BG_GetClipSize(weaponIndex);
+    if (iVar8 < iVar7) {
+      iVar7 = BG_GetClipSize(weaponIndex);
+      BG_SetAmmoInClip(&ps_00->ps,pWVar5->iClipIndex,iVar7);
     }
-    pWVar5 = BG_GetWeaponDef(param_2);
-    if ((-1 < pWVar5->iSharedAmmoCapIndex) &&
-       (iVar8 = BG_GetMaxPickupableAmmo(&pgVar1->ps,param_2), iVar8 < 0)) {
-      iVar9 = BG_WeaponIsClipOnly(param_2);
-      if (iVar9 == 0) {
-        BG_AddAmmoToPool(&pgVar1->ps,param_2,iVar8);
+    pWVar4 = BG_GetWeaponDef(weaponIndex);
+    if ((-1 < pWVar4->iSharedAmmoCapIndex) &&
+       (iVar7 = BG_GetMaxPickupableAmmo(&ps_00->ps,weaponIndex), iVar7 < 0)) {
+      iVar8 = BG_WeaponIsClipOnly(weaponIndex);
+      if (iVar8 == 0) {
+        BG_AddAmmoToPool(&ps_00->ps,weaponIndex,iVar7);
       }
       else {
-        pWVar6 = BG_GetWeaponVariantDef(param_2);
-        BG_AddAmmoToClip(&pgVar1->ps,pWVar6->iClipIndex,iVar8);
-        iVar8 = BG_GetAmmoInClip(&pgVar1->ps,param_2);
-        if (iVar8 < 1) {
-          BG_TakePlayerWeapon(&pgVar1->ps,param_2);
+        pWVar5 = BG_GetWeaponVariantDef(weaponIndex);
+        BG_AddAmmoToClip(&ps_00->ps,pWVar5->iClipIndex,iVar7);
+        iVar7 = BG_GetAmmoInClip(&ps_00->ps,weaponIndex);
+        if (iVar7 < 1) {
+          BG_TakePlayerWeapon(&ps_00->ps,weaponIndex);
           return 0;
         }
       }
     }
-    iVar8 = BG_GetAmmoNotInClip(&pgVar1->ps,param_2);
-    iVar9 = BG_GetAmmoInClip(&pgVar1->ps,param_2);
-    iVar4 = (iVar9 - iVar7) + (iVar8 - iVar4);
+    iVar7 = BG_GetAmmoNotInClip(&ps_00->ps,weaponIndex);
+    iVar8 = BG_GetAmmoInClip(&ps_00->ps,weaponIndex);
+    iVar3 = (iVar8 - iVar6) + (iVar7 - iVar3);
   }
-  return iVar4;
+  return iVar3;
 }
 
 
 // 00623DF0  BG_GetDropMinAmmo  (bgame/bg_weapons_ammo.h:81)
 
-int __cdecl BG_GetDropMinAmmo(int param_1)
+int __cdecl BG_GetDropMinAmmo(int weaponIndex)
 
 {
   WeaponDef *pWVar1;
   int iVar2;
   int iVar3;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef(param_1);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
   if (pWVar1->ammoCountClipRelative == false) {
     iVar3 = pWVar1->iDropAmmoMin;
   }
   else {
     iVar3 = pWVar1->iDropAmmoMin;
-    iVar2 = BG_GetClipSize(param_1);
+    iVar2 = BG_GetClipSize(weaponIndex);
     iVar3 = (iVar3 + -1) * iVar2 + 1;
   }
   return iVar3;
@@ -148,18 +161,19 @@ int __cdecl BG_GetDropMinAmmo(int param_1)
 
 // 00623E50  BG_GetDropMaxAmmo  (bgame/bg_weapons_ammo.h:93)
 
-int __cdecl BG_GetDropMaxAmmo(int param_1)
+int __cdecl BG_GetDropMaxAmmo(int weaponIndex)
 
 {
   WeaponDef *pWVar1;
   int iVar2;
+  WeaponDef *weapDef;
   
-  pWVar1 = BG_GetWeaponDef(param_1);
+  pWVar1 = BG_GetWeaponDef(weaponIndex);
   if (pWVar1->ammoCountClipRelative == false) {
     iVar2 = pWVar1->iDropAmmoMax;
   }
   else {
-    iVar2 = BG_GetClipSize(param_1);
+    iVar2 = BG_GetClipSize(weaponIndex);
     iVar2 = iVar2 * pWVar1->iDropAmmoMax;
   }
   return iVar2;
@@ -168,41 +182,41 @@ int __cdecl BG_GetDropMaxAmmo(int param_1)
 
 // 00621E40  CurrentPrimaryWeapon  (game/g_items.cpp:146)
 
-int __cdecl CurrentPrimaryWeapon(playerState_s *param_1)
+int __cdecl CurrentPrimaryWeapon(playerState_s *ps)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_c;
-  WeaponDef *local_8;
+  int weapIdx;
+  WeaponDef *weapDef;
   
-  if ((param_1 == (playerState_s *)0x0) &&
+  if ((ps == (playerState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x93,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_1->weapon == 0) {
-    local_c = 0;
+  if (ps->weapon == 0) {
+    weapIdx = 0;
   }
   else {
-    local_c = (uint)param_1->weapon;
-    local_8 = BG_GetWeaponDef(local_c);
-    if (local_8->inventoryType == WEAPINVENTORY_ALTMODE) {
-      local_c = param_1->lastWeaponAltModeSwitch;
-      local_8 = BG_GetWeaponDef(local_c);
+    weapIdx = (int)ps->weapon;
+    weapDef = BG_GetWeaponDef(weapIdx);
+    if (weapDef->inventoryType == WEAPINVENTORY_ALTMODE) {
+      weapIdx = ps->lastWeaponAltModeSwitch;
+      weapDef = BG_GetWeaponDef(weapIdx);
     }
-    iVar3 = BG_PlayerHasWeapon(param_1,local_c);
+    iVar3 = BG_PlayerHasWeapon(ps,weapIdx);
     if (iVar3 == 0) {
-      local_c = 0;
+      weapIdx = 0;
     }
-    else if (local_8->inventoryType != WEAPINVENTORY_PRIMARY) {
-      local_c = 0;
+    else if (weapDef->inventoryType != WEAPINVENTORY_PRIMARY) {
+      weapIdx = 0;
     }
   }
-  return local_c;
+  return weapIdx;
 }
 
 
@@ -213,7 +227,7 @@ int __cdecl CurrentPrimaryWeapon(playerState_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl G_ItemClipMask(gentity_s *param_1)
+int __cdecl G_ItemClipMask(gentity_s *ent)
 
 {
   code *pcVar1;
@@ -221,7 +235,7 @@ int __cdecl G_ItemClipMask(gentity_s *param_1)
   int iVar3;
   int local_8;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0xaf,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -229,11 +243,11 @@ int __cdecl G_ItemClipMask(gentity_s *param_1)
       return iVar3;
     }
   }
-  if (param_1->clipmask == 0) {
+  if (ent->clipmask == 0) {
     local_8 = 0x491;
   }
   else {
-    local_8 = param_1->clipmask;
+    local_8 = ent->clipmask;
   }
   return local_8;
 }
@@ -249,144 +263,143 @@ int __cdecl G_ItemClipMask(gentity_s *param_1)
 
 int __cdecl
 WeaponPickup_AddWeapon
-          (gentity_s *param_1,gentity_s *param_2,int param_3,uchar param_4,gentity_s **param_5)
+          (gentity_s *ent,gentity_s *other,int weapon,uchar weaponModel,gentity_s **pDroppedWeapon)
 
 {
   code *pcVar1;
   bool bVar2;
-  uchar uVar3;
-  int iVar4;
-  char *pcVar5;
-  uint uVar6;
+  uchar weaponModel_00;
+  int iVar3;
+  char *text;
+  uint tag;
   uint local_ac;
   uint local_a8;
-  col_context_t local_88;
-  gentity_s *local_60;
-  float4 local_5c;
+  col_context_t context;
+  gentity_s *droppedEnt;
+  float4 trace;
   float local_4c;
   char local_32;
   uint local_24;
-  int local_20;
-  float local_1c;
+  int mask;
+  float up;
   float local_18;
   float local_14;
-  gclient_s *local_10;
-  WeaponDef *local_c;
-  uint local_8;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  int playerWeapIdx;
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5c.v[0] = 0.0;
-  local_5c.v[1] = 0.0;
-  local_5c.v[2] = 0.0;
-  local_5c.v[3] = 0.0;
-  col_context_t::col_context_t(&local_88);
-  if ((param_1 == (gentity_s *)0x0) &&
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0xc0,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
-    iVar4 = (*pcVar1)();
-    return iVar4;
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((other == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0xc1,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
-    iVar4 = (*pcVar1)();
-    return iVar4;
+    iVar3 = (*pcVar1)();
+    return iVar3;
   }
-  local_60 = (gentity_s *)0x0;
-  local_10 = param_2->client;
-  local_c = BG_GetWeaponDef(param_3);
-  if (local_c->inventoryType == WEAPINVENTORY_PRIMARY) {
-    if (((local_10->ps).weapon != 0) &&
-       (iVar4 = BG_PlayerHasWeapon(&local_10->ps,(uint)(local_10->ps).weapon), iVar4 == 0)) {
+  droppedEnt = (gentity_s *)0x0;
+  ps = &other->client->ps;
+  weapDef = BG_GetWeaponDef(weapon);
+  if (weapDef->inventoryType == WEAPINVENTORY_PRIMARY) {
+    if ((ps->weapon != 0) && (iVar3 = BG_PlayerHasWeapon(ps,(uint)ps->weapon), iVar3 == 0)) {
       return 0;
     }
-    bVar2 = BG_PlayerWeaponsFull_Primaries(&local_10->ps);
+    bVar2 = BG_PlayerWeaponsFull_Primaries(ps);
     if (bVar2) {
-      local_8 = CurrentPrimaryWeapon(&local_10->ps);
-      if (local_8 == 0) {
-        pcVar5 = va("%c \"GAME_CANT_GET_PRIMARY_WEAP_MESSAGE\"");
-        SV_GameSendServerCommand((int)param_2[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar5);
-        iVar4 = 0;
+      playerWeapIdx = CurrentPrimaryWeapon(ps);
+      if (playerWeapIdx == 0) {
+        text = va("%c \"GAME_CANT_GET_PRIMARY_WEAP_MESSAGE\"");
+        SV_GameSendServerCommand((int)other[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,text);
+        iVar3 = 0;
       }
       else {
-        iVar4 = BG_PlayerHasWeapon(&local_10->ps,local_8);
-        if ((iVar4 == 0) &&
+        iVar3 = BG_PlayerHasWeapon(ps,playerWeapIdx);
+        if ((iVar3 == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0xdf,0,
                                      "%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
-          iVar4 = (*pcVar1)();
-          return iVar4;
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
-        uVar6 = 0;
-        uVar3 = BG_GetPlayerWeaponModel(&local_10->ps,local_8);
-        local_60 = Drop_Weapon(param_2,local_8,uVar3,uVar6);
-        if (local_60 != (gentity_s *)0x0) {
-          local_60->spawnflags = param_1->spawnflags & 0xfffffffe;
-          (local_60->s).groundEntityNum = (param_1->s).groundEntityNum;
-          if ((((local_60->flags & 0x1000U) == 0) || (param_1->tagInfo == (tagInfo_s *)0x0)) ||
-             (param_1->tagInfo->parent == (gentity_s *)0x0)) {
-            local_1c = (param_1->r).currentOrigin[0];
-            local_18 = (param_1->r).currentOrigin[1];
-            local_14 = (param_1->r).currentOrigin[2] + 2.0;
-            local_20 = G_ItemClipMask(param_1);
-            iVar4 = EntHandle::isDefined(&(local_60->r).ownerNum);
-            if (iVar4 == 0) {
+        tag = 0;
+        weaponModel_00 = BG_GetPlayerWeaponModel(ps,playerWeapIdx);
+        droppedEnt = Drop_Weapon(other,playerWeapIdx,weaponModel_00,tag);
+        if (droppedEnt != (gentity_s *)0x0) {
+          droppedEnt->spawnflags = ent->spawnflags & 0xfffffffe;
+          (droppedEnt->s).groundEntityNum = (ent->s).groundEntityNum;
+          if ((((droppedEnt->flags & 0x1000U) == 0) || (ent->tagInfo == (tagInfo_s *)0x0)) ||
+             (ent->tagInfo->parent == (gentity_s *)0x0)) {
+            up = (ent->r).currentOrigin[0];
+            local_18 = (ent->r).currentOrigin[1];
+            local_14 = (ent->r).currentOrigin[2] + 2.0;
+            mask = G_ItemClipMask(ent);
+            iVar3 = EntHandle::isDefined(&(droppedEnt->r).ownerNum);
+            if (iVar3 == 0) {
               local_a8 = 0x3ff;
             }
             else {
-              local_a8 = EntHandle::entnum(&(local_60->r).ownerNum);
+              local_a8 = EntHandle::entnum(&(droppedEnt->r).ownerNum);
             }
-            G_TraceCapsule((trace_t *)&local_5c,(param_1->r).currentOrigin,(local_60->r).mins,
-                           (local_60->r).maxs,&local_1c,local_a8,local_20,&local_88);
+            G_TraceCapsule((trace_t *)&trace,(ent->r).currentOrigin,(droppedEnt->r).mins,
+                           (droppedEnt->r).maxs,&up,local_a8,mask,&context);
             if (local_32 == '\0') {
-              Vec3Lerp((param_1->r).currentOrigin,&local_1c,local_4c,&local_1c);
-              iVar4 = EntHandle::isDefined(&(local_60->r).ownerNum);
-              if (iVar4 == 0) {
+              Vec3Lerp((ent->r).currentOrigin,&up,local_4c,&up);
+              iVar3 = EntHandle::isDefined(&(droppedEnt->r).ownerNum);
+              if (iVar3 == 0) {
                 local_ac = 0x3ff;
               }
               else {
-                local_ac = EntHandle::entnum(&(local_60->r).ownerNum);
+                local_ac = EntHandle::entnum(&(droppedEnt->r).ownerNum);
               }
-              G_TraceCapsule((trace_t *)&local_5c,&local_1c,(local_60->r).mins,(local_60->r).maxs,
-                             (param_1->r).currentOrigin,local_ac,local_20,&local_88);
-              Vec3Lerp(&local_1c,(param_1->r).currentOrigin,local_4c,&local_1c);
-              G_SetOrigin(local_60,&local_1c);
+              G_TraceCapsule((trace_t *)&trace,&up,(droppedEnt->r).mins,(droppedEnt->r).maxs,
+                             (ent->r).currentOrigin,local_ac,mask,&context);
+              Vec3Lerp(&up,(ent->r).currentOrigin,local_4c,&up);
+              G_SetOrigin(droppedEnt,&up);
             }
             else {
-              G_SetOrigin(local_60,(param_1->r).currentOrigin);
+              G_SetOrigin(droppedEnt,(ent->r).currentOrigin);
             }
-            G_SetAngle(local_60,(param_1->r).currentAngles);
+            G_SetAngle(droppedEnt,(ent->r).currentAngles);
           }
           else {
-            G_SetOrigin(local_60,(param_1->r).currentOrigin);
-            G_SetAngle(local_60,(param_1->r).currentAngles);
-            G_EntLinkTo(local_60,param_1->tagInfo->parent,(uint)param_1->tagInfo->name);
+            G_SetOrigin(droppedEnt,(ent->r).currentOrigin);
+            G_SetAngle(droppedEnt,(ent->r).currentAngles);
+            G_EntLinkTo(droppedEnt,ent->tagInfo->parent,(uint)ent->tagInfo->name);
           }
-          SV_LinkEntity(local_60);
+          SV_LinkEntity(droppedEnt);
         }
-        *param_5 = local_60;
-        G_GivePlayerWeapon(&local_10->ps,param_3,param_4,
+        *pDroppedWeapon = droppedEnt;
+        G_GivePlayerWeapon(ps,weapon,weaponModel,
                            (renderOptions_s)
-                           *(renderOptions_s_u_0 *)&(param_1->s).renderOptions.field0_0x0.s);
-        iVar4 = 1;
+                           *(renderOptions_s_u_0 *)&(ent->s).renderOptions.field0_0x0.s);
+        iVar3 = 1;
       }
     }
     else {
-      G_GivePlayerWeapon(&local_10->ps,param_3,param_4,
+      G_GivePlayerWeapon(ps,weapon,weaponModel,
                          (renderOptions_s)
-                         *(renderOptions_s_u_0 *)&(param_1->s).renderOptions.field0_0x0.s);
-      iVar4 = 1;
+                         *(renderOptions_s_u_0 *)&(ent->s).renderOptions.field0_0x0.s);
+      iVar3 = 1;
     }
   }
   else {
-    G_GivePlayerWeapon(&local_10->ps,param_3,param_4,
-                       (renderOptions_s)
-                       *(renderOptions_s_u_0 *)&(param_1->s).renderOptions.field0_0x0.s);
-    iVar4 = 1;
+    G_GivePlayerWeapon(ps,weapon,weaponModel,
+                       (renderOptions_s)*(renderOptions_s_u_0 *)&(ent->s).renderOptions.field0_0x0.s
+                      );
+    iVar3 = 1;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
@@ -397,7 +410,7 @@ WeaponPickup_AddWeapon
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PrintPlayerPickupMessage(gentity_s *param_1,int param_2)
+void __cdecl PrintPlayerPickupMessage(gentity_s *player,int weapIdx)
 
 {
   code *pcVar1;
@@ -405,8 +418,9 @@ void __cdecl PrintPlayerPickupMessage(gentity_s *param_1,int param_2)
   WeaponVariantDef *pWVar3;
   int iVar4;
   char *pcVar5;
+  WeaponVariantDef *weapVariantDef;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (player == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x10d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -414,7 +428,7 @@ void __cdecl PrintPlayerPickupMessage(gentity_s *param_1,int param_2)
       return;
     }
   }
-  pWVar3 = BG_GetWeaponVariantDef(param_2);
+  pWVar3 = BG_GetWeaponVariantDef(weapIdx);
   if (pWVar3 == (WeaponVariantDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x10f,0,"%s");
     if (!bVar2) {
@@ -423,14 +437,14 @@ void __cdecl PrintPlayerPickupMessage(gentity_s *param_1,int param_2)
       return;
     }
   }
-  iVar4 = BG_WeaponIsClipOnly(param_2);
+  iVar4 = BG_WeaponIsClipOnly(weapIdx);
   if (iVar4 == 0) {
     pcVar5 = va("%c \"GAME_PICKUP_AMMO\x14%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar5);
+    SV_GameSendServerCommand((int)player[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar5);
   }
   else {
     pcVar5 = va("%c \"GAME_PICKUP_CLIPONLY_AMMO\x14%s\"");
-    SV_GameSendServerCommand((int)param_1[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar5);
+    SV_GameSendServerCommand((int)player[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar5);
   }
   return;
 }
@@ -445,7 +459,8 @@ void __cdecl PrintPlayerPickupMessage(gentity_s *param_1,int param_2)
 
 bool __cdecl
 WeaponPickup_LeechFromWeaponEnt
-          (gentity_s *param_1,gentity_s *param_2,int param_3,int *param_4,bool param_5)
+          (gentity_s *weaponEnt,gentity_s *player,int haveExactWeapon,int *pickupEvent,
+          bool suppressNotifies)
 
 {
   ushort *puVar1;
@@ -457,18 +472,26 @@ WeaponPickup_LeechFromWeaponEnt
   bool bVar7;
   WeaponDef *pWVar8;
   int iVar9;
-  uint uVar10;
-  int local_14;
-  int local_c;
+  uint weaponIndex;
+  uchar weaponModel;
+  int ammoTaken;
+  int weapIdx;
+  WeaponDef *weapDef;
+  int ammoAvailable;
+  item_ent_t *itemEnt;
+  int i;
+  bool ammoRemains;
+  bool removedAnyAmmo;
+  bool grenadeWeapon;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((weaponEnt == (gentity_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x11d,0,"%s"),
      !bVar5)) {
     pcVar2 = (code *)swi(3);
     uVar6 = (*pcVar2)();
     return (bool)uVar6;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((player == (gentity_s *)0x0) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x11e,0,"%s"),
      !bVar5)) {
     pcVar2 = (code *)swi(3);
@@ -478,28 +501,28 @@ WeaponPickup_LeechFromWeaponEnt
   bVar5 = false;
   bVar4 = false;
   bVar3 = false;
-  for (local_c = 0; local_c < 2; local_c = local_c + 1) {
-    uVar10 = *(uint *)(param_1->attachModelNames + local_c * 6 + -0x32) & 0x800007ff;
-    if ((int)uVar10 < 0) {
-      uVar10 = (uVar10 - 1 | 0xfffff800) + 1;
+  for (i = 0; i < 2; i = i + 1) {
+    weaponIndex = *(uint *)(weaponEnt->attachModelNames + i * 6 + -0x32) & 0x800007ff;
+    if ((int)weaponIndex < 0) {
+      weaponIndex = (weaponIndex - 1 | 0xfffff800) + 1;
     }
-    if (0 < (int)uVar10) {
-      iVar9 = *(int *)(param_1->attachModelNames + local_c * 6 + -0x32);
-      pWVar8 = BG_GetWeaponDef(uVar10);
-      puVar1 = param_1->attachModelNames + local_c * 6 + -0x36;
+    if (0 < (int)weaponIndex) {
+      iVar9 = *(int *)(weaponEnt->attachModelNames + i * 6 + -0x32);
+      pWVar8 = BG_GetWeaponDef(weaponIndex);
+      puVar1 = weaponEnt->attachModelNames + i * 6 + -0x36;
       if (pWVar8->weapType == WEAPTYPE_GRENADE) {
         bVar3 = true;
       }
-      local_14 = *(int *)puVar1;
-      if (param_3 != 0) {
-        local_14 = local_14 + *(int *)(puVar1 + 2);
+      ammoAvailable = *(int *)puVar1;
+      if (haveExactWeapon != 0) {
+        ammoAvailable = ammoAvailable + *(int *)(puVar1 + 2);
       }
-      iVar9 = Add_Ammo(param_2,uVar10,(uchar)((int)(iVar9 + (iVar9 >> 0x1f & 0x7ffU)) >> 0xb),
-                       local_14,0);
+      iVar9 = Add_Ammo(player,weaponIndex,(uchar)((int)(iVar9 + (iVar9 >> 0x1f & 0x7ffU)) >> 0xb),
+                       ammoAvailable,0);
       if (iVar9 != 0) {
         bVar5 = true;
-        if ((!param_5) && ((pickupPrints->current).enabled != false)) {
-          PrintPlayerPickupMessage(param_2,uVar10);
+        if ((!suppressNotifies) && ((pickupPrints->current).enabled != false)) {
+          PrintPlayerPickupMessage(player,weaponIndex);
         }
         *(int *)puVar1 = *(int *)puVar1 - iVar9;
         if (*(int *)puVar1 < 0) {
@@ -517,18 +540,18 @@ WeaponPickup_LeechFromWeaponEnt
       }
     }
   }
-  if ((!param_5) && (bVar5)) {
-    if ((param_4 == (int *)0x0) &&
+  if ((!suppressNotifies) && (bVar5)) {
+    if ((pickupEvent == (int *)0x0) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x153,0,"%s"
                                 ), !bVar7)) {
       pcVar2 = (code *)swi(3);
       uVar6 = (*pcVar2)();
       return (bool)uVar6;
     }
-    *param_4 = 0xc;
+    *pickupEvent = 0xc;
   }
   if ((!bVar3) || (bVar4)) {
-    if ((param_3 == 0) || (!bVar5)) {
+    if ((haveExactWeapon == 0) || (!bVar5)) {
       bVar5 = false;
     }
     else {
@@ -549,46 +572,51 @@ WeaponPickup_LeechFromWeaponEnt
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl WeaponPickup_AddAmmoForNewWeapon(gentity_s *param_1,gentity_s *param_2)
+void __cdecl WeaponPickup_AddAmmoForNewWeapon(gentity_s *weaponEnt,gentity_s *player)
 
 {
   int iVar1;
-  int iVar2;
-  code *pcVar3;
-  bool bVar4;
-  uint uVar5;
-  WeaponVariantDef *pWVar6;
-  int iVar7;
-  int local_1c;
+  int amount;
+  code *pcVar2;
+  bool bVar3;
+  uint weaponIndex;
+  WeaponVariantDef *pWVar4;
+  int iVar5;
+  int i;
+  uchar weaponModel;
+  WeaponVariantDef *weapVarDef;
+  int reserveAmmo;
+  int weapon;
+  int clipAmmo;
   
-  local_1c = 0;
+  i = 0;
   do {
-    if (1 < local_1c) {
+    if (1 < i) {
       return;
     }
-    uVar5 = *(uint *)(param_1->attachModelNames + local_1c * 6 + -0x32) & 0x800007ff;
-    if ((int)uVar5 < 0) {
-      uVar5 = (uVar5 - 1 | 0xfffff800) + 1;
+    weaponIndex = *(uint *)(weaponEnt->attachModelNames + i * 6 + -0x32) & 0x800007ff;
+    if ((int)weaponIndex < 0) {
+      weaponIndex = (weaponIndex - 1 | 0xfffff800) + 1;
     }
-    iVar1 = *(int *)(param_1->attachModelNames + local_1c * 6 + -0x32);
-    if (0 < (int)uVar5) {
-      pWVar6 = BG_GetWeaponVariantDef(uVar5);
-      iVar2 = *(int *)(param_1->attachModelNames + local_1c * 6 + -0x34);
-      if (-1 < iVar2) {
-        iVar7 = BG_GetClipSize(uVar5);
-        if ((iVar7 < iVar2) &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x17b,0,
-                                     "%s"), !bVar4)) {
-          pcVar3 = (code *)swi(3);
-          (*pcVar3)();
+    iVar1 = *(int *)(weaponEnt->attachModelNames + i * 6 + -0x32);
+    if (0 < (int)weaponIndex) {
+      pWVar4 = BG_GetWeaponVariantDef(weaponIndex);
+      amount = *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34);
+      if (-1 < amount) {
+        iVar5 = BG_GetClipSize(weaponIndex);
+        if ((iVar5 < amount) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x17b,0,
+                                     "%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        BG_SetAmmoInClip(&param_2->client->ps,pWVar6->iClipIndex,iVar2);
+        BG_SetAmmoInClip(&player->client->ps,pWVar4->iClipIndex,amount);
       }
-      Add_Ammo(param_2,uVar5,(uchar)((int)(iVar1 + (iVar1 >> 0x1f & 0x7ffU)) >> 0xb),
-               *(int *)(param_1->attachModelNames + local_1c * 6 + -0x36),(uint)(iVar2 == -1));
+      Add_Ammo(player,weaponIndex,(uchar)((int)(iVar1 + (iVar1 >> 0x1f & 0x7ffU)) >> 0xb),
+               *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36),(uint)(amount == -1));
     }
-    local_1c = local_1c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -602,13 +630,14 @@ void __cdecl WeaponPickup_AddAmmoForNewWeapon(gentity_s *param_1,gentity_s *para
 
 void __cdecl
 WeaponPickup_Notifies
-          (gentity_s *param_1,gentity_s *param_2,gentity_s *param_3,WeaponDef *param_4,bool param_5)
+          (gentity_s *thisItem,gentity_s *newDroppedItem,gentity_s *player,WeaponDef *weapDef,
+          bool pickedUp)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (thisItem == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x188,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -616,7 +645,7 @@ WeaponPickup_Notifies
       return;
     }
   }
-  if (param_3 == (gentity_s *)0x0) {
+  if (player == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x189,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -624,7 +653,7 @@ WeaponPickup_Notifies
       return;
     }
   }
-  if (param_4 == (WeaponDef *)0x0) {
+  if (weapDef == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x18a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -632,14 +661,14 @@ WeaponPickup_Notifies
       return;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (newDroppedItem == (gentity_s *)0x0) {
     Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
   }
   else {
-    Scr_AddEntity(param_2,SCRIPTINSTANCE_SERVER);
+    Scr_AddEntity(newDroppedItem,SCRIPTINSTANCE_SERVER);
   }
-  Scr_AddEntity(param_3,SCRIPTINSTANCE_SERVER);
-  Scr_Notify(param_1,scr_const.trigger,2);
+  Scr_AddEntity(player,SCRIPTINSTANCE_SERVER);
+  Scr_Notify(thisItem,scr_const.trigger,2);
   return;
 }
 
@@ -651,16 +680,18 @@ WeaponPickup_Notifies
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,int *param_4)
+int __cdecl WeaponPickup_Grab(gentity_s *weaponEnt,gentity_s *player,int weapIdx,int *pickupEvent)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  gentity_s *local_c;
-  WeaponDef *local_8;
+  uchar weaponModel;
+  int gotWeapon;
+  gentity_s *droppedEnt;
+  WeaponDef *weapDef;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (weaponEnt == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1ad,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -668,7 +699,7 @@ int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,
       return iVar3;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (player == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1ae,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -676,7 +707,7 @@ int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,
       return iVar3;
     }
   }
-  if (param_2->client == (gclient_s *)0x0) {
+  if (player->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1af,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -684,16 +715,16 @@ int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,
       return iVar3;
     }
   }
-  local_c = (gentity_s *)0x0;
-  iVar3 = (param_1->s).un3.item;
-  local_8 = BG_GetWeaponDef(param_3);
-  if ((param_1->s).eType == 4) {
-    *param_4 = 0xc;
-    WeaponPickup_Notifies(param_1,(gentity_s *)0x0,param_2,local_8,true);
+  droppedEnt = (gentity_s *)0x0;
+  iVar3 = (weaponEnt->s).un3.item;
+  weapDef = BG_GetWeaponDef(weapIdx);
+  if ((weaponEnt->s).eType == 4) {
+    *pickupEvent = 0xc;
+    WeaponPickup_Notifies(weaponEnt,(gentity_s *)0x0,player,weapDef,true);
     iVar3 = 1;
   }
   else {
-    if ((param_1->r).inuse == '\0') {
+    if ((weaponEnt->r).inuse == '\0') {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1bc,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -701,11 +732,11 @@ int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,
         return iVar3;
       }
     }
-    param_1->flags = param_1->flags | 0x2000000;
+    weaponEnt->flags = weaponEnt->flags | 0x2000000;
     iVar3 = WeaponPickup_AddWeapon
-                      (param_1,param_2,param_3,
-                       (uchar)((int)(iVar3 + (iVar3 >> 0x1f & 0x7ffU)) >> 0xb),&local_c);
-    if ((param_1->r).inuse == '\0') {
+                      (weaponEnt,player,weapIdx,
+                       (uchar)((int)(iVar3 + (iVar3 >> 0x1f & 0x7ffU)) >> 0xb),&droppedEnt);
+    if ((weaponEnt->r).inuse == '\0') {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1c1,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -713,20 +744,20 @@ int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,
         return iVar3;
       }
     }
-    param_1->flags = param_1->flags & 0xfdffffff;
+    weaponEnt->flags = weaponEnt->flags & 0xfdffffff;
     if (iVar3 == 0) {
       iVar3 = 0;
     }
     else {
-      *param_4 = 0xb;
-      WeaponPickup_AddAmmoForNewWeapon(param_1,param_2);
-      if (local_c != (gentity_s *)0x0) {
-        WeaponPickup_LeechFromWeaponEnt(local_c,param_2,0,(int *)0x0,true);
+      *pickupEvent = 0xb;
+      WeaponPickup_AddAmmoForNewWeapon(weaponEnt,player);
+      if (droppedEnt != (gentity_s *)0x0) {
+        WeaponPickup_LeechFromWeaponEnt(droppedEnt,player,0,(int *)0x0,true);
       }
-      WeaponPickup_Notifies(param_1,local_c,param_2,local_8,true);
-      if (((local_8->weapType != WEAPTYPE_GRENADE) && (local_8->weapType != WEAPTYPE_MINE)) ||
-         (local_8->offhandClass == OFFHAND_CLASS_NONE)) {
-        G_SelectWeaponIndex((int)param_2[-0x1487a].r.mins / 0x2f8,param_3);
+      WeaponPickup_Notifies(weaponEnt,droppedEnt,player,weapDef,true);
+      if (((weapDef->weapType != WEAPTYPE_GRENADE) && (weapDef->weapType != WEAPTYPE_MINE)) ||
+         (weapDef->offhandClass == OFFHAND_CLASS_NONE)) {
+        G_SelectWeaponIndex((int)player[-0x1487a].r.mins / 0x2f8,weapIdx);
       }
       iVar3 = 1;
     }
@@ -744,7 +775,7 @@ int __cdecl WeaponPickup_Grab(gentity_s *param_1,gentity_s *param_2,int param_3,
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl WeaponPickup_Touch(gentity_s *param_1,gentity_s *param_2,int param_3,int *param_4)
+int __cdecl WeaponPickup_Touch(gentity_s *weaponEnt,gentity_s *player,int weapIdx,int *pickupEvent)
 
 {
   gclient_s *pgVar1;
@@ -752,47 +783,51 @@ int __cdecl WeaponPickup_Touch(gentity_s *param_1,gentity_s *param_2,int param_3
   bool bVar3;
   int iVar4;
   uint extraout_EAX;
-  WeaponDef *pWVar5;
+  WeaponDef *weapDef_00;
   uint extraout_EDX;
+  uchar weaponModel;
+  int haveExactWeapon;
+  bool removeWeaponFromWorld;
+  WeaponDef *weapDef;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((weaponEnt == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1da,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((player == (gentity_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1db,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_2->client == (gclient_s *)0x0) &&
+  if ((player->client == (gclient_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1dc,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((param_4 == (int *)0x0) &&
+  if ((pickupEvent == (int *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1dd,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  if ((((param_1->s).lerp.eFlags2 & 0x800000U) == 0) ||
-     (pgVar1 = param_2->client, _allshl(),
+  if ((((weaponEnt->s).lerp.eFlags2 & 0x800000U) == 0) ||
+     (pgVar1 = player->client, _allshl(),
      (extraout_EAX & (pgVar1->ps).perks[0]) == 0 && (extraout_EDX & (pgVar1->ps).perks[1]) == 0)) {
-    pWVar5 = BG_GetWeaponDef(param_3);
-    iVar4 = BG_PlayerHasWeapon(&param_2->client->ps,param_3);
-    if (((iVar4 != 0) || (bVar3 = BG_PlayerHasCompatibleWeapon(&param_2->client->ps,param_3), bVar3)
-        ) || (pWVar5->offhandClass == OFFHAND_CLASS_FRAG_GRENADE)) {
-      bVar3 = WeaponPickup_LeechFromWeaponEnt(param_1,param_2,iVar4,param_4,false);
-      if (*param_4 != 0) {
-        WeaponPickup_Notifies(param_1,(gentity_s *)0x0,param_2,pWVar5,bVar3);
+    weapDef_00 = BG_GetWeaponDef(weapIdx);
+    iVar4 = BG_PlayerHasWeapon(&player->client->ps,weapIdx);
+    if (((iVar4 != 0) || (bVar3 = BG_PlayerHasCompatibleWeapon(&player->client->ps,weapIdx), bVar3))
+       || (weapDef_00->offhandClass == OFFHAND_CLASS_FRAG_GRENADE)) {
+      bVar3 = WeaponPickup_LeechFromWeaponEnt(weaponEnt,player,iVar4,pickupEvent,false);
+      if (*pickupEvent != 0) {
+        WeaponPickup_Notifies(weaponEnt,(gentity_s *)0x0,player,weapDef_00,bVar3);
       }
       if (bVar3) {
         iVar4 = 1;
@@ -819,16 +854,19 @@ int __cdecl WeaponPickup_Touch(gentity_s *param_1,gentity_s *param_2,int param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl WeaponPickup(gentity_s *param_1,gentity_s *param_2,int *param_3,int param_4)
+int __cdecl WeaponPickup(gentity_s *weaponEnt,gentity_s *player,int *pickupEvent,int touched)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   WeaponDef *pWVar4;
-  uint uVar5;
+  uint weaponIndex;
+  int weapIdx;
+  WeaponDef *weapDef;
+  bool compatible;
   
-  if (param_1 == (gentity_s *)0x0) {
+  if (weaponEnt == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1fc,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -836,7 +874,7 @@ int __cdecl WeaponPickup(gentity_s *param_1,gentity_s *param_2,int *param_3,int 
       return iVar3;
     }
   }
-  if (param_2 == (gentity_s *)0x0) {
+  if (player == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1fd,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -844,7 +882,7 @@ int __cdecl WeaponPickup(gentity_s *param_1,gentity_s *param_2,int *param_3,int 
       return iVar3;
     }
   }
-  if (param_2->client == (gclient_s *)0x0) {
+  if (player->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x1fe,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -852,20 +890,20 @@ int __cdecl WeaponPickup(gentity_s *param_1,gentity_s *param_2,int *param_3,int 
       return iVar3;
     }
   }
-  uVar5 = (param_1->s).un3.secondBcAlias & 0x800007ff;
-  if ((int)uVar5 < 0) {
-    uVar5 = (uVar5 - 1 | 0xfffff800) + 1;
+  weaponIndex = (weaponEnt->s).un3.secondBcAlias & 0x800007ff;
+  if ((int)weaponIndex < 0) {
+    weaponIndex = (weaponIndex - 1 | 0xfffff800) + 1;
   }
-  pWVar4 = BG_GetWeaponDef(uVar5);
-  bVar2 = BG_PlayerCanPickUpWeaponType(pWVar4,&param_2->client->ps);
+  pWVar4 = BG_GetWeaponDef(weaponIndex);
+  bVar2 = BG_PlayerCanPickUpWeaponType(pWVar4,&player->client->ps);
   if (bVar2) {
-    pWVar4 = BG_GetWeaponDef((uint)(param_2->client->ps).weapon);
+    pWVar4 = BG_GetWeaponDef((uint)(player->client->ps).weapon);
     if (pWVar4->bIsCarriedKillstreakWeapon == false) {
-      if (param_4 == 0) {
-        iVar3 = WeaponPickup_Grab(param_1,param_2,uVar5,param_3);
+      if (touched == 0) {
+        iVar3 = WeaponPickup_Grab(weaponEnt,player,weaponIndex,pickupEvent);
       }
       else {
-        iVar3 = WeaponPickup_Touch(param_1,param_2,uVar5,param_3);
+        iVar3 = WeaponPickup_Touch(weaponEnt,player,weaponIndex,pickupEvent);
       }
     }
     else {
@@ -886,11 +924,11 @@ int __cdecl WeaponPickup(gentity_s *param_1,gentity_s *param_2,int *param_3,int 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Touch_Item_Auto(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl Touch_Item_Auto(gentity_s *ent,gentity_s *other,int bTouched)
 
 {
-  param_1->active = '\x01';
-  Touch_Item(param_1,param_2,param_3);
+  ent->active = '\x01';
+  Touch_Item(ent,other,bTouched);
   return;
 }
 
@@ -904,7 +942,7 @@ void __cdecl Touch_Item_Auto(gentity_s *param_1,gentity_s *param_2,int param_3)
 
 void __cdecl
 PrintMessage_CannotGrabItem
-          (gentity_s *param_1,gentity_s *param_2,int param_3,gitem_s *param_4,int param_5)
+          (gentity_s *ent,gentity_s *player,int touched,gitem_s *item,int weapIndex)
 
 {
   code *pcVar1;
@@ -912,51 +950,51 @@ PrintMessage_CannotGrabItem
   int iVar3;
   char *pcVar4;
   
-  if ((param_1 == (gentity_s *)0x0) &&
+  if ((ent == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x21b,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (gentity_s *)0x0) &&
+  if ((player == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x21c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->client == (gclient_s *)0x0) &&
+  if ((player->client == (gclient_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x21d,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (gitem_s *)0x0) &&
+  if ((item == (gitem_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x21e,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == 0) && ((uint)(param_1->s).clientNum != (param_2->s).number)) {
-    if ((param_4->giType != IT_WEAPON) &&
+  if ((touched == 0) && ((uint)(ent->s).clientNum != (player->s).number)) {
+    if ((item->giType != IT_WEAPON) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x225,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    iVar3 = BG_PlayerHasWeapon(&param_2->client->ps,param_5);
+    iVar3 = BG_PlayerHasWeapon(&player->client->ps,weapIndex);
     if (iVar3 == 0) {
       pcVar4 = va("%c \"GAME_CANT_GET_PRIMARY_WEAP_MESSAGE\"");
-      SV_GameSendServerCommand((int)param_2[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+      SV_GameSendServerCommand((int)player[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
     }
     else {
-      BG_GetWeaponVariantDef(param_5);
+      BG_GetWeaponVariantDef(weapIndex);
       pcVar4 = va("%c \"GAME_PICKUP_CANTCARRYMOREAMMO\x14%s\"");
-      SV_GameSendServerCommand((int)param_2[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
+      SV_GameSendServerCommand((int)player[-0x1487a].r.mins / 0x2f8,SV_CMD_CAN_IGNORE,pcVar4);
     }
   }
   return;
@@ -971,72 +1009,73 @@ PrintMessage_CannotGrabItem
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Touch_Item(gentity_s *param_1,gentity_s *param_2,int param_3)
+void __cdecl Touch_Item(gentity_s *ent,gentity_s *other,int touched)
 
 {
-  gitem_s *pgVar1;
-  code *pcVar2;
-  bool bVar3;
-  char local_5c [68];
+  gitem_s *item_00;
+  code *pcVar1;
+  bool bVar2;
+  gitem_s *item;
+  char cleanname [68];
   uint local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  uint local_8;
+  int canGrab;
+  int pickupEvent;
+  int pickedUp;
+  int weapIndex;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1->active != '\0') {
-    local_10 = 0;
-    param_1->active = '\0';
-    if (((param_2->client != (gclient_s *)0x0) && (0 < param_2->health)) &&
+  if (ent->active != '\0') {
+    pickupEvent = 0;
+    ent->active = '\0';
+    if (((other->client != (gclient_s *)0x0) && (0 < other->health)) &&
        (level.clientIsSpawning == 0)) {
-      local_8 = (param_1->s).un3.secondBcAlias & 0x800007ff;
-      if ((int)local_8 < 0) {
-        local_8 = (local_8 - 1 | 0xfffff800) + 1;
+      weapIndex = (ent->s).un3.secondBcAlias & 0x800007ff;
+      if (weapIndex < 0) {
+        weapIndex = (weapIndex - 1U | 0xfffff800) + 1;
       }
-      pgVar1 = (gitem_s *)(&bg_itemlist + (param_1->s).un3.item * 4);
-      local_14 = BG_CanItemBeGrabbed(&param_1->s,&param_2->client->ps,param_3);
-      if (local_14 == 0) {
-        PrintMessage_CannotGrabItem(param_1,param_2,param_3,pgVar1,local_8);
+      item_00 = (gitem_s *)(&bg_itemlist + (ent->s).un3.item * 4);
+      canGrab = BG_CanItemBeGrabbed(&ent->s,&other->client->ps,touched);
+      if (canGrab == 0) {
+        PrintMessage_CannotGrabItem(ent,other,touched,item_00,weapIndex);
       }
       else {
-        I_strncpyz(local_5c,(param_2->client->sess).cs.name,0x40);
-        I_CleanStr(local_5c);
-        BG_WeaponName(local_8);
-        SV_GetGuid((param_2->s).number);
+        I_strncpyz(cleanname,(other->client->sess).cs.name,0x40);
+        I_CleanStr(cleanname);
+        BG_WeaponName(weapIndex);
+        SV_GetGuid((other->s).number);
         G_LogPrintf("Weapon;%d;%d;%s;%s\n");
-        if ((pgVar1 == (gitem_s *)0x0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x253,0,
-                                     "%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if ((item_00 == (gitem_s *)0x0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x253,0,
+                                     "%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        if ((pgVar1->giType != IT_WEAPON) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x254,0,
-                                     "%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          (*pcVar2)();
+        if ((item_00->giType != IT_WEAPON) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x254,0,
+                                     "%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          (*pcVar1)();
           return;
         }
-        local_c = WeaponPickup(param_1,param_2,&local_10,param_3);
-        if (local_10 != 0) {
-          if ((param_2->client->sess).predictItemPickup == 0) {
-            G_AddEvent(param_2,local_10,local_8);
+        pickedUp = WeaponPickup(ent,other,&pickupEvent,touched);
+        if (pickupEvent != 0) {
+          if ((other->client->sess).predictItemPickup == 0) {
+            G_AddEvent(other,pickupEvent,weapIndex);
           }
           else {
-            G_AddPredictableEvent(param_2,local_10,local_8);
+            G_AddPredictableEvent(other,pickupEvent,weapIndex);
           }
         }
-        if (local_c != 0) {
-          if (((param_1->s).lerp.eFlags2 & 0x800000U) != 0) {
-            Scr_AddEntity(param_2,SCRIPTINSTANCE_SERVER);
-            Scr_Notify(param_1,scr_const.scavenger,1);
+        if (pickedUp != 0) {
+          if (((ent->s).lerp.eFlags2 & 0x800000U) != 0) {
+            Scr_AddEntity(other,SCRIPTINSTANCE_SERVER);
+            Scr_Notify(ent,scr_const.scavenger,1);
           }
-          if ((param_1->s).eType == 4) {
-            Scr_Notify(param_1,scr_const.death,0);
+          if ((ent->s).eType == 4) {
+            Scr_Notify(ent,scr_const.death,0);
           }
-          G_FreeEntity(param_1);
+          G_FreeEntity(ent);
         }
       }
     }
@@ -1061,13 +1100,19 @@ int __cdecl GetFreeDropCueIdx(void)
   int iVar4;
   gentity_s *pgVar5;
   WeaponDef *pWVar6;
-  uint uVar7;
-  float fVar8;
-  int local_28;
-  int local_24;
-  float local_1c;
-  float local_18;
-  int local_8;
+  uint weaponIndex;
+  float fVar7;
+  int weapIndex;
+  WeaponDef *weapDef;
+  int iBest;
+  int j;
+  int maxDroppedWeapon;
+  float fDistSqrd;
+  float fBestDistSqrd;
+  gclient_s *pClient;
+  float fClientDistSqrd;
+  gentity_s *ent;
+  int i;
   
   iVar3 = (g_maxDroppedWeapons->current).integer;
   if (((iVar3 < 1) || (0x20 < iVar3)) &&
@@ -1077,14 +1122,14 @@ int __cdecl GetFreeDropCueIdx(void)
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_28 = -1;
-  local_18 = -1.0;
-  for (local_8 = 0; local_8 < iVar3; local_8 = local_8 + 1) {
-    iVar4 = EntHandle::isDefined(level.droppedWeaponCue + local_8);
+  iBest = -1;
+  fBestDistSqrd = -1.0;
+  for (i = 0; i < iVar3; i = i + 1) {
+    iVar4 = EntHandle::isDefined(level.droppedWeaponCue + i);
     if (iVar4 == 0) {
-      return local_8;
+      return i;
     }
-    pgVar5 = EntHandle::ent(level.droppedWeaponCue + local_8);
+    pgVar5 = EntHandle::ent(level.droppedWeaponCue + i);
     if ((pgVar5->flags & 0x2000000U) == 0) {
       if ((*(int *)(&bg_itemlist + (pgVar5->s).un3.item * 4) != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x293,0,
@@ -1093,35 +1138,35 @@ int __cdecl GetFreeDropCueIdx(void)
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      uVar7 = (pgVar5->field36_0x21c).item[0].index & 0x800007ff;
-      if ((int)uVar7 < 0) {
-        uVar7 = (uVar7 - 1 | 0xfffff800) + 1;
+      weaponIndex = (pgVar5->field36_0x21c).item[0].index & 0x800007ff;
+      if ((int)weaponIndex < 0) {
+        weaponIndex = (weaponIndex - 1 | 0xfffff800) + 1;
       }
-      pWVar6 = BG_GetWeaponDef(uVar7);
+      pWVar6 = BG_GetWeaponDef(weaponIndex);
       if (pWVar6->avoidDropCleanup == false) {
-        local_1c = 3.4028235e+38;
-        for (local_24 = 0; local_24 < level.maxclients; local_24 = local_24 + 1) {
-          if (((level.clients[local_24].sess.connected == CON_CONNECTED) &&
-              (level.clients[local_24].sess.sessionState == SESS_STATE_PLAYING)) &&
-             (fVar8 = Vec3DistanceSq(g_entities[local_24].r.currentOrigin,(pgVar5->r).currentOrigin)
-             , fVar8 < local_1c)) {
-            local_1c = fVar8;
+        fDistSqrd = 3.4028235e+38;
+        for (j = 0; j < level.maxclients; j = j + 1) {
+          if (((level.clients[j].sess.connected == CON_CONNECTED) &&
+              (level.clients[j].sess.sessionState == SESS_STATE_PLAYING)) &&
+             (fVar7 = Vec3DistanceSq(g_entities[j].r.currentOrigin,(pgVar5->r).currentOrigin),
+             fVar7 < fDistSqrd)) {
+            fDistSqrd = fVar7;
           }
         }
-        if (local_18 < local_1c) {
-          local_18 = local_1c;
-          local_28 = local_8;
+        if (fBestDistSqrd < fDistSqrd) {
+          fBestDistSqrd = fDistSqrd;
+          iBest = i;
         }
       }
     }
   }
-  if (local_28 == -1) {
+  if (iBest == -1) {
     Com_PrintWarning(0x10,
                      "Could not find a suitable weapon entity to free out of %i possible.  Using index zero.\n"
                     );
-    local_28 = 0;
+    iBest = 0;
   }
-  pgVar5 = EntHandle::ent(level.droppedWeaponCue + local_28);
+  pgVar5 = EntHandle::ent(level.droppedWeaponCue + iBest);
   if ((pgVar5 == (gentity_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x2b5,0,"%s"),
      !bVar2)) {
@@ -1130,8 +1175,8 @@ int __cdecl GetFreeDropCueIdx(void)
     return iVar3;
   }
   G_FreeEntity(pgVar5);
-  EntHandle::setEnt(level.droppedWeaponCue + local_28,(gentity_s *)0x0);
-  return local_28;
+  EntHandle::setEnt(level.droppedWeaponCue + iBest,(gentity_s *)0x0);
+  return iBest;
 }
 
 
@@ -1142,10 +1187,10 @@ int __cdecl GetFreeDropCueIdx(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DroppedItemClearOwner(gentity_s *param_1)
+void __cdecl DroppedItemClearOwner(gentity_s *pSelf)
 
 {
-  (param_1->s).clientNum = ' ';
+  (pSelf->s).clientNum = ' ';
   return;
 }
 
@@ -1154,21 +1199,22 @@ void __cdecl DroppedItemClearOwner(gentity_s *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl G_GetItemClassname(gitem_s *param_1,ushort *param_2)
+void __cdecl G_GetItemClassname(gitem_s *item,ushort *out)
 
 {
-  uint uVar1;
-  char local_10c [260];
+  uint weapon;
+  int itemIndex;
+  char classname [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  uVar1 = (int)(param_1 + -0x398006) >> 2 & 0x800007ff;
-  if ((int)uVar1 < 0) {
-    uVar1 = (uVar1 - 1 | 0xfffff800) + 1;
+  weapon = (int)(item + -0x398006) >> 2 & 0x800007ff;
+  if ((int)weapon < 0) {
+    weapon = (weapon - 1 | 0xfffff800) + 1;
   }
-  BG_WeaponName(uVar1);
-  Com_sprintf(local_10c,0x100,"weapon_%s");
-  G_SetConstString(param_2,local_10c);
+  BG_WeaponName(weapon);
+  Com_sprintf(classname,0x100,"weapon_%s");
+  G_SetConstString(out,classname);
   return;
 }
 
@@ -1181,58 +1227,58 @@ void __cdecl G_GetItemClassname(gitem_s *param_1,ushort *param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 gentity_s * __cdecl
-LaunchItem(gitem_s *param_1,float *param_2,float *param_3,float *param_4,int param_5)
+LaunchItem(gitem_s *item,float *origin,float *angles,float *velocity,int ownerNum)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
   uint uVar4;
-  char *pcVar5;
-  int iVar6;
-  byte local_29;
-  DObj *local_28;
-  int local_24;
-  gentity_s *local_20;
-  int local_1c;
-  WeaponVariantDef *local_18;
-  uint local_14;
-  uint local_10;
-  byte local_9;
-  WeaponDef *local_8;
+  char *modelName;
+  int iVar5;
+  uchar boneIndex;
+  DObj *dobj;
+  int tagIndex;
+  gentity_s *dropped;
+  int dropIdx;
+  WeaponVariantDef *weapVariantDef;
+  int itemIndex;
+  int weapIndex;
+  uchar weapModel;
+  WeaponDef *weapDef;
   
-  if ((param_1 == (gitem_s *)0x0) &&
+  if ((item == (gitem_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x2dd,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*origin & 0x7f800000) == 0x7f800000) ||
+       (((uint)origin[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)origin[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x2df,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*velocity & 0x7f800000) == 0x7f800000) ||
+       (((uint)velocity[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)velocity[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x2e0,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  local_14 = (int)(param_1 + -0x398006) >> 2;
-  local_20 = G_Spawn();
-  local_1c = GetFreeDropCueIdx();
-  EntHandle::setEnt(level.droppedWeaponCue + local_1c,local_20);
-  (local_20->s).eType = 3;
-  (local_20->s).un3.secondBcAlias = local_14 & 0xffff;
-  if ((0x7ff < (local_20->s).un3.secondBcAlias) &&
+  itemIndex = (int)(item + -0x398006) >> 2;
+  dropped = G_Spawn();
+  dropIdx = GetFreeDropCueIdx();
+  EntHandle::setEnt(level.droppedWeaponCue + dropIdx,dropped);
+  (dropped->s).eType = 3;
+  (dropped->s).un3.secondBcAlias = itemIndex & 0xffff;
+  if ((0x7ff < (dropped->s).un3.secondBcAlias) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x2ea,0,
                                "dropped->s.un3.item doesn\'t index MAX_ITEMS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -1240,95 +1286,95 @@ LaunchItem(gitem_s *param_1,float *param_2,float *param_3,float *param_4,int par
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  G_GetItemClassname(param_1,&local_20->classname);
-  (local_20->field36_0x21c).item[0].index = local_14;
-  if ((param_1->giType != IT_WEAPON) &&
+  G_GetItemClassname(item,&dropped->classname);
+  (dropped->field36_0x21c).item[0].index = itemIndex;
+  if ((item->giType != IT_WEAPON) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x2ef,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  (local_20->r).mins[0] = -1.0;
-  (local_20->r).mins[1] = -1.0;
-  (local_20->r).mins[2] = -1.0;
-  (local_20->r).maxs[0] = 1.0;
-  (local_20->r).maxs[1] = 1.0;
-  (local_20->r).maxs[2] = 1.0;
-  (local_20->r).contents = 0x405c0108;
-  (local_20->r).contents = (local_20->r).contents | 0x200000;
-  if (param_5 < level.maxclients) {
-    AssignToSmallerType<unsigned_char>(&(local_20->s).clientNum,param_5);
+  (dropped->r).mins[0] = -1.0;
+  (dropped->r).mins[1] = -1.0;
+  (dropped->r).mins[2] = -1.0;
+  (dropped->r).maxs[0] = 1.0;
+  (dropped->r).maxs[1] = 1.0;
+  (dropped->r).maxs[2] = 1.0;
+  (dropped->r).contents = 0x405c0108;
+  (dropped->r).contents = (dropped->r).contents | 0x200000;
+  if (ownerNum < level.maxclients) {
+    AssignToSmallerType<unsigned_char>(&(dropped->s).clientNum,ownerNum);
   }
-  local_10 = local_14 & 0x800007ff;
-  if ((int)local_10 < 0) {
-    local_10 = (local_10 - 1 | 0xfffff800) + 1;
+  weapIndex = itemIndex & 0x800007ff;
+  if (weapIndex < 0) {
+    weapIndex = (weapIndex - 1U | 0xfffff800) + 1;
   }
   uVar4 = BG_GetNumWeapons();
-  if ((int)uVar4 <= (int)local_10) {
+  if ((int)uVar4 <= weapIndex) {
     Com_Error(ERR_DROP,"\x15LaunchItem() - Bad item WEAPIDX %i on entity");
   }
-  local_9 = (byte)((int)(local_14 + ((int)local_14 >> 0x1f & 0x7ffU)) >> 0xb);
-  local_8 = BG_GetWeaponDef(local_10);
-  if ((local_8 == (WeaponDef *)0x0) &&
+  weapModel = (uchar)((int)(itemIndex + (itemIndex >> 0x1f & 0x7ffU)) >> 0xb);
+  weapDef = BG_GetWeaponDef(weapIndex);
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x308,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  if ((((local_8->bUseDroppedModelAsStowed != false) && (local_8->worldModel[1] != (XModel *)0x0))
-      && (local_8->weapClass != WEAPCLASS_GRENADE)) &&
-     (local_8->weapClass != WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON)) {
-    local_9 = 1;
+  if ((((weapDef->bUseDroppedModelAsStowed != false) && (weapDef->worldModel[1] != (XModel *)0x0))
+      && (weapDef->weapClass != WEAPCLASS_GRENADE)) &&
+     (weapDef->weapClass != WEAPCLASS_KILLSTREAK_ALT_STORED_WEAPON)) {
+    weapModel = '\x01';
   }
-  if (local_8->worldModel[local_9] != (XModel *)0x0) {
-    pcVar5 = XModelGetName(local_8->worldModel[local_9]);
-    G_SetModel(local_20,pcVar5);
+  if (weapDef->worldModel[weapModel] != (XModel *)0x0) {
+    modelName = XModelGetName(weapDef->worldModel[weapModel]);
+    G_SetModel(dropped,modelName);
   }
-  G_DObjUpdate(local_20);
-  if (local_8->worldModel[local_9] != (XModel *)0x0) {
-    local_28 = Com_GetServerDObj((local_20->s).number);
-    local_18 = BG_GetWeaponVariantDef(local_10);
-    if ((local_18 == (WeaponVariantDef *)0x0) &&
+  G_DObjUpdate(dropped);
+  if (weapDef->worldModel[weapModel] != (XModel *)0x0) {
+    dobj = Com_GetServerDObj((dropped->s).number);
+    weapVariantDef = BG_GetWeaponVariantDef(weapIndex);
+    if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x31a,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       pgVar3 = (gentity_s *)(*pcVar1)();
       return pgVar3;
     }
-    for (local_24 = 0; (local_24 < 0x20 && (local_18->hideTags[local_24] != 0));
-        local_24 = local_24 + 1) {
-      local_29 = 0xfe;
-      iVar6 = DObjGetBoneIndex(local_28,(uint)local_18->hideTags[local_24],&local_29,-1);
-      if (iVar6 != 0) {
-        (local_20->s).partBits[(int)(uint)local_29 >> 5] =
-             0x80000000U >> (local_29 & 0x1f) | (local_20->s).partBits[(int)(uint)local_29 >> 5];
+    for (tagIndex = 0; (tagIndex < 0x20 && (weapVariantDef->hideTags[tagIndex] != 0));
+        tagIndex = tagIndex + 1) {
+      boneIndex = 0xfe;
+      iVar5 = DObjGetBoneIndex(dobj,(uint)weapVariantDef->hideTags[tagIndex],&boneIndex,-1);
+      if (iVar5 != 0) {
+        (dropped->s).partBits[(int)(uint)boneIndex >> 5] =
+             0x80000000U >> (boneIndex & 0x1f) | (dropped->s).partBits[(int)(uint)boneIndex >> 5];
       }
     }
-    DObjSetHidePartBits(local_28,(local_20->s).partBits);
+    DObjSetHidePartBits(dobj,(dropped->s).partBits);
   }
-  local_20->handler = '\x13';
-  G_SetOrigin(local_20,param_2);
-  (local_20->s).lerp.pos.trType = '\x06';
-  G_SetAngle(local_20,param_3);
-  (local_20->s).lerp.pos.trTime = level.time;
-  (local_20->s).lerp.pos.trDelta[0] = *param_4;
-  (local_20->s).lerp.pos.trDelta[1] = param_4[1];
-  (local_20->s).lerp.pos.trDelta[2] = param_4[2];
-  if ((((((uint)(local_20->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(local_20->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(local_20->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  dropped->handler = '\x13';
+  G_SetOrigin(dropped,origin);
+  (dropped->s).lerp.pos.trType = '\x06';
+  G_SetAngle(dropped,angles);
+  (dropped->s).lerp.pos.trTime = level.time;
+  (dropped->s).lerp.pos.trDelta[0] = *velocity;
+  (dropped->s).lerp.pos.trDelta[1] = velocity[1];
+  (dropped->s).lerp.pos.trDelta[2] = velocity[2];
+  if ((((((uint)(dropped->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(dropped->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(dropped->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x35c,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     pgVar3 = (gentity_s *)(*pcVar1)();
     return pgVar3;
   }
-  local_20->flags = 0x10;
-  local_20->nextthink = level.time + 1000;
-  SV_LinkEntity(local_20);
-  return local_20;
+  dropped->flags = 0x10;
+  dropped->nextthink = level.time + 1000;
+  SV_LinkEntity(dropped);
+  return dropped;
 }
 
 
@@ -1339,47 +1385,47 @@ LaunchItem(gitem_s *param_1,float *param_2,float *param_3,float *param_4,int par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl Drop_Item(gentity_s *param_1,gitem_s *param_2,float param_3,int param_4)
+gentity_s * __cdecl Drop_Item(gentity_s *ent,gitem_s *item,float angle,int novelocity)
 
 {
   gentity_s *pgVar1;
   float fVar2;
-  float local_28;
+  float velocity;
   float local_24;
   float local_20;
-  float local_1c;
+  float angles;
   float local_18;
   undefined4 local_14;
-  float local_10;
+  float vPos;
   float local_c;
   float local_8;
   
-  local_18 = (param_1->r).currentAngles[1] + param_3;
-  local_1c = 0.0;
+  local_18 = (ent->r).currentAngles[1] + angle;
+  angles = 0.0;
   local_14 = 0;
-  if (param_4 == 0) {
-    AngleVectors(&local_1c,&local_28,(float *)0x0,(float *)0x0);
+  if (novelocity == 0) {
+    AngleVectors(&angles,&velocity,(float *)0x0,(float *)0x0);
     fVar2 = (g_dropForwardSpeed->current).value;
-    local_28 = fVar2 * local_28;
+    velocity = fVar2 * velocity;
     local_24 = fVar2 * local_24;
     local_20 = fVar2 * local_20;
     fVar2 = G_crandom();
     local_20 = fVar2 * (g_dropUpSpeedRand->current).value + (g_dropUpSpeedBase->current).value +
                local_20;
     fVar2 = G_crandom();
-    local_28 = fVar2 * (g_dropHorzSpeedRand->current).value + local_28;
+    velocity = fVar2 * (g_dropHorzSpeedRand->current).value + velocity;
     fVar2 = G_crandom();
     local_24 = fVar2 * (g_dropHorzSpeedRand->current).value + local_24;
   }
   else {
-    local_28 = 0.0;
+    velocity = 0.0;
     local_24 = 0.0;
     local_20 = 0.0;
   }
-  local_10 = (param_1->r).currentOrigin[0];
-  local_c = (param_1->r).currentOrigin[1];
-  local_8 = ((param_1->r).maxs[2] - (param_1->r).mins[2]) * 0.5 + (param_1->r).currentOrigin[2];
-  pgVar1 = LaunchItem(param_2,&local_10,&local_1c,&local_28,(param_1->s).number);
+  vPos = (ent->r).currentOrigin[0];
+  local_c = (ent->r).currentOrigin[1];
+  local_8 = ((ent->r).maxs[2] - (ent->r).mins[2]) * 0.5 + (ent->r).currentOrigin[2];
+  pgVar1 = LaunchItem(item,&vPos,&angles,&velocity,(ent->s).number);
   return pgVar1;
 }
 
@@ -1392,44 +1438,46 @@ gentity_s * __cdecl Drop_Item(gentity_s *param_1,gitem_s *param_2,float param_3,
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 gentity_s * __cdecl
-ThrowClientWeapon(gentity_s *param_1,gitem_s *param_2,float param_3,float param_4)
+ThrowClientWeapon(gentity_s *ent,gitem_s *item,float heightIncrease,float velocityIncrease)
 
 {
   float10 fVar1;
   gentity_s *pgVar2;
   float10 fVar3;
-  float local_30;
+  float velocity;
   float local_2c;
   float local_28;
-  float local_1c;
+  float sine;
+  float cosine;
+  float angles;
   float local_18;
   undefined4 local_14;
-  float local_10;
+  float vPos;
   float local_c;
   float local_8;
   
-  local_1c = 0.0;
+  angles = 0.0;
   local_14 = 0;
-  if (param_1->client == (gclient_s *)0x0) {
+  if (ent->client == (gclient_s *)0x0) {
     local_18 = 0.0;
-    local_30 = 0.0;
+    velocity = 0.0;
     local_2c = 0.0;
     local_28 = 0.0;
   }
   else {
-    local_18 = param_1->client->fGunYaw;
-    AngleVectors(&local_1c,&local_30,(float *)0x0,(float *)0x0);
-    fVar3 = (float10)(param_1->client->fGunYaw * 0.017453292);
+    local_18 = ent->client->fGunYaw;
+    AngleVectors(&angles,&velocity,(float *)0x0,(float *)0x0);
+    fVar3 = (float10)(ent->client->fGunYaw * 0.017453292);
     fVar1 = (float10)fcos(fVar3);
     fVar3 = (float10)fsin(fVar3);
-    local_30 = param_4 * (float)fVar1 + local_30;
-    local_2c = param_4 * (float)fVar3 + local_2c;
-    local_28 = local_28 + param_3;
+    velocity = velocityIncrease * (float)fVar1 + velocity;
+    local_2c = velocityIncrease * (float)fVar3 + local_2c;
+    local_28 = local_28 + heightIncrease;
   }
-  local_10 = (param_1->r).currentOrigin[0];
-  local_c = (param_1->r).currentOrigin[1];
-  local_8 = ((param_1->r).maxs[2] - (param_1->r).mins[2]) * 0.5 + (param_1->r).currentOrigin[2];
-  pgVar2 = LaunchItem(param_2,&local_10,&local_1c,&local_30,(param_1->s).number);
+  vPos = (ent->r).currentOrigin[0];
+  local_c = (ent->r).currentOrigin[1];
+  local_8 = ((ent->r).maxs[2] - (ent->r).mins[2]) * 0.5 + (ent->r).currentOrigin[2];
+  pgVar2 = LaunchItem(item,&vPos,&angles,&velocity,(ent->s).number);
   return pgVar2;
 }
 
@@ -1441,20 +1489,23 @@ ThrowClientWeapon(gentity_s *param_1,gitem_s *param_2,float param_3,float param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetNonClipAmmoToTransferToWeaponEntity(gentity_s *param_1,int param_2)
+int __cdecl GetNonClipAmmoToTransferToWeaponEntity(gentity_s *player,int transferWeapon)
 
 {
   int iVar1;
-  int local_8;
+  int iVar2;
+  int ammoIndex;
+  int maxAmmoAfterDrop;
+  int ammoDrop;
   
-  BG_AmmoForWeapon(param_2);
-  iVar1 = BG_GetAmmoPlayerMax(&param_1->client->ps,param_2,param_2);
-  local_8 = BG_GetAmmoNotInClip(&param_1->client->ps,param_2);
-  local_8 = local_8 - iVar1;
-  if (local_8 < 0) {
-    local_8 = 0;
+  BG_AmmoForWeapon(transferWeapon);
+  iVar1 = BG_GetAmmoPlayerMax(&player->client->ps,transferWeapon,transferWeapon);
+  iVar2 = BG_GetAmmoNotInClip(&player->client->ps,transferWeapon);
+  ammoDrop = iVar2 - iVar1;
+  if (ammoDrop < 0) {
+    ammoDrop = 0;
   }
-  return local_8;
+  return ammoDrop;
 }
 
 
@@ -1465,15 +1516,16 @@ int __cdecl GetNonClipAmmoToTransferToWeaponEntity(gentity_s *param_1,int param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl PlayerHasAnyAmmoToTransferToWeapon(gentity_s *param_1,int param_2)
+bool __cdecl PlayerHasAnyAmmoToTransferToWeapon(gentity_s *player,int transferWeapon)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
+  int ammoDrop;
   
-  if (param_1->client == (gclient_s *)0x0) {
+  if (player->client == (gclient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x3c2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1481,9 +1533,9 @@ bool __cdecl PlayerHasAnyAmmoToTransferToWeapon(gentity_s *param_1,int param_2)
       return (bool)uVar3;
     }
   }
-  iVar4 = BG_GetAmmoInClip(&param_1->client->ps,param_2);
+  iVar4 = BG_GetAmmoInClip(&player->client->ps,transferWeapon);
   if (iVar4 < 1) {
-    iVar4 = GetNonClipAmmoToTransferToWeaponEntity(param_1,param_2);
+    iVar4 = GetNonClipAmmoToTransferToWeaponEntity(player,transferWeapon);
     if (iVar4 < 1) {
       bVar2 = false;
     }
@@ -1505,39 +1557,41 @@ bool __cdecl PlayerHasAnyAmmoToTransferToWeapon(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl TransferPlayerAmmoToWeaponEntity(gentity_s *param_1,gentity_s *param_2,int param_3)
+int __cdecl
+TransferPlayerAmmoToWeaponEntity(gentity_s *player,gentity_s *weaponEnt,int transferWeapon)
 
 {
   int iVar1;
   WeaponDef *pWVar2;
   WeaponVariantDef *pWVar3;
-  int local_10;
-  int local_c;
-  uint local_8;
+  int ammoDrop;
+  int i;
+  int total;
+  int index;
   
-  local_8 = param_3;
-  local_c = 0;
-  for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-    if (0 < (int)local_8) {
-      iVar1 = GetNonClipAmmoToTransferToWeaponEntity(param_1,local_8);
-      *(uint *)(param_2->attachModelNames + local_10 * 6 + -0x32) = local_8;
-      *(int *)(param_2->attachModelNames + local_10 * 6 + -0x36) = iVar1;
-      iVar1 = BG_GetAmmoInClip(&param_1->client->ps,local_8);
-      *(int *)(param_2->attachModelNames + local_10 * 6 + -0x34) = iVar1;
-      local_c = local_c + *(int *)(param_2->attachModelNames + local_10 * 6 + -0x36) +
-                *(int *)(param_2->attachModelNames + local_10 * 6 + -0x34);
-      pWVar2 = BG_GetWeaponDef(local_8);
+  index = transferWeapon;
+  total = 0;
+  for (i = 0; i < 2; i = i + 1) {
+    if (0 < index) {
+      iVar1 = GetNonClipAmmoToTransferToWeaponEntity(player,index);
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x32) = index;
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36) = iVar1;
+      iVar1 = BG_GetAmmoInClip(&player->client->ps,index);
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34) = iVar1;
+      total = total + *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36) +
+              *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34);
+      pWVar2 = BG_GetWeaponDef(index);
       if (pWVar2->bDualWield == false) {
-        pWVar3 = BG_GetWeaponVariantDef(local_8);
-        local_8 = pWVar3->altWeaponIndex;
+        pWVar3 = BG_GetWeaponVariantDef(index);
+        index = pWVar3->altWeaponIndex;
       }
       else {
-        pWVar2 = BG_GetWeaponDef(local_8);
-        local_8 = pWVar2->dualWieldWeaponIndex;
+        pWVar2 = BG_GetWeaponDef(index);
+        index = pWVar2->dualWieldWeaponIndex;
       }
     }
   }
-  return local_c;
+  return total;
 }
 
 
@@ -1548,51 +1602,56 @@ int __cdecl TransferPlayerAmmoToWeaponEntity(gentity_s *param_1,gentity_s *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl TransferRandomAmmoToWeaponEntity(gentity_s *param_1,int param_2)
+int __cdecl TransferRandomAmmoToWeaponEntity(gentity_s *weaponEnt,int transferWeapon)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
   int iVar4;
-  WeaponVariantDef *pWVar5;
+  int iVar5;
+  WeaponVariantDef *pWVar6;
   int local_b4;
   int local_b0;
   int local_a8;
   int local_a0;
-  int local_2c;
-  int local_24;
-  int local_1c;
-  int local_18;
-  int local_14;
-  uint local_10;
-  int local_c;
+  int clipSize;
+  int i;
+  int iClipMin;
+  int iDropAmmo;
+  int iClipMax;
+  int iMax;
+  int total;
+  int iMin;
+  int index;
+  int iDropClip;
+  WeaponDef *weapDef;
   
-  local_18 = 0;
-  local_10 = param_2;
-  local_2c = 0;
+  total = 0;
+  index = transferWeapon;
+  i = 0;
   do {
-    if (1 < local_2c) {
-      return local_18;
+    if (1 < i) {
+      return total;
     }
-    if (0 < (int)local_10) {
-      pWVar3 = BG_GetWeaponDef(local_10);
-      if ((-1 < pWVar3->iSharedAmmoCapIndex) && (local_2c != 0)) {
-        return local_18;
+    if (0 < index) {
+      pWVar3 = BG_GetWeaponDef(index);
+      if ((-1 < pWVar3->iSharedAmmoCapIndex) && (i != 0)) {
+        return total;
       }
-      local_1c = BG_GetDropMaxAmmo(local_10);
-      iVar4 = BG_GetDropMinAmmo(local_10);
-      local_14 = iVar4;
-      if (local_1c < iVar4) {
-        local_14 = BG_GetDropMaxAmmo(local_10);
-        local_1c = iVar4;
+      iMax = BG_GetDropMaxAmmo(index);
+      iVar4 = BG_GetDropMinAmmo(index);
+      iMin = iVar4;
+      if (iMax < iVar4) {
+        iMin = BG_GetDropMaxAmmo(index);
+        iMax = iVar4;
       }
-      if (local_1c < 0) {
-        local_24 = 0;
-        local_c = 0;
+      if (iMax < 0) {
+        iDropAmmo = 0;
+        iDropClip = 0;
       }
       else {
-        if ((local_1c < local_14) &&
+        if ((iMax < iMin) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x41a,0,
                                      "%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -1600,27 +1659,27 @@ int __cdecl TransferRandomAmmoToWeaponEntity(gentity_s *param_1,int param_2)
           return iVar4;
         }
         iVar4 = G_rand();
-        local_14 = iVar4 % ((local_1c - local_14) + 1) + local_14;
-        if (local_14 < 1) {
-          local_24 = 0;
-          local_c = 0;
+        iVar4 = iVar4 % ((iMax - iMin) + 1) + iMin;
+        if (iVar4 < 1) {
+          iDropAmmo = 0;
+          iDropClip = 0;
         }
         else {
-          iVar4 = BG_GetClipSize(local_10);
-          if ((iVar4 < 0) &&
+          iVar5 = BG_GetClipSize(index);
+          if ((iVar5 < 0) &&
              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x425,
                                        0,"%s"), !bVar2)) {
             pcVar1 = (code *)swi(3);
             iVar4 = (*pcVar1)();
             return iVar4;
           }
-          if (iVar4 == 1) {
-            local_c = 1;
+          if (iVar5 == 1) {
+            iDropClip = 1;
           }
           else {
             local_a0 = pWVar3->iDropClipAmmoMin;
-            if (iVar4 <= local_a0) {
-              local_a0 = iVar4;
+            if (iVar5 <= local_a0) {
+              local_a0 = iVar5;
             }
             if (local_a0 < 1) {
               local_b0 = 0;
@@ -1629,8 +1688,8 @@ int __cdecl TransferRandomAmmoToWeaponEntity(gentity_s *param_1,int param_2)
               local_b0 = local_a0;
             }
             local_a8 = pWVar3->iDropClipAmmoMax;
-            if (iVar4 <= local_a8) {
-              local_a8 = iVar4;
+            if (iVar5 <= local_a8) {
+              local_a8 = iVar5;
             }
             if (local_a8 < 1) {
               local_b4 = 0;
@@ -1638,34 +1697,34 @@ int __cdecl TransferRandomAmmoToWeaponEntity(gentity_s *param_1,int param_2)
             else {
               local_b4 = local_a8;
             }
-            iVar4 = G_rand();
-            local_c = iVar4 % ((local_b4 - local_b0) + 1) + local_b0;
+            iVar5 = G_rand();
+            iDropClip = iVar5 % ((local_b4 - local_b0) + 1) + local_b0;
           }
-          if (local_c < local_14) {
-            local_24 = local_14 - local_c;
+          if (iDropClip < iVar4) {
+            iDropAmmo = iVar4 - iDropClip;
           }
           else {
-            local_24 = 0;
-            local_c = local_14;
+            iDropAmmo = 0;
+            iDropClip = iVar4;
           }
         }
       }
-      *(uint *)(param_1->attachModelNames + local_2c * 6 + -0x32) = local_10;
-      *(int *)(param_1->attachModelNames + local_2c * 6 + -0x36) = local_24;
-      *(int *)(param_1->attachModelNames + local_2c * 6 + -0x34) = local_c;
-      pWVar3 = BG_GetWeaponDef(local_10);
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x32) = index;
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36) = iDropAmmo;
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34) = iDropClip;
+      pWVar3 = BG_GetWeaponDef(index);
       if (pWVar3->bDualWield == false) {
-        pWVar5 = BG_GetWeaponVariantDef(local_10);
-        local_10 = pWVar5->altWeaponIndex;
+        pWVar6 = BG_GetWeaponVariantDef(index);
+        index = pWVar6->altWeaponIndex;
       }
       else {
-        pWVar3 = BG_GetWeaponDef(local_10);
-        local_10 = pWVar3->dualWieldWeaponIndex;
+        pWVar3 = BG_GetWeaponDef(index);
+        index = pWVar3->dualWieldWeaponIndex;
       }
-      local_18 = local_18 + *(int *)(param_1->attachModelNames + local_2c * 6 + -0x36) +
-                 *(int *)(param_1->attachModelNames + local_2c * 6 + -0x34);
+      total = total + *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36) +
+              *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34);
     }
-    local_2c = local_2c + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1677,43 +1736,47 @@ int __cdecl TransferRandomAmmoToWeaponEntity(gentity_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl TransferSpecifiedAmmoToWeaponEntity(gentity_s *param_1,int param_2)
+int __cdecl TransferSpecifiedAmmoToWeaponEntity(gentity_s *weaponEnt,int transferWeapon)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
   int iVar4;
-  WeaponVariantDef *pWVar5;
+  int iVar5;
+  WeaponVariantDef *pWVar6;
   int local_5c;
-  int local_20;
-  int local_1c;
-  int local_18;
-  uint local_10;
-  int local_c;
+  int clipSize;
+  int i;
+  int iDropAmmo;
+  int total;
+  int iMaxAmmo;
+  int index;
+  int iDropClip;
+  WeaponDef *weapDef;
   
-  local_18 = 0;
-  local_10 = param_2;
-  local_20 = 0;
+  total = 0;
+  index = transferWeapon;
+  i = 0;
   do {
-    if (1 < local_20) {
-      return local_18;
+    if (1 < i) {
+      return total;
     }
-    if (0 < (int)local_10) {
-      pWVar3 = BG_GetWeaponDef(local_10);
-      if ((-1 < pWVar3->iSharedAmmoCapIndex) && (local_20 != 0)) {
-        return local_18;
+    if (0 < index) {
+      pWVar3 = BG_GetWeaponDef(index);
+      if ((-1 < pWVar3->iSharedAmmoCapIndex) && (i != 0)) {
+        return total;
       }
-      local_5c = BG_GetMaxAmmo(local_10);
-      if (param_1->count <= local_5c) {
-        local_5c = param_1->count;
+      local_5c = BG_GetMaxAmmo(index);
+      if (weaponEnt->count <= local_5c) {
+        local_5c = weaponEnt->count;
       }
       if (local_5c < 1) {
-        local_1c = 0;
-        local_c = 0;
+        iDropAmmo = 0;
+        iDropClip = 0;
       }
       else {
-        iVar4 = BG_GetClipSize(local_10);
+        iVar4 = BG_GetClipSize(index);
         if ((iVar4 < 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x471,0,
                                      "%s"), !bVar2)) {
@@ -1722,29 +1785,29 @@ int __cdecl TransferSpecifiedAmmoToWeaponEntity(gentity_s *param_1,int param_2)
           return iVar4;
         }
         if (iVar4 == 1) {
-          local_c = 1;
+          iDropClip = 1;
         }
         else {
-          local_c = G_rand();
-          local_c = local_c % (iVar4 + 1);
+          iVar5 = G_rand();
+          iDropClip = iVar5 % (iVar4 + 1);
         }
-        if (local_c < local_5c) {
-          local_1c = local_5c - local_c;
+        if (iDropClip < local_5c) {
+          iDropAmmo = local_5c - iDropClip;
         }
         else {
-          local_c = local_5c;
-          local_1c = 0;
+          iDropClip = local_5c;
+          iDropAmmo = 0;
         }
       }
-      *(uint *)(param_1->attachModelNames + local_20 * 6 + -0x32) = local_10;
-      *(int *)(param_1->attachModelNames + local_20 * 6 + -0x36) = local_1c;
-      *(int *)(param_1->attachModelNames + local_20 * 6 + -0x34) = local_c;
-      pWVar5 = BG_GetWeaponVariantDef(local_10);
-      local_10 = pWVar5->altWeaponIndex;
-      local_18 = local_18 + *(int *)(param_1->attachModelNames + local_20 * 6 + -0x36) +
-                 *(int *)(param_1->attachModelNames + local_20 * 6 + -0x34);
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x32) = index;
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36) = iDropAmmo;
+      *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34) = iDropClip;
+      pWVar6 = BG_GetWeaponVariantDef(index);
+      index = pWVar6->altWeaponIndex;
+      total = total + *(int *)(weaponEnt->attachModelNames + i * 6 + -0x36) +
+              *(int *)(weaponEnt->attachModelNames + i * 6 + -0x34);
     }
-    local_20 = local_20 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1759,8 +1822,8 @@ int __cdecl TransferSpecifiedAmmoToWeaponEntity(gentity_s *param_1,int param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 gentity_s * __cdecl
-ThrowDownWeapon(gentity_s *param_1,int param_2,uchar param_3,uint param_4,float param_5,
-               float param_6)
+ThrowDownWeapon(gentity_s *ent,int weapIdx,uchar weaponModel,uint tag,float throwHeight,
+               float throwDistance)
 
 {
   code *pcVar1;
@@ -1770,107 +1833,104 @@ ThrowDownWeapon(gentity_s *param_1,int param_2,uchar param_3,uint param_4,float 
   WeaponVariantDef *pWVar5;
   gentity_s *pgVar6;
   int iVar7;
-  col_context_t *pcVar8;
-  col_context_t local_b0;
-  float4 local_88;
+  col_context_t *context_00;
+  col_context_t context;
+  float4 trace;
   float local_78;
   uint local_50;
-  float local_4c;
+  float vCenter;
   float local_48;
   float local_44;
-  float local_40 [9];
+  float tagMat [9];
   float local_1c [3];
-  uint local_10;
-  gentity_s *local_c;
-  gitem_s *local_8;
+  uint altWeapIdx;
+  gentity_s *dropEnt;
+  gitem_s *weapItem;
   
   local_50 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pWVar4 = BG_GetWeaponDef(param_2);
-  uVar2 = param_2;
+  pWVar4 = BG_GetWeaponDef(weapIdx);
+  uVar2 = weapIdx;
   if (pWVar4->inventoryType == WEAPINVENTORY_ALTMODE) {
-    pWVar5 = BG_GetWeaponVariantDef(param_2);
-    local_10 = pWVar5->altWeaponIndex;
-    uVar2 = local_10;
-    if (local_10 == 0) {
-      BG_WeaponName(param_2);
+    pWVar5 = BG_GetWeaponVariantDef(weapIdx);
+    altWeapIdx = pWVar5->altWeaponIndex;
+    uVar2 = altWeapIdx;
+    if (altWeapIdx == 0) {
+      BG_WeaponName(weapIdx);
       Com_PrintError(0xf,
                      "Drop_Weapon(): Trying to drop alt-type weapon, \"%s\", but it has no corresponding altWeapon set.\n"
                     );
       return (gentity_s *)0x0;
     }
   }
-  param_2 = uVar2;
-  local_8 = (gitem_s *)(&bg_itemlist + ((uint)param_3 * 0x800 + param_2) * 4);
-  if ((local_8->giType != IT_WEAPON) &&
+  weapIdx = uVar2;
+  weapItem = (gitem_s *)(&bg_itemlist + ((uint)weaponModel * 0x800 + weapIdx) * 4);
+  if ((weapItem->giType != IT_WEAPON) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x4a2,0,"%s"),
      !bVar3)) {
     pcVar1 = (code *)swi(3);
     pgVar6 = (gentity_s *)(*pcVar1)();
     return pgVar6;
   }
-  if (param_1->client != (gclient_s *)0x0) {
-    iVar7 = BG_PlayerHasWeapon(&param_1->client->ps,param_2);
+  if (ent->client != (gclient_s *)0x0) {
+    iVar7 = BG_PlayerHasWeapon(&ent->client->ps,weapIdx);
     if (iVar7 == 0) {
-      BG_TakePlayerWeapon(&param_1->client->ps,param_2);
+      BG_TakePlayerWeapon(&ent->client->ps,weapIdx);
       return (gentity_s *)0x0;
     }
-    bVar3 = PlayerHasAnyAmmoToTransferToWeapon(param_1,param_2);
+    bVar3 = PlayerHasAnyAmmoToTransferToWeapon(ent,weapIdx);
     if (!bVar3) {
-      BG_TakePlayerWeapon(&param_1->client->ps,param_2);
+      BG_TakePlayerWeapon(&ent->client->ps,weapIdx);
       return (gentity_s *)0x0;
     }
   }
-  if (((param_1->client == (gclient_s *)0x0) ||
-      (pWVar4 = BG_GetWeaponDef(param_2), pWVar4->bClipOnly == false)) ||
-     (iVar7 = BG_GetAmmoInClip(&param_1->client->ps,param_2), iVar7 != 0)) {
-    if ((param_5 == 0.0) && (param_6 == 0.0)) {
-      local_c = Drop_Item(param_1,local_8,0.0,0);
+  if (((ent->client == (gclient_s *)0x0) ||
+      (pWVar4 = BG_GetWeaponDef(weapIdx), pWVar4->bClipOnly == false)) ||
+     (iVar7 = BG_GetAmmoInClip(&ent->client->ps,weapIdx), iVar7 != 0)) {
+    if ((throwHeight == 0.0) && (throwDistance == 0.0)) {
+      dropEnt = Drop_Item(ent,weapItem,0.0,0);
     }
     else {
-      local_c = ThrowClientWeapon(param_1,local_8,param_5,param_6);
+      dropEnt = ThrowClientWeapon(ent,weapItem,throwHeight,throwDistance);
     }
-    renderOptions_s::CopyWeaponOptions(&(local_c->s).renderOptions,&(param_1->s).renderOptions);
-    if (param_1->client == (gclient_s *)0x0) {
-      TransferRandomAmmoToWeaponEntity(local_c,param_2);
+    renderOptions_s::CopyWeaponOptions(&(dropEnt->s).renderOptions,&(ent->s).renderOptions);
+    if (ent->client == (gclient_s *)0x0) {
+      TransferRandomAmmoToWeaponEntity(dropEnt,weapIdx);
     }
     else {
-      TransferPlayerAmmoToWeaponEntity(param_1,local_c,param_2);
-      BG_TakePlayerWeapon(&param_1->client->ps,param_2);
+      TransferPlayerAmmoToWeaponEntity(ent,dropEnt,weapIdx);
+      BG_TakePlayerWeapon(&ent->client->ps,weapIdx);
     }
-    if (param_4 != 0) {
-      iVar7 = G_DObjGetWorldTagMatrix(param_1,param_4,(float (*) [3])local_40);
+    if (tag != 0) {
+      iVar7 = G_DObjGetWorldTagMatrix(ent,tag,(float (*) [3])tagMat);
       if (iVar7 != 0) {
-        local_88.v[0] = 0.0;
-        local_88.v[1] = 0.0;
-        local_88.v[2] = 0.0;
-        local_88.v[3] = 0.0;
-        local_4c = ((param_1->r).mins[0] + (param_1->r).maxs[0]) * 0.5 +
-                   (param_1->r).currentOrigin[0];
-        local_48 = ((param_1->r).mins[1] + (param_1->r).maxs[1]) * 0.5 +
-                   (param_1->r).currentOrigin[1];
-        local_44 = ((param_1->r).mins[2] + (param_1->r).maxs[2]) * 0.5 +
-                   (param_1->r).currentOrigin[2];
-        col_context_t::col_context_t(&local_b0);
-        pcVar8 = &local_b0;
-        iVar7 = G_ItemClipMask(local_c);
-        G_TraceCapsule((trace_t *)&local_88,&local_4c,(local_c->r).mins,(local_c->r).maxs,local_1c,
-                       (param_1->s).number,iVar7,pcVar8);
-        Vec3Lerp(&local_4c,local_1c,local_78,(local_c->s).lerp.pos.trBase);
-        (local_c->r).currentOrigin[0] = (local_c->s).lerp.pos.trBase[0];
-        (local_c->r).currentOrigin[1] = (local_c->s).lerp.pos.trBase[1];
-        (local_c->r).currentOrigin[2] = (local_c->s).lerp.pos.trBase[2];
-        (local_c->s).lerp.pos.trTime = level.time;
+        trace.v[0] = 0.0;
+        trace.v[1] = 0.0;
+        trace.v[2] = 0.0;
+        trace.v[3] = 0.0;
+        vCenter = ((ent->r).mins[0] + (ent->r).maxs[0]) * 0.5 + (ent->r).currentOrigin[0];
+        local_48 = ((ent->r).mins[1] + (ent->r).maxs[1]) * 0.5 + (ent->r).currentOrigin[1];
+        local_44 = ((ent->r).mins[2] + (ent->r).maxs[2]) * 0.5 + (ent->r).currentOrigin[2];
+        col_context_t::col_context_t(&context);
+        context_00 = &context;
+        iVar7 = G_ItemClipMask(dropEnt);
+        G_TraceCapsule((trace_t *)&trace,&vCenter,(dropEnt->r).mins,(dropEnt->r).maxs,local_1c,
+                       (ent->s).number,iVar7,context_00);
+        Vec3Lerp(&vCenter,local_1c,local_78,(dropEnt->s).lerp.pos.trBase);
+        (dropEnt->r).currentOrigin[0] = (dropEnt->s).lerp.pos.trBase[0];
+        (dropEnt->r).currentOrigin[1] = (dropEnt->s).lerp.pos.trBase[1];
+        (dropEnt->r).currentOrigin[2] = (dropEnt->s).lerp.pos.trBase[2];
+        (dropEnt->s).lerp.pos.trTime = level.time;
       }
-      if ((local_c->s).lerp.apos.trType != '\n') {
-        G_SetAngle(local_c,(param_1->r).currentAngles);
+      if ((dropEnt->s).lerp.apos.trType != '\n') {
+        G_SetAngle(dropEnt,(ent->r).currentAngles);
       }
     }
   }
   else {
-    BG_TakePlayerWeapon(&param_1->client->ps,param_2);
-    local_c = (gentity_s *)0x0;
+    BG_TakePlayerWeapon(&ent->client->ps,weapIdx);
+    dropEnt = (gentity_s *)0x0;
   }
-  return local_c;
+  return dropEnt;
 }
 
 
@@ -1881,12 +1941,12 @@ ThrowDownWeapon(gentity_s *param_1,int param_2,uchar param_3,uint param_4,float 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-gentity_s * __cdecl Drop_Weapon(gentity_s *param_1,int param_2,uchar param_3,uint param_4)
+gentity_s * __cdecl Drop_Weapon(gentity_s *ent,int weapIdx,uchar weaponModel,uint tag)
 
 {
   gentity_s *pgVar1;
   
-  pgVar1 = ThrowDownWeapon(param_1,param_2,param_3,param_4,0.0,0.0);
+  pgVar1 = ThrowDownWeapon(ent,weapIdx,weaponModel,tag,0.0,0.0);
   return pgVar1;
 }
 
@@ -1899,100 +1959,98 @@ gentity_s * __cdecl Drop_Weapon(gentity_s *param_1,int param_2,uchar param_3,uin
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl FinishSpawningItem(gentity_s *param_1)
+void __cdecl FinishSpawningItem(gentity_s *ent)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
-  float local_dc [2];
+  float vAngles [2];
   float local_d4;
-  float local_d0 [3];
+  float vAxis [3];
   float local_c4 [3];
   float local_b8;
   float local_b4;
   float local_b0;
-  int *local_ac;
-  col_context_t local_a8;
-  float local_80 [4];
+  gitem_s *item;
+  col_context_t context;
+  float mins [4];
   float local_70;
   float local_6c;
-  float local_68;
+  float maxs;
   float local_64;
   float local_60;
-  float local_5c [3];
-  float4 local_50;
+  float endpos [3];
+  float4 tr;
   float local_40;
   char local_25;
   uint local_18;
-  float local_14;
+  float dest;
   float local_10;
   float local_c;
-  int local_8;
+  int clipMask;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50.v[0] = 0.0;
-  local_50.v[1] = 0.0;
-  local_50.v[2] = 0.0;
-  local_50.v[3] = 0.0;
-  col_context_t::col_context_t(&local_a8);
-  param_1->handler = '\x15';
-  if ((param_1->spawnflags & 1U) == 0) {
-    local_ac = (int *)(&bg_itemlist + (param_1->s).un3.item * 4);
-    if ((*local_ac != 1) &&
+  tr.v[0] = 0.0;
+  tr.v[1] = 0.0;
+  tr.v[2] = 0.0;
+  tr.v[3] = 0.0;
+  col_context_t::col_context_t(&context);
+  ent->handler = '\x15';
+  if ((ent->spawnflags & 1U) == 0) {
+    item = (gitem_s *)(&bg_itemlist + (ent->s).un3.item * 4);
+    if ((item->giType != IT_WEAPON) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x525,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_80[0] = -1.0;
-    local_80[1] = -1.0;
-    local_80[2] = -1.0;
-    local_68 = 1.0;
+    mins[0] = -1.0;
+    mins[1] = -1.0;
+    mins[2] = -1.0;
+    maxs = 1.0;
     local_64 = 1.0;
     local_60 = 1.0;
-    local_8 = G_ItemClipMask(param_1);
-    local_80[3] = (param_1->r).currentOrigin[0];
-    local_70 = (param_1->r).currentOrigin[1];
-    local_6c = (param_1->r).currentOrigin[2];
-    local_14 = (param_1->r).currentOrigin[0];
-    local_10 = (param_1->r).currentOrigin[1];
-    local_c = (param_1->r).currentOrigin[2] - 4096.0;
-    G_TraceCapsule((trace_t *)&local_50,local_80 + 3,local_80,&local_68,&local_14,
-                   (param_1->s).number,local_8,&local_a8);
+    clipMask = G_ItemClipMask(ent);
+    mins[3] = (ent->r).currentOrigin[0];
+    local_70 = (ent->r).currentOrigin[1];
+    local_6c = (ent->r).currentOrigin[2];
+    dest = (ent->r).currentOrigin[0];
+    local_10 = (ent->r).currentOrigin[1];
+    local_c = (ent->r).currentOrigin[2] - 4096.0;
+    G_TraceCapsule((trace_t *)&tr,mins + 3,mins,&maxs,&dest,(ent->s).number,clipMask,&context);
     if (local_25 != '\0') {
-      local_80[3] = (param_1->r).currentOrigin[0];
-      local_70 = (param_1->r).currentOrigin[1];
-      local_6c = (param_1->r).currentOrigin[2] - 15.0;
-      local_14 = (param_1->r).currentOrigin[0];
-      local_10 = (param_1->r).currentOrigin[1];
-      local_c = (param_1->r).currentOrigin[2] - 4096.0;
-      G_TraceCapsule((trace_t *)&local_50,local_80 + 3,local_80,&local_68,&local_14,
-                     (param_1->s).number,local_8,&local_a8);
+      mins[3] = (ent->r).currentOrigin[0];
+      local_70 = (ent->r).currentOrigin[1];
+      local_6c = (ent->r).currentOrigin[2] - 15.0;
+      dest = (ent->r).currentOrigin[0];
+      local_10 = (ent->r).currentOrigin[1];
+      local_c = (ent->r).currentOrigin[2] - 4096.0;
+      G_TraceCapsule((trace_t *)&tr,mins + 3,mins,&maxs,&dest,(ent->s).number,clipMask,&context);
     }
     if (local_25 != '\0') {
-      vtos((param_1->r).currentOrigin);
-      SL_ConvertToString((uint)param_1->classname,SCRIPTINSTANCE_SERVER);
+      vtos((ent->r).currentOrigin);
+      SL_ConvertToString((uint)ent->classname,SCRIPTINSTANCE_SERVER);
       Com_Printf(0xf,"FinishSpawningItem: %s startsolid at %s\n");
-      G_FreeEntity(param_1);
+      G_FreeEntity(ent);
       return;
     }
-    uVar3 = Trace_GetEntityHitId((trace_t *)&local_50);
-    (param_1->s).groundEntityNum = uVar3;
-    g_entities[(param_1->s).groundEntityNum].flags =
-         g_entities[(param_1->s).groundEntityNum].flags | 0x100000;
-    Vec3Lerp(local_80 + 3,&local_14,local_40,local_5c);
-    G_SetOrigin(param_1,local_5c);
+    uVar3 = Trace_GetEntityHitId((trace_t *)&tr);
+    (ent->s).groundEntityNum = uVar3;
+    g_entities[(ent->s).groundEntityNum].flags =
+         g_entities[(ent->s).groundEntityNum].flags | 0x100000;
+    Vec3Lerp(mins + 3,&dest,local_40,endpos);
+    G_SetOrigin(ent,endpos);
     if (local_40 < 1.0) {
-      local_b8 = local_50.v[0];
-      local_b4 = local_50.v[1];
-      local_b0 = local_50.v[2];
-      AngleVectors((param_1->r).currentAngles,local_d0,(float *)0x0,(float *)0x0);
-      Vec3Cross(&local_b8,local_d0,local_c4);
-      Vec3Cross(local_c4,&local_b8,local_d0);
-      AxisToAngles(&local_d0,local_dc);
-      if ((*(int *)(&bg_itemlist + (param_1->s).un3.item * 4) != 1) &&
+      local_b8 = tr.v[0];
+      local_b4 = tr.v[1];
+      local_b0 = tr.v[2];
+      AngleVectors((ent->r).currentAngles,vAxis,(float *)0x0,(float *)0x0);
+      Vec3Cross(&local_b8,vAxis,local_c4);
+      Vec3Cross(local_c4,&local_b8,vAxis);
+      AxisToAngles(&vAxis,vAngles);
+      if ((*(int *)(&bg_itemlist + (ent->s).un3.item * 4) != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x552,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2000,13 +2058,13 @@ void __cdecl FinishSpawningItem(gentity_s *param_1)
         return;
       }
       local_d4 = local_d4 + 90.0;
-      G_SetAngle(param_1,local_dc);
+      G_SetAngle(ent,vAngles);
     }
   }
   else {
-    G_SetOrigin(param_1,(param_1->r).currentOrigin);
+    G_SetOrigin(ent,(ent->r).currentOrigin);
   }
-  SV_LinkEntity(param_1);
+  SV_LinkEntity(ent);
   return;
 }
 
@@ -2025,10 +2083,12 @@ void __cdecl ClearRegisteredItems(void)
 // 006243F0  SaveRegisteredWeapons  (game/g_items.cpp:1386)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: lastWrittenVariantCount */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl SaveRegisteredWeapons(void)
 
@@ -2038,50 +2098,51 @@ void __cdecl SaveRegisteredWeapons(void)
   uint uVar3;
   WeaponVariantDef *pWVar4;
   char *pcVar5;
-  uint local_41c;
-  int iVar6;
-  undefined1 uVar7;
-  uint local_c;
-  int local_8;
+  int lastWrittenIndex;
+  int lastWrittenVariantCount;
+  undefined1 uVar6;
+  WeaponVariantDef *weapVariantDef;
+  uint weapIndex;
+  int count;
   
-  local_8 = 0;
-  local_41c = 0;
-  iVar6 = 0;
+  count = 0;
+  lastWrittenIndex = 0;
+  lastWrittenVariantCount = 0;
   level.registerWeapons = 0;
-  local_c = 1;
+  weapIndex = 1;
   do {
     uVar3 = BG_GetNumWeapons();
-    if (uVar3 <= local_c) {
+    if (uVar3 <= weapIndex) {
       CG_SetupWeaponDef(0);
       return;
     }
-    pWVar4 = BG_GetWeaponVariantDef(local_c);
+    pWVar4 = BG_GetWeaponVariantDef(weapIndex);
     if (-1 < pWVar4->iVariantCount) {
-      if (0xff < local_8) {
+      if (0xff < count) {
         Com_Error(ERR_DROP,"SaveRegisteredWeapons: Too many weapon configstrings.  Max is %i.\n");
         return;
       }
-      uVar7 = 0;
-      if ((local_c != local_41c + 1 + iVar6) &&
+      uVar6 = 0;
+      if ((weapIndex != lastWrittenIndex + 1 + lastWrittenVariantCount) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x584,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        (*pcVar1)(iVar6,uVar7);
+        (*pcVar1)(lastWrittenVariantCount,uVar6);
         return;
       }
-      local_41c = local_c;
-      iVar6 = pWVar4->iVariantCount;
+      lastWrittenIndex = weapIndex;
+      lastWrittenVariantCount = pWVar4->iVariantCount;
       if (pWVar4->iVariantCount == 0) {
         pcVar5 = va("%i %s");
-        SV_SetConfigstring(local_8 + 0xb14,pcVar5);
+        SV_SetConfigstring(count + 0xb14,pcVar5);
       }
       else {
         pcVar5 = va("%i %s %i");
-        SV_SetConfigstring(local_8 + 0xb14,pcVar5);
+        SV_SetConfigstring(count + 0xb14,pcVar5);
       }
-      local_8 = local_8 + 1;
+      count = count + 1;
     }
-    local_c = local_c + 1;
+    weapIndex = weapIndex + 1;
   } while( true );
 }
 
@@ -2093,48 +2154,49 @@ void __cdecl SaveRegisteredWeapons(void)
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl SaveRegisteredItems(void)
 
 {
-  char local_81c [2048];
+  char string [2048];
   uint local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int bits;
+  int weapIdx;
+  int n;
+  int digit;
+  int last_non_zero_char;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
   level.bRegisterItems = 0;
-  local_8 = 0;
-  local_10 = 0;
-  local_c = 0;
-  local_18 = 0;
-  for (local_14 = 0; local_14 < 0x800; local_14 = local_14 + 1) {
-    if (itemRegistered[local_14] != 0) {
-      local_c = (1 << ((byte)local_18 & 0x1f)) + local_c;
+  last_non_zero_char = 0;
+  n = 0;
+  digit = 0;
+  bits = 0;
+  for (weapIdx = 0; weapIdx < 0x800; weapIdx = weapIdx + 1) {
+    if (itemRegistered[weapIdx] != 0) {
+      digit = (1 << ((byte)bits & 0x1f)) + digit;
     }
-    local_18 = local_18 + 1;
-    if (local_18 == 4) {
-      local_81c[local_10] = ((9 < local_c) - 1U & 0xd9) + 0x57 + (char)local_c;
-      local_10 = local_10 + 1;
-      if (local_c != 0) {
-        local_8 = local_10;
+    bits = bits + 1;
+    if (bits == 4) {
+      string[n] = ((9 < digit) - 1U & 0xd9) + 0x57 + (char)digit;
+      n = n + 1;
+      if (digit != 0) {
+        last_non_zero_char = n;
       }
-      local_c = 0;
-      local_18 = 0;
+      digit = 0;
+      bits = 0;
     }
   }
-  if (local_18 != 0) {
-    local_81c[local_10] = ((9 < local_c) - 1U & 0xd9) + 0x57 + (char)local_c;
-    local_10 = local_10 + 1;
-    if (local_c != 0) {
-      local_8 = local_10;
+  if (bits != 0) {
+    string[n] = ((9 < digit) - 1U & 0xd9) + 0x57 + (char)digit;
+    n = n + 1;
+    if (digit != 0) {
+      last_non_zero_char = n;
     }
   }
-  local_81c[local_8] = '\0';
-  SV_SetConfigstring(0xc4b,local_81c);
+  string[last_non_zero_char] = '\0';
+  SV_SetConfigstring(0xc4b,string);
   return;
 }
 
@@ -2146,7 +2208,7 @@ void __cdecl SaveRegisteredItems(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_RegisterWeapon(uint param_1)
+void __cdecl G_RegisterWeapon(uint weapIndex)
 
 {
   WeaponDef *pWVar1;
@@ -2155,8 +2217,11 @@ void __cdecl G_RegisterWeapon(uint param_1)
   int iVar4;
   char *pcVar5;
   int iVar6;
+  int modelindex;
+  uchar weapModel;
+  WeaponDef *weapDef;
   
-  if (itemRegistered[param_1] != 0) {
+  if (itemRegistered[weapIndex] != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x5fa,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -2164,10 +2229,10 @@ void __cdecl G_RegisterWeapon(uint param_1)
       return;
     }
   }
-  itemRegistered[param_1] = 1;
+  itemRegistered[weapIndex] = 1;
   level.bRegisterItems = 1;
   level.registerWeapons = 1;
-  pWVar1 = bg_weaponVariantDefs[param_1]->weapDef;
+  pWVar1 = bg_weaponVariantDefs[weapIndex]->weapDef;
   if (*pWVar1->szUseHintString != '\0') {
     iVar4 = G_GetHintStringIndex(&pWVar1->iUseHintStringIndex,pWVar1->szUseHintString);
     if (iVar4 == 0) {
@@ -2210,14 +2275,14 @@ void __cdecl G_RegisterWeapon(uint param_1)
 
 // 00624880  IsItemRegistered  (game/g_items.cpp:1584)
 
-int __cdecl IsItemRegistered(int param_1)
+int __cdecl IsItemRegistered(int iItemIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_1 < 0) || (0x7ff < param_1)) {
+  if ((iItemIndex < 0) || (0x7ff < iItemIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x631,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2225,7 +2290,7 @@ int __cdecl IsItemRegistered(int param_1)
       return iVar3;
     }
   }
-  return itemRegistered[param_1];
+  return itemRegistered[iItemIndex];
 }
 
 
@@ -2236,66 +2301,66 @@ int __cdecl IsItemRegistered(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_SpawnItem(gentity_s *param_1,gitem_s *param_2)
+void __cdecl G_SpawnItem(gentity_s *ent,gitem_s *item)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
-  int iVar5;
-  <unnamed_type_un3> <Var6;
-  byte local_1d;
-  DObj *local_1c;
-  int local_18;
-  WeaponVariantDef *local_14;
-  uint local_10;
-  byte local_9;
-  WeaponDef *local_8;
+  char *modelName;
+  int iVar4;
+  <unnamed_type_un3> <Var5;
+  uchar boneIndex;
+  DObj *dobj;
+  int tagIndex;
+  WeaponVariantDef *weapVariantDef;
+  int weapIndex;
+  uchar weapModel;
+  WeaponDef *weapDef;
   
-  (param_1->field36_0x21c).item[0].index = (int)(param_2 + -0x398006) >> 2;
-  local_10 = (param_1->field36_0x21c).item[0].index & 0x800007ff;
-  if ((int)local_10 < 0) {
-    local_10 = (local_10 - 1 | 0xfffff800) + 1;
+  (ent->field36_0x21c).item[0].index = (int)(item + -0x398006) >> 2;
+  weapIndex = (ent->field36_0x21c).item[0].index & 0x800007ff;
+  if (weapIndex < 0) {
+    weapIndex = (weapIndex - 1U | 0xfffff800) + 1;
   }
   uVar3 = BG_GetNumWeapons();
-  if ((int)uVar3 <= (int)local_10) {
+  if ((int)uVar3 <= weapIndex) {
     Com_Error(ERR_DROP,"\x15G_SpawnItem() - Bad item WEAPIDX %i on entity");
   }
-  iVar5 = (param_1->field36_0x21c).item[0].index;
-  local_9 = (byte)((int)(iVar5 + (iVar5 >> 0x1f & 0x7ffU)) >> 0xb);
-  local_8 = BG_GetWeaponDef(local_10);
-  if ((local_8 == (WeaponDef *)0x0) &&
+  iVar4 = (ent->field36_0x21c).item[0].index;
+  weapModel = (uchar)((int)(iVar4 + (iVar4 >> 0x1f & 0x7ffU)) >> 0xb);
+  weapDef = BG_GetWeaponDef(weapIndex);
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x652,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_8->worldModel[local_9] != (XModel *)0x0) {
-    pcVar4 = XModelGetName(local_8->worldModel[local_9]);
-    G_SetModel(param_1,pcVar4);
+  if (weapDef->worldModel[weapModel] != (XModel *)0x0) {
+    modelName = XModelGetName(weapDef->worldModel[weapModel]);
+    G_SetModel(ent,modelName);
   }
-  if ((param_2->giType != IT_WEAPON) &&
+  if ((item->giType != IT_WEAPON) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x656,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  (param_1->r).mins[0] = -1.0;
-  (param_1->r).mins[1] = -1.0;
-  (param_1->r).mins[2] = -1.0;
-  (param_1->r).maxs[0] = 1.0;
-  (param_1->r).maxs[1] = 1.0;
-  (param_1->r).maxs[2] = 1.0;
-  (param_1->r).contents = 0x405c0108;
-  (param_1->r).contents = (param_1->r).contents | 0x200000;
-  (param_1->s).eType = 3;
-  <Var6.item._2_2_ = 0;
-  <Var6.item._0_2_ = *(ushort *)((int)&param_1->field36_0x21c + 8);
-  (param_1->s).un3 = <Var6;
-  if ((0x7ff < (param_1->s).un3.secondBcAlias) &&
+  (ent->r).mins[0] = -1.0;
+  (ent->r).mins[1] = -1.0;
+  (ent->r).mins[2] = -1.0;
+  (ent->r).maxs[0] = 1.0;
+  (ent->r).maxs[1] = 1.0;
+  (ent->r).maxs[2] = 1.0;
+  (ent->r).contents = 0x405c0108;
+  (ent->r).contents = (ent->r).contents | 0x200000;
+  (ent->s).eType = 3;
+  <Var5.item._2_2_ = 0;
+  <Var5.item._0_2_ = *(ushort *)((int)&ent->field36_0x21c + 8);
+  (ent->s).un3 = <Var5;
+  if ((0x7ff < (ent->s).un3.secondBcAlias) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x660,0,
                                "ent->s.un3.item doesn\'t index MAX_ITEMS\n\t%i not in [0, %i)"),
      !bVar2)) {
@@ -2303,57 +2368,57 @@ void __cdecl G_SpawnItem(gentity_s *param_1,gitem_s *param_2)
     (*pcVar1)();
     return;
   }
-  if (param_1->count == 0) {
-    TransferRandomAmmoToWeaponEntity(param_1,local_10);
+  if (ent->count == 0) {
+    TransferRandomAmmoToWeaponEntity(ent,weapIndex);
   }
   else {
-    TransferSpecifiedAmmoToWeaponEntity(param_1,local_10);
+    TransferSpecifiedAmmoToWeaponEntity(ent,weapIndex);
   }
-  G_DObjUpdate(param_1);
-  if (local_8->worldModel[local_9] != (XModel *)0x0) {
-    local_1c = Com_GetServerDObj((param_1->s).number);
-    local_14 = BG_GetWeaponVariantDef(local_10);
-    if ((local_14 == (WeaponVariantDef *)0x0) &&
+  G_DObjUpdate(ent);
+  if (weapDef->worldModel[weapModel] != (XModel *)0x0) {
+    dobj = Com_GetServerDObj((ent->s).number);
+    weapVariantDef = BG_GetWeaponVariantDef(weapIndex);
+    if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x674,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    for (local_18 = 0; (local_18 < 0x20 && (local_14->hideTags[local_18] != 0));
-        local_18 = local_18 + 1) {
-      local_1d = 0xfe;
-      iVar5 = DObjGetBoneIndex(local_1c,(uint)local_14->hideTags[local_18],&local_1d,-1);
-      if (iVar5 != 0) {
-        (param_1->s).partBits[(int)(uint)local_1d >> 5] =
-             0x80000000U >> (local_1d & 0x1f) | (param_1->s).partBits[(int)(uint)local_1d >> 5];
+    for (tagIndex = 0; (tagIndex < 0x20 && (weapVariantDef->hideTags[tagIndex] != 0));
+        tagIndex = tagIndex + 1) {
+      boneIndex = 0xfe;
+      iVar4 = DObjGetBoneIndex(dobj,(uint)weapVariantDef->hideTags[tagIndex],&boneIndex,-1);
+      if (iVar4 != 0) {
+        (ent->s).partBits[(int)(uint)boneIndex >> 5] =
+             0x80000000U >> (boneIndex & 0x1f) | (ent->s).partBits[(int)(uint)boneIndex >> 5];
       }
     }
-    DObjSetHidePartBits(local_1c,(param_1->s).partBits);
+    DObjSetHidePartBits(dobj,(ent->s).partBits);
   }
-  (param_1->s).clientNum = ' ';
-  param_1->flags = param_1->flags | 0x1000;
+  (ent->s).clientNum = ' ';
+  ent->flags = ent->flags | 0x1000;
   if (level.spawnVar.spawnVarsValid == false) {
-    param_1->handler = '\x15';
-    if ((param_1->spawnflags & 1U) == 0) {
-      (param_1->s).groundEntityNum = 0x3ff;
-      if ((param_2->giType != IT_WEAPON) &&
+    ent->handler = '\x15';
+    if ((ent->spawnflags & 1U) == 0) {
+      (ent->s).groundEntityNum = 0x3ff;
+      if ((item->giType != IT_WEAPON) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x69d,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      (param_1->r).currentAngles[2] = (param_1->r).currentAngles[2] + 90.0;
+      (ent->r).currentAngles[2] = (ent->r).currentAngles[2] + 90.0;
     }
-    G_SetAngle(param_1,(param_1->r).currentAngles);
-    G_SetOrigin(param_1,(param_1->r).currentOrigin);
-    SV_LinkEntity(param_1);
+    G_SetAngle(ent,(ent->r).currentAngles);
+    G_SetOrigin(ent,(ent->r).currentOrigin);
+    SV_LinkEntity(ent);
   }
   else {
-    G_SetAngle(param_1,(param_1->r).currentAngles);
-    param_1->nextthink = level.time + 100;
-    param_1->handler = '\x14';
+    G_SetAngle(ent,(ent->r).currentAngles);
+    ent->nextthink = level.time + 100;
+    ent->handler = '\x14';
   }
   return;
 }
@@ -2366,28 +2431,28 @@ void __cdecl G_SpawnItem(gentity_s *param_1,gitem_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_OrientItemToGround(gentity_s *param_1,trace_t *param_2)
+void __cdecl G_OrientItemToGround(gentity_s *ent,trace_t *trace)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_34 [2];
+  float vAngles [2];
   float local_2c;
-  float local_28 [3];
+  float vAxis [3];
   float local_1c [3];
   float local_10;
   float local_c;
   float local_8;
   
-  local_10 = (param_2->normal).vec.v[0];
-  local_c = (param_2->normal).vec.v[1];
-  local_8 = (param_2->normal).vec.v[2];
-  AngleVectors((param_1->r).currentAngles,local_28,(float *)0x0,(float *)0x0);
-  Vec3Cross(&local_10,local_28,local_1c);
-  Vec3Cross(local_1c,&local_10,local_28);
-  AxisToAngles(&local_28,local_34);
-  if ((param_1->s).un3.item != 0) {
-    if (*(int *)(&bg_itemlist + (param_1->s).un3.item * 4) != 1) {
+  local_10 = (trace->normal).vec.v[0];
+  local_c = (trace->normal).vec.v[1];
+  local_8 = (trace->normal).vec.v[2];
+  AngleVectors((ent->r).currentAngles,vAxis,(float *)0x0,(float *)0x0);
+  Vec3Cross(&local_10,vAxis,local_1c);
+  Vec3Cross(local_1c,&local_10,vAxis);
+  AxisToAngles(&vAxis,vAngles);
+  if ((ent->s).un3.item != 0) {
+    if (*(int *)(&bg_itemlist + (ent->s).un3.item * 4) != 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x6b9,0,"%s");
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
@@ -2397,7 +2462,7 @@ void __cdecl G_OrientItemToGround(gentity_s *param_1,trace_t *param_2)
     }
     local_2c = local_2c + 90.0;
   }
-  G_SetAngle(param_1,local_34);
+  G_SetAngle(ent,vAngles);
   return;
 }
 
@@ -2410,7 +2475,7 @@ void __cdecl G_OrientItemToGround(gentity_s *param_1,trace_t *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl G_RunItem(gentity_s *param_1)
+void __cdecl G_RunItem(gentity_s *ent)
 
 {
   code *pcVar1;
@@ -2420,78 +2485,79 @@ void __cdecl G_RunItem(gentity_s *param_1)
   float fVar5;
   uint local_100;
   uint local_fc;
-  col_context_t local_94;
-  float local_6c;
+  int contents;
+  col_context_t context;
+  float delta;
   float local_68;
   float local_64;
-  float local_60;
+  float origin;
   float local_5c;
   float local_58;
-  float local_54;
+  float endpos;
   float local_50;
   float local_4c;
-  float4 local_48;
+  float4 tr;
   float local_38;
   char local_1d;
   uint local_10;
-  uint local_c;
-  float local_8;
+  int mask;
+  float dot;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_48.v[0] = 0.0;
-  local_48.v[1] = 0.0;
-  local_48.v[2] = 0.0;
-  local_48.v[3] = 0.0;
-  if (((param_1->s).eType == 2) &&
+  tr.v[0] = 0.0;
+  tr.v[1] = 0.0;
+  tr.v[2] = 0.0;
+  tr.v[3] = 0.0;
+  if (((ent->s).eType == 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x6cf,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->s).groundEntityNum == 0x3ff) ||
-     (level.gentities[(param_1->s).groundEntityNum].s.lerp.pos.trType != '\0')) {
-    if (((param_1->s).lerp.pos.trType == '\x06') ||
-       (((param_1->s).lerp.pos.trType == '\n' || ((param_1->s).lerp.pos.trType == '\r')))) {
-      if ((param_1->s).lerp.pos.trType == '\n') {
+  if (((ent->s).groundEntityNum == 0x3ff) ||
+     (level.gentities[(ent->s).groundEntityNum].s.lerp.pos.trType != '\0')) {
+    if (((ent->s).lerp.pos.trType == '\x06') ||
+       (((ent->s).lerp.pos.trType == '\n' || ((ent->s).lerp.pos.trType == '\r')))) {
+      if ((ent->s).lerp.pos.trType == '\n') {
         return;
       }
     }
-    else if ((param_1->spawnflags & 1U) == 0) {
-      (param_1->s).lerp.pos.trType = '\x06';
-      (param_1->s).lerp.pos.trTime = level.time;
-      (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-      (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-      (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-      (param_1->s).lerp.pos.trDelta[0] = 0.0;
-      (param_1->s).lerp.pos.trDelta[1] = 0.0;
-      (param_1->s).lerp.pos.trDelta[2] = 0.0;
+    else if ((ent->spawnflags & 1U) == 0) {
+      (ent->s).lerp.pos.trType = '\x06';
+      (ent->s).lerp.pos.trTime = level.time;
+      (ent->s).lerp.pos.trBase[0] = (ent->r).currentOrigin[0];
+      (ent->s).lerp.pos.trBase[1] = (ent->r).currentOrigin[1];
+      (ent->s).lerp.pos.trBase[2] = (ent->r).currentOrigin[2];
+      (ent->s).lerp.pos.trDelta[0] = 0.0;
+      (ent->s).lerp.pos.trDelta[1] = 0.0;
+      (ent->s).lerp.pos.trDelta[2] = 0.0;
     }
   }
-  if ((((((uint)(param_1->s).lerp.pos.trBase[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(param_1->s).lerp.pos.trBase[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(param_1->s).lerp.pos.trBase[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(ent->s).lerp.pos.trBase[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(ent->s).lerp.pos.trBase[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(ent->s).lerp.pos.trBase[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x6e8,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((((uint)(param_1->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(param_1->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(param_1->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(ent->s).lerp.pos.trDelta[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(ent->s).lerp.pos.trDelta[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(ent->s).lerp.pos.trDelta[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x6e9,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_1->s).lerp.pos.trType == '\0') || (param_1->tagInfo != (tagInfo_s *)0x0)) {
-    G_RunThink(param_1);
+  if (((ent->s).lerp.pos.trType == '\0') || (ent->tagInfo != (tagInfo_s *)0x0)) {
+    G_RunThink(ent);
   }
   else {
-    BG_EvaluateTrajectory(&(param_1->s).lerp.pos,level.time + 0x32,&local_60);
-    if ((((((uint)local_60 & 0x7f800000) == 0x7f800000) ||
+    BG_EvaluateTrajectory(&(ent->s).lerp.pos,level.time + 0x32,&origin);
+    if ((((((uint)origin & 0x7f800000) == 0x7f800000) ||
          (((uint)local_5c & 0x7f800000) == 0x7f800000)) ||
         (((uint)local_58 & 0x7f800000) == 0x7f800000)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x6f5,0,"%s"
@@ -2500,91 +2566,90 @@ void __cdecl G_RunItem(gentity_s *param_1)
       (*pcVar1)();
       return;
     }
-    local_c = G_ItemClipMask(param_1);
-    if ((((param_1->r).contents & local_c) != 0) &&
+    mask = G_ItemClipMask(ent);
+    if ((((ent->r).contents & mask) != 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_items.cpp",0x6fb,0,"%s"
                                 ), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    fVar5 = Vec3DistanceSq((param_1->r).currentOrigin,&local_60);
+    fVar5 = Vec3DistanceSq((ent->r).currentOrigin,&origin);
     if (fVar5 < 0.1) {
       local_58 = local_58 - 1.0;
     }
-    col_context_t::col_context_t(&local_94);
-    iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
+    col_context_t::col_context_t(&context);
+    iVar4 = EntHandle::isDefined(&(ent->r).ownerNum);
     if (iVar4 == 0) {
       local_fc = 0x3ff;
     }
     else {
-      local_fc = EntHandle::entnum(&(param_1->r).ownerNum);
+      local_fc = EntHandle::entnum(&(ent->r).ownerNum);
     }
-    G_TraceCapsule((trace_t *)&local_48,(param_1->r).currentOrigin,(param_1->r).mins,
-                   (param_1->r).maxs,&local_60,local_fc,local_c,&local_94);
+    G_TraceCapsule((trace_t *)&tr,(ent->r).currentOrigin,(ent->r).mins,(ent->r).maxs,&origin,
+                   local_fc,mask,&context);
     if (1.0 <= local_38) {
-      (param_1->r).currentOrigin[0] = local_60;
-      (param_1->r).currentOrigin[1] = local_5c;
-      (param_1->r).currentOrigin[2] = local_58;
+      (ent->r).currentOrigin[0] = origin;
+      (ent->r).currentOrigin[1] = local_5c;
+      (ent->r).currentOrigin[2] = local_58;
     }
     else {
-      Vec3Lerp((param_1->r).currentOrigin,&local_60,local_38,&local_54);
-      if (((local_1d == '\0') && (local_38 < 0.01)) && (local_48.v[2] < 0.5)) {
-        local_6c = local_60 - (param_1->r).currentOrigin[0];
-        local_68 = local_5c - (param_1->r).currentOrigin[1];
-        local_64 = local_58 - (param_1->r).currentOrigin[2];
-        local_8 = 1.0 - (local_6c * local_48.v[0] + local_68 * local_48.v[1] +
-                        local_64 * local_48.v[2]);
-        local_60 = local_8 * local_48.v[0] + local_60;
-        local_5c = local_8 * local_48.v[1] + local_5c;
-        local_58 = local_8 * local_48.v[2] + local_58;
-        iVar4 = EntHandle::isDefined(&(param_1->r).ownerNum);
+      Vec3Lerp((ent->r).currentOrigin,&origin,local_38,&endpos);
+      if (((local_1d == '\0') && (local_38 < 0.01)) && (tr.v[2] < 0.5)) {
+        delta = origin - (ent->r).currentOrigin[0];
+        local_68 = local_5c - (ent->r).currentOrigin[1];
+        local_64 = local_58 - (ent->r).currentOrigin[2];
+        dot = 1.0 - (delta * tr.v[0] + local_68 * tr.v[1] + local_64 * tr.v[2]);
+        origin = dot * tr.v[0] + origin;
+        local_5c = dot * tr.v[1] + local_5c;
+        local_58 = dot * tr.v[2] + local_58;
+        iVar4 = EntHandle::isDefined(&(ent->r).ownerNum);
         if (iVar4 == 0) {
           local_100 = 0x3ff;
         }
         else {
-          local_100 = EntHandle::entnum(&(param_1->r).ownerNum);
+          local_100 = EntHandle::entnum(&(ent->r).ownerNum);
         }
-        G_TraceCapsule((trace_t *)&local_48,&local_54,(param_1->r).mins,(param_1->r).maxs,&local_60,
-                       local_100,local_c,&local_94);
-        Vec3Lerp(&local_54,&local_60,local_38,&local_54);
+        G_TraceCapsule((trace_t *)&tr,&endpos,(ent->r).mins,(ent->r).maxs,&origin,local_100,mask,
+                       &context);
+        Vec3Lerp(&endpos,&origin,local_38,&endpos);
       }
-      (param_1->s).lerp.pos.trType = '\x04';
-      (param_1->s).lerp.pos.trTime = level.time;
-      (param_1->s).lerp.pos.trDuration = 0x32;
-      (param_1->s).lerp.pos.trBase[0] = (param_1->r).currentOrigin[0];
-      (param_1->s).lerp.pos.trBase[1] = (param_1->r).currentOrigin[1];
-      (param_1->s).lerp.pos.trBase[2] = (param_1->r).currentOrigin[2];
-      (param_1->s).lerp.pos.trDelta[0] = local_54 - (param_1->r).currentOrigin[0];
-      (param_1->s).lerp.pos.trDelta[1] = local_50 - (param_1->r).currentOrigin[1];
-      (param_1->s).lerp.pos.trDelta[2] = local_4c - (param_1->r).currentOrigin[2];
-      (param_1->s).lerp.pos.trDelta[0] = (param_1->s).lerp.pos.trDelta[0] * 20.0;
-      (param_1->s).lerp.pos.trDelta[1] = (param_1->s).lerp.pos.trDelta[1] * 20.0;
-      (param_1->s).lerp.pos.trDelta[2] = (param_1->s).lerp.pos.trDelta[2] * 20.0;
-      (param_1->r).currentOrigin[0] = local_54;
-      (param_1->r).currentOrigin[1] = local_50;
-      (param_1->r).currentOrigin[2] = local_4c;
+      (ent->s).lerp.pos.trType = '\x04';
+      (ent->s).lerp.pos.trTime = level.time;
+      (ent->s).lerp.pos.trDuration = 0x32;
+      (ent->s).lerp.pos.trBase[0] = (ent->r).currentOrigin[0];
+      (ent->s).lerp.pos.trBase[1] = (ent->r).currentOrigin[1];
+      (ent->s).lerp.pos.trBase[2] = (ent->r).currentOrigin[2];
+      (ent->s).lerp.pos.trDelta[0] = endpos - (ent->r).currentOrigin[0];
+      (ent->s).lerp.pos.trDelta[1] = local_50 - (ent->r).currentOrigin[1];
+      (ent->s).lerp.pos.trDelta[2] = local_4c - (ent->r).currentOrigin[2];
+      (ent->s).lerp.pos.trDelta[0] = (ent->s).lerp.pos.trDelta[0] * 20.0;
+      (ent->s).lerp.pos.trDelta[1] = (ent->s).lerp.pos.trDelta[1] * 20.0;
+      (ent->s).lerp.pos.trDelta[2] = (ent->s).lerp.pos.trDelta[2] * 20.0;
+      (ent->r).currentOrigin[0] = endpos;
+      (ent->r).currentOrigin[1] = local_50;
+      (ent->r).currentOrigin[2] = local_4c;
     }
-    SV_LinkEntity(param_1);
-    G_RunThink(param_1);
-    if (((param_1->r).inuse != '\0') && (local_38 < 0.01)) {
-      if (0.0 < local_48.v[2]) {
-        iVar4 = SV_PointContents((param_1->r).currentOrigin,-1,-0x80000000);
+    SV_LinkEntity(ent);
+    G_RunThink(ent);
+    if (((ent->r).inuse != '\0') && (local_38 < 0.01)) {
+      if (0.0 < tr.v[2]) {
+        iVar4 = SV_PointContents((ent->r).currentOrigin,-1,-0x80000000);
         if (iVar4 == 0) {
-          G_OrientItemToGround(param_1,(trace_t *)&local_48);
-          G_SetOrigin(param_1,&local_54);
-          uVar3 = Trace_GetEntityHitId((trace_t *)&local_48);
-          (param_1->s).groundEntityNum = uVar3;
-          g_entities[(param_1->s).groundEntityNum].flags =
-               g_entities[(param_1->s).groundEntityNum].flags | 0x100000;
-          SV_LinkEntity(param_1);
+          G_OrientItemToGround(ent,(trace_t *)&tr);
+          G_SetOrigin(ent,&endpos);
+          uVar3 = Trace_GetEntityHitId((trace_t *)&tr);
+          (ent->s).groundEntityNum = uVar3;
+          g_entities[(ent->s).groundEntityNum].flags =
+               g_entities[(ent->s).groundEntityNum].flags | 0x100000;
+          SV_LinkEntity(ent);
         }
         else {
-          G_FreeEntity(param_1);
+          G_FreeEntity(ent);
         }
       }
       else {
-        G_FreeEntity(param_1);
+        G_FreeEntity(ent);
       }
     }
   }

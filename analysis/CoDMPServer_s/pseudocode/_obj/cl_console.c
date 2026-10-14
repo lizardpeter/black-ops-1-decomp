@@ -33,35 +33,35 @@ void __cdecl Con_ToggleConsole(void)
 void __cdecl Con_GetTextCopy(char *param_1,int param_2)
 
 {
-  ulong uVar1;
+  ulong count;
+  int iVar1;
   int iVar2;
-  int iVar3;
   
-  uVar1 = DAT_00c57130;
+  count = DAT_00c57130;
   if (DAT_00c57138 == 0) {
     *param_1 = '\0';
     return;
   }
-  iVar2 = *(int *)(DAT_00c5710c + 4 + DAT_00c57134 * 0x18);
-  iVar3 = DAT_00c57130 - iVar2;
-  if (iVar3 < 0) {
-    iVar3 = iVar3 + DAT_00c57118;
+  iVar1 = *(int *)(DAT_00c5710c + 4 + DAT_00c57134 * 0x18);
+  iVar2 = DAT_00c57130 - iVar1;
+  if (iVar2 < 0) {
+    iVar2 = iVar2 + DAT_00c57118;
   }
-  if (0x3fff < iVar3) {
-    iVar2 = iVar2 + -0x3fff + iVar3;
-    if (DAT_00c57118 < iVar2) {
-      iVar2 = iVar2 - DAT_00c57118;
+  if (0x3fff < iVar2) {
+    iVar1 = iVar1 + -0x3fff + iVar2;
+    if (DAT_00c57118 < iVar1) {
+      iVar1 = iVar1 - DAT_00c57118;
     }
-    iVar3 = 0x3fff;
+    iVar2 = 0x3fff;
   }
-  if (iVar2 < (int)DAT_00c57130) {
-    memcpy((uchar *)param_1,DAT_00c57114 + iVar2,DAT_00c57130 - iVar2);
-    param_1[iVar3] = '\0';
+  if (iVar1 < (int)DAT_00c57130) {
+    memcpy((uchar *)param_1,DAT_00c57114 + iVar1,DAT_00c57130 - iVar1);
+    param_1[iVar2] = '\0';
     return;
   }
-  memcpy((uchar *)param_1,DAT_00c57114 + iVar2,DAT_00c57118 - iVar2);
-  memcpy((uchar *)(param_1 + (DAT_00c57118 - iVar2)),DAT_00c57114,uVar1);
-  param_1[iVar3] = '\0';
+  memcpy((uchar *)param_1,DAT_00c57114 + iVar1,DAT_00c57118 - iVar1);
+  memcpy((uchar *)(param_1 + (DAT_00c57118 - iVar1)),DAT_00c57114,count);
+  param_1[iVar2] = '\0';
   return;
 }
 
@@ -1480,9 +1480,9 @@ void __cdecl Con_Restricted_LoadWadList(char *param_1)
   int iVar3;
   int iVar4;
   int iVar5;
+  char *nptr;
   char *pcVar6;
-  char *pcVar7;
-  int iVar8;
+  int iVar7;
   char *unaff_EDI;
   undefined4 local_44;
   char local_40 [63];
@@ -1508,40 +1508,40 @@ LAB_004e1504:
     local_40[0] = '\0';
   }
   else {
-    iVar8 = 0x40;
+    iVar7 = 0x40;
     iVar5 = iVar4 + -1;
     do {
       cVar2 = *(char *)(iVar5 + 1);
       iVar5 = iVar5 + 1;
       local_40[(iVar5 - (iVar4 + -1)) + -1] = cVar2;
       if (cVar2 == '\0') break;
-      iVar8 = iVar8 + -1;
-    } while (iVar8 != 0);
+      iVar7 = iVar7 + -1;
+    } while (iVar7 != 0);
     local_1 = 0;
   }
   if (param_1 == (char *)0x0) goto LAB_004e16e3;
-  pcVar7 = param_1;
+  pcVar6 = param_1;
   if ((local_40[0] != '\0') && (local_40[0] != '#')) {
     if (DAT_03500f1c < 0x80) {
       iVar4 = 1;
       do {
         iVar5 = FUN_006a9e90();
-        pcVar6 = (char *)(*(int *)(iVar5 + 0x4280) * 0x428 + iVar5);
-        if (pcVar6[0x408] == '\0') {
+        nptr = (char *)(*(int *)(iVar5 + 0x4280) * 0x428 + iVar5);
+        if (nptr[0x408] == '\0') {
 LAB_004e15f2:
-          pcVar6 = (char *)FUN_006aa5f0(&param_1,0);
-          pcVar7 = param_1;
+          nptr = (char *)FUN_006aa5f0(&param_1,0);
+          pcVar6 = param_1;
         }
         else {
-          pcVar6[0x408] = '\0';
-          if (pcVar6[0x409] != '\0') {
-            param_1 = *(char **)(pcVar6 + 0x420);
-            *(undefined4 *)(pcVar6 + 0x404) = *(undefined4 *)(pcVar6 + 0x41c);
+          nptr[0x408] = '\0';
+          if (nptr[0x409] != '\0') {
+            param_1 = *(char **)(nptr + 0x420);
+            *(undefined4 *)(nptr + 0x404) = *(undefined4 *)(nptr + 0x41c);
             goto LAB_004e15f2;
           }
         }
         if (iVar4 == iVar3) {
-          if (*pcVar6 != '\0') {
+          if (*nptr != '\0') {
             if (&DAT_00c44b58 + DAT_03500f1c * 0x41 == (undefined1 *)0x0) goto LAB_004e1658;
             iVar4 = (int)&local_44 + 3;
             iVar5 = 0x40;
@@ -1568,9 +1568,9 @@ LAB_004e16e3:
   }
 LAB_004e168c:
   iVar4 = FUN_006a9e90();
-  if (pcVar7 != (char *)0x0) {
-    cVar2 = *pcVar7;
-    param_1 = pcVar7;
+  if (pcVar6 != (char *)0x0) {
+    cVar2 = *pcVar6;
+    param_1 = pcVar6;
     while (cVar2 != '\0') {
       param_1 = param_1 + 1;
       if (cVar2 == '\n') {
@@ -1592,7 +1592,7 @@ LAB_004e1640:
   (&DAT_00c44b97)[DAT_03500f1c * 0x41] = 0;
   iVar3 = local_44;
 LAB_004e1658:
-  iVar4 = atoi(pcVar6);
+  iVar4 = atoi(nptr);
   if (iVar4 == 0) {
     (&DAT_00c44b98)[DAT_03500f1c * 0x41] = 0;
   }

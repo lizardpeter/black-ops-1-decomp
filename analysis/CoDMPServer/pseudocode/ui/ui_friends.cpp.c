@@ -72,9 +72,11 @@ void __cdecl UI_FriendsRegisterDvars(void)
 
 // 0073B5E0  UI_FriendsUpdate  (ui/ui_friends.cpp:71)
 
-void __cdecl UI_FriendsUpdate(int param_1)
+void __cdecl UI_FriendsUpdate(int controllerIndex)
 
 {
+  int lowestOffset;
+  
   if ((int)((ui_dropdownListMax->current).string + (-1 - (ui_dropdownMax->current).integer)) <
       (ui_listboxIndex->current).integer) {
     Dvar_SetIntIfChanged

@@ -51,15 +51,15 @@ void __cdecl CG_AmmoCounterRegisterDvars(void)
 
 // 00474AC0  GetBaseRectPos  (cgame/cg_ammocounter.cpp:71)
 
-void __cdecl GetBaseRectPos(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl GetBaseRectPos(int localClientNum,rectDef_s *rect,float *base)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_c;
-  float local_8;
+  float dummyW;
+  float dummyH;
   
-  if (param_2 == (rectDef_s *)0x0) {
+  if (rect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x4b,0,
                              "%s");
     if (!bVar2) {
@@ -68,10 +68,10 @@ void __cdecl GetBaseRectPos(int param_1,rectDef_s *param_2,float *param_3)
       return;
     }
   }
-  *param_3 = param_2->x;
-  param_3[1] = param_2->y;
-  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_3,param_3 + 1,
-                     &local_c,&local_8,param_2->horzAlign,param_2->vertAlign);
+  *base = rect->x;
+  base[1] = rect->y;
+  ScrPlace_ApplyRect((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),base,base + 1,
+                     &dummyW,&dummyH,rect->horzAlign,rect->vertAlign);
   return;
 }
 
@@ -83,7 +83,7 @@ void __cdecl GetBaseRectPos(int param_1,rectDef_s *param_2,float *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl GetWeaponAltIndex(cg_s *param_1,int param_2)
+int __cdecl GetWeaponAltIndex(cg_s *cgameGlob,int weaponIndex)
 
 {
   code *pcVar1;
@@ -92,9 +92,12 @@ int __cdecl GetWeaponAltIndex(cg_s *param_1,int param_2)
   WeaponDef *pWVar4;
   int iVar5;
   uint uVar6;
+  WeaponVariantDef *weapVariantDef;
+  WeaponDef *weapDefAlt;
+  WeaponDef *weapDef;
   
-  pWVar3 = BG_GetWeaponVariantDef(param_2);
-  pWVar4 = BG_GetWeaponDef(param_2);
+  pWVar3 = BG_GetWeaponVariantDef(weaponIndex);
+  pWVar4 = BG_GetWeaponDef(weaponIndex);
   if (pWVar4 == (WeaponDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x60,0,
                              "%s");
@@ -105,10 +108,10 @@ int __cdecl GetWeaponAltIndex(cg_s *param_1,int param_2)
     }
   }
   if (pWVar4->inventoryType == WEAPINVENTORY_ALTMODE) {
-    uVar6 = CG_GetAltWeapon(param_1,param_2);
+    uVar6 = CG_GetAltWeapon(cgameGlob,weaponIndex);
   }
   else if (pWVar3->altWeaponIndex == 0) {
-    BG_WeaponName(param_2);
+    BG_WeaponName(weaponIndex);
     Com_PrintWarning(0x11,
                      "Weapon \"%s\" ammoCounterClip property is set to \"AltWeapon\", but it has no alternate weapon.\n"
                     );
@@ -118,7 +121,7 @@ int __cdecl GetWeaponAltIndex(cg_s *param_1,int param_2)
     pWVar4 = BG_GetWeaponDef(pWVar3->altWeaponIndex);
     if (pWVar4->ammoCounterClip == AMMO_COUNTER_CLIP_ALTWEAPON) {
       BG_WeaponName(pWVar3->altWeaponIndex);
-      BG_WeaponName(param_2);
+      BG_WeaponName(weaponIndex);
       Com_PrintWarning(0x11,
                        "Weapon \"%s\" and it\'s altweapon \"%s\" both have their ammoCounterClip property set to \"AltWeapon\".\n"
                       );
@@ -139,51 +142,52 @@ int __cdecl GetWeaponAltIndex(cg_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl ClipCounterWeapIdx(cg_s *param_1,uint param_2)
+int __cdecl ClipCounterWeapIdx(cg_s *cgameGlob,uint weapIndex)
 
 {
   WeaponDef *pWVar1;
+  WeaponDef *weapDef;
   
-  if (param_2 == 0) {
-    param_2 = 0;
+  if (weapIndex == 0) {
+    weapIndex = 0;
   }
   else {
-    pWVar1 = BG_GetWeaponDef(param_2);
+    pWVar1 = BG_GetWeaponDef(weapIndex);
     if ((pWVar1->ammoCounterClip == AMMO_COUNTER_CLIP_NONE) && (pWVar1->fuelTankWeapon == false)) {
-      param_2 = 0;
+      weapIndex = 0;
     }
     else if (pWVar1->ammoCounterClip == AMMO_COUNTER_CLIP_ALTWEAPON) {
-      param_2 = GetWeaponAltIndex(param_1,param_2);
+      weapIndex = GetWeaponAltIndex(cgameGlob,weapIndex);
     }
   }
-  return param_2;
+  return weapIndex;
 }
 
 
 // 00472AC0  AmmoColor  (cgame/cg_ammocounter.cpp:138)
 
+/* WARNING: Variable defined which should be unmapped: delta */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl AmmoColor(cg_s *param_1,float *param_2,uint param_3)
+void __cdecl AmmoColor(cg_s *cgameGlob,float *color,uint weapIndex)
 
 {
   bool bVar1;
   double dVar2;
   float fVar3;
-  undefined4 in_stack_fffffff8;
-  int iVar4;
+  float delta;
+  int idx;
   
-  bVar1 = CG_CheckPlayerForLowClipSpecific(param_1,param_3);
+  bVar1 = CG_CheckPlayerForLowClipSpecific(cgameGlob,weapIndex);
   if (bVar1) {
-    fVar3 = (float)(param_1->time - param_1->lastClipFlashTime) / (MYFLASHTERM * 3.1415927);
+    fVar3 = (float)(cgameGlob->time - cgameGlob->lastClipFlashTime) / (MYFLASHTERM * 3.1415927);
     dVar2 = (double)fVar3;
-    __libm_sse2_sin((double)CONCAT44(in_stack_fffffff8,fVar3));
-    for (iVar4 = 0; iVar4 < 3; iVar4 = iVar4 + 1) {
-      param_2[iVar4] =
-           (colorLowAmmo[iVar4] - param_2[iVar4]) * ((float)dVar2 * 0.5 + 0.5) + param_2[iVar4];
+    __libm_sse2_sin((double)CONCAT44(idx,fVar3));
+    for (idx = 0; idx < 3; idx = idx + 1) {
+      color[idx] = (colorLowAmmo[idx] - color[idx]) * ((float)dVar2 * 0.5 + 0.5) + color[idx];
     }
   }
   return;
@@ -197,7 +201,7 @@ void __cdecl AmmoColor(cg_s *param_1,float *param_2,uint param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl AmmoCounterFadeAlpha(int param_1,cg_s *param_2)
+float __cdecl AmmoCounterFadeAlpha(int localClientNum,cg_s *cgameGlob)
 
 {
   code *pcVar1;
@@ -205,7 +209,7 @@ float __cdecl AmmoCounterFadeAlpha(int param_1,cg_s *param_2)
   float10 fVar3;
   float fVar4;
   
-  if (param_2 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x9d,0,
                              "%s");
     if (!bVar2) {
@@ -214,8 +218,8 @@ float __cdecl AmmoCounterFadeAlpha(int param_1,cg_s *param_2)
       return (float)fVar3;
     }
   }
-  if (((param_2->predictedPlayerState).weapFlags & 0x80U) == 0) {
-    fVar4 = CG_FadeHudMenu(param_1,hud_fade_ammodisplay,param_2->ammoFadeTime,
+  if (((cgameGlob->predictedPlayerState).weapFlags & 0x80U) == 0) {
+    fVar4 = CG_FadeHudMenu(localClientNum,hud_fade_ammodisplay,cgameGlob->ammoFadeTime,
                            (int)ROUND((hud_fade_ammodisplay->current).value * 1000.0 + 9.313226e-10)
                           );
   }
@@ -235,7 +239,7 @@ float __cdecl AmmoCounterFadeAlpha(int param_1,cg_s *param_2)
 
 void __cdecl
 DrawClipAmmoMagazine
-          (cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *param_4,float *param_5)
+          (cg_s *cgameGlob,float *base,uint weapIdx,WeaponVariantDef *weapVarDef,float *color)
 
 {
   float fVar1;
@@ -243,10 +247,14 @@ DrawClipAmmoMagazine
   bool bVar3;
   int iVar4;
   int iVar5;
-  float local_18;
-  int local_10;
+  int clipSize;
+  float bulletX;
+  float bulletY;
+  int clipIdx;
+  playerState_s *ps;
+  int clipCnt;
   
-  if (param_1 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0xba,0,
                              "%s");
     if (!bVar3) {
@@ -255,7 +263,7 @@ DrawClipAmmoMagazine
       return;
     }
   }
-  if (param_4 == (WeaponVariantDef *)0x0) {
+  if (weapVarDef == (WeaponVariantDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0xbb,0,
                              "%s");
     if (!bVar3) {
@@ -264,19 +272,19 @@ DrawClipAmmoMagazine
       return;
     }
   }
-  local_18 = *param_2;
-  fVar1 = param_2[1];
-  iVar4 = BG_GetAmmoInClipForWeaponDef(&param_1->predictedPlayerState,param_4);
-  AmmoColor(param_1,param_5,param_3);
-  iVar5 = BG_GetClipSize(param_3);
-  for (local_10 = 0; local_18 = local_18 - 4.0, local_10 < iVar5; local_10 = local_10 + 1) {
-    if (local_10 == iVar4) {
-      *param_5 = 0.3;
-      param_5[1] = 0.3;
-      param_5[2] = 0.3;
+  bulletX = *base;
+  fVar1 = base[1];
+  iVar4 = BG_GetAmmoInClipForWeaponDef(&cgameGlob->predictedPlayerState,weapVarDef);
+  AmmoColor(cgameGlob,color,weapIdx);
+  iVar5 = BG_GetClipSize(weapIdx);
+  for (clipIdx = 0; bulletX = bulletX - 4.0, clipIdx < iVar5; clipIdx = clipIdx + 1) {
+    if (clipIdx == iVar4) {
+      *color = 0.3;
+      color[1] = 0.3;
+      color[2] = 0.3;
     }
     CL_DrawStretchPicPhysical
-              (local_18,fVar1 - 4.0,4.0,8.0,0.0,0.0,1.0,1.0,param_5,cgMedia.ammoCounterBullet);
+              (bulletX,fVar1 - 4.0,4.0,8.0,0.0,0.0,1.0,1.0,color,cgMedia.ammoCounterBullet);
   }
   return;
 }
@@ -291,7 +299,7 @@ DrawClipAmmoMagazine
 
 void __cdecl
 DrawClipAmmoShortMagazine
-          (cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *param_4,float *param_5)
+          (cg_s *cgameGlob,float *base,uint weapIdx,WeaponVariantDef *weapVarDef,float *color)
 
 {
   float fVar1;
@@ -299,10 +307,14 @@ DrawClipAmmoShortMagazine
   bool bVar3;
   int iVar4;
   int iVar5;
-  float local_18;
-  int local_10;
+  int clipSize;
+  float bulletX;
+  float bulletY;
+  int clipIdx;
+  playerState_s *ps;
+  int clipCnt;
   
-  if (param_1 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0xda,0,
                              "%s");
     if (!bVar3) {
@@ -311,7 +323,7 @@ DrawClipAmmoShortMagazine
       return;
     }
   }
-  if (param_4 == (WeaponVariantDef *)0x0) {
+  if (weapVarDef == (WeaponVariantDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0xdb,0,
                              "%s");
     if (!bVar3) {
@@ -320,21 +332,20 @@ DrawClipAmmoShortMagazine
       return;
     }
   }
-  local_18 = *param_2 - 32.0;
-  fVar1 = param_2[1];
-  iVar4 = BG_GetAmmoInClipForWeaponDef(&param_1->predictedPlayerState,param_4);
-  AmmoColor(param_1,param_5,param_3);
-  iVar5 = BG_GetClipSize(param_3);
-  for (local_10 = 0; local_10 < iVar5; local_10 = local_10 + 1) {
-    if (local_10 == iVar4) {
-      *param_5 = 0.3;
-      param_5[1] = 0.3;
-      param_5[2] = 0.3;
+  bulletX = *base - 32.0;
+  fVar1 = base[1];
+  iVar4 = BG_GetAmmoInClipForWeaponDef(&cgameGlob->predictedPlayerState,weapVarDef);
+  AmmoColor(cgameGlob,color,weapIdx);
+  iVar5 = BG_GetClipSize(weapIdx);
+  for (clipIdx = 0; clipIdx < iVar5; clipIdx = clipIdx + 1) {
+    if (clipIdx == iVar4) {
+      *color = 0.3;
+      color[1] = 0.3;
+      color[2] = 0.3;
     }
     CL_DrawStretchPicPhysical
-              (local_18,fVar1 - 4.0,32.0,8.0,0.0,0.0,1.0,1.0,param_5,cgMedia.ammoCounterRifleBullet)
-    ;
-    local_18 = local_18 - 40.0;
+              (bulletX,fVar1 - 4.0,32.0,8.0,0.0,0.0,1.0,1.0,color,cgMedia.ammoCounterRifleBullet);
+    bulletX = bulletX - 40.0;
   }
   return;
 }
@@ -347,20 +358,20 @@ DrawClipAmmoShortMagazine
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_GetSelectedWeaponIndex(cg_s *param_1)
+int __cdecl CG_GetSelectedWeaponIndex(cg_s *cgameGlob_2)
 
 {
   uint uVar1;
   int iVar2;
   
   uVar1 = BG_GetNumWeapons();
-  if ((param_1->weaponSelect < uVar1) &&
-     (iVar2 = BG_PlayerHasWeapon(&param_1->predictedPlayerState,param_1->weaponSelect), iVar2 != 0))
-  {
-    uVar1 = param_1->weaponSelect;
+  if ((cgameGlob_2->weaponSelect < uVar1) &&
+     (iVar2 = BG_PlayerHasWeapon(&cgameGlob_2->predictedPlayerState,cgameGlob_2->weaponSelect),
+     iVar2 != 0)) {
+    uVar1 = cgameGlob_2->weaponSelect;
   }
   else {
-    uVar1 = (uint)(param_1->predictedPlayerState).weapon;
+    uVar1 = (uint)(cgameGlob_2->predictedPlayerState).weapon;
   }
   return uVar1;
 }
@@ -375,7 +386,7 @@ int __cdecl CG_GetSelectedWeaponIndex(cg_s *param_1)
 
 void __cdecl
 DrawClipAmmoShotgunShells
-          (cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *param_4,float *param_5)
+          (cg_s *cgameGlob,float *base,uint weapIdx,WeaponVariantDef *weapVarDef,float *color)
 
 {
   float fVar1;
@@ -384,10 +395,14 @@ DrawClipAmmoShotgunShells
   int iVar4;
   int iVar5;
   float fVar6;
-  float local_14;
-  int local_8;
+  int magCnt;
+  int clipSize;
+  float bulletX;
+  float bulletY;
+  playerState_s *ps;
+  int magIdx;
   
-  if (param_1 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0xfa,0,
                              "%s");
     if (!bVar3) {
@@ -396,7 +411,7 @@ DrawClipAmmoShotgunShells
       return;
     }
   }
-  if (param_4 == (WeaponVariantDef *)0x0) {
+  if (weapVarDef == (WeaponVariantDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0xfb,0,
                              "%s");
     if (!bVar3) {
@@ -405,22 +420,22 @@ DrawClipAmmoShotgunShells
       return;
     }
   }
-  local_14 = *param_2 - TEST_bullet_wh[0];
+  bulletX = *base - TEST_bullet_wh[0];
   fVar6 = TEST_bullet_wh[1] * 0.5;
-  fVar1 = param_2[1];
-  iVar4 = BG_GetAmmoInClipForWeaponDef(&param_1->predictedPlayerState,param_4);
-  AmmoColor(param_1,param_5,param_3);
-  iVar5 = BG_GetClipSize(param_3);
-  for (local_8 = 0; local_8 < iVar5; local_8 = local_8 + 1) {
-    if (local_8 == iVar4) {
-      *param_5 = 0.3;
-      param_5[1] = 0.3;
-      param_5[2] = 0.3;
+  fVar1 = base[1];
+  iVar4 = BG_GetAmmoInClipForWeaponDef(&cgameGlob->predictedPlayerState,weapVarDef);
+  AmmoColor(cgameGlob,color,weapIdx);
+  iVar5 = BG_GetClipSize(weapIdx);
+  for (magIdx = 0; magIdx < iVar5; magIdx = magIdx + 1) {
+    if (magIdx == iVar4) {
+      *color = 0.3;
+      color[1] = 0.3;
+      color[2] = 0.3;
     }
     CL_DrawStretchPicPhysical
-              (local_14,fVar1 - fVar6,TEST_bullet_wh[0],TEST_bullet_wh[1],0.0,0.0,1.0,1.0,param_5,
+              (bulletX,fVar1 - fVar6,TEST_bullet_wh[0],TEST_bullet_wh[1],0.0,0.0,1.0,1.0,color,
                cgMedia.ammoCounterShotgunShell);
-    local_14 = local_14 - TEST_bullet_step[0];
+    bulletX = bulletX - TEST_bullet_step[0];
   }
   return;
 }
@@ -434,8 +449,8 @@ DrawClipAmmoShotgunShells
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DrawClipAmmoRockets(cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *param_4,
-                   float *param_5)
+DrawClipAmmoRockets(cg_s *cgameGlob,float *base,uint weapIdx,WeaponVariantDef *weapVarDef,
+                   float *color)
 
 {
   float fVar1;
@@ -444,10 +459,14 @@ DrawClipAmmoRockets(cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *
   int iVar4;
   int iVar5;
   float fVar6;
-  float local_14;
-  int local_8;
+  int magCnt;
+  int clipSize;
+  float bulletX;
+  float bulletY;
+  playerState_s *ps;
+  int magIdx;
   
-  if (param_1 == (cg_s *)0x0) {
+  if (cgameGlob == (cg_s *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x11a,0,
                              "%s");
     if (!bVar3) {
@@ -456,7 +475,7 @@ DrawClipAmmoRockets(cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *
       return;
     }
   }
-  if (param_4 == (WeaponVariantDef *)0x0) {
+  if (weapVarDef == (WeaponVariantDef *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x11b,0,
                              "%s");
     if (!bVar3) {
@@ -465,22 +484,22 @@ DrawClipAmmoRockets(cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *
       return;
     }
   }
-  local_14 = *param_2 - TEST_bullet_wh[0];
+  bulletX = *base - TEST_bullet_wh[0];
   fVar6 = TEST_bullet_wh[1] * 0.5;
-  fVar1 = param_2[1];
-  iVar4 = BG_GetAmmoInClipForWeaponDef(&param_1->predictedPlayerState,param_4);
-  AmmoColor(param_1,param_5,param_3);
-  iVar5 = BG_GetClipSize(param_3);
-  for (local_8 = 0; local_8 < iVar5; local_8 = local_8 + 1) {
-    if (local_8 == iVar4) {
-      *param_5 = 0.3;
-      param_5[1] = 0.3;
-      param_5[2] = 0.3;
+  fVar1 = base[1];
+  iVar4 = BG_GetAmmoInClipForWeaponDef(&cgameGlob->predictedPlayerState,weapVarDef);
+  AmmoColor(cgameGlob,color,weapIdx);
+  iVar5 = BG_GetClipSize(weapIdx);
+  for (magIdx = 0; magIdx < iVar5; magIdx = magIdx + 1) {
+    if (magIdx == iVar4) {
+      *color = 0.3;
+      color[1] = 0.3;
+      color[2] = 0.3;
     }
     CL_DrawStretchPicPhysical
-              (local_14,fVar1 - fVar6,TEST_bullet_wh[0],TEST_bullet_wh[1],0.0,0.0,1.0,1.0,param_5,
+              (bulletX,fVar1 - fVar6,TEST_bullet_wh[0],TEST_bullet_wh[1],0.0,0.0,1.0,1.0,color,
                cgMedia.ammoCounterRocket);
-    local_14 = local_14 - TEST_bullet_step[0];
+    bulletX = bulletX - TEST_bullet_step[0];
   }
   return;
 }
@@ -494,8 +513,8 @@ DrawClipAmmoRockets(cg_s *param_1,float *param_2,uint param_3,WeaponVariantDef *
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DrawClipAmmoBeltfed(cg_s *param_1,float *param_2,uint param_3,WeaponDef *param_4,
-                   WeaponVariantDef *param_5,float *param_6)
+DrawClipAmmoBeltfed(cg_s *cgameGlob,float *base,uint weapIdx,WeaponDef *weapDef,
+                   WeaponVariantDef *weapVarDef,float *color)
 
 {
   code *pcVar1;
@@ -503,81 +522,89 @@ DrawClipAmmoBeltfed(cg_s *param_1,float *param_2,uint param_3,WeaponDef *param_4
   int iVar3;
   int iVar4;
   float fVar5;
-  float local_38;
-  float local_34;
-  float local_30;
-  int local_2c;
-  float local_18;
-  int local_10;
+  int clipSize_2;
+  float stepX;
+  float bulletX_2;
+  float bulletY_2;
+  int clipIdx_2;
+  playerState_s *ps_2;
+  int clipCnt_2;
+  int percent;
+  int clipSize;
+  float bulletX;
+  float bulletY;
+  int clipIdx;
+  playerState_s *ps;
+  int clipCnt;
   
-  if (param_4->fireType == WEAPON_FIRETYPE_MINIGUN) {
-    if ((param_1 == (cg_s *)0x0) &&
+  if (weapDef->fireType == WEAPON_FIRETYPE_MINIGUN) {
+    if ((cgameGlob == (cg_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                  0x13c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_4 == (WeaponDef *)0x0) &&
+    if ((weapDef == (WeaponDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                  0x13d,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_18 = *param_2;
-    fVar5 = param_2[1];
-    iVar3 = BG_GetAmmoInClipForWeaponDef(&param_1->predictedPlayerState,param_5);
-    AmmoColor(param_1,param_6,param_3);
-    iVar4 = BG_GetClipSize(param_3);
-    for (local_10 = 0; local_18 = local_18 - 4.0, local_10 < 0x14; local_10 = local_10 + 1) {
-      if ((int)(((float)iVar3 / (float)iVar4) * 20.0) <= local_10) {
-        *param_6 = 0.3;
-        param_6[1] = 0.3;
-        param_6[2] = 0.3;
+    bulletX = *base;
+    fVar5 = base[1];
+    iVar3 = BG_GetAmmoInClipForWeaponDef(&cgameGlob->predictedPlayerState,weapVarDef);
+    AmmoColor(cgameGlob,color,weapIdx);
+    iVar4 = BG_GetClipSize(weapIdx);
+    for (clipIdx = 0; bulletX = bulletX - 4.0, clipIdx < 0x14; clipIdx = clipIdx + 1) {
+      if ((int)(((float)iVar3 / (float)iVar4) * 20.0) <= clipIdx) {
+        *color = 0.3;
+        color[1] = 0.3;
+        color[2] = 0.3;
       }
       CL_DrawStretchPicPhysical
-                (local_18,fVar5 - 4.0,4.0,8.0,0.0,0.0,1.0,1.0,param_6,cgMedia.ammoCounterBullet);
+                (bulletX,fVar5 - 4.0,4.0,8.0,0.0,0.0,1.0,1.0,color,cgMedia.ammoCounterBullet);
     }
   }
   else {
-    if ((param_1 == (cg_s *)0x0) &&
+    if ((cgameGlob == (cg_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                  0x15f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if ((param_4 == (WeaponDef *)0x0) &&
+    if ((weapDef == (WeaponDef *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                  0x160,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    local_38 = TEST_bullet_step[0];
-    local_34 = *param_2;
+    stepX = TEST_bullet_step[0];
+    bulletX_2 = *base;
     fVar5 = TEST_bullet_wh[1] * 0.25;
-    iVar3 = BG_GetClipSize(param_3);
-    local_30 = fVar5 * (float)(iVar3 / TEST_bullet_rowCnt) + param_2[1];
-    iVar3 = BG_GetAmmoInClipForWeaponDef(&param_1->predictedPlayerState,param_5);
-    AmmoColor(param_1,param_6,param_3);
-    iVar4 = BG_GetClipSize(param_3);
-    for (local_2c = 0; local_2c < iVar4; local_2c = local_2c + 1) {
-      if (local_2c == iVar3) {
-        *param_6 = 0.3;
-        param_6[1] = 0.3;
-        param_6[2] = 0.3;
+    iVar3 = BG_GetClipSize(weapIdx);
+    bulletY_2 = fVar5 * (float)(iVar3 / TEST_bullet_rowCnt) + base[1];
+    iVar3 = BG_GetAmmoInClipForWeaponDef(&cgameGlob->predictedPlayerState,weapVarDef);
+    AmmoColor(cgameGlob,color,weapIdx);
+    iVar4 = BG_GetClipSize(weapIdx);
+    for (clipIdx_2 = 0; clipIdx_2 < iVar4; clipIdx_2 = clipIdx_2 + 1) {
+      if (clipIdx_2 == iVar3) {
+        *color = 0.3;
+        color[1] = 0.3;
+        color[2] = 0.3;
       }
-      if (local_2c % TEST_bullet_rowCnt == 0) {
-        local_38 = local_38 * -1.0;
-        local_30 = local_30 + TEST_bullet_step[1];
-        local_34 = local_34 + local_38;
+      if (clipIdx_2 % TEST_bullet_rowCnt == 0) {
+        stepX = stepX * -1.0;
+        bulletY_2 = bulletY_2 + TEST_bullet_step[1];
+        bulletX_2 = bulletX_2 + stepX;
       }
       CL_DrawStretchPicPhysical
-                (local_34,local_30,TEST_bullet_wh[0],TEST_bullet_wh[1],0.0,0.0,1.0,1.0,param_6,
+                (bulletX_2,bulletY_2,TEST_bullet_wh[0],TEST_bullet_wh[1],0.0,0.0,1.0,1.0,color,
                  cgMedia.ammoCounterBeltBullet);
-      local_34 = local_34 + local_38;
+      bulletX_2 = bulletX_2 + stepX;
     }
   }
   return;
@@ -592,63 +619,66 @@ DrawClipAmmoBeltfed(cg_s *param_1,float *param_2,uint param_3,WeaponDef *param_4
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-DrawClipAmmo(cg_s *param_1,float *param_2,int param_3,WeaponDef *param_4,WeaponVariantDef *param_5,
-            float *param_6)
+DrawClipAmmo(cg_s *cgameGlob,float *base,int weapIdx,WeaponDef *weapDef,WeaponVariantDef *weapVarDef
+            ,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  WeaponDef *pWVar4;
-  WeaponVariantDef *pWVar5;
+  uint weaponIndex;
+  WeaponDef *weapDef_00;
+  WeaponVariantDef *weapVarDef_00;
+  WeaponVariantDef *weapVarDefAlt;
+  WeaponDef *weapDefAlt;
+  int weapIdxAlt;
   
-  if ((param_1 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x181,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (WeaponDef *)0x0) &&
+  if ((weapDef == (WeaponDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x182,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (WeaponVariantDef *)0x0) &&
+  if ((weapVarDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x183,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_4->ammoCounterClip) {
+  switch(weapDef->ammoCounterClip) {
   case AMMO_COUNTER_CLIP_MAGAZINE:
-    DrawClipAmmoMagazine(param_1,param_2,param_3,param_5,param_6);
+    DrawClipAmmoMagazine(cgameGlob,base,weapIdx,weapVarDef,color);
     break;
   case AMMO_COUNTER_CLIP_SHORTMAGAZINE:
-    DrawClipAmmoShortMagazine(param_1,param_2,param_3,param_5,param_6);
+    DrawClipAmmoShortMagazine(cgameGlob,base,weapIdx,weapVarDef,color);
     break;
   case AMMO_COUNTER_CLIP_SHOTGUN:
-    DrawClipAmmoShotgunShells(param_1,param_2,param_3,param_5,param_6);
+    DrawClipAmmoShotgunShells(cgameGlob,base,weapIdx,weapVarDef,color);
     break;
   case AMMO_COUNTER_CLIP_ROCKET:
-    DrawClipAmmoRockets(param_1,param_2,param_3,param_5,param_6);
+    DrawClipAmmoRockets(cgameGlob,base,weapIdx,weapVarDef,color);
     break;
   case AMMO_COUNTER_CLIP_BELTFED:
-    DrawClipAmmoBeltfed(param_1,param_2,param_3,param_4,param_5,param_6);
+    DrawClipAmmoBeltfed(cgameGlob,base,weapIdx,weapDef,weapVarDef,color);
     break;
   case AMMO_COUNTER_CLIP_ALTWEAPON:
-    uVar3 = GetWeaponAltIndex(param_1,param_3);
-    if (uVar3 != 0) {
-      pWVar4 = BG_GetWeaponDef(uVar3);
-      pWVar5 = BG_GetWeaponVariantDef(uVar3);
-      DrawClipAmmo(param_1,param_2,uVar3,pWVar4,pWVar5,param_6);
+    weaponIndex = GetWeaponAltIndex(cgameGlob,weapIdx);
+    if (weaponIndex != 0) {
+      weapDef_00 = BG_GetWeaponDef(weaponIndex);
+      weapVarDef_00 = BG_GetWeaponVariantDef(weaponIndex);
+      DrawClipAmmo(cgameGlob,base,weaponIndex,weapDef_00,weapVarDef_00,color);
     }
     break;
   default:
-    if ((param_4->ammoCounterClip != AMMO_COUNTER_CLIP_NONE) &&
+    if ((weapDef->ammoCounterClip != AMMO_COUNTER_CLIP_NONE) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                  0x1a2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -667,28 +697,32 @@ DrawClipAmmo(cg_s *param_1,float *param_2,int param_3,WeaponDef *param_4,WeaponV
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawAmmoCounterSingle(int param_1,rectDef_s *param_2,float *param_3,bool param_4)
+void __cdecl CG_DrawAmmoCounterSingle(int localClientNum,rectDef_s *rect,float *color,bool last)
 
 {
-  cg_s *pcVar1;
-  uint uVar2;
-  playerState_s *ppVar3;
-  int iVar4;
-  int local_1c;
-  float local_8;
+  cg_s *cgameGlob_2;
+  uint weaponIndex;
+  playerState_s *ps_00;
+  int iVar1;
+  int i;
+  cg_s *cgameGlob;
+  int weapIdx;
+  int numRounds;
+  playerState_s *ps;
+  float placementX;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  uVar2 = CG_GetSelectedWeaponIndex(pcVar1);
-  ppVar3 = CG_GetPredictedPlayerState(param_1);
-  iVar4 = BG_GetAmmoInClip(ppVar3,uVar2);
-  local_8 = param_2->x;
-  for (local_1c = 0; local_1c < iVar4; local_1c = local_1c + 1) {
-    if (((!param_4) && (local_1c < iVar4 + -1)) || ((param_4 && (local_1c == iVar4 + -1)))) {
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_8,param_2->y,
-                        param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                        param_3,cgMedia.ammoCounterSingle);
+  cgameGlob_2 = CG_GetLocalClientGlobals(localClientNum);
+  weaponIndex = CG_GetSelectedWeaponIndex(cgameGlob_2);
+  ps_00 = CG_GetPredictedPlayerState(localClientNum);
+  iVar1 = BG_GetAmmoInClip(ps_00,weaponIndex);
+  placementX = rect->x;
+  for (i = 0; i < iVar1; i = i + 1) {
+    if (((!last) && (i < iVar1 + -1)) || ((last && (i == iVar1 + -1)))) {
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),placementX,
+                        rect->y,rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,
+                        color,cgMedia.ammoCounterSingle);
     }
-    local_8 = local_8 - 16.0;
+    placementX = placementX - 16.0;
   }
   return;
 }
@@ -704,58 +738,57 @@ void __cdecl CG_DrawAmmoCounterSingle(int param_1,rectDef_s *param_2,float *para
 
 void __cdecl
 CG_DrawPlayerWeaponAmmoStock
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle)
 
 {
   WeaponDef *pWVar1;
-  int iVar2;
-  float fVar3;
-  char local_6c [64];
+  int value;
+  float fVar2;
+  char str [64];
   uint local_2c;
-  cg_s *local_28;
-  int local_24;
-  undefined1 local_1d;
-  uint local_1c;
-  playerState_s *local_18;
-  float local_14;
+  cg_s *cgameGlob;
+  int ammoStock;
+  bool lowAmmo;
+  int weapIndex;
+  playerState_s *ps;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_28 = CG_GetLocalClientGlobals(param_1);
-  local_18 = &local_28->predictedPlayerState;
-  if ((((local_28->predictedPlayerState).eFlags & 0x4000U) == 0) &&
-     ((((((local_28->predictedPlayerState).eFlags & 0x300U) == 0 ||
-        ((local_28->predictedPlayerState).weaponstate == 0x23)) ||
-       ((local_28->predictedPlayerState).weaponstate == 0x24)) ||
-      ((local_28->predictedPlayerState).weaponstate == 0x25)))) {
-    local_14 = *param_5;
-    local_10 = param_5[1];
-    local_c = param_5[2];
-    local_8 = param_5[3];
-    fVar3 = AmmoCounterFadeAlpha(param_1,local_28);
-    local_8 = fVar3 * local_8;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) &&
+     ((((((cgameGlob->predictedPlayerState).eFlags & 0x300U) == 0 ||
+        ((cgameGlob->predictedPlayerState).weaponstate == 0x23)) ||
+       ((cgameGlob->predictedPlayerState).weaponstate == 0x24)) ||
+      ((cgameGlob->predictedPlayerState).weaponstate == 0x25)))) {
+    colorMod = *color;
+    local_10 = color[1];
+    local_c = color[2];
+    local_8 = color[3];
+    fVar2 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
+    local_8 = fVar2 * local_8;
     if (local_8 != 0.0) {
-      local_1c = CG_GetSelectedWeaponIndex(local_28);
-      local_1c = ClipCounterWeapIdx(local_28,local_1c);
-      if ((local_1c != 0) &&
-         ((local_1c == 0 ||
-          (pWVar1 = BG_GetWeaponDef(local_1c), pWVar1->suppressAmmoReserveDisplay == false)))) {
-        local_24 = BG_GetTotalAmmoReserve(local_18,local_1c);
-        local_1d = CG_CheckPlayerForLowAmmoSpecific(local_28,local_1c);
-        if ((bool)local_1d) {
-          local_14 = 1.0;
+      weapIndex = CG_GetSelectedWeaponIndex(cgameGlob);
+      weapIndex = ClipCounterWeapIdx(cgameGlob,weapIndex);
+      if ((weapIndex != 0) &&
+         ((weapIndex == 0 ||
+          (pWVar1 = BG_GetWeaponDef(weapIndex), pWVar1->suppressAmmoReserveDisplay == false)))) {
+        ammoStock = BG_GetTotalAmmoReserve(ps,weapIndex);
+        lowAmmo = CG_CheckPlayerForLowAmmoSpecific(cgameGlob,weapIndex);
+        if (lowAmmo) {
+          colorMod = 1.0;
           local_10 = 0.3;
           local_c = 0.3;
         }
-        Com_sprintf(local_6c,0x40,"/ %i");
-        UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_6c,0x7fffffff,param_3,
-                    param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,&local_14,
-                    param_7);
-        iVar2 = UI_TextWidth(local_6c,6,param_3,param_4);
-        Dvar_SetIntIfChanged(ui_ammo_stock_width,iVar2);
+        Com_sprintf(str,0x40,"/ %i");
+        UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,0x7fffffff,font,
+                    rect->x,rect->y,rect->horzAlign,rect->vertAlign,scale,&colorMod,textStyle);
+        value = UI_TextWidth(str,6,font,scale);
+        Dvar_SetIntIfChanged(ui_ammo_stock_width,value);
       }
     }
   }
@@ -765,13 +798,13 @@ CG_DrawPlayerWeaponAmmoStock
 
 // 00476350  Byte4UnpackRgba  (universal/com_color.h:492)
 
-void __cdecl Byte4UnpackRgba(uchar *param_1,float *param_2)
+void __cdecl Byte4UnpackRgba(uchar *from,float *to)
 
 {
-  *param_2 = (float)*param_1 * 0.003921569;
-  param_2[1] = (float)param_1[1] * 0.003921569;
-  param_2[2] = (float)param_1[2] * 0.003921569;
-  param_2[3] = (float)param_1[3] * 0.003921569;
+  *to = (float)*from * 0.003921569;
+  to[1] = (float)from[1] * 0.003921569;
+  to[2] = (float)from[2] * 0.003921569;
+  to[3] = (float)from[3] * 0.003921569;
   return;
 }
 
@@ -786,59 +819,59 @@ void __cdecl Byte4UnpackRgba(uchar *param_1,float *param_2)
 
 void __cdecl
 CG_DrawFuelTankPercentage
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7,float param_8,float param_9)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle,float text_x,float text_y)
 
 {
   WeaponDef *pWVar1;
   int iVar2;
   float fVar3;
-  char local_6c [64];
+  char str [64];
   uint local_2c;
-  cg_s *local_28;
-  uint local_24;
-  playerState_s *local_20;
-  float local_1c;
+  cg_s *cgameGlob;
+  int weapIndex;
+  playerState_s *ps;
+  float colorMod;
   float local_18;
   float local_14;
   float local_10;
-  WeaponDef *local_c;
-  int local_8;
+  WeaponDef *weapDef;
+  int fuelValue;
   
   local_2c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_28 = CG_GetLocalClientGlobals(param_1);
-  local_20 = &local_28->predictedPlayerState;
-  if ((((local_28->predictedPlayerState).eFlags & 0x4000U) == 0) &&
-     ((((((local_28->predictedPlayerState).eFlags & 0x300U) == 0 ||
-        ((local_28->predictedPlayerState).weaponstate == 0x23)) ||
-       ((local_28->predictedPlayerState).weaponstate == 0x24)) ||
-      ((local_28->predictedPlayerState).weaponstate == 0x25)))) {
-    local_1c = *param_5;
-    local_18 = param_5[1];
-    local_14 = param_5[2];
-    local_10 = param_5[3];
-    fVar3 = AmmoCounterFadeAlpha(param_1,local_28);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) &&
+     ((((((cgameGlob->predictedPlayerState).eFlags & 0x300U) == 0 ||
+        ((cgameGlob->predictedPlayerState).weaponstate == 0x23)) ||
+       ((cgameGlob->predictedPlayerState).weaponstate == 0x24)) ||
+      ((cgameGlob->predictedPlayerState).weaponstate == 0x25)))) {
+    colorMod = *color;
+    local_18 = color[1];
+    local_14 = color[2];
+    local_10 = color[3];
+    fVar3 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
     local_10 = fVar3 * local_10;
     if (local_10 != 0.0) {
-      local_24 = CG_GetSelectedWeaponIndex(local_28);
-      local_24 = ClipCounterWeapIdx(local_28,local_24);
-      local_c = BG_GetWeaponDef(local_24);
-      if ((((local_24 != 0) && (local_c->fuelTankWeapon != false)) &&
+      weapIndex = CG_GetSelectedWeaponIndex(cgameGlob);
+      weapIndex = ClipCounterWeapIdx(cgameGlob,weapIndex);
+      weapDef = BG_GetWeaponDef(weapIndex);
+      if ((((weapIndex != 0) && (weapDef->fuelTankWeapon != false)) &&
           (((cg_fuelHudVersion->current).integer == 1 &&
-           ((local_24 == 0 ||
-            (pWVar1 = BG_GetWeaponDef(local_24), pWVar1->suppressAmmoReserveDisplay == false))))))
+           ((weapIndex == 0 ||
+            (pWVar1 = BG_GetWeaponDef(weapIndex), pWVar1->suppressAmmoReserveDisplay == false))))))
          && ((cg_fuelHudVersion->current).integer == 1)) {
-        iVar2 = BG_PlayerFuelTankTime(local_20,local_24);
-        local_8 = 100 - (int)(((float)iVar2 / (float)local_c->iTankLifeTime) * 100.0);
-        if (local_8 < 0x1e) {
-          local_1c = 1.0;
+        iVar2 = BG_PlayerFuelTankTime(ps,weapIndex);
+        fuelValue = 100 - (int)(((float)iVar2 / (float)weapDef->iTankLifeTime) * 100.0);
+        if (fuelValue < 0x1e) {
+          colorMod = 1.0;
           local_18 = 0.3;
           local_14 = 0.3;
         }
-        Com_sprintf(local_6c,0x40,"%03i");
-        UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_6c,0x7fffffff,param_3,
-                    param_2->x + param_8,param_2->y + param_9,param_2->horzAlign,param_2->vertAlign,
-                    param_4,&local_1c,param_7);
+        Com_sprintf(str,0x40,"%03i");
+        UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,0x7fffffff,font,
+                    rect->x + text_x,rect->y + text_y,rect->horzAlign,rect->vertAlign,scale,
+                    &colorMod,textStyle);
       }
     }
   }
@@ -856,76 +889,76 @@ CG_DrawFuelTankPercentage
 
 void __cdecl
 CG_DrawPlayerWeaponAmmoClip
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7,float param_8,float param_9,int param_10)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle,float text_x,float text_y,int textAlignMode)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
-  int iVar4;
-  float fVar5;
-  char local_8c [68];
+  int value;
+  float fVar4;
+  char str [68];
   uint local_48;
-  WeaponVariantDef *local_44;
-  cg_s *local_40;
-  int local_3c;
-  uint local_38;
-  playerState_s *local_34;
-  float local_30;
+  WeaponVariantDef *weapVarDef;
+  cg_s *cgameGlob;
+  int clipSize;
+  int weapIndex;
+  playerState_s *ps;
+  float colorMod;
   float local_2c;
   float local_28;
   float local_24;
-  int local_20;
-  rectDef_s local_1c;
+  int clipCnt;
+  rectDef_s textRect;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x23a,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_40 = CG_GetLocalClientGlobals(param_1);
-  local_34 = &local_40->predictedPlayerState;
-  if ((((local_40->predictedPlayerState).eFlags & 0x4000U) == 0) &&
-     ((((((local_40->predictedPlayerState).eFlags & 0x300U) == 0 ||
-        ((local_40->predictedPlayerState).weaponstate == 0x23)) ||
-       ((local_40->predictedPlayerState).weaponstate == 0x24)) ||
-      ((local_40->predictedPlayerState).weaponstate == 0x25)))) {
-    local_30 = *param_5;
-    local_2c = param_5[1];
-    local_28 = param_5[2];
-    local_24 = param_5[3];
-    fVar5 = AmmoCounterFadeAlpha(param_1,local_40);
-    local_24 = fVar5 * local_24;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) &&
+     ((((((cgameGlob->predictedPlayerState).eFlags & 0x300U) == 0 ||
+        ((cgameGlob->predictedPlayerState).weaponstate == 0x23)) ||
+       ((cgameGlob->predictedPlayerState).weaponstate == 0x24)) ||
+      ((cgameGlob->predictedPlayerState).weaponstate == 0x25)))) {
+    colorMod = *color;
+    local_2c = color[1];
+    local_28 = color[2];
+    local_24 = color[3];
+    fVar4 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
+    local_24 = fVar4 * local_24;
     if (local_24 != 0.0) {
-      local_38 = CG_GetSelectedWeaponIndex(local_40);
-      local_38 = ClipCounterWeapIdx(local_40,local_38);
-      if ((local_38 != 0) &&
-         ((local_38 == 0 ||
-          (pWVar3 = BG_GetWeaponDef(local_38), pWVar3->suppressAmmoReserveDisplay == false)))) {
-        local_44 = BG_GetWeaponVariantDef(local_38);
-        local_20 = BG_GetAmmoInClipForWeaponDef(local_34,local_44);
-        local_3c = BG_GetClipSize(local_38);
-        AmmoColor(local_40,&local_30,local_38);
-        if (local_3c < 100) {
-          if (local_3c < 10) {
-            Com_sprintf(local_8c,0x40,"%01i");
+      weapIndex = CG_GetSelectedWeaponIndex(cgameGlob);
+      weapIndex = ClipCounterWeapIdx(cgameGlob,weapIndex);
+      if ((weapIndex != 0) &&
+         ((weapIndex == 0 ||
+          (pWVar3 = BG_GetWeaponDef(weapIndex), pWVar3->suppressAmmoReserveDisplay == false)))) {
+        weapVarDef = BG_GetWeaponVariantDef(weapIndex);
+        clipCnt = BG_GetAmmoInClipForWeaponDef(ps,weapVarDef);
+        clipSize = BG_GetClipSize(weapIndex);
+        AmmoColor(cgameGlob,&colorMod,weapIndex);
+        if (clipSize < 100) {
+          if (clipSize < 10) {
+            Com_sprintf(str,0x40,"%01i");
           }
           else {
-            Com_sprintf(local_8c,0x40,"%02i");
+            Com_sprintf(str,0x40,"%02i");
           }
         }
         else {
-          Com_sprintf(local_8c,0x40,"%03i");
+          Com_sprintf(str,0x40,"%03i");
         }
-        iVar4 = UI_TextWidth(local_8c,3,param_3,param_4);
-        Dvar_SetIntIfChanged(ui_right_ammo_width,iVar4);
-        UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_8c,param_2,
-                           param_3,param_2->x + param_8,param_2->y + param_9,param_4,&local_30,
-                           param_7,param_10,&local_1c);
+        value = UI_TextWidth(str,3,font,scale);
+        Dvar_SetIntIfChanged(ui_right_ammo_width,value);
+        UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,rect,font,
+                           rect->x + text_x,rect->y + text_y,scale,&colorMod,textStyle,textAlignMode
+                           ,&textRect);
       }
     }
   }
@@ -935,13 +968,13 @@ CG_DrawPlayerWeaponAmmoClip
 
 // 004762B0  Vec4Lerp  (universal/com_vector.h:612)
 
-void __cdecl Vec4Lerp(float *param_1,float *param_2,float param_3,float *param_4)
+void __cdecl Vec4Lerp(float *from,float *to,float frac,float *result)
 
 {
-  *param_4 = (*param_2 - *param_1) * param_3 + *param_1;
-  param_4[1] = (param_2[1] - param_1[1]) * param_3 + param_1[1];
-  param_4[2] = (param_2[2] - param_1[2]) * param_3 + param_1[2];
-  param_4[3] = (param_2[3] - param_1[3]) * param_3 + param_1[3];
+  *result = (*to - *from) * frac + *from;
+  result[1] = (to[1] - from[1]) * frac + from[1];
+  result[2] = (to[2] - from[2]) * frac + from[2];
+  result[3] = (to[3] - from[3]) * frac + from[3];
   return;
 }
 
@@ -956,70 +989,69 @@ void __cdecl Vec4Lerp(float *param_1,float *param_2,float param_3,float *param_4
 
 void __cdecl
 CG_DrawPlayerWeaponAmmoClipDualWield
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-          Material *param_6,int param_7)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float scale,float *color,
+          Material *material,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponDef *pWVar3;
-  WeaponVariantDef *pWVar4;
-  float fVar5;
-  char local_74 [68];
+  WeaponVariantDef *weapVarDef;
+  float fVar4;
+  char str [68];
   uint local_30;
-  cg_s *local_2c;
-  int local_28;
-  uint local_24;
-  playerState_s *local_20;
-  WeaponDef *local_1c;
-  float local_18;
+  cg_s *cgameGlob;
+  int clipSize;
+  int weapIndex;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  float colorMod;
   float local_14;
   float local_10;
   float local_c;
-  int local_8;
+  int clipCnt;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x27c,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_2c = CG_GetLocalClientGlobals(param_1);
-  local_20 = &local_2c->predictedPlayerState;
-  if ((((local_2c->predictedPlayerState).eFlags & 0x4000U) == 0) &&
-     ((((((local_2c->predictedPlayerState).eFlags & 0x300U) == 0 ||
-        ((local_2c->predictedPlayerState).weaponstate == 0x23)) ||
-       ((local_2c->predictedPlayerState).weaponstate == 0x24)) ||
-      ((local_2c->predictedPlayerState).weaponstate == 0x25)))) {
-    local_18 = *param_5;
-    local_14 = param_5[1];
-    local_10 = param_5[2];
-    local_c = param_5[3];
-    fVar5 = AmmoCounterFadeAlpha(param_1,local_2c);
-    local_c = fVar5 * local_c;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  if ((((cgameGlob->predictedPlayerState).eFlags & 0x4000U) == 0) &&
+     ((((((cgameGlob->predictedPlayerState).eFlags & 0x300U) == 0 ||
+        ((cgameGlob->predictedPlayerState).weaponstate == 0x23)) ||
+       ((cgameGlob->predictedPlayerState).weaponstate == 0x24)) ||
+      ((cgameGlob->predictedPlayerState).weaponstate == 0x25)))) {
+    colorMod = *color;
+    local_14 = color[1];
+    local_10 = color[2];
+    local_c = color[3];
+    fVar4 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
+    local_c = fVar4 * local_c;
     if (local_c != 0.0) {
-      local_24 = CG_GetSelectedWeaponIndex(local_2c);
-      local_24 = ClipCounterWeapIdx(local_2c,local_24);
-      if (((local_24 != 0) &&
-          ((local_24 == 0 ||
-           (pWVar3 = BG_GetWeaponDef(local_24), pWVar3->suppressAmmoReserveDisplay == false)))) &&
-         ((local_1c = BG_GetWeaponDef(local_24), local_1c->bDualWield != false &&
-          (local_1c->dualWieldWeaponIndex != 0)))) {
-        pWVar4 = BG_GetWeaponVariantDef(local_1c->dualWieldWeaponIndex);
-        local_8 = BG_GetAmmoInClipForWeaponDef(local_20,pWVar4);
-        local_28 = BG_GetClipSize(local_24);
-        AmmoColor(local_2c,&local_18,local_1c->dualWieldWeaponIndex);
-        if (local_28 < 10) {
-          Com_sprintf(local_74,0x40,"%01i");
+      weapIndex = CG_GetSelectedWeaponIndex(cgameGlob);
+      weapIndex = ClipCounterWeapIdx(cgameGlob,weapIndex);
+      if (((weapIndex != 0) &&
+          ((weapIndex == 0 ||
+           (pWVar3 = BG_GetWeaponDef(weapIndex), pWVar3->suppressAmmoReserveDisplay == false)))) &&
+         ((weapDef = BG_GetWeaponDef(weapIndex), weapDef->bDualWield != false &&
+          (weapDef->dualWieldWeaponIndex != 0)))) {
+        weapVarDef = BG_GetWeaponVariantDef(weapDef->dualWieldWeaponIndex);
+        clipCnt = BG_GetAmmoInClipForWeaponDef(ps,weapVarDef);
+        clipSize = BG_GetClipSize(weapIndex);
+        AmmoColor(cgameGlob,&colorMod,weapDef->dualWieldWeaponIndex);
+        if (clipSize < 10) {
+          Com_sprintf(str,0x40,"%01i");
         }
         else {
-          Com_sprintf(local_74,0x40,"%02i");
+          Com_sprintf(str,0x40,"%02i");
         }
-        UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_74,0x7fffffff,param_3,
-                    param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,&local_18,
-                    param_7);
+        UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,0x7fffffff,font,
+                    rect->x,rect->y,rect->horzAlign,rect->vertAlign,scale,&colorMod,textStyle);
       }
     }
   }
@@ -1030,106 +1062,106 @@ CG_DrawPlayerWeaponAmmoClipDualWield
 // 004740D0  DpadIconDims  (cgame/cg_ammocounter.cpp:692)
 
 void __cdecl
-DpadIconDims(rectDef_s *param_1,uint param_2,WeaponVariantDef *param_3,float *param_4,float *param_5
-            ,float *param_6,float *param_7)
+DpadIconDims(rectDef_s *rect,uint slotIdx,WeaponVariantDef *weapVariantDef,float *x,float *y,
+            float *w,float *h)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2b6,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_3 == (WeaponVariantDef *)0x0) &&
+  if ((weapVariantDef == (WeaponVariantDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2b7,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((x == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2b8,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_5 == (float *)0x0) &&
+  if ((y == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2b9,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_6 == (float *)0x0) &&
+  if ((w == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2ba,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_7 == (float *)0x0) &&
+  if ((h == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",699,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_3->dpadIconRatio == WEAPON_ICON_RATIO_4TO1) {
-    if (param_2 < 2) {
-      *param_4 = param_1->x - param_1->w * 0.5;
-      *param_6 = param_1->w * 2.0;
+  if (weapVariantDef->dpadIconRatio == WEAPON_ICON_RATIO_4TO1) {
+    if (slotIdx < 2) {
+      *x = rect->x - rect->w * 0.5;
+      *w = rect->w * 2.0;
     }
-    else if (param_2 == 2) {
-      *param_4 = param_1->x - param_1->w;
-      *param_6 = param_1->w * 2.0;
+    else if (slotIdx == 2) {
+      *x = rect->x - rect->w;
+      *w = rect->w * 2.0;
     }
     else {
-      if ((param_2 != 3) &&
+      if ((slotIdx != 3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                    0x2cb,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      *param_4 = param_1->x;
-      *param_6 = param_1->w * 2.0;
+      *x = rect->x;
+      *w = rect->w * 2.0;
     }
-    *param_5 = param_1->h * 0.25 + param_1->y;
-    *param_7 = param_1->h * 0.5;
+    *y = rect->h * 0.25 + rect->y;
+    *h = rect->h * 0.5;
   }
-  else if (param_3->dpadIconRatio == WEAPON_ICON_RATIO_2TO1) {
-    if (param_2 < 2) {
-      *param_4 = param_1->x - param_1->w * 0.5;
-      *param_6 = param_1->w * 2.0;
+  else if (weapVariantDef->dpadIconRatio == WEAPON_ICON_RATIO_2TO1) {
+    if (slotIdx < 2) {
+      *x = rect->x - rect->w * 0.5;
+      *w = rect->w * 2.0;
     }
-    else if (param_2 == 2) {
-      *param_4 = param_1->x - param_1->w;
-      *param_6 = param_1->w * 2.0;
+    else if (slotIdx == 2) {
+      *x = rect->x - rect->w;
+      *w = rect->w * 2.0;
     }
     else {
-      if ((param_2 != 3) &&
+      if ((slotIdx != 3) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                    0x2e0,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      *param_4 = param_1->x;
-      *param_6 = param_1->w * 2.0;
+      *x = rect->x;
+      *w = rect->w * 2.0;
     }
-    *param_5 = param_1->y;
-    *param_7 = param_1->h;
+    *y = rect->y;
+    *h = rect->h;
   }
   else {
-    *param_4 = param_1->x;
-    *param_5 = param_1->y;
-    *param_6 = param_1->w;
-    *param_7 = param_1->h;
+    *x = rect->x;
+    *y = rect->y;
+    *w = rect->w;
+    *h = rect->h;
   }
   return;
 }
@@ -1138,22 +1170,22 @@ DpadIconDims(rectDef_s *param_1,uint param_2,WeaponVariantDef *param_3,float *pa
 // 00474430  DpadTextPos  (cgame/cg_ammocounter.cpp:754)
 
 void __cdecl
-DpadTextPos(int param_1,rectDef_s *param_2,uint param_3,WeaponVariantDef *param_4,float *param_5,
-           float *param_6)
+DpadTextPos(int localClientNum,rectDef_s *rect,uint slotIdx,WeaponVariantDef *weapVariantDef,
+           float *x,float *y)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float MYADJUST_Y;
+  float MYADJUST_X_INDEX_2;
+  float slot_adjust_x;
+  float MYADJUST_X;
   
-  local_8 = -7.0;
-  local_10 = -0.5;
-  local_14 = 5.0;
-  if (param_2 == (rectDef_s *)0x0) {
+  MYADJUST_X = -7.0;
+  MYADJUST_X_INDEX_2 = -0.5;
+  MYADJUST_Y = 5.0;
+  if (rect == (rectDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2f7,0,
                              "%s");
     if (!bVar2) {
@@ -1162,7 +1194,7 @@ DpadTextPos(int param_1,rectDef_s *param_2,uint param_3,WeaponVariantDef *param_
       return;
     }
   }
-  if (param_4 == (WeaponVariantDef *)0x0) {
+  if (weapVariantDef == (WeaponVariantDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2f8,0,
                              "%s");
     if (!bVar2) {
@@ -1171,7 +1203,7 @@ DpadTextPos(int param_1,rectDef_s *param_2,uint param_3,WeaponVariantDef *param_
       return;
     }
   }
-  if (param_5 == (float *)0x0) {
+  if (x == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2f9,0,
                              "%s");
     if (!bVar2) {
@@ -1180,7 +1212,7 @@ DpadTextPos(int param_1,rectDef_s *param_2,uint param_3,WeaponVariantDef *param_
       return;
     }
   }
-  if (param_6 == (float *)0x0) {
+  if (y == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x2fa,0,
                              "%s");
     if (!bVar2) {
@@ -1191,20 +1223,20 @@ DpadTextPos(int param_1,rectDef_s *param_2,uint param_3,WeaponVariantDef *param_
   }
   iVar3 = CL_LocalClient_GetActiveCount();
   if (1 < iVar3) {
-    local_8 = -14.0;
-    local_10 = -1.0;
-    local_14 = 11.0;
+    MYADJUST_X = -14.0;
+    MYADJUST_X_INDEX_2 = -1.0;
+    MYADJUST_Y = 11.0;
   }
-  local_c = 0.0;
-  if (param_3 == 2) {
-    local_c = local_10;
+  slot_adjust_x = 0.0;
+  if (slotIdx == 2) {
+    slot_adjust_x = MYADJUST_X_INDEX_2;
   }
-  *param_5 = param_2->w / 2.0 + param_2->x + local_8 + local_c;
-  *param_6 = param_2->h / 2.0 + param_2->y + local_14;
-  if (((param_4->dpadIconRatio == WEAPON_ICON_RATIO_2TO1) ||
-      (param_4->dpadIconRatio == WEAPON_ICON_RATIO_4TO1)) &&
-     (*param_5 = param_2->w * 0.5 + *param_5, param_3 == 2)) {
-    *param_5 = *param_5 - param_2->w;
+  *x = rect->w / 2.0 + rect->x + MYADJUST_X + slot_adjust_x;
+  *y = rect->h / 2.0 + rect->y + MYADJUST_Y;
+  if (((weapVariantDef->dpadIconRatio == WEAPON_ICON_RATIO_2TO1) ||
+      (weapVariantDef->dpadIconRatio == WEAPON_ICON_RATIO_4TO1)) &&
+     (*x = rect->w * 0.5 + *x, slotIdx == 2)) {
+    *x = *x - rect->w;
   }
   return;
 }
@@ -1217,47 +1249,53 @@ DpadTextPos(int param_1,rectDef_s *param_2,uint param_3,WeaponVariantDef *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl ActionSlotIsActive(int param_1,uint param_2)
+bool __cdecl ActionSlotIsActive(int localClientNum,uint slotIdx)
 
 {
   ActionSlotType AVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
-  cg_s *pcVar5;
-  WeaponDef *pWVar6;
-  uint uVar7;
-  int iVar8;
-  playerState_s *ppVar9;
+  cg_s *cgameGlob_00;
+  WeaponDef *pWVar5;
+  uint uVar6;
+  int iVar7;
+  playerState_s *ps_00;
+  cg_s *cgameGlob;
+  WeaponVariantDef *weapVariantDef;
+  uint weapIdx;
+  playerState_s *ps;
+  WeaponDef *weapDef;
+  bool new_weapon_has_no_ammo;
   
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  ppVar9 = &pcVar5->predictedPlayerState;
-  AVar1 = (pcVar5->predictedPlayerState).actionSlotType[param_2];
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  ps_00 = &cgameGlob_00->predictedPlayerState;
+  AVar1 = (cgameGlob_00->predictedPlayerState).actionSlotType[slotIdx];
   if (AVar1 == ACTIONSLOTTYPE_SPECIFYWEAPON) {
-    uVar7 = (pcVar5->predictedPlayerState).actionSlotParam[param_2].specifyWeapon.index;
-    if (uVar7 == 0) {
+    uVar6 = (cgameGlob_00->predictedPlayerState).actionSlotParam[slotIdx].specifyWeapon.index;
+    if (uVar6 == 0) {
       return false;
     }
-    iVar8 = BG_PlayerHasWeapon(ppVar9,uVar7);
-    if (iVar8 != 0) {
-      BG_GetWeaponVariantDef(uVar7);
-      pWVar6 = BG_GetWeaponDef(uVar7);
-      iVar8 = BG_GetAmmoInClip(ppVar9,uVar7);
-      if (((iVar8 == 0) && (iVar8 = BG_GetAmmoNotInClip(ppVar9,uVar7), iVar8 == 0)) &&
-         (pWVar6->unlimitedAmmo == false)) {
+    iVar7 = BG_PlayerHasWeapon(ps_00,uVar6);
+    if (iVar7 != 0) {
+      BG_GetWeaponVariantDef(uVar6);
+      pWVar5 = BG_GetWeaponDef(uVar6);
+      iVar7 = BG_GetAmmoInClip(ps_00,uVar6);
+      if (((iVar7 == 0) && (iVar7 = BG_GetAmmoNotInClip(ps_00,uVar6), iVar7 == 0)) &&
+         (pWVar5->unlimitedAmmo == false)) {
         bVar3 = true;
       }
       else {
         bVar3 = false;
       }
-      if (((pWVar6->offhandSlot == OFFHAND_SLOT_EQUIPMENT) && (bVar3)) &&
-         (pcVar5->compassScrambler[0xb].pos[1] == 1.43353e-42)) {
+      if (((pWVar5->offhandSlot == OFFHAND_SLOT_EQUIPMENT) && (bVar3)) &&
+         (cgameGlob_00->compassScrambler[0xb].pos[1] == 1.43353e-42)) {
         bVar3 = false;
       }
-      else if (param_2 == 0) {
+      else if (slotIdx == 0) {
         bVar3 = true;
       }
-      else if (param_2 == 3) {
+      else if (slotIdx == 3) {
         bVar3 = true;
       }
       else {
@@ -1268,14 +1306,14 @@ bool __cdecl ActionSlotIsActive(int param_1,uint param_2)
     return false;
   }
   if (AVar1 == ACTIONSLOTTYPE_ALTWEAPONTOGGLE) {
-    uVar7 = pcVar5->weaponSelect;
-    BG_GetWeaponVariantDef(uVar7);
-    pWVar6 = BG_GetWeaponDef(uVar7);
-    if ((pWVar6->inventoryType != WEAPINVENTORY_ALTMODE) &&
-       (uVar7 = CG_AltWeaponToggleIndex(param_1,pcVar5,(uint *)0x0), uVar7 == 0)) {
+    uVar6 = cgameGlob_00->weaponSelect;
+    BG_GetWeaponVariantDef(uVar6);
+    pWVar5 = BG_GetWeaponDef(uVar6);
+    if ((pWVar5->inventoryType != WEAPINVENTORY_ALTMODE) &&
+       (uVar6 = CG_AltWeaponToggleIndex(localClientNum,cgameGlob_00,(uint *)0x0), uVar6 == 0)) {
       return false;
     }
-    if (param_2 == 2) {
+    if (slotIdx == 2) {
       return true;
     }
     return false;
@@ -1283,7 +1321,7 @@ bool __cdecl ActionSlotIsActive(int param_1,uint param_2)
   if (AVar1 == ACTIONSLOTTYPE_NIGHTVISION) {
     return false;
   }
-  if (((pcVar5->predictedPlayerState).actionSlotType[param_2] != ACTIONSLOTTYPE_DONOTHING) &&
+  if (((cgameGlob_00->predictedPlayerState).actionSlotType[slotIdx] != ACTIONSLOTTYPE_DONOTHING) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x363,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -1301,30 +1339,30 @@ bool __cdecl ActionSlotIsActive(int param_1,uint param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl DpadFadeAlpha(int param_1,cg_s *param_2)
+float __cdecl DpadFadeAlpha(int localClientNum,cg_s *cgameGlob)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
-  uint local_8;
+  uint idx;
   
-  if ((param_2 == (cg_s *)0x0) &&
+  if ((cgameGlob == (cg_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x36e,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if (((param_2->predictedPlayerState).weapFlags & 0x80U) == 0) {
-    for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-      bVar2 = ActionSlotIsActive(param_1,local_8);
+  if (((cgameGlob->predictedPlayerState).weapFlags & 0x80U) == 0) {
+    for (idx = 0; idx < 4; idx = idx + 1) {
+      bVar2 = ActionSlotIsActive(localClientNum,idx);
       if (bVar2) {
         return 1.0;
       }
     }
-    fVar4 = AmmoCounterFadeAlpha(param_1,param_2);
+    fVar4 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
   }
   else {
     fVar4 = 0.0;
@@ -1340,15 +1378,15 @@ float __cdecl DpadFadeAlpha(int param_1,cg_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_GetHudAlphaDPad(int param_1)
+float __cdecl CG_GetHudAlphaDPad(int localClientNum)
 
 {
-  cg_s *pcVar1;
-  float fVar2;
+  cg_s *cgameGlob;
+  float fVar1;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  fVar2 = DpadFadeAlpha(param_1,pcVar1);
-  return fVar2;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  fVar1 = DpadFadeAlpha(localClientNum,cgameGlob);
+  return fVar1;
 }
 
 
@@ -1359,15 +1397,15 @@ float __cdecl CG_GetHudAlphaDPad(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_GetHudAlphaAmmoCounter(int param_1)
+float __cdecl CG_GetHudAlphaAmmoCounter(int localClientNum)
 
 {
-  cg_s *pcVar1;
-  float fVar2;
+  cg_s *cgameGlob;
+  float fVar1;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  fVar2 = AmmoCounterFadeAlpha(param_1,pcVar1);
-  return fVar2;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  fVar1 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
+  return fVar1;
 }
 
 
@@ -1379,18 +1417,21 @@ float __cdecl CG_GetHudAlphaAmmoCounter(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl CG_ActionSlotIsUsable(int param_1,uint param_2)
+bool __cdecl CG_ActionSlotIsUsable(int localClientNum,uint slotIdx)
 
 {
   ActionSlotType AVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
-  cg_s *pcVar5;
-  uint uVar6;
-  int iVar7;
+  cg_s *cgameGlob_00;
+  uint uVar5;
+  int iVar6;
+  cg_s *cgameGlob;
+  uint weapIdx;
+  playerState_s *ps;
   
-  if ((3 < param_2) &&
+  if ((3 < slotIdx) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x38e,
                                0,"slotIdx not in [0, (ACTIONSLOTS_NUM - 1)]\n\t%i not in [%i, %i]"),
      !bVar3)) {
@@ -1398,18 +1439,18 @@ bool __cdecl CG_ActionSlotIsUsable(int param_1,uint param_2)
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  pcVar5 = CG_GetLocalClientGlobals(param_1);
-  AVar1 = (pcVar5->predictedPlayerState).actionSlotType[param_2];
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  AVar1 = (cgameGlob_00->predictedPlayerState).actionSlotType[slotIdx];
   if (AVar1 == ACTIONSLOTTYPE_SPECIFYWEAPON) {
-    uVar6 = (pcVar5->predictedPlayerState).actionSlotParam[param_2].specifyWeapon.index;
-    if ((uVar6 != 0) &&
-       (iVar7 = BG_PlayerHasWeapon(&pcVar5->predictedPlayerState,uVar6), iVar7 != 0)) {
+    uVar5 = (cgameGlob_00->predictedPlayerState).actionSlotParam[slotIdx].specifyWeapon.index;
+    if ((uVar5 != 0) &&
+       (iVar6 = BG_PlayerHasWeapon(&cgameGlob_00->predictedPlayerState,uVar5), iVar6 != 0)) {
       return true;
     }
   }
   else if (AVar1 == ACTIONSLOTTYPE_ALTWEAPONTOGGLE) {
-    uVar6 = CG_AltWeaponToggleIndex(param_1,pcVar5,(uint *)0x0);
-    if (uVar6 != 0) {
+    uVar5 = CG_AltWeaponToggleIndex(localClientNum,cgameGlob_00,(uint *)0x0);
+    if (uVar5 != 0) {
       return true;
     }
   }
@@ -1417,9 +1458,9 @@ bool __cdecl CG_ActionSlotIsUsable(int param_1,uint param_2)
     if (AVar1 == ACTIONSLOTTYPE_NIGHTVISION) {
       return true;
     }
-    if (((pcVar5->predictedPlayerState).actionSlotType[param_2] != ACTIONSLOTTYPE_DONOTHING) &&
-       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
-                                 0x3a2,0,"%s"), !bVar3)) {
+    if (((cgameGlob_00->predictedPlayerState).actionSlotType[slotIdx] != ACTIONSLOTTYPE_DONOTHING)
+       && (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
+                                    0x3a2,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       uVar4 = (*pcVar2)();
       return (bool)uVar4;
@@ -1437,40 +1478,43 @@ bool __cdecl CG_ActionSlotIsUsable(int param_1,uint param_2)
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DrawPlayerActionSlotDpad(int param_1,rectDef_s *param_2,float *param_3,Material *param_4)
+CG_DrawPlayerActionSlotDpad(int localClientNum,rectDef_s *rect,float *color,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  float fVar4;
-  float local_14;
+  cg_s *cgameGlob_00;
+  float fVar3;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  playerState_s *ps;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x3b0,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = CG_ActionSlotIsUsable(param_1,0);
-  if ((((bVar2) || (bVar2 = CG_ActionSlotIsUsable(param_1,1), bVar2)) ||
-      (bVar2 = CG_ActionSlotIsUsable(param_1,2), bVar2)) ||
-     (bVar2 = CG_ActionSlotIsUsable(param_1,3), bVar2)) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    local_14 = *param_3;
-    local_10 = param_3[1];
-    local_c = param_3[2];
-    local_8 = param_3[3];
-    fVar4 = DpadFadeAlpha(param_1,pcVar3);
-    local_8 = fVar4 * local_8;
+  bVar2 = CG_ActionSlotIsUsable(localClientNum,0);
+  if ((((bVar2) || (bVar2 = CG_ActionSlotIsUsable(localClientNum,1), bVar2)) ||
+      (bVar2 = CG_ActionSlotIsUsable(localClientNum,2), bVar2)) ||
+     (bVar2 = CG_ActionSlotIsUsable(localClientNum,3), bVar2)) {
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    colorMod = *color;
+    local_10 = color[1];
+    local_c = color[2];
+    local_8 = color[3];
+    fVar3 = DpadFadeAlpha(localClientNum,cgameGlob_00);
+    local_8 = fVar3 * local_8;
     if (local_8 != 0.0) {
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                        param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                        &local_14,param_4);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y,
+                        rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,&colorMod,
+                        material);
     }
   }
   return;
@@ -1486,38 +1530,41 @@ CG_DrawPlayerActionSlotDpad(int param_1,rectDef_s *param_2,float *param_3,Materi
 
 void __cdecl
 CG_DrawPlayerActionSlotBack
-          (int param_1,rectDef_s *param_2,uint param_3,float *param_4,Material *param_5)
+          (int localClientNum,rectDef_s *rect,uint slotIdx,float *color,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  float fVar4;
-  float local_14;
+  cg_s *cgameGlob_00;
+  float fVar3;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  playerState_s *ps;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x3cd,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  bVar2 = CG_ActionSlotIsUsable(param_1,param_3);
+  bVar2 = CG_ActionSlotIsUsable(localClientNum,slotIdx);
   if (bVar2) {
-    pcVar3 = CG_GetLocalClientGlobals(param_1);
-    local_14 = *param_4;
-    local_10 = param_4[1];
-    local_c = param_4[2];
-    local_8 = param_4[3];
-    fVar4 = DpadFadeAlpha(param_1,pcVar3);
-    local_8 = fVar4 * local_8;
+    cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+    colorMod = *color;
+    local_10 = color[1];
+    local_c = color[2];
+    local_8 = color[3];
+    fVar3 = DpadFadeAlpha(localClientNum,cgameGlob_00);
+    local_8 = fVar3 * local_8;
     if (local_8 != 0.0) {
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                        param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                        &local_14,param_5);
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y,
+                        rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,&colorMod,
+                        material);
     }
   }
   return;
@@ -1533,41 +1580,43 @@ CG_DrawPlayerActionSlotBack
 
 void __cdecl
 CG_DrawPlayerActionSlotArrow
-          (int param_1,rectDef_s *param_2,uint param_3,float *param_4,Material *param_5)
+          (int localClientNum,rectDef_s *rect,uint slotIdx,float *color,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   float fVar4;
-  float local_14;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x3e6,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_14 = *param_4;
-  local_10 = param_4[1];
-  local_c = param_4[2];
-  local_8 = param_4[3];
-  bVar2 = ActionSlotIsActive(param_1,param_3);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  colorMod = *color;
+  local_10 = color[1];
+  local_c = color[2];
+  local_8 = color[3];
+  bVar2 = ActionSlotIsActive(localClientNum,slotIdx);
   if (bVar2) {
     local_8 = 0.8;
   }
-  fVar4 = CG_FadeHudMenu(param_1,hud_fade_ammodisplay,pcVar3->ammoFadeTime,
+  fVar4 = CG_FadeHudMenu(localClientNum,hud_fade_ammodisplay,pcVar3->ammoFadeTime,
                          (int)ROUND((hud_fade_ammodisplay->current).value * 1000.0 + 9.313226e-10));
   local_8 = fVar4 * local_8;
   if (local_8 != 0.0) {
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                      param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                      &local_14,param_5);
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y,
+                      rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,&colorMod,
+                      material);
   }
   return;
 }
@@ -1583,8 +1632,8 @@ CG_DrawPlayerActionSlotArrow
 
 void __cdecl
 CG_DrawPlayerActionSlot
-          (int param_1,rectDef_s *param_2,uint param_3,float *param_4,Font_s *param_5,float param_6,
-          int param_7)
+          (int localClientNum,rectDef_s *rect,uint slotIdx,float *color,Font_s *textFont,
+          float textScale,int textStyle)
 
 {
   ActionSlotType AVar1;
@@ -1592,55 +1641,55 @@ CG_DrawPlayerActionSlot
   bool bVar3;
   int iVar4;
   float fVar5;
-  char local_118;
-  char local_bc [68];
+  bool local_118;
+  char str [68];
   uint local_78;
-  int local_74;
-  float local_70;
-  float local_6c;
-  float local_68;
-  cg_s *local_64;
-  float local_60;
-  float local_5c;
-  float local_58;
-  WeaponVariantDef *local_54;
-  float local_50;
-  float local_4c;
-  uint local_48;
-  float local_44 [4];
-  playerState_s *local_34;
-  float local_30;
+  int ammo;
+  float circleX;
+  float ammoAlpha;
+  float topHighlightSize;
+  cg_s *cgameGlob;
+  float circleSize;
+  float leftHighlightX;
+  float circleY;
+  WeaponVariantDef *weapVariantDef;
+  float highlightSize;
+  float leftHighlightOffset;
+  uint weapIdx;
+  float black [4];
+  playerState_s *ps;
+  float colorMod;
   float local_2c;
   float local_28;
   float local_24;
-  float local_20;
-  float local_1c;
-  WeaponDef *local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  char local_5;
+  float x;
+  float y;
+  WeaponDef *weapDef;
+  float leftHighlightY;
+  float h;
+  float w;
+  bool new_weapon_has_no_ammo;
   
   local_78 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50 = 94.0;
-  local_68 = 96.0;
-  local_4c = 2.0;
-  local_60 = 11.0;
-  local_70 = 0.0;
-  local_58 = 0.0;
-  local_6c = 0.5;
-  local_44[0] = 0.0;
-  local_44[1] = 0.0;
-  local_44[2] = 0.0;
-  local_44[3] = 0.8;
-  if ((param_2 == (rectDef_s *)0x0) &&
+  highlightSize = 94.0;
+  topHighlightSize = 96.0;
+  leftHighlightOffset = 2.0;
+  circleSize = 11.0;
+  circleX = 0.0;
+  circleY = 0.0;
+  ammoAlpha = 0.5;
+  black[0] = 0.0;
+  black[1] = 0.0;
+  black[2] = 0.0;
+  black[3] = 0.8;
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x415,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((3 < param_3) &&
+  if ((3 < slotIdx) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x416,
                                0,"slotIdx not in [0, (ACTIONSLOTS_NUM - 1)]\n\t%i not in [%i, %i]"),
      !bVar3)) {
@@ -1650,139 +1699,137 @@ CG_DrawPlayerActionSlot
   }
   iVar4 = CL_LocalClient_GetActiveCount();
   if (1 < iVar4) {
-    local_50 = local_50 * 2.0;
-    local_68 = local_68 * 2.0;
-    local_4c = local_4c * 2.0;
-    local_60 = local_60 * 2.0;
+    highlightSize = highlightSize * 2.0;
+    topHighlightSize = topHighlightSize * 2.0;
+    leftHighlightOffset = leftHighlightOffset * 2.0;
+    circleSize = circleSize * 2.0;
   }
-  local_64 = CG_GetLocalClientGlobals(param_1);
-  local_34 = &local_64->predictedPlayerState;
-  local_30 = *param_4;
-  local_2c = param_4[1];
-  local_28 = param_4[2];
-  local_24 = param_4[3];
-  fVar5 = AmmoCounterFadeAlpha(param_1,local_64);
-  local_6c = fVar5 * local_6c;
-  fVar5 = AmmoCounterFadeAlpha(param_1,local_64);
-  local_44[3] = fVar5 * local_44[3];
-  fVar5 = AmmoCounterFadeAlpha(param_1,local_64);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  colorMod = *color;
+  local_2c = color[1];
+  local_28 = color[2];
+  local_24 = color[3];
+  fVar5 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
+  ammoAlpha = fVar5 * ammoAlpha;
+  fVar5 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
+  black[3] = fVar5 * black[3];
+  fVar5 = AmmoCounterFadeAlpha(localClientNum,cgameGlob);
   local_24 = fVar5 * local_24;
   if (local_24 != 0.0) {
-    AVar1 = local_34->actionSlotType[param_3];
+    AVar1 = ps->actionSlotType[slotIdx];
     if (AVar1 == ACTIONSLOTTYPE_SPECIFYWEAPON) {
-      local_48 = local_34->actionSlotParam[param_3].specifyWeapon.index;
-      if ((local_48 != 0) && (iVar4 = BG_PlayerHasWeapon(local_34,local_48), iVar4 != 0)) {
-        local_54 = BG_GetWeaponVariantDef(local_48);
-        local_18 = BG_GetWeaponDef(local_48);
-        iVar4 = BG_GetAmmoInClip(local_34,local_48);
+      weapIdx = ps->actionSlotParam[slotIdx].specifyWeapon.index;
+      if ((weapIdx != 0) && (iVar4 = BG_PlayerHasWeapon(ps,weapIdx), iVar4 != 0)) {
+        weapVariantDef = BG_GetWeaponVariantDef(weapIdx);
+        weapDef = BG_GetWeaponDef(weapIdx);
+        iVar4 = BG_GetAmmoInClip(ps,weapIdx);
         if ((iVar4 == 0) &&
-           ((iVar4 = BG_GetAmmoNotInClip(local_34,local_48), iVar4 == 0 &&
-            (local_18->unlimitedAmmo == false)))) {
-          local_118 = '\x01';
+           ((iVar4 = BG_GetAmmoNotInClip(ps,weapIdx), iVar4 == 0 &&
+            (weapDef->unlimitedAmmo == false)))) {
+          local_118 = true;
         }
         else {
-          local_118 = '\0';
+          local_118 = false;
         }
-        local_5 = local_118;
-        if ((local_18->offhandSlot == OFFHAND_SLOT_EQUIPMENT) && (local_118 != '\0')) {
-          if ((local_64->compassScrambler[0xb].pos[1] == 1.43353e-42) &&
-             (iVar4 = I_strcmp(local_54->szInternalName,"satchel_charge_mp"), iVar4 != 0)) {
+        new_weapon_has_no_ammo = local_118;
+        if ((weapDef->offhandSlot == OFFHAND_SLOT_EQUIPMENT) && (local_118 != false)) {
+          if ((cgameGlob->compassScrambler[0xb].pos[1] == 1.43353e-42) &&
+             (iVar4 = I_strcmp(weapVariantDef->szInternalName,"satchel_charge_mp"), iVar4 != 0)) {
             return;
           }
           local_24 = local_24 * 0.5;
         }
-        DpadIconDims(param_2,param_3,local_54,&local_20,&local_1c,&local_c,&local_10);
-        if (param_3 == 0) {
-          local_5c = (local_20 - (local_68 - local_c) / 2.0) - local_4c / 2.0;
-          local_14 = (local_1c - (local_68 - local_10) / 2.0) + local_4c;
+        DpadIconDims(rect,slotIdx,weapVariantDef,&x,&y,&w,&h);
+        if (slotIdx == 0) {
+          leftHighlightX = (x - (topHighlightSize - w) / 2.0) - leftHighlightOffset / 2.0;
+          leftHighlightY = (y - (topHighlightSize - h) / 2.0) + leftHighlightOffset;
           UI_DrawHandlePicRotated
-                    ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_5c,local_14,local_68,
-                     local_68,param_2->horzAlign,param_2->vertAlign,&local_30,90.0,
-                     cgMedia.hudDpadLeftHighlight);
+                    ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),leftHighlightX,
+                     leftHighlightY,topHighlightSize,topHighlightSize,rect->horzAlign,
+                     rect->vertAlign,&colorMod,90.0,cgMedia.hudDpadLeftHighlight);
         }
-        else if (param_3 == 3) {
-          local_5c = (local_20 - (local_50 - local_c) / 2.0) - local_4c;
-          local_14 = local_1c - (local_50 - local_10) / 2.0;
+        else if (slotIdx == 3) {
+          leftHighlightX = (x - (highlightSize - w) / 2.0) - leftHighlightOffset;
+          leftHighlightY = y - (highlightSize - h) / 2.0;
           UI_DrawHandlePicRotated
-                    ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_5c,local_14,local_50,
-                     local_50,param_2->horzAlign,param_2->vertAlign,&local_30,180.0,
-                     cgMedia.hudDpadLeftHighlight);
+                    ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),leftHighlightX,
+                     leftHighlightY,highlightSize,highlightSize,rect->horzAlign,rect->vertAlign,
+                     &colorMod,180.0,cgMedia.hudDpadLeftHighlight);
         }
-        iVar4 = I_strcmp(local_54->szInternalName,"minigun_drop_mp");
+        iVar4 = I_strcmp(weapVariantDef->szInternalName,"minigun_drop_mp");
         if ((((iVar4 == 0) ||
-             (iVar4 = I_strcmp(local_54->szInternalName,"supplydrop_mp"), iVar4 == 0)) ||
-            (iVar4 = I_strcmp(local_54->szInternalName,"rcbomb_mp"), iVar4 == 0)) ||
-           (iVar4 = I_strcmp(local_54->szInternalName,"helicopter_gunner_mp"), iVar4 == 0)) {
-          local_c = local_c * 1.1;
-          local_10 = local_10 * 1.1;
+             (iVar4 = I_strcmp(weapVariantDef->szInternalName,"supplydrop_mp"), iVar4 == 0)) ||
+            (iVar4 = I_strcmp(weapVariantDef->szInternalName,"rcbomb_mp"), iVar4 == 0)) ||
+           (iVar4 = I_strcmp(weapVariantDef->szInternalName,"helicopter_gunner_mp"), iVar4 == 0)) {
+          w = w * 1.1;
+          h = h * 1.1;
         }
-        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_20,local_1c,
-                          local_c,local_10,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                          &local_30,local_54->dpadIcon);
-        local_74 = BG_WeaponAmmo(local_34,local_48);
-        if (local_74 == 0) {
-          local_30 = 1.0;
+        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                          rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,&colorMod,
+                          weapVariantDef->dpadIcon);
+        ammo = BG_WeaponAmmo(ps,weapIdx);
+        if (ammo == 0) {
+          colorMod = 1.0;
           local_2c = 0.3;
           local_28 = 0.3;
         }
-        if ((1 < local_18->iStartAmmo) && (local_18->bIsCarriedKillstreakWeapon == false)) {
-          local_70 = (param_2->w / 2.0 + local_20) - local_60 / 2.0;
-          local_58 = (param_2->h / 2.0 + local_1c) - local_60 / 2.0;
-          CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_70,local_58,
-                            local_60,local_60,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                            local_44,cgMedia.hudDpadCircle);
-          DpadTextPos(param_1,param_2,param_3,local_54,&local_20,&local_1c);
-          Com_sprintf(local_bc,0x40,"%3i");
-          local_24 = local_6c;
-          UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_bc,0x7fffffff,
-                      param_5,local_20,local_1c,param_2->horzAlign,param_2->vertAlign,param_6,
-                      &local_30,param_7);
+        if ((1 < weapDef->iStartAmmo) && (weapDef->bIsCarriedKillstreakWeapon == false)) {
+          circleX = (rect->w / 2.0 + x) - circleSize / 2.0;
+          circleY = (rect->h / 2.0 + y) - circleSize / 2.0;
+          CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),circleX,
+                            circleY,circleSize,circleSize,rect->horzAlign,rect->vertAlign,0.0,0.0,
+                            1.0,1.0,black,cgMedia.hudDpadCircle);
+          DpadTextPos(localClientNum,rect,slotIdx,weapVariantDef,&x,&y);
+          Com_sprintf(str,0x40,"%3i");
+          local_24 = ammoAlpha;
+          UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,0x7fffffff,
+                      textFont,x,y,rect->horzAlign,rect->vertAlign,textScale,&colorMod,textStyle);
         }
       }
     }
     else if (AVar1 == ACTIONSLOTTYPE_ALTWEAPONTOGGLE) {
-      local_48 = local_64->weaponSelect;
-      local_54 = BG_GetWeaponVariantDef(local_48);
-      local_18 = BG_GetWeaponDef(local_48);
-      if (local_18->inventoryType != WEAPINVENTORY_ALTMODE) {
-        local_48 = CG_AltWeaponToggleIndex(param_1,local_64,(uint *)0x0);
-        if (local_48 == 0) {
+      weapIdx = cgameGlob->weaponSelect;
+      weapVariantDef = BG_GetWeaponVariantDef(weapIdx);
+      weapDef = BG_GetWeaponDef(weapIdx);
+      if (weapDef->inventoryType != WEAPINVENTORY_ALTMODE) {
+        weapIdx = CG_AltWeaponToggleIndex(localClientNum,cgameGlob,(uint *)0x0);
+        if (weapIdx == 0) {
           return;
         }
-        local_54 = BG_GetWeaponVariantDef(local_48);
+        weapVariantDef = BG_GetWeaponVariantDef(weapIdx);
       }
-      DpadIconDims(param_2,param_3,local_54,&local_20,&local_1c,&local_c,&local_10);
-      if (param_3 == 2) {
-        local_5c = (local_20 - (local_50 - local_c) / 2.0) + local_4c;
-        local_14 = (local_1c - (local_50 - local_10) / 2.0) + local_4c;
+      DpadIconDims(rect,slotIdx,weapVariantDef,&x,&y,&w,&h);
+      if (slotIdx == 2) {
+        leftHighlightX = (x - (highlightSize - w) / 2.0) + leftHighlightOffset;
+        leftHighlightY = (y - (highlightSize - h) / 2.0) + leftHighlightOffset;
         UI_DrawHandlePicRotated
-                  ((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_5c,local_14,local_50,
-                   local_50,param_2->horzAlign,param_2->vertAlign,&local_30,0.0,
-                   cgMedia.hudDpadLeftHighlight);
+                  ((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),leftHighlightX,
+                   leftHighlightY,highlightSize,highlightSize,rect->horzAlign,rect->vertAlign,
+                   &colorMod,0.0,cgMedia.hudDpadLeftHighlight);
       }
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_20,local_1c,
-                        local_c,local_10,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                        &local_30,local_54->dpadIcon);
-      local_70 = (param_2->w / 2.0 + local_20) - local_60 / 2.0;
-      local_58 = (param_2->h / 2.0 + local_1c) - local_60 / 2.0;
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_70,local_58,
-                        local_60,local_60,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                        local_44,cgMedia.hudDpadCircle);
-      local_74 = BG_WeaponAmmo(local_34,local_48);
-      if (local_74 == 0) {
-        local_30 = 1.0;
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),x,y,w,h,
+                        rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,&colorMod,
+                        weapVariantDef->dpadIcon);
+      circleX = (rect->w / 2.0 + x) - circleSize / 2.0;
+      circleY = (rect->h / 2.0 + y) - circleSize / 2.0;
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),circleX,circleY,
+                        circleSize,circleSize,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,black,
+                        cgMedia.hudDpadCircle);
+      ammo = BG_WeaponAmmo(ps,weapIdx);
+      if (ammo == 0) {
+        colorMod = 1.0;
         local_2c = 0.3;
         local_28 = 0.3;
       }
-      DpadTextPos(param_1,param_2,param_3,local_54,&local_20,&local_1c);
-      Com_sprintf(local_bc,0x40,"%3i");
-      local_24 = local_6c;
-      UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_bc,0x7fffffff,param_5,
-                  local_20,local_1c,param_2->horzAlign,param_2->vertAlign,param_6,&local_30,param_7)
-      ;
+      DpadTextPos(localClientNum,rect,slotIdx,weapVariantDef,&x,&y);
+      Com_sprintf(str,0x40,"%3i");
+      local_24 = ammoAlpha;
+      UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),str,0x7fffffff,textFont
+                  ,x,y,rect->horzAlign,rect->vertAlign,textScale,&colorMod,textStyle);
     }
     else if (((AVar1 != ACTIONSLOTTYPE_NIGHTVISION) &&
-             (local_34->actionSlotType[param_3] != ACTIONSLOTTYPE_DONOTHING)) &&
+             (ps->actionSlotType[slotIdx] != ACTIONSLOTTYPE_DONOTHING)) &&
             (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp"
                                       ,0x4c9,0,"%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -1803,27 +1850,29 @@ CG_DrawPlayerActionSlot
 
 void __cdecl
 CG_DrawPlayerActionSlotBind
-          (int param_1,rectDef_s *param_2,uint param_3,float *param_4,Font_s *param_5,float param_6,
-          int param_7,int param_8,itemDef_s *param_9,char *param_10)
+          (int localClientNum,rectDef_s *rect,uint slotIdx,float *color,Font_s *textFont,
+          float textScale,int textStyle,int textAlignMode,itemDef_s *item,char *text)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   float fVar4;
-  float local_14;
+  cg_s *cgameGlob;
+  playerState_s *ps;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x4d4,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((3 < param_3) &&
+  if ((3 < slotIdx) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x4d5,
                                0,"slotIdx not in [0, (ACTIONSLOTS_NUM - 1)]\n\t%i not in [%i, %i]"),
      !bVar2)) {
@@ -1831,25 +1880,24 @@ CG_DrawPlayerActionSlotBind
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_14 = *param_4;
-  local_10 = param_4[1];
-  local_c = param_4[2];
-  local_8 = param_4[3];
-  bVar2 = ActionSlotIsActive(param_1,param_3);
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  colorMod = *color;
+  local_10 = color[1];
+  local_c = color[2];
+  local_8 = color[3];
+  bVar2 = ActionSlotIsActive(localClientNum,slotIdx);
   if (bVar2) {
-    local_14 = local_14 * 1.0;
+    colorMod = colorMod * 1.0;
     local_10 = local_10 * 0.8;
     local_c = local_c * 0.4;
     local_8 = 0.8;
   }
-  fVar4 = CG_FadeHudMenu(param_1,hud_fade_ammodisplay,pcVar3->ammoFadeTime,
+  fVar4 = CG_FadeHudMenu(localClientNum,hud_fade_ammodisplay,pcVar3->ammoFadeTime,
                          (int)ROUND((hud_fade_ammodisplay->current).value * 1000.0 + 9.313226e-10));
   local_8 = fVar4 * local_8;
   if (local_8 != 0.0) {
-    UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_10,0x7fffffff,param_5,
-                param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_6,&local_14,
-                param_7);
+    UI_DrawText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),text,0x7fffffff,textFont,
+                rect->x,rect->y,rect->horzAlign,rect->vertAlign,textScale,&colorMod,textStyle);
   }
   return;
 }
@@ -1863,37 +1911,39 @@ CG_DrawPlayerActionSlotBind
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DrawPlayerWeaponBackground(int param_1,rectDef_s *param_2,float *param_3,Material *param_4)
+CG_DrawPlayerWeaponBackground(int localClientNum,rectDef_s *rect,float *color,Material *material)
 
 {
   code *pcVar1;
   bool bVar2;
   cg_s *pcVar3;
   float fVar4;
-  float local_14;
+  ScreenPlacement *scrPlace;
+  cg_s *cgameGlob;
+  float colorMod;
   float local_10;
   float local_c;
   float local_8;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x4f1,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_14 = *param_3;
-  local_10 = param_3[1];
-  local_c = param_3[2];
-  local_8 = param_3[3];
-  fVar4 = CG_FadeHudMenu(param_1,hud_fade_ammodisplay,pcVar3->ammoFadeTime,
+  pcVar3 = CG_GetLocalClientGlobals(localClientNum);
+  colorMod = *color;
+  local_10 = color[1];
+  local_c = color[2];
+  local_8 = color[3];
+  fVar4 = CG_FadeHudMenu(localClientNum,hud_fade_ammodisplay,pcVar3->ammoFadeTime,
                          (int)ROUND((hud_fade_ammodisplay->current).value * 1000.0 + 9.313226e-10));
   local_8 = fVar4 * local_8;
   if (local_8 != 0.0) {
-    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                      param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,1.0,
-                      &local_14,param_4);
+    CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y,
+                      rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,&colorMod,
+                      material);
   }
   return;
 }
@@ -1906,47 +1956,50 @@ CG_DrawPlayerWeaponBackground(int param_1,rectDef_s *param_2,float *param_3,Mate
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawPlayerWeaponAmmoClipGraphic(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl CG_DrawPlayerWeaponAmmoClipGraphic(int localClientNum,rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  uint uVar4;
-  WeaponVariantDef *pWVar5;
-  float fVar6;
-  float local_20 [2];
-  float local_18;
+  cg_s *cgameGlob_00;
+  uint weaponIndex;
+  WeaponVariantDef *weapVarDef_00;
+  float fVar3;
+  WeaponVariantDef *weapVarDef;
+  cg_s *cgameGlob;
+  int weapIdx;
+  float base [2];
+  float colorMod;
   float local_14;
   float local_10;
   float local_c;
-  WeaponDef *local_8;
+  WeaponDef *weapDef;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x527,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_18 = *param_3;
-  local_14 = param_3[1];
-  local_10 = param_3[2];
-  local_c = param_3[3];
-  fVar6 = AmmoCounterFadeAlpha(param_1,pcVar3);
-  local_c = fVar6 * local_c;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  colorMod = *color;
+  local_14 = color[1];
+  local_10 = color[2];
+  local_c = color[3];
+  fVar3 = AmmoCounterFadeAlpha(localClientNum,cgameGlob_00);
+  local_c = fVar3 * local_c;
   if (((local_c != 0.0) &&
-      ((((((pcVar3->predictedPlayerState).eFlags & 0x300U) == 0 ||
-         ((pcVar3->predictedPlayerState).weaponstate == 0x23)) ||
-        ((pcVar3->predictedPlayerState).weaponstate == 0x24)) ||
-       ((pcVar3->predictedPlayerState).weaponstate == 0x25)))) &&
-     ((((pcVar3->predictedPlayerState).eFlags & 0x4000U) == 0 &&
-      (uVar4 = CG_GetSelectedWeaponIndex(pcVar3), uVar4 != 0)))) {
-    pWVar5 = BG_GetWeaponVariantDef(uVar4);
-    local_8 = BG_GetWeaponDef(uVar4);
-    GetBaseRectPos(param_1,param_2,local_20);
-    DrawClipAmmo(pcVar3,local_20,uVar4,local_8,pWVar5,&local_18);
+      ((((((cgameGlob_00->predictedPlayerState).eFlags & 0x300U) == 0 ||
+         ((cgameGlob_00->predictedPlayerState).weaponstate == 0x23)) ||
+        ((cgameGlob_00->predictedPlayerState).weaponstate == 0x24)) ||
+       ((cgameGlob_00->predictedPlayerState).weaponstate == 0x25)))) &&
+     ((((cgameGlob_00->predictedPlayerState).eFlags & 0x4000U) == 0 &&
+      (weaponIndex = CG_GetSelectedWeaponIndex(cgameGlob_00), weaponIndex != 0)))) {
+    weapVarDef_00 = BG_GetWeaponVariantDef(weaponIndex);
+    weapDef = BG_GetWeaponDef(weaponIndex);
+    GetBaseRectPos(localClientNum,rect,base);
+    DrawClipAmmo(cgameGlob_00,base,weaponIndex,weapDef,weapVarDef_00,&colorMod);
   }
   return;
 }
@@ -1960,52 +2013,54 @@ void __cdecl CG_DrawPlayerWeaponAmmoClipGraphic(int param_1,rectDef_s *param_2,f
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-CG_DrawPlayerWeaponAmmoClipGraphicDualWield(int param_1,rectDef_s *param_2,float *param_3)
+CG_DrawPlayerWeaponAmmoClipGraphicDualWield(int localClientNum,rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  uint uVar4;
-  WeaponVariantDef *pWVar5;
-  WeaponDef *pWVar6;
-  float fVar7;
-  float *pfVar8;
-  float local_20 [2];
-  float local_18;
+  cg_s *cgameGlob_00;
+  uint weaponIndex;
+  WeaponVariantDef *weapVarDef;
+  WeaponDef *weapDef_00;
+  float fVar3;
+  float *color_00;
+  cg_s *cgameGlob;
+  int weapIdx;
+  float base [2];
+  float colorMod;
   float local_14;
   float local_10;
   float local_c;
-  WeaponDef *local_8;
+  WeaponDef *weapDef;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x54b,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_18 = *param_3;
-  local_14 = param_3[1];
-  local_10 = param_3[2];
-  local_c = param_3[3];
-  fVar7 = AmmoCounterFadeAlpha(param_1,pcVar3);
-  local_c = fVar7 * local_c;
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  colorMod = *color;
+  local_14 = color[1];
+  local_10 = color[2];
+  local_c = color[3];
+  fVar3 = AmmoCounterFadeAlpha(localClientNum,cgameGlob_00);
+  local_c = fVar3 * local_c;
   if (((local_c != 0.0) &&
-      ((((((pcVar3->predictedPlayerState).eFlags & 0x300U) == 0 ||
-         ((pcVar3->predictedPlayerState).weaponstate == 0x23)) ||
-        ((pcVar3->predictedPlayerState).weaponstate == 0x24)) ||
-       ((pcVar3->predictedPlayerState).weaponstate == 0x25)))) &&
-     (((((pcVar3->predictedPlayerState).eFlags & 0x4000U) == 0 &&
-       (uVar4 = CG_GetSelectedWeaponIndex(pcVar3), uVar4 != 0)) &&
-      ((local_8 = BG_GetWeaponDef(uVar4), local_8->bDualWield != false &&
-       (local_8->dualWieldWeaponIndex != 0)))))) {
-    GetBaseRectPos(param_1,param_2,local_20);
-    pfVar8 = &local_18;
-    pWVar5 = BG_GetWeaponVariantDef(local_8->dualWieldWeaponIndex);
-    pWVar6 = BG_GetWeaponDef(local_8->dualWieldWeaponIndex);
-    DrawClipAmmo(pcVar3,local_20,local_8->dualWieldWeaponIndex,pWVar6,pWVar5,pfVar8);
+      ((((((cgameGlob_00->predictedPlayerState).eFlags & 0x300U) == 0 ||
+         ((cgameGlob_00->predictedPlayerState).weaponstate == 0x23)) ||
+        ((cgameGlob_00->predictedPlayerState).weaponstate == 0x24)) ||
+       ((cgameGlob_00->predictedPlayerState).weaponstate == 0x25)))) &&
+     (((((cgameGlob_00->predictedPlayerState).eFlags & 0x4000U) == 0 &&
+       (weaponIndex = CG_GetSelectedWeaponIndex(cgameGlob_00), weaponIndex != 0)) &&
+      ((weapDef = BG_GetWeaponDef(weaponIndex), weapDef->bDualWield != false &&
+       (weapDef->dualWieldWeaponIndex != 0)))))) {
+    GetBaseRectPos(localClientNum,rect,base);
+    color_00 = &colorMod;
+    weapVarDef = BG_GetWeaponVariantDef(weapDef->dualWieldWeaponIndex);
+    weapDef_00 = BG_GetWeaponDef(weapDef->dualWieldWeaponIndex);
+    DrawClipAmmo(cgameGlob_00,base,weapDef->dualWieldWeaponIndex,weapDef_00,weapVarDef,color_00);
   }
   return;
 }
@@ -2014,48 +2069,47 @@ CG_DrawPlayerWeaponAmmoClipGraphicDualWield(int param_1,rectDef_s *param_2,float
 // 00475AB0  DrawStretchPicGun  (cgame/cg_ammocounter.cpp:1388)
 
 void __cdecl
-DrawStretchPicGun(ScreenPlacement *param_1,rectDef_s *param_2,float *param_3,Material *param_4,
-                 weaponIconRatioType_t param_5)
+DrawStretchPicGun(ScreenPlacement *scrPlace,rectDef_s *rect,float *color,Material *material,
+                 weaponIconRatioType_t ratio)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float x;
+  float y;
+  float h;
+  float w;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x572,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_14 = param_2->x;
-  local_10 = param_2->y;
-  local_8 = param_2->w;
-  local_c = param_2->h;
-  ScrPlace_ApplyRect(param_1,&local_14,&local_10,&local_8,&local_c,param_2->horzAlign,
-                     param_2->vertAlign);
-  if (param_5 != WEAPON_ICON_RATIO_1TO1) {
-    if (param_5 == WEAPON_ICON_RATIO_2TO1) {
-      local_14 = local_14 - local_8;
-      local_8 = local_8 * 2.0;
+  x = rect->x;
+  y = rect->y;
+  w = rect->w;
+  h = rect->h;
+  ScrPlace_ApplyRect(scrPlace,&x,&y,&w,&h,rect->horzAlign,rect->vertAlign);
+  if (ratio != WEAPON_ICON_RATIO_1TO1) {
+    if (ratio == WEAPON_ICON_RATIO_2TO1) {
+      x = x - w;
+      w = w * 2.0;
     }
     else {
-      if ((param_5 != WEAPON_ICON_RATIO_4TO1) &&
+      if ((ratio != WEAPON_ICON_RATIO_4TO1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",
                                    0x582,0,"%s\n\t(ratio) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_14 = local_14 - local_8 * 3.0;
-      local_8 = local_8 * 4.0;
+      x = x - w * 3.0;
+      w = w * 4.0;
     }
   }
-  CL_DrawStretchPicPhysical(local_14,local_10,local_8,local_c,0.0,0.0,1.0,1.0,param_3,param_4);
+  CL_DrawStretchPicPhysical(x,y,w,h,0.0,0.0,1.0,1.0,color,material);
   return;
 }
 
@@ -2067,38 +2121,41 @@ DrawStretchPicGun(ScreenPlacement *param_1,rectDef_s *param_2,float *param_3,Mat
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DrawPlayerWeaponIcon(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl CG_DrawPlayerWeaponIcon(int localClientNum,rectDef_s *rect,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
-  cg_s *pcVar3;
-  uint uVar4;
-  float fVar5;
-  float local_18;
+  cg_s *cgameGlob_00;
+  uint weaponIndex;
+  float fVar3;
+  cg_s *cgameGlob;
+  int weapIdx;
+  float colorMod;
   float local_14;
   float local_10;
   float local_c;
-  WeaponDef *local_8;
+  WeaponDef *weapDef;
   
-  if ((param_2 == (rectDef_s *)0x0) &&
+  if ((rect == (rectDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_ammocounter.cpp",0x591,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pcVar3 = CG_GetLocalClientGlobals(param_1);
-  local_18 = *param_3;
-  local_14 = param_3[1];
-  local_10 = param_3[2];
-  local_c = param_3[3];
-  fVar5 = AmmoCounterFadeAlpha(param_1,pcVar3);
-  local_c = fVar5 * local_c;
-  if ((local_c != 0.0) && (uVar4 = CG_GetSelectedWeaponIndex(pcVar3), uVar4 != 0)) {
-    local_8 = BG_GetWeaponDef(uVar4);
-    DrawStretchPicGun((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2,&local_18,
-                      local_8->ammoCounterIcon,local_8->ammoCounterIconRatio);
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  colorMod = *color;
+  local_14 = color[1];
+  local_10 = color[2];
+  local_c = color[3];
+  fVar3 = AmmoCounterFadeAlpha(localClientNum,cgameGlob_00);
+  local_c = fVar3 * local_c;
+  if ((local_c != 0.0) && (weaponIndex = CG_GetSelectedWeaponIndex(cgameGlob_00), weaponIndex != 0))
+  {
+    weapDef = BG_GetWeaponDef(weaponIndex);
+    DrawStretchPicGun((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect,&colorMod,
+                      weapDef->ammoCounterIcon,weapDef->ammoCounterIconRatio);
   }
   return;
 }
@@ -2114,173 +2171,182 @@ void __cdecl CG_DrawPlayerWeaponIcon(int param_1,rectDef_s *param_2,float *param
 
 void __cdecl
 CG_DrawPlayerWeaponLowAmmoWarning
-          (int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,int param_5,float param_6,
-          float param_7,int param_8,Material *param_9)
+          (int localClientNum,rectDef_s *rect,Font_s *font,float textScale,int textStyle,
+          float text_x,float text_y,int textAlignMode,Material *material)
 
 {
   bool bVar1;
-  cg_s *pcVar2;
+  cg_s *cgameGlob_00;
+  int iVar2;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
+  char *pcVar4;
+  float fVar5;
   float fVar6;
-  float fVar7;
-  double dVar8;
-  float fVar9;
+  double dVar7;
+  float fVar8;
   undefined4 in_stack_fffffe40;
-  char local_169;
-  float local_164 [4];
-  uint local_154;
-  float local_150;
-  char local_14c [260];
+  bool canReloadLeft;
+  float fade;
+  float frac;
+  int numBindings;
+  cg_s *cgameGlob;
+  float amplitude;
+  bool canReload;
+  bool empty;
+  char *localizedString;
+  float color1 [4];
+  int weapIndex;
+  float bias;
+  char binding [260];
   uint local_48;
-  float local_44 [3];
+  float colorMod [3];
   float local_38;
-  WeaponDef *local_34;
-  char *local_30;
-  rectDef_s local_2c;
-  float local_14 [4];
+  WeaponDef *weapDef;
+  char *text;
+  rectDef_s textRect;
+  float color2 [4];
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
-  if (8 < (pcVar2->predictedPlayerState).pm_type) {
+  cgameGlob_00 = CG_GetLocalClientGlobals(localClientNum);
+  if (8 < (cgameGlob_00->predictedPlayerState).pm_type) {
     return;
   }
-  if (2 < (pcVar2->predictedPlayerState).waterlevel) {
+  if (2 < (cgameGlob_00->predictedPlayerState).waterlevel) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).pm_type == 4) {
+  if ((cgameGlob_00->predictedPlayerState).pm_type == 4) {
     return;
   }
-  if (((pcVar2->predictedPlayerState).eFlags & 0x300U) != 0) {
+  if (((cgameGlob_00->predictedPlayerState).eFlags & 0x300U) != 0) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 10) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 10) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 0xc) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 0xc) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 0xe) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 0xe) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 0xd) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 0xd) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 0xb) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 0xb) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 0xf) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 0xf) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weaponstate == 0x10) {
+  if ((cgameGlob_00->predictedPlayerState).weaponstate == 0x10) {
     return;
   }
-  if ((pcVar2->predictedPlayerState).weapon == 0) {
+  if ((cgameGlob_00->predictedPlayerState).weapon == 0) {
     return;
   }
-  fVar9 = AmmoCounterFadeAlpha(param_1,pcVar2);
-  if (fVar9 == 0.0) {
+  fVar8 = AmmoCounterFadeAlpha(localClientNum,cgameGlob_00);
+  if (fVar8 == 0.0) {
     return;
   }
-  local_154 = CG_GetSelectedWeaponIndex(pcVar2);
-  local_34 = BG_GetWeaponDef(local_154);
-  if (local_34->bDualWield == false) {
-    bVar1 = CG_CheckPlayerForLowClipSpecific(pcVar2,local_154);
+  weapIndex = CG_GetSelectedWeaponIndex(cgameGlob_00);
+  weapDef = BG_GetWeaponDef(weapIndex);
+  if (weapDef->bDualWield == false) {
+    bVar1 = CG_CheckPlayerForLowClipSpecific(cgameGlob_00,weapIndex);
   }
   else {
-    bVar1 = CG_CheckPlayerForLowClipSpecific(pcVar2,local_154);
+    bVar1 = CG_CheckPlayerForLowClipSpecific(cgameGlob_00,weapIndex);
     if (bVar1) goto LAB_00475dec;
-    bVar1 = CG_CheckPlayerForLowClipSpecific(pcVar2,local_34->dualWieldWeaponIndex);
+    bVar1 = CG_CheckPlayerForLowClipSpecific(cgameGlob_00,weapDef->dualWieldWeaponIndex);
   }
   if (!bVar1) {
     return;
   }
 LAB_00475dec:
-  if (((pcVar2->predictedPlayerState).eFlags & 0x4300U) == 0) {
-    iVar3 = BG_GetAmmoNotInClip(&pcVar2->predictedPlayerState,local_154);
-    if (local_34->bDualWield == false) {
-      iVar4 = BG_GetAmmoInClip(&pcVar2->predictedPlayerState,local_154);
-      local_169 = '\x01' - (iVar4 != 0);
+  if (((cgameGlob_00->predictedPlayerState).eFlags & 0x4300U) == 0) {
+    iVar2 = BG_GetAmmoNotInClip(&cgameGlob_00->predictedPlayerState,weapIndex);
+    if (weapDef->bDualWield == false) {
+      iVar3 = BG_GetAmmoInClip(&cgameGlob_00->predictedPlayerState,weapIndex);
+      empty = (bool)('\x01' - (iVar3 != 0));
       bVar1 = false;
     }
     else {
-      iVar4 = BG_GetAmmoNotInClip(&pcVar2->predictedPlayerState,local_34->dualWieldWeaponIndex);
-      bVar1 = 0 < iVar4;
-      iVar4 = BG_GetAmmoInClip(&pcVar2->predictedPlayerState,local_154);
-      if ((iVar4 == 0) &&
-         (iVar4 = BG_GetAmmoInClip(&pcVar2->predictedPlayerState,local_34->dualWieldWeaponIndex),
-         iVar4 == 0)) {
+      iVar3 = BG_GetAmmoNotInClip(&cgameGlob_00->predictedPlayerState,weapDef->dualWieldWeaponIndex)
+      ;
+      bVar1 = 0 < iVar3;
+      iVar3 = BG_GetAmmoInClip(&cgameGlob_00->predictedPlayerState,weapIndex);
+      if ((iVar3 == 0) &&
+         (iVar3 = BG_GetAmmoInClip(&cgameGlob_00->predictedPlayerState,weapDef->dualWieldWeaponIndex
+                                  ), iVar3 == 0)) {
         in_stack_fffffe40 = 1;
       }
       else {
         in_stack_fffffe40 = 0;
       }
-      local_169 = (char)in_stack_fffffe40;
+      empty = SUB41(in_stack_fffffe40,0);
     }
-    if (local_34->ammoCounterClip != AMMO_COUNTER_CLIP_NONE) {
-      if ((0 < iVar3) || (bVar1)) {
-        if (local_34->bNoPartialReload != false) {
+    if (weapDef->ammoCounterClip != AMMO_COUNTER_CLIP_NONE) {
+      if ((0 < iVar2) || (bVar1)) {
+        if (weapDef->bNoPartialReload != false) {
           return;
         }
-        iVar3 = BG_GetClipSize(local_154);
-        if (iVar3 == 1) {
+        iVar2 = BG_GetClipSize(weapIndex);
+        if (iVar2 == 1) {
           return;
         }
-        local_30 = "PLATFORM_RELOAD";
-        Byte4UnpackRgba((lowAmmoWarningColor1->current).color,local_164);
-        Byte4UnpackRgba((lowAmmoWarningColor2->current).color,local_14);
+        text = "PLATFORM_RELOAD";
+        Byte4UnpackRgba((lowAmmoWarningColor1->current).color,color1);
+        Byte4UnpackRgba((lowAmmoWarningColor2->current).color,color2);
       }
-      else if ((local_169 == '\0') || (local_34->bIsCarriedKillstreakWeapon != false)) {
-        if (local_34->bNoPartialReload != false) {
+      else if ((empty == false) || (weapDef->bIsCarriedKillstreakWeapon != false)) {
+        if (weapDef->bNoPartialReload != false) {
           return;
         }
-        if (local_34->guidedMissileType == MISSILE_GUIDANCE_TVGUIDED) {
+        if (weapDef->guidedMissileType == MISSILE_GUIDANCE_TVGUIDED) {
           return;
         }
-        if (local_34->bDualWield != false) {
-          bVar1 = CG_CheckPlayerForLowClipSpecific(pcVar2,local_154);
+        if (weapDef->bDualWield != false) {
+          bVar1 = CG_CheckPlayerForLowClipSpecific(cgameGlob_00,weapIndex);
           if (!bVar1) {
             return;
           }
-          bVar1 = CG_CheckPlayerForLowClipSpecific(pcVar2,local_34->dualWieldWeaponIndex);
+          bVar1 = CG_CheckPlayerForLowClipSpecific(cgameGlob_00,weapDef->dualWieldWeaponIndex);
           if (!bVar1) {
             return;
           }
         }
-        local_30 = "PLATFORM_LOW_AMMO_NO_RELOAD";
-        Byte4UnpackRgba((lowAmmoWarningNoReloadColor1->current).color,local_164);
-        Byte4UnpackRgba((lowAmmoWarningNoReloadColor2->current).color,local_14);
+        text = "PLATFORM_LOW_AMMO_NO_RELOAD";
+        Byte4UnpackRgba((lowAmmoWarningNoReloadColor1->current).color,color1);
+        Byte4UnpackRgba((lowAmmoWarningNoReloadColor2->current).color,color2);
       }
       else {
-        local_30 = "WEAPON_NO_AMMO";
-        Byte4UnpackRgba((lowAmmoWarningNoAmmoColor1->current).color,local_164);
-        Byte4UnpackRgba((lowAmmoWarningNoAmmoColor2->current).color,local_14);
+        text = "WEAPON_NO_AMMO";
+        Byte4UnpackRgba((lowAmmoWarningNoAmmoColor1->current).color,color1);
+        Byte4UnpackRgba((lowAmmoWarningNoAmmoColor2->current).color,color2);
       }
-      fVar6 = ((lowAmmoWarningPulseMax->current).value - (lowAmmoWarningPulseMin->current).value) *
+      fVar5 = ((lowAmmoWarningPulseMax->current).value - (lowAmmoWarningPulseMin->current).value) *
               0.5;
-      local_150 = (lowAmmoWarningPulseMin->current).value + fVar6;
-      fVar7 = (float)pcVar2->time * 0.0062831854 * (lowAmmoWarningPulseFreq->current).value;
-      dVar8 = (double)fVar7;
-      __libm_sse2_sin((double)CONCAT44(fVar7,in_stack_fffffe40));
-      Vec4Lerp(local_164,local_14,(float)dVar8 * fVar6 + local_150,local_44);
-      local_38 = local_38 * fVar9;
-      if (param_9 != (Material *)0x0) {
-        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                          param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,0.0,0.0,1.0,
-                          1.0,local_44,param_9);
+      bias = (lowAmmoWarningPulseMin->current).value + fVar5;
+      fVar6 = (float)cgameGlob_00->time * 0.0062831854 * (lowAmmoWarningPulseFreq->current).value;
+      dVar7 = (double)fVar6;
+      __libm_sse2_sin((double)CONCAT44(fVar6,in_stack_fffffe40));
+      Vec4Lerp(color1,color2,(float)dVar7 * fVar5 + bias,colorMod);
+      local_38 = local_38 * fVar8;
+      if (material != (Material *)0x0) {
+        CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),rect->x,rect->y
+                          ,rect->w,rect->h,rect->horzAlign,rect->vertAlign,0.0,0.0,1.0,1.0,colorMod,
+                          material);
       }
-      iVar3 = UI_GetKeyBindingLocalizedString(param_1,"+reload",local_14c,0);
-      if (iVar3 == 0) {
-        iVar3 = 0x100;
-        pcVar5 = UI_SafeTranslateString("KEY_UNBOUND");
-        I_strncpyz(local_14c,pcVar5,iVar3);
+      iVar2 = UI_GetKeyBindingLocalizedString(localClientNum,"+reload",binding,0);
+      if (iVar2 == 0) {
+        iVar2 = 0x100;
+        pcVar4 = UI_SafeTranslateString("KEY_UNBOUND");
+        I_strncpyz(binding,pcVar4,iVar2);
       }
-      pcVar5 = UI_SafeTranslateString(local_30);
-      pcVar5 = UI_ReplaceConversionString(pcVar5,local_14c);
-      UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar5,param_2,param_3,
-                         param_2->x + param_6,param_2->y + param_7,param_4,local_44,param_5,param_8,
-                         &local_2c);
+      pcVar4 = UI_SafeTranslateString(text);
+      pcVar4 = UI_ReplaceConversionString(pcVar4,binding);
+      UI_DrawWrappedText((ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78),pcVar4,rect,font
+                         ,rect->x + text_x,rect->y + text_y,textScale,colorMod,textStyle,
+                         textAlignMode,&textRect);
     }
   }
   return;

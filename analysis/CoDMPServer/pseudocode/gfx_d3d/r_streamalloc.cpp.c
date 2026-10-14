@@ -12,18 +12,21 @@ void __cdecl _dynamic_initializer_for__TRACKINST_s_allocGlob__(void)
 
 // 00ABA1E0  R_StreamAlloc_InitTempImages  (gfx_d3d/r_streamalloc.cpp:1716)
 
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+
 void __cdecl R_StreamAlloc_InitTempImages(void)
 
 {
   GfxImage *pGVar1;
-  int local_8;
+  GfxImage *image;
+  int index;
   
   if (!s_allocGlob.tempImagesInit) {
-    for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
+    for (index = 0; index < 0x20; index = index + 1) {
       pGVar1 = DB_AllocTempImage();
-      s_allocGlob.tempImages[local_8].image = pGVar1;
-      memset((uchar *)s_allocGlob.tempImages[local_8].image,'\0',0x34);
-      s_allocGlob.tempImages[local_8].alloced = false;
+      s_allocGlob.tempImages[index].image = pGVar1;
+      memset((uchar *)s_allocGlob.tempImages[index].image,'\0',0x34);
+      s_allocGlob.tempImages[index].alloced = false;
     }
     s_allocGlob.tempImagesInit = true;
   }
@@ -34,14 +37,14 @@ void __cdecl R_StreamAlloc_InitTempImages(void)
 // 00ABA250  R_StreamAlloc_SetupTempImage  (gfx_d3d/r_streamalloc.cpp:1751)
 
 GfxImage * __cdecl
-R_StreamAlloc_SetupTempImage(_D3DFORMAT param_1,bool param_2,int param_3,int param_4,int param_5)
+R_StreamAlloc_SetupTempImage(_D3DFORMAT format,bool linear,int width,int height,int mipLevels)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
-  GfxImage *local_c;
-  int local_8;
+  GfxImage *image;
+  int index;
   
   if (!s_allocGlob.tempImagesInit) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_streamalloc.cpp",0x6db,0
@@ -53,44 +56,44 @@ R_StreamAlloc_SetupTempImage(_D3DFORMAT param_1,bool param_2,int param_3,int par
     }
   }
   R_StreamAlloc_Lock();
-  local_c = (GfxImage *)0x0;
-  local_8 = 0;
+  image = (GfxImage *)0x0;
+  index = 0;
   do {
-    if (0x1f < local_8) {
+    if (0x1f < index) {
 LAB_00aba2d6:
-      if (local_c == (GfxImage *)0x0) {
+      if (image == (GfxImage *)0x0) {
         R_StreamAlloc_Unlock();
-        local_c = (GfxImage *)0x0;
+        image = (GfxImage *)0x0;
       }
       else {
-        Image_Create2DTexture_PC(local_c,(ushort)param_3,(ushort)param_4,0,0,param_1);
+        Image_Create2DTexture_PC(image,(ushort)width,(ushort)height,0,0,format);
         R_StreamAlloc_Unlock();
       }
-      return local_c;
+      return image;
     }
-    if (s_allocGlob.tempImages[local_8].alloced == false) {
-      s_allocGlob.tempImages[local_8].alloced = true;
-      local_c = s_allocGlob.tempImages[local_8].image;
+    if (s_allocGlob.tempImages[index].alloced == false) {
+      s_allocGlob.tempImages[index].alloced = true;
+      image = s_allocGlob.tempImages[index].image;
       goto LAB_00aba2d6;
     }
-    local_8 = local_8 + 1;
+    index = index + 1;
   } while( true );
 }
 
 
 // 00ABA310  R_StreamAlloc_ReleaseTempImage  (gfx_d3d/r_streamalloc.cpp:1784)
 
-void __cdecl R_StreamAlloc_ReleaseTempImage(GfxImage *param_1)
+void __cdecl R_StreamAlloc_ReleaseTempImage(GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int index;
   
   R_StreamAlloc_Lock();
-  local_8 = 0;
+  index = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < index) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_streamalloc.cpp",0x707
                                ,0,"%s");
       if (bVar2) {
@@ -101,11 +104,11 @@ void __cdecl R_StreamAlloc_ReleaseTempImage(GfxImage *param_1)
       (*pcVar1)();
       return;
     }
-    if (param_1 == s_allocGlob.tempImages[local_8].image) break;
-    local_8 = local_8 + 1;
+    if (image == s_allocGlob.tempImages[index].image) break;
+    index = index + 1;
   }
-  Image_Release(param_1);
-  s_allocGlob.tempImages[local_8].alloced = false;
+  Image_Release(image);
+  s_allocGlob.tempImages[index].alloced = false;
   R_StreamAlloc_Unlock();
   return;
 }
@@ -133,61 +136,67 @@ void __cdecl R_StreamAlloc_Unlock(void)
 
 // 00ABA420  R_StreamAlloc_FreeImageByImportance  (gfx_d3d/r_streamalloc.cpp:1815)
 
-bool __cdecl R_StreamAlloc_FreeImageByImportance(int param_1,float param_2,GfxImage **param_3)
+bool __cdecl R_StreamAlloc_FreeImageByImportance(int size,float importance,GfxImage **unloadImage)
 
 {
-  uint uVar1;
-  byte bVar2;
-  int iVar3;
-  GfxImage *pGVar4;
-  int iVar5;
-  GfxImage *local_20;
-  int local_18;
+  uint index;
+  byte bVar1;
+  int iVar2;
+  GfxImage *pGVar3;
+  int iVar4;
+  GfxImage *image;
+  GfxImage *sacrificeImage;
+  int imagePartIndex;
+  int sortIndex;
+  int imagePartSize;
+  int imageIndex;
+  int imagePart;
+  int sacrificePart;
   
-  local_20 = (GfxImage *)0x0;
-  iVar3 = streamFrontendGlob.sortedImageCount;
-  while (local_18 = iVar3 + -1, -1 < local_18) {
-    uVar1 = streamFrontendGlob.sortedImages[iVar3 + -1];
-    iVar5 = (int)uVar1 >> 5;
-    bVar2 = (byte)uVar1;
-    iVar3 = local_18;
-    if (((1 << (bVar2 & 0x1f) & streamFrontendGlob.imageUseBits[iVar5]) != 0) &&
-       ((param_2 == 3.4028235e+38 ||
-        ((1 << (bVar2 & 0x1f) & streamFrontendGlob.imageForceBits[iVar5]) == 0)))) {
-      if (param_2 <= streamFrontendGlob.imageImportance[uVar1]) break;
-      if ((((1 << (bVar2 & 0x1f) & streamFrontendGlob.imageLoading[iVar5]) == 0) &&
-          (pGVar4 = DB_GetImageAtIndex(uVar1), pGVar4->streaming != '\0')) &&
-         (pGVar4->skippedMipLevels == '\0')) {
-        if (param_1 <= (int)pGVar4->loadedSize) {
-          *param_3 = pGVar4;
+  sacrificeImage = (GfxImage *)0x0;
+  iVar2 = streamFrontendGlob.sortedImageCount;
+  while (sortIndex = iVar2 + -1, -1 < sortIndex) {
+    index = streamFrontendGlob.sortedImages[iVar2 + -1];
+    iVar4 = (int)index >> 5;
+    bVar1 = (byte)index;
+    iVar2 = sortIndex;
+    if (((1 << (bVar1 & 0x1f) & streamFrontendGlob.imageUseBits[iVar4]) != 0) &&
+       ((importance == 3.4028235e+38 ||
+        ((1 << (bVar1 & 0x1f) & streamFrontendGlob.imageForceBits[iVar4]) == 0)))) {
+      if (importance <= streamFrontendGlob.imageImportance[index]) break;
+      if ((((1 << (bVar1 & 0x1f) & streamFrontendGlob.imageLoading[iVar4]) == 0) &&
+          (pGVar3 = DB_GetImageAtIndex(index), pGVar3->streaming != '\0')) &&
+         (pGVar3->skippedMipLevels == '\0')) {
+        if (size <= (int)pGVar3->loadedSize) {
+          *unloadImage = pGVar3;
           return true;
         }
-        if (local_20 == (GfxImage *)0x0) {
-          local_20 = pGVar4;
+        if (sacrificeImage == (GfxImage *)0x0) {
+          sacrificeImage = pGVar3;
         }
       }
     }
   }
-  if (local_20 == (GfxImage *)0x0) {
-    *param_3 = (GfxImage *)0x0;
+  if (sacrificeImage == (GfxImage *)0x0) {
+    *unloadImage = (GfxImage *)0x0;
   }
   else {
-    *param_3 = local_20;
+    *unloadImage = sacrificeImage;
   }
-  return local_20 != (GfxImage *)0x0;
+  return sacrificeImage != (GfxImage *)0x0;
 }
 
 
 // 00ABA3E0  R_StreamAlloc_CanAllocate  (gfx_d3d/r_streamalloc.cpp:1894)
 
-bool __cdecl R_StreamAlloc_CanAllocate(int param_1,float param_2,GfxImage **param_3)
+bool __cdecl R_StreamAlloc_CanAllocate(int size,float importance,GfxImage **unloadImage)
 
 {
   bool bVar1;
   
-  *param_3 = (GfxImage *)0x0;
-  if (streamFrontendGlob.mainBufferSize < Image_TrackBytes + param_1) {
-    bVar1 = R_StreamAlloc_FreeImageByImportance(param_1,param_2,param_3);
+  *unloadImage = (GfxImage *)0x0;
+  if (streamFrontendGlob.mainBufferSize < Image_TrackBytes + size) {
+    bVar1 = R_StreamAlloc_FreeImageByImportance(size,importance,unloadImage);
   }
   else {
     bVar1 = true;
@@ -198,15 +207,16 @@ bool __cdecl R_StreamAlloc_CanAllocate(int param_1,float param_2,GfxImage **para
 
 // 00ABA5A0  R_StreamAlloc_FreeImage  (gfx_d3d/r_streamalloc.cpp:1904)
 
-uchar * __cdecl R_StreamAlloc_FreeImage(GfxImage *param_1,int param_2,bool param_3,int *param_4)
+uchar * __cdecl R_StreamAlloc_FreeImage(GfxImage *image,int imagePart,bool dirty,int *freedSize)
 
 {
   uint uVar1;
+  int imagePartIndex;
   
-  uVar1 = DB_GetImageIndex(param_1);
+  uVar1 = DB_GetImageIndex(image);
   streamFrontendGlob.imageUseBits[(int)uVar1 >> 5] =
        ~(1 << ((byte)uVar1 & 0x1f)) & streamFrontendGlob.imageUseBits[(int)uVar1 >> 5];
-  *param_4 = 0;
+  *freedSize = 0;
   return (uchar *)0x0;
 }
 
@@ -219,15 +229,17 @@ void __cdecl R_StreamAlloc_Flush(void)
   uint uVar1;
   int iVar2;
   int iVar3;
-  int local_10;
-  int local_8;
+  uint useBits;
+  int bitIndex;
+  int imageIndex;
+  int index;
   
-  for (local_8 = 0; local_8 < 0x84; local_8 = local_8 + 1) {
-    uVar1 = streamFrontendGlob.imageUseBits[local_8];
+  for (index = 0; index < 0x84; index = index + 1) {
+    uVar1 = streamFrontendGlob.imageUseBits[index];
     if (uVar1 != 0) {
-      for (local_10 = 0; local_10 < 0x20; local_10 = local_10 + 1) {
-        if ((1 << ((byte)local_10 & 0x1f) & uVar1) != 0) {
-          iVar2 = local_8 * 0x20 + local_10;
+      for (bitIndex = 0; bitIndex < 0x20; bitIndex = bitIndex + 1) {
+        if ((1 << ((byte)bitIndex & 0x1f) & uVar1) != 0) {
+          iVar2 = index * 0x20 + bitIndex;
           iVar3 = iVar2 >> 5;
           streamFrontendGlob.imageUseBits[iVar3] =
                ~(1 << ((byte)iVar2 & 0x1f)) & streamFrontendGlob.imageUseBits[iVar3];

@@ -5,17 +5,18 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl printf(char *param_1)
+int __cdecl printf(char *format)
 
 {
   int *piVar1;
   int iVar2;
   _iobuf *p_Var3;
-  int iVar4;
-  localeinfo_struct *plVar5;
-  char *pcVar6;
+  int flag;
+  localeinfo_struct *plocinfo;
+  char *argptr;
+  int retval;
   
-  if (param_1 == (char *)0x0) {
+  if (format == (char *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
@@ -25,13 +26,13 @@ int __cdecl printf(char *param_1)
     p_Var3 = __iob_func();
     _lock_file2(1,p_Var3 + 1);
     p_Var3 = __iob_func();
-    iVar4 = _stbuf(p_Var3 + 1);
-    pcVar6 = &stack0x00000008;
-    plVar5 = (localeinfo_struct *)0x0;
+    flag = _stbuf(p_Var3 + 1);
+    argptr = &stack0x00000008;
+    plocinfo = (localeinfo_struct *)0x0;
     p_Var3 = __iob_func();
-    iVar2 = _output_l(p_Var3 + 1,param_1,plVar5,pcVar6);
+    iVar2 = _output_l(p_Var3 + 1,format,plocinfo,argptr);
     p_Var3 = __iob_func();
-    _ftbuf(iVar4,p_Var3 + 1);
+    _ftbuf(flag,p_Var3 + 1);
     FUN_0095c5c3();
   }
   return iVar2;

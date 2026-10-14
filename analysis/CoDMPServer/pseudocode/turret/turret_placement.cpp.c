@@ -41,14 +41,14 @@ void __cdecl Turret_PlaceTurret_RegisterDvars(void)
 
 void __cdecl
 Turret_PlaceTurret_Trace
-          (turret_handler param_1,trace_t *param_2,float *param_3,float *param_4,float *param_5,
-          float *param_6,int param_7,int param_8,col_context_t *param_9)
+          (turret_handler handler,trace_t *results,float *start,float *mins,float *maxs,float *end,
+          int passEntityNum,int contentmask,col_context_t *context)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (TURRET_HANDLER_SERVER < param_1) {
+  if (TURRET_HANDLER_SERVER < handler) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",0x5b,
                              0,"handler doesn\'t index TURRET_HANDLER_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -57,7 +57,7 @@ Turret_PlaceTurret_Trace
       return;
     }
   }
-  (*turretTraceHandlers[param_1])(param_2,param_3,param_4,param_5,param_6,param_7,param_8,param_9);
+  (*turretTraceHandlers[handler])(results,start,mins,maxs,end,passEntityNum,contentmask,context);
   return;
 }
 
@@ -66,7 +66,8 @@ Turret_PlaceTurret_Trace
 
 int __cdecl
 Turret_PlaceTurret_UpdateFooting
-          (turret_handler param_1,int param_2,trace_t *param_3,float *param_4,float (*param_5) [3])
+          (turret_handler handler,int moverEntNum,trace_t *trace,float *outOrigin,
+          float (*outAxis) [3])
 
 {
   float fVar1;
@@ -76,77 +77,77 @@ Turret_PlaceTurret_UpdateFooting
   int iVar5;
   float fVar6;
   float local_164;
-  col_context_t local_ac;
-  float local_84;
+  col_context_t context;
+  float feetNormal;
   float local_80;
   float local_7c;
-  float local_78;
+  float feetAxis;
   float local_74;
   float local_70;
   float local_6c;
   float local_68;
   float local_64;
-  uint local_60;
-  uint local_5c;
-  float local_58 [12];
-  float local_28 [4];
-  float local_18;
-  float local_14;
+  uint legIndex;
+  uint numFailed;
+  float legPosition [12];
+  float feetElevation [4];
+  float feetHeight;
+  float traceEnd;
   float local_10;
   float local_c;
   char acStack_8 [4];
   
-  if ((param_3 == (trace_t *)0x0) &&
+  if ((trace == (trace_t *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x8b,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((outOrigin == (float *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x8c,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((param_5 == (float (*) [3])0x0) &&
+  if ((outAxis == (float (*) [3])0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x8d,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*outOrigin & 0x7f800000) == 0x7f800000) ||
+       (((uint)outOrigin[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)outOrigin[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x8e,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((((((uint)(*param_5)[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)(*param_5)[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)(*param_5)[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)(*outAxis)[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)(*outAxis)[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)(*outAxis)[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x8f,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((((((uint)param_5[1][0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[1][1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[1][2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)outAxis[1][0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)outAxis[1][1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)outAxis[1][2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x90,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  if ((((((uint)param_5[2][0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_5[2][1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_5[2][2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)outAxis[2][0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)outAxis[2][1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)outAxis[2][2] & 0x7f800000) == 0x7f800000)) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x91,0,"%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -156,82 +157,85 @@ Turret_PlaceTurret_UpdateFooting
   fVar6 = (turret_placement_feet_offset->current).value;
   fVar1 = (turret_placement_feet_offset->current).vector[1];
   fVar2 = (turret_placement_feet_offset->current).vector[2];
-  local_58[0] = fVar2 * param_5[2][0] + fVar1 * param_5[1][0] + fVar6 * (*param_5)[0] + *param_4;
-  local_58[1] = fVar2 * param_5[2][1] + fVar1 * param_5[1][1] + fVar6 * (*param_5)[1] + param_4[1];
-  local_58[2] = fVar2 * param_5[2][2] + fVar1 * param_5[1][2] + fVar6 * (*param_5)[2] + param_4[2];
+  legPosition[0] =
+       fVar2 * outAxis[2][0] + fVar1 * outAxis[1][0] + fVar6 * (*outAxis)[0] + *outOrigin;
+  legPosition[1] =
+       fVar2 * outAxis[2][1] + fVar1 * outAxis[1][1] + fVar6 * (*outAxis)[1] + outOrigin[1];
+  legPosition[2] =
+       fVar2 * outAxis[2][2] + fVar1 * outAxis[1][2] + fVar6 * (*outAxis)[2] + outOrigin[2];
   fVar6 = (turret_placement_feet_offset->current).value * -2.0;
-  local_58[3] = fVar6 * (*param_5)[0] + local_58[0];
-  local_58[4] = fVar6 * (*param_5)[1] + local_58[1];
-  local_58[5] = fVar6 * (*param_5)[2] + local_58[2];
+  legPosition[3] = fVar6 * (*outAxis)[0] + legPosition[0];
+  legPosition[4] = fVar6 * (*outAxis)[1] + legPosition[1];
+  legPosition[5] = fVar6 * (*outAxis)[2] + legPosition[2];
   fVar6 = (turret_placement_feet_offset->current).vector[1] * -2.0;
-  local_58[6] = fVar6 * param_5[1][0] + local_58[3];
-  local_58[7] = fVar6 * param_5[1][1] + local_58[4];
-  local_58[8] = fVar6 * param_5[1][2] + local_58[5];
+  legPosition[6] = fVar6 * outAxis[1][0] + legPosition[3];
+  legPosition[7] = fVar6 * outAxis[1][1] + legPosition[4];
+  legPosition[8] = fVar6 * outAxis[1][2] + legPosition[5];
   fVar6 = (turret_placement_feet_offset->current).value * 2.0;
-  local_58[9] = fVar6 * (*param_5)[0] + local_58[6];
-  local_58[10] = fVar6 * (*param_5)[1] + local_58[7];
-  local_58[0xb] = fVar6 * (*param_5)[2] + local_58[8];
-  local_5c = 0;
-  for (local_60 = 0; local_60 < 4; local_60 = local_60 + 1) {
+  legPosition[9] = fVar6 * (*outAxis)[0] + legPosition[6];
+  legPosition[10] = fVar6 * (*outAxis)[1] + legPosition[7];
+  legPosition[0xb] = fVar6 * (*outAxis)[2] + legPosition[8];
+  numFailed = 0;
+  for (legIndex = 0; legIndex < 4; legIndex = legIndex + 1) {
     fVar6 = (turret_placement_feet_trace_dist_z->current).value * -1.0;
-    local_14 = fVar6 * param_5[2][0] + local_58[local_60 * 3];
-    local_10 = fVar6 * param_5[2][1] + local_58[local_60 * 3 + 1];
-    local_c = fVar6 * param_5[2][2] + local_58[local_60 * 3 + 2];
-    col_context_t::col_context_t(&local_ac);
+    traceEnd = fVar6 * outAxis[2][0] + legPosition[legIndex * 3];
+    local_10 = fVar6 * outAxis[2][1] + legPosition[legIndex * 3 + 1];
+    local_c = fVar6 * outAxis[2][2] + legPosition[legIndex * 3 + 2];
+    col_context_t::col_context_t(&context);
     Turret_PlaceTurret_Trace
-              (param_1,param_3,local_58 + local_60 * 3,vec3_origin,vec3_origin,&local_14,param_2,
-               0x2818011,&local_ac);
-    if (param_3->hitType == TRACE_HITTYPE_NONE) {
-      local_5c = local_5c + 1;
-      acStack_8[local_60] = '\0';
-      local_28[local_60] = 0.0;
+              (handler,trace,legPosition + legIndex * 3,vec3_origin,vec3_origin,&traceEnd,
+               moverEntNum,0x2818011,&context);
+    if (trace->hitType == TRACE_HITTYPE_NONE) {
+      numFailed = numFailed + 1;
+      acStack_8[legIndex] = '\0';
+      feetElevation[legIndex] = 0.0;
       if ((turret_placement_debug->current).enabled != false) {
-        G_DebugLine(local_58 + local_60 * 3,&local_14,colorRed,0);
+        G_DebugLine(legPosition + legIndex * 3,&traceEnd,colorRed,0);
       }
     }
     else {
-      acStack_8[local_60] = '\x01';
-      local_28[local_60] =
-           param_3->fraction * (turret_placement_feet_trace_dist_z->current).value -
+      acStack_8[legIndex] = '\x01';
+      feetElevation[legIndex] =
+           trace->fraction * (turret_placement_feet_trace_dist_z->current).value -
            (turret_placement_feet_offset->current).vector[2];
       if ((turret_placement_debug->current).enabled != false) {
-        G_DebugLine(local_58 + local_60 * 3,&local_14,colorGreen,0);
+        G_DebugLine(legPosition + legIndex * 3,&traceEnd,colorGreen,0);
       }
     }
-    fVar6 = local_28[local_60] * -1.0;
-    local_58[local_60 * 3] = fVar6 * param_5[2][0] + local_58[local_60 * 3];
-    local_58[local_60 * 3 + 1] = fVar6 * param_5[2][1] + local_58[local_60 * 3 + 1];
-    local_58[local_60 * 3 + 2] = fVar6 * param_5[2][2] + local_58[local_60 * 3 + 2];
+    fVar6 = feetElevation[legIndex] * -1.0;
+    legPosition[legIndex * 3] = fVar6 * outAxis[2][0] + legPosition[legIndex * 3];
+    legPosition[legIndex * 3 + 1] = fVar6 * outAxis[2][1] + legPosition[legIndex * 3 + 1];
+    legPosition[legIndex * 3 + 2] = fVar6 * outAxis[2][2] + legPosition[legIndex * 3 + 2];
   }
-  for (local_60 = 0; local_60 < 4; local_60 = local_60 + 1) {
-    if (acStack_8[local_60] == '\0') {
-      local_28[local_60] = local_28[(local_60 + 2) % 4];
+  for (legIndex = 0; legIndex < 4; legIndex = legIndex + 1) {
+    if (acStack_8[legIndex] == '\0') {
+      feetElevation[legIndex] = feetElevation[(legIndex + 2) % 4];
     }
   }
-  local_164 = local_28[1] * 0.5 + local_28[3] * 0.5;
-  fVar6 = local_28[0] * 0.5 + local_28[2] * 0.5;
+  local_164 = feetElevation[1] * 0.5 + feetElevation[3] * 0.5;
+  fVar6 = feetElevation[0] * 0.5 + feetElevation[2] * 0.5;
   if (0.0 <= fVar6 - local_164) {
     local_164 = fVar6;
   }
-  local_18 = local_164;
+  feetHeight = local_164;
   local_164 = local_164 * -1.0;
-  *param_4 = local_164 * param_5[2][0] + *param_4;
-  param_4[1] = local_164 * param_5[2][1] + param_4[1];
-  param_4[2] = local_164 * param_5[2][2] + param_4[2];
-  local_78 = local_58[0] - local_58[6];
-  local_74 = local_58[1] - local_58[7];
-  local_70 = local_58[2] - local_58[8];
-  local_6c = local_58[3] - local_58[9];
-  local_68 = local_58[4] - local_58[10];
-  local_64 = local_58[5] - local_58[0xb];
-  Vec3Cross(&local_78,&local_6c,&local_84);
-  Vec3Normalize(&local_84);
-  param_5[2][0] = local_84;
-  param_5[2][1] = local_80;
-  param_5[2][2] = local_7c;
-  Vec3Cross(param_5[2],*param_5,param_5[1]);
-  Vec3Cross(param_5[1],param_5[2],*param_5);
-  return (uint)(local_5c < 2);
+  *outOrigin = local_164 * outAxis[2][0] + *outOrigin;
+  outOrigin[1] = local_164 * outAxis[2][1] + outOrigin[1];
+  outOrigin[2] = local_164 * outAxis[2][2] + outOrigin[2];
+  feetAxis = legPosition[0] - legPosition[6];
+  local_74 = legPosition[1] - legPosition[7];
+  local_70 = legPosition[2] - legPosition[8];
+  local_6c = legPosition[3] - legPosition[9];
+  local_68 = legPosition[4] - legPosition[10];
+  local_64 = legPosition[5] - legPosition[0xb];
+  Vec3Cross(&feetAxis,&local_6c,&feetNormal);
+  Vec3Normalize(&feetNormal);
+  outAxis[2][0] = feetNormal;
+  outAxis[2][1] = local_80;
+  outAxis[2][2] = local_7c;
+  Vec3Cross(outAxis[2],*outAxis,outAxis[1]);
+  Vec3Cross(outAxis[1],outAxis[2],*outAxis);
+  return (uint)(numFailed < 2);
 }
 
 
@@ -241,53 +245,53 @@ Turret_PlaceTurret_UpdateFooting
 
 int __cdecl
 Turret_PlaceTurret_Internal
-          (turret_handler param_1,int param_2,int param_3,float *param_4,float *param_5,
-          float *param_6,float *param_7,float *param_8)
+          (turret_handler handler,int clientNum,int moverEntNum,float *moverOrigin,float *viewOrigin
+          ,float *viewAngles,float *outOrigin,float *outAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_dc;
+  float traceDir;
   float local_d8;
   float local_d4;
-  col_context_t local_d0;
-  float local_a8;
+  col_context_t context;
+  float mins;
   int local_a4;
   int local_a0;
-  float local_9c;
+  float traceAngles;
   float local_98;
   undefined4 local_94;
-  float4 local_90;
+  float4 trace;
   float local_80;
   char local_66;
   char local_65;
   uint local_58;
-  float local_54;
+  float maxs;
   int local_50;
   int local_4c;
-  float local_48;
-  float local_44;
+  float traceDist;
+  float axis;
   float local_40;
   float local_3c;
   float local_38 [3];
   float local_2c;
   float local_28;
   float local_24;
-  ushort local_20;
-  float local_1c;
+  ushort hitEntId;
+  float traceStart;
   float local_18;
   float local_14;
-  float local_10;
+  float traceEnd;
   float local_c;
   float local_8;
   
   local_58 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_90.v[0] = 0.0;
-  local_90.v[1] = 0.0;
-  local_90.v[2] = 0.0;
-  local_90.v[3] = 0.0;
-  if (0x1f < (uint)param_3) {
+  trace.v[0] = 0.0;
+  trace.v[1] = 0.0;
+  trace.v[2] = 0.0;
+  trace.v[3] = 0.0;
+  if (0x1f < (uint)moverEntNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",0xe7,
                              0,"moverEntNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -296,7 +300,7 @@ Turret_PlaceTurret_Internal
       return iVar3;
     }
   }
-  if (param_7 == (float *)0x0) {
+  if (outOrigin == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",0xe8,
                              0,"%s");
     if (!bVar2) {
@@ -305,7 +309,7 @@ Turret_PlaceTurret_Internal
       return iVar3;
     }
   }
-  if (param_8 == (float *)0x0) {
+  if (outAngles == (float *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",0xe9,
                              0,"%s");
     if (!bVar2) {
@@ -314,47 +318,47 @@ Turret_PlaceTurret_Internal
       return iVar3;
     }
   }
-  *param_8 = 0.0;
-  param_8[1] = 0.0;
-  param_8[2] = 0.0;
-  param_8[1] = param_6[1];
-  local_48 = (turret_placement_trace_dist->current).value +
-             (turret_placement_trace_radius_canon_safety->current).value;
-  local_9c = (float)(turret_placement_trace_pitch->current).integer;
-  local_98 = param_6[1];
+  *outAngles = 0.0;
+  outAngles[1] = 0.0;
+  outAngles[2] = 0.0;
+  outAngles[1] = viewAngles[1];
+  traceDist = (turret_placement_trace_dist->current).value +
+              (turret_placement_trace_radius_canon_safety->current).value;
+  traceAngles = (float)(turret_placement_trace_pitch->current).integer;
+  local_98 = viewAngles[1];
   local_94 = 0;
-  AngleVectors(&local_9c,&local_dc,(float *)0x0,(float *)0x0);
-  local_1c = local_48 * local_dc + *param_5;
-  local_18 = local_48 * local_d8 + param_5[1];
-  local_14 = local_48 * local_d4 + param_5[2];
-  local_8 = local_14 - (param_5[2] - param_4[2]);
-  local_a8 = (float)(turret_placement_trace_mins->current).integer;
+  AngleVectors(&traceAngles,&traceDir,(float *)0x0,(float *)0x0);
+  traceStart = traceDist * traceDir + *viewOrigin;
+  local_18 = traceDist * local_d8 + viewOrigin[1];
+  local_14 = traceDist * local_d4 + viewOrigin[2];
+  local_8 = local_14 - (viewOrigin[2] - moverOrigin[2]);
+  mins = (float)(turret_placement_trace_mins->current).integer;
   local_a4 = (turret_placement_trace_mins->current).integer;
   local_a0 = (turret_placement_trace_mins->current).integer;
-  local_54 = (float)(turret_placement_trace_maxs->current).integer;
+  maxs = (float)(turret_placement_trace_maxs->current).integer;
   local_50 = (turret_placement_trace_maxs->current).integer;
   local_4c = (turret_placement_trace_maxs->current).integer;
-  local_10 = local_1c;
+  traceEnd = traceStart;
   local_c = local_18;
   if ((turret_placement_debug->current).enabled != false) {
-    G_DebugLine(&local_1c,&local_10,colorBlue,0);
-    G_DebugBox(&local_1c,&local_a8,&local_54,param_6[1],colorYellow,0,0);
-    G_DebugBox(&local_10,&local_a8,&local_54,param_6[1],colorGreen,0,0);
+    G_DebugLine(&traceStart,&traceEnd,colorBlue,0);
+    G_DebugBox(&traceStart,&mins,&maxs,viewAngles[1],colorYellow,0,0);
+    G_DebugBox(&traceEnd,&mins,&maxs,viewAngles[1],colorGreen,0,0);
   }
-  col_context_t::col_context_t(&local_d0);
+  col_context_t::col_context_t(&context);
   Turret_PlaceTurret_Trace
-            (param_1,(trace_t *)&local_90,&local_1c,&local_a8,&local_54,&local_10,param_3,0x2818011,
-             &local_d0);
-  Vec3Lerp(&local_1c,&local_10,local_80,param_7);
+            (handler,(trace_t *)&trace,&traceStart,&mins,&maxs,&traceEnd,moverEntNum,0x2818011,
+             &context);
+  Vec3Lerp(&traceStart,&traceEnd,local_80,outOrigin);
   if ((((local_65 != '\0') || (local_66 != '\0')) || (local_80 < 0.0001)) ||
-     (local_90.v[2] < (turret_placement_trace_min_normal->current).value)) {
-    param_7[2] = param_4[2];
+     (trace.v[2] < (turret_placement_trace_min_normal->current).value)) {
+    outOrigin[2] = moverOrigin[2];
     iVar3 = 0;
   }
   else {
-    param_7[2] = param_7[2] - (turret_placement_trace_maxs->current).value;
-    local_20 = Trace_GetEntityHitId((trace_t *)&local_90);
-    if (0x3ff < local_20) {
+    outOrigin[2] = outOrigin[2] - (turret_placement_trace_maxs->current).value;
+    hitEntId = Trace_GetEntityHitId((trace_t *)&trace);
+    if (0x3ff < hitEntId) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x118,0,"hitEntId doesn\'t index MAX_GENTITIES\n\t%i not in [0, %i)")
       ;
@@ -364,23 +368,23 @@ Turret_PlaceTurret_Internal
         return iVar3;
       }
     }
-    if (local_20 == 0x3fe) {
-      local_44 = local_dc;
+    if (hitEntId == 0x3fe) {
+      axis = traceDir;
       local_40 = local_d8;
       local_3c = local_d4;
-      local_2c = local_90.v[0];
-      local_28 = local_90.v[1];
-      local_24 = local_90.v[2];
-      Vec3Cross(&local_2c,&local_44,local_38);
-      Vec3Cross(local_38,&local_2c,&local_44);
-      AxisToAngles((float (*) [3])&local_44,param_8);
+      local_2c = trace.v[0];
+      local_28 = trace.v[1];
+      local_24 = trace.v[2];
+      Vec3Cross(&local_2c,&axis,local_38);
+      Vec3Cross(local_38,&local_2c,&axis);
+      AxisToAngles((float (*) [3])&axis,outAngles);
       iVar3 = Turret_PlaceTurret_UpdateFooting
-                        (param_1,param_3,(trace_t *)&local_90,param_7,(float (*) [3])&local_44);
+                        (handler,moverEntNum,(trace_t *)&trace,outOrigin,(float (*) [3])&axis);
       if (iVar3 == 0) {
         iVar3 = 0;
       }
       else {
-        AxisToAngles((float (*) [3])&local_44,param_8);
+        AxisToAngles((float (*) [3])&axis,outAngles);
         iVar3 = 1;
       }
     }
@@ -400,53 +404,54 @@ Turret_PlaceTurret_Internal
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-Turret_PlaceTurret_Client(int param_1,entityState_s *param_2,float *param_3,float *param_4)
+Turret_PlaceTurret_Client(int localClientNum,entityState_s *es,float *outOrigin,float *outAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   cg_s *pcVar4;
-  centity_s *local_38;
-  float local_34;
+  cg_s *cgameGlob;
+  centity_s *carrierEnt;
+  float viewOrg;
   float local_30;
   float local_2c;
-  int *local_28;
-  int local_24;
-  playerState_s *local_20;
-  float local_1c;
+  clientInfo_t *ci;
+  int canPlace;
+  playerState_s *ps;
+  float moverOrigin;
   float local_18;
   float local_14;
-  float local_10;
+  float viewAngles;
   float local_c;
   float local_8;
   
-  if ((param_2 == (entityState_s *)0x0) &&
+  if ((es == (entityState_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x14a,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_3 == (float *)0x0) &&
+  if ((outOrigin == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x14b,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((param_4 == (float *)0x0) &&
+  if ((outAngles == (float *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                0x14c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (((param_2->lerp).u.turret.flags & 8U) == 0) {
-    local_24 = 0;
+  if (((es->lerp).u.turret.flags & 8U) == 0) {
+    canPlace = 0;
   }
   else {
-    pcVar4 = CG_GetLocalClientGlobals(param_1);
+    pcVar4 = CG_GetLocalClientGlobals(localClientNum);
     if ((pcVar4 == (cg_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                  0x152,0,"%s"), !bVar2)) {
@@ -454,8 +459,8 @@ Turret_PlaceTurret_Client(int param_1,entityState_s *param_2,float *param_3,floa
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    local_20 = &pcVar4->predictedPlayerState;
-    if ((0x1f < (ushort)param_2->otherEntityNum) &&
+    ps = &pcVar4->predictedPlayerState;
+    if ((0x1f < (ushort)es->otherEntityNum) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",
                                  0x155,0,
                                  "es->otherEntityNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -464,57 +469,57 @@ Turret_PlaceTurret_Client(int param_1,entityState_s *param_2,float *param_3,floa
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if ((param_2->otherEntityNum == (ushort)local_20->clientNum) &&
+    if ((es->otherEntityNum == (ushort)ps->clientNum) &&
        ((pcVar4->renderingThirdPerson == TP_OFF || (bVar2 = Demo_IsPlaying(), bVar2)))) {
-      BG_GetPlayerViewOrigin(local_20,&local_34,pcVar4->time);
-      local_2c = (60.0 - local_20->viewHeightCurrent) + local_2c;
-      local_10 = local_20->viewangles[0];
-      local_c = local_20->viewangles[1];
-      local_8 = local_20->viewangles[2];
-      local_1c = local_20->origin[0];
-      local_18 = local_20->origin[1];
-      local_14 = local_20->origin[2];
+      BG_GetPlayerViewOrigin(ps,&viewOrg,pcVar4->time);
+      local_2c = (60.0 - ps->viewHeightCurrent) + local_2c;
+      viewAngles = ps->viewangles[0];
+      local_c = ps->viewangles[1];
+      local_8 = ps->viewangles[2];
+      moverOrigin = ps->origin[0];
+      local_18 = ps->origin[1];
+      local_14 = ps->origin[2];
     }
     else {
-      if (param_2->otherEntityNum == (ushort)local_20->clientNum) {
-        local_38 = &pcVar4->predictedPlayerEntity;
+      if (es->otherEntityNum == (ushort)ps->clientNum) {
+        carrierEnt = &pcVar4->predictedPlayerEntity;
       }
       else {
-        local_38 = CG_GetEntity(param_1,(int)param_2->otherEntityNum);
+        carrierEnt = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
       }
-      if ((local_38 == (centity_s *)0x0) &&
+      if ((carrierEnt == (centity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp"
                                    ,0x170,1,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      local_28 = (int *)((int)(pcVar4->bgs).clientinfo + (uint)param_2->clientNum * 0x5c8);
-      if ((local_28 == (int *)0x0) || (*local_28 == 0)) {
+      ci = (clientInfo_t *)((int)(pcVar4->bgs).clientinfo + (uint)es->clientNum * 0x5c8);
+      if ((ci == (clientInfo_t *)0x0) || (ci->infoValid == 0)) {
         Com_PrintWarning(0x11,
                          "Sentry [%d] isBeingCarried but the client info [%d] is invalid! Script should ensure that this doesn\'t happen.\n"
                         );
         return 0;
       }
-      local_10 = (float)local_28[0x113];
-      local_c = (float)local_28[0x114];
-      local_8 = (float)local_28[0x115];
-      local_1c = (local_38->pose).origin[0];
-      local_18 = (local_38->pose).origin[1];
-      local_14 = (local_38->pose).origin[2];
-      local_34 = (local_38->pose).origin[0];
-      local_30 = (local_38->pose).origin[1];
-      local_2c = (local_38->pose).origin[2] + 60.0;
-      AddLeanToPosition(&local_34,local_c,(float)local_28[0x112],16.0,20.0);
+      viewAngles = ci->playerAngles[0];
+      local_c = ci->playerAngles[1];
+      local_8 = ci->playerAngles[2];
+      moverOrigin = (carrierEnt->pose).origin[0];
+      local_18 = (carrierEnt->pose).origin[1];
+      local_14 = (carrierEnt->pose).origin[2];
+      viewOrg = (carrierEnt->pose).origin[0];
+      local_30 = (carrierEnt->pose).origin[1];
+      local_2c = (carrierEnt->pose).origin[2] + 60.0;
+      AddLeanToPosition(&viewOrg,local_c,ci->lerpLean,16.0,20.0);
     }
-    local_24 = Turret_PlaceTurret_Internal
-                         (TURRET_HANDLER_CLIENT,param_1,(int)param_2->otherEntityNum,&local_1c,
-                          &local_34,&local_10,param_3,param_4);
-    if ((local_20->pm_flags & 4U) != 0) {
-      local_24 = 0;
+    canPlace = Turret_PlaceTurret_Internal
+                         (TURRET_HANDLER_CLIENT,localClientNum,(int)es->otherEntityNum,&moverOrigin,
+                          &viewOrg,&viewAngles,outOrigin,outAngles);
+    if ((ps->pm_flags & 4U) != 0) {
+      canPlace = 0;
     }
   }
-  return local_24;
+  return canPlace;
 }
 
 
@@ -525,17 +530,17 @@ Turret_PlaceTurret_Client(int param_1,entityState_s *param_2,float *param_3,floa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl Turret_PlaceTurret_Server(playerState_s *param_1,float *param_2,float *param_3)
+int __cdecl Turret_PlaceTurret_Server(playerState_s *ps,float *outOrigin,float *outAngles)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_14 [2];
+  float viewOrg [2];
   float local_c;
-  int local_8;
+  int canPlace;
   
-  if (param_1 == (playerState_s *)0x0) {
+  if (ps == (playerState_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\turret\\turret_placement.cpp",0x1c2
                              ,0,"%s");
     if (!bVar2) {
@@ -544,20 +549,20 @@ int __cdecl Turret_PlaceTurret_Server(playerState_s *param_1,float *param_2,floa
       return iVar3;
     }
   }
-  BG_GetPlayerViewOrigin(param_1,local_14,level.time);
-  local_c = (60.0 - param_1->viewHeightCurrent) + local_c;
-  local_8 = Turret_PlaceTurret_Internal
-                      (TURRET_HANDLER_SERVER,(uint)param_1->clientNum,(uint)param_1->clientNum,
-                       param_1->origin,local_14,param_1->viewangles,param_2,param_3);
-  if ((param_1->pm_flags & 4U) != 0) {
-    local_8 = 0;
+  BG_GetPlayerViewOrigin(ps,viewOrg,level.time);
+  local_c = (60.0 - ps->viewHeightCurrent) + local_c;
+  canPlace = Turret_PlaceTurret_Internal
+                       (TURRET_HANDLER_SERVER,(uint)ps->clientNum,(uint)ps->clientNum,ps->origin,
+                        viewOrg,ps->viewangles,outOrigin,outAngles);
+  if ((ps->pm_flags & 4U) != 0) {
+    canPlace = 0;
   }
-  if (local_8 == 0) {
-    param_1->weapFlags = param_1->weapFlags | 0x800000;
+  if (canPlace == 0) {
+    ps->weapFlags = ps->weapFlags | 0x800000;
   }
   else {
-    param_1->weapFlags = param_1->weapFlags & 0xff7fffff;
+    ps->weapFlags = ps->weapFlags & 0xff7fffff;
   }
-  return local_8;
+  return canPlace;
 }
 

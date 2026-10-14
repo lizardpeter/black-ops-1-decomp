@@ -27,12 +27,12 @@ int __cdecl cCurveManager::GetFreeCurve(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
   Sys_EnterCriticalSection(CRITSECT_CURVEALLOC);
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (3 < local_8) {
+    if (3 < i) {
       Sys_LeaveCriticalSection(CRITSECT_CURVEALLOC);
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x5e
                                ,0,"CurveManager - No unused curves available.");
@@ -43,24 +43,24 @@ int __cdecl cCurveManager::GetFreeCurve(void)
       iVar3 = (*pcVar1)();
       return iVar3;
     }
-    if (mCurves[local_8].mActive == false) break;
-    local_8 = local_8 + 1;
+    if (mCurves[i].mActive == false) break;
+    i = i + 1;
   }
-  mCurves[local_8].mActive = true;
+  mCurves[i].mActive = true;
   Sys_LeaveCriticalSection(CRITSECT_CURVEALLOC);
-  return local_8;
+  return i;
 }
 
 
 // 007BB760  AddNodeToCurve  (universal/CurveManager.cpp:100)
 
-void __cdecl cCurveManager::AddNodeToCurve(int param_1,float *param_2)
+void __cdecl cCurveManager::AddNodeToCurve(int curve,float *p)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x65,0
                              ,"%s");
     if (!bVar2) {
@@ -69,7 +69,7 @@ void __cdecl cCurveManager::AddNodeToCurve(int param_1,float *param_2)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x66,0
                              ,"%s");
     if (!bVar2) {
@@ -78,20 +78,20 @@ void __cdecl cCurveManager::AddNodeToCurve(int param_1,float *param_2)
       return;
     }
   }
-  cCurve::AddNode(mCurves + param_1,param_2);
+  cCurve::AddNode(mCurves + curve,p);
   return;
 }
 
 
 // 007BB7F0  AddNodeToCurve  (universal/CurveManager.cpp:108)
 
-void __cdecl cCurveManager::AddNodeToCurve(int param_1,float *param_2,float param_3)
+void __cdecl cCurveManager::AddNodeToCurve(int curve,float *p,float t)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x6d,0
                              ,"%s");
     if (!bVar2) {
@@ -100,7 +100,7 @@ void __cdecl cCurveManager::AddNodeToCurve(int param_1,float *param_2,float para
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x6e,0
                              ,"%s");
     if (!bVar2) {
@@ -109,20 +109,20 @@ void __cdecl cCurveManager::AddNodeToCurve(int param_1,float *param_2,float para
       return;
     }
   }
-  cCurve::AddNode(mCurves + param_1,param_2,param_3);
+  cCurve::AddNode(mCurves + curve,p,t);
   return;
 }
 
 
 // 007BB890  SortCurve  (universal/CurveManager.cpp:116)
 
-void __cdecl cCurveManager::SortCurve(int param_1,float *param_2,bool param_3)
+void __cdecl cCurveManager::SortCurve(int curve,float *p,bool is_increasing_sort_order)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x75,0
                              ,"%s");
     if (!bVar2) {
@@ -131,7 +131,7 @@ void __cdecl cCurveManager::SortCurve(int param_1,float *param_2,bool param_3)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x76,0
                              ,"%s");
     if (!bVar2) {
@@ -140,20 +140,20 @@ void __cdecl cCurveManager::SortCurve(int param_1,float *param_2,bool param_3)
       return;
     }
   }
-  cCurve::Sort(mCurves + param_1,param_2,param_3);
+  cCurve::Sort(mCurves + curve,p,is_increasing_sort_order);
   return;
 }
 
 
 // 007BB930  BuildCurve  (universal/CurveManager.cpp:124)
 
-void __cdecl cCurveManager::BuildCurve(int param_1)
+void __cdecl cCurveManager::BuildCurve(int curve)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x7d,0
                              ,"%s");
     if (!bVar2) {
@@ -162,7 +162,7 @@ void __cdecl cCurveManager::BuildCurve(int param_1)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x7e,0
                              ,"%s");
     if (!bVar2) {
@@ -171,20 +171,20 @@ void __cdecl cCurveManager::BuildCurve(int param_1)
       return;
     }
   }
-  cCurve::Build(mCurves + param_1);
+  cCurve::Build(mCurves + curve);
   return;
 }
 
 
 // 007BB9C0  FreeCurve  (universal/CurveManager.cpp:132)
 
-void __cdecl cCurveManager::FreeCurve(int param_1)
+void __cdecl cCurveManager::FreeCurve(int curve)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x85,0
                              ,"%s");
     if (!bVar2) {
@@ -193,7 +193,7 @@ void __cdecl cCurveManager::FreeCurve(int param_1)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x86,0
                              ,"%s");
     if (!bVar2) {
@@ -202,20 +202,20 @@ void __cdecl cCurveManager::FreeCurve(int param_1)
       return;
     }
   }
-  cCurve::Reset(mCurves + param_1);
+  cCurve::Reset(mCurves + curve);
   return;
 }
 
 
 // 007BBA50  SetCurveBSpline  (universal/CurveManager.cpp:164)
 
-void __cdecl cCurveManager::SetCurveBSpline(int param_1)
+void __cdecl cCurveManager::SetCurveBSpline(int curve)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0xa5,0
                              ,"%s");
     if (!bVar2) {
@@ -224,7 +224,7 @@ void __cdecl cCurveManager::SetCurveBSpline(int param_1)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0xa6,0
                              ,"%s");
     if (!bVar2) {
@@ -233,8 +233,8 @@ void __cdecl cCurveManager::SetCurveBSpline(int param_1)
       return;
     }
   }
-  if (mCurves[param_1].mCurveType != CURVE_BSPLINE) {
-    mCurves[param_1].mCurveType = CURVE_BSPLINE;
+  if (mCurves[curve].mCurveType != CURVE_BSPLINE) {
+    mCurves[curve].mCurveType = CURVE_BSPLINE;
   }
   return;
 }
@@ -242,13 +242,13 @@ void __cdecl cCurveManager::SetCurveBSpline(int param_1)
 
 // 007BBB00  SetCurveDraw  (universal/CurveManager.cpp:172)
 
-void __cdecl cCurveManager::SetCurveDraw(int param_1,float *param_2)
+void __cdecl cCurveManager::SetCurveDraw(int curve,float *color)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0xad,0
                              ,"%s");
     if (!bVar2) {
@@ -257,7 +257,7 @@ void __cdecl cCurveManager::SetCurveDraw(int param_1,float *param_2)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0xae,0
                              ,"%s");
     if (!bVar2) {
@@ -266,20 +266,20 @@ void __cdecl cCurveManager::SetCurveDraw(int param_1,float *param_2)
       return;
     }
   }
-  cCurve::SetDraw(mCurves + param_1,param_2);
+  cCurve::SetDraw(mCurves + curve,color);
   return;
 }
 
 
 // 007BBBA0  GetPos  (universal/CurveManager.cpp:276)
 
-void __cdecl cCurveManager::GetPos(int param_1,float param_2,float *param_3)
+void __cdecl cCurveManager::GetPos(int curve,float t,float *p)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x115,
                              0,"%s");
     if (!bVar2) {
@@ -288,7 +288,7 @@ void __cdecl cCurveManager::GetPos(int param_1,float param_2,float *param_3)
       return;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x116,
                              0,"%s");
     if (!bVar2) {
@@ -297,10 +297,9 @@ void __cdecl cCurveManager::GetPos(int param_1,float param_2,float *param_3)
       return;
     }
   }
-  cCurve::GetPos(mCurves + param_1,param_2,param_3);
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  cCurve::GetPos(mCurves + curve,t,p);
+  if (((((uint)*p & 0x7f800000) == 0x7f800000) || (((uint)p[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)p[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x119,
                              0,"%s");
     if (!bVar2) {
@@ -315,7 +314,7 @@ void __cdecl cCurveManager::GetPos(int param_1,float param_2,float *param_3)
 
 // 007BBCD0  GetCurveLength  (universal/CurveManager.cpp:286)
 
-float __cdecl cCurveManager::GetCurveLength(int param_1)
+float __cdecl cCurveManager::GetCurveLength(int curve)
 
 {
   code *pcVar1;
@@ -323,7 +322,7 @@ float __cdecl cCurveManager::GetCurveLength(int param_1)
   float10 fVar3;
   float fVar4;
   
-  if ((param_1 < 0) || (3 < param_1)) {
+  if ((curve < 0) || (3 < curve)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x11f,
                              0,"%s");
     if (!bVar2) {
@@ -332,7 +331,7 @@ float __cdecl cCurveManager::GetCurveLength(int param_1)
       return (float)fVar3;
     }
   }
-  if (mCurves[param_1].mActive == false) {
+  if (mCurves[curve].mActive == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\CurveManager.cpp",0x120,
                              0,"%s");
     if (!bVar2) {
@@ -341,7 +340,7 @@ float __cdecl cCurveManager::GetCurveLength(int param_1)
       return (float)fVar3;
     }
   }
-  fVar4 = cCurve::GetLength(mCurves + param_1);
+  fVar4 = cCurve::GetLength(mCurves + curve);
   return fVar4;
 }
 

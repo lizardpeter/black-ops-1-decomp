@@ -268,22 +268,22 @@ actor_s * __cdecl Actor_Alloc(void)
   int iVar1;
   actor_s *extraout_EAX;
   actor_s *unaff_ESI;
-  uchar *puVar2;
+  uchar *dst;
   
   iVar1 = 0;
-  puVar2 = DAT_01c5782c;
+  dst = DAT_01c5782c;
   do {
-    if (*(int *)(puVar2 + 0x174c) == 0) {
-      memset(puVar2,'\0',0x2780);
-      puVar2[0x174c] = '\x01';
-      puVar2[0x174d] = '\0';
-      puVar2[0x174e] = '\0';
-      puVar2[0x174f] = '\0';
+    if (*(int *)(dst + 0x174c) == 0) {
+      memset(dst,'\0',0x2780);
+      dst[0x174c] = '\x01';
+      dst[0x174d] = '\0';
+      dst[0x174e] = '\0';
+      dst[0x174f] = '\0';
       Actor_SetDefaults(unaff_ESI);
       return extraout_EAX;
     }
     iVar1 = iVar1 + 1;
-    puVar2 = puVar2 + 0x2780;
+    dst = dst + 0x2780;
   } while (iVar1 < 0x10);
   Com_DPrintf(0xa789dc,(char *)unaff_ESI);
   return (actor_s *)0x0;

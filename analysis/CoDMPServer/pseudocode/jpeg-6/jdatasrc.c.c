@@ -2,25 +2,28 @@
 
 // 00B45110  init_source  (jpeg-6/jdatasrc.c:43)
 
-void __cdecl init_source(jpeg_decompress_struct *param_1)
+void __cdecl init_source(jpeg_decompress_struct *cinfo)
 
 {
-  *(undefined1 *)&param_1->src[1].next_input_byte = 1;
+  my_source_mgr *src;
+  
+  *(undefined1 *)&cinfo->src[1].next_input_byte = 1;
   return;
 }
 
 
 // 00B45130  skip_input_data  (jpeg-6/jdatasrc.c:130)
 
-void __cdecl skip_input_data(jpeg_decompress_struct *param_1,long param_2)
+void __cdecl skip_input_data(jpeg_decompress_struct *cinfo,long num_bytes)
 
 {
   jpeg_source_mgr *pjVar1;
+  my_source_mgr *src;
   
-  pjVar1 = param_1->src;
-  if (0 < param_2) {
-    pjVar1->next_input_byte = pjVar1->next_input_byte + param_2;
-    pjVar1->bytes_in_buffer = pjVar1->bytes_in_buffer - param_2;
+  pjVar1 = cinfo->src;
+  if (0 < num_bytes) {
+    pjVar1->next_input_byte = pjVar1->next_input_byte + num_bytes;
+    pjVar1->bytes_in_buffer = pjVar1->bytes_in_buffer - num_bytes;
   }
   return;
 }
@@ -28,23 +31,24 @@ void __cdecl skip_input_data(jpeg_decompress_struct *param_1,long param_2)
 
 // 00B45080  jpeg_memory_src  (jpeg-6/jdatasrc.c:227)
 
-void __cdecl jpeg_memory_src(jpeg_decompress_struct *param_1,uchar *param_2,int param_3)
+void __cdecl jpeg_memory_src(jpeg_decompress_struct *cinfo,uchar *pubData,int iBytes)
 
 {
   jpeg_source_mgr *pjVar1;
+  my_source_mgr *src;
   
-  if (param_1->src == (jpeg_source_mgr *)0x0) {
-    pjVar1 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,0,0x20);
-    param_1->src = pjVar1;
+  if (cinfo->src == (jpeg_source_mgr *)0x0) {
+    pjVar1 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,0,0x20);
+    cinfo->src = pjVar1;
   }
-  pjVar1 = param_1->src;
+  pjVar1 = cinfo->src;
   pjVar1->init_source = init_source;
   pjVar1->fill_input_buffer = (_func___cdecl_uchar_jpeg_decompress_struct_ptr *)0x0;
   pjVar1->skip_input_data = skip_input_data;
   pjVar1->resync_to_restart = jpeg_resync_to_restart;
   pjVar1->term_source = GamerProfile_WriteSettings;
-  pjVar1->bytes_in_buffer = param_3;
-  pjVar1->next_input_byte = param_2;
+  pjVar1->bytes_in_buffer = iBytes;
+  pjVar1->next_input_byte = pubData;
   return;
 }
 

@@ -2,7 +2,7 @@
 
 // 00978CF2  __dtold  (line unknown)
 
-void __cdecl __dtold(_LDOUBLE *param_1,double *param_2)
+void __cdecl __dtold(_LDOUBLE *pld,double *px)
 
 {
   uint uVar1;
@@ -11,28 +11,28 @@ void __cdecl __dtold(_LDOUBLE *param_1,double *param_2)
   ushort uVar4;
   int iVar5;
   ushort uVar6;
-  uint local_8;
+  uint msb;
   
-  uVar2 = *(ushort *)((int)param_2 + 6) >> 4;
+  uVar2 = *(ushort *)((int)px + 6) >> 4;
   uVar6 = uVar2 & 0x7ff;
-  uVar4 = *(ushort *)((int)param_2 + 6) & 0x8000;
-  uVar1 = *(uint *)param_2;
-  uVar3 = *(uint *)((int)param_2 + 4) & 0xfffff;
-  local_8 = 0x80000000;
+  uVar4 = *(ushort *)((int)px + 6) & 0x8000;
+  uVar1 = *(uint *)px;
+  uVar3 = *(uint *)((int)px + 4) & 0xfffff;
+  msb = 0x80000000;
   if ((uVar2 & 0x7ff) == 0) {
     if ((uVar3 == 0) && (uVar1 == 0)) {
-      param_1->ld[4] = '\0';
-      param_1->ld[5] = '\0';
-      param_1->ld[6] = '\0';
-      param_1->ld[7] = '\0';
-      param_1->ld[0] = '\0';
-      param_1->ld[1] = '\0';
-      param_1->ld[2] = '\0';
-      param_1->ld[3] = '\0';
+      pld->ld[4] = '\0';
+      pld->ld[5] = '\0';
+      pld->ld[6] = '\0';
+      pld->ld[7] = '\0';
+      pld->ld[0] = '\0';
+      pld->ld[1] = '\0';
+      pld->ld[2] = '\0';
+      pld->ld[3] = '\0';
       goto LAB_00978da1;
     }
     uVar6 = uVar6 + 0x3c01;
-    local_8 = 0;
+    msb = 0;
   }
   else if (uVar6 == 0x7ff) {
     uVar6 = 0x7fff;
@@ -40,19 +40,19 @@ void __cdecl __dtold(_LDOUBLE *param_1,double *param_2)
   else {
     uVar6 = uVar6 + 0x3c00;
   }
-  local_8 = uVar1 >> 0x15 | uVar3 << 0xb | local_8;
+  uVar3 = uVar1 >> 0x15 | uVar3 << 0xb | msb;
   iVar5 = uVar1 << 0xb;
   while( true ) {
-    *(int *)param_1->ld = iVar5;
-    *(uint *)(param_1->ld + 4) = local_8;
-    if ((local_8 & 0x80000000) != 0) break;
-    local_8 = *(int *)(param_1->ld + 4) * 2 | *(uint *)param_1->ld >> 0x1f;
-    iVar5 = *(uint *)param_1->ld * 2;
+    *(int *)pld->ld = iVar5;
+    *(uint *)(pld->ld + 4) = uVar3;
+    if ((uVar3 & 0x80000000) != 0) break;
+    uVar3 = *(int *)(pld->ld + 4) * 2 | *(uint *)pld->ld >> 0x1f;
+    iVar5 = *(uint *)pld->ld * 2;
     uVar6 = uVar6 - 1;
   }
   uVar4 = uVar4 | uVar6;
 LAB_00978da1:
-  *(ushort *)(param_1->ld + 8) = uVar4;
+  *(ushort *)(pld->ld + 8) = uVar4;
   return;
 }
 
@@ -61,36 +61,36 @@ LAB_00978da1:
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-_strflt * __cdecl _fltout2(_CRT_DOUBLE param_1,_strflt *param_2,char *param_3,uint param_4)
+_strflt * __cdecl _fltout2(_CRT_DOUBLE x,_strflt *flt,char *resultstr,uint resultsize)
 
 {
-  _LDOUBLE _Var1;
-  int iVar2;
-  _FloatOutStruct local_30;
-  _LDOUBLE local_14;
+  _LDOUBLE ld_00;
+  int iVar1;
+  _FloatOutStruct autofos;
+  _LDOUBLE ld;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  __dtold(&local_14,&param_1.x);
-  _Var1.ld[4] = local_14.ld[4];
-  _Var1.ld[5] = local_14.ld[5];
-  _Var1.ld[6] = local_14.ld[6];
-  _Var1.ld[7] = local_14.ld[7];
-  _Var1.ld[0] = local_14.ld[0];
-  _Var1.ld[1] = local_14.ld[1];
-  _Var1.ld[2] = local_14.ld[2];
-  _Var1.ld[3] = local_14.ld[3];
-  _Var1.ld[8] = local_14.ld[8];
-  _Var1.ld[9] = local_14.ld[9];
-  iVar2 = _I10_OUTPUT(_Var1,0x11,0,&local_30);
-  param_2->flag = iVar2;
-  param_2->sign = (int)local_30.sign;
-  param_2->decpt = (int)local_30.exp;
-  iVar2 = strcpy_s(param_3,param_4,local_30.man);
-  if (iVar2 != 0) {
+  __dtold(&ld,&x.x);
+  ld_00.ld[4] = ld.ld[4];
+  ld_00.ld[5] = ld.ld[5];
+  ld_00.ld[6] = ld.ld[6];
+  ld_00.ld[7] = ld.ld[7];
+  ld_00.ld[0] = ld.ld[0];
+  ld_00.ld[1] = ld.ld[1];
+  ld_00.ld[2] = ld.ld[2];
+  ld_00.ld[3] = ld.ld[3];
+  ld_00.ld[8] = ld.ld[8];
+  ld_00.ld[9] = ld.ld[9];
+  iVar1 = _I10_OUTPUT(ld_00,0x11,0,&autofos);
+  flt->flag = iVar1;
+  flt->sign = (int)autofos.sign;
+  flt->decpt = (int)autofos.exp;
+  iVar1 = strcpy_s(resultstr,resultsize,autofos.man);
+  if (iVar1 != 0) {
     _invoke_watson((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
   }
-  param_2->mantissa = param_3;
-  return param_2;
+  flt->mantissa = resultstr;
+  return flt;
 }
 

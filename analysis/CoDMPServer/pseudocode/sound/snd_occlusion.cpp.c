@@ -6,42 +6,43 @@
 
 void __cdecl
 Snd_LosOcclusionMultiTrace
-          (int *param_1,float *param_2,float *param_3,float *param_4,float *param_5,float param_6,
-          float param_7,uint param_8,uint param_9,uint *param_10,uint *param_11)
+          (int *global_cache,float *listener,float *playback,float *dlistener,float *dplayback,
+          float listen_step,float playback_step,uint listen_rays,uint playback_rays,uint *valid,
+          uint *hits)
 
 {
   bool bVar1;
-  uint local_64;
-  uint local_60;
-  float4 local_5c [2];
+  uint j;
+  uint i;
+  float4 result [2];
   char local_31;
   uint local_24;
-  int local_20;
-  float local_1c [3];
-  float local_10 [3];
+  int cache;
+  float dl [3];
+  float dp [3];
   
   local_24 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_5c[0].v[0] = 0.0;
-  local_5c[0].v[1] = 0.0;
-  local_5c[0].v[2] = 0.0;
-  local_5c[0].v[3] = 0.0;
-  local_20 = 0;
-  for (local_60 = 0; local_60 < param_8; local_60 = local_60 + 1) {
-    Vec3ScaleAdd(param_2,param_4,(float)(local_60 + 1) * param_6,local_1c);
-    for (local_64 = 0; local_64 < param_9; local_64 = local_64 + 1) {
-      if (local_20 == 0) {
-        local_20 = *param_1;
+  result[0].v[0] = 0.0;
+  result[0].v[1] = 0.0;
+  result[0].v[2] = 0.0;
+  result[0].v[3] = 0.0;
+  cache = 0;
+  for (i = 0; i < listen_rays; i = i + 1) {
+    Vec3ScaleAdd(listener,dlistener,(float)(i + 1) * listen_step,dl);
+    for (j = 0; j < playback_rays; j = j + 1) {
+      if (cache == 0) {
+        cache = *global_cache;
       }
-      Vec3ScaleAdd(param_3,param_5,(float)(local_64 + 1) * param_7,local_10);
-      bVar1 = CG_SightTracePoint(&local_20,local_1c,local_10,0x31,(trace_t *)local_5c);
+      Vec3ScaleAdd(playback,dplayback,(float)(j + 1) * playback_step,dp);
+      bVar1 = CG_SightTracePoint(&cache,dl,dp,0x31,(trace_t *)result);
       if ((bVar1) && (local_31 == '\0')) {
-        *param_11 = *param_11 + 1;
+        *hits = *hits + 1;
       }
       if (local_31 == '\0') {
-        *param_10 = *param_10 + 1;
+        *valid = *valid + 1;
       }
-      if (local_20 != 0) {
-        *param_1 = local_20;
+      if (cache != 0) {
+        *global_cache = cache;
       }
     }
   }
@@ -53,7 +54,7 @@ Snd_LosOcclusionMultiTrace
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-float __cdecl SND_LosOcclusionTrace(bool param_1,int *param_2,float *param_3,float *param_4)
+float __cdecl SND_LosOcclusionTrace(bool fancy,int *cache,float *listener,float *playback)
 
 {
   bool bVar1;
@@ -62,87 +63,88 @@ float __cdecl SND_LosOcclusionTrace(bool param_1,int *param_2,float *param_3,flo
   float local_e0;
   float local_dc;
   float local_c0;
-  uint local_9c;
-  float local_98;
+  uint i;
+  float side;
   float local_94;
   undefined4 local_90;
-  float local_8c;
-  uint local_88;
-  float local_84;
-  float4 local_80 [3];
+  float occlusion_factor;
+  int playback_rays;
+  float up_listen_ray_step;
+  float4 result [3];
   uint local_48;
-  uint local_44;
-  uint local_40 [3];
-  float local_34;
-  float local_30 [4];
-  float local_20;
+  int listen_rays;
+  uint valid [3];
+  float up_playback_ray_step;
+  float up [3];
+  float side_playback_ray_step;
+  float to;
   float local_1c;
   float local_18;
-  uint local_14 [3];
-  float local_8;
+  uint hits [3];
+  float side_listen_ray_step;
   
   local_48 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_80[0].v[0] = 0.0;
-  local_80[0].v[1] = 0.0;
-  local_80[0].v[2] = 0.0;
-  local_80[0].v[3] = 0.0;
-  local_8c = 1.0;
-  local_40[0] = 0;
-  local_40[1] = 0;
-  local_40[2] = 0;
-  local_14[0] = 0;
-  local_14[1] = 0;
-  local_14[2] = 0;
-  local_88 = 2;
-  if (param_1) {
-    local_88 = 4;
+  result[0].v[0] = 0.0;
+  result[0].v[1] = 0.0;
+  result[0].v[2] = 0.0;
+  result[0].v[3] = 0.0;
+  occlusion_factor = 1.0;
+  valid[0] = 0;
+  valid[1] = 0;
+  valid[2] = 0;
+  hits[0] = 0;
+  hits[1] = 0;
+  hits[2] = 0;
+  playback_rays = 2;
+  if (fancy) {
+    playback_rays = 4;
   }
-  local_44 = 2;
-  local_84 = 10.0;
-  local_34 = 40.0 / (float)local_88;
-  local_8 = 15.0;
-  local_30[3] = 50.0 / (float)local_88;
+  listen_rays = 2;
+  up_listen_ray_step = 10.0;
+  up_playback_ray_step = 40.0 / (float)playback_rays;
+  side_listen_ray_step = 15.0;
+  side_playback_ray_step = 50.0 / (float)playback_rays;
   PIXBeginNamedEvent(-1,"Occlusion Trace");
-  bVar1 = CG_SightTracePoint(param_2,param_3,param_4,0x31,(trace_t *)local_80);
+  bVar1 = CG_SightTracePoint(cache,listener,playback,0x31,(trace_t *)result);
   if (bVar1) {
-    local_30[0] = 0.0;
-    local_30[1] = 0.0;
-    local_30[2] = 1.0;
-    local_20 = *param_3 - *param_4;
-    local_1c = param_3[1] - param_4[1];
-    local_18 = param_3[2] - param_4[2];
-    fVar3 = Vec3Normalize(&local_20);
+    up[0] = 0.0;
+    up[1] = 0.0;
+    up[2] = 1.0;
+    to = *listener - *playback;
+    local_1c = listener[1] - playback[1];
+    local_18 = listener[2] - playback[2];
+    fVar3 = Vec3Normalize(&to);
     if (1.52879e-05 <= fVar3) {
-      local_94 = -local_20;
-      local_98 = local_1c;
+      local_94 = -to;
+      side = local_1c;
       local_90 = 0;
       Snd_LosOcclusionMultiTrace
-                (param_2,param_3,param_4,local_30,local_30,local_84,local_34,local_44,local_88,
-                 local_40,local_14);
+                (cache,listener,playback,up,up,up_listen_ray_step,up_playback_ray_step,listen_rays,
+                 playback_rays,valid,hits);
       Snd_LosOcclusionMultiTrace
-                (param_2,param_3,param_4,&local_98,&local_98,local_8,local_30[3],local_44,local_88,
-                 local_40 + 1,local_14 + 1);
+                (cache,listener,playback,&side,&side,side_listen_ray_step,side_playback_ray_step,
+                 listen_rays,playback_rays,valid + 1,hits + 1);
       Snd_LosOcclusionMultiTrace
-                (param_2,param_3,param_4,&local_98,&local_98,-local_8,-local_30[3],local_44,local_88
-                 ,local_40 + 2,local_14 + 2);
-      for (local_9c = 0; local_9c < 3; local_9c = local_9c + 1) {
-        if (local_40[local_9c] == 0) {
+                (cache,listener,playback,&side,&side,-side_listen_ray_step,-side_playback_ray_step,
+                 listen_rays,playback_rays,valid + 2,hits + 2);
+      for (i = 0; i < 3; i = i + 1) {
+        if (valid[i] == 0) {
           local_c0 = 1.0;
         }
         else {
-          local_dc = (float)((float10)local_14[local_9c] / (float10)local_40[local_9c]);
+          local_dc = (float)((float10)hits[i] / (float10)valid[i]);
           if (0.0 <= 0.2 - local_dc) {
             local_dc = 0.2;
           }
           local_c0 = local_dc;
         }
-        if (local_c0 - local_8c < 0.0) {
+        if (local_c0 - occlusion_factor < 0.0) {
           local_e0 = local_c0;
         }
         else {
-          local_e0 = local_8c;
+          local_e0 = occlusion_factor;
         }
-        local_8c = local_e0;
+        occlusion_factor = local_e0;
       }
       DVar2 = GetCurrentThreadId();
       if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -150,7 +152,7 @@ float __cdecl SND_LosOcclusionTrace(bool param_1,int *param_2,float *param_3,flo
       }
     }
     else {
-      local_8c = 0.0;
+      occlusion_factor = 0.0;
     }
   }
   else {
@@ -158,125 +160,125 @@ float __cdecl SND_LosOcclusionTrace(bool param_1,int *param_2,float *param_3,flo
     if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
-    local_8c = 0.0;
+    occlusion_factor = 0.0;
   }
-  return local_8c;
+  return occlusion_factor;
 }
 
 
 // 0094A3A0  SND_SurfaceTypeToReflectance  (sound/snd_occlusion.cpp:157)
 
-float __cdecl SND_SurfaceTypeToReflectance(uint param_1)
+float __cdecl SND_SurfaceTypeToReflectance(uint surface)
 
 {
-  if (param_1 < 0x1000001) {
-    if (param_1 == 0x1000000) {
+  if (surface < 0x1000001) {
+    if (surface == 0x1000000) {
       return 0.6;
     }
-    if (0x800000 < param_1) {
-      if (param_1 < 0xc00001) {
-        if ((param_1 == 0xc00000) || (param_1 == 0x900000)) {
+    if (0x800000 < surface) {
+      if (surface < 0xc00001) {
+        if ((surface == 0xc00000) || (surface == 0x900000)) {
           return 1.0;
         }
-        if (param_1 == 0xa00000) {
+        if (surface == 0xa00000) {
           return 0.4;
         }
-        if (param_1 == 0xb00000) {
+        if (surface == 0xb00000) {
           return 0.6;
         }
       }
       else {
-        if ((char *)param_1 == "t") {
+        if ((char *)surface == "t") {
           return 1.0;
         }
-        if (param_1 == 0xe00000) {
+        if (surface == 0xe00000) {
           return 0.6;
         }
-        if (param_1 == 0xf00000) {
+        if (surface == 0xf00000) {
           return 0.6;
         }
       }
       return 0.5;
     }
-    if (param_1 == 0x800000) {
+    if (surface == 0x800000) {
       return 0.4;
     }
-    if (0x400000 < param_1) {
-      if (param_1 == 0x500000) {
+    if (0x400000 < surface) {
+      if (surface == 0x500000) {
         return 1.0;
       }
-      if (param_1 != 0x600000) {
-        if (param_1 == 0x700000) {
+      if (surface != 0x600000) {
+        if (surface == 0x700000) {
           return 0.2;
         }
         return 0.5;
       }
       return 0.6;
     }
-    if (param_1 == 0x400000) {
+    if (surface == 0x400000) {
       return 0.2;
     }
-    if (param_1 != 0x100000) {
-      if (param_1 == 0x200000) {
+    if (surface != 0x100000) {
+      if (surface == 0x200000) {
         return 1.0;
       }
-      if (param_1 == 0x300000) {
+      if (surface == 0x300000) {
         return 0.2;
       }
       return 0.5;
     }
     return 0.6;
   }
-  if (0x1800000 < param_1) {
-    if (param_1 < 0x1c00001) {
-      if (param_1 == 0x1c00000) {
+  if (0x1800000 < surface) {
+    if (surface < 0x1c00001) {
+      if (surface == 0x1c00000) {
         return 1.0;
       }
-      if (param_1 != 0x1900000) {
-        if (param_1 == 0x1a00000) {
+      if (surface != 0x1900000) {
+        if (surface == 0x1a00000) {
           return 0.2;
         }
-        if (param_1 == 0x1b00000) {
+        if (surface == 0x1b00000) {
           return 0.2;
         }
         return 0.5;
       }
     }
     else {
-      if (param_1 == 0x1d00000) {
+      if (surface == 0x1d00000) {
         return 0.2;
       }
-      if (param_1 != 0x1e00000) {
+      if (surface != 0x1e00000) {
         return 0.5;
       }
     }
     return 0.4;
   }
-  if (param_1 == 0x1800000) {
+  if (surface == 0x1800000) {
     return 1.0;
   }
-  if (0x1400000 < param_1) {
-    if (param_1 == 0x1500000) {
+  if (0x1400000 < surface) {
+    if (surface == 0x1500000) {
       return 1.0;
     }
-    if (param_1 != 0x1600000) {
-      if (param_1 != 0x1700000) {
+    if (surface != 0x1600000) {
+      if (surface != 0x1700000) {
         return 0.5;
       }
       return 1.0;
     }
     return 1.0;
   }
-  if (param_1 == 0x1400000) {
+  if (surface == 0x1400000) {
     return 1.0;
   }
-  if (param_1 == 0x1100000) {
+  if (surface == 0x1100000) {
     return 1.0;
   }
-  if (param_1 == 0x1200000) {
+  if (surface == 0x1200000) {
     return 0.6;
   }
-  if (param_1 != 0x1300000) {
+  if (surface != 0x1300000) {
     return 0.5;
   }
   return 0.2;
@@ -287,7 +289,8 @@ float __cdecl SND_SurfaceTypeToReflectance(uint param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl SND_TraceProximity(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl
+SND_TraceProximity(float *front,float *origin,float *resultDistance,float *resultReflection)
 
 {
   code *pcVar1;
@@ -328,8 +331,8 @@ void __cdecl SND_TraceProximity(float *param_1,float *param_2,float *param_3,flo
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   PIXBeginNamedEvent(-1,"proximity");
-  local_18 = *param_1;
-  local_1c = param_1[1];
+  local_18 = *front;
+  local_1c = front[1];
   dVar4 = (double)local_18;
   __libm_sse2_atan2((double)CONCAT44(in_stack_ffffff44,in_stack_ffffff40),
                     (double)CONCAT44(in_stack_ffffff4c,in_stack_ffffff48));
@@ -337,7 +340,7 @@ void __cdecl SND_TraceProximity(float *param_1,float *param_2,float *param_3,flo
   dVar4 = (double)local_20;
   __libm_sse2_cos((double)CONCAT44(in_stack_ffffff44,in_stack_ffffff40));
   local_24 = (float)dVar4;
-  local_28 = local_24 - param_1[1];
+  local_28 = local_24 - front[1];
   if ((1.52879e-05 <= ABS(local_28)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_occlusion.cpp",0xd1,0,
                                "%s"), !bVar2)) {
@@ -348,7 +351,7 @@ void __cdecl SND_TraceProximity(float *param_1,float *param_2,float *param_3,flo
   dVar4 = (double)local_20;
   __libm_sse2_sin((double)CONCAT44(in_stack_ffffff44,in_stack_ffffff40));
   local_2c = (float)dVar4;
-  local_30 = local_2c - *param_1;
+  local_30 = local_2c - *front;
   if ((1.52879e-05 <= ABS(local_30)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_occlusion.cpp",0xd2,0,
                                "%s"), !bVar2)) {
@@ -379,17 +382,17 @@ void __cdecl SND_TraceProximity(float *param_1,float *param_2,float *param_3,flo
       local_90 = local_4c;
       uStack_8c = 0;
       local_94 = ((float)local_4c / 16.0) * 1.5707964 + local_38;
-      local_a4 = *param_2;
-      local_a0 = param_2[1];
-      local_9c = param_2[2];
-      local_98 = param_2[3];
+      local_a4 = *origin;
+      local_a0 = origin[1];
+      local_9c = origin[2];
+      local_98 = origin[3];
       dVar4 = (double)local_94;
       __libm_sse2_cos((double)CONCAT44(in_stack_ffffff44,in_stack_ffffff40));
       local_a0 = (float)dVar4 * local_44 + local_a0;
       dVar4 = (double)local_94;
       __libm_sse2_sin((double)CONCAT44(in_stack_ffffff44,in_stack_ffffff40));
       local_a4 = (float)dVar4 * local_44 + local_a4;
-      bVar2 = CG_SightTracePoint(&local_88,param_2,&local_a4,0x31,(trace_t *)&local_84);
+      bVar2 = CG_SightTracePoint(&local_88,origin,&local_a4,0x31,(trace_t *)&local_84);
       if (bVar2) {
         local_3c = (1.0 - (1.0 - local_74) * (1.0 - local_74)) * local_48 + local_3c;
         fVar5 = SND_SurfaceTypeToReflectance((int)(local_70 & 0x3f00000) >> 0x14);
@@ -411,8 +414,8 @@ void __cdecl SND_TraceProximity(float *param_1,float *param_2,float *param_3,flo
       (*pcVar1)();
       return;
     }
-    param_3[local_34] = local_3c;
-    param_4[local_34] = local_40;
+    resultDistance[local_34] = local_3c;
+    resultReflection[local_34] = local_40;
     local_34 = local_34 + 1;
   }
   pcVar1 = (code *)swi(3);
@@ -429,8 +432,9 @@ void __cdecl SND_UpdateProximity(void)
 
 {
   float fVar1;
-  int local_10;
-  int local_8;
+  int i_2;
+  float scale;
+  int i;
   
   g_snd.proximityFront[0] = g_snd.listeners[0].orient.axis[0][0];
   g_snd.proximityFront[1] = g_snd.listeners[0].orient.axis[0][1];
@@ -439,18 +443,17 @@ void __cdecl SND_UpdateProximity(void)
   g_snd.proximityOrigin[1] = g_snd.listeners[0].orient.origin[1];
   g_snd.proximityOrigin[2] = g_snd.listeners[0].orient.origin[2];
   if ((snd_proximity_enable->current).enabled == false) {
-    for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      g_snd.proximityLateModifier[local_10] = 1.0;
+    for (i_2 = 0; i_2 < 4; i_2 = i_2 + 1) {
+      g_snd.proximityLateModifier[i_2] = 1.0;
     }
   }
   else {
-    for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
+    for (i = 0; i < 4; i = i + 1) {
       fVar1 = I_fmap((snd_proximity_min_dist->current).value,(snd_proximity_max_dist->current).value
-                     ,(snd_proximity_max_late_cut->current).value,0.0,
-                     g_snd.proximityDistance[local_8]);
+                     ,(snd_proximity_max_late_cut->current).value,0.0,g_snd.proximityDistance[i]);
       fVar1 = SND_dBToLinear(fVar1);
-      g_snd.proximityLateModifier[local_8] =
-           (1.0 - (snd_proximity_filter->current).value) * g_snd.proximityLateModifier[local_8] +
+      g_snd.proximityLateModifier[i] =
+           (1.0 - (snd_proximity_filter->current).value) * g_snd.proximityLateModifier[i] +
            fVar1 * (snd_proximity_filter->current).value;
     }
   }
@@ -466,20 +469,22 @@ void __cdecl SND_LosOcclusionCmd(void)
 
 {
   float fVar1;
-  uint local_c;
+  I_spuDmaSave save;
+  snd_occlusion_trace_t *trace;
+  uint i;
+  uint seq;
   
   Sys_EnterCriticalSection(CRITSEC_SOUND_OCCLUSION);
   if (g_snd.occlusionRunning == 0) {
     Sys_LeaveCriticalSection(CRITSEC_SOUND_OCCLUSION);
   }
   else {
-    for (local_c = 0; local_c < 0x4a; local_c = local_c + 1) {
-      if (g_snd.occlusionTraces[local_c].id != -1) {
+    for (i = 0; i < 0x4a; i = i + 1) {
+      if (g_snd.occlusionTraces[i].id != -1) {
         fVar1 = SND_LosOcclusionTrace
-                          (true,&g_snd.occlusionTraces[local_c].cache,
-                           g_snd.occlusionTraces[local_c].listener,
-                           g_snd.occlusionTraces[local_c].playback);
-        g_snd.occlusionTraces[local_c].occlusion = fVar1;
+                          (true,&g_snd.occlusionTraces[i].cache,g_snd.occlusionTraces[i].listener,
+                           g_snd.occlusionTraces[i].playback);
+        g_snd.occlusionTraces[i].occlusion = fVar1;
       }
     }
     SND_TraceProximity(g_snd.proximityFront,g_snd.proximityOrigin,g_snd.proximityDistance,
@@ -493,18 +498,18 @@ void __cdecl SND_LosOcclusionCmd(void)
 
 // 00949E60  Vec3ScaleAdd  (universal/com_vector.h:356)
 
-void __cdecl Vec3ScaleAdd(float *param_1,float *param_2,float param_3,float *param_4)
+void __cdecl Vec3ScaleAdd(float *base,float *dir,float scale,float *dst)
 
 {
-  *param_4 = *param_2;
-  param_4[1] = param_2[1];
-  param_4[2] = param_2[2];
-  *param_4 = param_3 * *param_4;
-  param_4[1] = param_3 * param_4[1];
-  param_4[2] = param_3 * param_4[2];
-  *param_4 = *param_1 + *param_4;
-  param_4[1] = param_1[1] + param_4[1];
-  param_4[2] = param_1[2] + param_4[2];
+  *dst = *dir;
+  dst[1] = dir[1];
+  dst[2] = dir[2];
+  *dst = scale * *dst;
+  dst[1] = scale * dst[1];
+  dst[2] = scale * dst[2];
+  *dst = *base + *dst;
+  dst[1] = base[1] + dst[1];
+  dst[2] = base[2] + dst[2];
   return;
 }
 
@@ -522,47 +527,46 @@ void __cdecl SND_LosOcclusionUpdate(void)
   float *local_30;
   snd_occlusion_trace_t *local_2c;
   snd_listener *local_28;
-  int local_14;
-  int local_10;
-  uint local_c;
-  int local_8;
+  int li;
+  snd_voice_t *voice;
+  uint i;
+  uint updated;
   
   if ((g_snd.lastTraceSequence == g_snd.traceSequence) &&
      (bVar1 = Sys_TryEnterCriticalSection(CRITSEC_SOUND_OCCLUSION), bVar1)) {
     SND_UpdateProximity();
-    local_8 = 0;
-    for (local_c = 0; local_c < 0x4a; local_c = local_c + 1) {
-      local_10 = local_c * 0x1d8 + 0xa0803e0;
-      if ((g_snd.voiceAliasHash[(int)(local_c * 0x1d8) / 0x1d8] == 0) ||
-         (((g_snd.voice[local_c].alias)->flags & 2) == 0)) {
-        g_snd.occlusionTraces[local_c].id = -1;
-        g_snd.occlusionTraces[local_c].cache = 0;
+    updated = 0;
+    for (i = 0; i < 0x4a; i = i + 1) {
+      voice = g_snd.voice + i;
+      if ((g_snd.voiceAliasHash[(int)(i * 0x1d8) / 0x1d8] == 0) ||
+         (((g_snd.voice[i].alias)->flags & 2) == 0)) {
+        g_snd.occlusionTraces[i].id = -1;
+        g_snd.occlusionTraces[i].cache = 0;
       }
       else {
-        if (g_snd.voice[local_c].firstPlaybackId == g_snd.occlusionTraces[local_c].id) {
-          SND_FaderSetGoal(&g_snd.voice[local_c].losOcclusion,
-                           g_snd.occlusionTraces[local_c].occlusion);
+        if (g_snd.voice[i].firstPlaybackId == g_snd.occlusionTraces[i].id) {
+          SND_FaderSetGoal(&g_snd.voice[i].losOcclusion,g_snd.occlusionTraces[i].occlusion);
         }
         else {
-          g_snd.occlusionTraces[local_c].cache = 0;
+          g_snd.occlusionTraces[i].cache = 0;
         }
-        local_14 = *(int *)(local_10 + 0x124);
-        g_snd.occlusionTraces[local_c].id = *(int *)(local_10 + 0x38);
-        local_2c = g_snd.occlusionTraces + local_c;
-        local_28 = g_snd.listeners + local_14;
+        li = voice->closestListenerIndex;
+        g_snd.occlusionTraces[i].id = voice->firstPlaybackId;
+        local_2c = g_snd.occlusionTraces + i;
+        local_28 = g_snd.listeners + li;
         local_2c->listener[0] = (local_28->orient).origin[0];
-        g_snd.occlusionTraces[local_c].listener[1] = g_snd.listeners[local_14].orient.origin[1];
-        g_snd.occlusionTraces[local_c].listener[2] = g_snd.listeners[local_14].orient.origin[2];
-        local_34 = g_snd.occlusionTraces[local_c].playback;
-        local_30 = (float *)(local_10 + 0x70);
+        g_snd.occlusionTraces[i].listener[1] = g_snd.listeners[li].orient.origin[1];
+        g_snd.occlusionTraces[i].listener[2] = g_snd.listeners[li].orient.origin[2];
+        local_34 = g_snd.occlusionTraces[i].playback;
+        local_30 = voice->position;
         *local_34 = *local_30;
-        g_snd.occlusionTraces[local_c].playback[1] = *(float *)(local_10 + 0x74);
-        g_snd.occlusionTraces[local_c].playback[2] = *(float *)(local_10 + 0x78);
-        g_snd.occlusionTraces[local_c].occlusion = 0.0;
-        local_8 = local_8 + 1;
+        g_snd.occlusionTraces[i].playback[1] = voice->position[1];
+        g_snd.occlusionTraces[i].playback[2] = voice->position[2];
+        g_snd.occlusionTraces[i].occlusion = 0.0;
+        updated = updated + 1;
       }
     }
-    if (local_8 != 0) {
+    if (updated != 0) {
       g_snd.traceSequence = g_snd.traceSequence + 1;
       local_38 = 0;
       InterlockedExchange(&local_38,0);
@@ -581,7 +585,7 @@ void __cdecl SND_LosOcclusionUpdate(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LosOcclusionThreadMain(uint param_1)
+void __cdecl SND_LosOcclusionThreadMain(uint context)
 
 {
   int iVar1;
@@ -615,11 +619,11 @@ void __cdecl SND_LosOcclusionInit(void)
 
 {
   LONG local_c;
-  uint local_8;
+  uint i;
   
   memset((uchar *)g_snd.occlusionTraces,'\0',0xa68);
-  for (local_8 = 0; local_8 < 0x4a; local_8 = local_8 + 1) {
-    g_snd.occlusionTraces[local_8].id = -1;
+  for (i = 0; i < 0x4a; i = i + 1) {
+    g_snd.occlusionTraces[i].id = -1;
   }
   g_snd.occlusionRunning = 1;
   local_c = 0;

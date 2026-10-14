@@ -4,7 +4,7 @@
 
 void __cdecl
 R_GenerateQuadStampCodeMeshVerts
-          (Material *param_1,float *param_2,float *param_3,float param_4,uchar *param_5,
+          (Material *worldRadius,float *rgbaColor,float *frameFrac,float param_4,uchar *param_5,
           float param_6)
 
 {
@@ -16,9 +16,10 @@ R_GenerateQuadStampCodeMeshVerts
   float *unaff_ESI;
   int iVar4;
   Material *unaff_EDI;
-  float *pfVar5;
-  float fVar6;
-  uchar *puVar7;
+  float *t0;
+  float fVar5;
+  uchar *s1;
+  float *origin;
   float fStack_3c;
   float fStack_38;
   float fStack_34;
@@ -35,13 +36,13 @@ R_GenerateQuadStampCodeMeshVerts
   
   AnglesToAxis(unaff_ESI,unaff_EBX);
   uVar3 = (uint)(unaff_EDI->info).textureAtlasRowCount;
-  fStack_30 = fStack_18 * (float)param_2;
+  fStack_30 = fStack_18 * (float)rgbaColor;
   iVar4 = (unaff_EDI->info).textureAtlasColumnCount * uVar3;
-  fStack_2c = fStack_14 * (float)param_2;
-  fStack_28 = fStack_10 * (float)param_2;
-  fStack_3c = fStack_c * (float)param_2;
-  fStack_38 = fStack_8 * (float)param_2;
-  fStack_34 = fStack_4 * (float)param_2;
+  fStack_2c = fStack_14 * (float)rgbaColor;
+  fStack_28 = fStack_10 * (float)rgbaColor;
+  fStack_3c = fStack_c * (float)rgbaColor;
+  fStack_38 = fStack_8 * (float)rgbaColor;
+  fStack_34 = fStack_4 * (float)rgbaColor;
   floorf((float)iVar4 * param_4);
   _ftol2_sse();
   iVar4 = iVar4 + -1;
@@ -50,13 +51,12 @@ R_GenerateQuadStampCodeMeshVerts
     iVar1 = iVar4;
   }
   uVar2 = (uint)(unaff_EDI->info).textureAtlasColumnCount;
-  fVar6 = 1.0 / (float)uVar3;
-  puVar7 = (uchar *)((float)(iVar1 / (int)uVar2) * fVar6);
-  pfVar5 = (float *)((float)(iVar1 % (int)uVar2) * (1.0 / (float)uVar2));
+  fVar5 = 1.0 / (float)uVar3;
+  s1 = (uchar *)((float)(iVar1 / (int)uVar2) * fVar5);
+  t0 = (float *)((float)(iVar1 % (int)uVar2) * (1.0 / (float)uVar2));
   R_BuildQuadStampCodeMeshVerts
-            (unaff_EDI,&afStack_24,&fStack_30,&fStack_3c,pfVar5,puVar7,
-             (float)pfVar5 + 1.0 / (float)uVar2,(float)puVar7 + fVar6,(float)unaff_ESI,
-             (float)unaff_EBX);
+            (unaff_EDI,&afStack_24,&fStack_30,&fStack_3c,t0,s1,(float)t0 + 1.0 / (float)uVar2,
+             (float)s1 + fVar5,(float)unaff_ESI,(float)unaff_EBX);
   return;
 }
 
@@ -65,7 +65,7 @@ R_GenerateQuadStampCodeMeshVerts
 
 void __cdecl
 R_GenerateQuadStampCodeMeshVertsArray
-          (Material *param_1,renderQuad_t *param_2,int param_3,float (*param_4) [3])
+          (Material *material,renderQuad_t *quads,int numQuads,float (*viewAxis) [3])
 
 {
   float fVar1;
@@ -74,7 +74,7 @@ R_GenerateQuadStampCodeMeshVertsArray
   float fVar4;
   float fVar5;
   float fVar6;
-  Material *pMVar7;
+  r_double_index_t *prVar7;
   bool bVar8;
   uint uVar9;
   uint uVar10;
@@ -102,110 +102,125 @@ R_GenerateQuadStampCodeMeshVertsArray
   float fVar31;
   float *pfVar32;
   float fVar33;
+  float fVar34;
   float *in_stack_fffffd7c;
   float *in_stack_fffffd80;
   PackedUnitVec PStack_1b8;
   PackedUnitVec PStack_19c;
-  float fStack_134;
-  float fStack_e8;
-  GfxStateBits **ppGStack_90;
-  GfxColor GStack_60;
-  PackedTexCoords PStack_5c;
-  PackedUnitVec PStack_58;
-  PackedUnitVec PStack_54;
-  GfxColor GStack_50;
-  PackedTexCoords PStack_4c;
-  PackedUnitVec PStack_48;
-  PackedUnitVec PStack_44;
-  float fStack_40;
-  GfxPackedVertex *pGStack_3c;
-  uint uStack_38;
-  Material *pMStack_34;
-  uint uStack_30;
-  uint uStack_2c;
-  float fStack_28;
-  float fStack_24;
-  float fStack_20;
-  float fStack_1c;
+  float t0;
+  float4 tmp0;
+  int frame;
+  float t;
+  float4 vcenter;
+  float4 *out;
+  float c;
+  PackedTexCoords tex1;
+  float t1;
+  float4 pos3;
+  float s1;
+  float4 tmp1;
+  float angle;
+  PackedTexCoords tex2;
+  float4 pos0;
+  PackedTexCoords tex3;
+  float s;
+  float4 vup;
+  float4 pos1;
+  float s0;
+  float4 vleft;
+  PackedTexCoords tex0;
+  float4 pos2;
+  uint value;
+  uint add2;
+  float dt;
+  uint *indexptr;
+  float numFrames;
+  uint add1;
+  float4 viewUp;
+  uint start;
+  GfxPackedVertex prototypeVert;
+  float4 prototype;
+  float ds;
+  GfxPackedVertex *verts;
+  uint incadd;
+  r_double_index_t *indices;
+  uint add0;
+  uint inc;
+  float4 viewLeft;
   undefined1 uStack_18;
   undefined1 uStack_17;
   undefined1 uStack_16;
   undefined1 uStack_15;
-  int iStack_14;
-  float fStack_10;
-  ushort auStack_c [2];
-  int iStack_8;
+  int i;
+  float numFramesMax;
+  ushort baseVertex;
+  uint count;
   
   uStack_18 = 0xff;
   uStack_17 = 0xff;
   uStack_16 = 0xff;
   uStack_15 = 0xff;
-  if (((0 < param_3) && (bVar8 = R_ReserveCodeMeshVerts(param_3 << 2,auStack_c), bVar8)) &&
-     (bVar8 = R_ReserveCodeMeshIndices((int)&pMStack_34,unaff_ESI), pMVar7 = pMStack_34, bVar8)) {
-    uStack_30 = PackTwoShorts(0,(uint)unaff_ESI);
+  if (((0 < numQuads) && (bVar8 = R_ReserveCodeMeshVerts(numQuads << 2,&baseVertex), bVar8)) &&
+     (bVar8 = R_ReserveCodeMeshIndices((int)&indices,unaff_ESI), prVar7 = indices, bVar8)) {
+    add0 = PackTwoShorts(0,(uint)unaff_ESI);
     uVar9 = PackTwoShorts(3,(uint)unaff_ESI);
     uVar10 = PackTwoShorts(1,(uint)unaff_ESI);
-    uStack_38 = PackTwoShorts(4,(uint)unaff_ESI);
-    uStack_2c = PackTwoShorts(0,(uint)unaff_ESI);
-    uVar11 = PackTwoShorts((uint)auStack_c[0],(uint)unaff_ESI);
-    iStack_8 = param_3;
-    ppGStack_90 = &pMVar7[-1].stateBitsTable;
+    uVar11 = PackTwoShorts(4,(uint)unaff_ESI);
+    inc = PackTwoShorts(0,(uint)unaff_ESI);
+    uVar12 = PackTwoShorts((uint)baseVertex,(uint)unaff_ESI);
+    count = numQuads;
+    indexptr = (uint *)(prVar7 + -1);
     do {
-      iVar17 = uVar11 + uStack_2c;
-      uStack_2c = uStack_2c + uStack_38;
-      ppGStack_90[1] = (GfxStateBits *)(iVar17 + uStack_30);
-      ppGStack_90[2] = (GfxStateBits *)(iVar17 + uVar9);
-      ppGStack_90 = ppGStack_90 + 3;
-      *ppGStack_90 = (GfxStateBits *)(iVar17 + uVar10);
-      iStack_8 = iStack_8 + -1;
-    } while (iStack_8 != 0);
-    Byte4CopyRgbaToVertexColor(GStack_60.array,(uchar *)unaff_ESI);
-    PStack_19c.array[1] = (char)(int)(-(*param_4)[1] * 127.0 + 127.5);
-    PStack_19c.array[0] = (char)(int)(-(*param_4)[0] * 127.0 + 127.5);
-    PStack_19c.array[2] = (char)(int)(-(*param_4)[2] * 127.0 + 127.5);
+      iVar17 = uVar12 + inc;
+      inc = inc + uVar11;
+      indexptr[1] = iVar17 + add0;
+      indexptr[2] = iVar17 + uVar9;
+      indexptr = indexptr + 3;
+      *indexptr = iVar17 + uVar10;
+      count = count - 1;
+    } while (count != 0);
+    Byte4CopyRgbaToVertexColor(prototypeVert.color.array,(uchar *)unaff_ESI);
+    PStack_19c.array[1] = (char)(int)(-(*viewAxis)[1] * 127.0 + 127.5);
+    PStack_19c.array[0] = (char)(int)(-(*viewAxis)[0] * 127.0 + 127.5);
+    PStack_19c.array[2] = (char)(int)(-(*viewAxis)[2] * 127.0 + 127.5);
     PStack_19c.array[3] = 0x3f;
-    PStack_58 = PStack_19c;
-    PStack_1b8.array[1] = (char)(int)(-param_4[1][1] * 127.0 + 127.5);
-    PStack_1b8.array[0] = (char)(int)(-param_4[1][0] * 127.0 + 127.5);
-    PStack_1b8.array[2] = (char)(int)(-param_4[1][2] * 127.0 + 127.5);
+    prototypeVert.normal = PStack_19c;
+    PStack_1b8.array[1] = (char)(int)(-viewAxis[1][1] * 127.0 + 127.5);
+    PStack_1b8.array[0] = (char)(int)(-viewAxis[1][0] * 127.0 + 127.5);
+    PStack_1b8.array[2] = (char)(int)(-viewAxis[1][2] * 127.0 + 127.5);
     PStack_1b8.array[3] = 0x3f;
-    PStack_54 = PStack_1b8;
-    GStack_50 = GStack_60;
-    PStack_4c = PStack_5c;
-    PStack_48 = PStack_19c;
-    PStack_44 = PStack_1b8;
-    pGStack_3c = R_GetCodeMeshVerts(auStack_c[0]);
-    fStack_40 = 1.0 / (float)(param_1->info).textureAtlasColumnCount;
-    fVar33 = 1.0 / (float)(param_1->info).textureAtlasRowCount;
-    fStack_10 = (float)((uint)(param_1->info).textureAtlasColumnCount *
-                       (uint)(param_1->info).textureAtlasRowCount) - 1.0;
-    fStack_28 = param_4[1][0];
-    fStack_24 = param_4[1][1];
-    fStack_20 = param_4[1][2];
-    fStack_1c = 0.0;
-    fVar1 = param_4[2][0];
-    fVar2 = param_4[2][1];
-    fVar3 = param_4[2][2];
-    for (iStack_14 = 0; iStack_14 < param_3; iStack_14 = iStack_14 + 1) {
+    prototypeVert.tangent = PStack_1b8;
+    verts = R_GetCodeMeshVerts(baseVertex);
+    fVar33 = 1.0 / (float)(material->info).textureAtlasColumnCount;
+    fVar34 = 1.0 / (float)(material->info).textureAtlasRowCount;
+    numFramesMax = (float)((uint)(material->info).textureAtlasColumnCount *
+                          (uint)(material->info).textureAtlasRowCount) - 1.0;
+    viewLeft.v[0] = viewAxis[1][0];
+    viewLeft.v[1] = viewAxis[1][1];
+    viewLeft.v[2] = viewAxis[1][2];
+    viewLeft.v[3] = 0.0;
+    fVar1 = viewAxis[2][0];
+    fVar2 = viewAxis[2][1];
+    fVar3 = viewAxis[2][2];
+    for (i = 0; i < numQuads; i = i + 1) {
       really_fast_sincos((float)unaff_ESI,in_stack_fffffd7c,in_stack_fffffd80);
-      fStack_e8 = fStack_e8 * param_2[iStack_14].radius;
-      fStack_134 = fStack_134 * param_2[iStack_14].radius;
-      fVar20 = fStack_134 * fStack_28 + fStack_e8 * fVar1;
-      fVar21 = fStack_134 * fStack_24 + fStack_e8 * fVar2;
-      fVar22 = fStack_134 * fStack_20 + fStack_e8 * fVar3;
-      fVar23 = fStack_134 * fStack_1c + fStack_e8 * 0.0;
-      fVar24 = fStack_134 * fVar1 - fStack_e8 * fStack_28;
-      fVar25 = fStack_134 * fVar2 - fStack_e8 * fStack_24;
-      fVar26 = fStack_134 * fVar3 - fStack_e8 * fStack_20;
-      fVar27 = fStack_134 * 0.0 - fStack_e8 * fStack_1c;
-      fVar28 = fStack_10;
+      s = s * quads[i].radius;
+      c = c * quads[i].radius;
+      fVar20 = c * viewLeft.v[0] + s * fVar1;
+      fVar21 = c * viewLeft.v[1] + s * fVar2;
+      fVar22 = c * viewLeft.v[2] + s * fVar3;
+      fVar23 = c * viewLeft.v[3] + s * 0.0;
+      fVar24 = c * fVar1 - s * viewLeft.v[0];
+      fVar25 = c * fVar2 - s * viewLeft.v[1];
+      fVar26 = c * fVar3 - s * viewLeft.v[2];
+      fVar27 = c * 0.0 - s * viewLeft.v[3];
+      fVar28 = numFramesMax;
       I_fmin((float)unaff_ESI,(float)in_stack_fffffd7c);
-      fVar29 = (float)((int)fVar28 % (int)(uint)(param_1->info).textureAtlasColumnCount) * fStack_40
-      ;
-      fVar30 = fVar29 + fStack_40;
-      fVar31 = (float)((int)fVar28 / (int)(uint)(param_1->info).textureAtlasColumnCount) * fVar33;
-      pfVar32 = (float *)(fVar31 + fVar33);
-      prVar19 = param_2 + iStack_14;
+      fVar29 = (float)((int)fVar28 % (int)(uint)(material->info).textureAtlasColumnCount) * fVar33;
+      fVar30 = fVar29 + fVar33;
+      fVar31 = (float)((int)fVar28 / (int)(uint)(material->info).textureAtlasColumnCount) * fVar34;
+      pfVar32 = (float *)(fVar31 + fVar34);
+      prVar19 = quads + i;
       fVar28 = prVar19->pos[0];
       fVar4 = prVar19->pos[1];
       fVar5 = prVar19->pos[2];
@@ -227,56 +242,56 @@ R_GenerateQuadStampCodeMeshVertsArray
                        (int)in_stack_fffffd7c);
       in_stack_fffffd80 = (float *)(uVar18 & 0xc000);
       uVar16 = I_clamp((int)((int)pfVar32 << 1 ^ 0x80000000U) >> 0xe,(int)unaff_ESI,(int)pfVar32);
-      pGStack_3c->xyz[0] = fVar28 + fVar20 + fVar24;
-      pGStack_3c->xyz[1] = fVar4 + fVar21 + fVar25;
-      pGStack_3c->xyz[2] = fVar5 + fVar22 + fVar26;
-      pGStack_3c->binormalSign = fVar6 + fVar23 + fVar27;
-      pGStack_3c->color = GStack_50;
-      pGStack_3c->texCoord = PStack_4c;
-      pGStack_3c->normal = PStack_48;
-      pGStack_3c->tangent = PStack_44;
-      (pGStack_3c->texCoord).packed =
+      verts->xyz[0] = fVar28 + fVar20 + fVar24;
+      verts->xyz[1] = fVar4 + fVar21 + fVar25;
+      verts->xyz[2] = fVar5 + fVar22 + fVar26;
+      verts->binormalSign = fVar6 + fVar23 + fVar27;
+      verts->color = prototypeVert.color;
+      verts->texCoord = prototypeVert.texCoord;
+      verts->normal = PStack_19c;
+      verts->tangent = PStack_1b8;
+      (verts->texCoord).packed =
            ((int)fVar29 >> 0x10 & 0xc000U | uVar9 & 0x3fff) * 0x10000 +
            ((int)fVar31 >> 0x10 & 0xc000U | uVar10 & 0x3fff);
-      pGStack_3c[1].xyz[0] = (fVar28 - fVar20) + fVar24;
-      pGStack_3c[1].xyz[1] = (fVar4 - fVar21) + fVar25;
-      pGStack_3c[1].xyz[2] = (fVar5 - fVar22) + fVar26;
-      pGStack_3c[1].binormalSign = (fVar6 - fVar23) + fVar27;
-      pGStack_3c[1].color = GStack_50;
-      pGStack_3c[1].texCoord = PStack_4c;
-      pGStack_3c[1].normal = PStack_48;
-      pGStack_3c[1].tangent = PStack_44;
-      pGStack_3c[1].texCoord.packed =
+      verts[1].xyz[0] = (fVar28 - fVar20) + fVar24;
+      verts[1].xyz[1] = (fVar4 - fVar21) + fVar25;
+      verts[1].xyz[2] = (fVar5 - fVar22) + fVar26;
+      verts[1].binormalSign = (fVar6 - fVar23) + fVar27;
+      verts[1].color = prototypeVert.color;
+      verts[1].texCoord = prototypeVert.texCoord;
+      verts[1].normal = PStack_19c;
+      verts[1].tangent = PStack_1b8;
+      verts[1].texCoord.packed =
            ((int)fVar30 >> 0x10 & 0xc000U | uVar11 & 0x3fff) * 0x10000 +
            ((int)fVar31 >> 0x10 & 0xc000U | uVar12 & 0x3fff);
-      pGStack_3c[2].xyz[0] = (fVar28 - fVar20) - fVar24;
-      pGStack_3c[2].xyz[1] = (fVar4 - fVar21) - fVar25;
-      pGStack_3c[2].xyz[2] = (fVar5 - fVar22) - fVar26;
-      pGStack_3c[2].binormalSign = (fVar6 - fVar23) - fVar27;
-      pGStack_3c[2].color = GStack_50;
-      pGStack_3c[2].texCoord = PStack_4c;
-      pGStack_3c[2].normal = PStack_48;
-      pGStack_3c[2].tangent = PStack_44;
-      pGStack_3c[2].texCoord.packed =
+      verts[2].xyz[0] = (fVar28 - fVar20) - fVar24;
+      verts[2].xyz[1] = (fVar4 - fVar21) - fVar25;
+      verts[2].xyz[2] = (fVar5 - fVar22) - fVar26;
+      verts[2].binormalSign = (fVar6 - fVar23) - fVar27;
+      verts[2].color = prototypeVert.color;
+      verts[2].texCoord = prototypeVert.texCoord;
+      verts[2].normal = PStack_19c;
+      verts[2].tangent = PStack_1b8;
+      verts[2].texCoord.packed =
            ((int)fVar30 >> 0x10 & 0xc000U | uVar13 & 0x3fff) * 0x10000 +
            (uVar18 & 0xc000 | uVar14 & 0x3fff);
-      pGStack_3c[3].xyz[0] = (fVar28 + fVar20) - fVar24;
-      pGStack_3c[3].xyz[1] = (fVar4 + fVar21) - fVar25;
-      pGStack_3c[3].xyz[2] = (fVar5 + fVar22) - fVar26;
-      pGStack_3c[3].binormalSign = (fVar6 + fVar23) - fVar27;
-      pGStack_3c[3].color = GStack_50;
-      pGStack_3c[3].texCoord = PStack_4c;
-      pGStack_3c[3].normal = PStack_48;
-      pGStack_3c[3].tangent = PStack_44;
-      pGStack_3c[3].texCoord.packed =
+      verts[3].xyz[0] = (fVar28 + fVar20) - fVar24;
+      verts[3].xyz[1] = (fVar4 + fVar21) - fVar25;
+      verts[3].xyz[2] = (fVar5 + fVar22) - fVar26;
+      verts[3].binormalSign = (fVar6 + fVar23) - fVar27;
+      verts[3].color = prototypeVert.color;
+      verts[3].texCoord = prototypeVert.texCoord;
+      verts[3].normal = PStack_19c;
+      verts[3].tangent = PStack_1b8;
+      verts[3].texCoord.packed =
            ((int)fVar29 >> 0x10 & 0xc000U | uVar15 & 0x3fff) * 0x10000 +
            ((uint)in_stack_fffffd80 | uVar16 & 0x3fff);
-      pGStack_3c = pGStack_3c + 4;
+      verts = verts + 4;
       in_stack_fffffd7c = pfVar32;
     }
     R_AddCodeMeshDrawSurf
-              (pMStack_34,(r_double_index_t *)(param_3 * 6),0,0,0xa9acd0,(char *)0xd,(uint)unaff_ESI
-              );
+              ((Material *)indices,(r_double_index_t *)(numQuads * 6),0,0,0xa9acd0,(char *)0xd,
+               (uint)unaff_ESI);
   }
   return;
 }

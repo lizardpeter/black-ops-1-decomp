@@ -10,15 +10,15 @@ pkcs_1_oaep_decode(char *param_1,uint param_2,byte *param_3,undefined4 param_4,u
 
 {
   uint uVar1;
-  uint uVar2;
-  byte *pbVar3;
-  uint uVar4;
-  int iVar5;
-  byte *pbVar6;
-  byte *pbVar7;
-  uint uVar8;
-  uint uVar9;
-  ulong uVar10;
+  uint size;
+  byte *pbVar2;
+  uint uVar3;
+  int iVar4;
+  byte *dst;
+  byte *pbVar5;
+  uint size_00;
+  uint uVar6;
+  ulong uVar7;
   uint local_10;
   void *local_c;
   byte *local_8;
@@ -45,109 +45,109 @@ pkcs_1_oaep_decode(char *param_1,uint param_2,byte *param_3,undefined4 param_4,u
                  ,0x2e);
   }
   *param_9 = 0;
-  iVar5 = hash_is_valid(param_6);
-  if (iVar5 != 0) {
-    return iVar5;
+  iVar4 = hash_is_valid(param_6);
+  if (iVar4 != 0) {
+    return iVar4;
   }
-  uVar2 = *(uint *)(&DAT_0b548c80 + param_6 * 0x68);
-  uVar8 = (uint)((param_5 & 7) != 0) + (param_5 >> 3);
-  if ((uVar8 - 2 <= uVar2 * 2) || (param_2 != uVar8)) {
+  size = *(uint *)(&DAT_0b548c80 + param_6 * 0x68);
+  size_00 = (uint)((param_5 & 7) != 0) + (param_5 >> 3);
+  if ((size_00 - 2 <= size * 2) || (param_2 != size_00)) {
     return 0x16;
   }
-  pbVar6 = tom_game_malloc(uVar8);
-  local_c = tom_game_malloc(uVar8);
-  pbVar7 = tom_game_malloc(uVar2);
-  local_8 = pbVar7;
-  if (pbVar6 == (byte *)0x0) {
+  dst = tom_game_malloc(size_00);
+  local_c = tom_game_malloc(size_00);
+  pbVar5 = tom_game_malloc(size);
+  local_8 = pbVar5;
+  if (dst == (byte *)0x0) {
 LAB_00c42b97:
     if (local_c != (void *)0x0) {
       tom_game_free(local_c);
     }
-    if (pbVar7 != (byte *)0x0) {
-      tom_game_free(pbVar7);
+    if (pbVar5 != (byte *)0x0) {
+      tom_game_free(pbVar5);
     }
     return 0xd;
   }
-  if ((local_c == (void *)0x0) || (pbVar7 == (byte *)0x0)) {
-    tom_game_free(pbVar6);
+  if ((local_c == (void *)0x0) || (pbVar5 == (byte *)0x0)) {
+    tom_game_free(dst);
     goto LAB_00c42b97;
   }
   if (*param_1 == '\0') {
     local_10 = 1;
-    memcpy(pbVar7,(uchar *)(param_1 + 1),uVar2);
-    local_10 = local_10 + uVar2;
-    uVar10 = (uVar8 - uVar2) - 1;
-    local_4 = uVar10;
-    memcpy(pbVar6,(uchar *)(param_1 + local_10),uVar10);
-    local_10 = (local_10 - 1) + (uVar8 - uVar2);
-    iVar5 = pkcs_1_mgf1(param_6,pbVar6,uVar10,local_c,uVar2);
-    if (iVar5 != 0) goto LAB_00c42b67;
-    if (uVar2 != 0) {
-      pbVar7 = local_8;
-      uVar9 = uVar2;
+    memcpy(pbVar5,(uchar *)(param_1 + 1),size);
+    local_10 = local_10 + size;
+    uVar7 = (size_00 - size) - 1;
+    local_4 = uVar7;
+    memcpy(dst,(uchar *)(param_1 + local_10),uVar7);
+    local_10 = (local_10 - 1) + (size_00 - size);
+    iVar4 = pkcs_1_mgf1(param_6,dst,uVar7,local_c,size);
+    if (iVar4 != 0) goto LAB_00c42b67;
+    if (size != 0) {
+      pbVar5 = local_8;
+      uVar6 = size;
       do {
-        *pbVar7 = *pbVar7 ^ pbVar7[(int)local_c - (int)local_8];
-        pbVar7 = pbVar7 + 1;
-        uVar9 = uVar9 - 1;
-      } while (uVar9 != 0);
+        *pbVar5 = *pbVar5 ^ pbVar5[(int)local_c - (int)local_8];
+        pbVar5 = pbVar5 + 1;
+        uVar6 = uVar6 - 1;
+      } while (uVar6 != 0);
     }
-    iVar5 = pkcs_1_mgf1(param_6,local_8,uVar2,local_c,local_4);
-    if (iVar5 != 0) goto LAB_00c42b67;
+    iVar4 = pkcs_1_mgf1(param_6,local_8,size,local_c,local_4);
+    if (iVar4 != 0) goto LAB_00c42b67;
     if (local_4 != 0) {
-      pbVar7 = pbVar6;
-      uVar10 = local_4;
+      pbVar5 = dst;
+      uVar7 = local_4;
       do {
-        *pbVar7 = *pbVar7 ^ pbVar7[(int)local_c - (int)pbVar6];
-        pbVar7 = pbVar7 + 1;
-        uVar10 = uVar10 - 1;
-      } while (uVar10 != 0);
+        *pbVar5 = *pbVar5 ^ pbVar5[(int)local_c - (int)dst];
+        pbVar5 = pbVar5 + 1;
+        uVar7 = uVar7 - 1;
+      } while (uVar7 != 0);
     }
     if (param_3 == (byte *)0x0) {
       param_4 = 0;
-      param_3 = pbVar6;
+      param_3 = dst;
     }
-    local_10 = uVar8;
-    iVar5 = hash_memory(param_6,param_3,param_4,local_8,&local_10);
-    uVar9 = uVar2;
-    pbVar7 = pbVar6;
-    pbVar3 = local_8;
-    if (iVar5 != 0) goto LAB_00c42b67;
-    for (; 3 < uVar9; uVar9 = uVar9 - 4) {
-      if (*(int *)pbVar3 != *(int *)pbVar7) goto LAB_00c42b5e;
-      pbVar7 = pbVar7 + 4;
-      pbVar3 = pbVar3 + 4;
+    local_10 = size_00;
+    iVar4 = hash_memory(param_6,param_3,param_4,local_8,&local_10);
+    uVar6 = size;
+    pbVar5 = dst;
+    pbVar2 = local_8;
+    if (iVar4 != 0) goto LAB_00c42b67;
+    for (; 3 < uVar6; uVar6 = uVar6 - 4) {
+      if (*(int *)pbVar2 != *(int *)pbVar5) goto LAB_00c42b5e;
+      pbVar5 = pbVar5 + 4;
+      pbVar2 = pbVar2 + 4;
     }
-    uVar4 = uVar2;
-    if ((uVar9 == 0) ||
-       ((*pbVar7 == *pbVar3 &&
-        ((uVar9 < 2 || ((pbVar7[1] == pbVar3[1] && ((uVar9 < 3 || (pbVar7[2] == pbVar3[2]))))))))))
+    uVar3 = size;
+    if ((uVar6 == 0) ||
+       ((*pbVar5 == *pbVar2 &&
+        ((uVar6 < 2 || ((pbVar5[1] == pbVar2[1] && ((uVar6 < 3 || (pbVar5[2] == pbVar2[2]))))))))))
     {
-      for (; (uVar4 < local_4 && (pbVar6[uVar4] == 0)); uVar4 = uVar4 + 1) {
+      for (; (uVar3 < local_4 && (dst[uVar3] == 0)); uVar3 = uVar3 + 1) {
       }
-      if ((uVar4 == local_4) || (pbVar6[uVar4] != 1)) {
-        iVar5 = 7;
-        local_10 = uVar4;
+      if ((uVar3 == local_4) || (dst[uVar3] != 1)) {
+        iVar4 = 7;
+        local_10 = uVar3;
         goto LAB_00c42b67;
       }
-      local_10 = uVar4 + 1;
-      uVar9 = ((uVar8 - local_10) - uVar2) - 1;
+      local_10 = uVar3 + 1;
+      uVar6 = ((size_00 - local_10) - size) - 1;
       uVar1 = *param_8;
-      *param_8 = uVar9;
-      if (uVar1 < uVar9) {
-        iVar5 = 6;
+      *param_8 = uVar6;
+      if (uVar1 < uVar6) {
+        iVar4 = 6;
         goto LAB_00c42b67;
       }
-      memcpy(param_7,pbVar6 + local_10,uVar9);
-      local_10 = uVar4 + (uVar8 - uVar2);
+      memcpy(param_7,dst + local_10,uVar6);
+      local_10 = uVar3 + (size_00 - size);
       *param_9 = 1;
     }
   }
 LAB_00c42b5e:
-  iVar5 = 0;
+  iVar4 = 0;
 LAB_00c42b67:
   tom_game_free(local_8);
   tom_game_free(local_c);
-  tom_game_free(pbVar6);
-  return iVar5;
+  tom_game_free(dst);
+  return iVar4;
 }
 

@@ -5,23 +5,23 @@
 void __thiscall phys_transient_allocator::resize(phys_transient_allocator *this)
 
 {
-  void *pvVar1;
-  block_header *pbVar2;
+  void *slot_pool;
+  block_header *pbVar1;
   
-  pvVar1 = this->m_slot_pool;
-  if (pvVar1 == (void *)0x0) {
-    pvVar1 = GET_PHYS_SLOT_POOL(0x4000,4);
-    this->m_slot_pool = pvVar1;
+  slot_pool = this->m_slot_pool;
+  if (slot_pool == (void *)0x0) {
+    slot_pool = GET_PHYS_SLOT_POOL(0x4000,4);
+    this->m_slot_pool = slot_pool;
   }
-  pbVar2 = PSP_ALLOC(pvVar1);
-  if (pbVar2 != (block_header *)0x0) {
-    pbVar2->m_block_size = 0x4000;
-    pbVar2->m_block_alignment = 4;
-    pbVar2->m_next_block = this->m_first_block;
-    this->m_first_block = pbVar2;
+  pbVar1 = PSP_ALLOC(slot_pool);
+  if (pbVar1 != (block_header *)0x0) {
+    pbVar1->m_block_size = 0x4000;
+    pbVar1->m_block_alignment = 4;
+    pbVar1->m_next_block = this->m_first_block;
+    this->m_first_block = pbVar1;
     this->m_total_memory_allocated = this->m_total_memory_allocated + 0x4000;
-    this->m_cur = (char *)(pbVar2 + 1);
-    this->m_end = (char *)&pbVar2[0x555].m_block_alignment;
+    this->m_cur = (char *)(pbVar1 + 1);
+    this->m_end = (char *)&pbVar1[0x555].m_block_alignment;
   }
   return;
 }
@@ -32,16 +32,16 @@ void __thiscall phys_transient_allocator::resize(phys_transient_allocator *this)
 void __thiscall phys_transient_allocator::reset(phys_transient_allocator *this)
 
 {
-  void *pvVar1;
-  block_header *pbVar2;
-  block_header *pbVar3;
+  void *slot_pool;
+  block_header *pbVar1;
+  block_header *slot;
   
-  pvVar1 = this->m_slot_pool;
-  pbVar3 = this->m_first_block;
-  while (pbVar3 != (block_header *)0x0) {
-    pbVar2 = pbVar3->m_next_block;
-    PSP_FREE(pvVar1,pbVar3);
-    pbVar3 = pbVar2;
+  slot_pool = this->m_slot_pool;
+  slot = this->m_first_block;
+  while (slot != (block_header *)0x0) {
+    pbVar1 = slot->m_next_block;
+    PSP_FREE(slot_pool,slot);
+    slot = pbVar1;
   }
   this->m_first_block = (block_header *)0x0;
   this->m_cur = (char *)0x0;
@@ -54,26 +54,27 @@ void __thiscall phys_transient_allocator::reset(phys_transient_allocator *this)
 // 00A0F450  reset_to_state  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_transient_allocator.cpp:52)
 
 void __thiscall
-phys_transient_allocator::reset_to_state(phys_transient_allocator *this,allocator_state *param_1)
+phys_transient_allocator::reset_to_state(phys_transient_allocator *this,allocator_state *as)
 
 {
-  void *pvVar1;
-  block_header *pbVar2;
-  block_header *pbVar3;
+  void *slot_pool_00;
+  block_header *pbVar1;
+  block_header *slot;
+  void *slot_pool;
   
-  pvVar1 = this->m_slot_pool;
-  pbVar3 = this->m_first_block;
-  if (pbVar3 != param_1->m_first_block) {
+  slot_pool_00 = this->m_slot_pool;
+  slot = this->m_first_block;
+  if (slot != as->m_first_block) {
     do {
-      pbVar2 = pbVar3->m_next_block;
-      PSP_FREE(pvVar1,pbVar3);
-      pbVar3 = pbVar2;
-    } while (pbVar2 != param_1->m_first_block);
+      pbVar1 = slot->m_next_block;
+      PSP_FREE(slot_pool_00,slot);
+      slot = pbVar1;
+    } while (pbVar1 != as->m_first_block);
   }
-  this->m_first_block = param_1->m_first_block;
-  this->m_cur = param_1->m_cur;
-  this->m_end = param_1->m_end;
-  this->m_total_memory_allocated = param_1->m_total_memory_allocated;
+  this->m_first_block = as->m_first_block;
+  this->m_cur = as->m_cur;
+  this->m_end = as->m_end;
+  this->m_total_memory_allocated = as->m_total_memory_allocated;
   return;
 }
 

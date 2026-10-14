@@ -2,35 +2,35 @@
 
 // 004292F0  BG_GetPerkIndexForName  (bgame/bg_perks.cpp:129)
 
-uint __cdecl BG_GetPerkIndexForName(char *param_1)
+uint __cdecl BG_GetPerkIndexForName(char *perkName)
 
 {
   int iVar1;
-  uint local_8;
+  uint idx;
   
-  if (param_1 == (char *)0x0) {
-    local_8 = 0x34;
+  if (perkName == (char *)0x0) {
+    idx = 0x34;
   }
   else {
-    local_8 = 0;
-    while ((local_8 < 0x34 && (iVar1 = I_stricmp(param_1,bg_perkNames[local_8]), iVar1 != 0))) {
-      local_8 = local_8 + 1;
+    idx = 0;
+    while ((idx < 0x34 && (iVar1 = I_stricmp(perkName,bg_perkNames[idx]), iVar1 != 0))) {
+      idx = idx + 1;
     }
   }
-  return local_8;
+  return idx;
 }
 
 
 // 00429340  BG_GetPerkNameForIndex  (bgame/bg_perks.cpp:143)
 
-char * __cdecl BG_GetPerkNameForIndex(uint param_1)
+char * __cdecl BG_GetPerkNameForIndex(uint perkIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (0x33 < param_1) {
+  if (0x33 < perkIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_perks.cpp",0x90,0,
                              "perkIndex doesn\'t index PERK_COUNT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -39,7 +39,7 @@ char * __cdecl BG_GetPerkNameForIndex(uint param_1)
       return pcVar3;
     }
   }
-  return bg_perkNames[param_1];
+  return bg_perkNames[perkIndex];
 }
 
 

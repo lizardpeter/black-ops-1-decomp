@@ -7,19 +7,19 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uchar * __cdecl BaseForFields(actor_s *param_1,actor_fields_s *param_2)
+uchar * __cdecl BaseForFields(actor_s *actor,actor_fields_s *fields)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (param_2 != aifields) {
-    if (param_2 == sentientfields) {
-      param_1 = (actor_s *)param_1->sentient;
+  if (fields != aifields) {
+    if (fields == sentientfields) {
+      actor = (actor_s *)actor->sentient;
     }
-    else if (param_2 == entfields) {
-      param_1 = (actor_s *)param_1->ent;
+    else if (fields == entfields) {
+      actor = (actor_s *)actor->ent;
     }
     else {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x10e,0,
@@ -30,10 +30,10 @@ uchar * __cdecl BaseForFields(actor_s *param_1,actor_fields_s *param_2)
         return puVar3;
       }
       Com_Error(ERR_DROP,"\x15BaseForFields: invalid fields[]");
-      param_1 = (actor_s *)0x0;
+      actor = (actor_s *)0x0;
     }
   }
-  return (uchar *)param_1;
+  return (uchar *)actor;
 }
 
 
@@ -44,22 +44,22 @@ uchar * __cdecl BaseForFields(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-actor_fields_s * __cdecl FindFieldForName(actor_fields_s *param_1,char *param_2)
+actor_fields_s * __cdecl FindFieldForName(actor_fields_s *fields,char *pszFieldName)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1[local_8].name == (char *)0x0) {
+    if (fields[i].name == (char *)0x0) {
       return (actor_fields_s *)0x0;
     }
-    iVar1 = I_stricmp(param_2,param_1[local_8].name);
+    iVar1 = I_stricmp(pszFieldName,fields[i].name);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  return param_1 + local_8;
+  return fields + i;
 }
 
 
@@ -70,39 +70,40 @@ actor_fields_s * __cdecl FindFieldForName(actor_fields_s *param_1,char *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetSpecies(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetSpecies(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  char *pcVar4;
-  undefined1 uVar5;
-  AISpecies local_c;
+  uint stringValue;
+  char *error;
+  undefined1 force_terminal;
+  int i;
+  uint type;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((pSelf == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x130,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  local_c = AI_SPECIES_DOG;
+  stringValue = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
+  i = 0;
   while( true ) {
-    if (0 < (int)local_c) {
-      uVar5 = 0;
-      SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
-      pcVar4 = va("unknown type \'%s\', should be human, dog, zombie, zombie_dog\n");
-      Scr_Error(pcVar4,(bool)uVar5);
+    if (0 < i) {
+      force_terminal = 0;
+      SL_ConvertToString(stringValue,SCRIPTINSTANCE_SERVER);
+      error = va("unknown type \'%s\', should be human, dog, zombie, zombie_dog\n");
+      Scr_Error(error,(bool)force_terminal);
       return;
     }
-    if (uVar3 == *g_AISpeciesNames[local_c]) break;
-    local_c = local_c + AI_SPECIES_ALL;
+    if (stringValue == *g_AISpeciesNames[i]) break;
+    i = i + 1;
   }
-  param_1->species = local_c;
-  (param_1->ent->s).lerp.u.loopFx.period = local_c & 0xff;
-  G_DObjUpdate(param_1->ent);
+  pSelf->species = i;
+  (pSelf->ent->s).lerp.u.loopFx.period = i & 0xff;
+  G_DObjUpdate(pSelf->ent);
   return;
 }
 
@@ -114,13 +115,13 @@ void __cdecl ActorScr_SetSpecies(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetSpecies(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetSpecies(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x14a,0,
                              "%s");
     if (!bVar2) {
@@ -129,7 +130,7 @@ void __cdecl ActorScr_GetSpecies(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_1->species != AI_SPECIES_DOG) {
+  if (pSelf->species != AI_SPECIES_DOG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x14b,0,
                              "pSelf->species doesn\'t index MAX_AI_SPECIES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -138,7 +139,7 @@ void __cdecl ActorScr_GetSpecies(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  Scr_AddConstString((uint)*g_AISpeciesNames[param_1->species],SCRIPTINSTANCE_SERVER);
+  Scr_AddConstString((uint)*g_AISpeciesNames[pSelf->species],SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -150,14 +151,14 @@ void __cdecl ActorScr_GetSpecies(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetIsDog(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetIsDog(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  scriptInstance_t sVar3;
+  scriptInstance_t inst;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x157,0,
                              "%s");
     if (!bVar2) {
@@ -166,7 +167,7 @@ void __cdecl ActorScr_GetIsDog(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_1->species != AI_SPECIES_DOG) {
+  if (pSelf->species != AI_SPECIES_DOG) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x158,0,
                              "pSelf->species doesn\'t index MAX_AI_SPECIES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -175,9 +176,9 @@ void __cdecl ActorScr_GetIsDog(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  sVar3 = SCRIPTINSTANCE_SERVER;
-  bVar2 = CL_IsLastActiveLocalClient(param_1->species);
-  Scr_AddBool((uint)bVar2,sVar3);
+  inst = SCRIPTINSTANCE_SERVER;
+  bVar2 = CL_IsLastActiveLocalClient(pSelf->species);
+  Scr_AddBool((uint)bVar2,inst);
   return;
 }
 
@@ -189,15 +190,15 @@ void __cdecl ActorScr_GetIsDog(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_Clamp_0_1(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_Clamp_0_1(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  float local_8;
+  float fValue;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x172,0,
                              "%s");
     if (!bVar2) {
@@ -206,7 +207,7 @@ void __cdecl ActorScr_Clamp_0_1(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x177,0,
                              "%s");
     if (!bVar2) {
@@ -215,22 +216,22 @@ void __cdecl ActorScr_Clamp_0_1(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  local_8 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (local_8 <= 1.0) {
-    if (local_8 < 0.0) {
+  fValue = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (fValue <= 1.0) {
+    if (fValue < 0.0) {
       bVar2 = false;
       pcVar3 = va("actor field %s clamped from %g to 0\n");
       Scr_Error(pcVar3,bVar2);
-      local_8 = 0.0;
+      fValue = 0.0;
     }
   }
   else {
     bVar2 = false;
     pcVar3 = va("actor field %s clamped from %g to 1\n");
     Scr_Error(pcVar3,bVar2);
-    local_8 = 1.0;
+    fValue = 1.0;
   }
-  *(float *)((int)param_1->eState + param_2->ofs + -0x18) = local_8;
+  *(float *)((int)pSelf->eState + pField->ofs + -0x18) = fValue;
   return;
 }
 
@@ -242,15 +243,15 @@ void __cdecl ActorScr_Clamp_0_1(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_Clamp_0_Positive(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_Clamp_0_Positive(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  float local_8;
+  char *error;
+  float value;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x193,0,
                              "%s");
     if (!bVar2) {
@@ -259,7 +260,7 @@ void __cdecl ActorScr_Clamp_0_Positive(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x198,0,
                              "%s");
     if (!bVar2) {
@@ -268,14 +269,14 @@ void __cdecl ActorScr_Clamp_0_Positive(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  local_8 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if (local_8 < 0.0) {
+  value = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if (value < 0.0) {
     bVar2 = false;
-    pcVar3 = va("actor field %s clamped from %g to 0\n");
-    Scr_Error(pcVar3,bVar2);
-    local_8 = 0.0;
+    error = va("actor field %s clamped from %g to 0\n");
+    Scr_Error(error,bVar2);
+    value = 0.0;
   }
-  *(float *)((int)param_1->eState + param_2->ofs + -0x18) = local_8;
+  *(float *)((int)pSelf->eState + pField->ofs + -0x18) = value;
   return;
 }
 
@@ -287,14 +288,14 @@ void __cdecl ActorScr_Clamp_0_Positive(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_ReadOnly(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_ReadOnly(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
+  char *error;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1af,0,
                              "%s");
     if (!bVar2) {
@@ -303,7 +304,7 @@ void __cdecl ActorScr_ReadOnly(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1b2,0,
                              "%s");
     if (!bVar2) {
@@ -313,27 +314,29 @@ void __cdecl ActorScr_ReadOnly(actor_s *param_1,actor_fields_s *param_2)
     }
   }
   bVar2 = false;
-  pcVar3 = va("actor field %s is read-only");
-  Scr_Error(pcVar3,bVar2);
+  error = va("actor field %s is read-only");
+  Scr_Error(error,bVar2);
   return;
 }
 
 
 // 008F2BA0  ActorScr_SetGoalRadius  (game/actor_fields.cpp:448)
 
+/* WARNING: Variable defined which should be unmapped: radius */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetGoalRadius(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetGoalRadius(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  actor_goal_s *paVar3;
+  actor_goal_s *radius_00;
+  float radius;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1c3,0,
                              "%s");
     if (!bVar2) {
@@ -342,11 +345,11 @@ void __cdecl ActorScr_SetGoalRadius(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  paVar3 = (actor_goal_s *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  if ((float)paVar3 < 0.0) {
+  radius_00 = (actor_goal_s *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  if ((float)radius_00 < 0.0) {
     Scr_ParamError(0,"radius must be >= 0",SCRIPTINSTANCE_SERVER);
   }
-  Actor_SetGoalRadius(paVar3,(float)paVar3);
+  Actor_SetGoalRadius(radius_00,(float)radius_00);
   return;
 }
 
@@ -358,15 +361,15 @@ void __cdecl ActorScr_SetGoalRadius(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetGoalHeight(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetGoalHeight(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   float unaff_EBP;
-  actor_goal_s *paVar3;
+  actor_goal_s *height;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1d5,0,
                              "%s");
     if (!bVar2) {
@@ -375,8 +378,8 @@ void __cdecl ActorScr_SetGoalHeight(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  paVar3 = (actor_goal_s *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  Actor_SetGoalHeight(paVar3,unaff_EBP);
+  height = (actor_goal_s *)Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
+  Actor_SetGoalHeight(height,unaff_EBP);
   return;
 }
 
@@ -388,14 +391,14 @@ void __cdecl ActorScr_SetGoalHeight(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetTime(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetTime(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1e3,0,
                              "%s");
     if (!bVar2) {
@@ -404,7 +407,7 @@ void __cdecl ActorScr_SetTime(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1e6,0,
                              "%s");
     if (!bVar2) {
@@ -413,7 +416,7 @@ void __cdecl ActorScr_SetTime(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->type != F_INT) {
+  if (pField->type != F_INT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1e8,0,
                              "%s");
     if (!bVar2) {
@@ -423,7 +426,7 @@ void __cdecl ActorScr_SetTime(actor_s *param_1,actor_fields_s *param_2)
     }
   }
   fVar3 = Scr_GetFloat(0,SCRIPTINSTANCE_SERVER);
-  *(int *)((int)param_1->eState + param_2->ofs + -0x18) = (int)ROUND(fVar3 * 1000.0 + 9.313226e-10);
+  *(int *)((int)pSelf->eState + pField->ofs + -0x18) = (int)ROUND(fVar3 * 1000.0 + 9.313226e-10);
   return;
 }
 
@@ -435,13 +438,13 @@ void __cdecl ActorScr_SetTime(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetTime(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetTime(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1f5,0,
                              "%s");
     if (!bVar2) {
@@ -450,7 +453,7 @@ void __cdecl ActorScr_GetTime(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->type != F_INT) {
+  if (pField->type != F_INT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x1f6,0,
                              "%s");
     if (!bVar2) {
@@ -459,7 +462,7 @@ void __cdecl ActorScr_GetTime(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  Scr_AddFloat((float)*(int *)((int)param_1->eState + param_2->ofs + -0x18) * 0.001,
+  Scr_AddFloat((float)*(int *)((int)pSelf->eState + pField->ofs + -0x18) * 0.001,
                SCRIPTINSTANCE_SERVER);
   return;
 }
@@ -472,16 +475,18 @@ void __cdecl ActorScr_GetTime(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetWeapon(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetWeapon(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  scriptInstance_t sVar5;
+  scriptInstance_t inst;
+  char *weapName;
+  int weapIndex;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x205,0,
                              "%s");
     if (!bVar2) {
@@ -490,7 +495,7 @@ void __cdecl ActorScr_SetWeapon(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x208,0,
                              "%s");
     if (!bVar2) {
@@ -499,7 +504,7 @@ void __cdecl ActorScr_SetWeapon(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->type != F_INT) {
+  if (pField->type != F_INT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x20a,0,
                              "%s");
     if (!bVar2) {
@@ -511,13 +516,13 @@ void __cdecl ActorScr_SetWeapon(actor_s *param_1,actor_fields_s *param_2)
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   iVar4 = G_GetWeaponIndexForName(pcVar3);
   if (iVar4 == 0) {
-    sVar5 = SCRIPTINSTANCE_SERVER;
+    inst = SCRIPTINSTANCE_SERVER;
     pcVar3 = va("Can\'t find weapon [%s].  It probably needs to be precached.");
-    Scr_ParamError(0,pcVar3,sVar5);
+    Scr_ParamError(0,pcVar3,inst);
   }
   pcVar3 = Scr_GetString(0,SCRIPTINSTANCE_SERVER);
   iVar4 = G_GetWeaponIndexForName(pcVar3);
-  *(int *)((int)param_1->eState + param_2->ofs + -0x18) = iVar4;
+  *(int *)((int)pSelf->eState + pField->ofs + -0x18) = iVar4;
   return;
 }
 
@@ -529,14 +534,15 @@ void __cdecl ActorScr_SetWeapon(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetWeapon(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetWeapon(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   WeaponVariantDef *pWVar3;
+  WeaponVariantDef *weapVariantDef;
   
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x21d,0,
                              "%s");
     if (!bVar2) {
@@ -545,7 +551,7 @@ void __cdecl ActorScr_GetWeapon(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->type != F_INT) {
+  if (pField->type != F_INT) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x21e,0,
                              "%s");
     if (!bVar2) {
@@ -554,7 +560,7 @@ void __cdecl ActorScr_GetWeapon(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  pWVar3 = BG_GetWeaponVariantDef(*(uint *)((int)param_1->eState + param_2->ofs + -0x18));
+  pWVar3 = BG_GetWeaponVariantDef(*(uint *)((int)pSelf->eState + pField->ofs + -0x18));
   if (pWVar3 != (WeaponVariantDef *)0x0) {
     Scr_AddString(pWVar3->szInternalName,SCRIPTINSTANCE_SERVER);
   }
@@ -569,15 +575,15 @@ void __cdecl ActorScr_GetWeapon(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetGroundType(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetGroundType(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  scriptInstance_t sVar4;
+  char *value;
+  scriptInstance_t inst;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x22d,0,
                              "%s");
     if (!bVar2) {
@@ -586,7 +592,7 @@ void __cdecl ActorScr_GetGroundType(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x22e,0,
                              "%s");
     if (!bVar2) {
@@ -595,7 +601,7 @@ void __cdecl ActorScr_GetGroundType(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->type != F_STRING) {
+  if (pField->type != F_STRING) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x22f,0,
                              "%s");
     if (!bVar2) {
@@ -604,7 +610,7 @@ void __cdecl ActorScr_GetGroundType(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->ofs != 0x25c) {
+  if (pField->ofs != 0x25c) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x230,0,
                              "%s");
     if (!bVar2) {
@@ -613,10 +619,10 @@ void __cdecl ActorScr_GetGroundType(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if ((param_1->Physics).iSurfaceType != 0) {
-    sVar4 = SCRIPTINSTANCE_SERVER;
-    pcVar3 = Com_SurfaceTypeToName((param_1->Physics).iSurfaceType);
-    Scr_AddString(pcVar3,sVar4);
+  if ((pSelf->Physics).iSurfaceType != 0) {
+    inst = SCRIPTINSTANCE_SERVER;
+    value = Com_SurfaceTypeToName((pSelf->Physics).iSurfaceType);
+    Scr_AddString(value,inst);
   }
   return;
 }
@@ -629,14 +635,14 @@ void __cdecl ActorScr_GetGroundType(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetLastEnemySightPos(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetLastEnemySightPos(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x260,0,
                              "%s");
     if (!bVar2) {
@@ -645,7 +651,7 @@ void __cdecl ActorScr_SetLastEnemySightPos(actor_s *param_1,actor_fields_s *para
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x261,0,
                              "%s");
     if (!bVar2) {
@@ -654,7 +660,7 @@ void __cdecl ActorScr_SetLastEnemySightPos(actor_s *param_1,actor_fields_s *para
       return;
     }
   }
-  if (param_2->type != F_VECTOR) {
+  if (pField->type != F_VECTOR) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x262,0,
                              "%s");
     if (!bVar2) {
@@ -663,7 +669,7 @@ void __cdecl ActorScr_SetLastEnemySightPos(actor_s *param_1,actor_fields_s *para
       return;
     }
   }
-  if (param_2->ofs != 0x16a8) {
+  if (pField->ofs != 0x16a8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x263,0,
                              "%s");
     if (!bVar2) {
@@ -674,11 +680,11 @@ void __cdecl ActorScr_SetLastEnemySightPos(actor_s *param_1,actor_fields_s *para
   }
   iVar3 = Scr_GetType(0,SCRIPTINSTANCE_SERVER);
   if (iVar3 == 0) {
-    param_1->lastEnemySightPosValid = false;
+    pSelf->lastEnemySightPosValid = false;
   }
   else {
-    Scr_GetVector(0,param_1->lastEnemySightPos,SCRIPTINSTANCE_SERVER);
-    param_1->lastEnemySightPosValid = true;
+    Scr_GetVector(0,pSelf->lastEnemySightPos,SCRIPTINSTANCE_SERVER);
+    pSelf->lastEnemySightPosValid = true;
   }
   return;
 }
@@ -691,42 +697,42 @@ void __cdecl ActorScr_SetLastEnemySightPos(actor_s *param_1,actor_fields_s *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetLastEnemySightPos(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetLastEnemySightPos(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((pSelf == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x277,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (actor_fields_s *)0x0) &&
+  if ((pField == (actor_fields_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x278,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->type != F_VECTOR) &&
+  if ((pField->type != F_VECTOR) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x279,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->ofs != 0x16a8) &&
+  if ((pField->ofs != 0x16a8) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x27a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->lastEnemySightPosValid != false) {
-    Scr_AddVector(param_1->lastEnemySightPos,SCRIPTINSTANCE_SERVER);
+  if (pSelf->lastEnemySightPosValid != false) {
+    Scr_AddVector(pSelf->lastEnemySightPos,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -739,35 +745,35 @@ void __cdecl ActorScr_GetLastEnemySightPos(actor_s *param_1,actor_fields_s *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetPathGoalPos(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetPathGoalPos(actor_s *self,actor_fields_s *field)
 
 {
   code *pcVar1;
   bool bVar2;
   actor_s *unaff_EBP;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((self == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x289,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (actor_fields_s *)0x0) &&
+  if ((field == (actor_fields_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x28a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->type != F_VECTOR) &&
+  if ((field->type != F_VECTOR) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x28b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->ofs != 0xd90) &&
+  if ((field->ofs != 0xd90) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x28c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -776,7 +782,7 @@ void __cdecl ActorScr_GetPathGoalPos(actor_s *param_1,actor_fields_s *param_2)
   }
   bVar2 = Actor_HasPath(unaff_EBP);
   if (bVar2) {
-    Scr_AddVector((param_1->Path).vFinalGoal,SCRIPTINSTANCE_SERVER);
+    Scr_AddVector((self->Path).vFinalGoal,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -789,14 +795,14 @@ void __cdecl ActorScr_GetPathGoalPos(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_SetFixedNode(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_SetFixedNode(actor_s *self,actor_fields_s *field)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (self == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x29b,0,
                              "%s");
     if (!bVar2) {
@@ -805,7 +811,7 @@ void __cdecl ActorScr_SetFixedNode(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2 == (actor_fields_s *)0x0) {
+  if (field == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x29c,0,
                              "%s");
     if (!bVar2) {
@@ -814,7 +820,7 @@ void __cdecl ActorScr_SetFixedNode(actor_s *param_1,actor_fields_s *param_2)
       return;
     }
   }
-  if (param_2->type != F_BYTE) {
+  if (field->type != F_BYTE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x29d,0,
                              "%s");
     if (!bVar2) {
@@ -824,8 +830,8 @@ void __cdecl ActorScr_SetFixedNode(actor_s *param_1,actor_fields_s *param_2)
     }
   }
   iVar3 = Scr_GetInt(0,SCRIPTINSTANCE_SERVER);
-  param_1->fixedNode = iVar3 != 0;
-  param_1->exposedStartTime = -0x80000000;
+  self->fixedNode = iVar3 != 0;
+  self->exposedStartTime = -0x80000000;
   return;
 }
 
@@ -837,41 +843,41 @@ void __cdecl ActorScr_SetFixedNode(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl ActorScr_GetMoveMode(actor_s *param_1,actor_fields_s *param_2)
+void __cdecl ActorScr_GetMoveMode(actor_s *pSelf,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1 == (actor_s *)0x0) &&
+  if ((pSelf == (actor_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x2ab,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (actor_fields_s *)0x0) &&
+  if ((pField == (actor_fields_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x2ac,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->type != F_STRING) &&
+  if ((pField->type != F_STRING) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x2ad,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->ofs != 0x224) &&
+  if ((pField->ofs != 0x224) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x2ae,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  switch(param_1->moveMode) {
+  switch(pSelf->moveMode) {
   case '\0':
     Scr_AddConstString((uint)scr_const.stop,SCRIPTINSTANCE_SERVER);
     break;
@@ -904,20 +910,21 @@ void __cdecl ActorScr_GetMoveMode(actor_s *param_1,actor_fields_s *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PrintFieldUsage(actor_fields_s *param_1)
+void __cdecl PrintFieldUsage(actor_fields_s *fields)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int local_8;
+  char *fmt;
+  char *pszType;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (param_1[local_8].name == (char *)0x0) {
+    if (fields[i].name == (char *)0x0) {
       return;
     }
-    switch(param_1[local_8].type) {
+    switch(fields[i].type) {
     case F_INT:
       break;
     case F_SHORT:
@@ -927,9 +934,9 @@ void __cdecl PrintFieldUsage(actor_fields_s *param_1)
     case F_FLOAT:
       break;
     default:
-      pcVar3 = va("Cmd_AI_f: unhandled field type %i\n");
+      fmt = va("Cmd_AI_f: unhandled field type %i\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x302,0,
-                               pcVar3);
+                               fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
@@ -958,7 +965,7 @@ void __cdecl PrintFieldUsage(actor_fields_s *param_1)
     }
     Com_Printf(0,"^5  %-20s: %s\n");
 LAB_008f392f:
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -993,14 +1000,14 @@ void __cdecl Cmd_AI_PrintUsage(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_AI_DisplayInfo(actor_s *param_1)
+void __cdecl Cmd_AI_DisplayInfo(actor_s *actor)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (actor == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x325,0,
                              "%s");
     if (!bVar2) {
@@ -1009,7 +1016,7 @@ void __cdecl Cmd_AI_DisplayInfo(actor_s *param_1)
       return;
     }
   }
-  if (param_1->ent == (gentity_s *)0x0) {
+  if (actor->ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x326,0,
                              "%s");
     if (!bVar2) {
@@ -1018,7 +1025,7 @@ void __cdecl Cmd_AI_DisplayInfo(actor_s *param_1)
       return;
     }
   }
-  if (param_1->ent->classname == 0) {
+  if (actor->ent->classname == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x327,0,
                              "%s");
     if (!bVar2) {
@@ -1027,7 +1034,7 @@ void __cdecl Cmd_AI_DisplayInfo(actor_s *param_1)
       return;
     }
   }
-  if (param_1->sentient == (sentient_s *)0x0) {
+  if (actor->sentient == (sentient_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x328,0,
                              "%s");
     if (!bVar2) {
@@ -1036,11 +1043,11 @@ void __cdecl Cmd_AI_DisplayInfo(actor_s *param_1)
       return;
     }
   }
-  pcVar3 = SL_ConvertToString((uint)param_1->ent->classname,SCRIPTINSTANCE_SERVER);
+  pcVar3 = SL_ConvertToString((uint)actor->ent->classname,SCRIPTINSTANCE_SERVER);
   Sentient_NameForTeam((team_t)pcVar3);
   Com_Printf(0,"ent %i (%-7s) %-24s");
-  if (param_1->ent->targetname != 0) {
-    SL_ConvertToString((uint)param_1->ent->targetname,SCRIPTINSTANCE_SERVER);
+  if (actor->ent->targetname != 0) {
+    SL_ConvertToString((uint)actor->ent->targetname,SCRIPTINSTANCE_SERVER);
     Com_Printf(0," targetname %s");
   }
   Com_Printf(0,"\n");
@@ -1055,13 +1062,13 @@ void __cdecl Cmd_AI_DisplayInfo(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_AI_Delete(actor_s *param_1)
+void __cdecl Cmd_AI_Delete(actor_s *actor)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (actor == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x33b,0,
                              "%s");
     if (!bVar2) {
@@ -1070,7 +1077,7 @@ void __cdecl Cmd_AI_Delete(actor_s *param_1)
       return;
     }
   }
-  if (param_1->ent == (gentity_s *)0x0) {
+  if (actor->ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x33c,0,
                              "%s");
     if (!bVar2) {
@@ -1079,7 +1086,7 @@ void __cdecl Cmd_AI_Delete(actor_s *param_1)
       return;
     }
   }
-  G_FreeEntityDelay(param_1->ent);
+  G_FreeEntityDelay(actor->ent);
   return;
 }
 
@@ -1091,7 +1098,7 @@ void __cdecl Cmd_AI_Delete(actor_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s *param_3)
+void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf,uchar *pBase,actor_fields_s *pField)
 
 {
   code *pcVar1;
@@ -1099,18 +1106,22 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
   int iVar3;
   sentient_s *psVar4;
   uint uVar5;
-  char *pcVar6;
-  scriptInstance_t sVar7;
+  char *fmt;
+  scriptInstance_t inst;
+  ushort str;
+  pathnode_t *pNode;
+  int i;
+  int entnum;
   
-  if ((param_3 == (actor_fields_s *)0x0) &&
+  if ((pField == (actor_fields_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x350,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_3->getter == ActorScr_GetTime) {
-    if ((param_3->type != F_INT) &&
+  if (pField->getter == ActorScr_GetTime) {
+    if ((pField->type != F_INT) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x356,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1120,7 +1131,7 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
     Com_Printf(0,"ent %i: %s = %g\n");
   }
   else {
-    switch(param_3->type) {
+    switch(pField->type) {
     case F_INT:
       Com_Printf(0,"ent %i: %s = %i\n");
       break;
@@ -1134,9 +1145,9 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
       Com_Printf(0,"ent %i: %s = %g\n");
       break;
     default:
-      pcVar6 = va("Cmd_AI_f: unhandled field type %i for %s\n");
+      fmt = va("Cmd_AI_f: unhandled field type %i for %s\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x3cd,0,
-                               pcVar6);
+                               fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
@@ -1144,8 +1155,8 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
       }
       break;
     case F_STRING:
-      if (*(ushort *)(param_2 + param_3->ofs) != 0) {
-        SL_ConvertToString((uint)*(ushort *)(param_2 + param_3->ofs),SCRIPTINSTANCE_SERVER);
+      if (*(ushort *)(pBase + pField->ofs) != 0) {
+        SL_ConvertToString((uint)*(ushort *)(pBase + pField->ofs),SCRIPTINSTANCE_SERVER);
       }
       Com_Printf(0,"ent %i: %s = %s\n");
       break;
@@ -1153,11 +1164,11 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
       Com_Printf(0,"ent %i: %s = %g %g %g\n");
       break;
     case F_ENTITY:
-      if (*(int *)(param_2 + param_3->ofs) == 0) {
+      if (*(int *)(pBase + pField->ofs) == 0) {
         Com_Printf(0,"ent %i: %s = (null)\n");
       }
       else {
-        iVar3 = (*(int *)(param_2 + param_3->ofs) - (int)level.gentities) / 0x2f8;
+        iVar3 = (*(int *)(pBase + pField->ofs) - (int)level.gentities) / 0x2f8;
         if (((iVar3 < 0) || (0x3ff < iVar3)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",
                                      0x37e,0,"%s"), !bVar2)) {
@@ -1172,12 +1183,12 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
       }
       break;
     case F_ENTHANDLE:
-      iVar3 = EntHandle::isDefined((EntHandle *)(param_2 + param_3->ofs));
+      iVar3 = EntHandle::isDefined((EntHandle *)(pBase + pField->ofs));
       if (iVar3 == 0) {
         Com_Printf(0,"ent %i: %s = (null)\n");
       }
       else {
-        uVar5 = EntHandle::entnum((EntHandle *)(param_2 + param_3->ofs));
+        uVar5 = EntHandle::entnum((EntHandle *)(pBase + pField->ofs));
         if ((((int)uVar5 < 0) || (0x3ff < (int)uVar5)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",
                                      0x38c,0,"%s"), !bVar2)) {
@@ -1192,38 +1203,36 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
       }
       break;
     case F_ACTOR:
-      if (*(int *)(param_2 + param_3->ofs) == 0) {
+      if (*(int *)(pBase + pField->ofs) == 0) {
         Com_Printf(0,"ent %i: %s = (null)\n");
       }
       else {
-        if (level.gentities[*(int *)**(undefined4 **)(param_2 + param_3->ofs)].targetname != 0) {
-          SL_ConvertToString((uint)level.gentities
-                                   [*(int *)**(undefined4 **)(param_2 + param_3->ofs)].targetname,
-                             SCRIPTINSTANCE_SERVER);
+        if (level.gentities[*(int *)**(undefined4 **)(pBase + pField->ofs)].targetname != 0) {
+          SL_ConvertToString((uint)level.gentities[*(int *)**(undefined4 **)(pBase + pField->ofs)].
+                                   targetname,SCRIPTINSTANCE_SERVER);
         }
         Com_Printf(0,"ent %i: %s = %i (targetname %s)\n");
       }
       break;
     case F_SENTIENT:
-      if (*(int *)(param_2 + param_3->ofs) == 0) {
+      if (*(int *)(pBase + pField->ofs) == 0) {
         Com_Printf(0,"ent %i: %s = (null)\n");
       }
       else {
-        if (level.gentities[*(int *)**(undefined4 **)(param_2 + param_3->ofs)].targetname != 0) {
-          SL_ConvertToString((uint)level.gentities
-                                   [*(int *)**(undefined4 **)(param_2 + param_3->ofs)].targetname,
-                             SCRIPTINSTANCE_SERVER);
+        if (level.gentities[*(int *)**(undefined4 **)(pBase + pField->ofs)].targetname != 0) {
+          SL_ConvertToString((uint)level.gentities[*(int *)**(undefined4 **)(pBase + pField->ofs)].
+                                   targetname,SCRIPTINSTANCE_SERVER);
         }
         Com_Printf(0,"ent %i: %s = %i (targetname %s)\n");
       }
       break;
     case F_SENTIENTHANDLE:
-      iVar3 = SentientHandle::isDefined((SentientHandle *)(param_2 + param_3->ofs));
+      iVar3 = SentientHandle::isDefined((SentientHandle *)(pBase + pField->ofs));
       if (iVar3 == 0) {
         Com_Printf(0,"ent %i: %s = (null)\n");
       }
       else {
-        psVar4 = SentientHandle::sentient((SentientHandle *)(param_2 + param_3->ofs));
+        psVar4 = SentientHandle::sentient((SentientHandle *)(pBase + pField->ofs));
         iVar3 = (psVar4->ent->s).number;
         if (level.gentities[iVar3].targetname != 0) {
           SL_ConvertToString((uint)level.gentities[iVar3].targetname,SCRIPTINSTANCE_SERVER);
@@ -1235,20 +1244,20 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
       Com_Printf(0,"ent %i: %s = client %i\n");
       break;
     case F_PATHNODE:
-      if (*(pathnode_t **)(param_2 + param_3->ofs) == (pathnode_t *)0x0) {
+      if (*(pathnode_t **)(pBase + pField->ofs) == (pathnode_t *)0x0) {
         Com_Printf(0,"ent %i: %s = (null)\n");
       }
       else {
-        Path_ConvertNodeToIndex(*(pathnode_t **)(param_2 + param_3->ofs));
+        Path_ConvertNodeToIndex(*(pathnode_t **)(pBase + pField->ofs));
         Com_Printf(0,"ent %i: %s = node %i\n");
       }
       break;
     case F_ACTORGROUP:
       break;
     case F_MODEL:
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      uVar5 = G_ModelName((uint)param_2[param_3->ofs]);
-      SL_ConvertToString(uVar5,sVar7);
+      inst = SCRIPTINSTANCE_SERVER;
+      uVar5 = G_ModelName((uint)pBase[pField->ofs]);
+      SL_ConvertToString(uVar5,inst);
       Com_Printf(0,"ent %i: %s = %s\n");
     }
   }
@@ -1264,106 +1273,107 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *param_1,uchar *param_2,actor_fields_s 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Cmd_AI_SetValue(actor_s *param_1,int param_2,uchar *param_3,actor_fields_s *param_4)
+void __cdecl Cmd_AI_SetValue(actor_s *pSelf,int argc,uchar *pBase,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  double dVar5;
+  char *fmt;
+  double dVar4;
   float in_stack_fffffec8;
-  int local_118;
-  char local_114 [256];
+  float f;
+  int i;
+  char arg [256];
   uint local_14;
   float afStack_10 [3];
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_4 == (actor_fields_s *)0x0) &&
+  if ((pField == (actor_fields_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x3e1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_4->setter == ActorScr_ReadOnly) {
+  if (pField->setter == ActorScr_ReadOnly) {
     Com_PrintError(0,"%s is read-only\n");
   }
-  else if (param_4->setter == ActorScr_SetTime) {
-    if ((param_4->type != F_INT) &&
+  else if (pField->setter == ActorScr_SetTime) {
+    if ((pField->type != F_INT) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x3eb,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_2 == 4) {
-      SV_Cmd_ArgvBuffer(3,local_114,0x100);
-      dVar5 = atof(local_114);
-      *(int *)(param_3 + param_4->ofs) = (int)ROUND((float)dVar5 * 1000.0 + 9.313226e-10);
+    if (argc == 4) {
+      SV_Cmd_ArgvBuffer(3,arg,0x100);
+      dVar4 = atof(arg);
+      *(int *)(pBase + pField->ofs) = (int)ROUND((float)dVar4 * 1000.0 + 9.313226e-10);
     }
     else {
       Cmd_AI_PrintUsage();
     }
   }
-  else if (param_4->getter == ActorScr_SetGoalRadius) {
-    if (param_2 == 4) {
-      SV_Cmd_ArgvBuffer(3,local_114,0x100);
-      dVar5 = atof(local_114);
-      Actor_SetGoalRadius((actor_goal_s *)(float)dVar5,in_stack_fffffec8);
+  else if (pField->getter == ActorScr_SetGoalRadius) {
+    if (argc == 4) {
+      SV_Cmd_ArgvBuffer(3,arg,0x100);
+      dVar4 = atof(arg);
+      Actor_SetGoalRadius((actor_goal_s *)(float)dVar4,in_stack_fffffec8);
     }
     else {
       Cmd_AI_PrintUsage();
     }
   }
   else {
-    switch(param_4->type) {
+    switch(pField->type) {
     case F_INT:
-      if (param_2 == 4) {
-        SV_Cmd_ArgvBuffer(3,local_114,0x100);
-        iVar3 = atoi(local_114);
-        *(int *)(param_3 + param_4->ofs) = iVar3;
+      if (argc == 4) {
+        SV_Cmd_ArgvBuffer(3,arg,0x100);
+        iVar3 = atoi(arg);
+        *(int *)(pBase + pField->ofs) = iVar3;
       }
       else {
         Cmd_AI_PrintUsage();
       }
       break;
     case F_SHORT:
-      if (param_2 == 4) {
-        SV_Cmd_ArgvBuffer(3,local_114,0x100);
-        iVar3 = atoi(local_114);
-        local_118._0_2_ = (undefined2)iVar3;
-        *(undefined2 *)(param_3 + param_4->ofs) = (undefined2)local_118;
+      if (argc == 4) {
+        SV_Cmd_ArgvBuffer(3,arg,0x100);
+        iVar3 = atoi(arg);
+        i._0_2_ = (undefined2)iVar3;
+        *(undefined2 *)(pBase + pField->ofs) = (undefined2)i;
       }
       else {
         Cmd_AI_PrintUsage();
       }
       break;
     case F_BYTE:
-      if (param_2 == 4) {
-        SV_Cmd_ArgvBuffer(3,local_114,0x100);
-        iVar3 = atoi(local_114);
-        local_118._0_1_ = (uchar)iVar3;
-        param_3[param_4->ofs] = (uchar)local_118;
+      if (argc == 4) {
+        SV_Cmd_ArgvBuffer(3,arg,0x100);
+        iVar3 = atoi(arg);
+        i._0_1_ = (uchar)iVar3;
+        pBase[pField->ofs] = (uchar)i;
       }
       else {
         Cmd_AI_PrintUsage();
       }
       break;
     case F_FLOAT:
-      if (param_2 == 4) {
-        SV_Cmd_ArgvBuffer(3,local_114,0x100);
-        dVar5 = atof(local_114);
-        *(float *)(param_3 + param_4->ofs) = (float)dVar5;
+      if (argc == 4) {
+        SV_Cmd_ArgvBuffer(3,arg,0x100);
+        dVar4 = atof(arg);
+        *(float *)(pBase + pField->ofs) = (float)dVar4;
       }
       else {
         Cmd_AI_PrintUsage();
       }
       break;
     default:
-      pcVar4 = va("Cmd_AI_f: unhandled field type %i\n");
+      fmt = va("Cmd_AI_f: unhandled field type %i\n");
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x453,0,
-                               pcVar4);
+                               fmt);
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
@@ -1383,12 +1393,12 @@ void __cdecl Cmd_AI_SetValue(actor_s *param_1,int param_2,uchar *param_3,actor_f
       Com_Printf(0,"cannot set from console\n");
       break;
     case F_VECTOR:
-      if (param_2 == 6) {
-        for (local_118 = 0; local_118 < 3; local_118 = local_118 + 1) {
-          SV_Cmd_ArgvBuffer(local_118 + 3,local_114,0x100);
-          dVar5 = atof(local_114);
-          afStack_10[local_118] = (float)dVar5;
-          *(float *)(param_3 + local_118 * 4 + param_4->ofs) = afStack_10[local_118];
+      if (argc == 6) {
+        for (i = 0; i < 3; i = i + 1) {
+          SV_Cmd_ArgvBuffer(i + 3,arg,0x100);
+          dVar4 = atof(arg);
+          afStack_10[i] = (float)dVar4;
+          *(float *)(pBase + i * 4 + pField->ofs) = afStack_10[i];
         }
       }
       else {
@@ -1407,15 +1417,14 @@ void __cdecl Cmd_AI_SetValue(actor_s *param_1,int param_2,uchar *param_3,actor_f
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_fields_s *param_4)
+void __cdecl Cmd_AI_Dispatch(int argc,actor_s *pSelf,actor_fields_s *fields,actor_fields_s *pField)
 
 {
   code *pcVar1;
   bool bVar2;
   uchar *puVar3;
   
-  if (param_1 < 3) {
+  if (argc < 3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x460,0,
                              "%s");
     if (!bVar2) {
@@ -1424,7 +1433,7 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
       return;
     }
   }
-  if (param_2 == (actor_s *)0x0) {
+  if (pSelf == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x461,0,
                              "%s");
     if (!bVar2) {
@@ -1433,7 +1442,7 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
       return;
     }
   }
-  if (param_2->ent == (gentity_s *)0x0) {
+  if (pSelf->ent == (gentity_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x462,0,
                              "%s");
     if (!bVar2) {
@@ -1442,7 +1451,7 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
       return;
     }
   }
-  if (param_4 == (actor_fields_s *)0x0) {
+  if (pField == (actor_fields_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x466,0,
                              "%s");
     if (!bVar2) {
@@ -1451,8 +1460,8 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
       return;
     }
   }
-  if (param_4 == &aifield_list) {
-    if (param_3 != (actor_fields_s *)0x0) {
+  if (pField == &aifield_list) {
+    if (fields != (actor_fields_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x46b,0,
                                "%s");
       if (!bVar2) {
@@ -1461,10 +1470,10 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
         return;
       }
     }
-    Cmd_AI_DisplayInfo(param_2);
+    Cmd_AI_DisplayInfo(pSelf);
   }
-  else if (param_4 == &aifield_delete) {
-    if (param_3 != (actor_fields_s *)0x0) {
+  else if (pField == &aifield_delete) {
+    if (fields != (actor_fields_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x470,0,
                                "%s");
       if (!bVar2) {
@@ -1473,10 +1482,10 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
         return;
       }
     }
-    Cmd_AI_Delete(param_2);
+    Cmd_AI_Delete(pSelf);
   }
-  else if (param_1 == 3) {
-    if (param_3 == (actor_fields_s *)0x0) {
+  else if (argc == 3) {
+    if (fields == (actor_fields_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x475,0,
                                "%s");
       if (!bVar2) {
@@ -1485,11 +1494,11 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
         return;
       }
     }
-    puVar3 = BaseForFields(param_2,param_3);
-    Cmd_AI_DisplayValue(param_2,puVar3,param_4);
+    puVar3 = BaseForFields(pSelf,fields);
+    Cmd_AI_DisplayValue(pSelf,puVar3,pField);
   }
   else {
-    if (param_3 == (actor_fields_s *)0x0) {
+    if (fields == (actor_fields_s *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x47a,0,
                                "%s");
       if (!bVar2) {
@@ -1498,8 +1507,8 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
         return;
       }
     }
-    puVar3 = BaseForFields(param_2,param_3);
-    Cmd_AI_SetValue(param_2,param_1,puVar3,param_4);
+    puVar3 = BaseForFields(pSelf,fields);
+    Cmd_AI_SetValue(pSelf,argc,puVar3,pField);
   }
   return;
 }
@@ -1507,22 +1516,24 @@ Cmd_AI_Dispatch(int param_1,actor_s *param_2,actor_fields_s *param_3,actor_field
 
 // 008F3AB0  Cmd_AI_EntityNumber  (game/actor_fields.cpp:1158)
 
+/* WARNING: Variable defined which should be unmapped: actor */
+/* WARNING: Variable defined which should be unmapped: entnum */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Cmd_AI_EntityNumber(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,char *param_4,
-                   int param_5)
+Cmd_AI_EntityNumber(int argc,actor_fields_s *fields,actor_fields_s *pField,char *szNum,
+                   int bInvertSelection)
 
 {
   int iVar1;
-  actor_s *paVar2;
-  int in_stack_fffffff4;
+  actor_s *actor;
+  int entnum;
   
-  iVar1 = atoi(param_4);
-  if (param_5 == 0) {
+  iVar1 = atoi(szNum);
+  if (bInvertSelection == 0) {
     if ((iVar1 < 0) || (0x3ff < iVar1)) {
       Cmd_AI_PrintUsage();
       Com_PrintError(0,"%i is not a valid entity number\n");
@@ -1532,14 +1543,14 @@ Cmd_AI_EntityNumber(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,
       Com_PrintError(0,"entity number %i is not an actor\n");
     }
     else {
-      Cmd_AI_Dispatch(param_1,level.gentities[iVar1].actor,param_2,param_3);
+      Cmd_AI_Dispatch(argc,level.gentities[iVar1].actor,fields,pField);
     }
   }
   else {
-    for (paVar2 = Actor_FirstActor(in_stack_fffffff4); paVar2 != (actor_s *)0x0;
-        paVar2 = Actor_NextActor(paVar2,iVar1)) {
-      if ((paVar2->ent->s).number != iVar1) {
-        Cmd_AI_Dispatch(param_1,paVar2,param_2,param_3);
+    for (actor = Actor_FirstActor((int)actor); actor != (actor_s *)0x0;
+        actor = Actor_NextActor(actor,iVar1)) {
+      if ((actor->ent->s).number != iVar1) {
+        Cmd_AI_Dispatch(argc,actor,fields,pField);
       }
     }
   }
@@ -1549,22 +1560,24 @@ Cmd_AI_EntityNumber(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,
 
 // 008F4B70  Cmd_AI_Team  (game/actor_fields.cpp:1200)
 
+/* WARNING: Variable defined which should be unmapped: actor */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Cmd_AI_Team(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,int param_4,int param_5)
+Cmd_AI_Team(int argc,actor_fields_s *fields,actor_fields_s *pField,int iTeamFlags,
+           int bInvertSelection)
 
 {
-  actor_s *paVar1;
   int in_ECX;
   int unaff_EBP;
+  actor_s *actor;
   
-  for (paVar1 = Actor_FirstActor(in_ECX); paVar1 != (actor_s *)0x0;
-      paVar1 = Actor_NextActor(paVar1,unaff_EBP)) {
-    Cmd_AI_Dispatch(param_1,paVar1,param_2,param_3);
+  for (actor = Actor_FirstActor(in_ECX); actor != (actor_s *)0x0;
+      actor = Actor_NextActor(actor,unaff_EBP)) {
+    Cmd_AI_Dispatch(argc,actor,fields,pField);
   }
   return;
 }
@@ -1572,6 +1585,8 @@ Cmd_AI_Team(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,int para
 
 // 008F4BC0  Cmd_AI_Name  (game/actor_fields.cpp:1220)
 
+/* WARNING: Variable defined which should be unmapped: bMatch */
+/* WARNING: Variable defined which should be unmapped: offset */
 /* WARNING: Type propagation algorithm not settling */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
@@ -1579,36 +1594,37 @@ Cmd_AI_Team(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,int para
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
-Cmd_AI_Name(int param_1,actor_fields_s *param_2,actor_fields_s *param_3,char *param_4,int param_5)
+Cmd_AI_Name(int argc,actor_fields_s *fields,actor_fields_s *pField,char *szName,int bInvertSelection
+           )
 
 {
   int iVar1;
   uint uVar2;
   actor_s *paVar3;
-  int in_stack_ffffffec;
-  ushort local_c [2];
-  actor_s *local_8;
+  int bMatch;
+  int offset;
+  ushort name;
+  actor_s *actor;
   
-  iVar1 = I_strnicmp(param_4,"actor_",6);
+  iVar1 = I_strnicmp(szName,"actor_",6);
   if (iVar1 == 0) {
-    iVar1 = 0x164;
+    offset = 0x164;
   }
   else {
-    iVar1 = 0x168;
+    offset = 0x168;
   }
-  uVar2 = SL_GetString(param_4,0,SCRIPTINSTANCE_SERVER);
-  local_c[0] = (ushort)uVar2;
-  local_8 = Actor_FirstActor(in_stack_ffffffec);
-  while (local_8 != (actor_s *)0x0) {
+  uVar2 = SL_GetString(szName,0,SCRIPTINSTANCE_SERVER);
+  name = (ushort)uVar2;
+  actor = Actor_FirstActor(bMatch);
+  while (actor != (actor_s *)0x0) {
     paVar3 = (actor_s *)
-             (uint)(*(ushort *)((int)(local_8->ent->s).lerp.pos.trBase + iVar1 + -0x18) ==
-                   local_c[0]);
-    if (paVar3 == (actor_s *)(uint)(param_5 == 0)) {
-      Cmd_AI_Dispatch(param_1,local_8,param_2,param_3);
+             (uint)(*(ushort *)((int)(actor->ent->s).lerp.pos.trBase + offset + -0x18) == name);
+    if (paVar3 == (actor_s *)(uint)(bInvertSelection == 0)) {
+      Cmd_AI_Dispatch(argc,actor,fields,pField);
     }
-    local_8 = Actor_NextActor(paVar3,iVar1);
+    actor = Actor_NextActor(paVar3,offset);
   }
-  Scr_SetString(local_c,0,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&name,0,SCRIPTINSTANCE_SERVER);
   return;
 }
 
@@ -1627,44 +1643,44 @@ void __cdecl Cmd_AI_f(void)
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_220;
-  char *local_21c;
-  actor_fields_s *local_218;
-  char local_214;
+  int bInvertSelection;
+  char *pszEntity;
+  actor_fields_s *fields;
+  char szEntity;
   char local_213 [255];
-  char local_114 [260];
+  char szField [260];
   uint local_10;
-  actor_fields_s *local_c;
-  int local_8;
+  actor_fields_s *pField;
+  int argc;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = SV_Cmd_Argc();
-  if (local_8 < 3) {
+  argc = SV_Cmd_Argc();
+  if (argc < 3) {
     Cmd_AI_PrintUsage();
   }
   else {
-    SV_Cmd_ArgvBuffer(2,local_114,0x100);
-    iVar3 = I_stricmp(local_114,"list");
+    SV_Cmd_ArgvBuffer(2,szField,0x100);
+    iVar3 = I_stricmp(szField,"list");
     if (iVar3 == 0) {
-      local_c = &aifield_list;
-      local_218 = (actor_fields_s *)0x0;
+      pField = &aifield_list;
+      fields = (actor_fields_s *)0x0;
     }
     else {
-      iVar3 = I_stricmp(local_114,"delete");
+      iVar3 = I_stricmp(szField,"delete");
       if (iVar3 == 0) {
-        local_c = &aifield_delete;
-        local_218 = (actor_fields_s *)0x0;
+        pField = &aifield_delete;
+        fields = (actor_fields_s *)0x0;
       }
       else {
-        local_218 = aifields;
-        local_c = FindFieldForName(aifields,local_114);
-        if (local_c == (actor_fields_s *)0x0) {
-          local_218 = sentientfields;
-          local_c = FindFieldForName(sentientfields,local_114);
-          if (local_c == (actor_fields_s *)0x0) {
-            local_218 = entfields;
-            local_c = FindFieldForName(entfields,local_114);
-            if (local_c == (actor_fields_s *)0x0) {
+        fields = aifields;
+        pField = FindFieldForName(aifields,szField);
+        if (pField == (actor_fields_s *)0x0) {
+          fields = sentientfields;
+          pField = FindFieldForName(sentientfields,szField);
+          if (pField == (actor_fields_s *)0x0) {
+            fields = entfields;
+            pField = FindFieldForName(entfields,szField);
+            if (pField == (actor_fields_s *)0x0) {
               Cmd_AI_PrintUsage();
               Com_PrintError(0,"%s is not an actor or entity field\n");
               return;
@@ -1673,43 +1689,43 @@ void __cdecl Cmd_AI_f(void)
         }
       }
     }
-    if ((local_c == (actor_fields_s *)0x0) &&
+    if ((pField == (actor_fields_s *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x510,0
                                  ,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    SV_Cmd_ArgvBuffer(1,&local_214,0x100);
-    local_21c = &local_214;
-    if (local_214 == '!') {
-      local_21c = local_213;
+    SV_Cmd_ArgvBuffer(1,&szEntity,0x100);
+    pszEntity = &szEntity;
+    if (szEntity == '!') {
+      pszEntity = local_213;
     }
-    local_220 = (uint)(local_214 == '!');
-    iVar3 = isdigit((int)*local_21c);
+    bInvertSelection = (int)(szEntity == '!');
+    iVar3 = isdigit((int)*pszEntity);
     if (iVar3 == 0) {
-      iVar3 = I_stricmp(local_21c,"all");
+      iVar3 = I_stricmp(pszEntity,"all");
       if (iVar3 == 0) {
-        Cmd_AI_Team(local_8,local_218,local_c,-1,local_220);
+        Cmd_AI_Team(argc,fields,pField,-1,bInvertSelection);
       }
       else {
-        iVar3 = I_stricmp(local_21c,"axis");
+        iVar3 = I_stricmp(pszEntity,"axis");
         if (iVar3 == 0) {
-          Cmd_AI_Team(local_8,local_218,local_c,2,local_220);
+          Cmd_AI_Team(argc,fields,pField,2,bInvertSelection);
         }
         else {
-          iVar3 = I_stricmp(local_21c,"allies");
+          iVar3 = I_stricmp(pszEntity,"allies");
           if (iVar3 == 0) {
-            Cmd_AI_Team(local_8,local_218,local_c,4,local_220);
+            Cmd_AI_Team(argc,fields,pField,4,bInvertSelection);
           }
           else {
-            Cmd_AI_Name(local_8,local_218,local_c,local_21c,local_220);
+            Cmd_AI_Name(argc,fields,pField,pszEntity,bInvertSelection);
           }
         }
       }
     }
     else {
-      Cmd_AI_EntityNumber(local_8,local_218,local_c,local_21c,local_220);
+      Cmd_AI_EntityNumber(argc,fields,pField,pszEntity,bInvertSelection);
     }
   }
   return;
@@ -1728,14 +1744,14 @@ void __cdecl GScr_AddFieldsForActor(void)
 {
   code *pcVar1;
   bool bVar2;
-  actor_fields_s *local_8;
+  actor_fields_s *f;
   
-  local_8 = aifields;
+  f = aifields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       return;
     }
-    if (((int)(local_8 + -0x8cbab) / 0x18 & 0xc000U) != 0) {
+    if (((int)(f + -0x8cbab) / 0x18 & 0xc000U) != 0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x54a,0,
                                "%s");
       if (!bVar2) {
@@ -1744,7 +1760,7 @@ void __cdecl GScr_AddFieldsForActor(void)
         return;
       }
     }
-    if ((int)(local_8 + -0x8cbab) / 0x18 != ((int)(local_8 + -0x8cbab) / 0x18 & 0xffffU)) {
+    if ((int)(f + -0x8cbab) / 0x18 != ((int)(f + -0x8cbab) / 0x18 & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x54b,0,
                                "%s");
       if (!bVar2) {
@@ -1753,9 +1769,9 @@ void __cdecl GScr_AddFieldsForActor(void)
         return;
       }
     }
-    Scr_AddClassField(0,local_8->name,(int)(local_8 + -0x8cbab) / 0x18 & 0xffffU | 0x8000,
-                      SCRIPTINSTANCE_SERVER);
-    local_8 = local_8 + 1;
+    Scr_AddClassField(0,f->name,(int)(f + -0x8cbab) / 0x18 & 0xffffU | 0x8000,SCRIPTINSTANCE_SERVER)
+    ;
+    f = f + 1;
   } while( true );
 }
 
@@ -1767,13 +1783,14 @@ void __cdecl GScr_AddFieldsForActor(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_SetActorField(actor_s *param_1,int param_2)
+void __cdecl Scr_SetActorField(actor_s *actor,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  actor_fields_s *f;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (actor == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x55a,0,
                              "%s");
     if (!bVar2) {
@@ -1782,7 +1799,7 @@ void __cdecl Scr_SetActorField(actor_s *param_1,int param_2)
       return;
     }
   }
-  if (0x4e < (uint)param_2) {
+  if (0x4e < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x55b,0,
                              "%s");
     if (!bVar2) {
@@ -1791,11 +1808,11 @@ void __cdecl Scr_SetActorField(actor_s *param_1,int param_2)
       return;
     }
   }
-  if (aifields[param_2].setter == (_func___cdecl_void_actor_s_ptr_actor_fields_s_ptr *)0x0) {
-    GScr_SetGenericField((uchar *)param_1,aifields[param_2].type,aifields[param_2].ofs,0);
+  if (aifields[offset].setter == (_func___cdecl_void_actor_s_ptr_actor_fields_s_ptr *)0x0) {
+    GScr_SetGenericField((uchar *)actor,aifields[offset].type,aifields[offset].ofs,0);
   }
   else {
-    (*aifields[param_2].setter)(param_1,aifields + param_2);
+    (*aifields[offset].setter)(actor,aifields + offset);
   }
   return;
 }
@@ -1808,13 +1825,14 @@ void __cdecl Scr_SetActorField(actor_s *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Scr_GetActorField(actor_s *param_1,int param_2)
+void __cdecl Scr_GetActorField(actor_s *actor,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  actor_fields_s *f;
   
-  if (param_1 == (actor_s *)0x0) {
+  if (actor == (actor_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x572,0,
                              "%s");
     if (!bVar2) {
@@ -1823,7 +1841,7 @@ void __cdecl Scr_GetActorField(actor_s *param_1,int param_2)
       return;
     }
   }
-  if (0x4e < (uint)param_2) {
+  if (0x4e < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp",0x573,0,
                              "%s");
     if (!bVar2) {
@@ -1832,11 +1850,11 @@ void __cdecl Scr_GetActorField(actor_s *param_1,int param_2)
       return;
     }
   }
-  if (aifields[param_2].getter == (_func___cdecl_void_actor_s_ptr_actor_fields_s_ptr *)0x0) {
-    GScr_GetGenericField((uchar *)param_1,aifields[param_2].type,aifields[param_2].ofs,0);
+  if (aifields[offset].getter == (_func___cdecl_void_actor_s_ptr_actor_fields_s_ptr *)0x0) {
+    GScr_GetGenericField((uchar *)actor,aifields[offset].type,aifields[offset].ofs,0);
   }
   else {
-    (*aifields[param_2].getter)(param_1,aifields + param_2);
+    (*aifields[offset].getter)(actor,aifields + offset);
   }
   return;
 }

@@ -2,6 +2,8 @@
 
 // 00878C20  jinit_c_main_controller  (jpeg-6/jcmainct.c:246)
 
+/* WARNING: Variable defined which should be unmapped: need_full_buffer */
+
 void __cdecl jinit_c_main_controller(jpeg_compress_struct *param_1,uchar param_2)
 
 {
@@ -9,6 +11,7 @@ void __cdecl jinit_c_main_controller(jpeg_compress_struct *param_1,uchar param_2
   undefined4 uVar2;
   int iVar3;
   int unaff_ESI;
+  uchar need_full_buffer;
   
   puVar1 = (undefined4 *)(*(code *)**(undefined4 **)(unaff_ESI + 4))();
   *(undefined4 **)(unaff_ESI + 0x148) = puVar1;

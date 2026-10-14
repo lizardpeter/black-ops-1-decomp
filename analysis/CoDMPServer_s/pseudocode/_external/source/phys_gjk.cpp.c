@@ -4,8 +4,7 @@
 
 phys_vec3 * __thiscall
 phys_gjk_geom::support_only
-          (phys_gjk_geom *this,phys_vec3 *__return_storage_ptr__,phys_mat44 *param_1,
-          phys_vec3 *param_2)
+          (phys_gjk_geom *this,phys_vec3 *__return_storage_ptr__,phys_mat44 *xform,phys_vec3 *v)
 
 {
   phys_vec3 *ppVar1;
@@ -14,17 +13,14 @@ phys_gjk_geom::support_only
   undefined1 auStack_30 [4];
   phys_vec3 apStack_2c [2];
   
-  fStack_50 = (param_1->x).z * param_2->z +
-              (param_1->x).x * param_2->x + (param_1->x).y * param_2->y;
-  pStack_4c.x = (param_1->y).z * param_2->z +
-                (param_1->y).x * param_2->x + (param_1->y).y * param_2->y;
-  pStack_4c.y = (param_1->z).z * param_2->z +
-                param_2->x * (param_1->z).x + (param_1->z).y * param_2->y;
+  fStack_50 = (xform->x).z * v->z + (xform->x).x * v->x + (xform->x).y * v->y;
+  pStack_4c.x = (xform->y).z * v->z + (xform->y).x * v->x + (xform->y).y * v->y;
+  pStack_4c.y = (xform->z).z * v->z + v->x * (xform->z).x + (xform->z).y * v->y;
   (**(code **)*this)(&fStack_50,&pStack_4c.w,auStack_30);
-  ppVar1 = phys_multiply33(apStack_2c,param_1,&pStack_4c);
-  __return_storage_ptr__->x = ppVar1->x + (param_1->w).x;
-  __return_storage_ptr__->y = ppVar1->y + (param_1->w).y;
-  __return_storage_ptr__->z = ppVar1->z + (param_1->w).z;
+  ppVar1 = phys_multiply33(apStack_2c,xform,&pStack_4c);
+  __return_storage_ptr__->x = ppVar1->x + (xform->w).x;
+  __return_storage_ptr__->y = ppVar1->y + (xform->w).y;
+  __return_storage_ptr__->z = ppVar1->z + (xform->w).z;
   return __return_storage_ptr__;
 }
 
@@ -32,16 +28,15 @@ phys_gjk_geom::support_only
 // 008E3BD0  get_simplex  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:26)
 
 void __cdecl
-get_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *param_3,
-           phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,phys_vec3 *param_7,int *param_8)
+get_simplex(phys_gjk_geom *cg2,phys_gjk_geom *gjk_ci,phys_gjk_cache_info *a_verts,phys_vec3 *a_inds,
+           phys_vec3 *b_verts,phys_vec3 *b_inds,phys_vec3 *vert_count,int *param_8)
 
 {
-  int *unaff_retaddr;
+  phys_gjk_geom *cg1;
   
-  (**(code **)((int)*param_1 + 4))(&param_3->m_support_a,param_3->m_support_count,param_4);
-  (**(code **)((int)param_5->x + 4))(&param_3->m_support_b,param_3->m_support_count,param_2,param_3)
-  ;
-  *unaff_retaddr = param_3->m_support_count;
+  (**(code **)((int)*cg2 + 4))(&a_verts->m_support_a,a_verts->m_support_count,a_inds);
+  (**(code **)((int)b_verts->x + 4))(&a_verts->m_support_b,a_verts->m_support_count,gjk_ci,a_verts);
+  *cg1 = (phys_gjk_geom)a_verts->m_support_count;
   return;
 }
 
@@ -49,16 +44,17 @@ get_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *p
 // 008E3C20  set_simplex  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:35)
 
 void __cdecl
-set_simplex(phys_gjk_geom *param_1,phys_gjk_geom *param_2,phys_gjk_cache_info *param_3,
-           phys_vec3 *param_4,phys_vec3 *param_5,phys_vec3 *param_6,phys_vec3 *param_7,int param_8)
+set_simplex(phys_gjk_geom *cg2,phys_gjk_geom *gjk_ci,phys_gjk_cache_info *a_normal,
+           phys_vec3 *b_normal,phys_vec3 *a_inds,phys_vec3 *b_inds,phys_vec3 *w_set,int param_8)
 
 {
   int *unaff_EDI;
+  phys_gjk_geom *cg1;
   
-  param_3->m_flags = param_3->m_flags | 8;
-  (**(code **)((int)*param_1 + 8))(param_6,param_8,param_4,&param_3->m_support_a);
-  (**(code **)(*unaff_EDI + 8))(param_3,param_8,param_1,&param_3->m_support_b);
-  param_3->m_support_count = BIT_COUNT[param_8];
+  a_normal->m_flags = a_normal->m_flags | 8;
+  (**(code **)((int)*cg2 + 8))(b_inds,param_8,b_normal,&a_normal->m_support_a);
+  (**(code **)(*unaff_EDI + 8))(a_normal,param_8,cg2,&a_normal->m_support_b);
+  a_normal->m_support_count = BIT_COUNT[param_8];
   return;
 }
 
@@ -71,6 +67,7 @@ int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
   uint uVar1;
   phys_vec3 *ppVar2;
   bool bVar3;
+  int w_set;
   
   bVar3 = (param_1 & 1U) != 0;
   if (bVar3) {
@@ -142,7 +139,7 @@ int __thiscall phys_gjk_info::compress_verts(phys_gjk_info *this,int param_1)
 
 // 008E6410  comp_v  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:78)
 
-void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 *param_2)
+void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int w_set,phys_vec3 *v)
 
 {
   float fVar1;
@@ -157,7 +154,7 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
   float afStack_90 [8];
   float afStack_70 [27];
   
-  bVar7 = (param_1 & 1U) != 0;
+  bVar7 = (w_set & 1U) != 0;
   if (bVar7) {
     afStack_70[0] = this->m_w_verts[0].x;
     afStack_70[1] = this->m_w_verts[0].y;
@@ -165,30 +162,30 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
   }
   uVar5 = (uint)bVar7;
   uVar4 = uVar5;
-  if ((param_1 & 2U) != 0) {
+  if ((w_set & 2U) != 0) {
     afStack_70[uVar5 * 4] = this->m_w_verts[1].x;
     uVar4 = uVar5 + 1;
     afStack_70[uVar5 * 4 + 1] = this->m_w_verts[1].y;
     afStack_70[uVar5 * 4 + 2] = this->m_w_verts[1].z;
   }
   uVar5 = uVar4;
-  if ((param_1 & 4U) != 0) {
+  if ((w_set & 4U) != 0) {
     afStack_70[uVar4 * 4] = this->m_w_verts[2].x;
     uVar5 = uVar4 + 1;
     afStack_70[uVar4 * 4 + 1] = this->m_w_verts[2].y;
     afStack_70[uVar4 * 4 + 2] = this->m_w_verts[2].z;
   }
   uVar4 = uVar5;
-  if ((param_1 & 8U) != 0) {
+  if ((w_set & 8U) != 0) {
     afStack_70[uVar5 * 4] = this->m_w_verts[3].x;
     uVar4 = uVar5 + 1;
     afStack_70[uVar5 * 4 + 1] = this->m_w_verts[3].y;
     afStack_70[uVar5 * 4 + 2] = this->m_w_verts[3].z;
   }
   if (uVar4 == 1) {
-    param_2->x = afStack_70[0];
-    param_2->y = afStack_70[1];
-    param_2->z = afStack_70[2];
+    v->x = afStack_70[0];
+    v->y = afStack_70[1];
+    v->z = afStack_70[2];
     return;
   }
   afStack_70[0xc] = afStack_70[4] - afStack_70[0];
@@ -203,9 +200,9 @@ void __thiscall phys_gjk_info::comp_v(phys_gjk_info *this,int param_1,phys_vec3 
     fStack_9c = afStack_70[1] - fVar1 * afStack_70[0xd];
     fVar1 = afStack_70[2] - fVar1 * afStack_70[0xe];
 LAB_008e65b5:
-    param_2->x = fStack_a0;
-    param_2->y = fStack_9c;
-    param_2->z = fVar1;
+    v->x = fStack_a0;
+    v->y = fStack_9c;
+    v->z = fVar1;
     return;
   }
   afStack_70[0x14] = afStack_70[8] - afStack_70[0];
@@ -254,9 +251,9 @@ LAB_008e67e4:
   afStack_90[0] = afStack_70[iVar6 * 4] - fVar3 * afStack_70[iVar6 * 4 + 0xc];
   afStack_90[1] = afStack_70[iVar6 * 4 + 1] - afStack_70[iVar6 * 4 + 0xd] * fVar3;
   fVar2 = afStack_70[iVar6 * 4 + 2];
-  param_2->x = afStack_90[0];
-  param_2->y = afStack_90[1];
-  param_2->z = fVar2 - fVar3 * fVar1;
+  v->x = afStack_90[0];
+  v->y = afStack_90[1];
+  v->z = fVar2 - fVar3 * fVar1;
   return;
 }
 
@@ -264,8 +261,7 @@ LAB_008e67e4:
 // 008E5D70  comp_closest_points  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:161)
 
 void __thiscall
-phys_gjk_info::comp_closest_points
-          (phys_gjk_info *this,int param_1,phys_vec3 *param_2,phys_vec3 *param_3)
+phys_gjk_info::comp_closest_points(phys_gjk_info *this,int w_set,phys_vec3 *a,phys_vec3 *b)
 
 {
   phys_gjk_set_info *ppVar1;
@@ -274,84 +270,84 @@ phys_gjk_info::comp_closest_points
   float fVar4;
   float fStack_38;
   
-  param_2->x = 0.0;
-  param_2->y = 0.0;
-  param_2->z = 0.0;
-  param_3->x = 0.0;
-  param_3->y = 0.0;
-  param_3->z = 0.0;
+  a->x = 0.0;
+  a->y = 0.0;
+  a->z = 0.0;
+  b->x = 0.0;
+  b->y = 0.0;
+  b->z = 0.0;
   fStack_38 = 0.0;
-  ppVar1 = this->m_set_list + param_1;
-  if ((param_1 & 1U) != 0) {
+  ppVar1 = this->m_set_list + w_set;
+  if ((w_set & 1U) != 0) {
     fStack_38 = ppVar1->m_lamda[0];
     fVar2 = this->m_a_verts[0].y;
     fVar3 = this->m_a_verts[0].z;
-    param_2->x = param_2->x + fStack_38 * this->m_a_verts[0].x;
-    param_2->y = param_2->y + fVar2 * fStack_38;
-    param_2->z = param_2->z + fVar3 * fStack_38;
+    a->x = a->x + fStack_38 * this->m_a_verts[0].x;
+    a->y = a->y + fVar2 * fStack_38;
+    a->z = a->z + fVar3 * fStack_38;
     fVar2 = this->m_b_verts[0].y;
     fVar3 = this->m_b_verts[0].z;
-    param_3->x = param_3->x + this->m_b_verts[0].x * fStack_38;
-    param_3->y = param_3->y + fVar2 * fStack_38;
-    param_3->z = fVar3 * fStack_38 + param_3->z;
+    b->x = b->x + this->m_b_verts[0].x * fStack_38;
+    b->y = b->y + fVar2 * fStack_38;
+    b->z = fVar3 * fStack_38 + b->z;
     fStack_38 = fStack_38 + 0.0;
   }
-  if ((param_1 & 2U) != 0) {
+  if ((w_set & 2U) != 0) {
     fVar2 = ppVar1->m_lamda[1];
     fVar3 = this->m_a_verts[1].y;
     fVar4 = this->m_a_verts[1].z;
-    param_2->x = param_2->x + fVar2 * this->m_a_verts[1].x;
-    param_2->y = param_2->y + fVar3 * fVar2;
-    param_2->z = param_2->z + fVar4 * fVar2;
+    a->x = a->x + fVar2 * this->m_a_verts[1].x;
+    a->y = a->y + fVar3 * fVar2;
+    a->z = a->z + fVar4 * fVar2;
     fVar3 = this->m_b_verts[1].y;
     fVar4 = this->m_b_verts[1].z;
-    param_3->x = param_3->x + this->m_b_verts[1].x * fVar2;
-    param_3->y = param_3->y + fVar3 * fVar2;
-    param_3->z = fVar4 * fVar2 + param_3->z;
+    b->x = b->x + this->m_b_verts[1].x * fVar2;
+    b->y = b->y + fVar3 * fVar2;
+    b->z = fVar4 * fVar2 + b->z;
     fStack_38 = fVar2 + fStack_38;
   }
-  if ((param_1 & 4U) != 0) {
+  if ((w_set & 4U) != 0) {
     fVar2 = ppVar1->m_lamda[2];
     fVar3 = this->m_a_verts[2].y;
     fVar4 = this->m_a_verts[2].z;
-    param_2->x = param_2->x + fVar2 * this->m_a_verts[2].x;
-    param_2->y = param_2->y + fVar3 * fVar2;
-    param_2->z = param_2->z + fVar4 * fVar2;
+    a->x = a->x + fVar2 * this->m_a_verts[2].x;
+    a->y = a->y + fVar3 * fVar2;
+    a->z = a->z + fVar4 * fVar2;
     fVar3 = this->m_b_verts[2].y;
     fVar4 = this->m_b_verts[2].z;
-    param_3->x = param_3->x + this->m_b_verts[2].x * fVar2;
-    param_3->y = param_3->y + fVar3 * fVar2;
-    param_3->z = fVar4 * fVar2 + param_3->z;
+    b->x = b->x + this->m_b_verts[2].x * fVar2;
+    b->y = b->y + fVar3 * fVar2;
+    b->z = fVar4 * fVar2 + b->z;
     fStack_38 = fVar2 + fStack_38;
   }
-  if ((param_1 & 8U) != 0) {
+  if ((w_set & 8U) != 0) {
     fVar2 = ppVar1->m_lamda[3];
     fVar3 = this->m_a_verts[3].y;
     fVar4 = this->m_a_verts[3].z;
-    param_2->x = param_2->x + fVar2 * this->m_a_verts[3].x;
-    param_2->y = param_2->y + fVar3 * fVar2;
-    param_2->z = param_2->z + fVar4 * fVar2;
+    a->x = a->x + fVar2 * this->m_a_verts[3].x;
+    a->y = a->y + fVar3 * fVar2;
+    a->z = a->z + fVar4 * fVar2;
     fVar3 = this->m_b_verts[3].y;
     fVar4 = this->m_b_verts[3].z;
-    param_3->x = param_3->x + this->m_b_verts[3].x * fVar2;
-    param_3->y = param_3->y + fVar3 * fVar2;
-    param_3->z = fVar4 * fVar2 + param_3->z;
+    b->x = b->x + this->m_b_verts[3].x * fVar2;
+    b->y = b->y + fVar3 * fVar2;
+    b->z = fVar4 * fVar2 + b->z;
     fStack_38 = fVar2 + fStack_38;
   }
   fStack_38 = 1.0 / fStack_38;
-  param_2->x = fStack_38 * param_2->x;
-  param_2->y = param_2->y * fStack_38;
-  param_2->z = param_2->z * fStack_38;
-  param_3->x = param_3->x * fStack_38;
-  param_3->y = param_3->y * fStack_38;
-  param_3->z = fStack_38 * param_3->z;
+  a->x = fStack_38 * a->x;
+  a->y = a->y * fStack_38;
+  a->z = a->z * fStack_38;
+  b->x = b->x * fStack_38;
+  b->y = b->y * fStack_38;
+  b->z = fStack_38 * b->z;
   return;
 }
 
 
 // 008E3A40  phys_full_inv_multiply_mat  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:236)
 
-void __cdecl phys_full_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,phys_mat44 *param_3)
+void __cdecl phys_full_inv_multiply_mat(phys_mat44 *dest,phys_mat44 *left,phys_mat44 *right)
 
 {
   float fVar1;
@@ -372,63 +368,61 @@ void __cdecl phys_full_inv_multiply_mat(phys_mat44 *param_1,phys_mat44 *param_2,
   phys_vec3 local_60;
   phys_mat44 local_50;
   
-  if (param_1 != param_2) {
-    fVar1 = (param_2->y).y;
-    fVar2 = (param_3->x).y;
-    fVar3 = (param_2->y).x;
-    fVar4 = (param_3->x).x;
-    fVar5 = (param_2->y).z;
-    fVar6 = (param_3->x).z;
-    fVar7 = (param_2->z).y;
-    fVar8 = (param_3->x).y;
-    fVar9 = (param_2->z).x;
-    fVar10 = (param_3->x).x;
-    fVar11 = (param_2->z).z;
-    fVar12 = (param_3->x).z;
-    (param_1->x).x =
-         (param_2->x).z * (param_3->x).z +
-         (param_2->x).y * (param_3->x).y + (param_2->x).x * (param_3->x).x;
-    (param_1->x).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
-    (param_1->x).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
-    fVar1 = (param_2->y).y;
-    fVar2 = (param_3->y).y;
-    fVar3 = (param_2->y).x;
-    fVar4 = (param_3->y).x;
-    fVar5 = (param_2->y).z;
-    fVar6 = (param_3->y).z;
-    fVar7 = (param_2->z).y;
-    fVar8 = (param_3->y).y;
-    fVar9 = (param_2->z).x;
-    fVar10 = (param_3->y).x;
-    fVar11 = (param_2->z).z;
-    fVar12 = (param_3->y).z;
-    (param_1->y).x =
-         (param_3->y).z * (param_2->x).z +
-         (param_3->y).y * (param_2->x).y + (param_2->x).x * (param_3->y).x;
-    (param_1->y).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
-    (param_1->y).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
-    local_60.x = (param_3->z).z * (param_2->x).z +
-                 (param_2->x).y * (param_3->z).y + (param_3->z).x * (param_2->x).x;
-    local_60.y = (param_2->y).z * (param_3->z).z +
-                 (param_2->y).x * (param_3->z).x + (param_2->y).y * (param_3->z).y;
-    local_60.z = (param_2->z).z * (param_3->z).z +
-                 (param_3->z).x * (param_2->z).x + (param_2->z).y * (param_3->z).y;
-    (param_1->z).x = local_60.x;
-    (param_1->z).y = local_60.y;
-    (param_1->z).z = local_60.z;
-    ppVar13 = phys_full_inv_multiply(&local_60,param_2,&param_3->w);
-    (param_1->w).x = ppVar13->x;
-    (param_1->w).y = ppVar13->y;
-    (param_1->w).z = ppVar13->z;
+  if (dest != left) {
+    fVar1 = (left->y).y;
+    fVar2 = (right->x).y;
+    fVar3 = (left->y).x;
+    fVar4 = (right->x).x;
+    fVar5 = (left->y).z;
+    fVar6 = (right->x).z;
+    fVar7 = (left->z).y;
+    fVar8 = (right->x).y;
+    fVar9 = (left->z).x;
+    fVar10 = (right->x).x;
+    fVar11 = (left->z).z;
+    fVar12 = (right->x).z;
+    (dest->x).x = (left->x).z * (right->x).z +
+                  (left->x).y * (right->x).y + (left->x).x * (right->x).x;
+    (dest->x).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
+    (dest->x).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
+    fVar1 = (left->y).y;
+    fVar2 = (right->y).y;
+    fVar3 = (left->y).x;
+    fVar4 = (right->y).x;
+    fVar5 = (left->y).z;
+    fVar6 = (right->y).z;
+    fVar7 = (left->z).y;
+    fVar8 = (right->y).y;
+    fVar9 = (left->z).x;
+    fVar10 = (right->y).x;
+    fVar11 = (left->z).z;
+    fVar12 = (right->y).z;
+    (dest->y).x = (right->y).z * (left->x).z +
+                  (right->y).y * (left->x).y + (left->x).x * (right->y).x;
+    (dest->y).y = fVar5 * fVar6 + fVar3 * fVar4 + fVar1 * fVar2;
+    (dest->y).z = fVar11 * fVar12 + fVar9 * fVar10 + fVar7 * fVar8;
+    local_60.x = (right->z).z * (left->x).z +
+                 (left->x).y * (right->z).y + (right->z).x * (left->x).x;
+    local_60.y = (left->y).z * (right->z).z +
+                 (left->y).x * (right->z).x + (left->y).y * (right->z).y;
+    local_60.z = (left->z).z * (right->z).z +
+                 (right->z).x * (left->z).x + (left->z).y * (right->z).y;
+    (dest->z).x = local_60.x;
+    (dest->z).y = local_60.y;
+    (dest->z).z = local_60.z;
+    ppVar13 = phys_full_inv_multiply(&local_60,left,&right->w);
+    (dest->w).x = ppVar13->x;
+    (dest->w).y = ppVar13->y;
+    (dest->w).z = ppVar13->z;
     return;
   }
   ppVar15 = &local_50;
   for (iVar14 = 0x10; iVar14 != 0; iVar14 = iVar14 + -1) {
-    (ppVar15->x).x = (param_2->x).x;
-    param_2 = (phys_mat44 *)&(param_2->x).y;
+    (ppVar15->x).x = (left->x).x;
+    left = (phys_mat44 *)&(left->x).y;
     ppVar15 = (phys_mat44 *)&(ppVar15->x).y;
   }
-  phys_full_inv_multiply_mat(param_1,&local_50,param_3);
+  phys_full_inv_multiply_mat(dest,&local_50,right);
   return;
 }
 
@@ -445,10 +439,11 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 008E3C70  gjk_subalgorithm  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:311)
 
-int __thiscall phys_gjk_info::gjk_subalgorithm(phys_gjk_info *this,int param_1,int param_2)
+int __thiscall phys_gjk_info::gjk_subalgorithm(phys_gjk_info *this,int new_index,int param_2)
 
 {
   int iVar1;
+  int w_set;
   
   iVar1 = backup1(this,param_2,false);
   return iVar1;
@@ -457,7 +452,7 @@ int __thiscall phys_gjk_info::gjk_subalgorithm(phys_gjk_info *this,int param_1,i
 
 // 008E3C90  seed_simplex  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:380)
 
-int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
+int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int cached_vert_count)
 
 {
   float fVar1;
@@ -470,8 +465,8 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
   iVar5 = 0;
   this->m_w_set = 0;
   uVar4 = 1;
-  if (3 < param_1) {
-    iVar6 = (param_1 - 4U >> 2) + 1;
+  if (3 < cached_vert_count) {
+    iVar6 = (cached_vert_count - 4U >> 2) + 1;
     iVar5 = iVar6 * 4;
     pfVar3 = &this->m_b_verts[0].y;
     do {
@@ -507,8 +502,8 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
       pfVar3 = pfVar3 + 0x10;
     } while (iVar6 != 0);
   }
-  if (iVar5 < param_1) {
-    iVar6 = param_1 - iVar5;
+  if (iVar5 < cached_vert_count) {
+    iVar6 = cached_vert_count - iVar5;
     pfVar3 = &this->m_b_verts[iVar5].y;
     do {
       fVar1 = (this->m_gjk_origin).y;
@@ -530,54 +525,56 @@ int __thiscall phys_gjk_info::seed_simplex(phys_gjk_info *this,int param_1)
 // 008E6870  init_gjk  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:440)
 
 int __thiscall
-phys_gjk_info::init_gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_2,bool param_3)
+phys_gjk_info::init_gjk
+          (phys_gjk_info *this,phys_gjk_input *d,phys_vec3 *initial_support_dir,
+          bool in_separation_loop)
 
 {
-  phys_gjk_cache_info *ppVar1;
-  phys_vec3 *ppVar2;
-  int iVar3;
-  phys_vec3 *ppVar4;
+  phys_gjk_cache_info *a_verts;
+  phys_vec3 *ppVar1;
+  int iVar2;
+  phys_vec3 *b_inds;
   int local_34;
   float local_30;
   float local_2c;
   float local_28;
   phys_vec3 local_20;
   
-  if (param_3) {
+  if (in_separation_loop) {
     local_34 = compress_verts(this,this->m_w_set);
   }
   else {
-    ppVar1 = param_1->gjk_ci;
-    if ((ppVar1 == (phys_gjk_cache_info *)0x0) || ((ppVar1->m_flags & 8) == 0)) goto LAB_008e6978;
-    ppVar4 = this->m_b_verts;
-    get_simplex(param_1->gjk_cg1,param_1->gjk_cg2,ppVar1,this->m_a_verts,this->m_a_inds,ppVar4,
-                this->m_b_inds,&local_34);
-    iVar3 = local_34;
+    a_verts = d->gjk_ci;
+    if ((a_verts == (phys_gjk_cache_info *)0x0) || ((a_verts->m_flags & 8) == 0)) goto LAB_008e6978;
+    b_inds = this->m_b_verts;
+    get_simplex(d->gjk_cg1,d->gjk_cg2,a_verts,this->m_a_verts,this->m_a_inds,b_inds,this->m_b_inds,
+                &local_34);
+    iVar2 = local_34;
     if (0 < local_34) {
       do {
-        ppVar2 = phys_multiply33(&local_20,&this->cg2_to_cg1_xform,ppVar4);
-        local_30 = ppVar2->x + (this->cg2_to_cg1_xform).w.x;
-        iVar3 = iVar3 + -1;
-        local_2c = ppVar2->y + (this->cg2_to_cg1_xform).w.y;
-        local_28 = ppVar2->z + (this->cg2_to_cg1_xform).w.z;
-        ppVar4->x = local_30;
-        ppVar4->y = local_2c;
-        ppVar4->z = local_28;
-        ppVar4 = ppVar4 + 1;
-      } while (iVar3 != 0);
+        ppVar1 = phys_multiply33(&local_20,&this->cg2_to_cg1_xform,b_inds);
+        local_30 = ppVar1->x + (this->cg2_to_cg1_xform).w.x;
+        iVar2 = iVar2 + -1;
+        local_2c = ppVar1->y + (this->cg2_to_cg1_xform).w.y;
+        local_28 = ppVar1->z + (this->cg2_to_cg1_xform).w.z;
+        b_inds->x = local_30;
+        b_inds->y = local_2c;
+        b_inds->z = local_28;
+        b_inds = b_inds + 1;
+      } while (iVar2 != 0);
     }
   }
   if (local_34 != 0) {
-    iVar3 = seed_simplex(this,local_34);
-    this->m_w_set = iVar3;
-    comp_v(this,iVar3,&this->m_support_dir);
+    iVar2 = seed_simplex(this,local_34);
+    this->m_w_set = iVar2;
+    comp_v(this,iVar2,&this->m_support_dir);
     this->m_last_w_set = this->m_w_set;
     return 1;
   }
 LAB_008e6978:
-  (this->m_support_dir).x = param_2->x;
-  (this->m_support_dir).y = param_2->y;
-  (this->m_support_dir).z = param_2->z;
+  (this->m_support_dir).x = initial_support_dir->x;
+  (this->m_support_dir).y = initial_support_dir->y;
+  (this->m_support_dir).z = initial_support_dir->z;
   this->m_last_w_set = 0;
   this->m_w_set = 0;
   return 0;
@@ -586,7 +583,7 @@ LAB_008e6978:
 
 // 008E3F20  backup1  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:473)
 
-int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
+int __cdecl backup1(phys_gjk_info *gjk_info,int new_index,bool seed_simplex)
 
 {
   float fVar1;
@@ -620,17 +617,17 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
   float local_38;
   float afStack_28 [9];
   
-  fVar1 = param_1->m_w_verts[param_2].y;
-  ppVar15 = param_1->m_w_verts + param_2;
-  uVar12 = 1 << ((byte)param_2 & 0x1f);
+  fVar1 = gjk_info->m_w_verts[new_index].y;
+  ppVar15 = gjk_info->m_w_verts + new_index;
+  uVar12 = 1 << ((byte)new_index & 0x1f);
   local_f0 = 1;
   pfVar14 = local_60 + 2;
   local_ec = ppVar15->z * ppVar15->z + ppVar15->x * ppVar15->x + fVar1 * fVar1;
-  param_1->m_set_list[uVar12].m_lamda[param_2] = 1.0;
-  uVar5 = param_1->m_w_set;
+  gjk_info->m_set_list[uVar12].m_lamda[new_index] = 1.0;
+  uVar5 = gjk_info->m_w_set;
   local_e8 = 0;
   local_f8 = 0;
-  local_f4 = &param_1->m_w_verts[0].z;
+  local_f4 = &gjk_info->m_w_verts[0].z;
   uVar13 = uVar12;
   do {
     if ((uVar5 & ~uVar12 & local_f0) != 0) {
@@ -653,12 +650,12 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
            fVar4 = fVar1 * *pfVar14 + ppVar15->z,
            fVar2 = fVar4 * fVar4 + fVar3 * fVar3 + fVar2 * fVar2, fVar2 < local_ec)) {
           uVar13 = local_f0 | uVar12;
-          param_1->m_set_list[uVar13].m_lamda[local_f8] = fVar1;
-          param_1->m_set_list[uVar13].m_lamda[param_2] = 1.0 - fVar1;
+          gjk_info->m_set_list[uVar13].m_lamda[local_f8] = fVar1;
+          gjk_info->m_set_list[uVar13].m_lamda[new_index] = 1.0 - fVar1;
           local_ec = fVar2;
         }
       }
-      if ((!param_3) ||
+      if ((!seed_simplex) ||
          (fVar1 = local_f4[-1] * local_f4[-1] +
                   ((phys_vec3 *)(local_f4 + -2))->x * ((phys_vec3 *)(local_f4 + -2))->x +
                   *local_f4 * *local_f4, local_ec <= fVar1)) {
@@ -667,7 +664,7 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
       }
       else {
         local_e8 = local_e8 + 1;
-        param_1->m_set_list[local_f0].m_lamda[local_f8] = 1.0;
+        gjk_info->m_set_list[local_f0].m_lamda[local_f8] = 1.0;
         pfVar14 = pfVar14 + 4;
         uVar13 = local_f0;
         local_ec = fVar1;
@@ -677,22 +674,22 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
     local_f8 = local_f8 + 1;
     local_f0 = local_f0 << 1 | (uint)((int)local_f0 < 0);
   } while (local_f8 < 4);
-  if ((param_3) && (local_e8 == 2)) {
-    fVar2 = param_1->m_w_verts[2].x - param_1->m_w_verts[1].x;
-    fVar3 = param_1->m_w_verts[2].y - param_1->m_w_verts[1].y;
-    fVar4 = param_1->m_w_verts[2].z - param_1->m_w_verts[1].z;
+  if ((seed_simplex) && (local_e8 == 2)) {
+    fVar2 = gjk_info->m_w_verts[2].x - gjk_info->m_w_verts[1].x;
+    fVar3 = gjk_info->m_w_verts[2].y - gjk_info->m_w_verts[1].y;
+    fVar4 = gjk_info->m_w_verts[2].z - gjk_info->m_w_verts[1].z;
     fVar1 = fVar3 * fVar3 + fVar2 * fVar2 + fVar4 * fVar4;
     if (9.9999994e-11 < fVar1) {
-      fVar1 = -(param_1->m_w_verts[1].z * fVar4 +
-               param_1->m_w_verts[1].x * fVar2 + param_1->m_w_verts[1].y * fVar3) / fVar1;
+      fVar1 = -(gjk_info->m_w_verts[1].z * fVar4 +
+               gjk_info->m_w_verts[1].x * fVar2 + gjk_info->m_w_verts[1].y * fVar3) / fVar1;
       if (((0.0 < fVar1) && (0.0 < 1.0 - fVar1)) &&
-         (fVar2 = param_1->m_w_verts[1].x + fVar1 * fVar2,
-         fVar3 = param_1->m_w_verts[1].y + fVar1 * fVar3,
-         fVar4 = param_1->m_w_verts[1].z + fVar1 * fVar4,
+         (fVar2 = gjk_info->m_w_verts[1].x + fVar1 * fVar2,
+         fVar3 = gjk_info->m_w_verts[1].y + fVar1 * fVar3,
+         fVar4 = gjk_info->m_w_verts[1].z + fVar1 * fVar4,
          fVar2 = fVar4 * fVar4 + fVar3 * fVar3 + fVar2 * fVar2, fVar2 < local_ec)) {
         uVar13 = 6;
-        param_1->m_set_list[6].m_lamda[1] = 1.0 - fVar1;
-        param_1->m_set_list[6].m_lamda[2] = fVar1;
+        gjk_info->m_set_list[6].m_lamda[1] = 1.0 - fVar1;
+        gjk_info->m_set_list[6].m_lamda[2] = fVar1;
         local_ec = fVar2;
       }
     }
@@ -724,9 +721,9 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
               iVar6 = local_70[iVar11];
               uVar13 = 1 << ((byte)iVar6 & 0x1f) |
                        1 << ((byte)*(int *)((int)local_70 + (int)local_f4) & 0x1f) | uVar12;
-              param_1->m_set_list[uVar13].m_lamda[*(int *)((int)local_70 + (int)local_f4)] = fVar7;
-              param_1->m_set_list[uVar13].m_lamda[iVar6] = fVar3;
-              param_1->m_set_list[uVar13].m_lamda[param_2] = fVar4;
+              gjk_info->m_set_list[uVar13].m_lamda[*(int *)((int)local_70 + (int)local_f4)] = fVar7;
+              gjk_info->m_set_list[uVar13].m_lamda[iVar6] = fVar3;
+              gjk_info->m_set_list[uVar13].m_lamda[new_index] = fVar4;
               local_ec = fVar8;
             }
           }
@@ -740,7 +737,7 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
       local_100 = local_100 + -1;
     } while (local_100 != 0);
   }
-  if ((local_e8 == 3) && (param_1->m_lower_dist_sq <= 0.0)) {
+  if ((local_e8 == 3) && (gjk_info->m_lower_dist_sq <= 0.0)) {
     fVar3 = local_60[1] * local_48 - local_60[2] * local_60[5];
     fVar2 = local_60[4] * local_60[2] - local_60[0] * local_48;
     fVar1 = local_60[5] * local_60[0] - local_60[4] * local_60[1];
@@ -772,20 +769,21 @@ int __cdecl backup1(phys_gjk_info *param_1,int param_2,bool param_3)
 // 008E4880  gjk  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:778)
 
 gjk_retval_e __thiscall
-phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_2,bool param_3)
+phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *d,phys_vec3 *initial_support_dir,
+                  bool in_separation_loop)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *v;
+  float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  float fVar5;
-  int iVar6;
+  int iVar5;
+  phys_vec3 *ppVar6;
   phys_vec3 *ppVar7;
-  phys_vec3 *ppVar8;
-  float *pfVar9;
-  phys_vec3 *ppVar10;
-  uint uVar11;
+  float *pfVar8;
+  phys_vec3 *ppVar9;
+  uint uVar10;
   int iStack_94;
   uint uStack_88;
   float fStack_40;
@@ -796,59 +794,59 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
   
   this->m_lower_dist_sq = -34.0;
   this->m_upper_dist_sq = 34.0;
-  iVar6 = init_gjk(this,param_1,param_2,param_3);
-  this->m_gjk_iter = iVar6;
-  ppVar1 = &this->m_support_dir;
+  iVar5 = init_gjk(this,d,initial_support_dir,in_separation_loop);
+  this->m_gjk_iter = iVar5;
+  v = &this->m_support_dir;
   do {
-    fVar2 = (this->m_support_dir).y;
-    fVar3 = (this->m_support_dir).z;
-    fVar2 = fVar2 * fVar2 + ppVar1->x * ppVar1->x + fVar3 * fVar3;
-    this->m_upper_dist_sq = fVar2;
-    if ((this->m_gjk_iter != 0) && (fVar2 < this->m_gjk_pen_thresh_sq)) {
+    fVar1 = (this->m_support_dir).y;
+    fVar2 = (this->m_support_dir).z;
+    fVar1 = fVar1 * fVar1 + v->x * v->x + fVar2 * fVar2;
+    this->m_upper_dist_sq = fVar1;
+    if ((this->m_gjk_iter != 0) && (fVar1 < this->m_gjk_pen_thresh_sq)) {
       return GJK_PENETRATING;
     }
-    uVar11 = this->m_w_set;
-    if ((uVar11 & 1) == 0) {
+    uVar10 = this->m_w_set;
+    if ((uVar10 & 1) == 0) {
       uStack_88 = 0;
     }
-    else if ((uVar11 & 2) == 0) {
+    else if ((uVar10 & 2) == 0) {
       uStack_88 = 1;
     }
     else {
-      uStack_88 = (uVar11 & 4 | 8) >> 2;
+      uStack_88 = (uVar10 & 4 | 8) >> 2;
     }
-    fStack_40 = -ppVar1->x;
-    ppVar8 = this->m_a_verts + uStack_88;
+    fStack_40 = -v->x;
+    ppVar7 = this->m_a_verts + uStack_88;
     fStack_3c = -(this->m_support_dir).y;
     fStack_38 = -(this->m_support_dir).z;
-    (**(code **)*param_1->gjk_cg1)(&fStack_40,ppVar8,this->m_a_inds + uStack_88);
-    ppVar10 = this->m_b_verts + uStack_88;
+    (**(code **)*d->gjk_cg1)(&fStack_40,ppVar7,this->m_a_inds + uStack_88);
+    ppVar9 = this->m_b_verts + uStack_88;
     fStack_3c = (this->cg2_to_cg1_xform).x.z * (this->m_support_dir).z +
-                ppVar1->x * (this->cg2_to_cg1_xform).x.x +
+                v->x * (this->cg2_to_cg1_xform).x.x +
                 (this->cg2_to_cg1_xform).x.y * (this->m_support_dir).y;
     fStack_38 = (this->cg2_to_cg1_xform).y.z * (this->m_support_dir).z +
-                ppVar1->x * (this->cg2_to_cg1_xform).y.x +
+                v->x * (this->cg2_to_cg1_xform).y.x +
                 (this->cg2_to_cg1_xform).y.y * (this->m_support_dir).y;
     fStack_34 = (this->cg2_to_cg1_xform).z.z * (this->m_support_dir).z +
-                ppVar1->x * (this->cg2_to_cg1_xform).z.x +
+                v->x * (this->cg2_to_cg1_xform).z.x +
                 (this->cg2_to_cg1_xform).z.y * (this->m_support_dir).y;
-    (**(code **)*param_1->gjk_cg2)(&fStack_3c,ppVar10,this->m_b_inds + iStack_94);
-    ppVar7 = phys_multiply33(&pStack_20,&this->cg2_to_cg1_xform,ppVar10);
-    fVar2 = ppVar7->y;
-    fVar3 = (this->cg2_to_cg1_xform).w.y;
-    fVar4 = ppVar7->z;
-    fVar5 = (this->cg2_to_cg1_xform).w.z;
-    ppVar10->x = ppVar7->x + (this->cg2_to_cg1_xform).w.x;
-    ppVar10->y = fVar2 + fVar3;
-    ppVar10->z = fVar4 + fVar5;
-    fVar2 = (ppVar8->x - ppVar10->x) - (this->m_gjk_origin).x;
-    fVar3 = (ppVar8->y - ppVar10->y) - (this->m_gjk_origin).y;
-    fVar4 = (ppVar8->z - ppVar10->z) - (this->m_gjk_origin).z;
-    fVar5 = fVar3 * (this->m_support_dir).y + fVar2 * ppVar1->x + fVar4 * (this->m_support_dir).z;
-    if ((((0.0 < fVar5) && (0.0 < this->m_upper_dist_sq)) &&
-        (fVar5 = (fVar5 * fVar5) / this->m_upper_dist_sq, this->m_lower_dist_sq < fVar5)) &&
-       ((this->m_lower_dist_sq = fVar5, (this->m_flags & 1) != 0 &&
-        (this->m_gjk_sep_thresh * this->m_gjk_sep_thresh < fVar5)))) {
+    (**(code **)*d->gjk_cg2)(&fStack_3c,ppVar9,this->m_b_inds + iStack_94);
+    ppVar6 = phys_multiply33(&pStack_20,&this->cg2_to_cg1_xform,ppVar9);
+    fVar1 = ppVar6->y;
+    fVar2 = (this->cg2_to_cg1_xform).w.y;
+    fVar3 = ppVar6->z;
+    fVar4 = (this->cg2_to_cg1_xform).w.z;
+    ppVar9->x = ppVar6->x + (this->cg2_to_cg1_xform).w.x;
+    ppVar9->y = fVar1 + fVar2;
+    ppVar9->z = fVar3 + fVar4;
+    fVar1 = (ppVar7->x - ppVar9->x) - (this->m_gjk_origin).x;
+    fVar2 = (ppVar7->y - ppVar9->y) - (this->m_gjk_origin).y;
+    fVar3 = (ppVar7->z - ppVar9->z) - (this->m_gjk_origin).z;
+    fVar4 = fVar2 * (this->m_support_dir).y + fVar1 * v->x + fVar3 * (this->m_support_dir).z;
+    if ((((0.0 < fVar4) && (0.0 < this->m_upper_dist_sq)) &&
+        (fVar4 = (fVar4 * fVar4) / this->m_upper_dist_sq, this->m_lower_dist_sq < fVar4)) &&
+       ((this->m_lower_dist_sq = fVar4, (this->m_flags & 1) != 0 &&
+        (this->m_gjk_sep_thresh * this->m_gjk_sep_thresh < fVar4)))) {
       return GJK_SEPARATED;
     }
     if ((this->m_gjk_iter != 0) && (0.0 < this->m_lower_dist_sq)) {
@@ -856,33 +854,33 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
       {
         return GJK_VALID;
       }
-      iVar6 = 0;
-      uVar11 = 1;
-      pfVar9 = &this->m_w_verts[0].z;
+      iVar5 = 0;
+      uVar10 = 1;
+      pfVar8 = &this->m_w_verts[0].z;
       do {
-        if (((this->m_last_w_set & uVar11) != 0) &&
-           (fVar5 = fVar2 - ((phys_vec3 *)(pfVar9 + -2))->x,
-           (fVar4 - *pfVar9) * (fVar4 - *pfVar9) +
-           fVar5 * fVar5 + (fVar3 - pfVar9[-1]) * (fVar3 - pfVar9[-1]) < 1.0000001e-06)) {
+        if (((this->m_last_w_set & uVar10) != 0) &&
+           (fVar4 = fVar1 - ((phys_vec3 *)(pfVar8 + -2))->x,
+           (fVar3 - *pfVar8) * (fVar3 - *pfVar8) +
+           fVar4 * fVar4 + (fVar2 - pfVar8[-1]) * (fVar2 - pfVar8[-1]) < 1.0000001e-06)) {
           return GJK_VALID;
         }
-        iVar6 = iVar6 + 1;
-        pfVar9 = pfVar9 + 4;
-        uVar11 = uVar11 * 2;
-      } while (iVar6 < 4);
+        iVar5 = iVar5 + 1;
+        pfVar8 = pfVar8 + 4;
+        uVar10 = uVar10 * 2;
+      } while (iVar5 < 4);
     }
-    ppVar7 = this->m_w_verts + uStack_88;
-    ppVar7->x = fVar2;
-    ppVar7->y = fVar3;
-    ppVar7->z = fVar4;
+    ppVar6 = this->m_w_verts + uStack_88;
+    ppVar6->x = fVar1;
+    ppVar6->y = fVar2;
+    ppVar6->z = fVar3;
     this->m_w_set = this->m_w_set | 1 << (sbyte)uStack_88;
     this->m_last_w_set = this->m_w_set;
-    iVar6 = backup1(this,uStack_88,false);
-    this->m_w_set = iVar6;
-    if (iVar6 == 0xf) {
+    iVar5 = backup1(this,uStack_88,false);
+    this->m_w_set = iVar5;
+    if (iVar5 == 0xf) {
       return GJK_PENETRATING;
     }
-    comp_v(this,iVar6,ppVar1);
+    comp_v(this,iVar5,v);
     this->m_gjk_iter = this->m_gjk_iter + 1;
   } while (this->m_gjk_iter < 0x1e);
   return GJK_VALID;
@@ -893,26 +891,27 @@ phys_gjk_info::gjk(phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_
 
 gjk_retval_e __thiscall
 phys_gjk_info::gjk_ray_cast
-          (phys_gjk_info *this,phys_gjk_input *param_1,phys_vec3 *param_2,bool param_3)
+          (phys_gjk_info *this,phys_gjk_input *d,phys_vec3 *initial_support_dir,
+          bool in_separation_loop)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *initial_support_dir_00;
+  float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
   float fVar5;
   float fVar6;
-  float fVar7;
-  uint uVar8;
+  uint uVar7;
+  float fVar8;
   float fVar9;
-  float fVar10;
-  int iVar11;
-  uint uVar12;
-  phys_vec3 *ppVar13;
-  gjk_retval_e gVar14;
+  int iVar10;
+  uint uVar11;
+  phys_vec3 *ppVar12;
+  gjk_retval_e gVar13;
+  phys_vec3 *ppVar14;
   phys_vec3 *ppVar15;
-  phys_vec3 *ppVar16;
-  float *pfVar17;
+  float *pfVar16;
   float10 extraout_ST0;
   undefined4 uStack_a0;
   uint uStack_94;
@@ -922,94 +921,95 @@ phys_gjk_info::gjk_ray_cast
   float fStack_34;
   phys_vec3 pStack_20;
   
-  fVar2 = param_1->m_start_time;
-  this->m_continuous_collision_lambda = fVar2;
-  fVar2 = -fVar2;
-  fVar3 = (this->m_cg1_relative_translation_loc).y;
-  fVar4 = (this->m_cg1_relative_translation_loc).z;
-  (this->m_gjk_origin).x = fVar2 * (this->m_cg1_relative_translation_loc).x;
-  (this->m_gjk_origin).y = fVar3 * fVar2;
-  (this->m_gjk_origin).z = fVar2 * fVar4;
+  fVar1 = d->m_start_time;
+  this->m_continuous_collision_lambda = fVar1;
+  fVar1 = -fVar1;
+  fVar2 = (this->m_cg1_relative_translation_loc).y;
+  fVar3 = (this->m_cg1_relative_translation_loc).z;
+  (this->m_gjk_origin).x = fVar1 * (this->m_cg1_relative_translation_loc).x;
+  (this->m_gjk_origin).y = fVar2 * fVar1;
+  (this->m_gjk_origin).z = fVar1 * fVar3;
   this->m_lower_dist_sq = -34.0;
   this->m_upper_dist_sq = 34.0;
-  iVar11 = init_gjk(this,param_1,param_2,param_3);
+  iVar10 = init_gjk(this,d,initial_support_dir,in_separation_loop);
   this->m_flags = this->m_flags & 0xffffffda;
-  this->m_gjk_iter = iVar11;
-  if ((param_1->gjk_ci == (phys_gjk_cache_info *)0x0) || ((param_1->gjk_ci->m_flags & 4) == 0)) {
-    uVar12 = this->m_flags & 0xffffffef;
+  this->m_gjk_iter = iVar10;
+  if ((d->gjk_ci == (phys_gjk_cache_info *)0x0) || ((d->gjk_ci->m_flags & 4) == 0)) {
+    uVar11 = this->m_flags & 0xffffffef;
   }
   else {
-    uVar12 = this->m_flags | 0x10;
+    uVar11 = this->m_flags | 0x10;
   }
-  this->m_flags = uVar12;
+  this->m_flags = uVar11;
   this->m_cc_reset_iter = 0;
   if (0.051 <= this->m_geom_radii_sum) {
-    fVar2 = this->m_geom_radii_sum;
+    fVar1 = this->m_geom_radii_sum;
   }
   else {
-    fVar2 = 0.051;
+    fVar1 = 0.051;
   }
-  ppVar1 = &this->m_support_dir;
+  initial_support_dir_00 = &this->m_support_dir;
 LAB_008e4dc2:
   do {
-    uVar12 = uStack_a0;
-    fVar3 = (this->m_support_dir).y;
-    fVar4 = (this->m_support_dir).z;
-    fVar3 = fVar4 * fVar4 + ppVar1->x * ppVar1->x + fVar3 * fVar3;
-    this->m_upper_dist_sq = fVar3;
+    uVar11 = uStack_a0;
+    fVar2 = (this->m_support_dir).y;
+    fVar3 = (this->m_support_dir).z;
+    fVar2 = fVar3 * fVar3 + initial_support_dir_00->x * initial_support_dir_00->x + fVar2 * fVar2;
+    this->m_upper_dist_sq = fVar2;
     if (this->m_gjk_iter != 0) {
       if (((this->m_flags & 0x10U) != 0) &&
-         (fVar3 < this->m_gjk_sep_thresh * this->m_gjk_sep_thresh)) {
+         (fVar2 < this->m_gjk_sep_thresh * this->m_gjk_sep_thresh)) {
         this->m_flags = this->m_flags | 1;
       }
       if (this->m_upper_dist_sq < this->m_gjk_pen_thresh_sq) {
         return GJK_PENETRATING;
       }
     }
-    uVar8 = this->m_w_set;
-    if ((uVar8 & 1) == 0) {
+    uVar7 = this->m_w_set;
+    if ((uVar7 & 1) == 0) {
       uStack_94 = 0;
     }
-    else if ((uVar8 & 2) == 0) {
+    else if ((uVar7 & 2) == 0) {
       uStack_94 = 1;
     }
     else {
-      uStack_94 = (uVar8 & 4 | 8) >> 2;
+      uStack_94 = (uVar7 & 4 | 8) >> 2;
     }
-    fStack_40 = -ppVar1->x;
+    fStack_40 = -initial_support_dir_00->x;
     fStack_3c = -(this->m_support_dir).y;
-    ppVar15 = this->m_a_verts + uStack_94;
+    ppVar14 = this->m_a_verts + uStack_94;
     fStack_38 = -(this->m_support_dir).z;
-    (**(code **)*param_1->gjk_cg1)(&fStack_40,ppVar15,this->m_a_inds + uStack_94);
-    ppVar16 = this->m_b_verts + uStack_94;
+    (**(code **)*d->gjk_cg1)(&fStack_40,ppVar14,this->m_a_inds + uStack_94);
+    ppVar15 = this->m_b_verts + uStack_94;
     fStack_3c = (this->cg2_to_cg1_xform).x.z * (this->m_support_dir).z +
-                ppVar1->x * (this->cg2_to_cg1_xform).x.x +
+                initial_support_dir_00->x * (this->cg2_to_cg1_xform).x.x +
                 (this->cg2_to_cg1_xform).x.y * (this->m_support_dir).y;
     fStack_38 = (this->cg2_to_cg1_xform).y.z * (this->m_support_dir).z +
-                ppVar1->x * (this->cg2_to_cg1_xform).y.x +
+                initial_support_dir_00->x * (this->cg2_to_cg1_xform).y.x +
                 (this->cg2_to_cg1_xform).y.y * (this->m_support_dir).y;
     fStack_34 = (this->cg2_to_cg1_xform).z.z * (this->m_support_dir).z +
-                ppVar1->x * (this->cg2_to_cg1_xform).z.x +
+                initial_support_dir_00->x * (this->cg2_to_cg1_xform).z.x +
                 (this->cg2_to_cg1_xform).z.y * (this->m_support_dir).y;
-    (**(code **)*param_1->gjk_cg2)(&fStack_3c,ppVar16,this->m_b_inds + uStack_a0);
-    ppVar13 = phys_multiply33(&pStack_20,&this->cg2_to_cg1_xform,ppVar16);
-    fVar3 = ppVar13->y;
-    fVar4 = (this->cg2_to_cg1_xform).w.y;
-    fVar5 = ppVar13->z;
-    fVar6 = (this->cg2_to_cg1_xform).w.z;
-    ppVar16->x = ppVar13->x + (this->cg2_to_cg1_xform).w.x;
-    ppVar16->y = fVar3 + fVar4;
-    ppVar16->z = fVar5 + fVar6;
-    fVar3 = (ppVar15->x - ppVar16->x) - (this->m_gjk_origin).x;
-    fVar4 = (ppVar15->y - ppVar16->y) - (this->m_gjk_origin).y;
-    fVar5 = (ppVar15->z - ppVar16->z) - (this->m_gjk_origin).z;
-    fVar6 = fVar3 * ppVar1->x + fVar4 * (this->m_support_dir).y + fVar5 * (this->m_support_dir).z;
-    if ((0.0 < fVar6) && (0.0 < this->m_upper_dist_sq)) {
+    (**(code **)*d->gjk_cg2)(&fStack_3c,ppVar15,this->m_b_inds + uStack_a0);
+    ppVar12 = phys_multiply33(&pStack_20,&this->cg2_to_cg1_xform,ppVar15);
+    fVar2 = ppVar12->y;
+    fVar3 = (this->cg2_to_cg1_xform).w.y;
+    fVar4 = ppVar12->z;
+    fVar5 = (this->cg2_to_cg1_xform).w.z;
+    ppVar15->x = ppVar12->x + (this->cg2_to_cg1_xform).w.x;
+    ppVar15->y = fVar2 + fVar3;
+    ppVar15->z = fVar4 + fVar5;
+    fVar2 = (ppVar14->x - ppVar15->x) - (this->m_gjk_origin).x;
+    fVar3 = (ppVar14->y - ppVar15->y) - (this->m_gjk_origin).y;
+    fVar4 = (ppVar14->z - ppVar15->z) - (this->m_gjk_origin).z;
+    fVar5 = fVar2 * initial_support_dir_00->x + fVar3 * (this->m_support_dir).y +
+            fVar4 * (this->m_support_dir).z;
+    if ((0.0 < fVar5) && (0.0 < this->m_upper_dist_sq)) {
       this->m_flags = this->m_flags | 0x20;
-      fVar9 = (fVar6 * fVar6) / this->m_upper_dist_sq;
-      if ((this->m_lower_dist_sq < fVar9) &&
-         ((this->m_lower_dist_sq = fVar9, (this->m_flags & 1U) != 0 &&
-          (this->m_gjk_sep_thresh * this->m_gjk_sep_thresh < fVar9)))) {
+      fVar8 = (fVar5 * fVar5) / this->m_upper_dist_sq;
+      if ((this->m_lower_dist_sq < fVar8) &&
+         ((this->m_lower_dist_sq = fVar8, (this->m_flags & 1U) != 0 &&
+          (this->m_gjk_sep_thresh * this->m_gjk_sep_thresh < fVar8)))) {
         return GJK_SEPARATED;
       }
     }
@@ -1017,60 +1017,60 @@ LAB_008e4dc2:
     if ((this->m_gjk_iter != 0) && (0.0 < this->m_lower_dist_sq)) {
       if ((1.0 - CONV_THRESH) * (1.0 - CONV_THRESH) * this->m_upper_dist_sq < this->m_lower_dist_sq)
       {
-        uStack_a0._0_3_ = (undefined3)uVar12;
+        uStack_a0._0_3_ = (undefined3)uVar11;
         uStack_a0 = CONCAT13(1,(undefined3)uStack_a0);
       }
-      iVar11 = 0;
-      uVar12 = 1;
-      pfVar17 = &this->m_w_verts[0].z;
+      iVar10 = 0;
+      uVar11 = 1;
+      pfVar16 = &this->m_w_verts[0].z;
       do {
         if (uStack_a0._3_1_ != '\0') break;
-        if (((this->m_last_w_set & uVar12) != 0) &&
-           (fVar9 = fVar3 - ((phys_vec3 *)(pfVar17 + -2))->x,
-           (fVar5 - *pfVar17) * (fVar5 - *pfVar17) +
-           fVar9 * fVar9 + (fVar4 - pfVar17[-1]) * (fVar4 - pfVar17[-1]) < 1.0000001e-06)) {
+        if (((this->m_last_w_set & uVar11) != 0) &&
+           (fVar8 = fVar2 - ((phys_vec3 *)(pfVar16 + -2))->x,
+           (fVar4 - *pfVar16) * (fVar4 - *pfVar16) +
+           fVar8 * fVar8 + (fVar3 - pfVar16[-1]) * (fVar3 - pfVar16[-1]) < 1.0000001e-06)) {
           uStack_a0 = CONCAT13(1,(undefined3)uStack_a0);
         }
-        iVar11 = iVar11 + 1;
-        pfVar17 = pfVar17 + 4;
-        uVar12 = uVar12 << 1 | (uint)((int)uVar12 < 0);
-      } while (iVar11 < 4);
+        iVar10 = iVar10 + 1;
+        pfVar16 = pfVar16 + 4;
+        uVar11 = uVar11 << 1 | (uint)((int)uVar11 < 0);
+      } while (iVar10 < 4);
     }
-    uVar12 = this->m_flags;
-    if ((((uVar12 & 4) == 0) && (0.0 < fVar6)) &&
-       (fVar9 = fVar2 * fVar2 * this->m_upper_dist_sq,
-       fVar9 < fVar6 * fVar6 != (fVar9 == fVar6 * fVar6))) {
+    uVar11 = this->m_flags;
+    if ((((uVar11 & 4) == 0) && (0.0 < fVar5)) &&
+       (fVar8 = fVar1 * fVar1 * this->m_upper_dist_sq,
+       fVar8 < fVar5 * fVar5 != (fVar8 == fVar5 * fVar5))) {
       _CIsqrt();
-      fVar9 = -((this->m_cg1_relative_translation_loc).z * (this->m_support_dir).z +
-               (this->m_cg1_relative_translation_loc).x * ppVar1->x +
+      fVar8 = -((this->m_cg1_relative_translation_loc).z * (this->m_support_dir).z +
+               (this->m_cg1_relative_translation_loc).x * initial_support_dir_00->x +
                (this->m_cg1_relative_translation_loc).y * (this->m_support_dir).y);
-      fVar6 = fVar6 - (float)extraout_ST0 * fVar2;
-      if (fVar9 < 0.0 == (fVar9 == 0.0)) {
-        if (0.0 <= fVar6) {
-          fVar10 = (this->m_support_dir).z * (this->m_gjk_origin).z +
-                   ppVar1->x * (this->m_gjk_origin).x +
-                   (this->m_support_dir).y * (this->m_gjk_origin).y;
-          fVar7 = (fVar10 + fVar6) / fVar9;
-          if (this->m_continuous_collision_lambda + 0.0001 < fVar7) {
-            if (param_1->m_end_time < fVar7) {
+      fVar5 = fVar5 - (float)extraout_ST0 * fVar1;
+      if (fVar8 < 0.0 == (fVar8 == 0.0)) {
+        if (0.0 <= fVar5) {
+          fVar9 = (this->m_support_dir).z * (this->m_gjk_origin).z +
+                  initial_support_dir_00->x * (this->m_gjk_origin).x +
+                  (this->m_support_dir).y * (this->m_gjk_origin).y;
+          fVar6 = (fVar9 + fVar5) / fVar8;
+          if (this->m_continuous_collision_lambda + 0.0001 < fVar6) {
+            if (d->m_end_time < fVar6) {
               if (this->m_gjk_sep_thresh * (float)extraout_ST0 <
-                  fVar10 + (fVar6 - param_1->m_end_time * fVar9)) {
+                  fVar9 + (fVar5 - d->m_end_time * fVar8)) {
                 return GJK_SEPARATED;
               }
-              fVar7 = param_1->m_end_time;
-              this->m_flags = uVar12 | 5;
+              fVar6 = d->m_end_time;
+              this->m_flags = uVar11 | 5;
             }
-            fVar3 = fVar7 - this->m_continuous_collision_lambda;
-            if (fVar3 < 0.0001 != (fVar3 == 0.0001)) {
+            fVar2 = fVar6 - this->m_continuous_collision_lambda;
+            if (fVar2 < 0.0001 != (fVar2 == 0.0001)) {
               this->m_flags = this->m_flags | 5;
             }
-            this->m_continuous_collision_lambda = fVar7;
-            fVar7 = -fVar7;
-            fVar3 = (this->m_cg1_relative_translation_loc).y;
-            fVar4 = (this->m_cg1_relative_translation_loc).z;
-            (this->m_gjk_origin).x = fVar7 * (this->m_cg1_relative_translation_loc).x;
-            (this->m_gjk_origin).y = fVar3 * fVar7;
-            (this->m_gjk_origin).z = fVar7 * fVar4;
+            this->m_continuous_collision_lambda = fVar6;
+            fVar6 = -fVar6;
+            fVar2 = (this->m_cg1_relative_translation_loc).y;
+            fVar3 = (this->m_cg1_relative_translation_loc).z;
+            (this->m_gjk_origin).x = fVar6 * (this->m_cg1_relative_translation_loc).x;
+            (this->m_gjk_origin).y = fVar2 * fVar6;
+            (this->m_gjk_origin).z = fVar6 * fVar3;
             this->m_cc_reset_iter = this->m_cc_reset_iter + 1;
             this->m_lower_dist_sq = -34.0;
             this->m_upper_dist_sq = 34.0;
@@ -1083,41 +1083,41 @@ LAB_008e4dc2:
             if (this->m_w_set == 0) {
               this->m_w_set = 1 << (sbyte)uStack_94;
             }
-            init_gjk(this,param_1,ppVar1,true);
+            init_gjk(this,d,initial_support_dir_00,true);
             this->m_gjk_iter = this->m_gjk_iter + 1;
             goto LAB_008e4dc2;
           }
         }
       }
-      else if (0.0 < fVar6) {
+      else if (0.0 < fVar5) {
         if (this->m_gjk_sep_thresh * this->m_gjk_sep_thresh < this->m_lower_dist_sq) {
           return GJK_SEPARATED;
         }
-        this->m_flags = uVar12 | 5;
+        this->m_flags = uVar11 | 5;
       }
     }
     if (uStack_a0._3_1_ != '\0') {
       return GJK_VALID;
     }
-    ppVar13 = this->m_w_verts + uStack_94;
-    ppVar13->x = fVar3;
-    ppVar13->y = fVar4;
-    ppVar13->z = fVar5;
+    ppVar12 = this->m_w_verts + uStack_94;
+    ppVar12->x = fVar2;
+    ppVar12->y = fVar3;
+    ppVar12->z = fVar4;
     this->m_w_set = this->m_w_set | 1 << (sbyte)uStack_94;
     this->m_last_w_set = this->m_w_set;
-    iVar11 = backup1(this,uStack_94,false);
-    this->m_w_set = iVar11;
-    if (iVar11 == 0xf) {
+    iVar10 = backup1(this,uStack_94,false);
+    this->m_w_set = iVar10;
+    if (iVar10 == 0xf) {
       return GJK_PENETRATING;
     }
-    comp_v(this,iVar11,ppVar1);
+    comp_v(this,iVar10,initial_support_dir_00);
     this->m_gjk_iter = this->m_gjk_iter + 1;
     if (0x1d < this->m_gjk_iter) {
-      gVar14 = GJK_PENETRATING;
+      gVar13 = GJK_PENETRATING;
       if (0.0 < this->m_lower_dist_sq) {
-        gVar14 = GJK_VALID;
+        gVar13 = GJK_VALID;
       }
-      return gVar14;
+      return gVar13;
     }
   } while( true );
 }
@@ -1127,7 +1127,7 @@ LAB_008e4dc2:
 
 phys_vec3 * __thiscall
 phys_gjk_info::get_initial_support_dir
-          (phys_gjk_info *this,phys_vec3 *__return_storage_ptr__,phys_gjk_input *param_1)
+          (phys_gjk_info *this,phys_vec3 *__return_storage_ptr__,phys_gjk_input *d)
 
 {
   float fVar1;
@@ -1144,18 +1144,18 @@ phys_gjk_info::get_initial_support_dir
   phys_vec3 pStack_34;
   undefined1 auStack_24 [32];
   
-  ppVar5 = param_1->gjk_ci;
+  ppVar5 = d->gjk_ci;
   if ((ppVar5 != (phys_gjk_cache_info *)0x0) && ((ppVar5->m_flags & 4) != 0)) {
-    phys_inv_multiply(__return_storage_ptr__,param_1->cg1_to_world_xform,&ppVar5->m_support_dir);
+    phys_inv_multiply(__return_storage_ptr__,d->cg1_to_world_xform,&ppVar5->m_support_dir);
     return __return_storage_ptr__;
   }
-  ppVar7 = (phys_vec3 *)(**(code **)((int)*param_1->gjk_cg2 + 0xc))(auStack_40);
+  ppVar7 = (phys_vec3 *)(**(code **)((int)*d->gjk_cg2 + 0xc))(auStack_40);
   ppVar7 = phys_multiply33(&pStack_34,&this->cg2_to_cg1_xform,ppVar7);
   fVar1 = ppVar7->x;
   fVar2 = (this->cg2_to_cg1_xform).w.x;
   fVar3 = ppVar7->y;
   fVar4 = (this->cg2_to_cg1_xform).w.y;
-  pfVar8 = (float *)(**(code **)((int)*param_1->gjk_cg1 + 0xc))(auStack_24);
+  pfVar8 = (float *)(**(code **)((int)*d->gjk_cg1 + 0xc))(auStack_24);
   fVar6 = *pfVar8 - fStack_58;
   fVar1 = pfVar8[1] - (fVar1 + fVar2);
   fVar2 = pfVar8[2] - (fVar3 + fVar4);
@@ -1176,7 +1176,7 @@ phys_gjk_info::get_initial_support_dir
 
 // 008E5500  collide  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2046)
 
-gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_input *param_1)
+gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   phys_gjk_cache_info *ppVar1;
@@ -1203,19 +1203,18 @@ gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_inpu
   (this->m_gjk_origin).y = ::PHYS_ZERO_VEC.y;
   (this->m_gjk_origin).z = ::PHYS_ZERO_VEC.z;
   this->m_flags = this->m_flags | 1;
-  get_initial_support_dir(this,&pStack_70,param_1);
+  get_initial_support_dir(this,&pStack_70,d);
   if ((this->m_flags & 8) == 0) {
-    gVar5 = gjk(this,param_1,&pStack_70,false);
+    gVar5 = gjk(this,d,&pStack_70,false);
   }
   else {
-    gVar5 = gjk_ray_cast(this,param_1,&pStack_70,false);
+    gVar5 = gjk_ray_cast(this,d,&pStack_70,false);
   }
   if (gVar5 == GJK_PENETRATING) {
     if ((this->m_flags & 2) == 0) {
       this->m_continuous_collision_lambda = 0.0;
-      if ((param_1->gjk_ci == (phys_gjk_cache_info *)0x0) || ((param_1->gjk_ci->m_flags & 4) == 0))
-      {
-        ppVar6 = gjk_sep_dir::comp_sep_dir(&pStack_40,param_1,this);
+      if ((d->gjk_ci == (phys_gjk_cache_info *)0x0) || ((d->gjk_ci->m_flags & 4) == 0)) {
+        ppVar6 = gjk_sep_dir::comp_sep_dir(&pStack_40,d,this);
       }
       else {
         ppVar6 = &pStack_70;
@@ -1241,9 +1240,9 @@ gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_inpu
         fStack_4c = -pStack_80.y;
         fStack_48 = -pStack_80.z;
         iVar7 = iVar7 + 1;
-        (**(code **)*param_1->gjk_cg1)(&fStack_50,&pStack_40,auStack_30);
+        (**(code **)*d->gjk_cg1)(&fStack_50,&pStack_40,auStack_30);
         ppVar6 = phys_gjk_geom::support_only
-                           (param_1->gjk_cg2,&pStack_20,&this->cg2_to_cg1_xform,&pStack_80);
+                           (d->gjk_cg2,&pStack_20,&this->cg2_to_cg1_xform,&pStack_80);
         pStack_70.x = pStack_40.x - ppVar6->x;
         pStack_70.y = pStack_40.y - ppVar6->y;
         pStack_70.z = pStack_40.z - ppVar6->z;
@@ -1260,12 +1259,12 @@ gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_inpu
         (this->m_gjk_origin).x = fStack_60;
         (this->m_gjk_origin).y = fStack_5c;
         (this->m_gjk_origin).z = fStack_58;
-        gVar5 = gjk(this,param_1,&pStack_80,1 < iVar7);
+        gVar5 = gjk(this,d,&pStack_80,1 < iVar7);
         if (gVar5 == GJK_PENETRATING) {
           if (iVar7 != 1) {
             return GJK_INVALID;
           }
-          ppVar1 = param_1->gjk_ci;
+          ppVar1 = d->gjk_ci;
           if (ppVar1 == (phys_gjk_cache_info *)0x0) {
             return GJK_INVALID;
           }
@@ -1273,7 +1272,7 @@ gjk_retval_e __thiscall phys_gjk_info::collide(phys_gjk_info *this,phys_gjk_inpu
             return GJK_INVALID;
           }
           ppVar1->m_flags = ppVar1->m_flags & 0xfffffff7;
-          gVar5 = gjk(this,param_1,&pStack_80,false);
+          gVar5 = gjk(this,d,&pStack_80,false);
           if (gVar5 == GJK_PENETRATING) {
             return GJK_INVALID;
           }
@@ -1294,6 +1293,7 @@ void __thiscall phys_gjk_info::gjk_cache_update_invalid(phys_gjk_info *this,phys
 
 {
   uint *puVar1;
+  phys_gjk_input *d;
   
   if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
     puVar1 = &param_1->gjk_ci->m_flags;
@@ -1309,8 +1309,7 @@ void __thiscall phys_gjk_info::gjk_cache_update_invalid(phys_gjk_info *this,phys
 
 // 008E61C0  gjk_cache_update_separated  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2134)
 
-void __thiscall
-phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *param_1)
+void __thiscall phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *d_2)
 
 {
   uint *puVar1;
@@ -1318,16 +1317,16 @@ phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *pa
   phys_vec3 *ppVar3;
   phys_vec3 pStack_20;
   
-  if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-    puVar1 = &param_1->gjk_ci->m_flags;
+  if (d_2->gjk_ci != (phys_gjk_cache_info *)0x0) {
+    puVar1 = &d_2->gjk_ci->m_flags;
     *puVar1 = *puVar1 | 1;
-    ppVar3 = phys_multiply33(&pStack_20,param_1->cg1_to_world_xform,&this->m_support_dir);
-    ppVar2 = param_1->gjk_ci;
+    ppVar3 = phys_multiply33(&pStack_20,d_2->cg1_to_world_xform,&this->m_support_dir);
+    ppVar2 = d_2->gjk_ci;
     ppVar2->m_flags = ppVar2->m_flags | 4;
     (ppVar2->m_support_dir).x = ppVar3->x;
     (ppVar2->m_support_dir).y = ppVar3->y;
     (ppVar2->m_support_dir).z = ppVar3->z;
-    puVar1 = &param_1->gjk_ci->m_flags;
+    puVar1 = &d_2->gjk_ci->m_flags;
     *puVar1 = *puVar1 & 0xfffffff7;
   }
   return;
@@ -1336,8 +1335,7 @@ phys_gjk_info::gjk_cache_update_separated(phys_gjk_info *this,phys_gjk_input *pa
 
 // 008E6220  gjk_cache_update_colliding  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2144)
 
-void __thiscall
-phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *param_1)
+void __thiscall phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   uint *puVar1;
@@ -1353,12 +1351,12 @@ phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *pa
   float fStack_28;
   phys_vec3 pStack_20;
   
-  if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-    puVar1 = &param_1->gjk_ci->m_flags;
+  if (d->gjk_ci != (phys_gjk_cache_info *)0x0) {
+    puVar1 = &d->gjk_ci->m_flags;
     *puVar1 = *puVar1 | 1;
     ppVar2 = &(this->cg1_cinfo_loc).m_n;
-    ppVar6 = phys_multiply33(&pStack_20,param_1->cg1_to_world_xform,ppVar2);
-    ppVar3 = param_1->gjk_ci;
+    ppVar6 = phys_multiply33(&pStack_20,d->cg1_to_world_xform,ppVar2);
+    ppVar3 = d->gjk_ci;
     ppVar3->m_flags = ppVar3->m_flags | 4;
     (ppVar3->m_support_dir).x = ppVar6->x;
     (ppVar3->m_support_dir).y = ppVar6->y;
@@ -1375,8 +1373,8 @@ phys_gjk_info::gjk_cache_update_colliding(phys_gjk_info *this,phys_gjk_input *pa
                   (this->cg2_to_cg1_xform).z.y * (this->cg1_cinfo_loc).m_n.y;
     fStack_30 = -ppVar2->x;
     fStack_2c = -(this->cg1_cinfo_loc).m_n.y;
-    ppVar3 = param_1->gjk_ci;
-    ppVar5 = param_1->gjk_cg1;
+    ppVar3 = d->gjk_ci;
+    ppVar5 = d->gjk_cg1;
     fStack_28 = -(this->cg1_cinfo_loc).m_n.z;
     ppVar3->m_flags = ppVar3->m_flags | 8;
     (**(code **)((int)*ppVar5 + 8))(this->m_a_inds,iVar4,&fStack_30,&ppVar3->m_support_a);
@@ -1394,6 +1392,7 @@ phys_gjk_info::gjk_cache_update_test_only_penetrating(phys_gjk_info *this,phys_g
 
 {
   uint *puVar1;
+  phys_gjk_input *d;
   
   if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
     puVar1 = &param_1->gjk_ci->m_flags;
@@ -1407,12 +1406,11 @@ phys_gjk_info::gjk_cache_update_test_only_penetrating(phys_gjk_info *this,phys_g
 
 // 008E5840  phys_collide_do_gjk_collide  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_gjk.cpp:2175)
 
-bool __thiscall
-phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *param_1)
+bool __thiscall phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *d)
 
 {
   uint *puVar1;
-  phys_vec3 *this_00;
+  phys_vec3 *v;
   float fVar2;
   float fVar3;
   float fVar4;
@@ -1426,13 +1424,12 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
   float fVar12;
   
   this->m_flags = 0;
-  phys_full_inv_multiply_mat
-            (&this->cg2_to_cg1_xform,param_1->cg1_to_world_xform,param_1->cg2_to_world_xform);
-  if (param_1->m_continuous_collision != false) {
-    ppVar7 = param_1->cg1_to_world_xform;
-    fVar8 = (param_1->m_cg1_translation).x - (param_1->m_cg2_translation).x;
-    fVar9 = (param_1->m_cg1_translation).y - (param_1->m_cg2_translation).y;
-    fVar10 = (param_1->m_cg1_translation).z - (param_1->m_cg2_translation).z;
+  phys_full_inv_multiply_mat(&this->cg2_to_cg1_xform,d->cg1_to_world_xform,d->cg2_to_world_xform);
+  if (d->m_continuous_collision != false) {
+    ppVar7 = d->cg1_to_world_xform;
+    fVar8 = (d->m_cg1_translation).x - (d->m_cg2_translation).x;
+    fVar9 = (d->m_cg1_translation).y - (d->m_cg2_translation).y;
+    fVar10 = (d->m_cg1_translation).z - (d->m_cg2_translation).z;
     fVar12 = (ppVar7->y).y;
     fVar2 = (ppVar7->y).x;
     fVar3 = (ppVar7->y).z;
@@ -1445,11 +1442,11 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
     (this->m_cg1_relative_translation_loc).z = fVar10 * fVar6 + fVar4 * fVar9 + fVar5 * fVar8;
     this->m_flags = this->m_flags | 8;
   }
-  fVar12 = param_1->cg2_radius + param_1->cg1_radius;
+  fVar12 = d->cg2_radius + d->cg1_radius;
   this->m_geom_radii_sum = fVar12;
-  fVar12 = fVar12 + param_1->m_sep_thresh;
+  fVar12 = fVar12 + d->m_sep_thresh;
   this->m_gjk_sep_thresh = fVar12;
-  if (param_1->m_intersection_test_only == false) {
+  if (d->m_intersection_test_only == false) {
     fVar12 = 0.0011560001;
   }
   else {
@@ -1457,57 +1454,57 @@ phys_gjk_info::phys_collide_do_gjk_collide(phys_gjk_info *this,phys_gjk_input *p
     fVar12 = fVar12 * fVar12;
   }
   this->m_gjk_pen_thresh_sq = fVar12;
-  gVar11 = collide(this,param_1);
+  gVar11 = collide(this,d);
   if (gVar11 == GJK_INVALID) {
-    if (param_1->gjk_ci != (phys_gjk_cache_info *)0x0) {
-      puVar1 = &param_1->gjk_ci->m_flags;
+    if (d->gjk_ci != (phys_gjk_cache_info *)0x0) {
+      puVar1 = &d->gjk_ci->m_flags;
       *puVar1 = *puVar1 | 1;
-      puVar1 = &param_1->gjk_ci->m_flags;
+      puVar1 = &d->gjk_ci->m_flags;
       *puVar1 = *puVar1 & 0xfffffffb;
-      puVar1 = &param_1->gjk_ci->m_flags;
+      puVar1 = &d->gjk_ci->m_flags;
       *puVar1 = *puVar1 & 0xfffffff7;
     }
     return false;
   }
   if (gVar11 == GJK_SEPARATED) {
-    gjk_cache_update_separated(this,param_1);
+    gjk_cache_update_separated(this,d);
     return false;
   }
   if ((this->m_flags & 2) != 0) {
     if (this->m_w_set == 0xf) {
-      gjk_cache_update_invalid(this,param_1);
+      gjk_cache_update_invalid(this,d);
       return true;
     }
     if (gVar11 == GJK_VALID) {
       comp_v(this,this->m_w_set,&this->m_support_dir);
-      gjk_cache_update_separated(this,param_1);
+      gjk_cache_update_separated(this,d);
       return true;
     }
-    gjk_cache_update_test_only_penetrating(this,param_1);
+    gjk_cache_update_test_only_penetrating(this,d);
     return true;
   }
   if (this->m_w_set == 0xf) {
-    gjk_cache_update_invalid(this,param_1);
+    gjk_cache_update_invalid(this,d);
     return false;
   }
   comp_closest_points(this,this->m_w_set,&(this->cg1_cinfo_loc).m_p1,&(this->cg1_cinfo_loc).m_p2);
-  this_00 = &(this->cg1_cinfo_loc).m_n;
-  comp_v(this,this->m_w_set,this_00);
-  fVar12 = Abs(this_00);
-  phys_vec3::operator/=(this_00,fVar12);
-  fVar12 = param_1->cg1_radius;
+  v = &(this->cg1_cinfo_loc).m_n;
+  comp_v(this,this->m_w_set,v);
+  fVar12 = Abs(v);
+  phys_vec3::operator/=(v,fVar12);
+  fVar12 = d->cg1_radius;
   fVar2 = (this->cg1_cinfo_loc).m_n.y;
   fVar3 = (this->cg1_cinfo_loc).m_n.z;
-  (this->cg1_cinfo_loc).m_p1.x = (this->cg1_cinfo_loc).m_p1.x - fVar12 * this_00->x;
+  (this->cg1_cinfo_loc).m_p1.x = (this->cg1_cinfo_loc).m_p1.x - fVar12 * v->x;
   (this->cg1_cinfo_loc).m_p1.y = (this->cg1_cinfo_loc).m_p1.y - fVar2 * fVar12;
   (this->cg1_cinfo_loc).m_p1.z = (this->cg1_cinfo_loc).m_p1.z - fVar12 * fVar3;
-  fVar12 = param_1->cg2_radius;
+  fVar12 = d->cg2_radius;
   fVar2 = (this->cg1_cinfo_loc).m_n.y;
   fVar3 = (this->cg1_cinfo_loc).m_n.z;
-  (this->cg1_cinfo_loc).m_p2.x = (this->cg1_cinfo_loc).m_p2.x + fVar12 * this_00->x;
+  (this->cg1_cinfo_loc).m_p2.x = (this->cg1_cinfo_loc).m_p2.x + fVar12 * v->x;
   (this->cg1_cinfo_loc).m_p2.y = (this->cg1_cinfo_loc).m_p2.y + fVar2 * fVar12;
   (this->cg1_cinfo_loc).m_p2.z = fVar12 * fVar3 + (this->cg1_cinfo_loc).m_p2.z;
-  gjk_cache_update_colliding(this,param_1);
+  gjk_cache_update_colliding(this,d);
   return true;
 }
 

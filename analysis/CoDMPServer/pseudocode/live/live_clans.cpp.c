@@ -2,12 +2,12 @@
 
 // 009570C0  Clan_GetName  (live/live_clans.cpp:17)
 
-char * __cdecl Clan_GetName(int param_1)
+char * __cdecl Clan_GetName(int controllerIndex)
 
 {
   GamerSettingState *pGVar1;
   
-  pGVar1 = GamerProfile_GetProfileSettings(param_1);
+  pGVar1 = GamerProfile_GetProfileSettings(controllerIndex);
   return pGVar1->clanPrefix;
 }
 

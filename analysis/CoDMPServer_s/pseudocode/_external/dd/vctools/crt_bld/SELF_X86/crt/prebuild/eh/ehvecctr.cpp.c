@@ -7,15 +7,16 @@
 
 void __cdecl
 _eh_vector_constructor_iterator_
-          (void *param_1,uint param_2,int param_3,_func___thiscall_void_void_ptr *param_4,
-          _func___thiscall_void_void_ptr *param_5)
+          (void *ptr,uint size,int count,_func___thiscall_void_void_ptr *pCtor,
+          _func___thiscall_void_void_ptr *pDtor)
 
 {
-  undefined4 local_20;
+  int success;
+  int i;
   
-  for (local_20 = 0; local_20 < param_3; local_20 = local_20 + 1) {
-    (*param_4)(param_1);
-    param_1 = (void *)((int)param_1 + param_2);
+  for (i = 0; i < count; i = i + 1) {
+    (*pCtor)(ptr);
+    ptr = (void *)((int)ptr + size);
   }
   FUN_00963d58();
   return;

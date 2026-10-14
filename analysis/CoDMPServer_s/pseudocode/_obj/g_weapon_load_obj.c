@@ -7,38 +7,38 @@
 bool __cdecl G_ParseWeaponAccurayGraphs(WeaponDef *param_1)
 
 {
-  ulong uVar1;
-  int iVar2;
-  char cVar3;
-  uchar *puVar4;
-  undefined **ppuVar5;
-  WeaponDef *pWVar6;
+  ulong count;
+  int iVar1;
+  char cVar2;
+  uchar *dst;
+  undefined **ppuVar3;
+  WeaponDef *pWVar4;
   int unaff_EDI;
   int local_84;
   uchar local_80 [128];
   
-  ppuVar5 = &PTR_s_aivsai_00ae08fc;
-  pWVar6 = param_1 + 0x71c;
+  ppuVar3 = &PTR_s_aivsai_00ae08fc;
+  pWVar4 = param_1 + 0x71c;
   do {
     memset(local_80,'\0',0x80);
     local_84 = 0;
-    cVar3 = FUN_005cb1c0(param_1,*ppuVar5,local_80,&local_84);
-    iVar2 = local_84;
-    if (cVar3 == '\0') {
+    cVar2 = FUN_005cb1c0(param_1,*ppuVar3,local_80,&local_84);
+    iVar1 = local_84;
+    if (cVar2 == '\0') {
       return false;
     }
     if (0 < local_84) {
-      uVar1 = local_84 * 8;
-      puVar4 = Hunk_AllocLowAlignInternal(uVar1,unaff_EDI);
-      *(uchar **)pWVar6 = puVar4;
-      *(uchar **)(pWVar6 + 8) = puVar4;
-      memcpy(puVar4,local_80,uVar1);
-      *(int *)(pWVar6 + 0x10) = iVar2;
-      *(int *)(pWVar6 + 0x18) = iVar2;
+      count = local_84 * 8;
+      dst = Hunk_AllocLowAlignInternal(count,unaff_EDI);
+      *(uchar **)pWVar4 = dst;
+      *(uchar **)(pWVar4 + 8) = dst;
+      memcpy(dst,local_80,count);
+      *(int *)(pWVar4 + 0x10) = iVar1;
+      *(int *)(pWVar4 + 0x18) = iVar1;
     }
-    ppuVar5 = ppuVar5 + 1;
-    pWVar6 = pWVar6 + 4;
-  } while ((int)ppuVar5 < 0xae0904);
+    ppuVar3 = ppuVar3 + 1;
+    pWVar4 = pWVar4 + 4;
+  } while ((int)ppuVar3 < 0xae0904);
   return true;
 }
 

@@ -8,16 +8,16 @@ void __cdecl R_InitWind(void)
   int iVar1;
   WindState *pWVar2;
   WindState *pWVar3;
-  uint local_8;
+  uint n;
   
   frontendWind.windDirection[0] = 1.0;
   frontendWind.windDirection[1] = 0.0;
   frontendWind.windDirection[2] = 0.0;
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    frontendWind.windSpringAngle[local_8] = 0.0;
-    frontendWind.windRustleAngle[local_8][0] = 0.0;
-    frontendWind.windRustleAngle[local_8][1] = 0.0;
-    frontendWind.windRustleAngle[local_8][2] = 0.0;
+  for (n = 0; n < 0x10; n = n + 1) {
+    frontendWind.windSpringAngle[n] = 0.0;
+    frontendWind.windRustleAngle[n][0] = 0.0;
+    frontendWind.windRustleAngle[n][1] = 0.0;
+    frontendWind.windRustleAngle[n][2] = 0.0;
   }
   frontendWind.customWind.location[0] = 0.0;
   frontendWind.customWind.location[1] = 0.0;
@@ -39,12 +39,12 @@ void __cdecl R_InitWind(void)
 
 // 00A5B730  R_SetWindDirection  (gfx_d3d/r_wind.cpp:68)
 
-void __cdecl R_SetWindDirection(float *param_1,float param_2)
+void __cdecl R_SetWindDirection(float *dir,float speed)
 
 {
-  frontendWind.speed = param_2;
-  frontendWind.windDirection[0] = *param_1;
-  frontendWind.windDirection[1] = param_1[1];
+  frontendWind.speed = speed;
+  frontendWind.windDirection[0] = *dir;
+  frontendWind.windDirection[1] = dir[1];
   frontendWind.windDirection[2] = 0.0;
   Vec3NormalizeFast(frontendWind.windDirection);
   return;
@@ -53,13 +53,13 @@ void __cdecl R_SetWindDirection(float *param_1,float param_2)
 
 // 00A5B7A0  R_SetVariantWindSpringAngle  (gfx_d3d/r_wind.cpp:77)
 
-void __cdecl R_SetVariantWindSpringAngle(uint param_1,float param_2)
+void __cdecl R_SetVariantWindSpringAngle(uint index,float angle)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0xf < param_1) {
+  if (0xf < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_wind.cpp",0x4e,0,
                              "index doesn\'t index ARRAY_COUNT(frontendWind.windSpringAngle)\n\t%i not in [0, %i)"
                             );
@@ -69,20 +69,20 @@ void __cdecl R_SetVariantWindSpringAngle(uint param_1,float param_2)
       return;
     }
   }
-  frontendWind.windSpringAngle[param_1] = param_2;
+  frontendWind.windSpringAngle[index] = angle;
   return;
 }
 
 
 // 00A5B7E0  R_SetVariantWindRustleAngle  (gfx_d3d/r_wind.cpp:84)
 
-void __cdecl R_SetVariantWindRustleAngle(uint param_1,float *param_2)
+void __cdecl R_SetVariantWindRustleAngle(uint windIndex,float *angles)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0xf < param_1) {
+  if (0xf < windIndex) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_wind.cpp",0x55,0,
                              "windIndex doesn\'t index ARRAY_COUNT(frontendWind.windRustleAngle)\n\t%i not in [0, %i)"
                             );
@@ -92,9 +92,9 @@ void __cdecl R_SetVariantWindRustleAngle(uint param_1,float *param_2)
       return;
     }
   }
-  frontendWind.windRustleAngle[param_1][0] = *param_2;
-  frontendWind.windRustleAngle[param_1][1] = param_2[1];
-  frontendWind.windRustleAngle[param_1][2] = param_2[2];
+  frontendWind.windRustleAngle[windIndex][0] = *angles;
+  frontendWind.windRustleAngle[windIndex][1] = angles[1];
+  frontendWind.windRustleAngle[windIndex][2] = angles[2];
   return;
 }
 
@@ -121,30 +121,30 @@ void __cdecl R_WindStartBackend(void)
 
 // 00A5B870  R_SetWindShaderConstants  (gfx_d3d/r_wind.cpp:96)
 
-void __cdecl R_SetWindShaderConstants(GfxCmdBufSourceState *param_1)
+void __cdecl R_SetWindShaderConstants(GfxCmdBufSourceState *source)
 
 {
-  float local_28;
+  float springConstant;
   float local_24;
   float local_20;
   float local_1c;
-  uint local_18;
-  float local_14;
+  uint idx;
+  float wind4;
   float local_10;
   float local_c;
   float local_8;
   
-  local_14 = backendWind.windDirection[0];
+  wind4 = backendWind.windDirection[0];
   local_10 = backendWind.windDirection[1];
   local_c = backendWind.windDirection[2];
   local_8 = backendWind.speed;
-  R_UpdateCodeConstantFromVec4(param_1,0x4f,&local_14);
-  for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1) {
-    local_28 = backendWind.windSpringAngle[local_18];
-    local_24 = backendWind.windRustleAngle[local_18][0];
-    local_20 = backendWind.windRustleAngle[local_18][1];
-    local_1c = backendWind.windRustleAngle[local_18][2];
-    R_UpdateCodeConstantFromVec4(param_1,local_18 + 0x62,&local_28);
+  R_UpdateCodeConstantFromVec4(source,0x4f,&wind4);
+  for (idx = 0; idx < 0x10; idx = idx + 1) {
+    springConstant = backendWind.windSpringAngle[idx];
+    local_24 = backendWind.windRustleAngle[idx][0];
+    local_20 = backendWind.windRustleAngle[idx][1];
+    local_1c = backendWind.windRustleAngle[idx][2];
+    R_UpdateCodeConstantFromVec4(source,idx + 0x62,&springConstant);
   }
   return;
 }
@@ -152,53 +152,53 @@ void __cdecl R_SetWindShaderConstants(GfxCmdBufSourceState *param_1)
 
 // 00A5B940  RB_SetCustomWindConstants  (gfx_d3d/r_wind.cpp:121)
 
-void __cdecl RB_SetCustomWindConstants(GfxCmdBufSourceState *param_1,float *param_2)
+void __cdecl RB_SetCustomWindConstants(GfxCmdBufSourceState *source,float *drawSurfListViewOrigin)
 
 {
-  float local_2c;
+  float eyeOffset;
   float local_28;
   float local_24;
-  float local_14;
+  float wind4;
   float local_10;
   float local_c;
   float local_8;
   
-  if (param_2[3] == 0.0) {
-    local_2c = 0.0;
+  if (drawSurfListViewOrigin[3] == 0.0) {
+    eyeOffset = 0.0;
     local_28 = 0.0;
     local_24 = 0.0;
   }
   else {
-    local_2c = *param_2;
-    local_28 = param_2[1];
-    local_24 = param_2[2];
+    eyeOffset = *drawSurfListViewOrigin;
+    local_28 = drawSurfListViewOrigin[1];
+    local_24 = drawSurfListViewOrigin[2];
   }
-  local_14 = backendWind.customWind.location[0] - local_2c;
+  wind4 = backendWind.customWind.location[0] - eyeOffset;
   local_10 = backendWind.customWind.location[1] - local_28;
   local_c = backendWind.customWind.location[2] - local_24;
   local_8 = backendWind.customWind.radius;
-  R_UpdateCodeConstantFromVec4(param_1,0xc0,&local_14);
-  local_14 = backendWind.customWind.rustleAngle[0];
+  R_UpdateCodeConstantFromVec4(source,0xc0,&wind4);
+  wind4 = backendWind.customWind.rustleAngle[0];
   local_10 = backendWind.customWind.rustleAngle[1];
   local_c = backendWind.customWind.rustleAngle[2];
   local_8 = 0.0;
-  R_UpdateCodeConstantFromVec4(param_1,0xc1,&local_14);
+  R_UpdateCodeConstantFromVec4(source,0xc1,&wind4);
   return;
 }
 
 
 // 00A5BAC0  R_SetLocalWind  (gfx_d3d/r_wind.cpp:142)
 
-void __cdecl R_SetLocalWind(float *param_1,float param_2,float *param_3)
+void __cdecl R_SetLocalWind(float *position,float radius,float *rustleAngle)
 
 {
-  frontendWind.customWind.location[0] = *param_1;
-  frontendWind.customWind.location[1] = param_1[1];
-  frontendWind.customWind.location[2] = param_1[2];
-  frontendWind.customWind.rustleAngle[0] = *param_3;
-  frontendWind.customWind.rustleAngle[1] = param_3[1];
-  frontendWind.customWind.rustleAngle[2] = param_3[2];
-  frontendWind.customWind.radius = param_2;
+  frontendWind.customWind.location[0] = *position;
+  frontendWind.customWind.location[1] = position[1];
+  frontendWind.customWind.location[2] = position[2];
+  frontendWind.customWind.rustleAngle[0] = *rustleAngle;
+  frontendWind.customWind.rustleAngle[1] = rustleAngle[1];
+  frontendWind.customWind.rustleAngle[2] = rustleAngle[2];
+  frontendWind.customWind.radius = radius;
   return;
 }
 

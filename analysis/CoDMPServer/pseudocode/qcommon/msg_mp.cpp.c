@@ -16,17 +16,17 @@ float (*) [3] __cdecl MSG_GetMapCenter(void)
 
 // 006E2F80  GetMinBitCountForNum  (qcommon/msg_mp.cpp:54)
 
-int __cdecl GetMinBitCountForNum(uint param_1)
+int __cdecl GetMinBitCountForNum(uint num)
 
 {
   uint uVar1;
   
   uVar1 = 0x1f;
-  if (param_1 != 0) {
-    for (; param_1 >> uVar1 == 0; uVar1 = uVar1 - 1) {
+  if (num != 0) {
+    for (; num >> uVar1 == 0; uVar1 = uVar1 - 1) {
     }
   }
-  if (param_1 == 0) {
+  if (num == 0) {
     uVar1 = 0x3f;
   }
   return 0x20 - (uVar1 ^ 0x1f);
@@ -37,18 +37,18 @@ int __cdecl GetMinBitCountForNum(uint param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_Init(msg_t *param_1,uchar *param_2,int param_3)
+void __cdecl MSG_Init(msg_t *buf,uchar *data,int length)
 
 {
   if (msgInit == 0) {
     MSG_InitHuffman();
   }
-  memset((uchar *)param_1,'\0',0x30);
-  param_1->data = param_2;
-  param_1->maxsize = param_3;
-  param_1->readOnly = 0;
-  param_1->splitData = (uchar *)0x0;
-  param_1->splitSize = 0;
+  memset((uchar *)buf,'\0',0x30);
+  buf->data = data;
+  buf->maxsize = length;
+  buf->readOnly = 0;
+  buf->splitData = (uchar *)0x0;
+  buf->splitSize = 0;
   return;
 }
 
@@ -56,19 +56,22 @@ void __cdecl MSG_Init(msg_t *param_1,uchar *param_2,int param_3)
 // 006E8EF0  areAllBitsEqual  (qcommon/bitarray.h:89)
 
 bool __thiscall
-bitarray<51>::areAllBitsEqual(bitarray<51> *this,bitarray<51> *param_1,bitarray<51> *param_2)
+bitarray<51>::areAllBitsEqual
+          (bitarray<51> *this,bitarray<51> *otherBitSet,bitarray<51> *ignoreMaskBitSet)
 
 {
-  int local_8;
+  int against_masked;
+  int this_masked;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (1 < local_8) {
+    if (1 < i) {
       return true;
     }
-    if ((~param_2->array[local_8] & this->array[local_8]) !=
-        (~param_2->array[local_8] & param_1->array[local_8])) break;
-    local_8 = local_8 + 1;
+    if ((~ignoreMaskBitSet->array[i] & this->array[i]) !=
+        (~ignoreMaskBitSet->array[i] & otherBitSet->array[i])) break;
+    i = i + 1;
   }
   return false;
 }
@@ -78,13 +81,13 @@ bitarray<51>::areAllBitsEqual(bitarray<51> *this,bitarray<51> *param_1,bitarray<
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_InitReadOnly(msg_t *param_1,uchar *param_2,int param_3)
+void __cdecl MSG_InitReadOnly(msg_t *buf,uchar *data,int length)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (uchar *)0x0) {
+  if (data == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x5e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -95,12 +98,12 @@ void __cdecl MSG_InitReadOnly(msg_t *param_1,uchar *param_2,int param_3)
   if (msgInit == 0) {
     MSG_InitHuffman();
   }
-  param_1->readOnly = 1;
-  param_1->data = param_2;
-  param_1->maxsize = param_3;
-  param_1->cursize = param_3;
-  param_1->splitData = (uchar *)0x0;
-  param_1->splitSize = 0;
+  buf->readOnly = 1;
+  buf->data = data;
+  buf->maxsize = length;
+  buf->cursize = length;
+  buf->splitData = (uchar *)0x0;
+  buf->splitSize = 0;
   return;
 }
 
@@ -109,14 +112,13 @@ void __cdecl MSG_InitReadOnly(msg_t *param_1,uchar *param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl
-MSG_InitReadOnlySplit(msg_t *param_1,uchar *param_2,int param_3,uchar *param_4,int param_5)
+void __cdecl MSG_InitReadOnlySplit(msg_t *buf,uchar *data,int length,uchar *data2,int length2)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (uchar *)0x0) {
+  if (data == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x6f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -124,7 +126,7 @@ MSG_InitReadOnlySplit(msg_t *param_1,uchar *param_2,int param_3,uchar *param_4,i
       return;
     }
   }
-  if (param_4 == (uchar *)0x0) {
+  if (data2 == (uchar *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x70,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -135,12 +137,12 @@ MSG_InitReadOnlySplit(msg_t *param_1,uchar *param_2,int param_3,uchar *param_4,i
   if (msgInit == 0) {
     MSG_InitHuffman();
   }
-  param_1->readOnly = 1;
-  param_1->data = param_2;
-  param_1->maxsize = param_3 + param_5;
-  param_1->cursize = param_3;
-  param_1->splitData = param_4;
-  param_1->splitSize = param_5;
+  buf->readOnly = 1;
+  buf->data = data;
+  buf->maxsize = length + length2;
+  buf->cursize = length;
+  buf->splitData = data2;
+  buf->splitSize = length2;
   return;
 }
 
@@ -149,12 +151,12 @@ MSG_InitReadOnlySplit(msg_t *param_1,uchar *param_2,int param_3,uchar *param_4,i
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_BeginReading(msg_t *param_1)
+void __cdecl MSG_BeginReading(msg_t *msg)
 
 {
-  param_1->overflowed = 0;
-  param_1->readcount = 0;
-  param_1->bit = 0;
+  msg->overflowed = 0;
+  msg->readcount = 0;
+  msg->bit = 0;
   return;
 }
 
@@ -163,12 +165,12 @@ void __cdecl MSG_BeginReading(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_Discard(msg_t *param_1)
+void __cdecl MSG_Discard(msg_t *msg)
 
 {
-  param_1->overflowed = 1;
-  param_1->cursize = param_1->readcount;
-  param_1->splitSize = 0;
+  msg->overflowed = 1;
+  msg->cursize = msg->readcount;
+  msg->splitSize = 0;
   return;
 }
 
@@ -177,7 +179,7 @@ void __cdecl MSG_Discard(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_GetByte(msg_t *param_1,int param_2)
+int __cdecl MSG_GetByte(msg_t *msg,int where)
 
 {
   byte bVar1;
@@ -185,11 +187,11 @@ int __cdecl MSG_GetByte(msg_t *param_1,int param_2)
   bool bVar3;
   int iVar4;
   
-  if (param_2 < param_1->cursize) {
-    bVar1 = param_1->data[param_2];
+  if (where < msg->cursize) {
+    bVar1 = msg->data[where];
   }
   else {
-    if (param_1->splitData == (uchar *)0x0) {
+    if (msg->splitData == (uchar *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x93,0,"%s")
       ;
       if (!bVar3) {
@@ -198,7 +200,7 @@ int __cdecl MSG_GetByte(msg_t *param_1,int param_2)
         return iVar4;
       }
     }
-    bVar1 = param_1->splitData[param_2 - param_1->cursize];
+    bVar1 = msg->splitData[where - msg->cursize];
   }
   return (uint)bVar1;
 }
@@ -208,10 +210,10 @@ int __cdecl MSG_GetByte(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_GetUsedBitCount(msg_t *param_1)
+int __cdecl MSG_GetUsedBitCount(msg_t *msg)
 
 {
-  return (param_1->cursize + param_1->splitSize) * 8 - (8U - param_1->bit & 7);
+  return (msg->cursize + msg->splitSize) * 8 - (8U - msg->bit & 7);
 }
 
 
@@ -219,10 +221,10 @@ int __cdecl MSG_GetUsedBitCount(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_GetNumBitsRead(msg_t *param_1)
+int __cdecl MSG_GetNumBitsRead(msg_t *msg)
 
 {
-  return param_1->readcount * 8 - (8U - param_1->bit & 7);
+  return msg->readcount * 8 - (8U - msg->bit & 7);
 }
 
 
@@ -230,14 +232,15 @@ int __cdecl MSG_GetNumBitsRead(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_SetBookmark(msg_t *param_1,msg_bookmark_t *param_2)
+void __cdecl MSG_SetBookmark(msg_t *msg,msg_bookmark_t *bookmark)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
+  int msgBit;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xb8,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -245,13 +248,13 @@ void __cdecl MSG_SetBookmark(msg_t *param_1,msg_bookmark_t *param_2)
       return;
     }
   }
-  iVar1 = param_1->bit;
-  param_2->overflowed = param_1->overflowed;
-  param_2->cursize = param_1->cursize;
-  param_2->bit = iVar1;
-  param_2->lastEntityRef = param_1->lastEntityRef;
-  param_2->bitByte = param_1->data[iVar1 >> 3];
-  param_2->readcount = param_1->readcount;
+  iVar1 = msg->bit;
+  bookmark->overflowed = msg->overflowed;
+  bookmark->cursize = msg->cursize;
+  bookmark->bit = iVar1;
+  bookmark->lastEntityRef = msg->lastEntityRef;
+  bookmark->bitByte = msg->data[iVar1 >> 3];
+  bookmark->readcount = msg->readcount;
   return;
 }
 
@@ -260,14 +263,15 @@ void __cdecl MSG_SetBookmark(msg_t *param_1,msg_bookmark_t *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_GotoBookmark(msg_t *param_1,msg_bookmark_t *param_2)
+void __cdecl MSG_GotoBookmark(msg_t *msg,msg_bookmark_t *bookmark)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
+  int msgBit;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xc5,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -275,13 +279,13 @@ void __cdecl MSG_GotoBookmark(msg_t *param_1,msg_bookmark_t *param_2)
       return;
     }
   }
-  iVar1 = param_2->bit;
-  param_1->overflowed = param_2->overflowed;
-  param_1->cursize = param_2->cursize;
-  param_1->bit = iVar1;
-  param_1->lastEntityRef = param_2->lastEntityRef;
-  param_1->data[iVar1 >> 3] = param_2->bitByte;
-  param_1->readcount = param_2->readcount;
+  iVar1 = bookmark->bit;
+  msg->overflowed = bookmark->overflowed;
+  msg->cursize = bookmark->cursize;
+  msg->bit = iVar1;
+  msg->lastEntityRef = bookmark->lastEntityRef;
+  msg->data[iVar1 >> 3] = bookmark->bitByte;
+  msg->readcount = bookmark->readcount;
   return;
 }
 
@@ -290,14 +294,15 @@ void __cdecl MSG_GotoBookmark(msg_t *param_1,msg_bookmark_t *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteBits(msg_t *param_1,int param_2,int param_3)
+void __cdecl MSG_WriteBits(msg_t *msg,int value,int bits)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int bit;
   
-  if (0x20 < (uint)param_3) {
+  if (0x20 < (uint)bits) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x115,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -305,7 +310,7 @@ void __cdecl MSG_WriteBits(msg_t *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x116,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -313,24 +318,23 @@ void __cdecl MSG_WriteBits(msg_t *param_1,int param_2,int param_3)
       return;
     }
   }
-  if (param_1->maxsize - param_1->cursize < 4) {
-    param_1->overflowed = 1;
+  if (msg->maxsize - msg->cursize < 4) {
+    msg->overflowed = 1;
   }
   else {
-    while (param_3 != 0) {
-      param_3 = param_3 + -1;
-      uVar3 = param_1->bit & 7;
+    while (bits != 0) {
+      bits = bits + -1;
+      uVar3 = msg->bit & 7;
       if (uVar3 == 0) {
-        param_1->bit = param_1->cursize << 3;
-        param_1->data[param_1->cursize] = '\0';
-        param_1->cursize = param_1->cursize + 1;
+        msg->bit = msg->cursize << 3;
+        msg->data[msg->cursize] = '\0';
+        msg->cursize = msg->cursize + 1;
       }
-      if ((param_2 & 1U) != 0) {
-        param_1->data[param_1->bit >> 3] =
-             param_1->data[param_1->bit >> 3] | (byte)(1 << (sbyte)uVar3);
+      if ((value & 1U) != 0) {
+        msg->data[msg->bit >> 3] = msg->data[msg->bit >> 3] | (byte)(1 << (sbyte)uVar3);
       }
-      param_1->bit = param_1->bit + 1;
-      param_2 = param_2 >> 1;
+      msg->bit = msg->bit + 1;
+      value = value >> 1;
     }
   }
   return;
@@ -341,29 +345,30 @@ void __cdecl MSG_WriteBits(msg_t *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteBit0(msg_t *param_1)
+void __cdecl MSG_WriteBit0(msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
+  int bit;
   
-  if ((param_1->readOnly != 0) &&
+  if ((msg->readOnly != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x135,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->bit & 7U) == 0) {
-    if (param_1->maxsize <= param_1->cursize) {
-      param_1->overflowed = 1;
+  if ((msg->bit & 7U) == 0) {
+    if (msg->maxsize <= msg->cursize) {
+      msg->overflowed = 1;
       return;
     }
-    param_1->bit = param_1->cursize << 3;
-    param_1->data[param_1->cursize] = '\0';
-    param_1->cursize = param_1->cursize + 1;
+    msg->bit = msg->cursize << 3;
+    msg->data[msg->cursize] = '\0';
+    msg->cursize = msg->cursize + 1;
   }
-  param_1->bit = param_1->bit + 1;
+  msg->bit = msg->bit + 1;
   return;
 }
 
@@ -372,32 +377,33 @@ void __cdecl MSG_WriteBit0(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteBit1(msg_t *param_1)
+void __cdecl MSG_WriteBit1(msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
+  int bit;
   
-  if ((param_1->readOnly != 0) &&
+  if ((msg->readOnly != 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x14c,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  uVar3 = param_1->bit & 7;
+  uVar3 = msg->bit & 7;
   if (uVar3 == 0) {
-    if (param_1->maxsize <= param_1->cursize) {
-      param_1->overflowed = 1;
+    if (msg->maxsize <= msg->cursize) {
+      msg->overflowed = 1;
       return;
     }
-    param_1->bit = param_1->cursize << 3;
-    param_1->data[param_1->cursize] = '\0';
-    param_1->cursize = param_1->cursize + 1;
+    msg->bit = msg->cursize << 3;
+    msg->data[msg->cursize] = '\0';
+    msg->cursize = msg->cursize + 1;
   }
-  param_1->data[param_1->bit >> 3] = param_1->data[param_1->bit >> 3] | (byte)(1 << (sbyte)uVar3);
-  param_1->bit = param_1->bit + 1;
+  msg->data[msg->bit >> 3] = msg->data[msg->bit >> 3] | (byte)(1 << (sbyte)uVar3);
+  msg->bit = msg->bit + 1;
   return;
 }
 
@@ -406,42 +412,43 @@ void __cdecl MSG_WriteBit1(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadBits(msg_t *param_1,int param_2)
+int __cdecl MSG_ReadBits(msg_t *msg,int bits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
-  int local_c;
-  uint local_8;
+  int bit;
+  int i;
+  int value;
   
-  if ((0x20 < (uint)param_2) &&
+  if ((0x20 < (uint)bits) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x167,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_8 = 0;
-  local_c = 0;
+  value = 0;
+  i = 0;
   do {
-    if (param_2 <= local_c) {
-      return local_8;
+    if (bits <= i) {
+      return value;
     }
-    uVar4 = param_1->bit & 7;
+    uVar4 = msg->bit & 7;
     if (uVar4 == 0) {
-      if (param_1->cursize + param_1->splitSize <= param_1->readcount) {
-        param_1->overflowed = 1;
+      if (msg->cursize + msg->splitSize <= msg->readcount) {
+        msg->overflowed = 1;
         return -1;
       }
-      param_1->bit = param_1->readcount << 3;
-      param_1->readcount = param_1->readcount + 1;
+      msg->bit = msg->readcount << 3;
+      msg->readcount = msg->readcount + 1;
     }
-    iVar3 = MSG_GetByte(param_1,param_1->bit >> 3);
-    local_8 = (iVar3 >> (sbyte)uVar4 & 1U) << ((byte)local_c & 0x1f) | local_8;
-    param_1->bit = param_1->bit + 1;
-    local_c = local_c + 1;
+    iVar3 = MSG_GetByte(msg,msg->bit >> 3);
+    value = (iVar3 >> (sbyte)uVar4 & 1U) << ((byte)i & 0x1f) | value;
+    msg->bit = msg->bit + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -450,102 +457,104 @@ int __cdecl MSG_ReadBits(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadBit(msg_t *param_1)
+int __cdecl MSG_ReadBit(msg_t *msg)
 
 {
   int iVar1;
   uint uVar2;
+  int bit;
+  int value;
   
-  uVar2 = param_1->bit & 7;
+  uVar2 = msg->bit & 7;
   if (uVar2 == 0) {
-    if (param_1->cursize + param_1->splitSize <= param_1->readcount) {
-      param_1->overflowed = 1;
+    if (msg->cursize + msg->splitSize <= msg->readcount) {
+      msg->overflowed = 1;
       return -1;
     }
-    param_1->bit = param_1->readcount << 3;
-    param_1->readcount = param_1->readcount + 1;
+    msg->bit = msg->readcount << 3;
+    msg->readcount = msg->readcount + 1;
   }
-  iVar1 = MSG_GetByte(param_1,param_1->bit >> 3);
-  param_1->bit = param_1->bit + 1;
+  iVar1 = MSG_GetByte(msg,msg->bit >> 3);
+  msg->bit = msg->bit + 1;
   return iVar1 >> (sbyte)uVar2 & 1;
 }
 
 
 // 006E3790  MSG_CompressWithZLib  (qcommon/msg_mp.cpp:417)
 
-int __cdecl MSG_CompressWithZLib(uchar *param_1,int param_2,uchar *param_3,int param_4)
+int __cdecl MSG_CompressWithZLib(uchar *from,int inSizeBytes,uchar *to,int outSizeBytes)
 
 {
   int local_40;
-  int local_3c;
-  z_stream_s local_38;
+  int err;
+  z_stream_s stream;
   
-  local_38.next_in = param_1;
-  local_38.avail_in = param_2;
-  local_38.next_out = param_3;
-  local_38.avail_out = param_4;
-  local_38.data_type = 0;
-  local_38.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
-  local_38.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
-  local_38.opaque = (uchar *)0x0;
-  local_3c = deflateInit2_(&local_38,9,8,-0xd,1,0,"1.2.3",0x34);
-  if (local_3c == 0) {
-    local_40 = deflate(&local_38,4);
+  stream.next_in = from;
+  stream.avail_in = inSizeBytes;
+  stream.next_out = to;
+  stream.avail_out = outSizeBytes;
+  stream.data_type = 0;
+  stream.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
+  stream.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
+  stream.opaque = (uchar *)0x0;
+  err = deflateInit2_(&stream,9,8,-0xd,1,0,"1.2.3",0x34);
+  if (err == 0) {
+    local_40 = deflate(&stream,4);
     if (local_40 == 1) {
-      local_3c = deflateEnd(&local_38);
+      err = deflateEnd(&stream);
     }
     else {
-      deflateEnd(&local_38);
+      deflateEnd(&stream);
       if (local_40 == 0) {
         local_40 = -5;
       }
-      local_3c = local_40;
+      err = local_40;
     }
   }
-  if (local_3c != 0) {
-    local_38.total_out = 0;
+  if (err != 0) {
+    stream.total_out = 0;
   }
-  return local_38.total_out;
+  return stream.total_out;
 }
 
 
 // 006E3850  MSG_WriteBitsCompress  (qcommon/msg_mp.cpp:453)
 
 int __cdecl
-MSG_WriteBitsCompress(bool param_1,uchar *param_2,int param_3,uchar *param_4,int param_5)
+MSG_WriteBitsCompress(bool trainHuffman,uchar *from,int fromSizeBytes,uchar *to,int toSizeBytes)
 
 {
-  int local_10;
-  int local_c;
-  int local_8;
+  int bit;
+  int compressedSize;
+  int i;
   
   if ((msg_zlibCompress->current).enabled != false) {
-    *param_4 = '\x02';
-    local_c = MSG_CompressWithZLib(param_2,param_3,param_4 + 1,param_5 + -1);
-    if ((local_c != 0) && (local_c < param_3 + 1)) {
+    *to = '\x02';
+    compressedSize = MSG_CompressWithZLib(from,fromSizeBytes,to + 1,toSizeBytes + -1);
+    if ((compressedSize != 0) && (compressedSize < fromSizeBytes + 1)) {
       if ((msg_zlibCompressOutput->current).enabled != false) {
         Com_Printf(0xf,"zlib compress %d->%d\n");
       }
-      return local_c + 1;
+      return compressedSize + 1;
     }
   }
-  if (param_1) {
-    for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-      huffBytesSeen[param_2[local_8]] = huffBytesSeen[param_2[local_8]] + 1;
+  if (trainHuffman) {
+    for (i = 0; i < fromSizeBytes; i = i + 1) {
+      huffBytesSeen[from[i]] = huffBytesSeen[from[i]] + 1;
     }
   }
-  *param_4 = '\x01';
-  local_10 = 0;
-  for (local_8 = 0; local_8 < param_3; local_8 = local_8 + 1) {
-    Huff_offsetTransmit(&msgHuff.compressDecompress,(uint)param_2[local_8],param_4 + 1,&local_10);
+  *to = '\x01';
+  bit = 0;
+  for (i = 0; i < fromSizeBytes; i = i + 1) {
+    Huff_offsetTransmit(&msgHuff.compressDecompress,(uint)from[i],to + 1,&bit);
   }
-  local_c = (local_10 + 7 >> 3) + 1;
-  if (param_3 + 1 < local_c) {
-    *param_4 = '\0';
-    memcpy(param_4 + 1,param_2,param_3);
-    local_c = param_3 + 1;
+  compressedSize = (bit + 7 >> 3) + 1;
+  if (fromSizeBytes + 1 < compressedSize) {
+    *to = '\0';
+    memcpy(to + 1,from,fromSizeBytes);
+    compressedSize = fromSizeBytes + 1;
   }
-  return local_c;
+  return compressedSize;
 }
 
 
@@ -554,9 +563,9 @@ MSG_WriteBitsCompress(bool param_1,uchar *param_2,int param_3,uchar *param_4,int
 void __cdecl showHuffmanData(void)
 
 {
-  uint local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x100; local_8 = local_8 + 1) {
+  for (i = 0; (uint)i < 0x100; i = i + 1) {
     Com_Printf(0xf,"\t%i,\t\t// %i\n");
   }
   return;
@@ -565,97 +574,96 @@ void __cdecl showHuffmanData(void)
 
 // 006E3A00  MSG_DecompressWithZLib  (qcommon/msg_mp.cpp:506)
 
-int __cdecl MSG_DecompressWithZLib(uchar *param_1,int param_2,uchar *param_3,int param_4)
+int __cdecl MSG_DecompressWithZLib(uchar *from,int inSizeBytes,uchar *to,int outSizeBytes)
 
 {
   int local_40;
-  int local_3c;
-  z_stream_s local_38;
+  int err;
+  z_stream_s stream;
   
-  local_38.next_in = param_1;
-  local_38.avail_in = param_2;
-  local_38.next_out = param_3;
-  local_38.avail_out = param_4;
-  local_38.data_type = 0;
-  local_38.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
-  local_38.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
-  local_38.opaque = (uchar *)0x0;
-  local_3c = inflateInit2_(&local_38,-0xd,"1.2.3",0x34);
-  if (local_3c == 0) {
-    local_40 = inflate(&local_38,4);
+  stream.next_in = from;
+  stream.avail_in = inSizeBytes;
+  stream.next_out = to;
+  stream.avail_out = outSizeBytes;
+  stream.data_type = 0;
+  stream.zalloc = (_func___cdecl_uchar_ptr_uchar_ptr_uint_uint *)0x0;
+  stream.zfree = (_func___cdecl_void_uchar_ptr_uchar_ptr *)0x0;
+  stream.opaque = (uchar *)0x0;
+  err = inflateInit2_(&stream,-0xd,"1.2.3",0x34);
+  if (err == 0) {
+    local_40 = inflate(&stream,4);
     if (local_40 == 1) {
-      local_3c = inflateEnd(&local_38);
+      err = inflateEnd(&stream);
     }
     else {
-      inflateEnd(&local_38);
+      inflateEnd(&stream);
       if (local_40 == 0) {
         local_40 = -5;
       }
-      local_3c = local_40;
+      err = local_40;
     }
   }
-  if (local_3c != 0) {
-    local_38.total_out = 0;
+  if (err != 0) {
+    stream.total_out = 0;
   }
-  return local_38.total_out;
+  return stream.total_out;
 }
 
 
 // 006E3AC0  MSG_ReadBitsCompress  (qcommon/msg_mp.cpp:542)
 
-int __cdecl MSG_ReadBitsCompress(uchar *param_1,int param_2,uchar *param_3,int param_4)
+int __cdecl MSG_ReadBitsCompress(uchar *from,int fromSizeBytes,uchar *to,int toSizeBytes)
 
 {
   code *pcVar1;
   bool bVar2;
-  ulong uVar3;
-  char *pcVar4;
-  int iVar5;
-  uchar *puVar6;
-  int local_1c;
-  uchar *local_18;
-  int local_14;
-  uchar local_d;
-  undefined4 local_c;
-  uchar local_8 [4];
+  ulong count;
+  char *fmt;
+  int iVar3;
+  uchar *src;
+  int bit;
+  uchar *data;
+  int bits;
+  uchar compressionType;
+  int i;
+  uchar get [4];
   
-  local_d = *param_1;
-  puVar6 = param_1 + 1;
-  uVar3 = param_2 - 1;
-  if (local_d == '\0') {
-    memcpy(param_3,puVar6,uVar3);
+  compressionType = *from;
+  src = from + 1;
+  count = fromSizeBytes - 1;
+  if (compressionType == '\0') {
+    memcpy(to,src,count);
   }
-  else if (local_d == '\x01') {
-    local_14 = uVar3 * 8;
-    local_c = 0;
-    local_18 = param_3;
-    local_1c = 0;
-    local_d = 1;
-    while (local_1c < local_14) {
-      Huff_offsetReceive(msgHuff.compressDecompress.tree,(int *)local_8,puVar6,&local_1c);
-      *local_18 = local_8[0];
-      local_18 = local_18 + 1;
+  else if (compressionType == '\x01') {
+    bits = count * 8;
+    i = 0;
+    data = to;
+    bit = 0;
+    compressionType = '\x01';
+    while (bit < bits) {
+      Huff_offsetReceive(msgHuff.compressDecompress.tree,(int *)get,src,&bit);
+      *data = get[0];
+      data = data + 1;
     }
-    uVar3 = (int)local_18 - (int)param_3;
+    count = (int)data - (int)to;
   }
-  else if (local_d == '\x02') {
-    uVar3 = MSG_DecompressWithZLib(puVar6,uVar3,param_3,param_4);
+  else if (compressionType == '\x02') {
+    count = MSG_DecompressWithZLib(src,count,to,toSizeBytes);
     if ((msg_zlibCompressOutput->current).enabled != false) {
       Com_Printf(0xf,"zlib decompress %d\n");
     }
   }
   else {
-    pcVar4 = va("Unknown compression protocol %d");
-    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x242,0,pcVar4
-                            );
+    fmt = va("Unknown compression protocol %d");
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x242,0,fmt);
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
-      iVar5 = (*pcVar1)();
-      return iVar5;
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
-    uVar3 = 0;
+    count = 0;
   }
-  return uVar3;
+  return count;
 }
 
 
@@ -663,21 +671,22 @@ int __cdecl MSG_ReadBitsCompress(uchar *param_1,int param_2,uchar *param_3,int p
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_Embed(msg_t *param_1,msg_t *param_2)
+void __cdecl MSG_Embed(msg_t *dest,msg_t *src)
 
 {
-  uint uVar1;
+  uint value;
+  int padBits;
   
-  if (param_1->maxsize - param_1->cursize < param_2->cursize + 1) {
-    param_1->overflowed = 1;
+  if (dest->maxsize - dest->cursize < src->cursize + 1) {
+    dest->overflowed = 1;
   }
   else {
-    uVar1 = 5U - param_1->bit & 7;
-    MSG_WriteBits(param_1,uVar1,3);
-    MSG_WriteBits(param_1,0,uVar1);
-    memcpy(param_1->data + param_1->cursize,param_2->data,param_2->cursize);
-    param_1->bit = param_2->bit + param_1->cursize * 8;
-    param_1->cursize = param_1->cursize + param_2->cursize;
+    value = 5U - dest->bit & 7;
+    MSG_WriteBits(dest,value,3);
+    MSG_WriteBits(dest,0,value);
+    memcpy(dest->data + dest->cursize,src->data,src->cursize);
+    dest->bit = src->bit + dest->cursize * 8;
+    dest->cursize = dest->cursize + src->cursize;
   }
   return;
 }
@@ -687,13 +696,14 @@ void __cdecl MSG_Embed(msg_t *param_1,msg_t *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_UnEmbed(msg_t *param_1)
+void __cdecl MSG_UnEmbed(msg_t *msg)
 
 {
-  int iVar1;
+  int bits;
+  int padBits;
   
-  iVar1 = MSG_ReadBits(param_1,3);
-  MSG_ReadBits(param_1,iVar1);
+  bits = MSG_ReadBits(msg,3);
+  MSG_ReadBits(msg,bits);
   return;
 }
 
@@ -702,13 +712,13 @@ void __cdecl MSG_UnEmbed(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteByte(msg_t *param_1,int param_2)
+void __cdecl MSG_WriteByte(msg_t *msg,int c)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x26c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -716,12 +726,12 @@ void __cdecl MSG_WriteByte(msg_t *param_1,int param_2)
       return;
     }
   }
-  if (param_1->cursize < param_1->maxsize) {
-    param_1->data[param_1->cursize] = (uchar)param_2;
-    param_1->cursize = param_1->cursize + 1;
+  if (msg->cursize < msg->maxsize) {
+    msg->data[msg->cursize] = (uchar)c;
+    msg->cursize = msg->cursize + 1;
   }
   else {
-    param_1->overflowed = 1;
+    msg->overflowed = 1;
   }
   return;
 }
@@ -731,14 +741,15 @@ void __cdecl MSG_WriteByte(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteData(msg_t *param_1,void *param_2,int param_3)
+void __cdecl MSG_WriteData(msg_t *buf,void *data,int length)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int newsize;
   
-  if (param_1->readOnly != 0) {
+  if (buf->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x27c,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -746,13 +757,13 @@ void __cdecl MSG_WriteData(msg_t *param_1,void *param_2,int param_3)
       return;
     }
   }
-  iVar3 = param_1->cursize + param_3;
-  if (param_1->maxsize < iVar3) {
-    param_1->overflowed = 1;
+  iVar3 = buf->cursize + length;
+  if (buf->maxsize < iVar3) {
+    buf->overflowed = 1;
   }
   else {
-    memcpy(param_1->data + param_1->cursize,param_2,param_3);
-    param_1->cursize = iVar3;
+    memcpy(buf->data + buf->cursize,data,length);
+    buf->cursize = iVar3;
   }
   return;
 }
@@ -762,14 +773,15 @@ void __cdecl MSG_WriteData(msg_t *param_1,void *param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteShort(msg_t *param_1,int param_2)
+void __cdecl MSG_WriteShort(msg_t *msg,int c)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int newsize;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x28d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -777,13 +789,13 @@ void __cdecl MSG_WriteShort(msg_t *param_1,int param_2)
       return;
     }
   }
-  iVar3 = param_1->cursize + 2;
-  if (param_1->maxsize < iVar3) {
-    param_1->overflowed = 1;
+  iVar3 = msg->cursize + 2;
+  if (msg->maxsize < iVar3) {
+    msg->overflowed = 1;
   }
   else {
-    *(undefined2 *)(param_1->data + param_1->cursize) = (undefined2)param_2;
-    param_1->cursize = iVar3;
+    *(undefined2 *)(msg->data + msg->cursize) = (undefined2)c;
+    msg->cursize = iVar3;
   }
   return;
 }
@@ -793,14 +805,15 @@ void __cdecl MSG_WriteShort(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteLong(msg_t *param_1,int param_2)
+void __cdecl MSG_WriteLong(msg_t *msg,int c)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int newsize;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x29f,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -808,13 +821,13 @@ void __cdecl MSG_WriteLong(msg_t *param_1,int param_2)
       return;
     }
   }
-  iVar3 = param_1->cursize + 4;
-  if (param_1->maxsize < iVar3) {
-    param_1->overflowed = 1;
+  iVar3 = msg->cursize + 4;
+  if (msg->maxsize < iVar3) {
+    msg->overflowed = 1;
   }
   else {
-    *(int *)(param_1->data + param_1->cursize) = param_2;
-    param_1->cursize = iVar3;
+    *(int *)(msg->data + msg->cursize) = c;
+    msg->cursize = iVar3;
   }
   return;
 }
@@ -824,13 +837,13 @@ void __cdecl MSG_WriteLong(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteFloat(msg_t *param_1,float param_2)
+void __cdecl MSG_WriteFloat(msg_t *sb,float f)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == -NAN) {
+  if (f == -NAN) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x2b6,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -838,7 +851,7 @@ void __cdecl MSG_WriteFloat(msg_t *param_1,float param_2)
       return;
     }
   }
-  MSG_WriteLong(param_1,(int)param_2);
+  MSG_WriteLong(sb,(int)f);
   return;
 }
 
@@ -847,7 +860,7 @@ void __cdecl MSG_WriteFloat(msg_t *param_1,float param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteInt64(msg_t *param_1,ulong64 param_2)
+void __cdecl MSG_WriteInt64(msg_t *msg,ulong64 param_2)
 
 {
   uchar *puVar1;
@@ -857,8 +870,9 @@ void __cdecl MSG_WriteInt64(msg_t *param_1,ulong64 param_2)
   int iVar5;
   ulong64 uVar6;
   undefined4 in_stack_00000008;
+  int newsize;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x2bf,0,"%s");
     if (!bVar4) {
       pcVar3 = (code *)swi(3);
@@ -866,17 +880,17 @@ void __cdecl MSG_WriteInt64(msg_t *param_1,ulong64 param_2)
       return;
     }
   }
-  iVar5 = param_1->cursize + 8;
-  if (param_1->maxsize < iVar5) {
-    param_1->overflowed = 1;
+  iVar5 = msg->cursize + 8;
+  if (msg->maxsize < iVar5) {
+    msg->overflowed = 1;
   }
   else {
     uVar6 = LittleLong64(CONCAT44((undefined4)param_2,in_stack_00000008));
-    puVar1 = param_1->data;
-    iVar2 = param_1->cursize;
+    puVar1 = msg->data;
+    iVar2 = msg->cursize;
     *(int *)(puVar1 + iVar2) = (int)uVar6;
     *(int *)(puVar1 + iVar2 + 4) = (int)(uVar6 >> 0x20);
-    param_1->cursize = iVar5;
+    msg->cursize = iVar5;
   }
   return;
 }
@@ -887,7 +901,7 @@ void __cdecl MSG_WriteInt64(msg_t *param_1,ulong64 param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteString(msg_t *param_1,char *param_2)
+void __cdecl MSG_WriteString(msg_t *sb,char *s)
 
 {
   code *pcVar1;
@@ -895,12 +909,13 @@ void __cdecl MSG_WriteString(msg_t *param_1,char *param_2)
   char cVar3;
   int iVar4;
   char *local_414;
-  char local_40c [1024];
+  int l;
+  char string [1024];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == (char *)0x0) {
+  if (s == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x2d2,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -908,7 +923,7 @@ void __cdecl MSG_WriteString(msg_t *param_1,char *param_2)
       return;
     }
   }
-  if (param_1->readOnly != 0) {
+  if (sb->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x2d3,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -916,23 +931,23 @@ void __cdecl MSG_WriteString(msg_t *param_1,char *param_2)
       return;
     }
   }
-  local_414 = param_2;
+  local_414 = s;
   do {
     cVar3 = *local_414;
     local_414 = local_414 + 1;
   } while (cVar3 != '\0');
-  iVar4 = (int)local_414 - (int)(param_2 + 1);
+  iVar4 = (int)local_414 - (int)(s + 1);
   if (iVar4 < 0x400) {
-    for (local_8 = 0; local_8 < iVar4; local_8 = local_8 + 1) {
-      cVar3 = I_CleanChar(param_2[local_8]);
-      local_40c[local_8] = cVar3;
+    for (i = 0; i < iVar4; i = i + 1) {
+      cVar3 = I_CleanChar(s[i]);
+      string[i] = cVar3;
     }
-    local_40c[local_8] = '\0';
-    MSG_WriteData(param_1,local_40c,iVar4 + 1);
+    string[i] = '\0';
+    MSG_WriteData(sb,string,iVar4 + 1);
   }
   else {
     Com_Printf(0x10,"MSG_WriteString: MAX_STRING_CHARS");
-    MSG_WriteData(param_1,"",1);
+    MSG_WriteData(sb,"",1);
   }
   return;
 }
@@ -944,7 +959,7 @@ void __cdecl MSG_WriteString(msg_t *param_1,char *param_2)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteBigString(msg_t *param_1,char *param_2)
+void __cdecl MSG_WriteBigString(msg_t *sb,char *s)
 
 {
   code *pcVar1;
@@ -952,13 +967,14 @@ void __cdecl MSG_WriteBigString(msg_t *param_1,char *param_2)
   char cVar3;
   int iVar4;
   char *local_4014;
-  char local_400c [16384];
+  int l;
+  char string [16384];
   uint local_c;
-  int local_8;
+  int i;
   
-  local_8 = 0x6e411d;
+  i = 0x6e411d;
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == (char *)0x0) {
+  if (s == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x2eb,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -966,7 +982,7 @@ void __cdecl MSG_WriteBigString(msg_t *param_1,char *param_2)
       return;
     }
   }
-  if (param_1->readOnly != 0) {
+  if (sb->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x2ec,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -974,23 +990,23 @@ void __cdecl MSG_WriteBigString(msg_t *param_1,char *param_2)
       return;
     }
   }
-  local_4014 = param_2;
+  local_4014 = s;
   do {
     cVar3 = *local_4014;
     local_4014 = local_4014 + 1;
   } while (cVar3 != '\0');
-  iVar4 = (int)local_4014 - (int)(param_2 + 1);
+  iVar4 = (int)local_4014 - (int)(s + 1);
   if (iVar4 < 0x4000) {
-    I_strncpyz(local_400c,param_2,0x4000);
-    for (local_8 = 0; local_8 < iVar4; local_8 = local_8 + 1) {
-      cVar3 = I_CleanChar(local_400c[local_8]);
-      local_400c[local_8] = cVar3;
+    I_strncpyz(string,s,0x4000);
+    for (i = 0; i < iVar4; i = i + 1) {
+      cVar3 = I_CleanChar(string[i]);
+      string[i] = cVar3;
     }
-    MSG_WriteData(param_1,local_400c,iVar4 + 1);
+    MSG_WriteData(sb,string,iVar4 + 1);
   }
   else {
     Com_Printf(0x10,"MSG_WriteString: BIG_INFO_STRING");
-    MSG_WriteData(param_1,"",1);
+    MSG_WriteData(sb,"",1);
   }
   return;
 }
@@ -1000,13 +1016,13 @@ void __cdecl MSG_WriteBigString(msg_t *param_1,char *param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteAngle(msg_t *param_1,int param_2,float param_3)
+void __cdecl MSG_WriteAngle(msg_t *sb,int bits,float f)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (sb->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x301,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1014,8 +1030,8 @@ void __cdecl MSG_WriteAngle(msg_t *param_1,int param_2,float param_3)
       return;
     }
   }
-  MSG_WriteBits(param_1,(int)(((float)(1 << ((byte)param_2 & 0x1f)) * param_3) / 360.0) &
-                        (1 << ((byte)param_2 & 0x1f)) - 1U,param_2);
+  MSG_WriteBits(sb,(int)(((float)(1 << ((byte)bits & 0x1f)) * f) / 360.0) &
+                   (1 << ((byte)bits & 0x1f)) - 1U,bits);
   return;
 }
 
@@ -1024,13 +1040,13 @@ void __cdecl MSG_WriteAngle(msg_t *param_1,int param_2,float param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteAngle16(msg_t *param_1,float param_2)
+void __cdecl MSG_WriteAngle16(msg_t *sb,float f)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (sb->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x308,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1038,7 +1054,7 @@ void __cdecl MSG_WriteAngle16(msg_t *param_1,float param_2)
       return;
     }
   }
-  MSG_WriteShort(param_1,(int)(param_2 * 182.04445) & 0xffff);
+  MSG_WriteShort(sb,(int)(f * 182.04445) & 0xffff);
   return;
 }
 
@@ -1047,18 +1063,20 @@ void __cdecl MSG_WriteAngle16(msg_t *param_1,float param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl
-MSG_WriteRangedFloatBits(msg_t *param_1,float param_2,float param_3,float param_4,int param_5)
+void __cdecl MSG_WriteRangedFloatBits(msg_t *sb,float f,float begin,float end,int bits)
 
 {
   int iVar1;
   float fVar2;
   int local_20;
   int local_14;
+  uint data;
+  float destRange;
+  float srcRange;
   
-  fVar2 = (float)((1 << ((byte)param_5 & 0x1f)) + -1);
+  fVar2 = (float)((1 << ((byte)bits & 0x1f)) + -1);
   iVar1 = (int)fVar2;
-  local_14 = (int)((fVar2 / (param_4 - param_3)) * (param_2 - param_3) + 0.5);
+  local_14 = (int)((fVar2 / (end - begin)) * (f - begin) + 0.5);
   if (iVar1 <= local_14) {
     local_14 = iVar1;
   }
@@ -1068,7 +1086,7 @@ MSG_WriteRangedFloatBits(msg_t *param_1,float param_2,float param_3,float param_
   else {
     local_20 = local_14;
   }
-  MSG_WriteBits(param_1,local_20,param_5);
+  MSG_WriteBits(sb,local_20,bits);
   return;
 }
 
@@ -1077,16 +1095,17 @@ MSG_WriteRangedFloatBits(msg_t *param_1,float param_2,float param_3,float param_
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadByte(msg_t *param_1)
+int __cdecl MSG_ReadByte(msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
   int iVar4;
+  int c;
   
-  if (param_1->readcount < param_1->cursize + param_1->splitSize) {
-    uVar3 = MSG_GetByte(param_1,param_1->readcount);
+  if (msg->readcount < msg->cursize + msg->splitSize) {
+    uVar3 = MSG_GetByte(msg,msg->readcount);
     if (uVar3 != (uVar3 & 0xff)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x32b,0,
                                "c == static_cast< byte >( c )\n\t%i, %i");
@@ -1096,10 +1115,10 @@ int __cdecl MSG_ReadByte(msg_t *param_1)
         return iVar4;
       }
     }
-    param_1->readcount = param_1->readcount + 1;
+    msg->readcount = msg->readcount + 1;
   }
   else {
-    param_1->overflowed = 1;
+    msg->overflowed = 1;
     uVar3 = 0xffffffff;
   }
   return uVar3;
@@ -1110,29 +1129,31 @@ int __cdecl MSG_ReadByte(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadShort(msg_t *param_1)
+int __cdecl MSG_ReadShort(msg_t *msg)
 
 {
   int iVar1;
   int iVar2;
   int local_18;
   int local_14;
-  short local_8 [2];
+  int c;
+  int newcount;
+  short read;
   
-  iVar2 = param_1->readcount + 2;
-  if (param_1->cursize + param_1->splitSize < iVar2) {
-    param_1->overflowed = 1;
+  iVar2 = msg->readcount + 2;
+  if (msg->cursize + msg->splitSize < iVar2) {
+    msg->overflowed = 1;
     iVar1 = -1;
   }
   else {
-    local_18 = param_1->readcount;
+    local_18 = msg->readcount;
     for (local_14 = 0; local_14 < 2; local_14 = local_14 + 1) {
-      iVar1 = MSG_GetByte(param_1,local_18);
-      *(char *)((int)local_8 + local_14) = (char)iVar1;
+      iVar1 = MSG_GetByte(msg,local_18);
+      *(char *)((int)&read + local_14) = (char)iVar1;
       local_18 = local_18 + 1;
     }
-    iVar1 = (int)local_8[0];
-    param_1->readcount = iVar2;
+    iVar1 = (int)read;
+    msg->readcount = iVar2;
   }
   return iVar1;
 }
@@ -1142,30 +1163,30 @@ int __cdecl MSG_ReadShort(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadLong(msg_t *param_1)
+int __cdecl MSG_ReadLong(msg_t *msg)
 
 {
   int iVar1;
   int local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int c;
+  int newcount;
   
-  local_8 = param_1->readcount + 4;
-  if (param_1->cursize + param_1->splitSize < local_8) {
-    param_1->overflowed = 1;
-    local_c = -1;
+  newcount = msg->readcount + 4;
+  if (msg->cursize + msg->splitSize < newcount) {
+    msg->overflowed = 1;
+    c = -1;
   }
   else {
-    local_14 = param_1->readcount;
+    local_14 = msg->readcount;
     for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-      iVar1 = MSG_GetByte(param_1,local_14);
-      *(char *)((int)&local_c + local_10) = (char)iVar1;
+      iVar1 = MSG_GetByte(msg,local_14);
+      *(char *)((int)&c + local_10) = (char)iVar1;
       local_14 = local_14 + 1;
     }
-    param_1->readcount = local_8;
+    msg->readcount = newcount;
   }
-  return local_c;
+  return c;
 }
 
 
@@ -1173,35 +1194,35 @@ int __cdecl MSG_ReadLong(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-ulong64 __cdecl MSG_ReadInt64(msg_t *param_1)
+ulong64 __cdecl MSG_ReadInt64(msg_t *msg)
 
 {
   int iVar1;
   ulong64 uVar2;
   int local_1c;
   int local_18;
-  undefined8 local_14;
-  int local_8;
+  undefined8 c;
+  int newcount;
   
-  local_8 = param_1->readcount + 8;
-  if (param_1->cursize + param_1->splitSize < local_8) {
-    param_1->overflowed = 1;
-    local_14._0_4_ = 0;
-    local_14._4_4_ = 0;
+  newcount = msg->readcount + 8;
+  if (msg->cursize + msg->splitSize < newcount) {
+    msg->overflowed = 1;
+    c._0_4_ = 0;
+    c._4_4_ = 0;
   }
   else {
-    local_1c = param_1->readcount;
+    local_1c = msg->readcount;
     for (local_18 = 0; local_18 < 8; local_18 = local_18 + 1) {
-      iVar1 = MSG_GetByte(param_1,local_1c);
-      *(char *)((int)&local_14 + local_18) = (char)iVar1;
+      iVar1 = MSG_GetByte(msg,local_1c);
+      *(char *)((int)&c + local_18) = (char)iVar1;
       local_1c = local_1c + 1;
     }
-    uVar2 = LittleLong64(local_14);
-    param_1->readcount = local_8;
-    local_14._0_4_ = (undefined4)uVar2;
-    local_14._4_4_ = (undefined4)(uVar2 >> 0x20);
+    uVar2 = LittleLong64(c);
+    msg->readcount = newcount;
+    c._0_4_ = (undefined4)uVar2;
+    c._4_4_ = (undefined4)(uVar2 >> 0x20);
   }
-  return CONCAT44(local_14._4_4_,(undefined4)local_14);
+  return CONCAT44(c._4_4_,(undefined4)c);
 }
 
 
@@ -1209,14 +1230,14 @@ ulong64 __cdecl MSG_ReadInt64(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadFloat(msg_t *param_1)
+float __cdecl MSG_ReadFloat(msg_t *msg)
 
 {
   float fVar1;
   
-  fVar1 = (float)MSG_ReadLong(param_1);
+  fVar1 = (float)MSG_ReadLong(msg);
   if (fVar1 == -NAN) {
-    param_1->overflowed = 1;
+    msg->overflowed = 1;
     fVar1 = -1.0;
   }
   return fVar1;
@@ -1227,17 +1248,17 @@ float __cdecl MSG_ReadFloat(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-char * __cdecl MSG_ReadString(msg_t *param_1,char *param_2,uint param_3)
+char * __cdecl MSG_ReadString(msg_t *msg,char *string,uint maxChars)
 
 {
   code *pcVar1;
   bool bVar2;
   char cVar3;
   char *pcVar4;
-  int local_c;
-  uint local_8;
+  int c;
+  uint l;
   
-  if (param_2 == (char *)0x0) {
+  if (string == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x37e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1245,21 +1266,21 @@ char * __cdecl MSG_ReadString(msg_t *param_1,char *param_2,uint param_3)
       return pcVar4;
     }
   }
-  local_8 = 0;
+  l = 0;
   while( true ) {
-    local_c = MSG_ReadByte(param_1);
-    if (local_c == -1) {
-      local_c = 0;
+    c = MSG_ReadByte(msg);
+    if (c == -1) {
+      c = 0;
     }
-    if (local_8 < param_3) {
-      cVar3 = I_CleanChar((char)local_c);
-      param_2[local_8] = cVar3;
+    if (l < maxChars) {
+      cVar3 = I_CleanChar((char)c);
+      string[l] = cVar3;
     }
-    if (local_c == 0) break;
-    local_8 = local_8 + 1;
+    if (c == 0) break;
+    l = l + 1;
   }
-  param_2[param_3 - 1] = '\0';
-  return param_2;
+  string[maxChars - 1] = '\0';
+  return string;
 }
 
 
@@ -1267,15 +1288,15 @@ char * __cdecl MSG_ReadString(msg_t *param_1,char *param_2,uint param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-char * __cdecl MSG_ReadBigString(msg_t *param_1)
+char * __cdecl MSG_ReadBigString(msg_t *msg)
 
 {
   code *pcVar1;
   bool bVar2;
   char cVar3;
   char *pcVar4;
-  int local_c;
-  uint local_8;
+  int c;
+  uint l;
   
   bVar2 = Sys_IsMainThread();
   if (!bVar2) {
@@ -1286,21 +1307,21 @@ char * __cdecl MSG_ReadBigString(msg_t *param_1)
       return pcVar4;
     }
   }
-  local_8 = 0;
+  l = 0;
   while( true ) {
-    local_c = MSG_ReadByte(param_1);
-    if (local_c == 0x25) {
-      local_c = 0x2e;
+    c = MSG_ReadByte(msg);
+    if (c == 0x25) {
+      c = 0x2e;
     }
-    else if (local_c == -1) {
-      local_c = 0;
+    else if (c == -1) {
+      c = 0;
     }
-    if (local_8 < 0x4000) {
-      cVar3 = I_CleanChar((char)local_c);
-      string[local_8] = cVar3;
+    if (l < 0x4000) {
+      cVar3 = I_CleanChar((char)c);
+      string[l] = cVar3;
     }
-    if (local_c == 0) break;
-    local_8 = local_8 + 1;
+    if (c == 0) break;
+    l = l + 1;
   }
   string[0x3fff] = '\0';
   return string;
@@ -1311,31 +1332,31 @@ char * __cdecl MSG_ReadBigString(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-char * __cdecl MSG_ReadStringLine(msg_t *param_1,char *param_2,uint param_3)
+char * __cdecl MSG_ReadStringLine(msg_t *msg,char *string,uint maxChars)
 
 {
   char cVar1;
-  int local_c;
-  uint local_8;
+  int c;
+  uint l;
   
-  local_8 = 0;
+  l = 0;
   while( true ) {
-    local_c = MSG_ReadByte(param_1);
-    if (local_c == 0x25) {
-      local_c = 0x2e;
+    c = MSG_ReadByte(msg);
+    if (c == 0x25) {
+      c = 0x2e;
     }
-    else if ((local_c == 10) || (local_c == -1)) {
-      local_c = 0;
+    else if ((c == 10) || (c == -1)) {
+      c = 0;
     }
-    if (local_8 < param_3) {
-      cVar1 = I_CleanChar((char)local_c);
-      param_2[local_8] = cVar1;
+    if (l < maxChars) {
+      cVar1 = I_CleanChar((char)c);
+      string[l] = cVar1;
     }
-    if (local_c == 0) break;
-    local_8 = local_8 + 1;
+    if (c == 0) break;
+    l = l + 1;
   }
-  param_2[param_3 - 1] = '\0';
-  return param_2;
+  string[maxChars - 1] = '\0';
+  return string;
 }
 
 
@@ -1343,13 +1364,13 @@ char * __cdecl MSG_ReadStringLine(msg_t *param_1,char *param_2,uint param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadAngle(msg_t *param_1,int param_2)
+float __cdecl MSG_ReadAngle(msg_t *msg,int bits)
 
 {
   int iVar1;
   
-  iVar1 = MSG_ReadBits(param_1,param_2);
-  return (360.0 / (float)(1 << ((byte)param_2 & 0x1f))) * (float)iVar1;
+  iVar1 = MSG_ReadBits(msg,bits);
+  return (360.0 / (float)(1 << ((byte)bits & 0x1f))) * (float)iVar1;
 }
 
 
@@ -1357,12 +1378,12 @@ float __cdecl MSG_ReadAngle(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadAngle16(msg_t *param_1)
+float __cdecl MSG_ReadAngle16(msg_t *msg)
 
 {
   int iVar1;
   
-  iVar1 = MSG_ReadShort(param_1);
+  iVar1 = MSG_ReadShort(msg);
   return (float)iVar1 * 0.005493164;
 }
 
@@ -1371,7 +1392,7 @@ float __cdecl MSG_ReadAngle16(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadRangedFloatBits(msg_t *param_1,float param_2,float param_3,int param_4)
+float __cdecl MSG_ReadRangedFloatBits(msg_t *sb,float begin,float end,int bits)
 
 {
   code *pcVar1;
@@ -1379,11 +1400,14 @@ float __cdecl MSG_ReadRangedFloatBits(msg_t *param_1,float param_2,float param_3
   uint uVar3;
   float10 fVar4;
   float fVar5;
+  uint data;
+  float destRange;
+  float f;
+  float srcRange;
   
-  uVar3 = MSG_ReadBits(param_1,param_4);
-  fVar5 = ((param_3 - param_2) / (float)((1 << ((byte)param_4 & 0x1f)) + -1)) * (float)uVar3 +
-          param_2;
-  if (fVar5 < param_2) {
+  uVar3 = MSG_ReadBits(sb,bits);
+  fVar5 = ((end - begin) / (float)((1 << ((byte)bits & 0x1f)) + -1)) * (float)uVar3 + begin;
+  if (fVar5 < begin) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",999,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1391,7 +1415,7 @@ float __cdecl MSG_ReadRangedFloatBits(msg_t *param_1,float param_2,float param_3
       return (float)fVar4;
     }
   }
-  if (param_3 < fVar5) {
+  if (end < fVar5) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",1000,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1407,34 +1431,36 @@ float __cdecl MSG_ReadRangedFloatBits(msg_t *param_1,float param_2,float param_3
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_ReadData(msg_t *param_1,void *param_2,int param_3)
+void __cdecl MSG_ReadData(msg_t *msg,void *data,int len)
 
 {
   int iVar1;
-  ulong uVar2;
+  ulong count;
+  int newcount;
+  int cursize;
   
-  iVar1 = param_1->readcount + param_3;
-  if (param_1->cursize < iVar1) {
-    if (param_1->cursize + param_1->splitSize < iVar1) {
-      param_1->overflowed = 1;
-      memset(param_2,0xff,param_3);
+  iVar1 = msg->readcount + len;
+  if (msg->cursize < iVar1) {
+    if (msg->cursize + msg->splitSize < iVar1) {
+      msg->overflowed = 1;
+      memset(data,0xff,len);
     }
     else {
-      uVar2 = param_1->cursize - param_1->readcount;
-      if (0 < (int)uVar2) {
-        memcpy(param_2,param_1->data + param_1->readcount,uVar2);
-        param_3 = param_3 - uVar2;
-        param_2 = (void *)((int)param_2 + uVar2);
+      count = msg->cursize - msg->readcount;
+      if (0 < (int)count) {
+        memcpy(data,msg->data + msg->readcount,count);
+        len = len - count;
+        data = (void *)((int)data + count);
       }
-      if (0 < param_3) {
-        memcpy(param_2,param_1->splitData + (param_1->readcount - param_1->cursize),param_3);
+      if (0 < len) {
+        memcpy(data,msg->splitData + (msg->readcount - msg->cursize),len);
       }
-      param_1->readcount = iVar1;
+      msg->readcount = iVar1;
     }
   }
   else {
-    memcpy(param_2,param_1->data + param_1->readcount,param_3);
-    param_1->readcount = iVar1;
+    memcpy(data,msg->data + msg->readcount,len);
+    msg->readcount = iVar1;
   }
   return;
 }
@@ -1444,13 +1470,13 @@ void __cdecl MSG_ReadData(msg_t *param_1,void *param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteDeltaKey(msg_t *param_1,int param_2,int param_3,int param_4,int param_5)
+void __cdecl MSG_WriteDeltaKey(msg_t *msg,int key,int oldV,int newV,int bits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x423,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1458,12 +1484,12 @@ void __cdecl MSG_WriteDeltaKey(msg_t *param_1,int param_2,int param_3,int param_
       return;
     }
   }
-  if (param_3 == param_4) {
-    MSG_WriteBit0(param_1);
+  if (oldV == newV) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
-    MSG_WriteBits(param_1,param_4 ^ param_2,param_5);
+    MSG_WriteBit1(msg);
+    MSG_WriteBits(msg,newV ^ key,bits);
   }
   return;
 }
@@ -1473,18 +1499,18 @@ void __cdecl MSG_WriteDeltaKey(msg_t *param_1,int param_2,int param_3,int param_
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaKey(msg_t *param_1,int param_2,int param_3,int param_4)
+int __cdecl MSG_ReadDeltaKey(msg_t *msg,int key,int oldV,int bits)
 
 {
   int iVar1;
   uint uVar2;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 != 0) {
-    uVar2 = MSG_ReadBits(param_1,param_4);
-    param_3 = uVar2 ^ param_2 & kbitmask[param_4];
+    uVar2 = MSG_ReadBits(msg,bits);
+    oldV = uVar2 ^ key & kbitmask[bits];
   }
-  return param_3;
+  return oldV;
 }
 
 
@@ -1492,13 +1518,13 @@ int __cdecl MSG_ReadDeltaKey(msg_t *param_1,int param_2,int param_3,int param_4)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteKey(msg_t *param_1,int param_2,int param_3,int param_4)
+void __cdecl MSG_WriteKey(msg_t *msg,int key,int newV,int bits)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x43a,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1506,7 +1532,7 @@ void __cdecl MSG_WriteKey(msg_t *param_1,int param_2,int param_3,int param_4)
       return;
     }
   }
-  MSG_WriteBits(param_1,param_3 ^ param_2,param_4);
+  MSG_WriteBits(msg,newV ^ key,bits);
   return;
 }
 
@@ -1515,13 +1541,13 @@ void __cdecl MSG_WriteKey(msg_t *param_1,int param_2,int param_3,int param_4)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadKey(msg_t *param_1,int param_2,int param_3)
+int __cdecl MSG_ReadKey(msg_t *msg,int key,int bits)
 
 {
   uint uVar1;
   
-  uVar1 = MSG_ReadBits(param_1,param_3);
-  return uVar1 ^ param_2 & kbitmask[param_3];
+  uVar1 = MSG_ReadBits(msg,bits);
+  return uVar1 ^ key & kbitmask[bits];
 }
 
 
@@ -1529,13 +1555,13 @@ int __cdecl MSG_ReadKey(msg_t *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteDeltaKeyByte(msg_t *param_1,int param_2,int param_3,int param_4)
+void __cdecl MSG_WriteDeltaKeyByte(msg_t *msg,int key,int oldV,int newV)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x447,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1543,12 +1569,12 @@ void __cdecl MSG_WriteDeltaKeyByte(msg_t *param_1,int param_2,int param_3,int pa
       return;
     }
   }
-  if ((param_3 & 0xffU) == (param_4 & 0xffU)) {
-    MSG_WriteBit0(param_1);
+  if ((oldV & 0xffU) == (newV & 0xffU)) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
-    MSG_WriteByte(param_1,param_4 ^ param_2);
+    MSG_WriteBit1(msg);
+    MSG_WriteByte(msg,newV ^ key);
   }
   return;
 }
@@ -1558,18 +1584,18 @@ void __cdecl MSG_WriteDeltaKeyByte(msg_t *param_1,int param_2,int param_3,int pa
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaKeyByte(msg_t *param_1,int param_2,int param_3)
+int __cdecl MSG_ReadDeltaKeyByte(msg_t *msg,int key,int oldV)
 
 {
   int iVar1;
   uint uVar2;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 != 0) {
-    uVar2 = MSG_ReadByte(param_1);
-    param_3 = (uVar2 ^ param_2) & 0xff;
+    uVar2 = MSG_ReadByte(msg);
+    oldV = (uVar2 ^ key) & 0xff;
   }
-  return param_3;
+  return oldV;
 }
 
 
@@ -1577,13 +1603,13 @@ int __cdecl MSG_ReadDeltaKeyByte(msg_t *param_1,int param_2,int param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_WriteDeltaKeyShort(msg_t *param_1,int param_2,int param_3,int param_4)
+void __cdecl MSG_WriteDeltaKeyShort(msg_t *msg,int key,int oldV,int newV)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x45d,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1591,12 +1617,12 @@ void __cdecl MSG_WriteDeltaKeyShort(msg_t *param_1,int param_2,int param_3,int p
       return;
     }
   }
-  if ((short)param_3 == (short)param_4) {
-    MSG_WriteBit0(param_1);
+  if ((short)oldV == (short)newV) {
+    MSG_WriteBit0(msg);
   }
   else {
-    MSG_WriteBit1(param_1);
-    MSG_WriteShort(param_1,param_4 ^ param_2);
+    MSG_WriteBit1(msg);
+    MSG_WriteShort(msg,newV ^ key);
   }
   return;
 }
@@ -1606,57 +1632,55 @@ void __cdecl MSG_WriteDeltaKeyShort(msg_t *param_1,int param_2,int param_3,int p
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaKeyShort(msg_t *param_1,int param_2,int param_3)
+int __cdecl MSG_ReadDeltaKeyShort(msg_t *msg,int key,int oldV)
 
 {
   int iVar1;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 != 0) {
-    iVar1 = MSG_ReadShort(param_1);
-    param_3 = (int)(short)((ushort)iVar1 ^ (ushort)param_2);
+    iVar1 = MSG_ReadShort(msg);
+    oldV = (int)(short)((ushort)iVar1 ^ (ushort)key);
   }
-  return param_3;
+  return oldV;
 }
 
 
 // 006E4D40  MSG_SetDefaultUserCmd  (qcommon/msg_mp.cpp:1167)
 
-void __cdecl MSG_SetDefaultUserCmd(playerState_s *param_1,usercmd_s *param_2)
+void __cdecl MSG_SetDefaultUserCmd(playerState_s *ps,usercmd_s *cmd)
 
 {
-  int local_8;
+  int i;
   
-  memset((uchar *)param_2,'\0',0x34);
-  param_2->weapon = param_1->weapon;
-  param_2->offHandIndex = (ushort)param_1->offHandIndex;
-  for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-    param_2->angles[local_8] =
-         (int)((param_1->viewangles[local_8] - param_1->delta_angles[local_8]) * 182.04445) & 0xffff
-    ;
+  memset((uchar *)cmd,'\0',0x34);
+  cmd->weapon = ps->weapon;
+  cmd->offHandIndex = (ushort)ps->offHandIndex;
+  for (i = 0; i < 2; i = i + 1) {
+    cmd->angles[i] = (int)((ps->viewangles[i] - ps->delta_angles[i]) * 182.04445) & 0xffff;
   }
-  if ((param_1->otherFlags & 4U) != 0) {
-    if ((param_1->eFlags & 8U) == 0) {
-      if ((param_1->eFlags & 4U) != 0) {
-        bitarray<51>::setBit(&param_2->button_bits,9);
+  if ((ps->otherFlags & 4U) != 0) {
+    if ((ps->eFlags & 8U) == 0) {
+      if ((ps->eFlags & 4U) != 0) {
+        bitarray<51>::setBit(&cmd->button_bits,9);
       }
     }
     else {
-      bitarray<51>::setBit(&param_2->button_bits,8);
+      bitarray<51>::setBit(&cmd->button_bits,8);
     }
-    if (param_1->leanf <= 0.0) {
-      if (param_1->leanf <= 0.0 && param_1->leanf != 0.0) {
-        bitarray<51>::setBit(&param_2->button_bits,6);
+    if (ps->leanf <= 0.0) {
+      if (ps->leanf <= 0.0 && ps->leanf != 0.0) {
+        bitarray<51>::setBit(&cmd->button_bits,6);
       }
     }
     else {
-      bitarray<51>::setBit(&param_2->button_bits,7);
+      bitarray<51>::setBit(&cmd->button_bits,7);
     }
-    if (param_1->fWeaponPosFrac != 0.0) {
-      bitarray<51>::setBit(&param_2->button_bits,0xb);
+    if (ps->fWeaponPosFrac != 0.0) {
+      bitarray<51>::setBit(&cmd->button_bits,0xb);
     }
-    if ((param_1->pm_flags & 0x8000U) != 0) {
-      bitarray<51>::setBit(&param_2->button_bits,1);
+    if ((ps->pm_flags & 0x8000U) != 0) {
+      bitarray<51>::setBit(&cmd->button_bits,1);
     }
   }
   return;
@@ -1668,8 +1692,7 @@ void __cdecl MSG_SetDefaultUserCmd(playerState_s *param_1,usercmd_s *param_2)
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_WriteDeltaUsercmdKey
-          (msg_t *param_1,int param_2,usercmd_s *param_3,usercmd_s *param_4,int param_5)
+MSG_WriteDeltaUsercmdKey(msg_t *msg,int key,usercmd_s *from,usercmd_s *to,int forceSendAngles)
 
 {
   code *pcVar1;
@@ -1678,14 +1701,16 @@ MSG_WriteDeltaUsercmdKey
   bool bVar4;
   uint uVar5;
   int iVar6;
-  char local_30;
-  int local_1c;
-  bitarray<51> local_14;
-  uint local_c;
-  undefined1 local_6;
-  char local_5;
+  bool local_30;
+  int i;
+  bool noButtonChange;
+  bool noMoveChange;
+  bitarray<51> ignoreMask;
+  uint delta;
+  bool buttonsAllEqual;
+  bool noAngleChange;
   
-  if (param_1->readOnly != 0) {
+  if (msg->readOnly != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x4e7,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -1693,95 +1718,89 @@ MSG_WriteDeltaUsercmdKey
       return;
     }
   }
-  local_c = param_4->serverTime - param_3->serverTime;
-  if (local_c < 0x100) {
-    MSG_WriteBit1(param_1);
-    MSG_WriteByte(param_1,local_c);
+  delta = to->serverTime - from->serverTime;
+  if (delta < 0x100) {
+    MSG_WriteBit1(msg);
+    MSG_WriteByte(msg,delta);
   }
   else {
-    MSG_WriteBit0(param_1);
-    MSG_WriteLong(param_1,param_4->serverTime);
+    MSG_WriteBit0(msg);
+    MSG_WriteLong(msg,to->serverTime);
   }
-  if ((param_3->forwardmove == param_4->forwardmove) && (param_3->rightmove == param_4->rightmove))
-  {
+  if ((from->forwardmove == to->forwardmove) && (from->rightmove == to->rightmove)) {
     bVar2 = true;
   }
   else {
     bVar2 = false;
   }
-  if (((param_5 == 0) || (param_3->yawmove != param_4->yawmove)) ||
-     (param_3->pitchmove != param_4->pitchmove)) {
-    local_30 = '\0';
+  if (((forceSendAngles == 0) || (from->yawmove != to->yawmove)) ||
+     (from->pitchmove != to->pitchmove)) {
+    local_30 = false;
   }
   else {
-    local_30 = '\x01';
+    local_30 = true;
   }
-  local_5 = local_30;
-  bitarray<51>::bitarray<51>(&local_14,(int)&local_14);
-  local_6 = bitarray<51>::areAllBitsEqual(&param_3->button_bits,&param_4->button_bits,&local_14);
-  if (((((bool)local_6) && (param_3->weapon == param_4->weapon)) &&
-      ((param_3->offHandIndex == param_4->offHandIndex &&
-       ((param_3->angles[2] == param_4->angles[2] &&
-        (param_3->meleeChargeYaw == param_4->meleeChargeYaw)))))) &&
-     (param_3->meleeChargeDist == param_4->meleeChargeDist)) {
-    bVar3 = bitarray<51>::testBit(&param_3->button_bits,0);
-    bVar4 = bitarray<51>::testBit(&param_4->button_bits,0);
-    if ((((param_3->angles[0] == param_4->angles[0]) && (param_3->angles[1] == param_4->angles[1]))
-        && (bVar3 == bVar4)) && ((bVar2 && (local_5 != '\0')))) {
-      MSG_WriteKey(param_1,param_2,0,1);
+  noAngleChange = local_30;
+  bitarray<51>::bitarray<51>(&ignoreMask,(int)&ignoreMask);
+  buttonsAllEqual = bitarray<51>::areAllBitsEqual(&from->button_bits,&to->button_bits,&ignoreMask);
+  if ((((buttonsAllEqual) && (from->weapon == to->weapon)) &&
+      ((from->offHandIndex == to->offHandIndex &&
+       ((from->angles[2] == to->angles[2] && (from->meleeChargeYaw == to->meleeChargeYaw)))))) &&
+     (from->meleeChargeDist == to->meleeChargeDist)) {
+    bVar3 = bitarray<51>::testBit(&from->button_bits,0);
+    bVar4 = bitarray<51>::testBit(&to->button_bits,0);
+    if ((((from->angles[0] == to->angles[0]) && (from->angles[1] == to->angles[1])) &&
+        (bVar3 == bVar4)) && ((bVar2 && (noAngleChange != false)))) {
+      MSG_WriteKey(msg,key,0,1);
     }
     else {
-      MSG_WriteKey(param_1,param_2,1,1);
-      MSG_WriteKey(param_1,param_2,0,1);
-      uVar5 = param_2 ^ param_4->serverTime;
+      MSG_WriteKey(msg,key,1,1);
+      MSG_WriteKey(msg,key,0,1);
+      uVar5 = key ^ to->serverTime;
       iVar6 = 1;
-      bVar2 = bitarray<51>::testBit(&param_4->button_bits,0);
-      MSG_WriteKey(param_1,uVar5,(uint)bVar2,iVar6);
-      MSG_WriteDeltaKeyShort(param_1,uVar5,param_3->angles[0],param_4->angles[0]);
-      MSG_WriteDeltaKeyShort(param_1,uVar5,param_3->angles[1],param_4->angles[1]);
-      MSG_WriteDeltaKeyByte(param_1,uVar5,(int)param_3->forwardmove,(int)param_4->forwardmove);
-      MSG_WriteDeltaKeyByte(param_1,uVar5,(int)param_3->rightmove,(int)param_4->rightmove);
-      MSG_WriteDeltaKeyByte(param_1,uVar5,(int)param_3->pitchmove,(int)param_4->pitchmove);
-      MSG_WriteDeltaKeyByte(param_1,uVar5,(int)param_3->yawmove,(int)param_4->yawmove);
+      bVar2 = bitarray<51>::testBit(&to->button_bits,0);
+      MSG_WriteKey(msg,uVar5,(uint)bVar2,iVar6);
+      MSG_WriteDeltaKeyShort(msg,uVar5,from->angles[0],to->angles[0]);
+      MSG_WriteDeltaKeyShort(msg,uVar5,from->angles[1],to->angles[1]);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(int)from->forwardmove,(int)to->forwardmove);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(int)from->rightmove,(int)to->rightmove);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(int)from->pitchmove,(int)to->pitchmove);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(int)from->yawmove,(int)to->yawmove);
     }
   }
   else {
-    MSG_WriteKey(param_1,param_2,1,1);
-    MSG_WriteKey(param_1,param_2,1,1);
+    MSG_WriteKey(msg,key,1,1);
+    MSG_WriteKey(msg,key,1,1);
     iVar6 = 1;
-    bVar2 = bitarray<51>::testBit(&param_4->button_bits,0);
-    MSG_WriteKey(param_1,param_2,(uint)bVar2,iVar6);
-    MSG_WriteDeltaKeyShort(param_1,param_2,param_3->angles[0],param_4->angles[0]);
-    MSG_WriteDeltaKeyShort(param_1,param_2,param_3->angles[1],param_4->angles[1]);
-    MSG_WriteDeltaKeyByte(param_1,param_2,(int)param_3->forwardmove,(int)param_4->forwardmove);
-    MSG_WriteDeltaKeyByte(param_1,param_2,(int)param_3->rightmove,(int)param_4->rightmove);
-    MSG_WriteDeltaKeyByte(param_1,param_2,(int)param_3->pitchmove,(int)param_4->pitchmove);
-    MSG_WriteDeltaKeyByte(param_1,param_2,(int)param_3->yawmove,(int)param_4->yawmove);
-    uVar5 = param_2 ^ param_4->serverTime;
-    MSG_WriteDeltaKeyShort(param_1,uVar5,param_3->angles[2],param_4->angles[2]);
-    for (local_1c = 0; local_1c < 2; local_1c = local_1c + 1) {
-      MSG_WriteDeltaKey(param_1,uVar5,(param_3->button_bits).array[local_1c],
-                        (param_4->button_bits).array[local_1c],0x20);
+    bVar2 = bitarray<51>::testBit(&to->button_bits,0);
+    MSG_WriteKey(msg,key,(uint)bVar2,iVar6);
+    MSG_WriteDeltaKeyShort(msg,key,from->angles[0],to->angles[0]);
+    MSG_WriteDeltaKeyShort(msg,key,from->angles[1],to->angles[1]);
+    MSG_WriteDeltaKeyByte(msg,key,(int)from->forwardmove,(int)to->forwardmove);
+    MSG_WriteDeltaKeyByte(msg,key,(int)from->rightmove,(int)to->rightmove);
+    MSG_WriteDeltaKeyByte(msg,key,(int)from->pitchmove,(int)to->pitchmove);
+    MSG_WriteDeltaKeyByte(msg,key,(int)from->yawmove,(int)to->yawmove);
+    uVar5 = key ^ to->serverTime;
+    MSG_WriteDeltaKeyShort(msg,uVar5,from->angles[2],to->angles[2]);
+    for (i = 0; i < 2; i = i + 1) {
+      MSG_WriteDeltaKey(msg,uVar5,(from->button_bits).array[i],(to->button_bits).array[i],0x20);
     }
-    MSG_WriteDeltaKey(param_1,uVar5,(uint)param_3->weapon,(uint)param_4->weapon,0xb);
-    MSG_WriteDeltaKey(param_1,uVar5,(uint)param_3->offHandIndex,(uint)param_4->offHandIndex,0xb);
-    MSG_WriteDeltaKey(param_1,uVar5,(uint)param_3->lastWeaponAltModeSwitch,
-                      (uint)param_4->lastWeaponAltModeSwitch,0xb);
-    bVar2 = bitarray<51>::testBit(&param_4->button_bits,0x10);
+    MSG_WriteDeltaKey(msg,uVar5,(uint)from->weapon,(uint)to->weapon,0xb);
+    MSG_WriteDeltaKey(msg,uVar5,(uint)from->offHandIndex,(uint)to->offHandIndex,0xb);
+    MSG_WriteDeltaKey(msg,uVar5,(uint)from->lastWeaponAltModeSwitch,
+                      (uint)to->lastWeaponAltModeSwitch,0xb);
+    bVar2 = bitarray<51>::testBit(&to->button_bits,0x10);
     if (bVar2) {
-      MSG_WriteDeltaKeyByte
-                (param_1,uVar5,(int)param_3->selectedLocation[0],(int)param_4->selectedLocation[0]);
-      MSG_WriteDeltaKeyByte
-                (param_1,uVar5,(int)param_3->selectedLocation[1],(int)param_4->selectedLocation[1]);
-      MSG_WriteDeltaKeyByte(param_1,uVar5,(uint)param_3->selectedYaw,(uint)param_4->selectedYaw);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(int)from->selectedLocation[0],(int)to->selectedLocation[0]);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(int)from->selectedLocation[1],(int)to->selectedLocation[1]);
+      MSG_WriteDeltaKeyByte(msg,uVar5,(uint)from->selectedYaw,(uint)to->selectedYaw);
     }
-    bVar2 = bitarray<51>::testBit(&param_4->button_bits,2);
+    bVar2 = bitarray<51>::testBit(&to->button_bits,2);
     if (bVar2) {
       MSG_WriteDeltaKeyShort
-                (param_1,uVar5,(int)(param_3->meleeChargeYaw * 182.04445) & 0xffff,
-                 (int)(param_4->meleeChargeYaw * 182.04445) & 0xffff);
-      MSG_WriteDeltaKey(param_1,uVar5,(uint)param_3->meleeChargeDist,(uint)param_4->meleeChargeDist,
-                        8);
+                (msg,uVar5,(int)(from->meleeChargeYaw * 182.04445) & 0xffff,
+                 (int)(to->meleeChargeYaw * 182.04445) & 0xffff);
+      MSG_WriteDeltaKey(msg,uVar5,(uint)from->meleeChargeDist,(uint)to->meleeChargeDist,8);
     }
   }
   return;
@@ -1792,8 +1811,7 @@ MSG_WriteDeltaUsercmdKey
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl
-MSG_ReadDeltaUsercmdKey(msg_t *param_1,int param_2,usercmd_s *param_3,usercmd_s *param_4)
+void __cdecl MSG_ReadDeltaUsercmdKey(msg_t *msg,int key,usercmd_s *from,usercmd_s *to)
 
 {
   bool bVar1;
@@ -1803,93 +1821,94 @@ MSG_ReadDeltaUsercmdKey(msg_t *param_1,int param_2,usercmd_s *param_3,usercmd_s 
   uint uVar5;
   usercmd_s *puVar6;
   usercmd_s *puVar7;
-  int local_10;
+  int i;
+  int set_attack_2;
+  int set_attack;
   
-  puVar6 = param_3;
-  puVar7 = param_4;
+  puVar6 = from;
+  puVar7 = to;
   for (iVar4 = 0xd; iVar4 != 0; iVar4 = iVar4 + -1) {
     puVar7->serverTime = puVar6->serverTime;
     puVar6 = (usercmd_s *)&puVar6->button_bits;
     puVar7 = (usercmd_s *)&puVar7->button_bits;
   }
-  iVar4 = MSG_ReadBit(param_1);
+  iVar4 = MSG_ReadBit(msg);
   if (iVar4 == 0) {
-    iVar4 = MSG_ReadLong(param_1);
-    param_4->serverTime = iVar4;
+    iVar4 = MSG_ReadLong(msg);
+    to->serverTime = iVar4;
   }
   else {
-    iVar4 = MSG_ReadByte(param_1);
-    param_4->serverTime = iVar4 + param_3->serverTime;
+    iVar4 = MSG_ReadByte(msg);
+    to->serverTime = iVar4 + from->serverTime;
   }
-  iVar4 = MSG_ReadKey(param_1,param_2,1);
+  iVar4 = MSG_ReadKey(msg,key,1);
   if (iVar4 != 0) {
-    bitarray<51>::resetBit(&param_4->button_bits,0);
-    iVar4 = MSG_ReadKey(param_1,param_2,1);
+    bitarray<51>::resetBit(&to->button_bits,0);
+    iVar4 = MSG_ReadKey(msg,key,1);
     if (iVar4 == 0) {
-      uVar5 = param_2 ^ param_4->serverTime;
-      iVar4 = MSG_ReadKey(param_1,uVar5,1);
+      uVar5 = key ^ to->serverTime;
+      iVar4 = MSG_ReadKey(msg,uVar5,1);
       if (iVar4 != 0) {
-        bitarray<51>::setBit(&param_4->button_bits,0);
+        bitarray<51>::setBit(&to->button_bits,0);
       }
-      uVar2 = MSG_ReadDeltaKeyShort(param_1,uVar5,param_3->angles[0]);
-      param_4->angles[0] = uVar2 & 0xffff;
-      uVar2 = MSG_ReadDeltaKeyShort(param_1,uVar5,param_3->angles[1]);
-      param_4->angles[1] = uVar2 & 0xffff;
-      iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(int)param_3->forwardmove);
-      param_4->forwardmove = (schar)iVar4;
-      iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(int)param_3->rightmove);
-      param_4->rightmove = (schar)iVar4;
-      iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(int)param_3->pitchmove);
-      param_4->pitchmove = (schar)iVar4;
-      iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(int)param_3->yawmove);
-      param_4->yawmove = (schar)iVar4;
+      uVar2 = MSG_ReadDeltaKeyShort(msg,uVar5,from->angles[0]);
+      to->angles[0] = uVar2 & 0xffff;
+      uVar2 = MSG_ReadDeltaKeyShort(msg,uVar5,from->angles[1]);
+      to->angles[1] = uVar2 & 0xffff;
+      iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(int)from->forwardmove);
+      to->forwardmove = (schar)iVar4;
+      iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(int)from->rightmove);
+      to->rightmove = (schar)iVar4;
+      iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(int)from->pitchmove);
+      to->pitchmove = (schar)iVar4;
+      iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(int)from->yawmove);
+      to->yawmove = (schar)iVar4;
     }
     else {
-      iVar4 = MSG_ReadKey(param_1,param_2,1);
-      uVar5 = MSG_ReadDeltaKeyShort(param_1,param_2,param_3->angles[0]);
-      param_4->angles[0] = uVar5 & 0xffff;
-      uVar5 = MSG_ReadDeltaKeyShort(param_1,param_2,param_3->angles[1]);
-      param_4->angles[1] = uVar5 & 0xffff;
-      iVar3 = MSG_ReadDeltaKeyByte(param_1,param_2,(int)param_3->forwardmove);
-      param_4->forwardmove = (schar)iVar3;
-      iVar3 = MSG_ReadDeltaKeyByte(param_1,param_2,(int)param_3->rightmove);
-      param_4->rightmove = (schar)iVar3;
-      iVar3 = MSG_ReadDeltaKeyByte(param_1,param_2,(int)param_3->pitchmove);
-      param_4->pitchmove = (schar)iVar3;
-      iVar3 = MSG_ReadDeltaKeyByte(param_1,param_2,(int)param_3->yawmove);
-      param_4->yawmove = (schar)iVar3;
-      uVar5 = param_2 ^ param_4->serverTime;
-      uVar2 = MSG_ReadDeltaKeyShort(param_1,uVar5,param_3->angles[2]);
-      param_4->angles[2] = uVar2 & 0xffff;
-      for (local_10 = 0; local_10 < 2; local_10 = local_10 + 1) {
-        iVar3 = MSG_ReadDeltaKey(param_1,uVar5,(param_3->button_bits).array[local_10],0x20);
-        (param_4->button_bits).array[local_10] = iVar3;
+      iVar4 = MSG_ReadKey(msg,key,1);
+      uVar5 = MSG_ReadDeltaKeyShort(msg,key,from->angles[0]);
+      to->angles[0] = uVar5 & 0xffff;
+      uVar5 = MSG_ReadDeltaKeyShort(msg,key,from->angles[1]);
+      to->angles[1] = uVar5 & 0xffff;
+      iVar3 = MSG_ReadDeltaKeyByte(msg,key,(int)from->forwardmove);
+      to->forwardmove = (schar)iVar3;
+      iVar3 = MSG_ReadDeltaKeyByte(msg,key,(int)from->rightmove);
+      to->rightmove = (schar)iVar3;
+      iVar3 = MSG_ReadDeltaKeyByte(msg,key,(int)from->pitchmove);
+      to->pitchmove = (schar)iVar3;
+      iVar3 = MSG_ReadDeltaKeyByte(msg,key,(int)from->yawmove);
+      to->yawmove = (schar)iVar3;
+      uVar5 = key ^ to->serverTime;
+      uVar2 = MSG_ReadDeltaKeyShort(msg,uVar5,from->angles[2]);
+      to->angles[2] = uVar2 & 0xffff;
+      for (i = 0; i < 2; i = i + 1) {
+        iVar3 = MSG_ReadDeltaKey(msg,uVar5,(from->button_bits).array[i],0x20);
+        (to->button_bits).array[i] = iVar3;
       }
       if (iVar4 != 0) {
-        bitarray<51>::setBit(&param_4->button_bits,0);
+        bitarray<51>::setBit(&to->button_bits,0);
       }
-      iVar4 = MSG_ReadDeltaKey(param_1,uVar5,(uint)param_3->weapon,0xb);
-      param_4->weapon = (ushort)iVar4;
-      iVar4 = MSG_ReadDeltaKey(param_1,uVar5,(uint)param_3->offHandIndex,0xb);
-      param_4->offHandIndex = (ushort)iVar4;
-      iVar4 = MSG_ReadDeltaKey(param_1,uVar5,(uint)param_3->lastWeaponAltModeSwitch,0xb);
-      param_4->lastWeaponAltModeSwitch = (ushort)iVar4;
-      bVar1 = bitarray<51>::testBit(&param_4->button_bits,0x10);
+      iVar4 = MSG_ReadDeltaKey(msg,uVar5,(uint)from->weapon,0xb);
+      to->weapon = (ushort)iVar4;
+      iVar4 = MSG_ReadDeltaKey(msg,uVar5,(uint)from->offHandIndex,0xb);
+      to->offHandIndex = (ushort)iVar4;
+      iVar4 = MSG_ReadDeltaKey(msg,uVar5,(uint)from->lastWeaponAltModeSwitch,0xb);
+      to->lastWeaponAltModeSwitch = (ushort)iVar4;
+      bVar1 = bitarray<51>::testBit(&to->button_bits,0x10);
       if (bVar1) {
-        iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(int)param_3->selectedLocation[0]);
-        param_4->selectedLocation[0] = (schar)iVar4;
-        iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(int)param_3->selectedLocation[1]);
-        param_4->selectedLocation[1] = (schar)iVar4;
-        iVar4 = MSG_ReadDeltaKeyByte(param_1,uVar5,(uint)param_3->selectedYaw);
-        param_4->selectedYaw = (uchar)iVar4;
+        iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(int)from->selectedLocation[0]);
+        to->selectedLocation[0] = (schar)iVar4;
+        iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(int)from->selectedLocation[1]);
+        to->selectedLocation[1] = (schar)iVar4;
+        iVar4 = MSG_ReadDeltaKeyByte(msg,uVar5,(uint)from->selectedYaw);
+        to->selectedYaw = (uchar)iVar4;
       }
-      bVar1 = bitarray<51>::testBit(&param_4->button_bits,2);
+      bVar1 = bitarray<51>::testBit(&to->button_bits,2);
       if (bVar1) {
-        iVar4 = MSG_ReadDeltaKeyShort
-                          (param_1,uVar5,(int)(param_3->meleeChargeYaw * 182.04445) & 0xffff);
-        param_4->meleeChargeYaw = (float)iVar4 * 0.005493164;
-        iVar4 = MSG_ReadDeltaKey(param_1,uVar5,(uint)param_3->meleeChargeDist,8);
-        param_4->meleeChargeDist = (uchar)iVar4;
+        iVar4 = MSG_ReadDeltaKeyShort(msg,uVar5,(int)(from->meleeChargeYaw * 182.04445) & 0xffff);
+        to->meleeChargeYaw = (float)iVar4 * 0.005493164;
+        iVar4 = MSG_ReadDeltaKey(msg,uVar5,(uint)from->meleeChargeDist,8);
+        to->meleeChargeDist = (uchar)iVar4;
       }
     }
   }
@@ -1901,10 +1920,10 @@ MSG_ReadDeltaUsercmdKey(msg_t *param_1,int param_2,usercmd_s *param_3,usercmd_s 
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl MSG_ClearLastReferencedEntity(msg_t *param_1)
+void __cdecl MSG_ClearLastReferencedEntity(msg_t *msg)
 
 {
-  param_1->lastEntityRef = -1;
+  msg->lastEntityRef = -1;
   return;
 }
 
@@ -1913,18 +1932,19 @@ void __cdecl MSG_ClearLastReferencedEntity(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaTime(msg_t *param_1,int param_2)
+int __cdecl MSG_ReadDeltaTime(msg_t *msg,int timeBase)
 
 {
   int iVar1;
+  int delta;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 == 0) {
-    iVar1 = MSG_ReadBits(param_1,8);
-    iVar1 = param_2 - iVar1;
+    iVar1 = MSG_ReadBits(msg,8);
+    iVar1 = timeBase - iVar1;
   }
   else {
-    iVar1 = MSG_ReadLong(param_1);
+    iVar1 = MSG_ReadLong(msg);
   }
   return iVar1;
 }
@@ -1935,31 +1955,33 @@ int __cdecl MSG_ReadDeltaTime(msg_t *param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x006e6f34) */
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaGroundEntity(msg_t *param_1)
+int __cdecl MSG_ReadDeltaGroundEntity(msg_t *msg)
 
 {
   int iVar1;
-  undefined4 local_14;
-  undefined4 local_8;
+  int j;
+  int bits;
+  int partialBits;
+  int value;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 == 1) {
-    local_8 = 0x3fe;
+    value = 0x3fe;
   }
   else {
-    iVar1 = MSG_ReadBit(param_1);
+    iVar1 = MSG_ReadBit(msg);
     if (iVar1 == 1) {
-      local_8 = 0;
+      value = 0;
     }
     else {
-      local_8 = MSG_ReadBits(param_1,2);
-      for (local_14 = 2; local_14 < 10; local_14 = local_14 + 8) {
-        iVar1 = MSG_ReadByte(param_1);
-        local_8 = iVar1 << ((byte)local_14 & 0x1f) | local_8;
+      value = MSG_ReadBits(msg,2);
+      for (j = 2; j < 10; j = j + 8) {
+        iVar1 = MSG_ReadByte(msg);
+        value = iVar1 << ((byte)j & 0x1f) | value;
       }
     }
   }
-  return local_8;
+  return value;
 }
 
 
@@ -1967,12 +1989,12 @@ int __cdecl MSG_ReadDeltaGroundEntity(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaEventField(msg_t *param_1)
+int __cdecl MSG_ReadDeltaEventField(msg_t *msg)
 
 {
   int iVar1;
   
-  iVar1 = MSG_ReadByte(param_1);
+  iVar1 = MSG_ReadByte(msg);
   return iVar1;
 }
 
@@ -1981,12 +2003,12 @@ int __cdecl MSG_ReadDeltaEventField(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadDeltaEventParamField(msg_t *param_1)
+int __cdecl MSG_ReadDeltaEventParamField(msg_t *msg)
 
 {
   int iVar1;
   
-  iVar1 = MSG_ReadBits(param_1,0xb);
+  iVar1 = MSG_ReadBits(msg,0xb);
   return iVar1;
 }
 
@@ -1995,15 +2017,16 @@ int __cdecl MSG_ReadDeltaEventParamField(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadEFlags(msg_t *param_1,int param_2)
+int __cdecl MSG_ReadEFlags(msg_t *msg,int oldFlags)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  uint local_8;
+  int bitChanged;
+  int value;
   
-  if (param_1->overflowed != 0) {
+  if (msg->overflowed != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x623,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2011,12 +2034,12 @@ int __cdecl MSG_ReadEFlags(msg_t *param_1,int param_2)
       return iVar3;
     }
   }
-  iVar3 = MSG_ReadBit(param_1);
+  iVar3 = MSG_ReadBit(msg);
   if (iVar3 == 1) {
-    local_8 = MSG_ReadBits(param_1,0x18);
+    value = MSG_ReadBits(msg,0x18);
   }
   else {
-    iVar3 = MSG_ReadBits(param_1,5);
+    iVar3 = MSG_ReadBits(msg,5);
     if ((iVar3 < 0) || (0x17 < iVar3)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x62e,0,
                                "%s\n\t(bitChanged) = %i");
@@ -2026,9 +2049,9 @@ int __cdecl MSG_ReadEFlags(msg_t *param_1,int param_2)
         return iVar3;
       }
     }
-    local_8 = 1 << ((byte)iVar3 & 0x1f) ^ param_2;
+    value = 1 << ((byte)iVar3 & 0x1f) ^ oldFlags;
   }
-  return local_8;
+  return value;
 }
 
 
@@ -2036,7 +2059,7 @@ int __cdecl MSG_ReadEFlags(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadOriginFloat(int param_1,msg_t *param_2,float param_3)
+float __cdecl MSG_ReadOriginFloat(int bits,msg_t *msg,float oldValue)
 
 {
   code *pcVar1;
@@ -2045,20 +2068,24 @@ float __cdecl MSG_ReadOriginFloat(int param_1,msg_t *param_2,float param_3)
   float (*pafVar4) [3];
   uint uVar5;
   float10 fVar6;
-  int local_14;
-  float local_10;
+  int trunc;
+  int roundedOldValue;
+  int roundedCenter;
+  int index;
+  float value;
+  int checkValue;
   
-  iVar3 = MSG_ReadBit(param_2);
+  iVar3 = MSG_ReadBit(msg);
   if (iVar3 == 0) {
-    iVar3 = MSG_ReadBits(param_2,7);
-    local_10 = (float)(iVar3 + -0x40) + param_3;
+    iVar3 = MSG_ReadBits(msg,7);
+    value = (float)(iVar3 + -0x40) + oldValue;
   }
   else {
-    if ((param_1 == -0x5c) || (param_1 == -0x42)) {
-      local_14 = 0;
+    if ((bits == -0x5c) || (bits == -0x42)) {
+      index = 0;
     }
     else {
-      if ((param_1 != -0x5b) && (param_1 != -0x41)) {
+      if ((bits != -0x5b) && (bits != -0x41)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x64f,0,
                                  "%s");
         if (!bVar2) {
@@ -2067,15 +2094,15 @@ float __cdecl MSG_ReadOriginFloat(int param_1,msg_t *param_2,float param_3)
           return (float)fVar6;
         }
       }
-      local_14 = 1;
+      index = 1;
     }
     pafVar4 = MSG_GetMapCenter();
-    iVar3 = (int)ROUND((*pafVar4)[local_14] + 9.313226e-10);
-    uVar5 = MSG_ReadBits(param_2,0x10);
-    local_10 = (float)(int)(((uVar5 ^ (0x8000 - iVar3) + (int)ROUND(param_3 + 9.313226e-10)) -
-                            0x8000) + iVar3);
+    iVar3 = (int)ROUND((*pafVar4)[index] + 9.313226e-10);
+    uVar5 = MSG_ReadBits(msg,0x10);
+    value = (float)(int)(((uVar5 ^ (0x8000 - iVar3) + (int)ROUND(oldValue + 9.313226e-10)) - 0x8000)
+                        + iVar3);
   }
-  return local_10;
+  return value;
 }
 
 
@@ -2083,27 +2110,31 @@ float __cdecl MSG_ReadOriginFloat(int param_1,msg_t *param_2,float param_3)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl MSG_ReadOriginZFloat(msg_t *param_1,float param_2)
+float __cdecl MSG_ReadOriginZFloat(msg_t *msg,float oldValue)
 
 {
   int iVar1;
   float (*pafVar2) [3];
   uint uVar3;
-  float local_10;
+  int trunc;
+  int roundedOldValue;
+  int roundedCenter;
+  float value;
+  int checkValue;
   
-  iVar1 = MSG_ReadBit(param_1);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 == 0) {
-    iVar1 = MSG_ReadBits(param_1,7);
-    local_10 = (float)(iVar1 + -0x40) + param_2;
+    iVar1 = MSG_ReadBits(msg,7);
+    value = (float)(iVar1 + -0x40) + oldValue;
   }
   else {
     pafVar2 = MSG_GetMapCenter();
     iVar1 = (int)ROUND((*pafVar2)[2] + 9.313226e-10);
-    uVar3 = MSG_ReadBits(param_1,0x11);
-    local_10 = (float)(int)(((uVar3 ^ (0x10000 - iVar1) + (int)ROUND(param_2 + 9.313226e-10)) -
-                            0x10000) + iVar1);
+    uVar3 = MSG_ReadBits(msg,0x11);
+    value = (float)(int)(((uVar3 ^ (0x10000 - iVar1) + (int)ROUND(oldValue + 9.313226e-10)) -
+                         0x10000) + iVar1);
   }
-  return local_10;
+  return value;
 }
 
 
@@ -2111,47 +2142,51 @@ float __cdecl MSG_ReadOriginZFloat(msg_t *param_1,float param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-float __cdecl
-MSG_ReadDemoRoundedFloat(msg_t *param_1,int param_2,float param_3,int param_4,int param_5)
+float __cdecl MSG_ReadDemoRoundedFloat(msg_t *msg,int bits,float oldValue,int diffBits,int fullBits)
 
 {
   int iVar1;
   float (*pafVar2) [3];
   uint uVar3;
   int iVar4;
-  int local_18;
-  float local_10;
-  int local_c;
+  int trunc;
+  int fullBias;
+  int roundedOldValue;
+  int roundedCenter;
+  int index;
+  int diffBias;
+  float value;
+  int checkValue;
   
-  iVar4 = 1 << ((char)param_5 - 1U & 0x1f);
-  iVar1 = MSG_ReadBit(param_1);
+  iVar4 = 1 << ((char)fullBits - 1U & 0x1f);
+  iVar1 = MSG_ReadBit(msg);
   if (iVar1 == 0) {
-    iVar1 = MSG_ReadBits(param_1,param_4);
-    local_10 = (float)(iVar1 - (1 << ((char)param_4 - 1U & 0x1f))) + param_3;
+    iVar1 = MSG_ReadBits(msg,diffBits);
+    value = (float)(iVar1 - (1 << ((char)diffBits - 1U & 0x1f))) + oldValue;
   }
   else {
-    if (((param_2 == -0x67) || (param_2 == -0x66)) || (param_2 == -0x65)) {
-      if (param_2 == -0x67) {
-        local_18 = 0;
+    if (((bits == -0x67) || (bits == -0x66)) || (bits == -0x65)) {
+      if (bits == -0x67) {
+        index = 0;
       }
-      else if (param_2 == -0x66) {
-        local_18 = 1;
+      else if (bits == -0x66) {
+        index = 1;
       }
       else {
-        local_18 = 2;
+        index = 2;
       }
       pafVar2 = MSG_GetMapCenter();
-      local_c = (int)((*pafVar2)[local_18] + 0.5);
-      uVar3 = MSG_ReadBits(param_1,param_5);
-      local_c = ((uVar3 ^ (iVar4 - local_c) + (int)param_3) - iVar4) + local_c;
+      iVar1 = (int)((*pafVar2)[index] + 0.5);
+      uVar3 = MSG_ReadBits(msg,fullBits);
+      checkValue = ((uVar3 ^ (iVar4 - iVar1) + (int)oldValue) - iVar4) + iVar1;
     }
     else {
-      uVar3 = MSG_ReadBits(param_1,param_5);
-      local_c = (uVar3 ^ (int)param_3 + iVar4) - iVar4;
+      uVar3 = MSG_ReadBits(msg,fullBits);
+      checkValue = (uVar3 ^ (int)oldValue + iVar4) - iVar4;
     }
-    local_10 = (float)local_c;
+    value = (float)checkValue;
   }
-  return local_10;
+  return value;
 }
 
 
@@ -2160,8 +2195,8 @@ MSG_ReadDemoRoundedFloat(msg_t *param_1,int param_2,float param_3,int param_4,in
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 float __cdecl
-MSG_ReadRangedFloat(msg_t *param_1,float param_2,float param_3,float param_4,int param_5,
-                   bool param_6)
+MSG_ReadRangedFloat(msg_t *msg,float oldValue,float begin,float end,int precision,
+                   bool oftenZeroOrOne)
 
 {
   code *pcVar1;
@@ -2175,28 +2210,33 @@ MSG_ReadRangedFloat(msg_t *param_1,float param_2,float param_3,float param_4,int
   uint local_3c;
   float local_2c;
   float local_28;
-  int local_18;
-  float local_14;
-  float local_8;
+  uint ni;
+  uint rangeSize;
+  float oldV;
+  uint rangeBits;
+  float oldVal;
+  int value;
+  float range;
+  float f;
   
-  if ((param_4 < param_3) &&
+  if ((end < begin) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x6d4,0,
                                "%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar5 = (float10)(*pcVar1)();
     return (float)fVar5;
   }
-  if ((param_5 < 1) &&
+  if ((precision < 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x6d5,0,
                                "%s\n\t%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar5 = (float10)(*pcVar1)();
     return (float)fVar5;
   }
-  fVar6 = (param_4 - param_3) * (float)param_5;
+  fVar6 = (end - begin) * (float)precision;
   if (fVar6 <= 4.2949673e+09) {
-    if ((param_6) && (iVar4 = MSG_ReadBit(param_1), iVar4 != 0)) {
-      iVar4 = MSG_ReadBit(param_1);
+    if ((oftenZeroOrOne) && (iVar4 = MSG_ReadBit(msg), iVar4 != 0)) {
+      iVar4 = MSG_ReadBit(msg);
       if (iVar4 == 0) {
         local_2c = 0.0;
       }
@@ -2206,38 +2246,38 @@ MSG_ReadRangedFloat(msg_t *param_1,float param_2,float param_3,float param_4,int
       return local_2c;
     }
     local_3c = (uint)(longlong)ROUND(fVar6);
-    local_18 = 0;
+    rangeBits = 0;
     if (local_3c != 0) {
-      local_18 = GetMinBitCountForNum(local_3c);
+      rangeBits = GetMinBitCountForNum(local_3c);
     }
-    if (param_2 - param_4 < 0.0) {
-      local_28 = param_2;
+    if (oldValue - end < 0.0) {
+      local_28 = oldValue;
     }
     else {
-      local_28 = param_4;
+      local_28 = end;
     }
-    if (param_3 - param_2 < 0.0) {
+    if (begin - oldValue < 0.0) {
       local_40 = local_28;
     }
     else {
-      local_40 = param_3;
+      local_40 = begin;
     }
-    local_14 = (local_40 - param_3) * (float)param_5 + 0.5;
-    if (fVar6 < local_14) {
-      local_14 = fVar6;
+    oldVal = (local_40 - begin) * (float)precision + 0.5;
+    if (fVar6 < oldVal) {
+      oldVal = fVar6;
     }
-    uVar3 = MSG_ReadBits(param_1,local_18);
-    local_50 = (uint)(longlong)ROUND(local_14);
-    local_8 = (float)(local_50 ^ uVar3) / (float)param_5 + param_3;
+    uVar3 = MSG_ReadBits(msg,rangeBits);
+    local_50 = (uint)(longlong)ROUND(oldVal);
+    f = (float)(local_50 ^ uVar3) / (float)precision + begin;
   }
   else {
     Com_PrintWarning(0xf,
                      "The numerical space defined by range/precision combination is too large. No compression performed."
                     );
-    uVar3 = MSG_ReadLong(param_1);
-    local_8 = (float)(uVar3 ^ (uint)param_2);
+    uVar3 = MSG_ReadLong(msg);
+    f = (float)(uVar3 ^ (uint)oldValue);
   }
-  return local_8;
+  return f;
 }
 
 
@@ -2245,43 +2285,43 @@ MSG_ReadRangedFloat(msg_t *param_1,float param_2,float param_3,float param_4,int
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-int __cdecl MSG_ReadEntityIndex(msg_t *param_1,int param_2)
+int __cdecl MSG_ReadEntityIndex(msg_t *msg,int indexBits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  iVar3 = MSG_ReadBit(param_1);
+  iVar3 = MSG_ReadBit(msg);
   if (iVar3 == 0) {
-    if (param_2 == 10) {
-      iVar3 = MSG_ReadBit(param_1);
+    if (indexBits == 10) {
+      iVar3 = MSG_ReadBit(msg);
       if (iVar3 == 0) {
         if ((msg_printEntityNums->current).enabled != false) {
           Com_Printf(0x10,"Entity num: %i bits (delta)\n");
         }
-        iVar3 = MSG_ReadBits(param_1,4);
-        param_1->lastEntityRef = iVar3 + param_1->lastEntityRef;
+        iVar3 = MSG_ReadBits(msg,4);
+        msg->lastEntityRef = iVar3 + msg->lastEntityRef;
         goto LAB_006e5d5e;
       }
     }
     if ((msg_printEntityNums->current).enabled != false) {
       Com_Printf(0x10,"Entity num: %i bits (full)\n");
     }
-    iVar3 = MSG_ReadBits(param_1,param_2);
-    param_1->lastEntityRef = iVar3;
+    iVar3 = MSG_ReadBits(msg,indexBits);
+    msg->lastEntityRef = iVar3;
   }
   else {
     if ((msg_printEntityNums->current).enabled != false) {
       Com_Printf(0x10,"Entity num: 1 bit (inc)\n");
     }
-    param_1->lastEntityRef = param_1->lastEntityRef + 1;
+    msg->lastEntityRef = msg->lastEntityRef + 1;
   }
 LAB_006e5d5e:
   if ((msg_printEntityNums->current).enabled != false) {
     Com_Printf(0x10,"Read entity num %i\n");
   }
-  if (param_1->lastEntityRef < 0) {
+  if (msg->lastEntityRef < 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x724,0,
                              "%s\n\t(msg->lastEntityRef) = %i");
     if (!bVar2) {
@@ -2290,7 +2330,7 @@ LAB_006e5d5e:
       return iVar3;
     }
   }
-  return param_1->lastEntityRef;
+  return msg->lastEntityRef;
 }
 
 
@@ -2299,20 +2339,19 @@ LAB_006e5d5e:
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
 void __cdecl
-MSG_ReadDeltaField(msg_t *param_1,int param_2,void *param_3,void *param_4,NetField *param_5,
-                  int param_6,bool param_7)
+MSG_ReadDeltaField(msg_t *msg,int time,void *from,void *to,NetField *field,int print,bool noXor)
 
 {
   code *pcVar1;
-  float *pfVar2;
+  int *piVar2;
   bool bVar3;
   undefined2 extraout_AX;
   undefined2 extraout_AX_00;
   undefined2 extraout_AX_01;
   int iVar4;
-  float fVar5;
-  uint uVar6;
-  int iVar7;
+  uint uVar5;
+  int iVar6;
+  float fVar7;
   uint local_a4;
   undefined2 local_94;
   undefined2 local_88;
@@ -2323,40 +2362,46 @@ MSG_ReadDeltaField(msg_t *param_1,int param_2,void *param_3,void *param_4,NetFie
   undefined2 local_60;
   undefined2 local_58;
   undefined2 local_50;
-  float local_18;
-  int local_14;
-  float *local_10;
-  float *local_c;
-  float local_8;
+  int LOSS_MASK;
+  int ALPHA_LOSS;
+  hudelem_color_t *fromColor;
+  hudelem_color_t *toColor;
+  int delta;
+  float oldFloat;
+  int zeroVal;
+  int trunc;
+  int *toF;
+  int *fromF;
+  int value;
   
-  local_18 = 0.0;
-  if (param_7) {
-    local_c = &local_18;
+  zeroVal = 0;
+  if (noXor) {
+    fromF = &zeroVal;
   }
   else {
-    local_c = (float *)((int)param_3 + param_5->offset);
+    fromF = (int *)((int)from + field->offset);
   }
-  local_10 = (float *)((int)param_4 + param_5->offset);
-  if ((param_1->overflowed != 0) &&
+  toF = (int *)((int)to + field->offset);
+  if ((msg->overflowed != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x767,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1->overflowed != 0) &&
+  if ((msg->overflowed != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x782,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_5->bits == 0) {
-    iVar4 = MSG_ReadBit(param_1);
+  if (field->bits == 0) {
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 0) {
-      iVar4 = MSG_ReadBit(param_1);
-      *local_10 = (float)(iVar4 << 0x1f);
-      if ((*local_10 != 0.0) &&
+      iVar4 = MSG_ReadBit(msg);
+      *toF = iVar4 << 0x1f;
+      if (((float)*toF != 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x789,0,
                                    "%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -2365,63 +2410,63 @@ MSG_ReadDeltaField(msg_t *param_1,int param_2,void *param_3,void *param_4,NetFie
       }
     }
     else {
-      iVar4 = MSG_ReadBit(param_1);
+      iVar4 = MSG_ReadBit(msg);
       if (iVar4 == 0) {
-        local_14 = MSG_ReadBits(param_1,5);
-        iVar4 = MSG_ReadByte(param_1);
-        local_14 = ((int)*local_c + 0x1000U ^ iVar4 * 0x20 + local_14) - 0x1000;
-        *local_10 = (float)local_14;
-        if (param_6 != 0) {
+        trunc = MSG_ReadBits(msg,5);
+        iVar4 = MSG_ReadByte(msg);
+        trunc = ((int)(float)*fromF + 0x1000U ^ iVar4 * 0x20 + trunc) - 0x1000;
+        *toF = (int)(float)trunc;
+        if (print != 0) {
           Com_Printf(0x10,"%s:%i ");
         }
       }
       else {
-        fVar5 = (float)MSG_ReadLong(param_1);
-        *local_10 = fVar5;
-        *local_10 = (float)((uint)*local_10 ^ (uint)*local_c);
-        if (param_6 != 0) {
+        iVar4 = MSG_ReadLong(msg);
+        *toF = iVar4;
+        *toF = *toF ^ *fromF;
+        if (print != 0) {
           Com_Printf(0x10,"%s:%f ");
         }
       }
     }
   }
-  else if ((param_5->bits == -0x3f) || (param_5->bits == -0x3d)) {
-    fVar5 = (float)MSG_ReadLong(param_1);
-    *local_10 = fVar5;
+  else if ((field->bits == -0x3f) || (field->bits == -0x3d)) {
+    iVar4 = MSG_ReadLong(msg);
+    *toF = iVar4;
   }
-  else if (param_5->bits == -0x59) {
-    iVar4 = MSG_ReadBit(param_1);
+  else if (field->bits == -0x59) {
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 0) {
-      local_14 = MSG_ReadBits(param_1,5);
-      iVar4 = MSG_ReadByte(param_1);
-      local_14 = ((int)*local_c + 0x1000U ^ iVar4 * 0x20 + local_14) - 0x1000;
-      *local_10 = (float)local_14;
-      if (param_6 != 0) {
+      trunc = MSG_ReadBits(msg,5);
+      iVar4 = MSG_ReadByte(msg);
+      trunc = ((int)(float)*fromF + 0x1000U ^ iVar4 * 0x20 + trunc) - 0x1000;
+      *toF = (int)(float)trunc;
+      if (print != 0) {
         Com_Printf(0x10,"%s:%i ");
       }
     }
     else {
-      fVar5 = (float)MSG_ReadLong(param_1);
-      *local_10 = fVar5;
-      *local_10 = (float)((uint)*local_10 ^ (uint)*local_c);
-      if (param_6 != 0) {
+      iVar4 = MSG_ReadLong(msg);
+      *toF = iVar4;
+      *toF = *toF ^ *fromF;
+      if (print != 0) {
         Com_Printf(0x10,"%s:%f ");
       }
     }
   }
-  else if (param_5->bits == -0x58) {
-    fVar5 = (float)MSG_ReadLong(param_1);
-    *local_10 = fVar5;
-    *local_10 = (float)((uint)*local_10 ^ (uint)*local_c);
-    if (param_6 != 0) {
+  else if (field->bits == -0x58) {
+    iVar4 = MSG_ReadLong(msg);
+    *toF = iVar4;
+    *toF = *toF ^ *fromF;
+    if (print != 0) {
       Com_Printf(0x10,"%s:%f ");
     }
   }
-  else if (param_5->bits == -99) {
-    iVar4 = MSG_ReadBit(param_1);
+  else if (field->bits == -99) {
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 0) {
-      *local_10 = 0.0;
-      if ((*local_10 != 0.0) &&
+      *toF = 0;
+      if (((float)*toF != 0.0) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x7d8,0,
                                    "%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
@@ -2430,26 +2475,26 @@ MSG_ReadDeltaField(msg_t *param_1,int param_2,void *param_3,void *param_4,NetFie
       }
     }
     else {
-      iVar4 = MSG_ReadBit(param_1);
+      iVar4 = MSG_ReadBit(msg);
       if (iVar4 == 0) {
-        local_14 = MSG_ReadBits(param_1,4);
-        iVar4 = MSG_ReadByte(param_1);
-        local_14 = ((int)*local_c + 0x800U ^ iVar4 * 0x10 + local_14) - 0x800;
-        *local_10 = (float)local_14;
-        if (param_6 != 0) {
+        trunc = MSG_ReadBits(msg,4);
+        iVar4 = MSG_ReadByte(msg);
+        trunc = ((int)(float)*fromF + 0x800U ^ iVar4 * 0x10 + trunc) - 0x800;
+        *toF = (int)(float)trunc;
+        if (print != 0) {
           Com_Printf(0x10,"%s:%i ");
         }
       }
       else {
-        uVar6 = MSG_ReadLong(param_1);
-        local_8 = (float)(uVar6 ^ (uint)*local_c);
-        *local_10 = local_8;
-        if (param_6 != 0) {
+        uVar5 = MSG_ReadLong(msg);
+        value = uVar5 ^ *fromF;
+        *toF = value;
+        if (print != 0) {
           Com_Printf(0x10,"%s:%f ");
         }
       }
     }
-    local_a4 = (uint)(longlong)ROUND(*local_10 + 2048.0);
+    local_a4 = (uint)(longlong)ROUND((float)*toF + 2048.0);
     if ((0xfff < local_a4) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x7f8,0,
                                  "*(float *)toF + HUDELEM_COORD_BIAS doesn\'t index 1 << HUDELEM_COORD_BITS\n\t%i not in [0, %i)"
@@ -2459,296 +2504,295 @@ MSG_ReadDeltaField(msg_t *param_1,int param_2,void *param_3,void *param_4,NetFie
       return;
     }
   }
-  else if (param_5->bits == -0x51) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,0.0,1.0,100,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x51) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,0.0,1.0,100,false);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x50) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,0.0,1.0,1000,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x50) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,0.0,1.0,1000,false);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x4d) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,-1.0,1.0,100,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x4d) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,-1.0,1.0,100,false);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x4c) {
-    MSG_ReadRangedFloat(param_1,(float)(int)*(short *)local_c * 3.0517578e-05,-1.0,1.0,10,false);
+  else if (field->bits == -0x4c) {
+    MSG_ReadRangedFloat(msg,(float)(int)(short)*fromF * 3.0517578e-05,-1.0,1.0,10,false);
     floor();
     _ftol2_sse();
-    *(undefined2 *)local_10 = extraout_AX;
+    *(undefined2 *)toF = extraout_AX;
   }
-  else if (param_5->bits == -0x4b) {
-    MSG_ReadRangedFloat(param_1,(float)(int)*(short *)local_c * 0.005493164,-90.0,90.0,10,false);
+  else if (field->bits == -0x4b) {
+    MSG_ReadRangedFloat(msg,(float)(int)(short)*fromF * 0.005493164,-90.0,90.0,10,false);
     floor();
     _ftol2_sse();
-    *(undefined2 *)local_10 = extraout_AX_00;
+    *(undefined2 *)toF = extraout_AX_00;
   }
-  else if (param_5->bits == -0x4a) {
-    MSG_ReadRangedFloat(param_1,(float)(int)*(short *)local_c * 0.005493164,-180.0,180.0,10,false);
+  else if (field->bits == -0x4a) {
+    MSG_ReadRangedFloat(msg,(float)(int)(short)*fromF * 0.005493164,-180.0,180.0,10,false);
     floor();
     _ftol2_sse();
-    *(undefined2 *)local_10 = extraout_AX_01;
+    *(undefined2 *)toF = extraout_AX_01;
   }
-  else if (param_5->bits == -0x49) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,-12.0,12.0,10,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x49) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,-12.0,12.0,10,false);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x48) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,-6000.0,6000.0,10,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x48) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,-6000.0,6000.0,10,false);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x62) {
-    fVar5 = (float)MSG_ReadEFlags(param_1,(int)*local_c);
-    *local_10 = fVar5;
+  else if (field->bits == -0x62) {
+    iVar4 = MSG_ReadEFlags(msg,*fromF);
+    *toF = iVar4;
   }
-  else if ((((param_5->bits == -0x61) || (param_5->bits == -0x47)) || (param_5->bits == -0x46)) ||
-          (param_5->bits == -0x44)) {
-    fVar5 = (float)MSG_ReadDeltaTime(param_1,param_2);
-    *local_10 = fVar5;
+  else if ((((field->bits == -0x61) || (field->bits == -0x47)) || (field->bits == -0x46)) ||
+          (field->bits == -0x44)) {
+    iVar4 = MSG_ReadDeltaTime(msg,time);
+    *toF = iVar4;
   }
-  else if ((param_5->bits == -0x45) || (param_5->bits == -0x43)) {
-    fVar5 = (float)MSG_ReadLong(param_1);
-    *local_10 = fVar5;
+  else if ((field->bits == -0x45) || (field->bits == -0x43)) {
+    iVar4 = MSG_ReadLong(msg);
+    *toF = iVar4;
   }
-  else if (param_5->bits == -0x60) {
-    fVar5 = (float)MSG_ReadDeltaGroundEntity(param_1);
-    iVar4 = param_5->size;
+  else if (field->bits == -0x60) {
+    iVar6 = MSG_ReadDeltaGroundEntity(msg);
+    iVar4 = field->size;
     if (iVar4 == 1) {
-      local_50._0_1_ = SUB41(fVar5,0);
-      *(undefined1 *)local_10 = (undefined1)local_50;
+      local_50._0_1_ = (undefined1)iVar6;
+      *(undefined1 *)toF = (undefined1)local_50;
     }
     else if (iVar4 == 2) {
-      local_50 = SUB42(fVar5,0);
-      *(undefined2 *)local_10 = local_50;
+      local_50 = (undefined2)iVar6;
+      *(undefined2 *)toF = local_50;
     }
     else if (iVar4 == 4) {
-      *local_10 = fVar5;
+      *toF = iVar6;
     }
   }
-  else if (param_5->bits == -0x5e) {
-    fVar5 = (float)MSG_ReadDeltaEventField(param_1);
-    iVar4 = param_5->size;
+  else if (field->bits == -0x5e) {
+    iVar6 = MSG_ReadDeltaEventField(msg);
+    iVar4 = field->size;
     if (iVar4 == 1) {
-      local_58._0_1_ = SUB41(fVar5,0);
-      *(undefined1 *)local_10 = (undefined1)local_58;
+      local_58._0_1_ = (undefined1)iVar6;
+      *(undefined1 *)toF = (undefined1)local_58;
     }
     else if (iVar4 == 2) {
-      local_58 = SUB42(fVar5,0);
-      *(undefined2 *)local_10 = local_58;
+      local_58 = (undefined2)iVar6;
+      *(undefined2 *)toF = local_58;
     }
     else if (iVar4 == 4) {
-      *local_10 = fVar5;
+      *toF = iVar6;
     }
   }
-  else if (param_5->bits == -0x5d) {
-    fVar5 = (float)MSG_ReadDeltaEventParamField(param_1);
-    iVar4 = param_5->size;
+  else if (field->bits == -0x5d) {
+    iVar6 = MSG_ReadDeltaEventParamField(msg);
+    iVar4 = field->size;
     if (iVar4 == 1) {
-      local_60._0_1_ = SUB41(fVar5,0);
-      *(undefined1 *)local_10 = (undefined1)local_60;
+      local_60._0_1_ = (undefined1)iVar6;
+      *(undefined1 *)toF = (undefined1)local_60;
     }
     else if (iVar4 == 2) {
-      local_60 = SUB42(fVar5,0);
-      *(undefined2 *)local_10 = local_60;
+      local_60 = (undefined2)iVar6;
+      *(undefined2 *)toF = local_60;
     }
     else if (iVar4 == 4) {
-      *local_10 = fVar5;
+      *toF = iVar6;
     }
   }
-  else if (param_5->bits == -0x3b) {
-    iVar4 = MSG_ReadBit(param_1);
+  else if (field->bits == -0x3b) {
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 1) {
       iVar4 = GetMinBitCountForNum(0x10);
-      iVar4 = MSG_ReadBits(param_1,iVar4);
-      iVar7 = MSG_GetField((int *)local_c,param_5->size);
-      fVar5 = (float)(iVar7 + 1 + iVar4);
-      iVar4 = param_5->size;
-      if (iVar4 == 1) {
-        local_68._0_1_ = SUB41(fVar5,0);
-        *(undefined1 *)local_10 = (undefined1)local_68;
+      iVar4 = MSG_ReadBits(msg,iVar4);
+      iVar6 = MSG_GetField(fromF,field->size);
+      iVar4 = iVar6 + 1 + iVar4;
+      iVar6 = field->size;
+      if (iVar6 == 1) {
+        local_68._0_1_ = (undefined1)iVar4;
+        *(undefined1 *)toF = (undefined1)local_68;
       }
-      else if (iVar4 == 2) {
-        local_68 = SUB42(fVar5,0);
-        *(undefined2 *)local_10 = local_68;
+      else if (iVar6 == 2) {
+        local_68 = (undefined2)iVar4;
+        *(undefined2 *)toF = local_68;
       }
-      else if (iVar4 == 4) {
-        *local_10 = fVar5;
+      else if (iVar6 == 4) {
+        *toF = iVar4;
       }
     }
     else {
-      fVar5 = (float)MSG_ReadValue(param_1,(int *)local_c,(int *)local_10,8,param_5->size);
-      iVar4 = param_5->size;
+      iVar6 = MSG_ReadValue(msg,fromF,toF,8,field->size);
+      iVar4 = field->size;
       if (iVar4 == 1) {
-        local_70._0_1_ = SUB41(fVar5,0);
-        *(undefined1 *)local_10 = (undefined1)local_70;
+        local_70._0_1_ = (undefined1)iVar6;
+        *(undefined1 *)toF = (undefined1)local_70;
       }
       else if (iVar4 == 2) {
-        local_70 = SUB42(fVar5,0);
-        *(undefined2 *)local_10 = local_70;
+        local_70 = (undefined2)iVar6;
+        *(undefined2 *)toF = local_70;
       }
       else if (iVar4 == 4) {
-        *local_10 = fVar5;
+        *toF = iVar6;
       }
     }
   }
-  else if (param_5->bits == -0x5f) {
-    iVar4 = MSG_ReadBits(param_1,7);
-    *local_10 = (float)(iVar4 * 100);
+  else if (field->bits == -0x5f) {
+    iVar4 = MSG_ReadBits(msg,7);
+    *toF = iVar4 * 100;
   }
-  else if (param_5->bits == -0x3a) {
-    fVar5 = (float)MSG_ReadValueNoXor(param_1,8);
-    iVar4 = param_5->size;
+  else if (field->bits == -0x3a) {
+    iVar6 = MSG_ReadValueNoXor(msg,8);
+    iVar4 = field->size;
     if (iVar4 == 1) {
-      local_78._0_1_ = SUB41(fVar5,0);
-      *(undefined1 *)local_10 = (undefined1)local_78;
+      local_78._0_1_ = (undefined1)iVar6;
+      *(undefined1 *)toF = (undefined1)local_78;
     }
     else if (iVar4 == 2) {
-      local_78 = SUB42(fVar5,0);
-      *(undefined2 *)local_10 = local_78;
+      local_78 = (undefined2)iVar6;
+      *(undefined2 *)toF = local_78;
     }
     else if (iVar4 == 4) {
-      *local_10 = fVar5;
+      *toF = iVar6;
     }
   }
-  else if (((param_5->bits == -0x5c) || (param_5->bits == -0x5b)) ||
-          ((param_5->bits == -0x42 || (param_5->bits == -0x41)))) {
-    fVar5 = MSG_ReadOriginFloat(param_5->bits,param_1,*local_c);
-    *local_10 = fVar5;
-    if (param_6 != 0) {
+  else if (((field->bits == -0x5c) || (field->bits == -0x5b)) ||
+          ((field->bits == -0x42 || (field->bits == -0x41)))) {
+    fVar7 = MSG_ReadOriginFloat(field->bits,msg,(float)*fromF);
+    *toF = (int)fVar7;
+    if (print != 0) {
       Com_Printf(0x10,"%s:%f ");
     }
   }
-  else if ((param_5->bits == -0x5a) || (param_5->bits == -0x40)) {
-    fVar5 = MSG_ReadOriginZFloat(param_1,*local_c);
-    *local_10 = fVar5;
-    if (param_6 != 0) {
+  else if ((field->bits == -0x5a) || (field->bits == -0x40)) {
+    fVar7 = MSG_ReadOriginZFloat(msg,(float)*fromF);
+    *toF = (int)fVar7;
+    if (print != 0) {
       Com_Printf(0x10,"%s:%f ");
     }
   }
-  else if (param_5->bits == -0x6a) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,0.0,255.0,100,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x6a) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,0.0,255.0,100,false);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x6b) {
-    fVar5 = MSG_ReadRangedFloat(param_1,*local_c,0.0,60.0,100,false);
-    *local_10 = fVar5;
+  else if (field->bits == -0x6b) {
+    fVar7 = MSG_ReadRangedFloat(msg,(float)*fromF,0.0,60.0,100,false);
+    *toF = (int)fVar7;
   }
-  else if (((param_5->bits == -0x67) || (param_5->bits == -0x66)) || (param_5->bits == -0x65)) {
-    fVar5 = MSG_ReadDemoRoundedFloat(param_1,param_5->bits,*local_c,5,0x10);
-    *local_10 = fVar5;
-    if (param_6 != 0) {
+  else if (((field->bits == -0x67) || (field->bits == -0x66)) || (field->bits == -0x65)) {
+    fVar7 = MSG_ReadDemoRoundedFloat(msg,field->bits,(float)*fromF,5,0x10);
+    *toF = (int)fVar7;
+    if (print != 0) {
       Com_Printf(0x10,"%s:%f ");
     }
   }
-  else if (param_5->bits == -0x68) {
-    fVar5 = MSG_ReadDemoRoundedFloat(param_1,param_5->bits,*local_c,7,0xc);
-    *local_10 = fVar5;
-    if (param_6 != 0) {
+  else if (field->bits == -0x68) {
+    fVar7 = MSG_ReadDemoRoundedFloat(msg,field->bits,(float)*fromF,7,0xc);
+    *toF = (int)fVar7;
+    if (print != 0) {
       Com_Printf(0x10,"%s:%f ");
     }
   }
-  else if (param_5->bits == -0x69) {
-    fVar5 = MSG_ReadAngle(param_1,10);
-    *local_10 = fVar5;
+  else if (field->bits == -0x69) {
+    fVar7 = MSG_ReadAngle(msg,10);
+    *toF = (int)fVar7;
   }
-  else if ((param_5->bits == -100) || (param_5->bits == -0x3e)) {
-    fVar5 = MSG_ReadDeltaAngle(param_1,*local_c);
-    *local_10 = fVar5;
+  else if ((field->bits == -100) || (field->bits == -0x3e)) {
+    fVar7 = MSG_ReadDeltaAngle(msg,(float)*fromF);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x57) {
-    fVar5 = MSG_ReadAngle16(param_1);
-    *local_10 = fVar5;
+  else if (field->bits == -0x57) {
+    fVar7 = MSG_ReadAngle16(msg);
+    *toF = (int)fVar7;
   }
-  else if (param_5->bits == -0x3c) {
-    iVar4 = MSG_ReadBit(param_1);
+  else if (field->bits == -0x3c) {
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 1) {
-      iVar4 = MSG_ReadBits(param_1,5);
-      iVar7 = MSG_GetField((int *)local_c,param_5->size);
-      fVar5 = (float)(iVar7 + -0x10 + iVar4);
-      iVar4 = param_5->size;
-      if (iVar4 == 1) {
-        local_80._0_1_ = SUB41(fVar5,0);
-        *(undefined1 *)local_10 = (undefined1)local_80;
+      iVar4 = MSG_ReadBits(msg,5);
+      iVar6 = MSG_GetField(fromF,field->size);
+      iVar4 = iVar6 + -0x10 + iVar4;
+      iVar6 = field->size;
+      if (iVar6 == 1) {
+        local_80._0_1_ = (undefined1)iVar4;
+        *(undefined1 *)toF = (undefined1)local_80;
       }
-      else if (iVar4 == 2) {
-        local_80 = SUB42(fVar5,0);
-        *(undefined2 *)local_10 = local_80;
+      else if (iVar6 == 2) {
+        local_80 = (undefined2)iVar4;
+        *(undefined2 *)toF = local_80;
       }
-      else if (iVar4 == 4) {
-        *local_10 = fVar5;
+      else if (iVar6 == 4) {
+        *toF = iVar4;
       }
     }
     else {
-      fVar5 = (float)MSG_ReadValue(param_1,(int *)local_c,(int *)local_10,-8,param_5->size);
-      iVar4 = param_5->size;
+      iVar6 = MSG_ReadValue(msg,fromF,toF,-8,field->size);
+      iVar4 = field->size;
       if (iVar4 == 1) {
-        local_88._0_1_ = SUB41(fVar5,0);
-        *(undefined1 *)local_10 = (undefined1)local_88;
+        local_88._0_1_ = (undefined1)iVar6;
+        *(undefined1 *)toF = (undefined1)local_88;
       }
       else if (iVar4 == 2) {
-        local_88 = SUB42(fVar5,0);
-        *(undefined2 *)local_10 = local_88;
+        local_88 = (undefined2)iVar6;
+        *(undefined2 *)toF = local_88;
       }
       else if (iVar4 == 4) {
-        *local_10 = fVar5;
+        *toF = iVar6;
       }
     }
   }
-  else if (param_5->bits == -0x56) {
-    iVar4 = MSG_ReadBits(param_1,6);
-    *local_10 = ((float)iVar4 * 1.0) / 10.0 + 1.0;
+  else if (field->bits == -0x56) {
+    iVar4 = MSG_ReadBits(msg,6);
+    *toF = (int)(((float)iVar4 * 1.0) / 10.0 + 1.0);
   }
-  else if (param_5->bits == -0x55) {
-    iVar4 = MSG_ReadBit(param_1);
-    pfVar2 = local_10;
+  else if (field->bits == -0x55) {
+    iVar4 = MSG_ReadBit(msg);
+    piVar2 = toF;
     if (iVar4 == 0) {
-      iVar4 = MSG_ReadBit(param_1);
+      iVar4 = MSG_ReadBit(msg);
       if (iVar4 == 0) {
-        iVar4 = MSG_ReadByte(param_1);
-        *(char *)pfVar2 = (char)iVar4;
-        iVar4 = MSG_ReadByte(param_1);
-        *(char *)((int)pfVar2 + 1) = (char)iVar4;
-        iVar4 = MSG_ReadByte(param_1);
-        *(char *)((int)pfVar2 + 2) = (char)iVar4;
+        iVar4 = MSG_ReadByte(msg);
+        *(char *)piVar2 = (char)iVar4;
+        iVar4 = MSG_ReadByte(msg);
+        *(char *)((int)piVar2 + 1) = (char)iVar4;
+        iVar4 = MSG_ReadByte(msg);
+        *(char *)((int)piVar2 + 2) = (char)iVar4;
       }
-      iVar4 = MSG_ReadBits(param_1,5);
-      *(char *)((int)pfVar2 + 3) = (char)(iVar4 << 3);
-      *(byte *)((int)pfVar2 + 3) =
-           *(byte *)((int)pfVar2 + 3) | (byte)((int)(uint)*(byte *)((int)pfVar2 + 3) >> 5);
+      iVar4 = MSG_ReadBits(msg,5);
+      *(char *)((int)piVar2 + 3) = (char)(iVar4 << 3);
+      *(byte *)((int)piVar2 + 3) =
+           *(byte *)((int)piVar2 + 3) | (byte)((int)(uint)*(byte *)((int)piVar2 + 3) >> 5);
     }
     else {
-      *local_10 = *local_c;
-      *(byte *)((int)local_10 + 3) = (-(*(char *)((int)local_c + 3) != '\0') & 1U) - 1;
+      *toF = *fromF;
+      *(byte *)((int)toF + 3) = (-(*(char *)((int)fromF + 3) != '\0') & 1U) - 1;
     }
   }
   else {
-    iVar4 = MSG_ReadBit(param_1);
+    iVar4 = MSG_ReadBit(msg);
     if (iVar4 == 0) {
-      iVar4 = param_5->size;
+      iVar4 = field->size;
       if (iVar4 == 1) {
-        *(undefined1 *)local_10 = 0;
+        *(undefined1 *)toF = 0;
       }
       else if (iVar4 == 2) {
-        *(undefined2 *)local_10 = 0;
+        *(undefined2 *)toF = 0;
       }
       else if (iVar4 == 4) {
-        *local_10 = 0.0;
+        *toF = 0;
       }
     }
     else {
-      fVar5 = (float)MSG_ReadValue(param_1,(int *)local_c,(int *)local_10,param_5->bits,
-                                   param_5->size);
-      iVar4 = param_5->size;
+      iVar6 = MSG_ReadValue(msg,fromF,toF,field->bits,field->size);
+      iVar4 = field->size;
       if (iVar4 == 1) {
-        local_94._0_1_ = SUB41(fVar5,0);
-        *(undefined1 *)local_10 = (undefined1)local_94;
+        local_94._0_1_ = (undefined1)iVar6;
+        *(undefined1 *)toF = (undefined1)local_94;
       }
       else if (iVar4 == 2) {
-        local_94 = SUB42(fVar5,0);
-        *(undefined2 *)local_10 = local_94;
+        local_94 = (undefined2)iVar6;
+        *(undefined2 *)toF = local_94;
       }
       else if (iVar4 == 4) {
-        *local_10 = fVar5;
+        *toF = iVar6;
       }
     }
   }
@@ -2762,15 +2806,15 @@ MSG_ReadDeltaField(msg_t *param_1,int param_2,void *param_3,void *param_4,NetFie
 
 int __cdecl
 MSG_ReadAppendedDeltaStruct
-          (msg_t *param_1,int param_2,void *param_3,void *param_4,uint param_5,int param_6,
-          int param_7,NetField *param_8,int param_9)
+          (msg_t *msg,int time,void *from,void *to,uint number,int numFields,int indexBits,
+          NetField *stateFields,int skippedFieldBits)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((uint)(1 << ((byte)param_7 & 0x1f)) <= param_5) {
+  if ((uint)(1 << ((byte)indexBits & 0x1f)) <= number) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x8d4,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2778,7 +2822,7 @@ MSG_ReadAppendedDeltaStruct
       return iVar3;
     }
   }
-  MSG_ReadDeltaFields(param_1,param_2,param_3,param_4,param_6,param_8,param_9,false);
+  MSG_ReadDeltaFields(msg,time,from,to,numFields,stateFields,skippedFieldBits,false);
   return 0;
 }
 
@@ -2791,20 +2835,18 @@ MSG_ReadAppendedDeltaStruct
 
 int __cdecl
 MSG_ReadDeltaEntityStruct
-          (msg_t *param_1,int param_2,void *param_3,void *param_4,uint param_5,int param_6,
-          int param_7)
+          (msg_t *msg,int time,void *from,void *to,uint number,int totalFields,int skippedFieldBits)
 
 {
   byte bVar1;
-  NetField *pNVar2;
-  code *pcVar3;
-  uint uVar4;
-  bool bVar5;
+  NetField *stateFields_00;
+  code *pcVar2;
+  uint uVar3;
+  bool bVar4;
+  int iVar5;
+  uint maxVal;
   int iVar6;
-  uint uVar7;
-  int iVar8;
-  NetFieldList *pNVar9;
-  uint uVar10;
+  NetFieldList *pNVar7;
   int local_84;
   byte *local_7c;
   byte *local_78;
@@ -2813,56 +2855,69 @@ MSG_ReadDeltaEntityStruct
   int local_60;
   byte *local_58;
   byte *local_54;
-  uint local_2c;
-  uint local_28;
-  uint local_8;
+  bool noXor_2;
+  NetField *field_2;
+  bool noXor;
+  NetField *field;
+  entityState_s *fromES;
+  entityState_s *toES;
+  int lastChanged;
+  int nextChanged;
+  NetFieldList *stateFieldList;
+  int print;
+  uint lc;
+  NetField *stateFields;
+  int *toF;
+  int etype;
+  bool justUnlinked;
+  uint i;
   
-  if ((0x3ff < param_5) &&
-     (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x8f2,0,"%s"
-                              ), !bVar5)) {
-    pcVar3 = (code *)swi(3);
-    iVar6 = (*pcVar3)();
-    return iVar6;
+  if ((0x3ff < number) &&
+     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x8f2,0,"%s"
+                              ), !bVar4)) {
+    pcVar2 = (code *)swi(3);
+    iVar5 = (*pcVar2)();
+    return iVar5;
   }
-  iVar6 = MSG_ReadBit(param_1);
-  if (iVar6 == 1) {
+  iVar5 = MSG_ReadBit(msg);
+  if (iVar5 == 1) {
     if ((cl_shownet != (dvar_s *)0x0) &&
        ((1 < (cl_shownet->current).integer || ((cl_shownet->current).integer == -1)))) {
       Com_Printf(0x10,"%3i: #%-3i remove\n");
     }
-    iVar6 = 1;
+    iVar5 = 1;
   }
   else {
-    iVar6 = MSG_ReadBit(param_1);
-    if (iVar6 == 0) {
-      for (iVar6 = 0x38; iVar6 != 0; iVar6 = iVar6 + -1) {
-        *(undefined4 *)param_4 = *(undefined4 *)param_3;
-        param_3 = (undefined4 *)((int)param_3 + 4);
-        param_4 = (undefined4 *)((int)param_4 + 4);
+    iVar5 = MSG_ReadBit(msg);
+    if (iVar5 == 0) {
+      for (iVar5 = 0x38; iVar5 != 0; iVar5 = iVar5 + -1) {
+        *(undefined4 *)to = *(undefined4 *)from;
+        from = (undefined4 *)((int)from + 4);
+        to = (undefined4 *)((int)to + 4);
       }
-      iVar6 = 0;
+      iVar5 = 0;
     }
     else {
-      iVar6 = MSG_ReadBit(param_1);
-      uVar7 = MSG_ReadLastChangedField(param_1,param_6);
+      iVar5 = MSG_ReadBit(msg);
+      maxVal = MSG_ReadLastChangedField(msg,totalFields);
       if ((cl_shownet != (dvar_s *)0x0) &&
          ((1 < (cl_shownet->current).integer || ((cl_shownet->current).integer == -1)))) {
         Com_Printf(0x10,"%3i: #%-3i ");
       }
-      *(uint *)param_4 = param_5;
+      *(uint *)to = number;
       local_54 = (byte *)0xcd7a18;
       local_58 = (byte *)0xcd7a18;
       do {
         bVar1 = *local_58;
-        bVar5 = bVar1 < *local_54;
+        bVar4 = bVar1 < *local_54;
         if (bVar1 != *local_54) {
 LAB_006e7418:
-          local_60 = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
+          local_60 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
           goto LAB_006e7420;
         }
         if (bVar1 == 0) break;
         bVar1 = local_58[1];
-        bVar5 = bVar1 < local_54[1];
+        bVar4 = bVar1 < local_54[1];
         if (bVar1 != local_54[1]) goto LAB_006e7418;
         local_58 = local_58 + 2;
         local_54 = local_54 + 2;
@@ -2870,144 +2925,144 @@ LAB_006e7418:
       local_60 = 0;
 LAB_006e7420:
       if ((local_60 != 0) &&
-         (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x92c,0,
-                                   "%s"), !bVar5)) {
-        pcVar3 = (code *)swi(3);
-        iVar6 = (*pcVar3)();
-        return iVar6;
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x92c,0,
+                                   "%s"), !bVar4)) {
+        pcVar2 = (code *)swi(3);
+        iVar5 = (*pcVar2)();
+        return iVar5;
       }
-      local_2c = 0xffffffff;
-      iVar8 = MSG_ReadNumFieldsSkipped(param_1,param_7,uVar7 + 1);
-      local_28 = iVar8 - 1;
-      if ((int)local_28 < 1) {
-        MSG_ReadDeltaField(param_1,param_2,param_3,param_4,entityStateFields,0,false);
-        local_2c = 0;
-        if (uVar7 != 0) {
-          local_28 = MSG_ReadNumFieldsSkipped(param_1,param_7,uVar7);
+      lastChanged = -1;
+      iVar6 = MSG_ReadNumFieldsSkipped(msg,skippedFieldBits,maxVal + 1);
+      nextChanged = iVar6 + -1;
+      if (nextChanged < 1) {
+        MSG_ReadDeltaField(msg,time,from,to,entityStateFields,0,false);
+        lastChanged = 0;
+        if (maxVal != 0) {
+          nextChanged = MSG_ReadNumFieldsSkipped(msg,skippedFieldBits,maxVal);
         }
       }
       else {
-        MSG_CopyFieldOver(entityStateFields,param_3,param_4,0);
+        MSG_CopyFieldOver(entityStateFields,from,to,0);
       }
-      iVar8 = MSG_GetField((int *)((int)param_4 + 0xbe),2);
-      bVar5 = Demo_IsPlaying();
-      pNVar9 = MSG_GetStateFieldListForEntityType(iVar8,bVar5);
-      pNVar2 = pNVar9->array;
-      if (pNVar9->count < uVar7) {
+      iVar6 = MSG_GetField((int *)((int)to + 0xbe),2);
+      bVar4 = Demo_IsPlaying();
+      pNVar7 = MSG_GetStateFieldListForEntityType(iVar6,bVar4);
+      stateFields_00 = pNVar7->array;
+      if (pNVar7->count < maxVal) {
         Com_Printf(0xe,"Last changed field was %i, but there are only %i fields\n");
-        param_1->overflowed = 1;
-        iVar6 = 0;
+        msg->overflowed = 1;
+        iVar5 = 0;
       }
       else {
-        uVar4 = uVar7;
-        local_8 = local_2c;
-        if (local_2c != uVar7) {
+        uVar3 = maxVal;
+        i = lastChanged;
+        if (lastChanged != maxVal) {
           do {
-            while (local_8 = local_8 + 1, local_8 < local_28) {
-              MSG_CopyFieldOver(pNVar2,param_3,param_4,local_8);
+            while (i = i + 1, i < (uint)nextChanged) {
+              MSG_CopyFieldOver(stateFields_00,from,to,i);
             }
-            if (iVar6 == 0) {
+            if (iVar5 == 0) {
 LAB_006e760d:
               local_6c = false;
             }
             else {
-              iVar8 = pNVar2[local_28].bits;
-              if ((iVar8 < -0x42) || (-0x3d < iVar8)) {
-                bVar5 = false;
+              iVar6 = stateFields_00[nextChanged].bits;
+              if ((iVar6 < -0x42) || (-0x3d < iVar6)) {
+                bVar4 = false;
               }
               else {
-                bVar5 = true;
+                bVar4 = true;
               }
-              if (!bVar5) goto LAB_006e760d;
+              if (!bVar4) goto LAB_006e760d;
               local_6c = true;
             }
-            MSG_ReadDeltaField(param_1,param_2,param_3,param_4,pNVar2 + local_28,0,local_6c);
-            local_2c = local_28;
-            uVar4 = local_2c;
-            if (local_28 == uVar7) break;
-            iVar8 = MSG_ReadNumFieldsSkipped(param_1,param_7,uVar7 - local_28);
-            uVar10 = iVar8 + local_28;
-            if ((int)uVar7 < (int)uVar10) {
+            MSG_ReadDeltaField(msg,time,from,to,stateFields_00 + nextChanged,0,local_6c);
+            lastChanged = nextChanged;
+            uVar3 = lastChanged;
+            if (nextChanged == maxVal) break;
+            iVar6 = MSG_ReadNumFieldsSkipped(msg,skippedFieldBits,maxVal - nextChanged);
+            iVar6 = iVar6 + nextChanged;
+            if ((int)maxVal < iVar6) {
               va("nextChanged is %i, lc is %i");
-              bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",
+              bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",
                                        0x988,0,"%s\n\t%s");
-              if (!bVar5) {
-                pcVar3 = (code *)swi(3);
-                iVar6 = (*pcVar3)();
-                return iVar6;
+              if (!bVar4) {
+                pcVar2 = (code *)swi(3);
+                iVar5 = (*pcVar2)();
+                return iVar5;
               }
             }
-            if ((int)uVar10 <= (int)local_28) {
+            if (iVar6 <= nextChanged) {
               va("nextChanged is %i, lastChanged is %i");
-              bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",
+              bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",
                                        0x989,0,"%s\n\t%s");
-              if (!bVar5) {
-                pcVar3 = (code *)swi(3);
-                iVar6 = (*pcVar3)();
-                return iVar6;
+              if (!bVar4) {
+                pcVar2 = (code *)swi(3);
+                iVar5 = (*pcVar2)();
+                return iVar5;
               }
             }
-            local_8 = local_28;
-            local_28 = uVar10;
-          } while ((int)uVar10 <= (int)uVar7);
+            i = nextChanged;
+            nextChanged = iVar6;
+          } while (iVar6 <= (int)maxVal);
         }
-        local_2c = uVar4;
-        for (local_8 = 0; local_8 < uVar7; local_8 = local_8 + 1) {
-          if (pNVar2[local_8].changeHints == '\x02') {
-            if (iVar6 == 0) {
+        lastChanged = uVar3;
+        for (i = 0; i < maxVal; i = i + 1) {
+          if (stateFields_00[i].changeHints == '\x02') {
+            if (iVar5 == 0) {
 LAB_006e779a:
               local_74 = false;
             }
             else {
-              iVar8 = pNVar2[local_8].bits;
-              if ((iVar8 < -0x42) || (-0x3d < iVar8)) {
-                bVar5 = false;
+              iVar6 = stateFields_00[i].bits;
+              if ((iVar6 < -0x42) || (-0x3d < iVar6)) {
+                bVar4 = false;
               }
               else {
-                bVar5 = true;
+                bVar4 = true;
               }
-              if (!bVar5) goto LAB_006e779a;
+              if (!bVar4) goto LAB_006e779a;
               local_74 = true;
             }
-            MSG_ReadDeltaField(param_1,param_2,param_3,param_4,pNVar2 + local_8,0,local_74);
+            MSG_ReadDeltaField(msg,time,from,to,stateFields_00 + i,0,local_74);
           }
         }
-        if ((local_2c != uVar7) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9bb,
-                                     0,"%s"), !bVar5)) {
-          pcVar3 = (code *)swi(3);
-          iVar6 = (*pcVar3)();
-          return iVar6;
+        if ((lastChanged != maxVal) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9bb,
+                                     0,"%s"), !bVar4)) {
+          pcVar2 = (code *)swi(3);
+          iVar5 = (*pcVar2)();
+          return iVar5;
         }
-        local_8 = local_2c;
-        if (((int)local_2c < 0) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9bc,
-                                     0,"%s"), !bVar5)) {
-          pcVar3 = (code *)swi(3);
-          iVar6 = (*pcVar3)();
-          return iVar6;
+        i = lastChanged;
+        if ((lastChanged < 0) &&
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9bc,
+                                     0,"%s"), !bVar4)) {
+          pcVar2 = (code *)swi(3);
+          iVar5 = (*pcVar2)();
+          return iVar5;
         }
-        while (local_8 = local_8 + 1, local_8 < pNVar9->count) {
-          MSG_CopyFieldOver(pNVar2,param_3,param_4,local_8);
+        while (i = i + 1, i < pNVar7->count) {
+          MSG_CopyFieldOver(stateFields_00,from,to,i);
         }
         if ((msg_dumpEnts->current).enabled != false) {
-          iVar6 = MSG_GetField((int *)((int)param_4 + 0xbe),2);
-          BG_GetEntityTypeName(iVar6);
+          iVar5 = MSG_GetField((int *)((int)to + 0xbe),2);
+          BG_GetEntityTypeName(iVar5);
           Com_Printf(0xe,"%3i: changed ent, eType %s\n");
         }
         local_78 = (byte *)0xcd7a18;
-        local_7c = (byte *)pNVar2->name;
+        local_7c = (byte *)stateFields_00->name;
         do {
           bVar1 = *local_7c;
-          bVar5 = bVar1 < *local_78;
+          bVar4 = bVar1 < *local_78;
           if (bVar1 != *local_78) {
 LAB_006e790b:
-            local_84 = (1 - (uint)bVar5) - (uint)(bVar5 != 0);
+            local_84 = (1 - (uint)bVar4) - (uint)(bVar4 != 0);
             goto LAB_006e7913;
           }
           if (bVar1 == 0) break;
           bVar1 = local_7c[1];
-          bVar5 = bVar1 < local_78[1];
+          bVar4 = bVar1 < local_78[1];
           if (bVar1 != local_78[1]) goto LAB_006e790b;
           local_7c = local_7c + 2;
           local_78 = local_78 + 2;
@@ -3015,17 +3070,17 @@ LAB_006e790b:
         local_84 = 0;
 LAB_006e7913:
         if ((local_84 != 0) &&
-           (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9c7,
-                                     0,"%s"), !bVar5)) {
-          pcVar3 = (code *)swi(3);
-          iVar6 = (*pcVar3)();
-          return iVar6;
+           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9c7,
+                                     0,"%s"), !bVar4)) {
+          pcVar2 = (code *)swi(3);
+          iVar5 = (*pcVar2)();
+          return iVar5;
         }
-        iVar6 = 0;
+        iVar5 = 0;
       }
     }
   }
-  return iVar6;
+  return iVar5;
 }
 
 
@@ -3035,16 +3090,16 @@ LAB_006e7913:
 
 int __cdecl
 MSG_ReadDeltaArchivedEntity
-          (msg_t *param_1,int param_2,archivedEntity_s *param_3,archivedEntity_s *param_4,
-          int param_5)
+          (msg_t *msg,int time,archivedEntity_s *from,archivedEntity_s *to,int number)
 
 {
   int iVar1;
+  int numFields;
   
-  iVar1 = MSG_ReadDeltaEntity(param_1,param_2,&param_3->s,&param_4->s,param_5);
+  iVar1 = MSG_ReadDeltaEntity(msg,time,&from->s,&to->s,number);
   if (iVar1 == 0) {
-    iVar1 = MSG_ReadAppendedDeltaStruct
-                      (param_1,param_2,&param_3->r,&param_4->r,param_5,8,10,archivedEntityFields,1);
+    iVar1 = MSG_ReadAppendedDeltaStruct(msg,time,&from->r,&to->r,number,8,10,archivedEntityFields,1)
+    ;
   }
   else {
     iVar1 = 1;
@@ -3057,144 +3112,147 @@ MSG_ReadDeltaArchivedEntity
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl
-MSG_ReadDeltaHudElems(msg_t *param_1,int param_2,hudelem_s *param_3,hudelem_s *param_4,int param_5)
+void __cdecl MSG_ReadDeltaHudElems(msg_t *msg,int time,hudelem_s *from,hudelem_s *to,int count)
 
 {
-  NetField *pNVar1;
-  uint uVar2;
-  code *pcVar3;
-  bool bVar4;
-  NetFieldList *pNVar5;
+  NetField *stateFields;
+  uint uVar1;
+  code *pcVar2;
+  bool bVar3;
+  NetFieldList *pNVar4;
+  int iVar5;
   int iVar6;
-  int iVar7;
-  byte bVar8;
-  uint uVar9;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_c;
-  int local_8;
+  byte bVar7;
+  uint uVar8;
+  int alignY;
+  int alignX;
+  int nextChanged;
+  int lastChanged;
+  int field;
+  int numFields;
+  uint lc;
+  NetField *fields;
+  int i;
+  int inuse;
   
-  if (((param_5 != 0x1f) && (param_5 != 0x1f)) &&
-     (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9fb,0,"%s"
-                              ), !bVar4)) {
-    pcVar3 = (code *)swi(3);
-    (*pcVar3)();
+  if (((count != 0x1f) && (count != 0x1f)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0x9fb,0,"%s"
+                              ), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    (*pcVar2)();
     return;
   }
-  bVar4 = Demo_IsPlaying();
-  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,bVar4);
-  pNVar1 = pNVar5->array;
-  bVar4 = Demo_IsPlaying();
-  pNVar5 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,bVar4);
-  uVar2 = pNVar5->count;
-  local_8 = MSG_ReadBits(param_1,5);
-  local_c = 0;
+  bVar3 = Demo_IsPlaying();
+  pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,bVar3);
+  stateFields = pNVar4->array;
+  bVar3 = Demo_IsPlaying();
+  pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_HUDELEMS,bVar3);
+  uVar1 = pNVar4->count;
+  inuse = MSG_ReadBits(msg,5);
+  i = 0;
   while( true ) {
-    if (local_8 <= local_c) {
+    if (inuse <= i) {
       while( true ) {
-        if ((param_5 <= local_8) || (param_4[local_8].type == '\0')) {
+        if ((count <= inuse) || (to[inuse].type == '\0')) {
           return;
         }
-        memset((uchar *)(param_4 + local_8),'\0',0x70);
-        if ((param_4[local_8].type != '\0') &&
-           (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa36,
-                                     0,"%s"), !bVar4)) break;
-        local_8 = local_8 + 1;
+        memset((uchar *)(to + inuse),'\0',0x70);
+        if ((to[inuse].type != '\0') &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa36,
+                                     0,"%s"), !bVar3)) break;
+        inuse = inuse + 1;
       }
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    iVar6 = MSG_ReadBits(param_1,6);
-    local_20 = -1;
-    local_24 = -1;
-    if (iVar6 != 0) {
-      iVar6 = iVar6 + -1;
-      while (local_24 = local_20, local_20 < iVar6) {
-        iVar7 = MSG_ReadNumFieldsSkipped(param_1,3,iVar6 - local_20);
-        iVar7 = iVar7 + local_20;
-        if (iVar6 < iVar7) {
+    iVar5 = MSG_ReadBits(msg,6);
+    lastChanged = -1;
+    nextChanged = -1;
+    if (iVar5 != 0) {
+      iVar5 = iVar5 + -1;
+      while (nextChanged = lastChanged, lastChanged < iVar5) {
+        iVar6 = MSG_ReadNumFieldsSkipped(msg,3,iVar5 - lastChanged);
+        iVar6 = iVar6 + lastChanged;
+        if (iVar5 < iVar6) {
           va("lc is %i, nextChanged is %i");
-          bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa13,0,
+          bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa13,0,
                                    "%s\n\t%s");
-          if (!bVar4) {
-            pcVar3 = (code *)swi(3);
-            (*pcVar3)();
+          if (!bVar3) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
             return;
           }
         }
-        local_1c = local_20;
-        if (iVar7 <= local_20) {
+        field = lastChanged;
+        if (iVar6 <= lastChanged) {
           va("nextChanged is %i, lastChanged is %i");
-          bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa14,0,
+          bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa14,0,
                                    "%s\n\t%s");
-          if (!bVar4) {
-            pcVar3 = (code *)swi(3);
-            (*pcVar3)();
+          if (!bVar3) {
+            pcVar2 = (code *)swi(3);
+            (*pcVar2)();
             return;
           }
         }
-        while (local_1c = local_1c + 1, local_1c < iVar7) {
-          MSG_CopyFieldOver(pNVar1,param_3 + local_c,param_4 + local_c,local_1c);
+        while (field = field + 1, field < iVar6) {
+          MSG_CopyFieldOver(stateFields,from + i,to + i,field);
         }
-        MSG_ReadDeltaField(param_1,param_2,param_3 + local_c,param_4 + local_c,pNVar1 + iVar7,0,
-                           false);
-        local_20 = iVar7;
+        MSG_ReadDeltaField(msg,time,from + i,to + i,stateFields + iVar6,0,false);
+        lastChanged = iVar6;
       }
     }
-    while (local_24 = local_24 + 1, local_24 < (int)uVar2) {
-      MSG_CopyFieldOver(pNVar1,param_3 + local_c,param_4 + local_c,local_24);
+    while (nextChanged = nextChanged + 1, nextChanged < (int)uVar1) {
+      MSG_CopyFieldOver(stateFields,from + i,to + i,nextChanged);
     }
-    if (((param_3[local_c].alignOrg & 0xf0) != 0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa22,0,
-                                 "%s\n\t(from[i].alignOrg) = %i"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (((from[i].alignOrg & 0xf0) != 0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa22,0,
+                                 "%s\n\t(from[i].alignOrg) = %i"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    if (((param_4[local_c].alignOrg & 0xf0) != 0) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa23,0,
-                                 "%s\n\t(from[i].alignOrg) = %i"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (((to[i].alignOrg & 0xf0) != 0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa23,0,
+                                 "%s\n\t(from[i].alignOrg) = %i"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    uVar9 = (int)(uint)param_3[local_c].alignOrg >> 2 & 3;
-    if ((((uVar9 != 0) && (uVar9 != 1)) && (uVar9 != 2)) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa26,0,
-                                 "%s\n\t(from[i].alignOrg) = %i"), !bVar4)) break;
-    bVar8 = param_3[local_c].alignOrg & 3;
-    if ((((param_3[local_c].alignOrg & 3) != 0) && (bVar8 != 1)) &&
-       ((bVar8 != 2 &&
-        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa29,0,
-                                  "%s\n\t(from[i].alignOrg) = %i"), !bVar4)))) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    uVar8 = (int)(uint)from[i].alignOrg >> 2 & 3;
+    if ((((uVar8 != 0) && (uVar8 != 1)) && (uVar8 != 2)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa26,0,
+                                 "%s\n\t(from[i].alignOrg) = %i"), !bVar3)) break;
+    bVar7 = from[i].alignOrg & 3;
+    if ((((from[i].alignOrg & 3) != 0) && (bVar7 != 1)) &&
+       ((bVar7 != 2 &&
+        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa29,0,
+                                  "%s\n\t(from[i].alignOrg) = %i"), !bVar3)))) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    uVar9 = (int)(uint)param_4[local_c].alignOrg >> 2 & 3;
-    if (((uVar9 != 0) && (uVar9 != 1)) &&
-       ((uVar9 != 2 &&
-        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa2c,0,
-                                  "%s\n\t(to[i].alignOrg) = %i"), !bVar4)))) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    uVar8 = (int)(uint)to[i].alignOrg >> 2 & 3;
+    if (((uVar8 != 0) && (uVar8 != 1)) &&
+       ((uVar8 != 2 &&
+        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa2c,0,
+                                  "%s\n\t(to[i].alignOrg) = %i"), !bVar3)))) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    bVar8 = param_4[local_c].alignOrg & 3;
-    if (((((param_4[local_c].alignOrg & 3) != 0) && (bVar8 != 1)) && (bVar8 != 2)) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa2f,0,
-                                 "%s\n\t(to[i].alignOrg) = %i"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    bVar7 = to[i].alignOrg & 3;
+    if (((((to[i].alignOrg & 3) != 0) && (bVar7 != 1)) && (bVar7 != 2)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa2f,0,
+                                 "%s\n\t(to[i].alignOrg) = %i"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  pcVar3 = (code *)swi(3);
-  (*pcVar3)();
+  pcVar2 = (code *)swi(3);
+  (*pcVar2)();
   return;
 }
 
@@ -3207,8 +3265,8 @@ MSG_ReadDeltaHudElems(msg_t *param_1,int param_2,hudelem_s *param_3,hudelem_s *p
 
 void __cdecl
 MSG_ReadDeltaPlayerstate
-          (int param_1,msg_t *param_2,int param_3,playerState_s *param_4,playerState_s *param_5,
-          bool param_6)
+          (int localClientNum,msg_t *msg,int time,playerState_s *from,playerState_s *to,
+          bool predictedFieldsIgnoreXor)
 
 {
   code *pcVar1;
@@ -3218,55 +3276,62 @@ MSG_ReadDeltaPlayerstate
   char *pcVar5;
   int iVar6;
   NetField *pNVar7;
-  clientActive_t *pcVar8;
-  uint uVar9;
-  objectiveState_t oVar10;
+  clientActive_t *cl_00;
+  uint uVar8;
+  objectiveState_t oVar9;
   bool local_270e;
   bool local_270d;
-  int local_26f0;
-  int local_26e8;
-  int local_26dc;
-  int local_26d0;
-  playerState_s local_26c4;
-  uint local_1c;
-  int local_18;
-  uint local_14;
-  int local_10;
-  int local_c;
-  NetField *local_8;
+  int slot;
+  clientActive_t *cl;
+  int lastChanged;
+  int nextChanged;
+  int numObjFields;
+  int print;
+  NetField *field;
+  int numFields;
+  int lc;
+  NetField *objFields;
+  int *toF;
+  playerState_s dummy;
+  int bits;
+  int *fromF;
+  int recvOriginAndVelocity;
+  int index;
+  int i;
+  NetField *psFields;
   
-  local_8 = (NetField *)0x6e7a4d;
-  if (param_4 == (playerState_s *)0x0) {
-    param_4 = &local_26c4;
-    memset((uchar *)&local_26c4,'\0',0x26a4);
+  psFields = (NetField *)0x6e7a4d;
+  if (from == (playerState_s *)0x0) {
+    from = &dummy;
+    memset((uchar *)&dummy,'\0',0x26a4);
   }
-  memcpy((uchar *)param_5,(uchar *)param_4,0x26a4);
+  memcpy((uchar *)to,(uchar *)from,0x26a4);
   if ((cl_shownet == (dvar_s *)0x0) ||
      (((cl_shownet->current).integer < 2 && ((cl_shownet->current).integer != -2)))) {
-    local_26dc = 0;
+    print = 0;
   }
   else {
-    local_26dc = 1;
+    print = 1;
     Com_Printf(0x10,"%3i: playerstate ");
   }
-  iVar3 = MSG_ReadBit(param_2);
-  local_14 = (uint)(0 < iVar3);
+  iVar3 = MSG_ReadBit(msg);
+  recvOriginAndVelocity = (int)(0 < iVar3);
   bVar2 = Demo_IsPlaying();
   pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_PLAYERSTATE,bVar2);
-  local_8 = pNVar4->array;
+  psFields = pNVar4->array;
   bVar2 = Demo_IsPlaying();
   pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_PLAYERSTATE,bVar2);
-  uVar9 = pNVar4->count;
-  local_26d0 = MSG_ReadLastChangedField(param_2,uVar9 + 1);
-  if ((local_26d0 < 0) &&
+  uVar8 = pNVar4->count;
+  lc = MSG_ReadLastChangedField(msg,uVar8 + 1);
+  if ((lc < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa6f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((int)(uVar9 + 1) < local_26d0) {
-    MSG_Discard(param_2);
+  if ((int)(uVar8 + 1) < lc) {
+    MSG_Discard(msg);
   }
   else {
     bVar2 = Demo_IsPlaying();
@@ -3274,35 +3339,35 @@ MSG_ReadDeltaPlayerstate
       pcVar5 = va("PlayerState - Lastchangedfield: %d\n");
       Demo_Printf(0x200,pcVar5);
     }
-    local_c = 0;
-    local_26e8 = -1;
-    if (0 < local_26d0) {
-      local_26d0 = local_26d0 + -1;
-      while (local_26e8 < local_26d0) {
-        if ((param_2->overflowed != 0) &&
+    i = 0;
+    lastChanged = -1;
+    if (0 < lc) {
+      lc = lc + -1;
+      while (lastChanged < lc) {
+        if ((msg->overflowed != 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa84,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        iVar6 = MSG_ReadNumFieldsSkipped(param_2,4,local_26d0 - local_26e8);
-        iVar6 = iVar6 + local_26e8;
-        local_1c = 0;
+        iVar6 = MSG_ReadNumFieldsSkipped(msg,4,lc - lastChanged);
+        iVar6 = iVar6 + lastChanged;
+        bits = 0;
         bVar2 = Demo_IsPlaying();
-        iVar3 = local_26e8;
+        iVar3 = lastChanged;
         if (bVar2) {
-          local_1c = MSG_GetNumBitsRead(param_2);
+          bits = MSG_GetNumBitsRead(msg);
         }
-        while (local_c = iVar3 + 1, local_c < iVar6) {
-          iVar3 = local_c;
-          if (local_8[local_c].changeHints != '\x02') {
-            MSG_CopyFieldOver(local_8,param_4,param_5,local_c);
-            iVar3 = local_c;
+        while (i = iVar3 + 1, i < iVar6) {
+          iVar3 = i;
+          if (psFields[i].changeHints != '\x02') {
+            MSG_CopyFieldOver(psFields,from,to,i);
+            iVar3 = i;
           }
         }
-        pNVar7 = local_8 + iVar6;
-        if (local_26d0 < iVar6) {
+        pNVar7 = psFields + iVar6;
+        if (lc < iVar6) {
           va("nextChanged == %i, lc == %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa99,0,
                                    "%s\n\t%s");
@@ -3312,7 +3377,7 @@ MSG_ReadDeltaPlayerstate
             return;
           }
         }
-        if (iVar6 <= local_26e8) {
+        if (iVar6 <= lastChanged) {
           va("nextChanged == %i, lastChanged == %i");
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa9a,0,
                                    "%s\n\t%s");
@@ -3322,21 +3387,22 @@ MSG_ReadDeltaPlayerstate
             return;
           }
         }
-        if ((param_2->overflowed != 0) &&
+        if ((msg->overflowed != 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa9c,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (((param_6) && (local_14 != 0)) && (pNVar7->changeHints == '\x03')) {
+        if (((predictedFieldsIgnoreXor) && (recvOriginAndVelocity != 0)) &&
+           (pNVar7->changeHints == '\x03')) {
           local_270d = true;
         }
         else {
           local_270d = false;
         }
-        MSG_ReadDeltaField(param_2,param_3,param_4,param_5,pNVar7,local_26dc,local_270d);
-        if ((param_2->overflowed != 0) &&
+        MSG_ReadDeltaField(msg,time,from,to,pNVar7,print,local_270d);
+        if ((msg->overflowed != 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xa9e,
                                      0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
@@ -3344,23 +3410,23 @@ MSG_ReadDeltaPlayerstate
           return;
         }
         bVar2 = Demo_IsPlaying();
-        local_26e8 = iVar6;
+        lastChanged = iVar6;
         if (bVar2) {
-          local_18 = (int)param_4->origin + pNVar7->offset + -0x24;
+          fromF = (int *)((int)from->origin + pNVar7->offset + -0x24);
           bVar2 = Demo_GetAnalyzePrintDataType(pNVar7->bits);
           if (bVar2) {
-            MSG_GetNumBitsRead(param_2);
+            MSG_GetNumBitsRead(msg);
             pcVar5 = va("PlayerState - FieldName: %s From: %d To: %d BitsUsed: %d\n");
             Demo_Printf(0x200,pcVar5);
           }
           else {
-            MSG_GetNumBitsRead(param_2);
+            MSG_GetNumBitsRead(msg);
             pcVar5 = va("PlayerState - FieldName: %s From: %.3f To: %.3f BitsUsed: %d\n");
             Demo_Printf(0x200,pcVar5);
           }
         }
       }
-      if ((local_26e8 != local_26d0) &&
+      if ((lastChanged != lc) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\msg_mp.cpp",0xaad,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -3368,191 +3434,191 @@ MSG_ReadDeltaPlayerstate
         return;
       }
     }
-    while (local_c = local_26e8 + 1, local_c < (int)uVar9) {
-      MSG_CopyFieldOver(local_8,param_4,param_5,local_c);
-      local_26e8 = local_c;
+    while (i = lastChanged + 1, i < (int)uVar8) {
+      MSG_CopyFieldOver(psFields,from,to,i);
+      lastChanged = i;
     }
-    for (local_c = 0; local_c < local_26d0; local_c = local_c + 1) {
-      pNVar7 = local_8 + local_c;
+    for (i = 0; i < lc; i = i + 1) {
+      pNVar7 = psFields + i;
       if (pNVar7->changeHints == '\x02') {
-        if (((param_6) && (local_14 != 0)) && (pNVar7->changeHints == '\x03')) {
+        if (((predictedFieldsIgnoreXor) && (recvOriginAndVelocity != 0)) &&
+           (pNVar7->changeHints == '\x03')) {
           local_270e = true;
         }
         else {
           local_270e = false;
         }
-        MSG_ReadDeltaField(param_2,param_3,param_4,param_5,pNVar7,local_26dc,local_270e);
+        MSG_ReadDeltaField(msg,time,from,to,pNVar7,print,local_270e);
       }
     }
-    if (local_14 == 0) {
-      pcVar8 = CL_GetLocalClientGlobals(param_1);
+    if (recvOriginAndVelocity == 0) {
+      cl_00 = CL_GetLocalClientGlobals(localClientNum);
       bVar2 = CL_GetPredictedOriginForServerTime
-                        (pcVar8,param_5->commandTime,param_5->origin,param_5->velocity,
-                         param_5->viewangles,&param_5->bobCycle,&param_5->movementDir);
+                        (cl_00,to->commandTime,to->origin,to->velocity,to->viewangles,&to->bobCycle,
+                         &to->movementDir);
       if (!bVar2) {
         Com_PrintError(0xe,"Unable to find the origin we sent, delta is not going to work");
-        param_5->origin[0] = param_4->origin[0];
-        param_5->origin[1] = param_4->origin[1];
-        param_5->origin[2] = param_4->origin[2];
-        param_5->velocity[0] = param_4->velocity[0];
-        param_5->velocity[1] = param_4->velocity[1];
-        param_5->velocity[2] = param_4->velocity[2];
-        param_5->bobCycle = param_4->bobCycle;
-        param_5->movementDir = param_4->movementDir;
-        param_5->viewangles[0] = param_4->viewangles[0];
-        param_5->viewangles[1] = param_4->viewangles[1];
-        param_5->viewangles[2] = param_4->viewangles[2];
+        to->origin[0] = from->origin[0];
+        to->origin[1] = from->origin[1];
+        to->origin[2] = from->origin[2];
+        to->velocity[0] = from->velocity[0];
+        to->velocity[1] = from->velocity[1];
+        to->velocity[2] = from->velocity[2];
+        to->bobCycle = from->bobCycle;
+        to->movementDir = from->movementDir;
+        to->viewangles[0] = from->viewangles[0];
+        to->viewangles[1] = from->viewangles[1];
+        to->viewangles[2] = from->viewangles[2];
       }
     }
-    local_1c = 0;
+    bits = 0;
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      local_1c = MSG_GetNumBitsRead(param_2);
+      bits = MSG_GetNumBitsRead(msg);
     }
-    iVar3 = MSG_ReadBit(param_2);
+    iVar3 = MSG_ReadBit(msg);
     if (iVar3 != 0) {
       if ((cl_shownet != (dvar_s *)0x0) && ((cl_shownet->current).integer == 4)) {
         Com_Printf(0x10,"%s ");
       }
-      local_1c = MSG_ReadBits(param_2,5);
-      if ((local_1c & 1) != 0) {
-        iVar3 = MSG_ReadShort(param_2);
-        param_5->stats[0] = iVar3;
+      bits = MSG_ReadBits(msg,5);
+      if ((bits & 1U) != 0) {
+        iVar3 = MSG_ReadShort(msg);
+        to->stats[0] = iVar3;
       }
-      if ((local_1c & 2) != 0) {
-        iVar3 = MSG_ReadShort(param_2);
-        param_5->stats[1] = iVar3;
+      if ((bits & 2U) != 0) {
+        iVar3 = MSG_ReadShort(msg);
+        to->stats[1] = iVar3;
       }
-      if ((local_1c & 4) != 0) {
-        iVar3 = MSG_ReadShort(param_2);
-        param_5->stats[2] = iVar3;
+      if ((bits & 4U) != 0) {
+        iVar3 = MSG_ReadShort(msg);
+        to->stats[2] = iVar3;
       }
-      if ((local_1c & 8) != 0) {
-        iVar3 = MSG_ReadBits(param_2,5);
-        param_5->stats[3] = iVar3;
+      if ((bits & 8U) != 0) {
+        iVar3 = MSG_ReadBits(msg,5);
+        to->stats[3] = iVar3;
       }
-      if ((local_1c & 0x10) != 0) {
-        iVar3 = MSG_ReadByte(param_2);
-        param_5->stats[4] = iVar3;
+      if ((bits & 0x10U) != 0) {
+        iVar3 = MSG_ReadByte(msg);
+        to->stats[4] = iVar3;
       }
     }
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar5 = va("PlayerState - FieldName: PS_STATS BitsUsed: %d\n");
       Demo_Printf(0x200,pcVar5);
-      local_1c = MSG_GetNumBitsRead(param_2);
+      bits = MSG_GetNumBitsRead(msg);
     }
-    iVar3 = MSG_ReadBit(param_2);
+    iVar3 = MSG_ReadBit(msg);
     if (iVar3 != 0) {
-      for (local_26f0 = 0; local_26f0 < 0xf; local_26f0 = local_26f0 + 1) {
-        iVar3 = MSG_ReadBit(param_2);
+      for (slot = 0; slot < 0xf; slot = slot + 1) {
+        iVar3 = MSG_ReadBit(msg);
         if (iVar3 != 0) {
           if ((cl_shownet != (dvar_s *)0x0) && ((cl_shownet->current).integer == 4)) {
             Com_Printf(0x10,"%s ");
           }
-          iVar3 = MSG_ReadBit(param_2);
+          iVar3 = MSG_ReadBit(msg);
           if (iVar3 != 0) {
-            uVar9 = MSG_ReadBits(param_2,0xb);
-            param_5->heldWeapons[local_26f0].weapon = uVar9;
+            uVar8 = MSG_ReadBits(msg,0xb);
+            to->heldWeapons[slot].weapon = uVar8;
           }
-          iVar3 = MSG_ReadBit(param_2);
+          iVar3 = MSG_ReadBit(msg);
           if (iVar3 != 0) {
-            iVar3 = MSG_ReadBits(param_2,4);
-            param_5->heldWeapons[local_26f0].model = (uchar)iVar3;
+            iVar3 = MSG_ReadBits(msg,4);
+            to->heldWeapons[slot].model = (uchar)iVar3;
           }
-          iVar3 = MSG_ReadBit(param_2);
+          iVar3 = MSG_ReadBit(msg);
           if (iVar3 != 0) {
-            uVar9 = MSG_ReadBits(param_2,0x20);
-            param_5->heldWeapons[local_26f0].options.field0_0x0.i = uVar9;
+            uVar8 = MSG_ReadBits(msg,0x20);
+            to->heldWeapons[slot].options.field0_0x0.i = uVar8;
           }
-          iVar3 = MSG_ReadBit(param_2);
+          iVar3 = MSG_ReadBit(msg);
           if (iVar3 != 0) {
-            iVar3 = MSG_ReadBits(param_2,0x20);
-            param_5->heldWeapons[local_26f0].field3_0xc.fuelTankTime = iVar3;
+            iVar3 = MSG_ReadBits(msg,0x20);
+            to->heldWeapons[slot].field3_0xc.fuelTankTime = iVar3;
           }
-          iVar3 = MSG_ReadBit(param_2);
-          param_5->heldWeapons[local_26f0].overHeating = iVar3 != 0;
-          iVar3 = MSG_ReadBit(param_2);
-          param_5->heldWeapons[local_26f0].needsRechamber = iVar3 != 0;
-          iVar3 = MSG_ReadBit(param_2);
-          param_5->heldWeapons[local_26f0].heldBefore = iVar3 != 0;
-          iVar3 = MSG_ReadBit(param_2);
-          param_5->heldWeapons[local_26f0].quickReload = iVar3 != 0;
+          iVar3 = MSG_ReadBit(msg);
+          to->heldWeapons[slot].overHeating = iVar3 != 0;
+          iVar3 = MSG_ReadBit(msg);
+          to->heldWeapons[slot].needsRechamber = iVar3 != 0;
+          iVar3 = MSG_ReadBit(msg);
+          to->heldWeapons[slot].heldBefore = iVar3 != 0;
+          iVar3 = MSG_ReadBit(msg);
+          to->heldWeapons[slot].quickReload = iVar3 != 0;
         }
       }
     }
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar5 = va("PlayerState - FieldName: PS_WEAPON BitsUsed: %d\n");
       Demo_Printf(0x200,pcVar5);
-      local_1c = MSG_GetNumBitsRead(param_2);
+      bits = MSG_GetNumBitsRead(msg);
     }
-    while (iVar3 = MSG_ReadBit(param_2), iVar3 != 0) {
-      local_10 = MSG_ReadBits(param_2,4);
+    while (iVar3 = MSG_ReadBit(msg), iVar3 != 0) {
+      index = MSG_ReadBits(msg,4);
       if ((cl_shownet != (dvar_s *)0x0) && ((cl_shownet->current).integer == 4)) {
         Com_Printf(0x10,"%s ");
       }
-      iVar3 = MSG_ReadBits(param_2,0xb);
-      param_5->ammoNotInClip[local_10].ammoIndex = iVar3;
-      iVar3 = MSG_ReadBits(param_2,10);
-      param_5->ammoNotInClip[local_10].count = iVar3;
+      iVar3 = MSG_ReadBits(msg,0xb);
+      to->ammoNotInClip[index].ammoIndex = iVar3;
+      iVar3 = MSG_ReadBits(msg,10);
+      to->ammoNotInClip[index].count = iVar3;
     }
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar5 = va("PlayerState - FieldName: PS_AMMO BitsUsed: %d\n");
       Demo_Printf(0x200,pcVar5);
-      local_1c = MSG_GetNumBitsRead(param_2);
+      bits = MSG_GetNumBitsRead(msg);
     }
-    while (iVar3 = MSG_ReadBit(param_2), iVar3 != 0) {
-      local_10 = MSG_ReadBits(param_2,4);
+    while (iVar3 = MSG_ReadBit(msg), iVar3 != 0) {
+      index = MSG_ReadBits(msg,4);
       if ((cl_shownet != (dvar_s *)0x0) && ((cl_shownet->current).integer == 4)) {
         Com_Printf(0x10,"%s ");
       }
-      iVar3 = MSG_ReadBits(param_2,0xb);
-      param_5->ammoInClip[local_10].clipIndex = iVar3;
-      iVar3 = MSG_ReadBits(param_2,10);
-      param_5->ammoInClip[local_10].count = iVar3;
+      iVar3 = MSG_ReadBits(msg,0xb);
+      to->ammoInClip[index].clipIndex = iVar3;
+      iVar3 = MSG_ReadBits(msg,10);
+      to->ammoInClip[index].count = iVar3;
     }
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar5 = va("PlayerState - FieldName: PS_AMMOCLIP BitsUsed: %d\n");
       Demo_Printf(0x200,pcVar5);
-      local_1c = MSG_GetNumBitsRead(param_2);
+      bits = MSG_GetNumBitsRead(msg);
     }
-    iVar3 = MSG_ReadBit(param_2);
+    iVar3 = MSG_ReadBit(msg);
     if (iVar3 != 0) {
       bVar2 = Demo_IsPlaying();
       pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_OBJECTIVE,bVar2);
       pNVar7 = pNVar4->array;
       bVar2 = Demo_IsPlaying();
       pNVar4 = MSG_GetNetFieldList(NET_FIELD_TYPE_OBJECTIVE,bVar2);
-      uVar9 = pNVar4->count;
-      for (local_c = 0; local_c < 0x20; local_c = local_c + 1) {
-        oVar10 = MSG_ReadBits(param_2,3);
-        param_5->objective[local_c].state = oVar10;
-        MSG_ReadDeltaFields(param_2,param_3,param_4->objective + local_c,
-                            param_5->objective + local_c,uVar9,pNVar7,1,false);
+      uVar8 = pNVar4->count;
+      for (i = 0; i < 0x20; i = i + 1) {
+        oVar9 = MSG_ReadBits(msg,3);
+        to->objective[i].state = oVar9;
+        MSG_ReadDeltaFields(msg,time,from->objective + i,to->objective + i,uVar8,pNVar7,1,false);
       }
     }
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar5 = va("PlayerState - FieldName: PS_OBJECTIVE BitsUsed: %d\n");
       Demo_Printf(0x200,pcVar5);
-      local_1c = MSG_GetNumBitsRead(param_2);
+      bits = MSG_GetNumBitsRead(msg);
     }
-    iVar3 = MSG_ReadBit(param_2);
+    iVar3 = MSG_ReadBit(msg);
     if (iVar3 != 0) {
-      MSG_ReadDeltaHudElems(param_2,param_3,(param_4->hud).archival,(param_5->hud).archival,0x1f);
-      MSG_ReadDeltaHudElems(param_2,param_3,(param_4->hud).current,(param_5->hud).current,0x1f);
+      MSG_ReadDeltaHudElems(msg,time,(from->hud).archival,(to->hud).archival,0x1f);
+      MSG_ReadDeltaHudElems(msg,time,(from->hud).current,(to->hud).current,0x1f);
     }
     bVar2 = Demo_IsPlaying();
     if (bVar2) {
-      MSG_GetNumBitsRead(param_2);
+      MSG_GetNumBitsRead(msg);
       pcVar5 = va("PlayerState - FieldName: PS_HUDELEMS BitsUsed: %d\n");
       Demo_Printf(0x200,pcVar5);
     }
@@ -3566,6 +3632,9 @@ MSG_ReadDeltaPlayerstate
 void __cdecl MSG_initHuffmanInternal(void)
 
 {
+  int time2;
+  int time;
+  
   Huff_Init(&msgHuff);
   Sys_Milliseconds();
   Huff_BuildFromData(&msgHuff.compressDecompress,msg_hData);
@@ -3591,32 +3660,32 @@ void __cdecl MSG_InitHuffman(void)
 void __cdecl MSG_DumpNetFieldChanges_f(void)
 
 {
-  int local_5c [6];
-  netFieldOrderInfo_t *local_44;
-  int local_40;
-  char *local_3c;
+  int arraySize [6];
+  int *array;
+  int iSize;
+  char *arrayNames;
   char *local_38;
   char *local_34;
   char *local_30;
   char *local_2c;
   char *local_28;
-  int local_24;
-  uint local_20;
-  netFieldOrderInfo_t *local_1c [6];
+  int i;
+  uint iArrayNum;
+  netFieldOrderInfo_t *changeArray [6];
   
-  local_1c[0] = &orderInfo;
-  local_1c[1] = (netFieldOrderInfo_t *)0x975a954;
-  local_1c[2] = (netFieldOrderInfo_t *)0x975a9c0;
-  local_1c[3] = (netFieldOrderInfo_t *)0x975aa90;
-  local_1c[4] = (netFieldOrderInfo_t *)0x975aee4;
-  local_1c[5] = (netFieldOrderInfo_t *)0x975af08;
-  local_5c[0] = 0x4f;
-  local_5c[1] = 10;
-  local_5c[2] = 0x34;
-  local_5c[3] = 0xb3;
-  local_5c[4] = 9;
-  local_5c[5] = 0x2b;
-  local_3c = "Entity State";
+  changeArray[0] = &orderInfo;
+  changeArray[1] = (netFieldOrderInfo_t *)0x975a954;
+  changeArray[2] = (netFieldOrderInfo_t *)0x975a9c0;
+  changeArray[3] = (netFieldOrderInfo_t *)0x975aa90;
+  changeArray[4] = (netFieldOrderInfo_t *)0x975aee4;
+  changeArray[5] = (netFieldOrderInfo_t *)0x975af08;
+  arraySize[0] = 0x4f;
+  arraySize[1] = 10;
+  arraySize[2] = 0x34;
+  arraySize[3] = 0xb3;
+  arraySize[4] = 9;
+  arraySize[5] = 0x2b;
+  arrayNames = "Entity State";
   local_38 = "Archived Entity State";
   local_34 = "Client State";
   local_30 = "Player State";
@@ -3624,14 +3693,14 @@ void __cdecl MSG_DumpNetFieldChanges_f(void)
   local_28 = "HUD Elem";
   Com_Printf(0,"========================================\n");
   Com_Printf(0,"NetField changes. format: field# : #changes\n");
-  for (local_20 = 0; local_20 < 6; local_20 = local_20 + 1) {
+  for (iArrayNum = 0; iArrayNum < 6; iArrayNum = iArrayNum + 1) {
     Com_Printf(0,"========================================\n");
     Com_Printf(0,"    %s\n");
     Com_Printf(0,"--------------------\n");
-    local_44 = local_1c[local_20];
-    local_40 = local_5c[local_20];
-    for (local_24 = 0; local_24 < local_40; local_24 = local_24 + 1) {
-      if (local_44->entState[local_24] != 0) {
+    array = changeArray[iArrayNum]->entState;
+    iSize = arraySize[iArrayNum];
+    for (i = 0; i < iSize; i = i + 1) {
+      if (array[i] != 0) {
         Com_Printf(0,"%3i :%8i\n");
       }
     }

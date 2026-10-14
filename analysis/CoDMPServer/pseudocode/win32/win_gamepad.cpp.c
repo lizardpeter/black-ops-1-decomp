@@ -12,15 +12,17 @@ void __cdecl TRACK_win_gamepad(void)
 
 // 007D7810  GPad_Check  (win32/win_gamepad.cpp:96)
 
-void __cdecl GPad_Check(int param_1)
+void __cdecl GPad_Check(int portIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   GamePad *pGVar4;
+  GamePad *gPad;
+  bool wasEnabled;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",100,0,"%s")
     ;
     if (!bVar2) {
@@ -29,26 +31,26 @@ void __cdecl GPad_Check(int param_1)
       return;
     }
   }
-  pGVar4 = s_gamePads + param_1;
+  pGVar4 = s_gamePads + portIndex;
   bVar2 = pGVar4->enabled;
-  iVar3 = _XInputGetCapabilities_12(param_1,1,param_1 * 0x7c + 0x9b649d4);
+  iVar3 = _XInputGetCapabilities_12(portIndex,1,portIndex * 0x7c + 0x9b649d4);
   if (iVar3 == 0) {
     pGVar4->enabled = true;
   }
   else {
     pGVar4->enabled = false;
   }
-  s_gamePads[param_1].keyboardEnabled = false;
+  s_gamePads[portIndex].keyboardEnabled = false;
   if (((s_removedCB == (_func___cdecl_void_int *)0x0) || (bVar2 == false)) ||
      (pGVar4->enabled != false)) {
     if (((s_insertedCB != (_func___cdecl_void_int *)0x0) && (bVar2 == false)) &&
        (pGVar4->enabled != false)) {
-      (*s_insertedCB)(param_1);
+      (*s_insertedCB)(portIndex);
     }
   }
   else {
-    GPad_ResetState(param_1);
-    (*s_removedCB)(param_1);
+    GPad_ResetState(portIndex);
+    (*s_removedCB)(portIndex);
   }
   return;
 }
@@ -59,10 +61,10 @@ void __cdecl GPad_Check(int param_1)
 void __cdecl GPad_RefreshAll(void)
 
 {
-  undefined4 local_8;
+  int portIndex;
   
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    GPad_Check(local_8);
+  for (portIndex = 0; portIndex < 1; portIndex = portIndex + 1) {
+    GPad_Check(portIndex);
   }
   return;
 }
@@ -70,14 +72,18 @@ void __cdecl GPad_RefreshAll(void)
 
 // 007D78F0  GPad_UpdateDigitals  (win32/win_gamepad.cpp:140)
 
-void __cdecl GPad_UpdateDigitals(int param_1,_XINPUT_GAMEPAD *param_2)
+void __cdecl GPad_UpdateDigitals(int portIndex,_XINPUT_GAMEPAD *xpad)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  GamePad *gPad;
+  float rightDeflect;
+  int stickIndex;
+  float leftDeflect;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x92,0,"%s"
                             );
     if (!bVar2) {
@@ -86,7 +92,7 @@ void __cdecl GPad_UpdateDigitals(int param_1,_XINPUT_GAMEPAD *param_2)
       return;
     }
   }
-  if (param_2 == (_XINPUT_GAMEPAD *)0x0) {
+  if (xpad == (_XINPUT_GAMEPAD *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x93,0,"%s"
                             );
     if (!bVar2) {
@@ -95,21 +101,21 @@ void __cdecl GPad_UpdateDigitals(int param_1,_XINPUT_GAMEPAD *param_2)
       return;
     }
   }
-  s_gamePads[param_1].lastDigitals = s_gamePads[param_1].digitals;
-  s_gamePads[param_1].digitals = param_2->wButtons;
+  s_gamePads[portIndex].lastDigitals = s_gamePads[portIndex].digitals;
+  s_gamePads[portIndex].digitals = xpad->wButtons;
   fVar3 = Dvar_GetFloat("gpad_button_rstick_deflect_max");
-  if (fVar3 < ABS(s_gamePads[param_1].sticks[2])) {
-    s_gamePads[param_1].digitals = s_gamePads[param_1].digitals & 0xff7f;
+  if (fVar3 < ABS(s_gamePads[portIndex].sticks[2])) {
+    s_gamePads[portIndex].digitals = s_gamePads[portIndex].digitals & 0xff7f;
   }
-  if (fVar3 < ABS(s_gamePads[param_1].sticks[3])) {
-    s_gamePads[param_1].digitals = s_gamePads[param_1].digitals & 0xff7f;
+  if (fVar3 < ABS(s_gamePads[portIndex].sticks[3])) {
+    s_gamePads[portIndex].digitals = s_gamePads[portIndex].digitals & 0xff7f;
   }
   fVar3 = Dvar_GetFloat("gpad_button_lstick_deflect_max");
-  if (fVar3 < ABS(s_gamePads[param_1].sticks[0])) {
-    s_gamePads[param_1].digitals = s_gamePads[param_1].digitals & 0xffbf;
+  if (fVar3 < ABS(s_gamePads[portIndex].sticks[0])) {
+    s_gamePads[portIndex].digitals = s_gamePads[portIndex].digitals & 0xffbf;
   }
-  if (fVar3 < ABS(s_gamePads[param_1].sticks[1])) {
-    s_gamePads[param_1].digitals = s_gamePads[param_1].digitals & 0xffbf;
+  if (fVar3 < ABS(s_gamePads[portIndex].sticks[1])) {
+    s_gamePads[portIndex].digitals = s_gamePads[portIndex].digitals & 0xffbf;
   }
   return;
 }
@@ -117,138 +123,143 @@ void __cdecl GPad_UpdateDigitals(int param_1,_XINPUT_GAMEPAD *param_2)
 
 // 007D7AA0  GPad_UpdateAnalogs  (win32/win_gamepad.cpp:182)
 
-void __cdecl GPad_UpdateAnalogs(int param_1,_XINPUT_GAMEPAD *param_2)
+void __cdecl GPad_UpdateAnalogs(int portIndex,_XINPUT_GAMEPAD *xpad)
 
 {
   code *pcVar1;
   bool bVar2;
   float local_20;
   float local_1c;
+  GamePad *gPad;
+  int buttonIndex;
+  float value;
   
-  if (((param_1 < 0) || (0 < param_1)) &&
+  if (((portIndex < 0) || (0 < portIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0xbb,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (_XINPUT_GAMEPAD *)0x0) &&
+  if ((xpad == (_XINPUT_GAMEPAD *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0xbc,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  s_gamePads[param_1].lastAnalogs[0] = s_gamePads[param_1].analogs[0];
-  local_1c = ((float)param_2->bLeftTrigger / 255.0 - (gpad_button_deadzone->current).value) /
+  s_gamePads[portIndex].lastAnalogs[0] = s_gamePads[portIndex].analogs[0];
+  local_1c = ((float)xpad->bLeftTrigger / 255.0 - (gpad_button_deadzone->current).value) /
              (1.0 - (gpad_button_deadzone->current).value);
   if (0.0 <= 0.0 - local_1c) {
     local_1c = 0.0;
   }
-  s_gamePads[param_1].analogs[0] = local_1c;
-  s_gamePads[param_1].lastAnalogs[1] = s_gamePads[param_1].analogs[1];
-  local_20 = ((float)param_2->bRightTrigger / 255.0 - (gpad_button_deadzone->current).value) /
+  s_gamePads[portIndex].analogs[0] = local_1c;
+  s_gamePads[portIndex].lastAnalogs[1] = s_gamePads[portIndex].analogs[1];
+  local_20 = ((float)xpad->bRightTrigger / 255.0 - (gpad_button_deadzone->current).value) /
              (1.0 - (gpad_button_deadzone->current).value);
   if (0.0 <= 0.0 - local_20) {
     local_20 = 0.0;
   }
-  s_gamePads[param_1].analogs[1] = local_20;
+  s_gamePads[portIndex].analogs[1] = local_20;
   return;
 }
 
 
 // 007D7DF0  GPad_ConvertStickToFloat  (win32/win_gamepad.cpp:210)
 
-void __cdecl GPad_ConvertStickToFloat(short param_1,short param_2,float *param_3,float *param_4)
+void __cdecl GPad_ConvertStickToFloat(short inX,short inY,float *outX,float *outY)
 
 {
   float fVar1;
-  float local_14;
+  float stickVec;
   float local_10;
-  float local_c;
-  float local_8;
+  float len;
+  float deadZoneTotal;
   
-  local_14 = (float)(int)param_1 / 32767.0;
-  local_10 = (float)(int)param_2 / 32767.0;
-  local_8 = (gpad_stick_deadzone_min->current).value + (gpad_stick_deadzone_max->current).value;
-  fVar1 = Vec2Normalize(&local_14);
+  stickVec = (float)(int)inX / 32767.0;
+  local_10 = (float)(int)inY / 32767.0;
+  deadZoneTotal =
+       (gpad_stick_deadzone_min->current).value + (gpad_stick_deadzone_max->current).value;
+  fVar1 = Vec2Normalize(&stickVec);
   if ((gpad_stick_deadzone_min->current).value <= fVar1) {
     if (fVar1 <= 1.0 - (gpad_stick_deadzone_max->current).value) {
-      local_c = (fVar1 - (gpad_stick_deadzone_min->current).value) / (1.0 - local_8);
+      len = (fVar1 - (gpad_stick_deadzone_min->current).value) / (1.0 - deadZoneTotal);
     }
     else {
-      local_c = 1.0;
+      len = 1.0;
     }
   }
   else {
-    local_c = 0.0;
+    len = 0.0;
   }
-  *param_3 = local_14 * local_c;
-  *param_4 = local_10 * local_c;
+  *outX = stickVec * len;
+  *outY = local_10 * len;
   return;
 }
 
 
 // 007D7EE0  GPad_UpdateSticksDown  (win32/win_gamepad.cpp:235)
 
-void __cdecl GPad_UpdateSticksDown(GamePad *param_1)
+void __cdecl GPad_UpdateSticksDown(GamePad *gPad)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  int local_10;
-  float local_c;
-  int local_8;
+  float fVar1;
+  code *pcVar2;
+  bool bVar3;
+  int dir;
+  float threshold;
+  int stickIter;
   
-  local_8 = 0;
+  stickIter = 0;
   do {
-    if (local_8 == 4) {
+    if (stickIter == 4) {
       return;
     }
-    for (local_10 = 0; local_10 != 2; local_10 = local_10 + 1) {
-      local_c = (gpad_stick_pressed->current).value;
-      param_1->stickDownLast[local_8][local_10] = param_1->stickDown[local_8][local_10];
-      if (param_1->stickDownLast[local_8][local_10] == false) {
-        local_c = local_c + (gpad_stick_pressed_hysteresis->current).value;
+    for (dir = 0; dir != 2; dir = dir + 1) {
+      fVar1 = (gpad_stick_pressed->current).value;
+      gPad->stickDownLast[stickIter][dir] = gPad->stickDown[stickIter][dir];
+      if (gPad->stickDownLast[stickIter][dir] == false) {
+        threshold = fVar1 + (gpad_stick_pressed_hysteresis->current).value;
       }
       else {
-        local_c = local_c - (gpad_stick_pressed_hysteresis->current).value;
+        threshold = fVar1 - (gpad_stick_pressed_hysteresis->current).value;
       }
-      if (local_10 == 0) {
-        param_1->stickDown[local_8][0] = local_c < param_1->sticks[local_8];
+      if (dir == 0) {
+        gPad->stickDown[stickIter][0] = threshold < gPad->sticks[stickIter];
       }
       else {
-        if ((local_10 != 1) &&
-           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",
-                                     0x102,0,"%s"), !bVar2)) {
-          pcVar1 = (code *)swi(3);
-          (*pcVar1)();
+        if ((dir != 1) &&
+           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",
+                                     0x102,0,"%s"), !bVar3)) {
+          pcVar2 = (code *)swi(3);
+          (*pcVar2)();
           return;
         }
-        param_1->stickDown[local_8][local_10] =
-             param_1->sticks[local_8] <= -local_c && -local_c != param_1->sticks[local_8];
+        gPad->stickDown[stickIter][dir] =
+             gPad->sticks[stickIter] <= -threshold && -threshold != gPad->sticks[stickIter];
       }
     }
-    local_8 = local_8 + 1;
+    stickIter = stickIter + 1;
   } while( true );
 }
 
 
 // 007D7C70  GPad_UpdateSticks  (win32/win_gamepad.cpp:267)
 
-void __cdecl GPad_UpdateSticks(int param_1,_XINPUT_GAMEPAD *param_2)
+void __cdecl GPad_UpdateSticks(int portIndex,_XINPUT_GAMEPAD *xpad)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_1c;
+  float rVec;
   float local_18;
-  GamePad *local_14;
-  undefined4 local_10;
-  float local_c;
+  GamePad *gPad;
+  int stickIndex;
+  float lVec;
   float local_8;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x111,0,
                              "%s");
     if (!bVar2) {
@@ -257,7 +268,7 @@ void __cdecl GPad_UpdateSticks(int param_1,_XINPUT_GAMEPAD *param_2)
       return;
     }
   }
-  if (param_2 == (_XINPUT_GAMEPAD *)0x0) {
+  if (xpad == (_XINPUT_GAMEPAD *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x112,0,
                              "%s");
     if (!bVar2) {
@@ -266,19 +277,19 @@ void __cdecl GPad_UpdateSticks(int param_1,_XINPUT_GAMEPAD *param_2)
       return;
     }
   }
-  local_14 = s_gamePads + param_1;
-  GPad_ConvertStickToFloat(param_2->sThumbLX,param_2->sThumbLY,&local_c,&local_8);
-  GPad_ConvertStickToFloat(param_2->sThumbRX,param_2->sThumbRY,&local_1c,&local_18);
-  local_14->lastSticks[0] = local_14->sticks[0];
-  local_14->sticks[0] = local_c;
-  local_14->lastSticks[1] = local_14->sticks[1];
-  local_14->sticks[1] = local_8;
-  local_14->lastSticks[2] = local_14->sticks[2];
-  local_14->sticks[2] = local_1c;
-  local_10 = 3;
-  local_14->lastSticks[3] = local_14->sticks[3];
-  local_14->sticks[3] = local_18;
-  GPad_UpdateSticksDown(local_14);
+  gPad = s_gamePads + portIndex;
+  GPad_ConvertStickToFloat(xpad->sThumbLX,xpad->sThumbLY,&lVec,&local_8);
+  GPad_ConvertStickToFloat(xpad->sThumbRX,xpad->sThumbRY,&rVec,&local_18);
+  gPad->lastSticks[0] = gPad->sticks[0];
+  gPad->sticks[0] = lVec;
+  gPad->lastSticks[1] = gPad->sticks[1];
+  gPad->sticks[1] = local_8;
+  gPad->lastSticks[2] = gPad->sticks[2];
+  gPad->sticks[2] = rVec;
+  stickIndex = 3;
+  gPad->lastSticks[3] = gPad->sticks[3];
+  gPad->sticks[3] = local_18;
+  GPad_UpdateSticksDown(gPad);
   return;
 }
 
@@ -288,7 +299,8 @@ void __cdecl GPad_UpdateSticks(int param_1,_XINPUT_GAMEPAD *param_2)
 void __cdecl GPad_InitAll(void)
 
 {
-  int local_8;
+  GamePad *gPad;
+  int portIndex;
   
   gpad_debug = _Dvar_RegisterInt("gpad_debug",0,-0x80000000,0x7fffffff,0,"coder use only");
   gpad_button_lstick_deflect_max =
@@ -329,10 +341,10 @@ void __cdecl GPad_InitAll(void)
                  ("gpad_sticksConfig","thumbstick_default",1,"Game pad stick configuration");
   gpad_enabled = _Dvar_RegisterBool("gpad_enabled",false,1,"Game pad enabled");
   gpad_present = _Dvar_RegisterBool("gpad_present",false,0x40,"Game pad present");
-  for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-    s_gamePads[local_8].feedback.Rumble.wLeftMotorSpeed = 0;
-    s_gamePads[local_8].feedback.Rumble.wRightMotorSpeed = 0;
-    _XInputSetState_8(local_8,local_8 * 0x7c + 0x9b649d0);
+  for (portIndex = 0; portIndex < 1; portIndex = portIndex + 1) {
+    s_gamePads[portIndex].feedback.Rumble.wLeftMotorSpeed = 0;
+    s_gamePads[portIndex].feedback.Rumble.wRightMotorSpeed = 0;
+    _XInputSetState_8(portIndex,portIndex * 0x7c + 0x9b649d0);
   }
   return;
 }
@@ -344,38 +356,38 @@ void __cdecl GPad_UpdateAll(void)
 
 {
   int iVar1;
-  undefined1 local_18 [4];
+  undefined1 inputState [4];
   _XINPUT_GAMEPAD local_14;
-  int local_8;
+  int portIndex;
   
   if ((gpad_debug->current).integer < 0) {
     if (inputCounter == 0) {
-      for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-        if (hasInput[local_8] != false) {
-          GPad_UpdateSticks(local_8,&delayedInputState[local_8].Gamepad);
-          GPad_UpdateDigitals(local_8,&delayedInputState[local_8].Gamepad);
-          GPad_UpdateAnalogs(local_8,&delayedInputState[local_8].Gamepad);
+      for (portIndex = 0; portIndex < 1; portIndex = portIndex + 1) {
+        if (hasInput[portIndex] != false) {
+          GPad_UpdateSticks(portIndex,&delayedInputState[portIndex].Gamepad);
+          GPad_UpdateDigitals(portIndex,&delayedInputState[portIndex].Gamepad);
+          GPad_UpdateAnalogs(portIndex,&delayedInputState[portIndex].Gamepad);
         }
       }
     }
     inputCounter = inputCounter + -1;
     if (inputCounter <= (gpad_debug->current).integer) {
       GPad_RefreshAll();
-      for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-        iVar1 = _XInputGetState_8(local_8,delayedInputState + local_8);
-        hasInput[local_8] = (bool)('\x01' - (iVar1 != 0));
+      for (portIndex = 0; portIndex < 1; portIndex = portIndex + 1) {
+        iVar1 = _XInputGetState_8(portIndex,delayedInputState + portIndex);
+        hasInput[portIndex] = (bool)('\x01' - (iVar1 != 0));
       }
       inputCounter = 0;
     }
   }
   else {
     GPad_RefreshAll();
-    for (local_8 = 0; local_8 < 1; local_8 = local_8 + 1) {
-      iVar1 = _XInputGetState_8(local_8,local_18);
+    for (portIndex = 0; portIndex < 1; portIndex = portIndex + 1) {
+      iVar1 = _XInputGetState_8(portIndex,inputState);
       if (iVar1 == 0) {
-        GPad_UpdateSticks(local_8,&local_14);
-        GPad_UpdateDigitals(local_8,&local_14);
-        GPad_UpdateAnalogs(local_8,&local_14);
+        GPad_UpdateSticks(portIndex,&local_14);
+        GPad_UpdateDigitals(portIndex,&local_14);
+        GPad_UpdateAnalogs(portIndex,&local_14);
       }
     }
     inputCounter = 0;
@@ -386,35 +398,36 @@ void __cdecl GPad_UpdateAll(void)
 
 // 007D8050  GPad_ResetState  (win32/win_gamepad.cpp:431)
 
-void __cdecl GPad_ResetState(int param_1)
+void __cdecl GPad_ResetState(int portIndex)
 
 {
-  _XINPUT_GAMEPAD local_10;
+  _XINPUT_GAMEPAD inputStateGamepad;
   
-  local_10.wButtons = 0;
-  local_10.bLeftTrigger = '\0';
-  local_10.bRightTrigger = '\0';
-  local_10.sThumbLX = 0;
-  local_10.sThumbLY = 0;
-  local_10.sThumbRX = 0;
-  local_10.sThumbRY = 0;
-  GPad_UpdateSticks(param_1,&local_10);
-  GPad_UpdateDigitals(param_1,&local_10);
-  GPad_UpdateAnalogs(param_1,&local_10);
+  inputStateGamepad.wButtons = 0;
+  inputStateGamepad.bLeftTrigger = '\0';
+  inputStateGamepad.bRightTrigger = '\0';
+  inputStateGamepad.sThumbLX = 0;
+  inputStateGamepad.sThumbLY = 0;
+  inputStateGamepad.sThumbRX = 0;
+  inputStateGamepad.sThumbRY = 0;
+  GPad_UpdateSticks(portIndex,&inputStateGamepad);
+  GPad_UpdateDigitals(portIndex,&inputStateGamepad);
+  GPad_UpdateAnalogs(portIndex,&inputStateGamepad);
   return;
 }
 
 
 // 007D80A0  GPad_IsActive  (win32/win_gamepad.cpp:466)
 
-bool __cdecl GPad_IsActive(int param_1)
+bool __cdecl GPad_IsActive(int portIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
+  GamePad *gPad;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x1d5,0,
                              "%s");
     if (!bVar2) {
@@ -423,23 +436,25 @@ bool __cdecl GPad_IsActive(int param_1)
       return (bool)uVar3;
     }
   }
-  return s_gamePads[param_1].enabled;
+  return s_gamePads[portIndex].enabled;
 }
 
 
 // 007D80F0  GPad_GetButton  (win32/win_gamepad.cpp:496)
 
-float __cdecl GPad_GetButton(int param_1,GamePadButton param_2)
+float __cdecl GPad_GetButton(int portIndex,GamePadButton button)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float local_14;
-  float local_8;
+  GamePad *gPad;
+  int but;
+  float value;
   
-  local_8 = 0.0;
-  if ((param_1 < 0) || (0 < param_1)) {
+  value = 0.0;
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x1f5,0,
                              "%s");
     if (!bVar2) {
@@ -448,7 +463,7 @@ float __cdecl GPad_GetButton(int param_1,GamePadButton param_2)
       return (float)fVar3;
     }
   }
-  if ((param_2 & 0x30000000) == GPAD_NONE) {
+  if ((button & 0x30000000) == GPAD_NONE) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x1f6,0,
                              "%s");
     if (!bVar2) {
@@ -457,33 +472,33 @@ float __cdecl GPad_GetButton(int param_1,GamePadButton param_2)
       return (float)fVar3;
     }
   }
-  if ((param_2 & 0x10000000) == GPAD_NONE) {
-    if ((param_2 & GPAD_L_TRIG) != GPAD_NONE) {
-      local_8 = *(float *)(param_1 * 0x7c + 0x9b64988 + (param_2 & ~GPAD_L_TRIG) * 4);
+  if ((button & 0x10000000) == GPAD_NONE) {
+    if ((button & GPAD_L_TRIG) != GPAD_NONE) {
+      value = *(float *)(portIndex * 0x7c + 0x9b64988 + (button & ~GPAD_L_TRIG) * 4);
     }
   }
   else {
-    if (((int)s_gamePads[param_1].digitals & param_2 & 0xefffffff) == GPAD_NONE) {
+    if (((int)s_gamePads[portIndex].digitals & button & 0xefffffff) == GPAD_NONE) {
       local_14 = 0.0;
     }
     else {
       local_14 = 1.0;
     }
-    local_8 = local_14;
+    value = local_14;
   }
-  return local_8;
+  return value;
 }
 
 
 // 007D81F0  GPad_ButtonRequiresUpdates  (win32/win_gamepad.cpp:522)
 
-bool __cdecl GPad_ButtonRequiresUpdates(int param_1,GamePadButton param_2)
+bool __cdecl GPad_ButtonRequiresUpdates(int portIndex,GamePadButton button)
 
 {
   float fVar1;
   
-  if (((param_2 & GPAD_L_TRIG) != GPAD_NONE) &&
-     (fVar1 = GPad_GetButton(param_1,param_2), 0.0 < fVar1)) {
+  if (((button & GPAD_L_TRIG) != GPAD_NONE) &&
+     (fVar1 = GPad_GetButton(portIndex,button), 0.0 < fVar1)) {
     return true;
   }
   return false;
@@ -492,7 +507,7 @@ bool __cdecl GPad_ButtonRequiresUpdates(int param_1,GamePadButton param_2)
 
 // 007D8220  GPad_IsButtonPressed  (win32/win_gamepad.cpp:533)
 
-bool __cdecl GPad_IsButtonPressed(int param_1,GamePadButton param_2)
+bool __cdecl GPad_IsButtonPressed(int portIndex,GamePadButton button)
 
 {
   code *pcVar1;
@@ -502,39 +517,43 @@ bool __cdecl GPad_IsButtonPressed(int param_1,GamePadButton param_2)
   bool bVar5;
   bool bVar6;
   bool local_1c;
+  GamePad *gPad;
+  int but;
+  bool lastDown;
+  bool down;
   
   bVar5 = false;
   bVar6 = false;
-  if (((param_1 < 0) || (0 < param_1)) &&
+  if (((portIndex < 0) || (0 < portIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x21b,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_2 & 0x30000000) == GPAD_NONE) &&
+  if (((button & 0x30000000) == GPAD_NONE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x21c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 & 0x10000000) == GPAD_NONE) {
-    if ((param_2 & GPAD_L_TRIG) != GPAD_NONE) {
-      bVar5 = 0.0 < *(float *)(param_1 * 0x7c + 0x9b64988 + (param_2 & ~GPAD_L_TRIG) * 4);
-      bVar6 = 0.0 < *(float *)(param_1 * 0x7c + 0x9b64990 + (param_2 & ~GPAD_L_TRIG) * 4);
+  if ((button & 0x10000000) == GPAD_NONE) {
+    if ((button & GPAD_L_TRIG) != GPAD_NONE) {
+      bVar5 = 0.0 < *(float *)(portIndex * 0x7c + 0x9b64988 + (button & ~GPAD_L_TRIG) * 4);
+      bVar6 = 0.0 < *(float *)(portIndex * 0x7c + 0x9b64990 + (button & ~GPAD_L_TRIG) * 4);
     }
   }
   else {
-    GVar4 = param_2 & 0xefffffff;
-    if ((((param_2 & 0xf) == GPAD_NONE) ||
-        (((int)s_gamePads[param_1].digitals & GVar4) == GPAD_NONE)) ||
-       (((int)s_gamePads[param_1].digitals & 0xf) == (param_2 & 0xf))) {
-      bVar5 = ((int)s_gamePads[param_1].digitals & GVar4) != GPAD_NONE;
-      if ((((param_2 & 0xf) == GPAD_NONE) ||
-          (((int)s_gamePads[param_1].lastDigitals & GVar4) == GPAD_NONE)) ||
-         (((int)s_gamePads[param_1].lastDigitals & 0xf) == (param_2 & 0xf))) {
-        bVar6 = ((int)s_gamePads[param_1].lastDigitals & GVar4) != GPAD_NONE;
+    GVar4 = button & 0xefffffff;
+    if ((((button & 0xf) == GPAD_NONE) ||
+        (((int)s_gamePads[portIndex].digitals & GVar4) == GPAD_NONE)) ||
+       (((int)s_gamePads[portIndex].digitals & 0xf) == (button & 0xf))) {
+      bVar5 = ((int)s_gamePads[portIndex].digitals & GVar4) != GPAD_NONE;
+      if ((((button & 0xf) == GPAD_NONE) ||
+          (((int)s_gamePads[portIndex].lastDigitals & GVar4) == GPAD_NONE)) ||
+         (((int)s_gamePads[portIndex].lastDigitals & 0xf) == (button & 0xf))) {
+        bVar6 = ((int)s_gamePads[portIndex].lastDigitals & GVar4) != GPAD_NONE;
       }
       else {
         bVar6 = false;
@@ -557,7 +576,7 @@ bool __cdecl GPad_IsButtonPressed(int param_1,GamePadButton param_2)
 
 // 007D83E0  GPad_IsButtonReleased  (win32/win_gamepad.cpp:579)
 
-bool __cdecl GPad_IsButtonReleased(int param_1,GamePadButton param_2)
+bool __cdecl GPad_IsButtonReleased(int portIndex,GamePadButton button)
 
 {
   code *pcVar1;
@@ -566,32 +585,36 @@ bool __cdecl GPad_IsButtonReleased(int param_1,GamePadButton param_2)
   bool bVar4;
   bool bVar5;
   bool local_1c;
+  GamePad *gPad;
+  int but;
+  bool lastDown;
+  bool down;
   
   bVar4 = false;
   bVar5 = false;
-  if (((param_1 < 0) || (0 < param_1)) &&
+  if (((portIndex < 0) || (0 < portIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x249,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (((param_2 & 0x30000000) == GPAD_NONE) &&
+  if (((button & 0x30000000) == GPAD_NONE) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x24a,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_2 & 0x10000000) == GPAD_NONE) {
-    if ((param_2 & GPAD_L_TRIG) != GPAD_NONE) {
-      bVar4 = 0.0 < *(float *)(param_1 * 0x7c + 0x9b64988 + (param_2 & ~GPAD_L_TRIG) * 4);
-      bVar5 = 0.0 < *(float *)(param_1 * 0x7c + 0x9b64990 + (param_2 & ~GPAD_L_TRIG) * 4);
+  if ((button & 0x10000000) == GPAD_NONE) {
+    if ((button & GPAD_L_TRIG) != GPAD_NONE) {
+      bVar4 = 0.0 < *(float *)(portIndex * 0x7c + 0x9b64988 + (button & ~GPAD_L_TRIG) * 4);
+      bVar5 = 0.0 < *(float *)(portIndex * 0x7c + 0x9b64990 + (button & ~GPAD_L_TRIG) * 4);
     }
   }
   else {
-    bVar4 = ((int)s_gamePads[param_1].digitals & param_2 & 0xefffffff) != GPAD_NONE;
-    bVar5 = ((int)s_gamePads[param_1].lastDigitals & param_2 & 0xefffffff) != GPAD_NONE;
+    bVar4 = ((int)s_gamePads[portIndex].digitals & button & 0xefffffff) != GPAD_NONE;
+    bVar5 = ((int)s_gamePads[portIndex].lastDigitals & button & 0xefffffff) != GPAD_NONE;
   }
   if ((bVar4) || (!bVar5)) {
     local_1c = false;
@@ -607,15 +630,17 @@ bool __cdecl GPad_IsButtonReleased(int param_1,GamePadButton param_2)
 
 /* WARNING: Enum "GamePadStick": Some values do not have unique names */
 
-float __cdecl GPad_GetStick(int param_1,GamePadStick param_2)
+float __cdecl GPad_GetStick(int portIndex,GamePadStick stick)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   uint3 in_stack_00000009;
+  GamePad *gPad;
+  int stickIndex;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x267,0,
                              "%s");
     if (!bVar2) {
@@ -633,7 +658,7 @@ float __cdecl GPad_GetStick(int param_1,GamePadStick param_2)
       return (float)fVar3;
     }
   }
-  return *(float *)(param_1 * 0x7c + 0x9b64998 + _param_2 * 4);
+  return *(float *)(portIndex * 0x7c + 0x9b64998 + _stick * 4);
 }
 
 
@@ -643,7 +668,7 @@ float __cdecl GPad_GetStick(int param_1,GamePadStick param_2)
 
 bool __cdecl
 GPad_GetStickChangedToPressedState
-          (int param_1,GamePadStick param_2,GamePadStickDir param_3,bool param_4)
+          (int portIndex,GamePadStick stick,GamePadStickDir stickDir,bool pressedState)
 
 {
   char cVar1;
@@ -652,8 +677,12 @@ GPad_GetStickChangedToPressedState
   undefined1 uVar4;
   uint3 in_stack_00000009;
   bool local_18;
+  GamePad *gPad;
+  bool lastDown;
+  int stickIndex;
+  bool down;
   
-  if ((param_1 < 0) || (0 < param_1)) {
+  if ((portIndex < 0) || (0 < portIndex)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x297,0,
                              "%s");
     if (!bVar3) {
@@ -671,7 +700,7 @@ GPad_GetStickChangedToPressedState
       return (bool)uVar4;
     }
   }
-  if ((param_3 != GPAD_STICK_POS) && (param_3 != GPAD_STICK_NEG)) {
+  if ((stickDir != GPAD_STICK_POS) && (stickDir != GPAD_STICK_NEG)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x299,0,
                              "%s");
     if (!bVar3) {
@@ -680,8 +709,8 @@ GPad_GetStickChangedToPressedState
       return (bool)uVar4;
     }
   }
-  _param_2 = _param_2 & 0xbfffffff;
-  if (3 < _param_2) {
+  _stick = _stick & 0xbfffffff;
+  if (3 < _stick) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_gamepad.cpp",0x29d,0,
                              "%s");
     if (!bVar3) {
@@ -690,9 +719,9 @@ GPad_GetStickChangedToPressedState
       return (bool)uVar4;
     }
   }
-  cVar1 = *(char *)(param_1 * 0x7c + 0x9b649b8 + param_3 + _param_2 * 2);
-  if ((cVar1 == *(char *)(param_1 * 0x7c + 0x9b649c0 + param_3 + _param_2 * 2)) ||
-     ((bool)cVar1 != param_4)) {
+  cVar1 = *(char *)(portIndex * 0x7c + 0x9b649b8 + stickDir + _stick * 2);
+  if ((cVar1 == *(char *)(portIndex * 0x7c + 0x9b649c0 + stickDir + _stick * 2)) ||
+     ((bool)cVar1 != pressedState)) {
     local_18 = false;
   }
   else {
@@ -706,12 +735,12 @@ GPad_GetStickChangedToPressedState
 
 /* WARNING: Enum "GamePadStick": Some values do not have unique names */
 
-bool __cdecl GPad_IsStickPressed(int param_1,GamePadStick param_2,GamePadStickDir param_3)
+bool __cdecl GPad_IsStickPressed(int portIndex,GamePadStick stick,GamePadStickDir stickDir)
 
 {
   bool bVar1;
   
-  bVar1 = GPad_GetStickChangedToPressedState(param_1,param_2,param_3,true);
+  bVar1 = GPad_GetStickChangedToPressedState(portIndex,stick,stickDir,true);
   return bVar1;
 }
 
@@ -720,12 +749,12 @@ bool __cdecl GPad_IsStickPressed(int param_1,GamePadStick param_2,GamePadStickDi
 
 /* WARNING: Enum "GamePadStick": Some values do not have unique names */
 
-bool __cdecl GPad_IsStickReleased(int param_1,GamePadStick param_2,GamePadStickDir param_3)
+bool __cdecl GPad_IsStickReleased(int portIndex,GamePadStick stick,GamePadStickDir stickDir)
 
 {
   bool bVar1;
   
-  bVar1 = GPad_GetStickChangedToPressedState(param_1,param_2,param_3,false);
+  bVar1 = GPad_GetStickChangedToPressedState(portIndex,stick,stickDir,false);
   return bVar1;
 }
 

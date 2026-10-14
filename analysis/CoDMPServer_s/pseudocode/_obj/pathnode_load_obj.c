@@ -462,11 +462,11 @@ void __cdecl Path_ConnectPaths(void)
 
 {
   int *piVar1;
-  uint *puVar2;
-  int iVar3;
-  uint uVar4;
+  uint *pBlock;
+  int iVar2;
+  uint uVar3;
+  int iVar4;
   int iVar5;
-  int iVar6;
   int local_20;
   int local_18;
   int local_14;
@@ -481,35 +481,35 @@ void __cdecl Path_ConnectPaths(void)
     Com_Error(ERR_DROP,"\x15PATH_MAX_NODES (%i) exceeded.  Check log for nodecount\n");
   }
   piVar1 = (int *)_Hunk_AllocateTempMemoryInternal();
-  iVar5 = 0;
+  iVar4 = 0;
   g_oldContents = piVar1;
   if (0 < DAT_01c5780c) {
-    iVar6 = 0;
+    iVar5 = 0;
     do {
-      iVar3 = DAT_01c57804 + iVar6;
-      if ((*(char *)(iVar3 + 0xe8) != '\0') &&
-         (piVar1[iVar5] = *(int *)(iVar3 + 0x108), (*(uint *)(iVar3 + 0x174) & 0x800) != 0)) {
-        *(undefined4 *)(iVar3 + 0x108) = 0;
+      iVar2 = DAT_01c57804 + iVar5;
+      if ((*(char *)(iVar2 + 0xe8) != '\0') &&
+         (piVar1[iVar4] = *(int *)(iVar2 + 0x108), (*(uint *)(iVar2 + 0x174) & 0x800) != 0)) {
+        *(undefined4 *)(iVar2 + 0x108) = 0;
       }
-      iVar5 = iVar5 + 1;
-      iVar6 = iVar6 + 0x2f8;
-    } while (iVar5 < DAT_01c5780c);
+      iVar4 = iVar4 + 1;
+      iVar5 = iVar5 + 0x2f8;
+    } while (iVar4 < DAT_01c5780c);
   }
-  iVar5 = 0;
+  iVar4 = 0;
   piVar1 = DAT_01ab008c;
-  for (uVar4 = DAT_01ab0088; uVar4 != 0; uVar4 = uVar4 - 1) {
+  for (uVar3 = DAT_01ab0088; uVar3 != 0; uVar3 = uVar3 - 1) {
     if (((*(byte *)(piVar1 + 1) & 1) == 0) && (*piVar1 != 0)) {
-      iVar5 = iVar5 + 1;
+      iVar4 = iVar4 + 1;
     }
     piVar1 = piVar1 + 0x20;
   }
   local_20 = 0;
-  puVar2 = malloc(0x600000);
-  if (puVar2 == (uint *)0x0) {
+  pBlock = malloc(0x600000);
+  if (pBlock == (uint *)0x0) {
                     /* WARNING: Subroutine does not return */
     FUN_00699280();
   }
-  _copyDWord(puVar2,0,0x180000);
+  _copyDWord(pBlock,0,0x180000);
   local_8 = 0;
   if (DAT_01ab0088 != 0) {
     local_18 = 0;
@@ -517,17 +517,17 @@ void __cdecl Path_ConnectPaths(void)
     do {
       piVar1 = (int *)(local_c + (int)DAT_01ab008c);
       if (((*(byte *)(piVar1 + 1) & 1) == 0) && (*piVar1 != 0)) {
-        uVar4 = 0;
+        uVar3 = 0;
         if (DAT_01ab0088 != 0) {
           local_14 = 0;
           do {
             if ((((*(byte *)((int *)(local_14 + (int)DAT_01ab008c) + 1) & 1) == 0) &&
-                (*(int *)(local_14 + (int)DAT_01ab008c) != 0)) && (local_8 != uVar4)) {
+                (*(int *)(local_14 + (int)DAT_01ab008c) != 0)) && (local_8 != uVar3)) {
               FUN_007638d0();
             }
-            uVar4 = uVar4 + 1;
+            uVar3 = uVar3 + 1;
             local_14 = local_14 + 0x80;
-          } while (uVar4 < DAT_01ab0088);
+          } while (uVar3 < DAT_01ab0088);
         }
         if (*(short *)(local_c + 0x3e + (int)DAT_01ab008c) == 0) {
           Com_PrintError(0x12,"ERROR: Pathnode (%s) at (%g %g %g) has no connections leaving it\n",
@@ -535,10 +535,10 @@ void __cdecl Path_ConnectPaths(void)
                          (double)(float)piVar1[6],(double)(float)piVar1[7]);
         }
         local_18 = local_18 + 0x14;
-        iVar6 = (local_18 / iVar5) * 5;
-        if (iVar6 != local_20) {
+        iVar5 = (local_18 / iVar4) * 5;
+        if (iVar5 != local_20) {
           Com_Printf(0x12,"%d%%\n");
-          local_20 = iVar6;
+          local_20 = iVar5;
         }
       }
       local_8 = local_8 + 1;
@@ -546,21 +546,21 @@ void __cdecl Path_ConnectPaths(void)
     } while (local_8 < DAT_01ab0088);
   }
   Com_Printf(0x12,"Connecting paths done.\n");
-  FUN_007630f0(puVar2,0);
-  free(puVar2);
+  FUN_007630f0(pBlock,0);
+  free(pBlock);
   piVar1 = g_oldContents;
-  iVar5 = 0;
+  iVar4 = 0;
   if (0 < DAT_01c5780c) {
-    iVar3 = 0;
-    iVar6 = DAT_01c57804;
+    iVar2 = 0;
+    iVar5 = DAT_01c57804;
     do {
-      if (*(char *)(iVar3 + 0xe8 + iVar6) != '\0') {
-        *(int *)(iVar3 + 0x108 + iVar6) = piVar1[iVar5];
-        iVar6 = DAT_01c57804;
+      if (*(char *)(iVar2 + 0xe8 + iVar5) != '\0') {
+        *(int *)(iVar2 + 0x108 + iVar5) = piVar1[iVar4];
+        iVar5 = DAT_01c57804;
       }
-      iVar5 = iVar5 + 1;
-      iVar3 = iVar3 + 0x2f8;
-    } while (iVar5 < DAT_01c5780c);
+      iVar4 = iVar4 + 1;
+      iVar2 = iVar2 + 0x2f8;
+    } while (iVar4 < DAT_01c5780c);
   }
   _Hunk_FreeTempMemory();
   g_oldContents = (int *)0x0;

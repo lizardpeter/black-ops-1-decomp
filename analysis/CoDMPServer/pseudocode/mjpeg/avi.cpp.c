@@ -2,17 +2,17 @@
 
 // 009AF720  Out32  (mjpeg/avi.h:27)
 
-uint __cdecl avi::Out32(uchar **param_1,uint param_2)
+uint __cdecl avi::Out32(uchar **out,uint d)
 
 {
-  **param_1 = (uchar)param_2;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(param_2 >> 8);
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(param_2 >> 0x10);
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(param_2 >> 0x18);
-  *param_1 = *param_1 + 1;
+  **out = (uchar)d;
+  *out = *out + 1;
+  **out = (uchar)(d >> 8);
+  *out = *out + 1;
+  **out = (uchar)(d >> 0x10);
+  *out = *out + 1;
+  **out = (uchar)(d >> 0x18);
+  *out = *out + 1;
   return 4;
 }
 
@@ -25,7 +25,8 @@ void __thiscall avi_s::write_thread(avi_s *this)
   uchar *puVar1;
   HANDLE hThread;
   int nPriority;
-  DWORD local_8;
+  uchar *locFlushToPtr;
+  DWORD bytes;
   
   this->threadQuit = false;
   nPriority = 2;
@@ -37,12 +38,12 @@ void __thiscall avi_s::write_thread(avi_s *this)
     if (puVar1 != this->writePtr) {
       if (puVar1 < this->writePtr) {
         if (this->encodeBuff != this->writePtr) {
-          WriteFile(this->hFile,this->writePtr,(int)this + (0x50140 - (int)this->writePtr),&local_8,
+          WriteFile(this->hFile,this->writePtr,(int)this + (0x50140 - (int)this->writePtr),&bytes,
                     (LPOVERLAPPED)0x0);
         }
         this->writePtr = this->buffer;
       }
-      WriteFile(this->hFile,this->writePtr,(int)puVar1 - (int)this->writePtr,&local_8,
+      WriteFile(this->hFile,this->writePtr,(int)puVar1 - (int)this->writePtr,&bytes,
                 (LPOVERLAPPED)0x0);
       this->writePtr = puVar1;
     }
@@ -53,81 +54,83 @@ void __thiscall avi_s::write_thread(avi_s *this)
 
 // 009B0A00  Out  (mjpeg/avi.h:64)
 
-void __thiscall avi::idx1_s::Out(idx1_s *this,uchar **param_1)
+void __thiscall avi::idx1_s::Out(idx1_s *this,uchar **out)
 
 {
-  int local_c;
-  uchar *local_8;
+  int i;
+  uchar *sizePtr;
   
-  **param_1 = 'i';
-  (*param_1)[1] = 'd';
-  (*param_1)[2] = 'x';
-  (*param_1)[3] = '1';
-  *param_1 = *param_1 + 4;
-  local_8 = *param_1;
-  Out32(param_1,0);
-  for (local_c = 0; local_c < this->count; local_c = local_c + 1) {
-    if ((this->sizes[local_c] & 0x80000000U) == 0) {
-      **param_1 = '0';
-      (*param_1)[1] = '1';
-      (*param_1)[2] = 'w';
-      (*param_1)[3] = 'b';
+  **out = 'i';
+  (*out)[1] = 'd';
+  (*out)[2] = 'x';
+  (*out)[3] = '1';
+  *out = *out + 4;
+  sizePtr = *out;
+  Out32(out,0);
+  for (i = 0; i < this->count; i = i + 1) {
+    if ((this->sizes[i] & 0x80000000U) == 0) {
+      **out = '0';
+      (*out)[1] = '1';
+      (*out)[2] = 'w';
+      (*out)[3] = 'b';
     }
     else {
-      **param_1 = '0';
-      (*param_1)[1] = '0';
-      (*param_1)[2] = 'd';
-      (*param_1)[3] = 'c';
+      **out = '0';
+      (*out)[1] = '0';
+      (*out)[2] = 'd';
+      (*out)[3] = 'c';
     }
-    *param_1 = *param_1 + 4;
-    Out32(param_1,0x10);
-    Out32(param_1,this->offsets[local_c]);
-    Out32(param_1,this->sizes[local_c] & 0x7fffffff);
+    *out = *out + 4;
+    Out32(out,0x10);
+    Out32(out,this->offsets[i]);
+    Out32(out,this->sizes[i] & 0x7fffffff);
   }
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  Out32(&sizePtr,(uint)(*out + (-4 - (int)sizePtr)));
   return;
 }
 
 
 // 009B05C0  output_data  (mjpeg/avi.cpp:85)
 
-uint __thiscall avi_s::output_data(avi_s *this,void *param_1,uint param_2)
+uint __thiscall avi_s::output_data(avi_s *this,void *data,uint size)
 
 {
   uint uVar1;
-  ulong uVar2;
+  ulong count;
+  uint bufferLeft;
+  uint ret;
   
   if (this->hOutputAddLock == (void *)0x0) {
     uVar1 = this->fileSize;
   }
   else {
     WaitForSingleObject(this->hOutputAddLock,0xffffffff);
-    if (this->outputPtr + param_2 < this->encodeBuff) {
-      while (this->writePtr <= this->outputPtr != this->writePtr <= this->outputPtr + param_2) {
+    if (this->outputPtr + size < this->encodeBuff) {
+      while (this->writePtr <= this->outputPtr != this->writePtr <= this->outputPtr + size) {
         Com_PrintWarning(0x10,"WARNING: Movie encoding buffer overrun\n");
         Sleep(1);
       }
-      memcpy(this->outputPtr,param_1,param_2);
-      this->outputPtr = this->outputPtr + param_2;
+      memcpy(this->outputPtr,data,size);
+      this->outputPtr = this->outputPtr + size;
     }
     else {
-      uVar2 = (int)this + (0x50140 - (int)this->outputPtr);
-      if (uVar2 != 0) {
-        while (this->writePtr <= this->outputPtr != this->writePtr <= this->outputPtr + uVar2) {
+      count = (int)this + (0x50140 - (int)this->outputPtr);
+      if (count != 0) {
+        while (this->writePtr <= this->outputPtr != this->writePtr <= this->outputPtr + count) {
           Com_PrintWarning(0x10,"WARNING: Movie encoding buffer overrun\n");
           Sleep(1);
         }
-        memcpy(this->outputPtr,param_1,uVar2);
+        memcpy(this->outputPtr,data,count);
       }
-      while (this->writePtr <= (uchar *)((int)this + (param_2 - uVar2) + 0x10140)) {
+      while (this->writePtr <= (uchar *)((int)this + (size - count) + 0x10140)) {
         Com_PrintWarning(0x10,"WARNING: Movie encoding buffer overrun\n");
         Sleep(1);
       }
-      memcpy(this->buffer,(uchar *)((int)param_1 + uVar2),param_2 - uVar2);
-      this->outputPtr = (uchar *)((int)this + (param_2 - uVar2) + 0x10140);
+      memcpy(this->buffer,(uchar *)((int)data + count),size - count);
+      this->outputPtr = (uchar *)((int)this + (size - count) + 0x10140);
     }
     uVar1 = this->fileSize;
-    this->fileSize = this->fileSize + param_2;
+    this->fileSize = this->fileSize + size;
     this->flushToPtr = this->outputPtr;
     ReleaseSemaphore(this->hOutput,1,(LPLONG)0x0);
     ReleaseMutex(this->hOutputAddLock);
@@ -150,25 +153,25 @@ RIFF_s * __thiscall avi::RIFF_s::RIFF_s(RIFF_s *this)
 
 // 009AF660  Out  (mjpeg/avi.h:93)
 
-void __thiscall avi::RIFF_s::Out(RIFF_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::Out(RIFF_s *this,uchar **out)
 
 {
   uint local_10;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
+  sizePtr = *out;
+  Out32(out,this->size);
   for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-    **param_1 = this->type[local_10];
-    *param_1 = *param_1 + 1;
+    **out = this->type[local_10];
+    *out = *out + 1;
   }
-  LIST_hdrl_s::Out(&this->list,param_1);
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  LIST_hdrl_s::Out(&this->list,out);
+  Out32(&sizePtr,(uint)(*out + (-4 - (int)sizePtr)));
   return;
 }
 
@@ -189,27 +192,27 @@ LIST_hdrl_s * __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_hdrl_s(LIST_hdrl_s *this
 
 // 009AF790  Out  (mjpeg/avi.h:107)
 
-void __thiscall avi::RIFF_s::LIST_hdrl_s::Out(LIST_hdrl_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::Out(LIST_hdrl_s *this,uchar **out)
 
 {
   uint local_10;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
+  sizePtr = *out;
+  Out32(out,this->size);
   for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-    **param_1 = this->type[local_10];
-    *param_1 = *param_1 + 1;
+    **out = this->type[local_10];
+    *out = *out + 1;
   }
-  avih_s::Out(&this->avih,param_1);
-  LIST_vid_strl_s::Out(&this->strl_vid,param_1);
-  LIST_aud_strl_s::Out(&this->strl_aud,param_1);
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  avih_s::Out(&this->avih,out);
+  LIST_vid_strl_s::Out(&this->strl_vid,out);
+  LIST_aud_strl_s::Out(&this->strl_aud,out);
+  Out32(&sizePtr,(uint)(*out + (-4 - (int)sizePtr)));
   return;
 }
 
@@ -240,28 +243,27 @@ avih_s * __thiscall avi::RIFF_s::LIST_hdrl_s::avih_s::avih_s(avih_s *this)
 
 // 009AF4E0  create  (mjpeg/avi.cpp:126)
 
-void __thiscall avi_s::create(avi_s *this,char *param_1,int param_2,int param_3,int param_4)
+void __thiscall avi_s::create(avi_s *this,char *szFile,int width,int height,int fps)
 
 {
   HANDLE pvVar1;
   DWORD DVar2;
-  DWORD local_10;
-  uchar *local_c;
-  ulong local_8;
+  DWORD bytes;
+  uchar *now;
+  ulong threadId;
   
   if (this->hFile == (void *)0x0) {
-    pvVar1 = CreateFileA(param_1,0x40000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,0,(HANDLE)0x0);
+    pvVar1 = CreateFileA(szFile,0x40000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,0,(HANDLE)0x0);
     this->hFile = pvVar1;
     this->audioBufferCount = 0;
     this->writePtr = this->buffer;
     this->flushToPtr = this->writePtr;
     this->outputPtr = this->flushToPtr;
-    avi::RIFF_s::Setup(&this->riff,param_2,param_3,param_4);
-    local_c = this->buffer;
-    avi::RIFF_s::Out(&this->riff,&local_c);
-    WriteFile(this->hFile,this->buffer,(int)local_c - (int)this->buffer,&local_10,(LPOVERLAPPED)0x0)
-    ;
-    WriteFile(this->hFile,"LISTXXXXmovi",0xc,&local_10,(LPOVERLAPPED)0x0);
+    avi::RIFF_s::Setup(&this->riff,width,height,fps);
+    now = this->buffer;
+    avi::RIFF_s::Out(&this->riff,&now);
+    WriteFile(this->hFile,this->buffer,(int)now - (int)this->buffer,&bytes,(LPOVERLAPPED)0x0);
+    WriteFile(this->hFile,"LISTXXXXmovi",0xc,&bytes,(LPOVERLAPPED)0x0);
     DVar2 = GetFileSize(this->hFile,(LPDWORD)0x0);
     this->fileSize = DVar2;
     pvVar1 = CreateSemaphoreA((LPSECURITY_ATTRIBUTES)0x0,0,0x7fffffff,(LPCSTR)0x0);
@@ -269,9 +271,9 @@ void __thiscall avi_s::create(avi_s *this,char *param_1,int param_2,int param_3,
     pvVar1 = CreateMutexA((LPSECURITY_ATTRIBUTES)0x0,0,(LPCSTR)0x0);
     this->hOutputAddLock = pvVar1;
     pvVar1 = CreateThread((LPSECURITY_ATTRIBUTES)0x0,0x1000,mjpeg_write_thread,(LPVOID)0x0,0,
-                          &local_8);
+                          &threadId);
     this->hOutputThread = pvVar1;
-    SetThreadName(local_8,"MJPEG Write Thread");
+    SetThreadName(threadId,"MJPEG Write Thread");
   }
   return;
 }
@@ -279,34 +281,34 @@ void __thiscall avi_s::create(avi_s *this,char *param_1,int param_2,int param_3,
 
 // 009AF870  Out  (mjpeg/avi.h:139)
 
-void __thiscall avi::RIFF_s::LIST_hdrl_s::avih_s::Out(avih_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::avih_s::Out(avih_s *this,uchar **out)
 
 {
   uint local_10;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
-  Out32(param_1,this->MicroSecPerFrame);
-  Out32(param_1,this->MaxBytesPerSec);
-  Out32(param_1,this->PaddingGranularity);
-  Out32(param_1,this->Flags);
-  Out32(param_1,this->TotalFrames);
-  Out32(param_1,this->InitialFrames);
-  Out32(param_1,this->Streams);
-  Out32(param_1,this->SuggestedBufferSize);
-  Out32(param_1,this->Width);
-  Out32(param_1,this->Height);
+  sizePtr = *out;
+  Out32(out,this->size);
+  Out32(out,this->MicroSecPerFrame);
+  Out32(out,this->MaxBytesPerSec);
+  Out32(out,this->PaddingGranularity);
+  Out32(out,this->Flags);
+  Out32(out,this->TotalFrames);
+  Out32(out,this->InitialFrames);
+  Out32(out,this->Streams);
+  Out32(out,this->SuggestedBufferSize);
+  Out32(out,this->Width);
+  Out32(out,this->Height);
   for (local_10 = 0; local_10 < 0x10; local_10 = local_10 + 1) {
-    **param_1 = *(uchar *)((int)this->Reserved + local_10);
-    *param_1 = *param_1 + 1;
+    **out = *(uchar *)((int)this->Reserved + local_10);
+    *out = *out + 1;
   }
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  Out32(&sizePtr,(uint)(*out + (-4 - (int)sizePtr)));
   return;
 }
 
@@ -315,14 +317,15 @@ void __thiscall avi::RIFF_s::LIST_hdrl_s::avih_s::Out(avih_s *this,uchar **param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __thiscall avi_s::add_frame(avi_s *this,uchar *param_1,uchar *param_2,uchar *param_3)
+void __thiscall avi_s::add_frame(avi_s *this,uchar *y,uchar *u,uchar *v)
 
 {
   uint uVar1;
-  uint uVar2;
-  uchar *local_1e4;
-  uchar *local_1e0;
-  jpeg_encode local_1dc;
+  uint size;
+  uint encodeSize;
+  uchar *encodeEnd;
+  uchar *sizePtr;
+  jpeg_encode encode;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -333,22 +336,22 @@ void __thiscall avi_s::add_frame(avi_s *this,uchar *param_1,uchar *param_2,uchar
   }
   else {
     builtin_memcpy(this->encodeBuff,"00dc",4);
-    local_1e0 = this->encodeBuff + 4;
-    for (local_1e4 = jpeg_encode::encode(&local_1dc,this->encodeBuff + 8,
-                                         (this->riff).list.avih.Width,(this->riff).list.avih.Height,
-                                         (this->riff).list.avih.Width,0x400,param_1,param_2,param_3,
-                                         (this->riff).list.avih.TotalFrames == 0,(jpeg_exif *)0x0);
-        ((int)local_1e4 - (int)this->encodeBuff & 3U) != 0; local_1e4 = local_1e4 + 1) {
-      *local_1e4 = '\0';
+    sizePtr = this->encodeBuff + 4;
+    for (encodeEnd = jpeg_encode::encode(&encode,this->encodeBuff + 8,(this->riff).list.avih.Width,
+                                         (this->riff).list.avih.Height,(this->riff).list.avih.Width,
+                                         0x400,y,u,v,(this->riff).list.avih.TotalFrames == 0,
+                                         (jpeg_exif *)0x0);
+        ((int)encodeEnd - (int)this->encodeBuff & 3U) != 0; encodeEnd = encodeEnd + 1) {
+      *encodeEnd = '\0';
     }
-    uVar1 = (int)local_1e4 - (int)this->encodeBuff;
-    avi::Out32(&local_1e0,uVar1 - 8);
+    uVar1 = (int)encodeEnd - (int)this->encodeBuff;
+    avi::Out32(&sizePtr,uVar1 - 8);
     if (0x40000 < uVar1) {
       Com_PrintWarning(0x10,"WARNING: Jpeg encoding buffer overrun\n");
     }
-    uVar2 = uVar1 - 8;
+    size = uVar1 - 8;
     uVar1 = output_data(this,this->encodeBuff,uVar1);
-    avi::RIFF_s::AddFrame(&this->riff,uVar1,uVar2);
+    avi::RIFF_s::AddFrame(&this->riff,uVar1,size);
   }
   return;
 }
@@ -370,27 +373,26 @@ avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::LIST_vid_strl_s(LIST_vid_strl_s *this
 
 // 009AF9E0  Out  (mjpeg/avi.h:176)
 
-void __thiscall
-avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::Out(LIST_vid_strl_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::Out(LIST_vid_strl_s *this,uchar **out)
 
 {
   uint local_10;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
+  sizePtr = *out;
+  Out32(out,this->size);
   for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-    **param_1 = this->type[local_10];
-    *param_1 = *param_1 + 1;
+    **out = this->type[local_10];
+    *out = *out + 1;
   }
-  strh_s::Out(&this->strh,param_1);
-  strf_s::Out(&this->strf,param_1);
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  strh_s::Out(&this->strh,out);
+  strf_s::Out(&this->strf,out);
+  Out32(&sizePtr,(uint)(*out + (-4 - (int)sizePtr)));
   return;
 }
 
@@ -427,18 +429,18 @@ strh_s * __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strh_s::strh_s(st
 void __thiscall avi_s::close(avi_s *this)
 
 {
-  DWORD local_1c;
-  uint local_18;
-  uchar *local_14;
-  uchar *local_10;
-  DWORD local_c;
-  uchar *local_8;
+  DWORD bytes;
+  int dataSize;
+  uchar *now;
+  uchar *riffSize;
+  int sizeOfRiff;
+  uchar *listSize;
   
   flush_samples(this);
-  local_18 = this->fileSize;
-  local_14 = this->encodeBuff;
-  avi::idx1_s::Out(&(this->riff).idx1,&local_14);
-  output_data(this,this->encodeBuff,(int)local_14 - (int)this->encodeBuff);
+  dataSize = this->fileSize;
+  now = this->encodeBuff;
+  avi::idx1_s::Out(&(this->riff).idx1,&now);
+  output_data(this,this->encodeBuff,(int)now - (int)this->encodeBuff);
   this->threadQuit = true;
   ReleaseSemaphore(this->hOutput,1,(LPLONG)0x0);
   WaitForSingleObject(this->hOutputThread,0xffffffff);
@@ -447,16 +449,16 @@ void __thiscall avi_s::close(avi_s *this)
   CloseHandle(this->hOutputAddLock);
   this->hOutputAddLock = (void *)0x0;
   SetFilePointer(this->hFile,0,(PLONG)0x0,0);
-  local_14 = this->encodeBuff;
-  avi::RIFF_s::Out(&this->riff,&local_14);
-  local_10 = this->encodeBuff + 4;
-  avi::Out32(&local_10,this->fileSize - 8);
-  local_c = (int)local_14 - (int)this->encodeBuff;
-  WriteFile(this->hFile,this->encodeBuff,local_c,&local_1c,(LPOVERLAPPED)0x0);
+  now = this->encodeBuff;
+  avi::RIFF_s::Out(&this->riff,&now);
+  riffSize = this->encodeBuff + 4;
+  avi::Out32(&riffSize,this->fileSize - 8);
+  sizeOfRiff = (int)now - (int)this->encodeBuff;
+  WriteFile(this->hFile,this->encodeBuff,sizeOfRiff,&bytes,(LPOVERLAPPED)0x0);
   builtin_memcpy(this->encodeBuff,"LISTXXXXmovi",0xd);
-  local_8 = this->encodeBuff + 4;
-  avi::Out32(&local_8,(local_18 - local_c) - 8);
-  WriteFile(this->hFile,this->encodeBuff,0xc,&local_1c,(LPOVERLAPPED)0x0);
+  listSize = this->encodeBuff + 4;
+  avi::Out32(&listSize,(dataSize - sizeOfRiff) - 8);
+  WriteFile(this->hFile,this->encodeBuff,0xc,&bytes,(LPOVERLAPPED)0x0);
   CloseHandle(this->hFile);
   return;
 }
@@ -464,7 +466,7 @@ void __thiscall avi_s::close(avi_s *this)
 
 // 009AFD60  Out  (mjpeg/avi.h:207)
 
-void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strh_s::Out(strh_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strh_s::Out(strh_s *this,uchar **out_2)
 
 {
   ushort uVar1;
@@ -477,68 +479,68 @@ void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strh_s::Out(strh_s *t
   uint local_14;
   uint local_10;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr_2;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out_2 = this->header[local_c];
+    *out_2 = *out_2 + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
+  sizePtr_2 = *out_2;
+  Out32(out_2,this->size);
   for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-    **param_1 = this->type[local_10];
-    *param_1 = *param_1 + 1;
+    **out_2 = this->type[local_10];
+    *out_2 = *out_2 + 1;
   }
   for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
-    **param_1 = this->format[local_14];
-    *param_1 = *param_1 + 1;
+    **out_2 = this->format[local_14];
+    *out_2 = *out_2 + 1;
   }
-  Out32(param_1,this->Flags);
+  Out32(out_2,this->Flags);
   uVar1 = this->Priority;
   local_16 = (uchar)uVar1;
-  **param_1 = local_16;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out_2 = local_16;
+  *out_2 = *out_2 + 1;
+  **out_2 = (uchar)(uVar1 >> 8);
+  *out_2 = *out_2 + 1;
   uVar1 = this->Language;
   local_18 = (uchar)uVar1;
-  **param_1 = local_18;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
-  Out32(param_1,this->InitialFrames);
-  Out32(param_1,this->Scale);
-  Out32(param_1,this->Rate);
-  Out32(param_1,this->Start);
-  Out32(param_1,this->Length);
-  Out32(param_1,this->SuggestedBufferSize);
-  Out32(param_1,this->Quality);
-  Out32(param_1,this->SampleSize);
+  **out_2 = local_18;
+  *out_2 = *out_2 + 1;
+  **out_2 = (uchar)(uVar1 >> 8);
+  *out_2 = *out_2 + 1;
+  Out32(out_2,this->InitialFrames);
+  Out32(out_2,this->Scale);
+  Out32(out_2,this->Rate);
+  Out32(out_2,this->Start);
+  Out32(out_2,this->Length);
+  Out32(out_2,this->SuggestedBufferSize);
+  Out32(out_2,this->Quality);
+  Out32(out_2,this->SampleSize);
   uVar1 = this->rLeft;
   local_1a = (uchar)uVar1;
-  **param_1 = local_1a;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out_2 = local_1a;
+  *out_2 = *out_2 + 1;
+  **out_2 = (uchar)(uVar1 >> 8);
+  *out_2 = *out_2 + 1;
   uVar1 = this->rTop;
   local_1c = (uchar)uVar1;
-  **param_1 = local_1c;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out_2 = local_1c;
+  *out_2 = *out_2 + 1;
+  **out_2 = (uchar)(uVar1 >> 8);
+  *out_2 = *out_2 + 1;
   uVar1 = this->rRight;
   local_1e = (uchar)uVar1;
-  **param_1 = local_1e;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out_2 = local_1e;
+  *out_2 = *out_2 + 1;
+  **out_2 = (uchar)(uVar1 >> 8);
+  *out_2 = *out_2 + 1;
   uVar1 = this->rBottom;
   local_20 = (uchar)uVar1;
-  **param_1 = local_20;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  **out_2 = local_20;
+  *out_2 = *out_2 + 1;
+  **out_2 = (uchar)(uVar1 >> 8);
+  *out_2 = *out_2 + 1;
+  Out32(&sizePtr_2,(uint)(*out_2 + (-4 - (int)sizePtr_2)));
   return;
 }
 
@@ -571,11 +573,11 @@ void __thiscall avi_s::flush_samples(avi_s *this)
   int iVar1;
   uint uVar2;
   idx1_s *piVar3;
-  uchar *local_8;
+  uchar *now;
   
   builtin_memcpy(this->audioBufferHeaders,"01wb",4);
-  local_8 = this->audioBufferHeaders + 4;
-  avi::Out32(&local_8,this->audioBufferCount << 1);
+  now = this->audioBufferHeaders + 4;
+  avi::Out32(&now,this->audioBufferCount << 1);
   (this->riff).list.strl_aud.strh.Length =
        (this->riff).list.strl_aud.strh.Length + this->audioBufferCount;
   iVar1 = this->audioBufferCount;
@@ -591,7 +593,7 @@ void __thiscall avi_s::flush_samples(avi_s *this)
 
 // 009AFAB0  Out  (mjpeg/avi.h:262)
 
-void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strf_s::Out(strf_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strf_s::Out(strf_s *this,uchar **out)
 
 {
   ushort uVar1;
@@ -599,71 +601,71 @@ void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_vid_strl_s::strf_s::Out(strf_s *t
   uchar local_10;
   uchar local_e;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
-  Out32(param_1,this->sizeBi);
-  Out32(param_1,this->width);
-  Out32(param_1,this->height);
+  sizePtr = *out;
+  Out32(out,this->size);
+  Out32(out,this->sizeBi);
+  Out32(out,this->width);
+  Out32(out,this->height);
   uVar1 = this->planes;
   local_e = (uchar)uVar1;
-  **param_1 = local_e;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out = local_e;
+  *out = *out + 1;
+  **out = (uchar)(uVar1 >> 8);
+  *out = *out + 1;
   uVar1 = this->bit_count;
   local_10 = (uchar)uVar1;
-  **param_1 = local_10;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out = local_10;
+  *out = *out + 1;
+  **out = (uchar)(uVar1 >> 8);
+  *out = *out + 1;
   for (local_14 = 0; local_14 < 4; local_14 = local_14 + 1) {
-    **param_1 = this->compression[local_14];
-    *param_1 = *param_1 + 1;
+    **out = this->compression[local_14];
+    *out = *out + 1;
   }
-  Out32(param_1,this->size_image);
-  Out32(param_1,this->horizontal_ppm);
-  Out32(param_1,this->vertical_ppm);
-  Out32(param_1,this->colors_used);
-  Out32(param_1,this->colors_important);
-  this->size = (uint)(*param_1 + (-4 - (int)local_8));
-  Out32(&local_8,this->size);
-  Out32(&local_8,this->size);
+  Out32(out,this->size_image);
+  Out32(out,this->horizontal_ppm);
+  Out32(out,this->vertical_ppm);
+  Out32(out,this->colors_used);
+  Out32(out,this->colors_important);
+  this->size = (uint)(*out + (-4 - (int)sizePtr));
+  Out32(&sizePtr,this->size);
+  Out32(&sizePtr,this->size);
   return;
 }
 
 
 // 009B0CB0  add_samples  (mjpeg/avi.cpp:265)
 
-void __thiscall avi_s::add_samples(avi_s *this,short *param_1,int param_2)
+void __thiscall avi_s::add_samples(avi_s *this,short *in,int count)
 
 {
   short sVar1;
-  undefined1 local_e;
-  int local_c;
-  short *local_8;
+  uchar local_e;
+  int i;
+  uchar *now;
   
   if ((this->riff).list.avih.TotalFrames <
-      (((this->riff).list.strl_aud.strh.Length + this->audioBufferCount + param_2 / 2) *
+      (((this->riff).list.strl_aud.strh.Length + this->audioBufferCount + count / 2) *
       (this->riff).list.strl_vid.strh.Rate) / 24000) {
     Com_PrintWarning(0x10,"WARNING: Movie encoding. Sound out of sync with video, droping samples\n"
                     );
   }
   else {
-    local_8 = this->audioBuffer + this->audioBufferCount;
-    local_c = 0;
-    while (local_c < param_2) {
-      sVar1 = param_1[local_c];
-      local_e = (undefined1)sVar1;
-      *(undefined1 *)local_8 = local_e;
-      *(char *)((int)local_8 + 1) = (char)((ushort)sVar1 >> 8);
-      local_8 = local_8 + 1;
-      local_c = local_c + 2;
+    now = (uchar *)(this->audioBuffer + this->audioBufferCount);
+    i = 0;
+    while (i < count) {
+      sVar1 = in[i];
+      local_e = (uchar)sVar1;
+      *now = local_e;
+      now[1] = (uchar)((ushort)sVar1 >> 8);
+      now = now + 2;
+      i = i + 2;
       this->audioBufferCount = this->audioBufferCount + 1;
     }
     if (23999 < this->audioBufferCount) {
@@ -690,34 +692,33 @@ avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::LIST_aud_strl_s(LIST_aud_strl_s *this
 
 // 009AFC90  Out  (mjpeg/avi.h:308)
 
-void __thiscall
-avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::Out(LIST_aud_strl_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::Out(LIST_aud_strl_s *this,uchar **out)
 
 {
   uint local_10;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
+  sizePtr = *out;
+  Out32(out,this->size);
   for (local_10 = 0; local_10 < 4; local_10 = local_10 + 1) {
-    **param_1 = this->type[local_10];
-    *param_1 = *param_1 + 1;
+    **out = this->type[local_10];
+    *out = *out + 1;
   }
-  LIST_vid_strl_s::strh_s::Out((strh_s *)&this->strh,param_1);
-  strf_s::Out(&this->strf,param_1);
-  Out32(&local_8,(uint)(*param_1 + (-4 - (int)local_8)));
+  LIST_vid_strl_s::strh_s::Out((strh_s *)&this->strh,out);
+  strf_s::Out(&this->strf,out);
+  Out32(&sizePtr,(uint)(*out + (-4 - (int)sizePtr)));
   return;
 }
 
 
 // 009AF300  mjpeg_write_thread  (mjpeg/avi.cpp:311)
 
-ulong __cdecl mjpeg_write_thread(void *param_1)
+ulong __cdecl mjpeg_write_thread(void *__formal)
 
 {
   avi_s::write_thread(AVI);
@@ -727,7 +728,7 @@ ulong __cdecl mjpeg_write_thread(void *param_1)
 
 // 009AF440  mjpeg_create  (mjpeg/avi.cpp:317)
 
-void __cdecl mjpeg_create(char *param_1,int param_2,int param_3,int param_4)
+void __cdecl mjpeg_create(char *szFile,int width,int height,int fps)
 
 {
   avi_s *local_2c;
@@ -742,12 +743,12 @@ void __cdecl mjpeg_create(char *param_1,int param_2,int param_3,int param_4)
     }
     AVI = local_2c;
   }
-  yuv_init(param_2,param_3,true);
+  yuv_init(width,height,true);
   if ((r_clipCodec->current).integer == 1) {
-    vpx_init(param_1,param_2,param_3);
+    vpx_init(szFile,width,height);
   }
   else {
-    avi_s::create(AVI,param_1,param_2,param_3,param_4);
+    avi_s::create(AVI,szFile,width,height,fps);
   }
   mjpeg_run_encoder = true;
   return;
@@ -786,14 +787,14 @@ strh_s * __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::strh_s::strh_s(st
 
 // 009B02E0  mjpeg_add_frame  (mjpeg/avi.cpp:337)
 
-void __cdecl mjpeg_add_frame(uchar *param_1,uchar *param_2,uchar *param_3)
+void __cdecl mjpeg_add_frame(uchar *y,uchar *u,uchar *v)
 
 {
   if ((r_clipCodec->current).integer == 1) {
-    vpx_encode_frame(param_1,param_2,param_3,false);
+    vpx_encode_frame(y,u,v,false);
   }
   else {
-    avi_s::add_frame(AVI,param_1,param_2,param_3);
+    avi_s::add_frame(AVI,y,u,v);
   }
   return;
 }
@@ -819,11 +820,11 @@ void __cdecl mjpeg_close_int(void)
 
 // 009B0C80  mjpeg_add_samples  (mjpeg/avi.cpp:365)
 
-void __cdecl mjpeg_add_samples(short *param_1,int param_2)
+void __cdecl mjpeg_add_samples(short *in,int count)
 
 {
   if (mjpeg_run_encoder) {
-    avi_s::add_samples(AVI,param_1,param_2);
+    avi_s::add_samples(AVI,in,count);
   }
   return;
 }
@@ -847,7 +848,7 @@ strf_s * __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::strf_s::strf_s(st
 
 // 009B0060  Out  (mjpeg/avi.h:390)
 
-void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::strf_s::Out(strf_s *this,uchar **param_1)
+void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::strf_s::Out(strf_s *this,uchar **out)
 
 {
   ushort uVar1;
@@ -856,63 +857,63 @@ void __thiscall avi::RIFF_s::LIST_hdrl_s::LIST_aud_strl_s::strf_s::Out(strf_s *t
   uchar local_10;
   uchar local_e;
   uint local_c;
-  uchar *local_8;
+  uchar *sizePtr;
   
   for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    **param_1 = this->header[local_c];
-    *param_1 = *param_1 + 1;
+    **out = this->header[local_c];
+    *out = *out + 1;
   }
-  local_8 = *param_1;
-  Out32(param_1,this->size);
+  sizePtr = *out;
+  Out32(out,this->size);
   uVar1 = this->format;
   local_e = (uchar)uVar1;
-  **param_1 = local_e;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out = local_e;
+  *out = *out + 1;
+  **out = (uchar)(uVar1 >> 8);
+  *out = *out + 1;
   uVar1 = this->channels;
   local_10 = (uchar)uVar1;
-  **param_1 = local_10;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
-  Out32(param_1,this->samples_per_sec);
-  Out32(param_1,this->avg_bytes_per_sec);
+  **out = local_10;
+  *out = *out + 1;
+  **out = (uchar)(uVar1 >> 8);
+  *out = *out + 1;
+  Out32(out,this->samples_per_sec);
+  Out32(out,this->avg_bytes_per_sec);
   uVar1 = this->block_align;
   local_12 = (uchar)uVar1;
-  **param_1 = local_12;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
+  **out = local_12;
+  *out = *out + 1;
+  **out = (uchar)(uVar1 >> 8);
+  *out = *out + 1;
   uVar1 = this->bits_per_sample;
   local_14 = (uchar)uVar1;
-  **param_1 = local_14;
-  *param_1 = *param_1 + 1;
-  **param_1 = (uchar)(uVar1 >> 8);
-  *param_1 = *param_1 + 1;
-  this->size = (uint)(*param_1 + (-4 - (int)local_8));
-  Out32(&local_8,this->size);
+  **out = local_14;
+  *out = *out + 1;
+  **out = (uchar)(uVar1 >> 8);
+  *out = *out + 1;
+  this->size = (uint)(*out + (-4 - (int)sizePtr));
+  Out32(&sizePtr,this->size);
   return;
 }
 
 
 // 009B0200  Setup  (mjpeg/avi.h:436)
 
-void __thiscall avi::RIFF_s::Setup(RIFF_s *this,uint param_1,uint param_2,uint param_3)
+void __thiscall avi::RIFF_s::Setup(RIFF_s *this,uint width,uint height,uint fps)
 
 {
-  (this->list).avih.Width = param_1;
-  (this->list).avih.Height = param_2;
+  (this->list).avih.Width = width;
+  (this->list).avih.Height = height;
   (this->list).avih.SuggestedBufferSize = 0;
-  (this->list).strl_vid.strf.width = param_1;
-  (this->list).strl_vid.strf.height = param_2;
+  (this->list).strl_vid.strf.width = width;
+  (this->list).strl_vid.strf.height = height;
   (this->list).strl_vid.strh.rTop = 0;
   (this->list).strl_vid.strh.rLeft = 0;
-  (this->list).strl_vid.strh.rBottom = (ushort)param_2;
-  (this->list).strl_vid.strh.rRight = (ushort)param_1;
-  (this->list).strl_vid.strf.size_image = param_1 * param_2 * 3;
-  (this->list).avih.MicroSecPerFrame = (uint)(1000000 / (ulonglong)param_3);
-  (this->list).strl_vid.strh.Rate = param_3;
+  (this->list).strl_vid.strh.rBottom = (ushort)height;
+  (this->list).strl_vid.strh.rRight = (ushort)width;
+  (this->list).strl_vid.strf.size_image = width * height * 3;
+  (this->list).avih.MicroSecPerFrame = (uint)(1000000 / (ulonglong)fps);
+  (this->list).strl_vid.strh.Rate = fps;
   (this->list).avih.TotalFrames = 0;
   (this->list).strl_vid.strh.Length = 0;
   (this->list).strl_aud.strh.Length = 0;
@@ -923,19 +924,19 @@ void __thiscall avi::RIFF_s::Setup(RIFF_s *this,uint param_1,uint param_2,uint p
 
 // 009B0530  AddFrame  (mjpeg/avi.h:460)
 
-void __thiscall avi::RIFF_s::AddFrame(RIFF_s *this,uint param_1,uint param_2)
+void __thiscall avi::RIFF_s::AddFrame(RIFF_s *this,uint offset,uint size)
 
 {
   idx1_s *piVar1;
   
   (this->list).avih.TotalFrames = (this->list).avih.TotalFrames + 1;
   (this->list).strl_vid.strh.Length = (this->list).strl_vid.strh.Length + 1;
-  if ((this->list).strl_vid.strh.SuggestedBufferSize < param_2) {
-    (this->list).strl_vid.strh.SuggestedBufferSize = param_2;
+  if ((this->list).strl_vid.strh.SuggestedBufferSize < size) {
+    (this->list).strl_vid.strh.SuggestedBufferSize = size;
   }
   piVar1 = &this->idx1;
-  (this->idx1).offsets[piVar1->count] = param_1;
-  (this->idx1).sizes[piVar1->count] = param_2 | 0x80000000;
+  (this->idx1).offsets[piVar1->count] = offset;
+  (this->idx1).sizes[piVar1->count] = size | 0x80000000;
   piVar1->count = piVar1->count + 1;
   return;
 }

@@ -6,74 +6,76 @@
 
 int __cdecl
 CL_GetMilestoneRowNum
-          (StringTable **param_1,int param_2,char *param_3,int param_4,char *param_5,int param_6,
-          char *param_7)
+          (StringTable **stringTable,int comparisonColumn1,char *value1,int comparisonColumn2,
+          char *value2,int comparisonColumn3,char *value3)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_30;
-  char local_2c [32];
+  int tableTier;
+  char tableName [32];
   uint local_c;
-  int local_8;
+  int milestoneTableRow;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = -1;
-  if ((param_3 == (char *)0x0) &&
+  milestoneTableRow = -1;
+  if ((value1 == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x21
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if (param_3 != (char *)0x0) {
-    for (local_30 = 1; local_30 < 5; local_30 = local_30 + 1) {
-      Com_sprintf(local_2c,0x20,"mp/statsmilestones%i.csv");
-      StringTable_GetAsset(local_2c,param_1);
-      if ((param_1 != (StringTable **)0x0) &&
-         (local_8 = StringTable_LookupRowNumForValue
-                              (*param_1,param_2,param_3,param_4,param_5,param_6,param_7),
-         local_8 != -1)) {
-        return local_8;
+  if (value1 != (char *)0x0) {
+    for (tableTier = 1; tableTier < 5; tableTier = tableTier + 1) {
+      Com_sprintf(tableName,0x20,"mp/statsmilestones%i.csv");
+      StringTable_GetAsset(tableName,stringTable);
+      if ((stringTable != (StringTable **)0x0) &&
+         (milestoneTableRow =
+               StringTable_LookupRowNumForValue
+                         (*stringTable,comparisonColumn1,value1,comparisonColumn2,value2,
+                          comparisonColumn3,value3), milestoneTableRow != -1)) {
+        return milestoneTableRow;
       }
     }
   }
-  return local_8;
+  return milestoneTableRow;
 }
 
 
 // 0056CFB0  CL_GetMilestoneData  (client_mp/cl_milestone.cpp:55)
 
-char * __cdecl CL_GetMilestoneData(char *param_1,milestoneTableColumns_t param_2)
+char * __cdecl CL_GetMilestoneData(char *indexName,milestoneTableColumns_t column)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  StringTable *local_10;
-  int local_c;
-  char *local_8;
+  StringTable *milestoneTable;
+  int milestoneTableRow;
+  char *milestoneName;
   
-  local_10 = (StringTable *)0x0;
-  local_8 = (char *)0x0;
-  if ((param_1 == (char *)0x0) &&
+  milestoneTable = (StringTable *)0x0;
+  milestoneName = (char *)0x0;
+  if ((indexName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x3a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if (param_1 == (char *)0x0) {
-    local_8 = (char *)0x0;
+  if (indexName == (char *)0x0) {
+    milestoneName = (char *)0x0;
   }
   else {
-    local_c = CL_GetMilestoneRowNum(&local_10,0,param_1,-1,(char *)0x0,-1,(char *)0x0);
-    if ((local_10 != (StringTable *)0x0) && (local_c != -1)) {
-      local_8 = StringTable_GetColumnValueForRow(local_10,local_c,param_2);
+    milestoneTableRow =
+         CL_GetMilestoneRowNum(&milestoneTable,0,indexName,-1,(char *)0x0,-1,(char *)0x0);
+    if ((milestoneTable != (StringTable *)0x0) && (milestoneTableRow != -1)) {
+      milestoneName = StringTable_GetColumnValueForRow(milestoneTable,milestoneTableRow,column);
     }
   }
-  return local_8;
+  return milestoneName;
 }
 
 
@@ -83,43 +85,44 @@ char * __cdecl CL_GetMilestoneData(char *param_1,milestoneTableColumns_t param_2
 
 void __cdecl
 CL_GetFrontEndMilestoneLocalizedName
-          (char *param_1,int param_2,int param_3,statsMilestoneTypes_t param_4,char *param_5)
+          (char *outputString,int stringLength,int index,statsMilestoneTypes_t milestoneType,
+          char *challengeType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  char local_114 [260];
+  char *reference;
+  char statName [260];
   uint local_10;
-  challengeInfo_t *local_c;
-  char *local_8;
+  challengeInfo_t *challenge;
+  char *localizedString;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = (char *)0x0;
-  if ((param_1 == (char *)0x0) &&
+  localizedString = (char *)0x0;
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x4e
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (char *)0x0) &&
-     (bVar2 = LiveStats_GetChallengeInfo(&local_c,param_3,param_4), bVar2)) {
-    if ((param_5 == (char *)0x0) ||
-       ((*param_5 == '\0' || (iVar3 = I_stricmp(param_5,"lifetime_"), iVar3 != 0)))) {
-      Com_sprintf(local_114,0x100,"%s");
+  if ((outputString != (char *)0x0) &&
+     (bVar2 = LiveStats_GetChallengeInfo(&challenge,index,milestoneType), bVar2)) {
+    if ((challengeType == (char *)0x0) ||
+       ((*challengeType == '\0' || (iVar3 = I_stricmp(challengeType,"lifetime_"), iVar3 != 0)))) {
+      Com_sprintf(statName,0x100,"%s");
     }
     else {
-      Com_sprintf(local_114,0x100,"%s%s");
+      Com_sprintf(statName,0x100,"%s%s");
     }
-    if (local_c->type == MILESTONE_GROUP) {
-      pcVar4 = Dvar_GetString("weapon_group_name");
-      local_8 = UI_SafeTranslateString(pcVar4);
+    if (challenge->type == MILESTONE_GROUP) {
+      reference = Dvar_GetString("weapon_group_name");
+      localizedString = UI_SafeTranslateString(reference);
     }
     CL_GetMilestoneLocalizedName
-              (param_1,param_2,local_114,local_c->type,(uint)local_c->index,(uint)local_c->milestone
-               ,(local_c->flags & 4) != 0,local_8);
+              (outputString,stringLength,statName,challenge->type,(uint)challenge->index,
+               (uint)challenge->milestone,(challenge->flags & 4) != 0,localizedString);
   }
   return;
 }
@@ -128,63 +131,70 @@ CL_GetFrontEndMilestoneLocalizedName
 // 0056D190  CL_GetInGameMilestoneLocalizedName  (client_mp/cl_milestone.cpp:103)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
 CL_GetInGameMilestoneLocalizedName
-          (int param_1,char *param_2,int param_3,char *param_4,statsMilestoneTypes_t param_5,
-          int param_6,int param_7,char *param_8)
+          (int localClientNum,char *outputString,int stringLength,char *statName,
+          statsMilestoneTypes_t milestoneType,int statsTableIndex,int milestoneTier,char *weaponType
+          )
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   char *pcVar4;
-  char local_10c;
+  char *weaponName;
+  char *weaponGroupName;
+  char localizedNameString;
   uchar local_10b [259];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10c = '\0';
+  localizedNameString = '\0';
   memset(local_10b,'\0',0xff);
-  if ((param_2 == (char *)0x0) &&
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x6a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if ((param_4 == (char *)0x0) &&
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x6e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_4 == (char *)0x0) {
+    if (statName == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      if (param_5 == MILESTONE_GROUP) {
-        if ((param_8 == (char *)0x0) &&
+      if (milestoneType == MILESTONE_GROUP) {
+        if ((weaponType == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x74,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if (param_8 == (char *)0x0) {
+        if (weaponType == (char *)0x0) {
           return false;
         }
         pcVar4 = va("MPUI_%s");
         UI_SafeTranslateString(pcVar4);
-        Com_sprintf(&local_10c,0x100,"%s");
+        Com_sprintf(&localizedNameString,0x100,"%s");
       }
-      else if (param_5 == MILESTONE_WEAPON) {
-        pcVar4 = BG_UnlockablesGetItemName(param_6);
+      else if (milestoneType == MILESTONE_WEAPON) {
+        pcVar4 = BG_UnlockablesGetItemName(statsTableIndex);
         if ((pcVar4 == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x7d,0,"%s"), !bVar2)) {
@@ -196,10 +206,11 @@ CL_GetInGameMilestoneLocalizedName
           return false;
         }
         UI_SafeTranslateString(pcVar4);
-        Com_sprintf(&local_10c,0x100,"%s");
+        Com_sprintf(&localizedNameString,0x100,"%s");
       }
       bVar2 = CL_GetMilestoneLocalizedName
-                        (param_2,param_3,param_4,param_5,param_6,param_7,false,&local_10c);
+                        (outputString,stringLength,statName,milestoneType,statsTableIndex,
+                         milestoneTier,false,&localizedNameString);
     }
   }
   return bVar2;
@@ -210,70 +221,74 @@ CL_GetInGameMilestoneLocalizedName
 
 bool __cdecl
 CL_GetMilestoneLocalizedName
-          (char *param_1,int param_2,char *param_3,statsMilestoneTypes_t param_4,int param_5,
-          int param_6,bool param_7,char *param_8)
+          (char *outputString,int stringLength,char *statName,statsMilestoneTypes_t milestoneType,
+          int statsTableIndex,int milestoneTier,bool isItemClassified,char *localizedString)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
-  int iVar5;
-  char *pcVar6;
-  bool local_9;
-  StringTable *local_8;
+  char *value2;
+  int iVar4;
+  char *value3;
+  bool couldLocalize;
+  StringTable *stringTable;
   
-  local_9 = false;
-  if ((param_1 == (char *)0x0) &&
+  couldLocalize = false;
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x8a
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1 == (char *)0x0) {
-    local_9 = false;
+  if (outputString == (char *)0x0) {
+    couldLocalize = false;
   }
   else {
-    if ((param_2 < 0x100) &&
+    if ((stringLength < 0x100) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x8e,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((((int)param_4 < 0) || (7 < (int)param_4)) &&
+    if ((((int)milestoneType < 0) || (7 < (int)milestoneType)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x8f,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    memset((uchar *)param_1,'\0',param_2);
-    if ((param_3 == (char *)0x0) &&
+    memset((uchar *)outputString,'\0',stringLength);
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x92,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_3 == (char *)0x0) {
-      local_9 = false;
+    if (statName == (char *)0x0) {
+      couldLocalize = false;
     }
     else {
-      pcVar6 = (char *)0x0;
-      iVar5 = -1;
-      pcVar4 = va("%d");
-      iVar5 = CL_GetMilestoneRowNum(&local_8,4,param_3,1,pcVar4,iVar5,pcVar6);
-      if (iVar5 == -1) {
-        param_6 = param_6 + -1;
+      value3 = (char *)0x0;
+      iVar4 = -1;
+      value2 = va("%d");
+      iVar4 = CL_GetMilestoneRowNum(&stringTable,4,statName,1,value2,iVar4,value3);
+      if (iVar4 == -1) {
+        milestoneTier = milestoneTier + -1;
       }
-      switch(param_4) {
+      switch(milestoneType) {
       case MILESTONE_GLOBAL:
-        local_9 = PrepareGlobalChallengeName(param_3,param_1,param_2,param_6);
+        couldLocalize = PrepareGlobalChallengeName(statName,outputString,stringLength,milestoneTier)
+        ;
         break;
       case MILESTONE_WEAPON:
-        local_9 = PrepareWeaponChallengeName(param_3,param_1,param_2,param_5,param_6,param_7);
+        couldLocalize =
+             PrepareWeaponChallengeName
+                       (statName,outputString,stringLength,statsTableIndex,milestoneTier,
+                        isItemClassified);
         break;
       case MILESTONE_MAP:
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
@@ -285,19 +300,31 @@ CL_GetMilestoneLocalizedName
         }
         break;
       case MILESTONE_GAMEMODE:
-        local_9 = PrepareGameModeChallengeName(param_3,param_1,param_2,param_5,param_6,param_8);
+        couldLocalize =
+             PrepareGameModeChallengeName
+                       (statName,outputString,stringLength,statsTableIndex,milestoneTier,
+                        localizedString);
         break;
       case MILESTONE_GROUP:
-        local_9 = PrepareGroupChallengeName(param_3,param_1,param_2,param_5,param_6,param_8);
+        couldLocalize =
+             PrepareGroupChallengeName
+                       (statName,outputString,stringLength,statsTableIndex,milestoneTier,
+                        localizedString);
         break;
       case MILESTONE_ATTACHMENTS:
-        local_9 = PrepareAttachmentChallengeName(param_3,param_1,param_2,param_5,param_6);
+        couldLocalize =
+             PrepareAttachmentChallengeName
+                       (statName,outputString,stringLength,statsTableIndex,milestoneTier);
         break;
       case MILESTONE_KILLSTREAKS:
-        local_9 = PrepareKillstreakChallengeName(param_3,param_1,param_2,param_5,param_6);
+        couldLocalize =
+             PrepareKillstreakChallengeName
+                       (statName,outputString,stringLength,statsTableIndex,milestoneTier);
         break;
       case MILESTONE_GRENADES:
-        local_9 = PrepareGrenadeChallengeName(param_3,param_1,param_2,param_5,param_6);
+        couldLocalize =
+             PrepareGrenadeChallengeName
+                       (statName,outputString,stringLength,statsTableIndex,milestoneTier);
         break;
       default:
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
@@ -310,7 +337,7 @@ CL_GetMilestoneLocalizedName
       }
     }
   }
-  return local_9;
+  return couldLocalize;
 }
 
 
@@ -319,30 +346,31 @@ CL_GetMilestoneLocalizedName
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __cdecl
-FormatStatsMilestoneName(char *param_1,int param_2,int param_3,char *param_4,char *param_5)
+FormatStatsMilestoneName
+          (char *outputString,int stringLength,int milestoneTier,char *statsName,char *itemName)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   char *pcVar4;
-  ConversionArguments *pCVar5;
-  char local_38 [8];
+  ConversionArguments *arguments;
+  char milestoneTierRoman [8];
   uint local_30;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  if (param_1 == (char *)0x0) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0xc5,0
                              ,"%s");
     if (!bVar2) {
@@ -351,11 +379,11 @@ FormatStatsMilestoneName(char *param_1,int param_2,int param_3,char *param_4,cha
       return (bool)uVar3;
     }
   }
-  if (param_1 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_5 == (char *)0x0) {
+    if (itemName == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0xc9
                                ,0,"%s");
       if (!bVar2) {
@@ -364,11 +392,11 @@ FormatStatsMilestoneName(char *param_1,int param_2,int param_3,char *param_4,cha
         return (bool)uVar3;
       }
     }
-    if (param_5 == (char *)0x0) {
+    if (itemName == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      if (param_4 == (char *)0x0) {
+      if (statsName == (char *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0xcd,0,"%s");
         if (!bVar2) {
@@ -377,21 +405,21 @@ FormatStatsMilestoneName(char *param_1,int param_2,int param_3,char *param_4,cha
           return (bool)uVar3;
         }
       }
-      if (param_4 == (char *)0x0) {
+      if (statsName == (char *)0x0) {
         bVar2 = false;
       }
       else {
-        CL_MilestoneTier_DecToRoman(param_3,local_38,5);
-        pcVar4 = UI_SafeTranslateString(param_5);
-        local_2c.args[local_2c.argCount] = pcVar4;
-        local_2c.argCount = local_2c.argCount + 1;
-        pcVar4 = UI_SafeTranslateString(param_4);
-        local_2c.args[local_2c.argCount] = pcVar4;
-        local_2c.args[local_2c.argCount + 1] = local_38;
-        local_2c.argCount = local_2c.argCount + 2;
-        pCVar5 = &local_2c;
+        CL_MilestoneTier_DecToRoman(milestoneTier,milestoneTierRoman,5);
+        pcVar4 = UI_SafeTranslateString(itemName);
+        convArgs.args[convArgs.argCount] = pcVar4;
+        convArgs.argCount = convArgs.argCount + 1;
+        pcVar4 = UI_SafeTranslateString(statsName);
+        convArgs.args[convArgs.argCount] = pcVar4;
+        convArgs.args[convArgs.argCount + 1] = milestoneTierRoman;
+        convArgs.argCount = convArgs.argCount + 2;
+        arguments = &convArgs;
         pcVar4 = UI_SafeTranslateString("STATS_STATSMILESTONES");
-        UI_ReplaceConversions(pcVar4,pCVar5,param_1,param_2);
+        UI_ReplaceConversions(pcVar4,arguments,outputString,stringLength);
         bVar2 = true;
       }
     }
@@ -404,55 +432,57 @@ FormatStatsMilestoneName(char *param_1,int param_2,int param_3,char *param_4,cha
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl PrepareGlobalChallengeName(char *param_1,char *param_2,int param_3,int param_4)
+bool __cdecl
+PrepareGlobalChallengeName(char *name,char *outputString,int stringLength,int milestoneTier)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
-  int iVar5;
-  char local_14 [8];
+  char *reference;
+  int iVar4;
+  char *tempChallengeName;
+  char milestoneTierRoman [8];
   uint local_c;
-  StringTable *local_8;
+  StringTable *stringTable;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_2 == (char *)0x0) &&
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0xdb
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     return false;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((name == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0xdf
                                ,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1 != (char *)0x0) {
-    bVar2 = StringBeginsWith("gm_",param_1);
-    if ((((bVar2) || (bVar2 = StringBeginsWith("kills_",param_1), bVar2)) ||
-        (bVar2 = StringBeginsWith("basic_",param_1), bVar2)) ||
-       (((bVar2 = StringBeginsWith("medal_",param_1), bVar2 ||
-         (bVar2 = StringBeginsWith("lifetime_",param_1), bVar2)) ||
-        (bVar2 = StringBeginsWith("final_",param_1), bVar2)))) {
-      pcVar4 = va("CH_%s");
-      UI_SafeTranslateString(pcVar4);
-      Com_sprintf(param_2,param_3,"%s");
+  if (name != (char *)0x0) {
+    bVar2 = StringBeginsWith("gm_",name);
+    if ((((bVar2) || (bVar2 = StringBeginsWith("kills_",name), bVar2)) ||
+        (bVar2 = StringBeginsWith("basic_",name), bVar2)) ||
+       (((bVar2 = StringBeginsWith("medal_",name), bVar2 ||
+         (bVar2 = StringBeginsWith("lifetime_",name), bVar2)) ||
+        (bVar2 = StringBeginsWith("final_",name), bVar2)))) {
+      reference = va("CH_%s");
+      UI_SafeTranslateString(reference);
+      Com_sprintf(outputString,stringLength,"%s");
     }
     else {
-      UI_SafeTranslateString(param_1);
-      Com_sprintf(param_2,param_3,"%s");
+      UI_SafeTranslateString(name);
+      Com_sprintf(outputString,stringLength,"%s");
     }
-    iVar5 = CL_GetMilestoneRowNum(&local_8,4,param_1,1,"1",-1,(char *)0x0);
-    if (iVar5 != -1) {
-      CL_MilestoneTier_DecToRoman(param_4,local_14,5);
-      Com_sprintf(param_2,param_3,"%s %s");
+    iVar4 = CL_GetMilestoneRowNum(&stringTable,4,name,1,"1",-1,(char *)0x0);
+    if (iVar4 != -1) {
+      CL_MilestoneTier_DecToRoman(milestoneTier,milestoneTierRoman,5);
+      Com_sprintf(outputString,stringLength,"%s %s");
     }
     return true;
   }
@@ -462,19 +492,25 @@ bool __cdecl PrepareGlobalChallengeName(char *param_1,char *param_2,int param_3,
 
 // 0056D970  PrepareKillstreakChallengeName  (client_mp/cl_milestone.cpp:254)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
-PrepareKillstreakChallengeName(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+PrepareKillstreakChallengeName(char *name,char *outputString,int stringLength,int index,int tierId)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  char *local_8;
+  char *itemName_00;
+  char *itemName;
+  char *statsName;
   
-  local_8 = "";
-  if (param_2 == (char *)0x0) {
+  statsName = "";
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x102,
                              0,"%s");
     if (!bVar2) {
@@ -483,11 +519,11 @@ PrepareKillstreakChallengeName(char *param_1,char *param_2,int param_3,int param
       return (bool)uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x106,0,"%s");
       if (!bVar2) {
@@ -496,24 +532,24 @@ PrepareKillstreakChallengeName(char *param_1,char *param_2,int param_3,int param
         return (bool)uVar3;
       }
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      iVar4 = I_stricmp(param_1,"kills");
+      iVar4 = I_stricmp(name,"kills");
       if (iVar4 == 0) {
-        local_8 = "STATS_MILESTONE_STATNAME_KILLS";
+        statsName = "STATS_MILESTONE_STATNAME_KILLS";
       }
-      iVar4 = I_stricmp(param_1,"used");
+      iVar4 = I_stricmp(name,"used");
       if (iVar4 == 0) {
-        local_8 = "STATS_MILESTONE_STATNAME_USED";
+        statsName = "STATS_MILESTONE_STATNAME_USED";
       }
-      iVar4 = I_stricmp(param_1,"destroyed");
+      iVar4 = I_stricmp(name,"destroyed");
       if (iVar4 == 0) {
-        local_8 = "STATS_MILESTONE_STATNAME_DESTROYED";
+        statsName = "STATS_MILESTONE_STATNAME_DESTROYED";
       }
-      pcVar5 = BG_UnlockablesGetItemName(param_4);
-      if (pcVar5 == (char *)0x0) {
+      itemName_00 = BG_UnlockablesGetItemName(index);
+      if (itemName_00 == (char *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x112,0,"%s");
         if (!bVar2) {
@@ -522,11 +558,11 @@ PrepareKillstreakChallengeName(char *param_1,char *param_2,int param_3,int param
           return (bool)uVar3;
         }
       }
-      if (pcVar5 == (char *)0x0) {
+      if (itemName_00 == (char *)0x0) {
         bVar2 = false;
       }
       else {
-        if (local_8 == (char *)0x0) {
+        if (statsName == (char *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x116,0,"%s");
           if (!bVar2) {
@@ -535,11 +571,11 @@ PrepareKillstreakChallengeName(char *param_1,char *param_2,int param_3,int param
             return (bool)uVar3;
           }
         }
-        if (local_8 == (char *)0x0) {
+        if (statsName == (char *)0x0) {
           bVar2 = false;
         }
         else {
-          bVar2 = FormatStatsMilestoneName(param_2,param_3,param_5,local_8,pcVar5);
+          bVar2 = FormatStatsMilestoneName(outputString,stringLength,tierId,statsName,itemName_00);
         }
       }
     }
@@ -550,19 +586,25 @@ PrepareKillstreakChallengeName(char *param_1,char *param_2,int param_3,int param
 
 // 0056DAF0  PrepareGrenadeChallengeName  (client_mp/cl_milestone.cpp:286)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
-PrepareGrenadeChallengeName(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+PrepareGrenadeChallengeName(char *name,char *outputString,int stringLength,int index,int tierId)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  char *local_8;
+  char *itemName_00;
+  char *itemName;
+  char *statsName;
   
-  local_8 = "";
-  if (param_2 == (char *)0x0) {
+  statsName = "";
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x122,
                              0,"%s");
     if (!bVar2) {
@@ -571,11 +613,11 @@ PrepareGrenadeChallengeName(char *param_1,char *param_2,int param_3,int param_4,
       return (bool)uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x126,0,"%s");
       if (!bVar2) {
@@ -584,16 +626,16 @@ PrepareGrenadeChallengeName(char *param_1,char *param_2,int param_3,int param_4,
         return (bool)uVar3;
       }
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      iVar4 = I_stricmp(param_1,"kills");
+      iVar4 = I_stricmp(name,"kills");
       if (iVar4 == 0) {
-        local_8 = "STATS_MILESTONE_STATNAME_KILLS";
+        statsName = "STATS_MILESTONE_STATNAME_KILLS";
       }
-      pcVar5 = BG_UnlockablesGetItemName(param_4);
-      if (pcVar5 == (char *)0x0) {
+      itemName_00 = BG_UnlockablesGetItemName(index);
+      if (itemName_00 == (char *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x131,0,"%s");
         if (!bVar2) {
@@ -602,11 +644,11 @@ PrepareGrenadeChallengeName(char *param_1,char *param_2,int param_3,int param_4,
           return (bool)uVar3;
         }
       }
-      if (pcVar5 == (char *)0x0) {
+      if (itemName_00 == (char *)0x0) {
         bVar2 = false;
       }
       else {
-        if (local_8 == (char *)0x0) {
+        if (statsName == (char *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x135,0,"%s");
           if (!bVar2) {
@@ -615,11 +657,11 @@ PrepareGrenadeChallengeName(char *param_1,char *param_2,int param_3,int param_4,
             return (bool)uVar3;
           }
         }
-        if (local_8 == (char *)0x0) {
+        if (statsName == (char *)0x0) {
           bVar2 = false;
         }
         else {
-          bVar2 = FormatStatsMilestoneName(param_2,param_3,param_5,local_8,pcVar5);
+          bVar2 = FormatStatsMilestoneName(outputString,stringLength,tierId,statsName,itemName_00);
         }
       }
     }
@@ -631,20 +673,23 @@ PrepareGrenadeChallengeName(char *param_1,char *param_2,int param_3,int param_4,
 // 0056DC30  PrepareAttachmentChallengeName  (client_mp/cl_milestone.cpp:317)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
-PrepareAttachmentChallengeName(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+PrepareAttachmentChallengeName(char *name,char *outputString,int stringLength,int index,int tierId)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *local_c;
-  char *local_8;
+  char *itemName;
+  char *statsName;
   
-  local_8 = "";
-  if (param_2 == (char *)0x0) {
+  statsName = "";
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x141,
                              0,"%s");
     if (!bVar2) {
@@ -653,11 +698,11 @@ PrepareAttachmentChallengeName(char *param_1,char *param_2,int param_3,int param
       return (bool)uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x145,0,"%s");
       if (!bVar2) {
@@ -666,21 +711,21 @@ PrepareAttachmentChallengeName(char *param_1,char *param_2,int param_3,int param
         return (bool)uVar3;
       }
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      iVar4 = I_stricmp(param_1,"kills");
+      iVar4 = I_stricmp(name,"kills");
       if (iVar4 == 0) {
-        local_8 = "STATS_MILESTONE_STATNAME_MARKSMAN";
+        statsName = "STATS_MILESTONE_STATNAME_MARKSMAN";
       }
-      if (param_4 < 0x18) {
-        local_c = BG_GetAttachmentDisplayName(param_4);
+      if (index < 0x18) {
+        itemName = BG_GetAttachmentDisplayName(index);
       }
       else {
-        local_c = BG_UnlockablesGetItemName(param_4);
+        itemName = BG_UnlockablesGetItemName(index);
       }
-      if (local_c == (char *)0x0) {
+      if (itemName == (char *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x157,0,"%s");
         if (!bVar2) {
@@ -689,11 +734,11 @@ PrepareAttachmentChallengeName(char *param_1,char *param_2,int param_3,int param
           return (bool)uVar3;
         }
       }
-      if (local_c == (char *)0x0) {
+      if (itemName == (char *)0x0) {
         bVar2 = false;
       }
       else {
-        if (local_8 == (char *)0x0) {
+        if (statsName == (char *)0x0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x15b,0,"%s");
           if (!bVar2) {
@@ -702,11 +747,11 @@ PrepareAttachmentChallengeName(char *param_1,char *param_2,int param_3,int param
             return (bool)uVar3;
           }
         }
-        if (local_8 == (char *)0x0) {
+        if (statsName == (char *)0x0) {
           bVar2 = false;
         }
         else {
-          bVar2 = FormatStatsMilestoneName(param_2,param_3,param_5,local_8,local_c);
+          bVar2 = FormatStatsMilestoneName(outputString,stringLength,tierId,statsName,itemName);
         }
       }
     }
@@ -717,88 +762,95 @@ PrepareAttachmentChallengeName(char *param_1,char *param_2,int param_3,int param
 
 // 0056DD90  PrepareWeaponChallengeName  (client_mp/cl_milestone.cpp:356)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
 PrepareWeaponChallengeName
-          (char *param_1,char *param_2,int param_3,int param_4,int param_5,bool param_6)
+          (char *name,char *outputString,int stringLength,int index,int tierId,bool isItemClassified
+          )
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   int iVar4;
-  char *pcVar5;
-  bool local_31;
-  char *local_30;
+  char *s0;
+  char *itemName;
+  bool couldLocalize;
+  char *statsName;
   
-  local_30 = "";
-  if ((param_2 == (char *)0x0) &&
+  statsName = "";
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x16c,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
-    local_31 = false;
+  if (outputString == (char *)0x0) {
+    couldLocalize = false;
   }
   else {
-    if ((param_1 == (char *)0x0) &&
+    if ((name == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x170,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_1 == (char *)0x0) {
-      local_31 = false;
+    if (name == (char *)0x0) {
+      couldLocalize = false;
     }
-    else if (param_6) {
+    else if (isItemClassified) {
       UI_SafeTranslateString("MENU_CLASSIFIED");
-      Com_sprintf(param_2,param_3,"%s");
-      local_31 = true;
+      Com_sprintf(outputString,stringLength,"%s");
+      couldLocalize = true;
     }
     else {
-      iVar4 = I_stricmp(param_1,"kills");
+      iVar4 = I_stricmp(name,"kills");
       if (iVar4 == 0) {
-        local_30 = "STATS_MILESTONE_STATNAME_MARKSMAN";
+        statsName = "STATS_MILESTONE_STATNAME_MARKSMAN";
       }
-      iVar4 = I_stricmp(param_1,"headshots");
+      iVar4 = I_stricmp(name,"headshots");
       if (iVar4 == 0) {
-        local_30 = "STATS_MILESTONE_STATNAME_EXPERT";
+        statsName = "STATS_MILESTONE_STATNAME_EXPERT";
       }
-      pcVar5 = BG_UnlockablesGetItemName(param_4);
-      if ((pcVar5 == (char *)0x0) &&
+      s0 = BG_UnlockablesGetItemName(index);
+      if ((s0 == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x182,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return (bool)uVar3;
       }
-      if (pcVar5 == (char *)0x0) {
-        local_31 = false;
+      if (s0 == (char *)0x0) {
+        couldLocalize = false;
       }
       else {
-        iVar4 = I_stricmp(pcVar5,"WEAPON_KNIFE");
+        iVar4 = I_stricmp(s0,"WEAPON_KNIFE");
         if (iVar4 == 0) {
-          local_30 = "STATS_MILESTONE_STATNAME_KNIFE";
+          statsName = "STATS_MILESTONE_STATNAME_KNIFE";
         }
-        if ((local_30 == (char *)0x0) &&
+        if ((statsName == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x189,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if (local_30 == (char *)0x0) {
-          local_31 = false;
+        if (statsName == (char *)0x0) {
+          couldLocalize = false;
         }
         else {
-          local_31 = FormatStatsMilestoneName(param_2,param_3,param_5,local_30,pcVar5);
+          couldLocalize = FormatStatsMilestoneName(outputString,stringLength,tierId,statsName,s0);
         }
       }
     }
   }
-  return local_31;
+  return couldLocalize;
 }
 
 
@@ -808,31 +860,32 @@ PrepareWeaponChallengeName
 
 bool __cdecl
 PrepareGroupChallengeName
-          (char *param_1,char *param_2,int param_3,int param_4,int param_5,char *param_6)
+          (char *name,char *outputString,int stringLength,int index,int tierId,
+          char *weaponNameLocalizedString)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   char *pcVar4;
-  ConversionArguments *pCVar5;
-  char local_3c [8];
+  ConversionArguments *arguments;
+  char milestoneTierRoman [8];
   uint local_34;
-  char *local_30;
-  ConversionArguments local_2c;
+  char *statsName;
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  if (param_2 == (char *)0x0) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x19b,
                              0,"%s");
     if (!bVar2) {
@@ -841,11 +894,11 @@ PrepareGroupChallengeName
       return (bool)uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x19f,0,"%s");
       if (!bVar2) {
@@ -854,13 +907,13 @@ PrepareGroupChallengeName
         return (bool)uVar3;
       }
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      local_30 = "";
-      local_30 = va("STATS_MILESTONE_STATNAME_%s");
-      if ((local_30 == (char *)0x0) && (param_6 == (char *)0x0)) {
+      statsName = "";
+      statsName = va("STATS_MILESTONE_STATNAME_%s");
+      if ((statsName == (char *)0x0) && (weaponNameLocalizedString == (char *)0x0)) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x1a6,0,"%s");
         if (!bVar2) {
@@ -869,20 +922,20 @@ PrepareGroupChallengeName
           return (bool)uVar3;
         }
       }
-      if ((local_30 == (char *)0x0) || (param_6 == (char *)0x0)) {
+      if ((statsName == (char *)0x0) || (weaponNameLocalizedString == (char *)0x0)) {
         bVar2 = false;
       }
       else {
-        CL_MilestoneTier_DecToRoman(param_5,local_3c,5);
-        local_2c.args[local_2c.argCount] = param_6;
-        local_2c.argCount = local_2c.argCount + 1;
-        pcVar4 = UI_SafeTranslateString(local_30);
-        local_2c.args[local_2c.argCount] = pcVar4;
-        local_2c.args[local_2c.argCount + 1] = local_3c;
-        local_2c.argCount = local_2c.argCount + 2;
-        pCVar5 = &local_2c;
+        CL_MilestoneTier_DecToRoman(tierId,milestoneTierRoman,5);
+        convArgs.args[convArgs.argCount] = weaponNameLocalizedString;
+        convArgs.argCount = convArgs.argCount + 1;
+        pcVar4 = UI_SafeTranslateString(statsName);
+        convArgs.args[convArgs.argCount] = pcVar4;
+        convArgs.args[convArgs.argCount + 1] = milestoneTierRoman;
+        convArgs.argCount = convArgs.argCount + 2;
+        arguments = &convArgs;
         pcVar4 = UI_SafeTranslateString("STATS_STATSGROUPMILESTONES");
-        UI_ReplaceConversions(pcVar4,pCVar5,param_2,param_3);
+        UI_ReplaceConversions(pcVar4,arguments,outputString,stringLength);
         bVar2 = true;
       }
     }
@@ -897,21 +950,22 @@ PrepareGroupChallengeName
 
 bool __cdecl
 PrepareGameModeChallengeName
-          (char *param_1,char *param_2,int param_3,int param_4,int param_5,char *param_6)
+          (char *name,char *outputString,int stringLength,int index,int tierId,
+          char *gameModeLocalizedString)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  char *pcVar4;
-  int iVar5;
-  char local_114 [8];
-  char local_10c [256];
+  char *reference;
+  int iVar4;
+  char milestoneTierRoman [8];
+  char challengeName [256];
   uint local_c;
-  StringTable *local_8;
+  StringTable *stringTable;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x1b8,
                              0,"%s");
     if (!bVar2) {
@@ -920,11 +974,11 @@ PrepareGameModeChallengeName
       return (bool)uVar3;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x1bc,0,"%s");
       if (!bVar2) {
@@ -933,23 +987,23 @@ PrepareGameModeChallengeName
         return (bool)uVar3;
       }
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      pcVar4 = va("CH_GM_%s");
-      UI_SafeTranslateString(pcVar4);
-      Com_sprintf(local_10c,0x100,"%s");
-      if (param_6 == (char *)0x0) {
-        Com_sprintf(param_2,param_3,"%s");
+      reference = va("CH_GM_%s");
+      UI_SafeTranslateString(reference);
+      Com_sprintf(challengeName,0x100,"%s");
+      if (gameModeLocalizedString == (char *)0x0) {
+        Com_sprintf(outputString,stringLength,"%s");
       }
       else {
-        Com_sprintf(param_2,param_3,"%s %s");
+        Com_sprintf(outputString,stringLength,"%s %s");
       }
-      iVar5 = CL_GetMilestoneRowNum(&local_8,4,param_1,1,"1",-1,(char *)0x0);
-      if (iVar5 != -1) {
-        CL_MilestoneTier_DecToRoman(param_5,local_114,5);
-        Com_sprintf(param_2,param_3,"%s %s");
+      iVar4 = CL_GetMilestoneRowNum(&stringTable,4,name,1,"1",-1,(char *)0x0);
+      if (iVar4 != -1) {
+        CL_MilestoneTier_DecToRoman(tierId,milestoneTierRoman,5);
+        Com_sprintf(outputString,stringLength,"%s %s");
       }
       bVar2 = true;
     }
@@ -961,65 +1015,70 @@ PrepareGameModeChallengeName
 // 0056E270  CL_GetFrontEndMilestoneLocalizedDesc  (client_mp/cl_milestone.cpp:468)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 void __cdecl
 CL_GetFrontEndMilestoneLocalizedDesc
-          (char *param_1,int param_2,int param_3,statsMilestoneTypes_t param_4,char *param_5)
+          (char *outputString,int stringLength,int index,statsMilestoneTypes_t milestoneType,
+          char *challengeType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   char *pcVar4;
-  char *local_110;
-  char local_10c [256];
+  char *itemName;
+  char statName [256];
   uint local_c;
-  challengeInfo_t *local_8;
+  challengeInfo_t *challenge;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_110 = (char *)0x0;
-  if ((param_1 == (char *)0x0) &&
+  itemName = (char *)0x0;
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x1d9,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_1 != (char *)0x0) &&
-     (bVar2 = LiveStats_GetChallengeInfo(&local_8,param_3,param_4), bVar2)) {
-    if ((param_5 == (char *)0x0) ||
-       ((*param_5 == '\0' || (iVar3 = I_stricmp(param_5,"lifetime_"), iVar3 != 0)))) {
-      Com_sprintf(local_10c,0x100,"%s");
+  if ((outputString != (char *)0x0) &&
+     (bVar2 = LiveStats_GetChallengeInfo(&challenge,index,milestoneType), bVar2)) {
+    if ((challengeType == (char *)0x0) ||
+       ((*challengeType == '\0' || (iVar3 = I_stricmp(challengeType,"lifetime_"), iVar3 != 0)))) {
+      Com_sprintf(statName,0x100,"%s");
     }
     else {
-      Com_sprintf(local_10c,0x100,"%s%s");
+      Com_sprintf(statName,0x100,"%s%s");
     }
-    if (local_8->type == MILESTONE_GAMEMODE) {
+    if (challenge->type == MILESTONE_GAMEMODE) {
       pcVar4 = va("MPUI_%s");
-      local_110 = UI_SafeTranslateString(pcVar4);
+      itemName = UI_SafeTranslateString(pcVar4);
     }
-    else if (local_8->type == MILESTONE_GROUP) {
+    else if (challenge->type == MILESTONE_GROUP) {
       Dvar_GetString("weapon_group_name");
       pcVar4 = va("%s_WITH_S");
-      local_110 = UI_SafeTranslateString(pcVar4);
+      itemName = UI_SafeTranslateString(pcVar4);
     }
-    else if (local_8->type == MILESTONE_WEAPON) {
-      pcVar4 = BG_UnlockablesGetItemName((uint)local_8->index);
-      local_110 = UI_SafeTranslateString(pcVar4);
-      if ((local_110 == (char *)0x0) &&
+    else if (challenge->type == MILESTONE_WEAPON) {
+      pcVar4 = BG_UnlockablesGetItemName((uint)challenge->index);
+      itemName = UI_SafeTranslateString(pcVar4);
+      if ((itemName == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x1f5,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if (local_110 == (char *)0x0) {
+      if (itemName == (char *)0x0) {
         return;
       }
     }
     CL_GetMilestoneLocalizedDesc
-              (param_1,param_2,local_10c,local_8->type,(uint)local_8->index,(uint)local_8->milestone
-               ,local_8->targetValue,local_110);
+              (outputString,stringLength,statName,challenge->type,(uint)challenge->index,
+               (uint)challenge->milestone,challenge->targetValue,itemName);
   }
   return;
 }
@@ -1028,81 +1087,91 @@ CL_GetFrontEndMilestoneLocalizedDesc
 // 0056E470  CL_GetInGameMilestoneLocalizedDesc  (client_mp/cl_milestone.cpp:512)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
 bool __cdecl
 CL_GetInGameMilestoneLocalizedDesc
-          (int param_1,char *param_2,int param_3,char *param_4,statsMilestoneTypes_t param_5,
-          int param_6,int param_7,char *param_8,int param_9)
+          (int localClientNum,char *outputString,int stringLength,char *statName,
+          statsMilestoneTypes_t milestoneType,int statsTableIndex,int milestoneTier,char *weaponType
+          ,int targetValue)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   char *pcVar4;
-  char local_20c;
+  char *weaponName;
+  char gameType;
   uchar local_20b [255];
-  char local_10c;
+  char localizedDescString;
   uchar local_10b [259];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10c = '\0';
+  localizedDescString = '\0';
   memset(local_10b,'\0',0xff);
-  if ((param_2 == (char *)0x0) &&
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x203,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if ((param_4 == (char *)0x0) &&
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x207,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_4 == (char *)0x0) {
+    if (statName == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      if (param_5 == MILESTONE_GAMEMODE) {
-        local_20c = '\0';
+      if (milestoneType == MILESTONE_GAMEMODE) {
+        gameType = '\0';
         memset(local_20b,'\0',0xff);
-        bVar2 = IsHardcoreMode(param_1);
+        bVar2 = IsHardcoreMode(localClientNum);
         if (bVar2) {
           Dvar_GetString("g_gametype");
-          Com_sprintf(&local_20c,0x100,"HC%s");
+          Com_sprintf(&gameType,0x100,"HC%s");
         }
         else {
           Dvar_GetString("g_gametype");
-          Com_sprintf(&local_20c,0x100,"%s");
+          Com_sprintf(&gameType,0x100,"%s");
         }
         pcVar4 = va("MPUI_%s");
         UI_SafeTranslateString(pcVar4);
-        Com_sprintf(&local_10c,0x100,"%s");
+        Com_sprintf(&localizedDescString,0x100,"%s");
       }
-      else if (param_5 == MILESTONE_GROUP) {
-        if ((param_8 == (char *)0x0) &&
+      else if (milestoneType == MILESTONE_GROUP) {
+        if ((weaponType == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x21c,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if (param_8 == (char *)0x0) {
+        if (weaponType == (char *)0x0) {
           return false;
         }
         pcVar4 = va("MPUI_%s_WITH_S");
         UI_SafeTranslateString(pcVar4);
-        Com_sprintf(&local_10c,0x100,"%s");
+        Com_sprintf(&localizedDescString,0x100,"%s");
       }
-      else if (param_5 == MILESTONE_WEAPON) {
-        pcVar4 = BG_UnlockablesGetItemName(param_6);
+      else if (milestoneType == MILESTONE_WEAPON) {
+        pcVar4 = BG_UnlockablesGetItemName(statsTableIndex);
         if ((pcVar4 == (char *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x224,0,"%s"), !bVar2)) {
@@ -1114,10 +1183,11 @@ CL_GetInGameMilestoneLocalizedDesc
           return false;
         }
         UI_SafeTranslateString(pcVar4);
-        Com_sprintf(&local_10c,0x100,"%s");
+        Com_sprintf(&localizedDescString,0x100,"%s");
       }
       bVar2 = CL_GetMilestoneLocalizedDesc
-                        (param_2,param_3,param_4,param_5,param_6,param_7,param_9,&local_10c);
+                        (outputString,stringLength,statName,milestoneType,statsTableIndex,
+                         milestoneTier,targetValue,&localizedDescString);
     }
   }
   return bVar2;
@@ -1128,60 +1198,64 @@ CL_GetInGameMilestoneLocalizedDesc
 
 bool __cdecl
 CL_GetMilestoneLocalizedDesc
-          (char *param_1,int param_2,char *param_3,statsMilestoneTypes_t param_4,int param_5,
-          int param_6,int param_7,char *param_8)
+          (char *outputString,int stringLength,char *statName,statsMilestoneTypes_t milestoneType,
+          int statsTableIndex,int milestoneTier,int targetValue,char *localizedString)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  bool local_5;
+  bool couldLocalize;
   
-  if ((param_2 < 0x100) &&
+  if ((stringLength < 0x100) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x230,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((((int)param_4 < 0) || (7 < (int)param_4)) &&
+  if ((((int)milestoneType < 0) || (7 < (int)milestoneType)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x231,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if ((param_1 == (char *)0x0) &&
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x233,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_1 == (char *)0x0) {
-    local_5 = false;
+  if (outputString == (char *)0x0) {
+    couldLocalize = false;
   }
   else {
-    if ((param_3 == (char *)0x0) &&
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x237,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_3 == (char *)0x0) {
-      local_5 = false;
+    if (statName == (char *)0x0) {
+      couldLocalize = false;
     }
     else {
-      memset((uchar *)param_1,'\0',param_2);
-      local_5 = false;
-      switch(param_4) {
+      memset((uchar *)outputString,'\0',stringLength);
+      couldLocalize = false;
+      switch(milestoneType) {
       case MILESTONE_GLOBAL:
-        local_5 = GetGlobalChallengeDescription(param_3,param_1,param_2,param_7);
+        couldLocalize =
+             GetGlobalChallengeDescription(statName,outputString,stringLength,targetValue);
         break;
       case MILESTONE_WEAPON:
       case MILESTONE_GROUP:
-        local_5 = PrepareWeaponDescription(param_3,param_1,param_2,param_7,param_4,param_8);
+        couldLocalize =
+             PrepareWeaponDescription
+                       (statName,outputString,stringLength,targetValue,milestoneType,localizedString
+                       );
         break;
       case MILESTONE_MAP:
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
@@ -1193,16 +1267,24 @@ CL_GetMilestoneLocalizedDesc
         }
         break;
       case MILESTONE_GAMEMODE:
-        local_5 = PrepareGameModeDescription(param_3,param_1,param_2,param_7,param_8);
+        couldLocalize =
+             PrepareGameModeDescription
+                       (statName,outputString,stringLength,targetValue,localizedString);
         break;
       case MILESTONE_ATTACHMENTS:
-        local_5 = PrepareAttachmentDescription(param_3,param_1,param_2,param_5,param_7);
+        couldLocalize =
+             PrepareAttachmentDescription
+                       (statName,outputString,stringLength,statsTableIndex,targetValue);
         break;
       case MILESTONE_KILLSTREAKS:
-        local_5 = PrepareKillstreakDescription(param_3,param_1,param_2,param_5,param_7);
+        couldLocalize =
+             PrepareKillstreakDescription
+                       (statName,outputString,stringLength,statsTableIndex,targetValue);
         break;
       case MILESTONE_GRENADES:
-        local_5 = PrepareGrenadeDescription(param_3,param_1,param_2,param_5,param_7);
+        couldLocalize =
+             PrepareGrenadeDescription
+                       (statName,outputString,stringLength,statsTableIndex,targetValue);
         break;
       default:
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
@@ -1215,13 +1297,14 @@ CL_GetMilestoneLocalizedDesc
       }
     }
   }
-  return local_5;
+  return couldLocalize;
 }
 
 
 // 0056E970  GetGlobalChallengeDescription  (client_mp/cl_milestone.cpp:606)
 
-bool __cdecl GetGlobalChallengeDescription(char *param_1,char *param_2,int param_3,int param_4)
+bool __cdecl
+GetGlobalChallengeDescription(char *name,char *outputString,int stringLength,int targetValue)
 
 {
   code *pcVar1;
@@ -1230,74 +1313,74 @@ bool __cdecl GetGlobalChallengeDescription(char *param_1,char *param_2,int param
   int iVar4;
   char *pcVar5;
   ConversionArguments *pCVar6;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  if ((param_2 == (char *)0x0) &&
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x263,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if ((param_1 == (char *)0x0) &&
+    if ((name == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x267,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      bVar2 = StringBeginsWith("gm_",param_1);
-      if ((((bVar2) || (bVar2 = StringBeginsWith("kills_",param_1), bVar2)) ||
-          (bVar2 = StringBeginsWith("basic_",param_1), bVar2)) ||
-         (((bVar2 = StringBeginsWith("medal_",param_1), bVar2 ||
-           (bVar2 = StringBeginsWith("lifetime_",param_1), bVar2)) ||
-          (bVar2 = StringBeginsWith("final_",param_1), bVar2)))) {
-        iVar4 = I_stricmp(param_1,"lifetime_time_played_total");
+      bVar2 = StringBeginsWith("gm_",name);
+      if ((((bVar2) || (bVar2 = StringBeginsWith("kills_",name), bVar2)) ||
+          (bVar2 = StringBeginsWith("basic_",name), bVar2)) ||
+         (((bVar2 = StringBeginsWith("medal_",name), bVar2 ||
+           (bVar2 = StringBeginsWith("lifetime_",name), bVar2)) ||
+          (bVar2 = StringBeginsWith("final_",name), bVar2)))) {
+        iVar4 = I_stricmp(name,"lifetime_time_played_total");
         if (iVar4 == 0) {
           pcVar5 = va("%d");
-          local_2c.args[local_2c.argCount] = pcVar5;
-          local_2c.argCount = local_2c.argCount + 1;
-          pCVar6 = &local_2c;
+          convArgs.args[convArgs.argCount] = pcVar5;
+          convArgs.argCount = convArgs.argCount + 1;
+          pCVar6 = &convArgs;
           pcVar5 = va("CH_%s_DESC");
           pcVar5 = UI_SafeTranslateString(pcVar5);
-          UI_ReplaceConversions(pcVar5,pCVar6,param_2,param_3);
+          UI_ReplaceConversions(pcVar5,pCVar6,outputString,stringLength);
         }
         else {
           pcVar5 = va("%d");
-          local_2c.args[local_2c.argCount] = pcVar5;
-          local_2c.argCount = local_2c.argCount + 1;
-          pCVar6 = &local_2c;
+          convArgs.args[convArgs.argCount] = pcVar5;
+          convArgs.argCount = convArgs.argCount + 1;
+          pCVar6 = &convArgs;
           pcVar5 = va("CH_%s_DESC");
           pcVar5 = UI_SafeTranslateString(pcVar5);
-          UI_ReplaceConversions(pcVar5,pCVar6,param_2,param_3);
+          UI_ReplaceConversions(pcVar5,pCVar6,outputString,stringLength);
         }
       }
       else {
         pcVar5 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar5;
-        local_2c.argCount = local_2c.argCount + 1;
-        pCVar6 = &local_2c;
+        convArgs.args[convArgs.argCount] = pcVar5;
+        convArgs.argCount = convArgs.argCount + 1;
+        pCVar6 = &convArgs;
         pcVar5 = va("%s_DESC");
         pcVar5 = UI_SafeTranslateString(pcVar5);
-        UI_ReplaceConversions(pcVar5,pCVar6,param_2,param_3);
+        UI_ReplaceConversions(pcVar5,pCVar6,outputString,stringLength);
       }
       bVar2 = true;
     }
@@ -1309,7 +1392,8 @@ bool __cdecl GetGlobalChallengeDescription(char *param_1,char *param_2,int param
 // 0056EBC0  PrepareAttachmentDescription  (client_mp/cl_milestone.cpp:646)
 
 bool __cdecl
-PrepareAttachmentDescription(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+PrepareAttachmentDescription
+          (char *name,char *outputString,int stringLength,int index,int targetValue)
 
 {
   code *pcVar1;
@@ -1318,19 +1402,19 @@ PrepareAttachmentDescription(char *param_1,char *param_2,int param_3,int param_4
   int iVar4;
   char *pcVar5;
   ConversionArguments *pCVar6;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  if (param_1 == (char *)0x0) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x28b,
                              0,"%s");
     if (!bVar2) {
@@ -1339,11 +1423,11 @@ PrepareAttachmentDescription(char *param_1,char *param_2,int param_3,int param_4
       return (bool)uVar3;
     }
   }
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_2 == (char *)0x0) {
+    if (outputString == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x28f,0,"%s");
       if (!bVar2) {
@@ -1352,28 +1436,28 @@ PrepareAttachmentDescription(char *param_1,char *param_2,int param_3,int param_4
         return (bool)uVar3;
       }
     }
-    if (param_2 == (char *)0x0) {
+    if (outputString == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      iVar4 = I_stricmp(param_1,"kills");
+      iVar4 = I_stricmp(name,"kills");
       if (iVar4 == 0) {
-        if ((((param_4 == 1) || (param_4 == 2)) || (param_4 == 3)) ||
-           (((param_4 == 4 || (param_4 == 5)) || ((param_4 == 6 || (param_4 == 0x15)))))) {
+        if ((((index == 1) || (index == 2)) || (index == 3)) ||
+           (((index == 4 || (index == 5)) || ((index == 6 || (index == 0x15)))))) {
           pcVar5 = va("%d");
-          local_2c.args[local_2c.argCount] = pcVar5;
-          local_2c.argCount = local_2c.argCount + 1;
-          pCVar6 = &local_2c;
+          convArgs.args[convArgs.argCount] = pcVar5;
+          convArgs.argCount = convArgs.argCount + 1;
+          pCVar6 = &convArgs;
           pcVar5 = UI_SafeTranslateString("WEAPON_ATTACHMENT_SIGHT_KILLS_CHALLENGE_DESC");
-          UI_ReplaceConversions(pcVar5,pCVar6,param_2,param_3);
+          UI_ReplaceConversions(pcVar5,pCVar6,outputString,stringLength);
         }
         else {
           pcVar5 = va("%d");
-          local_2c.args[local_2c.argCount] = pcVar5;
-          local_2c.argCount = local_2c.argCount + 1;
-          pCVar6 = &local_2c;
+          convArgs.args[convArgs.argCount] = pcVar5;
+          convArgs.argCount = convArgs.argCount + 1;
+          pCVar6 = &convArgs;
           pcVar5 = UI_SafeTranslateString("WEAPON_ATTACHMENT_KILLS_CHALLENGE_DESC");
-          UI_ReplaceConversions(pcVar5,pCVar6,param_2,param_3);
+          UI_ReplaceConversions(pcVar5,pCVar6,outputString,stringLength);
         }
       }
       bVar2 = true;
@@ -1385,8 +1469,14 @@ PrepareAttachmentDescription(char *param_1,char *param_2,int param_3,int param_4
 
 // 0056ED30  PrepareKillstreakDescription  (client_mp/cl_milestone.cpp:678)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
-PrepareKillstreakDescription(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+PrepareKillstreakDescription
+          (char *name,char *outputString,int stringLength,int index,int targetValue)
 
 {
   code *pcVar1;
@@ -1396,43 +1486,44 @@ PrepareKillstreakDescription(char *param_1,char *param_2,int param_3,int param_4
   int iVar5;
   char *pcVar6;
   ConversionArguments *pCVar7;
-  bool local_2d;
-  ConversionArguments local_2c;
+  char *itemName;
+  bool couldLocalize;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  local_2d = false;
-  if ((param_2 == (char *)0x0) &&
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  couldLocalize = false;
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x2ac,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
-    local_2d = false;
+  if (outputString == (char *)0x0) {
+    couldLocalize = false;
   }
   else {
-    if ((param_1 == (char *)0x0) &&
+    if ((name == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x2b0,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if (param_1 == (char *)0x0) {
-      local_2d = false;
+    if (name == (char *)0x0) {
+      couldLocalize = false;
     }
     else {
-      pcVar4 = BG_UnlockablesGetItemName(param_4);
+      pcVar4 = BG_UnlockablesGetItemName(index);
       if ((pcVar4 == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x2b6,0,"%s"), !bVar2)) {
@@ -1441,94 +1532,99 @@ PrepareKillstreakDescription(char *param_1,char *param_2,int param_3,int param_4
         return (bool)uVar3;
       }
       if (pcVar4 == (char *)0x0) {
-        local_2d = false;
+        couldLocalize = false;
       }
       else if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
-        iVar5 = I_stricmp(param_1,"kills");
+        iVar5 = I_stricmp(name,"kills");
         if (iVar5 == 0) {
           pcVar4 = va("%s_KILLS_CHALLENGE_DESC");
           pcVar4 = SEH_StringEd_GetString(pcVar4);
           if (pcVar4 == (char *)0x0) {
             pcVar4 = va("%d");
-            local_2c.args[local_2c.argCount] = pcVar4;
-            local_2c.argCount = local_2c.argCount + 1;
-            pcVar4 = BG_UnlockablesGetItemName(param_4);
+            convArgs.args[convArgs.argCount] = pcVar4;
+            convArgs.argCount = convArgs.argCount + 1;
+            pcVar4 = BG_UnlockablesGetItemName(index);
             pcVar4 = UI_SafeTranslateString(pcVar4);
-            local_2c.args[local_2c.argCount] = pcVar4;
-            local_2c.argCount = local_2c.argCount + 1;
-            pCVar7 = &local_2c;
-            pcVar4 = param_2;
-            iVar5 = param_3;
+            convArgs.args[convArgs.argCount] = pcVar4;
+            convArgs.argCount = convArgs.argCount + 1;
+            pCVar7 = &convArgs;
+            pcVar4 = outputString;
+            iVar5 = stringLength;
             pcVar6 = UI_SafeTranslateString("KILLSTREAK_KILLS_CHALLENGE_DESC");
             UI_ReplaceConversions(pcVar6,pCVar7,pcVar4,iVar5);
           }
           else {
             pcVar4 = va("%d");
-            local_2c.args[local_2c.argCount] = pcVar4;
-            local_2c.argCount = local_2c.argCount + 1;
-            pCVar7 = &local_2c;
-            pcVar4 = param_2;
-            iVar5 = param_3;
+            convArgs.args[convArgs.argCount] = pcVar4;
+            convArgs.argCount = convArgs.argCount + 1;
+            pCVar7 = &convArgs;
+            pcVar4 = outputString;
+            iVar5 = stringLength;
             pcVar6 = va("%s_KILLS_CHALLENGE_DESC");
             pcVar6 = UI_SafeTranslateString(pcVar6);
             UI_ReplaceConversions(pcVar6,pCVar7,pcVar4,iVar5);
           }
-          local_2d = true;
+          couldLocalize = true;
         }
-        iVar5 = I_stricmp(param_1,"used");
+        iVar5 = I_stricmp(name,"used");
         if (iVar5 == 0) {
-          pcVar4 = BG_UnlockablesGetItemName(param_4);
+          pcVar4 = BG_UnlockablesGetItemName(index);
           pcVar4 = UI_SafeTranslateString(pcVar4);
-          local_2c.args[local_2c.argCount] = pcVar4;
-          local_2c.argCount = local_2c.argCount + 1;
+          convArgs.args[convArgs.argCount] = pcVar4;
+          convArgs.argCount = convArgs.argCount + 1;
           pcVar4 = va("%d");
-          local_2c.args[local_2c.argCount] = pcVar4;
-          local_2c.argCount = local_2c.argCount + 1;
-          pCVar7 = &local_2c;
-          pcVar4 = param_2;
-          iVar5 = param_3;
+          convArgs.args[convArgs.argCount] = pcVar4;
+          convArgs.argCount = convArgs.argCount + 1;
+          pCVar7 = &convArgs;
+          pcVar4 = outputString;
+          iVar5 = stringLength;
           pcVar6 = UI_SafeTranslateString("KILLSTREAK_EARNED_CHALLENGE_DESC");
           UI_ReplaceConversions(pcVar6,pCVar7,pcVar4,iVar5);
-          local_2d = true;
+          couldLocalize = true;
         }
-        iVar5 = I_stricmp(param_1,"destroyed");
+        iVar5 = I_stricmp(name,"destroyed");
         if (iVar5 == 0) {
           pcVar4 = va("%s_DESTROYED_CHALLENGE_DESC");
           pcVar4 = SEH_StringEd_GetString(pcVar4);
           if (pcVar4 == (char *)0x0) {
-            pcVar4 = BG_UnlockablesGetItemName(param_4);
+            pcVar4 = BG_UnlockablesGetItemName(index);
             pcVar4 = UI_SafeTranslateString(pcVar4);
-            local_2c.args[local_2c.argCount] = pcVar4;
-            local_2c.argCount = local_2c.argCount + 1;
+            convArgs.args[convArgs.argCount] = pcVar4;
+            convArgs.argCount = convArgs.argCount + 1;
             pcVar4 = va("%d");
-            local_2c.args[local_2c.argCount] = pcVar4;
-            local_2c.argCount = local_2c.argCount + 1;
-            pCVar7 = &local_2c;
+            convArgs.args[convArgs.argCount] = pcVar4;
+            convArgs.argCount = convArgs.argCount + 1;
+            pCVar7 = &convArgs;
             pcVar4 = UI_SafeTranslateString("KILLSTREAK_DESTROYED_CHALLENGE_DESC");
-            UI_ReplaceConversions(pcVar4,pCVar7,param_2,param_3);
+            UI_ReplaceConversions(pcVar4,pCVar7,outputString,stringLength);
           }
           else {
             pcVar4 = va("%d");
-            local_2c.args[local_2c.argCount] = pcVar4;
-            local_2c.argCount = local_2c.argCount + 1;
-            pCVar7 = &local_2c;
+            convArgs.args[convArgs.argCount] = pcVar4;
+            convArgs.argCount = convArgs.argCount + 1;
+            pCVar7 = &convArgs;
             pcVar4 = va("%s_DESTROYED_CHALLENGE_DESC");
             pcVar4 = UI_SafeTranslateString(pcVar4);
-            UI_ReplaceConversions(pcVar4,pCVar7,param_2,param_3);
+            UI_ReplaceConversions(pcVar4,pCVar7,outputString,stringLength);
           }
-          local_2d = true;
+          couldLocalize = true;
         }
       }
     }
   }
-  return local_2d;
+  return couldLocalize;
 }
 
 
 // 0056F0B0  PrepareGrenadeDescription  (client_mp/cl_milestone.cpp:742)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 bool __cdecl
-PrepareGrenadeDescription(char *param_1,char *param_2,int param_3,int param_4,int param_5)
+PrepareGrenadeDescription(char *name,char *outputString,int stringLength,int index,int targetValue)
 
 {
   code *pcVar1;
@@ -1536,21 +1632,22 @@ PrepareGrenadeDescription(char *param_1,char *param_2,int param_3,int param_4,in
   undefined1 uVar3;
   char *pcVar4;
   char *pcVar5;
-  ConversionArguments *pCVar6;
-  ConversionArguments local_2c;
+  ConversionArguments *arguments;
+  char *itemName;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  pcVar4 = BG_UnlockablesGetItemName(param_4);
-  if (param_1 == (char *)0x0) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  pcVar4 = BG_UnlockablesGetItemName(index);
+  if (name == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x2ec,
                              0,"%s");
     if (!bVar2) {
@@ -1559,11 +1656,11 @@ PrepareGrenadeDescription(char *param_1,char *param_2,int param_3,int param_4,in
       return (bool)uVar3;
     }
   }
-  if (param_1 == (char *)0x0) {
+  if (name == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_2 == (char *)0x0) {
+    if (outputString == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x2f0,0,"%s");
       if (!bVar2) {
@@ -1572,7 +1669,7 @@ PrepareGrenadeDescription(char *param_1,char *param_2,int param_3,int param_4,in
         return (bool)uVar3;
       }
     }
-    if (param_2 == (char *)0x0) {
+    if (outputString == (char *)0x0) {
       bVar2 = false;
     }
     else {
@@ -1590,14 +1687,14 @@ PrepareGrenadeDescription(char *param_1,char *param_2,int param_3,int param_4,in
       }
       else {
         pcVar5 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar5;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar5;
+        convArgs.argCount = convArgs.argCount + 1;
         pcVar4 = UI_SafeTranslateString(pcVar4);
-        local_2c.args[local_2c.argCount] = pcVar4;
-        local_2c.argCount = local_2c.argCount + 1;
-        pCVar6 = &local_2c;
+        convArgs.args[convArgs.argCount] = pcVar4;
+        convArgs.argCount = convArgs.argCount + 1;
+        arguments = &convArgs;
         pcVar4 = UI_SafeTranslateString("WEAPON_GRENADE_KILLS_CHALLENGE_DESC");
-        UI_ReplaceConversions(pcVar4,pCVar6,param_2,param_3);
+        UI_ReplaceConversions(pcVar4,arguments,outputString,stringLength);
         bVar2 = true;
       }
     }
@@ -1610,7 +1707,8 @@ PrepareGrenadeDescription(char *param_1,char *param_2,int param_3,int param_4,in
 
 bool __cdecl
 PrepareWeaponDescription
-          (char *param_1,char *param_2,int param_3,int param_4,int param_5,char *param_6)
+          (char *name,char *outputString,int stringLength,int targetValue,int milestoneType,
+          char *weaponLocalizedString)
 
 {
   code *pcVar1;
@@ -1618,72 +1716,74 @@ PrepareWeaponDescription
   undefined1 uVar3;
   char *pcVar4;
   ConversionArguments *pCVar5;
-  bool local_2d;
-  ConversionArguments local_2c;
+  bool couldLocalize;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  local_2d = false;
-  if ((param_2 == (char *)0x0) &&
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  couldLocalize = false;
+  if ((outputString == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x306,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (param_2 == (char *)0x0) {
-    local_2d = false;
+  if (outputString == (char *)0x0) {
+    couldLocalize = false;
   }
   else {
-    if (((param_1 == (char *)0x0) && (param_6 == (char *)0x0)) &&
+    if (((name == (char *)0x0) && (weaponLocalizedString == (char *)0x0)) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x30a,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    if ((param_1 == (char *)0x0) || (param_6 == (char *)0x0)) {
-      local_2d = false;
+    if ((name == (char *)0x0) || (weaponLocalizedString == (char *)0x0)) {
+      couldLocalize = false;
     }
     else {
       pcVar4 = va("%d");
-      local_2c.args[local_2c.argCount] = pcVar4;
-      local_2c.argCount = local_2c.argCount + 1;
+      convArgs.args[convArgs.argCount] = pcVar4;
+      convArgs.argCount = convArgs.argCount + 1;
       pcVar4 = va("STATS_MILESTONE_STATNAME_%s_SMALL");
       pcVar4 = UI_SafeTranslateString(pcVar4);
-      local_2c.args[local_2c.argCount] = pcVar4;
-      local_2c.args[local_2c.argCount + 1] = param_6;
-      local_2c.argCount = local_2c.argCount + 2;
-      if (param_5 == 1) {
-        pCVar5 = &local_2c;
+      convArgs.args[convArgs.argCount] = pcVar4;
+      convArgs.args[convArgs.argCount + 1] = weaponLocalizedString;
+      convArgs.argCount = convArgs.argCount + 2;
+      if (milestoneType == 1) {
+        pCVar5 = &convArgs;
         pcVar4 = UI_SafeTranslateString("STATS_WEAPONITEM_DESC");
-        UI_ReplaceConversions(pcVar4,pCVar5,param_2,param_3);
-        local_2d = true;
+        UI_ReplaceConversions(pcVar4,pCVar5,outputString,stringLength);
+        couldLocalize = true;
       }
-      else if (param_5 == 4) {
-        pCVar5 = &local_2c;
+      else if (milestoneType == 4) {
+        pCVar5 = &convArgs;
         pcVar4 = UI_SafeTranslateString("STATS_WEAPONGROUP_DESC");
-        UI_ReplaceConversions(pcVar4,pCVar5,param_2,param_3);
-        local_2d = true;
+        UI_ReplaceConversions(pcVar4,pCVar5,outputString,stringLength);
+        couldLocalize = true;
       }
     }
   }
-  return local_2d;
+  return couldLocalize;
 }
 
 
 // 0056F370  PrepareGameModeDescription  (client_mp/cl_milestone.cpp:800)
 
 bool __cdecl
-PrepareGameModeDescription(char *param_1,char *param_2,int param_3,int param_4,char *param_5)
+PrepareGameModeDescription
+          (char *name,char *outputString,int stringLength,int targetValue,
+          char *gameModeLocalizedString)
 
 {
   code *pcVar1;
@@ -1691,20 +1791,20 @@ PrepareGameModeDescription(char *param_1,char *param_2,int param_3,int param_4,c
   bool bVar3;
   undefined1 uVar4;
   char *pcVar5;
-  ConversionArguments *pCVar6;
-  ConversionArguments local_2c;
+  ConversionArguments *arguments;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  if (param_2 == (char *)0x0) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  if (outputString == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x325,
                              0,"%s");
     if (!bVar3) {
@@ -1713,11 +1813,11 @@ PrepareGameModeDescription(char *param_1,char *param_2,int param_3,int param_4,c
       return (bool)uVar4;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar3 = false;
   }
   else {
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x329,0,"%s");
       if (!bVar3) {
@@ -1726,22 +1826,22 @@ PrepareGameModeDescription(char *param_1,char *param_2,int param_3,int param_4,c
         return (bool)uVar4;
       }
     }
-    if (param_1 == (char *)0x0) {
+    if (name == (char *)0x0) {
       bVar3 = false;
     }
     else {
       pcVar5 = va("%d");
-      local_2c.args[local_2c.argCount] = pcVar5;
-      iVar2 = local_2c.argCount + 1;
-      if (param_5 != (char *)0x0) {
-        local_2c.args[local_2c.argCount + 1] = param_5;
-        iVar2 = local_2c.argCount + 2;
+      convArgs.args[convArgs.argCount] = pcVar5;
+      iVar2 = convArgs.argCount + 1;
+      if (gameModeLocalizedString != (char *)0x0) {
+        convArgs.args[convArgs.argCount + 1] = gameModeLocalizedString;
+        iVar2 = convArgs.argCount + 2;
       }
-      local_2c.argCount = iVar2;
-      pCVar6 = &local_2c;
+      convArgs.argCount = iVar2;
+      arguments = &convArgs;
       pcVar5 = va("CH_GM_%s_DESC");
       pcVar5 = UI_SafeTranslateString(pcVar5);
-      UI_ReplaceConversions(pcVar5,pCVar6,param_2,param_3);
+      UI_ReplaceConversions(pcVar5,arguments,outputString,stringLength);
       bVar3 = true;
     }
   }
@@ -1752,7 +1852,8 @@ PrepareGameModeDescription(char *param_1,char *param_2,int param_3,int param_4,c
 // 0056F480  CL_GetMilestoneLocalizedXP  (client_mp/cl_milestone.cpp:824)
 
 bool __cdecl
-CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,char *param_5)
+CL_GetMilestoneLocalizedXP
+          (char *outputString,int stringLength,float xpScale,int tier,char *indexName)
 
 {
   code *pcVar1;
@@ -1760,8 +1861,12 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
   undefined1 uVar3;
   char *pcVar4;
   int iVar5;
+  char *localizedMilestoneXP;
+  char *milestoneXP;
+  int xpAmount;
+  char *xpStringAmount;
   
-  if (param_2 < 0x20) {
+  if (stringLength < 0x20) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x339,
                              0,"%s");
     if (!bVar2) {
@@ -1770,7 +1875,7 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
       return (bool)uVar3;
     }
   }
-  if (param_1 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x33a,
                              0,"%s");
     if (!bVar2) {
@@ -1779,11 +1884,11 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
       return (bool)uVar3;
     }
   }
-  if (param_1 == (char *)0x0) {
+  if (outputString == (char *)0x0) {
     bVar2 = false;
   }
   else {
-    if (param_5 == (char *)0x0) {
+    if (indexName == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x33e,0,"%s");
       if (!bVar2) {
@@ -1792,12 +1897,12 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
         return (bool)uVar3;
       }
     }
-    if (param_5 == (char *)0x0) {
+    if (indexName == (char *)0x0) {
       bVar2 = false;
     }
     else {
-      memset((uchar *)param_1,'\0',param_2);
-      pcVar4 = CL_GetMilestoneData(param_5,MILESTONE_COLUMN_XPEARNED);
+      memset((uchar *)outputString,'\0',stringLength);
+      pcVar4 = CL_GetMilestoneData(indexName,MILESTONE_COLUMN_XPEARNED);
       if (pcVar4 == (char *)0x0) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x349,0,"%s");
@@ -1812,7 +1917,7 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
       }
       else {
         iVar5 = atoi(pcVar4);
-        if ((int)((float)iVar5 * param_3) == 0) {
+        if ((int)((float)iVar5 * xpScale) == 0) {
           bVar2 = false;
         }
         else {
@@ -1830,8 +1935,8 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
             bVar2 = false;
           }
           else {
-            UI_ReplaceConversionInt(pcVar4,(int)((float)iVar5 * param_3));
-            Com_sprintf(param_1,param_2,"%s");
+            UI_ReplaceConversionInt(pcVar4,(int)((float)iVar5 * xpScale));
+            Com_sprintf(outputString,stringLength,"%s");
             bVar2 = true;
           }
         }
@@ -1844,63 +1949,65 @@ CL_GetMilestoneLocalizedXP(char *param_1,int param_2,float param_3,int param_4,c
 
 // 0056F630  CL_GetMilestoneBackingMaterial  (client_mp/cl_milestone.cpp:860)
 
-void __cdecl CL_GetMilestoneBackingMaterial(char *param_1,int param_2,char *param_3,char *param_4)
+void __cdecl
+CL_GetMilestoneBackingMaterial
+          (char *backingMaterialName,int stringLength,char *statName,char *perkName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  StringTable *local_10;
-  int local_c;
-  char *local_8;
+  StringTable *statsTable;
+  int row;
+  char *loadoutSlot;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((backingMaterialName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x35d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 != (char *)0x0) {
-    if ((param_3 == (char *)0x0) &&
+  if (backingMaterialName != (char *)0x0) {
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x361,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_3 != (char *)0x0) {
-      if ((param_2 < 0x100) &&
+    if (statName != (char *)0x0) {
+      if ((stringLength < 0x100) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x365,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      memset((uchar *)param_1,'\0',param_2);
-      Com_sprintf(param_1,param_2,"%s");
-      if (((param_3 != (char *)0x0) && (param_4 != (char *)0x0)) &&
-         (bVar2 = StringBeginsWith("perks_",param_3), bVar2)) {
-        StringTable_GetAsset("mp/statstable.csv",&local_10);
-        if ((local_10 == (StringTable *)0x0) &&
+      memset((uchar *)backingMaterialName,'\0',stringLength);
+      Com_sprintf(backingMaterialName,stringLength,"%s");
+      if (((statName != (char *)0x0) && (perkName != (char *)0x0)) &&
+         (bVar2 = StringBeginsWith("perks_",statName), bVar2)) {
+        StringTable_GetAsset("mp/statstable.csv",&statsTable);
+        if ((statsTable == (StringTable *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x36e,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_10 != (StringTable *)0x0) {
-          local_c = StringTable_LookupRowNumForValue(local_10,3,param_4);
-          local_8 = StringTable_GetColumnValueForRow(local_10,local_c,0xd);
-          if (local_8 != (char *)0x0) {
-            iVar3 = I_stricmp(local_8,"specialty2");
+        if (statsTable != (StringTable *)0x0) {
+          row = StringTable_LookupRowNumForValue(statsTable,3,perkName);
+          loadoutSlot = StringTable_GetColumnValueForRow(statsTable,row,0xd);
+          if (loadoutSlot != (char *)0x0) {
+            iVar3 = I_stricmp(loadoutSlot,"specialty2");
             if (iVar3 == 0) {
-              Com_sprintf(param_1,param_2,"%s");
+              Com_sprintf(backingMaterialName,stringLength,"%s");
             }
             else {
-              iVar3 = I_stricmp(local_8,"specialty3");
+              iVar3 = I_stricmp(loadoutSlot,"specialty3");
               if (iVar3 == 0) {
-                Com_sprintf(param_1,param_2,"%s");
+                Com_sprintf(backingMaterialName,stringLength,"%s");
               }
             }
           }
@@ -1914,55 +2021,56 @@ void __cdecl CL_GetMilestoneBackingMaterial(char *param_1,int param_2,char *para
 
 // 0056F810  CL_GetMilestoneMaterial  (client_mp/cl_milestone.cpp:903)
 
-void __cdecl CL_GetMilestoneMaterial(char *param_1,int param_2,char *param_3,char *param_4)
+void __cdecl
+CL_GetMilestoneMaterial(char *materialName,int stringLength,char *statName,char *perkName)
 
 {
   code *pcVar1;
   bool bVar2;
-  StringTable *local_10;
-  int local_c;
-  char *local_8;
+  StringTable *statsTable;
+  int row;
+  char *imageName;
   
-  if ((param_1 == (char *)0x0) &&
+  if ((materialName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x388,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 != (char *)0x0) {
-    if ((param_3 == (char *)0x0) &&
+  if (materialName != (char *)0x0) {
+    if ((statName == (char *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x38c,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_3 != (char *)0x0) {
-      if ((param_2 < 0x100) &&
+    if (statName != (char *)0x0) {
+      if ((stringLength < 0x100) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                    0x390,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      memset((uchar *)param_1,'\0',param_2);
-      Com_sprintf(param_1,param_2,"%s");
-      if (((param_3 != (char *)0x0) && (param_4 != (char *)0x0)) &&
-         (bVar2 = StringBeginsWith("perks_",param_3), bVar2)) {
-        StringTable_GetAsset("mp/statstable.csv",&local_10);
-        if ((local_10 == (StringTable *)0x0) &&
+      memset((uchar *)materialName,'\0',stringLength);
+      Com_sprintf(materialName,stringLength,"%s");
+      if (((statName != (char *)0x0) && (perkName != (char *)0x0)) &&
+         (bVar2 = StringBeginsWith("perks_",statName), bVar2)) {
+        StringTable_GetAsset("mp/statstable.csv",&statsTable);
+        if ((statsTable == (StringTable *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp"
                                      ,0x399,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (local_10 != (StringTable *)0x0) {
-          local_c = StringTable_LookupRowNumForValue(local_10,3,param_4);
-          local_8 = StringTable_GetColumnValueForRow(local_10,local_c,6);
-          if (local_8 != (char *)0x0) {
-            Com_sprintf(param_1,param_2,"%s");
+        if (statsTable != (StringTable *)0x0) {
+          row = StringTable_LookupRowNumForValue(statsTable,3,perkName);
+          imageName = StringTable_GetColumnValueForRow(statsTable,row,6);
+          if (imageName != (char *)0x0) {
+            Com_sprintf(materialName,stringLength,"%s");
           }
         }
       }
@@ -1974,7 +2082,7 @@ void __cdecl CL_GetMilestoneMaterial(char *param_1,int param_2,char *param_3,cha
 
 // 0056F9B0  getMilestoneType  (client_mp/cl_milestone.cpp:975)
 
-statsMilestoneTypes_t __cdecl getMilestoneType(char *param_1)
+statsMilestoneTypes_t __cdecl getMilestoneType(char *statsType)
 
 {
   byte bVar1;
@@ -1999,9 +2107,9 @@ statsMilestoneTypes_t __cdecl getMilestoneType(char *param_1)
   int local_18;
   byte *local_10;
   byte *local_c;
-  statsMilestoneTypes_t local_8;
+  statsMilestoneTypes_t milestoneType;
   
-  if (param_1 == (char *)0x0) {
+  if (statsType == (char *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",0x3d2,
                              0,"%s");
     if (!bVar3) {
@@ -2010,12 +2118,12 @@ statsMilestoneTypes_t __cdecl getMilestoneType(char *param_1)
       return sVar4;
     }
   }
-  if (param_1 == (char *)0x0) {
-    local_8 = MILESTONE_INVALID;
+  if (statsType == (char *)0x0) {
+    milestoneType = MILESTONE_INVALID;
   }
   else {
     local_c = (byte *)0xc9f494;
-    local_10 = (byte *)param_1;
+    local_10 = (byte *)statsType;
     do {
       bVar1 = *local_10;
       bVar3 = bVar1 < *local_c;
@@ -2034,11 +2142,11 @@ LAB_0056fa45:
     local_18 = 0;
 LAB_0056fa4d:
     if (local_18 == 0) {
-      local_8 = MILESTONE_GLOBAL;
+      milestoneType = MILESTONE_GLOBAL;
     }
     else {
       local_20 = (byte *)0xc6cdb0;
-      local_24 = (byte *)param_1;
+      local_24 = (byte *)statsType;
       do {
         bVar1 = *local_24;
         bVar3 = bVar1 < *local_20;
@@ -2057,11 +2165,11 @@ LAB_0056faaf:
       local_2c = 0;
 LAB_0056fab7:
       if (local_2c == 0) {
-        local_8 = MILESTONE_KILLSTREAKS;
+        milestoneType = MILESTONE_KILLSTREAKS;
       }
       else {
         local_34 = (byte *)0xc9f48c;
-        local_38 = (byte *)param_1;
+        local_38 = (byte *)statsType;
         do {
           bVar1 = *local_38;
           bVar3 = bVar1 < *local_34;
@@ -2080,11 +2188,11 @@ LAB_0056fb19:
         local_40 = 0;
 LAB_0056fb21:
         if (local_40 == 0) {
-          local_8 = MILESTONE_GROUP;
+          milestoneType = MILESTONE_GROUP;
         }
         else {
           local_48 = (byte *)0xc705e0;
-          local_4c = (byte *)param_1;
+          local_4c = (byte *)statsType;
           do {
             bVar1 = *local_4c;
             bVar3 = bVar1 < *local_48;
@@ -2103,11 +2211,11 @@ LAB_0056fb83:
           local_54 = 0;
 LAB_0056fb8b:
           if (local_54 == 0) {
-            local_8 = MILESTONE_ATTACHMENTS;
+            milestoneType = MILESTONE_ATTACHMENTS;
           }
           else {
             local_5c = (byte *)0xc9f480;
-            local_60 = (byte *)param_1;
+            local_60 = (byte *)statsType;
             do {
               bVar1 = *local_60;
               bVar3 = bVar1 < *local_5c;
@@ -2126,11 +2234,11 @@ LAB_0056fbed:
             local_68 = 0;
 LAB_0056fbf5:
             if (local_68 == 0) {
-              local_8 = MILESTONE_GAMEMODE;
+              milestoneType = MILESTONE_GAMEMODE;
             }
             else {
               local_70 = (byte *)0xc6ce58;
-              local_74 = (byte *)param_1;
+              local_74 = (byte *)statsType;
               do {
                 bVar1 = *local_74;
                 bVar3 = bVar1 < *local_70;
@@ -2149,10 +2257,10 @@ LAB_0056fc54:
               local_7c = 0;
 LAB_0056fc5c:
               if (local_7c == 0) {
-                local_8 = MILESTONE_GRENADES;
+                milestoneType = MILESTONE_GRENADES;
               }
               else {
-                local_8 = MILESTONE_WEAPON;
+                milestoneType = MILESTONE_WEAPON;
               }
             }
           }
@@ -2160,65 +2268,66 @@ LAB_0056fc5c:
       }
     }
   }
-  return local_8;
+  return milestoneType;
 }
 
 
 // 0056FC80  CL_MilestoneTier_DecToRoman  (client_mp/cl_milestone.cpp:1019)
 
-void __cdecl CL_MilestoneTier_DecToRoman(int param_1,char *param_2,int param_3)
+void __cdecl
+CL_MilestoneTier_DecToRoman(int milestoneTierId,char *milestoneTierRoman,int stringLength)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 == (char *)0x0) &&
+  if ((milestoneTierRoman == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                0x3fc,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2 != (char *)0x0) {
-    memset((uchar *)param_2,'\0',param_3);
-    if ((param_3 < 5) &&
+  if (milestoneTierRoman != (char *)0x0) {
+    memset((uchar *)milestoneTierRoman,'\0',stringLength);
+    if ((stringLength < 5) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\client_mp\\cl_milestone.cpp",
                                  0x402,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (param_3 < 6) {
-      switch(param_1) {
+    if (stringLength < 6) {
+      switch(milestoneTierId) {
       case 0:
-        I_strncpyz(param_2,"I",param_3);
+        I_strncpyz(milestoneTierRoman,"I",stringLength);
         break;
       case 1:
-        I_strncpyz(param_2,"II",param_3);
+        I_strncpyz(milestoneTierRoman,"II",stringLength);
         break;
       case 2:
-        I_strncpyz(param_2,"III",param_3);
+        I_strncpyz(milestoneTierRoman,"III",stringLength);
         break;
       case 3:
-        I_strncpyz(param_2,"IV",param_3);
+        I_strncpyz(milestoneTierRoman,"IV",stringLength);
         break;
       case 4:
-        I_strncpyz(param_2,"V",param_3);
+        I_strncpyz(milestoneTierRoman,"V",stringLength);
         break;
       case 5:
-        I_strncpyz(param_2,"VI",param_3);
+        I_strncpyz(milestoneTierRoman,"VI",stringLength);
         break;
       case 6:
-        I_strncpyz(param_2,"VII",param_3);
+        I_strncpyz(milestoneTierRoman,"VII",stringLength);
         break;
       case 7:
-        I_strncpyz(param_2,"VIII",param_3);
+        I_strncpyz(milestoneTierRoman,"VIII",stringLength);
         break;
       case 8:
-        I_strncpyz(param_2,"IX",param_3);
+        I_strncpyz(milestoneTierRoman,"IX",stringLength);
         break;
       case 9:
-        I_strncpyz(param_2,"X",param_3);
+        I_strncpyz(milestoneTierRoman,"X",stringLength);
         break;
       default:
         Com_Printf(0x10,"Conversion form Milestone Tier ID to roman numeral failed.");

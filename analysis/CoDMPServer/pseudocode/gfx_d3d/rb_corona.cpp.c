@@ -2,13 +2,13 @@
 
 // 00A8D380  RB_HW_BeginOcclusionQuery  (gfx_d3d/rb_query_d3d.h:32)
 
-void __cdecl RB_HW_BeginOcclusionQuery(IDirect3DQuery9 *param_1,void *param_2)
+void __cdecl RB_HW_BeginOcclusionQuery(IDirect3DQuery9 *query,void *device)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (IDirect3DQuery9 *)0x0) {
+  if (query == (IDirect3DQuery9 *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_query_d3d.h",0x22,0,
                              "%s");
     if (!bVar2) {
@@ -17,22 +17,23 @@ void __cdecl RB_HW_BeginOcclusionQuery(IDirect3DQuery9 *param_1,void *param_2)
       return;
     }
   }
-  (**(code **)((int)*param_1 + 0x18))(param_1,2);
+  (**(code **)((int)*query + 0x18))(query,2);
   return;
 }
 
 
 // 00A8D3C0  RB_HW_ReadOcclusionQuery  (gfx_d3d/rb_query_d3d.h:47)
 
-uint __cdecl RB_HW_ReadOcclusionQuery(IDirect3DQuery9 *param_1)
+uint __cdecl RB_HW_ReadOcclusionQuery(IDirect3DQuery9 *query)
 
 {
   int iVar1;
   uint local_10;
-  uint local_8;
+  HRESULT hr;
+  ulong pixelCount;
   
   while( true ) {
-    iVar1 = (**(code **)((int)*param_1 + 0x1c))(param_1,&local_8,4,1);
+    iVar1 = (**(code **)((int)*query + 0x1c))(query,&pixelCount,4,1);
     if (iVar1 != 1) break;
     Sleep(0);
   }
@@ -40,7 +41,7 @@ uint __cdecl RB_HW_ReadOcclusionQuery(IDirect3DQuery9 *param_1)
     local_10 = 0xffffffff;
   }
   else {
-    local_10 = local_8;
+    local_10 = pixelCount;
   }
   return local_10;
 }
@@ -48,7 +49,7 @@ uint __cdecl RB_HW_ReadOcclusionQuery(IDirect3DQuery9 *param_1)
 
 // 00A8C840  R_UpdateOverTime  (gfx_d3d/rb_corona.cpp:69)
 
-float __cdecl R_UpdateOverTime(float param_1,float param_2,int param_3)
+float __cdecl R_UpdateOverTime(float fCurrent,float fGoal,int frametime)
 
 {
   code *pcVar1;
@@ -56,26 +57,26 @@ float __cdecl R_UpdateOverTime(float param_1,float param_2,int param_3)
   float10 fVar3;
   float fVar4;
   
-  if ((param_3 < 0) &&
+  if ((frametime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x46,0,
                                "%s\n\t(frametime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  fVar4 = param_2;
-  if (param_3 != 0) {
-    if (param_2 <= param_1) {
-      fVar4 = param_1;
-      if ((param_2 < param_1) && (fVar4 = param_1 - ((float)param_3 * 1.0) / 100.0, fVar4 < param_2)
+  fVar4 = fGoal;
+  if (frametime != 0) {
+    if (fGoal <= fCurrent) {
+      fVar4 = fCurrent;
+      if ((fGoal < fCurrent) && (fVar4 = fCurrent - ((float)frametime * 1.0) / 100.0, fVar4 < fGoal)
          ) {
-        return param_2;
+        return fGoal;
       }
     }
     else {
-      fVar4 = ((float)param_3 * 1.0) / 100.0 + param_1;
-      if (param_2 < fVar4) {
-        return param_2;
+      fVar4 = ((float)frametime * 1.0) / 100.0 + fCurrent;
+      if (fGoal < fVar4) {
+        return fGoal;
       }
     }
   }
@@ -85,7 +86,7 @@ float __cdecl R_UpdateOverTime(float param_1,float param_2,int param_3)
 
 // 00A8CE80  RB_SetTessQuad  (gfx_d3d/rb_corona.cpp:105)
 
-GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
+GfxVertex * __cdecl RB_SetTessQuad(GfxColor color)
 
 {
   code *pcVar1;
@@ -94,6 +95,8 @@ GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
   bool bVar4;
   GfxVertex *pGVar5;
   uint uVar6;
+  ushort vertCount;
+  GfxVertex *vert;
   
   if (tess.vertexCount != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x6e,0,"%s"
@@ -125,19 +128,19 @@ GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
   tess.verts[uVar6].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6].texCoord[0] = 0.0;
   tess.verts[uVar6].texCoord[1] = 0.0;
-  tess.verts[uVar6].color = param_1;
+  tess.verts[uVar6].color = color;
   tess.verts[uVar6 + 1].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6 + 1].texCoord[0] = 1.0;
   tess.verts[uVar6 + 1].texCoord[1] = 0.0;
-  tess.verts[uVar6 + 1].color = param_1;
+  tess.verts[uVar6 + 1].color = color;
   tess.verts[uVar6 + 2].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6 + 2].texCoord[0] = 1.0;
   tess.verts[uVar6 + 2].texCoord[1] = 1.0;
-  tess.verts[uVar6 + 2].color = param_1;
+  tess.verts[uVar6 + 2].color = color;
   tess.verts[uVar6 + 3].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6 + 3].texCoord[0] = 0.0;
   tess.verts[uVar6 + 3].texCoord[1] = 1.0;
-  tess.verts[uVar6 + 3].color = param_1;
+  tess.verts[uVar6 + 3].color = color;
   tess.vertexCount = tess.vertexCount + 4;
   tess.indexCount = tess.indexCount + 6;
   return tess.verts + uVar6;
@@ -146,7 +149,7 @@ GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
 
 // 00A8C950  RB_TessCoronaBillboard  (gfx_d3d/rb_corona.cpp:146)
 
-void __cdecl RB_TessCoronaBillboard(Corona *param_1,GfxColor param_2,float param_3,int param_4)
+void __cdecl RB_TessCoronaBillboard(Corona *corona,GfxColor color,float radius,int query)
 
 {
   GfxLightCorona *pGVar1;
@@ -155,83 +158,87 @@ void __cdecl RB_TessCoronaBillboard(Corona *param_1,GfxColor param_2,float param
   float fVar4;
   float fVar5;
   float fVar6;
-  float local_2c;
-  float local_1c;
-  float local_14;
+  float fVar7;
+  float fVar8;
+  float distance;
+  float sizeY;
+  float sizeX;
+  float depthOffset;
+  float position;
   float local_10;
   float local_c;
-  GfxVertex *local_8;
+  GfxVertex *vert;
   
-  pGVar1 = param_1->info;
-  local_14 = pGVar1->origin[0];
+  pGVar1 = corona->info;
+  position = pGVar1->origin[0];
   local_10 = pGVar1->origin[1];
   local_c = pGVar1->origin[2];
-  fVar2 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][0] +
+  fVar2 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][0] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][0] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][0] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][0];
-  fVar3 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][1] +
+  fVar3 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][1] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][1] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][1] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][1];
-  fVar4 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][2] +
+  fVar4 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][2] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][2] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][2] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][2];
-  fVar5 = local_14 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] +
+  fVar5 = position * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] +
           local_10 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][3] +
           local_c * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][3] +
           ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][3];
-  local_2c = param_3 / fVar5;
-  local_1c = ((float)gfxCmdBufSourceState.renderTargetHeight * local_2c) /
-             (float)gfxCmdBufSourceState.renderTargetWidth;
+  sizeY = radius / fVar5;
+  sizeX = ((float)gfxCmdBufSourceState.renderTargetHeight * sizeY) /
+          (float)gfxCmdBufSourceState.renderTargetWidth;
   if (rg.renderHiResShot != 0) {
-    local_1c = (float)rg.hiResShotTiles * local_1c;
-    local_2c = (float)rg.hiResShotTiles * local_2c;
+    sizeX = (float)rg.hiResShotTiles * sizeX;
+    sizeY = (float)rg.hiResShotTiles * sizeY;
   }
-  local_8 = RB_SetTessQuad(param_2);
-  local_1c = local_1c * fVar5;
-  local_2c = local_2c * fVar5;
-  fVar6 = fVar5 * 5e-05;
-  local_8->xyzw[0] = fVar2;
-  local_8->xyzw[1] = fVar3;
-  local_8->xyzw[2] = fVar4;
-  local_8->xyzw[3] = fVar5;
-  local_8[1].xyzw[0] = fVar2;
-  local_8[1].xyzw[1] = fVar3;
-  local_8[1].xyzw[2] = fVar4;
-  local_8[1].xyzw[3] = fVar5;
-  local_8[2].xyzw[0] = fVar2;
-  local_8[2].xyzw[1] = fVar3;
-  local_8[2].xyzw[2] = fVar4;
-  local_8[2].xyzw[3] = fVar5;
-  local_8[3].xyzw[0] = fVar2;
-  local_8[3].xyzw[1] = fVar3;
-  local_8[3].xyzw[2] = fVar4;
-  local_8[3].xyzw[3] = fVar5;
-  local_8->xyzw[0] = local_8->xyzw[0] + local_1c;
-  local_8->xyzw[1] = local_8->xyzw[1] + local_2c;
-  local_8->xyzw[2] = local_8->xyzw[2] + fVar6;
-  local_8[1].xyzw[0] = local_8[1].xyzw[0] + local_1c;
-  local_8[1].xyzw[1] = local_8[1].xyzw[1] - local_2c;
-  local_8[1].xyzw[2] = local_8[1].xyzw[2] + fVar6;
-  local_8[2].xyzw[0] = local_8[2].xyzw[0] - local_1c;
-  local_8[2].xyzw[1] = local_8[2].xyzw[1] - local_2c;
-  local_8[2].xyzw[2] = local_8[2].xyzw[2] + fVar6;
-  local_8[3].xyzw[0] = local_8[3].xyzw[0] - local_1c;
-  local_8[3].xyzw[1] = local_8[3].xyzw[1] + local_2c;
-  local_8[3].xyzw[2] = local_8[3].xyzw[2] + fVar6;
-  Vec4DivideByW(local_8->xyzw,local_8->xyzw);
-  Vec4DivideByW(local_8[1].xyzw,local_8[1].xyzw);
-  Vec4DivideByW(local_8[2].xyzw,local_8[2].xyzw);
-  Vec4DivideByW(local_8[3].xyzw,local_8[3].xyzw);
-  if (param_4 == 0) {
-    fVar2 = Vec3DistanceSq((gfxCmdBufSourceState.viewParms3D)->origin,&local_14);
+  vert = RB_SetTessQuad(color);
+  fVar6 = sizeX * fVar5;
+  fVar7 = sizeY * fVar5;
+  fVar8 = fVar5 * 5e-05;
+  vert->xyzw[0] = fVar2;
+  vert->xyzw[1] = fVar3;
+  vert->xyzw[2] = fVar4;
+  vert->xyzw[3] = fVar5;
+  vert[1].xyzw[0] = fVar2;
+  vert[1].xyzw[1] = fVar3;
+  vert[1].xyzw[2] = fVar4;
+  vert[1].xyzw[3] = fVar5;
+  vert[2].xyzw[0] = fVar2;
+  vert[2].xyzw[1] = fVar3;
+  vert[2].xyzw[2] = fVar4;
+  vert[2].xyzw[3] = fVar5;
+  vert[3].xyzw[0] = fVar2;
+  vert[3].xyzw[1] = fVar3;
+  vert[3].xyzw[2] = fVar4;
+  vert[3].xyzw[3] = fVar5;
+  vert->xyzw[0] = vert->xyzw[0] + fVar6;
+  vert->xyzw[1] = vert->xyzw[1] + fVar7;
+  vert->xyzw[2] = vert->xyzw[2] + fVar8;
+  vert[1].xyzw[0] = vert[1].xyzw[0] + fVar6;
+  vert[1].xyzw[1] = vert[1].xyzw[1] - fVar7;
+  vert[1].xyzw[2] = vert[1].xyzw[2] + fVar8;
+  vert[2].xyzw[0] = vert[2].xyzw[0] - fVar6;
+  vert[2].xyzw[1] = vert[2].xyzw[1] - fVar7;
+  vert[2].xyzw[2] = vert[2].xyzw[2] + fVar8;
+  vert[3].xyzw[0] = vert[3].xyzw[0] - fVar6;
+  vert[3].xyzw[1] = vert[3].xyzw[1] + fVar7;
+  vert[3].xyzw[2] = vert[3].xyzw[2] + fVar8;
+  Vec4DivideByW(vert->xyzw,vert->xyzw);
+  Vec4DivideByW(vert[1].xyzw,vert[1].xyzw);
+  Vec4DivideByW(vert[2].xyzw,vert[2].xyzw);
+  Vec4DivideByW(vert[3].xyzw,vert[3].xyzw);
+  if (query == 0) {
+    fVar2 = Vec3DistanceSq((gfxCmdBufSourceState.viewParms3D)->origin,&position);
     fVar2 = SQRT(fVar2);
-    local_8->xyzw[3] = fVar2;
-    local_8[1].xyzw[3] = fVar2;
-    local_8[2].xyzw[3] = fVar2;
-    local_8[3].xyzw[3] = fVar2;
+    vert->xyzw[3] = fVar2;
+    vert[1].xyzw[3] = fVar2;
+    vert[2].xyzw[3] = fVar2;
+    vert[3].xyzw[3] = fVar2;
   }
   return;
 }
@@ -240,13 +247,13 @@ void __cdecl RB_TessCoronaBillboard(Corona *param_1,GfxColor param_2,float param
 // 00A8C900  RB_DrawCoronaSprite  (gfx_d3d/rb_corona.cpp:222)
 
 void __cdecl
-RB_DrawCoronaSprite(Corona *param_1,Material *param_2,GfxColor param_3,float param_4,int param_5)
+RB_DrawCoronaSprite(Corona *corona,Material *material,GfxColor color,float radius,int query)
 
 {
-  RB_SetTessTechnique(param_2,'\x04');
+  RB_SetTessTechnique(material,'\x04');
   R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_FX);
   RB_SetIdentity();
-  RB_TessCoronaBillboard(param_1,param_3,param_4,param_5);
+  RB_TessCoronaBillboard(corona,color,radius,query);
   RB_EndTessSurface();
   return;
 }
@@ -254,7 +261,7 @@ RB_DrawCoronaSprite(Corona *param_1,Material *param_2,GfxColor param_3,float par
 
 // 00A8D080  RB_DrawCoronaQuerySprite  (gfx_d3d/rb_corona.cpp:235)
 
-void __cdecl RB_DrawCoronaQuerySprite(Corona *param_1)
+void __cdecl RB_DrawCoronaQuerySprite(Corona *corona)
 
 {
   float fVar1;
@@ -265,10 +272,15 @@ void __cdecl RB_DrawCoronaQuerySprite(Corona *param_1)
   uint uVar6;
   float local_54;
   float local_30;
-  float local_14;
+  uint numVisible;
+  uint totalPixels;
+  float targetVisibility;
+  int error;
+  GfxColor color;
+  int queryIndex;
   
   if (rg.renderHiResShot == 0) {
-    if (((param_1 == (Corona *)0x0) || (param_1->inUse == false)) &&
+    if (((corona == (Corona *)0x0) || (corona->inUse == false)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0xf7,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
@@ -292,19 +304,19 @@ void __cdecl RB_DrawCoronaQuerySprite(Corona *param_1)
       (*pcVar2)();
       return;
     }
-    if ((param_1->query[uVar6] == (IDirect3DQuery9 *)0x0) ||
-       (param_1->queryMax[uVar6] == (IDirect3DQuery9 *)0x0)) {
-      param_1->targetVisibility = 0.0;
+    if ((corona->query[uVar6] == (IDirect3DQuery9 *)0x0) ||
+       (corona->queryMax[uVar6] == (IDirect3DQuery9 *)0x0)) {
+      corona->targetVisibility = 0.0;
     }
     else {
       bVar3 = false;
-      if (param_1->queryIssued[uVar6] == false) {
+      if (corona->queryIssued[uVar6] == false) {
         bVar3 = true;
-        local_14 = 0.0;
+        targetVisibility = 0.0;
       }
       else {
-        uVar4 = RB_HW_ReadOcclusionQuery(param_1->query[uVar6]);
-        uVar5 = RB_HW_ReadOcclusionQuery(param_1->queryMax[uVar6]);
+        uVar4 = RB_HW_ReadOcclusionQuery(corona->query[uVar6]);
+        uVar5 = RB_HW_ReadOcclusionQuery(corona->queryMax[uVar6]);
         if ((uVar4 == 0xffffffff) || (uVar5 == 0xffffffff)) {
           bVar3 = true;
         }
@@ -312,7 +324,7 @@ void __cdecl RB_DrawCoronaQuerySprite(Corona *param_1)
           bVar3 = true;
         }
         if (uVar5 == 0) {
-          local_14 = 0.0;
+          targetVisibility = 0.0;
         }
         else {
           fVar1 = (float)((float10)uVar4 / (float10)uVar5);
@@ -326,19 +338,19 @@ void __cdecl RB_DrawCoronaQuerySprite(Corona *param_1)
           else {
             local_54 = 0.0;
           }
-          local_14 = local_54;
+          targetVisibility = local_54;
         }
       }
       if (!bVar3) {
-        param_1->targetVisibility = local_14;
+        corona->targetVisibility = targetVisibility;
       }
-      RB_HW_BeginOcclusionQuery(param_1->query[uVar6],(void *)0x0);
-      RB_DrawCoronaSprite(param_1,rgp.additiveMaterial,(GfxColor)0xff000000,10.0,1);
-      (**(code **)((int)*param_1->query[uVar6] + 0x18))(param_1->query[uVar6],1);
-      RB_HW_BeginOcclusionQuery(param_1->queryMax[uVar6],(void *)0x0);
-      RB_DrawCoronaSprite(param_1,rgp.additiveMaterialNoDepth,(GfxColor)0xff000000,10.0,1);
-      (**(code **)((int)*param_1->queryMax[uVar6] + 0x18))(param_1->queryMax[uVar6],1);
-      param_1->queryIssued[uVar6] = true;
+      RB_HW_BeginOcclusionQuery(corona->query[uVar6],(void *)0x0);
+      RB_DrawCoronaSprite(corona,rgp.additiveMaterial,(GfxColor)0xff000000,10.0,1);
+      (**(code **)((int)*corona->query[uVar6] + 0x18))(corona->query[uVar6],1);
+      RB_HW_BeginOcclusionQuery(corona->queryMax[uVar6],(void *)0x0);
+      RB_DrawCoronaSprite(corona,rgp.additiveMaterialNoDepth,(GfxColor)0xff000000,10.0,1);
+      (**(code **)((int)*corona->queryMax[uVar6] + 0x18))(corona->queryMax[uVar6],1);
+      corona->queryIssued[uVar6] = true;
     }
   }
   return;
@@ -347,35 +359,36 @@ void __cdecl RB_DrawCoronaQuerySprite(Corona *param_1)
 
 // 00A8C3E0  RB_FindBestCoronaToSpawn  (gfx_d3d/rb_corona.cpp:311)
 
-GfxLightCorona * __cdecl RB_FindBestCoronaToSpawn(CoronaState *param_1)
+GfxLightCorona * __cdecl RB_FindBestCoronaToSpawn(CoronaState *state)
 
 {
   GfxLightCorona *pGVar1;
-  int local_14;
-  int local_c;
+  Corona *other_2;
+  int i_2;
+  Corona *other;
+  int i;
+  GfxLightCorona *info;
   
   id = id + 1;
   if ((rgp.world)->coronaCount <= id) {
     id = 0;
   }
   pGVar1 = (rgp.world)->coronas + id;
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (0xf < local_c) {
-      local_14 = 0;
+    if (0xf < i) {
+      i_2 = 0;
       while( true ) {
-        if (0xf < local_14) {
+        if (0xf < i_2) {
           return pGVar1;
         }
-        if ((param_1->pending[local_14].inUse != false) &&
-           (param_1->pending[local_14].info == pGVar1)) break;
-        local_14 = local_14 + 1;
+        if ((state->pending[i_2].inUse != false) && (state->pending[i_2].info == pGVar1)) break;
+        i_2 = i_2 + 1;
       }
       return (GfxLightCorona *)0x0;
     }
-    if ((param_1->active[local_c].inUse != false) && (param_1->active[local_c].info == pGVar1))
-    break;
-    local_c = local_c + 1;
+    if ((state->active[i].inUse != false) && (state->active[i].info == pGVar1)) break;
+    i = i + 1;
   }
   return (GfxLightCorona *)0x0;
 }
@@ -383,20 +396,20 @@ GfxLightCorona * __cdecl RB_FindBestCoronaToSpawn(CoronaState *param_1)
 
 // 00A8C520  RB_ResetCorona  (gfx_d3d/rb_corona.cpp:341)
 
-void __cdecl RB_ResetCorona(Corona *param_1)
+void __cdecl RB_ResetCorona(Corona *corona)
 
 {
-  uint local_8;
+  uint queryIndex;
   
-  param_1->inUse = false;
-  param_1->info = (GfxLightCorona *)0x0;
-  param_1->hitNum = 0;
-  param_1->timeSinceSpawned = 0;
-  param_1->currentVisibility = 0.0;
-  param_1->targetVisibility = 0.0;
-  param_1->wasEverVisible = false;
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    param_1->queryIssued[local_8] = false;
+  corona->inUse = false;
+  corona->info = (GfxLightCorona *)0x0;
+  corona->hitNum = 0;
+  corona->timeSinceSpawned = 0;
+  corona->currentVisibility = 0.0;
+  corona->targetVisibility = 0.0;
+  corona->wasEverVisible = false;
+  for (queryIndex = 0; queryIndex < 5; queryIndex = queryIndex + 1) {
+    corona->queryIssued[queryIndex] = false;
   }
   return;
 }
@@ -404,13 +417,13 @@ void __cdecl RB_ResetCorona(Corona *param_1)
 
 // 00A8C4C0  RB_SpawnCorona  (gfx_d3d/rb_corona.cpp:359)
 
-void __cdecl RB_SpawnCorona(Corona *param_1,GfxLightCorona *param_2)
+void __cdecl RB_SpawnCorona(Corona *corona,GfxLightCorona *info)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->inUse != false) {
+  if (corona->inUse != false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x168,0,
                              "%s");
     if (!bVar2) {
@@ -419,23 +432,23 @@ void __cdecl RB_SpawnCorona(Corona *param_1,GfxLightCorona *param_2)
       return;
     }
   }
-  RB_ResetCorona(param_1);
-  param_1->inUse = true;
-  param_1->info = param_2;
-  param_1->timeSinceSpawned = 0;
+  RB_ResetCorona(corona);
+  corona->inUse = true;
+  corona->info = info;
+  corona->timeSinceSpawned = 0;
   return;
 }
 
 
 // 00A8C5A0  RB_UnspawnCorona  (gfx_d3d/rb_corona.cpp:370)
 
-void __cdecl RB_UnspawnCorona(Corona *param_1)
+void __cdecl RB_UnspawnCorona(Corona *corona)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->inUse != true) {
+  if (corona->inUse != true) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x173,0,
                              "%s");
     if (!bVar2) {
@@ -444,74 +457,76 @@ void __cdecl RB_UnspawnCorona(Corona *param_1)
       return;
     }
   }
-  param_1->inUse = false;
+  corona->inUse = false;
   return;
 }
 
 
 // 00A8C5E0  RB_PromoteCorona  (gfx_d3d/rb_corona.cpp:377)
 
-void __cdecl RB_PromoteCorona(CoronaState *param_1,Corona *param_2)
+void __cdecl RB_PromoteCorona(CoronaState *state,Corona *corona)
 
 {
-  Corona *pCVar1;
-  code *pcVar2;
-  bool bVar3;
-  int local_8;
+  Corona *corona_00;
+  code *pcVar1;
+  bool bVar2;
+  Corona *newSlot;
+  int n;
   
-  local_8 = 0;
+  n = 0;
   while( true ) {
-    if (0xf < local_8) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",399,0,
+    if (0xf < n) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",399,0,
                                "oh");
-      if (bVar3) {
+      if (bVar2) {
         return;
       }
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
-    pCVar1 = param_1->active + local_8;
-    if (pCVar1->inUse == false) break;
-    local_8 = local_8 + 1;
+    corona_00 = state->active + n;
+    if (corona_00->inUse == false) break;
+    n = n + 1;
   }
-  RB_ResetCorona(pCVar1);
-  pCVar1->inUse = true;
-  pCVar1->info = param_2->info;
-  pCVar1->hitNum = param_2->hitNum;
-  pCVar1->timeSinceSpawned = param_2->timeSinceSpawned;
-  pCVar1->currentVisibility = param_2->currentVisibility;
-  pCVar1->targetVisibility = param_2->targetVisibility;
-  pCVar1->wasEverVisible = param_2->wasEverVisible;
-  param_2->inUse = false;
+  RB_ResetCorona(corona_00);
+  corona_00->inUse = true;
+  corona_00->info = corona->info;
+  corona_00->hitNum = corona->hitNum;
+  corona_00->timeSinceSpawned = corona->timeSinceSpawned;
+  corona_00->currentVisibility = corona->currentVisibility;
+  corona_00->targetVisibility = corona->targetVisibility;
+  corona_00->wasEverVisible = corona->wasEverVisible;
+  corona->inUse = false;
   return;
 }
 
 
 // 00A8C6B0  RB_DrawCorona  (gfx_d3d/rb_corona.cpp:403)
 
-void __cdecl RB_DrawCorona(Corona *param_1,int param_2,Material *param_3)
+void __cdecl RB_DrawCorona(Corona *corona,int frameTime,Material *coronaMat)
 
 {
   float fVar1;
+  float scale;
+  GfxColor color;
   
-  if (param_1->inUse != false) {
-    param_1->timeSinceSpawned = param_1->timeSinceSpawned + param_2;
-    fVar1 = R_UpdateOverTime(param_1->currentVisibility,param_1->targetVisibility,param_2);
-    param_1->currentVisibility = fVar1;
-    if (0.0 < param_1->targetVisibility) {
-      param_1->wasEverVisible = true;
+  if (corona->inUse != false) {
+    corona->timeSinceSpawned = corona->timeSinceSpawned + frameTime;
+    fVar1 = R_UpdateOverTime(corona->currentVisibility,corona->targetVisibility,frameTime);
+    corona->currentVisibility = fVar1;
+    if (0.0 < corona->targetVisibility) {
+      corona->wasEverVisible = true;
     }
     RB_SetIdentity();
-    RB_DrawCoronaQuerySprite(param_1);
-    fVar1 = param_1->currentVisibility * param_1->info->intensity * 255.0;
-    RB_DrawCoronaSprite(param_1,param_3,
+    RB_DrawCoronaQuerySprite(corona);
+    fVar1 = corona->currentVisibility * corona->info->intensity * 255.0;
+    RB_DrawCoronaSprite(corona,coronaMat,
                         (GfxColor)
-                        (((int)ROUND(param_1->info->color[0] * fVar1 + 9.313226e-10) & 0xffU) <<
-                         0x10 | ((int)ROUND(param_1->info->color[1] * fVar1 + 9.313226e-10) & 0xffU)
-                                << 8 |
-                         (int)ROUND(param_1->info->color[2] * fVar1 + 9.313226e-10) & 0xffU |
-                        0xff000000),param_1->info->radius,0);
+                        (((int)ROUND(corona->info->color[0] * fVar1 + 9.313226e-10) & 0xffU) << 0x10
+                         | ((int)ROUND(corona->info->color[1] * fVar1 + 9.313226e-10) & 0xffU) << 8
+                         | (int)ROUND(corona->info->color[2] * fVar1 + 9.313226e-10) & 0xffU |
+                        0xff000000),corona->info->radius,0);
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
     }
@@ -522,26 +537,35 @@ void __cdecl RB_DrawCorona(Corona *param_1,int param_2,Material *param_3)
 
 // 00A8C080  RB_DrawCoronas  (gfx_d3d/rb_corona.cpp:434)
 
-void __cdecl RB_DrawCoronas(int param_1)
+void __cdecl RB_DrawCoronas(int localClientNum)
 
 {
   Corona *pCVar1;
   code *pcVar2;
   bool bVar3;
   DWORD DVar4;
-  GfxLightCorona *pGVar5;
-  int iVar6;
-  CoronaState *pCVar7;
+  GfxLightCorona *info_00;
+  int iVar5;
+  CoronaState *state_00;
   Material *local_58;
-  int local_3c;
-  int local_34;
-  int local_2c;
-  int local_24;
-  int local_18;
-  int local_c;
+  Corona *corona_5;
+  int n_5;
+  Corona *corona_4;
+  int n_4;
+  Corona *corona_3;
+  int n_3;
+  Corona *corona_2;
+  int n_2;
+  GfxLightCorona *info;
+  Corona *corona;
+  int n;
+  CoronaState *state;
+  Material *coronaMat;
+  int frameTime;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"RB_DrawCoronas");
-  if ((gfxCfg.maxClientViews <= (uint)param_1) &&
+  if ((gfxCfg.maxClientViews <= (uint)localClientNum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x1b7,0,
                                "localClientNum doesn\'t index gfxCfg.maxClientViews\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -549,8 +573,8 @@ void __cdecl RB_DrawCoronas(int param_1)
     (*pcVar2)();
     return;
   }
-  iVar6 = param_1 * 0x908;
-  pCVar7 = coronaState + param_1;
+  iVar5 = localClientNum * 0x908;
+  state_00 = coronaState + localClientNum;
   if ((pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_COST) ||
      (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_MSEC)) {
     bVar3 = true;
@@ -567,22 +591,22 @@ void __cdecl RB_DrawCoronas(int param_1)
   else {
     if ((coronaTimeLastUpdated == 0) || (gfxCmdBufSourceState.sceneDef.time < coronaTimeLastUpdated)
        ) {
-      local_c = 10;
+      frameTime = 10;
     }
     else {
-      local_c = gfxCmdBufSourceState.sceneDef.time - coronaTimeLastUpdated;
+      frameTime = gfxCmdBufSourceState.sceneDef.time - coronaTimeLastUpdated;
     }
     coronaTimeLastUpdated = gfxCmdBufSourceState.sceneDef.time;
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
     }
-    if (coronaState[param_1].numPending < 0x10) {
-      for (local_18 = 0; local_18 < 0x10; local_18 = local_18 + 1) {
-        pCVar1 = (Corona *)(iVar6 + 0xad7df58 + local_18 * 0x48);
+    if (coronaState[localClientNum].numPending < 0x10) {
+      for (n = 0; n < 0x10; n = n + 1) {
+        pCVar1 = (Corona *)(iVar5 + 0xad7df58 + n * 0x48);
         if ((pCVar1->inUse == false) &&
-           (pGVar5 = RB_FindBestCoronaToSpawn(pCVar7), pGVar5 != (GfxLightCorona *)0x0)) {
-          coronaState[param_1].numPending = coronaState[param_1].numPending + 1;
-          RB_SpawnCorona(pCVar1,pGVar5);
+           (info_00 = RB_FindBestCoronaToSpawn(state_00), info_00 != (GfxLightCorona *)0x0)) {
+          coronaState[localClientNum].numPending = coronaState[localClientNum].numPending + 1;
+          RB_SpawnCorona(pCVar1,info_00);
         }
       }
     }
@@ -592,34 +616,34 @@ void __cdecl RB_DrawCoronas(int param_1)
     else {
       local_58 = (rgp.world)->coronaMaterial;
     }
-    for (local_24 = 0; local_24 < 0x10; local_24 = local_24 + 1) {
-      RB_DrawCorona((Corona *)(iVar6 + 0xad7dad8 + local_24 * 0x48),local_c,local_58);
+    for (n_2 = 0; n_2 < 0x10; n_2 = n_2 + 1) {
+      RB_DrawCorona((Corona *)(iVar5 + 0xad7dad8 + n_2 * 0x48),frameTime,local_58);
     }
-    for (local_2c = 0; local_2c < 0x10; local_2c = local_2c + 1) {
-      RB_DrawCorona((Corona *)(iVar6 + 0xad7df58 + local_2c * 0x48),local_c,local_58);
+    for (n_3 = 0; n_3 < 0x10; n_3 = n_3 + 1) {
+      RB_DrawCorona((Corona *)(iVar5 + 0xad7df58 + n_3 * 0x48),frameTime,local_58);
     }
-    if (pCVar7->numActive == 0x10) {
-      for (local_34 = 0; local_34 < 0x10; local_34 = local_34 + 1) {
-        pCVar1 = (Corona *)(iVar6 + 0xad7dad8 + local_34 * 0x48);
+    if (state_00->numActive == 0x10) {
+      for (n_4 = 0; n_4 < 0x10; n_4 = n_4 + 1) {
+        pCVar1 = (Corona *)(iVar5 + 0xad7dad8 + n_4 * 0x48);
         if ((pCVar1->inUse != false) && (pCVar1->targetVisibility <= 0.0)) {
           RB_UnspawnCorona(pCVar1);
-          pCVar7->numActive = pCVar7->numActive - 1;
+          state_00->numActive = state_00->numActive - 1;
           break;
         }
       }
     }
-    for (local_3c = 0; local_3c < 0x10; local_3c = local_3c + 1) {
-      pCVar1 = (Corona *)(iVar6 + 0xad7df58 + local_3c * 0x48);
+    for (n_5 = 0; n_5 < 0x10; n_5 = n_5 + 1) {
+      pCVar1 = (Corona *)(iVar5 + 0xad7df58 + n_5 * 0x48);
       if (((pCVar1->inUse != false) && (200 < pCVar1->timeSinceSpawned)) &&
-         (pCVar7->numActive < 0x10)) {
+         (state_00->numActive < 0x10)) {
         if (pCVar1->wasEverVisible == false) {
           RB_UnspawnCorona(pCVar1);
-          coronaState[param_1].numPending = coronaState[param_1].numPending - 1;
+          coronaState[localClientNum].numPending = coronaState[localClientNum].numPending - 1;
         }
         else {
-          RB_PromoteCorona(pCVar7,pCVar1);
-          coronaState[param_1].numPending = coronaState[param_1].numPending - 1;
-          pCVar7->numActive = pCVar7->numActive + 1;
+          RB_PromoteCorona(state_00,pCVar1);
+          coronaState[localClientNum].numPending = coronaState[localClientNum].numPending - 1;
+          state_00->numActive = state_00->numActive + 1;
         }
       }
     }
@@ -637,17 +661,20 @@ void __cdecl RB_DrawCoronas(int param_1)
 void __cdecl RB_ResetCoronas(void)
 
 {
-  uint local_c;
-  uint local_8;
+  Corona *corona_2;
+  Corona *corona;
+  CoronaState *state;
+  uint coronaIndex;
+  uint viewIndex;
   
-  for (local_8 = 0; local_8 < gfxCfg.maxClientViews; local_8 = local_8 + 1) {
-    coronaState[local_8].numActive = 0;
-    coronaState[local_8].numPending = 0;
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      RB_ResetCorona((Corona *)(local_8 * 0x908 + 0xad7dad8 + local_c * 0x48));
+  for (viewIndex = 0; viewIndex < gfxCfg.maxClientViews; viewIndex = viewIndex + 1) {
+    coronaState[viewIndex].numActive = 0;
+    coronaState[viewIndex].numPending = 0;
+    for (coronaIndex = 0; coronaIndex < 0x10; coronaIndex = coronaIndex + 1) {
+      RB_ResetCorona((Corona *)(viewIndex * 0x908 + 0xad7dad8 + coronaIndex * 0x48));
     }
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      RB_ResetCorona((Corona *)(local_8 * 0x908 + 0xad7df58 + local_c * 0x48));
+    for (coronaIndex = 0; coronaIndex < 0x10; coronaIndex = coronaIndex + 1) {
+      RB_ResetCorona((Corona *)(viewIndex * 0x908 + 0xad7df58 + coronaIndex * 0x48));
     }
   }
   return;
@@ -656,17 +683,17 @@ void __cdecl RB_ResetCoronas(void)
 
 // 00A8D5A0  RB_AllocCoronaSpriteQuery  (gfx_d3d/rb_corona.cpp:563)
 
-void __cdecl RB_AllocCoronaSpriteQuery(Corona *param_1)
+void __cdecl RB_AllocCoronaSpriteQuery(Corona *corona)
 
 {
   IDirect3DQuery9 *pIVar1;
-  uint local_8;
+  uint queryIndex;
   
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
+  for (queryIndex = 0; queryIndex < 5; queryIndex = queryIndex + 1) {
     pIVar1 = RB_HW_AllocOcclusionQuery();
-    param_1->query[local_8] = pIVar1;
+    corona->query[queryIndex] = pIVar1;
     pIVar1 = RB_HW_AllocOcclusionQuery();
-    param_1->queryMax[local_8] = pIVar1;
+    corona->queryMax[queryIndex] = pIVar1;
   }
   return;
 }
@@ -677,15 +704,18 @@ void __cdecl RB_AllocCoronaSpriteQuery(Corona *param_1)
 void __cdecl RB_AllocCoronaSpriteQueries(void)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  Corona *corona_2;
+  Corona *corona;
+  CoronaState *state;
+  uint coronaIndex;
+  uint viewIndex;
   
-  for (local_8 = 0; local_8 < gfxCfg.maxClientViews; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      RB_AllocCoronaSpriteQuery((Corona *)(local_8 * 0x908 + 0xad7dad8 + local_c * 0x48));
+  for (viewIndex = 0; viewIndex < gfxCfg.maxClientViews; viewIndex = viewIndex + 1) {
+    for (coronaIndex = 0; coronaIndex < 0x10; coronaIndex = coronaIndex + 1) {
+      RB_AllocCoronaSpriteQuery((Corona *)(viewIndex * 0x908 + 0xad7dad8 + coronaIndex * 0x48));
     }
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      RB_AllocCoronaSpriteQuery((Corona *)(local_8 * 0x908 + 0xad7df58 + local_c * 0x48));
+    for (coronaIndex = 0; coronaIndex < 0x10; coronaIndex = coronaIndex + 1) {
+      RB_AllocCoronaSpriteQuery((Corona *)(viewIndex * 0x908 + 0xad7df58 + coronaIndex * 0x48));
     }
   }
   RB_ResetCoronas();
@@ -695,33 +725,35 @@ void __cdecl RB_AllocCoronaSpriteQueries(void)
 
 // 00A8D6B0  RB_FreeCoronaSpriteQuery  (gfx_d3d/rb_corona.cpp:603)
 
-void __cdecl RB_FreeCoronaSpriteQuery(Corona *param_1)
+void __cdecl RB_FreeCoronaSpriteQuery(Corona *corona)
 
 {
   IDirect3DTexture9 *pIVar1;
   IDirect3DQuery9 *pIVar2;
-  uint local_8;
+  IDirect3DQuery9 *varCopy_2;
+  IDirect3DQuery9 *varCopy;
+  uint queryIndex;
   
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    pIVar2 = param_1->queryMax[local_8];
+  for (queryIndex = 0; queryIndex < 5; queryIndex = queryIndex + 1) {
+    pIVar2 = corona->queryMax[queryIndex];
     while (pIVar2 != (IDirect3DQuery9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("corona->queryMax[queryIndex]->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)param_1->queryMax[local_8];
-      param_1->queryMax[local_8] = (IDirect3DQuery9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)corona->queryMax[queryIndex];
+      corona->queryMax[queryIndex] = (IDirect3DQuery9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"corona->queryMax[queryIndex]",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x261);
       pIVar2 = (IDirect3DQuery9 *)alwaysfails;
     }
-    pIVar2 = param_1->query[local_8];
+    pIVar2 = corona->query[queryIndex];
     while (pIVar2 != (IDirect3DQuery9 *)0x0) {
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("corona->query[queryIndex]->Release()\n");
       }
-      pIVar1 = (IDirect3DTexture9 *)param_1->query[local_8];
-      param_1->query[local_8] = (IDirect3DQuery9 *)0x0;
+      pIVar1 = (IDirect3DTexture9 *)corona->query[queryIndex];
+      corona->query[queryIndex] = (IDirect3DQuery9 *)0x0;
       R_ReleaseAndSetNULL<IDirect3DTexture9>
                 (pIVar1,"corona->query[queryIndex]",
                  "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_corona.cpp",0x263);
@@ -737,15 +769,18 @@ void __cdecl RB_FreeCoronaSpriteQuery(Corona *param_1)
 void __cdecl RB_FreeCoronaSpriteQueries(void)
 
 {
-  undefined4 local_c;
-  undefined4 local_8;
+  Corona *corona_2;
+  Corona *corona;
+  CoronaState *state;
+  uint coronaIndex;
+  uint viewIndex;
   
-  for (local_8 = 0; local_8 < gfxCfg.maxClientViews; local_8 = local_8 + 1) {
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      RB_FreeCoronaSpriteQuery((Corona *)(local_8 * 0x908 + 0xad7dad8 + local_c * 0x48));
+  for (viewIndex = 0; viewIndex < gfxCfg.maxClientViews; viewIndex = viewIndex + 1) {
+    for (coronaIndex = 0; coronaIndex < 0x10; coronaIndex = coronaIndex + 1) {
+      RB_FreeCoronaSpriteQuery((Corona *)(viewIndex * 0x908 + 0xad7dad8 + coronaIndex * 0x48));
     }
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      RB_FreeCoronaSpriteQuery((Corona *)(local_8 * 0x908 + 0xad7df58 + local_c * 0x48));
+    for (coronaIndex = 0; coronaIndex < 0x10; coronaIndex = coronaIndex + 1) {
+      RB_FreeCoronaSpriteQuery((Corona *)(viewIndex * 0x908 + 0xad7df58 + coronaIndex * 0x48));
     }
   }
   return;
@@ -755,106 +790,109 @@ void __cdecl RB_FreeCoronaSpriteQueries(void)
 // 00A8D7C0  RB_DrawWaypoint  (gfx_d3d/rb_corona.cpp:643)
 
 void __cdecl
-RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,bool param_5,
-               bool param_6,bool param_7)
+RB_DrawWaypoint(Material *material,GfxColor color,float *origin,float radius,bool screenSize,
+               bool alignBottom,bool forceNear)
 
 {
-  float fVar1;
-  bool bVar2;
-  GfxVertex *pGVar3;
+  bool bVar1;
+  GfxVertex *in;
+  float fVar2;
+  float fVar3;
   float fVar4;
   float fVar5;
   float fVar6;
   float fVar7;
   float fVar8;
-  float local_2c;
-  float local_1c;
+  float sizeY;
+  float sizeX;
+  float depthOffset;
+  GfxVertex *vert;
   
-  bVar2 = R_StreamTouchMaterialAndCheck(param_1,0);
-  if (bVar2) {
+  bVar1 = R_StreamTouchMaterialAndCheck(material,0);
+  if (bVar1) {
     RB_SetIdentity();
-    RB_SetTessTechnique(param_1,'\x04');
+    RB_SetTessTechnique(material,'\x04');
     R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_FX);
-    fVar7 = *param_3;
-    fVar8 = param_3[1];
-    fVar1 = param_3[2];
-    fVar4 = fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][0] +
-            fVar8 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][0] +
-            fVar1 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][0] +
+    fVar5 = *origin;
+    fVar6 = origin[1];
+    fVar7 = origin[2];
+    fVar2 = fVar5 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][0] +
+            fVar6 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][0] +
+            fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][0] +
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][0];
-    fVar5 = fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][1] +
-            fVar8 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][1] +
-            fVar1 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][1] +
+    fVar3 = fVar5 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][1] +
+            fVar6 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][1] +
+            fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][1] +
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][1];
-    fVar6 = fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][2] +
-            fVar8 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][2] +
-            fVar1 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][2] +
+    fVar4 = fVar5 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][2] +
+            fVar6 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][2] +
+            fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][2] +
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][2];
-    fVar7 = fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] +
-            fVar8 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][3] +
-            fVar1 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][3] +
+    fVar5 = fVar5 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[0][3] +
+            fVar6 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[1][3] +
+            fVar7 * ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[2][3] +
             ((gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix).m[3][3];
-    if (param_5) {
-      param_4 = param_4 * fVar7;
+    if (screenSize) {
+      radius = radius * fVar5;
     }
-    local_2c = (param_4 * 2.0) / fVar7;
-    local_1c = ((float)gfxCmdBufSourceState.renderTargetHeight * local_2c) /
-               (float)gfxCmdBufSourceState.renderTargetWidth;
-    if ((param_1 != (Material *)0x0) && (param_1->textureCount != '\0')) {
-      local_2c = ((float)((param_1->textureTable->u).image)->height /
-                 (float)((param_1->textureTable->u).image)->width) * local_2c;
+    sizeY = (radius * 2.0) / fVar5;
+    sizeX = ((float)gfxCmdBufSourceState.renderTargetHeight * sizeY) /
+            (float)gfxCmdBufSourceState.renderTargetWidth;
+    if ((material != (Material *)0x0) && (material->textureCount != '\0')) {
+      sizeY = ((float)((material->textureTable->u).image)->height /
+              (float)((material->textureTable->u).image)->width) * sizeY;
     }
     if (rg.renderHiResShot != 0) {
-      local_1c = (float)rg.hiResShotTiles * local_1c;
-      local_2c = (float)rg.hiResShotTiles * local_2c;
+      sizeX = (float)rg.hiResShotTiles * sizeX;
+      sizeY = (float)rg.hiResShotTiles * sizeY;
     }
-    pGVar3 = RB_SetTessQuad(param_2);
-    local_1c = local_1c * fVar7;
-    local_2c = local_2c * fVar7;
-    fVar8 = fVar7 * 5e-05;
-    pGVar3->xyzw[0] = fVar4;
-    pGVar3->xyzw[1] = fVar5;
-    pGVar3->xyzw[2] = fVar6;
-    pGVar3->xyzw[3] = fVar7;
-    pGVar3[1].xyzw[0] = fVar4;
-    pGVar3[1].xyzw[1] = fVar5;
-    pGVar3[1].xyzw[2] = fVar6;
-    pGVar3[1].xyzw[3] = fVar7;
-    pGVar3[2].xyzw[0] = fVar4;
-    pGVar3[2].xyzw[1] = fVar5;
-    pGVar3[2].xyzw[2] = fVar6;
-    pGVar3[2].xyzw[3] = fVar7;
-    pGVar3[3].xyzw[0] = fVar4;
-    pGVar3[3].xyzw[1] = fVar5;
-    pGVar3[3].xyzw[2] = fVar6;
-    pGVar3[3].xyzw[3] = fVar7;
-    pGVar3->xyzw[0] = pGVar3->xyzw[0] - local_1c;
-    pGVar3->xyzw[1] = pGVar3->xyzw[1] + local_2c;
-    pGVar3->xyzw[2] = pGVar3->xyzw[2] + fVar8;
-    pGVar3[1].xyzw[0] = pGVar3[1].xyzw[0] + local_1c;
-    pGVar3[1].xyzw[1] = pGVar3[1].xyzw[1] + local_2c;
-    pGVar3[1].xyzw[2] = pGVar3[1].xyzw[2] + fVar8;
-    pGVar3[2].xyzw[0] = pGVar3[2].xyzw[0] + local_1c;
-    pGVar3[2].xyzw[1] = pGVar3[2].xyzw[1] - local_2c;
-    pGVar3[2].xyzw[2] = pGVar3[2].xyzw[2] + fVar8;
-    pGVar3[3].xyzw[0] = pGVar3[3].xyzw[0] - local_1c;
-    pGVar3[3].xyzw[1] = pGVar3[3].xyzw[1] - local_2c;
-    pGVar3[3].xyzw[2] = pGVar3[3].xyzw[2] + fVar8;
-    if (param_6) {
-      pGVar3->xyzw[1] = pGVar3->xyzw[1] + local_2c;
-      pGVar3[1].xyzw[1] = pGVar3[1].xyzw[1] + local_2c;
-      pGVar3[2].xyzw[1] = pGVar3[2].xyzw[1] + local_2c;
-      pGVar3[3].xyzw[1] = pGVar3[3].xyzw[1] + local_2c;
+    in = RB_SetTessQuad(color);
+    fVar6 = sizeX * fVar5;
+    fVar7 = sizeY * fVar5;
+    fVar8 = fVar5 * 5e-05;
+    in->xyzw[0] = fVar2;
+    in->xyzw[1] = fVar3;
+    in->xyzw[2] = fVar4;
+    in->xyzw[3] = fVar5;
+    in[1].xyzw[0] = fVar2;
+    in[1].xyzw[1] = fVar3;
+    in[1].xyzw[2] = fVar4;
+    in[1].xyzw[3] = fVar5;
+    in[2].xyzw[0] = fVar2;
+    in[2].xyzw[1] = fVar3;
+    in[2].xyzw[2] = fVar4;
+    in[2].xyzw[3] = fVar5;
+    in[3].xyzw[0] = fVar2;
+    in[3].xyzw[1] = fVar3;
+    in[3].xyzw[2] = fVar4;
+    in[3].xyzw[3] = fVar5;
+    in->xyzw[0] = in->xyzw[0] - fVar6;
+    in->xyzw[1] = in->xyzw[1] + fVar7;
+    in->xyzw[2] = in->xyzw[2] + fVar8;
+    in[1].xyzw[0] = in[1].xyzw[0] + fVar6;
+    in[1].xyzw[1] = in[1].xyzw[1] + fVar7;
+    in[1].xyzw[2] = in[1].xyzw[2] + fVar8;
+    in[2].xyzw[0] = in[2].xyzw[0] + fVar6;
+    in[2].xyzw[1] = in[2].xyzw[1] - fVar7;
+    in[2].xyzw[2] = in[2].xyzw[2] + fVar8;
+    in[3].xyzw[0] = in[3].xyzw[0] - fVar6;
+    in[3].xyzw[1] = in[3].xyzw[1] - fVar7;
+    in[3].xyzw[2] = in[3].xyzw[2] + fVar8;
+    if (alignBottom) {
+      in->xyzw[1] = in->xyzw[1] + fVar7;
+      in[1].xyzw[1] = in[1].xyzw[1] + fVar7;
+      in[2].xyzw[1] = in[2].xyzw[1] + fVar7;
+      in[3].xyzw[1] = in[3].xyzw[1] + fVar7;
     }
-    Vec4DivideByW(pGVar3->xyzw,pGVar3->xyzw);
-    Vec4DivideByW(pGVar3[1].xyzw,pGVar3[1].xyzw);
-    Vec4DivideByW(pGVar3[2].xyzw,pGVar3[2].xyzw);
-    Vec4DivideByW(pGVar3[3].xyzw,pGVar3[3].xyzw);
-    if ((param_7) && (0.0 < pGVar3->xyzw[2])) {
-      pGVar3->xyzw[2] = 0.0;
-      pGVar3[1].xyzw[2] = 0.0;
-      pGVar3[2].xyzw[2] = 0.0;
-      pGVar3[3].xyzw[2] = 0.0;
+    Vec4DivideByW(in->xyzw,in->xyzw);
+    Vec4DivideByW(in[1].xyzw,in[1].xyzw);
+    Vec4DivideByW(in[2].xyzw,in[2].xyzw);
+    Vec4DivideByW(in[3].xyzw,in[3].xyzw);
+    if ((forceNear) && (0.0 < in->xyzw[2])) {
+      in->xyzw[2] = 0.0;
+      in[1].xyzw[2] = 0.0;
+      in[2].xyzw[2] = 0.0;
+      in[3].xyzw[2] = 0.0;
     }
     RB_EndTessSurface();
     if (tess.indexCount != 0) {
@@ -867,17 +905,18 @@ RB_DrawWaypoint(Material *param_1,GfxColor param_2,float *param_3,float param_4,
 
 // 00A8CDE0  Vec4DivideByW  (universal/com_vector.h:700)
 
-void __cdecl Vec4DivideByW(float *param_1,float *param_2)
+void __cdecl Vec4DivideByW(float *in,float *out)
 
 {
   float fVar1;
+  float invW;
   
-  if (0.001 < ABS(param_1[3])) {
-    fVar1 = 1.0 / param_1[3];
-    *param_2 = *param_1 * fVar1;
-    param_2[1] = param_1[1] * fVar1;
-    param_2[2] = param_1[2] * fVar1;
-    param_2[3] = 1.0;
+  if (0.001 < ABS(in[3])) {
+    fVar1 = 1.0 / in[3];
+    *out = *in * fVar1;
+    out[1] = in[1] * fVar1;
+    out[2] = in[2] * fVar1;
+    out[3] = 1.0;
   }
   return;
 }

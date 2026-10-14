@@ -63,56 +63,56 @@ void __cdecl TRACK_destructible(void)
 
 // 00814B70  hasLabel  (physics/destructible.cpp:175)
 
-bool __cdecl hasLabel(DestructibleDef *param_1,int param_2)
+bool __cdecl hasLabel(DestructibleDef *ddef,int label)
 
 {
   int iVar1;
   
-  iVar1 = Destructible_GetPieceIndexForLabel(param_1,(ushort)param_2);
+  iVar1 = Destructible_GetPieceIndexForLabel(ddef,(ushort)label);
   return -1 < iVar1;
 }
 
 
 // 00814B90  Destructible_GetPieceIndexForLabel  (physics/destructible.cpp:180)
 
-int __cdecl Destructible_GetPieceIndexForLabel(DestructibleDef *param_1,ushort param_2)
+int __cdecl Destructible_GetPieceIndexForLabel(DestructibleDef *ddef,ushort enableLabel)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_1->numPieces <= local_8) {
+    if (ddef->numPieces <= i) {
       return -1;
     }
-    if (param_1->pieces[local_8].enableLabel == param_2) break;
-    local_8 = local_8 + 1;
+    if (ddef->pieces[i].enableLabel == enableLabel) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 00816F80  Destructible_HasParent  (physics/destructible.cpp:257)
 
-bool __cdecl Destructible_HasParent(DestructibleDef *param_1,uchar param_2)
+bool __cdecl Destructible_HasParent(DestructibleDef *ddef,uchar index)
 
 {
-  return (int)(uint)param_1->pieces[param_2].parentPiece < param_1->numPieces;
+  return (int)(uint)ddef->pieces[index].parentPiece < ddef->numPieces;
 }
 
 
 // 00814BE0  Destructible_GetPieceMaxHealth  (physics/destructible.cpp:262)
 
-int __cdecl Destructible_GetPieceMaxHealth(DestructibleDef *param_1,int param_2)
+int __cdecl Destructible_GetPieceMaxHealth(DestructibleDef *ddef,int pieceIndex)
 
 {
   int local_8;
   
-  if ((param_2 < 0) || (param_1->numPieces <= param_2)) {
+  if ((pieceIndex < 0) || (ddef->numPieces <= pieceIndex)) {
     local_8 = -1;
   }
   else {
-    local_8 = param_1->pieces[param_2].health;
+    local_8 = ddef->pieces[pieceIndex].health;
   }
   return local_8;
 }
@@ -168,16 +168,16 @@ void __cdecl _dynamic_initializer_for__PHYS_Z_VEC__(void)
 
 // 00814C20  Destructible_GetPieceHealth  (physics/destructible.cpp:269)
 
-int __cdecl Destructible_GetPieceHealth(Destructible *param_1,int param_2)
+int __cdecl Destructible_GetPieceHealth(Destructible *destructible,int pieceIndex)
 
 {
   int local_8;
   
-  if ((param_2 < 0) || (param_1->ddef->numPieces <= param_2)) {
+  if ((pieceIndex < 0) || (destructible->ddef->numPieces <= pieceIndex)) {
     local_8 = -1;
   }
   else {
-    local_8 = (int)param_1->pieceArray[param_2].health;
+    local_8 = (int)destructible->pieceArray[pieceIndex].health;
   }
   return local_8;
 }
@@ -219,17 +219,18 @@ void __cdecl Destructible_DumpEventInfo(void)
 
 {
   centity_s *pcVar1;
-  int local_8;
+  centity_s *cent;
+  int i;
   
   Com_PrintWarning(0x14,"***DESTRUCTIBLE EVENT INFO DUMP BEGIN***\n");
   Com_PrintWarning(0x14,"NUM DESTRUCTIBLE EVENTS: %d\n");
-  for (local_8 = 0; local_8 < g_destructible_events_count; local_8 = local_8 + 1) {
+  for (i = 0; i < g_destructible_events_count; i = i + 1) {
     Com_PrintWarning(0x14,"Event %d:\n");
-    if (g_destructible_events[local_8].type == 2) {
+    if (g_destructible_events[i].type == 2) {
       Com_PrintWarning(0x14,"\tDestructible HITEVENT.\n");
     }
     else {
-      pcVar1 = g_destructible_events[local_8].field1_0x4.ed.self;
+      pcVar1 = g_destructible_events[i].field1_0x4.ed.self;
       if (pcVar1->destructible == (Destructible *)0x0) {
         Com_PrintWarning(0x14,"\tNull destructible pointer\n");
       }
@@ -286,28 +287,29 @@ void __cdecl EnableAllDestructiblePieces(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl DisableDestructiblePiece(int param_1)
+void __cdecl DisableDestructiblePiece(int label)
 
 {
   bool bVar1;
-  uint local_c;
-  int local_8;
+  gentity_s *ent;
+  uint i_2;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (g_numDisabledLables <= local_8) {
-      g_disabledLabels[g_numDisabledLables] = param_1;
+    if (g_numDisabledLables <= i) {
+      g_disabledLabels[g_numDisabledLables] = label;
       g_numDisabledLables = g_numDisabledLables + 1;
-      for (local_c = 0; local_c < s_numDestructibles; local_c = local_c + 1) {
-        bVar1 = hasLabel(s_destructibles[local_c].ddef,param_1);
+      for (i_2 = 0; i_2 < s_numDestructibles; i_2 = i_2 + 1) {
+        bVar1 = hasLabel(s_destructibles[i_2].ddef,label);
         if (bVar1) {
-          G_DObjUpdate(g_entities + s_destructibles[local_c].entNum);
+          G_DObjUpdate(g_entities + s_destructibles[i_2].entNum);
         }
       }
       return;
     }
-    if (g_disabledLabels[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (g_disabledLabels[i] == label) break;
+    i = i + 1;
   }
   return;
 }
@@ -315,14 +317,14 @@ void __cdecl DisableDestructiblePiece(int param_1)
 
 // 00814D40  IsDestructiblePieceDisabled  (physics/destructible.cpp:359)
 
-bool __cdecl IsDestructiblePieceDisabled(int param_1)
+bool __cdecl IsDestructiblePieceDisabled(int label)
 
 {
-  int local_8;
+  int i;
   
-  if (param_1 != 0) {
-    for (local_8 = 0; local_8 < g_numDisabledLables; local_8 = local_8 + 1) {
-      if (g_disabledLabels[local_8] == param_1) {
+  if (label != 0) {
+    for (i = 0; i < g_numDisabledLables; i = i + 1) {
+      if (g_disabledLabels[i] == label) {
         return true;
       }
     }
@@ -348,30 +350,31 @@ void __cdecl CG_EnableAllDestructiblePieces(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DisableDestructiblePiece(int param_1,int param_2)
+void __cdecl CG_DisableDestructiblePiece(int localClientNum,int label)
 
 {
   bool bVar1;
-  centity_s *pcVar2;
-  uint local_c;
-  int local_8;
+  centity_s *self;
+  centity_s *cent;
+  uint i_2;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (cg_numDisabledLables <= local_8) {
-      cg_disabledLabels[cg_numDisabledLables] = param_2;
+    if (cg_numDisabledLables <= i) {
+      cg_disabledLabels[cg_numDisabledLables] = label;
       cg_numDisabledLables = cg_numDisabledLables + 1;
-      for (local_c = 0; local_c < 0x90; local_c = local_c + 1) {
-        if ((cg_destructibles[param_1][local_c].entNum != 0x3ff) &&
-           (bVar1 = hasLabel(cg_destructibles[param_1][local_c].ddef,param_2), bVar1)) {
-          pcVar2 = CG_GetEntity(param_1,cg_destructibles[param_1][local_c].entNum);
-          CG_DestructibleUpdateDObj(pcVar2);
+      for (i_2 = 0; i_2 < 0x90; i_2 = i_2 + 1) {
+        if ((cg_destructibles[localClientNum][i_2].entNum != 0x3ff) &&
+           (bVar1 = hasLabel(cg_destructibles[localClientNum][i_2].ddef,label), bVar1)) {
+          self = CG_GetEntity(localClientNum,cg_destructibles[localClientNum][i_2].entNum);
+          CG_DestructibleUpdateDObj(self);
         }
       }
       return;
     }
-    if (cg_disabledLabels[local_8] == param_2) break;
-    local_8 = local_8 + 1;
+    if (cg_disabledLabels[i] == label) break;
+    i = i + 1;
   }
   return;
 }
@@ -379,14 +382,14 @@ void __cdecl CG_DisableDestructiblePiece(int param_1,int param_2)
 
 // 00814EA0  CG_IsDestructiblePieceDisabled  (physics/destructible.cpp:398)
 
-bool __cdecl CG_IsDestructiblePieceDisabled(int param_1)
+bool __cdecl CG_IsDestructiblePieceDisabled(int label)
 
 {
-  int local_8;
+  int i;
   
-  if (param_1 != 0) {
-    for (local_8 = 0; local_8 < cg_numDisabledLables; local_8 = local_8 + 1) {
-      if (cg_disabledLabels[local_8] == param_1) {
+  if (label != 0) {
+    for (i = 0; i < cg_numDisabledLables; i = i + 1) {
+      if (cg_disabledLabels[i] == label) {
         return true;
       }
     }
@@ -417,14 +420,14 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 
 // 00814EF0  CG_GetDestructibleIndex  (physics/destructible.cpp:417)
 
-short __cdecl CG_GetDestructibleIndex(int param_1,Destructible *param_2)
+short __cdecl CG_GetDestructibleIndex(int localClientNum,Destructible *destructible)
 
 {
   code *pcVar1;
   bool bVar2;
   short sVar3;
   
-  if (param_2 == (Destructible *)0x0) {
+  if (destructible == (Destructible *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x1a2,0,
                              "%s");
     if (!bVar2) {
@@ -433,20 +436,20 @@ short __cdecl CG_GetDestructibleIndex(int param_1,Destructible *param_2)
       return sVar3;
     }
   }
-  return (short)(((int)param_2 - (int)cg_destructibles[param_1]) / 0xac) + 1;
+  return (short)(((int)destructible - (int)cg_destructibles[localClientNum]) / 0xac) + 1;
 }
 
 
 // 00814F40  CG_GetDestructibleByIndex  (physics/destructible.cpp:432)
 
-Destructible * __cdecl CG_GetDestructibleByIndex(int param_1,int param_2)
+Destructible * __cdecl CG_GetDestructibleByIndex(int localClientNum,int index)
 
 {
   code *pcVar1;
   bool bVar2;
   Destructible *pDVar3;
   
-  if (0x3f < param_2 - 1U) {
+  if (0x3f < index - 1U) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x1b2,0,
                              "index doesn\'t index MAX_DESTRUCTIBLES\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -455,7 +458,7 @@ Destructible * __cdecl CG_GetDestructibleByIndex(int param_1,int param_2)
       return pDVar3;
     }
   }
-  return cg_destructibles[param_1] + (param_2 - 1U);
+  return cg_destructibles[localClientNum] + (index - 1U);
 }
 
 
@@ -464,74 +467,74 @@ Destructible * __cdecl CG_GetDestructibleByIndex(int param_1,int param_2)
 Destructible * __cdecl Destructible_GetFreeDestructible(void)
 
 {
-  char *pcVar1;
-  int local_8;
+  char *fmt;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x3f < local_8) {
-      pcVar1 = va("Ran out of destructibles Max is %d");
-      Com_Error(ERR_DROP,pcVar1);
+    if (0x3f < i) {
+      fmt = va("Ran out of destructibles Max is %d");
+      Com_Error(ERR_DROP,fmt);
       return (Destructible *)0x0;
     }
-    if (s_destructibles[local_8].entNum == 0x3ff) break;
-    local_8 = local_8 + 1;
+    if (s_destructibles[i].entNum == 0x3ff) break;
+    i = i + 1;
   }
   s_numDestructibles = s_numDestructibles + 1;
-  s_destructibles[local_8].oldestBurnTime = 0;
-  s_destructibles[local_8].destructiblePoseID = '\0';
-  return s_destructibles + local_8;
+  s_destructibles[i].oldestBurnTime = 0;
+  s_destructibles[i].destructiblePoseID = '\0';
+  return s_destructibles + i;
 }
 
 
 // 00815030  Destructible_GetDestructible  (physics/destructible.cpp:458)
 
-Destructible * __cdecl Destructible_GetDestructible(int param_1)
+Destructible * __cdecl Destructible_GetDestructible(int entNum)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x3f < local_8) {
+    if (0x3f < i) {
       return (Destructible *)0x0;
     }
-    if (s_destructibles[local_8].entNum == param_1) break;
-    local_8 = local_8 + 1;
+    if (s_destructibles[i].entNum == entNum) break;
+    i = i + 1;
   }
-  return s_destructibles + local_8;
+  return s_destructibles + i;
 }
 
 
 // 00815080  Destructible_FreeDestructible  (physics/destructible.cpp:473)
 
-void __cdecl Destructible_FreeDestructible(Destructible *param_1)
+void __cdecl Destructible_FreeDestructible(Destructible *destructible)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if (param_1->entNum != 0x3ff) {
-    for (local_8 = 0; local_8 < param_1->pieceCount; local_8 = local_8 + 1) {
-      XDoll_DestroyXDoll(param_1->pieceArray[local_8].xdollHandle);
+  if (destructible->entNum != 0x3ff) {
+    for (i = 0; i < destructible->pieceCount; i = i + 1) {
+      XDoll_DestroyXDoll(destructible->pieceArray[i].xdollHandle);
     }
-    Hunk_UserFree(g_pieceArrayHunk,param_1->pieceArray);
-    param_1->pieceArray = (DESTRUCTIBLE_PIECE_INFO *)0x0;
+    Hunk_UserFree(g_pieceArrayHunk,destructible->pieceArray);
+    destructible->pieceArray = (DESTRUCTIBLE_PIECE_INFO *)0x0;
     s_numDestructibles = s_numDestructibles - 1;
-    param_1->entNum = 0x3ff;
-    param_1->ddef = (DestructibleDef *)0x0;
-    param_1->oldestBurnTime = 0;
-    param_1->flags = 0;
-    memset((uchar *)param_1->states,'\0',0x8c);
-    if ((param_1->destructiblePoseID != '\0') &&
+    destructible->entNum = 0x3ff;
+    destructible->ddef = (DestructibleDef *)0x0;
+    destructible->oldestBurnTime = 0;
+    destructible->flags = 0;
+    memset((uchar *)destructible->states,'\0',0x8c);
+    if ((destructible->destructiblePoseID != '\0') &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                  0x1f2,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    param_1->destructiblePoseID = '\0';
+    destructible->destructiblePoseID = '\0';
   }
   return;
 }
@@ -539,58 +542,63 @@ void __cdecl Destructible_FreeDestructible(Destructible *param_1)
 
 // 00815180  CG_GetFreeDestructible  (physics/destructible.cpp:503)
 
-Destructible * __cdecl CG_GetFreeDestructible(int param_1,int param_2)
+Destructible * __cdecl CG_GetFreeDestructible(int localClientNum,int entNum)
 
 {
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x90; local_8 = local_8 + 1) {
-    if (cg_destructibles[param_1][local_8].entNum == param_2) {
-      cg_destructibles[param_1][local_8].oldestBurnTime = 0;
-      cg_destructibles[param_1][local_8].destructiblePoseID = '\0';
-      return cg_destructibles[param_1] + local_8;
+  for (i = 0; i < 0x90; i = i + 1) {
+    if (cg_destructibles[localClientNum][i].entNum == entNum) {
+      cg_destructibles[localClientNum][i].oldestBurnTime = 0;
+      cg_destructibles[localClientNum][i].destructiblePoseID = '\0';
+      return cg_destructibles[localClientNum] + i;
     }
   }
-  local_c = 0;
+  i_2 = 0;
   while( true ) {
-    if (0x8f < local_c) {
+    if (0x8f < i_2) {
       Com_Error(ERR_DROP,"Ran out of cg destructibles");
       return (Destructible *)0x0;
     }
-    if (cg_destructibles[param_1][local_c].entNum == 0x3ff) break;
-    local_c = local_c + 1;
+    if (cg_destructibles[localClientNum][i_2].entNum == 0x3ff) break;
+    i_2 = i_2 + 1;
   }
-  cg_numDestructibles[param_1] = cg_numDestructibles[param_1] + 1;
-  cg_destructibles[param_1][local_c].oldestBurnTime = 0;
-  cg_destructibles[param_1][local_c].destructiblePoseID = '\0';
-  return cg_destructibles[param_1] + local_c;
+  cg_numDestructibles[localClientNum] = cg_numDestructibles[localClientNum] + 1;
+  cg_destructibles[localClientNum][i_2].oldestBurnTime = 0;
+  cg_destructibles[localClientNum][i_2].destructiblePoseID = '\0';
+  return cg_destructibles[localClientNum] + i_2;
 }
 
 
 // 008152C0  CG_FreeDestructible  (physics/destructible.cpp:530)
 
-void __cdecl CG_FreeDestructible(int param_1,Destructible *param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_FreeDestructible(int localClientNum,Destructible *destructible)
 
 {
-  int local_8;
+  int i;
   
-  if ((param_2->entNum != 0x3ff) && (param_2->ddef != (DestructibleDef *)0x0)) {
-    for (local_8 = 0; local_8 < param_2->ddef->numPieces; local_8 = local_8 + 1) {
-      XDoll_DestroyXDoll(param_2->pieceArray[local_8].xdollHandle);
+  if ((destructible->entNum != 0x3ff) && (destructible->ddef != (DestructibleDef *)0x0)) {
+    for (i = 0; i < destructible->ddef->numPieces; i = i + 1) {
+      XDoll_DestroyXDoll(destructible->pieceArray[i].xdollHandle);
     }
-    Hunk_UserFree(g_cgPieceArrayHunk,param_2->pieceArray);
-    param_2->pieceArray = (DESTRUCTIBLE_PIECE_INFO *)0x0;
-    cg_numDestructibles[param_1] = cg_numDestructibles[param_1] - 1;
-    param_2->entNum = 0x3ff;
-    param_2->ddef = (DestructibleDef *)0x0;
-    param_2->oldestBurnTime = 0;
-    param_2->flags = 0;
-    memset((uchar *)param_2->states,'\0',0x8c);
-    if (param_2->destructiblePoseID != '\0') {
-      CG_FreeDestructiblePose(param_1,param_2->destructiblePoseID);
+    Hunk_UserFree(g_cgPieceArrayHunk,destructible->pieceArray);
+    destructible->pieceArray = (DESTRUCTIBLE_PIECE_INFO *)0x0;
+    cg_numDestructibles[localClientNum] = cg_numDestructibles[localClientNum] - 1;
+    destructible->entNum = 0x3ff;
+    destructible->ddef = (DestructibleDef *)0x0;
+    destructible->oldestBurnTime = 0;
+    destructible->flags = 0;
+    memset((uchar *)destructible->states,'\0',0x8c);
+    if (destructible->destructiblePoseID != '\0') {
+      CG_FreeDestructiblePose(localClientNum,destructible->destructiblePoseID);
     }
-    param_2->destructiblePoseID = '\0';
+    destructible->destructiblePoseID = '\0';
   }
   return;
 }
@@ -598,13 +606,13 @@ void __cdecl CG_FreeDestructible(int param_1,Destructible *param_2)
 
 // 0081CC10  Vec3RotateTranspose  (universal/com_vector.h:532)
 
-void __cdecl Vec3RotateTranspose(float *param_1,float (*param_2) [3],float *param_3)
+void __cdecl Vec3RotateTranspose(float *in,float (*matrix) [3],float *out)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == param_3) {
+  if (in == out) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_vector.h",0x215,0,
                              "%s");
     if (!bVar2) {
@@ -613,30 +621,30 @@ void __cdecl Vec3RotateTranspose(float *param_1,float (*param_2) [3],float *para
       return;
     }
   }
-  *param_3 = *param_1 * (*param_2)[0] + param_1[1] * param_2[1][0] + param_1[2] * param_2[2][0];
-  param_3[1] = *param_1 * (*param_2)[1] + param_1[1] * param_2[1][1] + param_1[2] * param_2[2][1];
-  param_3[2] = *param_1 * (*param_2)[2] + param_1[1] * param_2[1][2] + param_1[2] * param_2[2][2];
+  *out = *in * (*matrix)[0] + in[1] * matrix[1][0] + in[2] * matrix[2][0];
+  out[1] = *in * (*matrix)[1] + in[1] * matrix[1][1] + in[2] * matrix[2][1];
+  out[2] = *in * (*matrix)[2] + in[1] * matrix[1][2] + in[2] * matrix[2][2];
   return;
 }
 
 
 // 008153C0  CG_InitDestructibles  (physics/destructible.cpp:554)
 
-void __cdecl CG_InitDestructibles(int param_1)
+void __cdecl CG_InitDestructibles(int localClientNum)
 
 {
   Destructible *pDVar1;
-  int local_8;
+  int i;
   
-  memset((uchar *)cg_destructibles[param_1],'\0',0x60c0);
-  for (local_8 = 0; local_8 < 0x90; local_8 = local_8 + 1) {
-    pDVar1 = cg_destructibles[param_1] + local_8;
+  memset((uchar *)cg_destructibles[localClientNum],'\0',0x60c0);
+  for (i = 0; i < 0x90; i = i + 1) {
+    pDVar1 = cg_destructibles[localClientNum] + i;
     pDVar1->entNum = 0x3ff;
     pDVar1->states[0].time = 1;
     pDVar1->states[0].state.modelState0 = 0x7fffffff;
   }
-  cg_numDestructibles[param_1] = 0;
-  cg_updateTime[param_1] = 0;
+  cg_numDestructibles[localClientNum] = 0;
+  cg_updateTime[localClientNum] = 0;
   return;
 }
 
@@ -646,12 +654,12 @@ void __cdecl CG_InitDestructibles(int param_1)
 void __cdecl G_InitDestructibles(void)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    s_destructibles[local_8].entNum = 0x3ff;
-    s_destructibles[local_8].states[0].time = 1;
-    s_destructibles[local_8].states[0].state.modelState0 = 0x7fffffff;
+  for (i = 0; i < 0x40; i = i + 1) {
+    s_destructibles[i].entNum = 0x3ff;
+    s_destructibles[i].states[0].time = 1;
+    s_destructibles[i].states[0].state.modelState0 = 0x7fffffff;
   }
   return;
 }
@@ -659,26 +667,26 @@ void __cdecl G_InitDestructibles(void)
 
 // 00818930  Destructible_FindGameState  (physics/destructible.cpp:598)
 
-destructible_gamestate * __cdecl Destructible_FindGameState(int param_1,int param_2)
+destructible_gamestate * __cdecl Destructible_FindGameState(int entityNum,int localClientNum)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (s_num_destructible_gamestates[param_2] <= local_8) {
+    if (s_num_destructible_gamestates[localClientNum] <= i) {
       return (destructible_gamestate *)0x0;
     }
-    if (*(short *)(param_2 * 0x880 + 0x9bc0092 + local_8 * 0x44) == param_1) break;
-    local_8 = local_8 + 1;
+    if (*(short *)(localClientNum * 0x880 + 0x9bc0092 + i * 0x44) == entityNum) break;
+    i = i + 1;
   }
-  return s_destructible_gamestates[param_2] + local_8;
+  return s_destructible_gamestates[localClientNum] + i;
 }
 
 
 // 008189A0  Destructible_RemoveGameState  (physics/destructible.cpp:610)
 
-bool __cdecl Destructible_RemoveGameState(int param_1,int param_2)
+bool __cdecl Destructible_RemoveGameState(int entityNum,int localClientNum)
 
 {
   uchar uVar1;
@@ -686,19 +694,21 @@ bool __cdecl Destructible_RemoveGameState(int param_1,int param_2)
   int iVar3;
   destructible_gamestate *pdVar4;
   destructible_gamestate *pdVar5;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (s_num_destructible_gamestates[param_2] <= local_8) {
+    if (s_num_destructible_gamestates[localClientNum] <= i) {
       return false;
     }
-    if (*(short *)(param_2 * 0x880 + 0x9bc0092 + local_8 * 0x44) == param_1) break;
-    local_8 = local_8 + 1;
+    if (*(short *)(localClientNum * 0x880 + 0x9bc0092 + i * 0x44) == entityNum) break;
+    i = i + 1;
   }
-  s_num_destructible_gamestates[param_2] = s_num_destructible_gamestates[param_2] + -1;
-  pdVar4 = s_destructible_gamestates[param_2] + s_num_destructible_gamestates[param_2];
-  pdVar5 = s_destructible_gamestates[param_2] + local_8;
+  s_num_destructible_gamestates[localClientNum] = s_num_destructible_gamestates[localClientNum] + -1
+  ;
+  pdVar4 = s_destructible_gamestates[localClientNum] + s_num_destructible_gamestates[localClientNum]
+  ;
+  pdVar5 = s_destructible_gamestates[localClientNum] + i;
   for (iVar3 = 0x11; iVar3 != 0; iVar3 = iVar3 + -1) {
     uVar1 = pdVar4->numPieces;
     sVar2 = pdVar4->entityNum;
@@ -714,47 +724,47 @@ bool __cdecl Destructible_RemoveGameState(int param_1,int param_2)
 
 // 008154B0  Destructible_GetNumStagesForPiece  (physics/destructible.cpp:626)
 
-int __cdecl Destructible_GetNumStagesForPiece(DestructibleDef *param_1,int param_2)
+int __cdecl Destructible_GetNumStagesForPiece(DestructibleDef *ddef,int pieceIndex)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return -1;
     }
-    if (param_1->pieces[param_2].stages[local_8].showBone == 0) break;
-    local_8 = local_8 + 1;
+    if (ddef->pieces[pieceIndex].stages[i].showBone == 0) break;
+    i = i + 1;
   }
-  return local_8;
+  return i;
 }
 
 
 // 00815630  Destructible_GetDestructibleStage  (physics/destructible.cpp:650)
 
-int __cdecl Destructible_GetDestructibleStage(DestructibleDef *param_1,int param_2,int param_3)
+int __cdecl Destructible_GetDestructibleStage(DestructibleDef *ddef,int pieceIndex,int health)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return -1;
     }
-    if ((float)param_1->pieces[param_2].health *
-        param_1->pieces[param_2].stages[local_8].breakHealth <= (float)param_3) break;
-    if (param_1->pieces[param_2].stages[local_8].showBone == 0) {
-      if (param_2 == 0) {
-        return local_8 + -1;
+    if ((float)ddef->pieces[pieceIndex].health * ddef->pieces[pieceIndex].stages[i].breakHealth <=
+        (float)health) break;
+    if (ddef->pieces[pieceIndex].stages[i].showBone == 0) {
+      if (pieceIndex == 0) {
+        return i + -1;
       }
       return -1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
-  if (param_1->pieces[param_2].stages[local_8].showBone != 0) {
-    return local_8;
+  if (ddef->pieces[pieceIndex].stages[i].showBone != 0) {
+    return i;
   }
   return -1;
 }
@@ -762,79 +772,80 @@ int __cdecl Destructible_GetDestructibleStage(DestructibleDef *param_1,int param
 
 // 00815500  Destructible_GetShowBoneNameForPiece  (physics/destructible.cpp:673)
 
-uint __cdecl Destructible_GetShowBoneNameForPiece(Destructible *param_1,int param_2)
+uint __cdecl Destructible_GetShowBoneNameForPiece(Destructible *destructible,int pieceIndex)
 
 {
-  DestructibleDef *pDVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uint uVar5;
+  DestructibleDef *ddef_00;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uint uVar4;
   int local_18;
-  uint local_10;
-  int local_c;
+  int boneName;
+  int stage;
+  DestructibleDef *ddef;
   
-  pDVar1 = param_1->ddef;
-  iVar4 = Destructible_GetDestructibleStage(pDVar1,param_2,(int)param_1->pieceArray[param_2].health)
-  ;
-  local_10 = 0;
-  if (iVar4 < 0) {
+  ddef_00 = destructible->ddef;
+  iVar3 = Destructible_GetDestructibleStage
+                    (ddef_00,pieceIndex,(int)destructible->pieceArray[pieceIndex].health);
+  boneName = 0;
+  if (iVar3 < 0) {
     for (local_18 = 0; local_18 < 5; local_18 = local_18 + 1) {
-      if (pDVar1->pieces[param_2].stages[local_18].showBone == 0) {
-        local_c = local_18 + -1;
+      if (ddef_00->pieces[pieceIndex].stages[local_18].showBone == 0) {
+        stage = local_18 + -1;
         goto LAB_008155ae;
       }
     }
-    local_c = 0;
+    stage = 0;
 LAB_008155ae:
-    if (local_c < 0) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x2ac,
+    if (stage < 0) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x2ac,
                                0,"%s");
-      if (!bVar3) {
-        pcVar2 = (code *)swi(3);
-        uVar5 = (*pcVar2)();
-        return uVar5;
+      if (!bVar2) {
+        pcVar1 = (code *)swi(3);
+        uVar4 = (*pcVar1)();
+        return uVar4;
       }
     }
-    if ((pDVar1->pieces[param_2].stages[local_c].physPreset != (PhysPreset *)0x0) &&
-       (param_1->pieceArray[param_2].xdollHandle != 0)) {
-      local_10 = (uint)pDVar1->pieces[param_2].stages[local_c].showBone;
+    if ((ddef_00->pieces[pieceIndex].stages[stage].physPreset != (PhysPreset *)0x0) &&
+       (destructible->pieceArray[pieceIndex].xdollHandle != 0)) {
+      boneName = (int)ddef_00->pieces[pieceIndex].stages[stage].showBone;
     }
   }
   else {
-    local_10 = (uint)pDVar1->pieces[param_2].stages[iVar4].showBone;
+    boneName = (int)ddef_00->pieces[pieceIndex].stages[iVar3].showBone;
   }
-  return local_10;
+  return boneName;
 }
 
 
 // 00815700  Destructible_GetHideParts  (physics/destructible.cpp:693)
 
-void __cdecl Destructible_GetHideParts(Destructible *param_1,uint *param_2)
+void __cdecl Destructible_GetHideParts(Destructible *destructible,uint *partBits)
 
 {
   int iVar1;
-  byte local_19;
-  uint local_18;
-  byte local_11;
-  int local_10;
-  byte local_9;
-  DestructibleDef *local_8;
+  uchar boneIndex;
+  int boneName;
+  uchar i_2;
+  int j;
+  uchar i;
+  DestructibleDef *ddef;
   
-  local_8 = param_1->ddef;
-  for (local_9 = 0; (int)(uint)local_9 < local_8->numPieces; local_9 = local_9 + 1) {
-    for (local_10 = 0; local_10 < 5; local_10 = local_10 + 1) {
-      param_2[local_10] = param_2[local_10] | local_8->pieces[local_9].hideBones[local_10];
+  ddef = destructible->ddef;
+  for (i = '\0'; (int)(uint)i < ddef->numPieces; i = i + '\x01') {
+    for (j = 0; j < 5; j = j + 1) {
+      partBits[j] = partBits[j] | ddef->pieces[i].hideBones[j];
     }
   }
-  for (local_11 = 0; (int)(uint)local_11 < local_8->numPieces; local_11 = local_11 + 1) {
-    local_18 = Destructible_GetShowBoneNameForPiece(param_1,(uint)local_11);
-    if (local_18 != 0) {
-      local_19 = 0;
-      iVar1 = XModelGetBoneIndex(local_8->model,local_18,0,&local_19);
+  for (i_2 = '\0'; (int)(uint)i_2 < ddef->numPieces; i_2 = i_2 + '\x01') {
+    boneName = Destructible_GetShowBoneNameForPiece(destructible,(uint)i_2);
+    if (boneName != 0) {
+      boneIndex = '\0';
+      iVar1 = XModelGetBoneIndex(ddef->model,boneName,0,&boneIndex);
       if (iVar1 != 0) {
-        param_2[(int)(uint)local_19 >> 5] =
-             ~(0x80000000U >> (local_19 & 0x1f)) & param_2[(int)(uint)local_19 >> 5];
+        partBits[(int)(uint)boneIndex >> 5] =
+             ~(0x80000000U >> (boneIndex & 0x1f)) & partBits[(int)(uint)boneIndex >> 5];
       }
     }
   }
@@ -844,221 +855,223 @@ void __cdecl Destructible_GetHideParts(Destructible *param_1,uint *param_2)
 
 // 00815800  Destructible_GetPieceParentBone  (physics/destructible.cpp:716)
 
-int __cdecl Destructible_GetPieceParentBone(DestructibleDef *param_1,int param_2)
+int __cdecl Destructible_GetPieceParentBone(DestructibleDef *ddef,int pieceIndex)
 
 {
   int iVar1;
+  int boneName;
+  int parentBoneName;
   
-  iVar1 = XModelGetParentBoneName(param_1->model,(uint)param_1->pieces[param_2].stages[0].showBone);
+  iVar1 = XModelGetParentBoneName(ddef->model,(uint)ddef->pieces[pieceIndex].stages[0].showBone);
   return iVar1;
 }
 
 
 // 00815840  Destructible_GetPiecePhysPreset  (physics/destructible.cpp:724)
 
-PhysPreset * __cdecl Destructible_GetPiecePhysPreset(DestructibleDef *param_1,int param_2)
+PhysPreset * __cdecl Destructible_GetPiecePhysPreset(DestructibleDef *ddef,int pieceIndex)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (4 < local_8) {
+    if (4 < i) {
       return (PhysPreset *)0x0;
     }
-    if (param_1->pieces[param_2].stages[local_8].physPreset != (PhysPreset *)0x0) break;
-    local_8 = local_8 + 1;
+    if (ddef->pieces[pieceIndex].stages[i].physPreset != (PhysPreset *)0x0) break;
+    i = i + 1;
   }
-  return param_1->pieces[param_2].stages[local_8].physPreset;
+  return ddef->pieces[pieceIndex].stages[i].physPreset;
 }
 
 
 // 008158A0  DestructibleUpdate  (physics/destructible.cpp:735)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
-/* WARNING: Variable defined which should be unmapped: param_3 */
+/* WARNING: Variable defined which should be unmapped: numModels */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl DestructibleUpdate(gentity_s *param_1,DObjModel_s *param_2,uint param_3)
+int __cdecl DestructibleUpdate(gentity_s *ent,DObjModel_s *dobjModels,uint numModels)
 
 {
-  char *pcVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  Destructible *pDVar5;
-  DESTRUCTIBLE_PIECE_INFO *pDVar6;
-  uint uVar7;
-  byte local_80d;
-  char local_80c [1024];
-  char local_40c [1024];
+  char *name;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  Destructible *pDVar4;
+  DESTRUCTIBLE_PIECE_INFO *pDVar5;
+  uint uVar6;
+  int stage;
+  char *loopSoundName;
+  uchar i;
+  char destructibleName_2 [1024];
+  char destructibleName [1024];
   uint local_c;
-  DestructibleDef *local_8;
+  DestructibleDef *ddef;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((((((param_1->s).lerp.eFlags & 0x20000U) != 0) && ((param_1->s).eType != 1)) &&
-      ((param_1->s).eType != 2)) && (((param_1->s).eType != 0x11 && ((param_1->s).eType != 0x13))))
-  {
-    if (param_1->destructible == (Destructible *)0x0) {
-      SV_GetConfigstring((param_1->s).un1.scale + 0xc6c,local_80c,0x400);
-      local_8 = DestructibleDefPrecache(local_80c);
+  if ((((((ent->s).lerp.eFlags & 0x20000U) != 0) && ((ent->s).eType != 1)) && ((ent->s).eType != 2))
+     && (((ent->s).eType != 0x11 && ((ent->s).eType != 0x13)))) {
+    if (ent->destructible == (Destructible *)0x0) {
+      SV_GetConfigstring((ent->s).un1.scale + 0xc6c,destructibleName_2,0x400);
+      ddef = DestructibleDefPrecache(destructibleName_2);
     }
     else {
-      if (param_1->destructible->ddef == (DestructibleDef *)0x0) {
-        SV_GetConfigstring((param_1->s).un1.scale + 0xc6c,local_40c,0x400);
-        local_8 = DestructibleDefPrecache(local_40c);
-        param_1->destructible->ddef = local_8;
-        if (local_8 != (DestructibleDef *)0x0) {
-          param_1->destructible->pieceCount = local_8->numPieces;
+      if (ent->destructible->ddef == (DestructibleDef *)0x0) {
+        SV_GetConfigstring((ent->s).un1.scale + 0xc6c,destructibleName,0x400);
+        ddef = DestructibleDefPrecache(destructibleName);
+        ent->destructible->ddef = ddef;
+        if (ddef != (DestructibleDef *)0x0) {
+          ent->destructible->pieceCount = ddef->numPieces;
         }
       }
       else {
-        local_8 = param_1->destructible->ddef;
+        ddef = ent->destructible->ddef;
       }
-      if ((local_8 == (DestructibleDef *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                   0x2f7,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if ((ddef == (DestructibleDef *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                   0x2f7,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
     }
-    if (local_8 != (DestructibleDef *)0x0) {
-      if ((param_1 == (gentity_s *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                   0x303,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+    if (ddef != (DestructibleDef *)0x0) {
+      if ((ent == (gentity_s *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                   0x303,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      if ((param_2 == (DObjModel_s *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                   0x304,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if ((dobjModels == (DObjModel_s *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                   0x304,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      if (param_1->destructible == (Destructible *)0x0) {
-        pDVar5 = Destructible_GetFreeDestructible();
-        param_1->destructible = pDVar5;
-        param_1->destructible->ddef = local_8;
-        if ((local_8 == (DestructibleDef *)0x0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                     0x30a,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          iVar4 = (*pcVar2)();
-          return iVar4;
+      if (ent->destructible == (Destructible *)0x0) {
+        pDVar4 = Destructible_GetFreeDestructible();
+        ent->destructible = pDVar4;
+        ent->destructible->ddef = ddef;
+        if ((ddef == (DestructibleDef *)0x0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                     0x30a,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
-        param_1->health = local_8->pieces->health;
-        param_1->destructible->pieceCount = local_8->numPieces;
+        ent->health = ddef->pieces->health;
+        ent->destructible->pieceCount = ddef->numPieces;
       }
-      else if ((param_1->destructible->entNum != (param_1->s).number) &&
-              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp"
-                                        ,0x312,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      else if ((ent->destructible->entNum != (ent->s).number) &&
+              (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp"
+                                        ,0x312,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      if (param_1->destructible == (Destructible *)0x0) {
+      if (ent->destructible == (Destructible *)0x0) {
         Com_Error(ERR_DROP,"\x15Hit max destructible count [%d] when creating %s\n");
       }
       else {
-        if (((param_1->s).number == 0x3ff) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                     0x317,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          iVar4 = (*pcVar2)();
-          return iVar4;
+        if (((ent->s).number == 0x3ff) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                     0x317,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
-        param_1->destructible->entNum = (param_1->s).number;
+        ent->destructible->entNum = (ent->s).number;
       }
-      if ((param_1->destructible->ddef == (DestructibleDef *)0x0) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                   799,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if ((ent->destructible->ddef == (DestructibleDef *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                   799,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      if ((param_3 != 1) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                   0x322,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        iVar4 = (*pcVar2)();
-        return iVar4;
+      if ((numModels != 1) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                   0x322,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
-      if ((param_1->destructible->flags & 2) == 0) {
+      if ((ent->destructible->flags & 2) == 0) {
         if (g_pieceArrayHunk == (HunkUser *)0x0) {
           g_pieceArrayHunk =
                Hunk_UserCreateFromBuffer
                          (g_pieceArrayBuffer,0x12000,HU_SCHEME_FIRSTFIT,0,(void *)0x0,
                           "DesctructiblePieces",0);
         }
-        pDVar6 = Hunk_UserAlloc(g_pieceArrayHunk,local_8->numPieces * 0x18,4,(char *)0x0);
-        param_1->destructible->pieceArray = pDVar6;
-        memset((uchar *)param_1->destructible->pieceArray,'\0',local_8->numPieces * 0x18);
-        if ((param_1->destructible->pieceArray == (DESTRUCTIBLE_PIECE_INFO *)0x0) &&
-           (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                     0x32d,0,"%s"), !bVar3)) {
-          pcVar2 = (code *)swi(3);
-          iVar4 = (*pcVar2)();
-          return iVar4;
+        pDVar5 = Hunk_UserAlloc(g_pieceArrayHunk,ddef->numPieces * 0x18,4,(char *)0x0);
+        ent->destructible->pieceArray = pDVar5;
+        memset((uchar *)ent->destructible->pieceArray,'\0',ddef->numPieces * 0x18);
+        if ((ent->destructible->pieceArray == (DESTRUCTIBLE_PIECE_INFO *)0x0) &&
+           (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                     0x32d,0,"%s"), !bVar2)) {
+          pcVar1 = (code *)swi(3);
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
       }
-      for (local_80d = 0; (int)(uint)local_80d < local_8->numPieces; local_80d = local_80d + 1) {
-        if (local_8->pieces[local_80d].stages[0].showBone == 0) {
+      for (i = '\0'; (int)(uint)i < ddef->numPieces; i = i + '\x01') {
+        if (ddef->pieces[i].stages[0].showBone == 0) {
           va("Destructible %s Piece %d first stage can\'t find bone");
-          bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+          bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x331,0,"%s\n\t%s");
-          if (!bVar3) {
-            pcVar2 = (code *)swi(3);
-            iVar4 = (*pcVar2)();
-            return iVar4;
+          if (!bVar2) {
+            pcVar1 = (code *)swi(3);
+            iVar3 = (*pcVar1)();
+            return iVar3;
           }
         }
-        if ((param_1->destructible->flags & 2) == 0) {
-          param_1->destructible->pieceArray[local_80d].health =
-               (short)local_8->pieces[local_80d].health;
-          param_1->destructible->pieceArray[local_80d].burnData.fx = 0;
-          param_1->destructible->pieceArray[local_80d].burnData.burnTime = 0;
-          param_1->destructible->pieceArray[local_80d].burnData.sndId = 0;
+        if ((ent->destructible->flags & 2) == 0) {
+          ent->destructible->pieceArray[i].health = (short)ddef->pieces[i].health;
+          ent->destructible->pieceArray[i].burnData.fx = 0;
+          ent->destructible->pieceArray[i].burnData.burnTime = 0;
+          ent->destructible->pieceArray[i].burnData.sndId = 0;
         }
-        bVar3 = IsDestructiblePieceDisabled((uint)local_8->pieces[local_80d].enableLabel);
-        if (bVar3) {
-          param_1->destructible->pieceArray[local_80d].health = -1;
+        bVar2 = IsDestructiblePieceDisabled((uint)ddef->pieces[i].enableLabel);
+        if (bVar2) {
+          ent->destructible->pieceArray[i].health = -1;
         }
-        else if (local_80d == 0) {
-          if ((param_1->destructible->flags & 4) == 0) {
-            param_2->model = local_8->model;
+        else if (i == '\0') {
+          if ((ent->destructible->flags & 4) == 0) {
+            dobjModels->model = ddef->model;
           }
           else {
-            param_2->model = local_8->pristineModel;
+            dobjModels->model = ddef->pristineModel;
           }
           if (level.initializing != 0) {
-            G_SetModel(param_1,param_2->model->name);
+            G_SetModel(ent,dobjModels->model->name);
           }
-          if ((param_1->destructible->flags & 2) == 0) {
-            iVar4 = Destructible_GetDestructibleStage
-                              (local_8,0,(int)param_1->destructible->pieceArray->health);
-            pcVar1 = local_8->pieces->stages[iVar4].loopSound;
-            if (pcVar1 != (char *)0x0) {
-              uVar7 = SND_FindAliasId(pcVar1);
-              (param_1->s).loopSoundId = uVar7;
-              (param_1->s).loopSoundFade = 1000;
+          if ((ent->destructible->flags & 2) == 0) {
+            iVar3 = Destructible_GetDestructibleStage
+                              (ddef,0,(int)ent->destructible->pieceArray->health);
+            name = ddef->pieces->stages[iVar3].loopSound;
+            if (name != (char *)0x0) {
+              uVar6 = SND_FindAliasId(name);
+              (ent->s).loopSoundId = uVar6;
+              (ent->s).loopSoundFade = 1000;
             }
           }
         }
       }
-      if (param_1->destructible != (Destructible *)0x0) {
-        param_1->takedamage = '\x01';
-        param_1->destructible->flags = param_1->destructible->flags | 2;
-        Destructible_GetHideParts(param_1->destructible,(param_1->s).partBits);
+      if (ent->destructible != (Destructible *)0x0) {
+        ent->takedamage = '\x01';
+        ent->destructible->flags = ent->destructible->flags | 2;
+        Destructible_GetHideParts(ent->destructible,(ent->s).partBits);
       }
     }
   }
-  return param_3;
+  return numModels;
 }
 
 
@@ -1066,21 +1079,23 @@ int __cdecl DestructibleUpdate(gentity_s *param_1,DObjModel_s *param_2,uint para
 
 bool __cdecl
 Destructible_GetPieceIndexFromBoneName
-          (Destructible *param_1,int param_2,uint param_3,uchar *param_4)
+          (Destructible *destructible,int modelIndex,uint boneName,uchar *index)
 
 {
   DestructibleDef *pDVar1;
   bool bVar2;
   uint uVar3;
-  int local_c;
+  uint currentShowBone;
+  int i;
+  DestructibleDef *ddef;
   
-  pDVar1 = param_1->ddef;
-  *param_4 = '\0';
-  if (param_2 == 0) {
-    for (local_c = 0; local_c < pDVar1->numPieces; local_c = local_c + 1) {
-      uVar3 = Destructible_GetShowBoneNameForPiece(param_1,local_c);
-      if (uVar3 == param_3) {
-        *param_4 = (uchar)local_c;
+  pDVar1 = destructible->ddef;
+  *index = '\0';
+  if (modelIndex == 0) {
+    for (i = 0; i < pDVar1->numPieces; i = i + 1) {
+      uVar3 = Destructible_GetShowBoneNameForPiece(destructible,i);
+      if (uVar3 == boneName) {
+        *index = (uchar)i;
         return true;
       }
     }
@@ -1100,7 +1115,7 @@ Destructible_GetPieceIndexFromBoneName
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl CG_Destructible_GetModelIndexFromLabel(centity_s *param_1,DObj *param_2,uint param_3)
+int __cdecl CG_Destructible_GetModelIndexFromLabel(centity_s *self,DObj *obj,uint label)
 
 {
   return -1;
@@ -1110,48 +1125,49 @@ int __cdecl CG_Destructible_GetModelIndexFromLabel(centity_s *param_1,DObj *para
 // 00816000  GetHealthFromState  (physics/destructible.cpp:953)
 
 int __cdecl
-GetHealthFromState(LerpEntityStateDestructibleHit *param_1,DestructibleDef *param_2,uchar param_3)
+GetHealthFromState(LerpEntityStateDestructibleHit *state,DestructibleDef *ddef,uchar pieceIndex)
 
 {
   DestructiblePiece *pDVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  int local_8;
+  DestructiblePiece *piece;
+  int stage;
   
-  if ((param_2->numPieces <= (int)(uint)param_3) &&
+  if ((ddef->numPieces <= (int)(uint)pieceIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x3ba,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     iVar4 = (*pcVar2)();
     return iVar4;
   }
-  pDVar1 = param_2->pieces;
-  if ((1 << (param_3 & 0x1f) & param_1->modelState0) == 0) {
-    if ((1 << (param_3 & 0x1f) & param_1->modelState1) == 0) {
-      if ((1 << (param_3 & 0x1f) & param_1->modelState2) == 0) {
-        if ((1 << (param_3 & 0x1f) & param_1->modelState3) == 0) {
-          if ((1 << (param_3 & 0x1f) & param_1->modelState4) == 0) {
+  pDVar1 = ddef->pieces;
+  if ((1 << (pieceIndex & 0x1f) & state->modelState0) == 0) {
+    if ((1 << (pieceIndex & 0x1f) & state->modelState1) == 0) {
+      if ((1 << (pieceIndex & 0x1f) & state->modelState2) == 0) {
+        if ((1 << (pieceIndex & 0x1f) & state->modelState3) == 0) {
+          if ((1 << (pieceIndex & 0x1f) & state->modelState4) == 0) {
             return -1;
           }
-          local_8 = 4;
+          stage = 4;
         }
         else {
-          local_8 = 3;
+          stage = 3;
         }
       }
       else {
-        local_8 = 2;
+        stage = 2;
       }
     }
     else {
-      local_8 = 1;
+      stage = 1;
     }
-    iVar4 = (int)((float)pDVar1[param_3].health * pDVar1[param_3].stages[local_8 + -1].breakHealth)
-            + -1;
+    iVar4 = (int)((float)pDVar1[pieceIndex].health *
+                 pDVar1[pieceIndex].stages[stage + -1].breakHealth) + -1;
   }
   else {
-    iVar4 = pDVar1[param_3].health;
+    iVar4 = pDVar1[pieceIndex].health;
   }
   return iVar4;
 }
@@ -1164,61 +1180,61 @@ GetHealthFromState(LerpEntityStateDestructibleHit *param_1,DestructibleDef *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-DestructibleEventSetPieceState(gentity_s *param_1,LerpEntityStateDestructibleHit *param_2)
+void __cdecl DestructibleEventSetPieceState(gentity_s *self,LerpEntityStateDestructibleHit *state)
 
 {
   Destructible *pDVar1;
-  DestructibleDef *pDVar2;
-  code *pcVar3;
-  bool bVar4;
-  int local_14;
-  byte local_d;
+  DestructibleDef *ddef_00;
+  code *pcVar2;
+  bool bVar3;
+  int stage;
+  uchar i;
+  Destructible *destructible;
+  DestructibleDef *ddef;
   
-  pDVar1 = param_1->destructible;
-  pDVar2 = pDVar1->ddef;
-  param_2->modelState0 = 0;
-  param_2->modelState1 = 0;
-  param_2->modelState2 = 0;
-  param_2->modelState3 = 0;
-  param_2->modelState4 = 0;
-  local_d = 0;
+  pDVar1 = self->destructible;
+  ddef_00 = pDVar1->ddef;
+  state->modelState0 = 0;
+  state->modelState1 = 0;
+  state->modelState2 = 0;
+  state->modelState3 = 0;
+  state->modelState4 = 0;
+  i = '\0';
   while( true ) {
-    if (pDVar2->numPieces <= (int)(uint)local_d) {
+    if (ddef_00->numPieces <= (int)(uint)i) {
       return;
     }
-    bVar4 = CG_IsDestructiblePieceDisabled((uint)pDVar2->pieces[local_d].enableLabel);
-    if (bVar4) {
-      local_14 = -1;
+    bVar3 = CG_IsDestructiblePieceDisabled((uint)ddef_00->pieces[i].enableLabel);
+    if (bVar3) {
+      stage = -1;
     }
     else {
-      local_14 = Destructible_GetDestructibleStage
-                           (pDVar2,(uint)local_d,(int)pDVar1->pieceArray[local_d].health);
+      stage = Destructible_GetDestructibleStage(ddef_00,(uint)i,(int)pDVar1->pieceArray[i].health);
     }
-    if (((local_14 < -1) || (4 < local_14)) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                 0x3e2,0,"stage not in [-1, 4]\n\t%i not in [%i, %i]"), !bVar4))
+    if (((stage < -1) || (4 < stage)) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                 0x3e2,0,"stage not in [-1, 4]\n\t%i not in [%i, %i]"), !bVar3))
     break;
-    switch(local_14) {
+    switch(stage) {
     case 0:
-      param_2->modelState0 = 1 << (local_d & 0x1f) | param_2->modelState0;
+      state->modelState0 = 1 << (i & 0x1f) | state->modelState0;
       break;
     case 1:
-      param_2->modelState1 = 1 << (local_d & 0x1f) | param_2->modelState1;
+      state->modelState1 = 1 << (i & 0x1f) | state->modelState1;
       break;
     case 2:
-      param_2->modelState2 = 1 << (local_d & 0x1f) | param_2->modelState2;
+      state->modelState2 = 1 << (i & 0x1f) | state->modelState2;
       break;
     case 3:
-      param_2->modelState3 = 1 << (local_d & 0x1f) | param_2->modelState3;
+      state->modelState3 = 1 << (i & 0x1f) | state->modelState3;
       break;
     case 4:
-      param_2->modelState4 = 1 << (local_d & 0x1f) | param_2->modelState4;
+      state->modelState4 = 1 << (i & 0x1f) | state->modelState4;
     }
-    local_d = local_d + 1;
+    i = i + '\x01';
   }
-  pcVar3 = (code *)swi(3);
-  (*pcVar3)();
+  pcVar2 = (code *)swi(3);
+  (*pcVar2)();
   return;
 }
 
@@ -1230,20 +1246,20 @@ DestructibleEventSetPieceState(gentity_s *param_1,LerpEntityStateDestructibleHit
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-DestructibleExplosiveDamageEvent(gentity_s *param_1,float *param_2,float param_3,int param_4)
+void __cdecl DestructibleExplosiveDamageEvent(gentity_s *self,float *point,float radius,int mod)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *tent;
   
-  pgVar3 = G_TempEntity(param_2,0x37);
+  pgVar3 = G_TempEntity(point,0x37);
   if (pgVar3 != (gentity_s *)0x0) {
-    AssignToSmallerType<short>(&(pgVar3->s).otherEntityNum,(param_1->s).number);
-    if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-        (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+    AssignToSmallerType<short>(&(pgVar3->s).otherEntityNum,(self->s).number);
+    if (((((uint)*point & 0x7f800000) == 0x7f800000) ||
+        (((uint)point[1] & 0x7f800000) == 0x7f800000)) ||
+       (((uint)point[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x401,
                                0,"%s");
       if (!bVar2) {
@@ -1252,9 +1268,9 @@ DestructibleExplosiveDamageEvent(gentity_s *param_1,float *param_2,float param_3
         return;
       }
     }
-    (pgVar3->s).lerp.pos.trBase[0] = *param_2;
-    (pgVar3->s).lerp.pos.trBase[1] = param_2[1];
-    (pgVar3->s).lerp.pos.trBase[2] = param_2[2];
+    (pgVar3->s).lerp.pos.trBase[0] = *point;
+    (pgVar3->s).lerp.pos.trBase[1] = point[1];
+    (pgVar3->s).lerp.pos.trBase[2] = point[2];
     (pgVar3->s).lerp.pos.trDelta[0] = 0.0;
     (pgVar3->s).lerp.pos.trDelta[1] = 0.0;
     (pgVar3->s).lerp.pos.trDelta[2] = 0.0;
@@ -1264,8 +1280,8 @@ DestructibleExplosiveDamageEvent(gentity_s *param_1,float *param_2,float param_3
     (pgVar3->s).lerp.apos.trDelta[0] = 0.0;
     (pgVar3->s).lerp.apos.trDelta[1] = 0.0;
     (pgVar3->s).lerp.apos.trDelta[2] = 0.0;
-    (pgVar3->s).un1.scale = (uchar)param_4;
-    DestructibleEventSetPieceState(param_1,&(pgVar3->s).lerp.u.destructibleHit);
+    (pgVar3->s).un1.scale = (uchar)mod;
+    DestructibleEventSetPieceState(self,&(pgVar3->s).lerp.u.destructibleHit);
   }
   return;
 }
@@ -1278,20 +1294,20 @@ DestructibleExplosiveDamageEvent(gentity_s *param_1,float *param_2,float param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-DestructibleBulletDamageEvent(gentity_s *param_1,float *param_2,float *param_3,int param_4)
+void __cdecl DestructibleBulletDamageEvent(gentity_s *self,float *point,float *dir,int mod)
 
 {
   code *pcVar1;
   bool bVar2;
   gentity_s *pgVar3;
+  gentity_s *tent;
   
-  pgVar3 = G_TempEntity(param_2,0x36);
+  pgVar3 = G_TempEntity(point,0x36);
   if (pgVar3 != (gentity_s *)0x0) {
-    AssignToSmallerType<short>(&(pgVar3->s).otherEntityNum,(param_1->s).number);
-    if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-        (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+    AssignToSmallerType<short>(&(pgVar3->s).otherEntityNum,(self->s).number);
+    if (((((uint)*point & 0x7f800000) == 0x7f800000) ||
+        (((uint)point[1] & 0x7f800000) == 0x7f800000)) ||
+       (((uint)point[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x412,
                                0,"%s");
       if (!bVar2) {
@@ -1300,20 +1316,20 @@ DestructibleBulletDamageEvent(gentity_s *param_1,float *param_2,float *param_3,i
         return;
       }
     }
-    (pgVar3->s).lerp.pos.trBase[0] = *param_2;
-    (pgVar3->s).lerp.pos.trBase[1] = param_2[1];
-    (pgVar3->s).lerp.pos.trBase[2] = param_2[2];
-    (pgVar3->s).lerp.pos.trDelta[0] = *param_3;
-    (pgVar3->s).lerp.pos.trDelta[1] = param_3[1];
-    (pgVar3->s).lerp.pos.trDelta[2] = param_3[2];
+    (pgVar3->s).lerp.pos.trBase[0] = *point;
+    (pgVar3->s).lerp.pos.trBase[1] = point[1];
+    (pgVar3->s).lerp.pos.trBase[2] = point[2];
+    (pgVar3->s).lerp.pos.trDelta[0] = *dir;
+    (pgVar3->s).lerp.pos.trDelta[1] = dir[1];
+    (pgVar3->s).lerp.pos.trDelta[2] = dir[2];
     (pgVar3->s).lerp.apos.trBase[0] = 0.0;
     (pgVar3->s).lerp.apos.trBase[1] = 0.0;
     (pgVar3->s).lerp.apos.trBase[2] = 0.0;
     (pgVar3->s).lerp.apos.trDelta[0] = 0.0;
     (pgVar3->s).lerp.apos.trDelta[1] = 0.0;
     (pgVar3->s).lerp.apos.trDelta[2] = 0.0;
-    (pgVar3->s).un1.scale = (uchar)param_4;
-    DestructibleEventSetPieceState(param_1,&(pgVar3->s).lerp.u.destructibleHit);
+    (pgVar3->s).un1.scale = (uchar)mod;
+    DestructibleEventSetPieceState(self,&(pgVar3->s).lerp.u.destructibleHit);
   }
   return;
 }
@@ -1327,234 +1343,234 @@ DestructibleBulletDamageEvent(gentity_s *param_1,float *param_2,float *param_3,i
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-DamagePiece(gentity_s *param_1,uchar param_2,int param_3,float *param_4,float *param_5,int param_6,
-           bool param_7,int param_8,gentity_s *param_9,int param_10)
+DamagePiece(gentity_s *self,uchar index,int damage,float *point,float *dir,int mod,
+           bool damageChildren,int excludeChild,gentity_s *attacker,int recursiveDepth)
 
 {
   code *pcVar1;
   int iVar2;
-  byte bVar3;
-  bool bVar4;
-  undefined1 uVar5;
+  bool bVar3;
+  undefined1 uVar4;
+  bool bVar5;
   short sVar6;
-  uint uVar7;
+  short sVar7;
+  uint alias;
   int iVar8;
-  char local_ad;
-  byte local_95;
-  float local_94;
+  bool local_ad;
+  int pieceDamage;
+  uchar i_2;
+  float force;
   float local_90;
   float local_8c;
-  float local_88;
-  uint local_84;
-  char *local_80;
-  int local_7c;
-  int local_78;
-  int local_74;
-  char *local_70;
-  int local_6c;
-  DestructibleStage *local_68;
-  float local_64 [9];
+  float scale;
+  uint soundIndex;
+  char *loopSoundName;
+  int break_health;
+  int current_health;
+  int damageNeeded;
+  char *notify;
+  int i;
+  DestructibleStage *stage;
+  float tagMat [9];
   float local_40 [3];
-  int local_34;
-  int local_30;
-  DestructibleStage *local_2c;
-  bool local_26;
-  char local_25;
-  Destructible *local_24;
-  DestructibleStage *local_20;
-  byte local_19;
-  short local_18;
-  DestructibleDef *local_14;
-  int local_10;
-  short local_c;
-  char local_5;
+  int j;
+  int prev_stage_index;
+  DestructibleStage *new_stage;
+  bool needFireUpdate;
+  bool damageParent;
+  Destructible *destructible;
+  DestructibleStage *prev_stage;
+  bool needDObjUpdate;
+  short prev_health;
+  DestructibleDef *ddef;
+  int new_stage_index;
+  short new_health;
+  bool explosiveDamage;
   
-  local_19 = 0;
-  local_24 = param_1->destructible;
-  local_14 = local_24->ddef;
-  if (param_10 < 0x15) {
-    if ((local_14->numPieces <= (int)(uint)param_2) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                 0x42b,0,"%s"), !bVar4)) {
+  needDObjUpdate = false;
+  destructible = self->destructible;
+  ddef = destructible->ddef;
+  if (recursiveDepth < 0x15) {
+    if ((ddef->numPieces <= (int)(uint)index) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                 0x42b,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
-      uVar5 = (*pcVar1)();
-      return (bool)uVar5;
+      uVar4 = (*pcVar1)();
+      return (bool)uVar4;
     }
-    sVar6 = ClampShort(param_3);
-    Destructible_SetDebugDamagePiece((uint)param_2,(int)sVar6);
-    sVar6 = local_24->pieceArray[param_2].health;
-    local_18 = sVar6;
-    local_c = ClampShort(param_3);
-    local_c = sVar6 - local_c;
-    if (local_c < -1) {
-      local_c = -1;
+    sVar6 = ClampShort(damage);
+    Destructible_SetDebugDamagePiece((uint)index,(int)sVar6);
+    sVar6 = destructible->pieceArray[index].health;
+    prev_health = sVar6;
+    sVar7 = ClampShort(damage);
+    new_health = sVar6 - sVar7;
+    if (new_health < -1) {
+      new_health = -1;
     }
-    local_30 = Destructible_GetDestructibleStage(local_14,(uint)param_2,(int)local_18);
-    local_10 = Destructible_GetDestructibleStage(local_14,(uint)param_2,(int)local_c);
-    local_20 = (DestructibleStage *)0x0;
-    local_2c = (DestructibleStage *)0x0;
-    if (-1 < local_30) {
-      local_20 = local_14->pieces[param_2].stages + local_30;
+    prev_stage_index = Destructible_GetDestructibleStage(ddef,(uint)index,(int)prev_health);
+    new_stage_index = Destructible_GetDestructibleStage(ddef,(uint)index,(int)new_health);
+    prev_stage = (DestructibleStage *)0x0;
+    new_stage = (DestructibleStage *)0x0;
+    if (-1 < prev_stage_index) {
+      prev_stage = ddef->pieces[index].stages + prev_stage_index;
     }
-    if (-1 < local_10) {
-      local_2c = local_14->pieces[param_2].stages + local_10;
+    if (-1 < new_stage_index) {
+      new_stage = ddef->pieces[index].stages + new_stage_index;
     }
-    if (((param_6 != 7) || (local_20 == (DestructibleStage *)0x0)) || ((local_20->flags & 8) != 0))
+    if (((mod != 7) || (prev_stage == (DestructibleStage *)0x0)) || ((prev_stage->flags & 8) != 0))
     {
-      if (((param_6 == 4) || (param_6 == 6)) || (param_6 == 0xf)) {
-        local_5 = '\x01';
+      if (((mod == 4) || (mod == 6)) || (mod == 0xf)) {
+        explosiveDamage = true;
       }
       else {
-        local_5 = '\0';
+        explosiveDamage = false;
       }
-      if (local_5 == '\0') {
-        iVar8 = local_30;
-        if ((local_20 != (DestructibleStage *)0x0) && ((local_20->flags & 1) != 0)) {
-          return (bool)local_19;
+      if (explosiveDamage == false) {
+        iVar8 = prev_stage_index;
+        if ((prev_stage != (DestructibleStage *)0x0) && ((prev_stage->flags & 1) != 0)) {
+          return needDObjUpdate;
         }
         do {
           iVar2 = iVar8;
-          local_34 = iVar2 + 1;
-          if (local_10 < local_34) goto LAB_008168de;
-          iVar8 = local_34;
-        } while ((local_14->pieces[param_2].stages[iVar2 + 1].flags & 1) == 0);
-        local_c = (short)(int)((float)local_14->pieces[param_2].health *
-                              local_14->pieces[param_2].stages[iVar2 + 1].breakHealth) + 1;
-        local_10 = Destructible_GetDestructibleStage(local_14,(uint)param_2,(int)local_c);
-        local_2c = local_14->pieces[param_2].stages + local_10;
+          j = iVar2 + 1;
+          if (new_stage_index < j) goto LAB_008168de;
+          iVar8 = j;
+        } while ((ddef->pieces[index].stages[iVar2 + 1].flags & 1) == 0);
+        new_health = (short)(int)((float)ddef->pieces[index].health *
+                                 ddef->pieces[index].stages[iVar2 + 1].breakHealth) + 1;
+        new_stage_index = Destructible_GetDestructibleStage(ddef,(uint)index,(int)new_health);
+        new_stage = ddef->pieces[index].stages + new_stage_index;
       }
 LAB_008168de:
-      if (((((local_30 == local_10) || (local_20 == (DestructibleStage *)0x0)) ||
-           (local_20->physPreset == (PhysPreset *)0x0)) ||
-          (((local_20->flags & 4) == 0 || (bVar4 = Destructible_HasParent(local_14,param_2), !bVar4)
-           ))) || (local_24->pieceArray[local_14->pieces[param_2].parentPiece].health < 1)) {
-        if ((local_20 == (DestructibleStage *)0x0) || ((local_20->flags & 2) == 0)) {
-          local_ad = '\0';
+      if (((((prev_stage_index == new_stage_index) || (prev_stage == (DestructibleStage *)0x0)) ||
+           (prev_stage->physPreset == (PhysPreset *)0x0)) ||
+          (((prev_stage->flags & 4) == 0 || (bVar3 = Destructible_HasParent(ddef,index), !bVar3))))
+         || (destructible->pieceArray[ddef->pieces[index].parentPiece].health < 1)) {
+        if ((prev_stage == (DestructibleStage *)0x0) || ((prev_stage->flags & 2) == 0)) {
+          local_ad = false;
         }
         else {
-          local_ad = '\x01';
+          local_ad = true;
         }
-        local_25 = local_ad;
-        local_24->pieceArray[param_2].health = local_c;
-        if (local_30 == local_10) {
-          if (((-1 < local_30) && (local_14->clientOnly == 0)) &&
-             (local_14->pieces[param_2].damageSound != (char *)0x0)) {
+        damageParent = local_ad;
+        destructible->pieceArray[index].health = new_health;
+        if (prev_stage_index == new_stage_index) {
+          if (((-1 < prev_stage_index) && (ddef->clientOnly == 0)) &&
+             (ddef->pieces[index].damageSound != (char *)0x0)) {
             if ((cg_vehicle_piece_damagesfx_threshold == (dvar_s *)0x0) &&
-               (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp"
-                                         ,0x47f,0,"%s"), !bVar4)) {
+               (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp"
+                                         ,0x47f,0,"%s"), !bVar3)) {
               pcVar1 = (code *)swi(3);
-              uVar5 = (*pcVar1)();
-              return (bool)uVar5;
+              uVar4 = (*pcVar1)();
+              return (bool)uVar4;
             }
-            if ((cg_vehicle_piece_damagesfx_threshold->current).value <= (float)param_3) {
-              G_GetTagTransform(param_1,local_14,(uint)param_2,(float (*) [3])local_64);
-              uVar7 = SND_FindAliasId(local_14->pieces[param_2].damageSound);
-              G_PlaySoundAliasAtPoint(local_40,uVar7);
+            if ((cg_vehicle_piece_damagesfx_threshold->current).value <= (float)damage) {
+              G_GetTagTransform(self,ddef,(uint)index,(float (*) [3])tagMat);
+              alias = SND_FindAliasId(ddef->pieces[index].damageSound);
+              G_PlaySoundAliasAtPoint(local_40,alias);
             }
           }
         }
         else {
-          local_19 = 1;
-          local_68 = (DestructibleStage *)0x0;
-          if (-1 < local_30) {
-            for (local_6c = local_30; local_6c < 5; local_6c = local_6c + 1) {
-              if ((local_14->pieces[param_2].stages[local_6c].showBone != 0) &&
-                 ((local_6c < local_10 || (local_10 < 0)))) {
-                local_68 = local_14->pieces[param_2].stages + local_6c;
-                local_70 = local_68->breakNotify;
-                if ((local_70 != (char *)0x0) &&
-                   ((Scr_DestructibleCallback(param_1,scr_const.broken,local_70,param_9),
-                    param_1->scr_vehicle != (scr_vehicle_s *)0x0 &&
-                    (param_1->scr_vehicle->nitrousVehicle != (NitrousVehicle *)0x0)))) {
+          needDObjUpdate = true;
+          stage = (DestructibleStage *)0x0;
+          if (-1 < prev_stage_index) {
+            for (i = prev_stage_index; i < 5; i = i + 1) {
+              if ((ddef->pieces[index].stages[i].showBone != 0) &&
+                 ((i < new_stage_index || (new_stage_index < 0)))) {
+                stage = ddef->pieces[index].stages + i;
+                notify = stage->breakNotify;
+                if ((notify != (char *)0x0) &&
+                   ((Scr_DestructibleCallback(self,scr_const.broken,notify,attacker),
+                    self->scr_vehicle != (scr_vehicle_s *)0x0 &&
+                    (self->scr_vehicle->nitrousVehicle != (NitrousVehicle *)0x0)))) {
                   NitrousVehicle::destructible_damage
-                            (param_1->scr_vehicle->nitrousVehicle,local_70,local_10);
+                            (self->scr_vehicle->nitrousVehicle,notify,new_stage_index);
                 }
               }
             }
           }
-          if (((local_20 != (DestructibleStage *)0x0) && (-1 < local_10)) &&
-             (0.0 < local_2c->maxTime)) {
-            local_7c = (int)(short)(int)((float)local_14->pieces[param_2].health *
-                                        local_2c->breakHealth);
-            local_78 = (int)local_24->pieceArray[param_2].health;
-            local_74 = (local_78 - local_7c) + 1;
+          if (((prev_stage != (DestructibleStage *)0x0) && (-1 < new_stage_index)) &&
+             (0.0 < new_stage->maxTime)) {
+            break_health = (int)(short)(int)((float)ddef->pieces[index].health *
+                                            new_stage->breakHealth);
+            current_health = (int)destructible->pieceArray[index].health;
+            damageNeeded = (current_health - break_health) + 1;
             Scr_DestructibleCallback
-                      (param_1,scr_const.breakafter,(uint)param_2,local_2c->maxTime,local_74);
+                      (self,scr_const.breakafter,(uint)index,new_stage->maxTime,damageNeeded);
           }
-          if (param_2 == '\0') {
-            (param_1->s).loopSoundId = 0;
-            (param_1->s).loopSoundFade = 0;
-            if ((-1 < local_10) && (local_80 = local_2c->loopSound, local_80 != (char *)0x0)) {
-              local_84 = SND_FindAliasId(local_80);
-              (param_1->s).loopSoundId = local_84;
-              (param_1->s).loopSoundFade = 1000;
+          if (index == '\0') {
+            (self->s).loopSoundId = 0;
+            (self->s).loopSoundFade = 0;
+            if ((-1 < new_stage_index) &&
+               (loopSoundName = new_stage->loopSound, loopSoundName != (char *)0x0)) {
+              soundIndex = SND_FindAliasId(loopSoundName);
+              (self->s).loopSoundId = soundIndex;
+              (self->s).loopSoundFade = 1000;
             }
-            if (local_24->pieceArray->health < 1) {
-              Scr_Notify(param_1,scr_const.destructible_base_piece_death,0);
+            if (destructible->pieceArray->health < 1) {
+              Scr_Notify(self,scr_const.destructible_base_piece_death,0);
             }
           }
         }
-        if ((((param_2 == '\0') && ((param_1->s).eType == 6)) &&
-            (local_2c != (DestructibleStage *)0x0)) &&
-           (local_14->model->physPreset != (PhysPreset *)0x0)) {
-          switch(param_6) {
+        if ((((index == '\0') && ((self->s).eType == 6)) && (new_stage != (DestructibleStage *)0x0))
+           && (ddef->model->physPreset != (PhysPreset *)0x0)) {
+          switch(mod) {
           case 3:
           case 4:
           case 5:
           case 6:
           case 0xf:
-            local_88 = (dynEnt_explodeForce->current).value;
+            scale = (dynEnt_explodeForce->current).value;
             break;
           default:
-            local_88 = (dynEnt_bulletForce->current).value;
+            scale = (dynEnt_bulletForce->current).value;
             break;
           case 0x11:
-            local_88 = 0.1;
+            scale = 0.1;
           }
-          local_94 = local_88 * *param_5;
-          local_90 = local_88 * param_5[1];
-          local_8c = local_88 * param_5[2];
-          ScriptMover_SetupPhysicsLaunch
-                    (&(param_1->s).lerp.pos,&(param_1->s).lerp.apos,param_4,&local_94);
+          force = scale * *dir;
+          local_90 = scale * dir[1];
+          local_8c = scale * dir[2];
+          ScriptMover_SetupPhysicsLaunch(&(self->s).lerp.pos,&(self->s).lerp.apos,point,&force);
         }
-        local_26 = false;
-        if (param_6 == 0x11) {
-          local_26 = 30000 < level.time - local_24->oldestBurnTime;
-          if (local_26) {
-            local_24->oldestBurnTime = level.time;
+        needFireUpdate = false;
+        if (mod == 0x11) {
+          bVar3 = 30000 < level.time - destructible->oldestBurnTime;
+          if (bVar3) {
+            destructible->oldestBurnTime = level.time;
           }
-          local_26 = local_24->pieceArray[param_2].burnData.burnTime == 0 || local_26;
-          local_24->pieceArray[param_2].burnData.burnTime = level.time;
+          needFireUpdate = destructible->pieceArray[index].burnData.burnTime == 0 || bVar3;
+          destructible->pieceArray[index].burnData.burnTime = level.time;
         }
-        if (param_7) {
-          for (local_95 = 0; bVar3 = local_19, (int)(uint)local_95 < local_14->numPieces;
-              local_95 = local_95 + 1) {
-            if (((local_14->pieces[local_95].parentPiece == param_2) && ((uint)param_2 != param_8))
-               && (iVar8 = (int)((float)param_3 * local_14->pieces[local_95].parentDamagePercent),
-                  iVar8 != 0)) {
-              bVar4 = DamagePiece(param_1,local_95,iVar8,param_4,param_5,param_6,true,param_8,
-                                  param_9,param_10 + 1);
-              local_19 = bVar3 | bVar4;
+        if (damageChildren) {
+          for (i_2 = '\0'; bVar3 = needDObjUpdate, (int)(uint)i_2 < ddef->numPieces;
+              i_2 = i_2 + '\x01') {
+            if (((ddef->pieces[i_2].parentPiece == index) && ((uint)index != excludeChild)) &&
+               (iVar8 = (int)((float)damage * ddef->pieces[i_2].parentDamagePercent), iVar8 != 0)) {
+              bVar5 = DamagePiece(self,i_2,iVar8,point,dir,mod,true,excludeChild,attacker,
+                                  recursiveDepth + 1);
+              needDObjUpdate = (bool)(bVar3 | bVar5);
             }
           }
         }
-        if ((local_25 != '\0') &&
-           (bVar4 = Destructible_HasParent(local_14,param_2), bVar3 = local_19, bVar4)) {
-          bVar4 = DamagePiece(param_1,local_14->pieces[param_2].parentPiece,param_3,param_4,param_5,
-                              param_6,true,(uint)param_2,param_9,param_10 + 1);
-          local_19 = bVar3 | bVar4;
+        if ((damageParent != false) &&
+           (bVar5 = Destructible_HasParent(ddef,index), bVar3 = needDObjUpdate, bVar5)) {
+          bVar5 = DamagePiece(self,ddef->pieces[index].parentPiece,damage,point,dir,mod,true,
+                              (uint)index,attacker,recursiveDepth + 1);
+          needDObjUpdate = (bool)(bVar3 | bVar5);
         }
       }
       else {
-        local_19 = 0;
+        needDObjUpdate = false;
       }
     }
   }
   else {
     Com_Printf(0x14,"Warning: Destructible (%s): The recusrion in DamagePiece is too deep.");
-    local_19 = 0;
+    needDObjUpdate = false;
   }
-  return (bool)local_19;
+  return needDObjUpdate;
 }
 
 
@@ -1567,12 +1583,12 @@ LAB_008168de:
 
 float __cdecl
 DestructibleRadiusDamage
-          (gentity_s *param_1,float *param_2,float param_3,float param_4,float param_5,int param_6,
-          gentity_s *param_7)
+          (gentity_s *self,float *point,float damgeInner,float damgeOuter,float radius,int mod,
+          gentity_s *attacker)
 
 {
   float *pfVar1;
-  byte bVar2;
+  bool bVar2;
   bool bVar3;
   int iVar4;
   float fVar5;
@@ -1584,193 +1600,194 @@ DestructibleRadiusDamage
   float local_15c;
   float local_158;
   float local_154;
-  float local_fc;
-  byte local_f1;
-  XModel *local_f0;
-  float local_ec;
+  float absorbedDamage;
+  float pieceToEntityDamage;
+  uchar boneIndex;
+  XModel *model;
+  float offset;
   float local_e8;
   float local_e4;
-  DObjAnimMat *local_e0;
-  float local_dc [3];
-  DestructiblePiece *local_d0;
-  float local_cc;
-  uint local_c8;
-  float local_c4;
+  DObjAnimMat *mat;
+  float boneLoc [3];
+  DestructiblePiece *piece;
+  float damage;
+  uint boneName;
+  float dir;
   float local_c0;
   float local_bc;
-  float local_b8;
+  float hitp;
   float local_b4;
   float local_b0;
-  float local_ac;
-  float local_a8;
-  byte local_a1;
-  float local_a0;
+  float dist;
+  float distSquared;
+  uchar index;
+  float leftTreadPoint;
   float local_9c;
   float local_98;
-  byte local_91;
-  float local_90;
-  float local_8c;
-  float local_88 [9];
+  bool needsDObjUpdate;
+  float smallestArmorDistance;
+  float rightTreadDamage;
+  float ent_axis [9];
   float local_64;
   float local_60;
   float local_5c;
-  float local_58;
-  float local_54;
+  float nonBaseDamage;
+  float leftTreadDir;
   float local_50;
   float local_4c;
-  float local_48;
-  float local_44;
-  float local_40;
-  Destructible *local_3c;
-  uint local_38;
-  float local_34;
+  float maxTreadShielding;
+  float radiusSquared;
+  float entityDamage;
+  Destructible *destructible;
+  int rightTreadIndex;
+  float rightTreadPoint;
   float local_30;
   float local_2c;
-  undefined1 local_25;
-  float local_24;
-  DestructibleDef *local_20;
-  float local_1c;
-  float local_18;
+  bool hitArmor;
+  float coreDistance;
+  DestructibleDef *ddef;
+  float nonBaseMax;
+  float rightTreadDir;
   float local_14;
   float local_10;
-  float local_c;
-  uint local_8;
+  float leftTreadDamage;
+  int leftTreadIndex;
   
-  local_3c = param_1->destructible;
-  local_20 = local_3c->ddef;
-  if (local_20->clientOnly == 0) {
-    local_91 = 0;
-    local_44 = param_5 * param_5;
-    Destructible_SetDebugRender(local_3c);
-    local_40 = 0.0;
-    local_58 = 0.0;
-    local_24 = 0.0;
-    local_90 = 3.4028235e+38;
-    AnglesToAxis((param_1->r).currentAngles,(float (*) [3])local_88);
-    local_64 = (param_1->r).currentOrigin[0];
-    local_60 = (param_1->r).currentOrigin[1];
-    local_5c = (param_1->r).currentOrigin[2];
-    local_8 = 0xffffffff;
-    local_c = 0.0;
-    local_38 = 0xffffffff;
-    local_8c = 0.0;
-    local_a0 = 0.0;
+  destructible = self->destructible;
+  ddef = destructible->ddef;
+  if (ddef->clientOnly == 0) {
+    needsDObjUpdate = false;
+    radiusSquared = radius * radius;
+    Destructible_SetDebugRender(destructible);
+    entityDamage = 0.0;
+    nonBaseDamage = 0.0;
+    coreDistance = 0.0;
+    smallestArmorDistance = 3.4028235e+38;
+    AnglesToAxis((self->r).currentAngles,(float (*) [3])ent_axis);
+    local_64 = (self->r).currentOrigin[0];
+    local_60 = (self->r).currentOrigin[1];
+    local_5c = (self->r).currentOrigin[2];
+    leftTreadIndex = -1;
+    leftTreadDamage = 0.0;
+    rightTreadIndex = -1;
+    rightTreadDamage = 0.0;
+    leftTreadPoint = 0.0;
     local_9c = 0.0;
     local_98 = 0.0;
-    local_54 = 0.0;
+    leftTreadDir = 0.0;
     local_50 = 0.0;
     local_4c = 0.0;
-    local_34 = 0.0;
+    rightTreadPoint = 0.0;
     local_30 = 0.0;
     local_2c = 0.0;
-    local_18 = 0.0;
+    rightTreadDir = 0.0;
     local_14 = 0.0;
     local_10 = 0.0;
-    local_25 = 0;
-    for (local_a1 = 0; bVar2 = local_91, (int)(uint)local_a1 < local_20->numPieces;
-        local_a1 = local_a1 + 1) {
-      local_d0 = local_20->pieces + local_a1;
-      local_c8 = Destructible_GetShowBoneNameForPiece(local_3c,(uint)local_a1);
-      if (local_c8 == 0) {
-        if ((local_a1 == 0) && (param_1->scr_vehicle != (scr_vehicle_s *)0x0)) {
-          bVar3 = VEH_ClampPointToBoundingBox(param_1,param_2,&local_b8);
-          if (!bVar3) {
-            local_b8 = *param_2;
-            local_b4 = param_2[1];
-            local_b0 = param_2[2];
+    hitArmor = false;
+    for (index = '\0'; bVar2 = needsDObjUpdate, (int)(uint)index < ddef->numPieces;
+        index = index + '\x01') {
+      piece = ddef->pieces + index;
+      boneName = Destructible_GetShowBoneNameForPiece(destructible,(uint)index);
+      if (boneName == 0) {
+        if ((index == '\0') && (self->scr_vehicle != (scr_vehicle_s *)0x0)) {
+          bVar2 = VEH_ClampPointToBoundingBox(self,point,&hitp);
+          if (!bVar2) {
+            hitp = *point;
+            local_b4 = point[1];
+            local_b0 = point[2];
           }
         }
         else {
-          local_b8 = (param_1->r).currentOrigin[0];
-          local_b4 = (param_1->r).currentOrigin[1];
-          local_b0 = (param_1->r).currentOrigin[2];
+          hitp = (self->r).currentOrigin[0];
+          local_b4 = (self->r).currentOrigin[1];
+          local_b0 = (self->r).currentOrigin[2];
         }
 LAB_008173d8:
-        bVar2 = local_91;
-        local_c4 = local_b8 - *param_2;
-        local_c0 = local_b4 - param_2[1];
-        local_bc = local_b0 - param_2[2];
-        local_a8 = local_c4 * local_c4 + local_c0 * local_c0 + local_bc * local_bc;
-        if (local_a8 < local_44) {
-          local_ac = SQRT(local_a8);
-          fVar5 = local_ac;
-          if ((((local_a1 != 0) && (fVar5 = local_24, 0 < local_3c->pieceArray[local_a1].health)) &&
-              (local_d0->enableLabel != scr_const.left_tread)) &&
-             ((local_d0->enableLabel != scr_const.right_tread && (local_ac < local_90)))) {
-            local_90 = local_ac;
+        bVar2 = needsDObjUpdate;
+        dir = hitp - *point;
+        local_c0 = local_b4 - point[1];
+        local_bc = local_b0 - point[2];
+        distSquared = dir * dir + local_c0 * local_c0 + local_bc * local_bc;
+        if (distSquared < radiusSquared) {
+          dist = SQRT(distSquared);
+          fVar5 = dist;
+          if ((((index != '\0') &&
+               (fVar5 = coreDistance, 0 < destructible->pieceArray[index].health)) &&
+              (piece->enableLabel != scr_const.left_tread)) &&
+             ((piece->enableLabel != scr_const.right_tread && (dist < smallestArmorDistance)))) {
+            smallestArmorDistance = dist;
           }
-          local_24 = fVar5;
-          local_cc = ((param_3 - param_4) * (1.0 - local_ac / param_5) + param_4) *
-                     local_d0->explosiveDamageScale;
-          if (local_ac <= 0.001) {
-            local_c4 = 0.0;
+          coreDistance = fVar5;
+          damage = ((damgeInner - damgeOuter) * (1.0 - dist / radius) + damgeOuter) *
+                   piece->explosiveDamageScale;
+          if (dist <= 0.001) {
+            dir = 0.0;
             local_c0 = 0.0;
             local_bc = 1.0;
           }
           else {
-            fVar5 = 1.0 / local_ac;
-            local_c4 = fVar5 * local_c4;
+            fVar5 = 1.0 / dist;
+            dir = fVar5 * dir;
             local_c0 = fVar5 * local_c0;
             local_bc = fVar5 * local_bc;
           }
-          if ((0.0 < local_d0->entityDamageTransfer) &&
-             (fVar5 = local_d0->entityDamageTransfer * local_cc, local_40 < fVar5)) {
-            local_40 = fVar5;
+          if ((0.0 < piece->entityDamageTransfer) &&
+             (fVar5 = piece->entityDamageTransfer * damage, entityDamage < fVar5)) {
+            entityDamage = fVar5;
           }
-          if (local_d0->enableLabel == scr_const.left_tread) {
-            local_8 = (uint)local_a1;
-            local_a0 = local_b8;
+          if (piece->enableLabel == scr_const.left_tread) {
+            leftTreadIndex = (int)index;
+            leftTreadPoint = hitp;
             local_9c = local_b4;
             local_98 = local_b0;
-            local_54 = local_c4;
+            leftTreadDir = dir;
             local_50 = local_c0;
             local_4c = local_bc;
-            local_c = local_cc;
+            leftTreadDamage = damage;
           }
-          else if (local_d0->enableLabel == scr_const.right_tread) {
-            local_38 = (uint)local_a1;
-            local_34 = local_b8;
+          else if (piece->enableLabel == scr_const.right_tread) {
+            rightTreadIndex = (int)index;
+            rightTreadPoint = hitp;
             local_30 = local_b4;
             local_2c = local_b0;
-            local_18 = local_c4;
+            rightTreadDir = dir;
             local_14 = local_c0;
             local_10 = local_bc;
-            local_8c = local_cc;
+            rightTreadDamage = damage;
           }
           else {
-            if ((local_a1 != 0) && (0 < local_3c->pieceArray[local_a1].health)) {
-              local_fc = local_cc - local_d0->entityDamageTransfer * local_cc;
-              if (local_fc < 0.0) {
-                local_fc = 0.0;
+            if ((index != '\0') && (0 < destructible->pieceArray[index].health)) {
+              absorbedDamage = damage - piece->entityDamageTransfer * damage;
+              if (absorbedDamage < 0.0) {
+                absorbedDamage = 0.0;
               }
-              if (local_58 < local_fc) {
-                local_58 = local_fc;
+              if (nonBaseDamage < absorbedDamage) {
+                nonBaseDamage = absorbedDamage;
               }
             }
-            bVar3 = DamagePiece(param_1,local_a1,(int)local_cc,&local_b8,&local_c4,param_6,true,-1,
-                                param_7,0);
-            local_91 = bVar2 | bVar3;
+            bVar3 = DamagePiece(self,index,(int)damage,&hitp,&dir,mod,true,-1,attacker,0);
+            needsDObjUpdate = (bool)(bVar2 | bVar3);
           }
         }
       }
       else {
-        local_f1 = 0;
-        local_f0 = local_20->model;
-        local_e0 = G_DObjGetLocalTagMatrix(param_1,local_c8);
-        iVar4 = XModelGetBoneIndex(local_f0,local_c8,0,&local_f1);
+        boneIndex = '\0';
+        model = ddef->model;
+        mat = G_DObjGetLocalTagMatrix(self,boneName);
+        iVar4 = XModelGetBoneIndex(model,boneName,0,&boneIndex);
         if (iVar4 == 0) {
-          local_b8 = (param_1->r).currentOrigin[0];
-          local_b4 = (param_1->r).currentOrigin[1];
-          local_b0 = (param_1->r).currentOrigin[2];
+          hitp = (self->r).currentOrigin[0];
+          local_b4 = (self->r).currentOrigin[1];
+          local_b0 = (self->r).currentOrigin[2];
           goto LAB_008173d8;
         }
-        if (local_e0 != (DObjAnimMat *)0x0) {
-          pfVar1 = (local_f0->field18_0xb8).localBoneInfo[local_f1].offset;
-          local_ec = *pfVar1;
+        if (mat != (DObjAnimMat *)0x0) {
+          pfVar1 = (model->field18_0xb8).localBoneInfo[boneIndex].offset;
+          offset = *pfVar1;
           local_e8 = pfVar1[1];
           local_e4 = pfVar1[2];
-          MatrixTransformVectorQuatTrans(&local_ec,local_e0,local_dc);
-          MatrixTransformVector43(local_dc,(float (*) [3])local_88,&local_b8);
+          MatrixTransformVectorQuatTrans(&offset,mat,boneLoc);
+          MatrixTransformVector43(boneLoc,(float (*) [3])ent_axis,&hitp);
           goto LAB_008173d8;
         }
         Com_PrintError(0,
@@ -1778,82 +1795,83 @@ LAB_008173d8:
                       );
       }
     }
-    fVar5 = (vehicle_damage_max_shielding->current).value * local_40;
-    local_154 = (float)local_20->pieces->health;
+    fVar5 = (vehicle_damage_max_shielding->current).value * entityDamage;
+    local_154 = (float)ddef->pieces->health;
     if (0.0 <= local_154 - fVar5) {
       local_154 = fVar5;
     }
-    local_1c = local_154;
-    if (local_154 - local_58 < 0.0) {
+    nonBaseMax = local_154;
+    if (local_154 - nonBaseDamage < 0.0) {
       local_158 = local_154;
     }
     else {
-      local_158 = local_58;
+      local_158 = nonBaseDamage;
     }
-    local_58 = local_158;
-    if (-1 < (int)local_8) {
-      local_15c = local_c - local_158;
+    nonBaseDamage = local_158;
+    if (-1 < leftTreadIndex) {
+      local_15c = leftTreadDamage - local_158;
       if (local_15c - 0.0 < 0.0) {
         local_15c = 0.0;
       }
-      local_c = local_15c;
-      bVar3 = DamagePiece(param_1,(uchar)local_8,(int)local_15c,&local_a0,&local_54,param_6,true,-1,
-                          param_7,0);
-      local_91 = bVar2 | bVar3;
+      leftTreadDamage = local_15c;
+      bVar3 = DamagePiece(self,(uchar)leftTreadIndex,(int)local_15c,&leftTreadPoint,&leftTreadDir,
+                          mod,true,-1,attacker,0);
+      needsDObjUpdate = (bool)(bVar2 | bVar3);
     }
-    bVar2 = local_91;
-    if (-1 < (int)local_38) {
-      local_160 = local_8c - local_58;
+    bVar2 = needsDObjUpdate;
+    if (-1 < rightTreadIndex) {
+      local_160 = rightTreadDamage - nonBaseDamage;
       if (local_160 - 0.0 < 0.0) {
         local_160 = 0.0;
       }
-      local_8c = local_160;
-      bVar3 = DamagePiece(param_1,(uchar)local_38,(int)local_160,&local_34,&local_18,param_6,true,-1
-                          ,param_7,0);
-      local_91 = bVar2 | bVar3;
+      rightTreadDamage = local_160;
+      bVar3 = DamagePiece(self,(uchar)rightTreadIndex,(int)local_160,&rightTreadPoint,&rightTreadDir
+                          ,mod,true,-1,attacker,0);
+      needsDObjUpdate = (bool)(bVar2 | bVar3);
     }
-    if (local_c - local_8c < 0.0) {
-      local_164 = local_8c;
-    }
-    else {
-      local_164 = local_c;
-    }
-    local_48 = local_164;
-    if (local_91 != 0) {
-      DestructibleExplosiveDamageEvent(param_1,param_2,param_5,param_6);
-      G_DObjUpdate(param_1);
-    }
-    if ((local_90 < 1.0) || (1.0 < local_24)) {
-      bVar3 = true;
+    if (leftTreadDamage - rightTreadDamage < 0.0) {
+      local_164 = rightTreadDamage;
     }
     else {
-      bVar3 = false;
+      local_164 = leftTreadDamage;
     }
-    if (param_1->scr_vehicle != (scr_vehicle_s *)0x0) {
-      local_16c = local_48 - local_20->pieces[local_8].entityDamageTransfer * local_48;
+    maxTreadShielding = local_164;
+    if (needsDObjUpdate != false) {
+      DestructibleExplosiveDamageEvent(self,point,radius,mod);
+      G_DObjUpdate(self);
+    }
+    if ((smallestArmorDistance < 1.0) || (1.0 < coreDistance)) {
+      bVar2 = true;
+    }
+    else {
+      bVar2 = false;
+    }
+    if (self->scr_vehicle != (scr_vehicle_s *)0x0) {
+      local_16c = maxTreadShielding -
+                  ddef->pieces[leftTreadIndex].entityDamageTransfer * maxTreadShielding;
       if (local_16c - 0.0 < 0.0) {
         local_16c = 0.0;
       }
-      if (!bVar3) {
-        local_58 = 0.0;
+      if (!bVar2) {
+        nonBaseDamage = 0.0;
       }
-      if (local_58 - local_16c < 0.0) {
+      if (nonBaseDamage - local_16c < 0.0) {
         local_170 = local_16c;
       }
       else {
-        local_170 = local_58;
+        local_170 = nonBaseDamage;
       }
-      local_40 = local_40 - local_170;
-      if (local_40 - 0.0 < 0.0) {
+      entityDamage = entityDamage - local_170;
+      if (entityDamage - 0.0 < 0.0) {
         local_174 = 0.0;
-        local_40 = local_174;
+        entityDamage = local_174;
       }
     }
   }
   else {
-    local_40 = 0.0;
+    entityDamage = 0.0;
   }
-  return local_40;
+  return entityDamage;
 }
 
 
@@ -1865,102 +1883,101 @@ LAB_008173d8:
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-DestructibleDamage(gentity_s *param_1,gentity_s *param_2,float *param_3,float *param_4,int param_5,
-                  int param_6,uint param_7,uint param_8)
+DestructibleDamage(gentity_s *self,gentity_s *attacker,float *dir,float *point,int damage,int mod,
+                  uint modelIndex,uint partName)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  byte local_25;
-  int local_24;
-  byte local_1e;
-  char local_1d;
-  float local_1c;
+  uchar index_2;
+  int randDamage;
+  uchar index;
+  bool needsDObjUpdate;
+  float hitd;
   float local_18;
   float local_14;
-  DestructibleDef *local_10;
-  int local_c;
-  Destructible *local_8;
+  DestructibleDef *ddef;
+  int entityDamage;
+  Destructible *destructible;
   
-  local_8 = param_1->destructible;
-  local_c = 0;
-  iVar3 = local_c;
-  if (local_8 != (Destructible *)0x0) {
-    local_10 = local_8->ddef;
-    if (local_10->clientOnly == 0) {
-      Destructible_SetDebugRender(local_8);
-      if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  destructible = self->destructible;
+  entityDamage = 0;
+  iVar3 = entityDamage;
+  if (destructible != (Destructible *)0x0) {
+    ddef = destructible->ddef;
+    if (ddef->clientOnly == 0) {
+      Destructible_SetDebugRender(destructible);
+      if ((((((uint)*point & 0x7f800000) == 0x7f800000) ||
+           (((uint)point[1] & 0x7f800000) == 0x7f800000)) ||
+          (((uint)point[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x624,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      if ((((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-           (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-          (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) &&
+      if ((((((uint)*dir & 0x7f800000) == 0x7f800000) || (((uint)dir[1] & 0x7f800000) == 0x7f800000)
+           ) || (((uint)dir[2] & 0x7f800000) == 0x7f800000)) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x625,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      local_1c = *param_3;
-      local_18 = param_3[1];
-      local_14 = param_3[2];
-      if (local_1c * local_1c + local_18 * local_18 + local_14 * local_14 < 0.001) {
-        local_1c = 0.0;
+      hitd = *dir;
+      local_18 = dir[1];
+      local_14 = dir[2];
+      if (hitd * hitd + local_18 * local_18 + local_14 * local_14 < 0.001) {
+        hitd = 0.0;
         local_18 = 0.0;
         local_14 = 1.0;
       }
-      if (((param_6 == 5) || (param_6 == 3)) || (param_6 == 0x10)) {
-        Vec3NormalizeFast(&local_1c);
+      if (((mod == 5) || (mod == 3)) || (mod == 0x10)) {
+        Vec3NormalizeFast(&hitd);
       }
-      if (param_6 == 0x11) {
-        local_1d = '\0';
-        for (local_1e = 0; (int)(uint)local_1e < local_10->numPieces; local_1e = local_1e + 1) {
+      if (mod == 0x11) {
+        needsDObjUpdate = false;
+        for (index = '\0'; (int)(uint)index < ddef->numPieces; index = index + '\x01') {
           iVar3 = G_rand();
-          local_24 = iVar3 % param_5 + 1;
-          bVar2 = DamagePiece(param_1,local_1e,local_24,param_4,&local_1c,0x11,false,-1,param_2,0);
+          randDamage = iVar3 % damage + 1;
+          bVar2 = DamagePiece(self,index,randDamage,point,&hitd,0x11,false,-1,attacker,0);
           if (bVar2) {
-            local_1d = '\x01';
+            needsDObjUpdate = true;
           }
         }
-        iVar3 = param_5;
-        if (local_1d != '\0') {
-          DestructibleBulletDamageEvent(param_1,param_4,&local_1c,0x11);
-          G_DObjUpdate(param_1);
+        iVar3 = damage;
+        if (needsDObjUpdate != false) {
+          DestructibleBulletDamageEvent(self,point,&hitd,0x11);
+          G_DObjUpdate(self);
         }
       }
       else {
         bVar2 = Destructible_GetPieceIndexFromBoneName
-                          (param_1->destructible,param_7,param_8,&local_25);
-        iVar3 = local_c;
+                          (self->destructible,modelIndex,partName,&index_2);
+        iVar3 = entityDamage;
         if (bVar2) {
-          if (((param_6 == 5) || (param_6 == 3)) || (param_6 == 0xf)) {
-            param_5 = (int)((float)param_5 * local_10->pieces[local_25].explosiveDamageScale);
+          if (((mod == 5) || (mod == 3)) || (mod == 0xf)) {
+            damage = (int)((float)damage * ddef->pieces[index_2].explosiveDamageScale);
           }
-          else if (param_6 == 7) {
-            param_5 = (int)((float)param_5 * local_10->pieces[local_25].meleeDamageScale);
+          else if (mod == 7) {
+            damage = (int)((float)damage * ddef->pieces[index_2].meleeDamageScale);
           }
-          else if (param_6 == 0x10) {
-            param_5 = (int)((float)param_5 * local_10->pieces[local_25].impactDamageScale);
+          else if (mod == 0x10) {
+            damage = (int)((float)damage * ddef->pieces[index_2].impactDamageScale);
           }
           else {
-            param_5 = (int)((float)param_5 * local_10->pieces[local_25].bulletDamageScale);
+            damage = (int)((float)damage * ddef->pieces[index_2].bulletDamageScale);
           }
-          if ((param_6 != 7) && (0.0 < local_10->pieces[local_25].entityDamageTransfer)) {
-            local_c = (int)((float)param_5 * local_10->pieces[local_25].entityDamageTransfer);
+          if ((mod != 7) && (0.0 < ddef->pieces[index_2].entityDamageTransfer)) {
+            entityDamage = (int)((float)damage * ddef->pieces[index_2].entityDamageTransfer);
           }
-          bVar2 = DamagePiece(param_1,local_25,param_5,param_4,&local_1c,param_6,true,-1,param_2,0);
-          iVar3 = local_c;
+          bVar2 = DamagePiece(self,index_2,damage,point,&hitd,mod,true,-1,attacker,0);
+          iVar3 = entityDamage;
           if (bVar2) {
-            DestructibleBulletDamageEvent(param_1,param_4,&local_1c,param_6);
-            G_DObjUpdate(param_1);
-            iVar3 = local_c;
+            DestructibleBulletDamageEvent(self,point,&hitd,mod);
+            G_DObjUpdate(self);
+            iVar3 = entityDamage;
           }
         }
       }
@@ -1980,14 +1997,15 @@ DestructibleDamage(gentity_s *param_1,gentity_s *param_2,float *param_3,float *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DestructibleClientOnlyCreate(centity_s *param_1,DestructibleDef *param_2)
+void __cdecl CG_DestructibleClientOnlyCreate(centity_s *ent,DestructibleDef *ddef)
 
 {
   code *pcVar1;
   bool bVar2;
   Destructible *pDVar3;
+  XModel *model;
   
-  if (param_2 == (DestructibleDef *)0x0) {
+  if (ddef == (DestructibleDef *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x66f,0,
                              "%s");
     if (!bVar2) {
@@ -1996,10 +2014,10 @@ void __cdecl CG_DestructibleClientOnlyCreate(centity_s *param_1,DestructibleDef 
       return;
     }
   }
-  pDVar3 = CG_GetFreeDestructible((uint)(param_1->pose).localClientNum,(param_1->nextState).number);
-  param_1->destructible = pDVar3;
-  param_1->destructible->ddef = param_2;
-  if ((param_1->nextState).number == 0x3ff) {
+  pDVar3 = CG_GetFreeDestructible((uint)(ent->pose).localClientNum,(ent->nextState).number);
+  ent->destructible = pDVar3;
+  ent->destructible->ddef = ddef;
+  if ((ent->nextState).number == 0x3ff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x672,0,
                              "%s");
     if (!bVar2) {
@@ -2008,44 +2026,45 @@ void __cdecl CG_DestructibleClientOnlyCreate(centity_s *param_1,DestructibleDef 
       return;
     }
   }
-  param_1->destructible->entNum = (param_1->nextState).number;
-  (param_1->nextState).eType = 6;
-  (param_1->nextState).lerp.pos.trBase[0] = (param_1->pose).origin[0];
-  (param_1->nextState).lerp.pos.trBase[1] = (param_1->pose).origin[1];
-  (param_1->nextState).lerp.pos.trBase[2] = (param_1->pose).origin[2];
-  (param_1->currentState).pos.trBase[0] = (param_1->pose).origin[0];
-  (param_1->currentState).pos.trBase[1] = (param_1->pose).origin[1];
-  (param_1->currentState).pos.trBase[2] = (param_1->pose).origin[2];
-  (param_1->nextState).lerp.apos.trBase[0] = (param_1->pose).angles[0];
-  (param_1->nextState).lerp.apos.trBase[1] = (param_1->pose).angles[1];
-  (param_1->nextState).lerp.apos.trBase[2] = (param_1->pose).angles[2];
-  (param_1->currentState).apos.trBase[0] = (param_1->pose).angles[0];
-  (param_1->currentState).apos.trBase[1] = (param_1->pose).angles[1];
-  (param_1->currentState).apos.trBase[2] = (param_1->pose).angles[2];
-  (param_1->nextState).lerp.eFlags = (param_1->nextState).lerp.eFlags | 0x20000;
+  ent->destructible->entNum = (ent->nextState).number;
+  (ent->nextState).eType = 6;
+  (ent->nextState).lerp.pos.trBase[0] = (ent->pose).origin[0];
+  (ent->nextState).lerp.pos.trBase[1] = (ent->pose).origin[1];
+  (ent->nextState).lerp.pos.trBase[2] = (ent->pose).origin[2];
+  (ent->currentState).pos.trBase[0] = (ent->pose).origin[0];
+  (ent->currentState).pos.trBase[1] = (ent->pose).origin[1];
+  (ent->currentState).pos.trBase[2] = (ent->pose).origin[2];
+  (ent->nextState).lerp.apos.trBase[0] = (ent->pose).angles[0];
+  (ent->nextState).lerp.apos.trBase[1] = (ent->pose).angles[1];
+  (ent->nextState).lerp.apos.trBase[2] = (ent->pose).angles[2];
+  (ent->currentState).apos.trBase[0] = (ent->pose).angles[0];
+  (ent->currentState).apos.trBase[1] = (ent->pose).angles[1];
+  (ent->currentState).apos.trBase[2] = (ent->pose).angles[2];
+  (ent->nextState).lerp.eFlags = (ent->nextState).lerp.eFlags | 0x20000;
   CG_PreProcess_GetDObj
-            ((uint)(param_1->pose).localClientNum,(param_1->nextState).number,
-             (int)(param_1->nextState).eType,param_2->model,(XModel *)0x0);
-  (param_1->nextState).lerp.u.turret.gunAngles[0] = 0.0;
-  (param_1->nextState).lerp.u.turret.gunAngles[1] = 0.0;
-  (param_1->nextState).lerp.u.turret.gunAngles[2] = 0.0;
-  (param_1->nextState).lerp.u.turret.ownerNum = 0;
-  (param_1->nextState).lerp.u.turret.heatVal = 0.0;
-  (param_1->nextState).lerp.u.turret.overheating = 0;
-  (param_1->nextState).lerp.u.player.meleeWeapon = 0x3ff;
+            ((uint)(ent->pose).localClientNum,(ent->nextState).number,(int)(ent->nextState).eType,
+             ddef->model,(XModel *)0x0);
+  (ent->nextState).lerp.u.turret.gunAngles[0] = 0.0;
+  (ent->nextState).lerp.u.turret.gunAngles[1] = 0.0;
+  (ent->nextState).lerp.u.turret.gunAngles[2] = 0.0;
+  (ent->nextState).lerp.u.turret.ownerNum = 0;
+  (ent->nextState).lerp.u.turret.heatVal = 0.0;
+  (ent->nextState).lerp.u.turret.overheating = 0;
+  (ent->nextState).lerp.u.player.meleeWeapon = 0x3ff;
   return;
 }
 
 
 // 00818290  CG_DestructibleUpdate  (physics/destructible.cpp:1675)
 
-/* WARNING: Variable defined which should be unmapped: param_3 */
+/* WARNING: Variable defined which should be unmapped: numModels */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-uint __cdecl CG_DestructibleUpdate(centity_s *param_1,DObjModel_s *param_2,uint param_3,int param_4)
+uint __cdecl
+CG_DestructibleUpdate(centity_s *ent,DObjModel_s *dobjModels,uint numModels,int localClientNum)
 
 {
   code *pcVar1;
@@ -2056,16 +2075,20 @@ uint __cdecl CG_DestructibleUpdate(centity_s *param_1,DObjModel_s *param_2,uint 
   destructible_gamestate *pdVar6;
   DESTRUCTIBLE_PIECE_INFO *pDVar7;
   int iVar8;
-  byte local_12;
-  byte local_11;
-  DestructibleDef *local_c;
+  int stage;
+  char *loopSoundName;
+  uchar i_2;
+  uchar i;
+  char *destructibleName;
+  DestructibleDef *ddef;
+  destructible_gamestate *dgs;
   
-  if ((((((param_1->nextState).lerp.eFlags & 0x20000U) != 0) && ((param_1->nextState).eType != 1))
-      && ((param_1->nextState).eType != 2)) &&
-     ((((param_1->nextState).eType == 0xe || ((param_1->nextState).eType == 0x10)) ||
-      ((param_1->nextState).eType == 6)))) {
-    if (param_1->destructible == (Destructible *)0x0) {
-      pcVar4 = CL_GetConfigString((param_1->nextState).un1.scale + 0xc6c);
+  if ((((((ent->nextState).lerp.eFlags & 0x20000U) != 0) && ((ent->nextState).eType != 1)) &&
+      ((ent->nextState).eType != 2)) &&
+     ((((ent->nextState).eType == 0xe || ((ent->nextState).eType == 0x10)) ||
+      ((ent->nextState).eType == 6)))) {
+    if (ent->destructible == (Destructible *)0x0) {
+      pcVar4 = CL_GetConfigString((ent->nextState).un1.scale + 0xc6c);
       if ((pcVar4 == (char *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x69b,0,"%s"), !bVar2)) {
@@ -2073,8 +2096,8 @@ uint __cdecl CG_DestructibleUpdate(centity_s *param_1,DObjModel_s *param_2,uint 
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      local_c = DestructibleDefPrecache(pcVar4);
-      if ((local_c == (DestructibleDef *)0x0) &&
+      ddef = DestructibleDefPrecache(pcVar4);
+      if ((ddef == (DestructibleDef *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x69e,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2083,8 +2106,8 @@ uint __cdecl CG_DestructibleUpdate(centity_s *param_1,DObjModel_s *param_2,uint 
       }
     }
     else {
-      local_c = param_1->destructible->ddef;
-      if ((local_c == (DestructibleDef *)0x0) &&
+      ddef = ent->destructible->ddef;
+      if ((ddef == (DestructibleDef *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x696,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2092,137 +2115,136 @@ uint __cdecl CG_DestructibleUpdate(centity_s *param_1,DObjModel_s *param_2,uint 
         return uVar3;
       }
     }
-    if (local_c != (DestructibleDef *)0x0) {
-      if ((param_1 == (centity_s *)0x0) &&
+    if (ddef != (DestructibleDef *)0x0) {
+      if ((ent == (centity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x6a4,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      if ((param_2 == (DObjModel_s *)0x0) &&
+      if ((dobjModels == (DObjModel_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x6a5,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      if (param_1->destructible == (Destructible *)0x0) {
-        pDVar5 = CG_GetFreeDestructible(param_4,(param_1->nextState).number);
-        param_1->destructible = pDVar5;
-        param_1->destructible->ddef = local_c;
+      if (ent->destructible == (Destructible *)0x0) {
+        pDVar5 = CG_GetFreeDestructible(localClientNum,(ent->nextState).number);
+        ent->destructible = pDVar5;
+        ent->destructible->ddef = ddef;
       }
-      else if ((param_1->destructible->entNum != (param_1->nextState).number) &&
+      else if ((ent->destructible->entNum != (ent->nextState).number) &&
               (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp"
                                         ,0x6ae,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      if ((param_1->destructible->ddef == (DestructibleDef *)0x0) &&
+      if ((ent->destructible->ddef == (DestructibleDef *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x6b1,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      if (param_1->destructible == (Destructible *)0x0) {
+      if (ent->destructible == (Destructible *)0x0) {
         Com_Error(ERR_DROP,"\x15Hit max destructible count [%d] when creating %s\n");
       }
       else {
-        if (((param_1->nextState).number == 0x3ff) &&
+        if (((ent->nextState).number == 0x3ff) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                      0x6b5,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return uVar3;
         }
-        param_1->destructible->entNum = (param_1->nextState).number;
+        ent->destructible->entNum = (ent->nextState).number;
       }
-      if ((param_3 != 1) &&
+      if ((numModels != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x6bd,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         uVar3 = (*pcVar1)();
         return uVar3;
       }
-      pdVar6 = Destructible_FindGameState((param_1->nextState).number,param_4);
-      if ((param_1->destructible->flags & 2) == 0) {
+      pdVar6 = Destructible_FindGameState((ent->nextState).number,localClientNum);
+      if ((ent->destructible->flags & 2) == 0) {
         if (g_cgPieceArrayHunk == (HunkUser *)0x0) {
           g_cgPieceArrayHunk =
                Hunk_UserCreateFromBuffer
                          (g_cgPieceArrayBuffer,0x12000,HU_SCHEME_FIRSTFIT,0,(void *)0x0,
                           "DesctructiblePieces",0);
         }
-        pDVar7 = Hunk_UserAlloc(g_cgPieceArrayHunk,local_c->numPieces * 0x18,4,(char *)0x0);
-        param_1->destructible->pieceArray = pDVar7;
-        memset((uchar *)param_1->destructible->pieceArray,'\0',local_c->numPieces * 0x18);
-        if ((param_1->destructible->pieceArray == (DESTRUCTIBLE_PIECE_INFO *)0x0) &&
+        pDVar7 = Hunk_UserAlloc(g_cgPieceArrayHunk,ddef->numPieces * 0x18,4,(char *)0x0);
+        ent->destructible->pieceArray = pDVar7;
+        memset((uchar *)ent->destructible->pieceArray,'\0',ddef->numPieces * 0x18);
+        if ((ent->destructible->pieceArray == (DESTRUCTIBLE_PIECE_INFO *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                      0x6cd,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return uVar3;
         }
-        for (local_11 = 0; (int)(uint)local_11 < local_c->numPieces; local_11 = local_11 + 1) {
-          param_1->destructible->pieceArray[local_11].health =
-               (short)local_c->pieces[local_11].health;
+        for (i = '\0'; (int)(uint)i < ddef->numPieces; i = i + '\x01') {
+          ent->destructible->pieceArray[i].health = (short)ddef->pieces[i].health;
           if (pdVar6 != (destructible_gamestate *)0x0) {
-            param_1->destructible->pieceArray[local_11].health = pdVar6->health[local_11];
+            ent->destructible->pieceArray[i].health = pdVar6->health[i];
           }
-          param_1->destructible->pieceArray[local_11].burnData.fx = 0;
-          param_1->destructible->pieceArray[local_11].burnData.burnTime = 0;
-          param_1->destructible->pieceArray[local_11].burnData.sndId = 0;
+          ent->destructible->pieceArray[i].burnData.fx = 0;
+          ent->destructible->pieceArray[i].burnData.burnTime = 0;
+          ent->destructible->pieceArray[i].burnData.sndId = 0;
         }
-        if (local_c->pristineModel != (XModel *)0x0) {
-          param_1->destructible->flags = param_1->destructible->flags | 4;
+        if (ddef->pristineModel != (XModel *)0x0) {
+          ent->destructible->flags = ent->destructible->flags | 4;
         }
       }
-      for (local_12 = 0; (int)(uint)local_12 < local_c->numPieces; local_12 = local_12 + 1) {
-        if ((local_c->pieces[local_12].stages[0].showBone == 0) &&
+      for (i_2 = '\0'; (int)(uint)i_2 < ddef->numPieces; i_2 = i_2 + '\x01') {
+        if ((ddef->pieces[i_2].stages[0].showBone == 0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                      0x6e2,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return uVar3;
         }
-        bVar2 = CG_IsDestructiblePieceDisabled((uint)local_c->pieces[local_12].enableLabel);
-        if ((!bVar2) && (local_12 == 0)) {
-          if ((param_1->destructible->flags & 4) == 0) {
-            param_2->model = local_c->model;
+        bVar2 = CG_IsDestructiblePieceDisabled((uint)ddef->pieces[i_2].enableLabel);
+        if ((!bVar2) && (i_2 == '\0')) {
+          if ((ent->destructible->flags & 4) == 0) {
+            dobjModels->model = ddef->model;
           }
           else {
-            param_2->model = local_c->pristineModel;
+            dobjModels->model = ddef->pristineModel;
           }
-          (param_1->nextState).loopSoundId = 0;
-          (param_1->nextState).loopSoundFade = 1000;
+          (ent->nextState).loopSoundId = 0;
+          (ent->nextState).loopSoundFade = 1000;
           iVar8 = Destructible_GetDestructibleStage
-                            (local_c,0,(int)param_1->destructible->pieceArray->health);
-          pcVar4 = local_c->pieces->stages[iVar8].loopSound;
+                            (ddef,0,(int)ent->destructible->pieceArray->health);
+          pcVar4 = ddef->pieces->stages[iVar8].loopSound;
           if (pcVar4 != (char *)0x0) {
             uVar3 = SND_FindAliasId(pcVar4);
-            (param_1->nextState).loopSoundId = uVar3;
-            (param_1->nextState).loopSoundFade = 1000;
+            (ent->nextState).loopSoundId = uVar3;
+            (ent->nextState).loopSoundFade = 1000;
           }
         }
       }
       if (pdVar6 != (destructible_gamestate *)0x0) {
-        Destructible_RemoveGameState((param_1->nextState).number,param_4);
+        Destructible_RemoveGameState((ent->nextState).number,localClientNum);
       }
-      param_1->destructible->flags = param_1->destructible->flags | 2;
-      if ((param_1->destructible->flags & 4) == 0) {
-        Destructible_GetHideParts(param_1->destructible,(param_1->nextState).partBits);
+      ent->destructible->flags = ent->destructible->flags | 2;
+      if ((ent->destructible->flags & 4) == 0) {
+        Destructible_GetHideParts(ent->destructible,(ent->nextState).partBits);
       }
       else {
-        (param_1->nextState).partBits[0] = 0;
-        (param_1->nextState).partBits[1] = 0;
-        (param_1->nextState).partBits[2] = 0;
-        (param_1->nextState).partBits[3] = 0;
-        (param_1->nextState).partBits[4] = 0;
+        (ent->nextState).partBits[0] = 0;
+        (ent->nextState).partBits[1] = 0;
+        (ent->nextState).partBits[2] = 0;
+        (ent->nextState).partBits[3] = 0;
+        (ent->nextState).partBits[4] = 0;
       }
     }
   }
-  return param_3;
+  return numModels;
 }
 
 
@@ -2234,50 +2256,56 @@ uint __cdecl CG_DestructibleUpdate(centity_s *param_1,DObjModel_s *param_2,uint 
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 int __cdecl
-CG_SpawnPhysObjForBone
-          (centity_s *param_1,int param_2,int param_3,float *param_4,float *param_5,int param_6)
+CG_SpawnPhysObjForBone(centity_s *cent,int pieceIndex,int boneName,float *hitp,float *hitd,int mod)
 
 {
   byte bVar1;
-  DestructibleDef *pDVar2;
-  code *pcVar3;
-  bool bVar4;
-  cg_s *pcVar5;
-  PhysPreset *pPVar6;
-  int iVar7;
-  float fVar8;
-  int local_20;
+  DestructibleDef *ddef_00;
+  code *pcVar2;
+  bool bVar3;
+  cg_s *pcVar4;
+  PhysPreset *physPreset_00;
+  int iVar5;
+  float fVar6;
+  int xdollHandle;
+  PhysPreset *physPreset;
+  int localClientNum;
+  DestructibleDef *ddef;
+  float dist2;
+  cg_s *cg;
+  int spawnObjects;
   
-  pcVar5 = CG_GetLocalClientGlobals(0);
-  fVar8 = Vec3DistanceSq((pcVar5->predictedPlayerState).origin,param_4);
+  pcVar4 = CG_GetLocalClientGlobals(0);
+  fVar6 = Vec3DistanceSq((pcVar4->predictedPlayerState).origin,hitp);
   if ((phys_piecesSpawnDistanceCutoff->current).value *
-      (phys_piecesSpawnDistanceCutoff->current).value <= fVar8) {
-    local_20 = 0;
+      (phys_piecesSpawnDistanceCutoff->current).value <= fVar6) {
+    xdollHandle = 0;
   }
   else {
-    pDVar2 = param_1->destructible->ddef;
-    bVar1 = (param_1->pose).localClientNum;
-    pPVar6 = Destructible_GetPiecePhysPreset(pDVar2,param_2);
-    if ((pDVar2->numPieces <= param_2) &&
-       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                 0x723,0,"%s"), !bVar4)) {
-      pcVar3 = (code *)swi(3);
-      iVar7 = (*pcVar3)();
-      return iVar7;
+    ddef_00 = cent->destructible->ddef;
+    bVar1 = (cent->pose).localClientNum;
+    physPreset_00 = Destructible_GetPiecePhysPreset(ddef_00,pieceIndex);
+    if ((ddef_00->numPieces <= pieceIndex) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                 0x723,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      iVar5 = (*pcVar2)();
+      return iVar5;
     }
-    if (param_1->destructible->pieceArray[param_2].xdollHandle == 0) {
-      local_20 = XDoll_CreateXDollForBoneLaunch
-                           ((uint)bVar1,(param_1->nextState).number,param_2,param_3,pPVar6);
+    if (cent->destructible->pieceArray[pieceIndex].xdollHandle == 0) {
+      xdollHandle = XDoll_CreateXDollForBoneLaunch
+                              ((uint)bVar1,(cent->nextState).number,pieceIndex,boneName,
+                               physPreset_00);
     }
     else {
-      local_20 = param_1->destructible->pieceArray[param_2].xdollHandle;
-      XDoll_SetCollides(local_20,true);
+      xdollHandle = cent->destructible->pieceArray[pieceIndex].xdollHandle;
+      XDoll_SetCollides(xdollHandle,true);
     }
-    if (local_20 != 0) {
-      XDoll_ApplyForce(local_20,param_4,param_5,param_6);
+    if (xdollHandle != 0) {
+      XDoll_ApplyForce(xdollHandle,hitp,hitd,mod);
     }
   }
-  return local_20;
+  return xdollHandle;
 }
 
 
@@ -2288,72 +2316,72 @@ CG_SpawnPhysObjForBone
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
+/* WARNING: Enum "DynEntityCollType": Some values do not have unique names */
 
 ushort __cdecl
 CG_DestructibleSpawnDynEnt
-          (centity_s *param_1,XModel *param_2,float *param_3,float (*param_4) [3],float *param_5,
-          float *param_6,int param_7)
+          (centity_s *cent,XModel *model,float *origin,float (*mat) [3],float *hitp,float *hitd,
+          int mod)
 
 {
-  col_context_t local_ac;
-  float4 local_84;
+  col_context_t context;
+  float4 result;
   float local_74;
   char local_59;
   uint local_4c;
-  float local_48;
+  float dir;
   float local_44;
   float local_40;
-  float local_3c;
+  float start;
   float local_38;
   float local_34;
-  float local_30;
+  float end;
   float local_2c;
   float local_28;
-  float local_24 [4];
-  float local_14;
+  float quat [4];
+  float localHitD;
   float local_10;
   float local_c;
-  ushort local_8;
+  ushort dynEntId;
   
   local_4c = __security_cookie ^ (uint)&stack0xfffffffc;
-  AxisToQuat(param_4,local_24);
-  local_14 = *param_6;
-  local_10 = param_6[1];
-  local_c = param_6[2];
-  if (param_1->vehicle != (cgVehicle_s *)0x0) {
-    if ((param_7 == 1) || (param_7 == 2)) {
-      Vec3Normalize(&local_14);
+  AxisToQuat(mat,quat);
+  localHitD = *hitd;
+  local_10 = hitd[1];
+  local_c = hitd[2];
+  if (cent->vehicle != (cgVehicle_s *)0x0) {
+    if ((mod == 1) || (mod == 2)) {
+      Vec3Normalize(&localHitD);
     }
-    param_7 = 2;
+    mod = 2;
   }
-  if ((param_1 != (centity_s *)0x0) && (param_1->vehicle != (cgVehicle_s *)0x0)) {
-    local_84.v[0] = 0.0;
-    local_84.v[1] = 0.0;
-    local_84.v[2] = 0.0;
-    local_84.v[3] = 0.0;
-    local_3c = (param_1->pose).origin[0];
-    local_38 = (param_1->pose).origin[1];
-    local_34 = (param_1->pose).origin[2] + 10.0;
-    local_48 = *param_3 - local_3c;
-    local_44 = param_3[1] - local_38;
-    local_40 = param_3[2] - local_34;
-    Vec3Normalize(&local_48);
-    local_30 = local_48 * 10.0 + *param_3;
-    local_2c = local_44 * 10.0 + param_3[1];
-    local_28 = local_40 * 10.0 + param_3[2];
-    col_context_t::col_context_t(&local_ac);
-    CG_TraceCapsule((trace_t *)&local_84,&local_3c,vec3_origin,vec3_origin,&local_30,
-                    (param_1->nextState).number,0x280ec93,&local_ac);
+  if ((cent != (centity_s *)0x0) && (cent->vehicle != (cgVehicle_s *)0x0)) {
+    result.v[0] = 0.0;
+    result.v[1] = 0.0;
+    result.v[2] = 0.0;
+    result.v[3] = 0.0;
+    start = (cent->pose).origin[0];
+    local_38 = (cent->pose).origin[1];
+    local_34 = (cent->pose).origin[2] + 10.0;
+    dir = *origin - start;
+    local_44 = origin[1] - local_38;
+    local_40 = origin[2] - local_34;
+    Vec3Normalize(&dir);
+    end = dir * 10.0 + *origin;
+    local_2c = local_44 * 10.0 + origin[1];
+    local_28 = local_40 * 10.0 + origin[2];
+    col_context_t::col_context_t(&context);
+    CG_TraceCapsule((trace_t *)&result,&start,vec3_origin,vec3_origin,&end,(cent->nextState).number,
+                    0x280ec93,&context);
     if ((local_59 != '\0') || (local_74 < 1.0)) {
       return 0xffff;
     }
   }
-  local_8 = DynEntCl_CreateEntityModel
-                      (param_2,local_24,param_3,param_5,&local_14,param_7,(PhysPreset *)0x0);
-  if (param_1->vehicle != (cgVehicle_s *)0x0) {
-    DynEntCl_SetFadeOut(local_8,DYNENT_DRAW_MODEL);
+  dynEntId = DynEntCl_CreateEntityModel(model,quat,origin,hitp,&localHitD,mod,(PhysPreset *)0x0);
+  if (cent->vehicle != (cgVehicle_s *)0x0) {
+    DynEntCl_SetFadeOut(dynEntId,DYNENT_DRAW_MODEL);
   }
-  return local_8;
+  return dynEntId;
 }
 
 
@@ -2365,25 +2393,27 @@ CG_DestructibleSpawnDynEnt
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 uint __cdecl
-CG_GetTagTransform(centity_s *param_1,DestructibleDef *param_2,int param_3,float *param_4,
-                  float (*param_5) [3])
+CG_GetTagTransform(centity_s *self,DestructibleDef *ddef,int pieceIndex,float *tagOrigin,
+                  float (*tagMat) [3])
 
 {
-  uint uVar1;
-  DObj *pDVar2;
-  int iVar3;
+  uint tagName;
+  DObj *obj_00;
+  int iVar1;
+  DObj *obj;
+  uint boneName;
   
-  uVar1 = (uint)param_2->pieces[param_3].stages[0].showBone;
-  if (((uVar1 == 0) ||
-      (pDVar2 = Com_GetClientDObj((param_1->nextState).number,(uint)(param_1->pose).localClientNum),
-      pDVar2 == (DObj *)0x0)) ||
-     (iVar3 = CG_DObjGetWorldTagMatrix(&param_1->pose,pDVar2,uVar1,param_5,param_4), iVar3 == 0)) {
-    AnglesToAxis((param_1->pose).angles,param_5);
-    *param_4 = (param_1->pose).origin[0];
-    param_4[1] = (param_1->pose).origin[1];
-    param_4[2] = (param_1->pose).origin[2];
+  tagName = (uint)ddef->pieces[pieceIndex].stages[0].showBone;
+  if (((tagName == 0) ||
+      (obj_00 = Com_GetClientDObj((self->nextState).number,(uint)(self->pose).localClientNum),
+      obj_00 == (DObj *)0x0)) ||
+     (iVar1 = CG_DObjGetWorldTagMatrix(&self->pose,obj_00,tagName,tagMat,tagOrigin), iVar1 == 0)) {
+    AnglesToAxis((self->pose).angles,tagMat);
+    *tagOrigin = (self->pose).origin[0];
+    tagOrigin[1] = (self->pose).origin[1];
+    tagOrigin[2] = (self->pose).origin[2];
   }
-  return uVar1;
+  return tagName;
 }
 
 
@@ -2395,22 +2425,24 @@ CG_GetTagTransform(centity_s *param_1,DestructibleDef *param_2,int param_3,float
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 uint __cdecl
-G_GetTagTransform(gentity_s *param_1,DestructibleDef *param_2,int param_3,float (*param_4) [3])
+G_GetTagTransform(gentity_s *ent,DestructibleDef *ddef,int pieceIndex,float (*tagMat) [3])
 
 {
-  uint uVar1;
-  DObj *pDVar2;
-  int iVar3;
+  uint tagName;
+  DObj *pDVar1;
+  int iVar2;
+  DObj *obj;
+  uint boneName;
   
-  uVar1 = Destructible_GetPieceParentBone(param_2,param_3);
-  if (((uVar1 == 0) || (pDVar2 = Com_GetServerDObj((param_1->s).number), pDVar2 == (DObj *)0x0)) ||
-     (iVar3 = G_DObjGetWorldTagMatrix(param_1,uVar1,param_4), iVar3 == 0)) {
-    AnglesToAxis((param_1->r).currentAngles,param_4);
-    param_4[3][0] = (param_1->r).currentOrigin[0];
-    param_4[3][1] = (param_1->r).currentOrigin[1];
-    param_4[3][2] = (param_1->r).currentOrigin[2];
+  tagName = Destructible_GetPieceParentBone(ddef,pieceIndex);
+  if (((tagName == 0) || (pDVar1 = Com_GetServerDObj((ent->s).number), pDVar1 == (DObj *)0x0)) ||
+     (iVar2 = G_DObjGetWorldTagMatrix(ent,tagName,tagMat), iVar2 == 0)) {
+    AnglesToAxis((ent->r).currentAngles,tagMat);
+    tagMat[3][0] = (ent->r).currentOrigin[0];
+    tagMat[3][1] = (ent->r).currentOrigin[1];
+    tagMat[3][2] = (ent->r).currentOrigin[2];
   }
-  return uVar1;
+  return tagName;
 }
 
 
@@ -2423,8 +2455,8 @@ G_GetTagTransform(gentity_s *param_1,DestructibleDef *param_2,int param_3,float 
 
 void __cdecl
 CG_DestructibleBreakPiece
-          (centity_s *param_1,DestructiblePiece *param_2,int param_3,int param_4,int param_5,
-          float *param_6,float *param_7,int param_8)
+          (centity_s *self,DestructiblePiece *piece,int pieceIndex,int stage,int nextStage,
+          float *hitp,float *hitd,int mod)
 
 {
   PhysConstraints *pPVar1;
@@ -2432,181 +2464,182 @@ CG_DestructibleBreakPiece
   bool bVar3;
   int iVar4;
   cg_s *pcVar5;
-  uint uVar6;
+  uint id;
+  float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
-  float local_bc;
+  int break_health;
+  int current_health;
+  int damageNeeded;
+  float popOutDir_2;
   float local_b8;
   float local_b4;
-  float local_b0;
+  float newHitp_2;
   float local_ac;
   float local_a8;
-  float local_a4;
+  float randDir_2;
   float local_a0;
   float local_9c;
-  float local_98;
+  float forceAngles_2;
   float local_94;
   float local_90;
-  PhysConstraint *local_8c;
-  float local_88;
+  PhysConstraint *c;
+  float popOutDir;
   float local_84;
   float local_80;
-  float local_7c;
+  float newHitp;
   float local_78;
   float local_74;
-  float local_70;
+  float randDir;
   float local_6c;
   float local_68;
-  float local_64;
+  float forceAngles;
   float local_60;
   float local_5c;
-  XModel *local_58;
-  int local_54;
-  uint local_50;
-  uint local_4c;
-  int local_48;
-  uint local_44;
-  float local_40 [3];
-  float local_34 [9];
-  ushort local_10;
-  DestructibleDef *local_c;
-  char local_5;
+  XModel *model;
+  int i;
+  uint boneName;
+  uint fxHandle;
+  int entityNum;
+  int localClientNum;
+  float tagOrigin [3];
+  float tagMat [9];
+  ushort dynEntId;
+  DestructibleDef *ddef;
+  bool burning;
   
-  local_44 = (uint)(param_1->pose).localClientNum;
-  local_48 = (param_1->nextState).number;
-  local_c = param_1->destructible->ddef;
-  local_50 = CG_GetTagTransform(param_1,param_1->destructible->ddef,param_3,local_40,
-                                (float (*) [3])local_34);
-  if ((local_50 != 0) && (param_1->nitrousVeh != (NitrousVehicle *)0x0)) {
-    GlassRenderer::BeginGenerateVerts((GlassRenderer *)param_1->nitrousVeh,local_50,param_5);
+  localClientNum = (int)(self->pose).localClientNum;
+  entityNum = (self->nextState).number;
+  ddef = self->destructible->ddef;
+  boneName = CG_GetTagTransform(self,self->destructible->ddef,pieceIndex,tagOrigin,
+                                (float (*) [3])tagMat);
+  if ((boneName != 0) && (self->nitrousVeh != (NitrousVehicle *)0x0)) {
+    GlassRenderer::BeginGenerateVerts((GlassRenderer *)self->nitrousVeh,boneName,nextStage);
   }
-  if ((param_1->destructible->ddef->numPieces <= param_3) &&
+  if ((self->destructible->ddef->numPieces <= pieceIndex) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x7a6,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_5 = param_1->destructible->pieceArray[param_3].burnData.burnTime != 0;
-  bVar3 = CL_LocalClient_IsFirstActive(local_44);
+  burning = self->destructible->pieceArray[pieceIndex].burnData.burnTime != 0;
+  bVar3 = CL_LocalClient_IsFirstActive(localClientNum);
   if (bVar3) {
-    for (local_54 = 0; local_54 < 3; local_54 = local_54 + 1) {
-      local_58 = param_2->stages[param_4].spawnModel[local_54];
-      if (local_58 != (XModel *)0x0) {
-        if (local_58->physPreset == (PhysPreset *)0x0) {
+    for (i = 0; i < 3; i = i + 1) {
+      model = piece->stages[stage].spawnModel[i];
+      if (model != (XModel *)0x0) {
+        if (model->physPreset == (PhysPreset *)0x0) {
           Com_PrintWarning(0x15,"Spawn model %s for destructible %s doesn\'t have physPreset.");
         }
         else {
-          if ((param_2->physConstraints == (PhysConstraints *)0x0) ||
-             (param_2->physConstraints->data[0].type != CONSTRAINT_LAUNCH)) {
-            local_10 = CG_DestructibleSpawnDynEnt
-                                 (param_1,local_58,local_40,(float (*) [3])local_34,param_6,param_7,
-                                  param_8);
+          if ((piece->physConstraints == (PhysConstraints *)0x0) ||
+             (piece->physConstraints->data[0].type != CONSTRAINT_LAUNCH)) {
+            dynEntId = CG_DestructibleSpawnDynEnt
+                                 (self,model,tagOrigin,(float (*) [3])tagMat,hitp,hitd,mod);
           }
           else {
-            pPVar1 = param_2->physConstraints;
-            local_8c = pPVar1->data;
-            local_64 = (param_1->pose).angles[0] + pPVar1->data[0].scale[0];
-            local_60 = (param_1->pose).angles[1] + pPVar1->data[0].scale[1];
-            local_5c = (param_1->pose).angles[2] + pPVar1->data[0].scale[2];
-            AngleVectors(&local_64,&local_88,(float *)0x0,(float *)0x0);
-            fVar9 = local_8c->power;
-            local_88 = fVar9 * local_88;
-            local_84 = fVar9 * local_84;
-            local_80 = fVar9 * local_80;
+            pPVar1 = piece->physConstraints;
+            c = pPVar1->data;
+            forceAngles = (self->pose).angles[0] + pPVar1->data[0].scale[0];
+            local_60 = (self->pose).angles[1] + pPVar1->data[0].scale[1];
+            local_5c = (self->pose).angles[2] + pPVar1->data[0].scale[2];
+            AngleVectors(&forceAngles,&popOutDir,(float *)0x0,(float *)0x0);
+            fVar8 = c->power;
+            popOutDir = fVar8 * popOutDir;
+            local_84 = fVar8 * local_84;
+            local_80 = fVar8 * local_80;
+            fVar6 = G_flrand(-1.0,1.0);
             fVar7 = G_flrand(-1.0,1.0);
-            fVar8 = G_flrand(-1.0,1.0);
             local_68 = G_flrand(-1.0,1.0);
-            fVar9 = local_8c->spin_scale;
-            local_7c = fVar9 * fVar7 + *param_6;
-            local_78 = fVar9 * fVar8 + param_6[1];
-            local_74 = fVar9 * local_68 + param_6[2];
-            local_70 = fVar7;
-            local_6c = fVar8;
-            local_10 = CG_DestructibleSpawnDynEnt
-                                 (param_1,local_58,local_40,(float (*) [3])local_34,&local_7c,
-                                  &local_88,param_8);
+            fVar8 = c->spin_scale;
+            newHitp = fVar8 * fVar6 + *hitp;
+            local_78 = fVar8 * fVar7 + hitp[1];
+            local_74 = fVar8 * local_68 + hitp[2];
+            randDir = fVar6;
+            local_6c = fVar7;
+            dynEntId = CG_DestructibleSpawnDynEnt
+                                 (self,model,tagOrigin,(float (*) [3])tagMat,&newHitp,&popOutDir,mod
+                                 );
           }
-          if ((local_5 != '\0') && (local_10 != 0xffff)) {
-            DynEntCl_SetBurning(local_10,DYNENT_DRAW_MODEL,true);
-            fVar9 = CG_DestructibleGetBurnFrac(param_1->destructible);
-            DynEntCl_SetBurnFrac(local_10,DYNENT_DRAW_MODEL,fVar9);
+          if ((burning != false) && (dynEntId != 0xffff)) {
+            DynEntCl_SetBurning(dynEntId,DYNENT_DRAW_MODEL,true);
+            fVar8 = CG_DestructibleGetBurnFrac(self->destructible);
+            DynEntCl_SetBurnFrac(dynEntId,DYNENT_DRAW_MODEL,fVar8);
           }
         }
       }
     }
   }
-  if (((param_2->stages[param_4].physPreset != (PhysPreset *)0x0) && (param_5 < 0)) &&
-     (bVar3 = CL_LocalClient_IsFirstActive(local_44), bVar3)) {
-    if ((param_2->physConstraints == (PhysConstraints *)0x0) ||
-       (param_2->physConstraints->data[0].type != CONSTRAINT_LAUNCH)) {
+  if (((piece->stages[stage].physPreset != (PhysPreset *)0x0) && (nextStage < 0)) &&
+     (bVar3 = CL_LocalClient_IsFirstActive(localClientNum), bVar3)) {
+    if ((piece->physConstraints == (PhysConstraints *)0x0) ||
+       (piece->physConstraints->data[0].type != CONSTRAINT_LAUNCH)) {
       iVar4 = CG_SpawnPhysObjForBone
-                        (param_1,param_3,(uint)param_2->stages[param_4].showBone,param_6,param_7,
-                         param_8);
-      param_1->destructible->pieceArray[param_3].xdollHandle = iVar4;
+                        (self,pieceIndex,(uint)piece->stages[stage].showBone,hitp,hitd,mod);
+      self->destructible->pieceArray[pieceIndex].xdollHandle = iVar4;
     }
     else {
-      pPVar1 = param_2->physConstraints;
-      local_98 = (param_1->pose).angles[0] + pPVar1->data[0].scale[0];
-      local_94 = (param_1->pose).angles[1] + pPVar1->data[0].scale[1];
-      local_90 = (param_1->pose).angles[2] + pPVar1->data[0].scale[2];
-      AngleVectors(&local_98,&local_bc,(float *)0x0,(float *)0x0);
-      fVar9 = pPVar1->data[0].power;
-      local_bc = fVar9 * local_bc;
-      local_b8 = fVar9 * local_b8;
-      local_b4 = fVar9 * local_b4;
+      pPVar1 = piece->physConstraints;
+      forceAngles_2 = (self->pose).angles[0] + pPVar1->data[0].scale[0];
+      local_94 = (self->pose).angles[1] + pPVar1->data[0].scale[1];
+      local_90 = (self->pose).angles[2] + pPVar1->data[0].scale[2];
+      AngleVectors(&forceAngles_2,&popOutDir_2,(float *)0x0,(float *)0x0);
+      fVar8 = pPVar1->data[0].power;
+      popOutDir_2 = fVar8 * popOutDir_2;
+      local_b8 = fVar8 * local_b8;
+      local_b4 = fVar8 * local_b4;
+      fVar6 = G_flrand(-1.0,1.0);
       fVar7 = G_flrand(-1.0,1.0);
-      fVar8 = G_flrand(-1.0,1.0);
       local_9c = G_flrand(-1.0,1.0);
-      fVar9 = pPVar1->data[0].spin_scale;
-      local_b0 = fVar9 * fVar7 + *param_6;
-      local_ac = fVar9 * fVar8 + param_6[1];
-      local_a8 = fVar9 * local_9c + param_6[2];
-      local_a4 = fVar7;
-      local_a0 = fVar8;
+      fVar8 = pPVar1->data[0].spin_scale;
+      newHitp_2 = fVar8 * fVar6 + *hitp;
+      local_ac = fVar8 * fVar7 + hitp[1];
+      local_a8 = fVar8 * local_9c + hitp[2];
+      randDir_2 = fVar6;
+      local_a0 = fVar7;
       iVar4 = CG_SpawnPhysObjForBone
-                        (param_1,param_3,(uint)param_2->stages[param_4].showBone,&local_b0,&local_bc
-                         ,param_8);
-      param_1->destructible->pieceArray[param_3].xdollHandle = iVar4;
+                        (self,pieceIndex,(uint)piece->stages[stage].showBone,&newHitp_2,&popOutDir_2
+                         ,mod);
+      self->destructible->pieceArray[pieceIndex].xdollHandle = iVar4;
     }
   }
-  if ((param_2->stages[param_4].breakNotify != (char *)0x0) &&
-     (param_1->nitrousVeh != (NitrousVehicle *)0x0)) {
-    NitrousVehicle::destructible_damage
-              (param_1->nitrousVeh,param_2->stages[param_4].breakNotify,param_5);
+  if ((piece->stages[stage].breakNotify != (char *)0x0) &&
+     (self->nitrousVeh != (NitrousVehicle *)0x0)) {
+    NitrousVehicle::destructible_damage(self->nitrousVeh,piece->stages[stage].breakNotify,nextStage)
+    ;
   }
-  if (param_1->destructible->pieceArray[param_3].fx != 0) {
-    FX_ThroughWithEffect(local_44,param_1->destructible->pieceArray[param_3].fx,false);
+  if (self->destructible->pieceArray[pieceIndex].fx != 0) {
+    FX_ThroughWithEffect(localClientNum,self->destructible->pieceArray[pieceIndex].fx,false);
   }
-  if (param_2->stages[param_4].breakEffect != (FxEffectDef *)0x0) {
-    if (local_50 == 0) {
-      if (((param_1->nextState).eType == 0xe) || ((param_1->nextState).eType == 0x10)) {
-        local_4c = CG_PlayBoltedEffect(local_44,param_2->stages[param_4].breakEffect,local_48,0);
+  if (piece->stages[stage].breakEffect != (FxEffectDef *)0x0) {
+    if (boneName == 0) {
+      if (((self->nextState).eType == 0xe) || ((self->nextState).eType == 0x10)) {
+        fxHandle = CG_PlayBoltedEffect(localClientNum,piece->stages[stage].breakEffect,entityNum,0);
       }
       else {
-        pcVar5 = CG_GetLocalClientGlobals(local_44);
-        local_4c = FX_PlayOrientedEffect
-                             (local_44,param_2->stages[param_4].breakEffect,pcVar5->time,local_40,
-                              (float (*) [3])local_34);
+        pcVar5 = CG_GetLocalClientGlobals(localClientNum);
+        fxHandle = FX_PlayOrientedEffect
+                             (localClientNum,piece->stages[stage].breakEffect,pcVar5->time,tagOrigin
+                              ,(float (*) [3])tagMat);
       }
     }
     else {
-      local_4c = CG_PlayBoltedEffect(local_44,param_2->stages[param_4].breakEffect,local_48,local_50
-                                    );
+      fxHandle = CG_PlayBoltedEffect(localClientNum,piece->stages[stage].breakEffect,entityNum,
+                                     boneName);
     }
-    param_1->destructible->pieceArray[param_3].fx = local_4c;
+    self->destructible->pieceArray[pieceIndex].fx = fxHandle;
   }
-  if (param_2->stages[param_4].breakSound != (char *)0x0) {
-    uVar6 = SND_FindAliasId(param_2->stages[param_4].breakSound);
-    CG_PlaySound(local_44,local_48,local_40,0,false,1.0,uVar6);
+  if (piece->stages[stage].breakSound != (char *)0x0) {
+    id = SND_FindAliasId(piece->stages[stage].breakSound);
+    CG_PlaySound(localClientNum,entityNum,tagOrigin,0,false,1.0,id);
   }
-  if (((local_c->clientOnly != 0) && (-1 < param_5)) && (0.0 < param_2->stages[param_5].maxTime)) {
+  if (((ddef->clientOnly != 0) && (-1 < nextStage)) && (0.0 < piece->stages[nextStage].maxTime)) {
     CScr_DestructibleCallback
-              (param_1,cscr_const.breakafter,param_3,param_2->stages[param_5].maxTime,
-               ((int)param_1->destructible->pieceArray[param_3].health -
-               (int)(short)(int)((float)local_c->pieces[param_3].health *
-                                param_2->stages[param_5].breakHealth)) + 1);
+              (self,cscr_const.breakafter,pieceIndex,piece->stages[nextStage].maxTime,
+               ((int)self->destructible->pieceArray[pieceIndex].health -
+               (int)(short)(int)((float)ddef->pieces[pieceIndex].health *
+                                piece->stages[nextStage].breakHealth)) + 1);
   }
   return;
 }
@@ -2621,7 +2654,7 @@ CG_DestructibleBreakPiece
 
 void __cdecl
 CG_DestructibleSetBurn
-          (int param_1,centity_s *param_2,Destructible *param_3,int param_4,bool param_5)
+          (int localClientNum,centity_s *self,Destructible *destructible,int pieceIndex,bool burn)
 
 {
   code *pcVar1;
@@ -2629,21 +2662,22 @@ CG_DestructibleSetBurn
   FxEffect *pFVar3;
   cg_s *pcVar4;
   uint uVar5;
-  float local_30 [9];
-  FxEffectDef *local_c;
-  DestructibleDef *local_8;
+  char *soundList;
+  float axis [9];
+  FxEffectDef *fxDef;
+  DestructibleDef *ddef;
   
-  local_8 = param_3->ddef;
-  if ((local_8->numPieces <= param_4) &&
+  ddef = destructible->ddef;
+  if ((ddef->numPieces <= pieceIndex) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0x829,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_5) {
-    if (param_3->oldestBurnTime == 0) {
-      if ((param_2 == (centity_s *)0x0) &&
+  if (burn) {
+    if (destructible->oldestBurnTime == 0) {
+      if ((self == (centity_s *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                    0x830,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -2651,33 +2685,32 @@ CG_DestructibleSetBurn
         return;
       }
       pFVar3 = UniqueHandleToEffect
-                         ((uint)(param_2->pose).localClientNum,
-                          param_3->pieceArray[param_4].burnData.fx);
+                         ((uint)(self->pose).localClientNum,
+                          destructible->pieceArray[pieceIndex].burnData.fx);
       if ((pFVar3 == (FxEffect *)0x0) &&
-         (local_c = local_8->pieces[param_4].burnEffect, local_c != (FxEffectDef *)0x0)) {
-        AnglesToAxis((param_2->pose).angles,(float (*) [3])local_30);
-        pcVar4 = CG_GetLocalClientGlobals((uint)(param_2->pose).localClientNum);
+         (fxDef = ddef->pieces[pieceIndex].burnEffect, fxDef != (FxEffectDef *)0x0)) {
+        AnglesToAxis((self->pose).angles,(float (*) [3])axis);
+        pcVar4 = CG_GetLocalClientGlobals((uint)(self->pose).localClientNum);
         uVar5 = FX_SpawnOrientedEffect
-                          ((uint)(param_2->pose).localClientNum,local_c,pcVar4->time,
-                           (param_2->pose).origin,(float (*) [3])local_30,
-                           (param_2->nextState).number);
-        param_3->pieceArray[param_4].burnData.fx = uVar5;
+                          ((uint)(self->pose).localClientNum,fxDef,pcVar4->time,(self->pose).origin,
+                           (float (*) [3])axis,(self->nextState).number);
+        destructible->pieceArray[pieceIndex].burnData.fx = uVar5;
       }
-      pcVar4 = CG_GetLocalClientGlobals((uint)(param_2->pose).localClientNum);
-      param_3->pieceArray[param_4].burnData.burnTime = pcVar4->time;
-      if (param_3->oldestBurnTime == 0) {
-        pcVar4 = CG_GetLocalClientGlobals((uint)(param_2->pose).localClientNum);
-        param_3->oldestBurnTime = pcVar4->time;
+      pcVar4 = CG_GetLocalClientGlobals((uint)(self->pose).localClientNum);
+      destructible->pieceArray[pieceIndex].burnData.burnTime = pcVar4->time;
+      if (destructible->oldestBurnTime == 0) {
+        pcVar4 = CG_GetLocalClientGlobals((uint)(self->pose).localClientNum);
+        destructible->oldestBurnTime = pcVar4->time;
       }
     }
   }
   else {
-    pFVar3 = UniqueHandleToEffect(param_1,param_3->pieceArray[param_4].burnData.fx);
+    pFVar3 = UniqueHandleToEffect(localClientNum,destructible->pieceArray[pieceIndex].burnData.fx);
     if (pFVar3 != (FxEffect *)0x0) {
-      FX_ThroughWithEffect(param_1,param_3->pieceArray[param_4].burnData.fx,true);
+      FX_ThroughWithEffect(localClientNum,destructible->pieceArray[pieceIndex].burnData.fx,true);
     }
-    param_3->pieceArray[param_4].burnData.fx = 0;
-    param_3->pieceArray[param_4].burnData.burnTime = 0;
+    destructible->pieceArray[pieceIndex].burnData.fx = 0;
+    destructible->pieceArray[pieceIndex].burnData.burnTime = 0;
   }
   return;
 }
@@ -2690,26 +2723,28 @@ CG_DestructibleSetBurn
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DestructibleUpdateBurn(int param_1,Destructible *param_2)
+void __cdecl CG_DestructibleUpdateBurn(int localClientNum,Destructible *destructible)
 
 {
   DestructibleDef *pDVar1;
   int iVar2;
   cg_s *pcVar3;
-  int local_10;
+  int i;
+  int currentTime;
+  DestructibleDef *ddef;
   
-  if (param_2->ddef == (DestructibleDef *)0x0) {
-    param_2->oldestBurnTime = 0;
+  if (destructible->ddef == (DestructibleDef *)0x0) {
+    destructible->oldestBurnTime = 0;
   }
-  if (param_2->oldestBurnTime != 0) {
-    pDVar1 = param_2->ddef;
+  if (destructible->oldestBurnTime != 0) {
+    pDVar1 = destructible->ddef;
     iVar2 = CL_GetFirstActiveLocalClient();
     pcVar3 = CG_GetLocalClientGlobals(iVar2);
     iVar2 = pcVar3->time;
-    for (local_10 = 0; local_10 < pDVar1->numPieces; local_10 = local_10 + 1) {
-      if ((param_2->pieceArray[local_10].burnData.burnTime != 0) &&
-         (60000 < iVar2 - param_2->pieceArray[local_10].burnData.burnTime)) {
-        CG_DestructibleSetBurn(param_1,(centity_s *)0x0,param_2,local_10,false);
+    for (i = 0; i < pDVar1->numPieces; i = i + 1) {
+      if ((destructible->pieceArray[i].burnData.burnTime != 0) &&
+         (60000 < iVar2 - destructible->pieceArray[i].burnData.burnTime)) {
+        CG_DestructibleSetBurn(localClientNum,(centity_s *)0x0,destructible,i,false);
       }
     }
   }
@@ -2724,39 +2759,43 @@ void __cdecl CG_DestructibleUpdateBurn(int param_1,Destructible *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DestructibleUpdateXDoll(int param_1,Destructible *param_2)
+void __cdecl CG_DestructibleUpdateXDoll(int localClientNum,Destructible *destructible)
 
 {
   DestructibleDef *pDVar1;
   bool bVar2;
   bool bVar3;
   int iVar4;
-  centity_s *pcVar5;
-  int local_10;
+  centity_s *self;
+  centity_s *cent;
+  int i;
+  bool hasXdoll;
+  bool needsDObjUpdate;
+  DestructibleDef *ddef;
   
-  if ((param_2->ddef != (DestructibleDef *)0x0) && ((param_2->flags & 1) != 0)) {
-    pDVar1 = param_2->ddef;
+  if ((destructible->ddef != (DestructibleDef *)0x0) && ((destructible->flags & 1) != 0)) {
+    pDVar1 = destructible->ddef;
     bVar2 = false;
     bVar3 = false;
-    for (local_10 = 0; local_10 < pDVar1->numPieces; local_10 = local_10 + 1) {
-      if (param_2->pieceArray[local_10].xdollHandle != 0) {
-        iVar4 = XDoll_GetStableTime(param_2->pieceArray[local_10].xdollHandle);
+    for (i = 0; i < pDVar1->numPieces; i = i + 1) {
+      if (destructible->pieceArray[i].xdollHandle != 0) {
+        iVar4 = XDoll_GetStableTime(destructible->pieceArray[i].xdollHandle);
         if (iVar4 < 0xea61) {
           bVar2 = true;
         }
         else {
-          XDoll_DestroyXDoll(param_2->pieceArray[local_10].xdollHandle);
-          param_2->pieceArray[local_10].xdollHandle = 0;
+          XDoll_DestroyXDoll(destructible->pieceArray[i].xdollHandle);
+          destructible->pieceArray[i].xdollHandle = 0;
           bVar3 = true;
         }
       }
     }
     if (!bVar2) {
-      param_2->flags = param_2->flags & 0xfffffffe;
+      destructible->flags = destructible->flags & 0xfffffffe;
     }
     if (bVar3) {
-      pcVar5 = CG_GetEntity(param_1,param_2->entNum);
-      CG_DestructibleUpdateDObj(pcVar5);
+      self = CG_GetEntity(localClientNum,destructible->entNum);
+      CG_DestructibleUpdateDObj(self);
     }
   }
   return;
@@ -2770,20 +2809,22 @@ void __cdecl CG_DestructibleUpdateXDoll(int param_1,Destructible *param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __cdecl CG_DestructibleGetBurnFrac(Destructible *param_1)
+float __cdecl CG_DestructibleGetBurnFrac(Destructible *destructible)
 
 {
   cg_s *pcVar1;
   float fVar2;
   float local_14;
   float local_10;
+  float burnFraction;
+  int currentTime;
   
-  if (param_1->oldestBurnTime == 0) {
+  if (destructible->oldestBurnTime == 0) {
     local_14 = 0.0;
   }
   else {
     pcVar1 = CG_GetLocalClientGlobals(0);
-    fVar2 = (float)(pcVar1->time - param_1->oldestBurnTime) / 5000.0;
+    fVar2 = (float)(pcVar1->time - destructible->oldestBurnTime) / 5000.0;
     local_10 = fVar2;
     if (0.0 <= fVar2 - 1.0) {
       local_10 = 1.0;
@@ -2799,31 +2840,37 @@ float __cdecl CG_DestructibleGetBurnFrac(Destructible *param_1)
 
 // 00819D50  CG_DestructibleIsClientOnly  (physics/destructible.cpp:2220)
 
-bool __cdecl CG_DestructibleIsClientOnly(Destructible *param_1)
+bool __cdecl CG_DestructibleIsClientOnly(Destructible *destructible)
 
 {
-  return 0 < param_1->ddef->clientOnly;
+  return 0 < destructible->ddef->clientOnly;
 }
 
 
 // 00819D70  CG_UpdateDestructibles  (physics/destructible.cpp:2225)
 
-void __cdecl CG_UpdateDestructibles(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_UpdateDestructibles(int localClientNum,int msec)
 
 {
-  uint local_c;
+  uint i;
+  int destructibleMsecStep;
   
-  cg_updateTime[param_1] = cg_updateTime[param_1] + param_2;
-  if (300 < cg_updateTime[param_1]) {
-    cg_updateTime[param_1] = cg_updateTime[param_1] + -300;
-    for (local_c = 0; local_c < cg_numDestructibles[param_1]; local_c = local_c + 1) {
-      if (cg_destructibles[param_1][local_c].entNum != 0x3ff) {
-        CG_DestructibleUpdateBurn(param_1,cg_destructibles[param_1] + local_c);
-        CG_DestructibleUpdateXDoll(param_1,cg_destructibles[param_1] + local_c);
+  cg_updateTime[localClientNum] = cg_updateTime[localClientNum] + msec;
+  if (300 < cg_updateTime[localClientNum]) {
+    cg_updateTime[localClientNum] = cg_updateTime[localClientNum] + -300;
+    for (i = 0; i < cg_numDestructibles[localClientNum]; i = i + 1) {
+      if (cg_destructibles[localClientNum][i].entNum != 0x3ff) {
+        CG_DestructibleUpdateBurn(localClientNum,cg_destructibles[localClientNum] + i);
+        CG_DestructibleUpdateXDoll(localClientNum,cg_destructibles[localClientNum] + i);
       }
     }
   }
-  CG_DestructibleUpdatePoses(param_1,param_2);
+  CG_DestructibleUpdatePoses(localClientNum,msec);
   return;
 }
 
@@ -2835,26 +2882,29 @@ void __cdecl CG_UpdateDestructibles(int param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DestructibleUpdateDObj(centity_s *param_1)
+void __cdecl CG_DestructibleUpdateDObj(centity_s *self)
 
 {
-  DObj *pDVar1;
-  uint local_18 [5];
+  DObj *obj_00;
+  uint *nbits;
+  DObj *obj;
+  uint *obits;
+  uint oldPartBits [5];
   
-  if (((param_1->destructible != (Destructible *)0x0) &&
-      (pDVar1 = Com_GetClientDObj((param_1->nextState).number,(uint)(param_1->pose).localClientNum),
-      pDVar1 != (DObj *)0x0)) &&
-     (Destructible_GetHideParts(param_1->destructible,(param_1->nextState).partBits),
-     (((pDVar1->hidePartBits[0] != (param_1->nextState).partBits[0] ||
-       pDVar1->hidePartBits[1] != (param_1->nextState).partBits[1]) ||
-      pDVar1->hidePartBits[2] != (param_1->nextState).partBits[2]) ||
-     pDVar1->hidePartBits[3] != (param_1->nextState).partBits[3]) ||
-     pDVar1->hidePartBits[4] != (param_1->nextState).partBits[4])) {
-    DObjGetHidePartBits(pDVar1,local_18);
-    DObjSetHidePartBits(pDVar1,(param_1->nextState).partBits);
+  if (((self->destructible != (Destructible *)0x0) &&
+      (obj_00 = Com_GetClientDObj((self->nextState).number,(uint)(self->pose).localClientNum),
+      obj_00 != (DObj *)0x0)) &&
+     (Destructible_GetHideParts(self->destructible,(self->nextState).partBits),
+     (((obj_00->hidePartBits[0] != (self->nextState).partBits[0] ||
+       obj_00->hidePartBits[1] != (self->nextState).partBits[1]) ||
+      obj_00->hidePartBits[2] != (self->nextState).partBits[2]) ||
+     obj_00->hidePartBits[3] != (self->nextState).partBits[3]) ||
+     obj_00->hidePartBits[4] != (self->nextState).partBits[4])) {
+    DObjGetHidePartBits(obj_00,oldPartBits);
+    DObjSetHidePartBits(obj_00,(self->nextState).partBits);
     FX_MarkEntUpdateHidePartBits
-              (local_18,(param_1->nextState).partBits,(uint)(param_1->pose).localClientNum,
-               (param_1->nextState).number);
+              (oldPartBits,(self->nextState).partBits,(uint)(self->pose).localClientNum,
+               (self->nextState).number);
   }
   return;
 }
@@ -2867,12 +2917,15 @@ void __cdecl CG_DestructibleUpdateDObj(centity_s *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_NotifyDestructibleScripts(int param_1,centity_s *param_2,DestructibleStage *param_3)
+void __cdecl
+CG_NotifyDestructibleScripts(int localClientNum,centity_s *self,DestructibleStage *prev_stage)
 
 {
-  if (param_3->breakNotify != (char *)0x0) {
-    Scr_AddString(param_3->breakNotify,SCRIPTINSTANCE_CLIENT);
-    CScr_NotifyNum(param_1,(param_2->nextState).number,0,(uint)cscr_const.broken,1);
+  char *notify;
+  
+  if (prev_stage->breakNotify != (char *)0x0) {
+    Scr_AddString(prev_stage->breakNotify,SCRIPTINSTANCE_CLIENT);
+    CScr_NotifyNum(localClientNum,(self->nextState).number,0,(uint)cscr_const.broken,1);
   }
   return;
 }
@@ -2887,115 +2940,122 @@ void __cdecl CG_NotifyDestructibleScripts(int param_1,centity_s *param_2,Destruc
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 bool __cdecl
-CG_DamagePiece(int param_1,centity_s *param_2,uchar param_3,int param_4,float *param_5,
-              float *param_6,int param_7,bool param_8,int param_9)
+CG_DamagePiece(int localClientNum,centity_s *self,uchar index,int damage,float *point,float *dir,
+              int mod,bool damageChildren,int recursiveDepth)
 
 {
   short sVar1;
-  Destructible *pDVar2;
-  DestructibleDef *pDVar3;
-  code *pcVar4;
-  bool bVar5;
-  undefined1 uVar6;
+  Destructible *destructible_00;
+  DestructibleDef *ddef_00;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
+  int iVar5;
+  uint uVar6;
   int iVar7;
-  uint uVar8;
-  int iVar9;
-  byte local_31;
-  int local_30;
-  DestructibleStage *local_28;
-  DestructibleStage *local_20;
-  bool local_19;
-  int local_10;
-  short local_c;
+  uint soundIndex;
+  char *loopSoundName;
+  int pieceDamage;
+  uchar i;
+  int j;
+  int prev_stage_index;
+  DestructibleStage *new_stage;
+  Destructible *destructible;
+  DestructibleStage *prev_stage;
+  bool needDObjUpdate;
+  short prev_health;
+  DestructibleDef *ddef;
+  int new_stage_index;
+  short new_health;
+  bool explosiveDamage;
   
-  pDVar2 = param_2->destructible;
-  pDVar3 = pDVar2->ddef;
-  if (param_9 < 0x15) {
-    if ((pDVar3->numPieces <= (int)(uint)param_3) &&
-       (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                 0x927,0,"%s"), !bVar5)) {
-      pcVar4 = (code *)swi(3);
-      uVar6 = (*pcVar4)();
-      return (bool)uVar6;
+  destructible_00 = self->destructible;
+  ddef_00 = destructible_00->ddef;
+  if (recursiveDepth < 0x15) {
+    if ((ddef_00->numPieces <= (int)(uint)index) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                 0x927,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      uVar4 = (*pcVar2)();
+      return (bool)uVar4;
     }
-    Destructible_SetDebugDamagePiece((uint)param_3,param_4);
-    sVar1 = pDVar2->pieceArray[param_3].health;
-    local_c = sVar1 - (short)param_4;
-    if (local_c < -1) {
-      local_c = -1;
+    Destructible_SetDebugDamagePiece((uint)index,damage);
+    sVar1 = destructible_00->pieceArray[index].health;
+    new_health = sVar1 - (short)damage;
+    if (new_health < -1) {
+      new_health = -1;
     }
-    iVar7 = Destructible_GetDestructibleStage(pDVar3,(uint)param_3,(int)sVar1);
-    local_10 = Destructible_GetDestructibleStage(pDVar3,(uint)param_3,(int)local_c);
-    local_20 = (DestructibleStage *)0x0;
-    local_28 = (DestructibleStage *)0x0;
-    if (-1 < iVar7) {
-      local_20 = pDVar3->pieces[param_3].stages + iVar7;
+    iVar5 = Destructible_GetDestructibleStage(ddef_00,(uint)index,(int)sVar1);
+    new_stage_index = Destructible_GetDestructibleStage(ddef_00,(uint)index,(int)new_health);
+    prev_stage = (DestructibleStage *)0x0;
+    new_stage = (DestructibleStage *)0x0;
+    if (-1 < iVar5) {
+      prev_stage = ddef_00->pieces[index].stages + iVar5;
     }
-    if (-1 < local_10) {
-      local_28 = pDVar3->pieces[param_3].stages + local_10;
+    if (-1 < new_stage_index) {
+      new_stage = ddef_00->pieces[index].stages + new_stage_index;
     }
-    if (((param_7 == 7) && (local_20 != (DestructibleStage *)0x0)) &&
-       ((local_20->flags & 0xfffffff7) != 0)) {
-      local_19 = false;
+    if (((mod == 7) && (prev_stage != (DestructibleStage *)0x0)) &&
+       ((prev_stage->flags & 0xfffffff7) != 0)) {
+      needDObjUpdate = false;
     }
     else {
-      if (((param_7 == 4) || (param_7 == 6)) || (param_7 == 0xf)) {
-        bVar5 = true;
+      if (((mod == 4) || (mod == 6)) || (mod == 0xf)) {
+        bVar3 = true;
       }
       else {
-        bVar5 = false;
+        bVar3 = false;
       }
-      if ((param_7 == 0xf) || (param_7 == 0x11)) {
-        CG_DestructibleSetBurn(param_1,param_2,pDVar2,(uint)param_3,true);
+      if ((mod == 0xf) || (mod == 0x11)) {
+        CG_DestructibleSetBurn(localClientNum,self,destructible_00,(uint)index,true);
       }
-      if (!bVar5) {
-        local_30 = iVar7;
-        if ((local_20 != (DestructibleStage *)0x0) && ((local_20->flags & 1) != 0)) {
+      if (!bVar3) {
+        j = iVar5;
+        if ((prev_stage != (DestructibleStage *)0x0) && ((prev_stage->flags & 1) != 0)) {
           return false;
         }
         do {
-          iVar9 = local_30;
-          local_30 = iVar9 + 1;
-          if (local_10 < local_30) goto LAB_0081ab4f;
-        } while ((pDVar3->pieces[param_3].stages[iVar9 + 1].flags & 1) == 0);
-        local_c = (short)(int)((float)pDVar3->pieces[param_3].health *
-                              pDVar3->pieces[param_3].stages[iVar9 + 1].breakHealth) + 1;
-        local_10 = Destructible_GetDestructibleStage(pDVar3,(uint)param_3,(int)local_c);
+          iVar7 = j;
+          j = iVar7 + 1;
+          if (new_stage_index < j) goto LAB_0081ab4f;
+        } while ((ddef_00->pieces[index].stages[iVar7 + 1].flags & 1) == 0);
+        new_health = (short)(int)((float)ddef_00->pieces[index].health *
+                                 ddef_00->pieces[index].stages[iVar7 + 1].breakHealth) + 1;
+        new_stage_index = Destructible_GetDestructibleStage(ddef_00,(uint)index,(int)new_health);
       }
 LAB_0081ab4f:
-      local_19 = CG_DestructibleDamage
-                           (param_2,param_6,param_5,(uint)param_3,(int)local_c,param_7,false,
-                            param_9 == 0);
-      if ((param_8) && (-1 < iVar7)) {
-        for (local_31 = 0; (int)(uint)local_31 < pDVar3->numPieces; local_31 = local_31 + 1) {
-          if ((pDVar3->pieces[local_31].parentPiece == param_3) &&
-             (iVar9 = (int)((float)param_4 * pDVar3->pieces[local_31].parentDamagePercent),
-             iVar9 != 0)) {
-            bVar5 = CG_DamagePiece(param_1,param_2,local_31,iVar9,param_5,param_6,param_7,true,
-                                   param_9 + 1);
-            local_19 = (bool)(local_19 | bVar5);
+      needDObjUpdate =
+           CG_DestructibleDamage
+                     (self,dir,point,(uint)index,(int)new_health,mod,false,recursiveDepth == 0);
+      if ((damageChildren) && (-1 < iVar5)) {
+        for (i = '\0'; (int)(uint)i < ddef_00->numPieces; i = i + '\x01') {
+          if ((ddef_00->pieces[i].parentPiece == index) &&
+             (iVar7 = (int)((float)damage * ddef_00->pieces[i].parentDamagePercent), iVar7 != 0)) {
+            bVar3 = CG_DamagePiece(localClientNum,self,i,iVar7,point,dir,mod,true,recursiveDepth + 1
+                                  );
+            needDObjUpdate = (bool)(needDObjUpdate | bVar3);
           }
         }
       }
-      if ((local_19 != false) && (local_20 != (DestructibleStage *)0x0)) {
-        CG_NotifyDestructibleScripts(param_1,param_2,local_20);
+      if ((needDObjUpdate != false) && (prev_stage != (DestructibleStage *)0x0)) {
+        CG_NotifyDestructibleScripts(localClientNum,self,prev_stage);
       }
-      if ((iVar7 != local_10) && (param_3 == '\0')) {
-        (param_2->nextState).loopSoundId = 0;
-        (param_2->nextState).loopSoundFade = 0xfa;
-        if ((-1 < local_10) && (local_28->loopSound != (char *)0x0)) {
-          uVar8 = SND_FindAliasId(local_28->loopSound);
-          (param_2->nextState).loopSoundId = uVar8;
-          (param_2->nextState).loopSoundFade = 1000;
+      if ((iVar5 != new_stage_index) && (index == '\0')) {
+        (self->nextState).loopSoundId = 0;
+        (self->nextState).loopSoundFade = 0xfa;
+        if ((-1 < new_stage_index) && (new_stage->loopSound != (char *)0x0)) {
+          uVar6 = SND_FindAliasId(new_stage->loopSound);
+          (self->nextState).loopSoundId = uVar6;
+          (self->nextState).loopSoundFade = 1000;
         }
       }
     }
   }
   else {
     Com_Printf(0x14,"Warning: Destructible (%s): The recusrion in DamagePiece is too deep.");
-    local_19 = false;
+    needDObjUpdate = false;
   }
-  return local_19;
+  return needDObjUpdate;
 }
 
 
@@ -3008,137 +3068,136 @@ LAB_0081ab4f:
 
 void __cdecl
 CG_DestructibleRadiusDamage
-          (centity_s *param_1,float *param_2,float param_3,float param_4,float param_5,int param_6,
-          int param_7)
+          (centity_s *self,float *point,float damgeInner,float damgeOuter,float radius,int mod,
+          int lazyprocess)
 
 {
-  byte bVar1;
+  bool bVar1;
   bool bVar2;
   destructible_event_t *pdVar3;
   int iVar4;
   float fVar5;
   float fVar6;
-  byte local_95;
-  float local_94 [9];
+  float pieceToEntityDamage;
+  uchar boneIndex;
+  float ent_axis [9];
   float local_70 [3];
-  XModel *local_64;
-  DObj *local_60;
-  DestructiblePiece *local_5c;
-  float local_58;
-  uint local_54;
-  float local_50;
+  XModel *model;
+  DObj *obj;
+  DestructiblePiece *piece;
+  float damage;
+  uint boneName;
+  float dir;
   float local_4c;
   float local_48;
-  float local_44;
+  float hitp;
   float local_40;
   float local_3c;
-  float local_38;
-  float local_34;
-  float local_30;
+  float dist;
+  float distSquared;
+  float randDir;
   float local_2c;
   float local_28;
-  float local_24;
-  byte local_1d;
-  byte local_15;
-  float local_14;
-  float local_10;
-  Destructible *local_c;
-  DestructibleDef *local_8;
+  float spin_scale;
+  uchar index;
+  bool needsDObjUpdate;
+  float radiusSquared;
+  float entityDamage;
+  Destructible *destructible;
+  DestructibleDef *ddef;
   
   iVar4 = g_destructible_events_count;
-  if (param_7 == 0) {
-    local_c = param_1->destructible;
-    if (local_c != (Destructible *)0x0) {
-      local_8 = local_c->ddef;
-      if (local_8->clientOnly == 0) {
-        param_3 = 0.0;
-        param_4 = 0.0;
+  if (lazyprocess == 0) {
+    destructible = self->destructible;
+    if (destructible != (Destructible *)0x0) {
+      ddef = destructible->ddef;
+      if (ddef->clientOnly == 0) {
+        damgeInner = 0.0;
+        damgeOuter = 0.0;
       }
-      if ((local_c->flags & 4) != 0) {
-        local_c->flags = local_c->flags & 0xfffffffb;
-        CG_SafeDObjFree((uint)(param_1->pose).localClientNum,(param_1->nextState).number);
+      if ((destructible->flags & 4) != 0) {
+        destructible->flags = destructible->flags & 0xfffffffb;
+        CG_SafeDObjFree((uint)(self->pose).localClientNum,(self->nextState).number);
         CG_PreProcess_GetDObj
-                  ((uint)(param_1->pose).localClientNum,(param_1->nextState).number,
-                   (int)(param_1->nextState).eType,local_8->model,(XModel *)0x0);
+                  ((uint)(self->pose).localClientNum,(self->nextState).number,
+                   (int)(self->nextState).eType,ddef->model,(XModel *)0x0);
       }
-      local_15 = 0;
-      local_14 = param_5 * param_5;
-      Destructible_SetDebugRender(local_c);
-      local_10 = 0.0;
-      for (local_1d = 0; (int)(uint)local_1d < local_8->numPieces; local_1d = local_1d + 1) {
-        local_5c = local_8->pieces + local_1d;
-        local_54 = Destructible_GetShowBoneNameForPiece(param_1->destructible,(uint)local_1d);
-        if (local_54 == 0) {
-          local_44 = (param_1->pose).origin[0];
-          local_40 = (param_1->pose).origin[1];
-          local_3c = (param_1->pose).origin[2];
+      needsDObjUpdate = false;
+      radiusSquared = radius * radius;
+      Destructible_SetDebugRender(destructible);
+      entityDamage = 0.0;
+      for (index = '\0'; (int)(uint)index < ddef->numPieces; index = index + '\x01') {
+        piece = ddef->pieces + index;
+        boneName = Destructible_GetShowBoneNameForPiece(self->destructible,(uint)index);
+        if (boneName == 0) {
+          hitp = (self->pose).origin[0];
+          local_40 = (self->pose).origin[1];
+          local_3c = (self->pose).origin[2];
         }
         else {
-          local_60 = Com_GetClientDObj((param_1->nextState).number,
-                                       (uint)(param_1->pose).localClientNum);
-          if (local_60 == (DObj *)0x0) {
-            local_44 = (param_1->pose).origin[0];
-            local_40 = (param_1->pose).origin[1];
-            local_3c = (param_1->pose).origin[2];
+          obj = Com_GetClientDObj((self->nextState).number,(uint)(self->pose).localClientNum);
+          if (obj == (DObj *)0x0) {
+            hitp = (self->pose).origin[0];
+            local_40 = (self->pose).origin[1];
+            local_3c = (self->pose).origin[2];
           }
           else {
-            local_64 = local_8->model;
-            local_95 = 0;
-            CG_DObjGetWorldTagMatrix
-                      (&param_1->pose,local_60,local_54,(float (*) [3])local_94,local_70);
-            iVar4 = XModelGetBoneIndex(local_64,local_54,0,&local_95);
+            model = ddef->model;
+            boneIndex = '\0';
+            CG_DObjGetWorldTagMatrix(&self->pose,obj,boneName,(float (*) [3])ent_axis,local_70);
+            iVar4 = XModelGetBoneIndex(model,boneName,0,&boneIndex);
             if (iVar4 == 0) {
-              local_44 = (param_1->pose).origin[0];
-              local_40 = (param_1->pose).origin[1];
-              local_3c = (param_1->pose).origin[2];
+              hitp = (self->pose).origin[0];
+              local_40 = (self->pose).origin[1];
+              local_3c = (self->pose).origin[2];
             }
             else {
               MatrixTransformVector43
-                        ((local_64->field18_0xb8).localBoneInfo[local_95].offset,
-                         (float (*) [3])local_94,&local_44);
+                        ((model->field18_0xb8).localBoneInfo[boneIndex].offset,
+                         (float (*) [3])ent_axis,&hitp);
             }
           }
         }
-        local_24 = 7.0;
+        spin_scale = 7.0;
         fVar5 = G_flrand(-1.0,1.0);
         fVar6 = G_flrand(-1.0,1.0);
         local_28 = G_flrand(-1.0,1.0);
-        bVar1 = local_15;
-        local_44 = local_24 * fVar5 + local_44;
-        local_40 = local_24 * fVar6 + local_40;
-        local_3c = local_24 * local_28 + local_3c;
-        local_50 = local_44 - *param_2;
-        local_4c = local_40 - param_2[1];
-        local_48 = local_3c - param_2[2];
-        local_34 = local_50 * local_50 + local_4c * local_4c + local_48 * local_48;
-        local_30 = fVar5;
+        bVar1 = needsDObjUpdate;
+        hitp = spin_scale * fVar5 + hitp;
+        local_40 = spin_scale * fVar6 + local_40;
+        local_3c = spin_scale * local_28 + local_3c;
+        dir = hitp - *point;
+        local_4c = local_40 - point[1];
+        local_48 = local_3c - point[2];
+        distSquared = dir * dir + local_4c * local_4c + local_48 * local_48;
+        randDir = fVar5;
         local_2c = fVar6;
-        if (local_34 < local_14) {
-          local_38 = SQRT(local_34);
-          local_58 = ((param_3 - param_4) * (1.0 - local_38 / param_5) + param_4) *
-                     local_5c->explosiveDamageScale;
-          if (local_38 <= 0.001) {
-            local_50 = 0.0;
+        if (distSquared < radiusSquared) {
+          dist = SQRT(distSquared);
+          damage = ((damgeInner - damgeOuter) * (1.0 - dist / radius) + damgeOuter) *
+                   piece->explosiveDamageScale;
+          if (dist <= 0.001) {
+            dir = 0.0;
             local_4c = 0.0;
             local_48 = 1.0;
           }
           else {
-            fVar5 = 1.0 / local_38;
-            local_50 = fVar5 * local_50;
+            fVar5 = 1.0 / dist;
+            dir = fVar5 * dir;
             local_4c = fVar5 * local_4c;
             local_48 = fVar5 * local_48;
           }
-          if ((0.0 < local_5c->entityDamageTransfer) &&
-             (fVar5 = local_58 * local_5c->entityDamageTransfer, local_10 < fVar5)) {
-            local_10 = fVar5;
+          if ((0.0 < piece->entityDamageTransfer) &&
+             (fVar5 = damage * piece->entityDamageTransfer, entityDamage < fVar5)) {
+            entityDamage = fVar5;
           }
-          bVar2 = CG_DamagePiece((uint)(param_1->pose).localClientNum,param_1,local_1d,(int)local_58
-                                 ,&local_44,&local_50,param_6,true,0);
-          local_15 = bVar1 | bVar2;
+          bVar2 = CG_DamagePiece((uint)(self->pose).localClientNum,self,index,(int)damage,&hitp,&dir
+                                 ,mod,true,0);
+          needsDObjUpdate = (bool)(bVar1 | bVar2);
         }
       }
-      if (local_15 != 0) {
-        CG_DestructibleUpdateDObj(param_1);
+      if (needsDObjUpdate != false) {
+        CG_DestructibleUpdateDObj(self);
       }
     }
   }
@@ -3146,14 +3205,14 @@ CG_DestructibleRadiusDamage
     pdVar3 = g_destructible_events + g_destructible_events_count;
     g_destructible_events_count = g_destructible_events_count + 1;
     pdVar3->type = 1;
-    g_destructible_events[iVar4].field1_0x4.ed.self = param_1;
-    g_destructible_events[iVar4].field1_0x4.erd.point[0] = *param_2;
-    g_destructible_events[iVar4].field1_0x4.ed.dir[0] = param_2[1];
-    g_destructible_events[iVar4].field1_0x4.ed.dir[1] = param_2[2];
-    g_destructible_events[iVar4].field1_0x4.ed.dir[2] = param_3;
-    g_destructible_events[iVar4].field1_0x4.ed.point[0] = param_4;
-    g_destructible_events[iVar4].field1_0x4.ed.point[1] = param_5;
-    g_destructible_events[iVar4].field1_0x4.erd.mod = param_6;
+    g_destructible_events[iVar4].field1_0x4.ed.self = self;
+    g_destructible_events[iVar4].field1_0x4.erd.point[0] = *point;
+    g_destructible_events[iVar4].field1_0x4.ed.dir[0] = point[1];
+    g_destructible_events[iVar4].field1_0x4.ed.dir[1] = point[2];
+    g_destructible_events[iVar4].field1_0x4.ed.dir[2] = damgeInner;
+    g_destructible_events[iVar4].field1_0x4.ed.point[0] = damgeOuter;
+    g_destructible_events[iVar4].field1_0x4.ed.point[1] = radius;
+    g_destructible_events[iVar4].field1_0x4.erd.mod = mod;
   }
   else {
     Com_PrintWarning(0x14,"CG_DestructibleRadiusDamage: Destructible events buffer full.\n");
@@ -3170,44 +3229,44 @@ CG_DestructibleRadiusDamage
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_StoreDestructibleState(centity_s *param_1,DestructibleState param_2)
+void __cdecl CG_StoreDestructibleState(centity_s *cent,DestructibleState newState)
 
 {
   int iVar1;
   DestructibleState *pDVar2;
   int *piVar3;
   DestructibleState *pDVar4;
-  int local_28;
-  int local_24;
-  int local_20 [7];
+  int j_2;
+  int j;
+  int tempState [7];
   
-  local_24 = 0;
+  j = 0;
   while( true ) {
-    if (4 < local_24) {
-      local_28 = 0;
+    if (4 < j) {
+      j_2 = 0;
       while( true ) {
-        if (4 < local_28) {
+        if (4 < j_2) {
           return;
         }
-        if (local_28 == 4) break;
-        pDVar2 = param_1->destructible->states + local_28 + 1;
-        piVar3 = local_20;
+        if (j_2 == 4) break;
+        pDVar2 = cent->destructible->states + j_2 + 1;
+        piVar3 = tempState;
         for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
           *piVar3 = (pDVar2->state).modelState0;
           pDVar2 = (DestructibleState *)&(pDVar2->state).modelState1;
           piVar3 = piVar3 + 1;
         }
-        piVar3 = local_20;
-        pDVar2 = param_1->destructible->states + local_28;
+        piVar3 = tempState;
+        pDVar2 = cent->destructible->states + j_2;
         for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
           (pDVar2->state).modelState0 = *piVar3;
           piVar3 = piVar3 + 1;
           pDVar2 = (DestructibleState *)&(pDVar2->state).modelState1;
         }
-        local_28 = local_28 + 1;
+        j_2 = j_2 + 1;
       }
-      pDVar2 = &param_2;
-      pDVar4 = param_1->destructible->states + 4;
+      pDVar2 = &newState;
+      pDVar4 = cent->destructible->states + 4;
       for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
         (pDVar4->state).modelState0 = (pDVar2->state).modelState0;
         pDVar2 = (DestructibleState *)&(pDVar2->state).modelState1;
@@ -3215,24 +3274,24 @@ void __cdecl CG_StoreDestructibleState(centity_s *param_1,DestructibleState para
       }
       return;
     }
-    if ((param_1->destructible->states[local_24].time == 0) &&
-       (param_1->destructible->bHasBeenHit == '\0')) break;
-    local_24 = local_24 + 1;
+    if ((cent->destructible->states[j].time == 0) && (cent->destructible->bHasBeenHit == '\0'))
+    break;
+    j = j + 1;
   }
-  if ((param_1->nitrousVeh == (NitrousVehicle *)0x0) && (local_24 == 0)) {
-    param_1->destructible->bHasBeenHit = '\x01';
-    param_1->destructible->states[0].time = 1;
-    param_1->destructible->states[0].state.modelState0 = 0x7fffffff;
+  if ((cent->nitrousVeh == (NitrousVehicle *)0x0) && (j == 0)) {
+    cent->destructible->bHasBeenHit = '\x01';
+    cent->destructible->states[0].time = 1;
+    cent->destructible->states[0].state.modelState0 = 0x7fffffff;
     return;
   }
-  pDVar2 = &param_2;
-  pDVar4 = param_1->destructible->states + local_24;
+  pDVar2 = &newState;
+  pDVar4 = cent->destructible->states + j;
   for (iVar1 = 7; iVar1 != 0; iVar1 = iVar1 + -1) {
     (pDVar4->state).modelState0 = (pDVar2->state).modelState0;
     pDVar2 = (DestructibleState *)&(pDVar2->state).modelState1;
     pDVar4 = (DestructibleState *)&(pDVar4->state).modelState1;
   }
-  param_1->destructible->bHasBeenHit = '\x01';
+  cent->destructible->bHasBeenHit = '\x01';
   return;
 }
 
@@ -3244,22 +3303,25 @@ void __cdecl CG_StoreDestructibleState(centity_s *param_1,DestructibleState para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_RestartDestructibles(int param_1)
+void __cdecl CG_RestartDestructibles(int localClientNum)
 
 {
   snapshot_s *psVar1;
   cg_s *pcVar2;
-  uint local_8;
+  cg_s *cgameGlob;
+  snapshot_s *nextSnap;
+  Destructible *self;
+  uint i;
   
-  pcVar2 = CG_GetLocalClientGlobals(param_1);
+  pcVar2 = CG_GetLocalClientGlobals(localClientNum);
   psVar1 = pcVar2->nextSnap;
   if (psVar1 != (snapshot_s *)0x0) {
-    for (local_8 = 0; local_8 < cg_numDestructibles[param_1]; local_8 = local_8 + 1) {
-      if ((cg_destructibles[param_1] + local_8 != (Destructible *)0x0) &&
+    for (i = 0; i < cg_numDestructibles[localClientNum]; i = i + 1) {
+      if ((cg_destructibles[localClientNum] + i != (Destructible *)0x0) &&
          (pcVar2->time - (psVar1->ps).deltaTime <= pcVar2->time)) {
         CG_DestructibleRewindToTime
-                  (param_1,cg_destructibles[param_1] + local_8,pcVar2->time - (psVar1->ps).deltaTime
-                  );
+                  (localClientNum,cg_destructibles[localClientNum] + i,
+                   pcVar2->time - (psVar1->ps).deltaTime);
       }
     }
   }
@@ -3274,49 +3336,49 @@ void __cdecl CG_RestartDestructibles(int param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DestructibleRewindToTime(int param_1,Destructible *param_2,int param_3)
+void __cdecl CG_DestructibleRewindToTime(int localClientNum,Destructible *destructible,int time)
 
 {
   DestructibleState *pDVar1;
   int iVar2;
-  short local_38;
-  byte local_31;
-  int local_30;
-  LerpEntityStateDestructibleHit local_2c;
-  centity_s *local_14;
-  char local_d;
-  DestructibleDef *local_c;
-  char local_5;
+  short newHealth;
+  uchar i;
+  int j;
+  LerpEntityStateDestructibleHit state;
+  centity_s *cent;
+  bool hasOldState;
+  DestructibleDef *ddef;
+  bool isDestroyed;
   
-  local_c = param_2->ddef;
-  local_d = '\0';
-  local_5 = '\0';
-  for (local_30 = 0; local_30 < 5; local_30 = local_30 + 1) {
-    if ((param_2->states[local_30].time != 0) && (param_2->states[local_30].time < param_3)) {
-      pDVar1 = param_2->states + local_30;
-      local_2c.modelState0 = (pDVar1->state).modelState0;
-      local_2c.modelState1 = (pDVar1->state).modelState1;
-      local_2c.modelState2 = (pDVar1->state).modelState2;
-      local_2c.dummy = (pDVar1->state).dummy;
-      local_2c.modelState3 = (pDVar1->state).modelState3;
-      local_2c.modelState4 = (pDVar1->state).modelState4;
-      local_d = '\x01';
+  ddef = destructible->ddef;
+  hasOldState = false;
+  isDestroyed = false;
+  for (j = 0; j < 5; j = j + 1) {
+    if ((destructible->states[j].time != 0) && (destructible->states[j].time < time)) {
+      pDVar1 = destructible->states + j;
+      state.modelState0 = (pDVar1->state).modelState0;
+      state.modelState1 = (pDVar1->state).modelState1;
+      state.modelState2 = (pDVar1->state).modelState2;
+      state.dummy = (pDVar1->state).dummy;
+      state.modelState3 = (pDVar1->state).modelState3;
+      state.modelState4 = (pDVar1->state).modelState4;
+      hasOldState = true;
     }
   }
-  if (local_d != '\0') {
-    local_14 = CG_GetEntity(param_1,param_2->entNum);
-    if (((local_14->nextState).lerp.eFlags2 & 8U) != 0) {
-      local_5 = '\x01';
+  if (hasOldState != false) {
+    cent = CG_GetEntity(localClientNum,destructible->entNum);
+    if (((cent->nextState).lerp.eFlags2 & 8U) != 0) {
+      isDestroyed = true;
     }
-    for (local_31 = 0; (int)(uint)local_31 < local_c->numPieces; local_31 = local_31 + 1) {
-      iVar2 = GetHealthFromState(&local_2c,local_c,local_31);
-      local_38 = (short)iVar2;
-      if (local_5 != '\0') {
-        local_38 = -1;
+    for (i = '\0'; (int)(uint)i < ddef->numPieces; i = i + '\x01') {
+      iVar2 = GetHealthFromState(&state,ddef,i);
+      newHealth = (short)iVar2;
+      if (isDestroyed != false) {
+        newHealth = -1;
       }
-      param_2->pieceArray[local_31].health = local_38;
+      destructible->pieceArray[i].health = newHealth;
     }
-    CG_DestructibleUpdateDObj(local_14);
+    CG_DestructibleUpdateDObj(cent);
   }
   return;
 }
@@ -3329,155 +3391,151 @@ void __cdecl CG_DestructibleRewindToTime(int param_1,Destructible *param_2,int p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_DestructibleHitEvent(int param_1,int param_2,entityState_s *param_3,int param_4)
+void __cdecl CG_DestructibleHitEvent(int localClientNum,int event,entityState_s *es,int lazyprocess)
 
 {
-  DestructibleState DVar1;
-  destructible_event_t *pdVar2;
-  int iVar3;
+  DestructibleState newState_00;
+  destructible_event_t *pdVar1;
+  int iVar2;
+  float *pfVar3;
   float *pfVar4;
-  float *pfVar5;
-  float fVar6;
+  float fVar5;
   float in_stack_ffffff24;
   undefined4 in_stack_ffffff28;
   uint in_stack_ffffff2c;
   int in_stack_ffffff30;
+  int iVar6;
   int iVar7;
-  int iVar8;
-  float local_98 [9];
+  float bone_axis [9];
   float local_74;
   float local_70;
   float local_6c;
-  DObj *local_68;
-  uint local_64;
-  float local_60;
+  DObj *obj;
+  uint boneName;
+  float hitp;
   float local_5c;
   float local_58;
-  float local_54;
-  int local_50;
-  byte local_49;
-  float local_48 [3];
+  float dist;
+  int newHealth;
+  uchar i;
+  float newState [3];
   int local_3c;
   float local_38;
   int local_34;
   int local_30;
-  float local_2c;
+  float dir;
   float local_28;
   float local_24;
-  cg_s *local_20;
-  DestructibleDef *local_1c;
-  float local_18;
+  cg_s *cgameGlob;
+  DestructibleDef *ddef;
+  float point;
   float local_14;
   float local_10;
-  centity_s *local_8;
+  centity_s *self;
   
-  iVar7 = g_destructible_events_count;
-  if (param_4 == 0) {
-    iVar7 = 0x81b11c;
-    local_8 = CG_GetEntity(param_1,(int)param_3->otherEntityNum);
-    if ((local_8 != (centity_s *)0x0) && (local_8->destructible != (Destructible *)0x0)) {
-      local_1c = local_8->destructible->ddef;
-      if ((local_8->destructible->flags & 4) != 0) {
-        local_8->destructible->flags = local_8->destructible->flags & 0xfffffffb;
-        CG_SafeDObjFree((uint)(local_8->pose).localClientNum,(local_8->nextState).number);
-        iVar7 = (int)(local_8->nextState).eType;
-        in_stack_ffffff30 = (local_8->nextState).number;
-        in_stack_ffffff2c = (uint)(local_8->pose).localClientNum;
+  iVar6 = g_destructible_events_count;
+  if (lazyprocess == 0) {
+    iVar6 = 0x81b11c;
+    self = CG_GetEntity(localClientNum,(int)es->otherEntityNum);
+    if ((self != (centity_s *)0x0) && (self->destructible != (Destructible *)0x0)) {
+      ddef = self->destructible->ddef;
+      if ((self->destructible->flags & 4) != 0) {
+        self->destructible->flags = self->destructible->flags & 0xfffffffb;
+        CG_SafeDObjFree((uint)(self->pose).localClientNum,(self->nextState).number);
+        iVar6 = (int)(self->nextState).eType;
+        in_stack_ffffff30 = (self->nextState).number;
+        in_stack_ffffff2c = (uint)(self->pose).localClientNum;
         in_stack_ffffff28 = 0x81b1bc;
-        CG_PreProcess_GetDObj
-                  (in_stack_ffffff2c,in_stack_ffffff30,iVar7,local_1c->model,(XModel *)0x0);
+        CG_PreProcess_GetDObj(in_stack_ffffff2c,in_stack_ffffff30,iVar6,ddef->model,(XModel *)0x0);
       }
-      local_18 = (param_3->lerp).pos.trBase[0];
-      local_14 = (param_3->lerp).pos.trBase[1];
-      local_10 = (param_3->lerp).pos.trBase[2];
-      local_2c = (param_3->lerp).pos.trDelta[0];
-      local_28 = (param_3->lerp).pos.trDelta[1];
-      local_24 = (param_3->lerp).pos.trDelta[2];
-      iVar8 = 0x81b23e;
-      local_20 = CG_GetLocalClientGlobals(param_1);
-      if (local_20->inKillCam == 0) {
-        local_48[0] = (param_3->lerp).u.turret.gunAngles[0];
-        local_48[1] = (param_3->lerp).u.turret.gunAngles[1];
-        local_48[2] = (param_3->lerp).u.turret.gunAngles[2];
-        local_3c = (param_3->lerp).u.turret.ownerNum;
-        local_38 = (param_3->lerp).u.turret.heatVal;
-        local_34 = (param_3->lerp).u.turret.overheating;
-        local_30 = local_20->time;
-        pfVar4 = local_48;
-        pfVar5 = (float *)&stack0xffffff24;
-        for (iVar3 = 7; iVar3 != 0; iVar3 = iVar3 + -1) {
-          *pfVar5 = *pfVar4;
+      point = (es->lerp).pos.trBase[0];
+      local_14 = (es->lerp).pos.trBase[1];
+      local_10 = (es->lerp).pos.trBase[2];
+      dir = (es->lerp).pos.trDelta[0];
+      local_28 = (es->lerp).pos.trDelta[1];
+      local_24 = (es->lerp).pos.trDelta[2];
+      iVar7 = 0x81b23e;
+      cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+      if (cgameGlob->inKillCam == 0) {
+        newState[0] = (es->lerp).u.turret.gunAngles[0];
+        newState[1] = (es->lerp).u.turret.gunAngles[1];
+        newState[2] = (es->lerp).u.turret.gunAngles[2];
+        local_3c = (es->lerp).u.turret.ownerNum;
+        local_38 = (es->lerp).u.turret.heatVal;
+        local_34 = (es->lerp).u.turret.overheating;
+        local_30 = cgameGlob->time;
+        pfVar3 = newState;
+        pfVar4 = (float *)&stack0xffffff24;
+        for (iVar2 = 7; iVar2 != 0; iVar2 = iVar2 + -1) {
+          *pfVar4 = *pfVar3;
+          pfVar3 = pfVar3 + 1;
           pfVar4 = pfVar4 + 1;
-          pfVar5 = pfVar5 + 1;
         }
-        DVar1.state.modelState1 = in_stack_ffffff28;
-        DVar1.state.modelState0 = (int)in_stack_ffffff24;
-        DVar1.state.modelState2 = in_stack_ffffff2c;
-        DVar1.state.dummy = in_stack_ffffff30;
-        DVar1.state.modelState3 = iVar7;
-        DVar1.state.modelState4 = iVar8;
-        DVar1.time = param_1;
-        CG_StoreDestructibleState(local_8,DVar1);
+        newState_00.state.modelState1 = in_stack_ffffff28;
+        newState_00.state.modelState0 = (int)in_stack_ffffff24;
+        newState_00.state.modelState2 = in_stack_ffffff2c;
+        newState_00.state.dummy = in_stack_ffffff30;
+        newState_00.state.modelState3 = iVar6;
+        newState_00.state.modelState4 = iVar7;
+        newState_00.time = localClientNum;
+        CG_StoreDestructibleState(self,newState_00);
       }
-      for (local_49 = 0; (int)(uint)local_49 < local_1c->numPieces; local_49 = local_49 + 1) {
-        local_50 = GetHealthFromState(&(param_3->lerp).u.destructibleHit,local_1c,local_49);
-        if (local_50 < local_8->destructible->pieceArray[local_49].health) {
-          if (param_2 == 0x37) {
-            local_60 = 0.0;
+      for (i = '\0'; (int)(uint)i < ddef->numPieces; i = i + '\x01') {
+        newHealth = GetHealthFromState(&(es->lerp).u.destructibleHit,ddef,i);
+        if (newHealth < self->destructible->pieceArray[i].health) {
+          if (event == 0x37) {
+            hitp = 0.0;
             local_5c = 0.0;
             local_58 = 0.0;
-            local_64 = Destructible_GetShowBoneNameForPiece(local_8->destructible,(uint)local_49);
-            if (local_64 == 0) {
-              local_60 = (local_8->pose).origin[0];
-              local_5c = (local_8->pose).origin[1];
-              local_58 = (local_8->pose).origin[2];
+            boneName = Destructible_GetShowBoneNameForPiece(self->destructible,(uint)i);
+            if (boneName == 0) {
+              hitp = (self->pose).origin[0];
+              local_5c = (self->pose).origin[1];
+              local_58 = (self->pose).origin[2];
             }
             else {
-              local_68 = Com_GetClientDObj((local_8->nextState).number,
-                                           (uint)(local_8->pose).localClientNum);
-              if (local_68 == (DObj *)0x0) {
-                local_60 = (local_8->pose).origin[0];
-                local_5c = (local_8->pose).origin[1];
-                local_58 = (local_8->pose).origin[2];
+              obj = Com_GetClientDObj((self->nextState).number,(uint)(self->pose).localClientNum);
+              if (obj == (DObj *)0x0) {
+                hitp = (self->pose).origin[0];
+                local_5c = (self->pose).origin[1];
+                local_58 = (self->pose).origin[2];
               }
               else {
                 CG_DObjGetWorldTagMatrix
-                          (&local_8->pose,local_68,local_64,(float (*) [3])local_98,&local_74);
-                local_60 = local_74;
+                          (&self->pose,obj,boneName,(float (*) [3])bone_axis,&local_74);
+                hitp = local_74;
                 local_5c = local_70;
                 local_58 = local_6c;
               }
             }
-            local_2c = local_60 - local_18;
+            dir = hitp - point;
             local_28 = local_5c - local_14;
-            fVar6 = local_58 - local_10;
-            local_54 = local_2c * local_2c + local_28 * local_28 + fVar6 * fVar6;
-            if (local_54 <= 0.001) {
-              local_2c = 0.0;
+            fVar5 = local_58 - local_10;
+            dist = dir * dir + local_28 * local_28 + fVar5 * fVar5;
+            if (dist <= 0.001) {
+              dir = 0.0;
               local_28 = 0.0;
               local_24 = 1.0;
             }
             else {
-              local_24 = 1.0 / SQRT(local_54);
-              local_2c = local_24 * local_2c;
+              local_24 = 1.0 / SQRT(dist);
+              dir = local_24 * dir;
               local_28 = local_24 * local_28;
-              local_24 = local_24 * fVar6;
+              local_24 = local_24 * fVar5;
             }
           }
-          CG_DestructibleDamage
-                    (local_8,&local_2c,&local_18,(uint)local_49,local_50,(uint)(param_3->un1).scale,
-                     true,true);
+          CG_DestructibleDamage(self,&dir,&point,(uint)i,newHealth,(uint)(es->un1).scale,true,true);
         }
       }
     }
   }
   else if (g_destructible_events_count < 0x40) {
-    pdVar2 = g_destructible_events + g_destructible_events_count;
+    pdVar1 = g_destructible_events + g_destructible_events_count;
     g_destructible_events_count = g_destructible_events_count + 1;
-    pdVar2->type = 2;
-    g_destructible_events[iVar7].field1_0x4.ehe.localClientNum = param_1;
-    g_destructible_events[iVar7].field1_0x4.ehe.event = param_2;
-    g_destructible_events[iVar7].field1_0x4.ehe.es = param_3;
+    pdVar1->type = 2;
+    g_destructible_events[iVar6].field1_0x4.ehe.localClientNum = localClientNum;
+    g_destructible_events[iVar6].field1_0x4.ehe.event = event;
+    g_destructible_events[iVar6].field1_0x4.ehe.es = es;
   }
   else {
     Com_PrintWarning(0x14,"CG_DestructibleHitEvent: Destructible events buffer full.\n");
@@ -3494,41 +3552,42 @@ void __cdecl CG_DestructibleHitEvent(int param_1,int param_2,entityState_s *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_ProcessDestructibleEvents(int param_1)
+void __cdecl CG_ProcessDestructibleEvents(int localClientNum)
 
 {
   int iVar1;
   DWORD DVar2;
-  int local_c;
+  int i;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"CG_ProcessDestructibleEvents");
-  for (local_c = 0; local_c < g_destructible_events_count; local_c = local_c + 1) {
-    iVar1 = g_destructible_events[local_c].type;
+  for (i = 0; i < g_destructible_events_count; i = i + 1) {
+    iVar1 = g_destructible_events[i].type;
     if (iVar1 == 0) {
       CG_DestructibleDamage
-                (g_destructible_events[local_c].field1_0x4.ed.self,
-                 g_destructible_events[local_c].field1_0x4.ed.attacker,
-                 g_destructible_events[local_c].field1_0x4.ed.dir,
-                 g_destructible_events[local_c].field1_0x4.ed.point,
-                 g_destructible_events[local_c].field1_0x4.ed.damage,
-                 g_destructible_events[local_c].field1_0x4.ed.mod,
-                 g_destructible_events[local_c].field1_0x4.ed.modelIndex,
-                 g_destructible_events[local_c].field1_0x4.ed.partName,0);
+                (g_destructible_events[i].field1_0x4.ed.self,
+                 g_destructible_events[i].field1_0x4.ed.attacker,
+                 g_destructible_events[i].field1_0x4.ed.dir,
+                 g_destructible_events[i].field1_0x4.ed.point,
+                 g_destructible_events[i].field1_0x4.ed.damage,
+                 g_destructible_events[i].field1_0x4.ed.mod,
+                 g_destructible_events[i].field1_0x4.ed.modelIndex,
+                 g_destructible_events[i].field1_0x4.ed.partName,0);
     }
     else if (iVar1 == 1) {
       CG_DestructibleRadiusDamage
-                (g_destructible_events[local_c].field1_0x4.ed.self,
-                 g_destructible_events[local_c].field1_0x4.erd.point,
-                 g_destructible_events[local_c].field1_0x4.ed.dir[2],
-                 g_destructible_events[local_c].field1_0x4.ed.point[0],
-                 g_destructible_events[local_c].field1_0x4.ed.point[1],
-                 g_destructible_events[local_c].field1_0x4.erd.mod,0);
+                (g_destructible_events[i].field1_0x4.ed.self,
+                 g_destructible_events[i].field1_0x4.erd.point,
+                 g_destructible_events[i].field1_0x4.ed.dir[2],
+                 g_destructible_events[i].field1_0x4.ed.point[0],
+                 g_destructible_events[i].field1_0x4.ed.point[1],
+                 g_destructible_events[i].field1_0x4.erd.mod,0);
     }
     else if (iVar1 == 2) {
       CG_DestructibleHitEvent
-                (g_destructible_events[local_c].field1_0x4.ehe.localClientNum,
-                 g_destructible_events[local_c].field1_0x4.ehe.event,
-                 g_destructible_events[local_c].field1_0x4.ehe.es,0);
+                (g_destructible_events[i].field1_0x4.ehe.localClientNum,
+                 g_destructible_events[i].field1_0x4.ehe.event,
+                 g_destructible_events[i].field1_0x4.ehe.es,0);
     }
   }
   g_destructible_events_count = 0;
@@ -3549,94 +3608,101 @@ void __cdecl CG_ProcessDestructibleEvents(int param_1)
 
 void __cdecl
 CG_DestructibleDamage
-          (centity_s *param_1,centity_s *param_2,float *param_3,float *param_4,int param_5,
-          int param_6,uint param_7,uint param_8,int param_9)
+          (centity_s *self,centity_s *attacker,float *dir,float *point,int damage,int mod,
+          uint modelIndex,uint partName,int lazyprocess)
 
 {
-  Destructible *pDVar1;
-  code *pcVar2;
-  bool bVar3;
-  destructible_event_t *pdVar4;
-  DWORD DVar5;
-  int iVar6;
-  byte local_1d;
-  bool local_a;
-  byte local_9;
-  DestructibleDef *local_8;
+  Destructible *destructible_00;
+  code *pcVar1;
+  bool bVar2;
+  destructible_event_t *pdVar3;
+  DWORD DVar4;
+  int iVar5;
+  int randDamage;
+  uchar index_2;
+  int newHealth;
+  PIXProfile pixProfile;
+  Destructible *destructible;
+  bool needDObjUpdate;
+  uchar index;
+  DestructibleDef *ddef;
   
-  iVar6 = g_destructible_events_count;
-  if (param_9 == 0) {
+  iVar5 = g_destructible_events_count;
+  if (lazyprocess == 0) {
     PIXBeginNamedEvent(-1,"CG_DestructibleDamage2");
-    pDVar1 = param_1->destructible;
-    if (pDVar1 == (Destructible *)0x0) {
-      DVar5 = GetCurrentThreadId();
-      if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    destructible_00 = self->destructible;
+    if (destructible_00 == (Destructible *)0x0) {
+      DVar4 = GetCurrentThreadId();
+      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      local_8 = pDVar1->ddef;
-      if ((pDVar1->flags & 4) != 0) {
-        pDVar1->flags = pDVar1->flags & 0xfffffffb;
-        CG_SafeDObjFree((uint)(param_1->pose).localClientNum,(param_1->nextState).number);
+      ddef = destructible_00->ddef;
+      if ((destructible_00->flags & 4) != 0) {
+        destructible_00->flags = destructible_00->flags & 0xfffffffb;
+        CG_SafeDObjFree((uint)(self->pose).localClientNum,(self->nextState).number);
         CG_PreProcess_GetDObj
-                  ((uint)(param_1->pose).localClientNum,(param_1->nextState).number,
-                   (int)(param_1->nextState).eType,local_8->model,(XModel *)0x0);
+                  ((uint)(self->pose).localClientNum,(self->nextState).number,
+                   (int)(self->nextState).eType,ddef->model,(XModel *)0x0);
       }
-      local_a = false;
-      Destructible_GetPieceIndexFromBoneName(pDVar1,param_7,param_8,&local_9);
-      if ((local_8->numPieces <= (int)(uint)local_9) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                   0xb59,0,"%s"), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      needDObjUpdate = false;
+      Destructible_GetPieceIndexFromBoneName(destructible_00,modelIndex,partName,&index);
+      if ((ddef->numPieces <= (int)(uint)index) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                   0xb59,0,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      if (local_8->clientOnly == 0) {
-        local_a = CG_DestructibleDamage
-                            (param_1,param_3,param_4,(uint)local_9,
-                             (int)pDVar1->pieceArray[local_9].health,param_6,false,true);
+      if (ddef->clientOnly == 0) {
+        needDObjUpdate =
+             CG_DestructibleDamage
+                       (self,dir,point,(uint)index,(int)destructible_00->pieceArray[index].health,
+                        mod,false,true);
       }
       else {
-        Destructible_SetDebugRender(pDVar1);
-        if (param_6 == 0x11) {
-          for (local_1d = 0; (int)(uint)local_1d < local_8->numPieces; local_1d = local_1d + 1) {
-            iVar6 = CG_rand();
-            local_a = CG_DamagePiece((uint)(param_1->pose).localClientNum,param_1,local_1d,
-                                     iVar6 % param_5 + 1,param_4,param_3,0x11,true,0);
+        Destructible_SetDebugRender(destructible_00);
+        if (mod == 0x11) {
+          for (index_2 = '\0'; (int)(uint)index_2 < ddef->numPieces; index_2 = index_2 + '\x01') {
+            iVar5 = CG_rand();
+            needDObjUpdate =
+                 CG_DamagePiece((uint)(self->pose).localClientNum,self,index_2,iVar5 % damage + 1,
+                                point,dir,0x11,true,0);
           }
         }
         else {
-          local_a = CG_DamagePiece((uint)(param_1->pose).localClientNum,param_1,local_9,
-                                   (int)((float)param_5 * local_8->pieces[local_9].bulletDamageScale
-                                        ),param_4,param_3,param_6,true,0);
+          needDObjUpdate =
+               CG_DamagePiece((uint)(self->pose).localClientNum,self,index,
+                              (int)((float)damage * ddef->pieces[index].bulletDamageScale),point,dir
+                              ,mod,true,0);
         }
       }
-      if (local_a != false) {
-        CG_DestructibleUpdateDObj(param_1);
+      if (needDObjUpdate != false) {
+        CG_DestructibleUpdateDObj(self);
       }
-      DVar5 = GetCurrentThreadId();
-      if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+      DVar4 = GetCurrentThreadId();
+      if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
   }
   else if (g_destructible_events_count < 0x40) {
-    pdVar4 = g_destructible_events + g_destructible_events_count;
+    pdVar3 = g_destructible_events + g_destructible_events_count;
     g_destructible_events_count = g_destructible_events_count + 1;
-    pdVar4->type = 0;
-    g_destructible_events[iVar6].field1_0x4.ed.self = param_1;
-    g_destructible_events[iVar6].field1_0x4.ed.attacker = param_2;
-    g_destructible_events[iVar6].field1_0x4.ed.dir[0] = *param_3;
-    g_destructible_events[iVar6].field1_0x4.ed.dir[1] = param_3[1];
-    g_destructible_events[iVar6].field1_0x4.ed.dir[2] = param_3[2];
-    g_destructible_events[iVar6].field1_0x4.ed.point[0] = *param_4;
-    g_destructible_events[iVar6].field1_0x4.ed.point[1] = param_4[1];
-    g_destructible_events[iVar6].field1_0x4.ed.point[2] = param_4[2];
-    g_destructible_events[iVar6].field1_0x4.ed.damage = param_5;
-    g_destructible_events[iVar6].field1_0x4.ed.mod = param_6;
-    g_destructible_events[iVar6].field1_0x4.ed.modelIndex = param_7;
-    g_destructible_events[iVar6].field1_0x4.ed.partName = param_8;
+    pdVar3->type = 0;
+    g_destructible_events[iVar5].field1_0x4.ed.self = self;
+    g_destructible_events[iVar5].field1_0x4.ed.attacker = attacker;
+    g_destructible_events[iVar5].field1_0x4.ed.dir[0] = *dir;
+    g_destructible_events[iVar5].field1_0x4.ed.dir[1] = dir[1];
+    g_destructible_events[iVar5].field1_0x4.ed.dir[2] = dir[2];
+    g_destructible_events[iVar5].field1_0x4.ed.point[0] = *point;
+    g_destructible_events[iVar5].field1_0x4.ed.point[1] = point[1];
+    g_destructible_events[iVar5].field1_0x4.ed.point[2] = point[2];
+    g_destructible_events[iVar5].field1_0x4.ed.damage = damage;
+    g_destructible_events[iVar5].field1_0x4.ed.mod = mod;
+    g_destructible_events[iVar5].field1_0x4.ed.modelIndex = modelIndex;
+    g_destructible_events[iVar5].field1_0x4.ed.partName = partName;
   }
   else {
     Com_PrintWarning(0x14,"CG_DestructibleDamage: Destructible events buffer full.\n");
@@ -3655,163 +3721,169 @@ CG_DestructibleDamage
 
 bool __cdecl
 CG_DestructibleDamage
-          (centity_s *param_1,float *param_2,float *param_3,uint param_4,int param_5,int param_6,
-          bool param_7,bool param_8)
+          (centity_s *self,float *dir,float *point,uint pieceIndex,int newHealth,int mod,
+          bool updateDObj,bool applyForce)
 
 {
-  code *pcVar1;
-  bool bVar2;
-  undefined1 uVar3;
-  Destructible *pDVar4;
-  uint uVar5;
-  PhysPreset *pPVar6;
-  int iVar7;
-  DWORD DVar8;
+  int iVar1;
+  code *pcVar2;
+  bool bVar3;
+  undefined1 uVar4;
+  Destructible *pDVar5;
+  uint id;
+  PhysPreset *physPreset_00;
+  int iVar6;
+  DWORD DVar7;
+  uint localClientNum_00;
   int local_94;
-  int local_78;
-  int local_74;
-  float local_64 [3];
-  float local_58 [9];
-  int local_34;
-  DestructiblePiece *local_30;
-  char local_29;
-  short local_28;
-  int local_24;
-  int local_20;
-  DestructibleDef *local_1c;
-  uint local_14;
-  Destructible *local_10;
-  undefined1 local_9;
-  int local_8;
+  PhysPreset *physPreset;
+  int nextStage;
+  int curStage;
+  int lastModel;
+  int numModelsForPiece;
+  bool hadPhysics;
+  float tagOrigin [3];
+  float tagMat [9];
+  int damage;
+  DestructiblePiece *piece;
+  bool breakPieceAlreadyAppliedForce;
+  short prev_health;
+  int newDModel;
+  int prevDModel;
+  DestructibleDef *ddef;
+  PIXProfile pixProfile;
+  int localClientNum;
+  Destructible *destructible;
+  bool needDObjUpdate;
+  int entity_index;
   
   PIXBeginNamedEvent(-1,"CG_DestructibleDamage1");
-  if (param_1->destructible == (Destructible *)0x0) {
-    pDVar4 = Destructible_GetDestructible((param_1->nextState).number);
-    param_1->destructible = pDVar4;
+  if (self->destructible == (Destructible *)0x0) {
+    pDVar5 = Destructible_GetDestructible((self->nextState).number);
+    self->destructible = pDVar5;
   }
-  local_10 = param_1->destructible;
-  local_8 = (param_1->nextState).number;
-  local_14 = (uint)(param_1->pose).localClientNum;
-  local_9 = 0;
-  if (local_10 != (Destructible *)0x0) {
-    local_1c = local_10->ddef;
-    if ((local_10->flags & 4) != 0) {
-      local_10->flags = local_10->flags & 0xfffffffb;
-      CG_SafeDObjFree((uint)(param_1->pose).localClientNum,(param_1->nextState).number);
+  pDVar5 = self->destructible;
+  iVar6 = (self->nextState).number;
+  localClientNum_00 = (uint)(self->pose).localClientNum;
+  needDObjUpdate = false;
+  if (pDVar5 != (Destructible *)0x0) {
+    ddef = pDVar5->ddef;
+    if ((pDVar5->flags & 4) != 0) {
+      pDVar5->flags = pDVar5->flags & 0xfffffffb;
+      CG_SafeDObjFree((uint)(self->pose).localClientNum,(self->nextState).number);
       CG_PreProcess_GetDObj
-                ((uint)(param_1->pose).localClientNum,(param_1->nextState).number,
-                 (int)(param_1->nextState).eType,local_1c->model,(XModel *)0x0);
+                ((uint)(self->pose).localClientNum,(self->nextState).number,
+                 (int)(self->nextState).eType,ddef->model,(XModel *)0x0);
     }
-    if ((local_1c->numPieces <= (int)param_4) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
-                                 0xb9c,0,"%s"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      uVar3 = (*pcVar1)();
-      return (bool)uVar3;
+    if ((ddef->numPieces <= (int)pieceIndex) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
+                                 0xb9c,0,"%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      uVar4 = (*pcVar2)();
+      return (bool)uVar4;
     }
-    local_28 = local_10->pieceArray[param_4].health;
-    local_10->pieceArray[param_4].health = (short)param_5;
-    local_20 = Destructible_GetDestructibleStage(local_1c,param_4,(int)local_28);
-    local_24 = Destructible_GetDestructibleStage(local_1c,param_4,param_5);
-    if (param_6 == 0x11) {
-      CG_DestructibleSetBurn((uint)(param_1->pose).localClientNum,param_1,local_10,param_4,true);
+    prev_health = pDVar5->pieceArray[pieceIndex].health;
+    pDVar5->pieceArray[pieceIndex].health = (short)newHealth;
+    prevDModel = Destructible_GetDestructibleStage(ddef,pieceIndex,(int)prev_health);
+    newDModel = Destructible_GetDestructibleStage(ddef,pieceIndex,newHealth);
+    if (mod == 0x11) {
+      CG_DestructibleSetBurn((uint)(self->pose).localClientNum,self,pDVar5,pieceIndex,true);
     }
-    if (((local_24 != -1) && (local_1c->pieces[param_4].physConstraints != (PhysConstraints *)0x0))
-       && ((local_1c->pieces[param_4].physConstraints)->data[0].type == CONSTRAINT_FAKE_SHAKE)) {
-      CG_DestructibleShake(local_14,param_1,param_4,param_2,param_3,param_6);
+    if (((newDModel != -1) && (ddef->pieces[pieceIndex].physConstraints != (PhysConstraints *)0x0))
+       && ((ddef->pieces[pieceIndex].physConstraints)->data[0].type == CONSTRAINT_FAKE_SHAKE)) {
+      CG_DestructibleShake(localClientNum_00,self,pieceIndex,dir,point,mod);
     }
-    if ((((local_1c->clientOnly != 0) && (local_24 == local_20)) &&
-        ((local_20 != -1 &&
-         ((param_5 < local_28 &&
-          (local_30 = local_1c->pieces + param_4, local_30->damageSound != (char *)0x0)))))) &&
-       (local_34 = local_28 - param_5,
-       (cg_vehicle_piece_damagesfx_threshold->current).value <= (float)local_34)) {
-      CG_GetTagTransform(param_1,local_1c,param_4,local_64,(float (*) [3])local_58);
-      uVar5 = SND_FindAliasId(local_30->damageSound);
-      CG_PlaySound((uint)(param_1->pose).localClientNum,(param_1->nextState).number,local_64,0,false
-                   ,1.0,uVar5);
+    if ((((ddef->clientOnly != 0) && (newDModel == prevDModel)) &&
+        ((prevDModel != -1 &&
+         ((newHealth < prev_health &&
+          (piece = ddef->pieces + pieceIndex, piece->damageSound != (char *)0x0)))))) &&
+       (damage = prev_health - newHealth,
+       (cg_vehicle_piece_damagesfx_threshold->current).value <= (float)damage)) {
+      CG_GetTagTransform(self,ddef,pieceIndex,tagOrigin,(float (*) [3])tagMat);
+      id = SND_FindAliasId(piece->damageSound);
+      CG_PlaySound((uint)(self->pose).localClientNum,(self->nextState).number,tagOrigin,0,false,1.0,
+                   id);
     }
-    local_29 = '\0';
-    if ((local_24 != local_20) && (local_20 != -1)) {
-      local_94 = Destructible_GetNumStagesForPiece(local_1c,param_4);
-      if (local_24 != -1) {
-        local_94 = local_24;
+    breakPieceAlreadyAppliedForce = false;
+    if ((newDModel != prevDModel) && (prevDModel != -1)) {
+      local_94 = Destructible_GetNumStagesForPiece(ddef,pieceIndex);
+      if (newDModel != -1) {
+        local_94 = newDModel;
       }
-      iVar7 = param_1->destructible->pieceArray[param_4].xdollHandle;
-      for (local_74 = local_20; local_74 < local_94; local_74 = local_74 + 1) {
-        local_78 = local_74 + 1;
-        if ((local_74 == local_94 + -1) && (local_24 == -1)) {
-          local_78 = local_24;
+      iVar1 = self->destructible->pieceArray[pieceIndex].xdollHandle;
+      for (curStage = prevDModel; curStage < local_94; curStage = curStage + 1) {
+        nextStage = curStage + 1;
+        if ((curStage == local_94 + -1) && (newDModel == -1)) {
+          nextStage = newDModel;
         }
         CG_DestructibleBreakPiece
-                  (param_1,local_1c->pieces + param_4,param_4,local_74,local_78,param_3,param_2,
-                   param_6);
+                  (self,ddef->pieces + pieceIndex,pieceIndex,curStage,nextStage,point,dir,mod);
       }
-      if ((iVar7 == 0) && (param_1->destructible->pieceArray[param_4].xdollHandle != 0)) {
-        local_29 = '\x01';
+      if ((iVar1 == 0) && (self->destructible->pieceArray[pieceIndex].xdollHandle != 0)) {
+        breakPieceAlreadyAppliedForce = true;
       }
-      local_9 = 1;
-      if (param_7) {
-        CG_DestructibleUpdateDObj(param_1);
+      needDObjUpdate = true;
+      if (updateDObj) {
+        CG_DestructibleUpdateDObj(self);
       }
     }
-    if (local_10->pieceArray[param_4].xdollHandle == 0) {
-      pPVar6 = Destructible_GetPiecePhysPreset(local_1c,param_4);
-      iVar7 = XDoll_CreateXDollForConstraints
-                        (local_14,local_8,param_4,param_5,local_1c->pieces[param_4].physConstraints,
-                         pPVar6);
-      local_10->pieceArray[param_4].xdollHandle = iVar7;
+    if (pDVar5->pieceArray[pieceIndex].xdollHandle == 0) {
+      physPreset_00 = Destructible_GetPiecePhysPreset(ddef,pieceIndex);
+      iVar6 = XDoll_CreateXDollForConstraints
+                        (localClientNum_00,iVar6,pieceIndex,newHealth,
+                         ddef->pieces[pieceIndex].physConstraints,physPreset_00);
+      pDVar5->pieceArray[pieceIndex].xdollHandle = iVar6;
     }
-    if (local_10->pieceArray[param_4].xdollHandle != 0) {
-      local_10->flags = local_10->flags | 1;
-      XDoll_UpdateHealth(local_10->pieceArray[param_4].xdollHandle,param_5);
-      if ((param_8) && (local_29 == '\0')) {
-        XDoll_ApplyForce(local_10->pieceArray[param_4].xdollHandle,param_3,param_2,param_6);
+    if (pDVar5->pieceArray[pieceIndex].xdollHandle != 0) {
+      pDVar5->flags = pDVar5->flags | 1;
+      XDoll_UpdateHealth(pDVar5->pieceArray[pieceIndex].xdollHandle,newHealth);
+      if ((applyForce) && (breakPieceAlreadyAppliedForce == false)) {
+        XDoll_ApplyForce(pDVar5->pieceArray[pieceIndex].xdollHandle,point,dir,mod);
       }
     }
   }
-  uVar3 = local_9;
-  DVar8 = GetCurrentThreadId();
-  if ((DVar8 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar7 = GetCurrentThreadId();
+  if ((DVar7 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  return (bool)uVar3;
+  return needDObjUpdate;
 }
 
 
 // 0081BEF0  CM_Hunk_AllocDestructible  (physics/destructible.cpp:3069)
 
-void * __cdecl CM_Hunk_AllocDestructible(int param_1)
+void * __cdecl CM_Hunk_AllocDestructible(int size)
 
 {
   void *pvVar1;
   
-  pvVar1 = Hunk_Alloc(param_1,"CM_Hunk_AllocDestructible",0xb);
+  pvVar1 = Hunk_Alloc(size,"CM_Hunk_AllocDestructible",0xb);
   return pvVar1;
 }
 
 
 // 0081BF50  DestructibleDefPrecache_LoadObj  (physics/destructible.cpp:3074)
 
-DestructibleDef * __cdecl DestructibleDefPrecache_LoadObj(char *param_1)
+DestructibleDef * __cdecl DestructibleDefPrecache_LoadObj(char *name)
 
 {
-  DestructibleDef *pDVar1;
-  char *pcVar2;
+  DestructibleDef *data;
+  char *pcVar1;
+  DestructibleDef *destructibleDef;
   
-  if (*param_1 == '\0') {
-    pDVar1 = (DestructibleDef *)0x0;
+  if (*name == '\0') {
+    data = (DestructibleDef *)0x0;
   }
   else {
-    pDVar1 = Hunk_FindDataForFile(9,param_1);
-    if ((pDVar1 == (DestructibleDef *)0x0) &&
-       (pDVar1 = DestructibleDefLoadFile(param_1,CM_Hunk_AllocDestructible),
-       pDVar1 != (DestructibleDef *)0x0)) {
-      pcVar2 = Hunk_SetDataForFile(9,param_1,pDVar1,CM_Hunk_AllocDestructible);
-      pDVar1->name = pcVar2;
+    data = Hunk_FindDataForFile(9,name);
+    if ((data == (DestructibleDef *)0x0) &&
+       (data = DestructibleDefLoadFile(name,CM_Hunk_AllocDestructible),
+       data != (DestructibleDef *)0x0)) {
+      pcVar1 = Hunk_SetDataForFile(9,name,data,CM_Hunk_AllocDestructible);
+      data->name = pcVar1;
     }
   }
-  return pDVar1;
+  return data;
 }
 
 
@@ -3820,16 +3892,16 @@ DestructibleDef * __cdecl DestructibleDefPrecache_LoadObj(char *param_1)
 /* WARNING: Enum "XAssetType": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 
-DestructibleDef * __cdecl DestructibleDefPrecache_FastFile(char *param_1)
+DestructibleDef * __cdecl DestructibleDefPrecache_FastFile(char *name)
 
 {
   XAssetHeader XVar1;
   
-  if (*param_1 == '\0') {
+  if (*name == '\0') {
     XVar1.xmodelPieces = (XModelPieces *)0x0;
   }
   else {
-    XVar1 = DB_FindXAssetHeader(ASSET_TYPE_DESTRUCTIBLEDEF,param_1,true,-1);
+    XVar1 = DB_FindXAssetHeader(ASSET_TYPE_DESTRUCTIBLEDEF,name,true,-1);
   }
   return (DestructibleDef *)XVar1.xmodelPieces;
 }
@@ -3837,7 +3909,7 @@ DestructibleDef * __cdecl DestructibleDefPrecache_FastFile(char *param_1)
 
 // 0081BF10  DestructibleDefPrecache  (physics/destructible.cpp:3107)
 
-DestructibleDef * __cdecl DestructibleDefPrecache(char *param_1)
+DestructibleDef * __cdecl DestructibleDefPrecache(char *name)
 
 {
   DestructibleDef *pDVar1;
@@ -3849,41 +3921,41 @@ DestructibleDef * __cdecl DestructibleDefPrecache(char *param_1)
   else {
     local_c = DestructibleDefPrecache_FastFile;
   }
-  pDVar1 = (DestructibleDef *)(*local_c)(param_1);
+  pDVar1 = (DestructibleDef *)(*local_c)(name);
   return pDVar1;
 }
 
 
 // 0081BFF0  Destructible_GetPieceCount  (physics/destructible.cpp:3113)
 
-int __cdecl Destructible_GetPieceCount(Destructible *param_1)
+int __cdecl Destructible_GetPieceCount(Destructible *obj)
 
 {
-  return param_1->ddef->numPieces;
+  return obj->ddef->numPieces;
 }
 
 
 // 0081C000  Destructible_XDollActive  (physics/destructible.cpp:3118)
 
-bool __cdecl Destructible_XDollActive(Destructible *param_1)
+bool __cdecl Destructible_XDollActive(Destructible *obj)
 
 {
-  return (bool)((byte)param_1->flags & 1);
+  return (bool)((byte)obj->flags & 1);
 }
 
 
 // 0081C010  Destructible_GetXDollHandle  (physics/destructible.cpp:3123)
 
-int __cdecl Destructible_GetXDollHandle(Destructible *param_1,int param_2)
+int __cdecl Destructible_GetXDollHandle(Destructible *obj,int piece_index)
 
 {
-  return param_1->pieceArray[param_2].xdollHandle;
+  return obj->pieceArray[piece_index].xdollHandle;
 }
 
 
 // 0081C030  Destructible_GetRigidBody  (physics/destructible.cpp:3129)
 
-rigid_body * __cdecl Destructible_GetRigidBody(int param_1,int param_2)
+rigid_body * __cdecl Destructible_GetRigidBody(int client_index,int entity_index)
 
 {
   rigid_body *prVar1;
@@ -3895,25 +3967,27 @@ rigid_body * __cdecl Destructible_GetRigidBody(int param_1,int param_2)
 
 // 0081C040  Destructible_NeedsGameStateUpdate  (physics/destructible.cpp:3277)
 
-bool __cdecl Destructible_NeedsGameStateUpdate(Destructible *param_1)
+bool __cdecl Destructible_NeedsGameStateUpdate(Destructible *d)
 
 {
-  DestructibleDef *pDVar1;
+  DestructibleDef *ddef_00;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  int local_c;
+  int prev_stage_index;
+  int new_stage_index;
+  int i;
+  DestructibleDef *ddef;
   
-  pDVar1 = param_1->ddef;
-  local_c = 0;
+  ddef_00 = d->ddef;
+  i = 0;
   while( true ) {
-    if (pDVar1->numPieces <= local_c) {
+    if (ddef_00->numPieces <= i) {
       return false;
     }
-    iVar2 = Destructible_GetDestructibleStage(pDVar1,local_c,pDVar1->pieces[local_c].health);
-    iVar3 = Destructible_GetDestructibleStage
-                      (pDVar1,local_c,(int)param_1->pieceArray[local_c].health);
-    if (iVar2 != iVar3) break;
-    local_c = local_c + 1;
+    iVar1 = Destructible_GetDestructibleStage(ddef_00,i,ddef_00->pieces[i].health);
+    iVar2 = Destructible_GetDestructibleStage(ddef_00,i,(int)d->pieceArray[i].health);
+    if (iVar1 != iVar2) break;
+    i = i + 1;
   }
   return true;
 }
@@ -3923,32 +3997,31 @@ bool __cdecl Destructible_NeedsGameStateUpdate(Destructible *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Destructible_WriteGameState(msg_t *param_1)
+void __cdecl Destructible_WriteGameState(msg_t *msg)
 
 {
   bool bVar1;
-  int local_14;
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
+  int numberDestructiblesSent;
   
-  local_8 = 0;
-  local_c = 0;
-  while ((local_c < 0x40 && (local_8 < 0x20))) {
-    if (s_destructibles[local_c].entNum != 0x3ff) {
-      bVar1 = Destructible_NeedsGameStateUpdate(s_destructibles + local_c);
+  numberDestructiblesSent = 0;
+  i = 0;
+  while ((i < 0x40 && (numberDestructiblesSent < 0x20))) {
+    if (s_destructibles[i].entNum != 0x3ff) {
+      bVar1 = Destructible_NeedsGameStateUpdate(s_destructibles + i);
       if (bVar1) {
-        local_8 = local_8 + 1;
-        MSG_WriteShort(param_1,s_destructibles[local_c].entNum);
-        MSG_WriteByte(param_1,(s_destructibles[local_c].ddef)->numPieces);
-        for (local_14 = 0; local_14 < (s_destructibles[local_c].ddef)->numPieces;
-            local_14 = local_14 + 1) {
-          MSG_WriteShort(param_1,(int)s_destructibles[local_c].pieceArray[local_14].health);
+        numberDestructiblesSent = numberDestructiblesSent + 1;
+        MSG_WriteShort(msg,s_destructibles[i].entNum);
+        MSG_WriteByte(msg,(s_destructibles[i].ddef)->numPieces);
+        for (i_2 = 0; i_2 < (s_destructibles[i].ddef)->numPieces; i_2 = i_2 + 1) {
+          MSG_WriteShort(msg,(int)s_destructibles[i].pieceArray[i_2].health);
         }
       }
     }
-    local_c = local_c + 1;
+    i = i + 1;
   }
-  MSG_WriteShort(param_1,0x3ff);
+  MSG_WriteShort(msg,0x3ff);
   return;
 }
 
@@ -3957,30 +4030,32 @@ void __cdecl Destructible_WriteGameState(msg_t *param_1)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Destructible_ReadGameState(msg_t *param_1,int param_2)
+void __cdecl Destructible_ReadGameState(msg_t *msg,int localClientNum)
 
 {
   int iVar1;
   int iVar2;
   int iVar3;
-  int local_14;
-  uchar local_10;
-  int local_8;
+  short health;
+  int i;
+  int numPieces;
+  int entityNum;
   
-  s_num_destructible_gamestates[param_2] = 0;
-  local_8 = MSG_ReadShort(param_1);
-  while (local_8 != 0x3ff) {
-    iVar2 = MSG_ReadByte(param_1);
-    iVar1 = s_num_destructible_gamestates[param_2];
-    s_destructible_gamestates[param_2][iVar1].entityNum = (short)local_8;
-    local_10 = (uchar)iVar2;
-    s_destructible_gamestates[param_2][iVar1].numPieces = local_10;
-    for (local_14 = 0; local_14 < iVar2; local_14 = local_14 + 1) {
-      iVar3 = MSG_ReadShort(param_1);
-      s_destructible_gamestates[param_2][iVar1].health[local_14] = (short)iVar3;
+  s_num_destructible_gamestates[localClientNum] = 0;
+  entityNum = MSG_ReadShort(msg);
+  while (entityNum != 0x3ff) {
+    iVar2 = MSG_ReadByte(msg);
+    iVar1 = s_num_destructible_gamestates[localClientNum];
+    s_destructible_gamestates[localClientNum][iVar1].entityNum = (short)entityNum;
+    numPieces._0_1_ = (uchar)iVar2;
+    s_destructible_gamestates[localClientNum][iVar1].numPieces = (uchar)numPieces;
+    for (i = 0; i < iVar2; i = i + 1) {
+      iVar3 = MSG_ReadShort(msg);
+      s_destructible_gamestates[localClientNum][iVar1].health[i] = (short)iVar3;
     }
-    s_num_destructible_gamestates[param_2] = s_num_destructible_gamestates[param_2] + 1;
-    local_8 = MSG_ReadShort(param_1);
+    s_num_destructible_gamestates[localClientNum] =
+         s_num_destructible_gamestates[localClientNum] + 1;
+    entityNum = MSG_ReadShort(msg);
   }
   return;
 }
@@ -3990,25 +4065,25 @@ void __cdecl Destructible_ReadGameState(msg_t *param_1,int param_2)
 
 /* WARNING: Enum "netsrc_t": Some values do not have unique names */
 
-void __cdecl Demo_Destructible_WriteGameState(msg_t *param_1,int param_2)
+void __cdecl Demo_Destructible_WriteGameState(msg_t *msg,int localClientNum)
 
 {
   Destructible *pDVar1;
-  int local_10;
-  int local_8;
+  int i_2;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-    if (cg_destructibles[param_2][local_8].entNum != 0x3ff) {
-      pDVar1 = cg_destructibles[param_2] + local_8;
-      MSG_WriteShort(param_1,pDVar1->entNum);
-      MSG_WriteShort(param_1,local_8);
-      MSG_WriteByte(param_1,pDVar1->ddef->numPieces);
-      for (local_10 = 0; local_10 < pDVar1->ddef->numPieces; local_10 = local_10 + 1) {
-        MSG_WriteShort(param_1,(int)pDVar1->pieceArray[local_10].health);
+  for (i = 0; i < 0x40; i = i + 1) {
+    if (cg_destructibles[localClientNum][i].entNum != 0x3ff) {
+      pDVar1 = cg_destructibles[localClientNum] + i;
+      MSG_WriteShort(msg,pDVar1->entNum);
+      MSG_WriteShort(msg,i);
+      MSG_WriteByte(msg,pDVar1->ddef->numPieces);
+      for (i_2 = 0; i_2 < pDVar1->ddef->numPieces; i_2 = i_2 + 1) {
+        MSG_WriteShort(msg,(int)pDVar1->pieceArray[i_2].health);
       }
     }
   }
-  MSG_WriteShort(param_1,0x3ff);
+  MSG_WriteShort(msg,0x3ff);
   return;
 }
 
@@ -4021,40 +4096,44 @@ void __cdecl Demo_Destructible_WriteGameState(msg_t *param_1,int param_2)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Demo_Destructible_ReadGameState(msg_t *param_1,int param_2)
+void __cdecl Demo_Destructible_ReadGameState(msg_t *msg,int localClientNum)
 
 {
   int iVar1;
   int iVar2;
-  centity_s *pcVar3;
-  Destructible *pDVar4;
-  int local_10;
-  int local_8;
+  centity_s *self;
+  Destructible *pDVar3;
+  short health;
+  centity_s *cent;
+  int index;
+  int entityNum;
+  int numPieces;
+  int i;
   
-  local_10 = MSG_ReadShort(param_1);
-  while (local_10 != 0x3ff) {
-    iVar1 = MSG_ReadShort(param_1);
-    pDVar4 = cg_destructibles[param_2] + iVar1;
-    iVar1 = MSG_ReadByte(param_1);
-    if ((((pDVar4->entNum == local_10) && (pDVar4->ddef != (DestructibleDef *)0x0)) &&
-        (pDVar4->ddef->numPieces == iVar1)) &&
-       (pDVar4->pieceArray != (DESTRUCTIBLE_PIECE_INFO *)0x0)) {
-      for (local_8 = 0; local_8 < iVar1; local_8 = local_8 + 1) {
-        iVar2 = MSG_ReadShort(param_1);
-        pDVar4->pieceArray[local_8].health = (short)iVar2;
-        pDVar4->pieceArray[local_8].xdollHandle = 0;
+  entityNum = MSG_ReadShort(msg);
+  while (entityNum != 0x3ff) {
+    iVar1 = MSG_ReadShort(msg);
+    pDVar3 = cg_destructibles[localClientNum] + iVar1;
+    iVar1 = MSG_ReadByte(msg);
+    if ((((pDVar3->entNum == entityNum) && (pDVar3->ddef != (DestructibleDef *)0x0)) &&
+        (pDVar3->ddef->numPieces == iVar1)) &&
+       (pDVar3->pieceArray != (DESTRUCTIBLE_PIECE_INFO *)0x0)) {
+      for (i = 0; i < iVar1; i = i + 1) {
+        iVar2 = MSG_ReadShort(msg);
+        pDVar3->pieceArray[i].health = (short)iVar2;
+        pDVar3->pieceArray[i].xdollHandle = 0;
       }
-      pDVar4->flags = pDVar4->flags & 0xfffffffe;
-      pDVar4->destructiblePoseID = '\0';
-      pcVar3 = CG_GetEntity(param_2,pDVar4->entNum);
-      CG_DestructibleUpdateDObj(pcVar3);
-      local_10 = MSG_ReadShort(param_1);
+      pDVar3->flags = pDVar3->flags & 0xfffffffe;
+      pDVar3->destructiblePoseID = '\0';
+      self = CG_GetEntity(localClientNum,pDVar3->entNum);
+      CG_DestructibleUpdateDObj(self);
+      entityNum = MSG_ReadShort(msg);
     }
     else {
-      for (local_8 = 0; local_8 < iVar1; local_8 = local_8 + 1) {
-        MSG_ReadShort(param_1);
+      for (i = 0; i < iVar1; i = i + 1) {
+        MSG_ReadShort(msg);
       }
-      local_10 = MSG_ReadShort(param_1);
+      entityNum = MSG_ReadShort(msg);
     }
   }
   return;
@@ -4067,18 +4146,18 @@ void __cdecl _dynamic_initializer_for__s_cgDestructiblePoses__(void)
 
 {
   DestructiblePose *pDVar1;
+  DestructiblePose *__t;
   DestructiblePose *pDVar2;
-  DestructiblePose *pDVar3;
   
   pDVar1 = (DestructiblePose *)&DAT_00000002;
-  pDVar2 = s_cgDestructiblePoses;
+  __t = s_cgDestructiblePoses;
   while (-1 < (int)((int)&pDVar1[-1].destructibleID + 1)) {
-    pDVar3 = pDVar2;
-    _vector_constructor_iterator_(pDVar2,0x2c,0x20,Destructible_BonePose::Destructible_BonePose);
-    pDVar3->numBones = 0;
-    pDVar3->destructibleID = 0;
-    pDVar1 = pDVar2;
-    pDVar2 = pDVar3 + 1;
+    pDVar2 = __t;
+    _vector_constructor_iterator_(__t,0x2c,0x20,Destructible_BonePose::Destructible_BonePose);
+    pDVar2->numBones = 0;
+    pDVar2->destructibleID = 0;
+    pDVar1 = __t;
+    __t = pDVar2 + 1;
   }
   return;
 }
@@ -4090,6 +4169,7 @@ uchar __cdecl CG_GetFreeDestructiblePose(void)
 
 {
   byte bVar1;
+  uchar i;
   
   bVar1 = 0;
   while( true ) {
@@ -4110,7 +4190,7 @@ uchar __cdecl CG_GetFreeDestructiblePose(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CG_FreeDestructiblePose(int param_1,uchar param_2)
+void __cdecl CG_FreeDestructiblePose(int localClientNum,uchar destructiblePoseID)
 
 {
   code *pcVar1;
@@ -4118,9 +4198,12 @@ void __cdecl CG_FreeDestructiblePose(int param_1,uchar param_2)
   DestructiblePose *pDVar3;
   Destructible *pDVar4;
   centity_s *pcVar5;
-  int local_14;
+  int i;
+  DestructiblePose *dpose;
+  Destructible *destructible;
+  centity_s *ent;
   
-  pDVar3 = CG_GetDestructiblePose((ushort)param_2);
+  pDVar3 = CG_GetDestructiblePose((ushort)destructiblePoseID);
   if (pDVar3 == (DestructiblePose *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0xdf0,0,
                              "%s");
@@ -4139,13 +4222,13 @@ void __cdecl CG_FreeDestructiblePose(int param_1,uchar param_2)
       return;
     }
   }
-  pDVar4 = CG_GetDestructibleByIndex(param_1,(int)pDVar3->destructibleID);
-  pcVar5 = CG_GetEntity(param_1,pDVar4->entNum);
+  pDVar4 = CG_GetDestructibleByIndex(localClientNum,(int)pDVar3->destructibleID);
+  pcVar5 = CG_GetEntity(localClientNum,pDVar4->entNum);
   (pcVar5->pose).destructiblePose = '\0';
   pDVar4->destructiblePoseID = '\0';
   pDVar3->destructibleID = 0;
-  for (local_14 = 0; local_14 < 0x20; local_14 = local_14 + 1) {
-    pDVar3->bones[local_14].boneid = 0;
+  for (i = 0; i < 0x20; i = i + 1) {
+    pDVar3->bones[i].boneid = 0;
   }
   pDVar3->numBones = 0;
   return;
@@ -4154,7 +4237,7 @@ void __cdecl CG_FreeDestructiblePose(int param_1,uchar param_2)
 
 // 0081C660  CG_GetDestructiblePose  (physics/destructible.cpp:3586)
 
-DestructiblePose * __cdecl CG_GetDestructiblePose(short param_1)
+DestructiblePose * __cdecl CG_GetDestructiblePose(short index)
 
 {
   code *pcVar1;
@@ -4162,7 +4245,7 @@ DestructiblePose * __cdecl CG_GetDestructiblePose(short param_1)
   short sVar3;
   DestructiblePose *pDVar4;
   
-  sVar3 = param_1 + -1;
+  sVar3 = index + -1;
   if ((sVar3 < 0) || (1 < sVar3)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0xe04,0,
                              "%s\n\t(index) = %i");
@@ -4185,7 +4268,7 @@ DestructiblePose * __cdecl CG_GetDestructiblePose(short param_1)
 
 void __cdecl
 CG_DestructibleShake
-          (int param_1,centity_s *param_2,int param_3,float *param_4,float *param_5,int param_6)
+          (int localClientNum,centity_s *cent,int pieceIndex,float *dir,float *hitp,int mod)
 
 {
   code *pcVar1;
@@ -4193,124 +4276,124 @@ CG_DestructibleShake
   bool bVar3;
   short sVar4;
   int iVar5;
-  float local_e0;
+  float tohitp;
   float local_dc;
   float local_d8;
-  float local_d4;
+  float bonepos;
   float local_d0;
   float local_cc;
-  float local_c8;
+  float local_avel;
   float local_c4;
-  float local_bc [2];
+  float avel [2];
   float local_b4;
-  float local_b0 [9];
-  float local_8c;
+  float axis [9];
+  float boneQuat;
   float local_88;
   float local_84;
   float local_80;
-  float local_7c [12];
-  DObjAnimMat *local_4c;
-  float local_48;
+  float tempBoneMtx [12];
+  DObjAnimMat *worldBoneMtx;
+  float controlAngles;
   float local_44;
   float local_40;
-  DObjAnimMat *local_3c;
-  byte local_35;
-  XModel *local_34;
-  float local_30;
+  DObjAnimMat *boneMtxList;
+  uchar boneIndex;
+  XModel *model;
+  float rot;
   float local_2c;
   float local_28;
-  float local_24;
-  Destructible_BonePose *local_20;
-  int local_1c;
-  PhysConstraints *local_18;
-  DestructiblePose *local_14;
-  Destructible *local_10;
-  DestructibleDef *local_c;
-  uint local_8;
+  float scale;
+  Destructible_BonePose *bonepose;
+  int i;
+  PhysConstraints *c;
+  DestructiblePose *dpose;
+  Destructible *destructible;
+  DestructibleDef *ddef;
+  int attachBoneHash;
   
-  local_10 = param_2->destructible;
-  local_c = local_10->ddef;
-  local_14 = (DestructiblePose *)0x0;
-  local_8 = Destructible_GetShowBoneNameForPiece(local_10,param_3);
-  if (local_8 != 0) {
-    if (local_10->destructiblePoseID == '\0') {
+  destructible = cent->destructible;
+  ddef = destructible->ddef;
+  dpose = (DestructiblePose *)0x0;
+  attachBoneHash = Destructible_GetShowBoneNameForPiece(destructible,pieceIndex);
+  if (attachBoneHash != 0) {
+    if (destructible->destructiblePoseID == '\0') {
       uVar2 = CG_GetFreeDestructiblePose();
-      local_10->destructiblePoseID = uVar2;
-      (param_2->pose).destructiblePose = local_10->destructiblePoseID;
-      local_14 = CG_GetDestructiblePose((ushort)local_10->destructiblePoseID);
-      sVar4 = CG_GetDestructibleIndex(param_1,local_10);
-      local_14->destructibleID = sVar4;
+      destructible->destructiblePoseID = uVar2;
+      (cent->pose).destructiblePose = destructible->destructiblePoseID;
+      dpose = CG_GetDestructiblePose((ushort)destructible->destructiblePoseID);
+      sVar4 = CG_GetDestructibleIndex(localClientNum,destructible);
+      dpose->destructibleID = sVar4;
     }
     else {
-      local_14 = CG_GetDestructiblePose((ushort)local_10->destructiblePoseID);
+      dpose = CG_GetDestructiblePose((ushort)destructible->destructiblePoseID);
     }
-    if (local_14 != (DestructiblePose *)0x0) {
-      local_18 = local_c->pieces[param_3].physConstraints;
-      for (local_1c = 0; local_1c < 0x20; local_1c = local_1c + 1) {
-        local_20 = local_14->bones + local_1c;
-        if ((local_20->boneid == 0) || (local_20->boneid == local_8)) {
-          if (local_20->boneid == 0) {
-            local_34 = local_c->model;
-            iVar5 = XModelGetBoneIndex(local_34,local_8,0,&local_35);
+    if (dpose != (DestructiblePose *)0x0) {
+      c = ddef->pieces[pieceIndex].physConstraints;
+      for (i = 0; i < 0x20; i = i + 1) {
+        bonepose = dpose->bones + i;
+        if ((bonepose->boneid == 0) || (bonepose->boneid == attachBoneHash)) {
+          if (bonepose->boneid == 0) {
+            model = ddef->model;
+            iVar5 = XModelGetBoneIndex(model,attachBoneHash,0,&boneIndex);
             if (iVar5 != 0) {
-              local_3c = XModelGetBasePose(local_34);
-              local_4c = local_3c + local_35;
-              local_8c = local_4c->quat[0];
-              local_88 = local_4c->quat[1];
-              local_84 = local_4c->quat[2];
-              local_80 = local_4c->quat[3];
-              QuatToAxis(&local_8c,(float (*) [3])local_7c);
-              AxisToSignedAngles((float (*) [3])local_7c,&local_48);
-              local_20->angles_original[0] = local_48;
-              local_20->angles_original[1] = local_44;
-              local_20->angles_original[2] = local_40;
-              local_20->boneid = local_8;
-              local_20->pieceIndex = param_3;
-              local_14->numBones = local_14->numBones + 1;
+              boneMtxList = XModelGetBasePose(model);
+              worldBoneMtx = boneMtxList + boneIndex;
+              boneQuat = worldBoneMtx->quat[0];
+              local_88 = worldBoneMtx->quat[1];
+              local_84 = worldBoneMtx->quat[2];
+              local_80 = worldBoneMtx->quat[3];
+              QuatToAxis(&boneQuat,(float (*) [3])tempBoneMtx);
+              AxisToSignedAngles((float (*) [3])tempBoneMtx,&controlAngles);
+              bonepose->angles_original[0] = controlAngles;
+              bonepose->angles_original[1] = local_44;
+              bonepose->angles_original[2] = local_40;
+              bonepose->boneid = attachBoneHash;
+              bonepose->pieceIndex = pieceIndex;
+              dpose->numBones = dpose->numBones + 1;
             }
           }
-          if ((local_20->boneid != local_8) &&
+          if ((bonepose->boneid != attachBoneHash) &&
              (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp"
                                        ,0xe44,0,"%s"), !bVar3)) {
             pcVar1 = (code *)swi(3);
             (*pcVar1)();
             return;
           }
-          switch(param_6) {
+          switch(mod) {
           default:
-            local_24 = bullet_force;
+            scale = bullet_force;
             break;
           case 0x11:
           case 4:
           case 6:
           case 0xf:
-            local_24 = grenade_force;
+            scale = grenade_force;
           }
-          if (param_6 == 0x11) {
+          if (mod == 0x11) {
             local_2c = 0.0;
-            local_30 = burn_force * 0.5;
+            rot = burn_force * 0.5;
             local_28 = burn_force;
           }
           else {
-            local_d4 = (param_2->pose).origin[0];
-            local_d0 = (param_2->pose).origin[1];
-            local_cc = (param_2->pose).origin[2];
-            local_e0 = *param_5 - local_d4;
-            local_dc = param_5[1] - local_d0;
-            local_d8 = param_5[2] - local_cc;
-            Vec3Cross(&local_e0,param_4,local_bc);
-            AnglesToAxis(local_20->angles_original,(float (*) [3])local_b0);
-            Vec3RotateTranspose(local_bc,(float (*) [3])local_b0,&local_c8);
-            local_2c = local_b4 * local_24 * local_18->data[0].scale[2];
-            local_30 = local_c4 * local_24 * local_18->data[0].scale[1];
-            local_28 = local_c8 * local_24 * local_18->data[0].scale[0];
+            bonepos = (cent->pose).origin[0];
+            local_d0 = (cent->pose).origin[1];
+            local_cc = (cent->pose).origin[2];
+            tohitp = *hitp - bonepos;
+            local_dc = hitp[1] - local_d0;
+            local_d8 = hitp[2] - local_cc;
+            Vec3Cross(&tohitp,dir,avel);
+            AnglesToAxis(bonepose->angles_original,(float (*) [3])axis);
+            Vec3RotateTranspose(avel,(float (*) [3])axis,&local_avel);
+            local_2c = local_b4 * scale * c->data[0].scale[2];
+            rot = local_c4 * scale * c->data[0].scale[1];
+            local_28 = local_avel * scale * c->data[0].scale[0];
           }
-          local_20->angles_vel[0] = local_20->angles_vel[0] + local_30;
-          local_20->angles_vel[1] = local_20->angles_vel[1] + local_2c;
-          local_20->angles_vel[2] = local_20->angles_vel[2] + local_28;
-          if (((((uint)local_20->angles_vel[0] & 0x7f800000) != 0x7f800000) &&
-              (((uint)local_20->angles_vel[1] & 0x7f800000) != 0x7f800000)) &&
-             (((uint)local_20->angles_vel[2] & 0x7f800000) != 0x7f800000)) {
+          bonepose->angles_vel[0] = bonepose->angles_vel[0] + rot;
+          bonepose->angles_vel[1] = bonepose->angles_vel[1] + local_2c;
+          bonepose->angles_vel[2] = bonepose->angles_vel[2] + local_28;
+          if (((((uint)bonepose->angles_vel[0] & 0x7f800000) != 0x7f800000) &&
+              (((uint)bonepose->angles_vel[1] & 0x7f800000) != 0x7f800000)) &&
+             (((uint)bonepose->angles_vel[2] & 0x7f800000) != 0x7f800000)) {
             return;
           }
           bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
@@ -4331,7 +4414,12 @@ CG_DestructibleShake
 
 // 0081CD00  CG_DestructibleUpdatePoses  (physics/destructible.cpp:3705)
 
-void __cdecl CG_DestructibleUpdatePoses(int param_1,int param_2)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl CG_DestructibleUpdatePoses(int localClientNum,int msec)
 
 {
   float fVar1;
@@ -4345,22 +4433,30 @@ void __cdecl CG_DestructibleUpdatePoses(int param_1,int param_2)
   Destructible_BonePose *pDVar9;
   Destructible_BonePose *pDVar10;
   float fVar11;
-  int local_2c;
-  int local_18;
-  byte local_9;
+  uchar destructiblePoseID;
+  float spring_pull;
+  int k;
+  PhysConstraints *c;
+  float spring_k;
+  float damp_k;
+  int boneindex;
+  Destructible *destructible;
+  uchar i;
+  float delta_t;
   
-  fVar11 = (float)param_2 * 0.001;
-  local_9 = 0;
+  fVar11 = (float)msec * 0.001;
+  i = '\0';
   do {
-    if (1 < local_9) {
+    if (1 < i) {
       return;
     }
-    uVar8 = (uint)local_9;
+    uVar8 = (uint)i;
     if (s_cgDestructiblePoses[uVar8].destructibleID != 0) {
-      pDVar6 = CG_GetDestructibleByIndex(param_1,(int)s_cgDestructiblePoses[uVar8].destructibleID);
-      for (local_18 = 0; local_18 < s_cgDestructiblePoses[uVar8].numBones; local_18 = local_18 + 1)
-      {
-        pDVar10 = s_cgDestructiblePoses[uVar8].bones + local_18;
+      pDVar6 = CG_GetDestructibleByIndex
+                         (localClientNum,(int)s_cgDestructiblePoses[uVar8].destructibleID);
+      for (boneindex = 0; boneindex < s_cgDestructiblePoses[uVar8].numBones;
+          boneindex = boneindex + 1) {
+        pDVar10 = s_cgDestructiblePoses[uVar8].bones + boneindex;
         if ((pDVar10->boneid == 0) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                                      0xe85,0,"%s"), !bVar5)) {
@@ -4373,13 +4469,12 @@ void __cdecl CG_DestructibleUpdatePoses(int param_1,int param_2)
            pPVar3 != (PhysConstraints *)0x0)) {
           fVar1 = pPVar3->data[0].damp;
           fVar2 = pPVar3->data[0].power;
-          for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-            pDVar10->angles_vel[local_2c] =
-                 pDVar10->angles_vel[local_2c] - fVar2 * pDVar10->angles_offset[local_2c] * fVar11;
-            pDVar10->angles_vel[local_2c] =
-                 pDVar10->angles_vel[local_2c] - pDVar10->angles_vel[local_2c] * fVar1 * fVar11;
-            pDVar10->angles_offset[local_2c] =
-                 pDVar10->angles_vel[local_2c] * fVar11 + pDVar10->angles_offset[local_2c];
+          for (k = 0; k < 3; k = k + 1) {
+            pDVar10->angles_vel[k] =
+                 pDVar10->angles_vel[k] - fVar2 * pDVar10->angles_offset[k] * fVar11;
+            pDVar10->angles_vel[k] =
+                 pDVar10->angles_vel[k] - pDVar10->angles_vel[k] * fVar1 * fVar11;
+            pDVar10->angles_offset[k] = pDVar10->angles_vel[k] * fVar11 + pDVar10->angles_offset[k];
           }
           if ((pDVar10->angles_vel[0] * pDVar10->angles_vel[0] +
                pDVar10->angles_vel[1] * pDVar10->angles_vel[1] +
@@ -4396,28 +4491,28 @@ void __cdecl CG_DestructibleUpdatePoses(int param_1,int param_2)
             }
             s_cgDestructiblePoses[uVar8].bones[s_cgDestructiblePoses[uVar8].numBones].boneid = 0;
             if (s_cgDestructiblePoses[uVar8].numBones == 0) {
-              CG_FreeDestructiblePose(param_1,local_9 + 1);
+              CG_FreeDestructiblePose(localClientNum,i + '\x01');
               break;
             }
           }
         }
       }
     }
-    local_9 = local_9 + 1;
+    i = i + '\x01';
   } while( true );
 }
 
 
 // 0081D000  Destructible_SetDebugRender  (physics/destructible.cpp:3769)
 
-void __cdecl Destructible_SetDebugRender(Destructible *param_1)
+void __cdecl Destructible_SetDebugRender(Destructible *destructible)
 
 {
-  int local_8;
+  int i;
   
-  g_DebugRenderDestructible = param_1;
-  for (local_8 = 0; local_8 < 0x20; local_8 = local_8 + 1) {
-    g_DebugLastPieceIndex[local_8] = -1;
+  g_DebugRenderDestructible = destructible;
+  for (i = 0; i < 0x20; i = i + 1) {
+    g_DebugLastPieceIndex[i] = -1;
   }
   return;
 }
@@ -4425,41 +4520,41 @@ void __cdecl Destructible_SetDebugRender(Destructible *param_1)
 
 // 0081D040  Destructible_SetDebugDamagePiece  (physics/destructible.cpp:3780)
 
-void __cdecl Destructible_SetDebugDamagePiece(int param_1,int param_2)
+void __cdecl Destructible_SetDebugDamagePiece(int piece,int damage)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < i) {
       return;
     }
-    if (g_DebugLastPieceIndex[local_8] == -1) break;
-    local_8 = local_8 + 1;
+    if (g_DebugLastPieceIndex[i] == -1) break;
+    i = i + 1;
   }
-  g_DebugLastPieceIndex[local_8] = param_1;
-  g_DebugLastPieceDamage[local_8] = param_2;
+  g_DebugLastPieceIndex[i] = piece;
+  g_DebugLastPieceDamage[i] = damage;
   return;
 }
 
 
 // 0081D090  Destructible_IsDebugDamagePiece  (physics/destructible.cpp:3796)
 
-int __cdecl Destructible_IsDebugDamagePiece(int param_1)
+int __cdecl Destructible_IsDebugDamagePiece(int piece)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0x1f < local_8) {
+    if (0x1f < i) {
       return -1;
     }
-    if (g_DebugLastPieceIndex[local_8] == param_1) break;
-    local_8 = local_8 + 1;
+    if (g_DebugLastPieceIndex[i] == piece) break;
+    i = i + 1;
   }
-  return g_DebugLastPieceDamage[local_8];
+  return g_DebugLastPieceDamage[i];
 }
 
 
@@ -4475,79 +4570,84 @@ void __cdecl Destructible_DebugRender(void)
 {
   char *pcVar1;
   int iVar2;
-  uint uVar3;
+  uint stringValue;
+  int health_00;
+  float *pfVar3;
   int iVar4;
-  float *pfVar5;
-  int iVar6;
-  Font_s *pFVar7;
-  float local_2c;
+  Font_s *pFVar5;
+  char *boneName;
+  int boneNameHash;
+  int damage;
+  int health;
+  int stage;
+  float color;
   float local_28;
   float local_24;
   float local_20;
-  byte local_19;
-  DestructibleDef *local_18;
-  gentity_s *local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  uchar i;
+  DestructibleDef *ddef;
+  gentity_s *ent;
+  float x;
+  float y;
+  float fontScale;
   
   if ((((g_destructibleDraw != (dvar_s *)0x0) && ((g_destructibleDraw->current).enabled != false))
-      && (local_8 = 0.7, g_DebugRenderDestructible != (Destructible *)0x0)) &&
+      && (fontScale = 0.7, g_DebugRenderDestructible != (Destructible *)0x0)) &&
      (g_DebugRenderDestructible->entNum != 0x3ff)) {
-    local_10 = 8.0;
-    local_c = 10.0;
-    local_18 = g_DebugRenderDestructible->ddef;
-    local_14 = g_entities + g_DebugRenderDestructible->entNum;
-    iVar6 = 5;
-    pfVar5 = colorWhite;
-    pFVar7 = cgMedia.smallDevFont;
+    x = 8.0;
+    y = 10.0;
+    ddef = g_DebugRenderDestructible->ddef;
+    ent = g_entities + g_DebugRenderDestructible->entNum;
+    iVar4 = 5;
+    pfVar3 = colorWhite;
+    pFVar5 = cgMedia.smallDevFont;
     pcVar1 = va("%s Health %d Entnum %d");
-    iVar6 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_10,local_c,local_8,local_8,
-                             pcVar1,pfVar5,iVar6,pFVar7);
-    local_c = (float)iVar6 + local_c;
-    for (local_19 = 0; (int)(uint)local_19 < local_18->numPieces; local_19 = local_19 + 1) {
-      iVar4 = (int)g_DebugRenderDestructible->pieceArray[local_19].health;
-      iVar6 = Destructible_GetDestructibleStage(local_18,(uint)local_19,iVar4);
-      iVar2 = Destructible_IsDebugDamagePiece((uint)local_19);
-      if (iVar6 == -1) {
-        local_2c = 1.0;
+    iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,fontScale,fontScale,pcVar1,pfVar3,
+                             iVar4,pFVar5);
+    y = (float)iVar4 + y;
+    for (i = '\0'; (int)(uint)i < ddef->numPieces; i = i + '\x01') {
+      health_00 = (int)g_DebugRenderDestructible->pieceArray[i].health;
+      iVar4 = Destructible_GetDestructibleStage(ddef,(uint)i,health_00);
+      iVar2 = Destructible_IsDebugDamagePiece((uint)i);
+      if (iVar4 == -1) {
+        color = 1.0;
         local_28 = 0.0;
       }
-      else if (iVar6 == 0) {
-        if (iVar4 == local_18->pieces[local_19].health) {
-          local_2c = 0.0;
+      else if (iVar4 == 0) {
+        if (health_00 == ddef->pieces[i].health) {
+          color = 0.0;
           local_28 = 1.0;
         }
         else {
-          local_2c = 0.0;
+          color = 0.0;
           local_28 = 0.75;
         }
       }
       else {
-        local_2c = 1.0;
+        color = 1.0;
         local_28 = 1.0;
       }
       local_20 = 1.0;
       local_24 = 0.0;
       if (iVar2 < 0) {
-        iVar6 = 5;
-        pfVar5 = &local_2c;
-        pFVar7 = cgMedia.smallDevFont;
+        iVar4 = 5;
+        pfVar3 = &color;
+        pFVar5 = cgMedia.smallDevFont;
         pcVar1 = va("Piece %d: Health %d, Stage %d");
-        iVar6 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_10,local_c,local_8,local_8,
-                                 pcVar1,pfVar5,iVar6,pFVar7);
-        local_c = (float)iVar6 + local_c;
+        iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,fontScale,fontScale,pcVar1,
+                                 pfVar3,iVar4,pFVar5);
+        y = (float)iVar4 + y;
       }
       else {
-        uVar3 = Destructible_GetShowBoneNameForPiece(g_DebugRenderDestructible,(uint)local_19);
-        SL_ConvertToString(uVar3,SCRIPTINSTANCE_SERVER);
-        iVar6 = 5;
-        pfVar5 = &local_2c;
-        pFVar7 = cgMedia.smallDevFont;
+        stringValue = Destructible_GetShowBoneNameForPiece(g_DebugRenderDestructible,(uint)i);
+        SL_ConvertToString(stringValue,SCRIPTINSTANCE_SERVER);
+        iVar4 = 5;
+        pfVar3 = &color;
+        pFVar5 = cgMedia.smallDevFont;
         pcVar1 = va("Piece %d: Health %d, Stage %d PrevDamage %d %s");
-        iVar6 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,local_10,local_c,local_8,local_8,
-                                 pcVar1,pfVar5,iVar6,pFVar7);
-        local_c = (float)iVar6 + local_c;
+        iVar4 = CG_DrawDevString((ScreenPlacement *)&scrPlaceView,x,y,fontScale,fontScale,pcVar1,
+                                 pfVar3,iVar4,pFVar5);
+        y = (float)iVar4 + y;
       }
     }
   }
@@ -4562,16 +4662,16 @@ void __cdecl Destructible_DebugRender(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-DestructibleDef * __cdecl Destructible_GetDDef(centity_s *param_1,int param_2)
+DestructibleDef * __cdecl Destructible_GetDDef(centity_s *cent,int localClientNum)
 
 {
   DestructibleDef *pDVar1;
   
-  if (param_1->destructible == (Destructible *)0x0) {
+  if (cent->destructible == (Destructible *)0x0) {
     pDVar1 = (DestructibleDef *)0x0;
   }
   else {
-    pDVar1 = param_1->destructible->ddef;
+    pDVar1 = cent->destructible->ddef;
   }
   return pDVar1;
 }
@@ -4579,14 +4679,14 @@ DestructibleDef * __cdecl Destructible_GetDDef(centity_s *param_1,int param_2)
 
 // 0081D460  Destructible_GetDDef  (physics/destructible.cpp:3869)
 
-DestructibleDef * __cdecl Destructible_GetDDef(Destructible *param_1)
+DestructibleDef * __cdecl Destructible_GetDDef(Destructible *obj)
 
 {
   code *pcVar1;
   bool bVar2;
   DestructibleDef *pDVar3;
   
-  if (param_1 == (Destructible *)0x0) {
+  if (obj == (Destructible *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",0xf1e,0,
                              "%s");
     if (!bVar2) {
@@ -4595,7 +4695,7 @@ DestructibleDef * __cdecl Destructible_GetDDef(Destructible *param_1)
       return pDVar3;
     }
   }
-  return param_1->ddef;
+  return obj->ddef;
 }
 
 
@@ -4606,19 +4706,19 @@ DestructibleDef * __cdecl Destructible_GetDDef(Destructible *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-Scr_DestructibleCallback(gentity_s *param_1,ushort param_2,int param_3,float param_4,int param_5)
+void __cdecl Scr_DestructibleCallback(gentity_s *self,ushort event,int piece,float time,int damage)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
   if (g_scr_data.destructible_callback != 0) {
-    Scr_AddInt(param_5,SCRIPTINSTANCE_SERVER);
-    Scr_AddFloat(param_4,SCRIPTINSTANCE_SERVER);
-    Scr_AddInt(param_3,SCRIPTINSTANCE_SERVER);
-    Scr_AddConstString((uint)param_2,SCRIPTINSTANCE_SERVER);
-    uVar1 = Scr_ExecEntThread(param_1,g_scr_data.destructible_callback,4);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+    Scr_AddInt(damage,SCRIPTINSTANCE_SERVER);
+    Scr_AddFloat(time,SCRIPTINSTANCE_SERVER);
+    Scr_AddInt(piece,SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)event,SCRIPTINSTANCE_SERVER);
+    handle = Scr_ExecEntThread(self,g_scr_data.destructible_callback,4);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -4631,23 +4731,23 @@ Scr_DestructibleCallback(gentity_s *param_1,ushort param_2,int param_3,float par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-Scr_DestructibleCallback(gentity_s *param_1,ushort param_2,char *param_3,gentity_s *param_4)
+void __cdecl Scr_DestructibleCallback(gentity_s *self,ushort event,char *notify,gentity_s *attacker)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
   if (g_scr_data.destructible_callback != 0) {
-    if (param_4 == (gentity_s *)0x0) {
+    if (attacker == (gentity_s *)0x0) {
       Scr_AddUndefined(SCRIPTINSTANCE_SERVER);
     }
     else {
-      Scr_AddEntity(param_4,SCRIPTINSTANCE_SERVER);
+      Scr_AddEntity(attacker,SCRIPTINSTANCE_SERVER);
     }
-    Scr_AddString(param_3,SCRIPTINSTANCE_SERVER);
-    Scr_AddConstString((uint)param_2,SCRIPTINSTANCE_SERVER);
-    uVar1 = Scr_ExecEntThread(param_1,g_scr_data.destructible_callback,3);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_SERVER);
+    Scr_AddString(notify,SCRIPTINSTANCE_SERVER);
+    Scr_AddConstString((uint)event,SCRIPTINSTANCE_SERVER);
+    handle = Scr_ExecEntThread(self,g_scr_data.destructible_callback,3);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_SERVER);
   }
   return;
 }
@@ -4660,19 +4760,19 @@ Scr_DestructibleCallback(gentity_s *param_1,ushort param_2,char *param_3,gentity
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl
-CScr_DestructibleCallback(centity_s *param_1,ushort param_2,int param_3,float param_4,int param_5)
+void __cdecl CScr_DestructibleCallback(centity_s *self,ushort event,int piece,float time,int damage)
 
 {
-  ushort uVar1;
+  ushort handle;
+  ushort callback;
   
   if (cg_scr_data.destructible_callback != 0) {
-    Scr_AddInt(param_5,SCRIPTINSTANCE_CLIENT);
-    Scr_AddFloat(param_4,SCRIPTINSTANCE_CLIENT);
-    Scr_AddInt(param_3,SCRIPTINSTANCE_CLIENT);
-    Scr_AddConstString((uint)param_2,SCRIPTINSTANCE_CLIENT);
-    uVar1 = CScr_ExecEntThread(param_1,cg_scr_data.destructible_callback,4);
-    Scr_FreeThread(uVar1,SCRIPTINSTANCE_CLIENT);
+    Scr_AddInt(damage,SCRIPTINSTANCE_CLIENT);
+    Scr_AddFloat(time,SCRIPTINSTANCE_CLIENT);
+    Scr_AddInt(piece,SCRIPTINSTANCE_CLIENT);
+    Scr_AddConstString((uint)event,SCRIPTINSTANCE_CLIENT);
+    handle = CScr_ExecEntThread(self,cg_scr_data.destructible_callback,4);
+    Scr_FreeThread(handle,SCRIPTINSTANCE_CLIENT);
   }
   return;
 }

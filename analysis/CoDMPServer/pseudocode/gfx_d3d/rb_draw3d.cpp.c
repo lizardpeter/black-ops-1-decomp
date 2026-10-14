@@ -11,59 +11,62 @@ float (*) [4] __cdecl R_GetCloudArea(void)
 
 // 00A725D0  R_CalcGameTimeVec  (gfx_d3d/rb_draw3d.cpp:84)
 
-void __cdecl R_CalcGameTimeVec(float param_1,float *param_2)
+void __cdecl R_CalcGameTimeVec(float gameTime,float *out)
 
 {
   float10 fVar1;
   float10 extraout_ST0;
   float10 fVar2;
+  float cosOfFracPartOfGameTime;
+  float sinOfFracPartOfGameTime;
+  float fracPartOfGameTime;
   
   floor();
-  fVar2 = (float10)((param_1 - (float)extraout_ST0) * 6.2831855);
+  fVar2 = (float10)((gameTime - (float)extraout_ST0) * 6.2831855);
   fVar1 = (float10)fcos(fVar2);
   fVar2 = (float10)fsin(fVar2);
-  *param_2 = (float)fVar2;
-  param_2[1] = (float)fVar1;
-  param_2[2] = param_1 - (float)extraout_ST0;
-  param_2[3] = param_1;
+  *out = (float)fVar2;
+  out[1] = (float)fVar1;
+  out[2] = gameTime - (float)extraout_ST0;
+  out[3] = gameTime;
   return;
 }
 
 
 // 00A72660  R_ShowTris  (gfx_d3d/rb_draw3d.cpp:119)
 
-void __cdecl R_ShowTris(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2)
+void __cdecl R_ShowTris(GfxCmdBufContext context,GfxDrawSurfListInfo *info)
 
 {
   int iVar1;
   GfxDrawSurfListInfo *pGVar2;
   int local_64;
   jqBatchGroup *local_60;
-  GfxDrawSurfListInfo local_5c;
-  int local_8;
+  GfxDrawSurfListInfo debugInfo;
+  int showTris;
   
-  local_8 = (r_showTris->current).integer;
-  if (local_8 != 0) {
+  showTris = (r_showTris->current).integer;
+  if (showTris != 0) {
     local_64 = 3;
-    local_60 = local_5c.group;
+    local_60 = debugInfo.group;
     while (local_64 = local_64 + -1, -1 < local_64) {
       (local_60->field0_0x0)._s_0.QueuedBatchCount = 0;
       (local_60->field0_0x0)._s_0.ExecutingBatchCount = 0;
       local_60 = local_60 + 1;
     }
-    if ((local_8 != 3) || (param_2 == param_2->viewInfo->drawList + 4)) {
-      if (local_8 == 2) {
-        R_ClearScreen(((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x06',colorWhite,
+    if ((showTris != 3) || (info == info->viewInfo->drawList + 4)) {
+      if (showTris == 2) {
+        R_ClearScreen(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x06',colorWhite,
                       1.0,'\0',(GfxViewport *)0x0);
       }
-      pGVar2 = &local_5c;
+      pGVar2 = &debugInfo;
       for (iVar1 = 0x14; iVar1 != 0; iVar1 = iVar1 + -1) {
-        pGVar2->drawSurfs = param_2->drawSurfs;
-        param_2 = (GfxDrawSurfListInfo *)&param_2->drawSurfCount;
+        pGVar2->drawSurfs = info->drawSurfs;
+        info = (GfxDrawSurfListInfo *)&info->drawSurfCount;
         pGVar2 = (GfxDrawSurfListInfo *)&pGVar2->drawSurfCount;
       }
-      local_5c.baseTechType = '}';
-      R_DrawSurfs(param_1,(GfxCmdBufState *)0x0,&local_5c);
+      debugInfo.baseTechType = '}';
+      R_DrawSurfs(context,(GfxCmdBufState *)0x0,&debugInfo);
     }
   }
   return;
@@ -72,40 +75,44 @@ void __cdecl R_ShowTris(GfxCmdBufContext param_1,GfxDrawSurfListInfo *param_2)
 
 // 00A73100  R_ClearForFrameBuffer  (gfx_d3d/rb_draw3d.cpp:144)
 
-void __cdecl R_ClearForFrameBuffer(IDirect3DDevice9 *param_1,GfxViewport *param_2)
+void __cdecl R_ClearForFrameBuffer(IDirect3DDevice9 *device,GfxViewport *viewport)
 
 {
-  float local_14 [4];
+  uchar whichToClear;
+  float clearColor [4];
   
-  R_GetClearColor(local_14);
-  R_ClearScreen(param_1,'\a',local_14,1.0,'\0',param_2);
+  R_GetClearColor(clearColor);
+  R_ClearScreen(device,'\a',clearColor,1.0,'\0',viewport);
   return;
 }
 
 
 // 00A73310  R_HW_EnableScissor  (gfx_d3d/r_setstate_d3d.h:686)
 
-void __cdecl
-R_HW_EnableScissor(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint param_4,uint param_5)
+void __cdecl R_HW_EnableScissor(IDirect3DDevice9 *device,uint x,uint y,uint w,uint h)
 
 {
   int iVar1;
   int iVar2;
-  uint local_14;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  uint scissor;
   uint local_10;
   int local_c;
   int local_8;
   
-  local_14 = param_2;
-  local_10 = param_3;
-  local_c = param_2 + param_4;
-  local_8 = param_3 + param_5;
+  scissor = x;
+  local_10 = y;
+  local_c = x + w;
+  local_8 = y + h;
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_SCISSORTESTENABLE, 1 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xae,1);
+  iVar2 = (**(code **)((int)*device + 0xe4))(device,0xae,1);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -121,7 +128,7 @@ R_HW_EnableScissor(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint para
     RB_LogPrint("device->SetScissorRect( &scissor )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 300))(param_1,&local_14);
+  iVar2 = (**(code **)((int)*device + 300))(device,&scissor);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
@@ -138,24 +145,26 @@ R_HW_EnableScissor(IDirect3DDevice9 *param_1,uint param_2,uint param_3,uint para
 
 // 00A72940  R_HW_DisableScissor  (gfx_d3d/r_setstate_d3d.h:700)
 
-void __cdecl R_HW_DisableScissor(IDirect3DDevice9 *param_1)
+void __cdecl R_HW_DisableScissor(IDirect3DDevice9 *device)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetRenderState( D3DRS_SCISSORTESTENABLE, 0 )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0xe4))(param_1,0xae,0);
+  hr_00 = (**(code **)((int)*device + 0xe4))(device,0xae,0);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetRenderState( D3DRS_SCISSORTESTENABLE, 0 ) failed: %s\n"
              );
@@ -166,25 +175,25 @@ void __cdecl R_HW_DisableScissor(IDirect3DDevice9 *param_1)
 
 // 00A72BD0  R_InitLocalCmdBufState  (gfx_d3d/r_state.h:1555)
 
-void __cdecl R_InitLocalCmdBufState(GfxCmdBufState *param_1)
+void __cdecl R_InitLocalCmdBufState(GfxCmdBufState *state)
 
 {
-  memcpy(param_1->refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-  memset((uchar *)param_1->vertexShaderConstState,'\0',0x800);
-  memset((uchar *)param_1->pixelShaderConstState,'\0',0x800);
+  memcpy(state->refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
+  memset((uchar *)state->vertexShaderConstState,'\0',0x800);
+  memset((uchar *)state->pixelShaderConstState,'\0',0x800);
   return;
 }
 
 
 // 00A76EE0  R_SetCodeImageTexture  (gfx_d3d/r_state.h:1858)
 
-void __cdecl R_SetCodeImageTexture(GfxCmdBufSourceState *param_1,uint param_2,GfxImage *param_3)
+void __cdecl R_SetCodeImageTexture(GfxCmdBufSourceState *source,uint codeTexture,GfxImage *image)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (GfxCmdBufSourceState *)0x0) {
+  if (source == (GfxCmdBufSourceState *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x743,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -192,7 +201,7 @@ void __cdecl R_SetCodeImageTexture(GfxCmdBufSourceState *param_1,uint param_2,Gf
       return;
     }
   }
-  if (0x2a < param_2) {
+  if (0x2a < codeTexture) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x744,0,
                              "codeTexture doesn\'t index TEXTURE_SRC_CODE_COUNT\n\t%i not in [0, %i)"
                             );
@@ -202,8 +211,8 @@ void __cdecl R_SetCodeImageTexture(GfxCmdBufSourceState *param_1,uint param_2,Gf
       return;
     }
   }
-  (param_1->input).codeImages[param_2 + 0xc] = param_3;
-  (param_1->input).codeImageRenderTargetControl[param_2 + 6].packed = 0;
+  (source->input).codeImages[codeTexture + 0xc] = image;
+  (source->input).codeImageRenderTargetControl[codeTexture + 6].packed = 0;
   return;
 }
 
@@ -211,7 +220,7 @@ void __cdecl R_SetCodeImageTexture(GfxCmdBufSourceState *param_1,uint param_2,Gf
 // 00A72EC0  RB_EndSceneRendering  (gfx_d3d/rb_draw3d.cpp:4133)
 
 void __cdecl
-RB_EndSceneRendering(GfxCmdBufContext param_1,GfxCmdBufInput *param_2,GfxViewInfo *param_3)
+RB_EndSceneRendering(GfxCmdBufContext context,GfxCmdBufInput *input,GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
@@ -220,17 +229,17 @@ RB_EndSceneRendering(GfxCmdBufContext param_1,GfxCmdBufInput *param_2,GfxViewInf
   
   PIXBeginNamedEvent(-1,"RB_EndSceneRendering()");
   R_HW_InsertFence(&backEndData->endFence);
-  R_InitCmdBufSourceState(param_1.field0_0x0._s_0.source,param_2,0);
-  R_InitLocalCmdBufState(param_1.field0_0x0._s_0.state);
+  R_InitCmdBufSourceState(context.field0_0x0._s_0.source,input,0);
+  R_InitLocalCmdBufState(context.field0_0x0._s_0.state);
   R_SetRenderTargetSize
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-             (uchar)(param_3->sceneComposition).renderingMode);
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_3->sceneDef,
-              (GfxViewParms *)param_3);
+             (uchar)(viewInfo->sceneComposition).renderingMode);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_3->field0_0x0).cullViewInfo.sceneViewport);
+                      &(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                    (uchar)(param_3->sceneComposition).renderingMode);
+                    (uchar)(viewInfo->sceneComposition).renderingMode);
   if ((developer->current).integer != 0) {
     R_Set3D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
     if ((gfxCmdBufSourceState.viewMode != VIEW_MODE_3D) &&
@@ -243,7 +252,7 @@ RB_EndSceneRendering(GfxCmdBufContext param_1,GfxCmdBufInput *param_2,GfxViewInf
     RB_DrawDebug(&gfxCmdBufSourceState.viewParms);
     RB_ShowCollision(&gfxCmdBufSourceState.viewParms);
   }
-  memcpy(gfxCmdBufState.refSamplerState,(param_1.field0_0x0._s_0.state)->refSamplerState,0x13d0);
+  memcpy(gfxCmdBufState.refSamplerState,(context.field0_0x0._s_0.state)->refSamplerState,0x13d0);
   DVar3 = GetCurrentThreadId();
   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -254,18 +263,18 @@ RB_EndSceneRendering(GfxCmdBufContext param_1,GfxCmdBufInput *param_2,GfxViewInf
 
 // 00A75AD0  R_SetResolvedScene  (gfx_d3d/rb_draw3d.cpp:4217)
 
-void __cdecl R_SetResolvedScene(GfxCmdBufContext param_1)
+void __cdecl R_SetResolvedScene(GfxCmdBufContext context)
 
 {
-  R_SetRenderTargetSize(param_1.field0_0x0._s_0.source,'\x03');
-  R_SetRenderTarget(param_1,'\x03');
+  R_SetRenderTargetSize(context.field0_0x0._s_0.source,'\x03');
+  R_SetRenderTarget(context,'\x03');
   return;
 }
 
 
 // 00A73020  R_SetAndClearSceneTarget  (gfx_d3d/rb_draw3d.cpp:4320)
 
-void __cdecl R_SetAndClearSceneTarget(GfxViewport *param_1,GfxViewInfo *param_2)
+void __cdecl R_SetAndClearSceneTarget(GfxViewport *viewport,GfxViewInfo *viewInfo)
 
 {
   DWORD DVar1;
@@ -274,11 +283,11 @@ void __cdecl R_SetAndClearSceneTarget(GfxViewport *param_1,GfxViewInfo *param_2)
   PIXBeginNamedEvent(-1,"Clear Render Target");
   R_SetRenderTargetSize
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-             (uchar)(param_2->sceneComposition).renderingMode);
+             (uchar)(viewInfo->sceneComposition).renderingMode);
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                    (uchar)(param_2->sceneComposition).renderingMode);
-  if (((uint)(param_2->bloom).bloomTintScale[2] & 7) == 0) {
-    R_ClearForFrameBuffer(gfxCmdBufState.prim.field0_0x0.device,param_1);
+                    (uchar)(viewInfo->sceneComposition).renderingMode);
+  if (((uint)(viewInfo->bloom).bloomTintScale[2] & 7) == 0) {
+    R_ClearForFrameBuffer(gfxCmdBufState.prim.field0_0x0.device,viewport);
   }
   else {
     R_ClearForFrameBuffer(gfxCmdBufState.prim.field0_0x0.device,(GfxViewport *)0x0);
@@ -295,18 +304,20 @@ void __cdecl R_SetAndClearSceneTarget(GfxViewport *param_1,GfxViewInfo *param_2)
 // 00A73260  R_DrawFullbrightLitCallback  (gfx_d3d/rb_draw3d.cpp:4360)
 
 void __cdecl
-R_DrawFullbrightLitCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawFullbrightLitCallback(void *data,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,*(uchar *)((int)param_1 + 0x35f0));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                       *(uint *)((int)param_1 + 0x160),*(uint *)((int)param_1 + 0x164),
-                       *(uint *)((int)param_1 + 0x168),*(uint *)((int)param_1 + 0x16c));
+  GfxViewInfo *viewInfo;
+  
+  R_SetRenderTarget(context,*(uchar *)((int)data + 0x35f0));
+  if ((*(uint *)((int)data + 0x3620) & 7) == 0) {
+    R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                       *(uint *)((int)data + 0x160),*(uint *)((int)data + 0x164),
+                       *(uint *)((int)data + 0x168),*(uint *)((int)data + 0x16c));
   }
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2230));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)data + 0x2230));
+  if ((*(uint *)((int)data + 0x3620) & 7) == 0) {
+    R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   }
   return;
 }
@@ -315,18 +326,20 @@ R_DrawFullbrightLitCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufCont
 // 00A73490  R_DrawFullbrightDecalCallback  (gfx_d3d/rb_draw3d.cpp:4379)
 
 void __cdecl
-R_DrawFullbrightDecalCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawFullbrightDecalCallback(void *data,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,*(uchar *)((int)param_1 + 0x35f0));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                       *(uint *)((int)param_1 + 0x160),*(uint *)((int)param_1 + 0x164),
-                       *(uint *)((int)param_1 + 0x168),*(uint *)((int)param_1 + 0x16c));
+  GfxViewInfo *viewInfo;
+  
+  R_SetRenderTarget(context,*(uchar *)((int)data + 0x35f0));
+  if ((*(uint *)((int)data + 0x3620) & 7) == 0) {
+    R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                       *(uint *)((int)data + 0x160),*(uint *)((int)data + 0x164),
+                       *(uint *)((int)data + 0x168),*(uint *)((int)data + 0x16c));
   }
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2320));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)data + 0x2320));
+  if ((*(uint *)((int)data + 0x3620) & 7) == 0) {
+    R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   }
   return;
 }
@@ -335,22 +348,25 @@ R_DrawFullbrightDecalCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufCo
 // 00A73540  R_DrawFullbrightEmissiveCallback  (gfx_d3d/rb_draw3d.cpp:4396)
 
 void __cdecl
-R_DrawFullbrightEmissiveCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawFullbrightEmissiveCallback
+          (void *data,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,*(uchar *)((int)param_1 + 0x35f0));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                       *(uint *)((int)param_1 + 0x160),*(uint *)((int)param_1 + 0x164),
-                       *(uint *)((int)param_1 + 0x168),*(uint *)((int)param_1 + 0x16c));
+  GfxViewInfo *viewInfo;
+  
+  R_SetRenderTarget(context,*(uchar *)((int)data + 0x35f0));
+  if ((*(uint *)((int)data + 0x3620) & 7) == 0) {
+    R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                       *(uint *)((int)data + 0x160),*(uint *)((int)data + 0x164),
+                       *(uint *)((int)data + 0x168),*(uint *)((int)data + 0x16c));
   }
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2370));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2230));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2280));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2320));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2370));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)data + 0x2370));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2230));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2280));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2320));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2370));
+  if ((*(uint *)((int)data + 0x3620) & 7) == 0) {
+    R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   }
   return;
 }
@@ -373,8 +389,8 @@ R_DrawFullbrightEmissiveCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBu
 
 void __cdecl
 R_DrawFullbrightOrDebugShader
-          (_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *param_1,
-          GfxViewInfo *param_2,GfxDrawSurfListInfo *param_3,GfxCmdBuf *param_4)
+          (_func___cdecl_void_void_ptr_GfxCmdBufContext_GfxCmdBufContext *callback,
+          GfxViewInfo *viewInfo,GfxDrawSurfListInfo *info,GfxCmdBuf *cmdBuf)
 
 {
   GfxCmdBufSourceState local_1ab0;
@@ -383,9 +399,9 @@ R_DrawFullbrightOrDebugShader
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   local_18 = R_GetCloudArea();
-  R_InitCmdBufSourceState(&local_1ab0,&param_2->input,1);
-  R_SetRenderTargetSize(&local_1ab0,(uchar)(param_2->sceneComposition).renderingMode);
-  R_SetViewportStruct(&local_1ab0,&(param_2->field0_0x0).cullViewInfo.sceneViewport);
+  R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,1);
+  R_SetRenderTargetSize(&local_1ab0,(uchar)(viewInfo->sceneComposition).renderingMode);
+  R_SetViewportStruct(&local_1ab0,&(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
   R_SetWindShaderConstants(&local_1ab0);
   local_1ab0.input.consts[0x72][0] = 0.0;
   local_1ab0.input.consts[0x72][1] = 0.0;
@@ -393,9 +409,9 @@ R_DrawFullbrightOrDebugShader
   local_1ab0.input.consts[0x72][3] = 0.0;
   R_DirtyCodeConstant(&local_1ab0,0x72);
   local_1ab0.input.consts[0x73][0] =
-       (*local_18)[0] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[0];
+       (*local_18)[0] - (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[0];
   local_1ab0.input.consts[0x73][1] =
-       (*local_18)[1] - (param_2->field0_0x0).cullViewInfo.viewParms.origin[1];
+       (*local_18)[1] - (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1];
   local_1ab0.input.consts[0x73][2] = (*local_18)[2];
   local_1ab0.input.consts[0x73][3] = (*local_18)[3];
   R_DirtyCodeConstant(&local_1ab0,0x73);
@@ -414,7 +430,7 @@ R_DrawFullbrightOrDebugShader
   local_1ab0.input.consts[0x2e][2] = 1.0;
   local_1ab0.input.consts[0x2e][3] = 0.0;
   R_DirtyCodeConstant(&local_1ab0,0x2e);
-  R_DrawCall(param_1,param_2,&local_1ab0,param_2,param_3,(GfxViewParms *)param_2,param_4,
+  R_DrawCall(callback,viewInfo,&local_1ab0,viewInfo,info,(GfxViewParms *)viewInfo,cmdBuf,
              (GfxCmdBuf *)0x0);
   return;
 }
@@ -422,27 +438,30 @@ R_DrawFullbrightOrDebugShader
 
 // 00A73140  R_DrawFullbright  (gfx_d3d/rb_draw3d.cpp:4458)
 
-void __cdecl R_DrawFullbright(GfxViewInfo *param_1,GfxCmdBufInput *param_2,GfxCmdBuf *param_3)
+void __cdecl R_DrawFullbright(GfxViewInfo *viewInfo,GfxCmdBufInput *input,GfxCmdBuf *cmdBuf)
 
 {
   DWORD DVar1;
+  PIXProfile pixProfile_3;
+  PIXProfile pixProfile_2;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"R_DrawFullbrightOrDebugShader - Lit");
-  R_DrawFullbrightOrDebugShader(R_DrawFullbrightLitCallback,param_1,param_1->drawList,param_3);
+  R_DrawFullbrightOrDebugShader(R_DrawFullbrightLitCallback,viewInfo,viewInfo->drawList,cmdBuf);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"R_DrawFullbrightOrDebugShader - Decal");
-  R_DrawFullbrightOrDebugShader(R_DrawFullbrightDecalCallback,param_1,param_1->drawList + 3,param_3)
-  ;
+  R_DrawFullbrightOrDebugShader
+            (R_DrawFullbrightDecalCallback,viewInfo,viewInfo->drawList + 3,cmdBuf);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   PIXBeginNamedEvent(-1,"R_DrawFullbrightOrDebugShader - Emissive");
   R_DrawFullbrightOrDebugShader
-            (R_DrawFullbrightEmissiveCallback,param_1,param_1->drawList + 4,param_3);
+            (R_DrawFullbrightEmissiveCallback,viewInfo,viewInfo->drawList + 4,cmdBuf);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -453,30 +472,33 @@ void __cdecl R_DrawFullbright(GfxViewInfo *param_1,GfxCmdBufInput *param_2,GfxCm
 
 // 00A767E0  RB_FullbrightRenderCommands  (gfx_d3d/rb_draw3d.cpp:4488)
 
-void __cdecl RB_FullbrightRenderCommands(GfxViewInfo *param_1)
+void __cdecl RB_FullbrightRenderCommands(GfxViewInfo *viewInfo)
 
 {
   GfxBackEndData *pGVar1;
   DWORD DVar2;
+  PIXProfile pixProfile;
+  GfxBackEndData *data;
+  GfxViewport *vp;
   
   PIXBeginNamedEvent(-1,"RB_FullbrightRenderCommands");
   pGVar1 = backEndData;
-  (param_1->exposureValue).whitePoint[2] = (float)backEndData;
+  (viewInfo->exposureValue).whitePoint[2] = (float)backEndData;
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,(GfxCmdBufInput *)&gfxCmdBufInput,0);
   gfxCmdBufSourceState._padding_ = (int)pGVar1;
   R_InitLocalCmdBufState(&gfxCmdBufState);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x02');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x02');
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-              (GfxViewParms *)param_1);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_1->field0_0x0).cullViewInfo.displayViewport);
-  if (param_1->cmds != (void *)0x0) {
+                      &(viewInfo->field0_0x0).cullViewInfo.displayViewport);
+  if (viewInfo->cmds != (void *)0x0) {
     RB_SetUI3DSamplerAndConstants
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (GfxUI3DBackend *)((param_1->rbUI3D).viewport + 3));
-    RB_ExecuteRenderCommandsLoop(param_1->cmds,(int *)0x0);
+               (GfxUI3DBackend *)((viewInfo->rbUI3D).viewport + 3));
+    RB_ExecuteRenderCommandsLoop(viewInfo->cmds,(int *)0x0);
   }
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   DVar2 = GetCurrentThreadId();
@@ -489,34 +511,36 @@ void __cdecl RB_FullbrightRenderCommands(GfxViewInfo *param_1)
 
 // 00A72D50  RB_FullbrightDrawCommands  (gfx_d3d/rb_draw3d.cpp:4528)
 
-void __cdecl RB_FullbrightDrawCommands(GfxViewInfo *param_1)
+void __cdecl RB_FullbrightDrawCommands(GfxViewInfo *viewInfo)
 
 {
-  GfxBackEndData *pGVar1;
-  DWORD DVar2;
-  GfxCmdBuf local_8;
+  GfxBackEndData *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  GfxBackEndData *data;
+  GfxCmdBuf cmdBuf;
   
   PIXBeginNamedEvent(-1,"RB_FullbrightDrawCommands");
-  pGVar1 = backEndData;
-  R_SetAndClearSceneTarget((GfxViewport *)0x0,param_1);
-  R_InitContext(pGVar1,&local_8);
-  R_DrawFullbright(param_1,&gfxCmdBufSourceState.input,&local_8);
-  R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->input,0);
+  data_00 = backEndData;
+  R_SetAndClearSceneTarget((GfxViewport *)0x0,viewInfo);
+  R_InitContext(data_00,&cmdBuf);
+  R_DrawFullbright(viewInfo,&gfxCmdBufSourceState.input,&cmdBuf);
+  R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->input,0);
   R_InitLocalCmdBufState(&gfxCmdBufState);
   R_SetRenderTargetSize
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-             (uchar)(param_1->sceneComposition).renderingMode);
+             (uchar)(viewInfo->sceneComposition).renderingMode);
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                    (uchar)(param_1->sceneComposition).renderingMode);
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-              (GfxViewParms *)param_1);
+                    (uchar)(viewInfo->sceneComposition).renderingMode);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_1->field0_0x0).cullViewInfo.sceneViewport);
-  RB_DrawSun(param_1->localClientNum);
+                      &(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+  RB_DrawSun(viewInfo->localClientNum);
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-  RB_EndSceneRendering((GfxCmdBufContext)0xb473fe00b472550,&param_1->input,param_1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  RB_EndSceneRendering((GfxCmdBufContext)0xb473fe00b472550,&viewInfo->input,viewInfo);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -532,14 +556,18 @@ void __cdecl RB_FullbrightDrawCommandsCommon(void)
   DWORD DVar2;
   GfxCmdBufSourceState_conflict *pGVar3;
   GfxCmdBufState *pGVar4;
-  uint local_8;
+  PIXProfile pixProfile;
+  GfxBackEndData *data;
+  GfxViewInfo *viewInfo;
+  uint viewInfoIndex;
   
   PIXBeginNamedEvent(-1,"RB_FullbrightDrawCommandsCommon");
   pGVar1 = backEndData;
   pGVar3 = &gfxCmdBufSourceState;
   pGVar4 = &gfxCmdBufState;
-  for (local_8 = 0; local_8 < pGVar1->viewInfoCount; local_8 = local_8 + 1) {
-    RB_FullbrightRenderCommands((GfxViewInfo *)(local_8 * 0x38e0 + (int)pGVar1->viewInfo));
+  for (viewInfoIndex = 0; viewInfoIndex < pGVar1->viewInfoCount; viewInfoIndex = viewInfoIndex + 1)
+  {
+    RB_FullbrightRenderCommands((GfxViewInfo *)(viewInfoIndex * 0x38e0 + (int)pGVar1->viewInfo));
   }
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -552,15 +580,17 @@ void __cdecl RB_FullbrightDrawCommandsCommon(void)
 // 00A73BA0  R_DrawDebugShaderLitCallback  (gfx_d3d/rb_draw3d.cpp:4642)
 
 void __cdecl
-R_DrawDebugShaderLitCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawDebugShaderLitCallback(void *data,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,'\x03');
-  R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                     *(uint *)((int)param_1 + 0x160),*(uint *)((int)param_1 + 0x164),
-                     *(uint *)((int)param_1 + 0x168),*(uint *)((int)param_1 + 0x16c));
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2230));
-  R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  GfxViewInfo *viewInfo;
+  
+  R_SetRenderTarget(context,'\x03');
+  R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                     *(uint *)((int)data + 0x160),*(uint *)((int)data + 0x164),
+                     *(uint *)((int)data + 0x168),*(uint *)((int)data + 0x16c));
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)data + 0x2230));
+  R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   return;
 }
 
@@ -568,11 +598,13 @@ R_DrawDebugShaderLitCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufCon
 // 00A73C30  R_DrawDebugShaderDecalCallback  (gfx_d3d/rb_draw3d.cpp:4657)
 
 void __cdecl
-R_DrawDebugShaderDecalCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawDebugShaderDecalCallback(void *data,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,'\x03');
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2320));
+  GfxViewInfo *viewInfo;
+  
+  R_SetRenderTarget(context,'\x03');
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)data + 0x2320));
   return;
 }
 
@@ -580,62 +612,68 @@ R_DrawDebugShaderDecalCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufC
 // 00A73C70  R_DrawDebugShaderEmissiveCallback  (gfx_d3d/rb_draw3d.cpp:4669)
 
 void __cdecl
-R_DrawDebugShaderEmissiveCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawDebugShaderEmissiveCallback
+          (void *data,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,'\x03');
-  R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                     *(uint *)((int)param_1 + 0x160),*(uint *)((int)param_1 + 0x164),
-                     *(uint *)((int)param_1 + 0x168),*(uint *)((int)param_1 + 0x16c));
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2370));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2230));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2280));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2320));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2370));
-  R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  GfxViewInfo *viewInfo;
+  
+  R_SetRenderTarget(context,'\x03');
+  R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                     *(uint *)((int)data + 0x160),*(uint *)((int)data + 0x164),
+                     *(uint *)((int)data + 0x168),*(uint *)((int)data + 0x16c));
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)data + 0x2370));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2230));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2280));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2320));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)data + 0x2370));
+  R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   return;
 }
 
 
 // 00A73B30  R_DrawDebugShader  (gfx_d3d/rb_draw3d.cpp:4698)
 
-void __cdecl R_DrawDebugShader(GfxViewInfo *param_1,GfxCmdBuf *param_2)
+void __cdecl R_DrawDebugShader(GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
-  R_DrawFullbrightOrDebugShader(R_DrawDebugShaderLitCallback,param_1,param_1->drawList,param_2);
+  R_DrawFullbrightOrDebugShader(R_DrawDebugShaderLitCallback,viewInfo,viewInfo->drawList,cmdBuf);
   R_DrawFullbrightOrDebugShader
-            (R_DrawDebugShaderDecalCallback,param_1,param_1->drawList + 3,param_2);
+            (R_DrawDebugShaderDecalCallback,viewInfo,viewInfo->drawList + 3,cmdBuf);
   R_DrawFullbrightOrDebugShader
-            (R_DrawDebugShaderEmissiveCallback,param_1,param_1->drawList + 4,param_2);
+            (R_DrawDebugShaderEmissiveCallback,viewInfo,viewInfo->drawList + 4,cmdBuf);
   return;
 }
 
 
 // 00A76990  RB_DebugShaderRenderCommands  (gfx_d3d/rb_draw3d.cpp:4713)
 
-void __cdecl RB_DebugShaderRenderCommands(GfxViewInfo *param_1)
+void __cdecl RB_DebugShaderRenderCommands(GfxViewInfo *viewInfo)
 
 {
   GfxBackEndData *pGVar1;
   DWORD DVar2;
+  PIXProfile pixProfile;
+  GfxBackEndData *data;
+  GfxViewport *vp;
   
   PIXBeginNamedEvent(-1,"RB_DebugShaderRenderCommands");
   pGVar1 = backEndData;
-  (param_1->exposureValue).whitePoint[2] = (float)backEndData;
+  (viewInfo->exposureValue).whitePoint[2] = (float)backEndData;
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,(GfxCmdBufInput *)&gfxCmdBufInput,0);
   gfxCmdBufSourceState._padding_ = (int)pGVar1;
   R_InitLocalCmdBufState(&gfxCmdBufState);
   R_SetResolvedScene((GfxCmdBufContext)0xb473fe00b472550);
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-              (GfxViewParms *)param_1);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_1->field0_0x0).cullViewInfo.displayViewport);
-  if (param_1->cmds != (void *)0x0) {
+                      &(viewInfo->field0_0x0).cullViewInfo.displayViewport);
+  if (viewInfo->cmds != (void *)0x0) {
     RB_SetUI3DSamplerAndConstants
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (GfxUI3DBackend *)((param_1->rbUI3D).viewport + 3));
-    RB_ExecuteRenderCommandsLoop(param_1->cmds,(int *)0x0);
+               (GfxUI3DBackend *)((viewInfo->rbUI3D).viewport + 3));
+    RB_ExecuteRenderCommandsLoop(viewInfo->cmds,(int *)0x0);
   }
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   DVar2 = GetCurrentThreadId();
@@ -648,17 +686,18 @@ void __cdecl RB_DebugShaderRenderCommands(GfxViewInfo *param_1)
 
 // 00A73AC0  RB_DebugShaderDrawCommands  (gfx_d3d/rb_draw3d.cpp:4746)
 
-void __cdecl RB_DebugShaderDrawCommands(GfxViewInfo *param_1)
+void __cdecl RB_DebugShaderDrawCommands(GfxViewInfo *viewInfo)
 
 {
-  GfxBackEndData *pGVar1;
-  GfxCmdBuf local_8;
+  GfxBackEndData *data_00;
+  GfxBackEndData *data;
+  GfxCmdBuf cmdBuf;
   
-  pGVar1 = backEndData;
-  R_SetAndClearSceneTarget((GfxViewport *)0x0,param_1);
-  R_InitContext(pGVar1,&local_8);
-  R_DrawDebugShader(param_1,&local_8);
-  RB_EndSceneRendering((GfxCmdBufContext)0xb473fe00b472550,&param_1->input,param_1);
+  data_00 = backEndData;
+  R_SetAndClearSceneTarget((GfxViewport *)0x0,viewInfo);
+  R_InitContext(data_00,&cmdBuf);
+  R_DrawDebugShader(viewInfo,&cmdBuf);
+  RB_EndSceneRendering((GfxCmdBufContext)0xb473fe00b472550,&viewInfo->input,viewInfo);
   return;
 }
 
@@ -669,11 +708,14 @@ void __cdecl RB_DebugShaderDrawCommandsCommon(void)
 
 {
   GfxBackEndData *pGVar1;
-  uint local_8;
+  GfxBackEndData *data;
+  GfxViewInfo *viewInfo;
+  uint viewInfoIndex;
   
   pGVar1 = backEndData;
-  for (local_8 = 0; local_8 < pGVar1->viewInfoCount; local_8 = local_8 + 1) {
-    RB_DebugShaderRenderCommands((GfxViewInfo *)(local_8 * 0x38e0 + (int)pGVar1->viewInfo));
+  for (viewInfoIndex = 0; viewInfoIndex < pGVar1->viewInfoCount; viewInfoIndex = viewInfoIndex + 1)
+  {
+    RB_DebugShaderRenderCommands((GfxViewInfo *)(viewInfoIndex * 0x38e0 + (int)pGVar1->viewInfo));
   }
   return;
 }
@@ -682,21 +724,23 @@ void __cdecl RB_DebugShaderDrawCommandsCommon(void)
 // 00A757C0  R_DrawPointLitSurfsCallback  (gfx_d3d/rb_draw3d.cpp:4810)
 
 void __cdecl
-R_DrawPointLitSurfsCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawPointLitSurfsCallback(void *userData,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
-  R_SetRenderTarget(param_2,*(uchar *)(*(int *)param_1 + 0x35f0));
-  R_Set2D(param_2.field0_0x0._s_0.source);
-  R_DrawQuadMesh(param_2,rgp.clearAlphaMaterial,*(GfxMeshData **)((int)param_1 + 4));
-  R_Set3D(param_2.field0_0x0._s_0.source);
-  if ((*(uint *)(*(int *)param_1 + 0x3620) & 7) == 0) {
-    R_HW_EnableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,
-                       *(uint *)((int)param_1 + 0xc),*(uint *)((int)param_1 + 0x10),
-                       *(uint *)((int)param_1 + 0x14),*(uint *)((int)param_1 + 0x18));
+  GfxPointLitSurfsInfo *info;
+  
+  R_SetRenderTarget(context,*(uchar *)(*(int *)userData + 0x35f0));
+  R_Set2D(context.field0_0x0._s_0.source);
+  R_DrawQuadMesh(context,rgp.clearAlphaMaterial,*(GfxMeshData **)((int)userData + 4));
+  R_Set3D(context.field0_0x0._s_0.source);
+  if ((*(uint *)(*(int *)userData + 0x3620) & 7) == 0) {
+    R_HW_EnableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,
+                       *(uint *)((int)userData + 0xc),*(uint *)((int)userData + 0x10),
+                       *(uint *)((int)userData + 0x14),*(uint *)((int)userData + 0x18));
   }
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,*(GfxDrawSurfListInfo **)((int)param_1 + 8));
-  if ((*(uint *)(*(int *)param_1 + 0x3620) & 7) == 0) {
-    R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,*(GfxDrawSurfListInfo **)((int)userData + 8));
+  if ((*(uint *)(*(int *)userData + 0x3620) & 7) == 0) {
+    R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   }
   return;
 }
@@ -704,10 +748,8 @@ R_DrawPointLitSurfsCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufCont
 
 // 00A74F50  R_DrawPointLitSurfs  (gfx_d3d/rb_draw3d.cpp:4837)
 
-/* WARNING: Type propagation algorithm not settling */
-
 void __cdecl
-R_DrawPointLitSurfs(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxCmdBuf *param_3)
+R_DrawPointLitSurfs(GfxCmdBufSourceState *source,GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
   float *pfVar1;
@@ -723,127 +765,127 @@ R_DrawPointLitSurfs(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxCmdBuf
   float fVar7;
   float local_138;
   float local_120;
-  GfxViewInfo *local_d0;
+  PointLightPartition *pointLightPartitions;
+  float *plane;
+  GfxViewInfo *info;
   GfxMeshData *local_cc;
   GfxDrawSurfListInfo *local_c8;
   int local_c4;
   int local_c0;
   int local_bc;
   int local_b8;
-  int local_b4;
-  float local_b0;
-  float local_ac;
+  int pointLightCount;
+  GfxBackEndData *data;
+  float perp;
   float local_a8;
   float local_a4;
-  float local_a0 [5];
-  float local_8c;
-  float local_88;
-  PointLightPartition *local_84;
-  float local_80;
-  PointLightPartition *local_7c;
-  float local_78;
+  float dist [4];
+  float halfWidth;
+  float width;
+  float height;
+  GfxLight *light;
+  float sign;
+  PointLightPartition *pointLightPartition;
+  float offset;
   float local_74;
   float local_70;
-  float local_6c;
+  float edgeGoalPoint;
   float local_68;
   float local_64;
-  float local_60;
-  float local_5c;
+  float tangentDist;
+  float edgeDir;
   float local_58;
   float local_54;
-  float local_50;
-  int local_4c;
-  GfxViewInfo *local_48;
-  float local_44;
-  uchar local_40 [4];
-  float local_3c;
-  float local_38;
-  uint local_34;
-  float local_30;
-  undefined4 local_2c;
+  float planeDist;
+  int partitionIndex;
+  GfxViewParms *viewParms;
+  float tangentDistSq;
+  uchar color [4];
+  float x;
+  float y;
+  uint axis;
+  float offsetDistSq;
+  undefined4 args;
   undefined4 local_28;
   undefined4 local_24;
-  uint local_20;
-  float local_1c;
-  float local_18;
+  uint planeIndex;
+  float halfHeight;
+  float perpDir;
   float local_14;
   float local_10;
-  float local_c;
-  float local_8;
+  float perpDist;
+  float w;
   
-  if ((param_2 == (GfxViewInfo *)0x0) &&
+  if ((viewInfo == (GfxViewInfo *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_draw3d.cpp",0x1308,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     (*pcVar3)();
     return;
   }
-  local_b4 = param_2->pointLightCount;
-  if (local_b4 != 0) {
-    R_ConvertColorToBytes(colorWhite,local_40);
-    local_b0 = (param_1->viewParms).viewMatrix.m[2][0];
+  pointLightCount = viewInfo->pointLightCount;
+  if (pointLightCount != 0) {
+    R_ConvertColorToBytes(colorWhite,color);
+    data = (GfxBackEndData *)(source->viewParms).viewMatrix.m[2][0];
     local_24 = 0;
-    local_2c = 4;
+    args = 4;
     local_28 = 2;
-    local_48 = param_2;
-    local_d0 = param_2;
-    for (local_4c = 0; local_4c < local_b4; local_4c = local_4c + 1) {
-      local_84 = param_2->pointLightPartitions + local_4c;
-      local_c8 = &local_84->info;
-      local_cc = param_2->pointLightMeshData + local_4c;
-      local_a0[0] = 1.0;
-      local_a0[1] = -1.0;
-      local_a0[2] = 1.0;
-      local_a0[3] = -1.0;
-      local_78 = (local_84->light).origin[0] -
-                 (local_48->field0_0x0).cullViewInfo.viewParms.origin[0];
-      local_74 = (local_84->light).origin[1] -
-                 (local_48->field0_0x0).cullViewInfo.viewParms.origin[1];
-      local_70 = (local_84->light).origin[2] -
-                 (local_48->field0_0x0).cullViewInfo.viewParms.origin[2];
-      local_30 = local_78 * local_78 + local_74 * local_74 + local_70 * local_70;
-      local_44 = local_30 - (local_84->light).radius * (local_84->light).radius;
-      local_7c = local_84;
-      if (1.0 < local_44) {
-        local_60 = SQRT(local_44);
-        local_c = local_30 / local_60;
-        local_80 = 1.0;
-        for (local_20 = 0; local_20 < 4; local_20 = local_20 + 1) {
-          local_34 = local_20 >> 1;
-          pfVar1 = (float *)((int)local_48 + (2 - local_34) * 0xc + 0x110);
-          local_ac = local_80 * *pfVar1;
-          local_a8 = local_80 * pfVar1[1];
-          local_a4 = local_80 * pfVar1[2];
-          Vec3Cross(&local_ac,&local_78,&local_18);
-          Vec3Normalize(&local_18);
-          fVar5 = -local_c;
-          local_6c = fVar5 * local_18 + (local_48->field0_0x0).cullViewInfo.viewParms.origin[0];
-          local_68 = fVar5 * local_14 + (local_48->field0_0x0).cullViewInfo.viewParms.origin[1];
-          local_64 = fVar5 * local_10 + (local_48->field0_0x0).cullViewInfo.viewParms.origin[2];
-          local_5c = local_6c - (local_84->light).origin[0];
-          local_58 = local_68 - (local_84->light).origin[1];
-          local_54 = local_64 - (local_84->light).origin[2];
-          Vec3Normalize(&local_5c);
-          fVar5 = (local_84->light).radius;
-          fVar6 = fVar5 * local_5c + (local_84->light).origin[0];
-          fVar7 = fVar5 * local_58 + (local_84->light).origin[1];
-          fVar5 = fVar5 * local_54 + (local_84->light).origin[2];
-          pafVar2 = param_2->frustumPlanes + local_20;
+    viewParms = (GfxViewParms *)viewInfo;
+    info = viewInfo;
+    for (partitionIndex = 0; partitionIndex < pointLightCount; partitionIndex = partitionIndex + 1)
+    {
+      light = &viewInfo->pointLightPartitions[partitionIndex].light;
+      local_c8 = &((PointLightPartition *)light)->info;
+      local_cc = viewInfo->pointLightMeshData + partitionIndex;
+      dist[0] = 1.0;
+      dist[1] = -1.0;
+      dist[2] = 1.0;
+      dist[3] = -1.0;
+      offset = (((PointLightPartition *)light)->light).origin[0] - viewParms->origin[0];
+      local_74 = (((PointLightPartition *)light)->light).origin[1] - viewParms->origin[1];
+      local_70 = (((PointLightPartition *)light)->light).origin[2] - viewParms->origin[2];
+      offsetDistSq = offset * offset + local_74 * local_74 + local_70 * local_70;
+      tangentDistSq =
+           offsetDistSq -
+           (((PointLightPartition *)light)->light).radius *
+           (((PointLightPartition *)light)->light).radius;
+      pointLightPartition = (PointLightPartition *)light;
+      if (1.0 < tangentDistSq) {
+        tangentDist = SQRT(tangentDistSq);
+        perpDist = offsetDistSq / tangentDist;
+        sign = 1.0;
+        for (planeIndex = 0; planeIndex < 4; planeIndex = planeIndex + 1) {
+          axis = planeIndex >> 1;
+          pfVar1 = (float *)((int)viewParms + (2 - axis) * 0xc + 0x110);
+          perp = sign * *pfVar1;
+          local_a8 = sign * pfVar1[1];
+          local_a4 = sign * pfVar1[2];
+          Vec3Cross(&perp,&offset,&perpDir);
+          Vec3Normalize(&perpDir);
+          fVar5 = -perpDist;
+          edgeGoalPoint = fVar5 * perpDir + viewParms->origin[0];
+          local_68 = fVar5 * local_14 + viewParms->origin[1];
+          local_64 = fVar5 * local_10 + viewParms->origin[2];
+          edgeDir = edgeGoalPoint - light->origin[0];
+          local_58 = local_68 - light->origin[1];
+          local_54 = local_64 - light->origin[2];
+          Vec3Normalize(&edgeDir);
+          fVar5 = light->radius;
+          fVar6 = fVar5 * edgeDir + light->origin[0];
+          fVar7 = fVar5 * local_58 + light->origin[1];
+          fVar5 = fVar5 * local_54 + light->origin[2];
+          pafVar2 = viewInfo->frustumPlanes + planeIndex;
           if ((0.0 < (*pafVar2)[0] * fVar6 + (*pafVar2)[1] * fVar7 + (*pafVar2)[2] * fVar5 +
                      (*pafVar2)[3]) &&
-             (local_8 = fVar6 * (local_48->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m
-                                [0][3] +
-                        fVar7 * (local_48->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m
-                                [1][3] +
-                        fVar5 * (local_48->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m
-                                [2][3] +
-                        (local_48->field0_0x0).cullViewInfo.viewParms.viewProjectionMatrix.m[3][3],
-             0.0 < local_8)) {
-            local_50 = fVar6 * *(float *)((int)&local_48->field0_0x0 + local_34 * 4 + 0x80) +
-                       fVar7 * *(float *)((int)&local_48->field0_0x0 + local_34 * 4 + 0x90) +
-                       fVar5 * *(float *)((int)&local_48->field0_0x0 + local_34 * 4 + 0xa0) +
-                       *(float *)((int)&local_48->field0_0x0 + local_34 * 4 + 0xb0);
-            fVar5 = local_50 / local_8;
+             (w = fVar6 * (viewParms->viewProjectionMatrix).m[0][3] +
+                  fVar7 * (viewParms->viewProjectionMatrix).m[1][3] +
+                  fVar5 * (viewParms->viewProjectionMatrix).m[2][3] +
+                  (viewParms->viewProjectionMatrix).m[3][3], 0.0 < w)) {
+            planeDist = fVar6 * (viewParms->viewProjectionMatrix).m[0][axis] +
+                        fVar7 * (viewParms->viewProjectionMatrix).m[1][axis] +
+                        fVar5 * (viewParms->viewProjectionMatrix).m[2][axis] +
+                        (viewParms->viewProjectionMatrix).m[3][axis];
+            fVar5 = planeDist / w;
             local_120 = fVar5;
             if (0.0 <= fVar5 - 1.0) {
               local_120 = 1.0;
@@ -854,17 +896,17 @@ R_DrawPointLitSurfs(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxCmdBuf
             else {
               local_138 = -1.0;
             }
-            local_a0[local_20] = local_138;
+            dist[planeIndex] = local_138;
           }
-          local_80 = -local_80;
+          sign = -sign;
         }
       }
-      local_a0[4] = (float)((param_2->field0_0x0).cullViewInfo.sceneViewport.width >> 1);
-      local_1c = (float)((param_2->field0_0x0).cullViewInfo.sceneViewport.height >> 1);
-      local_3c = (local_a0[1] + 1.0) * local_a0[4];
-      local_38 = (1.0 - local_a0[2]) * local_1c;
-      local_8c = (local_a0[0] - local_a0[1]) * local_a0[4];
-      local_88 = (local_a0[2] - local_a0[3]) * local_1c;
+      halfWidth = (float)((viewInfo->field0_0x0).cullViewInfo.sceneViewport.width >> 1);
+      halfHeight = (float)((viewInfo->field0_0x0).cullViewInfo.sceneViewport.height >> 1);
+      x = (dist[1] + 1.0) * halfWidth;
+      y = (1.0 - dist[2]) * halfHeight;
+      width = (dist[0] - dist[1]) * halfWidth;
+      height = (dist[2] - dist[3]) * halfHeight;
       floor();
       _ftol2_sse();
       local_c4 = extraout_EAX;
@@ -875,11 +917,11 @@ R_DrawPointLitSurfs(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxCmdBuf
       local_bc = (int)extraout_ST0 - local_c4;
       ceil();
       local_b8 = (int)extraout_ST0_00 - local_c0;
-      local_c4 = local_c4 + (param_2->field0_0x0).cullViewInfo.sceneViewport.x;
-      local_c0 = local_c0 + (param_2->field0_0x0).cullViewInfo.sceneViewport.y;
-      R_SetQuadMeshData(local_cc,local_3c,local_38,local_8c,local_88,0.0,0.0,1.0,1.0,0xffffffff);
-      R_DrawCall(R_DrawPointLitSurfsCallback,&local_d0,param_1,param_2,&local_7c->info,
-                 (GfxViewParms *)param_2,param_3,(GfxCmdBuf *)0x0);
+      local_c4 = local_c4 + (viewInfo->field0_0x0).cullViewInfo.sceneViewport.x;
+      local_c0 = local_c0 + (viewInfo->field0_0x0).cullViewInfo.sceneViewport.y;
+      R_SetQuadMeshData(local_cc,x,y,width,height,0.0,0.0,1.0,1.0,0xffffffff);
+      R_DrawCall(R_DrawPointLitSurfsCallback,&info,source,viewInfo,&pointLightPartition->info,
+                 (GfxViewParms *)viewInfo,cmdBuf,(GfxCmdBuf *)0x0);
     }
   }
   return;
@@ -891,6 +933,10 @@ R_DrawPointLitSurfs(GfxCmdBufSourceState *param_1,GfxViewInfo *param_2,GfxCmdBuf
 void __cdecl RB_SetFrameBufferAlpha(void)
 
 {
+  float zf;
+  float zn;
+  GfxColor color;
+  
   if (tess.indexCount != 0) {
     RB_EndTessSurface();
   }
@@ -916,26 +962,31 @@ void __cdecl RB_SetFrameBufferAlpha(void)
 void __cdecl RB_ShowFbColorDebug_Screen(void)
 
 {
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
+  float x;
+  float y;
+  float x_00;
+  float y_00;
+  float quarterScreenHeight;
+  float halfScreenWidth;
+  float halfScreenHeight;
+  float quarterScreenWidth;
+  GfxColor color;
   
   if (tess.indexCount != 0) {
     RB_EndTessSurface();
   }
   R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
-  fVar1 = (float)gfxCmdBufSourceState.renderTargetWidth * 0.5;
-  fVar2 = (float)gfxCmdBufSourceState.renderTargetHeight * 0.5;
-  fVar3 = fVar1 * 0.5;
-  fVar4 = fVar2 * 0.5;
-  RB_DrawStretchPic(rgp.frameColorDebugMaterial,fVar3,fVar4,fVar3,fVar4,0.0,0.0,1.0,1.0,0xffff0000,
+  x = (float)gfxCmdBufSourceState.renderTargetWidth * 0.5;
+  y = (float)gfxCmdBufSourceState.renderTargetHeight * 0.5;
+  x_00 = x * 0.5;
+  y_00 = y * 0.5;
+  RB_DrawStretchPic(rgp.frameColorDebugMaterial,x_00,y_00,x_00,y_00,0.0,0.0,1.0,1.0,0xffff0000,
                     GFX_PRIM_STATS_CODE);
-  RB_DrawStretchPic(rgp.frameColorDebugMaterial,fVar1,fVar4,fVar3,fVar4,0.0,0.0,1.0,1.0,0xff00ff00,
+  RB_DrawStretchPic(rgp.frameColorDebugMaterial,x,y_00,x_00,y_00,0.0,0.0,1.0,1.0,0xff00ff00,
                     GFX_PRIM_STATS_CODE);
-  RB_DrawStretchPic(rgp.frameColorDebugMaterial,fVar3,fVar2,fVar3,fVar4,0.0,0.0,1.0,1.0,0xff0000ff,
+  RB_DrawStretchPic(rgp.frameColorDebugMaterial,x_00,y,x_00,y_00,0.0,0.0,1.0,1.0,0xff0000ff,
                     GFX_PRIM_STATS_CODE);
-  RB_DrawStretchPic(rgp.frameAlphaDebugMaterial,fVar1,fVar2,fVar3,fVar4,0.0,0.0,1.0,1.0,0xffffffff,
+  RB_DrawStretchPic(rgp.frameAlphaDebugMaterial,x,y,x_00,y_00,0.0,0.0,1.0,1.0,0xffffffff,
                     GFX_PRIM_STATS_CODE);
   RB_EndTessSurface();
   return;
@@ -966,18 +1017,22 @@ void __cdecl RB_ShowFbColorDebug_Screen(void)
 void __cdecl RB_ShowFbColorDebug_Feedback(void)
 
 {
-  float fVar1;
-  float fVar2;
-  float fVar3;
-  float fVar4;
+  float x;
+  float y;
+  float x_00;
+  float y_00;
+  float quarterScreenHeight;
+  float halfScreenWidth;
+  float halfScreenHeight;
+  float quarterScreenWidth;
   
   if (tess.indexCount != 0) {
     RB_EndTessSurface();
   }
-  fVar1 = (float)gfxCmdBufSourceState.renderTargetWidth * 0.5;
-  fVar2 = (float)gfxCmdBufSourceState.renderTargetHeight * 0.5;
-  fVar3 = fVar1 * 0.5;
-  fVar4 = fVar2 * 0.5;
+  x = (float)gfxCmdBufSourceState.renderTargetWidth * 0.5;
+  y = (float)gfxCmdBufSourceState.renderTargetHeight * 0.5;
+  x_00 = x * 0.5;
+  y_00 = y * 0.5;
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x02');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x02');
   R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
@@ -996,8 +1051,8 @@ void __cdecl RB_ShowFbColorDebug_Feedback(void)
   gfxCmdBufSourceState.input.consts[0x2e][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0x2e][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2e);
-  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,fVar3,fVar4,fVar3,fVar4,0.25,0.25,0.5,0.5,
-                    0xffffffff,GFX_PRIM_STATS_CODE);
+  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,x_00,y_00,x_00,y_00,0.25,0.25,0.5,0.5,0xffffffff,
+                    GFX_PRIM_STATS_CODE);
   RB_EndTessSurface();
   gfxCmdBufSourceState.input.consts[0x2c][0] = 0.0;
   gfxCmdBufSourceState.input.consts[0x2c][1] = 0.0;
@@ -1014,8 +1069,8 @@ void __cdecl RB_ShowFbColorDebug_Feedback(void)
   gfxCmdBufSourceState.input.consts[0x2e][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0x2e][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2e);
-  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,fVar1,fVar4,fVar3,fVar4,0.5,0.25,0.75,0.5,
-                    0xffffffff,GFX_PRIM_STATS_CODE);
+  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,x,y_00,x_00,y_00,0.5,0.25,0.75,0.5,0xffffffff,
+                    GFX_PRIM_STATS_CODE);
   RB_EndTessSurface();
   Vec4Set(gfxCmdBufSourceState.input.consts[0x2c],0.0,0.0,0.0,0.0);
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2c);
@@ -1023,14 +1078,14 @@ void __cdecl RB_ShowFbColorDebug_Feedback(void)
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2d);
   Vec4Set(gfxCmdBufSourceState.input.consts[0x2e],0.0,0.0,1.0,0.0);
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2e);
-  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,fVar3,fVar2,fVar3,fVar4,0.25,0.5,0.5,0.75,
-                    0xffffffff,GFX_PRIM_STATS_CODE);
+  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,x_00,y,x_00,y_00,0.25,0.5,0.5,0.75,0xffffffff,
+                    GFX_PRIM_STATS_CODE);
   RB_EndTessSurface();
   R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2c,0.0,0.0,0.0,1.0);
   R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2d,0.0,0.0,0.0,1.0);
   R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x2e,0.0,0.0,0.0,1.0);
-  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,fVar1,fVar2,fVar3,fVar4,0.5,0.5,0.75,0.75,
-                    0xffffffff,GFX_PRIM_STATS_CODE);
+  RB_DrawStretchPic(rgp.colorChannelMixerMaterial,x,y,x_00,y_00,0.5,0.5,0.75,0.75,0xffffffff,
+                    GFX_PRIM_STATS_CODE);
   RB_EndTessSurface();
   return;
 }
@@ -1043,6 +1098,10 @@ void __cdecl RB_ShowFloatZDebug(void)
 {
   float fVar1;
   float fVar2;
+  float quarterScreenHeight;
+  float halfScreenWidth;
+  float halfScreenHeight;
+  float quarterScreenWidth;
   
   if (gfxRenderTargets[7].surface.color != (IDirect3DSurface9 *)0x0) {
     if (tess.indexCount != 0) {
@@ -1100,13 +1159,13 @@ void __cdecl RB_DrawDebugPostEffects(void)
 
 // 00A75B00  RB_ApplyLatePostEffects  (gfx_d3d/rb_draw3d.cpp:5205)
 
-void __cdecl RB_ApplyLatePostEffects(GfxViewInfo *param_1)
+void __cdecl RB_ApplyLatePostEffects(GfxViewInfo *viewInfo)
 
 {
   DWORD DVar1;
   
   PIXBeginNamedEvent(-1,"RB_ApplyLatePostEffects");
-  RB_ProcessPostEffects(param_1);
+  RB_ProcessPostEffects(viewInfo);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
   RB_DrawDebugPostEffects();
@@ -1127,16 +1186,16 @@ void __cdecl RB_ApplyLatePostEffects(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00a74e80) */
 /* WARNING: Removing unreachable block (ram,0x00a74ea7) */
 
-void __cdecl R_DrawLights(GfxViewInfo *param_1,GfxCmdBuf *param_2)
+void __cdecl R_DrawLights(GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
   GfxCmdBufSourceState local_1ab0;
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  R_InitCmdBufSourceState(&local_1ab0,&param_1->input,1);
-  R_SetRenderTargetSize(&local_1ab0,(uchar)(param_1->sceneComposition).renderingMode);
-  R_SetViewportStruct(&local_1ab0,&(param_1->field0_0x0).cullViewInfo.sceneViewport);
+  R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,1);
+  R_SetRenderTargetSize(&local_1ab0,(uchar)(viewInfo->sceneComposition).renderingMode);
+  R_SetViewportStruct(&local_1ab0,&(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
   R_SetWindShaderConstants(&local_1ab0);
   local_1ab0.input.consts[0x72][0] = 0.0;
   local_1ab0.input.consts[0x72][1] = 0.0;
@@ -1148,31 +1207,34 @@ void __cdecl R_DrawLights(GfxViewInfo *param_1,GfxCmdBuf *param_2)
   local_1ab0.input.consts[0x44][3] = (float)(r_testScale->current).integer;
   local_1ab0.input.consts[0x44][1] = 0.0;
   R_DirtyCodeConstant(&local_1ab0,0x44);
-  R_DrawPointLitSurfs(&local_1ab0,param_1,param_2);
+  R_DrawPointLitSurfs(&local_1ab0,viewInfo,cmdBuf);
   return;
 }
 
 
 // 00A72800  R_DrawEmissiveCallback  (gfx_d3d/rb_draw3d.cpp:5269)
 
-void __cdecl R_DrawEmissiveCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+void __cdecl
+R_DrawEmissiveCallback(void *userData,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
   DWORD DVar1;
+  PIXProfile pixProfile;
+  GfxViewInfo *viewInfo;
   
   PIXBeginNamedEvent(-1,"R_DrawEmissiveCallback");
-  R_UpdateCodeConstant(param_2.field0_0x0._s_0.source,0x5e,0.0,0.0,1.0,1.0);
+  R_UpdateCodeConstant(context.field0_0x0._s_0.source,0x5e,0.0,0.0,1.0,1.0);
   PIXBeginNamedEvent(-1,"emissive");
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x2370));
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)userData + 0x2370));
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2230));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2320));
-  R_ShowTris(param_2,(GfxDrawSurfListInfo *)((int)param_1 + 0x2370));
-  if ((*(uint *)((int)param_1 + 0x3620) & 7) == 0) {
-    R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)userData + 0x2230));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)userData + 0x2320));
+  R_ShowTris(context,(GfxDrawSurfListInfo *)((int)userData + 0x2370));
+  if ((*(uint *)((int)userData + 0x3620) & 7) == 0) {
+    R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   }
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1187,19 +1249,19 @@ void __cdecl R_DrawEmissiveCallback(void *param_1,GfxCmdBufContext param_2,GfxCm
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_DrawEmissive(GfxViewInfo *param_1,GfxCmdBuf *param_2)
+void __cdecl R_DrawEmissive(GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
   GfxCmdBufSourceState local_1ab0;
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  R_InitCmdBufSourceState(&local_1ab0,&param_1->input,1);
-  R_SetRenderTargetSize(&local_1ab0,(uchar)(param_1->sceneComposition).renderingMode);
-  R_SetViewportStruct(&local_1ab0,&(param_1->field0_0x0).cullViewInfo.sceneViewport);
-  R_SetADSZScaleConstants(param_1->localClientNum,&local_1ab0);
-  R_DrawCall(R_DrawEmissiveCallback,param_1,&local_1ab0,param_1,param_1->drawList + 4,
-             (GfxViewParms *)param_1,param_2,(GfxCmdBuf *)0x0);
+  R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,1);
+  R_SetRenderTargetSize(&local_1ab0,(uchar)(viewInfo->sceneComposition).renderingMode);
+  R_SetViewportStruct(&local_1ab0,&(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+  R_SetADSZScaleConstants(viewInfo->localClientNum,&local_1ab0);
+  R_DrawCall(R_DrawEmissiveCallback,viewInfo,&local_1ab0,viewInfo,viewInfo->drawList + 4,
+             (GfxViewParms *)viewInfo,cmdBuf,(GfxCmdBuf *)0x0);
   return;
 }
 
@@ -1207,31 +1269,32 @@ void __cdecl R_DrawEmissive(GfxViewInfo *param_1,GfxCmdBuf *param_2)
 // 00A72AC0  R_DrawReflectedCallback  (gfx_d3d/rb_draw3d.cpp:5680)
 
 void __cdecl
-R_DrawReflectedCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext param_3)
+R_DrawReflectedCallback(void *userData,GfxCmdBufContext context,GfxCmdBufContext prepassContext)
 
 {
   DWORD DVar1;
-  float local_18 [4];
-  uchar local_5;
+  GfxViewInfo *viewInfo;
+  float clearColor [4];
+  uchar surface;
   
-  local_5 = '\n';
-  R_InitLocalCmdBufState(param_2.field0_0x0._s_0.state);
-  R_SetRenderTargetSize(param_2.field0_0x0._s_0.source,local_5);
-  R_SetRenderTarget(param_2,local_5);
-  R_Set3D(param_2.field0_0x0._s_0.source);
-  local_18[0] = 0.0;
-  local_18[1] = 0.0;
-  local_18[2] = 0.0;
-  local_18[3] = 0.0;
-  R_ClearScreen(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x01',local_18,1.0,'\0',
-                (GfxViewport *)0x0);
+  surface = '\n';
+  R_InitLocalCmdBufState(context.field0_0x0._s_0.state);
+  R_SetRenderTargetSize(context.field0_0x0._s_0.source,surface);
+  R_SetRenderTarget(context,surface);
+  R_Set3D(context.field0_0x0._s_0.source);
+  clearColor[0] = 0.0;
+  clearColor[1] = 0.0;
+  clearColor[2] = 0.0;
+  clearColor[3] = 0.0;
+  R_ClearScreen(((context.field0_0x0._s_0.state)->prim).field0_0x0.device,'\x01',clearColor,1.0,'\0'
+                ,(GfxViewport *)0x0);
   PIXBeginNamedEvent(-1,"reflected");
-  R_DrawSurfs(param_2,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)param_1 + 0x23c0));
+  R_DrawSurfs(context,(GfxCmdBufState *)0x0,(GfxDrawSurfListInfo *)((int)userData + 0x23c0));
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  R_HW_DisableScissor(((param_2.field0_0x0._s_0.state)->prim).field0_0x0.device);
+  R_HW_DisableScissor(((context.field0_0x0._s_0.state)->prim).field0_0x0.device);
   return;
 }
 
@@ -1241,51 +1304,54 @@ R_DrawReflectedCallback(void *param_1,GfxCmdBufContext param_2,GfxCmdBufContext 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl R_DrawReflected(GfxViewInfo *param_1,GfxCmdBuf *param_2)
+void __cdecl R_DrawReflected(GfxViewInfo *viewInfo,GfxCmdBuf *cmdBuf)
 
 {
   GfxCmdBufSourceState local_1ab0;
   uint local_14;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
-  R_InitCmdBufSourceState(&local_1ab0,&param_1->input,1);
-  R_SetRenderTargetSize(&local_1ab0,(uchar)(param_1->sceneComposition).renderingMode);
-  R_SetViewportStruct(&local_1ab0,&(param_1->field0_0x0).cullViewInfo.sceneViewport);
-  R_DrawCall(R_DrawReflectedCallback,param_1,&local_1ab0,param_1,param_1->drawList + 5,
-             (GfxViewParms *)param_1,param_2,(GfxCmdBuf *)0x0);
+  R_InitCmdBufSourceState(&local_1ab0,&viewInfo->input,1);
+  R_SetRenderTargetSize(&local_1ab0,(uchar)(viewInfo->sceneComposition).renderingMode);
+  R_SetViewportStruct(&local_1ab0,&(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+  R_DrawCall(R_DrawReflectedCallback,viewInfo,&local_1ab0,viewInfo,viewInfo->drawList + 5,
+             (GfxViewParms *)viewInfo,cmdBuf,(GfxCmdBuf *)0x0);
   return;
 }
 
 
 // 00A758A0  R_ResolveDistortion  (gfx_d3d/rb_draw3d.cpp:5730)
 
-void __cdecl R_ResolveDistortion(GfxViewInfo *param_1)
+void __cdecl R_ResolveDistortion(GfxViewInfo *viewInfo)
 
 {
-  byte bVar1;
-  DWORD DVar2;
+  byte newTargetId;
+  DWORD DVar1;
   uint local_1c;
+  uchar resolveDest;
+  PIXProfile pp;
+  uchar resolveSrc;
   
   PIXBeginNamedEvent(-1,"Resolve Distortion");
-  bVar1 = (byte)(param_1->sceneComposition).renderingMode;
-  if (bVar1 == 3) {
+  newTargetId = (byte)(viewInfo->sceneComposition).renderingMode;
+  if (newTargetId == 3) {
     local_1c = 5;
   }
   else {
-    local_1c = (uint)bVar1;
+    local_1c = (uint)newTargetId;
   }
-  if (bVar1 == (byte)local_1c) {
-    DVar2 = GetCurrentThreadId();
-    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  if (newTargetId == (byte)local_1c) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   else {
-    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,bVar1);
-    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,bVar1);
+    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,newTargetId);
+    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,newTargetId);
     R_Resolve((GfxCmdBufContext)0xb473fe00b472550,gfxRenderTargets[local_1c].image);
-    DVar2 = GetCurrentThreadId();
-    if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar1 = GetCurrentThreadId();
+    if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
@@ -1295,26 +1361,27 @@ void __cdecl R_ResolveDistortion(GfxViewInfo *param_1)
 
 // 00A759A0  RB_StandardPostEffects  (gfx_d3d/rb_draw3d.cpp:5787)
 
-void __cdecl RB_StandardPostEffects(GfxViewInfo *param_1)
+void __cdecl RB_StandardPostEffects(GfxViewInfo *viewInfo)
 
 {
   GfxBackEndData *pGVar1;
   DWORD DVar2;
+  GfxBackEndData *data;
   
   pGVar1 = backEndData;
   PIXBeginNamedEvent(-1,"RB_StandardPostEffects");
-  (param_1->exposureValue).whitePoint[2] = (float)pGVar1;
-  R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->input,0);
+  (viewInfo->exposureValue).whitePoint[2] = (float)pGVar1;
+  R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->input,0);
   R_InitLocalCmdBufState(&gfxCmdBufState);
   R_SetResolvedScene((GfxCmdBufContext)0xb473fe00b472550);
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-              (GfxViewParms *)param_1);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_1->field0_0x0).cullViewInfo.sceneViewport);
-  RB_ApplyLatePostEffects(param_1);
+                      &(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+  RB_ApplyLatePostEffects(viewInfo);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
-  RB_DrawSunPostEffects(param_1->localClientNum,param_1->sunVisibility);
+  RB_DrawSunPostEffects(viewInfo->localClientNum,viewInfo->sunVisibility);
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1331,36 +1398,38 @@ void __cdecl RB_StandardPostEffects(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00a77130) */
 /* WARNING: Removing unreachable block (ram,0x00a7715a) */
 
-void __cdecl RB_StandardRenderCommands(GfxViewInfo *param_1)
+void __cdecl RB_StandardRenderCommands(GfxViewInfo *viewInfo)
 
 {
   GfxBackEndData *pGVar1;
   DWORD DVar2;
+  GfxBackEndData *data;
+  GfxViewport *vp;
   
   pGVar1 = backEndData;
   PIXBeginNamedEvent(-1,"RB_StandardRenderCommands");
   R_StartADSZScaleFrame();
-  (param_1->exposureValue).whitePoint[2] = (float)pGVar1;
+  (viewInfo->exposureValue).whitePoint[2] = (float)pGVar1;
   R_InitCmdBufSourceState
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,(GfxCmdBufInput *)&gfxCmdBufInput,0);
   gfxCmdBufSourceState._padding_ = (int)backEndData;
   R_InitLocalCmdBufState(&gfxCmdBufState);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x02');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x02');
-  if (((uint)(param_1->bloom).bloomTintScale[2] & 7) != 0) {
-    if (((uint)(param_1->bloom).bloomTintScale[2] & 0x40000000) == 0) {
+  if (((uint)(viewInfo->bloom).bloomTintScale[2] & 7) != 0) {
+    if (((uint)(viewInfo->bloom).bloomTintScale[2] & 0x40000000) == 0) {
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x10].packed =
-           (uint)*(byte *)((int)&(param_1->sceneComposition).renderingMode + 3) << 0x18 | 0x800062;
+           (uint)*(byte *)((int)&(viewInfo->sceneComposition).renderingMode + 3) << 0x18 | 0x800062;
     }
     else {
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x10].packed =
-           (uint)*(byte *)((int)&(param_1->sceneComposition).renderingMode + 2) << 0x18 | 0x800062;
+           (uint)*(byte *)((int)&(viewInfo->sceneComposition).renderingMode + 2) << 0x18 | 0x800062;
     }
   }
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-              (GfxViewParms *)param_1);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_1->field0_0x0).cullViewInfo.displayViewport);
+                      &(viewInfo->field0_0x0).cullViewInfo.displayViewport);
   gfxCmdBufSourceState.input.consts[0xaa][0] = 0.0;
   gfxCmdBufSourceState.input.consts[0xaa][1] = 0.0;
   gfxCmdBufSourceState.input.consts[0xaa][2] = 0.0;
@@ -1371,11 +1440,11 @@ void __cdecl RB_StandardRenderCommands(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0xab][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0xab][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0xab);
-  if (param_1->cmds != (void *)0x0) {
+  if (viewInfo->cmds != (void *)0x0) {
     RB_SetUI3DSamplerAndConstants
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (GfxUI3DBackend *)((param_1->rbUI3D).viewport + 3));
-    RB_ExecuteRenderCommandsLoop(param_1->cmds,(int *)0x0);
+               (GfxUI3DBackend *)((viewInfo->rbUI3D).viewport + 3));
+    RB_ExecuteRenderCommandsLoop(viewInfo->cmds,(int *)0x0);
   }
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   DVar2 = GetCurrentThreadId();
@@ -1388,7 +1457,7 @@ void __cdecl RB_StandardRenderCommands(GfxViewInfo *param_1)
 
 // 00A72C20  RB_ShouldDrawCoronas  (gfx_d3d/rb_draw3d.cpp:6058)
 
-bool __cdecl RB_ShouldDrawCoronas(bool param_1)
+bool __cdecl RB_ShouldDrawCoronas(bool isMissileCam)
 
 {
   bool bVar1;
@@ -1409,104 +1478,110 @@ bool __cdecl RB_ShouldDrawCoronas(bool param_1)
 
 /* WARNING: Type propagation algorithm not settling */
 
-void __cdecl RB_StandardDrawCommands(GfxViewInfo *param_1)
+void __cdecl RB_StandardDrawCommands(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
+  GfxBackEndData *data_00;
   bool bVar2;
-  uchar uVar3;
-  int iVar4;
-  DWORD DVar5;
-  uint local_5c;
-  float local_54 [4];
-  uchar local_43;
-  char local_41;
-  GfxBackEndData *local_40;
-  GfxCmdBuf local_3c;
-  char local_38;
-  uchar local_37;
-  char local_36;
-  undefined1 local_35;
-  ShadowType local_34;
-  int local_30;
-  float local_2c [4];
-  int local_1c;
+  uchar newTargetId;
+  int iVar3;
+  DWORD DVar4;
+  bool bVar5;
+  PIXProfile pp;
+  GfxColor color;
+  uchar depthPrepassRT;
+  float clearColor_2 [4];
+  uchar setupRenderTargetId;
+  PIXProfile pixProfile;
+  bool drawWaypoints;
+  GfxBackEndData *data;
+  GfxCmdBuf cmdBuf;
+  bool needsDepthPrepass;
+  uchar floatzRenderTarget;
+  bool applyPostFX;
+  bool resolveDistortion;
+  ShadowType dynamicShadowType;
+  int isRenderingFullScreen;
+  float clearColor [4];
+  int oldSceneViewport;
   int local_18;
   int local_14;
   int local_10;
-  byte local_9;
-  bool local_8;
-  uchar local_7;
-  char local_6;
-  bool local_5;
+  uchar whichToClearForScene;
+  bool isMissileCam;
+  uchar whichToClearForSetup;
+  bool drawReflected;
+  bool need_float_z;
   
   PIXBeginNamedEvent(-1,"RB_StandardDrawCommands");
-  local_40 = backEndData;
-  local_8 = *(bool *)((int)&param_1[1].field0_0x0 + 0x14);
-  local_37 = (-(local_8 != false) & 0x10U) + 7;
-  local_35 = 1;
-  local_6 = local_8 == false;
-  local_41 = local_8 == false;
-  local_36 = local_8 == false;
-  if (local_8 == false) {
+  data_00 = backEndData;
+  isMissileCam = *(bool *)((int)&viewInfo[1].field0_0x0 + 0x14);
+  floatzRenderTarget = (-(isMissileCam != false) & 0x10U) + 7;
+  resolveDistortion = true;
+  drawReflected = isMissileCam == false;
+  bVar5 = isMissileCam == false;
+  applyPostFX = isMissileCam == false;
+  if (isMissileCam == false) {
     RB_UI3D_RenderToTexture
-              (param_1->cmds,(GfxUI3DBackend *)((param_1->rbUI3D).viewport + 3),&param_1->input);
+              (viewInfo->cmds,(GfxUI3DBackend *)((viewInfo->rbUI3D).viewport + 3),&viewInfo->input);
   }
-  local_34 = param_1->dynamicShadowType;
-  local_30 = param_1->isRenderingFullScreen;
-  local_1c = (param_1->field0_0x0).cullViewInfo.sceneViewport.x;
-  local_18 = (param_1->field0_0x0).cullViewInfo.sceneViewport.y;
-  local_14 = (param_1->field0_0x0).cullViewInfo.sceneViewport.width;
-  local_10 = (param_1->field0_0x0).cullViewInfo.sceneViewport.height;
-  if (local_34 == SHADOW_MAP) {
-    iVar4 = Com_BitCheckAssert(local_40->shadowableLightHasShadowMap,
+  dynamicShadowType = viewInfo->dynamicShadowType;
+  isRenderingFullScreen = viewInfo->isRenderingFullScreen;
+  oldSceneViewport = (viewInfo->field0_0x0).cullViewInfo.sceneViewport.x;
+  local_18 = (viewInfo->field0_0x0).cullViewInfo.sceneViewport.y;
+  local_14 = (viewInfo->field0_0x0).cullViewInfo.sceneViewport.width;
+  local_10 = (viewInfo->field0_0x0).cullViewInfo.sceneViewport.height;
+  if (dynamicShadowType == SHADOW_MAP) {
+    iVar3 = Com_BitCheckAssert(data_00->shadowableLightHasShadowMap,
                                (rgp.world)->sunPrimaryLightIndex,0x20);
-    if (iVar4 != 0) {
-      RB_SunShadowMaps(local_40,param_1);
+    if (iVar3 != 0) {
+      RB_SunShadowMaps(data_00,viewInfo);
     }
-    RB_SpotShadowMaps(local_40,param_1);
+    RB_SpotShadowMaps(data_00,viewInfo);
   }
-  local_38 = local_8 == false;
-  local_9 = 7;
-  R_InitContext(local_40,&local_3c);
-  if (((param_1->needsFloatZ != false) &&
-      (gfxRenderTargets[(-(uint)(*(char *)((int)&param_1[1].field0_0x0 + 0x14) != '\0') & 0x10) + 7]
-       .surface.color == (IDirect3DSurface9 *)0x0)) &&
+  needsDepthPrepass = isMissileCam == false;
+  whichToClearForScene = '\a';
+  R_InitContext(data_00,&cmdBuf);
+  if (((viewInfo->needsFloatZ != false) &&
+      (gfxRenderTargets
+       [(-(uint)(*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0') & 0x10) + 7].surface.color
+       == (IDirect3DSurface9 *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_draw3d.cpp",0x1bdd,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_5 = param_1->needsFloatZ;
-  param_1->needsFloatZ = true;
-  local_43 = local_37;
-  local_7 = '\a';
-  if ((dx.supportsIntZ == false) || (local_8 != false)) {
+  need_float_z = viewInfo->needsFloatZ;
+  viewInfo->needsFloatZ = true;
+  setupRenderTargetId = floatzRenderTarget;
+  whichToClearForSetup = '\a';
+  if ((dx.supportsIntZ == false) || (isMissileCam != false)) {
     _D3DPERF_BeginEvent_8(0xffffffff,L"Float Z");
     R_InitLocalCmdBufState(&gfxCmdBufState);
-    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,local_43);
-    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,local_43);
-    R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,local_7,colorWhite,1.0,'\0',
+    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,setupRenderTargetId);
+    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,setupRenderTargetId);
+    R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,whichToClearForSetup,colorWhite,1.0,'\0',
                   (GfxViewport *)0x0);
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-    R_InitContext(local_40,&local_3c);
-    param_1->renderingFloatZ = true;
-    R_DepthPrepass(local_43,param_1,&local_3c);
-    param_1->renderingFloatZ = false;
+    R_InitContext(data_00,&cmdBuf);
+    viewInfo->renderingFloatZ = true;
+    R_DepthPrepass(setupRenderTargetId,viewInfo,&cmdBuf);
+    viewInfo->renderingFloatZ = false;
     _D3DPERF_EndEvent_0();
   }
-  if (*(char *)((int)&param_1[1].field0_0x0 + 0x14) == '\0') {
+  if (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0') {
     R_InitLocalCmdBufState(&gfxCmdBufState);
     R_SetRenderTargetSize
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (uchar)(param_1->sceneComposition).renderingMode);
+               (uchar)(viewInfo->sceneComposition).renderingMode);
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                      (uchar)(param_1->sceneComposition).renderingMode);
-    bVar2 = R_GetClearColor(local_2c);
-    if ((bVar2) || ((local_9 & 0xfe) != 0)) {
-      R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,'\a',local_2c,1.0,'\0',(GfxViewport *)0x0)
-      ;
+                      (uchar)(viewInfo->sceneComposition).renderingMode);
+    bVar2 = R_GetClearColor(clearColor);
+    if ((bVar2) || ((whichToClearForScene & 0xfe) != 0)) {
+      R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,'\a',clearColor,1.0,'\0',
+                    (GfxViewport *)0x0);
     }
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   }
@@ -1515,27 +1590,28 @@ void __cdecl RB_StandardDrawCommands(GfxViewInfo *param_1)
     PIXBeginNamedEvent(-1,"Clear ExtraCam Render Target");
     R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x16');
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x16');
-    local_54[0] = 0.0;
-    local_54[1] = 0.0;
-    local_54[2] = 0.0;
-    local_54[3] = 1.0;
-    R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,'\a',local_54,1.0,'\0',(GfxViewport *)0x0);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    clearColor_2[0] = 0.0;
+    clearColor_2[1] = 0.0;
+    clearColor_2[2] = 0.0;
+    clearColor_2[3] = 1.0;
+    R_ClearScreen(gfxCmdBufState.prim.field0_0x0.device,'\a',clearColor_2,1.0,'\0',
+                  (GfxViewport *)0x0);
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   }
-  if (local_38 != '\0') {
+  if (needsDepthPrepass != false) {
     _D3DPERF_BeginEvent_8(0xffffffff,L"R_DepthPrepass");
-    R_InitContext(local_40,&local_3c);
-    uVar3 = (dx.supportsSceneNullRenderTarget != false) + '\x03';
-    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,uVar3);
-    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,uVar3);
-    R_DepthPrepass((uchar)(param_1->sceneComposition).renderingMode,param_1,&local_3c);
+    R_InitContext(data_00,&cmdBuf);
+    newTargetId = (dx.supportsSceneNullRenderTarget != false) + '\x03';
+    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,newTargetId);
+    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,newTargetId);
+    R_DepthPrepass((uchar)(viewInfo->sceneComposition).renderingMode,viewInfo,&cmdBuf);
     _D3DPERF_EndEvent_0();
   }
-  if (*(char *)((int)&param_1[1].field0_0x0 + 0x14) == '\0') {
+  if (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0') {
     if (dx.supportsSceneNullRenderTarget != false) {
       R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
       R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
@@ -1545,183 +1621,183 @@ void __cdecl RB_StandardDrawCommands(GfxViewInfo *param_1)
     R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x16');
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x16');
   }
-  param_1->needsFloatZ = local_5;
-  if (param_1->drawList[6].drawSurfCount != 0) {
-    R_InitContext(local_40,&local_3c);
+  viewInfo->needsFloatZ = need_float_z;
+  if (viewInfo->drawList[6].drawSurfCount != 0) {
+    R_InitContext(data_00,&cmdBuf);
     PIXBeginNamedEvent(-1,"CloakPrePass");
-    R_DrawCloakHDR(param_1,&local_3c,CLOAK_PHASE_PREPASS);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    R_DrawCloakHDR(viewInfo,&cmdBuf,CLOAK_PHASE_PREPASS);
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  R_InitContext(local_40,&local_3c);
+  R_InitContext(data_00,&cmdBuf);
   PIXBeginNamedEvent(-1,"Lit");
-  R_DrawLit(param_1,&local_3c,(GfxCmdBuf *)0x0,LIT_PHASE_MAIN);
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_DrawLit(viewInfo,&cmdBuf,(GfxCmdBuf *)0x0,LIT_PHASE_MAIN);
+  DVar4 = GetCurrentThreadId();
+  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if ((dx.supportsIntZ != false) && (*(char *)((int)&param_1[1].field0_0x0 + 0x14) == '\0')) {
+  if ((dx.supportsIntZ != false) && (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0')) {
     PIXBeginNamedEvent(-1,"Resolve IntZ");
-    R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->input,0);
+    R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->input,0);
     R_InitLocalCmdBufState(&gfxCmdBufState);
     R_SetRenderTargetSize
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (uchar)(param_1->sceneComposition).renderingMode);
+               (uchar)(viewInfo->sceneComposition).renderingMode);
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                      (uchar)(param_1->sceneComposition).renderingMode);
+                      (uchar)(viewInfo->sceneComposition).renderingMode);
     R_ResolveIntZ_PC();
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  if (((uint)(param_1->bloom).bloomTintScale[2] & 7) == 0) {
-    R_ResolveDistortion(param_1);
+  if (((uint)(viewInfo->bloom).bloomTintScale[2] & 7) == 0) {
+    R_ResolveDistortion(viewInfo);
   }
-  if (local_6 != '\0') {
-    R_InitContext(local_40,&local_3c);
+  if (drawReflected != false) {
+    R_InitContext(data_00,&cmdBuf);
     PIXBeginNamedEvent(-1,"Reflected");
-    R_DrawReflected(param_1,&local_3c);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    R_DrawReflected(viewInfo,&cmdBuf);
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   PIXBeginNamedEvent(-1,"LitPostResolve");
-  R_InitContext(local_40,&local_3c);
-  R_DrawLit(param_1,&local_3c,(GfxCmdBuf *)0x0,LIT_PHASE_POST_RESOLVE);
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_InitContext(data_00,&cmdBuf);
+  R_DrawLit(viewInfo,&cmdBuf,(GfxCmdBuf *)0x0,LIT_PHASE_POST_RESOLVE);
+  DVar4 = GetCurrentThreadId();
+  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   if ((r_setFrameBufferAlpha->current).enabled != false) {
     RB_SetFrameBufferAlpha();
   }
-  R_InitContext(local_40,&local_3c);
-  R_DrawDecal(param_1,&local_3c,(GfxCmdBuf *)0x0);
-  if ((param_1->isRenderingFullScreen != local_30) &&
+  R_InitContext(data_00,&cmdBuf);
+  R_DrawDecal(viewInfo,&cmdBuf,(GfxCmdBuf *)0x0);
+  if ((viewInfo->isRenderingFullScreen != isRenderingFullScreen) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_draw3d.cpp",0x1ca6,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->input,0);
+  R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->input,0);
   R_InitLocalCmdBufState(&gfxCmdBufState);
   R_SetRenderTargetSize
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-             (uchar)(param_1->sceneComposition).renderingMode);
+             (uchar)(viewInfo->sceneComposition).renderingMode);
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                    (uchar)(param_1->sceneComposition).renderingMode);
-  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-              (GfxViewParms *)param_1);
+                    (uchar)(viewInfo->sceneComposition).renderingMode);
+  R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+              (GfxViewParms *)viewInfo);
   R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                      &(param_1->field0_0x0).cullViewInfo.sceneViewport);
-  RB_DrawSun(param_1->localClientNum);
-  bVar2 = RB_ShouldDrawCoronas(local_8);
+                      &(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+  RB_DrawSun(viewInfo->localClientNum);
+  bVar2 = RB_ShouldDrawCoronas(isMissileCam);
   if (bVar2) {
-    RB_DrawCoronas(param_1->localClientNum);
+    RB_DrawCoronas(viewInfo->localClientNum);
   }
-  if (local_8 == false) {
-    RB_DrawSuperFlareOccluders(param_1);
+  if (isMissileCam == false) {
+    RB_DrawSuperFlareOccluders(viewInfo);
   }
-  if ((dx.supportsIntZ != false) && (*(char *)((int)&param_1[1].field0_0x0 + 0x14) == '\0')) {
+  if ((dx.supportsIntZ != false) && (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) == '\0')) {
     PIXBeginNamedEvent(-1,"Resolve IntZ");
-    R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->input,0);
+    R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->input,0);
     R_InitLocalCmdBufState(&gfxCmdBufState);
     R_SetRenderTargetSize
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (uchar)(param_1->sceneComposition).renderingMode);
+               (uchar)(viewInfo->sceneComposition).renderingMode);
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                      (uchar)(param_1->sceneComposition).renderingMode);
+                      (uchar)(viewInfo->sceneComposition).renderingMode);
     R_ResolveIntZ_PC();
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
   memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   if ((r_enableDlights->current).enabled != false) {
-    R_InitContext(local_40,&local_3c);
+    R_InitContext(data_00,&cmdBuf);
     PIXBeginNamedEvent(-1,"Dynamic Lights");
-    R_DrawLights(param_1,&local_3c);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    R_DrawLights(viewInfo,&cmdBuf);
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  R_ResolveDistortion(param_1);
-  R_InitContext(local_40,&local_3c);
+  R_ResolveDistortion(viewInfo);
+  R_InitContext(data_00,&cmdBuf);
   PIXBeginNamedEvent(-1,"Emissive");
-  R_DrawEmissive(param_1,&local_3c);
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  R_DrawEmissive(viewInfo,&cmdBuf);
+  DVar4 = GetCurrentThreadId();
+  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
-  if (local_41 != '\0') {
-    R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->input,0);
+  if (bVar5) {
+    R_InitCmdBufSourceState((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->input,0);
     R_InitLocalCmdBufState(&gfxCmdBufState);
     R_SetRenderTargetSize
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (uchar)(param_1->sceneComposition).renderingMode);
+               (uchar)(viewInfo->sceneComposition).renderingMode);
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                      (uchar)(param_1->sceneComposition).renderingMode);
-    R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&param_1->sceneDef,
-                (GfxViewParms *)param_1);
+                      (uchar)(viewInfo->sceneComposition).renderingMode);
+    R_BeginView((GfxCmdBufSourceState *)&gfxCmdBufSourceState,&viewInfo->sceneDef,
+                (GfxViewParms *)viewInfo);
     R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                        &(param_1->field0_0x0).cullViewInfo.sceneViewport);
-    RB_DrawWaypoints(param_1->localClientNum);
+                        &(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+    RB_DrawWaypoints(viewInfo->localClientNum);
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   }
-  if (0.0 < param_1[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[1][2]) {
+  if (0.0 < viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[1][2]) {
     PIXBeginNamedEvent(-1,"postEmissiveBrightening");
     R_InitLocalCmdBufState(&gfxCmdBufState);
     R_SetRenderTargetSize
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-               (uchar)(param_1->sceneComposition).renderingMode);
+               (uchar)(viewInfo->sceneComposition).renderingMode);
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                      (uchar)(param_1->sceneComposition).renderingMode);
+                      (uchar)(viewInfo->sceneComposition).renderingMode);
     R_SetViewportStruct((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                        &(param_1->field0_0x0).cullViewInfo.sceneViewport);
-    local_5c = (int)(param_1[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[1][2] * 255.0 + 0.5)
-               & 0xff;
-    RB_DrawFullScreenColoredQuad(rgp.blendMaterialNoDepth,0.0,0.0,1.0,1.0,local_5c);
+                        &(viewInfo->field0_0x0).cullViewInfo.sceneViewport);
+    color.packed = (int)(viewInfo[1].field0_0x0.cullViewInfo.viewParms.viewMatrix.m[1][2] * 255.0 +
+                        0.5) & 0xff;
+    RB_DrawFullScreenColoredQuad(rgp.blendMaterialNoDepth,0.0,0.0,1.0,1.0,color.packed);
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  if (param_1->drawList[6].drawSurfCount != 0) {
-    if (((uint)(param_1->bloom).bloomTintScale[2] & 7) == 0) {
+  if (viewInfo->drawList[6].drawSurfCount != 0) {
+    if (((uint)(viewInfo->bloom).bloomTintScale[2] & 7) == 0) {
       R_Resolve((GfxCmdBufContext)0xb473fe00b472550,gfxRenderTargets[6].image);
     }
-    R_InitContext(local_40,&local_3c);
+    R_InitContext(data_00,&cmdBuf);
     PIXBeginNamedEvent(-1,"CloakPostEmissive");
-    R_DrawCloakHDR(param_1,&local_3c,CLOAK_PHASE_CLOAKED);
-    DVar5 = GetCurrentThreadId();
-    if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+    R_DrawCloakHDR(viewInfo,&cmdBuf,CLOAK_PHASE_CLOAKED);
+    DVar4 = GetCurrentThreadId();
+    if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  if (local_8 == false) {
-    RB_EndSceneRendering((GfxCmdBufContext)0xb473fe00b472550,&param_1->input,param_1);
+  if (isMissileCam == false) {
+    RB_EndSceneRendering((GfxCmdBufContext)0xb473fe00b472550,&viewInfo->input,viewInfo);
   }
-  if (local_36 != '\0') {
-    RB_StandardPostEffects(param_1);
+  if (applyPostFX != false) {
+    RB_StandardPostEffects(viewInfo);
   }
-  if ((local_30 == 0) && (local_8 == false)) {
-    (param_1->field0_0x0).cullViewInfo.sceneViewport.x = local_1c;
-    (param_1->field0_0x0).cullViewInfo.sceneViewport.y = local_18;
-    (param_1->field0_0x0).cullViewInfo.sceneViewport.width = local_14;
-    (param_1->field0_0x0).cullViewInfo.sceneViewport.height = local_10;
+  if ((isRenderingFullScreen == 0) && (isMissileCam == false)) {
+    (viewInfo->field0_0x0).cullViewInfo.sceneViewport.x = oldSceneViewport;
+    (viewInfo->field0_0x0).cullViewInfo.sceneViewport.y = local_18;
+    (viewInfo->field0_0x0).cullViewInfo.sceneViewport.width = local_14;
+    (viewInfo->field0_0x0).cullViewInfo.sceneViewport.height = local_10;
   }
-  DVar5 = GetCurrentThreadId();
-  if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+  DVar4 = GetCurrentThreadId();
+  if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return;
@@ -1739,7 +1815,19 @@ void __cdecl RB_StandardDrawCommandsCommon(void)
   DWORD DVar4;
   GfxViewInfo *pGVar5;
   float fVar6;
-  uint local_14;
+  float debugDisplayWidth_2;
+  float debugDisplayX_2;
+  float debugDisplayY_2;
+  float border;
+  float debugDisplayHeight_2;
+  float debugDisplayWidth;
+  float debugDisplayX;
+  float debugDisplayY;
+  float debugDisplayHeight;
+  uint viewInfoIndex;
+  PIXProfile pixProfile;
+  GfxBackEndData *data;
+  GfxViewInfo *viewInfo;
   
   PIXBeginNamedEvent(-1,"RB_StandardDrawCommandsCommon");
   pGVar2 = backEndData;
@@ -1750,8 +1838,9 @@ void __cdecl RB_StandardDrawCommandsCommon(void)
     }
   }
   else {
-    for (local_14 = 0; local_14 < pGVar2->viewInfoCount; local_14 = local_14 + 1) {
-      pGVar5 = (GfxViewInfo *)(local_14 * 0x38e0 + (int)pGVar2->viewInfo);
+    for (viewInfoIndex = 0; viewInfoIndex < pGVar2->viewInfoCount; viewInfoIndex = viewInfoIndex + 1
+        ) {
+      pGVar5 = (GfxViewInfo *)(viewInfoIndex * 0x38e0 + (int)pGVar2->viewInfo);
       if (*(char *)((int)&pGVar5[1].field0_0x0 + 0x14) == '\0') {
         RB_StandardRenderCommands(pGVar5);
       }
@@ -1817,7 +1906,7 @@ void __cdecl RB_StandardDrawCommandsCommon(void)
 
 // 00A72C50  RB_Draw3DInternal  (gfx_d3d/rb_draw3d.cpp:7729)
 
-void __cdecl RB_Draw3DInternal(GfxViewInfo *param_1)
+void __cdecl RB_Draw3DInternal(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
@@ -1839,10 +1928,10 @@ void __cdecl RB_Draw3DInternal(GfxViewInfo *param_1)
     memcpy(gfxCmdBufState.refSamplerState,gfxCmdBufState.refSamplerState,0x13d0);
   }
   else if (gfxDrawMethod.drawScene == GFX_DRAW_SCENE_FULLBRIGHT) {
-    RB_FullbrightDrawCommands(param_1);
+    RB_FullbrightDrawCommands(viewInfo);
   }
   else if (gfxDrawMethod.drawScene == GFX_DRAW_SCENE_DEBUGSHADER) {
-    RB_DebugShaderDrawCommands(param_1);
+    RB_DebugShaderDrawCommands(viewInfo);
   }
   else {
     if (gfxDrawMethod.drawScene != GFX_DRAW_SCENE_STANDARD) {
@@ -1854,7 +1943,7 @@ void __cdecl RB_Draw3DInternal(GfxViewInfo *param_1)
         return;
       }
     }
-    RB_StandardDrawCommands(param_1);
+    RB_StandardDrawCommands(viewInfo);
   }
   return;
 }

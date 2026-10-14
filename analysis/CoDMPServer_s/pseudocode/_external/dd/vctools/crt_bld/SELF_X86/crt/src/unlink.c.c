@@ -2,21 +2,21 @@
 
 // 0095D144  remove  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/unlink.c:41)
 
-int __cdecl remove(char *param_1)
+int __cdecl remove(char *path)
 
 {
   BOOL BVar1;
-  ulong uVar2;
+  ulong oserrno;
   
-  BVar1 = DeleteFileA(param_1);
+  BVar1 = DeleteFileA(path);
   if (BVar1 == 0) {
-    uVar2 = GetLastError();
+    oserrno = GetLastError();
   }
   else {
-    uVar2 = 0;
+    oserrno = 0;
   }
-  if (uVar2 != 0) {
-    _dosmaperr(uVar2);
+  if (oserrno != 0) {
+    _dosmaperr(oserrno);
     return -1;
   }
   return 0;

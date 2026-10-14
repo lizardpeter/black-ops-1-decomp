@@ -2,18 +2,18 @@
 
 // 0096AA5C  __libm_error_support  (line unknown)
 
-void __cdecl __libm_error_support(void *param_1,void *param_2,void *param_3,error_types param_4)
+void __cdecl __libm_error_support(void *arg1,void *arg2,void *retval,error_types input_tag)
 
 {
   code *pcVar1;
   int iVar2;
   int *piVar3;
-  undefined4 local_2c;
+  undefined4 exc;
   char *local_28;
   undefined8 local_24;
   undefined8 local_1c;
   double local_14;
-  undefined1 local_c;
+  undefined1 double_zero;
   undefined1 uStack_b;
   undefined1 uStack_a;
   undefined1 uStack_9;
@@ -22,7 +22,7 @@ void __cdecl __libm_error_support(void *param_1,void *param_2,void *param_3,erro
   undefined1 uStack_6;
   undefined1 uStack_5;
   
-  local_c = 0;
+  double_zero = 0;
   uStack_b = 0;
   uStack_a = 0;
   uStack_9 = 0;
@@ -36,52 +36,52 @@ void __cdecl __libm_error_support(void *param_1,void *param_2,void *param_3,erro
   else {
     pcVar1 = _decode_pointer(_pmatherr);
   }
-  if ((int)param_4 < 0xa7) {
-    if (param_4 == exp10_overflow) {
-      local_2c = 3;
+  if ((int)input_tag < 0xa7) {
+    if (input_tag == exp10_overflow) {
+      exc = 3;
       local_28 = "exp10";
 LAB_0096ab0d:
-      local_24 = *(undefined8 *)param_1;
-      local_1c = *(undefined8 *)param_2;
-      local_14 = *(double *)param_3;
-      iVar2 = (*pcVar1)(&local_2c);
+      local_24 = *(undefined8 *)arg1;
+      local_1c = *(undefined8 *)arg2;
+      local_14 = *(double *)retval;
+      iVar2 = (*pcVar1)(&exc);
       if (iVar2 == 0) {
         piVar3 = _errno();
         *piVar3 = 0x22;
       }
     }
-    else if ((int)param_4 < 0x1a) {
-      if (param_4 != pow_underflow) {
-        local_2c = 2;
-        if (param_4 == log_zero) {
-          local_2c = 2;
+    else if ((int)input_tag < 0x1a) {
+      if (input_tag != pow_underflow) {
+        exc = 2;
+        if (input_tag == log_zero) {
+          exc = 2;
           local_28 = "log";
         }
         else {
-          if (param_4 == log_negative) {
+          if (input_tag == log_negative) {
             local_28 = "log";
             goto LAB_0096ab7b;
           }
-          if (param_4 == log10_zero) {
+          if (input_tag == log10_zero) {
             local_28 = "log10";
           }
           else {
-            if (param_4 == log10_negative) {
+            if (input_tag == log10_negative) {
               local_28 = "log10";
               goto LAB_0096ab7b;
             }
-            if (param_4 != exp_overflow) {
-              if (param_4 != exp_underflow) {
-                if (param_4 != pow_overflow) {
+            if (input_tag != exp_overflow) {
+              if (input_tag != exp_underflow) {
+                if (input_tag != pow_overflow) {
                   return;
                 }
-                local_2c = 3;
+                exc = 3;
                 goto LAB_0096ab06;
               }
               local_28 = "exp";
               goto LAB_0096ab42;
             }
-            local_2c = 3;
+            exc = 3;
             local_28 = "exp";
           }
         }
@@ -89,19 +89,19 @@ LAB_0096ab0d:
       }
       local_28 = "pow";
 LAB_0096ab42:
-      local_24 = *(undefined8 *)param_1;
-      local_1c = *(undefined8 *)param_2;
-      local_2c = 4;
-      local_14 = *(double *)param_3;
-      (*pcVar1)(&local_2c);
+      local_24 = *(undefined8 *)arg1;
+      local_1c = *(undefined8 *)arg2;
+      exc = 4;
+      local_14 = *(double *)retval;
+      (*pcVar1)(&exc);
     }
     else {
-      if (param_4 != pow_zero_to_zero) {
-        if (param_4 != pow_zero_to_negative) {
-          if (param_4 == pow_neg_to_non_integer) goto switchD_0096ac38_caseD_3ee;
-          if (param_4 != pow_nan_to_zero) {
-            if (param_4 != acos_gt_one) {
-              if (param_4 != asin_gt_one) {
+      if (input_tag != pow_zero_to_zero) {
+        if (input_tag != pow_zero_to_negative) {
+          if (input_tag == pow_neg_to_non_integer) goto switchD_0096ac38_caseD_3ee;
+          if (input_tag != pow_nan_to_zero) {
+            if (input_tag != acos_gt_one) {
+              if (input_tag != asin_gt_one) {
                 return;
               }
               goto switchD_0096ac38_caseD_3f1;
@@ -111,7 +111,7 @@ LAB_0096ab42:
           local_28 = "pow";
           goto LAB_0096abf1;
         }
-        local_2c = 2;
+        exc = 2;
 LAB_0096ab06:
         local_28 = "pow";
         goto LAB_0096ab0d;
@@ -120,7 +120,7 @@ LAB_0096ab06:
     }
     goto LAB_0096acd1;
   }
-  switch(param_4) {
+  switch(input_tag) {
   case log_nan:
     local_28 = "log";
     break;
@@ -163,32 +163,32 @@ switchD_0096ac38_caseD_3f1:
   case tan_naninf:
     local_28 = "tan";
 LAB_0096ac9d:
-    local_14 = *(double *)param_1 *
+    local_14 = *(double *)arg1 *
                (double)CONCAT17(uStack_5,CONCAT16(uStack_6,CONCAT15(uStack_7,CONCAT14(uStack_8,
                                                   CONCAT13(uStack_9,CONCAT12(uStack_a,CONCAT11(
-                                                  uStack_b,local_c)))))));
-    *(double *)param_3 = local_14;
-    local_24 = *(undefined8 *)param_1;
-    local_1c = *(undefined8 *)param_2;
+                                                  uStack_b,double_zero)))))));
+    *(double *)retval = local_14;
+    local_24 = *(undefined8 *)arg1;
+    local_1c = *(undefined8 *)arg2;
     goto LAB_0096acae;
   default:
     goto switchD_0096ac38_default;
   }
 LAB_0096abf1:
-  *(undefined8 *)param_3 = *(undefined8 *)param_1;
+  *(undefined8 *)retval = *(undefined8 *)arg1;
 LAB_0096ab7b:
-  local_24 = *(undefined8 *)param_1;
-  local_1c = *(undefined8 *)param_2;
-  local_14 = *(double *)param_3;
+  local_24 = *(undefined8 *)arg1;
+  local_1c = *(undefined8 *)arg2;
+  local_14 = *(double *)retval;
 LAB_0096acae:
-  local_2c = 1;
-  iVar2 = (*pcVar1)(&local_2c);
+  exc = 1;
+  iVar2 = (*pcVar1)(&exc);
   if (iVar2 == 0) {
     piVar3 = _errno();
     *piVar3 = 0x21;
   }
 LAB_0096acd1:
-  *(double *)param_3 = local_14;
+  *(double *)retval = local_14;
 switchD_0096ac38_default:
   return;
 }

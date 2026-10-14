@@ -120,31 +120,31 @@ MatchMakingInfo * __thiscall MatchMakingInfo::MatchMakingInfo(MatchMakingInfo *t
 
 // 005A9870  serialize  (DW/win32/MatchMakingInfo_win32.cpp:37)
 
-void __thiscall MatchMakingInfo::serialize(MatchMakingInfo *this,bdByteBuffer *param_1)
+void __thiscall MatchMakingInfo::serialize(MatchMakingInfo *this,bdByteBuffer *buffer)
 
 {
-  bdMatchMakingInfo::serialize((bdMatchMakingInfo *)this,param_1);
-  bdByteBuffer::writeInt32(param_1,this->m_memberNETCODE_VERSION);
-  bdByteBuffer::writeBlob(param_1,this->m_membersecKey,0x10);
-  bdByteBuffer::writeString(param_1,this->m_memberservername,0x40);
-  bdByteBuffer::writeUInt64(param_1,this->m_membermaprotation);
-  bdByteBuffer::writeString(param_1,this->m_membermapname,0x20);
-  bdByteBuffer::writeInt32(param_1,this->m_memberGAME_TYPE);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPLAYLIST);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPLAYLIST_VERSION);
-  bdByteBuffer::writeInt32(param_1,this->m_memberPARTY_STATE);
-  bdByteBuffer::writeInt32(param_1,this->m_memberMAPPACKS);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberLICENSE);
-  bdByteBuffer::writeInt32(param_1,this->m_memberSKILL);
-  bdByteBuffer::writeInt32(param_1,this->m_memberTEAM_SIZE_MIN);
-  bdByteBuffer::writeInt32(param_1,this->m_memberTEAM_SIZE_MAX);
-  bdByteBuffer::writeInt32(param_1,this->m_memberGEOGRAPHICAL_LOCATION);
-  bdByteBuffer::writeUInt64(param_1,this->m_memberdemonwareID);
-  bdByteBuffer::writeInt32(param_1,this->m_memberserverType);
-  bdByteBuffer::writeInt32(param_1,this->m_memberroundTime);
-  bdByteBuffer::writeString(param_1,this->m_membermod,0x20);
-  bdByteBuffer::writeUInt64(param_1,this->m_memberaddressport);
-  bdByteBuffer::writeUInt32(param_1,this->m_memberDDL_VERSION);
+  bdMatchMakingInfo::serialize((bdMatchMakingInfo *)this,buffer);
+  bdByteBuffer::writeInt32(buffer,this->m_memberNETCODE_VERSION);
+  bdByteBuffer::writeBlob(buffer,this->m_membersecKey,0x10);
+  bdByteBuffer::writeString(buffer,this->m_memberservername,0x40);
+  bdByteBuffer::writeUInt64(buffer,this->m_membermaprotation);
+  bdByteBuffer::writeString(buffer,this->m_membermapname,0x20);
+  bdByteBuffer::writeInt32(buffer,this->m_memberGAME_TYPE);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPLAYLIST);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPLAYLIST_VERSION);
+  bdByteBuffer::writeInt32(buffer,this->m_memberPARTY_STATE);
+  bdByteBuffer::writeInt32(buffer,this->m_memberMAPPACKS);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberLICENSE);
+  bdByteBuffer::writeInt32(buffer,this->m_memberSKILL);
+  bdByteBuffer::writeInt32(buffer,this->m_memberTEAM_SIZE_MIN);
+  bdByteBuffer::writeInt32(buffer,this->m_memberTEAM_SIZE_MAX);
+  bdByteBuffer::writeInt32(buffer,this->m_memberGEOGRAPHICAL_LOCATION);
+  bdByteBuffer::writeUInt64(buffer,this->m_memberdemonwareID);
+  bdByteBuffer::writeInt32(buffer,this->m_memberserverType);
+  bdByteBuffer::writeInt32(buffer,this->m_memberroundTime);
+  bdByteBuffer::writeString(buffer,this->m_membermod,0x20);
+  bdByteBuffer::writeUInt64(buffer,this->m_memberaddressport);
+  bdByteBuffer::writeUInt32(buffer,this->m_memberDDL_VERSION);
   return;
 }
 
@@ -153,244 +153,243 @@ void __thiscall MatchMakingInfo::serialize(MatchMakingInfo *this,bdByteBuffer *p
 
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-bool __thiscall
-MatchMakingInfo::deserialize(MatchMakingInfo *this,bdReference<bdByteBuffer> param_1)
+bool __thiscall MatchMakingInfo::deserialize(MatchMakingInfo *this,bdReference<bdByteBuffer> buffer)
 
 {
   bool bVar1;
   bdReference<bdByteBuffer> bVar2;
   bool local_dc;
-  char local_d8;
-  char local_d4;
-  char local_d0;
-  char local_cc;
-  char local_c8;
-  char local_c4;
-  char local_c0;
-  char local_bc;
-  char local_b8;
-  char local_b4;
-  char local_b0;
-  char local_ac;
-  char local_a8;
-  char local_a4;
-  char local_a0;
-  char local_9c;
-  char local_98;
-  char local_94;
-  char local_90;
-  char local_8c;
-  uint local_c;
-  bool local_5;
+  bool local_d8;
+  bool local_d4;
+  bool local_d0;
+  bool local_cc;
+  bool local_c8;
+  bool local_c4;
+  bool local_c0;
+  bool local_bc;
+  bool local_b8;
+  bool local_b4;
+  bool local_b0;
+  bool local_ac;
+  bool local_a8;
+  bool local_a4;
+  bool local_a0;
+  bool local_9c;
+  bool local_98;
+  bool local_94;
+  bool local_90;
+  bool local_8c;
+  uint tempBlobLength_secKey;
+  bool ok;
   
-  bVar2.m_ptr = param_1.m_ptr;
-  if (param_1.m_ptr != (bdByteBuffer *)0x0) {
-    InterlockedIncrement(&(param_1.m_ptr)->_padding_);
+  bVar2.m_ptr = buffer.m_ptr;
+  if (buffer.m_ptr != (bdByteBuffer *)0x0) {
+    InterlockedIncrement(&(buffer.m_ptr)->_padding_);
   }
-  local_5 = bdMatchMakingInfo::deserialize((bdMatchMakingInfo *)this,bVar2);
-  if (local_5) {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberNETCODE_VERSION);
+  ok = bdMatchMakingInfo::deserialize((bdMatchMakingInfo *)this,bVar2);
+  if (ok) {
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberNETCODE_VERSION);
     if (!bVar1) goto LAB_005a9aa8;
-    local_8c = '\x01';
+    local_8c = true;
   }
   else {
 LAB_005a9aa8:
-    local_8c = '\0';
+    local_8c = false;
   }
-  local_5 = (bool)local_8c;
-  local_c = 0x10;
-  if (local_8c == '\0') {
+  ok = local_8c;
+  tempBlobLength_secKey = 0x10;
+  if (local_8c == false) {
 LAB_005a9af9:
-    local_90 = '\0';
+    local_90 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readBlob(param_1.m_ptr,this->m_membersecKey,&local_c);
+    bVar1 = bdByteBuffer::readBlob(buffer.m_ptr,this->m_membersecKey,&tempBlobLength_secKey);
     if (!bVar1) goto LAB_005a9af9;
-    local_90 = '\x01';
+    local_90 = true;
   }
-  local_5 = (bool)local_90;
-  if (local_90 == '\0') {
+  ok = local_90;
+  if (local_90 == false) {
 LAB_005a9b41:
-    local_94 = '\0';
+    local_94 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readString(param_1.m_ptr,this->m_memberservername,0x40);
+    bVar1 = bdByteBuffer::readString(buffer.m_ptr,this->m_memberservername,0x40);
     if (!bVar1) goto LAB_005a9b41;
-    local_94 = '\x01';
+    local_94 = true;
   }
-  local_5 = (bool)local_94;
-  if (local_94 == '\0') {
+  ok = local_94;
+  if (local_94 == false) {
 LAB_005a9b86:
-    local_98 = '\0';
+    local_98 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readUInt64(param_1.m_ptr,&this->m_membermaprotation);
+    bVar1 = bdByteBuffer::readUInt64(buffer.m_ptr,&this->m_membermaprotation);
     if (!bVar1) goto LAB_005a9b86;
-    local_98 = '\x01';
+    local_98 = true;
   }
-  local_5 = (bool)local_98;
-  if (local_98 == '\0') {
+  ok = local_98;
+  if (local_98 == false) {
 LAB_005a9bce:
-    local_9c = '\0';
+    local_9c = false;
   }
   else {
-    bVar1 = bdByteBuffer::readString(param_1.m_ptr,this->m_membermapname,0x20);
+    bVar1 = bdByteBuffer::readString(buffer.m_ptr,this->m_membermapname,0x20);
     if (!bVar1) goto LAB_005a9bce;
-    local_9c = '\x01';
+    local_9c = true;
   }
-  local_5 = (bool)local_9c;
-  if (local_9c == '\0') {
+  ok = local_9c;
+  if (local_9c == false) {
 LAB_005a9c14:
-    local_a0 = '\0';
+    local_a0 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberGAME_TYPE);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberGAME_TYPE);
     if (!bVar1) goto LAB_005a9c14;
-    local_a0 = '\x01';
+    local_a0 = true;
   }
-  local_5 = (bool)local_a0;
-  if (local_a0 == '\0') {
+  ok = local_a0;
+  if (local_a0 == false) {
 LAB_005a9c59:
-    local_a4 = '\0';
+    local_a4 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberPLAYLIST);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberPLAYLIST);
     if (!bVar1) goto LAB_005a9c59;
-    local_a4 = '\x01';
+    local_a4 = true;
   }
-  local_5 = (bool)local_a4;
-  if (local_a4 == '\0') {
+  ok = local_a4;
+  if (local_a4 == false) {
 LAB_005a9c9f:
-    local_a8 = '\0';
+    local_a8 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberPLAYLIST_VERSION);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberPLAYLIST_VERSION);
     if (!bVar1) goto LAB_005a9c9f;
-    local_a8 = '\x01';
+    local_a8 = true;
   }
-  local_5 = (bool)local_a8;
-  if (local_a8 == '\0') {
+  ok = local_a8;
+  if (local_a8 == false) {
 LAB_005a9ce5:
-    local_ac = '\0';
+    local_ac = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberPARTY_STATE);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberPARTY_STATE);
     if (!bVar1) goto LAB_005a9ce5;
-    local_ac = '\x01';
+    local_ac = true;
   }
-  local_5 = (bool)local_ac;
-  if (local_ac == '\0') {
+  ok = local_ac;
+  if (local_ac == false) {
 LAB_005a9d2a:
-    local_b0 = '\0';
+    local_b0 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberMAPPACKS);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberMAPPACKS);
     if (!bVar1) goto LAB_005a9d2a;
-    local_b0 = '\x01';
+    local_b0 = true;
   }
-  local_5 = (bool)local_b0;
-  if (local_b0 == '\0') {
+  ok = local_b0;
+  if (local_b0 == false) {
 LAB_005a9d70:
-    local_b4 = '\0';
+    local_b4 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readUInt32(param_1.m_ptr,&this->m_memberLICENSE);
+    bVar1 = bdByteBuffer::readUInt32(buffer.m_ptr,&this->m_memberLICENSE);
     if (!bVar1) goto LAB_005a9d70;
-    local_b4 = '\x01';
+    local_b4 = true;
   }
-  local_5 = (bool)local_b4;
-  if (local_b4 == '\0') {
+  ok = local_b4;
+  if (local_b4 == false) {
 LAB_005a9db6:
-    local_b8 = '\0';
+    local_b8 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberSKILL);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberSKILL);
     if (!bVar1) goto LAB_005a9db6;
-    local_b8 = '\x01';
+    local_b8 = true;
   }
-  local_5 = (bool)local_b8;
-  if (local_b8 == '\0') {
+  ok = local_b8;
+  if (local_b8 == false) {
 LAB_005a9dfb:
-    local_bc = '\0';
+    local_bc = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberTEAM_SIZE_MIN);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberTEAM_SIZE_MIN);
     if (!bVar1) goto LAB_005a9dfb;
-    local_bc = '\x01';
+    local_bc = true;
   }
-  local_5 = (bool)local_bc;
-  if (local_bc == '\0') {
+  ok = local_bc;
+  if (local_bc == false) {
 LAB_005a9e41:
-    local_c0 = '\0';
+    local_c0 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberTEAM_SIZE_MAX);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberTEAM_SIZE_MAX);
     if (!bVar1) goto LAB_005a9e41;
-    local_c0 = '\x01';
+    local_c0 = true;
   }
-  local_5 = (bool)local_c0;
-  if (local_c0 == '\0') {
+  ok = local_c0;
+  if (local_c0 == false) {
 LAB_005a9e87:
-    local_c4 = '\0';
+    local_c4 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberGEOGRAPHICAL_LOCATION);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberGEOGRAPHICAL_LOCATION);
     if (!bVar1) goto LAB_005a9e87;
-    local_c4 = '\x01';
+    local_c4 = true;
   }
-  local_5 = (bool)local_c4;
-  if (local_c4 == '\0') {
+  ok = local_c4;
+  if (local_c4 == false) {
 LAB_005a9ecc:
-    local_c8 = '\0';
+    local_c8 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readUInt64(param_1.m_ptr,&this->m_memberdemonwareID);
+    bVar1 = bdByteBuffer::readUInt64(buffer.m_ptr,&this->m_memberdemonwareID);
     if (!bVar1) goto LAB_005a9ecc;
-    local_c8 = '\x01';
+    local_c8 = true;
   }
-  local_5 = (bool)local_c8;
-  if (local_c8 == '\0') {
+  ok = local_c8;
+  if (local_c8 == false) {
 LAB_005a9f12:
-    local_cc = '\0';
+    local_cc = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberserverType);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberserverType);
     if (!bVar1) goto LAB_005a9f12;
-    local_cc = '\x01';
+    local_cc = true;
   }
-  local_5 = (bool)local_cc;
-  if (local_cc == '\0') {
+  ok = local_cc;
+  if (local_cc == false) {
 LAB_005a9f58:
-    local_d0 = '\0';
+    local_d0 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readInt32(param_1.m_ptr,&this->m_memberroundTime);
+    bVar1 = bdByteBuffer::readInt32(buffer.m_ptr,&this->m_memberroundTime);
     if (!bVar1) goto LAB_005a9f58;
-    local_d0 = '\x01';
+    local_d0 = true;
   }
-  local_5 = (bool)local_d0;
-  if (local_d0 == '\0') {
+  ok = local_d0;
+  if (local_d0 == false) {
 LAB_005a9f9f:
-    local_d4 = '\0';
+    local_d4 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readString(param_1.m_ptr,this->m_membermod,0x20);
+    bVar1 = bdByteBuffer::readString(buffer.m_ptr,this->m_membermod,0x20);
     if (!bVar1) goto LAB_005a9f9f;
-    local_d4 = '\x01';
+    local_d4 = true;
   }
-  local_5 = (bool)local_d4;
-  if (local_d4 == '\0') {
+  ok = local_d4;
+  if (local_d4 == false) {
 LAB_005a9fe5:
-    local_d8 = '\0';
+    local_d8 = false;
   }
   else {
-    bVar1 = bdByteBuffer::readUInt64(param_1.m_ptr,&this->m_memberaddressport);
+    bVar1 = bdByteBuffer::readUInt64(buffer.m_ptr,&this->m_memberaddressport);
     if (!bVar1) goto LAB_005a9fe5;
-    local_d8 = '\x01';
+    local_d8 = true;
   }
-  local_5 = (bool)local_d8;
-  if (local_d8 != '\0') {
-    bVar1 = bdByteBuffer::readUInt32(param_1.m_ptr,&this->m_memberDDL_VERSION);
+  ok = local_d8;
+  if (local_d8 != false) {
+    bVar1 = bdByteBuffer::readUInt32(buffer.m_ptr,&this->m_memberDDL_VERSION);
     if (bVar1) {
       local_dc = true;
       goto LAB_005aa035;
@@ -398,8 +397,8 @@ LAB_005a9fe5:
   }
   local_dc = false;
 LAB_005aa035:
-  local_5 = local_dc;
-  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&param_1);
+  ok = local_dc;
+  bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&buffer);
   return local_dc;
 }
 
@@ -415,26 +414,30 @@ uint __thiscall MatchMakingInfo::sizeOf(MatchMakingInfo *this)
 
 // 005AA070  setSessionKey  (DW/win32/MatchMakingInfo_win32.cpp:98)
 
-bool __thiscall MatchMakingInfo::setSessionKey(MatchMakingInfo *this,bdSecurityKey *param_1)
+bool __thiscall MatchMakingInfo::setSessionKey(MatchMakingInfo *this,bdSecurityKey *secKey)
 
 {
-  *(undefined4 *)this->m_membersecKey = *(undefined4 *)param_1->ab;
-  *(undefined4 *)(this->m_membersecKey + 4) = *(undefined4 *)(param_1->ab + 4);
-  *(undefined4 *)(this->m_membersecKey + 8) = *(undefined4 *)(param_1->ab + 8);
-  *(undefined4 *)(this->m_membersecKey + 0xc) = *(undefined4 *)(param_1->ab + 0xc);
+  bool result;
+  
+  *(undefined4 *)this->m_membersecKey = *(undefined4 *)secKey->ab;
+  *(undefined4 *)(this->m_membersecKey + 4) = *(undefined4 *)(secKey->ab + 4);
+  *(undefined4 *)(this->m_membersecKey + 8) = *(undefined4 *)(secKey->ab + 8);
+  *(undefined4 *)(this->m_membersecKey + 0xc) = *(undefined4 *)(secKey->ab + 0xc);
   return true;
 }
 
 
 // 005AA0B0  getSessionKey  (DW/win32/MatchMakingInfo_win32.cpp:108)
 
-bool __thiscall MatchMakingInfo::getSessionKey(MatchMakingInfo *this,bdSecurityKey *param_1)
+bool __thiscall MatchMakingInfo::getSessionKey(MatchMakingInfo *this,bdSecurityKey *secKey)
 
 {
-  *(undefined4 *)param_1->ab = *(undefined4 *)this->m_membersecKey;
-  *(undefined4 *)(param_1->ab + 4) = *(undefined4 *)(this->m_membersecKey + 4);
-  *(undefined4 *)(param_1->ab + 8) = *(undefined4 *)(this->m_membersecKey + 8);
-  *(undefined4 *)(param_1->ab + 0xc) = *(undefined4 *)(this->m_membersecKey + 0xc);
+  bool result;
+  
+  *(undefined4 *)secKey->ab = *(undefined4 *)this->m_membersecKey;
+  *(undefined4 *)(secKey->ab + 4) = *(undefined4 *)(this->m_membersecKey + 4);
+  *(undefined4 *)(secKey->ab + 8) = *(undefined4 *)(this->m_membersecKey + 8);
+  *(undefined4 *)(secKey->ab + 0xc) = *(undefined4 *)(this->m_membersecKey + 0xc);
   return true;
 }
 
@@ -442,20 +445,22 @@ bool __thiscall MatchMakingInfo::getSessionKey(MatchMakingInfo *this,bdSecurityK
 // 005AA0F0  doUpdate  (DW/win32/MatchMakingInfo_win32.cpp:122)
 
 bool __thiscall
-MatchMakingInfo::doUpdate(MatchMakingInfo *this,int param_1,uint param_2,uint param_3)
+MatchMakingInfo::doUpdate
+          (MatchMakingInfo *this,int msec,uint updateIntervalMsec,uint forceUpdateIntervalMsec)
 
 {
   char *pcVar1;
   int iVar2;
   uint uVar3;
-  bool local_5;
+  uint numPlayers;
+  bool allowUpdate;
   
-  local_5 = false;
+  allowUpdate = false;
   if (this->m_active != 0) {
-    timeSinceUpdate = timeSinceUpdate + param_1;
-    local_5 = param_3 <= timeSinceUpdate;
-    if ((param_2 <= timeSinceUpdate) && (this->m_dirty != 0)) {
-      local_5 = true;
+    timeSinceUpdate = timeSinceUpdate + msec;
+    allowUpdate = forceUpdateIntervalMsec <= timeSinceUpdate;
+    if ((updateIntervalMsec <= timeSinceUpdate) && (this->m_dirty != 0)) {
+      allowUpdate = true;
     }
     pcVar1 = SV_GetMapName();
     iVar2 = I_strcmp(this->m_membermapname,pcVar1);
@@ -463,7 +468,7 @@ MatchMakingInfo::doUpdate(MatchMakingInfo *this,int param_1,uint param_2,uint pa
       iVar2 = 0x20;
       pcVar1 = SV_GetMapName();
       I_strncpyz(this->m_membermapname,pcVar1,iVar2);
-      local_5 = true;
+      allowUpdate = true;
     }
     pcVar1 = SV_GetHostName();
     iVar2 = I_strcmp(this->m_memberservername,pcVar1);
@@ -471,7 +476,7 @@ MatchMakingInfo::doUpdate(MatchMakingInfo *this,int param_1,uint param_2,uint pa
       iVar2 = 0x40;
       pcVar1 = SV_GetHostName();
       I_strncpyz(this->m_memberservername,pcVar1,iVar2);
-      local_5 = true;
+      allowUpdate = true;
     }
     pcVar1 = Dvar_GetString("g_gametype");
     uVar3 = Com_GametypeToInt(pcVar1);
@@ -479,18 +484,18 @@ MatchMakingInfo::doUpdate(MatchMakingInfo *this,int param_1,uint param_2,uint pa
       pcVar1 = Dvar_GetString("g_gametype");
       uVar3 = Com_GametypeToInt(pcVar1);
       this->m_memberGAME_TYPE = uVar3;
-      local_5 = true;
+      allowUpdate = true;
     }
     uVar3 = SV_GetClientCount();
     if (this->_padding_ != uVar3) {
       this->_padding_ = uVar3;
-      local_5 = true;
+      allowUpdate = true;
     }
   }
-  if (local_5 != false) {
+  if (allowUpdate != false) {
     timeSinceUpdate = 0;
   }
-  return local_5;
+  return allowUpdate;
 }
 
 

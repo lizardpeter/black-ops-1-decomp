@@ -5,6 +5,8 @@
 void __cdecl UI_RegisterDvars_PC(void)
 
 {
+  bool allowConsoleDefault;
+  
   ui_joinGameType = _Dvar_RegisterInt("ui_joinGametype",0,0,0x7fffffff,1,"Game join type");
   ui_netGameTypeName = _Dvar_RegisterString("ui_netGametypeName","",0,"Displayed game type name");
   ui_dedicated = _Dvar_RegisterInt("ui_dedicated",0,0,2,1,"True if this is a dedicated server");
@@ -69,14 +71,14 @@ void __cdecl UI_RegisterDvars_PC(void)
 
 // 00752D90  UI_GetNetSources  (ui/ui_main_pc.cpp:205)
 
-char * __cdecl UI_GetNetSources(int param_1)
+char * __cdecl UI_GetNetSources(int source)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (3 < (uint)param_1) {
+  if (3 < (uint)source) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main_pc.cpp",0xce,0,
                              "source doesn\'t index ARRAY_COUNT(netSources)\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -85,7 +87,7 @@ char * __cdecl UI_GetNetSources(int param_1)
       return pcVar3;
     }
   }
-  return netSources[param_1];
+  return netSources[source];
 }
 
 
@@ -94,36 +96,37 @@ char * __cdecl UI_GetNetSources(int param_1)
 void __cdecl UI_SelectCurrentGameType(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  int local_8;
+  char *s0;
+  int iVar1;
+  char *currType;
+  int i;
   
-  pcVar1 = Dvar_GetString("g_gametype");
-  local_8 = 0;
+  s0 = Dvar_GetString("g_gametype");
+  i = 0;
   while( true ) {
-    if (DAT_098b5434 <= local_8) {
+    if (DAT_098b5434 <= i) {
       return;
     }
-    iVar2 = I_stricmp(pcVar1,&DAT_098b5438 + local_8 * 0x74);
-    if (iVar2 == 0) break;
-    local_8 = local_8 + 1;
+    iVar1 = I_stricmp(s0,&DAT_098b5438 + i * 0x74);
+    if (iVar1 == 0) break;
+    i = i + 1;
   }
-  Dvar_SetInt(ui_netGameType,local_8);
-  Dvar_SetString(ui_netGameTypeName,&DAT_098b5438 + local_8 * 0x74);
+  Dvar_SetInt(ui_netGameType,i);
+  Dvar_SetString(ui_netGameTypeName,&DAT_098b5438 + i * 0x74);
   return;
 }
 
 
 // 00754740  UI_IsMapActive  (ui/ui_main_pc.cpp:237)
 
-bool __cdecl UI_IsMapActive(int param_1)
+bool __cdecl UI_IsMapActive(int mapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if ((param_1 < 0) || (DAT_098b9e44 <= param_1)) {
+  if ((mapIndex < 0) || (DAT_098b9e44 <= mapIndex)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main_pc.cpp",0xee,0,
                              "%s\n\t(mapIndex) = %i");
     if (!bVar2) {
@@ -132,7 +135,7 @@ bool __cdecl UI_IsMapActive(int param_1)
       return (bool)uVar3;
     }
   }
-  return *(int *)(&DAT_098b9f74 + param_1 * 0x130) != 0;
+  return *(int *)(&DAT_098b9f74 + mapIndex * 0x130) != 0;
 }
 
 
@@ -141,66 +144,68 @@ bool __cdecl UI_IsMapActive(int param_1)
 void __cdecl UI_SelectFirstActiveMap(void)
 
 {
-  int local_8;
+  int listIndex;
+  int mapIndex;
   
-  local_8 = 0;
+  mapIndex = 0;
   while( true ) {
-    if (DAT_098b9e44 <= local_8) {
+    if (DAT_098b9e44 <= mapIndex) {
       return;
     }
-    if (*(int *)(&DAT_098b9f74 + local_8 * 0x130) != 0) break;
-    local_8 = local_8 + 1;
+    if (*(int *)(&DAT_098b9f74 + mapIndex * 0x130) != 0) break;
+    mapIndex = mapIndex + 1;
   }
   Menu_SetFeederSelection(0,&uiInfoArray[0].uiDC,(menuDef_t *)0x0,4,0,"createserver");
-  Dvar_SetInt(ui_currentNetMap,local_8);
+  Dvar_SetInt(ui_currentNetMap,mapIndex);
   return;
 }
 
 
 // 00752E60  UI_GetListIndexFromMapIndex  (ui/ui_main_pc.cpp:265)
 
-int __cdecl UI_GetListIndexFromMapIndex(int param_1)
+int __cdecl UI_GetListIndexFromMapIndex(int testMapIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_c;
-  int local_8;
+  int listIndex;
+  int mapIndex;
   
-  if (((param_1 < 0) || (DAT_098b9e44 <= param_1)) &&
+  if (((testMapIndex < 0) || (DAT_098b9e44 <= testMapIndex)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main_pc.cpp",0x10a,0,
                                "%s\n\t(testMapIndex) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  local_c = 0;
-  local_8 = 0;
+  listIndex = 0;
+  mapIndex = 0;
   do {
-    if (DAT_098b9e44 <= local_8) {
+    if (DAT_098b9e44 <= mapIndex) {
       return 0;
     }
-    if (*(int *)(&DAT_098b9f74 + local_8 * 0x130) != 0) {
-      if (local_8 == param_1) {
-        return local_c;
+    if (*(int *)(&DAT_098b9f74 + mapIndex * 0x130) != 0) {
+      if (mapIndex == testMapIndex) {
+        return listIndex;
       }
-      local_c = local_c + 1;
+      listIndex = listIndex + 1;
     }
-    local_8 = local_8 + 1;
+    mapIndex = mapIndex + 1;
   } while( true );
 }
 
 
 // 00754820  UI_SelectListIndexForMapIndex  (ui/ui_main_pc.cpp:290)
 
-void __cdecl UI_SelectListIndexForMapIndex(int param_1)
+void __cdecl UI_SelectListIndexForMapIndex(int mapIndex)
 
 {
-  int iVar1;
+  int index;
+  int listIndex;
   
-  iVar1 = UI_GetListIndexFromMapIndex(param_1);
-  Menu_SetFeederSelection(0,&uiInfoArray[0].uiDC,(menuDef_t *)0x0,4,iVar1,"createserver");
+  index = UI_GetListIndexFromMapIndex(mapIndex);
+  Menu_SetFeederSelection(0,&uiInfoArray[0].uiDC,(menuDef_t *)0x0,4,index,"createserver");
   return;
 }
 
@@ -211,53 +216,57 @@ int __cdecl UI_MapCountByGameType(void)
 
 {
   uint uVar1;
-  int local_10;
-  int local_8;
+  int c;
+  int game;
+  int i;
   
   uVar1 = (ui_netGameType->current).unsignedInt;
-  local_10 = 0;
-  for (local_8 = 0; local_8 < DAT_098b9e44; local_8 = local_8 + 1) {
-    *(undefined4 *)(&DAT_098b9f74 + local_8 * 0x130) = 0;
-    if ((1 << ((byte)uVar1 & 0x1f) & (&DAT_098b9eec)[local_8 * 0x4c]) != 0) {
-      local_10 = local_10 + 1;
-      *(undefined4 *)(&DAT_098b9f74 + local_8 * 0x130) = 1;
+  c = 0;
+  for (i = 0; i < DAT_098b9e44; i = i + 1) {
+    *(undefined4 *)(&DAT_098b9f74 + i * 0x130) = 0;
+    if ((1 << ((byte)uVar1 & 0x1f) & (&DAT_098b9eec)[i * 0x4c]) != 0) {
+      c = c + 1;
+      *(undefined4 *)(&DAT_098b9f74 + i * 0x130) = 1;
     }
   }
-  return local_10;
+  return c;
 }
 
 
 // 00752F90  UI_SelectCurrentMap  (ui/ui_main_pc.cpp:333)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "netsrc_t": Some values do not have unique names */
+/* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl UI_SelectCurrentMap(int param_1)
+void __cdecl UI_SelectCurrentMap(int localClientNum)
 
 {
   char *pcVar1;
   int iVar2;
-  int local_864;
-  char local_85c [68];
-  int local_818;
-  uiClientState_s local_814;
+  int iCount;
+  char *info;
+  char szMap [68];
+  int i;
+  uiClientState_s cstate;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  CL_GetClientState(param_1,&local_814);
-  if ((local_814.connState == CA_ACTIVE) && (pcVar1 = CL_GetConfigString(0), *pcVar1 != '\0')) {
+  CL_GetClientState(localClientNum,&cstate);
+  if ((cstate.connState == CA_ACTIVE) && (pcVar1 = CL_GetConfigString(0), *pcVar1 != '\0')) {
     iVar2 = 0x40;
     pcVar1 = Info_ValueForKey(pcVar1,"mapname");
-    I_strncpyz(local_85c,pcVar1,iVar2);
-    local_864 = 0;
-    for (local_818 = 0; local_818 < DAT_098b9e44; local_818 = local_818 + 1) {
-      if (*(int *)(&DAT_098b9f74 + local_818 * 0x130) != 0) {
-        iVar2 = I_stricmp(local_85c,&DAT_098b9e48 + local_818 * 0x130);
+    I_strncpyz(szMap,pcVar1,iVar2);
+    iCount = 0;
+    for (i = 0; i < DAT_098b9e44; i = i + 1) {
+      if (*(int *)(&DAT_098b9f74 + i * 0x130) != 0) {
+        iVar2 = I_stricmp(szMap,&DAT_098b9e48 + i * 0x130);
         if (iVar2 == 0) {
           Menu_SetFeederSelection
-                    (0,&uiInfoArray[0].uiDC,(menuDef_t *)0x0,4,local_864,"pc_gamesetup_coop");
+                    (0,&uiInfoArray[0].uiDC,(menuDef_t *)0x0,4,iCount,"pc_gamesetup_coop");
           return;
         }
-        local_864 = local_864 + 1;
+        iCount = iCount + 1;
       }
     }
   }
@@ -267,98 +276,96 @@ void __cdecl UI_SelectCurrentMap(int param_1)
 
 // 007530C0  UI_UseAltColorPalette  (ui/ui_main_pc.cpp:389)
 
-void __cdecl UI_UseAltColorPalette(char *param_1)
+void __cdecl UI_UseAltColorPalette(char *buffer)
 
 {
   char cVar1;
   bool bVar2;
   char *local_1c;
-  int local_18;
-  char *local_14;
-  char *local_10;
-  uint local_c;
-  char local_5;
+  int i;
+  char *glyph;
+  int len;
+  uint letter;
+  uchar colorCode;
   
-  local_1c = param_1;
+  local_1c = buffer;
   do {
     cVar1 = *local_1c;
     local_1c = local_1c + 1;
   } while (cVar1 != '\0');
-  local_10 = local_1c + (-2 - (int)(param_1 + 1));
-  local_18 = 0;
+  len = (int)(local_1c + (-2 - (int)(buffer + 1)));
+  i = 0;
   do {
-    if ((int)local_10 <= local_18) {
+    if (len <= i) {
       return;
     }
-    local_14 = param_1 + local_18;
-    local_c = SEH_ReadCharFromString(&local_14,(int *)0x0);
-    if ((((param_1[local_18] == '^') && (param_1 + local_18 + 1 != (char *)0x0)) &&
-        (param_1[local_18 + 1] != '^')) &&
-       (('/' < param_1[local_18 + 1] && (param_1[local_18 + 1] < 'A')))) {
-      switch(param_1[local_18 + 1]) {
+    glyph = buffer + i;
+    letter = SEH_ReadCharFromString(&glyph,(int *)0x0);
+    if ((((buffer[i] == '^') && (buffer + i + 1 != (char *)0x0)) && (buffer[i + 1] != '^')) &&
+       (('/' < buffer[i + 1] && (buffer[i + 1] < 'A')))) {
+      switch(buffer[i + 1]) {
       case '1':
-        local_5 = ':';
+        colorCode = ':';
         break;
       case '2':
-        local_5 = ';';
+        colorCode = ';';
         break;
       case '3':
-        local_5 = '<';
+        colorCode = '<';
         break;
       case '4':
-        local_5 = '=';
+        colorCode = '=';
         break;
       case '5':
-        local_5 = '>';
+        colorCode = '>';
         break;
       case '6':
-        local_5 = '?';
+        colorCode = '?';
         break;
       default:
-        local_18 = local_18 + 1;
+        i = i + 1;
         goto LAB_00753102;
       }
-      param_1[local_18 + 1] = local_5;
-      local_18 = local_18 + 1;
+      buffer[i + 1] = colorCode;
+      i = i + 1;
     }
-    else if (((param_1[local_18] == '^') &&
-             ((param_1 + local_18 + 1 != (char *)0x0 && (param_1[local_18 + 1] != '^')))) &&
-            (param_1[local_18 + 1] == 'F')) {
-      param_1[local_18 + 1] = '7';
+    else if (((buffer[i] == '^') && ((buffer + i + 1 != (char *)0x0 && (buffer[i + 1] != '^')))) &&
+            (buffer[i + 1] == 'F')) {
+      buffer[i + 1] = '7';
     }
     else {
-      bVar2 = ValidGamePadButtonIcon(local_c);
+      bVar2 = ValidGamePadButtonIcon(letter);
       if (bVar2) {
-        param_1[local_18] = ' ';
+        buffer[i] = ' ';
       }
     }
 LAB_00753102:
-    local_18 = local_18 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 007532E0  UI_RemoveServerFromDisplayList  (ui/ui_main_pc.cpp:455)
 
-void __cdecl UI_RemoveServerFromDisplayList(int param_1)
+void __cdecl UI_RemoveServerFromDisplayList(int num)
 
 {
-  int local_c;
-  int local_8;
+  int j;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (DAT_098d7618 <= local_8) {
+    if (DAT_098d7618 <= i) {
       return;
     }
-    if (*(int *)(&DAT_098c3d98 + local_8 * 4) == param_1) break;
-    local_8 = local_8 + 1;
+    if (*(int *)(&DAT_098c3d98 + i * 4) == num) break;
+    i = i + 1;
   }
   DAT_098d7618 = DAT_098d7618 + -1;
-  for (local_c = local_8; local_c < DAT_098d7618; local_c = local_c + 1) {
-    *(undefined4 *)(&DAT_098c3d98 + local_c * 4) = *(undefined4 *)(&DAT_098c3d9c + local_c * 4);
+  for (j = i; j < DAT_098d7618; j = j + 1) {
+    *(undefined4 *)(&DAT_098c3d98 + j * 4) = *(undefined4 *)(&DAT_098c3d9c + j * 4);
     if (((ui_netSource->current).integer == 4) && (DAT_098d7618 < 0x100)) {
-      (&DAT_098d7a48)[local_c] = (&DAT_098d7a49)[local_c];
+      (&DAT_098d7a48)[j] = (&DAT_098d7a49)[j];
     }
   }
   return;
@@ -367,7 +374,7 @@ void __cdecl UI_RemoveServerFromDisplayList(int param_1)
 
 // 007536D0  UI_SortServerStatusInfo  (ui/ui_main_pc.cpp:480)
 
-void __cdecl UI_SortServerStatusInfo(serverStatusInfo_s *param_1)
+void __cdecl UI_SortServerStatusInfo(serverStatusInfo_s *info)
 
 {
   char cVar1;
@@ -377,71 +384,72 @@ void __cdecl UI_SortServerStatusInfo(serverStatusInfo_s *param_1)
   int iVar5;
   char *pcVar6;
   char *local_20;
-  int local_18;
-  int local_c;
-  int local_8;
+  char *longname;
+  int j;
+  char *tmp1;
+  char *tmp2;
+  int index;
+  int i;
   
-  local_c = 0;
-  local_8 = 0;
+  index = 0;
+  i = 0;
   do {
-    if (serverStatusDvars[local_8].name == (char *)0x0) {
+    if (serverStatusDvars[i].name == (char *)0x0) {
       return;
     }
-    for (local_18 = 0; local_18 < param_1->numLines; local_18 = local_18 + 1) {
-      if (((param_1->lines[local_18][1] != (char *)0x0) && (*param_1->lines[local_18][1] != '\0'))
-         && (iVar5 = I_stricmp(serverStatusDvars[local_8].name,param_1->lines[local_18][0]),
-            iVar5 == 0)) {
-        pcVar6 = param_1->lines[local_c][0];
-        pcVar2 = param_1->lines[local_c][1];
-        param_1->lines[local_c][0] = param_1->lines[local_18][0];
-        param_1->lines[local_c][1] = param_1->lines[local_18][1];
-        param_1->lines[local_18][0] = pcVar6;
-        param_1->lines[local_18][1] = pcVar2;
-        if (serverStatusDvars[local_8].altName != (char *)0x0) {
-          local_20 = serverStatusDvars[local_8].altName;
+    for (j = 0; j < info->numLines; j = j + 1) {
+      if (((info->lines[j][1] != (char *)0x0) && (*info->lines[j][1] != '\0')) &&
+         (iVar5 = I_stricmp(serverStatusDvars[i].name,info->lines[j][0]), iVar5 == 0)) {
+        pcVar6 = info->lines[index][0];
+        pcVar2 = info->lines[index][1];
+        info->lines[index][0] = info->lines[j][0];
+        info->lines[index][1] = info->lines[j][1];
+        info->lines[j][0] = pcVar6;
+        info->lines[j][1] = pcVar2;
+        if (serverStatusDvars[i].altName != (char *)0x0) {
+          local_20 = serverStatusDvars[i].altName;
           pcVar6 = local_20 + 1;
           do {
             cVar1 = *local_20;
             local_20 = local_20 + 1;
           } while (cVar1 != '\0');
           if (local_20 != pcVar6) {
-            param_1->lines[local_c][0] = serverStatusDvars[local_8].altName;
+            info->lines[index][0] = serverStatusDvars[i].altName;
           }
         }
-        switch(serverStatusDvars[local_8].type) {
+        switch(serverStatusDvars[i].type) {
         case SSC_STRING:
           break;
         case SSC_YESNO:
-          iVar5 = atoi(param_1->lines[local_c][1]);
+          iVar5 = atoi(info->lines[index][1]);
           if (iVar5 == 0) {
-            param_1->lines[local_c][1] = "@EXE_NO";
+            info->lines[index][1] = "@EXE_NO";
           }
           else {
-            param_1->lines[local_c][1] = "@EXE_YES";
+            info->lines[index][1] = "@EXE_YES";
           }
           break;
         case SSC_GAMETYPE:
-          pcVar6 = UI_GetGameTypeDisplayName(param_1->lines[local_c][1]);
-          param_1->lines[local_c][1] = pcVar6;
+          pcVar6 = UI_GetGameTypeDisplayName(info->lines[index][1]);
+          info->lines[index][1] = pcVar6;
           break;
         case SSC_MAPNAME:
-          pcVar6 = UI_GetMapDisplayName(param_1->lines[local_c][1]);
-          param_1->lines[local_c][1] = pcVar6;
+          pcVar6 = UI_GetMapDisplayName(info->lines[index][1]);
+          info->lines[index][1] = pcVar6;
           break;
         case 4:
-          if ((param_1->lines[local_c][1] == (char *)0x0) || (*param_1->lines[local_c][1] == '\0'))
-          {
+          if ((info->lines[index][1] == (char *)0x0) || (*info->lines[index][1] == '\0')) {
             pcVar6 = UI_SafeTranslateString("PLATFORM_GEO_NOT_SPECIFIED");
-            param_1->lines[local_c][1] = pcVar6;
+            info->lines[index][1] = pcVar6;
           }
           else {
-            pcVar6 = CL_LongNameForShortName(param_1->lines[local_c][1]);
+            pcVar6 = CL_LongNameForShortName(info->lines[index][1]);
             if (pcVar6 != (char *)0x0) {
-              param_1->lines[local_c][1] = pcVar6;
+              info->lines[index][1] = pcVar6;
             }
           }
-          param_1->lines[local_c][0] = param_1->lines[local_c][1];
-          param_1->lines[local_c][1] = (char *)0x0;
+          info->lines[index][0] = info->lines[index][1];
+          info->lines[index][1] = (char *)0x0;
           break;
         default:
           pcVar6 = va("unknown server status dvar type: %i");
@@ -453,54 +461,55 @@ void __cdecl UI_SortServerStatusInfo(serverStatusInfo_s *param_1)
             return;
           }
         }
-        local_c = local_c + 1;
+        index = index + 1;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00753E40  ScoreBar_CompareScores  (ui/ui_main_pc.cpp:562)
 
-int __cdecl ScoreBar_CompareScores(void *param_1,void *param_2)
+int __cdecl ScoreBar_CompareScores(void *sv1,void *sv2)
 
 {
   int iVar1;
   int iVar2;
+  int delta;
   
-  iVar1 = atoi(*(char **)((int)param_2 + 0xc));
-  iVar2 = atoi(*(char **)((int)param_1 + 0xc));
+  iVar1 = atoi(*(char **)((int)sv2 + 0xc));
+  iVar2 = atoi(*(char **)((int)sv1 + 0xc));
   return iVar1 - iVar2;
 }
 
 
 // 00753E10  UI_SortServerStatusScoreBoardInfo  (ui/ui_main_pc.cpp:576)
 
-void __cdecl UI_SortServerStatusScoreBoardInfo(serverStatusInfo_s *param_1)
+void __cdecl UI_SortServerStatusScoreBoardInfo(serverStatusInfo_s *info)
 
 {
-  qsort(param_1->lines + 1,param_1->numLines - 1,0x20,ScoreBar_CompareScores);
+  qsort(info->lines + 1,info->numLines - 1,0x20,ScoreBar_CompareScores);
   return;
 }
 
 
 // 00753390  UI_IsServerStatusDvar  (ui/ui_main_pc.cpp:583)
 
-bool __cdecl UI_IsServerStatusDvar(char *param_1)
+bool __cdecl UI_IsServerStatusDvar(char *dvarname)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (serverStatusDvars[local_8].name == (char *)0x0) {
+    if (serverStatusDvars[i].name == (char *)0x0) {
       return false;
     }
-    iVar1 = I_stricmp(serverStatusDvars[local_8].name,param_1);
+    iVar1 = I_stricmp(serverStatusDvars[i].name,dvarname);
     if (iVar1 == 0) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -508,77 +517,77 @@ bool __cdecl UI_IsServerStatusDvar(char *param_1)
 
 // 007533E0  UI_GetServerStatusInfo  (ui/ui_main_pc.cpp:599)
 
-int __cdecl UI_GetServerStatusInfo(char *param_1,serverStatusInfo_s *param_2)
+int __cdecl UI_GetServerStatusInfo(char *serverAddress,serverStatusInfo_s *info)
 
 {
   bool bVar1;
   int iVar2;
   undefined1 *extraout_EAX;
   undefined1 *extraout_EAX_00;
-  uchar *puVar3;
-  char *local_14;
-  char *local_10;
-  char *local_c;
-  char *local_8;
+  uchar *string;
+  char *hostname;
+  char *servermessage;
+  char *mapname;
+  char *p;
   
-  local_14 = (char *)0x0;
-  local_10 = (char *)0x0;
-  local_c = (char *)0x0;
-  if (param_2 == (serverStatusInfo_s *)0x0) {
-    LAN_GetServerStatus(param_1,(char *)0x0,0);
+  hostname = (char *)0x0;
+  servermessage = (char *)0x0;
+  mapname = (char *)0x0;
+  if (info == (serverStatusInfo_s *)0x0) {
+    LAN_GetServerStatus(serverAddress,(char *)0x0,0);
     iVar2 = 0;
   }
   else {
-    memset((uchar *)param_2,'\0',0x14a4);
-    iVar2 = LAN_GetServerStatus(param_1,param_2->text,0x400);
+    memset((uchar *)info,'\0',0x14a4);
+    iVar2 = LAN_GetServerStatus(serverAddress,info->text,0x400);
     if (iVar2 == 0) {
       iVar2 = 0;
     }
     else {
       Dvar_SetBool(ui_browserShowInfo,true);
-      UI_UseAltColorPalette(param_2->text);
-      I_strncpyz(param_2->address,param_1,0x40);
-      local_8 = param_2->text;
-      param_2->numLines = 0;
+      UI_UseAltColorPalette(info->text);
+      I_strncpyz(info->address,serverAddress,0x40);
+      p = info->text;
+      info->numLines = 0;
       do {
-        if (((local_8 == (char *)0x0) || (*local_8 == '\0')) ||
-           (strchr((uchar *)local_8,'\\'), extraout_EAX == (undefined1 *)0x0)) break;
+        if (((p == (char *)0x0) || (*p == '\0')) ||
+           (strchr((uchar *)p,'\\'), extraout_EAX == (undefined1 *)0x0)) break;
         *extraout_EAX = 0;
-        puVar3 = extraout_EAX + 1;
-        if (*puVar3 == '\\') break;
-        param_2->lines[param_2->numLines][0] = (char *)puVar3;
-        strchr(puVar3,'\\');
+        string = extraout_EAX + 1;
+        if (*string == '\\') break;
+        info->lines[info->numLines][0] = (char *)string;
+        strchr(string,'\\');
         if (extraout_EAX_00 == (undefined1 *)0x0) break;
         *extraout_EAX_00 = 0;
-        local_8 = extraout_EAX_00 + 1;
-        param_2->lines[param_2->numLines][1] = local_8;
-        iVar2 = I_strcmp(param_2->lines[param_2->numLines][0],"ui_serverinfomessage");
+        p = extraout_EAX_00 + 1;
+        info->lines[info->numLines][1] = p;
+        iVar2 = I_strcmp(info->lines[info->numLines][0],"ui_serverinfomessage");
         if (iVar2 == 0) {
-          local_10 = param_2->lines[param_2->numLines][1];
+          servermessage = info->lines[info->numLines][1];
         }
-        iVar2 = I_strcmp(param_2->lines[param_2->numLines][0],"sv_hostname");
+        iVar2 = I_strcmp(info->lines[info->numLines][0],"sv_hostname");
         if (iVar2 == 0) {
-          local_14 = param_2->lines[param_2->numLines][1];
+          hostname = info->lines[info->numLines][1];
         }
-        iVar2 = I_strcmp(param_2->lines[param_2->numLines][0],"mapname");
+        iVar2 = I_strcmp(info->lines[info->numLines][0],"mapname");
         if (iVar2 == 0) {
-          local_c = param_2->lines[param_2->numLines][1];
+          mapname = info->lines[info->numLines][1];
         }
-        bVar1 = UI_IsServerStatusDvar(param_2->lines[param_2->numLines][0]);
+        bVar1 = UI_IsServerStatusDvar(info->lines[info->numLines][0]);
         if (bVar1) {
-          param_2->numLines = param_2->numLines + 1;
+          info->numLines = info->numLines + 1;
         }
-      } while (param_2->numLines < 0x80);
-      if ((local_10 != (char *)0x0) && (*local_10 != '\0')) {
-        Dvar_SetStringByName("ui_serverinfomessage",local_10);
+      } while (info->numLines < 0x80);
+      if ((servermessage != (char *)0x0) && (*servermessage != '\0')) {
+        Dvar_SetStringByName("ui_serverinfomessage",servermessage);
       }
-      if ((local_14 != (char *)0x0) && (*local_14 != '\0')) {
-        Dvar_SetStringByName("ui_serverinfomessagehostname",local_14);
+      if ((hostname != (char *)0x0) && (*hostname != '\0')) {
+        Dvar_SetStringByName("ui_serverinfomessagehostname",hostname);
       }
-      if ((local_c != (char *)0x0) && (*local_c != '\0')) {
-        Dvar_SetStringByName("ui_mapname",local_c);
+      if ((mapname != (char *)0x0) && (*mapname != '\0')) {
+        Dvar_SetStringByName("ui_mapname",mapname);
       }
-      UI_SortServerStatusInfo(param_2);
+      UI_SortServerStatusInfo(info);
       iVar2 = 1;
     }
   }
@@ -588,7 +597,7 @@ int __cdecl UI_GetServerStatusInfo(char *param_1,serverStatusInfo_s *param_2)
 
 // 00753A10  UI_GetServerStatusInfoScoreBoard  (ui/ui_main_pc.cpp:677)
 
-int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *param_2)
+int __cdecl UI_GetServerStatusInfoScoreBoard(char *serverAddress,serverStatusInfo_s *info)
 
 {
   int iVar1;
@@ -600,38 +609,47 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
   undefined1 *extraout_EAX_04;
   undefined1 *extraout_EAX_05;
   undefined1 *extraout_EAX_06;
-  char *local_c;
+  char *kills;
+  char *rank;
+  char *assists;
+  char *ping;
+  char *name;
+  int len;
+  char *deaths;
+  int i;
+  char *p;
+  char *score;
   
-  if (param_2 == (serverStatusInfo_s *)0x0) {
-    LAN_GetServerStatusScoreBoard(param_1,(char *)0x0,0);
+  if (info == (serverStatusInfo_s *)0x0) {
+    LAN_GetServerStatusScoreBoard(serverAddress,(char *)0x0,0);
     iVar1 = 0;
   }
   else {
-    memset((uchar *)param_2,'\0',0x14a4);
-    iVar1 = LAN_GetServerStatusScoreBoard(param_1,param_2->text,0x400);
+    memset((uchar *)info,'\0',0x14a4);
+    iVar1 = LAN_GetServerStatusScoreBoard(serverAddress,info->text,0x400);
     if (iVar1 == 0) {
       iVar1 = 0;
     }
     else {
-      I_strncpyz(param_2->address,param_1,0x40);
-      local_c = param_2->text;
-      param_2->numLines = 0;
-      if (param_2->numLines < 0x7d) {
-        param_2->lines[param_2->numLines][0] = "@EXE_SV_INFO_RANK";
-        param_2->lines[param_2->numLines][1] = "@EXE_SV_INFO_NAME";
-        param_2->lines[param_2->numLines][2] = "@EXE_SV_INFO_SCORE";
-        param_2->lines[param_2->numLines][3] = "@EXE_SV_INFO_KILLS";
-        param_2->lines[param_2->numLines][4] = "@EXE_SV_INFO_ASSISTS";
-        param_2->lines[param_2->numLines][5] = "@EXE_SV_INFO_DEATHS";
-        param_2->lines[param_2->numLines][6] = "@EXE_SV_INFO_PING";
-        param_2->numLines = param_2->numLines + 1;
-        while ((local_c != (char *)0x0 && (*local_c != '\0'))) {
-          if (*local_c == '\\') {
-            *local_c = '\0';
-            local_c = local_c + 1;
+      I_strncpyz(info->address,serverAddress,0x40);
+      p = info->text;
+      info->numLines = 0;
+      if (info->numLines < 0x7d) {
+        info->lines[info->numLines][0] = "@EXE_SV_INFO_RANK";
+        info->lines[info->numLines][1] = "@EXE_SV_INFO_NAME";
+        info->lines[info->numLines][2] = "@EXE_SV_INFO_SCORE";
+        info->lines[info->numLines][3] = "@EXE_SV_INFO_KILLS";
+        info->lines[info->numLines][4] = "@EXE_SV_INFO_ASSISTS";
+        info->lines[info->numLines][5] = "@EXE_SV_INFO_DEATHS";
+        info->lines[info->numLines][6] = "@EXE_SV_INFO_PING";
+        info->numLines = info->numLines + 1;
+        while ((p != (char *)0x0 && (*p != '\0'))) {
+          if (*p == '\\') {
+            *p = '\0';
+            p = p + 1;
           }
-          if ((local_c == (char *)0x0) ||
-             (strchr((uchar *)local_c,' '), extraout_EAX == (undefined1 *)0x0)) break;
+          if ((p == (char *)0x0) || (strchr((uchar *)p,' '), extraout_EAX == (undefined1 *)0x0))
+          break;
           *extraout_EAX = 0;
           strchr(extraout_EAX + 1,' ');
           if (extraout_EAX_00 == (undefined1 *)0x0) break;
@@ -651,21 +669,21 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
           strchr(extraout_EAX_04 + 1,' ');
           if (extraout_EAX_05 == (undefined1 *)0x0) break;
           *extraout_EAX_05 = 0;
-          param_2->lines[param_2->numLines][0] = extraout_EAX + 1;
-          param_2->lines[param_2->numLines][1] = extraout_EAX_05 + 1;
-          param_2->lines[param_2->numLines][2] = extraout_EAX_00 + 1;
-          param_2->lines[param_2->numLines][3] = extraout_EAX_01 + 1;
-          param_2->lines[param_2->numLines][4] = extraout_EAX_02 + 1;
-          param_2->lines[param_2->numLines][5] = extraout_EAX_03 + 1;
-          param_2->lines[param_2->numLines][6] = extraout_EAX_04 + 1;
-          param_2->numLines = param_2->numLines + 1;
-          if ((0x7f < param_2->numLines) ||
+          info->lines[info->numLines][0] = extraout_EAX + 1;
+          info->lines[info->numLines][1] = extraout_EAX_05 + 1;
+          info->lines[info->numLines][2] = extraout_EAX_00 + 1;
+          info->lines[info->numLines][3] = extraout_EAX_01 + 1;
+          info->lines[info->numLines][4] = extraout_EAX_02 + 1;
+          info->lines[info->numLines][5] = extraout_EAX_03 + 1;
+          info->lines[info->numLines][6] = extraout_EAX_04 + 1;
+          info->numLines = info->numLines + 1;
+          if ((0x7f < info->numLines) ||
              (strchr(extraout_EAX_05 + 1,'\\'), extraout_EAX_06 == (undefined1 *)0x0)) break;
           *extraout_EAX_06 = 0;
-          local_c = extraout_EAX_06 + 1;
+          p = extraout_EAX_06 + 1;
         }
       }
-      UI_SortServerStatusScoreBoardInfo(param_2);
+      UI_SortServerStatusScoreBoardInfo(info);
       iVar1 = 1;
     }
   }
@@ -675,27 +693,26 @@ int __cdecl UI_GetServerStatusInfoScoreBoard(char *param_1,serverStatusInfo_s *p
 
 // 00754430  stristr  (ui/ui_main_pc.cpp:802)
 
-char * __cdecl stristr(char *param_1,char *param_2)
+char * __cdecl stristr(char *str,char *charset)
 
 {
   int iVar1;
   int iVar2;
-  int local_8;
+  int i;
   
   do {
-    if (*param_1 == '\0') {
+    if (*str == '\0') {
       return (char *)0x0;
     }
-    for (local_8 = 0; (param_2[local_8] != '\0' && (param_1[local_8] != '\0'));
-        local_8 = local_8 + 1) {
-      iVar1 = toupper((int)param_2[local_8]);
-      iVar2 = toupper((int)param_1[local_8]);
+    for (i = 0; (charset[i] != '\0' && (str[i] != '\0')); i = i + 1) {
+      iVar1 = toupper((int)charset[i]);
+      iVar2 = toupper((int)str[i]);
       if (iVar1 != iVar2) break;
     }
-    if (param_2[local_8] == '\0') {
-      return param_1;
+    if (charset[i] == '\0') {
+      return str;
     }
-    param_1 = param_1 + 1;
+    str = str + 1;
   } while( true );
 }
 
@@ -705,6 +722,8 @@ char * __cdecl stristr(char *param_1,char *param_2)
 void __cdecl UI_RefreshServers(void)
 
 {
+  uiInfo_s *uiInfo;
+  
   UI_UpdateDisplayServers(0,uiInfoArray);
   return;
 }
@@ -720,39 +739,35 @@ void __cdecl UI_BuildFindPlayerList(void)
 {
   int iVar1;
   char *pcVar2;
-  int local_18e8;
-  serverStatusInfo_s local_18e4;
-  uiInfo_s *local_438;
-  char local_434 [36];
-  int local_410;
-  char local_40c [1028];
+  int j;
+  serverStatusInfo_s info;
+  uiInfo_s *uiInfo;
+  char name [36];
+  int i;
+  char infoString [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_438 = uiInfoArray;
+  uiInfo = uiInfoArray;
   if ((uiInfoArray[0].nextFindPlayerRefresh != 0) &&
      (uiInfoArray[0].nextFindPlayerRefresh <= uiInfoArray[0].uiDC.realTime)) {
     UI_UpdateDisplayServers(0,uiInfoArray);
-    for (local_410 = 0; local_410 < 0x10; local_410 = local_410 + 1) {
-      if ((*(int *)(&DAT_098da56c + local_410 * 0x8c) != 0) &&
-         (iVar1 = UI_GetServerStatusInfo(&DAT_098da4e4 + local_410 * 0x8c,&local_18e4), iVar1 != 0))
-      {
+    for (i = 0; i < 0x10; i = i + 1) {
+      if ((*(int *)(&DAT_098da56c + i * 0x8c) != 0) &&
+         (iVar1 = UI_GetServerStatusInfo(&DAT_098da4e4 + i * 0x8c,&info), iVar1 != 0)) {
         numFound = numFound + 1;
-        for (local_18e8 = 0; local_18e8 < local_18e4.numLines; local_18e8 = local_18e8 + 1) {
-          if ((local_18e4.lines[local_18e8 + 1][0] != (char *)0x0) &&
-             (*local_18e4.lines[local_18e8 + 1][0] != '\0')) {
-            I_strncpyz(local_434,local_18e4.lines[local_18e8][3],0x22);
-            I_CleanStr(local_434);
-            pcVar2 = stristr(local_434,local_438->findPlayerName);
+        for (j = 0; j < info.numLines; j = j + 1) {
+          if ((info.lines[j + 1][0] != (char *)0x0) && (*info.lines[j + 1][0] != '\0')) {
+            I_strncpyz(name,info.lines[j][3],0x22);
+            I_CleanStr(name);
+            pcVar2 = stristr(name,uiInfo->findPlayerName);
             if (pcVar2 != (char *)0x0) {
-              if (local_438->numFoundPlayerServers < 0xf) {
-                I_strncpyz(local_438->foundPlayerServerAddresses
-                           [local_438->numFoundPlayerServers + -1],&DAT_098da4e4 + local_410 * 0x8c,
-                           0x40);
-                I_strncpyz(local_438->foundPlayerServerAddresses
-                           [local_438->numFoundPlayerServers + 0xf],&DAT_098da524 + local_410 * 0x8c
-                           ,0x40);
-                local_438->numFoundPlayerServers = local_438->numFoundPlayerServers + 1;
+              if (uiInfo->numFoundPlayerServers < 0xf) {
+                I_strncpyz(uiInfo->foundPlayerServerAddresses[uiInfo->numFoundPlayerServers + -1],
+                           &DAT_098da4e4 + i * 0x8c,0x40);
+                I_strncpyz(uiInfo->foundPlayerServerAddresses[uiInfo->numFoundPlayerServers + 0xf],
+                           &DAT_098da524 + i * 0x8c,0x40);
+                uiInfo->numFoundPlayerServers = uiInfo->numFoundPlayerServers + 1;
               }
               else {
                 DAT_098da4e0 = DAT_098d7618;
@@ -760,52 +775,51 @@ void __cdecl UI_BuildFindPlayerList(void)
             }
           }
         }
-        Com_sprintf(local_438->foundPlayerServerAddresses[local_438->numFoundPlayerServers + 0xf],
-                    0x40,"searching %d/%d...");
-        *(undefined4 *)(&DAT_098da56c + local_410 * 0x8c) = 0;
+        Com_sprintf(uiInfo->foundPlayerServerAddresses[uiInfo->numFoundPlayerServers + 0xf],0x40,
+                    "searching %d/%d...");
+        *(undefined4 *)(&DAT_098da56c + i * 0x8c) = 0;
       }
-      if ((*(int *)(&DAT_098da56c + local_410 * 0x8c) == 0) ||
-         (*(int *)(&DAT_098da564 + local_410 * 0x8c) <
-          (local_438->uiDC).realTime - (ui_serverStatusTimeOut->current).integer)) {
-        if (*(int *)(&DAT_098da56c + local_410 * 0x8c) != 0) {
+      if ((*(int *)(&DAT_098da56c + i * 0x8c) == 0) ||
+         (*(int *)(&DAT_098da564 + i * 0x8c) <
+          (uiInfo->uiDC).realTime - (ui_serverStatusTimeOut->current).integer)) {
+        if (*(int *)(&DAT_098da56c + i * 0x8c) != 0) {
           numTimeOuts = numTimeOuts + 1;
         }
-        UI_GetServerStatusInfo(&DAT_098da4e4 + local_410 * 0x8c,(serverStatusInfo_s *)0x0);
-        *(undefined4 *)(&DAT_098da56c + local_410 * 0x8c) = 0;
-        UI_UpdateDisplayServers(0,local_438);
+        UI_GetServerStatusInfo(&DAT_098da4e4 + i * 0x8c,(serverStatusInfo_s *)0x0);
+        *(undefined4 *)(&DAT_098da56c + i * 0x8c) = 0;
+        UI_UpdateDisplayServers(0,uiInfo);
         if (DAT_098da4e0 < DAT_098d7618) {
-          *(int *)(&DAT_098da564 + local_410 * 0x8c) = (local_438->uiDC).realTime;
+          *(int *)(&DAT_098da564 + i * 0x8c) = (uiInfo->uiDC).realTime;
           LAN_GetServerAddressString
                     ((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098da4e0 * 4),
-                     &DAT_098da4e4 + local_410 * 0x8c,0x40);
+                     &DAT_098da4e4 + i * 0x8c,0x40);
           LAN_GetServerInfo((ui_netSource->current).integer,
-                            *(int *)(&DAT_098c3d98 + DAT_098da4e0 * 4),local_40c,0x400);
+                            *(int *)(&DAT_098c3d98 + DAT_098da4e0 * 4),infoString,0x400);
           iVar1 = 0x40;
-          pcVar2 = Info_ValueForKey(local_40c,"hostname");
-          I_strncpyz(&DAT_098da524 + local_410 * 0x8c,pcVar2,iVar1);
-          *(undefined4 *)(&DAT_098da56c + local_410 * 0x8c) = 1;
+          pcVar2 = Info_ValueForKey(infoString,"hostname");
+          I_strncpyz(&DAT_098da524 + i * 0x8c,pcVar2,iVar1);
+          *(undefined4 *)(&DAT_098da56c + i * 0x8c) = 1;
           DAT_098da4e0 = DAT_098da4e0 + 1;
-          Com_sprintf(local_438->foundPlayerServerAddresses[local_438->numFoundPlayerServers + 0xf],
-                      0x40,"searching %d/%d...");
+          Com_sprintf(uiInfo->foundPlayerServerAddresses[uiInfo->numFoundPlayerServers + 0xf],0x40,
+                      "searching %d/%d...");
         }
       }
     }
-    for (local_410 = 0; (local_410 < 0x10 && (*(int *)(&DAT_098da56c + local_410 * 0x8c) == 0));
-        local_410 = local_410 + 1) {
+    for (i = 0; (i < 0x10 && (*(int *)(&DAT_098da56c + i * 0x8c) == 0)); i = i + 1) {
     }
-    if (local_410 < 0x10) {
-      local_438->nextFindPlayerRefresh = (local_438->uiDC).realTime + 0x19;
+    if (i < 0x10) {
+      uiInfo->nextFindPlayerRefresh = (uiInfo->uiDC).realTime + 0x19;
     }
     else {
-      if (local_438->numFoundPlayerServers == 0) {
-        Com_sprintf(local_438->foundPlayerServerAddresses[local_438->numFoundPlayerServers + 0xf],
-                    0x40,"no servers found");
+      if (uiInfo->numFoundPlayerServers == 0) {
+        Com_sprintf(uiInfo->foundPlayerServerAddresses[uiInfo->numFoundPlayerServers + 0xf],0x40,
+                    "no servers found");
       }
       else {
-        Com_sprintf(local_438->foundPlayerServerAddresses[local_438->numFoundPlayerServers + 0xf],
-                    0x40,"%d server%s found with player %s");
+        Com_sprintf(uiInfo->foundPlayerServerAddresses[uiInfo->numFoundPlayerServers + 0xf],0x40,
+                    "%d server%s found with player %s");
       }
-      local_438->nextFindPlayerRefresh = 0;
+      uiInfo->nextFindPlayerRefresh = 0;
     }
   }
   return;
@@ -814,66 +828,67 @@ void __cdecl UI_BuildFindPlayerList(void)
 
 // 007544C0  UI_SelectedMap  (ui/ui_main_pc.cpp:945)
 
-char * __cdecl UI_SelectedMap(int param_1,int *param_2)
+char * __cdecl UI_SelectedMap(int index,int *actual)
 
 {
   char *pcVar1;
-  int local_c;
-  int local_8;
+  int c;
+  int i;
   
-  local_c = 0;
-  *param_2 = 0;
-  local_8 = 0;
+  c = 0;
+  *actual = 0;
+  i = 0;
   do {
-    if (DAT_098b9e44 <= local_8) {
+    if (DAT_098b9e44 <= i) {
       return "";
     }
-    if (*(int *)(&DAT_098b9f74 + local_8 * 0x130) != 0) {
-      if (local_c == param_1) {
-        *param_2 = local_8;
-        pcVar1 = UI_SafeTranslateString(&DAT_098b9e48 + local_8 * 0x130);
+    if (*(int *)(&DAT_098b9f74 + i * 0x130) != 0) {
+      if (c == index) {
+        *actual = i;
+        pcVar1 = UI_SafeTranslateString(&DAT_098b9e48 + i * 0x130);
         return pcVar1;
       }
-      local_c = local_c + 1;
+      c = c + 1;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 00754550  UI_GameType_HandleKey  (ui/ui_main_pc.cpp:969)
 
-int __cdecl UI_GameType_HandleKey(int param_1,int param_2,int param_3)
+int __cdecl UI_GameType_HandleKey(int flags,int key,int resetMap)
 
 {
   int iVar1;
   int iVar2;
-  int local_8;
+  int oldCount;
+  int nextGameType;
   
-  if ((((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xd)) || (param_2 == 0xbf)) {
+  if ((((key == 200) || (key == 0xc9)) || (key == 0xd)) || (key == 0xbf)) {
     iVar1 = UI_MapCountByGameType();
-    if (param_2 == 0xc9) {
-      local_8 = (ui_netGameTypeName->current).integer + -1;
-      if (local_8 == 2) {
-        local_8 = 1;
+    if (key == 0xc9) {
+      nextGameType = (ui_netGameTypeName->current).integer + -1;
+      if (nextGameType == 2) {
+        nextGameType = 1;
       }
-      else if (local_8 < 2) {
-        local_8 = DAT_098b5434 + -1;
+      else if (nextGameType < 2) {
+        nextGameType = DAT_098b5434 + -1;
       }
     }
     else {
-      local_8 = (ui_netGameTypeName->current).integer + 1;
-      if (local_8 < DAT_098b5434) {
-        if (local_8 == 2) {
-          local_8 = 3;
+      nextGameType = (ui_netGameTypeName->current).integer + 1;
+      if (nextGameType < DAT_098b5434) {
+        if (nextGameType == 2) {
+          nextGameType = 3;
         }
       }
       else {
-        local_8 = 1;
+        nextGameType = 1;
       }
     }
-    Dvar_SetInt(ui_netGameTypeName,local_8);
-    if ((param_3 != 0) && (iVar2 = UI_MapCountByGameType(), iVar1 != iVar2)) {
+    Dvar_SetInt(ui_netGameTypeName,nextGameType);
+    if ((resetMap != 0) && (iVar2 = UI_MapCountByGameType(), iVar1 != iVar2)) {
       Dvar_SetInt(ui_currentMap,0);
     }
     iVar1 = 1;
@@ -887,31 +902,31 @@ int __cdecl UI_GameType_HandleKey(int param_1,int param_2,int param_3)
 
 // 00754630  UI_NetGameType_HandleKey  (ui/ui_main_pc.cpp:1014)
 
-int __cdecl UI_NetGameType_HandleKey(int param_1,int param_2)
+int __cdecl UI_NetGameType_HandleKey(int flags,int key)
 
 {
   bool bVar1;
   int iVar2;
   int local_c;
-  int local_8;
+  int nextNetGameType;
   
-  if ((((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xd)) || (param_2 == 0xbf)) {
-    if (param_2 == 0xc9) {
+  if ((((key == 200) || (key == 0xc9)) || (key == 0xd)) || (key == 0xbf)) {
+    if (key == 0xc9) {
       if ((ui_netGameType->current).integer == 0) {
         local_c = DAT_098b5434;
       }
       else {
         local_c = (ui_netGameType->current).integer;
       }
-      local_8 = local_c + -1;
+      nextNetGameType = local_c + -1;
     }
     else {
-      local_8 = (ui_netGameType->current).integer + 1;
-      if (local_8 == DAT_098b5434) {
-        local_8 = 0;
+      nextNetGameType = (ui_netGameType->current).integer + 1;
+      if (nextNetGameType == DAT_098b5434) {
+        nextNetGameType = 0;
       }
     }
-    Dvar_SetInt(ui_netGameType,local_8);
+    Dvar_SetInt(ui_netGameType,nextNetGameType);
     Dvar_SetString(ui_netGameTypeName,&DAT_098b5438 + (ui_netGameType->current).integer * 0x74);
     UI_MapCountByGameType();
     bVar1 = UI_IsMapActive((ui_currentNetMap->current).integer);
@@ -933,30 +948,30 @@ int __cdecl UI_NetGameType_HandleKey(int param_1,int param_2)
 
 // 00754860  UI_JoinGameType_HandleKey  (ui/ui_main_pc.cpp:1056)
 
-int __cdecl UI_JoinGameType_HandleKey(int param_1,int param_2)
+int __cdecl UI_JoinGameType_HandleKey(int flags,int key)
 
 {
   int iVar1;
   int local_c;
-  int local_8;
+  int nextJoinGameType;
   
-  if ((((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xd)) || (param_2 == 0xbf)) {
-    if (param_2 == 0xc9) {
+  if ((((key == 200) || (key == 0xc9)) || (key == 0xd)) || (key == 0xbf)) {
+    if (key == 0xc9) {
       if ((ui_joinGameType->current).integer == 0) {
         local_c = DAT_098b8fc0;
       }
       else {
         local_c = (ui_joinGameType->current).integer;
       }
-      local_8 = local_c + -1;
+      nextJoinGameType = local_c + -1;
     }
     else {
-      local_8 = (ui_joinGameType->current).integer + 1;
-      if (local_8 == DAT_098b8fc0) {
-        local_8 = 0;
+      nextJoinGameType = (ui_joinGameType->current).integer + 1;
+      if (nextJoinGameType == DAT_098b8fc0) {
+        nextJoinGameType = 0;
       }
     }
-    Dvar_SetInt(ui_joinGameType,local_8);
+    Dvar_SetInt(ui_joinGameType,nextJoinGameType);
     UI_BuildServerDisplayList(0,uiInfoArray,1);
     iVar1 = 1;
   }
@@ -969,31 +984,31 @@ int __cdecl UI_JoinGameType_HandleKey(int param_1,int param_2)
 
 // 00754920  UI_JoinMod_HandleKey  (ui/ui_main_pc.cpp:1082)
 
-int __cdecl UI_JoinMod_HandleKey(int param_1,int param_2)
+int __cdecl UI_JoinMod_HandleKey(int flags,int key)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int nextJoinMod;
   
-  if ((((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xd)) || (param_2 == 0xbf)) {
-    if (param_2 == 0xc9) {
+  if ((((key == 200) || (key == 0xc9)) || (key == 0xd)) || (key == 0xbf)) {
+    if (key == 0xc9) {
       if ((ui_browserMod->current).integer + -1 < -2) {
-        local_8 = DAT_098c38f0;
+        nextJoinMod = DAT_098c38f0;
       }
       else {
-        local_8 = (ui_browserMod->current).integer;
+        nextJoinMod = (ui_browserMod->current).integer;
       }
-      local_8 = local_8 + -1;
+      nextJoinMod = nextJoinMod + -1;
     }
     else {
-      local_8 = (ui_browserMod->current).integer + 1;
-      if (local_8 == DAT_098c38f0) {
-        local_8 = -2;
+      nextJoinMod = (ui_browserMod->current).integer + 1;
+      if (nextJoinMod == DAT_098c38f0) {
+        nextJoinMod = -2;
       }
     }
-    if ((local_8 < -2) || (0x40 < local_8)) {
+    if ((nextJoinMod < -2) || (0x40 < nextJoinMod)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_main_pc.cpp",0x452,0,
                                "nextJoinMod not in [ALLMODS, MAX_MODS]\n\t%i not in [%i, %i]");
       if (!bVar2) {
@@ -1002,7 +1017,7 @@ int __cdecl UI_JoinMod_HandleKey(int param_1,int param_2)
         return iVar3;
       }
     }
-    Dvar_SetInt(ui_browserMod,local_8);
+    Dvar_SetInt(ui_browserMod,nextJoinMod);
     UI_BuildServerDisplayList(0,uiInfoArray,1);
     iVar3 = 1;
   }
@@ -1015,10 +1030,12 @@ int __cdecl UI_JoinMod_HandleKey(int param_1,int param_2)
 
 // 00754A10  UI_NetSource_UpdateDisplayList  (ui/ui_main_pc.cpp:1117)
 
-void __cdecl UI_NetSource_UpdateDisplayList(int param_1)
+void __cdecl UI_NetSource_UpdateDisplayList(int source)
 
 {
-  Dvar_SetInt(ui_netSource,param_1);
+  uiInfo_s *uiInfo;
+  
+  Dvar_SetInt(ui_netSource,source);
   UI_BuildServerDisplayList(0,uiInfoArray,1);
   return;
 }
@@ -1026,30 +1043,30 @@ void __cdecl UI_NetSource_UpdateDisplayList(int param_1)
 
 // 00754A50  UI_NetSource_HandleKey  (ui/ui_main_pc.cpp:1126)
 
-int __cdecl UI_NetSource_HandleKey(int param_1,int param_2)
+int __cdecl UI_NetSource_HandleKey(int flags,int key)
 
 {
   int iVar1;
   int local_c;
-  int local_8;
+  int nextNetSource;
   
-  if ((((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xd)) || (param_2 == 0xbf)) {
-    if (param_2 == 0xc9) {
+  if ((((key == 200) || (key == 0xc9)) || (key == 0xd)) || (key == 0xbf)) {
+    if (key == 0xc9) {
       if ((ui_netSource->current).integer == 0) {
         local_c = 4;
       }
       else {
         local_c = (ui_netSource->current).integer;
       }
-      local_8 = local_c + -1;
+      nextNetSource = local_c + -1;
     }
     else {
-      local_8 = (ui_netSource->current).integer + 1;
-      if (local_8 == 4) {
-        local_8 = 0;
+      nextNetSource = (ui_netSource->current).integer + 1;
+      if (nextNetSource == 4) {
+        nextNetSource = 0;
       }
     }
-    UI_NetSource_UpdateDisplayList(local_8);
+    UI_NetSource_UpdateDisplayList(nextNetSource);
     iVar1 = 1;
   }
   else {
@@ -1061,13 +1078,13 @@ int __cdecl UI_NetSource_HandleKey(int param_1,int param_2)
 
 // 00754AF0  UI_NetFilter_HandleKey  (ui/ui_main_pc.cpp:1153)
 
-int __cdecl UI_NetFilter_HandleKey(int param_1,int param_2)
+int __cdecl UI_NetFilter_HandleKey(int flags,int key)
 
 {
   int iVar1;
   
-  if ((((param_2 == 200) || (param_2 == 0xc9)) || (param_2 == 0xd)) || (param_2 == 0xbf)) {
-    if (param_2 == 0xc9) {
+  if ((((key == 200) || (key == 0xc9)) || (key == 0xd)) || (key == 0xbf)) {
+    if (key == 0xc9) {
       ui_serverFilterType = ui_serverFilterType + -1;
     }
     else {
@@ -1094,22 +1111,23 @@ int __cdecl UI_NetFilter_HandleKey(int param_1,int param_2)
 // 00754B90  UI_DrawGameType  (ui/ui_main_pc.cpp:1185)
 
 void __cdecl
-UI_DrawGameType(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-               int param_6)
+UI_DrawGameType(int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,int textStyle
+               )
 
 {
-  char *pcVar1;
-  char *local_c;
+  char *text;
+  char *str;
+  char *translation;
   
   if ((&DAT_098b5444)[(ui_netGameTypeName->current).integer * 0x74] == '\0') {
-    local_c = "EXE_ALL";
+    str = "EXE_ALL";
   }
   else {
-    local_c = &DAT_098b5444 + (ui_netGameTypeName->current).integer * 0x74;
+    str = &DAT_098b5444 + (ui_netGameTypeName->current).integer * 0x74;
   }
-  pcVar1 = UI_SafeTranslateString(local_c);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,0x7fffffff,param_3,
-              param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  text = UI_SafeTranslateString(str);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,rect->x,
+              rect->y,rect->horzAlign,rect->vertAlign,scale,color,textStyle);
   return;
 }
 
@@ -1117,26 +1135,27 @@ UI_DrawGameType(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,flo
 // 00754C30  UI_DrawNetGameType  (ui/ui_main_pc.cpp:1199)
 
 void __cdecl
-UI_DrawNetGameType(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-                  int param_6)
+UI_DrawNetGameType(int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,
+                  int textStyle)
 
 {
-  char *pcVar1;
-  char *local_c;
+  char *text;
+  char *str;
+  char *translation;
   
   if (DAT_098b5434 < (ui_netGameType->current).integer) {
     Dvar_SetInt(ui_netGameType,0);
     Dvar_SetString(ui_netGameTypeName,&DAT_098b5438);
   }
   if ((&DAT_098b5444)[(ui_netGameType->current).integer * 0x74] == '\0') {
-    local_c = "EXE_ALL";
+    str = "EXE_ALL";
   }
   else {
-    local_c = &DAT_098b5444 + (ui_netGameType->current).integer * 0x74;
+    str = &DAT_098b5444 + (ui_netGameType->current).integer * 0x74;
   }
-  pcVar1 = UI_SafeTranslateString(local_c);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,0x7fffffff,param_3,
-              param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  text = UI_SafeTranslateString(str);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,rect->x,
+              rect->y,rect->horzAlign,rect->vertAlign,scale,color,textStyle);
   return;
 }
 
@@ -1144,25 +1163,26 @@ UI_DrawNetGameType(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,
 // 00754D10  UI_DrawJoinGameType  (ui/ui_main_pc.cpp:1218)
 
 void __cdecl
-UI_DrawJoinGameType(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-                   int param_6)
+UI_DrawJoinGameType(int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,
+                   int textStyle)
 
 {
-  char *pcVar1;
-  char *local_c;
+  char *text;
+  char *str;
+  char *translation;
   
   if (DAT_098b8fc0 < (ui_joinGameType->current).integer) {
     Dvar_SetInt(ui_joinGameType,0);
   }
   if ((&DAT_098b8fd0)[(ui_joinGameType->current).integer * 0x74] == '\0') {
-    local_c = "EXE_ALL";
+    str = "EXE_ALL";
   }
   else {
-    local_c = &DAT_098b8fd0 + (ui_joinGameType->current).integer * 0x74;
+    str = &DAT_098b8fd0 + (ui_joinGameType->current).integer * 0x74;
   }
-  pcVar1 = UI_SafeTranslateString(local_c);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,0x7fffffff,param_3,
-              param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  text = UI_SafeTranslateString(str);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,rect->x,
+              rect->y,rect->horzAlign,rect->vertAlign,scale,color,textStyle);
   return;
 }
 
@@ -1170,23 +1190,23 @@ UI_DrawJoinGameType(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4
 // 00754DD0  UI_DrawJoinMod  (ui/ui_main_pc.cpp:1235)
 
 void __cdecl
-UI_DrawJoinMod(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-              int param_6)
+UI_DrawJoinMod(int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,int textStyle)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  char *local_c;
+  char *text;
+  char *str;
+  char *translation;
   
   if (DAT_098c38f0 < (ui_browserMod->current).integer) {
     Dvar_SetInt(ui_browserMod,-2);
   }
   if ((ui_browserMod->current).integer == -2) {
-    local_c = "EXE_ALL";
+    str = "EXE_ALL";
   }
   else if ((ui_browserMod->current).integer == -1) {
-    local_c = "EXE_NO";
+    str = "EXE_NO";
   }
   else {
     if (0x3f < (ui_browserMod->current).unsignedInt) {
@@ -1199,11 +1219,11 @@ UI_DrawJoinMod(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,floa
         return;
       }
     }
-    local_c = (char *)(&DAT_098c36f0)[(ui_browserMod->current).integer * 2];
+    str = (char *)(&DAT_098c36f0)[(ui_browserMod->current).integer * 2];
   }
-  pcVar3 = UI_SafeTranslateString(local_c);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar3,0x7fffffff,param_3,
-              param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  text = UI_SafeTranslateString(str);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),text,0x7fffffff,font,rect->x,
+              rect->y,rect->horzAlign,rect->vertAlign,scale,color,textStyle);
   return;
 }
 
@@ -1211,26 +1231,26 @@ UI_DrawJoinMod(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,floa
 // 00754ED0  UI_DrawNetFilter  (ui/ui_main_pc.cpp:1256)
 
 void __cdecl
-UI_DrawNetFilter(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-                int param_6)
+UI_DrawNetFilter(int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,
+                int textStyle)
 
 {
-  char *pcVar1;
-  char *pcVar2;
-  msgLocErrType_t mVar3;
+  char *pszInputBuffer;
+  char *pszMessageType;
+  msgLocErrType_t errType;
   undefined1 local_10 [8];
-  char *local_8;
+  char *pszTeanslation;
   
   if ((ui_serverFilterType < 0) || (1 < ui_serverFilterType)) {
     ui_serverFilterType = 0;
   }
-  mVar3 = LOCMSG_SAFE;
-  pcVar2 = "server filter";
+  errType = LOCMSG_SAFE;
+  pszMessageType = "server filter";
   UI_GetServerFilter((int)local_10);
-  pcVar1 = va("EXE_SERVERFILTER\x14%s");
-  local_8 = SEH_LocalizeTextMessage(pcVar1,pcVar2,mVar3);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),local_8,0x7fffffff,param_3,
-              param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  pszInputBuffer = va("EXE_SERVERFILTER\x14%s");
+  pszTeanslation = SEH_LocalizeTextMessage(pszInputBuffer,pszMessageType,errType);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),pszTeanslation,0x7fffffff,
+              font,rect->x,rect->y,rect->horzAlign,rect->vertAlign,scale,color,textStyle);
   return;
 }
 
@@ -1238,64 +1258,67 @@ UI_DrawNetFilter(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,fl
 // 00754F90  UI_DrawNetSource  (ui/ui_main_pc.cpp:1270)
 
 void __cdecl
-UI_DrawNetSource(int param_1,rectDef_s *param_2,Font_s *param_3,float param_4,float *param_5,
-                int param_6)
+UI_DrawNetSource(int contextIndex,rectDef_s *rect,Font_s *font,float scale,float *color,
+                int textStyle)
 
 {
   char *pcVar1;
-  char *pcVar2;
-  msgLocErrType_t mVar3;
+  char *pszMessageType;
+  msgLocErrType_t errType;
+  char *translation;
   
-  mVar3 = LOCMSG_SAFE;
-  pcVar2 = "net source";
+  errType = LOCMSG_SAFE;
+  pszMessageType = "net source";
   pcVar1 = va("EXE_NETSOURCE\x14%s");
-  pcVar1 = SEH_LocalizeTextMessage(pcVar1,pcVar2,mVar3);
-  UI_DrawText((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),pcVar1,0x7fffffff,param_3,
-              param_2->x,param_2->y,param_2->horzAlign,param_2->vertAlign,param_4,param_5,param_6);
+  pcVar1 = SEH_LocalizeTextMessage(pcVar1,pszMessageType,errType);
+  UI_DrawText((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),pcVar1,0x7fffffff,font,
+              rect->x,rect->y,rect->horzAlign,rect->vertAlign,scale,color,textStyle);
   return;
 }
 
 
 // 00755020  UI_GetLevelShot  (ui/ui_main_pc.cpp:1279)
 
-Material * __cdecl UI_GetLevelShot(int param_1)
+Material * __cdecl UI_GetLevelShot(int index)
 
 {
   Material *pMVar1;
   
-  if ((param_1 < 0) || (DAT_098b9e44 <= param_1)) {
-    param_1 = 0;
+  if ((index < 0) || (DAT_098b9e44 <= index)) {
+    index = 0;
   }
-  if ((&DAT_098b9f70)[param_1 * 0x4c] == 0) {
-    pMVar1 = Material_RegisterHandle(&DAT_098b9eb8 + param_1 * 0x130,3);
-    (&DAT_098b9f70)[param_1 * 0x4c] = pMVar1;
+  if ((&DAT_098b9f70)[index * 0x4c] == 0) {
+    pMVar1 = Material_RegisterHandle(&DAT_098b9eb8 + index * 0x130,3);
+    (&DAT_098b9f70)[index * 0x4c] = pMVar1;
   }
-  return (Material *)(&DAT_098b9f70)[param_1 * 0x4c];
+  return (Material *)(&DAT_098b9f70)[index * 0x4c];
 }
 
 
 // 00755090  UI_DrawMapPreview  (ui/ui_main_pc.cpp:1291)
 
-void __cdecl UI_DrawMapPreview(int param_1,rectDef_s *param_2,float *param_3)
+void __cdecl UI_DrawMapPreview(int contextIndex,rectDef_s *rect,float *color)
 
 {
-  Material *pMVar1;
+  Material *material;
+  Material *mtl;
   
-  pMVar1 = UI_GetLevelShot((ui_currentNetMap->current).integer);
-  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),param_2->x,param_2->y,
-                   param_2->w,param_2->h,param_2->horzAlign,param_2->vertAlign,param_3,pMVar1);
+  material = UI_GetLevelShot((ui_currentNetMap->current).integer);
+  UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),rect->x,rect->y,rect->w,
+                   rect->h,rect->horzAlign,rect->vertAlign,color,material);
   return;
 }
 
 
 // 00755100  UI_LodMods_ShouldSkipMap  (ui/ui_main_pc.cpp:1577)
 
-bool __cdecl UI_LodMods_ShouldSkipMap(char *param_1)
+bool __cdecl UI_LodMods_ShouldSkipMap(char *dir)
 
 {
   int iVar1;
+  int result;
   
-  iVar1 = I_strnicmp(param_1,"mp_",3);
+  iVar1 = I_strnicmp(dir,"mp_",3);
   return iVar1 != 0;
 }
 
@@ -1313,41 +1336,44 @@ void __cdecl UI_LoadMods(void)
   char *local_3c;
   char *local_2c;
   char *local_1c;
-  char *local_14;
-  int local_c;
+  int numdirs;
+  char *dirptr;
+  char *descptr;
+  int i;
+  int dirlen;
   
   DAT_098c38f0 = 0;
   DAT_098c38f4 = 0;
   iVar3 = FS_GetFileList("$modlist","",FS_LIST_ALL,dirlist,0x2000);
-  local_14 = dirlist;
-  local_c = 0;
+  dirptr = dirlist;
+  i = 0;
   do {
-    if (iVar3 <= local_c) {
+    if (iVar3 <= i) {
       return;
     }
-    bVar2 = UI_LodMods_ShouldSkipMap(local_14);
+    bVar2 = UI_LodMods_ShouldSkipMap(dirptr);
     if (bVar2) {
-      local_1c = local_14;
+      local_1c = dirptr;
       do {
         cVar1 = *local_1c;
         local_1c = local_1c + 1;
       } while (cVar1 != '\0');
-      local_2c = local_14 + (int)(local_1c + (1 - (int)(local_14 + 1)));
+      local_2c = dirptr + (int)(local_1c + (1 - (int)(dirptr + 1)));
       pcVar4 = local_2c + 1;
       do {
         cVar1 = *local_2c;
         local_2c = local_2c + 1;
       } while (cVar1 != '\0');
-      local_2c = local_2c + (int)(local_1c + (1 - (int)(local_14 + 1)) + (1 - (int)pcVar4));
+      local_2c = local_2c + (int)(local_1c + (1 - (int)(dirptr + 1)) + (1 - (int)pcVar4));
     }
     else {
-      local_3c = local_14;
+      local_3c = dirptr;
       do {
         cVar1 = *local_3c;
         local_3c = local_3c + 1;
       } while (cVar1 != '\0');
-      local_4c = local_14 + (int)(local_3c + (1 - (int)(local_14 + 1)));
-      pcVar4 = String_Alloc(local_14);
+      local_4c = dirptr + (int)(local_3c + (1 - (int)(dirptr + 1)));
+      pcVar4 = String_Alloc(dirptr);
       (&DAT_098c36f0)[DAT_098c38f0 * 2] = pcVar4;
       pcVar4 = String_Alloc(local_4c);
       (&DAT_098c36f4)[DAT_098c38f0 * 2] = pcVar4;
@@ -1356,14 +1382,14 @@ void __cdecl UI_LoadMods(void)
         cVar1 = *local_4c;
         local_4c = local_4c + 1;
       } while (cVar1 != '\0');
-      local_2c = local_4c + (int)(local_3c + (1 - (int)(local_14 + 1)) + (1 - (int)pcVar4));
+      local_2c = local_4c + (int)(local_3c + (1 - (int)(dirptr + 1)) + (1 - (int)pcVar4));
       DAT_098c38f0 = DAT_098c38f0 + 1;
       if (0x3f < DAT_098c38f0) {
         return;
       }
     }
-    local_14 = local_14 + (int)local_2c;
-    local_c = local_c + 1;
+    dirptr = dirptr + (int)local_2c;
+    i = i + 1;
   } while( true );
 }
 
@@ -1412,13 +1438,16 @@ void __cdecl UI_DeclineFriend(void)
 
 // 00755390  UI_AcceptInvite  (ui/ui_main_pc.cpp:1968)
 
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
 void __cdecl UI_AcceptInvite(void)
 
 {
-  ulong64 uVar1;
+  ulong64 frienduid;
+  int selected;
   
-  uVar1 = Live_GetInviteFriend((ui_inviteSelectedInd->current).integer);
-  Live_AcceptInvite(uVar1);
+  frienduid = Live_GetInviteFriend((ui_inviteSelectedInd->current).integer);
+  Live_AcceptInvite(frienduid);
   return;
 }
 
@@ -1429,16 +1458,17 @@ char * __cdecl UI_GetMapRotationToken(void)
 
 {
   char *pcVar1;
-  char *local_8;
+  char *token_2;
+  char *value_2;
   
-  local_8 = (sv_mapRotationCurrent->current).string;
-  pcVar1 = Com_Parse(&local_8);
-  if (local_8 == (char *)0x0) {
+  value_2 = (sv_mapRotationCurrent->current).string;
+  pcVar1 = Com_Parse(&value_2);
+  if (value_2 == (char *)0x0) {
     Dvar_SetString(sv_mapRotationCurrent,"");
     pcVar1 = (char *)0x0;
   }
   else {
-    Dvar_SetString(sv_mapRotationCurrent,local_8);
+    Dvar_SetString(sv_mapRotationCurrent,value_2);
   }
   return pcVar1;
 }
@@ -1449,15 +1479,15 @@ char * __cdecl UI_GetMapRotationToken(void)
 void __cdecl UI_ClearMods(void)
 
 {
-  dvar_s *pdVar1;
-  DvarSetSource DVar2;
+  dvar_s *dvar;
+  DvarSetSource setSource;
   
   if ((useFastFile->current).enabled != false) {
     DB_SyncXAssets();
   }
-  DVar2 = DVAR_SOURCE_INTERNAL;
-  pdVar1 = Dvar_FindVar("fs_game");
-  Dvar_Reset(pdVar1,DVar2);
+  setSource = DVAR_SOURCE_INTERNAL;
+  dvar = Dvar_FindVar("fs_game");
+  Dvar_Reset(dvar,setSource);
   Cbuf_AddText(0,"vid_restart\n");
   return;
 }

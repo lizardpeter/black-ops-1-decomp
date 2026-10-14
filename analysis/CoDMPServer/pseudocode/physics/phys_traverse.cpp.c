@@ -6,52 +6,53 @@
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __thiscall
-colgeom_visitor_t::intersect_box(colgeom_visitor_t *this,float *param_1,float *param_2,int param_3)
+colgeom_visitor_t::intersect_box(colgeom_visitor_t *this,float *mn,float *mx,int mask)
 
 {
-  cLeaf_s *pcVar1;
-  int local_1050;
-  leafList_s local_104c;
-  TraceThreadInfo local_1020;
-  ushort local_100c [2048];
+  cLeaf_s *leaf_00;
+  cLeaf_s *leaf;
+  int i;
+  leafList_s ll;
+  TraceThreadInfo info;
+  ushort leafs [2048];
   uint local_c;
-  undefined4 local_8;
+  int MAX_POSITION_LEAFS;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = 0x800;
-  (this->m_mn).vec.v[0] = *param_1;
-  (this->m_mn).vec.v[1] = param_1[1];
-  (this->m_mn).vec.v[2] = param_1[2];
-  (this->m_mx).vec.v[0] = *param_2;
-  (this->m_mx).vec.v[1] = param_2[1];
-  (this->m_mx).vec.v[2] = param_2[2];
-  this->m_mask = param_3;
-  local_104c.bounds[0][0] = (this->m_mn).vec.v[0];
-  local_104c.bounds[0][1] = (this->m_mn).vec.v[1];
-  local_104c.bounds[0][2] = (this->m_mn).vec.v[2];
-  local_104c.bounds[1][0] = (this->m_mx).vec.v[0];
-  local_104c.bounds[1][1] = (this->m_mx).vec.v[1];
-  local_104c.bounds[1][2] = (this->m_mx).vec.v[2];
-  local_104c.count = 0;
-  local_104c.maxcount = 0x800;
-  local_104c.list = local_100c;
-  local_104c.lastLeaf = 0;
-  local_104c.overflowed = 0;
-  CM_BoxLeafnums_r(&local_104c,0);
-  if (local_104c.count != 0) {
-    if (local_104c.overflowed != 0) {
+  MAX_POSITION_LEAFS = 0x800;
+  (this->m_mn).vec.v[0] = *mn;
+  (this->m_mn).vec.v[1] = mn[1];
+  (this->m_mn).vec.v[2] = mn[2];
+  (this->m_mx).vec.v[0] = *mx;
+  (this->m_mx).vec.v[1] = mx[1];
+  (this->m_mx).vec.v[2] = mx[2];
+  this->m_mask = mask;
+  ll.bounds[0][0] = (this->m_mn).vec.v[0];
+  ll.bounds[0][1] = (this->m_mn).vec.v[1];
+  ll.bounds[0][2] = (this->m_mn).vec.v[2];
+  ll.bounds[1][0] = (this->m_mx).vec.v[0];
+  ll.bounds[1][1] = (this->m_mx).vec.v[1];
+  ll.bounds[1][2] = (this->m_mx).vec.v[2];
+  ll.count = 0;
+  ll.maxcount = 0x800;
+  ll.list = leafs;
+  ll.lastLeaf = 0;
+  ll.overflowed = 0;
+  CM_BoxLeafnums_r(&ll,0);
+  if (ll.count != 0) {
+    if (ll.overflowed != 0) {
       Com_Printf(0,"colgeom_visitor_t::intersect_box: leafList overflow (max %d)\n");
     }
-    this->m_threadInfo = &local_1020;
+    this->m_threadInfo = &info;
     CM_GetTraceThreadInfo(this->m_threadInfo);
     if (((this->m_threadInfo->checkcount).partitions != (int *)0x0) || (cm.partitionCount == 0)) {
-      for (local_1050 = 0; local_1050 < local_104c.count; local_1050 = local_1050 + 1) {
-        pcVar1 = cm.leafs + local_100c[local_1050];
-        if ((pcVar1->brushContents & this->m_mask) != 0) {
-          intersect_box_brushes(this,pcVar1);
+      for (i = 0; i < ll.count; i = i + 1) {
+        leaf_00 = cm.leafs + leafs[i];
+        if ((leaf_00->brushContents & this->m_mask) != 0) {
+          intersect_box_brushes(this,leaf_00);
         }
-        if ((pcVar1->terrainContents & this->m_mask) != 0) {
-          intersect_box_partitions(this,pcVar1);
+        if ((leaf_00->terrainContents & this->m_mask) != 0) {
+          intersect_box_partitions(this,leaf_00);
         }
       }
     }
@@ -62,23 +63,23 @@ colgeom_visitor_t::intersect_box(colgeom_visitor_t *this,float *param_1,float *p
 
 // 0085BB60  intersect_box_brushes  (physics/phys_traverse.cpp:98)
 
-void __thiscall colgeom_visitor_t::intersect_box_brushes(colgeom_visitor_t *this,cLeaf_s *param_1)
+void __thiscall colgeom_visitor_t::intersect_box_brushes(colgeom_visitor_t *this,cLeaf_s *leaf)
 
 {
   bool bVar1;
   
-  if (param_1->leafBrushNode != 0) {
-    if (((((this->m_mx).vec.v[0] < param_1->mins[0]) || ((this->m_mx).vec.v[1] < param_1->mins[1]))
-        || ((this->m_mx).vec.v[2] < param_1->mins[2])) ||
-       (((param_1->maxs[0] < (this->m_mn).vec.v[0] || (param_1->maxs[1] < (this->m_mn).vec.v[1])) ||
-        (param_1->maxs[2] < (this->m_mn).vec.v[2])))) {
+  if (leaf->leafBrushNode != 0) {
+    if (((((this->m_mx).vec.v[0] < leaf->mins[0]) || ((this->m_mx).vec.v[1] < leaf->mins[1])) ||
+        ((this->m_mx).vec.v[2] < leaf->mins[2])) ||
+       (((leaf->maxs[0] < (this->m_mn).vec.v[0] || (leaf->maxs[1] < (this->m_mn).vec.v[1])) ||
+        (leaf->maxs[2] < (this->m_mn).vec.v[2])))) {
       bVar1 = false;
     }
     else {
       bVar1 = true;
     }
     if (bVar1) {
-      intersect_box_brushnode(this,cm.leafbrushNodes + param_1->leafBrushNode);
+      intersect_box_brushnode(this,cm.leafbrushNodes + leaf->leafBrushNode);
     }
   }
   return;
@@ -87,17 +88,18 @@ void __thiscall colgeom_visitor_t::intersect_box_brushes(colgeom_visitor_t *this
 
 // 0085BC40  intersect_box_partitions  (physics/phys_traverse.cpp:107)
 
-void __thiscall
-colgeom_visitor_t::intersect_box_partitions(colgeom_visitor_t *this,cLeaf_s *param_1)
+void __thiscall colgeom_visitor_t::intersect_box_partitions(colgeom_visitor_t *this,cLeaf_s *leaf)
 
 {
-  int local_8;
+  dmaterial_t *materialInfo;
+  CollisionAabbTree *aabbTree;
+  int k;
   
-  for (local_8 = 0; local_8 < (int)(uint)param_1->collAabbCount; local_8 = local_8 + 1) {
+  for (k = 0; k < (int)(uint)leaf->collAabbCount; k = k + 1) {
     if ((this->m_mask &
-        cm.materials[cm.aabbTrees[(uint)param_1->firstCollAabbIndex + local_8].materialIndex].
-        contentFlags) != 0) {
-      intersect_box_partitions_r(this,cm.aabbTrees + (uint)param_1->firstCollAabbIndex + local_8);
+        cm.materials[cm.aabbTrees[(uint)leaf->firstCollAabbIndex + k].materialIndex].contentFlags)
+        != 0) {
+      intersect_box_partitions_r(this,cm.aabbTrees + (uint)leaf->firstCollAabbIndex + k);
     }
   }
   return;
@@ -107,22 +109,24 @@ colgeom_visitor_t::intersect_box_partitions(colgeom_visitor_t *this,cLeaf_s *par
 // 0085BCC0  intersect_box_brushnode  (physics/phys_traverse.cpp:119)
 
 void __thiscall
-colgeom_visitor_t::intersect_box_brushnode(colgeom_visitor_t *this,cLeafBrushNode_s *param_1)
+colgeom_visitor_t::intersect_box_brushnode(colgeom_visitor_t *this,cLeafBrushNode_s *node)
 
 {
   float fVar1;
   bool bVar2;
   cbrush_t *pcVar3;
-  int local_8;
+  cbrush_t *b;
+  int brushnum;
+  int i;
   
   do {
-    if ((param_1->contents & this->m_mask) == 0) {
+    if ((node->contents & this->m_mask) == 0) {
       return;
     }
-    if (param_1->leafBrushCount != 0) {
-      if (0 < param_1->leafBrushCount) {
-        for (local_8 = 0; local_8 < param_1->leafBrushCount; local_8 = local_8 + 1) {
-          pcVar3 = cm.brushes + (param_1->data).leaf.brushes[local_8];
+    if (node->leafBrushCount != 0) {
+      if (0 < node->leafBrushCount) {
+        for (i = 0; i < node->leafBrushCount; i = i + 1) {
+          pcVar3 = cm.brushes + (node->data).leaf.brushes[i];
           if ((pcVar3->contents & this->m_mask) != 0) {
             if (((((this->m_mx).vec.v[0] < pcVar3->mins[0]) ||
                  ((this->m_mx).vec.v[1] < pcVar3->mins[1])) ||
@@ -142,17 +146,17 @@ colgeom_visitor_t::intersect_box_brushnode(colgeom_visitor_t *this,cLeafBrushNod
         }
         return;
       }
-      intersect_box_brushnode(this,param_1 + 1);
+      intersect_box_brushnode(this,node + 1);
     }
-    fVar1 = (this->m_mn).vec.v[param_1->axis];
-    if (fVar1 < (param_1->data).children.dist || fVar1 == (param_1->data).children.dist) {
-      if ((param_1->data).children.dist <= (this->m_mx).vec.v[param_1->axis]) {
-        intersect_box_brushnode(this,param_1 + (param_1->data).children.childOffset[0]);
+    fVar1 = (this->m_mn).vec.v[node->axis];
+    if (fVar1 < (node->data).children.dist || fVar1 == (node->data).children.dist) {
+      if ((node->data).children.dist <= (this->m_mx).vec.v[node->axis]) {
+        intersect_box_brushnode(this,node + (node->data).children.childOffset[0]);
       }
-      param_1 = param_1 + (param_1->data).children.childOffset[1];
+      node = node + (node->data).children.childOffset[1];
     }
     else {
-      param_1 = param_1 + (param_1->data).children.childOffset[0];
+      node = node + (node->data).children.childOffset[0];
     }
   } while( true );
 }
@@ -161,25 +165,29 @@ colgeom_visitor_t::intersect_box_brushnode(colgeom_visitor_t *this,cLeafBrushNod
 // 0085BE80  intersect_box_partitions_r  (physics/phys_traverse.cpp:161)
 
 void __thiscall
-colgeom_visitor_t::intersect_box_partitions_r(colgeom_visitor_t *this,CollisionAabbTree *param_1)
+colgeom_visitor_t::intersect_box_partitions_r(colgeom_visitor_t *this,CollisionAabbTree *aabbTree)
 
 {
   float *pfVar1;
   int iVar2;
   bool bVar3;
   float fVar4;
-  int local_18;
-  CollisionAabbTree *local_10;
+  int surfaceFlags;
+  int childIndex;
+  int partitionIndex;
+  CollisionAabbTree *child;
+  int checkStamp;
+  CollisionPartition *partition;
   
-  if ((this->m_mn).vec.v[0] <= param_1->origin[0] + param_1->halfSize[0]) {
-    if ((this->m_mn).vec.v[1] <= param_1->origin[1] + param_1->halfSize[1]) {
-      if ((this->m_mn).vec.v[2] <= param_1->origin[2] + param_1->halfSize[2]) {
-        fVar4 = param_1->origin[0] - param_1->halfSize[0];
+  if ((this->m_mn).vec.v[0] <= aabbTree->origin[0] + aabbTree->halfSize[0]) {
+    if ((this->m_mn).vec.v[1] <= aabbTree->origin[1] + aabbTree->halfSize[1]) {
+      if ((this->m_mn).vec.v[2] <= aabbTree->origin[2] + aabbTree->halfSize[2]) {
+        fVar4 = aabbTree->origin[0] - aabbTree->halfSize[0];
         if (fVar4 < (this->m_mx).vec.v[0] || fVar4 == (this->m_mx).vec.v[0]) {
-          fVar4 = param_1->origin[1] - param_1->halfSize[1];
+          fVar4 = aabbTree->origin[1] - aabbTree->halfSize[1];
           pfVar1 = (this->m_mx).vec.v + 1;
           if (fVar4 < *pfVar1 || fVar4 == *pfVar1) {
-            fVar4 = param_1->origin[2] - param_1->halfSize[2];
+            fVar4 = aabbTree->origin[2] - aabbTree->halfSize[2];
             pfVar1 = (this->m_mx).vec.v + 2;
             if (fVar4 < *pfVar1 || fVar4 == *pfVar1) {
               bVar3 = true;
@@ -208,19 +216,19 @@ colgeom_visitor_t::intersect_box_partitions_r(colgeom_visitor_t *this,CollisionA
     bVar3 = false;
   }
   if (bVar3) {
-    if (param_1->childCount == 0) {
+    if (aabbTree->childCount == 0) {
       iVar2 = (this->m_threadInfo->checkcount).global;
-      if ((this->m_threadInfo->checkcount).partitions[(param_1->u).firstChildIndex] != iVar2) {
-        (this->m_threadInfo->checkcount).partitions[(param_1->u).firstChildIndex] = iVar2;
-        (**(code **)(this->_padding_ + 0x10))(param_1);
+      if ((this->m_threadInfo->checkcount).partitions[(aabbTree->u).firstChildIndex] != iVar2) {
+        (this->m_threadInfo->checkcount).partitions[(aabbTree->u).firstChildIndex] = iVar2;
+        (**(code **)(this->_padding_ + 0x10))(aabbTree);
       }
     }
     else {
-      local_18 = 0;
-      local_10 = cm.aabbTrees + (param_1->u).firstChildIndex;
-      for (; local_18 < (int)(uint)param_1->childCount; local_18 = local_18 + 1) {
-        intersect_box_partitions_r(this,local_10);
-        local_10 = local_10 + 1;
+      childIndex = 0;
+      child = cm.aabbTrees + (aabbTree->u).firstChildIndex;
+      for (; childIndex < (int)(uint)aabbTree->childCount; childIndex = childIndex + 1) {
+        intersect_box_partitions_r(this,child);
+        child = child + 1;
       }
     }
   }
@@ -303,12 +311,12 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 // 0085B860  Vec3Abs  (universal/com_vector.h:321)
 
-void __cdecl Vec3Abs(float *param_1,float *param_2)
+void __cdecl Vec3Abs(float *a,float *res)
 
 {
-  *param_2 = ABS(*param_1);
-  param_2[1] = ABS(param_1[1]);
-  param_2[2] = ABS(param_1[2]);
+  *res = ABS(*a);
+  res[1] = ABS(a[1]);
+  res[2] = ABS(a[2]);
   return;
 }
 
@@ -336,11 +344,11 @@ void __cdecl _dynamic_initializer_for__PHYS_PI_OVER_2__(void)
 // 0085C050  visit  (physics/phys_traverse.cpp:451)
 
 void __thiscall
-static_colgeom_visitor_t::visit(static_colgeom_visitor_t *this,CollisionAabbTree *param_1)
+static_colgeom_visitor_t::visit(static_colgeom_visitor_t *this,CollisionAabbTree *tree)
 
 {
   if (this->ntrees < 0x200) {
-    this->trees[this->ntrees] = param_1;
+    this->trees[this->ntrees] = tree;
     this->ntrees = this->ntrees + 1;
   }
   return;
@@ -349,18 +357,18 @@ static_colgeom_visitor_t::visit(static_colgeom_visitor_t *this,CollisionAabbTree
 
 // 0085C090  visit  (physics/phys_traverse.cpp:457)
 
-void __thiscall static_colgeom_visitor_t::visit(static_colgeom_visitor_t *this,cbrush_t *param_1)
+void __thiscall static_colgeom_visitor_t::visit(static_colgeom_visitor_t *this,cbrush_t *brush)
 
 {
-  int local_8;
+  int i;
   
   if (this->nbrushes < 0x200) {
-    for (local_8 = 0; local_8 < this->nbrushes; local_8 = local_8 + 1) {
-      if (param_1 == this->brushes[local_8]) {
+    for (i = 0; i < this->nbrushes; i = i + 1) {
+      if (brush == this->brushes[i]) {
         return;
       }
     }
-    this->brushes[this->nbrushes] = param_1;
+    this->brushes[this->nbrushes] = brush;
     this->nbrushes = this->nbrushes + 1;
   }
   return;
@@ -371,10 +379,10 @@ void __thiscall static_colgeom_visitor_t::visit(static_colgeom_visitor_t *this,c
 
 void __thiscall
 static_colgeom_visitor_t::update
-          (static_colgeom_visitor_t *this,float *param_1,float *param_2,int param_3,float *param_4)
+          (static_colgeom_visitor_t *this,float *_mn,float *_mx,int mask,float *expand_vec)
 
 {
-  char local_54;
+  bool local_54;
   float local_44;
   float local_40;
   float local_3c;
@@ -384,37 +392,37 @@ static_colgeom_visitor_t::update
   float local_2c;
   float local_28;
   float local_24;
-  char local_1d;
-  float local_1c;
+  bool inside;
+  float mx;
   float local_18;
   float local_14;
-  float local_10;
+  float mn;
   float local_c;
   float local_8;
   
-  local_2c = (float)this->_padding_ - *param_1;
-  local_28 = (float)this->_padding_ - param_1[1];
-  local_24 = (float)this->_padding_ - param_1[2];
-  local_38 = *param_2 - (float)this->_padding_;
-  local_34 = param_2[1] - (float)this->_padding_;
-  local_30 = param_2[2] - (float)this->_padding_;
+  local_2c = (float)this->_padding_ - *_mn;
+  local_28 = (float)this->_padding_ - _mn[1];
+  local_24 = (float)this->_padding_ - _mn[2];
+  local_38 = *_mx - (float)this->_padding_;
+  local_34 = _mx[1] - (float)this->_padding_;
+  local_30 = _mx[2] - (float)this->_padding_;
   Vec3Max(&local_2c,&local_38,&local_44);
   if (((0.0 <= local_44) || (0.0 <= local_40)) || (0.0 <= local_3c)) {
-    local_54 = '\0';
+    local_54 = false;
   }
   else {
-    local_54 = '\x01';
+    local_54 = true;
   }
-  local_1d = local_54;
-  if ((this->_padding_ != param_3) || (local_54 == '\0')) {
-    local_10 = *param_1 - *param_4;
-    local_c = param_1[1] - param_4[1];
-    local_8 = param_1[2] - param_4[2];
-    local_1c = *param_2 + *param_4;
-    local_18 = param_2[1] + param_4[1];
-    local_14 = param_2[2] + param_4[2];
+  inside = local_54;
+  if ((this->_padding_ != mask) || (local_54 == false)) {
+    mn = *_mn - *expand_vec;
+    local_c = _mn[1] - expand_vec[1];
+    local_8 = _mn[2] - expand_vec[2];
+    mx = *_mx + *expand_vec;
+    local_18 = _mx[1] + expand_vec[1];
+    local_14 = _mx[2] + expand_vec[2];
     (**(code **)(this->_padding_ + 4))();
-    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&local_10,&local_1c,param_3);
+    colgeom_visitor_t::intersect_box((colgeom_visitor_t *)this,&mn,&mx,mask);
   }
   return;
 }

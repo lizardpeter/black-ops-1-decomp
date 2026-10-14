@@ -211,12 +211,12 @@ CL_CompositeDrawEmblemPhysical
   float *pfVar11;
   CompositeEmblemLayer *unaff_EDI;
   int iVar12;
-  Material *pMVar13;
-  float10 fVar14;
+  Material *colorIdx;
+  float10 fVar13;
+  double dVar14;
   double dVar15;
-  double dVar16;
-  float fVar17;
-  int iVar18;
+  float fVar16;
+  int verts;
   undefined1 local_170 [4];
   undefined1 local_16c [4];
   float local_168;
@@ -300,13 +300,13 @@ CL_CompositeDrawEmblemPhysical
     pfVar11 = pfVar11 + 5;
     iVar12 = iVar12 + -1;
   } while (iVar12 != 0);
-  fVar17 = (param_3 - 314.0) * -0.004 * 0.38 + 0.1;
+  fVar16 = (param_3 - 314.0) * -0.004 * 0.38 + 0.1;
   iVar12 = 0;
   local_168 = 0.48;
-  if (fVar17 - 0.48 < 0.0) {
-    local_168 = fVar17;
+  if (fVar16 - 0.48 < 0.0) {
+    local_168 = fVar16;
   }
-  if (0.0 <= 0.1 - fVar17) {
+  if (0.0 <= 0.1 - fVar16) {
     local_168 = 0.1;
   }
   local_164 = param_7 + -1;
@@ -315,19 +315,19 @@ CL_CompositeDrawEmblemPhysical
     do {
       sVar2 = *(short *)(pCVar10 + -0x18);
       if ((sVar2 < 0) || (*(int *)(DAT_034f8f60 + 0x14) <= (int)sVar2)) {
-        pMVar13 = (Material *)0x0;
+        colorIdx = (Material *)0x0;
       }
       else {
-        pMVar13 = *(Material **)(*(int *)(DAT_034f8f60 + 0x18) + sVar2 * 0x28);
+        colorIdx = *(Material **)(*(int *)(DAT_034f8f60 + 0x18) + sVar2 * 0x28);
       }
-      iVar18 = iVar12;
+      verts = iVar12;
       if (((pCVar10[4] != (CompositeEmblemLayer)0x0) && (-1 < sVar2)) &&
          ((int)sVar2 < *(int *)(DAT_034f8f60 + 0x14))) {
-        iVar18 = *(int *)(*(int *)(DAT_034f8f60 + 0x18) + 8 + sVar2 * 0x28);
+        verts = *(int *)(*(int *)(DAT_034f8f60 + 0x18) + 8 + sVar2 * 0x28);
       }
-      if ((pMVar13 != (Material *)0x0) &&
-         ((*(char *)((int)&(pMVar13->info).surfaceTypeBits + 3) == '\0' ||
-          (iVar5 = (int)&pMVar13[-0x13cdf].stateBitsTable / 0x34, iVar9 = iVar5 >> 5,
+      if ((colorIdx != (Material *)0x0) &&
+         ((*(char *)((int)&(colorIdx->info).surfaceTypeBits + 3) == '\0' ||
+          (iVar5 = (int)&colorIdx[-0x13cdf].stateBitsTable / 0x34, iVar9 = iVar5 >> 5,
           bVar8 = (byte)iVar5, bVar3 = bVar8 & 0x1f,
           puVar1 = streamFrontendGlob.imageTouchBits[streamFrontendGlob.activeImageTouchBits] +
                    iVar9, *puVar1 = *puVar1 | 1 << bVar3 | 1U >> 0x20 - bVar3,
@@ -342,25 +342,25 @@ CL_CompositeDrawEmblemPhysical
         local_150._0_4_ = 0x3f800000;
         local_140 = 0x3f800000;
         fVar4 = (float10)fcos((float10)local_11c);
-        fVar14 = (float10)fsin((float10)local_11c);
+        fVar13 = (float10)fsin((float10)local_11c);
         local_104 = (float)fVar4;
-        local_f8 = (float)fVar14;
+        local_f8 = (float)fVar13;
         local_e0 = (undefined1  [16])0x0;
         local_d0 = (undefined1  [16])0x0;
         local_100 = -local_f8;
         local_e4 = 0x3f800000;
         local_c0 = 0x3f800000;
-        dVar15 = 2.0;
+        dVar14 = 2.0;
         local_fc = iVar12;
         local_f4 = local_104;
         local_f0 = iVar12;
         local_ec = iVar12;
         local_e8 = iVar12;
-        __libm_sse2_pow((double)CONCAT44(unaff_ESI,unaff_EDI),(double)CONCAT44(iVar18,unaff_EBX));
-        dVar16 = 2.0;
-        local_e0._0_4_ = 1.0 / (float)dVar15;
-        __libm_sse2_pow((double)CONCAT44(unaff_ESI,unaff_EDI),(double)CONCAT44(iVar18,unaff_EBX));
-        local_d0._0_4_ = 1.0 / (float)dVar16;
+        __libm_sse2_pow((double)CONCAT44(unaff_ESI,unaff_EDI),(double)CONCAT44(verts,unaff_EBX));
+        dVar15 = 2.0;
+        local_e0._0_4_ = 1.0 / (float)dVar14;
+        __libm_sse2_pow((double)CONCAT44(unaff_ESI,unaff_EDI),(double)CONCAT44(verts,unaff_EBX));
+        local_d0._0_4_ = 1.0 / (float)dVar15;
         if (pCVar10[5] != (CompositeEmblemLayer)0x0) {
           local_e0._0_4_ = -(float)local_e0._0_4_;
         }
@@ -389,7 +389,7 @@ CL_CompositeDrawEmblemPhysical
         local_50 = local_10c;
         local_24 = local_60;
         R_AddCmdDrawEmblemLayer
-                  (pMVar13,*(GfxImage **)(pCVar10 + -0x14),iVar18,(float)&local_80,(float)unaff_EDI,
+                  (colorIdx,*(GfxImage **)(pCVar10 + -0x14),verts,(float)&local_80,(float)unaff_EDI,
                    unaff_ESI);
       }
       local_164 = local_164 + -1;

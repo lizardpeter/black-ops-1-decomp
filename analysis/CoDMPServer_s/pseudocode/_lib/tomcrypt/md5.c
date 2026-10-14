@@ -214,7 +214,7 @@ int __cdecl md5_process(uint *param_1,uchar *param_2,uint param_3)
 {
   uint uVar1;
   int iVar2;
-  uint uVar3;
+  uint count;
   
   if (param_1 == (uint *)0x0) {
     crypt_argchk("md != NULL",
@@ -232,14 +232,14 @@ int __cdecl md5_process(uint *param_1,uchar *param_2,uint param_3)
         }
         uVar1 = param_1[6];
         if ((uVar1 == 0) && (0x3f < param_3)) break;
-        uVar3 = 0x40 - uVar1;
+        count = 0x40 - uVar1;
         if (param_3 < 0x40 - uVar1) {
-          uVar3 = param_3;
+          count = param_3;
         }
-        memcpy((uchar *)(uVar1 + 0x1c + (int)param_1),param_2,uVar3);
-        param_1[6] = param_1[6] + uVar3;
-        param_2 = param_2 + uVar3;
-        param_3 = param_3 - uVar3;
+        memcpy((uchar *)(uVar1 + 0x1c + (int)param_1),param_2,count);
+        param_1[6] = param_1[6] + count;
+        param_2 = param_2 + count;
+        param_3 = param_3 - count;
         if (param_1[6] == 0x40) {
           iVar2 = FUN_0098d640(param_1);
           if (iVar2 != 0) {

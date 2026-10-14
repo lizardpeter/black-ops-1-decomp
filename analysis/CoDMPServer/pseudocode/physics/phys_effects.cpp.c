@@ -14,24 +14,25 @@ uint __thiscall rigid_body::is_user_rigid_body(rigid_body *this)
 
 // 0083FBC0  Phys_RemmapSurfaceType  (physics/phys_effects.cpp:154)
 
-Phys_SurfaceType __cdecl Phys_RemmapSurfaceType(int param_1)
+Phys_SurfaceType __cdecl Phys_RemmapSurfaceType(int stype)
 
 {
-  return remap_table[param_1];
+  return remap_table[stype];
 }
 
 
 // 0083EC80  Phys_GetSoundAliasIndex  (physics/phys_effects.cpp:159)
 
-int __cdecl Phys_GetSoundAliasIndex(Phys_SurfaceType param_1,Phys_SurfaceType param_2)
+int __cdecl Phys_GetSoundAliasIndex(Phys_SurfaceType type1,Phys_SurfaceType type2)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   int local_c;
+  int index;
   
-  if (((int)param_1 < 0) || (7 < (int)param_1)) {
+  if (((int)type1 < 0) || (7 < (int)type1)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_effects.cpp",0xa0,0,
                              "%s");
     if (!bVar2) {
@@ -40,7 +41,7 @@ int __cdecl Phys_GetSoundAliasIndex(Phys_SurfaceType param_1,Phys_SurfaceType pa
       return iVar3;
     }
   }
-  if (((int)param_2 < 0) || (7 < (int)param_2)) {
+  if (((int)type2 < 0) || (7 < (int)type2)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_effects.cpp",0xa1,0,
                              "%s");
     if (!bVar2) {
@@ -49,11 +50,11 @@ int __cdecl Phys_GetSoundAliasIndex(Phys_SurfaceType param_1,Phys_SurfaceType pa
       return iVar3;
     }
   }
-  if ((int)param_1 < (int)param_2) {
-    local_c = (int)((param_2 + EFFECT_SURF_TYPE_SOFT) * param_2) / 2 + param_1;
+  if ((int)type1 < (int)type2) {
+    local_c = (int)((type2 + EFFECT_SURF_TYPE_SOFT) * type2) / 2 + type1;
   }
   else {
-    local_c = (int)((param_1 + EFFECT_SURF_TYPE_SOFT) * param_1) / 2 + param_2;
+    local_c = (int)((type1 + EFFECT_SURF_TYPE_SOFT) * type1) / 2 + type2;
   }
   if ((local_c < 0) || (0x23 < local_c)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\phys_effects.cpp",0xa3,0,
@@ -77,22 +78,22 @@ void __cdecl Phys_InitSoundAliases(void)
 {
   int iVar1;
   uint uVar2;
-  Phys_SurfaceType local_94;
-  Phys_SurfaceType local_90;
-  char local_8c [132];
+  int index;
+  int type2;
+  int type1;
+  char name [132];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_90 = EFFECT_SURF_TYPE_HARD; (int)local_90 < 8;
-      local_90 = local_90 + EFFECT_SURF_TYPE_SOFT) {
-    for (local_94 = local_90; (int)local_94 < 8; local_94 = local_94 + EFFECT_SURF_TYPE_SOFT) {
-      iVar1 = Phys_GetSoundAliasIndex(local_90,local_94);
-      sprintf(local_8c,"phy_impact_%s_%s");
-      uVar2 = SND_FindAliasId(local_8c);
+  for (type1 = 0; type1 < 8; type1 = type1 + 1) {
+    for (type2 = type1; type2 < 8; type2 = type2 + 1) {
+      iVar1 = Phys_GetSoundAliasIndex(type1,type2);
+      sprintf(name,"phy_impact_%s_%s");
+      uVar2 = SND_FindAliasId(name);
       sound_aliases[iVar1] = uVar2;
       if (sound_aliases[iVar1] == 0) {
-        sprintf(local_8c,"phy_impact_%s_%s");
-        uVar2 = SND_FindAliasId(local_8c);
+        sprintf(name,"phy_impact_%s_%s");
+        uVar2 = SND_FindAliasId(name);
         sound_aliases[iVar1] = uVar2;
       }
     }
@@ -103,12 +104,13 @@ void __cdecl Phys_InitSoundAliases(void)
 
 // 0083FBD0  Phys_GetSoundAliasForImpact  (physics/phys_effects.cpp:188)
 
-uint __cdecl Phys_GetSoundAliasForImpact(Phys_SurfaceType param_1,Phys_SurfaceType param_2)
+uint __cdecl Phys_GetSoundAliasForImpact(Phys_SurfaceType type1,Phys_SurfaceType type2)
 
 {
   int iVar1;
+  int index;
   
-  iVar1 = Phys_GetSoundAliasIndex(param_1,param_2);
+  iVar1 = Phys_GetSoundAliasIndex(type1,type2);
   return sound_aliases[iVar1];
 }
 
@@ -158,45 +160,44 @@ void __cdecl Phys_EffectsInit(void)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Phys_ReEvalPriority(PhysObjUserData *param_1)
+void __cdecl Phys_ReEvalPriority(PhysObjUserData *userData)
 
 {
   bool bVar1;
-  float local_2c;
+  float player_pos;
   float local_28;
   float local_24;
-  float local_20 [3];
-  cg_s *local_14;
-  float local_10;
-  int local_c;
-  int local_8;
+  float body_pos [3];
+  cg_s *cgameGlob;
+  float dist2;
+  int localClientNum;
+  uint play_effect;
   
-  if ((phys_reeval_frequency->current).value <= param_1->m_time_since_last_reeval &&
-      param_1->m_time_since_last_reeval != (phys_reeval_frequency->current).value) {
-    param_1->m_time_since_last_reeval = 0.0;
-    local_8 = 0;
-    for (local_c = 0; local_c < 1; local_c = local_c + 1) {
-      bVar1 = CL_LocalClient_IsActive(local_c);
+  if ((phys_reeval_frequency->current).value <= userData->m_time_since_last_reeval &&
+      userData->m_time_since_last_reeval != (phys_reeval_frequency->current).value) {
+    userData->m_time_since_last_reeval = 0.0;
+    play_effect = 0;
+    for (localClientNum = 0; localClientNum < 1; localClientNum = localClientNum + 1) {
+      bVar1 = CL_LocalClient_IsActive(localClientNum);
       if (bVar1) {
-        local_14 = CG_GetLocalClientGlobals(local_c);
-        local_2c = (local_14->refdef).vieworg[0];
-        local_28 = (local_14->refdef).vieworg[1];
-        local_24 = (local_14->refdef).vieworg[2];
-        Phys_NitrousVecToVec3(&(param_1->body->m_mat).w,local_20);
-        local_10 = Vec3DistanceSq(local_20,&local_2c);
-        if (local_10 <
-            (phys_impact_distance_cutoff->current).value *
-            (phys_impact_distance_cutoff->current).value) {
-          local_8 = 1;
+        cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+        player_pos = (cgameGlob->refdef).vieworg[0];
+        local_28 = (cgameGlob->refdef).vieworg[1];
+        local_24 = (cgameGlob->refdef).vieworg[2];
+        Phys_NitrousVecToVec3(&(userData->body->m_mat).w,body_pos);
+        dist2 = Vec3DistanceSq(body_pos,&player_pos);
+        if (dist2 < (phys_impact_distance_cutoff->current).value *
+                    (phys_impact_distance_cutoff->current).value) {
+          play_effect = 1;
           break;
         }
       }
     }
-    if (local_8 == 0) {
-      param_1->m_flags = param_1->m_flags & 0xfffffffe;
+    if (play_effect == 0) {
+      userData->m_flags = userData->m_flags & 0xfffffffe;
     }
     else {
-      param_1->m_flags = param_1->m_flags | 1;
+      userData->m_flags = userData->m_flags | 1;
     }
   }
   return;
@@ -210,14 +211,14 @@ void __cdecl Phys_ReEvalPriority(PhysObjUserData *param_1)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-bool __cdecl Phys_CanPlayEffect(PhysObjUserData *param_1)
+bool __cdecl Phys_CanPlayEffect(PhysObjUserData *userData)
 
 {
   bool bVar1;
   
-  if ((param_1->m_time_since_last_event < (phys_impact_silence_window->current).value ||
-       param_1->m_time_since_last_event == (phys_impact_silence_window->current).value) ||
-     ((param_1->m_flags & 1U) == 0)) {
+  if ((userData->m_time_since_last_event < (phys_impact_silence_window->current).value ||
+       userData->m_time_since_last_event == (phys_impact_silence_window->current).value) ||
+     ((userData->m_flags & 1U) == 0)) {
     bVar1 = false;
   }
   else {
@@ -309,6 +310,33 @@ bool __cdecl Phys_CanPlayEffect(PhysObjUserData *param_1)
 void __cdecl Phys_EffectsProcess(void)
 
 {
+  cg_s *cgameGlob;
+  int localClientNum_2;
+  int stype_index;
+  int localClientNum;
+  Phys_SurfaceType type2;
+  Phys_SurfaceType type1;
+  int entnum_2;
+  broad_phase_info *bpi_2;
+  int entnum;
+  PhysObjUserData *userData2;
+  broad_phase_info *bpi;
+  bool collision_set;
+  int stype2;
+  int stype1;
+  PhysObjUserData *userData1_2;
+  phys_vec3 hitp;
+  float intensity;
+  phys_vec3 rel_vel;
+  contact_point_info *cpi_i;
+  contact_point_info *list_cpi;
+  contact_point_info *max_intensity_cpi;
+  float max_intensity;
+  PhysObjUserData *userData1;
+  rigid_body_constraint_contact *rbc;
+  int sfx_count;
+  int pfx_count;
+  
   return;
 }
 

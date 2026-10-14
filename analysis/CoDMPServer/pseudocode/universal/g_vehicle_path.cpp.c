@@ -35,49 +35,49 @@ short __cdecl VP_GetNextFreePathNode(void)
 
 // 007C8550  VP_AddDebugLine  (universal/g_vehicle_path.cpp:105)
 
-void __cdecl VP_AddDebugLine(float *param_1,float *param_2,int param_3)
+void __cdecl VP_AddDebugLine(float *start,float *end,int forceDraw)
 
 {
-  float local_20 [5];
+  float k_lineColor [5];
   float local_c;
   float local_8;
   
-  local_20[4] = *param_2 - *param_1;
-  local_c = param_2[1] - param_1[1];
-  local_8 = param_2[2] - param_1[2];
-  Vec3Normalize(local_20 + 4);
+  k_lineColor[4] = *end - *start;
+  local_c = end[1] - start[1];
+  local_8 = end[2] - start[2];
+  Vec3Normalize(k_lineColor + 4);
   if (s_newDebugLine == 0) {
-    if ((local_20[4] * s_dir[0] + local_c * s_dir[1] + local_8 * s_dir[2] < 0.9999) ||
-       (param_3 != 0)) {
-      local_20[0] = 1.0;
-      local_20[1] = 0.0;
-      local_20[2] = 0.0;
-      local_20[3] = 1.0;
-      G_DebugLine(s_start,s_end,local_20,1);
-      s_start[0] = *param_1;
-      s_start[1] = param_1[1];
-      s_start[2] = param_1[2];
-      s_end[0] = *param_2;
-      s_end[1] = param_2[1];
-      s_end[2] = param_2[2];
-      s_dir[0] = local_20[4];
+    if ((k_lineColor[4] * s_dir[0] + local_c * s_dir[1] + local_8 * s_dir[2] < 0.9999) ||
+       (forceDraw != 0)) {
+      k_lineColor[0] = 1.0;
+      k_lineColor[1] = 0.0;
+      k_lineColor[2] = 0.0;
+      k_lineColor[3] = 1.0;
+      G_DebugLine(s_start,s_end,k_lineColor,1);
+      s_start[0] = *start;
+      s_start[1] = start[1];
+      s_start[2] = start[2];
+      s_end[0] = *end;
+      s_end[1] = end[1];
+      s_end[2] = end[2];
+      s_dir[0] = k_lineColor[4];
       s_dir[1] = local_c;
       s_dir[2] = local_8;
     }
     else {
-      s_end[0] = *param_2;
-      s_end[1] = param_2[1];
-      s_end[2] = param_2[2];
+      s_end[0] = *end;
+      s_end[1] = end[1];
+      s_end[2] = end[2];
     }
   }
   else {
-    s_start[0] = *param_1;
-    s_start[1] = param_1[1];
-    s_start[2] = param_1[2];
-    s_end[0] = *param_2;
-    s_end[1] = param_2[1];
-    s_end[2] = param_2[2];
-    s_dir[0] = local_20[4];
+    s_start[0] = *start;
+    s_start[1] = start[1];
+    s_start[2] = start[2];
+    s_end[0] = *end;
+    s_end[1] = end[1];
+    s_end[2] = end[2];
+    s_dir[0] = k_lineColor[4];
     s_dir[1] = local_c;
     s_dir[2] = local_8;
     s_newDebugLine = 0;
@@ -88,91 +88,92 @@ void __cdecl VP_AddDebugLine(float *param_1,float *param_2,int param_3)
 
 // 007C8790  VP_DebugArrow  (universal/g_vehicle_path.cpp:156)
 
-void __cdecl VP_DebugArrow(float *param_1,float *param_2)
+void __cdecl VP_DebugArrow(float *pos,float *angles)
 
 {
-  float local_c4 [6];
+  float pts [6];
   float local_ac [3];
   float local_a0 [3];
   float local_94 [3];
-  float local_88 [5];
-  int local_74;
-  float local_70 [9];
+  float k_lineColor [4];
+  float scale;
+  int i;
+  float axis [9];
   float local_4c;
   float local_48;
   float local_44;
-  float local_40 [15];
+  float origPts [15];
   
-  local_88[4] = 80.0;
-  local_40[0] = 0.5;
-  local_40[1] = 0.0;
-  local_40[2] = 0.0;
-  local_40[3] = -0.5;
-  local_40[4] = -0.4;
-  local_40[5] = 0.0;
-  local_40[6] = -0.5;
-  local_40[7] = 0.4;
-  local_40[8] = 0.0;
-  local_40[9] = -0.5;
-  local_40[10] = 0.0;
-  local_40[0xb] = 0.4;
-  local_40[0xc] = -0.5;
-  local_40[0xd] = 0.0;
-  local_40[0xe] = 0.0;
-  AnglesToAxis(param_2,(float (*) [3])local_70);
-  local_4c = *param_1;
-  local_48 = param_1[1];
-  local_44 = param_1[2];
-  for (local_74 = 0; local_74 < 5; local_74 = local_74 + 1) {
-    local_40[local_74 * 3] = local_88[4] * local_40[local_74 * 3];
-    local_40[local_74 * 3 + 1] = local_88[4] * local_40[local_74 * 3 + 1];
-    local_40[local_74 * 3 + 2] = local_88[4] * local_40[local_74 * 3 + 2];
-    MatrixTransformVector43(local_40 + local_74 * 3,(float (*) [3])local_70,local_c4 + local_74 * 3)
-    ;
+  scale = 80.0;
+  origPts[0] = 0.5;
+  origPts[1] = 0.0;
+  origPts[2] = 0.0;
+  origPts[3] = -0.5;
+  origPts[4] = -0.4;
+  origPts[5] = 0.0;
+  origPts[6] = -0.5;
+  origPts[7] = 0.4;
+  origPts[8] = 0.0;
+  origPts[9] = -0.5;
+  origPts[10] = 0.0;
+  origPts[0xb] = 0.4;
+  origPts[0xc] = -0.5;
+  origPts[0xd] = 0.0;
+  origPts[0xe] = 0.0;
+  AnglesToAxis(angles,(float (*) [3])axis);
+  local_4c = *pos;
+  local_48 = pos[1];
+  local_44 = pos[2];
+  for (i = 0; i < 5; i = i + 1) {
+    origPts[i * 3] = scale * origPts[i * 3];
+    origPts[i * 3 + 1] = scale * origPts[i * 3 + 1];
+    origPts[i * 3 + 2] = scale * origPts[i * 3 + 2];
+    MatrixTransformVector43(origPts + i * 3,(float (*) [3])axis,pts + i * 3);
   }
-  local_88[0] = 1.0;
-  local_88[1] = 0.0;
-  local_88[2] = 0.0;
-  local_88[3] = 1.0;
-  G_DebugLine(local_c4,local_c4 + 3,local_88,1);
-  G_DebugLine(local_c4 + 3,local_ac,local_88,1);
-  G_DebugLine(local_ac,local_c4,local_88,1);
-  G_DebugLine(local_a0,local_94,local_88,1);
-  G_DebugLine(local_94,param_1,local_88,1);
-  G_DebugLine(param_1,local_a0,local_88,1);
+  k_lineColor[0] = 1.0;
+  k_lineColor[1] = 0.0;
+  k_lineColor[2] = 0.0;
+  k_lineColor[3] = 1.0;
+  G_DebugLine(pts,pts + 3,k_lineColor,1);
+  G_DebugLine(pts + 3,local_ac,k_lineColor,1);
+  G_DebugLine(local_ac,pts,k_lineColor,1);
+  G_DebugLine(local_a0,local_94,k_lineColor,1);
+  G_DebugLine(local_94,pos,k_lineColor,1);
+  G_DebugLine(pos,local_a0,k_lineColor,1);
   return;
 }
 
 
 // 007CC020  VP_SetScriptVariable  (universal/g_vehicle_path.cpp:226)
 
-void __cdecl VP_SetScriptVariable(char *param_1,char *param_2,vehicle_node_t *param_3)
+void __cdecl VP_SetScriptVariable(char *key,char *value,vehicle_node_t *node)
 
 {
   code *pcVar1;
   bool bVar2;
-  uint uVar3;
-  int iVar4;
-  char *pcVar5;
-  double dVar6;
-  scriptInstance_t sVar7;
-  int local_8;
+  uint index_00;
+  int value_00;
+  char *fmt;
+  double dVar3;
+  scriptInstance_t sVar4;
+  uint index;
+  int type;
   
-  uVar3 = Scr_FindField(param_1,&local_8,SCRIPTINSTANCE_SERVER);
-  if (uVar3 != 0) {
-    if (local_8 == 2) {
-      Scr_AddString(param_2,SCRIPTINSTANCE_SERVER);
+  index_00 = Scr_FindField(key,&type,SCRIPTINSTANCE_SERVER);
+  if (index_00 != 0) {
+    if (type == 2) {
+      Scr_AddString(value,SCRIPTINSTANCE_SERVER);
     }
-    else if (local_8 == 5) {
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      dVar6 = atof(param_2);
-      Scr_AddFloat((float)dVar6,sVar7);
+    else if (type == 5) {
+      sVar4 = SCRIPTINSTANCE_SERVER;
+      dVar3 = atof(value);
+      Scr_AddFloat((float)dVar3,sVar4);
     }
     else {
-      if (local_8 != 6) {
-        pcVar5 = va("VP_SetScriptVariable: bad case %d");
+      if (type != 6) {
+        fmt = va("VP_SetScriptVariable: bad case %d");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
-                                 0xf9,0,pcVar5);
+                                 0xf9,0,fmt);
         if (bVar2) {
           return;
         }
@@ -180,11 +181,11 @@ void __cdecl VP_SetScriptVariable(char *param_1,char *param_2,vehicle_node_t *pa
         (*pcVar1)();
         return;
       }
-      sVar7 = SCRIPTINSTANCE_SERVER;
-      iVar4 = atoi(param_2);
-      Scr_AddInt(iVar4,sVar7);
+      sVar4 = SCRIPTINSTANCE_SERVER;
+      value_00 = atoi(value);
+      Scr_AddInt(value_00,sVar4);
     }
-    Scr_SetDynamicEntityField((int)param_3->index,3,uVar3,SCRIPTINSTANCE_SERVER,0);
+    Scr_SetDynamicEntityField((int)node->index,3,index_00,SCRIPTINSTANCE_SERVER,0);
   }
   return;
 }
@@ -192,58 +193,58 @@ void __cdecl VP_SetScriptVariable(char *param_1,char *param_2,vehicle_node_t *pa
 
 // 007CBDE0  VP_ParseField  (universal/g_vehicle_path.cpp:266)
 
-void __cdecl VP_ParseField(char *param_1,char *param_2,vehicle_node_t *param_3,bool param_4)
+void __cdecl VP_ParseField(char *key,char *value,vehicle_node_t *node,bool setScriptVariable)
 
 {
   int iVar1;
   double dVar2;
   float fVar3;
-  vn_field_t *local_14;
+  uchar *b;
+  vn_field_t *f;
   
-  local_14 = vn_fields;
+  f = vn_fields;
   while( true ) {
-    if (local_14->name == (char *)0x0) {
-      if (param_4) {
-        VP_SetScriptVariable(param_1,param_2,param_3);
+    if (f->name == (char *)0x0) {
+      if (setScriptVariable) {
+        VP_SetScriptVariable(key,value,node);
       }
       return;
     }
-    iVar1 = I_stricmp(local_14->name,param_1);
+    iVar1 = I_stricmp(f->name,key);
     if (iVar1 == 0) break;
-    local_14 = local_14 + 1;
+    f = f + 1;
   }
-  switch(local_14->type) {
+  switch(f->type) {
   case F_INT:
-    iVar1 = atoi(param_2);
-    *(int *)((int)param_3->origin + local_14->ofs + -0x18) = iVar1;
+    iVar1 = atoi(value);
+    *(int *)((int)node->origin + f->ofs + -0x18) = iVar1;
     break;
   case F_SHORT:
-    iVar1 = atoi(param_2);
-    *(short *)((int)param_3->origin + local_14->ofs + -0x18) = (short)iVar1;
+    iVar1 = atoi(value);
+    *(short *)((int)node->origin + f->ofs + -0x18) = (short)iVar1;
     break;
   case F_BYTE:
-    iVar1 = atoi(param_2);
-    *(char *)((int)param_3->origin + local_14->ofs + -0x18) = (char)iVar1;
+    iVar1 = atoi(value);
+    *(char *)((int)node->origin + f->ofs + -0x18) = (char)iVar1;
     break;
   case F_FLOAT:
-    dVar2 = atof(param_2);
-    *(float *)((int)param_3->origin + local_14->ofs + -0x18) = (float)dVar2;
+    dVar2 = atof(value);
+    *(float *)((int)node->origin + f->ofs + -0x18) = (float)dVar2;
     break;
   case F_STRING:
     Scr_SetStringLiveUpdateSafe
-              ((ushort *)((int)param_3->origin + local_14->ofs + -0x18),param_2,
-               SCRIPTINSTANCE_SERVER);
+              ((ushort *)((int)node->origin + f->ofs + -0x18),value,SCRIPTINSTANCE_SERVER);
     break;
   case F_VECTOR:
-    sscanf(param_2,"%f %f %f");
-    *(undefined4 *)((int)param_3->origin + local_14->ofs + -0x18) = 0;
-    *(undefined4 *)((int)param_3->origin + local_14->ofs + -0x14) = 0;
-    *(undefined4 *)((int)param_3->origin + local_14->ofs + -0x10) = 0;
+    sscanf(value,"%f %f %f");
+    *(undefined4 *)((int)node->origin + f->ofs + -0x18) = 0;
+    *(undefined4 *)((int)node->origin + f->ofs + -0x14) = 0;
+    *(undefined4 *)((int)node->origin + f->ofs + -0x10) = 0;
     break;
   case F_VECTORHACK:
-    sscanf(param_2,"%f %f %f");
+    sscanf(value,"%f %f %f");
     fVar3 = AngleNormalize360(0.0);
-    *(float *)((int)param_3->origin + local_14->ofs + -0x18) = fVar3;
+    *(float *)((int)node->origin + f->ofs + -0x18) = fVar3;
   }
   return;
 }
@@ -251,14 +252,14 @@ void __cdecl VP_ParseField(char *param_1,char *param_2,vehicle_node_t *param_3,b
 
 // 007CBD60  VP_ParseFields  (universal/g_vehicle_path.cpp:336)
 
-void __cdecl VP_ParseFields(vehicle_node_t *param_1,SpawnVar *param_2,bool param_3)
+void __cdecl VP_ParseFields(vehicle_node_t *node,SpawnVar *spawnVar,bool setScriptVariable)
 
 {
   code *pcVar1;
   bool bVar2;
-  int local_8;
+  int i;
   
-  if (param_2->spawnVarsValid == false) {
+  if (spawnVar->spawnVarsValid == false) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                              0x153,0,"%s");
     if (!bVar2) {
@@ -267,8 +268,8 @@ void __cdecl VP_ParseFields(vehicle_node_t *param_1,SpawnVar *param_2,bool param
       return;
     }
   }
-  for (local_8 = 0; local_8 < param_2->numSpawnVars; local_8 = local_8 + 1) {
-    VP_ParseField(param_2->spawnVars[local_8][0],param_2->spawnVars[local_8][1],param_1,param_3);
+  for (i = 0; i < spawnVar->numSpawnVars; i = i + 1) {
+    VP_ParseField(spawnVar->spawnVars[i][0],spawnVar->spawnVars[i][1],node,setScriptVariable);
   }
   return;
 }
@@ -276,113 +277,114 @@ void __cdecl VP_ParseFields(vehicle_node_t *param_1,SpawnVar *param_2,bool param
 
 // 007C9DE0  VP_ZeroNode  (universal/g_vehicle_path.cpp:356)
 
-void __cdecl VP_ZeroNode(vehicle_node_t *param_1)
+void __cdecl VP_ZeroNode(vehicle_node_t *node)
 
 {
-  param_1->name = 0;
-  param_1->target = 0;
-  param_1->target2 = 0;
-  param_1->script_linkname = 0;
-  param_1->script_noteworthy = 0;
+  node->name = 0;
+  node->target = 0;
+  node->target2 = 0;
+  node->script_linkname = 0;
+  node->script_noteworthy = 0;
   return;
 }
 
 
 // 007C7490  VP_ClearNode  (universal/g_vehicle_path.cpp:371)
 
-void __cdecl VP_ClearNode(vehicle_node_t *param_1)
+void __cdecl VP_ClearNode(vehicle_node_t *node)
 
 {
-  Scr_SetString(&param_1->name,0,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_1->target,0,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_1->target2,0,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_1->script_linkname,0,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_1->script_noteworthy,0,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&node->name,0,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&node->target,0,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&node->target2,0,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&node->script_linkname,0,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&node->script_noteworthy,0,SCRIPTINSTANCE_SERVER);
   return;
 }
 
 
 // 007C9F60  VP_InitNode  (universal/g_vehicle_path.cpp:387)
 
-void __cdecl VP_InitNode(vehicle_node_t *param_1,short param_2)
+void __cdecl VP_InitNode(vehicle_node_t *node,short nodeIdx)
 
 {
-  VP_ZeroNode(param_1);
-  param_1->index = param_2;
-  param_1->flags = 0;
-  param_1->speed = -1.0;
-  param_1->lookAhead = -1.0;
-  param_1->origin[0] = 0.0;
-  param_1->origin[1] = 0.0;
-  param_1->origin[2] = 0.0;
-  (param_1->field11_0x30).splineNode.dir[0] = 0.0;
-  (param_1->field11_0x30).splineNode.dir[1] = 0.0;
-  (param_1->field11_0x30).splineNode.dir[2] = 0.0;
-  param_1->angles[0] = s_invalidAngles[0];
-  param_1->angles[1] = s_invalidAngles[1];
-  param_1->angles[2] = s_invalidAngles[2];
-  (param_1->field11_0x30).splineNode.length = 0.0;
-  (param_1->field11_0x30).splineNode.nextIdx = -1;
-  (param_1->field11_0x30).splineNode.prevIdx = -1;
+  VP_ZeroNode(node);
+  node->index = nodeIdx;
+  node->flags = 0;
+  node->speed = -1.0;
+  node->lookAhead = -1.0;
+  node->origin[0] = 0.0;
+  node->origin[1] = 0.0;
+  node->origin[2] = 0.0;
+  (node->field11_0x30).splineNode.dir[0] = 0.0;
+  (node->field11_0x30).splineNode.dir[1] = 0.0;
+  (node->field11_0x30).splineNode.dir[2] = 0.0;
+  node->angles[0] = s_invalidAngles[0];
+  node->angles[1] = s_invalidAngles[1];
+  node->angles[2] = s_invalidAngles[2];
+  (node->field11_0x30).splineNode.length = 0.0;
+  (node->field11_0x30).splineNode.nextIdx = -1;
+  (node->field11_0x30).splineNode.prevIdx = -1;
   return;
 }
 
 
 // 007CB8A0  VP_CopyNode  (universal/g_vehicle_path.cpp:419)
 
-void __cdecl VP_CopyNode(vehicle_node_t *param_1,vehicle_node_t *param_2)
+void __cdecl VP_CopyNode(vehicle_node_t *src,vehicle_node_t *dst)
 
 {
-  Scr_SetString(&param_2->name,(uint)param_1->name,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_2->target,(uint)param_1->target,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_2->target2,(uint)param_1->target2,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_2->script_linkname,(uint)param_1->script_linkname,SCRIPTINSTANCE_SERVER);
-  Scr_SetString(&param_2->script_noteworthy,(uint)param_1->script_noteworthy,SCRIPTINSTANCE_SERVER);
-  param_2->index = param_1->index;
-  param_2->flags = param_1->flags;
-  param_2->speed = param_1->speed;
-  param_2->lookAhead = param_1->lookAhead;
-  param_2->origin[0] = param_1->origin[0];
-  param_2->origin[1] = param_1->origin[1];
-  param_2->origin[2] = param_1->origin[2];
-  (param_2->field11_0x30).splineNode.dir[0] = (param_1->field11_0x30).splineNode.dir[0];
-  (param_2->field11_0x30).splineNode.dir[1] = (param_1->field11_0x30).splineNode.dir[1];
-  (param_2->field11_0x30).splineNode.dir[2] = (param_1->field11_0x30).splineNode.dir[2];
-  param_2->angles[0] = param_1->angles[0];
-  param_2->angles[1] = param_1->angles[1];
-  param_2->angles[2] = param_1->angles[2];
-  (param_2->field11_0x30).splineNode.length = (param_1->field11_0x30).splineNode.length;
-  (param_2->field11_0x30).splineNode.nextIdx = (param_1->field11_0x30).splineNode.nextIdx;
-  (param_2->field11_0x30).splineNode.prevIdx = (param_1->field11_0x30).splineNode.prevIdx;
+  Scr_SetString(&dst->name,(uint)src->name,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&dst->target,(uint)src->target,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&dst->target2,(uint)src->target2,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&dst->script_linkname,(uint)src->script_linkname,SCRIPTINSTANCE_SERVER);
+  Scr_SetString(&dst->script_noteworthy,(uint)src->script_noteworthy,SCRIPTINSTANCE_SERVER);
+  dst->index = src->index;
+  dst->flags = src->flags;
+  dst->speed = src->speed;
+  dst->lookAhead = src->lookAhead;
+  dst->origin[0] = src->origin[0];
+  dst->origin[1] = src->origin[1];
+  dst->origin[2] = src->origin[2];
+  (dst->field11_0x30).splineNode.dir[0] = (src->field11_0x30).splineNode.dir[0];
+  (dst->field11_0x30).splineNode.dir[1] = (src->field11_0x30).splineNode.dir[1];
+  (dst->field11_0x30).splineNode.dir[2] = (src->field11_0x30).splineNode.dir[2];
+  dst->angles[0] = src->angles[0];
+  dst->angles[1] = src->angles[1];
+  dst->angles[2] = src->angles[2];
+  (dst->field11_0x30).splineNode.length = (src->field11_0x30).splineNode.length;
+  (dst->field11_0x30).splineNode.nextIdx = (src->field11_0x30).splineNode.nextIdx;
+  (dst->field11_0x30).splineNode.prevIdx = (src->field11_0x30).splineNode.prevIdx;
   return;
 }
 
 
 // 007C7500  VP_GetNodeIndex  (universal/g_vehicle_path.cpp:459)
 
-short __cdecl VP_GetNodeIndex(ushort param_1,float *param_2)
+short __cdecl VP_GetNodeIndex(ushort name,float *origin)
 
 {
   bool bVar1;
   int iVar2;
-  short local_8;
+  vehicle_node_t *node;
+  short i;
   
-  if (param_1 != 0) {
-    for (local_8 = 0; local_8 < s_numNodes; local_8 = local_8 + 1) {
-      iVar2 = (int)local_8;
-      if (s_nodes[iVar2].name == param_1) {
-        if (param_2 == (float *)0x0) {
-          return local_8;
+  if (name != 0) {
+    for (i = 0; i < s_numNodes; i = i + 1) {
+      iVar2 = (int)i;
+      if (s_nodes[iVar2].name == name) {
+        if (origin == (float *)0x0) {
+          return i;
         }
-        if (((s_nodes[iVar2].origin[0] == *param_2) && (s_nodes[iVar2].origin[1] == param_2[1])) &&
-           (s_nodes[iVar2].origin[2] == param_2[2])) {
+        if (((s_nodes[iVar2].origin[0] == *origin) && (s_nodes[iVar2].origin[1] == origin[1])) &&
+           (s_nodes[iVar2].origin[2] == origin[2])) {
           bVar1 = true;
         }
         else {
           bVar1 = false;
         }
         if (bVar1) {
-          return local_8;
+          return i;
         }
       }
     }
@@ -393,57 +395,62 @@ short __cdecl VP_GetNodeIndex(ushort param_1,float *param_2)
 
 // 007C8FB0  VP_CalcNodeSpeed  (universal/g_vehicle_path.cpp:530)
 
-float __cdecl VP_CalcNodeSpeed(short param_1)
+float __cdecl VP_CalcNodeSpeed(short nodeIdx)
 
 {
   short sVar1;
   float fVar2;
   int iVar3;
-  float local_28;
-  float local_24;
-  float local_18;
-  float local_10;
-  short local_8;
+  vehicle_node_t *node;
+  float prevDist;
+  float nextDist;
+  float frac;
+  float totalDist;
+  float nextSpeed;
+  vehicle_node_t *temp;
+  float prevSpeed;
+  float speed;
+  short count;
   
-  iVar3 = (int)param_1;
+  iVar3 = (int)nodeIdx;
   if ((s_nodes[iVar3].flags & 0x20000U) == 0) {
-    local_24 = 0.0;
-    local_28 = 0.0;
-    local_18 = -1.0;
-    local_10 = -1.0;
+    nextDist = 0.0;
+    prevDist = 0.0;
+    nextSpeed = -1.0;
+    prevSpeed = -1.0;
     if (-1 < s_nodes[iVar3].field11_0x30.splineNode.prevIdx) {
-      local_8 = 0;
+      count = 0;
       sVar1 = s_nodes[iVar3].field11_0x30.splineNode.prevIdx;
-      while (local_8 < s_numNodes) {
-        local_8 = local_8 + 1;
-        local_28 = local_28 + s_nodes[sVar1].field11_0x30.splineNode.length;
+      while (count < s_numNodes) {
+        count = count + 1;
+        prevDist = prevDist + s_nodes[sVar1].field11_0x30.splineNode.length;
         if (0.0 <= s_nodes[sVar1].speed) {
-          local_10 = s_nodes[sVar1].speed;
+          prevSpeed = s_nodes[sVar1].speed;
           break;
         }
         if ((s_nodes[sVar1].field11_0x30.splineNode.prevIdx < 0) ||
-           (s_nodes[sVar1].field11_0x30.splineNode.prevIdx == param_1)) break;
+           (s_nodes[sVar1].field11_0x30.splineNode.prevIdx == nodeIdx)) break;
         sVar1 = s_nodes[sVar1].field11_0x30.splineNode.prevIdx;
       }
     }
-    local_8 = 0;
-    sVar1 = param_1;
-    while (local_8 < s_numNodes) {
-      local_8 = local_8 + 1;
+    count = 0;
+    sVar1 = nodeIdx;
+    while (count < s_numNodes) {
+      count = count + 1;
       if (0.0 <= s_nodes[sVar1].speed) {
-        local_18 = s_nodes[sVar1].speed;
+        nextSpeed = s_nodes[sVar1].speed;
         break;
       }
       if ((s_nodes[sVar1].field11_0x30.splineNode.nextIdx < 0) ||
-         (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == param_1)) break;
-      local_24 = local_24 + s_nodes[sVar1].field11_0x30.splineNode.length;
+         (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == nodeIdx)) break;
+      nextDist = nextDist + s_nodes[sVar1].field11_0x30.splineNode.length;
       sVar1 = s_nodes[sVar1].field11_0x30.splineNode.nextIdx;
     }
-    if ((0.0 <= local_10) || (0.0 <= local_18)) {
-      fVar2 = local_18;
-      if ((0.0 <= local_10) && (fVar2 = local_10, 0.0 <= local_18)) {
-        if (0.0 < local_28 + local_24) {
-          fVar2 = (local_18 - local_10) * (local_28 / (local_28 + local_24)) + local_10;
+    if ((0.0 <= prevSpeed) || (0.0 <= nextSpeed)) {
+      fVar2 = nextSpeed;
+      if ((0.0 <= prevSpeed) && (fVar2 = prevSpeed, 0.0 <= nextSpeed)) {
+        if (0.0 < prevDist + nextDist) {
+          fVar2 = (nextSpeed - prevSpeed) * (prevDist / (prevDist + nextDist)) + prevSpeed;
         }
         else {
           fVar2 = 0.0;
@@ -463,57 +470,62 @@ float __cdecl VP_CalcNodeSpeed(short param_1)
 
 // 007C91F0  VP_CalcNodeLookAhead  (universal/g_vehicle_path.cpp:614)
 
-float __cdecl VP_CalcNodeLookAhead(short param_1)
+float __cdecl VP_CalcNodeLookAhead(short nodeIdx)
 
 {
   short sVar1;
   float fVar2;
   int iVar3;
-  float local_28;
-  float local_24;
-  float local_10;
-  float local_c;
-  short local_8;
+  vehicle_node_t *node;
+  float prevDist;
+  float nextDist;
+  float frac;
+  float look;
+  float totalDist;
+  vehicle_node_t *temp;
+  float prevLook;
+  float nextLook;
+  short count;
   
-  iVar3 = (int)param_1;
+  iVar3 = (int)nodeIdx;
   if (s_nodes[iVar3].lookAhead < 0.0) {
-    local_24 = 0.0;
-    local_28 = 0.0;
-    local_c = -1.0;
-    local_10 = -1.0;
+    nextDist = 0.0;
+    prevDist = 0.0;
+    nextLook = -1.0;
+    prevLook = -1.0;
     if (-1 < s_nodes[iVar3].field11_0x30.splineNode.prevIdx) {
-      local_8 = 0;
+      count = 0;
       sVar1 = s_nodes[iVar3].field11_0x30.splineNode.prevIdx;
-      while (local_8 < s_numNodes) {
-        local_8 = local_8 + 1;
-        local_28 = local_28 + s_nodes[sVar1].field11_0x30.splineNode.length;
+      while (count < s_numNodes) {
+        count = count + 1;
+        prevDist = prevDist + s_nodes[sVar1].field11_0x30.splineNode.length;
         if (0.0 < s_nodes[sVar1].lookAhead) {
-          local_10 = s_nodes[sVar1].lookAhead;
+          prevLook = s_nodes[sVar1].lookAhead;
           break;
         }
         if ((s_nodes[sVar1].field11_0x30.splineNode.prevIdx < 0) ||
-           (s_nodes[sVar1].field11_0x30.splineNode.prevIdx == param_1)) break;
+           (s_nodes[sVar1].field11_0x30.splineNode.prevIdx == nodeIdx)) break;
         sVar1 = s_nodes[sVar1].field11_0x30.splineNode.prevIdx;
       }
     }
-    local_8 = 0;
-    sVar1 = param_1;
-    while (local_8 < s_numNodes) {
-      local_8 = local_8 + 1;
+    count = 0;
+    sVar1 = nodeIdx;
+    while (count < s_numNodes) {
+      count = count + 1;
       if (0.0 < s_nodes[sVar1].lookAhead) {
-        local_c = s_nodes[sVar1].lookAhead;
+        nextLook = s_nodes[sVar1].lookAhead;
         break;
       }
       if ((s_nodes[sVar1].field11_0x30.splineNode.nextIdx < 0) ||
-         (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == param_1)) break;
-      local_24 = local_24 + s_nodes[sVar1].field11_0x30.splineNode.length;
+         (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == nodeIdx)) break;
+      nextDist = nextDist + s_nodes[sVar1].field11_0x30.splineNode.length;
       sVar1 = s_nodes[sVar1].field11_0x30.splineNode.nextIdx;
     }
-    if ((0.0 <= local_10) || (0.0 <= local_c)) {
-      fVar2 = local_c;
-      if ((0.0 <= local_10) && (fVar2 = local_10, 0.0 <= local_c)) {
-        if (0.0 < local_28 + local_24) {
-          fVar2 = (local_c - local_10) * (local_28 / (local_28 + local_24)) + local_10;
+    if ((0.0 <= prevLook) || (0.0 <= nextLook)) {
+      fVar2 = nextLook;
+      if ((0.0 <= prevLook) && (fVar2 = prevLook, 0.0 <= nextLook)) {
+        if (0.0 < prevDist + nextDist) {
+          fVar2 = (nextLook - prevLook) * (prevDist / (prevDist + nextDist)) + prevLook;
         }
         else {
           fVar2 = 0.0;
@@ -533,24 +545,29 @@ float __cdecl VP_CalcNodeLookAhead(short param_1)
 
 // 007C9430  VP_CalcNodeAngles  (universal/g_vehicle_path.cpp:698)
 
-void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
+void __cdecl VP_CalcNodeAngles(short nodeIdx,float *angles)
 
 {
   short sVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_34;
-  float local_30;
-  float local_24;
+  float fVar5;
+  vehicle_node_t *node;
+  float prevDist;
+  float nextDist;
+  float frac;
+  float totalDist;
+  float nextAngles;
   float local_20;
   float local_1c;
-  float local_14;
+  vehicle_node_t *temp;
+  float prevAngles;
   float local_10;
   float local_c;
-  short local_8;
+  short count;
   
-  iVar3 = (int)param_1;
+  iVar3 = (int)nodeIdx;
   if (((s_nodes[iVar3].angles[0] == s_invalidAngles[0]) &&
       (s_nodes[iVar3].angles[1] == s_invalidAngles[1])) &&
      (s_nodes[iVar3].angles[2] == s_invalidAngles[2])) {
@@ -560,20 +577,20 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
     bVar2 = false;
   }
   if (bVar2) {
-    local_30 = 0.0;
-    local_34 = 0.0;
-    local_14 = s_invalidAngles[0];
+    nextDist = 0.0;
+    prevDist = 0.0;
+    prevAngles = s_invalidAngles[0];
     local_10 = s_invalidAngles[1];
     local_c = s_invalidAngles[2];
-    local_24 = s_invalidAngles[0];
+    nextAngles = s_invalidAngles[0];
     local_20 = s_invalidAngles[1];
     local_1c = s_invalidAngles[2];
     if (-1 < s_nodes[iVar3].field11_0x30.splineNode.prevIdx) {
-      local_8 = 0;
+      count = 0;
       sVar1 = s_nodes[iVar3].field11_0x30.splineNode.prevIdx;
-      while (local_8 < s_numNodes) {
-        local_8 = local_8 + 1;
-        local_34 = local_34 + s_nodes[sVar1].field11_0x30.splineNode.length;
+      while (count < s_numNodes) {
+        count = count + 1;
+        prevDist = prevDist + s_nodes[sVar1].field11_0x30.splineNode.length;
         if (((s_nodes[sVar1].angles[0] == s_invalidAngles[0]) &&
             (s_nodes[sVar1].angles[1] == s_invalidAngles[1])) &&
            (s_nodes[sVar1].angles[2] == s_invalidAngles[2])) {
@@ -583,20 +600,20 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
           bVar2 = false;
         }
         if (!bVar2) {
-          local_14 = s_nodes[sVar1].angles[0];
+          prevAngles = s_nodes[sVar1].angles[0];
           local_10 = s_nodes[sVar1].angles[1];
           local_c = s_nodes[sVar1].angles[2];
           break;
         }
         if ((s_nodes[sVar1].field11_0x30.splineNode.prevIdx < 0) ||
-           (s_nodes[sVar1].field11_0x30.splineNode.prevIdx == param_1)) break;
+           (s_nodes[sVar1].field11_0x30.splineNode.prevIdx == nodeIdx)) break;
         sVar1 = s_nodes[sVar1].field11_0x30.splineNode.prevIdx;
       }
     }
-    local_8 = 0;
-    sVar1 = param_1;
-    while (local_8 < s_numNodes) {
-      local_8 = local_8 + 1;
+    count = 0;
+    sVar1 = nodeIdx;
+    while (count < s_numNodes) {
+      count = count + 1;
       if (((s_nodes[sVar1].angles[0] == s_invalidAngles[0]) &&
           (s_nodes[sVar1].angles[1] == s_invalidAngles[1])) &&
          (s_nodes[sVar1].angles[2] == s_invalidAngles[2])) {
@@ -606,17 +623,17 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
         bVar2 = false;
       }
       if (!bVar2) {
-        local_24 = s_nodes[sVar1].angles[0];
+        nextAngles = s_nodes[sVar1].angles[0];
         local_20 = s_nodes[sVar1].angles[1];
         local_1c = s_nodes[sVar1].angles[2];
         break;
       }
       if ((s_nodes[sVar1].field11_0x30.splineNode.nextIdx < 0) ||
-         (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == param_1)) break;
-      local_30 = local_30 + s_nodes[sVar1].field11_0x30.splineNode.length;
+         (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == nodeIdx)) break;
+      nextDist = nextDist + s_nodes[sVar1].field11_0x30.splineNode.length;
       sVar1 = s_nodes[sVar1].field11_0x30.splineNode.nextIdx;
     }
-    if (((local_14 == s_invalidAngles[0]) && (local_10 == s_invalidAngles[1])) &&
+    if (((prevAngles == s_invalidAngles[0]) && (local_10 == s_invalidAngles[1])) &&
        (local_c == s_invalidAngles[2])) {
       bVar2 = true;
     }
@@ -624,7 +641,7 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
       bVar2 = false;
     }
     if (bVar2) {
-      if (((local_24 == s_invalidAngles[0]) && (local_20 == s_invalidAngles[1])) &&
+      if (((nextAngles == s_invalidAngles[0]) && (local_20 == s_invalidAngles[1])) &&
          (local_1c == s_invalidAngles[2])) {
         bVar2 = true;
       }
@@ -632,13 +649,13 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
         bVar2 = false;
       }
       if (bVar2) {
-        *param_2 = 0.0;
-        param_2[1] = 0.0;
-        param_2[2] = 0.0;
+        *angles = 0.0;
+        angles[1] = 0.0;
+        angles[2] = 0.0;
         return;
       }
     }
-    if (((local_14 == s_invalidAngles[0]) && (local_10 == s_invalidAngles[1])) &&
+    if (((prevAngles == s_invalidAngles[0]) && (local_10 == s_invalidAngles[1])) &&
        (local_c == s_invalidAngles[2])) {
       bVar2 = true;
     }
@@ -646,12 +663,12 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
       bVar2 = false;
     }
     if (bVar2) {
-      *param_2 = local_24;
-      param_2[1] = local_20;
-      param_2[2] = local_1c;
+      *angles = nextAngles;
+      angles[1] = local_20;
+      angles[2] = local_1c;
     }
     else {
-      if (((local_24 == s_invalidAngles[0]) && (local_20 == s_invalidAngles[1])) &&
+      if (((nextAngles == s_invalidAngles[0]) && (local_20 == s_invalidAngles[1])) &&
          (local_1c == s_invalidAngles[2])) {
         bVar2 = true;
       }
@@ -659,30 +676,30 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
         bVar2 = false;
       }
       if (bVar2) {
-        *param_2 = local_14;
-        param_2[1] = local_10;
-        param_2[2] = local_c;
+        *angles = prevAngles;
+        angles[1] = local_10;
+        angles[2] = local_c;
       }
-      else if (0.0 < local_34 + local_30) {
-        local_34 = local_34 / (local_34 + local_30);
-        fVar4 = AngleNormalize180(local_24 - local_14);
-        *param_2 = fVar4 * local_34 + local_14;
-        fVar4 = AngleNormalize180(local_20 - local_10);
-        param_2[1] = fVar4 * local_34 + local_10;
-        fVar4 = AngleNormalize180(local_1c - local_c);
-        param_2[2] = fVar4 * local_34 + local_c;
+      else if (0.0 < prevDist + nextDist) {
+        fVar4 = prevDist / (prevDist + nextDist);
+        fVar5 = AngleNormalize180(nextAngles - prevAngles);
+        *angles = fVar5 * fVar4 + prevAngles;
+        fVar5 = AngleNormalize180(local_20 - local_10);
+        angles[1] = fVar5 * fVar4 + local_10;
+        fVar5 = AngleNormalize180(local_1c - local_c);
+        angles[2] = fVar5 * fVar4 + local_c;
       }
       else {
-        *param_2 = 0.0;
-        param_2[1] = 0.0;
-        param_2[2] = 0.0;
+        *angles = 0.0;
+        angles[1] = 0.0;
+        angles[2] = 0.0;
       }
     }
   }
   else {
-    *param_2 = s_nodes[iVar3].angles[0];
-    param_2[1] = s_nodes[iVar3].angles[1];
-    param_2[2] = s_nodes[iVar3].angles[2];
+    *angles = s_nodes[iVar3].angles[0];
+    angles[1] = s_nodes[iVar3].angles[1];
+    angles[2] = s_nodes[iVar3].angles[2];
   }
   return;
 }
@@ -690,28 +707,30 @@ void __cdecl VP_CalcNodeAngles(short param_1,float *param_2)
 
 // 007CB040  VP_GetSpeed  (universal/g_vehicle_path.cpp:801)
 
-float __cdecl VP_GetSpeed(vehicle_pathpos_t *param_1)
+float __cdecl VP_GetSpeed(vehicle_pathpos_t *vpp)
 
 {
   int iVar1;
   float fVar2;
-  short local_10;
-  short local_c;
+  vehicle_node_t *node;
+  short nodeIdx;
+  short nextNodeIdx;
+  float speed;
   
-  if (param_1->customPath == (vehicle_custom_path_t *)0x0) {
-    local_10 = param_1->nodeIdx;
-    local_c = s_nodes[local_10].field11_0x30.splineNode.nextIdx;
+  if (vpp->customPath == (vehicle_custom_path_t *)0x0) {
+    nodeIdx = vpp->nodeIdx;
+    nextNodeIdx = s_nodes[nodeIdx].field11_0x30.splineNode.nextIdx;
   }
   else {
-    local_10 = param_1->customPath->pathOrder[param_1->nodeIdx];
-    local_c = param_1->customPath->pathOrder[param_1->nodeIdx + 1];
+    nodeIdx = vpp->customPath->pathOrder[vpp->nodeIdx];
+    nextNodeIdx = vpp->customPath->pathOrder[vpp->nodeIdx + 1];
   }
-  iVar1 = (int)local_10;
-  if (local_c < 0) {
+  iVar1 = (int)nodeIdx;
+  if (nextNodeIdx < 0) {
     fVar2 = s_nodes[iVar1].speed;
   }
   else {
-    fVar2 = (s_nodes[local_c].speed - s_nodes[iVar1].speed) * param_1->frac + s_nodes[iVar1].speed;
+    fVar2 = (s_nodes[nextNodeIdx].speed - s_nodes[iVar1].speed) * vpp->frac + s_nodes[iVar1].speed;
   }
   return fVar2;
 }
@@ -719,28 +738,30 @@ float __cdecl VP_GetSpeed(vehicle_pathpos_t *param_1)
 
 // 007CB100  VP_GetLookAhead  (universal/g_vehicle_path.cpp:837)
 
-float __cdecl VP_GetLookAhead(vehicle_pathpos_t *param_1)
+float __cdecl VP_GetLookAhead(vehicle_pathpos_t *vpp)
 
 {
   int iVar1;
   float fVar2;
-  short local_10;
-  short local_8;
+  vehicle_node_t *node;
+  short nodeIdx;
+  float lookahead;
+  short nextNodeIdx;
   
-  if (param_1->customPath == (vehicle_custom_path_t *)0x0) {
-    local_10 = param_1->nodeIdx;
-    local_8 = s_nodes[local_10].field11_0x30.splineNode.nextIdx;
+  if (vpp->customPath == (vehicle_custom_path_t *)0x0) {
+    nodeIdx = vpp->nodeIdx;
+    nextNodeIdx = s_nodes[nodeIdx].field11_0x30.splineNode.nextIdx;
   }
   else {
-    local_10 = param_1->customPath->pathOrder[param_1->nodeIdx];
-    local_8 = param_1->customPath->pathOrder[param_1->nodeIdx + 1];
+    nodeIdx = vpp->customPath->pathOrder[vpp->nodeIdx];
+    nextNodeIdx = vpp->customPath->pathOrder[vpp->nodeIdx + 1];
   }
-  iVar1 = (int)local_10;
+  iVar1 = (int)nodeIdx;
   if (s_nodes[iVar1].field11_0x30.splineNode.nextIdx < 0) {
     fVar2 = s_nodes[iVar1].lookAhead;
   }
   else {
-    fVar2 = (s_nodes[local_8].lookAhead - s_nodes[iVar1].lookAhead) * param_1->frac +
+    fVar2 = (s_nodes[nextNodeIdx].lookAhead - s_nodes[iVar1].lookAhead) * vpp->frac +
             s_nodes[iVar1].lookAhead;
   }
   return fVar2;
@@ -749,25 +770,27 @@ float __cdecl VP_GetLookAhead(vehicle_pathpos_t *param_1)
 
 // 007CB1C0  VP_GetSlide  (universal/g_vehicle_path.cpp:873)
 
-float __cdecl VP_GetSlide(vehicle_pathpos_t *param_1)
+float __cdecl VP_GetSlide(vehicle_pathpos_t *vpp)
 
 {
   int iVar1;
   int iVar2;
   float local_18;
-  short local_10;
-  short local_8;
+  vehicle_node_t *node;
+  short nodeIdx;
+  vehicle_node_t *next;
+  short nextNodeIdx;
   
-  if (param_1->customPath == (vehicle_custom_path_t *)0x0) {
-    local_10 = param_1->nodeIdx;
-    local_8 = s_nodes[local_10].field11_0x30.splineNode.nextIdx;
+  if (vpp->customPath == (vehicle_custom_path_t *)0x0) {
+    nodeIdx = vpp->nodeIdx;
+    nextNodeIdx = s_nodes[nodeIdx].field11_0x30.splineNode.nextIdx;
   }
   else {
-    local_10 = param_1->customPath->pathOrder[param_1->nodeIdx];
-    local_8 = param_1->customPath->pathOrder[param_1->nodeIdx + 1];
+    nodeIdx = vpp->customPath->pathOrder[vpp->nodeIdx];
+    nextNodeIdx = vpp->customPath->pathOrder[vpp->nodeIdx + 1];
   }
-  iVar1 = (int)local_10;
-  if (local_8 < 0) {
+  iVar1 = (int)nodeIdx;
+  if (nextNodeIdx < 0) {
     if ((s_nodes[iVar1].flags & 0x10000U) == 0) {
       local_18 = 0.0;
     }
@@ -776,17 +799,17 @@ float __cdecl VP_GetSlide(vehicle_pathpos_t *param_1)
     }
   }
   else {
-    iVar2 = (int)local_8;
+    iVar2 = (int)nextNodeIdx;
     if (((s_nodes[iVar1].flags & 0x10000U) == 0) || ((s_nodes[iVar2].flags & 0x10000U) == 0)) {
       if (((s_nodes[iVar1].flags & 0x10000U) == 0) && ((s_nodes[iVar2].flags & 0x10000U) != 0)) {
-        local_18 = param_1->frac;
+        local_18 = vpp->frac;
       }
       else if (((s_nodes[iVar1].flags & 0x10000U) == 0) || ((s_nodes[iVar2].flags & 0x10000U) != 0))
       {
         local_18 = 0.0;
       }
       else {
-        local_18 = 1.0 - param_1->frac;
+        local_18 = 1.0 - vpp->frac;
       }
     }
     else {
@@ -799,19 +822,19 @@ float __cdecl VP_GetSlide(vehicle_pathpos_t *param_1)
 
 // 007CA6E0  VPP_GetCurrentNode  (universal/g_vehicle_path.cpp:909)
 
-short __cdecl VPP_GetCurrentNode(vehicle_pathpos_t *param_1,short param_2)
+short __cdecl VPP_GetCurrentNode(vehicle_pathpos_t *vpp,short currentNode)
 
 {
-  if (param_1->customPath != (vehicle_custom_path_t *)0x0) {
-    param_2 = param_1->customPath->pathOrder[param_2];
+  if (vpp->customPath != (vehicle_custom_path_t *)0x0) {
+    currentNode = vpp->customPath->pathOrder[currentNode];
   }
-  return param_2;
+  return currentNode;
 }
 
 
 // 007CA430  VP_GetAngles  (universal/g_vehicle_path.cpp:926)
 
-void __cdecl VP_GetAngles(vehicle_pathpos_t *param_1,float *param_2)
+void __cdecl VP_GetAngles(vehicle_pathpos_t *vpp,float *angles)
 
 {
   float fVar1;
@@ -819,65 +842,66 @@ void __cdecl VP_GetAngles(vehicle_pathpos_t *param_1,float *param_2)
   int iVar3;
   float fVar4;
   float fVar5;
-  float local_2c [3];
-  short local_20;
-  vehicle_node_t *local_1c;
-  short local_18;
-  float local_14 [3];
-  int local_8;
+  vehicle_node_t *node;
+  float a2 [3];
+  short nodeIdx;
+  vehicle_node_t *next;
+  short nextNodeIdx;
+  float a1 [3];
+  int i;
   
-  sVar2 = VPP_GetCurrentNode(param_1,param_1->nodeIdx);
-  local_20 = sVar2;
+  sVar2 = VPP_GetCurrentNode(vpp,vpp->nodeIdx);
+  nodeIdx = sVar2;
   if ((s_nodes[sVar2].flags & 2U) == 0) {
-    local_18 = s_nodes[sVar2].field11_0x30.splineNode.nextIdx;
+    nextNodeIdx = s_nodes[sVar2].field11_0x30.splineNode.nextIdx;
   }
   else {
-    local_18 = VPP_GetCurrentNode(param_1,param_1->nodeIdx + 1);
+    nextNodeIdx = VPP_GetCurrentNode(vpp,vpp->nodeIdx + 1);
   }
-  if (local_18 < 0) {
+  if (nextNodeIdx < 0) {
     if ((s_nodes[sVar2].flags & 0x10000U) != 0) {
-      *param_2 = s_nodes[sVar2].angles[0];
-      param_2[1] = s_nodes[sVar2].angles[1];
-      param_2[2] = s_nodes[sVar2].angles[2];
+      *angles = s_nodes[sVar2].angles[0];
+      angles[1] = s_nodes[sVar2].angles[1];
+      angles[2] = s_nodes[sVar2].angles[2];
     }
   }
   else {
-    iVar3 = (int)local_18;
-    local_1c = s_nodes + iVar3;
+    iVar3 = (int)nextNodeIdx;
+    next = s_nodes + iVar3;
     if (((s_nodes[sVar2].flags & 0x10000U) != 0) || ((s_nodes[iVar3].flags & 0x10000U) != 0)) {
       if (((s_nodes[sVar2].flags & 0x10000U) == 0) || ((s_nodes[iVar3].flags & 0x10000U) == 0)) {
         if (((s_nodes[sVar2].flags & 0x10000U) == 0) && ((s_nodes[iVar3].flags & 0x10000U) != 0)) {
-          local_14[0] = *param_2;
-          local_14[1] = param_2[1];
-          local_14[2] = param_2[2];
-          local_2c[0] = s_nodes[iVar3].angles[0];
-          local_2c[1] = s_nodes[iVar3].angles[1];
-          local_2c[2] = s_nodes[iVar3].angles[2];
+          a1[0] = *angles;
+          a1[1] = angles[1];
+          a1[2] = angles[2];
+          a2[0] = s_nodes[iVar3].angles[0];
+          a2[1] = s_nodes[iVar3].angles[1];
+          a2[2] = s_nodes[iVar3].angles[2];
         }
         else {
-          local_14[0] = s_nodes[sVar2].angles[0];
-          local_14[1] = s_nodes[sVar2].angles[1];
-          local_14[2] = s_nodes[sVar2].angles[2];
-          local_2c[0] = *param_2;
-          local_2c[1] = param_2[1];
-          local_2c[2] = param_2[2];
+          a1[0] = s_nodes[sVar2].angles[0];
+          a1[1] = s_nodes[sVar2].angles[1];
+          a1[2] = s_nodes[sVar2].angles[2];
+          a2[0] = *angles;
+          a2[1] = angles[1];
+          a2[2] = angles[2];
         }
       }
       else {
-        local_14[0] = s_nodes[sVar2].angles[0];
-        local_14[1] = s_nodes[sVar2].angles[1];
-        local_14[2] = s_nodes[sVar2].angles[2];
-        local_2c[0] = s_nodes[iVar3].angles[0];
-        local_2c[1] = s_nodes[iVar3].angles[1];
-        local_2c[2] = s_nodes[iVar3].angles[2];
+        a1[0] = s_nodes[sVar2].angles[0];
+        a1[1] = s_nodes[sVar2].angles[1];
+        a1[2] = s_nodes[sVar2].angles[2];
+        a2[0] = s_nodes[iVar3].angles[0];
+        a2[1] = s_nodes[iVar3].angles[1];
+        a2[2] = s_nodes[iVar3].angles[2];
       }
-      for (local_8 = 0; local_8 < 3; local_8 = local_8 + 1) {
-        fVar5 = local_14[local_8];
-        fVar1 = param_1->frac;
-        fVar4 = AngleNormalize180(local_2c[local_8] - fVar5);
-        param_2[local_8] = fVar4 * fVar1 + fVar5;
-        fVar5 = AngleNormalize180(param_2[local_8]);
-        param_2[local_8] = fVar5;
+      for (i = 0; i < 3; i = i + 1) {
+        fVar5 = a1[i];
+        fVar1 = vpp->frac;
+        fVar4 = AngleNormalize180(a2[i] - fVar5);
+        angles[i] = fVar4 * fVar1 + fVar5;
+        fVar5 = AngleNormalize180(angles[i]);
+        angles[i] = fVar5;
       }
     }
   }
@@ -887,77 +911,81 @@ void __cdecl VP_GetAngles(vehicle_pathpos_t *param_1,float *param_2)
 
 // 007CA710  VP_GetLookAheadXYZCustom  (universal/g_vehicle_path.cpp:983)
 
-void __cdecl VP_GetLookAheadXYZCustom(vehicle_pathpos_t *param_1,float *param_2)
+void __cdecl VP_GetLookAheadXYZCustom(vehicle_pathpos_t *vpp,float *lookXYZ)
 
 {
   float fVar1;
   short sVar2;
   short sVar3;
   int iVar4;
-  float local_14;
-  short local_c;
+  vehicle_node_t *node;
+  short nodeIdx;
+  short linkIdx;
+  vehicle_path_node_link_t *link;
+  float dist;
+  float lookdist;
+  short pathIdx;
+  float length;
   
-  local_c = param_1->nodeIdx;
-  iVar4 = (int)param_1->customPath->pathLinkIdx[local_c];
-  local_14 = param_1->frac * s_node_links[iVar4].length + param_1->lookAhead;
-  sVar2 = param_1->customPath->pathOrder[local_c];
+  pathIdx = vpp->nodeIdx;
+  iVar4 = (int)vpp->customPath->pathLinkIdx[pathIdx];
+  dist = vpp->frac * s_node_links[iVar4].length + vpp->lookAhead;
+  sVar2 = vpp->customPath->pathOrder[pathIdx];
   while( true ) {
     fVar1 = s_node_links[iVar4].length;
-    local_c = local_c + 1;
-    sVar3 = param_1->customPath->pathOrder[local_c];
+    pathIdx = pathIdx + 1;
+    sVar3 = vpp->customPath->pathOrder[pathIdx];
     if ((sVar3 < 0) || (fVar1 == 0.0)) break;
-    if (local_14 < fVar1) {
-      *param_2 = local_14 * s_node_links[iVar4].dir[0] + s_nodes[sVar2].origin[0];
-      param_2[1] = local_14 * s_node_links[iVar4].dir[1] + s_nodes[sVar2].origin[1];
-      param_2[2] = local_14 * s_node_links[iVar4].dir[2] + s_nodes[sVar2].origin[2];
+    if (dist < fVar1) {
+      *lookXYZ = dist * s_node_links[iVar4].dir[0] + s_nodes[sVar2].origin[0];
+      lookXYZ[1] = dist * s_node_links[iVar4].dir[1] + s_nodes[sVar2].origin[1];
+      lookXYZ[2] = dist * s_node_links[iVar4].dir[2] + s_nodes[sVar2].origin[2];
       return;
     }
-    local_14 = local_14 - fVar1;
-    iVar4 = (int)param_1->customPath->pathLinkIdx[local_c];
+    dist = dist - fVar1;
+    iVar4 = (int)vpp->customPath->pathLinkIdx[pathIdx];
     sVar2 = sVar3;
   }
-  if (local_14 < 0.0) {
-    local_14 = 0.0;
+  if (dist < 0.0) {
+    dist = 0.0;
   }
-  *param_2 = local_14 * param_1->customGoalDir[0] + s_nodes[sVar2].origin[0];
-  param_2[1] = local_14 * param_1->customGoalDir[1] + s_nodes[sVar2].origin[1];
-  param_2[2] = local_14 * param_1->customGoalDir[2] + s_nodes[sVar2].origin[2];
+  *lookXYZ = dist * vpp->customGoalDir[0] + s_nodes[sVar2].origin[0];
+  lookXYZ[1] = dist * vpp->customGoalDir[1] + s_nodes[sVar2].origin[1];
+  lookXYZ[2] = dist * vpp->customGoalDir[2] + s_nodes[sVar2].origin[2];
   return;
 }
 
 
 // 007CA930  VP_GetLookAheadXYZ  (universal/g_vehicle_path.cpp:1040)
 
-void __cdecl VP_GetLookAheadXYZ(vehicle_pathpos_t *param_1,float *param_2)
+void __cdecl VP_GetLookAheadXYZ(vehicle_pathpos_t *vpp,float *lookXYZ)
 
 {
   int iVar1;
-  float local_10;
-  short local_8;
+  vehicle_node_t *node;
+  float dist;
+  float lookdist;
+  short count;
   
-  iVar1 = (int)param_1->nodeIdx;
-  local_10 = param_1->frac * s_nodes[iVar1].field11_0x30.splineNode.length +
-             param_1->lookAhead * param_1->speed;
-  local_8 = 0;
+  iVar1 = (int)vpp->nodeIdx;
+  dist = vpp->frac * s_nodes[iVar1].field11_0x30.splineNode.length + vpp->lookAhead * vpp->speed;
+  count = 0;
   do {
-    if (s_numNodes <= local_8) {
+    if (s_numNodes <= count) {
 LAB_007caa03:
-      *param_2 = local_10 * s_nodes[iVar1].field11_0x30.splineNode.dir[0] + s_nodes[iVar1].origin[0]
-      ;
-      param_2[1] = local_10 * s_nodes[iVar1].field11_0x30.splineNode.dir[1] +
-                   s_nodes[iVar1].origin[1];
-      param_2[2] = local_10 * s_nodes[iVar1].field11_0x30.splineNode.dir[2] +
-                   s_nodes[iVar1].origin[2];
+      *lookXYZ = dist * s_nodes[iVar1].field11_0x30.splineNode.dir[0] + s_nodes[iVar1].origin[0];
+      lookXYZ[1] = dist * s_nodes[iVar1].field11_0x30.splineNode.dir[1] + s_nodes[iVar1].origin[1];
+      lookXYZ[2] = dist * s_nodes[iVar1].field11_0x30.splineNode.dir[2] + s_nodes[iVar1].origin[2];
       return;
     }
-    local_8 = local_8 + 1;
+    count = count + 1;
     if ((s_nodes[iVar1].field11_0x30.splineNode.nextIdx < 0) ||
        (s_nodes[iVar1].field11_0x30.splineNode.length == 0.0)) {
-      local_10 = 0.0;
+      dist = 0.0;
       goto LAB_007caa03;
     }
-    if (local_10 < s_nodes[iVar1].field11_0x30.splineNode.length) goto LAB_007caa03;
-    local_10 = local_10 - s_nodes[iVar1].field11_0x30.splineNode.length;
+    if (dist < s_nodes[iVar1].field11_0x30.splineNode.length) goto LAB_007caa03;
+    dist = dist - s_nodes[iVar1].field11_0x30.splineNode.length;
     iVar1 = (int)s_nodes[iVar1].field11_0x30.splineNode.nextIdx;
   } while( true );
 }
@@ -965,7 +993,7 @@ LAB_007caa03:
 
 // 007CAA70  VP_UpdatePathPosCustom  (universal/g_vehicle_path.cpp:1081)
 
-int __cdecl VP_UpdatePathPosCustom(vehicle_pathpos_t *param_1,float *param_2,short param_3)
+int __cdecl VP_UpdatePathPosCustom(vehicle_pathpos_t *vpp,float *dir,short nodeTest)
 
 {
   short sVar1;
@@ -977,109 +1005,119 @@ int __cdecl VP_UpdatePathPosCustom(vehicle_pathpos_t *param_1,float *param_2,sho
   float fVar7;
   float fVar8;
   float fVar9;
+  float fVar10;
   float local_a0;
   float local_9c;
-  short local_50;
-  float local_4c;
-  int local_3c;
-  short local_24;
-  short local_20;
-  short local_1c;
-  float local_10;
+  float d1;
+  short nextLinkIdx;
+  short nodeIdx;
+  float frac;
+  short linkIdx;
+  vehicle_path_node_link_t *plink;
+  vehicle_path_node_link_t *nlink;
+  int test;
+  vehicle_path_node_link_t *clink;
+  float d2;
+  short nextNodeIdx;
+  short pathIdx;
+  short prevLinkIdx;
+  vehicle_node_t *cnode;
+  vehicle_node_t *nnode;
+  float VPPToNNode;
   float local_c;
   float local_8;
   
-  local_20 = param_1->nodeIdx;
-  local_50 = param_1->customPath->pathOrder[local_20];
-  sVar1 = param_1->customPath->pathLinkIdx[local_20];
-  local_3c = 0;
+  pathIdx = vpp->nodeIdx;
+  nodeIdx = vpp->customPath->pathOrder[pathIdx];
+  sVar1 = vpp->customPath->pathLinkIdx[pathIdx];
+  test = 0;
   while( true ) {
     while( true ) {
-      iVar4 = (int)local_50;
-      sVar2 = param_1->customPath->pathOrder[local_20 + 1];
-      sVar3 = param_1->customPath->pathLinkIdx[local_20 + 1];
-      local_24 = sVar2;
+      iVar4 = (int)nodeIdx;
+      sVar2 = vpp->customPath->pathOrder[pathIdx + 1];
+      sVar3 = vpp->customPath->pathLinkIdx[pathIdx + 1];
+      nextNodeIdx = sVar2;
       if ((s_nodes[sVar2].flags & 0x80000U) != 0) {
-        local_24 = -1;
+        nextNodeIdx = -1;
       }
-      local_1c = sVar1;
-      if (0 < local_20) {
-        local_1c = param_1->customPath->pathOrder[local_20 + 0x7f];
+      prevLinkIdx = sVar1;
+      if (0 < pathIdx) {
+        prevLinkIdx = vpp->customPath->pathOrder[pathIdx + 0x7f];
       }
-      iVar5 = (int)local_1c;
-      if (local_50 == param_3) {
-        local_3c = 1;
+      iVar5 = (int)prevLinkIdx;
+      if (nodeIdx == nodeTest) {
+        test = 1;
       }
-      if ((local_24 < 0) || (s_node_links[sVar1].length == 0.0)) {
-        local_4c = 0.0;
+      if ((nextNodeIdx < 0) || (s_node_links[sVar1].length == 0.0)) {
+        frac = 0.0;
         goto LAB_007cafc3;
       }
-      fVar9 = param_1->origin[0] - s_nodes[iVar4].origin[0];
-      fVar6 = param_1->origin[1] - s_nodes[iVar4].origin[1];
-      fVar7 = param_1->origin[2] - s_nodes[iVar4].origin[2];
-      local_4c = fVar9 * (s_node_links[iVar5].dir[0] + s_node_links[sVar1].dir[0]) * 0.5 +
-                 fVar6 * (s_node_links[iVar5].dir[1] + s_node_links[sVar1].dir[1]) * 0.5 +
-                 fVar7 * (s_node_links[iVar5].dir[2] + s_node_links[sVar1].dir[2]) * 0.5;
-      local_10 = s_nodes[sVar2].origin[0] - param_1->origin[0];
-      local_c = s_nodes[sVar2].origin[1] - param_1->origin[1];
-      local_8 = s_nodes[sVar2].origin[2] - param_1->origin[2];
-      fVar8 = local_10 * (s_node_links[sVar1].dir[0] + s_node_links[sVar3].dir[0]) * 0.5 +
+      fVar10 = vpp->origin[0] - s_nodes[iVar4].origin[0];
+      fVar6 = vpp->origin[1] - s_nodes[iVar4].origin[1];
+      fVar7 = vpp->origin[2] - s_nodes[iVar4].origin[2];
+      fVar8 = fVar10 * (s_node_links[iVar5].dir[0] + s_node_links[sVar1].dir[0]) * 0.5 +
+              fVar6 * (s_node_links[iVar5].dir[1] + s_node_links[sVar1].dir[1]) * 0.5 +
+              fVar7 * (s_node_links[iVar5].dir[2] + s_node_links[sVar1].dir[2]) * 0.5;
+      VPPToNNode = s_nodes[sVar2].origin[0] - vpp->origin[0];
+      local_c = s_nodes[sVar2].origin[1] - vpp->origin[1];
+      local_8 = s_nodes[sVar2].origin[2] - vpp->origin[2];
+      fVar9 = VPPToNNode * (s_node_links[sVar1].dir[0] + s_node_links[sVar3].dir[0]) * 0.5 +
               local_c * (s_node_links[sVar1].dir[1] + s_node_links[sVar3].dir[1]) * 0.5 +
               local_8 * (s_node_links[sVar1].dir[2] + s_node_links[sVar3].dir[2]) * 0.5;
-      if ((local_4c == 0.0) && (fVar8 == 0.0)) {
-        local_4c = 0.0;
+      if ((fVar8 == 0.0) && (fVar9 == 0.0)) {
+        frac = 0.0;
         goto LAB_007cafc3;
       }
-      if (0.0 <= fVar8) break;
-      local_20 = local_20 + 1;
-      local_50 = local_24;
+      if (0.0 <= fVar9) break;
+      pathIdx = pathIdx + 1;
+      nodeIdx = nextNodeIdx;
     }
-    if (0.0 <= local_4c) break;
-    if (s_node_links[sVar1].dir[0] * fVar9 + s_node_links[sVar1].dir[1] * fVar6 +
+    if (0.0 <= fVar8) break;
+    if (s_node_links[sVar1].dir[0] * fVar10 + s_node_links[sVar1].dir[1] * fVar6 +
         s_node_links[sVar1].dir[2] * fVar7 < 0.0) {
-      local_4c = 0.0;
+      frac = 0.0;
       goto LAB_007cafc3;
     }
-    fVar9 = Abs((phys_vec3 *)&local_10);
-    fVar9 = 1.0 - fVar9 / s_node_links[sVar1].length;
-    local_9c = fVar9;
-    if (0.0 <= fVar9 - 1.0) {
+    fVar10 = Abs((phys_vec3 *)&VPPToNNode);
+    fVar10 = 1.0 - fVar10 / s_node_links[sVar1].length;
+    local_9c = fVar10;
+    if (0.0 <= fVar10 - 1.0) {
       local_9c = 1.0;
     }
-    if (0.0 - fVar9 < 0.0) {
+    if (0.0 - fVar10 < 0.0) {
       local_a0 = local_9c;
     }
     else {
       local_a0 = 0.0;
     }
-    local_4c = local_a0;
+    frac = local_a0;
     if (local_a0 <= 0.95) goto LAB_007cafc3;
-    local_20 = local_20 + 1;
-    local_50 = local_24;
+    pathIdx = pathIdx + 1;
+    nodeIdx = nextNodeIdx;
   }
-  local_4c = local_4c / (local_4c + fVar8);
+  frac = fVar8 / (fVar8 + fVar9);
 LAB_007cafc3:
-  if (local_24 < 0) {
-    param_1->endOfPath = 1;
+  if (nextNodeIdx < 0) {
+    vpp->endOfPath = 1;
   }
   else {
-    param_1->endOfPath = 0;
+    vpp->endOfPath = 0;
   }
-  param_1->nodeIdx = local_20;
-  param_1->frac = local_4c;
-  fVar9 = VP_GetSpeed(param_1);
-  param_1->speed = fVar9;
-  fVar9 = VP_GetLookAhead(param_1);
-  param_1->lookAhead = fVar9;
-  fVar9 = VP_GetSlide(param_1);
-  param_1->slide = fVar9;
-  return local_3c;
+  vpp->nodeIdx = pathIdx;
+  vpp->frac = frac;
+  fVar10 = VP_GetSpeed(vpp);
+  vpp->speed = fVar10;
+  fVar10 = VP_GetLookAhead(vpp);
+  vpp->lookAhead = fVar10;
+  fVar10 = VP_GetSlide(vpp);
+  vpp->slide = fVar10;
+  return test;
 }
 
 
 // 007CB2F0  VP_UpdatePathPos  (universal/g_vehicle_path.cpp:1214)
 
-int __cdecl VP_UpdatePathPos(vehicle_pathpos_t *param_1,float *param_2,short param_3)
+int __cdecl VP_UpdatePathPos(vehicle_pathpos_t *vpp,float *dir,short nodeTest)
 
 {
   short sVar1;
@@ -1087,117 +1125,114 @@ int __cdecl VP_UpdatePathPos(vehicle_pathpos_t *param_1,float *param_2,short par
   float fVar3;
   float local_b4;
   float local_b0;
-  float local_60;
+  float nnodePlane;
   float local_5c;
   float local_58;
-  vehicle_node_t *local_54;
-  float local_50;
+  vehicle_node_t *pnode;
+  float cnodePlane;
   float local_4c;
   float local_48;
-  float local_44;
-  float local_40;
-  short local_3c;
-  float local_38;
-  short local_34;
-  int local_30;
-  float local_2c;
+  float angleDiff;
+  float d1;
+  short nodeIdx;
+  float frac;
+  short lastNodeIdx;
+  int test;
+  float cnodeToVPP;
   float local_28;
   float local_24;
-  float local_20;
-  vehicle_node_t *local_1c;
-  vehicle_node_t *local_18;
-  phys_vec3 local_14;
+  float d2;
+  vehicle_node_t *cnode;
+  vehicle_node_t *nnode;
+  undefined1 VPPToNNode [12];
+  short count;
   
-  local_3c = param_1->nodeIdx;
-  local_34 = param_1->lastNodeIdx;
-  local_1c = s_nodes + local_3c;
-  local_38 = param_1->frac;
-  local_30 = 0;
-  local_14.w._0_2_ = 0;
+  nodeIdx = vpp->nodeIdx;
+  lastNodeIdx = vpp->lastNodeIdx;
+  cnode = s_nodes + nodeIdx;
+  frac = vpp->frac;
+  test = 0;
+  count = 0;
 LAB_007cb338:
   do {
-    if (s_numNodes <= local_14.w._0_2_) {
+    if (s_numNodes <= count) {
 LAB_007cb7cb:
-      if ((local_1c->field11_0x30).splineNode.nextIdx < 0) {
-        param_1->endOfPath = 1;
+      if ((cnode->field11_0x30).splineNode.nextIdx < 0) {
+        vpp->endOfPath = 1;
       }
       else {
-        param_1->endOfPath = 0;
+        vpp->endOfPath = 0;
       }
-      param_1->lastNodeIdx = local_34;
-      param_1->nodeIdx = local_3c;
-      param_1->frac = local_38;
-      fVar3 = VP_GetSpeed(param_1);
-      param_1->speed = fVar3;
-      fVar3 = VP_GetLookAhead(param_1);
-      param_1->lookAhead = fVar3;
-      fVar3 = VP_GetSlide(param_1);
-      param_1->slide = fVar3;
-      return local_30;
+      vpp->lastNodeIdx = lastNodeIdx;
+      vpp->nodeIdx = nodeIdx;
+      vpp->frac = frac;
+      fVar3 = VP_GetSpeed(vpp);
+      vpp->speed = fVar3;
+      fVar3 = VP_GetLookAhead(vpp);
+      vpp->lookAhead = fVar3;
+      fVar3 = VP_GetSlide(vpp);
+      vpp->slide = fVar3;
+      return test;
     }
-    local_14.w._0_2_ = local_14.w._0_2_ + 1;
-    iVar2 = (int)local_3c;
-    local_1c = s_nodes + iVar2;
-    if (local_3c == param_3) {
-      local_30 = 1;
+    count = count + 1;
+    iVar2 = (int)nodeIdx;
+    cnode = s_nodes + iVar2;
+    if (nodeIdx == nodeTest) {
+      test = 1;
     }
     if ((s_nodes[iVar2].field11_0x30.splineNode.nextIdx < 0) ||
        (s_nodes[iVar2].field11_0x30.splineNode.length == 0.0)) {
-      local_38 = 0.0;
+      frac = 0.0;
       goto LAB_007cb7cb;
     }
     sVar1 = s_nodes[iVar2].field11_0x30.splineNode.nextIdx;
-    local_18 = s_nodes + sVar1;
-    local_54 = s_nodes + local_34;
-    local_60 = s_nodes[iVar2].field11_0x30.splineNode.dir[0] +
-               s_nodes[sVar1].field11_0x30.splineNode.dir[0];
+    nnode = s_nodes + sVar1;
+    pnode = s_nodes + lastNodeIdx;
+    nnodePlane = s_nodes[iVar2].field11_0x30.splineNode.dir[0] +
+                 s_nodes[sVar1].field11_0x30.splineNode.dir[0];
     local_5c = s_nodes[iVar2].field11_0x30.splineNode.dir[1] +
                s_nodes[sVar1].field11_0x30.splineNode.dir[1];
     local_58 = s_nodes[iVar2].field11_0x30.splineNode.dir[2] +
                s_nodes[sVar1].field11_0x30.splineNode.dir[2];
-    Vec3Normalize(&local_60);
-    local_44 = (local_54->field11_0x30).splineNode.dir[0] *
-               (local_1c->field11_0x30).splineNode.dir[0] +
-               (local_54->field11_0x30).splineNode.dir[1] *
-               (local_1c->field11_0x30).splineNode.dir[1] +
-               (local_54->field11_0x30).splineNode.dir[2] *
-               (local_1c->field11_0x30).splineNode.dir[2];
-    if (-tightTurnThreshold <= local_44) {
-      local_50 = (local_54->field11_0x30).splineNode.dir[0] +
-                 (local_1c->field11_0x30).splineNode.dir[0];
-      local_4c = (local_54->field11_0x30).splineNode.dir[1] +
-                 (local_1c->field11_0x30).splineNode.dir[1];
-      local_48 = (local_54->field11_0x30).splineNode.dir[2] +
-                 (local_1c->field11_0x30).splineNode.dir[2];
-      Vec3Normalize(&local_50);
+    Vec3Normalize(&nnodePlane);
+    angleDiff = (pnode->field11_0x30).splineNode.dir[0] * (cnode->field11_0x30).splineNode.dir[0] +
+                (pnode->field11_0x30).splineNode.dir[1] * (cnode->field11_0x30).splineNode.dir[1] +
+                (pnode->field11_0x30).splineNode.dir[2] * (cnode->field11_0x30).splineNode.dir[2];
+    if (-tightTurnThreshold <= angleDiff) {
+      cnodePlane = (pnode->field11_0x30).splineNode.dir[0] + (cnode->field11_0x30).splineNode.dir[0]
+      ;
+      local_4c = (pnode->field11_0x30).splineNode.dir[1] + (cnode->field11_0x30).splineNode.dir[1];
+      local_48 = (pnode->field11_0x30).splineNode.dir[2] + (cnode->field11_0x30).splineNode.dir[2];
+      Vec3Normalize(&cnodePlane);
     }
     else {
-      local_50 = (local_1c->field11_0x30).splineNode.dir[0];
-      local_4c = (local_1c->field11_0x30).splineNode.dir[1];
-      local_48 = (local_1c->field11_0x30).splineNode.dir[2];
+      cnodePlane = (cnode->field11_0x30).splineNode.dir[0];
+      local_4c = (cnode->field11_0x30).splineNode.dir[1];
+      local_48 = (cnode->field11_0x30).splineNode.dir[2];
     }
-    local_2c = param_1->origin[0] - local_1c->origin[0];
-    local_28 = param_1->origin[1] - local_1c->origin[1];
-    local_24 = param_1->origin[2] - local_1c->origin[2];
-    local_40 = local_2c * local_50 + local_28 * local_4c + local_24 * local_48;
-    local_14.x = local_18->origin[0] - param_1->origin[0];
-    local_14.y = local_18->origin[1] - param_1->origin[1];
-    local_14.z = local_18->origin[2] - param_1->origin[2];
-    local_20 = local_14.x * local_60 + local_14.y * local_5c + local_14.z * local_58;
-    if (0.0 <= local_20) {
-      if (0.0 <= local_40) {
-        local_38 = local_40 / (local_40 + local_20);
+    cnodeToVPP = vpp->origin[0] - cnode->origin[0];
+    local_28 = vpp->origin[1] - cnode->origin[1];
+    local_24 = vpp->origin[2] - cnode->origin[2];
+    d1 = cnodeToVPP * cnodePlane + local_28 * local_4c + local_24 * local_48;
+    VPPToNNode._0_4_ = nnode->origin[0] - vpp->origin[0];
+    VPPToNNode._4_4_ = nnode->origin[1] - vpp->origin[1];
+    VPPToNNode._8_4_ = nnode->origin[2] - vpp->origin[2];
+    d2 = (float)VPPToNNode._0_4_ * nnodePlane + (float)VPPToNNode._4_4_ * local_5c +
+         (float)VPPToNNode._8_4_ * local_58;
+    if (0.0 <= d2) {
+      if (0.0 <= d1) {
+        frac = d1 / (d1 + d2);
         goto LAB_007cb7cb;
       }
-      local_40 = (local_1c->field11_0x30).splineNode.dir[0] * local_2c +
-                 (local_1c->field11_0x30).splineNode.dir[1] * local_28 +
-                 (local_1c->field11_0x30).splineNode.dir[2] * local_24;
-      if (local_40 < 0.0) {
-        local_38 = 0.0;
+      d1 = (cnode->field11_0x30).splineNode.dir[0] * cnodeToVPP +
+           (cnode->field11_0x30).splineNode.dir[1] * local_28 +
+           (cnode->field11_0x30).splineNode.dir[2] * local_24;
+      if (d1 < 0.0) {
+        frac = 0.0;
         goto LAB_007cb7cb;
       }
-      fVar3 = Abs(&local_14);
-      fVar3 = 1.0 - fVar3 / (local_1c->field11_0x30).splineNode.length;
+      fVar3 = Abs((phys_vec3 *)VPPToNNode);
+      fVar3 = 1.0 - fVar3 / (cnode->field11_0x30).splineNode.length;
       local_b0 = fVar3;
       if (0.0 <= fVar3 - 1.0) {
         local_b0 = 1.0;
@@ -1208,28 +1243,29 @@ LAB_007cb7cb:
       else {
         local_b4 = 0.0;
       }
-      local_38 = local_b4;
+      frac = local_b4;
       if (local_b4 <= 0.9) goto LAB_007cb7cb;
-      local_34 = local_3c;
-      local_3c = (local_1c->field11_0x30).splineNode.nextIdx;
+      lastNodeIdx = nodeIdx;
+      nodeIdx = (cnode->field11_0x30).splineNode.nextIdx;
       goto LAB_007cb338;
     }
-    local_34 = local_3c;
-    local_3c = (local_1c->field11_0x30).splineNode.nextIdx;
+    lastNodeIdx = nodeIdx;
+    nodeIdx = (cnode->field11_0x30).splineNode.nextIdx;
   } while( true );
 }
 
 
 // 007CB850  VP_BeginSwitchNode  (universal/g_vehicle_path.cpp:1333)
 
-void __cdecl VP_BeginSwitchNode(vehicle_pathpos_t *param_1)
+void __cdecl VP_BeginSwitchNode(vehicle_pathpos_t *vpp)
 
 {
   short sVar1;
+  short nodeIdx;
   
-  sVar1 = VP_GetNodeIndex(param_1->switchNode[0].name,(float *)0x0);
+  sVar1 = VP_GetNodeIndex(vpp->switchNode[0].name,(float *)0x0);
   if (-1 < sVar1) {
-    VP_CopyNode(param_1->switchNode,s_nodes + sVar1);
+    VP_CopyNode(vpp->switchNode,s_nodes + sVar1);
   }
   return;
 }
@@ -1237,14 +1273,15 @@ void __cdecl VP_BeginSwitchNode(vehicle_pathpos_t *param_1)
 
 // 007CBA20  VP_EndSwitchNode  (universal/g_vehicle_path.cpp:1347)
 
-void __cdecl VP_EndSwitchNode(vehicle_pathpos_t *param_1)
+void __cdecl VP_EndSwitchNode(vehicle_pathpos_t *vpp)
 
 {
   short sVar1;
+  short nodeIdx;
   
-  sVar1 = VP_GetNodeIndex(param_1->switchNode[0].name,(float *)0x0);
+  sVar1 = VP_GetNodeIndex(vpp->switchNode[0].name,(float *)0x0);
   if (-1 < sVar1) {
-    VP_CopyNode(param_1->switchNode + 1,s_nodes + sVar1);
+    VP_CopyNode(vpp->switchNode + 1,s_nodes + sVar1);
   }
   return;
 }
@@ -1252,28 +1289,30 @@ void __cdecl VP_EndSwitchNode(vehicle_pathpos_t *param_1)
 
 // 007C75E0  VP_FindClosestPathNode  (universal/g_vehicle_path.cpp:1360)
 
-short __cdecl VP_FindClosestPathNode(float *param_1)
+short __cdecl VP_FindClosestPathNode(float *pos)
 
 {
   int iVar1;
   float fVar2;
-  float local_14;
-  short local_10;
-  short local_8;
+  vehicle_node_t *node;
+  float closestDist2;
+  short closestNode;
+  float dist2;
+  short i;
   
-  local_10 = -1;
-  local_14 = 3.4028235e+38;
-  for (local_8 = 0; local_8 < s_numNodes; local_8 = local_8 + 1) {
-    iVar1 = (int)local_8;
-    fVar2 = Vec3DistanceSq(param_1,s_nodes[iVar1].origin);
+  closestNode = -1;
+  closestDist2 = 3.4028235e+38;
+  for (i = 0; i < s_numNodes; i = i + 1) {
+    iVar1 = (int)i;
+    fVar2 = Vec3DistanceSq(pos,s_nodes[iVar1].origin);
     fVar2 = fVar2 - s_nodes[iVar1].field11_0x30.splineNode.length *
                     s_nodes[iVar1].field11_0x30.splineNode.length;
-    if (((s_nodes[iVar1].flags & 2U) != 0) && (fVar2 < local_14)) {
-      local_10 = local_8;
-      local_14 = fVar2;
+    if (((s_nodes[iVar1].flags & 2U) != 0) && (fVar2 < closestDist2)) {
+      closestNode = i;
+      closestDist2 = fVar2;
     }
   }
-  return local_10;
+  return closestNode;
 }
 
 
@@ -1282,37 +1321,37 @@ short __cdecl VP_FindClosestPathNode(float *param_1)
 vehicle_custom_path_t * __cdecl VP_GetFreeCustomPath(void)
 
 {
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
   
   if (!pathsInitialized) {
     pathsInitialized = true;
-    for (local_8 = 0; local_8 < 10; local_8 = local_8 + 1) {
-      gCustomPaths[local_8].inUse = '\0';
+    for (i = 0; i < 10; i = i + 1) {
+      gCustomPaths[i].inUse = '\0';
     }
   }
-  local_c = 0;
+  i_2 = 0;
   while( true ) {
-    if (9 < local_c) {
+    if (9 < i_2) {
       return (vehicle_custom_path_t *)0x0;
     }
-    if (gCustomPaths[local_c].inUse == '\0') break;
-    local_c = local_c + 1;
+    if (gCustomPaths[i_2].inUse == '\0') break;
+    i_2 = i_2 + 1;
   }
-  gCustomPaths[local_c].inUse = '\x01';
-  return gCustomPaths + local_c;
+  gCustomPaths[i_2].inUse = '\x01';
+  return gCustomPaths + i_2;
 }
 
 
 // 007C7730  VP_FreeCustomPath  (universal/g_vehicle_path.cpp:1408)
 
-void __cdecl VP_FreeCustomPath(vehicle_custom_path_t *param_1)
+void __cdecl VP_FreeCustomPath(vehicle_custom_path_t *path)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == (vehicle_custom_path_t *)0x0) {
+  if (path == (vehicle_custom_path_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                              0x581,0,"%s");
     if (!bVar2) {
@@ -1321,7 +1360,7 @@ void __cdecl VP_FreeCustomPath(vehicle_custom_path_t *param_1)
       return;
     }
   }
-  param_1->inUse = '\0';
+  path->inUse = '\0';
   return;
 }
 
@@ -1331,7 +1370,7 @@ void __cdecl VP_FreeCustomPath(vehicle_custom_path_t *param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl VP_FindPath(float *param_1,float *param_2,vehicle_pathpos_t *param_3)
+int __cdecl VP_FindPath(float *start,float *end,vehicle_pathpos_t *vpp)
 
 {
   short sVar1;
@@ -1342,68 +1381,83 @@ int __cdecl VP_FindPath(float *param_1,float *param_2,vehicle_pathpos_t *param_3
   short sVar6;
   int iVar7;
   float fVar8;
-  short local_7e5c;
-  short local_7e4c;
-  short local_7e40;
-  vehicle_custom_path_t *local_7e3c;
-  int local_7e34;
-  int local_7e28;
-  float local_7e20;
-  short local_7e1c;
+  short linkIdx_3;
+  short linkedNode_2;
+  bool tentative_is_better;
+  float tentative_g_cost;
+  short i_3;
+  short linkIdx_2;
+  short linkIdx;
+  short linkedNode;
+  short j;
+  short numLinks_2;
+  short firstLink_2;
+  short node_2;
+  vehicle_custom_path_t *path;
+  bool addLastNode;
+  int i_2;
+  short temp;
+  short node;
+  int i;
+  short numLinks;
+  float bestScore;
+  short bestNode;
+  short firstLink;
   short asStack_7e14 [128];
   uint local_7d14;
-  short local_7d10;
-  float local_7d0c [8000];
-  short local_c;
-  undefined4 local_8;
+  short pathQueueCount;
+  float nodeInfo [8000];
+  short startNode;
+  short endNode;
+  undefined2 uStack_6;
   
-  local_8 = 0x7c777d;
+  _endNode = 0x7c777d;
   local_7d14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  sVar5 = VP_FindClosestPathNode(param_1);
-  local_8 = CONCAT22(local_8._2_2_,sVar5);
-  local_c = VP_FindClosestPathNode(param_2);
-  if ((-1 < local_c) && (-1 < (short)local_8)) {
-    memset((uchar *)local_7d0c,'\0',32000);
-    local_7d10 = 0;
-    local_7d0c[local_c * 4 + 1] = 0.0;
-    fVar8 = Vec3Distance(s_nodes[local_c].origin,s_nodes[(short)local_8].origin);
-    local_7d0c[local_c * 4 + 3] = fVar8;
-    local_7d0c[local_c * 4 + 2] = local_7d0c[local_c * 4 + 3];
-    *(ushort *)((int)local_7d0c + (local_c * 8 + 1) * 2) =
-         *(ushort *)((int)local_7d0c + (local_c * 8 + 1) * 2) | 1;
-    asStack_7e14[local_7d10] = local_c;
-    local_7d10 = local_7d10 + 1;
-    while (0 < local_7d10) {
-      local_7d10 = local_7d10 + -1;
-      local_7e20 = local_7d0c[asStack_7e14[local_7d10] * 4 + 2];
-      local_7e28 = (int)local_7d10;
-      local_7e1c = asStack_7e14[local_7d10];
-      while (local_7e28 = local_7e28 + -1, -1 < local_7e28) {
-        sVar5 = asStack_7e14[local_7e28];
-        if (local_7d0c[sVar5 * 4 + 2] <= local_7e20 && local_7e20 != local_7d0c[sVar5 * 4 + 2]) {
-          local_7e20 = local_7d0c[sVar5 * 4 + 2];
-          sVar1 = asStack_7e14[local_7d10];
-          asStack_7e14[local_7d10] = sVar5;
-          asStack_7e14[local_7e28] = sVar1;
-          local_7e1c = sVar5;
+  sVar5 = VP_FindClosestPathNode(start);
+  _endNode = CONCAT22(uStack_6,sVar5);
+  startNode = VP_FindClosestPathNode(end);
+  if ((-1 < startNode) && (-1 < endNode)) {
+    memset((uchar *)nodeInfo,'\0',32000);
+    pathQueueCount = 0;
+    nodeInfo[startNode * 4 + 1] = 0.0;
+    fVar8 = Vec3Distance(s_nodes[startNode].origin,s_nodes[endNode].origin);
+    nodeInfo[startNode * 4 + 3] = fVar8;
+    nodeInfo[startNode * 4 + 2] = nodeInfo[startNode * 4 + 3];
+    *(ushort *)((int)nodeInfo + (startNode * 8 + 1) * 2) =
+         *(ushort *)((int)nodeInfo + (startNode * 8 + 1) * 2) | 1;
+    asStack_7e14[pathQueueCount] = startNode;
+    pathQueueCount = pathQueueCount + 1;
+    while (0 < pathQueueCount) {
+      pathQueueCount = pathQueueCount + -1;
+      bestScore = nodeInfo[asStack_7e14[pathQueueCount] * 4 + 2];
+      i = (int)pathQueueCount;
+      bestNode = asStack_7e14[pathQueueCount];
+      while (i = i + -1, -1 < i) {
+        sVar5 = asStack_7e14[i];
+        if (nodeInfo[sVar5 * 4 + 2] <= bestScore && bestScore != nodeInfo[sVar5 * 4 + 2]) {
+          bestScore = nodeInfo[sVar5 * 4 + 2];
+          sVar1 = asStack_7e14[pathQueueCount];
+          asStack_7e14[pathQueueCount] = sVar5;
+          asStack_7e14[i] = sVar1;
+          bestNode = sVar5;
         }
       }
-      *(ushort *)((int)local_7d0c + (local_7e1c * 8 + 1) * 2) =
-           *(ushort *)((int)local_7d0c + (local_7e1c * 8 + 1) * 2) | 2;
-      if (local_7e1c == (short)local_8) {
-        if (param_3->customPath == (vehicle_custom_path_t *)0x0) {
-          local_7e3c = VP_GetFreeCustomPath();
+      *(ushort *)((int)nodeInfo + (bestNode * 8 + 1) * 2) =
+           *(ushort *)((int)nodeInfo + (bestNode * 8 + 1) * 2) | 2;
+      if (bestNode == endNode) {
+        if (vpp->customPath == (vehicle_custom_path_t *)0x0) {
+          path = VP_GetFreeCustomPath();
         }
         else {
-          local_7e3c = param_3->customPath;
+          path = vpp->customPath;
         }
-        if (local_7e3c == (vehicle_custom_path_t *)0x0) {
+        if (path == (vehicle_custom_path_t *)0x0) {
           return 0;
         }
-        local_7e40 = (short)local_8;
-        local_7e34 = 0;
-        while (local_7e40 != local_c) {
-          if (0x7f < local_7e34) {
+        node_2 = endNode;
+        i_2 = 0;
+        while (node_2 != startNode) {
+          if (0x7f < i_2) {
             va("Vehicle path length over %d nodes long\n");
             bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp"
                                      ,0x5d7,0,"%s\n\t%s");
@@ -1413,40 +1467,40 @@ int __cdecl VP_FindPath(float *param_1,float *param_2,vehicle_pathpos_t *param_3
               return iVar7;
             }
           }
-          local_7e3c->pathOrder[local_7e34] = local_7e40;
-          sVar5 = s_nodes[local_7e40].field11_0x30.splineNode.prevIdx;
-          sVar1 = s_nodes[local_7e40].field11_0x30.splineNode.nextIdx;
-          local_7e40 = *(short *)(local_7d0c + local_7e40 * 4);
-          for (local_7e4c = 0; local_7e4c < sVar1; local_7e4c = local_7e4c + 1) {
-            sVar6 = sVar5 + local_7e4c;
-            if (s_node_links[sVar6].nextIdx == local_7e40) {
-              local_7e3c->pathLinkIdx[local_7e34] = sVar6;
+          path->pathOrder[i_2] = node_2;
+          sVar5 = s_nodes[node_2].field11_0x30.splineNode.prevIdx;
+          sVar1 = s_nodes[node_2].field11_0x30.splineNode.nextIdx;
+          node_2 = *(short *)(nodeInfo + node_2 * 4);
+          for (j = 0; j < sVar1; j = j + 1) {
+            sVar6 = sVar5 + j;
+            if (s_node_links[sVar6].nextIdx == node_2) {
+              path->pathLinkIdx[i_2] = sVar6;
             }
           }
-          local_7e34 = local_7e34 + 1;
+          i_2 = i_2 + 1;
         }
         bVar3 = true;
-        if (local_7e34 != 0) {
-          fVar8 = Vec3DistanceSq(s_nodes[local_c].origin,param_2);
-          if (s_nodes[local_c].field11_0x30.splineNode.length *
-              s_nodes[local_c].field11_0x30.splineNode.length <= fVar8) {
-            iVar7 = (int)local_c;
-            param_3->customGoalDir[0] = *param_2 - s_nodes[iVar7].origin[0];
-            param_3->customGoalDir[1] = param_2[1] - s_nodes[iVar7].origin[1];
-            param_3->customGoalDir[2] = param_2[2] - s_nodes[iVar7].origin[2];
-            fVar8 = Vec3Normalize(param_3->customGoalDir);
-            param_3->customGoalLength = fVar8;
-            sVar5 = local_7e3c->pathOrder[local_7e34 + 0x7f];
-            if ((s_node_links[sVar5].nextIdx != local_c) &&
+        if (i_2 != 0) {
+          fVar8 = Vec3DistanceSq(s_nodes[startNode].origin,end);
+          if (s_nodes[startNode].field11_0x30.splineNode.length *
+              s_nodes[startNode].field11_0x30.splineNode.length <= fVar8) {
+            iVar7 = (int)startNode;
+            vpp->customGoalDir[0] = *end - s_nodes[iVar7].origin[0];
+            vpp->customGoalDir[1] = end[1] - s_nodes[iVar7].origin[1];
+            vpp->customGoalDir[2] = end[2] - s_nodes[iVar7].origin[2];
+            fVar8 = Vec3Normalize(vpp->customGoalDir);
+            vpp->customGoalLength = fVar8;
+            sVar5 = path->pathOrder[i_2 + 0x7f];
+            if ((s_node_links[sVar5].nextIdx != startNode) &&
                (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp"
                                          ,0x5f9,0,"%s"), !bVar4)) {
               pcVar2 = (code *)swi(3);
               iVar7 = (*pcVar2)();
               return iVar7;
             }
-            if (param_3->customGoalDir[0] * s_node_links[sVar5].dir[0] +
-                param_3->customGoalDir[1] * s_node_links[sVar5].dir[1] +
-                param_3->customGoalDir[2] * s_node_links[sVar5].dir[2] < -0.3) {
+            if (vpp->customGoalDir[0] * s_node_links[sVar5].dir[0] +
+                vpp->customGoalDir[1] * s_node_links[sVar5].dir[1] +
+                vpp->customGoalDir[2] * s_node_links[sVar5].dir[2] < -0.3) {
               bVar3 = false;
             }
           }
@@ -1454,64 +1508,63 @@ int __cdecl VP_FindPath(float *param_1,float *param_2,vehicle_pathpos_t *param_3
             bVar3 = false;
           }
           if (bVar3) {
-            local_7e3c->pathOrder[local_7e34] = local_c;
-            local_7e3c->pathOrder[local_7e34 + 1] = -1;
+            path->pathOrder[i_2] = startNode;
+            path->pathOrder[i_2 + 1] = -1;
           }
           else {
-            if (0 < local_7e34) {
-              local_c = local_7e3c->pathOrder[local_7e34 + -1];
+            if (0 < i_2) {
+              startNode = path->pathOrder[i_2 + -1];
             }
-            local_7e3c->pathOrder[local_7e34] = -1;
+            path->pathOrder[i_2] = -1;
           }
-          G_VehSetUpPathPos(param_3,local_7e3c->pathOrder[0]);
-          param_3->nodeIdx = 0;
-          param_3->customPath = local_7e3c;
-          iVar7 = (int)local_c;
-          param_3->customGoalDir[0] = *param_2 - s_nodes[iVar7].origin[0];
-          param_3->customGoalDir[1] = param_2[1] - s_nodes[iVar7].origin[1];
-          param_3->customGoalDir[2] = param_2[2] - s_nodes[iVar7].origin[2];
-          fVar8 = Vec3Normalize(param_3->customGoalDir);
-          param_3->customGoalLength = fVar8;
+          G_VehSetUpPathPos(vpp,path->pathOrder[0]);
+          vpp->nodeIdx = 0;
+          vpp->customPath = path;
+          iVar7 = (int)startNode;
+          vpp->customGoalDir[0] = *end - s_nodes[iVar7].origin[0];
+          vpp->customGoalDir[1] = end[1] - s_nodes[iVar7].origin[1];
+          vpp->customGoalDir[2] = end[2] - s_nodes[iVar7].origin[2];
+          fVar8 = Vec3Normalize(vpp->customGoalDir);
+          vpp->customGoalLength = fVar8;
           return 1;
         }
-        VP_FreeCustomPath(local_7e3c);
-        param_3->customPath = (vehicle_custom_path_t *)0x0;
+        VP_FreeCustomPath(path);
+        vpp->customPath = (vehicle_custom_path_t *)0x0;
         return 0;
       }
-      sVar5 = s_nodes[local_7e1c].field11_0x30.splineNode.prevIdx;
-      sVar1 = s_nodes[local_7e1c].field11_0x30.splineNode.nextIdx;
-      for (local_7e5c = 0; local_7e5c < sVar1; local_7e5c = local_7e5c + 1) {
-        sVar6 = s_node_links[(short)(sVar5 + local_7e5c)].nextIdx;
+      sVar5 = s_nodes[bestNode].field11_0x30.splineNode.prevIdx;
+      sVar1 = s_nodes[bestNode].field11_0x30.splineNode.nextIdx;
+      for (i_3 = 0; i_3 < sVar1; i_3 = i_3 + 1) {
+        sVar6 = s_node_links[(short)(sVar5 + i_3)].nextIdx;
         if (((s_nodes[sVar6].flags & 0x80000U) == 0) &&
-           ((*(ushort *)((int)local_7d0c + (sVar6 * 8 + 1) * 2) & 2) == 0)) {
-          fVar8 = local_7d0c[local_7e1c * 4 + 1] + s_node_links[(int)sVar5 + (int)local_7e5c].length
-          ;
-          if ((*(ushort *)((int)local_7d0c + (sVar6 * 8 + 1) * 2) & 1) == 0) {
-            if ((0x7f < local_7d10) &&
+           ((*(ushort *)((int)nodeInfo + (sVar6 * 8 + 1) * 2) & 2) == 0)) {
+          fVar8 = nodeInfo[bestNode * 4 + 1] + s_node_links[(int)sVar5 + (int)i_3].length;
+          if ((*(ushort *)((int)nodeInfo + (sVar6 * 8 + 1) * 2) & 1) == 0) {
+            if ((0x7f < pathQueueCount) &&
                (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp"
                                          ,0x626,0,"%s"), !bVar3)) {
               pcVar2 = (code *)swi(3);
               iVar7 = (*pcVar2)();
               return iVar7;
             }
-            *(ushort *)((int)local_7d0c + (sVar6 * 8 + 1) * 2) =
-                 *(ushort *)((int)local_7d0c + (sVar6 * 8 + 1) * 2) | 1;
+            *(ushort *)((int)nodeInfo + (sVar6 * 8 + 1) * 2) =
+                 *(ushort *)((int)nodeInfo + (sVar6 * 8 + 1) * 2) | 1;
             bVar3 = true;
-            asStack_7e14[local_7d10] = sVar6;
-            local_7d10 = local_7d10 + 1;
+            asStack_7e14[pathQueueCount] = sVar6;
+            pathQueueCount = pathQueueCount + 1;
           }
-          else if (local_7d0c[sVar6 * 4 + 1] <= fVar8) {
+          else if (nodeInfo[sVar6 * 4 + 1] <= fVar8) {
             bVar3 = false;
           }
           else {
             bVar3 = true;
           }
           if (bVar3) {
-            *(short *)(local_7d0c + sVar6 * 4) = local_7e1c;
-            local_7d0c[sVar6 * 4 + 1] = fVar8;
-            fVar8 = Vec3Distance(s_nodes[sVar6].origin,s_nodes[(short)local_8].origin);
-            local_7d0c[sVar6 * 4 + 3] = fVar8;
-            local_7d0c[sVar6 * 4 + 2] = local_7d0c[sVar6 * 4 + 1] + local_7d0c[sVar6 * 4 + 3];
+            *(short *)(nodeInfo + sVar6 * 4) = bestNode;
+            nodeInfo[sVar6 * 4 + 1] = fVar8;
+            fVar8 = Vec3Distance(s_nodes[sVar6].origin,s_nodes[endNode].origin);
+            nodeInfo[sVar6 * 4 + 3] = fVar8;
+            nodeInfo[sVar6 * 4 + 2] = nodeInfo[sVar6 * 4 + 1] + nodeInfo[sVar6 * 4 + 3];
           }
         }
       }
@@ -1523,17 +1576,20 @@ int __cdecl VP_FindPath(float *param_1,float *param_2,vehicle_pathpos_t *param_3
 
 // 007C8150  VP_DrawCustomPath  (universal/g_vehicle_path.cpp:1605)
 
-void __cdecl VP_DrawCustomPath(vehicle_custom_path_t *param_1)
+void __cdecl VP_DrawCustomPath(vehicle_custom_path_t *customPath)
 
 {
-  int local_8;
+  short nodeIdx;
+  vehicle_node_t *firstNode;
+  short nextNodeIdx;
+  vehicle_node_t *secondNode;
+  int i;
   
-  if (param_1 != (vehicle_custom_path_t *)0x0) {
-    for (local_8 = 1;
-        ((local_8 < 0x80 && (-1 < param_1->pathOrder[local_8 + -1])) &&
-        (-1 < param_1->pathOrder[local_8])); local_8 = local_8 + 1) {
-      G_DebugLine(s_nodes[param_1->pathOrder[local_8 + -1]].origin,
-                  s_nodes[param_1->pathOrder[local_8]].origin,colorGreen,1);
+  if (customPath != (vehicle_custom_path_t *)0x0) {
+    for (i = 1; ((i < 0x80 && (-1 < customPath->pathOrder[i + -1])) &&
+                (-1 < customPath->pathOrder[i])); i = i + 1) {
+      G_DebugLine(s_nodes[customPath->pathOrder[i + -1]].origin,
+                  s_nodes[customPath->pathOrder[i]].origin,colorGreen,1);
     }
   }
   return;
@@ -1542,7 +1598,7 @@ void __cdecl VP_DrawCustomPath(vehicle_custom_path_t *param_1)
 
 // 007C8200  VP_DrawPath  (universal/g_vehicle_path.cpp:1634)
 
-void __cdecl VP_DrawPath(vehicle_pathpos_t *param_1)
+void __cdecl VP_DrawPath(vehicle_pathpos_t *vpp)
 
 {
   short sVar1;
@@ -1550,25 +1606,25 @@ void __cdecl VP_DrawPath(vehicle_pathpos_t *param_1)
   vehicle_pathpos_t *pvVar3;
   vehicle_pathpos_t *pvVar4;
   short *psVar5;
-  vehicle_node_t *local_218;
-  float local_214 [14];
-  int local_1dc;
-  int local_1d8;
-  vehicle_pathpos_t local_1d4;
-  short local_f4 [12];
+  vehicle_node_t *node;
+  float mins [14];
+  int arrowCount;
+  int done;
+  vehicle_pathpos_t nextVPP;
+  short prevVPP [12];
   float local_dc [50];
-  short local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  short loopNode;
+  int looped;
+  int arrowTime;
+  int count;
   
-  local_1dc = 0;
-  local_c = 1000;
-  local_1d8 = 0;
-  local_8 = 0;
-  local_14 = -1;
-  pvVar3 = param_1;
-  psVar5 = local_f4;
+  arrowCount = 0;
+  arrowTime = 1000;
+  done = 0;
+  count = 0;
+  loopNode = -1;
+  pvVar3 = vpp;
+  psVar5 = prevVPP;
   for (iVar2 = 0x37; iVar2 != 0; iVar2 = iVar2 + -1) {
     sVar1 = pvVar3->lastNodeIdx;
     psVar5[0] = pvVar3->nodeIdx;
@@ -1576,8 +1632,8 @@ void __cdecl VP_DrawPath(vehicle_pathpos_t *param_1)
     pvVar3 = (vehicle_pathpos_t *)&pvVar3->endOfPath;
     psVar5 = psVar5 + 2;
   }
-  pvVar3 = param_1;
-  pvVar4 = &local_1d4;
+  pvVar3 = vpp;
+  pvVar4 = &nextVPP;
   for (iVar2 = 0x37; iVar2 != 0; iVar2 = iVar2 + -1) {
     sVar1 = pvVar3->lastNodeIdx;
     pvVar4->nodeIdx = pvVar3->nodeIdx;
@@ -1586,13 +1642,13 @@ void __cdecl VP_DrawPath(vehicle_pathpos_t *param_1)
     pvVar4 = (vehicle_pathpos_t *)&pvVar4->endOfPath;
   }
   s_newDebugLine = 1;
-  while ((local_1d8 == 0 && (local_8 < 0xc351))) {
-    local_8 = local_8 + 1;
-    if (local_f4[0] != param_1->nodeIdx) {
-      local_14 = param_1->nodeIdx;
+  while ((done == 0 && (count < 0xc351))) {
+    count = count + 1;
+    if (prevVPP[0] != vpp->nodeIdx) {
+      loopNode = vpp->nodeIdx;
     }
-    pvVar3 = &local_1d4;
-    psVar5 = local_f4;
+    pvVar3 = &nextVPP;
+    psVar5 = prevVPP;
     for (iVar2 = 0x37; iVar2 != 0; iVar2 = iVar2 + -1) {
       sVar1 = pvVar3->lastNodeIdx;
       psVar5[0] = pvVar3->nodeIdx;
@@ -1600,52 +1656,49 @@ void __cdecl VP_DrawPath(vehicle_pathpos_t *param_1)
       pvVar3 = (vehicle_pathpos_t *)&pvVar3->endOfPath;
       psVar5 = psVar5 + 2;
     }
-    local_10 = G_VehUpdatePathPos(&local_1d4,local_14);
-    if ((local_1d4.endOfPath != 0) || (local_10 != 0)) {
-      local_1d8 = 1;
+    looped = G_VehUpdatePathPos(&nextVPP,loopNode);
+    if ((nextVPP.endOfPath != 0) || (looped != 0)) {
+      done = 1;
     }
-    VP_AddDebugLine(local_dc,local_1d4.origin,local_1d8);
-    if (local_c < local_1dc) {
-      VP_DebugArrow(local_1d4.origin,local_1d4.angles);
-      local_1dc = 0;
+    VP_AddDebugLine(local_dc,nextVPP.origin,done);
+    if (arrowTime < arrowCount) {
+      VP_DebugArrow(nextVPP.origin,nextVPP.angles);
+      arrowCount = 0;
     }
     else {
-      local_1dc = local_1dc + 0x32;
+      arrowCount = arrowCount + 0x32;
     }
   }
-  local_214[10] = 0.0;
-  local_214[0xb] = 1.0;
-  local_214[0xc] = 0.0;
-  local_214[0xd] = 1.0;
-  local_214[6] = 0.0;
-  local_214[7] = 0.0;
-  local_214[8] = 1.0;
-  local_214[9] = 1.0;
-  local_8 = 0;
-  sVar1 = param_1->nodeIdx;
+  mins[10] = 0.0;
+  mins[0xb] = 1.0;
+  mins[0xc] = 0.0;
+  mins[0xd] = 1.0;
+  mins[6] = 0.0;
+  mins[7] = 0.0;
+  mins[8] = 1.0;
+  mins[9] = 1.0;
+  count = 0;
+  sVar1 = vpp->nodeIdx;
   while( true ) {
-    local_218 = s_nodes + sVar1;
-    if ((s_numNodes <= local_8) ||
-       (param_1->nodeIdx == s_nodes[sVar1].field11_0x30.splineNode.nextIdx)) {
+    node = s_nodes + sVar1;
+    if ((s_numNodes <= count) || (vpp->nodeIdx == s_nodes[sVar1].field11_0x30.splineNode.nextIdx)) {
       return;
     }
-    local_8 = local_8 + 1;
-    local_214[0] = -8.0;
-    local_214[1] = -8.0;
-    local_214[2] = -8.0;
-    local_214[3] = 8.0;
-    local_214[4] = 8.0;
-    local_214[5] = 8.0;
-    if ((local_218 == s_nodes + param_1->nodeIdx) || (g_radiant_selected_node == local_218)) {
-      G_DebugBox(s_nodes[sVar1].origin,local_214,local_214 + 3,s_nodes[sVar1].angles[1],
-                 local_214 + 10,1,0);
+    count = count + 1;
+    mins[0] = -8.0;
+    mins[1] = -8.0;
+    mins[2] = -8.0;
+    mins[3] = 8.0;
+    mins[4] = 8.0;
+    mins[5] = 8.0;
+    if ((node == s_nodes + vpp->nodeIdx) || (g_radiant_selected_node == node)) {
+      G_DebugBox(s_nodes[sVar1].origin,mins,mins + 3,s_nodes[sVar1].angles[1],mins + 10,1,0);
     }
     else {
-      G_DebugBox(s_nodes[sVar1].origin,local_214,local_214 + 3,s_nodes[sVar1].angles[1],
-                 local_214 + 6,1,0);
+      G_DebugBox(s_nodes[sVar1].origin,mins,mins + 3,s_nodes[sVar1].angles[1],mins + 6,1,0);
     }
     if (s_nodes[sVar1].field11_0x30.splineNode.nextIdx < 0) break;
-    if (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == param_1->nodeIdx) {
+    if (s_nodes[sVar1].field11_0x30.splineNode.nextIdx == vpp->nodeIdx) {
       return;
     }
     sVar1 = s_nodes[sVar1].field11_0x30.splineNode.nextIdx;
@@ -1670,16 +1723,17 @@ void __cdecl G_InitVehiclePaths(void)
 void __cdecl G_FreeVehiclePaths(void)
 
 {
-  short local_8;
+  vehicle_node_t *node;
+  short i;
   
-  for (local_8 = 0; local_8 < s_numNodes; local_8 = local_8 + 1) {
-    Scr_FreeEntityNum((int)s_nodes[local_8].index,3,SCRIPTINSTANCE_SERVER);
-    VP_ClearNode(s_nodes + local_8);
+  for (i = 0; i < s_numNodes; i = i + 1) {
+    Scr_FreeEntityNum((int)s_nodes[i].index,3,SCRIPTINSTANCE_SERVER);
+    VP_ClearNode(s_nodes + i);
   }
   s_numNodes = 0;
   s_numVehicleNodeLinks = 0;
-  for (local_8 = 0; local_8 < num_heli_height_lock_patches; local_8 = local_8 + 1) {
-    Scr_SetString(&heli_height_lock_patches[local_8].targetname,0,SCRIPTINSTANCE_SERVER);
+  for (i = 0; i < num_heli_height_lock_patches; i = i + 1) {
+    Scr_SetString(&heli_height_lock_patches[i].targetname,0,SCRIPTINSTANCE_SERVER);
   }
   num_heli_height_lock_patches = 0;
   return;
@@ -1688,14 +1742,14 @@ void __cdecl G_FreeVehiclePaths(void)
 
 // 007C8BA0  VP_ResetNode  (universal/g_vehicle_path.cpp:1790)
 
-void __cdecl VP_ResetNode(vehicle_node_t *param_1)
+void __cdecl VP_ResetNode(vehicle_node_t *node)
 
 {
-  if ((param_1->flags & 0x20000U) == 0) {
-    param_1->speed = -1.0;
+  if ((node->flags & 0x20000U) == 0) {
+    node->speed = -1.0;
   }
-  if ((param_1->flags & 0x40000U) == 0) {
-    param_1->lookAhead = -1.0;
+  if ((node->flags & 0x40000U) == 0) {
+    node->lookAhead = -1.0;
   }
   return;
 }
@@ -1708,16 +1762,17 @@ void __cdecl G_SetupSplinePaths(void)
 {
   short sVar1;
   int iVar2;
-  vehicle_node_t *pvVar3;
-  float fVar4;
-  short local_c;
-  short local_8;
+  vehicle_node_t *node_00;
+  float fVar3;
+  vehicle_node_t *node;
+  short j;
+  short i;
   
-  local_8 = 0;
+  i = 0;
   do {
-    if (s_numNodes <= local_8) {
-      for (local_8 = 0; local_8 < s_numNodes; local_8 = local_8 + 1) {
-        iVar2 = (int)local_8;
+    if (s_numNodes <= i) {
+      for (i = 0; i < s_numNodes; i = i + 1) {
+        iVar2 = (int)i;
         if (((s_nodes[iVar2].flags & 2U) == 0) &&
            (-1 < s_nodes[iVar2].field11_0x30.splineNode.nextIdx)) {
           sVar1 = s_nodes[iVar2].field11_0x30.splineNode.nextIdx;
@@ -1727,32 +1782,32 @@ void __cdecl G_SetupSplinePaths(void)
                s_nodes[sVar1].origin[1] - s_nodes[iVar2].origin[1];
           s_nodes[iVar2].field11_0x30.splineNode.dir[2] =
                s_nodes[sVar1].origin[2] - s_nodes[iVar2].origin[2];
-          fVar4 = Vec3Normalize(s_nodes[iVar2].field11_0x30.splineNode.dir);
-          s_nodes[iVar2].field11_0x30.splineNode.length = fVar4;
+          fVar3 = Vec3Normalize(s_nodes[iVar2].field11_0x30.splineNode.dir);
+          s_nodes[iVar2].field11_0x30.splineNode.length = fVar3;
           if ((s_nodes[iVar2].flags & 0x10000U) == 0) {
             vectoangles(s_nodes[iVar2].field11_0x30.splineNode.dir,s_nodes[iVar2].angles);
           }
         }
       }
-      for (local_8 = 0; local_8 < s_numNodes; local_8 = local_8 + 1) {
-        iVar2 = (int)local_8;
+      for (i = 0; i < s_numNodes; i = i + 1) {
+        iVar2 = (int)i;
         if ((s_nodes[iVar2].flags & 2U) == 0) {
-          fVar4 = VP_CalcNodeSpeed(local_8);
-          s_nodes[iVar2].speed = fVar4;
-          fVar4 = VP_CalcNodeLookAhead(local_8);
-          s_nodes[iVar2].lookAhead = fVar4;
+          fVar3 = VP_CalcNodeSpeed(i);
+          s_nodes[iVar2].speed = fVar3;
+          fVar3 = VP_CalcNodeLookAhead(i);
+          s_nodes[iVar2].lookAhead = fVar3;
           if (s_nodes[iVar2].speed <= 0.0 && s_nodes[iVar2].speed != 0.0) {
             Com_Error(ERR_DROP,"\x15Vehicle path node at( %f, %f, %f ) has negative speed\n");
           }
           if ((s_nodes[iVar2].flags & 0x10000U) != 0) {
-            VP_CalcNodeAngles(local_8,s_nodes[iVar2].angles);
+            VP_CalcNodeAngles(i,s_nodes[iVar2].angles);
           }
-          fVar4 = AngleNormalize180(s_nodes[iVar2].angles[0]);
-          s_nodes[iVar2].angles[0] = fVar4;
-          fVar4 = AngleNormalize180(s_nodes[iVar2].angles[1]);
-          s_nodes[iVar2].angles[1] = fVar4;
-          fVar4 = AngleNormalize180(s_nodes[iVar2].angles[2]);
-          s_nodes[iVar2].angles[2] = fVar4;
+          fVar3 = AngleNormalize180(s_nodes[iVar2].angles[0]);
+          s_nodes[iVar2].angles[0] = fVar3;
+          fVar3 = AngleNormalize180(s_nodes[iVar2].angles[1]);
+          s_nodes[iVar2].angles[1] = fVar3;
+          fVar3 = AngleNormalize180(s_nodes[iVar2].angles[2]);
+          s_nodes[iVar2].angles[2] = fVar3;
           if ((s_nodes[iVar2].speed <= 0.0) || (s_nodes[iVar2].lookAhead <= 0.0)) {
             s_nodes[iVar2].field11_0x30.splineNode.nextIdx = -1;
           }
@@ -1768,29 +1823,28 @@ void __cdecl G_SetupSplinePaths(void)
       }
       return;
     }
-    iVar2 = (int)local_8;
-    pvVar3 = s_nodes + iVar2;
-    VP_ResetNode(pvVar3);
+    iVar2 = (int)i;
+    node_00 = s_nodes + iVar2;
+    VP_ResetNode(node_00);
     if ((s_nodes[iVar2].flags & 2U) == 0) {
       if (s_nodes[iVar2].target != 0) {
         sVar1 = VP_GetNodeIndex(s_nodes[iVar2].target,(float *)0x0);
         s_nodes[iVar2].field11_0x30.splineNode.nextIdx = sVar1;
       }
-      for (local_c = 0; local_c < s_numNodes; local_c = local_c + 1) {
-        if (((pvVar3->name != 0) && (local_8 != local_c)) &&
-           (pvVar3->name == s_nodes[local_c].target)) {
-          s_nodes[iVar2].field11_0x30.splineNode.prevIdx = local_c;
+      for (j = 0; j < s_numNodes; j = j + 1) {
+        if (((node_00->name != 0) && (i != j)) && (node_00->name == s_nodes[j].target)) {
+          s_nodes[iVar2].field11_0x30.splineNode.prevIdx = j;
           break;
         }
       }
-      if (s_nodes[iVar2].field11_0x30.splineNode.nextIdx == local_8) {
+      if (s_nodes[iVar2].field11_0x30.splineNode.nextIdx == i) {
         s_nodes[iVar2].field11_0x30.splineNode.nextIdx = -1;
       }
-      if (s_nodes[iVar2].field11_0x30.splineNode.prevIdx == local_8) {
+      if (s_nodes[iVar2].field11_0x30.splineNode.prevIdx == i) {
         s_nodes[iVar2].field11_0x30.splineNode.prevIdx = -1;
       }
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -1802,19 +1856,22 @@ void __cdecl G_ConnectVehiclePaths(void)
 {
   short sVar1;
   int iVar2;
-  vehicle_node_t *pvVar3;
-  int iVar4;
-  vehicle_node_t *pvVar5;
-  float fVar6;
-  short local_14;
-  short local_8;
+  vehicle_node_t *node_00;
+  int iVar3;
+  vehicle_node_t *pvVar4;
+  float fVar5;
+  vehicle_node_t *node;
+  short j;
+  short pathNodeIdx;
+  vehicle_node_t *other;
+  short i;
   
   VP_ResetLinks();
-  for (local_8 = 0; local_8 < s_numNodes; local_8 = local_8 + 1) {
-    iVar2 = (int)local_8;
-    pvVar3 = s_nodes + iVar2;
+  for (i = 0; i < s_numNodes; i = i + 1) {
+    iVar2 = (int)i;
+    node_00 = s_nodes + iVar2;
     if ((s_nodes[iVar2].flags & 2U) != 0) {
-      VP_ResetNode(pvVar3);
+      VP_ResetNode(node_00);
       s_nodes[iVar2].field11_0x30.splineNode.nextIdx = 0;
       if (s_nodes[iVar2].speed <= 0.0) {
         s_nodes[iVar2].speed = 1760.0;
@@ -1828,12 +1885,12 @@ void __cdecl G_ConnectVehiclePaths(void)
       if (s_nodes[iVar2].lookAhead <= 0.0) {
         s_nodes[iVar2].lookAhead = 200.0;
       }
-      for (local_14 = 0; local_14 < s_numNodes; local_14 = local_14 + 1) {
-        iVar4 = (int)local_14;
-        pvVar5 = s_nodes + iVar4;
-        if (((s_nodes[iVar4].flags & 2U) != 0) && (pvVar5 != pvVar3)) {
-          if ((pvVar5->name != 0) &&
-             ((s_nodes[iVar2].target == pvVar5->name || (s_nodes[iVar2].target2 == pvVar5->name))))
+      for (j = 0; j < s_numNodes; j = j + 1) {
+        iVar3 = (int)j;
+        pvVar4 = s_nodes + iVar3;
+        if (((s_nodes[iVar3].flags & 2U) != 0) && (pvVar4 != node_00)) {
+          if ((pvVar4->name != 0) &&
+             ((s_nodes[iVar2].target == pvVar4->name || (s_nodes[iVar2].target2 == pvVar4->name))))
           {
             sVar1 = VP_GetNextFreePathNode();
             if (s_nodes[iVar2].field11_0x30.splineNode.nextIdx == 0) {
@@ -1841,29 +1898,29 @@ void __cdecl G_ConnectVehiclePaths(void)
             }
             s_nodes[iVar2].field11_0x30.splineNode.nextIdx =
                  s_nodes[iVar2].field11_0x30.splineNode.nextIdx + 1;
-            s_node_links[sVar1].nextIdx = s_nodes[iVar4].index;
-            fVar6 = Vec3Distance(s_nodes[iVar2].origin,s_nodes[iVar4].origin);
-            s_node_links[sVar1].length = fVar6;
-            s_node_links[sVar1].dir[0] = s_nodes[iVar4].origin[0] - s_nodes[iVar2].origin[0];
-            s_node_links[sVar1].dir[1] = s_nodes[iVar4].origin[1] - s_nodes[iVar2].origin[1];
-            s_node_links[sVar1].dir[2] = s_nodes[iVar4].origin[2] - s_nodes[iVar2].origin[2];
+            s_node_links[sVar1].nextIdx = s_nodes[iVar3].index;
+            fVar5 = Vec3Distance(s_nodes[iVar2].origin,s_nodes[iVar3].origin);
+            s_node_links[sVar1].length = fVar5;
+            s_node_links[sVar1].dir[0] = s_nodes[iVar3].origin[0] - s_nodes[iVar2].origin[0];
+            s_node_links[sVar1].dir[1] = s_nodes[iVar3].origin[1] - s_nodes[iVar2].origin[1];
+            s_node_links[sVar1].dir[2] = s_nodes[iVar3].origin[2] - s_nodes[iVar2].origin[2];
             Vec3Normalize(s_node_links[sVar1].dir);
           }
-          if ((pvVar3->name != 0) &&
-             ((s_nodes[iVar4].target == pvVar3->name || (s_nodes[iVar4].target2 == pvVar3->name))))
-          {
+          if ((node_00->name != 0) &&
+             ((s_nodes[iVar3].target == node_00->name || (s_nodes[iVar3].target2 == node_00->name)))
+             ) {
             sVar1 = VP_GetNextFreePathNode();
             if (s_nodes[iVar2].field11_0x30.splineNode.nextIdx == 0) {
               s_nodes[iVar2].field11_0x30.splineNode.prevIdx = sVar1;
             }
             s_nodes[iVar2].field11_0x30.splineNode.nextIdx =
                  s_nodes[iVar2].field11_0x30.splineNode.nextIdx + 1;
-            s_node_links[sVar1].nextIdx = s_nodes[iVar4].index;
-            fVar6 = Vec3Distance(s_nodes[iVar2].origin,s_nodes[iVar4].origin);
-            s_node_links[sVar1].length = fVar6;
-            s_node_links[sVar1].dir[0] = s_nodes[iVar4].origin[0] - s_nodes[iVar2].origin[0];
-            s_node_links[sVar1].dir[1] = s_nodes[iVar4].origin[1] - s_nodes[iVar2].origin[1];
-            s_node_links[sVar1].dir[2] = s_nodes[iVar4].origin[2] - s_nodes[iVar2].origin[2];
+            s_node_links[sVar1].nextIdx = s_nodes[iVar3].index;
+            fVar5 = Vec3Distance(s_nodes[iVar2].origin,s_nodes[iVar3].origin);
+            s_node_links[sVar1].length = fVar5;
+            s_node_links[sVar1].dir[0] = s_nodes[iVar3].origin[0] - s_nodes[iVar2].origin[0];
+            s_node_links[sVar1].dir[1] = s_nodes[iVar3].origin[1] - s_nodes[iVar2].origin[1];
+            s_node_links[sVar1].dir[2] = s_nodes[iVar3].origin[2] - s_nodes[iVar2].origin[2];
             Vec3Normalize(s_node_links[sVar1].dir);
           }
         }
@@ -1887,167 +1944,171 @@ void __cdecl G_SetupVehiclePaths(void)
 
 // 007C9E20  G_VehInitPathPos  (universal/g_vehicle_path.cpp:2194)
 
-void __cdecl G_VehInitPathPos(vehicle_pathpos_t *param_1)
+void __cdecl G_VehInitPathPos(vehicle_pathpos_t *vpp)
 
 {
-  param_1->lastNodeIdx = -1;
-  param_1->nodeIdx = -1;
-  param_1->endOfPath = 0;
-  param_1->frac = 0.0;
-  param_1->speed = 0.0;
-  param_1->lookAhead = 0.0;
-  param_1->slide = 0.0;
-  param_1->customPath = (vehicle_custom_path_t *)0x0;
-  param_1->origin[0] = 0.0;
-  param_1->origin[1] = 0.0;
-  param_1->origin[2] = 0.0;
-  param_1->angles[0] = 0.0;
-  param_1->angles[1] = 0.0;
-  param_1->angles[2] = 0.0;
-  param_1->lookPos[0] = 0.0;
-  param_1->lookPos[1] = 0.0;
-  param_1->lookPos[2] = 0.0;
-  VP_InitNode(param_1->switchNode,-1);
-  VP_InitNode(param_1->switchNode + 1,-1);
+  vpp->lastNodeIdx = -1;
+  vpp->nodeIdx = -1;
+  vpp->endOfPath = 0;
+  vpp->frac = 0.0;
+  vpp->speed = 0.0;
+  vpp->lookAhead = 0.0;
+  vpp->slide = 0.0;
+  vpp->customPath = (vehicle_custom_path_t *)0x0;
+  vpp->origin[0] = 0.0;
+  vpp->origin[1] = 0.0;
+  vpp->origin[2] = 0.0;
+  vpp->angles[0] = 0.0;
+  vpp->angles[1] = 0.0;
+  vpp->angles[2] = 0.0;
+  vpp->lookPos[0] = 0.0;
+  vpp->lookPos[1] = 0.0;
+  vpp->lookPos[2] = 0.0;
+  VP_InitNode(vpp->switchNode,-1);
+  VP_InitNode(vpp->switchNode + 1,-1);
   return;
 }
 
 
 // 007CA080  G_VehFreePathPos  (universal/g_vehicle_path.cpp:2221)
 
-void __cdecl G_VehFreePathPos(vehicle_pathpos_t *param_1)
+void __cdecl G_VehFreePathPos(vehicle_pathpos_t *vpp)
 
 {
-  VP_ClearNode(param_1->switchNode);
-  VP_ClearNode(param_1->switchNode + 1);
+  VP_ClearNode(vpp->switchNode);
+  VP_ClearNode(vpp->switchNode + 1);
   return;
 }
 
 
 // 007CA0B0  G_VehSetUpPathPos  (universal/g_vehicle_path.cpp:2235)
 
-void __cdecl G_VehSetUpPathPos(vehicle_pathpos_t *param_1,short param_2)
+void __cdecl G_VehSetUpPathPos(vehicle_pathpos_t *vpp,short nodeIdx)
 
 {
   int iVar1;
   float local_24;
+  vehicle_node_t *node;
   
-  iVar1 = (int)param_2;
-  param_1->lastNodeIdx = param_2;
-  param_1->nodeIdx = param_2;
-  param_1->endOfPath = 0;
-  param_1->frac = 0.0;
-  param_1->speed = s_nodes[iVar1].speed;
-  param_1->lookAhead = s_nodes[iVar1].lookAhead;
+  iVar1 = (int)nodeIdx;
+  vpp->lastNodeIdx = nodeIdx;
+  vpp->nodeIdx = nodeIdx;
+  vpp->endOfPath = 0;
+  vpp->frac = 0.0;
+  vpp->speed = s_nodes[iVar1].speed;
+  vpp->lookAhead = s_nodes[iVar1].lookAhead;
   if ((s_nodes[iVar1].flags & 0x10000U) == 0) {
     local_24 = 0.0;
   }
   else {
     local_24 = 1.0;
   }
-  param_1->slide = local_24;
-  param_1->flags = 0;
-  param_1->customPath = (vehicle_custom_path_t *)0x0;
-  param_1->origin[0] = s_nodes[iVar1].origin[0];
-  param_1->origin[1] = s_nodes[iVar1].origin[1];
-  param_1->origin[2] = s_nodes[iVar1].origin[2];
-  param_1->angles[0] = s_nodes[iVar1].angles[0];
-  param_1->angles[1] = s_nodes[iVar1].angles[1];
-  param_1->angles[2] = s_nodes[iVar1].angles[2];
-  param_1->lookPos[0] = s_nodes[iVar1].origin[0];
-  param_1->lookPos[1] = s_nodes[iVar1].origin[1];
-  param_1->lookPos[2] = s_nodes[iVar1].origin[2];
-  VP_InitNode(param_1->switchNode,-1);
-  VP_InitNode(param_1->switchNode + 1,-1);
+  vpp->slide = local_24;
+  vpp->flags = 0;
+  vpp->customPath = (vehicle_custom_path_t *)0x0;
+  vpp->origin[0] = s_nodes[iVar1].origin[0];
+  vpp->origin[1] = s_nodes[iVar1].origin[1];
+  vpp->origin[2] = s_nodes[iVar1].origin[2];
+  vpp->angles[0] = s_nodes[iVar1].angles[0];
+  vpp->angles[1] = s_nodes[iVar1].angles[1];
+  vpp->angles[2] = s_nodes[iVar1].angles[2];
+  vpp->lookPos[0] = s_nodes[iVar1].origin[0];
+  vpp->lookPos[1] = s_nodes[iVar1].origin[1];
+  vpp->lookPos[2] = s_nodes[iVar1].origin[2];
+  VP_InitNode(vpp->switchNode,-1);
+  VP_InitNode(vpp->switchNode + 1,-1);
   return;
 }
 
 
 // 007CA220  G_VehUpdatePathPos  (universal/g_vehicle_path.cpp:2265)
 
-int __cdecl G_VehUpdatePathPos(vehicle_pathpos_t *param_1,short param_2)
+int __cdecl G_VehUpdatePathPos(vehicle_pathpos_t *vpp,short testNode)
 
 {
   float fVar1;
-  float local_14;
+  float dist;
+  float lookDir;
   float local_10;
   float local_c;
-  int local_8;
+  int test;
   
-  local_8 = 0;
-  if (param_1->endOfPath == 0) {
-    VP_BeginSwitchNode(param_1);
-    if (param_1->customPath == (vehicle_custom_path_t *)0x0) {
-      VP_GetLookAheadXYZ(param_1,param_1->lookPos);
+  test = 0;
+  if (vpp->endOfPath == 0) {
+    VP_BeginSwitchNode(vpp);
+    if (vpp->customPath == (vehicle_custom_path_t *)0x0) {
+      VP_GetLookAheadXYZ(vpp,vpp->lookPos);
     }
     else {
-      VP_GetLookAheadXYZCustom(param_1,param_1->lookPos);
+      VP_GetLookAheadXYZCustom(vpp,vpp->lookPos);
     }
-    local_14 = param_1->lookPos[0] - param_1->origin[0];
-    local_10 = param_1->lookPos[1] - param_1->origin[1];
-    local_c = param_1->lookPos[2] - param_1->origin[2];
-    fVar1 = Vec3Normalize(&local_14);
+    lookDir = vpp->lookPos[0] - vpp->origin[0];
+    local_10 = vpp->lookPos[1] - vpp->origin[1];
+    local_c = vpp->lookPos[2] - vpp->origin[2];
+    fVar1 = Vec3Normalize(&lookDir);
     if (fVar1 <= 0.0) {
-      param_1->endOfPath = 1;
+      vpp->endOfPath = 1;
     }
     else {
-      vectoangles(&local_14,param_1->angles);
-      fVar1 = AngleNormalize180(param_1->angles[0]);
-      param_1->angles[0] = fVar1;
-      fVar1 = AngleNormalize180(param_1->angles[1]);
-      param_1->angles[1] = fVar1;
-      fVar1 = AngleNormalize180(param_1->angles[2]);
-      param_1->angles[2] = fVar1;
-      fVar1 = param_1->speed * 0.05;
-      param_1->origin[0] = fVar1 * local_14 + param_1->origin[0];
-      param_1->origin[1] = fVar1 * local_10 + param_1->origin[1];
-      param_1->origin[2] = fVar1 * local_c + param_1->origin[2];
-      if (param_1->customPath == (vehicle_custom_path_t *)0x0) {
-        local_8 = VP_UpdatePathPos(param_1,&local_14,param_2);
+      vectoangles(&lookDir,vpp->angles);
+      fVar1 = AngleNormalize180(vpp->angles[0]);
+      vpp->angles[0] = fVar1;
+      fVar1 = AngleNormalize180(vpp->angles[1]);
+      vpp->angles[1] = fVar1;
+      fVar1 = AngleNormalize180(vpp->angles[2]);
+      vpp->angles[2] = fVar1;
+      fVar1 = vpp->speed * 0.05;
+      vpp->origin[0] = fVar1 * lookDir + vpp->origin[0];
+      vpp->origin[1] = fVar1 * local_10 + vpp->origin[1];
+      vpp->origin[2] = fVar1 * local_c + vpp->origin[2];
+      if (vpp->customPath == (vehicle_custom_path_t *)0x0) {
+        test = VP_UpdatePathPos(vpp,&lookDir,testNode);
       }
       else {
-        local_8 = VP_UpdatePathPosCustom(param_1,&local_14,param_2);
+        test = VP_UpdatePathPosCustom(vpp,&lookDir,testNode);
       }
-      VP_GetAngles(param_1,param_1->angles);
+      VP_GetAngles(vpp,vpp->angles);
     }
-    VP_EndSwitchNode(param_1);
+    VP_EndSwitchNode(vpp);
   }
   else {
-    local_8 = 0;
+    test = 0;
   }
-  return local_8;
+  return test;
 }
 
 
 // 007CBA70  G_VehSetSwitchNode  (universal/g_vehicle_path.cpp:2322)
 
-void __cdecl G_VehSetSwitchNode(vehicle_pathpos_t *param_1,short param_2,short param_3)
+void __cdecl G_VehSetSwitchNode(vehicle_pathpos_t *vpp,short srcNodeIdx,short dstNodeIdx)
 
 {
   int iVar1;
   int iVar2;
   float fVar3;
+  vehicle_node_t *srcNode;
+  vehicle_node_t *dstNode;
   
-  G_VehFreePathPos(param_1);
-  VP_InitNode(param_1->switchNode,-1);
-  VP_InitNode(param_1->switchNode + 1,-1);
-  if ((-1 < param_2) && (-1 < param_3)) {
-    if (param_1->nodeIdx == param_2) {
-      param_1->frac = 0.0;
+  G_VehFreePathPos(vpp);
+  VP_InitNode(vpp->switchNode,-1);
+  VP_InitNode(vpp->switchNode + 1,-1);
+  if ((-1 < srcNodeIdx) && (-1 < dstNodeIdx)) {
+    if (vpp->nodeIdx == srcNodeIdx) {
+      vpp->frac = 0.0;
     }
-    iVar1 = (int)param_2;
-    iVar2 = (int)param_3;
-    VP_CopyNode(s_nodes + iVar1,param_1->switchNode);
-    VP_CopyNode(s_nodes + iVar1,param_1->switchNode + 1);
-    param_1->switchNode[0].field11_0x30.splineNode.nextIdx = param_3;
-    param_1->switchNode[0].field11_0x30.splineNode.dir[0] =
+    iVar1 = (int)srcNodeIdx;
+    iVar2 = (int)dstNodeIdx;
+    VP_CopyNode(s_nodes + iVar1,vpp->switchNode);
+    VP_CopyNode(s_nodes + iVar1,vpp->switchNode + 1);
+    vpp->switchNode[0].field11_0x30.splineNode.nextIdx = dstNodeIdx;
+    vpp->switchNode[0].field11_0x30.splineNode.dir[0] =
          s_nodes[iVar2].origin[0] - s_nodes[iVar1].origin[0];
-    param_1->switchNode[0].field11_0x30.splineNode.dir[1] =
+    vpp->switchNode[0].field11_0x30.splineNode.dir[1] =
          s_nodes[iVar2].origin[1] - s_nodes[iVar1].origin[1];
-    param_1->switchNode[0].field11_0x30.splineNode.dir[2] =
+    vpp->switchNode[0].field11_0x30.splineNode.dir[2] =
          s_nodes[iVar2].origin[2] - s_nodes[iVar1].origin[2];
-    fVar3 = Vec3Normalize(param_1->switchNode[0].field11_0x30.splineNode.dir);
-    param_1->switchNode[0].field11_0x30.splineNode.length = fVar3;
+    fVar3 = Vec3Normalize(vpp->switchNode[0].field11_0x30.splineNode.dir);
+    vpp->switchNode[0].field11_0x30.splineNode.length = fVar3;
   }
   return;
 }
@@ -2065,74 +2126,77 @@ void __cdecl TRACK_g_vehicle_path(void)
 
 // 007CBBE0  G_FindVehicleNode  (universal/g_vehicle_path.cpp:2367)
 
-vehicle_node_t * __cdecl G_FindVehicleNode(SpawnVar *param_1)
+vehicle_node_t * __cdecl G_FindVehicleNode(SpawnVar *spawnVar)
 
 {
   vehicle_node_t *pvVar1;
   float fVar2;
-  uint local_60;
-  int local_5c;
-  uint local_58;
-  vehicle_node_t local_54;
-  vehicle_node_t *local_8;
+  vehicle_node_t *node;
+  float dist2;
+  int score;
+  int i;
+  int best_score;
+  vehicle_node_t compare_node;
+  vehicle_node_t *best_node;
   
-  VP_InitNode(&local_54,0);
-  VP_ParseFields(&local_54,param_1,false);
-  local_58 = 1;
-  local_8 = (vehicle_node_t *)0x0;
-  for (local_5c = 0; local_5c < s_numNodes; local_5c = local_5c + 1) {
-    local_60 = 0;
-    pvVar1 = s_nodes + local_5c;
-    fVar2 = Vec3DistanceSq(s_nodes[local_5c].origin,local_54.origin);
-    if ((fVar2 < 100.0) && (local_60 = 1, fVar2 < 0.5)) {
-      local_60 = 4;
+  VP_InitNode(&compare_node,0);
+  VP_ParseFields(&compare_node,spawnVar,false);
+  best_score = 1;
+  best_node = (vehicle_node_t *)0x0;
+  for (i = 0; i < s_numNodes; i = i + 1) {
+    score = 0;
+    pvVar1 = s_nodes + i;
+    fVar2 = Vec3DistanceSq(s_nodes[i].origin,compare_node.origin);
+    if ((fVar2 < 100.0) && (score = 1, fVar2 < 0.5)) {
+      score = 4;
     }
-    if ((pvVar1->name != 0) && (pvVar1->name == local_54.name)) {
-      local_60 = local_60 + 1;
+    if ((pvVar1->name != 0) && (pvVar1->name == compare_node.name)) {
+      score = score + 1;
     }
-    if ((s_nodes[local_5c].target != 0) && (s_nodes[local_5c].target == local_54.target)) {
-      local_60 = local_60 + 1;
+    if ((s_nodes[i].target != 0) && (s_nodes[i].target == compare_node.target)) {
+      score = score + 1;
     }
-    if ((s_nodes[local_5c].target2 != 0) && (s_nodes[local_5c].target == local_54.target2)) {
-      local_60 = local_60 + 1;
+    if ((s_nodes[i].target2 != 0) && (s_nodes[i].target == compare_node.target2)) {
+      score = score + 1;
     }
-    if ((s_nodes[local_5c].script_linkname != 0) &&
-       (s_nodes[local_5c].script_linkname == local_54.script_linkname)) {
-      local_60 = local_60 + 1;
+    if ((s_nodes[i].script_linkname != 0) &&
+       (s_nodes[i].script_linkname == compare_node.script_linkname)) {
+      score = score + 1;
     }
-    if ((s_nodes[local_5c].script_noteworthy != 0) &&
-       (s_nodes[local_5c].script_noteworthy == local_54.script_noteworthy)) {
-      local_60 = local_60 + 1;
+    if ((s_nodes[i].script_noteworthy != 0) &&
+       (s_nodes[i].script_noteworthy == compare_node.script_noteworthy)) {
+      score = score + 1;
     }
-    if (local_58 < local_60) {
-      local_58 = local_60;
-      local_8 = pvVar1;
+    if ((uint)best_score < (uint)score) {
+      best_score = score;
+      best_node = pvVar1;
     }
   }
-  return local_8;
+  return best_node;
 }
 
 
 // 007CC100  SP_info_vehicle_node  (universal/g_vehicle_path.cpp:2414)
 
-void __cdecl SP_info_vehicle_node(SpawnVar *param_1,int param_2,int param_3)
+void __cdecl SP_info_vehicle_node(SpawnVar *spawnVar,int rotated,int radiantLiveUpdate)
 
 {
   int iVar1;
-  vehicle_node_t *pvVar2;
+  vehicle_node_t *node_00;
+  vehicle_node_t *node;
   
   if (1999 < s_numNodes) {
     Com_Error(ERR_DROP,"\x15Hit max vehicle path node count [%d]\n");
   }
   iVar1 = (int)s_numNodes;
-  pvVar2 = s_nodes + iVar1;
-  VP_InitNode(pvVar2,s_numNodes);
+  node_00 = s_nodes + iVar1;
+  VP_InitNode(node_00,s_numNodes);
   s_numNodes = s_numNodes + 1;
-  VP_ParseFields(pvVar2,param_1,true);
-  if (param_2 != 0) {
+  VP_ParseFields(node_00,spawnVar,true);
+  if (rotated != 0) {
     s_nodes[iVar1].flags = s_nodes[iVar1].flags | 0x10000;
   }
-  if (((pvVar2->name == 0) && (param_3 == 0)) && ((s_nodes[iVar1].flags & 2U) == 0)) {
+  if (((node_00->name == 0) && (radiantLiveUpdate == 0)) && ((s_nodes[iVar1].flags & 2U) == 0)) {
     Com_Error(ERR_DROP,"\x15Vehicle spline path node( %f, %f, %f ) found with no name\n");
   }
   if (0.0 <= s_nodes[iVar1].speed) {
@@ -2158,34 +2222,37 @@ void __cdecl G_ClearSelectedVehicleNode(void)
 
 // 007CC260  G_ProcessVehicleNodeCommand  (universal/g_vehicle_path.cpp:2457)
 
-void __cdecl G_ProcessVehicleNodeCommand(RadiantCommand *param_1,SpawnVar *param_2)
+void __cdecl G_ProcessVehicleNodeCommand(RadiantCommand *command,SpawnVar *spawnVar)
 
 {
   RadiantCommandType RVar1;
-  char *pcVar2;
-  int iVar3;
-  vehicle_node_t *local_14;
+  char *s1;
+  int iVar2;
+  vehicle_node_t *node;
+  RadiantCommandType commandType;
+  char *classname;
+  bool rotated;
   
-  local_14 = (vehicle_node_t *)0x0;
-  RVar1 = param_1->type;
-  pcVar2 = GetPairValue(param_2,"classname");
-  iVar3 = I_strcmp("info_vehicle_node_rotate",pcVar2);
+  node = (vehicle_node_t *)0x0;
+  RVar1 = command->type;
+  s1 = GetPairValue(spawnVar,"classname");
+  iVar2 = I_strcmp("info_vehicle_node_rotate",s1);
   if (RVar1 == RADIANT_COMMAND_CREATE) {
-    SP_info_vehicle_node(param_2,(uint)(iVar3 == 0),1);
+    SP_info_vehicle_node(spawnVar,(uint)(iVar2 == 0),1);
     g_radiant_selected_node = s_nodes + s_numNodes + -1;
     G_SetupVehiclePaths();
     Com_Printf(5,"Radiant Live Update: Created new vehicle node\n");
-    G_AssignGameIdMapping(param_1->liveUpdateId,(int)g_radiant_selected_node->index);
-    AddSavedCommand(param_1);
+    G_AssignGameIdMapping(command->liveUpdateId,(int)g_radiant_selected_node->index);
+    AddSavedCommand(command);
   }
   else if (RVar1 == RADIANT_COMMAND_DELETE) {
-    g_radiant_selected_node = G_FindVehicleNode(param_2);
+    g_radiant_selected_node = G_FindVehicleNode(spawnVar);
     if (g_radiant_selected_node == (vehicle_node_t *)0x0) {
       g_radiant_selected_node = (vehicle_node_t *)0x0;
     }
     else {
-      G_AssignGameIdMapping(param_1->liveUpdateId,(int)g_radiant_selected_node->index);
-      AddSavedCommand(param_1);
+      G_AssignGameIdMapping(command->liveUpdateId,(int)g_radiant_selected_node->index);
+      AddSavedCommand(command);
       VP_InitNode(g_radiant_selected_node,-1);
       g_radiant_selected_node = (vehicle_node_t *)0x0;
       G_SetupVehiclePaths();
@@ -2193,41 +2260,41 @@ void __cdecl G_ProcessVehicleNodeCommand(RadiantCommand *param_1,SpawnVar *param
   }
   else {
     if (RVar1 == RADIANT_COMMAND_SELECT) {
-      local_14 = G_FindVehicleNode(param_2);
-      g_radiant_selected_node = local_14;
-      if (local_14 == (vehicle_node_t *)0x0) {
+      node = G_FindVehicleNode(spawnVar);
+      g_radiant_selected_node = node;
+      if (node == (vehicle_node_t *)0x0) {
         Com_Printf(5,
                    "Radiant Live Update: Can\'t find vehicle node.  Maps out of sync (Radiant/Game), re-bsp!\n"
                   );
       }
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE_SELECTED) {
-      local_14 = g_radiant_selected_node;
+      node = g_radiant_selected_node;
     }
     else if (RVar1 == RADIANT_COMMAND_UPDATE) {
-      local_14 = G_FindVehicleNode(param_2);
+      node = G_FindVehicleNode(spawnVar);
     }
-    if (local_14 != (vehicle_node_t *)0x0) {
-      local_14->speed = -1.0;
-      local_14->lookAhead = -1.0;
-      local_14->flags = 0;
-      VP_ParseFields(local_14,param_2,true);
-      if (iVar3 == 0) {
-        local_14->flags = local_14->flags | 0x10000;
+    if (node != (vehicle_node_t *)0x0) {
+      node->speed = -1.0;
+      node->lookAhead = -1.0;
+      node->flags = 0;
+      VP_ParseFields(node,spawnVar,true);
+      if (iVar2 == 0) {
+        node->flags = node->flags | 0x10000;
       }
       else {
-        local_14->flags = local_14->flags & 0xfffeffff;
+        node->flags = node->flags & 0xfffeffff;
       }
-      if (0.0 <= local_14->speed) {
-        local_14->flags = local_14->flags | 0x20000;
-        local_14->speed = local_14->speed * 17.6;
+      if (0.0 <= node->speed) {
+        node->flags = node->flags | 0x20000;
+        node->speed = node->speed * 17.6;
       }
-      if (0.0 <= local_14->lookAhead) {
-        local_14->flags = local_14->flags | 0x40000;
+      if (0.0 <= node->lookAhead) {
+        node->flags = node->flags | 0x40000;
       }
       G_SetupVehiclePaths();
-      G_AssignGameIdMapping(param_1->liveUpdateId,(int)local_14->index);
-      AddSavedCommand(param_1);
+      G_AssignGameIdMapping(command->liveUpdateId,(int)node->index);
+      AddSavedCommand(command);
     }
   }
   return;
@@ -2236,7 +2303,7 @@ void __cdecl G_ProcessVehicleNodeCommand(RadiantCommand *param_1,SpawnVar *param
 
 // 007CC4E0  GScr_GetVehicleNodeIndex  (universal/g_vehicle_path.cpp:2561)
 
-short __cdecl GScr_GetVehicleNodeIndex(uint param_1)
+short __cdecl GScr_GetVehicleNodeIndex(uint index)
 
 {
   code *pcVar1;
@@ -2246,16 +2313,16 @@ short __cdecl GScr_GetVehicleNodeIndex(uint param_1)
   undefined1 local_1c [10];
   uint local_12;
   undefined2 local_e;
-  undefined4 local_c;
+  undefined4 entref;
   undefined2 local_8;
   
-  sVar4 = Scr_GetEntityRef((uint)local_1c,(scriptInstance_t)param_1);
+  sVar4 = Scr_GetEntityRef((uint)local_1c,(scriptInstance_t)index);
   local_12 = *sVar4._0_4_;
   local_e = (undefined2)sVar4._0_4_[1];
-  local_c._2_2_ = (short)(local_12 >> 0x10);
-  local_c = local_12;
+  entref._2_2_ = (short)(local_12 >> 0x10);
+  entref = local_12;
   local_8 = local_e;
-  if (local_c._2_2_ == 3) {
+  if (entref._2_2_ == 3) {
     if ((int)s_numNodes <= (int)(local_12 & 0xffff)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                                0xa07,0,"%s");
@@ -2267,10 +2334,10 @@ short __cdecl GScr_GetVehicleNodeIndex(uint param_1)
     }
   }
   else {
-    Scr_ParamError(param_1,"Not a vehicle node",SCRIPTINSTANCE_SERVER);
-    local_c._0_2_ = -1;
+    Scr_ParamError(index,"Not a vehicle node",SCRIPTINSTANCE_SERVER);
+    entref._0_2_ = -1;
   }
-  return (short)local_c;
+  return (short)entref;
 }
 
 
@@ -2281,15 +2348,14 @@ void __cdecl GScr_AddFieldsForVehicleNode(void)
 {
   code *pcVar1;
   bool bVar2;
-  vn_field_t *local_8;
+  vn_field_t *f;
   
-  local_8 = vn_fields;
+  f = vn_fields;
   do {
-    if (local_8->name == (char *)0x0) {
+    if (f->name == (char *)0x0) {
       return;
     }
-    if ((int)&local_8[-0xb3f6a].writable / 0x14 !=
-        ((int)&local_8[-0xb3f6a].writable / 0x14 & 0xffffU)) {
+    if ((int)&f[-0xb3f6a].writable / 0x14 != ((int)&f[-0xb3f6a].writable / 0x14 & 0xffffU)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                                0xa1a,0,"%s");
       if (!bVar2) {
@@ -2298,22 +2364,23 @@ void __cdecl GScr_AddFieldsForVehicleNode(void)
         return;
       }
     }
-    Scr_AddClassField(3,local_8->name,(int)&local_8[-0xb3f6a].writable / 0x14 & 0xffff,
-                      SCRIPTINSTANCE_SERVER);
-    local_8 = local_8 + 1;
+    Scr_AddClassField(3,f->name,(int)&f[-0xb3f6a].writable / 0x14 & 0xffff,SCRIPTINSTANCE_SERVER);
+    f = f + 1;
   } while( true );
 }
 
 
 // 007CC620  GScr_GetVehicleNodeField  (universal/g_vehicle_path.cpp:2597)
 
-void __cdecl GScr_GetVehicleNodeField(int param_1,int param_2)
+void __cdecl GScr_GetVehicleNodeField(int entnum,int offset)
 
 {
   code *pcVar1;
   bool bVar2;
+  vehicle_node_t *node;
+  vn_field_t *f;
   
-  if (10 < (uint)param_2) {
+  if (10 < (uint)offset) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                              0xa29,0,
                              "offset doesn\'t index ARRAY_COUNT( vn_fields ) - 1\n\t%i not in [0, %i)"
@@ -2324,7 +2391,7 @@ void __cdecl GScr_GetVehicleNodeField(int param_1,int param_2)
       return;
     }
   }
-  if ((uint)(int)s_numNodes <= (uint)param_1) {
+  if ((uint)(int)s_numNodes <= (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                              0xa2a,0,"entnum doesn\'t index s_numNodes\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -2333,8 +2400,7 @@ void __cdecl GScr_GetVehicleNodeField(int param_1,int param_2)
       return;
     }
   }
-  GScr_GetGenericField
-            ((uchar *)(s_nodes + param_1),vn_fields[param_2].type,vn_fields[param_2].ofs,0);
+  GScr_GetGenericField((uchar *)(s_nodes + entnum),vn_fields[offset].type,vn_fields[offset].ofs,0);
   return;
 }
 
@@ -2347,18 +2413,25 @@ void __cdecl GScr_GetVehicleNode(void)
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *pcVar4;
+  char *name_00;
+  uint uVar4;
   uint uVar5;
-  uint uVar6;
-  vehicle_node_t *pvVar7;
-  vehicle_node_t *local_24;
-  short local_c;
+  vehicle_node_t *pvVar6;
+  vehicle_node_t *node;
+  vehicle_node_t *result;
+  uchar *b;
+  uint name;
+  int offset;
+  char *key;
+  vn_field_t *f;
+  short i;
+  uint value;
   
   uVar3 = Scr_GetConstString(0,SCRIPTINSTANCE_SERVER);
-  pcVar4 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
-  uVar5 = Scr_GetOffset(3,pcVar4,SCRIPTINSTANCE_SERVER);
-  if (-1 < (int)uVar5) {
-    if ((10 < uVar5) &&
+  name_00 = Scr_GetString(1,SCRIPTINSTANCE_SERVER);
+  uVar4 = Scr_GetOffset(3,name_00,SCRIPTINSTANCE_SERVER);
+  if (-1 < (int)uVar4) {
+    if ((10 < uVar4) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp",
                                  0xa6c,0,
                                  "offset doesn\'t index ARRAY_COUNT( vn_fields ) - 1\n\t%i not in [0, %i)"
@@ -2367,20 +2440,20 @@ void __cdecl GScr_GetVehicleNode(void)
       (*pcVar1)();
       return;
     }
-    if (vn_fields[uVar5].type != F_STRING) {
+    if (vn_fields[uVar4].type != F_STRING) {
       Scr_ParamError(1,"key is not internally a string",SCRIPTINSTANCE_SERVER);
     }
-    local_24 = (vehicle_node_t *)0x0;
-    for (local_c = 0; local_c < s_numNodes; local_c = local_c + 1) {
-      pvVar7 = s_nodes + local_c;
-      uVar6 = (uint)*(ushort *)((int)pvVar7->origin + vn_fields[uVar5].ofs + -0x18);
-      if (((uVar6 != 0) && (uVar6 == uVar3)) &&
-         (bVar2 = local_24 != (vehicle_node_t *)0x0, local_24 = pvVar7, bVar2)) {
+    result = (vehicle_node_t *)0x0;
+    for (i = 0; i < s_numNodes; i = i + 1) {
+      pvVar6 = s_nodes + i;
+      uVar5 = (uint)*(ushort *)((int)pvVar6->origin + vn_fields[uVar4].ofs + -0x18);
+      if (((uVar5 != 0) && (uVar5 == uVar3)) &&
+         (bVar2 = result != (vehicle_node_t *)0x0, result = pvVar6, bVar2)) {
         Scr_Error("GetVehicleNode used with more than one node",false);
       }
     }
-    if (local_24 != (vehicle_node_t *)0x0) {
-      Scr_AddEntityNum((int)local_24->index,3,SCRIPTINSTANCE_SERVER,0);
+    if (result != (vehicle_node_t *)0x0) {
+      Scr_AddEntityNum((int)result->index,3,SCRIPTINSTANCE_SERVER,0);
     }
   }
   return;
@@ -2389,21 +2462,21 @@ void __cdecl GScr_GetVehicleNode(void)
 
 // 007CC810  G_SpawnHeliHeightLock  (universal/g_vehicle_path.cpp:2825)
 
-void __cdecl G_SpawnHeliHeightLock(SpawnVar *param_1)
+void __cdecl G_SpawnHeliHeightLock(SpawnVar *spawnVar)
 
 {
   code *pcVar1;
   int iVar2;
   bool bVar3;
   uint uVar4;
-  char *local_24;
-  uint local_20;
-  float local_1c;
+  char *originString;
+  int brushmodel;
+  float origin;
   float local_18;
   float local_14;
-  char *local_10;
-  char *local_c;
-  uint local_8;
+  char *modelString;
+  char *targetnameString;
+  int modelIndex;
   
   if (num_heli_height_lock_patches < 1) {
     if ((0x1f < num_heli_height_lock_patches) &&
@@ -2414,40 +2487,40 @@ void __cdecl G_SpawnHeliHeightLock(SpawnVar *param_1)
       return;
     }
     if (num_heli_height_lock_patches < 0x20) {
-      G_SpawnString(param_1,"origin",(char *)0x0,&local_24);
-      G_SpawnString(param_1,"model",(char *)0x0,&local_10);
-      G_SpawnString(param_1,"targetname",(char *)0x0,&local_c);
-      if ((*local_10 != '*') &&
+      G_SpawnString(spawnVar,"origin",(char *)0x0,&originString);
+      G_SpawnString(spawnVar,"model",(char *)0x0,&modelString);
+      G_SpawnString(spawnVar,"targetname",(char *)0x0,&targetnameString);
+      if ((*modelString != '*') &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp"
                                    ,0xb1a,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_8 = atoi(local_10 + 1);
-      if ((local_8 != (local_8 & 0xffff)) &&
+      modelIndex = atoi(modelString + 1);
+      if ((modelIndex != (modelIndex & 0xffffU)) &&
          (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\g_vehicle_path.cpp"
                                    ,0xb1e,0,"%s"), !bVar3)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      local_20 = local_8 & 0xffff;
-      local_1c = 0.0;
+      brushmodel = modelIndex & 0xffff;
+      origin = 0.0;
       local_18 = 0.0;
       local_14 = 0.0;
-      sscanf(local_24,"%f %f %f");
-      heli_height_lock_patches[num_heli_height_lock_patches].brushmodel = local_20;
-      if (local_c == (char *)0x0) {
+      sscanf(originString,"%f %f %f");
+      heli_height_lock_patches[num_heli_height_lock_patches].brushmodel = brushmodel;
+      if (targetnameString == (char *)0x0) {
         heli_height_lock_patches[num_heli_height_lock_patches].targetname = 0;
       }
       else {
-        uVar4 = G_NewString(local_c);
+        uVar4 = G_NewString(targetnameString);
         heli_height_lock_patches[num_heli_height_lock_patches].targetname = (ushort)uVar4;
       }
       heli_height_lock_patches[num_heli_height_lock_patches].enabled = 1;
       iVar2 = num_heli_height_lock_patches;
-      heli_height_lock_patches[num_heli_height_lock_patches].origin[0] = local_1c;
+      heli_height_lock_patches[num_heli_height_lock_patches].origin[0] = origin;
       heli_height_lock_patches[iVar2].origin[1] = local_18;
       heli_height_lock_patches[iVar2].origin[2] = local_14;
       num_heli_height_lock_patches = num_heli_height_lock_patches + 1;

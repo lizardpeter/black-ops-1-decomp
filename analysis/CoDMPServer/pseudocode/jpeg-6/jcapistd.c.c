@@ -2,59 +2,59 @@
 
 // 00B420B0  jpeg_start_compress  (jpeg-6/jcapistd.c:39)
 
-void __cdecl jpeg_start_compress(jpeg_compress_struct *param_1,uchar param_2)
+void __cdecl jpeg_start_compress(jpeg_compress_struct *cinfo,uchar write_all_tables)
 
 {
-  if (param_1->global_state != 100) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->global_state != 100) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_2 != '\0') {
-    jpeg_suppress_tables(param_1,'\0');
+  if (write_all_tables != '\0') {
+    jpeg_suppress_tables(cinfo,'\0');
   }
-  (*param_1->err->reset_error_mgr)((jpeg_common_struct *)param_1);
-  (*param_1->dest->init_destination)(param_1);
-  jinit_compress_master(param_1);
-  (*param_1->master->prepare_for_pass)(param_1);
-  param_1->next_scanline = 0;
-  param_1->global_state = (param_1->raw_data_in != '\0') + 0x65;
+  (*cinfo->err->reset_error_mgr)((jpeg_common_struct *)cinfo);
+  (*cinfo->dest->init_destination)(cinfo);
+  jinit_compress_master(cinfo);
+  (*cinfo->master->prepare_for_pass)(cinfo);
+  cinfo->next_scanline = 0;
+  cinfo->global_state = (cinfo->raw_data_in != '\0') + 0x65;
   return;
 }
 
 
 // 00B42170  jpeg_write_scanlines  (jpeg-6/jcapistd.c:79)
 
-uint __cdecl jpeg_write_scanlines(jpeg_compress_struct *param_1,uchar **param_2,uint param_3)
+uint __cdecl jpeg_write_scanlines(jpeg_compress_struct *cinfo,uchar **scanlines,uint num_lines)
 
 {
-  uint local_c;
-  uint local_8;
+  uint row_ctr;
+  uint rows_left;
   
-  if (param_1->global_state != 0x65) {
-    param_1->err->msg_code = 0x14;
-    (param_1->err->msg_parm).i[0] = param_1->global_state;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  if (cinfo->global_state != 0x65) {
+    cinfo->err->msg_code = 0x14;
+    (cinfo->err->msg_parm).i[0] = cinfo->global_state;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  if (param_1->image_height <= param_1->next_scanline) {
-    param_1->err->msg_code = 0x7b;
-    (*param_1->err->emit_message)((jpeg_common_struct *)param_1,-1);
+  if (cinfo->image_height <= cinfo->next_scanline) {
+    cinfo->err->msg_code = 0x7b;
+    (*cinfo->err->emit_message)((jpeg_common_struct *)cinfo,-1);
   }
-  if (param_1->progress != (jpeg_progress_mgr *)0x0) {
-    param_1->progress->pass_counter = param_1->next_scanline;
-    param_1->progress->pass_limit = param_1->image_height;
-    (*param_1->progress->progress_monitor)((jpeg_common_struct *)param_1);
+  if (cinfo->progress != (jpeg_progress_mgr *)0x0) {
+    cinfo->progress->pass_counter = cinfo->next_scanline;
+    cinfo->progress->pass_limit = cinfo->image_height;
+    (*cinfo->progress->progress_monitor)((jpeg_common_struct *)cinfo);
   }
-  if (param_1->master->call_pass_startup != '\0') {
-    (*param_1->master->pass_startup)(param_1);
+  if (cinfo->master->call_pass_startup != '\0') {
+    (*cinfo->master->pass_startup)(cinfo);
   }
-  local_8 = param_1->image_height - param_1->next_scanline;
-  if (local_8 < param_3) {
-    param_3 = local_8;
+  rows_left = cinfo->image_height - cinfo->next_scanline;
+  if (rows_left < num_lines) {
+    num_lines = rows_left;
   }
-  local_c = 0;
-  (*param_1->main->process_data)(param_1,param_2,&local_c,param_3);
-  param_1->next_scanline = param_1->next_scanline + local_c;
-  return local_c;
+  row_ctr = 0;
+  (*cinfo->main->process_data)(cinfo,scanlines,&row_ctr,num_lines);
+  cinfo->next_scanline = cinfo->next_scanline + row_ctr;
+  return row_ctr;
 }
 

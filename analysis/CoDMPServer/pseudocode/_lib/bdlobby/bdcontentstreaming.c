@@ -129,8 +129,8 @@ bdContentStreaming::uploadUserSummaryMetaData
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   bdTag *in_stack_00000024;
   bdRemoteTask *local_6c;
   bdReference<bdByteBuffer> local_1c;
@@ -152,15 +152,15 @@ bdContentStreaming::uploadUserSummaryMetaData
     *(undefined4 *)&this->field_0x20 = param_1._4_4_;
     *(void **)&this->field_0x24 = param_2;
     this->field_0x1370 = 1;
-    bVar2 = _preUploadSummary(this);
+    other_3 = _preUploadSummary(this);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -173,7 +173,7 @@ bdContentStreaming::uploadUserSummaryMetaData
       InterlockedIncrement((LONG *)((param_1._0_4_)->_padding_ + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }
@@ -294,8 +294,8 @@ bdContentStreaming::upload
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   undefined2 in_stack_00000006;
   undefined2 in_stack_00000016;
   bdFileID *in_stack_0000002c;
@@ -314,16 +314,16 @@ bdContentStreaming::upload
                      (void *)param_7,param_8,(uint)param_9,(bdTag *)param_10,in_stack_0000002c,0,
                      false);
   if (bVar1) {
-    bVar2 = _preUpload(this,(char *)&local_14,param_5,(uint)param_2 & 0xffff,(ushort)param_4,
-                       (bdURL *)((uint)param_6 & 0xffff));
+    other_3 = _preUpload(this,(char *)&local_14,param_5,(uint)param_2 & 0xffff,(ushort)param_4,
+                         (bdURL *)((uint)param_6 & 0xffff));
     local_8 = 0;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 == BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 == BD_PENDING) {
       bdContentStreamingBase::startUpload((bdContentStreamingBase *)this);
     }
     else {
@@ -359,8 +359,8 @@ bdContentStreaming::upload
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   undefined2 in_stack_00000006;
   undefined2 in_stack_00000016;
   bdFileID *in_stack_0000002c;
@@ -379,16 +379,16 @@ bdContentStreaming::upload
                      (void *)param_7,param_8,(uint)param_9,(bdTag *)param_10,in_stack_0000002c,0,
                      false);
   if (bVar1) {
-    bVar2 = _preUpload(this,(char *)&local_14,param_5,(uint)param_2 & 0xffff,(ushort)param_4,
-                       (bdURL *)((uint)param_6 & 0xffff));
+    other_3 = _preUpload(this,(char *)&local_14,param_5,(uint)param_2 & 0xffff,(ushort)param_4,
+                         (bdURL *)((uint)param_6 & 0xffff));
     local_8 = 0;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 == BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 == BD_PENDING) {
       bdContentStreamingBase::startUpload((bdContentStreamingBase *)this);
     }
     else {
@@ -424,8 +424,8 @@ bdContentStreaming::copyFromPooledStorage
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   undefined2 in_stack_00000016;
   bdFileID *in_stack_0000002c;
   bdRemoteTask *local_6c;
@@ -445,15 +445,15 @@ bdContentStreaming::copyFromPooledStorage
                      (bdUploadInterceptor *)0x0,0,_param_4,(ushort)param_5,(void *)param_6,param_7,
                      (uint)param_8,(bdTag *)param_9,in_stack_0000002c,0,false);
   if (bVar1) {
-    bVar2 = _preCopy(this,CONCAT44(param_1._4_4_,&local_14),(uchar)param_2);
+    other_3 = _preCopy(this,CONCAT44(param_1._4_4_,&local_14),(uchar)param_2);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -465,7 +465,7 @@ bdContentStreaming::copyFromPooledStorage
       InterlockedIncrement((LONG *)((param_1._0_4_)->_padding_ + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }
@@ -495,8 +495,8 @@ bdContentStreaming::copyFromUserStorage
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   undefined2 in_stack_00000016;
   bdFileID *in_stack_0000002c;
   bdRemoteTask *local_6c;
@@ -516,15 +516,15 @@ bdContentStreaming::copyFromUserStorage
                      (bdUploadInterceptor *)0x0,0,_param_4,(ushort)param_5,(void *)param_6,param_7,
                      (uint)param_8,(bdTag *)param_9,in_stack_0000002c,0,false);
   if (bVar1) {
-    bVar2 = _preCopy(this,CONCAT44(param_1._4_4_,&local_14),(uchar)param_2);
+    other_3 = _preCopy(this,CONCAT44(param_1._4_4_,&local_14),(uchar)param_2);
     local_8 = 1;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = local_8 & 0xffffff00;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 != BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 != BD_PENDING) {
       local_6c = (bdRemoteTask *)&this->field_0x1bb4;
     }
     else {
@@ -536,7 +536,7 @@ bdContentStreaming::copyFromUserStorage
       InterlockedIncrement((LONG *)((param_1._0_4_)->_padding_ + 4));
     }
     local_8 = 0;
-    if (bVar3 == BD_PENDING) {
+    if (bVar2 == BD_PENDING) {
       bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_1c);
     }
   }
@@ -565,8 +565,8 @@ bdContentStreaming::download
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   uint in_stack_0000001c;
   bdReference<bdByteBuffer> local_14;
   void *local_10;
@@ -581,17 +581,17 @@ bdContentStreaming::download
                     ((bdContentStreamingBase *)this,(void *)0x0,0,(bdDownloadInterceptor *)param_3,
                      (bdFileMetaData *)param_4,param_5,in_stack_0000001c);
   if (bVar1) {
-    bVar2 = _preDownloadByFileID
-                      (this,CONCAT44(param_1._4_4_,&local_14),(uint)param_2,
-                       (bdFileMetaData *)0x40000000);
+    other_3 = _preDownloadByFileID
+                        (this,CONCAT44(param_1._4_4_,&local_14),(uint)param_2,
+                         (bdFileMetaData *)0x40000000);
     local_8 = 0;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 == BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 == BD_PENDING) {
       bdContentStreamingBase::startDownload((bdContentStreamingBase *)this);
     }
     else {
@@ -626,8 +626,8 @@ bdContentStreaming::download
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   uint in_stack_00000020;
   bdReference<bdByteBuffer> local_14;
   void *local_10;
@@ -643,15 +643,15 @@ bdContentStreaming::download
                      (bdDownloadInterceptor *)0x0,(bdFileMetaData *)param_5,param_6,
                      in_stack_00000020);
   if (bVar1) {
-    bVar2 = _preDownloadByFileID(this,CONCAT44(param_1._4_4_,&local_14),(uint)param_2,param_4);
+    other_3 = _preDownloadByFileID(this,CONCAT44(param_1._4_4_,&local_14),(uint)param_2,param_4);
     local_8 = 0;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 == BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 == BD_PENDING) {
       bdContentStreamingBase::startDownload((bdContentStreamingBase *)this);
     }
     else {
@@ -683,8 +683,8 @@ bdContentStreaming::removeFile(bdContentStreaming *this,ushort param_1)
 
 {
   bool bVar1;
-  bdReference<bdRemoteTask> bVar2;
-  bdStatus bVar3;
+  bdReference<bdRemoteTask> other_3;
+  bdStatus bVar2;
   undefined2 in_stack_00000006;
   ushort in_stack_00000008;
   bdReference<bdByteBuffer> local_14;
@@ -698,15 +698,15 @@ bdContentStreaming::removeFile(bdContentStreaming *this,ushort param_1)
   ExceptionList = &local_10;
   bVar1 = bdContentStreamingBase::initDelete((bdContentStreamingBase *)this);
   if (bVar1) {
-    bVar2 = _preDeleteFile(this,(ushort)&local_14,(bdURL *)(uint)in_stack_00000008);
+    other_3 = _preDeleteFile(this,(ushort)&local_14,(bdURL *)(uint)in_stack_00000008);
     local_8 = 0;
     bdReference<bdAddrHandle>::operator=
               ((bdReference<bdAddrHandle> *)&this->field_0x1bb4,
-               (bdReference<bdAddrHandle> *)bVar2.m_ptr);
+               (bdReference<bdAddrHandle> *)other_3.m_ptr);
     local_8 = 0xffffffff;
     bdReference<bdByteBuffer>::~bdReference<bdByteBuffer>(&local_14);
-    bVar3 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
-    if (bVar3 == BD_PENDING) {
+    bVar2 = bdRemoteTask::getStatus(*(bdRemoteTask **)&this->field_0x1bb4);
+    if (bVar2 == BD_PENDING) {
       bdContentStreamingBase::startDelete((bdContentStreamingBase *)this);
     }
     else {
@@ -1149,7 +1149,7 @@ bdReference<bdRemoteTask> __thiscall bdContentStreaming::_postCopy(bdContentStre
 {
   undefined4 uVar1;
   int extraout_EAX;
-  uchar *puVar2;
+  uchar *buf;
   int extraout_EAX_00;
   bdTaskByteBuffer *this_00;
   bdRemoteTask *in_stack_00000004;
@@ -1201,13 +1201,13 @@ bdReference<bdRemoteTask> __thiscall bdContentStreaming::_postCopy(bdContentStre
     local_88 = 0;
   }
   else {
-    puVar2 = (uchar *)(*(int *)&this->field_0xed0 + 0x186);
-    memchr(puVar2,'\0',0x80);
+    buf = (uchar *)(*(int *)&this->field_0xed0 + 0x186);
+    memchr(buf,'\0',0x80);
     if (extraout_EAX_00 == 0) {
       local_8c = 0x80;
     }
     else {
-      local_8c = extraout_EAX_00 - (int)puVar2;
+      local_8c = extraout_EAX_00 - (int)buf;
     }
     local_88 = local_8c + 2;
   }

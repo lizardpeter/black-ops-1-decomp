@@ -16,24 +16,27 @@ void __cdecl CCS_ClearConstantConfigStrings(void)
 
 /* WARNING: Enum "eGameModes": Some values do not have unique names */
 
-void __cdecl CCS_ValidateChecksums(int param_1,int param_2)
+void __cdecl CCS_ValidateChecksums(int serverChecksum,int clientChecksum)
 
 {
+  bool bOnlinegame;
+  bool bSystemlink;
+  
   Com_GameMode_IsGameMode(GAMEMODE_SYSTEMLINK);
   Com_GameMode_IsOnlineGame();
-  if ((param_1 == 0) && (param_2 != 0)) {
+  if ((serverChecksum == 0) && (clientChecksum != 0)) {
     Com_PrintError(0xe,
                    "The server did not send us a config checksum but we have one (%i), (onlinegame is %s)(systemlink is %s)\n"
                   );
     Com_Error(ERR_DROP,"EXE_CONFIGSTRINGMISMATCH2");
   }
-  else if ((param_2 == 0) && (param_1 != 0)) {
+  else if ((clientChecksum == 0) && (serverChecksum != 0)) {
     Com_PrintError(0xe,
                    "The server sent us a config checksum (%i) but we have don\'t have one, (onlinegame is %s)(systemlink is %s)\n"
                   );
     Com_Error(ERR_DROP,"EXE_CONFIGSTRINGMISMATCH3");
   }
-  else if (param_1 != param_2) {
+  else if (serverChecksum != clientChecksum) {
     Com_PrintError(0xe,"Our config string checksum %i doesn\'t match the server\'s checksum %i\n");
     Com_Error(ERR_DROP,"EXE_CONFIGSTRINGMISMATCH");
   }
@@ -53,7 +56,7 @@ int __cdecl CCS_GetChecksum(void)
 
 // 00788DB0  CCS_ShouldLoadConstConfigStrings  (universal/com_constantconfigstrings.cpp:63)
 
-bool __cdecl CCS_ShouldLoadConstConfigStrings(int param_1)
+bool __cdecl CCS_ShouldLoadConstConfigStrings(int party)
 
 {
   Com_GameMode_IsOnlineGame();
@@ -65,17 +68,17 @@ bool __cdecl CCS_ShouldLoadConstConfigStrings(int param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl CCS_LoadConstantConfigStrings(char *param_1,char *param_2)
+void __cdecl CCS_LoadConstantConfigStrings(char *mapname,char *gametype)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_10c [256];
+  char filename [256];
   uint local_c;
-  char *local_8;
+  char *dir;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 == (char *)0x0) {
+  if (mapname == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_constantconfigstrings.cpp"
                              ,0x60,0,"%s");
     if (!bVar2) {
@@ -84,7 +87,7 @@ void __cdecl CCS_LoadConstantConfigStrings(char *param_1,char *param_2)
       return;
     }
   }
-  if (param_2 == (char *)0x0) {
+  if (gametype == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_constantconfigstrings.cpp"
                              ,0x61,0,"%s");
     if (!bVar2) {
@@ -93,7 +96,7 @@ void __cdecl CCS_LoadConstantConfigStrings(char *param_1,char *param_2)
       return;
     }
   }
-  if (*param_1 == '\0') {
+  if (*mapname == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_constantconfigstrings.cpp"
                              ,0x62,0,"%s");
     if (!bVar2) {
@@ -102,7 +105,7 @@ void __cdecl CCS_LoadConstantConfigStrings(char *param_1,char *param_2)
       return;
     }
   }
-  if (*param_2 == '\0') {
+  if (*gametype == '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_constantconfigstrings.cpp"
                              ,99,0,"%s");
     if (!bVar2) {
@@ -111,9 +114,9 @@ void __cdecl CCS_LoadConstantConfigStrings(char *param_1,char *param_2)
       return;
     }
   }
-  local_8 = "mp";
-  Com_sprintf(local_10c,0x100,"%s/configStrings/configStrings_pc_%s_%s.csv");
-  StringTable_GetAsset(local_10c,&configStringTable);
+  dir = "mp";
+  Com_sprintf(filename,0x100,"%s/configStrings/configStrings_pc_%s_%s.csv");
+  StringTable_GetAsset(filename,&configStringTable);
   configStringTableChecksum = StringTable_Checksum(configStringTable,0);
   Com_DPrintf(0x1e,"CCS: CCS_LoadConstantConfigStrings %s: %d\n");
   return;
@@ -122,7 +125,7 @@ void __cdecl CCS_LoadConstantConfigStrings(char *param_1,char *param_2)
 
 // 00788F10  CCS_GetConfigStringValue  (universal/com_constantconfigstrings.cpp:128)
 
-char * __cdecl CCS_GetConfigStringValue(int param_1)
+char * __cdecl CCS_GetConfigStringValue(int rowNum)
 
 {
   char *pcVar1;
@@ -131,7 +134,7 @@ char * __cdecl CCS_GetConfigStringValue(int param_1)
     pcVar1 = "";
   }
   else {
-    pcVar1 = StringTable_GetColumnValueForRow(configStringTable,param_1,1);
+    pcVar1 = StringTable_GetColumnValueForRow(configStringTable,rowNum,1);
   }
   return pcVar1;
 }
@@ -139,18 +142,18 @@ char * __cdecl CCS_GetConfigStringValue(int param_1)
 
 // 00788F40  CCS_GetConfigStringNum  (universal/com_constantconfigstrings.cpp:135)
 
-int __cdecl CCS_GetConfigStringNum(int param_1)
+int __cdecl CCS_GetConfigStringNum(int rowNum)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   
   if (configStringTable == (StringTable *)0x0) {
     iVar1 = 0;
   }
   else {
-    pcVar2 = StringTable_GetColumnValueForRow(configStringTable,param_1,0);
-    iVar1 = atoi(pcVar2);
+    nptr = StringTable_GetColumnValueForRow(configStringTable,rowNum,0);
+    iVar1 = atoi(nptr);
   }
   return iVar1;
 }

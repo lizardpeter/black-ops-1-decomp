@@ -34,10 +34,10 @@ fileShareLastPlayedGame_t * __cdecl Live_FileShare_GetLastPlayedGame(void)
 
 // 0095D5D0  Live_FileShare_SetLiveBlurb  (live/live_fileshare.cpp:276)
 
-void __cdecl Live_FileShare_SetLiveBlurb(char *param_1)
+void __cdecl Live_FileShare_SetLiveBlurb(char *blurb)
 
 {
-  I_strncpyz(s_liveBlurb,param_1,0x100);
+  I_strncpyz(s_liveBlurb,blurb,0x100);
   Dvar_SetString(fshLiveBlurb,s_liveBlurb);
   return;
 }
@@ -46,30 +46,31 @@ void __cdecl Live_FileShare_SetLiveBlurb(char *param_1)
 // 0095D600  Live_FileShare_GetTag  (live/live_fileshare.cpp:282)
 
 bool __cdecl
-Live_FileShare_GetTag(bdFileMetaData *param_1,int param_2,ulong64 param_3,ulong64 *param_4)
+Live_FileShare_GetTag(bdFileMetaData *descriptors,int itemIndex,ulong64 tagType,ulong64 *tag)
 
 {
   uint local_14;
-  uint local_c;
+  uint i;
+  uint maxTags;
   
-  local_14 = param_1[param_2].m_numTags;
+  local_14 = descriptors[itemIndex].m_numTags;
   if (0x28 < (int)local_14) {
     local_14 = 0x28;
   }
-  local_c = 0;
+  i = 0;
   while( true ) {
-    if (local_14 <= local_c) {
-      *(undefined4 *)param_4 = 0;
-      *(undefined4 *)((int)param_4 + 4) = 0;
+    if (local_14 <= i) {
+      *(undefined4 *)tag = 0;
+      *(undefined4 *)((int)tag + 4) = 0;
       return false;
     }
-    if (((int)param_3 == (int)param_1[param_2].m_tags[local_c].m_priTag) &&
-       (param_3._4_4_ == *(int *)((int)&param_1[param_2].m_tags[local_c].m_priTag + 4))) break;
-    local_c = local_c + 1;
+    if (((int)tagType == (int)descriptors[itemIndex].m_tags[i].m_priTag) &&
+       (tagType._4_4_ == *(int *)((int)&descriptors[itemIndex].m_tags[i].m_priTag + 4))) break;
+    i = i + 1;
   }
-  *(int *)param_4 = (int)param_1[param_2].m_tags[local_c].m_secTag;
-  *(undefined4 *)((int)param_4 + 4) =
-       *(undefined4 *)((int)&param_1[param_2].m_tags[local_c].m_secTag + 4);
+  *(int *)tag = (int)descriptors[itemIndex].m_tags[i].m_secTag;
+  *(undefined4 *)((int)tag + 4) =
+       *(undefined4 *)((int)&descriptors[itemIndex].m_tags[i].m_secTag + 4);
   return true;
 }
 
@@ -86,23 +87,24 @@ fileSharePooledDetails_t * __cdecl Live_FileShare_GetFilePooledDetailsBuffer(voi
 // 0095D6F0  Live_FileShare_FindFileInPrivateData  (live/live_fileshare.cpp:303)
 
 bdFileMetaData * __cdecl
-Live_FileShare_FindFileInPrivateData(ulong64 param_1,fileShareBufferLocation param_2)
+Live_FileShare_FindFileInPrivateData(ulong64 fileID,fileShareBufferLocation bufferLocation)
 
 {
   fileSharePrivateData *pfVar1;
-  int local_c;
+  int i;
+  fileSharePrivateData *data;
   
-  pfVar1 = LiveStorage_FileShare_GetFileShareData(param_2);
-  local_c = 0;
+  pfVar1 = LiveStorage_FileShare_GetFileShareData(bufferLocation);
+  i = 0;
   while( true ) {
-    if (pfVar1->descriptorCount <= local_c) {
+    if (pfVar1->descriptorCount <= i) {
       return (bdFileMetaData *)0x0;
     }
-    if (((int)pfVar1->descriptors[local_c].m_fileID == (int)param_1) &&
-       (*(int *)((int)&pfVar1->descriptors[local_c].m_fileID + 4) == param_1._4_4_)) break;
-    local_c = local_c + 1;
+    if (((int)pfVar1->descriptors[i].m_fileID == (int)fileID) &&
+       (*(int *)((int)&pfVar1->descriptors[i].m_fileID + 4) == fileID._4_4_)) break;
+    i = i + 1;
   }
-  return pfVar1->descriptors + local_c;
+  return pfVar1->descriptors + i;
 }
 
 
@@ -110,19 +112,19 @@ Live_FileShare_FindFileInPrivateData(ulong64 param_1,fileShareBufferLocation par
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Live_FileShare_ValidatePublicDDLBuffer(char *param_1)
+bool __cdecl Live_FileShare_ValidatePublicDDLBuffer(char *buffer)
 
 {
   int iVar1;
-  char local_20c [516];
+  char backup [516];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = DDL_AssociateBuffer(param_1,0x200,g_fileSharePublicDDL);
+  iVar1 = DDL_AssociateBuffer(buffer,0x200,g_fileSharePublicDDL);
   if ((iVar1 == 0) &&
      (iVar1 = DDL_FixBufferVersion
-                        (param_1,g_fileSharePublicDDL,"ddl_mp/file_share_public.ddl",local_20c,0x200
-                        ), iVar1 == 0)) {
+                        (buffer,g_fileSharePublicDDL,"ddl_mp/file_share_public.ddl",backup,0x200),
+     iVar1 == 0)) {
     return false;
   }
   return true;
@@ -131,21 +133,20 @@ bool __cdecl Live_FileShare_ValidatePublicDDLBuffer(char *param_1)
 
 // 0095D7E0  Live_FileShare_ReadPublicMetaDataCreateTime  (live/live_fileshare.cpp:335)
 
-bool __cdecl Live_FileShare_ReadPublicMetaDataCreateTime(bdFileMetaData *param_1,int *param_2)
+bool __cdecl Live_FileShare_ReadPublicMetaDataCreateTime(bdFileMetaData *descriptor,int *createTime)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
-  ddlState_t local_18;
-  uchar *local_8;
+  ddlState_t state;
+  char *buffer;
   
-  local_8 = param_1->m_metaData;
-  bVar1 = Live_FileShare_ValidatePublicDDLBuffer((char *)local_8);
-  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_18,"createTime"), iVar2 != 0))
-  {
-    uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-    *param_2 = uVar3;
+  buffer = (char *)descriptor->m_metaData;
+  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(buffer);
+  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"createTime"), iVar2 != 0)) {
+    uVar3 = DDL_GetInt(&state,buffer);
+    *createTime = uVar3;
     return true;
   }
   return false;
@@ -154,17 +155,16 @@ bool __cdecl Live_FileShare_ReadPublicMetaDataCreateTime(bdFileMetaData *param_1
 
 // 0095D840  Live_FileShare_WritePublicMetaDataCreateTime  (live/live_fileshare.cpp:351)
 
-bool __cdecl Live_FileShare_WritePublicMetaDataCreateTime(char *param_1,int param_2)
+bool __cdecl Live_FileShare_WritePublicMetaDataCreateTime(char *buffer,int createTime)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t local_14;
+  ddlState_t state;
   
-  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(param_1);
-  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_14,"createTime"), iVar2 != 0))
-  {
-    DDL_SetInt(&local_14,param_2,param_1);
+  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(buffer);
+  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"createTime"), iVar2 != 0)) {
+    DDL_SetInt(&state,createTime,buffer);
     return true;
   }
   return false;
@@ -173,20 +173,20 @@ bool __cdecl Live_FileShare_WritePublicMetaDataCreateTime(char *param_1,int para
 
 // 0095D8A0  Live_FileShare_ReadPublicMetaDataLength  (live/live_fileshare.cpp:366)
 
-bool __cdecl Live_FileShare_ReadPublicMetaDataLength(bdFileMetaData *param_1,int *param_2)
+bool __cdecl Live_FileShare_ReadPublicMetaDataLength(bdFileMetaData *descriptor,int *duration)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
-  ddlState_t local_18;
-  uchar *local_8;
+  ddlState_t state;
+  char *buffer;
   
-  local_8 = param_1->m_metaData;
-  bVar1 = Live_FileShare_ValidatePublicDDLBuffer((char *)local_8);
-  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_18,"length"), iVar2 != 0)) {
-    uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-    *param_2 = uVar3;
+  buffer = (char *)descriptor->m_metaData;
+  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(buffer);
+  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"length"), iVar2 != 0)) {
+    uVar3 = DDL_GetInt(&state,buffer);
+    *duration = uVar3;
     return true;
   }
   return false;
@@ -195,16 +195,16 @@ bool __cdecl Live_FileShare_ReadPublicMetaDataLength(bdFileMetaData *param_1,int
 
 // 0095D900  Live_FileShare_WritePublicMetaDataLength  (live/live_fileshare.cpp:382)
 
-bool __cdecl Live_FileShare_WritePublicMetaDataLength(char *param_1,int param_2)
+bool __cdecl Live_FileShare_WritePublicMetaDataLength(char *buffer,int duration)
 
 {
   bool bVar1;
   int iVar2;
-  ddlState_t local_14;
+  ddlState_t state;
   
-  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(param_1);
-  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_14,"length"), iVar2 != 0)) {
-    DDL_SetInt(&local_14,param_2,param_1);
+  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(buffer);
+  if ((bVar1) && (iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"length"), iVar2 != 0)) {
+    DDL_SetInt(&state,duration,buffer);
     return true;
   }
   return false;
@@ -215,7 +215,7 @@ bool __cdecl Live_FileShare_WritePublicMetaDataLength(char *param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Live_FileShare_PublicMetaDataToTags(bdFileMetaData *param_1,int param_2)
+bool __cdecl Live_FileShare_PublicMetaDataToTags(bdFileMetaData *descriptor,int maxTags)
 
 {
   bool bVar1;
@@ -225,94 +225,94 @@ bool __cdecl Live_FileShare_PublicMetaDataToTags(bdFileMetaData *param_1,int par
   uchar *puVar5;
   uchar *puVar6;
   ulong64 uVar7;
-  ddlState_t local_148;
-  uint local_138;
-  uchar local_134 [2];
+  ddlState_t tagState;
+  int duration;
+  uchar metaData [2];
   uchar auStack_132 [254];
   uint local_34;
-  uint local_30;
-  uint local_2c;
-  ddlState_t local_28;
-  uchar *local_18;
-  int local_14;
+  int createTime;
+  uint i;
+  ddlState_t state;
+  char *buffer;
+  int gameTypeIndex;
   undefined4 local_10;
-  int local_c;
+  int mapNameIndex;
   undefined4 local_8;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18 = param_1->m_metaData;
-  param_1->m_numTags = 0;
-  bVar1 = Live_FileShare_ValidatePublicDDLBuffer((char *)local_18);
+  buffer = (char *)descriptor->m_metaData;
+  descriptor->m_numTags = 0;
+  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(buffer);
   if (bVar1) {
-    iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&local_28,"numTags");
+    iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&state,"numTags");
     if (iVar2 != 0) {
-      uVar3 = DDL_GetInt(&local_28,(char *)local_18);
-      param_1->m_numTags = uVar3;
+      uVar3 = DDL_GetInt(&state,buffer);
+      descriptor->m_numTags = uVar3;
     }
-    if ((((param_1->m_numTags != 0) &&
-         (iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&local_28,"tags"), iVar2 != 0)) &&
-        (iVar2 = DDL_MoveToIndex(&local_28,&local_28,0,1), iVar2 != 0)) &&
-       (iVar2 = DDL_IterateFirst(&local_28,&local_28), iVar2 != 0)) {
-      local_2c = 0;
+    if ((((descriptor->m_numTags != 0) &&
+         (iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&state,"tags"), iVar2 != 0)) &&
+        (iVar2 = DDL_MoveToIndex(&state,&state,0,1), iVar2 != 0)) &&
+       (iVar2 = DDL_IterateFirst(&state,&state), iVar2 != 0)) {
+      i = 0;
       do {
-        DDL_MoveToName(&local_28,&local_148,"priTag");
-        uVar3 = DDL_GetInt(&local_148,(char *)local_18);
-        *(uint *)&param_1->m_tags[local_2c].m_priTag = uVar3;
-        *(undefined4 *)((int)&param_1->m_tags[local_2c].m_priTag + 4) = 0;
-        DDL_MoveToName(&local_28,&local_148,"secTag");
-        uVar7 = DDL_GetInt64(&local_148,(char *)local_18);
-        *(int *)&param_1->m_tags[local_2c].m_secTag = (int)uVar7;
-        *(int *)((int)&param_1->m_tags[local_2c].m_secTag + 4) = (int)(uVar7 >> 0x20);
-        if (((int)param_1->m_tags[local_2c].m_priTag == 1) &&
-           (*(int *)((int)&param_1->m_tags[local_2c].m_priTag + 4) == 0)) {
-          local_14 = (int)param_1->m_tags[local_2c].m_secTag;
-          local_10 = *(undefined4 *)((int)&param_1->m_tags[local_2c].m_secTag + 4);
+        DDL_MoveToName(&state,&tagState,"priTag");
+        uVar3 = DDL_GetInt(&tagState,buffer);
+        *(uint *)&descriptor->m_tags[i].m_priTag = uVar3;
+        *(undefined4 *)((int)&descriptor->m_tags[i].m_priTag + 4) = 0;
+        DDL_MoveToName(&state,&tagState,"secTag");
+        uVar7 = DDL_GetInt64(&tagState,buffer);
+        *(int *)&descriptor->m_tags[i].m_secTag = (int)uVar7;
+        *(int *)((int)&descriptor->m_tags[i].m_secTag + 4) = (int)(uVar7 >> 0x20);
+        if (((int)descriptor->m_tags[i].m_priTag == 1) &&
+           (*(int *)((int)&descriptor->m_tags[i].m_priTag + 4) == 0)) {
+          gameTypeIndex = (int)descriptor->m_tags[i].m_secTag;
+          local_10 = *(undefined4 *)((int)&descriptor->m_tags[i].m_secTag + 4);
         }
-        else if (((int)param_1->m_tags[local_2c].m_priTag == 2) &&
-                (*(int *)((int)&param_1->m_tags[local_2c].m_priTag + 4) == 0)) {
-          local_c = (int)param_1->m_tags[local_2c].m_secTag;
-          local_8 = *(undefined4 *)((int)&param_1->m_tags[local_2c].m_secTag + 4);
+        else if (((int)descriptor->m_tags[i].m_priTag == 2) &&
+                (*(int *)((int)&descriptor->m_tags[i].m_priTag + 4) == 0)) {
+          mapNameIndex = (int)descriptor->m_tags[i].m_secTag;
+          local_8 = *(undefined4 *)((int)&descriptor->m_tags[i].m_secTag + 4);
         }
-        local_2c = local_2c + 1;
-        iVar2 = DDL_IterateNext(&local_28,&local_28);
-      } while ((iVar2 != 0) && (local_2c < param_1->m_numTags));
-      local_138 = 0;
-      local_30 = 0;
-      Live_FileShare_ReadPublicMetaDataLength(param_1,(int *)&local_138);
-      Live_FileShare_ReadPublicMetaDataCreateTime(param_1,(int *)&local_30);
-      memset(local_134,'\0',0xff);
-      DDL_AssociateBuffer((char *)local_134,0xff,g_fileshareDDL);
-      iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_28,"name");
+        i = i + 1;
+        iVar2 = DDL_IterateNext(&state,&state);
+      } while ((iVar2 != 0) && (i < descriptor->m_numTags));
+      duration = 0;
+      createTime = 0;
+      Live_FileShare_ReadPublicMetaDataLength(descriptor,&duration);
+      Live_FileShare_ReadPublicMetaDataCreateTime(descriptor,&createTime);
+      memset(metaData,'\0',0xff);
+      DDL_AssociateBuffer((char *)metaData,0xff,g_fileshareDDL);
+      iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"name");
       if (iVar2 != 0) {
-        puVar5 = local_134;
-        pcVar4 = Live_FileShare_GetLocalizedGameTypeFromIndex(local_14,true);
-        iVar2 = DDL_SetString(&local_28,pcVar4,(char *)puVar5);
+        puVar5 = metaData;
+        pcVar4 = Live_FileShare_GetLocalizedGameTypeFromIndex(gameTypeIndex,true);
+        iVar2 = DDL_SetString(&state,pcVar4,(char *)puVar5);
         if (iVar2 != 0) {
-          iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_28,"isModifiedName");
-          if ((iVar2 == 0) || (iVar2 = DDL_SetInt(&local_28,0,(char *)local_134), iVar2 == 0)) {
+          iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedName");
+          if ((iVar2 == 0) || (iVar2 = DDL_SetInt(&state,0,(char *)metaData), iVar2 == 0)) {
             Com_PrintError(0x10,"Could not set \'isModifiedName\' in the file share ddl.\n");
             return false;
           }
-          iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_28,"description");
+          iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"description");
           if (iVar2 != 0) {
-            puVar5 = local_134;
-            pcVar4 = Live_FileShare_GetLocalizedMapNameFromIndex(local_c);
-            iVar2 = DDL_SetString(&local_28,pcVar4,(char *)puVar5);
+            puVar5 = metaData;
+            pcVar4 = Live_FileShare_GetLocalizedMapNameFromIndex(mapNameIndex);
+            iVar2 = DDL_SetString(&state,pcVar4,(char *)puVar5);
             if (iVar2 != 0) {
-              iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_28,"isModifiedDescription");
-              if ((iVar2 == 0) || (iVar2 = DDL_SetInt(&local_28,0,(char *)local_134), iVar2 == 0)) {
+              iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedDescription");
+              if ((iVar2 == 0) || (iVar2 = DDL_SetInt(&state,0,(char *)metaData), iVar2 == 0)) {
                 Com_PrintError(0x10,
                                "Could not set \'isModifiedDescription\' in the file share ddl.\n");
                 return false;
               }
-              iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_28,"createTime");
+              iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"createTime");
               if ((iVar2 != 0) &&
-                 (iVar2 = DDL_SetInt(&local_28,local_30,(char *)local_134), iVar2 != 0)) {
-                iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_28,"length");
+                 (iVar2 = DDL_SetInt(&state,createTime,(char *)metaData), iVar2 != 0)) {
+                iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"length");
                 if ((iVar2 != 0) &&
-                   (iVar2 = DDL_SetInt(&local_28,local_138,(char *)local_134), iVar2 != 0)) {
-                  puVar5 = local_134;
-                  puVar6 = param_1->m_metaData;
+                   (iVar2 = DDL_SetInt(&state,duration,(char *)metaData), iVar2 != 0)) {
+                  puVar5 = metaData;
+                  puVar6 = descriptor->m_metaData;
                   for (iVar2 = 0x3f; iVar2 != 0; iVar2 = iVar2 + -1) {
                     *(undefined4 *)puVar6 = *(undefined4 *)puVar5;
                     puVar5 = puVar5 + 4;
@@ -343,37 +343,35 @@ bool __cdecl Live_FileShare_PublicMetaDataToTags(bdFileMetaData *param_1,int par
 
 // 0095DE20  Live_FileShare_WritePublicMetaDataTags  (live/live_fileshare.cpp:503)
 
-bool __cdecl Live_FileShare_WritePublicMetaDataTags(char *param_1,bdTag *param_2,int param_3)
+bool __cdecl Live_FileShare_WritePublicMetaDataTags(char *buffer,bdTag *tags,int numTags)
 
 {
   bool bVar1;
   int iVar2;
   char *in_stack_ffffffd8;
-  int local_18;
-  ddlState_t local_14;
+  int i;
+  ddlState_t state;
   
-  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(param_1);
-  if ((((!bVar1) ||
-       (iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&local_14,"tags"), iVar2 == 0)) ||
-      (iVar2 = DDL_MoveToIndex(&local_14,&local_14,0,1), iVar2 == 0)) ||
-     (iVar2 = DDL_IterateFirst(&local_14,&local_14), iVar2 == 0)) {
+  bVar1 = Live_FileShare_ValidatePublicDDLBuffer(buffer);
+  if ((((!bVar1) || (iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&state,"tags"), iVar2 == 0))
+      || (iVar2 = DDL_MoveToIndex(&state,&state,0,1), iVar2 == 0)) ||
+     (iVar2 = DDL_IterateFirst(&state,&state), iVar2 == 0)) {
     return false;
   }
-  local_18 = 0;
+  i = 0;
   do {
-    DDL_MoveToName(&local_14,(ddlState_t *)&stack0xffffffd8,"priTag");
-    DDL_SetInt((ddlState_t *)&stack0xffffffd8,(uint)param_2[local_18].m_priTag,param_1);
-    DDL_MoveToName(&local_14,(ddlState_t *)&stack0xffffffd8,"secTag");
+    DDL_MoveToName(&state,(ddlState_t *)&stack0xffffffd8,"priTag");
+    DDL_SetInt((ddlState_t *)&stack0xffffffd8,(uint)tags[i].m_priTag,buffer);
+    DDL_MoveToName(&state,(ddlState_t *)&stack0xffffffd8,"secTag");
     DDL_SetInt64((ddlState_t *)&stack0xffffffd8,
-                 CONCAT44(param_1,*(undefined4 *)((int)&param_2[local_18].m_secTag + 4)),
-                 in_stack_ffffffd8);
-    local_18 = local_18 + 1;
-    iVar2 = DDL_IterateNext(&local_14,&local_14);
+                 CONCAT44(buffer,*(undefined4 *)((int)&tags[i].m_secTag + 4)),in_stack_ffffffd8);
+    i = i + 1;
+    iVar2 = DDL_IterateNext(&state,&state);
     if (iVar2 == 0) break;
-  } while (local_18 < param_3);
-  iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&local_14,"numTags");
+  } while (i < numTags);
+  iVar2 = DDL_MoveToName(&g_fileSharePublicRootState,&state,"numTags");
   if (iVar2 != 0) {
-    DDL_SetInt(&local_14,param_3,param_1);
+    DDL_SetInt(&state,numTags,buffer);
   }
   return true;
 }
@@ -384,91 +382,91 @@ bool __cdecl Live_FileShare_WritePublicMetaDataTags(char *param_1,bdTag *param_2
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 bool __cdecl
-Live_FileShare_ReadFromMetaData(int param_1,bdFileMetaData *param_2,char **param_3,int *param_4)
+Live_FileShare_ReadFromMetaData
+          (int index,bdFileMetaData *descriptor,char **stringResult,int *intResult)
 
 {
   int iVar1;
   char *pcVar2;
   uint uVar3;
-  char local_11c [256];
+  char backup [256];
   uint local_1c;
-  ddlState_t local_18;
-  uchar *local_8;
+  ddlState_t state;
+  char *buffer;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = param_2->m_metaData;
-  iVar1 = DDL_AssociateBuffer((char *)local_8,0xff,g_fileshareDDL);
+  buffer = (char *)descriptor->m_metaData;
+  iVar1 = DDL_AssociateBuffer(buffer,0xff,g_fileshareDDL);
   if ((iVar1 != 0) ||
-     (iVar1 = DDL_FixBufferVersion
-                        ((char *)local_8,g_fileshareDDL,"ddl_mp/file_share.ddl",local_11c,0xff),
+     (iVar1 = DDL_FixBufferVersion(buffer,g_fileshareDDL,"ddl_mp/file_share.ddl",backup,0xff),
      iVar1 != 0)) {
-    switch(param_1) {
+    switch(index) {
     case 0:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"authorName");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"authorName");
       if (iVar1 != 0) {
-        pcVar2 = DDL_GetString(&local_18,(char *)local_8);
-        *param_3 = pcVar2;
+        pcVar2 = DDL_GetString(&state,buffer);
+        *stringResult = pcVar2;
         return true;
       }
       break;
     case 1:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"authorXuid");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"authorXuid");
       if (iVar1 != 0) {
-        pcVar2 = DDL_GetString(&local_18,(char *)local_8);
-        *param_3 = pcVar2;
+        pcVar2 = DDL_GetString(&state,buffer);
+        *stringResult = pcVar2;
         return true;
       }
       break;
     case 2:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"createTime");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"createTime");
       if (iVar1 != 0) {
-        uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-        *param_4 = uVar3;
+        uVar3 = DDL_GetInt(&state,buffer);
+        *intResult = uVar3;
         return true;
       }
       break;
     case 3:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"length");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"length");
       if (iVar1 != 0) {
-        uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-        *param_4 = uVar3;
+        uVar3 = DDL_GetInt(&state,buffer);
+        *intResult = uVar3;
         return true;
       }
       break;
     case 4:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"name");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"name");
       if (iVar1 != 0) {
-        pcVar2 = DDL_GetString(&local_18,(char *)local_8);
-        *param_3 = pcVar2;
+        pcVar2 = DDL_GetString(&state,buffer);
+        *stringResult = pcVar2;
         return true;
       }
       break;
     case 5:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"description");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"description");
       if (iVar1 != 0) {
-        pcVar2 = DDL_GetString(&local_18,(char *)local_8);
-        *param_3 = pcVar2;
+        pcVar2 = DDL_GetString(&state,buffer);
+        *stringResult = pcVar2;
         return true;
       }
       break;
     case 6:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"isModifiedName");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedName");
       if (iVar1 != 0) {
-        uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-        *param_4 = uVar3;
+        uVar3 = DDL_GetInt(&state,buffer);
+        *intResult = uVar3;
         return true;
       }
       break;
     case 7:
-      iVar1 = DDL_MoveToName(&g_fileShareRootState,&local_18,"isModifiedDescription");
+      iVar1 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedDescription");
       if (iVar1 != 0) {
-        uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-        *param_4 = uVar3;
+        uVar3 = DDL_GetInt(&state,buffer);
+        *intResult = uVar3;
         return true;
       }
     }
-    *param_4 = 0;
-    *param_3 = "";
+    *intResult = 0;
+    *stringResult = "";
   }
   return false;
 }
@@ -478,17 +476,17 @@ Live_FileShare_ReadFromMetaData(int param_1,bdFileMetaData *param_2,char **param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl Live_FileShare_ValidateDDLBuffer(char *param_1)
+bool __cdecl Live_FileShare_ValidateDDLBuffer(char *buffer)
 
 {
   int iVar1;
-  char local_10c [260];
+  char backup [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar1 = DDL_AssociateBuffer(param_1,0xff,g_fileshareDDL);
+  iVar1 = DDL_AssociateBuffer(buffer,0xff,g_fileshareDDL);
   if ((iVar1 == 0) &&
-     (iVar1 = DDL_FixBufferVersion(param_1,g_fileshareDDL,"ddl_mp/file_share.ddl",local_10c,0xff),
+     (iVar1 = DDL_FixBufferVersion(buffer,g_fileshareDDL,"ddl_mp/file_share.ddl",backup,0xff),
      iVar1 == 0)) {
     return false;
   }
@@ -499,23 +497,23 @@ bool __cdecl Live_FileShare_ValidateDDLBuffer(char *param_1)
 // 0095E280  Live_FileShare_AddTag  (live/live_fileshare.cpp:642)
 
 void __cdecl
-Live_FileShare_AddTag(ulong64 param_1,ulong64 param_2,int *param_3,bdTag *param_4,int param_5)
+Live_FileShare_AddTag(ulong64 priTag,ulong64 secTag,int *numTags,bdTag *tags,int maxNumTags)
 
 {
   int iVar1;
   
-  if (param_5 < *param_3 + 1) {
+  if (maxNumTags < *numTags + 1) {
     Com_PrintError(0x10,"Too many tags for file share search while adding a new search tag type.\n")
     ;
   }
   else {
-    iVar1 = *param_3;
-    *(undefined4 *)&param_4[iVar1].m_priTag = (undefined4)param_1;
-    *(undefined4 *)((int)&param_4[iVar1].m_priTag + 4) = param_1._4_4_;
-    iVar1 = *param_3;
-    *(undefined4 *)&param_4[iVar1].m_secTag = (undefined4)param_2;
-    *(undefined4 *)((int)&param_4[iVar1].m_secTag + 4) = param_2._4_4_;
-    *param_3 = *param_3 + 1;
+    iVar1 = *numTags;
+    *(undefined4 *)&tags[iVar1].m_priTag = (undefined4)priTag;
+    *(undefined4 *)((int)&tags[iVar1].m_priTag + 4) = priTag._4_4_;
+    iVar1 = *numTags;
+    *(undefined4 *)&tags[iVar1].m_secTag = (undefined4)secTag;
+    *(undefined4 *)((int)&tags[iVar1].m_secTag + 4) = secTag._4_4_;
+    *numTags = *numTags + 1;
   }
   return;
 }
@@ -523,18 +521,19 @@ Live_FileShare_AddTag(ulong64 param_1,ulong64 param_2,int *param_3,bdTag *param_
 
 // 0095E2F0  Live_FileShare_GetLocalizedUserTagFromIndex  (live/live_fileshare.cpp:656)
 
-char * __cdecl Live_FileShare_GetLocalizedUserTagFromIndex(int param_1)
+char * __cdecl Live_FileShare_GetLocalizedUserTagFromIndex(int index)
 
 {
   char *pcVar1;
-  int iVar2;
-  StringTable *local_8;
+  int valueColumn;
+  char *result;
+  StringTable *fileShareTable;
   
-  StringTable_GetAsset("mp/fileShareTags.csv",&local_8);
-  if ((0 < param_1) && (param_1 <= local_8->rowCount)) {
-    iVar2 = 1;
+  StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
+  if ((0 < index) && (index <= fileShareTable->rowCount)) {
+    valueColumn = 1;
     pcVar1 = va("%d");
-    pcVar1 = StringTable_Lookup(local_8,0,pcVar1,iVar2);
+    pcVar1 = StringTable_Lookup(fileShareTable,0,pcVar1,valueColumn);
     if ((pcVar1 != (char *)0x0) && (*pcVar1 != '\0')) {
       pcVar1 = UI_SafeTranslateString(pcVar1);
       return pcVar1;
@@ -547,27 +546,28 @@ char * __cdecl Live_FileShare_GetLocalizedUserTagFromIndex(int param_1)
 
 // 0095E370  Live_FileShare_GetGameTypeFromIndex  (live/live_fileshare.cpp:673)
 
-char * __cdecl Live_FileShare_GetGameTypeFromIndex(int param_1)
+char * __cdecl Live_FileShare_GetGameTypeFromIndex(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  StringTable *local_8;
+  int valueColumn;
+  char *result;
+  StringTable *gameTypesTable;
   
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_8);
-  if ((local_8 == (StringTable *)0x0) &&
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if ((gameTypesTable == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x2a5,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((-1 < param_1) && (param_1 < local_8->rowCount)) {
-    iVar4 = 0;
+  if ((-1 < index) && (index < gameTypesTable->rowCount)) {
+    valueColumn = 0;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_8,4,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(gameTypesTable,4,pcVar3,valueColumn);
     if ((pcVar3 != (char *)0x0) && (*pcVar3 != '\0')) {
       pcVar3 = va("%s");
       return pcVar3;
@@ -580,27 +580,28 @@ char * __cdecl Live_FileShare_GetGameTypeFromIndex(int param_1)
 
 // 0095E430  Live_FileShare_GetGameTypeImageFromIndex  (live/live_fileshare.cpp:693)
 
-char * __cdecl Live_FileShare_GetGameTypeImageFromIndex(int param_1)
+char * __cdecl Live_FileShare_GetGameTypeImageFromIndex(int index)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  StringTable *local_8;
+  int valueColumn;
+  char *result;
+  StringTable *gameTypesTable;
   
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_8);
-  if ((local_8 == (StringTable *)0x0) &&
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if ((gameTypesTable == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x2b9,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((-1 < param_1) && (param_1 < local_8->rowCount)) {
-    iVar4 = 3;
+  if ((-1 < index) && (index < gameTypesTable->rowCount)) {
+    valueColumn = 3;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_8,4,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(gameTypesTable,4,pcVar3,valueColumn);
     if ((pcVar3 != (char *)0x0) && (*pcVar3 != '\0')) {
       pcVar3 = va("%s");
       return pcVar3;
@@ -613,37 +614,37 @@ char * __cdecl Live_FileShare_GetGameTypeImageFromIndex(int param_1)
 
 // 0095E4F0  Live_FileShare_GetLocalizedGameTypeFromIndex  (live/live_fileshare.cpp:713)
 
-char * __cdecl Live_FileShare_GetLocalizedGameTypeFromIndex(int param_1,bool param_2)
+char * __cdecl Live_FileShare_GetLocalizedGameTypeFromIndex(int index,bool upperCase)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  char *local_c;
-  StringTable *local_8;
+  char *result;
+  StringTable *gameTypesTable;
   
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_8);
-  if ((local_8 == (StringTable *)0x0) &&
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if ((gameTypesTable == (StringTable *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x2cd,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if ((-1 < param_1) && (param_1 < local_8->rowCount)) {
-    if (param_2) {
+  if ((-1 < index) && (index < gameTypesTable->rowCount)) {
+    if (upperCase) {
       iVar4 = 1;
       pcVar3 = va("%d");
-      local_c = StringTable_Lookup(local_8,4,pcVar3,iVar4);
+      result = StringTable_Lookup(gameTypesTable,4,pcVar3,iVar4);
     }
     else {
       iVar4 = 7;
       pcVar3 = va("%d");
-      local_c = StringTable_Lookup(local_8,4,pcVar3,iVar4);
+      result = StringTable_Lookup(gameTypesTable,4,pcVar3,iVar4);
     }
-    if ((local_c != (char *)0x0) && (*local_c != '\0')) {
-      pcVar3 = UI_SafeTranslateString(local_c);
+    if ((result != (char *)0x0) && (*result != '\0')) {
+      pcVar3 = UI_SafeTranslateString(result);
       return pcVar3;
     }
     Com_PrintError(0x10,"Could not index %d in gameTypesTable.csv.\n");
@@ -654,16 +655,16 @@ char * __cdecl Live_FileShare_GetLocalizedGameTypeFromIndex(int param_1,bool par
 
 // 0095E5E0  Live_FileShare_GetLocalizedMapNameFromIndex  (live/live_fileshare.cpp:742)
 
-char * __cdecl Live_FileShare_GetLocalizedMapNameFromIndex(int param_1)
+char * __cdecl Live_FileShare_GetLocalizedMapNameFromIndex(int index)
 
 {
   char *pcVar1;
   
-  if ((param_1 < 0) || (DAT_098b9e44 <= param_1)) {
+  if ((index < 0) || (DAT_098b9e44 <= index)) {
     pcVar1 = "";
   }
   else {
-    pcVar1 = UI_SafeTranslateString(&DAT_098b9e48 + param_1 * 0x130);
+    pcVar1 = UI_SafeTranslateString(&DAT_098b9e48 + index * 0x130);
   }
   return pcVar1;
 }
@@ -674,30 +675,30 @@ char * __cdecl Live_FileShare_GetLocalizedMapNameFromIndex(int param_1)
 int __cdecl Live_FileShare_GetGameTypeCount(void)
 
 {
-  char *pcVar1;
-  int iVar2;
-  StringTable *local_8;
+  char *nptr;
+  int iVar1;
+  StringTable *gameTypesTable;
   
-  StringTable_GetAsset("mp/gameTypesTable.csv",&local_8);
-  pcVar1 = StringTable_Lookup(local_8,0,"total_filesharegametype",1);
-  iVar2 = atoi(pcVar1);
-  return iVar2;
+  StringTable_GetAsset("mp/gameTypesTable.csv",&gameTypesTable);
+  nptr = StringTable_Lookup(gameTypesTable,0,"total_filesharegametype",1);
+  iVar1 = atoi(nptr);
+  return iVar1;
 }
 
 
 // 0095E660  Live_FileShare_GetIndexFromGameType  (live/live_fileshare.cpp:760)
 
-int __cdecl Live_FileShare_GetIndexFromGameType(char *param_1)
+int __cdecl Live_FileShare_GetIndexFromGameType(char *gameType)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  StringTable *local_8;
+  char *nptr;
+  StringTable *gameTypesTable;
   
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_8);
-  if (local_8 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if (gameTypesTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x2fb,0,
                              "%s");
     if (!bVar2) {
@@ -706,8 +707,8 @@ int __cdecl Live_FileShare_GetIndexFromGameType(char *param_1)
       return iVar3;
     }
   }
-  pcVar4 = StringTable_Lookup(local_8,0,param_1,4);
-  iVar3 = atoi(pcVar4);
+  nptr = StringTable_Lookup(gameTypesTable,0,gameType,4);
+  iVar3 = atoi(nptr);
   return iVar3;
 }
 
@@ -718,23 +719,23 @@ void __cdecl Live_FileShare_PopulateLastPlayedGameDvars(void)
 
 {
   char *pcVar1;
-  uint local_18;
-  int local_14;
-  int local_c;
+  uint i;
+  int mapName;
+  int gameType;
   
-  for (local_18 = 0; local_18 < s_lastPlayedGame.descriptor.m_numTags; local_18 = local_18 + 1) {
-    if (((int)s_lastPlayedGame.descriptor.m_tags[local_18].m_priTag == 1) &&
-       (*(int *)((int)&s_lastPlayedGame.descriptor.m_tags[local_18].m_priTag + 4) == 0)) {
-      local_c = (int)s_lastPlayedGame.descriptor.m_tags[local_18].m_secTag;
+  for (i = 0; i < s_lastPlayedGame.descriptor.m_numTags; i = i + 1) {
+    if (((int)s_lastPlayedGame.descriptor.m_tags[i].m_priTag == 1) &&
+       (*(int *)((int)&s_lastPlayedGame.descriptor.m_tags[i].m_priTag + 4) == 0)) {
+      gameType = (int)s_lastPlayedGame.descriptor.m_tags[i].m_secTag;
     }
-    else if (((int)s_lastPlayedGame.descriptor.m_tags[local_18].m_priTag == 2) &&
-            (*(int *)((int)&s_lastPlayedGame.descriptor.m_tags[local_18].m_priTag + 4) == 0)) {
-      local_14 = (int)s_lastPlayedGame.descriptor.m_tags[local_18].m_secTag;
+    else if (((int)s_lastPlayedGame.descriptor.m_tags[i].m_priTag == 2) &&
+            (*(int *)((int)&s_lastPlayedGame.descriptor.m_tags[i].m_priTag + 4) == 0)) {
+      mapName = (int)s_lastPlayedGame.descriptor.m_tags[i].m_secTag;
     }
   }
-  pcVar1 = Live_FileShare_GetLocalizedGameTypeFromIndex(local_c,true);
+  pcVar1 = Live_FileShare_GetLocalizedGameTypeFromIndex(gameType,true);
   Dvar_SetString(fsSelectedFileName,pcVar1);
-  pcVar1 = Live_FileShare_GetLocalizedMapNameFromIndex(local_14);
+  pcVar1 = Live_FileShare_GetLocalizedMapNameFromIndex(mapName);
   Dvar_SetString(fsSelectedFileDescription,pcVar1);
   return;
 }
@@ -744,20 +745,20 @@ void __cdecl Live_FileShare_PopulateLastPlayedGameDvars(void)
 
 /* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
 
-void __cdecl Live_FileShare_GetLastPlayedGameDetails(int param_1)
+void __cdecl Live_FileShare_GetLastPlayedGameDetails(int controllerIndex)
 
 {
   ulong64 uVar1;
-  ddlState_t *pdVar2;
-  ddlState_t *pdVar3;
-  int iVar4;
-  ddlState_t local_14;
+  ddlState_t *searchState;
+  ddlState_t *resultState;
+  int argNum;
+  ddlState_t localState;
   
-  iVar4 = 2;
-  pdVar3 = &local_14;
-  pdVar2 = LiveStats_GetRootDDLState();
-  DDL_MoveTo(pdVar2,pdVar3,iVar4);
-  s_lastPlayedGame.dwFileID.m_fileID = LiveStats_GetDInt64Stat(param_1,&local_14);
+  argNum = 2;
+  resultState = &localState;
+  searchState = LiveStats_GetRootDDLState();
+  DDL_MoveTo(searchState,resultState,argNum);
+  s_lastPlayedGame.dwFileID.m_fileID = LiveStats_GetDInt64Stat(controllerIndex,&localState);
   if ((s_lastPlayedGame.dwFileID.m_fileID == 0) ||
      (s_lastPlayedGame.dwFileID.m_fileID !=
       CONCAT44(s_lastPlayedGame.descriptor.m_fileID._4_4_,
@@ -765,7 +766,7 @@ void __cdecl Live_FileShare_GetLastPlayedGameDetails(int param_1)
     uVar1 = s_lastPlayedGame.dwFileID.m_fileID;
     if (s_lastPlayedGame.dwFileID.m_fileID != 0) {
       LiveStorage_FileShare_ReadMetaDataByID
-                (param_1,&s_lastPlayedGame.dwFileID,1,&s_lastPlayedGame.descriptor,
+                (controllerIndex,&s_lastPlayedGame.dwFileID,1,&s_lastPlayedGame.descriptor,
                  FILESHARE_LOCATION_POOLEDSTORAGE);
       uVar1 = s_lastPlayedGame.dwFileID.m_fileID;
     }
@@ -782,7 +783,7 @@ void __cdecl Live_FileShare_GetLastPlayedGameDetails(int param_1)
 
 // 0095E950  Live_FileShare_AppendToFilterList  (live/live_fileshare.cpp:809)
 
-void __cdecl Live_FileShare_AppendToFilterList(int param_1,char *param_2,bool *param_3)
+void __cdecl Live_FileShare_AppendToFilterList(int checkValue,char *textValue,bool *filterPresent)
 
 {
   char cVar1;
@@ -790,17 +791,17 @@ void __cdecl Live_FileShare_AppendToFilterList(int param_1,char *param_2,bool *p
   char *pcVar3;
   uint uVar4;
   char *pcVar5;
-  int iVar6;
+  int destsize;
   char *local_24;
   char *local_10;
   undefined2 *local_8;
   
-  if (((param_1 != 0) && (param_2 != (char *)0x0)) && (*param_2 != '\0')) {
-    if (*param_3 == false) {
-      iVar6 = 0x200;
-      pcVar3 = UI_SafeTranslateString(param_2);
-      I_strncpyz(s_filterList,pcVar3,iVar6);
-      *param_3 = true;
+  if (((checkValue != 0) && (textValue != (char *)0x0)) && (*textValue != '\0')) {
+    if (*filterPresent == false) {
+      destsize = 0x200;
+      pcVar3 = UI_SafeTranslateString(textValue);
+      I_strncpyz(s_filterList,pcVar3,destsize);
+      *filterPresent = true;
     }
     else {
       local_8 = (undefined2 *)((int)&fsMaxPrivateSlotRowsOther + 3);
@@ -811,7 +812,7 @@ void __cdecl Live_FileShare_AppendToFilterList(int param_1,char *param_2,bool *p
       } while (*(char *)((int)local_8 + 1) != '\0');
       *(undefined2 *)((int)local_8 + 1) = 0x202c;
       *(undefined1 *)((int)local_8 + 3) = 0;
-      pcVar3 = UI_SafeTranslateString(param_2);
+      pcVar3 = UI_SafeTranslateString(textValue);
       local_10 = pcVar3;
       do {
         cVar1 = *local_10;
@@ -846,35 +847,36 @@ char * __cdecl Live_FileShare_GetFilterList(void)
 {
   char *pcVar1;
   uint3 in_ECX;
-  bool *pbVar2;
-  undefined4 uStack_8;
+  bool *filterPresent_00;
+  uint uStack_8;
+  bool filterPresent;
   
   uStack_8 = (uint)in_ECX;
   if ((s_fsSearchRowValueDvars[1]->current).integer == 0) {
     if ((fsSearchFileType->current).integer != 4) {
       Live_FileShare_AppendToFilterList
                 ((s_fsSearchRowValueDvars[2]->current).integer,
-                 (s_fsSearchRowTextDvars[2]->current).string,(bool *)((int)&uStack_8 + 3));
+                 (s_fsSearchRowTextDvars[2]->current).string,&filterPresent);
     }
     Live_FileShare_AppendToFilterList
               ((s_fsSearchRowValueDvars[3]->current).integer,
-               (s_fsSearchRowTextDvars[3]->current).string,(bool *)((int)&uStack_8 + 3));
+               (s_fsSearchRowTextDvars[3]->current).string,&filterPresent);
     Live_FileShare_AppendToFilterList
               ((s_fsSearchRowValueDvars[4]->current).integer,
-               (s_fsSearchRowTextDvars[4]->current).string,(bool *)((int)&uStack_8 + 3));
+               (s_fsSearchRowTextDvars[4]->current).string,&filterPresent);
     Live_FileShare_AppendToFilterList
               ((s_fsSearchRowValueDvars[5]->current).integer,
-               (s_fsSearchRowTextDvars[5]->current).string,(bool *)((int)&uStack_8 + 3));
+               (s_fsSearchRowTextDvars[5]->current).string,&filterPresent);
     Live_FileShare_AppendToFilterList
               ((s_fsSearchRowValueDvars[6]->current).integer,
-               (s_fsSearchRowTextDvars[6]->current).string,(bool *)((int)&uStack_8 + 3));
+               (s_fsSearchRowTextDvars[6]->current).string,&filterPresent);
   }
   else {
-    pbVar2 = (bool *)((int)&uStack_8 + 3);
+    filterPresent_00 = &filterPresent;
     pcVar1 = UI_SafeTranslateString("MENU_FILESHARE_MOSTPOPULAR");
-    Live_FileShare_AppendToFilterList(1,pcVar1,pbVar2);
+    Live_FileShare_AppendToFilterList(1,pcVar1,filterPresent_00);
   }
-  if (uStack_8._3_1_ == '\0') {
+  if (filterPresent == false) {
     pcVar1 = UI_SafeTranslateString("MENU_NONE");
   }
   else {
@@ -886,14 +888,14 @@ char * __cdecl Live_FileShare_GetFilterList(void)
 
 // 0095EA60  Live_FileShare_FeederToSlot  (live/live_fileshare.cpp:855)
 
-int __cdecl Live_FileShare_FeederToSlot(int param_1,int param_2)
+int __cdecl Live_FileShare_FeederToSlot(int row,int col)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_2 < 0) || (2 < param_2)) {
+  if ((col < 0) || (2 < col)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x358,0,
                              "%s");
     if (!bVar2) {
@@ -902,7 +904,7 @@ int __cdecl Live_FileShare_FeederToSlot(int param_1,int param_2)
       return iVar3;
     }
   }
-  if ((param_1 < 0) || (6 < param_1)) {
+  if ((row < 0) || (6 < row)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x359,0,
                              "%s");
     if (!bVar2) {
@@ -911,48 +913,50 @@ int __cdecl Live_FileShare_FeederToSlot(int param_1,int param_2)
       return iVar3;
     }
   }
-  return param_1 * 3 + 1 + param_2;
+  return row * 3 + 1 + col;
 }
 
 
 // 0095EAE0  Live_FileShare_FileIDFromSlot  (live/live_fileshare.cpp:863)
 
 bool __cdecl
-Live_FileShare_FileIDFromSlot(bdFileMetaData *param_1,int param_2,int param_3,ulong64 *param_4)
+Live_FileShare_FileIDFromSlot
+          (bdFileMetaData *descriptors,int descriptorCount,int slot,ulong64 *fileID)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_2 <= local_8) {
+    if (descriptorCount <= i) {
       return false;
     }
-    if ((uint)param_1[local_8].m_fileSlot == param_3) break;
-    local_8 = local_8 + 1;
+    if ((uint)descriptors[i].m_fileSlot == slot) break;
+    i = i + 1;
   }
-  *(int *)param_4 = (int)param_1[local_8].m_fileID;
-  *(undefined4 *)((int)param_4 + 4) = *(undefined4 *)((int)&param_1[local_8].m_fileID + 4);
+  *(int *)fileID = (int)descriptors[i].m_fileID;
+  *(undefined4 *)((int)fileID + 4) = *(undefined4 *)((int)&descriptors[i].m_fileID + 4);
   return true;
 }
 
 
 // 0095EB40  Live_FileShare_IsSlotOccupied  (live/live_fileshare.cpp:884)
 
-bool __cdecl Live_FileShare_IsSlotOccupied(int param_1,fileShareBufferLocation param_2)
+bool __cdecl Live_FileShare_IsSlotOccupied(int slot,fileShareBufferLocation location)
 
 {
   fileSharePrivateData *pfVar1;
-  int local_c;
+  int i;
+  fileSharePrivateData *fileShareData;
   
-  pfVar1 = LiveStorage_FileShare_GetFileShareData(param_2);
-  local_c = 0;
+  pfVar1 = LiveStorage_FileShare_GetFileShareData(location);
+  i = 0;
   while( true ) {
-    if (pfVar1->descriptorCount <= local_c) {
+    if (pfVar1->descriptorCount <= i) {
       return false;
     }
-    if ((uint)pfVar1->descriptors[local_c].m_fileSlot == param_1) break;
-    local_c = local_c + 1;
+    if ((uint)pfVar1->descriptors[i].m_fileSlot == slot) break;
+    i = i + 1;
   }
   return true;
 }
@@ -960,20 +964,20 @@ bool __cdecl Live_FileShare_IsSlotOccupied(int param_1,fileShareBufferLocation p
 
 // 0095EBA0  Live_FileShare_GetSelectedImage  (live/live_fileshare.cpp:912)
 
-char * __cdecl Live_FileShare_GetSelectedImage(bdFileMetaData *param_1,int param_2)
+char * __cdecl Live_FileShare_GetSelectedImage(bdFileMetaData *descriptors,int index)
 
 {
   ushort uVar1;
   char *pcVar2;
-  uint local_c;
+  uint map;
   uint local_8;
   
-  uVar1 = param_1[param_2].m_category;
+  uVar1 = descriptors[index].m_category;
   if (uVar1 != 0) {
     if (uVar1 < 4) {
-      Live_FileShare_GetTag(param_1,param_2,2,(ulong64 *)&local_c);
+      Live_FileShare_GetTag(descriptors,index,2,(ulong64 *)&map);
       if ((local_8 <= (uint)((int)DAT_098b9e44 >> 0x1f)) &&
-         ((local_8 < (uint)((int)DAT_098b9e44 >> 0x1f) || (local_c < DAT_098b9e44)))) {
+         ((local_8 < (uint)((int)DAT_098b9e44 >> 0x1f) || (map < DAT_098b9e44)))) {
         _allmul();
         pcVar2 = va("menu_%s_map_select_final");
         return pcVar2;
@@ -1000,24 +1004,24 @@ int __cdecl Live_FileShare_GetRating(void)
 
 // 0095EC80  Live_FileShare_LocalizedGameTypeAndMap  (live/live_fileshare.cpp:945)
 
-char * __cdecl Live_FileShare_LocalizedGameTypeAndMap(int param_1,int param_2)
+char * __cdecl Live_FileShare_LocalizedGameTypeAndMap(int gameTypeIndex,int mapIndex)
 
 {
   int iVar1;
   char *pcVar2;
-  char **ppcVar3;
-  char *local_c;
+  char **replaceStrings;
+  char *gameTypeAndMap;
   char *local_8;
   
-  if ((((-1 < param_1) && (iVar1 = Live_FileShare_GetGameTypeCount(), param_1 < iVar1)) &&
-      (-1 < param_2)) && (param_2 < DAT_098b9e44)) {
-    local_c = Live_FileShare_GetLocalizedGameTypeFromIndex(param_1,true);
+  if ((((-1 < gameTypeIndex) && (iVar1 = Live_FileShare_GetGameTypeCount(), gameTypeIndex < iVar1))
+      && (-1 < mapIndex)) && (mapIndex < DAT_098b9e44)) {
+    gameTypeAndMap = Live_FileShare_GetLocalizedGameTypeFromIndex(gameTypeIndex,true);
     pcVar2 = va("%s_CAPS");
     local_8 = UI_SafeTranslateString(pcVar2);
-    ppcVar3 = &local_c;
+    replaceStrings = &gameTypeAndMap;
     iVar1 = 2;
     pcVar2 = UI_SafeTranslateString("MENU_FILESHARE_GAMEONMAP");
-    pcVar2 = UI_ReplaceConversionStrings(pcVar2,iVar1,ppcVar3);
+    pcVar2 = UI_ReplaceConversionStrings(pcVar2,iVar1,replaceStrings);
     return pcVar2;
   }
   Com_PrintError(0x10,"File share game type or map name tag value out of bounds.\n");
@@ -1037,7 +1041,7 @@ void __cdecl Live_FileShare_InitRatingHistory(void)
 
 // 0095ED30  Live_FileShare_SaveRating  (live/live_fileshare.cpp:974)
 
-void __cdecl Live_FileShare_SaveRating(int param_1,ulong64 param_2,uchar param_3)
+void __cdecl Live_FileShare_SaveRating(int controllerIndex,ulong64 param_2,uchar param_3)
 
 {
   int iVar1;
@@ -1049,7 +1053,7 @@ void __cdecl Live_FileShare_SaveRating(int param_1,ulong64 param_2,uchar param_3
   *(undefined4 *)((int)s_fileShareRatingHistory.files + iVar1 + 0xc) = (undefined4)param_2;
   *(undefined1 *)((int)s_fileShareRatingHistory.files + s_fileShareRatingHistory.next * 0x18 + 0x10)
        = param_2._4_1_;
-  uVar2 = Live_GetXuid(param_1);
+  uVar2 = Live_GetXuid(controllerIndex);
   *(ulong64 *)((int)s_fileShareRatingHistory.files + s_fileShareRatingHistory.next * 0x18) = uVar2;
   s_fileShareRatingHistory.next = s_fileShareRatingHistory.next + 1;
   if (s_fileShareRatingHistory.next == 200) {
@@ -1061,67 +1065,66 @@ void __cdecl Live_FileShare_SaveRating(int param_1,ulong64 param_2,uchar param_3
 
 // 0095EDB0  Live_FileShare_IsRated  (live/live_fileshare.cpp:988)
 
-bool __cdecl Live_FileShare_IsRated(int param_1,ulong64 param_2,uchar *param_3)
+bool __cdecl Live_FileShare_IsRated(int controllerIndex,ulong64 param_2,uchar *param_3)
 
 {
   ulong64 uVar1;
   int in_stack_00000008;
-  int local_10;
-  int local_c;
+  int i;
+  int playerXuid;
   int local_8;
   
-  uVar1 = Live_GetXuid(param_1);
-  local_10 = 0;
+  uVar1 = Live_GetXuid(controllerIndex);
+  i = 0;
   do {
-    if (199 < local_10) {
+    if (199 < i) {
       return false;
     }
-    if ((in_stack_00000008 == *(int *)((int)s_fileShareRatingHistory.files + local_10 * 0x18 + 8))
-       && ((int)param_2 == *(int *)((int)s_fileShareRatingHistory.files + local_10 * 0x18 + 0xc))) {
-      local_c = (int)uVar1;
-      if ((*(int *)((int)s_fileShareRatingHistory.files + local_10 * 0x18) == local_c) &&
+    if ((in_stack_00000008 == *(int *)((int)s_fileShareRatingHistory.files + i * 0x18 + 8)) &&
+       ((int)param_2 == *(int *)((int)s_fileShareRatingHistory.files + i * 0x18 + 0xc))) {
+      playerXuid = (int)uVar1;
+      if ((*(int *)((int)s_fileShareRatingHistory.files + i * 0x18) == playerXuid) &&
          (local_8 = (int)(uVar1 >> 0x20),
-         *(int *)((int)s_fileShareRatingHistory.files + local_10 * 0x18 + 4) == local_8)) {
-        *param_2._4_4_ =
-             *(undefined1 *)((int)s_fileShareRatingHistory.files + local_10 * 0x18 + 0x10);
+         *(int *)((int)s_fileShareRatingHistory.files + i * 0x18 + 4) == local_8)) {
+        *param_2._4_4_ = *(undefined1 *)((int)s_fileShareRatingHistory.files + i * 0x18 + 0x10);
         return true;
       }
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
 
 // 0095EE50  Live_FileShare_Theater_SetFile  (live/live_fileshare.cpp:1026)
 
-bool __cdecl Live_FileShare_Theater_SetFile(ulong64 param_1,bool param_2)
+bool __cdecl Live_FileShare_Theater_SetFile(ulong64 fileID,bool isUserFile)
 
 {
   bool bVar1;
   int iVar2;
   bdFileMetaData *pbVar3;
-  bdFileMetaData *local_8;
+  bdFileMetaData *result;
   
-  local_8 = (bdFileMetaData *)0x0;
+  result = (bdFileMetaData *)0x0;
   s_theaterFileMetaData.m_fileID._0_4_ = 0;
   s_theaterFileMetaData.m_fileID._4_4_ = 0;
-  if ((param_2) &&
-     (local_8 = Live_FileShare_FindFileInPrivateData(param_1,FILESHARE_BUFFER_PRIMARY),
-     local_8 == (bdFileMetaData *)0x0)) {
-    local_8 = Live_FileShare_FindFileInPrivateData(param_1,FILESHARE_BUFFER_SECONDARY);
+  if ((isUserFile) &&
+     (result = Live_FileShare_FindFileInPrivateData(fileID,FILESHARE_BUFFER_PRIMARY),
+     result == (bdFileMetaData *)0x0)) {
+    result = Live_FileShare_FindFileInPrivateData(fileID,FILESHARE_BUFFER_SECONDARY);
   }
-  if (local_8 == (bdFileMetaData *)0x0) {
-    local_8 = (bdFileMetaData *)CL_GetFirstActiveLocalClient();
+  if (result == (bdFileMetaData *)0x0) {
+    result = (bdFileMetaData *)CL_GetFirstActiveLocalClient();
   }
-  if (local_8 == (bdFileMetaData *)0x0) {
+  if (result == (bdFileMetaData *)0x0) {
     Com_PrintError(0x10,"File ID %llu not found in %s storage.\n");
     bVar1 = false;
   }
   else {
     pbVar3 = &s_theaterFileMetaData;
     for (iVar2 = 0x20e; iVar2 != 0; iVar2 = iVar2 + -1) {
-      pbVar3->_padding_ = local_8->_padding_;
-      local_8 = (bdFileMetaData *)&local_8->field_0x4;
+      pbVar3->_padding_ = result->_padding_;
+      result = (bdFileMetaData *)&result->field_0x4;
       pbVar3 = (bdFileMetaData *)&pbVar3->field_0x4;
     }
     bVar1 = true;
@@ -1132,14 +1135,14 @@ bool __cdecl Live_FileShare_Theater_SetFile(ulong64 param_1,bool param_2)
 
 // 0095EF20  Live_FileShare_Theater_GetSize  (live/live_fileshare.cpp:1083)
 
-bool __cdecl Live_FileShare_Theater_GetSize(int *param_1)
+bool __cdecl Live_FileShare_Theater_GetSize(int *size)
 
 {
   bool bVar1;
   
   bVar1 = (int)s_theaterFileMetaData.m_fileID != 0 || s_theaterFileMetaData.m_fileID._4_4_ != 0;
   if (bVar1) {
-    *param_1 = s_theaterFileMetaData.m_fileSize;
+    *size = s_theaterFileMetaData.m_fileSize;
   }
   return bVar1;
 }
@@ -1147,14 +1150,14 @@ bool __cdecl Live_FileShare_Theater_GetSize(int *param_1)
 
 // 0095EF50  Live_FileShare_Theater_GetType  (live/live_fileshare.cpp:1094)
 
-bool __cdecl Live_FileShare_Theater_GetType(int *param_1)
+bool __cdecl Live_FileShare_Theater_GetType(int *type)
 
 {
   bool bVar1;
   
   bVar1 = (int)s_theaterFileMetaData.m_fileID != 0 || s_theaterFileMetaData.m_fileID._4_4_ != 0;
   if (bVar1) {
-    *param_1 = (uint)s_theaterFileMetaData.m_category;
+    *type = (uint)s_theaterFileMetaData.m_category;
   }
   return bVar1;
 }
@@ -1162,33 +1165,33 @@ bool __cdecl Live_FileShare_Theater_GetType(int *param_1)
 
 // 0095EF80  Live_FileShare_Theater_GetName  (live/live_fileshare.cpp:1104)
 
-bool __cdecl Live_FileShare_Theater_GetName(char **param_1)
+bool __cdecl Live_FileShare_Theater_GetName(char **name)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  ddlState_t local_1c;
-  uchar *local_c;
-  uint local_8;
+  ddlState_t state;
+  char *buffer;
+  int isModifiedName;
   
-  local_c = s_theaterFileMetaData.m_metaData;
-  local_8 = 0;
+  buffer = (char *)s_theaterFileMetaData.m_metaData;
+  isModifiedName = 0;
   if (((int)s_theaterFileMetaData.m_fileID == 0 && s_theaterFileMetaData.m_fileID._4_4_ == 0) ||
      (bVar1 = Live_FileShare_ValidateDDLBuffer((char *)s_theaterFileMetaData.m_metaData), !bVar1)) {
     return false;
   }
-  iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_1c,"isModifiedName");
+  iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"isModifiedName");
   if (iVar2 != 0) {
-    local_8 = DDL_GetInt(&local_1c,(char *)local_c);
-    if (local_8 == 0) {
-      Live_FileShare_Theater_GetMap(param_1);
+    isModifiedName = DDL_GetInt(&state,buffer);
+    if (isModifiedName == 0) {
+      Live_FileShare_Theater_GetMap(name);
       return true;
     }
-    iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_1c,"name");
+    iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"name");
     if (iVar2 != 0) {
-      pcVar3 = DDL_GetString(&local_1c,(char *)local_c);
-      *param_1 = pcVar3;
+      pcVar3 = DDL_GetString(&state,buffer);
+      *name = pcVar3;
       return true;
     }
   }
@@ -1198,22 +1201,22 @@ bool __cdecl Live_FileShare_Theater_GetName(char **param_1)
 
 // 0095F040  Live_FileShare_Theater_GetLength  (live/live_fileshare.cpp:1137)
 
-bool __cdecl Live_FileShare_Theater_GetLength(int *param_1)
+bool __cdecl Live_FileShare_Theater_GetLength(int *length)
 
 {
   bool bVar1;
   int iVar2;
   uint uVar3;
-  ddlState_t local_18;
-  uchar *local_8;
+  ddlState_t state;
+  char *buffer;
   
-  local_8 = s_theaterFileMetaData.m_metaData;
+  buffer = (char *)s_theaterFileMetaData.m_metaData;
   if (((int)s_theaterFileMetaData.m_fileID != 0 || s_theaterFileMetaData.m_fileID._4_4_ != 0) &&
      (bVar1 = Live_FileShare_ValidateDDLBuffer((char *)s_theaterFileMetaData.m_metaData), bVar1)) {
-    iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_18,"length");
+    iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"length");
     if (iVar2 != 0) {
-      uVar3 = DDL_GetInt(&local_18,(char *)local_8);
-      *param_1 = uVar3;
+      uVar3 = DDL_GetInt(&state,buffer);
+      *length = uVar3;
       return true;
     }
     return false;
@@ -1224,22 +1227,22 @@ bool __cdecl Live_FileShare_Theater_GetLength(int *param_1)
 
 // 0095F0B0  Live_FileShare_Theater_GetDescription  (live/live_fileshare.cpp:1173)
 
-bool __cdecl Live_FileShare_Theater_GetDescription(char **param_1)
+bool __cdecl Live_FileShare_Theater_GetDescription(char **description)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  ddlState_t local_18;
-  uchar *local_8;
+  ddlState_t state;
+  char *buffer;
   
-  local_8 = s_theaterFileMetaData.m_metaData;
+  buffer = (char *)s_theaterFileMetaData.m_metaData;
   if (((int)s_theaterFileMetaData.m_fileID != 0 || s_theaterFileMetaData.m_fileID._4_4_ != 0) &&
      (bVar1 = Live_FileShare_ValidateDDLBuffer((char *)s_theaterFileMetaData.m_metaData), bVar1)) {
-    iVar2 = DDL_MoveToName(&g_fileShareRootState,&local_18,"description");
+    iVar2 = DDL_MoveToName(&g_fileShareRootState,&state,"description");
     if (iVar2 != 0) {
-      pcVar3 = DDL_GetString(&local_18,(char *)local_8);
-      *param_1 = pcVar3;
+      pcVar3 = DDL_GetString(&state,buffer);
+      *description = pcVar3;
       return true;
     }
     return false;
@@ -1250,19 +1253,19 @@ bool __cdecl Live_FileShare_Theater_GetDescription(char **param_1)
 
 // 0095F120  Live_FileShare_Theater_GetMap  (live/live_fileshare.cpp:1191)
 
-bool __cdecl Live_FileShare_Theater_GetMap(char **param_1)
+bool __cdecl Live_FileShare_Theater_GetMap(char **mapName)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_c [2];
+  int mapTag [2];
   
-  local_c[0] = 0;
-  local_c[1] = 0;
+  mapTag[0] = 0;
+  mapTag[1] = 0;
   if (((s_theaterFileMetaData.m_fileID._4_4_ != 0) || ((int)s_theaterFileMetaData.m_fileID != 0)) &&
-     (bVar1 = Live_FileShare_GetTag(&s_theaterFileMetaData,0,2,(ulong64 *)local_c), bVar1)) {
-    pcVar2 = Live_FileShare_GetLocalizedMapNameFromIndex(local_c[0]);
-    *param_1 = pcVar2;
+     (bVar1 = Live_FileShare_GetTag(&s_theaterFileMetaData,0,2,(ulong64 *)mapTag), bVar1)) {
+    pcVar2 = Live_FileShare_GetLocalizedMapNameFromIndex(mapTag[0]);
+    *mapName = pcVar2;
     return true;
   }
   return false;
@@ -1271,19 +1274,19 @@ bool __cdecl Live_FileShare_Theater_GetMap(char **param_1)
 
 // 0095F180  Live_FileShare_Theater_GetGameType  (live/live_fileshare.cpp:1203)
 
-bool __cdecl Live_FileShare_Theater_GetGameType(char **param_1)
+bool __cdecl Live_FileShare_Theater_GetGameType(char **gameTypeName)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_c [2];
+  int gameTypeTag [2];
   
-  local_c[0] = 0;
-  local_c[1] = 0;
+  gameTypeTag[0] = 0;
+  gameTypeTag[1] = 0;
   if (((s_theaterFileMetaData.m_fileID._4_4_ != 0) || ((int)s_theaterFileMetaData.m_fileID != 0)) &&
-     (bVar1 = Live_FileShare_GetTag(&s_theaterFileMetaData,0,1,(ulong64 *)local_c), bVar1)) {
-    pcVar2 = Live_FileShare_GetLocalizedGameTypeFromIndex(local_c[0],true);
-    *param_1 = pcVar2;
+     (bVar1 = Live_FileShare_GetTag(&s_theaterFileMetaData,0,1,(ulong64 *)gameTypeTag), bVar1)) {
+    pcVar2 = Live_FileShare_GetLocalizedGameTypeFromIndex(gameTypeTag[0],true);
+    *gameTypeName = pcVar2;
     return true;
   }
   return false;
@@ -1292,12 +1295,12 @@ bool __cdecl Live_FileShare_Theater_GetGameType(char **param_1)
 
 // 0095F1F0  Live_FileShare_GetSearchResultsCount  (live/live_fileshare.cpp:1238)
 
-int __cdecl Live_FileShare_GetSearchResultsCount(int param_1)
+int __cdecl Live_FileShare_GetSearchResultsCount(int controllerIndex)
 
 {
   int iVar1;
   
-  iVar1 = Live_FileShareSearch_GetTotalFiles(param_1);
+  iVar1 = Live_FileShareSearch_GetTotalFiles(controllerIndex);
   return iVar1;
 }
 
@@ -1307,48 +1310,49 @@ int __cdecl Live_FileShare_GetSearchResultsCount(int param_1)
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 char * __cdecl
-Live_FileShare_SearchResultsItemText(int param_1,int param_2,int param_3,int param_4,bool *param_5)
+Live_FileShare_SearchResultsItemText
+          (int controllerIndex,int startIndex,int selectedIndex,int itemIndex,bool *useOwnerDraw)
 
 {
   bool bVar1;
   char *pcVar2;
-  float local_84c;
-  char *local_848;
-  bdFileMetaData local_844;
+  float floatRes;
+  char *stringRes;
+  bdFileMetaData descriptor;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  *param_5 = false;
-  bVar1 = Live_FileShareSearch_LoadDescriptor(param_1,param_2,param_3,param_4);
+  *useOwnerDraw = false;
+  bVar1 = Live_FileShareSearch_LoadDescriptor(controllerIndex,startIndex,selectedIndex,itemIndex);
   if (bVar1) {
-    bdFileMetaData::bdFileMetaData(&local_844);
-    bVar1 = Live_FileShareSearch_GetDescriptor(param_1,param_4,&local_844);
+    bdFileMetaData::bdFileMetaData(&descriptor);
+    bVar1 = Live_FileShareSearch_GetDescriptor(controllerIndex,itemIndex,&descriptor);
     if (bVar1) {
       if ((fshDebugFileList != (dvar_s *)0x0) && ((fshDebugFileList->current).enabled != false)) {
         pcVar2 = va("%lld");
-        bdFileMetaData::~bdFileMetaData(&local_844);
+        bdFileMetaData::~bdFileMetaData(&descriptor);
         return pcVar2;
       }
       bVar1 = Live_FileShare_GetName
-                        (&local_844,1,0,FILESHARE_INFOLOCATION_SEARCHRESULTS,&local_848,&local_84c);
+                        (&descriptor,1,0,FILESHARE_INFOLOCATION_SEARCHRESULTS,&stringRes,&floatRes);
       if (bVar1) {
-        bdFileMetaData::~bdFileMetaData(&local_844);
-        return local_848;
+        bdFileMetaData::~bdFileMetaData(&descriptor);
+        return stringRes;
       }
-      Live_FileShareSearch_MarkItemCorrupt(param_1,param_4);
-      bdFileMetaData::~bdFileMetaData(&local_844);
+      Live_FileShareSearch_MarkItemCorrupt(controllerIndex,itemIndex);
+      bdFileMetaData::~bdFileMetaData(&descriptor);
       return "";
     }
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    bdFileMetaData::~bdFileMetaData(&descriptor);
   }
-  *param_5 = true;
+  *useOwnerDraw = true;
   return "";
 }
 
 
 // 0095F370  Live_FileShare_GetMyPrivateSlotsCount  (live/live_fileshare.cpp:1283)
 
-int __cdecl Live_FileShare_GetMyPrivateSlotsCount(int param_1)
+int __cdecl Live_FileShare_GetMyPrivateSlotsCount(int controllerIndex)
 
 {
   bool bVar1;
@@ -1367,7 +1371,7 @@ int __cdecl Live_FileShare_GetMyPrivateSlotsCount(int param_1)
 
 // 0095F3A0  Live_FileShare_GetOtherPrivateSlotsCount  (live/live_fileshare.cpp:1293)
 
-int __cdecl Live_FileShare_GetOtherPrivateSlotsCount(int param_1)
+int __cdecl Live_FileShare_GetOtherPrivateSlotsCount(int controllerIndex)
 
 {
   return (fsMaxPrivateSlotRowsOther->current).integer;
@@ -1377,7 +1381,8 @@ int __cdecl Live_FileShare_GetOtherPrivateSlotsCount(int param_1)
 // 0095F3B0  Live_FileShare_PrivateSlotsText  (live/live_fileshare.cpp:1298)
 
 char * __cdecl
-Live_FileShare_PrivateSlotsText(int param_1,int param_2,int param_3,int param_4,Material **param_5)
+Live_FileShare_PrivateSlotsText
+          (int controllerIndex,int feederID,int itemIndex,int column,Material **handle)
 
 {
   code *pcVar1;
@@ -1385,18 +1390,19 @@ Live_FileShare_PrivateSlotsText(int param_1,int param_2,int param_3,int param_4,
   uint uVar3;
   char *pcVar4;
   Material *pMVar5;
-  int iVar6;
-  int local_18;
-  int local_14;
-  int local_10;
-  fileSharePrivateData *local_c;
+  int imageTrack;
+  int i_3;
+  int i_2;
+  int i;
+  fileSharePrivateData *fileShareData;
+  int currSlot;
   
-  uVar3 = Live_FileShare_FeederToSlot(param_3,param_4 % 3);
-  if ((param_2 == 0x50) || (param_2 == 0x56)) {
-    local_c = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
+  uVar3 = Live_FileShare_FeederToSlot(itemIndex,column % 3);
+  if ((feederID == 0x50) || (feederID == 0x56)) {
+    fileShareData = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
   }
-  else if (param_2 == 0x4f) {
-    local_c = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
+  else if (feederID == 0x4f) {
+    fileShareData = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
   }
   else {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x521,0,
@@ -1407,65 +1413,65 @@ Live_FileShare_PrivateSlotsText(int param_1,int param_2,int param_3,int param_4,
       return pcVar4;
     }
   }
-  if ((local_c == (fileSharePrivateData *)0x0) &&
+  if ((fileShareData == (fileSharePrivateData *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x524,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar4 = (char *)(*pcVar1)();
     return pcVar4;
   }
-  if (local_c == (fileSharePrivateData *)0x0) {
+  if (fileShareData == (fileSharePrivateData *)0x0) {
     return "";
   }
-  switch(param_4) {
+  switch(column) {
   case 0:
   case 1:
   case 2:
     pMVar5 = Material_RegisterHandle("white",7);
-    *param_5 = pMVar5;
+    *handle = pMVar5;
     return "";
   case 3:
   case 4:
   case 5:
-    for (local_10 = 0; local_10 < local_c->descriptorCount; local_10 = local_10 + 1) {
-      if (local_c->descriptors[local_10].m_fileSlot == uVar3) {
-        if (local_c->descriptors[local_10].m_category == 4) {
+    for (i = 0; i < fileShareData->descriptorCount; i = i + 1) {
+      if (fileShareData->descriptors[i].m_fileSlot == uVar3) {
+        if (fileShareData->descriptors[i].m_category == 4) {
           pMVar5 = Material_RegisterHandle("menu_mp_fileshare_custom",7);
-          *param_5 = pMVar5;
+          *handle = pMVar5;
         }
         else {
-          iVar6 = 7;
-          pcVar4 = Live_FileShare_GetSelectedImage(local_c->descriptors,local_10);
-          pMVar5 = Material_RegisterHandle(pcVar4,iVar6);
-          *param_5 = pMVar5;
+          imageTrack = 7;
+          pcVar4 = Live_FileShare_GetSelectedImage(fileShareData->descriptors,i);
+          pMVar5 = Material_RegisterHandle(pcVar4,imageTrack);
+          *handle = pMVar5;
         }
         return "";
       }
     }
     pMVar5 = Material_RegisterHandle("white",7);
-    *param_5 = pMVar5;
+    *handle = pMVar5;
     break;
   case 6:
   case 7:
   case 8:
-    for (local_18 = 0; local_18 < local_c->descriptorCount; local_18 = local_18 + 1) {
-      if (local_c->descriptors[local_18].m_fileSlot == uVar3) {
-        switch(local_c->descriptors[local_18].m_category) {
+    for (i_3 = 0; i_3 < fileShareData->descriptorCount; i_3 = i_3 + 1) {
+      if (fileShareData->descriptors[i_3].m_fileSlot == uVar3) {
+        switch(fileShareData->descriptors[i_3].m_category) {
         case 1:
           pMVar5 = Material_RegisterHandle("menu_mp_lobby_icon_film",7);
-          *param_5 = pMVar5;
+          *handle = pMVar5;
           return "";
         case 2:
           pMVar5 = Material_RegisterHandle("menu_mp_lobby_icon_clip",7);
-          *param_5 = pMVar5;
+          *handle = pMVar5;
           return "";
         case 3:
           pMVar5 = Material_RegisterHandle("menu_mp_lobby_icon_screenshot",7);
-          *param_5 = pMVar5;
+          *handle = pMVar5;
           return "";
         case 4:
           pMVar5 = Material_RegisterHandle("menu_mp_lobby_icon_customgamemode",7);
-          *param_5 = pMVar5;
+          *handle = pMVar5;
           return "";
         }
       }
@@ -1474,14 +1480,14 @@ Live_FileShare_PrivateSlotsText(int param_1,int param_2,int param_3,int param_4,
   case 9:
   case 10:
   case 0xb:
-    local_14 = 0;
+    i_2 = 0;
     while( true ) {
-      if (local_c->descriptorCount <= local_14) {
+      if (fileShareData->descriptorCount <= i_2) {
         pcVar4 = va("%d");
         return pcVar4;
       }
-      if (local_c->descriptors[local_14].m_fileSlot == uVar3) break;
-      local_14 = local_14 + 1;
+      if (fileShareData->descriptors[i_2].m_fileSlot == uVar3) break;
+      i_2 = i_2 + 1;
     }
     return "";
   }
@@ -1492,61 +1498,62 @@ Live_FileShare_PrivateSlotsText(int param_1,int param_2,int param_3,int param_4,
 // 0095F6C0  Live_FileShare_PrivateSlotsIngameText  (live/live_fileshare.cpp:1401)
 
 char * __cdecl
-Live_FileShare_PrivateSlotsIngameText(int param_1,int param_2,int param_3,Material **param_4)
+Live_FileShare_PrivateSlotsIngameText
+          (int controllerIndex,int itemIndex,int column,Material **handle)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   Material *pMVar4;
-  int local_1c;
-  float local_18;
-  int local_14;
-  fileSharePrivateData *local_10;
-  char *local_c;
-  uint local_8;
+  int i;
+  float result;
+  int descriptorIndex;
+  fileSharePrivateData *fileShareData;
+  char *stringResult;
+  int curSlot;
   
-  local_14 = -1;
-  local_8 = param_2 + 1;
-  local_10 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-  if ((local_10 == (fileSharePrivateData *)0x0) &&
+  descriptorIndex = -1;
+  curSlot = itemIndex + 1;
+  fileShareData = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
+  if ((fileShareData == (fileSharePrivateData *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x583,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pcVar3 = (char *)(*pcVar1)();
     return pcVar3;
   }
-  if (local_10 == (fileSharePrivateData *)0x0) {
+  if (fileShareData == (fileSharePrivateData *)0x0) {
     pcVar3 = "";
   }
   else {
-    for (local_1c = 0; local_1c < local_10->descriptorCount; local_1c = local_1c + 1) {
-      if (local_10->descriptors[local_1c].m_fileSlot == local_8) {
-        local_14 = local_1c;
+    for (i = 0; i < fileShareData->descriptorCount; i = i + 1) {
+      if ((uint)fileShareData->descriptors[i].m_fileSlot == curSlot) {
+        descriptorIndex = i;
         break;
       }
     }
-    if (param_3 == 0) {
+    if (column == 0) {
       pcVar3 = va("%d");
     }
     else {
-      if (param_3 == 1) {
-        if ((-1 < local_14) &&
+      if (column == 1) {
+        if ((-1 < descriptorIndex) &&
            (bVar2 = Live_FileShare_GetItemInfo
-                              (param_1,FILESHARE_KEY_TYPEICONNAME,param_2,
-                               FILESHARE_INFOLOCATION_MYFILESHARE_INGAME,&local_c,&local_18), bVar2)
-           ) {
-          pMVar4 = Material_RegisterHandle(local_c,7);
-          *param_4 = pMVar4;
+                              (controllerIndex,FILESHARE_KEY_TYPEICONNAME,itemIndex,
+                               FILESHARE_INFOLOCATION_MYFILESHARE_INGAME,&stringResult,&result),
+           bVar2)) {
+          pMVar4 = Material_RegisterHandle(stringResult,7);
+          *handle = pMVar4;
           return "";
         }
       }
-      else if (((param_3 == 2) && (-1 < local_14)) &&
+      else if (((column == 2) && (-1 < descriptorIndex)) &&
               (bVar2 = Live_FileShare_GetName
-                                 (local_10->descriptors,local_10->descriptorCount,local_14,
-                                  FILESHARE_INFOLOCATION_MYFILESHARE_INGAME,&local_c,&local_18),
-              bVar2)) {
-        return local_c;
+                                 (fileShareData->descriptors,fileShareData->descriptorCount,
+                                  descriptorIndex,FILESHARE_INFOLOCATION_MYFILESHARE_INGAME,
+                                  &stringResult,&result), bVar2)) {
+        return stringResult;
       }
       pcVar3 = "";
     }
@@ -1557,7 +1564,7 @@ Live_FileShare_PrivateSlotsIngameText(int param_1,int param_2,int param_3,Materi
 
 // 0095F920  Live_FileShare_ColorEmptySlot  (live/live_fileshare.cpp:1461)
 
-void __cdecl Live_FileShare_ColorEmptySlot(int param_1,int param_2,float *param_3,bool param_4)
+void __cdecl Live_FileShare_ColorEmptySlot(int column,int slotNum,float *color,bool isHighlighted)
 
 {
   dvar_s *pdVar1;
@@ -1571,44 +1578,44 @@ void __cdecl Live_FileShare_ColorEmptySlot(int param_1,int param_2,float *param_
   pdVar3 = fsSlotEmptyShowColorBg;
   pdVar2 = fsSlotNumMainColor;
   pdVar1 = fsSlotHighlightedColorNoSel;
-  switch(param_1) {
+  switch(column) {
   case 0:
   case 1:
   case 2:
-    if (param_4) {
-      *param_3 = (float)(fsSlotHighlightedColorNoSel->current).integer;
-      param_3[1] = (pdVar1->current).vector[1];
-      param_3[2] = (pdVar1->current).vector[2];
-      param_3[3] = (pdVar1->current).vector[3];
+    if (isHighlighted) {
+      *color = (float)(fsSlotHighlightedColorNoSel->current).integer;
+      color[1] = (pdVar1->current).vector[1];
+      color[2] = (pdVar1->current).vector[2];
+      color[3] = (pdVar1->current).vector[3];
     }
     else {
-      *param_3 = (float)(fsSlotEmptyShowColorBg->current).integer;
-      param_3[1] = (pdVar3->current).vector[1];
-      param_3[2] = (pdVar3->current).vector[2];
-      param_3[3] = (pdVar3->current).vector[3];
+      *color = (float)(fsSlotEmptyShowColorBg->current).integer;
+      color[1] = (pdVar3->current).vector[1];
+      color[2] = (pdVar3->current).vector[2];
+      color[3] = (pdVar3->current).vector[3];
     }
     break;
   case 3:
   case 4:
   case 5:
-    *param_3 = (float)(fsSlotEmptyMainColor->current).integer;
-    param_3[1] = (pdVar4->current).vector[1];
-    param_3[2] = (pdVar4->current).vector[2];
-    param_3[3] = (pdVar4->current).vector[3];
+    *color = (float)(fsSlotEmptyMainColor->current).integer;
+    color[1] = (pdVar4->current).vector[1];
+    color[2] = (pdVar4->current).vector[2];
+    color[3] = (pdVar4->current).vector[3];
     break;
   default:
-    *param_3 = (float)(fsSlotEmptyHiddenColor->current).integer;
-    param_3[1] = (pdVar5->current).vector[1];
-    param_3[2] = (pdVar5->current).vector[2];
-    param_3[3] = (pdVar5->current).vector[3];
+    *color = (float)(fsSlotEmptyHiddenColor->current).integer;
+    color[1] = (pdVar5->current).vector[1];
+    color[2] = (pdVar5->current).vector[2];
+    color[3] = (pdVar5->current).vector[3];
     break;
   case 9:
   case 10:
   case 0xb:
-    *param_3 = (float)(fsSlotNumMainColor->current).integer;
-    param_3[1] = (pdVar2->current).vector[1];
-    param_3[2] = (pdVar2->current).vector[2];
-    param_3[3] = (pdVar2->current).vector[3];
+    *color = (float)(fsSlotNumMainColor->current).integer;
+    color[1] = (pdVar2->current).vector[1];
+    color[2] = (pdVar2->current).vector[2];
+    color[3] = (pdVar2->current).vector[3];
   }
   return;
 }
@@ -1616,7 +1623,7 @@ void __cdecl Live_FileShare_ColorEmptySlot(int param_1,int param_2,float *param_
 
 // 0095FAA0  Live_FileShare_ColorOccupiedSlot  (live/live_fileshare.cpp:1499)
 
-void __cdecl Live_FileShare_ColorOccupiedSlot(int param_1,float *param_2,bool param_3)
+void __cdecl Live_FileShare_ColorOccupiedSlot(int column,float *color,bool isHighlighted)
 
 {
   dvar_s *pdVar1;
@@ -1626,23 +1633,23 @@ void __cdecl Live_FileShare_ColorOccupiedSlot(int param_1,float *param_2,bool pa
   pdVar3 = fsSlotMainColor;
   pdVar2 = fsSlotHighlightedColor;
   pdVar1 = fsSlotEmptyShowColorBg;
-  if ((param_1 < 0) || (2 < param_1)) {
-    *param_2 = (float)(fsSlotMainColor->current).integer;
-    param_2[1] = (pdVar3->current).vector[1];
-    param_2[2] = (pdVar3->current).vector[2];
-    param_2[3] = (pdVar3->current).vector[3];
+  if ((column < 0) || (2 < column)) {
+    *color = (float)(fsSlotMainColor->current).integer;
+    color[1] = (pdVar3->current).vector[1];
+    color[2] = (pdVar3->current).vector[2];
+    color[3] = (pdVar3->current).vector[3];
   }
-  else if (param_3) {
-    *param_2 = (float)(fsSlotHighlightedColor->current).integer;
-    param_2[1] = (pdVar2->current).vector[1];
-    param_2[2] = (pdVar2->current).vector[2];
-    param_2[3] = (pdVar2->current).vector[3];
+  else if (isHighlighted) {
+    *color = (float)(fsSlotHighlightedColor->current).integer;
+    color[1] = (pdVar2->current).vector[1];
+    color[2] = (pdVar2->current).vector[2];
+    color[3] = (pdVar2->current).vector[3];
   }
   else {
-    *param_2 = (float)(fsSlotEmptyShowColorBg->current).integer;
-    param_2[1] = (pdVar1->current).vector[1];
-    param_2[2] = (pdVar1->current).vector[2];
-    param_2[3] = (pdVar1->current).vector[3];
+    *color = (float)(fsSlotEmptyShowColorBg->current).integer;
+    color[1] = (pdVar1->current).vector[1];
+    color[2] = (pdVar1->current).vector[2];
+    color[3] = (pdVar1->current).vector[3];
   }
   return;
 }
@@ -1652,43 +1659,46 @@ void __cdecl Live_FileShare_ColorOccupiedSlot(int param_1,float *param_2,bool pa
 
 void __cdecl
 Live_FileShare_FeederColor
-          (listBoxDef_s *param_1,itemDef_s *param_2,int param_3,int param_4,int param_5,
-          fileShareBufferLocation param_6,float *param_7)
+          (listBoxDef_s *listPtr,itemDef_s *item,int contextIndex,int index,int column,
+          fileShareBufferLocation bufferLocation,float *color)
 
 {
   bool bVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  fileShareBufferLocation fVar6;
-  bool local_5;
+  int slotNum_00;
+  int slot;
+  int col;
+  fileShareBufferLocation location;
+  bool isSlotOccupied;
+  int slotNum;
+  int fileShareColumn;
+  bool isSlotHighlighted;
   
-  if (-1 < param_5) {
-    iVar5 = param_5 % 3;
-    iVar3 = Live_FileShare_FeederToSlot(param_4,iVar5);
-    fVar6 = param_6;
-    iVar4 = Live_FileShare_FeederToSlot(param_4,iVar5);
-    bVar1 = Live_FileShare_IsSlotOccupied(iVar4,fVar6);
-    local_5 = false;
-    bVar2 = Window_HasFocus(param_3,&param_2->window);
+  if (-1 < column) {
+    col = column % 3;
+    slotNum_00 = Live_FileShare_FeederToSlot(index,col);
+    location = bufferLocation;
+    slot = Live_FileShare_FeederToSlot(index,col);
+    bVar1 = Live_FileShare_IsSlotOccupied(slot,location);
+    isSlotHighlighted = false;
+    bVar2 = Window_HasFocus(contextIndex,&item->window);
     if (bVar2) {
-      if (param_6 == FILESHARE_BUFFER_PRIMARY) {
-        if ((param_1->cursorPos[param_3] == param_4) &&
-           (iVar5 == (fsPrivateSlotCol->current).integer)) {
-          local_5 = true;
+      if (bufferLocation == FILESHARE_BUFFER_PRIMARY) {
+        if ((listPtr->cursorPos[contextIndex] == index) &&
+           (col == (fsPrivateSlotCol->current).integer)) {
+          isSlotHighlighted = true;
         }
       }
-      else if ((param_1->cursorPos[param_3] == param_4) &&
-              (iVar5 == (fsOtherUserPrivateSlotCol->current).integer)) {
-        local_5 = true;
+      else if ((listPtr->cursorPos[contextIndex] == index) &&
+              (col == (fsOtherUserPrivateSlotCol->current).integer)) {
+        isSlotHighlighted = true;
       }
     }
     if (bVar1) {
-      Live_FileShare_ColorOccupiedSlot(param_5,param_7,local_5);
+      Live_FileShare_ColorOccupiedSlot(column,color,isSlotHighlighted);
     }
     else {
-      Live_FileShare_ColorEmptySlot(param_5,iVar3,param_7,local_5);
+      Live_FileShare_ColorEmptySlot(column,slotNum_00,color,isSlotHighlighted);
     }
   }
   return;
@@ -1699,13 +1709,14 @@ Live_FileShare_FeederColor
 
 bool __cdecl
 Live_FileShare_AreInfoParamsValid
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location)
 
 {
   bool bVar1;
   
-  if ((((param_1 == (bdFileMetaData *)0x0) || (param_2 < 1)) ||
-      (param_4 == FILESHARE_INFOLOCATION_INVALID)) || ((param_3 < 0 || (param_2 <= param_3)))) {
+  if ((((descriptors == (bdFileMetaData *)0x0) || (descriptorCount < 1)) ||
+      (location == FILESHARE_INFOLOCATION_INVALID)) || ((index < 0 || (descriptorCount <= index))))
+  {
     bVar1 = false;
   }
   else {
@@ -1719,27 +1730,27 @@ Live_FileShare_AreInfoParamsValid
 
 bool __cdecl
 Live_FileShare_GetDate
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  qtime_s local_30;
-  int local_c;
-  char *local_8;
+  qtime_s qTime;
+  int createTime;
+  char *stringRes;
   
-  bVar1 = Live_FileShare_ReadFromMetaData(2,param_1 + param_3,&local_8,&local_c);
+  bVar1 = Live_FileShare_ReadFromMetaData(2,descriptors + index,&stringRes,&createTime);
   if (!bVar1) {
-    *param_5 = "";
+    *stringResult = "";
   }
   else {
     iVar2 = LiveStorage_GetUTCOffset();
-    local_c = iVar2 + local_c;
-    Com_GetQTime(local_c,&local_30,true);
+    createTime = iVar2 + createTime;
+    Com_GetQTime(createTime,&qTime,true);
     pcVar3 = va("%d/%d/%d  %.2d:%.2d");
-    *param_5 = pcVar3;
+    *stringResult = pcVar3;
   }
   return bVar1;
 }
@@ -1749,26 +1760,26 @@ Live_FileShare_GetDate
 
 bool __cdecl
 Live_FileShare_GetLength
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  int intRes;
+  int demoTimeMin;
+  int demoTimeSec;
+  char *stringRes;
   
-  bVar1 = Live_FileShare_ReadFromMetaData(3,param_1 + param_3,&local_8,&local_14);
+  bVar1 = Live_FileShare_ReadFromMetaData(3,descriptors + index,&stringRes,&intRes);
   if (!bVar1) {
-    *param_5 = "";
+    *stringResult = "";
   }
   else {
-    local_10 = local_14 / 60000;
-    local_c = (local_14 % 60000) / 1000;
+    demoTimeMin = intRes / 60000;
+    demoTimeSec = (intRes % 60000) / 1000;
     pcVar2 = va("%02i:%02i");
-    *param_5 = pcVar2;
+    *stringResult = pcVar2;
   }
   return bVar1;
 }
@@ -1778,24 +1789,25 @@ Live_FileShare_GetLength
 
 bool __cdecl
 Live_FileShare_GetSize
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   char *pcVar1;
   char *pcVar2;
+  float fileSize;
   
-  if ((float)param_1[param_3].m_fileSize < 1048576.0) {
+  if ((float)descriptors[index].m_fileSize < 1048576.0) {
     pcVar1 = va("%0.2f");
     pcVar2 = UI_SafeTranslateString("MENU_FILESHARE_FILESIZEKB");
     pcVar1 = UI_ReplaceConversionString(pcVar2,pcVar1);
-    *param_5 = pcVar1;
+    *stringResult = pcVar1;
   }
   else {
     pcVar1 = va("%0.2f");
     pcVar2 = UI_SafeTranslateString("MENU_FILESHARE_FILESIZEMB");
     pcVar1 = UI_ReplaceConversionString(pcVar2,pcVar1);
-    *param_5 = pcVar1;
+    *stringResult = pcVar1;
   }
   return true;
 }
@@ -1805,27 +1817,27 @@ Live_FileShare_GetSize
 
 bool __cdecl
 Live_FileShare_GetMap
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  uint local_c;
+  uint tagValue;
   uint local_8;
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,2,(ulong64 *)&local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,2,(ulong64 *)&tagValue);
   if (bVar1) {
     if ((local_8 <= (uint)((int)DAT_098b9e44 >> 0x1f)) &&
-       ((local_8 < (uint)((int)DAT_098b9e44 >> 0x1f) || (local_c < DAT_098b9e44)))) {
+       ((local_8 < (uint)((int)DAT_098b9e44 >> 0x1f) || (tagValue < DAT_098b9e44)))) {
       _allmul();
       pcVar2 = va("%s");
-      *param_5 = pcVar2;
+      *stringResult = pcVar2;
       return true;
     }
     Com_PrintError(0x10,"Fileshare: Value not in sharedUiInfo bounds.\n");
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -1834,27 +1846,27 @@ Live_FileShare_GetMap
 
 bool __cdecl
 Live_FileShare_GetMapName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  uint local_c;
+  uint tagValue;
   uint local_8;
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,2,(ulong64 *)&local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,2,(ulong64 *)&tagValue);
   if (bVar1) {
     if ((local_8 <= (uint)((int)DAT_098b9e44 >> 0x1f)) &&
-       ((local_8 < (uint)((int)DAT_098b9e44 >> 0x1f) || (local_c < DAT_098b9e44)))) {
+       ((local_8 < (uint)((int)DAT_098b9e44 >> 0x1f) || (tagValue < DAT_098b9e44)))) {
       _allmul();
       pcVar2 = va("@%s_CAPS");
-      *param_5 = pcVar2;
+      *stringResult = pcVar2;
       return true;
     }
     Com_PrintError(0x10,"Fileshare: Value not in sharedUiInfo bounds.\n");
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -1863,21 +1875,21 @@ Live_FileShare_GetMapName
 
 bool __cdecl
 Live_FileShare_GetGameType
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_c [2];
+  int tagValue [2];
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,1,(ulong64 *)local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,1,(ulong64 *)tagValue);
   if (!bVar1) {
-    *param_5 = "";
+    *stringResult = "";
   }
   else {
-    pcVar2 = Live_FileShare_GetGameTypeFromIndex(local_c[0]);
-    *param_5 = pcVar2;
+    pcVar2 = Live_FileShare_GetGameTypeFromIndex(tagValue[0]);
+    *stringResult = pcVar2;
   }
   return bVar1;
 }
@@ -1887,28 +1899,28 @@ Live_FileShare_GetGameType
 
 bool __cdecl
 Live_FileShare_GetGameTypeName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   uint uVar2;
   char *pcVar3;
-  uint local_c;
+  uint tagValue;
   uint local_8;
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,1,(ulong64 *)&local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,1,(ulong64 *)&tagValue);
   if (bVar1) {
     uVar2 = Live_FileShare_GetGameTypeCount();
     if ((local_8 <= (uint)((int)uVar2 >> 0x1f)) &&
-       ((local_8 < (uint)((int)uVar2 >> 0x1f) || (local_c < uVar2)))) {
-      pcVar3 = Live_FileShare_GetLocalizedGameTypeFromIndex(local_c,true);
-      *param_5 = pcVar3;
+       ((local_8 < (uint)((int)uVar2 >> 0x1f) || (tagValue < uVar2)))) {
+      pcVar3 = Live_FileShare_GetLocalizedGameTypeFromIndex(tagValue,true);
+      *stringResult = pcVar3;
       return true;
     }
     Com_PrintError(0x10,"File share game type tag value out of bounds.\n");
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -1917,28 +1929,28 @@ Live_FileShare_GetGameTypeName
 
 bool __cdecl
 Live_FileShare_GetGameTypeImage
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   uint uVar2;
   char *pcVar3;
-  uint local_c;
+  uint tagValue;
   uint local_8;
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,1,(ulong64 *)&local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,1,(ulong64 *)&tagValue);
   if (bVar1) {
     uVar2 = Live_FileShare_GetGameTypeCount();
     if ((local_8 <= (uint)((int)uVar2 >> 0x1f)) &&
-       ((local_8 < (uint)((int)uVar2 >> 0x1f) || (local_c < uVar2)))) {
-      pcVar3 = Live_FileShare_GetGameTypeImageFromIndex(local_c);
-      *param_5 = pcVar3;
+       ((local_8 < (uint)((int)uVar2 >> 0x1f) || (tagValue < uVar2)))) {
+      pcVar3 = Live_FileShare_GetGameTypeImageFromIndex(tagValue);
+      *stringResult = pcVar3;
       return true;
     }
     Com_PrintError(0x10,"File share game type tag value out of bounds.\n");
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -1947,22 +1959,22 @@ Live_FileShare_GetGameTypeImage
 
 bool __cdecl
 Live_FileShare_GetGameTypeAndMapName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_14 [2];
-  int local_c [2];
+  int mapName [2];
+  int gameType [2];
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,1,(ulong64 *)local_c);
-  if ((bVar1) && (bVar1 = Live_FileShare_GetTag(param_1,param_3,2,(ulong64 *)local_14), bVar1)) {
-    pcVar2 = Live_FileShare_LocalizedGameTypeAndMap(local_c[0],local_14[0]);
-    *param_5 = pcVar2;
+  bVar1 = Live_FileShare_GetTag(descriptors,index,1,(ulong64 *)gameType);
+  if ((bVar1) && (bVar1 = Live_FileShare_GetTag(descriptors,index,2,(ulong64 *)mapName), bVar1)) {
+    pcVar2 = Live_FileShare_LocalizedGameTypeAndMap(gameType[0],mapName[0]);
+    *stringResult = pcVar2;
     return true;
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -1971,24 +1983,24 @@ Live_FileShare_GetGameTypeAndMapName
 
 bool __cdecl
 Live_FileShare_HasSummary
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   char *pcVar1;
   
-  if (param_1[param_3].m_summaryFileSize == 0) {
-    *param_6 = 0.0;
-    if ((param_5 != (char **)0x0) && (*param_5 != (char *)0x0)) {
+  if (descriptors[index].m_summaryFileSize == 0) {
+    *floatResult = 0.0;
+    if ((stringResult != (char **)0x0) && (*stringResult != (char *)0x0)) {
       pcVar1 = va("%d");
-      *param_5 = pcVar1;
+      *stringResult = pcVar1;
     }
   }
   else {
-    *param_6 = 1.0;
-    if ((param_5 != (char **)0x0) && (*param_5 != (char *)0x0)) {
+    *floatResult = 1.0;
+    if ((stringResult != (char **)0x0) && (*stringResult != (char *)0x0)) {
       pcVar1 = va("%d");
-      *param_5 = pcVar1;
+      *stringResult = pcVar1;
     }
   }
   return true;
@@ -1999,11 +2011,11 @@ Live_FileShare_HasSummary
 
 bool __cdecl
 Live_FileShare_IsSummaryCached
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
-  *param_6 = 0.0;
+  *floatResult = 0.0;
   return true;
 }
 
@@ -2012,18 +2024,18 @@ Live_FileShare_IsSummaryCached
 
 bool __cdecl
 Live_FileShare_IsSummaryLoaded
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   
   bVar1 = Live_FileShareSearch_IsSummaryLoaded();
   if (bVar1) {
-    *param_6 = 1.0;
+    *floatResult = 1.0;
   }
   else {
-    *param_6 = 0.0;
+    *floatResult = 0.0;
   }
   return true;
 }
@@ -2033,31 +2045,31 @@ Live_FileShare_IsSummaryLoaded
 
 bool __cdecl
 Live_FileShare_GetFileType
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   
-  switch(param_1[param_3].m_category) {
+  switch(descriptors[index].m_category) {
   case 1:
-    *param_5 = "film";
+    *stringResult = "film";
     bVar1 = true;
     break;
   case 2:
-    *param_5 = "clip";
+    *stringResult = "clip";
     bVar1 = true;
     break;
   case 3:
-    *param_5 = "screenshot";
+    *stringResult = "screenshot";
     bVar1 = true;
     break;
   case 4:
-    *param_5 = "customgamemode";
+    *stringResult = "customgamemode";
     bVar1 = true;
     break;
   default:
-    *param_5 = "";
+    *stringResult = "";
     bVar1 = false;
   }
   return bVar1;
@@ -2068,33 +2080,34 @@ Live_FileShare_GetFileType
 
 bool __cdecl
 Live_FileShare_GetUserTag
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  int iVar3;
-  StringTable *local_10;
-  int local_c [2];
+  int valueColumn;
+  char *result;
+  StringTable *fileShareTable;
+  int userTag [2];
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,5,(ulong64 *)local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,5,(ulong64 *)userTag);
   if (bVar1) {
-    StringTable_GetAsset("mp/fileShareTags.csv",&local_10);
-    if ((0 < local_c[0]) && (local_c[0] <= local_10->rowCount)) {
-      iVar3 = 1;
+    StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
+    if ((0 < userTag[0]) && (userTag[0] <= fileShareTable->rowCount)) {
+      valueColumn = 1;
       pcVar2 = va("%llu");
-      pcVar2 = StringTable_Lookup(local_10,0,pcVar2,iVar3);
+      pcVar2 = StringTable_Lookup(fileShareTable,0,pcVar2,valueColumn);
       if ((pcVar2 != (char *)0x0) && (*pcVar2 != '\0')) {
         pcVar2 = UI_SafeTranslateString(pcVar2);
-        *param_5 = pcVar2;
+        *stringResult = pcVar2;
         return true;
       }
     }
     Com_PrintError(0x10,"User tag index out range or tag value invalid.\n");
   }
   pcVar2 = UI_SafeTranslateString("MPUI_FILESHARE_TAG_NONE");
-  *param_5 = pcVar2;
+  *stringResult = pcVar2;
   return true;
 }
 
@@ -2103,31 +2116,31 @@ Live_FileShare_GetUserTag
 
 bool __cdecl
 Live_FileShare_GetUserTagIndex
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  StringTable *local_10;
-  int local_c;
+  StringTable *fileShareTable;
+  int userTag;
   uint local_8;
   
-  bVar1 = Live_FileShare_GetTag(param_1,param_3,5,(ulong64 *)&local_c);
+  bVar1 = Live_FileShare_GetTag(descriptors,index,5,(ulong64 *)&userTag);
   if (bVar1) {
-    StringTable_GetAsset("mp/fileShareTags.csv",&local_10);
-    if ((0 < local_c) && (local_c <= local_10->rowCount)) {
-      *param_6 = (float)(-(float10)(longlong)(((ulonglong)local_8 & 0x80000000) << 0x20) +
-                        (float10)(CONCAT44(local_8,local_c) & 0x7fffffffffffffff));
+    StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
+    if ((0 < userTag) && (userTag <= fileShareTable->rowCount)) {
+      *floatResult = (float)(-(float10)(longlong)(((ulonglong)local_8 & 0x80000000) << 0x20) +
+                            (float10)(CONCAT44(local_8,userTag) & 0x7fffffffffffffff));
       pcVar2 = va("%llu");
-      *param_5 = pcVar2;
+      *stringResult = pcVar2;
       return true;
     }
     Com_PrintError(0x10,"User tag index out range or tag value invalid.\n");
   }
-  *param_6 = 0.0;
+  *floatResult = 0.0;
   pcVar2 = va("0");
-  *param_5 = pcVar2;
+  *stringResult = pcVar2;
   return true;
 }
 
@@ -2136,38 +2149,38 @@ Live_FileShare_GetUserTagIndex
 
 bool __cdecl
 Live_FileShare_GetFileID
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  ulong64 local_c;
+  ulong64 fileID;
   
-  if (param_4 == FILESHARE_INFOLOCATION_SEARCHRESULTS) {
+  if (location == FILESHARE_INFOLOCATION_SEARCHRESULTS) {
     pcVar2 = va("%llu");
-    *param_5 = pcVar2;
+    *stringResult = pcVar2;
     bVar1 = true;
   }
-  else if (param_4 == FILESHARE_INFOLOCATION_MYFILESHARE) {
+  else if (location == FILESHARE_INFOLOCATION_MYFILESHARE) {
     pcVar2 = va("%llu");
-    *param_5 = pcVar2;
+    *stringResult = pcVar2;
     bVar1 = true;
   }
   else {
-    if (param_4 == FILESHARE_INFOLOCATION_OTHERFILESHARE) {
+    if (location == FILESHARE_INFOLOCATION_OTHERFILESHARE) {
       if (((fsOtherUserSlotSelected != (dvar_s *)0x0) &&
           (0 < (fsOtherUserSlotSelected->current).integer)) &&
          (bVar1 = Live_FileShare_FileIDFromSlot
-                            (param_1,param_2,(fsOtherUserSlotSelected->current).integer,&local_c),
-         bVar1)) {
+                            (descriptors,descriptorCount,(fsOtherUserSlotSelected->current).integer,
+                             &fileID), bVar1)) {
         pcVar2 = va("%llu");
-        *param_5 = pcVar2;
+        *stringResult = pcVar2;
         return true;
       }
       Com_PrintError(0x10,"getFeederData could not get fileID for location %d, index %d.\n");
     }
-    *param_5 = "";
+    *stringResult = "";
     bVar1 = false;
   }
   return bVar1;
@@ -2177,21 +2190,21 @@ Live_FileShare_GetFileID
 // 009604E0  Live_FileShare_LookupRating  (live/live_fileshare.cpp:1896)
 
 bool __cdecl
-Live_FileShare_LookupRating(ulong64 param_1,bdVoteRankStatsInfo *param_2,int param_3,float *param_4)
+Live_FileShare_LookupRating
+          (ulong64 fileID,bdVoteRankStatsInfo *ratings,int numRatings,float *rating)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (numRatings <= i) {
       return false;
     }
-    if ((param_2[local_8]._padding_ == (int)param_1) &&
-       (param_2[local_8]._padding_ == param_1._4_4_)) break;
-    local_8 = local_8 + 1;
+    if ((ratings[i]._padding_ == (int)fileID) && (ratings[i]._padding_ == fileID._4_4_)) break;
+    i = i + 1;
   }
-  *param_4 = (float)param_2[local_8].m_avgVoteValue / 500.0;
+  *rating = (float)ratings[i].m_avgVoteValue / 500.0;
   return true;
 }
 
@@ -2199,21 +2212,20 @@ Live_FileShare_LookupRating(ulong64 param_1,bdVoteRankStatsInfo *param_2,int par
 // 00960570  Live_FileShare_LookupRank  (live/live_fileshare.cpp:1910)
 
 bool __cdecl
-Live_FileShare_LookupRank(ulong64 param_1,bdVoteRankStatsInfo *param_2,int param_3,int *param_4)
+Live_FileShare_LookupRank(ulong64 fileID,bdVoteRankStatsInfo *ratings,int numRatings,int *rank)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (numRatings <= i) {
       return false;
     }
-    if ((param_2[local_8]._padding_ == (int)param_1) &&
-       (param_2[local_8]._padding_ == param_1._4_4_)) break;
-    local_8 = local_8 + 1;
+    if ((ratings[i]._padding_ == (int)fileID) && (ratings[i]._padding_ == fileID._4_4_)) break;
+    i = i + 1;
   }
-  *param_4 = param_2[local_8]._padding_;
+  *rank = ratings[i]._padding_;
   return true;
 }
 
@@ -2221,21 +2233,20 @@ Live_FileShare_LookupRank(ulong64 param_1,bdVoteRankStatsInfo *param_2,int param
 // 009605F0  Live_FileShare_LookupTotalVotes  (live/live_fileshare.cpp:1924)
 
 float __cdecl
-Live_FileShare_LookupTotalVotes(ulong64 param_1,bdVoteRankStatsInfo *param_2,int param_3)
+Live_FileShare_LookupTotalVotes(ulong64 fileID,bdVoteRankStatsInfo *ratings,int numRatings)
 
 {
-  int local_8;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (param_3 <= local_8) {
+    if (numRatings <= i) {
       return 0.0;
     }
-    if ((param_2[local_8]._padding_ == (int)param_1) &&
-       (param_2[local_8]._padding_ == param_1._4_4_)) break;
-    local_8 = local_8 + 1;
+    if ((ratings[i]._padding_ == (int)fileID) && (ratings[i]._padding_ == fileID._4_4_)) break;
+    i = i + 1;
   }
-  return (float)param_2[local_8].m_totalVotes;
+  return (float)ratings[i].m_totalVotes;
 }
 
 
@@ -2243,24 +2254,24 @@ Live_FileShare_LookupTotalVotes(ulong64 param_1,bdVoteRankStatsInfo *param_2,int
 
 bool __cdecl
 Live_FileShare_GetRating
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
-  int local_c;
-  bdVoteRankStatsInfo *local_8;
+  int numRatings;
+  bdVoteRankStatsInfo *ratings;
   
-  if (param_4 == FILESHARE_INFOLOCATION_SEARCHRESULTS) {
-    Live_FileShareSearch_GetRatings(&local_8,&local_c);
+  if (location == FILESHARE_INFOLOCATION_SEARCHRESULTS) {
+    Live_FileShareSearch_GetRatings(&ratings,&numRatings);
     bVar1 = Live_FileShare_LookupRating
-                      (CONCAT44(*(undefined4 *)((int)&param_1[param_3].m_fileID + 4),
-                                (int)param_1[param_3].m_fileID),local_8,local_c,param_6);
+                      (CONCAT44(*(undefined4 *)((int)&descriptors[index].m_fileID + 4),
+                                (int)descriptors[index].m_fileID),ratings,numRatings,floatResult);
     if (bVar1) {
       return true;
     }
   }
-  *param_6 = 0.0;
+  *floatResult = 0.0;
   return false;
 }
 
@@ -2269,25 +2280,25 @@ Live_FileShare_GetRating
 
 bool __cdecl
 Live_FileShare_GetTotalVotes
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   float fVar1;
-  int local_c;
-  bdVoteRankStatsInfo *local_8;
+  int numRatings;
+  bdVoteRankStatsInfo *ratings;
   
-  if (param_4 != FILESHARE_INFOLOCATION_SEARCHRESULTS) {
-    *param_6 = 0.0;
+  if (location != FILESHARE_INFOLOCATION_SEARCHRESULTS) {
+    *floatResult = 0.0;
   }
   else {
-    Live_FileShareSearch_GetRatings(&local_8,&local_c);
+    Live_FileShareSearch_GetRatings(&ratings,&numRatings);
     fVar1 = Live_FileShare_LookupTotalVotes
-                      (CONCAT44(*(undefined4 *)((int)&param_1[param_3].m_fileID + 4),
-                                (int)param_1[param_3].m_fileID),local_8,local_c);
-    *param_6 = fVar1;
+                      (CONCAT44(*(undefined4 *)((int)&descriptors[index].m_fileID + 4),
+                                (int)descriptors[index].m_fileID),ratings,numRatings);
+    *floatResult = fVar1;
   }
-  return param_4 == FILESHARE_INFOLOCATION_SEARCHRESULTS;
+  return location == FILESHARE_INFOLOCATION_SEARCHRESULTS;
 }
 
 
@@ -2295,16 +2306,16 @@ Live_FileShare_GetTotalVotes
 
 bool __cdecl
 Live_FileShare_GetOwnerName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
-  int local_8;
+  int intRes;
   
-  bVar1 = Live_FileShare_ReadFromMetaData(0,param_1 + param_3,param_5,&local_8);
+  bVar1 = Live_FileShare_ReadFromMetaData(0,descriptors + index,stringResult,&intRes);
   if (!bVar1) {
-    *param_5 = "";
+    *stringResult = "";
   }
   return bVar1;
 }
@@ -2314,14 +2325,14 @@ Live_FileShare_GetOwnerName
 
 bool __cdecl
 Live_FileShare_GetFileSize
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   char *pcVar1;
   
   pcVar1 = va("%d");
-  *param_5 = pcVar1;
+  *stringResult = pcVar1;
   return true;
 }
 
@@ -2330,11 +2341,11 @@ Live_FileShare_GetFileSize
 
 bool __cdecl
 Live_FileShare_GetFileName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
-  *param_5 = param_1[param_3].m_fileName;
+  *stringResult = descriptors[index].m_fileName;
   return true;
 }
 
@@ -2343,31 +2354,31 @@ Live_FileShare_GetFileName
 
 bool __cdecl
 Live_FileShare_GetTypeIconName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   
-  switch(param_1[param_3].m_category) {
+  switch(descriptors[index].m_category) {
   case 1:
-    *param_5 = "menu_mp_lobby_icon_film";
+    *stringResult = "menu_mp_lobby_icon_film";
     bVar1 = true;
     break;
   case 2:
-    *param_5 = "menu_mp_lobby_icon_clip";
+    *stringResult = "menu_mp_lobby_icon_clip";
     bVar1 = true;
     break;
   case 3:
-    *param_5 = "menu_mp_lobby_icon_screenshot";
+    *stringResult = "menu_mp_lobby_icon_screenshot";
     bVar1 = true;
     break;
   case 4:
-    *param_5 = "menu_mp_lobby_icon_customgamemode";
+    *stringResult = "menu_mp_lobby_icon_customgamemode";
     bVar1 = true;
     break;
   default:
-    *param_5 = "";
+    *stringResult = "";
     bVar1 = false;
   }
   return bVar1;
@@ -2378,19 +2389,19 @@ Live_FileShare_GetTypeIconName
 
 bool __cdecl
 Live_FileShare_GetSlot
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   int iVar1;
   
-  if (param_4 == FILESHARE_INFOLOCATION_OTHERFILESHARE) {
-    iVar1 = Live_FileShare_FeederToSlot(param_3,(fsOtherUserPrivateSlotCol->current).integer);
-    *param_6 = (float)iVar1;
+  if (location == FILESHARE_INFOLOCATION_OTHERFILESHARE) {
+    iVar1 = Live_FileShare_FeederToSlot(index,(fsOtherUserPrivateSlotCol->current).integer);
+    *floatResult = (float)iVar1;
   }
   else {
-    iVar1 = Live_FileShare_FeederToSlot(param_3,(fsPrivateSlotCol->current).integer);
-    *param_6 = (float)iVar1;
+    iVar1 = Live_FileShare_FeederToSlot(index,(fsPrivateSlotCol->current).integer);
+    *floatResult = (float)iVar1;
   }
   return true;
 }
@@ -2400,11 +2411,11 @@ Live_FileShare_GetSlot
 
 bool __cdecl
 Live_FileShare_GetIngameSlot
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
-  *param_6 = (float)(param_3 + 1);
+  *floatResult = (float)(index + 1);
   return true;
 }
 
@@ -2413,21 +2424,21 @@ Live_FileShare_GetIngameSlot
 
 bool __cdecl
 Live_FileShare_IsSlotOccupied
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   char *pcVar1;
   
-  if ((param_1[param_3].m_fileSlot == 0) || (param_1[param_3].m_fileSize == 0)) {
-    *param_6 = 0.0;
+  if ((descriptors[index].m_fileSlot == 0) || (descriptors[index].m_fileSize == 0)) {
+    *floatResult = 0.0;
     pcVar1 = va("0");
-    *param_5 = pcVar1;
+    *stringResult = pcVar1;
   }
   else {
-    *param_6 = 1.0;
+    *floatResult = 1.0;
     pcVar1 = va("1");
-    *param_5 = pcVar1;
+    *stringResult = pcVar1;
   }
   return true;
 }
@@ -2437,15 +2448,15 @@ Live_FileShare_IsSlotOccupied
 
 bool __cdecl
 Live_FileShare_GetSelectedImageName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   char *pcVar1;
   
-  pcVar1 = Live_FileShare_GetSelectedImage(param_1,param_3);
-  *param_5 = pcVar1;
-  return **param_5 != '\0';
+  pcVar1 = Live_FileShare_GetSelectedImage(descriptors,index);
+  *stringResult = pcVar1;
+  return **stringResult != '\0';
 }
 
 
@@ -2453,19 +2464,19 @@ Live_FileShare_GetSelectedImageName
 
 bool __cdecl
 Live_FileShare_GetIsModifiedName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
-  int local_8;
+  int intRes;
   
-  bVar1 = Live_FileShare_ReadFromMetaData(6,param_1 + param_3,param_5,&local_8);
+  bVar1 = Live_FileShare_ReadFromMetaData(6,descriptors + index,stringResult,&intRes);
   if (!bVar1) {
-    *param_5 = "";
+    *stringResult = "";
   }
   else {
-    *param_6 = (float)local_8;
+    *floatResult = (float)intRes;
   }
   return bVar1;
 }
@@ -2475,19 +2486,19 @@ Live_FileShare_GetIsModifiedName
 
 bool __cdecl
 Live_FileShare_GetIsModifiedDescription
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
-  int local_8;
+  int intRes;
   
-  bVar1 = Live_FileShare_ReadFromMetaData(7,param_1 + param_3,param_5,&local_8);
+  bVar1 = Live_FileShare_ReadFromMetaData(7,descriptors + index,stringResult,&intRes);
   if (!bVar1) {
-    *param_5 = "";
+    *stringResult = "";
   }
   else {
-    *param_6 = (float)local_8;
+    *floatResult = (float)intRes;
   }
   return bVar1;
 }
@@ -2497,43 +2508,46 @@ Live_FileShare_GetIsModifiedDescription
 
 bool __cdecl
 Live_FileShare_GetName
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_c;
-  int local_8;
+  int intRes;
+  int isModified;
   
-  local_8 = 0;
-  bVar1 = Live_FileShare_GetIsModifiedName(param_1,param_2,param_3,param_4,param_5,param_6);
+  isModified = 0;
+  bVar1 = Live_FileShare_GetIsModifiedName
+                    (descriptors,descriptorCount,index,location,stringResult,floatResult);
   if (bVar1) {
-    local_8 = (int)*param_6;
+    isModified = (int)*floatResult;
   }
-  if (local_8 == 0) {
-    if (param_1[param_3].m_category == 4) {
-      bVar1 = Live_FileShare_GetGameTypeName(param_1,param_2,param_3,param_4,param_5,param_6);
+  if (isModified == 0) {
+    if (descriptors[index].m_category == 4) {
+      bVar1 = Live_FileShare_GetGameTypeName
+                        (descriptors,descriptorCount,index,location,stringResult,floatResult);
       if (bVar1) {
         return true;
       }
     }
     else {
-      bVar1 = Live_FileShare_GetMapName(param_1,param_2,param_3,param_4,param_5,param_6);
+      bVar1 = Live_FileShare_GetMapName
+                        (descriptors,descriptorCount,index,location,stringResult,floatResult);
       if (bVar1) {
-        pcVar2 = UI_SafeTranslateString(*param_5 + 1);
-        *param_5 = pcVar2;
+        pcVar2 = UI_SafeTranslateString(*stringResult + 1);
+        *stringResult = pcVar2;
         return true;
       }
     }
   }
   else {
-    bVar1 = Live_FileShare_ReadFromMetaData(4,param_1 + param_3,param_5,&local_c);
+    bVar1 = Live_FileShare_ReadFromMetaData(4,descriptors + index,stringResult,&intRes);
     if (bVar1) {
       return true;
     }
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -2542,38 +2556,40 @@ Live_FileShare_GetName
 
 bool __cdecl
 Live_FileShare_GetDescription
-          (bdFileMetaData *param_1,int param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (bdFileMetaData *descriptors,int descriptorCount,int index,fileShareInfoLocation location,
+          char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   char *pcVar2;
-  int local_c;
-  int local_8;
+  int intRes;
+  int isModified;
   
-  local_8 = 0;
-  bVar1 = Live_FileShare_GetIsModifiedDescription(param_1,param_2,param_3,param_4,param_5,param_6);
+  isModified = 0;
+  bVar1 = Live_FileShare_GetIsModifiedDescription
+                    (descriptors,descriptorCount,index,location,stringResult,floatResult);
   if (bVar1) {
-    local_8 = (int)*param_6;
+    isModified = (int)*floatResult;
   }
-  if (local_8 == 0) {
-    if (param_1[param_3].m_category == 4) {
+  if (isModified == 0) {
+    if (descriptors[index].m_category == 4) {
       pcVar2 = UI_SafeTranslateString("CUSTOM_CUSTOM_GAME_MODE_CAPS");
-      *param_5 = pcVar2;
+      *stringResult = pcVar2;
       return true;
     }
-    bVar1 = Live_FileShare_GetGameTypeName(param_1,param_2,param_3,param_4,param_5,param_6);
+    bVar1 = Live_FileShare_GetGameTypeName
+                      (descriptors,descriptorCount,index,location,stringResult,floatResult);
     if (bVar1) {
       return true;
     }
   }
   else {
-    bVar1 = Live_FileShare_ReadFromMetaData(5,param_1 + param_3,param_5,&local_c);
+    bVar1 = Live_FileShare_ReadFromMetaData(5,descriptors + index,stringResult,&intRes);
     if (bVar1) {
       return true;
     }
   }
-  *param_5 = "";
+  *stringResult = "";
   return false;
 }
 
@@ -2614,17 +2630,17 @@ char * __cdecl Live_FileShare_GetPooledMapDeaths(void)
 
 // 00960C10  Live_FileShare_GetPooledTeamIcon  (live/live_fileshare.cpp:2177)
 
-char * __cdecl Live_FileShare_GetPooledTeamIcon(int param_1,int param_2)
+char * __cdecl Live_FileShare_GetPooledTeamIcon(int mapID,int team)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  StringTable *local_8;
+  StringTable *mapTable;
   
-  StringTable_GetAsset("mp/mapsTable.csv",&local_8);
-  if (local_8 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/mapsTable.csv",&mapTable);
+  if (mapTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x886,0,
                              "%s");
     if (!bVar2) {
@@ -2633,18 +2649,18 @@ char * __cdecl Live_FileShare_GetPooledTeamIcon(int param_1,int param_2)
       return pcVar3;
     }
   }
-  if (local_8 == (StringTable *)0x0) {
+  if (mapTable == (StringTable *)0x0) {
     pcVar3 = "";
   }
-  else if (param_2 == 1) {
+  else if (team == 1) {
     iVar4 = 0xf;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_8,5,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(mapTable,5,pcVar3,iVar4);
   }
   else {
     iVar4 = 0xe;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_8,5,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(mapTable,5,pcVar3,iVar4);
   }
   return pcVar3;
 }
@@ -2652,15 +2668,16 @@ char * __cdecl Live_FileShare_GetPooledTeamIcon(int param_1,int param_2)
 
 // 00961120  Live_FileShare_GetPooledTeamColorIcon  (live/live_fileshare.cpp:2197)
 
-char * __cdecl Live_FileShare_GetPooledTeamColorIcon(int param_1)
+char * __cdecl Live_FileShare_GetPooledTeamColorIcon(int teamID)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
+  char *teamIcon;
   
-  pcVar3 = Live_FileShare_GetPooledTeamIcon(s_pooledFileDetails.mapID,param_1);
+  pcVar3 = Live_FileShare_GetPooledTeamIcon(s_pooledFileDetails.mapID,teamID);
   iVar4 = I_stricmp(pcVar3,"ops");
   if (iVar4 == 0) {
     pcVar3 = "faction_128_specops";
@@ -2711,17 +2728,17 @@ char * __cdecl Live_FileShare_GetPooledTeamColorIcon(int param_1)
 
 // 00960CB0  Live_FileShare_GetPooledTeamName  (live/live_fileshare.cpp:2230)
 
-char * __cdecl Live_FileShare_GetPooledTeamName(int param_1,int param_2)
+char * __cdecl Live_FileShare_GetPooledTeamName(int mapID,int team)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  StringTable *local_8;
+  StringTable *mapTable;
   
-  StringTable_GetAsset("mp/mapsTable.csv",&local_8);
-  if (local_8 == (StringTable *)0x0) {
+  StringTable_GetAsset("mp/mapsTable.csv",&mapTable);
+  if (mapTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x8ba,0,
                              "%s");
     if (!bVar2) {
@@ -2730,19 +2747,19 @@ char * __cdecl Live_FileShare_GetPooledTeamName(int param_1,int param_2)
       return pcVar3;
     }
   }
-  if (local_8 == (StringTable *)0x0) {
+  if (mapTable == (StringTable *)0x0) {
     pcVar3 = "";
   }
-  else if (param_2 == 1) {
+  else if (team == 1) {
     iVar4 = 0xd;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_8,5,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(mapTable,5,pcVar3,iVar4);
     pcVar3 = UI_SafeTranslateString(pcVar3);
   }
   else {
     iVar4 = 0xc;
     pcVar3 = va("%d");
-    pcVar3 = StringTable_Lookup(local_8,5,pcVar3,iVar4);
+    pcVar3 = StringTable_Lookup(mapTable,5,pcVar3,iVar4);
     pcVar3 = UI_SafeTranslateString(pcVar3);
   }
   return pcVar3;
@@ -3002,20 +3019,20 @@ void __cdecl Live_FileShare_ExpirePooledFileDetails(void)
 
 // 00960D80  Live_FileShare_SetPooledFileDetailsContext  (live/live_fileshare.cpp:2387)
 
-void __cdecl Live_FileShare_SetPooledFileDetailsContext(fileSharePooledFileContext_t param_1)
+void __cdecl Live_FileShare_SetPooledFileDetailsContext(fileSharePooledFileContext_t context)
 
 {
-  if (s_pooledFileDetails.context != param_1) {
+  if (s_pooledFileDetails.context != context) {
     memset((uchar *)&s_pooledFileDetails,'\0',0x34);
   }
-  s_pooledFileDetails.context = param_1;
+  s_pooledFileDetails.context = context;
   return;
 }
 
 
 // 00960DB0  Live_FileShare_GetPooledFileInfo  (live/live_fileshare.cpp:2398)
 
-char * __cdecl Live_FileShare_GetPooledFileInfo(char *param_1)
+char * __cdecl Live_FileShare_GetPooledFileInfo(char *field)
 
 {
   code *pcVar1;
@@ -3023,7 +3040,7 @@ char * __cdecl Live_FileShare_GetPooledFileInfo(char *param_1)
   int iVar3;
   char *pcVar4;
   
-  iVar3 = I_stricmp("isValid",param_1);
+  iVar3 = I_stricmp("isValid",field);
   if (iVar3 == 0) {
     if (s_pooledFileDetails.isValid == false) {
       pcVar4 = va("%d");
@@ -3033,77 +3050,77 @@ char * __cdecl Live_FileShare_GetPooledFileInfo(char *param_1)
     }
   }
   else {
-    iVar3 = I_stricmp("mapKills",param_1);
+    iVar3 = I_stricmp("mapKills",field);
     if (iVar3 == 0) {
       pcVar4 = Live_FileShare_GetPooledMapKills();
     }
     else {
-      iVar3 = I_stricmp("mapDeaths",param_1);
+      iVar3 = I_stricmp("mapDeaths",field);
       if (iVar3 == 0) {
         pcVar4 = Live_FileShare_GetPooledMapDeaths();
       }
       else {
-        iVar3 = I_stricmp("mapTeam",param_1);
+        iVar3 = I_stricmp("mapTeam",field);
         if (iVar3 == 0) {
           pcVar4 = Live_FileShare_GetPooledMapTeam();
         }
         else {
-          iVar3 = I_stricmp("mapAxisScore",param_1);
+          iVar3 = I_stricmp("mapAxisScore",field);
           if (iVar3 == 0) {
             pcVar4 = Live_FileShare_GetPooledMapAxisScore();
           }
           else {
-            iVar3 = I_stricmp("mapAxisIcon",param_1);
+            iVar3 = I_stricmp("mapAxisIcon",field);
             if (iVar3 == 0) {
               pcVar4 = Live_FileShare_GetPooledMapAxisIcon();
             }
             else {
-              iVar3 = I_stricmp("mapAxisName",param_1);
+              iVar3 = I_stricmp("mapAxisName",field);
               if (iVar3 == 0) {
                 pcVar4 = Live_FileShare_GetPooledMapAxisName();
               }
               else {
-                iVar3 = I_stricmp("mapAlliesScore",param_1);
+                iVar3 = I_stricmp("mapAlliesScore",field);
                 if (iVar3 == 0) {
                   pcVar4 = Live_FileShare_GetPooledMapAlliesScore();
                 }
                 else {
-                  iVar3 = I_stricmp("mapAlliesIcon",param_1);
+                  iVar3 = I_stricmp("mapAlliesIcon",field);
                   if (iVar3 == 0) {
                     pcVar4 = Live_FileShare_GetPooledMapAlliesIcon();
                   }
                   else {
-                    iVar3 = I_stricmp("mapAlliesName",param_1);
+                    iVar3 = I_stricmp("mapAlliesName",field);
                     if (iVar3 == 0) {
                       pcVar4 = Live_FileShare_GetPooledMapAlliesName();
                     }
                     else {
-                      iVar3 = I_stricmp("mapVictory",param_1);
+                      iVar3 = I_stricmp("mapVictory",field);
                       if (iVar3 == 0) {
                         pcVar4 = Live_FileShare_GetPooledMapVictory();
                       }
                       else {
-                        iVar3 = I_stricmp("isTeamBased",param_1);
+                        iVar3 = I_stricmp("isTeamBased",field);
                         if (iVar3 == 0) {
                           pcVar4 = Live_FileShare_IsPooledTeamBased();
                         }
                         else {
-                          iVar3 = I_stricmp("score",param_1);
+                          iVar3 = I_stricmp("score",field);
                           if (iVar3 == 0) {
                             pcVar4 = Live_FileShare_GetPooledScore();
                           }
                           else {
-                            iVar3 = I_stricmp("wagerPayout",param_1);
+                            iVar3 = I_stricmp("wagerPayout",field);
                             if (iVar3 == 0) {
                               pcVar4 = Live_FileShare_GetPooledWagerPayout();
                             }
                             else {
-                              iVar3 = I_stricmp("position",param_1);
+                              iVar3 = I_stricmp("position",field);
                               if (iVar3 == 0) {
                                 pcVar4 = Live_FileShare_GetPooledPosition();
                               }
                               else {
-                                iVar3 = I_stricmp("isWager",param_1);
+                                iVar3 = I_stricmp("isWager",field);
                                 if (iVar3 == 0) {
                                   pcVar4 = Live_FileShare_GetPooledIsWager();
                                 }
@@ -3143,86 +3160,86 @@ char * __cdecl Live_FileShare_GetPooledFileInfo(char *param_1)
 
 bool __cdecl
 Live_FileShare_GetItemInfo
-          (int param_1,fileShareKeyIndex_conflict param_2,int param_3,fileShareInfoLocation param_4,
-          char **param_5,float *param_6)
+          (int controllerIndex,fileShareKeyIndex_conflict keyIndex,int index,
+          fileShareInfoLocation location,char **stringResult,float *floatResult)
 
 {
   code *pcVar1;
   undefined1 uVar2;
   bool bVar3;
-  fileShareBufferLocation local_85c;
-  fileSharePrivateData *local_858;
-  uint local_854;
-  bdFileMetaData *local_850;
-  int local_84c;
-  int local_848;
-  bdFileMetaData local_844;
+  fileShareBufferLocation bufferLocation;
+  fileSharePrivateData *data;
+  int slot;
+  bdFileMetaData *descriptors;
+  int descriptorCount;
+  int i;
+  bdFileMetaData descriptor;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  bdFileMetaData::bdFileMetaData(&local_844);
-  if (param_4 == FILESHARE_INFOLOCATION_SEARCHRESULTS) {
-    bVar3 = Live_FileShareSearch_GetDescriptor(param_1,param_3,&local_844);
+  bdFileMetaData::bdFileMetaData(&descriptor);
+  if (location == FILESHARE_INFOLOCATION_SEARCHRESULTS) {
+    bVar3 = Live_FileShareSearch_GetDescriptor(controllerIndex,index,&descriptor);
     if (!bVar3) {
-      bdFileMetaData::~bdFileMetaData(&local_844);
+      bdFileMetaData::~bdFileMetaData(&descriptor);
       return false;
     }
-    local_850 = &local_844;
-    local_84c = 1;
-    param_3 = 0;
+    descriptors = &descriptor;
+    descriptorCount = 1;
+    index = 0;
   }
-  else if ((1 < (int)param_4) && ((int)param_4 < 5)) {
-    if ((param_4 == FILESHARE_INFOLOCATION_MYFILESHARE) ||
-       (param_4 == FILESHARE_INFOLOCATION_MYFILESHARE_INGAME)) {
-      local_858 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-      local_85c = FILESHARE_BUFFER_PRIMARY;
+  else if ((1 < (int)location) && ((int)location < 5)) {
+    if ((location == FILESHARE_INFOLOCATION_MYFILESHARE) ||
+       (location == FILESHARE_INFOLOCATION_MYFILESHARE_INGAME)) {
+      data = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
+      bufferLocation = FILESHARE_BUFFER_PRIMARY;
     }
     else {
-      local_858 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
-      local_85c = FILESHARE_BUFFER_SECONDARY;
+      data = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
+      bufferLocation = FILESHARE_BUFFER_SECONDARY;
     }
-    if ((local_858 == (fileSharePrivateData *)0x0) &&
+    if ((data == (fileSharePrivateData *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0x9f7
                                  ,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
       uVar2 = (*pcVar1)();
       return (bool)uVar2;
     }
-    if (local_858 == (fileSharePrivateData *)0x0) {
-      bdFileMetaData::~bdFileMetaData(&local_844);
+    if (data == (fileSharePrivateData *)0x0) {
+      bdFileMetaData::~bdFileMetaData(&descriptor);
       return false;
     }
-    if (param_4 == FILESHARE_INFOLOCATION_MYFILESHARE_INGAME) {
-      local_854 = param_3 + 1;
+    if (location == FILESHARE_INFOLOCATION_MYFILESHARE_INGAME) {
+      slot = index + 1;
     }
-    else if (param_4 == FILESHARE_INFOLOCATION_OTHERFILESHARE) {
-      local_854 = Live_FileShare_FeederToSlot(param_3,(fsOtherUserPrivateSlotCol->current).integer);
+    else if (location == FILESHARE_INFOLOCATION_OTHERFILESHARE) {
+      slot = Live_FileShare_FeederToSlot(index,(fsOtherUserPrivateSlotCol->current).integer);
     }
     else {
-      local_854 = Live_FileShare_FeederToSlot(param_3,(fsPrivateSlotCol->current).integer);
+      slot = Live_FileShare_FeederToSlot(index,(fsPrivateSlotCol->current).integer);
     }
-    local_850 = local_858->descriptors;
-    local_84c = local_858->descriptorCount;
-    if ((param_2 == FILESHARE_KEY_SLOT) || (param_2 == FILESHARE_KEY_INGAMESLOT)) {
-      bVar3 = (*fileShareKeyFunctions[param_2])(local_850,local_84c,param_3,param_4,param_5,param_6)
-      ;
-      bdFileMetaData::~bdFileMetaData(&local_844);
+    descriptors = data->descriptors;
+    descriptorCount = data->descriptorCount;
+    if ((keyIndex == FILESHARE_KEY_SLOT) || (keyIndex == FILESHARE_KEY_INGAMESLOT)) {
+      bVar3 = (*fileShareKeyFunctions[keyIndex])
+                        (descriptors,descriptorCount,index,location,stringResult,floatResult);
+      bdFileMetaData::~bdFileMetaData(&descriptor);
       return bVar3;
     }
-    bVar3 = Live_FileShare_IsSlotOccupied(local_854,local_85c);
+    bVar3 = Live_FileShare_IsSlotOccupied(slot,bufferLocation);
     if (!bVar3) {
-      *param_5 = "";
-      *param_6 = 0.0;
-      bdFileMetaData::~bdFileMetaData(&local_844);
+      *stringResult = "";
+      *floatResult = 0.0;
+      bdFileMetaData::~bdFileMetaData(&descriptor);
       return false;
     }
-    for (local_848 = 0; local_848 < local_84c; local_848 = local_848 + 1) {
-      if (local_854 == local_858->descriptors[local_848].m_fileSlot) {
-        param_3 = local_848;
+    for (i = 0; i < descriptorCount; i = i + 1) {
+      if (slot == (uint)data->descriptors[i].m_fileSlot) {
+        index = i;
         break;
       }
     }
-    if (((local_84c <= param_3) || (param_3 < 0)) &&
+    if (((descriptorCount <= index) || (index < 0)) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0xa24
                                  ,0,"%s"), !bVar3)) {
       pcVar1 = (code *)swi(3);
@@ -3230,15 +3247,16 @@ Live_FileShare_GetItemInfo
       return (bool)uVar2;
     }
   }
-  bVar3 = Live_FileShare_AreInfoParamsValid(local_850,local_84c,param_3,param_4);
+  bVar3 = Live_FileShare_AreInfoParamsValid(descriptors,descriptorCount,index,location);
   if (bVar3) {
-    bVar3 = (*fileShareKeyFunctions[param_2])(local_850,local_84c,param_3,param_4,param_5,param_6);
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    bVar3 = (*fileShareKeyFunctions[keyIndex])
+                      (descriptors,descriptorCount,index,location,stringResult,floatResult);
+    bdFileMetaData::~bdFileMetaData(&descriptor);
   }
   else {
-    *param_5 = "";
-    *param_6 = 0.0;
-    bdFileMetaData::~bdFileMetaData(&local_844);
+    *stringResult = "";
+    *floatResult = 0.0;
+    bdFileMetaData::~bdFileMetaData(&descriptor);
     bVar3 = false;
   }
   return bVar3;
@@ -3248,46 +3266,48 @@ Live_FileShare_GetItemInfo
 // 00961820  Live_FileShare_GetMySlotInfo  (live/live_fileshare.cpp:2612)
 
 bool __cdecl
-Live_FileShare_GetMySlotInfo(int param_1,int param_2,char *param_3,char **param_4,float *param_5)
+Live_FileShare_GetMySlotInfo
+          (int controllerIndex,int slotNum,char *field,char **stringResult,float *floatResult)
 
 {
   bool bVar1;
   int iVar2;
   fileSharePrivateData *pfVar3;
-  int local_18;
-  int local_14;
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
+  fileSharePrivateData *data;
+  int keyIndex;
+  int index;
   
-  *param_4 = "";
-  *param_5 = 0.0;
-  for (local_14 = 0; local_14 < 0x1e; local_14 = local_14 + 1) {
-    iVar2 = I_stricmp(param_3,fileShareKeyNames[local_14]);
+  *stringResult = "";
+  *floatResult = 0.0;
+  for (i = 0; i < 0x1e; i = i + 1) {
+    iVar2 = I_stricmp(field,fileShareKeyNames[i]);
     if (iVar2 == 0) {
-      local_c = local_14;
+      keyIndex = i;
     }
   }
   pfVar3 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-  bVar1 = Live_FileShare_IsSlotOccupied(param_2,FILESHARE_BUFFER_PRIMARY);
+  bVar1 = Live_FileShare_IsSlotOccupied(slotNum,FILESHARE_BUFFER_PRIMARY);
   if (bVar1) {
-    local_8 = -1;
-    for (local_18 = 0; local_18 < pfVar3->descriptorCount; local_18 = local_18 + 1) {
-      if ((uint)pfVar3->descriptors[local_18].m_fileSlot == param_2) {
-        local_8 = local_18;
+    index = -1;
+    for (i_2 = 0; i_2 < pfVar3->descriptorCount; i_2 = i_2 + 1) {
+      if ((uint)pfVar3->descriptors[i_2].m_fileSlot == slotNum) {
+        index = i_2;
         break;
       }
     }
-    if (local_8 < 0) {
+    if (index < 0) {
       bVar1 = false;
     }
     else {
       bVar1 = Live_FileShare_AreInfoParamsValid
-                        (pfVar3->descriptors,pfVar3->descriptorCount,local_8,
+                        (pfVar3->descriptors,pfVar3->descriptorCount,index,
                          FILESHARE_INFOLOCATION_MYFILESHARE);
       if (bVar1) {
-        bVar1 = (*fileShareKeyFunctions[local_c])
-                          (pfVar3->descriptors,pfVar3->descriptorCount,local_8,
-                           FILESHARE_INFOLOCATION_MYFILESHARE,param_4,param_5);
+        bVar1 = (*fileShareKeyFunctions[keyIndex])
+                          (pfVar3->descriptors,pfVar3->descriptorCount,index,
+                           FILESHARE_INFOLOCATION_MYFILESHARE,stringResult,floatResult);
       }
       else {
         bVar1 = false;
@@ -3305,48 +3325,48 @@ Live_FileShare_GetMySlotInfo(int param_1,int param_2,char *param_3,char **param_
 
 bool __cdecl
 Live_FileShare_GetFeederData
-          (int param_1,int param_2,int param_3,char *param_4,char **param_5,float *param_6)
+          (int controllerIndex,int feederID,int index,char *field,char **stringResult,
+          float *floatResult)
 
 {
   bool bVar1;
   int iVar2;
-  fileShareKeyIndex_conflict local_c;
-  fileShareKeyIndex_conflict local_8;
+  int i;
+  fileShareKeyIndex_conflict keyIndex;
   
-  for (local_c = FILESHARE_KEY_SLOT; (int)local_c < 0x1e;
-      local_c = local_c + FILESHARE_KEY_INGAMESLOT) {
-    iVar2 = I_stricmp(param_4,fileShareKeyNames[local_c]);
+  for (i = 0; i < 0x1e; i = i + 1) {
+    iVar2 = I_stricmp(field,fileShareKeyNames[i]);
     if (iVar2 == 0) {
-      local_8 = local_c;
+      keyIndex = i;
     }
   }
-  if (((int)local_8 < 0) || (0x1d < (int)local_8)) {
+  if (((int)keyIndex < 0) || (0x1d < (int)keyIndex)) {
 switchD_009619c8_caseD_4b:
     bVar1 = false;
   }
   else {
-    switch(param_2) {
+    switch(feederID) {
     case 0x4a:
       bVar1 = Live_FileShare_GetItemInfo
-                        (param_1,local_8,param_3,FILESHARE_INFOLOCATION_SEARCHRESULTS,param_5,
-                         param_6);
+                        (controllerIndex,keyIndex,index,FILESHARE_INFOLOCATION_SEARCHRESULTS,
+                         stringResult,floatResult);
       break;
     default:
       goto switchD_009619c8_caseD_4b;
     case 0x4f:
       bVar1 = Live_FileShare_GetItemInfo
-                        (param_1,local_8,param_3,FILESHARE_INFOLOCATION_OTHERFILESHARE,param_5,
-                         param_6);
+                        (controllerIndex,keyIndex,index,FILESHARE_INFOLOCATION_OTHERFILESHARE,
+                         stringResult,floatResult);
       break;
     case 0x50:
       bVar1 = Live_FileShare_GetItemInfo
-                        (param_1,local_8,param_3,FILESHARE_INFOLOCATION_MYFILESHARE,param_5,param_6)
-      ;
+                        (controllerIndex,keyIndex,index,FILESHARE_INFOLOCATION_MYFILESHARE,
+                         stringResult,floatResult);
       break;
     case 0x56:
       bVar1 = Live_FileShare_GetItemInfo
-                        (param_1,local_8,param_3,FILESHARE_INFOLOCATION_MYFILESHARE_INGAME,param_5,
-                         param_6);
+                        (controllerIndex,keyIndex,index,FILESHARE_INFOLOCATION_MYFILESHARE_INGAME,
+                         stringResult,floatResult);
     }
   }
   return bVar1;
@@ -3355,18 +3375,20 @@ switchD_009619c8_caseD_4b:
 
 // 00961D00  Live_FileShare_GetStarFractionToDraw  (live/live_fileshare.cpp:2694)
 
-float __cdecl Live_FileShare_GetStarFractionToDraw(float param_1,int param_2)
+float __cdecl Live_FileShare_GetStarFractionToDraw(float rating,int imageNumber)
 
 {
   float fVar1;
   int iVar2;
+  int iRating;
+  int oneStarWorth;
   
-  iVar2 = (int)(param_1 * 100.0);
-  if (param_2 * 0x14 - iVar2 == 0 || param_2 * 0x14 < iVar2) {
+  iVar2 = (int)(rating * 100.0);
+  if (imageNumber * 0x14 - iVar2 == 0 || imageNumber * 0x14 < iVar2) {
     fVar1 = 1.0;
   }
-  else if ((param_2 + -1) * 0x14 < iVar2) {
-    fVar1 = ((float)iVar2 - (float)(param_2 + -1) * 20.0) / 20.0;
+  else if ((imageNumber + -1) * 0x14 < iVar2) {
+    fVar1 = ((float)iVar2 - (float)(imageNumber + -1) * 20.0) / 20.0;
   }
   else {
     fVar1 = 0.0;
@@ -3379,16 +3401,14 @@ float __cdecl Live_FileShare_GetStarFractionToDraw(float param_1,int param_2)
 
 void __cdecl
 Live_FileShare_DrawBackgroundStars
-          (int param_1,float param_2,float param_3,int param_4,int param_5,int param_6,int param_7,
-          float *param_8,Material *param_9)
+          (int contextIndex,float x,float y,int w,int h,int hA,int vA,float *color,Material *mtl)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                     (float)(local_8 * param_4) + param_2,param_3,(float)param_4,(float)param_5,
-                     param_6,param_7,param_8,param_9);
+  for (i = 0; i < 5; i = i + 1) {
+    UI_DrawHandlePic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),(float)(i * w) + x,y,
+                     (float)w,(float)h,hA,vA,color,mtl);
   }
   return;
 }
@@ -3398,19 +3418,19 @@ Live_FileShare_DrawBackgroundStars
 
 void __cdecl
 Live_FileShare_DrawRatingStars
-          (int param_1,float param_2,float param_3,float param_4,int param_5,int param_6,int param_7
-          ,int param_8,float *param_9,Material *param_10)
+          (int contextIndex,float rating,float x,float y,int w,int h,int hA,int vA,float *color,
+          Material *mtl)
 
 {
-  float fVar1;
-  int local_8;
+  float s2;
+  float fraction;
+  int i;
   
-  for (local_8 = 0; local_8 < 5; local_8 = local_8 + 1) {
-    fVar1 = Live_FileShare_GetStarFractionToDraw(param_2,local_8 + 1);
-    if (0.0 < fVar1) {
-      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + param_1 * 0x78),
-                        (float)(local_8 * param_5) + param_3,param_4,(float)param_5 * fVar1,
-                        (float)param_6,param_7,param_8,0.0,0.0,fVar1,1.0,param_9,param_10);
+  for (i = 0; i < 5; i = i + 1) {
+    s2 = Live_FileShare_GetStarFractionToDraw(rating,i + 1);
+    if (0.0 < s2) {
+      CL_DrawStretchPic((ScreenPlacement *)(&scrPlaceView + contextIndex * 0x78),(float)(i * w) + x,
+                        y,(float)w * s2,(float)h,hA,vA,0.0,0.0,s2,1.0,color,mtl);
     }
   }
   return;
@@ -3420,37 +3440,37 @@ Live_FileShare_DrawRatingStars
 // 00961A80  Live_FileShare_RatingOwnerdraw  (live/live_fileshare.cpp:2734)
 
 void __cdecl
-Live_FileShare_RatingOwnerdraw(int param_1,rectDef_s *param_2,itemDef_s *param_3,float *param_4)
+Live_FileShare_RatingOwnerdraw(int contextIndex,rectDef_s *rect,itemDef_s *item,float *color)
 
 {
-  ulong64 uVar1;
-  float *pfVar2;
-  int local_1c;
-  bdVoteRankStatsInfo *local_18;
-  int local_14;
-  int local_10;
-  float local_c;
-  Material *local_8;
+  ulong64 fileID;
+  float *rating_00;
+  int numRatings;
+  bdVoteRankStatsInfo *ratings;
+  int starWidth;
+  int startHeight;
+  float rating;
+  Material *mtl;
   
-  local_8 = Material_RegisterHandle("menu_mp_star_rating",3);
-  local_14 = 0xc;
-  local_10 = 0xc;
-  local_c = 0.0;
+  mtl = Material_RegisterHandle("menu_mp_star_rating",3);
+  starWidth = 0xc;
+  startHeight = 0xc;
+  rating = 0.0;
   if ((fsDebugRatingValue == (dvar_s *)0x0) || ((fsDebugRatingValue->current).value <= 0.0)) {
-    Live_FileShareSearch_GetRatings(&local_18,&local_1c);
-    pfVar2 = &local_c;
-    uVar1 = I_atoi64((fsSelectedFileID->current).string);
-    Live_FileShare_LookupRating(uVar1,local_18,local_1c,pfVar2);
+    Live_FileShareSearch_GetRatings(&ratings,&numRatings);
+    rating_00 = &rating;
+    fileID = I_atoi64((fsSelectedFileID->current).string);
+    Live_FileShare_LookupRating(fileID,ratings,numRatings,rating_00);
   }
   else {
-    local_c = (fsDebugRatingValue->current).value;
+    rating = (fsDebugRatingValue->current).value;
   }
   Live_FileShare_DrawBackgroundStars
-            (param_1,param_2->x,param_2->y,local_14,local_10,param_2->horzAlign,param_2->vertAlign,
-             param_4,local_8);
+            (contextIndex,rect->x,rect->y,starWidth,startHeight,rect->horzAlign,rect->vertAlign,
+             color,mtl);
   Live_FileShare_DrawRatingStars
-            (param_1,local_c,param_2->x,param_2->y,local_14,local_10,param_2->horzAlign,
-             param_2->vertAlign,&(fsStarHighlightColor->current).value,local_8);
+            (contextIndex,rating,rect->x,rect->y,starWidth,startHeight,rect->horzAlign,
+             rect->vertAlign,&(fsStarHighlightColor->current).value,mtl);
   return;
 }
 
@@ -3458,8 +3478,7 @@ Live_FileShare_RatingOwnerdraw(int param_1,rectDef_s *param_2,itemDef_s *param_3
 // 00961D70  Live_FileShare_PrivateRatingOwnerdraw  (live/live_fileshare.cpp:2760)
 
 void __cdecl
-Live_FileShare_PrivateRatingOwnerdraw
-          (int param_1,rectDef_s *param_2,itemDef_s *param_3,float *param_4)
+Live_FileShare_PrivateRatingOwnerdraw(int contextIndex,rectDef_s *rect,itemDef_s *item,float *color)
 
 {
   bool bVar1;
@@ -3468,21 +3487,25 @@ Live_FileShare_PrivateRatingOwnerdraw
   bdVoteRankStatsInfo *pbVar4;
   int iVar5;
   float *pfVar6;
-  float local_c;
-  Material *local_8;
+  fileSharePrivateData *data_2;
+  fileSharePrivateData *data;
+  int starWidth;
+  int startHeight;
+  float rating;
+  Material *mtl;
   
-  local_8 = Material_RegisterHandle("menu_mp_star_rating",3);
-  local_c = 0.0;
+  mtl = Material_RegisterHandle("menu_mp_star_rating",3);
+  rating = 0.0;
   if ((fsDebugRatingValue == (dvar_s *)0x0) || ((fsDebugRatingValue->current).value <= 0.0)) {
     pfVar2 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-    pfVar6 = &local_c;
+    pfVar6 = &rating;
     iVar5 = pfVar2->descriptorCount;
     pbVar4 = pfVar2->fileRatings;
     uVar3 = I_atoi64((fsSelectedFileID->current).string);
     bVar1 = Live_FileShare_LookupRating(uVar3,pbVar4,iVar5,pfVar6);
     if (!bVar1) {
       pfVar2 = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_SECONDARY);
-      pfVar6 = &local_c;
+      pfVar6 = &rating;
       iVar5 = pfVar2->descriptorCount;
       pbVar4 = pfVar2->fileRatings;
       uVar3 = I_atoi64((fsSelectedFileID->current).string);
@@ -3490,14 +3513,13 @@ Live_FileShare_PrivateRatingOwnerdraw
     }
   }
   else {
-    local_c = (fsDebugRatingValue->current).value;
+    rating = (fsDebugRatingValue->current).value;
   }
   Live_FileShare_DrawBackgroundStars
-            (param_1,param_2->x,param_2->y,0xc,0xc,param_2->horzAlign,param_2->vertAlign,param_4,
-             local_8);
+            (contextIndex,rect->x,rect->y,0xc,0xc,rect->horzAlign,rect->vertAlign,color,mtl);
   Live_FileShare_DrawRatingStars
-            (param_1,local_c,param_2->x,param_2->y,0xc,0xc,param_2->horzAlign,param_2->vertAlign,
-             &(fsStarHighlightColor->current).value,local_8);
+            (contextIndex,rating,rect->x,rect->y,0xc,0xc,rect->horzAlign,rect->vertAlign,
+             &(fsStarHighlightColor->current).value,mtl);
   return;
 }
 
@@ -3505,63 +3527,64 @@ Live_FileShare_PrivateRatingOwnerdraw
 // 00961EF0  Live_FileShare_SubmitRatingOwnerdraw  (live/live_fileshare.cpp:2789)
 
 void __cdecl
-Live_FileShare_SubmitRatingOwnerdraw
-          (int param_1,rectDef_s *param_2,itemDef_s *param_3,float *param_4)
+Live_FileShare_SubmitRatingOwnerdraw(int contextIndex,rectDef_s *rect,itemDef_s *item,float *color)
 
 {
-  Material *pMVar1;
+  Material *mtl_00;
+  int starHeight;
+  int starWidth;
+  Material *mtl;
   
-  pMVar1 = Material_RegisterHandle("menu_mp_star_rating",3);
+  mtl_00 = Material_RegisterHandle("menu_mp_star_rating",3);
   Live_FileShare_DrawBackgroundStars
-            (param_1,param_2->x,param_2->y,0x1e,0x1e,param_2->horzAlign,param_2->vertAlign,param_4,
-             pMVar1);
+            (contextIndex,rect->x,rect->y,0x1e,0x1e,rect->horzAlign,rect->vertAlign,color,mtl_00);
   Live_FileShare_DrawRatingStars
-            (param_1,(float)s_fileShareFileRating / 5.0,param_2->x,param_2->y,0x1e,0x1e,
-             param_2->horzAlign,param_2->vertAlign,&(fsStarHighlightColor->current).value,pMVar1);
+            (contextIndex,(float)s_fileShareFileRating / 5.0,rect->x,rect->y,0x1e,0x1e,
+             rect->horzAlign,rect->vertAlign,&(fsStarHighlightColor->current).value,mtl_00);
   Live_FileShare_DrawRatingStars
-            (param_1,(float)s_fileShareFileRatingPreview / 5.0,param_2->x,param_2->y,0x1e,0x1e,
-             param_2->horzAlign,param_2->vertAlign,&(fsStarPreviewColor->current).value,pMVar1);
+            (contextIndex,(float)s_fileShareFileRatingPreview / 5.0,rect->x,rect->y,0x1e,0x1e,
+             rect->horzAlign,rect->vertAlign,&(fsStarPreviewColor->current).value,mtl_00);
   return;
 }
 
 
 // 00962020  Live_FileShare_MyRatingOwnerdraw  (live/live_fileshare.cpp:2803)
 
+/* WARNING: Variable defined which should be unmapped: starHeight */
+
 void __cdecl
 Live_FileShare_MyRatingOwnerdraw
-          (int param_1,int param_2,rectDef_s *param_3,itemDef_s *param_4,float *param_5)
+          (int localClientNum,int contextIndex,rectDef_s *rect,itemDef_s *item,float *color)
 
 {
   bool bVar1;
-  int iVar2;
-  long64 lVar3;
-  int iVar4;
-  byte *pbVar5;
-  uchar *puVar6;
-  byte local_11;
-  Material *local_10;
-  undefined8 local_c;
+  int controllerIndex;
+  long64 lVar2;
+  int iVar3;
+  uchar *puVar4;
+  int starHeight;
+  int starWidth;
+  uchar rating;
+  Material *mtl;
+  undefined8 fileID;
   
-  local_10 = Material_RegisterHandle("menu_mp_star_rating",3);
-  puVar6 = (uchar *)0x1e;
+  mtl = Material_RegisterHandle("menu_mp_star_rating",3);
   Live_FileShare_DrawBackgroundStars
-            (param_2,param_3->x,param_3->y,0x1e,0x1e,param_3->horzAlign,param_3->vertAlign,param_5,
-             local_10);
-  lVar3 = I_atoi64((fsSelectedFileID->current).string);
-  local_11 = 0;
-  local_c._4_4_ = (int)((ulonglong)lVar3 >> 0x20);
-  local_c._0_4_ = (int)lVar3;
-  if ((local_c._4_4_ != 0) || ((int)local_c != 0)) {
-    pbVar5 = &local_11;
-    iVar4 = local_c._4_4_;
-    local_c = lVar3;
-    iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-    bVar1 = Live_FileShare_IsRated(iVar2,CONCAT44(pbVar5,iVar4),puVar6);
+            (contextIndex,rect->x,rect->y,0x1e,0x1e,rect->horzAlign,rect->vertAlign,color,mtl);
+  lVar2 = I_atoi64((fsSelectedFileID->current).string);
+  rating = '\0';
+  fileID._4_4_ = (int)((ulonglong)lVar2 >> 0x20);
+  fileID._0_4_ = (int)lVar2;
+  if ((fileID._4_4_ != 0) || ((int)fileID != 0)) {
+    puVar4 = &rating;
+    iVar3 = fileID._4_4_;
+    fileID = lVar2;
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    bVar1 = Live_FileShare_IsRated(controllerIndex,CONCAT44(puVar4,iVar3),(uchar *)0x1e);
     if (bVar1) {
       Live_FileShare_DrawRatingStars
-                (param_2,(float)local_11 / 5.0,param_3->x,param_3->y,0x1e,(int)puVar6,
-                 param_3->horzAlign,param_3->vertAlign,&(fsStarHighlightColor->current).value,
-                 local_10);
+                (contextIndex,(float)rating / 5.0,rect->x,rect->y,0x1e,0x1e,rect->horzAlign,
+                 rect->vertAlign,&(fsStarHighlightColor->current).value,mtl);
     }
   }
   return;
@@ -3572,44 +3595,44 @@ Live_FileShare_MyRatingOwnerdraw
 
 void __cdecl
 Live_FileShare_AvgSubmitRatingOwnerdraw
-          (int param_1,rectDef_s *param_2,itemDef_s *param_3,float *param_4)
+          (int contextIndex,rectDef_s *rect,itemDef_s *item,float *color)
 
 {
-  ulong64 uVar1;
-  float *pfVar2;
-  int local_1c;
-  bdVoteRankStatsInfo *local_18;
-  int local_14;
-  int local_10;
-  float local_c;
-  Material *local_8;
+  ulong64 fileID;
+  float *rating_00;
+  int numRatings;
+  bdVoteRankStatsInfo *ratings;
+  int starWidth;
+  int startHeight;
+  float rating;
+  Material *mtl;
   
-  local_8 = Material_RegisterHandle("menu_mp_star_rating",3);
-  local_14 = 0xc;
-  local_10 = 0xc;
-  local_c = 0.0;
+  mtl = Material_RegisterHandle("menu_mp_star_rating",3);
+  starWidth = 0xc;
+  startHeight = 0xc;
+  rating = 0.0;
   if ((fsDebugRatingValue == (dvar_s *)0x0) || ((fsDebugRatingValue->current).value <= 0.0)) {
-    Live_FileShareSearch_GetRatings(&local_18,&local_1c);
-    pfVar2 = &local_c;
-    uVar1 = I_atoi64((fsSelectedFileID->current).string);
-    Live_FileShare_LookupRating(uVar1,local_18,local_1c,pfVar2);
+    Live_FileShareSearch_GetRatings(&ratings,&numRatings);
+    rating_00 = &rating;
+    fileID = I_atoi64((fsSelectedFileID->current).string);
+    Live_FileShare_LookupRating(fileID,ratings,numRatings,rating_00);
   }
   else {
-    local_c = (fsDebugRatingValue->current).value;
+    rating = (fsDebugRatingValue->current).value;
   }
   Live_FileShare_DrawBackgroundStars
-            (param_1,param_2->x,param_2->y,local_14,local_10,param_2->horzAlign,param_2->vertAlign,
-             param_4,local_8);
+            (contextIndex,rect->x,rect->y,starWidth,startHeight,rect->horzAlign,rect->vertAlign,
+             color,mtl);
   Live_FileShare_DrawRatingStars
-            (param_1,local_c,param_2->x,param_2->y,local_14,local_10,param_2->horzAlign,
-             param_2->vertAlign,&(fsStarAvgColor->current).value,local_8);
+            (contextIndex,rating,rect->x,rect->y,starWidth,startHeight,rect->horzAlign,
+             rect->vertAlign,&(fsStarAvgColor->current).value,mtl);
   return;
 }
 
 
 // 00963650  Live_FileShare_GetRecentGames  (live/live_fileshare.cpp:2853)
 
-void __cdecl Live_FileShare_GetRecentGames(int param_1,ulong64 param_2)
+void __cdecl Live_FileShare_GetRecentGames(int localControllerIndex,ulong64 param_2)
 
 {
   undefined4 in_stack_00000008;
@@ -3617,20 +3640,20 @@ void __cdecl Live_FileShare_GetRecentGames(int param_1,ulong64 param_2)
   bdTag *local_2c;
   int local_28;
   bdTag *local_24;
-  int local_20;
-  bdTag local_1c;
+  int numTags;
+  bdTag tags;
   
   local_28 = 1;
-  local_24 = &local_1c;
+  local_24 = &tags;
   while (local_28 = local_28 + -1, -1 < local_28) {
     bdTag::bdTag(local_24);
     local_24 = local_24 + 1;
   }
-  local_20 = 0;
-  Live_FileShare_AddTag(4,CONCAT44((undefined4)param_2,in_stack_00000008),&local_20,&local_1c,0x28);
-  if (0 < local_20) {
+  numTags = 0;
+  Live_FileShare_AddTag(4,CONCAT44((undefined4)param_2,in_stack_00000008),&numTags,&tags,0x28);
+  if (0 < numTags) {
     Live_FileShareSearch_SetContext
-              (param_1,&local_1c,local_20,FILESHARE_LOCATION_POOLEDSTORAGE,false,-1);
+              (localControllerIndex,&tags,numTags,FILESHARE_LOCATION_POOLEDSTORAGE,false,-1);
   }
   local_30 = 1;
   local_2c = (bdTag *)&stack0xfffffffc;
@@ -3644,7 +3667,8 @@ void __cdecl Live_FileShare_GetRecentGames(int param_1,ulong64 param_2)
 
 // 00962270  Live_FileShare_SearchDvarsToTags  (live/live_fileshare.cpp:2868)
 
-void __cdecl Live_FileShare_SearchDvarsToTags(int param_1,bdTag *param_2,int *param_3,int param_4)
+void __cdecl
+Live_FileShare_SearchDvarsToTags(int controllerIndex,bdTag *tags,int *numTags,int maxTags)
 
 {
   int iVar1;
@@ -3652,29 +3676,34 @@ void __cdecl Live_FileShare_SearchDvarsToTags(int param_1,bdTag *param_2,int *pa
   int iVar3;
   int iVar4;
   int iVar5;
-  ulong64 uVar6;
+  ulong64 secTag;
+  int gameModeIndex;
+  int userTag;
+  int fileType;
+  int playerPreference;
+  int mapIndex;
   
   iVar1 = (s_fsSearchRowValueDvars[2]->current).integer;
   iVar2 = (s_fsSearchRowValueDvars[3]->current).integer;
   iVar3 = (s_fsSearchRowValueDvars[5]->current).integer;
   iVar4 = (s_fsSearchRowValueDvars[6]->current).integer;
   iVar5 = (fsSearchFileType->current).integer;
-  *param_3 = 0;
+  *numTags = 0;
   if ((iVar1 != 0) && (iVar5 != 4)) {
-    Live_FileShare_AddTag(2,(longlong)(iVar1 + -1),param_3,param_2,param_4);
+    Live_FileShare_AddTag(2,(longlong)(iVar1 + -1),numTags,tags,maxTags);
   }
   if (iVar2 != 0) {
-    Live_FileShare_AddTag(1,(longlong)(iVar2 + -1),param_3,param_2,param_4);
+    Live_FileShare_AddTag(1,(longlong)(iVar2 + -1),numTags,tags,maxTags);
   }
   if (iVar5 != 0) {
-    Live_FileShare_AddTag(3,(longlong)iVar5,param_3,param_2,param_4);
+    Live_FileShare_AddTag(3,(longlong)iVar5,numTags,tags,maxTags);
   }
   if (iVar3 != 0) {
-    Live_FileShare_AddTag(5,(longlong)iVar3,param_3,param_2,param_4);
+    Live_FileShare_AddTag(5,(longlong)iVar3,numTags,tags,maxTags);
   }
   if (iVar4 != 0) {
-    uVar6 = Live_GetXuid(param_1);
-    Live_FileShare_AddTag(4,uVar6,param_3,param_2,param_4);
+    secTag = Live_GetXuid(controllerIndex);
+    Live_FileShare_AddTag(4,secTag,numTags,tags,maxTags);
   }
   return;
 }
@@ -3682,7 +3711,7 @@ void __cdecl Live_FileShare_SearchDvarsToTags(int param_1,bdTag *param_2,int *pa
 
 // 00963A70  Live_FileShare_DvarSearch  (live/live_fileshare.cpp:2903)
 
-void __cdecl Live_FileShare_DvarSearch(int param_1)
+void __cdecl Live_FileShare_DvarSearch(int controllerIndex)
 
 {
   int iVar1;
@@ -3690,40 +3719,40 @@ void __cdecl Live_FileShare_DvarSearch(int param_1)
   bdTag *local_3d8;
   int local_3d4;
   bdTag *local_3d0;
-  int local_3cc;
-  int local_3c8;
-  bdTag local_3c4 [40];
+  int numPastDays;
+  int numTags;
+  bdTag tags [40];
   
   local_3d4 = 0x28;
-  local_3d0 = local_3c4;
+  local_3d0 = tags;
   while (local_3d4 = local_3d4 + -1, -1 < local_3d4) {
     bdTag::bdTag(local_3d0);
     local_3d0 = local_3d0 + 1;
   }
   if ((s_fsSearchRowValueDvars[1]->current).integer < 1) {
-    local_3cc = -1;
+    numPastDays = -1;
     iVar1 = (s_fsSearchRowValueDvars[4]->current).integer;
     if (iVar1 == 1) {
-      local_3cc = 7;
+      numPastDays = 7;
     }
     else if (iVar1 == 2) {
-      local_3cc = 0x1f;
+      numPastDays = 0x1f;
     }
     else if (iVar1 == 3) {
-      local_3cc = 0x16d;
+      numPastDays = 0x16d;
     }
-    Live_FileShare_SearchDvarsToTags(param_1,local_3c4,&local_3c8,0x28);
-    if (local_3c8 < 1) {
+    Live_FileShare_SearchDvarsToTags(controllerIndex,tags,&numTags,0x28);
+    if (numTags < 1) {
       Com_PrintError(0x10,"Invalid search. No search tags could be created.\n");
     }
     else {
       Com_Printf(0x10,"Searching for the past %d days.\n");
       Live_FileShareSearch_SetContext
-                (0,local_3c4,local_3c8,FILESHARE_LOCATION_USERSTORAGE,false,local_3cc);
+                (0,tags,numTags,FILESHARE_LOCATION_USERSTORAGE,false,numPastDays);
     }
   }
   else {
-    Live_FileShareSearch_SetContext(0,local_3c4,0,FILESHARE_LOCATION_USERSTORAGE,true,-1);
+    Live_FileShareSearch_SetContext(0,tags,0,FILESHARE_LOCATION_USERSTORAGE,true,-1);
   }
   local_3dc = 0x28;
   local_3d8 = (bdTag *)&stack0xfffffffc;
@@ -3737,108 +3766,108 @@ void __cdecl Live_FileShare_DvarSearch(int param_1)
 
 // 00962510  Live_FileShare_SetSpinnerDvars  (live/live_fileshare.cpp:2946)
 
-int __cdecl Live_FileShare_SetSpinnerDvars(int param_1,int param_2,dvar_s *param_3,dvar_s *param_4)
+int __cdecl Live_FileShare_SetSpinnerDvars(int offset,int max,dvar_s *valueDvar,dvar_s *textDvar)
 
 {
-  char *local_8;
+  int value;
   
-  local_8 = (param_3->current).string + param_1;
-  if ((int)local_8 < 0) {
-    local_8 = (char *)param_2;
+  value = (int)((valueDvar->current).string + offset);
+  if (value < 0) {
+    value = max;
   }
-  else if (param_2 < (int)local_8) {
-    local_8 = (char *)0x0;
+  else if (max < value) {
+    value = 0;
   }
-  if (local_8 == (char *)0x0) {
-    Dvar_SetString(param_4,"@MENU_ALL");
+  if (value == 0) {
+    Dvar_SetString(textDvar,"@MENU_ALL");
   }
-  Dvar_SetInt(param_3,(int)local_8);
-  return (int)local_8;
+  Dvar_SetInt(valueDvar,value);
+  return value;
 }
 
 
 // 00963100  Live_FileShare_SetSearchRowOffset  (live/live_fileshare.cpp:2970)
 
-void __cdecl Live_FileShare_SetSearchRowOffset(int param_1,int param_2)
+void __cdecl Live_FileShare_SetSearchRowOffset(int row,int offset)
 
 {
   char *pcVar1;
-  dvar_s *pdVar2;
-  dvar_s *pdVar3;
-  int iVar4;
-  StringTable *local_c;
-  int local_8;
+  dvar_s *valueDvar;
+  dvar_s *textDvar;
+  int iVar2;
+  StringTable *fileShareTable;
+  int value;
   
-  switch(param_1) {
+  switch(row) {
   case 1:
-    local_8 = Live_FileShare_SetSpinnerDvars
-                        (param_2,1,s_fsSearchRowValueDvars[1],s_fsSearchRowTextDvars[1]);
-    if (local_8 == 0) {
+    value = Live_FileShare_SetSpinnerDvars
+                      (offset,1,s_fsSearchRowValueDvars[1],s_fsSearchRowTextDvars[1]);
+    if (value == 0) {
       pcVar1 = UI_SafeTranslateString("@MENU_FILESHARE_MOSTRECENT");
       Dvar_SetString(s_fsSearchRowTextDvars[1],pcVar1);
     }
-    else if ((local_8 < 1) || (2 < local_8)) {
+    else if ((value < 1) || (2 < value)) {
       Com_PrintError(0x10,"Fileshare: Value not in sharedUiInfo bounds.\n");
     }
     else {
-      pcVar1 = UI_SafeTranslateString(fileShareSortBy[local_8 + -1]);
+      pcVar1 = UI_SafeTranslateString(fileShareSortBy[value + -1]);
       Dvar_SetString(s_fsSearchRowTextDvars[1],pcVar1);
     }
     break;
   case 2:
-    local_8 = Live_FileShare_SetSpinnerDvars
-                        (param_2,DAT_098b9e44,s_fsSearchRowValueDvars[2],s_fsSearchRowTextDvars[2]);
-    if (local_8 != 0) {
-      if ((local_8 < 1) || (DAT_098b9e44 < local_8)) {
+    value = Live_FileShare_SetSpinnerDvars
+                      (offset,DAT_098b9e44,s_fsSearchRowValueDvars[2],s_fsSearchRowTextDvars[2]);
+    if (value != 0) {
+      if ((value < 1) || (DAT_098b9e44 < value)) {
         Com_PrintError(0x10,"Fileshare: Value not in sharedUiInfo bounds.\n");
       }
       else {
-        pcVar1 = UI_SafeTranslateString(&DAT_098b9e48 + (local_8 + -1) * 0x130);
+        pcVar1 = UI_SafeTranslateString(&DAT_098b9e48 + (value + -1) * 0x130);
         Dvar_SetString(s_fsSearchRowTextDvars[2],pcVar1);
       }
     }
     break;
   case 3:
-    pdVar2 = s_fsSearchRowValueDvars[3];
-    pdVar3 = s_fsSearchRowTextDvars[3];
-    iVar4 = Live_FileShare_GetGameTypeCount();
-    local_8 = Live_FileShare_SetSpinnerDvars(param_2,iVar4,pdVar2,pdVar3);
-    if (local_8 != 0) {
-      if ((local_8 < 1) || (iVar4 = Live_FileShare_GetGameTypeCount(), iVar4 < local_8)) {
+    valueDvar = s_fsSearchRowValueDvars[3];
+    textDvar = s_fsSearchRowTextDvars[3];
+    iVar2 = Live_FileShare_GetGameTypeCount();
+    value = Live_FileShare_SetSpinnerDvars(offset,iVar2,valueDvar,textDvar);
+    if (value != 0) {
+      if ((value < 1) || (iVar2 = Live_FileShare_GetGameTypeCount(), iVar2 < value)) {
         Com_PrintError(0x10,"Fileshare: Value not in sharedUiInfo bounds.\n");
       }
       else {
-        pcVar1 = Live_FileShare_GetLocalizedGameTypeFromIndex(local_8 + -1,false);
+        pcVar1 = Live_FileShare_GetLocalizedGameTypeFromIndex(value + -1,false);
         Dvar_SetString(s_fsSearchRowTextDvars[3],pcVar1);
       }
     }
     break;
   case 4:
-    local_8 = Live_FileShare_SetSpinnerDvars
-                        (param_2,3,s_fsSearchRowValueDvars[4],s_fsSearchRowTextDvars[4]);
-    if (local_8 != 0) {
-      pcVar1 = UI_SafeTranslateString(fileShareAgeSearch[local_8 + -1]);
+    value = Live_FileShare_SetSpinnerDvars
+                      (offset,3,s_fsSearchRowValueDvars[4],s_fsSearchRowTextDvars[4]);
+    if (value != 0) {
+      pcVar1 = UI_SafeTranslateString(fileShareAgeSearch[value + -1]);
       Dvar_SetString(s_fsSearchRowTextDvars[4],pcVar1);
     }
     break;
   case 5:
-    StringTable_GetAsset("mp/fileShareTags.csv",&local_c);
-    local_8 = Live_FileShare_SetSpinnerDvars
-                        (param_2,local_c->rowCount,s_fsSearchRowValueDvars[5],
-                         s_fsSearchRowTextDvars[5]);
-    if (local_8 != 0) {
-      iVar4 = 1;
+    StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
+    value = Live_FileShare_SetSpinnerDvars
+                      (offset,fileShareTable->rowCount,s_fsSearchRowValueDvars[5],
+                       s_fsSearchRowTextDvars[5]);
+    if (value != 0) {
+      iVar2 = 1;
       pcVar1 = va("%d");
-      pcVar1 = StringTable_Lookup(local_c,0,pcVar1,iVar4);
+      pcVar1 = StringTable_Lookup(fileShareTable,0,pcVar1,iVar2);
       pcVar1 = UI_SafeTranslateString(pcVar1);
       Dvar_SetString(s_fsSearchRowTextDvars[5],pcVar1);
     }
     break;
   case 6:
-    local_8 = Live_FileShare_SetSpinnerDvars
-                        (param_2,1,s_fsSearchRowValueDvars[6],s_fsSearchRowTextDvars[6]);
-    if (local_8 != 0) {
-      pcVar1 = UI_SafeTranslateString(fshPlayerSearchPreference[local_8 + -1]);
+    value = Live_FileShare_SetSpinnerDvars
+                      (offset,1,s_fsSearchRowValueDvars[6],s_fsSearchRowTextDvars[6]);
+    if (value != 0) {
+      pcVar1 = UI_SafeTranslateString(fshPlayerSearchPreference[value + -1]);
       Dvar_SetString(s_fsSearchRowTextDvars[6],pcVar1);
     }
   }
@@ -3856,37 +3885,38 @@ void __cdecl Live_FileShare_Read_f(void)
 {
   bool bVar1;
   int iVar2;
-  char *pcVar3;
-  ulong64 uVar4;
-  long64 lVar5;
-  undefined4 uVar6;
-  fileShareBufferLocation fVar7;
+  char *str;
+  ulong64 uVar3;
+  long64 lVar4;
+  undefined4 uVar5;
+  fileShareBufferLocation fVar6;
   int local_1c;
+  int argCount;
   
   iVar2 = Cmd_Argc();
-  uVar4 = SV_GetOwnerID();
-  fVar7 = (fileShareBufferLocation)uVar4;
-  local_1c = (int)(uVar4 >> 0x20);
-  if (fVar7 == FILESHARE_BUFFER_PRIMARY && local_1c == 0) {
+  uVar3 = SV_GetOwnerID();
+  fVar6 = (fileShareBufferLocation)uVar3;
+  local_1c = (int)(uVar3 >> 0x20);
+  if (fVar6 == FILESHARE_BUFFER_PRIMARY && local_1c == 0) {
     Com_PrintError(0xf,"Must set ownerid first\n");
   }
   else if (iVar2 < 3) {
     if (iVar2 == 1) {
       bVar1 = SV_CanLoadCustomGameType();
       if (bVar1) {
-        uVar6 = 1;
-        uVar4 = SV_GetOwnerID();
-        LiveStorage_FileShare_ReadListing(0,CONCAT44(uVar6,(int)(uVar4 >> 0x20)),fVar7);
+        uVar5 = 1;
+        uVar3 = SV_GetOwnerID();
+        LiveStorage_FileShare_ReadListing(0,CONCAT44(uVar5,(int)(uVar3 >> 0x20)),fVar6);
       }
       else {
         Com_PrintError(0xf,"Can\'t load custom gametypes when ranked!\n");
       }
     }
     else {
-      uVar6 = 1;
-      pcVar3 = Cmd_Argv(1);
-      lVar5 = I_atoi64(pcVar3);
-      LiveStorage_FileShare_ReadListing(0,CONCAT44(uVar6,(int)((ulonglong)lVar5 >> 0x20)),fVar7);
+      uVar5 = 1;
+      str = Cmd_Argv(1);
+      lVar4 = I_atoi64(str);
+      LiveStorage_FileShare_ReadListing(0,CONCAT44(uVar5,(int)((ulonglong)lVar4 >> 0x20)),fVar6);
     }
   }
   else {
@@ -3901,12 +3931,12 @@ void __cdecl Live_FileShare_Read_f(void)
 void __cdecl Live_FileShare_ClearSearchState(void)
 
 {
-  StringTable *local_c;
-  int local_8;
+  StringTable *fileShareTable;
+  int i;
   
   if ((live_service != (dvar_s *)0x0) && ((live_service->current).enabled != false)) {
-    for (local_8 = 0; local_8 < 7; local_8 = local_8 + 1) {
-      switch(local_8) {
+    for (i = 0; i < 7; i = i + 1) {
+      switch(i) {
       case 2:
         Dvar_SetInt(s_fsSearchRowValueDvars[2],0);
         Live_FileShare_SetSpinnerDvars
@@ -3922,10 +3952,10 @@ void __cdecl Live_FileShare_ClearSearchState(void)
         Live_FileShare_SetSpinnerDvars(0,3,s_fsSearchRowValueDvars[4],s_fsSearchRowTextDvars[4]);
         break;
       case 5:
-        StringTable_GetAsset("mp/fileShareTags.csv",&local_c);
+        StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
         Dvar_SetInt(s_fsSearchRowValueDvars[5],0);
         Live_FileShare_SetSpinnerDvars
-                  (0,local_c->rowCount,s_fsSearchRowValueDvars[5],s_fsSearchRowTextDvars[5]);
+                  (0,fileShareTable->rowCount,s_fsSearchRowValueDvars[5],s_fsSearchRowTextDvars[5]);
         break;
       case 6:
         Dvar_SetInt(s_fsSearchRowValueDvars[6],0);
@@ -4023,21 +4053,21 @@ void __cdecl Live_FileShare_TransferFromPooled_f(void)
   int iVar1;
   char *pcVar2;
   long64 lVar3;
-  uint uVar4;
-  fileShareLocation fVar5;
+  uint location;
+  fileShareLocation isCommunityFile;
   undefined1 in_stack_ffffffe4;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    fVar5 = FILESHARE_LOCATION_INVALID;
-    uVar4 = 3;
+    isCommunityFile = FILESHARE_LOCATION_INVALID;
+    location = 3;
     pcVar2 = Cmd_Argv(2);
     iVar1 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(1);
     lVar3 = I_atoi64(pcVar2);
     LiveStorage_FileShare_TransferFile
-              (0,CONCAT44(iVar1,(int)((ulonglong)lVar3 >> 0x20)),uVar4,fVar5,(bool)in_stack_ffffffe4
-              );
+              (0,CONCAT44(iVar1,(int)((ulonglong)lVar3 >> 0x20)),location,isCommunityFile,
+               (bool)in_stack_ffffffe4);
   }
   else {
     Com_Printf(0x10,
@@ -4058,21 +4088,21 @@ void __cdecl Live_FileShare_TransferFromUser_f(void)
   int iVar1;
   char *pcVar2;
   long64 lVar3;
-  uint uVar4;
-  fileShareLocation fVar5;
+  uint location;
+  fileShareLocation isCommunityFile;
   undefined1 in_stack_ffffffe4;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    fVar5 = FILESHARE_LOCATION_INVALID;
-    uVar4 = 2;
+    isCommunityFile = FILESHARE_LOCATION_INVALID;
+    location = 2;
     pcVar2 = Cmd_Argv(2);
     iVar1 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(1);
     lVar3 = I_atoi64(pcVar2);
     LiveStorage_FileShare_TransferFile
-              (0,CONCAT44(iVar1,(int)((ulonglong)lVar3 >> 0x20)),uVar4,fVar5,(bool)in_stack_ffffffe4
-              );
+              (0,CONCAT44(iVar1,(int)((ulonglong)lVar3 >> 0x20)),location,isCommunityFile,
+               (bool)in_stack_ffffffe4);
   }
   else {
     Com_Printf(0x10,
@@ -4093,21 +4123,21 @@ void __cdecl Live_FileShare_TransferFromCommunity_f(void)
   int iVar1;
   char *pcVar2;
   long64 lVar3;
-  uint uVar4;
-  fileShareLocation fVar5;
+  uint location;
+  fileShareLocation isCommunityFile;
   undefined1 in_stack_ffffffe4;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 3) {
-    fVar5 = FILESHARE_LOCATION_PUBLISHERSTORAGE;
-    uVar4 = 2;
+    isCommunityFile = FILESHARE_LOCATION_PUBLISHERSTORAGE;
+    location = 2;
     pcVar2 = Cmd_Argv(2);
     iVar1 = atoi(pcVar2);
     pcVar2 = Cmd_Argv(1);
     lVar3 = I_atoi64(pcVar2);
     LiveStorage_FileShare_TransferFile
-              (0,CONCAT44(iVar1,(int)((ulonglong)lVar3 >> 0x20)),uVar4,fVar5,(bool)in_stack_ffffffe4
-              );
+              (0,CONCAT44(iVar1,(int)((ulonglong)lVar3 >> 0x20)),location,isCommunityFile,
+               (bool)in_stack_ffffffe4);
   }
   else {
     Com_Printf(0x10,
@@ -4126,14 +4156,14 @@ void __cdecl Live_FileShare_TransferLastUploaded_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  uint uVar3;
+  char *nptr;
+  uint userSlot;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    uVar3 = atoi(pcVar2);
-    LiveStorage_FileShare_TransferLastUploaded(0,uVar3);
+    nptr = Cmd_Argv(1);
+    userSlot = atoi(nptr);
+    LiveStorage_FileShare_TransferLastUploaded(0,userSlot);
   }
   else {
     Com_Printf(0x10,
@@ -4150,25 +4180,26 @@ void __cdecl Live_FileShare_GetRecentGames_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  ulong64 uVar3;
-  long64 lVar4;
+  char *str;
+  ulong64 uVar2;
+  long64 lVar3;
   undefined4 in_stack_ffffffdc;
-  int local_14;
+  int playerXuid;
   int local_10;
+  int argCount;
   
   iVar1 = Cmd_Argc();
   if (iVar1 < 3) {
     if (iVar1 == 1) {
-      uVar3 = Live_GetXuid(0);
-      Live_FileShare_GetRecentGames(0,CONCAT44(in_stack_ffffffdc,(int)(uVar3 >> 0x20)));
+      uVar2 = Live_GetXuid(0);
+      Live_FileShare_GetRecentGames(0,CONCAT44(in_stack_ffffffdc,(int)(uVar2 >> 0x20)));
     }
     else {
-      pcVar2 = Cmd_Argv(1);
-      lVar4 = I_atoi64(pcVar2);
-      local_10 = (int)((ulonglong)lVar4 >> 0x20);
-      local_14 = (int)lVar4;
-      if ((local_10 == 0) && (local_14 == 0)) {
+      str = Cmd_Argv(1);
+      lVar3 = I_atoi64(str);
+      local_10 = (int)((ulonglong)lVar3 >> 0x20);
+      playerXuid = (int)lVar3;
+      if ((local_10 == 0) && (playerXuid == 0)) {
         Com_PrintError(0x10,"Invalid XUID.\n");
       }
       else {
@@ -4193,14 +4224,14 @@ void __cdecl Live_FileShare_Remove_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  uint uVar3;
+  char *nptr;
+  uint fileSlot;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    uVar3 = atoi(pcVar2);
-    LiveStorage_FileShare_RemoveFile(0,uVar3);
+    nptr = Cmd_Argv(1);
+    fileSlot = atoi(nptr);
+    LiveStorage_FileShare_RemoveFile(0,fileSlot);
   }
   else {
     Com_Printf(0x10,"fileShareRemove usage: fileShareRemove <fileSlot>\n");
@@ -4222,60 +4253,60 @@ void __cdecl Live_FileShare_EditInfo_f(void)
   undefined1 unaff_SI;
   int iVar4;
   char *local_40;
-  uint local_24;
-  uint local_20;
-  fileSharePrivateData *local_1c;
-  int local_18;
-  undefined8 local_14;
-  bdFileMetaData *local_8;
+  int numTags;
+  uint index_2;
+  fileSharePrivateData *data;
+  int index;
+  undefined8 fileID;
+  bdFileMetaData *desc;
   
   pcVar3 = Cmd_Argv(1);
-  local_14 = I_atoi64(pcVar3);
-  local_1c = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
-  for (local_18 = 0; local_18 < local_1c->descriptorCount; local_18 = local_18 + 1) {
-    if (((int)local_1c->descriptors[local_18].m_fileID == (int)local_14) &&
-       (*(int *)((int)&local_1c->descriptors[local_18].m_fileID + 4) == local_14._4_4_)) break;
+  fileID = I_atoi64(pcVar3);
+  data = LiveStorage_FileShare_GetFileShareData(FILESHARE_BUFFER_PRIMARY);
+  for (index = 0; index < data->descriptorCount; index = index + 1) {
+    if (((int)data->descriptors[index].m_fileID == (int)fileID) &&
+       (*(int *)((int)&data->descriptors[index].m_fileID + 4) == fileID._4_4_)) break;
   }
-  if ((local_1c->descriptorCount <= local_18) &&
+  if ((data->descriptorCount <= index) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0xce3,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_18 == local_1c->descriptorCount) {
+  if (index == data->descriptorCount) {
     Com_PrintError(0x10,"File ID %llu not found in file share.\n");
   }
   else {
     iVar4 = 0x20;
     pcVar3 = Live_ControllerIndex_GetClientName(0);
     I_strncpyz(s_gamerTag,pcVar3,iVar4);
-    local_8 = local_1c->descriptors + local_18;
-    if ((local_8 == (bdFileMetaData *)0x0) &&
+    desc = data->descriptors + index;
+    if ((desc == (bdFileMetaData *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp",0xcf1
                                  ,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (local_8 != (bdFileMetaData *)0x0) {
-      for (local_20 = 0; local_20 < local_8->m_numTags; local_20 = local_20 + 1) {
-        if (((int)local_8->m_tags[local_20].m_priTag == 5) &&
-           (*(int *)((int)&local_8->m_tags[local_20].m_priTag + 4) == 0)) {
+    if (desc != (bdFileMetaData *)0x0) {
+      for (index_2 = 0; index_2 < desc->m_numTags; index_2 = index_2 + 1) {
+        if (((int)desc->m_tags[index_2].m_priTag == 5) &&
+           (*(int *)((int)&desc->m_tags[index_2].m_priTag + 4) == 0)) {
           iVar4 = (fsSelectedFileTagIndex->current).integer;
-          *(int *)&local_8->m_tags[local_20].m_secTag = iVar4;
-          *(int *)((int)&local_8->m_tags[local_20].m_secTag + 4) = iVar4 >> 0x1f;
+          *(int *)&desc->m_tags[index_2].m_secTag = iVar4;
+          *(int *)((int)&desc->m_tags[index_2].m_secTag + 4) = iVar4 >> 0x1f;
           break;
         }
       }
-      if (local_20 == local_8->m_numTags) {
-        local_24 = local_8->m_numTags;
+      if (index_2 == desc->m_numTags) {
+        numTags = desc->m_numTags;
         Live_FileShare_AddTag
-                  (5,(longlong)(fsSelectedFileTagIndex->current).integer,(int *)&local_24,
-                   local_8->m_tags,0x28);
-        local_8->m_numTags = local_24;
+                  (5,(longlong)(fsSelectedFileTagIndex->current).integer,&numTags,desc->m_tags,0x28)
+        ;
+        desc->m_numTags = numTags;
       }
-      LiveStorage_FileShare_UpdateMetaData((char *)local_8->m_metaData);
+      LiveStorage_FileShare_UpdateMetaData((char *)desc->m_metaData);
       local_40 = s_gamerTag;
       pcVar3 = local_40;
       do {
@@ -4283,9 +4314,9 @@ void __cdecl Live_FileShare_EditInfo_f(void)
         pcVar3 = local_40 + 1;
       } while (*local_40 != '\0');
       LiveStorage_FileShare_WriteSummary
-                (0,CONCAT44(2,local_14._4_4_),0xa4c8ba0,local_40 + -0xa4c8ba0,
-                 (uint)local_8->m_metaData,(void *)local_8->m_metaDataSize,(uint)local_8->m_tags,
-                 (bdTag *)local_8->m_numTags,1,(bool)unaff_SI);
+                (0,CONCAT44(2,fileID._4_4_),0xa4c8ba0,local_40 + -0xa4c8ba0,(uint)desc->m_metaData,
+                 (void *)desc->m_metaDataSize,(uint)desc->m_tags,(bdTag *)desc->m_numTags,1,
+                 (bool)unaff_SI);
     }
   }
   return;
@@ -4298,13 +4329,14 @@ void __cdecl Live_FileShare_AbortOperation_f(void)
 
 {
   int iVar1;
-  fileShareLocation fVar2;
+  fileShareLocation location_00;
+  fileShareLocation location;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 1) {
-    fVar2 = LiveStorage_FileShare_GetCurrentHTTPLocation(0);
-    if (fVar2 != FILESHARE_LOCATION_INVALID) {
-      LiveStorage_FileShare_AbortOperation(0,fVar2);
+    location_00 = LiveStorage_FileShare_GetCurrentHTTPLocation(0);
+    if (location_00 != FILESHARE_LOCATION_INVALID) {
+      LiveStorage_FileShare_AbortOperation(0,location_00);
     }
   }
   else {
@@ -4340,17 +4372,17 @@ void __cdecl Live_FileShare_SubmitRating_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
-  long64 lVar3;
+  char *str;
+  long64 lVar2;
   uint in_stack_ffffffe4;
   undefined4 local_8;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
     if (s_fileShareFileRating != 0) {
-      pcVar2 = Cmd_Argv(1);
-      lVar3 = I_atoi64(pcVar2);
-      local_8 = (undefined4)((ulonglong)lVar3 >> 0x20);
+      str = Cmd_Argv(1);
+      lVar2 = I_atoi64(str);
+      local_8 = (undefined4)((ulonglong)lVar2 >> 0x20);
       Com_Printf(0x10,"Setting a rating of %d for %llu\n");
       LiveStorage_FileShare_WriteRating(0,CONCAT44(s_fileShareFileRating,local_8),in_stack_ffffffe4)
       ;
@@ -4433,13 +4465,13 @@ void __cdecl Live_FileShare_SetRating_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   uint local_1c;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    local_1c = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    local_1c = atoi(nptr);
     if ((int)local_1c < 0) {
       local_1c = 0;
     }
@@ -4464,13 +4496,13 @@ void __cdecl Live_FileShare_SetRatingPreview_f(void)
 
 {
   int iVar1;
-  char *pcVar2;
+  char *nptr;
   uint local_1c;
   
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
-    pcVar2 = Cmd_Argv(1);
-    local_1c = atoi(pcVar2);
+    nptr = Cmd_Argv(1);
+    local_1c = atoi(nptr);
     if ((int)local_1c < 0) {
       local_1c = 0;
     }
@@ -4509,13 +4541,13 @@ void __cdecl Live_FileShare_ResetRatingPreview_f(void)
 void __cdecl Live_FileShare_ReadUserTag_f(void)
 
 {
-  int local_10;
-  StringTable *local_c;
-  char *local_8;
+  int i;
+  StringTable *fileShareTable;
+  char *value;
   
-  StringTable_GetAsset("mp/fileShareTags.csv",&local_c);
-  for (local_10 = 0; local_10 < local_c->rowCount; local_10 = local_10 + 1) {
-    local_8 = StringTable_Lookup(local_c,0,"1",1);
+  StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
+  for (i = 0; i < fileShareTable->rowCount; i = i + 1) {
+    value = StringTable_Lookup(fileShareTable,0,"1",1);
   }
   return;
 }
@@ -4526,11 +4558,11 @@ void __cdecl Live_FileShare_ReadUserTag_f(void)
 void __cdecl Live_FileShare_UserTagLeft_f(void)
 
 {
-  StringTable *local_8;
+  StringTable *fileShareTable;
   
-  StringTable_GetAsset("mp/fileShareTags.csv",&local_8);
+  StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
   if ((fsSelectedFileTagIndex->current).integer == 0) {
-    Dvar_SetInt(fsSelectedFileTagIndex,local_8->rowCount);
+    Dvar_SetInt(fsSelectedFileTagIndex,fileShareTable->rowCount);
   }
   else {
     Dvar_SetInt(fsSelectedFileTagIndex,(fsSelectedFileTagIndex->current).integer + -1);
@@ -4545,13 +4577,13 @@ void __cdecl Live_FileShare_UserTagRight_f(void)
 
 {
   int iVar1;
-  StringTable *local_8;
+  StringTable *fileShareTable;
   
   iVar1 = Key_IsDown(0,0xc9);
   if (iVar1 == 0) {
-    StringTable_GetAsset("mp/fileShareTags.csv",&local_8);
+    StringTable_GetAsset("mp/fileShareTags.csv",&fileShareTable);
     Dvar_SetInt(fsSelectedFileTagIndex,(fsSelectedFileTagIndex->current).integer + 1);
-    if (local_8->rowCount < (fsSelectedFileTagIndex->current).integer) {
+    if (fileShareTable->rowCount < (fsSelectedFileTagIndex->current).integer) {
       Dvar_SetInt(fsSelectedFileTagIndex,0);
     }
   }
@@ -4677,22 +4709,22 @@ void __cdecl Live_FileShare_Init(void)
 
 {
   dvar_s *pdVar1;
-  char *pcVar2;
-  int local_8;
+  char *value;
+  int i;
   
-  for (local_8 = 1; local_8 < 7; local_8 = local_8 + 1) {
+  for (i = 1; i < 7; i = i + 1) {
     pdVar1 = _Dvar_RegisterString
-                       (s_fsSearchRowTextDvarNames[local_8],"@MENU_ALL",0,
+                       (s_fsSearchRowTextDvarNames[i],"@MENU_ALL",0,
                         "Search text dvar for search spinner rows.");
-    s_fsSearchRowTextDvars[local_8] = pdVar1;
-    pdVar1 = _Dvar_RegisterInt(s_fsSearchRowValueDvarNames[local_8],0,0,0x7fffffff,0,
+    s_fsSearchRowTextDvars[i] = pdVar1;
+    pdVar1 = _Dvar_RegisterInt(s_fsSearchRowValueDvarNames[i],0,0,0x7fffffff,0,
                                "Search value dvar for search spinner rows.");
-    s_fsSearchRowValueDvars[local_8] = pdVar1;
+    s_fsSearchRowValueDvars[i] = pdVar1;
   }
   s_lastPlayedGame.descriptor.m_fileID._0_4_ = 0;
   s_lastPlayedGame.descriptor.m_fileID._4_4_ = 0;
-  pcVar2 = UI_SafeTranslateString("@MENU_FILESHARE_MOSTRECENT");
-  Dvar_SetString(s_fsSearchRowTextDvars[1],pcVar2);
+  value = UI_SafeTranslateString("@MENU_FILESHARE_MOSTRECENT");
+  Dvar_SetString(s_fsSearchRowTextDvars[1],value);
   fsSearchFileType =
        _Dvar_RegisterInt("fsSearchFileType",1,0,0x7fffffff,0,"File type on which to perform search")
   ;

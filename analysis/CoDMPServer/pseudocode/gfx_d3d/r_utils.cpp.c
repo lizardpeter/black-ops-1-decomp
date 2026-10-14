@@ -2,22 +2,22 @@
 
 // 00A7DCD0  R_HashAssetName  (gfx_d3d/r_utils.cpp:51)
 
-uint __cdecl R_HashAssetName(char *param_1)
+uint __cdecl R_HashAssetName(char *name)
 
 {
   code *pcVar1;
   bool bVar2;
   uint uVar3;
-  char *local_c;
-  uint local_8;
+  char *pos;
+  uint hash;
   
-  local_8 = 0;
-  local_c = param_1;
+  hash = 0;
+  pos = name;
   do {
-    if (*local_c == '\0') {
-      return local_8;
+    if (*pos == '\0') {
+      return hash;
     }
-    if (('@' < *local_c) && (*local_c < '[')) {
+    if (('@' < *pos) && (*pos < '[')) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_utils.cpp",0x3b,0,
                                "%s\n\t(name) = %s");
       if (!bVar2) {
@@ -26,7 +26,7 @@ uint __cdecl R_HashAssetName(char *param_1)
         return uVar3;
       }
     }
-    if ((*local_c == '\\') && (*local_c != '/')) {
+    if ((*pos == '\\') && (*pos != '/')) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_utils.cpp",0x3c,0,
                                "%s\n\t(name) = %s");
       if (!bVar2) {
@@ -35,57 +35,58 @@ uint __cdecl R_HashAssetName(char *param_1)
         return uVar3;
       }
     }
-    local_8 = local_8 * 0x21 ^ (int)*local_c;
-    local_c = local_c + 1;
+    hash = hash * 0x21 ^ (int)*pos;
+    pos = pos + 1;
   } while( true );
 }
 
 
 // 00A7DDA0  R_HashString  (gfx_d3d/r_utils.cpp:70)
 
-uint __cdecl R_HashString(char *param_1)
+uint __cdecl R_HashString(char *string)
 
 {
-  byte *local_c;
-  uint local_8;
+  char *pos;
+  uint hash;
   
-  local_8 = 0;
-  for (local_c = (byte *)param_1; *local_c != 0; local_c = local_c + 1) {
-    local_8 = local_8 * 0x21 ^ (int)(char)(*local_c | 0x20);
+  hash = 0;
+  for (pos = string; *pos != '\0'; pos = pos + 1) {
+    hash = hash * 0x21 ^ (int)(char)(*pos | 0x20);
   }
-  return local_8;
+  return hash;
 }
 
 
 // 00A7DDF0  R_AllocGlobalVariable  (gfx_d3d/r_utils.cpp:86)
 
-void * __cdecl R_AllocGlobalVariable(uint param_1,char *param_2)
+void * __cdecl R_AllocGlobalVariable(uint bytes,char *name)
 
 {
   void *pvVar1;
   
-  pvVar1 = Z_VirtualAlloc(param_1,param_2,0x13);
+  pvVar1 = Z_VirtualAlloc(bytes,name,0x13);
   return pvVar1;
 }
 
 
 // 00A7DE30  R_CullPointAndRadius  (gfx_d3d/r_utils.cpp:116)
 
-bool __cdecl R_CullPointAndRadius(float *param_1,float param_2,DpvsPlane *param_3,int param_4)
+bool __cdecl R_CullPointAndRadius(float *pt,float radius,DpvsPlane *clipPlanes,int clipPlaneCount)
 
 {
   DpvsPlane *pDVar1;
-  int local_8;
+  float dist;
+  int planeIndex;
   
-  local_8 = 0;
+  planeIndex = 0;
   while( true ) {
-    if (param_4 <= local_8) {
+    if (clipPlaneCount <= planeIndex) {
       return false;
     }
-    pDVar1 = param_3 + local_8;
-    if (*param_1 * pDVar1->coeffs[0] + param_1[1] * pDVar1->coeffs[1] +
-        param_1[2] * pDVar1->coeffs[2] + param_3[local_8].coeffs[3] < -param_2) break;
-    local_8 = local_8 + 1;
+    pDVar1 = clipPlanes + planeIndex;
+    if (*pt * pDVar1->coeffs[0] + pt[1] * pDVar1->coeffs[1] + pt[2] * pDVar1->coeffs[2] +
+        clipPlanes[planeIndex].coeffs[3] < -radius) break;
+    planeIndex = planeIndex + 1;
   }
   return true;
 }
@@ -93,17 +94,17 @@ bool __cdecl R_CullPointAndRadius(float *param_1,float param_2,DpvsPlane *param_
 
 // 00A7DED0  R_ConvertColorToBytes  (gfx_d3d/r_utils.cpp:131)
 
-void __cdecl R_ConvertColorToBytes(float *param_1,uchar *param_2)
+void __cdecl R_ConvertColorToBytes(float *colorFloat,uchar *colorBytes)
 
 {
-  if (param_1 == (float *)0x0) {
-    param_2[0] = 0xff;
-    param_2[1] = 0xff;
-    param_2[2] = 0xff;
-    param_2[3] = 0xff;
+  if (colorFloat == (float *)0x0) {
+    colorBytes[0] = 0xff;
+    colorBytes[1] = 0xff;
+    colorBytes[2] = 0xff;
+    colorBytes[3] = 0xff;
   }
   else {
-    Byte4PackVertexColor(param_1,param_2);
+    Byte4PackVertexColor(colorFloat,colorBytes);
   }
   return;
 }
@@ -112,24 +113,28 @@ void __cdecl R_ConvertColorToBytes(float *param_1,uchar *param_2)
 // 00A7DF30  R_PickEntityBone  (gfx_d3d/r_utils.cpp:298)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-int __cdecl R_PickEntityBone(int param_1,float *param_2,float *param_3,int param_4,char **param_5)
+int __cdecl R_PickEntityBone(int traceMask,float *org,float *dir,int boneIndex,char **boneName)
 
 {
   int iVar1;
-  float local_a4;
+  float xend;
   float local_a0;
   float local_9c;
-  float local_98;
+  float bonePos;
   float local_94;
   float local_90;
-  float local_8c;
+  float zend;
   float local_88;
   float local_84;
-  float local_80;
+  float end;
   float local_7c;
   float local_78;
-  float local_74;
+  float boneAxis;
   float local_70;
   float local_6c;
   float local_68;
@@ -138,37 +143,37 @@ int __cdecl R_PickEntityBone(int param_1,float *param_2,float *param_3,int param
   float local_5c;
   float local_58;
   float local_54;
-  float4 local_50 [3];
+  float4 trace [3];
   uint local_18;
-  float local_14;
+  float yend;
   float local_10;
   float local_c;
-  ushort local_8;
+  ushort hitEntId;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_50[0].v[0] = 0.0;
-  local_50[0].v[1] = 0.0;
-  local_50[0].v[2] = 0.0;
-  local_50[0].v[3] = 0.0;
-  local_80 = *param_3 * 262144.0 + *param_2;
-  local_7c = param_3[1] * 262144.0 + param_2[1];
-  local_78 = param_3[2] * 262144.0 + param_2[2];
-  CG_LocationalTrace((trace_t *)local_50,param_2,&local_80,0,param_1,false,(col_context_t *)0x0);
-  local_8 = Trace_GetEntityHitId((trace_t *)local_50);
-  iVar1 = CG_GetEntityBoneInfo((uint)local_8,param_4,&local_98,(float (*) [3])&local_74,param_5);
+  trace[0].v[0] = 0.0;
+  trace[0].v[1] = 0.0;
+  trace[0].v[2] = 0.0;
+  trace[0].v[3] = 0.0;
+  end = *dir * 262144.0 + *org;
+  local_7c = dir[1] * 262144.0 + org[1];
+  local_78 = dir[2] * 262144.0 + org[2];
+  CG_LocationalTrace((trace_t *)trace,org,&end,0,traceMask,false,(col_context_t *)0x0);
+  hitEntId = Trace_GetEntityHitId((trace_t *)trace);
+  iVar1 = CG_GetEntityBoneInfo((uint)hitEntId,boneIndex,&bonePos,(float (*) [3])&boneAxis,boneName);
   if (iVar1 != 0) {
-    local_a4 = local_74 * 30.0 + local_98;
+    xend = boneAxis * 30.0 + bonePos;
     local_a0 = local_70 * 30.0 + local_94;
     local_9c = local_6c * 30.0 + local_90;
-    local_14 = local_68 * 30.0 + local_98;
+    yend = local_68 * 30.0 + bonePos;
     local_10 = local_64 * 30.0 + local_94;
     local_c = local_60 * 30.0 + local_90;
-    local_8c = local_5c * 30.0 + local_98;
+    zend = local_5c * 30.0 + bonePos;
     local_88 = local_58 * 30.0 + local_94;
     local_84 = local_54 * 30.0 + local_90;
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,&local_98,&local_a4,colorRed,1);
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,&local_98,&local_14,colorGreen,1);
-    R_AddDebugLine(&frontEndDataOut->debugGlobals,&local_98,&local_8c,colorBlue,1);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,&bonePos,&xend,colorRed,1);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,&bonePos,&yend,colorGreen,1);
+    R_AddDebugLine(&frontEndDataOut->debugGlobals,&bonePos,&zend,colorBlue,1);
   }
   return (uint)(iVar1 != 0);
 }
@@ -176,7 +181,7 @@ int __cdecl R_PickEntityBone(int param_1,float *param_2,float *param_3,int param
 
 // 00A7E1E0  FresnelTerm  (gfx_d3d/r_utils.cpp:335)
 
-float __cdecl FresnelTerm(float param_1,float param_2,float param_3)
+float __cdecl FresnelTerm(float n0,float n1,float cosIncidentAngle)
 
 {
   code *pcVar1;
@@ -191,26 +196,26 @@ float __cdecl FresnelTerm(float param_1,float param_2,float param_3)
   undefined4 in_stack_ffffff94;
   double local_30;
   
-  if ((param_3 < -1.0) &&
+  if ((cosIncidentAngle < -1.0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_utils.cpp",0x15b,1,
                                "%s\n\t(cosIncidentAngle) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((1.0 < param_3) &&
+  if ((1.0 < cosIncidentAngle) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_utils.cpp",0x15c,1,
                                "%s\n\t(cosIncidentAngle) = %g"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  dVar5 = (double)ABS(param_3);
+  dVar5 = (double)ABS(cosIncidentAngle);
   __libm_sse2_acos((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90));
   dVar5 = (double)(float)dVar5;
   local_30 = dVar5;
   __libm_sse2_sin((double)CONCAT44(in_stack_ffffff94,in_stack_ffffff90));
-  local_30 = (double)(param_1 / param_2) * local_30;
+  local_30 = (double)(n0 / n1) * local_30;
   if (local_30 <= 1.0) {
     if (local_30 < -1.0) {
       local_30 = -1.0;
@@ -257,7 +262,7 @@ float __cdecl FresnelTerm(float param_1,float param_2,float param_3)
 
 // 00A7E460  R_GetClearColor  (gfx_d3d/r_utils.cpp:381)
 
-bool __cdecl R_GetClearColor(float *param_1)
+bool __cdecl R_GetClearColor(float *unpackedRgba)
 
 {
   GfxBackEndData *pGVar1;
@@ -267,27 +272,27 @@ bool __cdecl R_GetClearColor(float *param_1)
   pGVar1 = backEndData;
   if (((r_clear->current).integer == 0) ||
      (((r_clear->current).integer == 1 && ((developer->current).integer == 0)))) {
-    *param_1 = 0.0;
-    param_1[1] = 0.0;
-    param_1[2] = 0.0;
-    param_1[3] = 0.0;
+    *unpackedRgba = 0.0;
+    unpackedRgba[1] = 0.0;
+    unpackedRgba[2] = 0.0;
+    unpackedRgba[3] = 0.0;
     bVar2 = false;
   }
   else if ((((r_clear->current).integer == 4) && (backEndData != (GfxBackEndData *)0x0)) &&
           ((backEndData->fogSettings).density != 0.0)) {
-    *param_1 = (backEndData->fogSettings).color[0];
-    param_1[1] = (pGVar1->fogSettings).color[1];
-    param_1[2] = (pGVar1->fogSettings).color[2];
-    param_1[3] = (pGVar1->fogSettings).color[3];
-    param_1[3] = 1.0;
+    *unpackedRgba = (backEndData->fogSettings).color[0];
+    unpackedRgba[1] = (pGVar1->fogSettings).color[1];
+    unpackedRgba[2] = (pGVar1->fogSettings).color[2];
+    unpackedRgba[3] = (pGVar1->fogSettings).color[3];
+    unpackedRgba[3] = 1.0;
     bVar2 = true;
   }
   else {
     if (((r_clear->current).integer != 3) && (uVar3 = Sys_Milliseconds(), (uVar3 & 0x200) != 0)) {
-      Byte4UnpackRgba((r_clearColor2->current).color,param_1);
+      Byte4UnpackRgba((r_clearColor2->current).color,unpackedRgba);
       return true;
     }
-    Byte4UnpackRgba((r_clearColor->current).color,param_1);
+    Byte4UnpackRgba((r_clearColor->current).color,unpackedRgba);
     bVar2 = true;
   }
   return bVar2;

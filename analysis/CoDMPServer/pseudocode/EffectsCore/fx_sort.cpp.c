@@ -2,7 +2,7 @@
 
 // 005DFF50  FX_CalcRunnerParentSortOrder  (EffectsCore/fx_sort.cpp:35)
 
-int __cdecl FX_CalcRunnerParentSortOrder(FxEffect *param_1)
+int __cdecl FX_CalcRunnerParentSortOrder(FxEffect *effect)
 
 {
   FxEffectDef *pFVar1;
@@ -12,18 +12,21 @@ int __cdecl FX_CalcRunnerParentSortOrder(FxEffect *param_1)
   int iVar5;
   int local_30;
   int local_28;
-  int local_18;
-  int local_c;
-  int local_8;
+  FxEffectDef *def;
+  int totalNonRunnerElemDefs;
+  FxElemDef *elemDef;
+  int elemDefCount;
+  int totalSortOrder;
+  int elemDefIndex;
   
-  if ((param_1 == (FxEffect *)0x0) &&
+  if ((effect == (FxEffect *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",0x2b,0,
                                "%s"), !bVar4)) {
     pcVar3 = (code *)swi(3);
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  pFVar1 = (param_1->field0_0x0).def;
+  pFVar1 = (effect->field0_0x0).def;
   if ((pFVar1 == (FxEffectDef *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",0x2e,0,
                                "%s"), !bVar4)) {
@@ -31,22 +34,23 @@ int __cdecl FX_CalcRunnerParentSortOrder(FxEffect *param_1)
     iVar5 = (*pcVar3)();
     return iVar5;
   }
-  local_c = 0;
-  local_18 = 0;
-  for (local_8 = 0;
-      local_8 < pFVar1->elemDefCountEmission + pFVar1->elemDefCountOneShot +
-                pFVar1->elemDefCountLooping; local_8 = local_8 + 1) {
-    pFVar2 = (((param_1->field0_0x0).def)->field9_0x1c).elemDefsEA;
-    if (pFVar2[local_8].elemType != '\f') {
-      local_c = (uint)pFVar2[local_8].sortOrder + local_c;
-      local_18 = local_18 + 1;
+  totalSortOrder = 0;
+  totalNonRunnerElemDefs = 0;
+  for (elemDefIndex = 0;
+      elemDefIndex <
+      pFVar1->elemDefCountEmission + pFVar1->elemDefCountOneShot + pFVar1->elemDefCountLooping;
+      elemDefIndex = elemDefIndex + 1) {
+    pFVar2 = (((effect->field0_0x0).def)->field9_0x1c).elemDefsEA;
+    if (pFVar2[elemDefIndex].elemType != '\f') {
+      totalSortOrder = (uint)pFVar2[elemDefIndex].sortOrder + totalSortOrder;
+      totalNonRunnerElemDefs = totalNonRunnerElemDefs + 1;
     }
   }
-  if (local_18 < 1) {
+  if (totalNonRunnerElemDefs < 1) {
     local_30 = 0;
   }
   else {
-    local_28 = local_c / local_18;
+    local_28 = totalSortOrder / totalNonRunnerElemDefs;
     if (0xfd < local_28) {
       local_28 = 0xfe;
     }
@@ -61,28 +65,29 @@ int __cdecl FX_CalcRunnerParentSortOrder(FxEffect *param_1)
 
 // 005DFE70  FX_FirstEffectIsFurther  (EffectsCore/fx_sort.cpp:72)
 
-bool __cdecl FX_FirstEffectIsFurther(FxEffect *param_1,FxEffect *param_2)
+bool __cdecl FX_FirstEffectIsFurther(FxEffect *firstEffect,FxEffect *secondEffect)
 
 {
   uint uVar1;
   bool bVar2;
   
-  if ((((uint)param_1->boltAndSortOrder & 0xff) == 0xff) &&
-     (((uint)param_2->boltAndSortOrder & 0xff) == 0xff)) {
+  if ((((uint)firstEffect->boltAndSortOrder & 0xff) == 0xff) &&
+     (((uint)secondEffect->boltAndSortOrder & 0xff) == 0xff)) {
     bVar2 = false;
   }
   else {
-    if (((uint)param_1->boltAndSortOrder & 0xff) == 0xff) {
-      uVar1 = FX_CalcRunnerParentSortOrder(param_1);
-      param_1->boltAndSortOrder =
-           (FxBoltAndSortOrder)((uint)param_1->boltAndSortOrder & 0xffffff00 | uVar1 & 0xff);
+    if (((uint)firstEffect->boltAndSortOrder & 0xff) == 0xff) {
+      uVar1 = FX_CalcRunnerParentSortOrder(firstEffect);
+      firstEffect->boltAndSortOrder =
+           (FxBoltAndSortOrder)((uint)firstEffect->boltAndSortOrder & 0xffffff00 | uVar1 & 0xff);
     }
-    if (((uint)param_2->boltAndSortOrder & 0xff) == 0xff) {
-      uVar1 = FX_CalcRunnerParentSortOrder(param_2);
-      param_2->boltAndSortOrder =
-           (FxBoltAndSortOrder)((uint)param_2->boltAndSortOrder & 0xffffff00 | uVar1 & 0xff);
+    if (((uint)secondEffect->boltAndSortOrder & 0xff) == 0xff) {
+      uVar1 = FX_CalcRunnerParentSortOrder(secondEffect);
+      secondEffect->boltAndSortOrder =
+           (FxBoltAndSortOrder)((uint)secondEffect->boltAndSortOrder & 0xffffff00 | uVar1 & 0xff);
     }
-    bVar2 = ((uint)param_1->boltAndSortOrder & 0xff) < ((uint)param_2->boltAndSortOrder & 0xff);
+    bVar2 = ((uint)firstEffect->boltAndSortOrder & 0xff) <
+            ((uint)secondEffect->boltAndSortOrder & 0xff);
   }
   return bVar2;
 }
@@ -92,54 +97,58 @@ bool __cdecl FX_FirstEffectIsFurther(FxEffect *param_1,FxEffect *param_2)
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
-void __cdecl FX_SortEffects(FxSystem *param_1)
+void __cdecl FX_SortEffects(FxSystem *system)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxEffect *pFVar3;
+  FxEffect *firstEffect;
+  FxEffect *effectForOrg;
   float afStack_1024 [1024];
-  uint local_24;
-  ushort local_20;
-  FxSystem *local_1c;
-  uint local_18;
-  uint local_14;
-  FxEffect *local_10;
-  float local_c;
-  uint local_8;
+  int insertIndexModPrev;
+  ushort effectHandle;
+  float *camOrg;
+  int insertIndex;
+  int insertIndexMod;
+  FxEffect *otherEffect;
+  float distToCamSqNext;
+  int activeIndex;
   
-  local_8 = 0x5dfbdd;
-  if ((param_1 == (FxSystem *)0x0) &&
+  activeIndex = 0x5dfbdd;
+  if ((system == (FxSystem *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",100,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_1c = param_1;
-  FX_WaitBeginIteratingOverEffects_Exclusive(param_1);
-  for (local_8 = param_1->shared->firstActiveEffect; local_8 != param_1->shared->firstNewEffect;
-      local_8 = local_8 + 1) {
-    local_20 = param_1->shared->allEffectHandles[local_8 & 0x3ff];
-    pFVar3 = FX_EffectFromHandle(param_1,local_20);
-    local_c = Vec3DistanceSq((pFVar3->frameNow).origin,(float *)local_1c);
-    local_18 = local_8;
-    while ((local_18 != param_1->shared->firstActiveEffect &&
-           ((local_24 = local_18 - 1 & 0x3ff, afStack_1024[local_24] < local_c * 0.9999 ||
-            (((afStack_1024[local_24] < local_c * 1.0001 &&
-              (local_10 = FX_EffectFromHandle(param_1,param_1->shared->allEffectHandles[local_24]),
-              local_10->owner == pFVar3->owner)) &&
-             (bVar2 = FX_FirstEffectIsFurther(pFVar3,local_10), bVar2))))))) {
-      local_14 = local_18 & 0x3ff;
-      afStack_1024[local_14] = afStack_1024[local_24];
-      param_1->shared->allEffectHandles[local_14] = param_1->shared->allEffectHandles[local_24];
-      local_18 = local_18 - 1;
+  camOrg = (float *)system;
+  FX_WaitBeginIteratingOverEffects_Exclusive(system);
+  for (activeIndex = system->shared->firstActiveEffect;
+      activeIndex != system->shared->firstNewEffect; activeIndex = activeIndex + 1) {
+    effectHandle = system->shared->allEffectHandles[activeIndex & 0x3ff];
+    firstEffect = FX_EffectFromHandle(system,effectHandle);
+    distToCamSqNext = Vec3DistanceSq((firstEffect->frameNow).origin,camOrg);
+    insertIndex = activeIndex;
+    while ((insertIndex != system->shared->firstActiveEffect &&
+           ((insertIndexModPrev = insertIndex - 1U & 0x3ff,
+            afStack_1024[insertIndexModPrev] < distToCamSqNext * 0.9999 ||
+            (((afStack_1024[insertIndexModPrev] < distToCamSqNext * 1.0001 &&
+              (otherEffect = FX_EffectFromHandle(system,system->shared->allEffectHandles
+                                                        [insertIndexModPrev]),
+              otherEffect->owner == firstEffect->owner)) &&
+             (bVar2 = FX_FirstEffectIsFurther(firstEffect,otherEffect), bVar2))))))) {
+      insertIndexMod = insertIndex & 0x3ff;
+      afStack_1024[insertIndexMod] = afStack_1024[insertIndexModPrev];
+      system->shared->allEffectHandles[insertIndexMod] =
+           system->shared->allEffectHandles[insertIndexModPrev];
+      insertIndex = insertIndex + -1;
     }
-    local_14 = local_18 & 0x3ff;
-    afStack_1024[local_14] = local_c;
-    param_1->shared->allEffectHandles[local_14] = local_20;
+    insertIndexMod = insertIndex & 0x3ff;
+    afStack_1024[insertIndexMod] = distToCamSqNext;
+    system->shared->allEffectHandles[insertIndexMod] = effectHandle;
   }
-  param_1->shared->iteratorCount = 0;
+  system->shared->iteratorCount = 0;
   return;
 }
 
@@ -147,22 +156,22 @@ void __cdecl FX_SortEffects(FxSystem *param_1)
 // 005E0430  FX_GetInsertSortElem  (EffectsCore/fx_sort.cpp:150)
 
 void __cdecl
-FX_GetInsertSortElem(FxSystem *param_1,FxEffect *param_2,FxElem *param_3,FxInsertSortElem *param_4)
+FX_GetInsertSortElem(FxSystem *system,FxEffect *effect,FxElem *elem,FxInsertSortElem *sortElem)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_48 [3];
-  FxElemDef *local_3c;
-  uint local_38;
-  orientation_t local_34;
+  float posWorld [3];
+  FxElemDef *elemDef;
+  int randomSeed;
+  orientation_t orient;
   
-  param_4->msecBegin = param_3->msecBegin;
-  param_4->defIndex = (uint)param_3->defIndex;
-  local_3c = (((param_2->field0_0x0).def)->field9_0x1c).elemDefsEA + param_3->defIndex;
-  param_4->elemType = local_3c->elemType;
-  if (5 < local_3c->elemType) {
+  sortElem->msecBegin = elem->msecBegin;
+  sortElem->defIndex = (uint)elem->defIndex;
+  elemDef = (((effect->field0_0x0).def)->field9_0x1c).elemDefsEA + elem->defIndex;
+  sortElem->elemType = elemDef->elemType;
+  if (5 < elemDef->elemType) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",0xa1,0,
                              "%s\n\t(elemDef->elemType) = %i");
     if (!bVar2) {
@@ -171,13 +180,12 @@ FX_GetInsertSortElem(FxSystem *param_1,FxEffect *param_2,FxElem *param_3,FxInser
       return;
     }
   }
-  param_4->defSortOrder = (uint)local_3c->sortOrder;
-  local_38 = ((uint)param_2->randomSeed + param_3->msecBegin + (uint)param_3->sequence * 0x128) %
-             0x1df;
-  FX_GetOrientation(local_3c,&param_2->frameAtSpawn,&param_2->frameNow,local_38,&local_34);
-  FX_OrientationPosToWorldPos(&local_34,(param_3->field6_0x14).origin,local_48);
-  fVar3 = Vec3DistanceSq(local_48,(param_1->cameraPrev).origin);
-  param_4->distToCamSq = fVar3;
+  sortElem->defSortOrder = (uint)elemDef->sortOrder;
+  randomSeed = ((uint)effect->randomSeed + elem->msecBegin + (uint)elem->sequence * 0x128) % 0x1df;
+  FX_GetOrientation(elemDef,&effect->frameAtSpawn,&effect->frameNow,randomSeed,&orient);
+  FX_OrientationPosToWorldPos(&orient,(elem->field6_0x14).origin,posWorld);
+  fVar3 = Vec3DistanceSq(posWorld,(system->cameraPrev).origin);
+  sortElem->distToCamSq = fVar3;
   return;
 }
 
@@ -186,7 +194,7 @@ FX_GetInsertSortElem(FxSystem *param_1,FxEffect *param_2,FxElem *param_3,FxInser
 
 bool __cdecl
 FX_ExistingElemSortsBeforeNewElem
-          (FxSystem *param_1,FxEffect *param_2,FxElem *param_3,FxInsertSortElem *param_4)
+          (FxSystem *system,FxEffect *effect,FxElem *remoteElem,FxInsertSortElem *sortElemNew)
 
 {
   code *pcVar1;
@@ -194,38 +202,39 @@ FX_ExistingElemSortsBeforeNewElem
   undefined1 uVar3;
   float fVar4;
   bool local_68;
-  float local_50 [4];
-  FxElemDef *local_40;
-  uint local_3c;
-  orientation_t local_38;
-  FxElem *local_8;
+  float posWorld [3];
+  float distToCamSq;
+  FxElemDef *elemDef;
+  int randomSeed;
+  orientation_t orient;
+  FxElem *elem;
   
-  local_8 = param_3;
-  local_40 = (((param_2->field0_0x0).def)->field9_0x1c).elemDefsEA + param_3->defIndex;
-  if ((local_40->elemType == '\x05') &&
+  elem = remoteElem;
+  elemDef = (((effect->field0_0x0).def)->field9_0x1c).elemDefsEA + remoteElem->defIndex;
+  if ((elemDef->elemType == '\x05') &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",0xb9,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  if (local_40->elemType < 6) {
-    if (local_40->visualCount == '\0') {
+  if (elemDef->elemType < 6) {
+    if (elemDef->visualCount == '\0') {
       local_68 = true;
     }
-    else if ((int)(uint)local_40->sortOrder < param_4->defSortOrder) {
+    else if ((int)(uint)elemDef->sortOrder < sortElemNew->defSortOrder) {
       local_68 = true;
     }
-    else if (param_4->defSortOrder < (int)(uint)local_40->sortOrder) {
+    else if (sortElemNew->defSortOrder < (int)(uint)elemDef->sortOrder) {
       local_68 = false;
     }
     else {
-      local_3c = ((uint)param_2->randomSeed + local_8->msecBegin + (uint)local_8->sequence * 0x128)
-                 % 0x1df;
-      FX_GetOrientation(local_40,&param_2->frameAtSpawn,&param_2->frameNow,local_3c,&local_38);
-      FX_OrientationPosToWorldPos(&local_38,(local_8->field6_0x14).origin,local_50);
-      fVar4 = Vec3DistanceSq(local_50,(param_1->cameraPrev).origin);
-      local_68 = param_4->distToCamSq <= fVar4 && fVar4 != param_4->distToCamSq;
+      randomSeed = ((uint)effect->randomSeed + elem->msecBegin + (uint)elem->sequence * 0x128) %
+                   0x1df;
+      FX_GetOrientation(elemDef,&effect->frameAtSpawn,&effect->frameNow,randomSeed,&orient);
+      FX_OrientationPosToWorldPos(&orient,(elem->field6_0x14).origin,posWorld);
+      fVar4 = Vec3DistanceSq(posWorld,(system->cameraPrev).origin);
+      local_68 = sortElemNew->distToCamSq <= fVar4 && fVar4 != sortElemNew->distToCamSq;
     }
   }
   else {
@@ -238,28 +247,28 @@ FX_ExistingElemSortsBeforeNewElem
 // 005E0220  FX_SortSpriteElemIntoEffect  (EffectsCore/fx_sort.cpp:205)
 
 void __cdecl
-FX_SortSpriteElemIntoEffect(FxSystem *param_1,FxEffect *param_2,FxElem *param_3,FxElem *param_4)
+FX_SortSpriteElemIntoEffect(FxSystem *system,FxEffect *effect,FxElem *remoteElem,FxElem *elem)
 
 {
   code *pcVar1;
   bool bVar2;
-  ushort local_30;
-  FxInsertSortElem local_2c;
-  ushort local_18;
-  FxElem *local_14;
-  FxElem *local_10;
-  FxElem *local_c;
-  ushort local_8;
+  ushort nextElemHandle;
+  FxInsertSortElem sortElem;
+  ushort elemHandle;
+  FxElem *nextElem;
+  ushort *prevNextElemHandle;
+  FxElem *prevElem;
+  ushort prevElemHandle;
   
-  local_14 = (FxElem *)0x0;
-  local_c = (FxElem *)0x0;
-  local_10 = (FxElem *)0x0;
-  local_18 = FX_ElemToHandle(param_1,param_3);
-  local_8 = 0xffff;
-  local_30 = param_2->firstElemHandle[0];
-  if (param_2->firstElemHandle[0] != 0xffff) {
-    FX_GetInsertSortElem(param_1,param_2,param_4,&local_2c);
-    if ((local_2c.defSortOrder < 0) &&
+  nextElem = (FxElem *)0x0;
+  prevElem = (FxElem *)0x0;
+  prevNextElemHandle = (ushort *)0x0;
+  elemHandle = FX_ElemToHandle(system,remoteElem);
+  prevElemHandle = 0xffff;
+  nextElemHandle = effect->firstElemHandle[0];
+  if (effect->firstElemHandle[0] != 0xffff) {
+    FX_GetInsertSortElem(system,effect,elem,&sortElem);
+    if ((sortElem.defSortOrder < 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",0xe0,
                                  0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -267,37 +276,36 @@ FX_SortSpriteElemIntoEffect(FxSystem *param_1,FxEffect *param_2,FxElem *param_3,
       return;
     }
     do {
-      local_14 = FX_ElemFromHandle(param_1,local_30);
-      bVar2 = FX_ExistingElemSortsBeforeNewElem(param_1,param_2,local_14,&local_2c);
+      nextElem = FX_ElemFromHandle(system,nextElemHandle);
+      bVar2 = FX_ExistingElemSortsBeforeNewElem(system,effect,nextElem,&sortElem);
       if (!bVar2) break;
-      local_c = local_14;
-      local_8 = local_30;
-      local_10 = local_14 + 1;
-      local_30._0_1_ = local_10->defIndex;
-      local_30._1_1_ = local_10->sequence;
-    } while (local_30 != 0xffff);
+      prevElem = nextElem;
+      prevElemHandle = nextElemHandle;
+      prevNextElemHandle = (ushort *)(nextElem + 1);
+      nextElemHandle._0_1_ = ((FxElem *)prevNextElemHandle)->defIndex;
+      nextElemHandle._1_1_ = ((FxElem *)prevNextElemHandle)->sequence;
+    } while (nextElemHandle != 0xffff);
   }
-  param_3[1].defIndex = (undefined1)local_30;
-  param_3[1].sequence = local_30._1_1_;
-  param_3[1].atRestFraction = (undefined1)local_8;
-  param_3[1].emitResidual = local_8._1_1_;
-  if ((local_18 == local_30) &&
+  remoteElem[1].defIndex = (undefined1)nextElemHandle;
+  remoteElem[1].sequence = nextElemHandle._1_1_;
+  remoteElem[1].atRestFraction = (undefined1)prevElemHandle;
+  remoteElem[1].emitResidual = prevElemHandle._1_1_;
+  if ((elemHandle == nextElemHandle) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",0xf2,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_10 == (FxElem *)0x0) {
-    param_2->firstElemHandle[0] = local_18;
+  if (prevNextElemHandle == (ushort *)0x0) {
+    effect->firstElemHandle[0] = elemHandle;
   }
   else {
-    local_10->defIndex = (undefined1)local_18;
-    local_10->sequence = local_18._1_1_;
+    *prevNextElemHandle = elemHandle;
   }
-  if ((local_14 != (FxElem *)0x0) && (local_30 != 0xffff)) {
-    local_14[1].atRestFraction = (undefined1)local_18;
-    local_14[1].emitResidual = local_18._1_1_;
+  if ((nextElem != (FxElem *)0x0) && (nextElemHandle != 0xffff)) {
+    nextElem[1].atRestFraction = (undefined1)elemHandle;
+    nextElem[1].emitResidual = elemHandle._1_1_;
   }
   return;
 }
@@ -305,45 +313,48 @@ FX_SortSpriteElemIntoEffect(FxSystem *param_1,FxEffect *param_2,FxElem *param_3,
 
 // 005E0090  FX_SortNewElemsInEffect  (EffectsCore/fx_sort.cpp:263)
 
-void __cdecl FX_SortNewElemsInEffect(FxSystem *param_1,FxEffect *param_2)
+void __cdecl FX_SortNewElemsInEffect(FxSystem *system,FxEffect *effect)
 
 {
-  ushort uVar1;
-  code *pcVar2;
-  bool bVar3;
-  FxElem *pFVar4;
-  ushort local_14;
+  ushort handle;
+  code *pcVar1;
+  bool bVar2;
+  FxElem *pFVar3;
+  ushort elemHandle;
+  ushort stopElemHandle;
+  FxElem *remoteElem;
+  FxElem *elem;
   
-  local_14 = param_2->firstElemHandle[0];
-  uVar1 = param_2->firstSortedElemHandle;
-  if (local_14 != uVar1) {
-    param_2->firstElemHandle[0] = uVar1;
-    if (uVar1 != 0xffff) {
-      pFVar4 = FX_ElemFromHandle(param_1,uVar1);
-      pFVar4[1].atRestFraction = 0xff;
-      pFVar4[1].emitResidual = 0xff;
+  elemHandle = effect->firstElemHandle[0];
+  handle = effect->firstSortedElemHandle;
+  if (elemHandle != handle) {
+    effect->firstElemHandle[0] = handle;
+    if (handle != 0xffff) {
+      pFVar3 = FX_ElemFromHandle(system,handle);
+      pFVar3[1].atRestFraction = 0xff;
+      pFVar3[1].emitResidual = 0xff;
     }
     do {
-      pFVar4 = FX_ElemFromHandle(param_1,local_14);
-      local_14._0_1_ = pFVar4[1].defIndex;
-      local_14._1_1_ = pFVar4[1].sequence;
-      FX_SortSpriteElemIntoEffect(param_1,param_2,pFVar4,pFVar4);
-    } while (local_14 != uVar1);
-    param_2->firstSortedElemHandle = param_2->firstElemHandle[0];
-    local_14 = param_2->firstElemHandle[0];
-    while (local_14 != 0xffff) {
-      pFVar4 = FX_ElemFromHandle(param_1,local_14);
-      if ((5 < (((param_2->field0_0x0).def)->field9_0x1c).elemDefsEA[pFVar4->defIndex].elemType) &&
-         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",
+      pFVar3 = FX_ElemFromHandle(system,elemHandle);
+      elemHandle._0_1_ = pFVar3[1].defIndex;
+      elemHandle._1_1_ = pFVar3[1].sequence;
+      FX_SortSpriteElemIntoEffect(system,effect,pFVar3,pFVar3);
+    } while (elemHandle != handle);
+    effect->firstSortedElemHandle = effect->firstElemHandle[0];
+    elemHandle = effect->firstElemHandle[0];
+    while (elemHandle != 0xffff) {
+      pFVar3 = FX_ElemFromHandle(system,elemHandle);
+      if ((5 < (((effect->field0_0x0).def)->field9_0x1c).elemDefsEA[pFVar3->defIndex].elemType) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_sort.cpp",
                                    0x12f,0,
                                    "FX_GetEffectElemDef( effect, elem->defIndex )->elemType <= FX_ELEM_TYPE_LAST_SPRITE\n\t%i, %i"
-                                  ), !bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+                                  ), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      local_14._0_1_ = pFVar4[1].defIndex;
-      local_14._1_1_ = pFVar4[1].sequence;
+      elemHandle._0_1_ = pFVar3[1].defIndex;
+      elemHandle._1_1_ = pFVar3[1].sequence;
     }
   }
   return;
@@ -354,15 +365,16 @@ void __cdecl FX_SortNewElemsInEffect(FxSystem *param_1,FxEffect *param_2)
 
 ushort __cdecl
 FX_PoolToHandle_Generic<FxElem,FxElemContainer,2048>
-          (FxPool<FxElem,FxElemContainer> *param_1,FxElem *param_2)
+          (FxPool<FxElem,FxElemContainer> *poolArray,FxElem *item_slim)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  FxElemContainer *item;
   
-  if (((param_2 == (FxElem *)0x0) || (param_2 < param_1)) ||
-     ((FxElem *)(param_1 + 0x800) <= param_2)) {
+  if (((item_slim == (FxElem *)0x0) || (item_slim < poolArray)) ||
+     ((FxElem *)(poolArray + 0x800) <= item_slim)) {
     va("%p %p");
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1c9,0,
                              "%s\n\t%s");
@@ -372,21 +384,21 @@ FX_PoolToHandle_Generic<FxElem,FxElemContainer,2048>
       return uVar3;
     }
   }
-  return (ushort)((int)(((int)param_2 - (int)param_1) + ((int)param_2 - (int)param_1 >> 0x1f & 3U))
-                 >> 2);
+  return (ushort)((int)(((int)item_slim - (int)poolArray) +
+                       ((int)item_slim - (int)poolArray >> 0x1f & 3U)) >> 2);
 }
 
 
 // 005E03E0  FX_ElemToHandle  (EffectsCore/fx_system.h:471)
 
-ushort __cdecl FX_ElemToHandle(FxSystem *param_1,FxElem *param_2)
+ushort __cdecl FX_ElemToHandle(FxSystem *system,FxElem *elem)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   
-  if (param_1 == (FxSystem *)0x0) {
+  if (system == (FxSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x1d8,0,
                              "%s");
     if (!bVar2) {
@@ -395,14 +407,14 @@ ushort __cdecl FX_ElemToHandle(FxSystem *param_1,FxElem *param_2)
       return uVar3;
     }
   }
-  uVar3 = FX_PoolToHandle_Generic<FxElem,FxElemContainer,2048>(param_1->elems,param_2);
+  uVar3 = FX_PoolToHandle_Generic<FxElem,FxElemContainer,2048>(system->elems,elem);
   return uVar3;
 }
 
 
 // 005DFE00  FX_WaitBeginIteratingOverEffects_Exclusive  (EffectsCore/fx_system.h:670)
 
-void __cdecl FX_WaitBeginIteratingOverEffects_Exclusive(FxSystem *param_1)
+void __cdecl FX_WaitBeginIteratingOverEffects_Exclusive(FxSystem *system)
 
 {
   code *pcVar1;
@@ -410,14 +422,14 @@ void __cdecl FX_WaitBeginIteratingOverEffects_Exclusive(FxSystem *param_1)
   int iVar3;
   long *plVar4;
   
-  if ((param_1->isArchiving != false) &&
+  if ((system->isArchiving != false) &&
      (bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",0x2a0,0
                                ,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  plVar4 = &param_1->shared->iteratorCount;
+  plVar4 = &system->shared->iteratorCount;
   do {
     do {
     } while (*plVar4 != 0);

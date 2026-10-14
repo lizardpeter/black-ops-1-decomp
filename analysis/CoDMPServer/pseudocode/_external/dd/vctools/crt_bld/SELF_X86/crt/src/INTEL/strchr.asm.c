@@ -2,7 +2,7 @@
 
 // 00C10CD0  strchr  (line unknown)
 
-void __cdecl strchr(uchar *param_1,uchar param_2)
+void __cdecl strchr(uchar *string,uchar chr)
 
 {
   uint uVar1;
@@ -11,10 +11,10 @@ void __cdecl strchr(uchar *param_1,uchar param_2)
   uint uVar4;
   uint *puVar5;
   
-  while (((uint)param_1 & 3) != 0) {
-    uVar1 = *(uint *)param_1;
-    param_1 = (uchar *)((int)param_1 + 1);
-    if ((uchar)uVar1 == param_2) {
+  while (((uint)string & 3) != 0) {
+    uVar1 = *(uint *)string;
+    string = (uchar *)((int)string + 1);
+    if ((uchar)uVar1 == chr) {
       return;
     }
     if ((uchar)uVar1 == '\0') {
@@ -23,12 +23,12 @@ void __cdecl strchr(uchar *param_1,uchar param_2)
   }
   while( true ) {
     while( true ) {
-      uVar1 = *(uint *)param_1;
-      uVar4 = uVar1 ^ CONCAT22(CONCAT11(param_2,param_2),CONCAT11(param_2,param_2));
+      uVar1 = *(uint *)string;
+      uVar4 = uVar1 ^ CONCAT22(CONCAT11(chr,chr),CONCAT11(chr,chr));
       uVar3 = uVar1 ^ 0xffffffff ^ uVar1 + 0x7efefeff;
-      puVar5 = (uint *)((int)param_1 + 4);
+      puVar5 = (uint *)((int)string + 4);
       if (((uVar4 ^ 0xffffffff ^ uVar4 + 0x7efefeff) & 0x81010100) != 0) break;
-      param_1 = (uchar *)puVar5;
+      string = (uchar *)puVar5;
       if ((uVar3 & 0x81010100) != 0) {
         if ((uVar3 & 0x1010100) != 0) {
           return;
@@ -38,30 +38,30 @@ void __cdecl strchr(uchar *param_1,uchar param_2)
         }
       }
     }
-    uVar1 = *(uint *)param_1;
-    if ((uchar)uVar1 == param_2) {
+    uVar1 = *(uint *)string;
+    if ((uchar)uVar1 == chr) {
       return;
     }
     if ((uchar)uVar1 == '\0') {
       return;
     }
     uVar2 = (uchar)(uVar1 >> 8);
-    if (uVar2 == param_2) {
+    if (uVar2 == chr) {
       return;
     }
     if (uVar2 == '\0') {
       return;
     }
     uVar2 = (uchar)(uVar1 >> 0x10);
-    if (uVar2 == param_2) {
+    if (uVar2 == chr) {
       return;
     }
     if (uVar2 == '\0') break;
     uVar2 = (uchar)(uVar1 >> 0x18);
-    if (uVar2 == param_2) {
+    if (uVar2 == chr) {
       return;
     }
-    param_1 = (uchar *)puVar5;
+    string = (uchar *)puVar5;
     if (uVar2 == '\0') {
       return;
     }

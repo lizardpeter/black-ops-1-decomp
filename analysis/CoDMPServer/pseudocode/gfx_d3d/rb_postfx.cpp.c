@@ -2,7 +2,7 @@
 
 // 00B1CC00  RB_UsingFlameFX  (gfx_d3d/rb_postfx.cpp:28)
 
-bool __cdecl RB_UsingFlameFX(GfxViewInfo *param_1)
+bool __cdecl RB_UsingFlameFX(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
@@ -10,7 +10,7 @@ bool __cdecl RB_UsingFlameFX(GfxViewInfo *param_1)
   if ((r_flame_allowed->current).enabled == false) {
     bVar1 = false;
   }
-  else if ((param_1->flameFx).enabled == false) {
+  else if ((viewInfo->flameFx).enabled == false) {
     if ((r_flameFX_enable->current).enabled == false) {
       bVar1 = false;
     }
@@ -27,7 +27,7 @@ bool __cdecl RB_UsingFlameFX(GfxViewInfo *param_1)
 
 // 00B1CC40  RB_UsingElectrifiedFX  (gfx_d3d/rb_postfx.cpp:43)
 
-bool __cdecl RB_UsingElectrifiedFX(GfxViewInfo *param_1)
+bool __cdecl RB_UsingElectrifiedFX(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
@@ -35,7 +35,7 @@ bool __cdecl RB_UsingElectrifiedFX(GfxViewInfo *param_1)
   if ((r_flame_allowed->current).enabled == false) {
     bVar1 = false;
   }
-  else if ((param_1->electrifiedFx).enabled == false) {
+  else if ((viewInfo->electrifiedFx).enabled == false) {
     if ((r_flameFX_enable->current).enabled == false) {
       bVar1 = false;
     }
@@ -52,14 +52,14 @@ bool __cdecl RB_UsingElectrifiedFX(GfxViewInfo *param_1)
 
 // 00B1CC80  RB_UsingTransportedFX  (gfx_d3d/rb_postfx.cpp:58)
 
-bool __cdecl RB_UsingTransportedFX(GfxViewInfo *param_1)
+bool __cdecl RB_UsingTransportedFX(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (GfxViewInfo *)0x0) {
+  if (viewInfo == (GfxViewInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0x3b,0,"%s"
                             );
     if (!bVar2) {
@@ -71,7 +71,7 @@ bool __cdecl RB_UsingTransportedFX(GfxViewInfo *param_1)
   if ((r_flame_allowed->current).enabled == false) {
     bVar2 = false;
   }
-  else if ((param_1->transportedFx).enabled == false) {
+  else if ((viewInfo->transportedFx).enabled == false) {
     if ((r_flameFX_enable->current).enabled == false) {
       bVar2 = false;
     }
@@ -88,7 +88,7 @@ bool __cdecl RB_UsingTransportedFX(GfxViewInfo *param_1)
 
 // 00B1CCF0  RB_UsingWaterSheetingFX  (gfx_d3d/rb_postfx.cpp:75)
 
-bool __cdecl RB_UsingWaterSheetingFX(GfxViewInfo *param_1)
+bool __cdecl RB_UsingWaterSheetingFX(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
@@ -96,9 +96,9 @@ bool __cdecl RB_UsingWaterSheetingFX(GfxViewInfo *param_1)
   if ((r_waterSheetingFX_allowed->current).enabled == false) {
     bVar1 = false;
   }
-  else if ((param_1->waterSheetingFx).enabled == false) {
+  else if ((viewInfo->waterSheetingFx).enabled == false) {
     if (((r_waterSheetingFX_enable->current).enabled == false) ||
-       ((param_1->waterSheetingFx).blurRadius <= 0.0)) {
+       ((viewInfo->waterSheetingFx).blurRadius <= 0.0)) {
       bVar1 = false;
     }
     else {
@@ -114,26 +114,26 @@ bool __cdecl RB_UsingWaterSheetingFX(GfxViewInfo *param_1)
 
 // 00B27580  RB_UsingPoison  (gfx_d3d/rb_postfx.cpp:90)
 
-bool __cdecl RB_UsingPoison(GfxViewInfo *param_1)
+bool __cdecl RB_UsingPoison(GfxViewInfo *viewInfo)
 
 {
-  return 0.0 < (param_1->poisonFx).curAmount;
+  return 0.0 < (viewInfo->poisonFx).curAmount;
 }
 
 
 // 00B1CB90  RB_UsingDepthOfFieldFX  (gfx_d3d/rb_postfx.cpp:96)
 
-bool __cdecl RB_UsingDepthOfFieldFX(GfxViewInfo *param_1)
+bool __cdecl RB_UsingDepthOfFieldFX(GfxViewInfo *viewInfo)
 
 {
   float *pfVar1;
   float fVar2;
   bool bVar3;
   
-  if ((param_1->dof).viewModelEnd <= (param_1->dof).viewModelStart + 1.0) {
-    if ((param_1->dof).nearEnd <= (param_1->dof).nearStart + 1.0) {
-      fVar2 = (param_1->dof).farEnd;
-      pfVar1 = &(param_1->dof).farStart;
+  if ((viewInfo->dof).viewModelEnd <= (viewInfo->dof).viewModelStart + 1.0) {
+    if ((viewInfo->dof).nearEnd <= (viewInfo->dof).nearStart + 1.0) {
+      fVar2 = (viewInfo->dof).farEnd;
+      pfVar1 = &(viewInfo->dof).farStart;
       if (fVar2 < *pfVar1 || fVar2 == *pfVar1) {
         bVar3 = false;
       }
@@ -154,46 +154,46 @@ bool __cdecl RB_UsingDepthOfFieldFX(GfxViewInfo *param_1)
 
 // 00B1CD40  RB_UsingGenericFilter  (gfx_d3d/rb_postfx.cpp:109)
 
-bool __cdecl RB_UsingGenericFilter(GfxViewInfo *param_1)
+bool __cdecl RB_UsingGenericFilter(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
-  int local_c;
-  int local_8;
+  int iPass;
+  int iFilter;
   
-  if ((param_1 == (GfxViewInfo *)0x0) &&
+  if ((viewInfo == (GfxViewInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0x6e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_8 = 0;
+  iFilter = 0;
   do {
-    if (2 < local_8) {
+    if (2 < iFilter) {
       return (r_genericFilter_enable->current).enabled != false;
     }
-    for (local_c = 0; local_c < 0x10; local_c = local_c + 1) {
-      if (((param_1->genericFilter).passEnabled[local_8][local_c] != false) &&
-         ((param_1->genericFilter).passMaterial[local_8][local_c] != (Material *)0x0)) {
+    for (iPass = 0; iPass < 0x10; iPass = iPass + 1) {
+      if (((viewInfo->genericFilter).passEnabled[iFilter][iPass] != false) &&
+         ((viewInfo->genericFilter).passMaterial[iFilter][iPass] != (Material *)0x0)) {
         return true;
       }
     }
-    local_8 = local_8 + 1;
+    iFilter = iFilter + 1;
   } while( true );
 }
 
 
 // 00B1CDF0  RB_UsingReviveFX  (gfx_d3d/rb_postfx.cpp:130)
 
-bool __cdecl RB_UsingReviveFX(GfxViewInfo *param_1)
+bool __cdecl RB_UsingReviveFX(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
   
-  if ((param_1->reviveFx).enabled == false) {
+  if ((viewInfo->reviveFx).enabled == false) {
     if ((r_reviveFX_debug->current).enabled == false) {
       bVar1 = false;
     }
@@ -210,13 +210,13 @@ bool __cdecl RB_UsingReviveFX(GfxViewInfo *param_1)
 
 // 00B1CE20  RB_UsingBlur  (gfx_d3d/rb_postfx.cpp:144)
 
-bool __cdecl RB_UsingBlur(GfxViewInfo *param_1)
+bool __cdecl RB_UsingBlur(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
   
   if ((r_blur->current).value <= 0.0) {
-    if (param_1->blurRadius <= 0.0) {
+    if (viewInfo->blurRadius <= 0.0) {
       bVar1 = false;
     }
     else {
@@ -259,7 +259,7 @@ bool __cdecl RB_UsingBlur(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b1de79) */
 /* WARNING: Removing unreachable block (ram,0x00b1dea3) */
 
-bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
+bool __cdecl RB_SetBloomConstants(GfxViewInfo *viewInfo)
 
 {
   float local_f0;
@@ -281,13 +281,27 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
   float local_b0;
   float local_ac;
   float local_a8;
+  float desaturationE;
+  float breakPointR;
+  float gammaG;
+  float breakPointT;
+  float desaturationS;
+  float tintWeightR;
+  float gammaR;
+  float tintWeightG;
+  float breakPointG;
+  float gammaB;
+  float desaturationA;
+  float gammaT;
+  float breakPointB;
+  float tintWeightB;
   
-  gfxCmdBufSourceState.input.consts[0x79][0] = (param_1->bloom).bloomCurveBreakpoint[0];
-  gfxCmdBufSourceState.input.consts[0x79][1] = (param_1->bloom).bloomCurveBreakpoint[1];
-  gfxCmdBufSourceState.input.consts[0x79][2] = (param_1->bloom).bloomCurveBreakpoint[2];
-  gfxCmdBufSourceState.input.consts[0x79][3] = (param_1->bloom).bloomCurveBreakpoint[3];
-  local_a8 = (param_1->bloom).bloomCurveLoBlack[3] * 4.0;
-  local_ac = (param_1->bloom).bloomCurveLoGamma[3] * 4.0;
+  gfxCmdBufSourceState.input.consts[0x79][0] = (viewInfo->bloom).bloomCurveBreakpoint[0];
+  gfxCmdBufSourceState.input.consts[0x79][1] = (viewInfo->bloom).bloomCurveBreakpoint[1];
+  gfxCmdBufSourceState.input.consts[0x79][2] = (viewInfo->bloom).bloomCurveBreakpoint[2];
+  gfxCmdBufSourceState.input.consts[0x79][3] = (viewInfo->bloom).bloomCurveBreakpoint[3];
+  local_a8 = (viewInfo->bloom).bloomCurveLoBlack[3] * 4.0;
+  local_ac = (viewInfo->bloom).bloomCurveLoGamma[3] * 4.0;
   if (32.0 < local_a8) {
     local_a8 = 32.0;
   }
@@ -300,10 +314,10 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
   else {
     local_b0 = local_a8 + 3.0517578e-05;
   }
-  local_b4 = (param_1->bloom).bloomCurveLoWhite[0] * 4.0;
-  local_b8 = (param_1->bloom).bloomCurveLoWhite[1] * 4.0;
-  local_bc = (param_1->bloom).bloomCurveLoWhite[2] * 4.0;
-  local_c0 = (param_1->bloom).bloomCurveLoWhite[3] * 4.0;
+  local_b4 = (viewInfo->bloom).bloomCurveLoWhite[0] * 4.0;
+  local_b8 = (viewInfo->bloom).bloomCurveLoWhite[1] * 4.0;
+  local_bc = (viewInfo->bloom).bloomCurveLoWhite[2] * 4.0;
+  local_c0 = (viewInfo->bloom).bloomCurveLoWhite[3] * 4.0;
   if (local_b4 < 3.0517578e-05) {
     local_b4 = 3.0517578e-05;
   }
@@ -366,58 +380,58 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0x7d][3] =
        -(local_d0 / 32.0) * (1.0 / ((32.0 - local_d0) / 32.0));
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7d);
-  if ((param_1->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
     local_d4 = 0.1;
   }
   else {
-    local_d4 = (param_1->bloom).bloomCurveLoRemapWhite[0];
+    local_d4 = (viewInfo->bloom).bloomCurveLoRemapWhite[0];
   }
-  if ((param_1->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
     local_d8 = 0.1;
   }
   else {
-    local_d8 = (param_1->bloom).bloomCurveLoRemapWhite[1];
+    local_d8 = (viewInfo->bloom).bloomCurveLoRemapWhite[1];
   }
-  if ((param_1->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
     local_dc = 0.1;
   }
   else {
-    local_dc = (param_1->bloom).bloomCurveLoRemapWhite[2];
+    local_dc = (viewInfo->bloom).bloomCurveLoRemapWhite[2];
   }
-  if ((param_1->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveLoRemapWhite[0] == 0.0) {
     local_e0 = 0.1;
   }
   else {
-    local_e0 = (param_1->bloom).bloomCurveLoRemapWhite[3];
+    local_e0 = (viewInfo->bloom).bloomCurveLoRemapWhite[3];
   }
   gfxCmdBufSourceState.input.consts[0x7e][0] = 1.0 / local_d4;
   gfxCmdBufSourceState.input.consts[0x7e][1] = 1.0 / local_d8;
   gfxCmdBufSourceState.input.consts[0x7e][2] = 1.0 / local_dc;
   gfxCmdBufSourceState.input.consts[0x7e][3] = 1.0 / local_e0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7e);
-  if ((param_1->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
     local_e4 = 0.1;
   }
   else {
-    local_e4 = (param_1->bloom).bloomCurveHiRemapWhite[0];
+    local_e4 = (viewInfo->bloom).bloomCurveHiRemapWhite[0];
   }
-  if ((param_1->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
     local_e8 = 0.1;
   }
   else {
-    local_e8 = (param_1->bloom).bloomCurveHiRemapWhite[1];
+    local_e8 = (viewInfo->bloom).bloomCurveHiRemapWhite[1];
   }
-  if ((param_1->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
     local_ec = 0.1;
   }
   else {
-    local_ec = (param_1->bloom).bloomCurveHiRemapWhite[2];
+    local_ec = (viewInfo->bloom).bloomCurveHiRemapWhite[2];
   }
-  if ((param_1->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
+  if ((viewInfo->bloom).bloomCurveHiRemapWhite[0] == 0.0) {
     local_f0 = 0.1;
   }
   else {
-    local_f0 = (param_1->bloom).bloomCurveHiRemapWhite[3];
+    local_f0 = (viewInfo->bloom).bloomCurveHiRemapWhite[3];
   }
   gfxCmdBufSourceState.input.consts[0x7f][0] = 1.0 / local_e4;
   gfxCmdBufSourceState.input.consts[0x7f][1] = 1.0 / local_e8;
@@ -434,26 +448,27 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0x81][2] = (32.0 - local_cc) / 32.0;
   gfxCmdBufSourceState.input.consts[0x81][3] = (32.0 - local_d0) / 32.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x81);
-  gfxCmdBufSourceState.input.consts[0x82][0] = (param_1->bloom).bloomStreakXLevels1[1] / 16.0;
-  gfxCmdBufSourceState.input.consts[0x82][1] = (param_1->bloom).bloomStreakXLevels1[2] / 16.0;
-  gfxCmdBufSourceState.input.consts[0x82][2] = (param_1->bloom).bloomStreakXLevels1[3] / 16.0;
-  gfxCmdBufSourceState.input.consts[0x82][3] = (param_1->bloom).bloomStreakXInnerTint[0] / 16.0;
+  gfxCmdBufSourceState.input.consts[0x82][0] = (viewInfo->bloom).bloomStreakXLevels1[1] / 16.0;
+  gfxCmdBufSourceState.input.consts[0x82][1] = (viewInfo->bloom).bloomStreakXLevels1[2] / 16.0;
+  gfxCmdBufSourceState.input.consts[0x82][2] = (viewInfo->bloom).bloomStreakXLevels1[3] / 16.0;
+  gfxCmdBufSourceState.input.consts[0x82][3] = (viewInfo->bloom).bloomStreakXInnerTint[0] / 16.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x82);
-  gfxCmdBufSourceState.input.consts[0x85][0] = (float)(param_1->rbUI3D).viewport[2].width;
-  gfxCmdBufSourceState.input.consts[0x85][1] = (float)(param_1->rbUI3D).viewport[2].height;
-  gfxCmdBufSourceState.input.consts[0x85][2] = (param_1->bloom).bloomStreakXLevels0[1];
-  gfxCmdBufSourceState.input.consts[0x85][3] = (param_1->bloom).bloomStreakXLevels0[2];
+  gfxCmdBufSourceState.input.consts[0x85][0] = (float)(viewInfo->rbUI3D).viewport[2].width;
+  gfxCmdBufSourceState.input.consts[0x85][1] = (float)(viewInfo->rbUI3D).viewport[2].height;
+  gfxCmdBufSourceState.input.consts[0x85][2] = (viewInfo->bloom).bloomStreakXLevels0[1];
+  gfxCmdBufSourceState.input.consts[0x85][3] = (viewInfo->bloom).bloomStreakXLevels0[2];
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x85);
-  gfxCmdBufSourceState.input.consts[0x87][0] = (param_1->bloom).bloomCurveLoBlack[0];
-  gfxCmdBufSourceState.input.consts[0x87][1] = (param_1->bloom).bloomCurveLoBlack[1];
-  gfxCmdBufSourceState.input.consts[0x87][2] = (param_1->bloom).bloomCurveLoBlack[2];
+  gfxCmdBufSourceState.input.consts[0x87][0] = (viewInfo->bloom).bloomCurveLoBlack[0];
+  gfxCmdBufSourceState.input.consts[0x87][1] = (viewInfo->bloom).bloomCurveLoBlack[1];
+  gfxCmdBufSourceState.input.consts[0x87][2] = (viewInfo->bloom).bloomCurveLoBlack[2];
   gfxCmdBufSourceState.input.consts[0x87][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x87);
-  Vec4Set(gfxCmdBufSourceState.input.consts[0x88],(param_1->bloom).bloomCurveLoGamma[0],
-          (param_1->bloom).bloomCurveLoGamma[1],(param_1->bloom).bloomCurveLoGamma[2],0.03125);
+  Vec4Set(gfxCmdBufSourceState.input.consts[0x88],(viewInfo->bloom).bloomCurveLoGamma[0],
+          (viewInfo->bloom).bloomCurveLoGamma[1],(viewInfo->bloom).bloomCurveLoGamma[2],0.03125);
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x88);
-  return (param_1->bloom).bloomStreakXLevels1[1] + (param_1->bloom).bloomStreakXLevels1[2] +
-         (param_1->bloom).bloomStreakXLevels1[3] + (param_1->bloom).bloomStreakXInnerTint[0] != 0.0;
+  return (viewInfo->bloom).bloomStreakXLevels1[1] + (viewInfo->bloom).bloomStreakXLevels1[2] +
+         (viewInfo->bloom).bloomStreakXLevels1[3] + (viewInfo->bloom).bloomStreakXInnerTint[0] !=
+         0.0;
 }
 
 
@@ -534,7 +549,7 @@ bool __cdecl RB_SetBloomConstants(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b210e8) */
 /* WARNING: Removing unreachable block (ram,0x00b21112) */
 
-void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
+void __cdecl RB_BloomStreak(GfxViewInfo *viewInfo,uchar *srcRt,uchar *dstRt)
 
 {
   uchar uVar1;
@@ -544,390 +559,394 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
   float fVar4;
   float local_3bc;
   float local_3b8;
-  uint local_104;
-  float local_ec [16];
-  float local_ac;
-  float local_a8;
-  float local_a4;
-  float local_a0;
-  float local_9c;
-  uint local_98;
-  float local_94;
-  float local_90;
-  float local_8c [32];
-  float local_c;
-  float local_8;
+  uchar tmp_2;
+  uchar tmp;
+  uint j;
+  float dg;
+  float iw;
+  float r;
+  float wb;
+  float dr;
+  float sampleTaps [16];
+  float g;
+  float b;
+  float ob;
+  float pSize;
+  float wr;
+  uint i;
+  float ib;
+  float wg;
+  float sampleWeight [32];
+  float ow;
+  float db;
   
-  for (local_98 = 0; local_98 < 0x20; local_98 = local_98 + 1) {
+  for (i = 0; i < 0x20; i = i + 1) {
     _CIpow();
-    local_8c[local_98] = (float)extraout_ST0;
+    sampleWeight[i] = (float)extraout_ST0;
   }
-  local_104 = 0;
-  for (local_98 = 0; local_98 < 0x10; local_98 = local_98 + 1) {
-    local_ec[local_98] =
-         local_8c[local_104 + 1] / (local_8c[local_104] + local_8c[local_104 + 1]) +
-         (float)local_104;
-    local_8c[local_98] = local_8c[local_104] + local_8c[local_104 + 1];
-    local_104 = local_104 + 2;
+  j = 0;
+  for (i = 0; i < 0x10; i = i + 1) {
+    sampleTaps[i] = sampleWeight[j + 1] / (sampleWeight[j] + sampleWeight[j + 1]) + (float)j;
+    sampleWeight[i] = sampleWeight[j] + sampleWeight[j + 1];
+    j = j + 2;
   }
-  if ((param_1->bloom).bloomStreakYInnerTint[1] + (param_1->bloom).bloomStreakYInnerTint[2] +
-      (param_1->bloom).bloomStreakYOuterTint[0] != 0.0) {
+  if ((viewInfo->bloom).bloomStreakYInnerTint[1] + (viewInfo->bloom).bloomStreakYInnerTint[2] +
+      (viewInfo->bloom).bloomStreakYOuterTint[0] != 0.0) {
     R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1e');
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1e');
     R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1e');
-    local_94 = (param_1->bloom).bloomStreakXTintControl[2];
-    local_3b8 = (param_1->bloom).bloomStreakXTintControl[3];
-    if (local_3b8 <= local_94) {
-      local_3b8 = local_94 + 0.00048828125;
+    ib = (viewInfo->bloom).bloomStreakXTintControl[2];
+    local_3b8 = (viewInfo->bloom).bloomStreakXTintControl[3];
+    if (local_3b8 <= ib) {
+      local_3b8 = ib + 0.00048828125;
     }
-    local_a4 = (param_1->bloom).bloomStreakXTint[0];
-    local_c = (param_1->bloom).bloomStreakXTint[1];
+    ob = (viewInfo->bloom).bloomStreakXTint[0];
+    ow = (viewInfo->bloom).bloomStreakXTint[1];
     gfxCmdBufSourceState.input.consts[0x79][0] =
-         (1.0 / (local_3b8 - local_94)) * (param_1->bloom).bloomStreakXOuterTint[1];
+         (1.0 / (local_3b8 - ib)) * (viewInfo->bloom).bloomStreakXOuterTint[1];
     gfxCmdBufSourceState.input.consts[0x79][1] =
-         (1.0 / (local_3b8 - local_94)) * (param_1->bloom).bloomStreakXOuterTint[2];
+         (1.0 / (local_3b8 - ib)) * (viewInfo->bloom).bloomStreakXOuterTint[2];
     gfxCmdBufSourceState.input.consts[0x79][2] =
-         (1.0 / (local_3b8 - local_94)) * (param_1->bloom).bloomStreakXTintControl[0];
-    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (param_1->bloom).bloomStreakXTintControl[1];
+         (1.0 / (local_3b8 - ib)) * (viewInfo->bloom).bloomStreakXTintControl[0];
+    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (viewInfo->bloom).bloomStreakXTintControl[1];
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
-    gfxCmdBufSourceState.input.consts[0x7a][0] = -local_94 * (1.0 / (local_3b8 - local_94));
-    gfxCmdBufSourceState.input.consts[0x7a][1] = local_c - local_a4;
-    gfxCmdBufSourceState.input.consts[0x7a][2] = local_a4;
+    gfxCmdBufSourceState.input.consts[0x7a][0] = -ib * (1.0 / (local_3b8 - ib));
+    gfxCmdBufSourceState.input.consts[0x7a][1] = ow - ob;
+    gfxCmdBufSourceState.input.consts[0x7a][2] = ob;
     gfxCmdBufSourceState.input.consts[0x7a][3] = 0.0;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
     R_SetCodeImageTexture
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1b].image);
-    RB_Filter(rgp.bloomRemapStreak,param_1);
+    RB_Filter(rgp.bloomRemapStreak,viewInfo);
     R_SetCodeImageTexture
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1e].image);
-    fVar4 = (param_1->bloom).bloomStreakXTint[2];
-    local_ac = (param_1->bloom).bloomStreakYLevels0[0];
-    local_a8 = (param_1->bloom).bloomStreakYLevels0[1];
-    fVar2 = ((param_1->bloom).bloomStreakYLevels0[2] - (param_1->bloom).bloomStreakXTint[2]) *
+    fVar4 = (viewInfo->bloom).bloomStreakXTint[2];
+    g = (viewInfo->bloom).bloomStreakYLevels0[0];
+    b = (viewInfo->bloom).bloomStreakYLevels0[1];
+    fVar2 = ((viewInfo->bloom).bloomStreakYLevels0[2] - (viewInfo->bloom).bloomStreakXTint[2]) *
             0.0625;
-    fVar3 = ((param_1->bloom).bloomStreakYLevels0[3] - (param_1->bloom).bloomStreakYLevels0[0]) *
+    fVar3 = ((viewInfo->bloom).bloomStreakYLevels0[3] - (viewInfo->bloom).bloomStreakYLevels0[0]) *
             0.0625;
-    local_8 = ((param_1->bloom).bloomStreakYLevels1[0] - (param_1->bloom).bloomStreakYLevels0[1]) *
-              0.0625;
-    local_a0 = 1.0 / (float)gfxRenderTargets[0x1e].width;
-    gfxCmdBufSourceState.input.consts[0x79][0] = fVar4 * local_8c[0];
-    gfxCmdBufSourceState.input.consts[0x79][1] = local_ac * local_8c[0];
-    gfxCmdBufSourceState.input.consts[0x79][2] = local_a8 * local_8c[0];
-    gfxCmdBufSourceState.input.consts[0x79][3] = local_ec[0] * local_a0;
+    db = ((viewInfo->bloom).bloomStreakYLevels1[0] - (viewInfo->bloom).bloomStreakYLevels0[1]) *
+         0.0625;
+    pSize = 1.0 / (float)gfxRenderTargets[0x1e].width;
+    gfxCmdBufSourceState.input.consts[0x79][0] = fVar4 * sampleWeight[0];
+    gfxCmdBufSourceState.input.consts[0x79][1] = g * sampleWeight[0];
+    gfxCmdBufSourceState.input.consts[0x79][2] = b * sampleWeight[0];
+    gfxCmdBufSourceState.input.consts[0x79][3] = sampleTaps[0] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7a][0] = fVar4 * local_8c[1];
-    gfxCmdBufSourceState.input.consts[0x7a][1] = local_ac * local_8c[1];
-    gfxCmdBufSourceState.input.consts[0x7a][2] = local_a8 * local_8c[1];
-    gfxCmdBufSourceState.input.consts[0x7a][3] = local_ec[1] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7a][0] = fVar4 * sampleWeight[1];
+    gfxCmdBufSourceState.input.consts[0x7a][1] = g * sampleWeight[1];
+    gfxCmdBufSourceState.input.consts[0x7a][2] = b * sampleWeight[1];
+    gfxCmdBufSourceState.input.consts[0x7a][3] = sampleTaps[1] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7b][0] = fVar4 * local_8c[2];
-    gfxCmdBufSourceState.input.consts[0x7b][1] = local_ac * local_8c[2];
-    gfxCmdBufSourceState.input.consts[0x7b][2] = local_a8 * local_8c[2];
-    gfxCmdBufSourceState.input.consts[0x7b][3] = local_ec[2] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7b][0] = fVar4 * sampleWeight[2];
+    gfxCmdBufSourceState.input.consts[0x7b][1] = g * sampleWeight[2];
+    gfxCmdBufSourceState.input.consts[0x7b][2] = b * sampleWeight[2];
+    gfxCmdBufSourceState.input.consts[0x7b][3] = sampleTaps[2] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7b);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7c][0] = fVar4 * local_8c[3];
-    gfxCmdBufSourceState.input.consts[0x7c][1] = local_ac * local_8c[3];
-    gfxCmdBufSourceState.input.consts[0x7c][2] = local_a8 * local_8c[3];
-    gfxCmdBufSourceState.input.consts[0x7c][3] = local_ec[3] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7c][0] = fVar4 * sampleWeight[3];
+    gfxCmdBufSourceState.input.consts[0x7c][1] = g * sampleWeight[3];
+    gfxCmdBufSourceState.input.consts[0x7c][2] = b * sampleWeight[3];
+    gfxCmdBufSourceState.input.consts[0x7c][3] = sampleTaps[3] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7c);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7d][0] = fVar4 * local_8c[4];
-    gfxCmdBufSourceState.input.consts[0x7d][1] = local_ac * local_8c[4];
-    gfxCmdBufSourceState.input.consts[0x7d][2] = local_a8 * local_8c[4];
-    gfxCmdBufSourceState.input.consts[0x7d][3] = local_ec[4] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7d][0] = fVar4 * sampleWeight[4];
+    gfxCmdBufSourceState.input.consts[0x7d][1] = g * sampleWeight[4];
+    gfxCmdBufSourceState.input.consts[0x7d][2] = b * sampleWeight[4];
+    gfxCmdBufSourceState.input.consts[0x7d][3] = sampleTaps[4] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7d);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7e][0] = fVar4 * local_8c[5];
-    gfxCmdBufSourceState.input.consts[0x7e][1] = local_ac * local_8c[5];
-    gfxCmdBufSourceState.input.consts[0x7e][2] = local_a8 * local_8c[5];
-    gfxCmdBufSourceState.input.consts[0x7e][3] = local_ec[5] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7e][0] = fVar4 * sampleWeight[5];
+    gfxCmdBufSourceState.input.consts[0x7e][1] = g * sampleWeight[5];
+    gfxCmdBufSourceState.input.consts[0x7e][2] = b * sampleWeight[5];
+    gfxCmdBufSourceState.input.consts[0x7e][3] = sampleTaps[5] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7e);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7f][0] = fVar4 * local_8c[6];
-    gfxCmdBufSourceState.input.consts[0x7f][1] = local_ac * local_8c[6];
-    gfxCmdBufSourceState.input.consts[0x7f][2] = local_a8 * local_8c[6];
-    gfxCmdBufSourceState.input.consts[0x7f][3] = local_ec[6] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7f][0] = fVar4 * sampleWeight[6];
+    gfxCmdBufSourceState.input.consts[0x7f][1] = g * sampleWeight[6];
+    gfxCmdBufSourceState.input.consts[0x7f][2] = b * sampleWeight[6];
+    gfxCmdBufSourceState.input.consts[0x7f][3] = sampleTaps[6] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7f);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x80][0] = fVar4 * local_8c[7];
-    gfxCmdBufSourceState.input.consts[0x80][1] = local_ac * local_8c[7];
-    gfxCmdBufSourceState.input.consts[0x80][2] = local_a8 * local_8c[7];
-    gfxCmdBufSourceState.input.consts[0x80][3] = local_ec[7] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x80][0] = fVar4 * sampleWeight[7];
+    gfxCmdBufSourceState.input.consts[0x80][1] = g * sampleWeight[7];
+    gfxCmdBufSourceState.input.consts[0x80][2] = b * sampleWeight[7];
+    gfxCmdBufSourceState.input.consts[0x80][3] = sampleTaps[7] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x80);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x81][0] = fVar4 * local_8c[8];
-    gfxCmdBufSourceState.input.consts[0x81][1] = local_ac * local_8c[8];
-    gfxCmdBufSourceState.input.consts[0x81][2] = local_a8 * local_8c[8];
-    gfxCmdBufSourceState.input.consts[0x81][3] = local_ec[8] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x81][0] = fVar4 * sampleWeight[8];
+    gfxCmdBufSourceState.input.consts[0x81][1] = g * sampleWeight[8];
+    gfxCmdBufSourceState.input.consts[0x81][2] = b * sampleWeight[8];
+    gfxCmdBufSourceState.input.consts[0x81][3] = sampleTaps[8] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x81);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x82][0] = fVar4 * local_8c[9];
-    gfxCmdBufSourceState.input.consts[0x82][1] = local_ac * local_8c[9];
-    gfxCmdBufSourceState.input.consts[0x82][2] = local_a8 * local_8c[9];
-    gfxCmdBufSourceState.input.consts[0x82][3] = local_ec[9] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x82][0] = fVar4 * sampleWeight[9];
+    gfxCmdBufSourceState.input.consts[0x82][1] = g * sampleWeight[9];
+    gfxCmdBufSourceState.input.consts[0x82][2] = b * sampleWeight[9];
+    gfxCmdBufSourceState.input.consts[0x82][3] = sampleTaps[9] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x82);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x83][0] = fVar4 * local_8c[10];
-    gfxCmdBufSourceState.input.consts[0x83][1] = local_ac * local_8c[10];
-    gfxCmdBufSourceState.input.consts[0x83][2] = local_a8 * local_8c[10];
-    gfxCmdBufSourceState.input.consts[0x83][3] = local_ec[10] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x83][0] = fVar4 * sampleWeight[10];
+    gfxCmdBufSourceState.input.consts[0x83][1] = g * sampleWeight[10];
+    gfxCmdBufSourceState.input.consts[0x83][2] = b * sampleWeight[10];
+    gfxCmdBufSourceState.input.consts[0x83][3] = sampleTaps[10] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x83);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x84][0] = fVar4 * local_8c[0xb];
-    gfxCmdBufSourceState.input.consts[0x84][1] = local_ac * local_8c[0xb];
-    gfxCmdBufSourceState.input.consts[0x84][2] = local_a8 * local_8c[0xb];
-    gfxCmdBufSourceState.input.consts[0x84][3] = local_ec[0xb] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x84][0] = fVar4 * sampleWeight[0xb];
+    gfxCmdBufSourceState.input.consts[0x84][1] = g * sampleWeight[0xb];
+    gfxCmdBufSourceState.input.consts[0x84][2] = b * sampleWeight[0xb];
+    gfxCmdBufSourceState.input.consts[0x84][3] = sampleTaps[0xb] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x84);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x85][0] = fVar4 * local_8c[0xc];
-    gfxCmdBufSourceState.input.consts[0x85][1] = local_ac * local_8c[0xc];
-    gfxCmdBufSourceState.input.consts[0x85][2] = local_a8 * local_8c[0xc];
-    gfxCmdBufSourceState.input.consts[0x85][3] = local_ec[0xc] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x85][0] = fVar4 * sampleWeight[0xc];
+    gfxCmdBufSourceState.input.consts[0x85][1] = g * sampleWeight[0xc];
+    gfxCmdBufSourceState.input.consts[0x85][2] = b * sampleWeight[0xc];
+    gfxCmdBufSourceState.input.consts[0x85][3] = sampleTaps[0xc] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x85);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x86][0] = fVar4 * local_8c[0xd];
-    gfxCmdBufSourceState.input.consts[0x86][1] = local_ac * local_8c[0xd];
-    gfxCmdBufSourceState.input.consts[0x86][2] = local_a8 * local_8c[0xd];
-    gfxCmdBufSourceState.input.consts[0x86][3] = local_ec[0xd] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x86][0] = fVar4 * sampleWeight[0xd];
+    gfxCmdBufSourceState.input.consts[0x86][1] = g * sampleWeight[0xd];
+    gfxCmdBufSourceState.input.consts[0x86][2] = b * sampleWeight[0xd];
+    gfxCmdBufSourceState.input.consts[0x86][3] = sampleTaps[0xd] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x86);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x87][0] = fVar4 * local_8c[0xe];
-    gfxCmdBufSourceState.input.consts[0x87][1] = local_ac * local_8c[0xe];
-    gfxCmdBufSourceState.input.consts[0x87][2] = local_a8 * local_8c[0xe];
-    gfxCmdBufSourceState.input.consts[0x87][3] = local_ec[0xe] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x87][0] = fVar4 * sampleWeight[0xe];
+    gfxCmdBufSourceState.input.consts[0x87][1] = g * sampleWeight[0xe];
+    gfxCmdBufSourceState.input.consts[0x87][2] = b * sampleWeight[0xe];
+    gfxCmdBufSourceState.input.consts[0x87][3] = sampleTaps[0xe] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x87);
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x88][0] = (fVar4 + fVar2) * local_8c[0xf];
-    gfxCmdBufSourceState.input.consts[0x88][1] = local_ac * local_8c[0xf];
-    gfxCmdBufSourceState.input.consts[0x88][2] = local_a8 * local_8c[0xf];
-    gfxCmdBufSourceState.input.consts[0x88][3] = local_ec[0xf] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x88][0] = (fVar4 + fVar2) * sampleWeight[0xf];
+    gfxCmdBufSourceState.input.consts[0x88][1] = g * sampleWeight[0xf];
+    gfxCmdBufSourceState.input.consts[0x88][2] = b * sampleWeight[0xf];
+    gfxCmdBufSourceState.input.consts[0x88][3] = sampleTaps[0xf] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x88);
-    local_9c = (param_1->bloom).bloomStreakYLevels1[1];
-    local_90 = (param_1->bloom).bloomStreakYLevels1[2];
-    gfxCmdBufSourceState.input.consts[0x89][2] = (param_1->bloom).bloomStreakYLevels1[3];
-    fVar4 = (param_1->bloom).bloomStreakYInnerTint[1];
-    local_ac = (param_1->bloom).bloomStreakYInnerTint[2] / 8.0;
-    local_a8 = (param_1->bloom).bloomStreakYOuterTint[0] / 8.0;
-    gfxCmdBufSourceState.input.consts[0x89][3] = (param_1->bloom).bloomStreakYInnerTint[0];
-    gfxCmdBufSourceState.input.consts[0x89][0] = local_9c;
-    gfxCmdBufSourceState.input.consts[0x89][1] = local_90;
+    wr = (viewInfo->bloom).bloomStreakYLevels1[1];
+    wg = (viewInfo->bloom).bloomStreakYLevels1[2];
+    gfxCmdBufSourceState.input.consts[0x89][2] = (viewInfo->bloom).bloomStreakYLevels1[3];
+    fVar4 = (viewInfo->bloom).bloomStreakYInnerTint[1];
+    g = (viewInfo->bloom).bloomStreakYInnerTint[2] / 8.0;
+    b = (viewInfo->bloom).bloomStreakYOuterTint[0] / 8.0;
+    gfxCmdBufSourceState.input.consts[0x89][3] = (viewInfo->bloom).bloomStreakYInnerTint[0];
+    gfxCmdBufSourceState.input.consts[0x89][0] = wr;
+    gfxCmdBufSourceState.input.consts[0x89][1] = wg;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x89);
-    gfxCmdBufSourceState.input.consts[0x8a][1] = local_ac;
-    gfxCmdBufSourceState.input.consts[0x8a][2] = local_a8;
+    gfxCmdBufSourceState.input.consts[0x8a][1] = g;
+    gfxCmdBufSourceState.input.consts[0x8a][2] = b;
     gfxCmdBufSourceState.input.consts[0x8a][3] = 1.0;
     gfxCmdBufSourceState.input.consts[0x8a][0] = fVar4 / 8.0;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x8a);
-    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,*param_3);
-    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,*param_3);
+    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,*dstRt);
+    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,*dstRt);
     R_SetCodeImageTexture
-              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[*param_2].image);
-    RB_Filter(rgp.bloomStreakX,param_1);
-    uVar1 = *param_2;
-    *param_2 = *param_3;
-    *param_3 = uVar1;
+              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[*srcRt].image);
+    RB_Filter(rgp.bloomStreakX,viewInfo);
+    uVar1 = *srcRt;
+    *srcRt = *dstRt;
+    *dstRt = uVar1;
   }
-  if ((float)(param_1->rbUI3D).viewport[1].height + (float)(param_1->rbUI3D).viewport[2].x +
-      (float)(param_1->rbUI3D).viewport[2].y != 0.0) {
+  if ((float)(viewInfo->rbUI3D).viewport[1].height + (float)(viewInfo->rbUI3D).viewport[2].x +
+      (float)(viewInfo->rbUI3D).viewport[2].y != 0.0) {
     R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1e');
     R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1e');
     R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1e');
-    local_94 = (param_1->bloom).bloomStreakYTintControl[2];
-    local_3bc = (param_1->bloom).bloomStreakYTintControl[3];
-    if (local_3bc <= local_94) {
-      local_3bc = local_94 + 0.00048828125;
+    ib = (viewInfo->bloom).bloomStreakYTintControl[2];
+    local_3bc = (viewInfo->bloom).bloomStreakYTintControl[3];
+    if (local_3bc <= ib) {
+      local_3bc = ib + 0.00048828125;
     }
-    local_a4 = (param_1->bloom).bloomStreakYTint[0];
-    local_c = (param_1->bloom).bloomStreakYTint[1];
+    ob = (viewInfo->bloom).bloomStreakYTint[0];
+    ow = (viewInfo->bloom).bloomStreakYTint[1];
     gfxCmdBufSourceState.input.consts[0x79][0] =
-         (1.0 / (local_3bc - local_94)) * (param_1->bloom).bloomStreakYOuterTint[1];
+         (1.0 / (local_3bc - ib)) * (viewInfo->bloom).bloomStreakYOuterTint[1];
     gfxCmdBufSourceState.input.consts[0x79][1] =
-         (1.0 / (local_3bc - local_94)) * (param_1->bloom).bloomStreakYOuterTint[2];
+         (1.0 / (local_3bc - ib)) * (viewInfo->bloom).bloomStreakYOuterTint[2];
     gfxCmdBufSourceState.input.consts[0x79][2] =
-         (1.0 / (local_3bc - local_94)) * (param_1->bloom).bloomStreakYTintControl[0];
-    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (param_1->bloom).bloomStreakYTintControl[1];
+         (1.0 / (local_3bc - ib)) * (viewInfo->bloom).bloomStreakYTintControl[0];
+    gfxCmdBufSourceState.input.consts[0x79][3] = 1.0 / (viewInfo->bloom).bloomStreakYTintControl[1];
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
-    gfxCmdBufSourceState.input.consts[0x7a][0] = -local_94 * (1.0 / (local_3bc - local_94));
-    gfxCmdBufSourceState.input.consts[0x7a][1] = local_c - local_a4;
-    gfxCmdBufSourceState.input.consts[0x7a][2] = local_a4;
+    gfxCmdBufSourceState.input.consts[0x7a][0] = -ib * (1.0 / (local_3bc - ib));
+    gfxCmdBufSourceState.input.consts[0x7a][1] = ow - ob;
+    gfxCmdBufSourceState.input.consts[0x7a][2] = ob;
     gfxCmdBufSourceState.input.consts[0x7a][3] = 0.0;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
     R_SetCodeImageTexture
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1b].image);
-    RB_Filter(rgp.bloomRemapStreak,param_1);
+    RB_Filter(rgp.bloomRemapStreak,viewInfo);
     R_SetCodeImageTexture
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1e].image);
-    fVar4 = (param_1->bloom).bloomStreakYTint[2];
-    local_ac = param_1->bloomExpansionXpos;
-    local_a8 = param_1->bloomExpansionYpos;
-    fVar2 = ((float)(param_1->rbUI3D).viewport[0].x - (param_1->bloom).bloomStreakYTint[2]) * 0.0625
-    ;
-    fVar3 = ((float)(param_1->rbUI3D).viewport[0].y - param_1->bloomExpansionXpos) * 0.0625;
-    local_8 = ((float)(param_1->rbUI3D).viewport[0].width - param_1->bloomExpansionYpos) * 0.0625;
-    local_a0 = 1.0 / (float)gfxRenderTargets[0x1e].height;
-    gfxCmdBufSourceState.input.consts[0x79][0] = fVar4 * local_8c[0];
-    gfxCmdBufSourceState.input.consts[0x79][1] = local_ac * local_8c[0];
-    gfxCmdBufSourceState.input.consts[0x79][2] = local_a8 * local_8c[0];
-    gfxCmdBufSourceState.input.consts[0x79][3] = local_ec[0] * local_a0;
+    fVar4 = (viewInfo->bloom).bloomStreakYTint[2];
+    g = viewInfo->bloomExpansionXpos;
+    b = viewInfo->bloomExpansionYpos;
+    fVar2 = ((float)(viewInfo->rbUI3D).viewport[0].x - (viewInfo->bloom).bloomStreakYTint[2]) *
+            0.0625;
+    fVar3 = ((float)(viewInfo->rbUI3D).viewport[0].y - viewInfo->bloomExpansionXpos) * 0.0625;
+    db = ((float)(viewInfo->rbUI3D).viewport[0].width - viewInfo->bloomExpansionYpos) * 0.0625;
+    pSize = 1.0 / (float)gfxRenderTargets[0x1e].height;
+    gfxCmdBufSourceState.input.consts[0x79][0] = fVar4 * sampleWeight[0];
+    gfxCmdBufSourceState.input.consts[0x79][1] = g * sampleWeight[0];
+    gfxCmdBufSourceState.input.consts[0x79][2] = b * sampleWeight[0];
+    gfxCmdBufSourceState.input.consts[0x79][3] = sampleTaps[0] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7a][0] = fVar4 * local_8c[1];
-    gfxCmdBufSourceState.input.consts[0x7a][1] = local_ac * local_8c[1];
-    gfxCmdBufSourceState.input.consts[0x7a][2] = local_a8 * local_8c[1];
-    gfxCmdBufSourceState.input.consts[0x7a][3] = local_ec[1] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7a][0] = fVar4 * sampleWeight[1];
+    gfxCmdBufSourceState.input.consts[0x7a][1] = g * sampleWeight[1];
+    gfxCmdBufSourceState.input.consts[0x7a][2] = b * sampleWeight[1];
+    gfxCmdBufSourceState.input.consts[0x7a][3] = sampleTaps[1] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7b][0] = fVar4 * local_8c[2];
-    gfxCmdBufSourceState.input.consts[0x7b][1] = local_ac * local_8c[2];
-    gfxCmdBufSourceState.input.consts[0x7b][2] = local_a8 * local_8c[2];
-    gfxCmdBufSourceState.input.consts[0x7b][3] = local_ec[2] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7b][0] = fVar4 * sampleWeight[2];
+    gfxCmdBufSourceState.input.consts[0x7b][1] = g * sampleWeight[2];
+    gfxCmdBufSourceState.input.consts[0x7b][2] = b * sampleWeight[2];
+    gfxCmdBufSourceState.input.consts[0x7b][3] = sampleTaps[2] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7b);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7c][0] = fVar4 * local_8c[3];
-    gfxCmdBufSourceState.input.consts[0x7c][1] = local_ac * local_8c[3];
-    gfxCmdBufSourceState.input.consts[0x7c][2] = local_a8 * local_8c[3];
-    gfxCmdBufSourceState.input.consts[0x7c][3] = local_ec[3] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7c][0] = fVar4 * sampleWeight[3];
+    gfxCmdBufSourceState.input.consts[0x7c][1] = g * sampleWeight[3];
+    gfxCmdBufSourceState.input.consts[0x7c][2] = b * sampleWeight[3];
+    gfxCmdBufSourceState.input.consts[0x7c][3] = sampleTaps[3] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7c);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7d][0] = fVar4 * local_8c[4];
-    gfxCmdBufSourceState.input.consts[0x7d][1] = local_ac * local_8c[4];
-    gfxCmdBufSourceState.input.consts[0x7d][2] = local_a8 * local_8c[4];
-    gfxCmdBufSourceState.input.consts[0x7d][3] = local_ec[4] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7d][0] = fVar4 * sampleWeight[4];
+    gfxCmdBufSourceState.input.consts[0x7d][1] = g * sampleWeight[4];
+    gfxCmdBufSourceState.input.consts[0x7d][2] = b * sampleWeight[4];
+    gfxCmdBufSourceState.input.consts[0x7d][3] = sampleTaps[4] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7d);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7e][0] = fVar4 * local_8c[5];
-    gfxCmdBufSourceState.input.consts[0x7e][1] = local_ac * local_8c[5];
-    gfxCmdBufSourceState.input.consts[0x7e][2] = local_a8 * local_8c[5];
-    gfxCmdBufSourceState.input.consts[0x7e][3] = local_ec[5] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7e][0] = fVar4 * sampleWeight[5];
+    gfxCmdBufSourceState.input.consts[0x7e][1] = g * sampleWeight[5];
+    gfxCmdBufSourceState.input.consts[0x7e][2] = b * sampleWeight[5];
+    gfxCmdBufSourceState.input.consts[0x7e][3] = sampleTaps[5] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7e);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x7f][0] = fVar4 * local_8c[6];
-    gfxCmdBufSourceState.input.consts[0x7f][1] = local_ac * local_8c[6];
-    gfxCmdBufSourceState.input.consts[0x7f][2] = local_a8 * local_8c[6];
-    gfxCmdBufSourceState.input.consts[0x7f][3] = local_ec[6] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x7f][0] = fVar4 * sampleWeight[6];
+    gfxCmdBufSourceState.input.consts[0x7f][1] = g * sampleWeight[6];
+    gfxCmdBufSourceState.input.consts[0x7f][2] = b * sampleWeight[6];
+    gfxCmdBufSourceState.input.consts[0x7f][3] = sampleTaps[6] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7f);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x80][0] = fVar4 * local_8c[7];
-    gfxCmdBufSourceState.input.consts[0x80][1] = local_ac * local_8c[7];
-    gfxCmdBufSourceState.input.consts[0x80][2] = local_a8 * local_8c[7];
-    gfxCmdBufSourceState.input.consts[0x80][3] = local_ec[7] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x80][0] = fVar4 * sampleWeight[7];
+    gfxCmdBufSourceState.input.consts[0x80][1] = g * sampleWeight[7];
+    gfxCmdBufSourceState.input.consts[0x80][2] = b * sampleWeight[7];
+    gfxCmdBufSourceState.input.consts[0x80][3] = sampleTaps[7] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x80);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x81][0] = fVar4 * local_8c[8];
-    gfxCmdBufSourceState.input.consts[0x81][1] = local_ac * local_8c[8];
-    gfxCmdBufSourceState.input.consts[0x81][2] = local_a8 * local_8c[8];
-    gfxCmdBufSourceState.input.consts[0x81][3] = local_ec[8] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x81][0] = fVar4 * sampleWeight[8];
+    gfxCmdBufSourceState.input.consts[0x81][1] = g * sampleWeight[8];
+    gfxCmdBufSourceState.input.consts[0x81][2] = b * sampleWeight[8];
+    gfxCmdBufSourceState.input.consts[0x81][3] = sampleTaps[8] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x81);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x82][0] = fVar4 * local_8c[9];
-    gfxCmdBufSourceState.input.consts[0x82][1] = local_ac * local_8c[9];
-    gfxCmdBufSourceState.input.consts[0x82][2] = local_a8 * local_8c[9];
-    gfxCmdBufSourceState.input.consts[0x82][3] = local_ec[9] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x82][0] = fVar4 * sampleWeight[9];
+    gfxCmdBufSourceState.input.consts[0x82][1] = g * sampleWeight[9];
+    gfxCmdBufSourceState.input.consts[0x82][2] = b * sampleWeight[9];
+    gfxCmdBufSourceState.input.consts[0x82][3] = sampleTaps[9] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x82);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    gfxCmdBufSourceState.input.consts[0x83][0] = fVar4 * local_8c[10];
-    gfxCmdBufSourceState.input.consts[0x83][1] = local_ac * local_8c[10];
-    gfxCmdBufSourceState.input.consts[0x83][2] = local_a8 * local_8c[10];
-    gfxCmdBufSourceState.input.consts[0x83][3] = local_ec[10] * local_a0;
+    g = g + fVar3;
+    b = b + db;
+    gfxCmdBufSourceState.input.consts[0x83][0] = fVar4 * sampleWeight[10];
+    gfxCmdBufSourceState.input.consts[0x83][1] = g * sampleWeight[10];
+    gfxCmdBufSourceState.input.consts[0x83][2] = b * sampleWeight[10];
+    gfxCmdBufSourceState.input.consts[0x83][3] = sampleTaps[10] * pSize;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x83);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    Vec4Set(gfxCmdBufSourceState.input.consts[0x84],fVar4 * local_8c[0xb],local_ac * local_8c[0xb],
-            local_a8 * local_8c[0xb],local_ec[0xb] * local_a0);
+    g = g + fVar3;
+    b = b + db;
+    Vec4Set(gfxCmdBufSourceState.input.consts[0x84],fVar4 * sampleWeight[0xb],g * sampleWeight[0xb],
+            b * sampleWeight[0xb],sampleTaps[0xb] * pSize);
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x84);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    Vec4Set(gfxCmdBufSourceState.input.consts[0x85],fVar4 * local_8c[0xc],local_ac * local_8c[0xc],
-            local_a8 * local_8c[0xc],local_ec[0xc] * local_a0);
+    g = g + fVar3;
+    b = b + db;
+    Vec4Set(gfxCmdBufSourceState.input.consts[0x85],fVar4 * sampleWeight[0xc],g * sampleWeight[0xc],
+            b * sampleWeight[0xc],sampleTaps[0xc] * pSize);
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x85);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    Vec4Set(gfxCmdBufSourceState.input.consts[0x86],fVar4 * local_8c[0xd],local_ac * local_8c[0xd],
-            local_a8 * local_8c[0xd],local_ec[0xd] * local_a0);
+    g = g + fVar3;
+    b = b + db;
+    Vec4Set(gfxCmdBufSourceState.input.consts[0x86],fVar4 * sampleWeight[0xd],g * sampleWeight[0xd],
+            b * sampleWeight[0xd],sampleTaps[0xd] * pSize);
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x86);
     fVar4 = fVar4 + fVar2;
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
-    Vec4Set(gfxCmdBufSourceState.input.consts[0x87],fVar4 * local_8c[0xe],local_ac * local_8c[0xe],
-            local_a8 * local_8c[0xe],local_ec[0xe] * local_a0);
+    g = g + fVar3;
+    b = b + db;
+    Vec4Set(gfxCmdBufSourceState.input.consts[0x87],fVar4 * sampleWeight[0xe],g * sampleWeight[0xe],
+            b * sampleWeight[0xe],sampleTaps[0xe] * pSize);
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x87);
-    local_ac = local_ac + fVar3;
-    local_a8 = local_a8 + local_8;
+    g = g + fVar3;
+    b = b + db;
     R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x88,
-                      (fVar4 + fVar2) * local_8c[0xf],local_ac * local_8c[0xf],
-                      local_a8 * local_8c[0xf],local_ec[0xf] * local_a0);
-    local_9c = (float)(param_1->rbUI3D).viewport[0].height;
-    local_90 = (float)(param_1->rbUI3D).viewport[1].x;
-    fVar4 = (float)(param_1->rbUI3D).viewport[1].height;
-    local_ac = (float)(param_1->rbUI3D).viewport[2].x / 8.0;
-    local_a8 = (float)(param_1->rbUI3D).viewport[2].y / 8.0;
-    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x89,local_9c,local_90,
-                      (float)(param_1->rbUI3D).viewport[1].y,
-                      (float)(param_1->rbUI3D).viewport[1].width);
-    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x8a,fVar4 / 8.0,local_ac,
-                      local_a8,1.0);
-    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,*param_3);
-    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,*param_3);
+                      (fVar4 + fVar2) * sampleWeight[0xf],g * sampleWeight[0xf],
+                      b * sampleWeight[0xf],sampleTaps[0xf] * pSize);
+    wr = (float)(viewInfo->rbUI3D).viewport[0].height;
+    wg = (float)(viewInfo->rbUI3D).viewport[1].x;
+    fVar4 = (float)(viewInfo->rbUI3D).viewport[1].height;
+    g = (float)(viewInfo->rbUI3D).viewport[2].x / 8.0;
+    b = (float)(viewInfo->rbUI3D).viewport[2].y / 8.0;
+    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x89,wr,wg,
+                      (float)(viewInfo->rbUI3D).viewport[1].y,
+                      (float)(viewInfo->rbUI3D).viewport[1].width);
+    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x8a,fVar4 / 8.0,g,b,1.0);
+    R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,*dstRt);
+    R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,*dstRt);
     R_SetCodeImageTexture
-              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[*param_2].image);
-    RB_Filter(rgp.bloomStreakY,param_1);
-    uVar1 = *param_2;
-    *param_2 = *param_3;
-    *param_3 = uVar1;
+              ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[*srcRt].image);
+    RB_Filter(rgp.bloomStreakY,viewInfo);
+    uVar1 = *srcRt;
+    *srcRt = *dstRt;
+    *dstRt = uVar1;
   }
   return;
 }
@@ -944,11 +963,12 @@ void __cdecl RB_BloomStreak(GfxViewInfo *param_1,uchar *param_2,uchar *param_3)
 /* WARNING: Removing unreachable block (ram,0x00b21988) */
 /* WARNING: Removing unreachable block (ram,0x00b219af) */
 
-void __cdecl RB_SetBlurConstants(float param_1,float param_2)
+void __cdecl RB_SetBlurConstants(float radius,float textureScaler)
 
 {
   float fVar1;
   double dVar2;
+  float fVar3;
   undefined4 in_stack_ffffff54;
   undefined4 in_stack_ffffff58;
   float local_a4;
@@ -957,98 +977,102 @@ void __cdecl RB_SetBlurConstants(float param_1,float param_2)
   float local_98;
   float local_94;
   float local_68;
-  int local_64;
-  int local_60;
-  float local_5c;
-  float local_48 [12];
-  float local_18;
-  float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  int i_2;
+  int i;
+  float t;
+  float e;
+  float tap01;
+  float tap23;
+  float g;
+  float blurWeights [12];
+  float tap67;
+  float tap89;
+  float x;
+  float tapAB;
+  float tap45;
   
-  if (param_1 - 3.0 < 0.0) {
-    local_68 = param_1;
+  if (radius - 3.0 < 0.0) {
+    local_68 = radius;
   }
   else {
     local_68 = 3.0;
   }
-  if (1.0 - param_1 < 0.0) {
+  if (1.0 - radius < 0.0) {
     local_94 = local_68;
   }
   else {
     local_94 = 1.0;
   }
-  local_10 = 0.5;
-  local_5c = 0.0;
-  for (local_60 = 0; local_60 < 0xc; local_60 = local_60 + 1) {
-    dVar2 = (double)(local_10 * local_10 * (-0.5 / (local_94 * local_94)));
+  x = 0.5;
+  t = 0.0;
+  for (i = 0; i < 0xc; i = i + 1) {
+    dVar2 = (double)(x * x * (-0.5 / (local_94 * local_94)));
     __libm_sse2_exp((double)CONCAT44(in_stack_ffffff58,in_stack_ffffff54));
     fVar1 = (float)dVar2;
-    local_48[local_60] = fVar1;
-    local_5c = fVar1 + fVar1 + local_5c;
-    local_10 = local_10 + 1.0;
+    blurWeights[i] = fVar1;
+    t = fVar1 + fVar1 + t;
+    x = x + 1.0;
   }
-  for (local_64 = 0; local_64 < 0xc; local_64 = local_64 + 1) {
-    local_48[local_64] = local_48[local_64] / local_5c;
+  for (i_2 = 0; i_2 < 0xc; i_2 = i_2 + 1) {
+    blurWeights[i_2] = blurWeights[i_2] / t;
   }
-  if (local_48[0] + local_48[1] == 0.0) {
+  if (blurWeights[0] + blurWeights[1] == 0.0) {
     local_98 = 0.0;
   }
   else {
-    local_98 = local_48[1] / (local_48[0] + local_48[1]) + 0.0;
+    local_98 = blurWeights[1] / (blurWeights[0] + blurWeights[1]) + 0.0;
   }
-  if (local_48[2] + local_48[3] == 0.0) {
+  if (blurWeights[2] + blurWeights[3] == 0.0) {
     local_9c = 0.0;
   }
   else {
-    local_9c = local_48[3] / (local_48[2] + local_48[3]) + 2.0;
+    local_9c = blurWeights[3] / (blurWeights[2] + blurWeights[3]) + 2.0;
   }
-  if (local_48[4] + local_48[5] == 0.0) {
+  if (blurWeights[4] + blurWeights[5] == 0.0) {
     local_a0 = 0.0;
   }
   else {
-    local_a0 = local_48[5] / (local_48[4] + local_48[5]) + 4.0;
+    local_a0 = blurWeights[5] / (blurWeights[4] + blurWeights[5]) + 4.0;
   }
-  if (local_48[6] + local_48[7] == 0.0) {
+  if (blurWeights[6] + blurWeights[7] == 0.0) {
     local_a4 = 0.0;
   }
   else {
-    local_a4 = local_48[7] / (local_48[6] + local_48[7]) + 6.0;
+    local_a4 = blurWeights[7] / (blurWeights[6] + blurWeights[7]) + 6.0;
   }
-  if (local_48[8] + local_48[9] == 0.0) {
-    local_14 = 0.0;
-  }
-  else {
-    local_14 = local_48[9] / (local_48[8] + local_48[9]) + 8.0;
-  }
-  if (local_48[10] + local_48[0xb] == 0.0) {
-    local_c = 0.0;
+  if (blurWeights[8] + blurWeights[9] == 0.0) {
+    fVar1 = 0.0;
   }
   else {
-    local_c = local_48[0xb] / (local_48[10] + local_48[0xb]) + 10.0;
+    fVar1 = blurWeights[9] / (blurWeights[8] + blurWeights[9]) + 8.0;
   }
-  gfxCmdBufSourceState.input.consts[0x79][0] = local_98 * param_2;
-  gfxCmdBufSourceState.input.consts[0x79][1] = local_9c * param_2;
-  local_8 = local_a0 * param_2;
-  local_18 = local_a4 * param_2;
-  local_14 = local_14 * param_2;
-  local_c = local_c * param_2;
+  if (blurWeights[10] + blurWeights[0xb] == 0.0) {
+    fVar3 = 0.0;
+  }
+  else {
+    fVar3 = blurWeights[0xb] / (blurWeights[10] + blurWeights[0xb]) + 10.0;
+  }
+  gfxCmdBufSourceState.input.consts[0x79][0] = local_98 * textureScaler;
+  gfxCmdBufSourceState.input.consts[0x79][1] = local_9c * textureScaler;
+  tap45 = local_a0 * textureScaler;
+  tap67 = local_a4 * textureScaler;
+  tap89 = fVar1 * textureScaler;
+  tapAB = fVar3 * textureScaler;
   gfxCmdBufSourceState.input.consts[0x79][3] = 0.0;
-  gfxCmdBufSourceState.input.consts[0x79][2] = local_8;
+  gfxCmdBufSourceState.input.consts[0x79][2] = tap45;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
-  gfxCmdBufSourceState.input.consts[0x7a][0] = local_18;
-  gfxCmdBufSourceState.input.consts[0x7a][1] = local_14;
-  gfxCmdBufSourceState.input.consts[0x7a][2] = local_c;
+  gfxCmdBufSourceState.input.consts[0x7a][0] = tap67;
+  gfxCmdBufSourceState.input.consts[0x7a][1] = tap89;
+  gfxCmdBufSourceState.input.consts[0x7a][2] = tapAB;
   gfxCmdBufSourceState.input.consts[0x7a][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
-  gfxCmdBufSourceState.input.consts[0x7b][0] = local_48[0] + local_48[1];
-  gfxCmdBufSourceState.input.consts[0x7b][1] = local_48[2] + local_48[3];
-  gfxCmdBufSourceState.input.consts[0x7b][2] = local_48[4] + local_48[5];
-  gfxCmdBufSourceState.input.consts[0x7b][3] = local_48[6] + local_48[7];
+  gfxCmdBufSourceState.input.consts[0x7b][0] = blurWeights[0] + blurWeights[1];
+  gfxCmdBufSourceState.input.consts[0x7b][1] = blurWeights[2] + blurWeights[3];
+  gfxCmdBufSourceState.input.consts[0x7b][2] = blurWeights[4] + blurWeights[5];
+  gfxCmdBufSourceState.input.consts[0x7b][3] = blurWeights[6] + blurWeights[7];
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7b);
-  gfxCmdBufSourceState.input.consts[0x7c][0] = local_48[8] + local_48[9];
-  gfxCmdBufSourceState.input.consts[0x7c][1] = local_48[10] + local_48[0xb];
+  gfxCmdBufSourceState.input.consts[0x7c][0] = blurWeights[8] + blurWeights[9];
+  gfxCmdBufSourceState.input.consts[0x7c][1] = blurWeights[10] + blurWeights[0xb];
   gfxCmdBufSourceState.input.consts[0x7c][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0x7c][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7c);
@@ -1065,7 +1089,7 @@ void __cdecl RB_SetBlurConstants(float param_1,float param_2)
 /* WARNING: Removing unreachable block (ram,0x00b21c43) */
 /* WARNING: Removing unreachable block (ram,0x00b21c6a) */
 
-void __cdecl RB_SetFilmCurveConstants(GfxViewInfo *param_1)
+void __cdecl RB_SetFilmCurveConstants(GfxViewInfo *viewInfo)
 
 {
   float fVar1;
@@ -1074,13 +1098,21 @@ void __cdecl RB_SetFilmCurveConstants(GfxViewInfo *param_1)
   float fVar4;
   float fVar5;
   float fVar6;
+  float D;
+  float A;
+  float wpdivisor;
+  float F;
+  float C;
+  float B;
+  float wp;
+  float E;
   
-  fVar1 = (param_1->film).sCurveShoulderStrength;
-  fVar2 = (param_1->film).sCurveLinearStrength;
-  fVar3 = (param_1->film).sCurveLinearAngle;
-  fVar4 = (param_1->film).sCurveToeStrength;
-  fVar5 = (param_1->film).sCurveToeNumerator;
-  fVar6 = (param_1->film).sCurveToeDenominator;
+  fVar1 = (viewInfo->film).sCurveShoulderStrength;
+  fVar2 = (viewInfo->film).sCurveLinearStrength;
+  fVar3 = (viewInfo->film).sCurveLinearAngle;
+  fVar4 = (viewInfo->film).sCurveToeStrength;
+  fVar5 = (viewInfo->film).sCurveToeNumerator;
+  fVar6 = (viewInfo->film).sCurveToeDenominator;
   gfxCmdBufSourceState.input.consts[0x79][2] = fVar4 * fVar6;
   gfxCmdBufSourceState.input.consts[0x79][3] = 0.0;
   gfxCmdBufSourceState.input.consts[0x79][0] = fVar1;
@@ -1141,12 +1173,12 @@ void __cdecl RB_SetFilmCurveConstants(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b22feb) */
 /* WARNING: Removing unreachable block (ram,0x00b23015) */
 
-void __cdecl RB_SetVisionSetColorCorrection(GfxViewInfo *param_1)
+void __cdecl RB_SetVisionSetColorCorrection(GfxViewInfo *viewInfo)
 
 {
+  float z;
   float fVar1;
   float fVar2;
-  float fVar3;
   float local_268;
   float local_264;
   float local_250;
@@ -1174,89 +1206,89 @@ void __cdecl RB_SetVisionSetColorCorrection(GfxViewInfo *param_1)
   undefined4 local_14;
   
   if ((r_filmTweakRangeDebug->current).enabled == false) {
-    colorTempMatrix((float (*) [4])local_80,(param_1->film).filmColorTemp[0]);
-    colorHueMatrix((float (*) [4])local_c0,(param_1->film).filmHue[0]);
-    colorSaturationMatrix((float (*) [4])local_100,(param_1->film).filmSaturation[0]);
+    colorTempMatrix((float (*) [4])local_80,(viewInfo->film).filmColorTemp[0]);
+    colorHueMatrix((float (*) [4])local_c0,(viewInfo->film).filmHue[0]);
+    colorSaturationMatrix((float (*) [4])local_100,(viewInfo->film).filmSaturation[0]);
     MatrixMultiply44((float (*) [4])local_80,(float (*) [4])local_c0,(float (*) [4])local_140);
     MatrixMultiply44((float (*) [4])local_140,(float (*) [4])local_100,(float (*) [4])&local_180);
-    local_180 = (param_1->film).filmDarkTint[0] * (param_1->film).filmContrast[0] * local_180;
-    local_170 = (param_1->film).filmDarkTint[0] * (param_1->film).filmContrast[0] * local_170;
-    local_160 = (param_1->film).filmDarkTint[0] * (param_1->film).filmContrast[0] * local_160;
-    local_17c = (param_1->film).filmDarkTint[1] * (param_1->film).filmContrast[0] * local_17c;
-    local_16c = (param_1->film).filmDarkTint[1] * (param_1->film).filmContrast[0] * local_16c;
-    local_15c = (param_1->film).filmDarkTint[1] * (param_1->film).filmContrast[0] * local_15c;
-    local_178 = (param_1->film).filmDarkTint[2] * (param_1->film).filmContrast[0] * local_178;
-    local_168 = (param_1->film).filmDarkTint[2] * (param_1->film).filmContrast[0] * local_168;
-    local_158 = (param_1->film).filmDarkTint[2] * (param_1->film).filmContrast[0] * local_158;
-    gfxCmdBufSourceState.input.consts[0x79][3] = (1.0 - (param_1->film).filmContrast[0]) * 0.5;
+    local_180 = (viewInfo->film).filmDarkTint[0] * (viewInfo->film).filmContrast[0] * local_180;
+    local_170 = (viewInfo->film).filmDarkTint[0] * (viewInfo->film).filmContrast[0] * local_170;
+    local_160 = (viewInfo->film).filmDarkTint[0] * (viewInfo->film).filmContrast[0] * local_160;
+    local_17c = (viewInfo->film).filmDarkTint[1] * (viewInfo->film).filmContrast[0] * local_17c;
+    local_16c = (viewInfo->film).filmDarkTint[1] * (viewInfo->film).filmContrast[0] * local_16c;
+    local_15c = (viewInfo->film).filmDarkTint[1] * (viewInfo->film).filmContrast[0] * local_15c;
+    local_178 = (viewInfo->film).filmDarkTint[2] * (viewInfo->film).filmContrast[0] * local_178;
+    local_168 = (viewInfo->film).filmDarkTint[2] * (viewInfo->film).filmContrast[0] * local_168;
+    local_158 = (viewInfo->film).filmDarkTint[2] * (viewInfo->film).filmContrast[0] * local_158;
+    gfxCmdBufSourceState.input.consts[0x79][3] = (1.0 - (viewInfo->film).filmContrast[0]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x79][0] = local_180;
     gfxCmdBufSourceState.input.consts[0x79][1] = local_170;
     gfxCmdBufSourceState.input.consts[0x79][2] = local_160;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
-    gfxCmdBufSourceState.input.consts[0x7a][3] = (1.0 - (param_1->film).filmContrast[0]) * 0.5;
+    gfxCmdBufSourceState.input.consts[0x7a][3] = (1.0 - (viewInfo->film).filmContrast[0]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x7a][0] = local_17c;
     gfxCmdBufSourceState.input.consts[0x7a][1] = local_16c;
     gfxCmdBufSourceState.input.consts[0x7a][2] = local_15c;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
-    gfxCmdBufSourceState.input.consts[0x7b][3] = (1.0 - (param_1->film).filmContrast[0]) * 0.5;
+    gfxCmdBufSourceState.input.consts[0x7b][3] = (1.0 - (viewInfo->film).filmContrast[0]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x7b][0] = local_178;
     gfxCmdBufSourceState.input.consts[0x7b][1] = local_168;
     gfxCmdBufSourceState.input.consts[0x7b][2] = local_158;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7b);
-    colorTempMatrix((float (*) [4])local_80,(param_1->film).filmColorTemp[1]);
-    colorHueMatrix((float (*) [4])local_c0,(param_1->film).filmHue[1]);
-    colorSaturationMatrix((float (*) [4])local_100,(param_1->film).filmSaturation[1]);
+    colorTempMatrix((float (*) [4])local_80,(viewInfo->film).filmColorTemp[1]);
+    colorHueMatrix((float (*) [4])local_c0,(viewInfo->film).filmHue[1]);
+    colorSaturationMatrix((float (*) [4])local_100,(viewInfo->film).filmSaturation[1]);
     MatrixMultiply44((float (*) [4])local_80,(float (*) [4])local_c0,(float (*) [4])local_140);
     MatrixMultiply44((float (*) [4])local_140,(float (*) [4])local_100,(float (*) [4])&local_180);
-    local_180 = (param_1->film).filmMidTint[0] * (param_1->film).filmContrast[1] * local_180;
-    local_170 = (param_1->film).filmMidTint[0] * (param_1->film).filmContrast[1] * local_170;
-    local_160 = (param_1->film).filmMidTint[0] * (param_1->film).filmContrast[1] * local_160;
-    local_17c = (param_1->film).filmMidTint[1] * (param_1->film).filmContrast[1] * local_17c;
-    local_16c = (param_1->film).filmMidTint[1] * (param_1->film).filmContrast[1] * local_16c;
-    local_15c = (param_1->film).filmMidTint[1] * (param_1->film).filmContrast[1] * local_15c;
-    local_178 = (param_1->film).filmMidTint[2] * (param_1->film).filmContrast[1] * local_178;
-    local_168 = (param_1->film).filmMidTint[2] * (param_1->film).filmContrast[1] * local_168;
-    local_158 = (param_1->film).filmMidTint[2] * (param_1->film).filmContrast[1] * local_158;
-    gfxCmdBufSourceState.input.consts[0x7c][3] = (1.0 - (param_1->film).filmContrast[1]) * 0.5;
+    local_180 = (viewInfo->film).filmMidTint[0] * (viewInfo->film).filmContrast[1] * local_180;
+    local_170 = (viewInfo->film).filmMidTint[0] * (viewInfo->film).filmContrast[1] * local_170;
+    local_160 = (viewInfo->film).filmMidTint[0] * (viewInfo->film).filmContrast[1] * local_160;
+    local_17c = (viewInfo->film).filmMidTint[1] * (viewInfo->film).filmContrast[1] * local_17c;
+    local_16c = (viewInfo->film).filmMidTint[1] * (viewInfo->film).filmContrast[1] * local_16c;
+    local_15c = (viewInfo->film).filmMidTint[1] * (viewInfo->film).filmContrast[1] * local_15c;
+    local_178 = (viewInfo->film).filmMidTint[2] * (viewInfo->film).filmContrast[1] * local_178;
+    local_168 = (viewInfo->film).filmMidTint[2] * (viewInfo->film).filmContrast[1] * local_168;
+    local_158 = (viewInfo->film).filmMidTint[2] * (viewInfo->film).filmContrast[1] * local_158;
+    gfxCmdBufSourceState.input.consts[0x7c][3] = (1.0 - (viewInfo->film).filmContrast[1]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x7c][0] = local_180;
     gfxCmdBufSourceState.input.consts[0x7c][1] = local_170;
     gfxCmdBufSourceState.input.consts[0x7c][2] = local_160;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7c);
-    gfxCmdBufSourceState.input.consts[0x7d][3] = (1.0 - (param_1->film).filmContrast[1]) * 0.5;
+    gfxCmdBufSourceState.input.consts[0x7d][3] = (1.0 - (viewInfo->film).filmContrast[1]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x7d][0] = local_17c;
     gfxCmdBufSourceState.input.consts[0x7d][1] = local_16c;
     gfxCmdBufSourceState.input.consts[0x7d][2] = local_15c;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7d);
-    gfxCmdBufSourceState.input.consts[0x7e][3] = (1.0 - (param_1->film).filmContrast[1]) * 0.5;
+    gfxCmdBufSourceState.input.consts[0x7e][3] = (1.0 - (viewInfo->film).filmContrast[1]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x7e][0] = local_178;
     gfxCmdBufSourceState.input.consts[0x7e][1] = local_168;
     gfxCmdBufSourceState.input.consts[0x7e][2] = local_158;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7e);
-    colorTempMatrix((float (*) [4])local_80,(param_1->film).filmColorTemp[2]);
-    colorHueMatrix((float (*) [4])local_c0,(param_1->film).filmHue[2]);
-    colorSaturationMatrix((float (*) [4])local_100,(param_1->film).filmSaturation[2]);
+    colorTempMatrix((float (*) [4])local_80,(viewInfo->film).filmColorTemp[2]);
+    colorHueMatrix((float (*) [4])local_c0,(viewInfo->film).filmHue[2]);
+    colorSaturationMatrix((float (*) [4])local_100,(viewInfo->film).filmSaturation[2]);
     MatrixMultiply44((float (*) [4])local_80,(float (*) [4])local_c0,(float (*) [4])local_140);
     MatrixMultiply44((float (*) [4])local_140,(float (*) [4])local_100,(float (*) [4])&local_180);
-    local_180 = (param_1->film).filmLightTint[0] * (param_1->film).filmContrast[2] * local_180;
-    local_170 = (param_1->film).filmLightTint[0] * (param_1->film).filmContrast[2] * local_170;
-    local_160 = (param_1->film).filmLightTint[0] * (param_1->film).filmContrast[2] * local_160;
-    local_17c = (param_1->film).filmLightTint[1] * (param_1->film).filmContrast[2] * local_17c;
-    local_16c = (param_1->film).filmLightTint[1] * (param_1->film).filmContrast[2] * local_16c;
-    local_15c = (param_1->film).filmLightTint[1] * (param_1->film).filmContrast[2] * local_15c;
-    local_178 = (param_1->film).filmLightTint[2] * (param_1->film).filmContrast[2] * local_178;
-    local_168 = (param_1->film).filmLightTint[2] * (param_1->film).filmContrast[2] * local_168;
-    local_158 = (param_1->film).filmLightTint[2] * (param_1->film).filmContrast[2] * local_158;
-    gfxCmdBufSourceState.input.consts[0x7f][3] = (1.0 - (param_1->film).filmContrast[2]) * 0.5;
+    local_180 = (viewInfo->film).filmLightTint[0] * (viewInfo->film).filmContrast[2] * local_180;
+    local_170 = (viewInfo->film).filmLightTint[0] * (viewInfo->film).filmContrast[2] * local_170;
+    local_160 = (viewInfo->film).filmLightTint[0] * (viewInfo->film).filmContrast[2] * local_160;
+    local_17c = (viewInfo->film).filmLightTint[1] * (viewInfo->film).filmContrast[2] * local_17c;
+    local_16c = (viewInfo->film).filmLightTint[1] * (viewInfo->film).filmContrast[2] * local_16c;
+    local_15c = (viewInfo->film).filmLightTint[1] * (viewInfo->film).filmContrast[2] * local_15c;
+    local_178 = (viewInfo->film).filmLightTint[2] * (viewInfo->film).filmContrast[2] * local_178;
+    local_168 = (viewInfo->film).filmLightTint[2] * (viewInfo->film).filmContrast[2] * local_168;
+    local_158 = (viewInfo->film).filmLightTint[2] * (viewInfo->film).filmContrast[2] * local_158;
+    gfxCmdBufSourceState.input.consts[0x7f][3] = (1.0 - (viewInfo->film).filmContrast[2]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x7f][0] = local_180;
     gfxCmdBufSourceState.input.consts[0x7f][1] = local_170;
     gfxCmdBufSourceState.input.consts[0x7f][2] = local_160;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7f);
-    gfxCmdBufSourceState.input.consts[0x80][3] = (1.0 - (param_1->film).filmContrast[2]) * 0.5;
+    gfxCmdBufSourceState.input.consts[0x80][3] = (1.0 - (viewInfo->film).filmContrast[2]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x80][0] = local_17c;
     gfxCmdBufSourceState.input.consts[0x80][1] = local_16c;
     gfxCmdBufSourceState.input.consts[0x80][2] = local_15c;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x80);
-    gfxCmdBufSourceState.input.consts[0x81][3] = (1.0 - (param_1->film).filmContrast[2]) * 0.5;
+    gfxCmdBufSourceState.input.consts[0x81][3] = (1.0 - (viewInfo->film).filmContrast[2]) * 0.5;
     gfxCmdBufSourceState.input.consts[0x81][0] = local_178;
     gfxCmdBufSourceState.input.consts[0x81][1] = local_168;
     gfxCmdBufSourceState.input.consts[0x81][2] = local_158;
@@ -1318,36 +1350,36 @@ void __cdecl RB_SetVisionSetColorCorrection(GfxViewInfo *param_1)
     gfxCmdBufSourceState.input.consts[0x81][3] = 0.0;
     R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x81);
   }
-  fVar2 = (param_1->film).filmBleach[0];
-  fVar3 = (param_1->film).filmBleach[1];
-  fVar1 = (param_1->film).filmBleach[2];
-  if ((((gfxCmdBufSourceState.input.consts[0x82][0] != fVar2) ||
-       (gfxCmdBufSourceState.input.consts[0x82][1] != fVar3)) ||
-      (gfxCmdBufSourceState.input.consts[0x82][2] != fVar1)) ||
+  fVar1 = (viewInfo->film).filmBleach[0];
+  fVar2 = (viewInfo->film).filmBleach[1];
+  z = (viewInfo->film).filmBleach[2];
+  if ((((gfxCmdBufSourceState.input.consts[0x82][0] != fVar1) ||
+       (gfxCmdBufSourceState.input.consts[0x82][1] != fVar2)) ||
+      (gfxCmdBufSourceState.input.consts[0x82][2] != z)) ||
      (gfxCmdBufSourceState.input.consts[0x82][3] != 1.0)) {
-    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x82,fVar2,fVar3,fVar1,1.0);
+    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x82,fVar1,fVar2,z,1.0);
   }
-  fVar2 = (param_1->film).filmMidStart;
-  local_250 = (param_1->film).filmMidEnd;
-  if (local_250 < fVar2) {
-    local_250 = fVar2;
+  fVar1 = (viewInfo->film).filmMidStart;
+  local_250 = (viewInfo->film).filmMidEnd;
+  if (local_250 < fVar1) {
+    local_250 = fVar1;
   }
-  local_264 = fVar2 - fVar2 * (param_1->film).filmDarkFeather;
-  local_268 = (1.0 - local_250) * (param_1->film).filmLightFeather + local_250;
-  if (local_264 == fVar2) {
+  local_264 = fVar1 - fVar1 * (viewInfo->film).filmDarkFeather;
+  local_268 = (1.0 - local_250) * (viewInfo->film).filmLightFeather + local_250;
+  if (local_264 == fVar1) {
     local_264 = local_264 - 6.1035156e-05;
   }
   if (local_250 == local_268) {
     local_268 = local_268 + 6.1035156e-05;
   }
-  fVar2 = 1.0 / (fVar2 - local_264);
-  fVar3 = 1.0 / (local_268 - local_250);
-  if (((gfxCmdBufSourceState.input.consts[0x83][0] != fVar2) ||
-      (gfxCmdBufSourceState.input.consts[0x83][1] != -local_264 * fVar2)) ||
-     ((gfxCmdBufSourceState.input.consts[0x83][2] != fVar3 ||
-      (gfxCmdBufSourceState.input.consts[0x83][3] != -local_250 * fVar3)))) {
-    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x83,fVar2,-local_264 * fVar2,
-                      fVar3,-local_250 * fVar3);
+  fVar1 = 1.0 / (fVar1 - local_264);
+  fVar2 = 1.0 / (local_268 - local_250);
+  if (((gfxCmdBufSourceState.input.consts[0x83][0] != fVar1) ||
+      (gfxCmdBufSourceState.input.consts[0x83][1] != -local_264 * fVar1)) ||
+     ((gfxCmdBufSourceState.input.consts[0x83][2] != fVar2 ||
+      (gfxCmdBufSourceState.input.consts[0x83][3] != -local_250 * fVar2)))) {
+    R_SetCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x83,fVar1,-local_264 * fVar1,
+                      fVar2,-local_250 * fVar2);
   }
   return;
 }
@@ -1364,14 +1396,14 @@ void __cdecl RB_SetVisionSetColorCorrection(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b23a9f) */
 /* WARNING: Removing unreachable block (ram,0x00b23ac6) */
 
-void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
+void __cdecl RB_BloomLDR(GfxViewInfo *viewInfo)
 
 {
-  byte bVar1;
+  uchar uVar1;
   DWORD DVar2;
-  byte local_7;
-  byte local_6;
-  byte local_5;
+  uchar srcRt;
+  uchar dstRt;
+  uchar tmp;
   
   PIXBeginNamedEvent(-1,"LDR Bloom");
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x19');
@@ -1384,13 +1416,13 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[6].image);
-  RB_Filter(rgp.bloomDownsampleLDR,param_1);
+  RB_Filter(rgp.bloomDownsampleLDR,viewInfo);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1a');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1a');
   R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1a');
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x19].image);
-  RB_Filter(rgp.resampleFinal,param_1);
+  RB_Filter(rgp.resampleFinal,viewInfo);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1b');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1b');
   R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1b');
@@ -1401,35 +1433,35 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1a].image);
-  RB_Filter(rgp.bloomDownsampleConvolution,param_1);
+  RB_Filter(rgp.bloomDownsampleConvolution,viewInfo);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1c');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1c');
   R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1c');
-  RB_SetBloomConstants(param_1);
+  RB_SetBloomConstants(viewInfo);
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1b].image);
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[0x1b].image);
-  RB_Filter(rgp.bloomRemap,param_1);
-  RB_SetBlurConstants((param_1->bloom).bloomStreakXInnerTint[2],
+  RB_Filter(rgp.bloomRemap,viewInfo);
+  RB_SetBlurConstants((viewInfo->bloom).bloomStreakXInnerTint[2],
                       1.0 / (float)gfxRenderTargets[0x1b].width);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1d');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1d');
   R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1d');
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1c].image);
-  RB_Filter(rgp.bloomBlurX,param_1);
-  RB_SetBlurConstants((param_1->bloom).bloomStreakXInnerTint[2],
+  RB_Filter(rgp.bloomBlurX,viewInfo);
+  RB_SetBlurConstants((viewInfo->bloom).bloomStreakXInnerTint[2],
                       1.0 / (float)gfxRenderTargets[0x1b].height);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x1c');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x1c');
   R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\x1c');
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0x1d].image);
-  RB_Filter(rgp.bloomBlurY,param_1);
-  local_7 = 0x1c;
-  local_6 = 0x1d;
-  RB_BloomStreak(param_1,&local_7,&local_6);
+  RB_Filter(rgp.bloomBlurY,viewInfo);
+  srcRt = '\x1c';
+  dstRt = '\x1d';
+  RB_BloomStreak(viewInfo,&srcRt,&dstRt);
   gfxCmdBufSourceState.input.consts[0x79][0] = 1.5 / (float)gfxRenderTargets[0x1b].width;
   gfxCmdBufSourceState.input.consts[0x79][1] = 0.5 / (float)gfxRenderTargets[0x1b].height;
   gfxCmdBufSourceState.input.consts[0x79][2] = 0.5 / (float)gfxRenderTargets[0x1b].width;
@@ -1440,30 +1472,30 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
   gfxCmdBufSourceState.input.consts[0x7a][2] = -0.5 / (float)gfxRenderTargets[0x1b].width;
   gfxCmdBufSourceState.input.consts[0x7a][3] = 1.5 / (float)gfxRenderTargets[0x1b].height;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
-  R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,local_6);
-  R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,local_6);
-  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,local_6);
+  R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,dstRt);
+  R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,dstRt);
+  R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,dstRt);
   R_SetCodeImageTexture
-            ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[local_7].image);
-  RB_Filter(rgp.bloomSmoothA,param_1);
-  bVar1 = local_7;
-  local_5 = local_7;
-  local_7 = local_6;
-  local_6 = bVar1;
+            ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[srcRt].image);
+  RB_Filter(rgp.bloomSmoothA,viewInfo);
+  uVar1 = srcRt;
+  tmp = srcRt;
+  srcRt = dstRt;
+  dstRt = uVar1;
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
-  RB_SetFilmCurveConstants(param_1);
+  RB_SetFilmCurveConstants(viewInfo);
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[6].image);
   R_SetCodeImageTexture
-            ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[local_7].image);
+            ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x23,gfxRenderTargets[srcRt].image);
   R_SetCodeImageTexture
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x24,gfxRenderTargets[6].image);
-  RB_Filter(rgp.bloomApplyLDR,param_1);
-  RB_SetVisionSetColorCorrection(param_1);
+  RB_Filter(rgp.bloomApplyLDR,viewInfo);
+  RB_SetVisionSetColorCorrection(viewInfo);
   R_Resolve((GfxCmdBufContext)0xb473fe00b472550,gfxRenderTargets[6].image);
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,10,gfxRenderTargets[6].image);
-  RB_Filter(rgp.postFxColorMaterial,param_1);
+  RB_Filter(rgp.postFxColorMaterial,viewInfo);
   DVar2 = GetCurrentThreadId();
   if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1474,23 +1506,23 @@ void __cdecl RB_BloomLDR(GfxViewInfo *param_1)
 
 // 00B23CB0  R_UsingDoubleVision  (gfx_d3d/rb_postfx.cpp:2183)
 
-bool __cdecl R_UsingDoubleVision(GfxViewInfo *param_1)
+bool __cdecl R_UsingDoubleVision(GfxViewInfo *viewInfo)
 
 {
-  return 0.0 < (param_1->doubleVision).cur;
+  return 0.0 < (viewInfo->doubleVision).cur;
 }
 
 
 // 00B23CE0  RB_UsingColorManipulation  (gfx_d3d/rb_postfx.cpp:2190)
 
-bool __cdecl RB_UsingColorManipulation(GfxViewInfo *param_1)
+bool __cdecl RB_UsingColorManipulation(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (param_1 == (GfxViewInfo *)0x0) {
+  if (viewInfo == (GfxViewInfo *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0x88f,0,
                              "%s");
     if (!bVar2) {
@@ -1499,8 +1531,8 @@ bool __cdecl RB_UsingColorManipulation(GfxViewInfo *param_1)
       return (bool)uVar3;
     }
   }
-  if ((param_1->film).filmLut < 1.0) {
-    if ((param_1->film).enabled == false) {
+  if ((viewInfo->film).filmLut < 1.0) {
+    if ((viewInfo->film).enabled == false) {
       bVar2 = false;
     }
     else {
@@ -1516,17 +1548,17 @@ bool __cdecl RB_UsingColorManipulation(GfxViewInfo *param_1)
 
 // 00B276F0  RB_UsingMergedPostEffects  (gfx_d3d/rb_postfx.cpp:2254)
 
-bool __cdecl RB_UsingMergedPostEffects(GfxViewInfo *param_1)
+bool __cdecl RB_UsingMergedPostEffects(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
   
-  bVar1 = RB_UsingDepthOfFieldFX(param_1);
+  bVar1 = RB_UsingDepthOfFieldFX(viewInfo);
   if (bVar1) {
     bVar1 = true;
   }
   else {
-    bVar1 = RB_UsingColorManipulation(param_1);
+    bVar1 = RB_UsingColorManipulation(viewInfo);
     if (bVar1) {
       bVar1 = true;
     }
@@ -1540,7 +1572,7 @@ bool __cdecl RB_UsingMergedPostEffects(GfxViewInfo *param_1)
 
 // 00B275B0  RB_UsingPostEffects  (gfx_d3d/rb_postfx.cpp:2276)
 
-bool __cdecl RB_UsingPostEffects(GfxViewInfo *param_1)
+bool __cdecl RB_UsingPostEffects(GfxViewInfo *viewInfo)
 
 {
   bool bVar1;
@@ -1549,54 +1581,54 @@ bool __cdecl RB_UsingPostEffects(GfxViewInfo *param_1)
     bVar1 = true;
   }
   else {
-    bVar1 = RB_UsingBlur(param_1);
+    bVar1 = RB_UsingBlur(viewInfo);
     if (bVar1) {
       bVar1 = true;
     }
     else {
-      bVar1 = RB_UsingReviveFX(param_1);
+      bVar1 = RB_UsingReviveFX(viewInfo);
       if (bVar1) {
         bVar1 = true;
       }
       else {
-        bVar1 = RB_UsingFlameFX(param_1);
+        bVar1 = RB_UsingFlameFX(viewInfo);
         if (bVar1) {
           bVar1 = true;
         }
         else {
-          bVar1 = RB_UsingElectrifiedFX(param_1);
+          bVar1 = RB_UsingElectrifiedFX(viewInfo);
           if (bVar1) {
             bVar1 = true;
           }
           else {
-            bVar1 = RB_UsingTransportedFX(param_1);
+            bVar1 = RB_UsingTransportedFX(viewInfo);
             if (bVar1) {
               bVar1 = true;
             }
             else {
-              bVar1 = RB_UsingWaterSheetingFX(param_1);
+              bVar1 = RB_UsingWaterSheetingFX(viewInfo);
               if (bVar1) {
                 bVar1 = true;
               }
               else {
-                bVar1 = R_UsingDoubleVision(param_1);
+                bVar1 = R_UsingDoubleVision(viewInfo);
                 if (bVar1) {
                   bVar1 = true;
                 }
                 else {
-                  bVar1 = RB_UsingGenericFilter(param_1);
+                  bVar1 = RB_UsingGenericFilter(viewInfo);
                   if (bVar1) {
                     bVar1 = true;
                   }
                   else {
-                    bVar1 = RB_UsingPoison(param_1);
+                    bVar1 = RB_UsingPoison(viewInfo);
                     if (bVar1) {
                       bVar1 = true;
                     }
-                    else if ((param_1->saveScreenFx).saveScreenParam.mode == '\0') {
-                      if ((param_1->saveScreenFx).blendFlashedParam.enabled == '\0') {
-                        if ((param_1->saveScreenFx).blendBlurredParam.enabled == '\0') {
-                          bVar1 = RB_UsingMergedPostEffects(param_1);
+                    else if ((viewInfo->saveScreenFx).saveScreenParam.mode == '\0') {
+                      if ((viewInfo->saveScreenFx).blendFlashedParam.enabled == '\0') {
+                        if ((viewInfo->saveScreenFx).blendBlurredParam.enabled == '\0') {
+                          bVar1 = RB_UsingMergedPostEffects(viewInfo);
                         }
                         else {
                           bVar1 = true;
@@ -1626,7 +1658,8 @@ bool __cdecl RB_UsingPostEffects(GfxViewInfo *param_1)
 
 void __cdecl
 RB_GetSceneDepthOfFieldEquation
-          (float param_1,float param_2,float param_3,float param_4,float *param_5,float param_6)
+          (float nearOutOfFocus,float nearInFocus,float farInFocus,float farOutOfFocus,
+          float *dofEquation,float zNear)
 
 {
   code *pcVar1;
@@ -1635,9 +1668,9 @@ RB_GetSceneDepthOfFieldEquation
   float local_14;
   float local_10;
   float local_c;
-  float local_8;
+  float depthScale;
   
-  if (param_6 == 0.0) {
+  if (zNear == 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0x95c,0,
                              "%s");
     if (!bVar2) {
@@ -1647,38 +1680,38 @@ RB_GetSceneDepthOfFieldEquation
     }
   }
   if (dx.supportsIntZ == false) {
-    local_8 = 1.0;
+    depthScale = 1.0;
   }
   else {
-    local_8 = param_6 * 0.984375;
+    depthScale = zNear * 0.984375;
   }
-  local_10 = param_1;
-  local_c = param_2;
-  if (param_1 - param_6 < 0.0) {
-    local_14 = param_6;
+  local_10 = nearOutOfFocus;
+  local_c = nearInFocus;
+  if (nearOutOfFocus - zNear < 0.0) {
+    local_14 = zNear;
   }
   else {
-    local_14 = param_1;
+    local_14 = nearOutOfFocus;
   }
-  if (param_2 <= local_14) {
-    local_c = param_6 * 0.5;
+  if (nearInFocus <= local_14) {
+    local_c = zNear * 0.5;
     local_10 = 0.0;
   }
-  *param_5 = local_8 / (local_10 - local_c);
-  param_5[2] = local_c / (local_c - local_10);
-  if (param_6 - param_3 < 0.0) {
-    local_18 = param_3;
+  *dofEquation = depthScale / (local_10 - local_c);
+  dofEquation[2] = local_c / (local_c - local_10);
+  if (zNear - farInFocus < 0.0) {
+    local_18 = farInFocus;
   }
   else {
-    local_18 = param_6;
+    local_18 = zNear;
   }
-  if (local_18 < param_4) {
-    param_5[1] = local_8 / (param_4 - param_3);
-    param_5[3] = param_3 / (param_3 - param_4);
+  if (local_18 < farOutOfFocus) {
+    dofEquation[1] = depthScale / (farOutOfFocus - farInFocus);
+    dofEquation[3] = farInFocus / (farInFocus - farOutOfFocus);
   }
   else {
-    param_5[1] = 0.0;
-    param_5[3] = 0.0;
+    dofEquation[1] = 0.0;
+    dofEquation[3] = 0.0;
   }
   return;
 }
@@ -1686,36 +1719,37 @@ RB_GetSceneDepthOfFieldEquation
 
 // 00B27D40  RB_GetViewModelDepthOfFieldEquation  (gfx_d3d/rb_postfx.cpp:2428)
 
-void __cdecl RB_GetViewModelDepthOfFieldEquation(float param_1,float param_2,float *param_3)
+void __cdecl RB_GetViewModelDepthOfFieldEquation(float outOfFocus,float inFocus,float *dofEquation)
 
 {
   float fVar1;
   float local_18;
   float local_14;
   float local_10;
-  float local_8;
+  float nearClip;
+  float depthScale;
   
   fVar1 = (r_znear_depthhack->current).value;
   if (dx.supportsIntZ) {
-    param_3[1] = 0.015625;
-    local_8 = fVar1 * 0.015625;
+    dofEquation[1] = 0.015625;
+    depthScale = fVar1 * 0.015625;
   }
   else {
-    param_3[1] = 0.0;
-    local_8 = 1.0;
+    dofEquation[1] = 0.0;
+    depthScale = 1.0;
   }
-  local_14 = param_1;
-  local_10 = param_2;
+  local_14 = outOfFocus;
+  local_10 = inFocus;
   local_18 = fVar1;
-  if (0.0 <= param_1 - fVar1) {
-    local_18 = param_1;
+  if (0.0 <= outOfFocus - fVar1) {
+    local_18 = outOfFocus;
   }
-  if (param_2 <= local_18) {
+  if (inFocus <= local_18) {
     local_10 = fVar1 * 0.5;
     local_14 = 0.0;
   }
-  *param_3 = local_8 / (local_14 - local_10);
-  param_3[2] = local_10 / (local_10 - local_14);
+  *dofEquation = depthScale / (local_14 - local_10);
+  dofEquation[2] = local_10 / (local_10 - local_14);
   return;
 }
 
@@ -1745,7 +1779,7 @@ void __cdecl RB_GetResolvedScene(void)
 
 // 00B23D40  RB_PoisonFX  (gfx_d3d/rb_postfx.cpp:2784)
 
-void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
+void __cdecl RB_PoisonFX(GfxViewInfo *viewInfo)
 
 {
   float fVar1;
@@ -1768,24 +1802,24 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
     local_14 = 0.0;
   }
   local_14 = (local_14 * -2.0 + 3.0) * local_14 * local_14;
-  fVar3 = (param_1->sceneDef).floatTime;
-  dVar5 = (double)(((param_1->sceneDef).floatTime / 10.0) * 3.1415927 * 2.0);
+  fVar3 = (viewInfo->sceneDef).floatTime;
+  dVar5 = (double)(((viewInfo->sceneDef).floatTime / 10.0) * 3.1415927 * 2.0);
   __libm_sse2_sin(in_stack_ffffffa0);
   fVar2 = (r_poisonFX_warpX->current).value;
   dVar6 = (double)((fVar3 / 8.45) * 3.1415927 * 2.0 + 1.5707964);
   __libm_sse2_sin(in_stack_ffffffa0);
   fVar3 = (r_poisonFX_warpY->current).value;
-  fVar4 = (param_1->sceneDef).floatTime;
-  dVar7 = (double)(((param_1->sceneDef).floatTime / 5.0) * 3.1415927 * 2.0);
+  fVar4 = (viewInfo->sceneDef).floatTime;
+  dVar7 = (double)(((viewInfo->sceneDef).floatTime / 5.0) * 3.1415927 * 2.0);
   __libm_sse2_sin(in_stack_ffffffa0);
   fVar1 = (r_poisonFX_warpX->current).value;
   dVar8 = (double)((fVar4 / 4.225) * 3.1415927 * 2.0 + 1.5707964);
   __libm_sse2_sin(in_stack_ffffffa0);
   fVar2 = ((1.0 - local_14) * fVar2 * (float)dVar5 + local_14 * fVar1 * (float)dVar7) *
-          (param_1->poisonFx).curAmount;
+          (viewInfo->poisonFx).curAmount;
   fVar3 = ((1.0 - local_14) * fVar3 * (float)dVar6 +
           local_14 * (r_poisonFX_warpY->current).value * (float)dVar8) *
-          (param_1->poisonFx).curAmount;
+          (viewInfo->poisonFx).curAmount;
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79,fVar2,fVar3,
              (1.0 / (1.0 - fVar2)) * 0.5,(1.0 / (1.0 - fVar3)) * 0.5);
@@ -1795,7 +1829,7 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
   __libm_sse2_sin(in_stack_ffffffa0);
   fVar3 = (r_poisonFX_dvisionX->current).value;
   fVar2 = (r_poisonFX_dvisionY->current).value;
-  fVar4 = (param_1->sceneDef).floatTime / 4.0;
+  fVar4 = (viewInfo->sceneDef).floatTime / 4.0;
   if (((int)fVar4 & 1U) == 0) {
     dVar7 = (double)(fVar4 * 3.1415927);
     __libm_sse2_sin(in_stack_ffffffa0);
@@ -1804,7 +1838,7 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
   else {
     local_50 = 0.0;
   }
-  fVar4 = (param_1->sceneDef).floatTime / 2.0;
+  fVar4 = (viewInfo->sceneDef).floatTime / 2.0;
   if (((int)fVar4 & 1U) == 0) {
     dVar7 = (double)(fVar4 * 3.1415927);
     __libm_sse2_sin(in_stack_ffffffa0);
@@ -1813,17 +1847,17 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
   else {
     local_54 = 0.0;
   }
-  dVar7 = (double)(((param_1->sceneDef).floatTime / 12.0) * 3.1415927 * 2.0);
+  dVar7 = (double)(((viewInfo->sceneDef).floatTime / 12.0) * 3.1415927 * 2.0);
   __libm_sse2_cos(in_stack_ffffffa0);
   fVar3 = (((float)dVar7 * 1.25 +
            (1.0 - local_14) * local_50 + local_14 * local_54 + (float)dVar5 * fVar3) /
-          param_1->fullSceneViewMesh->width) * (param_1->poisonFx).curAmount;
-  fVar2 = (((float)dVar6 * fVar2) / param_1->fullSceneViewMesh->height) *
-          (param_1->poisonFx).curAmount;
+          viewInfo->fullSceneViewMesh->width) * (viewInfo->poisonFx).curAmount;
+  fVar2 = (((float)dVar6 * fVar2) / viewInfo->fullSceneViewMesh->height) *
+          (viewInfo->poisonFx).curAmount;
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a,fVar3 + 0.5,fVar2 + 0.5,-fVar3 + 0.5
              ,-fVar2 + 0.5);
-  RB_Filter(rgp.poisonFXMaterial,param_1);
+  RB_Filter(rgp.poisonFXMaterial,viewInfo);
   return;
 }
 
@@ -1874,7 +1908,7 @@ void __cdecl RB_PoisonFX(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b25cfb) */
 /* WARNING: Restarted to delay deadcode elimination for space: ram */
 
-void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
+void __cdecl RB_GenericFilterFX(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
@@ -1997,10 +2031,10 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
   GfxViewInfo *local_18;
   GfxGenericFilter *local_14;
   
-  local_14 = &param_1->genericFilter;
-  local_18 = param_1;
-  local_1c = (float (*) [4])((int)&param_1->field0_0x0 + 0x40);
-  MatrixMultiply44((float (*) [4])param_1,local_1c,(float (*) [4])&local_60);
+  local_14 = &viewInfo->genericFilter;
+  local_18 = viewInfo;
+  local_1c = (float (*) [4])((int)&viewInfo->field0_0x0 + 0x40);
+  MatrixMultiply44((float (*) [4])viewInfo,local_1c,(float (*) [4])&local_60);
   local_64 = 0;
   do {
     if (2 < local_64) {
@@ -2189,9 +2223,9 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
         gfxCmdBufSourceState.input.consts[0xb4][1] = local_d0;
         gfxCmdBufSourceState.input.consts[0xb4][2] = local_d4;
         R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0xb4);
-        local_dc = (param_1->field0_0x0).cullViewInfo.viewParms.origin[0];
-        local_e0 = (param_1->field0_0x0).cullViewInfo.viewParms.origin[1];
-        local_e4 = (param_1->field0_0x0).cullViewInfo.viewParms.origin[2];
+        local_dc = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[0];
+        local_e0 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[1];
+        local_e4 = (viewInfo->field0_0x0).cullViewInfo.viewParms.origin[2];
         local_e8 = 0xb473940;
         gfxCmdBufSourceState.input.consts[0xbf][3] = 0.0;
         gfxCmdBufSourceState.input.consts[0xbf][0] = local_dc;
@@ -2340,7 +2374,7 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
         R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0xba);
         R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
         if (local_14->passQuads[local_64][local_6c] < 1) {
-          RB_Filter(local_14->passMaterial[local_64][local_6c],param_1);
+          RB_Filter(local_14->passMaterial[local_64][local_6c],viewInfo);
         }
         else {
           local_22c[4] = local_14->passParam[local_64][local_6c][4] *
@@ -2367,32 +2401,33 @@ void __cdecl RB_GenericFilterFX(GfxViewInfo *param_1)
 switchD_00b243f7_default:
     }
     if (local_65 != '\0') {
-      RB_SetBlurConstants((param_1->bloom).bloomStreakXInnerTint[2],
+      RB_SetBlurConstants((viewInfo->bloom).bloomStreakXInnerTint[2],
                           1.0 / (float)gfxRenderTargets[0xd].width);
       R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\r');
       R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\r');
       R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\r');
       R_SetCodeImageTexture
                 ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0xc].image);
-      RB_Filter(rgp.bloomBlurX,param_1);
-      RB_SetBlurConstants((param_1->bloom).bloomStreakXInnerTint[2],
+      RB_Filter(rgp.bloomBlurX,viewInfo);
+      RB_SetBlurConstants((viewInfo->bloom).bloomStreakXInnerTint[2],
                           1.0 / (float)gfxRenderTargets[0xc].height);
       R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\f');
       R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\f');
       R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\f');
       R_SetCodeImageTexture
                 ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x22,gfxRenderTargets[0xd].image);
-      RB_Filter(rgp.bloomBlurY,param_1);
+      RB_Filter(rgp.bloomBlurY,viewInfo);
       gfxCmdBufSourceState.input.codeImageRenderTargetControl[0x13].packed = 0xc800062;
       R_SetRenderTargetSize
                 ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,
-                 *(uchar *)((int)&(param_1->sceneComposition).renderingMode + 1));
+                 *(uchar *)((int)&(viewInfo->sceneComposition).renderingMode + 1));
       R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,
-                        *(uchar *)((int)&(param_1->sceneComposition).renderingMode + 1));
+                        *(uchar *)((int)&(viewInfo->sceneComposition).renderingMode + 1));
       R_Set2D((GfxCmdBufSourceState *)&gfxCmdBufSourceState);
       RB_DrawFullSceneQuad
-                (rgp.superFlareApply,*(uchar *)((int)&(param_1->sceneComposition).renderingMode + 1)
-                 ,0.0,0.0,1.0,1.0,GFX_PRIM_STATS_CODE);
+                (rgp.superFlareApply,
+                 *(uchar *)((int)&(viewInfo->sceneComposition).renderingMode + 1),0.0,0.0,1.0,1.0,
+                 GFX_PRIM_STATS_CODE);
       RB_EndTessSurface();
     }
     local_64 = local_64 + 1;
@@ -2402,183 +2437,189 @@ switchD_00b243f7_default:
 
 // 00B26040  RB_FlameFX  (gfx_d3d/rb_postfx.cpp:3473)
 
-void __cdecl RB_FlameFX(GfxViewInfo *param_1)
+void __cdecl RB_FlameFX(GfxViewInfo *viewInfo)
 
 {
-  Material *pMVar1;
-  float fVar2;
+  Material *material;
+  float fVar1;
   float local_38;
   float local_1c;
-  float local_c;
+  float fadeEffect;
+  Material *flameFxMaterial;
   
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[6].image);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
-  pMVar1 = rgp.permapAssets.flameThrowerFXMaterial;
+  material = rgp.permapAssets.flameThrowerFXMaterial;
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x58,
              (float)((rgp.permapAssets.flameThrowerFXMaterial)->info).textureAtlasColumnCount,
              (float)((rgp.permapAssets.flameThrowerFXMaterial)->info).textureAtlasRowCount,
              (float)((uint)((rgp.permapAssets.flameThrowerFXMaterial)->info).textureAtlasRowCount *
                     (uint)((rgp.permapAssets.flameThrowerFXMaterial)->info).textureAtlasColumnCount)
-             ,(param_1->flameFx).frameRate);
-  if ((param_1->flameFx).duration == 0) {
-    local_c = 0.0;
+             ,(viewInfo->flameFx).frameRate);
+  if ((viewInfo->flameFx).duration == 0) {
+    fadeEffect = 0.0;
   }
   else {
-    fVar2 = 1.0 - (float)((param_1->flameFx).duration -
-                         ((param_1->flameFx).currentTime - (param_1->flameFx).startMSec)) /
-                  (float)(param_1->flameFx).duration;
-    local_1c = fVar2;
-    if (0.0 <= fVar2 - 1.0) {
+    fVar1 = 1.0 - (float)((viewInfo->flameFx).duration -
+                         ((viewInfo->flameFx).currentTime - (viewInfo->flameFx).startMSec)) /
+                  (float)(viewInfo->flameFx).duration;
+    local_1c = fVar1;
+    if (0.0 <= fVar1 - 1.0) {
       local_1c = 1.0;
     }
-    if (0.0 - fVar2 < 0.0) {
+    if (0.0 - fVar1 < 0.0) {
       local_38 = local_1c;
     }
     else {
       local_38 = 0.0;
     }
-    local_c = local_38;
+    fadeEffect = local_38;
   }
-  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x5c,local_c,0.0,0.0,0.0);
-  if ((param_1->flameFx).distortionScale[1] <= 0.0) {
+  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x5c,fadeEffect,0.0,0.0,0.0);
+  if ((viewInfo->flameFx).distortionScale[1] <= 0.0) {
     R_UpdateCodeConstant
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x56,
-               (param_1->flameFx).distortionScale[0],(param_1->flameFx).distortionScale[1],0.0,
-               (param_1->flameFx).distortionMagnitude);
+               (viewInfo->flameFx).distortionScale[0],(viewInfo->flameFx).distortionScale[1],0.0,
+               (viewInfo->flameFx).distortionMagnitude);
   }
   else {
     R_UpdateCodeConstant
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x56,
-               (param_1->flameFx).distortionScale[0],(param_1->flameFx).distortionScale[1],
-               1.0 / (param_1->flameFx).distortionScale[1],(param_1->flameFx).distortionMagnitude);
+               (viewInfo->flameFx).distortionScale[0],(viewInfo->flameFx).distortionScale[1],
+               1.0 / (viewInfo->flameFx).distortionScale[1],(viewInfo->flameFx).distortionMagnitude)
+    ;
   }
-  RB_Filter(pMVar1,param_1);
+  RB_Filter(material,viewInfo);
   return;
 }
 
 
 // 00B26290  RB_ElectrifiedFX  (gfx_d3d/rb_postfx.cpp:3525)
 
-void __cdecl RB_ElectrifiedFX(GfxViewInfo *param_1)
+void __cdecl RB_ElectrifiedFX(GfxViewInfo *viewInfo)
 
 {
-  Material *pMVar1;
-  float fVar2;
+  Material *material;
+  float fVar1;
   float local_38;
   float local_1c;
-  float local_8;
+  Material *electrifiedMtl;
+  float fadeEffect;
   
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[6].image);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
-  pMVar1 = rgp.permapAssets.electrifiedFXMaterial;
+  material = rgp.permapAssets.electrifiedFXMaterial;
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x58,
              (float)((rgp.permapAssets.electrifiedFXMaterial)->info).textureAtlasColumnCount,
              (float)((rgp.permapAssets.electrifiedFXMaterial)->info).textureAtlasRowCount,
              (float)((uint)((rgp.permapAssets.electrifiedFXMaterial)->info).textureAtlasRowCount *
                     (uint)((rgp.permapAssets.electrifiedFXMaterial)->info).textureAtlasColumnCount),
-             (param_1->electrifiedFx).frameRate);
-  if ((param_1->electrifiedFx).duration == 0) {
-    local_8 = 0.0;
+             (viewInfo->electrifiedFx).frameRate);
+  if ((viewInfo->electrifiedFx).duration == 0) {
+    fadeEffect = 0.0;
   }
   else {
-    fVar2 = 1.0 - (float)((param_1->electrifiedFx).duration -
-                         ((param_1->electrifiedFx).currentTime - (param_1->electrifiedFx).startMSec)
-                         ) / (float)(param_1->electrifiedFx).duration;
-    local_1c = fVar2;
-    if (0.0 <= fVar2 - 1.0) {
+    fVar1 = 1.0 - (float)((viewInfo->electrifiedFx).duration -
+                         ((viewInfo->electrifiedFx).currentTime -
+                         (viewInfo->electrifiedFx).startMSec)) /
+                  (float)(viewInfo->electrifiedFx).duration;
+    local_1c = fVar1;
+    if (0.0 <= fVar1 - 1.0) {
       local_1c = 1.0;
     }
-    if (0.0 - fVar2 < 0.0) {
+    if (0.0 - fVar1 < 0.0) {
       local_38 = local_1c;
     }
     else {
       local_38 = 0.0;
     }
-    local_8 = local_38;
+    fadeEffect = local_38;
   }
-  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x5c,local_8,0.0,0.0,0.0);
-  if ((param_1->electrifiedFx).distortionScale[1] <= 0.0) {
+  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x5c,fadeEffect,0.0,0.0,0.0);
+  if ((viewInfo->electrifiedFx).distortionScale[1] <= 0.0) {
     R_UpdateCodeConstant
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x56,
-               (param_1->electrifiedFx).distortionScale[0],
-               (param_1->electrifiedFx).distortionScale[1],0.0,
-               (param_1->electrifiedFx).distortionMagnitude);
+               (viewInfo->electrifiedFx).distortionScale[0],
+               (viewInfo->electrifiedFx).distortionScale[1],0.0,
+               (viewInfo->electrifiedFx).distortionMagnitude);
   }
   else {
     R_UpdateCodeConstant
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x56,
-               (param_1->electrifiedFx).distortionScale[0],
-               (param_1->electrifiedFx).distortionScale[1],
-               1.0 / (param_1->electrifiedFx).distortionScale[1],
-               (param_1->electrifiedFx).distortionMagnitude);
+               (viewInfo->electrifiedFx).distortionScale[0],
+               (viewInfo->electrifiedFx).distortionScale[1],
+               1.0 / (viewInfo->electrifiedFx).distortionScale[1],
+               (viewInfo->electrifiedFx).distortionMagnitude);
   }
-  RB_Filter(pMVar1,param_1);
+  RB_Filter(material,viewInfo);
   return;
 }
 
 
 // 00B264E0  RB_TransportedFX  (gfx_d3d/rb_postfx.cpp:3578)
 
-void __cdecl RB_TransportedFX(GfxViewInfo *param_1)
+void __cdecl RB_TransportedFX(GfxViewInfo *viewInfo)
 
 {
-  Material *pMVar1;
-  float fVar2;
+  Material *material;
+  float fVar1;
   float local_38;
   float local_1c;
-  float local_8;
+  Material *transportedMtl;
+  float fadeEffect;
   
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[6].image);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
-  pMVar1 = rgp.permapAssets.transportedFXMaterial;
+  material = rgp.permapAssets.transportedFXMaterial;
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x58,
              (float)((rgp.permapAssets.transportedFXMaterial)->info).textureAtlasColumnCount,
              (float)((rgp.permapAssets.transportedFXMaterial)->info).textureAtlasRowCount,
              (float)((uint)((rgp.permapAssets.transportedFXMaterial)->info).textureAtlasRowCount *
                     (uint)((rgp.permapAssets.transportedFXMaterial)->info).textureAtlasColumnCount),
-             (param_1->transportedFx).frameRate);
-  if ((param_1->transportedFx).duration == 0) {
-    local_8 = 0.0;
+             (viewInfo->transportedFx).frameRate);
+  if ((viewInfo->transportedFx).duration == 0) {
+    fadeEffect = 0.0;
   }
   else {
-    fVar2 = 1.0 - (float)((param_1->transportedFx).duration -
-                         ((param_1->transportedFx).currentTime - (param_1->transportedFx).startMSec)
-                         ) / (float)(param_1->transportedFx).duration;
-    local_1c = fVar2;
-    if (0.0 <= fVar2 - 1.0) {
+    fVar1 = 1.0 - (float)((viewInfo->transportedFx).duration -
+                         ((viewInfo->transportedFx).currentTime -
+                         (viewInfo->transportedFx).startMSec)) /
+                  (float)(viewInfo->transportedFx).duration;
+    local_1c = fVar1;
+    if (0.0 <= fVar1 - 1.0) {
       local_1c = 1.0;
     }
-    if (0.0 - fVar2 < 0.0) {
+    if (0.0 - fVar1 < 0.0) {
       local_38 = local_1c;
     }
     else {
       local_38 = 0.0;
     }
-    local_8 = local_38;
+    fadeEffect = local_38;
   }
-  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x5c,local_8,0.0,0.0,0.0);
-  if ((param_1->transportedFx).distortionScale[1] <= 0.0) {
+  R_UpdateCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x5c,fadeEffect,0.0,0.0,0.0);
+  if ((viewInfo->transportedFx).distortionScale[1] <= 0.0) {
     R_UpdateCodeConstant
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x56,
-               (param_1->transportedFx).distortionScale[0],
-               (param_1->transportedFx).distortionScale[1],0.0,
-               (param_1->transportedFx).distortionMagnitude);
+               (viewInfo->transportedFx).distortionScale[0],
+               (viewInfo->transportedFx).distortionScale[1],0.0,
+               (viewInfo->transportedFx).distortionMagnitude);
   }
   else {
     R_UpdateCodeConstant
               ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x56,
-               (param_1->transportedFx).distortionScale[0],
-               (param_1->transportedFx).distortionScale[1],
-               1.0 / (param_1->transportedFx).distortionScale[1],
-               (param_1->transportedFx).distortionMagnitude);
+               (viewInfo->transportedFx).distortionScale[0],
+               (viewInfo->transportedFx).distortionScale[1],
+               1.0 / (viewInfo->transportedFx).distortionScale[1],
+               (viewInfo->transportedFx).distortionMagnitude);
   }
-  RB_Filter(pMVar1,param_1);
+  RB_Filter(material,viewInfo);
   return;
 }
 
@@ -2592,67 +2633,70 @@ void __cdecl RB_TransportedFX(GfxViewInfo *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b269f1) */
 /* WARNING: Removing unreachable block (ram,0x00b26a18) */
 
-void __cdecl RB_WaterSheetingFX(GfxViewInfo *param_1)
+void __cdecl RB_WaterSheetingFX(GfxViewInfo *viewInfo)
 
 {
-  float local_20;
+  float phaseScale;
+  float gameTimeVec;
   float local_1c;
   float local_14;
-  float local_10;
-  float local_c;
-  float local_8;
+  float y_speed;
+  float fadeEffect;
+  float x_speed;
   
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[6].image);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
-  R_CalcGameTimeVec(gfxCmdBufSourceState.sceneDef.floatTime,&local_20);
-  local_8 = (param_1->waterSheetingFx).distortionScale[0];
-  if ((param_1->waterSheetingFx).distortionScale[1] <= 0.0) {
-    local_10 = 0.0;
+  R_CalcGameTimeVec(gfxCmdBufSourceState.sceneDef.floatTime,&gameTimeVec);
+  x_speed = (viewInfo->waterSheetingFx).distortionScale[0];
+  if ((viewInfo->waterSheetingFx).distortionScale[1] <= 0.0) {
+    y_speed = 0.0;
   }
   else {
-    local_10 = 1.0 / (param_1->waterSheetingFx).distortionScale[1];
+    y_speed = 1.0 / (viewInfo->waterSheetingFx).distortionScale[1];
   }
-  if ((param_1->waterSheetingFx).duration == 0) {
-    local_c = 0.0;
+  if ((viewInfo->waterSheetingFx).duration == 0) {
+    fadeEffect = 0.0;
   }
   else {
-    local_c = 1.0 - (float)((param_1->waterSheetingFx).duration -
-                           ((param_1->waterSheetingFx).currentTime -
-                           (param_1->waterSheetingFx).startMSec)) /
-                    (float)(param_1->waterSheetingFx).duration;
+    fadeEffect = 1.0 - (float)((viewInfo->waterSheetingFx).duration -
+                              ((viewInfo->waterSheetingFx).currentTime -
+                              (viewInfo->waterSheetingFx).startMSec)) /
+                       (float)(viewInfo->waterSheetingFx).duration;
   }
   gfxCmdBufSourceState.input.consts[0x79][2] = local_1c * 0.5;
-  gfxCmdBufSourceState.input.consts[0x79][3] = local_20 * 0.5;
+  gfxCmdBufSourceState.input.consts[0x79][3] = gameTimeVec * 0.5;
   gfxCmdBufSourceState.input.consts[0x79][0] = 1.0;
   gfxCmdBufSourceState.input.consts[0x79][1] = 0.475;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
-  gfxCmdBufSourceState.input.consts[0x7a][0] = local_20 * local_8;
-  gfxCmdBufSourceState.input.consts[0x7a][1] = 1.0 - local_14 * local_10;
-  gfxCmdBufSourceState.input.consts[0x7a][2] = local_20 * local_8 * 0.475;
-  gfxCmdBufSourceState.input.consts[0x7a][3] = (1.0 - local_14 * local_10) * 0.475;
+  gfxCmdBufSourceState.input.consts[0x7a][0] = gameTimeVec * x_speed;
+  gfxCmdBufSourceState.input.consts[0x7a][1] = 1.0 - local_14 * y_speed;
+  gfxCmdBufSourceState.input.consts[0x7a][2] = gameTimeVec * x_speed * 0.475;
+  gfxCmdBufSourceState.input.consts[0x7a][3] = (1.0 - local_14 * y_speed) * 0.475;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
-  gfxCmdBufSourceState.input.consts[0x7b][1] = (param_1->waterSheetingFx).distortionMagnitude;
-  gfxCmdBufSourceState.input.consts[0x7b][0] = 1.0 - local_c * 2.0;
+  gfxCmdBufSourceState.input.consts[0x7b][1] = (viewInfo->waterSheetingFx).distortionMagnitude;
+  gfxCmdBufSourceState.input.consts[0x7b][0] = 1.0 - fadeEffect * 2.0;
   gfxCmdBufSourceState.input.consts[0x7b][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0x7b][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7b);
-  RB_Filter(rgp.waterSheetingFXMaterial,param_1);
+  RB_Filter(rgp.waterSheetingFXMaterial,viewInfo);
   return;
 }
 
 
 // 00B27E50  RB_GetDepthOfFieldBlurFraction  (gfx_d3d/rb_postfx.cpp:3705)
 
-float __cdecl RB_GetDepthOfFieldBlurFraction(GfxViewInfo *param_1,float param_2)
+float __cdecl RB_GetDepthOfFieldBlurFraction(GfxViewInfo *viewInfo,float pixelRadiusAtSceneRes)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float10 extraout_ST0;
+  float fraction;
+  float normalizedRadius;
   
-  if ((param_1->dof).nearBlur < 4.0) {
+  if ((viewInfo->dof).nearBlur < 4.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0xe7d,0,
                              "%s\n\t(viewInfo->dof.nearBlur) = %g");
     if (!bVar2) {
@@ -2668,7 +2712,7 @@ float __cdecl RB_GetDepthOfFieldBlurFraction(GfxViewInfo *param_1,float param_2)
 
 // 00B27F10  RB_GetDepthOfFieldInputImages  (gfx_d3d/rb_postfx.cpp:3855)
 
-void __cdecl RB_GetDepthOfFieldInputImages(float param_1)
+void __cdecl RB_GetDepthOfFieldInputImages(float radius)
 
 {
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\r');
@@ -2680,7 +2724,7 @@ void __cdecl RB_GetDepthOfFieldInputImages(float param_1)
   else {
     RB_FullScreenFilter(rgp.dofDownsampleNvIntzMaterial);
   }
-  RB_GaussianFilterImage(param_1 * 0.25,'\r','\f',0);
+  RB_GaussianFilterImage(radius * 0.25,'\r','\f',0);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\b');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\b');
   R_ClearRenderTargetForMultiGpu((GfxCmdBufContext)0xb473fe00b472550,'\b');
@@ -2695,7 +2739,7 @@ void __cdecl RB_GetDepthOfFieldInputImages(float param_1)
 
 // 00B277A0  RB_ApplyDepthOfField  (gfx_d3d/rb_postfx.cpp:3904)
 
-void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
+void __cdecl RB_ApplyDepthOfField(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
@@ -2709,7 +2753,7 @@ void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
   float local_20 [3];
   float local_14;
   
-  bVar2 = RB_UsingDepthOfFieldFX(param_1);
+  bVar2 = RB_UsingDepthOfFieldFX(viewInfo);
   if (!bVar2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0xf46,0,
                              "%s");
@@ -2719,7 +2763,7 @@ void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
       return;
     }
   }
-  if (*(char *)((int)&param_1[1].field0_0x0 + 0x14) != '\0') {
+  if (*(char *)((int)&viewInfo[1].field0_0x0 + 0x14) != '\0') {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0xf48,0,
                              "%s");
     if (!bVar2) {
@@ -2728,7 +2772,7 @@ void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
       return;
     }
   }
-  if ((dx.supportsIntZ == false) && (param_1->needsFloatZ == false)) {
+  if ((dx.supportsIntZ == false) && (viewInfo->needsFloatZ == false)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0xf49,0,
                              "%s");
     if (!bVar2) {
@@ -2738,20 +2782,20 @@ void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
     }
   }
   RB_GetSceneDepthOfFieldEquation
-            ((param_1->dof).nearStart,(param_1->dof).nearEnd,(param_1->dof).farStart,
-             (param_1->dof).farEnd,local_20,(param_1->field0_0x0).cullViewInfo.viewParms.zNear);
+            ((viewInfo->dof).nearStart,(viewInfo->dof).nearEnd,(viewInfo->dof).farStart,
+             (viewInfo->dof).farEnd,local_20,(viewInfo->field0_0x0).cullViewInfo.viewParms.zNear);
   R_UpdateCodeConstantFromVec4((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x1b,local_20);
   RB_GetViewModelDepthOfFieldEquation
-            ((param_1->dof).viewModelStart,(param_1->dof).viewModelEnd,local_20);
-  dVar3 = (double)((param_1->dof).farBlur / (param_1->dof).nearBlur);
+            ((viewInfo->dof).viewModelStart,(viewInfo->dof).viewModelEnd,local_20);
+  dVar3 = (double)((viewInfo->dof).farBlur / (viewInfo->dof).nearBlur);
   __libm_sse2_pow(in_stack_ffffffc0,(double)CONCAT44(in_stack_ffffffcc,in_stack_ffffffc8));
   local_14 = (float)dVar3;
   R_UpdateCodeConstantFromVec4((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x1a,local_20);
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x1e,0.0,
              1.0 / (float)vidConfig.sceneHeight,0.0,0.0);
-  fVar4 = RB_GetDepthOfFieldBlurFraction(param_1,1.4);
-  fVar5 = RB_GetDepthOfFieldBlurFraction(param_1,3.6);
+  fVar4 = RB_GetDepthOfFieldBlurFraction(viewInfo,1.4);
+  fVar5 = RB_GetDepthOfFieldBlurFraction(viewInfo,3.6);
   if (((fVar4 <= 0.0) || (fVar5 <= fVar4)) || (1.0 <= fVar5)) {
     va("%g, %g, %g, %i");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0xf58,0,
@@ -2768,14 +2812,14 @@ void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
   R_UpdateCodeConstant
             ((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x1d,1.0,fVar5 / (fVar5 - fVar4),
              1.0 / (1.0 - fVar5),-fVar5 / (1.0 - fVar5));
-  RB_GetDepthOfFieldInputImages((param_1->dof).nearBlur);
+  RB_GetDepthOfFieldInputImages((viewInfo->dof).nearBlur);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x02');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x02');
   if (dx.supportsIntZ == false) {
-    RB_Filter(rgp.postFxDofMaterial,param_1);
+    RB_Filter(rgp.postFxDofMaterial,viewInfo);
   }
   else {
-    RB_Filter(rgp.postFxDofNvIntzMaterial,param_1);
+    RB_Filter(rgp.postFxDofNvIntzMaterial,viewInfo);
   }
   return;
 }
@@ -2783,15 +2827,19 @@ void __cdecl RB_ApplyDepthOfField(GfxViewInfo *param_1)
 
 // 00B28040  RB_GetBlurRadius  (gfx_d3d/rb_postfx.cpp:4033)
 
-float __cdecl RB_GetBlurRadius(float param_1)
+float __cdecl RB_GetBlurRadius(float blurRadiusFromCode)
 
 {
   code *pcVar1;
   bool bVar2;
   float10 fVar3;
   float fVar4;
+  float blurRadiusSqFromDvar;
+  float blurRadiusFinal;
+  float blurRadiusSqFromCode;
   
-  fVar4 = SQRT((r_blur->current).value * (r_blur->current).value + param_1 * param_1);
+  fVar4 = SQRT((r_blur->current).value * (r_blur->current).value +
+               blurRadiusFromCode * blurRadiusFromCode);
   if (fVar4 < 0.0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0xfca,1,
                              "%s\n\t(blurRadiusFinal) = %g");
@@ -2816,12 +2864,12 @@ float __cdecl RB_GetBlurRadius(float param_1)
 /* WARNING: Removing unreachable block (ram,0x00b26fa9) */
 /* WARNING: Removing unreachable block (ram,0x00b26fd0) */
 
-void __cdecl RB_ReviveFX(GfxViewInfo *param_1)
+void __cdecl RB_ReviveFX(GfxViewInfo *viewInfo)
 
 {
   DWORD DVar1;
-  float local_c4 [16];
-  float local_84;
+  float saturationMatrix [16];
+  float finalMatrix;
   float local_80;
   float local_7c;
   float local_74;
@@ -2830,61 +2878,62 @@ void __cdecl RB_ReviveFX(GfxViewInfo *param_1)
   float local_64;
   float local_60;
   float local_5c;
-  float local_44 [16];
+  float whiteTempMatrix [16];
   
   PIXBeginNamedEvent(-1,"RB_ReviveFX");
   RB_GaussianFilterImage(6.4,'\x06','\f',0);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[6].image);
-  colorTempMatrix((float (*) [4])local_44,(param_1->reviveFx).reviveEdgeColorTemp);
-  colorSaturationMatrix((float (*) [4])local_c4,(param_1->reviveFx).reviveEdgeSaturation);
-  MatrixMultiply44((float (*) [4])local_44,(float (*) [4])local_c4,(float (*) [4])&local_84);
-  local_84 = (param_1->reviveFx).reviveEdgeScale[0] * (param_1->reviveFx).reviveEdgeContrast[0] *
-             local_84;
-  local_74 = (param_1->reviveFx).reviveEdgeScale[0] * (param_1->reviveFx).reviveEdgeContrast[0] *
+  colorTempMatrix((float (*) [4])whiteTempMatrix,(viewInfo->reviveFx).reviveEdgeColorTemp);
+  colorSaturationMatrix((float (*) [4])saturationMatrix,(viewInfo->reviveFx).reviveEdgeSaturation);
+  MatrixMultiply44((float (*) [4])whiteTempMatrix,(float (*) [4])saturationMatrix,
+                   (float (*) [4])&finalMatrix);
+  finalMatrix = (viewInfo->reviveFx).reviveEdgeScale[0] * (viewInfo->reviveFx).reviveEdgeContrast[0]
+                * finalMatrix;
+  local_74 = (viewInfo->reviveFx).reviveEdgeScale[0] * (viewInfo->reviveFx).reviveEdgeContrast[0] *
              local_74;
-  local_64 = (param_1->reviveFx).reviveEdgeScale[0] * (param_1->reviveFx).reviveEdgeContrast[0] *
+  local_64 = (viewInfo->reviveFx).reviveEdgeScale[0] * (viewInfo->reviveFx).reviveEdgeContrast[0] *
              local_64;
-  local_80 = (param_1->reviveFx).reviveEdgeScale[1] * (param_1->reviveFx).reviveEdgeContrast[1] *
+  local_80 = (viewInfo->reviveFx).reviveEdgeScale[1] * (viewInfo->reviveFx).reviveEdgeContrast[1] *
              local_80;
-  local_70 = (param_1->reviveFx).reviveEdgeScale[1] * (param_1->reviveFx).reviveEdgeContrast[1] *
+  local_70 = (viewInfo->reviveFx).reviveEdgeScale[1] * (viewInfo->reviveFx).reviveEdgeContrast[1] *
              local_70;
-  local_60 = (param_1->reviveFx).reviveEdgeScale[1] * (param_1->reviveFx).reviveEdgeContrast[1] *
+  local_60 = (viewInfo->reviveFx).reviveEdgeScale[1] * (viewInfo->reviveFx).reviveEdgeContrast[1] *
              local_60;
-  local_7c = (param_1->reviveFx).reviveEdgeScale[2] * (param_1->reviveFx).reviveEdgeContrast[2] *
+  local_7c = (viewInfo->reviveFx).reviveEdgeScale[2] * (viewInfo->reviveFx).reviveEdgeContrast[2] *
              local_7c;
-  local_6c = (param_1->reviveFx).reviveEdgeScale[2] * (param_1->reviveFx).reviveEdgeContrast[2] *
+  local_6c = (viewInfo->reviveFx).reviveEdgeScale[2] * (viewInfo->reviveFx).reviveEdgeContrast[2] *
              local_6c;
-  local_5c = (param_1->reviveFx).reviveEdgeScale[2] * (param_1->reviveFx).reviveEdgeContrast[2] *
+  local_5c = (viewInfo->reviveFx).reviveEdgeScale[2] * (viewInfo->reviveFx).reviveEdgeContrast[2] *
              local_5c;
   gfxCmdBufSourceState.input.consts[0x79][3] =
-       (param_1->reviveFx).reviveEdgeOffset[0] +
-       (1.0 - (param_1->reviveFx).reviveEdgeContrast[0]) * 0.5;
-  gfxCmdBufSourceState.input.consts[0x79][0] = local_84;
+       (viewInfo->reviveFx).reviveEdgeOffset[0] +
+       (1.0 - (viewInfo->reviveFx).reviveEdgeContrast[0]) * 0.5;
+  gfxCmdBufSourceState.input.consts[0x79][0] = finalMatrix;
   gfxCmdBufSourceState.input.consts[0x79][1] = local_74;
   gfxCmdBufSourceState.input.consts[0x79][2] = local_64;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x79);
   gfxCmdBufSourceState.input.consts[0x7a][3] =
-       (param_1->reviveFx).reviveEdgeOffset[1] +
-       (1.0 - (param_1->reviveFx).reviveEdgeContrast[1]) * 0.5;
+       (viewInfo->reviveFx).reviveEdgeOffset[1] +
+       (1.0 - (viewInfo->reviveFx).reviveEdgeContrast[1]) * 0.5;
   gfxCmdBufSourceState.input.consts[0x7a][0] = local_80;
   gfxCmdBufSourceState.input.consts[0x7a][1] = local_70;
   gfxCmdBufSourceState.input.consts[0x7a][2] = local_60;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7a);
   gfxCmdBufSourceState.input.consts[0x7b][3] =
-       (param_1->reviveFx).reviveEdgeOffset[2] +
-       (1.0 - (param_1->reviveFx).reviveEdgeContrast[2]) * 0.5;
+       (viewInfo->reviveFx).reviveEdgeOffset[2] +
+       (1.0 - (viewInfo->reviveFx).reviveEdgeContrast[2]) * 0.5;
   gfxCmdBufSourceState.input.consts[0x7b][0] = local_7c;
   gfxCmdBufSourceState.input.consts[0x7b][1] = local_6c;
   gfxCmdBufSourceState.input.consts[0x7b][2] = local_5c;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7b);
-  gfxCmdBufSourceState.input.consts[0x7c][0] = (param_1->reviveFx).reviveEdgeMaskAdjust;
-  gfxCmdBufSourceState.input.consts[0x7c][1] = (param_1->reviveFx).reviveEdgeAmount;
+  gfxCmdBufSourceState.input.consts[0x7c][0] = (viewInfo->reviveFx).reviveEdgeMaskAdjust;
+  gfxCmdBufSourceState.input.consts[0x7c][1] = (viewInfo->reviveFx).reviveEdgeAmount;
   gfxCmdBufSourceState.input.consts[0x7c][2] = 0.0;
   gfxCmdBufSourceState.input.consts[0x7c][3] = 0.0;
   R_DirtyCodeConstant((GfxCmdBufSourceState *)&gfxCmdBufSourceState,0x7c);
-  RB_Filter(rgp.reviveFXMaterial,param_1);
+  RB_Filter(rgp.reviveFXMaterial,viewInfo);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -2895,7 +2944,7 @@ void __cdecl RB_ReviveFX(GfxViewInfo *param_1)
 
 // 00B280D0  RB_BlurScreen  (gfx_d3d/rb_postfx.cpp:4232)
 
-void __cdecl RB_BlurScreen(GfxViewInfo *param_1,float param_2)
+void __cdecl RB_BlurScreen(GfxViewInfo *viewInfo,float blurRadius)
 
 {
   code *pcVar1;
@@ -2905,9 +2954,18 @@ void __cdecl RB_BlurScreen(GfxViewInfo *param_1,float param_2)
   int iVar5;
   float fVar6;
   undefined1 local_40;
-  undefined4 local_c;
+  int semaphore_2;
+  HRESULT hr_2;
+  int semaphore;
+  HRESULT hr;
+  float blurRadiusMin;
+  IDirect3DSurface9 *imageSurface;
+  uchar srcRtId;
+  int registerCount;
+  GfxColor color;
+  uchar srcRenderTarget;
   
-  if ((param_1 == (GfxViewInfo *)0x0) &&
+  if ((viewInfo == (GfxViewInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0x108e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2915,11 +2973,12 @@ void __cdecl RB_BlurScreen(GfxViewInfo *param_1,float param_2)
     return;
   }
   fVar6 = 1440.0 / (float)gfxCmdBufSourceState.sceneViewport.height;
-  local_c = 0xffffffff;
-  if (param_2 < fVar6) {
-    local_40 = (undefined1)(int)ROUND((param_2 / fVar6) * 255.0 + 9.313226e-10);
-    local_c = CONCAT13(local_40,0xffffff);
-    param_2 = fVar6;
+  color.packed = 0xffffffff;
+  if (blurRadius < fVar6) {
+    local_40 = (undefined1)(int)ROUND((blurRadius / fVar6) * 255.0 + 9.313226e-10);
+    color.array[3] = local_40;
+    color.packed._0_3_ = 0xffffff;
+    blurRadius = fVar6;
   }
   pIVar3 = Image_GetSurface(gfxRenderTargets[6].image);
   if ((pIVar3 == (IDirect3DSurface9 *)0x0) &&
@@ -2965,27 +3024,29 @@ void __cdecl RB_BlurScreen(GfxViewInfo *param_1,float param_2)
               "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp (%i) imageSurface->Release() failed: %s\n"
              );
   }
-  RB_GaussianFilterImage(param_2,'\x06','\f',0);
+  RB_GaussianFilterImage(blurRadius,'\x06','\f',0);
   R_SetRenderTargetSize((GfxCmdBufSourceState *)&gfxCmdBufSourceState,'\x03');
   R_SetRenderTarget((GfxCmdBufContext)0xb473fe00b472550,'\x03');
   R_SetCodeImageTexture((GfxCmdBufSourceState *)&gfxCmdBufSourceState,8,gfxRenderTargets[0xc].image)
   ;
-  RB_ColoredFilter(rgp.feedbackBlendMaterial,param_1,local_c);
+  RB_ColoredFilter(rgp.feedbackBlendMaterial,viewInfo,color.packed);
   return;
 }
 
 
 // 00B27090  RB_ProcessPostEffects  (gfx_d3d/rb_postfx.cpp:4302)
 
-void __cdecl RB_ProcessPostEffects(GfxViewInfo *param_1)
+void __cdecl RB_ProcessPostEffects(GfxViewInfo *viewInfo)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float fVar4;
+  float blurRadius_00;
+  float blurRadius;
+  bool needColorManipulation;
   
-  if ((param_1 == (GfxViewInfo *)0x0) &&
+  if ((viewInfo == (GfxViewInfo *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",0x10d1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -2993,74 +3054,74 @@ void __cdecl RB_ProcessPostEffects(GfxViewInfo *param_1)
     return;
   }
   RB_GetResolvedScene();
-  RB_BloomLDR(param_1);
-  bVar2 = RB_UsingPostEffects(param_1);
+  RB_BloomLDR(viewInfo);
+  bVar2 = RB_UsingPostEffects(viewInfo);
   if (bVar2) {
     RB_GetResolvedScene();
-    bVar2 = RB_UsingFlameFX(param_1);
+    bVar2 = RB_UsingFlameFX(viewInfo);
     if (bVar2) {
       PIXBeginNamedEvent(-1,"RB_ApplyFlameFX");
-      RB_FlameFX(param_1);
+      RB_FlameFX(viewInfo);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
     else {
-      bVar2 = RB_UsingReviveFX(param_1);
+      bVar2 = RB_UsingReviveFX(viewInfo);
       if (bVar2) {
         PIXBeginNamedEvent(-1,"RB_ApplyReviveFX");
-        RB_ReviveFX(param_1);
+        RB_ReviveFX(viewInfo);
         DVar3 = GetCurrentThreadId();
         if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
           _D3DPERF_EndEvent_0();
         }
       }
       else {
-        bVar2 = RB_UsingElectrifiedFX(param_1);
+        bVar2 = RB_UsingElectrifiedFX(viewInfo);
         if (bVar2) {
           PIXBeginNamedEvent(-1,"RB_ApplyElectrifiedFX");
-          RB_ElectrifiedFX(param_1);
+          RB_ElectrifiedFX(viewInfo);
           DVar3 = GetCurrentThreadId();
           if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
             _D3DPERF_EndEvent_0();
           }
         }
         else {
-          bVar2 = RB_UsingTransportedFX(param_1);
+          bVar2 = RB_UsingTransportedFX(viewInfo);
           if (bVar2) {
             PIXBeginNamedEvent(-1,"RB_ApplyTransportedFX");
-            RB_TransportedFX(param_1);
+            RB_TransportedFX(viewInfo);
             DVar3 = GetCurrentThreadId();
             if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
               _D3DPERF_EndEvent_0();
             }
           }
           else {
-            bVar2 = RB_UsingWaterSheetingFX(param_1);
+            bVar2 = RB_UsingWaterSheetingFX(viewInfo);
             if (bVar2) {
               PIXBeginNamedEvent(-1,"RB_WaterSheetingFX");
-              RB_WaterSheetingFX(param_1);
+              RB_WaterSheetingFX(viewInfo);
               DVar3 = GetCurrentThreadId();
               if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                 _D3DPERF_EndEvent_0();
               }
             }
             else {
-              bVar2 = RB_UsingPoison(param_1);
+              bVar2 = RB_UsingPoison(viewInfo);
               if (bVar2) {
                 PIXBeginNamedEvent(-1,"RB_PoisonFX");
-                RB_PoisonFX(param_1);
+                RB_PoisonFX(viewInfo);
                 DVar3 = GetCurrentThreadId();
                 if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                   _D3DPERF_EndEvent_0();
                 }
               }
               else {
-                bVar2 = RB_UsingDepthOfFieldFX(param_1);
+                bVar2 = RB_UsingDepthOfFieldFX(viewInfo);
                 if (bVar2) {
                   PIXBeginNamedEvent(-1,"RB_ApplyDepthOfField");
-                  RB_ApplyDepthOfField(param_1);
+                  RB_ApplyDepthOfField(viewInfo);
                   DVar3 = GetCurrentThreadId();
                   if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
                     _D3DPERF_EndEvent_0();
@@ -3072,19 +3133,19 @@ void __cdecl RB_ProcessPostEffects(GfxViewInfo *param_1)
         }
       }
     }
-    bVar2 = RB_UsingGenericFilter(param_1);
+    bVar2 = RB_UsingGenericFilter(viewInfo);
     if ((bVar2) && (rg.renderHiResShot == 0)) {
       PIXBeginNamedEvent(-1,"genericFilter effect");
-      RB_GenericFilterFX(param_1);
+      RB_GenericFilterFX(viewInfo);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
-    bVar2 = RB_UsingBlur(param_1);
+    bVar2 = RB_UsingBlur(viewInfo);
     if (bVar2) {
-      fVar4 = RB_GetBlurRadius(param_1->blurRadius);
-      if ((fVar4 <= 0.0) &&
+      blurRadius_00 = RB_GetBlurRadius(viewInfo->blurRadius);
+      if ((blurRadius_00 <= 0.0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_postfx.cpp",
                                    0x1124,1,"%s\n\t(blurRadius) = %g"), !bVar2)) {
         pcVar1 = (code *)swi(3);
@@ -3092,19 +3153,19 @@ void __cdecl RB_ProcessPostEffects(GfxViewInfo *param_1)
         return;
       }
       PIXBeginNamedEvent(-1,"RB_BlurScreen()");
-      RB_BlurScreen(param_1,fVar4);
+      RB_BlurScreen(viewInfo,blurRadius_00);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
       }
     }
-    if ((((param_1->saveScreenFx).blendBlurredParam.enabled != '\0') ||
-        ((param_1->saveScreenFx).blendFlashedParam.enabled != '\0')) ||
-       ((param_1->saveScreenFx).saveScreenParam.mode != '\0')) {
+    if ((((viewInfo->saveScreenFx).blendBlurredParam.enabled != '\0') ||
+        ((viewInfo->saveScreenFx).blendFlashedParam.enabled != '\0')) ||
+       ((viewInfo->saveScreenFx).saveScreenParam.mode != '\0')) {
       PIXBeginNamedEvent(-1,"saveScreenFx");
-      RB_SaveScreen_BlendBlurred(&(param_1->saveScreenFx).blendBlurredParam,param_1);
-      RB_SaveScreen_BlendFlashed(&(param_1->saveScreenFx).blendFlashedParam,param_1);
-      RB_SaveScreen(&(param_1->saveScreenFx).saveScreenParam,param_1);
+      RB_SaveScreen_BlendBlurred(&(viewInfo->saveScreenFx).blendBlurredParam,viewInfo);
+      RB_SaveScreen_BlendFlashed(&(viewInfo->saveScreenFx).blendFlashedParam,viewInfo);
+      RB_SaveScreen(&(viewInfo->saveScreenFx).saveScreenParam,viewInfo);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();

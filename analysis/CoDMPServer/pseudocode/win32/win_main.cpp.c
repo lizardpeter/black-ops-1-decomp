@@ -32,7 +32,7 @@ bool __cdecl PC_StartWithNoSounds(void)
 
 // 007D93D0  Sys_GetInfo  (win32/win_main.cpp:138)
 
-void __cdecl Sys_GetInfo(SysInfo *param_1)
+void __cdecl Sys_GetInfo(SysInfo *info)
 
 {
   int iVar1;
@@ -40,9 +40,9 @@ void __cdecl Sys_GetInfo(SysInfo *param_1)
   
   pSVar2 = &sys_info;
   for (iVar1 = 0x98; iVar1 != 0; iVar1 = iVar1 + -1) {
-    *(undefined4 *)&param_1->cpuGHz = *(undefined4 *)&pSVar2->cpuGHz;
+    *(undefined4 *)&info->cpuGHz = *(undefined4 *)&pSVar2->cpuGHz;
     pSVar2 = (SysInfo *)((int)&pSVar2->cpuGHz + 4);
-    param_1 = (SysInfo *)((int)&param_1->cpuGHz + 4);
+    info = (SysInfo *)((int)&info->cpuGHz + 4);
   }
   return;
 }
@@ -93,27 +93,27 @@ void __cdecl Sys_RegisterInfoDvars(void)
 
 // 007D93F0  Sys_HasConfigureChecksumChanged  (win32/win_main.cpp:173)
 
-bool __cdecl Sys_HasConfigureChecksumChanged(int param_1)
+bool __cdecl Sys_HasConfigureChecksumChanged(int checksum)
 
 {
   bool bVar1;
-  bool local_5;
+  bool changed;
   
   Sys_RegisterInfoDvars();
   bVar1 = G_OnlyConnectingPaths();
   if (bVar1) {
-    local_5 = false;
+    changed = false;
   }
   else {
-    local_5 = false;
-    if (((sys_configSum->current).integer != 0) && ((sys_configSum->current).integer != param_1)) {
-      local_5 = Sys_ShouldUpdateForConfigChange();
+    changed = false;
+    if (((sys_configSum->current).integer != 0) && ((sys_configSum->current).integer != checksum)) {
+      changed = Sys_ShouldUpdateForConfigChange();
     }
-    if (((sys_configSum->current).integer == 0) || ((sys_configSum->current).integer != param_1)) {
-      Dvar_SetInt(sys_configSum,param_1);
+    if (((sys_configSum->current).integer == 0) || ((sys_configSum->current).integer != checksum)) {
+      Dvar_SetInt(sys_configSum,checksum);
     }
   }
-  return local_5;
+  return changed;
 }
 
 
@@ -220,14 +220,14 @@ LAB_007d969b:
 
 // 007D9720  Sys_ArchiveInfo  (win32/win_main.cpp:244)
 
-void __cdecl Sys_ArchiveInfo(int param_1)
+void __cdecl Sys_ArchiveInfo(int checksum)
 
 {
   Sys_RegisterInfoDvars();
   Dvar_SetFloat(sys_configureGHz,(float)sys_info.configureGHz);
   Dvar_SetInt(sys_sysMB,sys_info.sysMB);
   Dvar_SetString(sys_gpu,sys_info.gpuDescription);
-  Dvar_SetInt(sys_configSum,param_1);
+  Dvar_SetInt(sys_configSum,checksum);
   return;
 }
 
@@ -266,7 +266,7 @@ void __cdecl Sys_DirectXFatalError(void)
 
 // 007D9810  Sys_OutOfMemErrorInternal  (win32/win_main.cpp:276)
 
-void __cdecl Sys_OutOfMemErrorInternal(char *param_1,int param_2)
+void __cdecl Sys_OutOfMemErrorInternal(char *filename,int line)
 
 {
   bool bVar1;
@@ -298,10 +298,10 @@ void __cdecl Sys_OutOfMemErrorInternal(char *param_1,int param_2)
 
 // 007D98A0  Sys_QuitAndStartProcess  (win32/win_main.cpp:303)
 
-void __cdecl Sys_QuitAndStartProcess(char *param_1)
+void __cdecl Sys_QuitAndStartProcess(char *exeName)
 
 {
-  I_strncpyz(sys_exitCmdLine,param_1,0x400);
+  I_strncpyz(sys_exitCmdLine,exeName,0x400);
   Cbuf_AddText(0,"quit\n");
   return;
 }
@@ -313,19 +313,19 @@ void __cdecl Sys_SpawnQuitProcess(void)
 
 {
   bool bVar1;
-  CHAR local_10 [4];
-  DWORD local_c;
-  char local_5;
+  void *msgBuf;
+  ulong error;
+  bool success;
   
   if (sys_exitCmdLine[0] != '\0') {
-    local_5 = '\x01';
+    success = true;
     bVar1 = LiveSteam_LaunchOtherApp(sys_exitCmdLine);
     if (!bVar1) {
-      local_5 = '\0';
+      success = false;
     }
-    if (local_5 == '\0') {
-      local_c = GetLastError();
-      FormatMessageA(0x1300,(LPCVOID)0x0,local_c,0x400,local_10,0,(va_list *)0x0);
+    if (success == false) {
+      error = GetLastError();
+      FormatMessageA(0x1300,(LPCVOID)0x0,error,0x400,(LPSTR)&msgBuf,0,(va_list *)0x0);
       Win_LocalizeRef("WIN_COULDNT_START_PROCESS");
       Com_Error(ERR_FATAL,"\x15%s \'%s\'\n%s(0x%08x)\n");
     }
@@ -336,23 +336,24 @@ void __cdecl Sys_SpawnQuitProcess(void)
 
 // 007D98D0  Sys_OpenURL  (win32/win_main.cpp:370)
 
-void __cdecl Sys_OpenURL(char *param_1,int param_2)
+void __cdecl Sys_OpenURL(char *url,int doexit)
 
 {
   HINSTANCE pHVar1;
-  char *pcVar2;
+  char *fmt;
   HWND hWnd;
+  HWND__ *wnd;
   
-  pHVar1 = ShellExecuteA((HWND)0x0,"open",param_1,(LPCSTR)0x0,(LPCSTR)0x0,9);
+  pHVar1 = ShellExecuteA((HWND)0x0,"open",url,(LPCSTR)0x0,(LPCSTR)0x0,9);
   if (pHVar1 == (HINSTANCE)0x0) {
-    pcVar2 = va("EXE_ERR_COULDNT_OPEN_URL\x15%s");
-    Com_Error(ERR_DROP,pcVar2);
+    fmt = va("EXE_ERR_COULDNT_OPEN_URL\x15%s");
+    Com_Error(ERR_DROP,fmt);
   }
   hWnd = GetForegroundWindow();
   if (hWnd != (HWND)0x0) {
     ShowWindow(hWnd,3);
   }
-  if (param_2 != 0) {
+  if (doexit != 0) {
     Cbuf_AddText(0,"quit\n");
   }
   return;
@@ -368,13 +369,14 @@ void __cdecl Sys_OpenURL(char *param_1,int param_2)
 /* WARNING: Removing unreachable block (ram,0x007d9a31) */
 /* WARNING: Removing unreachable block (ram,0x007d9a48) */
 /* WARNING: Removing unreachable block (ram,0x007d9a4a) */
+/* WARNING: Variable defined which should be unmapped: argptr */
 
-void __cdecl Sys_Error(char *param_1)
+void __cdecl Sys_Error(char *error)
 
 {
   bool bVar1;
-  int iVar2;
-  char local_100c [4100];
+  char *argptr;
+  char text [4100];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -382,17 +384,16 @@ void __cdecl Sys_Error(char *param_1)
   Com_PrintStackTrace();
   com_errorEntered = 1;
   Sys_SuspendOtherThreads();
-  _vsnprintf(local_100c,0x1000,param_1,&stack0x00000008);
-  iVar2 = 0;
+  _vsnprintf(text,0x1000,error,&stack0x00000008);
   bVar1 = Monkey_IsRunning();
   if (!bVar1) {
     FixWindowsDesktop();
-    Sys_SetErrorText(local_100c);
-    GamerProfile_WriteSettings(iVar2);
+    Sys_SetErrorText(text);
+    GamerProfile_WriteSettings(0);
                     /* WARNING: Subroutine does not return */
     exit(0);
   }
-  Monkey_Error(local_100c);
+  Monkey_Error(text);
                     /* WARNING: Subroutine does not return */
   exit(0);
 }
@@ -434,13 +435,13 @@ void __cdecl Sys_Quit(void)
 
 // 007D9BA0  Sys_Print  (win32/win_main.cpp:527)
 
-void __cdecl Sys_Print(char *param_1)
+void __cdecl Sys_Print(char *msg)
 
 {
   if (enable_OutputDebugString != 0) {
-    OutputDebugStringA(param_1);
+    OutputDebugStringA(msg);
   }
-  Conbuf_AppendTextInMainThread(param_1);
+  Conbuf_AppendTextInMainThread(msg);
   return;
 }
 
@@ -452,42 +453,44 @@ char * __cdecl Sys_GetClipboardData(void)
 {
   BOOL BVar1;
   HANDLE hMem;
-  char *pcVar2;
-  SIZE_T SVar3;
-  char *pcVar4;
-  int iVar5;
-  char *local_c;
+  char *src;
+  SIZE_T SVar2;
+  char *name;
+  int type;
+  void *hClipboardData;
+  char *data;
+  char *cliptext;
   
-  local_c = (char *)0x0;
+  data = (char *)0x0;
   BVar1 = OpenClipboard((HWND)0x0);
   if (BVar1 != 0) {
     hMem = GetClipboardData(1);
     if (hMem != (HANDLE)0x0) {
-      pcVar2 = GlobalLock(hMem);
-      if (pcVar2 != (char *)0x0) {
-        iVar5 = 0xb;
-        pcVar4 = "Sys_GetClipboardData";
-        SVar3 = GlobalSize(hMem);
-        local_c = Z_Malloc(SVar3 + 1,pcVar4,iVar5);
-        SVar3 = GlobalSize(hMem);
-        I_strncpyz(local_c,pcVar2,SVar3);
+      src = GlobalLock(hMem);
+      if (src != (char *)0x0) {
+        type = 0xb;
+        name = "Sys_GetClipboardData";
+        SVar2 = GlobalSize(hMem);
+        data = Z_Malloc(SVar2 + 1,name,type);
+        SVar2 = GlobalSize(hMem);
+        I_strncpyz(data,src,SVar2);
         GlobalUnlock(hMem);
-        strtok(local_c,"\n\r\b");
+        strtok(data,"\n\r\b");
       }
     }
     CloseClipboard();
   }
-  return local_c;
+  return data;
 }
 
 
 // 007D9C80  Sys_QueEvent  (win32/win_main.cpp:716)
 
-void __cdecl
-Sys_QueEvent(int param_1,sysEventType_t param_2,int param_3,int param_4,int param_5,void *param_6)
+void __cdecl Sys_QueEvent(int time,sysEventType_t type,int value,int value2,int ptrLength,void *ptr)
 
 {
   uint uVar1;
+  sysEvent_t *ev;
   
   Sys_EnterCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
   uVar1 = eventHead & 0xff;
@@ -499,15 +502,15 @@ Sys_QueEvent(int param_1,sysEventType_t param_2,int param_3,int param_4,int para
     eventTail = eventTail + 1;
   }
   eventHead = eventHead + 1;
-  if (param_1 == 0) {
-    param_1 = Sys_Milliseconds();
+  if (time == 0) {
+    time = Sys_Milliseconds();
   }
-  eventQue[uVar1].evTime = param_1;
-  eventQue[uVar1].evType = param_2;
-  eventQue[uVar1].evValue = param_3;
-  eventQue[uVar1].evValue2 = param_4;
-  eventQue[uVar1].evPtrLength = param_5;
-  eventQue[uVar1].evPtr = param_6;
+  eventQue[uVar1].evTime = time;
+  eventQue[uVar1].evType = type;
+  eventQue[uVar1].evValue = value;
+  eventQue[uVar1].evValue2 = value2;
+  eventQue[uVar1].evPtrLength = ptrLength;
+  eventQue[uVar1].evPtr = ptr;
   Sys_LeaveCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
   return;
 }
@@ -519,6 +522,7 @@ void __cdecl Sys_ShutdownEvents(void)
 
 {
   uint uVar1;
+  sysEvent_t *ev;
   
   Sys_EnterCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
   while (eventTail < eventHead) {
@@ -537,19 +541,21 @@ void __cdecl Sys_ShutdownEvents(void)
 
 /* WARNING: Variable defined which should be unmapped: __return_storage_ptr__ */
 
-sysEvent_t * __cdecl Win_GetEvent(sysEvent_t *__return_storage_ptr__,WinQuitBehavior param_1)
+sysEvent_t * __cdecl Win_GetEvent(sysEvent_t *__return_storage_ptr__,WinQuitBehavior quitBehavior)
 
 {
   char cVar1;
   int iVar2;
   BOOL BVar3;
   char *pcVar4;
-  char *pcVar5;
-  uint uVar6;
+  char *dest;
+  uint uVar5;
   char *local_48;
-  tagMSG local_3c;
-  char *local_20;
-  int local_1c;
+  char *b;
+  int len;
+  tagMSG msg;
+  char *s;
+  int ev;
   sysEventType_t local_18;
   int local_14;
   int local_10;
@@ -558,16 +564,16 @@ sysEvent_t * __cdecl Win_GetEvent(sysEvent_t *__return_storage_ptr__,WinQuitBeha
   
   Sys_EnterCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
   if (eventTail < eventHead) {
-    uVar6 = eventTail & 0xff;
-    local_1c = eventQue[uVar6].evTime;
-    local_18 = eventQue[uVar6].evType;
-    local_14 = eventQue[uVar6].evValue;
-    local_10 = eventQue[uVar6].evValue2;
-    local_c = eventQue[uVar6].evPtrLength;
-    local_8 = eventQue[uVar6].evPtr;
+    uVar5 = eventTail & 0xff;
+    ev = eventQue[uVar5].evTime;
+    local_18 = eventQue[uVar5].evType;
+    local_14 = eventQue[uVar5].evValue;
+    local_10 = eventQue[uVar5].evValue2;
+    local_c = eventQue[uVar5].evPtrLength;
+    local_8 = eventQue[uVar5].evPtr;
     eventTail = eventTail + 1;
     Sys_LeaveCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
-    __return_storage_ptr__->evTime = local_1c;
+    __return_storage_ptr__->evTime = ev;
     __return_storage_ptr__->evType = local_18;
     __return_storage_ptr__->evValue = local_14;
     __return_storage_ptr__->evValue2 = local_10;
@@ -579,39 +585,39 @@ sysEvent_t * __cdecl Win_GetEvent(sysEvent_t *__return_storage_ptr__,WinQuitBeha
     if (iVar2 != 0) {
       Com_Quit_f();
     }
-    while (BVar3 = PeekMessageA(&local_3c,(HWND)0x0,0,0,0), BVar3 != 0) {
-      BVar3 = GetMessageA(&local_3c,(HWND)0x0,0,0);
+    while (BVar3 = PeekMessageA(&msg,(HWND)0x0,0,0,0), BVar3 != 0) {
+      BVar3 = GetMessageA(&msg,(HWND)0x0,0,0);
       if (BVar3 == 0) {
         Com_Quit_f();
       }
-      g_wv.sysMsgTime = local_3c.time;
-      TranslateMessage(&local_3c);
-      DispatchMessageA(&local_3c);
+      g_wv.sysMsgTime = msg.time;
+      TranslateMessage(&msg);
+      DispatchMessageA(&msg);
     }
-    local_20 = Sys_ConsoleInput();
-    if (local_20 != (char *)0x0) {
-      pcVar4 = local_20 + 1;
-      local_48 = local_20;
+    s = Sys_ConsoleInput();
+    if (s != (char *)0x0) {
+      pcVar4 = s + 1;
+      local_48 = s;
       do {
         cVar1 = *local_48;
         local_48 = local_48 + 1;
       } while (cVar1 != '\0');
       iVar2 = ((int)local_48 - (int)pcVar4) + 1;
-      pcVar5 = Com_AllocEvent(iVar2);
-      I_strncpyz(pcVar5,local_20,(int)local_48 - (int)pcVar4);
-      Sys_QueEvent(0,SE_CONSOLE,0,0,iVar2,pcVar5);
+      dest = Com_AllocEvent(iVar2);
+      I_strncpyz(dest,s,(int)local_48 - (int)pcVar4);
+      Sys_QueEvent(0,SE_CONSOLE,0,0,iVar2,dest);
     }
     if (eventTail < eventHead) {
-      uVar6 = eventTail & 0xff;
-      local_1c = eventQue[uVar6].evTime;
-      local_18 = eventQue[uVar6].evType;
-      local_14 = eventQue[uVar6].evValue;
-      local_10 = eventQue[uVar6].evValue2;
-      local_c = eventQue[uVar6].evPtrLength;
-      local_8 = eventQue[uVar6].evPtr;
+      uVar5 = eventTail & 0xff;
+      ev = eventQue[uVar5].evTime;
+      local_18 = eventQue[uVar5].evType;
+      local_14 = eventQue[uVar5].evValue;
+      local_10 = eventQue[uVar5].evValue2;
+      local_c = eventQue[uVar5].evPtrLength;
+      local_8 = eventQue[uVar5].evPtr;
       eventTail = eventTail + 1;
       Sys_LeaveCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
-      __return_storage_ptr__->evTime = local_1c;
+      __return_storage_ptr__->evTime = ev;
       __return_storage_ptr__->evType = local_18;
       __return_storage_ptr__->evValue = local_14;
       __return_storage_ptr__->evValue2 = local_10;
@@ -619,15 +625,15 @@ sysEvent_t * __cdecl Win_GetEvent(sysEvent_t *__return_storage_ptr__,WinQuitBeha
       __return_storage_ptr__->evPtr = local_8;
     }
     else {
-      local_1c = 0;
+      ev = 0;
       local_18 = SE_NONE;
       local_14 = 0;
       local_10 = 0;
       local_c = 0;
       local_8 = (void *)0x0;
-      local_1c = Sys_Milliseconds();
+      ev = Sys_Milliseconds();
       Sys_LeaveCriticalSection(CRITSECT_SYS_EVENT_QUEUE);
-      __return_storage_ptr__->evTime = local_1c;
+      __return_storage_ptr__->evTime = ev;
       __return_storage_ptr__->evType = local_18;
       __return_storage_ptr__->evValue = local_14;
       __return_storage_ptr__->evValue2 = local_10;
@@ -652,7 +658,7 @@ void __cdecl Sys_LoadingKeepAlive(void)
   int local_28;
   int local_24;
   void *local_20;
-  int local_1c;
+  int ev;
   sysEventType_t local_18;
   int local_14;
   int local_10;
@@ -668,7 +674,7 @@ void __cdecl Sys_LoadingKeepAlive(void)
     local_28 = psVar1->evValue2;
     local_24 = psVar1->evPtrLength;
     local_20 = psVar1->evPtr;
-    local_1c = local_34;
+    ev = local_34;
     local_18 = local_30;
     local_14 = local_2c;
     local_10 = local_28;
@@ -735,24 +741,27 @@ void __cdecl Sys_Mjpeg(void)
 
 {
   int iVar1;
-  uint uVar2;
-  char *pcVar3;
-  int iVar4;
-  int local_14 [4];
+  uint width_00;
+  char *szFile;
+  int fps_00;
+  int fps;
+  int width;
+  int height;
+  int heights [4];
   
-  local_14[0] = 0x168;
-  local_14[1] = 0x1e0;
-  local_14[2] = 0x2d0;
-  local_14[3] = 0x438;
+  heights[0] = 0x168;
+  heights[1] = 0x1e0;
+  heights[2] = 0x2d0;
+  heights[3] = 0x438;
   iVar1 = Cmd_Argc();
   if (iVar1 == 2) {
     mjpeg_init();
-    iVar1 = local_14[(r_clipSize->current).integer];
-    uVar2 = (uint)(((longlong)iVar1 * (longlong)(int)vidConfig.displayWidth & 0xffffffffU) /
-                  (ulonglong)vidConfig.displayHeight) & 0xfff0;
-    iVar4 = (r_clipFPS->current).integer;
-    pcVar3 = Cmd_Argv(1);
-    mjpeg_create(pcVar3,uVar2,iVar1,iVar4);
+    iVar1 = heights[(r_clipSize->current).integer];
+    width_00 = (uint)(((longlong)iVar1 * (longlong)(int)vidConfig.displayWidth & 0xffffffffU) /
+                     (ulonglong)vidConfig.displayHeight) & 0xfff0;
+    fps_00 = (r_clipFPS->current).integer;
+    szFile = Cmd_Argv(1);
+    mjpeg_create(szFile,width_00,iVar1,fps_00);
   }
   return;
 }
@@ -777,7 +786,7 @@ void __cdecl Sys_Init(void)
 {
   BOOL BVar1;
   char *pcVar2;
-  _OSVERSIONINFOA local_a4;
+  _OSVERSIONINFOA osversion;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -788,17 +797,17 @@ void __cdecl Sys_Init(void)
   Cmd_AddCommandInternal("movie_stop",Sys_MjpegClose,(cmd_function_s *)&Sys_MjpegClose_VAR);
   Cmd_AddCommandInternal("net_listen",Sys_Listen_f,(cmd_function_s *)&Sys_Listen_f_VAR);
   Cmd_AddCommandInternal("net_connect",Sys_Connect_f,(cmd_function_s *)&Sys_Connect_f_VAR);
-  local_a4.dwOSVersionInfoSize = 0x94;
-  BVar1 = GetVersionExA(&local_a4);
+  osversion.dwOSVersionInfoSize = 0x94;
+  BVar1 = GetVersionExA(&osversion);
   if (BVar1 == 0) {
     Sys_Error("Couldn\'t get OS info");
   }
-  if (local_a4.dwMajorVersion < 4) {
+  if (osversion.dwMajorVersion < 4) {
     Com_GetBuildDisplayNameR();
     pcVar2 = va("%s requires Windows version 4 or greater");
     Sys_Error(pcVar2);
   }
-  if (local_a4.dwPlatformId == 0) {
+  if (osversion.dwPlatformId == 0) {
     Com_GetBuildDisplayNameR();
     pcVar2 = va("%s doesn\'t run on Win32s");
     Sys_Error(pcVar2);
@@ -852,58 +861,58 @@ void __cdecl Sys_NoFreeFilesError(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl Sys_IsGameProcess(int param_1)
+int __cdecl Sys_IsGameProcess(int id)
 
 {
   int iVar1;
-  undefined4 local_354 [8];
+  undefined4 me [8];
   char local_334 [524];
-  int local_128;
-  char *local_124;
-  char *local_120;
-  CHAR local_11c [259];
+  int isGame;
+  char *ch;
+  char *moduleName;
+  CHAR modulePath [259];
   undefined1 local_19;
   uint local_10;
-  HANDLE local_c;
-  HANDLE local_8;
+  void *snapshot;
+  void *process;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_8 = OpenProcess(0x1f0fff,0,param_1);
-  if (local_8 == (HANDLE)0x0) {
-    local_128 = 0;
+  process = OpenProcess(0x1f0fff,0,id);
+  if (process == (HANDLE)0x0) {
+    isGame = 0;
   }
   else {
-    CloseHandle(local_8);
-    local_c = (HANDLE)_CreateToolhelp32Snapshot_8(8,param_1);
-    if (local_c == (HANDLE)0xffffffff) {
-      local_128 = 0;
+    CloseHandle(process);
+    snapshot = (void *)_CreateToolhelp32Snapshot_8(8,id);
+    if (snapshot == (void *)0xffffffff) {
+      isGame = 0;
     }
     else {
-      local_128 = 0;
-      local_354[0] = 0x224;
-      iVar1 = _Module32First_8(local_c,local_354);
+      isGame = 0;
+      me[0] = 0x224;
+      iVar1 = _Module32First_8(snapshot,me);
       if (iVar1 != 0) {
-        GetModuleFileNameA((HMODULE)0x0,local_11c,0x104);
+        GetModuleFileNameA((HMODULE)0x0,modulePath,0x104);
         local_19 = 0;
-        local_120 = local_11c;
-        for (local_124 = local_11c; *local_124 != '\0'; local_124 = local_124 + 1) {
-          if ((*local_124 == '\\') || (*local_124 == ':')) {
-            local_120 = local_124 + 1;
+        moduleName = modulePath;
+        for (ch = modulePath; *ch != '\0'; ch = ch + 1) {
+          if ((*ch == '\\') || (*ch == ':')) {
+            moduleName = ch + 1;
           }
         }
         do {
-          iVar1 = I_stricmp(local_334,local_120);
+          iVar1 = I_stricmp(local_334,moduleName);
           if (iVar1 == 0) {
-            local_128 = 1;
+            isGame = 1;
             break;
           }
-          iVar1 = _Module32Next_8(local_c,local_354);
+          iVar1 = _Module32Next_8(snapshot,me);
         } while (iVar1 != 0);
       }
-      CloseHandle(local_c);
+      CloseHandle(snapshot);
     }
   }
-  return local_128;
+  return isGame;
 }
 
 
@@ -914,17 +923,18 @@ int __cdecl Sys_IsGameProcess(int param_1)
 void __cdecl Sys_GetSemaphoreFileName(void)
 
 {
-  char *local_11c;
-  CHAR local_114 [259];
+  char *ch;
+  char *moduleName;
+  CHAR modulePath [259];
   undefined1 local_11;
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetModuleFileNameA((HMODULE)0x0,local_114,0x104);
+  GetModuleFileNameA((HMODULE)0x0,modulePath,0x104);
   local_11 = 0;
-  for (local_11c = local_114; *local_11c != '\0'; local_11c = local_11c + 1) {
-    if (((*local_11c != '\\') && (*local_11c != ':')) && (*local_11c == '.')) {
-      *local_11c = '\0';
+  for (ch = modulePath; *ch != '\0'; ch = ch + 1) {
+    if (((*ch != '\\') && (*ch != ':')) && (*ch == '.')) {
+      *ch = '\0';
     }
   }
   sprintf(sys_processSemaphoreFile,"__%s");
@@ -943,52 +953,52 @@ int __cdecl Sys_CheckCrashOrRerun(void)
   char *lpText;
   HWND hWnd;
   UINT uType;
-  DWORD local_18;
-  int local_14;
-  DWORD local_10;
-  HANDLE local_c;
-  DWORD local_8;
+  ulong procID;
+  int answer;
+  ulong byteCount;
+  void *file;
+  ulong id;
   
   if (sys_processSemaphoreFile[0] == '\0') {
     return 1;
   }
-  local_18 = GetCurrentProcessId();
-  local_c = CreateFileA(sys_processSemaphoreFile,0x80000000,0,(LPSECURITY_ATTRIBUTES)0x0,3,2,
-                        (HANDLE)0x0);
-  if (local_c != (HANDLE)0xffffffff) {
-    BVar1 = ReadFile(local_c,&local_8,4,&local_10,(LPOVERLAPPED)0x0);
-    if ((BVar1 == 0) || (local_10 != 4)) {
-      CloseHandle(local_c);
+  procID = GetCurrentProcessId();
+  file = CreateFileA(sys_processSemaphoreFile,0x80000000,0,(LPSECURITY_ATTRIBUTES)0x0,3,2,
+                     (HANDLE)0x0);
+  if (file != (HANDLE)0xffffffff) {
+    BVar1 = ReadFile(file,&id,4,&byteCount,(LPOVERLAPPED)0x0);
+    if ((BVar1 == 0) || (byteCount != 4)) {
+      CloseHandle(file);
     }
     else {
-      CloseHandle(local_c);
-      if ((local_18 != local_8) && (iVar2 = Sys_IsGameProcess(local_8), iVar2 != 0)) {
+      CloseHandle(file);
+      if ((procID != id) && (iVar2 = Sys_IsGameProcess(id), iVar2 != 0)) {
         return 0;
       }
       uType = 0x33;
       lpCaption = Win_LocalizeRef("WIN_IMPROPER_QUIT_TITLE");
       lpText = Win_LocalizeRef("WIN_IMPROPER_QUIT_BODY");
       hWnd = GetActiveWindow();
-      local_14 = MessageBoxA(hWnd,lpText,lpCaption,uType);
-      if (local_14 == 6) {
+      answer = MessageBoxA(hWnd,lpText,lpCaption,uType);
+      if (answer == 6) {
         Com_ForceSafeMode();
       }
-      else if ((local_14 != 7) && (local_14 == 2)) {
+      else if ((answer != 7) && (answer == 2)) {
         return 0;
       }
     }
   }
-  local_c = CreateFileA(sys_processSemaphoreFile,0x40000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,2,
-                        (HANDLE)0x0);
-  if (local_c == (HANDLE)0xffffffff) {
+  file = CreateFileA(sys_processSemaphoreFile,0x40000000,0,(LPSECURITY_ATTRIBUTES)0x0,2,2,
+                     (HANDLE)0x0);
+  if (file == (HANDLE)0xffffffff) {
     Sys_NoFreeFilesError();
   }
-  BVar1 = WriteFile(local_c,&local_18,4,&local_10,(LPOVERLAPPED)0x0);
-  if ((BVar1 == 0) || (local_10 != 4)) {
-    CloseHandle(local_c);
+  BVar1 = WriteFile(file,&procID,4,&byteCount,(LPOVERLAPPED)0x0);
+  if ((BVar1 == 0) || (byteCount != 4)) {
+    CloseHandle(file);
     Sys_NoFreeFilesError();
   }
-  CloseHandle(local_c);
+  CloseHandle(file);
   return 1;
 }
 
@@ -1009,17 +1019,17 @@ void __cdecl Win_RegisterClass(void)
 
 {
   ATOM AVar1;
-  WNDCLASSEXA local_34;
+  WNDCLASSEXA wce;
   
-  memset((uchar *)&local_34,'\0',0x30);
-  local_34.cbSize = 0x30;
-  local_34.lpfnWndProc = MainWndProc;
-  local_34.hInstance = (HINSTANCE)g_wv.hInstance;
-  local_34.hIcon = LoadIconA((HINSTANCE)g_wv.hInstance,&DAT_00000001);
-  local_34.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
-  local_34.hbrBackground = CreateSolidBrush(0);
-  local_34.lpszClassName = "CoDBlackOps";
-  AVar1 = RegisterClassExA(&local_34);
+  memset((uchar *)&wce,'\0',0x30);
+  wce.cbSize = 0x30;
+  wce.lpfnWndProc = MainWndProc;
+  wce.hInstance = (HINSTANCE)g_wv.hInstance;
+  wce.hIcon = LoadIconA((HINSTANCE)g_wv.hInstance,&DAT_00000001);
+  wce.hCursor = LoadCursorA((HINSTANCE)0x0,(LPCSTR)0x7f00);
+  wce.hbrBackground = CreateSolidBrush(0);
+  wce.lpszClassName = "CoDBlackOps";
+  AVar1 = RegisterClassExA(&wce);
   if (AVar1 == 0) {
     Com_Error(ERR_FATAL,"EXE_ERR_COULDNT_REGISTER_WINDOW");
   }
@@ -1034,11 +1044,11 @@ void __cdecl Win_RegisterClass(void)
 void __cdecl PrintWorkingDir(void)
 
 {
-  char local_10c [260];
+  char cwd [260];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  _getcwd(local_10c,0x100);
+  _getcwd(cwd,0x100);
   Com_Printf(0x10,"Working directory: %s\n");
   return;
 }
@@ -1046,7 +1056,7 @@ void __cdecl PrintWorkingDir(void)
 
 // 007DA790  PrivateUnhandledExceptionFilter  (win32/win_main.cpp:1323)
 
-long __cdecl PrivateUnhandledExceptionFilter(_EXCEPTION_POINTERS *param_1)
+long __cdecl PrivateUnhandledExceptionFilter(_EXCEPTION_POINTERS *ExceptionInfo)
 
 {
   uint uVar1;
@@ -1086,11 +1096,12 @@ long __cdecl PrivateUnhandledExceptionFilter(_EXCEPTION_POINTERS *param_1)
   char *local_28;
   char *local_20;
   undefined4 *local_18;
-  int local_10;
-  int local_8;
+  int j;
+  int group;
+  int i;
   
   builtin_strncpy(g_ExceptionStr,"Exception: ",0xc);
-  uVar1 = param_1->ExceptionRecord->ExceptionCode;
+  uVar1 = ExceptionInfo->ExceptionRecord->ExceptionCode;
   if (uVar1 < 0xc0000006) {
     if (uVar1 == 0xc0000005) {
       local_18 = (undefined4 *)((int)&sys_SSE + 3);
@@ -1383,7 +1394,7 @@ LAB_007dad5b:
     pcVar3 = local_c0 + 1;
   } while (*local_c0 != '\0');
   sprintf(local_c0,"Exception Address: %08x\n\n");
-  if ((param_1->ContextRecord->ContextFlags & 0x10001) != 0) {
+  if ((ExceptionInfo->ContextRecord->ContextFlags & 0x10001) != 0) {
     local_d0 = g_ExceptionStr;
     pcVar3 = local_d0;
     do {
@@ -1392,7 +1403,7 @@ LAB_007dad5b:
     } while (*local_d0 != '\0');
     sprintf(local_d0,"EBP: %08x\tEIP: %08x\tSEGCS: %08x\tESP: %08x\tSEGSS: %08x\tEFLAGS: %08x\n\n");
   }
-  if ((param_1->ContextRecord->ContextFlags & 0x10004) != 0) {
+  if ((ExceptionInfo->ContextRecord->ContextFlags & 0x10004) != 0) {
     local_e0 = g_ExceptionStr;
     pcVar3 = local_e0;
     do {
@@ -1401,7 +1412,7 @@ LAB_007dad5b:
     } while (*local_e0 != '\0');
     sprintf(local_e0,"SEGGS: %08x\tSEGFS: %08x\tSEGES: %08x\tSEGDS: %08x\n");
   }
-  if ((param_1->ContextRecord->ContextFlags & 0x10002) != 0) {
+  if ((ExceptionInfo->ContextRecord->ContextFlags & 0x10002) != 0) {
     local_f0 = g_ExceptionStr;
     pcVar3 = local_f0;
     do {
@@ -1410,7 +1421,7 @@ LAB_007dad5b:
     } while (*local_f0 != '\0');
     sprintf(local_f0,"EDI: %08x\tESI: %08x\nEAX: %08x\tEBX: %08x\nECX: %08x\tEDX: %08x\n\n");
   }
-  if ((param_1->ContextRecord->ContextFlags & 0x10001) != 0) {
+  if ((ExceptionInfo->ContextRecord->ContextFlags & 0x10001) != 0) {
     local_100 = (char *)((int)&sys_SSE + 3);
     pcVar3 = local_100;
     do {
@@ -1418,8 +1429,8 @@ LAB_007dad5b:
       pcVar3 = local_100 + 1;
     } while (local_100[1] != '\0');
     builtin_strncpy(local_100 + 1,"Stack Bytes: \n",0xf);
-    for (local_8 = 0; local_8 < 0x80; local_8 = local_8 + 1) {
-      for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
+    for (i = 0; i < 0x80; i = i + 1) {
+      for (j = 0; j < 8; j = j + 1) {
         local_108 = g_ExceptionStr;
         pcVar3 = local_108;
         do {
@@ -1442,8 +1453,8 @@ LAB_007dad5b:
       } while (*(char *)((int)local_120 + 1) != '\0');
       *(undefined2 *)((int)local_120 + 1) = 0x5b09;
       *(undefined1 *)((int)local_120 + 3) = 0;
-      for (local_10 = 0; local_10 < 8; local_10 = local_10 + 1) {
-        if (*(byte *)(param_1->ContextRecord->Esp + local_10 + local_8 * 8) < 0x21) {
+      for (j = 0; j < 8; j = j + 1) {
+        if (*(byte *)(ExceptionInfo->ContextRecord->Esp + j + i * 8) < 0x21) {
           local_128 = g_ExceptionStr;
           pcVar3 = local_128;
           do {
@@ -1501,7 +1512,7 @@ bool __cdecl CheckRemoteSession(void)
 
 // 007DB9F0  StartingDedicatedServer  (win32/win_main.cpp:1488)
 
-int __cdecl StartingDedicatedServer(char *param_1)
+int __cdecl StartingDedicatedServer(char *cmdline)
 
 {
   char *pcVar1;
@@ -1509,9 +1520,11 @@ int __cdecl StartingDedicatedServer(char *param_1)
   uint uVar2;
   int iVar3;
   char *local_14;
-  char *local_8;
+  int dedicated;
+  char *dedicated_str;
+  char *p;
   
-  strstr((uchar *)param_1,(uchar *)"dedicated");
+  strstr((uchar *)cmdline,(uchar *)"dedicated");
   if (extraout_EAX == 0) {
     uVar2 = 0;
   }
@@ -1522,13 +1535,12 @@ int __cdecl StartingDedicatedServer(char *param_1)
       local_14 = pcVar1;
       pcVar1 = local_14 + 1;
     } while (*local_14 != '\0');
-    for (local_8 = local_14 + extraout_EAX + -0xcf8378; (*local_8 != '\0' && (*local_8 == ' '));
-        local_8 = local_8 + 1) {
+    for (p = local_14 + extraout_EAX + -0xcf8378; (*p != '\0' && (*p == ' ')); p = p + 1) {
     }
-    if ((*local_8 != '\0') && (*local_8 == '\"')) {
-      local_8 = local_8 + 1;
+    if ((*p != '\0') && (*p == '\"')) {
+      p = p + 1;
     }
-    iVar3 = atoi(local_8);
+    iVar3 = atoi(p);
     uVar2 = (uint)(iVar3 != 0);
   }
   return uVar2;
@@ -1539,8 +1551,10 @@ int __cdecl StartingDedicatedServer(char *param_1)
 
 /* WARNING: Removing unreachable block (ram,0x007db6ce) */
 /* WARNING: Removing unreachable block (ram,0x007db736) */
+/* WARNING: Variable defined which should be unmapped: SCRIPT_DEBUGGER_SMOKE_TEST_SUCCESS_EXIT_CODE
+    */
 
-int __cdecl WinMain(HINSTANCE__ *param_1,HINSTANCE__ *param_2,char *param_3,int param_4)
+int __cdecl WinMain(HINSTANCE__ *hInstance,HINSTANCE__ *hPrevInstance,char *lpCmdLine,int nCmdShow)
 
 {
   code *pcVar1;
@@ -1548,16 +1562,15 @@ int __cdecl WinMain(HINSTANCE__ *param_1,HINSTANCE__ *param_2,char *param_3,int 
   int iVar3;
   char *pcVar4;
   int extraout_EAX;
-  int iVar5;
-  int extraout_var;
+  int in_ECX;
+  int SCRIPT_DEBUGGER_SMOKE_TEST_SUCCESS_EXIT_CODE;
   
-  iVar3 = StartingDedicatedServer(param_3);
-  iVar5 = extraout_var;
+  iVar3 = StartingDedicatedServer(lpCmdLine);
   if ((iVar3 != 0) || (bVar2 = CheckRemoteSession(), !bVar2)) {
     g_allowMature = true;
-    pcVar4 = I_stristr(param_3,"minidump");
+    pcVar4 = I_stristr(lpCmdLine,"minidump");
     if (pcVar4 == (char *)0x0) {
-      pcVar4 = I_stristr(param_3,"nodump");
+      pcVar4 = I_stristr(lpCmdLine,"nodump");
       if (pcVar4 == (char *)0x0) {
         Sys_StartMiniDump(true);
       }
@@ -1573,9 +1586,9 @@ int __cdecl WinMain(HINSTANCE__ *param_1,HINSTANCE__ *param_2,char *param_3,int 
     PMem_Init();
     track_init();
     Win_InitLocalization();
-    iVar3 = I_strnicmp(param_3,"allowdupe",9);
-    if (((iVar3 != 0) || (' ' < param_3[9])) &&
-       (strstr((uchar *)param_3,(uchar *)"g_connectpaths 3"), extraout_EAX == 0)) {
+    iVar3 = I_strnicmp(lpCmdLine,"allowdupe",9);
+    if (((iVar3 != 0) || (' ' < lpCmdLine[9])) &&
+       (strstr((uchar *)lpCmdLine,(uchar *)"g_connectpaths 3"), extraout_EAX == 0)) {
       Sys_GetSemaphoreFileName();
       iVar3 = Sys_CheckCrashOrRerun();
       if (iVar3 == 0) {
@@ -1584,15 +1597,15 @@ int __cdecl WinMain(HINSTANCE__ *param_1,HINSTANCE__ *param_2,char *param_3,int 
         return 0;
       }
     }
-    pcVar4 = I_stristr(param_3,"nosnd");
+    pcVar4 = I_stristr(lpCmdLine,"nosnd");
     s_nosnd = (int)(pcVar4 != (char *)0x0);
-    if (param_2 == (HINSTANCE__ *)0x0) {
+    if (hPrevInstance == (HINSTANCE__ *)0x0) {
       Com_InitParse();
       Dvar_Init();
       InitTiming();
       Sys_FindInfo();
-      g_wv.hInstance = param_1;
-      I_strncpyz(sys_cmdline,param_3,0x400);
+      g_wv.hInstance = hInstance;
+      I_strncpyz(sys_cmdline,lpCmdLine,0x400);
       if (g_open_automate_benchmark[0] != '\0') {
         I_strncat(sys_cmdline,0x400,
                   " +set r_open_automate 1 +set com_introPlayed 1 +set ui_autoContinue 1 +devmap ");
@@ -1601,7 +1614,7 @@ int __cdecl WinMain(HINSTANCE__ *param_1,HINSTANCE__ *param_2,char *param_3,int 
       Win_RegisterClass();
       SetErrorMode(1);
       Sys_Milliseconds();
-      GamerProfile_WriteSettings(iVar5);
+      GamerProfile_WriteSettings(in_ECX);
       tlPrintf("Hello from the wonderful world of TL\n");
       Sys_SetupTLCallbacks(0x900000);
       bVar2 = Sys_IsMainThread();
@@ -1609,8 +1622,8 @@ int __cdecl WinMain(HINSTANCE__ *param_1,HINSTANCE__ *param_2,char *param_3,int 
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\win32\\win_main.cpp",0x694,0,
                                    "%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
-        iVar5 = (*pcVar1)();
-        return iVar5;
+        iVar3 = (*pcVar1)();
+        return iVar3;
       }
       Com_Init(sys_cmdline,false);
       PrintWorkingDir();

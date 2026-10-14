@@ -2,7 +2,7 @@
 
 // 00A1CEA0  setup_gjk_input_from_pcp  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_collision.h:10)
 
-void __cdecl setup_gjk_input_from_pcp(phys_gjk_input *param_1,phys_collision_pair *param_2)
+void __cdecl setup_gjk_input_from_pcp(phys_gjk_input *pgi,phys_collision_pair *pcp)
 
 {
   float fVar1;
@@ -18,8 +18,8 @@ void __cdecl setup_gjk_input_from_pcp(phys_gjk_input *param_1,phys_collision_pai
   float10 fVar11;
   float10 fVar12;
   
-  fVar1 = param_2->m_hit_time;
-  if ((NAN(fVar1) || 0.0 < fVar1 == (fVar1 == 0.0)) || (1.0 < param_2->m_hit_time)) {
+  fVar1 = pcp->m_hit_time;
+  if ((NAN(fVar1) || 0.0 < fVar1 == (fVar1 == 0.0)) || (1.0 < pcp->m_hit_time)) {
     bVar10 = _tlAssert("C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_collision.h"
                        ,0xb,"pcp->m_hit_time >= 0.0f && pcp->m_hit_time <= 1.0f","");
     if (bVar10) {
@@ -28,31 +28,31 @@ void __cdecl setup_gjk_input_from_pcp(phys_gjk_input *param_1,phys_collision_pai
       return;
     }
   }
-  pbVar2 = param_2->m_bpi1;
-  fVar1 = param_2->m_hit_time;
-  pbVar3 = param_2->m_bpi2;
-  (param_1->m_cg1_translation).x = (float)pbVar2->_padding_;
-  (param_1->m_cg1_translation).y = (float)pbVar2->_padding_;
-  (param_1->m_cg1_translation).z = (float)pbVar2->_padding_;
-  (param_1->m_cg2_translation).x = (float)pbVar3->_padding_;
-  (param_1->m_cg2_translation).y = (float)pbVar3->_padding_;
-  (param_1->m_cg2_translation).z = (float)pbVar3->_padding_;
-  param_1->m_start_time = fVar1;
-  param_1->m_end_time = 1.0;
+  pbVar2 = pcp->m_bpi1;
+  fVar1 = pcp->m_hit_time;
+  pbVar3 = pcp->m_bpi2;
+  (pgi->m_cg1_translation).x = (float)pbVar2->_padding_;
+  (pgi->m_cg1_translation).y = (float)pbVar2->_padding_;
+  (pgi->m_cg1_translation).z = (float)pbVar2->_padding_;
+  (pgi->m_cg2_translation).x = (float)pbVar3->_padding_;
+  (pgi->m_cg2_translation).y = (float)pbVar3->_padding_;
+  (pgi->m_cg2_translation).z = (float)pbVar3->_padding_;
+  pgi->m_start_time = fVar1;
+  pgi->m_end_time = 1.0;
   ppVar4 = pbVar2->m_gjk_geom;
   ppVar5 = pbVar3->m_gjk_geom;
   ppVar6 = pbVar2->m_cg_to_world_xform;
   ppVar7 = pbVar3->m_cg_to_world_xform;
   fVar11 = (float10)(**(code **)((int)*ppVar4 + 0x14))();
   fVar12 = (float10)(**(code **)((int)*ppVar5 + 0x14))();
-  ppVar8 = param_2->m_gjk_ci;
-  param_1->cg1_radius = (float)(fVar11 + (float10)0.3400000035762787);
-  param_1->gjk_ci = ppVar8;
-  param_1->gjk_cg2 = ppVar5;
-  param_1->cg2_radius = (float)(fVar12 + (float10)0.3400000035762787);
-  param_1->gjk_cg1 = ppVar4;
-  param_1->cg1_to_world_xform = ppVar6;
-  param_1->cg2_to_world_xform = ppVar7;
+  ppVar8 = pcp->m_gjk_ci;
+  pgi->cg1_radius = (float)(fVar11 + (float10)0.3400000035762787);
+  pgi->gjk_ci = ppVar8;
+  pgi->gjk_cg2 = ppVar5;
+  pgi->cg2_radius = (float)(fVar12 + (float10)0.3400000035762787);
+  pgi->gjk_cg1 = ppVar4;
+  pgi->cg1_to_world_xform = ppVar6;
+  pgi->cg2_to_world_xform = ppVar7;
   return;
 }
 
@@ -63,8 +63,8 @@ void __cdecl setup_gjk_input_from_pcp(phys_gjk_input *param_1,phys_collision_pai
 /* WARNING: Removing unreachable block (ram,0x00a2037b) */
 
 void __cdecl
-add_collision_pair(broad_phase_info *param_1,broad_phase_info *param_2,float param_3,
-                  phys_gjk_cache_info *param_4)
+add_collision_pair(broad_phase_info *bpi1,broad_phase_info *bpi2,float hit_time,
+                  phys_gjk_cache_info *gjk_ci)
 
 {
   int *piVar1;
@@ -73,7 +73,7 @@ add_collision_pair(broad_phase_info *param_1,broad_phase_info *param_2,float par
   bool bVar4;
   phys_collision_pair *ppVar5;
   
-  if (((param_3 < 0.0) || (1.0 < param_3)) &&
+  if (((hit_time < 0.0) || (1.0 < hit_time)) &&
      (bVar4 = _tlAssert("source/phys_broad_phase.cpp",0xb,"hit_time >= 0.0f && hit_time <= 1.0f","")
      , bVar4)) {
     pcVar2 = (code *)swi(3);
@@ -89,10 +89,10 @@ add_collision_pair(broad_phase_info *param_1,broad_phase_info *param_2,float par
   else {
     ppVar5->m_hit_time = -1.0;
   }
-  ppVar5->m_hit_time = param_3;
-  ppVar5->m_bpi1 = param_1;
-  ppVar5->m_bpi2 = param_2;
-  ppVar5->m_gjk_ci = param_4;
+  ppVar5->m_hit_time = hit_time;
+  ppVar5->m_bpi1 = bpi1;
+  ppVar5->m_bpi2 = bpi2;
+  ppVar5->m_gjk_ci = gjk_ci;
   pbVar3 = G_BPM;
   if (((G_BPM->g_list_phys_collide_data).m_last_next_ptr == (phys_collision_pair **)0x0) &&
      (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0xe6,
@@ -117,35 +117,33 @@ add_collision_pair(broad_phase_info *param_1,broad_phase_info *param_2,float par
 
 void __cdecl
 add_collision_pair_mutex
-          (broad_phase_info *param_1,broad_phase_info *param_2,float param_3,
-          phys_gjk_cache_info *param_4)
+          (broad_phase_info *bpi1,broad_phase_info *bpi2,float hit_time,phys_gjk_cache_info *gjk_ci)
 
 {
   code *pcVar1;
   bool bVar2;
-  phys_collision_pair *ppVar3;
+  phys_collision_pair *p;
   
-  if (((param_3 < 0.0) || (1.0 < param_3)) &&
+  if (((hit_time < 0.0) || (1.0 < hit_time)) &&
      (bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x17,"hit_time >= 0.0f && hit_time <= 1.0f",""
                        ), bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  ppVar3 = phys_transient_allocator::mt_allocate
-                     (&G_BPM->g_collision_memory_buffer,0x14,4,0,
-                      "broad phase collision out of memory.");
-  if (ppVar3 == (phys_collision_pair *)0x0) {
-    ppVar3 = (phys_collision_pair *)0x0;
+  p = phys_transient_allocator::mt_allocate
+                (&G_BPM->g_collision_memory_buffer,0x14,4,0,"broad phase collision out of memory.");
+  if (p == (phys_collision_pair *)0x0) {
+    p = (phys_collision_pair *)0x0;
   }
   else {
-    ppVar3->m_hit_time = -1.0;
+    p->m_hit_time = -1.0;
   }
-  ppVar3->m_hit_time = param_3;
-  ppVar3->m_bpi1 = param_1;
-  ppVar3->m_gjk_ci = param_4;
-  ppVar3->m_bpi2 = param_2;
-  phys_link_list<phys_collision_pair>::add_mt(&G_BPM->g_list_phys_collide_data,ppVar3);
+  p->m_hit_time = hit_time;
+  p->m_bpi1 = bpi1;
+  p->m_gjk_ci = gjk_ci;
+  p->m_bpi2 = bpi2;
+  phys_link_list<phys_collision_pair>::add_mt(&G_BPM->g_list_phys_collide_data,p);
   return;
 }
 
@@ -153,13 +151,13 @@ add_collision_pair_mutex
 // 00A1CF90  collision_process  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:34)
 
 void __thiscall
-phys_wheel_collide_info::collision_process(phys_wheel_collide_info *this,broad_phase_info *param_1)
+phys_wheel_collide_info::collision_process(phys_wheel_collide_info *this,broad_phase_info *bpi)
 
 {
-  phys_mat44 *ppVar1;
-  code *pcVar2;
-  char cVar3;
-  bool bVar4;
+  phys_mat44 *mat;
+  code *pcVar1;
+  char cVar2;
+  bool bVar3;
   phys_vec3 local_50;
   float local_40;
   float local_3c;
@@ -170,24 +168,24 @@ phys_wheel_collide_info::collision_process(phys_wheel_collide_info *this,broad_p
   float local_18;
   float local_14;
   
-  ppVar1 = param_1->m_cg_to_world_xform;
-  phys_full_inv_multiply(&local_50,ppVar1,&this->m_ray_pos);
-  local_2c = (ppVar1->y).z * (this->m_ray_dir).z +
-             (ppVar1->y).x * (this->m_ray_dir).x + (ppVar1->y).y * (this->m_ray_dir).y;
-  local_28 = (ppVar1->z).z * (this->m_ray_dir).z +
-             (ppVar1->z).x * (this->m_ray_dir).x + (ppVar1->z).y * (this->m_ray_dir).y;
-  local_30 = (ppVar1->x).z * (this->m_ray_dir).z +
-             (this->m_ray_dir).x * (ppVar1->x).x + (ppVar1->x).y * (this->m_ray_dir).y;
+  mat = bpi->m_cg_to_world_xform;
+  phys_full_inv_multiply(&local_50,mat,&this->m_ray_pos);
+  local_2c = (mat->y).z * (this->m_ray_dir).z +
+             (mat->y).x * (this->m_ray_dir).x + (mat->y).y * (this->m_ray_dir).y;
+  local_28 = (mat->z).z * (this->m_ray_dir).z +
+             (mat->z).x * (this->m_ray_dir).x + (mat->z).y * (this->m_ray_dir).y;
+  local_30 = (mat->x).z * (this->m_ray_dir).z +
+             (this->m_ray_dir).x * (mat->x).x + (mat->x).y * (this->m_ray_dir).y;
   local_18 = local_28;
   local_14 = local_2c;
-  cVar3 = (**(code **)((int)*param_1->m_gjk_geom + 0x1c))
+  cVar2 = (**(code **)((int)*bpi->m_gjk_geom + 0x1c))
                     (&local_50,&local_30,this->m_hit_t,&local_14,&local_40);
-  if (cVar3 != '\0') {
+  if (cVar2 != '\0') {
     if (this->m_hit_t < local_14) {
-      bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x29,"hit_t <= m_hit_t","");
-      if (bVar4) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+      bVar3 = _tlAssert("source/phys_broad_phase.cpp",0x29,"hit_t <= m_hit_t","");
+      if (bVar3) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
     }
@@ -195,7 +193,7 @@ phys_wheel_collide_info::collision_process(phys_wheel_collide_info *this,broad_p
     (this->m_hitn).x = local_40;
     (this->m_hitn).y = local_3c;
     (this->m_hitn).z = local_38;
-    this->m_hit_bpi = param_1;
+    this->m_hit_bpi = bpi;
   }
   return;
 }
@@ -216,47 +214,47 @@ jqBatchGroup * __thiscall jqBatchGroup::jqBatchGroup(jqBatchGroup *this)
 
 void __thiscall
 phys_wheel_collide_info::collision_epilog
-          (phys_wheel_collide_info *this,rigid_body_constraint_wheel *param_1)
+          (phys_wheel_collide_info *this,rigid_body_constraint_wheel *rbc_wheel)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *v_2;
+  float fVar1;
   float fVar2;
-  float fVar3;
-  broad_phase_info *pbVar4;
-  phys_vec3 *ppVar5;
+  broad_phase_info *pbVar3;
+  phys_vec3 *ppVar4;
   float10 extraout_ST0;
   phys_vec3 local_50;
   phys_vec3 local_40;
   phys_vec3 local_30;
   float local_14;
   
-  rigid_body_constraint_wheel::set_no_collision(param_1);
+  rigid_body_constraint_wheel::set_no_collision(rbc_wheel);
   if (this->m_hit_bpi != (broad_phase_info *)0x0) {
-    fVar2 = (this->m_hitn).y;
-    ppVar1 = &this->m_hitn;
-    fVar3 = (this->m_hitn).z;
-    local_14 = fVar3 * fVar3 + ppVar1->x * ppVar1->x + fVar2 * fVar2;
+    fVar1 = (this->m_hitn).y;
+    v_2 = &this->m_hitn;
+    fVar2 = (this->m_hitn).z;
+    local_14 = fVar2 * fVar2 + v_2->x * v_2->x + fVar1 * fVar1;
     _CIsqrt();
     if (1e-06 < (float)extraout_ST0) {
       local_14 = 1.0 / (float)extraout_ST0;
-      ppVar1->x = local_14 * ppVar1->x;
+      v_2->x = local_14 * v_2->x;
       (this->m_hitn).y = (this->m_hitn).y * local_14;
       (this->m_hitn).z = local_14 * (this->m_hitn).z;
-      ppVar5 = phys_multiply33(&local_40,this->m_hit_bpi->m_cg_to_world_xform,ppVar1);
-      ppVar1->x = ppVar5->x;
-      (this->m_hitn).y = ppVar5->y;
-      (this->m_hitn).z = ppVar5->z;
+      ppVar4 = phys_multiply33(&local_40,this->m_hit_bpi->m_cg_to_world_xform,v_2);
+      v_2->x = ppVar4->x;
+      (this->m_hitn).y = ppVar4->y;
+      (this->m_hitn).z = ppVar4->z;
       local_14 = this->m_hit_t;
       local_30.x = local_14 * (this->m_ray_dir).x;
       local_30.y = (this->m_ray_dir).y * local_14;
       local_30.z = local_14 * (this->m_ray_dir).z;
       local_40.x = (this->m_ray_pos).x + local_30.x;
       local_40.y = (this->m_ray_pos).y + local_30.y;
-      pbVar4 = this->m_hit_bpi;
+      pbVar3 = this->m_hit_bpi;
       local_40.z = (this->m_ray_pos).z + local_30.z;
-      phys_full_inv_multiply(&local_30,pbVar4->m_rb_to_world_xform,&local_40);
-      phys_inv_multiply(&local_50,pbVar4->m_rb_to_world_xform,ppVar1);
-      rigid_body_constraint_wheel::set_collision(param_1,pbVar4->m_rb,&local_30,&local_50);
+      phys_full_inv_multiply(&local_30,pbVar3->m_rb_to_world_xform,&local_40);
+      phys_inv_multiply(&local_50,pbVar3->m_rb_to_world_xform,v_2);
+      rigid_body_constraint_wheel::set_collision(rbc_wheel,pbVar3->m_rb,&local_30,&local_50);
       return;
     }
   }
@@ -275,6 +273,7 @@ void __thiscall broad_phase_group::collision_epilog(broad_phase_group *this)
   code *pcVar4;
   bool bVar5;
   int iVar6;
+  int wheel_count;
   int local_8;
   
   iVar6 = 0;
@@ -312,7 +311,7 @@ void __thiscall broad_phase_group::collision_epilog(broad_phase_group *this)
 
 // 00A1EBF0  bpi_do_gjk_intersect  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:80)
 
-bool __cdecl bpi_do_gjk_intersect(broad_phase_info *param_1,broad_phase_info *param_2,float param_3)
+bool __cdecl bpi_do_gjk_intersect(broad_phase_info *p1,broad_phase_info *p2,float hit_time)
 
 {
   code *pcVar1;
@@ -324,16 +323,16 @@ bool __cdecl bpi_do_gjk_intersect(broad_phase_info *param_1,broad_phase_info *pa
   uint local_18;
   uint local_14;
   
-  if (((param_3 < 0.0) || (1.0 < param_3)) &&
+  if (((hit_time < 0.0) || (1.0 < hit_time)) &&
      (bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x51,"hit_time >= 0.0f && hit_time <= 1.0f",""
                        ), bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_18 = param_1->m_gjk_geom_id;
-  local_14 = param_2->m_gjk_geom_id;
-  if ((param_1 == param_2) &&
+  local_18 = p1->m_gjk_geom_id;
+  local_14 = p2->m_gjk_geom_id;
+  if ((p1 == p2) &&
      (bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x56,"p1 && p2 && p1 != p2",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     uVar3 = (*pcVar1)();
@@ -345,9 +344,9 @@ bool __cdecl bpi_do_gjk_intersect(broad_phase_info *param_1,broad_phase_info *pa
     uVar3 = (*pcVar1)();
     return (bool)uVar3;
   }
-  local_2c.m_hit_time = param_3;
-  local_2c.m_bpi1 = param_1;
-  local_2c.m_bpi2 = param_2;
+  local_2c.m_hit_time = hit_time;
+  local_2c.m_bpi1 = p1;
+  local_2c.m_bpi2 = p2;
   local_2c.m_gjk_ci =
        phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info_mutex
                  (&G_BPM->g_phys_gjk_cache_system,local_18,local_14,&G_BPM->g_bp_gjk_cache_mutex,
@@ -363,7 +362,7 @@ bool __cdecl bpi_do_gjk_intersect(broad_phase_info *param_1,broad_phase_info *pa
 
 // 00A1CDF0  get_aabb  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_broad_phase_base.h:85)
 
-void __thiscall broad_phase_base::get_aabb(broad_phase_base *this,phys_vec3 *param_1)
+void __thiscall broad_phase_base::get_aabb(broad_phase_base *this,phys_vec3 *aabb)
 
 {
   phys_vec3 *ppVar1;
@@ -374,23 +373,23 @@ void __thiscall broad_phase_base::get_aabb(broad_phase_base *this,phys_vec3 *par
   local_20.y = (this->m_trace_translation).y + (this->m_trace_aabb_min_whace).y;
   local_20.z = (this->m_trace_translation).z + (this->m_trace_aabb_min_whace).z;
   ppVar1 = phys_min(&local_30,&this->m_trace_aabb_min_whace,&local_20);
-  param_1->x = ppVar1->x;
-  param_1->y = ppVar1->y;
-  param_1->z = ppVar1->z;
+  aabb->x = ppVar1->x;
+  aabb->y = ppVar1->y;
+  aabb->z = ppVar1->z;
   local_20.x = (this->m_trace_aabb_max_whace).x + (this->m_trace_translation).x;
   local_20.y = (this->m_trace_aabb_max_whace).y + (this->m_trace_translation).y;
   local_20.z = (this->m_trace_aabb_max_whace).z + (this->m_trace_translation).z;
   ppVar1 = phys_max(&local_30,&this->m_trace_aabb_max_whace,&local_20);
-  param_1[1].x = ppVar1->x;
-  param_1[1].y = ppVar1->y;
-  param_1[1].z = ppVar1->z;
+  aabb[1].x = ppVar1->x;
+  aabb[1].y = ppVar1->y;
+  aabb[1].z = ppVar1->z;
   return;
 }
 
 
 // 00A1F590  adjust_col_moved_vec  (<external>/projects_pc/cod/codsrc/tl/physics/include/rigid_body.h:99)
 
-void __thiscall rigid_body::adjust_col_moved_vec(rigid_body *this,float param_1)
+void __thiscall rigid_body::adjust_col_moved_vec(rigid_body *this,float lambda)
 
 {
   float fVar1;
@@ -402,10 +401,10 @@ void __thiscall rigid_body::adjust_col_moved_vec(rigid_body *this,float param_1)
   fVar2 = (this->m_moved_vec).z;
   fVar3 = (this->m_mat).w.y;
   fVar4 = (this->m_mat).w.z;
-  (this->m_mat).w.x = (this->m_mat).w.x + param_1 * (this->m_moved_vec).x;
-  (this->m_mat).w.y = fVar3 + fVar1 * param_1;
-  (this->m_mat).w.z = fVar4 + fVar2 * param_1;
-  fVar1 = 1.0 - param_1;
+  (this->m_mat).w.x = (this->m_mat).w.x + lambda * (this->m_moved_vec).x;
+  (this->m_mat).w.y = fVar3 + fVar1 * lambda;
+  (this->m_mat).w.z = fVar4 + fVar2 * lambda;
+  fVar1 = 1.0 - lambda;
   (this->m_moved_vec).x = fVar1 * (this->m_moved_vec).x;
   (this->m_moved_vec).y = (this->m_moved_vec).y * fVar1;
   (this->m_moved_vec).z = fVar1 * (this->m_moved_vec).z;
@@ -433,31 +432,31 @@ broad_phase_info * __cdecl create_broad_phase_info(void)
   code *pcVar2;
   broad_phase_memory *pbVar3;
   bool bVar4;
-  T_internal *pTVar5;
-  broad_phase_info *pbVar6;
+  T_internal *T_i;
+  broad_phase_info *pbVar5;
   phys_free_list<broad_phase_info> *this;
   
   pbVar3 = G_BPM;
   this = &G_BPM->g_list_broad_phase_info;
-  pTVar5 = PMM_ALLOC(0x90,0x10);
-  if (pTVar5 != (T_internal *)0x0) {
-    *(phys_free_list<broad_phase_info> **)pTVar5 = this;
-    *(T_internal_base **)&pTVar5->field_0x4 =
+  T_i = PMM_ALLOC(0x90,0x10);
+  if (T_i != (T_internal *)0x0) {
+    *(phys_free_list<broad_phase_info> **)T_i = this;
+    *(T_internal_base **)&T_i->field_0x4 =
          (pbVar3->g_list_broad_phase_info).m_dummy_head.m_next_T_internal;
     ((pbVar3->g_list_broad_phase_info).m_dummy_head.m_next_T_internal)->m_prev_T_internal =
-         (T_internal_base *)pTVar5;
+         (T_internal_base *)T_i;
     piVar1 = &(pbVar3->g_list_broad_phase_info).m_list_count;
     *piVar1 = *piVar1 + 1;
-    (pbVar3->g_list_broad_phase_info).m_dummy_head.m_next_T_internal = (T_internal_base *)pTVar5;
-    phys_free_list<broad_phase_info>::debug_add(this,pTVar5);
-    return &pTVar5->m_data;
+    (pbVar3->g_list_broad_phase_info).m_dummy_head.m_next_T_internal = (T_internal_base *)T_i;
+    phys_free_list<broad_phase_info>::debug_add(this,T_i);
+    return &T_i->m_data;
   }
   bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1d6,
                     "no_error","phys_free_list error: out of memory.");
   if (bVar4) {
     pcVar2 = (code *)swi(3);
-    pbVar6 = (broad_phase_info *)(*pcVar2)();
-    return pbVar6;
+    pbVar5 = (broad_phase_info *)(*pcVar2)();
+    return pbVar5;
   }
   return (broad_phase_info *)0x0;
 }
@@ -465,18 +464,18 @@ broad_phase_info * __cdecl create_broad_phase_info(void)
 
 // 00A1E8C0  destroy_broad_phase_info  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:119)
 
-void __cdecl destroy_broad_phase_info(broad_phase_info *param_1)
+void __cdecl destroy_broad_phase_info(broad_phase_info *bpi)
 
 {
   phys_free_list<broad_phase_info> *this;
   
-  environment_collision_list_remove((broad_phase_base *)param_1);
+  environment_collision_list_remove((broad_phase_base *)bpi);
   axis_aligned_sweep_and_prune::destroy_sap_node
-            (g_axis_aligned_sweep_and_prune,(broad_phase_base *)param_1);
+            (g_axis_aligned_sweep_and_prune,(broad_phase_base *)bpi);
   this = &G_BPM->g_list_broad_phase_info;
-  if (param_1 != (broad_phase_info *)0x0) {
-    PMM_VALIDATE(&param_1[-1].m_gjk_geom,0x90,0x10);
-    phys_free_list<broad_phase_info>::remove(this,(T_internal *)&param_1[-1].m_gjk_geom);
+  if (bpi != (broad_phase_info *)0x0) {
+    PMM_VALIDATE(&bpi[-1].m_gjk_geom,0x90,0x10);
+    phys_free_list<broad_phase_info>::remove(this,(T_internal *)&bpi[-1].m_gjk_geom);
   }
   return;
 }
@@ -484,7 +483,7 @@ void __cdecl destroy_broad_phase_info(broad_phase_info *param_1)
 
 // 00A1E910  destroy_broad_phase_info_list  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:126)
 
-void __cdecl destroy_broad_phase_info_list(broad_phase_info *param_1)
+void __cdecl destroy_broad_phase_info_list(broad_phase_info *list_bpi)
 
 {
   int *piVar1;
@@ -494,21 +493,21 @@ void __cdecl destroy_broad_phase_info_list(broad_phase_info *param_1)
   code *pcVar5;
   broad_phase_memory *pbVar6;
   bool bVar7;
-  phys_gjk_geom **pppVar8;
+  phys_gjk_geom **T_i;
   phys_free_list<broad_phase_info> *this;
   
   while( true ) {
-    if (param_1 == (broad_phase_info *)0x0) {
+    if (list_bpi == (broad_phase_info *)0x0) {
       return;
     }
-    if (((param_1->_padding_ & 0x20) != 0) &&
+    if (((list_bpi->_padding_ & 0x20) != 0) &&
        (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x82,
                           "!bpi->get_flag(broad_phase_base::FLAG_ON_ENV_LIST)",""), bVar7)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    if ((param_1->_padding_ != 0) &&
+    if ((list_bpi->_padding_ != 0) &&
        (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x83,"bpi->m_sap_node == NULL",""), bVar7))
     {
       pcVar5 = (code *)swi(3);
@@ -516,22 +515,22 @@ void __cdecl destroy_broad_phase_info_list(broad_phase_info *param_1)
       return;
     }
     pbVar6 = G_BPM;
-    pbVar2 = (broad_phase_info *)param_1->_padding_;
-    pppVar8 = &param_1[-1].m_gjk_geom;
+    pbVar2 = (broad_phase_info *)list_bpi->_padding_;
+    T_i = &list_bpi[-1].m_gjk_geom;
     this = &G_BPM->g_list_broad_phase_info;
-    PMM_VALIDATE(pppVar8,0x90,0x10);
-    if ((pppVar8 == (phys_gjk_geom **)0x0) &&
+    PMM_VALIDATE(T_i,0x90,0x10);
+    if ((T_i == (phys_gjk_geom **)0x0) &&
        (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
                           "data",""), bVar7)) break;
     piVar1 = &(pbVar6->g_list_broad_phase_info).m_list_count;
     *piVar1 = *piVar1 + -1;
-    phys_free_list<broad_phase_info>::debug_remove(this,(T_internal *)pppVar8);
-    pVar3 = (phys_gjk_geom)param_1[-1].m_gjk_geom_id;
-    ppVar4 = *pppVar8;
+    phys_free_list<broad_phase_info>::debug_remove(this,(T_internal *)T_i);
+    pVar3 = (phys_gjk_geom)list_bpi[-1].m_gjk_geom_id;
+    ppVar4 = *T_i;
     ppVar4[1] = pVar3;
     *(phys_gjk_geom **)pVar3 = ppVar4;
-    PMM_FREE(pppVar8,0x90,0x10);
-    param_1 = pbVar2;
+    PMM_FREE(T_i,0x90,0x10);
+    list_bpi = pbVar2;
   }
   pcVar5 = (code *)swi(3);
   (*pcVar5)();
@@ -541,7 +540,7 @@ void __cdecl destroy_broad_phase_info_list(broad_phase_info *param_1)
 
 // 00A218A0  allocate_buffer  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_broad_phase_inline.h:139)
 
-broad_phase_memory * __cdecl broad_phase_memory::allocate_buffer(broad_phase_memory_info *param_1)
+broad_phase_memory * __cdecl broad_phase_memory::allocate_buffer(broad_phase_memory_info *bpmi)
 
 {
   broad_phase_memory *pbVar1;
@@ -556,11 +555,11 @@ broad_phase_memory * __cdecl broad_phase_memory::allocate_buffer(broad_phase_mem
   else {
     pbVar1 = broad_phase_memory(pbVar1);
   }
-  iVar4 = param_1->m_max_num_sap_active_pairs;
-  iVar2 = param_1->m_max_num_gjk_ci;
+  iVar4 = bpmi->m_max_num_sap_active_pairs;
+  iVar2 = bpmi->m_max_num_gjk_ci;
   (pbVar1->g_phys_gjk_cache_system).m_list_head = (phys_gjk_cache_info_internal *)0x0;
   (pbVar1->g_phys_gjk_cache_system).m_max_num_gjk_ci = iVar4 + iVar2;
-  iVar4 = param_1->m_max_num_surface_types;
+  iVar4 = bpmi->m_max_num_surface_types;
   iVar2 = ((iVar4 + 1) * iVar4) / 2;
   pbVar1->m_max_num_surface_types = iVar4;
   pbVar1->m_max_num_surface_type_infos = iVar2;
@@ -598,32 +597,32 @@ broad_phase_collision_pair * __cdecl create_broad_phase_collision_pair(void)
   code *pcVar2;
   broad_phase_memory *pbVar3;
   bool bVar4;
-  T_internal *pTVar5;
-  broad_phase_collision_pair *pbVar6;
+  T_internal *T_i;
+  broad_phase_collision_pair *pbVar5;
   phys_free_list<broad_phase_collision_pair> *this;
   
   pbVar3 = G_BPM;
   this = &G_BPM->g_list_broad_phase_collision_pair;
-  pTVar5 = PMM_ALLOC(0x18,4);
-  if (pTVar5 != (T_internal *)0x0) {
-    pTVar5->_padding_ = (int)this;
-    pTVar5->_padding_ =
-         (int)(pbVar3->g_list_broad_phase_collision_pair).m_dummy_head.m_next_T_internal;
+  T_i = PMM_ALLOC(0x18,4);
+  if (T_i != (T_internal *)0x0) {
+    T_i->_padding_ = (int)this;
+    T_i->_padding_ = (int)(pbVar3->g_list_broad_phase_collision_pair).m_dummy_head.m_next_T_internal
+    ;
     ((pbVar3->g_list_broad_phase_collision_pair).m_dummy_head.m_next_T_internal)->m_prev_T_internal
-         = (T_internal_base *)pTVar5;
+         = (T_internal_base *)T_i;
     piVar1 = &(pbVar3->g_list_broad_phase_collision_pair).m_list_count;
     *piVar1 = *piVar1 + 1;
     (pbVar3->g_list_broad_phase_collision_pair).m_dummy_head.m_next_T_internal =
-         (T_internal_base *)pTVar5;
-    phys_free_list<broad_phase_collision_pair>::debug_add(this,pTVar5);
-    return &pTVar5->m_data;
+         (T_internal_base *)T_i;
+    phys_free_list<broad_phase_collision_pair>::debug_add(this,T_i);
+    return &T_i->m_data;
   }
   bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1d6,
                     "no_error","phys_free_list error: out of memory.");
   if (bVar4) {
     pcVar2 = (code *)swi(3);
-    pbVar6 = (broad_phase_collision_pair *)(*pcVar2)();
-    return pbVar6;
+    pbVar5 = (broad_phase_collision_pair *)(*pcVar2)();
+    return pbVar5;
   }
   return (broad_phase_collision_pair *)0x0;
 }
@@ -631,15 +630,15 @@ broad_phase_collision_pair * __cdecl create_broad_phase_collision_pair(void)
 
 // 00A1EA60  destroy_broad_phase_collision_pair  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:143)
 
-void __cdecl destroy_broad_phase_collision_pair(broad_phase_collision_pair *param_1)
+void __cdecl destroy_broad_phase_collision_pair(broad_phase_collision_pair *bpcp)
 
 {
   phys_free_list<broad_phase_collision_pair> *this;
   
   this = &G_BPM->g_list_broad_phase_collision_pair;
-  if (param_1 != (broad_phase_collision_pair *)0x0) {
-    PMM_VALIDATE(&param_1[-1].m_bpi2,0x18,4);
-    phys_free_list<broad_phase_collision_pair>::remove(this,(T_internal *)&param_1[-1].m_bpi2);
+  if (bpcp != (broad_phase_collision_pair *)0x0) {
+    PMM_VALIDATE(&bpcp[-1].m_bpi2,0x18,4);
+    phys_free_list<broad_phase_collision_pair>::remove(this,(T_internal *)&bpcp[-1].m_bpi2);
   }
   return;
 }
@@ -647,45 +646,45 @@ void __cdecl destroy_broad_phase_collision_pair(broad_phase_collision_pair *para
 
 // 00A1EAA0  destroy_broad_phase_collision_pair_list  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:146)
 
-void __cdecl destroy_broad_phase_collision_pair_list(broad_phase_collision_pair *param_1)
+void __cdecl destroy_broad_phase_collision_pair_list(broad_phase_collision_pair *list_bpcp)
 
 {
-  broad_phase_info **ppbVar1;
-  int *piVar2;
+  broad_phase_info **T_i;
+  int *piVar1;
+  broad_phase_collision_pair *pbVar2;
   broad_phase_collision_pair *pbVar3;
-  broad_phase_collision_pair *pbVar4;
-  broad_phase_info *pbVar5;
-  code *pcVar6;
-  broad_phase_memory *pbVar7;
-  bool bVar8;
+  broad_phase_info *pbVar4;
+  code *pcVar5;
+  broad_phase_memory *pbVar6;
+  bool bVar7;
   
-  pbVar7 = G_BPM;
+  pbVar6 = G_BPM;
   while( true ) {
-    if (param_1 == (broad_phase_collision_pair *)0x0) {
-      G_BPM = pbVar7;
+    if (list_bpcp == (broad_phase_collision_pair *)0x0) {
+      G_BPM = pbVar6;
       return;
     }
-    pbVar3 = param_1->m_next_bpcp;
-    ppbVar1 = &param_1[-1].m_bpi2;
-    G_BPM = pbVar7;
-    PMM_VALIDATE(ppbVar1,0x18,4);
-    if ((ppbVar1 == (broad_phase_info **)0x0) &&
-       (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
-                          "data",""), bVar8)) break;
-    piVar2 = &(pbVar7->g_list_broad_phase_collision_pair).m_list_count;
-    *piVar2 = *piVar2 + -1;
+    pbVar2 = list_bpcp->m_next_bpcp;
+    T_i = &list_bpcp[-1].m_bpi2;
+    G_BPM = pbVar6;
+    PMM_VALIDATE(T_i,0x18,4);
+    if ((T_i == (broad_phase_info **)0x0) &&
+       (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
+                          "data",""), bVar7)) break;
+    piVar1 = &(pbVar6->g_list_broad_phase_collision_pair).m_list_count;
+    *piVar1 = *piVar1 + -1;
     phys_free_list<broad_phase_collision_pair>::debug_remove
-              (&pbVar7->g_list_broad_phase_collision_pair,(T_internal *)ppbVar1);
-    pbVar4 = param_1[-1].m_next_bpcp;
-    pbVar5 = *ppbVar1;
-    pbVar5->_padding_ = (int)pbVar4;
-    pbVar4->m_bpi1 = pbVar5;
-    PMM_FREE(ppbVar1,0x18,4);
-    param_1 = pbVar3;
-    pbVar7 = G_BPM;
+              (&pbVar6->g_list_broad_phase_collision_pair,(T_internal *)T_i);
+    pbVar3 = list_bpcp[-1].m_next_bpcp;
+    pbVar4 = *T_i;
+    pbVar4->_padding_ = (int)pbVar3;
+    pbVar3->m_bpi1 = pbVar4;
+    PMM_FREE(T_i,0x18,4);
+    list_bpcp = pbVar2;
+    pbVar6 = G_BPM;
   }
-  pcVar6 = (code *)swi(3);
-  (*pcVar6)();
+  pcVar5 = (code *)swi(3);
+  (*pcVar5)();
   return;
 }
 
@@ -699,32 +698,32 @@ broad_phase_group * __cdecl create_broad_phase_group(void)
   code *pcVar2;
   broad_phase_memory *pbVar3;
   bool bVar4;
-  T_internal *pTVar5;
-  broad_phase_group *pbVar6;
+  T_internal *T_i_2;
+  broad_phase_group *pbVar5;
   phys_free_list<broad_phase_group> *this;
   
   pbVar3 = G_BPM;
   this = &G_BPM->g_list_broad_phase_group;
-  pTVar5 = PMM_ALLOC(0x80,0x10);
-  if (pTVar5 != (T_internal *)0x0) {
-    *(phys_free_list<broad_phase_group> **)pTVar5 = this;
-    *(T_internal_base **)&pTVar5->field_0x4 =
+  T_i_2 = PMM_ALLOC(0x80,0x10);
+  if (T_i_2 != (T_internal *)0x0) {
+    *(phys_free_list<broad_phase_group> **)T_i_2 = this;
+    *(T_internal_base **)&T_i_2->field_0x4 =
          (pbVar3->g_list_broad_phase_group).m_dummy_head.m_next_T_internal;
     ((pbVar3->g_list_broad_phase_group).m_dummy_head.m_next_T_internal)->m_prev_T_internal =
-         (T_internal_base *)pTVar5;
+         (T_internal_base *)T_i_2;
     piVar1 = &(pbVar3->g_list_broad_phase_group).m_list_count;
     *piVar1 = *piVar1 + 1;
-    (pbVar3->g_list_broad_phase_group).m_dummy_head.m_next_T_internal = (T_internal_base *)pTVar5;
+    (pbVar3->g_list_broad_phase_group).m_dummy_head.m_next_T_internal = (T_internal_base *)T_i_2;
     phys_free_list<rigid_body_constraint_distance>::debug_add
-              ((phys_free_list<rigid_body_constraint_distance> *)this,pTVar5);
-    return (broad_phase_group *)&pTVar5->m_data;
+              ((phys_free_list<rigid_body_constraint_distance> *)this,T_i_2);
+    return (broad_phase_group *)&T_i_2->m_data;
   }
   bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1d6,
                     "no_error","phys_free_list error: out of memory.");
   if (bVar4) {
     pcVar2 = (code *)swi(3);
-    pbVar6 = (broad_phase_group *)(*pcVar2)();
-    return pbVar6;
+    pbVar5 = (broad_phase_group *)(*pcVar2)();
+    return pbVar5;
   }
   return (broad_phase_group *)0x0;
 }
@@ -732,20 +731,20 @@ broad_phase_group * __cdecl create_broad_phase_group(void)
 
 // 00A1EBA0  destroy_broad_phase_group  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:164)
 
-void __cdecl destroy_broad_phase_group(broad_phase_group *param_1)
+void __cdecl destroy_broad_phase_group(broad_phase_group *bpg)
 
 {
   phys_free_list<broad_phase_group> *this;
   
-  environment_collision_list_remove((broad_phase_base *)param_1);
+  environment_collision_list_remove((broad_phase_base *)bpg);
   axis_aligned_sweep_and_prune::destroy_sap_node
-            (g_axis_aligned_sweep_and_prune,(broad_phase_base *)param_1);
+            (g_axis_aligned_sweep_and_prune,(broad_phase_base *)bpg);
   this = &G_BPM->g_list_broad_phase_group;
-  if (param_1 != (broad_phase_group *)0x0) {
-    PMM_VALIDATE(&param_1[-1].m_list_bpi_head,0x80,0x10);
+  if (bpg != (broad_phase_group *)0x0) {
+    PMM_VALIDATE(&bpg[-1].m_list_bpi_head,0x80,0x10);
     phys_free_list<rigid_body_constraint_distance>::remove
               ((phys_free_list<rigid_body_constraint_distance> *)this,
-               (T_internal *)&param_1[-1].m_list_bpi_head);
+               (T_internal *)&bpg[-1].m_list_bpi_head);
   }
   return;
 }
@@ -756,7 +755,8 @@ void __cdecl destroy_broad_phase_group(broad_phase_group *param_1)
 void __thiscall broad_phase_group::collision_prolog(broad_phase_group *this)
 
 {
-  phys_vec3 *ppVar1;
+  phys_vec3 *p1_00;
+  float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
@@ -768,22 +768,24 @@ void __thiscall broad_phase_group::collision_prolog(broad_phase_group *this)
   float fVar10;
   float fVar11;
   float fVar12;
-  float fVar13;
-  broad_phase_info *pbVar14;
+  broad_phase_info *pbVar13;
+  int iVar14;
   rb_vehicle_model *prVar15;
-  code *pcVar16;
-  bool bVar17;
-  phys_wheel_collide_info *ppVar18;
-  phys_vec3 *ppVar19;
-  phys_vec3 local_c0;
-  phys_vec3 local_b0;
-  phys_mat44 *local_9c;
-  int local_98;
-  broad_phase_group *local_94;
-  phys_vec3 local_90;
-  phys_vec3 local_80;
-  phys_vec3 local_70;
-  phys_vec3 local_60;
+  int iVar16;
+  code *pcVar17;
+  undefined1 auVar18 [4];
+  bool bVar19;
+  phys_wheel_collide_info *ppVar20;
+  phys_vec3 *p0;
+  undefined1 local_c0 [12];
+  phys_vec3 p2;
+  phys_vec3 half_dims;
+  undefined1 rb_mat [4];
+  int wheel_count;
+  float local_88;
+  phys_vec3 aabb2_min;
+  phys_vec3 aabb2_max;
+  phys_vec3 p1;
   phys_vec3 local_50;
   float local_40;
   float local_3c;
@@ -793,209 +795,208 @@ void __thiscall broad_phase_group::collision_prolog(broad_phase_group *this)
   float local_1c;
   float local_18;
   float local_14;
+  int i;
   
-  local_94 = this;
   if ((this->m_list_bpi_head == (broad_phase_info *)0x0) &&
-     (bVar17 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
-                         ,0xb8,"m_list_bpi_head",""), bVar17)) {
-    pcVar16 = (code *)swi(3);
-    (*pcVar16)();
+     (bVar19 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h"
+                         ,0xb8,"m_list_bpi_head",""), bVar19)) {
+    pcVar17 = (code *)swi(3);
+    (*pcVar17)();
     return;
   }
   broad_phase_info::collision_prolog(this->m_list_bpi_head);
-  pbVar14 = this->m_list_bpi_head;
-  fVar2 = (float)pbVar14->_padding_;
-  local_50.x = (float)pbVar14->_padding_;
-  fVar3 = (float)pbVar14->_padding_;
-  local_50.y = (float)pbVar14->_padding_;
-  local_50.z = (float)pbVar14->_padding_;
-  fVar4 = (float)pbVar14->_padding_;
-  local_60.x = (float)pbVar14->_padding_;
-  fVar5 = (float)pbVar14->_padding_;
-  local_50.w = (float)pbVar14->_padding_;
-  local_60.z = (float)pbVar14->_padding_;
-  fVar6 = (float)pbVar14->_padding_;
-  fVar7 = (float)pbVar14->_padding_;
-  local_60.y = (float)pbVar14->_padding_;
-  fVar8 = (float)pbVar14->_padding_;
-  local_60.w = (float)pbVar14->_padding_;
-  fVar9 = (float)pbVar14->_padding_;
-  fVar10 = (float)pbVar14->_padding_;
-  fVar11 = (float)pbVar14->_padding_;
-  fVar12 = (float)pbVar14->_padding_;
-  fVar13 = (float)pbVar14->_padding_;
-  this->_padding_ = pbVar14->_padding_;
-  local_90.x = fVar2 + fVar3;
-  local_90.y = fVar4 + fVar5;
-  local_90.z = fVar6 + fVar7;
-  local_80.x = fVar8 + fVar9;
-  local_80.y = fVar10 + fVar11;
-  local_80.z = fVar12 + fVar13;
-  for (pbVar14 = (broad_phase_info *)pbVar14->_padding_; pbVar14 != (broad_phase_info *)0x0;
-      pbVar14 = (broad_phase_info *)pbVar14->_padding_) {
-    broad_phase_info::collision_prolog(pbVar14);
-    if ((float)pbVar14->_padding_ < local_50.z) {
-      local_50.z = (float)pbVar14->_padding_;
+  pbVar13 = this->m_list_bpi_head;
+  fVar1 = (float)pbVar13->_padding_;
+  local_50.x = (float)pbVar13->_padding_;
+  fVar2 = (float)pbVar13->_padding_;
+  local_50.y = (float)pbVar13->_padding_;
+  local_50.z = (float)pbVar13->_padding_;
+  fVar3 = (float)pbVar13->_padding_;
+  p1.y = (float)pbVar13->_padding_;
+  fVar4 = (float)pbVar13->_padding_;
+  local_50.w = (float)pbVar13->_padding_;
+  p1.w = (float)pbVar13->_padding_;
+  fVar5 = (float)pbVar13->_padding_;
+  fVar6 = (float)pbVar13->_padding_;
+  p1.z = (float)pbVar13->_padding_;
+  fVar7 = (float)pbVar13->_padding_;
+  fVar8 = (float)pbVar13->_padding_;
+  fVar9 = (float)pbVar13->_padding_;
+  fVar10 = (float)pbVar13->_padding_;
+  fVar11 = (float)pbVar13->_padding_;
+  fVar12 = (float)pbVar13->_padding_;
+  this->_padding_ = pbVar13->_padding_;
+  rb_mat = (undefined1  [4])(fVar1 + fVar2);
+  wheel_count = (int)(fVar3 + fVar4);
+  local_88 = fVar5 + fVar6;
+  aabb2_min.y = fVar7 + fVar8;
+  aabb2_min.z = fVar9 + fVar10;
+  aabb2_min.w = fVar11 + fVar12;
+  for (pbVar13 = (broad_phase_info *)pbVar13->_padding_; pbVar13 != (broad_phase_info *)0x0;
+      pbVar13 = (broad_phase_info *)pbVar13->_padding_) {
+    broad_phase_info::collision_prolog(pbVar13);
+    if ((float)pbVar13->_padding_ < local_50.z) {
+      local_50.z = (float)pbVar13->_padding_;
     }
-    if ((float)pbVar14->_padding_ < local_50.y) {
-      local_50.y = (float)pbVar14->_padding_;
+    if ((float)pbVar13->_padding_ < local_50.y) {
+      local_50.y = (float)pbVar13->_padding_;
     }
-    if ((float)pbVar14->_padding_ < local_50.x) {
-      local_50.x = (float)pbVar14->_padding_;
+    if ((float)pbVar13->_padding_ < local_50.x) {
+      local_50.x = (float)pbVar13->_padding_;
     }
-    if ((float)pbVar14->_padding_ < local_60.z == ((float)pbVar14->_padding_ == local_60.z)) {
-      local_60.z = (float)pbVar14->_padding_;
+    if ((float)pbVar13->_padding_ < p1.w == ((float)pbVar13->_padding_ == p1.w)) {
+      p1.w = (float)pbVar13->_padding_;
     }
-    if ((float)pbVar14->_padding_ < local_60.y == ((float)pbVar14->_padding_ == local_60.y)) {
-      local_60.y = (float)pbVar14->_padding_;
+    if ((float)pbVar13->_padding_ < p1.z == ((float)pbVar13->_padding_ == p1.z)) {
+      p1.z = (float)pbVar13->_padding_;
     }
-    if ((float)pbVar14->_padding_ < local_60.x == ((float)pbVar14->_padding_ == local_60.x)) {
-      local_60.x = (float)pbVar14->_padding_;
+    if ((float)pbVar13->_padding_ < p1.y == ((float)pbVar13->_padding_ == p1.y)) {
+      p1.y = (float)pbVar13->_padding_;
     }
-    local_40 = (float)pbVar14->_padding_ + (float)pbVar14->_padding_;
-    local_3c = (float)pbVar14->_padding_ + (float)pbVar14->_padding_;
-    local_38 = (float)pbVar14->_padding_ + (float)pbVar14->_padding_;
-    local_70.x = (float)pbVar14->_padding_ + (float)pbVar14->_padding_;
-    local_70.y = (float)pbVar14->_padding_ + (float)pbVar14->_padding_;
-    local_70.z = (float)pbVar14->_padding_ + (float)pbVar14->_padding_;
-    fVar2 = local_70.z;
-    if (local_90.z <= local_70.z) {
-      fVar2 = local_90.z;
+    local_40 = (float)pbVar13->_padding_ + (float)pbVar13->_padding_;
+    local_3c = (float)pbVar13->_padding_ + (float)pbVar13->_padding_;
+    local_38 = (float)pbVar13->_padding_ + (float)pbVar13->_padding_;
+    aabb2_max.y = (float)pbVar13->_padding_ + (float)pbVar13->_padding_;
+    aabb2_max.z = (float)pbVar13->_padding_ + (float)pbVar13->_padding_;
+    aabb2_max.w = (float)pbVar13->_padding_ + (float)pbVar13->_padding_;
+    fVar1 = aabb2_max.w;
+    if (local_88 <= aabb2_max.w) {
+      fVar1 = local_88;
     }
-    fVar3 = local_70.y;
-    if (local_90.y <= local_70.y) {
-      fVar3 = local_90.y;
+    fVar2 = aabb2_max.z;
+    if ((float)wheel_count <= aabb2_max.z) {
+      fVar2 = (float)wheel_count;
     }
-    fVar4 = local_70.x;
-    if (local_90.x <= local_70.x) {
-      fVar4 = local_90.x;
+    auVar18 = (undefined1  [4])aabb2_max.y;
+    if ((float)rb_mat <= aabb2_max.y) {
+      auVar18 = rb_mat;
     }
     local_18 = local_38;
-    if (local_38 < local_80.z != (local_38 == local_80.z)) {
-      local_18 = local_80.z;
+    if (local_38 < aabb2_min.w != (local_38 == aabb2_min.w)) {
+      local_18 = aabb2_min.w;
     }
     local_1c = local_3c;
-    if (local_3c < local_80.y != (local_3c == local_80.y)) {
-      local_1c = local_80.y;
+    if (local_3c < aabb2_min.z != (local_3c == aabb2_min.z)) {
+      local_1c = aabb2_min.z;
     }
     local_14 = local_40;
-    if (local_40 < local_80.x != (local_40 == local_80.x)) {
-      local_14 = local_80.x;
+    if (local_40 < aabb2_min.y != (local_40 == aabb2_min.y)) {
+      local_14 = aabb2_min.y;
     }
-    this->_padding_ = this->_padding_ | pbVar14->_padding_;
-    local_90.x = fVar4;
-    local_90.y = fVar3;
-    local_90.z = fVar2;
-    local_80.x = local_14;
-    local_80.y = local_1c;
-    local_80.z = local_18;
+    this->_padding_ = this->_padding_ | pbVar13->_padding_;
+    rb_mat = auVar18;
+    wheel_count = (int)fVar2;
+    local_88 = fVar1;
+    aabb2_min.y = local_14;
+    aabb2_min.z = local_1c;
+    aabb2_min.w = local_18;
   }
   if (this->m_rbvm != (rb_vehicle_model *)0x0) {
-    local_98 = (this->m_rbvm->m_wheels).m_alloc_count;
-    ppVar18 = phys_transient_allocator::mt_allocate
-                        (&G_BPM->g_collision_memory_buffer,local_98 << 6,0x10,0,
+    iVar14 = (this->m_rbvm->m_wheels).m_alloc_count;
+    ppVar20 = phys_transient_allocator::mt_allocate
+                        (&G_BPM->g_collision_memory_buffer,iVar14 << 6,0x10,0,
                          "broad phase collision out of memory.");
     prVar15 = this->m_rbvm;
-    this->m_list_wci = ppVar18;
+    this->m_list_wci = ppVar20;
     if (((prVar15->m_wheels).m_alloc_count < 1) &&
-       (bVar17 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc"
-                           ,0x76,"i >= 0 && i < m_alloc_count",""), bVar17)) {
-      pcVar16 = (code *)swi(3);
-      (*pcVar16)();
+       (bVar19 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc"
+                           ,0x76,"i >= 0 && i < m_alloc_count",""), bVar19)) {
+      pcVar17 = (code *)swi(3);
+      (*pcVar17)();
       return;
     }
-    local_9c = (phys_mat44 *)((*(prVar15->m_wheels).m_slot_array)->_padding_ + 0x30);
+    iVar16 = (*(prVar15->m_wheels).m_slot_array)->_padding_;
     local_18 = 0.0;
-    if (0 < local_98) {
+    if (0 < iVar14) {
       local_1c = 0.0;
       do {
-        ppVar19 = (phys_vec3 *)((int)&(this->m_list_wci->m_ray_pos).x + (int)local_1c);
+        p0 = (phys_vec3 *)((int)&(this->m_list_wci->m_ray_pos).x + (int)local_1c);
         local_20 = &this->m_rbvm->m_wheels;
         if ((((int)local_18 < 0) || ((this->m_rbvm->m_wheels).m_alloc_count <= (int)local_18)) &&
-           (bVar17 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc"
-                               ,0x76,"i >= 0 && i < m_alloc_count",""), bVar17)) {
-          pcVar16 = (code *)swi(3);
-          (*pcVar16)();
+           (bVar19 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc"
+                               ,0x76,"i >= 0 && i < m_alloc_count",""), bVar19)) {
+          pcVar17 = (code *)swi(3);
+          (*pcVar17)();
           return;
         }
-        ppVar1 = ppVar19 + 1;
+        p1_00 = p0 + 1;
         rigid_body_constraint_wheel::get_wheel_collide_segment
-                  (local_20->m_slot_array[(int)local_18],local_9c,ppVar19,ppVar1);
-        ppVar1->x = ppVar1->x - ppVar19->x;
-        ppVar19[1].y = ppVar19[1].y - ppVar19->y;
-        ppVar19[1].z = ppVar19[1].z - ppVar19->z;
-        ppVar19[3].y = 0.0;
-        ppVar19[3].x = 1.0;
-        if (ppVar19->z < local_50.z) {
-          local_50.z = ppVar19->z;
+                  (local_20->m_slot_array[(int)local_18],(phys_mat44 *)(iVar16 + 0x30),p0,p1_00);
+        p1_00->x = p1_00->x - p0->x;
+        p0[1].y = p0[1].y - p0->y;
+        p0[1].z = p0[1].z - p0->z;
+        p0[3].y = 0.0;
+        p0[3].x = 1.0;
+        if (p0->z < local_50.z) {
+          local_50.z = p0->z;
         }
-        if (ppVar19->y < local_50.y) {
-          local_50.y = ppVar19->y;
+        if (p0->y < local_50.y) {
+          local_50.y = p0->y;
         }
-        if (ppVar19->x < local_50.x) {
-          local_50.x = ppVar19->x;
+        if (p0->x < local_50.x) {
+          local_50.x = p0->x;
         }
-        if (ppVar19->z < local_60.z == (ppVar19->z == local_60.z)) {
-          local_60.z = ppVar19->z;
+        if (p0->z < p1.w == (p0->z == p1.w)) {
+          p1.w = p0->z;
         }
-        if (ppVar19->y < local_60.y == (ppVar19->y == local_60.y)) {
-          local_60.y = ppVar19->y;
+        if (p0->y < p1.z == (p0->y == p1.z)) {
+          p1.z = p0->y;
         }
-        if (ppVar19->x < local_60.x == (ppVar19->x == local_60.x)) {
-          local_60.x = ppVar19->x;
+        if (p0->x < p1.y == (p0->x == p1.y)) {
+          p1.y = p0->x;
         }
-        local_70.x = ppVar19->x + ppVar1->x;
-        local_70.y = ppVar19[1].y + ppVar19->y;
-        local_70.z = ppVar19[1].z + ppVar19->z;
-        local_40 = ppVar19->x + ppVar1->x;
-        local_3c = ppVar19[1].y + ppVar19->y;
-        local_38 = ppVar19[1].z + ppVar19->z;
-        fVar2 = local_38;
-        if (local_90.z <= local_38) {
-          fVar2 = local_90.z;
+        aabb2_max.y = p0->x + p1_00->x;
+        aabb2_max.z = p0[1].y + p0->y;
+        aabb2_max.w = p0[1].z + p0->z;
+        local_40 = p0->x + p1_00->x;
+        local_3c = p0[1].y + p0->y;
+        local_38 = p0[1].z + p0->z;
+        fVar1 = local_38;
+        if (local_88 <= local_38) {
+          fVar1 = local_88;
         }
-        fVar3 = local_3c;
-        if (local_90.y <= local_3c) {
-          fVar3 = local_90.y;
+        fVar2 = local_3c;
+        if ((float)wheel_count <= local_3c) {
+          fVar2 = (float)wheel_count;
         }
-        fVar4 = local_40;
-        if (local_90.x <= local_40) {
-          fVar4 = local_90.x;
+        auVar18 = (undefined1  [4])local_40;
+        if ((float)rb_mat <= local_40) {
+          auVar18 = rb_mat;
         }
-        local_14 = local_70.z;
-        if (local_70.z < local_80.z != (local_70.z == local_80.z)) {
-          local_14 = local_80.z;
+        local_14 = aabb2_max.w;
+        if (aabb2_max.w < aabb2_min.w != (aabb2_max.w == aabb2_min.w)) {
+          local_14 = aabb2_min.w;
         }
-        local_24 = local_70.y;
-        if (local_70.y < local_80.y != (local_70.y == local_80.y)) {
-          local_24 = local_80.y;
+        local_24 = aabb2_max.z;
+        if (aabb2_max.z < aabb2_min.z != (aabb2_max.z == aabb2_min.z)) {
+          local_24 = aabb2_min.z;
         }
-        local_20 = (phys_static_array<rigid_body_constraint_wheel_*,4> *)local_70.x;
-        if (local_70.x < local_80.x != (local_70.x == local_80.x)) {
-          local_20 = (phys_static_array<rigid_body_constraint_wheel_*,4> *)local_80.x;
+        local_20 = (phys_static_array<rigid_body_constraint_wheel_*,4> *)aabb2_max.y;
+        if (aabb2_max.y < aabb2_min.y != (aabb2_max.y == aabb2_min.y)) {
+          local_20 = (phys_static_array<rigid_body_constraint_wheel_*,4> *)aabb2_min.y;
         }
         local_1c = (float)((int)local_1c + 0x40);
         local_18 = (float)((int)local_18 + 1);
-        this = local_94;
-        local_90.x = fVar4;
-        local_90.y = fVar3;
-        local_90.z = fVar2;
-        local_80.x = (float)local_20;
-        local_80.y = local_24;
-        local_80.z = local_14;
-      } while ((int)local_18 < local_98);
+        rb_mat = auVar18;
+        wheel_count = (int)fVar2;
+        local_88 = fVar1;
+        aabb2_min.y = (float)local_20;
+        aabb2_min.z = local_24;
+        aabb2_min.w = local_14;
+      } while ((int)local_18 < iVar14);
     }
   }
-  comp_trace_volume(&local_50,&local_60,&local_90,&local_80,&local_70,&local_c0,&local_b0);
-  this->_padding_ = (int)(local_70.x - local_b0.x);
-  this->_padding_ = (int)(local_70.y - local_b0.y);
-  this->_padding_ = (int)(local_70.z - local_b0.z);
-  this->_padding_ = (int)(local_c0.x + local_b0.x);
-  this->_padding_ = (int)(local_c0.y + local_b0.y);
-  this->_padding_ = (int)(local_c0.z + local_b0.z);
-  this->_padding_ = (int)(local_c0.x - local_70.x);
-  this->_padding_ = (int)(local_c0.y - local_70.y);
-  this->_padding_ = (int)(local_c0.z - local_70.z);
+  comp_trace_volume(&local_50,(phys_vec3 *)&p1.y,(phys_vec3 *)rb_mat,(phys_vec3 *)&aabb2_min.y,
+                    (phys_vec3 *)&aabb2_max.y,(phys_vec3 *)local_c0,(phys_vec3 *)&p2.y);
+  this->_padding_ = (int)(aabb2_max.y - p2.y);
+  this->_padding_ = (int)(aabb2_max.z - p2.z);
+  this->_padding_ = (int)(aabb2_max.w - p2.w);
+  this->_padding_ = (int)((float)local_c0._0_4_ + p2.y);
+  this->_padding_ = (int)((float)local_c0._4_4_ + p2.z);
+  this->_padding_ = (int)((float)local_c0._8_4_ + p2.w);
+  this->_padding_ = (int)((float)local_c0._0_4_ - aabb2_max.y);
+  this->_padding_ = (int)((float)local_c0._4_4_ - aabb2_max.z);
+  this->_padding_ = (int)((float)local_c0._8_4_ - aabb2_max.w);
   return;
 }
 
@@ -1004,18 +1005,18 @@ void __thiscall broad_phase_group::collision_prolog(broad_phase_group *this)
 
 bool __cdecl
 phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
-          (broad_phase_info *param_1,broad_phase_info *param_2,float *param_3)
+          (broad_phase_info *p1_2,broad_phase_info *p2_2,float *hit_time_2)
 
 {
   bool bVar1;
   phys_vec3 local_20;
   
-  local_20.x = (float)param_1->_padding_ - (float)param_2->_padding_;
-  local_20.y = (float)param_1->_padding_ - (float)param_2->_padding_;
-  local_20.z = (float)param_1->_padding_ - (float)param_2->_padding_;
+  local_20.x = (float)p1_2->_padding_ - (float)p2_2->_padding_;
+  local_20.y = (float)p1_2->_padding_ - (float)p2_2->_padding_;
+  local_20.z = (float)p1_2->_padding_ - (float)p2_2->_padding_;
   bVar1 = phys_are_potentially_colliding
-                    ((phys_vec3 *)param_1,(phys_vec3 *)&param_1->_padding_,&local_20,
-                     (phys_vec3 *)param_2,(phys_vec3 *)&param_2->_padding_,param_3);
+                    ((phys_vec3 *)p1_2,(phys_vec3 *)&p1_2->_padding_,&local_20,(phys_vec3 *)p2_2,
+                     (phys_vec3 *)&p2_2->_padding_,hit_time_2);
   return bVar1;
 }
 
@@ -1023,8 +1024,8 @@ phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
 // 00A1CBD0  comp_trace_volume  (<external>/projects_pc/cod/codsrc/tl/physics/include/collision/phys_bounding_volume.h:205)
 
 void __cdecl
-comp_trace_volume(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_vec3 *param_4,
-                 phys_vec3 *param_5,phys_vec3 *param_6,phys_vec3 *param_7)
+comp_trace_volume(phys_vec3 *aabb1_min,phys_vec3 *aabb1_max,phys_vec3 *aabb2_min,
+                 phys_vec3 *aabb2_max,phys_vec3 *p1,phys_vec3 *p2,phys_vec3 *half_dims)
 
 {
   phys_vec3 *ppVar1;
@@ -1035,61 +1036,61 @@ comp_trace_volume(phys_vec3 *param_1,phys_vec3 *param_2,phys_vec3 *param_3,phys_
   float local_1c;
   float local_18;
   
-  local_40.x = param_2->x - param_1->x;
-  local_40.y = param_2->y - param_1->y;
-  local_40.z = param_2->z - param_1->z;
-  local_50.x = param_4->x - param_3->x;
-  local_50.y = param_4->y - param_3->y;
-  local_50.z = param_4->z - param_3->z;
+  local_40.x = aabb1_max->x - aabb1_min->x;
+  local_40.y = aabb1_max->y - aabb1_min->y;
+  local_40.z = aabb1_max->z - aabb1_min->z;
+  local_50.x = aabb2_max->x - aabb2_min->x;
+  local_50.y = aabb2_max->y - aabb2_min->y;
+  local_50.z = aabb2_max->z - aabb2_min->z;
   ppVar1 = phys_max(&local_30,&local_40,&local_50);
   local_20 = ppVar1->x * 0.5;
   local_1c = ppVar1->y * 0.5;
   local_18 = ppVar1->z * 0.5;
-  param_7->x = local_20;
-  param_7->y = local_1c;
-  param_7->z = local_18;
-  phys_min(&local_40,param_1,param_3);
-  phys_max(&local_30,param_2,param_4);
+  half_dims->x = local_20;
+  half_dims->y = local_1c;
+  half_dims->z = local_18;
+  phys_min(&local_40,aabb1_min,aabb2_min);
+  phys_max(&local_30,aabb1_max,aabb2_max);
   local_50.x = local_20 + local_40.x;
   local_50.y = local_1c + local_40.y;
   local_50.z = local_18 + local_40.z;
   local_40.x = local_30.x - local_20;
   local_40.y = local_30.y - local_1c;
   local_40.z = local_30.z - local_18;
-  local_20 = param_1->x + param_2->x;
-  local_1c = param_1->y + param_2->y;
-  local_18 = param_1->z + param_2->z;
+  local_20 = aabb1_min->x + aabb1_max->x;
+  local_1c = aabb1_min->y + aabb1_max->y;
+  local_18 = aabb1_min->z + aabb1_max->z;
   local_30.x = local_20 * 0.5;
   local_30.y = local_1c * 0.5;
   local_30.z = local_18 * 0.5;
-  param_5->x = local_30.x;
-  param_5->y = local_30.y;
-  param_5->z = local_30.z;
-  ppVar1 = phys_min(&local_30,param_5,&local_40);
-  param_5->x = ppVar1->x;
-  param_5->y = ppVar1->y;
-  param_5->z = ppVar1->z;
-  ppVar1 = phys_max(&local_30,param_5,&local_50);
-  param_5->x = ppVar1->x;
-  param_5->y = ppVar1->y;
-  param_5->z = ppVar1->z;
-  local_30.x = param_3->x + param_4->x;
-  local_30.y = param_3->y + param_4->y;
-  local_30.z = param_3->z + param_4->z;
+  p1->x = local_30.x;
+  p1->y = local_30.y;
+  p1->z = local_30.z;
+  ppVar1 = phys_min(&local_30,p1,&local_40);
+  p1->x = ppVar1->x;
+  p1->y = ppVar1->y;
+  p1->z = ppVar1->z;
+  ppVar1 = phys_max(&local_30,p1,&local_50);
+  p1->x = ppVar1->x;
+  p1->y = ppVar1->y;
+  p1->z = ppVar1->z;
+  local_30.x = aabb2_min->x + aabb2_max->x;
+  local_30.y = aabb2_min->y + aabb2_max->y;
+  local_30.z = aabb2_min->z + aabb2_max->z;
   local_20 = local_30.x * 0.5;
   local_1c = local_30.y * 0.5;
   local_18 = local_30.z * 0.5;
-  param_6->x = local_20;
-  param_6->y = local_1c;
-  param_6->z = local_18;
-  ppVar1 = phys_min(&local_30,param_6,&local_40);
-  param_6->x = ppVar1->x;
-  param_6->y = ppVar1->y;
-  param_6->z = ppVar1->z;
-  ppVar1 = phys_max(&local_40,param_6,&local_50);
-  param_6->x = ppVar1->x;
-  param_6->y = ppVar1->y;
-  param_6->z = ppVar1->z;
+  p2->x = local_20;
+  p2->y = local_1c;
+  p2->z = local_18;
+  ppVar1 = phys_min(&local_30,p2,&local_40);
+  p2->x = ppVar1->x;
+  p2->y = ppVar1->y;
+  p2->z = ppVar1->z;
+  ppVar1 = phys_max(&local_40,p2,&local_50);
+  p2->x = ppVar1->x;
+  p2->y = ppVar1->y;
+  p2->z = ppVar1->z;
   return;
 }
 
@@ -1130,7 +1131,7 @@ void __thiscall axis_aligned_sweep_and_prune::sap_node::update_ae_val(sap_node *
 
 void __thiscall
 phys_link_list<phys_collision_pair>::add_mt
-          (phys_link_list<phys_collision_pair> *this,phys_collision_pair *param_1)
+          (phys_link_list<phys_collision_pair> *this,phys_collision_pair *p)
 
 {
   phys_collision_pair ***ppppVar1;
@@ -1147,7 +1148,7 @@ phys_link_list<phys_collision_pair>::add_mt
     (*pcVar3)();
     return;
   }
-  param_1->_padding_ = 0;
+  p->_padding_ = 0;
   LOCK();
   this->m_alloc_count = this->m_alloc_count + 1;
   UNLOCK();
@@ -1156,12 +1157,12 @@ phys_link_list<phys_collision_pair>::add_mt
     LOCK();
     pppVar5 = *ppppVar1;
     if (pppVar2 == pppVar5) {
-      *ppppVar1 = (phys_collision_pair **)param_1;
+      *ppppVar1 = (phys_collision_pair **)p;
       pppVar5 = pppVar2;
     }
     UNLOCK();
   } while (pppVar5 != pppVar2);
-  *pppVar2 = param_1;
+  *pppVar2 = p;
   return;
 }
 
@@ -1170,36 +1171,36 @@ phys_link_list<phys_collision_pair>::add_mt
 
 void __thiscall
 axis_aligned_sweep_and_prune::sap_node::init
-          (sap_node *this,broad_phase_base *param_1,axis_element **param_2,axis_element **param_3,
-          axis_element **param_4)
+          (sap_node *this,broad_phase_base *bpb,axis_element **xlist,axis_element **ylist,
+          axis_element **zlist)
 
 {
   axis_element *paVar1;
   
-  this->m_bpb = param_1;
+  this->m_bpb = bpb;
   this->m_updated = 0;
   this->m_ae1[0][0].m_node = this;
   this->m_ae1[0][0].m_min_max = 0;
   this->m_ae1[0][1].m_node = this;
   this->m_ae1[0][1].m_min_max = 1;
   this->m_ae1[0][0].m_next = this->m_ae1[0] + 1;
-  this->m_ae1[0][1].m_next = *param_2;
-  *param_2 = this->m_ae1[0];
+  this->m_ae1[0][1].m_next = *xlist;
+  *xlist = this->m_ae1[0];
   this->m_ae1[1][0].m_node = this;
   this->m_ae1[1][0].m_min_max = 0;
   this->m_ae1[1][1].m_node = this;
   this->m_ae1[1][1].m_min_max = 1;
   this->m_ae1[1][0].m_next = this->m_ae1[1] + 1;
-  this->m_ae1[1][1].m_next = *param_3;
-  *param_3 = this->m_ae1[1];
+  this->m_ae1[1][1].m_next = *ylist;
+  *ylist = this->m_ae1[1];
   paVar1 = this->m_ae1[2] + 1;
   ((axis_element *)&this->m_ae1[2][0].m_node)->m_node = this;
   this->m_ae1[2][0].m_min_max = 0;
   paVar1->m_node = this;
   this->m_ae1[2][1].m_min_max = 1;
   this->m_ae1[2][0].m_next = paVar1;
-  this->m_ae1[2][1].m_next = *param_4;
-  *param_4 = this->m_ae1[2];
+  this->m_ae1[2][1].m_next = *zlist;
+  *zlist = this->m_ae1[2];
   return;
 }
 
@@ -1208,15 +1209,15 @@ axis_aligned_sweep_and_prune::sap_node::init
 
 int __thiscall
 axis_aligned_sweep_and_prune::are_overlapping
-          (axis_aligned_sweep_and_prune *this,sap_node *param_1,sap_node *param_2)
+          (axis_aligned_sweep_and_prune *this,sap_node *n1,sap_node *n2)
 
 {
-  if ((((param_1->m_ae1[0][0].m_ae_list_index < param_2->m_ae1[0][1].m_ae_list_index) &&
-       (param_2->m_ae1[0][0].m_ae_list_index < param_1->m_ae1[0][1].m_ae_list_index)) &&
-      (param_1->m_ae1[1][0].m_ae_list_index < param_2->m_ae1[1][1].m_ae_list_index)) &&
-     (((param_2->m_ae1[1][0].m_ae_list_index < param_1->m_ae1[1][1].m_ae_list_index &&
-       (param_1->m_ae1[2][0].m_ae_list_index < param_2->m_ae1[2][1].m_ae_list_index)) &&
-      (param_2->m_ae1[2][0].m_ae_list_index < param_1->m_ae1[2][1].m_ae_list_index)))) {
+  if ((((n1->m_ae1[0][0].m_ae_list_index < n2->m_ae1[0][1].m_ae_list_index) &&
+       (n2->m_ae1[0][0].m_ae_list_index < n1->m_ae1[0][1].m_ae_list_index)) &&
+      (n1->m_ae1[1][0].m_ae_list_index < n2->m_ae1[1][1].m_ae_list_index)) &&
+     (((n2->m_ae1[1][0].m_ae_list_index < n1->m_ae1[1][1].m_ae_list_index &&
+       (n1->m_ae1[2][0].m_ae_list_index < n2->m_ae1[2][1].m_ae_list_index)) &&
+      (n2->m_ae1[2][0].m_ae_list_index < n1->m_ae1[2][1].m_ae_list_index)))) {
     return 1;
   }
   return 0;
@@ -1269,7 +1270,7 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 void __thiscall
 axis_aligned_sweep_and_prune::add_active_pair
-          (axis_aligned_sweep_and_prune *this,sap_node *param_1,sap_node *param_2)
+          (axis_aligned_sweep_and_prune *this,sap_node *p1,sap_node *p2)
 
 {
   code *pcVar1;
@@ -1340,11 +1341,11 @@ axis_aligned_sweep_and_prune::add_active_pair
       return;
     }
     (this->m_active_pair_allocator).m_count = (this->m_active_pair_allocator).m_count + 1;
-    paVar3->m_p1 = param_1;
-    paVar3->m_p2 = param_2;
+    paVar3->m_p1 = p1;
+    paVar3->m_p2 = p2;
     paVar3->m_gjk_ci = (phys_gjk_cache_info *)0x0;
-    if ((param_1->m_bpb->m_flags & 1) != 0) {
-      if ((param_2->m_bpb->m_flags & 1) != 0) {
+    if ((p1->m_bpb->m_flags & 1) != 0) {
+      if ((p2->m_bpb->m_flags & 1) != 0) {
         paVar3->m_next = this->m_list_bpi_bpi;
         this->m_list_bpi_bpi = paVar3;
         return;
@@ -1353,9 +1354,9 @@ axis_aligned_sweep_and_prune::add_active_pair
       this->m_list_bpi_bpg = paVar3;
       return;
     }
-    if ((param_2->m_bpb->m_flags & 1) != 0) {
-      paVar3->m_p1 = param_2;
-      paVar3->m_p2 = param_1;
+    if ((p2->m_bpb->m_flags & 1) != 0) {
+      paVar3->m_p1 = p2;
+      paVar3->m_p2 = p1;
       paVar3->m_gjk_ci = (phys_gjk_cache_info *)0x0;
       paVar3->m_next = this->m_list_bpi_bpg;
       this->m_list_bpi_bpg = paVar3;
@@ -1392,7 +1393,8 @@ void __thiscall bpei_database_t::~bpei_database_t(bpei_database_t *this)
 // 00A1FE80  init_system  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:346)
 
 void __thiscall
-axis_aligned_sweep_and_prune::init_system(axis_aligned_sweep_and_prune *this,int param_1)
+axis_aligned_sweep_and_prune::init_system
+          (axis_aligned_sweep_and_prune *this,int max_num_active_pairs)
 
 {
   code *pcVar1;
@@ -1422,7 +1424,7 @@ axis_aligned_sweep_and_prune::init_system(axis_aligned_sweep_and_prune *this,int
   this->m_list_bpi_bpi = (active_pair *)0x0;
   this->m_list_bpi_bpg = (active_pair *)0x0;
   this->m_list_bpg_bpg = (active_pair *)0x0;
-  this->m_max_num_active_pairs = param_1;
+  this->m_max_num_active_pairs = max_num_active_pairs;
   return;
 }
 
@@ -1431,8 +1433,8 @@ axis_aligned_sweep_and_prune::init_system(axis_aligned_sweep_and_prune *this,int
 
 phys_gjk_cache_info * __thiscall
 phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info_mutex
-          (phys_heap_gjk_cache_system_avl_tree *this,uint param_1,uint param_2,
-          tlAtomicReadWriteMutex *param_3,bool param_4)
+          (phys_heap_gjk_cache_system_avl_tree *this,uint id1,uint id2,
+          tlAtomicReadWriteMutex *query_mutex,bool __formal)
 
 {
   phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
@@ -1444,35 +1446,35 @@ phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info_mutex
   phys_gjk_cache_info_internal *ppVar5;
   int *piVar6;
   uint uVar7;
-  phys_gjk_geom_id_pair_key local_c;
+  phys_gjk_geom_id_pair_key key;
   
-  if ((param_1 == param_2) &&
+  if ((id1 == id2) &&
      (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_gjk_cache_system.h"
                         ,0x15b,"id1 != id2",""), bVar2)) {
     pcVar1 = (code *)swi(3);
     ppVar4 = (phys_gjk_cache_info *)(*pcVar1)();
     return ppVar4;
   }
-  bVar2 = param_2 < param_1;
-  uVar7 = param_1;
+  bVar2 = id2 < id1;
+  uVar7 = id1;
   if (bVar2) {
-    uVar7 = param_2;
-    param_2 = param_1;
+    uVar7 = id2;
+    id2 = id1;
   }
-  if ((param_2 <= uVar7) &&
+  if ((id2 <= uVar7) &&
      (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_gjk_cache_system.h"
                         ,0x18,"id1 < id2",""), bVar3)) {
     pcVar1 = (code *)swi(3);
     ppVar4 = (phys_gjk_cache_info *)(*pcVar1)();
     return ppVar4;
   }
-  local_c.m_id1 = uVar7;
-  local_c.m_id2 = param_2;
-  tlAtomicReadWriteMutex::ReadLock(param_3);
+  key.m_id1 = uVar7;
+  key.m_id2 = id2;
+  tlAtomicReadWriteMutex::ReadLock(query_mutex);
   this_00 = &this->m_search_tree;
   ppVar5 = phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-           ::find(this_00,&local_c);
-  piVar6 = &param_3->ThisPtr->ReadLockCount;
+           ::find(this_00,&key);
+  piVar6 = &query_mutex->ThisPtr->ReadLockCount;
   LOCK();
   *piVar6 = *piVar6 + -1;
   UNLOCK();
@@ -1514,9 +1516,9 @@ phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info_mutex
   }
   ppVar5 = (phys_gjk_cache_info_internal *)0x0;
   if ((this->m_list_phys_gjk_cache_info_internal).m_count < this->m_max_num_gjk_ci) {
-    tlAtomicReadWriteMutex::WriteLock(param_3);
+    tlAtomicReadWriteMutex::WriteLock(query_mutex);
     ppVar5 = phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-             ::find(this_00,&local_c);
+             ::find(this_00,&key);
     if ((ppVar5 != (phys_gjk_cache_info_internal *)0x0) &&
        (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_gjk_cache_system.h"
                           ,0x174,"m_search_tree.find(key) == NULL",""), bVar3)) {
@@ -1553,20 +1555,20 @@ phys_heap_gjk_cache_system_avl_tree::get_gjk_cache_info_mutex
       pai_gjk_cache_system_create_gjk_ci.m_hits_frame_count =
            pai_gjk_cache_system_create_gjk_ci.m_hits_frame_count + 1;
       UNLOCK();
-      tlAtomicReadWriteMutex::WriteUnlock(param_3);
+      tlAtomicReadWriteMutex::WriteUnlock(query_mutex);
       return (phys_gjk_cache_info *)0x0;
     }
     (this->m_list_phys_gjk_cache_info_internal).m_count =
          (this->m_list_phys_gjk_cache_info_internal).m_count + 1;
-    ppVar5->_padding_ = local_c.m_id1;
-    ppVar5->_padding_ = local_c.m_id2;
+    ppVar5->_padding_ = key.m_id1;
+    ppVar5->_padding_ = key.m_id2;
     ppVar5->_padding_ = 0;
     ppVar5->_padding_ = -(uint)bVar2 & 2;
     phys_inplace_avl_tree<phys_gjk_geom_id_pair_key,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal,phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor>
-    ::add(this_00,&local_c,ppVar5);
+    ::add(this_00,&key,ppVar5);
     ppVar5->m_next_gjk_ci = this->m_list_head;
     this->m_list_head = ppVar5;
-    tlAtomicReadWriteMutex::WriteUnlock(param_3);
+    tlAtomicReadWriteMutex::WriteUnlock(query_mutex);
   }
   return (phys_gjk_cache_info *)ppVar5;
 }
@@ -1583,12 +1585,12 @@ axis_aligned_sweep_and_prune::process_active_pair_list(axis_aligned_sweep_and_pr
   sap_node *psVar3;
   broad_phase_base *pbVar4;
   broad_phase_info *pbVar5;
-  rigid_body *prVar6;
-  code *pcVar7;
-  bool bVar8;
-  phys_gjk_cache_info *ppVar9;
-  phys_heap_gjk_cache_system_avl_tree *ppVar10;
-  broad_phase_info *pbVar11;
+  rigid_body *bpi2;
+  code *pcVar6;
+  bool bVar7;
+  phys_gjk_cache_info *ppVar8;
+  phys_heap_gjk_cache_system_avl_tree *ppVar9;
+  broad_phase_info *pbVar10;
   phys_vec3 local_50;
   phys_vec3 local_40;
   broad_phase_info *local_24;
@@ -1596,6 +1598,7 @@ axis_aligned_sweep_and_prune::process_active_pair_list(axis_aligned_sweep_and_pr
   active_pair **local_1c;
   axis_aligned_sweep_and_prune *local_18;
   float local_14;
+  float hit_time;
   
   local_1c = &this->m_list_bpi_bpi;
   paVar1 = *local_1c;
@@ -1612,56 +1615,56 @@ axis_aligned_sweep_and_prune::process_active_pair_list(axis_aligned_sweep_and_pr
       local_20 = (broad_phase_info *)psVar2->m_bpb;
       local_1c = &paVar1->m_next;
       if (((local_20->_padding_ & 1U) == 0) &&
-         (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,99,"is_bpi()",""), bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+         (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,99,"is_bpi()",""), bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
-      pbVar11 = (broad_phase_info *)paVar1->m_p2->m_bpb;
-      local_24 = pbVar11;
-      if (((pbVar11->_padding_ & 1U) == 0) &&
-         (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,99,"is_bpi()",""), bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+      pbVar10 = (broad_phase_info *)paVar1->m_p2->m_bpb;
+      local_24 = pbVar10;
+      if (((pbVar10->_padding_ & 1U) == 0) &&
+         (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,99,"is_bpi()",""), bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
-      local_40.x = ((phys_vec3 *)&local_20->_padding_)->x - ((phys_vec3 *)&pbVar11->_padding_)->x;
-      local_40.y = (float)local_20->_padding_ - (float)pbVar11->_padding_;
-      local_40.z = (float)local_20->_padding_ - (float)pbVar11->_padding_;
-      bVar8 = phys_are_potentially_colliding
+      local_40.x = ((phys_vec3 *)&local_20->_padding_)->x - ((phys_vec3 *)&pbVar10->_padding_)->x;
+      local_40.y = (float)local_20->_padding_ - (float)pbVar10->_padding_;
+      local_40.z = (float)local_20->_padding_ - (float)pbVar10->_padding_;
+      bVar7 = phys_are_potentially_colliding
                         ((phys_vec3 *)local_20,(phys_vec3 *)&local_20->_padding_,&local_40,
-                         (phys_vec3 *)pbVar11,(phys_vec3 *)&pbVar11->_padding_,&local_14);
-      if (bVar8) {
+                         (phys_vec3 *)pbVar10,(phys_vec3 *)&pbVar10->_padding_,&local_14);
+      if (bVar7) {
         if (paVar1->m_gjk_ci == (phys_gjk_cache_info *)0x0) {
-          ppVar10 = &G_BPM->g_phys_gjk_cache_system;
-          ppVar9 = PMM_ALLOC(0x90,0x10);
-          if (ppVar9 == (phys_gjk_cache_info *)0x0) {
-            ppVar9 = (phys_gjk_cache_info *)0x0;
+          ppVar9 = &G_BPM->g_phys_gjk_cache_system;
+          ppVar8 = PMM_ALLOC(0x90,0x10);
+          if (ppVar8 == (phys_gjk_cache_info *)0x0) {
+            ppVar8 = (phys_gjk_cache_info *)0x0;
           }
           else {
-            (ppVar10->m_list_phys_gjk_cache_info_internal).m_count =
-                 (ppVar10->m_list_phys_gjk_cache_info_internal).m_count + 1;
-            (ppVar9->m_key).m_id1 = 1;
-            (ppVar9->m_key).m_id2 = 2;
-            ppVar9->m_flags = 0;
+            (ppVar9->m_list_phys_gjk_cache_info_internal).m_count =
+                 (ppVar9->m_list_phys_gjk_cache_info_internal).m_count + 1;
+            (ppVar8->m_key).m_id1 = 1;
+            (ppVar8->m_key).m_id2 = 2;
+            ppVar8->m_flags = 0;
           }
-          paVar1->m_gjk_ci = ppVar9;
-          pbVar11 = local_24;
+          paVar1->m_gjk_ci = ppVar8;
+          pbVar10 = local_24;
         }
-        add_collision_pair(local_20,pbVar11,local_14,paVar1->m_gjk_ci);
+        add_collision_pair(local_20,pbVar10,local_14,paVar1->m_gjk_ci);
       }
     }
     else {
       *local_1c = paVar1->m_next;
-      ppVar9 = paVar1->m_gjk_ci;
+      ppVar8 = paVar1->m_gjk_ci;
       local_24 = (broad_phase_info *)&G_BPM->g_phys_gjk_cache_system;
-      if (ppVar9 != (phys_gjk_cache_info *)0x0) {
-        PMM_VALIDATE(ppVar9,0x90,0x10);
+      if (ppVar8 != (phys_gjk_cache_info *)0x0) {
+        PMM_VALIDATE(ppVar8,0x90,0x10);
         ((phys_vec3 *)&local_24->_padding_)->x =
              (float)((int)((phys_vec3 *)&local_24->_padding_)->x + -1);
-        PMM_FREE(ppVar9,0x90,0x10);
+        PMM_FREE(ppVar8,0x90,0x10);
       }
       PMM_VALIDATE(paVar1,0x10,4);
       (local_18->m_active_pair_allocator).m_count = (local_18->m_active_pair_allocator).m_count + -1
@@ -1681,53 +1684,53 @@ axis_aligned_sweep_and_prune::process_active_pair_list(axis_aligned_sweep_and_pr
        (((psVar3->m_ae1[1][0].m_ae_list_index < psVar2->m_ae1[1][1].m_ae_list_index &&
          (psVar2->m_ae1[2][0].m_ae_list_index < psVar3->m_ae1[2][1].m_ae_list_index)) &&
         (psVar3->m_ae1[2][0].m_ae_list_index < psVar2->m_ae1[2][1].m_ae_list_index)))) {
-      pbVar11 = (broad_phase_info *)psVar2->m_bpb;
+      pbVar10 = (broad_phase_info *)psVar2->m_bpb;
       local_1c = &paVar1->m_next;
-      if (((pbVar11->_padding_ & 1) == 0) &&
-         (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,99,"is_bpi()",""), bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+      if (((pbVar10->_padding_ & 1) == 0) &&
+         (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,99,"is_bpi()",""), bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
       pbVar4 = paVar1->m_p2->m_bpb;
       if (((pbVar4->m_flags & 2) == 0) &&
-         (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,100,"is_bpg()",""), bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+         (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,100,"is_bpg()",""), bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
-      local_40.x = (float)pbVar11->_padding_ - (pbVar4->m_trace_translation).x;
-      local_40.y = (float)pbVar11->_padding_ - (pbVar4->m_trace_translation).y;
-      local_40.z = (float)pbVar11->_padding_ - (pbVar4->m_trace_translation).z;
-      bVar8 = phys_are_potentially_colliding
-                        ((phys_vec3 *)pbVar11,(phys_vec3 *)&pbVar11->_padding_,&local_40,
+      local_40.x = (float)pbVar10->_padding_ - (pbVar4->m_trace_translation).x;
+      local_40.y = (float)pbVar10->_padding_ - (pbVar4->m_trace_translation).y;
+      local_40.z = (float)pbVar10->_padding_ - (pbVar4->m_trace_translation).z;
+      bVar7 = phys_are_potentially_colliding
+                        ((phys_vec3 *)pbVar10,(phys_vec3 *)&pbVar10->_padding_,&local_40,
                          &pbVar4->m_trace_aabb_min_whace,&pbVar4->m_trace_aabb_max_whace,&local_14);
-      if (bVar8) {
+      if (bVar7) {
         for (pbVar5 = (broad_phase_info *)pbVar4[1].m_trace_aabb_min_whace.x;
             pbVar5 != (broad_phase_info *)0x0; pbVar5 = (broad_phase_info *)pbVar5->_padding_) {
-          local_50.x = (float)pbVar11->_padding_ - (float)pbVar5->_padding_;
-          local_50.y = (float)pbVar11->_padding_ - (float)pbVar5->_padding_;
-          local_50.z = (float)pbVar11->_padding_ - (float)pbVar5->_padding_;
-          bVar8 = phys_are_potentially_colliding
-                            ((phys_vec3 *)pbVar11,(phys_vec3 *)&pbVar11->_padding_,&local_50,
+          local_50.x = (float)pbVar10->_padding_ - (float)pbVar5->_padding_;
+          local_50.y = (float)pbVar10->_padding_ - (float)pbVar5->_padding_;
+          local_50.z = (float)pbVar10->_padding_ - (float)pbVar5->_padding_;
+          bVar7 = phys_are_potentially_colliding
+                            ((phys_vec3 *)pbVar10,(phys_vec3 *)&pbVar10->_padding_,&local_50,
                              (phys_vec3 *)pbVar5,(phys_vec3 *)&pbVar5->_padding_,&local_14);
-          if (bVar8) {
-            add_collision_pair(pbVar11,pbVar5,local_14,(phys_gjk_cache_info *)0x0);
+          if (bVar7) {
+            add_collision_pair(pbVar10,pbVar5,local_14,(phys_gjk_cache_info *)0x0);
           }
         }
       }
     }
     else {
       *local_1c = paVar1->m_next;
-      ppVar9 = paVar1->m_gjk_ci;
+      ppVar8 = paVar1->m_gjk_ci;
       local_24 = (broad_phase_info *)&G_BPM->g_phys_gjk_cache_system;
-      if (ppVar9 != (phys_gjk_cache_info *)0x0) {
-        PMM_VALIDATE(ppVar9,0x90,0x10);
+      if (ppVar8 != (phys_gjk_cache_info *)0x0) {
+        PMM_VALIDATE(ppVar8,0x90,0x10);
         ((phys_vec3 *)&local_24->_padding_)->x =
              (float)((int)((phys_vec3 *)&local_24->_padding_)->x + -1);
-        PMM_FREE(ppVar9,0x90,0x10);
+        PMM_FREE(ppVar8,0x90,0x10);
       }
       PMM_VALIDATE(paVar1,0x10,4);
       (local_18->m_active_pair_allocator).m_count = (local_18->m_active_pair_allocator).m_count + -1
@@ -1753,58 +1756,58 @@ axis_aligned_sweep_and_prune::process_active_pair_list(axis_aligned_sweep_and_pr
       pbVar4 = psVar2->m_bpb;
       local_1c = &paVar1->m_next;
       if (((pbVar4->m_flags & 2) == 0) &&
-         (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,100,"is_bpg()",""), bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+         (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,100,"is_bpg()",""), bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
-      pbVar11 = (broad_phase_info *)paVar1->m_p2->m_bpb;
-      local_20 = pbVar11;
-      if (((pbVar11->_padding_ & 2U) == 0) &&
-         (bVar8 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,100,"is_bpg()",""), bVar8)) {
-        pcVar7 = (code *)swi(3);
-        (*pcVar7)();
+      pbVar10 = (broad_phase_info *)paVar1->m_p2->m_bpb;
+      local_20 = pbVar10;
+      if (((pbVar10->_padding_ & 2U) == 0) &&
+         (bVar7 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,100,"is_bpg()",""), bVar7)) {
+        pcVar6 = (code *)swi(3);
+        (*pcVar6)();
         return;
       }
       for (pbVar5 = (broad_phase_info *)pbVar4[1].m_trace_aabb_min_whace.x;
           pbVar5 != (broad_phase_info *)0x0; pbVar5 = (broad_phase_info *)pbVar5->_padding_) {
-        local_50.x = (float)pbVar5->_padding_ - ((phys_vec3 *)&pbVar11->_padding_)->x;
-        local_50.y = (float)pbVar5->_padding_ - (float)pbVar11->_padding_;
-        local_50.z = (float)pbVar5->_padding_ - (float)pbVar11->_padding_;
-        bVar8 = phys_are_potentially_colliding
+        local_50.x = (float)pbVar5->_padding_ - ((phys_vec3 *)&pbVar10->_padding_)->x;
+        local_50.y = (float)pbVar5->_padding_ - (float)pbVar10->_padding_;
+        local_50.z = (float)pbVar5->_padding_ - (float)pbVar10->_padding_;
+        bVar7 = phys_are_potentially_colliding
                           ((phys_vec3 *)pbVar5,(phys_vec3 *)&pbVar5->_padding_,&local_50,
-                           (phys_vec3 *)pbVar11,(phys_vec3 *)&pbVar11->_padding_,&local_14);
-        if (bVar8) {
-          prVar6 = pbVar11->m_rb;
-          pbVar11 = local_20;
-          for (; local_20 = pbVar11, prVar6 != (rigid_body *)0x0;
-              prVar6 = (rigid_body *)(prVar6->m_mat).x.y) {
-            local_40.x = (float)pbVar5->_padding_ - prVar6->m_smallest_lambda;
-            local_40.y = (float)pbVar5->_padding_ - (float)prVar6->_padding_;
-            local_40.z = (float)pbVar5->_padding_ - (float)prVar6->_padding_;
-            bVar8 = phys_are_potentially_colliding
+                           (phys_vec3 *)pbVar10,(phys_vec3 *)&pbVar10->_padding_,&local_14);
+        if (bVar7) {
+          bpi2 = pbVar10->m_rb;
+          pbVar10 = local_20;
+          for (; local_20 = pbVar10, bpi2 != (rigid_body *)0x0;
+              bpi2 = (rigid_body *)(bpi2->m_mat).x.y) {
+            local_40.x = (float)pbVar5->_padding_ - bpi2->m_smallest_lambda;
+            local_40.y = (float)pbVar5->_padding_ - (float)bpi2->_padding_;
+            local_40.z = (float)pbVar5->_padding_ - (float)bpi2->_padding_;
+            bVar7 = phys_are_potentially_colliding
                               ((phys_vec3 *)pbVar5,(phys_vec3 *)&pbVar5->_padding_,&local_40,
-                               &prVar6->m_last_position,&prVar6->m_moved_vec,&local_14);
-            if (bVar8) {
-              add_collision_pair(pbVar5,(broad_phase_info *)prVar6,local_14,
-                                 (phys_gjk_cache_info *)0x0);
+                               &bpi2->m_last_position,&bpi2->m_moved_vec,&local_14);
+            if (bVar7) {
+              add_collision_pair(pbVar5,(broad_phase_info *)bpi2,local_14,(phys_gjk_cache_info *)0x0
+                                );
             }
-            pbVar11 = local_20;
+            pbVar10 = local_20;
           }
         }
       }
     }
     else {
       *local_1c = paVar1->m_next;
-      ppVar9 = paVar1->m_gjk_ci;
+      ppVar8 = paVar1->m_gjk_ci;
       local_24 = (broad_phase_info *)&G_BPM->g_phys_gjk_cache_system;
-      if (ppVar9 != (phys_gjk_cache_info *)0x0) {
-        PMM_VALIDATE(ppVar9,0x90,0x10);
+      if (ppVar8 != (phys_gjk_cache_info *)0x0) {
+        PMM_VALIDATE(ppVar8,0x90,0x10);
         ((phys_vec3 *)&local_24->_padding_)->x =
              (float)((int)((phys_vec3 *)&local_24->_padding_)->x + -1);
-        PMM_FREE(ppVar9,0x90,0x10);
+        PMM_FREE(ppVar8,0x90,0x10);
       }
       PMM_VALIDATE(paVar1,0x10,4);
       (local_18->m_active_pair_allocator).m_count = (local_18->m_active_pair_allocator).m_count + -1
@@ -1819,8 +1822,7 @@ axis_aligned_sweep_and_prune::process_active_pair_list(axis_aligned_sweep_and_pr
 // 00A200A0  debug_add  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:405)
 
 void __thiscall
-phys_free_list<broad_phase_info>::debug_add
-          (phys_free_list<broad_phase_info> *this,T_internal *param_1)
+phys_free_list<broad_phase_info>::debug_add(phys_free_list<broad_phase_info> *this,T_internal *T_i)
 
 {
   int iVar1;
@@ -1831,12 +1833,12 @@ phys_free_list<broad_phase_info>::debug_add
   }
   this->m_list_count_high_water = iVar1;
   if (this->m_ptr_list_count < 0x100) {
-    param_1->m_ptr_list_index = this->m_ptr_list_count;
-    this->m_ptr_list[this->m_ptr_list_count] = &param_1->m_data;
+    T_i->m_ptr_list_index = this->m_ptr_list_count;
+    this->m_ptr_list[this->m_ptr_list_count] = &T_i->m_data;
     this->m_ptr_list_count = this->m_ptr_list_count + 1;
     return;
   }
-  param_1->m_ptr_list_index = -1;
+  T_i->m_ptr_list_index = -1;
   return;
 }
 
@@ -1845,7 +1847,7 @@ phys_free_list<broad_phase_info>::debug_add
 
 void __thiscall
 phys_free_list<broad_phase_collision_pair>::debug_add
-          (phys_free_list<broad_phase_collision_pair> *this,T_internal *param_1)
+          (phys_free_list<broad_phase_collision_pair> *this,T_internal *T_i)
 
 {
   int iVar1;
@@ -1856,12 +1858,12 @@ phys_free_list<broad_phase_collision_pair>::debug_add
   }
   this->m_list_count_high_water = iVar1;
   if (this->m_ptr_list_count < 0x100) {
-    param_1->m_ptr_list_index = this->m_ptr_list_count;
-    this->m_ptr_list[this->m_ptr_list_count] = &param_1->m_data;
+    T_i->m_ptr_list_index = this->m_ptr_list_count;
+    this->m_ptr_list[this->m_ptr_list_count] = &T_i->m_data;
     this->m_ptr_list_count = this->m_ptr_list_count + 1;
     return;
   }
-  param_1->m_ptr_list_index = -1;
+  T_i->m_ptr_list_index = -1;
   return;
 }
 
@@ -1870,14 +1872,14 @@ phys_free_list<broad_phase_collision_pair>::debug_add
 
 void __thiscall
 phys_free_list<broad_phase_info>::debug_remove
-          (phys_free_list<broad_phase_info> *this,T_internal *param_1)
+          (phys_free_list<broad_phase_info> *this,T_internal *T_i)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   
-  iVar1 = param_1->m_ptr_list_index;
+  iVar1 = T_i->m_ptr_list_index;
   if (iVar1 != -1) {
     if ((iVar1 < 0) || (0xff < iVar1)) {
       bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a5,
@@ -1888,7 +1890,7 @@ phys_free_list<broad_phase_info>::debug_remove
         return;
       }
     }
-    if (this->m_ptr_list[param_1->m_ptr_list_index] != &param_1->m_data) {
+    if (this->m_ptr_list[T_i->m_ptr_list_index] != &T_i->m_data) {
       bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a6,
                         "m_ptr_list[T_i->m_ptr_list_index] == &T_i->m_data","");
       if (bVar3) {
@@ -1898,8 +1900,8 @@ phys_free_list<broad_phase_info>::debug_remove
       }
     }
     this->m_ptr_list_count = this->m_ptr_list_count + -1;
-    this->m_ptr_list[this->m_ptr_list_count][1]._padding_ = param_1->m_ptr_list_index;
-    this->m_ptr_list[param_1->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
+    this->m_ptr_list[this->m_ptr_list_count][1]._padding_ = T_i->m_ptr_list_index;
+    this->m_ptr_list[T_i->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
   }
   return;
 }
@@ -1909,14 +1911,14 @@ phys_free_list<broad_phase_info>::debug_remove
 
 void __thiscall
 phys_free_list<broad_phase_collision_pair>::debug_remove
-          (phys_free_list<broad_phase_collision_pair> *this,T_internal *param_1)
+          (phys_free_list<broad_phase_collision_pair> *this,T_internal *T_i)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   
-  iVar1 = param_1->m_ptr_list_index;
+  iVar1 = T_i->m_ptr_list_index;
   if (iVar1 != -1) {
     if ((iVar1 < 0) || (0xff < iVar1)) {
       bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a5,
@@ -1927,7 +1929,7 @@ phys_free_list<broad_phase_collision_pair>::debug_remove
         return;
       }
     }
-    if (this->m_ptr_list[param_1->m_ptr_list_index] != &param_1->m_data) {
+    if (this->m_ptr_list[T_i->m_ptr_list_index] != &T_i->m_data) {
       bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1a6,
                         "m_ptr_list[T_i->m_ptr_list_index] == &T_i->m_data","");
       if (bVar3) {
@@ -1937,9 +1939,8 @@ phys_free_list<broad_phase_collision_pair>::debug_remove
       }
     }
     this->m_ptr_list_count = this->m_ptr_list_count + -1;
-    this->m_ptr_list[this->m_ptr_list_count][1].m_bpi1 =
-         (broad_phase_info *)param_1->m_ptr_list_index;
-    this->m_ptr_list[param_1->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
+    this->m_ptr_list[this->m_ptr_list_count][1].m_bpi1 = (broad_phase_info *)T_i->m_ptr_list_index;
+    this->m_ptr_list[T_i->m_ptr_list_index] = this->m_ptr_list[this->m_ptr_list_count];
   }
   return;
 }
@@ -1951,26 +1952,26 @@ void __thiscall axis_aligned_sweep_and_prune::process(axis_aligned_sweep_and_pru
 
 {
   axis_element **ppaVar1;
-  int iVar2;
-  axis_element *paVar3;
-  code *pcVar4;
+  int size;
+  axis_element *paVar2;
+  code *pcVar3;
   axis_aligned_sweep_and_prune *this_00;
-  bool bVar5;
+  bool bVar4;
+  axis_element **list;
+  axis_element **ppaVar5;
   axis_element **ppaVar6;
-  axis_element **ppaVar7;
-  axis_element **ppaVar8;
-  int iVar9;
-  axis_element *paVar10;
-  phys_transient_allocator local_50;
-  axis_element **local_38;
-  int local_34;
-  axis_element **local_30;
-  axis_element **local_2c;
-  axis_element **local_28;
-  axis_element **local_24;
-  axis_element **local_20;
-  axis_element *local_1c;
-  axis_element *local_18;
+  int iVar7;
+  axis_element *paVar8;
+  phys_transient_allocator transient_buffer;
+  axis_element **zlist;
+  int axis_element_count;
+  axis_element **ylist;
+  axis_element **zl_i;
+  axis_element **yl_i;
+  axis_element **xl_i;
+  axis_element **xl_i_last;
+  axis_element *zcur;
+  axis_element *ycur;
   axis_aligned_sweep_and_prune *local_14;
   void *local_10;
   undefined1 *puStack_c;
@@ -1980,111 +1981,111 @@ void __thiscall axis_aligned_sweep_and_prune::process(axis_aligned_sweep_and_pru
   puStack_c = &__ehhandler__process_axis_aligned_sweep_and_prune__QAEXXZ;
   local_10 = ExceptionList;
   ExceptionList = &local_10;
-  iVar9 = (this->m_sap_node_allocator).m_count;
-  local_34 = iVar9 * 2;
+  iVar7 = (this->m_sap_node_allocator).m_count;
+  axis_element_count = iVar7 * 2;
   local_14 = this;
-  if (0 < local_34) {
-    local_50.m_first_block = (block_header *)0x0;
-    local_50.m_cur = (char *)0x0;
-    local_50.m_end = (char *)0x0;
-    local_50.m_total_memory_allocated = 0;
-    local_50.m_mutex.m_count = 1;
-    local_50.m_slot_pool = (void *)0x0;
-    iVar2 = iVar9 * 8;
+  if (0 < axis_element_count) {
+    transient_buffer.m_first_block = (block_header *)0x0;
+    transient_buffer.m_cur = (char *)0x0;
+    transient_buffer.m_end = (char *)0x0;
+    transient_buffer.m_total_memory_allocated = 0;
+    transient_buffer.m_mutex.m_count = 1;
+    transient_buffer.m_slot_pool = (void *)0x0;
+    size = iVar7 * 8;
     local_8 = 0;
-    ppaVar6 = phys_transient_allocator::allocate
-                        (&local_50,iVar2,4,0,"phys_transient_allocator out of memory.");
-    local_30 = phys_transient_allocator::allocate
-                         (&local_50,iVar2,4,0,"phys_transient_allocator out of memory.");
-    local_38 = phys_transient_allocator::allocate
-                         (&local_50,iVar2,4,0,"phys_transient_allocator out of memory.");
-    paVar10 = local_14->m_x_list;
-    local_1c = local_14->m_z_list;
-    local_20 = ppaVar6 + iVar9 * 2;
-    iVar9 = 0;
-    local_28 = local_30;
-    local_2c = local_38;
-    local_24 = ppaVar6;
-    local_18 = local_14->m_y_list;
-    if (ppaVar6 != local_20) {
+    list = phys_transient_allocator::allocate
+                     (&transient_buffer,size,4,0,"phys_transient_allocator out of memory.");
+    ylist = phys_transient_allocator::allocate
+                      (&transient_buffer,size,4,0,"phys_transient_allocator out of memory.");
+    zlist = phys_transient_allocator::allocate
+                      (&transient_buffer,size,4,0,"phys_transient_allocator out of memory.");
+    paVar8 = local_14->m_x_list;
+    zcur = local_14->m_z_list;
+    xl_i_last = list + iVar7 * 2;
+    iVar7 = 0;
+    yl_i = ylist;
+    zl_i = zlist;
+    xl_i = list;
+    ycur = local_14->m_y_list;
+    if (list != xl_i_last) {
       do {
-        if ((paVar10->m_node->m_updated != 1) &&
-           (bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x1c3,"xcur->m_node->m_updated == 1","")
-           , bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        if ((paVar8->m_node->m_updated != 1) &&
+           (bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x1c3,"xcur->m_node->m_updated == 1","")
+           , bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        if ((local_18->m_node->m_updated != 1) &&
-           (bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x1c4,"ycur->m_node->m_updated == 1","")
-           , bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        if ((ycur->m_node->m_updated != 1) &&
+           (bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x1c4,"ycur->m_node->m_updated == 1","")
+           , bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        if ((local_1c->m_node->m_updated != 1) &&
-           (bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x1c5,"zcur->m_node->m_updated == 1","")
-           , bVar5)) {
-          pcVar4 = (code *)swi(3);
-          (*pcVar4)();
+        if ((zcur->m_node->m_updated != 1) &&
+           (bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x1c5,"zcur->m_node->m_updated == 1","")
+           , bVar4)) {
+          pcVar3 = (code *)swi(3);
+          (*pcVar3)();
           return;
         }
-        *local_24 = paVar10;
-        paVar10->m_ae_list_index = iVar9;
-        paVar10 = paVar10->m_next;
-        *local_28 = local_18;
-        local_28 = local_28 + 1;
-        paVar3 = local_18->m_next;
-        local_18->m_ae_list_index = iVar9;
-        *local_2c = local_1c;
-        local_24 = local_24 + 1;
-        local_1c->m_ae_list_index = iVar9;
-        local_1c = local_1c->m_next;
-        local_2c = local_2c + 1;
-        iVar9 = iVar9 + 1;
-        local_18 = paVar3;
-      } while (local_24 != local_20);
+        *xl_i = paVar8;
+        paVar8->m_ae_list_index = iVar7;
+        paVar8 = paVar8->m_next;
+        *yl_i = ycur;
+        yl_i = yl_i + 1;
+        paVar2 = ycur->m_next;
+        ycur->m_ae_list_index = iVar7;
+        *zl_i = zcur;
+        xl_i = xl_i + 1;
+        zcur->m_ae_list_index = iVar7;
+        zcur = zcur->m_next;
+        zl_i = zl_i + 1;
+        iVar7 = iVar7 + 1;
+        ycur = paVar2;
+      } while (xl_i != xl_i_last);
     }
-    if ((((paVar10 != (axis_element *)0x0) || (local_18 != (axis_element *)0x0)) ||
-        (local_1c != (axis_element *)0x0)) &&
-       (bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x1cb,
-                          "xcur == NULL && ycur == NULL && zcur == NULL",""), bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if ((((paVar8 != (axis_element *)0x0) || (ycur != (axis_element *)0x0)) ||
+        (zcur != (axis_element *)0x0)) &&
+       (bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x1cb,
+                          "xcur == NULL && ycur == NULL && zcur == NULL",""), bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
-    iVar9 = local_34;
-    merge_sort(local_14,ppaVar6,local_34);
+    iVar7 = axis_element_count;
+    merge_sort(local_14,list,axis_element_count);
     this_00 = local_14;
-    ppaVar7 = local_30;
-    merge_sort(local_14,local_30,iVar9);
-    merge_sort(this_00,local_38,local_34);
-    this_00->m_x_list = *ppaVar6;
-    this_00->m_y_list = *ppaVar7;
-    this_00->m_z_list = *local_38;
-    ppaVar8 = local_38;
-    for (; ppaVar6 != local_20; ppaVar6 = ppaVar6 + 1) {
+    ppaVar5 = ylist;
+    merge_sort(local_14,ylist,iVar7);
+    merge_sort(this_00,zlist,axis_element_count);
+    this_00->m_x_list = *list;
+    this_00->m_y_list = *ppaVar5;
+    this_00->m_z_list = *zlist;
+    ppaVar6 = zlist;
+    for (; list != xl_i_last; list = list + 1) {
+      (*list)->m_node->m_updated = 0;
+      (*ppaVar5)->m_node->m_updated = 0;
       (*ppaVar6)->m_node->m_updated = 0;
-      (*ppaVar7)->m_node->m_updated = 0;
-      (*ppaVar8)->m_node->m_updated = 0;
-      (*ppaVar6)->m_next = ppaVar6[1];
-      (*ppaVar7)->m_next = ppaVar7[1];
-      paVar10 = *ppaVar8;
-      ppaVar1 = ppaVar8 + 1;
-      ppaVar7 = ppaVar7 + 1;
-      ppaVar8 = ppaVar8 + 1;
-      paVar10->m_next = *ppaVar1;
+      (*list)->m_next = list[1];
+      (*ppaVar5)->m_next = ppaVar5[1];
+      paVar8 = *ppaVar6;
+      ppaVar1 = ppaVar6 + 1;
+      ppaVar5 = ppaVar5 + 1;
+      ppaVar6 = ppaVar6 + 1;
+      paVar8->m_next = *ppaVar1;
     }
+    list[-1]->m_next = (axis_element *)0x0;
+    ppaVar5[-1]->m_next = (axis_element *)0x0;
     ppaVar6[-1]->m_next = (axis_element *)0x0;
-    ppaVar7[-1]->m_next = (axis_element *)0x0;
-    ppaVar8[-1]->m_next = (axis_element *)0x0;
-    phys_transient_allocator::reset(&local_50);
+    phys_transient_allocator::reset(&transient_buffer);
     local_8 = 0xffffffff;
-    if ((local_50.m_first_block != (block_header *)0x0) &&
-       (bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_transient_allocator.h"
-                          ,0x45,"m_first_block == NULL",""), bVar5)) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if ((transient_buffer.m_first_block != (block_header *)0x0) &&
+       (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_transient_allocator.h"
+                          ,0x45,"m_first_block == NULL",""), bVar4)) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
@@ -2187,7 +2188,7 @@ phys_free_list<broad_phase_collision_pair>::~phys_free_list<broad_phase_collisio
 // 00A200F0  remove  (<external>/projects_pc/cod/codsrc/tl/physics/include/phys_mem.h:476)
 
 void __thiscall
-phys_free_list<broad_phase_info>::remove(phys_free_list<broad_phase_info> *this,T_internal *param_1)
+phys_free_list<broad_phase_info>::remove(phys_free_list<broad_phase_info> *this,T_internal *data)
 
 {
   int *piVar1;
@@ -2195,7 +2196,7 @@ phys_free_list<broad_phase_info>::remove(phys_free_list<broad_phase_info> *this,
   code *pcVar3;
   bool bVar4;
   
-  if (param_1 == (T_internal *)0x0) {
+  if (data == (T_internal *)0x0) {
     bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,"data",
                       "");
     if (bVar4) {
@@ -2205,12 +2206,12 @@ phys_free_list<broad_phase_info>::remove(phys_free_list<broad_phase_info> *this,
     }
   }
   this->m_list_count = this->m_list_count + -1;
-  debug_remove(this,param_1);
-  piVar1 = *(int **)&param_1->field_0x4;
-  iVar2 = *(int *)param_1;
+  debug_remove(this,data);
+  piVar1 = *(int **)&data->field_0x4;
+  iVar2 = *(int *)data;
   *(int **)(iVar2 + 4) = piVar1;
   *piVar1 = iVar2;
-  PMM_FREE(param_1,0x90,0x10);
+  PMM_FREE(data,0x90,0x10);
   return;
 }
 
@@ -2219,7 +2220,7 @@ phys_free_list<broad_phase_info>::remove(phys_free_list<broad_phase_info> *this,
 
 void __thiscall
 phys_free_list<broad_phase_collision_pair>::remove
-          (phys_free_list<broad_phase_collision_pair> *this,T_internal *param_1)
+          (phys_free_list<broad_phase_collision_pair> *this,T_internal *data)
 
 {
   int *piVar1;
@@ -2227,7 +2228,7 @@ phys_free_list<broad_phase_collision_pair>::remove
   code *pcVar3;
   bool bVar4;
   
-  if (param_1 == (T_internal *)0x0) {
+  if (data == (T_internal *)0x0) {
     bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,"data",
                       "");
     if (bVar4) {
@@ -2237,12 +2238,12 @@ phys_free_list<broad_phase_collision_pair>::remove
     }
   }
   this->m_list_count = this->m_list_count + -1;
-  debug_remove(this,param_1);
-  piVar1 = (int *)param_1->_padding_;
-  iVar2 = param_1->_padding_;
+  debug_remove(this,data);
+  piVar1 = (int *)data->_padding_;
+  iVar2 = data->_padding_;
   *(int **)(iVar2 + 4) = piVar1;
   *piVar1 = iVar2;
-  PMM_FREE(param_1,0x18,4);
+  PMM_FREE(data,0x18,4);
   return;
 }
 
@@ -2251,14 +2252,14 @@ phys_free_list<broad_phase_collision_pair>::remove
 
 void __thiscall
 axis_aligned_sweep_and_prune::create_sap_node
-          (axis_aligned_sweep_and_prune *this,broad_phase_base *param_1)
+          (axis_aligned_sweep_and_prune *this,broad_phase_base *bpb)
 
 {
   code *pcVar1;
   bool bVar2;
   sap_node *this_00;
   
-  if (param_1->m_sap_node != (void *)0x0) {
+  if (bpb->m_sap_node != (void *)0x0) {
     bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x1f0,"bpb->m_sap_node == NULL","");
     if (bVar2) {
       pcVar1 = (code *)swi(3);
@@ -2273,8 +2274,8 @@ axis_aligned_sweep_and_prune::create_sap_node
   else {
     (this->m_sap_node_allocator).m_count = (this->m_sap_node_allocator).m_count + 1;
   }
-  sap_node::init(this_00,param_1,&this->m_x_list,&this->m_y_list,&this->m_z_list);
-  param_1->m_sap_node = this_00;
+  sap_node::init(this_00,bpb,&this->m_x_list,&this->m_y_list,&this->m_z_list);
+  bpb->m_sap_node = this_00;
   return;
 }
 
@@ -2285,32 +2286,32 @@ void __thiscall phys_free_list<broad_phase_info>::remove_all(phys_free_list<broa
 
 {
   phys_free_list<broad_phase_info> *ppVar1;
-  T_internal *pTVar2;
-  int *piVar3;
-  int iVar4;
-  code *pcVar5;
-  bool bVar6;
+  T_internal *T_i;
+  int *piVar2;
+  int iVar3;
+  code *pcVar4;
+  bool bVar5;
   
   ppVar1 = (phys_free_list<broad_phase_info> *)(this->m_dummy_head).m_next_T_internal;
   while( true ) {
     if (ppVar1 == this) {
       return;
     }
-    pTVar2 = (T_internal *)(this->m_dummy_head).m_next_T_internal;
-    if ((pTVar2 == (T_internal *)0x0) &&
-       (bVar6 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
-                          "data",""), bVar6)) break;
+    T_i = (T_internal *)(this->m_dummy_head).m_next_T_internal;
+    if ((T_i == (T_internal *)0x0) &&
+       (bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
+                          "data",""), bVar5)) break;
     this->m_list_count = this->m_list_count + -1;
-    debug_remove(this,pTVar2);
-    piVar3 = *(int **)&pTVar2->field_0x4;
-    iVar4 = *(int *)pTVar2;
-    *(int **)(iVar4 + 4) = piVar3;
-    *piVar3 = iVar4;
-    PMM_FREE(pTVar2,0x90,0x10);
+    debug_remove(this,T_i);
+    piVar2 = *(int **)&T_i->field_0x4;
+    iVar3 = *(int *)T_i;
+    *(int **)(iVar3 + 4) = piVar2;
+    *piVar2 = iVar3;
+    PMM_FREE(T_i,0x90,0x10);
     ppVar1 = (phys_free_list<broad_phase_info> *)(this->m_dummy_head).m_next_T_internal;
   }
-  pcVar5 = (code *)swi(3);
-  (*pcVar5)();
+  pcVar4 = (code *)swi(3);
+  (*pcVar4)();
   return;
 }
 
@@ -2323,32 +2324,32 @@ phys_free_list<broad_phase_collision_pair>::remove_all
 
 {
   phys_free_list<broad_phase_collision_pair> *ppVar1;
-  T_internal *pTVar2;
-  int *piVar3;
-  int iVar4;
-  code *pcVar5;
-  bool bVar6;
+  T_internal *T_i;
+  int *piVar2;
+  int iVar3;
+  code *pcVar4;
+  bool bVar5;
   
   ppVar1 = (phys_free_list<broad_phase_collision_pair> *)(this->m_dummy_head).m_next_T_internal;
   while( true ) {
     if (ppVar1 == this) {
       return;
     }
-    pTVar2 = (T_internal *)(this->m_dummy_head).m_next_T_internal;
-    if ((pTVar2 == (T_internal *)0x0) &&
-       (bVar6 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
-                          "data",""), bVar6)) break;
+    T_i = (T_internal *)(this->m_dummy_head).m_next_T_internal;
+    if ((T_i == (T_internal *)0x0) &&
+       (bVar5 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",0x1dd,
+                          "data",""), bVar5)) break;
     this->m_list_count = this->m_list_count + -1;
-    debug_remove(this,pTVar2);
-    piVar3 = (int *)pTVar2->_padding_;
-    iVar4 = pTVar2->_padding_;
-    *(int **)(iVar4 + 4) = piVar3;
-    *piVar3 = iVar4;
-    PMM_FREE(pTVar2,0x18,4);
+    debug_remove(this,T_i);
+    piVar2 = (int *)T_i->_padding_;
+    iVar3 = T_i->_padding_;
+    *(int **)(iVar3 + 4) = piVar2;
+    *piVar2 = iVar3;
+    PMM_FREE(T_i,0x18,4);
     ppVar1 = (phys_free_list<broad_phase_collision_pair> *)(this->m_dummy_head).m_next_T_internal;
   }
-  pcVar5 = (code *)swi(3);
-  (*pcVar5)();
+  pcVar4 = (code *)swi(3);
+  (*pcVar4)();
   return;
 }
 
@@ -2357,7 +2358,7 @@ phys_free_list<broad_phase_collision_pair>::remove_all
 
 void __thiscall
 axis_aligned_sweep_and_prune::remove
-          (axis_aligned_sweep_and_prune *this,axis_element **param_1,sap_node *param_2)
+          (axis_aligned_sweep_and_prune *this,axis_element **axis_list,sap_node *node)
 
 {
   code *pcVar1;
@@ -2365,19 +2366,19 @@ axis_aligned_sweep_and_prune::remove
   axis_element *paVar3;
   int iVar4;
   
-  paVar3 = *param_1;
+  paVar3 = *axis_list;
   iVar4 = 0;
   if (paVar3 != (axis_element *)0x0) {
     do {
       if (1 < iVar4) break;
-      if (paVar3->m_node == param_2) {
-        *param_1 = paVar3->m_next;
+      if (paVar3->m_node == node) {
+        *axis_list = paVar3->m_next;
         iVar4 = iVar4 + 1;
       }
       else {
-        param_1 = &paVar3->m_next;
+        axis_list = &paVar3->m_next;
       }
-      paVar3 = *param_1;
+      paVar3 = *axis_list;
     } while (paVar3 != (axis_element *)0x0);
     if (iVar4 == 2) {
       return;
@@ -2397,33 +2398,33 @@ axis_aligned_sweep_and_prune::remove
 
 void __thiscall
 axis_aligned_sweep_and_prune::remove
-          (axis_aligned_sweep_and_prune *this,active_pair **param_1,sap_node *param_2)
+          (axis_aligned_sweep_and_prune *this,active_pair **list_ap,sap_node *node)
 
 {
-  active_pair *paVar1;
-  phys_gjk_cache_info *ppVar2;
-  phys_heap_gjk_cache_system_avl_tree *ppVar3;
+  active_pair *ptr;
+  phys_gjk_cache_info *ptr_00;
+  phys_heap_gjk_cache_system_avl_tree *ppVar1;
   
-  paVar1 = *param_1;
-  while (paVar1 != (active_pair *)0x0) {
-    if ((paVar1->m_p1 == param_2) || (paVar1->m_p2 == param_2)) {
-      *param_1 = paVar1->m_next;
-      ppVar2 = paVar1->m_gjk_ci;
-      ppVar3 = &G_BPM->g_phys_gjk_cache_system;
-      if (ppVar2 != (phys_gjk_cache_info *)0x0) {
-        PMM_VALIDATE(ppVar2,0x90,0x10);
-        (ppVar3->m_list_phys_gjk_cache_info_internal).m_count =
-             (ppVar3->m_list_phys_gjk_cache_info_internal).m_count + -1;
-        PMM_FREE(ppVar2,0x90,0x10);
+  ptr = *list_ap;
+  while (ptr != (active_pair *)0x0) {
+    if ((ptr->m_p1 == node) || (ptr->m_p2 == node)) {
+      *list_ap = ptr->m_next;
+      ptr_00 = ptr->m_gjk_ci;
+      ppVar1 = &G_BPM->g_phys_gjk_cache_system;
+      if (ptr_00 != (phys_gjk_cache_info *)0x0) {
+        PMM_VALIDATE(ptr_00,0x90,0x10);
+        (ppVar1->m_list_phys_gjk_cache_info_internal).m_count =
+             (ppVar1->m_list_phys_gjk_cache_info_internal).m_count + -1;
+        PMM_FREE(ptr_00,0x90,0x10);
       }
-      PMM_VALIDATE(paVar1,0x10,4);
+      PMM_VALIDATE(ptr,0x10,4);
       (this->m_active_pair_allocator).m_count = (this->m_active_pair_allocator).m_count + -1;
-      PMM_FREE(paVar1,0x10,4);
+      PMM_FREE(ptr,0x10,4);
     }
     else {
-      param_1 = &paVar1->m_next;
+      list_ap = &ptr->m_next;
     }
-    paVar1 = *param_1;
+    ptr = *list_ap;
   }
   return;
 }
@@ -2433,25 +2434,25 @@ axis_aligned_sweep_and_prune::remove
 
 void __thiscall
 axis_aligned_sweep_and_prune::destroy_sap_node
-          (axis_aligned_sweep_and_prune *this,broad_phase_base *param_1)
+          (axis_aligned_sweep_and_prune *this,broad_phase_base *bpb)
 
 {
-  sap_node *psVar1;
+  sap_node *node;
   
-  psVar1 = param_1->m_sap_node;
-  if (psVar1 != (sap_node *)0x0) {
-    remove(this,&this->m_list_bpi_bpi,psVar1);
-    remove(this,&this->m_list_bpi_bpg,psVar1);
-    remove(this,&this->m_list_bpg_bpg,psVar1);
-    remove(this,&this->m_x_list,psVar1);
-    remove(this,&this->m_y_list,psVar1);
-    remove(this,&this->m_z_list,psVar1);
-    if (psVar1 != (sap_node *)0x0) {
-      PMM_VALIDATE(psVar1,0x80,4);
+  node = bpb->m_sap_node;
+  if (node != (sap_node *)0x0) {
+    remove(this,&this->m_list_bpi_bpi,node);
+    remove(this,&this->m_list_bpi_bpg,node);
+    remove(this,&this->m_list_bpg_bpg,node);
+    remove(this,&this->m_x_list,node);
+    remove(this,&this->m_y_list,node);
+    remove(this,&this->m_z_list,node);
+    if (node != (sap_node *)0x0) {
+      PMM_VALIDATE(node,0x80,4);
       (this->m_sap_node_allocator).m_count = (this->m_sap_node_allocator).m_count + -1;
-      PMM_FREE(psVar1,0x80,4);
+      PMM_FREE(node,0x80,4);
     }
-    param_1->m_sap_node = (void *)0x0;
+    bpb->m_sap_node = (void *)0x0;
   }
   return;
 }
@@ -2461,52 +2462,52 @@ axis_aligned_sweep_and_prune::destroy_sap_node
 
 void __thiscall
 axis_aligned_sweep_and_prune::swap
-          (axis_aligned_sweep_and_prune *this,axis_element **param_1,axis_element **param_2)
+          (axis_aligned_sweep_and_prune *this,axis_element **a1_ptr,axis_element **a2_ptr)
 
 {
   axis_element *paVar1;
   axis_element *paVar2;
-  sap_node *psVar3;
-  code *pcVar4;
-  bool bVar5;
-  int iVar6;
+  sap_node *n2;
+  code *pcVar3;
+  bool bVar4;
+  int iVar5;
   
-  paVar1 = *param_1;
-  paVar2 = *param_2;
+  paVar1 = *a1_ptr;
+  paVar2 = *a2_ptr;
   if (paVar1->m_node == paVar2->m_node) {
-    bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x23a,"a1->m_node != a2->m_node","");
-    if (bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x23a,"a1->m_node != a2->m_node","");
+    if (bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
   if (paVar1->m_ae_list_index + 1 != paVar2->m_ae_list_index) {
-    bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x23b,
+    bVar4 = _tlAssert("source/phys_broad_phase.cpp",0x23b,
                       "a1->m_ae_list_index + 1 == a2->m_ae_list_index","");
-    if (bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
   paVar1->m_ae_list_index = paVar1->m_ae_list_index + 1;
   paVar2->m_ae_list_index = paVar2->m_ae_list_index + -1;
   if ((paVar1->m_min_max == 1) && (paVar2->m_min_max == 0)) {
-    psVar3 = paVar2->m_node;
-    iVar6 = are_overlapping(this,paVar1->m_node,psVar3);
-    if (iVar6 != 0) {
+    n2 = paVar2->m_node;
+    iVar5 = are_overlapping(this,paVar1->m_node,n2);
+    if (iVar5 != 0) {
       if (this->m_should_collide_callback !=
           (_func___cdecl_bool_broad_phase_base_ptr_broad_phase_base_ptr *)0x0) {
-        bVar5 = (*this->m_should_collide_callback)(paVar1->m_node->m_bpb,psVar3->m_bpb);
-        if (!bVar5) goto LAB_00a1e516;
+        bVar4 = (*this->m_should_collide_callback)(paVar1->m_node->m_bpb,n2->m_bpb);
+        if (!bVar4) goto LAB_00a1e516;
       }
       add_active_pair(this,paVar1->m_node,paVar2->m_node);
     }
   }
 LAB_00a1e516:
-  *param_1 = paVar2;
-  *param_2 = paVar1;
+  *a1_ptr = paVar2;
+  *a2_ptr = paVar1;
   return;
 }
 
@@ -2515,36 +2516,35 @@ LAB_00a1e516:
 
 void __thiscall
 axis_aligned_sweep_and_prune::merge_sort
-          (axis_aligned_sweep_and_prune *this,axis_element **param_1,int param_2)
+          (axis_aligned_sweep_and_prune *this,axis_element **list,int list_count)
 
 {
+  axis_element **a1_ptr;
+  axis_element **a2_ptr;
   axis_element **ppaVar1;
-  axis_element **ppaVar2;
-  axis_element **ppaVar3;
-  int iVar4;
+  int list_count_00;
   
-  if (param_2 < 3) {
-    if ((param_2 == 2) && (param_1[1]->m_val < (*param_1)->m_val)) {
-      swap(this,param_1,param_1 + 1);
+  if (list_count < 3) {
+    if ((list_count == 2) && (list[1]->m_val < (*list)->m_val)) {
+      swap(this,list,list + 1);
       return;
     }
   }
   else {
-    iVar4 = param_2 / 2;
-    merge_sort(this,param_1,iVar4);
-    ppaVar3 = param_1 + iVar4;
-    merge_sort(this,ppaVar3,param_2 - iVar4);
-    ppaVar1 = ppaVar3 + -1;
-    while ((ppaVar2 = ppaVar3, ppaVar2 < param_1 + param_2 &&
-           ((*ppaVar2)->m_val < (*ppaVar1)->m_val))) {
-      swap(this,ppaVar1,ppaVar2);
-      while ((param_1 < ppaVar1 && (ppaVar3 = ppaVar1 + -1, (*ppaVar1)->m_val < (*ppaVar3)->m_val)))
-      {
-        swap(this,ppaVar3,ppaVar1);
-        ppaVar1 = ppaVar3;
+    list_count_00 = list_count / 2;
+    merge_sort(this,list,list_count_00);
+    ppaVar1 = list + list_count_00;
+    merge_sort(this,ppaVar1,list_count - list_count_00);
+    a1_ptr = ppaVar1 + -1;
+    while ((a2_ptr = ppaVar1, a2_ptr < list + list_count && ((*a2_ptr)->m_val < (*a1_ptr)->m_val)))
+    {
+      swap(this,a1_ptr,a2_ptr);
+      while ((list < a1_ptr && (ppaVar1 = a1_ptr + -1, (*a1_ptr)->m_val < (*ppaVar1)->m_val))) {
+        swap(this,ppaVar1,a1_ptr);
+        a1_ptr = ppaVar1;
       }
-      ppaVar1 = ppaVar2;
-      ppaVar3 = ppaVar2 + 1;
+      a1_ptr = a2_ptr;
+      ppaVar1 = a2_ptr + 1;
     }
   }
   return;
@@ -2553,53 +2553,53 @@ axis_aligned_sweep_and_prune::merge_sort
 
 // 00A1E630  aasap_list_add  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:589)
 
-void __cdecl aasap_list_add(broad_phase_base *param_1)
+void __cdecl aasap_list_add(broad_phase_base *bpb)
 
 {
-  axis_aligned_sweep_and_prune::create_sap_node(g_axis_aligned_sweep_and_prune,param_1);
+  axis_aligned_sweep_and_prune::create_sap_node(g_axis_aligned_sweep_and_prune,bpb);
   return;
 }
 
 
 // 00A1E650  aasap_list_remove  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:592)
 
-void __cdecl aasap_list_remove(broad_phase_base *param_1)
+void __cdecl aasap_list_remove(broad_phase_base *bpb)
 
 {
-  axis_aligned_sweep_and_prune::destroy_sap_node(g_axis_aligned_sweep_and_prune,param_1);
+  axis_aligned_sweep_and_prune::destroy_sap_node(g_axis_aligned_sweep_and_prune,bpb);
   return;
 }
 
 
 // 00A1D320  init_bpeqi  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:603)
 
-void __cdecl init_bpeqi(broad_phase_environment_query_input *param_1,broad_phase_base *param_2)
+void __cdecl init_bpeqi(broad_phase_environment_query_input *bpeqi,broad_phase_base *bpb)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = (param_2->m_trace_aabb_min_whace).y;
-  fVar2 = (param_2->m_trace_aabb_min_whace).z;
-  (param_1->trace_aabb_min_wace).x = (param_2->m_trace_aabb_min_whace).x - 0.51;
-  (param_1->trace_aabb_min_wace).y = fVar1 - 0.51;
-  (param_1->trace_aabb_min_wace).z = fVar2 - 0.51;
-  fVar1 = (param_2->m_trace_aabb_max_whace).y;
-  fVar2 = (param_2->m_trace_aabb_max_whace).z;
-  (param_1->trace_aabb_max_wace).x = (param_2->m_trace_aabb_max_whace).x + 0.51;
-  (param_1->trace_aabb_max_wace).y = fVar1 + 0.51;
-  (param_1->trace_aabb_max_wace).z = fVar2 + 0.51;
-  (param_1->trace_translation).x = (param_2->m_trace_translation).x;
-  (param_1->trace_translation).y = (param_2->m_trace_translation).y;
-  (param_1->trace_translation).z = (param_2->m_trace_translation).z;
-  param_1->env_collision_flags = param_2->m_env_collision_flags;
+  fVar1 = (bpb->m_trace_aabb_min_whace).y;
+  fVar2 = (bpb->m_trace_aabb_min_whace).z;
+  (bpeqi->trace_aabb_min_wace).x = (bpb->m_trace_aabb_min_whace).x - 0.51;
+  (bpeqi->trace_aabb_min_wace).y = fVar1 - 0.51;
+  (bpeqi->trace_aabb_min_wace).z = fVar2 - 0.51;
+  fVar1 = (bpb->m_trace_aabb_max_whace).y;
+  fVar2 = (bpb->m_trace_aabb_max_whace).z;
+  (bpeqi->trace_aabb_max_wace).x = (bpb->m_trace_aabb_max_whace).x + 0.51;
+  (bpeqi->trace_aabb_max_wace).y = fVar1 + 0.51;
+  (bpeqi->trace_aabb_max_wace).z = fVar2 + 0.51;
+  (bpeqi->trace_translation).x = (bpb->m_trace_translation).x;
+  (bpeqi->trace_translation).y = (bpb->m_trace_translation).y;
+  (bpeqi->trace_translation).z = (bpb->m_trace_translation).z;
+  bpeqi->env_collision_flags = bpb->m_env_collision_flags;
   return;
 }
 
 
 // 00A1D3C0  check_terrain_query_params  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:632)
 
-void __cdecl check_terrain_query_params(broad_phase_base *param_1)
+void __cdecl check_terrain_query_params(broad_phase_base *bpb)
 
 {
   float fVar1;
@@ -2608,9 +2608,9 @@ void __cdecl check_terrain_query_params(broad_phase_base *param_1)
   code *pcVar4;
   bool bVar5;
   
-  fVar1 = (param_1->m_trace_translation).y;
-  fVar2 = (param_1->m_trace_translation).x;
-  fVar3 = (param_1->m_trace_translation).z;
+  fVar1 = (bpb->m_trace_translation).y;
+  fVar2 = (bpb->m_trace_translation).x;
+  fVar3 = (bpb->m_trace_translation).z;
   fVar1 = fVar3 * fVar3 + fVar2 * fVar2 + fVar1 * fVar1;
   if (fVar1 <= 260100.0) {
     return;
@@ -2648,39 +2648,38 @@ void __cdecl check_terrain_query_params(broad_phase_base *param_1)
 // 00A1ED10  collide_bpi_environment  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:654)
 
 void __cdecl
-collide_bpi_environment(broad_phase_info *param_1,broad_phase_environement_query_results *param_2)
+collide_bpi_environment(broad_phase_info *bpi,broad_phase_environement_query_results *bpeqr)
 
 {
   broad_phase_environement_query_results *pbVar1;
-  broad_phase_info *pbVar2;
-  int *piVar3;
-  broad_phase_info *pbVar4;
-  bool bVar5;
-  char cVar6;
+  broad_phase_info *p2_2;
+  int *piVar2;
+  broad_phase_info *p1_2;
+  bool bVar3;
+  char cVar4;
   
-  pbVar4 = param_1;
-  if ((param_1->_padding_ & param_2->m_env_collision_flags) != 0) {
-    pbVar1 = (broad_phase_environement_query_results *)*(param_2->m_list_bpi_env).m_list_cur;
-    for (param_2 = (broad_phase_environement_query_results *)(param_2->m_list_bpi_env).m_list;
-        param_2 != pbVar1;
-        param_2 = (broad_phase_environement_query_results *)(param_2->m_list_bpi_env).m_list_cur) {
-      pbVar2 = (broad_phase_info *)(param_2->m_list_bpi_env).m_list;
-      param_1 = (broad_phase_info *)0x0;
-      if (((pbVar4->_padding_ & pbVar2->_padding_) != 0) &&
-         (bVar5 = phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
-                            (pbVar4,pbVar2,(float *)&param_1), bVar5)) {
-        if ((pbVar2->_padding_ & 0x80) == 0) {
-          add_collision_pair_mutex(pbVar4,pbVar2,(float)param_1,(phys_gjk_cache_info *)0x0);
+  p1_2 = bpi;
+  if ((bpi->_padding_ & bpeqr->m_env_collision_flags) != 0) {
+    pbVar1 = (broad_phase_environement_query_results *)*(bpeqr->m_list_bpi_env).m_list_cur;
+    for (bpeqr = (broad_phase_environement_query_results *)(bpeqr->m_list_bpi_env).m_list;
+        bpeqr != pbVar1;
+        bpeqr = (broad_phase_environement_query_results *)(bpeqr->m_list_bpi_env).m_list_cur) {
+      p2_2 = (broad_phase_info *)(bpeqr->m_list_bpi_env).m_list;
+      bpi = (broad_phase_info *)0x0;
+      if (((p1_2->_padding_ & p2_2->_padding_) != 0) &&
+         (bVar3 = phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
+                            (p1_2,p2_2,(float *)&bpi), bVar3)) {
+        if ((p2_2->_padding_ & 0x80) == 0) {
+          add_collision_pair_mutex(p1_2,p2_2,(float)bpi,(phys_gjk_cache_info *)0x0);
         }
         else {
-          piVar3 = (int *)pbVar2->_padding_;
-          cVar6 = (**(code **)*piVar3)();
-          if ((cVar6 == '\0') && (bVar5 = bpi_do_gjk_intersect(pbVar4,pbVar2,(float)param_1), bVar5)
-             ) {
+          piVar2 = (int *)p2_2->_padding_;
+          cVar4 = (**(code **)*piVar2)();
+          if ((cVar4 == '\0') && (bVar3 = bpi_do_gjk_intersect(p1_2,p2_2,(float)bpi), bVar3)) {
             tlAtomicMutex::Lock(&G_BPM->g_bp_auto_activate_mutex);
-            cVar6 = (**(code **)*piVar3)();
-            if (cVar6 == '\0') {
-              (**(code **)(*piVar3 + 4))(pbVar4);
+            cVar4 = (**(code **)*piVar2)();
+            if (cVar4 == '\0') {
+              (**(code **)(*piVar2 + 4))(p1_2);
             }
             tlAtomicMutex::Unlock(&G_BPM->g_bp_auto_activate_mutex);
           }
@@ -2694,19 +2693,19 @@ collide_bpi_environment(broad_phase_info *param_1,broad_phase_environement_query
 
 // 00A1D4A0  calc_largest_vel_sq  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:691)
 
-void __cdecl calc_largest_vel_sq(broad_phase_info *param_1)
+void __cdecl calc_largest_vel_sq(broad_phase_info *bpi)
 
 {
-  phys_vec3 *ppVar1;
-  float *pfVar2;
+  phys_vec3 *a;
+  float *pfVar1;
+  float fVar2;
   float fVar3;
-  float fVar4;
-  rigid_body *prVar5;
-  code *pcVar6;
-  float fVar7;
-  bool bVar8;
-  phys_vec3 *ppVar9;
-  float fVar10;
+  rigid_body *prVar4;
+  code *pcVar5;
+  float fVar6;
+  bool bVar7;
+  phys_vec3 *ppVar8;
+  float fVar9;
   phys_vec3 local_c0;
   phys_vec3 local_b0;
   undefined1 local_a0 [16];
@@ -2720,43 +2719,43 @@ void __cdecl calc_largest_vel_sq(broad_phase_info *param_1)
   phys_vec3 *local_18;
   float local_14;
   
-  if (((param_1->_padding_ & 4) != 0) &&
-     (bVar8 = _tlAssert("source/phys_broad_phase.cpp",0x2b4,"!bpi->is_bpi_env()",""), bVar8)) {
-    pcVar6 = (code *)swi(3);
-    (*pcVar6)();
+  if (((bpi->_padding_ & 4) != 0) &&
+     (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x2b4,"!bpi->is_bpi_env()",""), bVar7)) {
+    pcVar5 = (code *)swi(3);
+    (*pcVar5)();
     return;
   }
-  prVar5 = param_1->m_rb;
-  if (((prVar5->m_flags & 0x30) != 0) &&
-     (bVar8 = _tlAssert("source/phys_broad_phase.cpp",0x2b6,
+  prVar4 = bpi->m_rb;
+  if (((prVar4->m_flags & 0x30) != 0) &&
+     (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x2b6,
                         "!rb->get_flag(rigid_body::FLAG_ENVIRONMENT_RIGID_BODY|rigid_body::FLAG_USER_RIGID_BODY)"
-                        ,""), bVar8)) {
-    pcVar6 = (code *)swi(3);
-    (*pcVar6)();
+                        ,""), bVar7)) {
+    pcVar5 = (code *)swi(3);
+    (*pcVar5)();
     return;
   }
-  fVar3 = (prVar5->m_a_vel).y;
-  ppVar1 = &prVar5->m_a_vel;
-  fVar10 = (prVar5->m_a_vel).z;
-  local_18 = (phys_vec3 *)(fVar10 * fVar10 + ppVar1->x * ppVar1->x + fVar3 * fVar3);
-  fVar3 = (prVar5->m_t_vel).y;
-  fVar10 = (prVar5->m_t_vel).x;
-  fVar4 = (prVar5->m_t_vel).z;
-  local_54 = fVar4 * fVar4 + fVar10 * fVar10 + fVar3 * fVar3;
+  fVar2 = (prVar4->m_a_vel).y;
+  a = &prVar4->m_a_vel;
+  fVar9 = (prVar4->m_a_vel).z;
+  local_18 = (phys_vec3 *)(fVar9 * fVar9 + a->x * a->x + fVar2 * fVar2);
+  fVar2 = (prVar4->m_t_vel).y;
+  fVar9 = (prVar4->m_t_vel).x;
+  fVar3 = (prVar4->m_t_vel).z;
+  local_54 = fVar3 * fVar3 + fVar9 * fVar9 + fVar2 * fVar2;
   if (1.0000001e-06 <= (float)local_18) {
-    local_50.x = (prVar5->m_t_vel).y * (prVar5->m_a_vel).z -
-                 (prVar5->m_t_vel).z * (prVar5->m_a_vel).y;
-    local_50.y = ppVar1->x * (prVar5->m_t_vel).z - (prVar5->m_t_vel).x * (prVar5->m_a_vel).z;
-    local_50.z = (prVar5->m_t_vel).x * (prVar5->m_a_vel).y - ppVar1->x * (prVar5->m_t_vel).y;
+    local_50.x = (prVar4->m_t_vel).y * (prVar4->m_a_vel).z -
+                 (prVar4->m_t_vel).z * (prVar4->m_a_vel).y;
+    local_50.y = a->x * (prVar4->m_t_vel).z - (prVar4->m_t_vel).x * (prVar4->m_a_vel).z;
+    local_50.z = (prVar4->m_t_vel).x * (prVar4->m_a_vel).y - a->x * (prVar4->m_t_vel).y;
     local_14 = local_50.z * local_50.z + local_50.x * local_50.x + local_50.y * local_50.y;
     if (local_14 < 1.0000001e-06) {
-      fVar3 = ppVar1->x * 0.0;
-      local_30.x = (prVar5->m_t_vel).x + ((prVar5->m_a_vel).y * 0.0 - (prVar5->m_a_vel).z * 0.0);
-      local_30.y = (prVar5->m_t_vel).y + ((prVar5->m_a_vel).z - fVar3);
-      local_30.z = (prVar5->m_t_vel).z + (fVar3 - (prVar5->m_a_vel).y);
-      local_50.x = local_30.y * (prVar5->m_a_vel).z - local_30.z * (prVar5->m_a_vel).y;
-      local_50.y = ppVar1->x * local_30.z - local_30.x * (prVar5->m_a_vel).z;
-      local_50.z = (prVar5->m_a_vel).y * local_30.x - local_30.y * ppVar1->x;
+      fVar2 = a->x * 0.0;
+      local_30.x = (prVar4->m_t_vel).x + ((prVar4->m_a_vel).y * 0.0 - (prVar4->m_a_vel).z * 0.0);
+      local_30.y = (prVar4->m_t_vel).y + ((prVar4->m_a_vel).z - fVar2);
+      local_30.z = (prVar4->m_t_vel).z + (fVar2 - (prVar4->m_a_vel).y);
+      local_50.x = local_30.y * (prVar4->m_a_vel).z - local_30.z * (prVar4->m_a_vel).y;
+      local_50.y = a->x * local_30.z - local_30.x * (prVar4->m_a_vel).z;
+      local_50.z = (prVar4->m_a_vel).y * local_30.x - local_30.y * a->x;
       local_14 = local_50.x * local_50.x + local_50.y * local_50.y + local_50.z * local_50.z;
       local_40.x = local_50.x;
       local_40.y = local_50.y;
@@ -2765,14 +2764,14 @@ void __cdecl calc_largest_vel_sq(broad_phase_info *param_1)
         local_30.x = 0.0;
         local_30.y = 2.0;
         local_30.z = 0.0;
-        ppVar9 = phys_cross(&local_b0,ppVar1,&local_30);
-        local_40.x = (prVar5->m_t_vel).x + ppVar9->x;
-        local_40.y = (prVar5->m_t_vel).y + ppVar9->y;
-        local_40.z = (prVar5->m_t_vel).z + ppVar9->z;
-        ppVar9 = phys_cross(&local_90,&local_40,ppVar1);
-        local_50.x = ppVar9->x;
-        local_50.y = ppVar9->y;
-        local_50.z = ppVar9->z;
+        ppVar8 = phys_cross(&local_b0,a,&local_30);
+        local_40.x = (prVar4->m_t_vel).x + ppVar8->x;
+        local_40.y = (prVar4->m_t_vel).y + ppVar8->y;
+        local_40.z = (prVar4->m_t_vel).z + ppVar8->z;
+        ppVar8 = phys_cross(&local_90,&local_40,a);
+        local_50.x = ppVar8->x;
+        local_50.y = ppVar8->y;
+        local_50.z = ppVar8->z;
         local_14 = local_50.z * local_50.z + local_50.x * local_50.x + local_50.y * local_50.y;
       }
     }
@@ -2780,33 +2779,33 @@ void __cdecl calc_largest_vel_sq(broad_phase_info *param_1)
       local_54 = local_54 + (float)local_18;
     }
     else {
-      phys_inv_multiply(&local_80,param_1->m_cg_to_world_xform,&local_50);
-      (**(code **)*param_1->m_gjk_geom)(&local_80,&local_70,local_a0);
-      local_18 = &param_1->m_rb_to_world_xform->w;
-      ppVar9 = phys_full_multiply(&local_c0,param_1->m_cg_to_world_xform,&local_70);
-      fVar3 = ppVar9->x - local_18->x;
-      fVar10 = ppVar9->y - local_18->y;
-      fVar4 = ppVar9->z - local_18->z;
-      fVar7 = (fVar4 * (prVar5->m_a_vel).y - fVar10 * (prVar5->m_a_vel).z) + (prVar5->m_t_vel).x;
-      fVar4 = (prVar5->m_t_vel).y + (fVar3 * (prVar5->m_a_vel).z - ppVar1->x * fVar4);
-      fVar3 = (prVar5->m_t_vel).z + (ppVar1->x * fVar10 - fVar3 * (prVar5->m_a_vel).y);
-      local_54 = fVar3 * fVar3 + fVar7 * fVar7 + fVar4 * fVar4;
+      phys_inv_multiply(&local_80,bpi->m_cg_to_world_xform,&local_50);
+      (**(code **)*bpi->m_gjk_geom)(&local_80,&local_70,local_a0);
+      local_18 = &bpi->m_rb_to_world_xform->w;
+      ppVar8 = phys_full_multiply(&local_c0,bpi->m_cg_to_world_xform,&local_70);
+      fVar2 = ppVar8->x - local_18->x;
+      fVar9 = ppVar8->y - local_18->y;
+      fVar3 = ppVar8->z - local_18->z;
+      fVar6 = (fVar3 * (prVar4->m_a_vel).y - fVar9 * (prVar4->m_a_vel).z) + (prVar4->m_t_vel).x;
+      fVar3 = (prVar4->m_t_vel).y + (fVar2 * (prVar4->m_a_vel).z - a->x * fVar3);
+      fVar2 = (prVar4->m_t_vel).z + (a->x * fVar9 - fVar2 * (prVar4->m_a_vel).y);
+      local_54 = fVar2 * fVar2 + fVar6 * fVar6 + fVar3 * fVar3;
     }
   }
-  pfVar2 = &prVar5->m_largest_vel_sq;
+  pfVar1 = &prVar4->m_largest_vel_sq;
   do {
-    fVar3 = *pfVar2;
-    if (local_54 < fVar3) {
+    fVar2 = *pfVar1;
+    if (local_54 < fVar2) {
       return;
     }
     LOCK();
-    fVar10 = *pfVar2;
-    if (fVar3 == fVar10) {
-      *pfVar2 = local_54;
-      fVar10 = fVar3;
+    fVar9 = *pfVar1;
+    if (fVar2 == fVar9) {
+      *pfVar1 = local_54;
+      fVar9 = fVar2;
     }
     UNLOCK();
-  } while (fVar10 != fVar3);
+  } while (fVar9 != fVar2);
   return;
 }
 
@@ -2814,14 +2813,14 @@ void __cdecl calc_largest_vel_sq(broad_phase_info *param_1)
 // 00A1E670  do_initial_tunnel_test  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:752)
 
 void __cdecl
-do_initial_tunnel_test(broad_phase_group *param_1,broad_phase_environement_query_results *param_2)
+do_initial_tunnel_test(broad_phase_group *bpg,broad_phase_environement_query_results *bpeqr)
 
 {
   broad_phase_info *this;
-  broad_phase_info *pbVar1;
-  code *pcVar2;
-  bool bVar3;
-  float10 fVar4;
+  broad_phase_info *aabb_min1;
+  code *pcVar1;
+  bool bVar2;
+  float10 fVar3;
   phys_gjk_info local_440;
   phys_gjk_input local_a0;
   phys_vec3 local_50;
@@ -2833,46 +2832,46 @@ do_initial_tunnel_test(broad_phase_group *param_1,broad_phase_environement_query
   node *local_18;
   float local_14;
   
-  if (((param_1->_padding_ & 0x200U) == 0) &&
-     (bVar3 = _tlAssert("source/phys_broad_phase.cpp",0x2f1,
-                        "bpg->get_flag(broad_phase_group::FLAG_DO_INITIAL_TUNNEL_TEST)",""), bVar3))
+  if (((bpg->_padding_ & 0x200U) == 0) &&
+     (bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x2f1,
+                        "bpg->get_flag(broad_phase_group::FLAG_DO_INITIAL_TUNNEL_TEST)",""), bVar2))
   {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  param_1->_padding_ = param_1->_padding_ & 0xfffffdff;
-  this = param_1->m_list_bpi_head;
+  bpg->_padding_ = bpg->_padding_ & 0xfffffdff;
+  this = bpg->m_list_bpi_head;
   local_3c.m_hit_time = -1.0;
   local_1c = 0.0;
   for (; this != (broad_phase_info *)0x0; this = (broad_phase_info *)this->_padding_) {
     local_14 = 1.0;
-    fVar4 = (float10)(**(code **)((int)*this->m_gjk_geom + 0x14))();
-    local_18 = (param_2->m_list_bpi_env).m_list;
-    local_24 = *(param_2->m_list_bpi_env).m_list_cur;
-    local_28 = (float)(fVar4 * (float10)0.8999999761581421 + (float10)0.3400000035762787);
+    fVar3 = (float10)(**(code **)((int)*this->m_gjk_geom + 0x14))();
+    local_18 = (bpeqr->m_list_bpi_env).m_list;
+    local_24 = *(bpeqr->m_list_bpi_env).m_list_cur;
+    local_28 = (float)(fVar3 * (float10)0.8999999761581421 + (float10)0.3400000035762787);
     if (local_18 != local_24) {
       do {
-        pbVar1 = (broad_phase_info *)local_18->m_bpb;
-        if ((this->_padding_ & pbVar1->_padding_) != 0) {
-          local_50.x = (float)this->_padding_ - ((phys_vec3 *)&pbVar1->_padding_)->x;
-          local_50.y = (float)this->_padding_ - (float)pbVar1->_padding_;
-          local_50.z = (float)this->_padding_ - (float)pbVar1->_padding_;
-          bVar3 = phys_are_potentially_colliding
+        aabb_min1 = (broad_phase_info *)local_18->m_bpb;
+        if ((this->_padding_ & aabb_min1->_padding_) != 0) {
+          local_50.x = (float)this->_padding_ - ((phys_vec3 *)&aabb_min1->_padding_)->x;
+          local_50.y = (float)this->_padding_ - (float)aabb_min1->_padding_;
+          local_50.z = (float)this->_padding_ - (float)aabb_min1->_padding_;
+          bVar2 = phys_are_potentially_colliding
                             ((phys_vec3 *)this,(phys_vec3 *)&this->_padding_,&local_50,
-                             (phys_vec3 *)pbVar1,(phys_vec3 *)&pbVar1->_padding_,&local_1c);
-          if (bVar3) {
+                             (phys_vec3 *)aabb_min1,(phys_vec3 *)&aabb_min1->_padding_,&local_1c);
+          if (bVar2) {
             local_3c.m_hit_time = local_1c;
             local_3c.m_gjk_ci = (phys_gjk_cache_info *)0x0;
             local_3c.m_bpi1 = this;
-            local_3c.m_bpi2 = pbVar1;
+            local_3c.m_bpi2 = aabb_min1;
             setup_gjk_input_from_pcp(&local_a0,&local_3c);
             local_a0.cg1_radius = local_28;
             local_a0.m_sep_thresh = 1.02;
             local_a0.m_intersection_test_only = false;
             local_a0.m_continuous_collision = true;
-            bVar3 = phys_gjk_info::phys_collide_do_gjk_collide(&local_440,&local_a0);
-            if (((bVar3) &&
+            bVar2 = phys_gjk_info::phys_collide_do_gjk_collide(&local_440,&local_a0);
+            if (((bVar2) &&
                 (local_20 = local_440.cg1_cinfo_loc.m_n.z *
                             local_440.m_cg1_relative_translation_loc.z +
                             local_440.cg1_cinfo_loc.m_n.x *
@@ -2897,15 +2896,15 @@ do_initial_tunnel_test(broad_phase_group *param_1,broad_phase_environement_query
 // 00A1EDF0  collide_bpg_environment  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:797)
 
 void __cdecl
-collide_bpg_environment(broad_phase_group *param_1,broad_phase_environement_query_results *param_2)
+collide_bpg_environment(broad_phase_group *bpg,broad_phase_environement_query_results *bpeqr)
 
 {
   int *piVar1;
-  broad_phase_info *pbVar2;
-  broad_phase_info *pbVar3;
-  code *pcVar4;
-  bool bVar5;
-  char cVar6;
+  broad_phase_info *p2_2;
+  broad_phase_info *bpi1;
+  code *pcVar2;
+  bool bVar3;
+  char cVar4;
   broad_phase_memory *this;
   phys_vec3 local_50;
   phys_vec3 local_40;
@@ -2917,59 +2916,58 @@ collide_bpg_environment(broad_phase_group *param_1,broad_phase_environement_quer
   float local_14;
   
   local_14 = 0.0;
-  if ((param_1->_padding_ & param_2->m_env_collision_flags) != 0) {
-    if ((param_1->_padding_ & 0x200U) != 0) {
-      do_initial_tunnel_test(param_1,param_2);
+  if ((bpg->_padding_ & bpeqr->m_env_collision_flags) != 0) {
+    if ((bpg->_padding_ & 0x200U) != 0) {
+      do_initial_tunnel_test(bpg,bpeqr);
     }
-    local_1c = (param_2->m_list_bpi_env).m_list;
-    local_28 = *(param_2->m_list_bpi_env).m_list_cur;
+    local_1c = (bpeqr->m_list_bpi_env).m_list;
+    local_28 = *(bpeqr->m_list_bpi_env).m_list_cur;
     if (local_1c != local_28) {
       do {
-        pbVar2 = (broad_phase_info *)local_1c->m_bpb;
-        if (((param_1->_padding_ & pbVar2->_padding_) != 0) &&
-           (bVar5 = phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
-                              ((broad_phase_info *)param_1,pbVar2,&local_14), bVar5)) {
-          pbVar3 = param_1->m_list_bpi_head;
-          if ((pbVar2->_padding_ & 0x80) == 0) {
-            for (; pbVar3 != (broad_phase_info *)0x0; pbVar3 = (broad_phase_info *)pbVar3->_padding_
-                ) {
-              if ((pbVar2->_padding_ & pbVar3->_padding_) != 0) {
-                local_40.x = (float)pbVar3->_padding_ - (float)pbVar2->_padding_;
-                local_40.y = (float)pbVar3->_padding_ - (float)pbVar2->_padding_;
-                local_40.z = (float)pbVar3->_padding_ - (float)pbVar2->_padding_;
-                bVar5 = phys_are_potentially_colliding
-                                  ((phys_vec3 *)pbVar3,(phys_vec3 *)&pbVar3->_padding_,&local_40,
-                                   (phys_vec3 *)pbVar2,(phys_vec3 *)&pbVar2->_padding_,&local_14);
-                if (bVar5) {
-                  add_collision_pair_mutex(pbVar3,pbVar2,local_14,(phys_gjk_cache_info *)0x0);
+        p2_2 = (broad_phase_info *)local_1c->m_bpb;
+        if (((bpg->_padding_ & p2_2->_padding_) != 0) &&
+           (bVar3 = phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
+                              ((broad_phase_info *)bpg,p2_2,&local_14), bVar3)) {
+          bpi1 = bpg->m_list_bpi_head;
+          if ((p2_2->_padding_ & 0x80) == 0) {
+            for (; bpi1 != (broad_phase_info *)0x0; bpi1 = (broad_phase_info *)bpi1->_padding_) {
+              if ((p2_2->_padding_ & bpi1->_padding_) != 0) {
+                local_40.x = (float)bpi1->_padding_ - (float)p2_2->_padding_;
+                local_40.y = (float)bpi1->_padding_ - (float)p2_2->_padding_;
+                local_40.z = (float)bpi1->_padding_ - (float)p2_2->_padding_;
+                bVar3 = phys_are_potentially_colliding
+                                  ((phys_vec3 *)bpi1,(phys_vec3 *)&bpi1->_padding_,&local_40,
+                                   (phys_vec3 *)p2_2,(phys_vec3 *)&p2_2->_padding_,&local_14);
+                if (bVar3) {
+                  add_collision_pair_mutex(bpi1,p2_2,local_14,(phys_gjk_cache_info *)0x0);
                 }
               }
             }
-            if (param_1->m_rbvm != (rb_vehicle_model *)0x0) {
-              if ((param_1->m_list_wci == (phys_wheel_collide_info *)0x0) &&
-                 (bVar5 = _tlAssert("source/phys_broad_phase.cpp",0x343,"bpg->m_list_wci",""), bVar5
+            if (bpg->m_rbvm != (rb_vehicle_model *)0x0) {
+              if ((bpg->m_list_wci == (phys_wheel_collide_info *)0x0) &&
+                 (bVar3 = _tlAssert("source/phys_broad_phase.cpp",0x343,"bpg->m_list_wci",""), bVar3
                  )) {
-                pcVar4 = (code *)swi(3);
-                (*pcVar4)();
+                pcVar2 = (code *)swi(3);
+                (*pcVar2)();
                 return;
               }
-              this = (broad_phase_memory *)param_1->m_list_wci;
+              this = (broad_phase_memory *)bpg->m_list_wci;
               local_24 = (broad_phase_memory *)
                          ((this->g_list_broad_phase_info).m_ptr_list +
-                         (param_1->m_rbvm->m_wheels).m_alloc_count * 0x10 + -0x12);
+                         (bpg->m_rbvm->m_wheels).m_alloc_count * 0x10 + -0x12);
               if (this != local_24) {
                 local_18 = &(this->g_bp_gjk_cache_mutex).ReadLockCount;
                 do {
                   local_50.x = *(float *)&((tlAtomicReadWriteMutex *)(local_18 + -2))->WriteThreadId
-                               - (float)pbVar2->_padding_;
-                  local_50.y = (float)local_18[-1] - (float)pbVar2->_padding_;
-                  local_50.z = (float)*local_18 - (float)pbVar2->_padding_;
-                  bVar5 = phys_are_potentially_colliding
-                                    ((phys_vec3 *)this,(phys_vec3 *)this,&local_50,
-                                     (phys_vec3 *)pbVar2,(phys_vec3 *)&pbVar2->_padding_,&local_14);
-                  if (bVar5) {
-                    phys_wheel_collide_info::collision_process
-                              ((phys_wheel_collide_info *)this,pbVar2);
+                               - (float)p2_2->_padding_;
+                  local_50.y = (float)local_18[-1] - (float)p2_2->_padding_;
+                  local_50.z = (float)*local_18 - (float)p2_2->_padding_;
+                  bVar3 = phys_are_potentially_colliding
+                                    ((phys_vec3 *)this,(phys_vec3 *)this,&local_50,(phys_vec3 *)p2_2
+                                     ,(phys_vec3 *)&p2_2->_padding_,&local_14);
+                  if (bVar3) {
+                    phys_wheel_collide_info::collision_process((phys_wheel_collide_info *)this,p2_2)
+                    ;
                   }
                   local_18 = local_18 + 0x10;
                   this = (broad_phase_memory *)&(this->g_list_broad_phase_info).m_list_count;
@@ -2978,17 +2976,17 @@ collide_bpg_environment(broad_phase_group *param_1,broad_phase_environement_quer
             }
           }
           else {
-            local_18 = (int *)pbVar2->_padding_;
-            while ((pbVar3 != (broad_phase_info *)0x0 &&
-                   (cVar6 = (**(code **)*local_18)(), cVar6 == '\0'))) {
-              if (((pbVar2->_padding_ & pbVar3->_padding_) != 0) &&
-                 ((bVar5 = phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
-                                     (pbVar3,pbVar2,&local_14), bVar5 &&
-                  (bVar5 = bpi_do_gjk_intersect(pbVar3,pbVar2,local_14), bVar5)))) {
+            local_18 = (int *)p2_2->_padding_;
+            while ((bpi1 != (broad_phase_info *)0x0 &&
+                   (cVar4 = (**(code **)*local_18)(), cVar4 == '\0'))) {
+              if (((p2_2->_padding_ & bpi1->_padding_) != 0) &&
+                 ((bVar3 = phys_are_potentially_colliding_whace<broad_phase_info,broad_phase_info>
+                                     (bpi1,p2_2,&local_14), bVar3 &&
+                  (bVar3 = bpi_do_gjk_intersect(bpi1,p2_2,local_14), bVar3)))) {
                 tlAtomicMutex::Lock(&G_BPM->g_bp_auto_activate_mutex);
-                cVar6 = (**(code **)*local_18)();
-                if (cVar6 == '\0') {
-                  (**(code **)(*local_18 + 4))(pbVar3);
+                cVar4 = (**(code **)*local_18)();
+                if (cVar4 == '\0') {
+                  (**(code **)(*local_18 + 4))(bpi1);
                 }
                 local_24 = G_BPM;
                 piVar1 = &(G_BPM->g_bp_auto_activate_mutex).LockCount;
@@ -3000,7 +2998,7 @@ collide_bpg_environment(broad_phase_group *param_1,broad_phase_environement_quer
                   *(undefined4 *)((int)&(local_24->g_bp_auto_activate_mutex).ThreadId + 4) = 0;
                 }
               }
-              pbVar3 = (broad_phase_info *)pbVar3->_padding_;
+              bpi1 = (broad_phase_info *)bpi1->_padding_;
             }
           }
         }
@@ -3008,7 +3006,7 @@ collide_bpg_environment(broad_phase_group *param_1,broad_phase_environement_quer
       } while (local_1c != local_28);
     }
   }
-  broad_phase_group::collision_epilog(param_1);
+  broad_phase_group::collision_epilog(bpg);
   return;
 }
 
@@ -3016,7 +3014,7 @@ collide_bpg_environment(broad_phase_group *param_1,broad_phase_environement_quer
 // 00A1FF00  process_cluster_environment_collision_prolog  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:875)
 
 void __cdecl
-process_cluster_environment_collision_prolog(broad_phase_base *param_1,broad_phase_base *param_2)
+process_cluster_environment_collision_prolog(broad_phase_base *bpb,broad_phase_base *info)
 
 {
   code *pcVar1;
@@ -3024,8 +3022,8 @@ process_cluster_environment_collision_prolog(broad_phase_base *param_1,broad_pha
   phys_vec3 *ppVar3;
   phys_vec3 local_20;
   
-  if ((param_1->m_flags & 1) == 0) {
-    if ((param_1->m_flags & 2) == 0) {
+  if ((bpb->m_flags & 1) == 0) {
+    if ((bpb->m_flags & 2) == 0) {
       bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
                         ,100,"is_bpg()","");
       if (bVar2) {
@@ -3034,21 +3032,21 @@ process_cluster_environment_collision_prolog(broad_phase_base *param_1,broad_pha
         return;
       }
     }
-    broad_phase_group::collision_prolog((broad_phase_group *)param_1);
+    broad_phase_group::collision_prolog((broad_phase_group *)bpb);
   }
   else {
-    broad_phase_info::collision_prolog((broad_phase_info *)param_1);
+    broad_phase_info::collision_prolog((broad_phase_info *)bpb);
   }
-  param_1->m_flags = param_1->m_flags & 0xffffffef;
-  param_1->m_list_bpb_cluster_next = (broad_phase_base *)0x0;
-  ppVar3 = phys_min(&local_20,&param_2->m_trace_aabb_min_whace,&param_1->m_trace_aabb_min_whace);
-  (param_2->m_trace_aabb_min_whace).x = ppVar3->x;
-  (param_2->m_trace_aabb_min_whace).y = ppVar3->y;
-  (param_2->m_trace_aabb_min_whace).z = ppVar3->z;
-  ppVar3 = phys_max(&local_20,&param_2->m_trace_aabb_max_whace,&param_1->m_trace_aabb_max_whace);
-  (param_2->m_trace_aabb_max_whace).x = ppVar3->x;
-  (param_2->m_trace_aabb_max_whace).y = ppVar3->y;
-  (param_2->m_trace_aabb_max_whace).z = ppVar3->z;
+  bpb->m_flags = bpb->m_flags & 0xffffffef;
+  bpb->m_list_bpb_cluster_next = (broad_phase_base *)0x0;
+  ppVar3 = phys_min(&local_20,&info->m_trace_aabb_min_whace,&bpb->m_trace_aabb_min_whace);
+  (info->m_trace_aabb_min_whace).x = ppVar3->x;
+  (info->m_trace_aabb_min_whace).y = ppVar3->y;
+  (info->m_trace_aabb_min_whace).z = ppVar3->z;
+  ppVar3 = phys_max(&local_20,&info->m_trace_aabb_max_whace,&bpb->m_trace_aabb_max_whace);
+  (info->m_trace_aabb_max_whace).x = ppVar3->x;
+  (info->m_trace_aabb_max_whace).y = ppVar3->y;
+  (info->m_trace_aabb_max_whace).z = ppVar3->z;
   return;
 }
 
@@ -3057,46 +3055,45 @@ process_cluster_environment_collision_prolog(broad_phase_base *param_1,broad_pha
 
 void __cdecl
 process_cluster_environment_collision
-          (broad_phase_base *param_1,broad_phase_environement_query_results *param_2)
+          (broad_phase_base *bpb,broad_phase_environement_query_results *bpeqr)
 
 {
-  broad_phase_info *pbVar1;
-  code *pcVar2;
-  bool bVar3;
+  broad_phase_info *bpi;
+  code *pcVar1;
+  bool bVar2;
   
-  if (((param_1 == (broad_phase_base *)0x0) ||
-      (param_1->m_list_bpb_cluster_next == (broad_phase_base *)0x0)) &&
-     (bVar3 = _tlAssert("source/phys_broad_phase.cpp",0x378,"bpb && bpb->get_bpb_cluster_next()","")
-     , bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if (((bpb == (broad_phase_base *)0x0) || (bpb->m_list_bpb_cluster_next == (broad_phase_base *)0x0)
+      ) && (bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x378,
+                              "bpb && bpb->get_bpb_cluster_next()",""), bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  pbVar1 = (broad_phase_info *)param_1->m_list_bpb_cluster_next;
+  bpi = (broad_phase_info *)bpb->m_list_bpb_cluster_next;
   while( true ) {
-    if (pbVar1 == (broad_phase_info *)0x0) {
+    if (bpi == (broad_phase_info *)0x0) {
       return;
     }
-    if (((pbVar1->_padding_ & 0x10) == 0) &&
-       (bVar3 = _tlAssert("source/phys_broad_phase.cpp",0x37b,
-                          "bpb->get_flag(broad_phase_base::FLAG_IS_IN_CLUSTER)",""), bVar3)) break;
-    if ((pbVar1->_padding_ & 1U) == 0) {
-      if (((pbVar1->_padding_ & 2U) == 0) &&
-         (bVar3 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
-                            ,100,"is_bpg()",""), bVar3)) {
-        pcVar2 = (code *)swi(3);
-        (*pcVar2)();
+    if (((bpi->_padding_ & 0x10) == 0) &&
+       (bVar2 = _tlAssert("source/phys_broad_phase.cpp",0x37b,
+                          "bpb->get_flag(broad_phase_base::FLAG_IS_IN_CLUSTER)",""), bVar2)) break;
+    if ((bpi->_padding_ & 1U) == 0) {
+      if (((bpi->_padding_ & 2U) == 0) &&
+         (bVar2 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_base.h"
+                            ,100,"is_bpg()",""), bVar2)) {
+        pcVar1 = (code *)swi(3);
+        (*pcVar1)();
         return;
       }
-      collide_bpg_environment((broad_phase_group *)pbVar1,param_2);
+      collide_bpg_environment((broad_phase_group *)bpi,bpeqr);
     }
     else {
-      collide_bpi_environment(pbVar1,param_2);
+      collide_bpi_environment(bpi,bpeqr);
     }
-    pbVar1 = (broad_phase_info *)pbVar1->_padding_;
+    bpi = (broad_phase_info *)bpi->_padding_;
   }
-  pcVar2 = (code *)swi(3);
-  (*pcVar2)();
+  pcVar1 = (code *)swi(3);
+  (*pcVar1)();
   return;
 }
 
@@ -3115,7 +3112,7 @@ void __cdecl _dynamic_initializer_for__g_prolog_task_mutex__(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl bp_env_jq_batch_function1(jqBatch *param_1)
+int __cdecl bp_env_jq_batch_function1(jqBatch *pBatch)
 
 {
   float fVar1;
@@ -3154,7 +3151,7 @@ int __cdecl bp_env_jq_batch_function1(jqBatch *param_1)
       g_bpb_list_index = iVar7;
     } while (bVar6);
   }
-  puVar4 = param_1->Input;
+  puVar4 = pBatch->Input;
   tlAtomicMutex::Lock(&g_prolog_task_mutex);
   pfVar5 = (float *)*puVar4;
   fVar1 = local_70.m_trace_aabb_min_whace.z;
@@ -3207,11 +3204,11 @@ int __cdecl bp_env_jq_batch_function1(jqBatch *param_1)
 /* WARNING: Removing unreachable block (ram,0x00a1f0bd) */
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl bp_env_jq_batch_function2(jqBatch *param_1)
+int __cdecl bp_env_jq_batch_function2(jqBatch *pBatch)
 
 {
-  broad_phase_base *pbVar1;
-  int iVar2;
+  broad_phase_base *bpb;
+  int iVar1;
   broad_phase_environment_query_input local_70;
   broad_phase_environement_query_results local_24;
   
@@ -3219,31 +3216,31 @@ int __cdecl bp_env_jq_batch_function2(jqBatch *param_1)
   UNLOCK();
   local_24.m_list_bpi_env.m_list_cur = (node **)&local_24;
   local_24.m_list_bpi_env.m_list = (node *)0x0;
-  iVar2 = g_thread_id + 1;
+  iVar1 = g_thread_id + 1;
   local_24.m_thread_id = g_thread_id;
-  pbVar1 = g_bpb_list_cur;
-  while (g_thread_id = iVar2, pbVar1 != (broad_phase_base *)0x0) {
-    g_bpb_list_cur = pbVar1->m_list_bpb_next;
+  bpb = g_bpb_list_cur;
+  while (g_thread_id = iVar1, bpb != (broad_phase_base *)0x0) {
+    g_bpb_list_cur = bpb->m_list_bpb_next;
     LOCK();
     UNLOCK();
-    check_terrain_query_params(pbVar1);
+    check_terrain_query_params(bpb);
     local_24.m_list_bpi_env.m_list_cur = (node **)&local_24;
     local_24.m_list_bpi_env_count = 0;
     local_24.m_env_collision_flags = 0;
-    init_bpeqi(&local_70,pbVar1);
+    init_bpeqi(&local_70,bpb);
     (**(code **)*G_BPM->g_broad_phase_terrain_query_callback)(&local_70,&local_24);
-    process_cluster_environment_collision(pbVar1,&local_24);
-    iVar2 = g_thread_id;
-    pbVar1 = g_bpb_list_cur;
+    process_cluster_environment_collision(bpb,&local_24);
+    iVar1 = g_thread_id;
+    bpb = g_bpb_list_cur;
   }
-  g_bpb_list_cur = pbVar1;
+  g_bpb_list_cur = bpb;
   return 0;
 }
 
 
 // 00A1FFB0  compare_bpb  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:958)
 
-int __cdecl compare_bpb(broad_phase_base *param_1,broad_phase_base *param_2)
+int __cdecl compare_bpb(broad_phase_base *bpb1,broad_phase_base *bpb2)
 
 {
   float fVar1;
@@ -3261,7 +3258,7 @@ int __cdecl compare_bpb(broad_phase_base *param_1,broad_phase_base *param_2)
     return iVar5;
   }
   iVar3 = g_bpb_cluster_sort_axis;
-  fVar1 = (&(param_1->m_trace_aabb_min_whace).x)[iVar5];
+  fVar1 = (&(bpb1->m_trace_aabb_min_whace).x)[iVar5];
   if (((g_bpb_cluster_sort_axis < 0) || (2 < g_bpb_cluster_sort_axis)) &&
      (bVar4 = _tlAssert("c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\old_phys_math.h",0x20,
                         "i >= 0 && i < 3",""), bVar4)) {
@@ -3269,7 +3266,7 @@ int __cdecl compare_bpb(broad_phase_base *param_1,broad_phase_base *param_2)
     iVar5 = (*pcVar2)();
     return iVar5;
   }
-  if ((&(param_2->m_trace_aabb_min_whace).x)[iVar3] <= fVar1) {
+  if ((&(bpb2->m_trace_aabb_min_whace).x)[iVar3] <= fVar1) {
     return 0;
   }
   return 1;
@@ -3278,7 +3275,7 @@ int __cdecl compare_bpb(broad_phase_base *param_1,broad_phase_base *param_2)
 
 // 00A1DA10  merge_sort_bpb  (<external>/projects_pc/cod/codsrc/tl/physics/source/phys_broad_phase.cpp:969)
 
-void __cdecl merge_sort_bpb(broad_phase_base **param_1,int param_2)
+void __cdecl merge_sort_bpb(broad_phase_base **list,int list_count)
 
 {
   broad_phase_base *pbVar1;
@@ -3286,27 +3283,28 @@ void __cdecl merge_sort_bpb(broad_phase_base **param_1,int param_2)
   broad_phase_base **ppbVar3;
   int iVar4;
   broad_phase_base **ppbVar5;
+  broad_phase_base **last;
   
-  if (param_2 < 3) {
-    if ((param_2 == 2) && (iVar4 = compare_bpb(param_1[1],*param_1), iVar4 != 0)) {
-      pbVar1 = *param_1;
-      *param_1 = param_1[1];
-      param_1[1] = pbVar1;
+  if (list_count < 3) {
+    if ((list_count == 2) && (iVar4 = compare_bpb(list[1],*list), iVar4 != 0)) {
+      pbVar1 = *list;
+      *list = list[1];
+      list[1] = pbVar1;
       return;
     }
   }
   else {
-    iVar4 = param_2 / 2;
-    merge_sort_bpb(param_1,iVar4);
-    ppbVar5 = param_1 + iVar4;
-    merge_sort_bpb(ppbVar5,param_2 - iVar4);
+    iVar4 = list_count / 2;
+    merge_sort_bpb(list,iVar4);
+    ppbVar5 = list + iVar4;
+    merge_sort_bpb(ppbVar5,list_count - iVar4);
     ppbVar2 = ppbVar5 + -1;
-    while ((ppbVar3 = ppbVar5, ppbVar3 < param_1 + param_2 &&
+    while ((ppbVar3 = ppbVar5, ppbVar3 < list + list_count &&
            (iVar4 = compare_bpb(*ppbVar3,*ppbVar2), iVar4 != 0))) {
       pbVar1 = *ppbVar2;
       *ppbVar2 = *ppbVar3;
       *ppbVar3 = pbVar1;
-      while (param_1 < ppbVar2) {
+      while (list < ppbVar2) {
         ppbVar5 = ppbVar2 + -1;
         iVar4 = compare_bpb(*ppbVar2,*ppbVar5);
         if (iVar4 == 0) break;
@@ -3327,8 +3325,7 @@ void __cdecl merge_sort_bpb(broad_phase_base **param_1,int param_2)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl
-broad_phase_process_object_environment_collision(bpi_environment_collision_info *param_1)
+void __cdecl broad_phase_process_object_environment_collision(bpi_environment_collision_info *eci)
 
 {
   broad_phase_base **ppbVar1;
@@ -3388,7 +3385,7 @@ broad_phase_process_object_environment_collision(bpi_environment_collision_info 
   local_1c = ExceptionList;
   ExceptionList = &local_1c;
   puVar6 = &stack0xfffffffc;
-  if ((param_1->m_bpb_count < 1) &&
+  if ((eci->m_bpb_count < 1) &&
      (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x3ed,"eci.m_bpb_count > 0",""),
      puVar6 = puStack_20, bVar7)) {
     pcVar3 = (code *)swi(3);
@@ -3404,14 +3401,14 @@ broad_phase_process_object_environment_collision(bpi_environment_collision_info 
   local_98.m_slot_pool = (void *)0x0;
   local_14 = 0;
   local_40 = phys_transient_allocator::allocate
-                       (&local_98,param_1->m_bpb_count * 4,4,0,
-                        "phys_transient_allocator out of memory.");
-  pbVar10 = param_1->m_bpb_i_start;
+                       (&local_98,eci->m_bpb_count * 4,4,0,"phys_transient_allocator out of memory."
+                       );
+  pbVar10 = eci->m_bpb_i_start;
   local_44 = local_40;
-  if (pbVar10 != param_1->m_bpb_i_end) {
+  if (pbVar10 != eci->m_bpb_i_end) {
     local_3c = 0.0;
     do {
-      if ((param_1->m_bpb_count <= (int)local_3c >> 2) &&
+      if ((eci->m_bpb_count <= (int)local_3c >> 2) &&
          (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x3fc,
                             "bpb_ptr_cur - bpb_ptr_list < eci.m_bpb_count",""), bVar7)) {
         pcVar3 = (code *)swi(3);
@@ -3422,9 +3419,9 @@ broad_phase_process_object_environment_collision(bpi_environment_collision_info 
       *local_40 = pbVar10;
       pbVar10 = pbVar10->m_list_bpb_next;
       local_40 = local_40 + 1;
-    } while (pbVar10 != param_1->m_bpb_i_end);
+    } while (pbVar10 != eci->m_bpb_i_end);
   }
-  if (((int)local_40 - (int)local_44 >> 2 != param_1->m_bpb_count) &&
+  if (((int)local_40 - (int)local_44 >> 2 != eci->m_bpb_count) &&
      (bVar7 = _tlAssert("source/phys_broad_phase.cpp",0x403,
                         "bpb_ptr_cur - bpb_ptr_list == eci.m_bpb_count",""), bVar7)) {
     pcVar3 = (code *)swi(3);
@@ -3435,14 +3432,14 @@ broad_phase_process_object_environment_collision(bpi_environment_collision_info 
   local_e0 = 1e+30;
   g_bpb_list_index = 0;
   local_dc = 1e+30;
-  g_bpb_list_max_index = param_1->m_bpb_count;
+  g_bpb_list_max_index = eci->m_bpb_count;
   local_d8 = 1e+30;
   local_d0 = -1e+30;
   local_e8 = &local_e0;
   local_cc = -1e+30;
   local_c8 = -1e+30;
   local_e4 = &local_d0;
-  phys_task_manager_process(&bp_env_jq_module1Module,&local_e8,param_1->m_bpb_count);
+  phys_task_manager_process(&bp_env_jq_module1Module,&local_e8,eci->m_bpb_count);
   phys_task_manager_flush();
   ppbVar4 = local_44;
   local_54 = local_d0 - local_e0;
@@ -3458,18 +3455,18 @@ broad_phase_process_object_environment_collision(bpi_environment_collision_info 
   }
   g_bpb_cluster_sort_axis = 2;
 LAB_00a1dd19:
-  merge_sort_bpb(local_44,param_1->m_bpb_count);
+  merge_sort_bpb(local_44,eci->m_bpb_count);
   G_BPM->g_list_bpb = *ppbVar4;
-  param_1->m_bpb_i_start = *ppbVar4;
-  ppbVar1 = ppbVar4 + param_1->m_bpb_count;
+  eci->m_bpb_i_start = *ppbVar4;
+  ppbVar1 = ppbVar4 + eci->m_bpb_count;
   for (; ppbVar4 < ppbVar1; ppbVar4 = ppbVar4 + 1) {
     (*ppbVar4)->m_list_bpb_next = ppbVar4[1];
   }
-  ppbVar4[-1]->m_list_bpb_next = param_1->m_bpb_i_end;
-  pbVar10 = param_1->m_bpb_i_start;
+  ppbVar4[-1]->m_list_bpb_next = eci->m_bpb_i_end;
+  pbVar10 = eci->m_bpb_i_start;
   local_48 = (broad_phase_base *)0x0;
   local_54 = 0.0;
-  if (pbVar10 != param_1->m_bpb_i_end) {
+  if (pbVar10 != eci->m_bpb_i_end) {
     do {
       if ((pbVar10->m_flags & 0x10) == 0) {
         if ((pbVar10->m_list_bpb_cluster_next != (broad_phase_base *)0x0) &&
@@ -3507,7 +3504,7 @@ LAB_00a1dd19:
         }
         local_9c = (&(pbVar10->m_trace_aabb_min_whace).x)[iVar5];
         pbVar9 = pbVar10->m_list_bpb_next;
-        if (pbVar9 != param_1->m_bpb_i_end) {
+        if (pbVar9 != eci->m_bpb_i_end) {
           do {
             local_24 = (broad_phase_base *)g_bpb_cluster_sort_axis;
             if (((g_bpb_cluster_sort_axis < 0) || (2 < g_bpb_cluster_sort_axis)) &&
@@ -3596,7 +3593,7 @@ LAB_00a1dd19:
               }
             }
             pbVar9 = pbVar9->m_list_bpb_next;
-          } while (pbVar9 != param_1->m_bpb_i_end);
+          } while (pbVar9 != eci->m_bpb_i_end);
         }
         transient_allocator_update_largest_size(0x50);
         pbVar8 = (broad_phase_base *)
@@ -3656,7 +3653,7 @@ LAB_00a1e250:
         pbVar8->m_env_collision_flags = (uint)local_34;
       }
       pbVar10 = pbVar10->m_list_bpb_next;
-    } while (pbVar10 != param_1->m_bpb_i_end);
+    } while (pbVar10 != eci->m_bpb_i_end);
   }
   g_bpb_list_cur = local_48;
   g_bpb_list_index = 0;
@@ -3684,18 +3681,18 @@ void __cdecl broad_phase_process_object_environment_collision(void)
 
 {
   broad_phase_base *pbVar1;
-  bpi_environment_collision_info local_14;
+  bpi_environment_collision_info eci;
   
-  local_14.m_bpb_count = G_BPM->g_list_bpb_count;
-  local_14.m_bpb_i_end = (broad_phase_base *)0x0;
+  eci.m_bpb_count = G_BPM->g_list_bpb_count;
+  eci.m_bpb_i_end = (broad_phase_base *)0x0;
   pbVar1 = G_BPM->g_list_bpb;
-  local_14.m_bpb_last_count = local_14.m_bpb_count;
-  while (local_14.m_bpb_i_start = pbVar1, local_14.m_bpb_count != 0) {
-    broad_phase_process_object_environment_collision(&local_14);
-    local_14.m_bpb_count = G_BPM->g_list_bpb_count - local_14.m_bpb_last_count;
+  eci.m_bpb_last_count = eci.m_bpb_count;
+  while (eci.m_bpb_i_start = pbVar1, eci.m_bpb_count != 0) {
+    broad_phase_process_object_environment_collision(&eci);
+    eci.m_bpb_count = G_BPM->g_list_bpb_count - eci.m_bpb_last_count;
     pbVar1 = G_BPM->g_list_bpb;
-    local_14.m_bpb_last_count = G_BPM->g_list_bpb_count;
-    local_14.m_bpb_i_end = local_14.m_bpb_i_start;
+    eci.m_bpb_last_count = G_BPM->g_list_bpb_count;
+    eci.m_bpb_i_end = eci.m_bpb_i_start;
   }
   return;
 }
@@ -3708,24 +3705,26 @@ void __cdecl broad_phase_process_collision_pairs(void)
 {
   phys_free_list<broad_phase_collision_pair> *ppVar1;
   T_internal_base *pTVar2;
-  phys_vec3 *ppVar3;
-  phys_vec3 *ppVar4;
-  bool bVar5;
+  phys_vec3 *aabb_min0;
+  phys_vec3 *aabb_min1;
+  bool bVar3;
   phys_vec3 local_30;
   float local_14;
+  float hit_time;
   
   local_14 = 0.0;
   ppVar1 = &G_BPM->g_list_broad_phase_collision_pair;
   for (pTVar2 = (G_BPM->g_list_broad_phase_collision_pair).m_dummy_head.m_next_T_internal;
       ppVar1 != (phys_free_list<broad_phase_collision_pair> *)pTVar2;
       pTVar2 = pTVar2->m_next_T_internal) {
-    ppVar3 = (phys_vec3 *)pTVar2[1].m_prev_T_internal;
-    ppVar4 = (phys_vec3 *)pTVar2[1].m_next_T_internal;
-    local_30.x = ppVar3[2].x - ppVar4[2].x;
-    local_30.y = ppVar3[2].y - ppVar4[2].y;
-    local_30.z = ppVar3[2].z - ppVar4[2].z;
-    bVar5 = phys_are_potentially_colliding(ppVar3,ppVar3 + 1,&local_30,ppVar4,ppVar4 + 1,&local_14);
-    if (bVar5) {
+    aabb_min0 = (phys_vec3 *)pTVar2[1].m_prev_T_internal;
+    aabb_min1 = (phys_vec3 *)pTVar2[1].m_next_T_internal;
+    local_30.x = aabb_min0[2].x - aabb_min1[2].x;
+    local_30.y = aabb_min0[2].y - aabb_min1[2].y;
+    local_30.z = aabb_min0[2].z - aabb_min1[2].z;
+    bVar3 = phys_are_potentially_colliding
+                      (aabb_min0,aabb_min0 + 1,&local_30,aabb_min1,aabb_min1 + 1,&local_14);
+    if (bVar3) {
       add_collision_pair((broad_phase_info *)pTVar2[1].m_prev_T_internal,
                          (broad_phase_info *)pTVar2[1].m_next_T_internal,local_14,
                          (phys_gjk_cache_info *)0x0);
@@ -3847,15 +3846,15 @@ broad_phase_memory_info::broad_phase_memory_info(broad_phase_memory_info *this)
 
 void __cdecl
 broad_phase_system_init
-          (broad_phase_memory_info *param_1,
-          _func___cdecl_bool_broad_phase_base_ptr_broad_phase_base_ptr *param_2)
+          (broad_phase_memory_info *bpmi,
+          _func___cdecl_bool_broad_phase_base_ptr_broad_phase_base_ptr *should_collide_callback)
 
 {
   phys_free_list<broad_phase_info> *this;
   broad_phase_memory *pbVar1;
   
   break_here = true;
-  G_BPM = broad_phase_memory::allocate_buffer(param_1);
+  G_BPM = broad_phase_memory::allocate_buffer(bpmi);
   g_axis_aligned_sweep_and_prune = PMM_PERM_ALLOCATE(0x28,4);
   if (g_axis_aligned_sweep_and_prune == (axis_aligned_sweep_and_prune *)0x0) {
     g_axis_aligned_sweep_and_prune = (axis_aligned_sweep_and_prune *)0x0;
@@ -3877,8 +3876,8 @@ broad_phase_system_init
   bpei_database_t::purge_database(&pbVar1->g_bpei_database);
   pbVar1->m_memory_high_water = 0;
   axis_aligned_sweep_and_prune::init_system
-            (g_axis_aligned_sweep_and_prune,param_1->m_max_num_sap_active_pairs);
-  g_axis_aligned_sweep_and_prune->m_should_collide_callback = param_2;
+            (g_axis_aligned_sweep_and_prune,bpmi->m_max_num_sap_active_pairs);
+  g_axis_aligned_sweep_and_prune->m_should_collide_callback = should_collide_callback;
   return;
 }
 

@@ -21,27 +21,27 @@ void __cdecl SND_InitLog(void)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LogLookupAlias(uint param_1,char *param_2)
+void __cdecl SND_LogLookupAlias(uint hash,char *string)
 
 {
-  uint local_8;
+  uint i;
   
-  *param_2 = '\0';
+  *string = '\0';
   Sys_EnterCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
-  local_8 = 0;
+  i = 0;
   do {
-    if (0x7f < local_8) {
+    if (0x7f < i) {
 LAB_0094949e:
       Sys_LeaveCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
       return;
     }
-    if (g_snd.logReverseHash[local_8].hash == param_1) {
-      g_snd.logReverseHash[local_8].timestamp = g_snd.logTimestamp;
+    if (g_snd.logReverseHash[i].hash == hash) {
+      g_snd.logReverseHash[i].timestamp = g_snd.logTimestamp;
       g_snd.logTimestamp = g_snd.logTimestamp + 1;
-      strncpy((uchar *)param_2,(uchar *)(g_snd.logReverseHash + local_8),0x30);
+      strncpy((uchar *)string,(uchar *)(g_snd.logReverseHash + i),0x30);
       goto LAB_0094949e;
     }
-    local_8 = local_8 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -50,42 +50,42 @@ LAB_0094949e:
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LogRegisterString(char *param_1,uint param_2)
+void __cdecl SND_LogRegisterString(char *name,uint hash)
 
 {
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint i;
+  uint oldest;
+  uint oldestTime;
   
   Sys_EnterCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
-  local_c = 0;
-  local_8 = g_snd.logReverseHash[0].timestamp;
-  local_10 = 0;
+  oldest = 0;
+  oldestTime = g_snd.logReverseHash[0].timestamp;
+  i = 0;
   do {
-    if (0x7f < local_10) {
+    if (0x7f < i) {
 LAB_0094957a:
-      g_snd.logReverseHash[local_c].hash = param_2;
-      g_snd.logReverseHash[local_c].timestamp = g_snd.logTimestamp;
+      g_snd.logReverseHash[oldest].hash = hash;
+      g_snd.logReverseHash[oldest].timestamp = g_snd.logTimestamp;
       g_snd.logTimestamp = g_snd.logTimestamp + 1;
-      strncpy((uchar *)(g_snd.logReverseHash + local_c),(uchar *)param_1,0x30);
+      strncpy((uchar *)(g_snd.logReverseHash + oldest),(uchar *)name,0x30);
       Sys_LeaveCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
       return;
     }
-    if (g_snd.logReverseHash[local_10].hash == param_2) {
-      g_snd.logReverseHash[local_c].timestamp = g_snd.logTimestamp;
+    if (g_snd.logReverseHash[i].hash == hash) {
+      g_snd.logReverseHash[oldest].timestamp = g_snd.logTimestamp;
       g_snd.logTimestamp = g_snd.logTimestamp + 1;
       Sys_LeaveCriticalSection(CRITSECT_SOUND_LOOKUP_CACHE);
       return;
     }
-    if (g_snd.logReverseHash[local_10].hash == 0) {
-      local_c = local_10;
+    if (g_snd.logReverseHash[i].hash == 0) {
+      oldest = i;
       goto LAB_0094957a;
     }
-    if (g_snd.logReverseHash[local_10].timestamp < local_8) {
-      local_c = local_10;
-      local_8 = g_snd.logReverseHash[local_10].timestamp;
+    if (g_snd.logReverseHash[i].timestamp < oldestTime) {
+      oldest = i;
+      oldestTime = g_snd.logReverseHash[i].timestamp;
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -96,40 +96,40 @@ LAB_0094957a:
 /* WARNING: Removing unreachable block (ram,0x00949611) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-bool __cdecl SND_LogSkip(uint param_1,uint param_2,uint *param_3,uint *param_4)
+bool __cdecl SND_LogSkip(uint hash,uint skipCount,uint *skipHash,uint *skipTime)
 
 {
   bool bVar1;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint i;
+  uint oldest;
+  uint oldestTime;
   
-  local_c = 0;
-  local_8 = *param_4;
-  local_10 = 0;
+  oldest = 0;
+  oldestTime = *skipTime;
+  i = 0;
   do {
-    if (param_2 <= local_10) {
-      param_3[local_c] = param_1;
-      param_4[local_c] = g_snd.logTimestamp;
+    if (skipCount <= i) {
+      skipHash[oldest] = hash;
+      skipTime[oldest] = g_snd.logTimestamp;
       bVar1 = false;
 LAB_009496d3:
       g_snd.logTimestamp = g_snd.logTimestamp + 1;
       return bVar1;
     }
-    if (param_3[local_10] == param_1) {
-      param_4[local_c] = g_snd.logTimestamp;
+    if (skipHash[i] == hash) {
+      skipTime[oldest] = g_snd.logTimestamp;
       bVar1 = true;
       goto LAB_009496d3;
     }
-    if (param_3[local_10] == 0) {
-      local_c = local_10;
-      local_8 = 0;
+    if (skipHash[i] == 0) {
+      oldest = i;
+      oldestTime = 0;
     }
-    else if (param_4[local_10] < local_8) {
-      local_c = local_10;
-      local_8 = param_4[local_10];
+    else if (skipTime[i] < oldestTime) {
+      oldest = i;
+      oldestTime = skipTime[i];
     }
-    local_10 = local_10 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -141,26 +141,26 @@ LAB_009496d3:
 /* WARNING: Removing unreachable block (ram,0x0094974a) */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LogMissingAliasId(uint param_1)
+void __cdecl SND_LogMissingAliasId(uint hash)
 
 {
   code *pcVar1;
   bool bVar2;
-  char local_38 [48];
+  char reverse [48];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if ((param_1 == 0) &&
+  if ((hash == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_log.cpp",0x93,0,"%s"),
      !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  SND_LogSkip(param_1,0x80,g_snd.logSkipMissingHash,g_snd.logSkipMissingTimestamp);
-  bVar2 = SND_LogSkip(param_1,0x80,g_snd.logSkipMissingHash,g_snd.logSkipMissingTimestamp);
+  SND_LogSkip(hash,0x80,g_snd.logSkipMissingHash,g_snd.logSkipMissingTimestamp);
+  bVar2 = SND_LogSkip(hash,0x80,g_snd.logSkipMissingHash,g_snd.logSkipMissingTimestamp);
   if (!bVar2) {
-    SND_LogLookupAlias(param_1,local_38);
+    SND_LogLookupAlias(hash,reverse);
     Com_Printf(9,"missing alias 0x%x %s\n");
   }
   return;
@@ -171,13 +171,13 @@ void __cdecl SND_LogMissingAliasId(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LogPlayedAliasId(uint param_1)
+void __cdecl SND_LogPlayedAliasId(uint hash)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1 == 0) {
+  if (hash == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_log.cpp",0xb0,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -185,7 +185,7 @@ void __cdecl SND_LogPlayedAliasId(uint param_1)
       return;
     }
   }
-  SND_LogSkip(param_1,0x200,g_snd.logSkipPlayedHash,g_snd.logSkipPlayedTimestamp);
+  SND_LogSkip(hash,0x200,g_snd.logSkipPlayedHash,g_snd.logSkipPlayedTimestamp);
   return;
 }
 
@@ -194,11 +194,11 @@ void __cdecl SND_LogPlayedAliasId(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LogCommandQHWM(uint param_1)
+void __cdecl SND_LogCommandQHWM(uint event_count)
 
 {
-  if (g_snd.logCommandCount < param_1) {
-    g_snd.logCommandCount = param_1;
+  if (g_snd.logCommandCount < event_count) {
+    g_snd.logCommandCount = event_count;
   }
   return;
 }
@@ -208,11 +208,11 @@ void __cdecl SND_LogCommandQHWM(uint param_1)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl SND_LogNotifyQHWM(uint param_1)
+void __cdecl SND_LogNotifyQHWM(uint event_count)
 
 {
-  if (g_snd.logNotifyCount < param_1) {
-    g_snd.logNotifyCount = param_1;
+  if (g_snd.logNotifyCount < event_count) {
+    g_snd.logNotifyCount = event_count;
   }
   return;
 }

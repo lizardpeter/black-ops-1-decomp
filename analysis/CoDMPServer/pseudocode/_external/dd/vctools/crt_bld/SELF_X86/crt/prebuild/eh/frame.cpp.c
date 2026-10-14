@@ -2,10 +2,10 @@
 
 // 00C2478D  bad_exception  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/stdhpp/exception:351)
 
-bad_exception * __thiscall std::bad_exception::bad_exception(bad_exception *this,char *param_1)
+bad_exception * __thiscall std::bad_exception::bad_exception(bad_exception *this,char *_Message)
 
 {
-  exception::exception((exception *)this,&param_1);
+  exception::exception((exception *)this,&_Message);
   *(undefined ***)this = vftable;
   return this;
 }
@@ -26,8 +26,8 @@ void __thiscall std::bad_exception::~bad_exception(bad_exception *this)
 
 _EXCEPTION_DISPOSITION __cdecl
 __InternalCxxFrameHandler
-          (EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
-          _s_FuncInfo *param_5,int param_6,EHRegistrationNode *param_7,uchar param_8)
+          (EHExceptionRecord *pExcept,EHRegistrationNode *pRN,_CONTEXT *pContext,void *pDC,
+          _s_FuncInfo *pFuncInfo,int CatchDepth,EHRegistrationNode *pMarkerRN,uchar recursive)
 
 {
   _func___cdecl_int *p_Var1;
@@ -35,24 +35,25 @@ __InternalCxxFrameHandler
   _EXCEPTION_DISPOSITION _Var3;
   
   p_Var2 = _getptd();
-  if ((((p_Var2->_cxxReThrow != 0) || (param_1->ExceptionCode == 0xe06d7363)) ||
-      (param_1->ExceptionCode == 0x80000026)) ||
-     ((param_5->magicNumber < 0x19930522 || ((param_5->EHFlags & 1) == 0)))) {
-    if ((param_1->ExceptionFlags & 0x66) == 0) {
-      if ((param_5->nTryBlocks != 0) ||
-         ((0x19930520 < param_5->magicNumber && (param_5->pESTypeList != (_s_ESTypeList *)0x0)))) {
-        if ((param_1->ExceptionCode == 0xe06d7363) &&
-           (((2 < param_1->NumberParameters && (0x19930522 < (param_1->params).magicNumber)) &&
-            (p_Var1 = ((param_1->params).pThrowInfo)->pForwardCompat,
+  if ((((p_Var2->_cxxReThrow != 0) || (pExcept->ExceptionCode == 0xe06d7363)) ||
+      (pExcept->ExceptionCode == 0x80000026)) ||
+     ((pFuncInfo->magicNumber < 0x19930522 || ((pFuncInfo->EHFlags & 1) == 0)))) {
+    if ((pExcept->ExceptionFlags & 0x66) == 0) {
+      if ((pFuncInfo->nTryBlocks != 0) ||
+         ((0x19930520 < pFuncInfo->magicNumber && (pFuncInfo->pESTypeList != (_s_ESTypeList *)0x0)))
+         ) {
+        if ((pExcept->ExceptionCode == 0xe06d7363) &&
+           (((2 < pExcept->NumberParameters && (0x19930522 < (pExcept->params).magicNumber)) &&
+            (p_Var1 = ((pExcept->params).pThrowInfo)->pForwardCompat,
             p_Var1 != (_func___cdecl_int *)0x0)))) {
-          _Var3 = (*p_Var1)(param_1,param_2,param_3,param_4,param_5,param_6,param_7,param_8);
+          _Var3 = (*p_Var1)(pExcept,pRN,pContext,pDC,pFuncInfo,CatchDepth,pMarkerRN,recursive);
           return _Var3;
         }
-        FindHandler(param_1,param_2,param_3,param_4,param_5,param_8,param_6,param_7);
+        FindHandler(pExcept,pRN,pContext,pDC,pFuncInfo,recursive,CatchDepth,pMarkerRN);
       }
     }
-    else if ((param_5->maxState != 0) && (param_6 == 0)) {
-      __FrameUnwindToState(param_2,param_4,param_5,-1);
+    else if ((pFuncInfo->maxState != 0) && (CatchDepth == 0)) {
+      __FrameUnwindToState(pRN,pDC,pFuncInfo,-1);
     }
   }
   return ExceptionContinueSearch;
@@ -62,161 +63,163 @@ __InternalCxxFrameHandler
 // 00C24FFC  FindHandler  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:569)
 
 void __cdecl
-FindHandler(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
-           _s_FuncInfo *param_5,uchar param_6,int param_7,EHRegistrationNode *param_8)
+FindHandler(EHExceptionRecord *pExcept,EHRegistrationNode *pRN,_CONTEXT *pContext,void *pDC,
+           _s_FuncInfo *pFuncInfo,uchar recursive,int CatchDepth,EHRegistrationNode *pMarkerRN)
 
 {
   ulong uVar1;
   int *piVar2;
-  _s_FuncInfo *p_Var3;
-  uchar uVar4;
-  bool bVar5;
-  _tiddata *p_Var6;
-  int iVar7;
-  _s_TryBlockMapEntry *p_Var8;
+  _s_FuncInfo *pConv;
+  uchar uVar3;
+  bool bVar4;
+  _tiddata *p_Var5;
+  int iVar6;
+  _s_TryBlockMapEntry *p_Var7;
   EHRegistrationNode *unaff_EBX;
-  int iVar9;
-  _s_CatchableTypeArray *p_Var10;
+  int iVar8;
+  _s_CatchableTypeArray *p_Var9;
   int unaff_ESI;
   _s_TryBlockMapEntry *unaff_EDI;
   uchar in_stack_ffffffd0;
-  uint local_20;
-  int local_1c;
-  int local_18;
-  uint local_14;
-  _s_HandlerType *local_10;
-  int local_c;
-  char local_5;
+  _s_CatchableType *pCatchable;
+  uint end;
+  int catches;
+  int catchables;
+  uint curTry;
+  _s_HandlerType *pCatch;
+  int curState;
+  uchar gotMatch;
   
-  local_5 = '\0';
-  if (param_5->maxState < 0x81) {
-    local_c = (int)(char)param_2->state;
+  gotMatch = '\0';
+  if (pFuncInfo->maxState < 0x81) {
+    curState = (int)(char)pRN->state;
   }
   else {
-    local_c = param_2->state;
+    curState = pRN->state;
   }
-  if ((local_c < -1) || (param_5->maxState <= local_c)) {
+  if ((curState < -1) || (pFuncInfo->maxState <= curState)) {
                     /* WARNING: Subroutine does not return */
     _inconsistency();
   }
-  if (param_1->ExceptionCode == 0xe06d7363) {
-    if (((param_1->NumberParameters == 3) &&
-        (((uVar1 = (param_1->params).magicNumber, uVar1 == 0x19930520 || (uVar1 == 0x19930521)) ||
-         (uVar1 == 0x19930522)))) && ((param_1->params).pThrowInfo == (_s_ThrowInfo *)0x0)) {
-      p_Var6 = _getptd();
-      if (p_Var6->_curexception == (void *)0x0) {
+  if (pExcept->ExceptionCode == 0xe06d7363) {
+    if (((pExcept->NumberParameters == 3) &&
+        (((uVar1 = (pExcept->params).magicNumber, uVar1 == 0x19930520 || (uVar1 == 0x19930521)) ||
+         (uVar1 == 0x19930522)))) && ((pExcept->params).pThrowInfo == (_s_ThrowInfo *)0x0)) {
+      p_Var5 = _getptd();
+      if (p_Var5->_curexception == (void *)0x0) {
         return;
       }
-      p_Var6 = _getptd();
-      param_1 = p_Var6->_curexception;
-      p_Var6 = _getptd();
-      param_3 = p_Var6->_curcontext;
-      iVar7 = _ValidateRead(param_1,1);
-      if (iVar7 == 0) {
+      p_Var5 = _getptd();
+      pExcept = p_Var5->_curexception;
+      p_Var5 = _getptd();
+      pContext = p_Var5->_curcontext;
+      iVar6 = _ValidateRead(pExcept,1);
+      if (iVar6 == 0) {
                     /* WARNING: Subroutine does not return */
         _inconsistency();
       }
-      if ((((param_1->ExceptionCode == 0xe06d7363) && (param_1->NumberParameters == 3)) &&
-          ((uVar1 = (param_1->params).magicNumber, uVar1 == 0x19930520 ||
+      if ((((pExcept->ExceptionCode == 0xe06d7363) && (pExcept->NumberParameters == 3)) &&
+          ((uVar1 = (pExcept->params).magicNumber, uVar1 == 0x19930520 ||
            ((uVar1 == 0x19930521 || (uVar1 == 0x19930522)))))) &&
-         ((param_1->params).pThrowInfo == (_s_ThrowInfo *)0x0)) {
+         ((pExcept->params).pThrowInfo == (_s_ThrowInfo *)0x0)) {
                     /* WARNING: Subroutine does not return */
         _inconsistency();
       }
-      p_Var6 = _getptd();
-      if (p_Var6->_curexcspec != (void *)0x0) {
-        p_Var6 = _getptd();
-        piVar2 = p_Var6->_curexcspec;
-        p_Var6 = _getptd();
-        iVar7 = 0;
-        p_Var6->_curexcspec = (void *)0x0;
-        uVar4 = IsInExceptionSpec(param_1,(_s_ESTypeList *)unaff_EDI);
-        if (uVar4 == '\0') {
-          iVar9 = 0;
+      p_Var5 = _getptd();
+      if (p_Var5->_curexcspec != (void *)0x0) {
+        p_Var5 = _getptd();
+        piVar2 = p_Var5->_curexcspec;
+        p_Var5 = _getptd();
+        iVar6 = 0;
+        p_Var5->_curexcspec = (void *)0x0;
+        uVar3 = IsInExceptionSpec(pExcept,(_s_ESTypeList *)unaff_EDI);
+        if (uVar3 == '\0') {
+          iVar8 = 0;
           if (0 < *piVar2) {
             do {
-              bVar5 = type_info::operator==
-                                (*(type_info **)(iVar9 + 4 + piVar2[1]),
+              bVar4 = type_info::operator==
+                                (*(type_info **)(iVar8 + 4 + piVar2[1]),
                                  (type_info *)&std::bad_exception::RTTI_Type_Descriptor);
-              if (bVar5) {
-                __DestructExceptionObject(param_1,'\x01');
+              if (bVar4) {
+                __DestructExceptionObject(pExcept,'\x01');
                 std::bad_exception::bad_exception((bad_exception *)&stack0xffffffd0,"bad exception")
                 ;
                     /* WARNING: Subroutine does not return */
                 _CxxThrowException(&stack0xffffffd0,(_s__ThrowInfo *)&__TI2_AVbad_exception_std__);
               }
-              iVar7 = iVar7 + 1;
-              iVar9 = iVar9 + 0x10;
-            } while (iVar7 < *piVar2);
+              iVar6 = iVar6 + 1;
+              iVar8 = iVar8 + 0x10;
+            } while (iVar6 < *piVar2);
           }
           goto LAB_00c25138;
         }
       }
     }
-    if (((param_1->ExceptionCode == 0xe06d7363) && (param_1->NumberParameters == 3)) &&
-       ((uVar1 = (param_1->params).magicNumber, uVar1 == 0x19930520 ||
+    if (((pExcept->ExceptionCode == 0xe06d7363) && (pExcept->NumberParameters == 3)) &&
+       ((uVar1 = (pExcept->params).magicNumber, uVar1 == 0x19930520 ||
         ((uVar1 == 0x19930521 || (uVar1 == 0x19930522)))))) {
-      if (param_5->nTryBlocks != 0) {
-        p_Var8 = _GetRangeOfTrysToCheck(param_5,param_7,local_c,&local_14,&local_20);
-        for (; local_14 < local_20; local_14 = local_14 + 1) {
-          if ((p_Var8->tryLow <= local_c) && (local_c <= p_Var8->tryHigh)) {
-            local_10 = p_Var8->pHandlerArray;
-            for (local_1c = p_Var8->nCatches; 0 < local_1c; local_1c = local_1c + -1) {
-              p_Var10 = ((param_1->params).pThrowInfo)->pCatchableTypeArray;
-              for (local_18 = p_Var10->nCatchableTypes; 0 < local_18; local_18 = local_18 + -1) {
-                p_Var10 = p_Var10 + 1;
-                p_Var3 = (_s_FuncInfo *)p_Var10->nCatchableTypes;
-                iVar7 = __TypeMatch(local_10,(_s_CatchableType *)p_Var3,(param_1->params).pThrowInfo
-                                   );
-                if (iVar7 != 0) {
-                  local_5 = '\x01';
-                  CatchIt(param_1,(EHRegistrationNode *)param_3,param_4,param_5,p_Var3,
-                          (_s_HandlerType *)param_7,(_s_CatchableType *)param_8,unaff_EDI,unaff_ESI,
-                          unaff_EBX,in_stack_ffffffd0);
+      if (pFuncInfo->nTryBlocks != 0) {
+        p_Var7 = _GetRangeOfTrysToCheck(pFuncInfo,CatchDepth,curState,&curTry,&end);
+        for (; curTry < end; curTry = curTry + 1) {
+          if ((p_Var7->tryLow <= curState) && (curState <= p_Var7->tryHigh)) {
+            pCatch = p_Var7->pHandlerArray;
+            for (catches = p_Var7->nCatches; 0 < catches; catches = catches + -1) {
+              p_Var9 = ((pExcept->params).pThrowInfo)->pCatchableTypeArray;
+              for (catchables = p_Var9->nCatchableTypes; 0 < catchables;
+                  catchables = catchables + -1) {
+                p_Var9 = p_Var9 + 1;
+                pConv = (_s_FuncInfo *)p_Var9->nCatchableTypes;
+                iVar6 = __TypeMatch(pCatch,(_s_CatchableType *)pConv,(pExcept->params).pThrowInfo);
+                if (iVar6 != 0) {
+                  gotMatch = '\x01';
+                  CatchIt(pExcept,(EHRegistrationNode *)pContext,pDC,pFuncInfo,pConv,
+                          (_s_HandlerType *)CatchDepth,(_s_CatchableType *)pMarkerRN,unaff_EDI,
+                          unaff_ESI,unaff_EBX,in_stack_ffffffd0);
                   goto LAB_00c25255;
                 }
               }
-              local_10 = local_10 + 1;
+              pCatch = pCatch + 1;
             }
           }
 LAB_00c25255:
-          p_Var8 = p_Var8 + 1;
+          p_Var7 = p_Var7 + 1;
         }
       }
-      if (param_6 != '\0') {
-        __DestructExceptionObject(param_1,'\x01');
+      if (recursive != '\0') {
+        __DestructExceptionObject(pExcept,'\x01');
       }
-      if ((((local_5 == '\0') && (0x19930520 < param_5->magicNumber)) &&
-          (param_5->pESTypeList != (_s_ESTypeList *)0x0)) &&
-         (uVar4 = IsInExceptionSpec(param_1,(_s_ESTypeList *)unaff_EDI), uVar4 == '\0')) {
+      if ((((gotMatch == '\0') && (0x19930520 < pFuncInfo->magicNumber)) &&
+          (pFuncInfo->pESTypeList != (_s_ESTypeList *)0x0)) &&
+         (uVar3 = IsInExceptionSpec(pExcept,(_s_ESTypeList *)unaff_EDI), uVar3 == '\0')) {
         _getptd();
         _getptd();
-        p_Var6 = _getptd();
-        p_Var6->_curexception = param_1;
-        p_Var6 = _getptd();
-        p_Var6->_curcontext = param_3;
-        if (param_8 == (EHRegistrationNode *)0x0) {
-          param_8 = param_2;
+        p_Var5 = _getptd();
+        p_Var5->_curexception = pExcept;
+        p_Var5 = _getptd();
+        p_Var5->_curcontext = pContext;
+        if (pMarkerRN == (EHRegistrationNode *)0x0) {
+          pMarkerRN = pRN;
         }
-        _UnwindNestedFrames(param_8,param_1);
-        __FrameUnwindToState(param_2,param_4,param_5,-1);
+        _UnwindNestedFrames(pMarkerRN,pExcept);
+        __FrameUnwindToState(pRN,pDC,pFuncInfo,-1);
                     /* WARNING: Subroutine does not return */
-        CallUnexpected(param_5->pESTypeList);
+        CallUnexpected(pFuncInfo->pESTypeList);
       }
       goto LAB_00c2532b;
     }
   }
-  if (param_5->nTryBlocks != 0) {
-    if (param_6 != '\0') {
+  if (pFuncInfo->nTryBlocks != 0) {
+    if (recursive != '\0') {
 LAB_00c25138:
                     /* WARNING: Subroutine does not return */
       terminate();
     }
-    FindHandlerForForeignException(param_1,param_2,param_3,param_4,param_5,local_c,param_7,param_8);
+    FindHandlerForForeignException(pExcept,pRN,pContext,pDC,pFuncInfo,curState,CatchDepth,pMarkerRN)
+    ;
   }
 LAB_00c2532b:
-  p_Var6 = _getptd();
-  if (p_Var6->_curexcspec == (void *)0x0) {
+  p_Var5 = _getptd();
+  if (p_Var5->_curexcspec == (void *)0x0) {
     return;
   }
                     /* WARNING: Subroutine does not return */
@@ -226,10 +229,12 @@ LAB_00c2532b:
 
 // 00C24F08  FindHandlerForForeignException  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:915)
 
+/* WARNING: Variable defined which should be unmapped: end */
+
 void __cdecl
 FindHandlerForForeignException
-          (EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
-          _s_FuncInfo *param_5,int param_6,int param_7,EHRegistrationNode *param_8)
+          (EHExceptionRecord *pExcept,EHRegistrationNode *pRN,_CONTEXT *pContext,void *pDC,
+          _s_FuncInfo *pFuncInfo,int curState,int CatchDepth,EHRegistrationNode *pMarkerRN)
 
 {
   TypeDescriptor *pTVar1;
@@ -240,41 +245,39 @@ FindHandlerForForeignException
   _s_TryBlockMapEntry *unaff_EBX;
   EHRegistrationNode *unaff_ESI;
   int unaff_EDI;
-  uint extraout_var;
-  uint uVar6;
-  uint local_8;
+  uint end;
+  uint curTry;
   
-  if (param_1->ExceptionCode != 0x80000003) {
+  if (pExcept->ExceptionCode != 0x80000003) {
     p_Var2 = _getptd();
-    uVar6 = extraout_var;
     if (p_Var2->_translator != (void *)0x0) {
       p_Var2 = _getptd();
       pvVar3 = _encoded_null();
-      if (((p_Var2->_translator != pvVar3) && (param_1->ExceptionCode != 0xe0434f4d)) &&
-         (iVar4 = _CallSETranslator(param_1,param_2,param_3,param_4,param_5,param_7,param_8),
+      if (((p_Var2->_translator != pvVar3) && (pExcept->ExceptionCode != 0xe0434f4d)) &&
+         (iVar4 = _CallSETranslator(pExcept,pRN,pContext,pDC,pFuncInfo,CatchDepth,pMarkerRN),
          iVar4 != 0)) {
         return;
       }
     }
-    if (param_5->nTryBlocks == 0) {
+    if (pFuncInfo->nTryBlocks == 0) {
                     /* WARNING: Subroutine does not return */
       _inconsistency();
     }
-    p_Var5 = _GetRangeOfTrysToCheck(param_5,param_7,param_6,&local_8,(uint *)&stack0xfffffff4);
-    if (local_8 < uVar6) {
+    p_Var5 = _GetRangeOfTrysToCheck(pFuncInfo,CatchDepth,curState,&curTry,&end);
+    if (curTry < end) {
       do {
-        if ((p_Var5->tryLow <= param_6) && (param_6 <= p_Var5->tryHigh)) {
+        if ((p_Var5->tryLow <= curState) && (curState <= p_Var5->tryHigh)) {
           pTVar1 = p_Var5->pHandlerArray[p_Var5->nCatches + -1].pType;
           if (((pTVar1 == (TypeDescriptor *)0x0) || ((char)pTVar1[1].hash == '\0')) &&
              ((p_Var5->pHandlerArray[p_Var5->nCatches + -1].adjectives & 0x40) == 0)) {
-            CatchIt(param_1,(EHRegistrationNode *)param_3,param_4,param_5,(_s_FuncInfo *)0x0,
-                    (_s_HandlerType *)param_7,(_s_CatchableType *)param_8,unaff_EBX,unaff_EDI,
-                    unaff_ESI,(uchar)uVar6);
+            CatchIt(pExcept,(EHRegistrationNode *)pContext,pDC,pFuncInfo,(_s_FuncInfo *)0x0,
+                    (_s_HandlerType *)CatchDepth,(_s_CatchableType *)pMarkerRN,unaff_EBX,unaff_EDI,
+                    unaff_ESI,(uchar)end);
           }
         }
-        local_8 = local_8 + 1;
+        curTry = curTry + 1;
         p_Var5 = p_Var5 + 1;
-      } while (local_8 < uVar6);
+      } while (curTry < end);
     }
   }
   return;
@@ -283,27 +286,27 @@ FindHandlerForForeignException
 
 // 00C247DD  __TypeMatch  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:1001)
 
-int __cdecl __TypeMatch(_s_HandlerType *param_1,_s_CatchableType *param_2,_s_ThrowInfo *param_3)
+int __cdecl __TypeMatch(_s_HandlerType *pCatch,_s_CatchableType *pCatchable,_s_ThrowInfo *pThrow)
 
 {
   TypeDescriptor *pTVar1;
   int extraout_EAX;
   int iVar2;
   
-  pTVar1 = param_1->pType;
+  pTVar1 = pCatch->pType;
   if ((pTVar1 == (TypeDescriptor *)0x0) || ((uchar)pTVar1[1].hash == '\0')) {
 LAB_00c24835:
     iVar2 = 1;
   }
   else {
-    if (pTVar1 == param_2->pType) {
+    if (pTVar1 == pCatchable->pType) {
 LAB_00c24814:
-      if (((((param_2->properties & 2) == 0) || ((param_1->adjectives & 8) != 0)) &&
-          (((param_3->attributes & 1) == 0 || ((param_1->adjectives & 1) != 0)))) &&
-         (((param_3->attributes & 2) == 0 || ((param_1->adjectives & 2) != 0)))) goto LAB_00c24835;
+      if (((((pCatchable->properties & 2) == 0) || ((pCatch->adjectives & 8) != 0)) &&
+          (((pThrow->attributes & 1) == 0 || ((pCatch->adjectives & 1) != 0)))) &&
+         (((pThrow->attributes & 2) == 0 || ((pCatch->adjectives & 2) != 0)))) goto LAB_00c24835;
     }
     else {
-      strcmp((uchar *)(pTVar1 + 1),(uchar *)(param_2->pType + 1));
+      strcmp((uchar *)(pTVar1 + 1),(uchar *)(pCatchable->pType + 1));
       if (extraout_EAX == 0) goto LAB_00c24814;
     }
     iVar2 = 0;
@@ -314,13 +317,13 @@ LAB_00c24814:
 
 // 00C2483C  __FrameUnwindFilter  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:1037)
 
-int __cdecl __FrameUnwindFilter(_EXCEPTION_POINTERS *param_1)
+int __cdecl __FrameUnwindFilter(_EXCEPTION_POINTERS *pExPtrs)
 
 {
   ulong uVar1;
   _tiddata *p_Var2;
   
-  uVar1 = param_1->ExceptionRecord->ExceptionCode;
+  uVar1 = pExPtrs->ExceptionRecord->ExceptionCode;
   if (uVar1 == 0xe0434f4d) {
     p_Var2 = _getptd();
     if (0 < p_Var2->_ProcessingThrow) {
@@ -344,37 +347,39 @@ int __cdecl __FrameUnwindFilter(_EXCEPTION_POINTERS *param_1)
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
 void __cdecl
-__FrameUnwindToState(EHRegistrationNode *param_1,void *param_2,_s_FuncInfo *param_3,int param_4)
+__FrameUnwindToState(EHRegistrationNode *pRN,void *pDC,_s_FuncInfo *pFuncInfo,int targetState)
 
 {
   _tiddata *p_Var1;
   int iVar2;
   int iVar3;
+  int nxtState;
+  int curState;
   
-  if (param_3->maxState < 0x81) {
-    iVar2 = (int)(char)param_1->state;
+  if (pFuncInfo->maxState < 0x81) {
+    iVar2 = (int)(char)pRN->state;
   }
   else {
-    iVar2 = param_1->state;
+    iVar2 = pRN->state;
   }
   p_Var1 = _getptd();
   p_Var1->_ProcessingThrow = p_Var1->_ProcessingThrow + 1;
   while( true ) {
     iVar3 = iVar2;
-    if (iVar3 == param_4) {
+    if (iVar3 == targetState) {
       FUN_00c2494b();
-      if (iVar3 == param_4) {
-        param_1->state = iVar3;
+      if (iVar3 == targetState) {
+        pRN->state = iVar3;
         return;
       }
                     /* WARNING: Subroutine does not return */
       _inconsistency();
     }
-    if ((iVar3 < 0) || (param_3->maxState <= iVar3)) break;
-    iVar2 = param_3->pUnwindMap[iVar3].toState;
-    if (param_3->pUnwindMap[iVar3].action != (_func___cdecl_void *)0x0) {
-      param_1->state = iVar2;
-      _CallSettingFrame((ulong)param_3->pUnwindMap[iVar3].action,(ulong)param_1,0x103);
+    if ((iVar3 < 0) || (pFuncInfo->maxState <= iVar3)) break;
+    iVar2 = pFuncInfo->pUnwindMap[iVar3].toState;
+    if (pFuncInfo->pUnwindMap[iVar3].action != (_func___cdecl_void *)0x0) {
+      pRN->state = iVar2;
+      _CallSettingFrame((ulong)pFuncInfo->pUnwindMap[iVar3].action,(ulong)pRN,0x103);
     }
   }
                     /* WARNING: Subroutine does not return */
@@ -384,32 +389,35 @@ __FrameUnwindToState(EHRegistrationNode *param_1,void *param_2,_s_FuncInfo *para
 
 // 00C24E9A  CatchIt  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:1219)
 
+/* WARNING: Variable defined which should be unmapped: IsRethrow */
+
 void __cdecl
-CatchIt(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,void *param_4,
-       _s_FuncInfo *param_5,_s_HandlerType *param_6,_s_CatchableType *param_7,
+CatchIt(EHExceptionRecord *pExcept,EHRegistrationNode *pContext,_CONTEXT *pDC,void *pFuncInfo,
+       _s_FuncInfo *pConv,_s_HandlerType *CatchDepth,_s_CatchableType *pMarkerRN,
        _s_TryBlockMapEntry *param_8,int param_9,EHRegistrationNode *param_10,uchar param_11)
 
 {
-  void *pvVar1;
+  void *target;
   _s_HandlerType *unaff_EBX;
   _s_CatchableType *unaff_ESI;
   int *unaff_EDI;
-  _s_CatchableType *p_Var2;
+  _s_CatchableType *p_Var1;
+  uchar IsRethrow;
   
-  if (param_5 != (_s_FuncInfo *)0x0) {
-    __BuildCatchObject(param_1,unaff_ESI,unaff_EBX,(_s_CatchableType *)param_5);
+  if (pConv != (_s_FuncInfo *)0x0) {
+    __BuildCatchObject(pExcept,unaff_ESI,unaff_EBX,(_s_CatchableType *)pConv);
   }
-  if (param_7 == (_s_CatchableType *)0x0) {
-    param_7 = unaff_ESI;
+  if (pMarkerRN == (_s_CatchableType *)0x0) {
+    pMarkerRN = unaff_ESI;
   }
-  _UnwindNestedFrames((EHRegistrationNode *)param_7,param_1);
-  p_Var2 = unaff_ESI;
-  __FrameUnwindToState((EHRegistrationNode *)unaff_ESI,param_3,param_4,*unaff_EDI);
+  _UnwindNestedFrames((EHRegistrationNode *)pMarkerRN,pExcept);
+  p_Var1 = unaff_ESI;
+  __FrameUnwindToState((EHRegistrationNode *)unaff_ESI,pDC,pFuncInfo,*unaff_EDI);
   (unaff_ESI->thisDisplacement).mdisp = unaff_EDI[1] + 1;
-  pvVar1 = CallCatchBlock(param_1,(EHRegistrationNode *)unaff_ESI,(_CONTEXT *)param_2,param_4,
-                          param_6,0x100,(ulong)p_Var2);
-  if (pvVar1 != (void *)0x0) {
-    _JumpToContinuation(pvVar1,(EHRegistrationNode *)unaff_ESI);
+  target = CallCatchBlock(pExcept,(EHRegistrationNode *)unaff_ESI,(_CONTEXT *)pContext,pFuncInfo,
+                          CatchDepth,0x100,(ulong)p_Var1);
+  if (target != (void *)0x0) {
+    _JumpToContinuation(target,(EHRegistrationNode *)unaff_ESI);
   }
   return;
 }
@@ -421,40 +429,41 @@ CatchIt(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
 void * __cdecl
-CallCatchBlock(EHExceptionRecord *param_1,EHRegistrationNode *param_2,_CONTEXT *param_3,
-              _s_FuncInfo *param_4,void *param_5,int param_6,ulong param_7)
+CallCatchBlock(EHExceptionRecord *pExcept,EHRegistrationNode *pRN,_CONTEXT *pContext,
+              _s_FuncInfo *pFuncInfo,void *CatchDepth,int NLGCode,ulong param_7)
 
 {
   _tiddata *p_Var1;
   void *in_ECX;
-  FrameInfo local_40;
-  undefined4 local_38;
-  void *local_34;
-  void *local_30;
-  FrameInfo *local_2c;
-  int local_28;
-  void *local_20;
+  FrameInfo FrameInfo;
+  int ExceptionObjectDestroyed;
+  void *pSaveExContext;
+  EHExceptionRecord *pSaveException;
+  FrameInfo *pFrameInfo;
+  void *saveESP;
+  uint i;
+  void *continuationAddress;
   undefined4 uStack_c;
   undefined *local_8;
   
   local_8 = &DAT_00dfa1a8;
   uStack_c = 0xc24af9;
-  local_38 = 0;
-  local_28 = param_2[-1].state;
-  local_2c = _CreateFrameInfo(&local_40,(param_1->params).pExceptionObject);
+  ExceptionObjectDestroyed = 0;
+  saveESP = (void *)pRN[-1].state;
+  pFrameInfo = _CreateFrameInfo(&FrameInfo,(pExcept->params).pExceptionObject);
   p_Var1 = _getptd();
-  local_30 = p_Var1->_curexception;
+  pSaveException = p_Var1->_curexception;
   p_Var1 = _getptd();
-  local_34 = p_Var1->_curcontext;
+  pSaveExContext = p_Var1->_curcontext;
   p_Var1 = _getptd();
-  p_Var1->_curexception = param_1;
+  p_Var1->_curexception = pExcept;
   p_Var1 = _getptd();
-  p_Var1->_curcontext = param_3;
+  p_Var1->_curcontext = pContext;
   local_8 = (undefined *)0x1;
-  local_20 = _CallCatchBlock2(param_2,param_4,in_ECX,(int)param_5,param_6);
+  continuationAddress = _CallCatchBlock2(pRN,pFuncInfo,in_ECX,(int)CatchDepth,NLGCode);
   local_8 = (undefined *)0xfffffffe;
   FUN_00c24c13();
-  return local_20;
+  return continuationAddress;
 }
 
 
@@ -487,51 +496,51 @@ int __cdecl ExFilterRethrow(_EXCEPTION_POINTERS *param_1)
 
 int __cdecl
 __BuildCatchObjectHelper
-          (EHExceptionRecord *param_1,void *param_2,_s_HandlerType *param_3,
-          _s_CatchableType *param_4)
+          (EHExceptionRecord *pExcept,void *pRN,_s_HandlerType *pCatch,_s_CatchableType *pConv)
 
 {
   int iVar1;
   void *pvVar2;
-  uchar *puVar3;
-  ulong uVar4;
+  uchar *src;
+  ulong count;
   uint in_stack_ffffffd0;
+  int retval;
   
-  if (((param_3->pType == (TypeDescriptor *)0x0) || ((char)param_3->pType[1].hash == '\0')) ||
-     ((param_3->dispCatchObj == 0 && ((param_3->adjectives & 0x80000000) == 0)))) {
+  if (((pCatch->pType == (TypeDescriptor *)0x0) || ((char)pCatch->pType[1].hash == '\0')) ||
+     ((pCatch->dispCatchObj == 0 && ((pCatch->adjectives & 0x80000000) == 0)))) {
     return 0;
   }
-  if (-1 < (int)param_3->adjectives) {
-    param_2 = (void *)(param_3->dispCatchObj + 0xc + (int)param_2);
+  if (-1 < (int)pCatch->adjectives) {
+    pRN = (void *)(pCatch->dispCatchObj + 0xc + (int)pRN);
   }
-  if ((param_3->adjectives & 8) == 0) {
-    pvVar2 = (param_1->params).pExceptionObject;
-    if ((param_4->properties & 1) == 0) {
-      if (param_4->copyFunction == (_func___cdecl_void *)0x0) {
+  if ((pCatch->adjectives & 8) == 0) {
+    pvVar2 = (pExcept->params).pExceptionObject;
+    if ((pConv->properties & 1) == 0) {
+      if (pConv->copyFunction == (_func___cdecl_void *)0x0) {
         iVar1 = _ValidateRead(pvVar2,1);
-        if ((iVar1 != 0) && (iVar1 = _ValidateRead(param_2,1), iVar1 != 0)) {
-          uVar4 = param_4->sizeOrOffset;
-          puVar3 = __AdjustPointer((param_1->params).pExceptionObject,&param_4->thisDisplacement);
-          memmove(param_2,puVar3,uVar4);
+        if ((iVar1 != 0) && (iVar1 = _ValidateRead(pRN,1), iVar1 != 0)) {
+          count = pConv->sizeOrOffset;
+          src = __AdjustPointer((pExcept->params).pExceptionObject,&pConv->thisDisplacement);
+          memmove(pRN,src,count);
           return 0;
         }
       }
       else {
         iVar1 = _ValidateRead(pvVar2,1);
-        if (((iVar1 != 0) && (iVar1 = _ValidateRead(param_2,1), iVar1 != 0)) &&
-           (iVar1 = _ValidateRead(param_4->copyFunction,in_stack_ffffffd0), iVar1 != 0)) {
-          return ((param_4->properties & 4) != 0) + 1;
+        if (((iVar1 != 0) && (iVar1 = _ValidateRead(pRN,1), iVar1 != 0)) &&
+           (iVar1 = _ValidateRead(pConv->copyFunction,in_stack_ffffffd0), iVar1 != 0)) {
+          return ((pConv->properties & 4) != 0) + 1;
         }
       }
     }
     else {
       iVar1 = _ValidateRead(pvVar2,1);
-      if ((iVar1 != 0) && (iVar1 = _ValidateRead(param_2,1), iVar1 != 0)) {
-        memmove(param_2,(param_1->params).pExceptionObject,param_4->sizeOrOffset);
-        if (param_4->sizeOrOffset != 4) {
+      if ((iVar1 != 0) && (iVar1 = _ValidateRead(pRN,1), iVar1 != 0)) {
+        memmove(pRN,(pExcept->params).pExceptionObject,pConv->sizeOrOffset);
+        if (pConv->sizeOrOffset != 4) {
           return 0;
         }
-        pvVar2 = *(void **)param_2;
+        pvVar2 = *(void **)pRN;
         if (pvVar2 == (void *)0x0) {
           return 0;
         }
@@ -540,13 +549,13 @@ __BuildCatchObjectHelper
     }
   }
   else {
-    iVar1 = _ValidateRead((param_1->params).pExceptionObject,1);
-    if ((iVar1 != 0) && (iVar1 = _ValidateRead(param_2,1), iVar1 != 0)) {
-      pvVar2 = (param_1->params).pExceptionObject;
-      *(void **)param_2 = pvVar2;
+    iVar1 = _ValidateRead((pExcept->params).pExceptionObject,1);
+    if ((iVar1 != 0) && (iVar1 = _ValidateRead(pRN,1), iVar1 != 0)) {
+      pvVar2 = (pExcept->params).pExceptionObject;
+      *(void **)pRN = pvVar2;
 LAB_00c24d0e:
-      pvVar2 = __AdjustPointer(pvVar2,&param_4->thisDisplacement);
-      *(void **)param_2 = pvVar2;
+      pvVar2 = __AdjustPointer(pvVar2,&pConv->thisDisplacement);
+      *(void **)pRN = pvVar2;
       return 0;
     }
   }
@@ -561,25 +570,25 @@ LAB_00c24d0e:
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
 void __cdecl
-__BuildCatchObject(EHExceptionRecord *param_1,void *param_2,_s_HandlerType *param_3,
-                  _s_CatchableType *param_4)
+__BuildCatchObject(EHExceptionRecord *pExcept,void *pRN,_s_HandlerType *pCatch,
+                  _s_CatchableType *pConv)
 
 {
   int iVar1;
-  void *pvVar2;
+  void *pthis_3;
   
-  pvVar2 = param_2;
-  if ((param_3->adjectives & 0x80000000) == 0) {
-    pvVar2 = (void *)(param_3->dispCatchObj + 0xc + (int)param_2);
+  pthis_3 = pRN;
+  if ((pCatch->adjectives & 0x80000000) == 0) {
+    pthis_3 = (void *)(pCatch->dispCatchObj + 0xc + (int)pRN);
   }
-  iVar1 = __BuildCatchObjectHelper(param_1,param_2,param_3,param_4);
+  iVar1 = __BuildCatchObjectHelper(pExcept,pRN,pCatch,pConv);
   if (iVar1 == 1) {
-    __AdjustPointer((param_1->params).pExceptionObject,&param_4->thisDisplacement);
-    _CallMemberFunction0(pvVar2,param_4->copyFunction);
+    __AdjustPointer((pExcept->params).pExceptionObject,&pConv->thisDisplacement);
+    _CallMemberFunction0(pthis_3,pConv->copyFunction);
   }
   else if (iVar1 == 2) {
-    __AdjustPointer((param_1->params).pExceptionObject,&param_4->thisDisplacement);
-    _CallMemberFunction0(pvVar2,param_4->copyFunction);
+    __AdjustPointer((pExcept->params).pExceptionObject,&pConv->thisDisplacement);
+    _CallMemberFunction0(pthis_3,pConv->copyFunction);
   }
   return;
 }
@@ -590,16 +599,16 @@ __BuildCatchObject(EHExceptionRecord *param_1,void *param_2,_s_HandlerType *para
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-void __cdecl __DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
+void __cdecl __DestructExceptionObject(EHExceptionRecord *pExcept,uchar fThrowNotAllowed)
 
 {
   _s_ThrowInfo *p_Var1;
-  _func___cdecl_void *p_Var2;
+  _func___cdecl_void *pmfn_3;
   
-  if ((((param_1 != (EHExceptionRecord *)0x0) && (param_1->ExceptionCode == 0xe06d7363)) &&
-      (p_Var1 = (param_1->params).pThrowInfo, p_Var1 != (_s_ThrowInfo *)0x0)) &&
-     (p_Var2 = p_Var1->pmfnUnwind, p_Var2 != (_func___cdecl_void *)0x0)) {
-    _CallMemberFunction0((param_1->params).pExceptionObject,p_Var2);
+  if ((((pExcept != (EHExceptionRecord *)0x0) && (pExcept->ExceptionCode == 0xe06d7363)) &&
+      (p_Var1 = (pExcept->params).pThrowInfo, p_Var1 != (_s_ThrowInfo *)0x0)) &&
+     (pmfn_3 = p_Var1->pmfnUnwind, pmfn_3 != (_func___cdecl_void *)0x0)) {
+    _CallMemberFunction0((pExcept->params).pExceptionObject,pmfn_3);
   }
   return;
 }
@@ -607,16 +616,15 @@ void __cdecl __DestructExceptionObject(EHExceptionRecord *param_1,uchar param_2)
 
 // 00C24A00  __AdjustPointer  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:1844)
 
-void * __cdecl __AdjustPointer(void *param_1,PMD *param_2)
+void * __cdecl __AdjustPointer(void *pThis,PMD *pmd)
 
 {
   void *pvVar1;
   
-  pvVar1 = (void *)(param_2->mdisp + (int)param_1);
-  if (-1 < param_2->pdisp) {
+  pvVar1 = (void *)(pmd->mdisp + (int)pThis);
+  if (-1 < pmd->pdisp) {
     pvVar1 = (void *)((int)pvVar1 +
-                     *(int *)(*(int *)(param_2->pdisp + (int)param_1) + param_2->vdisp) +
-                     param_2->pdisp);
+                     *(int *)(*(int *)(pmd->pdisp + (int)pThis) + pmd->vdisp) + pmd->pdisp);
   }
   return pvVar1;
 }
@@ -624,43 +632,43 @@ void * __cdecl __AdjustPointer(void *param_1,PMD *param_2)
 
 // 00C24A29  IsInExceptionSpec  (<external>/dd/vctools/crt_bld/SELF_X86/crt/prebuild/eh/frame.cpp:2304)
 
-uchar __cdecl IsInExceptionSpec(EHExceptionRecord *param_1,_s_ESTypeList *param_2)
+uchar __cdecl IsInExceptionSpec(EHExceptionRecord *pExcept,_s_ESTypeList *param_2)
 
 {
   int iVar1;
   int iVar2;
   _s_CatchableTypeArray *p_Var3;
   int *unaff_EDI;
-  int local_c;
-  uchar local_5;
+  int i;
+  uchar bFoundMatchingTypeInES;
   
   if (unaff_EDI == (int *)0x0) {
                     /* WARNING: Subroutine does not return */
     _inconsistency();
   }
-  local_c = 0;
-  local_5 = '\0';
+  i = 0;
+  bFoundMatchingTypeInES = '\0';
   if (0 < *unaff_EDI) {
     do {
-      p_Var3 = ((param_1->params).pThrowInfo)->pCatchableTypeArray;
+      p_Var3 = ((pExcept->params).pThrowInfo)->pCatchableTypeArray;
       iVar2 = p_Var3->nCatchableTypes;
       if (0 < iVar2) {
         do {
           p_Var3 = p_Var3 + 1;
-          iVar1 = __TypeMatch((_s_HandlerType *)(unaff_EDI[1] + local_c * 0x10),
+          iVar1 = __TypeMatch((_s_HandlerType *)(unaff_EDI[1] + i * 0x10),
                               (_s_CatchableType *)p_Var3->nCatchableTypes,
-                              (param_1->params).pThrowInfo);
+                              (pExcept->params).pThrowInfo);
           if (iVar1 != 0) {
-            local_5 = '\x01';
+            bFoundMatchingTypeInES = '\x01';
             break;
           }
           iVar2 = iVar2 + -1;
         } while (0 < iVar2);
       }
-      local_c = local_c + 1;
-    } while (local_c < *unaff_EDI);
+      i = i + 1;
+    } while (i < *unaff_EDI);
   }
-  return local_5;
+  return bFoundMatchingTypeInES;
 }
 
 
@@ -668,7 +676,7 @@ uchar __cdecl IsInExceptionSpec(EHExceptionRecord *param_1,_s_ESTypeList *param_
 
 /* WARNING: Function: _EH_prolog3_catch replaced with injection: EH_prolog3 */
 
-void __cdecl CallUnexpected(_s_ESTypeList *param_1)
+void __cdecl CallUnexpected(_s_ESTypeList *pESTypeList)
 
 {
   _tiddata *p_Var1;
@@ -700,10 +708,10 @@ void * __thiscall std::bad_exception::_scalar_deleting_destructor_(bad_exception
 // 00C25343  bad_exception  (line unknown)
 
 bad_exception * __thiscall
-std::bad_exception::bad_exception(bad_exception *this,bad_exception *param_1)
+std::bad_exception::bad_exception(bad_exception *this,bad_exception *__that)
 
 {
-  exception::exception((exception *)this,(exception *)param_1);
+  exception::exception((exception *)this,(exception *)__that);
   *(undefined ***)this = vftable;
   return this;
 }

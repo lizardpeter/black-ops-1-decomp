@@ -23,7 +23,17 @@ int __cdecl RB_CalcSunSpriteSamples(void)
   bool bVar3;
   int iVar4;
   int iVar5;
-  int local_8;
+  int semaphore_4;
+  HRESULT hr_5;
+  int semaphore_3;
+  HRESULT hr_4;
+  int semaphore_2;
+  HRESULT hr_3;
+  int semaphore;
+  HRESULT hr_2;
+  IDirect3DQuery9 *occlusionQuery;
+  HRESULT hr;
+  ulong sampleCount;
   
   if ((vidConfig.displayWidth < 0x10) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x30,0,
@@ -41,7 +51,7 @@ int __cdecl RB_CalcSunSpriteSamples(void)
   }
   pIVar2 = sunFlareArray[0].sunQuery[0];
   if (sunFlareArray[0].sunQuery[0] == (IDirect3DQuery9 *)0x0) {
-    local_8 = 0;
+    sampleCount = 0;
   }
   else {
     RB_ResetStatTracking(0);
@@ -126,20 +136,21 @@ int __cdecl RB_CalcSunSpriteSamples(void)
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp (%i) dx.device->EndScene() failed: %s\n"
                );
     }
-    while (iVar4 = (**(code **)((int)*pIVar2 + 0x1c))(pIVar2,&local_8,4,1), iVar4 == 1) {
+    while (iVar4 = (**(code **)((int)*pIVar2 + 0x1c))(pIVar2,&sampleCount,4,1), iVar4 == 1) {
       Sleep(0);
     }
     if (iVar4 != 0) {
-      local_8 = 0x100;
+      sampleCount = 0x100;
     }
   }
-  return local_8;
+  return sampleCount;
 }
 
 
 // 00B02DD0  R_UpdateOverTime  (gfx_d3d/rb_sky.cpp:121)
 
-float __cdecl R_UpdateOverTime(float param_1,float param_2,int param_3,int param_4,int param_5)
+float __cdecl
+R_UpdateOverTime(float fCurrent,float fGoal,int iFadeInTime,int iFadeOutTime,int frametime)
 
 {
   code *pcVar1;
@@ -147,48 +158,48 @@ float __cdecl R_UpdateOverTime(float param_1,float param_2,int param_3,int param
   float10 fVar3;
   float fVar4;
   
-  if ((param_5 < 0) &&
+  if ((frametime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x7a,0,
                                "%s\n\t(frametime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_3 < 0) &&
+  if ((iFadeInTime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x7b,0,
                                "%s\n\t(iFadeInTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  if ((param_4 < 0) &&
+  if ((iFadeOutTime < 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x7c,0,
                                "%s\n\t(iFadeOutTime) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     fVar3 = (float10)(*pcVar1)();
     return (float)fVar3;
   }
-  fVar4 = param_2;
-  if (param_5 != 0) {
-    if (param_2 <= param_1) {
-      fVar4 = param_1;
-      if (param_2 < param_1) {
-        if (param_4 < 1) {
-          return param_2;
+  fVar4 = fGoal;
+  if (frametime != 0) {
+    if (fGoal <= fCurrent) {
+      fVar4 = fCurrent;
+      if (fGoal < fCurrent) {
+        if (iFadeOutTime < 1) {
+          return fGoal;
         }
-        fVar4 = param_1 - ((float)param_5 * 1.0) / (float)param_4;
-        if (fVar4 < param_2) {
-          return param_2;
+        fVar4 = fCurrent - ((float)frametime * 1.0) / (float)iFadeOutTime;
+        if (fVar4 < fGoal) {
+          return fGoal;
         }
       }
     }
     else {
-      if (param_3 < 1) {
-        return param_2;
+      if (iFadeInTime < 1) {
+        return fGoal;
       }
-      fVar4 = ((float)param_5 * 1.0) / (float)param_3 + param_1;
-      if (param_2 < fVar4) {
-        return param_2;
+      fVar4 = ((float)frametime * 1.0) / (float)iFadeInTime + fCurrent;
+      if (fGoal < fVar4) {
+        return fGoal;
       }
     }
   }
@@ -198,7 +209,7 @@ float __cdecl R_UpdateOverTime(float param_1,float param_2,int param_3,int param
 
 // 00B021E0  RB_SetTessQuad  (gfx_d3d/rb_sky.cpp:151)
 
-GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
+GfxVertex * __cdecl RB_SetTessQuad(GfxColor color)
 
 {
   code *pcVar1;
@@ -207,6 +218,8 @@ GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
   bool bVar4;
   GfxVertex *pGVar5;
   uint uVar6;
+  ushort vertCount;
+  GfxVertex *vert;
   
   if (tess.vertexCount != 0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x9c,0,"%s");
@@ -236,19 +249,19 @@ GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
   tess.verts[uVar6].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6].texCoord[0] = 0.0;
   tess.verts[uVar6].texCoord[1] = 0.0;
-  tess.verts[uVar6].color = param_1;
+  tess.verts[uVar6].color = color;
   tess.verts[uVar6 + 1].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6 + 1].texCoord[0] = 1.0;
   tess.verts[uVar6 + 1].texCoord[1] = 0.0;
-  tess.verts[uVar6 + 1].color = param_1;
+  tess.verts[uVar6 + 1].color = color;
   tess.verts[uVar6 + 2].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6 + 2].texCoord[0] = 1.0;
   tess.verts[uVar6 + 2].texCoord[1] = 1.0;
-  tess.verts[uVar6 + 2].color = param_1;
+  tess.verts[uVar6 + 2].color = color;
   tess.verts[uVar6 + 3].normal.packed = 0x3ffe7f7f;
   tess.verts[uVar6 + 3].texCoord[0] = 0.0;
   tess.verts[uVar6 + 3].texCoord[1] = 1.0;
-  tess.verts[uVar6 + 3].color = param_1;
+  tess.verts[uVar6 + 3].color = color;
   tess.vertexCount = tess.vertexCount + 4;
   tess.indexCount = tess.indexCount + 6;
   return tess.verts + uVar6;
@@ -257,7 +270,7 @@ GfxVertex * __cdecl RB_SetTessQuad(GfxColor param_1)
 
 // 00B01E60  RB_TessSunBillboard  (gfx_d3d/rb_sky.cpp:192)
 
-void __cdecl RB_TessSunBillboard(float param_1,float param_2,GfxColor param_3)
+void __cdecl RB_TessSunBillboard(float widthInClipSpace,float heightInClipSpace,GfxColor color)
 
 {
   code *pcVar1;
@@ -273,6 +286,8 @@ void __cdecl RB_TessSunBillboard(float param_1,float param_2,GfxColor param_3)
   float fVar11;
   float fVar12;
   float fVar13;
+  float *sunPosition;
+  GfxVertex *vert;
   
   pGVar2 = gfxCmdBufSourceState.viewParms3D;
   pGVar4 = &(gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix;
@@ -297,9 +312,9 @@ void __cdecl RB_TessSunBillboard(float param_1,float param_2,GfxColor param_3)
   fVar10 = *pfVar5 * (pGVar2->viewProjectionMatrix).m[0][3] +
            ((rgp.world)->sun).sunFxPosition[1] * (pGVar2->viewProjectionMatrix).m[1][3] +
            ((rgp.world)->sun).sunFxPosition[2] * (pGVar2->viewProjectionMatrix).m[2][3];
-  pGVar6 = RB_SetTessQuad(param_3);
-  fVar11 = param_1 * fVar10;
-  fVar12 = param_2 * fVar10;
+  pGVar6 = RB_SetTessQuad(color);
+  fVar11 = widthInClipSpace * fVar10;
+  fVar12 = heightInClipSpace * fVar10;
   fVar13 = fVar10 * -0.0005;
   pGVar6->xyzw[0] = fVar7;
   pGVar6->xyzw[1] = fVar8;
@@ -335,7 +350,7 @@ void __cdecl RB_TessSunBillboard(float param_1,float param_2,GfxColor param_3)
 
 // 00B02520  RB_GetSunSampleRectRelativeArea  (gfx_d3d/rb_sky.cpp:245)
 
-float __cdecl RB_GetSunSampleRectRelativeArea(int param_1,int param_2)
+float __cdecl RB_GetSunSampleRectRelativeArea(int widthInPixels,int heightInPixels)
 
 {
   code *pcVar1;
@@ -345,10 +360,13 @@ float __cdecl RB_GetSunSampleRectRelativeArea(int param_1,int param_2)
   float *pfVar5;
   float10 fVar6;
   float fVar7;
-  int local_30;
-  uint local_2c;
-  int local_24;
-  uint local_c;
+  int top;
+  int right;
+  int vidWidth;
+  int left;
+  float *sunPosition;
+  int bottom;
+  int vidHeight;
   
   pGVar2 = gfxCmdBufSourceState.viewParms3D;
   pGVar4 = &(gfxCmdBufSourceState.viewParms3D)->viewProjectionMatrix;
@@ -365,37 +383,34 @@ float __cdecl RB_GetSunSampleRectRelativeArea(int param_1,int param_2)
           ((rgp.world)->sun).sunFxPosition[1] * (pGVar2->viewProjectionMatrix).m[1][3] +
           ((rgp.world)->sun).sunFxPosition[2] * (pGVar2->viewProjectionMatrix).m[2][3];
   if (0.0 < fVar7) {
-    local_24 = (int)ROUND((((*pfVar5 * pGVar4->m[0][0] +
-                             ((rgp.world)->sun).sunFxPosition[1] *
-                             (pGVar2->viewProjectionMatrix).m[1][0] +
-                            ((rgp.world)->sun).sunFxPosition[2] *
-                            (pGVar2->viewProjectionMatrix).m[2][0]) / fVar7 + 1.0) *
-                           (float)(int)vidConfig.displayWidth - (float)param_1) * 0.5 + 9.313226e-10
-                         );
-    local_30 = (int)ROUND((((*pfVar5 * (pGVar2->viewProjectionMatrix).m[0][1] +
-                             ((rgp.world)->sun).sunFxPosition[1] *
-                             (pGVar2->viewProjectionMatrix).m[1][1] +
-                            ((rgp.world)->sun).sunFxPosition[2] *
-                            (pGVar2->viewProjectionMatrix).m[2][1]) / fVar7 + 1.0) *
-                           (float)(int)vidConfig.displayHeight - (float)param_2) * 0.5 +
-                          9.313226e-10);
-    local_2c = local_24 + param_1;
-    local_c = local_30 + param_2;
-    if (local_24 < 0) {
-      local_24 = 0;
+    left = (int)ROUND((((*pfVar5 * pGVar4->m[0][0] +
+                         ((rgp.world)->sun).sunFxPosition[1] *
+                         (pGVar2->viewProjectionMatrix).m[1][0] +
+                        ((rgp.world)->sun).sunFxPosition[2] * (pGVar2->viewProjectionMatrix).m[2][0]
+                        ) / fVar7 + 1.0) * (float)(int)vidConfig.displayWidth - (float)widthInPixels
+                      ) * 0.5 + 9.313226e-10);
+    top = (int)ROUND((((*pfVar5 * (pGVar2->viewProjectionMatrix).m[0][1] +
+                        ((rgp.world)->sun).sunFxPosition[1] * (pGVar2->viewProjectionMatrix).m[1][1]
+                       + ((rgp.world)->sun).sunFxPosition[2] *
+                         (pGVar2->viewProjectionMatrix).m[2][1]) / fVar7 + 1.0) *
+                      (float)(int)vidConfig.displayHeight - (float)heightInPixels) * 0.5 +
+                     9.313226e-10);
+    right = left + widthInPixels;
+    bottom = top + heightInPixels;
+    if (left < 0) {
+      left = 0;
     }
-    if ((int)vidConfig.displayWidth < (int)local_2c) {
-      local_2c = vidConfig.displayWidth;
+    if ((int)vidConfig.displayWidth < right) {
+      right = vidConfig.displayWidth;
     }
-    if (local_30 < 0) {
-      local_30 = 0;
+    if (top < 0) {
+      top = 0;
     }
-    if ((int)vidConfig.displayHeight < (int)local_c) {
-      local_c = vidConfig.displayHeight;
+    if ((int)vidConfig.displayHeight < bottom) {
+      bottom = vidConfig.displayHeight;
     }
-    if ((local_24 < (int)local_2c) && (local_30 < (int)local_c)) {
-      fVar7 = (float)(int)((local_2c - local_24) * (local_c - local_30)) /
-              (float)(param_1 * param_2);
+    if ((left < right) && (top < bottom)) {
+      fVar7 = (float)((right - left) * (bottom - top)) / (float)(widthInPixels * heightInPixels);
     }
     else {
       fVar7 = 0.0;
@@ -410,18 +425,18 @@ float __cdecl RB_GetSunSampleRectRelativeArea(int param_1,int param_2)
 
 // 00B023F0  RB_UpdateSunVisibilityWithoutQuery  (gfx_d3d/rb_sky.cpp:294)
 
-void __cdecl RB_UpdateSunVisibilityWithoutQuery(SunFlareDynamic *param_1)
+void __cdecl RB_UpdateSunVisibilityWithoutQuery(SunFlareDynamic *sunFlare)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   float fVar4;
-  float local_10;
+  float sunTraceEnd;
   float local_c;
   float local_8;
   
-  if ((param_1 == (SunFlareDynamic *)0x0) &&
+  if ((sunFlare == (SunFlareDynamic *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x129,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -429,19 +444,19 @@ void __cdecl RB_UpdateSunVisibilityWithoutQuery(SunFlareDynamic *param_1)
     return;
   }
   fVar4 = RB_GetSunSampleRectRelativeArea(0x10,0x10);
-  param_1->lastVisibility = fVar4;
-  if (param_1->lastVisibility != 0.0) {
-    local_10 = ((rgp.world)->sun).sunFxPosition[0] * 262144.0 +
-               (gfxCmdBufSourceState.viewParms3D)->origin[0];
+  sunFlare->lastVisibility = fVar4;
+  if (sunFlare->lastVisibility != 0.0) {
+    sunTraceEnd = ((rgp.world)->sun).sunFxPosition[0] * 262144.0 +
+                  (gfxCmdBufSourceState.viewParms3D)->origin[0];
     local_c = ((rgp.world)->sun).sunFxPosition[1] * 262144.0 +
               (gfxCmdBufSourceState.viewParms3D)->origin[1];
     local_8 = ((rgp.world)->sun).sunFxPosition[2] * 262144.0 +
               (gfxCmdBufSourceState.viewParms3D)->origin[2];
-    iVar3 = CM_BoxSightTrace(param_1->hitNum,(gfxCmdBufSourceState.viewParms3D)->origin,&local_10,
-                             vec3_origin,vec3_origin,0,0x2003);
-    param_1->hitNum = iVar3;
-    if (param_1->hitNum != 0) {
-      param_1->lastVisibility = 0.0;
+    iVar3 = CM_BoxSightTrace(sunFlare->hitNum,(gfxCmdBufSourceState.viewParms3D)->origin,
+                             &sunTraceEnd,vec3_origin,vec3_origin,0,0x2003);
+    sunFlare->hitNum = iVar3;
+    if (sunFlare->hitNum != 0) {
+      sunFlare->lastVisibility = 0.0;
     }
   }
   return;
@@ -450,7 +465,7 @@ void __cdecl RB_UpdateSunVisibilityWithoutQuery(SunFlareDynamic *param_1)
 
 // 00B01B60  RB_DrawSunQuerySprite  (gfx_d3d/rb_sky.cpp:311)
 
-void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
+void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *sunFlare)
 
 {
   code *pcVar1;
@@ -460,10 +475,15 @@ void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
   uint uVar5;
   uint uVar6;
   float local_50;
-  float local_c;
+  uint sunSpriteSamples;
+  ulong drawnSampleCount;
+  PIXProfile pp;
+  GfxColor color;
+  float lastVisibility;
+  int queryIndex;
   
   PIXBeginNamedEvent(-1,"RB_DrawSunQuerySprite");
-  if ((param_1 == (SunFlareDynamic *)0x0) &&
+  if ((sunFlare == (SunFlareDynamic *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x142,0,"%s"
                               ), !bVar3)) {
     pcVar1 = (code *)swi(3);
@@ -482,8 +502,8 @@ void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
     (*pcVar1)();
     return;
   }
-  if (param_1->sunQuery[uVar6] == (IDirect3DQuery9 *)0x0) {
-    RB_UpdateSunVisibilityWithoutQuery(param_1);
+  if (sunFlare->sunQuery[uVar6] == (IDirect3DQuery9 *)0x0) {
+    RB_UpdateSunVisibilityWithoutQuery(sunFlare);
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -495,13 +515,13 @@ void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
     RB_SetIdentity();
     RB_TessSunBillboard(16.0 / (float)gfxCmdBufSourceState.renderTargetWidth,
                         16.0 / (float)gfxCmdBufSourceState.renderTargetHeight,(GfxColor)0xff000000);
-    if (param_1->sunQueryIssued[uVar6] == false) {
-      local_c = 0.0;
+    if (sunFlare->sunQueryIssued[uVar6] == false) {
+      lastVisibility = 0.0;
     }
     else {
-      uVar5 = RB_HW_ReadOcclusionQuery(param_1->sunQuery[uVar6]);
+      uVar5 = RB_HW_ReadOcclusionQuery(sunFlare->sunQuery[uVar6]);
       if (uVar5 == 0xffffffff) {
-        param_1->error = true;
+        sunFlare->error = true;
       }
       iVar2 = dx.sunSpriteSamples;
       if ((dx.sunSpriteSamples == 0) &&
@@ -512,18 +532,18 @@ void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
         return;
       }
       if ((uint)iVar2 < uVar5) {
-        param_1->error = true;
+        sunFlare->error = true;
       }
       local_50 = (float)((float10)uVar5 / (float10)(uint)iVar2);
       if (1.0 - local_50 < 0.0) {
         local_50 = 1.0;
       }
-      local_c = local_50;
+      lastVisibility = local_50;
     }
-    if (param_1->error == false) {
-      param_1->lastVisibility = local_c;
+    if (sunFlare->error == false) {
+      sunFlare->lastVisibility = lastVisibility;
     }
-    param_1->error = false;
+    sunFlare->error = false;
     if ((pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_COST) ||
        (pixelCostMode == GFX_PIXEL_COST_MODE_MEASURE_MSEC)) {
       bVar3 = true;
@@ -535,10 +555,10 @@ void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
       RB_EndTessSurface();
     }
     else {
-      RB_HW_BeginOcclusionQuery(param_1->sunQuery[uVar6],(void *)0x0);
+      RB_HW_BeginOcclusionQuery(sunFlare->sunQuery[uVar6],(void *)0x0);
       RB_EndTessSurface();
-      (**(code **)((int)*param_1->sunQuery[uVar6] + 0x18))(param_1->sunQuery[uVar6],1);
-      param_1->sunQueryIssued[uVar6] = true;
+      (**(code **)((int)*sunFlare->sunQuery[uVar6] + 0x18))(sunFlare->sunQuery[uVar6],1);
+      sunFlare->sunQueryIssued[uVar6] = true;
     }
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -551,16 +571,18 @@ void __cdecl RB_DrawSunQuerySprite(SunFlareDynamic *param_1)
 
 // 00B02F00  RB_DrawSunFlareCore  (gfx_d3d/rb_sky.cpp:461)
 
-void __cdecl RB_DrawSunFlareCore(float param_1,float param_2)
+void __cdecl RB_DrawSunFlareCore(float alpha,float sizeIn640x480)
 
 {
   uint uVar1;
   code *pcVar2;
   bool bVar3;
+  uchar flareBrightness;
+  GfxColor color;
   
   RB_SetTessTechnique(((rgp.world)->sun).flareMaterial,'\x04');
   R_TrackPrims(&gfxCmdBufState.prim,GFX_PRIM_STATS_FX);
-  if ((param_1 < 0.0) || (1.0 < param_1)) {
+  if ((alpha < 0.0) || (1.0 < alpha)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x1d4,0,
                              "%s\n\t(alpha) = %g");
     if (!bVar3) {
@@ -569,9 +591,9 @@ void __cdecl RB_DrawSunFlareCore(float param_1,float param_2)
       return;
     }
   }
-  uVar1 = (uint)ROUND(param_1 * 255.0 + 9.313226e-10);
+  uVar1 = (uint)ROUND(alpha * 255.0 + 9.313226e-10);
   RB_SetIdentity();
-  RB_TessSunBillboard(param_2 / 640.0,param_2 / 480.0,
+  RB_TessSunBillboard(sizeIn640x480 / 640.0,sizeIn640x480 / 480.0,
                       (GfxColor)
                       ((uVar1 & 0xff) << 0x10 | (uVar1 & 0xff) << 8 | uVar1 & 0xff | 0xff000000));
   return;
@@ -580,7 +602,7 @@ void __cdecl RB_DrawSunFlareCore(float param_1,float param_2)
 
 // 00B029E0  RB_DrawSunFlare  (gfx_d3d/rb_sky.cpp:478)
 
-void __cdecl RB_DrawSunFlare(SunFlareDynamic *param_1,int param_2)
+void __cdecl RB_DrawSunFlare(SunFlareDynamic *sunFlare,int frameTime)
 
 {
   float fVar1;
@@ -590,10 +612,13 @@ void __cdecl RB_DrawSunFlare(SunFlareDynamic *param_1,int param_2)
   DWORD DVar5;
   float fVar6;
   float fVar7;
-  float local_14;
+  float lerp;
+  float size;
+  PIXProfile pp;
+  float alpha;
   
   PIXBeginNamedEvent(-1,"RB_DrawSunFlare");
-  if ((param_1 == (SunFlareDynamic *)0x0) &&
+  if ((sunFlare == (SunFlareDynamic *)0x0) &&
      (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x1e5,0,"%s"
                               ), !bVar4)) {
     pcVar3 = (code *)swi(3);
@@ -613,15 +638,15 @@ void __cdecl RB_DrawSunFlare(SunFlareDynamic *param_1,int param_2)
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (((rgp.world)->sun).flareMinDot < param_1->lastDot) {
-    if (param_1->lastDot < ((rgp.world)->sun).flareMaxDot) {
-      local_14 = (param_1->lastDot - ((rgp.world)->sun).flareMinDot) /
-                 (((rgp.world)->sun).flareMaxDot - ((rgp.world)->sun).flareMinDot);
+  else if (((rgp.world)->sun).flareMinDot < sunFlare->lastDot) {
+    if (sunFlare->lastDot < ((rgp.world)->sun).flareMaxDot) {
+      lerp = (sunFlare->lastDot - ((rgp.world)->sun).flareMinDot) /
+             (((rgp.world)->sun).flareMaxDot - ((rgp.world)->sun).flareMinDot);
     }
     else {
-      local_14 = 1.0;
+      lerp = 1.0;
     }
-    if (((local_14 < 0.0) || (1.0 < local_14)) &&
+    if (((lerp < 0.0) || (1.0 < lerp)) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x1f7,1,
                                  "%s\n\t(lerp) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -635,28 +660,28 @@ void __cdecl RB_DrawSunFlare(SunFlareDynamic *param_1,int param_2)
       (*pcVar3)();
       return;
     }
-    fVar6 = local_14 * ((rgp.world)->sun).flareMaxAlpha;
+    fVar6 = lerp * ((rgp.world)->sun).flareMaxAlpha;
     fVar1 = ((rgp.world)->sun).flareMaxSize;
     fVar2 = ((rgp.world)->sun).flareMinSize;
-    if ((param_1->flareIntensity < 0.0) &&
+    if ((sunFlare->flareIntensity < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x1fd,0,
                                  "%s\n\t(sunFlare->flareIntensity) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    if ((param_1->lastVisibility < 0.0) &&
+    if ((sunFlare->lastVisibility < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x1fe,0,
                                  "%s\n\t(sunFlare->lastVisibility) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    fVar7 = R_UpdateOverTime(param_1->flareIntensity,param_1->lastVisibility,
+    fVar7 = R_UpdateOverTime(sunFlare->flareIntensity,sunFlare->lastVisibility,
                              ((rgp.world)->sun).flareFadeInTime,((rgp.world)->sun).flareFadeOutTime,
-                             param_2);
-    param_1->flareIntensity = fVar7;
-    if ((param_1->flareIntensity < 0.0) &&
+                             frameTime);
+    sunFlare->flareIntensity = fVar7;
+    if ((sunFlare->flareIntensity < 0.0) &&
        (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x202,0,
                                  "%s\n\t(sunFlare->flareIntensity) = %g"), !bVar4)) {
       pcVar3 = (code *)swi(3);
@@ -670,8 +695,8 @@ void __cdecl RB_DrawSunFlare(SunFlareDynamic *param_1,int param_2)
       (*pcVar3)();
       return;
     }
-    RB_DrawSunFlareCore(param_1->flareIntensity * fVar6 * param_1->sunVisibilityAdjust,
-                        local_14 * fVar1 + fVar2);
+    RB_DrawSunFlareCore(sunFlare->flareIntensity * fVar6 * sunFlare->sunVisibilityAdjust,
+                        lerp * fVar1 + fVar2);
     DVar5 = GetCurrentThreadId();
     if ((DVar5 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
@@ -689,17 +714,18 @@ void __cdecl RB_DrawSunFlare(SunFlareDynamic *param_1,int param_2)
 
 // 00B03140  RB_CalcSunBlind  (gfx_d3d/rb_sky.cpp:521)
 
-void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3,float *param_4)
+void __cdecl RB_CalcSunBlind(SunFlareDynamic *sunFlare,int frameTime,float *blind,float *glare)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float fVar4;
-  float local_10;
-  float local_c;
+  float blindLerp;
+  float glareLerp;
+  float sunDot;
   
-  if (param_1 == (SunFlareDynamic *)0x0) {
+  if (sunFlare == (SunFlareDynamic *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x20e,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -715,23 +741,23 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
       return;
     }
   }
-  fVar3 = ((rgp.world)->sun).sunFxPosition[0] * (gfxCmdBufSourceState.viewParms3D)->axis[0][0] +
+  fVar4 = ((rgp.world)->sun).sunFxPosition[0] * (gfxCmdBufSourceState.viewParms3D)->axis[0][0] +
           ((rgp.world)->sun).sunFxPosition[1] * (gfxCmdBufSourceState.viewParms3D)->axis[0][1] +
           ((rgp.world)->sun).sunFxPosition[2] * (gfxCmdBufSourceState.viewParms3D)->axis[0][2];
   if (0.0 < ((rgp.world)->sun).blindMaxDarken) {
-    if (((rgp.world)->sun).blindMinDot < fVar3) {
-      if (fVar3 < ((rgp.world)->sun).blindMaxDot) {
-        local_10 = (fVar3 - ((rgp.world)->sun).blindMinDot) /
-                   (((rgp.world)->sun).blindMaxDot - ((rgp.world)->sun).blindMinDot);
+    if (((rgp.world)->sun).blindMinDot < fVar4) {
+      if (fVar4 < ((rgp.world)->sun).blindMaxDot) {
+        blindLerp = (fVar4 - ((rgp.world)->sun).blindMinDot) /
+                    (((rgp.world)->sun).blindMaxDot - ((rgp.world)->sun).blindMinDot);
       }
       else {
-        local_10 = 1.0;
+        blindLerp = 1.0;
       }
     }
     else {
-      local_10 = 0.0;
+      blindLerp = 0.0;
     }
-    if (local_10 < 0.0) {
+    if (blindLerp < 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x21f,0,
                                "%s\n\t(blindLerp) = %g");
       if (!bVar2) {
@@ -740,7 +766,7 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
         return;
       }
     }
-    if (1.0 < local_10) {
+    if (1.0 < blindLerp) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x220,0,
                                "%s\n\t(blindLerp) = %g");
       if (!bVar2) {
@@ -749,8 +775,8 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
         return;
       }
     }
-    local_10 = param_1->lastVisibility * param_1->sunVisibilityAdjust * local_10;
-    if (local_10 < 0.0) {
+    fVar3 = sunFlare->lastVisibility * sunFlare->sunVisibilityAdjust * blindLerp;
+    if (fVar3 < 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x222,0,
                                "%s\n\t(blindLerp) = %g");
       if (!bVar2) {
@@ -759,7 +785,7 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
         return;
       }
     }
-    if (1.0 < local_10) {
+    if (1.0 < fVar3) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x223,0,
                                "%s\n\t(blindLerp) = %g");
       if (!bVar2) {
@@ -768,10 +794,10 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
         return;
       }
     }
-    fVar4 = R_UpdateOverTime(param_1->currentBlind,local_10,((rgp.world)->sun).blindFadeInTime,
-                             ((rgp.world)->sun).blindFadeOutTime,param_2);
-    param_1->currentBlind = fVar4;
-    if (param_1->currentBlind < 0.0) {
+    fVar3 = R_UpdateOverTime(sunFlare->currentBlind,fVar3,((rgp.world)->sun).blindFadeInTime,
+                             ((rgp.world)->sun).blindFadeOutTime,frameTime);
+    sunFlare->currentBlind = fVar3;
+    if (sunFlare->currentBlind < 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x225,0,
                                "%s\n\t(sunFlare->currentBlind) = %g");
       if (!bVar2) {
@@ -780,7 +806,7 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
         return;
       }
     }
-    if (1.0 < param_1->currentBlind) {
+    if (1.0 < sunFlare->currentBlind) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x226,0,
                                "%s\n\t(sunFlare->currentBlind) = %g");
       if (!bVar2) {
@@ -789,33 +815,33 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
         return;
       }
     }
-    *param_3 = param_1->currentBlind * ((rgp.world)->sun).blindMaxDarken;
+    *blind = sunFlare->currentBlind * ((rgp.world)->sun).blindMaxDarken;
   }
   else {
-    *param_3 = 0.0;
+    *blind = 0.0;
   }
   if (0.0 < ((rgp.world)->sun).glareMaxLighten) {
-    if (((rgp.world)->sun).glareMinDot < fVar3) {
-      if (fVar3 < ((rgp.world)->sun).glareMaxDot) {
-        local_c = (fVar3 - ((rgp.world)->sun).glareMinDot) /
-                  (((rgp.world)->sun).glareMaxDot - ((rgp.world)->sun).glareMinDot);
+    if (((rgp.world)->sun).glareMinDot < fVar4) {
+      if (fVar4 < ((rgp.world)->sun).glareMaxDot) {
+        glareLerp = (fVar4 - ((rgp.world)->sun).glareMinDot) /
+                    (((rgp.world)->sun).glareMaxDot - ((rgp.world)->sun).glareMinDot);
       }
       else {
-        local_c = 1.0;
+        glareLerp = 1.0;
       }
     }
     else {
-      local_c = 0.0;
+      glareLerp = 0.0;
     }
-    fVar3 = R_UpdateOverTime(param_1->currentGlare,
-                             param_1->lastVisibility * param_1->sunVisibilityAdjust * local_c,
+    fVar4 = R_UpdateOverTime(sunFlare->currentGlare,
+                             sunFlare->lastVisibility * sunFlare->sunVisibilityAdjust * glareLerp,
                              ((rgp.world)->sun).glareFadeInTime,((rgp.world)->sun).glareFadeOutTime,
-                             param_2);
-    param_1->currentGlare = fVar3;
-    *param_4 = param_1->currentGlare * ((rgp.world)->sun).glareMaxLighten;
+                             frameTime);
+    sunFlare->currentGlare = fVar4;
+    *glare = sunFlare->currentGlare * ((rgp.world)->sun).glareMaxLighten;
   }
   else {
-    *param_4 = 0.0;
+    *glare = 0.0;
   }
   return;
 }
@@ -823,12 +849,12 @@ void __cdecl RB_CalcSunBlind(SunFlareDynamic *param_1,int param_2,float *param_3
 
 // 00B02770  RB_AddSunEffects  (gfx_d3d/rb_sky.cpp:573)
 
-void __cdecl RB_AddSunEffects(SunFlareDynamic *param_1)
+void __cdecl RB_AddSunEffects(SunFlareDynamic *sunFlare)
 
 {
   code *pcVar1;
   bool bVar2;
-  float (*pafVar3) [3];
+  float (*cinfo_8) [3];
   
   if ((rgp.world == (GfxWorld *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x23e,0,"%s"
@@ -837,20 +863,20 @@ void __cdecl RB_AddSunEffects(SunFlareDynamic *param_1)
     (*pcVar1)();
     return;
   }
-  if ((param_1 == (SunFlareDynamic *)0x0) &&
+  if ((sunFlare == (SunFlareDynamic *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x23f,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pafVar3 = (gfxCmdBufSourceState.viewParms3D)->axis;
-  param_1->lastDot =
-       ((rgp.world)->sun).sunFxPosition[0] * (*pafVar3)[0] +
+  cinfo_8 = (gfxCmdBufSourceState.viewParms3D)->axis;
+  sunFlare->lastDot =
+       ((rgp.world)->sun).sunFxPosition[0] * (*cinfo_8)[0] +
        ((rgp.world)->sun).sunFxPosition[1] * (gfxCmdBufSourceState.viewParms3D)->axis[0][1] +
        ((rgp.world)->sun).sunFxPosition[2] * (gfxCmdBufSourceState.viewParms3D)->axis[0][2];
-  if (0.0 < param_1->lastDot) {
-    GamerProfile_WriteSettings((int)pafVar3);
+  if (0.0 < sunFlare->lastDot) {
+    GamerProfile_WriteSettings((int)cinfo_8);
   }
   return;
 }
@@ -858,36 +884,39 @@ void __cdecl RB_AddSunEffects(SunFlareDynamic *param_1)
 
 // 00B03020  RB_DrawBlindAndGlare  (gfx_d3d/rb_sky.cpp:585)
 
-void __cdecl RB_DrawBlindAndGlare(SunFlareDynamic *param_1,int param_2)
+void __cdecl RB_DrawBlindAndGlare(SunFlareDynamic *sunFlare,int frameTime)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  float local_28;
+  float colorVec;
   float local_24;
   float local_20;
   float local_1c;
-  float local_18 [4];
-  ulong local_8;
+  float blind;
+  float epsilon;
+  float glare;
+  PIXProfile pp;
+  GfxColor color;
   
   PIXBeginNamedEvent(-1,"RB_DrawBlindAndGlare");
-  if ((param_1 == (SunFlareDynamic *)0x0) &&
+  if ((sunFlare == (SunFlareDynamic *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x250,0,"%s"
                               ), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  RB_CalcSunBlind(param_1,param_2,local_18,local_18 + 2);
-  local_18[1] = 0.001;
-  if ((0.001 < local_18[2]) || (0.001 < local_18[0])) {
-    local_28 = local_18[2];
-    local_24 = local_18[2];
-    local_20 = local_18[2];
-    local_1c = local_18[0];
-    R_ConvertColorToBytes(&local_28,(uchar *)&local_8);
-    RB_DrawFullScreenColoredQuad(rgp.glareBlindMaterial,0.0,0.0,1.0,1.0,local_8);
+  RB_CalcSunBlind(sunFlare,frameTime,&blind,&glare);
+  epsilon = 0.001;
+  if ((0.001 < glare) || (0.001 < blind)) {
+    colorVec = glare;
+    local_24 = glare;
+    local_20 = glare;
+    local_1c = blind;
+    R_ConvertColorToBytes(&colorVec,color.array);
+    RB_DrawFullScreenColoredQuad(rgp.glareBlindMaterial,0.0,0.0,1.0,1.0,color.packed);
   }
   else if (tess.indexCount != 0) {
     RB_EndTessSurface();
@@ -902,12 +931,14 @@ void __cdecl RB_DrawBlindAndGlare(SunFlareDynamic *param_1,int param_2)
 
 // 00B01A00  RB_DrawSun  (gfx_d3d/rb_sky.cpp:613)
 
-void __cdecl RB_DrawSun(int param_1)
+void __cdecl RB_DrawSun(int localClientNum)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
+  SunFlareDynamic *sunFlare;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"RB_DrawSun");
   if ((rgp.world == (GfxWorld *)0x0) &&
@@ -917,7 +948,7 @@ void __cdecl RB_DrawSun(int param_1)
     (*pcVar1)();
     return;
   }
-  if ((gfxCfg.maxClientViews <= (uint)param_1) &&
+  if ((gfxCfg.maxClientViews <= (uint)localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x26b,0,
                                "localClientNum doesn\'t index gfxCfg.maxClientViews\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -939,8 +970,8 @@ void __cdecl RB_DrawSun(int param_1)
   }
   else {
     RB_SetIdentity();
-    RB_DrawSunQuerySprite(sunFlareArray + param_1);
-    RB_AddSunEffects(sunFlareArray + param_1);
+    RB_DrawSunQuerySprite(sunFlareArray + localClientNum);
+    RB_AddSunEffects(sunFlareArray + localClientNum);
     if (tess.indexCount != 0) {
       RB_EndTessSurface();
     }
@@ -955,16 +986,18 @@ void __cdecl RB_DrawSun(int param_1)
 
 // 00B02850  RB_DrawSunPostEffects  (gfx_d3d/rb_sky.cpp:644)
 
-void __cdecl RB_DrawSunPostEffects(int param_1,float param_2)
+void __cdecl RB_DrawSunPostEffects(int localClientNum,float sunVisibilityAdjust)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  int local_10;
+  int frameTime;
+  SunFlareDynamic *sunFlare;
+  PIXProfile pp;
   
   PIXBeginNamedEvent(-1,"RB_DrawSunPostEffects");
-  if ((3 < (uint)param_1) &&
+  if ((3 < (uint)localClientNum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x28a,0,
                                "localClientNum doesn\'t index ARRAY_COUNT( sunFlareArray )\n\t%i not in [0, %i)"
                               ), !bVar2)) {
@@ -972,15 +1005,15 @@ void __cdecl RB_DrawSunPostEffects(int param_1,float param_2)
     (*pcVar1)();
     return;
   }
-  sunFlareArray[param_1].sunVisibilityAdjust = param_2;
-  if ((sunFlareArray[param_1].lastTime == 0) ||
-     (gfxCmdBufSourceState.sceneDef.time < sunFlareArray[param_1].lastTime)) {
-    local_10 = 10;
+  sunFlareArray[localClientNum].sunVisibilityAdjust = sunVisibilityAdjust;
+  if ((sunFlareArray[localClientNum].lastTime == 0) ||
+     (gfxCmdBufSourceState.sceneDef.time < sunFlareArray[localClientNum].lastTime)) {
+    frameTime = 10;
   }
   else {
-    local_10 = gfxCmdBufSourceState.sceneDef.time - sunFlareArray[param_1].lastTime;
+    frameTime = gfxCmdBufSourceState.sceneDef.time - sunFlareArray[localClientNum].lastTime;
   }
-  sunFlareArray[param_1].lastTime = gfxCmdBufSourceState.sceneDef.time;
+  sunFlareArray[localClientNum].lastTime = gfxCmdBufSourceState.sceneDef.time;
   if ((r_drawSun->current).enabled == false) {
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1002,8 +1035,8 @@ void __cdecl RB_DrawSunPostEffects(int param_1,float param_2)
       }
     }
     else {
-      RB_DrawSunFlare(sunFlareArray + param_1,local_10);
-      RB_DrawBlindAndGlare(sunFlareArray + param_1,local_10);
+      RB_DrawSunFlare(sunFlareArray + localClientNum,frameTime);
+      RB_DrawBlindAndGlare(sunFlareArray + localClientNum,frameTime);
       DVar3 = GetCurrentThreadId();
       if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
         _D3DPERF_EndEvent_0();
@@ -1020,14 +1053,14 @@ void __cdecl RB_AllocSunSpriteQueries(void)
 
 {
   IDirect3DQuery9 *pIVar1;
-  undefined4 local_c;
-  undefined4 local_8;
+  uint viewIndex;
+  uint queryIndex;
   
-  for (local_c = 0; local_c < gfxCfg.maxClientViews; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
+  for (viewIndex = 0; viewIndex < gfxCfg.maxClientViews; viewIndex = viewIndex + 1) {
+    for (queryIndex = 0; queryIndex < 2; queryIndex = queryIndex + 1) {
       pIVar1 = RB_HW_AllocOcclusionQuery();
-      *(IDirect3DQuery9 **)(local_c * 0x2c + 0xb50ebc0 + local_8 * 4) = pIVar1;
-      *(undefined1 *)(local_c * 0x2c + 0xb50ebbd + local_8) = 0;
+      *(IDirect3DQuery9 **)(viewIndex * 0x2c + 0xb50ebc0 + queryIndex * 4) = pIVar1;
+      *(undefined1 *)(viewIndex * 0x2c + 0xb50ebbd + queryIndex) = 0;
     }
   }
   return;
@@ -1039,24 +1072,25 @@ void __cdecl RB_AllocSunSpriteQueries(void)
 void __cdecl RB_FreeSunSpriteQueries(void)
 
 {
-  IDirect3DTexture9 *pIVar1;
-  int iVar2;
-  uint local_c;
-  uint local_8;
+  IDirect3DTexture9 *var_9;
+  int iVar1;
+  IDirect3DQuery9 *varCopy;
+  uint viewIndex;
+  uint queryIndex;
   
-  for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-    for (local_8 = 0; local_8 < 2; local_8 = local_8 + 1) {
-      iVar2 = *(int *)(local_c * 0x2c + 0xb50ebc0 + local_8 * 4);
-      while (iVar2 != 0) {
+  for (viewIndex = 0; viewIndex < 4; viewIndex = viewIndex + 1) {
+    for (queryIndex = 0; queryIndex < 2; queryIndex = queryIndex + 1) {
+      iVar1 = *(int *)(viewIndex * 0x2c + 0xb50ebc0 + queryIndex * 4);
+      while (iVar1 != 0) {
         if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
           RB_LogPrint("sunFlareArray[viewIndex].sunQuery[queryIndex]->Release()\n");
         }
-        pIVar1 = *(IDirect3DTexture9 **)(local_c * 0x2c + 0xb50ebc0 + local_8 * 4);
-        *(undefined4 *)(local_c * 0x2c + 0xb50ebc0 + local_8 * 4) = 0;
+        var_9 = *(IDirect3DTexture9 **)(viewIndex * 0x2c + 0xb50ebc0 + queryIndex * 4);
+        *(undefined4 *)(viewIndex * 0x2c + 0xb50ebc0 + queryIndex * 4) = 0;
         R_ReleaseAndSetNULL<IDirect3DTexture9>
-                  (pIVar1,"sunFlareArray[viewIndex].sunQuery[queryIndex]",
+                  (var_9,"sunFlareArray[viewIndex].sunQuery[queryIndex]",
                    "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_sky.cpp",0x2c3);
-        iVar2 = alwaysfails;
+        iVar1 = alwaysfails;
       }
     }
   }

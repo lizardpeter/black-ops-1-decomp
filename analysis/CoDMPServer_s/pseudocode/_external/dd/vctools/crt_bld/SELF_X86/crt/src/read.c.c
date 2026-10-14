@@ -5,38 +5,39 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl _read(int param_1,void *param_2,uint param_3)
+int __cdecl _read(int fh,void *buf,uint cnt)
 
 {
   ulong *puVar1;
   int *piVar2;
   int iVar3;
-  int iStack_20;
+  int _Expr_val;
+  int r;
   
-  if (param_1 == -2) {
+  if (fh == -2) {
     puVar1 = __doserrno();
     *puVar1 = 0;
     piVar2 = _errno();
     *piVar2 = 9;
     return -1;
   }
-  if ((-1 < param_1) && ((uint)param_1 < (uint)_nhandle)) {
-    iVar3 = (param_1 & 0x1fU) * 0x40;
-    if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) != 0) {
-      if (param_3 < 0x80000000) {
-        __lock_fhandle(param_1);
-        if ((*(byte *)(*(int *)(&__pioinfo + (param_1 >> 5) * 4) + 4 + iVar3) & 1) == 0) {
+  if ((-1 < fh) && ((uint)fh < (uint)_nhandle)) {
+    iVar3 = (fh & 0x1fU) * 0x40;
+    if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) != 0) {
+      if (cnt < 0x80000000) {
+        __lock_fhandle(fh);
+        if ((*(byte *)(*(int *)(&__pioinfo + (fh >> 5) * 4) + 4 + iVar3) & 1) == 0) {
           piVar2 = _errno();
           *piVar2 = 9;
           puVar1 = __doserrno();
           *puVar1 = 0;
-          iStack_20 = -1;
+          r = -1;
         }
         else {
-          iStack_20 = _read_nolock(param_1,param_2,param_3);
+          r = _read_nolock(fh,buf,cnt);
         }
         FUN_0096c547();
-        return iStack_20;
+        return r;
       }
       puVar1 = __doserrno();
       *puVar1 = 0;
@@ -57,44 +58,47 @@ LAB_0096c4a3:
 
 // 0096BE92  _read_nolock  (<external>/dd/vctools/crt_bld/SELF_X86/crt/src/read.c:114)
 
-int __cdecl _read_nolock(int param_1,void *param_2,uint param_3)
+int __cdecl _read_nolock(int fh,void *inputbuf,uint cnt)
 
 {
   uint uVar1;
   byte bVar2;
-  short sVar3;
+  char cVar3;
   ulong *puVar4;
   int *piVar5;
   uint uVar6;
-  byte *pbVar7;
-  BOOL BVar8;
-  DWORD DVar9;
-  ulong uVar10;
-  byte *pbVar11;
-  int iVar12;
+  char *lpBuffer;
+  BOOL BVar7;
+  DWORD DVar8;
+  ulong oserrno;
+  byte *pbVar9;
+  byte *pbVar10;
+  int iVar11;
+  short *psVar12;
   int iVar13;
   int unaff_EDI;
   bool bVar14;
   long64 lVar15;
-  undefined2 uVar16;
-  uint local_1c;
-  int local_18;
-  byte *local_14;
-  byte *local_10;
-  undefined2 local_c;
-  char local_6;
-  char local_5;
+  short sVar16;
+  uint inputsize;
+  int os_read;
+  int retval;
+  int bytes_read;
+  void *buf;
+  undefined2 wpeekchr;
+  char tmode;
+  char peekchr;
   
-  uVar1 = param_3;
-  local_18 = -2;
-  if (param_1 == -2) {
+  uVar1 = cnt;
+  retval = -2;
+  if (fh == -2) {
     puVar4 = __doserrno();
     *puVar4 = 0;
     piVar5 = _errno();
     *piVar5 = 9;
     return -1;
   }
-  if ((param_1 < 0) || ((uint)_nhandle <= (uint)param_1)) {
+  if ((fh < 0) || ((uint)_nhandle <= (uint)fh)) {
     puVar4 = __doserrno();
     *puVar4 = 0;
     piVar5 = _errno();
@@ -102,8 +106,8 @@ int __cdecl _read_nolock(int param_1,void *param_2,uint param_3)
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  piVar5 = (int *)(&__pioinfo + (param_1 >> 5) * 4);
-  iVar13 = (param_1 & 0x1fU) * 0x40;
+  piVar5 = (int *)(&__pioinfo + (fh >> 5) * 4);
+  iVar13 = (fh & 0x1fU) * 0x40;
   bVar2 = *(byte *)(*piVar5 + iVar13 + 4);
   if ((bVar2 & 1) == 0) {
     puVar4 = __doserrno();
@@ -112,73 +116,74 @@ int __cdecl _read_nolock(int param_1,void *param_2,uint param_3)
     *piVar5 = 9;
     goto LAB_0096bf9c;
   }
-  if (param_3 < 0x80000000) {
-    local_14 = (byte *)0x0;
-    if ((param_3 == 0) || ((bVar2 & 2) != 0)) {
+  if (cnt < 0x80000000) {
+    bytes_read = 0;
+    if ((cnt == 0) || ((bVar2 & 2) != 0)) {
       return 0;
     }
-    if (param_2 != (void *)0x0) {
-      local_6 = (char)(*(char *)(*piVar5 + iVar13 + 0x24) * '\x02') >> 1;
-      if (local_6 == '\x01') {
-        if ((~param_3 & 1) == 0) goto LAB_0096bf8a;
-        uVar6 = param_3 >> 1;
-        param_3 = 4;
+    if (inputbuf != (void *)0x0) {
+      tmode = (char)(*(char *)(*piVar5 + iVar13 + 0x24) * '\x02') >> 1;
+      if (tmode == '\x01') {
+        if ((~cnt & 1) == 0) goto LAB_0096bf8a;
+        uVar6 = cnt >> 1;
+        cnt = 4;
         if (3 < uVar6) {
-          param_3 = uVar6;
+          cnt = uVar6;
         }
-        local_10 = _malloc_crt(param_3);
-        if (local_10 == (byte *)0x0) {
+        buf = _malloc_crt(cnt);
+        if (buf == (void *)0x0) {
           piVar5 = _errno();
           *piVar5 = 0xc;
           puVar4 = __doserrno();
           *puVar4 = 8;
           return -1;
         }
-        lVar15 = _lseeki64_nolock(param_1,0x100000000,unaff_EDI);
-        iVar12 = *piVar5;
-        *(int *)(iVar13 + 0x28 + iVar12) = (int)lVar15;
-        *(int *)(iVar13 + 0x2c + iVar12) = (int)((ulonglong)lVar15 >> 0x20);
+        lVar15 = _lseeki64_nolock(fh,0x100000000,unaff_EDI);
+        iVar11 = *piVar5;
+        *(int *)(iVar13 + 0x28 + iVar11) = (int)lVar15;
+        *(int *)(iVar13 + 0x2c + iVar11) = (int)((ulonglong)lVar15 >> 0x20);
       }
       else {
-        if (local_6 == '\x02') {
-          if ((~param_3 & 1) == 0) goto LAB_0096bf8a;
-          param_3 = param_3 & 0xfffffffe;
+        if (tmode == '\x02') {
+          if ((~cnt & 1) == 0) goto LAB_0096bf8a;
+          cnt = cnt & 0xfffffffe;
         }
-        local_10 = param_2;
+        buf = inputbuf;
       }
-      pbVar7 = local_10;
-      uVar6 = param_3;
+      lpBuffer = buf;
+      uVar6 = cnt;
       if ((((*(byte *)(*piVar5 + iVar13 + 4) & 0x48) != 0) &&
-          (bVar2 = *(byte *)(*piVar5 + iVar13 + 5), bVar2 != 10)) && (param_3 != 0)) {
-        *local_10 = bVar2;
-        pbVar7 = local_10 + 1;
-        uVar6 = param_3 - 1;
-        local_14 = (byte *)0x1;
+          (cVar3 = *(char *)(*piVar5 + iVar13 + 5), cVar3 != '\n')) && (cnt != 0)) {
+        *(char *)buf = cVar3;
+        lpBuffer = (char *)((int)buf + 1);
+        uVar6 = cnt - 1;
+        bytes_read = 1;
         *(undefined1 *)(iVar13 + 5 + *piVar5) = 10;
-        if (((local_6 != '\0') && (bVar2 = *(byte *)(iVar13 + 0x25 + *piVar5), bVar2 != 10)) &&
+        if (((tmode != '\0') && (cVar3 = *(char *)(iVar13 + 0x25 + *piVar5), cVar3 != '\n')) &&
            (uVar6 != 0)) {
-          *pbVar7 = bVar2;
-          pbVar7 = local_10 + 2;
-          uVar6 = param_3 - 2;
-          local_14 = (byte *)0x2;
+          *lpBuffer = cVar3;
+          lpBuffer = (char *)((int)buf + 2);
+          uVar6 = cnt - 2;
+          bytes_read = 2;
           *(undefined1 *)(iVar13 + 0x25 + *piVar5) = 10;
-          if (((local_6 == '\x01') && (bVar2 = *(byte *)(iVar13 + 0x26 + *piVar5), bVar2 != 10)) &&
+          if (((tmode == '\x01') && (cVar3 = *(char *)(iVar13 + 0x26 + *piVar5), cVar3 != '\n')) &&
              (uVar6 != 0)) {
-            *pbVar7 = bVar2;
-            pbVar7 = local_10 + 3;
-            local_14 = (byte *)0x3;
+            *lpBuffer = cVar3;
+            lpBuffer = (char *)((int)buf + 3);
+            bytes_read = 3;
             *(undefined1 *)(iVar13 + 0x26 + *piVar5) = 10;
-            uVar6 = param_3 - 3;
+            uVar6 = cnt - 3;
           }
         }
       }
-      param_3 = uVar6;
-      BVar8 = ReadFile(*(HANDLE *)(iVar13 + *piVar5),pbVar7,param_3,&local_1c,(LPOVERLAPPED)0x0);
-      if (((BVar8 == 0) || ((int)local_1c < 0)) || (param_3 < local_1c)) {
-        uVar10 = GetLastError();
-        if (uVar10 != 5) {
-          if (uVar10 == 0x6d) {
-            local_18 = 0;
+      cnt = uVar6;
+      BVar7 = ReadFile(*(HANDLE *)(iVar13 + *piVar5),lpBuffer,cnt,(LPDWORD)&os_read,
+                       (LPOVERLAPPED)0x0);
+      if (((BVar7 == 0) || (os_read < 0)) || (cnt < (uint)os_read)) {
+        oserrno = GetLastError();
+        if (oserrno != 5) {
+          if (oserrno == 0x6d) {
+            retval = 0;
             goto LAB_0096c2a9;
           }
           goto LAB_0096c29e;
@@ -189,211 +194,210 @@ int __cdecl _read_nolock(int param_1,void *param_2,uint param_3)
         *puVar4 = 5;
       }
       else {
-        local_14 = (byte *)((int)local_14 + local_1c);
-        pbVar7 = (byte *)(iVar13 + 4 + *piVar5);
-        if ((*pbVar7 & 0x80) == 0) goto LAB_0096c2a9;
-        if (local_6 == '\x02') {
-          if ((local_1c == 0) || (*(short *)local_10 != 10)) {
-            *pbVar7 = *pbVar7 & 0xfb;
+        bytes_read = bytes_read + os_read;
+        pbVar9 = (byte *)(iVar13 + 4 + *piVar5);
+        if ((*pbVar9 & 0x80) == 0) goto LAB_0096c2a9;
+        if (tmode == '\x02') {
+          if ((os_read == 0) || (*(short *)buf != 10)) {
+            *pbVar9 = *pbVar9 & 0xfb;
           }
           else {
-            *pbVar7 = *pbVar7 | 4;
+            *pbVar9 = *pbVar9 | 4;
           }
-          local_14 = local_10 + (int)local_14;
-          param_3 = (uint)local_10;
-          pbVar7 = local_10;
-          if (local_10 < local_14) {
+          bytes_read = bytes_read + (int)buf;
+          cnt = (uint)buf;
+          psVar12 = buf;
+          if (buf < (uint)bytes_read) {
             do {
-              sVar3 = *(short *)param_3;
-              if (sVar3 == 0x1a) {
-                pbVar11 = (byte *)(iVar13 + 4 + *piVar5);
-                if ((*pbVar11 & 0x40) == 0) {
-                  *pbVar11 = *pbVar11 | 2;
+              sVar16 = *(short *)cnt;
+              if (sVar16 == 0x1a) {
+                pbVar9 = (byte *)(iVar13 + 4 + *piVar5);
+                if ((*pbVar9 & 0x40) == 0) {
+                  *pbVar9 = *pbVar9 | 2;
                 }
                 else {
-                  *(undefined2 *)pbVar7 = *(undefined2 *)param_3;
-                  pbVar7 = pbVar7 + 2;
+                  *psVar12 = *(short *)cnt;
+                  psVar12 = psVar12 + 1;
                 }
                 break;
               }
-              if (sVar3 == 0xd) {
-                if (param_3 < local_14 + -2) {
-                  if (*(short *)(param_3 + 2) == 10) {
-                    uVar1 = param_3 + 4;
+              if (sVar16 == 0xd) {
+                if (cnt < bytes_read - 2U) {
+                  if (*(short *)(cnt + 2) == 10) {
+                    uVar1 = cnt + 4;
                     goto LAB_0096c34c;
                   }
 LAB_0096c3df:
-                  param_3 = param_3 + 2;
-                  uVar16 = 0xd;
+                  cnt = cnt + 2;
+                  sVar16 = 0xd;
 LAB_0096c3e1:
-                  *(undefined2 *)pbVar7 = uVar16;
+                  *psVar12 = sVar16;
                 }
                 else {
-                  uVar1 = param_3 + 2;
-                  BVar8 = ReadFile(*(HANDLE *)(iVar13 + *piVar5),&local_c,2,&local_1c,
+                  uVar1 = cnt + 2;
+                  BVar7 = ReadFile(*(HANDLE *)(iVar13 + *piVar5),&wpeekchr,2,(LPDWORD)&os_read,
                                    (LPOVERLAPPED)0x0);
-                  if (((BVar8 == 0) && (DVar9 = GetLastError(), DVar9 != 0)) || (local_1c == 0))
+                  if (((BVar7 == 0) && (DVar8 = GetLastError(), DVar8 != 0)) || (os_read == 0))
                   goto LAB_0096c3df;
                   if ((*(byte *)(iVar13 + 4 + *piVar5) & 0x48) == 0) {
-                    if ((pbVar7 == local_10) && (local_c == 10)) goto LAB_0096c34c;
-                    _lseeki64_nolock(param_1,0x1ffffffff,unaff_EDI);
-                    if (local_c == 10) goto LAB_0096c3e7;
+                    if ((psVar12 == buf) && (wpeekchr == 10)) goto LAB_0096c34c;
+                    _lseeki64_nolock(fh,0x1ffffffff,unaff_EDI);
+                    if (wpeekchr == 10) goto LAB_0096c3e7;
                     goto LAB_0096c3df;
                   }
-                  if (local_c == 10) {
+                  if (wpeekchr == 10) {
 LAB_0096c34c:
-                    param_3 = uVar1;
-                    uVar16 = 10;
+                    cnt = uVar1;
+                    sVar16 = 10;
                     goto LAB_0096c3e1;
                   }
-                  pbVar7[0] = 0xd;
-                  pbVar7[1] = 0;
-                  *(undefined1 *)(iVar13 + 5 + *piVar5) = (undefined1)local_c;
-                  *(undefined1 *)(iVar13 + 0x25 + *piVar5) = local_c._1_1_;
+                  *psVar12 = 0xd;
+                  *(undefined1 *)(iVar13 + 5 + *piVar5) = (undefined1)wpeekchr;
+                  *(undefined1 *)(iVar13 + 0x25 + *piVar5) = wpeekchr._1_1_;
                   *(undefined1 *)(iVar13 + 0x26 + *piVar5) = 10;
-                  param_3 = uVar1;
+                  cnt = uVar1;
                 }
-                pbVar7 = pbVar7 + 2;
-                uVar1 = param_3;
+                psVar12 = psVar12 + 1;
+                uVar1 = cnt;
               }
               else {
-                *(short *)pbVar7 = sVar3;
-                pbVar7 = pbVar7 + 2;
-                uVar1 = param_3 + 2;
+                *psVar12 = sVar16;
+                psVar12 = psVar12 + 1;
+                uVar1 = cnt + 2;
               }
 LAB_0096c3e7:
-              param_3 = uVar1;
-            } while (param_3 < local_14);
+              cnt = uVar1;
+            } while (cnt < (uint)bytes_read);
           }
-          local_14 = (byte *)((int)pbVar7 - (int)local_10);
+          bytes_read = (int)psVar12 - (int)buf;
           goto LAB_0096c2a9;
         }
-        if ((local_1c == 0) || (*local_10 != 10)) {
-          *pbVar7 = *pbVar7 & 0xfb;
+        if ((os_read == 0) || (*(char *)buf != '\n')) {
+          *pbVar9 = *pbVar9 & 0xfb;
         }
         else {
-          *pbVar7 = *pbVar7 | 4;
+          *pbVar9 = *pbVar9 | 4;
         }
-        local_14 = local_10 + (int)local_14;
-        param_3 = (uint)local_10;
-        pbVar7 = local_10;
-        if (local_10 < local_14) {
+        bytes_read = bytes_read + (int)buf;
+        cnt = (uint)buf;
+        pbVar9 = buf;
+        if (buf < (uint)bytes_read) {
           do {
-            bVar2 = *(byte *)param_3;
+            bVar2 = *(byte *)cnt;
             if (bVar2 == 0x1a) {
-              pbVar11 = (byte *)(iVar13 + 4 + *piVar5);
-              if ((*pbVar11 & 0x40) == 0) {
-                *pbVar11 = *pbVar11 | 2;
+              pbVar10 = (byte *)(iVar13 + 4 + *piVar5);
+              if ((*pbVar10 & 0x40) == 0) {
+                *pbVar10 = *pbVar10 | 2;
               }
               else {
-                *pbVar7 = *(byte *)param_3;
-                pbVar7 = pbVar7 + 1;
+                *pbVar9 = *(byte *)cnt;
+                pbVar9 = pbVar9 + 1;
               }
               break;
             }
             if (bVar2 == 0xd) {
-              if (param_3 < local_14 + -1) {
-                if (*(char *)(param_3 + 1) == '\n') {
-                  uVar6 = param_3 + 2;
+              if (cnt < bytes_read - 1U) {
+                if (*(char *)(cnt + 1) == '\n') {
+                  uVar6 = cnt + 2;
                   goto LAB_0096c129;
                 }
 LAB_0096c1a0:
-                param_3 = param_3 + 1;
-                *pbVar7 = 0xd;
+                cnt = cnt + 1;
+                *pbVar9 = 0xd;
               }
               else {
-                uVar6 = param_3 + 1;
-                BVar8 = ReadFile(*(HANDLE *)(iVar13 + *piVar5),&local_5,1,&local_1c,
+                uVar6 = cnt + 1;
+                BVar7 = ReadFile(*(HANDLE *)(iVar13 + *piVar5),&peekchr,1,(LPDWORD)&os_read,
                                  (LPOVERLAPPED)0x0);
-                if (((BVar8 == 0) && (DVar9 = GetLastError(), DVar9 != 0)) || (local_1c == 0))
+                if (((BVar7 == 0) && (DVar8 = GetLastError(), DVar8 != 0)) || (os_read == 0))
                 goto LAB_0096c1a0;
                 if ((*(byte *)(iVar13 + 4 + *piVar5) & 0x48) == 0) {
-                  if ((pbVar7 == local_10) && (local_5 == '\n')) goto LAB_0096c129;
-                  _lseeki64_nolock(param_1,0x1ffffffff,unaff_EDI);
-                  if (local_5 == '\n') goto LAB_0096c1a4;
+                  if ((pbVar9 == buf) && (peekchr == '\n')) goto LAB_0096c129;
+                  _lseeki64_nolock(fh,0x1ffffffff,unaff_EDI);
+                  if (peekchr == '\n') goto LAB_0096c1a4;
                   goto LAB_0096c1a0;
                 }
-                if (local_5 == '\n') {
+                if (peekchr == '\n') {
 LAB_0096c129:
-                  param_3 = uVar6;
-                  *pbVar7 = 10;
+                  cnt = uVar6;
+                  *pbVar9 = 10;
                 }
                 else {
-                  *pbVar7 = 0xd;
-                  *(char *)(iVar13 + 5 + *piVar5) = local_5;
-                  param_3 = uVar6;
+                  *pbVar9 = 0xd;
+                  *(char *)(iVar13 + 5 + *piVar5) = peekchr;
+                  cnt = uVar6;
                 }
               }
-              pbVar7 = pbVar7 + 1;
-              uVar6 = param_3;
+              pbVar9 = pbVar9 + 1;
+              uVar6 = cnt;
             }
             else {
-              *pbVar7 = bVar2;
-              pbVar7 = pbVar7 + 1;
-              uVar6 = param_3 + 1;
+              *pbVar9 = bVar2;
+              pbVar9 = pbVar9 + 1;
+              uVar6 = cnt + 1;
             }
 LAB_0096c1a4:
-            param_3 = uVar6;
-          } while (param_3 < local_14);
+            cnt = uVar6;
+          } while (cnt < (uint)bytes_read);
         }
-        local_14 = (byte *)((int)pbVar7 - (int)local_10);
-        if ((local_6 != '\x01') || (local_14 == (byte *)0x0)) goto LAB_0096c2a9;
-        bVar2 = pbVar7[-1];
+        bytes_read = (int)pbVar9 - (int)buf;
+        if ((tmode != '\x01') || (bytes_read == 0)) goto LAB_0096c2a9;
+        bVar2 = pbVar9[-1];
         if ((char)bVar2 < '\0') {
-          iVar12 = 1;
-          pbVar7 = pbVar7 + -1;
-          while (((_lookuptrailbytes[bVar2] == '\0' && (iVar12 < 5)) && (local_10 <= pbVar7))) {
-            pbVar7 = pbVar7 + -1;
-            bVar2 = *pbVar7;
-            iVar12 = iVar12 + 1;
+          iVar11 = 1;
+          pbVar9 = pbVar9 + -1;
+          while (((_lookuptrailbytes[bVar2] == '\0' && (iVar11 < 5)) && (buf <= pbVar9))) {
+            pbVar9 = pbVar9 + -1;
+            bVar2 = *pbVar9;
+            iVar11 = iVar11 + 1;
           }
-          if (_lookuptrailbytes[*pbVar7] == 0) {
+          if (_lookuptrailbytes[*pbVar9] == 0) {
             piVar5 = _errno();
             *piVar5 = 0x2a;
             goto LAB_0096c2a5;
           }
-          if (_lookuptrailbytes[*pbVar7] + 1 == iVar12) {
-            pbVar7 = pbVar7 + iVar12;
+          if (_lookuptrailbytes[*pbVar9] + 1 == iVar11) {
+            pbVar9 = pbVar9 + iVar11;
           }
           else if ((*(byte *)(*piVar5 + iVar13 + 4) & 0x48) == 0) {
-            _lseeki64_nolock(param_1,CONCAT44(1,-iVar12 >> 0x1f),unaff_EDI);
+            _lseeki64_nolock(fh,CONCAT44(1,-iVar11 >> 0x1f),unaff_EDI);
           }
           else {
-            pbVar11 = pbVar7 + 1;
-            *(byte *)(*piVar5 + iVar13 + 5) = *pbVar7;
-            if (1 < iVar12) {
-              *(byte *)(iVar13 + 0x25 + *piVar5) = *pbVar11;
-              pbVar11 = pbVar7 + 2;
+            pbVar10 = pbVar9 + 1;
+            *(byte *)(*piVar5 + iVar13 + 5) = *pbVar9;
+            if (1 < iVar11) {
+              *(byte *)(iVar13 + 0x25 + *piVar5) = *pbVar10;
+              pbVar10 = pbVar9 + 2;
             }
-            if (iVar12 == 3) {
-              *(byte *)(iVar13 + 0x26 + *piVar5) = *pbVar11;
-              pbVar11 = pbVar11 + 1;
+            if (iVar11 == 3) {
+              *(byte *)(iVar13 + 0x26 + *piVar5) = *pbVar10;
+              pbVar10 = pbVar10 + 1;
             }
-            pbVar7 = pbVar11 + -iVar12;
+            pbVar9 = pbVar10 + -iVar11;
           }
         }
-        iVar12 = (int)pbVar7 - (int)local_10;
-        local_14 = (byte *)MultiByteToWideChar(0xfde9,0,(LPCSTR)local_10,iVar12,param_2,uVar1 >> 1);
-        if (local_14 != (byte *)0x0) {
-          bVar14 = local_14 != (byte *)iVar12;
-          local_14 = (byte *)((int)local_14 * 2);
+        iVar11 = (int)pbVar9 - (int)buf;
+        bytes_read = MultiByteToWideChar(0xfde9,0,buf,iVar11,inputbuf,uVar1 >> 1);
+        if (bytes_read != 0) {
+          bVar14 = bytes_read != iVar11;
+          bytes_read = bytes_read * 2;
           *(uint *)(iVar13 + 0x30 + *piVar5) = (uint)bVar14;
           goto LAB_0096c2a9;
         }
-        uVar10 = GetLastError();
+        oserrno = GetLastError();
 LAB_0096c29e:
-        _dosmaperr(uVar10);
+        _dosmaperr(oserrno);
       }
 LAB_0096c2a5:
-      local_18 = -1;
+      retval = -1;
 LAB_0096c2a9:
-      if (local_10 != param_2) {
-        free(local_10);
+      if (buf != inputbuf) {
+        free(buf);
       }
-      if (local_18 == -2) {
-        return (int)local_14;
+      if (retval == -2) {
+        return bytes_read;
       }
-      return local_18;
+      return retval;
     }
   }
 LAB_0096bf8a:

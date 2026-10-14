@@ -8,15 +8,15 @@ int __cdecl FS_SV_FileExists(char *param_1,char *param_2)
 
 {
   int *piVar1;
-  _iobuf *p_Var2;
+  _iobuf *stream;
   char local_100 [256];
   
   FUN_0068e750((fs_homepath->current).integer,"");
   piVar1 = _errno();
   *piVar1 = 0;
-  p_Var2 = fopen(local_100,"rb");
-  if ((p_Var2 != (_iobuf *)0xffffffff) && (p_Var2 != (_iobuf *)0x0)) {
-    fclose(p_Var2);
+  stream = fopen(local_100,"rb");
+  if ((stream != (_iobuf *)0xffffffff) && (stream != (_iobuf *)0x0)) {
+    fclose(stream);
     return 1;
   }
   return 0;
@@ -196,19 +196,19 @@ int __cdecl FS_GetModList(char *param_1,int param_2)
 {
   char *pcVar1;
   char cVar2;
-  _iobuf *p_Var3;
+  _iobuf *stream;
+  int iVar3;
   int iVar4;
-  int iVar5;
-  dvar_s *pdVar6;
+  dvar_s *pdVar5;
+  char **ppcVar6;
   char **ppcVar7;
-  char **ppcVar8;
+  char *pcVar8;
   char *pcVar9;
-  char *pcVar10;
-  int iVar11;
-  uint uVar12;
-  char *pcVar13;
+  int iVar10;
+  uint uVar11;
+  char *pcVar12;
   char *unaff_EDI;
-  int *piVar14;
+  int *piVar13;
   int local_11c;
   int local_118;
   int local_114;
@@ -216,89 +216,89 @@ int __cdecl FS_GetModList(char *param_1,int param_2)
   char *local_108;
   undefined4 local_104;
   
-  pdVar6 = fs_homepath;
+  pdVar5 = fs_homepath;
   *param_1 = '\0';
   local_108 = (char *)0x0;
   local_118 = 0;
-  Com_sprintf("%s/%s",(pdVar6->current).integer,"mods");
-  ppcVar7 = Sys_ListFiles((char *)&local_104,(char *)0x0,(char *)0x0,&local_10c,1);
+  Com_sprintf("%s/%s",(pdVar5->current).integer,"mods");
+  ppcVar6 = Sys_ListFiles((char *)&local_104,(char *)0x0,(char *)0x0,&local_10c,1);
   local_114 = 0;
-  if (ppcVar7 != (char **)0x0) {
-    pcVar13 = *ppcVar7;
+  if (ppcVar6 != (char **)0x0) {
+    pcVar12 = *ppcVar6;
     local_114 = 0;
-    ppcVar8 = ppcVar7;
-    while (pcVar13 != (char *)0x0) {
-      ppcVar8 = ppcVar8 + 1;
+    ppcVar7 = ppcVar6;
+    while (pcVar12 != (char *)0x0) {
+      ppcVar7 = ppcVar7 + 1;
       local_114 = local_114 + 1;
-      pcVar13 = *ppcVar8;
+      pcVar12 = *ppcVar7;
     }
   }
   local_11c = 0;
-  iVar11 = 0;
+  iVar10 = 0;
   if (0 < local_114) {
     do {
-      pcVar13 = ppcVar7[local_11c];
-      pcVar9 = pcVar13;
+      pcVar12 = ppcVar6[local_11c];
+      pcVar8 = pcVar12;
+      do {
+        cVar2 = *pcVar8;
+        pcVar8 = pcVar8 + 1;
+      } while (cVar2 != '\0');
+      iVar3 = 1 - (int)(pcVar12 + 1);
+      pcVar9 = pcVar12;
       do {
         cVar2 = *pcVar9;
+        pcVar9[(int)&local_104 - (int)pcVar12] = cVar2;
         pcVar9 = pcVar9 + 1;
       } while (cVar2 != '\0');
-      iVar4 = 1 - (int)(pcVar13 + 1);
-      pcVar10 = pcVar13;
-      do {
-        cVar2 = *pcVar10;
-        pcVar10[(int)&local_104 - (int)pcVar13] = cVar2;
-        pcVar10 = pcVar10 + 1;
-      } while (cVar2 != '\0');
-      piVar14 = &local_104;
-      I_strncat((char *)piVar14,0xa4fa70,unaff_EDI);
-      iVar11 = FS_SV_FOpenFileRead("mods",(char *)&local_10c,(int *)0x0,piVar14);
-      if ((iVar11 < 1) || (local_10c == 0)) {
+      piVar13 = &local_104;
+      I_strncat((char *)piVar13,0xa4fa70,unaff_EDI);
+      iVar10 = FS_SV_FOpenFileRead("mods",(char *)&local_10c,(int *)0x0,piVar13);
+      if ((iVar10 < 1) || (local_10c == 0)) {
         Com_Printf(10,"FS_GetModList: failed to open %s\n",&local_104);
         local_104._0_1_ = '\0';
       }
       else {
-        p_Var3 = (_iobuf *)(&fsh)[local_10c * 0x47];
+        stream = (_iobuf *)(&fsh)[local_10c * 0x47];
         Com_Memset(&local_104,0,0x100);
-        uVar12 = fread(&local_104,1,0x30,p_Var3);
-        if (-1 < (int)uVar12) {
-          *(undefined1 *)((int)&local_104 + uVar12) = 0;
+        uVar11 = fread(&local_104,1,0x30,stream);
+        if (-1 < (int)uVar11) {
+          *(undefined1 *)((int)&local_104 + uVar11) = 0;
         }
         FS_FCloseFile((int)unaff_EDI);
       }
-      pcVar10 = (char *)&local_104;
+      pcVar9 = (char *)&local_104;
       do {
-        cVar2 = *pcVar10;
-        pcVar10 = pcVar10 + 1;
+        cVar2 = *pcVar9;
+        pcVar9 = pcVar9 + 1;
       } while (cVar2 != '\0');
-      iVar5 = 1 - ((int)&local_104 + 1);
-      pcVar1 = pcVar9 + (int)(pcVar10 + (int)(local_108 + iVar4 + iVar5));
-      iVar11 = local_118;
+      iVar4 = 1 - ((int)&local_104 + 1);
+      pcVar1 = pcVar8 + (int)(pcVar9 + (int)(local_108 + iVar3 + iVar4));
+      iVar10 = local_118;
       if (param_2 <= (int)(pcVar1 + 2)) break;
-      iVar11 = (int)param_1 - (int)pcVar13;
+      iVar10 = (int)param_1 - (int)pcVar12;
       do {
-        cVar2 = *pcVar13;
-        pcVar13[iVar11] = cVar2;
-        pcVar13 = pcVar13 + 1;
+        cVar2 = *pcVar12;
+        pcVar12[iVar10] = cVar2;
+        pcVar12 = pcVar12 + 1;
       } while (cVar2 != '\0');
-      pcVar13 = (char *)&local_104;
-      iVar11 = iVar4 - (int)pcVar13;
+      pcVar12 = (char *)&local_104;
+      iVar10 = iVar3 - (int)pcVar12;
       do {
-        cVar2 = *pcVar13;
-        pcVar13[(int)(param_1 + (int)(pcVar9 + iVar11))] = cVar2;
-        pcVar13 = pcVar13 + 1;
+        cVar2 = *pcVar12;
+        pcVar12[(int)(param_1 + (int)(pcVar8 + iVar10))] = cVar2;
+        pcVar12 = pcVar12 + 1;
       } while (cVar2 != '\0');
-      iVar11 = local_118 + 1;
+      iVar10 = local_118 + 1;
       local_11c = local_11c + 1;
-      param_1 = param_1 + (int)(pcVar9 + (int)(pcVar10 + iVar4 + iVar5));
-      local_118 = iVar11;
+      param_1 = param_1 + (int)(pcVar8 + (int)(pcVar9 + iVar3 + iVar4));
+      local_118 = iVar10;
       local_108 = pcVar1;
     } while (local_11c < local_114);
   }
-  if (ppcVar7 != (char **)0x0) {
-    (*(code *)(&PTR_Hunk_UserDefaultDestroy_00adbb48)[*(int *)ppcVar7[-1] * 5])(ppcVar7[-1]);
+  if (ppcVar6 != (char **)0x0) {
+    (*(code *)(&PTR_Hunk_UserDefaultDestroy_00adbb48)[*(int *)ppcVar6[-1] * 5])(ppcVar6[-1]);
   }
-  return iVar11;
+  return iVar10;
 }
 
 
@@ -900,22 +900,22 @@ bool __cdecl FS_PureServerSetLoadedIwds(char *param_1,char *param_2)
   char cVar1;
   scrMemTreePub_t sVar2;
   int *piVar3;
-  ulong uVar4;
-  int iVar5;
-  char *pcVar6;
-  int iVar7;
-  snd_command *psVar8;
-  int iVar9;
-  uint uVar10;
-  scrMemTreePub_t *psVar11;
-  uint uVar12;
-  char *pcVar13;
-  int iVar14;
+  ulong count;
+  int iVar4;
+  char *pcVar5;
+  int iVar6;
+  snd_command *psVar7;
+  int iVar8;
+  uint uVar9;
+  scrMemTreePub_t *psVar10;
+  uint uVar11;
+  char *pcVar12;
+  int iVar13;
   int unaff_ESI;
-  int iVar15;
+  int iVar14;
   snd_command *unaff_EDI;
-  iwd_pure_check_s *piVar16;
-  code *pcVar17;
+  iwd_pure_check_s *piVar15;
+  code *pcVar16;
   bool bStack_2009;
   int iStack_2008;
   int aiStack_2004 [1024];
@@ -928,32 +928,32 @@ bool __cdecl FS_PureServerSetLoadedIwds(char *param_1,char *param_2)
                0x200 - *(int *)(*(int *)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10)
                                + 0x28e4),1);
   piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar14 = piVar3[*piVar3 + 0x21];
-  if (0x400 < iVar14) {
-    iVar14 = 0x400;
+  iVar13 = piVar3[*piVar3 + 0x21];
+  if (0x400 < iVar13) {
+    iVar13 = 0x400;
   }
-  iVar15 = 0;
-  if (0 < iVar14) {
+  iVar14 = 0;
+  if (0 < iVar13) {
     do {
       piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-      if (iVar15 < piVar3[*piVar3 + 0x21]) {
-        pcVar13 = *(char **)(piVar3[*piVar3 + 0x29] + iVar15 * 4);
+      if (iVar14 < piVar3[*piVar3 + 0x21]) {
+        pcVar12 = *(char **)(piVar3[*piVar3 + 0x29] + iVar14 * 4);
       }
       else {
-        pcVar13 = "";
+        pcVar12 = "";
       }
-      iVar5 = atoi(pcVar13);
-      aiStack_1004[iVar15] = iVar5;
-      iVar15 = iVar15 + 1;
-    } while (iVar15 < iVar14);
+      iVar4 = atoi(pcVar12);
+      aiStack_1004[iVar14] = iVar4;
+      iVar14 = iVar14 + 1;
+    } while (iVar14 < iVar13);
   }
   piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar15 = *piVar3;
-  if (iVar15 != -1) {
-    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar15 + 0x21];
-    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar15 + 0x19];
-    piVar3[0xa3a] = piVar3[0xa3a] - piVar3[iVar15 + 0xa31];
-    *piVar3 = iVar15 + -1;
+  iVar14 = *piVar3;
+  if (iVar14 != -1) {
+    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar14 + 0x21];
+    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar14 + 0x19];
+    piVar3[0xa3a] = piVar3[0xa3a] - piVar3[iVar14 + 0xa31];
+    *piVar3 = iVar14 + -1;
   }
   FUN_005e6b20(0xffffffff,0,0,param_2,
                0x200 - *(int *)(*(int *)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10)
@@ -963,135 +963,135 @@ bool __cdecl FS_PureServerSetLoadedIwds(char *param_1,char *param_2)
   if (0x400 < iStack_2008) {
     iStack_2008 = 0x400;
   }
-  iVar15 = iStack_2008;
-  iVar5 = 0;
+  iVar14 = iStack_2008;
+  iVar4 = 0;
   if (0 < iStack_2008) {
     do {
       piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-      if (iVar5 < piVar3[*piVar3 + 0x21]) {
-        pcVar13 = *(char **)(piVar3[*piVar3 + 0x29] + iVar5 * 4);
+      if (iVar4 < piVar3[*piVar3 + 0x21]) {
+        pcVar12 = *(char **)(piVar3[*piVar3 + 0x29] + iVar4 * 4);
       }
       else {
-        pcVar13 = "";
+        pcVar12 = "";
       }
-      pcVar6 = pcVar13;
+      pcVar5 = pcVar12;
       do {
-        cVar1 = *pcVar6;
-        pcVar6 = pcVar6 + 1;
+        cVar1 = *pcVar5;
+        pcVar5 = pcVar5 + 1;
       } while (cVar1 != '\0');
-      iVar7 = _SL_GetStringOfSize(0,pcVar13,0,pcVar6 + (1 - (int)(pcVar13 + 1)));
-      if (iVar7 == 0) {
-        psVar11 = (scrMemTreePub_t *)0x0;
+      iVar6 = _SL_GetStringOfSize(0,pcVar12,0,pcVar5 + (1 - (int)(pcVar12 + 1)));
+      if (iVar6 == 0) {
+        psVar10 = (scrMemTreePub_t *)0x0;
       }
       else {
-        psVar11 = gScrMemTreePub + iVar7 * 0x10 + 4;
+        psVar10 = gScrMemTreePub + iVar6 * 0x10 + 4;
       }
-      aiStack_2004[iVar5] = (int)psVar11;
-      iVar5 = iVar5 + 1;
-    } while (iVar5 < iVar15);
+      aiStack_2004[iVar4] = (int)psVar10;
+      iVar4 = iVar4 + 1;
+    } while (iVar4 < iVar14);
   }
   piVar3 = *(int **)(*(int *)(*(int *)ThreadLocalStoragePointer + 0x1c) + 0x10);
-  iVar5 = *piVar3;
-  if (iVar5 != -1) {
-    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar5 + 0x21];
-    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar5 + 0x19];
-    piVar3[0xa3a] = piVar3[0xa3a] - piVar3[iVar5 + 0xa31];
-    *piVar3 = iVar5 + -1;
+  iVar4 = *piVar3;
+  if (iVar4 != -1) {
+    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar4 + 0x21];
+    piVar3[0xa39] = piVar3[0xa39] - piVar3[iVar4 + 0x19];
+    piVar3[0xa3a] = piVar3[0xa3a] - piVar3[iVar4 + 0xa31];
+    *piVar3 = iVar4 + -1;
   }
-  if (iVar14 != iVar15) {
+  if (iVar13 != iVar14) {
     Com_Error(ERR_DROP,"iwd sum/name mismatch");
   }
-  piVar16 = fs_iwdPureChecks;
-  if (iVar14 != 0) {
-    for (; piVar16 != (iwd_pure_check_s *)0x0; piVar16 = *(iwd_pure_check_s **)piVar16) {
-      iVar15 = 0;
-      if (iVar14 < 1) {
+  piVar15 = fs_iwdPureChecks;
+  if (iVar13 != 0) {
+    for (; piVar15 != (iwd_pure_check_s *)0x0; piVar15 = *(iwd_pure_check_s **)piVar15) {
+      iVar14 = 0;
+      if (iVar13 < 1) {
 LAB_005f42ec:
         bStack_2009 = true;
         goto LAB_005f42f1;
       }
-      iVar5 = *(int *)(piVar16 + 4);
-      while ((aiStack_1004[iVar15] != iVar5 ||
-             (iVar7 = I_strnicmp((char *)aiStack_2004[iVar15],(char *)unaff_EDI,unaff_ESI),
-             iVar7 != 0))) {
-        iVar15 = iVar15 + 1;
-        if (iVar14 <= iVar15) goto LAB_005f42ec;
+      iVar4 = *(int *)(piVar15 + 4);
+      while ((aiStack_1004[iVar14] != iVar4 ||
+             (iVar6 = I_strnicmp((char *)aiStack_2004[iVar14],(char *)unaff_EDI,unaff_ESI),
+             iVar6 != 0))) {
+        iVar14 = iVar14 + 1;
+        if (iVar13 <= iVar14) goto LAB_005f42ec;
       }
     }
   }
-  iVar15 = fs_numServerIwds;
-  if (iVar14 == fs_numServerIwds) {
-    iVar5 = 0;
-    if (0 < iVar14) {
+  iVar14 = fs_numServerIwds;
+  if (iVar13 == fs_numServerIwds) {
+    iVar4 = 0;
+    if (0 < iVar13) {
       do {
-        iVar7 = 0;
+        iVar6 = 0;
         while( true ) {
-          if (iVar15 <= iVar7) goto LAB_005f42f1;
-          if (((int *)aiStack_1004[iVar5] == (&fs_serverIwds)[iVar7]) &&
-             (iVar9 = I_strnicmp((char *)aiStack_2004[iVar5],(char *)unaff_EDI,unaff_ESI),
-             iVar9 == 0)) break;
-          iVar7 = iVar7 + 1;
+          if (iVar14 <= iVar6) goto LAB_005f42f1;
+          if (((int *)aiStack_1004[iVar4] == (&fs_serverIwds)[iVar6]) &&
+             (iVar8 = I_strnicmp((char *)aiStack_2004[iVar4],(char *)unaff_EDI,unaff_ESI),
+             iVar8 == 0)) break;
+          iVar6 = iVar6 + 1;
         }
-        iVar5 = iVar5 + 1;
-      } while (iVar5 < iVar14);
+        iVar4 = iVar4 + 1;
+      } while (iVar4 < iVar13);
     }
-    iVar14 = iStack_2008;
-    iVar15 = 0;
+    iVar13 = iStack_2008;
+    iVar14 = 0;
     if (0 < iStack_2008) {
       do {
-        pcVar13 = (char *)aiStack_2004[iVar15];
-        pcVar6 = pcVar13;
+        pcVar12 = (char *)aiStack_2004[iVar14];
+        pcVar5 = pcVar12;
         do {
-          cVar1 = *pcVar6;
-          pcVar6 = pcVar6 + 1;
+          cVar1 = *pcVar5;
+          pcVar5 = pcVar5 + 1;
         } while (cVar1 != '\0');
-        uVar10 = SL_FindStringOfSize((scriptInstance_t)pcVar13,pcVar6 + (1 - (int)(pcVar13 + 1)),
-                                     (uint)unaff_EDI);
-        psVar11 = gScrMemTreePub + uVar10 * 0x10;
-        uVar12 = (byte)psVar11[3] - 1 & 0xff;
-        sVar2 = psVar11[uVar12 + 4];
+        uVar9 = SL_FindStringOfSize((scriptInstance_t)pcVar12,pcVar5 + (1 - (int)(pcVar12 + 1)),
+                                    (uint)unaff_EDI);
+        psVar10 = gScrMemTreePub + uVar9 * 0x10;
+        uVar11 = (byte)psVar10[3] - 1 & 0xff;
+        sVar2 = psVar10[uVar11 + 4];
         while (sVar2 != (scrMemTreePub_t)0x0) {
-          sVar2 = psVar11[uVar12 + 0x104];
-          uVar12 = uVar12 + 0x100;
+          sVar2 = psVar10[uVar11 + 0x104];
+          uVar11 = uVar11 + 0x100;
         }
         LOCK();
-        iVar5 = *(int *)psVar11;
-        *(int *)psVar11 = *(int *)psVar11 + -1;
+        iVar4 = *(int *)psVar10;
+        *(int *)psVar10 = *(int *)psVar10 + -1;
         UNLOCK();
-        if ((iVar5 - 1U & 0xffff) == 0) {
-          FUN_00729880(0,uVar10,uVar12 + 1);
+        if ((iVar4 - 1U & 0xffff) == 0) {
+          FUN_00729880(0,uVar9,uVar11 + 1);
         }
-        iVar15 = iVar15 + 1;
-      } while (iVar15 < iVar14);
+        iVar14 = iVar14 + 1;
+      } while (iVar14 < iVar13);
     }
     return false;
   }
 LAB_005f42f1:
   if (_g_snd != 0) {
-    psVar8 = SND_GetNewCommand();
-    if (psVar8 != (snd_command *)0x0) {
-      *(undefined4 *)psVar8 = 9;
-      *(undefined4 *)(psVar8 + 4) = 1;
+    psVar7 = SND_GetNewCommand();
+    if (psVar7 != (snd_command *)0x0) {
+      *(undefined4 *)psVar7 = 9;
+      *(undefined4 *)(psVar7 + 4) = 1;
       SND_CommandPush(unaff_EDI);
     }
     if (_g_snd != 0) {
-      pcVar17 = FUN_0069cb50;
+      pcVar16 = FUN_0069cb50;
       jqAssistWithBatches(FUN_0069cb50,updatesound_workerWorkerCmd + 0x10,
                           (jqBatchGroup *)(updatesound_workerWorkerCmd + 0x10),(jqQueue *)0x0);
       Sys_AddWorkerCmdInternal
                 ((jqWorkerCmd *)&updatesound_workerWorkerCmd,&iStack_2008,
-                 (WorkerCmdConditional *)pcVar17);
+                 (WorkerCmdConditional *)pcVar16);
       jqAssistWithBatches(FUN_0069cb50,updatesound_workerWorkerCmd + 0x10,
                           (jqBatchGroup *)(updatesound_workerWorkerCmd + 0x10),(jqQueue *)0x0);
     }
   }
   FUN_00692210(&fs_numServerIwds,&fs_serverIwdNames);
-  fs_numServerIwds = iVar14;
-  if (iVar14 != 0) {
+  fs_numServerIwds = iVar13;
+  if (iVar13 != 0) {
     Com_DPrintf(0xa4fc74,(char *)unaff_EDI);
-    uVar4 = fs_numServerIwds * 4;
-    memcpy((uchar *)&fs_serverIwds,(uchar *)aiStack_1004,uVar4);
-    memcpy((uchar *)&fs_serverIwdNames,(uchar *)aiStack_2004,uVar4);
+    count = fs_numServerIwds * 4;
+    memcpy((uchar *)&fs_serverIwds,(uchar *)aiStack_1004,count);
+    memcpy((uchar *)&fs_serverIwdNames,(uchar *)aiStack_2004,count);
     fs_fakeChkSum = 0;
   }
   return bStack_2009;
@@ -1135,7 +1135,7 @@ char * __cdecl FS_GetMapBaseName(char *param_1)
   uchar *in_EAX;
   int iVar2;
   uchar *puVar3;
-  ulong uVar4;
+  ulong count;
   int unaff_ESI;
   char *unaff_EDI;
   
@@ -1148,21 +1148,21 @@ char * __cdecl FS_GetMapBaseName(char *param_1)
     uVar1 = *puVar3;
     puVar3 = puVar3 + 1;
   } while (uVar1 != '\0');
-  uVar4 = (int)puVar3 - (int)(in_EAX + 1);
-  iVar2 = I_strnicmp((char *)(in_EAX + (uVar4 - 3)),unaff_EDI,unaff_ESI);
+  count = (int)puVar3 - (int)(in_EAX + 1);
+  iVar2 = I_strnicmp((char *)(in_EAX + (count - 3)),unaff_EDI,unaff_ESI);
   if (iVar2 == 0) {
-    uVar4 = uVar4 - 7;
+    count = count - 7;
   }
-  memcpy(&DAT_04fb46b8,in_EAX,uVar4);
+  memcpy(&DAT_04fb46b8,in_EAX,count);
   iVar2 = 0;
-  (&DAT_04fb46b8)[uVar4] = 0;
-  if (0 < (int)uVar4) {
+  (&DAT_04fb46b8)[count] = 0;
+  if (0 < (int)count) {
     do {
       if ((&DAT_04fb46b8)[iVar2] == '%') {
         (&DAT_04fb46b8)[iVar2] = 0x5f;
       }
       iVar2 = iVar2 + 1;
-    } while (iVar2 < (int)uVar4);
+    } while (iVar2 < (int)count);
   }
   return &DAT_04fb46b8;
 }

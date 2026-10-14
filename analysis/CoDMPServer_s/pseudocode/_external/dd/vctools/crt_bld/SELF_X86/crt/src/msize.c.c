@@ -5,15 +5,16 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-uint __cdecl _msize(void *param_1)
+uint __cdecl _msize(void *pblock)
 
 {
   int *piVar1;
   uint uVar2;
   tagHeader *ptVar3;
-  uint local_20;
+  tagHeader *pHeader;
+  uint retval;
   
-  if (param_1 == (void *)0x0) {
+  if (pblock == (void *)0x0) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
@@ -22,16 +23,16 @@ uint __cdecl _msize(void *param_1)
   else {
     if (__active_heap == 3) {
       _lock(4);
-      ptVar3 = __sbh_find_block(param_1);
+      ptVar3 = __sbh_find_block(pblock);
       if (ptVar3 != (tagHeader *)0x0) {
-        local_20 = *(int *)((int)param_1 + -4) - 9;
+        retval = *(int *)((int)pblock + -4) - 9;
       }
       FUN_0096aa53();
       if (ptVar3 != (tagHeader *)0x0) {
-        return local_20;
+        return retval;
       }
     }
-    uVar2 = HeapSize(_crtheap,0,param_1);
+    uVar2 = HeapSize(_crtheap,0,pblock);
   }
   return uVar2;
 }

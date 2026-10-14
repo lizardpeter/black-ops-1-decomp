@@ -2,167 +2,166 @@
 
 // 00B431B0  out_of_memory  (jpeg-6/jmemmgr.c:222)
 
-void __cdecl out_of_memory(jpeg_common_struct *param_1,int param_2)
+void __cdecl out_of_memory(jpeg_common_struct *cinfo,int which)
 
 {
-  param_1->err->msg_code = 0x36;
-  (param_1->err->msg_parm).i[0] = param_2;
-  (*param_1->err->error_exit)(param_1);
+  cinfo->err->msg_code = 0x36;
+  (cinfo->err->msg_parm).i[0] = which;
+  (*cinfo->err->error_exit)(cinfo);
   return;
 }
 
 
 // 00B42FE0  alloc_small  (jpeg-6/jmemmgr.c:261)
 
-void * __cdecl alloc_small(jpeg_common_struct *param_1,int param_2,uint param_3)
+void * __cdecl alloc_small(jpeg_common_struct *cinfo,int pool_id,uint sizeofobject)
 
 {
   jpeg_memory_mgr *pjVar1;
-  int iVar2;
-  uint local_18;
-  _func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *local_14;
-  _func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *local_c;
+  uint uVar2;
+  int iVar3;
+  my_memory_mgr *mem;
+  uint min_request;
+  uint slop;
+  small_pool_struct *prev_hdr_ptr;
+  char *data_ptr;
+  small_pool_struct *hdr_ptr;
+  uint odd_bytes;
   
-  pjVar1 = param_1->mem;
-  if (0x3b9ac9f0 < param_3) {
-    out_of_memory(param_1,1);
+  pjVar1 = cinfo->mem;
+  if (0x3b9ac9f0 < sizeofobject) {
+    out_of_memory(cinfo,1);
   }
-  if (param_3 % 8 != 0) {
-    param_3 = (8 - param_3 % 8) + param_3;
+  if (sizeofobject % 8 != 0) {
+    sizeofobject = (8 - sizeofobject % 8) + sizeofobject;
   }
-  if ((param_2 < 0) || (1 < param_2)) {
-    param_1->err->msg_code = 0xe;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)(param_1);
+  if ((pool_id < 0) || (1 < pool_id)) {
+    cinfo->err->msg_code = 0xe;
+    (cinfo->err->msg_parm).i[0] = pool_id;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  local_14 = (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0;
-  for (local_c = (&pjVar1[1].alloc_small)[param_2];
-      (local_c != (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0 &&
-      (*(uint *)(local_c + 8) < param_3));
-      local_c = *(_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint **)local_c) {
-    local_14 = local_c;
+  prev_hdr_ptr = (small_pool_struct *)0x0;
+  for (hdr_ptr = (small_pool_struct *)(&pjVar1[1].alloc_small)[pool_id];
+      (hdr_ptr != (small_pool_struct *)0x0 && ((hdr_ptr->hdr).bytes_left < sizeofobject));
+      hdr_ptr = (hdr_ptr->hdr).next) {
+    prev_hdr_ptr = hdr_ptr;
   }
-  if (local_c == (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0) {
-    iVar2 = param_3 + 0x10;
-    if (local_14 == (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0) {
-      local_18 = first_pool_slop[param_2];
+  if (hdr_ptr == (small_pool_struct *)0x0) {
+    iVar3 = sizeofobject + 0x10;
+    if (prev_hdr_ptr == (small_pool_struct *)0x0) {
+      slop = first_pool_slop[pool_id];
     }
     else {
-      local_18 = extra_pool_slop[param_2];
+      slop = extra_pool_slop[pool_id];
     }
-    if (1000000000U - iVar2 < local_18) {
-      local_18 = 1000000000 - iVar2;
+    if (1000000000U - iVar3 < slop) {
+      slop = 1000000000 - iVar3;
     }
-    while (local_c = jpeg_get_small(param_1,iVar2 + local_18),
-          local_c == (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0) {
-      local_18 = local_18 >> 1;
-      if (local_18 < 0x32) {
-        out_of_memory(param_1,2);
+    while (hdr_ptr = jpeg_get_small(cinfo,iVar3 + slop), hdr_ptr == (small_pool_struct *)0x0) {
+      slop = slop >> 1;
+      if (slop < 0x32) {
+        out_of_memory(cinfo,2);
       }
     }
-    pjVar1[1].realize_virt_arrays = pjVar1[1].realize_virt_arrays + iVar2 + local_18;
-    *(undefined4 *)local_c = 0;
-    *(undefined4 *)(local_c + 4) = 0;
-    *(uint *)(local_c + 8) = param_3 + local_18;
-    if (local_14 == (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0) {
-      (&pjVar1[1].alloc_small)[param_2] = local_c;
+    pjVar1[1].realize_virt_arrays = pjVar1[1].realize_virt_arrays + iVar3 + slop;
+    (hdr_ptr->hdr).next = (small_pool_struct *)0x0;
+    (hdr_ptr->hdr).bytes_used = 0;
+    (hdr_ptr->hdr).bytes_left = sizeofobject + slop;
+    if (prev_hdr_ptr == (small_pool_struct *)0x0) {
+      (&pjVar1[1].alloc_small)[pool_id] =
+           (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)hdr_ptr;
     }
     else {
-      *(_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint **)local_14 = local_c;
+      (prev_hdr_ptr->hdr).next = hdr_ptr;
     }
   }
-  iVar2 = *(int *)(local_c + 4);
-  *(uint *)(local_c + 4) = *(int *)(local_c + 4) + param_3;
-  *(uint *)(local_c + 8) = *(int *)(local_c + 8) - param_3;
-  return local_c + iVar2 + 0x10;
+  uVar2 = (hdr_ptr->hdr).bytes_used;
+  (hdr_ptr->hdr).bytes_used = (hdr_ptr->hdr).bytes_used + sizeofobject;
+  (hdr_ptr->hdr).bytes_left = (hdr_ptr->hdr).bytes_left - sizeofobject;
+  return (void *)((int)hdr_ptr + uVar2 + 0x10);
 }
 
 
 // 00B431E0  alloc_large  (jpeg-6/jmemmgr.c:346)
 
-void * __cdecl alloc_large(jpeg_common_struct *param_1,int param_2,uint param_3)
+void * __cdecl alloc_large(jpeg_common_struct *cinfo,int pool_id,uint sizeofobject)
 
 {
   jpeg_memory_mgr *pjVar1;
   _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *p_Var2;
+  my_memory_mgr *mem;
+  large_pool_struct *hdr_ptr;
+  uint odd_bytes;
   
-  pjVar1 = param_1->mem;
-  if (0x3b9ac9f0 < param_3) {
-    out_of_memory(param_1,3);
+  pjVar1 = cinfo->mem;
+  if (0x3b9ac9f0 < sizeofobject) {
+    out_of_memory(cinfo,3);
   }
-  if (param_3 % 8 != 0) {
-    param_3 = (8 - param_3 % 8) + param_3;
+  if (sizeofobject % 8 != 0) {
+    sizeofobject = (8 - sizeofobject % 8) + sizeofobject;
   }
-  if ((param_2 < 0) || (1 < param_2)) {
-    param_1->err->msg_code = 0xe;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)(param_1);
+  if ((pool_id < 0) || (1 < pool_id)) {
+    cinfo->err->msg_code = 0xe;
+    (cinfo->err->msg_parm).i[0] = pool_id;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  p_Var2 = jpeg_get_small(param_1,param_3 + 0x10);
+  p_Var2 = jpeg_get_small(cinfo,sizeofobject + 0x10);
   if (p_Var2 == (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *)0x0) {
-    out_of_memory(param_1,4);
+    out_of_memory(cinfo,4);
   }
-  pjVar1[1].realize_virt_arrays = pjVar1[1].realize_virt_arrays + param_3 + 0x10;
+  pjVar1[1].realize_virt_arrays = pjVar1[1].realize_virt_arrays + sizeofobject + 0x10;
   *(_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint **)p_Var2 =
-       (&pjVar1[1].alloc_sarray)[param_2];
-  *(uint *)(p_Var2 + 4) = param_3;
+       (&pjVar1[1].alloc_sarray)[pool_id];
+  *(uint *)(p_Var2 + 4) = sizeofobject;
   *(undefined4 *)(p_Var2 + 8) = 0;
-  (&pjVar1[1].alloc_sarray)[param_2] = p_Var2;
+  (&pjVar1[1].alloc_sarray)[pool_id] = p_Var2;
   return p_Var2 + 0x10;
 }
 
 
 // 00B432E0  alloc_sarray  (jpeg-6/jmemmgr.c:400)
 
-uchar ** __cdecl alloc_sarray(jpeg_common_struct *param_1,int param_2,uint param_3,uint param_4)
+uchar ** __cdecl alloc_sarray(jpeg_common_struct *cinfo,int pool_id,uint samplesperrow,uint numrows)
 
 {
   jpeg_memory_mgr *pjVar1;
   uchar **ppuVar2;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-  *local_24;
-  uint local_20;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-  *local_10;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-  *local_c;
-  uchar *local_8;
+  uint local_24;
+  uint currow;
+  my_memory_mgr *mem;
+  uchar **result;
+  long ltemp;
+  uint rowsperchunk;
+  uint i;
+  uchar *workspace;
   
-  pjVar1 = param_1->mem;
-  local_10 = (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-              *)(0x3b9ac9f0 / (ulonglong)param_3);
-  if (local_10 ==
-      (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar *
-      )0x0) {
-    param_1->err->msg_code = 0x46;
-    (*param_1->err->error_exit)(param_1);
+  pjVar1 = cinfo->mem;
+  rowsperchunk = (uint)(0x3b9ac9f0 / (ulonglong)samplesperrow);
+  if (rowsperchunk == 0) {
+    cinfo->err->msg_code = 0x46;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  if ((int)param_4 <= (int)local_10) {
-    local_10 = (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-                *)param_4;
+  if ((int)numrows <= (int)rowsperchunk) {
+    rowsperchunk = numrows;
   }
-  pjVar1[1].access_virt_sarray = local_10;
-  ppuVar2 = alloc_small(param_1,param_2,param_4 << 2);
-  local_20 = 0;
-  while (local_20 < param_4) {
-    if (local_10 <
-        (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-         *)(param_4 - local_20)) {
-      local_24 = local_10;
+  pjVar1[1].access_virt_sarray =
+       (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
+        *)rowsperchunk;
+  ppuVar2 = alloc_small(cinfo,pool_id,numrows << 2);
+  currow = 0;
+  while (currow < numrows) {
+    if (rowsperchunk < numrows - currow) {
+      local_24 = rowsperchunk;
     }
     else {
-      local_24 = (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-                  *)(param_4 - local_20);
+      local_24 = numrows - currow;
     }
-    local_10 = local_24;
-    local_8 = alloc_large(param_1,param_2,(int)local_24 * param_3);
-    for (local_c = local_24;
-        local_c !=
-        (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-         *)0x0; local_c = local_c + -1) {
-      ppuVar2[local_20] = local_8;
-      local_20 = local_20 + 1;
-      local_8 = local_8 + param_3;
+    rowsperchunk = local_24;
+    workspace = alloc_large(cinfo,pool_id,local_24 * samplesperrow);
+    for (i = local_24; i != 0; i = i - 1) {
+      ppuVar2[currow] = workspace;
+      currow = currow + 1;
+      workspace = workspace + samplesperrow;
     }
   }
   return ppuVar2;
@@ -172,55 +171,46 @@ uchar ** __cdecl alloc_sarray(jpeg_common_struct *param_1,int param_2,uint param
 // 00B433F0  alloc_barray  (jpeg-6/jmemmgr.c:448)
 
 short (**) [64] __cdecl
-alloc_barray(jpeg_common_struct *param_1,int param_2,uint param_3,uint param_4)
+alloc_barray(jpeg_common_struct *cinfo,int pool_id,uint blocksperrow,uint numrows)
 
 {
   jpeg_memory_mgr *pjVar1;
   short (**ppasVar2) [64];
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-  *local_24;
-  uint local_20;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-  *local_10;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-  *local_c;
-  short (*local_8) [64];
+  uint local_24;
+  uint currow;
+  my_memory_mgr *mem;
+  long ltemp;
+  uint rowsperchunk;
+  uint i;
+  short (*workspace) [64];
   
-  pjVar1 = param_1->mem;
-  local_10 = (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-              *)(0x3b9ac9f0 / (ulonglong)(param_3 << 7));
-  if (local_10 ==
-      (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar *
-      )0x0) {
-    param_1->err->msg_code = 0x46;
-    (*param_1->err->error_exit)(param_1);
+  pjVar1 = cinfo->mem;
+  rowsperchunk = (uint)(0x3b9ac9f0 / (ulonglong)(blocksperrow << 7));
+  if (rowsperchunk == 0) {
+    cinfo->err->msg_code = 0x46;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  if ((int)param_4 <= (int)local_10) {
-    local_10 = (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-                *)param_4;
+  if ((int)numrows <= (int)rowsperchunk) {
+    rowsperchunk = numrows;
   }
-  pjVar1[1].access_virt_sarray = local_10;
-  ppasVar2 = alloc_small(param_1,param_2,param_4 << 2);
-  local_20 = 0;
-  while (local_20 < param_4) {
-    if (local_10 <
-        (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-         *)(param_4 - local_20)) {
-      local_24 = local_10;
+  pjVar1[1].access_virt_sarray =
+       (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
+        *)rowsperchunk;
+  ppasVar2 = alloc_small(cinfo,pool_id,numrows << 2);
+  currow = 0;
+  while (currow < numrows) {
+    if (rowsperchunk < numrows - currow) {
+      local_24 = rowsperchunk;
     }
     else {
-      local_24 = (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-                  *)(param_4 - local_20);
+      local_24 = numrows - currow;
     }
-    local_10 = local_24;
-    local_8 = alloc_large(param_1,param_2,(int)local_24 * param_3 * 0x80);
-    for (local_c = local_24;
-        local_c !=
-        (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-         *)0x0; local_c = local_c + -1) {
-      ppasVar2[local_20] = local_8;
-      local_20 = local_20 + 1;
-      local_8 = local_8 + param_3;
+    rowsperchunk = local_24;
+    workspace = alloc_large(cinfo,pool_id,local_24 * blocksperrow * 0x80);
+    for (i = local_24; i != 0; i = i - 1) {
+      ppasVar2[currow] = workspace;
+      currow = currow + 1;
+      workspace = workspace + blocksperrow;
     }
   }
   return ppasVar2;
@@ -230,25 +220,27 @@ alloc_barray(jpeg_common_struct *param_1,int param_2,uint param_3,uint param_4)
 // 00B43510  request_virt_sarray  (jpeg-6/jmemmgr.c:529)
 
 jvirt_sarray_control * __cdecl
-request_virt_sarray(jpeg_common_struct *param_1,int param_2,uchar param_3,uint param_4,uint param_5,
-                   uint param_6)
+request_virt_sarray(jpeg_common_struct *cinfo,int pool_id,uchar pre_zero,uint samplesperrow,
+                   uint numrows,uint maxaccess)
 
 {
   jpeg_memory_mgr *pjVar1;
   jvirt_sarray_control *pjVar2;
+  my_memory_mgr *mem;
+  jvirt_sarray_control *result;
   
-  pjVar1 = param_1->mem;
-  if (param_2 != 1) {
-    param_1->err->msg_code = 0xe;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)(param_1);
+  pjVar1 = cinfo->mem;
+  if (pool_id != 1) {
+    cinfo->err->msg_code = 0xe;
+    (cinfo->err->msg_parm).i[0] = pool_id;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  pjVar2 = alloc_small(param_1,param_2,0x78);
+  pjVar2 = alloc_small(cinfo,pool_id,0x78);
   pjVar2->mem_buffer = (uchar **)0x0;
-  pjVar2->rows_in_array = param_5;
-  pjVar2->samplesperrow = param_4;
-  pjVar2->maxaccess = param_6;
-  pjVar2->pre_zero = param_3;
+  pjVar2->rows_in_array = numrows;
+  pjVar2->samplesperrow = samplesperrow;
+  pjVar2->maxaccess = maxaccess;
+  pjVar2->pre_zero = pre_zero;
   pjVar2->b_s_open = '\0';
   pjVar2->next = (jvirt_sarray_control *)pjVar1[1].request_virt_sarray;
   pjVar1[1].request_virt_sarray =
@@ -261,25 +253,27 @@ request_virt_sarray(jpeg_common_struct *param_1,int param_2,uchar param_3,uint p
 // 00B435C0  request_virt_barray  (jpeg-6/jmemmgr.c:559)
 
 jvirt_barray_control * __cdecl
-request_virt_barray(jpeg_common_struct *param_1,int param_2,uchar param_3,uint param_4,uint param_5,
-                   uint param_6)
+request_virt_barray(jpeg_common_struct *cinfo,int pool_id,uchar pre_zero,uint blocksperrow,
+                   uint numrows,uint maxaccess)
 
 {
   jpeg_memory_mgr *pjVar1;
   jvirt_barray_control *pjVar2;
+  my_memory_mgr *mem;
+  jvirt_barray_control *result;
   
-  pjVar1 = param_1->mem;
-  if (param_2 != 1) {
-    param_1->err->msg_code = 0xe;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)(param_1);
+  pjVar1 = cinfo->mem;
+  if (pool_id != 1) {
+    cinfo->err->msg_code = 0xe;
+    (cinfo->err->msg_parm).i[0] = pool_id;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  pjVar2 = alloc_small(param_1,param_2,0x78);
+  pjVar2 = alloc_small(cinfo,pool_id,0x78);
   pjVar2->mem_buffer = (short (**) [64])0x0;
-  pjVar2->rows_in_array = param_5;
-  pjVar2->blocksperrow = param_4;
-  pjVar2->maxaccess = param_6;
-  pjVar2->pre_zero = param_3;
+  pjVar2->rows_in_array = numrows;
+  pjVar2->blocksperrow = blocksperrow;
+  pjVar2->maxaccess = maxaccess;
+  pjVar2->pre_zero = pre_zero;
   pjVar2->b_s_open = '\0';
   pjVar2->next = (jvirt_barray_control *)pjVar1[1].request_virt_barray;
   pjVar1[1].request_virt_barray =
@@ -291,101 +285,88 @@ request_virt_barray(jpeg_common_struct *param_1,int param_2,uchar param_3,uint p
 
 // 00B43670  realize_virt_arrays  (jpeg-6/jmemmgr.c:587)
 
-void __cdecl realize_virt_arrays(jpeg_common_struct *param_1)
+void __cdecl realize_virt_arrays(jpeg_common_struct *cinfo)
 
 {
   jpeg_memory_mgr *pjVar1;
   long lVar2;
   uchar **ppuVar3;
   short (**ppasVar4) [64];
-  _func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *local_20;
-  _func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *local_18;
-  int local_14;
-  int local_10;
-  int local_8;
+  my_memory_mgr *mem;
+  jvirt_barray_control *bptr;
+  long avail_mem;
+  jvirt_sarray_control *sptr;
+  long maximum_space;
+  long space_per_minheight;
+  long minheights;
+  long max_minheights;
   
-  pjVar1 = param_1->mem;
-  local_10 = 0;
-  local_14 = 0;
-  for (local_18 = pjVar1[1].request_virt_sarray;
-      local_18 !=
-      (_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)0x0;
-      local_18 = *(_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint
-                   **)(local_18 + 0x24)) {
-    if (*(int *)local_18 == 0) {
-      local_10 = *(int *)(local_18 + 0xc) * *(int *)(local_18 + 8) + local_10;
-      local_14 = *(int *)(local_18 + 4) * *(int *)(local_18 + 8) + local_14;
+  pjVar1 = cinfo->mem;
+  space_per_minheight = 0;
+  maximum_space = 0;
+  for (sptr = (jvirt_sarray_control *)pjVar1[1].request_virt_sarray;
+      sptr != (jvirt_sarray_control *)0x0; sptr = sptr->next) {
+    if (sptr->mem_buffer == (uchar **)0x0) {
+      space_per_minheight = sptr->maxaccess * sptr->samplesperrow + space_per_minheight;
+      maximum_space = sptr->rows_in_array * sptr->samplesperrow + maximum_space;
     }
   }
-  for (local_20 = pjVar1[1].request_virt_barray;
-      local_20 !=
-      (_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)0x0;
-      local_20 = *(_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint
-                   **)(local_20 + 0x24)) {
-    if (*(int *)local_20 == 0) {
-      local_10 = *(int *)(local_20 + 0xc) * *(int *)(local_20 + 8) * 0x80 + local_10;
-      local_14 = *(int *)(local_20 + 4) * *(int *)(local_20 + 8) * 0x80 + local_14;
+  for (bptr = (jvirt_barray_control *)pjVar1[1].request_virt_barray;
+      bptr != (jvirt_barray_control *)0x0; bptr = bptr->next) {
+    if (bptr->mem_buffer == (short (**) [64])0x0) {
+      space_per_minheight = bptr->maxaccess * bptr->blocksperrow * 0x80 + space_per_minheight;
+      maximum_space = bptr->rows_in_array * bptr->blocksperrow * 0x80 + maximum_space;
     }
   }
-  if (0 < local_10) {
-    lVar2 = jpeg_mem_available(param_1,local_10,local_14,(long)pjVar1[1].realize_virt_arrays);
-    if (lVar2 < local_14) {
-      local_8 = lVar2 / local_10;
-      if (local_8 < 1) {
-        local_8 = 1;
+  if (0 < space_per_minheight) {
+    lVar2 = jpeg_mem_available(cinfo,space_per_minheight,maximum_space,
+                               (long)pjVar1[1].realize_virt_arrays);
+    if (lVar2 < maximum_space) {
+      max_minheights = lVar2 / space_per_minheight;
+      if (max_minheights < 1) {
+        max_minheights = 1;
       }
     }
     else {
-      local_8 = 1000000000;
+      max_minheights = 1000000000;
     }
-    for (local_18 = pjVar1[1].request_virt_sarray;
-        local_18 !=
-        (_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)
-        0x0; local_18 = *(_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint
-                          **)(local_18 + 0x24)) {
-      if (*(int *)local_18 == 0) {
-        if (local_8 < (int)((*(int *)(local_18 + 4) - 1U) / *(uint *)(local_18 + 0xc) + 1)) {
-          *(int *)(local_18 + 0x10) = local_8 * *(int *)(local_18 + 0xc);
-          jpeg_open_backing_store
-                    (param_1,(backing_store_struct *)(local_18 + 0x28),
-                     *(int *)(local_18 + 4) * *(int *)(local_18 + 8));
-          local_18[0x22] = (code)0x1;
+    for (sptr = (jvirt_sarray_control *)pjVar1[1].request_virt_sarray;
+        sptr != (jvirt_sarray_control *)0x0; sptr = sptr->next) {
+      if (sptr->mem_buffer == (uchar **)0x0) {
+        if (max_minheights < (int)((sptr->rows_in_array - 1) / sptr->maxaccess + 1)) {
+          sptr->rows_in_mem = max_minheights * sptr->maxaccess;
+          jpeg_open_backing_store(cinfo,&sptr->b_s_info,sptr->rows_in_array * sptr->samplesperrow);
+          sptr->b_s_open = '\x01';
         }
         else {
-          *(int *)(local_18 + 0x10) = *(int *)(local_18 + 4);
+          sptr->rows_in_mem = sptr->rows_in_array;
         }
-        ppuVar3 = alloc_sarray(param_1,1,*(uint *)(local_18 + 8),*(uint *)(local_18 + 0x10));
-        *(uchar ***)local_18 = ppuVar3;
-        *(_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-          **)(local_18 + 0x14) = pjVar1[1].access_virt_sarray;
-        *(int *)(local_18 + 0x18) = 0;
-        *(int *)(local_18 + 0x1c) = 0;
-        local_18[0x21] = (code)0x0;
+        ppuVar3 = alloc_sarray(cinfo,1,sptr->samplesperrow,sptr->rows_in_mem);
+        sptr->mem_buffer = ppuVar3;
+        sptr->rowsperchunk = (uint)pjVar1[1].access_virt_sarray;
+        sptr->cur_start_row = 0;
+        sptr->first_undef_row = 0;
+        sptr->dirty = '\0';
       }
     }
-    for (local_20 = pjVar1[1].request_virt_barray;
-        local_20 !=
-        (_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)
-        0x0; local_20 = *(_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint
-                          **)(local_20 + 0x24)) {
-      if (*(int *)local_20 == 0) {
-        if (local_8 < (int)((*(int *)(local_20 + 4) - 1U) / *(uint *)(local_20 + 0xc) + 1)) {
-          *(int *)(local_20 + 0x10) = local_8 * *(int *)(local_20 + 0xc);
+    for (bptr = (jvirt_barray_control *)pjVar1[1].request_virt_barray;
+        bptr != (jvirt_barray_control *)0x0; bptr = bptr->next) {
+      if (bptr->mem_buffer == (short (**) [64])0x0) {
+        if (max_minheights < (int)((bptr->rows_in_array - 1) / bptr->maxaccess + 1)) {
+          bptr->rows_in_mem = max_minheights * bptr->maxaccess;
           jpeg_open_backing_store
-                    (param_1,(backing_store_struct *)(local_20 + 0x28),
-                     *(int *)(local_20 + 4) * *(int *)(local_20 + 8) * 0x80);
-          local_20[0x22] = (code)0x1;
+                    (cinfo,&bptr->b_s_info,bptr->rows_in_array * bptr->blocksperrow * 0x80);
+          bptr->b_s_open = '\x01';
         }
         else {
-          *(int *)(local_20 + 0x10) = *(int *)(local_20 + 4);
+          bptr->rows_in_mem = bptr->rows_in_array;
         }
-        ppasVar4 = alloc_barray(param_1,1,*(uint *)(local_20 + 8),*(uint *)(local_20 + 0x10));
-        *(short (***) [64])local_20 = ppasVar4;
-        *(_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_jvirt_sarray_control_ptr_uint_uint_uchar
-          **)(local_20 + 0x14) = pjVar1[1].access_virt_sarray;
-        *(int *)(local_20 + 0x18) = 0;
-        *(int *)(local_20 + 0x1c) = 0;
-        local_20[0x21] = (code)0x0;
+        ppasVar4 = alloc_barray(cinfo,1,bptr->blocksperrow,bptr->rows_in_mem);
+        bptr->mem_buffer = ppasVar4;
+        bptr->rowsperchunk = (uint)pjVar1[1].access_virt_sarray;
+        bptr->cur_start_row = 0;
+        bptr->first_undef_row = 0;
+        bptr->dirty = '\0';
       }
     }
   }
@@ -395,7 +376,7 @@ void __cdecl realize_virt_arrays(jpeg_common_struct *param_1)
 
 // 00B43B40  do_sarray_io  (jpeg-6/jmemmgr.c:694)
 
-void __cdecl do_sarray_io(jpeg_common_struct *param_1,jvirt_sarray_control *param_2,uchar param_3)
+void __cdecl do_sarray_io(jpeg_common_struct *cinfo,jvirt_sarray_control *ptr,uchar writing)
 
 {
   uint uVar1;
@@ -403,47 +384,51 @@ void __cdecl do_sarray_io(jpeg_common_struct *param_1,jvirt_sarray_control *para
   uint local_28;
   uint local_24;
   uint local_20;
-  int local_1c;
-  int local_c;
+  long file_offset;
+  long byte_count;
+  long thisrow;
+  long rows;
+  long i;
+  long bytesperrow;
   
-  uVar1 = param_2->samplesperrow;
-  local_1c = param_2->cur_start_row * uVar1;
-  local_c = 0;
+  uVar1 = ptr->samplesperrow;
+  file_offset = ptr->cur_start_row * uVar1;
+  i = 0;
   while( true ) {
-    if ((int)param_2->rows_in_mem <= local_c) {
+    if ((int)ptr->rows_in_mem <= i) {
       return;
     }
-    if ((int)param_2->rowsperchunk < (int)(param_2->rows_in_mem - local_c)) {
-      local_20 = param_2->rowsperchunk;
+    if ((int)ptr->rowsperchunk < (int)(ptr->rows_in_mem - i)) {
+      local_20 = ptr->rowsperchunk;
     }
     else {
-      local_20 = param_2->rows_in_mem - local_c;
+      local_20 = ptr->rows_in_mem - i;
     }
-    iVar2 = param_2->cur_start_row + local_c;
-    if ((int)local_20 < (int)(param_2->first_undef_row - iVar2)) {
+    iVar2 = ptr->cur_start_row + i;
+    if ((int)local_20 < (int)(ptr->first_undef_row - iVar2)) {
       local_24 = local_20;
     }
     else {
-      local_24 = param_2->first_undef_row - iVar2;
+      local_24 = ptr->first_undef_row - iVar2;
     }
-    if ((int)local_24 < (int)(param_2->rows_in_array - iVar2)) {
+    if ((int)local_24 < (int)(ptr->rows_in_array - iVar2)) {
       local_28 = local_24;
     }
     else {
-      local_28 = param_2->rows_in_array - iVar2;
+      local_28 = ptr->rows_in_array - iVar2;
     }
     if ((int)local_28 < 1) break;
     iVar2 = local_28 * uVar1;
-    if (param_3 == '\0') {
-      (*(param_2->b_s_info).read_backing_store)
-                (param_1,&param_2->b_s_info,param_2->mem_buffer[local_c],local_1c,iVar2);
+    if (writing == '\0') {
+      (*(ptr->b_s_info).read_backing_store)
+                (cinfo,&ptr->b_s_info,ptr->mem_buffer[i],file_offset,iVar2);
     }
     else {
-      (*(param_2->b_s_info).write_backing_store)
-                (param_1,&param_2->b_s_info,param_2->mem_buffer[local_c],local_1c,iVar2);
+      (*(ptr->b_s_info).write_backing_store)
+                (cinfo,&ptr->b_s_info,ptr->mem_buffer[i],file_offset,iVar2);
     }
-    local_1c = local_1c + iVar2;
-    local_c = local_c + param_2->rowsperchunk;
+    file_offset = file_offset + iVar2;
+    i = i + ptr->rowsperchunk;
   }
   return;
 }
@@ -451,7 +436,7 @@ void __cdecl do_sarray_io(jpeg_common_struct *param_1,jvirt_sarray_control *para
 
 // 00B43E90  do_barray_io  (jpeg-6/jmemmgr.c:727)
 
-void __cdecl do_barray_io(jpeg_common_struct *param_1,jvirt_barray_control *param_2,uchar param_3)
+void __cdecl do_barray_io(jpeg_common_struct *cinfo,jvirt_barray_control *ptr,uchar writing)
 
 {
   int iVar1;
@@ -459,47 +444,51 @@ void __cdecl do_barray_io(jpeg_common_struct *param_1,jvirt_barray_control *para
   uint local_28;
   uint local_24;
   uint local_20;
-  int local_1c;
-  int local_c;
+  long file_offset;
+  long byte_count;
+  long thisrow;
+  long rows;
+  long i;
+  long bytesperrow;
   
-  iVar1 = param_2->blocksperrow * 0x80;
-  local_1c = param_2->cur_start_row * iVar1;
-  local_c = 0;
+  iVar1 = ptr->blocksperrow * 0x80;
+  file_offset = ptr->cur_start_row * iVar1;
+  i = 0;
   while( true ) {
-    if ((int)param_2->rows_in_mem <= local_c) {
+    if ((int)ptr->rows_in_mem <= i) {
       return;
     }
-    if ((int)param_2->rowsperchunk < (int)(param_2->rows_in_mem - local_c)) {
-      local_20 = param_2->rowsperchunk;
+    if ((int)ptr->rowsperchunk < (int)(ptr->rows_in_mem - i)) {
+      local_20 = ptr->rowsperchunk;
     }
     else {
-      local_20 = param_2->rows_in_mem - local_c;
+      local_20 = ptr->rows_in_mem - i;
     }
-    iVar2 = param_2->cur_start_row + local_c;
-    if ((int)local_20 < (int)(param_2->first_undef_row - iVar2)) {
+    iVar2 = ptr->cur_start_row + i;
+    if ((int)local_20 < (int)(ptr->first_undef_row - iVar2)) {
       local_24 = local_20;
     }
     else {
-      local_24 = param_2->first_undef_row - iVar2;
+      local_24 = ptr->first_undef_row - iVar2;
     }
-    if ((int)local_24 < (int)(param_2->rows_in_array - iVar2)) {
+    if ((int)local_24 < (int)(ptr->rows_in_array - iVar2)) {
       local_28 = local_24;
     }
     else {
-      local_28 = param_2->rows_in_array - iVar2;
+      local_28 = ptr->rows_in_array - iVar2;
     }
     if ((int)local_28 < 1) break;
     iVar2 = local_28 * iVar1;
-    if (param_3 == '\0') {
-      (*(param_2->b_s_info).read_backing_store)
-                (param_1,&param_2->b_s_info,param_2->mem_buffer[local_c],local_1c,iVar2);
+    if (writing == '\0') {
+      (*(ptr->b_s_info).read_backing_store)
+                (cinfo,&ptr->b_s_info,ptr->mem_buffer[i],file_offset,iVar2);
     }
     else {
-      (*(param_2->b_s_info).write_backing_store)
-                (param_1,&param_2->b_s_info,param_2->mem_buffer[local_c],local_1c,iVar2);
+      (*(ptr->b_s_info).write_backing_store)
+                (cinfo,&ptr->b_s_info,ptr->mem_buffer[i],file_offset,iVar2);
     }
-    local_1c = local_1c + iVar2;
-    local_c = local_c + param_2->rowsperchunk;
+    file_offset = file_offset + iVar2;
+    i = i + ptr->rowsperchunk;
   }
   return;
 }
@@ -508,227 +497,223 @@ void __cdecl do_barray_io(jpeg_common_struct *param_1,jvirt_barray_control *para
 // 00B43940  access_virt_sarray  (jpeg-6/jmemmgr.c:764)
 
 uchar ** __cdecl
-access_virt_sarray(jpeg_common_struct *param_1,jvirt_sarray_control *param_2,uint param_3,
-                  uint param_4,uchar param_5)
+access_virt_sarray(jpeg_common_struct *cinfo,jvirt_sarray_control *ptr,uint start_row,uint num_rows,
+                  uchar writable)
 
 {
+  uint bytestozero;
   uint uVar1;
   uint uVar2;
-  uint uVar3;
-  uint local_10;
-  uint local_8;
+  uint bytesperrow;
+  long ltemp;
+  uint end_row;
+  uint undef_row;
   
-  uVar3 = param_3 + param_4;
-  if (((param_2->rows_in_array < uVar3) || (param_2->maxaccess < param_4)) ||
-     (param_2->mem_buffer == (uchar **)0x0)) {
-    param_1->err->msg_code = 0x16;
-    (*param_1->err->error_exit)(param_1);
+  uVar2 = start_row + num_rows;
+  if (((ptr->rows_in_array < uVar2) || (ptr->maxaccess < num_rows)) ||
+     (ptr->mem_buffer == (uchar **)0x0)) {
+    cinfo->err->msg_code = 0x16;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  if ((param_3 < param_2->cur_start_row) || (param_2->cur_start_row + param_2->rows_in_mem < uVar3))
-  {
-    if (param_2->b_s_open == '\0') {
-      param_1->err->msg_code = 0x45;
-      (*param_1->err->error_exit)(param_1);
+  if ((start_row < ptr->cur_start_row) || (ptr->cur_start_row + ptr->rows_in_mem < uVar2)) {
+    if (ptr->b_s_open == '\0') {
+      cinfo->err->msg_code = 0x45;
+      (*cinfo->err->error_exit)(cinfo);
     }
-    if (param_2->dirty != '\0') {
-      do_sarray_io(param_1,param_2,'\x01');
-      param_2->dirty = '\0';
+    if (ptr->dirty != '\0') {
+      do_sarray_io(cinfo,ptr,'\x01');
+      ptr->dirty = '\0';
     }
-    if (param_2->cur_start_row < param_3) {
-      param_2->cur_start_row = param_3;
+    if (ptr->cur_start_row < start_row) {
+      ptr->cur_start_row = start_row;
     }
     else {
-      local_10 = uVar3 - param_2->rows_in_mem;
-      if ((int)local_10 < 0) {
-        local_10 = 0;
+      ltemp = uVar2 - ptr->rows_in_mem;
+      if (ltemp < 0) {
+        ltemp = 0;
       }
-      param_2->cur_start_row = local_10;
+      ptr->cur_start_row = ltemp;
     }
-    do_sarray_io(param_1,param_2,'\0');
+    do_sarray_io(cinfo,ptr,'\0');
   }
-  if (param_2->first_undef_row < uVar3) {
-    if (param_2->first_undef_row < param_3) {
-      if (param_5 != '\0') {
-        param_1->err->msg_code = 0x16;
-        (*param_1->err->error_exit)(param_1);
+  if (ptr->first_undef_row < uVar2) {
+    if (ptr->first_undef_row < start_row) {
+      if (writable != '\0') {
+        cinfo->err->msg_code = 0x16;
+        (*cinfo->err->error_exit)(cinfo);
       }
-      local_8 = param_3;
+      undef_row = start_row;
     }
     else {
-      local_8 = param_2->first_undef_row;
+      undef_row = ptr->first_undef_row;
     }
-    if (param_5 != '\0') {
-      param_2->first_undef_row = uVar3;
+    if (writable != '\0') {
+      ptr->first_undef_row = uVar2;
     }
-    if (param_2->pre_zero == '\0') {
-      if (param_5 == '\0') {
-        param_1->err->msg_code = 0x16;
-        (*param_1->err->error_exit)(param_1);
+    if (ptr->pre_zero == '\0') {
+      if (writable == '\0') {
+        cinfo->err->msg_code = 0x16;
+        (*cinfo->err->error_exit)(cinfo);
       }
     }
     else {
-      uVar1 = param_2->samplesperrow;
-      uVar2 = param_2->cur_start_row;
-      for (local_8 = local_8 - param_2->cur_start_row; local_8 < uVar3 - uVar2;
-          local_8 = local_8 + 1) {
-        R_SetBlackProbe(param_2->mem_buffer[local_8],uVar1);
+      bytestozero = ptr->samplesperrow;
+      uVar1 = ptr->cur_start_row;
+      for (undef_row = undef_row - ptr->cur_start_row; undef_row < uVar2 - uVar1;
+          undef_row = undef_row + 1) {
+        R_SetBlackProbe(ptr->mem_buffer[undef_row],bytestozero);
       }
     }
   }
-  if (param_5 != '\0') {
-    param_2->dirty = '\x01';
+  if (writable != '\0') {
+    ptr->dirty = '\x01';
   }
-  return param_2->mem_buffer + (param_3 - param_2->cur_start_row);
+  return ptr->mem_buffer + (start_row - ptr->cur_start_row);
 }
 
 
 // 00B43C90  access_virt_barray  (jpeg-6/jmemmgr.c:849)
 
 short (**) [64] __cdecl
-access_virt_barray(jpeg_common_struct *param_1,jvirt_barray_control *param_2,uint param_3,
-                  uint param_4,uchar param_5)
+access_virt_barray(jpeg_common_struct *cinfo,jvirt_barray_control *ptr,uint start_row,uint num_rows,
+                  uchar writable)
 
 {
   uint uVar1;
   uint uVar2;
   uint uVar3;
-  uint local_10;
-  uint local_8;
+  uint bytesperrow;
+  long ltemp;
+  uint end_row;
+  uint undef_row;
   
-  uVar3 = param_3 + param_4;
-  if (((param_2->rows_in_array < uVar3) || (param_2->maxaccess < param_4)) ||
-     (param_2->mem_buffer == (short (**) [64])0x0)) {
-    param_1->err->msg_code = 0x16;
-    (*param_1->err->error_exit)(param_1);
+  uVar3 = start_row + num_rows;
+  if (((ptr->rows_in_array < uVar3) || (ptr->maxaccess < num_rows)) ||
+     (ptr->mem_buffer == (short (**) [64])0x0)) {
+    cinfo->err->msg_code = 0x16;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  if ((param_3 < param_2->cur_start_row) || (param_2->cur_start_row + param_2->rows_in_mem < uVar3))
-  {
-    if (param_2->b_s_open == '\0') {
-      param_1->err->msg_code = 0x45;
-      (*param_1->err->error_exit)(param_1);
+  if ((start_row < ptr->cur_start_row) || (ptr->cur_start_row + ptr->rows_in_mem < uVar3)) {
+    if (ptr->b_s_open == '\0') {
+      cinfo->err->msg_code = 0x45;
+      (*cinfo->err->error_exit)(cinfo);
     }
-    if (param_2->dirty != '\0') {
-      do_barray_io(param_1,param_2,'\x01');
-      param_2->dirty = '\0';
+    if (ptr->dirty != '\0') {
+      do_barray_io(cinfo,ptr,'\x01');
+      ptr->dirty = '\0';
     }
-    if (param_2->cur_start_row < param_3) {
-      param_2->cur_start_row = param_3;
+    if (ptr->cur_start_row < start_row) {
+      ptr->cur_start_row = start_row;
     }
     else {
-      local_10 = uVar3 - param_2->rows_in_mem;
-      if ((int)local_10 < 0) {
-        local_10 = 0;
+      ltemp = uVar3 - ptr->rows_in_mem;
+      if (ltemp < 0) {
+        ltemp = 0;
       }
-      param_2->cur_start_row = local_10;
+      ptr->cur_start_row = ltemp;
     }
-    do_barray_io(param_1,param_2,'\0');
+    do_barray_io(cinfo,ptr,'\0');
   }
-  if (param_2->first_undef_row < uVar3) {
-    if (param_2->first_undef_row < param_3) {
-      if (param_5 != '\0') {
-        param_1->err->msg_code = 0x16;
-        (*param_1->err->error_exit)(param_1);
+  if (ptr->first_undef_row < uVar3) {
+    if (ptr->first_undef_row < start_row) {
+      if (writable != '\0') {
+        cinfo->err->msg_code = 0x16;
+        (*cinfo->err->error_exit)(cinfo);
       }
-      local_8 = param_3;
+      undef_row = start_row;
     }
     else {
-      local_8 = param_2->first_undef_row;
+      undef_row = ptr->first_undef_row;
     }
-    if (param_5 != '\0') {
-      param_2->first_undef_row = uVar3;
+    if (writable != '\0') {
+      ptr->first_undef_row = uVar3;
     }
-    if (param_2->pre_zero == '\0') {
-      if (param_5 == '\0') {
-        param_1->err->msg_code = 0x16;
-        (*param_1->err->error_exit)(param_1);
+    if (ptr->pre_zero == '\0') {
+      if (writable == '\0') {
+        cinfo->err->msg_code = 0x16;
+        (*cinfo->err->error_exit)(cinfo);
       }
     }
     else {
-      uVar1 = param_2->blocksperrow;
-      uVar2 = param_2->cur_start_row;
-      for (local_8 = local_8 - param_2->cur_start_row; local_8 < uVar3 - uVar2;
-          local_8 = local_8 + 1) {
-        R_SetBlackProbe((uchar *)param_2->mem_buffer[local_8],uVar1 << 7);
+      uVar1 = ptr->blocksperrow;
+      uVar2 = ptr->cur_start_row;
+      for (undef_row = undef_row - ptr->cur_start_row; undef_row < uVar3 - uVar2;
+          undef_row = undef_row + 1) {
+        R_SetBlackProbe((uchar *)ptr->mem_buffer[undef_row],uVar1 << 7);
       }
     }
   }
-  if (param_5 != '\0') {
-    param_2->dirty = '\x01';
+  if (writable != '\0') {
+    ptr->dirty = '\x01';
   }
-  return param_2->mem_buffer + (param_3 - param_2->cur_start_row);
+  return ptr->mem_buffer + (start_row - ptr->cur_start_row);
 }
 
 
 // 00B43FE0  free_pool  (jpeg-6/jmemmgr.c:933)
 
-void __cdecl free_pool(jpeg_common_struct *param_1,int param_2)
+void __cdecl free_pool(jpeg_common_struct *cinfo,int pool_id)
 
 {
   uint uVar1;
   jpeg_memory_mgr *pjVar2;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *p_Var3;
-  _func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *p_Var4;
-  _func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *local_1c;
-  _func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *local_18;
-  _func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *local_10;
-  _func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *local_c;
+  large_pool_struct *plVar3;
+  small_pool_struct *psVar4;
+  small_pool_struct *next_shdr_ptr;
+  large_pool_struct *next_lhdr_ptr;
+  jvirt_barray_control *bptr;
+  jvirt_sarray_control *sptr;
+  my_memory_mgr *mem;
+  small_pool_struct *shdr_ptr;
+  large_pool_struct *lhdr_ptr;
+  uint space_freed;
   
-  pjVar2 = param_1->mem;
-  if ((param_2 < 0) || (1 < param_2)) {
-    param_1->err->msg_code = 0xe;
-    (param_1->err->msg_parm).i[0] = param_2;
-    (*param_1->err->error_exit)(param_1);
+  pjVar2 = cinfo->mem;
+  if ((pool_id < 0) || (1 < pool_id)) {
+    cinfo->err->msg_code = 0xe;
+    (cinfo->err->msg_parm).i[0] = pool_id;
+    (*cinfo->err->error_exit)(cinfo);
   }
-  if (param_2 == 1) {
-    for (local_18 = pjVar2[1].request_virt_sarray;
-        local_18 !=
-        (_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)
-        0x0; local_18 = *(_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint
-                          **)(local_18 + 0x24)) {
-      if (local_18[0x22] !=
-          (_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint)
-          0x0) {
-        local_18[0x22] = (code)0x0;
-        (**(code **)(local_18 + 0x30))(param_1,local_18 + 0x28);
+  if (pool_id == 1) {
+    for (sptr = (jvirt_sarray_control *)pjVar2[1].request_virt_sarray;
+        sptr != (jvirt_sarray_control *)0x0; sptr = sptr->next) {
+      if (sptr->b_s_open != '\0') {
+        sptr->b_s_open = '\0';
+        (*(sptr->b_s_info).close_backing_store)(cinfo,&sptr->b_s_info);
       }
     }
     pjVar2[1].request_virt_sarray =
          (_func___cdecl_jvirt_sarray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)
          0x0;
-    for (local_1c = pjVar2[1].request_virt_barray;
-        local_1c !=
-        (_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)
-        0x0; local_1c = *(_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint
-                          **)(local_1c + 0x24)) {
-      if (local_1c[0x22] !=
-          (_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint)
-          0x0) {
-        local_1c[0x22] = (code)0x0;
-        (**(code **)(local_1c + 0x30))(param_1,local_1c + 0x28);
+    for (bptr = (jvirt_barray_control *)pjVar2[1].request_virt_barray;
+        bptr != (jvirt_barray_control *)0x0; bptr = bptr->next) {
+      if (bptr->b_s_open != '\0') {
+        bptr->b_s_open = '\0';
+        (*(bptr->b_s_info).close_backing_store)(cinfo,&bptr->b_s_info);
       }
     }
     pjVar2[1].request_virt_barray =
          (_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)
          0x0;
   }
-  local_c = (&pjVar2[1].alloc_sarray)[param_2];
-  (&pjVar2[1].alloc_sarray)[param_2] =
+  lhdr_ptr = (large_pool_struct *)(&pjVar2[1].alloc_sarray)[pool_id];
+  (&pjVar2[1].alloc_sarray)[pool_id] =
        (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *)0x0;
-  while (local_c != (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *)0x0) {
-    p_Var3 = *(_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint **)local_c;
-    uVar1 = *(int *)(local_c + 4) + 0x10 + *(int *)(local_c + 8);
-    jpeg_free_small(param_1,local_c,uVar1);
+  while (lhdr_ptr != (large_pool_struct *)0x0) {
+    plVar3 = (lhdr_ptr->hdr).next;
+    uVar1 = (lhdr_ptr->hdr).bytes_used + 0x10 + (lhdr_ptr->hdr).bytes_left;
+    jpeg_free_small(cinfo,lhdr_ptr,uVar1);
     pjVar2[1].realize_virt_arrays = pjVar2[1].realize_virt_arrays + -uVar1;
-    local_c = p_Var3;
+    lhdr_ptr = plVar3;
   }
-  local_10 = (&pjVar2[1].alloc_small)[param_2];
-  (&pjVar2[1].alloc_small)[param_2] = (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0;
-  while (local_10 != (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0) {
-    p_Var4 = *(_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint **)local_10;
-    uVar1 = *(int *)(local_10 + 4) + 0x10 + *(int *)(local_10 + 8);
-    jpeg_free_small(param_1,local_10,uVar1);
+  shdr_ptr = (small_pool_struct *)(&pjVar2[1].alloc_small)[pool_id];
+  (&pjVar2[1].alloc_small)[pool_id] = (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0;
+  while (shdr_ptr != (small_pool_struct *)0x0) {
+    psVar4 = (shdr_ptr->hdr).next;
+    uVar1 = (shdr_ptr->hdr).bytes_used + 0x10 + (shdr_ptr->hdr).bytes_left;
+    jpeg_free_small(cinfo,shdr_ptr,uVar1);
     pjVar2[1].realize_virt_arrays = pjVar2[1].realize_virt_arrays + -uVar1;
-    local_10 = p_Var4;
+    shdr_ptr = psVar4;
   }
   return;
 }
@@ -736,17 +721,17 @@ void __cdecl free_pool(jpeg_common_struct *param_1,int param_2)
 
 // 00B441A0  self_destruct  (jpeg-6/jmemmgr.c:1005)
 
-void __cdecl self_destruct(jpeg_common_struct *param_1)
+void __cdecl self_destruct(jpeg_common_struct *cinfo)
 
 {
-  int local_8;
+  int pool;
   
-  for (local_8 = 1; -1 < local_8; local_8 = local_8 + -1) {
-    free_pool(param_1,local_8);
+  for (pool = 1; -1 < pool; pool = pool + -1) {
+    free_pool(cinfo,pool);
   }
-  jpeg_free_small(param_1,param_1->mem,0x5c);
-  param_1->mem = (jpeg_memory_mgr *)0x0;
-  GamerProfile_WriteSettings((int)param_1);
+  jpeg_free_small(cinfo,cinfo->mem,0x5c);
+  cinfo->mem = (jpeg_memory_mgr *)0x0;
+  GamerProfile_WriteSettings((int)cinfo);
   return;
 }
 
@@ -756,21 +741,24 @@ void __cdecl self_destruct(jpeg_common_struct *param_1)
 /* WARNING: Removing unreachable block (ram,0x00b42e54) */
 /* WARNING: Removing unreachable block (ram,0x00b42e84) */
 
-void __cdecl jinit_memory_mgr(jpeg_common_struct *param_1)
+void __cdecl jinit_memory_mgr(jpeg_common_struct *cinfo)
 
 {
   int iVar1;
   jpeg_memory_mgr *pjVar2;
-  int local_14;
+  int pool;
+  my_memory_mgr *mem;
+  uint test_mac;
+  long max_to_use;
   
-  param_1->mem = (jpeg_memory_mgr *)0x0;
+  cinfo->mem = (jpeg_memory_mgr *)0x0;
   iVar1 = CL_GetFirstActiveLocalClient();
-  pjVar2 = jpeg_get_small(param_1,0x5c);
+  pjVar2 = jpeg_get_small(cinfo,0x5c);
   if (pjVar2 == (jpeg_memory_mgr *)0x0) {
-    GamerProfile_WriteSettings((int)param_1);
-    param_1->err->msg_code = 0x36;
-    (param_1->err->msg_parm).i[0] = 0;
-    (*param_1->err->error_exit)(param_1);
+    GamerProfile_WriteSettings((int)cinfo);
+    cinfo->err->msg_code = 0x36;
+    (cinfo->err->msg_parm).i[0] = 0;
+    (*cinfo->err->error_exit)(cinfo);
   }
   pjVar2->alloc_small = alloc_small;
   pjVar2->alloc_large = alloc_large;
@@ -785,10 +773,9 @@ void __cdecl jinit_memory_mgr(jpeg_common_struct *param_1)
   pjVar2->self_destruct = self_destruct;
   pjVar2->max_alloc_chunk = 1000000000;
   pjVar2->max_memory_to_use = iVar1;
-  for (local_14 = 1; -1 < local_14; local_14 = local_14 + -1) {
-    (&pjVar2[1].alloc_small)[local_14] =
-         (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0;
-    (&pjVar2[1].alloc_sarray)[local_14] =
+  for (pool = 1; -1 < pool; pool = pool + -1) {
+    (&pjVar2[1].alloc_small)[pool] = (_func___cdecl_void_ptr_jpeg_common_struct_ptr_int_uint *)0x0;
+    (&pjVar2[1].alloc_sarray)[pool] =
          (_func___cdecl_uchar_ptr_ptr_jpeg_common_struct_ptr_int_uint_uint *)0x0;
   }
   pjVar2[1].request_virt_sarray =
@@ -798,7 +785,7 @@ void __cdecl jinit_memory_mgr(jpeg_common_struct *param_1)
        (_func___cdecl_jvirt_barray_control_ptr_jpeg_common_struct_ptr_int_uchar_uint_uint_uint *)0x0
   ;
   pjVar2[1].realize_virt_arrays = (_func___cdecl_void_jpeg_common_struct_ptr *)0x5c;
-  param_1->mem = pjVar2;
+  cinfo->mem = pjVar2;
   return;
 }
 
@@ -806,11 +793,12 @@ void __cdecl jinit_memory_mgr(jpeg_common_struct *param_1)
 // 00B44200  jpeg_set_jpeg_alloc  (jpeg-6/jmemmgr.c:1125)
 
 void __cdecl
-jpeg_set_jpeg_alloc(_func___cdecl_void_ptr_uint *param_1,_func___cdecl_void_void_ptr *param_2)
+jpeg_set_jpeg_alloc(_func___cdecl_void_ptr_uint *malloc_fn_ptr,
+                   _func___cdecl_void_void_ptr *free_fn_ptr)
 
 {
-  jpeg_alloc_overrides.malloc = param_1;
-  jpeg_alloc_overrides.free = param_2;
+  jpeg_alloc_overrides.malloc = malloc_fn_ptr;
+  jpeg_alloc_overrides.free = free_fn_ptr;
   return;
 }
 

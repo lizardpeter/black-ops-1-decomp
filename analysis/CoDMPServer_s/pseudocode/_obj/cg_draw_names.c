@@ -99,17 +99,17 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
   int in_EAX;
   ScreenPlacement *pSVar6;
   Font_s *pFVar7;
-  char *pcVar8;
+  char *maxChars;
   Material *unaff_EBX;
   float *unaff_EBP;
+  int iVar8;
   int iVar9;
-  int iVar10;
-  PlayerDetails **ppPVar11;
+  PlayerDetails **ppPVar10;
   centity_s *unaff_ESI;
   ScreenPlacement *unaff_EDI;
-  float10 fVar12;
+  float10 fVar11;
+  float fVar12;
   float fVar13;
-  float fVar14;
   float local_50;
   PlayerDetails **local_4c;
   float local_48;
@@ -143,9 +143,9 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
          pSVar6 = (ScreenPlacement *)CG_GetDriverClientNumFromVehicle((int)unaff_EDI,unaff_ESI),
          (int)pSVar6 < (com_maxclients->current).integer)))) &&
        ((*(uint *)(in_EAX + 0x1ec) & 0x40000) == 0)) {
-      iVar9 = param_1 * 0x20 + (int)pSVar6;
-      iVar10 = iVar9 * 0x68;
-      ppPVar11 = &playerDetails + iVar9 * 0x1a;
+      iVar8 = param_1 * 0x20 + (int)pSVar6;
+      iVar9 = iVar8 * 0x68;
+      ppPVar10 = &playerDetails + iVar8 * 0x1a;
       pFVar7 = DAT_01eb815c;
       local_3c = pSVar6;
       if ((cg_overheadNamesFont->current).integer != 2) {
@@ -160,10 +160,10 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
           pSVar6 = local_3c;
         }
         else {
-          iVar9 = CachedTag_GetTagPos((centity_s *)(uint)DAT_01c78ecc,(uint)&local_20,
+          iVar8 = CachedTag_GetTagPos((centity_s *)(uint)DAT_01c78ecc,(uint)&local_20,
                                       (float *)(cg_overheadNamesTagUpdateInterval->current).string,0
                                       ,SUB41(unaff_EDI,0));
-          if (iVar9 < 1) {
+          if (iVar8 < 1) {
             local_20 = *(float *)(in_EAX + 0x30);
             local_1c = *(float *)(in_EAX + 0x34);
             local_18 = *(float *)(in_EAX + 0x38) + 82.0;
@@ -175,12 +175,12 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
         switch(param_3) {
         case 0.0:
           bVar1 = false;
-          ppPVar11 = (PlayerDetails **)(&DAT_00b85a15 + iVar10);
+          ppPVar10 = (PlayerDetails **)(&DAT_00b85a15 + iVar9);
         case 2.8026e-45:
-          local_4c = ppPVar11;
+          local_4c = ppPVar10;
           break;
         case 1.4013e-45:
-          local_4c = (PlayerDetails **)(&DAT_00b85a0e + iVar10);
+          local_4c = (PlayerDetails **)(&DAT_00b85a0e + iVar9);
           break;
         default:
           Com_PrintError(0xe,"Bad Overhead Display Mode for client num: %i\n",pSVar6);
@@ -205,44 +205,44 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
             if (local_40 <=
                 (cg_overheadNamesFarDist->current).value * (cg_overheadNamesFarDist->current).value)
             {
-              fVar12 = (float10)sqrtf(local_40);
-              fVar13 = ((float)fVar12 - (pdVar2->current).value) /
+              fVar11 = (float10)sqrtf(local_40);
+              fVar12 = ((float)fVar11 - (pdVar2->current).value) /
                        ((pdVar3->current).value - (pdVar2->current).value);
-              local_48 = (cg_overheadNamesFarScale->current).value * fVar13 + (1.0 - fVar13);
+              local_48 = (cg_overheadNamesFarScale->current).value * fVar12 + (1.0 - fVar12);
             }
             else {
               local_48 = (cg_overheadNamesFarScale->current).value;
-              fVar12 = (float10)sqrtf(local_40);
+              fVar11 = (float10)sqrtf(local_40);
             }
           }
           else {
             local_48 = 1.0;
-            fVar12 = (float10)sqrtf(local_40);
+            fVar11 = (float10)sqrtf(local_40);
           }
-          local_40 = (float)fVar12;
+          local_40 = (float)fVar11;
           local_34 = ((cg_overheadNamesSize->current).value * local_48 * 48.0) /
                      (float)pFVar7->pixelHeight;
+          if (rg.renderHiResShot == 0) {
+            fVar12 = 1.0;
+          }
+          else {
+            fVar12 = (float)rg.hiResShotTiles;
+          }
           if (rg.renderHiResShot == 0) {
             fVar13 = 1.0;
           }
           else {
             fVar13 = (float)rg.hiResShotTiles;
           }
-          if (rg.renderHiResShot == 0) {
-            fVar14 = 1.0;
-          }
-          else {
-            fVar14 = (float)rg.hiResShotTiles;
-          }
-          fVar13 = fVar14 * (local_34 / fVar13) * (float)local_2c[5] * (float)*local_2c;
+          fVar12 = fVar13 * (local_34 / fVar12) * (float)local_2c[5] * (float)*local_2c;
           local_28 = (float)pFVar7->pixelHeight * local_34;
-          local_30 = fVar13;
+          local_30 = fVar12;
           local_24 = local_34;
-          iVar9 = R_TextWidth((char *)local_4c,0x20,pFVar7);
-          fVar12 = (float10)floorf((local_50 - (float)iVar9 * fVar13 * 0.5) + 0.5);
-          local_50 = (float)fVar12;
-          fVar12 = (float10)floorf(local_44 + 0.5);
-          local_44 = (float)fVar12;
+          iVar8 = R_TextWidth((char *)local_4c,0x20,pFVar7);
+          fVar11 = (float10)floorf((local_50 - (float)iVar8 * fVar12 * 0.5) + 0.5);
+          local_50 = (float)fVar11;
+          fVar11 = (float10)floorf(local_44 + 0.5);
+          local_44 = (float)fVar11;
           Dvar_GetUnpackedColor((dvar_s *)unaff_EDI,(float *)unaff_ESI);
           local_14 = local_14 * (float)param_2;
           ScrPlace_HiResApplyRect
@@ -251,7 +251,7 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
                     ((char *)local_4c,0x20,pFVar7,local_50,local_44,local_40,local_30,local_34,
                      &local_10,3,&local_20,(Material *)0x0,(Material *)0x0,0,0,0,0);
           if (bVar1) {
-            iVar9 = *(int *)(local_38 + (int)local_3c * 0x5d0 + 0x5f270);
+            iVar8 = *(int *)(local_38 + (int)local_3c * 0x5d0 + 0x5f270);
             if (((zombiemode->current).enabled == false) &&
                (*(int *)(local_38 + (int)local_3c * 0x5d0 + 0x5f2cc) != 0)) {
               local_30 = (cg_overheadIconSize->current).value * local_28;
@@ -262,21 +262,21 @@ void __cdecl CG_DrawOverheadNames(int param_1,centity_s *param_2,float param_3,i
               ScrPlace_VirtualFromReal_Height(unaff_EDI,(float)unaff_ESI);
               ScrPlace_RealFromVirtual_Width(pSVar6,(float)unaff_EDI);
               local_2c = (ScreenPlacement **)((float)pSVar6 / (float)local_3c);
-              pcVar8 = CL_GetRankData(iVar9,0xe);
-              iVar9 = R_TextWidth(pcVar8,0x20,pFVar7);
+              maxChars = CL_GetRankData(iVar8,0xe);
+              iVar8 = R_TextWidth(maxChars,0x20,pFVar7);
               local_50 = local_50 -
-                         ((float)iVar9 * (float)local_3c + local_48 * 2.0 + local_30) *
+                         ((float)iVar8 * (float)local_3c + local_48 * 2.0 + local_30) *
                          (float)local_2c;
               local_10 = 1.0;
               local_c = 1.0;
               local_8 = 1.0;
               local_4 = param_2;
-              fVar13 = (float)local_2c * local_30;
+              fVar12 = (float)local_2c * local_30;
               CL_DrawStretchPicPhysicalW
-                        (local_50,local_44 - (local_30 + local_28) * 0.5,local_40,fVar13,local_30,
+                        (local_50,local_44 - (local_30 + local_28) * 0.5,local_40,fVar12,local_30,
                          1.0,1.0,(float)unaff_EDI,(float)unaff_ESI,unaff_EBP,unaff_EBX);
-              local_50 = fVar13 + local_50;
-              CL_DrawTextPhysical(pcVar8,3,pFVar7,local_50,
+              local_50 = fVar12 + local_50;
+              CL_DrawTextPhysical(maxChars,3,pFVar7,local_50,
                                   (float)pFVar7->pixelHeight * local_24 * 0.25 + local_44,local_40,
                                   (float)local_2c * (float)local_3c,(float)local_3c,
                                   unaff_EDI->scaleVirtualToReal,(int)unaff_ESI);

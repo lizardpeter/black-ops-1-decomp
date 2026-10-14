@@ -2,50 +2,54 @@
 
 // 00B37E20  RB_ShowTess  (gfx_d3d/rb_tess.cpp:80)
 
-void __cdecl RB_ShowTess(GfxCmdBufContext param_1,float *param_2,char *param_3,float *param_4)
+void __cdecl RB_ShowTess(GfxCmdBufContext context,float *center,char *tessName,float *color)
 
 {
   float fVar1;
   code *pcVar2;
   bool bVar3;
   char *pcVar4;
-  float local_20;
+  GfxBackEndData *data;
+  float TEXT_TECH_MEAN;
+  char *infoIdString;
+  float TEXT_TECH_VERTICAL_OFFSET;
+  float offsetCenter;
   float local_1c;
   float local_18;
-  MaterialTechnique *local_14;
-  MaterialTechniqueSet *local_10;
-  float local_c;
-  char *local_8;
+  MaterialTechnique *tech;
+  MaterialTechniqueSet *techSet;
+  float TEXT_SIZE;
+  char *infoString;
   
-  local_c = 0.6;
-  if ((param_2 == (float *)0x0) &&
+  TEXT_SIZE = 0.6;
+  if ((center == (float *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5e,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_3 == (char *)0x0) &&
+  if ((tessName == (char *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5f,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_20 = *param_2;
-  local_1c = param_2[1];
-  local_18 = param_2[2];
-  if (((param_1.field0_0x0._s_0.state)->material == (Material *)0x0) &&
+  offsetCenter = *center;
+  local_1c = center[1];
+  local_18 = center[2];
+  if (((context.field0_0x0._s_0.state)->material == (Material *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",99,0,"%s"),
      !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_14 = Material_GetTechnique
-                       ((param_1.field0_0x0._s_0.state)->material,
-                        (param_1.field0_0x0._s_0.state)->techType);
-  if ((local_14 == (MaterialTechnique *)0x0) &&
+  tech = Material_GetTechnique
+                   ((context.field0_0x0._s_0.state)->material,
+                    (context.field0_0x0._s_0.state)->techType);
+  if ((tech == (MaterialTechnique *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x66,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -54,54 +58,54 @@ void __cdecl RB_ShowTess(GfxCmdBufContext param_1,float *param_2,char *param_3,f
   }
   switch((r_showTess->current).integer) {
   case 1:
-    local_8 = local_14->name;
-    local_18 = ((float)(param_1.field0_0x0._s_0.state)->techType - 16.0) * 0.3 + local_18;
+    infoString = tech->name;
+    local_18 = ((float)(context.field0_0x0._s_0.state)->techType - 16.0) * 0.3 + local_18;
     break;
   case 2:
-    local_10 = Material_GetTechniqueSet((param_1.field0_0x0._s_0.state)->material);
-    if ((local_10 == (MaterialTechniqueSet *)0x0) &&
+    techSet = Material_GetTechniqueSet((context.field0_0x0._s_0.state)->material);
+    if ((techSet == (MaterialTechniqueSet *)0x0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x86,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    local_8 = local_10->name;
+    infoString = techSet->name;
     break;
   case 3:
-    local_8 = ((param_1.field0_0x0._s_0.state)->material->info).name;
+    infoString = ((context.field0_0x0._s_0.state)->material->info).name;
     break;
   case 4:
-    if ((local_14->passCount == 0) &&
+    if ((tech->passCount == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x71,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (local_14->passArray[0].vertexShader == (MaterialVertexShader *)0x0) {
-      local_8 = "<NONE>";
+    if (tech->passArray[0].vertexShader == (MaterialVertexShader *)0x0) {
+      infoString = "<NONE>";
     }
     else {
-      local_8 = (local_14->passArray[0].vertexShader)->name;
+      infoString = (tech->passArray[0].vertexShader)->name;
     }
-    local_18 = ((float)(param_1.field0_0x0._s_0.state)->techType - 16.0) * 0.3 + local_18;
+    local_18 = ((float)(context.field0_0x0._s_0.state)->techType - 16.0) * 0.3 + local_18;
     break;
   case 5:
-    if ((local_14->passCount == 0) &&
+    if ((tech->passCount == 0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x7b,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if (local_14->passArray[0].field2_0x8.pixelShader == (MaterialPixelShader *)0x0) {
-      local_8 = "<NONE>";
+    if (tech->passArray[0].field2_0x8.pixelShader == (MaterialPixelShader *)0x0) {
+      infoString = "<NONE>";
     }
     else {
-      local_8 = (local_14->passArray[0].field2_0x8.pixelShader)->name;
+      infoString = (tech->passArray[0].field2_0x8.pixelShader)->name;
     }
-    local_18 = ((float)(param_1.field0_0x0._s_0.state)->techType - 16.0) * 0.3 + local_18;
+    local_18 = ((float)(context.field0_0x0._s_0.state)->techType - 16.0) * 0.3 + local_18;
     break;
   default:
     pcVar4 = va("Unknown value for r_showTess: %i");
@@ -112,62 +116,63 @@ void __cdecl RB_ShowTess(GfxCmdBufContext param_1,float *param_2,char *param_3,f
       (*pcVar2)();
       return;
     }
-    local_8 = "?";
+    infoString = "?";
   }
-  fVar1 = ((param_1.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
+  fVar1 = ((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
   pcVar4 = va("%s:%s=%s");
-  R_AddDebugString((DebugGlobals *)((int)fVar1 + 0x16cea8),&local_20,param_4,local_c,pcVar4);
+  R_AddDebugString((DebugGlobals *)((int)fVar1 + 0x16cea8),&offsetCenter,color,TEXT_SIZE,pcVar4);
   return;
 }
 
 
 // 00B381A0  R_SetVertexDeclTypeNormal  (gfx_d3d/rb_tess.cpp:158)
 
-void __cdecl R_SetVertexDeclTypeNormal(GfxCmdBufState *param_1,MaterialVertexDeclType param_2)
+void __cdecl R_SetVertexDeclTypeNormal(GfxCmdBufState *state,MaterialVertexDeclType vertDeclType)
 
 {
-  (param_1->prim).vertDeclType = param_2;
-  R_UpdateVertexDecl(param_1);
+  (state->prim).vertDeclType = vertDeclType;
+  R_UpdateVertexDecl(state);
   return;
 }
 
 
 // 00B38600  R_SetVertexDeclTypeNormal_Safe  (gfx_d3d/rb_tess.cpp:167)
 
-int __cdecl R_SetVertexDeclTypeNormal_Safe(GfxCmdBufState *param_1,MaterialVertexDeclType param_2)
+int __cdecl
+R_SetVertexDeclTypeNormal_Safe(GfxCmdBufState *state,MaterialVertexDeclType vertDeclType)
 
 {
-  (param_1->prim).vertDeclType = param_2;
-  R_UpdateVertexDecl(param_1);
+  (state->prim).vertDeclType = vertDeclType;
+  R_UpdateVertexDecl(state);
   return 1;
 }
 
 
 // 00B381C0  R_SetVertexDeclTypeWorld  (gfx_d3d/rb_tess.cpp:190)
 
-void __cdecl R_SetVertexDeclTypeWorld(GfxCmdBufState *param_1)
+void __cdecl R_SetVertexDeclTypeWorld(GfxCmdBufState *state)
 
 {
-  MaterialVertexDeclType local_8;
+  MaterialVertexDeclType vertDeclType;
   
-  if ((param_1->technique->flags & 8) == 0) {
-    local_8 = VERTDECL_WORLD;
+  if ((state->technique->flags & 8) == 0) {
+    vertDeclType = VERTDECL_WORLD;
   }
   else {
-    local_8 = ((param_1->material->field8_0xb0).localTechniqueSet)->worldVertFormat + VERTDECL_WORLD
-    ;
+    vertDeclType = ((state->material->field8_0xb0).localTechniqueSet)->worldVertFormat +
+                   VERTDECL_WORLD;
   }
-  R_SetVertexDeclTypeNormal(param_1,local_8);
+  R_SetVertexDeclTypeNormal(state,vertDeclType);
   return;
 }
 
 
 // 00B38210  R_SetVertexDeclTypeModel  (gfx_d3d/rb_tess.cpp:202)
 
-void __cdecl R_SetVertexDeclTypeModel(XSurface *param_1,GfxCmdBufState *param_2)
+void __cdecl R_SetVertexDeclTypeModel(XSurface *surf_2,GfxCmdBufState *state_2)
 
 {
-  R_SetVertexDeclTypeNormal(param_2,VERTDECL_PACKED);
+  R_SetVertexDeclTypeNormal(state_2,VERTDECL_PACKED);
   return;
 }
 
@@ -176,7 +181,7 @@ void __cdecl R_SetVertexDeclTypeModel(XSurface *param_1,GfxCmdBufState *param_2)
 
 void __cdecl
 R_TessCodeMeshList_AddCodeMeshArgs
-          (GfxCmdBufSourceState *param_1,GfxBackEndData *param_2,FxCodeMeshData *param_3)
+          (GfxCmdBufSourceState *source,GfxBackEndData *data,FxCodeMeshData *codeMesh)
 
 {
   float (*pafVar1) [4];
@@ -185,16 +190,20 @@ R_TessCodeMeshList_AddCodeMeshArgs
   code *pcVar4;
   bool bVar5;
   uint uVar6;
-  uint local_1c;
+  uint argIndex;
+  uint argGlobalIndex;
+  uint argCount;
+  uint argOffset;
+  uint constantId;
   
-  uVar2 = param_3->argOffset;
-  uVar3 = param_3->argCount;
-  local_1c = 0;
+  uVar2 = codeMesh->argOffset;
+  uVar3 = codeMesh->argCount;
+  argIndex = 0;
   do {
-    if (local_1c == uVar3) {
+    if (argIndex == uVar3) {
       return;
     }
-    if (0x4d < local_1c + 0x4c) {
+    if (0x4d < argIndex + 0x4c) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xf3,0,
                                "%s\n\t(constantId) = %i");
       if (!bVar5) {
@@ -203,8 +212,8 @@ R_TessCodeMeshList_AddCodeMeshArgs
         return;
       }
     }
-    uVar6 = local_1c + uVar2;
-    if ((uint)param_2->codeMeshArgsCount <= uVar6) {
+    uVar6 = argIndex + uVar2;
+    if ((uint)data->codeMeshArgsCount <= uVar6) {
       bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xf6,0,
                                "%s\n\t(argGlobalIndex) = %i");
       if (!bVar5) {
@@ -213,22 +222,22 @@ R_TessCodeMeshList_AddCodeMeshArgs
         return;
       }
     }
-    pafVar1 = param_2->codeMeshArgs + uVar6;
-    R_SetCodeConstant(param_1,local_1c + 0x4c,(*pafVar1)[0],(*pafVar1)[1],(*pafVar1)[2],
-                      (*pafVar1)[3]);
-    local_1c = local_1c + 1;
+    pafVar1 = data->codeMeshArgs + uVar6;
+    R_SetCodeConstant(source,argIndex + 0x4c,(*pafVar1)[0],(*pafVar1)[1],(*pafVar1)[2],(*pafVar1)[3]
+                     );
+    argIndex = argIndex + 1;
   } while( true );
 }
 
 
 // 00B38230  R_SetObjectIdentityPlacement  (gfx_d3d/rb_tess.cpp:270)
 
-void __cdecl R_SetObjectIdentityPlacement(GfxCmdBufSourceState *param_1)
+void __cdecl R_SetObjectIdentityPlacement(GfxCmdBufSourceState *source)
 
 {
-  if (param_1->viewMode != 0xb0025c0) {
-    param_1->viewMode = 0xb0025c0;
-    R_ChangeObjectPlacementRemote(param_1,&g_drawConsts.identityPlacement);
+  if (source->viewMode != 0xb0025c0) {
+    source->viewMode = 0xb0025c0;
+    R_ChangeObjectPlacementRemote(source,&g_drawConsts.identityPlacement);
   }
   return;
 }
@@ -236,354 +245,370 @@ void __cdecl R_SetObjectIdentityPlacement(GfxCmdBufSourceState *param_1)
 
 // 00B38270  R_TessCodeMeshList  (gfx_d3d/rb_tess.cpp:279)
 
-uint __cdecl R_TessCodeMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessCodeMeshList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxDrawSurf *pGVar1;
-  FxCodeMeshData *pFVar2;
-  ushort uVar3;
-  GfxCmdBufSourceState *pGVar4;
-  GfxCmdBufState *pGVar5;
+  FxCodeMeshData *codeMesh;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  uint uVar2;
+  GfxBackEndData *data_00;
+  code *pcVar3;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  bool bVar4;
+  int iVar5;
   uint uVar6;
-  GfxBackEndData *pGVar7;
-  code *pcVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  bool bVar12;
-  int iVar13;
-  uint uVar14;
   int extraout_EAX;
-  GfxDepthRangeType GVar15;
-  uint local_38;
-  ushort *local_2c;
-  GfxDrawPrimArgs local_20;
-  uint local_14;
+  GfxDepthRangeType depthRangeType;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint drawSurfIndex;
+  ushort *indices;
+  uint argCount;
+  GfxDrawPrimArgs args;
+  uint drawSurfKey;
   uint local_10;
-  uint local_8;
+  uint drawSurfCount;
   
-  pGVar4 = (param_1->context).field0_0x0._s_0.source;
-  pGVar5 = (param_1->context).field0_0x0._s_0.state;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  local_8 = param_1->info->drawSurfCount - param_1->firstDrawSurfIndex;
-  pGVar1 = param_1->info->drawSurfs + param_1->firstDrawSurfIndex;
-  uVar14 = *(uint *)pGVar1;
-  uVar6 = *(uint *)((int)pGVar1 + 4);
-  iVar13 = R_SetVertexDeclTypeNormal_Safe(pGVar5,VERTDECL_PACKED);
-  if (iVar13 == 0) {
-    local_38 = 1;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  drawSurfCount = listArgs->info->drawSurfCount - listArgs->firstDrawSurfIndex;
+  pGVar1 = listArgs->info->drawSurfs + listArgs->firstDrawSurfIndex;
+  uVar6 = *(uint *)pGVar1;
+  uVar2 = *(uint *)((int)pGVar1 + 4);
+  iVar5 = R_SetVertexDeclTypeNormal_Safe(state,VERTDECL_PACKED);
+  if (iVar5 == 0) {
+    drawSurfIndex = 1;
   }
   else {
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar9);
-    if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-        (pGVar4 != param_2.field0_0x0._s_0.source)) &&
-       (bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x145,0,
-                                  "%s"), !bVar12)) {
-      pcVar8 = (code *)swi(3);
-      uVar14 = (*pcVar8)();
-      return uVar14;
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+    if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+        (source != prepassContext.field0_0x0._s_0.source)) &&
+       (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x145,0,
+                                 "%s"), !bVar4)) {
+      pcVar3 = (code *)swi(3);
+      uVar6 = (*pcVar3)();
+      return uVar6;
     }
-    R_SetObjectIdentityPlacement(pGVar4);
-    R_ChangeDepthHackNearClip(pGVar4,0);
-    GVar15 = ((pGVar4->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar15 != pGVar5->depthRangeType) {
-      R_ChangeDepthRange(pGVar5,GVar15);
+    R_SetObjectIdentityPlacement(source);
+    R_ChangeDepthHackNearClip(source,0);
+    depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (depthRangeType != state->depthRangeType) {
+      R_ChangeDepthRange(state,depthRangeType);
     }
-    pGVar7 = (GfxBackEndData *)(pGVar4->viewParms).viewMatrix.m[2][0];
-    R_SetMeshStream(pGVar5,pGVar7->codeMeshPtr);
-    local_2c = (ushort *)0x0;
-    local_20.baseIndex = 0;
-    local_20.vertexCount = 0x4000;
-    local_20.triCount = 0;
-    local_14 = uVar14 & 0xf00f0000;
-    local_10 = uVar6;
-    R_TrackPrims(&pGVar5->prim,GFX_PRIM_STATS_FX);
-    uVar3 = 0;
-    local_38 = 0;
+    data_00 = (GfxBackEndData *)(source->viewParms).viewMatrix.m[2][0];
+    R_SetMeshStream(state,data_00->codeMeshPtr);
+    indices = (ushort *)0x0;
+    args.baseIndex = 0;
+    args.vertexCount = 0x4000;
+    args.triCount = 0;
+    drawSurfKey = uVar6 & 0xf00f0000;
+    local_10 = uVar2;
+    R_TrackPrims(&state->prim,GFX_PRIM_STATS_FX);
+    argCount = 0;
+    drawSurfIndex = 0;
     do {
       _allmul();
-      pFVar2 = (FxCodeMeshData *)((int)&pGVar7->codeMeshes[0].triCount + extraout_EAX);
-      if ((pFVar2->triCount == 0) &&
-         (bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x16c,
-                                    0,"%s\n\t(codeMesh->triCount) = %i"), !bVar12)) {
-        pcVar8 = (code *)swi(3);
-        uVar14 = (*pcVar8)();
-        return uVar14;
+      codeMesh = (FxCodeMeshData *)((int)&data_00->codeMeshes[0].triCount + extraout_EAX);
+      if ((codeMesh->triCount == 0) &&
+         (bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x16c,0
+                                   ,"%s\n\t(codeMesh->triCount) = %i"), !bVar4)) {
+        pcVar3 = (code *)swi(3);
+        uVar6 = (*pcVar3)();
+        return uVar6;
       }
-      if (((uVar3 != 0) || (pFVar2->argCount != 0)) ||
-         (local_2c + local_20.triCount * 3 != pFVar2->indices)) {
-        if (local_20.triCount != 0) {
-          local_20.baseIndex = R_SetIndexData(&pGVar5->prim,local_2c,local_20.triCount);
-          R_DrawIndexedPrimitive(&pGVar5->prim,&local_20);
-          local_20.triCount = 0;
+      if (((argCount != 0) || (codeMesh->argCount != 0)) ||
+         (indices + args.triCount * 3 != codeMesh->indices)) {
+        if (args.triCount != 0) {
+          args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+          R_DrawIndexedPrimitive(&state->prim,&args);
+          args.triCount = 0;
         }
-        local_2c = pFVar2->indices;
-        R_TessCodeMeshList_AddCodeMeshArgs(pGVar4,pGVar7,pFVar2);
-        R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar10);
-        R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar11);
+        indices = codeMesh->indices;
+        R_TessCodeMeshList_AddCodeMeshArgs(source,data_00,codeMesh);
+        R_SetupPassPerObjectArgs((GfxCmdBufContext)context);
+        R_SetupPassPerPrimArgs((GfxCmdBufContext)context_00);
       }
-      uVar3 = pFVar2->argCount;
-      local_20.triCount = local_20.triCount + pFVar2->triCount;
-      (pGVar5->prim).frameStats.fxIndexCount =
-           pFVar2->triCount * 3 + (pGVar5->prim).frameStats.fxIndexCount;
-      local_38 = local_38 + 1;
-    } while (((local_38 != local_8) && ((*(uint *)(pGVar1 + local_38) & 0xf00f0000) == local_14)) &&
-            (*(uint *)((int)pGVar1 + (local_38 * 2 + 1) * 4) == local_10));
-    if (local_20.triCount != 0) {
-      local_20.baseIndex = R_SetIndexData(&pGVar5->prim,local_2c,local_20.triCount);
-      R_DrawIndexedPrimitive(&pGVar5->prim,&local_20);
+      argCount = (uint)codeMesh->argCount;
+      args.triCount = args.triCount + codeMesh->triCount;
+      (state->prim).frameStats.fxIndexCount =
+           codeMesh->triCount * 3 + (state->prim).frameStats.fxIndexCount;
+      drawSurfIndex = drawSurfIndex + 1;
+    } while (((drawSurfIndex != drawSurfCount) &&
+             ((*(uint *)(pGVar1 + drawSurfIndex) & 0xf00f0000) == drawSurfKey)) &&
+            (*(uint *)((int)pGVar1 + (drawSurfIndex * 2 + 1) * 4) == local_10));
+    if (args.triCount != 0) {
+      args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+      R_DrawIndexedPrimitive(&state->prim,&args);
     }
-    (pGVar5->prim).primStats = (GfxPrimStats *)0x0;
+    (state->prim).primStats = (GfxPrimStats *)0x0;
   }
-  return local_38;
+  return drawSurfIndex;
 }
 
 
 // 00B38740  R_TessRopeMeshList  (gfx_d3d/rb_tess.cpp:440)
 
-uint __cdecl R_TessRopeMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessRopeMeshList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxDrawSurf *pGVar1;
   int *piVar2;
-  short sVar3;
-  GfxCmdBufSourceState *pGVar4;
-  GfxCmdBufState *pGVar5;
-  uint uVar6;
-  float fVar7;
-  code *pcVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  bool bVar12;
-  int iVar13;
-  uint uVar14;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  uint uVar3;
+  float fVar4;
+  code *pcVar5;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  bool bVar6;
+  int iVar7;
+  uint uVar8;
   int extraout_EAX;
-  GfxDepthRangeType GVar15;
-  uint local_38;
-  ushort *local_2c;
-  GfxDrawPrimArgs local_20;
-  uint local_14;
+  GfxDepthRangeType depthRangeType;
+  uint lightHandle;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint drawSurfIndex;
+  ushort *indices;
+  uint argCount;
+  GfxDrawPrimArgs args;
+  uint drawSurfKey;
   uint local_10;
-  uint local_8;
+  uint drawSurfCount;
   
-  pGVar4 = (param_1->context).field0_0x0._s_0.source;
-  pGVar5 = (param_1->context).field0_0x0._s_0.state;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  local_8 = param_1->info->drawSurfCount - param_1->firstDrawSurfIndex;
-  pGVar1 = param_1->info->drawSurfs + param_1->firstDrawSurfIndex;
-  iVar13 = R_SetVertexDeclTypeNormal_Safe(pGVar5,VERTDECL_PACKED);
-  if (iVar13 == 0) {
-    local_38 = 1;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  drawSurfCount = listArgs->info->drawSurfCount - listArgs->firstDrawSurfIndex;
+  pGVar1 = listArgs->info->drawSurfs + listArgs->firstDrawSurfIndex;
+  iVar7 = R_SetVertexDeclTypeNormal_Safe(state,VERTDECL_PACKED);
+  if (iVar7 == 0) {
+    drawSurfIndex = 1;
   }
   else {
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar9);
-    if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-        (pGVar4 != param_2.field0_0x0._s_0.source)) &&
-       (bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x1e2,0,
-                                  "%s"), !bVar12)) {
-      pcVar8 = (code *)swi(3);
-      uVar14 = (*pcVar8)();
-      return uVar14;
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+    if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+        (source != prepassContext.field0_0x0._s_0.source)) &&
+       (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x1e2,0,
+                                 "%s"), !bVar6)) {
+      pcVar5 = (code *)swi(3);
+      uVar8 = (*pcVar5)();
+      return uVar8;
     }
-    uVar14 = *(uint *)pGVar1;
-    uVar6 = *(uint *)((int)pGVar1 + 4);
-    R_SetObjectIdentityPlacement(pGVar4);
-    R_ChangeDepthHackNearClip(pGVar4,0);
-    GVar15 = ((pGVar4->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar15 != pGVar5->depthRangeType) {
-      R_ChangeDepthRange(pGVar5,GVar15);
+    uVar8 = *(uint *)pGVar1;
+    uVar3 = *(uint *)((int)pGVar1 + 4);
+    R_SetObjectIdentityPlacement(source);
+    R_ChangeDepthHackNearClip(source,0);
+    depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (depthRangeType != state->depthRangeType) {
+      R_ChangeDepthRange(state,depthRangeType);
     }
-    fVar7 = (pGVar4->viewParms).viewMatrix.m[2][0];
-    R_SetMeshStream(pGVar5,*(GfxMeshData **)((int)fVar7 + 0xd1500));
-    local_2c = (ushort *)0x0;
-    local_20.baseIndex = 0;
-    local_20.vertexCount = 0x4000;
-    local_20.triCount = 0;
-    local_14 = uVar14 & 0xf00f0000;
-    local_10 = uVar6;
-    R_TrackPrims(&pGVar5->prim,GFX_PRIM_STATS_FX);
-    sVar3 = 0;
-    local_38 = 0;
+    fVar4 = (source->viewParms).viewMatrix.m[2][0];
+    R_SetMeshStream(state,*(GfxMeshData **)((int)fVar4 + 0xd1500));
+    indices = (ushort *)0x0;
+    args.baseIndex = 0;
+    args.vertexCount = 0x4000;
+    args.triCount = 0;
+    drawSurfKey = uVar8 & 0xf00f0000;
+    local_10 = uVar3;
+    R_TrackPrims(&state->prim,GFX_PRIM_STATS_FX);
+    argCount = 0;
+    drawSurfIndex = 0;
     do {
       _allmul();
-      piVar2 = (int *)((int)fVar7 + 0x40000 + extraout_EAX);
+      piVar2 = (int *)((int)fVar4 + 0x40000 + extraout_EAX);
       if ((*piVar2 == 0) &&
-         (bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x20f,
-                                    0,"%s\n\t(codeMesh->triCount) = %i"), !bVar12)) {
-        pcVar8 = (code *)swi(3);
-        uVar14 = (*pcVar8)();
-        return uVar14;
+         (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x20f,0
+                                   ,"%s\n\t(codeMesh->triCount) = %i"), !bVar6)) {
+        pcVar5 = (code *)swi(3);
+        uVar8 = (*pcVar5)();
+        return uVar8;
       }
-      if (((uint)piVar2[1] < *(uint *)(*(int *)((int)fVar7 + 0xd1500) + 0xc)) ||
-         (*(int *)(*(int *)((int)fVar7 + 0xd1500) + 0xc) + 0x1e000U <
+      if (((uint)piVar2[1] < *(uint *)(*(int *)((int)fVar4 + 0xd1500) + 0xc)) ||
+         (*(int *)(*(int *)((int)fVar4 + 0xd1500) + 0xc) + 0x1e000U <
           (uint)(piVar2[1] + *piVar2 * 6))) {
         va("0x%08x 0x%08x %i %i %s");
-        bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x213,0,
-                                  "%s\n\t%s");
-        if (!bVar12) {
-          pcVar8 = (code *)swi(3);
-          uVar14 = (*pcVar8)();
-          return uVar14;
+        bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x213,0,
+                                 "%s\n\t%s");
+        if (!bVar6) {
+          pcVar5 = (code *)swi(3);
+          uVar8 = (*pcVar5)();
+          return uVar8;
         }
       }
-      if (((sVar3 != 0) || (*(short *)((int)piVar2 + 10) != 0)) ||
-         (local_2c + local_20.triCount * 3 != (ushort *)piVar2[1])) {
-        if (local_20.triCount != 0) {
-          local_20.baseIndex = R_SetIndexData(&pGVar5->prim,local_2c,local_20.triCount);
-          R_DrawIndexedPrimitive(&pGVar5->prim,&local_20);
-          local_20.triCount = 0;
+      if (((argCount != 0) || (*(short *)((int)piVar2 + 10) != 0)) ||
+         (indices + args.triCount * 3 != (ushort *)piVar2[1])) {
+        if (args.triCount != 0) {
+          args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+          R_DrawIndexedPrimitive(&state->prim,&args);
+          args.triCount = 0;
         }
-        local_2c = (ushort *)piVar2[1];
+        indices = (ushort *)piVar2[1];
         R_SetModelLightingCoordsForSource
                   ((ushort)*(undefined4 *)
-                            ((int)fVar7 + 0x8c500 + (uint)*(ushort *)(piVar2 + 2) * 0x10),pGVar4);
-        R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar10);
-        R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar11);
+                            ((int)fVar4 + 0x8c500 + (uint)*(ushort *)(piVar2 + 2) * 0x10),source);
+        R_SetupPassPerObjectArgs((GfxCmdBufContext)context);
+        R_SetupPassPerPrimArgs((GfxCmdBufContext)context_00);
       }
-      sVar3 = *(short *)((int)piVar2 + 10);
-      local_20.triCount = local_20.triCount + *piVar2;
-      (pGVar5->prim).frameStats.fxIndexCount = *piVar2 * 3 + (pGVar5->prim).frameStats.fxIndexCount;
-      local_38 = local_38 + 1;
-    } while (((local_38 != local_8) && ((*(uint *)(pGVar1 + local_38) & 0xf00f0000) == local_14)) &&
-            (*(uint *)((int)pGVar1 + (local_38 * 2 + 1) * 4) == local_10));
-    if (local_20.triCount != 0) {
-      local_20.baseIndex = R_SetIndexData(&pGVar5->prim,local_2c,local_20.triCount);
-      R_DrawIndexedPrimitive(&pGVar5->prim,&local_20);
+      argCount = (uint)*(ushort *)((int)piVar2 + 10);
+      args.triCount = args.triCount + *piVar2;
+      (state->prim).frameStats.fxIndexCount = *piVar2 * 3 + (state->prim).frameStats.fxIndexCount;
+      drawSurfIndex = drawSurfIndex + 1;
+    } while (((drawSurfIndex != drawSurfCount) &&
+             ((*(uint *)(pGVar1 + drawSurfIndex) & 0xf00f0000) == drawSurfKey)) &&
+            (*(uint *)((int)pGVar1 + (drawSurfIndex * 2 + 1) * 4) == local_10));
+    if (args.triCount != 0) {
+      args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+      R_DrawIndexedPrimitive(&state->prim,&args);
     }
-    (pGVar5->prim).primStats = (GfxPrimStats *)0x0;
+    (state->prim).primStats = (GfxPrimStats *)0x0;
   }
-  return local_38;
+  return drawSurfIndex;
 }
 
 
 // 00B3A1A0  Byte4UnpackVertexColor  (universal/com_color.h:555)
 
-void __cdecl Byte4UnpackVertexColor(uchar *param_1,float *param_2)
+void __cdecl Byte4UnpackVertexColor(uchar *from,float *to)
 
 {
-  *param_2 = (float)param_1[2] * 0.003921569;
-  param_2[1] = (float)param_1[1] * 0.003921569;
-  param_2[2] = (float)*param_1 * 0.003921569;
-  param_2[3] = (float)param_1[3] * 0.003921569;
+  *to = (float)from[2] * 0.003921569;
+  to[1] = (float)from[1] * 0.003921569;
+  to[2] = (float)*from * 0.003921569;
+  to[3] = (float)from[3] * 0.003921569;
   return;
 }
 
 
 // 00B38B90  R_TessGlassMeshList  (gfx_d3d/rb_tess.cpp:614)
 
-uint __cdecl R_TessGlassMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessGlassMeshList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxDrawSurf *pGVar1;
   int *piVar2;
-  GfxCmdBufSourceState *pGVar3;
-  GfxCmdBufState *pGVar4;
-  uint uVar5;
-  float fVar6;
-  code *pcVar7;
-  GfxCmdBufContext GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  undefined6 uVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  GfxCmdBufContext_u_0_s_0 GVar12;
-  bool bVar13;
-  int iVar14;
-  uint uVar15;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  uint uVar3;
+  float fVar4;
+  code *pcVar5;
+  GfxCmdBufContext context;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  undefined6 uVar6;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  GfxCmdBufContext_u_0_s_0 context_01;
+  bool bVar7;
+  int iVar8;
+  uint uVar9;
   int extraout_EAX;
   uint extraout_EAX_00;
-  GfxDepthRangeType GVar16;
-  uint local_38;
-  ushort *local_2c;
-  int local_28;
-  GfxDrawPrimArgs local_20;
-  uint local_14;
+  GfxDepthRangeType depthRangeType;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint drawSurfIndex;
+  ushort *indices;
+  uint lightHandle;
+  GfxDrawPrimArgs args;
+  uint drawSurfKey;
   uint local_10;
-  uint local_8;
+  uint drawSurfCount;
   
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar4 = (param_1->context).field0_0x0._s_0.state;
-  GVar12 = (param_1->context).field0_0x0._s_0;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  uVar10 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  local_8 = param_1->info->drawSurfCount - param_1->firstDrawSurfIndex;
-  pGVar1 = param_1->info->drawSurfs + param_1->firstDrawSurfIndex;
-  iVar14 = R_SetVertexDeclTypeNormal_Safe(pGVar4,VERTDECL_PACKED);
-  if (iVar14 == 0) {
-    local_38 = 1;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_01 = (listArgs->context).field0_0x0._s_0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  uVar6 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  drawSurfCount = listArgs->info->drawSurfCount - listArgs->firstDrawSurfIndex;
+  pGVar1 = listArgs->info->drawSurfs + listArgs->firstDrawSurfIndex;
+  iVar8 = R_SetVertexDeclTypeNormal_Safe(state,VERTDECL_PACKED);
+  if (iVar8 == 0) {
+    drawSurfIndex = 1;
   }
   else {
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar9);
-    if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-        (pGVar3 != param_2.field0_0x0._s_0.source)) &&
-       (bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x291,0,
-                                  "%s"), !bVar13)) {
-      pcVar7 = (code *)swi(3);
-      uVar15 = (*pcVar7)();
-      return uVar15;
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+    if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+        (source != prepassContext.field0_0x0._s_0.source)) &&
+       (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x291,0,
+                                 "%s"), !bVar7)) {
+      pcVar5 = (code *)swi(3);
+      uVar9 = (*pcVar5)();
+      return uVar9;
     }
-    uVar15 = *(uint *)pGVar1;
-    uVar5 = *(uint *)((int)pGVar1 + 4);
-    R_SetObjectIdentityPlacement(pGVar3);
-    R_ChangeDepthHackNearClip(pGVar3,0);
-    GVar16 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar16 != pGVar4->depthRangeType) {
-      R_ChangeDepthRange(pGVar4,GVar16);
+    uVar9 = *(uint *)pGVar1;
+    uVar3 = *(uint *)((int)pGVar1 + 4);
+    R_SetObjectIdentityPlacement(source);
+    R_ChangeDepthHackNearClip(source,0);
+    depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (depthRangeType != state->depthRangeType) {
+      R_ChangeDepthRange(state,depthRangeType);
     }
-    fVar6 = (pGVar3->viewParms).viewMatrix.m[2][0];
-    R_SetMeshStream(pGVar4,*(GfxMeshData **)((int)fVar6 + 0xd1500));
-    local_20.baseIndex = 0;
-    local_20.vertexCount = 0x4000;
-    local_20.triCount = 0;
-    local_14 = uVar15 & 0xf00f0000;
-    local_10 = uVar5;
-    R_TrackPrims(&pGVar4->prim,GFX_PRIM_STATS_FX);
-    local_2c = (ushort *)0x0;
-    local_28 = 0;
-    local_38 = 0;
+    fVar4 = (source->viewParms).viewMatrix.m[2][0];
+    R_SetMeshStream(state,*(GfxMeshData **)((int)fVar4 + 0xd1500));
+    args.baseIndex = 0;
+    args.vertexCount = 0x4000;
+    args.triCount = 0;
+    drawSurfKey = uVar9 & 0xf00f0000;
+    local_10 = uVar3;
+    R_TrackPrims(&state->prim,GFX_PRIM_STATS_FX);
+    indices = (ushort *)0x0;
+    lightHandle = 0;
+    drawSurfIndex = 0;
     do {
       _allmul();
-      piVar2 = (int *)((int)fVar6 + 0x40000 + extraout_EAX);
+      piVar2 = (int *)((int)fVar4 + 0x40000 + extraout_EAX);
       if ((*piVar2 == 0) &&
-         (bVar13 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x2c1,
-                                    0,"%s\n\t(codeMesh->triCount) = %i"), !bVar13)) {
-        pcVar7 = (code *)swi(3);
-        uVar15 = (*pcVar7)();
-        return uVar15;
+         (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x2c1,0
+                                   ,"%s\n\t(codeMesh->triCount) = %i"), !bVar7)) {
+        pcVar5 = (code *)swi(3);
+        uVar9 = (*pcVar5)();
+        return uVar9;
       }
-      if ((local_28 != piVar2[3]) || (local_2c + local_20.triCount * 3 != (ushort *)piVar2[1])) {
-        if (local_20.triCount != 0) {
-          local_20.baseIndex = R_SetIndexData(&pGVar4->prim,local_2c,local_20.triCount);
-          R_DrawIndexedPrimitive(&pGVar4->prim,&local_20);
-          local_20.triCount = 0;
+      if ((lightHandle != piVar2[3]) || (indices + args.triCount * 3 != (ushort *)piVar2[1])) {
+        if (args.triCount != 0) {
+          args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+          R_DrawIndexedPrimitive(&state->prim,&args);
+          args.triCount = 0;
         }
-        local_2c = (ushort *)piVar2[1];
-        local_28 = piVar2[3];
-        R_SetModelLightingCoordsForSource(*(ushort *)(piVar2 + 3),pGVar3);
+        indices = (ushort *)piVar2[1];
+        lightHandle = piVar2[3];
+        R_SetModelLightingCoordsForSource(*(ushort *)(piVar2 + 3),source);
         _aullshr();
-        GVar8.field0_0x0._6_2_ = (short)((uint)pGVar4 >> 0x10);
-        GVar8.field0_0x0._0_6_ = uVar10;
-        R_SetReflectionProbe(GVar8,extraout_EAX_00 & 7);
-        R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar11);
-        R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar12);
+        context.field0_0x0._6_2_ = (short)((uint)state >> 0x10);
+        context.field0_0x0._0_6_ = uVar6;
+        R_SetReflectionProbe(context,extraout_EAX_00 & 7);
+        R_SetupPassPerObjectArgs((GfxCmdBufContext)context_00);
+        R_SetupPassPerPrimArgs((GfxCmdBufContext)context_01);
       }
-      local_20.triCount = local_20.triCount + *piVar2;
-      (pGVar4->prim).frameStats.fxIndexCount = *piVar2 * 3 + (pGVar4->prim).frameStats.fxIndexCount;
-      local_38 = local_38 + 1;
-    } while (((local_38 != local_8) && ((*(uint *)(pGVar1 + local_38) & 0xf00f0000) == local_14)) &&
-            (*(uint *)((int)pGVar1 + (local_38 * 2 + 1) * 4) == local_10));
-    if (local_20.triCount != 0) {
-      local_20.baseIndex = R_SetIndexData(&pGVar4->prim,local_2c,local_20.triCount);
-      R_DrawIndexedPrimitive(&pGVar4->prim,&local_20);
+      args.triCount = args.triCount + *piVar2;
+      (state->prim).frameStats.fxIndexCount = *piVar2 * 3 + (state->prim).frameStats.fxIndexCount;
+      drawSurfIndex = drawSurfIndex + 1;
+    } while (((drawSurfIndex != drawSurfCount) &&
+             ((*(uint *)(pGVar1 + drawSurfIndex) & 0xf00f0000) == drawSurfKey)) &&
+            (*(uint *)((int)pGVar1 + (drawSurfIndex * 2 + 1) * 4) == local_10));
+    if (args.triCount != 0) {
+      args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+      R_DrawIndexedPrimitive(&state->prim,&args);
     }
-    (pGVar4->prim).primStats = (GfxPrimStats *)0x0;
+    (state->prim).primStats = (GfxPrimStats *)0x0;
   }
-  return local_38;
+  return drawSurfIndex;
 }
 
 
@@ -594,7 +619,7 @@ uint __cdecl R_TessGlassMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext p
 /* WARNING: Removing unreachable block (ram,0x00b39955) */
 /* WARNING: Removing unreachable block (ram,0x00b3997c) */
 
-uint __cdecl R_TessMarkMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessMarkMeshList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxDrawSurf *pGVar1;
@@ -604,293 +629,300 @@ uint __cdecl R_TessMarkMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext pa
   float fVar5;
   float fVar6;
   uchar uVar7;
-  GfxCmdBufSourceState *pGVar8;
-  GfxCmdBufState *pGVar9;
-  GfxDrawSurfListInfo *pGVar10;
-  float fVar11;
-  code *pcVar12;
-  GfxCmdBufContext GVar13;
-  GfxCmdBufContext GVar14;
-  GfxCmdBufContext_u_0_s_0 GVar15;
-  GfxCmdBufContext_u_0_s_0 GVar16;
-  undefined6 uVar17;
-  undefined6 uVar18;
-  GfxCmdBufContext_u_0_s_0 GVar19;
-  GfxCmdBufContext_u_0_s_0 GVar20;
-  GfxCmdBufContext_u_0_s_0 GVar21;
-  byte bVar22;
-  float fVar23;
-  bool bVar24;
-  uint uVar25;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *pGVar8;
+  float fVar9;
+  code *pcVar10;
+  GfxCmdBufContext context;
+  GfxCmdBufContext context_00;
+  GfxCmdBufContext_u_0_s_0 context_01;
+  GfxCmdBufContext_u_0_s_0 context_02;
+  undefined6 uVar11;
+  undefined6 uVar12;
+  GfxCmdBufContext_u_0_s_0 context_03;
+  GfxCmdBufContext_u_0_s_0 context_04;
+  GfxCmdBufContext_u_0_s_0 context_05;
+  byte bVar13;
+  float fVar14;
+  bool bVar15;
+  uint uVar16;
   int extraout_EAX;
-  MaterialVertexDeclType MVar26;
+  MaterialVertexDeclType vertDeclType;
   int extraout_EAX_00;
   uint extraout_EAX_01;
   uint extraout_EAX_02;
-  uint uVar27;
+  uint uVar17;
   int extraout_EAX_03;
-  byte bVar28;
-  GfxDepthRangeType GVar29;
-  byte bVar30;
-  undefined2 uVar31;
-  undefined4 uVar32;
-  undefined4 uVar33;
-  undefined4 uVar34;
-  uint local_84;
+  byte bVar18;
+  GfxDepthRangeType GVar19;
+  byte bVar20;
+  undefined2 uVar21;
+  undefined4 uVar22;
+  undefined4 uVar23;
+  undefined4 uVar24;
+  int normalChanged;
+  GfxDrawSurfListInfo *info;
+  uint drawSurf;
   uint local_80;
-  float local_74;
+  GfxBackEndData *data;
+  float curNormal;
   float local_70;
   float local_6c;
-  uint local_5c;
-  uint local_50;
-  ushort *local_40;
-  GfxDrawPrimArgs local_20;
-  uint local_14;
+  GfxCmdBufSourceState *commonSource;
+  uint drawSurfSubMask;
+  uchar baseTechType;
+  uint drawSurfIndex;
+  ushort *indices;
+  MaterialVertexDeclType declType;
+  uint markType;
+  GfxDrawPrimArgs args;
+  uint drawSurfKey;
   uint local_10;
-  uint local_c;
-  uint local_8;
+  int needsMarksHitNormal;
+  uint drawSurfCount;
   
-  pGVar8 = (param_1->context).field0_0x0._s_0.source;
-  pGVar9 = (param_1->context).field0_0x0._s_0.state;
-  GVar21 = (param_1->context).field0_0x0._s_0;
-  GVar20 = (param_1->context).field0_0x0._s_0;
-  GVar19 = (param_1->context).field0_0x0._s_0;
-  uVar18 = *(undefined6 *)&(param_1->context).field0_0x0;
-  uVar17 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar16 = (param_1->context).field0_0x0._s_0;
-  GVar15 = (param_1->context).field0_0x0._s_0;
-  pGVar10 = param_1->info;
-  local_c = pGVar9->technique->flags & 0x100;
-  local_74 = 0.0;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_05 = (listArgs->context).field0_0x0._s_0;
+  context_04 = (listArgs->context).field0_0x0._s_0;
+  context_03 = (listArgs->context).field0_0x0._s_0;
+  uVar12 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  uVar11 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_02 = (listArgs->context).field0_0x0._s_0;
+  context_01 = (listArgs->context).field0_0x0._s_0;
+  pGVar8 = listArgs->info;
+  needsMarksHitNormal = state->technique->flags & 0x100;
+  curNormal = 0.0;
   local_70 = 0.0;
   local_6c = 0.0;
-  local_8 = pGVar10->drawSurfCount - param_1->firstDrawSurfIndex;
-  pGVar1 = pGVar10->drawSurfs + param_1->firstDrawSurfIndex;
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)(param_1->context).field0_0x0._s_0);
-  if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-      (pGVar8 != param_2.field0_0x0._s_0.source)) &&
-     (bVar24 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x369,0,
-                                "%s"), !bVar24)) {
-    pcVar12 = (code *)swi(3);
-    uVar25 = (*pcVar12)();
-    return uVar25;
+  drawSurfCount = pGVar8->drawSurfCount - listArgs->firstDrawSurfIndex;
+  pGVar1 = pGVar8->drawSurfs + listArgs->firstDrawSurfIndex;
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)(listArgs->context).field0_0x0._s_0);
+  if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+      (source != prepassContext.field0_0x0._s_0.source)) &&
+     (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x369,0,
+                                "%s"), !bVar15)) {
+    pcVar10 = (code *)swi(3);
+    uVar16 = (*pcVar10)();
+    return uVar16;
   }
-  uVar7 = pGVar10->baseTechType;
-  local_84 = *(uint *)pGVar1;
+  uVar7 = pGVar8->baseTechType;
+  drawSurf = *(uint *)pGVar1;
   local_80 = *(uint *)((int)pGVar1 + 4);
-  R_SetObjectIdentityPlacement(pGVar8);
-  R_ChangeDepthHackNearClip(pGVar8,0);
-  fVar11 = (pGVar8->viewParms).viewMatrix.m[2][0];
+  R_SetObjectIdentityPlacement(source);
+  R_ChangeDepthHackNearClip(source,0);
+  fVar9 = (source->viewParms).viewMatrix.m[2][0];
   _allmul();
-  bVar30 = *(byte *)((int)fVar11 + extraout_EAX + 0x163bde) & 0xc0;
-  if ((bVar30 == 0x40) || (bVar30 == 0xc0)) {
-    bVar30 = 1;
+  bVar20 = *(byte *)((int)fVar9 + extraout_EAX + 0x163bde) & 0xc0;
+  if ((bVar20 == 0x40) || (bVar20 == 0xc0)) {
+    bVar20 = 1;
   }
   else {
-    bVar30 = 0;
+    bVar20 = 0;
   }
-  MVar26 = VERTDECL_WORLD - bVar30;
-  R_SetVertexDeclTypeNormal(pGVar9,MVar26);
-  GVar29 = ((pGVar8->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar29 != pGVar9->depthRangeType) {
-    R_ChangeDepthRange(pGVar9,GVar29);
+  vertDeclType = VERTDECL_WORLD - bVar20;
+  R_SetVertexDeclTypeNormal(state,vertDeclType);
+  GVar19 = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (GVar19 != state->depthRangeType) {
+    R_ChangeDepthRange(state,GVar19);
   }
-  R_SetMeshStream(pGVar9,(GfxMeshData *)((int)fVar11 + 0xd1510));
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    R_SetVertexDeclTypeNormal(param_2.field0_0x0._s_0.state,MVar26);
-    GVar29 = ((pGVar8->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar29 != (param_2.field0_0x0._s_0.state)->depthRangeType) {
-      R_ChangeDepthRange(param_2.field0_0x0._s_0.state,GVar29);
+  R_SetMeshStream(state,(GfxMeshData *)((int)fVar9 + 0xd1510));
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    R_SetVertexDeclTypeNormal(prepassContext.field0_0x0._s_0.state,vertDeclType);
+    GVar19 = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (GVar19 != (prepassContext.field0_0x0._s_0.state)->depthRangeType) {
+      R_ChangeDepthRange(prepassContext.field0_0x0._s_0.state,GVar19);
     }
-    R_SetMeshStream(param_2.field0_0x0._s_0.state,(GfxMeshData *)((int)fVar11 + 0xd1510));
+    R_SetMeshStream(prepassContext.field0_0x0._s_0.state,(GfxMeshData *)((int)fVar9 + 0xd1510));
   }
-  local_40 = (ushort *)0x0;
-  local_20.baseIndex = 0;
-  local_20.vertexCount = 0x1800;
-  local_20.triCount = 0;
-  local_5c = 0xffff0000;
+  indices = (ushort *)0x0;
+  args.baseIndex = 0;
+  args.vertexCount = 0x1800;
+  args.triCount = 0;
+  drawSurfSubMask = 0xffff0000;
   if (uVar7 != '\n') {
-    local_5c = 0xf00f0000;
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar15);
-    if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-      R_SetupPassPerObjectArgs(param_2);
+    drawSurfSubMask = 0xf00f0000;
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context_01);
+    if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+      R_SetupPassPerObjectArgs(prepassContext);
     }
   }
-  local_14 = local_84 & 0xf00f0000;
+  drawSurfKey = drawSurf & 0xf00f0000;
   local_10 = local_80;
-  R_TrackPrims(&pGVar9->prim,GFX_PRIM_STATS_FX);
-  local_50 = 0;
+  R_TrackPrims(&state->prim,GFX_PRIM_STATS_FX);
+  drawSurfIndex = 0;
   do {
-    uVar25 = local_80;
+    uVar16 = local_80;
     if (uVar7 == '\n') {
-      if (local_20.triCount != 0) {
-        R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar16);
-        local_20.baseIndex = R_SetIndexData(&pGVar9->prim,local_40,local_20.triCount);
-        R_DrawIndexedPrimitive(&pGVar9->prim,&local_20);
-        if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-          R_SetupPassPerPrimArgs(param_2);
-          local_20.baseIndex =
-               R_SetIndexData(&(param_2.field0_0x0._s_0.state)->prim,local_40,local_20.triCount);
-          R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_20);
+      if (args.triCount != 0) {
+        R_SetupPassPerPrimArgs((GfxCmdBufContext)context_02);
+        args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+        R_DrawIndexedPrimitive(&state->prim,&args);
+        if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+          R_SetupPassPerPrimArgs(prepassContext);
+          args.baseIndex =
+               R_SetIndexData(&(prepassContext.field0_0x0._s_0.state)->prim,indices,args.triCount);
+          R_DrawIndexedPrimitive(&(prepassContext.field0_0x0._s_0.state)->prim,&args);
         }
-        local_40 = (ushort *)0x0;
-        local_20.triCount = 0;
+        indices = (ushort *)0x0;
+        args.triCount = 0;
       }
-      uVar34 = 0;
-      uVar33 = 0x18;
-      uVar32 = 0;
+      uVar24 = 0;
+      uVar23 = 0x18;
+      uVar22 = 0;
       _allmul();
-      iVar2 = (int)fVar11 + 0x163bc8 + extraout_EAX_00;
-      bVar30 = *(byte *)(iVar2 + 0x16);
-      bVar28 = bVar30 & 0xc0;
-      if ((bVar28 == 0x40) || (bVar28 == 0xc0)) {
-        bVar22 = 1;
+      iVar2 = (int)fVar9 + 0x163bc8 + extraout_EAX_00;
+      bVar20 = *(byte *)(iVar2 + 0x16);
+      bVar18 = bVar20 & 0xc0;
+      if ((bVar18 == 0x40) || (bVar18 == 0xc0)) {
+        bVar13 = 1;
       }
       else {
-        bVar22 = 0;
+        bVar13 = 0;
       }
-      if ((MVar26 != VERTDECL_WORLD - bVar22) &&
-         (bVar24 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3ce,
-                                    0,"%s\n\t(markType) = %i"), !bVar24)) {
-        pcVar12 = (code *)swi(3);
-        uVar25 = (*pcVar12)();
-        return uVar25;
+      if ((vertDeclType != VERTDECL_WORLD - bVar13) &&
+         (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3ce,
+                                    0,"%s\n\t(markType) = %i"), !bVar15)) {
+        pcVar10 = (code *)swi(3);
+        uVar16 = (*pcVar10)();
+        return uVar16;
       }
       fVar4 = g_ftDecalFadePower;
-      if (local_c != 0) {
-        local_74 = *(float *)(iVar2 + 8);
+      if (needsMarksHitNormal != 0) {
+        curNormal = *(float *)(iVar2 + 8);
         local_70 = *(float *)(iVar2 + 0xc);
         local_6c = *(float *)(iVar2 + 0x10);
-        (pGVar8->input).consts[0x78][0] = local_74;
-        (pGVar8->input).consts[0x78][1] = local_70;
-        (pGVar8->input).consts[0x78][2] = local_6c;
-        (pGVar8->input).consts[0x78][3] = fVar4;
-        R_DirtyCodeConstant(pGVar8,0x78);
+        (source->input).consts[0x78][0] = curNormal;
+        (source->input).consts[0x78][1] = local_70;
+        (source->input).consts[0x78][2] = local_6c;
+        (source->input).consts[0x78][3] = fVar4;
+        R_DirtyCodeConstant(source,0x78);
       }
-      uVar31 = (undefined2)((uint)pGVar9 >> 0x10);
-      if (bVar28 == 0x40) {
-        R_SetStaticModelLightingCoordsForSource((uint)*(ushort *)(iVar2 + 0x14),pGVar8);
+      uVar21 = (undefined2)((uint)state >> 0x10);
+      if (bVar18 == 0x40) {
+        R_SetStaticModelLightingCoordsForSource((uint)*(ushort *)(iVar2 + 0x14),source);
       }
-      else if (bVar28 == 0xc0) {
-        R_SetModelLightingCoordsForSource(*(ushort *)(iVar2 + 0x14),pGVar8);
+      else if (bVar18 == 0xc0) {
+        R_SetModelLightingCoordsForSource(*(ushort *)(iVar2 + 0x14),source);
       }
       else {
-        if ((((bVar30 & 0xc0) != 0) && (bVar28 != 0x80)) &&
-           (bVar24 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",
-                                      0x3e5,0,"%s\n\t(markType) = %i"), !bVar24)) {
-          pcVar12 = (code *)swi(3);
-          uVar25 = (*pcVar12)(uVar32,uVar33,uVar34);
-          return uVar25;
+        if ((((bVar20 & 0xc0) != 0) && (bVar18 != 0x80)) &&
+           (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",
+                                      0x3e5,0,"%s\n\t(markType) = %i"), !bVar15)) {
+          pcVar10 = (code *)swi(3);
+          uVar16 = (*pcVar10)(uVar22,uVar23,uVar24);
+          return uVar16;
         }
         _aullshr();
-        GVar13.field0_0x0._6_2_ = uVar31;
-        GVar13.field0_0x0._0_6_ = uVar17;
-        R_SetLightmap(GVar13,extraout_EAX_01 & 0x1f);
+        context.field0_0x0._6_2_ = uVar21;
+        context.field0_0x0._0_6_ = uVar11;
+        R_SetLightmap(context,extraout_EAX_01 & 0x1f);
       }
       _aullshr();
-      GVar14.field0_0x0._6_2_ = uVar31;
-      GVar14.field0_0x0._0_6_ = uVar18;
-      R_SetReflectionProbe(GVar14,extraout_EAX_02 & 7);
-      R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar19);
-      if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-        R_SetupPassPerObjectArgs(param_2);
+      context_00.field0_0x0._6_2_ = uVar21;
+      context_00.field0_0x0._0_6_ = uVar12;
+      R_SetReflectionProbe(context_00,extraout_EAX_02 & 7);
+      R_SetupPassPerObjectArgs((GfxCmdBufContext)context_03);
+      if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+        R_SetupPassPerObjectArgs(prepassContext);
       }
     }
-    uVar27 = local_84 & local_5c;
+    uVar17 = drawSurf & drawSurfSubMask;
     while( true ) {
       _allmul();
-      piVar3 = (int *)((int)fVar11 + 0x163bc8 + extraout_EAX_03);
-      bVar30 = *(byte *)((int)piVar3 + 0x16) & 0xc0;
-      if ((bVar30 == 0x40) || (bVar30 == 0xc0)) {
-        bVar30 = 1;
+      piVar3 = (int *)((int)fVar9 + 0x163bc8 + extraout_EAX_03);
+      bVar20 = *(byte *)((int)piVar3 + 0x16) & 0xc0;
+      if ((bVar20 == 0x40) || (bVar20 == 0xc0)) {
+        bVar20 = 1;
       }
       else {
-        bVar30 = 0;
+        bVar20 = 0;
       }
-      if ((MVar26 != VERTDECL_WORLD - bVar30) &&
-         (bVar24 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3f6,
-                                    0,"%s\n\t(markType) = %i"), !bVar24)) {
-        pcVar12 = (code *)swi(3);
-        uVar25 = (*pcVar12)();
-        return uVar25;
+      if ((vertDeclType != VERTDECL_WORLD - bVar20) &&
+         (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3f6,
+                                    0,"%s\n\t(markType) = %i"), !bVar15)) {
+        pcVar10 = (code *)swi(3);
+        uVar16 = (*pcVar10)();
+        return uVar16;
       }
       if ((*piVar3 == 0) &&
-         (bVar24 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3f7,
-                                    0,"%s\n\t(markMesh->triCount) = %i"), !bVar24)) {
-        pcVar12 = (code *)swi(3);
-        uVar25 = (*pcVar12)();
-        return uVar25;
+         (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3f7,
+                                    0,"%s\n\t(markMesh->triCount) = %i"), !bVar15)) {
+        pcVar10 = (code *)swi(3);
+        uVar16 = (*pcVar10)();
+        return uVar16;
       }
       fVar4 = (float)piVar3[2];
       fVar5 = (float)piVar3[3];
       fVar6 = (float)piVar3[4];
-      if ((((uint)piVar3[1] < *(uint *)((int)fVar11 + 0xd151c)) ||
-          (*(int *)((int)fVar11 + 0xd151c) + 0x4800U < (uint)(piVar3[1] + *piVar3 * 6))) &&
-         (bVar24 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3fc,
-                                    0,"%s"), !bVar24)) {
-        pcVar12 = (code *)swi(3);
-        uVar25 = (*pcVar12)();
-        return uVar25;
+      if ((((uint)piVar3[1] < *(uint *)((int)fVar9 + 0xd151c)) ||
+          (*(int *)((int)fVar9 + 0xd151c) + 0x4800U < (uint)(piVar3[1] + *piVar3 * 6))) &&
+         (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x3fc,
+                                    0,"%s"), !bVar15)) {
+        pcVar10 = (code *)swi(3);
+        uVar16 = (*pcVar10)();
+        return uVar16;
       }
-      if (local_c == 0) {
-        bVar24 = false;
+      if (needsMarksHitNormal == 0) {
+        bVar15 = false;
       }
       else {
-        if (((local_74 == fVar4) && (local_70 == fVar5)) && (local_6c == fVar6)) {
-          bVar24 = true;
+        if (((curNormal == fVar4) && (local_70 == fVar5)) && (local_6c == fVar6)) {
+          bVar15 = true;
         }
         else {
-          bVar24 = false;
+          bVar15 = false;
         }
-        bVar24 = !bVar24;
+        bVar15 = !bVar15;
       }
-      if ((bVar24) || (local_40 + local_20.triCount * 3 != (ushort *)piVar3[1])) {
-        if (local_20.triCount != 0) {
-          R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar20);
-          local_20.baseIndex = R_SetIndexData(&pGVar9->prim,local_40,local_20.triCount);
-          R_DrawIndexedPrimitive(&pGVar9->prim,&local_20);
-          if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-            R_SetupPassPerPrimArgs(param_2);
-            R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_20);
+      if ((bVar15) || (indices + args.triCount * 3 != (ushort *)piVar3[1])) {
+        if (args.triCount != 0) {
+          R_SetupPassPerPrimArgs((GfxCmdBufContext)context_04);
+          args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+          R_DrawIndexedPrimitive(&state->prim,&args);
+          if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+            R_SetupPassPerPrimArgs(prepassContext);
+            R_DrawIndexedPrimitive(&(prepassContext.field0_0x0._s_0.state)->prim,&args);
           }
-          local_20.triCount = 0;
+          args.triCount = 0;
         }
-        fVar23 = g_ftDecalFadePower;
-        if (bVar24) {
-          (pGVar8->input).consts[0x78][0] = fVar4;
-          (pGVar8->input).consts[0x78][1] = fVar5;
-          (pGVar8->input).consts[0x78][2] = fVar6;
-          (pGVar8->input).consts[0x78][3] = fVar23;
-          R_DirtyCodeConstant(pGVar8,0x78);
-          local_74 = fVar4;
+        fVar14 = g_ftDecalFadePower;
+        if (bVar15) {
+          (source->input).consts[0x78][0] = fVar4;
+          (source->input).consts[0x78][1] = fVar5;
+          (source->input).consts[0x78][2] = fVar6;
+          (source->input).consts[0x78][3] = fVar14;
+          R_DirtyCodeConstant(source,0x78);
+          curNormal = fVar4;
           local_70 = fVar5;
           local_6c = fVar6;
         }
-        local_40 = (ushort *)piVar3[1];
+        indices = (ushort *)piVar3[1];
       }
-      local_20.triCount = local_20.triCount + *piVar3;
-      (pGVar9->prim).frameStats.fxIndexCount = *piVar3 * 3 + (pGVar9->prim).frameStats.fxIndexCount;
-      local_50 = local_50 + 1;
-      if (local_50 == local_8) break;
-      local_84 = *(uint *)(pGVar1 + local_50);
-      local_80 = *(uint *)((int)pGVar1 + (local_50 * 2 + 1) * 4);
-      if (((local_84 & local_5c) != uVar27) || (local_80 != uVar25)) break;
+      args.triCount = args.triCount + *piVar3;
+      (state->prim).frameStats.fxIndexCount = *piVar3 * 3 + (state->prim).frameStats.fxIndexCount;
+      drawSurfIndex = drawSurfIndex + 1;
+      if (drawSurfIndex == drawSurfCount) break;
+      drawSurf = *(uint *)(pGVar1 + drawSurfIndex);
+      local_80 = *(uint *)((int)pGVar1 + (drawSurfIndex * 2 + 1) * 4);
+      if (((drawSurf & drawSurfSubMask) != uVar17) || (local_80 != uVar16)) break;
     }
-    if ((local_50 == local_8) || (((local_84 & 0xf00f0000) != local_14 || (local_80 != local_10))))
-    {
-      if (local_20.triCount != 0) {
-        R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar21);
-        local_20.baseIndex = R_SetIndexData(&pGVar9->prim,local_40,local_20.triCount);
-        R_DrawIndexedPrimitive(&pGVar9->prim,&local_20);
-        if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-          R_SetupPassPerPrimArgs(param_2);
-          local_20.baseIndex =
-               R_SetIndexData(&(param_2.field0_0x0._s_0.state)->prim,local_40,local_20.triCount);
-          R_DrawIndexedPrimitive(&(param_2.field0_0x0._s_0.state)->prim,&local_20);
+    if ((drawSurfIndex == drawSurfCount) ||
+       (((drawSurf & 0xf00f0000) != drawSurfKey || (local_80 != local_10)))) {
+      if (args.triCount != 0) {
+        R_SetupPassPerPrimArgs((GfxCmdBufContext)context_05);
+        args.baseIndex = R_SetIndexData(&state->prim,indices,args.triCount);
+        R_DrawIndexedPrimitive(&state->prim,&args);
+        if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+          R_SetupPassPerPrimArgs(prepassContext);
+          args.baseIndex =
+               R_SetIndexData(&(prepassContext.field0_0x0._s_0.state)->prim,indices,args.triCount);
+          R_DrawIndexedPrimitive(&(prepassContext.field0_0x0._s_0.state)->prim,&args);
         }
       }
-      (pGVar9->prim).primStats = (GfxPrimStats *)0x0;
-      return local_50;
+      (state->prim).primStats = (GfxPrimStats *)0x0;
+      return drawSurfIndex;
     }
   } while( true );
 }
@@ -898,12 +930,13 @@ uint __cdecl R_TessMarkMeshList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext pa
 
 // 00B3A210  RB_Vec3DirWorldToView  (gfx_d3d/rb_tess.cpp:1126)
 
-void __cdecl RB_Vec3DirWorldToView(GfxCmdBufSourceState *param_1,float *param_2,float *param_3)
+void __cdecl RB_Vec3DirWorldToView(GfxCmdBufSourceState *source,float *worldDir,float *viewDir)
 
 {
   code *pcVar1;
   bool bVar2;
-  float local_28;
+  GfxMatrix *viewMtx;
+  float viewAxis;
   float local_24;
   float local_20;
   float local_1c;
@@ -913,7 +946,7 @@ void __cdecl RB_Vec3DirWorldToView(GfxCmdBufSourceState *param_1,float *param_2,
   float local_c;
   float local_8;
   
-  if ((param_1->scissorViewport).width != 1) {
+  if ((source->scissorViewport).width != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x46a,0,
                              "%s\n\t(source->viewMode) = %i");
     if (!bVar2) {
@@ -922,16 +955,16 @@ void __cdecl RB_Vec3DirWorldToView(GfxCmdBufSourceState *param_1,float *param_2,
       return;
     }
   }
-  local_28 = (param_1->viewParms).viewMatrix.m[3][0];
-  local_24 = (param_1->viewParms).viewMatrix.m[3][1];
-  local_20 = (param_1->viewParms).viewMatrix.m[3][2];
-  local_1c = (param_1->viewParms).projectionMatrix.m[0][0];
-  local_18 = (param_1->viewParms).projectionMatrix.m[0][1];
-  local_14 = (param_1->viewParms).projectionMatrix.m[0][2];
-  local_10 = (param_1->viewParms).projectionMatrix.m[1][0];
-  local_c = (param_1->viewParms).projectionMatrix.m[1][1];
-  local_8 = (param_1->viewParms).projectionMatrix.m[1][2];
-  Vec3RotateTranspose(param_2,(float (*) [3])&local_28,param_3);
+  viewAxis = (source->viewParms).viewMatrix.m[3][0];
+  local_24 = (source->viewParms).viewMatrix.m[3][1];
+  local_20 = (source->viewParms).viewMatrix.m[3][2];
+  local_1c = (source->viewParms).projectionMatrix.m[0][0];
+  local_18 = (source->viewParms).projectionMatrix.m[0][1];
+  local_14 = (source->viewParms).projectionMatrix.m[0][2];
+  local_10 = (source->viewParms).projectionMatrix.m[1][0];
+  local_c = (source->viewParms).projectionMatrix.m[1][1];
+  local_8 = (source->viewParms).projectionMatrix.m[1][2];
+  Vec3RotateTranspose(worldDir,(float (*) [3])&viewAxis,viewDir);
   return;
 }
 
@@ -939,15 +972,16 @@ void __cdecl RB_Vec3DirWorldToView(GfxCmdBufSourceState *param_1,float *param_2,
 // 00B3A360  RB_CreateParticleCloud2dAxis  (gfx_d3d/rb_tess.cpp:1141)
 
 void __cdecl
-RB_CreateParticleCloud2dAxis(GfxParticleCloud *param_1,float *param_2,float (*param_3) [2])
+RB_CreateParticleCloud2dAxis(GfxParticleCloud *cloud,float *viewUp,float (*viewAxis) [2])
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float fVar4;
+  float viewAxisLength;
   
-  if (param_1 == (GfxParticleCloud *)0x0) {
+  if (cloud == (GfxParticleCloud *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x47a,0,"%s")
     ;
     if (!bVar2) {
@@ -956,14 +990,14 @@ RB_CreateParticleCloud2dAxis(GfxParticleCloud *param_1,float *param_2,float (*pa
       return;
     }
   }
-  if ((0.001 < *param_2 || *param_2 == 0.001) || (0.001 < param_2[1] || param_2[1] == 0.001)) {
-    fVar3 = *param_2;
-    (*param_3)[0] = param_2[1] * 1.0;
-    (*param_3)[1] = fVar3 * -1.0;
-    fVar3 = param_2[1];
-    param_3[1][0] = *param_2;
-    param_3[1][1] = fVar3;
-    fVar3 = Vec2Length(*param_3);
+  if ((0.001 < *viewUp || *viewUp == 0.001) || (0.001 < viewUp[1] || viewUp[1] == 0.001)) {
+    fVar3 = *viewUp;
+    (*viewAxis)[0] = viewUp[1] * 1.0;
+    (*viewAxis)[1] = fVar3 * -1.0;
+    fVar3 = viewUp[1];
+    viewAxis[1][0] = *viewUp;
+    viewAxis[1][1] = fVar3;
+    fVar3 = Vec2Length(*viewAxis);
     if (fVar3 <= 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x48d,0,
                                "%s\n\t(viewAxisLength) = %g");
@@ -973,7 +1007,7 @@ RB_CreateParticleCloud2dAxis(GfxParticleCloud *param_1,float *param_2,float (*pa
         return;
       }
     }
-    fVar4 = Vec2Length(param_3[1]);
+    fVar4 = Vec2Length(viewAxis[1]);
     if (0.001 <= ABS(fVar3 - fVar4)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x48e,0,
                                "%s");
@@ -983,21 +1017,21 @@ RB_CreateParticleCloud2dAxis(GfxParticleCloud *param_1,float *param_2,float (*pa
         return;
       }
     }
-    fVar4 = param_1->radius[0] / fVar3;
-    (*param_3)[0] = fVar4 * (*param_3)[0];
-    (*param_3)[1] = fVar4 * (*param_3)[1];
-    if (fVar3 < param_1->radius[0]) {
-      fVar3 = param_1->radius[0] / fVar3;
-      param_3[1][0] = fVar3 * param_3[1][0];
-      param_3[1][1] = fVar3 * param_3[1][1];
+    fVar4 = cloud->radius[0] / fVar3;
+    (*viewAxis)[0] = fVar4 * (*viewAxis)[0];
+    (*viewAxis)[1] = fVar4 * (*viewAxis)[1];
+    if (fVar3 < cloud->radius[0]) {
+      fVar3 = cloud->radius[0] / fVar3;
+      viewAxis[1][0] = fVar3 * viewAxis[1][0];
+      viewAxis[1][1] = fVar3 * viewAxis[1][1];
     }
   }
   else {
-    (*param_3)[0] = param_1->radius[0];
-    (*param_3)[1] = 0.0;
-    fVar3 = param_1->radius[1];
-    param_3[1][0] = 0.0;
-    param_3[1][1] = fVar3;
+    (*viewAxis)[0] = cloud->radius[0];
+    (*viewAxis)[1] = 0.0;
+    fVar3 = cloud->radius[1];
+    viewAxis[1][0] = 0.0;
+    viewAxis[1][1] = fVar3;
   }
   return;
 }
@@ -1005,30 +1039,31 @@ RB_CreateParticleCloud2dAxis(GfxParticleCloud *param_1,float *param_2,float (*pa
 
 // 00B39F50  R_SetParticleCloudConstants  (gfx_d3d/rb_tess.cpp:1178)
 
-void __cdecl R_SetParticleCloudConstants(GfxCmdBufSourceState *param_1,GfxParticleCloud *param_2)
+void __cdecl R_SetParticleCloudConstants(GfxCmdBufSourceState *source,GfxParticleCloud *cloud)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  float local_58;
+  bool uniformScale;
+  float scaledWorldUp;
   float local_54;
   float local_50;
-  float local_4c [3];
-  float local_40;
+  float viewUp [3];
+  float viewAxis;
   float local_3c;
   undefined4 local_38;
   float local_34;
-  float local_30;
+  float particleCloudMatrix;
   float local_2c;
   undefined4 local_28;
   float local_24;
-  float local_20 [4];
-  float local_10;
+  float particleColor [4];
+  float worldUp;
   float local_c;
   float local_8;
   
-  if (param_2 == (GfxParticleCloud *)0x0) {
+  if (cloud == (GfxParticleCloud *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4a3,0,"%s")
     ;
     if (!bVar2) {
@@ -1037,8 +1072,8 @@ void __cdecl R_SetParticleCloudConstants(GfxCmdBufSourceState *param_1,GfxPartic
       return;
     }
   }
-  if (param_2->radius[0] != param_2->radius[1]) {
-    iVar3 = VecNCompareCustomEpsilon((param_2->placement).base.origin,param_2->endpos,0.001,3);
+  if (cloud->radius[0] != cloud->radius[1]) {
+    iVar3 = VecNCompareCustomEpsilon((cloud->placement).base.origin,cloud->endpos,0.001,3);
     if (iVar3 == 0) {
       bVar2 = false;
       goto LAB_00b39fd6;
@@ -1047,262 +1082,268 @@ void __cdecl R_SetParticleCloudConstants(GfxCmdBufSourceState *param_1,GfxPartic
   bVar2 = true;
 LAB_00b39fd6:
   if (bVar2) {
-    local_40 = param_2->radius[0];
+    viewAxis = cloud->radius[0];
     local_3c = 0.0;
-    local_34 = param_2->radius[1];
+    local_34 = cloud->radius[1];
     local_38 = 0;
   }
   else {
-    local_10 = param_2->endpos[0] - (param_2->placement).base.origin[0];
-    local_c = param_2->endpos[1] - (param_2->placement).base.origin[1];
-    local_8 = param_2->endpos[2] - (param_2->placement).base.origin[2];
-    Vec3Normalize(&local_10);
-    local_50 = param_2->radius[1];
-    local_58 = local_50 * local_10;
+    worldUp = cloud->endpos[0] - (cloud->placement).base.origin[0];
+    local_c = cloud->endpos[1] - (cloud->placement).base.origin[1];
+    local_8 = cloud->endpos[2] - (cloud->placement).base.origin[2];
+    Vec3Normalize(&worldUp);
+    local_50 = cloud->radius[1];
+    scaledWorldUp = local_50 * worldUp;
     local_54 = local_50 * local_c;
     local_50 = local_50 * local_8;
-    RB_Vec3DirWorldToView(param_1,&local_58,local_4c);
-    RB_CreateParticleCloud2dAxis(param_2,local_4c,(float (*) [2])&local_40);
+    RB_Vec3DirWorldToView(source,&scaledWorldUp,viewUp);
+    RB_CreateParticleCloud2dAxis(cloud,viewUp,(float (*) [2])&viewAxis);
   }
-  local_30 = local_40;
+  particleCloudMatrix = viewAxis;
   local_2c = local_3c;
   local_28 = local_38;
   local_24 = local_34;
-  R_SetCodeConstantFromVec4(param_1,0x4a,&local_30);
-  Byte4UnpackVertexColor((param_2->color).array,local_20);
-  R_SetCodeConstantFromVec4(param_1,0x1f,local_20);
+  R_SetCodeConstantFromVec4(source,0x4a,&particleCloudMatrix);
+  Byte4UnpackVertexColor((cloud->color).array,particleColor);
+  R_SetCodeConstantFromVec4(source,0x1f,particleColor);
   return;
 }
 
 
 // 00B39B80  R_TessParticleCloudList  (gfx_d3d/rb_tess.cpp:1215)
 
-uint __cdecl R_TessParticleCloudList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessParticleCloudList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  GfxParticleCloud *pGVar1;
-  GfxCmdBufSourceState *pGVar2;
-  GfxCmdBufState *pGVar3;
-  GfxDrawSurfListInfo *pGVar4;
-  float fVar5;
-  code *pcVar6;
-  GfxCmdBufContext_u_0_s_0 GVar7;
-  GfxCmdBufContext_u_0_s_0 GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  bool bVar10;
-  uint uVar11;
-  char *pcVar12;
+  GfxParticleCloud *cloud_00;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *pGVar1;
+  float fVar2;
+  code *pcVar3;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  bool bVar4;
+  uint uVar5;
+  char *text;
   int extraout_EAX;
-  GfxDepthRangeType GVar13;
-  uint local_1c;
-  GfxDrawPrimArgs local_14;
-  uint local_8;
+  GfxDepthRangeType depthRangeType;
+  GfxParticleCloud *cloud;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uint offset;
+  GfxParticleCloud *remoteCloud;
+  GfxDrawPrimArgs args;
+  uint count;
   
-  pGVar2 = (param_1->context).field0_0x0._s_0.source;
-  pGVar3 = (param_1->context).field0_0x0._s_0.state;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  GVar8 = (param_1->context).field0_0x0._s_0;
-  GVar7 = (param_1->context).field0_0x0._s_0;
-  if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-     (pGVar2 != param_2.field0_0x0._s_0.source)) {
-    bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4ce,0,"%s"
-                             );
-    if (!bVar10) {
-      pcVar6 = (code *)swi(3);
-      uVar11 = (*pcVar6)();
-      return uVar11;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+     (source != prepassContext.field0_0x0._s_0.source)) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4ce,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  pGVar4 = param_1->info;
+  pGVar1 = listArgs->info;
   if ((r_logFile->current).integer != 0) {
-    pcVar12 = va("--- RB_TessParticleCloud( %s ) ---\n");
-    RB_LogPrint(pcVar12);
+    text = va("--- RB_TessParticleCloud( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  fVar5 = (pGVar2->viewParms).viewMatrix.m[2][0];
-  if (*(uint *)((int)fVar5 + 0x163bb8) <=
-      (*(uint *)(pGVar4->drawSurfs + param_1->firstDrawSurfIndex) & 0xffff)) {
-    bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4df,0,
-                              "drawSurf.fields.objectId doesn\'t index data->cloudCount\n\t%i not in [0, %i)"
-                             );
-    if (!bVar10) {
-      pcVar6 = (code *)swi(3);
-      uVar11 = (*pcVar6)();
-      return uVar11;
+  fVar2 = (source->viewParms).viewMatrix.m[2][0];
+  if (*(uint *)((int)fVar2 + 0x163bb8) <=
+      (*(uint *)(pGVar1->drawSurfs + listArgs->firstDrawSurfIndex) & 0xffff)) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4df,0,
+                             "drawSurf.fields.objectId doesn\'t index data->cloudCount\n\t%i not in [0, %i)"
+                            );
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
   _allmul();
-  pGVar1 = (GfxParticleCloud *)((int)fVar5 + 0x8d500 + extraout_EAX);
-  R_SetParticleCloudConstants(pGVar2,pGVar1);
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar7);
-  R_ChangeDepthHackNearClip(pGVar2,0);
-  R_SetVertexDeclTypeNormal(pGVar3,VERTDECL_PARTICLECLOUD);
-  GVar13 = ((pGVar2->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar13 != pGVar3->depthRangeType) {
-    R_ChangeDepthRange(pGVar3,GVar13);
+  cloud_00 = (GfxParticleCloud *)((int)fVar2 + 0x8d500 + extraout_EAX);
+  R_SetParticleCloudConstants(source,cloud_00);
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetVertexDeclTypeNormal(state,VERTDECL_PARTICLECLOUD);
+  depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (depthRangeType != state->depthRangeType) {
+    R_ChangeDepthRange(state,depthRangeType);
   }
-  local_1c = (uint)pGVar1->offset;
-  local_8 = (uint)pGVar1->count;
-  if ((local_8 == 0) || (0x400 < local_1c + local_8)) {
-    bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4f3,0,"%s"
-                             );
-    if (!bVar10) {
-      pcVar6 = (code *)swi(3);
-      uVar11 = (*pcVar6)();
-      return uVar11;
+  offset = (uint)cloud_00->offset;
+  count = (uint)cloud_00->count;
+  if ((count == 0) || (0x400 < offset + count)) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x4f3,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  if (pGVar1->gaussian != '\0') {
-    local_1c = local_1c + 0x400;
+  if (cloud_00->gaussian != '\0') {
+    offset = offset + 0x400;
   }
-  if ((pGVar3->prim).indexBuffer != gfxBuf.particleCloudIndexBuffer) {
-    R_ChangeIndices(&pGVar3->prim,gfxBuf.particleCloudIndexBuffer);
+  if ((state->prim).indexBuffer != gfxBuf.particleCloudIndexBuffer) {
+    R_ChangeIndices(&state->prim,gfxBuf.particleCloudIndexBuffer);
   }
-  R_SetStreamSource(&pGVar3->prim,gfxBuf.particleCloudVertexBuffer,0,8);
-  if ((GfxParticleCloud *)pGVar2->viewMode != pGVar1) {
-    pGVar2->viewMode = (GfxViewMode)pGVar1;
-    R_ChangeObjectPlacementRemote(pGVar2,(GfxScaledPlacement *)pGVar1);
+  R_SetStreamSource(&state->prim,gfxBuf.particleCloudVertexBuffer,0,8);
+  if ((GfxParticleCloud *)source->viewMode != cloud_00) {
+    source->viewMode = (GfxViewMode)cloud_00;
+    R_ChangeObjectPlacementRemote(source,(GfxScaledPlacement *)cloud_00);
   }
-  R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar9);
-  R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar8);
-  local_14.baseIndex = local_1c * 6;
-  if (pGVar1->gaussian == '\0') {
-    local_14.vertexCount = 0x1000;
+  R_SetupPassPerObjectArgs((GfxCmdBufContext)context_00);
+  R_SetupPassPerPrimArgs((GfxCmdBufContext)context);
+  args.baseIndex = offset * 6;
+  if (cloud_00->gaussian == '\0') {
+    args.vertexCount = 0x1000;
   }
   else {
-    local_14.vertexCount = local_8 * 4 + 0x1000;
+    args.vertexCount = count * 4 + 0x1000;
   }
-  local_14.triCount = local_8 * 2;
-  (pGVar3->prim).frameStats.fxIndexCount = local_8 * 6 + (pGVar3->prim).frameStats.fxIndexCount;
-  RB_TrackImmediatePrims(&pGVar3->prim,GFX_PRIM_STATS_FX);
-  if ((pGVar3->prim).primStats == (GfxPrimStats *)0x0) {
-    bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x534,0,"%s"
-                             );
-    if (!bVar10) {
-      pcVar6 = (code *)swi(3);
-      uVar11 = (*pcVar6)();
-      return uVar11;
+  args.triCount = count * 2;
+  (state->prim).frameStats.fxIndexCount = count * 6 + (state->prim).frameStats.fxIndexCount;
+  RB_TrackImmediatePrims(&state->prim,GFX_PRIM_STATS_FX);
+  if ((state->prim).primStats == (GfxPrimStats *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x534,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  R_DrawIndexedPrimitive(&pGVar3->prim,&local_14);
-  if ((pGVar3->prim).primStats == (GfxPrimStats *)0x0) {
-    bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x540,0,"%s"
-                             );
-    if (!bVar10) {
-      pcVar6 = (code *)swi(3);
-      uVar11 = (*pcVar6)();
-      return uVar11;
+  R_DrawIndexedPrimitive(&state->prim,&args);
+  if ((state->prim).primStats == (GfxPrimStats *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x540,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  ((pGVar3->prim).primStats)->staticVertexCount =
-       ((pGVar3->prim).primStats)->staticVertexCount + local_14.vertexCount;
-  ((pGVar3->prim).primStats)->staticIndexCount =
-       local_14.triCount * 3 + ((pGVar3->prim).primStats)->staticIndexCount;
-  RB_EndTrackImmediatePrims(&pGVar3->prim);
+  ((state->prim).primStats)->staticVertexCount =
+       ((state->prim).primStats)->staticVertexCount + args.vertexCount;
+  ((state->prim).primStats)->staticIndexCount =
+       args.triCount * 3 + ((state->prim).primStats)->staticIndexCount;
+  RB_EndTrackImmediatePrims(&state->prim);
   return 1;
 }
 
 
 // 00B3A670  R_DrawXModelSkinnedCached  (gfx_d3d/rb_tess.cpp:1379)
 
-void __cdecl R_DrawXModelSkinnedCached(GfxCmdBufContext param_1,GfxModelSkinnedSurface *param_2)
+void __cdecl R_DrawXModelSkinnedCached(GfxCmdBufContext context,GfxModelSkinnedSurface *modelSurf)
 
 {
   XSurface *pXVar1;
-  IDirect3DIndexBuffer9 *pIVar2;
-  float fVar3;
-  code *pcVar4;
-  bool bVar5;
-  char *pcVar6;
-  GfxMatrix *pGVar7;
-  float *pfVar8;
-  GfxDrawPrimArgs local_10;
+  IDirect3DIndexBuffer9 *ib_00;
+  float fVar2;
+  code *pcVar3;
+  bool bVar4;
+  char *pcVar5;
+  GfxMatrix *pGVar6;
+  float *color;
+  GfxBackEndData *data;
+  XSurface *xsurf;
+  IDirect3DIndexBuffer9 *ib;
+  GfxDrawPrimArgs args;
   
   if ((r_logFile->current).integer != 0) {
-    pcVar6 = va("--- R_DrawXModelSkinnedCached( %s ) ---\n");
-    RB_LogPrint(pcVar6);
+    pcVar5 = va("--- R_DrawXModelSkinnedCached( %s ) ---\n");
+    RB_LogPrint(pcVar5);
   }
-  if (param_2 == (GfxModelSkinnedSurface *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x574,0,"%s")
+  if (modelSurf == (GfxModelSkinnedSurface *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x574,0,"%s")
     ;
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  pXVar1 = param_2->xsurf;
+  pXVar1 = modelSurf->xsurf;
   if (pXVar1 == (XSurface *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x577,0,"%s")
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x577,0,"%s")
     ;
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
   if (pXVar1->vertCount == 0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x578,0,"%s")
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x578,0,"%s")
     ;
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  if (param_2->skinnedCachedOffset < 0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x57a,0,"%s")
+  if (modelSurf->skinnedCachedOffset < 0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x57a,0,"%s")
     ;
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  local_10.baseIndex = 0;
-  local_10.vertexCount = (int)pXVar1->vertCount;
-  local_10.triCount = (int)pXVar1->triCount;
-  ((param_1.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount =
-       local_10.triCount * 3 + ((param_1.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount;
-  pIVar2 = pXVar1->indexBuffer;
-  if (pIVar2 == (IDirect3DIndexBuffer9 *)0x0) {
-    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x587,0,"%s")
+  args.baseIndex = 0;
+  args.vertexCount = (int)pXVar1->vertCount;
+  args.triCount = (int)pXVar1->triCount;
+  ((context.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount =
+       args.triCount * 3 + ((context.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount;
+  ib_00 = pXVar1->indexBuffer;
+  if (ib_00 == (IDirect3DIndexBuffer9 *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x587,0,"%s")
     ;
-    if (!bVar5) {
-      pcVar4 = (code *)swi(3);
-      (*pcVar4)();
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      (*pcVar3)();
       return;
     }
   }
-  fVar3 = ((param_1.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
-  if (((param_1.field0_0x0._s_0.state)->prim).indexBuffer != pIVar2) {
-    R_ChangeIndices(&(param_1.field0_0x0._s_0.state)->prim,pIVar2);
+  fVar2 = ((context.field0_0x0._s_0.source)->viewParms).viewMatrix.m[2][0];
+  if (((context.field0_0x0._s_0.state)->prim).indexBuffer != ib_00) {
+    R_ChangeIndices(&(context.field0_0x0._s_0.state)->prim,ib_00);
   }
-  R_SetStreamSource(&(param_1.field0_0x0._s_0.state)->prim,
-                    *(IDirect3DVertexBuffer9 **)(*(int *)((int)fVar3 + 0x16cbcc) + 8),
-                    param_2->skinnedCachedOffset,0x20);
-  R_DrawIndexedPrimitive(&(param_1.field0_0x0._s_0.state)->prim,&local_10);
-  if (((param_1.field0_0x0._s_0.state)->prim).primStats != (GfxPrimStats *)0x0) {
-    if (((param_1.field0_0x0._s_0.state)->prim).primStats == (GfxPrimStats *)0x0) {
-      bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5c8,0,
+  R_SetStreamSource(&(context.field0_0x0._s_0.state)->prim,
+                    *(IDirect3DVertexBuffer9 **)(*(int *)((int)fVar2 + 0x16cbcc) + 8),
+                    modelSurf->skinnedCachedOffset,0x20);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
+  if (((context.field0_0x0._s_0.state)->prim).primStats != (GfxPrimStats *)0x0) {
+    if (((context.field0_0x0._s_0.state)->prim).primStats == (GfxPrimStats *)0x0) {
+      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5c8,0,
                                "%s");
-      if (!bVar5) {
-        pcVar4 = (code *)swi(3);
-        (*pcVar4)();
+      if (!bVar4) {
+        pcVar3 = (code *)swi(3);
+        (*pcVar3)();
         return;
       }
     }
-    (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount =
-         local_10.triCount * 3 +
-         (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount;
-    (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount =
-         (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount +
-         local_10.vertexCount;
+    (((context.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount =
+         args.triCount * 3 + (((context.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount;
+    (((context.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount =
+         (((context.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount + args.vertexCount;
   }
   if ((r_showTess->current).integer != 0) {
-    pfVar8 = colorWhite;
-    pcVar6 = "XMSkin$";
-    pGVar7 = R_GetActiveWorldMatrix(param_1.field0_0x0._s_0.source);
-    RB_ShowTess(param_1,pGVar7->m[3],pcVar6,pfVar8);
+    color = colorWhite;
+    pcVar5 = "XMSkin$";
+    pGVar6 = R_GetActiveWorldMatrix(context.field0_0x0._s_0.source);
+    RB_ShowTess(context,pGVar6->m[3],pcVar5,color);
   }
   return;
 }
@@ -1311,80 +1352,81 @@ void __cdecl R_DrawXModelSkinnedCached(GfxCmdBufContext param_1,GfxModelSkinnedS
 // 00B3A8F0  R_DrawXModelSkinnedUncached  (gfx_d3d/rb_tess.cpp:1498)
 
 void __cdecl
-R_DrawXModelSkinnedUncached(GfxCmdBufContext param_1,XSurface *param_2,GfxPackedVertex *param_3)
+R_DrawXModelSkinnedUncached(GfxCmdBufContext context,XSurface *xsurf,GfxPackedVertex *skinnedVert)
 
 {
-  IDirect3DVertexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  char *pcVar4;
-  uint uVar5;
-  GfxMatrix *pGVar6;
-  float *pfVar7;
-  GfxDrawPrimArgs local_10;
+  IDirect3DVertexBuffer9 *vb_00;
+  code *pcVar1;
+  bool bVar2;
+  char *pcVar3;
+  uint vertexOffset_00;
+  GfxMatrix *pGVar4;
+  float *color;
+  IDirect3DVertexBuffer9 *vb;
+  int vertexOffset;
+  GfxDrawPrimArgs args;
   
   if ((r_logFile->current).integer != 0) {
-    pcVar4 = va("--- R_DrawXModelSkinnedUncached( %s ) ---\n");
-    RB_LogPrint(pcVar4);
+    pcVar3 = va("--- R_DrawXModelSkinnedUncached( %s ) ---\n");
+    RB_LogPrint(pcVar3);
   }
-  if (param_2 == (XSurface *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5e4,0,"%s")
+  if (xsurf == (XSurface *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5e4,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  if (param_3 == (GfxPackedVertex *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5e5,0,"%s")
+  if (skinnedVert == (GfxPackedVertex *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5e5,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
       return;
     }
   }
-  local_10.triCount = XSurfaceGetNumTris(param_2);
-  local_10.vertexCount = XSurfaceGetNumVerts(param_2);
-  ((param_1.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount =
-       local_10.triCount * 3 + ((param_1.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount;
-  local_10.baseIndex =
-       R_SetIndexData(&(param_1.field0_0x0._s_0.state)->prim,param_2->triIndices,local_10.triCount);
-  R_CheckVertexDataOverflow(local_10.vertexCount << 5);
-  uVar5 = R_SetVertexData(param_1.field0_0x0._s_0.state,param_3,local_10.vertexCount,0x20);
-  pIVar1 = (gfxBuf.dynamicVertexBuffer)->buffer;
-  if (pIVar1 == (IDirect3DVertexBuffer9 *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5f3,0,"%s")
-    ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
-      return;
-    }
-  }
-  R_SetStreamSource(&(param_1.field0_0x0._s_0.state)->prim,pIVar1,uVar5,0x20);
-  R_DrawIndexedPrimitive(&(param_1.field0_0x0._s_0.state)->prim,&local_10);
-  if (((param_1.field0_0x0._s_0.state)->prim).primStats == (GfxPrimStats *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5fa,0,"%s")
-    ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      (*pcVar2)();
-      return;
-    }
-  }
-  (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount =
-       local_10.triCount * 3 + (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount
+  args.triCount = XSurfaceGetNumTris(xsurf);
+  args.vertexCount = XSurfaceGetNumVerts(xsurf);
+  ((context.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount =
+       args.triCount * 3 + ((context.field0_0x0._s_0.state)->prim).frameStats.geoIndexCount;
+  args.baseIndex =
+       R_SetIndexData(&(context.field0_0x0._s_0.state)->prim,xsurf->triIndices,args.triCount);
+  R_CheckVertexDataOverflow(args.vertexCount << 5);
+  vertexOffset_00 = R_SetVertexData(context.field0_0x0._s_0.state,skinnedVert,args.vertexCount,0x20)
   ;
-  (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount =
-       (((param_1.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount + local_10.vertexCount
-  ;
+  vb_00 = (gfxBuf.dynamicVertexBuffer)->buffer;
+  if (vb_00 == (IDirect3DVertexBuffer9 *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5f3,0,"%s")
+    ;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
+      return;
+    }
+  }
+  R_SetStreamSource(&(context.field0_0x0._s_0.state)->prim,vb_00,vertexOffset_00,0x20);
+  R_DrawIndexedPrimitive(&(context.field0_0x0._s_0.state)->prim,&args);
+  if (((context.field0_0x0._s_0.state)->prim).primStats == (GfxPrimStats *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x5fa,0,"%s")
+    ;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      (*pcVar1)();
+      return;
+    }
+  }
+  (((context.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount =
+       args.triCount * 3 + (((context.field0_0x0._s_0.state)->prim).primStats)->staticIndexCount;
+  (((context.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount =
+       (((context.field0_0x0._s_0.state)->prim).primStats)->staticVertexCount + args.vertexCount;
   if ((r_showTess->current).integer != 0) {
-    pfVar7 = colorWhite;
-    pcVar4 = "XMSkinUn$";
-    pGVar6 = R_GetActiveWorldMatrix(param_1.field0_0x0._s_0.source);
-    RB_ShowTess(param_1,pGVar6->m[3],pcVar4,pfVar7);
+    color = colorWhite;
+    pcVar3 = "XMSkinUn$";
+    pGVar4 = R_GetActiveWorldMatrix(context.field0_0x0._s_0.source);
+    RB_ShowTess(context,pGVar4->m[3],pcVar3,color);
   }
   return;
 }
@@ -1392,13 +1434,14 @@ R_DrawXModelSkinnedUncached(GfxCmdBufContext param_1,XSurface *param_2,GfxPacked
 
 // 00B3A600  R_DrawXModelSkinnedModelSurf  (gfx_d3d/rb_tess.cpp:1545)
 
-void __cdecl R_DrawXModelSkinnedModelSurf(GfxCmdBufContext param_1,GfxModelSkinnedSurface *param_2)
+void __cdecl
+R_DrawXModelSkinnedModelSurf(GfxCmdBufContext context,GfxModelSkinnedSurface *modelSurf)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_2 == (GfxModelSkinnedSurface *)0x0) {
+  if (modelSurf == (GfxModelSkinnedSurface *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x60a,0,"%s")
     ;
     if (!bVar2) {
@@ -1407,11 +1450,11 @@ void __cdecl R_DrawXModelSkinnedModelSurf(GfxCmdBufContext param_1,GfxModelSkinn
       return;
     }
   }
-  if (param_2->skinnedCachedOffset < 0) {
-    R_DrawXModelSkinnedUncached(param_1,param_2->xsurf,(param_2->field3_0x14).skinnedVert);
+  if (modelSurf->skinnedCachedOffset < 0) {
+    R_DrawXModelSkinnedUncached(context,modelSurf->xsurf,(modelSurf->field3_0x14).skinnedVert);
   }
   else {
-    R_DrawXModelSkinnedCached(param_1,param_2);
+    R_DrawXModelSkinnedCached(context,modelSurf);
   }
   return;
 }
@@ -1419,325 +1462,336 @@ void __cdecl R_DrawXModelSkinnedModelSurf(GfxCmdBufContext param_1,GfxModelSkinn
 
 // 00B3AB10  R_TessXModelSkinnedDrawSurfList  (gfx_d3d/rb_tess.cpp:1582)
 
-uint __cdecl R_TessXModelSkinnedDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl
+R_TessXModelSkinnedDrawSurfList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxEntity *pGVar1;
-  GfxCmdBufState *pGVar2;
-  GfxDrawSurfListInfo *pGVar3;
-  code *pcVar4;
-  GfxCmdBufContext GVar5;
-  GfxCmdBufContext GVar6;
-  GfxCmdBufContext GVar7;
-  GfxCmdBufContext GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  GfxCmdBufContext_u_0_s_0 GVar12;
-  undefined6 uVar13;
-  GfxCmdBufContext_u_0_s_0 GVar14;
-  undefined6 uVar15;
-  GfxCmdBufContext_u_0_s_0 GVar16;
-  GfxCmdBufContext_u_0_s_0 GVar17;
-  undefined6 uVar18;
-  GfxCmdBufContext_u_0_s_0 GVar19;
-  GfxCmdBufContext_u_0_s_0 GVar20;
-  GfxCmdBufContext_u_0_s_0 GVar21;
-  undefined6 uVar22;
-  GfxCmdBufContext_u_0_s_0 GVar23;
-  GfxCmdBufContext_u_0_s_0 GVar24;
-  bool bVar25;
-  uint uVar26;
-  float *pfVar27;
+  GfxCmdBufState *state_2;
+  GfxDrawSurfListInfo *pGVar2;
+  code *pcVar3;
+  GfxCmdBufContext context;
+  GfxCmdBufContext context_00;
+  GfxCmdBufContext context_01;
+  GfxCmdBufContext context_02;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context_03;
+  GfxCmdBufContext_u_0_s_0 context_04;
+  GfxCmdBufContext_u_0_s_0 context_05;
+  undefined6 uVar4;
+  GfxCmdBufContext_u_0_s_0 context_06;
+  undefined6 uVar5;
+  GfxCmdBufContext_u_0_s_0 context_07;
+  GfxCmdBufContext_u_0_s_0 context_08;
+  undefined6 uVar6;
+  GfxCmdBufContext_u_0_s_0 context_2_00;
+  GfxCmdBufContext_u_0_s_0 context_09;
+  GfxCmdBufContext_u_0_s_0 context_10;
+  undefined6 uVar7;
+  GfxCmdBufContext_u_0_s_0 context_11;
+  GfxCmdBufContext_u_0_s_0 context_12;
+  bool bVar8;
+  uint uVar9;
+  float *remotePlacement;
   int extraout_EAX;
-  int iVar28;
-  uint uVar29;
+  int iVar10;
+  uint uVar11;
   uint extraout_EAX_00;
   int extraout_EAX_01;
   int extraout_EAX_02;
   int extraout_EAX_03;
   int extraout_EAX_04;
-  undefined2 uVar30;
+  undefined2 uVar12;
   float local_b0;
   float local_ac;
-  GfxDrawSurf local_6c;
-  GfxBackEndData *local_60;
-  GfxCmdBufSourceState *local_5c;
-  float local_58;
-  uchar local_51;
-  uint local_50;
-  uint local_4c;
-  uint local_48;
-  uint local_44;
+  float wetness;
+  float invert;
+  uint baseGfxEntIndex;
+  GfxDrawSurfListInfo *info;
+  GfxDrawSurf drawSurf;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  float curWetness;
+  uchar baseTechType;
+  int setupVertexShader;
+  uint drawSurfIndex;
+  int updatedFade;
+  uint drawSurfMask;
   uint local_40;
-  GfxModelSkinnedSurface *local_38;
-  float local_34;
-  GfxDepthRangeType local_30;
-  float local_2c;
-  float local_28;
-  int local_24;
-  GfxDrawSurf *local_20;
-  uint local_1c;
+  GfxModelSkinnedSurface *modelSurf;
+  float curDestructibleBurnAmount;
+  uint depthHackFlags;
+  float curDestructibleFadeAmount;
+  float materialTime;
+  int currTextureOverride;
+  GfxDrawSurf *drawSurfList;
+  uint drawSurfKey;
   uint local_18;
-  uint local_10;
-  uint local_c;
-  uint local_8;
+  uint drawSurfCount;
+  uint drawOutlineFlags;
+  int updatedBurnFadeConstant;
   
-  local_c = 0;
-  local_8 = 0;
-  local_5c = (param_1->context).field0_0x0._s_0.source;
-  pGVar2 = (param_1->context).field0_0x0._s_0.state;
-  GVar24 = (param_1->context).field0_0x0._s_0;
-  GVar23 = (param_1->context).field0_0x0._s_0;
-  uVar22 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar21 = (param_1->context).field0_0x0._s_0;
-  GVar20 = (param_1->context).field0_0x0._s_0;
-  GVar19 = (param_1->context).field0_0x0._s_0;
-  uVar18 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar17 = (param_1->context).field0_0x0._s_0;
-  GVar16 = (param_1->context).field0_0x0._s_0;
-  uVar15 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar14 = (param_1->context).field0_0x0._s_0;
-  uVar13 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar12 = (param_1->context).field0_0x0._s_0;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-      (local_5c != param_2.field0_0x0._s_0.source)) &&
-     (bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x64a,0,
-                                "%s"), !bVar25)) {
-    pcVar4 = (code *)swi(3);
-    uVar26 = (*pcVar4)();
-    return uVar26;
+  drawOutlineFlags = 0;
+  updatedBurnFadeConstant = 0;
+  commonSource = (listArgs->context).field0_0x0._s_0.source;
+  state_2 = (listArgs->context).field0_0x0._s_0.state;
+  context_12 = (listArgs->context).field0_0x0._s_0;
+  context_11 = (listArgs->context).field0_0x0._s_0;
+  uVar7 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_10 = (listArgs->context).field0_0x0._s_0;
+  context_09 = (listArgs->context).field0_0x0._s_0;
+  context_2_00 = (listArgs->context).field0_0x0._s_0;
+  uVar6 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_08 = (listArgs->context).field0_0x0._s_0;
+  context_07 = (listArgs->context).field0_0x0._s_0;
+  uVar5 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_06 = (listArgs->context).field0_0x0._s_0;
+  uVar4 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_05 = (listArgs->context).field0_0x0._s_0;
+  context_04 = (listArgs->context).field0_0x0._s_0;
+  context_03 = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+      (commonSource != prepassContext.field0_0x0._s_0.source)) &&
+     (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x64a,0,
+                               "%s"), !bVar8)) {
+    pcVar3 = (code *)swi(3);
+    uVar9 = (*pcVar3)();
+    return uVar9;
   }
-  local_60 = (GfxBackEndData *)(local_5c->viewParms).viewMatrix.m[2][0];
-  pGVar3 = param_1->info;
-  local_51 = pGVar3->baseTechType;
-  local_10 = pGVar3->drawSurfCount - param_1->firstDrawSurfIndex;
-  local_20 = pGVar3->drawSurfs + param_1->firstDrawSurfIndex;
-  local_6c.packed._0_4_ = *(undefined4 *)local_20;
-  local_6c.packed._4_4_ = *(uint *)((int)local_20 + 4);
-  pfVar27 = (local_5c->sceneDef).viewOffset;
-  if ((float *)local_5c->viewMode != pfVar27) {
-    local_5c->viewMode = (GfxViewMode)pfVar27;
-    R_ChangeObjectPlacementRemote(local_5c,(GfxScaledPlacement *)pfVar27);
+  data = (GfxBackEndData *)(commonSource->viewParms).viewMatrix.m[2][0];
+  pGVar2 = listArgs->info;
+  baseTechType = pGVar2->baseTechType;
+  drawSurfCount = pGVar2->drawSurfCount - listArgs->firstDrawSurfIndex;
+  drawSurfList = pGVar2->drawSurfs + listArgs->firstDrawSurfIndex;
+  drawSurf.packed._0_4_ = *(undefined4 *)drawSurfList;
+  drawSurf.packed._4_4_ = *(uint *)((int)drawSurfList + 4);
+  remotePlacement = (commonSource->sceneDef).viewOffset;
+  if ((float *)commonSource->viewMode != remotePlacement) {
+    commonSource->viewMode = (GfxViewMode)remotePlacement;
+    R_ChangeObjectPlacementRemote(commonSource,(GfxScaledPlacement *)remotePlacement);
   }
-  local_48 = R_UpdateCodeConstant(local_5c,0x75,1.0,1.0,1.0,1.0);
-  RB_TrackImmediatePrims(&pGVar2->prim,GFX_PRIM_STATS_XMODELSKINNED);
-  local_4c = 0;
-  uVar30 = (undefined2)((uint)pGVar2 >> 0x10);
-  if (pGVar3->cameraView == 0) {
-    if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-       (bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x73c,0,
-                                  "%s"), !bVar25)) {
-      pcVar4 = (code *)swi(3);
-      uVar26 = (*pcVar4)();
-      return uVar26;
+  updatedFade = R_UpdateCodeConstant(commonSource,0x75,1.0,1.0,1.0,1.0);
+  RB_TrackImmediatePrims(&state_2->prim,GFX_PRIM_STATS_XMODELSKINNED);
+  drawSurfIndex = 0;
+  uVar12 = (undefined2)((uint)state_2 >> 0x10);
+  if (pGVar2->cameraView == 0) {
+    if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+       (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x73c,0,
+                                 "%s"), !bVar8)) {
+      pcVar3 = (code *)swi(3);
+      uVar9 = (*pcVar3)();
+      return uVar9;
     }
-    if ((local_51 == '\n') &&
-       (bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x73d,0,
-                                  "%s"), !bVar25)) {
-      pcVar4 = (code *)swi(3);
-      uVar26 = (*pcVar4)();
-      return uVar26;
+    if ((baseTechType == '\n') &&
+       (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x73d,0,
+                                 "%s"), !bVar8)) {
+      pcVar3 = (code *)swi(3);
+      uVar9 = (*pcVar3)();
+      return uVar9;
     }
     _allshl();
-    local_38 = (GfxModelSkinnedSurface *)(local_60->surfsBuffer + extraout_EAX_03);
-    uVar26 = (uint)(local_38->info).gfxEntIndex;
-    if (uVar26 == 0) {
-      local_28 = 0.0;
+    modelSurf = (GfxModelSkinnedSurface *)(data->surfsBuffer + extraout_EAX_03);
+    uVar9 = (uint)(modelSurf->info).gfxEntIndex;
+    if (uVar9 == 0) {
+      materialTime = 0.0;
     }
     else {
-      local_28 = local_60->gfxEnts[uVar26].materialTime;
+      materialTime = data->gfxEnts[uVar9].materialTime;
     }
-    local_50 = R_UpdateMaterialTime(local_5c,local_28,0.0,0.0,0.0);
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar19);
-    if (local_50 != 0) {
-      R_SetupPassVertexShaderArgs((GfxCmdBufContext)GVar20);
+    setupVertexShader = R_UpdateMaterialTime(commonSource,materialTime,0.0,0.0,0.0);
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2_00);
+    if (setupVertexShader != 0) {
+      R_SetupPassVertexShaderArgs((GfxCmdBufContext)context_09);
     }
-    R_ChangeDepthHackNearClip(local_5c,0);
-    R_SetVertexDeclTypeModel(local_38->xsurf,pGVar2);
-    if (pGVar2->depthRangeType != GFX_DEPTH_RANGE_FULL) {
-      R_ChangeDepthRange(pGVar2,GFX_DEPTH_RANGE_FULL);
+    R_ChangeDepthHackNearClip(commonSource,0);
+    R_SetVertexDeclTypeModel(modelSurf->xsurf,state_2);
+    if (state_2->depthRangeType != GFX_DEPTH_RANGE_FULL) {
+      R_ChangeDepthRange(state_2,GFX_DEPTH_RANGE_FULL);
     }
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar24);
-    R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar21);
-    local_44 = 0xf00f0000;
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context_12);
+    R_SetupPassPerPrimArgs((GfxCmdBufContext)context_10);
+    drawSurfMask = 0xf00f0000;
     local_40 = 0xffffffff;
-    local_1c = local_6c.packed._0_4_ & 0xf00f0000;
-    local_18 = local_6c.packed._4_4_;
+    drawSurfKey = drawSurf.packed._0_4_ & 0xf00f0000;
+    local_18 = drawSurf.packed._4_4_;
     while( true ) {
-      GVar8.field0_0x0._6_2_ = uVar30;
-      GVar8.field0_0x0._0_6_ = uVar22;
-      R_DrawXModelSkinnedModelSurf(GVar8,local_38);
-      local_4c = local_4c + 1;
-      if (local_4c == local_10) break;
-      local_6c.packed._0_4_ = *(undefined4 *)(local_20 + local_4c);
-      local_6c.packed._4_4_ = *(uint *)((int)local_20 + (local_4c * 2 + 1) * 4);
-      if (((local_6c.packed._0_4_ & local_44) != local_1c) ||
-         ((local_6c.packed._4_4_ & local_40) != local_18)) break;
+      context_02.field0_0x0._6_2_ = uVar12;
+      context_02.field0_0x0._0_6_ = uVar7;
+      R_DrawXModelSkinnedModelSurf(context_02,modelSurf);
+      drawSurfIndex = drawSurfIndex + 1;
+      if (drawSurfIndex == drawSurfCount) break;
+      drawSurf.packed._0_4_ = *(undefined4 *)(drawSurfList + drawSurfIndex);
+      drawSurf.packed._4_4_ = *(uint *)((int)drawSurfList + (drawSurfIndex * 2 + 1) * 4);
+      if (((drawSurf.packed._0_4_ & drawSurfMask) != drawSurfKey) ||
+         ((drawSurf.packed._4_4_ & local_40) != local_18)) break;
       _allshl();
-      local_38 = (GfxModelSkinnedSurface *)(local_60->surfsBuffer + extraout_EAX_04);
+      modelSurf = (GfxModelSkinnedSurface *)(data->surfsBuffer + extraout_EAX_04);
     }
   }
   else {
     _allshl();
-    local_38 = (GfxModelSkinnedSurface *)(local_60->surfsBuffer + extraout_EAX);
-    uVar26 = (uint)(local_38->info).gfxEntIndex;
-    if (uVar26 == 0) {
-      local_34 = 0.0;
-      local_2c = 0.0;
-      local_58 = 0.0;
-      local_30 = GFX_DEPTH_RANGE_SCENE;
-      local_28 = 0.0;
-      local_24 = -1;
+    modelSurf = (GfxModelSkinnedSurface *)(data->surfsBuffer + extraout_EAX);
+    uVar9 = (uint)(modelSurf->info).gfxEntIndex;
+    if (uVar9 == 0) {
+      curDestructibleBurnAmount = 0.0;
+      curDestructibleFadeAmount = 0.0;
+      curWetness = 0.0;
+      depthHackFlags = 0;
+      materialTime = 0.0;
+      currTextureOverride = -1;
     }
     else {
-      pGVar1 = local_60->gfxEnts + uVar26;
-      local_30 = pGVar1->renderFxFlags & GFX_DEPTH_RANGE_VIEWMODEL;
-      local_28 = pGVar1->materialTime;
-      local_34 = pGVar1->destructibleBurnAmount;
-      local_2c = pGVar1->destructibleFadeAmount;
-      local_58 = pGVar1->wetness;
-      local_24 = pGVar1->textureOverrideIndex;
+      pGVar1 = data->gfxEnts + uVar9;
+      depthHackFlags = pGVar1->renderFxFlags & 2;
+      materialTime = pGVar1->materialTime;
+      curDestructibleBurnAmount = pGVar1->destructibleBurnAmount;
+      curDestructibleFadeAmount = pGVar1->destructibleFadeAmount;
+      curWetness = pGVar1->wetness;
+      currTextureOverride = pGVar1->textureOverrideIndex;
     }
-    iVar28 = RB_DrawSurf_Uses_ShaderConstantSet(&local_6c);
-    if (iVar28 == 0) {
-      local_8 = R_UpdateCodeConstant
-                          (local_5c,0x72,local_34,(r_burnedDestructibleColor->current).value,
-                           local_2c,0.0);
+    iVar10 = RB_DrawSurf_Uses_ShaderConstantSet(&drawSurf);
+    if (iVar10 == 0) {
+      updatedBurnFadeConstant =
+           R_UpdateCodeConstant
+                     (commonSource,0x72,curDestructibleBurnAmount,
+                      (r_burnedDestructibleColor->current).value,curDestructibleFadeAmount,0.0);
       if ((r_swrk_override_enable->current).enabled == false) {
-        local_ac = ABS(local_58);
+        local_ac = ABS(curWetness);
       }
       else {
         local_ac = (r_swrk_override_wetness->current).value;
       }
-      if (0.0 <= local_58) {
+      if (0.0 <= curWetness) {
         local_b0 = 0.0;
       }
       else {
         local_b0 = 1.0;
       }
-      uVar29 = R_UpdateCodeConstant(local_5c,0x76,local_34,local_ac,local_b0,0.0);
-      local_8 = uVar29 | local_8;
+      uVar11 = R_UpdateCodeConstant
+                         (commonSource,0x76,curDestructibleBurnAmount,local_ac,local_b0,0.0);
+      updatedBurnFadeConstant = uVar11 | updatedBurnFadeConstant;
     }
     else {
-      local_8 = 0;
+      updatedBurnFadeConstant = 0;
     }
-    uVar29 = R_UpdateMaterialTime(local_5c,local_28,local_34,local_2c,local_58);
-    local_50 = uVar29 | local_8 | local_48;
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar9);
-    if (local_50 != 0) {
-      R_SetupPassVertexShaderArgs((GfxCmdBufContext)GVar10);
+    uVar11 = R_UpdateMaterialTime
+                       (commonSource,materialTime,curDestructibleBurnAmount,
+                        curDestructibleFadeAmount,curWetness);
+    setupVertexShader = uVar11 | updatedBurnFadeConstant | updatedFade;
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+    if (setupVertexShader != 0) {
+      R_SetupPassVertexShaderArgs((GfxCmdBufContext)context_03);
     }
-    R_ChangeDepthHackNearClip(local_5c,local_30);
-    R_SetVertexDeclTypeModel(local_38->xsurf,pGVar2);
-    if (local_30 != pGVar2->depthRangeType) {
-      R_ChangeDepthRange(pGVar2,local_30);
+    R_ChangeDepthHackNearClip(commonSource,depthHackFlags);
+    R_SetVertexDeclTypeModel(modelSurf->xsurf,state_2);
+    if (depthHackFlags != state_2->depthRangeType) {
+      R_ChangeDepthRange(state_2,depthHackFlags);
     }
-    if (local_51 == '\n') {
-      R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar11);
-      if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-        R_SetupPassPixelShaderArgs(param_2);
-        if (local_50 != 0) {
-          R_SetupPassVertexShaderArgs(param_2);
+    if (baseTechType == '\n') {
+      R_SetupPassPerObjectArgs((GfxCmdBufContext)context_04);
+      if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+        R_SetupPassPixelShaderArgs(prepassContext);
+        if (setupVertexShader != 0) {
+          R_SetupPassVertexShaderArgs(prepassContext);
         }
-        R_SetVertexDeclTypeModel(local_38->xsurf,param_2.field0_0x0._s_0.state);
-        if (local_30 != (param_2.field0_0x0._s_0.state)->depthRangeType) {
-          R_ChangeDepthRange(param_2.field0_0x0._s_0.state,local_30);
+        R_SetVertexDeclTypeModel(modelSurf->xsurf,prepassContext.field0_0x0._s_0.state);
+        if (depthHackFlags != (prepassContext.field0_0x0._s_0.state)->depthRangeType) {
+          R_ChangeDepthRange(prepassContext.field0_0x0._s_0.state,depthHackFlags);
         }
-        R_SetupPassPerObjectArgs(param_2);
-        R_SetupPassPerPrimArgs(param_2);
+        R_SetupPassPerObjectArgs(prepassContext);
+        R_SetupPassPerPrimArgs(prepassContext);
       }
-      if (-1 < local_24) {
-        R_TextureOverride(local_60,(GfxCmdBufContext)GVar12,(uint)(local_38->info).dobjModelIndex,
-                          local_24);
+      if (-1 < currTextureOverride) {
+        R_TextureOverride(data,(GfxCmdBufContext)context_05,(uint)(modelSurf->info).dobjModelIndex,
+                          currTextureOverride);
       }
-      local_44 = 0xf1ff0000;
+      drawSurfMask = 0xf1ff0000;
       local_40 = 0xffffffff;
-      local_1c = local_6c.packed._0_4_ & 0xf1ff0000;
-      local_18 = local_6c.packed._4_4_;
+      drawSurfKey = drawSurf.packed._0_4_ & 0xf1ff0000;
+      local_18 = drawSurf.packed._4_4_;
       while( true ) {
-        if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-          R_DrawXModelSkinnedModelSurf(param_2,local_38);
+        if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+          R_DrawXModelSkinnedModelSurf(prepassContext,modelSurf);
         }
-        R_SetModelLightingCoordsForSource((local_38->info).lightingHandle,local_5c);
+        R_SetModelLightingCoordsForSource((modelSurf->info).lightingHandle,commonSource);
         _aullshr();
-        GVar5.field0_0x0._6_2_ = uVar30;
-        GVar5.field0_0x0._0_6_ = uVar13;
-        R_SetReflectionProbe(GVar5,extraout_EAX_00 & 7);
-        R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar14);
-        GVar6.field0_0x0._6_2_ = uVar30;
-        GVar6.field0_0x0._0_6_ = uVar15;
-        R_DrawXModelSkinnedModelSurf(GVar6,local_38);
-        local_4c = local_4c + 1;
-        if (local_4c == local_10) break;
-        local_6c.packed._0_4_ = *(undefined4 *)(local_20 + local_4c);
-        local_6c.packed._4_4_ = *(uint *)((int)local_20 + (local_4c * 2 + 1) * 4);
-        if (((local_6c.packed._0_4_ & local_44) != local_1c) ||
-           ((local_6c.packed._4_4_ & local_40) != local_18)) break;
+        context.field0_0x0._6_2_ = uVar12;
+        context.field0_0x0._0_6_ = uVar4;
+        R_SetReflectionProbe(context,extraout_EAX_00 & 7);
+        R_SetupPassPerPrimArgs((GfxCmdBufContext)context_06);
+        context_00.field0_0x0._6_2_ = uVar12;
+        context_00.field0_0x0._0_6_ = uVar5;
+        R_DrawXModelSkinnedModelSurf(context_00,modelSurf);
+        drawSurfIndex = drawSurfIndex + 1;
+        if (drawSurfIndex == drawSurfCount) break;
+        drawSurf.packed._0_4_ = *(undefined4 *)(drawSurfList + drawSurfIndex);
+        drawSurf.packed._4_4_ = *(uint *)((int)drawSurfList + (drawSurfIndex * 2 + 1) * 4);
+        if (((drawSurf.packed._0_4_ & drawSurfMask) != drawSurfKey) ||
+           ((drawSurf.packed._4_4_ & local_40) != local_18)) break;
         _allshl();
-        local_38 = (GfxModelSkinnedSurface *)(local_60->surfsBuffer + extraout_EAX_01);
-        if (((local_38->info).gfxEntIndex != uVar26) &&
-           (bVar25 = R_DrawXModelSurfCheckBreak
-                               ((uint)(local_38->info).gfxEntIndex,local_60,local_30,local_28,
-                                local_34,local_2c,local_58,true,local_24,local_c), bVar25)) break;
+        modelSurf = (GfxModelSkinnedSurface *)(data->surfsBuffer + extraout_EAX_01);
+        if (((modelSurf->info).gfxEntIndex != uVar9) &&
+           (bVar8 = R_DrawXModelSurfCheckBreak
+                              ((uint)(modelSurf->info).gfxEntIndex,data,depthHackFlags,materialTime,
+                               curDestructibleBurnAmount,curDestructibleFadeAmount,curWetness,true,
+                               currTextureOverride,drawOutlineFlags), bVar8)) break;
       }
     }
     else {
-      if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-         (bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x706,
-                                    0,"%s"), !bVar25)) {
-        pcVar4 = (code *)swi(3);
-        uVar26 = (*pcVar4)();
-        return uVar26;
+      if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+         (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x706,0
+                                   ,"%s"), !bVar8)) {
+        pcVar3 = (code *)swi(3);
+        uVar9 = (*pcVar3)();
+        return uVar9;
       }
-      if ((local_51 == '\n') &&
-         (bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x707,
-                                    0,"%s"), !bVar25)) {
-        pcVar4 = (code *)swi(3);
-        uVar26 = (*pcVar4)();
-        return uVar26;
+      if ((baseTechType == '\n') &&
+         (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x707,0
+                                   ,"%s"), !bVar8)) {
+        pcVar3 = (code *)swi(3);
+        uVar9 = (*pcVar3)();
+        return uVar9;
       }
-      R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar23);
-      R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar16);
-      if (-1 < local_24) {
-        R_TextureOverride(local_60,(GfxCmdBufContext)GVar17,(uint)(local_38->info).dobjModelIndex,
-                          local_24);
+      R_SetupPassPerObjectArgs((GfxCmdBufContext)context_11);
+      R_SetupPassPerPrimArgs((GfxCmdBufContext)context_07);
+      if (-1 < currTextureOverride) {
+        R_TextureOverride(data,(GfxCmdBufContext)context_08,(uint)(modelSurf->info).dobjModelIndex,
+                          currTextureOverride);
       }
-      local_44 = 0xf00f0000;
+      drawSurfMask = 0xf00f0000;
       local_40 = 0xffffffff;
-      local_1c = local_6c.packed._0_4_ & 0xf00f0000;
-      local_18 = local_6c.packed._4_4_;
+      drawSurfKey = drawSurf.packed._0_4_ & 0xf00f0000;
+      local_18 = drawSurf.packed._4_4_;
       while( true ) {
-        GVar7.field0_0x0._6_2_ = uVar30;
-        GVar7.field0_0x0._0_6_ = uVar18;
-        R_DrawXModelSkinnedModelSurf(GVar7,local_38);
-        local_4c = local_4c + 1;
-        if (local_4c == local_10) break;
-        local_6c.packed._0_4_ = *(undefined4 *)(local_20 + local_4c);
-        local_6c.packed._4_4_ = *(uint *)((int)local_20 + (local_4c * 2 + 1) * 4);
-        if (((local_6c.packed._0_4_ & local_44) != local_1c) ||
-           ((local_6c.packed._4_4_ & local_40) != local_18)) break;
+        context_01.field0_0x0._6_2_ = uVar12;
+        context_01.field0_0x0._0_6_ = uVar6;
+        R_DrawXModelSkinnedModelSurf(context_01,modelSurf);
+        drawSurfIndex = drawSurfIndex + 1;
+        if (drawSurfIndex == drawSurfCount) break;
+        drawSurf.packed._0_4_ = *(undefined4 *)(drawSurfList + drawSurfIndex);
+        drawSurf.packed._4_4_ = *(uint *)((int)drawSurfList + (drawSurfIndex * 2 + 1) * 4);
+        if (((drawSurf.packed._0_4_ & drawSurfMask) != drawSurfKey) ||
+           ((drawSurf.packed._4_4_ & local_40) != local_18)) break;
         _allshl();
-        local_38 = (GfxModelSkinnedSurface *)(local_60->surfsBuffer + extraout_EAX_02);
-        if (((local_38->info).gfxEntIndex != uVar26) &&
-           (bVar25 = R_DrawXModelSurfCheckBreak
-                               ((uint)(local_38->info).gfxEntIndex,local_60,local_30,local_28,
-                                local_34,local_2c,local_58,true,local_24,local_c), bVar25)) break;
+        modelSurf = (GfxModelSkinnedSurface *)(data->surfsBuffer + extraout_EAX_02);
+        if (((modelSurf->info).gfxEntIndex != uVar9) &&
+           (bVar8 = R_DrawXModelSurfCheckBreak
+                              ((uint)(modelSurf->info).gfxEntIndex,data,depthHackFlags,materialTime,
+                               curDestructibleBurnAmount,curDestructibleFadeAmount,curWetness,true,
+                               currTextureOverride,drawOutlineFlags), bVar8)) break;
       }
     }
   }
-  RB_EndTrackImmediatePrims(&pGVar2->prim);
-  if ((local_4c == 0) &&
-     (bVar25 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x791,0,
-                                "%s"), !bVar25)) {
-    pcVar4 = (code *)swi(3);
-    uVar26 = (*pcVar4)();
-    return uVar26;
+  RB_EndTrackImmediatePrims(&state_2->prim);
+  if ((drawSurfIndex == 0) &&
+     (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x791,0,
+                               "%s"), !bVar8)) {
+    pcVar3 = (code *)swi(3);
+    uVar9 = (*pcVar3)();
+    return uVar9;
   }
-  return local_4c;
+  return drawSurfIndex;
 }
 
 
@@ -1745,21 +1799,21 @@ uint __cdecl R_TessXModelSkinnedDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmd
 
 void __cdecl
 R_SetDoubleStreamSource
-          (GfxCmdBufPrimState *param_1,IDirect3DVertexBuffer9 *param_2,uint param_3,uint param_4,
-          IDirect3DVertexBuffer9 *param_5,uint param_6,uint param_7)
+          (GfxCmdBufPrimState *primState,IDirect3DVertexBuffer9 *vb0,uint vertexOffset0,
+          uint vertexStride0,IDirect3DVertexBuffer9 *vb1,uint vertexOffset1,uint vertexStride1)
 
 {
-  if (((param_1->streams[0].vb != param_2) || (param_1->streams[0].offset != param_3)) ||
-     (param_1->streams[0].stride != param_4)) {
-    R_ChangeStreamSource(param_1,0,param_2,param_3,param_4);
+  if (((primState->streams[0].vb != vb0) || (primState->streams[0].offset != vertexOffset0)) ||
+     (primState->streams[0].stride != vertexStride0)) {
+    R_ChangeStreamSource(primState,0,vb0,vertexOffset0,vertexStride0);
   }
-  if (((param_1->streams[1].vb != param_5) || (param_1->streams[1].offset != param_6)) ||
-     (param_1->streams[1].stride != param_7)) {
-    R_ChangeStreamSource(param_1,1,param_5,param_6,param_7);
+  if (((primState->streams[1].vb != vb1) || (primState->streams[1].offset != vertexOffset1)) ||
+     (primState->streams[1].stride != vertexStride1)) {
+    R_ChangeStreamSource(primState,1,vb1,vertexOffset1,vertexStride1);
   }
-  if (((param_1->streams[2].vb != (IDirect3DVertexBuffer9 *)0x0) ||
-      (param_1->streams[2].offset != 0)) || (param_1->streams[2].stride != 0)) {
-    R_ChangeStreamSource(param_1,2,(IDirect3DVertexBuffer9 *)0x0,0,0);
+  if (((primState->streams[2].vb != (IDirect3DVertexBuffer9 *)0x0) ||
+      (primState->streams[2].offset != 0)) || (primState->streams[2].stride != 0)) {
+    R_ChangeStreamSource(primState,2,(IDirect3DVertexBuffer9 *)0x0,0,0);
   }
   return;
 }
@@ -1767,493 +1821,510 @@ R_SetDoubleStreamSource
 
 // 00B3B570  R_TessXModelRigidDrawSurfList  (gfx_d3d/rb_tess.cpp:1943)
 
-uint __cdecl R_TessXModelRigidDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl
+R_TessXModelRigidDrawSurfList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxEntity *pGVar1;
-  GfxCmdBufState *pGVar2;
-  GfxDrawSurfListInfo *pGVar3;
-  code *pcVar4;
-  GfxCmdBufContext_u_0_s_0 GVar5;
-  GfxCmdBufContext_u_0_s_0 GVar6;
-  GfxCmdBufContext_u_0_s_0 GVar7;
-  GfxCmdBufContext_u_0_s_0 GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  GfxCmdBufContext_u_0_s_0 GVar12;
-  GfxCmdBufContext_u_0_s_0 GVar13;
-  GfxCmdBufContext_u_0_s_0 GVar14;
-  bool bVar15;
-  uint uVar16;
-  char *pcVar17;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *info;
+  code *pcVar2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  GfxCmdBufContext_u_0_s_0 context_01;
+  GfxCmdBufContext_u_0_s_0 context_02;
+  GfxCmdBufContext_u_0_s_0 context_03;
+  GfxCmdBufContext_u_0_s_0 context_04;
+  GfxCmdBufContext_u_0_s_0 context_05;
+  GfxCmdBufContext_u_0_s_0 context_2_00;
+  GfxCmdBufContext_u_0_s_0 context_06;
+  bool bVar3;
+  uint uVar4;
+  char *text;
   int extraout_EAX;
-  int iVar18;
-  GfxDrawSurf local_4c;
-  GfxBackEndData *local_40;
-  GfxCmdBufSourceState *local_3c;
-  float local_38;
-  uchar local_31;
-  uint local_30;
-  uint local_2c;
-  uint local_28;
-  uchar *local_24;
-  float local_20;
-  GfxDepthRangeType local_1c;
-  float local_18;
-  float local_14;
-  GfxDrawSurf *local_10;
-  uint local_c;
-  uint local_8;
+  int iVar5;
+  uint gfxEntIndex;
+  GfxDrawSurf drawSurf;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  float curWetness;
+  uchar baseTechType;
+  int setupVertexShader;
+  uint drawSurfIndex;
+  int updatedFade;
+  uchar *modelSurf;
+  float curDestructibleBurnAmount;
+  uint depthHackFlags;
+  float curDestructibleFadeAmount;
+  float materialTime;
+  GfxDrawSurf *drawSurfList;
+  uint drawSurfCount;
+  int updatedBurnFadeConstant;
   
-  local_8 = 0;
-  local_3c = (param_1->context).field0_0x0._s_0.source;
-  pGVar2 = (param_1->context).field0_0x0._s_0.state;
-  GVar14 = (param_1->context).field0_0x0._s_0;
-  GVar13 = (param_1->context).field0_0x0._s_0;
-  GVar12 = (param_1->context).field0_0x0._s_0;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  GVar8 = (param_1->context).field0_0x0._s_0;
-  GVar7 = (param_1->context).field0_0x0._s_0;
-  GVar6 = (param_1->context).field0_0x0._s_0;
-  GVar5 = (param_1->context).field0_0x0._s_0;
-  if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-      (local_3c != param_2.field0_0x0._s_0.source)) &&
-     (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x7ae,0,
-                                "%s"), !bVar15)) {
-    pcVar4 = (code *)swi(3);
-    uVar16 = (*pcVar4)();
-    return uVar16;
+  updatedBurnFadeConstant = 0;
+  commonSource = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_06 = (listArgs->context).field0_0x0._s_0;
+  context_2_00 = (listArgs->context).field0_0x0._s_0;
+  context_05 = (listArgs->context).field0_0x0._s_0;
+  context_04 = (listArgs->context).field0_0x0._s_0;
+  context_03 = (listArgs->context).field0_0x0._s_0;
+  context_02 = (listArgs->context).field0_0x0._s_0;
+  context_01 = (listArgs->context).field0_0x0._s_0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+      (commonSource != prepassContext.field0_0x0._s_0.source)) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x7ae,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return uVar4;
   }
-  local_40 = (GfxBackEndData *)(local_3c->viewParms).viewMatrix.m[2][0];
-  pGVar3 = param_1->info;
-  local_31 = pGVar3->baseTechType;
+  data = (GfxBackEndData *)(commonSource->viewParms).viewMatrix.m[2][0];
+  info = listArgs->info;
+  baseTechType = info->baseTechType;
   if ((r_logFile->current).integer != 0) {
-    pcVar17 = va("--- RB_TessXModelRigid( %s ) ---\n");
-    RB_LogPrint(pcVar17);
+    text = va("--- RB_TessXModelRigid( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  local_c = pGVar3->drawSurfCount - param_1->firstDrawSurfIndex;
-  local_10 = pGVar3->drawSurfs + param_1->firstDrawSurfIndex;
-  local_4c.packed._0_4_ = *(undefined4 *)local_10;
-  local_4c.packed._4_4_ = *(undefined4 *)((int)local_10 + 4);
-  local_3c->viewMode = (GfxViewMode)&s_manualObjectPlacement;
-  local_28 = R_UpdateCodeConstant(local_3c,0x75,1.0,1.0,1.0,1.0);
-  RB_TrackImmediatePrims(&pGVar2->prim,GFX_PRIM_STATS_XMODELRIGID);
-  if (((pGVar2->prim).primStats == (GfxPrimStats *)0x0) &&
-     (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x7c7,0,
-                                "%s"), !bVar15)) {
-    pcVar4 = (code *)swi(3);
-    uVar16 = (*pcVar4)();
-    return uVar16;
+  drawSurfCount = info->drawSurfCount - listArgs->firstDrawSurfIndex;
+  drawSurfList = info->drawSurfs + listArgs->firstDrawSurfIndex;
+  drawSurf.packed._0_4_ = *(undefined4 *)drawSurfList;
+  drawSurf.packed._4_4_ = *(undefined4 *)((int)drawSurfList + 4);
+  commonSource->viewMode = (GfxViewMode)&s_manualObjectPlacement;
+  updatedFade = R_UpdateCodeConstant(commonSource,0x75,1.0,1.0,1.0,1.0);
+  RB_TrackImmediatePrims(&state->prim,GFX_PRIM_STATS_XMODELRIGID);
+  if (((state->prim).primStats == (GfxPrimStats *)0x0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x7c7,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return uVar4;
   }
-  if (pGVar3->cameraView == 0) {
-    if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-       (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x846,0,
-                                  "%s"), !bVar15)) {
-      pcVar4 = (code *)swi(3);
-      uVar16 = (*pcVar4)();
-      return uVar16;
+  if (info->cameraView == 0) {
+    if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x846,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      uVar4 = (*pcVar2)();
+      return uVar4;
     }
-    if ((local_31 == '\n') &&
-       (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x847,0,
-                                  "%s"), !bVar15)) {
-      pcVar4 = (code *)swi(3);
-      uVar16 = (*pcVar4)();
-      return uVar16;
+    if ((baseTechType == '\n') &&
+       (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x847,0,
+                                 "%s"), !bVar3)) {
+      pcVar2 = (code *)swi(3);
+      uVar4 = (*pcVar2)();
+      return uVar4;
     }
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar13);
-    R_ChangeDepthHackNearClip(local_3c,0);
-    R_SetVertexDeclTypeNormal(pGVar2,VERTDECL_PACKED);
-    if (pGVar2->depthRangeType != GFX_DEPTH_RANGE_FULL) {
-      R_ChangeDepthRange(pGVar2,GFX_DEPTH_RANGE_FULL);
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2_00);
+    R_ChangeDepthHackNearClip(commonSource,0);
+    R_SetVertexDeclTypeNormal(state,VERTDECL_PACKED);
+    if (state->depthRangeType != GFX_DEPTH_RANGE_FULL) {
+      R_ChangeDepthRange(state,GFX_DEPTH_RANGE_FULL);
     }
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar14);
-    local_2c = R_DrawXModelSurf(local_10,local_c,(GfxCmdBufContext)GVar10,pGVar3);
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context_06);
+    drawSurfIndex = R_DrawXModelSurf(drawSurfList,drawSurfCount,(GfxCmdBufContext)context_03,info);
   }
   else {
     _allshl();
-    local_24 = local_40->surfsBuffer + extraout_EAX;
-    if (*(ushort *)(local_24 + 0xe) == 0) {
-      local_1c = GFX_DEPTH_RANGE_SCENE;
-      local_14 = 0.0;
-      local_20 = 0.0;
-      local_18 = 0.0;
-      local_38 = 0.0;
+    modelSurf = data->surfsBuffer + extraout_EAX;
+    if (*(ushort *)(modelSurf + 0xe) == 0) {
+      depthHackFlags = 0;
+      materialTime = 0.0;
+      curDestructibleBurnAmount = 0.0;
+      curDestructibleFadeAmount = 0.0;
+      curWetness = 0.0;
     }
     else {
-      pGVar1 = local_40->gfxEnts + *(ushort *)(local_24 + 0xe);
-      local_1c = pGVar1->renderFxFlags & GFX_DEPTH_RANGE_VIEWMODEL;
-      local_14 = pGVar1->materialTime;
-      local_18 = pGVar1->destructibleFadeAmount;
-      local_20 = pGVar1->destructibleBurnAmount;
-      local_38 = pGVar1->wetness;
+      pGVar1 = data->gfxEnts + *(ushort *)(modelSurf + 0xe);
+      depthHackFlags = pGVar1->renderFxFlags & 2;
+      materialTime = pGVar1->materialTime;
+      curDestructibleFadeAmount = pGVar1->destructibleFadeAmount;
+      curDestructibleBurnAmount = pGVar1->destructibleBurnAmount;
+      curWetness = pGVar1->wetness;
       if (pGVar1->textureOverrideIndex != -1) {
-        R_TextureOverride(local_40,(GfxCmdBufContext)GVar5,(uint)local_24[0x12],
+        R_TextureOverride(data,(GfxCmdBufContext)context,(uint)modelSurf[0x12],
                           pGVar1->textureOverrideIndex);
       }
     }
-    iVar18 = RB_DrawSurf_Uses_ShaderConstantSet(&local_4c);
-    if (iVar18 == 0) {
-      local_8 = R_UpdateCodeConstant
-                          (local_3c,0x72,local_20,(r_burnedDestructibleColor->current).value,
-                           local_18,0.0);
-      uVar16 = R_UpdateCodeConstant(local_3c,0x76,local_20,0.0,0.0,0.0);
-      local_8 = uVar16 | local_8;
+    iVar5 = RB_DrawSurf_Uses_ShaderConstantSet(&drawSurf);
+    if (iVar5 == 0) {
+      updatedBurnFadeConstant =
+           R_UpdateCodeConstant
+                     (commonSource,0x72,curDestructibleBurnAmount,
+                      (r_burnedDestructibleColor->current).value,curDestructibleFadeAmount,0.0);
+      uVar4 = R_UpdateCodeConstant(commonSource,0x76,curDestructibleBurnAmount,0.0,0.0,0.0);
+      updatedBurnFadeConstant = uVar4 | updatedBurnFadeConstant;
     }
     else {
-      local_8 = 0;
+      updatedBurnFadeConstant = 0;
     }
-    uVar16 = R_UpdateMaterialTime(local_3c,local_14,local_20,local_18,local_38);
-    local_30 = uVar16 | local_8 | local_28;
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar6);
-    if (local_30 != 0) {
-      R_SetupPassVertexShaderArgs((GfxCmdBufContext)GVar7);
+    uVar4 = R_UpdateMaterialTime
+                      (commonSource,materialTime,curDestructibleBurnAmount,curDestructibleFadeAmount
+                       ,curWetness);
+    setupVertexShader = uVar4 | updatedBurnFadeConstant | updatedFade;
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+    if (setupVertexShader != 0) {
+      R_SetupPassVertexShaderArgs((GfxCmdBufContext)context_00);
     }
-    R_ChangeDepthHackNearClip(local_3c,local_1c);
-    R_SetVertexDeclTypeModel(*(XSurface **)(local_24 + 4),pGVar2);
-    if (local_1c != pGVar2->depthRangeType) {
-      R_ChangeDepthRange(pGVar2,local_1c);
+    R_ChangeDepthHackNearClip(commonSource,depthHackFlags);
+    R_SetVertexDeclTypeModel(*(XSurface **)(modelSurf + 4),state);
+    if (depthHackFlags != state->depthRangeType) {
+      R_ChangeDepthRange(state,depthHackFlags);
     }
-    if (local_31 == '\n') {
-      if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-        R_SetupPassPixelShaderArgs(param_2);
-        if (local_30 != 0) {
-          R_SetupPassVertexShaderArgs(param_2);
+    if (baseTechType == '\n') {
+      if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+        R_SetupPassPixelShaderArgs(prepassContext);
+        if (setupVertexShader != 0) {
+          R_SetupPassVertexShaderArgs(prepassContext);
         }
-        R_SetVertexDeclTypeModel(*(XSurface **)(local_24 + 4),param_2.field0_0x0._s_0.state);
-        if (local_1c != (param_2.field0_0x0._s_0.state)->depthRangeType) {
-          R_ChangeDepthRange(param_2.field0_0x0._s_0.state,local_1c);
+        R_SetVertexDeclTypeModel(*(XSurface **)(modelSurf + 4),prepassContext.field0_0x0._s_0.state)
+        ;
+        if (depthHackFlags != (prepassContext.field0_0x0._s_0.state)->depthRangeType) {
+          R_ChangeDepthRange(prepassContext.field0_0x0._s_0.state,depthHackFlags);
         }
       }
-      if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-        R_SetupPassPerObjectArgs(param_2);
+      if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+        R_SetupPassPerObjectArgs(prepassContext);
       }
-      R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar11);
-      local_2c = R_DrawXModelSurfLit(local_10,local_c,(GfxCmdBufContext)GVar8,param_2,pGVar3);
+      R_SetupPassPerObjectArgs((GfxCmdBufContext)context_04);
+      drawSurfIndex =
+           R_DrawXModelSurfLit(drawSurfList,drawSurfCount,(GfxCmdBufContext)context_01,
+                               prepassContext,info);
     }
     else {
-      if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-         (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x83c,
-                                    0,"%s"), !bVar15)) {
-        pcVar4 = (code *)swi(3);
-        uVar16 = (*pcVar4)();
-        return uVar16;
+      if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x83c,0
+                                   ,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        uVar4 = (*pcVar2)();
+        return uVar4;
       }
-      if ((local_31 == '\n') &&
-         (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x83d,
-                                    0,"%s"), !bVar15)) {
-        pcVar4 = (code *)swi(3);
-        uVar16 = (*pcVar4)();
-        return uVar16;
+      if ((baseTechType == '\n') &&
+         (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x83d,0
+                                   ,"%s"), !bVar3)) {
+        pcVar2 = (code *)swi(3);
+        uVar4 = (*pcVar2)();
+        return uVar4;
       }
-      R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar12);
-      local_2c = R_DrawXModelSurfCamera(local_10,local_c,(GfxCmdBufContext)GVar9,pGVar3);
+      R_SetupPassPerObjectArgs((GfxCmdBufContext)context_05);
+      drawSurfIndex =
+           R_DrawXModelSurfCamera(drawSurfList,drawSurfCount,(GfxCmdBufContext)context_02,info);
     }
   }
-  RB_EndTrackImmediatePrims(&pGVar2->prim);
-  if ((local_2c == 0) &&
-     (bVar15 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x862,0,
-                                "%s"), !bVar15)) {
-    pcVar4 = (code *)swi(3);
-    uVar16 = (*pcVar4)();
-    return uVar16;
+  RB_EndTrackImmediatePrims(&state->prim);
+  if ((drawSurfIndex == 0) &&
+     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x862,0,
+                               "%s"), !bVar3)) {
+    pcVar2 = (code *)swi(3);
+    uVar4 = (*pcVar2)();
+    return uVar4;
   }
-  return local_2c;
+  return drawSurfIndex;
 }
 
 
 // 00B3BB30  R_TessXModelWaterList  (gfx_d3d/rb_tess.cpp:2151)
 
-uint __cdecl R_TessXModelWaterList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessXModelWaterList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   code *pcVar1;
-  GfxCmdBufContext GVar2;
-  GfxCmdBufContext GVar3;
-  GfxCmdBufContext GVar4;
-  GfxCmdBufContext GVar5;
-  GfxCmdBufContext GVar6;
-  bool bVar7;
-  uint uVar8;
-  char *pcVar9;
+  GfxCmdBufContext context_00;
+  GfxCmdBufContext context_01;
+  GfxCmdBufContext context_2;
+  GfxCmdBufContext context_02;
+  GfxCmdBufContext context_03;
+  bool bVar2;
+  uint uVar3;
+  char *pcVar4;
   int extraout_EAX;
-  GfxMatrix *pGVar10;
-  float *pfVar11;
-  float local_90;
+  GfxMatrix *pGVar5;
+  float *color;
+  GfxMatrix *matrix;
+  float origin;
   float local_8c;
   float local_88;
-  uint local_84;
-  uint local_80;
-  undefined4 *local_7c;
-  float local_78 [9];
-  GfxDrawPrimArgs local_54;
-  GfxCmdBufSourceState *local_48;
+  uint offset1;
+  uint offset0;
+  uchar *modelSurf;
+  float axis [9];
+  GfxDrawPrimArgs args;
+  GfxCmdBufSourceState *context;
   GfxCmdBufState *local_44;
-  GfxDrawSurfListInfo *local_40;
-  uint local_3c;
+  GfxDrawSurfListInfo *info;
+  uint drawSurf;
   uint local_38;
-  float local_30;
-  GfxCmdBufSourceState *local_2c;
-  uint local_28;
-  uint local_24;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uint drawSurfIndex;
+  uint drawSurfMask;
   uint local_20;
-  GfxDrawSurf *local_18;
-  uint local_14;
+  GfxDrawSurf *drawSurfList;
+  uint drawSurfKey;
   uint local_10;
-  uint local_8;
+  uint drawSurfCount;
   
-  local_48 = (param_1->context).field0_0x0._s_0.source;
-  local_44 = (param_1->context).field0_0x0._s_0.state;
-  local_2c = local_48;
-  if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-      (local_48 != param_2.field0_0x0._s_0.source)) &&
-     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x872,0,
-                               "%s"), !bVar7)) {
+  context = (listArgs->context).field0_0x0._s_0.source;
+  local_44 = (listArgs->context).field0_0x0._s_0.state;
+  commonSource = context;
+  if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+      (context != prepassContext.field0_0x0._s_0.source)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x872,0,
+                               "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar8 = (*pcVar1)();
-    return uVar8;
+    uVar3 = (*pcVar1)();
+    return uVar3;
   }
-  local_40 = param_1->info;
+  info = listArgs->info;
   if ((r_logFile->current).integer != 0) {
-    pcVar9 = va("--- R_TessXModelWaterList( %s ) ---\n");
-    RB_LogPrint(pcVar9);
+    pcVar4 = va("--- R_TessXModelWaterList( %s ) ---\n");
+    RB_LogPrint(pcVar4);
   }
-  local_8 = local_40->drawSurfCount - param_1->firstDrawSurfIndex;
-  local_18 = local_40->drawSurfs + param_1->firstDrawSurfIndex;
-  local_3c = *(uint *)local_18;
-  local_38 = *(uint *)((int)local_18 + 4);
-  local_30 = (local_2c->viewParms).viewMatrix.m[2][0];
-  if (((local_2c->scissorViewport).y == 0) &&
-     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x884,0,
-                               "%s"), !bVar7)) {
+  drawSurfCount = info->drawSurfCount - listArgs->firstDrawSurfIndex;
+  drawSurfList = info->drawSurfs + listArgs->firstDrawSurfIndex;
+  drawSurf = *(uint *)drawSurfList;
+  local_38 = *(uint *)((int)drawSurfList + 4);
+  data = (GfxBackEndData *)(commonSource->viewParms).viewMatrix.m[2][0];
+  if (((commonSource->scissorViewport).y == 0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x884,0,
+                               "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar8 = (*pcVar1)();
-    return uVar8;
+    uVar3 = (*pcVar1)();
+    return uVar3;
   }
-  local_24 = 0xf00f0000;
+  drawSurfMask = 0xf00f0000;
   local_20 = 0xfff807ff;
-  local_14 = local_3c & 0xf00f0000;
+  drawSurfKey = drawSurf & 0xf00f0000;
   local_10 = local_38 & 0xfff807ff;
-  local_2c->viewMode = (GfxViewMode)&s_manualObjectPlacement;
-  R_UpdateMaterialTime(local_2c,0.0,0.0,0.0,0.0);
+  commonSource->viewMode = (GfxViewMode)&s_manualObjectPlacement;
+  R_UpdateMaterialTime(commonSource,0.0,0.0,0.0,0.0);
   if (local_44->depthRangeType != GFX_DEPTH_RANGE_SCENE) {
     R_ChangeDepthRange(local_44,GFX_DEPTH_RANGE_SCENE);
   }
-  GVar3.field0_0x0._s_0.state = local_44;
-  GVar3.field0_0x0._s_0.source = local_48;
-  R_SetupPassVertexShaderArgs(GVar3);
-  GVar4.field0_0x0._s_0.state = local_44;
-  GVar4.field0_0x0._s_0.source = local_48;
-  R_SetupPassPixelShaderArgs(GVar4);
+  context_01.field0_0x0._s_0.state = local_44;
+  context_01.field0_0x0._s_0.source = context;
+  R_SetupPassVertexShaderArgs(context_01);
+  context_2.field0_0x0._s_0.state = local_44;
+  context_2.field0_0x0._s_0.source = context;
+  R_SetupPassPixelShaderArgs(context_2);
   R_SetVertexDeclTypeNormal(local_44,VERTDECL_WATER);
   RB_TrackImmediatePrims(&local_44->prim,GFX_PRIM_STATS_CODE);
   if (((local_44->prim).primStats == (GfxPrimStats *)0x0) &&
-     (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x8a2,0,
-                               "%s"), !bVar7)) {
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x8a2,0,
+                               "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    uVar8 = (*pcVar1)();
-    return uVar8;
+    uVar3 = (*pcVar1)();
+    return uVar3;
   }
-  local_28 = 0;
+  drawSurfIndex = 0;
   while( true ) {
     _allshl();
-    local_7c = (undefined4 *)(extraout_EAX + (int)local_30);
-    pGVar10 = R_GetActiveWorldMatrix(local_2c);
-    MatrixIdentity33((float (*) [3])local_78);
-    local_90 = (float)local_7c[8] - (local_2c->skinnedPlacement).base.origin[0];
-    local_8c = (float)local_7c[9] - (local_2c->skinnedPlacement).base.origin[1];
-    local_88 = (float)local_7c[10] - (local_2c->skinnedPlacement).base.origin[2];
-    ikMatrixSet44((float (*) [4])pGVar10,&local_90,(float (*) [3])local_78,1.0);
-    local_54.baseIndex = 0;
-    local_54.triCount = local_7c[7];
-    local_54.vertexCount = local_7c[6];
-    local_80 = local_7c[3] << 4;
-    local_84 = local_7c[4] << 4;
-    if ((local_44->prim).indexBuffer != (IDirect3DIndexBuffer9 *)*local_7c) {
-      R_ChangeIndices(&local_44->prim,(IDirect3DIndexBuffer9 *)*local_7c);
+    modelSurf = data->surfsBuffer + extraout_EAX;
+    pGVar5 = R_GetActiveWorldMatrix(commonSource);
+    MatrixIdentity33((float (*) [3])axis);
+    origin = *(float *)(modelSurf + 0x20) - (commonSource->skinnedPlacement).base.origin[0];
+    local_8c = *(float *)(modelSurf + 0x24) - (commonSource->skinnedPlacement).base.origin[1];
+    local_88 = *(float *)(modelSurf + 0x28) - (commonSource->skinnedPlacement).base.origin[2];
+    ikMatrixSet44((float (*) [4])pGVar5,&origin,(float (*) [3])axis,1.0);
+    args.baseIndex = 0;
+    args.triCount = *(int *)(modelSurf + 0x1c);
+    args.vertexCount = *(int *)(modelSurf + 0x18);
+    offset0 = *(int *)(modelSurf + 0xc) << 4;
+    offset1 = *(int *)(modelSurf + 0x10) << 4;
+    if ((local_44->prim).indexBuffer != *(IDirect3DIndexBuffer9 **)modelSurf) {
+      R_ChangeIndices(&local_44->prim,*(IDirect3DIndexBuffer9 **)modelSurf);
     }
     R_SetDoubleStreamSource
-              (&local_44->prim,(IDirect3DVertexBuffer9 *)local_7c[1],local_80,0x10,
-               (IDirect3DVertexBuffer9 *)local_7c[2],local_84,0x10);
-    R_SetWaterSimulationConstants(local_2c,(float)local_7c[5]);
-    GVar5.field0_0x0._s_0.state = local_44;
-    GVar5.field0_0x0._s_0.source = local_48;
-    R_SetupPassPerObjectArgs(GVar5);
-    GVar6.field0_0x0._s_0.state = local_44;
-    GVar6.field0_0x0._s_0.source = local_48;
-    R_SetupPassPerPrimArgs(GVar6);
-    R_DrawIndexedPrimitive(&local_44->prim,&local_54);
+              (&local_44->prim,*(IDirect3DVertexBuffer9 **)(modelSurf + 4),offset0,0x10,
+               *(IDirect3DVertexBuffer9 **)(modelSurf + 8),offset1,0x10);
+    R_SetWaterSimulationConstants(commonSource,*(float *)(modelSurf + 0x14));
+    context_02.field0_0x0._s_0.state = local_44;
+    context_02.field0_0x0._s_0.source = context;
+    R_SetupPassPerObjectArgs(context_02);
+    context_03.field0_0x0._s_0.state = local_44;
+    context_03.field0_0x0._s_0.source = context;
+    R_SetupPassPerPrimArgs(context_03);
+    R_DrawIndexedPrimitive(&local_44->prim,&args);
     if ((r_showTess->current).integer != 0) {
-      pfVar11 = colorWhite;
-      pcVar9 = "XMRigid";
-      pGVar10 = R_GetActiveWorldMatrix(local_2c);
-      GVar2.field0_0x0._s_0.state = local_44;
-      GVar2.field0_0x0._s_0.source = local_48;
-      RB_ShowTess(GVar2,pGVar10->m[3],pcVar9,pfVar11);
+      color = colorWhite;
+      pcVar4 = "XMRigid";
+      pGVar5 = R_GetActiveWorldMatrix(commonSource);
+      context_00.field0_0x0._s_0.state = local_44;
+      context_00.field0_0x0._s_0.source = context;
+      RB_ShowTess(context_00,pGVar5->m[3],pcVar4,color);
     }
-    local_28 = local_28 + 1;
-    if (local_28 == local_8) break;
-    local_3c = *(uint *)(local_18 + local_28);
-    local_38 = *(uint *)((int)local_18 + (local_28 * 2 + 1) * 4);
-    if (((local_3c & local_24) != local_14) || ((local_38 & local_20) != local_10)) break;
+    drawSurfIndex = drawSurfIndex + 1;
+    if (drawSurfIndex == drawSurfCount) break;
+    drawSurf = *(uint *)(drawSurfList + drawSurfIndex);
+    local_38 = *(uint *)((int)drawSurfList + (drawSurfIndex * 2 + 1) * 4);
+    if (((drawSurf & drawSurfMask) != drawSurfKey) || ((local_38 & local_20) != local_10)) break;
   }
   RB_EndTrackImmediatePrims(&local_44->prim);
-  return local_28;
+  return drawSurfIndex;
 }
 
 
 // 00B3C060  R_TessXModelRigidSkinnedDrawSurfList  (gfx_d3d/rb_tess.cpp:2282)
 
 uint __cdecl
-R_TessXModelRigidSkinnedDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+R_TessXModelRigidSkinnedDrawSurfList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
   GfxDrawSurf *pGVar1;
-  GfxDepthRangeType *pGVar2;
+  uint *puVar2;
   uchar uVar3;
-  GfxCmdBufSourceState *pGVar4;
-  GfxCmdBufState *pGVar5;
-  float fVar6;
-  GfxDrawSurfListInfo *pGVar7;
-  uint uVar8;
-  code *pcVar9;
-  GfxCmdBufContext GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  GfxCmdBufContext_u_0_s_0 GVar12;
-  GfxCmdBufContext_u_0_s_0 GVar13;
-  undefined6 uVar14;
-  GfxCmdBufContext_u_0_s_0 GVar15;
-  GfxCmdBufContext_u_0_s_0 GVar16;
-  GfxCmdBufContext_u_0_s_0 GVar17;
-  uint uVar18;
-  bool bVar19;
-  bool bVar20;
-  uint uVar21;
-  char *pcVar22;
-  uint uVar23;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  float fVar4;
+  GfxDrawSurfListInfo *pGVar5;
+  uint uVar6;
+  code *pcVar7;
+  GfxCmdBufContext context;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context_2_00;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  undefined6 uVar8;
+  GfxCmdBufContext_u_0_s_0 context_01;
+  GfxCmdBufContext_u_0_s_0 context_02;
+  GfxCmdBufContext_u_0_s_0 context_03;
+  uint uVar9;
+  bool bVar10;
+  bool bVar11;
+  uint uVar12;
+  char *text;
+  uint uVar13;
   int extraout_EAX;
-  int iVar24;
-  int iVar25;
+  int iVar14;
+  int iVar15;
   uint extraout_EAX_00;
-  GfxScaledPlacement *pGVar26;
-  uint uVar27;
-  uint local_64;
+  GfxScaledPlacement *remotePlacement;
+  uint uVar16;
+  uint gfxEntIndex;
+  GfxDrawSurfListInfo *info;
+  uint drawSurf;
   uint local_60;
-  uint local_44;
-  uint local_30;
-  GfxDepthRangeType local_20;
-  float local_1c;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  int setupPixelShader;
+  uint drawSurfSubMask;
+  uchar baseTechType;
+  int setupVertexShader;
+  uint drawSurfIndex;
+  uint depthHackFlags;
+  float materialTime;
+  uint drawSurfCount;
   
-  pGVar4 = (param_1->context).field0_0x0._s_0.source;
-  pGVar5 = (param_1->context).field0_0x0._s_0.state;
-  GVar17 = (param_1->context).field0_0x0._s_0;
-  GVar16 = (param_1->context).field0_0x0._s_0;
-  GVar15 = (param_1->context).field0_0x0._s_0;
-  uVar14 = *(undefined6 *)&(param_1->context).field0_0x0;
-  GVar13 = (param_1->context).field0_0x0._s_0;
-  GVar12 = (param_1->context).field0_0x0._s_0;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-      (pGVar4 != param_2.field0_0x0._s_0.source)) &&
-     (bVar19 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x902,0,
-                                "%s"), !bVar19)) {
-    pcVar9 = (code *)swi(3);
-    uVar21 = (*pcVar9)();
-    return uVar21;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_03 = (listArgs->context).field0_0x0._s_0;
+  context_02 = (listArgs->context).field0_0x0._s_0;
+  context_01 = (listArgs->context).field0_0x0._s_0;
+  uVar8 = *(undefined6 *)&(listArgs->context).field0_0x0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context_2_00 = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+      (source != prepassContext.field0_0x0._s_0.source)) &&
+     (bVar10 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x902,0,
+                                "%s"), !bVar10)) {
+    pcVar7 = (code *)swi(3);
+    uVar12 = (*pcVar7)();
+    return uVar12;
   }
-  fVar6 = (pGVar4->viewParms).viewMatrix.m[2][0];
-  pGVar7 = param_1->info;
-  uVar3 = pGVar7->baseTechType;
+  fVar4 = (source->viewParms).viewMatrix.m[2][0];
+  pGVar5 = listArgs->info;
+  uVar3 = pGVar5->baseTechType;
   if ((r_logFile->current).integer != 0) {
-    pcVar22 = va("--- R_TessXModelRigidSkinnedDrawSurfList( %s ) ---\n");
-    RB_LogPrint(pcVar22);
+    text = va("--- R_TessXModelRigidSkinnedDrawSurfList( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  uVar21 = pGVar7->drawSurfCount - param_1->firstDrawSurfIndex;
-  pGVar1 = pGVar7->drawSurfs + param_1->firstDrawSurfIndex;
-  if (pGVar7->cameraView == 0) {
-    R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar11);
-    R_ChangeDepthHackNearClip(pGVar4,0);
-    if (pGVar5->depthRangeType != GFX_DEPTH_RANGE_FULL) {
-      R_ChangeDepthRange(pGVar5,GFX_DEPTH_RANGE_FULL);
+  uVar12 = pGVar5->drawSurfCount - listArgs->firstDrawSurfIndex;
+  pGVar1 = pGVar5->drawSurfs + listArgs->firstDrawSurfIndex;
+  if (pGVar5->cameraView == 0) {
+    R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+    R_ChangeDepthHackNearClip(source,0);
+    if (state->depthRangeType != GFX_DEPTH_RANGE_FULL) {
+      R_ChangeDepthRange(state,GFX_DEPTH_RANGE_FULL);
     }
   }
-  R_SetVertexDeclTypeNormal(pGVar5,VERTDECL_PACKED);
-  bVar19 = true;
-  local_44 = 0xffff0000;
+  R_SetVertexDeclTypeNormal(state,VERTDECL_PACKED);
+  bVar10 = true;
+  drawSurfSubMask = 0xffff0000;
   if (uVar3 != '\n') {
-    local_44 = 0xf00f0000;
+    drawSurfSubMask = 0xf00f0000;
   }
-  local_64 = *(uint *)pGVar1;
-  uVar8 = *(uint *)((int)pGVar1 + 4);
-  uVar23 = local_64 & 0xf00f0000;
-  RB_TrackImmediatePrims(&pGVar5->prim,GFX_PRIM_STATS_XMODELRIGID);
-  if (((pGVar5->prim).primStats == (GfxPrimStats *)0x0) &&
-     (bVar20 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x92b,0,
-                                "%s"), !bVar20)) {
-    pcVar9 = (code *)swi(3);
-    uVar21 = (*pcVar9)();
-    return uVar21;
+  drawSurf = *(uint *)pGVar1;
+  uVar6 = *(uint *)((int)pGVar1 + 4);
+  uVar13 = drawSurf & 0xf00f0000;
+  RB_TrackImmediatePrims(&state->prim,GFX_PRIM_STATS_XMODELRIGID);
+  if (((state->prim).primStats == (GfxPrimStats *)0x0) &&
+     (bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x92b,0,
+                                "%s"), !bVar11)) {
+    pcVar7 = (code *)swi(3);
+    uVar12 = (*pcVar7)();
+    return uVar12;
   }
-  local_30 = 0;
-  local_60 = uVar8;
+  drawSurfIndex = 0;
+  local_60 = uVar6;
   do {
-    uVar18 = local_60;
-    uVar27 = local_64 & local_44;
+    uVar9 = local_60;
+    uVar16 = drawSurf & drawSurfSubMask;
     while( true ) {
       _allshl();
-      iVar24 = extraout_EAX + (int)fVar6;
-      if (pGVar7->cameraView != 0) {
-        if (*(ushort *)(iVar24 + 0xe) == 0) {
-          local_20 = GFX_DEPTH_RANGE_SCENE;
-          local_1c = 0.0;
+      iVar14 = extraout_EAX + (int)fVar4;
+      if (pGVar5->cameraView != 0) {
+        if (*(ushort *)(iVar14 + 0xe) == 0) {
+          depthHackFlags = 0;
+          materialTime = 0.0;
         }
         else {
-          pGVar2 = (GfxDepthRangeType *)
-                   ((int)fVar6 + 0x15d7b0 + (uint)*(ushort *)(iVar24 + 0xe) * 0x18);
-          local_20 = *pGVar2 & GFX_DEPTH_RANGE_VIEWMODEL;
-          local_1c = (float)pGVar2[1];
+          puVar2 = (uint *)((int)fVar4 + 0x15d7b0 + (uint)*(ushort *)(iVar14 + 0xe) * 0x18);
+          depthHackFlags = *puVar2 & 2;
+          materialTime = (float)puVar2[1];
         }
-        iVar25 = R_UpdateMaterialTime(pGVar4,local_1c,0.0,0.0,0.0);
-        if (bVar19 || iVar25 != 0) {
-          R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar12);
+        iVar15 = R_UpdateMaterialTime(source,materialTime,0.0,0.0,0.0);
+        if (bVar10 || iVar15 != 0) {
+          R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2_00);
         }
-        if (iVar25 != 0) {
-          R_SetupPassVertexShaderArgs((GfxCmdBufContext)GVar13);
+        if (iVar15 != 0) {
+          R_SetupPassVertexShaderArgs((GfxCmdBufContext)context_00);
         }
-        R_ChangeDepthHackNearClip(pGVar4,local_20);
+        R_ChangeDepthHackNearClip(source,depthHackFlags);
         if (uVar3 == '\n') {
-          R_SetModelLightingCoordsForSource(*(ushort *)(iVar24 + 0x10),pGVar4);
+          R_SetModelLightingCoordsForSource(*(ushort *)(iVar14 + 0x10),source);
           _aullshr();
-          GVar10.field0_0x0._6_2_ = (short)((uint)pGVar5 >> 0x10);
-          GVar10.field0_0x0._0_6_ = uVar14;
-          R_SetReflectionProbe(GVar10,extraout_EAX_00 & 7);
+          context.field0_0x0._6_2_ = (short)((uint)state >> 0x10);
+          context.field0_0x0._0_6_ = uVar8;
+          R_SetReflectionProbe(context,extraout_EAX_00 & 7);
         }
-        if (local_20 != pGVar5->depthRangeType) {
-          R_ChangeDepthRange(pGVar5,local_20);
+        if (depthHackFlags != state->depthRangeType) {
+          R_ChangeDepthRange(state,depthHackFlags);
         }
-        bVar19 = false;
+        bVar10 = false;
       }
-      pGVar26 = (GfxScaledPlacement *)(iVar24 + 0x18);
-      if ((GfxScaledPlacement *)pGVar4->viewMode != pGVar26) {
-        pGVar4->viewMode = (GfxViewMode)pGVar26;
-        R_ChangeObjectPlacementRemote(pGVar4,pGVar26);
+      remotePlacement = (GfxScaledPlacement *)(iVar14 + 0x18);
+      if ((GfxScaledPlacement *)source->viewMode != remotePlacement) {
+        source->viewMode = (GfxViewMode)remotePlacement;
+        R_ChangeObjectPlacementRemote(source,remotePlacement);
       }
-      R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar15);
-      R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar16);
+      R_SetupPassPerObjectArgs((GfxCmdBufContext)context_01);
+      R_SetupPassPerPrimArgs((GfxCmdBufContext)context_02);
       R_DrawXModelSkinnedUncached
-                ((GfxCmdBufContext)GVar17,*(XSurface **)(iVar24 + 4),
-                 *(GfxPackedVertex **)(*(int *)(iVar24 + 4) + 0x20));
-      local_30 = local_30 + 1;
-      if (local_30 == uVar21) break;
-      local_64 = *(uint *)(pGVar1 + local_30);
-      local_60 = *(uint *)((int)pGVar1 + (local_30 * 2 + 1) * 4);
-      if (((local_64 & local_44) != uVar27) || (local_60 != uVar18)) break;
+                ((GfxCmdBufContext)context_03,*(XSurface **)(iVar14 + 4),
+                 *(GfxPackedVertex **)(*(int *)(iVar14 + 4) + 0x20));
+      drawSurfIndex = drawSurfIndex + 1;
+      if (drawSurfIndex == uVar12) break;
+      drawSurf = *(uint *)(pGVar1 + drawSurfIndex);
+      local_60 = *(uint *)((int)pGVar1 + (drawSurfIndex * 2 + 1) * 4);
+      if (((drawSurf & drawSurfSubMask) != uVar16) || (local_60 != uVar9)) break;
     }
-    if ((local_30 == uVar21) || (((local_64 & 0xf00f0000) != uVar23 || (local_60 != uVar8)))) {
-      RB_EndTrackImmediatePrims(&pGVar5->prim);
-      return local_30;
+    if ((drawSurfIndex == uVar12) || (((drawSurf & 0xf00f0000) != uVar13 || (local_60 != uVar6)))) {
+      RB_EndTrackImmediatePrims(&state->prim);
+      return drawSurfIndex;
     }
   } while( true );
 }
@@ -2262,113 +2333,120 @@ R_TessXModelRigidSkinnedDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufConte
 // 00B3C4F0  R_TessStaticModelRigidDrawSurfList  (gfx_d3d/rb_tess.cpp:2438)
 
 uint __cdecl
-R_TessStaticModelRigidDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+R_TessStaticModelRigidDrawSurfList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  uint *puVar1;
-  uchar uVar2;
-  GfxCmdBufSourceState *pGVar3;
-  GfxCmdBufState *pGVar4;
-  GfxDrawSurfListInfo *pGVar5;
-  float fVar6;
-  code *pcVar7;
-  GfxCmdBufContext_u_0_s_0 GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  GfxCmdBufContext_u_0_s_0 GVar12;
-  GfxCmdBufContext_u_0_s_0 GVar13;
-  bool bVar14;
-  uint uVar15;
-  char *pcVar16;
-  GfxDepthRangeType GVar17;
+  uint *primDrawSurfPos_00;
+  uchar uVar1;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *info_00;
+  float fVar2;
+  code *pcVar3;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  GfxCmdBufContext_u_0_s_0 context_01;
+  GfxCmdBufContext_u_0_s_0 context_02;
+  GfxCmdBufContext_u_0_s_0 context_03;
+  bool bVar4;
+  uint uVar5;
+  char *text;
+  GfxDepthRangeType GVar6;
   int extraout_EAX;
-  undefined4 uVar18;
-  undefined4 uVar19;
-  undefined4 uVar20;
+  undefined4 uVar7;
+  undefined4 uVar8;
+  undefined4 uVar9;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint *primDrawSurfPos;
+  GfxDrawSurf *localDrawSurf;
   
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar4 = (param_1->context).field0_0x0._s_0.state;
-  GVar13 = (param_1->context).field0_0x0._s_0;
-  GVar12 = (param_1->context).field0_0x0._s_0;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  GVar8 = (param_1->context).field0_0x0._s_0;
-  if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-     (pGVar3 != param_2.field0_0x0._s_0.source)) {
-    bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x992,0,"%s"
-                             );
-    if (!bVar14) {
-      pcVar7 = (code *)swi(3);
-      uVar15 = (*pcVar7)();
-      return uVar15;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_03 = (listArgs->context).field0_0x0._s_0;
+  context_02 = (listArgs->context).field0_0x0._s_0;
+  context_01 = (listArgs->context).field0_0x0._s_0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+     (source != prepassContext.field0_0x0._s_0.source)) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x992,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  pGVar5 = param_1->info;
+  info_00 = listArgs->info;
   if ((r_logFile->current).integer != 0) {
-    pcVar16 = va("--- R_TessStaticModelRigidDrawSurfList( %s ) ---\n");
-    RB_LogPrint(pcVar16);
+    text = va("--- R_TessStaticModelRigidDrawSurfList( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  uVar2 = pGVar5->baseTechType;
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar8);
-  R_SetGameTime(pGVar3,pGVar3->materialTime);
-  R_SetupPassVertexShaderArgs((GfxCmdBufContext)GVar9);
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    R_SetupPassVertexShaderArgs(param_2);
+  uVar1 = info_00->baseTechType;
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+  R_SetGameTime(source,source->materialTime);
+  R_SetupPassVertexShaderArgs((GfxCmdBufContext)context);
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    R_SetupPassVertexShaderArgs(prepassContext);
   }
-  pGVar3->viewMode = (GfxViewMode)&s_manualObjectPlacement;
-  R_ChangeDepthHackNearClip(pGVar3,0);
-  R_SetVertexDeclTypeNormal(pGVar4,VERTDECL_PACKED);
-  GVar17 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar17 != pGVar4->depthRangeType) {
-    R_ChangeDepthRange(pGVar4,GVar17);
+  source->viewMode = (GfxViewMode)&s_manualObjectPlacement;
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetVertexDeclTypeNormal(state,VERTDECL_PACKED);
+  GVar6 = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (GVar6 != state->depthRangeType) {
+    R_ChangeDepthRange(state,GVar6);
   }
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    R_SetupPassPixelShaderArgs(param_2);
-    R_SetVertexDeclTypeNormal(param_2.field0_0x0._s_0.state,VERTDECL_PACKED);
-    GVar17 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar17 != (param_2.field0_0x0._s_0.state)->depthRangeType) {
-      R_ChangeDepthRange(param_2.field0_0x0._s_0.state,GVar17);
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    R_SetupPassPixelShaderArgs(prepassContext);
+    R_SetVertexDeclTypeNormal(prepassContext.field0_0x0._s_0.state,VERTDECL_PACKED);
+    GVar6 = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (GVar6 != (prepassContext.field0_0x0._s_0.state)->depthRangeType) {
+      R_ChangeDepthRange(prepassContext.field0_0x0._s_0.state,GVar6);
     }
   }
-  fVar6 = (pGVar3->viewParms).viewMatrix.m[2][0];
-  uVar20 = 0;
-  uVar19 = 4;
-  uVar18 = 0;
+  fVar2 = (source->viewParms).viewMatrix.m[2][0];
+  uVar9 = 0;
+  uVar8 = 4;
+  uVar7 = 0;
   _allmul();
-  puVar1 = (uint *)((int)fVar6 + 0x48000 + extraout_EAX);
-  RB_TrackImmediatePrims(&pGVar4->prim,GFX_PRIM_STATS_SMODELRIGID);
-  if ((pGVar4->prim).primStats == (GfxPrimStats *)0x0) {
-    bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x9c3,0,"%s"
-                             );
-    if (!bVar14) {
-      pcVar7 = (code *)swi(3);
-      uVar15 = (*pcVar7)();
-      return uVar15;
+  primDrawSurfPos_00 = (uint *)((int)fVar2 + 0x48000 + extraout_EAX);
+  RB_TrackImmediatePrims(&state->prim,GFX_PRIM_STATS_SMODELRIGID);
+  if ((state->prim).primStats == (GfxPrimStats *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x9c3,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  if (uVar2 == '\n') {
-    if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-      R_SetupPassPerObjectArgs(param_2);
+  if (uVar1 == '\n') {
+    if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+      R_SetupPassPerObjectArgs(prepassContext);
     }
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar12);
-    R_DrawStaticModelSurfLit(puVar1,(GfxCmdBufContext)GVar10,param_2,pGVar5);
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context_02);
+    R_DrawStaticModelSurfLit(primDrawSurfPos_00,(GfxCmdBufContext)context_00,prepassContext,info_00)
+    ;
   }
   else {
-    if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-      bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x9d4,0,
-                                "%s");
-      if (!bVar14) {
-        pcVar7 = (code *)swi(3);
-        uVar15 = (*pcVar7)(uVar18,uVar19,uVar20);
-        return uVar15;
+    if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x9d4,0,
+                               "%s");
+      if (!bVar4) {
+        pcVar3 = (code *)swi(3);
+        uVar5 = (*pcVar3)(uVar7,uVar8,uVar9);
+        return uVar5;
       }
     }
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar13);
-    R_DrawStaticModelSurf(puVar1,(GfxCmdBufContext)GVar11,pGVar5);
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context_03);
+    R_DrawStaticModelSurf(primDrawSurfPos_00,(GfxCmdBufContext)context_01,info_00);
   }
-  RB_EndTrackImmediatePrims(&pGVar4->prim);
+  RB_EndTrackImmediatePrims(&state->prim);
   return 1;
 }
 
@@ -2376,220 +2454,239 @@ R_TessStaticModelRigidDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext
 // 00B3C7D0  R_TessStaticModelSkinnedDrawSurfList  (gfx_d3d/rb_tess.cpp:2534)
 
 uint __cdecl
-R_TessStaticModelSkinnedDrawSurfList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+R_TessStaticModelSkinnedDrawSurfList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  uint *puVar1;
-  uchar uVar2;
-  GfxCmdBufSourceState *pGVar3;
-  GfxCmdBufState *pGVar4;
-  GfxDrawSurfListInfo *pGVar5;
-  float fVar6;
-  code *pcVar7;
-  GfxCmdBufContext_u_0_s_0 GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  bool bVar11;
-  uint uVar12;
-  char *pcVar13;
+  uint *primDrawSurfPos_00;
+  uchar uVar1;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *info_00;
+  float fVar2;
+  code *pcVar3;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  bool bVar4;
+  uint uVar5;
+  char *text;
   int extraout_EAX;
-  GfxDepthRangeType GVar14;
-  undefined4 uVar15;
-  undefined4 uVar16;
-  undefined4 uVar17;
+  GfxDepthRangeType depthRangeType;
+  undefined4 uVar6;
+  undefined4 uVar7;
+  undefined4 uVar8;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint *primDrawSurfPos;
   
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar4 = (param_1->context).field0_0x0._s_0.state;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  GVar8 = (param_1->context).field0_0x0._s_0;
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x9f2,0,"%s"
-                             );
-    if (!bVar11) {
-      pcVar7 = (code *)swi(3);
-      uVar12 = (*pcVar7)();
-      return uVar12;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0x9f2,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  pGVar5 = param_1->info;
+  info_00 = listArgs->info;
   if ((r_logFile->current).integer != 0) {
-    pcVar13 = va("--- R_TessStaticModelSkinnedDrawSurfList( %s ) ---\n");
-    RB_LogPrint(pcVar13);
+    text = va("--- R_TessStaticModelSkinnedDrawSurfList( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar10);
-  uVar2 = pGVar5->baseTechType;
-  pGVar3->viewMode = (GfxViewMode)&s_manualObjectPlacement;
-  R_ChangeDepthHackNearClip(pGVar3,0);
-  R_SetVertexDeclTypeNormal(pGVar4,VERTDECL_PACKED);
-  GVar14 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar14 != pGVar4->depthRangeType) {
-    R_ChangeDepthRange(pGVar4,GVar14);
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+  uVar1 = info_00->baseTechType;
+  source->viewMode = (GfxViewMode)&s_manualObjectPlacement;
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetVertexDeclTypeNormal(state,VERTDECL_PACKED);
+  depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (depthRangeType != state->depthRangeType) {
+    R_ChangeDepthRange(state,depthRangeType);
   }
-  fVar6 = (pGVar3->viewParms).viewMatrix.m[2][0];
-  uVar17 = 0;
-  uVar16 = 4;
-  uVar15 = 0;
+  fVar2 = (source->viewParms).viewMatrix.m[2][0];
+  uVar8 = 0;
+  uVar7 = 4;
+  uVar6 = 0;
   _allmul();
-  puVar1 = (uint *)((int)fVar6 + 0x48000 + extraout_EAX);
-  RB_TrackImmediatePrims(&pGVar4->prim,GFX_PRIM_STATS_SMODELRIGID);
-  if ((pGVar4->prim).primStats == (GfxPrimStats *)0x0) {
-    bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa07,0,"%s"
-                             );
-    if (!bVar11) {
-      pcVar7 = (code *)swi(3);
-      uVar12 = (*pcVar7)(uVar15,uVar16,uVar17);
-      return uVar12;
+  primDrawSurfPos_00 = (uint *)((int)fVar2 + 0x48000 + extraout_EAX);
+  RB_TrackImmediatePrims(&state->prim,GFX_PRIM_STATS_SMODELRIGID);
+  if ((state->prim).primStats == (GfxPrimStats *)0x0) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa07,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)(uVar6,uVar7,uVar8);
+      return uVar5;
     }
   }
-  if (uVar2 == '\n') {
-    R_DrawStaticModelSkinnedSurfLit(puVar1,(GfxCmdBufContext)GVar8,pGVar5);
+  if (uVar1 == '\n') {
+    R_DrawStaticModelSkinnedSurfLit(primDrawSurfPos_00,(GfxCmdBufContext)context,info_00);
   }
   else {
-    R_DrawStaticModelSkinnedSurf(puVar1,(GfxCmdBufContext)GVar9,pGVar5);
+    R_DrawStaticModelSkinnedSurf(primDrawSurfPos_00,(GfxCmdBufContext)context_00,info_00);
   }
-  RB_EndTrackImmediatePrims(&pGVar4->prim);
+  RB_EndTrackImmediatePrims(&state->prim);
   return 1;
 }
 
 
 // 00B3C9A0  R_TessStaticModelPreTessList  (gfx_d3d/rb_tess.cpp:2589)
 
-uint __cdecl R_TessStaticModelPreTessList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+/* WARNING: Variable defined which should be unmapped: info */
+
+uint __cdecl
+R_TessStaticModelPreTessList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  uint *puVar1;
-  uchar uVar2;
-  GfxCmdBufSourceState *pGVar3;
-  float fVar4;
-  code *pcVar5;
-  GfxCmdBufContext GVar6;
-  GfxCmdBufContext GVar7;
-  GfxCmdBufContext GVar8;
-  bool bVar9;
-  uint uVar10;
-  char *pcVar11;
+  uint *primDrawSurfPos_00;
+  uchar uVar1;
+  GfxDrawSurfListInfo *pGVar2;
+  GfxCmdBufSourceState *source;
+  float fVar3;
+  code *pcVar4;
+  GfxCmdBufContext context;
+  GfxCmdBufContext context_00;
+  GfxCmdBufContext context_2;
+  bool bVar5;
+  uint uVar6;
+  char *text;
   int extraout_EAX;
-  GfxDepthRangeType GVar12;
-  GfxCmdBufSourceState *pGVar13;
-  GfxCmdBufState *pGVar14;
-  GfxDrawSurfListInfo *pGVar15;
+  GfxDepthRangeType depthRangeType;
+  GfxCmdBufSourceState *pGVar7;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint *primDrawSurfPos;
   
-  pGVar15 = param_1->info;
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar14 = (param_1->context).field0_0x0._s_0.state;
-  pGVar13 = pGVar3;
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    bVar9 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa2a,0,"%s")
+  pGVar2 = listArgs->info;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  pGVar7 = source;
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa2a,0,"%s")
     ;
-    if (!bVar9) {
-      pcVar5 = (code *)swi(3);
-      uVar10 = (*pcVar5)(pGVar13,pGVar14,pGVar15);
-      return uVar10;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)(pGVar7,state,pGVar2);
+      return uVar6;
     }
   }
-  pGVar15 = param_1->info;
+  pGVar2 = listArgs->info;
   if ((r_logFile->current).integer != 0) {
-    pcVar11 = va("--- RB_TessStaticModelCached( %s ) ---\n");
-    RB_LogPrint(pcVar11);
+    text = va("--- RB_TessStaticModelCached( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  GVar8.field0_0x0._s_0.state = pGVar14;
-  GVar8.field0_0x0._s_0.source = pGVar13;
-  R_SetupPassPixelShaderArgs(GVar8);
-  uVar2 = pGVar15->baseTechType;
-  R_ChangeDepthHackNearClip(pGVar3,0);
-  R_SetObjectIdentityPlacement(pGVar3);
-  R_SetVertexDeclTypeNormal(pGVar14,VERTDECL_STATICMODELCACHE);
-  GVar12 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar12 != pGVar14->depthRangeType) {
-    R_ChangeDepthRange(pGVar14,GVar12);
+  context_2.field0_0x0._s_0.state = state;
+  context_2.field0_0x0._s_0.source = pGVar7;
+  R_SetupPassPixelShaderArgs(context_2);
+  uVar1 = pGVar2->baseTechType;
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetObjectIdentityPlacement(source);
+  R_SetVertexDeclTypeNormal(state,VERTDECL_STATICMODELCACHE);
+  depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (depthRangeType != state->depthRangeType) {
+    R_ChangeDepthRange(state,depthRangeType);
   }
-  fVar4 = (pGVar3->viewParms).viewMatrix.m[2][0];
+  fVar3 = (source->viewParms).viewMatrix.m[2][0];
   _allmul();
-  puVar1 = (uint *)((int)fVar4 + 0x48000 + extraout_EAX);
-  R_TrackPrims(&pGVar14->prim,GFX_PRIM_STATS_SMODELCACHED);
-  if (uVar2 == '\n') {
-    GVar6.field0_0x0._s_0.state = pGVar14;
-    GVar6.field0_0x0._s_0.source = pGVar13;
-    R_DrawStaticModelPreTessSurfLit(puVar1,GVar6);
+  primDrawSurfPos_00 = (uint *)((int)fVar3 + 0x48000 + extraout_EAX);
+  R_TrackPrims(&state->prim,GFX_PRIM_STATS_SMODELCACHED);
+  if (uVar1 == '\n') {
+    context.field0_0x0._s_0.state = state;
+    context.field0_0x0._s_0.source = pGVar7;
+    R_DrawStaticModelPreTessSurfLit(primDrawSurfPos_00,context);
   }
   else {
-    GVar7.field0_0x0._s_0.state = pGVar14;
-    GVar7.field0_0x0._s_0.source = pGVar13;
-    R_DrawStaticModelPreTessSurf(puVar1,GVar7);
+    context_00.field0_0x0._s_0.state = state;
+    context_00.field0_0x0._s_0.source = pGVar7;
+    R_DrawStaticModelPreTessSurf(primDrawSurfPos_00,context_00);
   }
-  (pGVar14->prim).primStats = (GfxPrimStats *)0x0;
+  (state->prim).primStats = (GfxPrimStats *)0x0;
   return 1;
 }
 
 
 // 00B3CB40  R_TessStaticModelCachedList  (gfx_d3d/rb_tess.cpp:2646)
 
-uint __cdecl R_TessStaticModelCachedList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl
+R_TessStaticModelCachedList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  uint *puVar1;
-  uchar uVar2;
-  GfxCmdBufSourceState *pGVar3;
-  GfxCmdBufState *pGVar4;
-  GfxDrawSurfListInfo *pGVar5;
-  float fVar6;
-  code *pcVar7;
-  GfxCmdBufContext_u_0_s_0 GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  bool bVar11;
-  uint uVar12;
-  char *pcVar13;
+  uint *primDrawSurfPos_00;
+  uchar uVar1;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *pGVar2;
+  float fVar3;
+  code *pcVar4;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  bool bVar5;
+  uint uVar6;
+  char *text;
   int extraout_EAX;
-  GfxDepthRangeType GVar14;
+  GfxDepthRangeType depthRangeType;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint *primDrawSurfPos;
   
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar4 = (param_1->context).field0_0x0._s_0.state;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  GVar8 = (param_1->context).field0_0x0._s_0;
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    bVar11 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa62,0,"%s"
-                             );
-    if (!bVar11) {
-      pcVar7 = (code *)swi(3);
-      uVar12 = (*pcVar7)();
-      return uVar12;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa62,0,"%s")
+    ;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)();
+      return uVar6;
     }
   }
-  pGVar5 = param_1->info;
+  pGVar2 = listArgs->info;
   if ((r_logFile->current).integer != 0) {
-    pcVar13 = va("--- RB_TessStaticModelCached( %s ) ---\n");
-    RB_LogPrint(pcVar13);
+    text = va("--- RB_TessStaticModelCached( %s ) ---\n");
+    RB_LogPrint(text);
   }
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar10);
-  uVar2 = pGVar5->baseTechType;
-  R_ChangeDepthHackNearClip(pGVar3,0);
-  R_SetObjectIdentityPlacement(pGVar3);
-  R_SetVertexDeclTypeNormal(pGVar4,VERTDECL_STATICMODELCACHE);
-  GVar14 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar14 != pGVar4->depthRangeType) {
-    R_ChangeDepthRange(pGVar4,GVar14);
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+  uVar1 = pGVar2->baseTechType;
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetObjectIdentityPlacement(source);
+  R_SetVertexDeclTypeNormal(state,VERTDECL_STATICMODELCACHE);
+  depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (depthRangeType != state->depthRangeType) {
+    R_ChangeDepthRange(state,depthRangeType);
   }
-  fVar6 = (pGVar3->viewParms).viewMatrix.m[2][0];
+  fVar3 = (source->viewParms).viewMatrix.m[2][0];
   _allmul();
-  puVar1 = (uint *)((int)fVar6 + 0x48000 + extraout_EAX);
-  R_TrackPrims(&pGVar4->prim,GFX_PRIM_STATS_SMODELCACHED);
-  if (uVar2 == '\n') {
-    R_DrawStaticModelCachedSurfLit(puVar1,(GfxCmdBufContext)GVar8);
+  primDrawSurfPos_00 = (uint *)((int)fVar3 + 0x48000 + extraout_EAX);
+  R_TrackPrims(&state->prim,GFX_PRIM_STATS_SMODELCACHED);
+  if (uVar1 == '\n') {
+    R_DrawStaticModelCachedSurfLit(primDrawSurfPos_00,(GfxCmdBufContext)context);
   }
   else {
-    R_DrawStaticModelCachedSurf(puVar1,(GfxCmdBufContext)GVar9);
+    R_DrawStaticModelCachedSurf(primDrawSurfPos_00,(GfxCmdBufContext)context_00);
   }
-  (pGVar4->prim).primStats = (GfxPrimStats *)0x0;
+  (state->prim).primStats = (GfxPrimStats *)0x0;
   return 1;
 }
 
 
 // 00B3CF30  R_SetTerrainScorchTextures  (gfx_d3d/rb_tess.cpp:2699)
 
-void __cdecl R_SetTerrainScorchTextures(GfxCmdBufSourceState *param_1,Material *param_2)
+void __cdecl R_SetTerrainScorchTextures(GfxCmdBufSourceState *source,Material *material)
 
 {
   uint uVar1;
@@ -2597,8 +2694,12 @@ void __cdecl R_SetTerrainScorchTextures(GfxCmdBufSourceState *param_1,Material *
   bool bVar3;
   uint uVar4;
   GfxImage *local_28;
-  GfxImage *local_20;
-  uint local_18;
+  uint shift;
+  GfxImage *scorchedImage;
+  uint layerSurfType;
+  uint layer;
+  uint layerCount;
+  uint layeredSurfTypes;
   
   if (g_worldDraw->terrainScorchImages[0] == (GfxImage *)0x0) {
     local_28 = rgp.whiteImage;
@@ -2606,13 +2707,13 @@ void __cdecl R_SetTerrainScorchTextures(GfxCmdBufSourceState *param_1,Material *
   else {
     local_28 = g_worldDraw->terrainScorchImages[0];
   }
-  uVar1 = (param_2->info).layeredSurfaceTypes;
-  local_18 = 0;
+  uVar1 = (material->info).layeredSurfaceTypes;
+  layer = 0;
   do {
-    if (uVar1 >> 0x1d <= local_18) {
+    if (uVar1 >> 0x1d <= layer) {
       return;
     }
-    uVar4 = uVar1 >> ((char)local_18 * '\x06' & 0x1fU) & 0x3f;
+    uVar4 = uVar1 >> ((char)layer * '\x06' & 0x1fU) & 0x3f;
     if (0x1e < uVar4) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xa9d,0,
                                "layerSurfType doesn\'t index ARRAY_COUNT(g_worldDraw->terrainScorchImages)\n\t%i not in [0, %i)"
@@ -2623,164 +2724,176 @@ void __cdecl R_SetTerrainScorchTextures(GfxCmdBufSourceState *param_1,Material *
         return;
       }
     }
-    local_20 = g_worldDraw->terrainScorchImages[uVar4];
-    if (local_20 == (GfxImage *)0x0) {
-      local_20 = local_28;
+    scorchedImage = g_worldDraw->terrainScorchImages[uVar4];
+    if (scorchedImage == (GfxImage *)0x0) {
+      scorchedImage = local_28;
     }
-    R_SetCodeImageTexture(param_1,local_18 + 0x1d,local_20);
-    local_18 = local_18 + 1;
+    R_SetCodeImageTexture(source,layer + 0x1d,scorchedImage);
+    layer = layer + 1;
   } while( true );
 }
 
 
 // 00B3CCD0  R_TessTrianglesList  (gfx_d3d/rb_tess.cpp:2728)
 
-uint __cdecl R_TessTrianglesList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessTrianglesList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  uint *puVar1;
-  uchar uVar2;
-  GfxCmdBufSourceState *pGVar3;
-  GfxCmdBufState *pGVar4;
-  GfxDrawSurfListInfo *pGVar5;
-  float fVar6;
-  code *pcVar7;
-  GfxCmdBufContext_u_0_s_0 GVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  GfxCmdBufContext_u_0_s_0 GVar12;
-  GfxCmdBufContext_u_0_s_0 GVar13;
-  bool bVar14;
-  uint uVar15;
+  uint *primDrawSurfPos_00;
+  uchar uVar1;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *info_00;
+  float fVar2;
+  code *pcVar3;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  GfxCmdBufContext_u_0_s_0 context_01;
+  GfxCmdBufContext_u_0_s_0 context_02;
+  GfxCmdBufContext_u_0_s_0 context_03;
+  bool bVar4;
+  uint uVar5;
   int extraout_EAX;
-  GfxDepthRangeType GVar16;
+  GfxDepthRangeType GVar6;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint *primDrawSurfPos;
+  GfxDrawSurf *localDrawSurf;
   
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar4 = (param_1->context).field0_0x0._s_0.state;
-  GVar13 = (param_1->context).field0_0x0._s_0;
-  GVar12 = (param_1->context).field0_0x0._s_0;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  GVar8 = (param_1->context).field0_0x0._s_0;
-  if ((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-     (pGVar3 != param_2.field0_0x0._s_0.source)) {
-    bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xab4,0,"%s"
-                             );
-    if (!bVar14) {
-      pcVar7 = (code *)swi(3);
-      uVar15 = (*pcVar7)();
-      return uVar15;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_03 = (listArgs->context).field0_0x0._s_0;
+  context_02 = (listArgs->context).field0_0x0._s_0;
+  context_01 = (listArgs->context).field0_0x0._s_0;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  if ((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+     (source != prepassContext.field0_0x0._s_0.source)) {
+    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xab4,0,"%s")
+    ;
+    if (!bVar4) {
+      pcVar3 = (code *)swi(3);
+      uVar5 = (*pcVar3)();
+      return uVar5;
     }
   }
-  pGVar5 = param_1->info;
-  uVar2 = pGVar5->baseTechType;
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar8);
-  R_SetObjectIdentityPlacement(pGVar3);
-  R_ChangeDepthHackNearClip(pGVar3,0);
-  R_SetVertexDeclTypeWorld(pGVar4);
-  GVar16 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar16 != pGVar4->depthRangeType) {
-    R_ChangeDepthRange(pGVar4,GVar16);
+  info_00 = listArgs->info;
+  uVar1 = info_00->baseTechType;
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+  R_SetObjectIdentityPlacement(source);
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetVertexDeclTypeWorld(state);
+  GVar6 = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (GVar6 != state->depthRangeType) {
+    R_ChangeDepthRange(state,GVar6);
   }
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    R_SetupPassPixelShaderArgs(param_2);
-    R_SetVertexDeclTypeWorld(param_2.field0_0x0._s_0.state);
-    GVar16 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar16 != (param_2.field0_0x0._s_0.state)->depthRangeType) {
-      R_ChangeDepthRange(param_2.field0_0x0._s_0.state,GVar16);
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    R_SetupPassPixelShaderArgs(prepassContext);
+    R_SetVertexDeclTypeWorld(prepassContext.field0_0x0._s_0.state);
+    GVar6 = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (GVar6 != (prepassContext.field0_0x0._s_0.state)->depthRangeType) {
+      R_ChangeDepthRange(prepassContext.field0_0x0._s_0.state,GVar6);
     }
   }
-  fVar6 = (pGVar3->viewParms).viewMatrix.m[2][0];
+  fVar2 = (source->viewParms).viewMatrix.m[2][0];
   _allmul();
-  puVar1 = (uint *)((int)fVar6 + 0x48000 + extraout_EAX);
-  R_TrackPrims(&pGVar4->prim,GFX_PRIM_STATS_WORLD);
-  if (uVar2 == '\n') {
+  primDrawSurfPos_00 = (uint *)((int)fVar2 + 0x48000 + extraout_EAX);
+  R_TrackPrims(&state->prim,GFX_PRIM_STATS_WORLD);
+  if (uVar1 == '\n') {
     R_SetTerrainScorchTextures
-              ((param_1->context).field0_0x0._s_0.source,
-               ((param_1->context).field0_0x0._s_0.state)->material);
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar9);
-    R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar10);
-    if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-      R_SetupPassPerObjectArgs(param_2);
-      R_SetupPassPerPrimArgs(param_2);
+              ((listArgs->context).field0_0x0._s_0.source,
+               ((listArgs->context).field0_0x0._s_0.state)->material);
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context);
+    R_SetupPassPerPrimArgs((GfxCmdBufContext)context_00);
+    if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+      R_SetupPassPerObjectArgs(prepassContext);
+      R_SetupPassPerPrimArgs(prepassContext);
     }
-    R_DrawBspDrawSurfsLit(puVar1,(GfxCmdBufContext)GVar11,param_2,pGVar5);
+    R_DrawBspDrawSurfsLit(primDrawSurfPos_00,(GfxCmdBufContext)context_01,prepassContext,info_00);
   }
   else {
-    R_SetupPassPerObjectArgs((GfxCmdBufContext)GVar12);
-    R_SetupPassPerPrimArgs((GfxCmdBufContext)GVar13);
-    R_DrawBspDrawSurfs(puVar1,pGVar4,pGVar5);
+    R_SetupPassPerObjectArgs((GfxCmdBufContext)context_02);
+    R_SetupPassPerPrimArgs((GfxCmdBufContext)context_03);
+    R_DrawBspDrawSurfs(primDrawSurfPos_00,state,info_00);
   }
-  (pGVar4->prim).primStats = (GfxPrimStats *)0x0;
+  (state->prim).primStats = (GfxPrimStats *)0x0;
   return 1;
 }
 
 
 // 00B3D020  R_TessTrianglesPreTessList  (gfx_d3d/rb_tess.cpp:2816)
 
-uint __cdecl R_TessTrianglesPreTessList(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl
+R_TessTrianglesPreTessList(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  uint *puVar1;
-  uchar uVar2;
-  GfxCmdBufSourceState *pGVar3;
-  GfxCmdBufState *pGVar4;
-  GfxDrawSurfListInfo *pGVar5;
-  float fVar6;
-  IDirect3DIndexBuffer9 *pIVar7;
-  code *pcVar8;
-  GfxCmdBufContext_u_0_s_0 GVar9;
-  GfxCmdBufContext_u_0_s_0 GVar10;
-  GfxCmdBufContext_u_0_s_0 GVar11;
-  bool bVar12;
-  uint uVar13;
-  GfxDepthRangeType GVar14;
+  uint *primDrawSurfPos_00;
+  uchar uVar1;
+  GfxCmdBufSourceState *source;
+  GfxCmdBufState *state;
+  GfxDrawSurfListInfo *pGVar2;
+  float fVar3;
+  IDirect3DIndexBuffer9 *ib;
+  code *pcVar4;
+  GfxCmdBufContext_u_0_s_0 context_2;
+  GfxCmdBufContext_u_0_s_0 context;
+  GfxCmdBufContext_u_0_s_0 context_00;
+  bool bVar5;
+  uint uVar6;
+  GfxDepthRangeType depthRangeType;
   int extraout_EAX;
+  GfxDrawSurfListInfo *info;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  uchar baseTechType;
+  uint *primDrawSurfPos;
   
-  pGVar3 = (param_1->context).field0_0x0._s_0.source;
-  pGVar4 = (param_1->context).field0_0x0._s_0.state;
-  GVar11 = (param_1->context).field0_0x0._s_0;
-  GVar10 = (param_1->context).field0_0x0._s_0;
-  GVar9 = (param_1->context).field0_0x0._s_0;
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    bVar12 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xb0c,0,"%s"
-                             );
-    if (!bVar12) {
-      pcVar8 = (code *)swi(3);
-      uVar13 = (*pcVar8)();
-      return uVar13;
+  source = (listArgs->context).field0_0x0._s_0.source;
+  state = (listArgs->context).field0_0x0._s_0.state;
+  context_00 = (listArgs->context).field0_0x0._s_0;
+  context = (listArgs->context).field0_0x0._s_0;
+  context_2 = (listArgs->context).field0_0x0._s_0;
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xb0c,0,"%s")
+    ;
+    if (!bVar5) {
+      pcVar4 = (code *)swi(3);
+      uVar6 = (*pcVar4)();
+      return uVar6;
     }
   }
-  pGVar5 = param_1->info;
+  pGVar2 = listArgs->info;
   R_SetTerrainScorchTextures
-            ((param_1->context).field0_0x0._s_0.source,
-             ((param_1->context).field0_0x0._s_0.state)->material);
-  R_SetupPassPixelShaderArgs((GfxCmdBufContext)GVar9);
-  uVar2 = pGVar5->baseTechType;
-  R_SetObjectIdentityPlacement(pGVar3);
-  R_ChangeDepthHackNearClip(pGVar3,0);
-  R_SetVertexDeclTypeWorld(pGVar4);
-  GVar14 = ((pGVar3->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar14 != pGVar4->depthRangeType) {
-    R_ChangeDepthRange(pGVar4,GVar14);
+            ((listArgs->context).field0_0x0._s_0.source,
+             ((listArgs->context).field0_0x0._s_0.state)->material);
+  R_SetupPassPixelShaderArgs((GfxCmdBufContext)context_2);
+  uVar1 = pGVar2->baseTechType;
+  R_SetObjectIdentityPlacement(source);
+  R_ChangeDepthHackNearClip(source,0);
+  R_SetVertexDeclTypeWorld(state);
+  depthRangeType = ((source->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (depthRangeType != state->depthRangeType) {
+    R_ChangeDepthRange(state,depthRangeType);
   }
-  fVar6 = (pGVar3->viewParms).viewMatrix.m[2][0];
-  pIVar7 = *(IDirect3DIndexBuffer9 **)(*(int *)((int)fVar6 + 0x16cbdc) + 8);
-  if ((pGVar4->prim).indexBuffer != pIVar7) {
-    R_ChangeIndices(&pGVar4->prim,pIVar7);
+  fVar3 = (source->viewParms).viewMatrix.m[2][0];
+  ib = *(IDirect3DIndexBuffer9 **)(*(int *)((int)fVar3 + 0x16cbdc) + 8);
+  if ((state->prim).indexBuffer != ib) {
+    R_ChangeIndices(&state->prim,ib);
   }
   _allmul();
-  puVar1 = (uint *)((int)fVar6 + 0x48000 + extraout_EAX);
-  R_TrackPrims(&pGVar4->prim,GFX_PRIM_STATS_WORLD);
-  if (uVar2 == '\n') {
-    R_DrawBspDrawSurfsLitPreTess(puVar1,(GfxCmdBufContext)GVar10);
+  primDrawSurfPos_00 = (uint *)((int)fVar3 + 0x48000 + extraout_EAX);
+  R_TrackPrims(&state->prim,GFX_PRIM_STATS_WORLD);
+  if (uVar1 == '\n') {
+    R_DrawBspDrawSurfsLitPreTess(primDrawSurfPos_00,(GfxCmdBufContext)context);
   }
   else {
-    R_DrawBspDrawSurfsPreTess(puVar1,(GfxCmdBufContext)GVar11);
+    R_DrawBspDrawSurfsPreTess(primDrawSurfPos_00,(GfxCmdBufContext)context_00);
   }
-  (pGVar4->prim).primStats = (GfxPrimStats *)0x0;
+  (state->prim).primStats = (GfxPrimStats *)0x0;
   return 1;
 }
 
@@ -2788,13 +2901,13 @@ uint __cdecl R_TessTrianglesPreTessList(GfxDrawSurfListArgs *param_1,GfxCmdBufCo
 // 00B3DB20  R_DrawBModelPrim  (gfx_d3d/rb_tess.cpp:2870)
 
 void __cdecl
-R_DrawBModelPrim(GfxCmdBufContext *param_1,GfxCmdBufContext *param_2,GfxDrawPrimArgs *param_3)
+R_DrawBModelPrim(GfxCmdBufContext *prepassContext,GfxCmdBufContext *context,GfxDrawPrimArgs *args)
 
 {
-  if ((param_1->field0_0x0)._s_0.state != (GfxCmdBufState *)0x0) {
-    R_DrawIndexedPrimitive(&((param_1->field0_0x0)._s_0.state)->prim,param_3);
+  if ((prepassContext->field0_0x0)._s_0.state != (GfxCmdBufState *)0x0) {
+    R_DrawIndexedPrimitive(&((prepassContext->field0_0x0)._s_0.state)->prim,args);
   }
-  R_DrawIndexedPrimitive(&((param_2->field0_0x0)._s_0.state)->prim,param_3);
+  R_DrawIndexedPrimitive(&((context->field0_0x0)._s_0.state)->prim,args);
   return;
 }
 
@@ -2803,259 +2916,263 @@ R_DrawBModelPrim(GfxCmdBufContext *param_1,GfxCmdBufContext *param_2,GfxDrawPrim
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-uint __cdecl R_TessBModel(GfxDrawSurfListArgs *param_1,GfxCmdBufContext param_2)
+uint __cdecl R_TessBModel(GfxDrawSurfListArgs *listArgs,GfxCmdBufContext prepassContext)
 
 {
-  GfxScaledPlacement *pGVar1;
-  code *pcVar2;
-  GfxCmdBufContext GVar3;
-  GfxCmdBufContext GVar4;
-  GfxCmdBufContext GVar5;
-  GfxCmdBufContext GVar6;
-  GfxCmdBufContext GVar7;
-  GfxCmdBufContext GVar8;
-  GfxCmdBufContext GVar9;
-  GfxCmdBufContext GVar10;
-  GfxCmdBufContext GVar11;
-  GfxCmdBufContext GVar12;
-  GfxCmdBufContext GVar13;
-  bool bVar14;
-  uint uVar15;
+  GfxScaledPlacement *remotePlacement;
+  code *pcVar1;
+  GfxCmdBufContext context_00;
+  GfxCmdBufContext context_01;
+  GfxCmdBufContext context_2;
+  GfxCmdBufContext context_2_00;
+  GfxCmdBufContext context_02;
+  GfxCmdBufContext context_03;
+  GfxCmdBufContext context_04;
+  GfxCmdBufContext context_2_01;
+  GfxCmdBufContext context_05;
+  GfxCmdBufContext context_06;
+  GfxCmdBufContext context_07;
+  bool bVar2;
+  uint uVar3;
   uint extraout_EAX;
   uint extraout_EAX_00;
   int extraout_EAX_01;
-  int iVar16;
-  GfxDepthRangeType GVar17;
+  int iVar4;
+  GfxDepthRangeType GVar5;
   uint local_130;
-  uint local_108;
-  float local_104;
-  float local_100;
-  GfxCmdBufContext_u_0 local_fc;
-  uint local_f4;
-  GfxDrawSurfListInfo *local_f0;
-  uint local_ec;
+  int baseIndex;
+  int changed;
+  float fade;
+  float burn;
+  GfxCmdBufContext_u_0 context;
+  int updatedConstant;
+  GfxDrawSurfListInfo *info;
+  uint drawSurf;
   uint local_e8;
-  float local_e0;
-  GfxCmdBufSourceState *local_dc;
-  srfTriangles_t *local_d8;
-  ShaderConstantSet local_d4;
+  GfxBackEndData *data;
+  GfxCmdBufSourceState *commonSource;
+  GfxSurface *tris;
+  ShaderConstantSet savedConstantSet;
   uint local_58;
-  uint local_54;
+  uint drawSurfSubKey;
   uint local_50;
-  uint local_4c;
+  uint drawSurfSubMask;
   uint local_48;
-  uchar local_41;
-  uint local_40;
-  uint local_3c;
+  uchar baseTechType;
+  uint drawSurfIndex;
+  uint drawSurfMask;
   uint local_38;
-  ShaderConstantSet *local_30;
-  srfTriangles_t *local_2c;
-  int *local_28;
-  GfxDrawSurf *local_24;
-  GfxDrawPrimArgs local_20;
-  uint local_14;
+  ShaderConstantSet *constantSet;
+  GfxSurface *surf;
+  uchar *bmodelSurf;
+  GfxDrawSurf *drawSurfList;
+  GfxDrawPrimArgs args;
+  uint drawSurfKey;
   uint local_10;
-  int local_c;
-  uint local_8;
+  int baseVertex;
+  uint drawSurfCount;
   
   local_58 = __security_cookie ^ (uint)&stack0xfffffffc;
-  R_InitShaderConstantSet(&local_d4);
-  local_fc._s_0.source = (param_1->context).field0_0x0._s_0.source;
-  local_fc._s_0.state = (param_1->context).field0_0x0._s_0.state;
-  local_dc = local_fc._s_0.source;
-  if (((param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
-      (local_fc._s_0.source != param_2.field0_0x0._s_0.source)) &&
-     (bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xb7b,0,
-                                "%s"), !bVar14)) {
-    pcVar2 = (code *)swi(3);
-    uVar15 = (*pcVar2)();
-    return uVar15;
+  R_InitShaderConstantSet(&savedConstantSet);
+  context._s_0.source = (listArgs->context).field0_0x0._s_0.source;
+  context._s_0.state = (listArgs->context).field0_0x0._s_0.state;
+  commonSource = context._s_0.source;
+  if (((prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) &&
+      (context._s_0.source != prepassContext.field0_0x0._s_0.source)) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xb7b,0,
+                               "%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    uVar3 = (*pcVar1)();
+    return uVar3;
   }
-  local_f0 = param_1->info;
-  local_24 = local_f0->drawSurfs + param_1->firstDrawSurfIndex;
-  local_8 = local_f0->drawSurfCount - param_1->firstDrawSurfIndex;
+  info = listArgs->info;
+  drawSurfList = info->drawSurfs + listArgs->firstDrawSurfIndex;
+  drawSurfCount = info->drawSurfCount - listArgs->firstDrawSurfIndex;
   R_SetTerrainScorchTextures
-            ((param_1->context).field0_0x0._s_0.source,
-             ((param_1->context).field0_0x0._s_0.state)->material);
-  GVar5.field0_0x0._s_0.state = local_fc._s_0.state;
-  GVar5.field0_0x0._s_0.source = local_fc._s_0.source;
-  R_SetupPassPixelShaderArgs(GVar5);
-  local_e0 = (local_dc->viewParms).viewMatrix.m[2][0];
-  local_41 = local_f0->baseTechType;
-  R_ChangeDepthHackNearClip(local_dc,0);
-  R_SetVertexDeclTypeWorld(local_fc._s_0.state);
-  GVar17 = ((local_dc->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-  if (GVar17 != (local_fc._s_0.state)->depthRangeType) {
-    R_ChangeDepthRange(local_fc._s_0.state,GVar17);
+            ((listArgs->context).field0_0x0._s_0.source,
+             ((listArgs->context).field0_0x0._s_0.state)->material);
+  context_2.field0_0x0._s_0.state = context._s_0.state;
+  context_2.field0_0x0._s_0.source = context._s_0.source;
+  R_SetupPassPixelShaderArgs(context_2);
+  data = (GfxBackEndData *)(commonSource->viewParms).viewMatrix.m[2][0];
+  baseTechType = info->baseTechType;
+  R_ChangeDepthHackNearClip(commonSource,0);
+  R_SetVertexDeclTypeWorld(context._s_0.state);
+  GVar5 = ((commonSource->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+  if (GVar5 != (context._s_0.state)->depthRangeType) {
+    R_ChangeDepthRange(context._s_0.state,GVar5);
   }
-  if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-    GVar6.field0_0x0._s_0.state = param_2.field0_0x0._s_0.state;
-    GVar6.field0_0x0._s_0.source = param_2.field0_0x0._s_0.source;
-    R_SetupPassPixelShaderArgs(GVar6);
-    R_SetVertexDeclTypeWorld(param_2.field0_0x0._s_0.state);
-    GVar17 = ((local_dc->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
-    if (GVar17 != (param_2.field0_0x0._s_0.state)->depthRangeType) {
-      R_ChangeDepthRange(param_2.field0_0x0._s_0.state,GVar17);
+  if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+    context_2_00.field0_0x0._s_0.state = prepassContext.field0_0x0._s_0.state;
+    context_2_00.field0_0x0._s_0.source = prepassContext.field0_0x0._s_0.source;
+    R_SetupPassPixelShaderArgs(context_2_00);
+    R_SetVertexDeclTypeWorld(prepassContext.field0_0x0._s_0.state);
+    GVar5 = ((commonSource->scissorViewport).y != 0) + GFX_DEPTH_RANGE_FULL;
+    if (GVar5 != (prepassContext.field0_0x0._s_0.state)->depthRangeType) {
+      R_ChangeDepthRange(prepassContext.field0_0x0._s_0.state,GVar5);
     }
-    GVar7.field0_0x0._s_0.state = param_2.field0_0x0._s_0.state;
-    GVar7.field0_0x0._s_0.source = param_2.field0_0x0._s_0.source;
-    R_SetupPassPerObjectArgs(GVar7);
+    context_02.field0_0x0._s_0.state = prepassContext.field0_0x0._s_0.state;
+    context_02.field0_0x0._s_0.source = prepassContext.field0_0x0._s_0.source;
+    R_SetupPassPerObjectArgs(context_02);
   }
-  local_ec = *(uint *)local_24;
-  local_e8 = *(uint *)((int)local_24 + 4);
-  local_3c = 0xf00f0000;
+  drawSurf = *(uint *)drawSurfList;
+  local_e8 = *(uint *)((int)drawSurfList + 4);
+  drawSurfMask = 0xf00f0000;
   local_38 = 0xffffffff;
-  local_4c = 0xffff0000;
+  drawSurfSubMask = 0xffff0000;
   local_48 = 0xffffffff;
-  if (local_41 != '\n') {
-    local_4c = 0xf00f0000;
+  if (baseTechType != '\n') {
+    drawSurfSubMask = 0xf00f0000;
     local_48 = 0xffffffff;
-    GVar8.field0_0x0._s_0.state = local_fc._s_0.state;
-    GVar8.field0_0x0._s_0.source = local_fc._s_0.source;
-    R_SetupPassPerObjectArgs(GVar8);
+    context_03.field0_0x0._s_0.state = context._s_0.state;
+    context_03.field0_0x0._s_0.source = context._s_0.source;
+    R_SetupPassPerObjectArgs(context_03);
   }
-  local_14 = local_ec & local_3c;
+  drawSurfKey = drawSurf & drawSurfMask;
   local_10 = local_e8 & local_38;
-  R_TrackPrims(&(local_fc._s_0.state)->prim,GFX_PRIM_STATS_BMODEL);
-  local_40 = 0;
+  R_TrackPrims(&(context._s_0.state)->prim,GFX_PRIM_STATS_BMODEL);
+  drawSurfIndex = 0;
   do {
-    if (local_41 == '\n') {
+    if (baseTechType == '\n') {
       _aullshr();
-      GVar3.field0_0x0._s_0.state = local_fc._s_0.state;
-      GVar3.field0_0x0._s_0.source = local_fc._s_0.source;
-      R_SetLightmap(GVar3,extraout_EAX & 0x1f);
+      context_00.field0_0x0._s_0.state = context._s_0.state;
+      context_00.field0_0x0._s_0.source = context._s_0.source;
+      R_SetLightmap(context_00,extraout_EAX & 0x1f);
       _aullshr();
-      GVar4.field0_0x0._s_0.state = local_fc._s_0.state;
-      GVar4.field0_0x0._s_0.source = local_fc._s_0.source;
-      R_SetReflectionProbe(GVar4,extraout_EAX_00 & 7);
-      GVar9.field0_0x0._s_0.state = local_fc._s_0.state;
-      GVar9.field0_0x0._s_0.source = local_fc._s_0.source;
-      R_SetupPassPerObjectArgs(GVar9);
+      context_01.field0_0x0._s_0.state = context._s_0.state;
+      context_01.field0_0x0._s_0.source = context._s_0.source;
+      R_SetReflectionProbe(context_01,extraout_EAX_00 & 7);
+      context_04.field0_0x0._s_0.state = context._s_0.state;
+      context_04.field0_0x0._s_0.source = context._s_0.source;
+      R_SetupPassPerObjectArgs(context_04);
     }
-    local_54 = local_ec & local_4c;
+    drawSurfSubKey = drawSurf & drawSurfSubMask;
     local_50 = local_e8 & local_48;
-    local_c = -1;
-    local_20.triCount = 0;
-    local_20.vertexCount = 0;
-    local_20.baseIndex = -1;
-    local_104 = -1.0;
-    local_100 = -1.0;
-    local_30 = (ShaderConstantSet *)0x0;
+    baseVertex = -1;
+    args.triCount = 0;
+    args.vertexCount = 0;
+    args.baseIndex = -1;
+    fade = -1.0;
+    burn = -1.0;
+    constantSet = (ShaderConstantSet *)0x0;
     while( true ) {
       _allshl();
-      local_28 = (int *)(extraout_EAX_01 + (int)local_e0);
-      local_d8 = (srfTriangles_t *)local_28[1];
-      local_2c = local_d8;
-      if ((local_d8->triCount == 0) &&
-         (bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xbde,
-                                    0,"%s"), !bVar14)) {
-        pcVar2 = (code *)swi(3);
-        uVar15 = (*pcVar2)();
-        return uVar15;
+      bmodelSurf = data->surfsBuffer + extraout_EAX_01;
+      tris = *(GfxSurface **)(bmodelSurf + 4);
+      surf = tris;
+      if (((tris->tris).triCount == 0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xbde,0
+                                   ,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        uVar3 = (*pcVar1)();
+        return uVar3;
       }
-      local_108 = local_28[2] - (int)local_30 |
-                  local_28[3] - (int)local_100 |
-                  local_28[4] - (int)local_104 | (int)(local_dc->viewMode - *local_28) >> 5;
+      changed = *(int *)(bmodelSurf + 8) - (int)constantSet |
+                *(int *)(bmodelSurf + 0xc) - (int)burn |
+                *(int *)(bmodelSurf + 0x10) - (int)fade |
+                (int)(commonSource->viewMode - *(int *)bmodelSurf) >> 5;
       if ((gfxBuf.dynamicIndexBuffer)->total <
-          (int)((gfxBuf.dynamicIndexBuffer)->used + (uint)local_d8->triCount * 3)) {
-        if (0 < local_20.triCount) {
-          R_DrawBModelPrim(&param_2,(GfxCmdBufContext *)&local_fc._s_0,&local_20);
+          (int)((gfxBuf.dynamicIndexBuffer)->used + (uint)(tris->tris).triCount * 3)) {
+        if (0 < args.triCount) {
+          R_DrawBModelPrim(&prepassContext,(GfxCmdBufContext *)&context._s_0,&args);
         }
-        local_20.triCount = 0;
-        local_108 = 1;
+        args.triCount = 0;
+        changed = 1;
       }
-      iVar16 = R_SetIndexData(&(local_fc._s_0.state)->prim,
-                              g_worldDraw->indices + local_d8->baseIndex,(uint)local_d8->triCount);
-      if (local_20.triCount * 3 + local_20.baseIndex != iVar16 ||
-          (local_c != local_d8->firstVertex || local_108 != 0)) {
-        if (0 < local_20.triCount) {
-          R_DrawBModelPrim(&param_2,(GfxCmdBufContext *)&local_fc._s_0,&local_20);
+      iVar4 = R_SetIndexData(&(context._s_0.state)->prim,
+                             g_worldDraw->indices + (tris->tris).baseIndex,
+                             (uint)(tris->tris).triCount);
+      if (args.triCount * 3 + args.baseIndex != iVar4 ||
+          (baseVertex != (tris->tris).firstVertex || changed != 0)) {
+        if (0 < args.triCount) {
+          R_DrawBModelPrim(&prepassContext,(GfxCmdBufContext *)&context._s_0,&args);
         }
-        local_20.triCount = 0;
-        local_c = local_d8->firstVertex;
-        local_20.vertexCount = 0;
-        local_100 = (float)local_28[3];
-        local_104 = (float)local_28[4];
-        local_20.baseIndex = iVar16;
-        local_f4 = R_UpdateCodeConstant
-                             (local_dc,0x72,local_100,(r_burnedDestructibleColor->current).value,
-                              local_104,0.0);
-        if (local_28[2] == 0) {
-          local_30 = (ShaderConstantSet *)0x0;
+        args.triCount = 0;
+        baseVertex = (tris->tris).firstVertex;
+        args.vertexCount = 0;
+        burn = *(float *)(bmodelSurf + 0xc);
+        fade = *(float *)(bmodelSurf + 0x10);
+        args.baseIndex = iVar4;
+        updatedConstant =
+             R_UpdateCodeConstant
+                       (commonSource,0x72,burn,(r_burnedDestructibleColor->current).value,fade,0.0);
+        if (*(int *)(bmodelSurf + 8) == 0) {
+          constantSet = (ShaderConstantSet *)0x0;
         }
         else {
-          local_30 = (ShaderConstantSet *)local_28[2];
+          constantSet = *(ShaderConstantSet **)(bmodelSurf + 8);
         }
-        RB_ApplyShaderConstantSet(local_dc,&local_d4);
-        RB_SaveCurrentShaderConstantSetValues(&local_d4,local_dc,local_30);
-        uVar15 = RB_ApplyShaderConstantSet(local_dc,local_30);
-        local_f4 = uVar15 | local_f4;
-        GVar10.field0_0x0._s_0.state = local_fc._s_0.state;
-        GVar10.field0_0x0._s_0.source = local_fc._s_0.source;
-        R_SetupPassPixelShaderArgs(GVar10);
-        if (local_f4 != 0) {
-          GVar11.field0_0x0._s_0.state = local_fc._s_0.state;
-          GVar11.field0_0x0._s_0.source = local_fc._s_0.source;
-          R_SetupPassVertexShaderArgs(GVar11);
+        RB_ApplyShaderConstantSet(commonSource,&savedConstantSet);
+        RB_SaveCurrentShaderConstantSetValues(&savedConstantSet,commonSource,constantSet);
+        uVar3 = RB_ApplyShaderConstantSet(commonSource,constantSet);
+        updatedConstant = uVar3 | updatedConstant;
+        context_2_01.field0_0x0._s_0.state = context._s_0.state;
+        context_2_01.field0_0x0._s_0.source = context._s_0.source;
+        R_SetupPassPixelShaderArgs(context_2_01);
+        if (updatedConstant != 0) {
+          context_05.field0_0x0._s_0.state = context._s_0.state;
+          context_05.field0_0x0._s_0.source = context._s_0.source;
+          R_SetupPassVertexShaderArgs(context_05);
         }
-        pGVar1 = (GfxScaledPlacement *)*local_28;
-        if ((GfxScaledPlacement *)local_dc->viewMode != pGVar1) {
-          local_dc->viewMode = (GfxViewMode)pGVar1;
-          R_ChangeObjectPlacementRemote(local_dc,pGVar1);
+        remotePlacement = *(GfxScaledPlacement **)bmodelSurf;
+        if ((GfxScaledPlacement *)commonSource->viewMode != remotePlacement) {
+          commonSource->viewMode = (GfxViewMode)remotePlacement;
+          R_ChangeObjectPlacementRemote(commonSource,remotePlacement);
         }
-        R_SetStreamsForBspSurface(&(local_fc._s_0.state)->prim,local_d8);
-        GVar12.field0_0x0._s_0.state = local_fc._s_0.state;
-        GVar12.field0_0x0._s_0.source = local_fc._s_0.source;
-        R_SetupPassPerPrimArgs(GVar12);
-        if (param_2.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
-          R_SetStreamsForBspSurface(&(param_2.field0_0x0._s_0.state)->prim,local_d8);
-          GVar13.field0_0x0._s_0.state = param_2.field0_0x0._s_0.state;
-          GVar13.field0_0x0._s_0.source = param_2.field0_0x0._s_0.source;
-          R_SetupPassPerPrimArgs(GVar13);
-          bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xc39,
-                                    0,"prepass dynamic indices not supported here");
-          if (!bVar14) {
-            pcVar2 = (code *)swi(3);
-            uVar15 = (*pcVar2)();
-            return uVar15;
+        R_SetStreamsForBspSurface(&(context._s_0.state)->prim,&tris->tris);
+        context_06.field0_0x0._s_0.state = context._s_0.state;
+        context_06.field0_0x0._s_0.source = context._s_0.source;
+        R_SetupPassPerPrimArgs(context_06);
+        if (prepassContext.field0_0x0._s_0.state != (GfxCmdBufState *)0x0) {
+          R_SetStreamsForBspSurface(&(prepassContext.field0_0x0._s_0.state)->prim,&tris->tris);
+          context_07.field0_0x0._s_0.state = prepassContext.field0_0x0._s_0.state;
+          context_07.field0_0x0._s_0.source = prepassContext.field0_0x0._s_0.source;
+          R_SetupPassPerPrimArgs(context_07);
+          bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xc39,0
+                                   ,"prepass dynamic indices not supported here");
+          if (!bVar2) {
+            pcVar1 = (code *)swi(3);
+            uVar3 = (*pcVar1)();
+            return uVar3;
           }
         }
       }
-      local_20.triCount = (uint)local_d8->triCount + local_20.triCount;
-      local_130 = (uint)local_d8->vertexCount;
-      if ((int)local_130 <= local_20.vertexCount) {
-        local_130 = local_20.vertexCount;
+      args.triCount = (uint)(tris->tris).triCount + args.triCount;
+      local_130 = (uint)(tris->tris).vertexCount;
+      if ((int)local_130 <= args.vertexCount) {
+        local_130 = args.vertexCount;
       }
-      local_20.vertexCount = local_130;
-      if ((((local_fc._s_0.state)->prim).primStats == (GfxPrimStats *)0x0) &&
-         (bVar14 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xc45,
-                                    0,"%s"), !bVar14)) {
-        pcVar2 = (code *)swi(3);
-        uVar15 = (*pcVar2)();
-        return uVar15;
+      args.vertexCount = local_130;
+      if ((((context._s_0.state)->prim).primStats == (GfxPrimStats *)0x0) &&
+         (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",0xc45,0
+                                   ,"%s"), !bVar2)) {
+        pcVar1 = (code *)swi(3);
+        uVar3 = (*pcVar1)();
+        return uVar3;
       }
-      ((local_fc._s_0.state)->prim).frameStats.geoIndexCount =
-           (uint)local_d8->triCount * 3 + ((local_fc._s_0.state)->prim).frameStats.geoIndexCount;
-      (((local_fc._s_0.state)->prim).primStats)->dynamicIndexCount =
-           (uint)local_d8->triCount * 3 +
-           (((local_fc._s_0.state)->prim).primStats)->dynamicIndexCount;
-      (((local_fc._s_0.state)->prim).primStats)->dynamicVertexCount =
-           (uint)local_d8->vertexCount +
-           (((local_fc._s_0.state)->prim).primStats)->dynamicVertexCount;
-      local_40 = local_40 + 1;
-      if (local_40 == local_8) break;
-      local_ec = *(uint *)(local_24 + local_40);
-      local_e8 = *(uint *)((int)local_24 + (local_40 * 2 + 1) * 4);
-      if (((local_ec & local_4c) != local_54) || ((local_e8 & local_48) != local_50)) break;
+      ((context._s_0.state)->prim).frameStats.geoIndexCount =
+           (uint)(tris->tris).triCount * 3 + ((context._s_0.state)->prim).frameStats.geoIndexCount;
+      (((context._s_0.state)->prim).primStats)->dynamicIndexCount =
+           (uint)(tris->tris).triCount * 3 +
+           (((context._s_0.state)->prim).primStats)->dynamicIndexCount;
+      (((context._s_0.state)->prim).primStats)->dynamicVertexCount =
+           (uint)(tris->tris).vertexCount +
+           (((context._s_0.state)->prim).primStats)->dynamicVertexCount;
+      drawSurfIndex = drawSurfIndex + 1;
+      if (drawSurfIndex == drawSurfCount) break;
+      drawSurf = *(uint *)(drawSurfList + drawSurfIndex);
+      local_e8 = *(uint *)((int)drawSurfList + (drawSurfIndex * 2 + 1) * 4);
+      if (((drawSurf & drawSurfSubMask) != drawSurfSubKey) || ((local_e8 & local_48) != local_50))
+      break;
     }
-    if (0 < local_20.triCount) {
-      R_DrawBModelPrim(&param_2,(GfxCmdBufContext *)&local_fc._s_0,&local_20);
+    if (0 < args.triCount) {
+      R_DrawBModelPrim(&prepassContext,(GfxCmdBufContext *)&context._s_0,&args);
     }
-    if (((local_40 == local_8) || ((local_ec & local_3c) != local_14)) ||
+    if (((drawSurfIndex == drawSurfCount) || ((drawSurf & drawSurfMask) != drawSurfKey)) ||
        ((local_e8 & local_38) != local_10)) {
-      RB_ApplyShaderConstantSet(local_dc,&local_d4);
-      ((local_fc._s_0.state)->prim).primStats = (GfxPrimStats *)0x0;
-      return local_40;
+      RB_ApplyShaderConstantSet(commonSource,&savedConstantSet);
+      ((context._s_0.state)->prim).primStats = (GfxPrimStats *)0x0;
+      return drawSurfIndex;
     }
   } while( true );
 }

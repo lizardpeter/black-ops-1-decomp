@@ -18,15 +18,15 @@ void __cdecl _dynamic_initializer_for__fx_add_markModule__(void)
 
 // 005D58D0  FX_MarkIsAlphaFadedOut  (EffectsCore/fx_marks.cpp:90)
 
-bool __cdecl FX_MarkIsAlphaFadedOut(FxMark *param_1)
+bool __cdecl FX_MarkIsAlphaFadedOut(FxMark *mark)
 
 {
   bool bVar1;
   
-  if ((param_1->alphaFade).ageLimitMsec < 1) {
+  if ((mark->alphaFade).ageLimitMsec < 1) {
     bVar1 = false;
   }
-  else if ((param_1->alphaFade).ageLimitMsec < param_1->ageMsec) {
+  else if ((mark->alphaFade).ageLimitMsec < mark->ageMsec) {
     bVar1 = true;
   }
   else {
@@ -41,15 +41,18 @@ bool __cdecl FX_MarkIsAlphaFadedOut(FxMark *param_1)
 /* WARNING: Removing unreachable block (ram,0x005d595a) */
 /* WARNING: Removing unreachable block (ram,0x005d597f) */
 
-uchar __cdecl FX_MarkGetFadedAlpha(FxMark *param_1)
+uchar __cdecl FX_MarkGetFadedAlpha(FxMark *mark)
 
 {
   uchar uVar1;
   float local_18;
+  float alphaMult;
+  int fadeTime;
+  int fadeAge;
   
-  if ((param_1->alphaFade).fadeStartAgeMsec < param_1->ageMsec) {
-    local_18 = (float)(param_1->ageMsec - (param_1->alphaFade).fadeStartAgeMsec) /
-               (float)((param_1->alphaFade).ageLimitMsec - (param_1->alphaFade).fadeStartAgeMsec);
+  if ((mark->alphaFade).fadeStartAgeMsec < mark->ageMsec) {
+    local_18 = (float)(mark->ageMsec - (mark->alphaFade).fadeStartAgeMsec) /
+               (float)((mark->alphaFade).ageLimitMsec - (mark->alphaFade).fadeStartAgeMsec);
     if (0.0 <= local_18) {
       if (1.0 < local_18) {
         local_18 = 1.0;
@@ -58,10 +61,10 @@ uchar __cdecl FX_MarkGetFadedAlpha(FxMark *param_1)
     else {
       local_18 = 0.0;
     }
-    uVar1 = (uchar)(int)((float)param_1->nativeColor[3] * (1.0 - local_18));
+    uVar1 = (uchar)(int)((float)mark->nativeColor[3] * (1.0 - local_18));
   }
   else {
-    uVar1 = param_1->nativeColor[3];
+    uVar1 = mark->nativeColor[3];
   }
   return uVar1;
 }
@@ -84,6 +87,7 @@ FxMarkPoint * __cdecl FX_GetFxMarkPointsBuffer(void)
 {
   long lVar1;
   uint uVar2;
+  int buffer;
   
   lVar1 = g_fxMarkPointsCurrentBuffer;
   LOCK();
@@ -101,47 +105,48 @@ FxMarkPoint * __cdecl FX_GetFxMarkPointsBuffer(void)
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-void __cdecl FX_InitMarksSystem(FxMarksSystem *param_1)
+void __cdecl FX_InitMarksSystem(FxMarksSystem *marksSystem)
 
 {
   ushort uVar1;
-  int local_14;
-  uint local_10;
-  int local_c;
-  int local_8;
+  int pointIndex;
+  uint markIndex;
+  int triIndex;
+  uint markHandleIndex;
   
   Sys_AssistAndWaitWorkerCmdInternal(&fx_add_markWorkerCmd);
   Sys_EnterCriticalSection(CRITSECT_ALLOC_MARK);
-  for (local_8 = 0; local_8 != 0x600; local_8 = local_8 + 1) {
-    param_1->entFirstMarkHandles[local_8] = 0xffff;
+  for (markHandleIndex = 0; markHandleIndex != 0x600; markHandleIndex = markHandleIndex + 1) {
+    marksSystem->entFirstMarkHandles[markHandleIndex] = 0xffff;
   }
-  uVar1 = FX_MarkToHandle(param_1,param_1->marks);
-  param_1->firstFreeMarkHandle = uVar1;
-  for (local_10 = 0; local_10 < 0xff; local_10 = local_10 + 1) {
-    param_1->marks[local_10].prevMark = 0xffff;
-    uVar1 = FX_MarkToHandle(param_1,param_1->marks + local_10 + 1);
-    param_1->marks[local_10].nextMark = uVar1;
-    param_1->marks[local_10].frameCountDrawn = -1;
+  uVar1 = FX_MarkToHandle(marksSystem,marksSystem->marks);
+  marksSystem->firstFreeMarkHandle = uVar1;
+  for (markIndex = 0; markIndex < 0xff; markIndex = markIndex + 1) {
+    marksSystem->marks[markIndex].prevMark = 0xffff;
+    uVar1 = FX_MarkToHandle(marksSystem,marksSystem->marks + markIndex + 1);
+    marksSystem->marks[markIndex].nextMark = uVar1;
+    marksSystem->marks[markIndex].frameCountDrawn = -1;
   }
-  param_1->marks[local_10].prevMark = 0xffff;
-  param_1->marks[local_10].nextMark = 0xffff;
-  param_1->marks[local_10].frameCountDrawn = -1;
-  param_1->firstFreeTriGroup = param_1->triGroups;
-  for (local_c = 0; local_c < 0x3ff; local_c = local_c + 1) {
-    param_1->triGroups[local_c].nextFreeTriGroup = param_1->triGroups + local_c + 1;
+  marksSystem->marks[markIndex].prevMark = 0xffff;
+  marksSystem->marks[markIndex].nextMark = 0xffff;
+  marksSystem->marks[markIndex].frameCountDrawn = -1;
+  marksSystem->firstFreeTriGroup = marksSystem->triGroups;
+  for (triIndex = 0; triIndex < 0x3ff; triIndex = triIndex + 1) {
+    marksSystem->triGroups[triIndex].nextFreeTriGroup = marksSystem->triGroups + triIndex + 1;
   }
-  param_1->triGroups[local_c].nextFreeTriGroup = (FxTriGroupPool *)0x0;
-  param_1->firstFreePointGroup = param_1->pointGroups;
-  for (local_14 = 0; local_14 < 0x5ff; local_14 = local_14 + 1) {
-    param_1->pointGroups[local_14].nextFreePointGroup = param_1->pointGroups + local_14 + 1;
+  marksSystem->triGroups[triIndex].nextFreeTriGroup = (FxTriGroupPool *)0x0;
+  marksSystem->firstFreePointGroup = marksSystem->pointGroups;
+  for (pointIndex = 0; pointIndex < 0x5ff; pointIndex = pointIndex + 1) {
+    marksSystem->pointGroups[pointIndex].nextFreePointGroup =
+         marksSystem->pointGroups + pointIndex + 1;
   }
-  param_1->pointGroups[local_14].nextFreePointGroup = (FxPointGroupPool *)0x0;
-  param_1->firstActiveWorldMarkHandle = 0xffff;
-  param_1->allocedMarkCount = 0;
-  param_1->freedMarkCount = 0;
-  param_1->frameTime = 0;
-  param_1->numVisibleWorldSeethru = 0;
-  param_1->numVisibleEntBrushSeethru = 0;
+  marksSystem->pointGroups[pointIndex].nextFreePointGroup = (FxPointGroupPool *)0x0;
+  marksSystem->firstActiveWorldMarkHandle = 0xffff;
+  marksSystem->allocedMarkCount = 0;
+  marksSystem->freedMarkCount = 0;
+  marksSystem->frameTime = 0;
+  marksSystem->numVisibleWorldSeethru = 0;
+  marksSystem->numVisibleEntBrushSeethru = 0;
   Sys_LeaveCriticalSection(CRITSECT_ALLOC_MARK);
   return;
 }
@@ -149,14 +154,14 @@ void __cdecl FX_InitMarksSystem(FxMarksSystem *param_1)
 
 // 005D5D60  FX_GetMarksSystem  (EffectsCore/fx_marks.h:156)
 
-FxMarksSystem * __cdecl FX_GetMarksSystem(int param_1)
+FxMarksSystem * __cdecl FX_GetMarksSystem(int clientIndex)
 
 {
   code *pcVar1;
   bool bVar2;
   FxMarksSystem *pFVar3;
   
-  if ((uint)fx_maxLocalClients <= (uint)param_1) {
+  if ((uint)fx_maxLocalClients <= (uint)clientIndex) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0x9d,0,
                              "clientIndex doesn\'t index fx_maxLocalClients\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -165,20 +170,21 @@ FxMarksSystem * __cdecl FX_GetMarksSystem(int param_1)
       return pFVar3;
     }
   }
-  return fx_marksSystemPool + param_1;
+  return fx_marksSystemPool + clientIndex;
 }
 
 
 // 005D5C70  FX_MarkToHandle  (EffectsCore/fx_marks.h:163)
 
-ushort __cdecl FX_MarkToHandle(FxMarksSystem *param_1,FxMark *param_2)
+ushort __cdecl FX_MarkToHandle(FxMarksSystem *marksSystem,FxMark *mark)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
+  ushort handle;
   
-  if (param_1 == (FxMarksSystem *)0x0) {
+  if (marksSystem == (FxMarksSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xa6,0,
                              "%s");
     if (!bVar2) {
@@ -187,7 +193,7 @@ ushort __cdecl FX_MarkToHandle(FxMarksSystem *param_1,FxMark *param_2)
       return uVar3;
     }
   }
-  if (param_2 == (FxMark *)0x0) {
+  if (mark == (FxMark *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xa7,0,
                              "%s");
     if (!bVar2) {
@@ -196,7 +202,7 @@ ushort __cdecl FX_MarkToHandle(FxMarksSystem *param_1,FxMark *param_2)
       return uVar3;
     }
   }
-  uVar3 = (ushort)(((int)param_2 - (int)param_1->marks) / 0x5c);
+  uVar3 = (ushort)(((int)mark - (int)marksSystem->marks) / 0x5c);
   if (0xff < uVar3) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xaa,0,
                              "handle doesn\'t index FX_MARKS_LIMIT\n\t%i not in [0, %i)");
@@ -212,37 +218,39 @@ ushort __cdecl FX_MarkToHandle(FxMarksSystem *param_1,FxMark *param_2)
 
 // 005D82D0  FX_MarkContextsEqual  (EffectsCore/fx_marks.h:176)
 
-bool __cdecl FX_MarkContextsEqual(GfxMarkContext *param_1,GfxMarkContext *param_2)
+bool __cdecl FX_MarkContextsEqual(GfxMarkContext *contextA,GfxMarkContext *contextB)
 
 {
   short sVar1;
   short sVar2;
   short sVar3;
   short sVar4;
+  short *contextAs;
+  short *contextBs;
   
-  sVar1._0_1_ = param_1->lmapIndex;
-  sVar1._1_1_ = param_1->primaryLightIndex;
-  sVar2._0_1_ = param_2->lmapIndex;
-  sVar2._1_1_ = param_2->primaryLightIndex;
-  sVar3._0_1_ = param_1->reflectionProbeIndex;
-  sVar3._1_1_ = param_1->modelTypeAndSurf;
-  sVar4._0_1_ = param_2->reflectionProbeIndex;
-  sVar4._1_1_ = param_2->modelTypeAndSurf;
+  sVar1._0_1_ = contextA->lmapIndex;
+  sVar1._1_1_ = contextA->primaryLightIndex;
+  sVar2._0_1_ = contextB->lmapIndex;
+  sVar2._1_1_ = contextB->primaryLightIndex;
+  sVar3._0_1_ = contextA->reflectionProbeIndex;
+  sVar3._1_1_ = contextA->modelTypeAndSurf;
+  sVar4._0_1_ = contextB->reflectionProbeIndex;
+  sVar4._1_1_ = contextB->modelTypeAndSurf;
   return (bool)('\x01' - ((sVar1 != sVar2 || sVar3 != sVar4) ||
-                         param_1->modelIndex != param_2->modelIndex));
+                         contextA->modelIndex != contextB->modelIndex));
 }
 
 
 // 005D60B0  FX_MarkFromHandle  (EffectsCore/fx_marks.h:187)
 
-FxMark * __cdecl FX_MarkFromHandle(FxMarksSystem *param_1,ushort param_2)
+FxMark * __cdecl FX_MarkFromHandle(FxMarksSystem *marksSystem,ushort handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxMark *pFVar3;
   
-  if (0xff < param_2) {
+  if (0xff < handle) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xbc,0,
                              "handle doesn\'t index FX_MARKS_LIMIT\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -251,7 +259,7 @@ FxMark * __cdecl FX_MarkFromHandle(FxMarksSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  if (param_1 == (FxMarksSystem *)0x0) {
+  if (marksSystem == (FxMarksSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xbd,0,
                              "%s");
     if (!bVar2) {
@@ -260,21 +268,22 @@ FxMark * __cdecl FX_MarkFromHandle(FxMarksSystem *param_1,ushort param_2)
       return pFVar3;
     }
   }
-  return param_1->marks + param_2;
+  return marksSystem->marks + handle;
 }
 
 
 // 005D8320  FX_TriGroupToHandle  (EffectsCore/fx_marks.h:196)
 
-int __cdecl FX_TriGroupToHandle(FxMarksSystem *param_1,FxTriGroup *param_2)
+int __cdecl FX_TriGroupToHandle(FxMarksSystem *marksSystem,FxTriGroup *group)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  int handle;
   
-  if (param_1 == (FxMarksSystem *)0x0) {
+  if (marksSystem == (FxMarksSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",199,0,"%s"
                             );
     if (!bVar2) {
@@ -283,7 +292,7 @@ int __cdecl FX_TriGroupToHandle(FxMarksSystem *param_1,FxTriGroup *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (FxTriGroup *)0x0) {
+  if (group == (FxTriGroup *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",200,0,"%s"
                             );
     if (!bVar2) {
@@ -292,7 +301,7 @@ int __cdecl FX_TriGroupToHandle(FxMarksSystem *param_1,FxTriGroup *param_2)
       return iVar3;
     }
   }
-  uVar4 = (int)param_2 - (int)param_1->triGroups;
+  uVar4 = (int)group - (int)marksSystem->triGroups;
   if (0x5fff < uVar4) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xcb,0,
                              "handle doesn\'t index FX_TRI_GROUP_LIMIT * sizeof( FxTriGroup )\n\t%i not in [0, %i)"
@@ -309,13 +318,14 @@ int __cdecl FX_TriGroupToHandle(FxMarksSystem *param_1,FxTriGroup *param_2)
 
 // 005D5D30  FX_ClearMarks  (EffectsCore/fx_marks.cpp:198)
 
-void __cdecl FX_ClearMarks(int param_1)
+void __cdecl FX_ClearMarks(int localClientNum)
 
 {
-  FxMarksSystem *pFVar1;
+  FxMarksSystem *marksSystem_00;
+  FxMarksSystem *marksSystem;
   
-  pFVar1 = FX_GetMarksSystem(param_1);
-  FX_InitMarksSystem(pFVar1);
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  FX_InitMarksSystem(marksSystem_00);
   return;
 }
 
@@ -325,33 +335,36 @@ void __cdecl FX_ClearMarks(int param_1)
 /* WARNING: Removing unreachable block (ram,0x005d6169) */
 /* WARNING: Removing unreachable block (ram,0x005d618e) */
 
-void __cdecl FX_FreeMarkTriGroups(FxMarksSystem *param_1,FxMark *param_2)
+void __cdecl FX_FreeMarkTriGroups(FxMarksSystem *marksSystem,FxMark *mark)
 
 {
   FxTriGroupPool *pFVar1;
-  int local_10;
+  int groupHandle;
+  FxTriGroupPool *groupPool;
+  FxTriGroup *group;
   
-  local_10 = param_2->tris;
+  groupHandle = mark->tris;
   do {
-    pFVar1 = (FxTriGroupPool *)FX_TriGroupFromHandle(param_1,local_10);
-    local_10 = (pFVar1->triGroup).next;
-    pFVar1->nextFreeTriGroup = param_1->firstFreeTriGroup;
-    param_1->firstFreeTriGroup = pFVar1;
-  } while (local_10 != 0xffff);
+    pFVar1 = (FxTriGroupPool *)FX_TriGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = (pFVar1->triGroup).next;
+    pFVar1->nextFreeTriGroup = marksSystem->firstFreeTriGroup;
+    marksSystem->firstFreeTriGroup = pFVar1;
+  } while (groupHandle != 0xffff);
   return;
 }
 
 
 // 005D61C0  FX_TriGroupFromHandle  (EffectsCore/fx_marks.h:209)
 
-FxTriGroup * __cdecl FX_TriGroupFromHandle(FxMarksSystem *param_1,int param_2)
+FxTriGroup * __cdecl FX_TriGroupFromHandle(FxMarksSystem *marksSystem,int handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxTriGroup *pFVar3;
+  FxTriGroup *group;
   
-  if (0x5fff < (uint)param_2) {
+  if (0x5fff < (uint)handle) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xd4,0,
                              "handle doesn\'t index FX_TRI_GROUP_LIMIT * sizeof( FxTriGroup )\n\t%i not in [0, %i)"
                             );
@@ -361,7 +374,7 @@ FxTriGroup * __cdecl FX_TriGroupFromHandle(FxMarksSystem *param_1,int param_2)
       return pFVar3;
     }
   }
-  if (param_1 == (FxMarksSystem *)0x0) {
+  if (marksSystem == (FxMarksSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xd5,0,
                              "%s");
     if (!bVar2) {
@@ -370,21 +383,22 @@ FxTriGroup * __cdecl FX_TriGroupFromHandle(FxMarksSystem *param_1,int param_2)
       return pFVar3;
     }
   }
-  return (FxTriGroup *)((int)param_1->triGroups + param_2);
+  return (FxTriGroup *)((int)marksSystem->triGroups + handle);
 }
 
 
 // 005D84C0  FX_PointGroupToHandle  (EffectsCore/fx_marks.h:221)
 
-int __cdecl FX_PointGroupToHandle(FxMarksSystem *param_1,FxPointGroup *param_2)
+int __cdecl FX_PointGroupToHandle(FxMarksSystem *marksSystem,FxPointGroup *group)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   uint uVar4;
+  int handle;
   
-  if (param_1 == (FxMarksSystem *)0x0) {
+  if (marksSystem == (FxMarksSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xe0,0,
                              "%s");
     if (!bVar2) {
@@ -393,7 +407,7 @@ int __cdecl FX_PointGroupToHandle(FxMarksSystem *param_1,FxPointGroup *param_2)
       return iVar3;
     }
   }
-  if (param_2 == (FxPointGroup *)0x0) {
+  if (group == (FxPointGroup *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xe1,0,
                              "%s");
     if (!bVar2) {
@@ -402,7 +416,7 @@ int __cdecl FX_PointGroupToHandle(FxMarksSystem *param_1,FxPointGroup *param_2)
       return iVar3;
     }
   }
-  uVar4 = (int)param_2 - (int)param_1->pointGroups;
+  uVar4 = (int)group - (int)marksSystem->pointGroups;
   if (0x197ff < uVar4) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xe4,0,
                              "handle doesn\'t index FX_POINT_GROUP_LIMIT * sizeof( FxPointGroup )\n\t%i not in [0, %i)"
@@ -422,33 +436,36 @@ int __cdecl FX_PointGroupToHandle(FxMarksSystem *param_1,FxPointGroup *param_2)
 /* WARNING: Removing unreachable block (ram,0x005d6279) */
 /* WARNING: Removing unreachable block (ram,0x005d629e) */
 
-void __cdecl FX_FreeMarkPointGroups(FxMarksSystem *param_1,FxMark *param_2)
+void __cdecl FX_FreeMarkPointGroups(FxMarksSystem *marksSystem,FxMark *mark)
 
 {
   FxPointGroupPool *pFVar1;
-  int local_10;
+  int groupHandle;
+  FxPointGroupPool *groupPool;
+  FxPointGroup *group;
   
-  local_10 = param_2->points;
+  groupHandle = mark->points;
   do {
-    pFVar1 = (FxPointGroupPool *)FX_PointGroupFromHandle(param_1,local_10);
-    local_10 = (pFVar1->pointGroup).next;
-    pFVar1->nextFreePointGroup = param_1->firstFreePointGroup;
-    param_1->firstFreePointGroup = pFVar1;
-  } while (local_10 != 0xffff);
+    pFVar1 = (FxPointGroupPool *)FX_PointGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = (pFVar1->pointGroup).next;
+    pFVar1->nextFreePointGroup = marksSystem->firstFreePointGroup;
+    marksSystem->firstFreePointGroup = pFVar1;
+  } while (groupHandle != 0xffff);
   return;
 }
 
 
 // 005D62D0  FX_PointGroupFromHandle  (EffectsCore/fx_marks.h:234)
 
-FxPointGroup * __cdecl FX_PointGroupFromHandle(FxMarksSystem *param_1,int param_2)
+FxPointGroup * __cdecl FX_PointGroupFromHandle(FxMarksSystem *marksSystem,int handle)
 
 {
   code *pcVar1;
   bool bVar2;
   FxPointGroup *pFVar3;
+  FxPointGroup *group;
   
-  if (0x197ff < (uint)param_2) {
+  if (0x197ff < (uint)handle) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xed,0,
                              "handle doesn\'t index FX_POINT_GROUP_LIMIT * sizeof( FxPointGroup )\n\t%i not in [0, %i)"
                             );
@@ -458,7 +475,7 @@ FxPointGroup * __cdecl FX_PointGroupFromHandle(FxMarksSystem *param_1,int param_
       return pFVar3;
     }
   }
-  if (param_1 == (FxMarksSystem *)0x0) {
+  if (marksSystem == (FxMarksSystem *)0x0) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_marks.h",0xee,0,
                              "%s");
     if (!bVar2) {
@@ -467,31 +484,32 @@ FxPointGroup * __cdecl FX_PointGroupFromHandle(FxMarksSystem *param_1,int param_
       return pFVar3;
     }
   }
-  return (FxPointGroup *)((int)param_1->pointGroups + param_2);
+  return (FxPointGroup *)((int)marksSystem->pointGroups + handle);
 }
 
 
 // 005D5F80  FX_FreeMarkFromList  (EffectsCore/fx_marks.cpp:247)
 
-void __cdecl FX_FreeMarkFromList(FxMarksSystem *param_1,FxMark *param_2,ushort *param_3)
+void __cdecl FX_FreeMarkFromList(FxMarksSystem *marksSystem,FxMark *mark,ushort *listHead)
 
 {
   code *pcVar1;
   bool bVar2;
   ushort uVar3;
   FxMark *pFVar4;
+  ushort markHandle;
   
   Sys_EnterCriticalSection(CRITSECT_ALLOC_MARK);
-  uVar3 = FX_MarkToHandle(param_1,param_2);
-  FX_FreeMarkTriGroups(param_1,param_2);
-  FX_FreeMarkPointGroups(param_1,param_2);
-  if (param_2->nextMark != 0xffff) {
-    pFVar4 = FX_MarkFromHandle(param_1,param_2->nextMark);
-    pFVar4->prevMark = param_2->prevMark;
+  uVar3 = FX_MarkToHandle(marksSystem,mark);
+  FX_FreeMarkTriGroups(marksSystem,mark);
+  FX_FreeMarkPointGroups(marksSystem,mark);
+  if (mark->nextMark != 0xffff) {
+    pFVar4 = FX_MarkFromHandle(marksSystem,mark->nextMark);
+    pFVar4->prevMark = mark->prevMark;
   }
-  if (param_2->prevMark == 0xffff) {
-    if (param_3 != (ushort *)0x0) {
-      if (*param_3 != uVar3) {
+  if (mark->prevMark == 0xffff) {
+    if (listHead != (ushort *)0x0) {
+      if (*listHead != uVar3) {
         va("%i %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x10b,0,"%s\n\t%s");
@@ -501,16 +519,16 @@ void __cdecl FX_FreeMarkFromList(FxMarksSystem *param_1,FxMark *param_2,ushort *
           return;
         }
       }
-      *param_3 = param_2->nextMark;
+      *listHead = mark->nextMark;
     }
   }
   else {
-    pFVar4 = FX_MarkFromHandle(param_1,param_2->prevMark);
-    pFVar4->nextMark = param_2->nextMark;
+    pFVar4 = FX_MarkFromHandle(marksSystem,mark->prevMark);
+    pFVar4->nextMark = mark->nextMark;
   }
-  param_2->frameCountDrawn = -1;
-  param_2->nextMark = param_1->firstFreeMarkHandle;
-  param_1->firstFreeMarkHandle = uVar3;
+  mark->frameCountDrawn = -1;
+  mark->nextMark = marksSystem->firstFreeMarkHandle;
+  marksSystem->firstFreeMarkHandle = uVar3;
   Sys_LeaveCriticalSection(CRITSECT_ALLOC_MARK);
   return;
 }
@@ -518,22 +536,22 @@ void __cdecl FX_FreeMarkFromList(FxMarksSystem *param_1,FxMark *param_2,ushort *
 
 // 005D5DB0  FX_FreeMark  (EffectsCore/fx_marks.cpp:282)
 
-void __cdecl FX_FreeMark(FxMarksSystem *param_1,FxMark *param_2)
+void __cdecl FX_FreeMark(FxMarksSystem *marksSystem,FxMark *mark)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  switch((param_2->context).modelTypeAndSurf & 0xc0) {
+  switch((mark->context).modelTypeAndSurf & 0xc0) {
   case 0:
-    FX_FreeMarkFromList(param_1,param_2,&param_1->firstActiveWorldMarkHandle);
+    FX_FreeMarkFromList(marksSystem,mark,&marksSystem->firstActiveWorldMarkHandle);
     break;
   case 0x40:
-    FX_FreeMarkFromList(param_1,param_2,(ushort *)0x0);
+    FX_FreeMarkFromList(marksSystem,mark,(ushort *)0x0);
     break;
   case 0x80:
   case 0xc0:
-    if ((0x5ff < (param_2->context).modelIndex) &&
+    if ((0x5ff < (mark->context).modelIndex) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x124,0,
                                  "mark->context.modelIndex doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
@@ -542,8 +560,8 @@ void __cdecl FX_FreeMark(FxMarksSystem *param_1,FxMark *param_2)
       (*pcVar1)();
       return;
     }
-    FX_FreeMarkFromList(param_1,param_2,param_1->entFirstMarkHandles + (param_2->context).modelIndex
-                       );
+    FX_FreeMarkFromList(marksSystem,mark,
+                        marksSystem->entFirstMarkHandles + (mark->context).modelIndex);
     break;
   default:
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x12f,0,
@@ -554,96 +572,98 @@ void __cdecl FX_FreeMark(FxMarksSystem *param_1,FxMark *param_2)
       return;
     }
   }
-  param_1->freedMarkCount = param_1->freedMarkCount + 1;
+  marksSystem->freedMarkCount = marksSystem->freedMarkCount + 1;
   return;
 }
 
 
 // 005D8100  FX_FreeLruMark  (EffectsCore/fx_marks.cpp:311)
 
-void __cdecl FX_FreeLruMark(FxMarksSystem *param_1)
+void __cdecl FX_FreeLruMark(FxMarksSystem *marksSystem)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxMark *local_10;
-  FxMark *local_c;
+  FxMark *lruMark;
+  FxMark *mark;
+  FxMark *markEnd;
   
-  if ((param_1 == (FxMarksSystem *)0x0) &&
+  if ((marksSystem == (FxMarksSystem *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x13e,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_10 = (FxMark *)0x0;
-  local_c = param_1->marks;
+  lruMark = (FxMark *)0x0;
+  mark = marksSystem->marks;
   do {
-    if (local_c == (FxMark *)param_1->triGroups) {
+    if (mark == (FxMark *)marksSystem->triGroups) {
 LAB_005d81c1:
-      FX_FreeMark(param_1,local_10);
+      FX_FreeMark(marksSystem,lruMark);
       return;
     }
-    if (local_c->frameCountDrawn != -1) {
-      bVar2 = FX_MarkIsAlphaFadedOut(local_c);
+    if (mark->frameCountDrawn != -1) {
+      bVar2 = FX_MarkIsAlphaFadedOut(mark);
       if (bVar2) {
-        local_10 = local_c;
+        lruMark = mark;
         goto LAB_005d81c1;
       }
-      if (((local_10 == (FxMark *)0x0) || (local_c->frameCountDrawn < local_10->frameCountDrawn)) ||
-         ((local_c->frameCountDrawn == local_10->frameCountDrawn &&
-          (local_c->frameCountAlloced < local_10->frameCountAlloced)))) {
-        local_10 = local_c;
+      if (((lruMark == (FxMark *)0x0) || (mark->frameCountDrawn < lruMark->frameCountDrawn)) ||
+         ((mark->frameCountDrawn == lruMark->frameCountDrawn &&
+          (mark->frameCountAlloced < lruMark->frameCountAlloced)))) {
+        lruMark = mark;
       }
     }
-    local_c = local_c + 1;
+    mark = mark + 1;
   } while( true );
 }
 
 
 // 005D81E0  FX_AllocMarkTris  (EffectsCore/fx_marks.cpp:343)
 
-int __cdecl FX_AllocMarkTris(FxMarksSystem *param_1,FxMarkTri *param_2,int param_3)
+int __cdecl FX_AllocMarkTris(FxMarksSystem *marksSystem,FxMarkTri *markTris,int triCount)
 
 {
-  FxTriGroupPool *pFVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  int local_10;
-  int local_c;
+  FxTriGroupPool *group;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  int groupHandle;
+  int usedCount;
+  FxTriGroupPool *newGroup;
   
-  local_10 = 0xffff;
+  groupHandle = 0xffff;
   do {
-    if (param_1->firstFreeTriGroup == (FxTriGroupPool *)0x0) {
-      FX_FreeLruMark(param_1);
-      if (param_1->firstFreeTriGroup == (FxTriGroupPool *)0x0) {
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
+    if (marksSystem->firstFreeTriGroup == (FxTriGroupPool *)0x0) {
+      FX_FreeLruMark(marksSystem);
+      if (marksSystem->firstFreeTriGroup == (FxTriGroupPool *)0x0) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x162,0,"%s");
-        if (!bVar3) {
-          pcVar2 = (code *)swi(3);
-          iVar4 = (*pcVar2)();
-          return iVar4;
+        if (!bVar2) {
+          pcVar1 = (code *)swi(3);
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
       }
     }
-    pFVar1 = param_1->firstFreeTriGroup;
-    param_1->firstFreeTriGroup = pFVar1->nextFreeTriGroup;
-    (pFVar1->triGroup).next = local_10;
-    local_10 = FX_TriGroupToHandle(param_1,&pFVar1->triGroup);
-    if (param_3 < 2) {
+    group = marksSystem->firstFreeTriGroup;
+    marksSystem->firstFreeTriGroup = group->nextFreeTriGroup;
+    (group->triGroup).next = groupHandle;
+    groupHandle = FX_TriGroupToHandle(marksSystem,&group->triGroup);
+    if (triCount < 2) {
 LAB_005d8299:
-      local_c = 1;
+      usedCount = 1;
     }
     else {
-      bVar3 = FX_MarkContextsEqual(&param_2->context,&param_2[1].context);
-      if (!bVar3) goto LAB_005d8299;
-      local_c = 2;
+      bVar2 = FX_MarkContextsEqual(&markTris->context,&markTris[1].context);
+      if (!bVar2) goto LAB_005d8299;
+      usedCount = 2;
     }
-    param_2 = param_2 + local_c;
-    param_3 = param_3 - local_c;
-    if (param_3 == 0) {
-      return local_10;
+    markTris = markTris + usedCount;
+    triCount = triCount - usedCount;
+    if (triCount == 0) {
+      return groupHandle;
     }
   } while( true );
 }
@@ -651,53 +671,54 @@ LAB_005d8299:
 
 // 005D83D0  FX_AllocMarkPoints  (EffectsCore/fx_marks.cpp:375)
 
-int __cdecl FX_AllocMarkPoints(FxMarksSystem *param_1,int param_2)
+int __cdecl FX_AllocMarkPoints(FxMarksSystem *marksSystem,int pointCount)
 
 {
-  FxPointGroupPool *pFVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  int local_10;
-  int local_8;
+  FxPointGroupPool *group;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  int groupHandle;
+  FxPointGroupPool *newGroup;
+  int pointGroupCount;
   
-  local_10 = 0xffff;
-  local_8 = (param_2 + 1) / 2;
-  if (local_8 < 1) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x17e,0,
+  groupHandle = 0xffff;
+  pointGroupCount = (pointCount + 1) / 2;
+  if (pointGroupCount < 1) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x17e,0,
                              "%s\n\t(pointGroupCount) = %i");
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
   do {
-    if (param_1->firstFreePointGroup == (FxPointGroupPool *)0x0) {
-      FX_FreeLruMark(param_1);
-      if (param_1->firstFreePointGroup == (FxPointGroupPool *)0x0) {
-        bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
+    if (marksSystem->firstFreePointGroup == (FxPointGroupPool *)0x0) {
+      FX_FreeLruMark(marksSystem);
+      if (marksSystem->firstFreePointGroup == (FxPointGroupPool *)0x0) {
+        bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x184,0,"%s");
-        if (!bVar3) {
-          pcVar2 = (code *)swi(3);
-          iVar4 = (*pcVar2)();
-          return iVar4;
+        if (!bVar2) {
+          pcVar1 = (code *)swi(3);
+          iVar3 = (*pcVar1)();
+          return iVar3;
         }
       }
     }
-    pFVar1 = param_1->firstFreePointGroup;
-    param_1->firstFreePointGroup = pFVar1->nextFreePointGroup;
-    (pFVar1->pointGroup).next = local_10;
-    local_10 = FX_PointGroupToHandle(param_1,&pFVar1->pointGroup);
-    local_8 = local_8 + -1;
-  } while (local_8 != 0);
-  return local_10;
+    group = marksSystem->firstFreePointGroup;
+    marksSystem->firstFreePointGroup = group->nextFreePointGroup;
+    (group->pointGroup).next = groupHandle;
+    groupHandle = FX_PointGroupToHandle(marksSystem,&group->pointGroup);
+    pointGroupCount = pointGroupCount + -1;
+  } while (pointGroupCount != 0);
+  return groupHandle;
 }
 
 
 // 005D8570  FX_LinkMarkIntoList  (EffectsCore/fx_marks.cpp:403)
 
-void __cdecl FX_LinkMarkIntoList(FxMarksSystem *param_1,ushort *param_2,FxMark *param_3)
+void __cdecl FX_LinkMarkIntoList(FxMarksSystem *marksSystem,ushort *head,FxMark *mark)
 
 {
   code *pcVar1;
@@ -706,31 +727,36 @@ void __cdecl FX_LinkMarkIntoList(FxMarksSystem *param_1,ushort *param_2,FxMark *
   FxMark *pFVar4;
   float fVar5;
   float fVar6;
-  ushort local_20;
-  ushort *local_18;
+  ushort iterMarkPrev;
+  float radiusSum;
+  ushort *iterHandlePrev;
+  FxMark *nextMark;
+  FxMark *iterMark;
+  float distSq;
+  ushort markHandle;
   
-  local_20 = 0xffff;
-  local_18 = param_2;
+  iterMarkPrev = 0xffff;
+  iterHandlePrev = head;
   while( true ) {
-    if ((*local_18 == 0xffff) ||
-       ((pFVar4 = FX_MarkFromHandle(param_1,*local_18), pFVar4->material == param_3->material &&
-        (bVar2 = FX_MarkContextsEqual(&pFVar4->context,&param_3->context), bVar2))))
+    if ((*iterHandlePrev == 0xffff) ||
+       ((pFVar4 = FX_MarkFromHandle(marksSystem,*iterHandlePrev), pFVar4->material == mark->material
+        && (bVar2 = FX_MarkContextsEqual(&pFVar4->context,&mark->context), bVar2))))
     goto LAB_005d8640;
-    fVar6 = Vec3DistanceSq(param_3->origin,pFVar4->origin);
-    fVar5 = param_3->radius + pFVar4->radius;
+    fVar6 = Vec3DistanceSq(mark->origin,pFVar4->origin);
+    fVar5 = mark->radius + pFVar4->radius;
     if (fVar6 < fVar5 * fVar5) break;
-    local_20 = *local_18;
-    local_18 = &pFVar4->nextMark;
+    iterMarkPrev = *iterHandlePrev;
+    iterHandlePrev = &pFVar4->nextMark;
   }
-  local_20 = 0xffff;
-  local_18 = param_2;
+  iterMarkPrev = 0xffff;
+  iterHandlePrev = head;
 LAB_005d8640:
-  uVar3 = FX_MarkToHandle(param_1,param_3);
-  param_3->nextMark = *local_18;
-  param_3->prevMark = local_20;
-  if (param_3->nextMark != 0xffff) {
-    pFVar4 = FX_MarkFromHandle(param_1,param_3->nextMark);
-    if ((pFVar4->prevMark != param_3->prevMark) &&
+  uVar3 = FX_MarkToHandle(marksSystem,mark);
+  mark->nextMark = *iterHandlePrev;
+  mark->prevMark = iterMarkPrev;
+  if (mark->nextMark != 0xffff) {
+    pFVar4 = FX_MarkFromHandle(marksSystem,mark->nextMark);
+    if ((pFVar4->prevMark != mark->prevMark) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x1be,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -739,14 +765,15 @@ LAB_005d8640:
     }
     pFVar4->prevMark = uVar3;
   }
-  *local_18 = uVar3;
+  *iterHandlePrev = uVar3;
   return;
 }
 
 
 // 005D86E0  FX_CopyMarkTris  (EffectsCore/fx_marks.cpp:455)
 
-void __cdecl FX_CopyMarkTris(FxMarksSystem *param_1,FxMarkTri *param_2,int param_3,int param_4)
+void __cdecl
+FX_CopyMarkTris(FxMarksSystem *marksSystem,FxMarkTri *srcTris,int dstGroupHandle,int triCount)
 
 {
   code *pcVar1;
@@ -756,39 +783,41 @@ void __cdecl FX_CopyMarkTris(FxMarksSystem *param_1,FxMarkTri *param_2,int param
   bool bVar5;
   FxTriGroup *pFVar6;
   int local_20;
-  int local_c;
+  int copyCount;
+  int copyIndex;
+  FxTriGroup *dstGroup;
   
   do {
-    pFVar6 = FX_TriGroupFromHandle(param_1,param_3);
-    if (param_4 < 2) {
-      local_20 = param_4;
+    pFVar6 = FX_TriGroupFromHandle(marksSystem,dstGroupHandle);
+    if (triCount < 2) {
+      local_20 = triCount;
     }
     else {
       local_20 = 2;
     }
-    local_c = 0;
-    uVar2 = (param_2->context).primaryLightIndex;
-    uVar3 = (param_2->context).reflectionProbeIndex;
-    uVar4 = (param_2->context).modelTypeAndSurf;
-    (pFVar6->context).lmapIndex = (param_2->context).lmapIndex;
+    copyIndex = 0;
+    uVar2 = (srcTris->context).primaryLightIndex;
+    uVar3 = (srcTris->context).reflectionProbeIndex;
+    uVar4 = (srcTris->context).modelTypeAndSurf;
+    (pFVar6->context).lmapIndex = (srcTris->context).lmapIndex;
     (pFVar6->context).primaryLightIndex = uVar2;
     (pFVar6->context).reflectionProbeIndex = uVar3;
     (pFVar6->context).modelTypeAndSurf = uVar4;
-    (pFVar6->context).modelIndex = (param_2->context).modelIndex;
+    (pFVar6->context).modelIndex = (srcTris->context).modelIndex;
     do {
-      pFVar6->indices[local_c][0] = param_2[local_c].indices[0];
-      pFVar6->indices[local_c][1] = param_2[local_c].indices[1];
-      pFVar6->indices[local_c][2] = param_2[local_c].indices[2];
-      local_c = local_c + 1;
-      if (local_c == local_20) break;
-      bVar5 = FX_MarkContextsEqual(&param_2[local_c].context,&pFVar6->context);
+      pFVar6->indices[copyIndex][0] = srcTris[copyIndex].indices[0];
+      pFVar6->indices[copyIndex][1] = srcTris[copyIndex].indices[1];
+      pFVar6->indices[copyIndex][2] = srcTris[copyIndex].indices[2];
+      copyIndex = copyIndex + 1;
+      if (copyIndex == local_20) break;
+      bVar5 = FX_MarkContextsEqual(&srcTris[copyIndex].context,&pFVar6->context);
     } while (bVar5);
-    param_3 = pFVar6->next;
-    pFVar6->triCount = (uchar)local_c;
-    param_2 = param_2 + pFVar6->triCount;
-    param_4 = param_4 - (uint)pFVar6->triCount;
-    if (param_4 == 0) {
-      if (param_3 != 0xffff) {
+    dstGroupHandle = pFVar6->next;
+    pFVar6->triCount = (uchar)copyIndex;
+    srcTris = srcTris + pFVar6->triCount;
+    triCount = triCount - (uint)pFVar6->triCount;
+    if (triCount == 0) {
+      if (dstGroupHandle != 0xffff) {
         bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x1e1,0,"%s\n\t(dstGroupHandle) = %i");
         if (!bVar5) {
@@ -805,7 +834,9 @@ void __cdecl FX_CopyMarkTris(FxMarksSystem *param_1,FxMarkTri *param_2,int param
 
 // 005D8840  FX_CopyMarkPoints  (EffectsCore/fx_marks.cpp:486)
 
-void __cdecl FX_CopyMarkPoints(FxMarksSystem *param_1,FxMarkPoint *param_2,int param_3,int param_4)
+void __cdecl
+FX_CopyMarkPoints(FxMarksSystem *marksSystem,FxMarkPoint *srcPoints,int dstGroupHandle,
+                 int pointCount)
 
 {
   code *pcVar1;
@@ -815,12 +846,14 @@ void __cdecl FX_CopyMarkPoints(FxMarksSystem *param_1,FxMarkPoint *param_2,int p
   FxMarkPoint *pFVar5;
   FxMarkPoint *pFVar6;
   int local_18;
-  int local_c;
+  int copyCount;
+  int copyIndex;
+  FxPointGroup *dstGroup;
   
   do {
-    pFVar3 = FX_PointGroupFromHandle(param_1,param_3);
-    if (param_4 < 3) {
-      local_18 = param_4;
+    pFVar3 = FX_PointGroupFromHandle(marksSystem,dstGroupHandle);
+    if (pointCount < 3) {
+      local_18 = pointCount;
     }
     else {
       local_18 = 2;
@@ -834,22 +867,22 @@ void __cdecl FX_CopyMarkPoints(FxMarksSystem *param_1,FxMarkPoint *param_2,int p
         return;
       }
     }
-    local_c = 0;
+    copyIndex = 0;
     do {
-      pFVar5 = param_2 + local_c;
-      pFVar6 = pFVar3->points + local_c;
+      pFVar5 = srcPoints + copyIndex;
+      pFVar6 = pFVar3->points + copyIndex;
       for (iVar4 = 8; iVar4 != 0; iVar4 = iVar4 + -1) {
         pFVar6->xyz[0] = pFVar5->xyz[0];
         pFVar5 = (FxMarkPoint *)(pFVar5->xyz + 1);
         pFVar6 = (FxMarkPoint *)(pFVar6->xyz + 1);
       }
-      local_c = local_c + 1;
-    } while (local_c < local_18);
-    param_3 = pFVar3->next;
-    param_2 = param_2 + local_18;
-    param_4 = param_4 - local_18;
-  } while (param_4 != 0);
-  if (param_3 != 0xffff) {
+      copyIndex = copyIndex + 1;
+    } while (copyIndex < local_18);
+    dstGroupHandle = pFVar3->next;
+    srcPoints = srcPoints + local_18;
+    pointCount = pointCount - local_18;
+  } while (pointCount != 0);
+  if (dstGroupHandle != 0xffff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x1fc,0,
                              "%s\n\t(dstGroupHandle) = %i");
     if (!bVar2) {
@@ -864,59 +897,64 @@ void __cdecl FX_CopyMarkPoints(FxMarksSystem *param_1,FxMarkPoint *param_2,int p
 
 // 005D8940  FX_FindModelHead  (EffectsCore/fx_marks.cpp:513)
 
-ushort __cdecl FX_FindModelHead(FxMarksSystem *param_1,ushort param_2,int param_3)
+ushort __cdecl FX_FindModelHead(FxMarksSystem *marksSystem,ushort modelIndex,int type)
 
 {
   ushort uVar1;
-  FxMark *local_c;
+  FxMark *mark;
+  FxMark *markEnd;
   
-  local_c = param_1->marks;
+  mark = marksSystem->marks;
   while( true ) {
-    if (local_c == (FxMark *)param_1->triGroups) {
+    if (mark == (FxMark *)marksSystem->triGroups) {
       return 0xffff;
     }
-    if ((((local_c->frameCountDrawn != -1) && (local_c->prevMark == 0xffff)) &&
-        (((local_c->context).modelTypeAndSurf & 0xc0) == param_3)) &&
-       ((local_c->context).modelIndex == param_2)) break;
-    local_c = local_c + 1;
+    if ((((mark->frameCountDrawn != -1) && (mark->prevMark == 0xffff)) &&
+        (((mark->context).modelTypeAndSurf & 0xc0) == type)) &&
+       ((mark->context).modelIndex == modelIndex)) break;
+    mark = mark + 1;
   }
-  uVar1 = FX_MarkToHandle(param_1,local_c);
+  uVar1 = FX_MarkToHandle(marksSystem,mark);
   return uVar1;
 }
 
 
 // 005D8A20  FX_MarkContextsCompare  (EffectsCore/fx_marks.cpp:536)
 
-int __cdecl FX_MarkContextsCompare(GfxMarkContext *param_1,GfxMarkContext *param_2)
+int __cdecl FX_MarkContextsCompare(GfxMarkContext *context0,GfxMarkContext *context1)
 
 {
   uint uVar1;
   int iVar2;
   uint uVar3;
+  int type1;
+  int surf0;
+  int type0;
+  int surf1;
   
-  uVar3 = param_1->modelTypeAndSurf & 0xc0;
-  uVar1 = param_2->modelTypeAndSurf & 0xc0;
+  uVar3 = context0->modelTypeAndSurf & 0xc0;
+  uVar1 = context1->modelTypeAndSurf & 0xc0;
   if (uVar3 == uVar1) {
-    if (param_1->primaryLightIndex == param_2->primaryLightIndex) {
-      if (param_1->reflectionProbeIndex == param_2->reflectionProbeIndex) {
-        if (param_1->lmapIndex == param_2->lmapIndex) {
-          if (param_1->modelIndex == param_2->modelIndex) {
-            iVar2 = (param_2->modelTypeAndSurf & 0x3f) - (param_1->modelTypeAndSurf & 0x3f);
+    if (context0->primaryLightIndex == context1->primaryLightIndex) {
+      if (context0->reflectionProbeIndex == context1->reflectionProbeIndex) {
+        if (context0->lmapIndex == context1->lmapIndex) {
+          if (context0->modelIndex == context1->modelIndex) {
+            iVar2 = (context1->modelTypeAndSurf & 0x3f) - (context0->modelTypeAndSurf & 0x3f);
           }
           else {
-            iVar2 = (uint)param_2->modelIndex - (uint)param_1->modelIndex;
+            iVar2 = (uint)context1->modelIndex - (uint)context0->modelIndex;
           }
         }
         else {
-          iVar2 = (uint)param_2->lmapIndex - (uint)param_1->lmapIndex;
+          iVar2 = (uint)context1->lmapIndex - (uint)context0->lmapIndex;
         }
       }
       else {
-        iVar2 = (uint)param_2->reflectionProbeIndex - (uint)param_1->reflectionProbeIndex;
+        iVar2 = (uint)context1->reflectionProbeIndex - (uint)context0->reflectionProbeIndex;
       }
     }
     else {
-      iVar2 = (uint)param_2->primaryLightIndex - (uint)param_1->primaryLightIndex;
+      iVar2 = (uint)context1->primaryLightIndex - (uint)context0->primaryLightIndex;
     }
   }
   else {
@@ -928,15 +966,16 @@ int __cdecl FX_MarkContextsCompare(GfxMarkContext *param_1,GfxMarkContext *param
 
 // 005D89D0  FX_CompareMarkTris  (EffectsCore/fx_marks.cpp:562)
 
-bool __cdecl FX_CompareMarkTris(FxMarkTri *param_1,FxMarkTri *param_2)
+bool __cdecl FX_CompareMarkTris(FxMarkTri *tri0,FxMarkTri *tri1)
 
 {
   bool bVar1;
   int iVar2;
+  int contextCompareResult;
   
-  iVar2 = FX_MarkContextsCompare(&param_1->context,&param_2->context);
+  iVar2 = FX_MarkContextsCompare(&tri0->context,&tri1->context);
   if (iVar2 == 0) {
-    bVar1 = param_1->indices[0] < param_2->indices[0];
+    bVar1 = tri0->indices[0] < tri1->indices[0];
   }
   else {
     bVar1 = 0 < iVar2;
@@ -948,30 +987,34 @@ bool __cdecl FX_CompareMarkTris(FxMarkTri *param_1,FxMarkTri *param_2)
 // 005D6350  FX_SeeThruMarkOverlaps  (EffectsCore/fx_marks.cpp:574)
 
 bool __cdecl
-FX_SeeThruMarkOverlaps(FxMarksSystem *param_1,float *param_2,float param_3,float *param_4)
+FX_SeeThruMarkOverlaps(FxMarksSystem *marksSystem,float *origin,float radius,float *hitNormal)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
   float fVar4;
-  uint local_8;
+  FxMark *m;
+  float radSq;
+  float distsq;
+  float dot;
+  int i;
   
-  local_8 = 0;
+  i = 0;
   while( true ) {
-    if (0xff < local_8) {
+    if (0xff < (uint)i) {
       return false;
     }
-    if (((param_1->marks[local_8].frameCountDrawn != -1) &&
-        (0.866 <= *param_4 * param_1->marks[local_8].hitNormal[0] +
-                  param_4[1] * param_1->marks[local_8].hitNormal[1] +
-                  param_4[2] * param_1->marks[local_8].hitNormal[2])) &&
-       (fVar1 = *param_2 - param_1->marks[local_8].origin[0],
-       fVar2 = param_2[1] - param_1->marks[local_8].origin[1],
-       fVar3 = param_2[2] - param_1->marks[local_8].origin[2],
-       fVar4 = (param_1->marks[local_8].radius + param_3) * 0.5,
+    if (((marksSystem->marks[i].frameCountDrawn != -1) &&
+        (0.866 <= *hitNormal * marksSystem->marks[i].hitNormal[0] +
+                  hitNormal[1] * marksSystem->marks[i].hitNormal[1] +
+                  hitNormal[2] * marksSystem->marks[i].hitNormal[2])) &&
+       (fVar1 = *origin - marksSystem->marks[i].origin[0],
+       fVar2 = origin[1] - marksSystem->marks[i].origin[1],
+       fVar3 = origin[2] - marksSystem->marks[i].origin[2],
+       fVar4 = (marksSystem->marks[i].radius + radius) * 0.5,
        fVar1 * fVar1 + fVar2 * fVar2 + fVar3 * fVar3 < fVar4 * fVar4)) break;
-    local_8 = local_8 + 1;
+    i = i + 1;
   }
   return true;
 }
@@ -981,9 +1024,9 @@ FX_SeeThruMarkOverlaps(FxMarksSystem *param_1,float *param_2,float param_3,float
 
 void __cdecl
 FX_AllocAndConstructMark
-          (int param_1,int param_2,int param_3,Material *param_4,FxMarkTri *param_5,
-          FxMarkPoint *param_6,float *param_7,float *param_8,float param_9,float *param_10,
-          uchar *param_11,FxMarkAlphaFade *param_12,bool param_13)
+          (int localClientNum,int triCount,int pointCount,Material *material,FxMarkTri *markTris,
+          FxMarkPoint *markPoints,float *origin,float *hitNormal,float radius,float *texCoordAxis,
+          uchar *nativeColor,FxMarkAlphaFade *markAlpha,bool isSeeThruDecal)
 
 {
   int *piVar1;
@@ -994,23 +1037,24 @@ FX_AllocAndConstructMark
   uchar uVar6;
   bool bVar7;
   int iVar8;
-  ushort local_28 [2];
-  ushort local_24;
-  FxMarksSystem *local_20;
-  int local_1c;
-  uint local_18;
-  uint local_14;
-  FxMark *local_10;
-  int local_c;
-  undefined1 local_5;
+  ushort staticModelMarkHead;
+  ushort newMarkHandle;
+  FxMarksSystem *marksSystem;
+  int points;
+  uint limit;
+  int modelType;
+  FxMark *newMark;
+  int tris;
+  uchar flags;
   
-  local_20 = FX_GetMarksSystem(param_1);
-  if ((!param_13) || (bVar7 = FX_SeeThruMarkOverlaps(local_20,param_7,param_9,param_8), !bVar7)) {
+  marksSystem = FX_GetMarksSystem(localClientNum);
+  if ((!isSeeThruDecal) ||
+     (bVar7 = FX_SeeThruMarkOverlaps(marksSystem,origin,radius,hitNormal), !bVar7)) {
     std::_Sort<FxMarkTri_*,int,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-              (param_5,param_5 + param_2,((int)(param_5 + param_2) - (int)param_5) / 0xc,
+              (markTris,markTris + triCount,((int)(markTris + triCount) - (int)markTris) / 0xc,
                FX_CompareMarkTris);
     Sys_EnterCriticalSection(CRITSECT_ALLOC_MARK);
-    piVar1 = g_markThread + param_1;
+    piVar1 = g_markThread + localClientNum;
     LOCK();
     iVar8 = *piVar1;
     *piVar1 = *piVar1 + 1;
@@ -1022,72 +1066,72 @@ FX_AllocAndConstructMark
       (*pcVar3)();
       return;
     }
-    local_20 = FX_GetMarksSystem(param_1);
-    local_c = FX_AllocMarkTris(local_20,param_5,param_2);
-    local_1c = FX_AllocMarkPoints(local_20,param_3);
-    if (((local_20->firstFreeMarkHandle == 0xffff) &&
-        (FX_FreeLruMark(local_20), local_20->firstFreeMarkHandle == 0xffff)) &&
+    marksSystem = FX_GetMarksSystem(localClientNum);
+    tris = FX_AllocMarkTris(marksSystem,markTris,triCount);
+    points = FX_AllocMarkPoints(marksSystem,pointCount);
+    if (((marksSystem->firstFreeMarkHandle == 0xffff) &&
+        (FX_FreeLruMark(marksSystem), marksSystem->firstFreeMarkHandle == 0xffff)) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x28e,0,"%s"), !bVar7)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_18 = 0x100;
+    limit = 0x100;
     iVar8 = CL_LocalClient_GetActiveCount();
     if (1 < iVar8) {
-      local_18 = local_18 >> 1;
+      limit = limit >> 1;
     }
-    while (local_18 < local_20->allocedMarkCount - local_20->freedMarkCount) {
-      FX_FreeLruMark(local_20);
+    while (limit < marksSystem->allocedMarkCount - marksSystem->freedMarkCount) {
+      FX_FreeLruMark(marksSystem);
     }
-    local_24 = local_20->firstFreeMarkHandle;
-    local_10 = FX_MarkFromHandle(local_20,local_24);
-    if ((local_10 == (FxMark *)0x0) &&
+    newMarkHandle = marksSystem->firstFreeMarkHandle;
+    newMark = FX_MarkFromHandle(marksSystem,newMarkHandle);
+    if ((newMark == (FxMark *)0x0) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x29a,0,"%s"), !bVar7)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_20->firstFreeMarkHandle = local_10->nextMark;
-    if ((local_20->frameCount < 1) &&
+    marksSystem->firstFreeMarkHandle = newMark->nextMark;
+    if ((marksSystem->frameCount < 1) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x2a1,0,"%s\n\t(marksSystem->frameCount) = %i"), !bVar7)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    uVar4 = (param_5->context).primaryLightIndex;
-    uVar5 = (param_5->context).reflectionProbeIndex;
-    uVar6 = (param_5->context).modelTypeAndSurf;
-    (local_10->context).lmapIndex = (param_5->context).lmapIndex;
-    (local_10->context).primaryLightIndex = uVar4;
-    (local_10->context).reflectionProbeIndex = uVar5;
-    (local_10->context).modelTypeAndSurf = uVar6;
-    (local_10->context).modelIndex = (param_5->context).modelIndex;
-    local_10->material = param_4;
-    local_10->radius = param_9;
-    local_10->origin[0] = *param_7;
-    local_10->origin[1] = param_7[1];
-    local_10->origin[2] = param_7[2];
-    local_10->texCoordAxis[0] = *param_10;
-    local_10->texCoordAxis[1] = param_10[1];
-    local_10->texCoordAxis[2] = param_10[2];
-    local_10->hitNormal[0] = *param_8;
-    local_10->hitNormal[1] = param_8[1];
-    local_10->hitNormal[2] = param_8[2];
-    *(undefined4 *)local_10->nativeColor = *(undefined4 *)param_11;
-    local_10->ageMsec = 0;
-    iVar8 = param_12->fadeStartAgeMsec;
-    (local_10->alphaFade).ageLimitMsec = param_12->ageLimitMsec;
-    (local_10->alphaFade).fadeStartAgeMsec = iVar8;
-    local_5 = param_13;
-    local_10->markFlags = param_13;
-    bVar2 = (local_10->context).modelTypeAndSurf;
-    local_14 = bVar2 & 0xc0;
-    if ((local_14 == 0xc0) || (local_14 == 0x80)) {
-      if ((0x5ff < (local_10->context).modelIndex) &&
+    uVar4 = (markTris->context).primaryLightIndex;
+    uVar5 = (markTris->context).reflectionProbeIndex;
+    uVar6 = (markTris->context).modelTypeAndSurf;
+    (newMark->context).lmapIndex = (markTris->context).lmapIndex;
+    (newMark->context).primaryLightIndex = uVar4;
+    (newMark->context).reflectionProbeIndex = uVar5;
+    (newMark->context).modelTypeAndSurf = uVar6;
+    (newMark->context).modelIndex = (markTris->context).modelIndex;
+    newMark->material = material;
+    newMark->radius = radius;
+    newMark->origin[0] = *origin;
+    newMark->origin[1] = origin[1];
+    newMark->origin[2] = origin[2];
+    newMark->texCoordAxis[0] = *texCoordAxis;
+    newMark->texCoordAxis[1] = texCoordAxis[1];
+    newMark->texCoordAxis[2] = texCoordAxis[2];
+    newMark->hitNormal[0] = *hitNormal;
+    newMark->hitNormal[1] = hitNormal[1];
+    newMark->hitNormal[2] = hitNormal[2];
+    *(undefined4 *)newMark->nativeColor = *(undefined4 *)nativeColor;
+    newMark->ageMsec = 0;
+    iVar8 = markAlpha->fadeStartAgeMsec;
+    (newMark->alphaFade).ageLimitMsec = markAlpha->ageLimitMsec;
+    (newMark->alphaFade).fadeStartAgeMsec = iVar8;
+    flags = isSeeThruDecal;
+    newMark->markFlags = isSeeThruDecal;
+    bVar2 = (newMark->context).modelTypeAndSurf;
+    modelType = bVar2 & 0xc0;
+    if ((modelType == 0xc0) || (modelType == 0x80)) {
+      if ((0x5ff < (newMark->context).modelIndex) &&
          (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                    0x2b8,0,
                                    "newMark->context.modelIndex doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
@@ -1096,19 +1140,19 @@ FX_AllocAndConstructMark
         (*pcVar3)();
         return;
       }
-      FX_LinkMarkIntoList(local_20,local_20->entFirstMarkHandles + (local_10->context).modelIndex,
-                          local_10);
+      FX_LinkMarkIntoList(marksSystem,
+                          marksSystem->entFirstMarkHandles + (newMark->context).modelIndex,newMark);
     }
-    else if (local_14 == 0x40) {
-      local_28[0] = FX_FindModelHead(local_20,(local_10->context).modelIndex,0x40);
-      if ((local_28[0] == local_24) &&
+    else if (modelType == 0x40) {
+      staticModelMarkHead = FX_FindModelHead(marksSystem,(newMark->context).modelIndex,0x40);
+      if ((staticModelMarkHead == newMarkHandle) &&
          (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                    0x2c5,0,"%s"), !bVar7)) {
         pcVar3 = (code *)swi(3);
         (*pcVar3)();
         return;
       }
-      FX_LinkMarkIntoList(local_20,local_28,local_10);
+      FX_LinkMarkIntoList(marksSystem,&staticModelMarkHead,newMark);
     }
     else {
       if (((bVar2 & 0xc0) != 0) &&
@@ -1118,39 +1162,39 @@ FX_AllocAndConstructMark
         (*pcVar3)();
         return;
       }
-      FX_LinkMarkIntoList(local_20,&local_20->firstActiveWorldMarkHandle,local_10);
+      FX_LinkMarkIntoList(marksSystem,&marksSystem->firstActiveWorldMarkHandle,newMark);
     }
-    if ((local_10->frameCountDrawn != -1) &&
+    if ((newMark->frameCountDrawn != -1) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x2d7,0,"%s"), !bVar7)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_10->frameCountDrawn = local_20->frameCount + -1;
-    local_10->frameCountAlloced = local_20->frameCount;
-    local_10->tris = local_c;
-    local_10->triCount = (uchar)param_2;
-    if (((uint)local_10->triCount != param_2) &&
+    newMark->frameCountDrawn = marksSystem->frameCount + -1;
+    newMark->frameCountAlloced = marksSystem->frameCount;
+    newMark->tris = tris;
+    newMark->triCount = (uchar)triCount;
+    if (((uint)newMark->triCount != triCount) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x2de,0,"newMark->triCount == triCount\n\t%i, %i"), !bVar7)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    local_10->points = local_1c;
-    local_10->pointCount = (ushort)param_3;
-    if (((uint)local_10->pointCount != param_3) &&
+    newMark->points = points;
+    newMark->pointCount = (ushort)pointCount;
+    if (((uint)newMark->pointCount != pointCount) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x2e2,0,"newMark->pointCount == pointCount\n\t%i, %i"), !bVar7)) {
       pcVar3 = (code *)swi(3);
       (*pcVar3)();
       return;
     }
-    FX_CopyMarkTris(local_20,param_5,local_10->tris,param_2);
-    FX_CopyMarkPoints(local_20,param_6,local_10->points,param_3);
-    local_20->allocedMarkCount = local_20->allocedMarkCount + 1;
-    piVar1 = g_markThread + param_1;
+    FX_CopyMarkTris(marksSystem,markTris,newMark->tris,triCount);
+    FX_CopyMarkPoints(marksSystem,markPoints,newMark->points,pointCount);
+    marksSystem->allocedMarkCount = marksSystem->allocedMarkCount + 1;
+    piVar1 = g_markThread + localClientNum;
     LOCK();
     iVar8 = *piVar1;
     *piVar1 = *piVar1 + -1;
@@ -1181,7 +1225,7 @@ FX_AllocAndConstructMark
 
 void __cdecl
 FX_ImpactMark_Generate_AddEntityBrush
-          (int param_1,MarkInfo *param_2,uint param_3,float *param_4,float param_5)
+          (int localClientNum,MarkInfo *markInfo,uint entityIndex,float *origin,float radius)
 
 {
   float fVar1;
@@ -1199,7 +1243,7 @@ FX_ImpactMark_Generate_AddEntityBrush
   uint local_1f4;
   uint local_1f0;
   uint local_1ec;
-  float local_a8;
+  float entAxis;
   float local_a4;
   float local_a0;
   float local_9c;
@@ -1208,8 +1252,8 @@ FX_ImpactMark_Generate_AddEntityBrush
   float local_90;
   float local_8c;
   float local_88;
-  ushort local_84;
-  float local_80;
+  ushort entityIndexAsUnsignedShort;
+  float worldModelBoundsFloat4;
   float local_7c;
   float local_78;
   float local_74;
@@ -1217,13 +1261,13 @@ FX_ImpactMark_Generate_AddEntityBrush
   float local_6c;
   float local_68;
   float local_64;
-  float local_60;
+  float markMins;
   float local_5c;
   float local_58;
-  float local_54;
+  float markMaxs;
   float local_50;
   float local_4c;
-  float local_48;
+  float modelBounds;
   float local_44;
   float local_40;
   undefined4 local_3c;
@@ -1232,9 +1276,9 @@ FX_ImpactMark_Generate_AddEntityBrush
   float local_30;
   undefined4 local_2c;
   uint local_28;
-  GfxBrushModel *local_24;
-  centity_s *local_20;
-  float local_1c;
+  GfxBrushModel *brushModel;
+  centity_s *ent;
+  float worldModelBoundsVec3;
   float local_18;
   float local_14;
   float local_10;
@@ -1242,30 +1286,30 @@ FX_ImpactMark_Generate_AddEntityBrush
   float local_8;
   
   local_28 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_3 != 0x3ff) {
-    local_58 = -param_5;
-    local_60 = *param_4 + local_58;
-    local_5c = param_4[1] + local_58;
-    local_58 = param_4[2] + local_58;
-    local_54 = *param_4 + param_5;
-    local_50 = param_4[1] + param_5;
-    local_4c = param_4[2] + param_5;
-    local_20 = CG_GetEntity(param_1,param_3);
-    if ((local_20->nextValid != 0) && ((local_20->nextState).solid == 0xffffff)) {
-      local_24 = R_GetBrushModel((int)(local_20->nextState).index.brushmodel);
-      AnglesToAxis((local_20->pose).angles,(float (*) [3])&local_a8);
-      local_48 = local_24->bounds[0][0];
-      local_44 = local_24->bounds[0][1];
-      local_40 = local_24->bounds[0][2];
+  if (entityIndex != 0x3ff) {
+    local_58 = -radius;
+    markMins = *origin + local_58;
+    local_5c = origin[1] + local_58;
+    local_58 = origin[2] + local_58;
+    markMaxs = *origin + radius;
+    local_50 = origin[1] + radius;
+    local_4c = origin[2] + radius;
+    ent = CG_GetEntity(localClientNum,entityIndex);
+    if ((ent->nextValid != 0) && ((ent->nextState).solid == 0xffffff)) {
+      brushModel = R_GetBrushModel((int)(ent->nextState).index.brushmodel);
+      AnglesToAxis((ent->pose).angles,(float (*) [3])&entAxis);
+      modelBounds = brushModel->bounds[0][0];
+      local_44 = brushModel->bounds[0][1];
+      local_40 = brushModel->bounds[0][2];
       local_3c = 0;
-      local_38 = local_24->bounds[1][0];
-      local_34 = local_24->bounds[1][1];
-      local_30 = local_24->bounds[1][2];
+      local_38 = brushModel->bounds[1][0];
+      local_34 = brushModel->bounds[1][1];
+      local_30 = brushModel->bounds[1][2];
       local_2c = 0;
-      fVar1 = (local_20->pose).origin[0];
-      fVar2 = (local_20->pose).origin[1];
-      fVar3 = (local_20->pose).origin[2];
-      if (0.0 <= local_a8) {
+      fVar1 = (ent->pose).origin[0];
+      fVar2 = (ent->pose).origin[1];
+      fVar3 = (ent->pose).origin[2];
+      if (0.0 <= entAxis) {
         local_1ec = 0;
       }
       else {
@@ -1319,49 +1363,49 @@ FX_ImpactMark_Generate_AddEntityBrush
       else {
         local_214 = 0xffffffff;
       }
-      local_80 = (float)(~local_20c & (uint)local_40 | local_20c & (uint)local_30) * local_90 +
-                 (float)(~local_1fc & (uint)local_44 | local_1fc & (uint)local_34) * local_9c +
-                 (float)(~local_1ec & (uint)local_48 | local_1ec & (uint)local_38) * local_a8 +
-                 fVar1;
+      worldModelBoundsFloat4 =
+           (float)(~local_20c & (uint)local_40 | local_20c & (uint)local_30) * local_90 +
+           (float)(~local_1fc & (uint)local_44 | local_1fc & (uint)local_34) * local_9c +
+           (float)(~local_1ec & (uint)modelBounds | local_1ec & (uint)local_38) * entAxis + fVar1;
       local_7c = (float)(~local_210 & (uint)local_40 | local_210 & (uint)local_30) * local_8c +
                  (float)(~local_200 & (uint)local_44 | local_200 & (uint)local_34) * local_98 +
-                 (float)(~local_1f0 & (uint)local_48 | local_1f0 & (uint)local_38) * local_a4 +
+                 (float)(~local_1f0 & (uint)modelBounds | local_1f0 & (uint)local_38) * local_a4 +
                  fVar2;
       local_78 = (float)(~local_214 & (uint)local_40 | local_214 & (uint)local_30) * local_88 +
                  (float)(~local_204 & (uint)local_44 | local_204 & (uint)local_34) * local_94 +
-                 (float)(~local_1f4 & (uint)local_48 | local_1f4 & (uint)local_38) * local_a0 +
+                 (float)(~local_1f4 & (uint)modelBounds | local_1f4 & (uint)local_38) * local_a0 +
                  fVar3;
-      local_74 = local_40 * 0.0 + local_44 * 0.0 + local_48 * 0.0 + 0.0;
+      local_74 = local_40 * 0.0 + local_44 * 0.0 + modelBounds * 0.0 + 0.0;
       local_70 = (float)(~local_20c & (uint)local_30 | local_20c & (uint)local_40) * local_90 +
                  (float)(~local_1fc & (uint)local_34 | local_1fc & (uint)local_44) * local_9c +
-                 (float)(~local_1ec & (uint)local_38 | local_1ec & (uint)local_48) * local_a8 +
+                 (float)(~local_1ec & (uint)local_38 | local_1ec & (uint)modelBounds) * entAxis +
                  fVar1;
       local_6c = (float)(~local_210 & (uint)local_30 | local_210 & (uint)local_40) * local_8c +
                  (float)(~local_200 & (uint)local_34 | local_200 & (uint)local_44) * local_98 +
-                 (float)(~local_1f0 & (uint)local_38 | local_1f0 & (uint)local_48) * local_a4 +
+                 (float)(~local_1f0 & (uint)local_38 | local_1f0 & (uint)modelBounds) * local_a4 +
                  fVar2;
       local_68 = (float)(~local_214 & (uint)local_30 | local_214 & (uint)local_40) * local_88 +
                  (float)(~local_204 & (uint)local_34 | local_204 & (uint)local_44) * local_94 +
-                 (float)(~local_1f4 & (uint)local_38 | local_1f4 & (uint)local_48) * local_a0 +
+                 (float)(~local_1f4 & (uint)local_38 | local_1f4 & (uint)modelBounds) * local_a0 +
                  fVar3;
       local_64 = local_30 * 0.0 + local_34 * 0.0 + local_38 * 0.0 + 0.0;
-      local_1c = local_80;
+      worldModelBoundsVec3 = worldModelBoundsFloat4;
       local_18 = local_7c;
       local_14 = local_78;
       local_10 = local_70;
       local_c = local_6c;
       local_8 = local_68;
-      iVar6 = BoundsOverlap(&local_60,&local_54,&local_1c,&local_10);
+      iVar6 = BoundsOverlap(&markMins,&markMaxs,&worldModelBoundsVec3,&local_10);
       if (iVar6 != 0) {
-        local_84 = (ushort)param_3;
-        if (((param_3 & 0xffff) != param_3) &&
+        entityIndexAsUnsignedShort = (ushort)entityIndex;
+        if (((entityIndex & 0xffff) != entityIndex) &&
            (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                      0x32b,0,"%s\n\t(entityIndex) = %i"), !bVar5)) {
           pcVar4 = (code *)swi(3);
           (*pcVar4)();
           return;
         }
-        R_MarkFragments_AddBModel(param_2,local_24,&local_20->pose,local_84);
+        R_MarkFragments_AddBModel(markInfo,brushModel,&ent->pose,entityIndexAsUnsignedShort);
       }
     }
   }
@@ -1378,29 +1422,36 @@ FX_ImpactMark_Generate_AddEntityBrush
 
 void __cdecl
 FX_ImpactMark_Generate_AddEntityModel
-          (int param_1,MarkInfo *param_2,uint param_3,float *param_4,float param_5)
+          (int localClientNum,MarkInfo *markInfo,uint entityIndex,float *origin,float radius)
 
 {
   code *pcVar1;
   bool bVar2;
-  centity_s *pcVar3;
-  DObj *pDVar4;
-  float fVar5;
-  float fVar6;
+  centity_s *pose;
+  DObj *obj;
+  float fVar3;
+  float fVar4;
+  ushort entityIndexAsUnsignedShort;
+  float dObjRadius;
+  float summedRadiusSquared;
+  centity_s *ent;
+  float summedRadius;
+  DObj *dObj;
   
-  if (((param_3 != 0x3ff) && (pcVar3 = CG_GetEntity(param_1,param_3), pcVar3->nextValid != 0)) &&
-     (pDVar4 = Com_GetClientDObj((pcVar3->nextState).number,param_1), pDVar4 != (DObj *)0x0)) {
-    fVar5 = DObjGetRadius(pDVar4);
-    fVar6 = Vec3DistanceSq(param_4,(pcVar3->pose).origin);
-    if (fVar6 <= (fVar5 + param_5) * (fVar5 + param_5)) {
-      if (((param_3 & 0xffff) != param_3) &&
+  if (((entityIndex != 0x3ff) &&
+      (pose = CG_GetEntity(localClientNum,entityIndex), pose->nextValid != 0)) &&
+     (obj = Com_GetClientDObj((pose->nextState).number,localClientNum), obj != (DObj *)0x0)) {
+    fVar3 = DObjGetRadius(obj);
+    fVar4 = Vec3DistanceSq(origin,(pose->pose).origin);
+    if (fVar4 <= (fVar3 + radius) * (fVar3 + radius)) {
+      if (((entityIndex & 0xffff) != entityIndex) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                    0x35d,0,"%s\n\t(entityIndex) = %i"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      R_MarkFragments_AddDObj(param_2,pDVar4,&pcVar3->pose,(ushort)param_3);
+      R_MarkFragments_AddDObj(markInfo,obj,&pose->pose,(ushort)entityIndex);
     }
   }
   return;
@@ -1411,14 +1462,17 @@ FX_ImpactMark_Generate_AddEntityModel
 
 void __cdecl
 FX_ImpactMark_Generate_Callback
-          (void *param_1,int param_2,FxMarkTri *param_3,int param_4,FxMarkPoint *param_5,
-          float *param_6,float *param_7,float *param_8,bool param_9)
+          (void *context,int triCount,FxMarkTri *tris,int pointCount,FxMarkPoint *points,
+          float *markOrigin,float *markTexCoordAxis,float *markHitNormal,bool isSeeThruDecal)
 
 {
+  MarkGenContext *markGenContext;
+  
   FX_AllocAndConstructMark
-            (*(int *)param_1,param_2,param_4,*(Material **)((int)param_1 + 4),param_3,param_5,
-             param_6,param_8,*(float *)((int)param_1 + 8),param_7,*(uchar **)((int)param_1 + 0xc),
-             *(FxMarkAlphaFade **)((int)param_1 + 0x10),param_9);
+            (*(int *)context,triCount,pointCount,*(Material **)((int)context + 4),tris,points,
+             markOrigin,markHitNormal,*(float *)((int)context + 8),markTexCoordAxis,
+             *(uchar **)((int)context + 0xc),*(FxMarkAlphaFade **)((int)context + 0x10),
+             isSeeThruDecal);
   return;
 }
 
@@ -1427,23 +1481,28 @@ FX_ImpactMark_Generate_Callback
 
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
 FX_ImpactMark_Generate
-          (int param_1,MarkFragmentsAgainstEnum param_2,Material *param_3,float *param_4,
-          float (*param_5) [3],float param_6,uchar *param_7,float param_8,uint param_9,
-          FxMarkAlphaFade *param_10,bool param_11)
+          (int localClientNum,MarkFragmentsAgainstEnum markAgainst,Material *material,float *origin,
+          float (*axis) [3],float orientation,uchar *nativeColor,float radius,uint markEntnum,
+          FxMarkAlphaFade *markAlpha,bool isSeeThruDecal)
 
 {
   code *pcVar1;
   bool bVar2;
   DWORD DVar3;
-  FxMarkPoint *pFVar4;
-  FxMarkTri local_10cc [255];
-  MarkInfo local_4d4;
+  FxMarkPoint *points;
+  PIXProfile pixProfile;
+  FxMarkTri tris [255];
+  MarkInfo markInfo;
   uint local_20;
-  FxSystem *local_1c;
-  int local_18;
+  FxSystem *system;
+  int markGenContext;
   Material *local_14;
   float local_10;
   uchar *local_c;
@@ -1452,7 +1511,7 @@ FX_ImpactMark_Generate
   local_8 = (FxMarkAlphaFade *)0x5d694d;
   local_20 = __security_cookie ^ (uint)&stack0xfffffffc;
   PIXBeginNamedEvent(-1,"FX_ImpactMark_Generate");
-  local_1c = FX_GetSystem(param_1);
+  system = FX_GetSystem(localClientNum);
   bVar2 = CL_IsRenderingSplitScreen();
   if (bVar2) {
     DVar3 = GetCurrentThreadId();
@@ -1461,35 +1520,36 @@ FX_ImpactMark_Generate
     }
   }
   else {
-    local_18 = param_1;
-    local_14 = param_3;
-    local_10 = param_8;
-    local_c = param_7;
-    local_8 = param_10;
-    local_4d4.isSeeThruDecal = param_11;
+    markGenContext = localClientNum;
+    local_14 = material;
+    local_10 = radius;
+    local_c = nativeColor;
+    local_8 = markAlpha;
+    markInfo.isSeeThruDecal = isSeeThruDecal;
     if (((fx_marks->current).enabled != false) &&
-       (((param_2 != MARK_FRAGMENTS_AGAINST_MODELS || ((fx_marks_ents->current).enabled != false))
-        || ((fx_marks_smodels->current).enabled != false)))) {
-      R_MarkFragments_Begin(&local_4d4,param_2,param_4,param_5,param_8,(float *)local_1c,param_3);
+       (((markAgainst != MARK_FRAGMENTS_AGAINST_MODELS ||
+         ((fx_marks_ents->current).enabled != false)) ||
+        ((fx_marks_smodels->current).enabled != false)))) {
+      R_MarkFragments_Begin(&markInfo,markAgainst,origin,axis,radius,(float *)system,material);
       if ((fx_marks_ents->current).enabled != false) {
-        if (((param_2 != MARK_FRAGMENTS_AGAINST_MODELS) &&
-            (param_2 != MARK_FRAGMENTS_AGAINST_BRUSHES)) &&
+        if (((markAgainst != MARK_FRAGMENTS_AGAINST_MODELS) &&
+            (markAgainst != MARK_FRAGMENTS_AGAINST_BRUSHES)) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                      0x3d7,0,"%s\n\t(markAgainst) = %i"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           (*pcVar1)();
           return;
         }
-        if (param_2 == MARK_FRAGMENTS_AGAINST_MODELS) {
-          FX_ImpactMark_Generate_AddEntityModel(param_1,&local_4d4,param_9,param_4,param_8);
+        if (markAgainst == MARK_FRAGMENTS_AGAINST_MODELS) {
+          FX_ImpactMark_Generate_AddEntityModel(localClientNum,&markInfo,markEntnum,origin,radius);
         }
         else {
-          FX_ImpactMark_Generate_AddEntityBrush(param_1,&local_4d4,param_9,param_4,param_8);
+          FX_ImpactMark_Generate_AddEntityBrush(localClientNum,&markInfo,markEntnum,origin,radius);
         }
       }
-      pFVar4 = FX_GetFxMarkPointsBuffer();
-      R_MarkFragments_Go(&local_4d4,FX_ImpactMark_Generate_Callback,&local_18,0xff,local_10cc,0x2fd,
-                         pFVar4);
+      points = FX_GetFxMarkPointsBuffer();
+      R_MarkFragments_Go(&markInfo,FX_ImpactMark_Generate_Callback,&markGenContext,0xff,tris,0x2fd,
+                         points);
     }
     DVar3 = GetCurrentThreadId();
     if ((DVar3 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1503,49 +1563,53 @@ FX_ImpactMark_Generate
 // 005D6700  FX_ImpactMark  (EffectsCore/fx_marks.cpp:1041)
 
 void __cdecl
-FX_ImpactMark(int param_1,Material *param_2,Material *param_3,float *param_4,float *param_5,
-             float param_6,uchar *param_7,float param_8,uint param_9,FxMarkAlphaFade *param_10)
+FX_ImpactMark(int localClientNum,Material *worldMaterial,Material *modelMaterial,float *origin,
+             float *quat,float orientation,uchar *nativeColor,float radius,uint markEntnum,
+             FxMarkAlphaFade *markAlpha)
 
 {
   code *pcVar1;
   bool bVar2;
   FxMarksSystem *pFVar3;
   DWORD DVar4;
-  float local_28 [3];
+  FxMarksSystem *marksSystem;
+  PIXProfile pixProfile;
+  float axis [3];
   float local_1c [3];
   float local_10 [3];
   
   PIXBeginNamedEvent(-1,"FX_ImpactMark");
-  pFVar3 = FX_GetMarksSystem(param_1);
+  pFVar3 = FX_GetMarksSystem(localClientNum);
   if (((fx_marks->current).enabled == false) || (pFVar3->noMarks != false)) {
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
       _D3DPERF_EndEvent_0();
     }
   }
-  else if (0.1 <= param_8) {
-    if ((param_8 <= 0.0) &&
+  else if (0.1 <= radius) {
+    if ((radius <= 0.0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x423,0,"%s\n\t(radius) = %g"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    UnitQuatToAxis(param_5,&local_28);
-    RotatePointAroundVector(local_10,local_28,local_1c,param_6 * 57.295776);
-    Vec3Cross(local_28,local_10,local_1c);
+    UnitQuatToAxis(quat,&axis);
+    RotatePointAroundVector(local_10,axis,local_1c,orientation * 57.295776);
+    Vec3Cross(axis,local_10,local_1c);
     if ((fx_marks_draw_impact_axis->current).enabled != false) {
-      CL_AddDebugAxis(param_4,&local_28,20.0,1,700);
+      CL_AddDebugAxis(origin,&axis,20.0,1,700);
     }
-    bVar2 = Material_IsForSeeThruBulletHoleDecal(param_2);
+    bVar2 = Material_IsForSeeThruBulletHoleDecal(worldMaterial);
     if ((!bVar2) &&
        ((FX_ImpactMark_Generate
-                   (param_1,MARK_FRAGMENTS_AGAINST_BRUSHES,param_2,param_4,&local_28,param_6,param_7
-                    ,param_8,param_9,param_10,false), (fx_marks_smodels->current).enabled != false
-        || ((fx_marks_ents->current).enabled != false)))) {
+                   (localClientNum,MARK_FRAGMENTS_AGAINST_BRUSHES,worldMaterial,origin,&axis,
+                    orientation,nativeColor,radius,markEntnum,markAlpha,false),
+        (fx_marks_smodels->current).enabled != false || ((fx_marks_ents->current).enabled != false))
+       )) {
       FX_ImpactMark_Generate
-                (param_1,MARK_FRAGMENTS_AGAINST_MODELS,param_3,param_4,&local_28,param_6,param_7,
-                 param_8,param_9,param_10,false);
+                (localClientNum,MARK_FRAGMENTS_AGAINST_MODELS,modelMaterial,origin,&axis,orientation
+                 ,nativeColor,radius,markEntnum,markAlpha,false);
     }
     DVar4 = GetCurrentThreadId();
     if ((DVar4 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
@@ -1564,12 +1628,13 @@ FX_ImpactMark(int param_1,Material *param_2,Material *param_3,float *param_4,flo
 
 // 005D64A0  FX_BeginMarks  (EffectsCore/fx_marks.cpp:1115)
 
-void __cdecl FX_BeginMarks(int param_1)
+void __cdecl FX_BeginMarks(int clientIndex)
 
 {
   FxMarksSystem *pFVar1;
+  FxMarksSystem *marksSystem;
   
-  pFVar1 = FX_GetMarksSystem(param_1);
+  pFVar1 = FX_GetMarksSystem(clientIndex);
   pFVar1->frameCount = pFVar1->frameCount + 1;
   if (pFVar1->frameCount < 1) {
     pFVar1->frameCount = 1;
@@ -1583,42 +1648,48 @@ void __cdecl FX_BeginMarks(int param_1)
 // 005D6550  FX_CreateImpactMarkInternal  (EffectsCore/fx_marks.cpp:1136)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
 void __cdecl
 FX_CreateImpactMarkInternal
-          (int param_1,FxElemDef *param_2,FxSpatialFrame *param_3,int param_4,uint param_5)
+          (int localClientNum,FxElemDef *elemDef,FxSpatialFrame *spatialFrame,int randomSeed,
+          uint markEntnum)
 
 {
-  FxElemVisualState local_48;
+  FxElemVisualState visState;
   uint local_30;
-  FxMarkAlphaFade local_2c;
-  FxElemPreVisualState local_24;
-  FxElemMarkVisuals *local_8;
+  FxMarkAlphaFade markAlpha;
+  FxElemPreVisualState preVisState;
+  FxElemMarkVisuals *markVisuals;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  FX_SetupVisualState(param_2,(FxEffect *)0x0,param_4,0.0,&local_24);
-  local_48.size[0] =
-       (*(float *)(&DAT_00caeb48 + param_4 * 4) * ((local_24.refState)->amplitude).size[0] +
-       ((local_24.refState)->base).size[0]) * local_24.sampleLerpInv +
-       (*(float *)(&DAT_00caeb48 + param_4 * 4) * local_24.refState[1].amplitude.size[0] +
-       local_24.refState[1].base.size[0]) * local_24.sampleLerp;
-  FX_EvaluateVisualState(param_1,&local_24,1.0,&local_48);
-  if (((param_2->lifeSpanMsec).base < 2) ||
-     ((param_2->lifeSpanMsec).base <= (int)(uint)param_2->alphaFadeTimeMsec)) {
-    local_2c.ageLimitMsec = 0;
-    local_2c.fadeStartAgeMsec = 0;
+  FX_SetupVisualState(elemDef,(FxEffect *)0x0,randomSeed,0.0,&preVisState);
+  visState.size[0] =
+       (*(float *)(&DAT_00caeb48 + randomSeed * 4) * ((preVisState.refState)->amplitude).size[0] +
+       ((preVisState.refState)->base).size[0]) * preVisState.sampleLerpInv +
+       (*(float *)(&DAT_00caeb48 + randomSeed * 4) * preVisState.refState[1].amplitude.size[0] +
+       preVisState.refState[1].base.size[0]) * preVisState.sampleLerp;
+  FX_EvaluateVisualState(localClientNum,&preVisState,1.0,&visState);
+  if (((elemDef->lifeSpanMsec).base < 2) ||
+     ((elemDef->lifeSpanMsec).base <= (int)(uint)elemDef->alphaFadeTimeMsec)) {
+    markAlpha.ageLimitMsec = 0;
+    markAlpha.fadeStartAgeMsec = 0;
   }
   else {
-    local_2c.ageLimitMsec =
-         ((int)((uint)*(ushort *)(&fx_randomTable + (param_4 * 2 + 0x22) * 2) *
-               ((param_2->lifeSpanMsec).amplitude + 1)) >> 0x10) + (param_2->lifeSpanMsec).base;
-    local_2c.fadeStartAgeMsec = local_2c.ageLimitMsec - (uint)param_2->alphaFadeTimeMsec;
+    markAlpha.ageLimitMsec =
+         ((int)((uint)*(ushort *)(&fx_randomTable + (randomSeed * 2 + 0x22) * 2) *
+               ((elemDef->lifeSpanMsec).amplitude + 1)) >> 0x10) + (elemDef->lifeSpanMsec).base;
+    markAlpha.fadeStartAgeMsec = markAlpha.ageLimitMsec - (uint)elemDef->alphaFadeTimeMsec;
   }
-  local_8 = (param_2->visuals).markArray +
-            ((int)((uint)*(ushort *)(&fx_randomTable + (param_4 * 2 + 0x2a) * 2) *
-                  (uint)param_2->visualCount) >> 0x10);
-  FX_ImpactMark(param_1,local_8->materials[1],local_8->materials[0],param_3->origin,param_3->quat,
-                local_48.rotationTotal,local_48.color,local_48.size[0],param_5,&local_2c);
+  markVisuals = (elemDef->visuals).markArray +
+                ((int)((uint)*(ushort *)(&fx_randomTable + (randomSeed * 2 + 0x2a) * 2) *
+                      (uint)elemDef->visualCount) >> 0x10);
+  FX_ImpactMark(localClientNum,markVisuals->materials[1],markVisuals->materials[0],
+                spatialFrame->origin,spatialFrame->quat,visState.rotationTotal,visState.color,
+                visState.size[0],markEntnum,&markAlpha);
   return;
 }
 
@@ -1626,13 +1697,15 @@ FX_CreateImpactMarkInternal
 // 005D64F0  FX_CreateImpactMark  (EffectsCore/fx_marks.cpp:1171)
 
 void __cdecl
-FX_CreateImpactMark(int param_1,FxElemDef *param_2,FxSpatialFrame *param_3,int param_4,uint param_5)
+FX_CreateImpactMark(int localClientNum,FxElemDef *elemDef,FxSpatialFrame *spatialFrame,
+                   int randomSeed,uint markEntnum)
 
 {
   DWORD DVar1;
+  PIXProfile pixProfile;
   
   PIXBeginNamedEvent(-1,"FX_CreateImpactMark");
-  FX_CreateImpactMarkInternal(param_1,param_2,param_3,param_4,param_5);
+  FX_CreateImpactMarkInternal(localClientNum,elemDef,spatialFrame,randomSeed,markEntnum);
   DVar1 = GetCurrentThreadId();
   if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
@@ -1645,19 +1718,23 @@ FX_CreateImpactMark(int param_1,FxElemDef *param_2,FxSpatialFrame *param_3,int p
 
 /* WARNING: Enum "jqWorkerType": Some values do not have unique names */
 
-int __cdecl fx_add_markCallback(jqBatch *param_1)
+int __cdecl fx_add_markCallback(jqBatch *batch)
 
 {
-  int *piVar1;
-  DWORD DVar2;
+  int *data_00;
+  DWORD DVar1;
+  PIXProfile pixProfile;
+  void *data;
+  FxAddMarkCmd *cmd;
   
-  piVar1 = jqLockData(param_1);
+  data_00 = jqLockData(batch);
   PIXBeginNamedEvent(-1,"fx_add_mark");
   FX_CreateImpactMarkInternal
-            (*piVar1,(FxElemDef *)piVar1[1],(FxSpatialFrame *)(piVar1 + 2),piVar1[9],piVar1[10]);
-  jqUnlockData(param_1,piVar1);
-  DVar2 = GetCurrentThreadId();
-  if ((DVar2 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
+            (*data_00,(FxElemDef *)data_00[1],(FxSpatialFrame *)(data_00 + 2),data_00[9],data_00[10]
+            );
+  jqUnlockData(batch,data_00);
+  DVar1 = GetCurrentThreadId();
+  if ((DVar1 == (DWORD)g_DXDeviceThread) && (g_DXDeviceThread._4_4_ == 0)) {
     _D3DPERF_EndEvent_0();
   }
   return 0;
@@ -1666,16 +1743,17 @@ int __cdecl fx_add_markCallback(jqBatch *param_1)
 
 // 005D8BB0  FX_MarkEntDetachAll  (EffectsCore/fx_marks.cpp:1217)
 
-void __cdecl FX_MarkEntDetachAll(int param_1,int param_2)
+void __cdecl FX_MarkEntDetachAll(int localClientNum,int entnum)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxMarksSystem *pFVar3;
-  FxMark *pFVar4;
+  FxMarksSystem *marksSystem_00;
+  FxMark *mark;
+  FxMarksSystem *marksSystem;
   
-  pFVar3 = FX_GetMarksSystem(param_1);
-  if (0x5ff < (uint)param_2) {
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  if (0x5ff < (uint)entnum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x4c4,0,
                              "entnum doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
                             );
@@ -1685,9 +1763,9 @@ void __cdecl FX_MarkEntDetachAll(int param_1,int param_2)
       return;
     }
   }
-  while (pFVar3->entFirstMarkHandles[param_2] != 0xffff) {
-    pFVar4 = FX_MarkFromHandle(pFVar3,pFVar3->entFirstMarkHandles[param_2]);
-    FX_FreeMark(pFVar3,pFVar4);
+  while (marksSystem_00->entFirstMarkHandles[entnum] != 0xffff) {
+    mark = FX_MarkFromHandle(marksSystem_00,marksSystem_00->entFirstMarkHandles[entnum]);
+    FX_FreeMark(marksSystem_00,mark);
   }
   return;
 }
@@ -1695,20 +1773,22 @@ void __cdecl FX_MarkEntDetachAll(int param_1,int param_2)
 
 // 005D8C40  FX_MarkGlassDetachAll  (EffectsCore/fx_marks.cpp:1227)
 
-void __cdecl FX_MarkGlassDetachAll(int param_1,int param_2)
+void __cdecl FX_MarkGlassDetachAll(int localClientNum,int glassIndex)
 
 {
-  FxMarksSystem *pFVar1;
-  FxMark *pFVar2;
-  ushort local_8;
+  FxMarksSystem *marksSystem_00;
+  FxMark *mark_00;
+  FxMarksSystem *marksSystem;
+  FxMark *mark;
+  ushort markHandle;
   
-  pFVar1 = FX_GetMarksSystem(param_1);
-  local_8 = pFVar1->firstActiveWorldMarkHandle;
-  while (local_8 != 0xffff) {
-    pFVar2 = FX_MarkFromHandle(pFVar1,local_8);
-    local_8 = pFVar2->nextMark;
-    if ((uint)(pFVar2->context).modelIndex == param_2) {
-      FX_FreeMark(pFVar1,pFVar2);
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  markHandle = marksSystem_00->firstActiveWorldMarkHandle;
+  while (markHandle != 0xffff) {
+    mark_00 = FX_MarkFromHandle(marksSystem_00,markHandle);
+    markHandle = mark_00->nextMark;
+    if ((uint)(mark_00->context).modelIndex == glassIndex) {
+      FX_FreeMark(marksSystem_00,mark_00);
     }
   }
   return;
@@ -1717,17 +1797,19 @@ void __cdecl FX_MarkGlassDetachAll(int param_1,int param_2)
 
 // 005D8F90  FX_MarkEntDetachAllOfType  (EffectsCore/fx_marks.cpp:1246)
 
-void __cdecl FX_MarkEntDetachAllOfType(int param_1,int param_2,int param_3)
+void __cdecl FX_MarkEntDetachAllOfType(int localClientNum,int entnum,int markType)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxMarksSystem *pFVar3;
-  FxMark *pFVar4;
-  ushort local_c;
+  FxMarksSystem *marksSystem_00;
+  FxMark *mark_00;
+  FxMarksSystem *marksSystem;
+  ushort handle;
+  FxMark *mark;
   
-  pFVar3 = FX_GetMarksSystem(param_1);
-  if ((0x5ff < (uint)param_2) &&
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  if ((0x5ff < (uint)entnum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x4e5,
                                0,
                                "entnum doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
@@ -1736,12 +1818,12 @@ void __cdecl FX_MarkEntDetachAllOfType(int param_1,int param_2,int param_3)
     (*pcVar1)();
     return;
   }
-  local_c = pFVar3->entFirstMarkHandles[param_2];
-  while (local_c != 0xffff) {
-    pFVar4 = FX_MarkFromHandle(pFVar3,local_c);
-    local_c = pFVar4->nextMark;
-    if (((pFVar4->context).modelTypeAndSurf & 0xc0) == param_3) {
-      FX_FreeMark(pFVar3,pFVar4);
+  handle = marksSystem_00->entFirstMarkHandles[entnum];
+  while (handle != 0xffff) {
+    mark_00 = FX_MarkFromHandle(marksSystem_00,handle);
+    handle = mark_00->nextMark;
+    if (((mark_00->context).modelTypeAndSurf & 0xc0) == markType) {
+      FX_FreeMark(marksSystem_00,mark_00);
     }
   }
   return;
@@ -1750,17 +1832,20 @@ void __cdecl FX_MarkEntDetachAllOfType(int param_1,int param_2,int param_3)
 
 // 005D8D30  FX_MarkEntDetachMatchingBones  (EffectsCore/fx_marks.cpp:1270)
 
-void __cdecl FX_MarkEntDetachMatchingBones(FxMarksSystem *param_1,int param_2,uint *param_3)
+void __cdecl
+FX_MarkEntDetachMatchingBones(FxMarksSystem *marksSystem,int entnum,uint *unsetHidePartBits)
 
 {
   byte bVar1;
   code *pcVar2;
   bool bVar3;
-  FxMark *pFVar4;
-  uint uVar5;
-  ushort local_10;
+  FxMark *mark_00;
+  uint uVar4;
+  ushort handle;
+  FxMark *mark;
+  int markBoneIndex;
   
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entnum) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x4fb,
                                0,
                                "entnum doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
@@ -1769,27 +1854,27 @@ void __cdecl FX_MarkEntDetachMatchingBones(FxMarksSystem *param_1,int param_2,ui
     (*pcVar2)();
     return;
   }
-  local_10 = param_1->entFirstMarkHandles[param_2];
+  handle = marksSystem->entFirstMarkHandles[entnum];
   while( true ) {
     do {
-      if (local_10 == 0xffff) {
+      if (handle == 0xffff) {
         return;
       }
-      pFVar4 = FX_MarkFromHandle(param_1,local_10);
-      local_10 = pFVar4->nextMark;
-    } while (((pFVar4->context).modelTypeAndSurf & 0xc0) != 0xc0);
-    bVar1 = (pFVar4->context).lmapIndex;
-    uVar5 = (int)(uint)bVar1 >> 5;
-    if ((4 < uVar5) &&
+      mark_00 = FX_MarkFromHandle(marksSystem,handle);
+      handle = mark_00->nextMark;
+    } while (((mark_00->context).modelTypeAndSurf & 0xc0) != 0xc0);
+    bVar1 = (mark_00->context).lmapIndex;
+    uVar4 = (int)(uint)bVar1 >> 5;
+    if ((4 < uVar4) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x504,0,"%s\n\t(markBoneIndex) = %i"), !bVar3)) break;
-    if (((pFVar4->context).modelTypeAndSurf & 0x3f) == 0) {
-      if ((0x80000000U >> (bVar1 & 0x1f) & param_3[uVar5]) != 0) {
-        FX_FreeMark(param_1,pFVar4);
+    if (((mark_00->context).modelTypeAndSurf & 0x3f) == 0) {
+      if ((0x80000000U >> (bVar1 & 0x1f) & unsetHidePartBits[uVar4]) != 0) {
+        FX_FreeMark(marksSystem,mark_00);
       }
     }
     else {
-      FX_FreeMark(param_1,pFVar4);
+      FX_FreeMark(marksSystem,mark_00);
     }
   }
   pcVar2 = (code *)swi(3);
@@ -1800,26 +1885,30 @@ void __cdecl FX_MarkEntDetachMatchingBones(FxMarksSystem *param_1,int param_2,ui
 
 // 005D8CB0  FX_MarkEntUpdateHidePartBits  (EffectsCore/fx_marks.cpp:1308)
 
-void __cdecl FX_MarkEntUpdateHidePartBits(uint *param_1,uint *param_2,int param_3,int param_4)
+void __cdecl
+FX_MarkEntUpdateHidePartBits
+          (uint *oldHidePartBits,uint *newHidePartBits,int localClientNum,int entnum)
 
 {
   uint uVar1;
   uint uVar2;
-  FxMarksSystem *pFVar3;
-  uint local_20 [5];
-  int local_c;
-  uint local_8;
+  FxMarksSystem *marksSystem_00;
+  FxMarksSystem *marksSystem;
+  uint unsetHidePartBitInt;
+  uint unsetHidePartBits [5];
+  int hidePartIntIndex;
+  uint oredUnsetHidePartBits;
   
-  pFVar3 = FX_GetMarksSystem(param_3);
-  local_8 = 0;
-  for (local_c = 0; local_c != 5; local_c = local_c + 1) {
-    uVar1 = param_1[local_c];
-    uVar2 = param_2[local_c];
-    local_20[local_c] = ~uVar1 & uVar2;
-    local_8 = local_8 | ~uVar1 & uVar2;
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  oredUnsetHidePartBits = 0;
+  for (hidePartIntIndex = 0; hidePartIntIndex != 5; hidePartIntIndex = hidePartIntIndex + 1) {
+    uVar1 = oldHidePartBits[hidePartIntIndex];
+    uVar2 = newHidePartBits[hidePartIntIndex];
+    unsetHidePartBits[hidePartIntIndex] = ~uVar1 & uVar2;
+    oredUnsetHidePartBits = oredUnsetHidePartBits | ~uVar1 & uVar2;
   }
-  if (local_8 != 0) {
-    FX_MarkEntDetachMatchingBones(pFVar3,param_4,local_20);
+  if (oredUnsetHidePartBits != 0) {
+    FX_MarkEntDetachMatchingBones(marksSystem_00,entnum,unsetHidePartBits);
   }
   return;
 }
@@ -1828,45 +1917,48 @@ void __cdecl FX_MarkEntUpdateHidePartBits(uint *param_1,uint *param_2,int param_
 // 005D8E50  FX_MarkEntUpdateBegin  (EffectsCore/fx_marks.cpp:1330)
 
 void __cdecl
-FX_MarkEntUpdateBegin(FxMarkDObjUpdateContext *param_1,DObj *param_2,bool param_3,ushort param_4)
+FX_MarkEntUpdateBegin(FxMarkDObjUpdateContext *context,DObj *obj,bool isBrush,ushort brushIndex)
 
 {
   int iVar1;
   XModel *pXVar2;
   char *pcVar3;
-  int local_8;
+  int modelCount;
+  int modelIndex;
   
-  if (param_2 == (DObj *)0x0) {
-    param_1->modelCount = 0;
+  if (obj == (DObj *)0x0) {
+    context->modelCount = 0;
   }
   else {
-    iVar1 = DObjGetNumModels(param_2);
-    param_1->modelCount = iVar1;
-    for (local_8 = 0; local_8 != iVar1; local_8 = local_8 + 1) {
-      pXVar2 = DObjGetModel(param_2,local_8);
-      param_1->models[local_8] = pXVar2;
-      pcVar3 = DObjGetModelParentBoneName(param_2,local_8);
-      param_1->modelParentBones[local_8] = pcVar3;
+    iVar1 = DObjGetNumModels(obj);
+    context->modelCount = iVar1;
+    for (modelIndex = 0; modelIndex != iVar1; modelIndex = modelIndex + 1) {
+      pXVar2 = DObjGetModel(obj,modelIndex);
+      context->models[modelIndex] = pXVar2;
+      pcVar3 = DObjGetModelParentBoneName(obj,modelIndex);
+      context->modelParentBones[modelIndex] = pcVar3;
     }
   }
-  param_1->isBrush = param_3;
-  param_1->brushIndex = param_4;
+  context->isBrush = isBrush;
+  context->brushIndex = brushIndex;
   return;
 }
 
 
 // 005D9150  FX_MarkEntDetachModel  (EffectsCore/fx_marks.cpp:1355)
 
-void __cdecl FX_MarkEntDetachModel(FxMarksSystem *param_1,int param_2,int param_3)
+void __cdecl FX_MarkEntDetachModel(FxMarksSystem *marksSystem,int entnum,int oldModelIndex)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxMark *pFVar3;
-  uint uVar4;
-  ushort local_10;
+  FxMark *mark_00;
+  uint uVar3;
+  ushort handle;
+  FxMark *mark;
+  int markModelIndex;
   
-  if ((0x5ff < (uint)param_2) &&
+  if ((0x5ff < (uint)entnum) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x550,
                                0,
                                "entnum doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
@@ -1875,27 +1967,27 @@ void __cdecl FX_MarkEntDetachModel(FxMarksSystem *param_1,int param_2,int param_
     (*pcVar1)();
     return;
   }
-  local_10 = param_1->entFirstMarkHandles[param_2];
+  handle = marksSystem->entFirstMarkHandles[entnum];
   while( true ) {
     while( true ) {
       do {
-        if (local_10 == 0xffff) {
+        if (handle == 0xffff) {
           return;
         }
-        pFVar3 = FX_MarkFromHandle(param_1,local_10);
-        local_10 = pFVar3->nextMark;
-      } while (((pFVar3->context).modelTypeAndSurf & 0xc0) != 0xc0);
-      uVar4 = (pFVar3->context).modelTypeAndSurf & 0x3f;
-      if (uVar4 == param_3) break;
-      if (param_3 < (int)uVar4) {
-        (pFVar3->context).modelTypeAndSurf = (pFVar3->context).modelTypeAndSurf + 0xff;
+        mark_00 = FX_MarkFromHandle(marksSystem,handle);
+        handle = mark_00->nextMark;
+      } while (((mark_00->context).modelTypeAndSurf & 0xc0) != 0xc0);
+      uVar3 = (mark_00->context).modelTypeAndSurf & 0x3f;
+      if (uVar3 == oldModelIndex) break;
+      if (oldModelIndex < (int)uVar3) {
+        (mark_00->context).modelTypeAndSurf = (mark_00->context).modelTypeAndSurf + 0xff;
       }
     }
-    if ((pFVar3->frameCountDrawn == -1) &&
+    if ((mark_00->frameCountDrawn == -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x55e,0,"%s"), !bVar2)) break;
-    FX_FreeMark(param_1,pFVar3);
-    if ((pFVar3->frameCountDrawn != -1) &&
+    FX_FreeMark(marksSystem,mark_00);
+    if ((mark_00->frameCountDrawn != -1) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                                  0x560,0,"%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
@@ -1912,44 +2004,47 @@ void __cdecl FX_MarkEntDetachModel(FxMarksSystem *param_1,int param_2,int param_
 // 005D9040  FX_MarkEntUpdateEndDObj  (EffectsCore/fx_marks.cpp:1387)
 
 void __cdecl
-FX_MarkEntUpdateEndDObj(FxMarkDObjUpdateContext *param_1,int param_2,int param_3,DObj *param_4)
+FX_MarkEntUpdateEndDObj(FxMarkDObjUpdateContext *context,int localClientNum,int entnum,DObj *obj)
 
 {
   int iVar1;
-  FxMarksSystem *pFVar2;
-  int iVar3;
-  XModel *pXVar4;
-  char *pcVar5;
-  int local_14;
-  int local_10;
-  int local_8;
+  FxMarksSystem *marksSystem_00;
+  int iVar2;
+  XModel *pXVar3;
+  char *pcVar4;
+  FxMarksSystem *marksSystem;
+  int oldModelCount;
+  int removedModelCount;
+  int oldModelIndex;
+  int modelCount;
+  int modelIndex;
   
-  pFVar2 = FX_GetMarksSystem(param_2);
-  iVar1 = param_1->modelCount;
-  iVar3 = DObjGetNumModels(param_4);
-  local_8 = 0;
-  local_14 = 0;
-  local_10 = 0;
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  iVar1 = context->modelCount;
+  iVar2 = DObjGetNumModels(obj);
+  modelIndex = 0;
+  removedModelCount = 0;
+  oldModelIndex = 0;
   while( true ) {
-    if (local_10 == iVar1) {
+    if (oldModelIndex == iVar1) {
       return;
     }
-    if (local_8 == iVar3) break;
-    pXVar4 = DObjGetModel(param_4,local_8);
-    if ((pXVar4 == param_1->models[local_10]) &&
-       (pcVar5 = DObjGetModelParentBoneName(param_4,local_8),
-       pcVar5 == param_1->modelParentBones[local_10])) {
-      local_8 = local_8 + 1;
+    if (modelIndex == iVar2) break;
+    pXVar3 = DObjGetModel(obj,modelIndex);
+    if ((pXVar3 == context->models[oldModelIndex]) &&
+       (pcVar4 = DObjGetModelParentBoneName(obj,modelIndex),
+       pcVar4 == context->modelParentBones[oldModelIndex])) {
+      modelIndex = modelIndex + 1;
     }
     else {
-      FX_MarkEntDetachModel(pFVar2,param_3,local_10 - local_14);
-      local_14 = local_14 + 1;
+      FX_MarkEntDetachModel(marksSystem_00,entnum,oldModelIndex - removedModelCount);
+      removedModelCount = removedModelCount + 1;
     }
-    local_10 = local_10 + 1;
+    oldModelIndex = oldModelIndex + 1;
   }
-  for (; local_10 != iVar1; local_10 = local_10 + 1) {
-    FX_MarkEntDetachModel(pFVar2,param_3,local_10 - local_14);
-    local_14 = local_14 + 1;
+  for (; oldModelIndex != iVar1; oldModelIndex = oldModelIndex + 1) {
+    FX_MarkEntDetachModel(marksSystem_00,entnum,oldModelIndex - removedModelCount);
+    removedModelCount = removedModelCount + 1;
   }
   return;
 }
@@ -1958,19 +2053,19 @@ FX_MarkEntUpdateEndDObj(FxMarkDObjUpdateContext *param_1,int param_2,int param_3
 // 005D8F00  FX_MarkEntUpdateEnd  (EffectsCore/fx_marks.cpp:1427)
 
 void __cdecl
-FX_MarkEntUpdateEnd(FxMarkDObjUpdateContext *param_1,int param_2,int param_3,DObj *param_4,
-                   bool param_5,ushort param_6)
+FX_MarkEntUpdateEnd(FxMarkDObjUpdateContext *context,int localClientNum,int entnum,DObj *obj,
+                   bool isBrush,ushort brushIndex)
 
 {
-  if ((param_1->isBrush != false) && ((!param_5 || (param_1->brushIndex != param_6)))) {
-    FX_MarkEntDetachAllOfType(param_2,param_3,0x80);
+  if ((context->isBrush != false) && ((!isBrush || (context->brushIndex != brushIndex)))) {
+    FX_MarkEntDetachAllOfType(localClientNum,entnum,0x80);
   }
-  if (param_1->modelCount != 0) {
-    if (param_4 == (DObj *)0x0) {
-      FX_MarkEntDetachAllOfType(param_2,param_3,0xc0);
+  if (context->modelCount != 0) {
+    if (obj == (DObj *)0x0) {
+      FX_MarkEntDetachAllOfType(localClientNum,entnum,0xc0);
     }
     else {
-      FX_MarkEntUpdateEndDObj(param_1,param_2,param_3,param_4);
+      FX_MarkEntUpdateEndDObj(context,localClientNum,entnum,obj);
     }
   }
   return;
@@ -1980,7 +2075,7 @@ FX_MarkEntUpdateEnd(FxMarkDObjUpdateContext *param_1,int param_2,int param_3,DOb
 // 005DBED0  setTexCoordAndLMap<GfxPackedVertex>  (EffectsCore/fx_marks.cpp:1462)
 
 void __cdecl
-setTexCoordAndLMap<GfxPackedVertex>(GfxPackedVertex *param_1,float *param_2,float *param_3)
+setTexCoordAndLMap<GfxPackedVertex>(GfxPackedVertex *outVert,float *texCoord,float *lmapCoord)
 
 {
   uint local_44;
@@ -1988,7 +2083,7 @@ setTexCoordAndLMap<GfxPackedVertex>(GfxPackedVertex *param_1,float *param_2,floa
   uint local_38;
   uint local_24;
   
-  local_24 = (int)((int)*param_2 << 1 ^ 0x80000000U) >> 0xe;
+  local_24 = (int)((int)*texCoord << 1 ^ 0x80000000U) >> 0xe;
   if (0x3ffe < (int)local_24) {
     local_24 = 0x3fff;
   }
@@ -1998,7 +2093,7 @@ setTexCoordAndLMap<GfxPackedVertex>(GfxPackedVertex *param_1,float *param_2,floa
   else {
     local_40 = local_24;
   }
-  local_38 = (int)((int)param_2[1] << 1 ^ 0x80000000U) >> 0xe;
+  local_38 = (int)((int)texCoord[1] << 1 ^ 0x80000000U) >> 0xe;
   if (0x3ffe < (int)local_38) {
     local_38 = 0x3fff;
   }
@@ -2008,9 +2103,9 @@ setTexCoordAndLMap<GfxPackedVertex>(GfxPackedVertex *param_1,float *param_2,floa
   else {
     local_44 = local_38;
   }
-  (param_1->texCoord).packed =
-       ((int)*param_2 >> 0x10 & 0xc000U | local_40 & 0x3fff) * 0x10000 +
-       ((int)param_2[1] >> 0x10 & 0xc000U | local_44 & 0x3fff);
+  (outVert->texCoord).packed =
+       ((int)*texCoord >> 0x10 & 0xc000U | local_40 & 0x3fff) * 0x10000 +
+       ((int)texCoord[1] >> 0x10 & 0xc000U | local_44 & 0x3fff);
   return;
 }
 
@@ -2021,12 +2116,12 @@ setTexCoordAndLMap<GfxPackedVertex>(GfxPackedVertex *param_1,float *param_2,floa
 
 void __cdecl
 FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
-          (FxMarksSystem *param_1,FxMark *param_2,ushort param_3)
+          (FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex)
 
 {
   code *pcVar1;
   GfxWorldVertex *pGVar2;
-  uint uVar3;
+  int iVar3;
   bool bVar4;
   uchar uVar5;
   float fVar6;
@@ -2034,23 +2129,24 @@ FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
   float fVar8;
   float fVar9;
   float *pfVar10;
-  uint local_a4;
+  int local_a4;
   PackedUnitVec local_98;
   PackedUnitVec local_78;
-  int local_44;
-  float local_30;
+  int groupHandle;
+  float texCoordScale;
+  float binormal;
   float local_2c;
   float local_28;
-  FxPointGroup *local_24;
-  GfxWorldVertex *local_20;
-  float local_1c;
+  FxPointGroup *markPoint;
+  GfxWorldVertex *verts;
+  float texCoord;
   float local_18;
-  uint local_14;
-  uint local_10;
-  FxPointGroup *local_c;
-  GfxWorldVertex *local_8;
+  int pointCount;
+  int loopCount;
+  FxPointGroup *group;
+  GfxWorldVertex *outVert;
   
-  if (param_2 == (FxMark *)0x0) {
+  if (mark == (FxMark *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5cc,0,
                              "%s");
     if (!bVar4) {
@@ -2059,9 +2155,9 @@ FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
       return;
     }
   }
-  local_20 = R_GetMarkMeshVerts(param_3);
-  local_14 = (uint)param_2->pointCount;
-  if (param_2->radius < 0.1) {
+  verts = R_GetMarkMeshVerts(baseVertex);
+  pointCount = (int)mark->pointCount;
+  if (mark->radius < 0.1) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5dc,0,
                              "%s\n\t(mark->radius) = %g");
     if (!bVar4) {
@@ -2070,13 +2166,13 @@ FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
       return;
     }
   }
-  fVar6 = 0.5 / param_2->radius;
-  local_44 = param_2->points;
-  local_8 = local_20;
-  uVar3 = local_10;
+  fVar6 = 0.5 / mark->radius;
+  groupHandle = mark->points;
+  outVert = verts;
+  iVar3 = loopCount;
   do {
-    local_10 = uVar3;
-    if (local_44 == 0xffff) {
+    loopCount = iVar3;
+    if (groupHandle == 0xffff) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5e2,
                                0,"%s");
       if (!bVar4) {
@@ -2085,16 +2181,16 @@ FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
         return;
       }
     }
-    local_c = FX_PointGroupFromHandle(param_1,local_44);
-    local_44 = local_c->next;
-    if ((int)local_14 < 3) {
-      local_a4 = local_14;
+    group = FX_PointGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = group->next;
+    if (pointCount < 3) {
+      local_a4 = pointCount;
     }
     else {
       local_a4 = 2;
     }
-    local_10 = local_a4;
-    if ((int)local_a4 < 1) {
+    loopCount = local_a4;
+    if (local_a4 < 1) {
       bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5e7,
                                0,"%s\n\t(loopCount) = %i");
       if (!bVar4) {
@@ -2103,48 +2199,48 @@ FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
         return;
       }
     }
-    local_14 = local_14 - local_10;
-    local_24 = local_c;
+    pointCount = pointCount - loopCount;
+    markPoint = group;
     do {
-      pGVar2 = local_8;
-      pfVar10 = local_24[2].points[0].normal + 1;
-      fVar7 = local_24->points[0].xyz[0] - param_2->origin[0];
-      fVar8 = local_24->points[0].xyz[1] - param_2->origin[1];
-      fVar9 = local_24->points[0].xyz[2] - param_2->origin[2];
-      Vec3Cross(param_2->texCoordAxis,local_24->points[0].normal,&local_30);
-      pGVar2->xyz[0] = local_24->points[0].xyz[0];
-      pGVar2->xyz[1] = local_24->points[0].xyz[1];
-      pGVar2->xyz[2] = local_24->points[0].xyz[2];
+      pGVar2 = outVert;
+      pfVar10 = markPoint[2].points[0].normal + 1;
+      fVar7 = markPoint->points[0].xyz[0] - mark->origin[0];
+      fVar8 = markPoint->points[0].xyz[1] - mark->origin[1];
+      fVar9 = markPoint->points[0].xyz[2] - mark->origin[2];
+      Vec3Cross(mark->texCoordAxis,markPoint->points[0].normal,&binormal);
+      pGVar2->xyz[0] = markPoint->points[0].xyz[0];
+      pGVar2->xyz[1] = markPoint->points[0].xyz[1];
+      pGVar2->xyz[2] = markPoint->points[0].xyz[2];
       pGVar2->binormalSign = -1.0;
-      pGVar2->color = *(GfxColor *)param_2->nativeColor;
-      if (0 < (param_2->alphaFade).ageLimitMsec) {
-        uVar5 = FX_MarkGetFadedAlpha(param_2);
+      pGVar2->color = *(GfxColor *)mark->nativeColor;
+      if (0 < (mark->alphaFade).ageLimitMsec) {
+        uVar5 = FX_MarkGetFadedAlpha(mark);
         (pGVar2->color).array[3] = uVar5;
       }
-      local_1c = (fVar7 * param_2->texCoordAxis[0] + fVar8 * param_2->texCoordAxis[1] +
-                 fVar9 * param_2->texCoordAxis[2]) * fVar6 + 0.5;
-      local_18 = (fVar7 * local_30 + fVar8 * local_2c + fVar9 * local_28) * fVar6 + 0.5;
-      pGVar2->texCoord[0] = local_1c;
+      texCoord = (fVar7 * mark->texCoordAxis[0] + fVar8 * mark->texCoordAxis[1] +
+                 fVar9 * mark->texCoordAxis[2]) * fVar6 + 0.5;
+      local_18 = (fVar7 * binormal + fVar8 * local_2c + fVar9 * local_28) * fVar6 + 0.5;
+      pGVar2->texCoord[0] = texCoord;
       pGVar2->texCoord[1] = local_18;
-      pGVar2->lmapCoord[0] = local_24->points[0].lmapCoord[0];
-      pGVar2->lmapCoord[1] = local_24->points[0].lmapCoord[1];
-      local_78.array[1] = (char)(int)(local_24->points[0].normal[1] * 127.0 + 127.5);
-      local_78.array[0] = (char)(int)(local_24->points[0].normal[0] * 127.0 + 127.5);
-      local_78.array[2] = (char)(int)(local_24->points[0].normal[2] * 127.0 + 127.5);
+      pGVar2->lmapCoord[0] = markPoint->points[0].lmapCoord[0];
+      pGVar2->lmapCoord[1] = markPoint->points[0].lmapCoord[1];
+      local_78.array[1] = (char)(int)(markPoint->points[0].normal[1] * 127.0 + 127.5);
+      local_78.array[0] = (char)(int)(markPoint->points[0].normal[0] * 127.0 + 127.5);
+      local_78.array[2] = (char)(int)(markPoint->points[0].normal[2] * 127.0 + 127.5);
       local_78.array[3] = 0x3f;
       pGVar2->normal = local_78;
-      local_98.array[1] = (char)(int)(param_2->texCoordAxis[1] * 127.0 + 127.5);
-      local_98.array[0] = (char)(int)(param_2->texCoordAxis[0] * 127.0 + 127.5);
-      local_98.array[2] = (char)(int)(param_2->texCoordAxis[2] * 127.0 + 127.5);
+      local_98.array[1] = (char)(int)(mark->texCoordAxis[1] * 127.0 + 127.5);
+      local_98.array[0] = (char)(int)(mark->texCoordAxis[0] * 127.0 + 127.5);
+      local_98.array[2] = (char)(int)(mark->texCoordAxis[2] * 127.0 + 127.5);
       local_98.array[3] = 0x3f;
       pGVar2->tangent = local_98;
-      local_24 = (FxPointGroup *)(local_24->points + 1);
-      local_8 = local_8 + 1;
-      local_10 = local_10 - 1;
-    } while (local_10 != 0);
-    uVar3 = 0;
-  } while (local_14 != 0);
-  if (local_44 != 0xffff) {
+      markPoint = (FxPointGroup *)(markPoint->points + 1);
+      outVert = outVert + 1;
+      loopCount = loopCount + -1;
+    } while (loopCount != 0);
+    iVar3 = 0;
+  } while (pointCount != 0);
+  if (groupHandle != 0xffff) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x607,0,
                              "%s\n\t(groupHandle) = %i");
     if (!bVar4) {
@@ -2163,136 +2259,137 @@ FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>
 
 void __cdecl
 FX_ExpandMarkVerts_NoTransform<GfxPackedVertex>
-          (FxMarksSystem *param_1,FxMark *param_2,ushort param_3)
+          (FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex)
 
 {
   code *pcVar1;
-  GfxWorldVertex *pGVar2;
-  uint uVar3;
-  bool bVar4;
-  uchar uVar5;
+  GfxWorldVertex *outVert_00;
+  int iVar2;
+  bool bVar3;
+  uchar uVar4;
+  float fVar5;
   float fVar6;
   float fVar7;
   float fVar8;
-  float fVar9;
-  float *pfVar10;
-  uint local_d4;
+  float *pfVar9;
+  int local_d4;
   undefined4 local_c8;
   undefined4 local_a8;
-  int local_44;
-  float local_30;
+  int groupHandle;
+  float texCoordScale;
+  float binormal;
   float local_2c;
   float local_28;
-  FxPointGroup *local_24;
-  GfxWorldVertex *local_20;
-  float local_1c;
+  FxPointGroup *markPoint;
+  GfxWorldVertex *verts;
+  float texCoord;
   float local_18;
-  uint local_14;
-  uint local_10;
-  FxPointGroup *local_c;
-  GfxWorldVertex *local_8;
+  int pointCount;
+  int loopCount;
+  FxPointGroup *group;
+  GfxWorldVertex *outVert;
   
-  if (param_2 == (FxMark *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5cc,0,
+  if (mark == (FxMark *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5cc,0,
                              "%s");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  local_20 = R_GetMarkMeshVerts(param_3);
-  local_14 = (uint)param_2->pointCount;
-  if (param_2->radius < 0.1) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5dc,0,
+  verts = R_GetMarkMeshVerts(baseVertex);
+  pointCount = (int)mark->pointCount;
+  if (mark->radius < 0.1) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5dc,0,
                              "%s\n\t(mark->radius) = %g");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  fVar6 = 0.5 / param_2->radius;
-  local_44 = param_2->points;
-  local_8 = local_20;
-  uVar3 = local_10;
+  fVar5 = 0.5 / mark->radius;
+  groupHandle = mark->points;
+  outVert = verts;
+  iVar2 = loopCount;
   do {
-    local_10 = uVar3;
-    if (local_44 == 0xffff) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5e2,
+    loopCount = iVar2;
+    if (groupHandle == 0xffff) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5e2,
                                0,"%s");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_c = FX_PointGroupFromHandle(param_1,local_44);
-    local_44 = local_c->next;
-    if ((int)local_14 < 3) {
-      local_d4 = local_14;
+    group = FX_PointGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = group->next;
+    if (pointCount < 3) {
+      local_d4 = pointCount;
     }
     else {
       local_d4 = 2;
     }
-    local_10 = local_d4;
-    if ((int)local_d4 < 1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5e7,
+    loopCount = local_d4;
+    if (local_d4 < 1) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x5e7,
                                0,"%s\n\t(loopCount) = %i");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_14 = local_14 - local_10;
-    local_24 = local_c;
+    pointCount = pointCount - loopCount;
+    markPoint = group;
     do {
-      pGVar2 = local_8;
-      pfVar10 = local_24[2].points[0].normal + 1;
-      fVar7 = local_24->points[0].xyz[0] - param_2->origin[0];
-      fVar8 = local_24->points[0].xyz[1] - param_2->origin[1];
-      fVar9 = local_24->points[0].xyz[2] - param_2->origin[2];
-      Vec3Cross(param_2->texCoordAxis,local_24->points[0].normal,&local_30);
-      pGVar2->xyz[0] = local_24->points[0].xyz[0];
-      pGVar2->xyz[1] = local_24->points[0].xyz[1];
-      pGVar2->xyz[2] = local_24->points[0].xyz[2];
-      pGVar2->binormalSign = -1.0;
-      pGVar2->color = *(GfxColor *)param_2->nativeColor;
-      if (0 < (param_2->alphaFade).ageLimitMsec) {
-        uVar5 = FX_MarkGetFadedAlpha(param_2);
-        (pGVar2->color).array[3] = uVar5;
+      outVert_00 = outVert;
+      pfVar9 = markPoint[2].points[0].normal + 1;
+      fVar6 = markPoint->points[0].xyz[0] - mark->origin[0];
+      fVar7 = markPoint->points[0].xyz[1] - mark->origin[1];
+      fVar8 = markPoint->points[0].xyz[2] - mark->origin[2];
+      Vec3Cross(mark->texCoordAxis,markPoint->points[0].normal,&binormal);
+      outVert_00->xyz[0] = markPoint->points[0].xyz[0];
+      outVert_00->xyz[1] = markPoint->points[0].xyz[1];
+      outVert_00->xyz[2] = markPoint->points[0].xyz[2];
+      outVert_00->binormalSign = -1.0;
+      outVert_00->color = *(GfxColor *)mark->nativeColor;
+      if (0 < (mark->alphaFade).ageLimitMsec) {
+        uVar4 = FX_MarkGetFadedAlpha(mark);
+        (outVert_00->color).array[3] = uVar4;
       }
-      local_1c = (fVar7 * param_2->texCoordAxis[0] + fVar8 * param_2->texCoordAxis[1] +
-                 fVar9 * param_2->texCoordAxis[2]) * fVar6 + 0.5;
-      local_18 = (fVar7 * local_30 + fVar8 * local_2c + fVar9 * local_28) * fVar6 + 0.5;
+      texCoord = (fVar6 * mark->texCoordAxis[0] + fVar7 * mark->texCoordAxis[1] +
+                 fVar8 * mark->texCoordAxis[2]) * fVar5 + 0.5;
+      local_18 = (fVar6 * binormal + fVar7 * local_2c + fVar8 * local_28) * fVar5 + 0.5;
       setTexCoordAndLMap<GfxPackedVertex>
-                ((GfxPackedVertex *)pGVar2,&local_1c,local_24->points[0].lmapCoord);
-      local_a8 = (float)CONCAT13(0x3f,CONCAT12((char)(int)(local_24->points[0].normal[2] * 127.0 +
+                ((GfxPackedVertex *)outVert_00,&texCoord,markPoint->points[0].lmapCoord);
+      local_a8 = (float)CONCAT13(0x3f,CONCAT12((char)(int)(markPoint->points[0].normal[2] * 127.0 +
                                                           127.5),
-                                               CONCAT11((char)(int)(local_24->points[0].normal[1] *
+                                               CONCAT11((char)(int)(markPoint->points[0].normal[1] *
                                                                     127.0 + 127.5),
-                                                        (char)(int)(local_24->points[0].normal[0] *
+                                                        (char)(int)(markPoint->points[0].normal[0] *
                                                                     127.0 + 127.5))));
-      pGVar2->texCoord[1] = local_a8;
-      local_c8 = (float)CONCAT13(0x3f,CONCAT12((char)(int)(param_2->texCoordAxis[2] * 127.0 + 127.5)
-                                               ,CONCAT11((char)(int)(param_2->texCoordAxis[1] *
-                                                                     127.0 + 127.5),
-                                                         (char)(int)(param_2->texCoordAxis[0] *
-                                                                     127.0 + 127.5))));
-      pGVar2->lmapCoord[0] = local_c8;
-      local_24 = (FxPointGroup *)(local_24->points + 1);
-      local_8 = local_8 + 1;
-      local_10 = local_10 - 1;
-    } while (local_10 != 0);
-    uVar3 = 0;
-  } while (local_14 != 0);
-  if (local_44 != 0xffff) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x607,0,
+      outVert_00->texCoord[1] = local_a8;
+      local_c8 = (float)CONCAT13(0x3f,CONCAT12((char)(int)(mark->texCoordAxis[2] * 127.0 + 127.5),
+                                               CONCAT11((char)(int)(mark->texCoordAxis[1] * 127.0 +
+                                                                   127.5),
+                                                        (char)(int)(mark->texCoordAxis[0] * 127.0 +
+                                                                   127.5))));
+      outVert_00->lmapCoord[0] = local_c8;
+      markPoint = (FxPointGroup *)(markPoint->points + 1);
+      outVert = outVert + 1;
+      loopCount = loopCount + -1;
+    } while (loopCount != 0);
+    iVar2 = 0;
+  } while (pointCount != 0);
+  if (groupHandle != 0xffff) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x607,0,
                              "%s\n\t(groupHandle) = %i");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
-      (*pcVar1)(pfVar10);
+      (*pcVar1)(pfVar9);
       return;
     }
   }
@@ -2302,7 +2399,7 @@ FX_ExpandMarkVerts_NoTransform<GfxPackedVertex>
 
 // 005D9E30  ConvertQuatToSkelMat  (universal/com_math.h:1536)
 
-void __cdecl ConvertQuatToSkelMat(DObjAnimMat *param_1,DObjSkelMat *param_2)
+void __cdecl ConvertQuatToSkelMat(DObjAnimMat *mat,DObjSkelMat *skelMat)
 
 {
   code *pcVar1;
@@ -2316,11 +2413,20 @@ void __cdecl ConvertQuatToSkelMat(DObjAnimMat *param_1,DObjSkelMat *param_2)
   float fVar9;
   float fVar10;
   float fVar11;
+  float yy;
+  float xy;
+  float zz;
+  float zw;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
   
-  if ((((((uint)param_1->quat[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->quat[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->quat[2] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->quat[3] & 0x7f800000) == 0x7f800000)) {
+  if ((((((uint)mat->quat[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)mat->quat[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)mat->quat[2] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)mat->quat[3] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x604,0,"%s"
                             );
     if (!bVar2) {
@@ -2329,7 +2435,7 @@ void __cdecl ConvertQuatToSkelMat(DObjAnimMat *param_1,DObjSkelMat *param_2)
       return;
     }
   }
-  if (((uint)param_1->transWeight & 0x7f800000) == 0x7f800000) {
+  if (((uint)mat->transWeight & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x605,0,"%s"
                             );
     if (!bVar2) {
@@ -2338,35 +2444,35 @@ void __cdecl ConvertQuatToSkelMat(DObjAnimMat *param_1,DObjSkelMat *param_2)
       return;
     }
   }
-  fVar5 = param_1->transWeight;
-  fVar3 = fVar5 * param_1->quat[0];
-  fVar4 = fVar5 * param_1->quat[1];
-  fVar5 = fVar5 * param_1->quat[2];
-  fVar6 = fVar3 * param_1->quat[0];
-  fVar7 = fVar3 * param_1->quat[1];
-  fVar8 = fVar3 * param_1->quat[2];
-  fVar3 = fVar3 * param_1->quat[3];
-  fVar9 = fVar4 * param_1->quat[1];
-  fVar10 = fVar4 * param_1->quat[2];
-  fVar4 = fVar4 * param_1->quat[3];
-  fVar11 = fVar5 * param_1->quat[2];
-  fVar5 = fVar5 * param_1->quat[3];
-  param_2->axis[0][0] = 1.0 - (fVar9 + fVar11);
-  param_2->axis[0][1] = fVar7 + fVar5;
-  param_2->axis[0][2] = fVar8 - fVar4;
-  param_2->axis[0][3] = 0.0;
-  param_2->axis[1][0] = fVar7 - fVar5;
-  param_2->axis[1][1] = 1.0 - (fVar6 + fVar11);
-  param_2->axis[1][2] = fVar10 + fVar3;
-  param_2->axis[1][3] = 0.0;
-  param_2->axis[2][0] = fVar8 + fVar4;
-  param_2->axis[2][1] = fVar10 - fVar3;
-  param_2->axis[2][2] = 1.0 - (fVar6 + fVar9);
-  param_2->axis[2][3] = 0.0;
-  param_2->origin[0] = param_1->trans[0];
-  param_2->origin[1] = param_1->trans[1];
-  param_2->origin[2] = param_1->trans[2];
-  param_2->origin[3] = 1.0;
+  fVar5 = mat->transWeight;
+  fVar3 = fVar5 * mat->quat[0];
+  fVar4 = fVar5 * mat->quat[1];
+  fVar5 = fVar5 * mat->quat[2];
+  fVar6 = fVar3 * mat->quat[0];
+  fVar7 = fVar3 * mat->quat[1];
+  fVar8 = fVar3 * mat->quat[2];
+  fVar3 = fVar3 * mat->quat[3];
+  fVar9 = fVar4 * mat->quat[1];
+  fVar10 = fVar4 * mat->quat[2];
+  fVar4 = fVar4 * mat->quat[3];
+  fVar11 = fVar5 * mat->quat[2];
+  fVar5 = fVar5 * mat->quat[3];
+  skelMat->axis[0][0] = 1.0 - (fVar9 + fVar11);
+  skelMat->axis[0][1] = fVar7 + fVar5;
+  skelMat->axis[0][2] = fVar8 - fVar4;
+  skelMat->axis[0][3] = 0.0;
+  skelMat->axis[1][0] = fVar7 - fVar5;
+  skelMat->axis[1][1] = 1.0 - (fVar6 + fVar11);
+  skelMat->axis[1][2] = fVar10 + fVar3;
+  skelMat->axis[1][3] = 0.0;
+  skelMat->axis[2][0] = fVar8 + fVar4;
+  skelMat->axis[2][1] = fVar10 - fVar3;
+  skelMat->axis[2][2] = 1.0 - (fVar6 + fVar9);
+  skelMat->axis[2][3] = 0.0;
+  skelMat->origin[0] = mat->trans[0];
+  skelMat->origin[1] = mat->trans[1];
+  skelMat->origin[2] = mat->trans[2];
+  skelMat->origin[3] = 1.0;
   return;
 }
 
@@ -2377,140 +2483,142 @@ void __cdecl ConvertQuatToSkelMat(DObjAnimMat *param_1,DObjSkelMat *param_2)
 
 void __cdecl
 FX_ExpandMarkVerts_Transform<GfxWorldVertex>
-          (FxMarksSystem *param_1,FxMark *param_2,ushort param_3,float (*param_4) [3])
+          (FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex,float (*matrixTransform) [3])
 
 {
   code *pcVar1;
-  GfxWorldVertex *pGVar2;
-  uint uVar3;
-  bool bVar4;
-  uchar uVar5;
-  uint local_b8;
+  GfxWorldVertex *out;
+  int iVar2;
+  bool bVar3;
+  uchar uVar4;
+  int local_b8;
   PackedUnitVec local_b4;
   PackedUnitVec local_98;
-  int local_68;
-  float local_64;
+  int groupHandle;
+  float delta;
   float local_60;
   float local_5c;
-  float local_58;
+  float transformedNormal;
   float local_54;
   float local_50;
-  float local_4c;
-  float local_48;
+  float texCoordScale;
+  float binormal;
   float local_44;
   float local_40;
-  FxPointGroup *local_3c;
-  GfxWorldVertex *local_38;
-  float local_34;
+  FxPointGroup *markPoint;
+  GfxWorldVertex *verts;
+  float transformedDelta;
   float local_30;
   float local_2c;
-  float local_28;
+  float texCoord;
   float local_24;
-  uint local_20;
-  uint local_1c;
-  float local_18;
+  int pointCount;
+  int loopCount;
+  float transformedTexCoordAxis;
   float local_14;
   float local_10;
-  FxPointGroup *local_c;
-  GfxWorldVertex *local_8;
+  FxPointGroup *group;
+  GfxWorldVertex *outVert;
   
-  if (param_2 == (FxMark *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x623,0,
+  if (mark == (FxMark *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x623,0,
                              "%s");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  local_38 = R_GetMarkMeshVerts(param_3);
-  if (param_2->radius < 0.1) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x627,0,
+  verts = R_GetMarkMeshVerts(baseVertex);
+  if (mark->radius < 0.1) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x627,0,
                              "%s\n\t(mark->radius) = %g");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  local_4c = 0.5 / param_2->radius;
-  local_68 = param_2->points;
-  local_20 = (uint)param_2->pointCount;
-  local_8 = local_38;
-  uVar3 = local_1c;
+  texCoordScale = 0.5 / mark->radius;
+  groupHandle = mark->points;
+  pointCount = (int)mark->pointCount;
+  outVert = verts;
+  iVar2 = loopCount;
   do {
-    local_1c = uVar3;
-    if (local_68 == 0xffff) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x62f,
+    loopCount = iVar2;
+    if (groupHandle == 0xffff) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x62f,
                                0,"%s");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_c = FX_PointGroupFromHandle(param_1,local_68);
-    local_68 = local_c->next;
-    if ((int)local_20 < 3) {
-      local_b8 = local_20;
+    group = FX_PointGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = group->next;
+    if (pointCount < 3) {
+      local_b8 = pointCount;
     }
     else {
       local_b8 = 2;
     }
-    local_1c = local_b8;
-    if ((int)local_b8 < 1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x634,
+    loopCount = local_b8;
+    if (local_b8 < 1) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x634,
                                0,"%s\n\t(loopCount) = %i");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_20 = local_20 - local_1c;
-    local_3c = local_c;
+    pointCount = pointCount - loopCount;
+    markPoint = group;
     do {
-      pGVar2 = local_8;
-      local_64 = local_3c->points[0].xyz[0] - param_2->origin[0];
-      local_60 = local_3c->points[0].xyz[1] - param_2->origin[1];
-      local_5c = local_3c->points[0].xyz[2] - param_2->origin[2];
-      MatrixTransformVector(&local_64,param_4,&local_34);
-      MatrixTransformVector(param_2->texCoordAxis,param_4,&local_18);
-      MatrixTransformVector(local_3c->points[0].normal,param_4,&local_58);
-      Vec3Cross(&local_18,&local_58,&local_48);
-      MatrixTransformVector43((float *)local_3c,param_4,pGVar2->xyz);
-      pGVar2->binormalSign = -1.0;
-      pGVar2->color = *(GfxColor *)param_2->nativeColor;
-      if (0 < (param_2->alphaFade).ageLimitMsec) {
-        uVar5 = FX_MarkGetFadedAlpha(param_2);
-        (pGVar2->color).array[3] = uVar5;
+      out = outVert;
+      delta = markPoint->points[0].xyz[0] - mark->origin[0];
+      local_60 = markPoint->points[0].xyz[1] - mark->origin[1];
+      local_5c = markPoint->points[0].xyz[2] - mark->origin[2];
+      MatrixTransformVector(&delta,matrixTransform,&transformedDelta);
+      MatrixTransformVector(mark->texCoordAxis,matrixTransform,&transformedTexCoordAxis);
+      MatrixTransformVector(markPoint->points[0].normal,matrixTransform,&transformedNormal);
+      Vec3Cross(&transformedTexCoordAxis,&transformedNormal,&binormal);
+      MatrixTransformVector43((float *)markPoint,matrixTransform,out->xyz);
+      out->binormalSign = -1.0;
+      out->color = *(GfxColor *)mark->nativeColor;
+      if (0 < (mark->alphaFade).ageLimitMsec) {
+        uVar4 = FX_MarkGetFadedAlpha(mark);
+        (out->color).array[3] = uVar4;
       }
-      local_28 = (local_34 * local_18 + local_30 * local_14 + local_2c * local_10) * local_4c + 0.5;
-      local_24 = (local_34 * local_48 + local_30 * local_44 + local_2c * local_40) * local_4c + 0.5;
-      pGVar2->texCoord[0] = local_28;
-      pGVar2->texCoord[1] = local_24;
-      pGVar2->lmapCoord[0] = local_3c->points[0].lmapCoord[0];
-      pGVar2->lmapCoord[1] = local_3c->points[0].lmapCoord[1];
+      texCoord = (transformedDelta * transformedTexCoordAxis + local_30 * local_14 +
+                 local_2c * local_10) * texCoordScale + 0.5;
+      local_24 = (transformedDelta * binormal + local_30 * local_44 + local_2c * local_40) *
+                 texCoordScale + 0.5;
+      out->texCoord[0] = texCoord;
+      out->texCoord[1] = local_24;
+      out->lmapCoord[0] = markPoint->points[0].lmapCoord[0];
+      out->lmapCoord[1] = markPoint->points[0].lmapCoord[1];
       local_98.array[1] = (char)(int)(local_54 * 127.0 + 127.5);
-      local_98.array[0] = (char)(int)(local_58 * 127.0 + 127.5);
+      local_98.array[0] = (char)(int)(transformedNormal * 127.0 + 127.5);
       local_98.array[2] = (char)(int)(local_50 * 127.0 + 127.5);
       local_98.array[3] = 0x3f;
-      pGVar2->normal = local_98;
+      out->normal = local_98;
       local_b4.array[1] = (char)(int)(local_14 * 127.0 + 127.5);
-      local_b4.array[0] = (char)(int)(local_18 * 127.0 + 127.5);
+      local_b4.array[0] = (char)(int)(transformedTexCoordAxis * 127.0 + 127.5);
       local_b4.array[2] = (char)(int)(local_10 * 127.0 + 127.5);
       local_b4.array[3] = 0x3f;
-      pGVar2->tangent = local_b4;
-      local_3c = (FxPointGroup *)(local_3c->points + 1);
-      local_8 = local_8 + 1;
-      local_1c = local_1c - 1;
-    } while (local_1c != 0);
-    uVar3 = 0;
-  } while (local_20 != 0);
-  if (local_68 != 0xffff) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x652,0,
+      out->tangent = local_b4;
+      markPoint = (FxPointGroup *)(markPoint->points + 1);
+      outVert = outVert + 1;
+      loopCount = loopCount + -1;
+    } while (loopCount != 0);
+    iVar2 = 0;
+  } while (pointCount != 0);
+  if (groupHandle != 0xffff) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x652,0,
                              "%s\n\t(groupHandle) = %i");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
@@ -2526,136 +2634,140 @@ FX_ExpandMarkVerts_Transform<GfxWorldVertex>
 
 void __cdecl
 FX_ExpandMarkVerts_Transform<GfxPackedVertex>
-          (FxMarksSystem *param_1,FxMark *param_2,ushort param_3,float (*param_4) [3])
+          (FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex,float (*matrixTransform) [3])
 
 {
   code *pcVar1;
-  GfxWorldVertex *pGVar2;
-  uint uVar3;
-  bool bVar4;
-  uchar uVar5;
-  uint local_e8;
+  GfxWorldVertex *outVert_00;
+  int iVar2;
+  bool bVar3;
+  uchar uVar4;
+  int local_e8;
   undefined4 local_e4;
   undefined4 local_c8;
-  int local_68;
-  float local_64;
+  int groupHandle;
+  float delta;
   float local_60;
   float local_5c;
-  float local_58;
+  float transformedNormal;
   float local_54;
   float local_50;
-  float local_4c;
-  float local_48;
+  float texCoordScale;
+  float binormal;
   float local_44;
   float local_40;
-  FxPointGroup *local_3c;
-  GfxWorldVertex *local_38;
-  float local_34;
+  FxPointGroup *markPoint;
+  GfxWorldVertex *verts;
+  float transformedDelta;
   float local_30;
   float local_2c;
-  float local_28;
+  float texCoord;
   float local_24;
-  uint local_20;
-  uint local_1c;
-  float local_18;
+  int pointCount;
+  int loopCount;
+  float transformedTexCoordAxis;
   float local_14;
   float local_10;
-  FxPointGroup *local_c;
-  GfxWorldVertex *local_8;
+  FxPointGroup *group;
+  GfxWorldVertex *outVert;
   
-  if (param_2 == (FxMark *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x623,0,
+  if (mark == (FxMark *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x623,0,
                              "%s");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  local_38 = R_GetMarkMeshVerts(param_3);
-  if (param_2->radius < 0.1) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x627,0,
+  verts = R_GetMarkMeshVerts(baseVertex);
+  if (mark->radius < 0.1) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x627,0,
                              "%s\n\t(mark->radius) = %g");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  local_4c = 0.5 / param_2->radius;
-  local_68 = param_2->points;
-  local_20 = (uint)param_2->pointCount;
-  local_8 = local_38;
-  uVar3 = local_1c;
+  texCoordScale = 0.5 / mark->radius;
+  groupHandle = mark->points;
+  pointCount = (int)mark->pointCount;
+  outVert = verts;
+  iVar2 = loopCount;
   do {
-    local_1c = uVar3;
-    if (local_68 == 0xffff) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x62f,
+    loopCount = iVar2;
+    if (groupHandle == 0xffff) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x62f,
                                0,"%s");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_c = FX_PointGroupFromHandle(param_1,local_68);
-    local_68 = local_c->next;
-    if ((int)local_20 < 3) {
-      local_e8 = local_20;
+    group = FX_PointGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = group->next;
+    if (pointCount < 3) {
+      local_e8 = pointCount;
     }
     else {
       local_e8 = 2;
     }
-    local_1c = local_e8;
-    if ((int)local_e8 < 1) {
-      bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x634,
+    loopCount = local_e8;
+    if (local_e8 < 1) {
+      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x634,
                                0,"%s\n\t(loopCount) = %i");
-      if (!bVar4) {
+      if (!bVar3) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    local_20 = local_20 - local_1c;
-    local_3c = local_c;
+    pointCount = pointCount - loopCount;
+    markPoint = group;
     do {
-      pGVar2 = local_8;
-      local_64 = local_3c->points[0].xyz[0] - param_2->origin[0];
-      local_60 = local_3c->points[0].xyz[1] - param_2->origin[1];
-      local_5c = local_3c->points[0].xyz[2] - param_2->origin[2];
-      MatrixTransformVector(&local_64,param_4,&local_34);
-      MatrixTransformVector(param_2->texCoordAxis,param_4,&local_18);
-      MatrixTransformVector(local_3c->points[0].normal,param_4,&local_58);
-      Vec3Cross(&local_18,&local_58,&local_48);
-      MatrixTransformVector43((float *)local_3c,param_4,pGVar2->xyz);
-      pGVar2->binormalSign = -1.0;
-      pGVar2->color = *(GfxColor *)param_2->nativeColor;
-      if (0 < (param_2->alphaFade).ageLimitMsec) {
-        uVar5 = FX_MarkGetFadedAlpha(param_2);
-        (pGVar2->color).array[3] = uVar5;
+      outVert_00 = outVert;
+      delta = markPoint->points[0].xyz[0] - mark->origin[0];
+      local_60 = markPoint->points[0].xyz[1] - mark->origin[1];
+      local_5c = markPoint->points[0].xyz[2] - mark->origin[2];
+      MatrixTransformVector(&delta,matrixTransform,&transformedDelta);
+      MatrixTransformVector(mark->texCoordAxis,matrixTransform,&transformedTexCoordAxis);
+      MatrixTransformVector(markPoint->points[0].normal,matrixTransform,&transformedNormal);
+      Vec3Cross(&transformedTexCoordAxis,&transformedNormal,&binormal);
+      MatrixTransformVector43((float *)markPoint,matrixTransform,outVert_00->xyz);
+      outVert_00->binormalSign = -1.0;
+      outVert_00->color = *(GfxColor *)mark->nativeColor;
+      if (0 < (mark->alphaFade).ageLimitMsec) {
+        uVar4 = FX_MarkGetFadedAlpha(mark);
+        (outVert_00->color).array[3] = uVar4;
       }
-      local_28 = (local_34 * local_18 + local_30 * local_14 + local_2c * local_10) * local_4c + 0.5;
-      local_24 = (local_34 * local_48 + local_30 * local_44 + local_2c * local_40) * local_4c + 0.5;
+      texCoord = (transformedDelta * transformedTexCoordAxis + local_30 * local_14 +
+                 local_2c * local_10) * texCoordScale + 0.5;
+      local_24 = (transformedDelta * binormal + local_30 * local_44 + local_2c * local_40) *
+                 texCoordScale + 0.5;
       setTexCoordAndLMap<GfxPackedVertex>
-                ((GfxPackedVertex *)pGVar2,&local_28,local_3c->points[0].lmapCoord);
+                ((GfxPackedVertex *)outVert_00,&texCoord,markPoint->points[0].lmapCoord);
       local_c8 = (float)CONCAT13(0x3f,CONCAT12((char)(int)(local_50 * 127.0 + 127.5),
                                                CONCAT11((char)(int)(local_54 * 127.0 + 127.5),
-                                                        (char)(int)(local_58 * 127.0 + 127.5))));
-      pGVar2->texCoord[1] = local_c8;
+                                                        (char)(int)(transformedNormal * 127.0 +
+                                                                   127.5))));
+      outVert_00->texCoord[1] = local_c8;
       local_e4 = (float)CONCAT13(0x3f,CONCAT12((char)(int)(local_10 * 127.0 + 127.5),
                                                CONCAT11((char)(int)(local_14 * 127.0 + 127.5),
-                                                        (char)(int)(local_18 * 127.0 + 127.5))));
-      pGVar2->lmapCoord[0] = local_e4;
-      local_3c = (FxPointGroup *)(local_3c->points + 1);
-      local_8 = local_8 + 1;
-      local_1c = local_1c - 1;
-    } while (local_1c != 0);
-    uVar3 = 0;
-  } while (local_20 != 0);
-  if (local_68 != 0xffff) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x652,0,
+                                                        (char)(int)(transformedTexCoordAxis * 127.0
+                                                                   + 127.5))));
+      outVert_00->lmapCoord[0] = local_e4;
+      markPoint = (FxPointGroup *)(markPoint->points + 1);
+      outVert = outVert + 1;
+      loopCount = loopCount + -1;
+    } while (loopCount != 0);
+    iVar2 = 0;
+  } while (pointCount != 0);
+  if (groupHandle != 0xffff) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x652,0,
                              "%s\n\t(groupHandle) = %i");
-    if (!bVar4) {
+    if (!bVar3) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
@@ -2667,12 +2779,12 @@ FX_ExpandMarkVerts_Transform<GfxPackedVertex>
 
 // 005D9A50  FX_AddMarkTrisToScene  (EffectsCore/fx_marks.cpp:1635)
 
-void __cdecl FX_AddMarkTrisToScene(FxActiveMarkSurf *param_1)
+void __cdecl FX_AddMarkTrisToScene(FxActiveMarkSurf *outSurf)
 
 {
   R_AddMarkMeshDrawSurf
-            (param_1->material,&param_1->context,param_1->indices,param_1->indexCount,
-             param_1->markHitNormal,param_1->visLightsMask);
+            (outSurf->material,&outSurf->context,outSurf->indices,outSurf->indexCount,
+             outSurf->markHitNormal,outSurf->visLightsMask);
   return;
 }
 
@@ -2680,8 +2792,8 @@ void __cdecl FX_AddMarkTrisToScene(FxActiveMarkSurf *param_1)
 // 005D9820  FX_EmitMarkTri  (EffectsCore/fx_marks.cpp:1642)
 
 void __cdecl
-FX_EmitMarkTri(FxMarksSystem *param_1,ushort *param_2,GfxMarkContext *param_3,ushort param_4,
-              FxActiveMarkSurf *param_5)
+FX_EmitMarkTri(FxMarksSystem *marksSystem,ushort *indices,GfxMarkContext *markContext,
+              ushort baseVertex,FxActiveMarkSurf *outSurf)
 
 {
   ushort *puVar1;
@@ -2690,15 +2802,16 @@ FX_EmitMarkTri(FxMarksSystem *param_1,ushort *param_2,GfxMarkContext *param_3,us
   uchar uVar4;
   uchar uVar5;
   bool bVar6;
+  r_double_index_t *pIndex;
   
-  bVar6 = FX_MarkContextsEqual(&param_5->context,param_3);
+  bVar6 = FX_MarkContextsEqual(&outSurf->context,markContext);
   if (!bVar6) {
-    if (param_5->indexCount != 0) {
-      FX_AddMarkTrisToScene(param_5);
-      param_5->indices = param_5->indices + param_5->indexCount;
-      param_5->indexCount = 0;
+    if (outSurf->indexCount != 0) {
+      FX_AddMarkTrisToScene(outSurf);
+      outSurf->indices = outSurf->indices + outSurf->indexCount;
+      outSurf->indexCount = 0;
     }
-    if ((param_5->context).modelIndex != param_3->modelIndex) {
+    if ((outSurf->context).modelIndex != markContext->modelIndex) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x679,
                                0,"%s");
       if (!bVar6) {
@@ -2707,7 +2820,7 @@ FX_EmitMarkTri(FxMarksSystem *param_1,ushort *param_2,GfxMarkContext *param_3,us
         return;
       }
     }
-    if (((param_5->context).modelTypeAndSurf & 0xc0) != (param_3->modelTypeAndSurf & 0xc0)) {
+    if (((outSurf->context).modelTypeAndSurf & 0xc0) != (markContext->modelTypeAndSurf & 0xc0)) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x67a,
                                0,"%s");
       if (!bVar6) {
@@ -2716,17 +2829,17 @@ FX_EmitMarkTri(FxMarksSystem *param_1,ushort *param_2,GfxMarkContext *param_3,us
         return;
       }
     }
-    uVar3 = param_3->primaryLightIndex;
-    uVar4 = param_3->reflectionProbeIndex;
-    uVar5 = param_3->modelTypeAndSurf;
-    (param_5->context).lmapIndex = param_3->lmapIndex;
-    (param_5->context).primaryLightIndex = uVar3;
-    (param_5->context).reflectionProbeIndex = uVar4;
-    (param_5->context).modelTypeAndSurf = uVar5;
-    (param_5->context).modelIndex = param_3->modelIndex;
+    uVar3 = markContext->primaryLightIndex;
+    uVar4 = markContext->reflectionProbeIndex;
+    uVar5 = markContext->modelTypeAndSurf;
+    (outSurf->context).lmapIndex = markContext->lmapIndex;
+    (outSurf->context).primaryLightIndex = uVar3;
+    (outSurf->context).reflectionProbeIndex = uVar4;
+    (outSurf->context).modelTypeAndSurf = uVar5;
+    (outSurf->context).modelIndex = markContext->modelIndex;
   }
-  if (param_1->hasCarryIndex == false) {
-    puVar1 = param_5->indices + param_5->indexCount;
+  if (marksSystem->hasCarryIndex == false) {
+    puVar1 = outSurf->indices + outSurf->indexCount;
     if (((uint)puVar1 & 3) != 0) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x686,
                                0,"%s");
@@ -2736,13 +2849,13 @@ FX_EmitMarkTri(FxMarksSystem *param_1,ushort *param_2,GfxMarkContext *param_3,us
         return;
       }
     }
-    *puVar1 = param_4 + *param_2;
-    puVar1[1] = param_4 + param_2[1];
-    param_1->hasCarryIndex = true;
-    param_1->carryIndex = param_4 + param_2[2];
+    *puVar1 = baseVertex + *indices;
+    puVar1[1] = baseVertex + indices[1];
+    marksSystem->hasCarryIndex = true;
+    marksSystem->carryIndex = baseVertex + indices[2];
   }
   else {
-    puVar1 = param_5->indices + param_5->indexCount + -1;
+    puVar1 = outSurf->indices + outSurf->indexCount + -1;
     if (((uint)puVar1 & 3) != 0) {
       bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x694,
                                0,"%s");
@@ -2752,20 +2865,20 @@ FX_EmitMarkTri(FxMarksSystem *param_1,ushort *param_2,GfxMarkContext *param_3,us
         return;
       }
     }
-    *puVar1 = param_1->carryIndex;
-    puVar1[1] = param_4 + *param_2;
-    puVar1[2] = param_4 + param_2[1];
-    puVar1[3] = param_4 + param_2[2];
-    param_1->hasCarryIndex = false;
+    *puVar1 = marksSystem->carryIndex;
+    puVar1[1] = baseVertex + *indices;
+    puVar1[2] = baseVertex + indices[1];
+    puVar1[3] = baseVertex + indices[2];
+    marksSystem->hasCarryIndex = false;
   }
-  param_5->indexCount = param_5->indexCount + 3;
+  outSurf->indexCount = outSurf->indexCount + 3;
   return;
 }
 
 
 // 005DA690  ConvertQuatToInverseSkelMat  (universal/com_math.h:1645)
 
-void __cdecl ConvertQuatToInverseSkelMat(DObjAnimMat *param_1,DObjSkelMat *param_2)
+void __cdecl ConvertQuatToInverseSkelMat(DObjAnimMat *mat,DObjSkelMat *skelMat)
 
 {
   code *pcVar1;
@@ -2779,11 +2892,20 @@ void __cdecl ConvertQuatToInverseSkelMat(DObjAnimMat *param_1,DObjSkelMat *param
   float fVar9;
   float fVar10;
   float fVar11;
+  float yy;
+  float xy;
+  float zz;
+  float zw;
+  float yw;
+  float xz;
+  float yz;
+  float xx;
+  float xw;
   
-  if ((((((uint)param_1->quat[0] & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_1->quat[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_1->quat[2] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1->quat[3] & 0x7f800000) == 0x7f800000)) {
+  if ((((((uint)mat->quat[0] & 0x7f800000) == 0x7f800000) ||
+       (((uint)mat->quat[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)mat->quat[2] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)mat->quat[3] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x671,0,"%s"
                             );
     if (!bVar2) {
@@ -2792,7 +2914,7 @@ void __cdecl ConvertQuatToInverseSkelMat(DObjAnimMat *param_1,DObjSkelMat *param
       return;
     }
   }
-  if (((uint)param_1->transWeight & 0x7f800000) == 0x7f800000) {
+  if (((uint)mat->transWeight & 0x7f800000) == 0x7f800000) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_math.h",0x672,0,"%s"
                             );
     if (!bVar2) {
@@ -2801,41 +2923,41 @@ void __cdecl ConvertQuatToInverseSkelMat(DObjAnimMat *param_1,DObjSkelMat *param
       return;
     }
   }
-  fVar5 = param_1->transWeight;
-  fVar3 = fVar5 * param_1->quat[0];
-  fVar4 = fVar5 * param_1->quat[1];
-  fVar5 = fVar5 * param_1->quat[2];
-  fVar6 = fVar3 * param_1->quat[0];
-  fVar7 = fVar3 * param_1->quat[1];
-  fVar8 = fVar3 * param_1->quat[2];
-  fVar3 = fVar3 * param_1->quat[3];
-  fVar9 = fVar4 * param_1->quat[1];
-  fVar10 = fVar4 * param_1->quat[2];
-  fVar4 = fVar4 * param_1->quat[3];
-  fVar11 = fVar5 * param_1->quat[2];
-  fVar5 = fVar5 * param_1->quat[3];
-  param_2->axis[0][0] = 1.0 - (fVar9 + fVar11);
-  param_2->axis[0][1] = fVar7 - fVar5;
-  param_2->axis[0][2] = fVar8 + fVar4;
-  param_2->axis[0][3] = 0.0;
-  param_2->axis[1][0] = fVar7 + fVar5;
-  param_2->axis[1][1] = 1.0 - (fVar6 + fVar11);
-  param_2->axis[1][2] = fVar10 - fVar3;
-  param_2->axis[1][3] = 0.0;
-  param_2->axis[2][0] = fVar8 - fVar4;
-  param_2->axis[2][1] = fVar10 + fVar3;
-  param_2->axis[2][2] = 1.0 - (fVar6 + fVar9);
-  param_2->axis[2][3] = 0.0;
-  param_2->origin[0] =
-       -(param_1->trans[0] * param_2->axis[0][0] + param_1->trans[1] * param_2->axis[1][0] +
-        param_1->trans[2] * param_2->axis[2][0]);
-  param_2->origin[1] =
-       -(param_1->trans[0] * param_2->axis[0][1] + param_1->trans[1] * param_2->axis[1][1] +
-        param_1->trans[2] * param_2->axis[2][1]);
-  param_2->origin[2] =
-       -(param_1->trans[0] * param_2->axis[0][2] + param_1->trans[1] * param_2->axis[1][2] +
-        param_1->trans[2] * param_2->axis[2][2]);
-  param_2->origin[3] = 1.0;
+  fVar5 = mat->transWeight;
+  fVar3 = fVar5 * mat->quat[0];
+  fVar4 = fVar5 * mat->quat[1];
+  fVar5 = fVar5 * mat->quat[2];
+  fVar6 = fVar3 * mat->quat[0];
+  fVar7 = fVar3 * mat->quat[1];
+  fVar8 = fVar3 * mat->quat[2];
+  fVar3 = fVar3 * mat->quat[3];
+  fVar9 = fVar4 * mat->quat[1];
+  fVar10 = fVar4 * mat->quat[2];
+  fVar4 = fVar4 * mat->quat[3];
+  fVar11 = fVar5 * mat->quat[2];
+  fVar5 = fVar5 * mat->quat[3];
+  skelMat->axis[0][0] = 1.0 - (fVar9 + fVar11);
+  skelMat->axis[0][1] = fVar7 - fVar5;
+  skelMat->axis[0][2] = fVar8 + fVar4;
+  skelMat->axis[0][3] = 0.0;
+  skelMat->axis[1][0] = fVar7 + fVar5;
+  skelMat->axis[1][1] = 1.0 - (fVar6 + fVar11);
+  skelMat->axis[1][2] = fVar10 - fVar3;
+  skelMat->axis[1][3] = 0.0;
+  skelMat->axis[2][0] = fVar8 - fVar4;
+  skelMat->axis[2][1] = fVar10 + fVar3;
+  skelMat->axis[2][2] = 1.0 - (fVar6 + fVar9);
+  skelMat->axis[2][3] = 0.0;
+  skelMat->origin[0] =
+       -(mat->trans[0] * skelMat->axis[0][0] + mat->trans[1] * skelMat->axis[1][0] +
+        mat->trans[2] * skelMat->axis[2][0]);
+  skelMat->origin[1] =
+       -(mat->trans[0] * skelMat->axis[0][1] + mat->trans[1] * skelMat->axis[1][1] +
+        mat->trans[2] * skelMat->axis[2][1]);
+  skelMat->origin[2] =
+       -(mat->trans[0] * skelMat->axis[0][2] + mat->trans[1] * skelMat->axis[1][2] +
+        mat->trans[2] * skelMat->axis[2][2]);
+  skelMat->origin[3] = 1.0;
   return;
 }
 
@@ -2843,18 +2965,19 @@ void __cdecl ConvertQuatToInverseSkelMat(DObjAnimMat *param_1,DObjSkelMat *param
 // 005D9600  FX_DrawMarkTris  (EffectsCore/fx_marks.cpp:1708)
 
 void __cdecl
-FX_DrawMarkTris(FxMarksSystem *param_1,FxMark *param_2,ushort param_3,ushort *param_4,
-               FxActiveMarkSurf *param_5)
+FX_DrawMarkTris(FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex,ushort *indices,
+               FxActiveMarkSurf *outSurf)
 
 {
   code *pcVar1;
   bool bVar2;
   FxTriGroup *pFVar3;
-  int local_14;
-  uint local_10;
-  uint local_8;
+  int groupHandle;
+  int triCount;
+  FxTriGroup *group;
+  int triIndex;
   
-  if (param_2 == (FxMark *)0x0) {
+  if (mark == (FxMark *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6b2,0,
                              "%s");
     if (!bVar2) {
@@ -2863,24 +2986,24 @@ FX_DrawMarkTris(FxMarksSystem *param_1,FxMark *param_2,ushort param_3,ushort *pa
       return;
     }
   }
-  local_14 = param_2->tris;
-  local_10 = (uint)param_2->triCount;
-  param_5->material = param_2->material;
-  (param_5->context).lmapIndex = 0xff;
-  (param_5->context).primaryLightIndex = '\0';
-  (param_5->context).reflectionProbeIndex = 0xff;
-  (param_5->context).modelTypeAndSurf = (param_2->context).modelTypeAndSurf;
-  (param_5->context).modelIndex = (param_2->context).modelIndex;
-  param_5->indices = param_4;
-  param_5->indexCount = 0;
-  param_5->markHitNormal[0] = param_2->hitNormal[0];
-  param_5->markHitNormal[1] = param_2->hitNormal[1];
-  param_5->markHitNormal[2] = param_2->hitNormal[2];
-  param_5->visLightsMask = 0;
+  groupHandle = mark->tris;
+  triCount = (int)mark->triCount;
+  outSurf->material = mark->material;
+  (outSurf->context).lmapIndex = 0xff;
+  (outSurf->context).primaryLightIndex = '\0';
+  (outSurf->context).reflectionProbeIndex = 0xff;
+  (outSurf->context).modelTypeAndSurf = (mark->context).modelTypeAndSurf;
+  (outSurf->context).modelIndex = (mark->context).modelIndex;
+  outSurf->indices = indices;
+  outSurf->indexCount = 0;
+  outSurf->markHitNormal[0] = mark->hitNormal[0];
+  outSurf->markHitNormal[1] = mark->hitNormal[1];
+  outSurf->markHitNormal[2] = mark->hitNormal[2];
+  outSurf->visLightsMask = 0;
   do {
-    pFVar3 = FX_TriGroupFromHandle(param_1,local_14);
-    local_14 = pFVar3->next;
-    if ((int)local_10 < (int)(uint)pFVar3->triCount) {
+    pFVar3 = FX_TriGroupFromHandle(marksSystem,groupHandle);
+    groupHandle = pFVar3->next;
+    if (triCount < (int)(uint)pFVar3->triCount) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6c6,
                                0,"triCount >= group->triCount\n\t%i, %i");
       if (!bVar2) {
@@ -2898,14 +3021,14 @@ FX_DrawMarkTris(FxMarksSystem *param_1,FxMark *param_2,ushort param_3,ushort *pa
         return;
       }
     }
-    local_10 = local_10 - pFVar3->triCount;
-    local_8 = 0;
+    triCount = triCount - (uint)pFVar3->triCount;
+    triIndex = 0;
     do {
-      FX_EmitMarkTri(param_1,pFVar3->indices[local_8],&pFVar3->context,param_3,param_5);
-      local_8 = local_8 + 1;
-    } while (local_8 != pFVar3->triCount);
-  } while (local_10 != 0);
-  if (local_14 != 0xffff) {
+      FX_EmitMarkTri(marksSystem,pFVar3->indices[triIndex],&pFVar3->context,baseVertex,outSurf);
+      triIndex = triIndex + 1;
+    } while (triIndex != (uint)pFVar3->triCount);
+  } while (triCount != 0);
+  if (groupHandle != 0xffff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6d1,0,
                              "%s\n\t(groupHandle) = %i");
     if (!bVar2) {
@@ -2914,7 +3037,7 @@ FX_DrawMarkTris(FxMarksSystem *param_1,FxMark *param_2,ushort param_3,ushort *pa
       return;
     }
   }
-  if (param_5->indexCount == 0) {
+  if (outSurf->indexCount == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6d3,0,
                              "%s");
     if (!bVar2) {
@@ -2929,27 +3052,27 @@ FX_DrawMarkTris(FxMarksSystem *param_1,FxMark *param_2,ushort param_3,ushort *pa
 
 // 005DA160  DObjSkelMatToMatrix43  (universal/com_math.h:1723)
 
-void __cdecl DObjSkelMatToMatrix43(DObjSkelMat *param_1,float (*param_2) [3])
+void __cdecl DObjSkelMatToMatrix43(DObjSkelMat *inSkelMat,float (*outMatrix) [3])
 
 {
   float fVar1;
   float fVar2;
   float (*pafVar3) [3];
-  int local_8;
+  int dim;
   
-  for (local_8 = 0; local_8 != 3; local_8 = local_8 + 1) {
-    pafVar3 = param_2 + local_8;
-    fVar1 = param_1->axis[local_8][1];
-    fVar2 = param_1->axis[local_8][2];
-    (*pafVar3)[0] = param_1->axis[local_8][0];
+  for (dim = 0; dim != 3; dim = dim + 1) {
+    pafVar3 = outMatrix + dim;
+    fVar1 = inSkelMat->axis[dim][1];
+    fVar2 = inSkelMat->axis[dim][2];
+    (*pafVar3)[0] = inSkelMat->axis[dim][0];
     (*pafVar3)[1] = fVar1;
     (*pafVar3)[2] = fVar2;
   }
-  fVar1 = param_1->origin[1];
-  fVar2 = param_1->origin[2];
-  param_2[3][0] = param_1->origin[0];
-  param_2[3][1] = fVar1;
-  param_2[3][2] = fVar2;
+  fVar1 = inSkelMat->origin[1];
+  fVar2 = inSkelMat->origin[2];
+  outMatrix[3][0] = inSkelMat->origin[0];
+  outMatrix[3][1] = fVar1;
+  outMatrix[3][2] = fVar2;
   return;
 }
 
@@ -2958,8 +3081,8 @@ void __cdecl DObjSkelMatToMatrix43(DObjSkelMat *param_1,float (*param_2) [3])
 
 bool __cdecl
 FX_GenerateMarkVertsForMark_Begin
-          (FxMarksSystem *param_1,FxMark *param_2,uint *param_3,ushort *param_4,
-          FxActiveMarkSurf *param_5)
+          (FxMarksSystem *marksSystem,FxMark *mark,uint *indexCount,ushort *outBaseVertex,
+          FxActiveMarkSurf *outDrawSurf)
 
 {
   uint uVar1;
@@ -2967,42 +3090,48 @@ FX_GenerateMarkVertsForMark_Begin
   bool bVar3;
   undefined1 uVar4;
   uint uVar5;
-  r_double_index_t *local_8;
+  uint newIndexCount;
+  uint reserveIndexCount;
+  ushort *indices;
+  r_double_index_t *doubleIndices;
   
-  uVar5 = (uint)param_2->triCount * 3 + *param_3;
-  uVar1 = *param_3;
-  bVar3 = R_ReserveMarkMeshVerts((uint)param_2->pointCount,param_4);
+  uVar5 = (uint)mark->triCount * 3 + *indexCount;
+  uVar1 = *indexCount;
+  bVar3 = R_ReserveMarkMeshVerts((uint)mark->pointCount,outBaseVertex);
   if ((!bVar3) ||
-     (bVar3 = R_ReserveMarkMeshIndices((uVar5 + 1 & 0xfffffffe) - (uVar1 + 1 & 0xfffffffe),&local_8)
-     , !bVar3)) {
-    FX_FreeMark(param_1,param_2);
+     (bVar3 = R_ReserveMarkMeshIndices
+                        ((uVar5 + 1 & 0xfffffffe) - (uVar1 + 1 & 0xfffffffe),&doubleIndices), !bVar3
+     )) {
+    FX_FreeMark(marksSystem,mark);
     return false;
   }
-  uVar1 = *param_3;
-  *param_3 = uVar5;
-  if ((param_2->frameCountDrawn == -1) &&
+  uVar1 = *indexCount;
+  *indexCount = uVar5;
+  if ((mark->frameCountDrawn == -1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6ef,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  param_2->frameCountDrawn = param_1->frameCount;
-  FX_DrawMarkTris(param_1,param_2,*param_4,(ushort *)((int)local_8 + (uVar1 & 1) * -2),param_5);
+  mark->frameCountDrawn = marksSystem->frameCount;
+  FX_DrawMarkTris(marksSystem,mark,*outBaseVertex,(ushort *)((int)doubleIndices + (uVar1 & 1) * -2),
+                  outDrawSurf);
   return true;
 }
 
 
 // 005D9A90  FX_GenerateMarkVertsForMark_SetLightHandle  (EffectsCore/fx_marks.cpp:1784)
 
-void __cdecl FX_GenerateMarkVertsForMark_SetLightHandle(FxActiveMarkSurf *param_1,ushort param_2)
+void __cdecl
+FX_GenerateMarkVertsForMark_SetLightHandle(FxActiveMarkSurf *drawSurf,ushort lightHandleOverride)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->context).modelTypeAndSurf & 0xc0) != 0xc0) &&
-     (((param_1->context).modelTypeAndSurf & 0xc0) != 0x80)) {
+  if ((((drawSurf->context).modelTypeAndSurf & 0xc0) != 0xc0) &&
+     (((drawSurf->context).modelTypeAndSurf & 0xc0) != 0x80)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6f9,0,
                              "%s\n\t(drawSurf->context.modelTypeAndSurf) = %i");
     if (!bVar2) {
@@ -3011,7 +3140,7 @@ void __cdecl FX_GenerateMarkVertsForMark_SetLightHandle(FxActiveMarkSurf *param_
       return;
     }
   }
-  if (param_2 == 0) {
+  if (lightHandleOverride == 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x6fa,0,
                              "%s");
     if (!bVar2) {
@@ -3020,7 +3149,7 @@ void __cdecl FX_GenerateMarkVertsForMark_SetLightHandle(FxActiveMarkSurf *param_
       return;
     }
   }
-  (param_1->context).modelIndex = param_2;
+  (drawSurf->context).modelIndex = lightHandleOverride;
   return;
 }
 
@@ -3028,14 +3157,15 @@ void __cdecl FX_GenerateMarkVertsForMark_SetLightHandle(FxActiveMarkSurf *param_
 // 005D9B30  FX_GenerateMarkVertsForMark_SetReflectionProbeIndex  (EffectsCore/fx_marks.cpp:1792)
 
 void __cdecl
-FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(FxActiveMarkSurf *param_1,uchar param_2)
+FX_GenerateMarkVertsForMark_SetReflectionProbeIndex
+          (FxActiveMarkSurf *drawSurf,uchar reflectionProbeIndexOverride)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((((param_1->context).modelTypeAndSurf & 0xc0) != 0xc0) &&
-     (((param_1->context).modelTypeAndSurf & 0xc0) != 0x80)) {
+  if ((((drawSurf->context).modelTypeAndSurf & 0xc0) != 0xc0) &&
+     (((drawSurf->context).modelTypeAndSurf & 0xc0) != 0x80)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x701,0,
                              "%s\n\t(drawSurf->context.modelTypeAndSurf) = %i");
     if (!bVar2) {
@@ -3044,7 +3174,7 @@ FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(FxActiveMarkSurf *param_1,uc
       return;
     }
   }
-  if (param_2 == 0xff) {
+  if (reflectionProbeIndexOverride == 0xff) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x702,0,
                              "%s");
     if (!bVar2) {
@@ -3053,7 +3183,7 @@ FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(FxActiveMarkSurf *param_1,uc
       return;
     }
   }
-  (param_1->context).reflectionProbeIndex = param_2;
+  (drawSurf->context).reflectionProbeIndex = reflectionProbeIndexOverride;
   return;
 }
 
@@ -3062,8 +3192,8 @@ FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(FxActiveMarkSurf *param_1,uc
 
 void __cdecl
 FX_GenerateMarkVertsForMark_FinishNonAnimated
-          (FxMarksSystem *param_1,FxMark *param_2,ushort param_3,FxActiveMarkSurf *param_4,
-          GfxLight *param_5,int param_6)
+          (FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex,FxActiveMarkSurf *drawSurf,
+          GfxLight *visibleLights,int visibleLightCount)
 
 {
   byte bVar1;
@@ -3072,10 +3202,13 @@ FX_GenerateMarkVertsForMark_FinishNonAnimated
   GfxLight *pGVar4;
   float fVar5;
   float fVar6;
-  int local_10;
-  uint local_c;
+  GfxLight *light;
+  float radius;
+  int visLightIndex;
+  uint visLightsMask;
+  uint type;
   
-  bVar1 = (param_4->context).modelTypeAndSurf;
+  bVar1 = (drawSurf->context).modelTypeAndSurf;
   if (((bVar1 & 0xc0) != 0) && ((bVar1 & 0xc0) != 0x40)) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x70c,0,
                              "%s\n\t(type) = %i");
@@ -3085,23 +3218,23 @@ FX_GenerateMarkVertsForMark_FinishNonAnimated
       return;
     }
   }
-  local_c = 0;
-  local_10 = 0;
+  visLightsMask = 0;
+  visLightIndex = 0;
   do {
-    if (param_6 <= local_10) {
-      param_4->visLightsMask = local_c;
-      FX_AddMarkTrisToScene(param_4);
+    if (visibleLightCount <= visLightIndex) {
+      drawSurf->visLightsMask = visLightsMask;
+      FX_AddMarkTrisToScene(drawSurf);
       if ((bVar1 & 0xc0) == 0) {
-        FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>(param_1,param_2,param_3);
+        FX_ExpandMarkVerts_NoTransform<GfxWorldVertex>(marksSystem,mark,baseVertex);
       }
       else {
-        FX_ExpandMarkVerts_NoTransform<GfxPackedVertex>(param_1,param_2,param_3);
+        FX_ExpandMarkVerts_NoTransform<GfxPackedVertex>(marksSystem,mark,baseVertex);
       }
       return;
     }
-    pGVar4 = param_5 + local_10;
-    fVar5 = pGVar4->radius + param_2->radius;
-    fVar6 = Vec3DistanceSq(pGVar4->origin,param_2->origin);
+    pGVar4 = visibleLights + visLightIndex;
+    fVar5 = pGVar4->radius + mark->radius;
+    fVar6 = Vec3DistanceSq(pGVar4->origin,mark->origin);
     if (fVar6 <= fVar5 * fVar5) {
       if ((pGVar4->type != '\x03') && (pGVar4->type != '\x02')) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
@@ -3112,9 +3245,9 @@ FX_GenerateMarkVertsForMark_FinishNonAnimated
           return;
         }
       }
-      local_c = (pGVar4->type != '\x03') + 1 | local_c;
+      visLightsMask = (pGVar4->type != '\x03') + 1 | visLightsMask;
     }
-    local_10 = local_10 + 1;
+    visLightIndex = visLightIndex + 1;
   } while( true );
 }
 
@@ -3123,8 +3256,8 @@ FX_GenerateMarkVertsForMark_FinishNonAnimated
 
 void __cdecl
 FX_GenerateMarkVertsForMark_FinishAnimated
-          (FxMarksSystem *param_1,FxMark *param_2,ushort param_3,FxActiveMarkSurf *param_4,
-          float (*param_5) [3],GfxLight *param_6,int param_7)
+          (FxMarksSystem *marksSystem,FxMark *mark,ushort baseVertex,FxActiveMarkSurf *drawSurf,
+          float (*transform) [3],GfxLight *visibleLights,int visibleLightCount)
 
 {
   code *pcVar1;
@@ -3133,11 +3266,14 @@ FX_GenerateMarkVertsForMark_FinishAnimated
   byte bVar4;
   float fVar5;
   float fVar6;
-  int local_1c;
-  uint local_18;
-  float local_10 [3];
+  GfxLight *light;
+  float radius;
+  int visLightIndex;
+  uint visLightsMask;
+  uint type;
+  float transformedOrigin [3];
   
-  bVar4 = (param_4->context).modelTypeAndSurf & 0xc0;
+  bVar4 = (drawSurf->context).modelTypeAndSurf & 0xc0;
   if ((bVar4 != 0x80) && (bVar4 != 0xc0)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x730,0,
                              "%s\n\t(type) = %i");
@@ -3147,7 +3283,7 @@ FX_GenerateMarkVertsForMark_FinishAnimated
       return;
     }
   }
-  if (param_5 == (float (*) [3])0x0) {
+  if (transform == (float (*) [3])0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x731,0,
                              "%s");
     if (!bVar2) {
@@ -3156,24 +3292,24 @@ FX_GenerateMarkVertsForMark_FinishAnimated
       return;
     }
   }
-  MatrixTransformVector43(param_2->origin,param_5,local_10);
-  local_18 = 0;
-  local_1c = 0;
+  MatrixTransformVector43(mark->origin,transform,transformedOrigin);
+  visLightsMask = 0;
+  visLightIndex = 0;
   do {
-    if (param_7 <= local_1c) {
-      param_4->visLightsMask = local_18;
-      FX_AddMarkTrisToScene(param_4);
+    if (visibleLightCount <= visLightIndex) {
+      drawSurf->visLightsMask = visLightsMask;
+      FX_AddMarkTrisToScene(drawSurf);
       if (bVar4 == 0x80) {
-        FX_ExpandMarkVerts_Transform<GfxWorldVertex>(param_1,param_2,param_3,param_5);
+        FX_ExpandMarkVerts_Transform<GfxWorldVertex>(marksSystem,mark,baseVertex,transform);
       }
       else {
-        FX_ExpandMarkVerts_Transform<GfxPackedVertex>(param_1,param_2,param_3,param_5);
+        FX_ExpandMarkVerts_Transform<GfxPackedVertex>(marksSystem,mark,baseVertex,transform);
       }
       return;
     }
-    pGVar3 = param_6 + local_1c;
-    fVar5 = pGVar3->radius + param_2->radius;
-    fVar6 = Vec3DistanceSq(pGVar3->origin,local_10);
+    pGVar3 = visibleLights + visLightIndex;
+    fVar5 = pGVar3->radius + mark->radius;
+    fVar6 = Vec3DistanceSq(pGVar3->origin,transformedOrigin);
     if (fVar6 <= fVar5 * fVar5) {
       if ((pGVar3->type != '\x03') && (pGVar3->type != '\x02')) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
@@ -3184,9 +3320,9 @@ FX_GenerateMarkVertsForMark_FinishAnimated
           return;
         }
       }
-      local_18 = (pGVar3->type != '\x03') + 1 | local_18;
+      visLightsMask = (pGVar3->type != '\x03') + 1 | visLightsMask;
     }
-    local_1c = local_1c + 1;
+    visLightIndex = visLightIndex + 1;
   } while( true );
 }
 
@@ -3195,22 +3331,22 @@ FX_GenerateMarkVertsForMark_FinishAnimated
 
 void __cdecl
 FX_GenerateMarkVertsForMark_MatrixFromPlacement
-          (GfxPlacement *param_1,float *param_2,float (*param_3) [3])
+          (GfxPlacement *placement,float *viewOffset,float (*outTransform) [3])
 
 {
   DObjSkelMat local_70;
   DObjAnimMat local_30;
   
-  local_30.quat[0] = param_1->quat[0];
-  local_30.quat[1] = param_1->quat[1];
-  local_30.quat[2] = param_1->quat[2];
-  local_30.quat[3] = param_1->quat[3];
+  local_30.quat[0] = placement->quat[0];
+  local_30.quat[1] = placement->quat[1];
+  local_30.quat[2] = placement->quat[2];
+  local_30.quat[3] = placement->quat[3];
   local_30.transWeight = 2.0;
-  local_30.trans[0] = param_1->origin[0];
-  local_30.trans[1] = param_1->origin[1];
-  local_30.trans[2] = param_1->origin[2];
+  local_30.trans[0] = placement->origin[0];
+  local_30.trans[1] = placement->origin[1];
+  local_30.trans[2] = placement->origin[2];
   ConvertQuatToSkelMat(&local_30,&local_70);
-  DObjSkelMatToMatrix43(&local_70,param_3);
+  DObjSkelMatToMatrix43(&local_70,outTransform);
   return;
 }
 
@@ -3219,7 +3355,8 @@ FX_GenerateMarkVertsForMark_MatrixFromPlacement
 
 void __cdecl
 FX_GenerateMarkVertsForMark_MatrixFromAnim
-          (FxMark *param_1,DObj *param_2,DObjAnimMat *param_3,float *param_4,float (*param_5) [3])
+          (FxMark *mark,DObj *dobj,DObjAnimMat *boneMtxList,float *viewOffset,
+          float (*outTransform) [3])
 
 {
   code *pcVar1;
@@ -3236,7 +3373,7 @@ FX_GenerateMarkVertsForMark_MatrixFromAnim
   uint local_18;
   uint local_14;
   
-  if (param_2 == (DObj *)0x0) {
+  if (dobj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x77c,0,
                              "%s");
     if (!bVar2) {
@@ -3245,7 +3382,7 @@ FX_GenerateMarkVertsForMark_MatrixFromAnim
       return;
     }
   }
-  if (param_3 == (DObjAnimMat *)0x0) {
+  if (boneMtxList == (DObjAnimMat *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x77d,0,
                              "%s");
     if (!bVar2) {
@@ -3254,9 +3391,9 @@ FX_GenerateMarkVertsForMark_MatrixFromAnim
       return;
     }
   }
-  local_14 = (uint)(param_1->context).lmapIndex;
-  local_18 = (param_1->context).modelTypeAndSurf & 0x3f;
-  iVar3 = DObjGetNumModels(param_2);
+  local_14 = (uint)(mark->context).lmapIndex;
+  local_18 = (mark->context).modelTypeAndSurf & 0x3f;
+  iVar3 = DObjGetNumModels(dobj);
   if (iVar3 <= (int)local_18) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x782,0,
                              "%s\n\t(dObjModelIndexForMark) = %i");
@@ -3268,17 +3405,17 @@ FX_GenerateMarkVertsForMark_MatrixFromAnim
   }
   local_1c = 0;
   for (local_20 = 0; local_20 != local_18; local_20 = local_20 + 1) {
-    local_24 = DObjGetModel(param_2,local_20);
+    local_24 = DObjGetModel(dobj,local_20);
     iVar3 = XModelNumBones(local_24);
     local_1c = iVar3 + local_1c;
   }
-  ConvertQuatToSkelMat(param_3 + local_1c + local_14,&local_70);
+  ConvertQuatToSkelMat(boneMtxList + local_1c + local_14,&local_70);
   DObjSkelMatToMatrix43(&local_70,(float (*) [3])local_a0);
-  local_24 = DObjGetModel(param_2,local_18);
+  local_24 = DObjGetModel(dobj,local_18);
   local_a4 = XModelGetBasePose(local_24);
   ConvertQuatToInverseSkelMat(local_a4 + local_14,&local_f0);
   DObjSkelMatToMatrix43(&local_f0,(float (*) [3])local_120);
-  MatrixMultiply43((float (*) [3])local_120,(float (*) [3])local_a0,param_5);
+  MatrixMultiply43((float (*) [3])local_120,(float (*) [3])local_a0,outTransform);
   return;
 }
 
@@ -3287,45 +3424,50 @@ FX_GenerateMarkVertsForMark_MatrixFromAnim
 
 bool __cdecl
 FX_GenerateMarkVertsForList_EntDObj
-          (FxMarksSystem *param_1,ushort param_2,FxCamera *param_3,uint *param_4,ushort param_5,
-          uchar param_6,DObj *param_7,DObjAnimMat *param_8,uint *param_9,GfxLight *param_10,
-          int param_11)
+          (FxMarksSystem *marksSystem,ushort head,FxCamera *camera,uint *indexCount,
+          ushort lightHandleOverride,uchar reflectionProbeIndexOverride,DObj *dobj,
+          DObjAnimMat *boneMtxList,uint *hidePartBits,GfxLight *visibleLights,int visibleLightCount)
 
 {
   byte bVar1;
   int iVar2;
   bool bVar3;
-  FxMark *pFVar4;
-  int iVar5;
-  FxActiveMarkSurf local_60;
-  ushort local_3c;
-  ushort local_38 [2];
-  float local_34 [12];
+  FxMark *mark_00;
+  int iVar4;
+  int dObjModelIndexForMark;
+  int frameTime;
+  FxMark *mark;
+  FxActiveMarkSurf drawSurf;
+  ushort markHandle;
+  ushort baseVertex;
+  float transformMatrix [12];
   
-  iVar2 = param_1->frameTime;
-  local_3c = param_2;
+  iVar2 = marksSystem->frameTime;
+  markHandle = head;
   do {
-    if (local_3c == 0xffff) {
+    if (markHandle == 0xffff) {
       return true;
     }
-    pFVar4 = FX_MarkFromHandle(param_1,local_3c);
-    pFVar4->ageMsec = pFVar4->ageMsec + iVar2;
-    bVar3 = FX_MarkIsAlphaFadedOut(pFVar4);
-    if (((!bVar3) && (((pFVar4->context).modelTypeAndSurf & 0xc0) == 0xc0)) &&
-       (bVar1 = (pFVar4->context).modelTypeAndSurf, iVar5 = DObjGetNumModels(param_7),
-       (int)(bVar1 & 0x3f) < iVar5)) {
-      bVar3 = FX_GenerateMarkVertsForMark_Begin(param_1,pFVar4,param_4,local_38,&local_60);
+    mark_00 = FX_MarkFromHandle(marksSystem,markHandle);
+    mark_00->ageMsec = mark_00->ageMsec + iVar2;
+    bVar3 = FX_MarkIsAlphaFadedOut(mark_00);
+    if (((!bVar3) && (((mark_00->context).modelTypeAndSurf & 0xc0) == 0xc0)) &&
+       (bVar1 = (mark_00->context).modelTypeAndSurf, iVar4 = DObjGetNumModels(dobj),
+       (int)(bVar1 & 0x3f) < iVar4)) {
+      bVar3 = FX_GenerateMarkVertsForMark_Begin
+                        (marksSystem,mark_00,indexCount,&baseVertex,&drawSurf);
       if (!bVar3) {
         return false;
       }
-      FX_GenerateMarkVertsForMark_SetLightHandle(&local_60,param_5);
-      FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(&local_60,param_6);
+      FX_GenerateMarkVertsForMark_SetLightHandle(&drawSurf,lightHandleOverride);
+      FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(&drawSurf,reflectionProbeIndexOverride);
       FX_GenerateMarkVertsForMark_MatrixFromAnim
-                (pFVar4,param_7,param_8,param_3->origin,(float (*) [3])local_34);
+                (mark_00,dobj,boneMtxList,camera->origin,(float (*) [3])transformMatrix);
       FX_GenerateMarkVertsForMark_FinishAnimated
-                (param_1,pFVar4,local_38[0],&local_60,(float (*) [3])local_34,param_10,param_11);
+                (marksSystem,mark_00,baseVertex,&drawSurf,(float (*) [3])transformMatrix,
+                 visibleLights,visibleLightCount);
     }
-    local_3c = pFVar4->nextMark;
+    markHandle = mark_00->nextMark;
   } while( true );
 }
 
@@ -3334,40 +3476,45 @@ FX_GenerateMarkVertsForList_EntDObj
 
 bool __cdecl
 FX_GenerateMarkVertsForList_EntXModel
-          (FxMarksSystem *param_1,ushort param_2,FxCamera *param_3,uint *param_4,ushort param_5,
-          uchar param_6,GfxScaledPlacement *param_7,GfxLight *param_8,int param_9)
+          (FxMarksSystem *marksSystem,ushort head,FxCamera *camera,uint *indexCount,
+          ushort lightHandleOverride,uchar reflectionProbeIndexOverride,
+          GfxScaledPlacement *placement,GfxLight *visibleLights,int visibleLightCount)
 
 {
   int iVar1;
   bool bVar2;
-  FxMark *pFVar3;
-  FxActiveMarkSurf local_60;
-  ushort local_3c;
-  ushort local_38 [2];
-  float local_34 [12];
+  FxMark *mark_00;
+  int frameTime;
+  FxMark *mark;
+  FxActiveMarkSurf drawSurf;
+  ushort markHandle;
+  ushort baseVertex;
+  float transformMatrix [12];
   
-  iVar1 = param_1->frameTime;
+  iVar1 = marksSystem->frameTime;
   FX_GenerateMarkVertsForMark_MatrixFromPlacement
-            (&param_7->base,vec3_origin,(float (*) [3])local_34);
-  local_3c = param_2;
+            (&placement->base,vec3_origin,(float (*) [3])transformMatrix);
+  markHandle = head;
   do {
-    if (local_3c == 0xffff) {
+    if (markHandle == 0xffff) {
       return true;
     }
-    pFVar3 = FX_MarkFromHandle(param_1,local_3c);
-    pFVar3->ageMsec = pFVar3->ageMsec + iVar1;
-    bVar2 = FX_MarkIsAlphaFadedOut(pFVar3);
-    if ((!bVar2) && (((pFVar3->context).modelTypeAndSurf & 0xc0) == 0xc0)) {
-      bVar2 = FX_GenerateMarkVertsForMark_Begin(param_1,pFVar3,param_4,local_38,&local_60);
+    mark_00 = FX_MarkFromHandle(marksSystem,markHandle);
+    mark_00->ageMsec = mark_00->ageMsec + iVar1;
+    bVar2 = FX_MarkIsAlphaFadedOut(mark_00);
+    if ((!bVar2) && (((mark_00->context).modelTypeAndSurf & 0xc0) == 0xc0)) {
+      bVar2 = FX_GenerateMarkVertsForMark_Begin
+                        (marksSystem,mark_00,indexCount,&baseVertex,&drawSurf);
       if (!bVar2) {
         return false;
       }
-      FX_GenerateMarkVertsForMark_SetLightHandle(&local_60,param_5);
-      FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(&local_60,param_6);
+      FX_GenerateMarkVertsForMark_SetLightHandle(&drawSurf,lightHandleOverride);
+      FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(&drawSurf,reflectionProbeIndexOverride);
       FX_GenerateMarkVertsForMark_FinishAnimated
-                (param_1,pFVar3,local_38[0],&local_60,(float (*) [3])local_34,param_8,param_9);
+                (marksSystem,mark_00,baseVertex,&drawSurf,(float (*) [3])transformMatrix,
+                 visibleLights,visibleLightCount);
     }
-    local_3c = pFVar3->nextMark;
+    markHandle = mark_00->nextMark;
   } while( true );
 }
 
@@ -3376,41 +3523,47 @@ FX_GenerateMarkVertsForList_EntXModel
 
 bool __cdecl
 FX_GenerateMarkVertsForList_EntBrush
-          (FxMarksSystem *param_1,ushort param_2,FxCamera *param_3,uint *param_4,
-          GfxPlacement *param_5,uchar param_6,GfxLight *param_7,int param_8)
+          (FxMarksSystem *marksSystem,ushort head,FxCamera *camera,uint *indexCount,
+          GfxPlacement *placement,uchar reflectionProbeIndex,GfxLight *visibleLights,
+          int visibleLightCount)
 
 {
   int iVar1;
   bool bVar2;
-  FxMark *pFVar3;
-  FxActiveMarkSurf local_60;
-  ushort local_3c;
-  ushort local_38 [2];
-  float local_34 [12];
+  FxMark *mark_00;
+  int frameTime;
+  FxMark *mark;
+  FxActiveMarkSurf drawSurf;
+  ushort markHandle;
+  ushort baseVertex;
+  float transformMatrix [12];
   
-  iVar1 = param_1->frameTime;
-  FX_GenerateMarkVertsForMark_MatrixFromPlacement(param_5,vec3_origin,(float (*) [3])local_34);
-  local_3c = param_2;
+  iVar1 = marksSystem->frameTime;
+  FX_GenerateMarkVertsForMark_MatrixFromPlacement
+            (placement,vec3_origin,(float (*) [3])transformMatrix);
+  markHandle = head;
   do {
-    if (local_3c == 0xffff) {
+    if (markHandle == 0xffff) {
       return true;
     }
-    pFVar3 = FX_MarkFromHandle(param_1,local_3c);
-    pFVar3->ageMsec = pFVar3->ageMsec + iVar1;
-    bVar2 = FX_MarkIsAlphaFadedOut(pFVar3);
-    if ((!bVar2) && (((pFVar3->context).modelTypeAndSurf & 0xc0) == 0x80)) {
-      bVar2 = FX_GenerateMarkVertsForMark_Begin(param_1,pFVar3,param_4,local_38,&local_60);
+    mark_00 = FX_MarkFromHandle(marksSystem,markHandle);
+    mark_00->ageMsec = mark_00->ageMsec + iVar1;
+    bVar2 = FX_MarkIsAlphaFadedOut(mark_00);
+    if ((!bVar2) && (((mark_00->context).modelTypeAndSurf & 0xc0) == 0x80)) {
+      bVar2 = FX_GenerateMarkVertsForMark_Begin
+                        (marksSystem,mark_00,indexCount,&baseVertex,&drawSurf);
       if (!bVar2) {
         return false;
       }
-      FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(&local_60,param_6);
+      FX_GenerateMarkVertsForMark_SetReflectionProbeIndex(&drawSurf,reflectionProbeIndex);
       FX_GenerateMarkVertsForMark_FinishAnimated
-                (param_1,pFVar3,local_38[0],&local_60,(float (*) [3])local_34,param_7,param_8);
-      if ((pFVar3->markFlags & 1) != 0) {
-        param_1->numVisibleEntBrushSeethru = param_1->numVisibleEntBrushSeethru + 1;
+                (marksSystem,mark_00,baseVertex,&drawSurf,(float (*) [3])transformMatrix,
+                 visibleLights,visibleLightCount);
+      if ((mark_00->markFlags & 1) != 0) {
+        marksSystem->numVisibleEntBrushSeethru = marksSystem->numVisibleEntBrushSeethru + 1;
       }
     }
-    local_3c = pFVar3->nextMark;
+    markHandle = mark_00->nextMark;
   } while( true );
 }
 
@@ -3419,37 +3572,40 @@ FX_GenerateMarkVertsForList_EntBrush
 
 bool __cdecl
 FX_GenerateMarkVertsForList_WorldXModel
-          (FxMarksSystem *param_1,ushort param_2,FxCamera *param_3,uint *param_4,GfxLight *param_5,
-          int param_6)
+          (FxMarksSystem *marksSystem,ushort head,FxCamera *camera,uint *indexCount,
+          GfxLight *visibleLights,int visibleLightCount)
 
 {
   int iVar1;
   bool bVar2;
-  FxMark *pFVar3;
-  FxActiveMarkSurf local_30;
-  ushort local_c;
-  ushort local_8 [2];
+  FxMark *mark_00;
+  int frameTime;
+  FxMark *mark;
+  FxActiveMarkSurf drawSurf;
+  ushort markHandle;
+  ushort baseVertex;
   
-  iVar1 = param_1->frameTime;
-  local_c = param_2;
+  iVar1 = marksSystem->frameTime;
+  markHandle = head;
   do {
-    if (local_c == 0xffff) {
+    if (markHandle == 0xffff) {
       return true;
     }
-    pFVar3 = FX_MarkFromHandle(param_1,local_c);
-    pFVar3->ageMsec = pFVar3->ageMsec + iVar1;
-    bVar2 = FX_MarkIsAlphaFadedOut(pFVar3);
+    mark_00 = FX_MarkFromHandle(marksSystem,markHandle);
+    mark_00->ageMsec = mark_00->ageMsec + iVar1;
+    bVar2 = FX_MarkIsAlphaFadedOut(mark_00);
     if ((!bVar2) &&
-       (bVar2 = FX_CullSphere(param_3,param_3->frustumPlaneCount,pFVar3->origin,pFVar3->radius),
+       (bVar2 = FX_CullSphere(camera,camera->frustumPlaneCount,mark_00->origin,mark_00->radius),
        !bVar2)) {
-      bVar2 = FX_GenerateMarkVertsForMark_Begin(param_1,pFVar3,param_4,local_8,&local_30);
+      bVar2 = FX_GenerateMarkVertsForMark_Begin
+                        (marksSystem,mark_00,indexCount,&baseVertex,&drawSurf);
       if (!bVar2) {
         return false;
       }
       FX_GenerateMarkVertsForMark_FinishNonAnimated
-                (param_1,pFVar3,local_8[0],&local_30,param_5,param_6);
+                (marksSystem,mark_00,baseVertex,&drawSurf,visibleLights,visibleLightCount);
     }
-    local_c = pFVar3->nextMark;
+    markHandle = mark_00->nextMark;
   } while( true );
 }
 
@@ -3458,49 +3614,52 @@ FX_GenerateMarkVertsForList_WorldXModel
 
 bool __cdecl
 FX_GenerateMarkVertsForList_WorldBrush
-          (FxMarksSystem *param_1,ushort param_2,FxCamera *param_3,uint *param_4,GfxLight *param_5,
-          int param_6)
+          (FxMarksSystem *marksSystem,ushort head,FxCamera *camera,uint *indexCount,
+          GfxLight *visibleLights,int visibleLightCount)
 
 {
   int iVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
-  FxMark *pFVar5;
-  FxActiveMarkSurf local_30;
-  ushort local_c;
-  ushort local_8 [2];
+  FxMark *mark_00;
+  int frameTime;
+  FxMark *mark;
+  FxActiveMarkSurf drawSurf;
+  ushort markHandle;
+  ushort baseVertex;
   
-  iVar1 = param_1->frameTime;
-  if ((param_1->numVisibleWorldSeethru != 0) &&
+  iVar1 = marksSystem->frameTime;
+  if ((marksSystem->numVisibleWorldSeethru != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x82c,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     uVar4 = (*pcVar2)();
     return (bool)uVar4;
   }
-  local_c = param_2;
+  markHandle = head;
   do {
-    if (local_c == 0xffff) {
+    if (markHandle == 0xffff) {
       return true;
     }
-    pFVar5 = FX_MarkFromHandle(param_1,local_c);
-    pFVar5->ageMsec = pFVar5->ageMsec + iVar1;
-    bVar3 = FX_MarkIsAlphaFadedOut(pFVar5);
+    mark_00 = FX_MarkFromHandle(marksSystem,markHandle);
+    mark_00->ageMsec = mark_00->ageMsec + iVar1;
+    bVar3 = FX_MarkIsAlphaFadedOut(mark_00);
     if ((!bVar3) &&
-       (bVar3 = FX_CullSphere(param_3,param_3->frustumPlaneCount,pFVar5->origin,pFVar5->radius),
+       (bVar3 = FX_CullSphere(camera,camera->frustumPlaneCount,mark_00->origin,mark_00->radius),
        !bVar3)) {
-      bVar3 = FX_GenerateMarkVertsForMark_Begin(param_1,pFVar5,param_4,local_8,&local_30);
+      bVar3 = FX_GenerateMarkVertsForMark_Begin
+                        (marksSystem,mark_00,indexCount,&baseVertex,&drawSurf);
       if (!bVar3) {
         return false;
       }
       FX_GenerateMarkVertsForMark_FinishNonAnimated
-                (param_1,pFVar5,local_8[0],&local_30,param_5,param_6);
-      if ((pFVar5->markFlags & 1) != 0) {
-        param_1->numVisibleWorldSeethru = param_1->numVisibleWorldSeethru + 1;
+                (marksSystem,mark_00,baseVertex,&drawSurf,visibleLights,visibleLightCount);
+      if ((mark_00->markFlags & 1) != 0) {
+        marksSystem->numVisibleWorldSeethru = marksSystem->numVisibleWorldSeethru + 1;
       }
     }
-    local_c = pFVar5->nextMark;
+    markHandle = mark_00->nextMark;
   } while( true );
 }
 
@@ -3509,8 +3668,8 @@ FX_GenerateMarkVertsForList_WorldBrush
 
 void __cdecl
 std::_Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-          (FxMarkTri *param_1,int param_2,int param_3,FxMarkTri param_4,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_5)
+          (FxMarkTri *_First,int _Hole,int _Bottom,FxMarkTri _Val,
+          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Pred)
 
 {
   uchar uVar1;
@@ -3521,17 +3680,17 @@ std::_Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,Fx
   FxMarkTri local_28;
   int local_1c;
   int local_18;
-  int local_10;
-  int local_c;
+  int _Idx;
+  int _Top;
   
-  local_c = param_2;
-  while (local_10 = param_2 * 2 + 2, local_10 < param_3) {
-    bVar3 = (*param_5)(param_1 + local_10,param_1 + param_2 * 2 + 1);
+  _Top = _Hole;
+  while (_Idx = _Hole * 2 + 2, _Idx < _Bottom) {
+    bVar3 = (*_Pred)(_First + _Idx,_First + _Hole * 2 + 1);
     if (bVar3) {
-      local_10 = local_10 + -1;
+      _Idx = _Idx + -1;
     }
-    pFVar4 = param_1 + local_10;
-    pFVar5 = param_1 + param_2;
+    pFVar4 = _First + _Idx;
+    pFVar5 = _First + _Hole;
     *(undefined4 *)pFVar5->indices = *(undefined4 *)pFVar4->indices;
     *(undefined4 *)(pFVar5->indices + 2) = *(undefined4 *)(pFVar4->indices + 2);
     uVar1 = (pFVar4->context).modelTypeAndSurf;
@@ -3539,11 +3698,11 @@ std::_Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,Fx
     (pFVar5->context).reflectionProbeIndex = (pFVar4->context).reflectionProbeIndex;
     (pFVar5->context).modelTypeAndSurf = uVar1;
     (pFVar5->context).modelIndex = uVar2;
-    param_2 = local_10;
+    _Hole = _Idx;
   }
-  if (local_10 == param_3) {
-    pFVar4 = param_1 + param_3 + -1;
-    pFVar5 = param_1 + param_2;
+  if (_Idx == _Bottom) {
+    pFVar4 = _First + _Bottom + -1;
+    pFVar5 = _First + _Hole;
     *(undefined4 *)pFVar5->indices = *(undefined4 *)pFVar4->indices;
     *(undefined4 *)(pFVar5->indices + 2) = *(undefined4 *)(pFVar4->indices + 2);
     uVar1 = (pFVar4->context).modelTypeAndSurf;
@@ -3551,22 +3710,22 @@ std::_Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,Fx
     (pFVar5->context).reflectionProbeIndex = (pFVar4->context).reflectionProbeIndex;
     (pFVar5->context).modelTypeAndSurf = uVar1;
     (pFVar5->context).modelIndex = uVar2;
-    param_2 = param_3 + -1;
+    _Hole = _Bottom + -1;
   }
-  local_28.indices[0] = param_4.indices[0];
-  local_28.indices[1] = param_4.indices[1];
-  local_28.indices[2] = param_4.indices[2];
-  local_28.context.lmapIndex = param_4.context.lmapIndex;
-  local_28.context.primaryLightIndex = param_4.context.primaryLightIndex;
-  local_28.context.reflectionProbeIndex = param_4.context.reflectionProbeIndex;
-  local_28.context.modelTypeAndSurf = param_4.context.modelTypeAndSurf;
-  local_28.context.modelIndex = param_4.context.modelIndex;
-  local_1c = param_2;
-  while (local_18 = (local_1c + -1) / 2, local_c < local_1c) {
-    bVar3 = (*param_5)(param_1 + local_18,&local_28);
+  local_28.indices[0] = _Val.indices[0];
+  local_28.indices[1] = _Val.indices[1];
+  local_28.indices[2] = _Val.indices[2];
+  local_28.context.lmapIndex = _Val.context.lmapIndex;
+  local_28.context.primaryLightIndex = _Val.context.primaryLightIndex;
+  local_28.context.reflectionProbeIndex = _Val.context.reflectionProbeIndex;
+  local_28.context.modelTypeAndSurf = _Val.context.modelTypeAndSurf;
+  local_28.context.modelIndex = _Val.context.modelIndex;
+  local_1c = _Hole;
+  while (local_18 = (local_1c + -1) / 2, _Top < local_1c) {
+    bVar3 = (*_Pred)(_First + local_18,&local_28);
     if (!bVar3) break;
-    pFVar5 = param_1 + local_18;
-    pFVar4 = param_1 + local_1c;
+    pFVar5 = _First + local_18;
+    pFVar4 = _First + local_1c;
     *(undefined4 *)pFVar4->indices = *(undefined4 *)pFVar5->indices;
     *(undefined4 *)(pFVar4->indices + 2) = *(undefined4 *)(pFVar5->indices + 2);
     uVar1 = (pFVar5->context).modelTypeAndSurf;
@@ -3576,7 +3735,7 @@ std::_Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,Fx
     (pFVar4->context).modelIndex = uVar2;
     local_1c = local_18;
   }
-  pFVar4 = param_1 + local_1c;
+  pFVar4 = _First + local_1c;
   *(undefined4 *)pFVar4->indices = local_28.indices._0_4_;
   *(undefined4 *)(pFVar4->indices + 2) = local_28._4_4_;
   (pFVar4->context).reflectionProbeIndex = local_28.context.reflectionProbeIndex;
@@ -3588,18 +3747,19 @@ std::_Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,Fx
 
 // 005DACE0  FX_FinishGeneratingMarkVerts  (EffectsCore/fx_marks.cpp:2126)
 
-void __cdecl FX_FinishGeneratingMarkVerts(FxMarksSystem *param_1)
+void __cdecl FX_FinishGeneratingMarkVerts(FxMarksSystem *marksSystem)
 
 {
   bool bVar1;
-  uint local_c;
-  r_double_index_t *local_8;
+  r_double_index_t index;
+  r_double_index_t *doubleIndices;
   
-  if (param_1->hasCarryIndex != false) {
-    bVar1 = R_ReserveMarkMeshIndices(0,&local_8);
+  if (marksSystem->hasCarryIndex != false) {
+    bVar1 = R_ReserveMarkMeshIndices(0,&doubleIndices);
     if (bVar1) {
-      local_c = (uint)param_1->carryIndex;
-      *(uint *)local_8[-1].value = local_c;
+      index.value[1] = 0;
+      index.value[0] = marksSystem->carryIndex;
+      *&doubleIndices[-1].value = index.value;
     }
     else {
       Com_PrintWarning(0x15,"FX Marks WARNING: R_ReserveMarkMeshIndices returned false\n");
@@ -3611,7 +3771,7 @@ void __cdecl FX_FinishGeneratingMarkVerts(FxMarksSystem *param_1)
 
 // 005D9290  FX_BeginGeneratingMarkVertsForEntModels  (EffectsCore/fx_marks.cpp:2150)
 
-void __cdecl FX_BeginGeneratingMarkVertsForEntModels(int param_1,uint *param_2)
+void __cdecl FX_BeginGeneratingMarkVertsForEntModels(int localClientNum,uint *indexCount)
 
 {
   int *piVar1;
@@ -3619,6 +3779,7 @@ void __cdecl FX_BeginGeneratingMarkVertsForEntModels(int param_1,uint *param_2)
   code *pcVar3;
   bool bVar4;
   FxMarksSystem *pFVar5;
+  FxMarksSystem *marksSystem;
   
   if (((fx_marks->current).enabled == false) || ((fx_marks_ents->current).enabled == false)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x869,0,
@@ -3630,7 +3791,7 @@ void __cdecl FX_BeginGeneratingMarkVertsForEntModels(int param_1,uint *param_2)
     }
   }
   R_BeginMarkMeshVerts();
-  piVar1 = g_markThread + param_1;
+  piVar1 = g_markThread + localClientNum;
   LOCK();
   iVar2 = *piVar1;
   *piVar1 = *piVar1 + 1;
@@ -3644,9 +3805,9 @@ void __cdecl FX_BeginGeneratingMarkVertsForEntModels(int param_1,uint *param_2)
       return;
     }
   }
-  pFVar5 = FX_GetMarksSystem(param_1);
+  pFVar5 = FX_GetMarksSystem(localClientNum);
   pFVar5->hasCarryIndex = false;
-  *param_2 = 0;
+  *indexCount = 0;
   return;
 }
 
@@ -3655,31 +3816,37 @@ void __cdecl FX_BeginGeneratingMarkVertsForEntModels(int param_1,uint *param_2)
 
 void __cdecl
 FX_GenerateMarkVertsForEntXModel
-          (int param_1,int param_2,uint *param_3,ushort param_4,uchar param_5,
-          GfxScaledPlacement *param_6,GfxLight *param_7,int param_8)
+          (int localClientNum,int entId,uint *indexCount,ushort lightHandle,
+          uchar reflectionProbeIndex,GfxScaledPlacement *placement,GfxLight *visibleLights,
+          int visibleLightCount)
 
 {
-  ushort uVar1;
-  code *pcVar2;
-  bool bVar3;
-  FxMarksSystem *pFVar4;
-  FxSystem *pFVar5;
+  ushort head;
+  code *pcVar1;
+  bool bVar2;
+  FxMarksSystem *marksSystem_00;
+  FxSystem *camera_00;
+  FxMarksSystem *marksSystem;
+  FxCamera *camera;
+  FxSystem *system;
+  ushort entMarkListHead;
   
-  pFVar4 = FX_GetMarksSystem(param_1);
-  if ((0x5ff < (uint)param_2) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x880,
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  if ((0x5ff < (uint)entId) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x880,
                                0,
                                "entId doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  uVar1 = pFVar4->entFirstMarkHandles[param_2];
-  if (uVar1 != 0xffff) {
-    pFVar5 = FX_GetSystem(param_1);
+  head = marksSystem_00->entFirstMarkHandles[entId];
+  if (head != 0xffff) {
+    camera_00 = FX_GetSystem(localClientNum);
     FX_GenerateMarkVertsForList_EntXModel
-              (pFVar4,uVar1,&pFVar5->camera,param_3,param_4,param_5,param_6,param_7,param_8);
+              (marksSystem_00,head,&camera_00->camera,indexCount,lightHandle,reflectionProbeIndex,
+               placement,visibleLights,visibleLightCount);
   }
   return;
 }
@@ -3689,35 +3856,38 @@ FX_GenerateMarkVertsForEntXModel
 
 void __cdecl
 FX_GenerateMarkVertsForEntDObj
-          (int param_1,int param_2,uint *param_3,ushort param_4,uchar param_5,DObj *param_6,
-          cpose_t *param_7,GfxLight *param_8,int param_9)
+          (int localClientNum,int entId,uint *indexCount,ushort lightHandle,
+          uchar reflectionProbeIndex,DObj *dobj,cpose_t *pose,GfxLight *visibleLights,
+          int visibleLightCount)
 
 {
   code *pcVar1;
   bool bVar2;
-  FxMarksSystem *pFVar3;
-  FxSystem *pFVar4;
-  uint local_24 [5];
-  FxSystem *local_10;
-  DObjAnimMat *local_c;
-  ushort local_8;
+  FxMarksSystem *marksSystem_00;
+  FxSystem *camera_00;
+  FxMarksSystem *marksSystem;
+  FxCamera *camera;
+  uint hidePartBits [5];
+  FxSystem *system;
+  DObjAnimMat *boneMtxList;
+  ushort entMarkListHead;
   
-  if ((param_6 == (DObj *)0x0) &&
+  if ((dobj == (DObj *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x89c,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_7 == (cpose_t *)0x0) &&
+  if ((pose == (cpose_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x89d,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  pFVar3 = FX_GetMarksSystem(param_1);
-  if ((0x5ff < (uint)param_2) &&
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  if ((0x5ff < (uint)entId) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8a0,
                                0,
                                "entId doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
@@ -3726,14 +3896,14 @@ FX_GenerateMarkVertsForEntDObj
     (*pcVar1)();
     return;
   }
-  local_8 = pFVar3->entFirstMarkHandles[param_2];
-  if (local_8 != 0xffff) {
-    pFVar4 = FX_GetSystem(param_1);
-    local_10 = pFVar4;
-    R_MarkUtil_GetDObjAnimMatAndHideParts(param_6,param_7,&local_c,local_24);
+  entMarkListHead = marksSystem_00->entFirstMarkHandles[entId];
+  if (entMarkListHead != 0xffff) {
+    camera_00 = FX_GetSystem(localClientNum);
+    system = camera_00;
+    R_MarkUtil_GetDObjAnimMatAndHideParts(dobj,pose,&boneMtxList,hidePartBits);
     FX_GenerateMarkVertsForList_EntDObj
-              (pFVar3,local_8,&pFVar4->camera,param_3,param_4,param_5,param_6,local_c,local_24,
-               param_8,param_9);
+              (marksSystem_00,entMarkListHead,&camera_00->camera,indexCount,lightHandle,
+               reflectionProbeIndex,dobj,boneMtxList,hidePartBits,visibleLights,visibleLightCount);
   }
   return;
 }
@@ -3743,20 +3913,19 @@ FX_GenerateMarkVertsForEntDObj
 
 void __cdecl
 std::make_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-          (FxMarkTri *param_1,FxMarkTri *param_2,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_3)
+          (FxMarkTri *_First,FxMarkTri *_Last,_func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Pred)
 
 {
-  int iVar1;
+  int _Bottom;
   int local_18;
   
-  if (1 < ((int)param_2 - (int)param_1) / 0xc) {
-    iVar1 = ((int)param_2 - (int)param_1) / 0xc;
-    local_18 = iVar1 / 2;
+  if (1 < ((int)_Last - (int)_First) / 0xc) {
+    _Bottom = ((int)_Last - (int)_First) / 0xc;
+    local_18 = _Bottom / 2;
     while (0 < local_18) {
       local_18 = local_18 + -1;
       _Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-                (param_1,local_18,iVar1,param_1[local_18],param_3);
+                (_First,local_18,_Bottom,_First[local_18],_Pred);
     }
   }
   return;
@@ -3767,38 +3936,43 @@ std::make_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
 
 void __cdecl
 FX_GenerateMarkVertsForEntBrush
-          (int param_1,int param_2,uint *param_3,uchar param_4,GfxPlacement *param_5,
-          GfxLight *param_6,int param_7)
+          (int localClientNum,int entId,uint *indexCount,uchar reflectionProbeIndex,
+          GfxPlacement *placement,GfxLight *visibleLights,int visibleLightCount)
 
 {
-  ushort uVar1;
-  code *pcVar2;
-  bool bVar3;
-  FxMarksSystem *pFVar4;
-  FxSystem *pFVar5;
+  ushort head;
+  code *pcVar1;
+  bool bVar2;
+  FxMarksSystem *marksSystem_00;
+  FxSystem *camera_00;
+  FxMarksSystem *marksSystem;
+  FxCamera *camera;
+  FxSystem *system;
+  ushort entMarkListHead;
   
-  if ((param_5 == (GfxPlacement *)0x0) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8bb,
-                               0,"%s"), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+  if ((placement == (GfxPlacement *)0x0) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8bb,
+                               0,"%s"), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  pFVar4 = FX_GetMarksSystem(param_1);
-  if ((0x5ff < (uint)param_2) &&
-     (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8be,
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  if ((0x5ff < (uint)entId) &&
+     (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8be,
                                0,
                                "entId doesn\'t index ARRAY_COUNT( marksSystem->entFirstMarkHandles )\n\t%i not in [0, %i)"
-                              ), !bVar3)) {
-    pcVar2 = (code *)swi(3);
-    (*pcVar2)();
+                              ), !bVar2)) {
+    pcVar1 = (code *)swi(3);
+    (*pcVar1)();
     return;
   }
-  uVar1 = pFVar4->entFirstMarkHandles[param_2];
-  if (uVar1 != 0xffff) {
-    pFVar5 = FX_GetSystem(param_1);
+  head = marksSystem_00->entFirstMarkHandles[entId];
+  if (head != 0xffff) {
+    camera_00 = FX_GetSystem(localClientNum);
     FX_GenerateMarkVertsForList_EntBrush
-              (pFVar4,uVar1,&pFVar5->camera,param_3,param_5,param_4,param_6,param_7);
+              (marksSystem_00,head,&camera_00->camera,indexCount,placement,reflectionProbeIndex,
+               visibleLights,visibleLightCount);
   }
   return;
 }
@@ -3808,27 +3982,26 @@ FX_GenerateMarkVertsForEntBrush
 
 void __cdecl
 std::_Sort_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-          (FxMarkTri *param_1,FxMarkTri *param_2,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_3)
+          (FxMarkTri *_First,FxMarkTri *_Last,_func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Pred)
 
 {
-  FxMarkTri FVar1;
-  uchar uVar2;
-  ushort uVar3;
+  FxMarkTri _Val;
+  uchar uVar1;
+  ushort uVar2;
   
-  for (; 1 < ((int)param_2 - (int)param_1) / 0xc; param_2 = param_2 + -1) {
-    if (1 < ((int)param_2 - (int)param_1) / 0xc) {
-      FVar1 = param_2[-1];
-      *(undefined4 *)param_2[-1].indices = *(undefined4 *)param_1->indices;
-      *(undefined4 *)(param_2[-1].indices + 2) = *(undefined4 *)(param_1->indices + 2);
-      uVar2 = (param_1->context).modelTypeAndSurf;
-      uVar3 = (param_1->context).modelIndex;
-      param_2[-0xffffffff00000001].context.reflectionProbeIndex =
-           (param_1->context).reflectionProbeIndex;
-      param_2[-0xffffffff00000001].context.modelTypeAndSurf = uVar2;
-      param_2[-0xffffffff00000001].context.modelIndex = uVar3;
+  for (; 1 < ((int)_Last - (int)_First) / 0xc; _Last = _Last + -1) {
+    if (1 < ((int)_Last - (int)_First) / 0xc) {
+      _Val = _Last[-1];
+      *(undefined4 *)_Last[-1].indices = *(undefined4 *)_First->indices;
+      *(undefined4 *)(_Last[-1].indices + 2) = *(undefined4 *)(_First->indices + 2);
+      uVar1 = (_First->context).modelTypeAndSurf;
+      uVar2 = (_First->context).modelIndex;
+      _Last[-0xffffffff00000001].context.reflectionProbeIndex =
+           (_First->context).reflectionProbeIndex;
+      _Last[-0xffffffff00000001].context.modelTypeAndSurf = uVar1;
+      _Last[-0xffffffff00000001].context.modelIndex = uVar2;
       _Adjust_heap<FxMarkTri_*,int,FxMarkTri,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-                (param_1,0,((int)param_2 + (-0xc - (int)param_1)) / 0xc,FVar1,param_3);
+                (_First,0,((int)_Last + (-0xc - (int)_First)) / 0xc,_Val,_Pred);
     }
   }
   return;
@@ -3837,18 +4010,19 @@ std::_Sort_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)
 
 // 005DAC70  FX_EndGeneratingMarkVertsForEntModels  (EffectsCore/fx_marks.cpp:2257)
 
-void __cdecl FX_EndGeneratingMarkVertsForEntModels(int param_1)
+void __cdecl FX_EndGeneratingMarkVertsForEntModels(int localClientNum)
 
 {
   int *piVar1;
   int iVar2;
   code *pcVar3;
   bool bVar4;
-  FxMarksSystem *pFVar5;
+  FxMarksSystem *marksSystem_00;
+  FxMarksSystem *marksSystem;
   
-  pFVar5 = FX_GetMarksSystem(param_1);
-  FX_FinishGeneratingMarkVerts(pFVar5);
-  piVar1 = g_markThread + param_1;
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  FX_FinishGeneratingMarkVerts(marksSystem_00);
+  piVar1 = g_markThread + localClientNum;
   LOCK();
   iVar2 = *piVar1;
   *piVar1 = *piVar1 + -1;
@@ -3871,23 +4045,26 @@ void __cdecl FX_EndGeneratingMarkVertsForEntModels(int param_1)
 
 void __cdecl
 FX_GenerateMarkVertsForStaticModels
-          (int param_1,int param_2,uchar *param_3,GfxLight *param_4,int param_5)
+          (int localClientNum,int smodelCount,uchar *smodelVisLods,GfxLight *visibleLights,
+          int visibleLightCount)
 
 {
   int *piVar1;
   code *pcVar2;
   bool bVar3;
-  ushort uVar4;
-  FxMarksSystem *pFVar5;
-  FxSystem *pFVar6;
-  FxSystem *pFVar7;
-  uint *puVar8;
-  GfxLight *pGVar9;
-  int iVar10;
-  FxMark *local_18;
-  uint local_10;
-  FxSystem *local_c;
-  FxMark *local_8;
+  ushort head;
+  FxMarksSystem *marksSystem_00;
+  FxSystem *pFVar4;
+  FxSystem *camera_00;
+  uint *indexCount_00;
+  GfxLight *visibleLights_00;
+  int iVar5;
+  FxMarksSystem *marksSystem;
+  FxMark *mark;
+  FxCamera *camera;
+  uint indexCount;
+  FxSystem *system;
+  FxMark *markEnd;
   
   if ((((fx_marks->current).enabled == false) || ((fx_marks_smodels->current).enabled == false)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8eb,
@@ -3897,43 +4074,44 @@ FX_GenerateMarkVertsForStaticModels
     return;
   }
   R_BeginMarkMeshVerts();
-  piVar1 = g_markThread + param_1;
+  piVar1 = g_markThread + localClientNum;
   LOCK();
-  iVar10 = *piVar1;
+  iVar5 = *piVar1;
   *piVar1 = *piVar1 + 1;
   UNLOCK();
-  if ((iVar10 != 0) &&
+  if ((iVar5 != 0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x8f0,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  pFVar5 = FX_GetMarksSystem(param_1);
-  pFVar6 = FX_GetSystem(param_1);
-  pFVar5->hasCarryIndex = false;
-  local_10 = 0;
-  local_8 = (FxMark *)pFVar5->triGroups;
-  local_c = pFVar6;
-  for (local_18 = pFVar5->marks; local_18 != local_8; local_18 = local_18 + 1) {
-    if (((local_18->prevMark == 0xffff) && (local_18->frameCountDrawn != -1)) &&
-       ((((local_18->context).modelTypeAndSurf & 0xc0) == 0x40 &&
-        (param_3[(local_18->context).modelIndex] != '\0')))) {
-      puVar8 = &local_10;
-      pFVar7 = pFVar6;
-      pGVar9 = param_4;
-      iVar10 = param_5;
-      uVar4 = FX_MarkToHandle(pFVar5,local_18);
-      FX_GenerateMarkVertsForList_WorldXModel(pFVar5,uVar4,&pFVar7->camera,puVar8,pGVar9,iVar10);
+  marksSystem_00 = FX_GetMarksSystem(localClientNum);
+  pFVar4 = FX_GetSystem(localClientNum);
+  marksSystem_00->hasCarryIndex = false;
+  indexCount = 0;
+  markEnd = (FxMark *)marksSystem_00->triGroups;
+  system = pFVar4;
+  for (mark = marksSystem_00->marks; mark != markEnd; mark = mark + 1) {
+    if (((mark->prevMark == 0xffff) && (mark->frameCountDrawn != -1)) &&
+       ((((mark->context).modelTypeAndSurf & 0xc0) == 0x40 &&
+        (smodelVisLods[(mark->context).modelIndex] != '\0')))) {
+      indexCount_00 = &indexCount;
+      camera_00 = pFVar4;
+      visibleLights_00 = visibleLights;
+      iVar5 = visibleLightCount;
+      head = FX_MarkToHandle(marksSystem_00,mark);
+      FX_GenerateMarkVertsForList_WorldXModel
+                (marksSystem_00,head,&camera_00->camera,indexCount_00,visibleLights_00,iVar5);
     }
   }
-  FX_FinishGeneratingMarkVerts(pFVar5);
-  piVar1 = g_markThread + param_1;
+  FX_FinishGeneratingMarkVerts(marksSystem_00);
+  piVar1 = g_markThread + localClientNum;
   LOCK();
-  iVar10 = *piVar1;
+  iVar5 = *piVar1;
   *piVar1 = *piVar1 + -1;
   UNLOCK();
-  if ((iVar10 != 1) &&
+  if ((iVar5 != 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",0x910,
                                0,"%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
@@ -3947,20 +4125,23 @@ FX_GenerateMarkVertsForStaticModels
 
 // 005DB170  FX_GenerateMarkVertsForWorld  (EffectsCore/fx_marks.cpp:2328)
 
-void __cdecl FX_GenerateMarkVertsForWorld(int param_1,GfxLight *param_2,int param_3)
+void __cdecl
+FX_GenerateMarkVertsForWorld(int localClientNum,GfxLight *visibleLights,int visibleLightCount)
 
 {
   int *piVar1;
   int iVar2;
   code *pcVar3;
   bool bVar4;
-  FxMarksSystem *pFVar5;
-  uint local_c;
-  FxSystem *local_8;
+  FxMarksSystem *marksSystem_00;
+  FxMarksSystem *marksSystem;
+  FxCamera *camera;
+  uint indexCount;
+  FxSystem *system;
   
   if ((fx_marks != (dvar_s *)0x0) && ((fx_marks->current).enabled != false)) {
     R_BeginMarkMeshVerts();
-    piVar1 = g_markThread + param_1;
+    piVar1 = g_markThread + localClientNum;
     LOCK();
     iVar2 = *piVar1;
     *piVar1 = *piVar1 + 1;
@@ -3972,14 +4153,15 @@ void __cdecl FX_GenerateMarkVertsForWorld(int param_1,GfxLight *param_2,int para
       (*pcVar3)();
       return;
     }
-    pFVar5 = FX_GetMarksSystem(param_1);
-    local_8 = FX_GetSystem(param_1);
-    pFVar5->hasCarryIndex = false;
-    local_c = 0;
+    marksSystem_00 = FX_GetMarksSystem(localClientNum);
+    system = FX_GetSystem(localClientNum);
+    marksSystem_00->hasCarryIndex = false;
+    indexCount = 0;
     FX_GenerateMarkVertsForList_WorldBrush
-              (pFVar5,pFVar5->firstActiveWorldMarkHandle,&local_8->camera,&local_c,param_2,param_3);
-    FX_FinishGeneratingMarkVerts(pFVar5);
-    piVar1 = g_markThread + param_1;
+              (marksSystem_00,marksSystem_00->firstActiveWorldMarkHandle,&system->camera,&indexCount
+               ,visibleLights,visibleLightCount);
+    FX_FinishGeneratingMarkVerts(marksSystem_00);
+    piVar1 = g_markThread + localClientNum;
     LOCK();
     iVar2 = *piVar1;
     *piVar1 = *piVar1 + -1;
@@ -3999,25 +4181,27 @@ void __cdecl FX_GenerateMarkVertsForWorld(int param_1,GfxLight *param_2,int para
 
 // 005DB3D0  FX_MarkUpdateClientTime  (EffectsCore/fx_marks.cpp:2363)
 
-void __cdecl FX_MarkUpdateClientTime(int param_1,int param_2)
+void __cdecl FX_MarkUpdateClientTime(int localClientNum,int frameTime)
 
 {
   FxMarksSystem *pFVar1;
+  FxMarksSystem *ms;
   
-  pFVar1 = FX_GetMarksSystem(param_1);
-  pFVar1->frameTime = param_2;
+  pFVar1 = FX_GetMarksSystem(localClientNum);
+  pFVar1->frameTime = frameTime;
   return;
 }
 
 
 // 005DB400  FX_GetFrameTotalSeeThruDecalCount  (EffectsCore/fx_marks.cpp:2370)
 
-uint __cdecl FX_GetFrameTotalSeeThruDecalCount(int param_1)
+uint __cdecl FX_GetFrameTotalSeeThruDecalCount(int localClientNum)
 
 {
   FxMarksSystem *pFVar1;
+  FxMarksSystem *system;
   
-  pFVar1 = FX_GetMarksSystem(param_1);
+  pFVar1 = FX_GetMarksSystem(localClientNum);
   return pFVar1->numVisibleWorldSeethru + pFVar1->numVisibleEntBrushSeethru;
 }
 
@@ -4029,51 +4213,63 @@ uint __cdecl FX_GetFrameTotalSeeThruDecalCount(int param_1)
 
 void __cdecl
 std::_Insertion_sort1<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&),FxMarkTri>
-          (FxMarkTri *param_1,FxMarkTri *param_2,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_3,FxMarkTri *param_4)
+          (FxMarkTri *_First,FxMarkTri *_Last,_func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Pred,
+          FxMarkTri *__formal)
 
 {
-  pathsort_t *ppVar1;
-  bool bVar2;
-  pathsort_t *ppVar3;
-  pathnode_t *local_1c;
-  float local_18;
-  float local_14;
+  uchar uVar1;
+  ushort uVar2;
+  FxMarkTri *pFVar3;
+  bool bVar4;
+  FxMarkTri *pFVar5;
+  FxMarkTri *_First1;
+  FxMarkTri _Val;
   uint local_10;
-  pathsort_t *local_c;
-  pathsort_t *local_8;
+  FxMarkTri *_Next1;
+  FxMarkTri *_Next;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  if (param_1 != param_2) {
-    local_8 = (pathsort_t *)param_1;
-    while (local_c = local_8 + 1, local_c != (pathsort_t *)param_2) {
-      local_1c = local_c->node;
-      local_18 = local_8[1].metric;
-      local_14 = local_8[1].distMetric;
-      local_8 = local_c;
-      bVar2 = (*param_3)((FxMarkTri *)&local_1c,param_1);
-      if (bVar2) {
-        local_c = local_c + 1;
+  if (_First != _Last) {
+    _Next = _First;
+    while (_Next1 = _Next + 1, _Next1 != _Last) {
+      _Val.indices._0_4_ = *(undefined4 *)_Next1->indices;
+      _Val._4_4_ = *(undefined4 *)(_Next[1].indices + 2);
+      _Val.context.reflectionProbeIndex = _Next[1].context.reflectionProbeIndex;
+      _Val.context.modelTypeAndSurf = _Next[1].context.modelTypeAndSurf;
+      _Val.context.modelIndex = _Next[1].context.modelIndex;
+      _Next = _Next1;
+      bVar4 = (*_Pred)(&_Val,_First);
+      if (bVar4) {
+        _Next1 = _Next1 + 1;
         stdext::unchecked_copy_backward<pathsort_t_*,pathsort_t_*>
-                  ((pathsort_t *)param_1,local_8,local_c);
-        *(pathnode_t **)param_1->indices = local_1c;
-        *(float *)(param_1->indices + 2) = local_18;
-        *(float *)&(param_1->context).reflectionProbeIndex = local_14;
+                  ((pathsort_t *)_First,(pathsort_t *)_Next,(pathsort_t *)_Next1);
+        *(undefined4 *)_First->indices = _Val.indices._0_4_;
+        *(undefined4 *)(_First->indices + 2) = _Val._4_4_;
+        (_First->context).reflectionProbeIndex = _Val.context.reflectionProbeIndex;
+        (_First->context).modelTypeAndSurf = _Val.context.modelTypeAndSurf;
+        (_First->context).modelIndex = _Val.context.modelIndex;
       }
       else {
         while( true ) {
-          ppVar1 = local_c;
-          ppVar3 = local_c + -1;
-          bVar2 = (*param_3)((FxMarkTri *)&local_1c,(FxMarkTri *)ppVar3);
-          if (!bVar2) break;
-          local_c->node = ppVar3->node;
-          local_c->metric = ppVar1[-1].metric;
-          local_c->distMetric = ppVar1[-1].distMetric;
-          local_c = ppVar3;
+          pFVar3 = _Next1;
+          pFVar5 = _Next1 + -1;
+          bVar4 = (*_Pred)(&_Val,pFVar5);
+          if (!bVar4) break;
+          *(undefined4 *)_Next1->indices = *(undefined4 *)pFVar5->indices;
+          *(undefined4 *)(_Next1->indices + 2) = *(undefined4 *)(pFVar3[-1].indices + 2);
+          uVar1 = pFVar3[-0xffffffff00000001].context.modelTypeAndSurf;
+          uVar2 = pFVar3[-0xffffffff00000001].context.modelIndex;
+          (_Next1->context).reflectionProbeIndex =
+               pFVar3[-0xffffffff00000001].context.reflectionProbeIndex;
+          (_Next1->context).modelTypeAndSurf = uVar1;
+          (_Next1->context).modelIndex = uVar2;
+          _Next1 = pFVar5;
         }
-        local_c->node = local_1c;
-        local_c->metric = local_18;
-        local_c->distMetric = local_14;
+        *(undefined4 *)_Next1->indices = _Val.indices._0_4_;
+        *(undefined4 *)(_Next1->indices + 2) = _Val._4_4_;
+        (_Next1->context).reflectionProbeIndex = _Val.context.reflectionProbeIndex;
+        (_Next1->context).modelTypeAndSurf = _Val.context.modelTypeAndSurf;
+        (_Next1->context).modelIndex = _Val.context.modelIndex;
       }
     }
   }
@@ -4087,8 +4283,8 @@ std::_Insertion_sort1<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_co
 
 void __cdecl
 std::_Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-          (FxMarkTri *param_1,FxMarkTri *param_2,FxMarkTri *param_3,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_4)
+          (FxMarkTri *_First,FxMarkTri *_Mid,FxMarkTri *_Last,
+          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Pred)
 
 {
   undefined4 uVar1;
@@ -4102,95 +4298,96 @@ std::_Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
   int iVar9;
   FxMarkTri *pFVar10;
   FxMarkTri *pFVar11;
+  uint _Step;
   
-  if (((int)param_3 - (int)param_1) / 0xc < 0x29) {
-    bVar8 = (*param_4)(param_2,param_1);
-    if ((bVar8) && (param_2 != param_1)) {
-      uVar1 = *(undefined4 *)param_2->indices;
-      uVar2 = *(undefined4 *)(param_2->indices + 2);
-      uVar5 = (param_2->context).reflectionProbeIndex;
-      uVar6 = (param_2->context).modelTypeAndSurf;
-      uVar7 = (param_2->context).modelIndex;
-      *(undefined4 *)param_2->indices = *(undefined4 *)param_1->indices;
-      *(undefined4 *)(param_2->indices + 2) = *(undefined4 *)(param_1->indices + 2);
-      uVar3 = (param_1->context).modelTypeAndSurf;
-      uVar4 = (param_1->context).modelIndex;
-      (param_2->context).reflectionProbeIndex = (param_1->context).reflectionProbeIndex;
-      (param_2->context).modelTypeAndSurf = uVar3;
-      (param_2->context).modelIndex = uVar4;
-      *(undefined4 *)param_1->indices = uVar1;
-      *(undefined4 *)(param_1->indices + 2) = uVar2;
-      (param_1->context).reflectionProbeIndex = uVar5;
-      (param_1->context).modelTypeAndSurf = uVar6;
-      (param_1->context).modelIndex = uVar7;
+  if (((int)_Last - (int)_First) / 0xc < 0x29) {
+    bVar8 = (*_Pred)(_Mid,_First);
+    if ((bVar8) && (_Mid != _First)) {
+      uVar1 = *(undefined4 *)_Mid->indices;
+      uVar2 = *(undefined4 *)(_Mid->indices + 2);
+      uVar5 = (_Mid->context).reflectionProbeIndex;
+      uVar6 = (_Mid->context).modelTypeAndSurf;
+      uVar7 = (_Mid->context).modelIndex;
+      *(undefined4 *)_Mid->indices = *(undefined4 *)_First->indices;
+      *(undefined4 *)(_Mid->indices + 2) = *(undefined4 *)(_First->indices + 2);
+      uVar3 = (_First->context).modelTypeAndSurf;
+      uVar4 = (_First->context).modelIndex;
+      (_Mid->context).reflectionProbeIndex = (_First->context).reflectionProbeIndex;
+      (_Mid->context).modelTypeAndSurf = uVar3;
+      (_Mid->context).modelIndex = uVar4;
+      *(undefined4 *)_First->indices = uVar1;
+      *(undefined4 *)(_First->indices + 2) = uVar2;
+      (_First->context).reflectionProbeIndex = uVar5;
+      (_First->context).modelTypeAndSurf = uVar6;
+      (_First->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(param_3,param_2);
-    if ((bVar8) && (param_3 != param_2)) {
-      uVar1 = *(undefined4 *)param_3->indices;
-      uVar2 = *(undefined4 *)(param_3->indices + 2);
-      uVar5 = (param_3->context).reflectionProbeIndex;
-      uVar6 = (param_3->context).modelTypeAndSurf;
-      uVar7 = (param_3->context).modelIndex;
-      *(undefined4 *)param_3->indices = *(undefined4 *)param_2->indices;
-      *(undefined4 *)(param_3->indices + 2) = *(undefined4 *)(param_2->indices + 2);
-      uVar3 = (param_2->context).modelTypeAndSurf;
-      uVar4 = (param_2->context).modelIndex;
-      (param_3->context).reflectionProbeIndex = (param_2->context).reflectionProbeIndex;
-      (param_3->context).modelTypeAndSurf = uVar3;
-      (param_3->context).modelIndex = uVar4;
-      *(undefined4 *)param_2->indices = uVar1;
-      *(undefined4 *)(param_2->indices + 2) = uVar2;
-      (param_2->context).reflectionProbeIndex = uVar5;
-      (param_2->context).modelTypeAndSurf = uVar6;
-      (param_2->context).modelIndex = uVar7;
+    bVar8 = (*_Pred)(_Last,_Mid);
+    if ((bVar8) && (_Last != _Mid)) {
+      uVar1 = *(undefined4 *)_Last->indices;
+      uVar2 = *(undefined4 *)(_Last->indices + 2);
+      uVar5 = (_Last->context).reflectionProbeIndex;
+      uVar6 = (_Last->context).modelTypeAndSurf;
+      uVar7 = (_Last->context).modelIndex;
+      *(undefined4 *)_Last->indices = *(undefined4 *)_Mid->indices;
+      *(undefined4 *)(_Last->indices + 2) = *(undefined4 *)(_Mid->indices + 2);
+      uVar3 = (_Mid->context).modelTypeAndSurf;
+      uVar4 = (_Mid->context).modelIndex;
+      (_Last->context).reflectionProbeIndex = (_Mid->context).reflectionProbeIndex;
+      (_Last->context).modelTypeAndSurf = uVar3;
+      (_Last->context).modelIndex = uVar4;
+      *(undefined4 *)_Mid->indices = uVar1;
+      *(undefined4 *)(_Mid->indices + 2) = uVar2;
+      (_Mid->context).reflectionProbeIndex = uVar5;
+      (_Mid->context).modelTypeAndSurf = uVar6;
+      (_Mid->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(param_2,param_1);
-    if ((bVar8) && (param_2 != param_1)) {
-      uVar1 = *(undefined4 *)param_2->indices;
-      uVar2 = *(undefined4 *)(param_2->indices + 2);
-      uVar5 = (param_2->context).reflectionProbeIndex;
-      uVar6 = (param_2->context).modelTypeAndSurf;
-      uVar7 = (param_2->context).modelIndex;
-      *(undefined4 *)param_2->indices = *(undefined4 *)param_1->indices;
-      *(undefined4 *)(param_2->indices + 2) = *(undefined4 *)(param_1->indices + 2);
-      uVar3 = (param_1->context).modelTypeAndSurf;
-      uVar4 = (param_1->context).modelIndex;
-      (param_2->context).reflectionProbeIndex = (param_1->context).reflectionProbeIndex;
-      (param_2->context).modelTypeAndSurf = uVar3;
-      (param_2->context).modelIndex = uVar4;
-      *(undefined4 *)param_1->indices = uVar1;
-      *(undefined4 *)(param_1->indices + 2) = uVar2;
-      (param_1->context).reflectionProbeIndex = uVar5;
-      (param_1->context).modelTypeAndSurf = uVar6;
-      (param_1->context).modelIndex = uVar7;
+    bVar8 = (*_Pred)(_Mid,_First);
+    if ((bVar8) && (_Mid != _First)) {
+      uVar1 = *(undefined4 *)_Mid->indices;
+      uVar2 = *(undefined4 *)(_Mid->indices + 2);
+      uVar5 = (_Mid->context).reflectionProbeIndex;
+      uVar6 = (_Mid->context).modelTypeAndSurf;
+      uVar7 = (_Mid->context).modelIndex;
+      *(undefined4 *)_Mid->indices = *(undefined4 *)_First->indices;
+      *(undefined4 *)(_Mid->indices + 2) = *(undefined4 *)(_First->indices + 2);
+      uVar3 = (_First->context).modelTypeAndSurf;
+      uVar4 = (_First->context).modelIndex;
+      (_Mid->context).reflectionProbeIndex = (_First->context).reflectionProbeIndex;
+      (_Mid->context).modelTypeAndSurf = uVar3;
+      (_Mid->context).modelIndex = uVar4;
+      *(undefined4 *)_First->indices = uVar1;
+      *(undefined4 *)(_First->indices + 2) = uVar2;
+      (_First->context).reflectionProbeIndex = uVar5;
+      (_First->context).modelTypeAndSurf = uVar6;
+      (_First->context).modelIndex = uVar7;
     }
   }
   else {
-    iVar9 = ((int)param_3 - (int)param_1) / 0xc + 1;
+    iVar9 = ((int)_Last - (int)_First) / 0xc + 1;
     iVar9 = (int)(iVar9 + (iVar9 >> 0x1f & 7U)) >> 3;
-    pFVar11 = param_1 + iVar9 * 2;
-    pFVar10 = param_1 + iVar9;
-    bVar8 = (*param_4)(pFVar10,param_1);
-    if ((bVar8) && (pFVar10 != param_1)) {
+    pFVar11 = _First + iVar9 * 2;
+    pFVar10 = _First + iVar9;
+    bVar8 = (*_Pred)(pFVar10,_First);
+    if ((bVar8) && (pFVar10 != _First)) {
       uVar1 = *(undefined4 *)pFVar10->indices;
       uVar2 = *(undefined4 *)(pFVar10->indices + 2);
       uVar5 = (pFVar10->context).reflectionProbeIndex;
       uVar6 = (pFVar10->context).modelTypeAndSurf;
       uVar7 = (pFVar10->context).modelIndex;
-      *(undefined4 *)pFVar10->indices = *(undefined4 *)param_1->indices;
-      *(undefined4 *)(pFVar10->indices + 2) = *(undefined4 *)(param_1->indices + 2);
-      uVar3 = (param_1->context).modelTypeAndSurf;
-      uVar4 = (param_1->context).modelIndex;
-      (pFVar10->context).reflectionProbeIndex = (param_1->context).reflectionProbeIndex;
+      *(undefined4 *)pFVar10->indices = *(undefined4 *)_First->indices;
+      *(undefined4 *)(pFVar10->indices + 2) = *(undefined4 *)(_First->indices + 2);
+      uVar3 = (_First->context).modelTypeAndSurf;
+      uVar4 = (_First->context).modelIndex;
+      (pFVar10->context).reflectionProbeIndex = (_First->context).reflectionProbeIndex;
       (pFVar10->context).modelTypeAndSurf = uVar3;
       (pFVar10->context).modelIndex = uVar4;
-      *(undefined4 *)param_1->indices = uVar1;
-      *(undefined4 *)(param_1->indices + 2) = uVar2;
-      (param_1->context).reflectionProbeIndex = uVar5;
-      (param_1->context).modelTypeAndSurf = uVar6;
-      (param_1->context).modelIndex = uVar7;
+      *(undefined4 *)_First->indices = uVar1;
+      *(undefined4 *)(_First->indices + 2) = uVar2;
+      (_First->context).reflectionProbeIndex = uVar5;
+      (_First->context).modelTypeAndSurf = uVar6;
+      (_First->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(pFVar11,pFVar10);
+    bVar8 = (*_Pred)(pFVar11,pFVar10);
     if ((bVar8) && (pFVar11 != pFVar10)) {
       uVar1 = *(undefined4 *)pFVar11->indices;
       uVar2 = *(undefined4 *)(pFVar11->indices + 2);
@@ -4210,91 +4407,91 @@ std::_Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
       (pFVar10->context).modelTypeAndSurf = uVar6;
       (pFVar10->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(pFVar10,param_1);
-    if ((bVar8) && (pFVar10 != param_1)) {
+    bVar8 = (*_Pred)(pFVar10,_First);
+    if ((bVar8) && (pFVar10 != _First)) {
       uVar1 = *(undefined4 *)pFVar10->indices;
       uVar2 = *(undefined4 *)(pFVar10->indices + 2);
       uVar5 = (pFVar10->context).reflectionProbeIndex;
       uVar6 = (pFVar10->context).modelTypeAndSurf;
       uVar7 = (pFVar10->context).modelIndex;
-      *(undefined4 *)pFVar10->indices = *(undefined4 *)param_1->indices;
-      *(undefined4 *)(pFVar10->indices + 2) = *(undefined4 *)(param_1->indices + 2);
-      uVar3 = (param_1->context).modelTypeAndSurf;
-      uVar4 = (param_1->context).modelIndex;
-      (pFVar10->context).reflectionProbeIndex = (param_1->context).reflectionProbeIndex;
+      *(undefined4 *)pFVar10->indices = *(undefined4 *)_First->indices;
+      *(undefined4 *)(pFVar10->indices + 2) = *(undefined4 *)(_First->indices + 2);
+      uVar3 = (_First->context).modelTypeAndSurf;
+      uVar4 = (_First->context).modelIndex;
+      (pFVar10->context).reflectionProbeIndex = (_First->context).reflectionProbeIndex;
       (pFVar10->context).modelTypeAndSurf = uVar3;
       (pFVar10->context).modelIndex = uVar4;
-      *(undefined4 *)param_1->indices = uVar1;
-      *(undefined4 *)(param_1->indices + 2) = uVar2;
-      (param_1->context).reflectionProbeIndex = uVar5;
-      (param_1->context).modelTypeAndSurf = uVar6;
-      (param_1->context).modelIndex = uVar7;
+      *(undefined4 *)_First->indices = uVar1;
+      *(undefined4 *)(_First->indices + 2) = uVar2;
+      (_First->context).reflectionProbeIndex = uVar5;
+      (_First->context).modelTypeAndSurf = uVar6;
+      (_First->context).modelIndex = uVar7;
     }
-    pFVar11 = param_2 + iVar9;
-    pFVar10 = param_2 + -iVar9;
-    bVar8 = (*param_4)(param_2,pFVar10);
-    if ((bVar8) && (param_2 != pFVar10)) {
-      uVar1 = *(undefined4 *)param_2->indices;
-      uVar2 = *(undefined4 *)(param_2->indices + 2);
-      uVar5 = (param_2->context).reflectionProbeIndex;
-      uVar6 = (param_2->context).modelTypeAndSurf;
-      uVar7 = (param_2->context).modelIndex;
-      *(undefined4 *)param_2->indices = *(undefined4 *)pFVar10->indices;
-      *(undefined4 *)(param_2->indices + 2) = *(undefined4 *)(pFVar10->indices + 2);
+    pFVar11 = _Mid + iVar9;
+    pFVar10 = _Mid + -iVar9;
+    bVar8 = (*_Pred)(_Mid,pFVar10);
+    if ((bVar8) && (_Mid != pFVar10)) {
+      uVar1 = *(undefined4 *)_Mid->indices;
+      uVar2 = *(undefined4 *)(_Mid->indices + 2);
+      uVar5 = (_Mid->context).reflectionProbeIndex;
+      uVar6 = (_Mid->context).modelTypeAndSurf;
+      uVar7 = (_Mid->context).modelIndex;
+      *(undefined4 *)_Mid->indices = *(undefined4 *)pFVar10->indices;
+      *(undefined4 *)(_Mid->indices + 2) = *(undefined4 *)(pFVar10->indices + 2);
       uVar3 = (pFVar10->context).modelTypeAndSurf;
       uVar4 = (pFVar10->context).modelIndex;
-      (param_2->context).reflectionProbeIndex = (pFVar10->context).reflectionProbeIndex;
-      (param_2->context).modelTypeAndSurf = uVar3;
-      (param_2->context).modelIndex = uVar4;
+      (_Mid->context).reflectionProbeIndex = (pFVar10->context).reflectionProbeIndex;
+      (_Mid->context).modelTypeAndSurf = uVar3;
+      (_Mid->context).modelIndex = uVar4;
       *(undefined4 *)pFVar10->indices = uVar1;
       *(undefined4 *)(pFVar10->indices + 2) = uVar2;
       (pFVar10->context).reflectionProbeIndex = uVar5;
       (pFVar10->context).modelTypeAndSurf = uVar6;
       (pFVar10->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(pFVar11,param_2);
-    if ((bVar8) && (pFVar11 != param_2)) {
+    bVar8 = (*_Pred)(pFVar11,_Mid);
+    if ((bVar8) && (pFVar11 != _Mid)) {
       uVar1 = *(undefined4 *)pFVar11->indices;
       uVar2 = *(undefined4 *)(pFVar11->indices + 2);
       uVar5 = (pFVar11->context).reflectionProbeIndex;
       uVar6 = (pFVar11->context).modelTypeAndSurf;
       uVar7 = (pFVar11->context).modelIndex;
-      *(undefined4 *)pFVar11->indices = *(undefined4 *)param_2->indices;
-      *(undefined4 *)(pFVar11->indices + 2) = *(undefined4 *)(param_2->indices + 2);
-      uVar3 = (param_2->context).modelTypeAndSurf;
-      uVar4 = (param_2->context).modelIndex;
-      (pFVar11->context).reflectionProbeIndex = (param_2->context).reflectionProbeIndex;
+      *(undefined4 *)pFVar11->indices = *(undefined4 *)_Mid->indices;
+      *(undefined4 *)(pFVar11->indices + 2) = *(undefined4 *)(_Mid->indices + 2);
+      uVar3 = (_Mid->context).modelTypeAndSurf;
+      uVar4 = (_Mid->context).modelIndex;
+      (pFVar11->context).reflectionProbeIndex = (_Mid->context).reflectionProbeIndex;
       (pFVar11->context).modelTypeAndSurf = uVar3;
       (pFVar11->context).modelIndex = uVar4;
-      *(undefined4 *)param_2->indices = uVar1;
-      *(undefined4 *)(param_2->indices + 2) = uVar2;
-      (param_2->context).reflectionProbeIndex = uVar5;
-      (param_2->context).modelTypeAndSurf = uVar6;
-      (param_2->context).modelIndex = uVar7;
+      *(undefined4 *)_Mid->indices = uVar1;
+      *(undefined4 *)(_Mid->indices + 2) = uVar2;
+      (_Mid->context).reflectionProbeIndex = uVar5;
+      (_Mid->context).modelTypeAndSurf = uVar6;
+      (_Mid->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(param_2,pFVar10);
-    if ((bVar8) && (param_2 != pFVar10)) {
-      uVar1 = *(undefined4 *)param_2->indices;
-      uVar2 = *(undefined4 *)(param_2->indices + 2);
-      uVar5 = (param_2->context).reflectionProbeIndex;
-      uVar6 = (param_2->context).modelTypeAndSurf;
-      uVar7 = (param_2->context).modelIndex;
-      *(undefined4 *)param_2->indices = *(undefined4 *)pFVar10->indices;
-      *(undefined4 *)(param_2->indices + 2) = *(undefined4 *)(pFVar10->indices + 2);
+    bVar8 = (*_Pred)(_Mid,pFVar10);
+    if ((bVar8) && (_Mid != pFVar10)) {
+      uVar1 = *(undefined4 *)_Mid->indices;
+      uVar2 = *(undefined4 *)(_Mid->indices + 2);
+      uVar5 = (_Mid->context).reflectionProbeIndex;
+      uVar6 = (_Mid->context).modelTypeAndSurf;
+      uVar7 = (_Mid->context).modelIndex;
+      *(undefined4 *)_Mid->indices = *(undefined4 *)pFVar10->indices;
+      *(undefined4 *)(_Mid->indices + 2) = *(undefined4 *)(pFVar10->indices + 2);
       uVar3 = (pFVar10->context).modelTypeAndSurf;
       uVar4 = (pFVar10->context).modelIndex;
-      (param_2->context).reflectionProbeIndex = (pFVar10->context).reflectionProbeIndex;
-      (param_2->context).modelTypeAndSurf = uVar3;
-      (param_2->context).modelIndex = uVar4;
+      (_Mid->context).reflectionProbeIndex = (pFVar10->context).reflectionProbeIndex;
+      (_Mid->context).modelTypeAndSurf = uVar3;
+      (_Mid->context).modelIndex = uVar4;
       *(undefined4 *)pFVar10->indices = uVar1;
       *(undefined4 *)(pFVar10->indices + 2) = uVar2;
       (pFVar10->context).reflectionProbeIndex = uVar5;
       (pFVar10->context).modelTypeAndSurf = uVar6;
       (pFVar10->context).modelIndex = uVar7;
     }
-    pFVar11 = param_3 + -iVar9;
-    pFVar10 = param_3 + iVar9 * -2;
-    bVar8 = (*param_4)(pFVar11,pFVar10);
+    pFVar11 = _Last + -iVar9;
+    pFVar10 = _Last + iVar9 * -2;
+    bVar8 = (*_Pred)(pFVar11,pFVar10);
     if ((bVar8) && (pFVar11 != pFVar10)) {
       uVar1 = *(undefined4 *)pFVar11->indices;
       uVar2 = *(undefined4 *)(pFVar11->indices + 2);
@@ -4314,27 +4511,27 @@ std::_Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
       (pFVar10->context).modelTypeAndSurf = uVar6;
       (pFVar10->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(param_3,pFVar11);
-    if ((bVar8) && (param_3 != pFVar11)) {
-      uVar1 = *(undefined4 *)param_3->indices;
-      uVar2 = *(undefined4 *)(param_3->indices + 2);
-      uVar5 = (param_3->context).reflectionProbeIndex;
-      uVar6 = (param_3->context).modelTypeAndSurf;
-      uVar7 = (param_3->context).modelIndex;
-      *(undefined4 *)param_3->indices = *(undefined4 *)pFVar11->indices;
-      *(undefined4 *)(param_3->indices + 2) = *(undefined4 *)(pFVar11->indices + 2);
+    bVar8 = (*_Pred)(_Last,pFVar11);
+    if ((bVar8) && (_Last != pFVar11)) {
+      uVar1 = *(undefined4 *)_Last->indices;
+      uVar2 = *(undefined4 *)(_Last->indices + 2);
+      uVar5 = (_Last->context).reflectionProbeIndex;
+      uVar6 = (_Last->context).modelTypeAndSurf;
+      uVar7 = (_Last->context).modelIndex;
+      *(undefined4 *)_Last->indices = *(undefined4 *)pFVar11->indices;
+      *(undefined4 *)(_Last->indices + 2) = *(undefined4 *)(pFVar11->indices + 2);
       uVar3 = (pFVar11->context).modelTypeAndSurf;
       uVar4 = (pFVar11->context).modelIndex;
-      (param_3->context).reflectionProbeIndex = (pFVar11->context).reflectionProbeIndex;
-      (param_3->context).modelTypeAndSurf = uVar3;
-      (param_3->context).modelIndex = uVar4;
+      (_Last->context).reflectionProbeIndex = (pFVar11->context).reflectionProbeIndex;
+      (_Last->context).modelTypeAndSurf = uVar3;
+      (_Last->context).modelIndex = uVar4;
       *(undefined4 *)pFVar11->indices = uVar1;
       *(undefined4 *)(pFVar11->indices + 2) = uVar2;
       (pFVar11->context).reflectionProbeIndex = uVar5;
       (pFVar11->context).modelTypeAndSurf = uVar6;
       (pFVar11->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(pFVar11,pFVar10);
+    bVar8 = (*_Pred)(pFVar11,pFVar10);
     if ((bVar8) && (pFVar11 != pFVar10)) {
       uVar1 = *(undefined4 *)pFVar11->indices;
       uVar2 = *(undefined4 *)(pFVar11->indices + 2);
@@ -4354,62 +4551,62 @@ std::_Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
       (pFVar10->context).modelTypeAndSurf = uVar6;
       (pFVar10->context).modelIndex = uVar7;
     }
-    pFVar10 = param_3 + -iVar9;
-    pFVar11 = param_1 + iVar9;
-    bVar8 = (*param_4)(param_2,pFVar11);
-    if ((bVar8) && (param_2 != pFVar11)) {
-      uVar1 = *(undefined4 *)param_2->indices;
-      uVar2 = *(undefined4 *)(param_2->indices + 2);
-      uVar5 = (param_2->context).reflectionProbeIndex;
-      uVar6 = (param_2->context).modelTypeAndSurf;
-      uVar7 = (param_2->context).modelIndex;
-      *(undefined4 *)param_2->indices = *(undefined4 *)pFVar11->indices;
-      *(undefined4 *)(param_2->indices + 2) = *(undefined4 *)(pFVar11->indices + 2);
+    pFVar10 = _Last + -iVar9;
+    pFVar11 = _First + iVar9;
+    bVar8 = (*_Pred)(_Mid,pFVar11);
+    if ((bVar8) && (_Mid != pFVar11)) {
+      uVar1 = *(undefined4 *)_Mid->indices;
+      uVar2 = *(undefined4 *)(_Mid->indices + 2);
+      uVar5 = (_Mid->context).reflectionProbeIndex;
+      uVar6 = (_Mid->context).modelTypeAndSurf;
+      uVar7 = (_Mid->context).modelIndex;
+      *(undefined4 *)_Mid->indices = *(undefined4 *)pFVar11->indices;
+      *(undefined4 *)(_Mid->indices + 2) = *(undefined4 *)(pFVar11->indices + 2);
       uVar3 = (pFVar11->context).modelTypeAndSurf;
       uVar4 = (pFVar11->context).modelIndex;
-      (param_2->context).reflectionProbeIndex = (pFVar11->context).reflectionProbeIndex;
-      (param_2->context).modelTypeAndSurf = uVar3;
-      (param_2->context).modelIndex = uVar4;
+      (_Mid->context).reflectionProbeIndex = (pFVar11->context).reflectionProbeIndex;
+      (_Mid->context).modelTypeAndSurf = uVar3;
+      (_Mid->context).modelIndex = uVar4;
       *(undefined4 *)pFVar11->indices = uVar1;
       *(undefined4 *)(pFVar11->indices + 2) = uVar2;
       (pFVar11->context).reflectionProbeIndex = uVar5;
       (pFVar11->context).modelTypeAndSurf = uVar6;
       (pFVar11->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(pFVar10,param_2);
-    if ((bVar8) && (pFVar10 != param_2)) {
+    bVar8 = (*_Pred)(pFVar10,_Mid);
+    if ((bVar8) && (pFVar10 != _Mid)) {
       uVar1 = *(undefined4 *)pFVar10->indices;
       uVar2 = *(undefined4 *)(pFVar10->indices + 2);
       uVar5 = (pFVar10->context).reflectionProbeIndex;
       uVar6 = (pFVar10->context).modelTypeAndSurf;
       uVar7 = (pFVar10->context).modelIndex;
-      *(undefined4 *)pFVar10->indices = *(undefined4 *)param_2->indices;
-      *(undefined4 *)(pFVar10->indices + 2) = *(undefined4 *)(param_2->indices + 2);
-      uVar3 = (param_2->context).modelTypeAndSurf;
-      uVar4 = (param_2->context).modelIndex;
-      (pFVar10->context).reflectionProbeIndex = (param_2->context).reflectionProbeIndex;
+      *(undefined4 *)pFVar10->indices = *(undefined4 *)_Mid->indices;
+      *(undefined4 *)(pFVar10->indices + 2) = *(undefined4 *)(_Mid->indices + 2);
+      uVar3 = (_Mid->context).modelTypeAndSurf;
+      uVar4 = (_Mid->context).modelIndex;
+      (pFVar10->context).reflectionProbeIndex = (_Mid->context).reflectionProbeIndex;
       (pFVar10->context).modelTypeAndSurf = uVar3;
       (pFVar10->context).modelIndex = uVar4;
-      *(undefined4 *)param_2->indices = uVar1;
-      *(undefined4 *)(param_2->indices + 2) = uVar2;
-      (param_2->context).reflectionProbeIndex = uVar5;
-      (param_2->context).modelTypeAndSurf = uVar6;
-      (param_2->context).modelIndex = uVar7;
+      *(undefined4 *)_Mid->indices = uVar1;
+      *(undefined4 *)(_Mid->indices + 2) = uVar2;
+      (_Mid->context).reflectionProbeIndex = uVar5;
+      (_Mid->context).modelTypeAndSurf = uVar6;
+      (_Mid->context).modelIndex = uVar7;
     }
-    bVar8 = (*param_4)(param_2,pFVar11);
-    if ((bVar8) && (param_2 != pFVar11)) {
-      uVar1 = *(undefined4 *)param_2->indices;
-      uVar2 = *(undefined4 *)(param_2->indices + 2);
-      uVar5 = (param_2->context).reflectionProbeIndex;
-      uVar6 = (param_2->context).modelTypeAndSurf;
-      uVar7 = (param_2->context).modelIndex;
-      *(undefined4 *)param_2->indices = *(undefined4 *)pFVar11->indices;
-      *(undefined4 *)(param_2->indices + 2) = *(undefined4 *)(pFVar11->indices + 2);
+    bVar8 = (*_Pred)(_Mid,pFVar11);
+    if ((bVar8) && (_Mid != pFVar11)) {
+      uVar1 = *(undefined4 *)_Mid->indices;
+      uVar2 = *(undefined4 *)(_Mid->indices + 2);
+      uVar5 = (_Mid->context).reflectionProbeIndex;
+      uVar6 = (_Mid->context).modelTypeAndSurf;
+      uVar7 = (_Mid->context).modelIndex;
+      *(undefined4 *)_Mid->indices = *(undefined4 *)pFVar11->indices;
+      *(undefined4 *)(_Mid->indices + 2) = *(undefined4 *)(pFVar11->indices + 2);
       uVar3 = (pFVar11->context).modelTypeAndSurf;
       uVar4 = (pFVar11->context).modelIndex;
-      (param_2->context).reflectionProbeIndex = (pFVar11->context).reflectionProbeIndex;
-      (param_2->context).modelTypeAndSurf = uVar3;
-      (param_2->context).modelIndex = uVar4;
+      (_Mid->context).reflectionProbeIndex = (pFVar11->context).reflectionProbeIndex;
+      (_Mid->context).modelTypeAndSurf = uVar3;
+      (_Mid->context).modelIndex = uVar4;
       *(undefined4 *)pFVar11->indices = uVar1;
       *(undefined4 *)(pFVar11->indices + 2) = uVar2;
       (pFVar11->context).reflectionProbeIndex = uVar5;
@@ -4427,8 +4624,8 @@ std::_Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
 
 pair<FxMarkTri_*,FxMarkTri_*> __cdecl
 std::_Unguarded_partition<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-          (FxMarkTri *param_1,FxMarkTri *param_2,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_3)
+          (FxMarkTri *param_1,FxMarkTri *_First,
+          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Last)
 
 {
   undefined4 uVar1;
@@ -4445,217 +4642,218 @@ std::_Unguarded_partition<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTr
   FxMarkTri *pFVar12;
   pair<FxMarkTri_*,FxMarkTri_*> pVar13;
   _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *in_stack_00000010;
-  FxMarkTri *local_18;
-  FxMarkTri *local_14;
-  FxMarkTri *local_10;
-  FxMarkTri *local_c;
+  FxMarkTri *_Plast;
+  FxMarkTri *_Glast;
+  FxMarkTri *_Pfirst;
+  FxMarkTri *_Gfirst;
+  FxMarkTri *_Mid;
   
-  local_10 = param_2 + ((int)param_3 - (int)param_2) / 0x18;
+  _Pfirst = _First + ((int)_Last - (int)_First) / 0x18;
   _Median<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-            (param_2,local_10,(FxMarkTri *)(param_3 + -0xc),in_stack_00000010);
-  local_18 = local_10 + 1;
-  while (((param_2 < local_10 && (bVar8 = (*in_stack_00000010)(local_10 + -1,local_10), !bVar8)) &&
-         (bVar8 = (*in_stack_00000010)(local_10,local_10 + -1), !bVar8))) {
-    local_10 = local_10 + -1;
+            (_First,_Pfirst,(FxMarkTri *)(_Last + -0xc),in_stack_00000010);
+  _Plast = _Pfirst + 1;
+  while (((_First < _Pfirst && (bVar8 = (*in_stack_00000010)(_Pfirst + -1,_Pfirst), !bVar8)) &&
+         (bVar8 = (*in_stack_00000010)(_Pfirst,_Pfirst + -1), !bVar8))) {
+    _Pfirst = _Pfirst + -1;
   }
-  while (((local_18 < param_3 && (bVar8 = (*in_stack_00000010)(local_18,local_10), !bVar8)) &&
-         (bVar8 = (*in_stack_00000010)(local_10,local_18), !bVar8))) {
-    local_18 = local_18 + 1;
+  while (((_Plast < _Last && (bVar8 = (*in_stack_00000010)(_Plast,_Pfirst), !bVar8)) &&
+         (bVar8 = (*in_stack_00000010)(_Pfirst,_Plast), !bVar8))) {
+    _Plast = _Plast + 1;
   }
-  local_c = local_18;
-  local_14 = local_10;
-  pFVar10 = local_18;
-  pFVar11 = local_c;
-  pFVar9 = local_10;
+  _Gfirst = _Plast;
+  _Glast = _Pfirst;
+  pFVar10 = _Plast;
+  pFVar11 = _Gfirst;
+  pFVar9 = _Pfirst;
   do {
-    while (local_10 = pFVar9, local_c = pFVar11, local_18 = pFVar10, param_3 <= local_c) {
+    while (_Pfirst = pFVar9, _Gfirst = pFVar11, _Plast = pFVar10, _Last <= _Gfirst) {
 LAB_005dcd01:
-      for (; param_2 < local_14; local_14 = local_14 + -1) {
-        bVar8 = (*in_stack_00000010)(local_14 + -1,local_10);
-        pFVar10 = local_10;
+      for (; _First < _Glast; _Glast = _Glast + -1) {
+        bVar8 = (*in_stack_00000010)(_Glast + -1,_Pfirst);
+        pFVar10 = _Pfirst;
         if (!bVar8) {
-          bVar8 = (*in_stack_00000010)(local_10,local_14 + -1);
+          bVar8 = (*in_stack_00000010)(_Pfirst,_Glast + -1);
           if (bVar8) break;
-          pFVar10 = local_10 + -1;
-          pFVar11 = local_14 + -1;
+          pFVar10 = _Pfirst + -1;
+          pFVar11 = _Glast + -1;
           if (pFVar10 != pFVar11) {
             uVar1 = *(undefined4 *)pFVar10->indices;
-            uVar2 = *(undefined4 *)(local_10[-1].indices + 2);
-            uVar5 = local_10[-0xffffffff00000001].context.reflectionProbeIndex;
-            uVar6 = local_10[-0xffffffff00000001].context.modelTypeAndSurf;
-            uVar7 = local_10[-0xffffffff00000001].context.modelIndex;
+            uVar2 = *(undefined4 *)(_Pfirst[-1].indices + 2);
+            uVar5 = _Pfirst[-0xffffffff00000001].context.reflectionProbeIndex;
+            uVar6 = _Pfirst[-0xffffffff00000001].context.modelTypeAndSurf;
+            uVar7 = _Pfirst[-0xffffffff00000001].context.modelIndex;
             *(undefined4 *)pFVar10->indices = *(undefined4 *)pFVar11->indices;
-            *(undefined4 *)(local_10[-1].indices + 2) = *(undefined4 *)(local_14[-1].indices + 2);
-            uVar3 = local_14[-0xffffffff00000001].context.modelTypeAndSurf;
-            uVar4 = local_14[-0xffffffff00000001].context.modelIndex;
-            local_10[-0xffffffff00000001].context.reflectionProbeIndex =
-                 local_14[-0xffffffff00000001].context.reflectionProbeIndex;
-            local_10[-0xffffffff00000001].context.modelTypeAndSurf = uVar3;
-            local_10[-0xffffffff00000001].context.modelIndex = uVar4;
+            *(undefined4 *)(_Pfirst[-1].indices + 2) = *(undefined4 *)(_Glast[-1].indices + 2);
+            uVar3 = _Glast[-0xffffffff00000001].context.modelTypeAndSurf;
+            uVar4 = _Glast[-0xffffffff00000001].context.modelIndex;
+            _Pfirst[-0xffffffff00000001].context.reflectionProbeIndex =
+                 _Glast[-0xffffffff00000001].context.reflectionProbeIndex;
+            _Pfirst[-0xffffffff00000001].context.modelTypeAndSurf = uVar3;
+            _Pfirst[-0xffffffff00000001].context.modelIndex = uVar4;
             *(undefined4 *)pFVar11->indices = uVar1;
-            *(undefined4 *)(local_14[-1].indices + 2) = uVar2;
-            local_14[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
-            local_14[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
-            local_14[-0xffffffff00000001].context.modelIndex = uVar7;
+            *(undefined4 *)(_Glast[-1].indices + 2) = uVar2;
+            _Glast[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
+            _Glast[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
+            _Glast[-0xffffffff00000001].context.modelIndex = uVar7;
           }
         }
-        local_10 = pFVar10;
+        _Pfirst = pFVar10;
       }
-      if ((local_14 == param_2) && (local_c == (FxMarkTri *)param_3)) {
-        *(FxMarkTri **)param_1->indices = local_10;
-        *(FxMarkTri **)(param_1->indices + 2) = local_18;
-        pVar13.second = local_18;
+      if ((_Glast == _First) && (_Gfirst == (FxMarkTri *)_Last)) {
+        *(FxMarkTri **)param_1->indices = _Pfirst;
+        *(FxMarkTri **)(param_1->indices + 2) = _Plast;
+        pVar13.second = _Plast;
         pVar13.first = param_1;
         return pVar13;
       }
-      if (local_14 == param_2) {
-        if ((local_18 != local_c) && (local_10 != local_18)) {
-          uVar1 = *(undefined4 *)local_10->indices;
-          uVar2 = *(undefined4 *)(local_10->indices + 2);
-          uVar5 = (local_10->context).reflectionProbeIndex;
-          uVar6 = (local_10->context).modelTypeAndSurf;
-          uVar7 = (local_10->context).modelIndex;
-          *(undefined4 *)local_10->indices = *(undefined4 *)local_18->indices;
-          *(undefined4 *)(local_10->indices + 2) = *(undefined4 *)(local_18->indices + 2);
-          uVar3 = (local_18->context).modelTypeAndSurf;
-          uVar4 = (local_18->context).modelIndex;
-          (local_10->context).reflectionProbeIndex = (local_18->context).reflectionProbeIndex;
-          (local_10->context).modelTypeAndSurf = uVar3;
-          (local_10->context).modelIndex = uVar4;
-          *(undefined4 *)local_18->indices = uVar1;
-          *(undefined4 *)(local_18->indices + 2) = uVar2;
-          (local_18->context).reflectionProbeIndex = uVar5;
-          (local_18->context).modelTypeAndSurf = uVar6;
-          (local_18->context).modelIndex = uVar7;
+      if (_Glast == _First) {
+        if ((_Plast != _Gfirst) && (_Pfirst != _Plast)) {
+          uVar1 = *(undefined4 *)_Pfirst->indices;
+          uVar2 = *(undefined4 *)(_Pfirst->indices + 2);
+          uVar5 = (_Pfirst->context).reflectionProbeIndex;
+          uVar6 = (_Pfirst->context).modelTypeAndSurf;
+          uVar7 = (_Pfirst->context).modelIndex;
+          *(undefined4 *)_Pfirst->indices = *(undefined4 *)_Plast->indices;
+          *(undefined4 *)(_Pfirst->indices + 2) = *(undefined4 *)(_Plast->indices + 2);
+          uVar3 = (_Plast->context).modelTypeAndSurf;
+          uVar4 = (_Plast->context).modelIndex;
+          (_Pfirst->context).reflectionProbeIndex = (_Plast->context).reflectionProbeIndex;
+          (_Pfirst->context).modelTypeAndSurf = uVar3;
+          (_Pfirst->context).modelIndex = uVar4;
+          *(undefined4 *)_Plast->indices = uVar1;
+          *(undefined4 *)(_Plast->indices + 2) = uVar2;
+          (_Plast->context).reflectionProbeIndex = uVar5;
+          (_Plast->context).modelTypeAndSurf = uVar6;
+          (_Plast->context).modelIndex = uVar7;
         }
-        pFVar10 = local_18 + 1;
-        pFVar11 = local_c + 1;
-        pFVar9 = local_10 + 1;
-        if (local_10 != local_c) {
-          uVar1 = *(undefined4 *)local_10->indices;
-          uVar2 = *(undefined4 *)(local_10->indices + 2);
-          uVar5 = (local_10->context).reflectionProbeIndex;
-          uVar6 = (local_10->context).modelTypeAndSurf;
-          uVar7 = (local_10->context).modelIndex;
-          *(undefined4 *)local_10->indices = *(undefined4 *)local_c->indices;
-          *(undefined4 *)(local_10->indices + 2) = *(undefined4 *)(local_c->indices + 2);
-          uVar3 = (local_c->context).modelTypeAndSurf;
-          uVar4 = (local_c->context).modelIndex;
-          (local_10->context).reflectionProbeIndex = (local_c->context).reflectionProbeIndex;
-          (local_10->context).modelTypeAndSurf = uVar3;
-          (local_10->context).modelIndex = uVar4;
-          *(undefined4 *)local_c->indices = uVar1;
-          *(undefined4 *)(local_c->indices + 2) = uVar2;
-          (local_c->context).reflectionProbeIndex = uVar5;
-          (local_c->context).modelTypeAndSurf = uVar6;
-          (local_c->context).modelIndex = uVar7;
+        pFVar10 = _Plast + 1;
+        pFVar11 = _Gfirst + 1;
+        pFVar9 = _Pfirst + 1;
+        if (_Pfirst != _Gfirst) {
+          uVar1 = *(undefined4 *)_Pfirst->indices;
+          uVar2 = *(undefined4 *)(_Pfirst->indices + 2);
+          uVar5 = (_Pfirst->context).reflectionProbeIndex;
+          uVar6 = (_Pfirst->context).modelTypeAndSurf;
+          uVar7 = (_Pfirst->context).modelIndex;
+          *(undefined4 *)_Pfirst->indices = *(undefined4 *)_Gfirst->indices;
+          *(undefined4 *)(_Pfirst->indices + 2) = *(undefined4 *)(_Gfirst->indices + 2);
+          uVar3 = (_Gfirst->context).modelTypeAndSurf;
+          uVar4 = (_Gfirst->context).modelIndex;
+          (_Pfirst->context).reflectionProbeIndex = (_Gfirst->context).reflectionProbeIndex;
+          (_Pfirst->context).modelTypeAndSurf = uVar3;
+          (_Pfirst->context).modelIndex = uVar4;
+          *(undefined4 *)_Gfirst->indices = uVar1;
+          *(undefined4 *)(_Gfirst->indices + 2) = uVar2;
+          (_Gfirst->context).reflectionProbeIndex = uVar5;
+          (_Gfirst->context).modelTypeAndSurf = uVar6;
+          (_Gfirst->context).modelIndex = uVar7;
         }
       }
-      else if (local_c == (FxMarkTri *)param_3) {
-        pFVar12 = local_14 + -1;
-        pFVar9 = local_10 + -1;
+      else if (_Gfirst == (FxMarkTri *)_Last) {
+        pFVar12 = _Glast + -1;
+        pFVar9 = _Pfirst + -1;
         if ((pFVar12 != pFVar9) && (pFVar12 != pFVar9)) {
           uVar1 = *(undefined4 *)pFVar12->indices;
-          uVar2 = *(undefined4 *)(local_14[-1].indices + 2);
-          uVar5 = local_14[-0xffffffff00000001].context.reflectionProbeIndex;
-          uVar6 = local_14[-0xffffffff00000001].context.modelTypeAndSurf;
-          uVar7 = local_14[-0xffffffff00000001].context.modelIndex;
+          uVar2 = *(undefined4 *)(_Glast[-1].indices + 2);
+          uVar5 = _Glast[-0xffffffff00000001].context.reflectionProbeIndex;
+          uVar6 = _Glast[-0xffffffff00000001].context.modelTypeAndSurf;
+          uVar7 = _Glast[-0xffffffff00000001].context.modelIndex;
           *(undefined4 *)pFVar12->indices = *(undefined4 *)pFVar9->indices;
-          *(undefined4 *)(local_14[-1].indices + 2) = *(undefined4 *)(local_10[-1].indices + 2);
-          uVar3 = local_10[-0xffffffff00000001].context.modelTypeAndSurf;
-          uVar4 = local_10[-0xffffffff00000001].context.modelIndex;
-          local_14[-0xffffffff00000001].context.reflectionProbeIndex =
-               local_10[-0xffffffff00000001].context.reflectionProbeIndex;
-          local_14[-0xffffffff00000001].context.modelTypeAndSurf = uVar3;
-          local_14[-0xffffffff00000001].context.modelIndex = uVar4;
+          *(undefined4 *)(_Glast[-1].indices + 2) = *(undefined4 *)(_Pfirst[-1].indices + 2);
+          uVar3 = _Pfirst[-0xffffffff00000001].context.modelTypeAndSurf;
+          uVar4 = _Pfirst[-0xffffffff00000001].context.modelIndex;
+          _Glast[-0xffffffff00000001].context.reflectionProbeIndex =
+               _Pfirst[-0xffffffff00000001].context.reflectionProbeIndex;
+          _Glast[-0xffffffff00000001].context.modelTypeAndSurf = uVar3;
+          _Glast[-0xffffffff00000001].context.modelIndex = uVar4;
           *(undefined4 *)pFVar9->indices = uVar1;
-          *(undefined4 *)(local_10[-1].indices + 2) = uVar2;
-          local_10[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
-          local_10[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
-          local_10[-0xffffffff00000001].context.modelIndex = uVar7;
+          *(undefined4 *)(_Pfirst[-1].indices + 2) = uVar2;
+          _Pfirst[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
+          _Pfirst[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
+          _Pfirst[-0xffffffff00000001].context.modelIndex = uVar7;
         }
-        pFVar10 = local_18 + -1;
-        pFVar11 = local_c;
-        local_14 = pFVar12;
+        pFVar10 = _Plast + -1;
+        pFVar11 = _Gfirst;
+        _Glast = pFVar12;
         if (pFVar9 != pFVar10) {
           uVar1 = *(undefined4 *)pFVar9->indices;
-          uVar2 = *(undefined4 *)(local_10[-1].indices + 2);
-          uVar5 = local_10[-0xffffffff00000001].context.reflectionProbeIndex;
-          uVar6 = local_10[-0xffffffff00000001].context.modelTypeAndSurf;
-          uVar7 = local_10[-0xffffffff00000001].context.modelIndex;
+          uVar2 = *(undefined4 *)(_Pfirst[-1].indices + 2);
+          uVar5 = _Pfirst[-0xffffffff00000001].context.reflectionProbeIndex;
+          uVar6 = _Pfirst[-0xffffffff00000001].context.modelTypeAndSurf;
+          uVar7 = _Pfirst[-0xffffffff00000001].context.modelIndex;
           *(undefined4 *)pFVar9->indices = *(undefined4 *)pFVar10->indices;
-          *(undefined4 *)(local_10[-1].indices + 2) = *(undefined4 *)(local_18[-1].indices + 2);
-          uVar3 = local_18[-0xffffffff00000001].context.modelTypeAndSurf;
-          uVar4 = local_18[-0xffffffff00000001].context.modelIndex;
-          local_10[-0xffffffff00000001].context.reflectionProbeIndex =
-               local_18[-0xffffffff00000001].context.reflectionProbeIndex;
-          local_10[-0xffffffff00000001].context.modelTypeAndSurf = uVar3;
-          local_10[-0xffffffff00000001].context.modelIndex = uVar4;
+          *(undefined4 *)(_Pfirst[-1].indices + 2) = *(undefined4 *)(_Plast[-1].indices + 2);
+          uVar3 = _Plast[-0xffffffff00000001].context.modelTypeAndSurf;
+          uVar4 = _Plast[-0xffffffff00000001].context.modelIndex;
+          _Pfirst[-0xffffffff00000001].context.reflectionProbeIndex =
+               _Plast[-0xffffffff00000001].context.reflectionProbeIndex;
+          _Pfirst[-0xffffffff00000001].context.modelTypeAndSurf = uVar3;
+          _Pfirst[-0xffffffff00000001].context.modelIndex = uVar4;
           *(undefined4 *)pFVar10->indices = uVar1;
-          *(undefined4 *)(local_18[-1].indices + 2) = uVar2;
-          local_18[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
-          local_18[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
-          local_18[-0xffffffff00000001].context.modelIndex = uVar7;
+          *(undefined4 *)(_Plast[-1].indices + 2) = uVar2;
+          _Plast[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
+          _Plast[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
+          _Plast[-0xffffffff00000001].context.modelIndex = uVar7;
         }
       }
       else {
-        pFVar12 = local_14 + -1;
-        if (local_c != pFVar12) {
-          uVar1 = *(undefined4 *)local_c->indices;
-          uVar2 = *(undefined4 *)(local_c->indices + 2);
-          uVar5 = (local_c->context).reflectionProbeIndex;
-          uVar6 = (local_c->context).modelTypeAndSurf;
-          uVar7 = (local_c->context).modelIndex;
-          *(undefined4 *)local_c->indices = *(undefined4 *)pFVar12->indices;
-          *(undefined4 *)(local_c->indices + 2) = *(undefined4 *)(local_14[-1].indices + 2);
-          uVar3 = local_14[-0xffffffff00000001].context.modelTypeAndSurf;
-          uVar4 = local_14[-0xffffffff00000001].context.modelIndex;
-          (local_c->context).reflectionProbeIndex =
-               local_14[-0xffffffff00000001].context.reflectionProbeIndex;
-          (local_c->context).modelTypeAndSurf = uVar3;
-          (local_c->context).modelIndex = uVar4;
+        pFVar12 = _Glast + -1;
+        if (_Gfirst != pFVar12) {
+          uVar1 = *(undefined4 *)_Gfirst->indices;
+          uVar2 = *(undefined4 *)(_Gfirst->indices + 2);
+          uVar5 = (_Gfirst->context).reflectionProbeIndex;
+          uVar6 = (_Gfirst->context).modelTypeAndSurf;
+          uVar7 = (_Gfirst->context).modelIndex;
+          *(undefined4 *)_Gfirst->indices = *(undefined4 *)pFVar12->indices;
+          *(undefined4 *)(_Gfirst->indices + 2) = *(undefined4 *)(_Glast[-1].indices + 2);
+          uVar3 = _Glast[-0xffffffff00000001].context.modelTypeAndSurf;
+          uVar4 = _Glast[-0xffffffff00000001].context.modelIndex;
+          (_Gfirst->context).reflectionProbeIndex =
+               _Glast[-0xffffffff00000001].context.reflectionProbeIndex;
+          (_Gfirst->context).modelTypeAndSurf = uVar3;
+          (_Gfirst->context).modelIndex = uVar4;
           *(undefined4 *)pFVar12->indices = uVar1;
-          *(undefined4 *)(local_14[-1].indices + 2) = uVar2;
-          local_14[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
-          local_14[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
-          local_14[-0xffffffff00000001].context.modelIndex = uVar7;
+          *(undefined4 *)(_Glast[-1].indices + 2) = uVar2;
+          _Glast[-0xffffffff00000001].context.reflectionProbeIndex = uVar5;
+          _Glast[-0xffffffff00000001].context.modelTypeAndSurf = uVar6;
+          _Glast[-0xffffffff00000001].context.modelIndex = uVar7;
         }
-        pFVar10 = local_18;
-        pFVar11 = local_c + 1;
-        pFVar9 = local_10;
-        local_14 = pFVar12;
+        pFVar10 = _Plast;
+        pFVar11 = _Gfirst + 1;
+        pFVar9 = _Pfirst;
+        _Glast = pFVar12;
       }
     }
-    bVar8 = (*in_stack_00000010)(local_10,local_c);
-    pFVar10 = local_18;
+    bVar8 = (*in_stack_00000010)(_Pfirst,_Gfirst);
+    pFVar10 = _Plast;
     if (!bVar8) {
-      bVar8 = (*in_stack_00000010)(local_c,local_10);
+      bVar8 = (*in_stack_00000010)(_Gfirst,_Pfirst);
       if (bVar8) goto LAB_005dcd01;
-      pFVar10 = local_18 + 1;
-      if (local_18 != local_c) {
-        uVar1 = *(undefined4 *)local_18->indices;
-        uVar2 = *(undefined4 *)(local_18->indices + 2);
-        uVar5 = (local_18->context).reflectionProbeIndex;
-        uVar6 = (local_18->context).modelTypeAndSurf;
-        uVar7 = (local_18->context).modelIndex;
-        *(undefined4 *)local_18->indices = *(undefined4 *)local_c->indices;
-        *(undefined4 *)(local_18->indices + 2) = *(undefined4 *)(local_c->indices + 2);
-        uVar3 = (local_c->context).modelTypeAndSurf;
-        uVar4 = (local_c->context).modelIndex;
-        (local_18->context).reflectionProbeIndex = (local_c->context).reflectionProbeIndex;
-        (local_18->context).modelTypeAndSurf = uVar3;
-        (local_18->context).modelIndex = uVar4;
-        *(undefined4 *)local_c->indices = uVar1;
-        *(undefined4 *)(local_c->indices + 2) = uVar2;
-        (local_c->context).reflectionProbeIndex = uVar5;
-        (local_c->context).modelTypeAndSurf = uVar6;
-        (local_c->context).modelIndex = uVar7;
+      pFVar10 = _Plast + 1;
+      if (_Plast != _Gfirst) {
+        uVar1 = *(undefined4 *)_Plast->indices;
+        uVar2 = *(undefined4 *)(_Plast->indices + 2);
+        uVar5 = (_Plast->context).reflectionProbeIndex;
+        uVar6 = (_Plast->context).modelTypeAndSurf;
+        uVar7 = (_Plast->context).modelIndex;
+        *(undefined4 *)_Plast->indices = *(undefined4 *)_Gfirst->indices;
+        *(undefined4 *)(_Plast->indices + 2) = *(undefined4 *)(_Gfirst->indices + 2);
+        uVar3 = (_Gfirst->context).modelTypeAndSurf;
+        uVar4 = (_Gfirst->context).modelIndex;
+        (_Plast->context).reflectionProbeIndex = (_Gfirst->context).reflectionProbeIndex;
+        (_Plast->context).modelTypeAndSurf = uVar3;
+        (_Plast->context).modelIndex = uVar4;
+        *(undefined4 *)_Gfirst->indices = uVar1;
+        *(undefined4 *)(_Gfirst->indices + 2) = uVar2;
+        (_Gfirst->context).reflectionProbeIndex = uVar5;
+        (_Gfirst->context).modelTypeAndSurf = uVar6;
+        (_Gfirst->context).modelIndex = uVar7;
       }
     }
-    local_18 = pFVar10;
-    pFVar10 = local_18;
-    pFVar11 = local_c + 1;
-    pFVar9 = local_10;
+    _Plast = pFVar10;
+    pFVar10 = _Plast;
+    pFVar11 = _Gfirst + 1;
+    pFVar9 = _Pfirst;
   } while( true );
 }
 
@@ -4664,41 +4862,39 @@ LAB_005dcd01:
 
 void __cdecl
 std::_Sort<FxMarkTri_*,int,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-          (FxMarkTri *param_1,FxMarkTri *param_2,int param_3,
-          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *param_4)
+          (FxMarkTri *_First,FxMarkTri *_Last,int _Ideal,
+          _func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *_Pred)
 
 {
-  FxMarkTri *local_10;
+  FxMarkTri *_Mid;
   FxMarkTri *local_c;
-  int local_8;
+  int _Count;
   
-  while ((local_8 = ((int)param_2 - (int)param_1) / 0xc, 0x20 < local_8 && (0 < param_3))) {
+  while ((_Count = ((int)_Last - (int)_First) / 0xc, 0x20 < _Count && (0 < _Ideal))) {
     _Unguarded_partition<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-              ((FxMarkTri *)&local_10,param_1,
-               (_func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *)param_2);
-    param_3 = (param_3 / 2) / 2 + param_3 / 2;
-    if (((int)local_10 - (int)param_1) / 0xc < ((int)param_2 - (int)local_c) / 0xc) {
+              ((FxMarkTri *)&_Mid,_First,(_func___cdecl_bool_FxMarkTri_ptr_FxMarkTri_ptr *)_Last);
+    _Ideal = (_Ideal / 2) / 2 + _Ideal / 2;
+    if (((int)_Mid - (int)_First) / 0xc < ((int)_Last - (int)local_c) / 0xc) {
       _Sort<FxMarkTri_*,int,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-                (param_1,local_10,param_3,param_4);
-      param_1 = local_c;
+                (_First,_Mid,_Ideal,_Pred);
+      _First = local_c;
     }
     else {
       _Sort<FxMarkTri_*,int,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-                (local_c,param_2,param_3,param_4);
-      param_2 = local_10;
+                (local_c,_Last,_Ideal,_Pred);
+      _Last = _Mid;
     }
   }
-  if (local_8 < 0x21) {
-    if (1 < local_8) {
+  if (_Count < 0x21) {
+    if (1 < _Count) {
       _Insertion_sort1<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&),FxMarkTri>
-                (param_1,param_2,param_4,(FxMarkTri *)0x0);
+                (_First,_Last,_Pred,(FxMarkTri *)0x0);
     }
   }
   else {
-    make_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-              (param_1,param_2,param_4);
-    _Sort_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>
-              (param_1,param_2,param_4);
+    make_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>(_First,_Last,_Pred);
+    _Sort_heap<FxMarkTri_*,bool_(__cdecl*)(FxMarkTri_const_&,FxMarkTri_const_&)>(_First,_Last,_Pred)
+    ;
   }
   return;
 }

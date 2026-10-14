@@ -5,14 +5,14 @@
 void __cdecl RB_AllocSuperFlareQueries(void)
 
 {
-  int iVar1;
-  char *pcVar2;
-  IDirect3DQuery9 *pIVar3;
-  int iVar4;
+  int hr;
+  char *pcVar1;
+  IDirect3DQuery9 *pIVar2;
+  int iVar3;
+  IDirect3DQuery9 **ppIVar4;
   IDirect3DQuery9 **ppIVar5;
-  IDirect3DQuery9 **ppIVar6;
-  bool (*paabVar7) [4] [4];
-  int iVar8;
+  bool (*paabVar6) [4] [4];
+  int iVar7;
   bool *pbStack_1c;
   IDirect3DQuery9 **ppIStack_18;
   bool *pbStack_14;
@@ -29,28 +29,28 @@ void __cdecl RB_AllocSuperFlareQueries(void)
     do {
       pbStack_1c = pbStack_14;
       iStack_c = 4;
-      ppIVar5 = ppIStack_18;
+      ppIVar4 = ppIStack_18;
       do {
-        iVar4 = 5;
-        ppIVar6 = ppIVar5;
-        paabVar7 = (bool (*) [4] [4])pbStack_1c;
+        iVar3 = 5;
+        ppIVar5 = ppIVar4;
+        paabVar6 = (bool (*) [4] [4])pbStack_1c;
         do {
-          iVar1 = (**(code **)((int)*dx.device + 0x1d8))(dx.device,9,&pIStack_4);
-          pIVar3 = pIStack_4;
-          if (iVar1 < 0) {
-            iVar8 = iVar1;
-            pcVar2 = DXGetErrorDescriptionA(iVar1);
-            Com_Printf(8,"Occlusion query creation failed: %s (0x%08x)\n",pcVar2,iVar1,iVar8);
-            pIVar3 = (IDirect3DQuery9 *)0x0;
+          hr = (**(code **)((int)*dx.device + 0x1d8))(dx.device,9,&pIStack_4);
+          pIVar2 = pIStack_4;
+          if (hr < 0) {
+            iVar7 = hr;
+            pcVar1 = DXGetErrorDescriptionA(hr);
+            Com_Printf(8,"Occlusion query creation failed: %s (0x%08x)\n",pcVar1,hr,iVar7);
+            pIVar2 = (IDirect3DQuery9 *)0x0;
           }
-          (*(IDirect3DQuery9 *(*) [2] [4] [4])ppIVar6)[0][0][0] = pIVar3;
-          (*paabVar7)[0][0] = false;
-          ppIVar6 = (IDirect3DQuery9 **)((int)ppIVar6 + 0x80);
-          paabVar7 = paabVar7 + 1;
-          iVar4 = iVar4 + -1;
-        } while (iVar4 != 0);
+          (*(IDirect3DQuery9 *(*) [2] [4] [4])ppIVar5)[0][0][0] = pIVar2;
+          (*paabVar6)[0][0] = false;
+          ppIVar5 = (IDirect3DQuery9 **)((int)ppIVar5 + 0x80);
+          paabVar6 = paabVar6 + 1;
+          iVar3 = iVar3 + -1;
+        } while (iVar3 != 0);
         pbStack_1c = pbStack_1c + 1;
-        ppIVar5 = ppIVar5 + 1;
+        ppIVar4 = ppIVar4 + 1;
         iStack_c = iStack_c + -1;
       } while (iStack_c != 0);
       ppIStack_18 = ppIStack_18 + 0x10;
@@ -120,10 +120,12 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
   int iVar7;
   int iVar8;
   IDirect3DQuery9 *unaff_EDI;
-  GfxGenericFilter *pGVar9;
-  float fVar10;
-  Material *pMVar11;
-  int iVar12;
+  GfxGenericFilter *iPass;
+  float fVar9;
+  GfxViewInfo *viewInfo;
+  Material *pMVar10;
+  int iVar11;
+  int iFilter;
   int iStack_18;
   float fStack_10;
   int iStack_c;
@@ -134,13 +136,13 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
     iStack_18 = 0;
     pafVar6 = (param_1->genericFilter).passFlareOcclusion;
     do {
-      pGVar9 = (GfxGenericFilter *)0x0;
+      iPass = (GfxGenericFilter *)0x0;
       do {
-        if ((int)pGVar9 < 3) {
+        if ((int)iPass < 3) {
           iVar8 = param_1->localClientNum;
           iStack_c = r_glob.backEndFrameCount % 5;
           iVar7 = iStack_c * 8;
-          pabVar3 = pGVar9->passEnabled;
+          pabVar3 = iPass->passEnabled;
           pIVar1 = SuperFlareQuery[iStack_c][0][iVar8][(int)pabVar3];
           bVar2 = true;
           if ((pIVar1 == (IDirect3DQuery9 *)0x0) ||
@@ -150,13 +152,13 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
           if (((((pIVar1 == (IDirect3DQuery9 *)0x0) ||
                 (SuperFlareQuery[iStack_c][1][iVar8][(int)pabVar3] == (IDirect3DQuery9 *)0x0)) ||
                (!bVar2)) ||
-              ((*(char *)((int)&param_1->field0_0x0 + (int)(pGVar9->sunPosition + iStack_18 * 4)) ==
+              ((*(char *)((int)&param_1->field0_0x0 + (int)(iPass->sunPosition + iStack_18 * 4)) ==
                 '\0' || (*(int *)((int)(&param_1->doubleVision + 2) +
-                                 (int)(pGVar9->passEnabled + iStack_18) * 4 + 0x14) == 0)))) ||
-             ((param_1->genericFilter).passQuads[0][(int)(pGVar9->passEnabled + iStack_18)] < 1))
+                                 (int)(iPass->passEnabled + iStack_18) * 4 + 0x14) == 0)))) ||
+             ((param_1->genericFilter).passQuads[0][(int)(iPass->passEnabled + iStack_18)] < 1))
           goto LAB_0084cf26;
           iStack_c = iStack_c * 4;
-          if (*(char *)(pGVar9[0x326b].passParam[2][0xf] + iStack_c + iVar8 + 3) == '\0') {
+          if (*(char *)(iPass[0x326b].passParam[2][0xf] + iStack_c + iVar8 + 3) == '\0') {
             (*pafVar6)[0] = 0.0;
           }
           else {
@@ -170,17 +172,17 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
               if ((int)uVar5 < 0) {
                 fStack_10 = fStack_10 + 4.2949673e+09;
               }
-              fVar10 = (float)(int)uVar4;
+              fVar9 = (float)(int)uVar4;
               if ((int)uVar4 < 0) {
-                fVar10 = fVar10 + 4.2949673e+09;
+                fVar9 = fVar9 + 4.2949673e+09;
               }
-              fStack_10 = fStack_10 / fVar10;
-              fVar10 = fStack_10;
+              fStack_10 = fStack_10 / fVar9;
+              fVar9 = fStack_10;
               if (0.0 <= fStack_10 - 1.0) {
-                fVar10 = 1.0;
+                fVar9 = 1.0;
               }
               if (-fStack_10 < 0.0) {
-                (*pafVar6)[0] = fVar10;
+                (*pafVar6)[0] = fVar9;
               }
               else {
                 (*pafVar6)[0] = 0.0;
@@ -197,41 +199,41 @@ void __cdecl RB_DrawSuperFlareOccluders(GfxViewInfo *param_1)
           }
           iVar8 = 0;
           do {
-            pMVar11 = (Material *)
+            pMVar10 = (Material *)
                       SuperFlareQuery[0][0][0]
-                      [(int)(pGVar9->passEnabled[0] + (param_1->localClientNum + iVar7) * 4)];
-            iVar12 = 2;
-            (**(code **)((pMVar11->info).name + 0x18))();
+                      [(int)(iPass->passEnabled[0] + (param_1->localClientNum + iVar7) * 4)];
+            iVar11 = 2;
+            (**(code **)((pMVar10->info).name + 0x18))();
             if ((gfxCmdBufState.origMaterial != (Material *)(&fStack_10)[iVar8]) ||
                (gfxCmdBufState.origTechType != '\x04')) {
               if (tess.indexCount != 0) {
                 RB_DrawTessSurface();
               }
-              RB_BeginSurface(pMVar11,(uchar)iVar12);
+              RB_BeginSurface(pMVar10,(uchar)iVar11);
             }
             if ((0x154a < tess.vertexCount + 4) || (0x100000 < tess.indexCount + 6)) {
               RB_DrawTessSurface();
-              RB_BeginSurface(pMVar11,(uchar)iVar12);
+              RB_BeginSurface(pMVar10,(uchar)iVar11);
             }
             RB_SetIdentity();
-            RB_DrawSuperFlareOccluder(pGVar9,(int)pMVar11,iVar12,(int)unaff_EDI);
+            RB_DrawSuperFlareOccluder(iPass,(int)pMVar10,iVar11,(int)unaff_EDI);
             RB_DrawTessSurface();
             pIVar1 = SuperFlareQuery[0][0][0]
-                     [(int)(pGVar9->passEnabled[0] + (param_1->localClientNum + iVar7) * 4)];
+                     [(int)(iPass->passEnabled[0] + (param_1->localClientNum + iVar7) * 4)];
             (**(code **)((int)*pIVar1 + 0x18))(pIVar1,1);
             iVar8 = iVar8 + 1;
             iVar7 = iVar7 + 4;
             *(undefined1 *)
-             (pGVar9[0x326b].passParam[2][0xf] + param_1->localClientNum + iStack_c + 3) = 1;
+             (iPass[0x326b].passParam[2][0xf] + param_1->localClientNum + iStack_c + 3) = 1;
           } while (iVar8 < 2);
         }
         else {
 LAB_0084cf26:
           (*pafVar6)[0] = 0.0;
         }
-        pGVar9 = (GfxGenericFilter *)(pGVar9->passEnabled[0] + 1);
+        iPass = (GfxGenericFilter *)(iPass->passEnabled[0] + 1);
         pafVar6 = (float (*) [16])(*pafVar6 + 1);
-      } while ((int)pGVar9 < 0x10);
+      } while ((int)iPass < 0x10);
       iStack_18 = iStack_18 + 1;
     } while (iStack_18 < 3);
   }

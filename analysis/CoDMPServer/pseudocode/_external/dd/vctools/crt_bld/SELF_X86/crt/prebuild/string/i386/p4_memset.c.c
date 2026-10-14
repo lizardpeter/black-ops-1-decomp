@@ -2,22 +2,22 @@
 
 // 00C1A0DC  fastzero_I  (line unknown)
 
-void __cdecl fastzero_I(void *param_1,int param_2)
+void __cdecl fastzero_I(void *dst,int len)
 
 {
   uint uVar1;
   
-  uVar1 = (uint)param_2 >> 7;
+  uVar1 = (uint)len >> 7;
   do {
-    *(undefined1 (*) [16])param_1 = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x10) = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x20) = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x30) = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x40) = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x50) = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x60) = (undefined1  [16])0x0;
-    *(undefined1 (*) [16])((int)param_1 + 0x70) = (undefined1  [16])0x0;
-    param_1 = (void *)((int)param_1 + 0x80);
+    *(undefined1 (*) [16])dst = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x10) = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x20) = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x30) = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x40) = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x50) = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x60) = (undefined1  [16])0x0;
+    *(undefined1 (*) [16])((int)dst + 0x70) = (undefined1  [16])0x0;
+    dst = (void *)((int)dst + 0x80);
     uVar1 = uVar1 - 1;
   } while (uVar1 != 0);
   return;
@@ -26,7 +26,7 @@ void __cdecl fastzero_I(void *param_1,int param_2)
 
 // 00C1A133  _VEC_memzero  (line unknown)
 
-void * __cdecl _VEC_memzero(void *param_1,int param_2,int param_3)
+void * __cdecl _VEC_memzero(void *dst,int val,int len)
 
 {
   int iVar1;
@@ -34,15 +34,15 @@ void * __cdecl _VEC_memzero(void *param_1,int param_2,int param_3)
   int iVar3;
   undefined1 *puVar4;
   
-  uVar2 = (int)param_1 >> 0x1f;
-  iVar3 = (((uint)param_1 ^ uVar2) - uVar2 & 0xf ^ uVar2) - uVar2;
+  uVar2 = (int)dst >> 0x1f;
+  iVar3 = (((uint)dst ^ uVar2) - uVar2 & 0xf ^ uVar2) - uVar2;
   if (iVar3 == 0) {
-    uVar2 = param_3 & 0x7f;
-    if (param_3 != uVar2) {
-      fastzero_I(param_1,param_3 - uVar2);
+    uVar2 = len & 0x7f;
+    if (len != uVar2) {
+      fastzero_I(dst,len - uVar2);
     }
     if (uVar2 != 0) {
-      puVar4 = (undefined1 *)((int)param_1 + (param_3 - uVar2));
+      puVar4 = (undefined1 *)((int)dst + (len - uVar2));
       for (; uVar2 != 0; uVar2 = uVar2 - 1) {
         *puVar4 = 0;
         puVar4 = puVar4 + 1;
@@ -51,13 +51,13 @@ void * __cdecl _VEC_memzero(void *param_1,int param_2,int param_3)
   }
   else {
     iVar3 = 0x10 - iVar3;
-    puVar4 = param_1;
+    puVar4 = dst;
     for (iVar1 = iVar3; iVar1 != 0; iVar1 = iVar1 + -1) {
       *puVar4 = 0;
       puVar4 = puVar4 + 1;
     }
-    _VEC_memzero((void *)((int)param_1 + iVar3),0,param_3 - iVar3);
+    _VEC_memzero((void *)((int)dst + iVar3),0,len - iVar3);
   }
-  return param_1;
+  return dst;
 }
 

@@ -2,16 +2,17 @@
 
 // 00B2F9C0  R_DObjCalcPose  (gfx_d3d/r_model_pose.cpp:45)
 
-DObjAnimMat * __cdecl R_DObjCalcPose(GfxSceneEntity *param_1,DObj *param_2,int *param_3)
+DObjAnimMat * __cdecl R_DObjCalcPose(GfxSceneEntity *sceneEnt,DObj *obj,int *partBits)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
-  int local_20;
-  int local_18 [5];
+  int i;
+  DObjAnimMat *boneMatrix;
+  int completePartBits [5];
   
-  if (param_1 == (GfxSceneEntity *)0x0) {
+  if (sceneEnt == (GfxSceneEntity *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0x31,0,
                              "%s");
     if (!bVar2) {
@@ -20,7 +21,7 @@ DObjAnimMat * __cdecl R_DObjCalcPose(GfxSceneEntity *param_1,DObj *param_2,int *
       return pDVar3;
     }
   }
-  if (param_2 == (DObj *)0x0) {
+  if (obj == (DObj *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0x32,0,
                              "%s");
     if (!bVar2) {
@@ -29,23 +30,23 @@ DObjAnimMat * __cdecl R_DObjCalcPose(GfxSceneEntity *param_1,DObj *param_2,int *
       return pDVar3;
     }
   }
-  for (local_20 = 0; local_20 < 5; local_20 = local_20 + 1) {
-    local_18[local_20] = param_3[local_20];
+  for (i = 0; i < 5; i = i + 1) {
+    completePartBits[i] = partBits[i];
   }
-  pDVar3 = CG_DObjCalcPose((param_1->info).pose,param_2,local_18);
+  pDVar3 = CG_DObjCalcPose((sceneEnt->info).pose,obj,completePartBits);
   return pDVar3;
 }
 
 
 // 00B2FA70  R_SetNoDraw  (gfx_d3d/r_model_pose.cpp:68)
 
-void __cdecl R_SetNoDraw(GfxSceneEntity *param_1,GfxSceneEntity *param_2)
+void __cdecl R_SetNoDraw(GfxSceneEntity *sceneEnt,GfxSceneEntity *localSceneEnt)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_1->cull).state != 1) {
+  if ((sceneEnt->cull).state != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0x47,0,
                              "%s\n\t(sceneEnt->cull.state) = %i");
     if (!bVar2) {
@@ -54,7 +55,7 @@ void __cdecl R_SetNoDraw(GfxSceneEntity *param_1,GfxSceneEntity *param_2)
       return;
     }
   }
-  (param_1->cull).state = 4;
+  (sceneEnt->cull).state = 4;
   return;
 }
 
@@ -66,7 +67,9 @@ void __cdecl R_SetNoDraw(GfxSceneEntity *param_1,GfxSceneEntity *param_2)
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 DObjAnimMat * __cdecl
-R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **param_3,int param_4)
+R_UpdateSceneEntBounds
+          (GfxSceneEntity *sceneEnt,GfxSceneEntity **pLocalSceneEnt,DObj **pObj,int waitForCullState
+          )
 
 {
   float fVar1;
@@ -142,16 +145,16 @@ R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **p
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
   LOCK();
-  uVar8 = (param_1->cull).state;
+  uVar8 = (sceneEnt->cull).state;
   if (uVar8 == 0) {
-    (param_1->cull).state = 1;
+    (sceneEnt->cull).state = 1;
     uVar8 = 0;
   }
   UNLOCK();
   if (uVar8 == 0) {
-    local_1c = param_1;
-    *param_2 = param_1;
-    if ((param_1->obj == (DObj *)0x0) &&
+    local_1c = sceneEnt;
+    *pLocalSceneEnt = sceneEnt;
+    if ((sceneEnt->obj == (DObj *)0x0) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0xe5
                                  ,0,"%s"), !bVar7)) {
       pcVar6 = (code *)swi(3);
@@ -159,7 +162,7 @@ R_UpdateSceneEntBounds(GfxSceneEntity *param_1,GfxSceneEntity **param_2,DObj **p
       return pDVar9;
     }
     local_20 = local_1c->obj;
-    *param_3 = local_20;
+    *pObj = local_20;
     if ((local_20 == (DObj *)0x0) &&
        (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0xe8
                                  ,0,"%s"), !bVar7)) {
@@ -192,7 +195,7 @@ LAB_00b2e2f0:
     DObjGetSurfaceData(local_20,(local_1c->placement).base.origin,(local_1c->placement).scale,
                        local_21,(local_1c->cull).lods);
     if (((useFastFile->current).enabled == false) && (iVar10 = DObjBad(local_20), iVar10 != 0)) {
-      R_SetNoDraw(param_1,local_1c);
+      R_SetNoDraw(sceneEnt,local_1c);
       local_58 = (DObjAnimMat *)0x0;
     }
     else {
@@ -203,7 +206,7 @@ LAB_00b2e2f0:
         local_54 = DObjGetSurfaces(local_20,(int *)local_50,(local_1c->cull).lods);
       }
       if (local_54 == 0) {
-        R_SetNoDraw(param_1,local_1c);
+        R_SetNoDraw(sceneEnt,local_1c);
         local_58 = (DObjAnimMat *)0x0;
       }
       else {
@@ -218,7 +221,7 @@ LAB_00b2e2f0:
           DObjSkelSetSkel(local_20,(int *)local_50);
         }
         if (local_58 == (DObjAnimMat *)0x0) {
-          R_SetNoDraw(param_1,local_1c);
+          R_SetNoDraw(sceneEnt,local_1c);
           local_58 = (DObjAnimMat *)0x0;
         }
         else {
@@ -465,13 +468,13 @@ LAB_00b2e2f0:
     }
   }
   else {
-    *param_2 = (GfxSceneEntity *)0x0;
-    if (param_4 == 0) {
+    *pLocalSceneEnt = (GfxSceneEntity *)0x0;
+    if (waitForCullState == 0) {
       local_58 = (DObjAnimMat *)0x0;
     }
     else {
       do {
-        local_18 = (param_1->cull).state;
+        local_18 = (sceneEnt->cull).state;
         if ((local_18 == 0) &&
            (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",
                                      0xc9,0,"%s\n\t(state) = %i"), !bVar7)) {
@@ -484,10 +487,10 @@ LAB_00b2e2f0:
         local_58 = (DObjAnimMat *)0x0;
       }
       else {
-        local_1c = param_1;
-        *param_2 = param_1;
-        local_20 = param_1->obj;
-        *param_3 = local_20;
+        local_1c = sceneEnt;
+        *pLocalSceneEnt = sceneEnt;
+        local_20 = sceneEnt->obj;
+        *pObj = local_20;
         if ((local_20 == (DObj *)0x0) &&
            (bVar7 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",
                                      0xd4,0,"%s"), !bVar7)) {
@@ -505,30 +508,30 @@ LAB_00b2e2f0:
 
 // 00B2FAC0  R_UpdateGfxEntityBoundsCmd  (gfx_d3d/r_model_pose.cpp:407)
 
-void __cdecl R_UpdateGfxEntityBoundsCmd(void *param_1)
+void __cdecl R_UpdateGfxEntityBoundsCmd(void *data)
 
 {
   code *pcVar1;
   bool bVar2;
   DObjAnimMat *pDVar3;
-  DObj *local_14;
-  GfxSceneEntity *local_10;
-  GfxSceneEntity *local_c;
-  void *local_8;
+  DObj *obj;
+  GfxSceneEntity *localSceneEnt;
+  GfxSceneEntity *sceneEnt;
+  GfxSceneEntity **pSceneEnt;
   
-  local_10 = (GfxSceneEntity *)0x0;
-  local_14 = (DObj *)0x0;
-  if ((param_1 == (void *)0x0) &&
+  localSceneEnt = (GfxSceneEntity *)0x0;
+  obj = (DObj *)0x0;
+  if ((data == (void *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0x19d,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  local_8 = param_1;
-  local_c = *(GfxSceneEntity **)param_1;
-  pDVar3 = R_UpdateSceneEntBounds(local_c,&local_10,&local_14,0);
-  if (((pDVar3 != (DObjAnimMat *)0x0) && (local_10 == (GfxSceneEntity *)0x0)) &&
+  pSceneEnt = data;
+  sceneEnt = *(GfxSceneEntity **)data;
+  pDVar3 = R_UpdateSceneEntBounds(sceneEnt,&localSceneEnt,&obj,0);
+  if (((pDVar3 != (DObjAnimMat *)0x0) && (localSceneEnt == (GfxSceneEntity *)0x0)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_pose.cpp",0x1a7,
                                0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);

@@ -3,7 +3,7 @@
 // 00862390  RB_AddDebugLine  (gfx_d3d/rb_debug.cpp:41)
 
 int __cdecl
-RB_AddDebugLine(float *param_1,float *param_2,float *param_3,bool param_4,int param_5,int param_6,
+RB_AddDebugLine(float *end,float *color,float *depthTest,bool param_4,int param_5,int param_6,
                GfxPointVertex *param_7)
 
 {
@@ -12,6 +12,8 @@ RB_AddDebugLine(float *param_1,float *param_2,float *param_3,bool param_4,int pa
   int in_ECX;
   GfxPointVertex *pGVar2;
   uchar *unaff_EDI;
+  float *start;
+  int vertLimit;
   
   if ((0xaa5 < in_ECX + 2) || ((s_addingDebugLines && (s_lastDepthTest != param_4)))) {
     RB_DrawLines3D(in_ECX / 2,1,in_EAX,s_lastDepthTest);
@@ -21,7 +23,7 @@ RB_AddDebugLine(float *param_1,float *param_2,float *param_3,bool param_4,int pa
   s_lastDepthTest = param_4;
   s_addingDebugLines = true;
   puVar1 = pGVar2->color;
-  if (param_3 == (float *)0x0) {
+  if (depthTest == (float *)0x0) {
     puVar1[0] = 0xff;
     puVar1[1] = 0xff;
     puVar1[2] = 0xff;
@@ -31,12 +33,12 @@ RB_AddDebugLine(float *param_1,float *param_2,float *param_3,bool param_4,int pa
     Byte4PackVertexColor((float *)puVar1,unaff_EDI);
   }
   *(undefined4 *)pGVar2[1].color = *(undefined4 *)puVar1;
-  pGVar2->xyz[0] = *param_1;
-  pGVar2->xyz[1] = param_1[1];
-  pGVar2->xyz[2] = param_1[2];
-  pGVar2[1].xyz[0] = *param_2;
-  pGVar2[1].xyz[1] = param_2[1];
-  pGVar2[1].xyz[2] = param_2[2];
+  pGVar2->xyz[0] = *end;
+  pGVar2->xyz[1] = end[1];
+  pGVar2->xyz[2] = end[2];
+  pGVar2[1].xyz[0] = *color;
+  pGVar2[1].xyz[1] = color[1];
+  pGVar2[1].xyz[2] = color[2];
   return in_ECX + 2;
 }
 
@@ -49,13 +51,13 @@ void __cdecl RB_DrawDebug(GfxViewParms *param_1)
   DebugGlobals *pDVar1;
   GfxViewParms *in_EAX;
   GfxPointVertex *unaff_retaddr;
-  trDebugSphere_t *ptVar2;
-  GfxPointVertex *pGVar3;
+  trDebugSphere_t *sphereCount;
+  GfxPointVertex *pGVar2;
   int extraout_var;
-  int iVar4;
+  int iVar3;
   
   RB_AddPlumeStrings(in_EAX);
-  iVar4 = extraout_var;
+  iVar3 = extraout_var;
   if (tess.indexCount != 0) {
     RB_DrawTessSurface();
   }
@@ -63,16 +65,16 @@ void __cdecl RB_DrawDebug(GfxViewParms *param_1)
   (*s_DebugBrushesAndPatchesCallback)();
   RB_DrawDebugPolys();
   RB_DrawDebugSpheres((backEndData->debugGlobals).spheres,(backEndData->debugGlobals).sphereCount);
-  pGVar3 = (GfxPointVertex *)(backEndData->debugGlobals).externSphereCount;
-  ptVar2 = (backEndData->debugGlobals).externSpheres;
-  RB_DrawDebugSpheres(ptVar2,(int)pGVar3);
+  pGVar2 = (GfxPointVertex *)(backEndData->debugGlobals).externSphereCount;
+  sphereCount = (backEndData->debugGlobals).externSpheres;
+  RB_DrawDebugSpheres(sphereCount,(int)pGVar2);
   (backEndData->debugGlobals).sphereCount = 0;
-  RB_DrawDebugLines((trDebugLine_t *)g_debugLineVerts,(int)ptVar2,pGVar3);
-  RB_DrawDebugLines((trDebugLine_t *)g_debugExternLineVerts,iVar4,unaff_retaddr);
+  RB_DrawDebugLines((trDebugLine_t *)g_debugLineVerts,(int)sphereCount,pGVar2);
+  RB_DrawDebugLines((trDebugLine_t *)g_debugExternLineVerts,iVar3,unaff_retaddr);
   pDVar1 = &backEndData->debugGlobals;
   (backEndData->debugGlobals).lineCount = 0;
-  RB_DrawDebugStrings(pDVar1->strings,iVar4);
-  RB_DrawDebugStrings((backEndData->debugGlobals).externStrings,iVar4);
+  RB_DrawDebugStrings(pDVar1->strings,iVar3);
+  RB_DrawDebugStrings((backEndData->debugGlobals).externStrings,iVar3);
   if (tess.indexCount != 0) {
     RB_DrawTessSurface();
   }

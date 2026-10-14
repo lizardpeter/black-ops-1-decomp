@@ -365,7 +365,7 @@ void __cdecl vp8_de_noise(int *param_1)
 void FUN_008c1cb0(int param_1,int param_2)
 
 {
-  uchar extraout_AL;
+  uchar value;
   ulong extraout_EAX;
   ulong uVar1;
   uint uVar2;
@@ -398,7 +398,7 @@ void FUN_008c1cb0(int param_1,int param_2)
       if (0 < (int)extraout_EAX) {
         uVar1 = extraout_EAX;
         _ftol2_sse();
-        memset(local_140 + iVar4,extraout_AL,uVar1);
+        memset(local_140 + iVar4,value,uVar1);
         uVar1 = extraout_EAX;
         in_ECX = local_14c;
       }

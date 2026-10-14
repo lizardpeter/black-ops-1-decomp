@@ -7,6 +7,10 @@
 int __cdecl _ms_p5_test_fdiv(void)
 
 {
+  double dTestDividend;
+  double dTestDivisor;
+  double dRslt;
+  
   return 0;
 }
 

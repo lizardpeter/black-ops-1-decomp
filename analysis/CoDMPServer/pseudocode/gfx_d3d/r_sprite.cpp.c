@@ -6,12 +6,18 @@
 
 void __cdecl
 R_BuildQuadStampCodeMeshVerts
-          (Material *param_1,float (*param_2) [3],float *param_3,float *param_4,float *param_5,
-          uchar *param_6,float param_7,float param_8,float param_9,float param_10)
+          (Material *material,float (*viewAxis) [3],float *origin,float *left,float *up,
+          uchar *rgbaColor,float s0,float t0,float s1,float t1)
 
 {
-  code *pcVar1;
-  bool bVar2;
+  float fVar1;
+  float fVar2;
+  float fVar3;
+  float fVar4;
+  float fVar5;
+  float fVar6;
+  code *pcVar7;
+  bool bVar8;
   uint local_1a4;
   uint local_1a0;
   uint local_19c;
@@ -30,60 +36,65 @@ R_BuildQuadStampCodeMeshVerts
   uint local_c4;
   PackedUnitVec local_a8;
   PackedUnitVec local_88;
-  float local_3c;
+  PackedUnitVec packedNormal;
+  PackedUnitVec packedTangent;
+  float testBinormal;
   float local_38;
   float local_34;
-  GfxPackedVertex *local_30;
-  r_double_index_t *local_2c;
-  GfxColor local_28;
-  undefined4 local_24;
-  float local_20;
-  float local_1c;
-  float local_18;
-  ushort local_14 [2];
-  float local_10;
+  GfxPackedVertex *verts;
+  r_double_index_t *indices;
+  GfxColor nativeColor;
+  r_double_index_t index;
+  ushort baseVertex;
+  float leftUp;
   float local_c;
   float local_8;
   
-  bVar2 = R_ReserveCodeMeshVerts(4,local_14);
-  if ((bVar2) && (bVar2 = R_ReserveCodeMeshIndices(6,&local_2c), bVar2)) {
-    Vec3Cross(*param_2,param_4,&local_3c);
-    if ((*param_5 * local_3c + param_5[1] * local_38 + param_5[2] * local_34 <= 0.0) &&
-       (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sprite.cpp",0x20,0,
-                                 "Vec3Dot( up, testBinormal ) > 0.0f\n\t%g, %g"), !bVar2)) {
-      pcVar1 = (code *)swi(3);
-      (*pcVar1)();
+  bVar8 = R_ReserveCodeMeshVerts(4,&baseVertex);
+  if ((bVar8) && (bVar8 = R_ReserveCodeMeshIndices(6,&indices), bVar8)) {
+    Vec3Cross(*viewAxis,left,&testBinormal);
+    if ((*up * testBinormal + up[1] * local_38 + up[2] * local_34 <= 0.0) &&
+       (bVar8 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sprite.cpp",0x20,0,
+                                 "Vec3Dot( up, testBinormal ) > 0.0f\n\t%g, %g"), !bVar8)) {
+      pcVar7 = (code *)swi(3);
+      (*pcVar7)();
       return;
     }
-    local_24 = CONCAT22(local_14[0] + 1,local_14[0]);
-    *(undefined4 *)local_2c->value = local_24;
-    local_24 = CONCAT22(local_14[0] + 3,local_14[0] + 3);
-    *(undefined4 *)local_2c[1].value = local_24;
-    local_24 = CONCAT22(local_14[0] + 2,local_14[0] + 1);
-    *(undefined4 *)local_2c[2].value = local_24;
-    local_10 = *param_4 + *param_5;
-    local_c = param_4[1] + param_5[1];
-    local_8 = param_4[2] + param_5[2];
-    local_20 = *param_4 - *param_5;
-    local_1c = param_4[1] - param_5[1];
-    local_18 = param_4[2] - param_5[2];
-    Byte4CopyRgbaToVertexColor(param_6,local_28.array);
-    local_88.array[1] = (char)(int)(-(*param_2)[1] * 127.0 + 127.5);
-    local_88.array[0] = (char)(int)(-(*param_2)[0] * 127.0 + 127.5);
-    local_88.array[2] = (char)(int)(-(*param_2)[2] * 127.0 + 127.5);
+    index.value[1] = baseVertex + 1;
+    index.value[0] = baseVertex;
+    *(r_double_index_t *)indices->value = index;
+    index.value[1] = baseVertex + 3;
+    index.value[0] = baseVertex + 3;
+    *&indices[1].value = index.value;
+    index.value[1] = baseVertex + 2;
+    index.value[0] = baseVertex + 1;
+    *&indices[2].value = index.value;
+    leftUp = *left + *up;
+    local_c = left[1] + up[1];
+    local_8 = left[2] + up[2];
+    fVar1 = *left;
+    fVar2 = *up;
+    fVar3 = left[1];
+    fVar4 = up[1];
+    fVar5 = left[2];
+    fVar6 = up[2];
+    Byte4CopyRgbaToVertexColor(rgbaColor,nativeColor.array);
+    local_88.array[1] = (char)(int)(-(*viewAxis)[1] * 127.0 + 127.5);
+    local_88.array[0] = (char)(int)(-(*viewAxis)[0] * 127.0 + 127.5);
+    local_88.array[2] = (char)(int)(-(*viewAxis)[2] * 127.0 + 127.5);
     local_88.array[3] = 0x3f;
-    local_a8.array[1] = (char)(int)(-param_4[1] * 127.0 + 127.5);
-    local_a8.array[0] = (char)(int)(-*param_4 * 127.0 + 127.5);
-    local_a8.array[2] = (char)(int)(-param_4[2] * 127.0 + 127.5);
+    local_a8.array[1] = (char)(int)(-left[1] * 127.0 + 127.5);
+    local_a8.array[0] = (char)(int)(-*left * 127.0 + 127.5);
+    local_a8.array[2] = (char)(int)(-left[2] * 127.0 + 127.5);
     local_a8.array[3] = 0x3f;
-    local_30 = R_GetCodeMeshVerts(local_14[0]);
-    local_30->xyz[0] = *param_3 + local_10;
-    local_30->xyz[1] = param_3[1] + local_c;
-    local_30->xyz[2] = param_3[2] + local_8;
-    local_30->binormalSign = 1.0;
-    local_30->normal = local_88;
-    local_30->color = local_28;
-    local_c4 = (int)((int)param_7 << 1 ^ 0x80000000U) >> 0xe;
+    verts = R_GetCodeMeshVerts(baseVertex);
+    verts->xyz[0] = *origin + leftUp;
+    verts->xyz[1] = origin[1] + local_c;
+    verts->xyz[2] = origin[2] + local_8;
+    verts->binormalSign = 1.0;
+    verts->normal = local_88;
+    verts->color = nativeColor;
+    local_c4 = (int)((int)s0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_c4) {
       local_c4 = 0x3fff;
     }
@@ -93,7 +104,7 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_188 = local_c4;
     }
-    local_d8 = (int)((int)param_8 << 1 ^ 0x80000000U) >> 0xe;
+    local_d8 = (int)((int)t0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_d8) {
       local_d8 = 0x3fff;
     }
@@ -103,17 +114,17 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_18c = local_d8;
     }
-    (local_30->texCoord).packed =
-         ((int)param_7 >> 0x10 & 0xc000U | local_188 & 0x3fff) * 0x10000 +
-         ((int)param_8 >> 0x10 & 0xc000U | local_18c & 0x3fff);
-    local_30->tangent = local_a8;
-    local_30[1].xyz[0] = *param_3 - local_20;
-    local_30[1].xyz[1] = param_3[1] - local_1c;
-    local_30[1].xyz[2] = param_3[2] - local_18;
-    local_30[1].binormalSign = 1.0;
-    local_30[1].normal = local_88;
-    local_30[1].color = local_28;
-    local_fc = (int)((int)param_9 << 1 ^ 0x80000000U) >> 0xe;
+    (verts->texCoord).packed =
+         ((int)s0 >> 0x10 & 0xc000U | local_188 & 0x3fff) * 0x10000 +
+         ((int)t0 >> 0x10 & 0xc000U | local_18c & 0x3fff);
+    verts->tangent = local_a8;
+    verts[1].xyz[0] = *origin - (fVar1 - fVar2);
+    verts[1].xyz[1] = origin[1] - (fVar3 - fVar4);
+    verts[1].xyz[2] = origin[2] - (fVar5 - fVar6);
+    verts[1].binormalSign = 1.0;
+    verts[1].normal = local_88;
+    verts[1].color = nativeColor;
+    local_fc = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_fc) {
       local_fc = 0x3fff;
     }
@@ -123,7 +134,7 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_190 = local_fc;
     }
-    local_110 = (int)((int)param_8 << 1 ^ 0x80000000U) >> 0xe;
+    local_110 = (int)((int)t0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_110) {
       local_110 = 0x3fff;
     }
@@ -133,17 +144,17 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_194 = local_110;
     }
-    local_30[1].texCoord.packed =
-         ((int)param_9 >> 0x10 & 0xc000U | local_190 & 0x3fff) * 0x10000 +
-         ((int)param_8 >> 0x10 & 0xc000U | local_194 & 0x3fff);
-    local_30[1].tangent = local_a8;
-    local_30[2].xyz[0] = *param_3 - local_10;
-    local_30[2].xyz[1] = param_3[1] - local_c;
-    local_30[2].xyz[2] = param_3[2] - local_8;
-    local_30[2].binormalSign = 1.0;
-    local_30[2].normal = local_88;
-    local_30[2].color = local_28;
-    local_134 = (int)((int)param_9 << 1 ^ 0x80000000U) >> 0xe;
+    verts[1].texCoord.packed =
+         ((int)s1 >> 0x10 & 0xc000U | local_190 & 0x3fff) * 0x10000 +
+         ((int)t0 >> 0x10 & 0xc000U | local_194 & 0x3fff);
+    verts[1].tangent = local_a8;
+    verts[2].xyz[0] = *origin - leftUp;
+    verts[2].xyz[1] = origin[1] - local_c;
+    verts[2].xyz[2] = origin[2] - local_8;
+    verts[2].binormalSign = 1.0;
+    verts[2].normal = local_88;
+    verts[2].color = nativeColor;
+    local_134 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_134) {
       local_134 = 0x3fff;
     }
@@ -153,7 +164,7 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_198 = local_134;
     }
-    local_148 = (int)((int)param_10 << 1 ^ 0x80000000U) >> 0xe;
+    local_148 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_148) {
       local_148 = 0x3fff;
     }
@@ -163,17 +174,17 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_19c = local_148;
     }
-    local_30[2].texCoord.packed =
-         ((int)param_9 >> 0x10 & 0xc000U | local_198 & 0x3fff) * 0x10000 +
-         ((int)param_10 >> 0x10 & 0xc000U | local_19c & 0x3fff);
-    local_30[2].tangent = local_a8;
-    local_30[3].xyz[0] = *param_3 + local_20;
-    local_30[3].xyz[1] = param_3[1] + local_1c;
-    local_30[3].xyz[2] = param_3[2] + local_18;
-    local_30[3].binormalSign = 1.0;
-    local_30[3].normal = local_88;
-    local_30[3].color = local_28;
-    local_16c = (int)((int)param_7 << 1 ^ 0x80000000U) >> 0xe;
+    verts[2].texCoord.packed =
+         ((int)s1 >> 0x10 & 0xc000U | local_198 & 0x3fff) * 0x10000 +
+         ((int)t1 >> 0x10 & 0xc000U | local_19c & 0x3fff);
+    verts[2].tangent = local_a8;
+    verts[3].xyz[0] = *origin + (fVar1 - fVar2);
+    verts[3].xyz[1] = origin[1] + (fVar3 - fVar4);
+    verts[3].xyz[2] = origin[2] + (fVar5 - fVar6);
+    verts[3].binormalSign = 1.0;
+    verts[3].normal = local_88;
+    verts[3].color = nativeColor;
+    local_16c = (int)((int)s0 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_16c) {
       local_16c = 0x3fff;
     }
@@ -183,7 +194,7 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_1a0 = local_16c;
     }
-    local_180 = (int)((int)param_10 << 1 ^ 0x80000000U) >> 0xe;
+    local_180 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
     if (0x3ffe < (int)local_180) {
       local_180 = 0x3fff;
     }
@@ -193,11 +204,11 @@ R_BuildQuadStampCodeMeshVerts
     else {
       local_1a4 = local_180;
     }
-    local_30[3].texCoord.packed =
-         ((int)param_7 >> 0x10 & 0xc000U | local_1a0 & 0x3fff) * 0x10000 +
-         ((int)param_10 >> 0x10 & 0xc000U | local_1a4 & 0x3fff);
-    local_30[3].tangent = local_a8;
-    R_AddCodeMeshDrawSurf(param_1,local_2c,6,0,0,"R_BuildQuadStampCodeMeshVerts",0xd);
+    verts[3].texCoord.packed =
+         ((int)s0 >> 0x10 & 0xc000U | local_1a0 & 0x3fff) * 0x10000 +
+         ((int)t1 >> 0x10 & 0xc000U | local_1a4 & 0x3fff);
+    verts[3].tangent = local_a8;
+    R_AddCodeMeshDrawSurf(material,indices,6,0,0,"R_BuildQuadStampCodeMeshVerts",0xd);
   }
   return;
 }
@@ -207,60 +218,64 @@ R_BuildQuadStampCodeMeshVerts
 
 void __cdecl
 R_GenerateQuadStampCodeMeshVerts
-          (Material *param_1,float *param_2,float *param_3,float param_4,uchar *param_5,
-          float param_6)
+          (Material *material,float *viewAngles,float *origin,float worldRadius,uchar *rgbaColor,
+          float frameFrac)
 
 {
   int extraout_EAX;
   int iVar1;
+  float t0_00;
   float fVar2;
-  float fVar3;
-  int local_58;
-  float local_48;
+  float t0;
+  float dt;
+  int frame;
+  float t1;
+  int numFrames;
+  float s1;
+  float left;
   float local_44;
   float local_40;
-  float local_3c;
-  float local_38 [3];
+  float ds;
+  float viewAxis [3];
   float local_2c;
   float local_28;
   float local_24;
   float local_20;
   float local_1c;
   float local_18;
-  float local_14;
+  float up;
   float local_10;
   float local_c;
-  float local_8;
+  float s0;
   
-  AnglesToAxis(param_2,&local_38);
-  local_48 = param_4 * local_2c;
-  local_44 = param_4 * local_28;
-  local_40 = param_4 * local_24;
-  local_14 = param_4 * local_20;
-  local_10 = param_4 * local_1c;
-  local_c = param_4 * local_18;
-  iVar1 = (uint)(param_1->info).textureAtlasColumnCount * (uint)(param_1->info).textureAtlasRowCount
-  ;
+  AnglesToAxis(viewAngles,&viewAxis);
+  left = worldRadius * local_2c;
+  local_44 = worldRadius * local_28;
+  local_40 = worldRadius * local_24;
+  up = worldRadius * local_20;
+  local_10 = worldRadius * local_1c;
+  local_c = worldRadius * local_18;
+  iVar1 = (uint)(material->info).textureAtlasColumnCount *
+          (uint)(material->info).textureAtlasRowCount;
   floor();
   _ftol2_sse();
-  local_58 = extraout_EAX;
+  frame = extraout_EAX;
   if (iVar1 + -1 < extraout_EAX) {
-    local_58 = iVar1 + -1;
+    frame = iVar1 + -1;
   }
-  local_3c = 1.0 / (float)(param_1->info).textureAtlasColumnCount;
-  local_8 = (float)(local_58 % (int)(uint)(param_1->info).textureAtlasColumnCount) * local_3c;
-  fVar3 = 1.0 / (float)(param_1->info).textureAtlasRowCount;
-  fVar2 = (float)(local_58 / (int)(uint)(param_1->info).textureAtlasColumnCount) * fVar3;
+  ds = 1.0 / (float)(material->info).textureAtlasColumnCount;
+  s0 = (float)(frame % (int)(uint)(material->info).textureAtlasColumnCount) * ds;
+  fVar2 = 1.0 / (float)(material->info).textureAtlasRowCount;
+  t0_00 = (float)(frame / (int)(uint)(material->info).textureAtlasColumnCount) * fVar2;
   R_BuildQuadStampCodeMeshVerts
-            (param_1,&local_38,param_3,&local_48,&local_14,param_5,local_8,fVar2,local_8 + local_3c,
-             fVar2 + fVar3);
+            (material,&viewAxis,origin,&left,&up,rgbaColor,s0,t0_00,s0 + ds,t0_00 + fVar2);
   return;
 }
 
 
 // 00AF3AA0  fast_round  (gfx_d3d/r_sprite.cpp:273)
 
-double __cdecl fast_round(double param_1)
+double __cdecl fast_round(double x)
 
 {
   float10 extraout_ST0;
@@ -272,29 +287,34 @@ double __cdecl fast_round(double param_1)
 
 // 00AF3990  really_fast_sincos  (gfx_d3d/r_sprite.cpp:282)
 
-void __cdecl really_fast_sincos(float param_1,float *param_2,float *param_3)
+void __cdecl really_fast_sincos(float in,float *s,float *c)
 
 {
   double dVar1;
   double dVar2;
+  double cd;
+  double sd;
+  double cx;
+  double x;
+  double sx;
   
-  dVar1 = (double)param_1 * 0.15915493866300567 + 100000.0;
+  dVar1 = (double)in * 0.15915493866300567 + 100000.0;
   dVar2 = fast_round(dVar1);
   dVar2 = (dVar1 - dVar2) - 0.5;
-  *param_2 = (float)((ABS(dVar2) * 16.0 - 8.0) * dVar2);
+  *s = (float)((ABS(dVar2) * 16.0 - 8.0) * dVar2);
   dVar2 = fast_round(dVar1 + 0.25);
   dVar1 = ((dVar1 + 0.25) - dVar2) - 0.5;
-  *param_3 = (float)((ABS(dVar1) * 16.0 - 8.0) * dVar1);
+  *c = (float)((ABS(dVar1) * 16.0 - 8.0) * dVar1);
   return;
 }
 
 
 // 00AF3AC0  PackTwoShorts  (gfx_d3d/r_sprite.cpp:301)
 
-uint __cdecl PackTwoShorts(uint param_1,uint param_2)
+uint __cdecl PackTwoShorts(uint first,uint second)
 
 {
-  return param_2 << 0x10 | param_1;
+  return second << 0x10 | first;
 }
 
 
@@ -304,7 +324,7 @@ uint __cdecl PackTwoShorts(uint param_1,uint param_2)
 
 void __cdecl
 R_GenerateQuadStampCodeMeshVertsArray
-          (Material *param_1,renderQuad_t *param_2,int param_3,float (*param_4) [3])
+          (Material *material,renderQuad_t *quads,int numQuads,float (*viewAxis) [3])
 
 {
   float fVar1;
@@ -313,8 +333,10 @@ R_GenerateQuadStampCodeMeshVertsArray
   float fVar4;
   code *pcVar5;
   bool bVar6;
-  renderQuad_t *prVar7;
-  float fVar8;
+  uint uVar7;
+  renderQuad_t *prVar8;
+  float fVar9;
+  float fVar10;
   uint local_2d8;
   uint local_2d4;
   uint local_2d0;
@@ -334,190 +356,181 @@ R_GenerateQuadStampCodeMeshVertsArray
   uint local_200;
   PackedUnitVec local_1c8;
   PackedUnitVec local_1a8;
-  float local_138;
-  uint local_134;
-  float local_130;
-  float local_12c;
+  float t0;
+  int frame;
+  float t;
+  float4 *out;
+  float c;
+  PackedTexCoords tex1;
+  float t1;
+  float pos3;
   float local_128;
   float local_124;
   float local_120;
-  float local_11c;
-  float local_118;
+  float s1;
+  float tmp1;
   float local_114;
   float local_110;
   float local_10c;
-  float local_108;
-  uint local_104;
-  float local_100;
+  float angle;
+  PackedTexCoords tex2;
+  float pos0;
   float local_fc;
   float local_f8;
   float local_f4;
-  uint local_f0;
-  float local_ec;
-  float local_e8;
+  PackedTexCoords tex3;
+  float s;
+  float vup;
   float local_e4;
   float local_e0;
   float local_dc;
-  float local_d8;
+  float pos1;
   float local_d4;
   float local_d0;
   float local_cc;
-  float local_c8;
-  float local_c4;
+  float s0;
+  float vleft;
   float local_c0;
   float local_bc;
   float local_b8;
-  uint local_b4;
-  float local_b0;
+  PackedTexCoords tex0;
+  float pos2;
   float local_ac;
   float local_a8;
   float local_a4;
-  int local_a0;
-  uint local_9c;
-  float local_98;
-  r_double_index_t *local_94;
-  float local_90;
-  uint local_8c;
-  float local_88;
+  uint value;
+  uint add2;
+  float dt;
+  uint *indexptr;
+  float numFrames;
+  uint add1;
+  float viewUp;
   float local_84;
   float local_80;
   float local_7c;
-  uint local_78;
-  GfxColor local_64;
-  PackedTexCoords local_60;
-  PackedUnitVec local_5c;
-  PackedUnitVec local_58;
-  GfxColor local_54;
-  PackedTexCoords local_50;
-  PackedUnitVec local_4c;
-  PackedUnitVec local_48;
-  float local_44;
-  GfxPackedVertex *local_40;
-  uint local_3c;
-  r_double_index_t *local_38;
-  uint local_34;
-  uint local_30;
-  float local_2c;
+  uint start;
+  GfxPackedVertex prototypeVert;
+  float ds;
+  GfxPackedVertex *verts;
+  uint incadd;
+  r_double_index_t *indices;
+  uint add0;
+  uint inc;
+  float viewLeft;
   float local_28;
   float local_24;
   float local_20;
   uint local_1c;
-  uchar local_18 [4];
-  int local_14;
-  float local_10;
-  ushort local_c [2];
-  int local_8;
+  uchar rgbaColor [4];
+  int i;
+  float numFramesMax;
+  ushort baseVertex;
+  uint count;
   
   local_1c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18[0] = 0xff;
-  local_18[1] = 0xff;
-  local_18[2] = 0xff;
-  local_18[3] = 0xff;
-  if (((0 < param_3) && (bVar6 = R_ReserveCodeMeshVerts(param_3 << 2,local_c), bVar6)) &&
-     (bVar6 = R_ReserveCodeMeshIndices(param_3 * 6,&local_38), bVar6)) {
-    local_94 = local_38;
-    local_34 = PackTwoShorts(0,1);
-    local_8c = PackTwoShorts(3,3);
-    local_9c = PackTwoShorts(1,2);
-    local_3c = PackTwoShorts(4,4);
-    local_30 = PackTwoShorts(0,0);
-    local_78 = PackTwoShorts((uint)local_c[0],(uint)local_c[0]);
-    local_8 = param_3;
-    local_94 = local_94 + -1;
+  rgbaColor[0] = 0xff;
+  rgbaColor[1] = 0xff;
+  rgbaColor[2] = 0xff;
+  rgbaColor[3] = 0xff;
+  if (((0 < numQuads) && (bVar6 = R_ReserveCodeMeshVerts(numQuads << 2,&baseVertex), bVar6)) &&
+     (bVar6 = R_ReserveCodeMeshIndices(numQuads * 6,&indices), bVar6)) {
+    indexptr = (uint *)indices;
+    add0 = PackTwoShorts(0,1);
+    add1 = PackTwoShorts(3,3);
+    add2 = PackTwoShorts(1,2);
+    uVar7 = PackTwoShorts(4,4);
+    inc = PackTwoShorts(0,0);
+    start = PackTwoShorts((uint)baseVertex,(uint)baseVertex);
+    count = numQuads;
+    indexptr = indexptr + -1;
     do {
-      local_a0 = local_78 + local_30;
-      local_30 = local_30 + local_3c;
-      *(uint *)local_94[1].value = local_a0 + local_34;
-      *(uint *)local_94[2].value = local_a0 + local_8c;
-      local_94 = local_94 + 3;
-      *(uint *)local_94->value = local_a0 + local_9c;
-      local_8 = local_8 + -1;
-    } while (local_8 != 0);
-    Byte4CopyRgbaToVertexColor(local_18,local_64.array);
-    local_1a8.array[1] = (char)(int)(-(*param_4)[1] * 127.0 + 127.5);
-    local_1a8.array[0] = (char)(int)(-(*param_4)[0] * 127.0 + 127.5);
-    local_1a8.array[2] = (char)(int)(-(*param_4)[2] * 127.0 + 127.5);
+      value = start + inc;
+      inc = inc + uVar7;
+      indexptr[1] = value + add0;
+      indexptr[2] = value + add1;
+      indexptr = indexptr + 3;
+      *indexptr = value + add2;
+      count = count - 1;
+    } while (count != 0);
+    Byte4CopyRgbaToVertexColor(rgbaColor,prototypeVert.color.array);
+    local_1a8.array[1] = (char)(int)(-(*viewAxis)[1] * 127.0 + 127.5);
+    local_1a8.array[0] = (char)(int)(-(*viewAxis)[0] * 127.0 + 127.5);
+    local_1a8.array[2] = (char)(int)(-(*viewAxis)[2] * 127.0 + 127.5);
     local_1a8.array[3] = 0x3f;
-    local_5c = local_1a8;
-    local_1c8.array[1] = (char)(int)(-param_4[1][1] * 127.0 + 127.5);
-    local_1c8.array[0] = (char)(int)(-param_4[1][0] * 127.0 + 127.5);
-    local_1c8.array[2] = (char)(int)(-param_4[1][2] * 127.0 + 127.5);
+    prototypeVert.normal = local_1a8;
+    local_1c8.array[1] = (char)(int)(-viewAxis[1][1] * 127.0 + 127.5);
+    local_1c8.array[0] = (char)(int)(-viewAxis[1][0] * 127.0 + 127.5);
+    local_1c8.array[2] = (char)(int)(-viewAxis[1][2] * 127.0 + 127.5);
     local_1c8.array[3] = 0x3f;
-    local_58 = local_1c8;
-    local_54 = local_64;
-    local_50 = local_60;
-    local_4c = local_1a8;
-    local_48 = local_1c8;
-    local_40 = R_GetCodeMeshVerts(local_c[0]);
-    if ((((uint)local_40 & 0x1f) != 0) &&
+    prototypeVert.tangent = local_1c8;
+    verts = R_GetCodeMeshVerts(baseVertex);
+    if ((((uint)verts & 0x1f) != 0) &&
        (bVar6 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sprite.cpp",0x16c,0,
                                  "%s"), !bVar6)) {
       pcVar5 = (code *)swi(3);
       (*pcVar5)();
       return;
     }
-    local_44 = 1.0 / (float)(param_1->info).textureAtlasColumnCount;
-    local_98 = 1.0 / (float)(param_1->info).textureAtlasRowCount;
-    local_90 = (float)((uint)(param_1->info).textureAtlasColumnCount *
-                      (uint)(param_1->info).textureAtlasRowCount);
-    local_10 = local_90 - 1.0;
-    local_2c = param_4[1][0];
-    local_28 = param_4[1][1];
-    local_24 = param_4[1][2];
+    fVar10 = 1.0 / (float)(material->info).textureAtlasColumnCount;
+    dt = 1.0 / (float)(material->info).textureAtlasRowCount;
+    numFrames = (float)((uint)(material->info).textureAtlasColumnCount *
+                       (uint)(material->info).textureAtlasRowCount);
+    numFramesMax = numFrames - 1.0;
+    viewLeft = viewAxis[1][0];
+    local_28 = viewAxis[1][1];
+    local_24 = viewAxis[1][2];
     local_20 = 0.0;
-    local_88 = param_4[2][0];
-    local_84 = param_4[2][1];
-    local_80 = param_4[2][2];
+    viewUp = viewAxis[2][0];
+    local_84 = viewAxis[2][1];
+    local_80 = viewAxis[2][2];
     local_7c = 0.0;
-    for (local_14 = 0; local_14 < param_3; local_14 = local_14 + 1) {
-      local_108 = param_2[local_14].rotation * 0.017453292;
-      really_fast_sincos(local_108,&local_ec,&local_138);
-      local_ec = local_ec * param_2[local_14].radius;
-      local_138 = local_138 * param_2[local_14].radius;
-      local_c4 = local_138 * local_2c + local_ec * local_88;
-      local_c0 = local_138 * local_28 + local_ec * local_84;
-      local_bc = local_138 * local_24 + local_ec * local_80;
-      local_b8 = local_138 * local_20 + local_ec * local_7c;
-      local_118 = local_ec * local_2c;
-      local_114 = local_ec * local_28;
-      local_110 = local_ec * local_24;
-      local_10c = local_ec * local_20;
-      local_e8 = local_138 * local_88 - local_118;
-      local_e4 = local_138 * local_84 - local_114;
-      local_e0 = local_138 * local_80 - local_110;
-      local_dc = local_138 * local_7c - local_10c;
-      local_2b8 = param_2[local_14].lifeFrac * local_90;
-      if (local_10 - local_2b8 < 0.0) {
-        local_2b8 = local_10;
+    for (i = 0; i < numQuads; i = i + 1) {
+      angle = quads[i].rotation * 0.017453292;
+      really_fast_sincos(angle,&s,&c);
+      s = s * quads[i].radius;
+      c = c * quads[i].radius;
+      vleft = c * viewLeft + s * viewUp;
+      local_c0 = c * local_28 + s * local_84;
+      local_bc = c * local_24 + s * local_80;
+      local_b8 = c * local_20 + s * local_7c;
+      tmp1 = s * viewLeft;
+      local_114 = s * local_28;
+      local_110 = s * local_24;
+      local_10c = s * local_20;
+      vup = c * viewUp - tmp1;
+      local_e4 = c * local_84 - local_114;
+      local_e0 = c * local_80 - local_110;
+      local_dc = c * local_7c - local_10c;
+      local_2b8 = quads[i].lifeFrac * numFrames;
+      if (numFramesMax - local_2b8 < 0.0) {
+        local_2b8 = numFramesMax;
       }
-      local_c8 = (float)((int)local_2b8 % (int)(uint)(param_1->info).textureAtlasColumnCount) *
-                 local_44;
-      local_11c = local_c8 + local_44;
-      fVar8 = (float)((int)local_2b8 / (int)(uint)(param_1->info).textureAtlasColumnCount) *
-              local_98;
-      local_130 = fVar8 + local_98;
-      prVar7 = param_2 + local_14;
-      fVar1 = prVar7->pos[0];
-      fVar2 = prVar7->pos[1];
-      fVar3 = prVar7->pos[2];
-      fVar4 = prVar7->pos[3];
-      local_100 = fVar1 + local_c4 + local_e8;
+      s0 = (float)((int)local_2b8 % (int)(uint)(material->info).textureAtlasColumnCount) * fVar10;
+      s1 = s0 + fVar10;
+      fVar9 = (float)((int)local_2b8 / (int)(uint)(material->info).textureAtlasColumnCount) * dt;
+      t1 = fVar9 + dt;
+      prVar8 = quads + i;
+      fVar1 = prVar8->pos[0];
+      fVar2 = prVar8->pos[1];
+      fVar3 = prVar8->pos[2];
+      fVar4 = prVar8->pos[3];
+      pos0 = fVar1 + vleft + vup;
       local_fc = fVar2 + local_c0 + local_e4;
       local_f8 = fVar3 + local_bc + local_e0;
       local_f4 = fVar4 + local_b8 + local_dc;
-      local_d8 = (fVar1 - local_c4) + local_e8;
+      pos1 = (fVar1 - vleft) + vup;
       local_d4 = (fVar2 - local_c0) + local_e4;
       local_d0 = (fVar3 - local_bc) + local_e0;
       local_cc = (fVar4 - local_b8) + local_dc;
-      local_b0 = (fVar1 - local_c4) - local_e8;
+      pos2 = (fVar1 - vleft) - vup;
       local_ac = (fVar2 - local_c0) - local_e4;
       local_a8 = (fVar3 - local_bc) - local_e0;
       local_a4 = (fVar4 - local_b8) - local_dc;
-      local_12c = (fVar1 + local_c4) - local_e8;
+      pos3 = (fVar1 + vleft) - vup;
       local_128 = (fVar2 + local_c0) - local_e4;
       local_124 = (fVar3 + local_bc) - local_e0;
       local_120 = (fVar4 + local_b8) - local_dc;
-      local_200 = (int)((int)local_c8 << 1 ^ 0x80000000U) >> 0xe;
+      local_200 = (int)((int)s0 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_200) {
         local_200 = 0x3fff;
       }
@@ -527,7 +540,7 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2bc = local_200;
       }
-      local_214 = (int)((int)fVar8 << 1 ^ 0x80000000U) >> 0xe;
+      local_214 = (int)((int)fVar9 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_214) {
         local_214 = 0x3fff;
       }
@@ -537,9 +550,9 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2c0 = local_214;
       }
-      local_b4 = ((int)local_c8 >> 0x10 & 0xc000U | local_2bc & 0x3fff) * 0x10000 +
-                 ((int)fVar8 >> 0x10 & 0xc000U | local_2c0 & 0x3fff);
-      local_234 = (int)((int)local_11c << 1 ^ 0x80000000U) >> 0xe;
+      tex0.packed = ((int)s0 >> 0x10 & 0xc000U | local_2bc & 0x3fff) * 0x10000 +
+                    ((int)fVar9 >> 0x10 & 0xc000U | local_2c0 & 0x3fff);
+      local_234 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_234) {
         local_234 = 0x3fff;
       }
@@ -549,7 +562,7 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2c4 = local_234;
       }
-      local_248 = (int)((int)fVar8 << 1 ^ 0x80000000U) >> 0xe;
+      local_248 = (int)((int)fVar9 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_248) {
         local_248 = 0x3fff;
       }
@@ -559,9 +572,9 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2c8 = local_248;
       }
-      local_134 = ((int)local_11c >> 0x10 & 0xc000U | local_2c4 & 0x3fff) * 0x10000 +
-                  ((int)fVar8 >> 0x10 & 0xc000U | local_2c8 & 0x3fff);
-      local_268 = (int)((int)local_11c << 1 ^ 0x80000000U) >> 0xe;
+      tex1.packed = ((int)s1 >> 0x10 & 0xc000U | local_2c4 & 0x3fff) * 0x10000 +
+                    ((int)fVar9 >> 0x10 & 0xc000U | local_2c8 & 0x3fff);
+      local_268 = (int)((int)s1 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_268) {
         local_268 = 0x3fff;
       }
@@ -571,7 +584,7 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2cc = local_268;
       }
-      local_27c = (int)((int)local_130 << 1 ^ 0x80000000U) >> 0xe;
+      local_27c = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_27c) {
         local_27c = 0x3fff;
       }
@@ -581,9 +594,9 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2d0 = local_27c;
       }
-      local_104 = ((int)local_11c >> 0x10 & 0xc000U | local_2cc & 0x3fff) * 0x10000 +
-                  ((int)local_130 >> 0x10 & 0xc000U | local_2d0 & 0x3fff);
-      local_29c = (int)((int)local_c8 << 1 ^ 0x80000000U) >> 0xe;
+      tex2.packed = ((int)s1 >> 0x10 & 0xc000U | local_2cc & 0x3fff) * 0x10000 +
+                    ((int)t1 >> 0x10 & 0xc000U | local_2d0 & 0x3fff);
+      local_29c = (int)((int)s0 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_29c) {
         local_29c = 0x3fff;
       }
@@ -593,7 +606,7 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2d4 = local_29c;
       }
-      local_2b0 = (int)((int)local_130 << 1 ^ 0x80000000U) >> 0xe;
+      local_2b0 = (int)((int)t1 << 1 ^ 0x80000000U) >> 0xe;
       if (0x3ffe < (int)local_2b0) {
         local_2b0 = 0x3fff;
       }
@@ -603,48 +616,48 @@ R_GenerateQuadStampCodeMeshVertsArray
       else {
         local_2d8 = local_2b0;
       }
-      local_f0 = ((int)local_c8 >> 0x10 & 0xc000U | local_2d4 & 0x3fff) * 0x10000 +
-                 ((int)local_130 >> 0x10 & 0xc000U | local_2d8 & 0x3fff);
-      local_40->xyz[0] = local_100;
-      local_40->xyz[1] = local_fc;
-      local_40->xyz[2] = local_f8;
-      local_40->binormalSign = local_f4;
-      local_40->color = local_54;
-      local_40->texCoord = local_50;
-      local_40->normal = local_4c;
-      local_40->tangent = local_48;
-      (local_40->texCoord).packed = local_b4;
-      local_40[1].xyz[0] = local_d8;
-      local_40[1].xyz[1] = local_d4;
-      local_40[1].xyz[2] = local_d0;
-      local_40[1].binormalSign = local_cc;
-      local_40[1].color = local_54;
-      local_40[1].texCoord = local_50;
-      local_40[1].normal = local_4c;
-      local_40[1].tangent = local_48;
-      local_40[1].texCoord.packed = local_134;
-      local_40[2].xyz[0] = local_b0;
-      local_40[2].xyz[1] = local_ac;
-      local_40[2].xyz[2] = local_a8;
-      local_40[2].binormalSign = local_a4;
-      local_40[2].color = local_54;
-      local_40[2].texCoord = local_50;
-      local_40[2].normal = local_4c;
-      local_40[2].tangent = local_48;
-      local_40[2].texCoord.packed = local_104;
-      local_40[3].xyz[0] = local_12c;
-      local_40[3].xyz[1] = local_128;
-      local_40[3].xyz[2] = local_124;
-      local_40[3].binormalSign = local_120;
-      local_40[3].color = local_54;
-      local_40[3].texCoord = local_50;
-      local_40[3].normal = local_4c;
-      local_40[3].tangent = local_48;
-      local_40[3].texCoord.packed = local_f0;
-      local_40 = local_40 + 4;
+      tex3.packed = ((int)s0 >> 0x10 & 0xc000U | local_2d4 & 0x3fff) * 0x10000 +
+                    ((int)t1 >> 0x10 & 0xc000U | local_2d8 & 0x3fff);
+      verts->xyz[0] = pos0;
+      verts->xyz[1] = local_fc;
+      verts->xyz[2] = local_f8;
+      verts->binormalSign = local_f4;
+      verts->color = prototypeVert.color;
+      verts->texCoord = prototypeVert.texCoord;
+      verts->normal = local_1a8;
+      verts->tangent = local_1c8;
+      verts->texCoord = tex0;
+      verts[1].xyz[0] = pos1;
+      verts[1].xyz[1] = local_d4;
+      verts[1].xyz[2] = local_d0;
+      verts[1].binormalSign = local_cc;
+      verts[1].color = prototypeVert.color;
+      verts[1].texCoord = prototypeVert.texCoord;
+      verts[1].normal = local_1a8;
+      verts[1].tangent = local_1c8;
+      verts[1].texCoord = tex1;
+      verts[2].xyz[0] = pos2;
+      verts[2].xyz[1] = local_ac;
+      verts[2].xyz[2] = local_a8;
+      verts[2].binormalSign = local_a4;
+      verts[2].color = prototypeVert.color;
+      verts[2].texCoord = prototypeVert.texCoord;
+      verts[2].normal = local_1a8;
+      verts[2].tangent = local_1c8;
+      verts[2].texCoord = tex2;
+      verts[3].xyz[0] = pos3;
+      verts[3].xyz[1] = local_128;
+      verts[3].xyz[2] = local_124;
+      verts[3].binormalSign = local_120;
+      verts[3].color = prototypeVert.color;
+      verts[3].texCoord = prototypeVert.texCoord;
+      verts[3].normal = local_1a8;
+      verts[3].tangent = local_1c8;
+      verts[3].texCoord = tex3;
+      verts = verts + 4;
     }
-    R_AddCodeMeshDrawSurf(param_1,local_38,param_3 * 6,0,0,"R_BuildQuadStampCodeMeshVertsArray",0xd)
-    ;
+    R_AddCodeMeshDrawSurf
+              (material,indices,numQuads * 6,0,0,"R_BuildQuadStampCodeMeshVertsArray",0xd);
   }
   return;
 }

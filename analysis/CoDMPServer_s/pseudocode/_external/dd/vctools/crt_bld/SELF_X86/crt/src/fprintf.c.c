@@ -5,52 +5,52 @@
 /* WARNING: Function: __SEH_prolog4 replaced with injection: SEH_prolog4 */
 /* WARNING: Function: __SEH_epilog4 replaced with injection: EH_epilog3 */
 
-int __cdecl fprintf(_iobuf *param_1,char *param_2)
+int __cdecl fprintf(_iobuf *str,char *format)
 
 {
   int *piVar1;
   uint uVar2;
-  int iVar3;
-  ioinfo *piVar4;
-  int iStack_20;
+  int flag;
+  ioinfo *piVar3;
+  int retval;
   
-  iStack_20 = 0;
-  if ((param_1 == (_iobuf *)0x0) || (param_2 == (char *)0x0)) {
+  retval = 0;
+  if ((str == (_iobuf *)0x0) || (format == (char *)0x0)) {
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
     return -1;
   }
-  _lock_file(param_1);
-  if ((param_1->_flag & 0x40) == 0) {
-    uVar2 = _fileno(param_1);
+  _lock_file(str);
+  if ((str->_flag & 0x40) == 0) {
+    uVar2 = _fileno(str);
     if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
-      piVar4 = &__badioinfo;
+      piVar3 = &__badioinfo;
     }
     else {
-      piVar4 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
+      piVar3 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
     }
-    if (piVar4->textmode == '\0') {
+    if (piVar3->textmode == '\0') {
       if ((uVar2 == 0xffffffff) || (uVar2 == 0xfffffffe)) {
-        piVar4 = &__badioinfo;
+        piVar3 = &__badioinfo;
       }
       else {
-        piVar4 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
+        piVar3 = (ioinfo *)((uVar2 & 0x1f) * 0x40 + *(int *)(&__pioinfo + ((int)uVar2 >> 5) * 4));
       }
-      if (piVar4->unicode == '\0') goto LAB_0095e6a0;
+      if (piVar3->unicode == '\0') goto LAB_0095e6a0;
     }
     piVar1 = _errno();
     *piVar1 = 0x16;
     _invalid_parameter((wchar_t *)0x0,(wchar_t *)0x0,(wchar_t *)0x0,0,0);
-    iStack_20 = -1;
+    retval = -1;
   }
 LAB_0095e6a0:
-  if (iStack_20 == 0) {
-    iVar3 = _stbuf(param_1);
-    iStack_20 = _output_l(param_1,param_2,(localeinfo_struct *)0x0,&stack0x0000000c);
-    _ftbuf(iVar3,param_1);
+  if (retval == 0) {
+    flag = _stbuf(str);
+    retval = _output_l(str,format,(localeinfo_struct *)0x0,&stack0x0000000c);
+    _ftbuf(flag,str);
   }
   FUN_0095e6dd();
-  return iStack_20;
+  return retval;
 }
 

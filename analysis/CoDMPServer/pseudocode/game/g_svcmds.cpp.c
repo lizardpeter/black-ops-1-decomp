@@ -4,43 +4,43 @@
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-int __cdecl StringToFilter(char *param_1,ipFilter_s *param_2)
+int __cdecl StringToFilter(char *s,ipFilter_s *f)
 
 {
   int iVar1;
-  int local_98;
-  uint local_94;
-  uint local_90;
-  char local_8c [128];
+  int j;
+  uint m;
+  uint b;
+  char num [128];
   uint local_c;
-  int local_8;
+  int i;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    local_8c[local_8 + -4] = '\0';
-    *(undefined1 *)((int)&local_94 + local_8) = 0;
+  for (i = 0; i < 4; i = i + 1) {
+    num[i + -4] = '\0';
+    *(undefined1 *)((int)&m + i) = 0;
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    if ((*param_1 < '0') || ('9' < *param_1)) {
+  for (i = 0; i < 4; i = i + 1) {
+    if ((*s < '0') || ('9' < *s)) {
       Com_Printf(0xf,"Bad filter address: %s\n");
       return 0;
     }
-    local_98 = 0;
-    for (; ('/' < *param_1 && (*param_1 < ':')); param_1 = param_1 + 1) {
-      local_8c[local_98] = *param_1;
-      local_98 = local_98 + 1;
+    j = 0;
+    for (; ('/' < *s && (*s < ':')); s = s + 1) {
+      num[j] = *s;
+      j = j + 1;
     }
-    local_8c[local_98] = '\0';
-    iVar1 = atoi(local_8c);
-    local_8c[local_8 + -4] = (char)iVar1;
-    if (local_8c[local_8 + -4] != '\0') {
-      *(undefined1 *)((int)&local_94 + local_8) = 0xff;
+    num[j] = '\0';
+    iVar1 = atoi(num);
+    num[i + -4] = (char)iVar1;
+    if (num[i + -4] != '\0') {
+      *(undefined1 *)((int)&m + i) = 0xff;
     }
-    if (*param_1 == '\0') break;
-    param_1 = param_1 + 1;
+    if (*s == '\0') break;
+    s = s + 1;
   }
-  param_2->mask = local_94;
-  param_2->compare = local_90;
+  f->mask = m;
+  f->compare = b;
   return 1;
 }
 
@@ -56,21 +56,21 @@ void __cdecl UpdateIPBans(void)
   char *pcVar2;
   char *local_428;
   char *local_418;
-  int local_410;
-  char local_40c;
+  int i;
+  char iplist;
   undefined1 auStack_40b [1027];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_40c = '\0';
-  for (local_410 = 0; local_410 < numIPFilters; local_410 = local_410 + 1) {
-    if (ipFilters[local_410].compare != 0xffffffff) {
-      local_418 = &local_40c;
+  iplist = '\0';
+  for (i = 0; i < numIPFilters; i = i + 1) {
+    if (ipFilters[i].compare != 0xffffffff) {
+      local_418 = &iplist;
       do {
         cVar1 = *local_418;
         local_418 = local_418 + 1;
       } while (cVar1 != '\0');
-      pcVar2 = &local_40c;
+      pcVar2 = &iplist;
       do {
         local_428 = pcVar2;
         pcVar2 = local_428 + 1;
@@ -78,32 +78,31 @@ void __cdecl UpdateIPBans(void)
       Com_sprintf(local_428,0x400 - ((int)local_418 - (int)auStack_40b),"%i.%i.%i.%i ");
     }
   }
-  Dvar_SetString(g_banIPs,&local_40c);
+  Dvar_SetString(g_banIPs,&iplist);
   return;
 }
 
 
 // 0068CDE0  AddIP  (game/g_svcmds.cpp:142)
 
-void __cdecl AddIP(char *param_1)
+void __cdecl AddIP(char *str)
 
 {
   int iVar1;
-  int local_8;
+  int i;
   
-  for (local_8 = 0; (local_8 < numIPFilters && (ipFilters[local_8].compare != 0xffffffff));
-      local_8 = local_8 + 1) {
+  for (i = 0; (i < numIPFilters && (ipFilters[i].compare != 0xffffffff)); i = i + 1) {
   }
-  if (local_8 == numIPFilters) {
+  if (i == numIPFilters) {
     if (numIPFilters == 0x400) {
       Com_Printf(0xf,"IP filter list is full\n");
       return;
     }
     numIPFilters = numIPFilters + 1;
   }
-  iVar1 = StringToFilter(param_1,ipFilters + local_8);
+  iVar1 = StringToFilter(str,ipFilters + i);
   if (iVar1 == 0) {
-    ipFilters[local_8].compare = 0xffffffff;
+    ipFilters[i].compare = 0xffffffff;
   }
   UpdateIPBans();
   return;
@@ -117,24 +116,23 @@ void __cdecl AddIP(char *param_1)
 void __cdecl G_ProcessIPBans(void)
 
 {
-  uchar *extraout_EAX;
-  uchar local_414 [1028];
+  char *extraout_EAX;
+  char str [1028];
   uint local_10;
-  uchar *local_c;
-  uchar *local_8;
+  char *t;
+  char *s;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
   numIPFilters = 0;
-  I_strncpyz((char *)local_414,(g_banIPs->current).string,0x400);
-  local_8 = local_414;
-  while ((*local_8 != '\0' &&
-         (local_c = local_8, strchr(local_8,' '), local_8 = extraout_EAX,
-         extraout_EAX != (uchar *)0x0))) {
-    for (; *local_8 == ' '; local_8 = local_8 + 1) {
-      *local_8 = '\0';
+  I_strncpyz(str,(g_banIPs->current).string,0x400);
+  s = str;
+  while ((*s != '\0' &&
+         (t = s, strchr((uchar *)s,' '), s = extraout_EAX, extraout_EAX != (char *)0x0))) {
+    for (; *s == ' '; s = s + 1) {
+      *s = '\0';
     }
-    if (*local_c != '\0') {
-      AddIP((char *)local_c);
+    if (*t != '\0') {
+      AddIP(t);
     }
   }
   return;
@@ -149,7 +147,7 @@ void __cdecl Svcmd_AddIP_f(void)
 
 {
   int iVar1;
-  char local_40c [1028];
+  char str [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
@@ -158,8 +156,8 @@ void __cdecl Svcmd_AddIP_f(void)
     Com_Printf(0,"Usage:  addip <ip-mask>\n");
   }
   else {
-    SV_Cmd_ArgvBuffer(1,local_40c,0x400);
-    AddIP(local_40c);
+    SV_Cmd_ArgvBuffer(1,str,0x400);
+    AddIP(str);
   }
   return;
 }
@@ -173,10 +171,10 @@ void __cdecl Svcmd_RemoveIP_f(void)
 
 {
   int iVar1;
-  char local_414 [1024];
+  char str [1024];
   uint local_14;
-  ipFilter_s local_10;
-  int local_8;
+  ipFilter_s f;
+  int i;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
   iVar1 = SV_Cmd_Argc();
@@ -184,13 +182,12 @@ void __cdecl Svcmd_RemoveIP_f(void)
     Com_Printf(0,"Usage:  sv removeip <ip-mask>\n");
   }
   else {
-    SV_Cmd_ArgvBuffer(1,local_414,0x400);
-    iVar1 = StringToFilter(local_414,&local_10);
+    SV_Cmd_ArgvBuffer(1,str,0x400);
+    iVar1 = StringToFilter(str,&f);
     if (iVar1 != 0) {
-      for (local_8 = 0; local_8 < numIPFilters; local_8 = local_8 + 1) {
-        if ((ipFilters[local_8].mask == local_10.mask) &&
-           (ipFilters[local_8].compare == local_10.compare)) {
-          ipFilters[local_8].compare = 0xffffffff;
+      for (i = 0; i < numIPFilters; i = i + 1) {
+        if ((ipFilters[i].mask == f.mask) && (ipFilters[i].compare == f.compare)) {
+          ipFilters[i].compare = 0xffffffff;
           Com_Printf(0,"Removed.\n");
           UpdateIPBans();
           return;
@@ -213,17 +210,17 @@ void __cdecl Svcmd_RemoveIP_f(void)
 void __cdecl Svcmd_EntityList_f(void)
 
 {
-  int local_c;
-  gentity_s *local_8;
+  int e;
+  gentity_s *check;
   
-  local_8 = g_entities;
-  for (local_c = 1; local_8 = local_8 + 1, local_c < level.num_entities; local_c = local_c + 1) {
-    if ((local_8->r).inuse != '\0') {
+  check = g_entities;
+  for (e = 1; check = check + 1, e < level.num_entities; e = e + 1) {
+    if ((check->r).inuse != '\0') {
       Com_Printf(0,"%3i: ");
-      G_GetEntityTypeName(local_8);
+      G_GetEntityTypeName(check);
       Com_Printf(0,"\'%s\'");
-      if (local_8->classname != 0) {
-        SL_ConvertToString((uint)local_8->classname,SCRIPTINSTANCE_SERVER);
+      if (check->classname != 0) {
+        SL_ConvertToString((uint)check->classname,SCRIPTINSTANCE_SERVER);
         Com_Printf(0,", \'%s\'");
       }
       Com_Printf(0,"\n");
@@ -235,11 +232,17 @@ void __cdecl Svcmd_EntityList_f(void)
 
 // 0068D390  ConsoleCommand  (game/g_svcmds.cpp:295)
 
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
 int __cdecl ConsoleCommand(void)
 
 {
   char *pcVar1;
   int iVar2;
+  char *cmd;
   
   pcVar1 = Cmd_Argv(0);
   iVar2 = I_stricmp(pcVar1,"entitylist");

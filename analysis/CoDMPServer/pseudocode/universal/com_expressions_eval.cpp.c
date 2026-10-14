@@ -2,7 +2,7 @@
 
 // 0078AFD0  GetOperand  (universal/com_expressions_eval.cpp:166)
 
-bool __cdecl GetOperand(OperandStack *param_1,Operand *param_2)
+bool __cdecl GetOperand(OperandStack *dataStack,Operand *data)
 
 {
   operandInternalDataUnion oVar1;
@@ -10,26 +10,27 @@ bool __cdecl GetOperand(OperandStack *param_1,Operand *param_2)
   bool bVar3;
   undefined1 uVar4;
   OperandList *pOVar5;
+  OperandList *list;
   
-  if (param_1->numOperandLists < 1) {
+  if (dataStack->numOperandLists < 1) {
     Expression_Error(" Invalid operation - missing parameter inside function or parenthesis\n");
-    param_1->numOperandLists = 1;
-    param_1->stack[0].operandCount = 1;
-    oVar1 = param_1->stack[0].operands[0].internals;
-    param_2->dataType = param_1->stack[0].operands[0].dataType;
-    param_2->internals = oVar1;
-    param_2->dataType = VAL_INT;
-    (param_2->internals).intVal = 0;
+    dataStack->numOperandLists = 1;
+    dataStack->stack[0].operandCount = 1;
+    oVar1 = dataStack->stack[0].operands[0].internals;
+    data->dataType = dataStack->stack[0].operands[0].dataType;
+    data->internals = oVar1;
+    data->dataType = VAL_INT;
+    (data->internals).intVal = 0;
     bVar3 = false;
   }
   else {
-    pOVar5 = param_1->stack + param_1->numOperandLists + -1;
+    pOVar5 = dataStack->stack + dataStack->numOperandLists + -1;
     if (pOVar5->operandCount == 1) {
       oVar1 = pOVar5->operands[0].internals;
-      param_2->dataType = pOVar5->operands[0].dataType;
-      param_2->internals = oVar1;
-      param_1->numOperandLists = param_1->numOperandLists + -1;
-      if ((param_2->dataType == VAL_STRING) && ((param_2->internals).intVal == 0)) {
+      data->dataType = pOVar5->operands[0].dataType;
+      data->internals = oVar1;
+      dataStack->numOperandLists = dataStack->numOperandLists + -1;
+      if ((data->dataType == VAL_STRING) && ((data->internals).intVal == 0)) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                  ,0xbf,0,"%s");
         if (!bVar3) {
@@ -44,8 +45,8 @@ bool __cdecl GetOperand(OperandStack *param_1,Operand *param_2)
       Expression_Error(
                       " Invalid operand count - expected to find one operand but instead found %i\n"
                       );
-      param_2->dataType = VAL_INT;
-      (param_2->internals).intVal = 0;
+      data->dataType = VAL_INT;
+      (data->internals).intVal = 0;
       bVar3 = false;
     }
   }
@@ -55,18 +56,18 @@ bool __cdecl GetOperand(OperandStack *param_1,Operand *param_2)
 
 // 0078AFA0  GetTwoOperands  (universal/com_expressions_eval.cpp:197)
 
-bool __cdecl GetTwoOperands(OperandStack *param_1,Operand *param_2,Operand *param_3)
+bool __cdecl GetTwoOperands(OperandStack *dataStack,Operand *data1,Operand *data2)
 
 {
-  GetOperand(param_1,param_3);
-  GetOperand(param_1,param_2);
+  GetOperand(dataStack,data2);
+  GetOperand(dataStack,data1);
   return true;
 }
 
 
 // 0078B0E0  GetOperandList  (universal/com_expressions_eval.cpp:205)
 
-bool __cdecl GetOperandList(OperandStack *param_1,OperandList *param_2)
+bool __cdecl GetOperandList(OperandStack *dataStack,OperandList *list)
 
 {
   bool bVar1;
@@ -74,28 +75,28 @@ bool __cdecl GetOperandList(OperandStack *param_1,OperandList *param_2)
   operandInternalDataUnion *poVar3;
   OperandList *pOVar4;
   
-  if (param_1->numOperandLists < 1) {
+  if (dataStack->numOperandLists < 1) {
     Expression_Error(" Invalid operation - missing parameter inside function or parenthesis\n");
-    param_1->numOperandLists = 1;
-    pOVar4 = param_2;
+    dataStack->numOperandLists = 1;
+    pOVar4 = list;
     for (iVar2 = 0x15; iVar2 != 0; iVar2 = iVar2 + -1) {
-      pOVar4->operands[0].dataType = param_1->stack[0].operands[0].dataType;
-      param_1 = (OperandStack *)&param_1->stack[0].operands[0].internals;
+      pOVar4->operands[0].dataType = dataStack->stack[0].operands[0].dataType;
+      dataStack = (OperandStack *)&dataStack->stack[0].operands[0].internals;
       pOVar4 = (OperandList *)&pOVar4->operands[0].internals;
     }
-    param_2->operandCount = 1;
-    param_2->operands[0].dataType = VAL_INT;
-    param_2->operands[0].internals.intVal = 0;
+    list->operandCount = 1;
+    list->operands[0].dataType = VAL_INT;
+    list->operands[0].internals.intVal = 0;
     bVar1 = false;
   }
   else {
-    poVar3 = (operandInternalDataUnion *)(param_1->stack + param_1->numOperandLists + -1);
+    poVar3 = (operandInternalDataUnion *)(dataStack->stack + dataStack->numOperandLists + -1);
     for (iVar2 = 0x15; iVar2 != 0; iVar2 = iVar2 + -1) {
-      param_2->operands[0].dataType = *(expDataType *)poVar3;
+      list->operands[0].dataType = *(expDataType *)poVar3;
       poVar3 = poVar3 + 1;
-      param_2 = (OperandList *)&param_2->operands[0].internals;
+      list = (OperandList *)&list->operands[0].internals;
     }
-    param_1->numOperandLists = param_1->numOperandLists + -1;
+    dataStack->numOperandLists = dataStack->numOperandLists + -1;
     bVar1 = true;
   }
   return bVar1;
@@ -104,7 +105,7 @@ bool __cdecl GetOperandList(OperandStack *param_1,OperandList *param_2)
 
 // 0078B490  AddOperandToStack  (universal/com_expressions_eval.cpp:224)
 
-void __cdecl AddOperandToStack(OperandStack *param_1,Operand *param_2)
+void __cdecl AddOperandToStack(OperandStack *dataStack,Operand *data)
 
 {
   operandInternalDataUnion oVar1;
@@ -112,7 +113,7 @@ void __cdecl AddOperandToStack(OperandStack *param_1,Operand *param_2)
   code *pcVar3;
   bool bVar4;
   
-  if ((param_2->dataType == VAL_STRING) && ((param_2->internals).intVal == 0)) {
+  if ((data->dataType == VAL_STRING) && ((data->internals).intVal == 0)) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0xe1,0,"%s");
     if (!bVar4) {
@@ -121,31 +122,31 @@ void __cdecl AddOperandToStack(OperandStack *param_1,Operand *param_2)
       return;
     }
   }
-  oVar1 = param_2->internals;
-  iVar2 = param_1->numOperandLists;
-  param_1->stack[iVar2].operands[0].dataType = param_2->dataType;
-  param_1->stack[iVar2].operands[0].internals = oVar1;
-  param_1->stack[param_1->numOperandLists].operandCount = 1;
-  param_1->numOperandLists = param_1->numOperandLists + 1;
+  oVar1 = data->internals;
+  iVar2 = dataStack->numOperandLists;
+  dataStack->stack[iVar2].operands[0].dataType = data->dataType;
+  dataStack->stack[iVar2].operands[0].internals = oVar1;
+  dataStack->stack[dataStack->numOperandLists].operandCount = 1;
+  dataStack->numOperandLists = dataStack->numOperandLists + 1;
   return;
 }
 
 
 // 007901A0  GetOperandValueInt  (universal/com_expressions_eval.cpp:233)
 
-int __cdecl GetOperandValueInt(Operand *param_1)
+int __cdecl GetOperandValueInt(Operand *source)
 
 {
   int iVar1;
   
-  if (param_1->dataType == VAL_STRING) {
-    iVar1 = atoi((param_1->internals).string);
+  if (source->dataType == VAL_STRING) {
+    iVar1 = atoi((source->internals).string);
   }
-  else if (param_1->dataType == VAL_FLOAT) {
-    iVar1 = (int)(param_1->internals).floatVal;
+  else if (source->dataType == VAL_FLOAT) {
+    iVar1 = (int)(source->internals).floatVal;
   }
   else {
-    iVar1 = (param_1->internals).intVal;
+    iVar1 = (source->internals).intVal;
   }
   return iVar1;
 }
@@ -153,15 +154,16 @@ int __cdecl GetOperandValueInt(Operand *param_1)
 
 // 0078B170  GetSourceString  (universal/com_expressions_eval.cpp:269)
 
-char * __cdecl GetSourceString(Operand param_1)
+char * __cdecl GetSourceString(Operand operand)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  operandInternalDataUnion oVar4;
+  operandInternalDataUnion dest;
+  char *result;
   
-  if (param_1.dataType != VAL_STRING) {
+  if (operand.dataType != VAL_STRING) {
     if ((0x1f < (uint)currentTempOperand) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                  ,0x112,0,
@@ -171,35 +173,36 @@ char * __cdecl GetSourceString(Operand param_1)
       pcVar3 = (char *)(*pcVar1)();
       return pcVar3;
     }
-    oVar4.string = s_tempOperandValueAsString[currentTempOperand];
+    dest.string = s_tempOperandValueAsString[currentTempOperand];
     currentTempOperand = currentTempOperand + 1U & 0x8000001f;
     if (currentTempOperand < 0) {
       currentTempOperand = (currentTempOperand - 1U | 0xffffffe0) + 1;
     }
-    if (param_1.dataType == VAL_INT) {
-      I_itoa(param_1.internals.intVal,oVar4.string,0x100);
-      param_1.internals.string = oVar4.string;
+    if (operand.dataType == VAL_INT) {
+      I_itoa(operand.internals.intVal,dest.string,0x100);
+      operand.internals.string = dest.string;
     }
     else {
-      param_1.internals.string = oVar4.string;
-      if (param_1.dataType == VAL_FLOAT) {
-        Com_sprintf(oVar4.string,0x100,"%f");
+      operand.internals.string = dest.string;
+      if (operand.dataType == VAL_FLOAT) {
+        Com_sprintf(dest.string,0x100,"%f");
       }
     }
   }
-  return (char *)param_1.internals.intVal;
+  return (char *)operand.internals.intVal;
 }
 
 
 // 0078B520  CopyTempString  (universal/com_expressions_eval.cpp:286)
 
-char * __cdecl CopyTempString(char *param_1)
+char * __cdecl CopyTempString(char *string)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  char (*pacVar4) [256];
+  char (*dest) [256];
+  char *result;
   
   if (0x1f < (uint)currentTempOperand) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
@@ -212,19 +215,19 @@ char * __cdecl CopyTempString(char *param_1)
       return pcVar3;
     }
   }
-  pacVar4 = s_tempOperandValueAsString + currentTempOperand;
+  dest = s_tempOperandValueAsString + currentTempOperand;
   currentTempOperand = currentTempOperand + 1U & 0x8000001f;
   if (currentTempOperand < 0) {
     currentTempOperand = (currentTempOperand - 1U | 0xffffffe0) + 1;
   }
-  Com_sprintf(*pacVar4,0x100,"%s");
-  return *pacVar4;
+  Com_sprintf(*dest,0x100,"%s");
+  return *dest;
 }
 
 
 // 0078B230  GetSourceFloat  (universal/com_expressions_eval.cpp:298)
 
-float __cdecl GetSourceFloat(Operand *param_1)
+float __cdecl GetSourceFloat(Operand *source)
 
 {
   float fVar1;
@@ -233,14 +236,14 @@ float __cdecl GetSourceFloat(Operand *param_1)
   float10 fVar4;
   double dVar5;
   
-  if (param_1->dataType == VAL_FLOAT) {
-    fVar1 = (param_1->internals).floatVal;
+  if (source->dataType == VAL_FLOAT) {
+    fVar1 = (source->internals).floatVal;
   }
-  else if (param_1->dataType == VAL_INT) {
-    fVar1 = (float)(param_1->internals).intVal;
+  else if (source->dataType == VAL_INT) {
+    fVar1 = (float)(source->internals).intVal;
   }
   else {
-    if (param_1->dataType != VAL_STRING) {
+    if (source->dataType != VAL_STRING) {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x12f,0,"%s");
       if (!bVar3) {
@@ -249,7 +252,7 @@ float __cdecl GetSourceFloat(Operand *param_1)
         return (float)fVar4;
       }
     }
-    dVar5 = atof((param_1->internals).string);
+    dVar5 = atof((source->internals).string);
     fVar1 = (float)dVar5;
   }
   return fVar1;
@@ -258,21 +261,21 @@ float __cdecl GetSourceFloat(Operand *param_1)
 
 // 0078B2A0  GetSourceInt  (universal/com_expressions_eval.cpp:309)
 
-int __cdecl GetSourceInt(Operand *param_1)
+int __cdecl GetSourceInt(Operand *source)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if (param_1->dataType == VAL_FLOAT) {
-    iVar3 = (int)(param_1->internals).floatVal;
+  if (source->dataType == VAL_FLOAT) {
+    iVar3 = (int)(source->internals).floatVal;
   }
-  else if (param_1->dataType == VAL_INT) {
-    iVar3 = (param_1->internals).intVal;
+  else if (source->dataType == VAL_INT) {
+    iVar3 = (source->internals).intVal;
   }
   else {
-    if (param_1->dataType != VAL_STRING) {
+    if (source->dataType != VAL_STRING) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x13a,0,"%s");
       if (!bVar2) {
@@ -281,7 +284,7 @@ int __cdecl GetSourceInt(Operand *param_1)
         return iVar3;
       }
     }
-    iVar3 = atoi((param_1->internals).string);
+    iVar3 = atoi((source->internals).string);
   }
   return iVar3;
 }
@@ -289,20 +292,20 @@ int __cdecl GetSourceInt(Operand *param_1)
 
 // 0078B5B0  GetNameForValueType  (universal/com_expressions_eval.cpp:319)
 
-char * __cdecl GetNameForValueType(expDataType param_1)
+char * __cdecl GetNameForValueType(expDataType valType)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   
-  if (param_1 == VAL_INT) {
+  if (valType == VAL_INT) {
     pcVar3 = "Int";
   }
-  else if (param_1 == VAL_FLOAT) {
+  else if (valType == VAL_FLOAT) {
     pcVar3 = "Float";
   }
-  else if (param_1 == VAL_STRING) {
+  else if (valType == VAL_STRING) {
     pcVar3 = "String";
   }
   else {
@@ -322,54 +325,54 @@ char * __cdecl GetNameForValueType(expDataType param_1)
 
 // 0078B310  GetDvarValue  (universal/com_expressions_eval.cpp:335)
 
-void __cdecl GetDvarValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDvarValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  dvar_s *local_8;
+  Operand source;
+  Operand result;
+  dvar_s *dvar;
   
-  GetOperand(param_3,&local_18);
-  if (local_18.dataType == VAL_STRING) {
-    local_8 = Dvar_FindVar(local_18.internals.string);
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    dvar = Dvar_FindVar(source.internals.string);
   }
   else {
-    if (local_18.dataType != VAL_INT) {
-      GetNameForValueType(local_18.dataType);
+    if (source.dataType != VAL_INT) {
+      GetNameForValueType(source.dataType);
       Expression_Error("Must use a string as the name of a dvar, not a %s\n");
-      local_10.dataType = VAL_STRING;
-      local_10.internals.floatVal = 1.8187723e-38;
-      AddOperandToStack(param_3,&local_10);
+      result.dataType = VAL_STRING;
+      result.internals.floatVal = 1.8187723e-38;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_8 = Dvar_FindVar(local_18.internals.intVal);
+    dvar = Dvar_FindVar(source.internals.intVal);
   }
-  local_10.dataType = VAL_STRING;
-  if (local_8 == (dvar_s *)0x0) {
-    local_10.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  if (dvar == (dvar_s *)0x0) {
+    result.internals.floatVal = 1.8187723e-38;
   }
-  else if (local_8->type == DVAR_TYPE_BOOL) {
-    local_10.dataType = VAL_INT;
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = (local_8->current).enabled != false;
+  else if (dvar->type == DVAR_TYPE_BOOL) {
+    result.dataType = VAL_INT;
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = (dvar->current).enabled != false;
   }
-  else if (local_8->type == DVAR_TYPE_FLOAT) {
-    local_10.dataType = VAL_FLOAT;
-    local_10.internals = (operandInternalDataUnion)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_FLOAT) {
+    result.dataType = VAL_FLOAT;
+    result.internals = (operandInternalDataUnion)(dvar->current).integer;
   }
-  else if (local_8->type == DVAR_TYPE_INT) {
-    local_10.dataType = VAL_INT;
-    local_10.internals = (operandInternalDataUnion)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_INT) {
+    result.dataType = VAL_INT;
+    result.internals = (operandInternalDataUnion)(dvar->current).integer;
   }
-  else if (local_8->type == DVAR_TYPE_STRING) {
-    local_10.internals.string = CopyTempString((local_8->current).string);
+  else if (dvar->type == DVAR_TYPE_STRING) {
+    result.internals.string = CopyTempString((dvar->current).string);
   }
   else {
-    local_10.internals.string = Dvar_DisplayableValue(local_8);
+    result.internals.string = Dvar_DisplayableValue(dvar);
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
-    Dvar_DisplayableValue(local_8);
+    Dvar_DisplayableValue(dvar);
     Expression_TraceInternal("dvar( %s ) = %s\n");
   }
   return;
@@ -378,218 +381,219 @@ void __cdecl GetDvarValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0078B620  GetDvarStringValue  (universal/com_expressions_eval.cpp:389)
 
-void __cdecl GetDvarStringValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDvarStringValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  dvar_s *local_8;
+  Operand source;
+  Operand result;
+  dvar_s *dvar;
   
-  GetOperand(param_3,&local_18);
-  if (local_18.dataType == VAL_STRING) {
-    local_8 = Dvar_FindVar(local_18.internals.string);
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    dvar = Dvar_FindVar(source.internals.string);
   }
   else {
-    if (local_18.dataType != VAL_INT) {
-      GetNameForValueType(local_18.dataType);
+    if (source.dataType != VAL_INT) {
+      GetNameForValueType(source.dataType);
       Expression_Error("Must use a string as the name of a dvar, not a %s\n");
-      local_10.dataType = VAL_STRING;
-      local_10.internals.floatVal = 1.8187723e-38;
-      AddOperandToStack(param_3,&local_10);
+      result.dataType = VAL_STRING;
+      result.internals.floatVal = 1.8187723e-38;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_8 = Dvar_FindVar(local_18.internals.intVal);
+    dvar = Dvar_FindVar(source.internals.intVal);
   }
-  local_10.dataType = VAL_STRING;
-  if (local_8 == (dvar_s *)0x0) {
-    local_10.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  if (dvar == (dvar_s *)0x0) {
+    result.internals.floatVal = 1.8187723e-38;
   }
-  else if (local_8->type == DVAR_TYPE_STRING) {
-    local_10.internals.string = CopyTempString((local_8->current).string);
+  else if (dvar->type == DVAR_TYPE_STRING) {
+    result.internals.string = CopyTempString((dvar->current).string);
   }
   else {
-    local_10.internals.string = Dvar_DisplayableValue(local_8);
+    result.internals.string = Dvar_DisplayableValue(dvar);
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("dvarstring( %s ) = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078B740  GetDvarBoolValue  (universal/com_expressions_eval.cpp:426)
 
-void __cdecl GetDvarBoolValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDvarBoolValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  Operand local_18;
-  Operand local_10;
-  dvar_s *local_8;
+  char *nptr;
+  Operand source;
+  Operand result;
+  dvar_s *dvar;
   
-  GetOperand(param_3,&local_18);
-  if (local_18.dataType == VAL_STRING) {
-    local_8 = Dvar_FindVar(local_18.internals.string);
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    dvar = Dvar_FindVar(source.internals.string);
   }
   else {
-    if (local_18.dataType != VAL_INT) {
-      GetNameForValueType(local_18.dataType);
+    if (source.dataType != VAL_INT) {
+      GetNameForValueType(source.dataType);
       Expression_Error("Must use a string as the name of a dvar, not a %s\n");
-      local_10.dataType = VAL_STRING;
-      local_10.internals.floatVal = 1.8187723e-38;
-      AddOperandToStack(param_3,&local_10);
+      result.dataType = VAL_STRING;
+      result.internals.floatVal = 1.8187723e-38;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_8 = Dvar_FindVar(local_18.internals.intVal);
+    dvar = Dvar_FindVar(source.internals.intVal);
   }
-  local_10.dataType = VAL_INT;
-  if (local_8 == (dvar_s *)0x0) {
-    local_10.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  if (dvar == (dvar_s *)0x0) {
+    result.internals.intVal = 0;
   }
-  else if (local_8->type == DVAR_TYPE_BOOL) {
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = (local_8->current).enabled != false;
+  else if (dvar->type == DVAR_TYPE_BOOL) {
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = (dvar->current).enabled != false;
   }
-  else if (local_8->type == DVAR_TYPE_FLOAT) {
-    local_10.internals.intVal = (int)(local_8->current).value;
+  else if (dvar->type == DVAR_TYPE_FLOAT) {
+    result.internals.intVal = (int)(dvar->current).value;
   }
-  else if (local_8->type == DVAR_TYPE_INT) {
-    local_10.internals = (operandInternalDataUnion)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_INT) {
+    result.internals = (operandInternalDataUnion)(dvar->current).integer;
   }
   else {
-    pcVar1 = Dvar_DisplayableValue(local_8);
-    local_10.internals.intVal = atoi(pcVar1);
+    nptr = Dvar_DisplayableValue(dvar);
+    result.internals.intVal = atoi(nptr);
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("dvarbool( %s ) = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078B890  GetDvarIntValue  (universal/com_expressions_eval.cpp:465)
 
-void __cdecl GetDvarIntValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDvarIntValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  Operand local_18;
-  Operand local_10;
-  dvar_s *local_8;
+  char *nptr;
+  Operand source;
+  Operand result;
+  dvar_s *dvar;
   
-  GetOperand(param_3,&local_18);
-  if (local_18.dataType == VAL_STRING) {
-    local_8 = Dvar_FindVar(local_18.internals.string);
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    dvar = Dvar_FindVar(source.internals.string);
   }
   else {
-    if (local_18.dataType != VAL_INT) {
-      GetNameForValueType(local_18.dataType);
+    if (source.dataType != VAL_INT) {
+      GetNameForValueType(source.dataType);
       Expression_Error("Must use a string as the name of a dvar, not a %s\n");
-      local_10.dataType = VAL_STRING;
-      local_10.internals.floatVal = 1.8187723e-38;
-      AddOperandToStack(param_3,&local_10);
+      result.dataType = VAL_STRING;
+      result.internals.floatVal = 1.8187723e-38;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_8 = Dvar_FindVar(local_18.internals.intVal);
+    dvar = Dvar_FindVar(source.internals.intVal);
   }
-  local_10.dataType = VAL_INT;
-  if (local_8 == (dvar_s *)0x0) {
-    local_10.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  if (dvar == (dvar_s *)0x0) {
+    result.internals.intVal = 0;
   }
-  else if (local_8->type == DVAR_TYPE_BOOL) {
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = (local_8->current).enabled != false;
+  else if (dvar->type == DVAR_TYPE_BOOL) {
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = (dvar->current).enabled != false;
   }
-  else if (local_8->type == DVAR_TYPE_FLOAT) {
-    local_10.internals.intVal = (int)(local_8->current).value;
+  else if (dvar->type == DVAR_TYPE_FLOAT) {
+    result.internals.intVal = (int)(dvar->current).value;
   }
-  else if (local_8->type == DVAR_TYPE_INT) {
-    local_10.internals = (operandInternalDataUnion)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_INT) {
+    result.internals = (operandInternalDataUnion)(dvar->current).integer;
   }
-  else if (local_8->type == DVAR_TYPE_ENUM) {
-    local_10.internals = (operandInternalDataUnion)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_ENUM) {
+    result.internals = (operandInternalDataUnion)(dvar->current).integer;
   }
   else {
-    pcVar1 = Dvar_DisplayableValue(local_8);
-    local_10.internals.intVal = atoi(pcVar1);
+    nptr = Dvar_DisplayableValue(dvar);
+    result.internals.intVal = atoi(nptr);
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("dvarint( %s ) = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078B9F0  GetDvarFloatValue  (universal/com_expressions_eval.cpp:506)
 
-void __cdecl GetDvarFloatValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDvarFloatValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  double dVar2;
-  Operand local_18;
-  Operand local_10;
-  dvar_s *local_8;
+  char *nptr;
+  double dVar1;
+  Operand source;
+  Operand result;
+  dvar_s *dvar;
   
-  GetOperand(param_3,&local_18);
-  if (local_18.dataType == VAL_STRING) {
-    local_8 = Dvar_FindVar(local_18.internals.string);
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    dvar = Dvar_FindVar(source.internals.string);
   }
   else {
-    if (local_18.dataType != VAL_INT) {
-      GetNameForValueType(local_18.dataType);
+    if (source.dataType != VAL_INT) {
+      GetNameForValueType(source.dataType);
       Expression_Error("Must use a string as the name of a dvar, not a %s\n");
-      local_10.dataType = VAL_STRING;
-      local_10.internals.floatVal = 1.8187723e-38;
-      AddOperandToStack(param_3,&local_10);
+      result.dataType = VAL_STRING;
+      result.internals.floatVal = 1.8187723e-38;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_8 = Dvar_FindVar(local_18.internals.intVal);
+    dvar = Dvar_FindVar(source.internals.intVal);
   }
-  local_10.dataType = VAL_FLOAT;
-  if (local_8 == (dvar_s *)0x0) {
-    local_10.internals.intVal = 0;
+  result.dataType = VAL_FLOAT;
+  if (dvar == (dvar_s *)0x0) {
+    result.internals.intVal = 0;
   }
-  else if (local_8->type == DVAR_TYPE_BOOL) {
-    local_10.internals.floatVal = (float)((local_8->current).enabled != false);
+  else if (dvar->type == DVAR_TYPE_BOOL) {
+    result.internals.floatVal = (float)((dvar->current).enabled != false);
   }
-  else if (local_8->type == DVAR_TYPE_FLOAT) {
-    local_10.internals = (operandInternalDataUnion)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_FLOAT) {
+    result.internals = (operandInternalDataUnion)(dvar->current).integer;
   }
-  else if (local_8->type == DVAR_TYPE_INT) {
-    local_10.internals.floatVal = (float)(local_8->current).integer;
+  else if (dvar->type == DVAR_TYPE_INT) {
+    result.internals.floatVal = (float)(dvar->current).integer;
   }
   else {
-    pcVar1 = Dvar_DisplayableValue(local_8);
-    dVar2 = atof(pcVar1);
-    local_10.internals.floatVal = (float)dVar2;
+    nptr = Dvar_DisplayableValue(dvar);
+    dVar1 = atof(nptr);
+    result.internals.floatVal = (float)dVar1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("dvarfloat( %s ) = %f\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078BC40  GetLocalVar  (universal/com_expressions_eval.cpp:545)
 
-UILocalVar * __cdecl GetLocalVar(int param_1,Operand *param_2)
+UILocalVar * __cdecl GetLocalVar(int localClientNum,Operand *source)
 
 {
   code *pcVar1;
   bool bVar2;
   UILocalVar *pUVar3;
-  int iVar4;
-  UILocalVarContext *pUVar5;
-  char *pcVar6;
+  int contextIndex_00;
+  UILocalVarContext *context;
+  char *name;
+  int contextIndex;
   
-  if (param_2->dataType == VAL_STRING) {
-    iVar4 = Com_LocalClient_GetUIContextIndex(param_1);
-    if (iVar4 == -1) {
+  if (source->dataType == VAL_STRING) {
+    contextIndex_00 = Com_LocalClient_GetUIContextIndex(localClientNum);
+    if (contextIndex_00 == -1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x229,0,"%s");
       if (!bVar2) {
@@ -598,12 +602,12 @@ UILocalVar * __cdecl GetLocalVar(int param_1,Operand *param_2)
         return pUVar3;
       }
     }
-    pcVar6 = (param_2->internals).string;
-    pUVar5 = UI_UIContext_GetLocalVarsContext(iVar4);
-    pUVar3 = UILocalVar_Find(pUVar5,pcVar6);
+    name = (source->internals).string;
+    context = UI_UIContext_GetLocalVarsContext(contextIndex_00);
+    pUVar3 = UILocalVar_Find(context,name);
   }
   else {
-    GetNameForValueType(param_2->dataType);
+    GetNameForValueType(source->dataType);
     Expression_Error("Must use a string as the name of a localVar, not a %s\n");
     pUVar3 = (UILocalVar *)0x0;
   }
@@ -613,32 +617,32 @@ UILocalVar * __cdecl GetLocalVar(int param_1,Operand *param_2)
 
 // 0078BB60  GetLocalVarStringValue  (universal/com_expressions_eval.cpp:559)
 
-void __cdecl GetLocalVarStringValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLocalVarStringValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_20;
-  UILocalVar *local_18;
-  Operand local_14;
-  int local_c;
-  char (*local_8) [32];
+  Operand source;
+  UILocalVar *var;
+  Operand result;
+  int size;
+  char *stringBuf;
   
-  local_8 = localVarStrings + localVarStringIndex;
-  local_c = 0x20;
+  stringBuf = localVarStrings[localVarStringIndex];
+  size = 0x20;
   localVarStringIndex = (localVarStringIndex + 1U) % 4;
-  GetOperand(param_3,&local_20);
-  local_18 = GetLocalVar(param_1,&local_20);
-  if (local_18 == (UILocalVar *)0x0) {
-    local_14.dataType = VAL_STRING;
-    local_14.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  var = GetLocalVar(localClientNum,&source);
+  if (var == (UILocalVar *)0x0) {
+    result.dataType = VAL_STRING;
+    result.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_14.dataType = VAL_STRING;
-    local_14.internals.string = UILocalVar_GetString(local_18,*local_8,local_c);
+    result.dataType = VAL_STRING;
+    result.internals.string = UILocalVar_GetString(var,stringBuf,size);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("localVarString( %s ) = %s\n");
     }
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -646,30 +650,30 @@ void __cdecl GetLocalVarStringValue(int param_1,itemDef_s *param_2,OperandStack 
 
 // 0078BCD0  GetLocalVarBoolValue  (universal/com_expressions_eval.cpp:589)
 
-void __cdecl GetLocalVarBoolValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLocalVarBoolValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  UILocalVar *local_10;
-  Operand local_c;
+  Operand source;
+  UILocalVar *var;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  local_10 = GetLocalVar(param_1,&local_18);
-  if (local_10 == (UILocalVar *)0x0) {
-    local_c.dataType = VAL_INT;
-    local_c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  var = GetLocalVar(localClientNum,&source);
+  if (var == (UILocalVar *)0x0) {
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_c.dataType = VAL_INT;
-    bVar1 = UILocalVar_GetBool(local_10);
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+    result.dataType = VAL_INT;
+    bVar1 = UILocalVar_GetBool(var);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("localVarBool( %s ) = %i\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -677,27 +681,27 @@ void __cdecl GetLocalVarBoolValue(int param_1,itemDef_s *param_2,OperandStack *p
 
 // 0078BD80  GetLocalVarIntValue  (universal/com_expressions_eval.cpp:611)
 
-void __cdecl GetLocalVarIntValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLocalVarIntValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  UILocalVar *local_10;
-  Operand local_c;
+  Operand source;
+  UILocalVar *var;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  local_10 = GetLocalVar(param_1,&local_18);
-  if (local_10 == (UILocalVar *)0x0) {
-    local_c.dataType = VAL_INT;
-    local_c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  var = GetLocalVar(localClientNum,&source);
+  if (var == (UILocalVar *)0x0) {
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_c.dataType = VAL_INT;
-    local_c.internals.intVal = UILocalVar_GetInt(local_10);
+    result.dataType = VAL_INT;
+    result.internals.intVal = UILocalVar_GetInt(var);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("localVarInt( %s ) = %i\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -705,27 +709,27 @@ void __cdecl GetLocalVarIntValue(int param_1,itemDef_s *param_2,OperandStack *pa
 
 // 0078BE30  GetLocalVarFloatValue  (universal/com_expressions_eval.cpp:633)
 
-void __cdecl GetLocalVarFloatValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLocalVarFloatValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  UILocalVar *local_10;
-  Operand local_c;
+  Operand source;
+  UILocalVar *var;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  local_10 = GetLocalVar(param_1,&local_18);
-  if (local_10 == (UILocalVar *)0x0) {
-    local_c.dataType = VAL_FLOAT;
-    local_c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  var = GetLocalVar(localClientNum,&source);
+  if (var == (UILocalVar *)0x0) {
+    result.dataType = VAL_FLOAT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_c.dataType = VAL_FLOAT;
-    local_c.internals.floatVal = UILocalVar_GetFloat(local_10);
+    result.dataType = VAL_FLOAT;
+    result.internals.floatVal = UILocalVar_GetFloat(var);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("localVarFloat( %s ) = %f\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -733,62 +737,62 @@ void __cdecl GetLocalVarFloatValue(int param_1,itemDef_s *param_2,OperandStack *
 
 // 0078BEF0  GetSinValue  (universal/com_expressions_eval.cpp:655)
 
-void __cdecl GetSinValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetSinValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   double dVar1;
   Operand in_stack_ffffffe8;
-  Operand local_10;
-  float local_8;
+  Operand result;
+  float val;
   
-  GetOperand(param_3,(Operand *)&stack0xffffffe8);
-  local_8 = GetSourceFloat((Operand *)&stack0xffffffe8);
-  local_10.dataType = VAL_FLOAT;
-  dVar1 = (double)local_8;
+  GetOperand(dataStack,(Operand *)&stack0xffffffe8);
+  val = GetSourceFloat((Operand *)&stack0xffffffe8);
+  result.dataType = VAL_FLOAT;
+  dVar1 = (double)val;
   __libm_sse2_sin((double)in_stack_ffffffe8);
-  local_10.internals.floatVal = (float)dVar1;
+  result.internals.floatVal = (float)dVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("sin( %f ) = %f\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078BF80  GetCosValue  (universal/com_expressions_eval.cpp:672)
 
-void __cdecl GetCosValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCosValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   double dVar1;
   Operand in_stack_ffffffe8;
-  Operand local_10;
-  float local_8;
+  Operand result;
+  float val;
   
-  GetOperand(param_3,(Operand *)&stack0xffffffe8);
-  local_8 = GetSourceFloat((Operand *)&stack0xffffffe8);
-  local_10.dataType = VAL_FLOAT;
-  dVar1 = (double)local_8;
+  GetOperand(dataStack,(Operand *)&stack0xffffffe8);
+  val = GetSourceFloat((Operand *)&stack0xffffffe8);
+  result.dataType = VAL_FLOAT;
+  dVar1 = (double)val;
   __libm_sse2_cos((double)in_stack_ffffffe8);
-  local_10.internals.floatVal = (float)dVar1;
+  result.internals.floatVal = (float)dVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("cos( %f ) = %f\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078C010  GetMilliseconds  (universal/com_expressions_eval.cpp:689)
 
-void __cdecl GetMilliseconds(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetMilliseconds(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = Sys_Milliseconds();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = Sys_Milliseconds();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -801,301 +805,308 @@ void __cdecl GetMilliseconds(int param_1,itemDef_s *param_2,OperandStack *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetPlayerField(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPlayerField(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char local_114 [36];
-  cg_s *local_f0;
-  undefined4 local_ec;
+  char xuidStr [36];
+  cg_s *cgameGlob_11;
+  undefined4 xuid;
   undefined4 local_e8;
-  cg_s *local_e4;
-  cg_s *local_e0;
-  Material *local_dc;
-  cg_s *local_d8;
-  char local_d4 [32];
-  char *local_b4;
-  cg_s *local_b0;
-  char local_ac [8];
-  cg_s *local_a4;
-  operandInternalDataUnion local_a0;
-  operandInternalDataUnion *local_9c;
-  score_s *local_98;
-  char *local_94;
-  cg_s *local_90;
-  char *local_8c;
-  score_s *local_88;
-  cg_s *local_84;
-  score_s *local_80;
-  score_s *local_7c;
-  score_s *local_78;
-  operandInternalDataUnion *local_74;
-  cg_s *local_70;
-  char local_6c [40];
-  cg_s *local_44;
-  char local_40 [40];
+  cg_s *cgameGlob_10;
+  cg_s *cgameGlob_9;
+  Material *material;
+  cg_s *cgameGlob_8;
+  char clientName_3 [32];
+  char *clanAbbrev;
+  cg_s *cgameGlob_7;
+  char clanTag [8];
+  cg_s *cgameGlob_6;
+  char *rankText;
+  score_s *score_5;
+  score_s *nextHighestScore;
+  int i;
+  cg_s *cgameGlob_5;
+  int place;
+  score_s *score_4;
+  cg_s *cgameGlob_4;
+  score_s *score_3;
+  score_s *score_2;
+  score_s *score;
+  cg_s *cgameGlob_3;
+  cg_s *cgameGlob_2;
+  char clientName_2 [40];
+  cg_s *cgameGlob;
+  char clientName [40];
   uint local_18;
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
   local_18 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_14);
-  if (local_14.dataType == VAL_STRING) {
-    iVar3 = I_stricmp(local_14.internals.string,"name");
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    iVar3 = I_stricmp(source.internals.string,"name");
     if (iVar3 == 0) {
-      local_c.dataType = VAL_STRING;
-      local_c.internals.floatVal = 1.8187723e-38;
-      local_44 = CG_GetLocalClientGlobals(param_1);
-      CL_GetClientName(param_1,(uint)(local_44->predictedPlayerState).clientNum,local_40,0x26,true);
-      local_c.dataType = VAL_STRING;
-      local_c.internals.string = CopyTempString(local_40);
+      result.dataType = VAL_STRING;
+      result.internals.floatVal = 1.8187723e-38;
+      cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+      CL_GetClientName(localClientNum,(uint)(cgameGlob->predictedPlayerState).clientNum,clientName,
+                       0x26,true);
+      result.dataType = VAL_STRING;
+      result.internals.string = CopyTempString(clientName);
       if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
         Expression_TraceInternal("player( %s ) = %s\n");
       }
     }
     else {
-      iVar3 = I_stricmp(local_14.internals.string,"localname");
+      iVar3 = I_stricmp(source.internals.string,"localname");
       if (iVar3 == 0) {
-        local_c.dataType = VAL_STRING;
-        local_c.internals.floatVal = 1.8187723e-38;
-        local_70 = CG_GetLocalClientGlobals(param_1);
-        CL_GetClientName(param_1,local_70->clientNum,local_6c,0x26,true);
-        local_c.dataType = VAL_STRING;
-        local_c.internals.string = CopyTempString(local_6c);
+        result.dataType = VAL_STRING;
+        result.internals.floatVal = 1.8187723e-38;
+        cgameGlob_2 = CG_GetLocalClientGlobals(localClientNum);
+        CL_GetClientName(localClientNum,cgameGlob_2->clientNum,clientName_2,0x26,true);
+        result.dataType = VAL_STRING;
+        result.internals.string = CopyTempString(clientName_2);
         if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
           Expression_TraceInternal("player( %s ) = %s\n");
         }
       }
       else {
-        iVar3 = I_stricmp(local_14.internals.string,"teamname");
+        iVar3 = I_stricmp(source.internals.string,"teamname");
         if (iVar3 == 0) {
-          local_c.dataType = VAL_STRING;
-          local_c.internals.string = CG_GetPlayerTeamName(param_1);
+          result.dataType = VAL_STRING;
+          result.internals.string = CG_GetPlayerTeamName(localClientNum);
           if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
             Expression_TraceInternal("player( %s ) = %s\n");
           }
         }
         else {
-          iVar3 = I_stricmp(local_14.internals.string,"otherteamname");
+          iVar3 = I_stricmp(source.internals.string,"otherteamname");
           if (iVar3 == 0) {
-            local_c.dataType = VAL_STRING;
-            local_c.internals.string = CG_GetPlayerOpposingTeamName(param_1);
+            result.dataType = VAL_STRING;
+            result.internals.string = CG_GetPlayerOpposingTeamName(localClientNum);
             if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
               Expression_TraceInternal("player( %s ) = %s\n");
             }
           }
           else {
-            iVar3 = I_stricmp(local_14.internals.string,"dead");
+            iVar3 = I_stricmp(source.internals.string,"dead");
             if (iVar3 == 0) {
-              local_c.dataType = VAL_INT;
-              bVar2 = CG_IsPlayerDead(param_1);
-              local_c.internals.intVal._1_3_ = 0;
-              local_c.internals.intVal._0_1_ = bVar2;
+              result.dataType = VAL_INT;
+              bVar2 = CG_IsPlayerDead(localClientNum);
+              result.internals.intVal._1_3_ = 0;
+              result.internals.intVal._0_1_ = bVar2;
               if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
                 Expression_TraceInternal("player( %s ) = %i\n");
               }
             }
             else {
-              iVar3 = I_stricmp(local_14.internals.string,"clipAmmo");
+              iVar3 = I_stricmp(source.internals.string,"clipAmmo");
               if (iVar3 == 0) {
-                local_c.dataType = VAL_INT;
-                local_c.internals.intVal = CG_GetPlayerClipAmmoCount(param_1);
+                result.dataType = VAL_INT;
+                result.internals.intVal = CG_GetPlayerClipAmmoCount(localClientNum);
                 if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
                   Expression_TraceInternal("player( %s ) = %s\n");
                 }
               }
               else {
-                iVar3 = I_stricmp(local_14.internals.string,"nightvision");
+                iVar3 = I_stricmp(source.internals.string,"nightvision");
                 if (iVar3 == 0) {
-                  local_c.dataType = VAL_INT;
-                  local_c.internals.intVal._0_1_ = CG_LookingThroughNightVision(param_1);
-                  local_c.internals.intVal._1_3_ = 0;
+                  result.dataType = VAL_INT;
+                  result.internals.intVal._0_1_ = CG_LookingThroughNightVision(localClientNum);
+                  result.internals.intVal._1_3_ = 0;
                   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0))
                   {
                     Expression_TraceInternal("player( %s ) = %i\n");
                   }
                 }
                 else {
-                  iVar3 = I_stricmp(local_14.internals.string,"number");
+                  iVar3 = I_stricmp(source.internals.string,"number");
                   if (iVar3 == 0) {
-                    local_74 = (operandInternalDataUnion *)CG_GetLocalClientGlobals(param_1);
-                    local_c.dataType = VAL_INT;
-                    local_c.internals = *local_74;
+                    cgameGlob_3 = CG_GetLocalClientGlobals(localClientNum);
+                    result.dataType = VAL_INT;
+                    result.internals = *(operandInternalDataUnion *)cgameGlob_3;
                     if ((uiscript_debug != (dvar_s *)0x0) &&
                        ((uiscript_debug->current).integer != 0)) {
                       Expression_TraceInternal("player( %s ) = %i\n");
                     }
                   }
                   else {
-                    iVar3 = I_stricmp(local_14.internals.string,"score");
+                    iVar3 = I_stricmp(source.internals.string,"score");
                     if (iVar3 == 0) {
-                      local_78 = UI_GetOurClientScore(param_1);
-                      if (local_78 == (score_s *)0x0) {
-                        local_c.internals.intVal = 0;
+                      score = UI_GetOurClientScore(localClientNum);
+                      if (score == (score_s *)0x0) {
+                        result.internals.intVal = 0;
                       }
                       else {
-                        local_c.internals = (operandInternalDataUnion)local_78->score;
+                        result.internals = (operandInternalDataUnion)score->score;
                       }
-                      local_c.dataType = VAL_INT;
+                      result.dataType = VAL_INT;
                       if ((uiscript_debug != (dvar_s *)0x0) &&
                          ((uiscript_debug->current).integer != 0)) {
                         Expression_TraceInternal("player( %s ) = %i\n");
                       }
                     }
                     else {
-                      iVar3 = I_stricmp(local_14.internals.string,"deaths");
+                      iVar3 = I_stricmp(source.internals.string,"deaths");
                       if (iVar3 == 0) {
-                        local_7c = UI_GetOurClientScore(param_1);
-                        if (local_7c == (score_s *)0x0) {
-                          local_c.internals.intVal = 0;
+                        score_2 = UI_GetOurClientScore(localClientNum);
+                        if (score_2 == (score_s *)0x0) {
+                          result.internals.intVal = 0;
                         }
                         else {
-                          local_c.internals = (operandInternalDataUnion)local_7c->deaths;
+                          result.internals = (operandInternalDataUnion)score_2->deaths;
                         }
-                        local_c.dataType = VAL_INT;
+                        result.dataType = VAL_INT;
                         if ((uiscript_debug != (dvar_s *)0x0) &&
                            ((uiscript_debug->current).integer != 0)) {
                           Expression_TraceInternal("player( %s ) = %i\n");
                         }
                       }
                       else {
-                        iVar3 = I_stricmp(local_14.internals.string,"kills");
+                        iVar3 = I_stricmp(source.internals.string,"kills");
                         if (iVar3 == 0) {
-                          local_84 = CG_GetLocalClientGlobals(param_1);
-                          local_80 = GetClientScore(param_1,(uint)(local_84->predictedPlayerState).
-                                                                  clientNum);
-                          if (local_80 == (score_s *)0x0) {
-                            local_c.internals.intVal = 0;
+                          cgameGlob_4 = CG_GetLocalClientGlobals(localClientNum);
+                          score_3 = GetClientScore(localClientNum,
+                                                   (uint)(cgameGlob_4->predictedPlayerState).
+                                                         clientNum);
+                          if (score_3 == (score_s *)0x0) {
+                            result.internals.intVal = 0;
                           }
                           else {
-                            local_c.internals = (operandInternalDataUnion)local_80->kills;
+                            result.internals = (operandInternalDataUnion)score_3->kills;
                           }
-                          local_c.dataType = VAL_INT;
+                          result.dataType = VAL_INT;
                           if ((uiscript_debug != (dvar_s *)0x0) &&
                              ((uiscript_debug->current).integer != 0)) {
                             Expression_TraceInternal("player( %s ) = %i\n");
                           }
                         }
                         else {
-                          iVar3 = I_stricmp(local_14.internals.string,"place");
+                          iVar3 = I_stricmp(source.internals.string,"place");
                           if (iVar3 == 0) {
-                            local_c.dataType = VAL_INT;
-                            local_8c = &DAT_00000001;
-                            local_90 = CG_GetLocalClientGlobals(param_1);
-                            local_88 = GetClientScore(param_1,(uint)(local_90->predictedPlayerState)
-                                                                    .clientNum);
-                            if (local_88 != (score_s *)0x0) {
-                              local_8c = (char *)local_88->place;
-                              while (((local_94 = local_8c + -1, 0 < (int)local_94 &&
-                                      (local_98 = UI_GetScoreAtRank(param_1,(int)local_94),
-                                      local_98 != (score_s *)0x0)) &&
-                                     (local_98->score == local_88->score))) {
-                                local_8c = local_94;
+                            result.dataType = VAL_INT;
+                            place = 1;
+                            cgameGlob_5 = CG_GetLocalClientGlobals(localClientNum);
+                            score_4 = GetClientScore(localClientNum,
+                                                     (uint)(cgameGlob_5->predictedPlayerState).
+                                                           clientNum);
+                            if (score_4 != (score_s *)0x0) {
+                              place = score_4->place;
+                              while (((i = place + -1, 0 < i &&
+                                      (nextHighestScore = UI_GetScoreAtRank(localClientNum,i),
+                                      nextHighestScore != (score_s *)0x0)) &&
+                                     (nextHighestScore->score == score_4->score))) {
+                                place = i;
                               }
                             }
-                            if (local_8c == (char *)0x0) {
-                              local_8c = &DAT_00000001;
+                            if (place == 0) {
+                              place = 1;
                             }
-                            local_c.internals.string = local_8c;
+                            result.internals.intVal = place;
                             if ((uiscript_debug != (dvar_s *)0x0) &&
                                ((uiscript_debug->current).integer != 0)) {
                               Expression_TraceInternal("player( %s ) = %i\n");
                             }
                           }
                           else {
-                            iVar3 = I_stricmp(local_14.internals.string,"ping");
+                            iVar3 = I_stricmp(source.internals.string,"ping");
                             if (iVar3 == 0) {
-                              local_9c = (operandInternalDataUnion *)UI_GetOurClientScore(param_1);
-                              if (local_9c == (operandInternalDataUnion *)0x0) {
-                                local_c.internals.intVal = 0;
+                              score_5 = UI_GetOurClientScore(localClientNum);
+                              if ((operandInternalDataUnion *)score_5 ==
+                                  (operandInternalDataUnion *)0x0) {
+                                result.internals.intVal = 0;
                               }
                               else {
-                                local_c.internals = *local_9c;
+                                result.internals = *(operandInternalDataUnion *)score_5;
                               }
-                              local_c.dataType = VAL_INT;
+                              result.dataType = VAL_INT;
                               if ((uiscript_debug != (dvar_s *)0x0) &&
                                  ((uiscript_debug->current).integer != 0)) {
                                 Expression_TraceInternal("player( %s ) = %i\n");
                               }
                             }
                             else {
-                              iVar3 = I_stricmp(local_14.internals.string,"rank");
+                              iVar3 = I_stricmp(source.internals.string,"rank");
                               if (iVar3 == 0) {
-                                local_c.dataType = VAL_STRING;
-                                local_c.internals.floatVal = 1.8187723e-38;
-                                local_a4 = CG_GetLocalClientGlobals(param_1);
-                                local_a0.string =
-                                     CL_GetRankData(*(int *)((int)(local_a4->bgs).clientinfo +
-                                                            (uint)(local_a4->predictedPlayerState).
-                                                                  clientNum * 0x5c8 + 0x38),
-                                                    MP_RANKTABLE_DISPLAYLEVEL);
-                                local_c.dataType = VAL_STRING;
-                                local_c.internals.string = local_a0.string;
+                                result.dataType = VAL_STRING;
+                                result.internals.floatVal = 1.8187723e-38;
+                                cgameGlob_6 = CG_GetLocalClientGlobals(localClientNum);
+                                rankText = CL_GetRankData(*(int *)((int)(cgameGlob_6->bgs).
+                                                                        clientinfo +
+                                                                  (uint)(cgameGlob_6->
+                                                                        predictedPlayerState).
+                                                                        clientNum * 0x5c8 + 0x38),
+                                                          MP_RANKTABLE_DISPLAYLEVEL);
+                                result.dataType = VAL_STRING;
+                                result.internals.string = rankText;
                                 if ((uiscript_debug != (dvar_s *)0x0) &&
                                    ((uiscript_debug->current).integer != 0)) {
                                   Expression_TraceInternal("player( %s ) = %s\n");
                                 }
                               }
                               else {
-                                iVar3 = I_stricmp(local_14.internals.string,"clan");
+                                iVar3 = I_stricmp(source.internals.string,"clan");
                                 if (iVar3 == 0) {
-                                  local_c.dataType = VAL_STRING;
-                                  local_c.internals.floatVal = 1.8187723e-38;
-                                  local_ac[0] = '\0';
-                                  local_ac[1] = '\0';
-                                  local_ac[2] = '\0';
-                                  local_ac[3] = '\0';
-                                  local_ac[4] = '\0';
-                                  local_ac[5] = '\0';
-                                  local_ac[6] = '\0';
-                                  local_b0 = CG_GetLocalClientGlobals(param_1);
-                                  local_b4 = (char *)((int)(local_b0->bgs).clientinfo +
-                                                     (uint)(local_b0->predictedPlayerState).
-                                                           clientNum * 0x5c8 + 0x58);
-                                  if ((local_b4 != (char *)0x0) && (*local_b4 != '\0')) {
-                                    Com_sprintf(local_ac,7,"[%s]");
+                                  result.dataType = VAL_STRING;
+                                  result.internals.floatVal = 1.8187723e-38;
+                                  clanTag[0] = '\0';
+                                  clanTag[1] = '\0';
+                                  clanTag[2] = '\0';
+                                  clanTag[3] = '\0';
+                                  clanTag[4] = '\0';
+                                  clanTag[5] = '\0';
+                                  clanTag[6] = '\0';
+                                  cgameGlob_7 = CG_GetLocalClientGlobals(localClientNum);
+                                  clanAbbrev = (char *)((int)(cgameGlob_7->bgs).clientinfo +
+                                                       (uint)(cgameGlob_7->predictedPlayerState).
+                                                             clientNum * 0x5c8 + 0x58);
+                                  if ((clanAbbrev != (char *)0x0) && (*clanAbbrev != '\0')) {
+                                    Com_sprintf(clanTag,7,"[%s]");
                                   }
-                                  local_c.dataType = VAL_STRING;
-                                  local_c.internals.string = CopyTempString(local_ac);
+                                  result.dataType = VAL_STRING;
+                                  result.internals.string = CopyTempString(clanTag);
                                   if ((uiscript_debug != (dvar_s *)0x0) &&
                                      ((uiscript_debug->current).integer != 0)) {
                                     Expression_TraceInternal("player( %s ) = %s\n");
                                   }
                                 }
                                 else {
-                                  iVar3 = I_stricmp(local_14.internals.string,"tag");
+                                  iVar3 = I_stricmp(source.internals.string,"tag");
                                   if (iVar3 == 0) {
-                                    local_c.dataType = VAL_STRING;
-                                    local_c.internals.floatVal = 1.8187723e-38;
-                                    local_d8 = CG_GetLocalClientGlobals(param_1);
-                                    CL_GetClientName(param_1,(uint)(local_d8->predictedPlayerState).
-                                                                   clientNum,local_d4,0x20,false);
-                                    local_c.dataType = VAL_STRING;
-                                    local_c.internals.string = CopyTempString(local_d4);
+                                    result.dataType = VAL_STRING;
+                                    result.internals.floatVal = 1.8187723e-38;
+                                    cgameGlob_8 = CG_GetLocalClientGlobals(localClientNum);
+                                    CL_GetClientName(localClientNum,
+                                                     (uint)(cgameGlob_8->predictedPlayerState).
+                                                           clientNum,clientName_3,0x20,false);
+                                    result.dataType = VAL_STRING;
+                                    result.internals.string = CopyTempString(clientName_3);
                                     if ((uiscript_debug != (dvar_s *)0x0) &&
                                        ((uiscript_debug->current).integer != 0)) {
                                       Expression_TraceInternal("player( %s ) = %s\n");
                                     }
                                   }
                                   else {
-                                    iVar3 = I_stricmp(local_14.internals.string,"rankicon");
+                                    iVar3 = I_stricmp(source.internals.string,"rankicon");
                                     if (iVar3 == 0) {
-                                      local_c.dataType = VAL_STRING;
-                                      local_c.internals.floatVal = 1.8187723e-38;
-                                      local_e0 = CG_GetLocalClientGlobals(param_1);
-                                      CL_GetRankIcon(*(int *)((int)(local_e0->bgs).clientinfo +
-                                                             (uint)(local_e0->predictedPlayerState).
-                                                                   clientNum * 0x5c8 + 0x38),
-                                                     *(int *)((int)(local_e0->bgs).clientinfo +
-                                                             (uint)(local_e0->predictedPlayerState).
-                                                                   clientNum * 0x5c8 + 0x3c),
-                                                     &local_dc);
-                                      if (local_dc != (Material *)0x0) {
-                                        local_c.dataType = VAL_STRING;
-                                        local_c.internals.string =
-                                             CopyTempString((local_dc->info).name);
+                                      result.dataType = VAL_STRING;
+                                      result.internals.floatVal = 1.8187723e-38;
+                                      cgameGlob_9 = CG_GetLocalClientGlobals(localClientNum);
+                                      CL_GetRankIcon(*(int *)((int)(cgameGlob_9->bgs).clientinfo +
+                                                             (uint)(cgameGlob_9->
+                                                                   predictedPlayerState).clientNum *
+                                                             0x5c8 + 0x38),
+                                                     *(int *)((int)(cgameGlob_9->bgs).clientinfo +
+                                                             (uint)(cgameGlob_9->
+                                                                   predictedPlayerState).clientNum *
+                                                             0x5c8 + 0x3c),&material);
+                                      if (material != (Material *)0x0) {
+                                        result.dataType = VAL_STRING;
+                                        result.internals.string =
+                                             CopyTempString((material->info).name);
                                       }
                                       if ((uiscript_debug != (dvar_s *)0x0) &&
                                          ((uiscript_debug->current).integer != 0)) {
@@ -1103,31 +1114,31 @@ void __cdecl GetPlayerField(int param_1,itemDef_s *param_2,OperandStack *param_3
                                       }
                                     }
                                     else {
-                                      iVar3 = I_stricmp(local_14.internals.string,"currentteamname")
-                                      ;
+                                      iVar3 = I_stricmp(source.internals.string,"currentteamname");
                                       if (iVar3 == 0) {
-                                        local_c.dataType = VAL_STRING;
-                                        local_c.internals.intVal = 0;
-                                        local_e4 = CG_GetLocalClientGlobals(param_1);
-                                        local_c.dataType = VAL_STRING;
-                                        local_c.internals.string =
+                                        result.dataType = VAL_STRING;
+                                        result.internals.intVal = 0;
+                                        cgameGlob_10 = CG_GetLocalClientGlobals(localClientNum);
+                                        result.dataType = VAL_STRING;
+                                        result.internals.string =
                                              CG_GetTeamName(*(team_t *)
-                                                             ((int)(local_e4->bgs).clientinfo +
-                                                             (uint)(local_e4->predictedPlayerState).
-                                                                   clientNum * 0x5c8 + 0x2c));
+                                                             ((int)(cgameGlob_10->bgs).clientinfo +
+                                                             (uint)(cgameGlob_10->
+                                                                   predictedPlayerState).clientNum *
+                                                             0x5c8 + 0x2c));
                                         if ((uiscript_debug != (dvar_s *)0x0) &&
                                            ((uiscript_debug->current).integer != 0)) {
                                           Expression_TraceInternal("player( %s ) = %s\n");
                                         }
                                       }
                                       else {
-                                        iVar3 = I_stricmp(local_14.internals.string,"xuid");
+                                        iVar3 = I_stricmp(source.internals.string,"xuid");
                                         if (iVar3 == 0) {
-                                          local_c.dataType = VAL_STRING;
-                                          local_c.internals.floatVal = 1.8187723e-38;
-                                          local_f0 = CG_GetLocalClientGlobals(param_1);
-                                          if ((0x1f < (local_f0->predictedPlayerState).clientNum) &&
-                                             (bVar2 = Assert_MyHandler(
+                                          result.dataType = VAL_STRING;
+                                          result.internals.floatVal = 1.8187723e-38;
+                                          cgameGlob_11 = CG_GetLocalClientGlobals(localClientNum);
+                                          if ((0x1f < (cgameGlob_11->predictedPlayerState).clientNum
+                                              ) && (bVar2 = Assert_MyHandler(
                                                   "C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                                   ,0x3cc,0,
                                                   "cgameGlob->predictedPlayerState.clientNum doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)"
@@ -1136,18 +1147,19 @@ void __cdecl GetPlayerField(int param_1,itemDef_s *param_2,OperandStack *param_3
                                             (*pcVar1)();
                                             return;
                                           }
-                                          if ((local_f0->predictedPlayerState).clientNum < 0x20) {
-                                            iVar3 = (uint)(local_f0->predictedPlayerState).clientNum
-                                                    * 0x5c8;
-                                            local_ec = *(undefined4 *)
-                                                        ((int)(local_f0->bgs).clientinfo +
-                                                        iVar3 + 0x50);
+                                          if ((cgameGlob_11->predictedPlayerState).clientNum < 0x20)
+                                          {
+                                            iVar3 = (uint)(cgameGlob_11->predictedPlayerState).
+                                                          clientNum * 0x5c8;
+                                            xuid = *(undefined4 *)
+                                                    ((int)(cgameGlob_11->bgs).clientinfo +
+                                                    iVar3 + 0x50);
                                             local_e8 = *(undefined4 *)
-                                                        ((int)(local_f0->bgs).clientinfo +
+                                                        ((int)(cgameGlob_11->bgs).clientinfo +
                                                         iVar3 + 0x54);
-                                            Com_sprintf(local_114,0x22,"%lld");
-                                            local_c.dataType = VAL_STRING;
-                                            local_c.internals.string = CopyTempString(local_114);
+                                            Com_sprintf(xuidStr,0x22,"%lld");
+                                            result.dataType = VAL_STRING;
+                                            result.internals.string = CopyTempString(xuidStr);
                                           }
                                           if ((uiscript_debug != (dvar_s *)0x0) &&
                                              ((uiscript_debug->current).integer != 0)) {
@@ -1156,8 +1168,8 @@ void __cdecl GetPlayerField(int param_1,itemDef_s *param_2,OperandStack *param_3
                                         }
                                         else {
                                           Expression_Error("Unknown player field \'%s\'\n");
-                                          local_c.dataType = VAL_INT;
-                                          local_c.internals.intVal = 0;
+                                          result.dataType = VAL_INT;
+                                          result.internals.intVal = 0;
                                         }
                                       }
                                     }
@@ -1177,14 +1189,14 @@ void __cdecl GetPlayerField(int param_1,itemDef_s *param_2,OperandStack *param_3
         }
       }
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    GetNameForValueType(local_14.dataType);
+    GetNameForValueType(source.dataType);
     Expression_Error("Must use a string as the name of a player field, not a %s\n");
-    local_c.dataType = VAL_STRING;
-    local_c.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_c);
+    result.dataType = VAL_STRING;
+    result.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -1197,58 +1209,59 @@ void __cdecl GetPlayerField(int param_1,itemDef_s *param_2,OperandStack *param_3
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetFieldForTeam(int param_1,team_t param_2,Operand *param_3,Operand *param_4)
+void __cdecl GetFieldForTeam(int localClientNum,team_t team,Operand *fieldName,Operand *result)
 
 {
   cg_s *pcVar1;
   int iVar2;
   char *pcVar3;
+  cg_s *cgameGlob;
   
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  if (param_3->dataType == VAL_STRING) {
-    iVar2 = I_stricmp((param_3->internals).string,"score");
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  if (fieldName->dataType == VAL_STRING) {
+    iVar2 = I_stricmp((fieldName->internals).string,"score");
     if (iVar2 == 0) {
-      param_4->dataType = VAL_INT;
-      param_4->internals = *(operandInternalDataUnion *)(pcVar1->teamScores + param_2);
+      result->dataType = VAL_INT;
+      result->internals = *(operandInternalDataUnion *)(pcVar1->teamScores + team);
       if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
         Expression_TraceInternal("team(%i)( %s ) = %i\n");
       }
     }
     else {
-      iVar2 = I_stricmp((param_3->internals).string,"name");
+      iVar2 = I_stricmp((fieldName->internals).string,"name");
       if (iVar2 == 0) {
-        param_4->dataType = VAL_STRING;
-        pcVar3 = CG_GetTeamName(param_2);
-        (param_4->internals).string = pcVar3;
+        result->dataType = VAL_STRING;
+        pcVar3 = CG_GetTeamName(team);
+        (result->internals).string = pcVar3;
         if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
           Expression_TraceInternal("team(%i)( %s ) = %s\n");
         }
       }
       else {
-        iVar2 = I_stricmp((param_3->internals).string,"ffaname");
+        iVar2 = I_stricmp((fieldName->internals).string,"ffaname");
         if (iVar2 == 0) {
-          param_4->dataType = VAL_STRING;
+          result->dataType = VAL_STRING;
           pcVar3 = CG_GetFFATeamName(*(ffa_team_t *)
                                       ((int)(pcVar1->bgs).clientinfo +
                                       pcVar1->clientNum * 0x5c8 + 0x34));
-          (param_4->internals).string = pcVar3;
+          (result->internals).string = pcVar3;
           if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
             Expression_TraceInternal("team(%i)( %s ) = %s\n");
           }
         }
         else {
           Expression_Error("Unknown team field \'%s\'\n");
-          param_4->dataType = VAL_INT;
-          (param_4->internals).intVal = 0;
+          result->dataType = VAL_INT;
+          (result->internals).intVal = 0;
         }
       }
     }
   }
   else {
-    GetNameForValueType(param_3->dataType);
+    GetNameForValueType(fieldName->dataType);
     Expression_Error(" Must use a string as the name of a team parameter, not a %s\n");
-    param_4->dataType = VAL_STRING;
-    (param_4->internals).floatVal = (float)"";
+    result->dataType = VAL_STRING;
+    (result->internals).floatVal = (float)"";
   }
   return;
 }
@@ -1261,41 +1274,41 @@ void __cdecl GetFieldForTeam(int param_1,team_t param_2,Operand *param_3,Operand
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetOtherTeamField(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetOtherTeamField(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_20;
-  team_t local_18;
-  Operand local_14;
-  undefined4 local_c;
-  cg_s *local_8;
+  Operand source;
+  team_t otherteam;
+  Operand result;
+  undefined4 team;
+  cg_s *cgameGlob;
   
-  GetOperand(param_3,&local_20);
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (*(int *)((int)(local_8->bgs).clientinfo + local_8->clientNum * 0x5c8) == 0) {
-    local_c = 0;
+  GetOperand(dataStack,&source);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (*(int *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8) == 0) {
+    team = 0;
   }
   else {
-    local_c = *(undefined4 *)((int)(local_8->bgs).clientinfo + local_8->clientNum * 0x5c8 + 0x2c);
+    team = *(undefined4 *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8 + 0x2c);
   }
-  switch(local_c) {
+  switch(team) {
   case 0:
-    local_18 = TEAM_BAD;
+    otherteam = TEAM_BAD;
     break;
   case 1:
-    local_18 = TEAM_ALLIES;
+    otherteam = TEAM_ALLIES;
     break;
   case 2:
-    local_18 = TEAM_AXIS;
+    otherteam = TEAM_AXIS;
     break;
   case 3:
-    local_18 = TEAM_SPECTATOR;
+    otherteam = TEAM_SPECTATOR;
     break;
   default:
-    local_18 = TEAM_BAD;
+    otherteam = TEAM_BAD;
   }
-  GetFieldForTeam(param_1,local_18,&local_20,&local_14);
-  AddOperandToStack(param_3,&local_14);
+  GetFieldForTeam(localClientNum,otherteam,&source,&result);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1307,24 +1320,24 @@ void __cdecl GetOtherTeamField(int param_1,itemDef_s *param_2,OperandStack *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetTeamField(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTeamField(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  team_t local_c;
-  cg_s *local_8;
+  Operand source;
+  Operand result;
+  team_t team;
+  cg_s *cgameGlob;
   
-  GetOperand(param_3,&local_1c);
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (*(int *)((int)(local_8->bgs).clientinfo + local_8->clientNum * 0x5c8) == 0) {
-    local_c = TEAM_BAD;
+  GetOperand(dataStack,&source);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (*(int *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8) == 0) {
+    team = TEAM_BAD;
   }
   else {
-    local_c = *(team_t *)((int)(local_8->bgs).clientinfo + local_8->clientNum * 0x5c8 + 0x2c);
+    team = *(team_t *)((int)(cgameGlob->bgs).clientinfo + cgameGlob->clientNum * 0x5c8 + 0x2c);
   }
-  GetFieldForTeam(param_1,local_c,&local_1c,&local_14);
-  AddOperandToStack(param_3,&local_14);
+  GetFieldForTeam(localClientNum,team,&source,&result);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1332,16 +1345,19 @@ void __cdecl GetTeamField(int param_1,itemDef_s *param_2,OperandStack *param_3)
 // 0078CF80  GetTeamMarinesField  (universal/com_expressions_eval.cpp:1119)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetTeamMarinesField(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTeamMarinesField(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  GetFieldForTeam(param_1,TEAM_ALLIES,&local_14,&local_c);
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  GetFieldForTeam(localClientNum,TEAM_ALLIES,&source,&result);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1349,70 +1365,78 @@ void __cdecl GetTeamMarinesField(int param_1,itemDef_s *param_2,OperandStack *pa
 // 0078CFC0  GetTeamOpForField  (universal/com_expressions_eval.cpp:1129)
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetTeamOpForField(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTeamOpForField(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  GetFieldForTeam(param_1,TEAM_AXIS,&local_14,&local_c);
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  GetFieldForTeam(localClientNum,TEAM_AXIS,&source,&result);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D000  GetUIActive  (universal/com_expressions_eval.cpp:1139)
 
-void __cdecl GetUIActive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUIActive(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  bVar1 = CL_IsUIActive(param_1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = bVar1;
+  result.dataType = VAL_INT;
+  bVar1 = CL_IsUIActive(localClientNum);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("ui_active() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D060  IsViewportLarge  (universal/com_expressions_eval.cpp:1148)
 
-void __cdecl IsViewportLarge(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsViewportLarge(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsViewportLarge() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D0B0  GetFlashbanged  (universal/com_expressions_eval.cpp:1164)
 
-void __cdecl GetFlashbanged(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetFlashbanged(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   int local_10;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  bVar1 = CG_Flashbanged(param_1);
+  result.dataType = VAL_INT;
+  bVar1 = CG_Flashbanged(localClientNum);
   if (!bVar1) {
-    bVar1 = CG_Flared(param_1);
+    bVar1 = CG_Flared(localClientNum);
     if (!bVar1) {
       local_10 = 0;
       goto LAB_0078d0f3;
@@ -1420,31 +1444,36 @@ void __cdecl GetFlashbanged(int param_1,itemDef_s *param_2,OperandStack *param_3
   }
   local_10 = 1;
 LAB_0078d0f3:
-  local_c.internals.intVal = local_10;
+  result.internals.intVal = local_10;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("flashbanged() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D140  GetScoped  (universal/com_expressions_eval.cpp:1174)
 
-void __cdecl GetScoped(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetScoped(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  bVar1 = CG_ScopeIsOverlayed(param_1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = bVar1;
+  result.dataType = VAL_INT;
+  bVar1 = CG_ScopeIsOverlayed(localClientNum);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("scoped() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1456,19 +1485,19 @@ void __cdecl GetScoped(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl InKillcam(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl InKillcam(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   cg_s *pcVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  pcVar1 = CG_GetLocalClientGlobals(param_1);
-  local_c.internals = (operandInternalDataUnion)pcVar1->inKillCam;
+  result.dataType = VAL_INT;
+  pcVar1 = CG_GetLocalClientGlobals(localClientNum);
+  result.internals = (operandInternalDataUnion)pcVar1->inKillCam;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("InKillcam() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1480,31 +1509,31 @@ void __cdecl InKillcam(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsDualWield(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDualWield(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
   int iVar2;
   WeaponDef *pWVar3;
-  Operand local_14;
-  cg_s *local_c;
-  uint local_8;
+  Operand result;
+  cg_s *cgameGlob;
+  uint weaponIndex;
   
-  local_14.dataType = VAL_INT;
-  local_c = CG_GetLocalClientGlobals(param_1);
+  result.dataType = VAL_INT;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
   uVar1 = BG_GetNumWeapons();
-  if ((local_c->weaponSelect < uVar1) &&
-     (iVar2 = BG_PlayerHasWeapon(&local_c->predictedPlayerState,local_c->weaponSelect), iVar2 != 0))
-  {
-    local_8 = local_c->weaponSelect;
+  if ((cgameGlob->weaponSelect < uVar1) &&
+     (iVar2 = BG_PlayerHasWeapon(&cgameGlob->predictedPlayerState,cgameGlob->weaponSelect),
+     iVar2 != 0)) {
+    weaponIndex = cgameGlob->weaponSelect;
   }
   else {
-    local_8 = (uint)(local_c->predictedPlayerState).weapon;
+    weaponIndex = (uint)(cgameGlob->predictedPlayerState).weapon;
   }
-  pWVar3 = BG_GetWeaponDef(local_8);
-  local_14.internals.intVal._1_3_ = 0;
-  local_14.internals.intVal._0_1_ = pWVar3->bDualWield;
-  AddOperandToStack(param_3,&local_14);
+  pWVar3 = BG_GetWeaponDef(weaponIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = pWVar3->bDualWield;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1516,58 +1545,59 @@ void __cdecl IsDualWield(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsFuelWeapon(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsFuelWeapon(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
   int iVar2;
   WeaponDef *pWVar3;
-  Operand local_14;
-  cg_s *local_c;
-  uint local_8;
+  Operand result;
+  cg_s *cgameGlob;
+  uint weaponIndex;
   
-  local_14.dataType = VAL_INT;
-  local_c = CG_GetLocalClientGlobals(param_1);
+  result.dataType = VAL_INT;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
   uVar1 = BG_GetNumWeapons();
-  if ((local_c->weaponSelect < uVar1) &&
-     (iVar2 = BG_PlayerHasWeapon(&local_c->predictedPlayerState,local_c->weaponSelect), iVar2 != 0))
-  {
-    local_8 = local_c->weaponSelect;
+  if ((cgameGlob->weaponSelect < uVar1) &&
+     (iVar2 = BG_PlayerHasWeapon(&cgameGlob->predictedPlayerState,cgameGlob->weaponSelect),
+     iVar2 != 0)) {
+    weaponIndex = cgameGlob->weaponSelect;
   }
   else {
-    local_8 = (uint)(local_c->predictedPlayerState).weapon;
+    weaponIndex = (uint)(cgameGlob->predictedPlayerState).weapon;
   }
-  pWVar3 = BG_GetWeaponDef(local_8);
-  local_14.internals.intVal._1_3_ = 0;
-  local_14.internals.intVal._0_1_ = pWVar3->fuelTankWeapon;
-  AddOperandToStack(param_3,&local_14);
+  pWVar3 = BG_GetWeaponDef(weaponIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = pWVar3->fuelTankWeapon;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007960B0  GetPartyMissingMapPack  (universal/com_expressions_eval.cpp:1236)
 
-void __cdecl GetPartyMissingMapPack(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetPartyMissingMapPack(int localClientNum_15,itemDef_s *item_15,OperandStack *dataStack_15)
 
 {
-  Operand local_c;
+  Operand result_13;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  AddOperandToStack(param_3,&local_c);
+  result_13.dataType = VAL_INT;
+  result_13.internals.intVal = 0;
+  AddOperandToStack(dataStack_15,&result_13);
   return;
 }
 
 
 // 0078D340  GetPartyMissingMapPackError  (universal/com_expressions_eval.cpp:1270)
 
-void __cdecl GetPartyMissingMapPackError(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPartyMissingMapPackError(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand operandResult;
   
-  local_c.internals.floatVal = 1.8187723e-38;
-  AddOperandToStack(param_3,&local_c);
+  operandResult.internals.floatVal = 1.8187723e-38;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
@@ -1579,30 +1609,31 @@ void __cdecl GetPartyMissingMapPackError(int param_1,itemDef_s *param_2,OperandS
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsSelectingLocationalKillstreak(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+IsSelectingLocationalKillstreak(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int local_1c;
-  Operand local_18;
-  uint local_10;
-  cg_s *local_c;
-  int local_8;
+  Operand result;
+  int mtlIndex;
+  cg_s *cgameGlob;
+  int locationSelectorActive;
   
-  local_18.dataType = VAL_INT;
-  local_c = CG_GetLocalClientGlobals(param_1);
-  local_10 = (local_c->predictedPlayerState).locationSelectionInfo & 0xf;
-  if ((local_10 < 0xf) && ((local_c->predictedPlayerState).locationSelectionInfo != 0)) {
+  result.dataType = VAL_INT;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  mtlIndex = (cgameGlob->predictedPlayerState).locationSelectionInfo & 0xf;
+  if (((uint)mtlIndex < 0xf) && ((cgameGlob->predictedPlayerState).locationSelectionInfo != 0)) {
     local_1c = 1;
   }
   else {
     local_1c = 0;
   }
-  local_8 = local_1c;
-  local_18.internals.intVal = local_1c;
+  locationSelectorActive = local_1c;
+  result.internals.intVal = local_1c;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSelectingLocationalKillstreak() = %i\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1614,60 +1645,61 @@ void __cdecl IsSelectingLocationalKillstreak(int param_1,itemDef_s *param_2,Oper
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl isInGuidedMissile(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl isInGuidedMissile(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   WeaponDef *pWVar1;
   int iVar2;
   centity_s *pcVar3;
-  Operand local_14;
-  cg_s *local_c;
-  playerState_s *local_8;
+  centity_s *cent;
+  Operand result;
+  cg_s *cgameGlob;
+  playerState_s *ps;
   
-  local_14.dataType = VAL_INT;
-  local_c = CG_GetLocalClientGlobals(param_1);
-  local_8 = &local_c->predictedPlayerState;
-  local_14.internals.intVal = 0;
-  pWVar1 = BG_GetWeaponDef((uint)(local_c->predictedPlayerState).weapon);
-  if (((pWVar1->guidedMissileType == MISSILE_GUIDANCE_TVGUIDED) && (0.95 <= local_8->fWeaponPosFrac)
-      ) || ((local_8->eFlags2 & 0x40000U) != 0)) {
-    if (0.95 <= local_8->fWeaponPosFrac) {
-      local_14.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = &cgameGlob->predictedPlayerState;
+  result.internals.intVal = 0;
+  pWVar1 = BG_GetWeaponDef((uint)(cgameGlob->predictedPlayerState).weapon);
+  if (((pWVar1->guidedMissileType == MISSILE_GUIDANCE_TVGUIDED) && (0.95 <= ps->fWeaponPosFrac)) ||
+     ((ps->eFlags2 & 0x40000U) != 0)) {
+    if (0.95 <= ps->fWeaponPosFrac) {
+      result.internals.intVal = 1;
     }
-    if ((local_8->viewlocked_entNum != 0x3ff) ||
-       (iVar2 = BG_GetAmmoInClip(local_8,(uint)local_8->weapon), iVar2 == 0)) {
-      local_14.internals.intVal = 1;
+    if ((ps->viewlocked_entNum != 0x3ff) ||
+       (iVar2 = BG_GetAmmoInClip(ps,(uint)ps->weapon), iVar2 == 0)) {
+      result.internals.intVal = 1;
     }
   }
-  else if ((local_8->eFlags & 0x300U) != 0) {
-    pcVar3 = CG_GetEntity(param_1,(int)local_8->viewlocked_entNum);
+  else if ((ps->eFlags & 0x300U) != 0) {
+    pcVar3 = CG_GetEntity(localClientNum,(int)ps->viewlocked_entNum);
     pWVar1 = BG_GetWeaponDef((uint)(pcVar3->nextState).weapon);
     if (pWVar1->guidedMissileType == MISSILE_GUIDANCE_TVGUIDED) {
-      local_14.internals.intVal = 1;
+      result.internals.intVal = 1;
     }
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("isInGuidedMissile() = %i\n");
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D560  IsInGame  (universal/com_expressions_eval.cpp:1341)
 
-void __cdecl IsInGame(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsInGame(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = CL_AllLocalClientsDisconnected();
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = !bVar1;
-  AddOperandToStack(param_3,&local_c);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = !bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1679,22 +1711,22 @@ void __cdecl IsInGame(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsSelectingAirstrike(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSelectingAirstrike(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8->predictedPlayerState).locationSelectionType == LOC_SEL_AIRSTRIKE) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->predictedPlayerState).locationSelectionType == LOC_SEL_AIRSTRIKE) {
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSelectingAirstrike() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1706,22 +1738,22 @@ void __cdecl IsSelectingAirstrike(int param_1,itemDef_s *param_2,OperandStack *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsSelectingArtillery(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSelectingArtillery(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8->predictedPlayerState).locationSelectionType == LOC_SEL_ARTILLERY) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->predictedPlayerState).locationSelectionType == LOC_SEL_ARTILLERY) {
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSelectingArtillery() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1733,22 +1765,22 @@ void __cdecl IsSelectingArtillery(int param_1,itemDef_s *param_2,OperandStack *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsSelectingNapalm(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSelectingNapalm(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8->predictedPlayerState).locationSelectionType == LOC_SEL_NAPALM) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->predictedPlayerState).locationSelectionType == LOC_SEL_NAPALM) {
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSelectingNapalm() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1760,22 +1792,22 @@ void __cdecl IsSelectingNapalm(int param_1,itemDef_s *param_2,OperandStack *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsSelectingMortar(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSelectingMortar(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8->predictedPlayerState).locationSelectionType == LOC_SEL_MORTAR) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->predictedPlayerState).locationSelectionType == LOC_SEL_MORTAR) {
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSelectingMortar() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1787,169 +1819,174 @@ void __cdecl IsSelectingMortar(int param_1,itemDef_s *param_2,OperandStack *para
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsSelectingComlink(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSelectingComlink(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8->predictedPlayerState).locationSelectionType == LOC_SEL_COMLINK) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->predictedPlayerState).locationSelectionType == LOC_SEL_COMLINK) {
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSelectingComlink() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D7D0  GetScoreboardVisible  (universal/com_expressions_eval.cpp:1423)
 
-void __cdecl GetScoreboardVisible(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetScoreboardVisible(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = CG_IsScoreboardDisplayed(param_1);
+  result.dataType = VAL_INT;
+  result.internals.intVal = CG_IsScoreboardDisplayed(localClientNum);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("scoreboard_visible() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D830  GetIsIntermission  (universal/com_expressions_eval.cpp:1437)
 
-void __cdecl GetIsIntermission(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetIsIntermission(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = CG_IsIntermission(param_1);
+  result.dataType = VAL_INT;
+  result.internals.intVal = CG_IsIntermission(localClientNum);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("isIntermission() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D890  GetIsSuperUser  (universal/com_expressions_eval.cpp:1451)
 
-void __cdecl GetIsSuperUser(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetIsSuperUser(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_10;
-  EUserTier local_8;
+  int controllerIndex;
+  Operand result;
+  EUserTier tier;
   
-  local_10.dataType = VAL_INT;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = Live_GetTier(iVar1);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = local_8 == USER_TIER_SUPER;
+  result.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  tier = Live_GetTier(controllerIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = tier == USER_TIER_SUPER;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("issuperuser() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D900  GetIsAutoJoinDevUser  (universal/com_expressions_eval.cpp:1466)
 
-void __cdecl GetIsAutoJoinDevUser(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetIsAutoJoinDevUser(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("isautojoindevuser() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D950  GetSelectingLocation  (universal/com_expressions_eval.cpp:1481)
 
-void __cdecl GetSelectingLocation(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetSelectingLocation(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  bVar1 = CG_IsSelectingLocation(param_1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = bVar1;
+  result.dataType = VAL_INT;
+  bVar1 = CG_IsSelectingLocation(localClientNum);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("selecting_location() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078D9B0  ShowZombieMap  (universal/com_expressions_eval.cpp:1491)
 
-void __cdecl ShowZombieMap(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ShowZombieMap(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
+  result.dataType = VAL_INT;
   bVar1 = CL_IsRenderingSplitScreen();
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = bVar1;
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("ShowZombieMap() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DA10  PrivatePartyHostInLobby  (universal/com_expressions_eval.cpp:1501)
 
-void __cdecl PrivatePartyHostInLobby(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl PrivatePartyHostInLobby(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("PrivatePartyHostInLobby() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DA60  AloneInPrivateParty  (universal/com_expressions_eval.cpp:1524)
 
-void __cdecl AloneInPrivateParty(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl AloneInPrivateParty(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("AloneInPrivateParty() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -1957,313 +1994,314 @@ void __cdecl AloneInPrivateParty(int param_1,itemDef_s *param_2,OperandStack *pa
 // 0078DAB0  AloneInPrivatePartyIgnoreSplitscreen  (universal/com_expressions_eval.cpp:1541)
 
 void __cdecl
-AloneInPrivatePartyIgnoreSplitscreen(int param_1,itemDef_s *param_2,OperandStack *param_3)
+AloneInPrivatePartyIgnoreSplitscreen(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("AloneInPartyIgnoreSplitscreen() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DB10  AloneInLobby  (universal/com_expressions_eval.cpp:1572)
 
-void __cdecl AloneInLobby(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl AloneInLobby(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("AloneInLobby() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DB60  AloneInLobbyIgnoreSplitscreen  (universal/com_expressions_eval.cpp:1588)
 
-void __cdecl AloneInLobbyIgnoreSplitscreen(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+AloneInLobbyIgnoreSplitscreen(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("AloneInLobbyIgnoreSplitscreen() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DBC0  GameHost  (universal/com_expressions_eval.cpp:1610)
 
-void __cdecl GameHost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GameHost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GameHost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DC10  InLobby  (universal/com_expressions_eval.cpp:1625)
 
-void __cdecl InLobby(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl InLobby(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   connstate_t cVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = cVar1 == CA_ACTIVE;
+  result.dataType = VAL_INT;
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = cVar1 == CA_ACTIVE;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("InLobby() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DC70  InPrivateParty  (universal/com_expressions_eval.cpp:1640)
 
-void __cdecl InPrivateParty(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl InPrivateParty(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = (com_sv_running->current).enabled != false;
+  result.dataType = VAL_INT;
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = (com_sv_running->current).enabled != false;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("InPrivateParty() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DCE0  IsVisibilityBitSet  (universal/com_expressions_eval.cpp:1661)
 
-void __cdecl IsVisibilityBitSet(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsVisibilityBitSet(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint extraout_EAX;
   uint extraout_EDX;
   operandInternalDataUnion local_24;
-  Operand local_18;
-  int local_10;
-  Operand local_c;
+  Operand source;
+  int checkBit;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  local_c.dataType = VAL_INT;
-  local_10 = GetSourceInt(&local_18);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  checkBit = GetSourceInt(&source);
   _allshl();
   local_24.intVal._1_3_ = 0;
   local_24.intVal._0_1_ =
-       (extraout_EAX & *(uint *)(&DAT_098dada8 + param_1 * 8)) != 0 ||
-       (extraout_EDX & *(uint *)(&DAT_098dadac + param_1 * 8)) != 0;
-  local_c.internals = local_24;
+       (extraout_EAX & *(uint *)(&DAT_098dada8 + localClientNum * 8)) != 0 ||
+       (extraout_EDX & *(uint *)(&DAT_098dadac + localClientNum * 8)) != 0;
+  result.internals = local_24;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsVisiblityBitSet() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DD90  PrivatePartyHost  (universal/com_expressions_eval.cpp:1674)
 
-void __cdecl PrivatePartyHost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl PrivatePartyHost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("PrivatePartyHost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DDE0  Splitscreen  (universal/com_expressions_eval.cpp:1688)
 
-void __cdecl Splitscreen(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Splitscreen(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("Splitscreen() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DE30  SplitscreenHost  (universal/com_expressions_eval.cpp:1702)
 
-void __cdecl SplitscreenHost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl SplitscreenHost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  bVar1 = Com_LocalClient_IsPrimary(param_1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = bVar1;
+  result.dataType = VAL_INT;
+  bVar1 = Com_LocalClient_IsPrimary(localClientNum);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("SplitscreenHost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DE90  SplitscreenNum  (universal/com_expressions_eval.cpp:1713)
 
-void __cdecl SplitscreenNum(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl SplitscreenNum(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("SplitscreenNum() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DEE0  IsCinematicFinished  (universal/com_expressions_eval.cpp:1727)
 
-void __cdecl IsCinematicFinished(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsCinematicFinished(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCinematicFinished() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DF30  IsItemLocked  (universal/com_expressions_eval.cpp:1751)
 
-void __cdecl IsItemLocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsItemLocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int itemIndex;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  iVar2 = GetSourceInt(&local_18);
-  local_8 = iVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsItemLocked(iVar3,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  itemIndex = GetSourceInt(&source);
+  index = itemIndex;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemLocked() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078DFC0  IsItemLockedForAll  (universal/com_expressions_eval.cpp:1769)
 
-void __cdecl IsItemLockedForAll(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsItemLockedForAll(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  int local_1c;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int controllerIndex;
+  int itemIndex;
+  int otherLocalClientNum;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 1;
-  local_8 = GetSourceInt(&local_18);
-  local_1c = 0;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  index = GetSourceInt(&source);
+  otherLocalClientNum = 0;
   do {
-    if (0 < local_1c) {
+    if (0 < otherLocalClientNum) {
 LAB_0078e049:
       if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
         Expression_TraceInternal("IsItemLockedForAll() = %i\n");
       }
-      AddOperandToStack(param_3,&local_10);
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    bVar1 = Com_LocalClient_IsBeingUsed(local_1c);
+    bVar1 = Com_LocalClient_IsBeingUsed(otherLocalClientNum);
     if (bVar1) {
-      iVar3 = local_8;
-      iVar2 = Com_LocalClient_GetControllerIndex(local_1c);
-      bVar1 = BG_UnlockablesIsItemLocked(iVar2,iVar3);
+      itemIndex = index;
+      controllerIndex = Com_LocalClient_GetControllerIndex(otherLocalClientNum);
+      bVar1 = BG_UnlockablesIsItemLocked(controllerIndex,itemIndex);
       if (!bVar1) {
-        local_10.internals.intVal = 0;
+        result.internals.intVal = 0;
         goto LAB_0078e049;
       }
     }
-    local_1c = local_1c + 1;
+    otherLocalClientNum = otherLocalClientNum + 1;
   } while( true );
 }
 
 
 // 0078E090  GetCurrentClanTagFeature  (universal/com_expressions_eval.cpp:1795)
 
-void __cdecl GetCurrentClanTagFeature(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentClanTagFeature(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c3928;
+  result.dataType = VAL_INT;
+  index = DAT_098c3928;
   if (DAT_098c3928 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x709,0,"%s");
@@ -2273,245 +2311,265 @@ void __cdecl GetCurrentClanTagFeature(int param_1,itemDef_s *param_2,OperandStac
       return;
     }
   }
-  local_10.internals.intVal = local_8;
+  result.internals.intVal = index;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentClanTagFeature() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E120  IsClanTagFeatureLocked  (universal/com_expressions_eval.cpp:1812)
 
-void __cdecl IsClanTagFeatureLocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsClanTagFeatureLocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  uint uVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  uint index_00;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  uVar2 = GetSourceInt(&local_18);
-  local_8 = uVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsClanTagFeatureLocked(iVar3,uVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index_00 = GetSourceInt(&source);
+  index = index_00;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsClanTagFeatureLocked(controllerIndex,index_00);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsClanTagFeatureLocked() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E1B0  GetClanTagFeatureCost  (universal/com_expressions_eval.cpp:1830)
 
-void __cdecl GetClanTagFeatureCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClanTagFeatureCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  char *nptr;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  pcVar1 = BG_UnlockablesGetClanTagFeature(local_8,CLANTAG_COL_COST);
-  local_10.internals.intVal = atoi(pcVar1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  nptr = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_COST);
+  result.internals.intVal = atoi(nptr);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetClanTagFeatureCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E230  GetClanTagFeatureName  (universal/com_expressions_eval.cpp:1848)
 
-void __cdecl GetClanTagFeatureName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClanTagFeatureName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = BG_UnlockablesGetClanTagFeature(local_8,CLANTAG_COL_NAME);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  index = GetSourceInt(&source);
+  result.internals.string = BG_UnlockablesGetClanTagFeature(index,CLANTAG_COL_NAME);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetClanTagFeatureName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E2B0  IsClanTagFeaturePurchased  (universal/com_expressions_eval.cpp:1866)
 
-void __cdecl IsClanTagFeaturePurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsClanTagFeaturePurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  uint uVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  uint index_00;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  uVar2 = GetSourceInt(&local_18);
-  local_8 = uVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsClanTagFeaturePurchased(iVar3,uVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index_00 = GetSourceInt(&source);
+  index = index_00;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsClanTagFeaturePurchased(controllerIndex,index_00);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsClanTagFeaturePurchased() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E340  GetClanTagFeaturePlevel  (universal/com_expressions_eval.cpp:1884)
 
-void __cdecl GetClanTagFeaturePlevel(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClanTagFeaturePlevel(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetClanTagFeaturePLvlUnlock(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetClanTagFeaturePLvlUnlock(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetClanTagFeaturePlevel() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E3C0  IsItemDualWieldLocked  (universal/com_expressions_eval.cpp:1902)
 
-void __cdecl IsItemDualWieldLocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsItemDualWieldLocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int itemIndex;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  iVar2 = GetSourceInt(&local_18);
-  local_8 = iVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsItemDualWieldLocked(iVar3,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  itemIndex = GetSourceInt(&source);
+  index = itemIndex;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsItemDualWieldLocked(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemDualWieldLocked() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E450  IsItemDualWieldPurchased  (universal/com_expressions_eval.cpp:1921)
 
-void __cdecl IsItemDualWieldPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsItemDualWieldPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int itemIndex;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  iVar2 = GetSourceInt(&local_18);
-  local_8 = iVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsItemDualWieldPurchased(iVar3,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  itemIndex = GetSourceInt(&source);
+  index = itemIndex;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsItemDualWieldPurchased(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemDualWieldPurchased() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E4E0  IsItemNew  (universal/com_expressions_eval.cpp:1939)
 
-void __cdecl IsItemNew(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsItemNew(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int itemIndex;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  iVar2 = GetSourceInt(&local_18);
-  local_8 = iVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsItemNew(iVar3,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  itemIndex = GetSourceInt(&source);
+  index = itemIndex;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsItemNew(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemNew() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078E570  IsItemGroupNew  (universal/com_expressions_eval.cpp:1956)
 
-void __cdecl IsItemGroupNew(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsItemGroupNew(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  char *groupName_00;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  char *groupName;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  pcVar2 = GetSourceString(OVar1);
-  local_8 = pcVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals._0_1_ = BG_UnlockablesIsItemGroupNew(iVar3,pcVar2);
-  local_10.internals.intVal._1_3_ = 0;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  groupName_00 = GetSourceString(operand);
+  groupName = groupName_00;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals._0_1_ = BG_UnlockablesIsItemGroupNew(controllerIndex,groupName_00);
+  result.internals.intVal._1_3_ = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemGroupNew() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -2521,7 +2579,7 @@ void __cdecl IsItemGroupNew(int param_1,itemDef_s *param_2,OperandStack *param_3
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl GetAttachmentsFormatted(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetAttachmentsFormatted(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   byte bVar1;
@@ -2530,28 +2588,28 @@ void __cdecl GetAttachmentsFormatted(int param_1,itemDef_s *param_2,OperandStack
   int local_188;
   byte *local_180;
   byte *local_17c;
-  int local_178;
-  Operand local_174;
-  OperandList local_16c;
-  eAttachment local_110;
-  char local_10c;
+  int attachments;
+  Operand result;
+  OperandList list;
+  int attachmentNum;
+  char fullWeaponName;
   uchar local_10b [255];
   uint local_c;
-  byte *local_8;
+  char *currentAttachmentName;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_10c = '\0';
+  fullWeaponName = '\0';
   memset(local_10b,'\0',0xff);
-  local_110 = ATTACHMENT_COUNT;
-  GetOperandList(param_3,&local_16c);
-  if (local_16c.operandCount < 1) {
+  attachmentNum = 0x18;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount < 1) {
     Expression_Error("Expected at least one GetWeaponOptionGroupIndex()\n");
-    AddOperandToStack(param_3,&local_174);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    for (local_178 = 0; local_178 < local_16c.operandCount; local_178 = local_178 + 1) {
-      local_110 = GetSourceInt(local_16c.operands + local_178);
-      if (ATTACHMENT_DW < local_110) {
+    for (attachments = 0; attachments < list.operandCount; attachments = attachments + 1) {
+      attachmentNum = GetSourceInt(list.operands + attachments);
+      if (0x17 < (uint)attachmentNum) {
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                  ,0x7c9,0,
                                  "attachmentNum doesn\'t index ATTACHMENT_COUNT\n\t%i not in [0, %i)"
@@ -2562,10 +2620,10 @@ void __cdecl GetAttachmentsFormatted(int param_1,itemDef_s *param_2,OperandStack
           return;
         }
       }
-      local_8 = (byte *)BG_GetAttachmentDisplayName(local_110);
-      if (local_8 != (byte *)0x0) {
+      currentAttachmentName = BG_GetAttachmentDisplayName(attachmentNum);
+      if ((byte *)currentAttachmentName != (byte *)0x0) {
         local_17c = (byte *)0xd03b90;
-        local_180 = local_8;
+        local_180 = (byte *)currentAttachmentName;
         do {
           bVar1 = *local_180;
           bVar3 = bVar1 < *local_17c;
@@ -2584,18 +2642,19 @@ LAB_0078e784:
         local_188 = 0;
 LAB_0078e78f:
         if (local_188 != 0) {
-          I_strncat(&local_10c,0x40," / ");
-          local_8 = (byte *)SEH_LocalizeTextMessage((char *)local_8,"ui string",LOCMSG_NOERR);
-          I_strncat(&local_10c,0x40,(char *)local_8);
+          I_strncat(&fullWeaponName,0x40," / ");
+          currentAttachmentName =
+               SEH_LocalizeTextMessage(currentAttachmentName,"ui string",LOCMSG_NOERR);
+          I_strncat(&fullWeaponName,0x40,currentAttachmentName);
         }
       }
     }
-    local_174.dataType = VAL_STRING;
-    local_174.internals.string = &local_10c;
+    result.dataType = VAL_STRING;
+    result.internals.string = &fullWeaponName;
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("GetWeaponFullName() = %s\n");
     }
-    AddOperandToStack(param_3,&local_174);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -2605,26 +2664,26 @@ LAB_0078e78f:
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl GetAttachmentName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetAttachmentName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  eAttachment local_8;
+  Operand source;
+  Operand result;
+  int attachmentNum;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  if (((int)local_8 < 0) || (0x17 < (int)local_8)) {
-    local_10.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  attachmentNum = GetSourceInt(&source);
+  if ((attachmentNum < 0) || (0x17 < attachmentNum)) {
+    result.internals.floatVal = 1.8187723e-38;
   }
   else {
-    local_10.internals.string = BG_GetAttachmentDisplayName(local_8);
+    result.internals.string = BG_GetAttachmentDisplayName(attachmentNum);
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetAttachmentName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -2633,18 +2692,18 @@ void __cdecl GetAttachmentName(int param_1,itemDef_s *param_2,OperandStack *para
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl GetAttachmentImage(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetAttachmentImage(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_18;
-  Operand local_10;
-  eAttachment local_8;
+  Operand source;
+  Operand result;
+  int attachmentNum;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  if (ATTACHMENT_DW < local_8) {
+  GetOperand(dataStack,&source);
+  attachmentNum = GetSourceInt(&source);
+  if (0x17 < (uint)attachmentNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x7f8,0,
                              "attachmentNum doesn\'t index ATTACHMENT_COUNT\n\t%i not in [0, %i)");
@@ -2654,12 +2713,12 @@ void __cdecl GetAttachmentImage(int param_1,itemDef_s *param_2,OperandStack *par
       return;
     }
   }
-  local_10.dataType = VAL_STRING;
-  local_10.internals.string = BG_GetAttachmentImage(local_8);
+  result.dataType = VAL_STRING;
+  result.internals.string = BG_GetAttachmentImage(attachmentNum);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetAttachmentImage() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -2668,18 +2727,18 @@ void __cdecl GetAttachmentImage(int param_1,itemDef_s *param_2,OperandStack *par
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl GetAttachmentDesc(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetAttachmentDesc(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_18;
-  Operand local_10;
-  eAttachment local_8;
+  Operand source;
+  Operand result;
+  int attachmentNum;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  if (ATTACHMENT_DW < local_8) {
+  GetOperand(dataStack,&source);
+  attachmentNum = GetSourceInt(&source);
+  if (0x17 < (uint)attachmentNum) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x808,0,
                              "attachmentNum doesn\'t index ATTACHMENT_COUNT\n\t%i not in [0, %i)");
@@ -2689,57 +2748,65 @@ void __cdecl GetAttachmentDesc(int param_1,itemDef_s *param_2,OperandStack *para
       return;
     }
   }
-  local_10.dataType = VAL_STRING;
-  local_10.internals.string = BG_GetAttachmentDesc(local_8);
+  result.dataType = VAL_STRING;
+  result.internals.string = BG_GetAttachmentDesc(attachmentNum);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetAttachmentName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EA40  IsAttachmentAllowedOnItemIndex  (universal/com_expressions_eval.cpp:2066)
 
-void __cdecl IsAttachmentAllowedOnItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl
+IsAttachmentAllowedOnItemIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
+  Operand operand;
+  int iVar1;
   int iVar2;
-  int iVar3;
-  char *pcVar4;
-  int local_74;
-  Operand local_6c;
-  OperandList local_64;
-  char *local_c;
-  int local_8;
+  char *s1;
+  int attachmentNum;
+  int i;
+  int numAttachments;
+  Operand result;
+  OperandList operandList;
+  char *attachmentRef;
+  int itemIndex;
   
-  local_6c.dataType = VAL_INT;
-  local_6c.internals.intVal = 0;
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 2) {
-    local_8 = GetSourceInt(local_64.operands);
-    OVar1.internals.intVal = local_64.operands[1].internals.intVal;
-    OVar1.dataType = local_64.operands[1].dataType;
-    local_c = GetSourceString(OVar1);
-    iVar2 = BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(local_8,0);
-    for (local_74 = 0; local_74 < iVar2; local_74 = local_74 + 1) {
-      iVar3 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint(local_8,local_74,0);
-      pcVar4 = BG_UnlockablesGetItemAttachmentRef(local_8,iVar3);
-      iVar3 = I_stricmp(local_c,pcVar4);
-      if (iVar3 == 0) {
-        local_6c.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  GetOperandList(dataStack,&operandList);
+  if (operandList.operandCount == 2) {
+    itemIndex = GetSourceInt(operandList.operands);
+    operand.internals.intVal = operandList.operands[1].internals.intVal;
+    operand.dataType = operandList.operands[1].dataType;
+    attachmentRef = GetSourceString(operand);
+    iVar1 = BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(itemIndex,0);
+    for (i = 0; i < iVar1; i = i + 1) {
+      iVar2 = BG_UnlockablesGetItemAttachmentNumWithAttachPoint(itemIndex,i,0);
+      s1 = BG_UnlockablesGetItemAttachmentRef(itemIndex,iVar2);
+      iVar2 = I_stricmp(attachmentRef,s1);
+      if (iVar2 == 0) {
+        result.internals.intVal = 1;
         break;
       }
     }
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("IsAttachmentAllowedOnItemIndex() = %d\n");
     }
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to IsAttachmentAllowedOnItemIndex()\n");
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -2747,64 +2814,64 @@ void __cdecl IsAttachmentAllowedOnItemIndex(int param_1,itemDef_s *param_2,Opera
 
 // 0078EB60  GetFaceCamoIndex  (universal/com_expressions_eval.cpp:2106)
 
-void __cdecl GetFaceCamoIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFaceCamoIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int faceCamoIndex;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetFaceCamoItemIndex(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  faceCamoIndex = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetFaceCamoItemIndex(faceCamoIndex);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetFaceCamoIndex() = %d\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EBE0  GetWeaponOptionImage  (universal/com_expressions_eval.cpp:2124)
 
-void __cdecl GetWeaponOptionImage(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetWeaponOptionImage(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int weaponOption;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = BG_GetWeaponOptionImage(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  weaponOption = GetSourceInt(&source);
+  result.internals.string = BG_GetWeaponOptionImage(weaponOption);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetWeaponOptionImage() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EC60  GetWeaponOptionName  (universal/com_expressions_eval.cpp:2138)
 
-void __cdecl GetWeaponOptionName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetWeaponOptionName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int weaponOption;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = BG_GetWeaponOptionDisplayName(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  weaponOption = GetSourceInt(&source);
+  result.internals.string = BG_GetWeaponOptionDisplayName(weaponOption);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetWeaponOptionName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -2813,29 +2880,29 @@ void __cdecl GetWeaponOptionName(int param_1,itemDef_s *param_2,OperandStack *pa
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-void __cdecl GetWeaponOptionGroupIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetWeaponOptionGroupIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_6c;
-  OperandList local_64;
-  eWeaponOptionGroup local_c;
-  int local_8;
+  Operand result;
+  OperandList list;
+  eWeaponOptionGroup weaponOptionGroup;
+  int index;
   
-  GetOperandList(param_3,&local_64);
-  local_6c.dataType = VAL_INT;
-  local_6c.internals.intVal = 0;
-  if (local_64.operandCount == 2) {
-    local_8 = GetSourceInt(local_64.operands);
-    local_c = GetSourceInt(local_64.operands + 1);
-    local_6c.internals.intVal = BG_GetWeaponOptionNumFromIndexAndGroup(local_8,local_c);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    index = GetSourceInt(list.operands);
+    weaponOptionGroup = GetSourceInt(list.operands + 1);
+    result.internals.intVal = BG_GetWeaponOptionNumFromIndexAndGroup(index,weaponOptionGroup);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("GetWeaponOptionGroupIndex() = %i\n");
     }
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to GetWeaponOptionGroupIndex()\n");
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -2843,152 +2910,153 @@ void __cdecl GetWeaponOptionGroupIndex(int param_1,itemDef_s *param_2,OperandSta
 
 // 0078EDA0  GetPooledFileDetails  (universal/com_expressions_eval.cpp:2178)
 
-void __cdecl GetPooledFileDetails(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPooledFileDetails(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_68;
-  operandInternalDataUnion local_60;
-  OperandList local_5c;
+  Operand result;
+  char *field;
+  OperandList list;
   
-  GetOperandList(param_3,&local_5c);
-  local_68.dataType = VAL_STRING;
-  local_68.internals.floatVal = 1.8187723e-38;
-  local_60.intVal = local_5c.operands[0].internals.intVal;
-  local_68.internals.string =
-       Live_FileShare_GetPooledFileInfo(local_5c.operands[0].internals.string);
-  AddOperandToStack(param_3,&local_68);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  field = list.operands[0].internals.string;
+  result.internals.string = Live_FileShare_GetPooledFileInfo(list.operands[0].internals.string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EDF0  CanRateFilmInTheater  (universal/com_expressions_eval.cpp:2193)
 
-void __cdecl CanRateFilmInTheater(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanRateFilmInTheater(int locaClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("CanRateFileInTheater() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EE40  GetDemoFileID  (universal/com_expressions_eval.cpp:2211)
 
-void __cdecl GetDemoFileID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoFileID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetDemoFileID() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EE90  GetFileShareRating  (universal/com_expressions_eval.cpp:2226)
 
-void __cdecl GetFileShareRating(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileShareRating(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  local_c.internals.intVal = Live_FileShare_GetRating();
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = Live_FileShare_GetRating();
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetFileShareRating() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EEF0  GetFileShareTotalVotes  (universal/com_expressions_eval.cpp:2242)
 
-void __cdecl GetFileShareTotalVotes(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileShareTotalVotes(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  ulong64 uVar1;
-  int local_14;
-  Operand local_10;
-  bdVoteRankStatsInfo *local_8;
+  ulong64 fileID;
+  int numRatings;
+  Operand result;
+  bdVoteRankStatsInfo *ratings;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  Live_FileShareSearch_GetRatings(&local_8,&local_14);
-  uVar1 = I_atoi64((fsSelectedFileID->current).string);
-  Live_FileShare_LookupTotalVotes(uVar1,local_8,local_14);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  Live_FileShareSearch_GetRatings(&ratings,&numRatings);
+  fileID = I_atoi64((fsSelectedFileID->current).string);
+  Live_FileShare_LookupTotalVotes(fileID,ratings,numRatings);
   _ftol2_sse();
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetFileShareTotalVotes() = %d\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EF80  GetAutoJoinLobbyStatus  (universal/com_expressions_eval.cpp:2262)
 
-void __cdecl GetAutoJoinLobbyStatus(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetAutoJoinLobbyStatus(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetAutoJoinLobbyStatus() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078EFD0  GetCounterTotal  (universal/com_expressions_eval.cpp:2282)
 
-void __cdecl GetCounterTotal(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCounterTotal(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  char *pcVar3;
-  int iVar4;
-  long64 lVar5;
-  int local_74;
+  Operand operand;
+  Operand operand_00;
+  char *counterType_00;
+  int counterID;
+  long64 lVar1;
+  int counterValue;
   int local_70;
-  Operand local_64;
-  OperandList local_5c;
+  char *counterType;
+  int counterId;
+  Operand result;
+  OperandList list;
   
-  GetOperandList(param_3,&local_5c);
-  local_64.dataType = VAL_STRING;
-  local_64.internals.floatVal = 1.8187723e-38;
-  if (local_5c.operandCount == 1) {
-    OVar1.internals.intVal = local_5c.operands[0].internals.intVal;
-    OVar1.dataType = local_5c.operands[0].dataType;
-    pcVar3 = GetSourceString(OVar1);
-    iVar4 = LiveCounter_CounterStringToID(pcVar3);
-    if (iVar4 == -1) {
-      OVar2.internals.intVal = local_5c.operands[0].internals.intVal;
-      OVar2.dataType = local_5c.operands[0].dataType;
-      GetSourceString(OVar2);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount == 1) {
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    counterType_00 = GetSourceString(operand);
+    counterID = LiveCounter_CounterStringToID(counterType_00);
+    if (counterID == -1) {
+      operand_00.internals.intVal = list.operands[0].internals.intVal;
+      operand_00.dataType = list.operands[0].dataType;
+      GetSourceString(operand_00);
       Com_PrintError(0x10,"Invalid counter string id: %s\n");
     }
     else {
-      lVar5 = LiveCounter_GetCounterTotalValue(iVar4);
-      local_74 = (int)lVar5;
-      local_70 = (int)((ulonglong)lVar5 >> 0x20);
-      if ((local_74 != -1) || (local_70 != -1)) {
-        local_64.internals.string = va("%llu");
+      lVar1 = LiveCounter_GetCounterTotalValue(counterID);
+      counterValue = (int)lVar1;
+      local_70 = (int)((ulonglong)lVar1 >> 0x20);
+      if ((counterValue != -1) || (local_70 != -1)) {
+        result.internals.string = va("%llu");
       }
     }
   }
@@ -3000,101 +3068,101 @@ void __cdecl GetCounterTotal(int param_1,itemDef_s *param_2,OperandStack *param_
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCounterTotal() = %s\n");
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F0D0  GetDownloadProgress  (universal/com_expressions_eval.cpp:2319)
 
-void __cdecl GetDownloadProgress(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDownloadProgress(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   operandInternalDataUnion extraout_EAX;
-  uint *puVar2;
-  float *pfVar3;
-  Operand local_18;
-  uint local_10;
-  float local_c;
-  uint local_8;
+  uint *bytes_00;
+  float *dataRate_00;
+  Operand result;
+  uint bytes;
+  float dataRate;
+  uint totalSize;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveStorage_FileShare_GetDownloadingFileTotalSize(iVar1);
-  pfVar3 = &local_c;
-  puVar2 = &local_10;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  LiveStorage_FileShare_GetDownloadProgress(iVar1,puVar2,pfVar3);
-  if ((local_8 != 0) && (local_10 <= local_8)) {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  totalSize = LiveStorage_FileShare_GetDownloadingFileTotalSize(iVar1);
+  dataRate_00 = &dataRate;
+  bytes_00 = &bytes;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  LiveStorage_FileShare_GetDownloadProgress(iVar1,bytes_00,dataRate_00);
+  if ((totalSize != 0) && (bytes <= totalSize)) {
     _ftol2_sse();
-    local_18.internals = extraout_EAX;
+    result.internals = extraout_EAX;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetDownloadProgress() = %s\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F1A0  GetUploadProgress  (universal/com_expressions_eval.cpp:2341)
 
-void __cdecl GetUploadProgress(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUploadProgress(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   operandInternalDataUnion extraout_EAX;
-  uint *puVar2;
-  float *pfVar3;
-  Operand local_18;
-  uint local_10;
-  float local_c;
-  uint local_8;
+  uint *bytes_00;
+  float *dataRate_00;
+  Operand result;
+  uint bytes;
+  float dataRate;
+  uint totalSize;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveStorage_FileShare_GetUploadingFileTotalSize(iVar1);
-  pfVar3 = &local_c;
-  puVar2 = &local_10;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  LiveStorage_FileShare_GetUploadProgress(iVar1,puVar2,pfVar3);
-  if (local_8 < local_10) {
-    local_8 = local_10;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  totalSize = LiveStorage_FileShare_GetUploadingFileTotalSize(iVar1);
+  dataRate_00 = &dataRate;
+  bytes_00 = &bytes;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  LiveStorage_FileShare_GetUploadProgress(iVar1,bytes_00,dataRate_00);
+  if (totalSize < bytes) {
+    totalSize = bytes;
   }
-  if ((local_8 != 0) && (local_10 <= local_8)) {
+  if ((totalSize != 0) && (bytes <= totalSize)) {
     _ftol2_sse();
-    local_18.internals = extraout_EAX;
+    result.internals = extraout_EAX;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetUploadProgress() = %d\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F270  IsPremiumSubscriber  (universal/com_expressions_eval.cpp:2371)
 
-void __cdecl IsPremiumSubscriber(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsPremiumSubscriber(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  Com_LocalClient_GetControllerIndex(param_1);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = CL_IsRenderingSplitScreen();
   if (bVar1) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsPremiumSubscriber() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -3103,98 +3171,99 @@ void __cdecl IsPremiumSubscriber(int param_1,itemDef_s *param_2,OperandStack *pa
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-char * __cdecl GetLocalizedTimeRemaining(int param_1)
+char * __cdecl GetLocalizedTimeRemaining(int secondsRemaining)
 
 {
   char *pcVar1;
   ConversionArguments *pCVar2;
   uchar *puVar3;
   int iVar4;
-  int local_84;
-  int local_7c;
-  int local_78;
-  uchar local_74 [68];
+  int hours;
+  int seconds;
+  int minutes;
+  int days;
+  uchar output [68];
   uint local_30;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_78 = 0;
-  local_84 = 0;
-  local_7c = 0;
-  if (param_1 < 0x15181) {
-    if (param_1 < 0xe11) {
-      if (0x3c < param_1) {
-        local_7c = param_1 / 0x3c;
+  days = 0;
+  hours = 0;
+  minutes = 0;
+  if (secondsRemaining < 0x15181) {
+    if (secondsRemaining < 0xe11) {
+      if (0x3c < secondsRemaining) {
+        minutes = secondsRemaining / 0x3c;
       }
     }
     else {
-      local_84 = param_1 / 0xe10;
+      hours = secondsRemaining / 0xe10;
     }
   }
   else {
-    local_78 = param_1 / 0x15180;
+    days = secondsRemaining / 0x15180;
   }
-  local_2c.argCount = 0;
-  memset(local_74,'\0',0x40);
-  if (local_78 < 1) {
-    if (local_84 < 1) {
-      if (local_7c < 1) {
+  convArgs.argCount = 0;
+  memset(output,'\0',0x40);
+  if (days < 1) {
+    if (hours < 1) {
+      if (minutes < 1) {
         pcVar1 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
         iVar4 = 0x40;
-        puVar3 = local_74;
-        pCVar2 = &local_2c;
+        puVar3 = output;
+        pCVar2 = &convArgs;
         pcVar1 = UI_SafeTranslateString("MENU_TIMEREMAINING_S");
         UI_ReplaceConversions(pcVar1,pCVar2,(char *)puVar3,iVar4);
       }
       else {
         pcVar1 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
         pcVar1 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
         iVar4 = 0x40;
-        puVar3 = local_74;
-        pCVar2 = &local_2c;
+        puVar3 = output;
+        pCVar2 = &convArgs;
         pcVar1 = UI_SafeTranslateString("MENU_TIMEREMAINING_MS");
         UI_ReplaceConversions(pcVar1,pCVar2,(char *)puVar3,iVar4);
       }
     }
     else {
       pcVar1 = va("%d");
-      local_2c.args[local_2c.argCount] = pcVar1;
-      local_2c.argCount = local_2c.argCount + 1;
+      convArgs.args[convArgs.argCount] = pcVar1;
+      convArgs.argCount = convArgs.argCount + 1;
       pcVar1 = va("%d");
-      local_2c.args[local_2c.argCount] = pcVar1;
-      local_2c.argCount = local_2c.argCount + 1;
+      convArgs.args[convArgs.argCount] = pcVar1;
+      convArgs.argCount = convArgs.argCount + 1;
       pcVar1 = va("%d");
-      local_2c.args[local_2c.argCount] = pcVar1;
-      local_2c.argCount = local_2c.argCount + 1;
+      convArgs.args[convArgs.argCount] = pcVar1;
+      convArgs.argCount = convArgs.argCount + 1;
       iVar4 = 0x40;
-      puVar3 = local_74;
-      pCVar2 = &local_2c;
+      puVar3 = output;
+      pCVar2 = &convArgs;
       pcVar1 = UI_SafeTranslateString("MENU_TIMEREMAINING_HMS");
       UI_ReplaceConversions(pcVar1,pCVar2,(char *)puVar3,iVar4);
     }
   }
   else {
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     iVar4 = 0x40;
-    puVar3 = local_74;
-    pCVar2 = &local_2c;
+    puVar3 = output;
+    pCVar2 = &convArgs;
     pcVar1 = UI_SafeTranslateString("MENU_TIMEREMAINING_DHMS");
     UI_ReplaceConversions(pcVar1,pCVar2,(char *)puVar3,iVar4);
   }
@@ -3205,29 +3274,29 @@ char * __cdecl GetLocalizedTimeRemaining(int param_1)
 
 // 0078F2F0  GetUploadTimeRemaining  (universal/com_expressions_eval.cpp:2448)
 
-void __cdecl GetUploadTimeRemaining(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUploadTimeRemaining(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   int extraout_EAX;
-  uint *puVar2;
-  float *pfVar3;
-  Operand local_18;
-  uint local_10;
-  float local_c;
-  uint local_8;
+  uint *bytes_00;
+  float *dataRate_00;
+  Operand result;
+  uint bytes;
+  float dataRate;
+  uint totalSize;
   
-  local_18.dataType = VAL_STRING;
-  local_18.internals.intVal = 0;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveStorage_FileShare_GetUploadingFileTotalSize(iVar1);
-  pfVar3 = &local_c;
-  puVar2 = &local_10;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  LiveStorage_FileShare_GetUploadProgress(iVar1,puVar2,pfVar3);
+  result.dataType = VAL_STRING;
+  result.internals.intVal = 0;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  totalSize = LiveStorage_FileShare_GetUploadingFileTotalSize(iVar1);
+  dataRate_00 = &dataRate;
+  bytes_00 = &bytes;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  LiveStorage_FileShare_GetUploadProgress(iVar1,bytes_00,dataRate_00);
   iVar1 = Sys_Milliseconds();
   if (1000 < iVar1 - lastPoll) {
-    if ((local_8 == 0) || (local_8 < local_10)) {
+    if ((totalSize == 0) || (totalSize < bytes)) {
       secondsRemaining = 0;
     }
     else {
@@ -3237,29 +3306,29 @@ void __cdecl GetUploadTimeRemaining(int param_1,itemDef_s *param_2,OperandStack 
     lastPoll = Sys_Milliseconds();
   }
   if (secondsRemaining < 0x15180) {
-    local_18.internals.string = GetLocalizedTimeRemaining(secondsRemaining);
+    result.internals.string = GetLocalizedTimeRemaining(secondsRemaining);
   }
   else {
-    local_18.internals.floatVal = 1.8187723e-38;
+    result.internals.floatVal = 1.8187723e-38;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetUploadProgress() = %s\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F6C0  ShowBusyDotsIndicator  (universal/com_expressions_eval.cpp:2492)
 
-void __cdecl ShowBusyDotsIndicator(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ShowBusyDotsIndicator(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.string = UI_GetBusyDotsIndicator();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_STRING;
+  result.internals.string = UI_GetBusyDotsIndicator();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -3268,32 +3337,34 @@ void __cdecl ShowBusyDotsIndicator(int param_1,itemDef_s *param_2,OperandStack *
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-eWeaponOptionGroup __cdecl GetOptionFromIndexAndGroupDvar(int param_1)
+eWeaponOptionGroup __cdecl GetOptionFromIndexAndGroupDvar(int index)
 
 {
-  eWeaponOptionGroup local_c;
+  int currentWeaponGroup;
+  eWeaponOptionGroup weaponOptionGroup;
   
-  local_c = WEAPONOPTION_GROUP_CAMO;
+  currentWeaponGroup = 0;
   if (ui_currentWeaponOptionGroup != (dvar_s *)0x0) {
-    local_c = (ui_currentWeaponOptionGroup->current).integer;
+    currentWeaponGroup = (ui_currentWeaponOptionGroup->current).integer;
   }
-  return local_c;
+  return currentWeaponGroup;
 }
 
 
 // 0078F6F0  HostMigrationWaitingForPlayers  (universal/com_expressions_eval.cpp:2518)
 
-void __cdecl HostMigrationWaitingForPlayers(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+HostMigrationWaitingForPlayers(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("HostMigrationWaitingForPlayers() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -3302,415 +3373,480 @@ void __cdecl HostMigrationWaitingForPlayers(int param_1,itemDef_s *param_2,Opera
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
 
-void __cdecl GetCurrentItemOption(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentItemOption(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  eWeaponOptionGroup eVar1;
-  Operand local_c;
+  eWeaponOptionGroup weaponOptionGroup;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  eVar1 = GetOptionFromIndexAndGroupDvar(DAT_098c391c);
-  local_c.internals.intVal = BG_GetWeaponOptionNumFromIndexAndGroup(DAT_098c391c,eVar1);
+  result.dataType = VAL_INT;
+  weaponOptionGroup = GetOptionFromIndexAndGroupDvar(DAT_098c391c);
+  result.internals.intVal = BG_GetWeaponOptionNumFromIndexAndGroup(DAT_098c391c,weaponOptionGroup);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemOption() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F7E0  GetWeaponOptionCost  (universal/com_expressions_eval.cpp:2550)
 
-void __cdecl GetWeaponOptionCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetWeaponOptionCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_14;
-  Operand local_c;
+  int weaponOption;
+  Operand source;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  GetOperand(param_3,&local_14);
-  iVar1 = GetSourceInt(&local_14);
-  local_c.internals.intVal = BG_GetWeaponOptionCost(iVar1);
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  weaponOption = GetSourceInt(&source);
+  result.internals.intVal = BG_GetWeaponOptionCost(weaponOption);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetWeaponOptionCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F850  GetWeaponOptionUnlockLvl  (universal/com_expressions_eval.cpp:2564)
 
-void __cdecl GetWeaponOptionUnlockLvl(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetWeaponOptionUnlockLvl(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_14;
-  Operand local_c;
+  int weaponOption;
+  Operand source;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  GetOperand(param_3,&local_14);
-  iVar1 = GetSourceInt(&local_14);
-  local_c.internals.intVal = BG_GetWeaponOptionUnlockLvl(iVar1);
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  weaponOption = GetSourceInt(&source);
+  result.internals.intVal = BG_GetWeaponOptionUnlockLvl(weaponOption);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetWeaponOptionUnlockLvl() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F8C0  GetWeaponOptionUnlockPLevel  (universal/com_expressions_eval.cpp:2578)
 
-void __cdecl GetWeaponOptionUnlockPLevel(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetWeaponOptionUnlockPLevel(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_14;
-  Operand local_c;
+  int weaponOption;
+  Operand source;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  GetOperand(param_3,&local_14);
-  iVar1 = GetSourceInt(&local_14);
-  local_c.internals.intVal = BG_GetWeaponOptionUnlockPLevel(iVar1);
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  weaponOption = GetSourceInt(&source);
+  result.internals.intVal = BG_GetWeaponOptionUnlockPLevel(weaponOption);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetWeaponOptionUnlockPLevel() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F930  GetItemRef  (universal/com_expressions_eval.cpp:2592)
 
-void __cdecl GetItemRef(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemRef(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = BG_UnlockablesGetItemRef(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  index = GetSourceInt(&source);
+  result.internals.string = BG_UnlockablesGetItemRef(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemRef() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078F9B0  GetItemName  (universal/com_expressions_eval.cpp:2610)
 
-void __cdecl GetItemName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_14;
-  Operand local_c;
+  int itemIndex;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_STRING;
-  iVar1 = GetSourceInt(&local_14);
-  local_c.internals.string = BG_UnlockablesGetItemName(iVar1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  itemIndex = GetSourceInt(&source);
+  result.internals.string = BG_UnlockablesGetItemName(itemIndex);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FA20  GetItemImage  (universal/com_expressions_eval.cpp:2627)
 
-void __cdecl GetItemImage(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemImage(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = BG_UnlockablesGetItemImage(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  index = GetSourceInt(&source);
+  result.internals.string = BG_UnlockablesGetItemImage(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemImage() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FAA0  GetItemUnlockLevel  (universal/com_expressions_eval.cpp:2645)
 
-void __cdecl GetItemUnlockLevel(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemUnlockLevel(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemUnlockLevel(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemUnlockLevel(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemUnlockLevel() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FB20  GetItemUnlockPLevel  (universal/com_expressions_eval.cpp:2664)
 
-void __cdecl GetItemUnlockPLevel(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemUnlockPLevel(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemUnlockPLevel(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemUnlockPLevel(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemUnlockLevel() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FBA0  GetItemCost  (universal/com_expressions_eval.cpp:2683)
 
-void __cdecl GetItemCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemCost(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemCost(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FC20  GetItemDualWieldCost  (universal/com_expressions_eval.cpp:2702)
 
-void __cdecl GetItemDualWieldCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemDualWieldCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemDualWieldCost(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemDualWieldCost(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemDualWieldCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FCA0  GetItemSellPrice  (universal/com_expressions_eval.cpp:2721)
 
-void __cdecl GetItemSellPrice(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemSellPrice(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemSellPrice(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemSellPrice(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemSellPrice() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FD20  GetItemCount  (universal/com_expressions_eval.cpp:2740)
 
-void __cdecl GetItemCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemCount(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemCount(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemCount() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FDA0  GetItemGroup  (universal/com_expressions_eval.cpp:2759)
 
-void __cdecl GetItemGroup(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemGroup(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_14;
-  Operand local_c;
+  int itemIndex;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_STRING;
-  iVar1 = GetSourceInt(&local_14);
-  local_c.internals.string = BG_UnlockablesGetItemGroup(iVar1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  itemIndex = GetSourceInt(&source);
+  result.internals.string = BG_UnlockablesGetItemGroup(itemIndex);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemGroup() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FE10  GetItemDesc  (universal/com_expressions_eval.cpp:2776)
 
-void __cdecl GetItemDesc(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemDesc(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = BG_UnlockablesGetItemDesc(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  index = GetSourceInt(&source);
+  result.internals.string = BG_UnlockablesGetItemDesc(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemDesc() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FE90  GetItemIndex  (universal/com_expressions_eval.cpp:2795)
 
-void __cdecl GetItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetItemIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  Operand source;
+  Operand result;
+  char *itemName;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_10.internals.intVal = BG_UnlockablesGetItemIndexFromName(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  itemName = GetSourceString(operand);
+  result.internals.intVal = BG_UnlockablesGetItemIndexFromName(itemName);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemIndex() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FF10  GetItemDualWieldIndex  (universal/com_expressions_eval.cpp:2813)
 
-void __cdecl GetItemDualWieldIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemDualWieldIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemDualWieldIndex(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemDualWieldIndex(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemDualWieldIndex() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0078FF90  GetItemDualWieldBaseIndex  (universal/com_expressions_eval.cpp:2831)
 
-void __cdecl GetItemDualWieldBaseIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetItemDualWieldBaseIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = BG_UnlockablesGetItemDualWieldBaseIndex(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  result.internals.intVal = BG_UnlockablesGetItemDualWieldBaseIndex(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemDualWieldBaseIndex() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790010  GetDefaultClassSlot  (universal/com_expressions_eval.cpp:2849)
 
-void __cdecl GetDefaultClassSlot(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDefaultClassSlot(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  Operand local_6c;
-  OperandList local_64;
-  char *local_c;
-  char *local_8;
+  Operand operand;
+  Operand operand_00;
+  Operand result;
+  OperandList list;
+  char *className;
+  char *slotName;
   
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 2) {
-    local_6c.dataType = VAL_INT;
-    OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-    OVar1.dataType = local_64.operands[0].dataType;
-    local_c = GetSourceString(OVar1);
-    OVar2.internals.intVal = local_64.operands[1].internals.intVal;
-    OVar2.dataType = local_64.operands[1].dataType;
-    local_8 = GetSourceString(OVar2);
-    local_6c.internals.intVal = BG_UnlockablesGetDefaultClassSlotIndexFromName(local_c,local_8);
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    result.dataType = VAL_INT;
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    className = GetSourceString(operand);
+    operand_00.internals.intVal = list.operands[1].internals.intVal;
+    operand_00.dataType = list.operands[1].dataType;
+    slotName = GetSourceString(operand_00);
+    result.internals.intVal = BG_UnlockablesGetDefaultClassSlotIndexFromName(className,slotName);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("GetDefaultClassSlot() = %i\n");
     }
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to GetDefaultClassSlot()\n");
-    local_6c.dataType = VAL_INT;
-    local_6c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_6c);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -3718,31 +3854,34 @@ void __cdecl GetDefaultClassSlot(int param_1,itemDef_s *param_2,OperandStack *pa
 
 // 007900E0  GetItemAttachment  (universal/com_expressions_eval.cpp:2876)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl GetItemAttachment(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetItemAttachment(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_6c;
-  OperandList local_64;
-  int local_c;
-  int local_8;
+  Operand result;
+  OperandList list;
+  int attachmentNum;
+  int itemIndex;
   
-  GetOperandList(param_3,&local_64);
-  local_6c.dataType = VAL_INT;
-  if (local_64.operandCount == 2) {
-    local_8 = GetOperandValueInt(local_64.operands);
-    local_c = GetOperandValueInt(local_64.operands + 1);
-    local_6c.internals.intVal = BG_UnlockablesGetItemAttachment(local_8,local_c);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  if (list.operandCount == 2) {
+    itemIndex = GetOperandValueInt(list.operands);
+    attachmentNum = GetOperandValueInt(list.operands + 1);
+    result.internals.intVal = BG_UnlockablesGetItemAttachment(itemIndex,attachmentNum);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("GetItemAttachment() = %d\n");
     }
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to GetItemAttachment()\n");
-    local_6c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_6c);
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -3750,56 +3889,57 @@ void __cdecl GetItemAttachment(int param_1,itemDef_s *param_2,OperandStack *para
 
 // 007901E0  GetCurrentItemMultiText  (universal/com_expressions_eval.cpp:2903)
 
-void __cdecl GetCurrentItemMultiText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentItemMultiText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   multiDef_s *pmVar3;
   int iVar4;
-  char *pcVar5;
-  double dVar6;
-  int local_20;
-  int local_1c;
-  Operand local_14;
-  char *local_c;
-  float local_8;
+  char *nptr;
+  double dVar5;
+  int i_2;
+  int i;
+  multiDef_s *multiPtr;
+  Operand result;
+  char *string;
+  float value;
   
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  if ((param_2 == (itemDef_s *)0x0) &&
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if ((item == (itemDef_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0xb5f,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->parent == (menuDef_t *)0x0) &&
+  if ((item->parent == (menuDef_t *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0xb60,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_2->dataType == 10) {
-    pmVar3 = Item_GetMultiDef(param_2);
+  if (item->dataType == 10) {
+    pmVar3 = Item_GetMultiDef(item);
     if (pmVar3->strDef == 0) {
-      pcVar5 = Dvar_GetVariantString(param_2->dvar);
-      dVar6 = atof(pcVar5);
-      local_8 = (float)dVar6;
-      for (local_20 = 0; local_20 < pmVar3->count; local_20 = local_20 + 1) {
-        if (pmVar3->dvarValue[local_20] == local_8) {
-          local_14.internals = *(operandInternalDataUnion *)(pmVar3->dvarList + local_20);
+      nptr = Dvar_GetVariantString(item->dvar);
+      dVar5 = atof(nptr);
+      value = (float)dVar5;
+      for (i_2 = 0; i_2 < pmVar3->count; i_2 = i_2 + 1) {
+        if (pmVar3->dvarValue[i_2] == value) {
+          result.internals = *(operandInternalDataUnion *)(pmVar3->dvarList + i_2);
           break;
         }
       }
     }
     else {
-      local_c = Dvar_GetVariantString(param_2->dvar);
-      for (local_1c = 0; local_1c < pmVar3->count; local_1c = local_1c + 1) {
-        iVar4 = I_stricmp(local_c,pmVar3->dvarStr[local_1c]);
+      string = Dvar_GetVariantString(item->dvar);
+      for (i = 0; i < pmVar3->count; i = i + 1) {
+        iVar4 = I_stricmp(string,pmVar3->dvarStr[i]);
         if (iVar4 == 0) {
-          local_14.internals = *(operandInternalDataUnion *)(pmVar3->dvarList + local_1c);
+          result.internals = *(operandInternalDataUnion *)(pmVar3->dvarList + i);
           break;
         }
       }
@@ -3807,12 +3947,12 @@ void __cdecl GetCurrentItemMultiText(int param_1,itemDef_s *param_2,OperandStack
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("GetCurrentItemMultiText() = %d\n");
     }
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("GetCurrentItemMultiText() called on an item that is not an ITEM_TYPE_MULTI\n")
     ;
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -3820,14 +3960,14 @@ void __cdecl GetCurrentItemMultiText(int param_1,itemDef_s *param_2,OperandStack
 
 // 007903B0  GetCollectiblesCount  (universal/com_expressions_eval.cpp:2955)
 
-void __cdecl GetCollectiblesCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCollectiblesCount(int localClientNum_2,itemDef_s *item_2,OperandStack *dataStack_2)
 
 {
-  Operand local_c;
+  Operand result_2;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  AddOperandToStack(param_3,&local_c);
+  result_2.dataType = VAL_STRING;
+  result_2.internals.floatVal = 1.8187723e-38;
+  AddOperandToStack(dataStack_2,&result_2);
   return;
 }
 
@@ -3839,35 +3979,37 @@ void __cdecl GetCollectiblesCount(int param_1,itemDef_s *param_2,OperandStack *p
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetNumLives(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumLives(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  cg_s *local_14;
-  int local_10;
-  playerState_s *local_c;
-  int local_8;
+  int iVar1;
+  int scr_numLives;
+  Operand result;
+  cg_s *cgameGlob;
+  int numDeaths;
+  playerState_s *ps;
+  int numLives;
   
-  local_10 = -1;
-  local_8 = -1;
-  local_14 = CG_GetLocalClientGlobals(param_1);
-  local_c = CG_GetPredictedPlayerState(param_1);
-  if (*(int *)((int)(local_14->bgs).clientinfo + (uint)local_c->clientNum * 0x5c8) != 0) {
-    local_10 = *(int *)((int)(local_14->bgs).clientinfo + (uint)local_c->clientNum * 0x5c8 + 0x78);
+  numDeaths = -1;
+  numLives = -1;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  ps = CG_GetPredictedPlayerState(localClientNum);
+  if (*(int *)((int)(cgameGlob->bgs).clientinfo + (uint)ps->clientNum * 0x5c8) != 0) {
+    numDeaths = *(int *)((int)(cgameGlob->bgs).clientinfo + (uint)ps->clientNum * 0x5c8 + 0x78);
   }
-  if (-1 < local_10) {
-    local_8 = Dvar_GetInt("scr_numLives");
-    local_8 = local_8 - local_10;
-    if (local_8 < 0) {
-      local_8 = -1;
+  if (-1 < numDeaths) {
+    iVar1 = Dvar_GetInt("scr_numLives");
+    numLives = iVar1 - numDeaths;
+    if (numLives < 0) {
+      numLives = -1;
     }
   }
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = local_8;
+  result.dataType = VAL_INT;
+  result.internals.intVal = numLives;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetNumLives() = %d\n");
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -3879,113 +4021,114 @@ void __cdecl GetNumLives(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl PlayersAlive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl PlayersAlive(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int *piVar1;
   int iVar2;
-  int local_24;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  cg_s *local_c;
-  int local_8;
+  clientInfo_t *ci;
+  int clientNum;
+  Operand source;
+  Operand result;
+  int team;
+  cg_s *cgameGlob;
+  int count;
   
-  GetOperand(param_3,&local_20);
-  local_8 = 0;
-  local_10 = 6;
-  local_c = CG_GetLocalClientGlobals(param_1);
-  iVar2 = I_stricmp(local_20.internals.string,"TEAM_ALLIES");
+  GetOperand(dataStack,&source);
+  count = 0;
+  team = 6;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  iVar2 = I_stricmp(source.internals.string,"TEAM_ALLIES");
   if (iVar2 == 0) {
-    local_10 = 2;
+    team = 2;
   }
   else {
-    iVar2 = I_stricmp(local_20.internals.string,"TEAM_AXIS");
+    iVar2 = I_stricmp(source.internals.string,"TEAM_AXIS");
     if (iVar2 == 0) {
-      local_10 = 1;
+      team = 1;
     }
   }
-  for (local_24 = 0; local_24 < 0x20; local_24 = local_24 + 1) {
-    piVar1 = (int *)((int)(local_c->bgs).clientinfo + local_24 * 0x5c8);
-    if ((*piVar1 != 0) && (((local_10 == 6 || (local_10 == piVar1[0xb])) && (piVar1[0x19] == 0)))) {
-      local_8 = local_8 + 1;
+  for (clientNum = 0; clientNum < 0x20; clientNum = clientNum + 1) {
+    piVar1 = (int *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8);
+    if ((*piVar1 != 0) && (((team == 6 || (team == piVar1[0xb])) && (piVar1[0x19] == 0)))) {
+      count = count + 1;
     }
   }
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = local_8;
+  result.dataType = VAL_INT;
+  result.internals.intVal = count;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("PlayersAlive() = %d\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007905D0  GetPlayerStatByName  (universal/com_expressions_eval.cpp:3042)
 
-void __cdecl GetPlayerStatByName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPlayerStatByName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  Operand OVar3;
-  bool bVar4;
-  char *pcVar5;
-  int iVar6;
-  operandInternalDataUnion *poVar7;
-  Operand local_14;
-  Operand local_c;
+  Operand operand;
+  Operand operand_00;
+  Operand operand_01;
+  bool bVar1;
+  char *statName;
+  int controllerIndex;
+  operandInternalDataUnion *outInt;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
-  OVar2.internals.intVal = local_14.internals.intVal;
-  OVar2.dataType = local_14.dataType;
-  pcVar5 = GetSourceString(OVar2);
-  poVar7 = &local_c.internals;
-  iVar6 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar4 = LiveStats_GetIntPlayerStat(iVar6,&poVar7->intVal,pcVar5);
-  if (!bVar4) {
-    OVar3.internals.intVal = local_14.internals.intVal;
-    OVar3.dataType = local_14.dataType;
-    GetSourceString(OVar3);
+  GetOperand(dataStack,&source);
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  operand_00.internals.intVal = source.internals.intVal;
+  operand_00.dataType = source.dataType;
+  statName = GetSourceString(operand_00);
+  outInt = &result.internals;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = LiveStats_GetIntPlayerStat(controllerIndex,&outInt->intVal,statName);
+  if (!bVar1) {
+    operand_01.internals.intVal = source.internals.intVal;
+    operand_01.dataType = source.dataType;
+    GetSourceString(operand_01);
     Expression_Error("UI Expression Error: Error retrieving PlayerStat %s\n");
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
-    OVar1.internals.intVal = local_14.internals.intVal;
-    OVar1.dataType = local_14.dataType;
-    GetSourceString(OVar1);
+    operand.internals.intVal = source.internals.intVal;
+    operand.dataType = source.dataType;
+    GetSourceString(operand);
     Expression_TraceInternal("getstatbyname( %s ) = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790690  GetLowestLocalCP  (universal/com_expressions_eval.cpp:3064)
 
-void __cdecl GetLowestLocalCP(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLowestLocalCP(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  operandInternalDataUnion *poVar3;
-  playerStatsKeyIndex_t pVar4;
-  Operand local_c;
+  int controllerIndex;
+  operandInternalDataUnion *outInt;
+  playerStatsKeyIndex_t keyIndex;
+  Operand result;
   
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
-  pVar4 = MP_PLAYERSTATSKEY_CODPOINTS;
-  poVar3 = &local_c.internals;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = LiveStats_GetIntPlayerStatByKey(iVar2,&poVar3->intVal,pVar4);
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  keyIndex = MP_PLAYERSTATSKEY_CODPOINTS;
+  outInt = &result.internals;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = LiveStats_GetIntPlayerStatByKey(controllerIndex,&outInt->intVal,keyIndex);
   if (!bVar1) {
     Expression_Error("UI Expression Error: Error retrieving CP for local client %d\n");
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("getlowestlocalcp() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -3994,21 +4137,21 @@ void __cdecl GetLowestLocalCP(int param_1,itemDef_s *param_2,OperandStack *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl IsWagerServer(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsWagerServer(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  Operand local_414;
-  char local_40c [1028];
+  char *nptr;
+  Operand result;
+  char buff [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4),
-                    local_40c,0x400);
-  local_414.dataType = VAL_INT;
-  pcVar1 = Info_ValueForKey(local_40c,"wagerbet");
-  local_414.internals.intVal = atoi(pcVar1);
-  AddOperandToStack(param_3,&local_414);
+  LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4),buff,
+                    0x400);
+  result.dataType = VAL_INT;
+  nptr = Info_ValueForKey(buff,"wagerbet");
+  result.internals.intVal = atoi(nptr);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4017,48 +4160,48 @@ void __cdecl IsWagerServer(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetContextHeight(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContextHeight(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  int iVar2;
-  Operand local_414;
-  char local_40c [1028];
+  char *nptr;
+  int iVar1;
+  Operand result;
+  char buff [1028];
   uint local_8;
   
   local_8 = __security_cookie ^ (uint)&stack0xfffffffc;
-  LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4),
-                    local_40c,0x400);
-  local_414.dataType = VAL_INT;
-  pcVar1 = Info_ValueForKey(local_40c,"wagerbet");
-  iVar2 = atoi(pcVar1);
-  local_414.internals.string = (char *)((-(uint)(iVar2 != 0) & 0xffffffee) + 0x50);
-  AddOperandToStack(param_3,&local_414);
+  LAN_GetServerInfo((ui_netSource->current).integer,*(int *)(&DAT_098c3d98 + DAT_098c3d94 * 4),buff,
+                    0x400);
+  result.dataType = VAL_INT;
+  nptr = Info_ValueForKey(buff,"wagerbet");
+  iVar1 = atoi(nptr);
+  result.internals.string = (char *)((-(uint)(iVar1 != 0) & 0xffffffee) + 0x50);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790850  GetKeyBinding  (universal/com_expressions_eval.cpp:3114)
 
-void __cdecl GetKeyBinding(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetKeyBinding(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  if (local_14.dataType == VAL_STRING) {
-    UI_GetKeyBindingLocalizedString(param_1,local_14.internals.string,resultString,0);
-    local_c.dataType = VAL_STRING;
-    local_c.internals.string = resultString;
-    AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    UI_GetKeyBindingLocalizedString(localClientNum,source.internals.string,resultString,0);
+    result.dataType = VAL_STRING;
+    result.internals.string = resultString;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    GetNameForValueType(local_14.dataType);
+    GetNameForValueType(source.dataType);
     Expression_Error(" Must use a string as KeyBinding() parameter, not a %s\n");
-    local_c.dataType = VAL_STRING;
-    local_c.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_c);
+    result.dataType = VAL_STRING;
+    result.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4066,30 +4209,35 @@ void __cdecl GetKeyBinding(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 007908E0  GetActionSlotUsable  (universal/com_expressions_eval.cpp:3137)
 
-void __cdecl GetActionSlotUsable(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetActionSlotUsable(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  Operand source;
+  Operand result;
+  int slotId;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetOperandValueInt(&local_18);
-  if (((int)local_8 < 1) || (4 < (int)local_8)) {
+  GetOperand(dataStack,&source);
+  slotId = GetOperandValueInt(&source);
+  if ((slotId < 1) || (4 < slotId)) {
     Expression_Error("UI Expression Error: ActionSlot() slot ID should be in range (1,%i) not %i.\n"
                     );
-    local_10.dataType = VAL_INT;
-    local_10.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_10);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_8 = local_8 - 1;
-    local_10.dataType = VAL_INT;
-    bVar1 = CG_ActionSlotIsUsable(param_1,local_8);
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = bVar1;
-    AddOperandToStack(param_3,&local_10);
+    slotId = slotId - 1;
+    result.dataType = VAL_INT;
+    bVar1 = CG_ActionSlotIsUsable(localClientNum,slotId);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4097,60 +4245,60 @@ void __cdecl GetActionSlotUsable(int param_1,itemDef_s *param_2,OperandStack *pa
 
 // 00790990  GetHudFade  (universal/com_expressions_eval.cpp:3161)
 
-void __cdecl GetHudFade(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetHudFade(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   int iVar2;
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_FLOAT;
-  bVar1 = CL_LocalClient_IsCUIFlagSet(param_1,0x20);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_FLOAT;
+  bVar1 = CL_LocalClient_IsCUIFlagSet(localClientNum,0x20);
   if (bVar1) {
-    if (local_14.dataType == VAL_STRING) {
-      iVar2 = I_stricmp(local_14.internals.string,"dpad");
+    if (source.dataType == VAL_STRING) {
+      iVar2 = I_stricmp(source.internals.string,"dpad");
       if (iVar2 == 0) {
-        local_c.internals.floatVal = CG_GetHudAlphaDPad(param_1);
+        result.internals.floatVal = CG_GetHudAlphaDPad(localClientNum);
       }
       else {
-        iVar2 = I_stricmp(local_14.internals.string,"weapon");
+        iVar2 = I_stricmp(source.internals.string,"weapon");
         if (iVar2 == 0) {
-          local_c.internals.floatVal = CG_GetHudAlphaAmmoCounter(param_1);
+          result.internals.floatVal = CG_GetHudAlphaAmmoCounter(localClientNum);
         }
         else {
-          iVar2 = I_stricmp(local_14.internals.string,"compass");
+          iVar2 = I_stricmp(source.internals.string,"compass");
           if (iVar2 == 0) {
-            local_c.internals.floatVal = CG_GetHudAlphaCompass(param_1);
+            result.internals.floatVal = CG_GetHudAlphaCompass(localClientNum);
           }
           else {
-            iVar2 = I_stricmp(local_14.internals.string,"scoreboard");
+            iVar2 = I_stricmp(source.internals.string,"scoreboard");
             if (iVar2 == 0) {
-              local_c.internals.floatVal = 1.0;
+              result.internals.floatVal = 1.0;
             }
             else {
-              GetNameForValueType(local_14.dataType);
+              GetNameForValueType(source.dataType);
               Expression_Error(
                               " Argument to HudFade() must be \"dpad\", \"compass\", \"scoreboard\", or \"weapon\".\n"
                               );
-              local_c.internals.intVal = 0;
+              result.internals.intVal = 0;
             }
           }
         }
       }
-      AddOperandToStack(param_3,&local_c);
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      GetNameForValueType(local_14.dataType);
+      GetNameForValueType(source.dataType);
       Expression_Error(" Must use a string as HudFade() parameter, not a %s\n");
-      local_c.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_c);
+      result.internals.intVal = 0;
+      AddOperandToStack(dataStack,&result);
     }
   }
   else {
-    local_c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_c);
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4158,30 +4306,30 @@ void __cdecl GetHudFade(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 00790B00  IsMenuOpen  (universal/com_expressions_eval.cpp:3239)
 
-void __cdecl IsMenuOpen(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsMenuOpen(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  if (local_14.dataType == VAL_STRING) {
-    local_c.dataType = VAL_INT;
-    bVar1 = Menu_IsMenuOpenAndVisible(param_1,local_14.internals.string);
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  if (source.dataType == VAL_STRING) {
+    result.dataType = VAL_INT;
+    bVar1 = Menu_IsMenuOpenAndVisible(localClientNum,source.internals.string);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("ismenuopen( %s ) = %i\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    GetNameForValueType(local_14.dataType);
+    GetNameForValueType(source.dataType);
     Expression_Error(" Must use a string as the name of a menu, not a %s\n");
-    local_c.dataType = VAL_INT;
-    local_c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_c);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4189,45 +4337,45 @@ void __cdecl IsMenuOpen(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 00790BC0  WritingData  (universal/com_expressions_eval.cpp:3259)
 
-void __cdecl WritingData(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl WritingData(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("writingdata() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079F560  LogicalNot  (universal/com_expressions_eval.cpp:3273)
 
-void __cdecl LogicalNot(int param_1,Operand *param_2,Operand *param_3)
+void __cdecl LogicalNot(int localClientNum,Operand *source,Operand *result)
 
 {
   operandInternalDataUnion oVar1;
   operandInternalDataUnion local_c;
   
-  param_3->dataType = VAL_INT;
-  if (param_2->dataType == VAL_STRING) {
-    GetSourceString(*param_2);
-    GetNameForValueType(param_2->dataType);
+  result->dataType = VAL_INT;
+  if (source->dataType == VAL_STRING) {
+    GetSourceString(*source);
+    GetNameForValueType(source->dataType);
     Expression_Error("You cannot ! a \'%s\' (%s)\n");
-    (param_3->internals).intVal = 0;
+    (result->internals).intVal = 0;
   }
-  else if (param_2->dataType == VAL_INT) {
+  else if (source->dataType == VAL_INT) {
     oVar1.intVal._1_3_ = 0;
-    oVar1.intVal._0_1_ = (param_2->internals).intVal == 0;
-    param_3->internals = oVar1;
+    oVar1.intVal._0_1_ = (source->internals).intVal == 0;
+    result->internals = oVar1;
   }
-  else if (param_2->dataType == VAL_FLOAT) {
+  else if (source->dataType == VAL_FLOAT) {
     local_c.intVal._1_3_ = 0;
-    local_c.intVal._0_1_ = (param_2->internals).floatVal == 0.0;
-    param_3->internals = local_c;
+    local_c.intVal._0_1_ = (source->internals).floatVal == 0.0;
+    result->internals = local_c;
   }
   else {
     Expression_Error("Unknown datatype %i in LogicalNot()\n");
@@ -4238,30 +4386,30 @@ void __cdecl LogicalNot(int param_1,Operand *param_2,Operand *param_3)
 
 // 0079F670  BitwiseNot  (universal/com_expressions_eval.cpp:3297)
 
-void __cdecl BitwiseNot(int param_1,Operand *param_2,Operand *param_3)
+void __cdecl BitwiseNot(int localClientNum,Operand *source,Operand *result)
 
 {
-  uint local_8;
+  int val;
   
-  param_3->dataType = VAL_INT;
-  if (param_2->dataType == VAL_STRING) {
-    GetSourceString(*param_2);
-    GetNameForValueType(param_2->dataType);
+  result->dataType = VAL_INT;
+  if (source->dataType == VAL_STRING) {
+    GetSourceString(*source);
+    GetNameForValueType(source->dataType);
     Expression_Error(" You cannot ~ a \'%s\' (%s)\n");
-    (param_3->internals).intVal = 0;
+    (result->internals).intVal = 0;
   }
   else {
-    if (param_2->dataType == VAL_INT) {
-      local_8 = (param_2->internals).intVal;
+    if (source->dataType == VAL_INT) {
+      val = (source->internals).intVal;
     }
-    else if (param_2->dataType == VAL_FLOAT) {
-      local_8 = (uint)(param_2->internals).floatVal;
+    else if (source->dataType == VAL_FLOAT) {
+      val = (int)(source->internals).floatVal;
     }
     else {
-      local_8 = 0;
+      val = 0;
       Expression_Error("Unknown datatype %i in LogicalNot()\n");
     }
-    (param_3->internals).intVal = ~local_8;
+    (result->internals).intVal = ~val;
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("~%i = %i\n");
     }
@@ -4272,16 +4420,18 @@ void __cdecl BitwiseNot(int param_1,Operand *param_2,Operand *param_3)
 
 // 0079F7A0  BitShiftLeft  (universal/com_expressions_eval.cpp:3327)
 
-void __cdecl BitShiftLeft(int param_1,Operand *param_2,Operand *param_3,Operand *param_4)
+void __cdecl BitShiftLeft(int localClientNum,Operand *source,Operand *bitsSource,Operand *result)
 
 {
   int iVar1;
   int iVar2;
+  int val;
+  int bits;
   
-  iVar1 = GetSourceInt(param_2);
-  iVar2 = GetSourceInt(param_3);
-  param_4->dataType = VAL_INT;
-  (param_4->internals).intVal = iVar1 << ((byte)iVar2 & 0x1f);
+  iVar1 = GetSourceInt(source);
+  iVar2 = GetSourceInt(bitsSource);
+  result->dataType = VAL_INT;
+  (result->internals).intVal = iVar1 << ((byte)iVar2 & 0x1f);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("%i << %i = %i\n");
   }
@@ -4291,16 +4441,18 @@ void __cdecl BitShiftLeft(int param_1,Operand *param_2,Operand *param_3,Operand 
 
 // 0079F860  BitShiftRight  (universal/com_expressions_eval.cpp:3340)
 
-void __cdecl BitShiftRight(int param_1,Operand *param_2,Operand *param_3,Operand *param_4)
+void __cdecl BitShiftRight(int localClientNum,Operand *source,Operand *bitsSource,Operand *result)
 
 {
   int iVar1;
   int iVar2;
+  int val;
+  int bits;
   
-  iVar1 = GetSourceInt(param_2);
-  iVar2 = GetSourceInt(param_3);
-  param_4->dataType = VAL_INT;
-  (param_4->internals).intVal = iVar1 >> ((byte)iVar2 & 0x1f);
+  iVar1 = GetSourceInt(source);
+  iVar2 = GetSourceInt(bitsSource);
+  result->dataType = VAL_INT;
+  (result->internals).intVal = iVar1 >> ((byte)iVar2 & 0x1f);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("%i >> %i = %i\n");
   }
@@ -4310,214 +4462,235 @@ void __cdecl BitShiftRight(int param_1,Operand *param_2,Operand *param_3,Operand
 
 // 00790C10  GetAdsJavelin  (universal/com_expressions_eval.cpp:3354)
 
-void __cdecl GetAdsJavelin(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetAdsJavelin(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  result.dataType = VAL_INT;
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar2 < 8) {
-    local_c.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
   else {
-    bVar1 = CG_JavelinADS(param_1);
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+    bVar1 = CG_JavelinADS(localClientNum);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("adsjavelin() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790C90  GetWeapLockBlink  (universal/com_expressions_eval.cpp:3368)
 
-void __cdecl GetWeapLockBlink(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetWeapLockBlink(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  Operand local_18;
-  Operand local_10;
-  float local_8;
+  Operand source;
+  Operand result;
+  float bps;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceFloat(&local_18);
-  local_10.dataType = VAL_INT;
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  GetOperand(dataStack,&source);
+  bps = GetSourceFloat(&source);
+  result.dataType = VAL_INT;
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar2 < 8) {
-    local_10.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
   else {
-    bVar1 = CG_UICheckWeapLockBlink(param_1,local_8);
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = bVar1;
+    bVar1 = CG_UICheckWeapLockBlink(localClientNum,bps);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("weaplockblink( %.2f ) = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790D40  GetWeapAttackTop  (universal/com_expressions_eval.cpp:3388)
 
-void __cdecl GetWeapAttackTop(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetWeapAttackTop(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  result.dataType = VAL_INT;
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar2 < 8) {
-    local_c.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
   else {
-    bVar1 = CG_UICheckWeapLockAttackTop(param_1);
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+    bVar1 = CG_UICheckWeapLockAttackTop(localClientNum);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("weapattacktop() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790DC0  GetWeapAttackDirect  (universal/com_expressions_eval.cpp:3403)
 
-void __cdecl GetWeapAttackDirect(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetWeapAttackDirect(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   connstate_t cVar2;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  cVar2 = CL_GetLocalClientConnectionState(param_1);
+  result.dataType = VAL_INT;
+  cVar2 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar2 < 8) {
-    local_c.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
   else {
-    bVar1 = CG_UICheckWeapLockAttackDirect(param_1);
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+    bVar1 = CG_UICheckWeapLockAttackDirect(localClientNum);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("weapattackdirect() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790E40  ToUpper  (universal/com_expressions_eval.cpp:3418)
 
-void __cdecl ToUpper(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ToUpper(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  Operand source;
+  Operand result;
+  char *origString;
   
-  GetOperand(param_3,&local_18);
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.string = UI_ToUpper(local_8);
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  origString = GetSourceString(operand);
+  result.dataType = VAL_STRING;
+  result.internals.string = UI_ToUpper(origString);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("toUpper() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790EC0  GetPlaylistName  (universal/com_expressions_eval.cpp:3434)
 
-void __cdecl GetPlaylistName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPlaylistName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_10;
-  int local_8;
+  int playlistId;
+  Operand result;
+  int controllerIndex;
   
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.dataType = VAL_STRING;
-  iVar1 = Playlist_GetPlaylistIdForNum(local_8,(playlist->current).integer);
-  local_10.internals.string = Playlist_GetPlaylistName(local_8,iVar1);
-  if (((char *)local_10.internals.intVal == (char *)0x0) || (*local_10.internals.string == '\0')) {
-    local_10.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.dataType = VAL_STRING;
+  playlistId = Playlist_GetPlaylistIdForNum(controllerIndex,(playlist->current).integer);
+  result.internals.string = Playlist_GetPlaylistName(controllerIndex,playlistId);
+  if (((char *)result.internals.intVal == (char *)0x0) || (*result.internals.string == '\0')) {
+    result.internals.floatVal = 1.8187723e-38;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("getPlaylistName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00790F60  SecondsAsTimeDisplay  (universal/com_expressions_eval.cpp:3453)
 
-void __cdecl SecondsAsTimeDisplay(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl SecondsAsTimeDisplay(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
+  int replaceInt;
   char *pcVar2;
-  Operand local_24;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int hours;
+  int seconds;
+  int minutes;
+  int days;
   
-  GetOperand(param_3,&local_24);
+  GetOperand(dataStack,&source);
   resultString[0] = '\0';
-  local_10 = GetSourceInt(&local_24);
-  iVar1 = local_10 / 0x15180;
-  local_14 = (local_10 % 0x15180) / 0xe10;
-  local_c = (local_10 % 0xe10) / 0x3c;
-  local_10 = local_10 % 0x3c;
-  local_8 = iVar1;
-  if (iVar1 != 0) {
+  iVar1 = GetSourceInt(&source);
+  replaceInt = iVar1 / 0x15180;
+  hours = (iVar1 % 0x15180) / 0xe10;
+  minutes = (iVar1 % 0xe10) / 0x3c;
+  seconds = iVar1 % 0x3c;
+  days = replaceInt;
+  if (replaceInt != 0) {
     pcVar2 = UI_SafeTranslateString("MPUI_TIMEDISPLAY_DAYS");
-    pcVar2 = UI_ReplaceConversionInt(pcVar2,iVar1);
+    pcVar2 = UI_ReplaceConversionInt(pcVar2,replaceInt);
     I_strncat(resultString,0x80,pcVar2);
     I_strncat(resultString,0x80," ");
   }
-  if (local_14 != 0) {
-    iVar1 = local_14;
+  if (hours != 0) {
+    iVar1 = hours;
     pcVar2 = UI_SafeTranslateString("MPUI_TIMEDISPLAY_HOURS");
     pcVar2 = UI_ReplaceConversionInt(pcVar2,iVar1);
     I_strncat(resultString,0x80,pcVar2);
     I_strncat(resultString,0x80," ");
   }
-  if (local_c != 0) {
-    iVar1 = local_c;
+  if (minutes != 0) {
+    iVar1 = minutes;
     pcVar2 = UI_SafeTranslateString("MPUI_TIMEDISPLAY_MINUTES");
     pcVar2 = UI_ReplaceConversionInt(pcVar2,iVar1);
     I_strncat(resultString,0x80,pcVar2);
     I_strncat(resultString,0x80," ");
   }
-  if (local_10 != 0) {
-    iVar1 = local_10;
+  if (seconds != 0) {
+    iVar1 = seconds;
     pcVar2 = UI_SafeTranslateString("MPUI_TIMEDISPLAY_SECONDS");
     pcVar2 = UI_ReplaceConversionInt(pcVar2,iVar1);
     I_strncat(resultString,0x80,pcVar2);
     I_strncat(resultString,0x80," ");
   }
-  if ((((local_8 == 0) && (local_14 == 0)) && (local_c == 0)) && (local_10 == 0)) {
+  if ((((days == 0) && (hours == 0)) && (minutes == 0)) && (seconds == 0)) {
     I_strncat(resultString,0x80,"< ");
     iVar1 = 1;
     pcVar2 = UI_SafeTranslateString("MPUI_TIMEDISPLAY_SECONDS");
@@ -4525,48 +4698,48 @@ void __cdecl SecondsAsTimeDisplay(int param_1,itemDef_s *param_2,OperandStack *p
     I_strncat(resultString,0x80,pcVar2);
     I_strncat(resultString,0x80," ");
   }
-  local_1c.dataType = VAL_STRING;
-  local_1c.internals.string = resultString;
+  result.dataType = VAL_STRING;
+  result.internals.string = resultString;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("secondsToTime() = %s\n");
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007911C0  SecondsAsCountdownDisplay  (universal/com_expressions_eval.cpp:3511)
 
-void __cdecl SecondsAsCountdownDisplay(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl SecondsAsCountdownDisplay(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  int local_74;
-  Operand local_70;
-  int local_68;
-  OperandList local_64;
-  bool local_9;
-  int local_8;
+  int timeInSec;
+  Operand result;
+  int msec;
+  OperandList list;
+  bool showMs;
+  int sec;
   
-  GetOperandList(param_3,&local_64);
-  local_70.dataType = VAL_STRING;
-  local_70.internals.string = resultString;
-  if (local_64.operandCount < 3) {
-    if (local_64.operandCount == 2) {
-      local_74 = GetOperandValueInt(local_64.operands);
-      iVar1 = GetOperandValueInt(local_64.operands + 1);
-      local_9 = iVar1 != 0;
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.string = resultString;
+  if (list.operandCount < 3) {
+    if (list.operandCount == 2) {
+      timeInSec = GetOperandValueInt(list.operands);
+      iVar1 = GetOperandValueInt(list.operands + 1);
+      showMs = iVar1 != 0;
     }
     else {
-      local_74 = GetOperandValueInt(local_64.operands);
-      local_9 = false;
+      timeInSec = GetOperandValueInt(list.operands);
+      showMs = false;
     }
-    if (local_74 < 0) {
-      local_74 = 0;
+    if (timeInSec < 0) {
+      timeInSec = 0;
     }
-    local_8 = local_74 / 1000;
-    local_68 = local_74 % 1000;
-    if (local_9 == false) {
+    sec = timeInSec / 1000;
+    msec = timeInSec % 1000;
+    if (showMs == false) {
       _snprintf(resultString,0x80,"%2i:%02i");
     }
     else {
@@ -4575,12 +4748,12 @@ void __cdecl SecondsAsCountdownDisplay(int param_1,itemDef_s *param_2,OperandSta
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("secondsToCountdown() = %s\n");
     }
-    AddOperandToStack(param_3,&local_70);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_70.internals.floatVal = 1.8187723e-38;
+    result.internals.floatVal = 1.8187723e-38;
     Expression_Error("Expected 1 or 2 parameters to secondsAsCountdown()\n");
-    AddOperandToStack(param_3,&local_70);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4593,26 +4766,27 @@ void __cdecl SecondsAsCountdownDisplay(int param_1,itemDef_s *param_2,OperandSta
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetTimeLeft(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTimeLeft(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   connstate_t cVar1;
-  Operand local_14;
-  cg_s *local_c;
-  cgs_t *local_8;
+  int timeLeft;
+  Operand result;
+  cg_s *cgameGlob;
+  cgs_t *cgs;
   
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar1 < 8) {
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_14);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_c = CG_GetLocalClientGlobals(param_1);
-    local_8 = CG_GetLocalClientStaticGlobals(param_1);
-    local_14.internals.string = (char *)(local_8->gameEndTime - local_c->nextSnap->serverTime);
-    local_14.dataType = VAL_INT;
-    AddOperandToStack(param_3,&local_14);
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+    result.internals.string = (char *)(cgs->gameEndTime - cgameGlob->nextSnap->serverTime);
+    result.dataType = VAL_INT;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4625,24 +4799,24 @@ void __cdecl GetTimeLeft(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetGameTime(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetGameTime(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   connstate_t cVar1;
-  Operand local_14;
-  cg_s *local_c;
-  cgs_t *local_8;
+  Operand result;
+  cg_s *cgameGlob;
+  cgs_t *cgs;
   
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar1 < 8) {
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal = 0;
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
   }
-  local_c = CG_GetLocalClientGlobals(param_1);
-  local_8 = CG_GetLocalClientStaticGlobals(param_1);
-  local_14.dataType = VAL_INT;
-  local_14.internals = (operandInternalDataUnion)local_c->nextSnap->serverTime;
-  AddOperandToStack(param_3,&local_14);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+  result.dataType = VAL_INT;
+  result.internals = (operandInternalDataUnion)cgameGlob->nextSnap->serverTime;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4654,22 +4828,22 @@ void __cdecl GetGameTime(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetBombTime(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetBombTime(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  cg_s *local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  cg_s *cgameGlob;
+  int bombIndex;
   
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  GetOperand(param_3,&local_1c);
-  local_8 = GetSourceInt(&local_1c);
-  if (local_8 < 2) {
-    local_c = CG_GetLocalClientGlobals(param_1);
-    local_14.internals = *(operandInternalDataUnion *)(local_c->bombTimer + local_8);
-    AddOperandToStack(param_3,&local_14);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  GetOperand(dataStack,&source);
+  bombIndex = GetSourceInt(&source);
+  if (bombIndex < 2) {
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    result.internals = *(operandInternalDataUnion *)(cgameGlob->bombTimer + bombIndex);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error(" The bomb index %d is not less than BOMB_TIMER_COUNT\n");
@@ -4685,52 +4859,52 @@ void __cdecl GetBombTime(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetGametypeObjective(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetGametypeObjective(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   connstate_t cVar1;
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_STRING;
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  result.dataType = VAL_STRING;
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar1 < 8) {
-    local_10.internals.floatVal = 1.8187723e-38;
+    result.internals.floatVal = 1.8187723e-38;
   }
   else {
-    local_8 = CG_GetLocalClientGlobals(param_1);
-    local_10.internals.string = CG_GetGametypeDescription(param_1);
-    if ((char *)local_10.internals.intVal == (char *)0x0) {
-      local_10.internals.floatVal = 1.8187723e-38;
+    cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+    result.internals.string = CG_GetGametypeDescription(localClientNum);
+    if ((char *)result.internals.intVal == (char *)0x0) {
+      result.internals.floatVal = 1.8187723e-38;
     }
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791520  GetPlaylistMaxPartySize  (universal/com_expressions_eval.cpp:3677)
 
-void __cdecl GetPlaylistMaxPartySize(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPlaylistMaxPartySize(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   int iVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int playlistId;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   iVar2 = (playlist->current).integer;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
   iVar2 = Playlist_GetPlaylistIdForNum(iVar1,iVar2);
-  local_8 = iVar2;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals.intVal = Playlist_GetMaxPartySize(iVar1,iVar2);
+  playlistId = iVar2;
+  iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = Playlist_GetMaxPartySize(iVar1,iVar2);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetPlaylistMaxPartySize() = %d\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4739,31 +4913,31 @@ void __cdecl GetPlaylistMaxPartySize(int param_1,itemDef_s *param_2,OperandStack
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl GetGametypeName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetGametypeName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   connstate_t cVar1;
-  Operand local_10;
-  cgs_t *local_8;
+  Operand result;
+  cgs_t *cgs;
   
-  local_10.dataType = VAL_STRING;
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  result.dataType = VAL_STRING;
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar1 < 8) {
     if (g_gametype == (dvar_s *)0x0) {
-      local_10.internals.floatVal = 1.8187723e-38;
+      result.internals.floatVal = 1.8187723e-38;
     }
     else {
-      local_10.internals.string = UI_GetGameTypeDisplayName((g_gametype->current).string);
+      result.internals.string = UI_GetGameTypeDisplayName((g_gametype->current).string);
     }
   }
   else {
-    local_8 = CG_GetLocalClientStaticGlobals(param_1);
-    local_10.internals.string = UI_GetGameTypeDisplayName(local_8->gametype);
+    cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+    result.internals.string = UI_GetGameTypeDisplayName(cgs->gametype);
   }
-  if ((char *)local_10.internals.intVal == (char *)0x0) {
-    local_10.internals.floatVal = 1.8187723e-38;
+  if ((char *)result.internals.intVal == (char *)0x0) {
+    result.internals.floatVal = 1.8187723e-38;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4775,61 +4949,66 @@ void __cdecl GetGametypeName(int param_1,itemDef_s *param_2,OperandStack *param_
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetGametypeInternal(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetGametypeInternal(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   connstate_t cVar1;
-  Operand local_14;
-  cg_s *local_c;
-  cgs_t *local_8;
+  Operand result;
+  cg_s *cgameGlob;
+  cgs_t *cgs;
   
-  local_c = CG_GetLocalClientGlobals(param_1);
-  local_8 = CG_GetLocalClientStaticGlobals(param_1);
-  local_14.dataType = VAL_STRING;
-  cVar1 = CL_GetLocalClientConnectionState(param_1);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  cgs = CG_GetLocalClientStaticGlobals(localClientNum);
+  result.dataType = VAL_STRING;
+  cVar1 = CL_GetLocalClientConnectionState(localClientNum);
   if ((int)cVar1 < 8) {
-    local_14.internals = (operandInternalDataUnion)(g_gametype->current).integer;
+    result.internals = (operandInternalDataUnion)(g_gametype->current).integer;
   }
   else {
-    local_14.internals.string = local_8->gametype;
+    result.internals.string = cgs->gametype;
   }
-  if ((char *)local_14.internals.intVal == (char *)0x0) {
-    local_14.internals.floatVal = 1.8187723e-38;
+  if ((char *)result.internals.intVal == (char *)0x0) {
+    result.internals.floatVal = 1.8187723e-38;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007916C0  GetScore  (universal/com_expressions_eval.cpp:3780)
 
-void __cdecl GetScore(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetScore(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  score_s *local_8;
+  Operand source;
+  Operand result;
+  score_s *score;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  if (local_18.dataType == VAL_INT) {
-    if ((int)local_18.internals < 1) {
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (source.dataType == VAL_INT) {
+    if ((int)source.internals < 1) {
       Expression_Error(" rank must be > 0: %i\n");
-      AddOperandToStack(param_3,&local_10);
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      local_8 = UI_GetScoreAtRank(param_1,local_18.internals.intVal);
-      if (local_8 != (score_s *)0x0) {
-        local_10.internals = (operandInternalDataUnion)local_8->score;
+      score = UI_GetScoreAtRank(localClientNum,source.internals.intVal);
+      if (score != (score_s *)0x0) {
+        result.internals = (operandInternalDataUnion)score->score;
       }
-      AddOperandToStack(param_3,&local_10);
+      AddOperandToStack(dataStack,&result);
     }
   }
   else {
-    GetNameForValueType(local_18.dataType);
+    GetNameForValueType(source.dataType);
     Expression_Error(" Must use an integer for the rank: %s\n");
-    AddOperandToStack(param_3,&local_10);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4837,28 +5016,28 @@ void __cdecl GetScore(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 00791780  GetGameMessageWindowActive  (universal/com_expressions_eval.cpp:3812)
 
-void __cdecl GetGameMessageWindowActive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetGameMessageWindowActive(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int windowIndex;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetSourceInt(&local_18);
-  bVar1 = Con_IsValidGameMessageWindow(local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  windowIndex = GetSourceInt(&source);
+  bVar1 = Con_IsValidGameMessageWindow(windowIndex);
   if (bVar1) {
-    bVar1 = Con_IsGameMessageWindowActive(param_1,local_8);
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = bVar1;
-    AddOperandToStack(param_3,&local_10);
+    bVar1 = Con_IsGameMessageWindowActive(localClientNum,windowIndex);
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("UI Script error: gameMsgWndActive was passed an invalid window index\n");
-    AddOperandToStack(param_3,&local_10);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -4866,32 +5045,32 @@ void __cdecl GetGameMessageWindowActive(int param_1,itemDef_s *param_2,OperandSt
 
 // 00791820  UI_GetOnlineFriendCount  (universal/com_expressions_eval.cpp:3836)
 
-void __cdecl UI_GetOnlineFriendCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl UI_GetOnlineFriendCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals.intVal = Friends_GetCount(local_8,4,0x30);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = Friends_GetCount(controllerIndex,4,0x30);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079B0B0  UI_GetInvitesCount  (universal/com_expressions_eval.cpp:3876)
 
-void __cdecl UI_GetInvitesCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl UI_GetInvitesCount(int localClientNum_2,itemDef_s *item_2,OperandStack *dataStack_2)
 
 {
-  Operand local_c;
+  Operand result_2;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  local_c.internals.intVal = Live_GetInvitesCount();
-  AddOperandToStack(param_3,&local_c);
+  result_2.dataType = VAL_INT;
+  result_2.internals.intVal = 0;
+  result_2.internals.intVal = Live_GetInvitesCount();
+  AddOperandToStack(dataStack_2,&result_2);
   return;
 }
 
@@ -4903,22 +5082,22 @@ void __cdecl UI_GetInvitesCount(int param_1,itemDef_s *param_2,OperandStack *par
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetFollowing(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFollowing(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (((local_8->predictedPlayerState).otherFlags & 0x1aU) != 0) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (((cgameGlob->predictedPlayerState).otherFlags & 0x1aU) != 0) {
+    result.internals.intVal = 1;
   }
-  if (((local_8->predictedPlayerState).otherFlags & 0x18U) != 0) {
-    local_10.internals.intVal = 1;
+  if (((cgameGlob->predictedPlayerState).otherFlags & 0x18U) != 0) {
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4930,19 +5109,19 @@ void __cdecl GetFollowing(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CanSpecCycle(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanSpecCycle(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (((local_8->predictedPlayerState).otherFlags & 8U) != 0) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (((cgameGlob->predictedPlayerState).otherFlags & 8U) != 0) {
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4954,19 +5133,19 @@ void __cdecl CanSpecCycle(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl CanSpecFree(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanSpecFree(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (((local_8->predictedPlayerState).otherFlags & 0x10U) != 0) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (((cgameGlob->predictedPlayerState).otherFlags & 0x10U) != 0) {
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -4978,23 +5157,23 @@ void __cdecl CanSpecFree(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetClientInPlace(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClientInPlace(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_20;
-  Operand local_18;
-  cg_s *local_10;
-  int local_c;
-  operandInternalDataUnion local_8;
+  Operand source;
+  Operand result;
+  cg_s *cgameGlob;
+  int place;
+  int clientNum;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = -1;
-  local_10 = CG_GetLocalClientGlobals(param_1);
-  local_c = GetSourceInt(&local_20);
-  if (0x1f < local_c - 1U) {
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = -1;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  place = GetSourceInt(&source);
+  if (0x1f < place - 1U) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0xf8f,0,"place-1 doesn\'t index MAX_CLIENTS\n\t%i not in [0, %i)");
     if (!bVar2) {
@@ -5003,503 +5182,510 @@ void __cdecl GetClientInPlace(int param_1,itemDef_s *param_2,OperandStack *param
       return;
     }
   }
-  local_8 = (operandInternalDataUnion)
-            ((operandInternalDataUnion *)(local_10->teamPlayers + local_c + 3))->intVal;
-  if ((-1 < local_8.intVal) && (local_8.intVal < 0x20)) {
-    local_18.internals = local_8;
+  clientNum = ((operandInternalDataUnion *)(cgameGlob->teamPlayers + place + 3))->intVal;
+  if ((-1 < clientNum) && (clientNum < 0x20)) {
+    result.internals.intVal = clientNum;
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791A30  GetPlaceWithTiesForScore  (universal/com_expressions_eval.cpp:3995)
 
-void __cdecl GetPlaceWithTiesForScore(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl GetPlaceWithTiesForScore(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int score;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = CG_GetPlaceWithTiesForScore(param_1,local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  score = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = CG_GetPlaceWithTiesForScore(localClientNum,score);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791A90  EmblemLayerName  (universal/com_expressions_eval.cpp:4014)
 
-void __cdecl EmblemLayerName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemLayerName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  char *pcVar2;
-  Operand local_14;
-  Operand local_c;
+  int layer;
+  char *string;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  iVar1 = GetOperandValueInt(&local_14);
-  pcVar2 = UI_EmblemGetLayerName(iVar1);
-  local_c.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  layer = GetOperandValueInt(&source);
+  string = UI_EmblemGetLayerName(layer);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791AF0  EmblemLayerState  (universal/com_expressions_eval.cpp:4031)
 
-void __cdecl EmblemLayerState(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemLayerState(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   char *pcVar2;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int layer;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c = GetOperandValueInt(&local_1c);
-  iVar1 = BG_EmblemsGetUnlockedLayerCount(local_8);
-  if (local_c < iVar1) {
-    iVar1 = BG_EmblemsGetPurchasedLayerCount(local_8);
-    if (local_c < iVar1) {
-      pcVar2 = UI_EmblemGetLayerName(local_c);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  layer = GetOperandValueInt(&source);
+  iVar1 = BG_EmblemsGetUnlockedLayerCount(controllerIndex);
+  if (layer < iVar1) {
+    iVar1 = BG_EmblemsGetPurchasedLayerCount(controllerIndex);
+    if (layer < iVar1) {
+      pcVar2 = UI_EmblemGetLayerName(layer);
       if (*pcVar2 == '\0') {
-        local_14.internals.intVal = 2;
+        result.internals.intVal = 2;
       }
       else {
-        local_14.internals.intVal = 3;
+        result.internals.intVal = 3;
       }
     }
     else {
-      local_14.internals.intVal = 1;
+      result.internals.intVal = 1;
     }
   }
   else {
-    local_14.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791BA0  EmblemLayerCanOutline  (universal/com_expressions_eval.cpp:4065)
 
-void __cdecl EmblemLayerCanOutline(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemLayerCanOutline(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int layer;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetOperandValueInt(&local_18);
-  bVar1 = UI_EmblemCanOutlineLayer(local_8);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  layer = GetOperandValueInt(&source);
+  bVar1 = UI_EmblemCanOutlineLayer(layer);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791C00  EmblemLayerCanDuplicate  (universal/com_expressions_eval.cpp:4083)
 
-void __cdecl EmblemLayerCanDuplicate(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemLayerCanDuplicate(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int layer;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c = GetOperandValueInt(&local_1c);
-  local_14.internals._0_1_ = UI_EmblemCanDuplicateLayer(local_8,local_c);
-  local_14.internals.intVal._1_3_ = 0;
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  layer = GetOperandValueInt(&source);
+  result.internals._0_1_ = UI_EmblemCanDuplicateLayer(controllerIndex,layer);
+  result.internals.intVal._1_3_ = 0;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791C70  EmblemSelectedLayer  (universal/com_expressions_eval.cpp:4102)
 
-void __cdecl EmblemSelectedLayer(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemSelectedLayer(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  local_c.internals.intVal = UI_EmblemGetSelectedLayer();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = UI_EmblemGetSelectedLayer();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791CA0  EmblemLayerCost  (universal/com_expressions_eval.cpp:4116)
 
-void __cdecl EmblemLayerCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemLayerCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int layer;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetOperandValueInt(&local_18);
-  local_10.internals.intVal = BG_EmblemsGetLayerCost(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  layer = GetOperandValueInt(&source);
+  result.internals.intVal = BG_EmblemsGetLayerCost(layer);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791D00  EmblemLayerUnlockLevel  (universal/com_expressions_eval.cpp:4134)
 
-void __cdecl EmblemLayerUnlockLevel(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemLayerUnlockLevel(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int layer;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetOperandValueInt(&local_18);
-  local_10.internals.intVal = BG_EmblemsGetLayerUnlockLevel(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  layer = GetOperandValueInt(&source);
+  result.internals.intVal = BG_EmblemsGetLayerUnlockLevel(layer);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791D60  EmblemIconName  (universal/com_expressions_eval.cpp:4152)
 
-void __cdecl EmblemIconName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemIconName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  char *pcVar2;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  char *string;
+  Operand source;
+  Operand result;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  iVar1 = GetOperandValueInt(&local_18);
-  pcVar2 = BG_EmblemsGetIconDesc(local_8,(short)iVar1);
-  local_10.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  iVar1 = GetOperandValueInt(&source);
+  string = BG_EmblemsGetIconDesc(controllerIndex,(short)iVar1);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791DD0  EmblemIconUnlockDesc  (universal/com_expressions_eval.cpp:4170)
 
-void __cdecl EmblemIconUnlockDesc(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemIconUnlockDesc(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  char *pcVar2;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  char *string;
+  Operand source;
+  Operand result;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  iVar1 = GetOperandValueInt(&local_18);
-  pcVar2 = BG_EmblemsGetIconUnlockDesc(local_8,(short)iVar1);
-  local_10.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  iVar1 = GetOperandValueInt(&source);
+  string = BG_EmblemsGetIconUnlockDesc(controllerIndex,(short)iVar1);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791E40  EmblemIconCost  (universal/com_expressions_eval.cpp:4188)
 
-void __cdecl EmblemIconCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemIconCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  iVar1 = GetOperandValueInt(&local_14);
-  local_c.internals.intVal = BG_EmblemsGetIconCost((short)iVar1);
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  iVar1 = GetOperandValueInt(&source);
+  result.internals.intVal = BG_EmblemsGetIconCost((short)iVar1);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791E90  EmblemIconState  (universal/com_expressions_eval.cpp:4205)
 
-void __cdecl EmblemIconState(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemIconState(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = GetOperandValueInt(&local_1c);
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  if (local_8 == -1) {
-    local_14.internals.intVal = 4;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  id = GetOperandValueInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (id == -1) {
+    result.internals.intVal = 4;
   }
   else {
-    bVar1 = BG_EmblemsIsIconClassified(local_c,(short)local_8);
+    bVar1 = BG_EmblemsIsIconClassified(controllerIndex,(short)id);
     if (bVar1) {
-      local_14.internals.intVal = 0;
+      result.internals.intVal = 0;
     }
     else {
-      bVar1 = BG_EmblemsIsIconLocked(local_c,(short)local_8);
+      bVar1 = BG_EmblemsIsIconLocked(controllerIndex,(short)id);
       if (bVar1) {
-        local_14.internals.intVal = 1;
+        result.internals.intVal = 1;
       }
       else {
-        bVar1 = BG_EmblemsIsIconPurchased(local_c,(short)local_8);
+        bVar1 = BG_EmblemsIsIconPurchased(controllerIndex,(short)id);
         if (bVar1) {
-          local_14.internals.intVal = 3;
+          result.internals.intVal = 3;
         }
         else {
-          local_14.internals.intVal = 2;
+          result.internals.intVal = 2;
         }
       }
     }
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791F60  EmblemPurchasedLayerCount  (universal/com_expressions_eval.cpp:4234)
 
-void __cdecl EmblemPurchasedLayerCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemPurchasedLayerCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals.intVal = BG_EmblemsGetPurchasedLayerCount(local_8);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = BG_EmblemsGetPurchasedLayerCount(controllerIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00791FB0  EmblemIsModified  (universal/com_expressions_eval.cpp:4249)
 
-void __cdecl EmblemIsModified(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemIsModified(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = UI_EmblemIsModified(local_8);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = UI_EmblemIsModified(controllerIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792000  EmblemBackgroundCount  (universal/com_expressions_eval.cpp:4264)
 
-void __cdecl EmblemBackgroundCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  local_c.internals.intVal = BG_EmblemsGetBackgroundCount();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = BG_EmblemsGetBackgroundCount();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792030  EmblemBackgroundIsLocked  (universal/com_expressions_eval.cpp:4278)
 
-void __cdecl EmblemBackgroundIsLocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundIsLocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  short local_8;
+  int index;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  short id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  iVar2 = GetOperandValueInt(&local_1c);
-  local_8 = BG_EmblemsGetBackgroundID(iVar2);
-  bVar1 = BG_EmblemsIsBackgroundLocked(local_c,local_8);
-  local_14.internals.intVal._1_3_ = 0;
-  local_14.internals.intVal._0_1_ = bVar1;
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  bVar1 = BG_EmblemsIsBackgroundLocked(controllerIndex,id);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007920B0  EmblemBackgroundIsClassified  (universal/com_expressions_eval.cpp:4297)
 
-void __cdecl EmblemBackgroundIsClassified(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+EmblemBackgroundIsClassified(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  short local_8;
+  int index;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  short id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  iVar2 = GetOperandValueInt(&local_1c);
-  local_8 = BG_EmblemsGetBackgroundID(iVar2);
-  bVar1 = BG_EmblemsIsBackgroundClassified(local_c,local_8);
-  local_14.internals.intVal._1_3_ = 0;
-  local_14.internals.intVal._0_1_ = bVar1;
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  bVar1 = BG_EmblemsIsBackgroundClassified(controllerIndex,id);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792130  EmblemBackgroundIsPurchased  (universal/com_expressions_eval.cpp:4316)
 
-void __cdecl EmblemBackgroundIsPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundIsPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  short local_8;
+  int index;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  short id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  iVar2 = GetOperandValueInt(&local_1c);
-  local_8 = BG_EmblemsGetBackgroundID(iVar2);
-  bVar1 = BG_EmblemsIsBackgroundPurchased(local_c,local_8);
-  local_14.internals.intVal._1_3_ = 0;
-  local_14.internals.intVal._0_1_ = bVar1;
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  bVar1 = BG_EmblemsIsBackgroundPurchased(controllerIndex,id);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007921B0  EmblemBackgroundMaterial  (universal/com_expressions_eval.cpp:4337)
 
-void __cdecl EmblemBackgroundMaterial(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundMaterial(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_1c;
-  Operand local_14;
-  operandInternalDataUnion *local_c;
-  short local_8;
+  int index;
+  Operand source;
+  Operand result;
+  Material *mat;
+  short id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  iVar1 = GetOperandValueInt(&local_1c);
-  local_8 = BG_EmblemsGetBackgroundID(iVar1);
-  local_c = (operandInternalDataUnion *)BG_EmblemsGetBackgroundMaterial(local_8);
-  if (local_c == (operandInternalDataUnion *)0x0) {
-    local_14.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  mat = BG_EmblemsGetBackgroundMaterial(id);
+  if ((operandInternalDataUnion *)mat == (operandInternalDataUnion *)0x0) {
+    result.internals.floatVal = 1.8187723e-38;
   }
   else {
-    local_14.internals = *local_c;
+    result.internals = *(operandInternalDataUnion *)mat;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792230  EmblemPlayerBackgroundMaterial  (universal/com_expressions_eval.cpp:4359)
 
-void __cdecl EmblemPlayerBackgroundMaterial(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+EmblemPlayerBackgroundMaterial(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  ulong64 uVar2;
-  int iVar3;
-  char *pcVar4;
-  long64 lVar5;
-  expDataType eVar6;
-  OperandList local_74;
-  int local_18;
-  Material *local_14;
-  short local_10;
-  undefined8 local_c;
+  Operand operand;
+  ulong64 uVar1;
+  int controllerIndex_00;
+  char *str;
+  long64 lVar2;
+  expDataType eVar3;
+  int controllerIndex;
+  OperandList list;
+  int useServer;
+  Material *mat;
+  short id;
+  undefined8 xuid;
   
-  GetOperandList(param_3,&local_74);
-  local_18 = GetSourceInt(local_74.operands + 1);
-  eVar6 = VAL_STRING;
-  if (local_74.operandCount < 2) {
-    AddOperandToStack(param_3,(Operand *)&stack0xffffff80);
+  GetOperandList(dataStack,&list);
+  useServer = GetSourceInt(list.operands + 1);
+  eVar3 = VAL_STRING;
+  if (list.operandCount < 2) {
+    AddOperandToStack(dataStack,(Operand *)&stack0xffffff80);
   }
   else {
-    iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-    OVar1.internals.intVal._0_2_ = (short)local_74.operands[0].internals.intVal;
-    OVar1.dataType = local_74.operands[0].dataType;
-    OVar1.internals.intVal._2_2_ = (short)((uint)local_74.operands[0].internals >> 0x10);
-    pcVar4 = GetSourceString(OVar1);
-    lVar5 = I_atoi64(pcVar4);
-    local_c._4_4_ = (undefined4)((ulonglong)lVar5 >> 0x20);
-    local_c = lVar5;
-    if (local_18 == 0) {
-      uVar2 = CONCAT44(eVar6,local_c._4_4_);
-      local_10 = PCache_GetPlayerEmblemBackgroundID(iVar3,uVar2);
+    controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+    operand.internals.intVal._0_2_ = (short)list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    operand.internals.intVal._2_2_ = (short)((uint)list.operands[0].internals >> 0x10);
+    str = GetSourceString(operand);
+    lVar2 = I_atoi64(str);
+    xuid._4_4_ = (undefined4)((ulonglong)lVar2 >> 0x20);
+    xuid = lVar2;
+    if (useServer == 0) {
+      uVar1 = CONCAT44(eVar3,xuid._4_4_);
+      id = PCache_GetPlayerEmblemBackgroundID(controllerIndex_00,uVar1);
     }
     else {
-      uVar2 = CONCAT44(eVar6,local_c._4_4_);
-      local_10 = PCache_GetPlayerEmblemBackgroundID(-1,uVar2);
+      uVar1 = CONCAT44(eVar3,xuid._4_4_);
+      id = PCache_GetPlayerEmblemBackgroundID(-1,uVar1);
     }
-    local_14 = BG_EmblemsGetBackgroundMaterial(local_10);
-    AddOperandToStack(param_3,(Operand *)&stack0xffffff80);
+    mat = BG_EmblemsGetBackgroundMaterial(id);
+    AddOperandToStack(dataStack,(Operand *)&stack0xffffff80);
   }
   return;
 }
@@ -5507,294 +5693,296 @@ void __cdecl EmblemPlayerBackgroundMaterial(int param_1,itemDef_s *param_2,Opera
 
 // 00792320  EmblemSelectedBackground  (universal/com_expressions_eval.cpp:4414)
 
-void __cdecl EmblemSelectedBackground(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemSelectedBackground(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  short local_8;
+  Operand result;
+  short id;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = -1;
-  local_8 = UI_EmblemGetSelectedBackgroundID();
-  local_10.internals.intVal = BG_EmblemsGetBackgroundIndex(local_8);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_INT;
+  result.internals.intVal = -1;
+  id = UI_EmblemGetSelectedBackgroundID();
+  result.internals.intVal = BG_EmblemsGetBackgroundIndex(id);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792370  EmblemBackgroundName  (universal/com_expressions_eval.cpp:4431)
 
-void __cdecl EmblemBackgroundName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  char *pcVar2;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  short local_8;
+  int index;
+  char *string;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  short id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  iVar1 = GetOperandValueInt(&local_1c);
-  local_8 = BG_EmblemsGetBackgroundID(iVar1);
-  pcVar2 = BG_EmblemsGetBackgroundDesc(local_c,local_8);
-  local_14.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  string = BG_EmblemsGetBackgroundDesc(controllerIndex,id);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007923F0  EmblemBackgroundUnlockDesc  (universal/com_expressions_eval.cpp:4450)
 
-void __cdecl EmblemBackgroundUnlockDesc(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundUnlockDesc(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  char *pcVar2;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  short local_8;
+  int index;
+  char *string;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  short id;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  iVar1 = GetOperandValueInt(&local_1c);
-  local_8 = BG_EmblemsGetBackgroundID(iVar1);
-  pcVar2 = BG_EmblemsGetBackgroundUnlockDesc(local_c,local_8);
-  local_14.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  string = BG_EmblemsGetBackgroundUnlockDesc(controllerIndex,id);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792470  EmblemStateDisplay  (universal/com_expressions_eval.cpp:4469)
 
-void __cdecl EmblemStateDisplay(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemStateDisplay(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  char *pcVar2;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int idx;
+  char *string;
+  Operand source;
+  Operand result;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  iVar1 = GetOperandValueInt(&local_18);
-  pcVar2 = UI_EmblemGetStateDisplay(local_8,iVar1);
-  local_10.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  idx = GetOperandValueInt(&source);
+  string = UI_EmblemGetStateDisplay(controllerIndex,idx);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007924E0  EmblemCategoryDisplay  (universal/com_expressions_eval.cpp:4487)
 
-void __cdecl EmblemCategoryDisplay(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemCategoryDisplay(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  char *pcVar2;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int idx;
+  char *string;
+  Operand source;
+  Operand result;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  iVar1 = GetOperandValueInt(&local_18);
-  pcVar2 = UI_EmblemGetCategoryDisplay(local_8,iVar1);
-  local_10.internals.string = CopyTempString(pcVar2);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  idx = GetOperandValueInt(&source);
+  string = UI_EmblemGetCategoryDisplay(controllerIndex,idx);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792550  EmblemFilterCount  (universal/com_expressions_eval.cpp:4505)
 
-void __cdecl EmblemFilterCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemFilterCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_64;
-  OperandList local_5c;
+  int controllerIndex_00;
+  int category;
+  int state;
+  int controllerIndex;
+  Operand result;
+  OperandList list;
   
-  GetOperandList(param_3,&local_5c);
-  local_64.dataType = VAL_INT;
-  local_64.internals.intVal = 0;
-  if (local_5c.operandCount == 2) {
-    iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-    iVar2 = GetOperandValueInt(local_5c.operands + 1);
-    iVar3 = GetOperandValueInt(local_5c.operands);
-    local_64.internals.intVal = UI_EmblemGetFilterCount(iVar1,iVar3,iVar2);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+    category = GetOperandValueInt(list.operands + 1);
+    state = GetOperandValueInt(list.operands);
+    result.internals.intVal = UI_EmblemGetFilterCount(controllerIndex_00,state,category);
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007925D0  EmblemFilterIconID  (universal/com_expressions_eval.cpp:4527)
 
-void __cdecl EmblemFilterIconID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemFilterIconID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   short sVar1;
-  int iVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  Operand local_64;
-  OperandList local_5c;
+  int controllerIndex_00;
+  int index;
+  int category;
+  int state;
+  int controllerIndex;
+  Operand result;
+  OperandList list;
   
-  GetOperandList(param_3,&local_5c);
-  local_64.dataType = VAL_INT;
-  local_64.internals.intVal = 0;
-  if (local_5c.operandCount == 3) {
-    iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-    iVar3 = GetOperandValueInt(local_5c.operands + 2);
-    iVar4 = GetOperandValueInt(local_5c.operands + 1);
-    iVar5 = GetOperandValueInt(local_5c.operands);
-    sVar1 = UI_EmblemGetFilterIconID(iVar2,iVar5,iVar4,iVar3);
-    local_64.internals = (operandInternalDataUnion)(int)sVar1;
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 3) {
+    controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+    index = GetOperandValueInt(list.operands + 2);
+    category = GetOperandValueInt(list.operands + 1);
+    state = GetOperandValueInt(list.operands);
+    sVar1 = UI_EmblemGetFilterIconID(controllerIndex_00,state,category,index);
+    result.internals = (operandInternalDataUnion)(int)sVar1;
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792660  EmblemBackgroundCost  (universal/com_expressions_eval.cpp:4550)
 
-void __cdecl EmblemBackgroundCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl EmblemBackgroundCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_18;
-  Operand local_10;
-  short local_8;
+  int index;
+  Operand source;
+  Operand result;
+  short id;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  iVar1 = GetOperandValueInt(&local_18);
-  local_8 = BG_EmblemsGetBackgroundID(iVar1);
-  local_10.internals.intVal = BG_EmblemsGetBackgroundCost(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  index = GetOperandValueInt(&source);
+  id = BG_EmblemsGetBackgroundID(index);
+  result.internals.intVal = BG_EmblemsGetBackgroundCost(id);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007926D0  GridMove  (universal/com_expressions_eval.cpp:4568)
 
-void __cdecl GridMove(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GridMove(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  int iVar2;
+  Operand operand;
+  int iVar1;
   int local_90;
-  Operand local_88;
-  int local_80;
-  OperandList local_7c;
-  int local_24;
-  int local_20;
-  int local_1c;
-  int local_18;
-  char *local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand result;
+  int pages;
+  OperandList list;
+  int page;
+  int idx;
+  int row;
+  int rows;
+  char *direction;
+  int count;
+  int cols;
+  int col;
   
-  GetOperandList(param_3,&local_7c);
-  local_18 = GetOperandValueInt(local_7c.operands);
-  local_c = GetOperandValueInt(local_7c.operands + 1);
-  local_10 = GetOperandValueInt(local_7c.operands + 2);
-  local_20 = GetOperandValueInt(local_7c.operands + 3);
-  OVar1.internals.intVal = local_7c.operands[4].internals.intVal;
-  OVar1.dataType = local_7c.operands[4].dataType;
-  local_14 = GetSourceString(OVar1);
-  local_80 = (local_10 + -1 + local_18 * local_c) / (local_18 * local_c);
-  local_24 = local_20 / (local_18 * local_c);
-  local_8 = local_20 % local_c;
-  local_1c = (local_20 / local_c) % local_18;
-  local_88.dataType = VAL_INT;
-  local_88.internals.intVal = local_20;
-  iVar2 = I_stricmp(local_14,"up");
-  if (iVar2 == 0) {
-    if (0 < local_1c) {
-      local_1c = local_1c + -1;
+  GetOperandList(dataStack,&list);
+  rows = GetOperandValueInt(list.operands);
+  cols = GetOperandValueInt(list.operands + 1);
+  count = GetOperandValueInt(list.operands + 2);
+  idx = GetOperandValueInt(list.operands + 3);
+  operand.internals.intVal = list.operands[4].internals.intVal;
+  operand.dataType = list.operands[4].dataType;
+  direction = GetSourceString(operand);
+  pages = (count + -1 + rows * cols) / (rows * cols);
+  page = idx / (rows * cols);
+  col = idx % cols;
+  row = (idx / cols) % rows;
+  result.dataType = VAL_INT;
+  result.internals.intVal = idx;
+  iVar1 = I_stricmp(direction,"up");
+  if (iVar1 == 0) {
+    if (0 < row) {
+      row = row + -1;
     }
   }
   else {
-    iVar2 = I_stricmp(local_14,"down");
-    if (iVar2 == 0) {
-      if (local_1c < local_18 + -1) {
-        local_1c = local_1c + 1;
+    iVar1 = I_stricmp(direction,"down");
+    if (iVar1 == 0) {
+      if (row < rows + -1) {
+        row = row + 1;
       }
     }
     else {
-      iVar2 = I_stricmp(local_14,"left");
-      if (iVar2 == 0) {
-        if (local_8 < 1) {
-          local_24 = local_24 + -1;
-          local_8 = local_c;
+      iVar1 = I_stricmp(direction,"left");
+      if (iVar1 == 0) {
+        if (col < 1) {
+          page = page + -1;
+          col = cols;
         }
-        local_8 = local_8 + -1;
+        col = col + -1;
       }
       else {
-        iVar2 = I_stricmp(local_14,"right");
-        if (iVar2 == 0) {
-          if ((local_8 < local_c + -1) && (local_20 < local_10 + -1)) {
-            local_8 = local_8 + 1;
+        iVar1 = I_stricmp(direction,"right");
+        if (iVar1 == 0) {
+          if ((col < cols + -1) && (idx < count + -1)) {
+            col = col + 1;
           }
           else {
-            local_8 = 0;
-            local_24 = local_24 + 1;
+            col = 0;
+            page = page + 1;
           }
         }
         else {
-          iVar2 = I_stricmp(local_14,"page_left");
-          if (iVar2 == 0) {
-            local_24 = local_24 + -1;
+          iVar1 = I_stricmp(direction,"page_left");
+          if (iVar1 == 0) {
+            page = page + -1;
           }
           else {
-            iVar2 = I_stricmp(local_14,"page_right");
-            if (iVar2 == 0) {
-              local_24 = local_24 + 1;
+            iVar1 = I_stricmp(direction,"page_right");
+            if (iVar1 == 0) {
+              page = page + 1;
             }
           }
         }
       }
     }
   }
-  if (local_80 == 0) {
-    local_24 = 0;
-    local_20 = 0;
+  if (pages == 0) {
+    page = 0;
+    idx = 0;
   }
   else {
-    if (local_24 < 0) {
-      local_24 = local_24 + local_80;
+    if (page < 0) {
+      page = page + pages;
     }
-    if (local_80 <= local_24) {
-      local_24 = local_24 - local_80;
+    if (pages <= page) {
+      page = page - pages;
     }
-    iVar2 = local_1c * local_c + local_18 * local_c * local_24 + local_8;
-    local_90 = local_10 + -1;
-    if (iVar2 <= local_90) {
-      local_90 = iVar2;
+    iVar1 = row * cols + rows * cols * page + col;
+    local_90 = count + -1;
+    if (iVar1 <= local_90) {
+      local_90 = iVar1;
     }
-    local_20 = local_90;
+    idx = local_90;
   }
-  local_88.internals.intVal = local_20;
-  AddOperandToStack(param_3,&local_88);
+  result.internals.intVal = idx;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -5807,43 +5995,43 @@ void __cdecl GridMove(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetClientName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClientName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_48;
-  Operand local_40;
-  cg_s *local_38;
-  char local_34 [40];
+  Operand source;
+  Operand result;
+  cg_s *cgameGlob;
+  char clientName [40];
   uint local_c;
-  int local_8;
+  int clientNum;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_48);
-  local_40.dataType = VAL_STRING;
-  local_40.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_48);
-  local_38 = CG_GetLocalClientGlobals(param_1);
-  CL_GetClientName(param_1,local_8,local_34,0x26,true);
-  local_40.internals.string = CopyTempString(local_34);
-  AddOperandToStack(param_3,&local_40);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  clientNum = GetSourceInt(&source);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  CL_GetClientName(localClientNum,clientNum,clientName,0x26,true);
+  result.internals.string = CopyTempString(clientName);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007929F0  ToOrdinal  (universal/com_expressions_eval.cpp:4672)
 
-void __cdecl ToOrdinal(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ToOrdinal(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  int local_10;
-  Operand local_c;
+  Operand source;
+  int number;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  local_c.dataType = VAL_STRING;
-  local_10 = GetSourceInt(&local_18);
-  local_c.internals.string = UI_TranslateIntegerToOrdinal(local_10);
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  number = GetSourceInt(&source);
+  result.internals.string = UI_TranslateIntegerToOrdinal(number);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -5855,324 +6043,324 @@ void __cdecl ToOrdinal(int param_1,itemDef_s *param_2,OperandStack *param_3)
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetScoreForClient(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetScoreForClient(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  cg_s *local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  cg_s *cgameGlob;
+  int clientNum;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = CG_GetLocalClientGlobals(param_1);
-  local_8 = GetSourceInt(&local_1c);
-  if (((-1 < local_8) && (local_8 < 0x20)) &&
-     (*(int *)((int)(local_c->bgs).clientinfo + local_8 * 0x5c8) != 0)) {
-    local_14.internals =
-         *(operandInternalDataUnion *)((int)(local_c->bgs).clientinfo + local_8 * 0x5c8 + 0x6c);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  clientNum = GetSourceInt(&source);
+  if (((-1 < clientNum) && (clientNum < 0x20)) &&
+     (*(int *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8) != 0)) {
+    result.internals =
+         *(operandInternalDataUnion *)((int)(cgameGlob->bgs).clientinfo + clientNum * 0x5c8 + 0x6c);
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792AD0  IsDemoPlaying  (universal/com_expressions_eval.cpp:4706)
 
-void __cdecl IsDemoPlaying(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemoPlaying(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792B10  IsDemoClipRecording  (universal/com_expressions_eval.cpp:4718)
 
-void __cdecl IsDemoClipRecording(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemoClipRecording(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsClipRecording();
   if (bVar1) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792B50  IsDemoClipPlaying  (universal/com_expressions_eval.cpp:4730)
 
-void __cdecl IsDemoClipPlaying(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemoClipPlaying(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int local_10;
-  Operand local_c;
+  int type;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
     bVar1 = Demo_IsClipPlaying();
     if (bVar1) {
-      local_c.internals.intVal = 1;
+      result.internals.intVal = 1;
     }
   }
   else {
-    bVar1 = Live_FileShare_Theater_GetType(&local_10);
-    if ((bVar1) && (local_10 == 2)) {
-      local_c.internals.intVal = 1;
+    bVar1 = Live_FileShare_Theater_GetType(&type);
+    if ((bVar1) && (type == 2)) {
+      result.internals.intVal = 1;
     }
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792BC0  IsDemoMovieRendering  (universal/com_expressions_eval.cpp:4759)
 
-void __cdecl IsDemoMovieRendering(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemoMovieRendering(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsRenderingMovie();
   if (bVar1) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792C00  IsDemoThirdPersonCamera  (universal/com_expressions_eval.cpp:4771)
 
-void __cdecl IsDemoThirdPersonCamera(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemoThirdPersonCamera(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
     bVar1 = Demo_IsThirdPersonCamera();
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792C40  IsDemoMovieCamera  (universal/com_expressions_eval.cpp:4783)
 
-void __cdecl IsDemoMovieCamera(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemoMovieCamera(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
     bVar1 = Demo_IsMovieCamera();
-    local_c.internals.intVal._1_3_ = 0;
-    local_c.internals.intVal._0_1_ = bVar1;
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = bVar1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792C80  IsDisplayingPartyScoreboard  (universal/com_expressions_eval.cpp:4795)
 
-void __cdecl IsDisplayingPartyScoreboard(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDisplayingPartyScoreboard(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    local_c.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792CC0  GetDemoTitleName  (universal/com_expressions_eval.cpp:4809)
 
-void __cdecl GetDemoTitleName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoTitleName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  bVar1 = Live_FileShare_Theater_GetName(&local_c.internals.string);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  bVar1 = Live_FileShare_Theater_GetName(&result.internals.string);
   if (!bVar1) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      local_c.internals.string = Demo_GetTitleName();
+      result.internals.string = Demo_GetTitleName();
     }
     else {
-      local_c.internals.floatVal = 1.8187723e-38;
+      result.internals.floatVal = 1.8187723e-38;
     }
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792D20  GetDemoTitleDescription  (universal/com_expressions_eval.cpp:4829)
 
-void __cdecl GetDemoTitleDescription(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoTitleDescription(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  bVar1 = Live_FileShare_Theater_GetDescription(&local_c.internals.string);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  bVar1 = Live_FileShare_Theater_GetDescription(&result.internals.string);
   if (!bVar1) {
     bVar1 = Demo_IsPlaying();
     if (bVar1) {
-      local_c.internals.string = Demo_GetTitleDescription();
+      result.internals.string = Demo_GetTitleDescription();
     }
     else {
-      local_c.internals.floatVal = 1.8187723e-38;
+      result.internals.floatVal = 1.8187723e-38;
     }
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792D80  GetDemoAuthor  (universal/com_expressions_eval.cpp:4849)
 
-void __cdecl GetDemoAuthor(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoAuthor(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    local_c.internals.string = Demo_GetAuthor();
+    result.internals.string = Demo_GetAuthor();
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792DC0  GetDemoTimeInfo  (universal/com_expressions_eval.cpp:4862)
 
-void __cdecl GetDemoTimeInfo(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoTimeInfo(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    local_c.internals.string = Demo_GetTimeInfo();
+    result.internals.string = Demo_GetTimeInfo();
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792E00  GetDemoDuration  (universal/com_expressions_eval.cpp:4875)
 
-void __cdecl GetDemoDuration(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoDuration(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   bVar1 = Demo_IsPlaying();
   if (bVar1) {
-    local_c.internals.string = Demo_GetDuration();
+    result.internals.string = Demo_GetDuration();
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792E40  GetDemoSegmentCount  (universal/com_expressions_eval.cpp:4888)
 
-void __cdecl GetDemoSegmentCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoSegmentCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.floatVal = 1.8187723e-38;
-  local_c.internals.intVal = Demo_GetSegmentCount();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.floatVal = 1.8187723e-38;
+  result.internals.intVal = Demo_GetSegmentCount();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792E70  GetDemoSegmentInformation  (universal/com_expressions_eval.cpp:4900)
 
-void __cdecl GetDemoSegmentInformation(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoSegmentInformation(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_6c;
-  OperandList local_64;
-  int local_c;
-  char *local_8;
+  Operand operand;
+  Operand result;
+  OperandList list;
+  int segmentIndex;
+  char *infoKey;
   
-  local_6c.dataType = VAL_STRING;
-  local_6c.internals.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 2) {
-    local_c = GetOperandValueInt(local_64.operands);
-    OVar1.internals.intVal = local_64.operands[1].internals.intVal;
-    OVar1.dataType = local_64.operands[1].dataType;
-    local_8 = GetSourceString(OVar1);
-    local_6c.internals.string = Demo_GetSegmentInformation(local_c,local_8);
-    AddOperandToStack(param_3,&local_6c);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    segmentIndex = GetOperandValueInt(list.operands);
+    operand.internals.intVal = list.operands[1].internals.intVal;
+    operand.dataType = list.operands[1].dataType;
+    infoKey = GetSourceString(operand);
+    result.internals.string = Demo_GetSegmentInformation(segmentIndex,infoKey);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_6c.internals.floatVal = 1.8187723e-38;
+    result.internals.floatVal = 1.8187723e-38;
     Expression_Error("Expected 2 parameters to getDemoSegmentInformation()\n");
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -6180,114 +6368,116 @@ void __cdecl GetDemoSegmentInformation(int param_1,itemDef_s *param_2,OperandSta
 
 // 00792F10  IsClipModified  (universal/com_expressions_eval.cpp:4930)
 
-void __cdecl IsClipModified(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsClipModified(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.floatVal = 1.8187723e-38;
-  local_c.internals._0_1_ = Demo_IsClipModified();
-  local_c.internals.intVal._1_3_ = 0;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.floatVal = 1.8187723e-38;
+  result.internals._0_1_ = Demo_IsClipModified();
+  result.internals.intVal._1_3_ = 0;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792F50  CanStartDemoPlayback  (universal/com_expressions_eval.cpp:4942)
 
-void __cdecl CanStartDemoPlayback(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanStartDemoPlayback(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.floatVal = 1.8187723e-38;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.floatVal = 1.8187723e-38;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792F80  GetDemoSaveScreenName  (universal/com_expressions_eval.cpp:4954)
 
-void __cdecl GetDemoSaveScreenName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDemoSaveScreenName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  Operand source;
+  Operand result;
+  char *type;
   
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  GetOperand(param_3,&local_18);
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_10.internals.string = Demo_GetSaveScreenName(local_8);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  type = GetSourceString(operand);
+  result.internals.string = Demo_GetSaveScreenName(type);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00792FE0  GetDemoSaveScreenDescription  (universal/com_expressions_eval.cpp:4971)
 
-void __cdecl GetDemoSaveScreenDescription(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetDemoSaveScreenDescription(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  Operand source;
+  Operand result;
+  char *type;
   
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  GetOperand(param_3,&local_18);
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_10.internals.string = Demo_GetSaveScreenDescription(local_8);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  type = GetSourceString(operand);
+  result.internals.string = Demo_GetSaveScreenDescription(type);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793040  GetTheaterFilmNotSelectedMessage  (universal/com_expressions_eval.cpp:4988)
 
-void __cdecl GetTheaterFilmNotSelectedMessage(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetTheaterFilmNotSelectedMessage(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetTheaterFilmNotSelectedMessage() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793090  IsCurrentSortedItemEquipped  (universal/com_expressions_eval.cpp:5009)
 
-void __cdecl IsCurrentSortedItemEquipped(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsCurrentSortedItemEquipped(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  int local_20;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  char *slotName;
+  int iVar3;
+  int currSlot;
+  Operand result;
+  int controllerIndex;
+  int slotCount;
+  char *groupName;
+  int index;
   
-  local_1c.dataType = VAL_INT;
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1398,0,"%s");
@@ -6297,55 +6487,55 @@ void __cdecl IsCurrentSortedItemEquipped(int param_1,itemDef_s *param_2,OperandS
       return;
     }
   }
-  local_1c.internals.intVal = 0;
-  local_c = Dvar_GetString("selected_group");
-  local_10 = Dvar_GetInt("ui_slot_count");
-  for (local_20 = 0; local_20 < local_10; local_20 = local_20 + 1) {
-    pcVar3 = va("%s%d");
-    iVar4 = BG_UnlockablesGetEquippedItemInSlot(local_14,(char *)0x0,pcVar3);
-    if (local_8 == iVar4) {
-      local_1c.internals.intVal = 1;
+  result.internals.intVal = 0;
+  groupName = Dvar_GetString("selected_group");
+  slotCount = Dvar_GetInt("ui_slot_count");
+  for (currSlot = 0; currSlot < slotCount; currSlot = currSlot + 1) {
+    slotName = va("%s%d");
+    iVar3 = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,(char *)0x0,slotName);
+    if (index == iVar3) {
+      result.internals.intVal = 1;
     }
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCurrentItemEquipped() = %i\n");
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793190  GetNumSortedItemsEquipped  (universal/com_expressions_eval.cpp:5035)
 
-void __cdecl GetNumSortedItemsEquipped(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumSortedItemsEquipped(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  int local_1c;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  char *local_8;
+  char *slotName;
+  int itemIndex;
+  int currSlot;
+  Operand result;
+  int controllerIndex;
+  int slotCount;
+  char *groupName;
   
-  local_18.dataType = VAL_INT;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_18.internals.intVal = 0;
-  local_8 = Dvar_GetString("selected_group");
-  local_c = Dvar_GetInt("ui_slot_count");
-  for (local_1c = 0; local_1c < local_c; local_1c = local_1c + 1) {
-    pcVar2 = va("%s%d");
-    iVar3 = BG_UnlockablesGetEquippedItemInSlot(local_10,(char *)0x0,pcVar2);
-    bVar1 = BG_UnlockablesIsItemValidNotNull(iVar3);
+  result.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = 0;
+  groupName = Dvar_GetString("selected_group");
+  slotCount = Dvar_GetInt("ui_slot_count");
+  for (currSlot = 0; currSlot < slotCount; currSlot = currSlot + 1) {
+    slotName = va("%s%d");
+    itemIndex = BG_UnlockablesGetEquippedItemInSlot(controllerIndex,(char *)0x0,slotName);
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemIndex);
     if (bVar1) {
-      local_18.internals.string = (char *)(local_18.internals.intVal + 1);
+      result.internals.string = (char *)(result.internals.intVal + 1);
     }
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetNumSortedItemsEquipped() = %i\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -6353,19 +6543,19 @@ void __cdecl GetNumSortedItemsEquipped(int param_1,itemDef_s *param_2,OperandSta
 // 00793270  IsCurrentItemEquippedInAnyCustomClass  (universal/com_expressions_eval.cpp:5058)
 
 void __cdecl
-IsCurrentItemEquippedInAnyCustomClass(int param_1,itemDef_s *param_2,OperandStack *param_3)
+IsCurrentItemEquippedInAnyCustomClass(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_18;
-  int local_10;
-  undefined1 local_9;
-  int local_8;
+  Operand result;
+  int controllerIndex;
+  bool isEquipped;
+  int index;
   
-  local_18.dataType = VAL_INT;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x13c9,0,"%s");
@@ -6375,52 +6565,57 @@ IsCurrentItemEquippedInAnyCustomClass(int param_1,itemDef_s *param_2,OperandStac
       return;
     }
   }
-  local_18.internals.intVal = 0;
-  local_9 = BG_UnlockablesIsItemEquippedInAnyCustomClass(local_10,local_8);
-  if ((bool)local_9) {
-    local_18.internals.intVal = 1;
+  result.internals.intVal = 0;
+  isEquipped = BG_UnlockablesIsItemEquippedInAnyCustomClass(controllerIndex,index);
+  if (isEquipped) {
+    result.internals.intVal = 1;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCurrentItemEquippedInAnyCustomClass() = %i\n");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793330  IsItemEquipped  (universal/com_expressions_eval.cpp:5083)
 
-void __cdecl IsItemEquipped(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsItemEquipped(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_74;
-  operandInternalDataUnion local_6c;
-  int local_68;
-  OperandList local_64;
-  operandInternalDataUnion local_8;
+  Operand result;
+  char *customClassName;
+  int controllerIndex;
+  OperandList list;
+  int itemIndex;
   
-  GetOperandList(param_3,&local_64);
-  local_74.dataType = VAL_INT;
-  local_74.internals.intVal = 0;
-  if (local_64.operandCount == 2) {
-    local_68 = Com_LocalClient_GetControllerIndex(param_1);
-    local_8.intVal = local_64.operands[0].internals.intVal;
-    local_6c.intVal = local_64.operands[1].internals.intVal;
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    itemIndex = list.operands[0].internals.intVal;
+    customClassName = list.operands[1].internals.string;
     bVar1 = BG_UnlockablesIsItemEquipped
-                      (local_68,local_64.operands[1].internals.string,
-                       local_64.operands[0].internals.intVal);
+                      (controllerIndex,list.operands[1].internals.string,
+                       list.operands[0].internals.intVal);
     if (bVar1) {
-      local_74.internals.intVal = 1;
+      result.internals.intVal = 1;
     }
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("IsItemEquipped() = %i\n");
     }
-    AddOperandToStack(param_3,&local_74);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("UI Expression Error: Expected 2 parameters to IsItemEquipped()\n");
-    AddOperandToStack(param_3,&local_74);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -6428,18 +6623,18 @@ void __cdecl IsItemEquipped(int param_1,itemDef_s *param_2,OperandStack *param_3
 
 // 007933F0  IsCurrentItemPurchased  (universal/com_expressions_eval.cpp:5116)
 
-void __cdecl IsCurrentItemPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsCurrentItemPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
-  Operand local_10;
-  int local_8;
+  int controllerIndex;
+  int itemIndex;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1402,0,"%s");
@@ -6449,173 +6644,191 @@ void __cdecl IsCurrentItemPurchased(int param_1,itemDef_s *param_2,OperandStack 
       return;
     }
   }
-  iVar4 = local_8;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar2 = BG_UnlockablesIsItemPurchased(iVar3,iVar4);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar2;
+  itemIndex = index;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar2 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar2;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCurrentItemPurchased() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793490  IsProItemVersionUnlocked  (universal/com_expressions_eval.cpp:5133)
 
-void __cdecl IsProItemVersionUnlocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsProItemVersionUnlocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int itemIndex;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  iVar2 = GetSourceInt(&local_18);
-  local_8 = iVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsProItemUnlocked(iVar3,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  itemIndex = GetSourceInt(&source);
+  index = itemIndex;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsProItemUnlocked(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsProItemVersionUnlocked() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793520  IsProItemVersion  (universal/com_expressions_eval.cpp:5151)
 
-void __cdecl IsProItemVersion(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsProItemVersion(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  bVar1 = BG_UnlockablesIsProItem(local_8);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  bVar1 = BG_UnlockablesIsProItem(index);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsProItemVersion() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007935A0  GetProItemVersionCost  (universal/com_expressions_eval.cpp:5169)
 
-void __cdecl GetProItemVersionCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetProItemVersionCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int proItemIndex;
+  int index;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_1c);
-  local_c = BG_UnlockablesGetProItem(local_8);
-  if (local_c == -1) {
-    local_14.internals.intVal = 0;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  proItemIndex = BG_UnlockablesGetProItem(index);
+  if (proItemIndex == -1) {
+    result.internals.intVal = 0;
   }
   else {
-    local_14.internals.intVal = BG_UnlockablesGetItemCost(local_c);
+    result.internals.intVal = BG_UnlockablesGetItemCost(proItemIndex);
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetProItemVersionCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793640  IsItemPurchased  (universal/com_expressions_eval.cpp:5193)
 
-void __cdecl IsItemPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsItemPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  int iVar3;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  int itemIndex;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  iVar2 = GetSourceInt(&local_18);
-  local_8 = iVar2;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = BG_UnlockablesIsItemPurchased(iVar3,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  itemIndex = GetSourceInt(&source);
+  index = itemIndex;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = BG_UnlockablesIsItemPurchased(controllerIndex,itemIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemPurchased() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007936D0  IsItemAttachmentPointPurchased  (universal/com_expressions_eval.cpp:5212)
 
-void __cdecl IsItemAttachmentPointPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl
+IsItemAttachmentPointPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
-  Operand OVar2;
-  bool bVar3;
-  int iVar4;
-  int iVar5;
-  char *pcVar6;
-  Operand local_70;
-  char *local_68;
-  OperandList local_64;
-  int local_8;
+  Operand operand;
+  bool bVar2;
+  int controllerIndex;
+  int itemIndex_00;
+  char *attachmentPoint_00;
+  Operand result;
+  char *attachmentPoint;
+  OperandList list;
+  int itemIndex;
   
-  GetOperandList(param_3,&local_64);
-  local_70.dataType = VAL_INT;
-  local_70.internals.intVal = 0;
-  if (local_64.operandCount == 2) {
-    local_8 = GetOperandValueInt(local_64.operands);
-    OVar2.internals.intVal = local_64.operands[1].internals.intVal;
-    OVar2.dataType = local_64.operands[1].dataType;
-    local_68 = GetSourceString(OVar2);
-    if (local_8 == -1) {
-      bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    itemIndex = GetOperandValueInt(list.operands);
+    operand.internals.intVal = list.operands[1].internals.intVal;
+    operand.dataType = list.operands[1].dataType;
+    attachmentPoint = GetSourceString(operand);
+    if (itemIndex == -1) {
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x146e,0,"%s");
-      if (!bVar3) {
+      if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
     }
-    iVar5 = local_8;
-    pcVar6 = local_68;
-    iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-    local_70.internals._0_1_ = BG_UnlockablesIsItemAttachmentPointPurchased(iVar4,iVar5,pcVar6);
-    local_70.internals.intVal._1_3_ = 0;
+    itemIndex_00 = itemIndex;
+    attachmentPoint_00 = attachmentPoint;
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    result.internals._0_1_ =
+         BG_UnlockablesIsItemAttachmentPointPurchased
+                   (controllerIndex,itemIndex_00,attachmentPoint_00);
+    result.internals.intVal._1_3_ = 0;
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("IsCurrentItemAttachmentPointPurchased() = %i\n");
     }
-    AddOperandToStack(param_3,&local_70);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to IsItemAttachmentPointPurchased()\n");
-    AddOperandToStack(param_3,&local_70);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -6623,19 +6836,25 @@ void __cdecl IsItemAttachmentPointPurchased(int param_1,itemDef_s *param_2,Opera
 
 // 007937D0  IsCurrentItemAttachmentPurchased  (universal/com_expressions_eval.cpp:5242)
 
-void __cdecl IsCurrentItemAttachmentPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl
+IsCurrentItemAttachmentPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  int iVar4;
-  int iVar5;
-  Operand local_10;
-  int local_8;
+  int controllerIndex;
+  int itemIndex;
+  int attachmentNum;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1480,0,"%s");
@@ -6645,15 +6864,16 @@ void __cdecl IsCurrentItemAttachmentPurchased(int param_1,itemDef_s *param_2,Ope
       return;
     }
   }
-  iVar4 = local_8;
-  iVar5 = DAT_098c3910;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals._0_1_ = BG_UnlockablesIsItemAttachmentPurchased(iVar3,iVar4,iVar5);
-  local_10.internals.intVal._1_3_ = 0;
+  itemIndex = index;
+  attachmentNum = DAT_098c3910;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals._0_1_ =
+       BG_UnlockablesIsItemAttachmentPurchased(controllerIndex,itemIndex,attachmentNum);
+  result.internals.intVal._1_3_ = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCurrentItemAttachmentPurchased() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -6661,21 +6881,26 @@ void __cdecl IsCurrentItemAttachmentPurchased(int param_1,itemDef_s *param_2,Ope
 // 00793870  IsCurrentItemOptionPurchased  (universal/com_expressions_eval.cpp:5259)
 
 /* WARNING: Enum "eWeaponOptionGroup": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl IsCurrentItemOptionPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+IsCurrentItemOptionPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  eWeaponOptionGroup eVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  Operand local_10;
-  int local_8;
+  eWeaponOptionGroup weaponOptionGroup;
+  int optionIndex;
+  int controllerIndex;
+  int itemIndex;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1491,0,"%s");
@@ -6685,150 +6910,170 @@ void __cdecl IsCurrentItemOptionPurchased(int param_1,itemDef_s *param_2,Operand
       return;
     }
   }
-  eVar3 = GetOptionFromIndexAndGroupDvar(DAT_098c391c);
-  iVar4 = BG_GetWeaponOptionNumFromIndexAndGroup(DAT_098c391c,eVar3);
-  iVar6 = local_8;
-  iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar2 = BG_UnlockablesIsItemOptionPurchased(iVar5,iVar6,iVar4);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar2;
+  weaponOptionGroup = GetOptionFromIndexAndGroupDvar(DAT_098c391c);
+  optionIndex = BG_GetWeaponOptionNumFromIndexAndGroup(DAT_098c391c,weaponOptionGroup);
+  itemIndex = index;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar2 = BG_UnlockablesIsItemOptionPurchased(controllerIndex,itemIndex,optionIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar2;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCurrentItemOptionPurchased() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793930  GetItemOptionByName  (universal/com_expressions_eval.cpp:5276)
 
-void __cdecl GetItemOptionByName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetItemOptionByName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  Operand source;
+  Operand result;
+  char *optionName;
   
-  local_10.dataType = VAL_INT;
-  GetOperand(param_3,&local_18);
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_10.internals.intVal = BG_UnlockablesGetWeaponOptionFromName(local_8);
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  optionName = GetSourceString(operand);
+  result.internals.intVal = BG_UnlockablesGetWeaponOptionFromName(optionName);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetItemOptionByName() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007939B0  IsItemOptionPurchasedByName  (universal/com_expressions_eval.cpp:5294)
 
-void __cdecl IsItemOptionPurchasedByName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsItemOptionPurchasedByName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
-  Operand OVar2;
-  bool bVar3;
-  int iVar4;
-  int iVar5;
-  int iVar6;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  char *local_8;
+  Operand operand;
+  bool bVar2;
+  int optionIndex;
+  int controllerIndex;
+  int itemIndex;
+  Operand source;
+  Operand result;
+  int index;
+  char *optionName;
   
-  local_14.dataType = VAL_INT;
-  GetOperand(param_3,&local_1c);
-  local_c = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x14b6,0,"%s");
-    if (!bVar3) {
+    if (!bVar2) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
   }
-  OVar2.internals.intVal = local_1c.internals.intVal;
-  OVar2.dataType = local_1c.dataType;
-  local_8 = GetSourceString(OVar2);
-  iVar4 = BG_UnlockablesGetWeaponOptionFromName(local_8);
-  iVar6 = local_c;
-  iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar3 = BG_UnlockablesIsItemOptionPurchased(iVar5,iVar6,iVar4);
-  local_14.internals.intVal._1_3_ = 0;
-  local_14.internals.intVal._0_1_ = bVar3;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  optionName = GetSourceString(operand);
+  optionIndex = BG_UnlockablesGetWeaponOptionFromName(optionName);
+  itemIndex = index;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar2 = BG_UnlockablesIsItemOptionPurchased(controllerIndex,itemIndex,optionIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar2;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsItemOptionPurchasedByName() = %i\n");
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793A80  ItemHasDualWield  (universal/com_expressions_eval.cpp:5314)
 
-void __cdecl ItemHasDualWield(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl ItemHasDualWield(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  bVar1 = BG_UnlockablesItemHasDualWield(local_8);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  bVar1 = BG_UnlockablesItemHasDualWield(index);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("ItemHasDualWield() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793B00  ItemIsDualWield  (universal/com_expressions_eval.cpp:5332)
 
-void __cdecl ItemIsDualWield(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl ItemIsDualWield(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_8 = GetSourceInt(&local_18);
-  bVar1 = BG_UnlockablesItemIsDualWield(local_8);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  index = GetSourceInt(&source);
+  bVar1 = BG_UnlockablesItemIsDualWield(index);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("ItemIsDualWield() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793B80  GetCurrentItemCost  (universal/com_expressions_eval.cpp:5350)
 
-void __cdecl GetCurrentItemCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetCurrentItemCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x14ec,0,"%s");
@@ -6838,27 +7083,32 @@ void __cdecl GetCurrentItemCost(int param_1,itemDef_s *param_2,OperandStack *par
       return;
     }
   }
-  local_10.internals.intVal = BG_UnlockablesGetItemCost(local_8);
+  result.internals.intVal = BG_UnlockablesGetItemCost(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793C10  GetCurrentItemSellPrice  (universal/com_expressions_eval.cpp:5367)
 
-void __cdecl GetCurrentItemSellPrice(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetCurrentItemSellPrice(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x14fd,0,"%s");
@@ -6868,38 +7118,43 @@ void __cdecl GetCurrentItemSellPrice(int param_1,itemDef_s *param_2,OperandStack
       return;
     }
   }
-  local_10.internals.intVal = BG_UnlockablesGetItemSellPrice(local_8);
+  result.internals.intVal = BG_UnlockablesGetItemSellPrice(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemSellPrice() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793CA0  IsCurrentItemClassified  (universal/com_expressions_eval.cpp:5384)
 
-void __cdecl IsCurrentItemClassified(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl IsCurrentItemClassified(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   int iVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   bVar1 = BG_UnlockablesIsItemClassified(DAT_098c38f8);
-  local_10.internals.intVal._1_3_ = 0;
-  local_10.internals.intVal._0_1_ = bVar1;
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
   iVar2 = Dvar_GetInt(ui_useCustomClassInfo);
   if (iVar2 != 0) {
-    local_10.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsCurrentItemClassified() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -6907,77 +7162,86 @@ void __cdecl IsCurrentItemClassified(int param_1,itemDef_s *param_2,OperandStack
 // 00793D20  GetCurrentItemClassifiedHintText  (universal/com_expressions_eval.cpp:5404)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl GetCurrentItemClassifiedHintText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCurrentItemClassifiedHintText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  ConversionArguments *pCVar5;
-  int iVar6;
-  Operand local_43c;
-  char local_434 [1024];
+  int comparisonColumn2;
+  char *pcVar3;
+  ConversionArguments *pCVar4;
+  int valueColumn;
+  int purchasesNeeded;
+  Operand result;
+  char outputString [1024];
   uint local_34;
-  StringTable *local_30;
-  ConversionArguments local_2c;
+  StringTable *attributesTable;
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_43c.dataType = VAL_STRING;
-  local_43c.internals.floatVal = 1.8187723e-38;
-  StringTable_GetAsset("mp/attributesTable.csv",&local_30);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  StringTable_GetAsset("mp/attributesTable.csv",&attributesTable);
   iVar1 = BG_UnlockablesGetNumPurchasesBeforeDeclassified(DAT_098c38f8);
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 2;
-  local_2c.args[0] = va("%i");
-  iVar6 = 1;
-  pcVar4 = "name";
-  iVar3 = 2;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 2;
+  convArgs.args[0] = va("%i");
+  valueColumn = 1;
+  pcVar3 = "name";
+  comparisonColumn2 = 2;
   pcVar2 = BG_UnlockablesGetItemGroup(DAT_098c38f8);
-  StringTable_Lookup(local_30,0,pcVar2,iVar3,pcVar4,iVar6);
+  StringTable_Lookup(attributesTable,0,pcVar2,comparisonColumn2,pcVar3,valueColumn);
   pcVar2 = va("%s%s");
-  local_2c.args[1] = UI_SafeTranslateString(pcVar2);
+  convArgs.args[1] = UI_SafeTranslateString(pcVar2);
   if (iVar1 == 1) {
     iVar1 = 0x400;
-    pcVar2 = local_434;
-    pCVar5 = &local_2c;
-    pcVar4 = UI_SafeTranslateString("MPUI_CLASSIFIED_TOOLTIP_SING");
-    UI_ReplaceConversions(pcVar4,pCVar5,pcVar2,iVar1);
+    pcVar2 = outputString;
+    pCVar4 = &convArgs;
+    pcVar3 = UI_SafeTranslateString("MPUI_CLASSIFIED_TOOLTIP_SING");
+    UI_ReplaceConversions(pcVar3,pCVar4,pcVar2,iVar1);
   }
   else {
     iVar1 = 0x400;
-    pcVar2 = local_434;
-    pCVar5 = &local_2c;
-    pcVar4 = UI_SafeTranslateString("MPUI_CLASSIFIED_TOOLTIP");
-    UI_ReplaceConversions(pcVar4,pCVar5,pcVar2,iVar1);
+    pcVar2 = outputString;
+    pCVar4 = &convArgs;
+    pcVar3 = UI_SafeTranslateString("MPUI_CLASSIFIED_TOOLTIP");
+    UI_ReplaceConversions(pcVar3,pCVar4,pcVar2,iVar1);
   }
-  local_43c.internals.string = CopyTempString(local_434);
-  AddOperandToStack(param_3,&local_43c);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793E80  GetCurrentItemAttachmentCost  (universal/com_expressions_eval.cpp:5435)
 
-void __cdecl GetCurrentItemAttachmentCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+
+void __cdecl
+GetCurrentItemAttachmentCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1541,0,"%s");
@@ -6987,27 +7251,32 @@ void __cdecl GetCurrentItemAttachmentCost(int param_1,itemDef_s *param_2,Operand
       return;
     }
   }
-  local_10.internals.intVal = BG_UnlockablesGetItemAttachmentCost(local_8,DAT_098c3910);
+  result.internals.intVal = BG_UnlockablesGetItemAttachmentCost(index,DAT_098c3910);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemAttachmentCost() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793F10  GetCurrentItemName  (universal/com_expressions_eval.cpp:5452)
 
-void __cdecl GetCurrentItemName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetCurrentItemName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_STRING;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_STRING;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1552,0,"%s");
@@ -7017,27 +7286,27 @@ void __cdecl GetCurrentItemName(int param_1,itemDef_s *param_2,OperandStack *par
       return;
     }
   }
-  local_10.internals.string = BG_UnlockablesGetItemName(local_8);
+  result.internals.string = BG_UnlockablesGetItemName(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00793FA0  GetCurrentItemIndex  (universal/com_expressions_eval.cpp:5469)
 
-void __cdecl GetCurrentItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentItemIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1563,0,"%s");
@@ -7047,27 +7316,30 @@ void __cdecl GetCurrentItemIndex(int param_1,itemDef_s *param_2,OperandStack *pa
       return;
     }
   }
-  local_10.internals.intVal = local_8;
+  result.internals.intVal = index;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemIndex() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794030  GetCurrentItemAttachmentName  (universal/com_expressions_eval.cpp:5487)
 
-void __cdecl GetCurrentItemAttachmentName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+
+void __cdecl
+GetCurrentItemAttachmentName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_STRING;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_STRING;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1575,0,"%s");
@@ -7077,27 +7349,30 @@ void __cdecl GetCurrentItemAttachmentName(int param_1,itemDef_s *param_2,Operand
       return;
     }
   }
-  local_10.internals.string = BG_UnlockablesGetItemAttachmentDisplayName(local_8,DAT_098c3910);
+  result.internals.string = BG_UnlockablesGetItemAttachmentDisplayName(index,DAT_098c3910);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemAttachmentName() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007940C0  GetCurrentItemAttachmentDesc  (universal/com_expressions_eval.cpp:5505)
 
-void __cdecl GetCurrentItemAttachmentDesc(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+
+void __cdecl
+GetCurrentItemAttachmentDesc(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_STRING;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_STRING;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1587,0,"%s");
@@ -7107,27 +7382,27 @@ void __cdecl GetCurrentItemAttachmentDesc(int param_1,itemDef_s *param_2,Operand
       return;
     }
   }
-  local_10.internals.string = BG_UnlockablesGetItemAttachmentDesc(local_8,DAT_098c3910);
+  result.internals.string = BG_UnlockablesGetItemAttachmentDesc(index,DAT_098c3910);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemAttachmentDesc() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794150  GetCurrentItemAttachmentNum  (universal/com_expressions_eval.cpp:5523)
 
-void __cdecl GetCurrentItemAttachmentNum(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentItemAttachmentNum(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int attachmentNum;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c3910;
+  result.dataType = VAL_INT;
+  attachmentNum = DAT_098c3910;
   if (DAT_098c3910 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1599,0,"%s");
@@ -7137,50 +7412,55 @@ void __cdecl GetCurrentItemAttachmentNum(int param_1,itemDef_s *param_2,OperandS
       return;
     }
   }
-  local_10.internals.intVal = local_8;
+  result.internals.intVal = attachmentNum;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemAttachmentNum() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007941E0  GetCurrentItemAttachmentPoint  (universal/com_expressions_eval.cpp:5540)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
 
-void __cdecl GetCurrentItemAttachmentPoint(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCurrentItemAttachmentPoint(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  eAttachment eVar1;
-  Operand local_c;
+  eAttachment attachment;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  eVar1 = BG_UnlockablesGetItemAttachment(DAT_098c38f8,DAT_098c3910);
-  local_c.internals.intVal = BG_GetAttachmentPointIndexFromAttachment(eVar1);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  attachment = BG_UnlockablesGetItemAttachment(DAT_098c38f8,DAT_098c3910);
+  result.internals.intVal = BG_GetAttachmentPointIndexFromAttachment(attachment);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemAttachmentPoint() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794250  GetCurrentItemNumAttachments  (universal/com_expressions_eval.cpp:5555)
 
-void __cdecl GetCurrentItemNumAttachments(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCurrentItemNumAttachments(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int index;
   
-  local_10.dataType = VAL_INT;
-  local_8 = DAT_098c38f8;
+  result.dataType = VAL_INT;
+  index = DAT_098c38f8;
   if (DAT_098c38f8 == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x15b9,0,"%s");
@@ -7190,71 +7470,77 @@ void __cdecl GetCurrentItemNumAttachments(int param_1,itemDef_s *param_2,Operand
       return;
     }
   }
-  local_10.internals.intVal = BG_UnlockablesGetNumItemAttachments(local_8);
+  result.internals.intVal = BG_UnlockablesGetNumItemAttachments(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetCurrentItemNumAttachments() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007942E0  GetItemNumAttachmentsEquipped  (universal/com_expressions_eval.cpp:5572)
 
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
-/* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl GetItemNumAttachmentsEquipped(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetItemNumAttachmentsEquipped(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  loadoutSlot_t lVar3;
-  char *pcVar4;
-  int iVar5;
-  eAttachmentPoint local_84;
-  int local_78;
-  Operand local_74;
-  char *local_6c;
-  int local_68;
-  OperandList local_64;
-  eAttachment local_c;
-  int local_8;
+  Operand operand;
+  bool bVar1;
+  loadoutSlot_t loadoutSlot;
+  char *pcVar2;
+  int controllerIndex_00;
+  int currAttachPoint;
+  char *loadoutName;
+  int controllerIndex;
+  int numAttachmentsEquipped;
+  Operand result;
+  char *customClassName;
+  int equippedAttachmentNum;
+  OperandList list;
+  eAttachment equippedAttachmentIndex;
+  int itemIndex;
   
-  GetOperandList(param_3,&local_64);
-  local_74.dataType = VAL_INT;
-  local_74.internals.intVal = 0;
-  if (local_64.operandCount == 2) {
-    local_78 = 0;
-    OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-    OVar1.dataType = local_64.operands[0].dataType;
-    local_6c = GetSourceString(OVar1);
-    local_8 = GetSourceInt(local_64.operands + 1);
-    bVar2 = BG_UnlockablesIsItemValidNotNull(local_8);
-    if (bVar2) {
-      lVar3 = BG_UnlockablesGetItemLoadoutSlot(local_8);
-      pcVar4 = BG_UnlockablesGetLoadoutSlotName(lVar3);
-      iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-      if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
-        for (local_84 = ATTACHMENT_POINT_FIRST; (int)local_84 < 5;
-            local_84 = local_84 + ATTACHMENT_POINT_FIRST) {
-          BG_GetAttachmentPointName(local_84);
-          pcVar4 = va("%sattachment%s");
-          local_68 = BG_UnlockablesGetEquippedItemInSlot(iVar5,local_6c,pcVar4);
-          local_c = BG_UnlockablesGetItemAttachment(local_8,local_68);
-          if (local_c != ATTACHMENT_NONE) {
-            local_78 = local_78 + 1;
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    numAttachmentsEquipped = 0;
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    customClassName = GetSourceString(operand);
+    itemIndex = GetSourceInt(list.operands + 1);
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemIndex);
+    if (bVar1) {
+      loadoutSlot = BG_UnlockablesGetItemLoadoutSlot(itemIndex);
+      pcVar2 = BG_UnlockablesGetLoadoutSlotName(loadoutSlot);
+      controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+      if ((pcVar2 != (char *)0x0) && (*pcVar2 != '\0')) {
+        for (currAttachPoint = 1; currAttachPoint < 5; currAttachPoint = currAttachPoint + 1) {
+          BG_GetAttachmentPointName(currAttachPoint);
+          pcVar2 = va("%sattachment%s");
+          equippedAttachmentNum =
+               BG_UnlockablesGetEquippedItemInSlot(controllerIndex_00,customClassName,pcVar2);
+          equippedAttachmentIndex = BG_UnlockablesGetItemAttachment(itemIndex,equippedAttachmentNum)
+          ;
+          if (equippedAttachmentIndex != ATTACHMENT_NONE) {
+            numAttachmentsEquipped = numAttachmentsEquipped + 1;
           }
         }
       }
     }
-    local_74.internals.intVal = local_78;
-    AddOperandToStack(param_3,&local_74);
+    result.internals.intVal = numAttachmentsEquipped;
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to GetCurrentItemNumAttachmentsEquipped()\n");
-    AddOperandToStack(param_3,&local_74);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -7262,65 +7548,70 @@ void __cdecl GetItemNumAttachmentsEquipped(int param_1,itemDef_s *param_2,Operan
 
 // 00794430  GetItemEquippedAttachment  (universal/com_expressions_eval.cpp:5623)
 
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "eAttachmentPoint": Some values do not have unique names */
-/* WARNING: Enum "eAttachment": Some values do not have unique names */
 
-void __cdecl GetItemEquippedAttachment(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetItemEquippedAttachment(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  loadoutSlot_t lVar3;
-  char *pcVar4;
-  int iVar5;
-  eAttachmentPoint local_84;
-  int local_78;
-  Operand local_74;
-  char *local_6c;
-  int local_68;
-  OperandList local_64;
-  operandInternalDataUnion local_c;
-  int local_8;
+  Operand operand;
+  bool bVar1;
+  loadoutSlot_t loadoutSlot;
+  char *pcVar2;
+  int controllerIndex_00;
+  int currAttachPoint;
+  char *loadoutName;
+  int controllerIndex;
+  int returnAttachmentIndex;
+  Operand result;
+  char *customClassName;
+  int equippedAttachmentNum;
+  OperandList list;
+  eAttachment equippedAttachmentIndex;
+  int itemIndex;
   
-  GetOperandList(param_3,&local_64);
-  local_74.dataType = VAL_INT;
-  local_74.internals.intVal = 0;
-  if (local_64.operandCount == 3) {
-    local_74.internals.intVal = -1;
-    OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-    OVar1.dataType = local_64.operands[0].dataType;
-    local_6c = GetSourceString(OVar1);
-    local_8 = GetSourceInt(local_64.operands + 1);
-    bVar2 = BG_UnlockablesIsItemValidNotNull(local_8);
-    if (bVar2) {
-      local_78 = GetSourceInt(local_64.operands + 2);
-      lVar3 = BG_UnlockablesGetItemLoadoutSlot(local_8);
-      pcVar4 = BG_UnlockablesGetLoadoutSlotName(lVar3);
-      iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-      if ((pcVar4 != (char *)0x0) && (*pcVar4 != '\0')) {
-        for (local_84 = ATTACHMENT_POINT_FIRST; (int)local_84 < 5;
-            local_84 = local_84 + ATTACHMENT_POINT_FIRST) {
-          BG_GetAttachmentPointName(local_84);
-          pcVar4 = va("%sattachment%s");
-          local_68 = BG_UnlockablesGetEquippedItemInSlot(iVar5,local_6c,pcVar4);
-          local_c.intVal = BG_UnlockablesGetItemAttachment(local_8,local_68);
-          if (local_c.intVal != ATTACHMENT_NONE) {
-            if (local_78 == 0) {
-              local_74.internals.intVal = local_c.intVal;
-              AddOperandToStack(param_3,&local_74);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 3) {
+    result.internals.intVal = -1;
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    customClassName = GetSourceString(operand);
+    itemIndex = GetSourceInt(list.operands + 1);
+    bVar1 = BG_UnlockablesIsItemValidNotNull(itemIndex);
+    if (bVar1) {
+      returnAttachmentIndex = GetSourceInt(list.operands + 2);
+      loadoutSlot = BG_UnlockablesGetItemLoadoutSlot(itemIndex);
+      pcVar2 = BG_UnlockablesGetLoadoutSlotName(loadoutSlot);
+      controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+      if ((pcVar2 != (char *)0x0) && (*pcVar2 != '\0')) {
+        for (currAttachPoint = 1; currAttachPoint < 5; currAttachPoint = currAttachPoint + 1) {
+          BG_GetAttachmentPointName(currAttachPoint);
+          pcVar2 = va("%sattachment%s");
+          equippedAttachmentNum =
+               BG_UnlockablesGetEquippedItemInSlot(controllerIndex_00,customClassName,pcVar2);
+          equippedAttachmentIndex = BG_UnlockablesGetItemAttachment(itemIndex,equippedAttachmentNum)
+          ;
+          if (equippedAttachmentIndex != ATTACHMENT_NONE) {
+            if (returnAttachmentIndex == 0) {
+              result.internals.intVal = equippedAttachmentIndex;
+              AddOperandToStack(dataStack,&result);
               return;
             }
-            local_78 = local_78 + -1;
+            returnAttachmentIndex = returnAttachmentIndex + -1;
           }
         }
       }
     }
-    AddOperandToStack(param_3,&local_74);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 3 parameters to GetCurrentItemNumAttachmentsEquipped()\n");
-    AddOperandToStack(param_3,&local_74);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -7328,30 +7619,36 @@ void __cdecl GetItemEquippedAttachment(int param_1,itemDef_s *param_2,OperandSta
 
 // 007945C0  GetNumItemAttachmentsWithAttachPoint  (universal/com_expressions_eval.cpp:5682)
 
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
 void __cdecl
-GetNumItemAttachmentsWithAttachPoint(int param_1,itemDef_s *param_2,OperandStack *param_3)
+GetNumItemAttachmentsWithAttachPoint(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_6c;
-  OperandList local_64;
-  int local_c;
-  int local_8;
+  Operand result;
+  OperandList list;
+  int attachPoint;
+  int itemIndex;
   
-  local_6c.internals.intVal = 0;
-  local_6c.dataType = VAL_INT;
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 2) {
-    local_8 = GetOperandValueInt(local_64.operands);
-    local_c = GetOperandValueInt(local_64.operands + 1);
-    local_6c.internals.intVal = BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(local_8,local_c);
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    itemIndex = GetOperandValueInt(list.operands);
+    attachPoint = GetOperandValueInt(list.operands + 1);
+    result.internals.intVal =
+         BG_UnlockablesGetNumItemAttachmentsWithAttachPoint(itemIndex,attachPoint);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
       Expression_TraceInternal("GetNumItemAttachmentsWithAttachPoint() = %i\n");
     }
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 2 parameters to GetNumItemAttachmentsWithAttachPoint()\n");
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -7359,258 +7656,259 @@ GetNumItemAttachmentsWithAttachPoint(int param_1,itemDef_s *param_2,OperandStack
 
 // 00794680  PlaylistPlayerCount  (universal/com_expressions_eval.cpp:5710)
 
-void __cdecl PlaylistPlayerCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl PlaylistPlayerCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  char *path;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int playlistId;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = Playlist_GetPlaylistIdForNum(local_c,local_1c.internals.intVal);
-  pcVar1 = va("playlist/%d");
-  local_14.internals.intVal = LiveGroups_GetCount(pcVar1);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  playlistId = Playlist_GetPlaylistIdForNum(controllerIndex,source.internals.intVal);
+  path = va("playlist/%d");
+  result.internals.intVal = LiveGroups_GetCount(path);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794700  CategoryPlayerCountForPlaylist  (universal/com_expressions_eval.cpp:5730)
 
-void __cdecl CategoryPlayerCountForPlaylist(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+CategoryPlayerCountForPlaylist(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  char *pcVar3;
-  uint uVar4;
-  int local_1c;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  int categoryId;
+  char *path;
+  uint uVar2;
+  int index;
+  Operand source;
+  Operand result;
+  char *category;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  iVar2 = Playlist_GetCategoryIdForNum(local_18.internals.intVal);
-  local_8 = Playlist_GetCategoryInternalName(iVar2);
-  for (local_1c = 0; local_1c < 0x40; local_1c = local_1c + 1) {
-    bVar1 = Playlist_HasCategory(local_1c,local_8);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  categoryId = Playlist_GetCategoryIdForNum(source.internals.intVal);
+  category = Playlist_GetCategoryInternalName(categoryId);
+  for (index = 0; index < 0x40; index = index + 1) {
+    bVar1 = Playlist_HasCategory(index,category);
     if (bVar1) {
-      pcVar3 = va("playlist/%d");
-      uVar4 = LiveGroups_GetCount(pcVar3);
-      local_10.internals.string = local_10.internals.string + uVar4;
+      path = va("playlist/%d");
+      uVar2 = LiveGroups_GetCount(path);
+      result.internals.string = result.internals.string + uVar2;
     }
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007947B0  TotalPlayersInPlaylists  (universal/com_expressions_eval.cpp:5753)
 
-void __cdecl TotalPlayersInPlaylists(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl TotalPlayersInPlaylists(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   uVar1 = LiveGroups_GetCount("playlist");
-  local_c.internals.string = local_c.internals.string + uVar1;
-  AddOperandToStack(param_3,&local_c);
+  result.internals.string = result.internals.string + uVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007947F0  GetPlayersRegisteredOnline  (universal/com_expressions_eval.cpp:5767)
 
-void __cdecl GetPlayersRegisteredOnline(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPlayersRegisteredOnline(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  local_c.internals.intVal = LiveGroups_GetCount("online");
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveGroups_GetCount("online");
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794830  GetUserTagFromIndex  (universal/com_expressions_eval.cpp:5781)
 
-void __cdecl GetUserTagFromIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUserTagFromIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_14;
-  Operand local_c;
+  int index;
+  Operand source;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  GetOperand(param_3,&local_14);
-  iVar1 = GetSourceInt(&local_14);
-  local_c.internals.string = Live_FileShare_GetLocalizedUserTagFromIndex(iVar1);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.internals.string = Live_FileShare_GetLocalizedUserTagFromIndex(index);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetUserTagFromIndex() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007948B0  CanShowContentFromUser  (universal/com_expressions_eval.cpp:5798)
 
-void __cdecl CanShowContentFromUser(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanShowContentFromUser(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
-  GetOperand(param_3,&local_14);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  GetOperand(dataStack,&source);
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("CanShowContentFromUser() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794910  GetUserFileRating  (universal/com_expressions_eval.cpp:5820)
 
-void __cdecl GetUserFileRating(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUserFileRating(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  long64 lVar5;
-  undefined4 uVar6;
-  byte *pbVar7;
+  Operand operand;
+  bool bVar1;
+  char *str;
+  int controllerIndex;
+  long64 lVar2;
+  undefined4 uVar3;
+  uchar *puVar4;
   uchar *in_stack_ffffffe8;
   operandInternalDataUnion local_14;
-  Operand local_10;
-  byte local_5;
+  Operand result;
+  uchar rating;
   
-  GetOperand(param_3,(Operand *)&stack0xffffffe8);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  pbVar7 = &local_5;
-  OVar1.internals.intVal = local_14.intVal;
-  OVar1.dataType = (expDataType)in_stack_ffffffe8;
-  pcVar3 = GetSourceString(OVar1);
-  lVar5 = I_atoi64(pcVar3);
-  uVar6 = (undefined4)((ulonglong)lVar5 >> 0x20);
-  iVar4 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar2 = Live_FileShare_IsRated(iVar4,CONCAT44(pbVar7,uVar6),in_stack_ffffffe8);
-  if (bVar2) {
-    local_10.internals.intVal._1_3_ = 0;
-    local_10.internals.intVal._0_1_ = local_5;
+  GetOperand(dataStack,(Operand *)&stack0xffffffe8);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  puVar4 = &rating;
+  operand.internals.intVal = local_14.intVal;
+  operand.dataType = (expDataType)in_stack_ffffffe8;
+  str = GetSourceString(operand);
+  lVar2 = I_atoi64(str);
+  uVar3 = (undefined4)((ulonglong)lVar2 >> 0x20);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = Live_FileShare_IsRated(controllerIndex,CONCAT44(puVar4,uVar3),in_stack_ffffffe8);
+  if (bVar1) {
+    result.internals.intVal._1_3_ = 0;
+    result.internals.intVal._0_1_ = rating;
   }
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetUserFileRating() = %d\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007949B0  CanRenderClip  (universal/com_expressions_eval.cpp:5839)
 
-void __cdecl CanRenderClip(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanRenderClip(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("CanRenderClip() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794A10  GetFileShareFilterList  (universal/com_expressions_eval.cpp:5856)
 
-void __cdecl GetFileShareFilterList(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileShareFilterList(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  local_c.internals.string = Live_FileShare_GetFilterList();
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  result.internals.string = Live_FileShare_GetFilterList();
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetFileShareFilterList() = %s\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794A70  GetLiveGroupCount  (universal/com_expressions_eval.cpp:5870)
 
-void __cdecl GetLiveGroupCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLiveGroupCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  Operand source;
+  Operand result;
+  char *groupName;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  GetOperand(param_3,&local_18);
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_10.internals.intVal = LiveGroups_GetCount(local_8);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  groupName = GetSourceString(operand);
+  result.internals.intVal = LiveGroups_GetCount(groupName);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794AD0  GetBaseLbMenuName  (universal/com_expressions_eval.cpp:5906)
 
-void __cdecl GetBaseLbMenuName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetBaseLbMenuName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  char *pcVar3;
-  int iVar4;
+  char *value;
+  int valueColumn;
   operandInternalDataUnion local_74;
-  StringTable *local_70;
-  Operand local_6c;
-  operandInternalDataUnion local_64;
-  operandInternalDataUnion local_60;
-  OperandList local_5c;
+  StringTable *gameTypesTable;
+  Operand result;
+  int lbType;
+  char *lbMenuPrefix;
+  OperandList list;
   
-  local_6c.dataType = VAL_STRING;
-  local_6c.internals.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_5c);
-  local_60 = local_5c.operands[1].internals;
-  if (local_5c.operands[0].internals.intVal < 8) {
-    local_74.intVal = local_5c.operands[0].internals.intVal;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperandList(dataStack,&list);
+  lbMenuPrefix = list.operands[1].internals.string;
+  if (list.operands[0].internals.intVal < 8) {
+    local_74.intVal = list.operands[0].internals.intVal;
   }
   else {
-    local_74.string = (char *)(local_5c.operands[0].internals.intVal + -8);
+    local_74.string = (char *)(list.operands[0].internals.intVal + -8);
   }
-  local_64.intVal = local_74.intVal;
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_70);
-  if (local_70 == (StringTable *)0x0) {
+  lbType = local_74.intVal;
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if (gameTypesTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1721,0,"%s");
     if (!bVar2) {
@@ -7619,11 +7917,11 @@ void __cdecl GetBaseLbMenuName(int param_1,itemDef_s *param_2,OperandStack *para
       return;
     }
   }
-  iVar4 = 1;
-  pcVar3 = va("%d");
-  StringTable_Lookup(local_70,5,pcVar3,iVar4);
-  local_6c.internals.string = va("%s%s");
-  AddOperandToStack(param_3,&local_6c);
+  valueColumn = 1;
+  value = va("%d");
+  StringTable_Lookup(gameTypesTable,5,value,valueColumn);
+  result.internals.string = va("%s%s");
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -7632,66 +7930,66 @@ void __cdecl GetBaseLbMenuName(int param_1,itemDef_s *param_2,OperandStack *para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetLeaderboardMinReqText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLeaderboardMinReqText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  int iVar2;
-  char *pcVar3;
-  ConversionArguments *pCVar4;
-  char *pcVar5;
-  char local_49c [1024];
+  Operand operand;
+  int iVar1;
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *pcVar2;
+  char outputString [1024];
   uint local_9c;
-  ConversionArguments local_98;
-  int local_70;
-  Operand local_6c;
-  OperandList local_64;
-  int local_c;
-  char *local_8;
+  ConversionArguments convArgs;
+  int lbTypeByResetPeriod;
+  Operand result;
+  OperandList list;
+  int totalMatchesPlayed;
+  char *gameModePrefix;
   
   local_9c = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperandList(param_3,&local_64);
-  local_6c.dataType = VAL_STRING;
-  local_6c.internals.floatVal = 1.8187723e-38;
-  OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-  OVar1.dataType = local_64.operands[0].dataType;
-  local_8 = GetSourceString(OVar1);
-  local_70 = GetSourceInt(local_64.operands + 1);
-  if (local_70 == 0) {
-    pcVar5 = local_8;
-    iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-    local_c = LiveStats_GetTotalMatchesPlayedByGameMode(iVar2,pcVar5);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  operand.internals.intVal = list.operands[0].internals.intVal;
+  operand.dataType = list.operands[0].dataType;
+  gameModePrefix = GetSourceString(operand);
+  lbTypeByResetPeriod = GetSourceInt(list.operands + 1);
+  if (lbTypeByResetPeriod == 0) {
+    pcVar2 = gameModePrefix;
+    iVar1 = Com_LocalClient_GetControllerIndex(localClientNum);
+    totalMatchesPlayed = LiveStats_GetTotalMatchesPlayedByGameMode(iVar1,pcVar2);
   }
   else {
-    local_c = LiveStorage_GetMatchesPlayed(local_8,local_70);
+    totalMatchesPlayed = LiveStorage_GetMatchesPlayed(gameModePrefix,lbTypeByResetPeriod);
   }
-  if (local_c < lbWriteMinRequirementValues[local_70]) {
-    local_98.args[0] = (char *)0x0;
-    local_98.args[1] = (char *)0x0;
-    local_98.args[2] = (char *)0x0;
-    local_98.args[3] = (char *)0x0;
-    local_98.args[4] = (char *)0x0;
-    local_98.args[5] = (char *)0x0;
-    local_98.args[6] = (char *)0x0;
-    local_98.args[7] = (char *)0x0;
-    local_98.args[8] = (char *)0x0;
-    local_98.argCount = 2;
-    local_98.args[0] = va("%d");
-    local_98.args[1] = va("%d");
-    iVar2 = 0x400;
-    pcVar5 = local_49c;
-    pCVar4 = &local_98;
-    pcVar3 = UI_SafeTranslateString("MPUI_LEADERBOARD_MIN_REQ_TEXT");
-    UI_ReplaceConversions(pcVar3,pCVar4,pcVar5,iVar2);
-    local_6c.internals.string = CopyTempString(local_49c);
+  if (totalMatchesPlayed < lbWriteMinRequirementValues[lbTypeByResetPeriod]) {
+    convArgs.args[0] = (char *)0x0;
+    convArgs.args[1] = (char *)0x0;
+    convArgs.args[2] = (char *)0x0;
+    convArgs.args[3] = (char *)0x0;
+    convArgs.args[4] = (char *)0x0;
+    convArgs.args[5] = (char *)0x0;
+    convArgs.args[6] = (char *)0x0;
+    convArgs.args[7] = (char *)0x0;
+    convArgs.args[8] = (char *)0x0;
+    convArgs.argCount = 2;
+    convArgs.args[0] = va("%d");
+    convArgs.args[1] = va("%d");
+    iVar1 = 0x400;
+    pcVar2 = outputString;
+    arguments = &convArgs;
+    sourceString = UI_SafeTranslateString("MPUI_LEADERBOARD_MIN_REQ_TEXT");
+    UI_ReplaceConversions(sourceString,arguments,pcVar2,iVar1);
+    result.internals.string = CopyTempString(outputString);
   }
   else {
-    local_6c.internals.floatVal = 1.8187723e-38;
+    result.internals.floatVal = 1.8187723e-38;
   }
-  if ((char *)local_6c.internals.intVal == (char *)0x0) {
-    local_6c.internals.floatVal = 1.8187723e-38;
+  if ((char *)result.internals.intVal == (char *)0x0) {
+    result.internals.floatVal = 1.8187723e-38;
   }
-  AddOperandToStack(param_3,&local_6c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -7700,47 +7998,52 @@ void __cdecl GetLeaderboardMinReqText(int param_1,itemDef_s *param_2,OperandStac
 
 /* WARNING: Removing unreachable block (ram,0x00794d4a) */
 
-void __cdecl GetCurrentMapName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentMapName(int localClientNum_4,itemDef_s *item_4,OperandStack *dataStack_4)
 
 {
-  Operand local_c;
+  Operand result_4;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  AddOperandToStack(param_3,&local_c);
+  result_4.dataType = VAL_STRING;
+  result_4.internals.floatVal = 1.8187723e-38;
+  AddOperandToStack(dataStack_4,&result_4);
   return;
 }
 
 
 // 00794D70  HowManyReadiesNeeded  (universal/com_expressions_eval.cpp:6068)
 
-void __cdecl HowManyReadiesNeeded(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl HowManyReadiesNeeded(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = -1;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = -1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794DA0  IsExtraCamActive  (universal/com_expressions_eval.cpp:6081)
 
-void __cdecl IsExtraCamActive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl IsExtraCamActive(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  bVar1 = CG_ExtraCamIsActive(param_1);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  bVar1 = CG_ExtraCamIsActive(localClientNum);
   if (bVar1) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -7752,173 +8055,174 @@ void __cdecl IsExtraCamActive(int param_1,itemDef_s *param_2,OperandStack *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetCurrentWeapon(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentWeapon(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  if (((local_8->predictedPlayerState).weaponstate < 0x14) ||
-     (0x19 < (local_8->predictedPlayerState).weaponstate)) {
-    local_10.internals.string = BG_WeaponName((uint)(local_8->predictedPlayerState).weapon);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (((cgameGlob->predictedPlayerState).weaponstate < 0x14) ||
+     (0x19 < (cgameGlob->predictedPlayerState).weaponstate)) {
+    result.internals.string = BG_WeaponName((uint)(cgameGlob->predictedPlayerState).weapon);
   }
   else {
-    local_10.internals.string = BG_WeaponName((local_8->predictedPlayerState).offHandIndex);
+    result.internals.string = BG_WeaponName((cgameGlob->predictedPlayerState).offHandIndex);
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795FC0  GetClanRank  (universal/com_expressions_eval.cpp:6113)
 
-void __cdecl GetClanRank(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClanRank(int localClientNum_4,itemDef_s *item_4,OperandStack *dataStack_4)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source_4;
+  Operand result_4;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack_4,&source_4);
+  result_4.dataType = VAL_STRING;
+  result_4.internals.floatVal = 1.8187723e-38;
+  AddOperandToStack(dataStack_4,&result_4);
   return;
 }
 
 
 // 00794E70  IsPlayerJoinable  (universal/com_expressions_eval.cpp:6139)
 
-void __cdecl IsPlayerJoinable(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsPlayerJoinable(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  ulong64 uVar4;
-  ulong64 uVar5;
+  Operand operand;
+  bool bVar1;
+  char *str;
+  ulong64 uVar2;
+  ulong64 uVar3;
   int local_40;
   int local_3c;
   int local_38;
   int local_34;
   undefined8 local_30;
-  Operand local_28;
-  Operand local_20;
-  int local_18;
-  undefined8 local_14;
-  int local_c;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  undefined8 selectedPlayerXuid;
+  int myXuid;
   int local_8;
   
-  GetOperand(param_3,&local_28);
-  local_20.dataType = VAL_INT;
-  local_20.internals.intVal = 0;
-  local_18 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar2 = Live_IsSignedIn(local_18);
-  if (bVar2) {
-    local_30 = Live_GetXuid(local_18);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = Live_IsSignedIn(controllerIndex);
+  if (bVar1) {
+    local_30 = Live_GetXuid(controllerIndex);
   }
   else {
     local_30 = 0;
   }
-  local_c = (int)local_30;
+  myXuid = (int)local_30;
   local_8 = local_30._4_4_;
-  OVar1.internals.intVal = local_28.internals.intVal;
-  OVar1.dataType = local_28.dataType;
-  pcVar3 = GetSourceString(OVar1);
-  uVar4 = I_atoi64(pcVar3);
-  local_14._0_4_ = (int)uVar4;
-  local_14._4_4_ = (int)(uVar4 >> 0x20);
-  if (((int)local_14 != 0 || local_14._4_4_ != 0) &&
-     (((int)local_14 != local_c || (local_14._4_4_ != local_8)))) {
-    local_14 = uVar4;
-    bVar2 = Dvar_GetBool("ui_friendsListOpen");
-    if (bVar2) {
-      uVar5 = Live_GetServerForFriend(local_14);
-      local_38 = (int)uVar5;
-      uVar4 = local_14;
-      if ((local_38 != 0) || (local_34 = (int)(uVar5 >> 0x20), local_34 != 0)) {
-        local_20.internals.intVal = 1;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  str = GetSourceString(operand);
+  uVar2 = I_atoi64(str);
+  selectedPlayerXuid._0_4_ = (int)uVar2;
+  selectedPlayerXuid._4_4_ = (int)(uVar2 >> 0x20);
+  if (((int)selectedPlayerXuid != 0 || selectedPlayerXuid._4_4_ != 0) &&
+     (((int)selectedPlayerXuid != myXuid || (selectedPlayerXuid._4_4_ != local_8)))) {
+    selectedPlayerXuid = uVar2;
+    bVar1 = Dvar_GetBool("ui_friendsListOpen");
+    if (bVar1) {
+      uVar3 = Live_GetServerForFriend(selectedPlayerXuid);
+      local_38 = (int)uVar3;
+      uVar2 = selectedPlayerXuid;
+      if ((local_38 != 0) || (local_34 = (int)(uVar3 >> 0x20), local_34 != 0)) {
+        result.internals.intVal = 1;
       }
     }
     else {
-      bVar2 = Dvar_GetBool("ui_playerListOpen");
-      uVar4 = local_14;
-      if (bVar2) {
-        uVar5 = LiveMeetPlayer_GetPlayerSessionByID(local_14);
-        local_40 = (int)uVar5;
-        uVar4 = local_14;
-        if ((local_40 != 0) || (local_3c = (int)(uVar5 >> 0x20), local_3c != 0)) {
-          local_20.internals.intVal = 1;
+      bVar1 = Dvar_GetBool("ui_playerListOpen");
+      uVar2 = selectedPlayerXuid;
+      if (bVar1) {
+        uVar3 = LiveMeetPlayer_GetPlayerSessionByID(selectedPlayerXuid);
+        local_40 = (int)uVar3;
+        uVar2 = selectedPlayerXuid;
+        if ((local_40 != 0) || (local_3c = (int)(uVar3 >> 0x20), local_3c != 0)) {
+          result.internals.intVal = 1;
         }
       }
     }
   }
-  local_14 = uVar4;
-  AddOperandToStack(param_3,&local_20);
+  selectedPlayerXuid = uVar2;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00794FB0  IsPlayerInvitable  (universal/com_expressions_eval.cpp:6289)
 
-void __cdecl IsPlayerInvitable(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsPlayerInvitable(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  long64 lVar4;
+  Operand operand;
+  bool bVar1;
+  char *str;
+  long64 lVar2;
   undefined8 local_30;
-  Operand local_28;
-  Operand local_20;
-  int local_18;
-  undefined8 local_14;
-  int local_c;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  undefined8 selectedPlayerXuid;
+  int myXuid;
   int local_8;
   
-  GetOperand(param_3,&local_28);
-  local_20.dataType = VAL_INT;
-  local_20.internals.intVal = 0;
-  local_18 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar2 = Live_IsSignedIn(local_18);
-  if (bVar2) {
-    local_30 = Live_GetXuid(local_18);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = Live_IsSignedIn(controllerIndex);
+  if (bVar1) {
+    local_30 = Live_GetXuid(controllerIndex);
   }
   else {
     local_30 = 0;
   }
-  local_c = (int)local_30;
+  myXuid = (int)local_30;
   local_8 = local_30._4_4_;
-  OVar1.internals.intVal = local_28.internals.intVal;
-  OVar1.dataType = local_28.dataType;
-  pcVar3 = GetSourceString(OVar1);
-  lVar4 = I_atoi64(pcVar3);
-  local_14._0_4_ = (int)lVar4;
-  local_14._4_4_ = (int)((ulonglong)lVar4 >> 0x20);
-  if (((int)local_14 != 0 || local_14._4_4_ != 0) &&
-     (((int)local_14 != local_c || (local_14._4_4_ != local_8)))) {
-    local_20.internals.intVal = 1;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  str = GetSourceString(operand);
+  lVar2 = I_atoi64(str);
+  selectedPlayerXuid._0_4_ = (int)lVar2;
+  selectedPlayerXuid._4_4_ = (int)((ulonglong)lVar2 >> 0x20);
+  if (((int)selectedPlayerXuid != 0 || selectedPlayerXuid._4_4_ != 0) &&
+     (((int)selectedPlayerXuid != myXuid || (selectedPlayerXuid._4_4_ != local_8)))) {
+    result.internals.intVal = 1;
   }
-  local_14 = lVar4;
-  AddOperandToStack(param_3,&local_20);
+  selectedPlayerXuid = lVar2;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795080  IsRecommendedPlayerInvitable  (universal/com_expressions_eval.cpp:6321)
 
-void __cdecl IsRecommendedPlayerInvitable(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+IsRecommendedPlayerInvitable(int localClientNum_3,itemDef_s *item_3,OperandStack *dataStack_3)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand source_3;
+  Operand result_3;
   
-  GetOperand(param_3,&local_14);
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack_3,&source_3);
+  result_3.dataType = VAL_INT;
+  result_3.internals.intVal = 0;
+  AddOperandToStack(dataStack_3,&result_3);
   return;
 }
 
@@ -7930,21 +8234,21 @@ void __cdecl IsRecommendedPlayerInvitable(int param_1,itemDef_s *param_2,Operand
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl IsExtraCamStatic(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsExtraCamStatic(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if ((local_8->compassScrambler[0xb].handle != 0) ||
-     ((local_8->compassScrambler[0xb].startTime != 0 &&
-      (((local_8->predictedPlayerState).weapFlags & 0x200000U) == 0)))) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if ((cgameGlob->compassScrambler[0xb].handle != 0) ||
+     ((cgameGlob->compassScrambler[0xb].startTime != 0 &&
+      (((cgameGlob->predictedPlayerState).weapFlags & 0x200000U) == 0)))) {
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -7957,53 +8261,53 @@ void __cdecl IsExtraCamStatic(int param_1,itemDef_s *param_2,OperandStack *param
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetFlagCarrierForTeam(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFlagCarrierForTeam(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  int iVar3;
-  char local_58 [40];
+  Operand operand;
+  char *s1;
+  int iVar1;
+  char clientName [40];
   uint local_30;
-  centity_s *local_2c;
-  int *local_28;
-  int local_24;
-  Operand local_20;
-  Operand local_18;
-  char *local_10;
-  int local_c;
-  cg_s *local_8;
+  centity_s *cent;
+  clientInfo_t *clientInfo;
+  int i;
+  Operand source;
+  Operand result;
+  char *teamName;
+  team_t team;
+  cg_s *cgameGlob;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  GetOperand(param_3,&local_20);
-  OVar1.internals.intVal = local_20.internals.intVal;
-  OVar1.dataType = local_20.dataType;
-  local_10 = GetSourceString(OVar1);
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  local_c = 2;
-  pcVar2 = CG_GetTeamName(TEAM_AXIS);
-  iVar3 = I_stricmp(local_10,pcVar2);
-  if (iVar3 == 0) {
-    local_c = 1;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  teamName = GetSourceString(operand);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  team = TEAM_ALLIES;
+  s1 = CG_GetTeamName(TEAM_AXIS);
+  iVar1 = I_stricmp(teamName,s1);
+  if (iVar1 == 0) {
+    team = TEAM_AXIS;
   }
-  local_24 = 0;
+  i = 0;
   do {
-    if ((com_maxclients->current).integer <= local_24) {
+    if ((com_maxclients->current).integer <= i) {
 LAB_00795259:
-      AddOperandToStack(param_3,&local_18);
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_28 = (int *)((int)(local_8->bgs).clientinfo + local_24 * 0x5c8);
-    if ((((*local_28 != 0) && (local_28[0xb] == local_c)) &&
-        (local_2c = CG_GetEntity(param_1,local_24), local_2c->nextValid != 0)) &&
-       (((local_2c->nextState).lerp.eFlags2 & 1U) != 0)) {
-      CL_GetClientName(param_1,local_24,local_58,0x26,false);
-      local_18.internals.string = CopyTempString(local_58);
+    clientInfo = (clientInfo_t *)((int)(cgameGlob->bgs).clientinfo + i * 0x5c8);
+    if ((((clientInfo->infoValid != 0) && (clientInfo->team == team)) &&
+        (cent = CG_GetEntity(localClientNum,i), cent->nextValid != 0)) &&
+       (((cent->nextState).lerp.eFlags2 & 1U) != 0)) {
+      CL_GetClientName(localClientNum,i,clientName,0x26,false);
+      result.internals.string = CopyTempString(clientName);
       goto LAB_00795259;
     }
-    local_24 = local_24 + 1;
+    i = i + 1;
   } while( true );
 }
 
@@ -8015,57 +8319,57 @@ LAB_00795259:
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl GetFlagStatusForTeam(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFlagStatusForTeam(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  int iVar3;
-  Operand local_20;
-  Operand local_18;
-  char *local_10;
-  int local_c;
-  cg_s *local_8;
+  Operand operand;
+  char *s1;
+  int iVar1;
+  Operand source;
+  Operand result;
+  char *teamName;
+  int isAway;
+  cg_s *cgameGlob;
   
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  GetOperand(param_3,&local_20);
-  OVar1.internals.intVal = local_20.internals.intVal;
-  OVar1.dataType = local_20.dataType;
-  local_10 = GetSourceString(OVar1);
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  local_c = local_8[1].activeSnapshots[0].ps.commandTime;
-  pcVar2 = CG_GetTeamName(TEAM_AXIS);
-  iVar3 = I_stricmp(local_10,pcVar2);
-  if (iVar3 == 0) {
-    local_c = local_8[1].activeSnapshots[0].ps.pm_type;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  teamName = GetSourceString(operand);
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  isAway = cgameGlob[1].activeSnapshots[0].ps.commandTime;
+  s1 = CG_GetTeamName(TEAM_AXIS);
+  iVar1 = I_stricmp(teamName,s1);
+  if (iVar1 == 0) {
+    isAway = cgameGlob[1].activeSnapshots[0].ps.pm_type;
   }
-  if (local_c == 0) {
-    local_18.internals.string = UI_SafeTranslateString("OBJECTIVES_FLAG_HOME_CAPS");
+  if (isAway == 0) {
+    result.internals.string = UI_SafeTranslateString("OBJECTIVES_FLAG_HOME_CAPS");
   }
   else {
-    local_18.internals.string = UI_SafeTranslateString("OBJECTIVES_FLAG_AWAY_CAPS");
+    result.internals.string = UI_SafeTranslateString("OBJECTIVES_FLAG_AWAY_CAPS");
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795340  HasTacticalMaskOverlay  (universal/com_expressions_eval.cpp:6428)
 
-void __cdecl HasTacticalMaskOverlay(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl HasTacticalMaskOverlay(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   bVar1 = CL_IsRenderingSplitScreen();
   if (bVar1) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -8077,54 +8381,54 @@ void __cdecl HasTacticalMaskOverlay(int param_1,itemDef_s *param_2,OperandStack 
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl InVehicle(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl InVehicle(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  cg_s *local_8;
+  Operand result;
+  cg_s *cgameGlob;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (((local_8->predictedPlayerState).eFlags & 0x4000U) != 0) {
-    local_10.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  cgameGlob = CG_GetLocalClientGlobals(localClientNum);
+  if (((cgameGlob->predictedPlayerState).eFlags & 0x4000U) != 0) {
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007953E0  GetNumActiveContracts  (universal/com_expressions_eval.cpp:6455)
 
-void __cdecl GetNumActiveContracts(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumActiveContracts(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_c;
+  int controllerIndex;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c.internals.intVal = LiveContracts_GetNumActiveContracts(iVar1);
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = LiveContracts_GetNumActiveContracts(controllerIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795420  GetCurrentContractIndex  (universal/com_expressions_eval.cpp:6468)
 
-void __cdecl GetCurrentContractIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentContractIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  uiInfo_s *local_8;
+  Operand result;
+  uiInfo_s *uiInfo;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = UI_GetInfo(param_1);
-  if (local_8 == (uiInfo_s *)0x0) {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  uiInfo = UI_GetInfo(localClientNum);
+  if (uiInfo == (uiInfo_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x194b,0,"%s");
     if (!bVar2) {
@@ -8133,585 +8437,594 @@ void __cdecl GetCurrentContractIndex(int param_1,itemDef_s *param_2,OperandStack
       return;
     }
   }
-  local_10.internals = (operandInternalDataUnion)local_8->contractIndex;
-  AddOperandToStack(param_3,&local_10);
+  result.internals = (operandInternalDataUnion)uiInfo->contractIndex;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795490  GetContractName  (universal/com_expressions_eval.cpp:6483)
 
-void __cdecl GetContractName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  if (local_8 < 0) {
-    local_10.internals.string = UI_SafeTranslateString("MPUI_CONTRACT_EMPTY_CAPS");
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (index < 0) {
+    result.internals.string = UI_SafeTranslateString("MPUI_CONTRACT_EMPTY_CAPS");
   }
   else {
-    local_10.internals.string = LiveContracts_GetContractName(local_8);
+    result.internals.string = LiveContracts_GetContractName(index);
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795500  GetContractDesc  (universal/com_expressions_eval.cpp:6504)
 
-void __cdecl GetContractDesc(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractDesc(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_10.internals.string = LiveContracts_GetContractDesc(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  result.internals.string = LiveContracts_GetContractDesc(index);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795560  GetContractProgress  (universal/com_expressions_eval.cpp:6522)
 
-void __cdecl GetContractProgress(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractProgress(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_c = GetSourceInt(&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveContracts_GetActiveContractIndex(local_10,local_c);
-  if (-1 < local_8) {
-    local_18.internals.intVal = LiveContracts_GetActiveContractProgress(local_10,local_8);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  activeContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+  if (-1 < activeContractIndex) {
+    result.internals.intVal =
+         LiveContracts_GetActiveContractProgress(controllerIndex,activeContractIndex);
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007955F0  GetContractRequiredCount  (universal/com_expressions_eval.cpp:6543)
 
-void __cdecl GetContractRequiredCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractRequiredCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveContracts_GetContractRequiredCount(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveContracts_GetContractRequiredCount(index);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795650  GetContractCost  (universal/com_expressions_eval.cpp:6561)
 
-void __cdecl GetContractCost(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractCost(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveContracts_GetContractCost(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveContracts_GetContractCost(index);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007956B0  GetTimeUntilNewContracts  (universal/com_expressions_eval.cpp:6579)
 
-void __cdecl GetTimeUntilNewContracts(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTimeUntilNewContracts(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = -1;
-  local_c.internals.intVal = LiveContracts_GetTimeUntilNextCycle();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = -1;
+  result.internals.intVal = LiveContracts_GetTimeUntilNextCycle();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007956E0  IsContractActive  (universal/com_expressions_eval.cpp:6593)
 
-void __cdecl IsContractActive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsContractActive(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_c = GetSourceInt(&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveContracts_GetActiveContractIndex(local_10,local_c);
-  if (-1 < local_8) {
-    local_18.internals.intVal = 1;
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  activeContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+  if (-1 < activeContractIndex) {
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795760  IsContractInProgress  (universal/com_expressions_eval.cpp:6614)
 
-void __cdecl IsContractInProgress(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsContractInProgress(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   ContractStatus_t CVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_c = GetSourceInt(&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveContracts_GetActiveContractIndex(local_10,local_c);
-  CVar1 = LiveContracts_GetActiveContractStatus(local_10,local_8);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  activeContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+  CVar1 = LiveContracts_GetActiveContractStatus(controllerIndex,activeContractIndex);
   if (CVar1 == CONTRACT_IN_PROGRESS) {
-    local_18.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007957F0  IsContractExpired  (universal/com_expressions_eval.cpp:6635)
 
-void __cdecl IsContractExpired(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsContractExpired(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   ContractStatus_t CVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_c = GetSourceInt(&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveContracts_GetActiveContractIndex(local_10,local_c);
-  CVar1 = LiveContracts_GetActiveContractStatus(local_10,local_8);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  activeContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+  CVar1 = LiveContracts_GetActiveContractStatus(controllerIndex,activeContractIndex);
   if (CVar1 == CONTRACT_EXPIRED) {
-    local_18.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795880  IsContractComplete  (universal/com_expressions_eval.cpp:6656)
 
-void __cdecl IsContractComplete(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsContractComplete(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   ContractStatus_t CVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_c = GetSourceInt(&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveContracts_GetActiveContractIndex(local_10,local_c);
-  CVar1 = LiveContracts_GetActiveContractStatus(local_10,local_8);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  activeContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+  CVar1 = LiveContracts_GetActiveContractStatus(controllerIndex,activeContractIndex);
   if (CVar1 == CONTRACT_COMPLETE) {
-    local_18.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795910  IsContractLocked  (universal/com_expressions_eval.cpp:6677)
 
-void __cdecl IsContractLocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsContractLocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int contractIndex;
   
-  GetOperand(param_3,&local_1c);
-  local_8 = GetSourceInt(&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = LiveContracts_IsContractLocked(local_c,local_8);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = LiveContracts_IsContractLocked(controllerIndex,contractIndex);
   if (bVar1) {
-    local_14.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795990  GetTimesContractPurchased  (universal/com_expressions_eval.cpp:6697)
 
-void __cdecl GetTimesContractPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTimesContractPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int contractIndex;
   
-  GetOperand(param_3,&local_1c);
-  local_8 = GetSourceInt(&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  local_14.internals.intVal = LiveContracts_GetTimesPurchased(local_c,local_8);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = LiveContracts_GetTimesPurchased(controllerIndex,contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795A00  GetTimesContractPurchasable  (universal/com_expressions_eval.cpp:6716)
 
-void __cdecl GetTimesContractPurchasable(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTimesContractPurchasable(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int contractIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveContracts_GetTimesPurchasable(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveContracts_GetTimesPurchasable(contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795A60  GetContractCooldownTime  (universal/com_expressions_eval.cpp:6734)
 
-void __cdecl GetContractCooldownTime(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractCooldownTime(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int contractIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveContracts_GetCooldownTime(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveContracts_GetCooldownTime(contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795AC0  GetRemainingContractCooldownTime  (universal/com_expressions_eval.cpp:6752)
 
-void __cdecl GetRemainingContractCooldownTime(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetRemainingContractCooldownTime(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int contractIndex;
   
-  GetOperand(param_3,&local_1c);
-  local_8 = GetSourceInt(&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  local_14.internals.intVal = LiveContracts_GetTimeUntilCooledDown(local_c,local_8);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = LiveContracts_GetTimeUntilCooledDown(controllerIndex,contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795B30  GetContractUnlockLevel  (universal/com_expressions_eval.cpp:6771)
 
-void __cdecl GetContractUnlockLevel(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractUnlockLevel(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int contractIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveContracts_GetUnlockLevel(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveContracts_GetUnlockLevel(contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795B90  GetContractRewardText  (universal/com_expressions_eval.cpp:6789)
 
-void __cdecl GetContractRewardText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractRewardText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   char *pcVar2;
-  Operand local_74;
-  int local_6c;
-  char *local_68;
-  OperandList local_64;
-  int local_c;
-  undefined1 local_5;
+  int xpReward;
+  Operand result;
+  int contractIndex;
+  char *xpStringRef;
+  OperandList list;
+  int cpReward;
+  bool notGreyedOut;
   
-  GetOperandList(param_3,&local_64);
-  local_74.dataType = VAL_STRING;
-  local_74.internals.floatVal = 1.8187723e-38;
-  local_68 = (char *)0x0;
-  local_6c = GetSourceInt(local_64.operands);
-  iVar1 = GetSourceInt(local_64.operands + 1);
-  local_5 = 0 < iVar1;
-  if ((bool)local_5) {
-    local_68 = "MPUI_CONTRACT_REWARD_XP_YELLOW";
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  xpStringRef = (char *)0x0;
+  contractIndex = GetSourceInt(list.operands);
+  iVar1 = GetSourceInt(list.operands + 1);
+  notGreyedOut = 0 < iVar1;
+  if (notGreyedOut) {
+    xpStringRef = "MPUI_CONTRACT_REWARD_XP_YELLOW";
   }
   else {
-    local_68 = "MPUI_CONTRACT_REWARD_XP";
+    xpStringRef = "MPUI_CONTRACT_REWARD_XP";
   }
-  local_c = LiveContracts_GetContractRewardCP(local_6c);
-  iVar1 = LiveContracts_GetContractRewardXP(local_6c);
-  if ((local_c < 1) || (iVar1 < 1)) {
-    if (local_c < 1) {
+  cpReward = LiveContracts_GetContractRewardCP(contractIndex);
+  iVar1 = LiveContracts_GetContractRewardXP(contractIndex);
+  if ((cpReward < 1) || (iVar1 < 1)) {
+    if (cpReward < 1) {
       if (0 < iVar1) {
-        pcVar2 = UI_SafeTranslateString(local_68);
-        local_74.internals.string = UI_ReplaceConversionInt(pcVar2,iVar1);
+        pcVar2 = UI_SafeTranslateString(xpStringRef);
+        result.internals.string = UI_ReplaceConversionInt(pcVar2,iVar1);
       }
     }
     else {
-      iVar1 = local_c;
+      iVar1 = cpReward;
       pcVar2 = UI_SafeTranslateString("MENU_POINTS");
-      local_74.internals.string = UI_ReplaceConversionInt(pcVar2,iVar1);
+      result.internals.string = UI_ReplaceConversionInt(pcVar2,iVar1);
     }
   }
   else {
-    pcVar2 = UI_SafeTranslateString(local_68);
+    pcVar2 = UI_SafeTranslateString(xpStringRef);
     UI_ReplaceConversionInt(pcVar2,iVar1);
-    iVar1 = local_c;
+    iVar1 = cpReward;
     pcVar2 = UI_SafeTranslateString("MENU_POINTS");
     UI_ReplaceConversionInt(pcVar2,iVar1);
-    local_74.internals.string = va("%s    %s");
+    result.internals.string = va("%s    %s");
   }
-  AddOperandToStack(param_3,&local_74);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795CD0  GetContractExpirationType  (universal/com_expressions_eval.cpp:6822)
 
-void __cdecl GetContractExpirationType(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractExpirationType(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int contractIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_10.internals.string = LiveContracts_GetExpirationType(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  result.internals.string = LiveContracts_GetExpirationType(contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795D30  IsTaskInProgress  (universal/com_expressions_eval.cpp:6840)
 
-void __cdecl IsTaskInProgress(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl IsTaskInProgress(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  int iVar2;
-  Operand local_18;
-  Operand local_10;
-  char *local_8;
+  Operand operand;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  char *taskName;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_8 = GetSourceString(OVar1);
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals.intVal._0_1_ = TaskManger2_TaskGetInProgressForControllerByName(local_8,iVar2);
-  local_10.internals.intVal._1_3_ = 0;
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  taskName = GetSourceString(operand);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal._0_1_ =
+       TaskManger2_TaskGetInProgressForControllerByName(taskName,controllerIndex);
+  result.internals.intVal._1_3_ = 0;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795DB0  GetContractExpirationData  (universal/com_expressions_eval.cpp:6863)
 
-void __cdecl GetContractExpirationData(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractExpirationData(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int contractIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveContracts_GetExpirationData(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  contractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveContracts_GetExpirationData(contractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795E10  GetContractCombatTimeLeft  (universal/com_expressions_eval.cpp:6881)
 
-void __cdecl GetContractCombatTimeLeft(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetContractCombatTimeLeft(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_c = GetSourceInt(&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveContracts_GetActiveContractIndex(local_10,local_c);
-  local_18.internals.intVal = LiveContracts_GetCombatTimeLeft(local_10,local_8);
-  AddOperandToStack(param_3,&local_18);
+  GetOperand(dataStack,&source);
+  index = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  activeContractIndex = LiveContracts_GetActiveContractIndex(controllerIndex,index);
+  result.internals.intVal = LiveContracts_GetCombatTimeLeft(controllerIndex,activeContractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795E90  GetIndexForActiveContract  (universal/com_expressions_eval.cpp:6901)
 
-void __cdecl GetIndexForActiveContract(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetIndexForActiveContract(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_1c);
-  local_8 = GetSourceInt(&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = -1;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  local_14.internals.intVal = LiveContracts_GetIndexForActiveContract(local_c,local_8);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&source);
+  activeContractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = -1;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal =
+       LiveContracts_GetIndexForActiveContract(controllerIndex,activeContractIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00795F00  GetIndexForNthActiveContract  (universal/com_expressions_eval.cpp:6920)
 
-void __cdecl GetIndexForNthActiveContract(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetIndexForNthActiveContract(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int local_24;
-  Operand local_20;
-  operandInternalDataUnion local_18;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  int i;
+  Operand source;
+  int indexForActiveContract;
+  Operand result;
+  int controllerIndex;
+  int activeContractIndex;
   
-  GetOperand(param_3,&local_20);
-  local_8 = GetSourceInt(&local_20);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = -1;
-  local_18.intVal = 0;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  local_24 = 0;
+  GetOperand(dataStack,&source);
+  activeContractIndex = GetSourceInt(&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = -1;
+  indexForActiveContract = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  i = 0;
   while( true ) {
-    if (2 < local_24) {
-      AddOperandToStack(param_3,&local_14);
+    if (2 < i) {
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_18.intVal = LiveContracts_GetIndexForActiveContract(local_c,local_24);
-    if ((local_18.intVal != -1) && (local_8 = local_8 + -1, local_8 == 0)) break;
-    local_24 = local_24 + 1;
+    indexForActiveContract = LiveContracts_GetIndexForActiveContract(controllerIndex,i);
+    if ((indexForActiveContract != -1) &&
+       (activeContractIndex = activeContractIndex + -1, activeContractIndex == 0)) break;
+    i = i + 1;
   }
-  local_14.internals.intVal = local_18.intVal;
-  AddOperandToStack(param_3,&local_14);
+  result.internals.intVal = indexForActiveContract;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796000  GetClanName  (universal/com_expressions_eval.cpp:7019)
 
-void __cdecl GetClanName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClanName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int local_20;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  Operand result;
+  int clanTagColor;
+  int controllerIndex;
+  int currEquippedClanTagFeatureIndex;
+  char *clanName;
   
-  local_1c.dataType = VAL_STRING;
-  local_1c.internals.floatVal = 1.8187723e-38;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = Clan_GetName(local_10);
-  local_c = BG_UnlockablesGetEquippedClanTagFeatureIndex(local_10);
-  local_20 = local_c;
-  if (local_c == 0) {
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  clanName = Clan_GetName(controllerIndex);
+  currEquippedClanTagFeatureIndex = BG_UnlockablesGetEquippedClanTagFeatureIndex(controllerIndex);
+  local_20 = currEquippedClanTagFeatureIndex;
+  if (currEquippedClanTagFeatureIndex == 0) {
     local_20 = 7;
   }
-  local_14 = local_20;
-  if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-    Clan_GetName(local_10);
-    local_1c.internals.string = va("[^%i%s^7]");
+  clanTagColor = local_20;
+  if ((clanName != (char *)0x0) && (*clanName != '\0')) {
+    Clan_GetName(controllerIndex);
+    result.internals.string = va("[^%i%s^7]");
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -8720,185 +9033,189 @@ void __cdecl GetClanName(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetPlayerCardTitle(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPlayerCardTitle(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  ConversionArguments *pCVar3;
-  char *pcVar4;
-  int iVar5;
-  Operand local_448;
-  char *local_440;
-  Operand local_43c;
-  char local_434 [1028];
+  Operand operand;
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand source;
+  char *playerName;
+  Operand result;
+  char outputString [1028];
   uint local_30;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_43c.dataType = VAL_STRING;
-  GetOperand(param_3,&local_448);
-  OVar1.internals.intVal = local_448.internals.intVal;
-  OVar1.dataType = local_448.dataType;
-  local_440 = GetSourceString(OVar1);
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 1;
-  iVar5 = 0x400;
-  pcVar4 = local_434;
-  pCVar3 = &local_2c;
-  local_2c.args[0] = local_440;
-  pcVar2 = UI_SafeTranslateString("MENU_PLAYERCARD_TITLE_CAPS");
-  UI_ReplaceConversions(pcVar2,pCVar3,pcVar4,iVar5);
-  local_43c.internals.string = CopyTempString(local_434);
-  AddOperandToStack(param_3,&local_43c);
+  result.dataType = VAL_STRING;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  playerName = GetSourceString(operand);
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 1;
+  outputStringSize = 0x400;
+  outputString_00 = outputString;
+  arguments = &convArgs;
+  convArgs.args[0] = playerName;
+  sourceString = UI_SafeTranslateString("MENU_PLAYERCARD_TITLE_CAPS");
+  UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007961C0  GetClanTagAndName  (universal/com_expressions_eval.cpp:7119)
 
-void __cdecl GetClanTagAndName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClanTagAndName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   char *pcVar1;
-  char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  char *s0;
+  int iVar2;
+  char *s1;
+  char *playerName;
+  Operand result;
+  int controllerIndex;
+  int feature;
   
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
-  pcVar1 = CL_ControllerIndex_GetUsername(local_c);
-  local_8 = 0;
-  local_8 = LiveStats_GetClanTagFeature(local_c);
-  pcVar4 = "";
-  pcVar2 = Clan_GetName(local_c);
-  iVar3 = I_strcmp(pcVar2,pcVar4);
-  if (iVar3 == 0) {
-    local_14.internals.string = CopyTempString(pcVar1);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  pcVar1 = CL_ControllerIndex_GetUsername(controllerIndex);
+  feature = 0;
+  feature = LiveStats_GetClanTagFeature(controllerIndex);
+  s1 = "";
+  s0 = Clan_GetName(controllerIndex);
+  iVar2 = I_strcmp(s0,s1);
+  if (iVar2 == 0) {
+    result.internals.string = CopyTempString(pcVar1);
   }
   else {
-    Clan_GetName(local_c);
+    Clan_GetName(controllerIndex);
     pcVar1 = va("[%s] %s");
-    local_14.internals.string = CopyTempString(pcVar1);
+    result.internals.string = CopyTempString(pcVar1);
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796280  GetXUID  (universal/com_expressions_eval.cpp:7177)
 
-void __cdecl GetXUID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetXUID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  char *pcVar2;
-  Operand local_10;
-  int local_8;
+  char *string;
+  Operand result;
+  int controllerIndex;
   
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  bVar1 = Live_IsSignedIn(local_8);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  bVar1 = Live_IsSignedIn(controllerIndex);
   if (bVar1) {
-    Live_GetXuid(local_8);
-    pcVar2 = va("%lld");
-    local_10.internals.string = CopyTempString(pcVar2);
+    Live_GetXuid(controllerIndex);
+    string = va("%lld");
+    result.internals.string = CopyTempString(string);
   }
   else {
-    local_10.internals.string = CopyTempString("0");
+    result.internals.string = CopyTempString("0");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796310  GetSellText  (universal/com_expressions_eval.cpp:7207)
 
-void __cdecl GetSellText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetSellText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796360  GetItemPrice  (universal/com_expressions_eval.cpp:7234)
 
-void __cdecl GetItemPrice(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetItemPrice(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
   
-  GetOperand(param_3,&local_18);
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007963B0  GetSelfGamertag  (universal/com_expressions_eval.cpp:7258)
 
-void __cdecl GetSelfGamertag(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetSelfGamertag(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = Live_IsSignedIn(local_8);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = Live_IsSignedIn(controllerIndex);
   if (bVar1) {
-    local_10.internals.string = Live_ControllerIndex_GetClientName(local_8);
+    result.internals.string = Live_ControllerIndex_GetClientName(controllerIndex);
   }
   else {
-    local_10.internals.floatVal = 1.8187723e-38;
+    result.internals.floatVal = 1.8187723e-38;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007964B0  GetRankByXUID_Internal  (universal/com_expressions_eval.cpp:7277)
 
-int __cdecl GetRankByXUID_Internal(int param_1,ulong64 param_2)
+/* WARNING: Variable defined which should be unmapped: prestige */
+
+int __cdecl GetRankByXUID_Internal(int controllerIndex,ulong64 param_2)
 
 {
   bool bVar1;
   int in_stack_00000008;
-  int local_8;
+  int prestige;
+  int rank;
   
   if (in_stack_00000008 != 0 || (int)param_2 != 0) {
-    local_8 = 0;
-    bVar1 = PCache_GetRank(param_1,CONCAT44(&local_8,(int)param_2),(int *)&stack0xfffffff4,
-                           (int *)0x0);
+    rank = 0;
+    prestige = 0;
+    bVar1 = PCache_GetRank(controllerIndex,CONCAT44(&rank,(int)param_2),&prestige,(int *)0x0);
     if (bVar1) {
-      return local_8;
+      return rank;
     }
   }
   return -1;
@@ -8907,157 +9224,163 @@ int __cdecl GetRankByXUID_Internal(int param_1,ulong64 param_2)
 
 // 00796420  GetRankByXUID  (universal/com_expressions_eval.cpp:7304)
 
-void __cdecl GetRankByXUID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetRankByXUID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  int iVar3;
-  long64 lVar4;
-  undefined4 uVar5;
+  Operand operand;
+  char *str;
+  int controllerIndex;
+  long64 lVar1;
+  undefined4 uVar2;
   expDataType in_stack_ffffffe4;
   operandInternalDataUnion local_18;
-  Operand local_14;
-  undefined8 local_c;
+  Operand result;
+  undefined8 xuid;
   
-  GetOperand(param_3,(Operand *)&stack0xffffffe4);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  OVar1.internals.intVal = local_18.intVal;
-  OVar1.dataType = in_stack_ffffffe4;
-  pcVar2 = GetSourceString(OVar1);
-  lVar4 = I_atoi64(pcVar2);
-  local_c._4_4_ = (undefined4)((ulonglong)lVar4 >> 0x20);
-  uVar5 = local_c._4_4_;
-  local_c = lVar4;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  local_14.internals.intVal = GetRankByXUID_Internal(iVar3,CONCAT44(in_stack_ffffffe4,uVar5));
-  if (local_14.internals.intVal < 0) {
-    local_14.internals.intVal = 0;
+  GetOperand(dataStack,(Operand *)&stack0xffffffe4);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  operand.internals.intVal = local_18.intVal;
+  operand.dataType = in_stack_ffffffe4;
+  str = GetSourceString(operand);
+  lVar1 = I_atoi64(str);
+  xuid._4_4_ = (undefined4)((ulonglong)lVar1 >> 0x20);
+  uVar2 = xuid._4_4_;
+  xuid = lVar1;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal =
+       GetRankByXUID_Internal(controllerIndex,CONCAT44(in_stack_ffffffe4,uVar2));
+  if (result.internals.intVal < 0) {
+    result.internals.intVal = 0;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796500  GetPrestigeByXUID  (universal/com_expressions_eval.cpp:7320)
 
-void __cdecl GetPrestigeByXUID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Variable defined which should be unmapped: prestige */
+
+void __cdecl GetPrestigeByXUID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand OVar2;
-  bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  long64 lVar6;
-  operandInternalDataUnion oVar7;
-  undefined4 local_20;
-  Operand local_1c;
-  Operand local_14;
-  undefined8 local_c;
+  Operand operand;
+  bool bVar2;
+  char *str;
+  long64 lVar3;
+  int prestige;
+  int controllerIndex;
+  int rank;
+  Operand source;
+  Operand result;
+  undefined8 xuid;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  OVar2.internals.intVal = local_1c.internals.intVal;
-  OVar2.dataType = local_1c.dataType;
-  pcVar4 = GetSourceString(OVar2);
-  lVar6 = I_atoi64(pcVar4);
-  local_c._0_4_ = (int)lVar6;
-  local_c._4_4_ = (int)((ulonglong)lVar6 >> 0x20);
-  bVar3 = (int)local_c != 0;
-  bVar1 = local_c._4_4_ != 0;
-  local_c = lVar6;
-  if (bVar3 || bVar1) {
-    local_20 = 0;
-    oVar7.intVal = 0;
-    iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-    bVar3 = PCache_GetRank(iVar5,CONCAT44(&local_20,local_c._4_4_),(int *)&stack0xffffffd8,
-                           (int *)oVar7.string);
-    if (bVar3) {
-      local_14.internals = oVar7;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  str = GetSourceString(operand);
+  lVar3 = I_atoi64(str);
+  xuid._0_4_ = (int)lVar3;
+  xuid._4_4_ = (int)((ulonglong)lVar3 >> 0x20);
+  bVar2 = (int)xuid != 0;
+  bVar1 = xuid._4_4_ != 0;
+  xuid = lVar3;
+  if (bVar2 || bVar1) {
+    rank = 0;
+    prestige = 0;
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    bVar2 = PCache_GetRank(controllerIndex,CONCAT44(&rank,xuid._4_4_),&prestige,(int *)prestige);
+    if (bVar2) {
+      result.internals.intVal = prestige;
     }
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007965B0  GetCodpointsByXUID  (universal/com_expressions_eval.cpp:7360)
 
-void __cdecl GetCodpointsByXUID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Variable defined which should be unmapped: controllerIndex */
+
+void __cdecl GetCodpointsByXUID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand OVar2;
-  bool bVar3;
-  char *pcVar4;
-  int iVar5;
-  long64 lVar6;
-  int local_20;
-  Operand local_1c;
-  Operand local_14;
-  undefined8 local_c;
+  Operand operand;
+  bool bVar2;
+  char *str;
+  int controllerIndex_00;
+  long64 lVar3;
+  int controllerIndex;
+  int codpoints;
+  Operand source;
+  Operand result;
+  undefined8 xuid;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  OVar2.internals.intVal = local_1c.internals.intVal;
-  OVar2.dataType = local_1c.dataType;
-  pcVar4 = GetSourceString(OVar2);
-  lVar6 = I_atoi64(pcVar4);
-  local_c._0_4_ = (int)lVar6;
-  local_c._4_4_ = (int)((ulonglong)lVar6 >> 0x20);
-  bVar3 = (int)local_c != 0;
-  bVar1 = local_c._4_4_ != 0;
-  local_c = lVar6;
-  if (bVar3 || bVar1) {
-    local_20 = 0;
-    iVar5 = Com_LocalClient_GetControllerIndex(param_1);
-    bVar3 = PCache_GetCodpoints(iVar5,CONCAT44(&local_20,local_c._4_4_),(int *)iVar5);
-    if (bVar3) {
-      local_14.internals.intVal = local_20;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  str = GetSourceString(operand);
+  lVar3 = I_atoi64(str);
+  xuid._0_4_ = (int)lVar3;
+  xuid._4_4_ = (int)((ulonglong)lVar3 >> 0x20);
+  bVar2 = (int)xuid != 0;
+  bVar1 = xuid._4_4_ != 0;
+  xuid = lVar3;
+  if (bVar2 || bVar1) {
+    codpoints = 0;
+    controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+    bVar2 = PCache_GetCodpoints(controllerIndex_00,CONCAT44(&codpoints,xuid._4_4_),
+                                (int *)controllerIndex_00);
+    if (bVar2) {
+      result.internals.intVal = codpoints;
     }
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796650  GetDisplayLevelByXUID  (universal/com_expressions_eval.cpp:7398)
 
-void __cdecl GetDisplayLevelByXUID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDisplayLevelByXUID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  int iVar3;
-  long64 lVar4;
-  undefined4 uVar5;
+  Operand operand;
+  char *pcVar1;
+  int controllerIndex;
+  long64 lVar2;
+  undefined4 uVar3;
   expDataType in_stack_ffffffe0;
   operandInternalDataUnion local_1c;
-  Operand local_18;
-  int local_10;
-  undefined8 local_c;
+  Operand result;
+  int rank;
+  undefined8 xuid;
   
-  GetOperand(param_3,(Operand *)&stack0xffffffe0);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  OVar1.internals.intVal = local_1c.intVal;
-  OVar1.dataType = in_stack_ffffffe0;
-  pcVar2 = GetSourceString(OVar1);
-  lVar4 = I_atoi64(pcVar2);
-  local_c._4_4_ = (undefined4)((ulonglong)lVar4 >> 0x20);
-  uVar5 = local_c._4_4_;
-  local_c = lVar4;
-  iVar3 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10 = GetRankByXUID_Internal(iVar3,CONCAT44(in_stack_ffffffe0,uVar5));
-  if (-1 < local_10) {
-    pcVar2 = CL_GetRankData(local_10,MP_RANKTABLE_DISPLAYLEVEL);
-    local_18.internals.string = CopyTempString(pcVar2);
+  GetOperand(dataStack,(Operand *)&stack0xffffffe0);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  operand.internals.intVal = local_1c.intVal;
+  operand.dataType = in_stack_ffffffe0;
+  pcVar1 = GetSourceString(operand);
+  lVar2 = I_atoi64(pcVar1);
+  xuid._4_4_ = (undefined4)((ulonglong)lVar2 >> 0x20);
+  uVar3 = xuid._4_4_;
+  xuid = lVar2;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  rank = GetRankByXUID_Internal(controllerIndex,CONCAT44(in_stack_ffffffe0,uVar3));
+  if (-1 < rank) {
+    pcVar1 = CL_GetRankData(rank,MP_RANKTABLE_DISPLAYLEVEL);
+    result.internals.string = CopyTempString(pcVar1);
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -9066,68 +9389,68 @@ void __cdecl GetDisplayLevelByXUID(int param_1,itemDef_s *param_2,OperandStack *
 
 /* WARNING: Enum "team_t": Some values do not have unique names */
 
-void __cdecl GetMutedStatus(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetMutedStatus(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  Operand local_30;
-  clientActive_t *local_28;
-  int local_24;
-  Operand local_20;
-  clientState_s *local_18;
-  undefined8 local_14;
-  int local_c;
-  int local_8;
+  Operand operand;
+  bool bVar1;
+  char *str;
+  Operand source;
+  clientActive_t *cl;
+  int playerIndex;
+  Operand result;
+  clientState_s *pState;
+  undefined8 playerXuid;
+  int i;
+  int localControllerIndex;
   
-  GetOperand(param_3,&local_30);
-  local_20.dataType = VAL_INT;
-  local_20.internals.intVal = 0;
-  OVar1.internals.intVal = local_30.internals.intVal;
-  OVar1.dataType = local_30.dataType;
-  pcVar3 = GetSourceString(OVar1);
-  local_14 = I_atoi64(pcVar3);
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_24 = -1;
-  local_28 = CL_GetLocalClientGlobals(param_1);
-  if ((local_28->snap).valid != 0) {
-    for (local_c = 0; local_c < (local_28->snap).numClients; local_c = local_c + 1) {
-      local_18 = local_28->parseClients + ((local_28->snap).parseClientsNum + local_c & 0x7ff);
-      if (((local_18->field12_0x78).xuid32[0] == (uint)local_14) &&
-         ((local_18->field12_0x78).xuid32[1] == local_14._4_4_)) {
-        local_24 = local_18->clientIndex;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  str = GetSourceString(operand);
+  playerXuid = I_atoi64(str);
+  localControllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  playerIndex = -1;
+  cl = CL_GetLocalClientGlobals(localClientNum);
+  if ((cl->snap).valid != 0) {
+    for (i = 0; i < (cl->snap).numClients; i = i + 1) {
+      pState = cl->parseClients + ((cl->snap).parseClientsNum + i & 0x7ff);
+      if (((pState->field12_0x78).xuid32[0] == (uint)playerXuid) &&
+         ((pState->field12_0x78).xuid32[1] == playerXuid._4_4_)) {
+        playerIndex = pState->clientIndex;
         break;
       }
     }
   }
-  if (-1 < local_24) {
-    bVar2 = CL_IsPlayerMuted(param_1,local_24);
-    if (bVar2) {
-      local_20.internals.intVal = 1;
+  if (-1 < playerIndex) {
+    bVar1 = CL_IsPlayerMuted(localClientNum,playerIndex);
+    if (bVar1) {
+      result.internals.intVal = 1;
       goto LAB_007967fb;
     }
   }
-  local_20.internals.intVal = 0;
+  result.internals.intVal = 0;
 LAB_007967fb:
-  AddOperandToStack(param_3,&local_20);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796810  IsProfileSignedIn  (universal/com_expressions_eval.cpp:7481)
 
-void __cdecl IsProfileSignedIn(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsProfileSignedIn(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  if (local_8 == -1) {
+  result.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (controllerIndex == -1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x1d3e,0,"%s");
     if (!bVar2) {
@@ -9136,174 +9459,174 @@ void __cdecl IsProfileSignedIn(int param_1,itemDef_s *param_2,OperandStack *para
       return;
     }
   }
-  if (-1 < local_8) {
-    bVar2 = GamerProfile_IsProfileLoggedIn(local_8);
+  if (-1 < controllerIndex) {
+    bVar2 = GamerProfile_IsProfileLoggedIn(controllerIndex);
     if (!bVar2) {
-      local_10.internals.intVal = 0;
+      result.internals.intVal = 0;
       goto LAB_00796881;
     }
   }
-  local_10.internals.intVal = 1;
+  result.internals.intVal = 1;
 LAB_00796881:
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007968A0  IsSignedIn  (universal/com_expressions_eval.cpp:7497)
 
-void __cdecl IsSignedIn(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSignedIn(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_c;
+  int controllerIndex;
+  Operand result;
   
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c.internals.intVal._0_1_ = Live_IsSignedIn(iVar1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal._0_1_ = Live_IsSignedIn(controllerIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSignedIn() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796920  IsSignedInToLive  (universal/com_expressions_eval.cpp:7514)
 
-void __cdecl IsSignedInToLive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsSignedInToLive(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_c;
+  int controllerIndex;
+  Operand result;
   
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c.internals.intVal._0_1_ = Live_IsSignedInToLive(iVar1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal._0_1_ = Live_IsSignedInToLive(controllerIndex);
+  result.internals.intVal._1_3_ = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSignedInToLive() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007969A0  AnySignedIn  (universal/com_expressions_eval.cpp:7530)
 
-void __cdecl AnySignedIn(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl AnySignedIn(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSignedIn() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007969F0  AnySignedInToLive  (universal/com_expressions_eval.cpp:7553)
 
-void __cdecl AnySignedInToLive(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl AnySignedInToLive(int localClientNum_2,itemDef_s *item_2,OperandStack *dataStack_2)
 
 {
-  Operand local_c;
+  Operand result_2;
   
-  local_c.internals.intVal = 0;
-  local_c.dataType = VAL_INT;
+  result_2.internals.intVal = 0;
+  result_2.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsSignedInToLive() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack_2,&result_2);
   return;
 }
 
 
 // 00796A40  AreStatsFetched  (universal/com_expressions_eval.cpp:7600)
 
-void __cdecl AreStatsFetched(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl AreStatsFetched(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int localControllerIndex;
   
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = Live_IsUserSignedInToDemonware(local_8);
+  localControllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = Live_IsUserSignedInToDemonware(localControllerIndex);
   if (bVar1) {
-    bVar1 = LiveStorage_DoWeHaveAllStats(local_8);
+    bVar1 = LiveStorage_DoWeHaveAllStats(localControllerIndex);
     if (bVar1) {
-      local_10.internals.intVal = 1;
+      result.internals.intVal = 1;
       goto LAB_00796a8b;
     }
   }
-  local_10.internals.intVal = 0;
+  result.internals.intVal = 0;
 LAB_00796a8b:
-  local_10.dataType = VAL_INT;
+  result.dataType = VAL_INT;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("AreStatsFetched() = %i\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796AD0  AreContractsFetched  (universal/com_expressions_eval.cpp:7617)
 
-void __cdecl AreContractsFetched(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl AreContractsFetched(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
-  local_c.internals.intVal._0_1_ = LiveStorage_DoWeHaveContracts();
-  local_c.internals.intVal._1_3_ = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  result.internals.intVal._0_1_ = LiveStorage_DoWeHaveContracts();
+  result.internals.intVal._1_3_ = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("AreContractsFetched() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796B40  IsTimeSynced  (universal/com_expressions_eval.cpp:7634)
 
-void __cdecl IsTimeSynced(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsTimeSynced(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
-  local_c.internals.intVal._0_1_ = LiveStorage_IsTimeSynced();
-  local_c.internals.intVal._1_3_ = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  result.internals.intVal._0_1_ = LiveStorage_IsTimeSynced();
+  result.internals.intVal._1_3_ = 0;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsTimeSynced() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796BB0  IsContentRatingAllowed  (universal/com_expressions_eval.cpp:7651)
 
-void __cdecl IsContentRatingAllowed(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsContentRatingAllowed(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsContentRatingAllowed() = %i\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -9312,38 +9635,39 @@ void __cdecl IsContentRatingAllowed(int param_1,itemDef_s *param_2,OperandStack 
 
 /* WARNING: Removing unreachable block (ram,0x00796cd4) */
 
-void __cdecl IsDemonwareFetchingDone(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsDemonwareFetchingDone(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  char local_11;
-  int local_10;
-  undefined1 local_b;
-  char local_a;
-  undefined1 local_9;
-  char local_8;
-  char local_7;
-  undefined1 local_6;
-  undefined1 local_5;
+  Operand result;
+  bool isTimeSynced;
+  int controllerIndex;
+  bool weHaveContracts;
+  bool weHavePlaylist;
+  bool isUserSignedInToLive;
+  bool isUserSignedInToDemonware;
+  bool weHaveStats;
+  bool hasMultiplayerPrivileges;
+  bool isUserGuest;
   
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = 1;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_5 = CL_IsRenderingSplitScreen();
-  local_9 = Live_IsUserSignedInToLive(local_10);
-  local_8 = Live_IsUserSignedInToDemonware(local_10);
-  local_7 = LiveStorage_DoWeHaveAllStats(local_10);
-  local_a = LiveStorage_DoWeHavePlaylists();
-  local_6 = CL_IsLastActiveLocalClient(local_10);
-  if ((((local_8 == '\0') || (local_7 == '\0')) || (local_a == '\0')) || (!(bool)local_6)) {
-    local_1c.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  isUserGuest = CL_IsRenderingSplitScreen();
+  isUserSignedInToLive = Live_IsUserSignedInToLive(controllerIndex);
+  isUserSignedInToDemonware = Live_IsUserSignedInToDemonware(controllerIndex);
+  weHaveStats = LiveStorage_DoWeHaveAllStats(controllerIndex);
+  weHavePlaylist = LiveStorage_DoWeHavePlaylists();
+  hasMultiplayerPrivileges = CL_IsLastActiveLocalClient(controllerIndex);
+  if ((((isUserSignedInToDemonware == false) || (weHaveStats == false)) || (weHavePlaylist == false)
+      ) || (!hasMultiplayerPrivileges)) {
+    result.internals.intVal = 0;
   }
-  local_11 = LiveStorage_IsTimeSynced();
-  local_b = LiveStorage_DoWeHaveContracts();
-  if ((local_11 == '\0') || (!(bool)local_b)) {
-    local_1c.internals.intVal = 0;
+  isTimeSynced = LiveStorage_IsTimeSynced();
+  weHaveContracts = LiveStorage_DoWeHaveContracts();
+  if ((isTimeSynced == false) || (!weHaveContracts)) {
+    result.internals.intVal = 0;
   }
-  if (local_1c.internals.intVal == 0) {
+  if (result.internals.intVal == 0) {
     Com_Printf(0x10,"Can play online (controller: %d): %s\n");
     Com_Printf(0x10,"\t%s - Live_UserIsGuest( controller: %d )\n");
     Com_Printf(0x10,"\t%s - Live_IsUserSignedInToLive( controller: %d )\n");
@@ -9356,75 +9680,75 @@ void __cdecl IsDemonwareFetchingDone(int param_1,itemDef_s *param_2,OperandStack
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("IsDemonwareFetchingDone() = %i\n");
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00796E80  GetUIRect  (universal/com_expressions_eval.cpp:7756)
 
-void __cdecl GetUIRect(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUIRect(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  int iVar3;
-  Operand local_70;
-  operandInternalDataUnion local_68;
-  OperandList local_64;
-  itemDef_s *local_8;
+  Operand operand;
+  char *name;
+  int iVar1;
+  Operand result;
+  char *field;
+  OperandList list;
+  itemDef_s *actualItem;
   
-  local_68.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_64);
-  local_70.dataType = VAL_FLOAT;
-  local_70.internals.intVal = 0;
-  if (local_64.operandCount < 1) {
+  field = "";
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_FLOAT;
+  result.internals.intVal = 0;
+  if (list.operandCount < 1) {
     Com_PrintError(0xd,"UI Expression Error: Expected at least 1 parameter to getUIRect()\n");
-    AddOperandToStack(param_3,&local_70);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    if (local_64.operandCount == 1) {
-      local_8 = param_2;
-      if (local_64.operands[0].dataType == VAL_STRING) {
-        local_68.intVal = local_64.operands[0].internals.intVal;
+    if (list.operandCount == 1) {
+      actualItem = item;
+      if (list.operands[0].dataType == VAL_STRING) {
+        field = list.operands[0].internals.string;
       }
     }
     else {
-      OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-      OVar1.dataType = local_64.operands[0].dataType;
-      pcVar2 = GetSourceString(OVar1);
-      local_8 = Menu_GetMatchingItemByNumber(param_2->parent,0,pcVar2);
-      if (local_64.operands[1].dataType == VAL_STRING) {
-        local_68 = local_64.operands[1].internals;
+      operand.internals.intVal = list.operands[0].internals.intVal;
+      operand.dataType = list.operands[0].dataType;
+      name = GetSourceString(operand);
+      actualItem = Menu_GetMatchingItemByNumber(item->parent,0,name);
+      if (list.operands[1].dataType == VAL_STRING) {
+        field = list.operands[1].internals.string;
       }
     }
-    if (local_8 == (itemDef_s *)0x0) {
-      AddOperandToStack(param_3,&local_70);
+    if (actualItem == (itemDef_s *)0x0) {
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      iVar3 = I_stricmp(local_68.string,"x");
-      if (iVar3 == 0) {
-        local_70.internals = (operandInternalDataUnion)(local_8->window).rect.x;
+      iVar1 = I_stricmp(field,"x");
+      if (iVar1 == 0) {
+        result.internals = (operandInternalDataUnion)(actualItem->window).rect.x;
       }
       else {
-        iVar3 = I_stricmp(local_68.string,"y");
-        if (iVar3 == 0) {
-          local_70.internals = (operandInternalDataUnion)(local_8->window).rect.y;
+        iVar1 = I_stricmp(field,"y");
+        if (iVar1 == 0) {
+          result.internals = (operandInternalDataUnion)(actualItem->window).rect.y;
         }
         else {
-          iVar3 = I_stricmp(local_68.string,"w");
-          if (iVar3 == 0) {
-            local_70.internals = (operandInternalDataUnion)(local_8->window).rect.w;
+          iVar1 = I_stricmp(field,"w");
+          if (iVar1 == 0) {
+            result.internals = (operandInternalDataUnion)(actualItem->window).rect.w;
           }
           else {
-            iVar3 = I_stricmp(local_68.string,"h");
-            if (iVar3 == 0) {
-              local_70.internals = (operandInternalDataUnion)(local_8->window).rect.h;
+            iVar1 = I_stricmp(field,"h");
+            if (iVar1 == 0) {
+              result.internals = (operandInternalDataUnion)(actualItem->window).rect.h;
             }
           }
         }
       }
-      AddOperandToStack(param_3,&local_70);
+      AddOperandToStack(dataStack,&result);
     }
   }
   return;
@@ -9433,7 +9757,7 @@ void __cdecl GetUIRect(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 00797120  GetSearchState  (universal/com_expressions_eval.cpp:7805)
 
-bool __cdecl GetSearchState(ddlState_t *param_1,OperandList *param_2,int param_3)
+bool __cdecl GetSearchState(ddlState_t *searchState,OperandList *operandList,int listStartIndex)
 
 {
   code *pcVar1;
@@ -9441,47 +9765,47 @@ bool __cdecl GetSearchState(ddlState_t *param_1,OperandList *param_2,int param_3
   undefined1 uVar3;
   int iVar4;
   expDataType *peVar5;
-  int local_60;
-  expDataType local_5c [20];
+  int i;
+  expDataType list [20];
   int local_c;
   
-  peVar5 = local_5c;
+  peVar5 = list;
   for (iVar4 = 0x15; iVar4 != 0; iVar4 = iVar4 + -1) {
-    *peVar5 = param_2->operands[0].dataType;
-    param_2 = (OperandList *)&param_2->operands[0].internals;
+    *peVar5 = operandList->operands[0].dataType;
+    operandList = (OperandList *)&operandList->operands[0].internals;
     peVar5 = peVar5 + 1;
   }
-  if (local_c - param_3 < 9) {
-    for (local_60 = param_3; local_60 < local_c; local_60 = local_60 + 1) {
-      if (local_5c[local_60 * 2] == VAL_INT) {
-        if ((param_1->member == (ddlMemberDef_t *)0x0) &&
+  if (local_c - listStartIndex < 9) {
+    for (i = listStartIndex; i < local_c; i = i + 1) {
+      if (list[i * 2] == VAL_INT) {
+        if ((searchState->member == (ddlMemberDef_t *)0x0) &&
            (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                      ,0x1e99,0,"%s"), !bVar2)) {
           pcVar1 = (code *)swi(3);
           uVar3 = (*pcVar1)();
           return (bool)uVar3;
         }
-        if (param_1->member->arraySize == 1) {
+        if (searchState->member->arraySize == 1) {
           DDL_PrintError("DDL: Member name (string) expected. Received an integer instead.");
           return false;
         }
-        iVar4 = DDL_MoveToIndex(param_1,param_1,local_5c[local_60 * 2 + 1],1);
+        iVar4 = DDL_MoveToIndex(searchState,searchState,list[i * 2 + 1],1);
         if (iVar4 == 0) {
           DDL_PrintError("DDL: Could not find member array index number.");
           return false;
         }
       }
       else {
-        if (local_5c[local_60 * 2] != VAL_STRING) {
+        if (list[i * 2] != VAL_STRING) {
           DDL_PrintError("DDL: Expected strings or integers only.");
           return false;
         }
-        if ((((param_1->member != (ddlMemberDef_t *)0x0) && (param_1->arrayIndex == -1)) &&
-            (1 < param_1->member->arraySize)) && (param_1->member->enumIndex == -1)) {
+        if ((((searchState->member != (ddlMemberDef_t *)0x0) && (searchState->arrayIndex == -1)) &&
+            (1 < searchState->member->arraySize)) && (searchState->member->enumIndex == -1)) {
           DDL_PrintError("DDL: array index (integer) expected. Received a string instead.");
           return false;
         }
-        iVar4 = DDL_MoveToName(param_1,param_1,(char *)local_5c[local_60 * 2 + 1]);
+        iVar4 = DDL_MoveToName(searchState,searchState,(char *)list[i * 2 + 1]);
         if (iVar4 == 0) {
           DDL_PrintError("DDL: Could not find member name.");
           return false;
@@ -9500,29 +9824,29 @@ bool __cdecl GetSearchState(ddlState_t *param_1,OperandList *param_2,int param_3
 
 // 00796FF0  GetDStat  (universal/com_expressions_eval.cpp:7856)
 
-void __cdecl GetDStat(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDStat(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   ddlState_t *pdVar3;
-  Operand local_78;
-  int local_70;
-  OperandList local_6c;
-  ddlState_t local_14;
+  Operand result;
+  int controllerIndex;
+  OperandList list;
+  ddlState_t searchState;
   
-  local_78.dataType = VAL_INT;
-  local_78.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   pdVar3 = LiveStats_GetRootDDLState();
-  local_14.absoluteOffset = pdVar3->absoluteOffset;
-  local_14.arrayIndex = pdVar3->arrayIndex;
-  local_14.member = pdVar3->member;
-  local_14.ddl = pdVar3->ddl;
-  GetOperandList(param_3,&local_6c);
-  bVar2 = GetSearchState(&local_14,&local_6c,0);
+  searchState.absoluteOffset = pdVar3->absoluteOffset;
+  searchState.arrayIndex = pdVar3->arrayIndex;
+  searchState.member = pdVar3->member;
+  searchState.ddl = pdVar3->ddl;
+  GetOperandList(dataStack,&list);
+  bVar2 = GetSearchState(&searchState,&list,0);
   if (bVar2) {
-    local_70 = Com_LocalClient_GetControllerIndex(param_1);
-    if (local_14.member == (ddlMemberDef_t *)0x0) {
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    if (searchState.member == (ddlMemberDef_t *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x1ec3,0,"%s");
       if (!bVar2) {
@@ -9531,23 +9855,23 @@ void __cdecl GetDStat(int param_1,itemDef_s *param_2,OperandStack *param_3)
         return;
       }
     }
-    if ((local_14.member)->type == 5) {
-      local_78.dataType = VAL_STRING;
-      local_78.internals.string = LiveStats_GetDStringStat(local_70,&local_14);
+    if ((searchState.member)->type == 5) {
+      result.dataType = VAL_STRING;
+      result.internals.string = LiveStats_GetDStringStat(controllerIndex,&searchState);
     }
-    else if ((local_14.member)->type == 3) {
-      local_78.dataType = VAL_STRING;
-      LiveStats_GetDInt64Stat(local_70,&local_14);
-      local_78.internals.string = va("%llu");
+    else if ((searchState.member)->type == 3) {
+      result.dataType = VAL_STRING;
+      LiveStats_GetDInt64Stat(controllerIndex,&searchState);
+      result.internals.string = va("%llu");
     }
     else {
-      local_78.dataType = VAL_INT;
-      local_78.internals.intVal = LiveStats_GetDIntStat(local_70,&local_14);
+      result.dataType = VAL_INT;
+      result.internals.intVal = LiveStats_GetDIntStat(controllerIndex,&searchState);
     }
-    AddOperandToStack(param_3,&local_78);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_78);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -9555,7 +9879,7 @@ void __cdecl GetDStat(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 007972A0  GetDStatForPreviousMatch  (universal/com_expressions_eval.cpp:7898)
 
-void __cdecl GetDStatForPreviousMatch(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDStatForPreviousMatch(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
@@ -9563,27 +9887,28 @@ void __cdecl GetDStatForPreviousMatch(int param_1,itemDef_s *param_2,OperandStac
   ddlState_t *pdVar3;
   uint uVar4;
   uint uVar5;
-  Operand local_80;
-  uchar *local_78;
-  int local_74;
-  uchar *local_70;
-  OperandList local_6c;
-  ddlState_t local_14;
+  Operand result;
+  char *liveStatsBuffer;
+  int controllerIndex;
+  char *oldStatsBuffer;
+  OperandList list;
+  ddlState_t searchState;
   
-  local_80.dataType = VAL_INT;
-  local_80.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   pdVar3 = LiveStats_GetRootDDLState();
-  local_14.absoluteOffset = pdVar3->absoluteOffset;
-  local_14.arrayIndex = pdVar3->arrayIndex;
-  local_14.member = pdVar3->member;
-  local_14.ddl = pdVar3->ddl;
-  GetOperandList(param_3,&local_6c);
-  bVar2 = GetSearchState(&local_14,&local_6c,0);
+  searchState.absoluteOffset = pdVar3->absoluteOffset;
+  searchState.arrayIndex = pdVar3->arrayIndex;
+  searchState.member = pdVar3->member;
+  searchState.ddl = pdVar3->ddl;
+  GetOperandList(dataStack,&list);
+  bVar2 = GetSearchState(&searchState,&list,0);
   if (bVar2) {
-    local_74 = Com_LocalClient_GetControllerIndex(param_1);
-    local_78 = LiveStorage_GetStatsBuffer(local_74,STATS_LOCATION_NORMAL,true);
-    local_70 = LiveStorage_GetStatsBuffer(local_74,STATS_LOCATION_STABLE,true);
-    if (local_14.member == (ddlMemberDef_t *)0x0) {
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    liveStatsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true)
+    ;
+    oldStatsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_STABLE,true);
+    if (searchState.member == (ddlMemberDef_t *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x1ef0,0,"%s");
       if (!bVar2) {
@@ -9592,13 +9917,13 @@ void __cdecl GetDStatForPreviousMatch(int param_1,itemDef_s *param_2,OperandStac
         return;
       }
     }
-    uVar4 = LiveStats_GetDIntStatFromBase(local_74,&local_14,(char *)local_78);
-    uVar5 = LiveStats_GetDIntStatFromBase(local_74,&local_14,(char *)local_70);
-    local_80.internals.string = (char *)(uVar4 - uVar5);
-    AddOperandToStack(param_3,&local_80);
+    uVar4 = LiveStats_GetDIntStatFromBase(controllerIndex,&searchState,liveStatsBuffer);
+    uVar5 = LiveStats_GetDIntStatFromBase(controllerIndex,&searchState,oldStatsBuffer);
+    result.internals.string = (char *)(uVar4 - uVar5);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_80);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -9606,59 +9931,60 @@ void __cdecl GetDStatForPreviousMatch(int param_1,itemDef_s *param_2,OperandStac
 
 // 007973C0  IsStableStatsBufferInitialized  (universal/com_expressions_eval.cpp:7929)
 
-void __cdecl IsStableStatsBufferInitialized(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+IsStableStatsBufferInitialized(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = LiveStats_IsStableStatsBufferInitialized(local_8);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = LiveStats_IsStableStatsBufferInitialized(controllerIndex);
   if (bVar1) {
-    local_10.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00797420  GetStatForFriendOrSelf  (universal/com_expressions_eval.cpp:7948)
 
-void __cdecl GetStatForFriendOrSelf(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetStatForFriendOrSelf(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   ddlState_t *pdVar3;
-  uchar *local_84;
-  Operand local_80;
-  int local_78;
-  OperandList local_74;
-  ddlState_t local_18;
-  operandInternalDataUnion local_8;
+  char *buffer;
+  Operand result;
+  int controllerIndex;
+  OperandList list;
+  ddlState_t searchState;
+  int forFriend;
   
-  local_80.dataType = VAL_INT;
-  local_80.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
   pdVar3 = LiveStats_GetRootDDLState();
-  local_18.absoluteOffset = pdVar3->absoluteOffset;
-  local_18.arrayIndex = pdVar3->arrayIndex;
-  local_18.member = pdVar3->member;
-  local_18.ddl = pdVar3->ddl;
-  GetOperandList(param_3,&local_74);
-  local_8 = local_74.operands[0].internals;
-  bVar2 = GetSearchState(&local_18,&local_74,1);
+  searchState.absoluteOffset = pdVar3->absoluteOffset;
+  searchState.arrayIndex = pdVar3->arrayIndex;
+  searchState.member = pdVar3->member;
+  searchState.ddl = pdVar3->ddl;
+  GetOperandList(dataStack,&list);
+  forFriend = list.operands[0].internals.intVal;
+  bVar2 = GetSearchState(&searchState,&list,1);
   if (bVar2) {
-    local_78 = Com_LocalClient_GetControllerIndex(param_1);
-    if (local_8.intVal == 0) {
-      local_84 = LiveStorage_GetStatsBuffer(local_78,STATS_LOCATION_GLOBAL,true);
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    if (forFriend == 0) {
+      buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_GLOBAL,true);
     }
     else {
-      local_84 = LiveStorage_GetStatsBuffer(local_78,STATS_LOCATION_OTHERPLAYER,true);
+      buffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_OTHERPLAYER,true);
     }
-    if (local_18.member == (ddlMemberDef_t *)0x0) {
+    if (searchState.member == (ddlMemberDef_t *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x1f30,0,"%s");
       if (!bVar2) {
@@ -9667,25 +9993,25 @@ void __cdecl GetStatForFriendOrSelf(int param_1,itemDef_s *param_2,OperandStack 
         return;
       }
     }
-    if ((local_18.member)->type == 5) {
-      local_80.dataType = VAL_STRING;
-      local_80.internals.string =
-           LiveStats_GetDStringStatFromForcedBase(local_78,&local_18,(char *)local_84);
+    if ((searchState.member)->type == 5) {
+      result.dataType = VAL_STRING;
+      result.internals.string =
+           LiveStats_GetDStringStatFromForcedBase(controllerIndex,&searchState,buffer);
     }
-    else if ((local_18.member)->type == 3) {
-      local_80.dataType = VAL_STRING;
-      LiveStats_GetDInt64StatFromForcedBase(local_78,&local_18,(char *)local_84);
-      local_80.internals.string = va("%llu");
+    else if ((searchState.member)->type == 3) {
+      result.dataType = VAL_STRING;
+      LiveStats_GetDInt64StatFromForcedBase(controllerIndex,&searchState,buffer);
+      result.internals.string = va("%llu");
     }
     else {
-      local_80.dataType = VAL_INT;
-      local_80.internals.intVal =
-           LiveStats_GetDIntStatFromForcedBase(local_78,&local_18,(char *)local_84);
+      result.dataType = VAL_INT;
+      result.internals.intVal =
+           LiveStats_GetDIntStatFromForcedBase(controllerIndex,&searchState,buffer);
     }
-    AddOperandToStack(param_3,&local_80);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_80);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -9693,88 +10019,88 @@ void __cdecl GetStatForFriendOrSelf(int param_1,itemDef_s *param_2,OperandStack 
 
 // 007975A0  GetSortedStatsForFriendOrSelf  (universal/com_expressions_eval.cpp:8019)
 
-void __cdecl GetSortedStatsForFriendOrSelf(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetSortedStatsForFriendOrSelf(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  operandInternalDataUnion extraout_EAX;
-  operandInternalDataUnion extraout_EAX_00;
+  int extraout_EAX;
+  int extraout_EAX_00;
   operandInternalDataUnion extraout_EAX_01;
   operandInternalDataUnion extraout_EAX_02;
   float fVar1;
-  Operand local_80;
-  operandInternalDataUnion local_78;
-  OperandList local_74;
-  bool local_15;
-  operandInternalDataUnion local_14;
-  operandInternalDataUnion local_10;
-  operandInternalDataUnion local_c;
-  operandInternalDataUnion local_8;
+  int param;
+  Operand result;
+  int returnStatsforFriend;
+  OperandList list;
+  bool forFriend;
+  int currIndex;
+  int index;
+  int getAbsoluteIndex;
+  int itemIndex;
   
-  GetOperandList(param_3,&local_74);
-  local_80.dataType = VAL_INT;
-  local_80.internals.intVal = 0;
-  if (local_74.operandCount < 4) {
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount < 4) {
     Com_PrintError(0xd,
                    "UI Expression Error: Expected 4 parameters to getSortedStatsForFriendOrSelf()\n"
                   );
-    AddOperandToStack(param_3,&local_80);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_78.intVal = local_74.operands[0].internals.intVal;
-    local_10.intVal = local_74.operands[1].internals.intVal;
-    local_c.intVal = local_74.operands[2].internals.intVal;
-    local_15 = local_74.operands[0].internals.intVal != 0;
-    if (((local_74.operands[2].internals.intVal != 0) &&
-        (-1 < local_74.operands[1].internals.intVal)) &&
-       (local_74.operands[1].internals.intVal < DAT_098c3924)) {
+    returnStatsforFriend = list.operands[0].internals.intVal;
+    index = list.operands[1].internals.intVal;
+    getAbsoluteIndex = list.operands[2].internals.intVal;
+    forFriend = list.operands[0].internals.intVal != 0;
+    if (((list.operands[2].internals.intVal != 0) && (-1 < list.operands[1].internals.intVal)) &&
+       (list.operands[1].internals.intVal < DAT_098c3924)) {
       fVar1 = LiveCombatRecord_GetSortedItemData
-                        (local_74.operands[1].internals.intVal,local_15,SORT_KEY);
+                        (list.operands[1].internals.intVal,forFriend,SORT_KEY);
       if (fVar1 == 2.1474836e+09) {
-        while ((fVar1 = LiveCombatRecord_GetSortedItemData(local_10.intVal,local_15,SORT_KEY),
-               fVar1 == 2.1474836e+09 && (local_10.intVal < DAT_098c3924))) {
-          local_10.string = (char *)(local_10.intVal + 1);
+        while ((fVar1 = LiveCombatRecord_GetSortedItemData(index,forFriend,SORT_KEY),
+               fVar1 == 2.1474836e+09 && (index < DAT_098c3924))) {
+          index = index + 1;
         }
       }
-      LiveCombatRecord_GetSortedItemData(local_10.intVal,local_15,ITEM_INDEX);
+      LiveCombatRecord_GetSortedItemData(index,forFriend,ITEM_INDEX);
       _ftol2_sse();
-      local_14.intVal = local_10.intVal;
-      local_8 = extraout_EAX;
+      currIndex = index;
+      itemIndex = extraout_EAX;
     }
-    if (local_c.intVal == 0) {
-      local_14.string = local_10.string + DAT_098c3920 + -3;
-      if ((char *)local_14.intVal == (char *)0xffffffff) {
-        local_14.intVal = 0;
+    if (getAbsoluteIndex == 0) {
+      currIndex = DAT_098c3920 + -3 + index;
+      if (currIndex == -1) {
+        currIndex = 0;
       }
-      if (DAT_098c3924 <= local_14.intVal) {
-        local_14.string = (char *)(DAT_098c3924 + -1);
+      if (DAT_098c3924 <= currIndex) {
+        currIndex = DAT_098c3924 + -1;
       }
-      LiveCombatRecord_GetSortedItemData(local_14.intVal,local_15,ITEM_INDEX);
+      LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
       _ftol2_sse();
-      local_8 = extraout_EAX_00;
+      itemIndex = extraout_EAX_00;
     }
-    switch(local_74.operands[3].internals.intVal) {
+    switch(list.operands[3].internals.intVal) {
     case 0:
-      local_80.dataType = VAL_INT;
-      local_80.internals = local_8;
+      result.dataType = VAL_INT;
+      result.internals.intVal = itemIndex;
       break;
     case 1:
-      local_80.dataType = VAL_INT;
-      LiveCombatRecord_GetSortedItemData(local_14.intVal,local_15,PARAM1);
+      result.dataType = VAL_INT;
+      LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
       _ftol2_sse();
-      local_80.internals = extraout_EAX_01;
+      result.internals = extraout_EAX_01;
       break;
     case 2:
-      local_80.dataType = VAL_INT;
-      LiveCombatRecord_GetSortedItemData(local_14.intVal,local_15,PARAM2);
+      result.dataType = VAL_INT;
+      LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM2);
       _ftol2_sse();
-      local_80.internals = extraout_EAX_02;
+      result.internals = extraout_EAX_02;
       break;
     case 4:
-      local_80.dataType = VAL_FLOAT;
-      local_80.internals.floatVal =
-           LiveCombatRecord_GetSortedItemData(local_14.intVal,local_15,SORT_KEY);
+      result.dataType = VAL_FLOAT;
+      result.internals.floatVal = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
     }
-    AddOperandToStack(param_3,&local_80);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -9782,114 +10108,115 @@ void __cdecl GetSortedStatsForFriendOrSelf(int param_1,itemDef_s *param_2,Operan
 
 // 007977E0  GetToastPopupWidth  (universal/com_expressions_eval.cpp:8098)
 
-void __cdecl GetToastPopupWidth(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetToastPopupWidth(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   int local_28;
-  Operand local_1c;
-  Font_s *local_14;
-  ScreenPlacement *local_10;
-  uiInfo_s *local_c;
-  float local_8;
+  Operand result;
+  Font_s *font;
+  ScreenPlacement *scrPlace;
+  uiInfo_s *uiInfo;
+  float scale;
   
-  local_8 = 0.315;
-  local_10 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-  local_14 = UI_GetFontHandle(local_10,0,0.315);
-  local_c = UI_GetInfo(param_1);
-  local_1c.dataType = VAL_INT;
-  local_28 = UI_TextWidth(local_c->toastPopupDesc,0,local_14,local_8);
-  iVar1 = UI_TextWidth(local_c->toastPopupTitle,0,local_14,local_8);
+  scale = 0.315;
+  scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+  font = UI_GetFontHandle(scrPlace,0,0.315);
+  uiInfo = UI_GetInfo(localClientNum);
+  result.dataType = VAL_INT;
+  local_28 = UI_TextWidth(uiInfo->toastPopupDesc,0,font,scale);
+  iVar1 = UI_TextWidth(uiInfo->toastPopupTitle,0,font,scale);
   if (local_28 <= iVar1) {
     local_28 = iVar1;
   }
-  local_1c.internals.intVal = local_28;
+  result.internals.intVal = local_28;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetToastPopupWidth() = %i\n");
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007978D0  GetToastPopupIcon  (universal/com_expressions_eval.cpp:8117)
 
-void __cdecl GetToastPopupIcon(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetToastPopupIcon(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  uiInfo_s *local_8;
+  Operand result;
+  uiInfo_s *uiInfo;
   
-  local_8 = UI_GetInfo(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.string = local_8->toastPopupIconName;
+  uiInfo = UI_GetInfo(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.string = uiInfo->toastPopupIconName;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetToastPopupIcon() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00797940  GetToastPopupTitle  (universal/com_expressions_eval.cpp:8130)
 
-void __cdecl GetToastPopupTitle(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetToastPopupTitle(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  uiInfo_s *local_8;
+  Operand result;
+  uiInfo_s *uiInfo;
   
-  local_8 = UI_GetInfo(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.string = local_8->toastPopupTitle;
+  uiInfo = UI_GetInfo(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.string = uiInfo->toastPopupTitle;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetToastPopupTitle() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007979B0  GetToastPopupDescription  (universal/com_expressions_eval.cpp:8143)
 
-void __cdecl GetToastPopupDescription(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetToastPopupDescription(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  uiInfo_s *local_8;
+  Operand result;
+  uiInfo_s *uiInfo;
   
-  local_8 = UI_GetInfo(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.string = local_8->toastPopupDesc;
+  uiInfo = UI_GetInfo(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.string = uiInfo->toastPopupDesc;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("GetToastPopupDescription() = %s\n");
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00797A20  GetFloatAsFormattedString  (universal/com_expressions_eval.cpp:8156)
 
-void __cdecl GetFloatAsFormattedString(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFloatAsFormattedString(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_6c;
-  OperandList local_64;
-  operandInternalDataUnion local_8;
+  int precision;
+  Operand result;
+  OperandList list;
+  float value;
   
-  GetOperandList(param_3,&local_64);
-  local_6c.dataType = VAL_STRING;
-  local_6c.internals.floatVal = 1.8187723e-38;
-  if (local_64.operandCount < 2) {
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount < 2) {
     Com_PrintError(0xd,"UI Expression Error: Expected 2 parameters to GetFloatAsFormattedString()\n"
                   );
-    AddOperandToStack(param_3,&local_6c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_8 = local_64.operands[0].internals;
-    local_6c.internals.string = va("%.*f");
-    AddOperandToStack(param_3,&local_6c);
+    value = list.operands[0].internals.floatVal;
+    result.internals.string = va("%.*f");
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -9897,208 +10224,219 @@ void __cdecl GetFloatAsFormattedString(int param_1,itemDef_s *param_2,OperandSta
 
 // 00797AC0  ChangeSortedStatsPivot  (universal/com_expressions_eval.cpp:8184)
 
-void __cdecl ChangeSortedStatsPivot(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ChangeSortedStatsPivot(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  int local_14;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  int changeValue;
+  Operand result;
+  int newPivot;
   
-  GetOperand(param_3,&local_1c);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 1;
-  local_14 = GetSourceInt(&local_1c);
-  local_8 = DAT_098c3920 + local_14;
-  if ((2 < local_8) || (local_8 < DAT_098c3924 + -2)) {
-    DAT_098c3920 = local_8;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  changeValue = GetSourceInt(&source);
+  newPivot = DAT_098c3920 + changeValue;
+  if ((2 < newPivot) || (newPivot < DAT_098c3924 + -2)) {
+    DAT_098c3920 = newPivot;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00797B30  CanScrollUpOrDown  (universal/com_expressions_eval.cpp:8206)
 
-void __cdecl CanScrollUpOrDown(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanScrollUpOrDown(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int wantToScrollUp;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetSourceInt(&local_18);
-  if (((local_8 == 0) || (2 < DAT_098c3920)) &&
-     ((local_8 != 0 || (DAT_098c3920 < DAT_098c3924 + -3)))) {
-    local_10.internals.intVal = 1;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  wantToScrollUp = GetSourceInt(&source);
+  if (((wantToScrollUp == 0) || (2 < DAT_098c3920)) &&
+     ((wantToScrollUp != 0 || (DAT_098c3920 < DAT_098c3924 + -3)))) {
+    result.internals.intVal = 1;
   }
   else {
-    local_10.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00797BB0  GetCurrentScrollBarPosition  (universal/com_expressions_eval.cpp:8231)
 
-void __cdecl GetCurrentScrollBarPosition(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentScrollBarPosition(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   float local_24;
-  Operand local_1c;
-  Operand local_14;
-  int local_c;
-  float local_8;
+  Operand source;
+  Operand result;
+  int currPos;
+  float totalHeightOfScrollBar;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = GetSourceFloat(&local_1c);
-  local_14.dataType = VAL_FLOAT;
-  local_c = Dvar_GetInt("ui_combatCurrScrollBarPos");
-  local_24 = (float)local_c * (local_8 / (float)(DAT_098c3924 + -5));
-  if (local_8 - local_24 < 0.0) {
-    local_24 = local_8;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  totalHeightOfScrollBar = GetSourceFloat(&source);
+  result.dataType = VAL_FLOAT;
+  currPos = Dvar_GetInt("ui_combatCurrScrollBarPos");
+  local_24 = (float)currPos * (totalHeightOfScrollBar / (float)(DAT_098c3924 + -5));
+  if (totalHeightOfScrollBar - local_24 < 0.0) {
+    local_24 = totalHeightOfScrollBar;
   }
-  local_14.internals.floatVal = local_24;
-  AddOperandToStack(param_3,&local_14);
+  result.internals.floatVal = local_24;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00797C70  GetCombatRecordInfoBarWidth  (universal/com_expressions_eval.cpp:8252)
 
-void __cdecl GetCombatRecordInfoBarWidth(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCombatRecordInfoBarWidth(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   int iVar2;
+  int itemIndex;
   int extraout_EAX;
   int extraout_EAX_00;
-  int extraout_EAX_01;
-  undefined1 uVar3;
+  undefined1 forFriend_00;
+  float fVar3;
   float fVar4;
-  float fVar5;
   float local_b0;
   float local_ac;
   float local_a8;
   float local_a4;
-  Operand local_90;
-  float local_88;
-  int local_84;
-  float local_80;
-  int local_7c;
-  float local_78;
-  float local_74;
-  int local_70;
-  OperandList local_6c;
-  bool local_d;
-  int local_c;
-  int local_8;
+  float topKDRforComparedPlayer;
+  float topKDR;
+  int infoBarNumber;
+  Operand result;
+  float infoBarMaxWidth;
+  int currentWeaponStatView;
+  float topSortKeyForComparedPlayer;
+  int topIndexWithDefinedKDR;
+  float width;
+  float topSortKey;
+  int infoBarForOtherPlayer;
+  OperandList list;
+  bool forFriend;
+  int currIndex;
+  int topIndexWithDefinedKDRforOtherPlayer;
   
-  GetOperandList(param_3,&local_6c);
-  local_90.dataType = VAL_INT;
-  local_90.internals.intVal = 0;
-  if (local_6c.operandCount == 3) {
-    local_90.dataType = VAL_FLOAT;
-    local_70 = GetSourceInt(local_6c.operands);
-    local_88 = GetSourceFloat(local_6c.operands + 1);
-    iVar2 = GetSourceInt(local_6c.operands + 2);
-    local_84 = Dvar_GetInt("ui_combatCurrViewNum");
-    local_d = Dvar_GetBool("ui_showFriendsCombatRecord");
-    local_c = 0;
-    local_78 = 0.0;
-    local_7c = 0;
-    local_8 = 0;
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 3) {
+    result.dataType = VAL_FLOAT;
+    infoBarForOtherPlayer = GetSourceInt(list.operands);
+    infoBarMaxWidth = GetSourceFloat(list.operands + 1);
+    iVar2 = GetSourceInt(list.operands + 2);
+    currentWeaponStatView = Dvar_GetInt("ui_combatCurrViewNum");
+    forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+    currIndex = 0;
+    width = 0.0;
+    topIndexWithDefinedKDR = 0;
+    topIndexWithDefinedKDRforOtherPlayer = 0;
     bVar1 = Dvar_GetBool("ui_combatStatsMilestonesVis");
-    if ((bVar1) && ((local_84 == 7 || (local_84 == 9)))) {
-      local_90.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_90);
+    if ((bVar1) && ((currentWeaponStatView == 7 || (currentWeaponStatView == 9)))) {
+      result.internals.intVal = 0;
+      AddOperandToStack(dataStack,&result);
     }
-    else if ((local_70 == 0) || (bVar1 = Dvar_GetBool("ui_combatComparisonModeOn"), bVar1)) {
-      local_c = DAT_098c3920 + -3 + iVar2;
-      if (local_c == -1) {
-        local_c = 0;
+    else if ((infoBarForOtherPlayer == 0) ||
+            (bVar1 = Dvar_GetBool("ui_combatComparisonModeOn"), bVar1)) {
+      currIndex = DAT_098c3920 + -3 + iVar2;
+      if (currIndex == -1) {
+        currIndex = 0;
       }
-      if (DAT_098c3924 <= local_c) {
-        local_c = local_c + -1;
+      if (DAT_098c3924 <= currIndex) {
+        currIndex = currIndex + -1;
       }
-      if (local_70 != 0) {
-        uVar3 = local_d == false;
-        LiveCombatRecord_GetSortedItemData(local_c,local_d,ITEM_INDEX);
+      if (infoBarForOtherPlayer != 0) {
+        forFriend_00 = forFriend == false;
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
         _ftol2_sse();
-        local_c = LiveCombatRecord_GetSortedItemPositionByItemIndex(extraout_EAX,(bool)uVar3);
-        local_d = (bool)('\x01' - (local_d != false));
+        currIndex = LiveCombatRecord_GetSortedItemPositionByItemIndex(itemIndex,(bool)forFriend_00);
+        forFriend = (bool)('\x01' - (forFriend != false));
       }
-      local_74 = LiveCombatRecord_GetSortedItemData(0,local_d,SORT_KEY);
-      local_80 = LiveCombatRecord_GetSortedItemData(0,local_d == false,SORT_KEY);
-      if (local_84 == 2) {
-        local_c = iVar2 + -1;
-        local_74 = LiveCombatRecord_GetSortedItemData(local_c,local_d,PARAM1);
-        local_80 = LiveCombatRecord_GetSortedItemData(local_c,local_d == false,PARAM1);
-        if (local_74 == 0.0) {
-          local_78 = 0.0;
+      topSortKey = LiveCombatRecord_GetSortedItemData(0,forFriend,SORT_KEY);
+      topSortKeyForComparedPlayer =
+           LiveCombatRecord_GetSortedItemData(0,forFriend == false,SORT_KEY);
+      if (currentWeaponStatView == 2) {
+        currIndex = iVar2 + -1;
+        topSortKey = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
+        topSortKeyForComparedPlayer =
+             LiveCombatRecord_GetSortedItemData(currIndex,forFriend == false,PARAM1);
+        if (topSortKey == 0.0) {
+          width = 0.0;
         }
         else {
           bVar1 = Dvar_GetBool("ui_combatComparisonModeOn");
           if (bVar1) {
-            if (local_74 - local_80 < 0.0) {
-              local_a8 = local_80;
+            if (topSortKey - topSortKeyForComparedPlayer < 0.0) {
+              local_a8 = topSortKeyForComparedPlayer;
             }
             else {
-              local_a8 = local_74;
+              local_a8 = topSortKey;
             }
-            local_78 = (local_74 / local_a8) * local_88;
+            width = (topSortKey / local_a8) * infoBarMaxWidth;
           }
           else {
-            local_78 = local_88;
+            width = infoBarMaxWidth;
           }
         }
       }
-      else if (local_84 == 5) {
-        LiveCombatRecord_GetSortedItemData(local_c,local_d,PARAM1);
+      else if (currentWeaponStatView == 5) {
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
         _ftol2_sse();
-        if (extraout_EAX_00 == 0) {
-          local_78 = 0.0;
+        if (extraout_EAX == 0) {
+          width = 0.0;
         }
         else {
-          LiveCombatRecord_GetSortedItemData(local_c,local_d,PARAM2);
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM2);
           _ftol2_sse();
-          if (extraout_EAX_01 == 0) {
-            local_78 = local_88;
+          if (extraout_EAX_00 == 0) {
+            width = infoBarMaxWidth;
           }
           else {
-            fVar5 = LiveCombatRecord_GetSortedItemData(local_7c,local_d,SORT_KEY);
-            if (fVar5 == 2.1474836e+09) {
-              while (fVar5 = LiveCombatRecord_GetSortedItemData(local_7c,local_d,SORT_KEY),
-                    fVar5 == 2.1474836e+09) {
-                local_7c = local_7c + 1;
+            fVar4 = LiveCombatRecord_GetSortedItemData(topIndexWithDefinedKDR,forFriend,SORT_KEY);
+            if (fVar4 == 2.1474836e+09) {
+              while (fVar4 = LiveCombatRecord_GetSortedItemData
+                                       (topIndexWithDefinedKDR,forFriend,SORT_KEY),
+                    fVar4 == 2.1474836e+09) {
+                topIndexWithDefinedKDR = topIndexWithDefinedKDR + 1;
               }
             }
-            fVar5 = LiveCombatRecord_GetSortedItemData(local_7c,local_d,SORT_KEY);
+            fVar4 = LiveCombatRecord_GetSortedItemData(topIndexWithDefinedKDR,forFriend,SORT_KEY);
             bVar1 = Dvar_GetBool("ui_combatComparisonModeOn");
             if (bVar1) {
-              fVar4 = LiveCombatRecord_GetSortedItemData(local_8,local_d == false,SORT_KEY);
-              if (fVar4 == 2.1474836e+09) {
-                while (fVar4 = LiveCombatRecord_GetSortedItemData(local_8,local_d == false,SORT_KEY)
-                      , fVar4 == 2.1474836e+09) {
-                  local_8 = local_8 + 1;
+              fVar3 = LiveCombatRecord_GetSortedItemData
+                                (topIndexWithDefinedKDRforOtherPlayer,forFriend == false,SORT_KEY);
+              if (fVar3 == 2.1474836e+09) {
+                while (fVar3 = LiveCombatRecord_GetSortedItemData
+                                         (topIndexWithDefinedKDRforOtherPlayer,forFriend == false,
+                                          SORT_KEY), fVar3 == 2.1474836e+09) {
+                  topIndexWithDefinedKDRforOtherPlayer = topIndexWithDefinedKDRforOtherPlayer + 1;
                 }
               }
-              local_a4 = LiveCombatRecord_GetSortedItemData(local_8,local_d == false,SORT_KEY);
-              if (0.0 <= fVar5 - local_a4) {
-                local_a4 = fVar5;
+              local_a4 = LiveCombatRecord_GetSortedItemData
+                                   (topIndexWithDefinedKDRforOtherPlayer,forFriend == false,SORT_KEY
+                                   );
+              if (0.0 <= fVar4 - local_a4) {
+                local_a4 = fVar4;
               }
-              fVar5 = LiveCombatRecord_GetSortedItemData(local_c,local_d,SORT_KEY);
-              local_78 = (fVar5 / local_a4) * local_88;
+              fVar4 = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+              width = (fVar4 / local_a4) * infoBarMaxWidth;
             }
             else {
-              fVar4 = LiveCombatRecord_GetSortedItemData(local_c,local_d,SORT_KEY);
-              local_78 = (fVar4 / fVar5) * local_88;
+              fVar3 = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+              width = (fVar3 / fVar4) * infoBarMaxWidth;
             }
           }
         }
@@ -10106,45 +10444,45 @@ void __cdecl GetCombatRecordInfoBarWidth(int param_1,itemDef_s *param_2,OperandS
       else {
         bVar1 = Dvar_GetBool("ui_combatComparisonModeOn");
         if (bVar1) {
-          if (local_74 - local_80 < 0.0) {
-            local_ac = local_80;
+          if (topSortKey - topSortKeyForComparedPlayer < 0.0) {
+            local_ac = topSortKeyForComparedPlayer;
           }
           else {
-            local_ac = local_74;
+            local_ac = topSortKey;
           }
           if (local_ac == 0.0) {
-            local_78 = 0.0;
+            width = 0.0;
           }
           else {
-            if (local_74 - local_80 < 0.0) {
-              local_b0 = local_80;
+            if (topSortKey - topSortKeyForComparedPlayer < 0.0) {
+              local_b0 = topSortKeyForComparedPlayer;
             }
             else {
-              local_b0 = local_74;
+              local_b0 = topSortKey;
             }
-            fVar5 = LiveCombatRecord_GetSortedItemData(local_c,local_d,SORT_KEY);
-            local_78 = (fVar5 / local_b0) * local_88;
+            fVar4 = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+            width = (fVar4 / local_b0) * infoBarMaxWidth;
           }
         }
-        else if (local_74 == 0.0) {
-          local_78 = 0.0;
+        else if (topSortKey == 0.0) {
+          width = 0.0;
         }
         else {
-          fVar5 = LiveCombatRecord_GetSortedItemData(local_c,local_d,SORT_KEY);
-          local_78 = (fVar5 / local_74) * local_88;
+          fVar4 = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+          width = (fVar4 / topSortKey) * infoBarMaxWidth;
         }
       }
-      local_90.internals.floatVal = local_78;
-      AddOperandToStack(param_3,&local_90);
+      result.internals.floatVal = width;
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      local_90.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_90);
+      result.internals.intVal = 0;
+      AddOperandToStack(dataStack,&result);
     }
   }
   else {
     Expression_Error("Expected 3 parameters to GetCombatRecordInfoBarWidth()\n");
-    AddOperandToStack(param_3,&local_90);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -10153,176 +10491,192 @@ void __cdecl GetCombatRecordInfoBarWidth(int param_1,itemDef_s *param_2,OperandS
 // 00798290  GetCombatRecordInfoBarText  (universal/com_expressions_eval.cpp:8399)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl GetCombatRecordInfoBarText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCombatRecordInfoBarText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int extraout_EAX;
-  int extraout_EAX_00;
+  int itemIndex;
+  int itemIndex_00;
   char *pcVar1;
   char *pcVar2;
-  int extraout_EAX_01;
-  int extraout_EAX_02;
-  undefined1 uVar3;
-  StringTable *local_4d0;
-  char *local_4cc;
-  char *local_4c8;
-  int local_4c4;
-  StringTable *local_4bc;
-  int local_4b8;
-  int local_4b4;
-  int local_4b0;
-  Operand local_4ac;
-  int local_4a4;
-  char *local_4a0;
-  char local_49c [1024];
+  int extraout_EAX;
+  int itemIndex_01;
+  undefined1 forFriend_00;
+  int currValue;
+  int targetValue;
+  int requiredValue;
+  char *currItemGroup;
+  StringTable *nextStatsMilestonesTable;
+  char *currStatsMilestoneString;
+  char *currMilestoneStat;
+  int nextMilestoneRowNum;
+  int currMilestone;
+  StringTable *statsMilestonesTable;
+  int currMilestoneRowNum;
+  int infoBarNumber;
+  int comparisonMode;
+  Operand result;
+  int currentWeaponStatView;
+  char *itemName;
+  char outputString [1024];
   uint local_9c;
-  char *local_98;
-  OperandList local_94;
-  bool local_39;
-  int local_38;
-  ConversionArguments local_34;
-  undefined1 local_9;
-  char *local_8;
+  char *suffix;
+  OperandList list;
+  bool forFriend;
+  int currIndex;
+  ConversionArguments convArgs;
+  bool statsMilestonesVisible;
+  char *equipmentUsageString;
   
   local_9c = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperandList(param_3,&local_94);
-  local_4ac.dataType = VAL_STRING;
-  local_4ac.internals.floatVal = 1.8187723e-38;
-  if (local_94.operandCount == 2) {
-    local_4b0 = GetSourceInt(local_94.operands);
-    local_4b4 = GetSourceInt(local_94.operands + 1);
-    local_39 = Dvar_GetBool("ui_showFriendsCombatRecord");
-    local_4a4 = Dvar_GetInt("ui_combatCurrViewNum");
-    local_38 = DAT_098c3920 + -3 + local_4b4;
-    if (local_38 == -1) {
-      local_38 = 0;
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount == 2) {
+    comparisonMode = GetSourceInt(list.operands);
+    infoBarNumber = GetSourceInt(list.operands + 1);
+    forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+    currentWeaponStatView = Dvar_GetInt("ui_combatCurrViewNum");
+    currIndex = DAT_098c3920 + -3 + infoBarNumber;
+    if (currIndex == -1) {
+      currIndex = 0;
     }
-    if (DAT_098c3924 <= local_38) {
-      local_38 = local_38 + -1;
+    if (DAT_098c3924 <= currIndex) {
+      currIndex = currIndex + -1;
     }
-    if (local_4b0 != 0) {
-      uVar3 = local_39 == false;
-      LiveCombatRecord_GetSortedItemData(local_38,local_39,ITEM_INDEX);
+    if (comparisonMode != 0) {
+      forFriend_00 = forFriend == false;
+      LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
       _ftol2_sse();
-      local_38 = LiveCombatRecord_GetSortedItemPositionByItemIndex(extraout_EAX,(bool)uVar3);
-      local_39 = (bool)('\x01' - (local_39 != false));
+      currIndex = LiveCombatRecord_GetSortedItemPositionByItemIndex(itemIndex,(bool)forFriend_00);
+      forFriend = (bool)('\x01' - (forFriend != false));
     }
-    local_9 = Dvar_GetBool("ui_combatStatsMilestonesVis");
-    if (((bool)local_9) && ((local_4a4 == 7 || (local_4a4 == 9)))) {
-      if (local_4a4 == 9) {
-        local_4c8 = "headshots";
+    statsMilestonesVisible = Dvar_GetBool("ui_combatStatsMilestonesVis");
+    if ((statsMilestonesVisible) && ((currentWeaponStatView == 7 || (currentWeaponStatView == 9))))
+    {
+      if (currentWeaponStatView == 9) {
+        currMilestoneStat = "headshots";
       }
       else {
-        local_4c8 = "kills";
+        currMilestoneStat = "kills";
       }
-      if (local_4c8 == (char *)0x0) {
-        AddOperandToStack(param_3,&local_4ac);
+      if (currMilestoneStat == (char *)0x0) {
+        AddOperandToStack(dataStack,&result);
       }
       else {
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,ITEM_INDEX);
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
         _ftol2_sse();
-        pcVar1 = BG_UnlockablesGetItemGroup(extraout_EAX_00);
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM3);
+        pcVar1 = BG_UnlockablesGetItemGroup(itemIndex_00);
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM3);
         _ftol2_sse();
         pcVar2 = va("%d");
-        local_4b8 = CL_GetMilestoneRowNum(&local_4bc,3,pcVar1,4,local_4c8,1,pcVar2);
+        currMilestoneRowNum =
+             CL_GetMilestoneRowNum(&statsMilestonesTable,3,pcVar1,4,currMilestoneStat,1,pcVar2);
         pcVar2 = va("%d");
-        local_4c4 = CL_GetMilestoneRowNum(&local_4d0,3,pcVar1,4,local_4c8,1,pcVar2);
-        if (local_4c4 == -1) {
-          local_4ac.internals.string = UI_SafeTranslateString("STATS_NO_MORE_MILESTONES");
-          AddOperandToStack(param_3,&local_4ac);
+        nextMilestoneRowNum =
+             CL_GetMilestoneRowNum(&nextStatsMilestonesTable,3,pcVar1,4,currMilestoneStat,1,pcVar2);
+        if (nextMilestoneRowNum == -1) {
+          result.internals.string = UI_SafeTranslateString("STATS_NO_MORE_MILESTONES");
+          AddOperandToStack(dataStack,&result);
         }
         else {
-          LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM1);
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
           _ftol2_sse();
-          pcVar1 = StringTable_GetColumnValueForRow(local_4bc,local_4b8,2);
+          pcVar1 = StringTable_GetColumnValueForRow(statsMilestonesTable,currMilestoneRowNum,2);
           atoi(pcVar1);
-          local_34.args[0] = (char *)0x0;
-          local_34.args[1] = (char *)0x0;
-          local_34.args[2] = (char *)0x0;
-          local_34.args[3] = (char *)0x0;
-          local_34.args[4] = (char *)0x0;
-          local_34.args[5] = (char *)0x0;
-          local_34.args[6] = (char *)0x0;
-          local_34.args[7] = (char *)0x0;
-          local_34.args[8] = (char *)0x0;
-          local_34.argCount = 4;
-          local_34.args[0] = va("%d");
-          local_34.args[1] = StringTable_GetColumnValueForRow(local_4bc,local_4b8,6);
-          local_34.args[2] = UI_SafeTranslateString("MENU_XP_CAPS");
-          local_34.args[3] = StringTable_GetColumnValueForRow(local_4bc,local_4b8,7);
-          if (local_4a4 == 7) {
-            local_4cc = UI_SafeTranslateString("STATS_MILESTONES_COMBAT_RECORD_KILLS");
+          convArgs.args[0] = (char *)0x0;
+          convArgs.args[1] = (char *)0x0;
+          convArgs.args[2] = (char *)0x0;
+          convArgs.args[3] = (char *)0x0;
+          convArgs.args[4] = (char *)0x0;
+          convArgs.args[5] = (char *)0x0;
+          convArgs.args[6] = (char *)0x0;
+          convArgs.args[7] = (char *)0x0;
+          convArgs.args[8] = (char *)0x0;
+          convArgs.argCount = 4;
+          convArgs.args[0] = va("%d");
+          convArgs.args[1] =
+               StringTable_GetColumnValueForRow(statsMilestonesTable,currMilestoneRowNum,6);
+          convArgs.args[2] = UI_SafeTranslateString("MENU_XP_CAPS");
+          convArgs.args[3] =
+               StringTable_GetColumnValueForRow(statsMilestonesTable,currMilestoneRowNum,7);
+          if (currentWeaponStatView == 7) {
+            currStatsMilestoneString =
+                 UI_SafeTranslateString("STATS_MILESTONES_COMBAT_RECORD_KILLS");
           }
           else {
-            local_4cc = UI_SafeTranslateString("STATS_MILESTONES_COMBAT_RECORD_HEADSHOTS");
+            currStatsMilestoneString =
+                 UI_SafeTranslateString("STATS_MILESTONES_COMBAT_RECORD_HEADSHOTS");
           }
-          UI_ReplaceConversions(local_4cc,&local_34,local_49c,0x400);
-          local_4ac.internals.string = CopyTempString(local_49c);
-          AddOperandToStack(param_3,&local_4ac);
+          UI_ReplaceConversions(currStatsMilestoneString,&convArgs,outputString,0x400);
+          result.internals.string = CopyTempString(outputString);
+          AddOperandToStack(dataStack,&result);
         }
       }
     }
     else {
-      if (local_4a4 == 5) {
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM2);
+      if (currentWeaponStatView == 5) {
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM2);
         _ftol2_sse();
-        if (extraout_EAX_01 == 0) {
-          LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM2);
+        if (extraout_EAX == 0) {
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM2);
           _ftol2_sse();
-          LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM1);
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
           _ftol2_sse();
-          local_4ac.internals.string = va("%d/%d");
+          result.internals.string = va("%d/%d");
         }
         else {
-          LiveCombatRecord_GetSortedItemData(local_38,local_39,SORT_KEY);
-          LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM2);
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM2);
           _ftol2_sse();
-          LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM1);
+          LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
           _ftol2_sse();
-          local_4ac.internals.string = va("%d/%d ( %.2f )");
+          result.internals.string = va("%d/%d ( %.2f )");
         }
       }
-      else if (local_4a4 == 6) {
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,SORT_KEY);
-        local_4ac.internals.string = va("%.2f %%");
+      else if (currentWeaponStatView == 6) {
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+        result.internals.string = va("%.2f %%");
       }
-      else if (local_4a4 == 0xd) {
-        local_34.args[0] = (char *)0x0;
-        local_34.args[1] = (char *)0x0;
-        local_34.args[2] = (char *)0x0;
-        local_34.args[3] = (char *)0x0;
-        local_34.args[4] = (char *)0x0;
-        local_34.args[5] = (char *)0x0;
-        local_34.args[6] = (char *)0x0;
-        local_34.args[7] = (char *)0x0;
-        local_34.args[8] = (char *)0x0;
-        local_34.argCount = 1;
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM1);
+      else if (currentWeaponStatView == 0xd) {
+        convArgs.args[0] = (char *)0x0;
+        convArgs.args[1] = (char *)0x0;
+        convArgs.args[2] = (char *)0x0;
+        convArgs.args[3] = (char *)0x0;
+        convArgs.args[4] = (char *)0x0;
+        convArgs.args[5] = (char *)0x0;
+        convArgs.args[6] = (char *)0x0;
+        convArgs.args[7] = (char *)0x0;
+        convArgs.args[8] = (char *)0x0;
+        convArgs.argCount = 1;
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
         _ftol2_sse();
-        local_34.args[0] = va("%d");
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,ITEM_INDEX);
+        convArgs.args[0] = va("%d");
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
         _ftol2_sse();
-        local_4a0 = BG_UnlockablesGetItemName(extraout_EAX_02);
-        local_98 = LiveCombatRecord_GetEquipmentUsageStringSuffix(local_4a0);
+        itemName = BG_UnlockablesGetItemName(itemIndex_01);
+        suffix = LiveCombatRecord_GetEquipmentUsageStringSuffix(itemName);
         pcVar1 = va("MPUI_CR_EQUIPMENT_%s");
-        local_8 = UI_SafeTranslateString(pcVar1);
-        UI_ReplaceConversions(local_8,&local_34,local_49c,0x400);
-        local_4ac.internals.string = CopyTempString(local_49c);
+        equipmentUsageString = UI_SafeTranslateString(pcVar1);
+        UI_ReplaceConversions(equipmentUsageString,&convArgs,outputString,0x400);
+        result.internals.string = CopyTempString(outputString);
       }
       else {
-        LiveCombatRecord_GetSortedItemData(local_38,local_39,PARAM1);
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,PARAM1);
         _ftol2_sse();
-        local_4ac.internals.string = va("%d");
+        result.internals.string = va("%d");
       }
-      AddOperandToStack(param_3,&local_4ac);
+      AddOperandToStack(dataStack,&result);
     }
   }
   else {
     Com_PrintError(0xd,
                    "UI Expression Error: Expected 2 parameters to GetCombatRecordInfoBarText()\n");
-    AddOperandToStack(param_3,&local_4ac);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -10332,43 +10686,43 @@ void __cdecl GetCombatRecordInfoBarText(int param_1,itemDef_s *param_2,OperandSt
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetCopyClassDialogTitle(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCopyClassDialogTitle(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  ConversionArguments *pCVar2;
-  char *pcVar3;
-  int iVar4;
-  Operand local_448;
-  Operand local_440;
-  int local_438;
-  char local_434 [1028];
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand source;
+  Operand result;
+  int classIndexToCopy;
+  char outputString [1028];
   uint local_30;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_448);
-  local_440.dataType = VAL_STRING;
-  local_440.internals.floatVal = 1.8187723e-38;
-  local_438 = GetSourceInt(&local_448);
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 1;
-  local_2c.args[0] = Dvar_GetString(*(char **)(&customClassDvars + local_438 * 4));
-  iVar4 = 0x400;
-  pcVar3 = local_434;
-  pCVar2 = &local_2c;
-  pcVar1 = UI_SafeTranslateString("MPUI_COPY_CLASS_TITLE");
-  UI_ReplaceConversions(pcVar1,pCVar2,pcVar3,iVar4);
-  local_440.internals.string = CopyTempString(local_434);
-  AddOperandToStack(param_3,&local_440);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  classIndexToCopy = GetSourceInt(&source);
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 1;
+  convArgs.args[0] = Dvar_GetString(*(char **)(&customClassDvars + classIndexToCopy * 4));
+  outputStringSize = 0x400;
+  outputString_00 = outputString;
+  arguments = &convArgs;
+  sourceString = UI_SafeTranslateString("MPUI_COPY_CLASS_TITLE");
+  UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -10377,56 +10731,57 @@ void __cdecl GetCopyClassDialogTitle(int param_1,itemDef_s *param_2,OperandStack
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetCopyClassConfirmationText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCopyClassConfirmationText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  ConversionArguments *pCVar2;
-  char *pcVar3;
-  int iVar4;
-  Operand local_4a4;
-  int local_49c;
-  int local_498;
-  char local_494 [1028];
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand result;
+  int classIndexToCopy;
+  int classIndexToReplace;
+  char outputString [1028];
   uint local_90;
-  OperandList local_8c;
-  int local_30;
-  ConversionArguments local_2c;
+  OperandList list;
+  int selectedClassIndex;
+  ConversionArguments convArgs;
   
   local_90 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperandList(param_3,&local_8c);
-  local_4a4.dataType = VAL_STRING;
-  local_4a4.internals.floatVal = 1.8187723e-38;
-  if (local_8c.operandCount < 2) {
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount < 2) {
     Com_PrintError(0xd,"UI Expression Error: Expected 2 parameters to GetCopyClassDialogTitle()\n");
-    AddOperandToStack(param_3,&local_4a4);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_49c = GetSourceInt(local_8c.operands);
-    local_498 = GetSourceInt(local_8c.operands + 1);
-    local_30 = local_498;
-    if (local_49c <= local_498) {
-      local_30 = local_498 + 1;
+    classIndexToCopy = GetSourceInt(list.operands);
+    classIndexToReplace = GetSourceInt(list.operands + 1);
+    selectedClassIndex = classIndexToReplace;
+    if (classIndexToCopy <= classIndexToReplace) {
+      selectedClassIndex = classIndexToReplace + 1;
     }
-    local_2c.args[0] = (char *)0x0;
-    local_2c.args[1] = (char *)0x0;
-    local_2c.args[2] = (char *)0x0;
-    local_2c.args[3] = (char *)0x0;
-    local_2c.args[4] = (char *)0x0;
-    local_2c.args[5] = (char *)0x0;
-    local_2c.args[6] = (char *)0x0;
-    local_2c.args[7] = (char *)0x0;
-    local_2c.args[8] = (char *)0x0;
-    local_2c.argCount = 2;
-    local_2c.args[0] = Dvar_GetString(*(char **)(&customClassDvars + local_30 * 4));
-    local_2c.args[1] = Dvar_GetString(*(char **)(&customClassDvars + local_49c * 4));
-    iVar4 = 0x400;
-    pcVar3 = local_494;
-    pCVar2 = &local_2c;
-    pcVar1 = UI_SafeTranslateString("MPUI_COPY_CLASS_CONFIRMATION");
-    UI_ReplaceConversions(pcVar1,pCVar2,pcVar3,iVar4);
-    local_4a4.internals.string = CopyTempString(local_494);
-    AddOperandToStack(param_3,&local_4a4);
+    convArgs.args[0] = (char *)0x0;
+    convArgs.args[1] = (char *)0x0;
+    convArgs.args[2] = (char *)0x0;
+    convArgs.args[3] = (char *)0x0;
+    convArgs.args[4] = (char *)0x0;
+    convArgs.args[5] = (char *)0x0;
+    convArgs.args[6] = (char *)0x0;
+    convArgs.args[7] = (char *)0x0;
+    convArgs.args[8] = (char *)0x0;
+    convArgs.argCount = 2;
+    convArgs.args[0] = Dvar_GetString(*(char **)(&customClassDvars + selectedClassIndex * 4));
+    convArgs.args[1] = Dvar_GetString(*(char **)(&customClassDvars + classIndexToCopy * 4));
+    outputStringSize = 0x400;
+    outputString_00 = outputString;
+    arguments = &convArgs;
+    sourceString = UI_SafeTranslateString("MPUI_COPY_CLASS_CONFIRMATION");
+    UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+    result.internals.string = CopyTempString(outputString);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -10437,44 +10792,44 @@ void __cdecl GetCopyClassConfirmationText(int param_1,itemDef_s *param_2,Operand
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-GetCopyCustomGametypeClassDialogTitle(int param_1,itemDef_s *param_2,OperandStack *param_3)
+GetCopyCustomGametypeClassDialogTitle(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  ConversionArguments *pCVar2;
-  char *pcVar3;
-  int iVar4;
-  Operand local_448;
-  Operand local_440;
-  int local_438;
-  char local_434 [1028];
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand source;
+  Operand result;
+  int classIndexToCopy;
+  char outputString [1028];
   uint local_30;
-  ConversionArguments local_2c;
+  ConversionArguments convArgs;
   
   local_30 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_448);
-  local_440.dataType = VAL_STRING;
-  local_440.internals.floatVal = 1.8187723e-38;
-  local_2c.argCount = 0;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_438 = GetSourceInt(&local_448);
-  local_2c.argCount = 1;
-  local_2c.args[0] = g_customGameModeClassDescriptions[local_438].name;
-  iVar4 = 0x400;
-  pcVar3 = local_434;
-  pCVar2 = &local_2c;
-  pcVar1 = UI_SafeTranslateString("MPUI_COPY_CLASS_TITLE");
-  UI_ReplaceConversions(pcVar1,pCVar2,pcVar3,iVar4);
-  local_440.internals.string = CopyTempString(local_434);
-  AddOperandToStack(param_3,&local_440);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  convArgs.argCount = 0;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  classIndexToCopy = GetSourceInt(&source);
+  convArgs.argCount = 1;
+  convArgs.args[0] = g_customGameModeClassDescriptions[classIndexToCopy].name;
+  outputStringSize = 0x400;
+  outputString_00 = outputString;
+  arguments = &convArgs;
+  sourceString = UI_SafeTranslateString("MPUI_COPY_CLASS_TITLE");
+  UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -10484,54 +10839,55 @@ GetCopyCustomGametypeClassDialogTitle(int param_1,itemDef_s *param_2,OperandStac
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
 void __cdecl
-GetCopyCustomGametypeClassConfirmationText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+GetCopyCustomGametypeClassConfirmationText
+          (int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  ConversionArguments *pCVar2;
-  char *pcVar3;
-  int iVar4;
-  Operand local_4a4;
-  int local_49c;
-  int local_498;
-  char local_494 [1028];
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand result;
+  int classIndexToCopy;
+  int classIndexToReplace;
+  char outputString [1028];
   uint local_90;
-  OperandList local_8c;
-  int local_30;
-  ConversionArguments local_2c;
+  OperandList list;
+  int selectedClassIndex;
+  ConversionArguments convArgs;
   
   local_90 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperandList(param_3,&local_8c);
-  local_4a4.dataType = VAL_STRING;
-  local_4a4.internals.floatVal = 1.8187723e-38;
-  if (local_8c.operandCount < 2) {
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount < 2) {
     Com_PrintError(0xd,"UI Expression Error: Expected 2 parameters to GetCopyClassDialogTitle()\n");
-    AddOperandToStack(param_3,&local_4a4);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_49c = GetSourceInt(local_8c.operands);
-    local_498 = GetSourceInt(local_8c.operands + 1);
-    local_30 = local_498;
-    if (local_49c <= local_498) {
-      local_30 = local_498 + 1;
+    classIndexToCopy = GetSourceInt(list.operands);
+    classIndexToReplace = GetSourceInt(list.operands + 1);
+    selectedClassIndex = classIndexToReplace;
+    if (classIndexToCopy <= classIndexToReplace) {
+      selectedClassIndex = classIndexToReplace + 1;
     }
-    local_2c.args[2] = (char *)0x0;
-    local_2c.args[3] = (char *)0x0;
-    local_2c.args[4] = (char *)0x0;
-    local_2c.args[5] = (char *)0x0;
-    local_2c.args[6] = (char *)0x0;
-    local_2c.args[7] = (char *)0x0;
-    local_2c.args[8] = (char *)0x0;
-    local_2c.argCount = 2;
-    local_2c.args[0] = g_customGameModeClassDescriptions[local_30].name;
-    local_2c.args[1] = g_customGameModeClassDescriptions[local_49c].name;
-    iVar4 = 0x400;
-    pcVar3 = local_494;
-    pCVar2 = &local_2c;
-    pcVar1 = UI_SafeTranslateString("MPUI_COPY_CLASS_CONFIRMATION");
-    UI_ReplaceConversions(pcVar1,pCVar2,pcVar3,iVar4);
-    local_4a4.internals.string = CopyTempString(local_494);
-    AddOperandToStack(param_3,&local_4a4);
+    convArgs.args[2] = (char *)0x0;
+    convArgs.args[3] = (char *)0x0;
+    convArgs.args[4] = (char *)0x0;
+    convArgs.args[5] = (char *)0x0;
+    convArgs.args[6] = (char *)0x0;
+    convArgs.args[7] = (char *)0x0;
+    convArgs.args[8] = (char *)0x0;
+    convArgs.argCount = 2;
+    convArgs.args[0] = g_customGameModeClassDescriptions[selectedClassIndex].name;
+    convArgs.args[1] = g_customGameModeClassDescriptions[classIndexToCopy].name;
+    outputStringSize = 0x400;
+    outputString_00 = outputString;
+    arguments = &convArgs;
+    sourceString = UI_SafeTranslateString("MPUI_COPY_CLASS_CONFIRMATION");
+    UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+    result.internals.string = CopyTempString(outputString);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -10539,125 +10895,134 @@ GetCopyCustomGametypeClassConfirmationText(int param_1,itemDef_s *param_2,Operan
 
 // 00798DB0  GetCombatRecordInfoBarTagText  (universal/com_expressions_eval.cpp:8669)
 
-void __cdecl GetCombatRecordInfoBarTagText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl
+GetCombatRecordInfoBarTagText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  Operand local_18;
-  int local_10;
-  Operand local_c;
+  Operand source;
+  int infoBarNumber;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  local_10 = GetSourceInt(&local_18);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  infoBarNumber = GetSourceInt(&source);
   iVar1 = Dvar_GetInt("ui_combatCurrViewNum");
   if (iVar1 == 2) {
-    LiveCombatRecord_GetPersonalBestStatNameByIndex(local_10);
-    local_c.internals.string = va("MPUI_%s");
+    LiveCombatRecord_GetPersonalBestStatNameByIndex(infoBarNumber);
+    result.internals.string = va("MPUI_%s");
   }
   else {
-    local_c.internals.string = BG_UnlockablesGetItemName(local_10);
+    result.internals.string = BG_UnlockablesGetItemName(infoBarNumber);
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00798E40  GetCombatRecordHistogramHeight  (universal/com_expressions_eval.cpp:8694)
 
-void __cdecl GetCombatRecordHistogramHeight(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCombatRecordHistogramHeight(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int extraout_EAX;
   int extraout_EAX_00;
   int extraout_EAX_01;
   int extraout_EAX_02;
-  Operand local_90;
-  float local_88;
-  float local_84;
-  int local_80;
-  OperandList local_7c;
-  bool local_1d;
-  int local_1c;
-  int local_18;
-  int local_14;
-  int local_10;
-  float local_c;
-  operandInternalDataUnion local_8;
+  float minimumHeight;
+  Operand result;
+  float minScore;
+  float currScore;
+  int numRecentValues;
+  OperandList list;
+  bool forFriend;
+  int currIndex;
+  int isValid;
+  int itemIndex;
+  int gameTypeIndex;
+  float maxScore;
+  float fullHeight;
   
-  GetOperandList(param_3,&local_7c);
-  local_90.dataType = VAL_FLOAT;
-  local_90.internals.intVal = 0;
-  if (local_7c.operandCount == 2) {
-    local_14 = GetSourceInt(local_7c.operands);
-    local_10 = GetSourceInt(local_7c.operands + 1);
-    local_88 = 0.0;
-    local_c = 0.0;
-    local_84 = 0.0;
-    local_1c = 0;
-    local_1d = Dvar_GetBool("ui_showFriendsCombatRecord");
-    local_18 = 0;
-    local_80 = 0;
-    local_8.floatVal = 1.0;
-    if (local_10 == -1) {
-      LiveCombatRecord_GetSortedItemData(10,local_1d,ITEM_INDEX);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_FLOAT;
+  result.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    itemIndex = GetSourceInt(list.operands);
+    gameTypeIndex = GetSourceInt(list.operands + 1);
+    minScore = 0.0;
+    maxScore = 0.0;
+    currScore = 0.0;
+    currIndex = 0;
+    forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+    isValid = 0;
+    numRecentValues = 0;
+    fullHeight = 1.0;
+    if (gameTypeIndex == -1) {
+      LiveCombatRecord_GetSortedItemData(10,forFriend,ITEM_INDEX);
       _ftol2_sse();
-      local_80 = extraout_EAX;
-      local_88 = LiveCombatRecord_GetSortedItemData(10,local_1d,PARAM1);
-      local_c = LiveCombatRecord_GetSortedItemData(10,local_1d,PARAM2);
-      if (local_14 <= local_80 + -1) {
-        local_84 = LiveCombatRecord_GetSortedItemData((local_80 + -1) - local_14,local_1d,PARAM1);
-        LiveCombatRecord_GetSortedItemData((local_80 + -1) - local_14,local_1d,ITEM_INDEX);
+      numRecentValues = extraout_EAX;
+      minScore = LiveCombatRecord_GetSortedItemData(10,forFriend,PARAM1);
+      maxScore = LiveCombatRecord_GetSortedItemData(10,forFriend,PARAM2);
+      if (itemIndex <= numRecentValues + -1) {
+        currScore = LiveCombatRecord_GetSortedItemData
+                              ((numRecentValues + -1) - itemIndex,forFriend,PARAM1);
+        LiveCombatRecord_GetSortedItemData((numRecentValues + -1) - itemIndex,forFriend,ITEM_INDEX);
         _ftol2_sse();
-        local_18 = extraout_EAX_00;
+        isValid = extraout_EAX_00;
       }
     }
     else {
-      LiveCombatRecord_GetSortedItemData(local_10 * 10,local_1d,ITEM_INDEX);
+      LiveCombatRecord_GetSortedItemData(gameTypeIndex * 10,forFriend,ITEM_INDEX);
       _ftol2_sse();
-      local_80 = extraout_EAX_01;
-      local_88 = LiveCombatRecord_GetSortedItemData(local_10 * 10,local_1d,PARAM1);
-      local_c = LiveCombatRecord_GetSortedItemData(local_10 * 10,local_1d,PARAM2);
-      if (local_14 <= local_80 + -1) {
-        local_1c = (local_10 * 10 + -1 + local_80) - local_14;
-        local_84 = LiveCombatRecord_GetSortedItemData(local_1c,local_1d,SORT_KEY);
-        LiveCombatRecord_GetSortedItemData(local_1c,local_1d,ITEM_INDEX);
+      numRecentValues = extraout_EAX_01;
+      minScore = LiveCombatRecord_GetSortedItemData(gameTypeIndex * 10,forFriend,PARAM1);
+      maxScore = LiveCombatRecord_GetSortedItemData(gameTypeIndex * 10,forFriend,PARAM2);
+      if (itemIndex <= numRecentValues + -1) {
+        currIndex = (gameTypeIndex * 10 + -1 + numRecentValues) - itemIndex;
+        currScore = LiveCombatRecord_GetSortedItemData(currIndex,forFriend,SORT_KEY);
+        LiveCombatRecord_GetSortedItemData(currIndex,forFriend,ITEM_INDEX);
         _ftol2_sse();
-        local_18 = extraout_EAX_02;
+        isValid = extraout_EAX_02;
       }
     }
-    if ((local_18 != 0) && (1 < local_80)) {
-      if (0.0 <= local_88) {
-        if (local_c == 0.0) {
-          local_90.internals.string = (char *)0x3d4ccccd;
+    if ((isValid != 0) && (1 < numRecentValues)) {
+      if (0.0 <= minScore) {
+        if (maxScore == 0.0) {
+          result.internals.string = (char *)0x3d4ccccd;
         }
-        else if (local_84 == 0.0) {
-          local_90.internals.string = (char *)0x3d4ccccd;
+        else if (currScore == 0.0) {
+          result.internals.string = (char *)0x3d4ccccd;
         }
         else {
-          local_90.internals.floatVal = local_84 / local_c;
+          result.internals.floatVal = currScore / maxScore;
         }
       }
-      else if ((local_84 == local_88) || (local_c == local_88)) {
-        local_90.internals.string = (char *)0x3d4ccccd;
+      else if ((currScore == minScore) || (maxScore == minScore)) {
+        result.internals.string = (char *)0x3d4ccccd;
       }
-      else if (local_84 == local_c) {
-        if (local_84 == local_c) {
-          local_90.internals = local_8;
+      else if (currScore == maxScore) {
+        if (currScore == maxScore) {
+          result.internals.floatVal = fullHeight;
         }
       }
       else {
-        local_90.internals.floatVal = (local_84 - local_88) / (local_c - local_88);
+        result.internals.floatVal = (currScore - minScore) / (maxScore - minScore);
       }
     }
-    AddOperandToStack(param_3,&local_90);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Com_PrintError(0xd,
                    "UI Expression Error: Expected 2 parameters to GetCombatRecordHistogramHeight()\n"
                   );
-    AddOperandToStack(param_3,&local_90);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -10665,7 +11030,12 @@ void __cdecl GetCombatRecordHistogramHeight(int param_1,itemDef_s *param_2,Opera
 
 // 00799190  GetCombatRecordPieChartText  (universal/com_expressions_eval.cpp:8781)
 
-void __cdecl GetCombatRecordPieChartText(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetCombatRecordPieChartText(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int extraout_EAX;
@@ -10673,81 +11043,84 @@ void __cdecl GetCombatRecordPieChartText(int param_1,itemDef_s *param_2,OperandS
   char *pcVar1;
   int iVar2;
   int iVar3;
-  Operand local_90;
-  int local_88;
-  OperandList local_84;
-  int local_2c;
-  bool local_25;
-  int local_24;
+  char *itemName;
+  int numMinutes;
+  int numHours;
+  Operand result;
+  int totalItemTypes;
+  OperandList list;
+  int totalItems;
+  bool forFriend;
+  int pieChartType;
   int aiStack_20 [6];
-  int local_8;
+  int textPosition;
   
-  GetOperandList(param_3,&local_84);
-  local_90.dataType = VAL_STRING;
-  local_90.internals.floatVal = 1.8187723e-38;
-  if (local_84.operandCount != 2) {
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount != 2) {
     Com_PrintError(0xd,
                    "UI Expression Error: Expected 2 parameters to GetCombatRecordPieChartText()\n");
-    AddOperandToStack(param_3,&local_90);
+    AddOperandToStack(dataStack,&result);
     return;
   }
-  local_24 = GetSourceInt(local_84.operands);
-  local_8 = GetSourceInt(local_84.operands + 1);
-  local_25 = Dvar_GetBool("ui_showFriendsCombatRecord");
+  pieChartType = GetSourceInt(list.operands);
+  textPosition = GetSourceInt(list.operands + 1);
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
   currIndex = 0;
   startIndex = 0;
   endIndex = 0;
-  local_88 = 0;
-  local_2c = 0;
-  if (local_24 != 0) {
-    if (local_24 == 1) {
+  totalItemTypes = 0;
+  totalItems = 0;
+  if (pieChartType != 0) {
+    if (pieChartType == 1) {
       startIndex = 3;
       endIndex = 6;
       goto LAB_007992b7;
     }
-    if (local_24 != 2) goto LAB_007992b7;
+    if (pieChartType != 2) goto LAB_007992b7;
   }
   startIndex = 0;
   endIndex = 3;
 LAB_007992b7:
   for (; startIndex < endIndex; startIndex = startIndex + 1) {
-    LiveCombatRecord_GetSortedItemData(startIndex,local_25,ITEM_INDEX);
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend,ITEM_INDEX);
     _ftol2_sse();
     aiStack_20[currIndex] = extraout_EAX;
-    LiveCombatRecord_GetSortedItemData(startIndex,local_25,SORT_KEY);
+    LiveCombatRecord_GetSortedItemData(startIndex,forFriend,SORT_KEY);
     _ftol2_sse();
     aiStack_20[currIndex + 3] = extraout_EAX_00;
     if (aiStack_20[currIndex + 3] == 0) break;
-    local_88 = local_88 + 1;
-    local_2c = local_2c + aiStack_20[currIndex + 3];
+    totalItemTypes = totalItemTypes + 1;
+    totalItems = totalItems + aiStack_20[currIndex + 3];
     currIndex = currIndex + 1;
   }
   currIndex = -1;
-  if (local_8 == 0) {
-    if (0 < local_88) {
+  if (textPosition == 0) {
+    if (0 < totalItemTypes) {
       currIndex = 0;
     }
   }
-  else if (local_8 == 1) {
-    if (1 < local_88) {
+  else if (textPosition == 1) {
+    if (1 < totalItemTypes) {
       currIndex = 1;
     }
   }
-  else if ((local_8 == 2) && (2 < local_88)) {
+  else if ((textPosition == 2) && (2 < totalItemTypes)) {
     currIndex = 2;
   }
   if (currIndex != -1) {
-    if (local_24 == 0) {
+    if (pieChartType == 0) {
       UI_SafeTranslateString("MPUI_GAMES");
       pcVar1 = va("MPUI_%s_CAPS");
       UI_SafeTranslateString(pcVar1);
-      local_90.internals.string = va("%s ( %d %s )");
+      result.internals.string = va("%s ( %d %s )");
     }
-    else if (local_24 == 1) {
+    else if (pieChartType == 1) {
       UI_SafeTranslateString("MPUI_GAMES");
       pcVar1 = va("MPUI_%s_CAPS");
       UI_SafeTranslateString(pcVar1);
-      local_90.internals.string = va("%s ( %d %s )");
+      result.internals.string = va("%s ( %d %s )");
     }
     else {
       pcVar1 = BG_UnlockablesGetItemName(aiStack_20[currIndex]);
@@ -10759,29 +11132,29 @@ LAB_007992b7:
         if ((iVar2 < 1) || (iVar3 != 0)) {
           if ((iVar2 < 1) && (-1 < iVar3)) {
             UI_SafeTranslateString("MPUI_MINUTES");
-            local_90.internals.string = va("%s ( %d %s )");
+            result.internals.string = va("%s ( %d %s )");
           }
         }
         else {
           UI_SafeTranslateString("MPUI_HOURS");
-          local_90.internals.string = va("%s ( %d %s )");
+          result.internals.string = va("%s ( %d %s )");
         }
       }
       else {
         UI_SafeTranslateString("MPUI_MINUTES");
         UI_SafeTranslateString("MPUI_HOURS");
-        local_90.internals.string = va("%s ( %d %s %d %s )");
+        result.internals.string = va("%s ( %d %s %d %s )");
       }
     }
   }
-  AddOperandToStack(param_3,&local_90);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007995E0  GetCombatRecordMinMaxScore  (universal/com_expressions_eval.cpp:8888)
 
-void __cdecl GetCombatRecordMinMaxScore(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCombatRecordMinMaxScore(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int extraout_EAX;
@@ -10795,83 +11168,83 @@ void __cdecl GetCombatRecordMinMaxScore(int param_1,itemDef_s *param_2,OperandSt
   int extraout_EAX_06;
   bool bVar2;
   sortedItemParams_t sVar3;
-  Operand local_7c;
-  int local_74;
-  int local_70;
-  OperandList local_6c;
-  bool local_11;
-  int local_10;
-  int local_c;
-  int local_8;
+  Operand result;
+  int minScore;
+  int graphType;
+  OperandList list;
+  bool forFriend;
+  int returnMinScore;
+  int maxScore;
+  int count;
   
-  GetOperandList(param_3,&local_6c);
-  local_7c.dataType = VAL_STRING;
-  local_7c.internals.floatVal = 1.8187723e-38;
-  if (local_6c.operandCount == 2) {
-    local_74 = 0;
-    local_c = 0;
-    local_8 = 0;
-    local_11 = Dvar_GetBool("ui_showFriendsCombatRecord");
-    local_70 = GetSourceInt(local_6c.operands);
-    local_10 = GetSourceInt(local_6c.operands + 1);
-    if (local_70 == 0) {
-      LiveCombatRecord_GetSortedItemData(10,local_11,PARAM1);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount == 2) {
+    minScore = 0;
+    maxScore = 0;
+    count = 0;
+    forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+    graphType = GetSourceInt(list.operands);
+    returnMinScore = GetSourceInt(list.operands + 1);
+    if (graphType == 0) {
+      LiveCombatRecord_GetSortedItemData(10,forFriend,PARAM1);
       _ftol2_sse();
-      local_74 = extraout_EAX;
-      LiveCombatRecord_GetSortedItemData(10,local_11,PARAM2);
+      minScore = extraout_EAX;
+      LiveCombatRecord_GetSortedItemData(10,forFriend,PARAM2);
       _ftol2_sse();
-      local_c = extraout_EAX_00;
-      LiveCombatRecord_GetSortedItemData(10,local_11,ITEM_INDEX);
+      maxScore = extraout_EAX_00;
+      LiveCombatRecord_GetSortedItemData(10,forFriend,ITEM_INDEX);
       _ftol2_sse();
-      local_8 = extraout_EAX_01;
+      count = extraout_EAX_01;
     }
-    else if (local_70 == 1) {
+    else if (graphType == 1) {
       sVar3 = PARAM1;
-      bVar2 = local_11;
+      bVar2 = forFriend;
       iVar1 = Dvar_GetInt("ui_combatHistogramCurrGametype");
       LiveCombatRecord_GetSortedItemData(iVar1 * 10,bVar2,sVar3);
       _ftol2_sse();
       sVar3 = PARAM2;
-      local_74 = extraout_EAX_02;
-      bVar2 = local_11;
+      minScore = extraout_EAX_02;
+      bVar2 = forFriend;
       iVar1 = Dvar_GetInt("ui_combatHistogramCurrGametype");
       LiveCombatRecord_GetSortedItemData(iVar1 * 10,bVar2,sVar3);
       _ftol2_sse();
       sVar3 = ITEM_INDEX;
-      local_c = extraout_EAX_03;
-      bVar2 = local_11;
+      maxScore = extraout_EAX_03;
+      bVar2 = forFriend;
       iVar1 = Dvar_GetInt("ui_combatHistogramCurrGametype");
       LiveCombatRecord_GetSortedItemData(iVar1 * 10,bVar2,sVar3);
       _ftol2_sse();
-      local_8 = extraout_EAX_04;
+      count = extraout_EAX_04;
     }
-    else if (local_70 == 2) {
-      LiveCombatRecord_GetSortedItemData(10,local_11,PARAM1);
+    else if (graphType == 2) {
+      LiveCombatRecord_GetSortedItemData(10,forFriend,PARAM1);
       _ftol2_sse();
-      local_74 = extraout_EAX_05;
-      LiveCombatRecord_GetSortedItemData(10,local_11,PARAM2);
+      minScore = extraout_EAX_05;
+      LiveCombatRecord_GetSortedItemData(10,forFriend,PARAM2);
       _ftol2_sse();
-      local_c = extraout_EAX_06;
+      maxScore = extraout_EAX_06;
     }
-    if ((local_8 != -1) && (1 < local_8)) {
-      if (local_10 == 0) {
-        if ((local_c != local_74) || (0 < local_c)) {
-          local_7c.internals.string = va("%d");
+    if ((count != -1) && (1 < count)) {
+      if (returnMinScore == 0) {
+        if ((maxScore != minScore) || (0 < maxScore)) {
+          result.internals.string = va("%d");
         }
       }
-      else if (local_74 < 0) {
-        local_7c.internals.string = va("%d");
+      else if (minScore < 0) {
+        result.internals.string = va("%d");
       }
       else {
-        local_7c.internals.string = va("0");
+        result.internals.string = va("0");
       }
     }
-    AddOperandToStack(param_3,&local_7c);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Com_PrintError(0xd,
                    "UI Expression Error: Expected 2 parameters to GetCombatRecordMinMaxScore()\n");
-    AddOperandToStack(param_3,&local_7c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -10879,50 +11252,57 @@ void __cdecl GetCombatRecordMinMaxScore(int param_1,itemDef_s *param_2,OperandSt
 
 // 00799810  GetCombatRecordFailedContracts  (universal/com_expressions_eval.cpp:8952)
 
-void __cdecl GetCombatRecordFailedContracts(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCombatRecordFailedContracts(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   ContractStatus_t CVar1;
-  int local_2c;
-  int local_28;
-  Operand local_20;
-  int local_18;
-  int local_14;
-  undefined1 local_d;
-  int local_c;
-  int local_8;
+  int i_2;
+  int i;
+  char *buffer;
+  Operand result;
+  int numPurchasedContracts;
+  int controllerIndex;
+  bool forFriend;
+  int numCompletedContracts;
+  int numContractsInProgress;
   
-  local_20.dataType = VAL_INT;
-  local_20.internals.intVal = 0;
-  local_c = 0;
-  local_18 = 0;
-  local_8 = 0;
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  local_d = Dvar_GetBool("ui_showFriendsCombatRecord");
-  if ((bool)local_d) {
-    LiveStorage_GetStatsBuffer(local_14,STATS_LOCATION_OTHERPLAYER,true);
-    LiveStats_GetIntOtherPlayerStatByKey(local_14,&local_c,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
-    LiveStats_GetIntOtherPlayerStatByKey(local_14,&local_18,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
-    for (local_28 = 0; local_28 < 3; local_28 = local_28 + 1) {
-      CVar1 = LiveContracts_GetActiveContractStatus(local_14,local_28);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  numCompletedContracts = 0;
+  numPurchasedContracts = 0;
+  numContractsInProgress = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  if (forFriend) {
+    LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_OTHERPLAYER,true);
+    LiveStats_GetIntOtherPlayerStatByKey
+              (controllerIndex,&numCompletedContracts,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
+    LiveStats_GetIntOtherPlayerStatByKey
+              (controllerIndex,&numPurchasedContracts,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
+    for (i = 0; i < 3; i = i + 1) {
+      CVar1 = LiveContracts_GetActiveContractStatus(controllerIndex,i);
       if (CVar1 == CONTRACT_IN_PROGRESS) {
-        local_8 = local_8 + 1;
+        numContractsInProgress = numContractsInProgress + 1;
       }
     }
   }
   else {
-    LiveStorage_GetStatsBuffer(local_14,STATS_LOCATION_NORMAL,true);
-    LiveStats_GetIntPlayerStatByKey(local_14,&local_c,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
-    LiveStats_GetIntPlayerStatByKey(local_14,&local_18,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
-    for (local_2c = 0; local_2c < 3; local_2c = local_2c + 1) {
-      CVar1 = LiveContracts_GetActiveContractStatus(local_14,local_2c);
+    LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true);
+    LiveStats_GetIntPlayerStatByKey
+              (controllerIndex,&numCompletedContracts,MP_PLAYERSTATSKEY_CONTRACTS_COMPLETED);
+    LiveStats_GetIntPlayerStatByKey
+              (controllerIndex,&numPurchasedContracts,MP_PLAYERSTATSKEY_CONTRACTS_PURCHASED);
+    for (i_2 = 0; i_2 < 3; i_2 = i_2 + 1) {
+      CVar1 = LiveContracts_GetActiveContractStatus(controllerIndex,i_2);
       if (CVar1 == CONTRACT_IN_PROGRESS) {
-        local_8 = local_8 + 1;
+        numContractsInProgress = numContractsInProgress + 1;
       }
     }
   }
-  local_20.internals.string = (char *)(local_18 - (local_c + local_8));
-  AddOperandToStack(param_3,&local_20);
+  result.internals.string =
+       (char *)(numPurchasedContracts - (numCompletedContracts + numContractsInProgress));
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -10931,259 +11311,269 @@ void __cdecl GetCombatRecordFailedContracts(int param_1,itemDef_s *param_2,Opera
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetCombatRecordLockedString(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCombatRecordLockedString(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  ConversionArguments *pCVar3;
-  char *pcVar4;
-  int iVar5;
-  Operand local_444;
-  Operand local_43c;
-  char local_434 [1024];
+  Operand operand;
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand source;
+  Operand result;
+  char outputString [1024];
   uint local_34;
-  char *local_30;
-  ConversionArguments local_2c;
+  char *name;
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_444);
-  OVar1.internals.intVal = local_444.internals.intVal;
-  OVar1.dataType = local_444.dataType;
-  local_30 = GetSourceString(OVar1);
-  local_43c.dataType = VAL_STRING;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 1;
-  local_2c.args[0] = va("%s");
-  iVar5 = 0x400;
-  pcVar4 = local_434;
-  pCVar3 = &local_2c;
-  pcVar2 = UI_SafeTranslateString("MPUI_COMBAT_RECORD_LOCKED_FOR_FRIEND");
-  UI_ReplaceConversions(pcVar2,pCVar3,pcVar4,iVar5);
-  local_43c.internals.string = CopyTempString(local_434);
-  AddOperandToStack(param_3,&local_43c);
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  name = GetSourceString(operand);
+  result.dataType = VAL_STRING;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 1;
+  convArgs.args[0] = va("%s");
+  outputStringSize = 0x400;
+  outputString_00 = outputString;
+  arguments = &convArgs;
+  sourceString = UI_SafeTranslateString("MPUI_COMBAT_RECORD_LOCKED_FOR_FRIEND");
+  UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799A50  GetNumWagerMatchesPlayed  (universal/com_expressions_eval.cpp:9017)
 
-void __cdecl GetNumWagerMatchesPlayed(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumWagerMatchesPlayed(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   char *pcVar1;
-  int local_24;
-  int local_20;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  char local_9;
-  int local_8;
+  int gameType;
+  int losses;
+  Operand result;
+  int controllerIndex;
+  int wins;
+  bool forFriend;
+  int numMatches;
   
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = 0;
-  local_8 = 0;
-  local_10 = 0;
-  local_20 = 0;
-  local_9 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-    if (local_9 == '\0') {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  numMatches = 0;
+  wins = 0;
+  losses = 0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  for (gameType = 0; gameType < 4; gameType = gameType + 1) {
+    if (forFriend == false) {
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
-      LiveStats_GetIntPlayerStatByGameMode(local_14,&local_10,lbWagerGameModeEnum[local_24],pcVar1);
+      LiveStats_GetIntPlayerStatByGameMode
+                (controllerIndex,&wins,lbWagerGameModeEnum[gameType],pcVar1);
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_LOSSES);
-      LiveStats_GetIntPlayerStatByGameMode(local_14,&local_20,lbWagerGameModeEnum[local_24],pcVar1);
+      LiveStats_GetIntPlayerStatByGameMode
+                (controllerIndex,&losses,lbWagerGameModeEnum[gameType],pcVar1);
     }
     else {
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
       LiveStats_GetIntOtherPlayerStatByGameMode
-                (local_14,&local_10,lbWagerGameModeEnum[local_24],pcVar1);
+                (controllerIndex,&wins,lbWagerGameModeEnum[gameType],pcVar1);
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_LOSSES);
       LiveStats_GetIntOtherPlayerStatByGameMode
-                (local_14,&local_20,lbWagerGameModeEnum[local_24],pcVar1);
+                (controllerIndex,&losses,lbWagerGameModeEnum[gameType],pcVar1);
     }
-    local_8 = local_10 + local_20 + local_8;
+    numMatches = wins + losses + numMatches;
   }
-  local_1c.internals.intVal = local_8;
-  AddOperandToStack(param_3,&local_1c);
+  result.internals.intVal = numMatches;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799B90  GetNumWagerMatchesWon  (universal/com_expressions_eval.cpp:9053)
 
-void __cdecl GetNumWagerMatchesWon(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumWagerMatchesWon(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   char *pcVar1;
-  int local_24;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  char local_9;
-  char *local_8;
+  int gameType;
+  int losses;
+  Operand result;
+  int controllerIndex;
+  int wins;
+  bool forFriend;
+  int numMatches;
   
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = 0;
-  local_8 = (char *)0x0;
-  local_10 = 0;
-  local_9 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  for (local_24 = 0; local_24 < 4; local_24 = local_24 + 1) {
-    if (local_9 == '\0') {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  numMatches = 0;
+  wins = 0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  for (gameType = 0; gameType < 4; gameType = gameType + 1) {
+    if (forFriend == false) {
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
-      LiveStats_GetIntPlayerStatByGameMode(local_14,&local_10,lbWagerGameModeEnum[local_24],pcVar1);
+      LiveStats_GetIntPlayerStatByGameMode
+                (controllerIndex,&wins,lbWagerGameModeEnum[gameType],pcVar1);
     }
     else {
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
       LiveStats_GetIntOtherPlayerStatByGameMode
-                (local_14,&local_10,lbWagerGameModeEnum[local_24],pcVar1);
+                (controllerIndex,&wins,lbWagerGameModeEnum[gameType],pcVar1);
     }
-    local_8 = local_8 + local_10;
+    numMatches = wins + numMatches;
   }
-  local_1c.internals.string = local_8;
-  AddOperandToStack(param_3,&local_1c);
+  result.internals.intVal = numMatches;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799C70  GetIndexIntoMatchScoreboard  (universal/com_expressions_eval.cpp:9083)
 
-void __cdecl GetIndexIntoMatchScoreboard(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetIndexIntoMatchScoreboard(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals.intVal = CG_GetIndexIntoMatchScoreboard(param_1,local_8);
-  if (local_10.internals.intVal < 0) {
-    local_10.internals.intVal = 0;
+  result.dataType = VAL_INT;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = CG_GetIndexIntoMatchScoreboard(localClientNum,controllerIndex);
+  if (result.internals.intVal < 0) {
+    result.internals.intVal = 0;
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799CC0  GetScoreboardColumnHeader  (universal/com_expressions_eval.cpp:9100)
 
-void __cdecl GetScoreboardColumnHeader(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetScoreboardColumnHeader(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int columnNumber;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.string = CG_GetNameForScoreboardColumn(param_1,local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  columnNumber = GetSourceInt(&source);
+  result.internals.string = CG_GetNameForScoreboardColumn(localClientNum,columnNumber);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799D20  GetWagerPlaceForMatchScoreboard  (universal/com_expressions_eval.cpp:9118)
 
-void __cdecl GetWagerPlaceForMatchScoreboard(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetWagerPlaceForMatchScoreboard(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int matchScoreboardIndex;
   
-  local_10.dataType = VAL_INT;
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = CG_GetWagerPlaceForMatchScoreboard(param_1,local_8);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  matchScoreboardIndex = GetSourceInt(&source);
+  result.internals.intVal = CG_GetWagerPlaceForMatchScoreboard(localClientNum,matchScoreboardIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799D80  GetWagerGametypeNameFromEnum  (universal/com_expressions_eval.cpp:9136)
 
-void __cdecl GetWagerGametypeNameFromEnum(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetWagerGametypeNameFromEnum(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int gametypeIndex;
   
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  GetOperand(param_3,&local_18);
-  local_8 = GetSourceInt(&local_18);
-  if ((-1 < local_8) && (local_8 < 4)) {
-    local_10.internals = *(operandInternalDataUnion *)(lbWagerGameModeEnum + local_8);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperand(dataStack,&source);
+  gametypeIndex = GetSourceInt(&source);
+  if ((-1 < gametypeIndex) && (gametypeIndex < 4)) {
+    result.internals = *(operandInternalDataUnion *)(lbWagerGameModeEnum + gametypeIndex);
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799DE0  GetAfterActionReportAwardsInfo  (universal/com_expressions_eval.cpp:9169)
 
-void __cdecl GetAfterActionReportAwardsInfo(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetAfterActionReportAwardsInfo(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  uint local_48;
-  Operand local_44;
-  Operand local_3c;
-  uchar *local_34;
-  int local_30;
-  int local_2c;
-  uchar *local_28;
-  int local_24;
-  uint local_20;
-  int local_1c;
-  operandInternalDataUnion local_18;
+  int currIndex;
+  Operand source;
+  Operand result;
+  char *liveStatsBuffer;
+  int controllerIndex;
+  int numContractsCompletedAfterMatch;
+  char *oldStatsBuffer;
+  int awardIndex;
+  int totalPersonalBests;
+  int numNewPersonalBests;
+  operandInternalDataUnion numAwards;
   uint local_14;
   int local_10;
-  int local_c;
-  int local_8;
+  int numContractsCompleted;
+  int numContractsCompletedBeforeMatch;
   
-  GetOperand(param_3,&local_44);
-  local_3c.dataType = VAL_INT;
-  local_3c.internals.intVal = 0;
-  local_30 = Com_LocalClient_GetControllerIndex(param_1);
-  local_24 = GetSourceInt(&local_44);
-  if ((local_24 < 0) || (2 < local_24)) {
-    AddOperandToStack(param_3,&local_3c);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  awardIndex = GetSourceInt(&source);
+  if ((awardIndex < 0) || (2 < awardIndex)) {
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_1c = 0;
-    local_c = 0;
-    local_20 = LiveStats_GetNumPersonalBests(local_30);
-    for (local_48 = 0; (int)local_48 < (int)local_20; local_48 = local_48 + 1) {
-      iVar1 = LiveStats_GetPersonalBestDelta(local_30,local_48);
+    numNewPersonalBests = 0;
+    numContractsCompleted = 0;
+    totalPersonalBests = LiveStats_GetNumPersonalBests(controllerIndex);
+    for (currIndex = 0; currIndex < totalPersonalBests; currIndex = currIndex + 1) {
+      iVar1 = LiveStats_GetPersonalBestDelta(controllerIndex,currIndex);
       if (0 < iVar1) {
-        local_1c = local_1c + 1;
+        numNewPersonalBests = numNewPersonalBests + 1;
       }
     }
-    local_18.intVal = local_1c;
-    local_14 = LiveStats_GetNumStatsMilestones(local_30);
-    local_34 = LiveStorage_GetStatsBuffer(local_30,STATS_LOCATION_NORMAL,true);
-    local_28 = LiveStorage_GetStatsBuffer(local_30,STATS_LOCATION_STABLE,true);
-    local_8 = 0;
-    local_2c = 0;
-    LiveStats_GetIntPlayerStatFromBase(&local_8,"CONTRACTS_COMPLETED",(char *)local_28);
-    LiveStats_GetIntPlayerStatFromBase(&local_2c,"CONTRACTS_COMPLETED",(char *)local_34);
-    local_c = local_2c - local_8;
-    local_10 = local_2c - local_8;
-    local_3c.internals = (&local_18)[local_24];
-    AddOperandToStack(param_3,&local_3c);
+    numAwards.intVal = numNewPersonalBests;
+    local_14 = LiveStats_GetNumStatsMilestones(controllerIndex);
+    liveStatsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_NORMAL,true)
+    ;
+    oldStatsBuffer = (char *)LiveStorage_GetStatsBuffer(controllerIndex,STATS_LOCATION_STABLE,true);
+    numContractsCompletedBeforeMatch = 0;
+    numContractsCompletedAfterMatch = 0;
+    LiveStats_GetIntPlayerStatFromBase
+              (&numContractsCompletedBeforeMatch,"CONTRACTS_COMPLETED",oldStatsBuffer);
+    LiveStats_GetIntPlayerStatFromBase
+              (&numContractsCompletedAfterMatch,"CONTRACTS_COMPLETED",liveStatsBuffer);
+    numContractsCompleted = numContractsCompletedAfterMatch - numContractsCompletedBeforeMatch;
+    local_10 = numContractsCompletedAfterMatch - numContractsCompletedBeforeMatch;
+    result.internals = (&numAwards)[awardIndex];
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11191,162 +11581,162 @@ void __cdecl GetAfterActionReportAwardsInfo(int param_1,itemDef_s *param_2,Opera
 
 // 00799F40  GetNumPersonalBests  (universal/com_expressions_eval.cpp:9223)
 
-void __cdecl GetNumPersonalBests(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumPersonalBests(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_c;
+  int controllerIndex;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c.internals.intVal = LiveStats_GetNumPersonalBests(iVar1);
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = LiveStats_GetNumPersonalBests(controllerIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799F80  GetPersonalBestName  (universal/com_expressions_eval.cpp:9236)
 
-void __cdecl GetPersonalBestName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPersonalBestName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  uint uVar1;
-  int iVar2;
-  char *pcVar3;
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  uint personalBestNum;
+  int controllerIndex;
+  char *string;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  uVar1 = GetSourceInt(&local_18);
-  local_8 = uVar1;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  pcVar3 = LiveStats_GetPersonalBestName(iVar2,uVar1);
-  local_10.internals.string = CopyTempString(pcVar3);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  personalBestNum = GetSourceInt(&source);
+  index = personalBestNum;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  string = LiveStats_GetPersonalBestName(controllerIndex,personalBestNum);
+  result.internals.string = CopyTempString(string);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 00799FF0  GetPersonalBestPrefix  (universal/com_expressions_eval.cpp:9252)
 
-void __cdecl GetPersonalBestPrefix(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPersonalBestPrefix(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  uint uVar1;
-  int iVar2;
-  Operand local_1c;
-  Operand local_14;
-  uint local_c;
-  char *local_8;
+  uint personalBestNum;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
+  char *prefix;
   
-  GetOperand(param_3,&local_1c);
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  uVar1 = GetSourceInt(&local_1c);
-  local_c = uVar1;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveStats_GetPersonalBestPrefix(iVar2,uVar1);
-  if ((local_8 == (char *)0x0) || (*local_8 == '\0')) {
-    local_14.internals.floatVal = 1.8504791e-38;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  personalBestNum = GetSourceInt(&source);
+  index = personalBestNum;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  prefix = LiveStats_GetPersonalBestPrefix(controllerIndex,personalBestNum);
+  if ((prefix == (char *)0x0) || (*prefix == '\0')) {
+    result.internals.floatVal = 1.8504791e-38;
   }
   else {
-    local_14.internals.string = CopyTempString(local_8);
+    result.internals.string = CopyTempString(prefix);
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079A080  GetPersonalBestValue  (universal/com_expressions_eval.cpp:9272)
 
-void __cdecl GetPersonalBestValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPersonalBestValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
   int iVar4;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  char *local_c;
-  uint local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  char *personalBestName;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = GetSourceInt(&local_20);
-  local_c = LiveStats_GetPersonalBestName(local_10,local_8);
-  if ((local_c == (char *)0x0) &&
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetSourceInt(&source);
+  personalBestName = LiveStats_GetPersonalBestName(controllerIndex,index);
+  if ((personalBestName == (char *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x2443,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (local_c == (char *)0x0) {
+  if (personalBestName == (char *)0x0) {
 LAB_0079a122:
     pcVar3 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_HIGHEST_KDRATIO);
-    iVar4 = I_stricmp(local_c,pcVar3);
+    iVar4 = I_stricmp(personalBestName,pcVar3);
     if (iVar4 != 0) {
-      if (local_c == (char *)0x0) {
+      if (personalBestName == (char *)0x0) {
 LAB_0079a1a3:
         pcVar3 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_HIGHEST_ACCURACY);
-        iVar4 = I_stricmp(local_c,pcVar3);
+        iVar4 = I_stricmp(personalBestName,pcVar3);
         if (iVar4 != 0) {
-          local_18.internals.intVal = LiveStats_GetPersonalBestValue(local_10,local_8);
+          result.internals.intVal = LiveStats_GetPersonalBestValue(controllerIndex,index);
           goto LAB_0079a25a;
         }
       }
       else {
         pcVar3 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_ACCURACY);
-        iVar4 = I_stricmp(local_c,pcVar3);
+        iVar4 = I_stricmp(personalBestName,pcVar3);
         if (iVar4 != 0) goto LAB_0079a1a3;
       }
-      local_18.dataType = VAL_STRING;
-      LiveStats_GetPersonalBestValue(local_10,local_8);
-      local_18.internals.string = va("%.2f %%");
+      result.dataType = VAL_STRING;
+      LiveStats_GetPersonalBestValue(controllerIndex,index);
+      result.internals.string = va("%.2f %%");
       goto LAB_0079a25a;
     }
   }
   else {
     pcVar3 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_KDRATIO);
-    iVar4 = I_stricmp(local_c,pcVar3);
+    iVar4 = I_stricmp(personalBestName,pcVar3);
     if (iVar4 != 0) goto LAB_0079a122;
   }
-  local_18.dataType = VAL_STRING;
-  LiveStats_GetPersonalBestValue(local_10,local_8);
-  local_18.internals.string = va("%.2f");
+  result.dataType = VAL_STRING;
+  LiveStats_GetPersonalBestValue(controllerIndex,index);
+  result.internals.string = va("%.2f");
 LAB_0079a25a:
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079A270  GetPersonalBestDelta  (universal/com_expressions_eval.cpp:9309)
 
-void __cdecl GetPersonalBestDelta(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPersonalBestDelta(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  uint uVar1;
-  int iVar2;
-  Operand local_18;
-  Operand local_10;
-  uint local_8;
+  uint personalBestNum;
+  int controllerIndex;
+  Operand source;
+  Operand result;
+  int index;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  uVar1 = GetSourceInt(&local_18);
-  local_8 = uVar1;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.internals.intVal = LiveStats_GetPersonalBestDelta(iVar2,uVar1);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  personalBestNum = GetSourceInt(&source);
+  index = personalBestNum;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = LiveStats_GetPersonalBestDelta(controllerIndex,personalBestNum);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -11355,47 +11745,50 @@ void __cdecl GetPersonalBestDelta(int param_1,itemDef_s *param_2,OperandStack *p
 
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 
-void __cdecl GetNumWeaponUnlocks(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumWeaponUnlocks(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   itemGroup_t iVar2;
-  uint local_24;
-  Operand local_20;
-  int local_18;
-  loadoutSlot_t local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int currItem;
+  Operand result;
+  int controllerIndex;
+  loadoutSlot_t currLoadoutSlot;
+  int itemIndex;
+  int totalWeaponsUnlocked;
+  int totalItemsUnlocked;
   
-  local_20.dataType = VAL_INT;
-  local_20.internals.intVal = 0;
-  local_18 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveStats_GetNumRecentlyUnlockedItems(local_18);
-  local_c = 0;
-  local_10 = 0;
-  local_24 = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  totalItemsUnlocked = LiveStats_GetNumRecentlyUnlockedItems(controllerIndex);
+  totalWeaponsUnlocked = 0;
+  itemIndex = 0;
+  currItem = 0;
   do {
-    if (local_8 <= (int)local_24) {
-      local_20.internals.intVal = local_c;
-      AddOperandToStack(param_3,&local_20);
+    if (totalItemsUnlocked <= currItem) {
+      result.internals.intVal = totalWeaponsUnlocked;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_10 = LiveStats_GetRecentlyUnlockedItemIndex(local_18,local_24);
-    local_14 = BG_UnlockablesGetItemLoadoutSlot(local_10);
-    if ((local_14 == LOADOUTSLOT_FIRST) || (local_14 == LOADOUTSLOT_SECONDARY_WEAPON)) {
+    itemIndex = LiveStats_GetRecentlyUnlockedItemIndex(controllerIndex,currItem);
+    currLoadoutSlot = BG_UnlockablesGetItemLoadoutSlot(itemIndex);
+    if ((currLoadoutSlot == LOADOUTSLOT_FIRST) || (currLoadoutSlot == LOADOUTSLOT_SECONDARY_WEAPON))
+    {
 LAB_0079a38c:
-      local_c = local_c + 1;
+      totalWeaponsUnlocked = totalWeaponsUnlocked + 1;
     }
     else {
-      iVar2 = BG_UnlockablesGetItemGroupEnum(local_10);
+      iVar2 = BG_UnlockablesGetItemGroupEnum(itemIndex);
       if (iVar2 == ITEMGROUP_SPECIALTY) {
-        bVar1 = BG_UnlockablesIsProItem(local_10);
+        bVar1 = BG_UnlockablesIsProItem(itemIndex);
         if (bVar1) goto LAB_0079a38c;
       }
     }
-    local_24 = local_24 + 1;
+    currItem = currItem + 1;
   } while( true );
 }
 
@@ -11403,50 +11796,54 @@ LAB_0079a38c:
 // 0079A3C0  GetNumFeatureUnlocks  (universal/com_expressions_eval.cpp:9356)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl GetNumFeatureUnlocks(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumFeatureUnlocks(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   itemGroup_t iVar1;
-  uint local_24;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int currItem;
+  itemGroup_t currItemGroup;
+  Operand result;
+  int controllerIndex;
+  int totalFeaturesUnlocked;
+  int itemIndex;
+  int totalItemsUnlocked;
   
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = 0;
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  local_8 = LiveStats_GetNumRecentlyUnlockedItems(local_14);
-  local_10 = 0;
-  local_c = 0;
-  for (local_24 = 0; (int)local_24 < local_8; local_24 = local_24 + 1) {
-    local_c = LiveStats_GetRecentlyUnlockedItemIndex(local_14,local_24);
-    iVar1 = BG_UnlockablesGetItemGroupEnum(local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  totalItemsUnlocked = LiveStats_GetNumRecentlyUnlockedItems(controllerIndex);
+  totalFeaturesUnlocked = 0;
+  itemIndex = 0;
+  for (currItem = 0; currItem < totalItemsUnlocked; currItem = currItem + 1) {
+    itemIndex = LiveStats_GetRecentlyUnlockedItemIndex(controllerIndex,currItem);
+    iVar1 = BG_UnlockablesGetItemGroupEnum(itemIndex);
     if (iVar1 == ITEMGROUP_FEATURE) {
-      local_10 = local_10 + 1;
+      totalFeaturesUnlocked = totalFeaturesUnlocked + 1;
     }
   }
-  local_1c.internals.intVal = local_10;
-  AddOperandToStack(param_3,&local_1c);
+  result.internals.intVal = totalFeaturesUnlocked;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079A470  GetNumStatsMilestones  (universal/com_expressions_eval.cpp:9386)
 
-void __cdecl GetNumStatsMilestones(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumStatsMilestones(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  Operand local_c;
+  int controllerIndex;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  iVar1 = Com_LocalClient_GetControllerIndex(param_1);
-  local_c.internals.intVal = LiveStats_GetNumStatsMilestones(iVar1);
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.internals.intVal = LiveStats_GetNumStatsMilestones(controllerIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -11455,100 +11852,107 @@ void __cdecl GetNumStatsMilestones(int param_1,itemDef_s *param_2,OperandStack *
 
 char * __cdecl
 GetStatsMilestoneData
-          (milestoneTableColumns_t param_1,char *param_2,milestoneTableColumns_t param_3,
-          char *param_4,milestoneTableColumns_t param_5,char *param_6,
-          milestoneTableColumns_t param_7)
+          (milestoneTableColumns_t comparisonColumn1,char *value1,
+          milestoneTableColumns_t comparisonColumn2,char *value2,
+          milestoneTableColumns_t comparisonColumn3,char *value3,
+          milestoneTableColumns_t returnColumn)
 
 {
-  int iVar1;
-  char *pcVar2;
-  StringTable *local_8;
+  int row;
+  char *pcVar1;
+  int rowNum;
+  StringTable *statsMilestonestable;
   
-  iVar1 = CL_GetMilestoneRowNum(&local_8,param_1,param_2,param_3,param_4,param_5,param_6);
-  if (iVar1 == -1) {
-    pcVar2 = "";
+  row = CL_GetMilestoneRowNum
+                  (&statsMilestonestable,comparisonColumn1,value1,comparisonColumn2,value2,
+                   comparisonColumn3,value3);
+  if (row == -1) {
+    pcVar1 = "";
   }
   else {
-    pcVar2 = StringTable_GetColumnValueForRow(local_8,iVar1,param_7);
+    pcVar1 = StringTable_GetColumnValueForRow(statsMilestonestable,row,returnColumn);
   }
-  return pcVar2;
+  return pcVar1;
 }
 
 
 // 0079A510  GetStatsMilestoneValue  (universal/com_expressions_eval.cpp:9415)
 
-void __cdecl GetStatsMilestoneValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetStatsMilestoneValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
   char *pcVar2;
-  int iVar3;
-  Operand local_3c;
-  Operand local_34;
-  statsMilestoneTypes_t local_2c;
-  int local_28;
-  char *local_24;
-  StringTable *local_20;
-  uint local_1c;
-  char *local_18;
-  char *local_14;
-  int local_10;
-  char *local_c;
-  uint local_8;
+  int valueColumn;
+  Operand source;
+  Operand result;
+  statsMilestoneTypes_t statsMilestoneType;
+  int controllerIndex;
+  char *statsMilestoneItemGroup;
+  StringTable *statsTable;
+  int index;
+  char *statsMilestoneTierString;
+  char *statsMilestoneName;
+  int statsMilestoneItemIndex;
+  char *statType;
+  int statsMilestoneTier;
   
-  GetOperand(param_3,&local_3c);
-  local_34.dataType = VAL_INT;
-  local_34.internals.intVal = 0;
-  local_28 = Com_LocalClient_GetControllerIndex(param_1);
-  local_1c = GetSourceInt(&local_3c);
-  if (((int)local_1c < 0) ||
-     (uVar1 = LiveStats_GetNumStatsMilestones(local_28), (int)(uVar1 - 1) < (int)local_1c)) {
-    local_34.dataType = VAL_STRING;
-    local_34.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_34);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  index = GetSourceInt(&source);
+  if ((index < 0) ||
+     (uVar1 = LiveStats_GetNumStatsMilestones(controllerIndex), (int)(uVar1 - 1) < index)) {
+    result.dataType = VAL_STRING;
+    result.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    StringTable_GetAsset("mp/statsTable.csv",&local_20);
-    local_8 = LiveStats_GetStatsMilestoneTier(local_28,local_1c);
-    local_18 = va("%d");
-    local_2c = LiveStats_GetStatsMilestoneType(local_28,local_1c);
-    local_14 = LiveStats_GetStatsMilestoneName(local_28,local_1c);
-    local_c = (char *)0x0;
-    switch(local_2c) {
+    StringTable_GetAsset("mp/statsTable.csv",&statsTable);
+    statsMilestoneTier = LiveStats_GetStatsMilestoneTier(controllerIndex,index);
+    statsMilestoneTierString = va("%d");
+    statsMilestoneType = LiveStats_GetStatsMilestoneType(controllerIndex,index);
+    statsMilestoneName = LiveStats_GetStatsMilestoneName(controllerIndex,index);
+    statType = (char *)0x0;
+    switch(statsMilestoneType) {
     case MILESTONE_GLOBAL:
-      local_c = "global";
+      statType = "global";
       break;
     case MILESTONE_WEAPON:
-      local_10 = LiveStats_GetStatsMilestoneItemIndex(local_28,local_1c);
-      if (local_10 != -1) {
-        iVar3 = 2;
+      statsMilestoneItemIndex = LiveStats_GetStatsMilestoneItemIndex(controllerIndex,index);
+      if (statsMilestoneItemIndex != -1) {
+        valueColumn = 2;
         pcVar2 = va("%d");
-        local_24 = StringTable_Lookup(local_20,0,pcVar2,iVar3);
+        statsMilestoneItemGroup = StringTable_Lookup(statsTable,0,pcVar2,valueColumn);
         pcVar2 = GetStatsMilestoneData
-                           (MILESTONE_COLUMN_TIERID,local_18,MILESTONE_COLUMN_STATTYPE,local_24,
-                            MILESTONE_COLUMN_STATNAME,local_14,MILESTONE_COLUMN_TARGETVALUE);
-        local_34.internals.intVal = atoi(pcVar2);
-        AddOperandToStack(param_3,&local_34);
+                           (MILESTONE_COLUMN_TIERID,statsMilestoneTierString,
+                            MILESTONE_COLUMN_STATTYPE,statsMilestoneItemGroup,
+                            MILESTONE_COLUMN_STATNAME,statsMilestoneName,
+                            MILESTONE_COLUMN_TARGETVALUE);
+        result.internals.intVal = atoi(pcVar2);
+        AddOperandToStack(dataStack,&result);
         return;
       }
-      local_10 = 0xffffffff;
+      statsMilestoneItemIndex = -1;
       break;
     case MILESTONE_GAMEMODE:
-      local_c = "gamemode";
+      statType = "gamemode";
       break;
     case MILESTONE_GROUP:
-      local_c = "group";
+      statType = "group";
       break;
     case MILESTONE_ATTACHMENTS:
-      local_c = "attachment";
+      statType = "attachment";
     }
-    if ((local_c != (char *)0x0) && (*local_c != '\0')) {
+    if ((statType != (char *)0x0) && (*statType != '\0')) {
       pcVar2 = GetStatsMilestoneData
-                         (MILESTONE_COLUMN_TIERID,local_18,MILESTONE_COLUMN_STATTYPE,local_c,
-                          MILESTONE_COLUMN_STATNAME,local_14,MILESTONE_COLUMN_TARGETVALUE);
-      local_34.internals.intVal = atoi(pcVar2);
+                         (MILESTONE_COLUMN_TIERID,statsMilestoneTierString,MILESTONE_COLUMN_STATTYPE
+                          ,statType,MILESTONE_COLUMN_STATNAME,statsMilestoneName,
+                          MILESTONE_COLUMN_TARGETVALUE);
+      result.internals.intVal = atoi(pcVar2);
     }
-    AddOperandToStack(param_3,&local_34);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11559,57 +11963,59 @@ void __cdecl GetStatsMilestoneValue(int param_1,itemDef_s *param_2,OperandStack 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
 
-void __cdecl GetStatsMilestoneName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetStatsMilestoneName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
   char *pcVar2;
-  Operand local_430;
-  char *local_428;
-  Operand local_424;
-  statsMilestoneTypes_t local_41c;
-  int local_418;
-  uchar local_414 [1024];
+  Operand source;
+  char *statMilestoneName;
+  Operand result;
+  statsMilestoneTypes_t statsMilestoneType;
+  int controllerIndex;
+  uchar outputString [1024];
   uint local_14;
-  int local_10;
-  uint local_c;
-  itemGroup_t local_8;
+  int milestoneTier;
+  int index;
+  int statsMilestoneItemIndex;
   
   local_14 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_430);
-  local_424.dataType = VAL_STRING;
-  local_424.internals.floatVal = 1.8187723e-38;
-  local_418 = Com_LocalClient_GetControllerIndex(param_1);
-  memset(local_414,'\0',0x400);
-  local_c = GetSourceInt(&local_430);
-  if ((-1 < (int)local_c) &&
-     (uVar1 = LiveStats_GetNumStatsMilestones(local_418), (int)local_c <= (int)(uVar1 - 1))) {
-    local_8 = LiveStats_GetStatsMilestoneItemIndex(local_418,local_c);
-    if (local_8 == ITEMGROUP_INVALID) {
-      local_424.internals.floatVal = 1.8187723e-38;
-      AddOperandToStack(param_3,&local_424);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  memset(outputString,'\0',0x400);
+  index = GetSourceInt(&source);
+  if ((-1 < index) &&
+     (uVar1 = LiveStats_GetNumStatsMilestones(controllerIndex), index <= (int)(uVar1 - 1))) {
+    statsMilestoneItemIndex = LiveStats_GetStatsMilestoneItemIndex(controllerIndex,index);
+    if (statsMilestoneItemIndex == -1) {
+      result.internals.floatVal = 1.8187723e-38;
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_41c = LiveStats_GetStatsMilestoneType(local_418,local_c);
-    local_428 = LiveStats_GetStatsMilestoneName(local_418,local_c);
-    uVar1 = LiveStats_GetStatsMilestoneTier(local_418,local_c);
-    local_10 = uVar1 - 1;
-    if (local_41c == MILESTONE_GROUP) {
-      BG_UnlockablesGetItemGroupName(local_8);
+    statsMilestoneType = LiveStats_GetStatsMilestoneType(controllerIndex,index);
+    statMilestoneName = LiveStats_GetStatsMilestoneName(controllerIndex,index);
+    uVar1 = LiveStats_GetStatsMilestoneTier(controllerIndex,index);
+    milestoneTier = uVar1 - 1;
+    if (statsMilestoneType == MILESTONE_GROUP) {
+      BG_UnlockablesGetItemGroupName(statsMilestoneItemIndex);
       pcVar2 = va("STATS_TYPE_%s");
       pcVar2 = UI_SafeTranslateString(pcVar2);
       CL_GetMilestoneLocalizedName
-                ((char *)local_414,0x100,local_428,local_41c,local_8,local_10,false,pcVar2);
+                ((char *)outputString,0x100,statMilestoneName,statsMilestoneType,
+                 statsMilestoneItemIndex,milestoneTier,false,pcVar2);
     }
     else {
       CL_GetMilestoneLocalizedName
-                ((char *)local_414,0x100,local_428,local_41c,local_8,local_10,false,(char *)0x0);
+                ((char *)outputString,0x100,statMilestoneName,statsMilestoneType,
+                 statsMilestoneItemIndex,milestoneTier,false,(char *)0x0);
     }
-    local_424.internals.string = CopyTempString((char *)local_414);
-    AddOperandToStack(param_3,&local_424);
+    result.internals.string = CopyTempString((char *)outputString);
+    AddOperandToStack(dataStack,&result);
     return;
   }
-  AddOperandToStack(param_3,&local_424);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -11617,64 +12023,64 @@ void __cdecl GetStatsMilestoneName(int param_1,itemDef_s *param_2,OperandStack *
 // 0079A920  GetCurrentIndex  (universal/com_expressions_eval.cpp:9537)
 
 bool __cdecl
-GetCurrentIndex(int param_1,itemDef_s *param_2,OperandStack *param_3,Operand *param_4,int *param_5,
-               int *param_6,char *param_7)
+GetCurrentIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack,Operand *result,
+               int *challengeNum,int *milestoneType,char *challengeType)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  Operand OVar3;
-  bool bVar4;
-  int iVar5;
-  char *local_70;
-  OperandList local_6c;
-  float local_10;
-  itemDef_s *local_c;
-  char *local_8;
+  Operand operand;
+  Operand operand_00;
+  Operand operand_01;
+  bool bVar1;
+  int iVar2;
+  char *stringResult;
+  OperandList list;
+  float currIndex;
+  itemDef_s *actualItem;
+  char *feederName;
   
-  local_10 = 0.0;
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount < 2) {
+  currIndex = 0.0;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount < 2) {
     Expression_Error("Expected 2 parameters to GetName()\n");
-    AddOperandToStack(param_3,param_4);
-    bVar4 = false;
+    AddOperandToStack(dataStack,result);
+    bVar1 = false;
   }
   else {
-    if (local_6c.operandCount == 2) {
-      OVar1.internals.intVal = local_6c.operands[0].internals.intVal;
-      OVar1.dataType = local_6c.operands[0].dataType;
-      local_8 = GetSourceString(OVar1);
-      iVar5 = GetOperandValueInt(local_6c.operands + 1);
-      *param_6 = iVar5;
+    if (list.operandCount == 2) {
+      operand.internals.intVal = list.operands[0].internals.intVal;
+      operand.dataType = list.operands[0].dataType;
+      feederName = GetSourceString(operand);
+      iVar2 = GetOperandValueInt(list.operands + 1);
+      *milestoneType = iVar2;
     }
-    else if ((local_6c.operandCount == 3) && (param_7 != (char *)0x0)) {
-      OVar2.internals.intVal = local_6c.operands[0].internals.intVal;
-      OVar2.dataType = local_6c.operands[0].dataType;
-      local_8 = GetSourceString(OVar2);
-      iVar5 = GetOperandValueInt(local_6c.operands + 1);
-      *param_6 = iVar5;
-      OVar3.internals.intVal = local_6c.operands[2].internals.intVal;
-      OVar3.dataType = local_6c.operands[2].dataType;
-      GetSourceString(OVar3);
-      Com_sprintf(param_7,0x100,"%s");
+    else if ((list.operandCount == 3) && (challengeType != (char *)0x0)) {
+      operand_00.internals.intVal = list.operands[0].internals.intVal;
+      operand_00.dataType = list.operands[0].dataType;
+      feederName = GetSourceString(operand_00);
+      iVar2 = GetOperandValueInt(list.operands + 1);
+      *milestoneType = iVar2;
+      operand_01.internals.intVal = list.operands[2].internals.intVal;
+      operand_01.dataType = list.operands[2].dataType;
+      GetSourceString(operand_01);
+      Com_sprintf(challengeType,0x100,"%s");
     }
-    if ((local_8 == (char *)0x0) || (*local_8 == '\0')) {
-      bVar4 = false;
+    if ((feederName == (char *)0x0) || (*feederName == '\0')) {
+      bVar1 = false;
     }
     else {
-      local_c = Menu_GetMatchingItemByNumber(param_2->parent,0,local_8);
-      bVar4 = UI_FeederData(param_1,local_c,"selection",&local_70,&local_10);
-      if (bVar4) {
-        *param_5 = (int)local_10;
-        bVar4 = true;
+      actualItem = Menu_GetMatchingItemByNumber(item->parent,0,feederName);
+      bVar1 = UI_FeederData(localClientNum,actualItem,"selection",&stringResult,&currIndex);
+      if (bVar1) {
+        *challengeNum = (int)currIndex;
+        bVar1 = true;
       }
       else {
-        AddOperandToStack(param_3,param_4);
-        bVar4 = false;
+        AddOperandToStack(dataStack,result);
+        bVar1 = false;
       }
     }
   }
-  return bVar4;
+  return bVar1;
 }
 
 
@@ -11682,66 +12088,68 @@ GetCurrentIndex(int param_1,itemDef_s *param_2,OperandStack *param_3,Operand *pa
 
 bool __cdecl
 GetCurrentIndexOfHighlightedFeeder
-          (int param_1,itemDef_s *param_2,OperandStack *param_3,Operand *param_4,int *param_5,
-          int *param_6,char *param_7)
+          (int localClientNum,itemDef_s *item,OperandStack *dataStack,Operand *result,
+          int *challengeNum,int *milestoneType,char *name)
 
 {
   bool bVar1;
-  char *local_14;
-  float local_10;
-  itemDef_s *local_c;
-  int local_8;
+  char *stringResult;
+  float currIndex;
+  itemDef_s *actualItem;
+  int contextIndex;
   
-  local_10 = 0.0;
-  if (param_7 == (char *)0x0) {
-    param_7 = "stats_milestones_list";
+  currIndex = 0.0;
+  if (name == (char *)0x0) {
+    name = "stats_milestones_list";
   }
-  local_8 = Com_LocalClient_GetUIContextIndex(param_1);
-  local_c = Menu_GetMatchingItemByNumber(param_2->parent,0,param_7);
-  *param_6 = 1;
-  bVar1 = Window_HasFocus(local_8,&local_c->window);
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  actualItem = Menu_GetMatchingItemByNumber(item->parent,0,name);
+  *milestoneType = 1;
+  bVar1 = Window_HasFocus(contextIndex,&actualItem->window);
   if (!bVar1) {
-    local_c = Menu_GetMatchingItemByNumber(param_2->parent,0,"stats_milestones_weapongrouplist");
-    *param_6 = 4;
+    actualItem = Menu_GetMatchingItemByNumber(item->parent,0,"stats_milestones_weapongrouplist");
+    *milestoneType = 4;
   }
-  if ((local_c != (itemDef_s *)0x0) &&
-     (bVar1 = UI_FeederData(param_1,local_c,"selection",&local_14,&local_10), bVar1)) {
-    *param_5 = (int)local_10;
+  if ((actualItem != (itemDef_s *)0x0) &&
+     (bVar1 = UI_FeederData(localClientNum,actualItem,"selection",&stringResult,&currIndex), bVar1))
+  {
+    *challengeNum = (int)currIndex;
     return true;
   }
-  AddOperandToStack(param_3,param_4);
+  AddOperandToStack(dataStack,result);
   return false;
 }
 
 
 // 0079AA70  GetCurrentChallengeXpReward  (universal/com_expressions_eval.cpp:9613)
 
-void __cdecl GetCurrentChallengeXpReward(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentChallengeXpReward(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int local_18;
-  Operand local_14;
-  int local_c;
-  uint local_8;
+  int xpReward;
+  Operand result;
+  int milestoneType;
+  int challengeNum;
   
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = 0;
-  local_18 = 0;
-  local_c = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  xpReward = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_14,(int *)&local_8,&local_c,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
     bVar1 = LiveStats_GetChallengeInfoParam
-                      (CHALLENGE_PARAM_XP_REWARD,local_8,(char **)0x0,&local_18,local_c);
+                      (CHALLENGE_PARAM_XP_REWARD,challengeNum,(char **)0x0,&xpReward,milestoneType);
     if (bVar1) {
-      local_14.internals.intVal = local_18;
+      result.internals.intVal = xpReward;
     }
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11749,32 +12157,35 @@ void __cdecl GetCurrentChallengeXpReward(int param_1,itemDef_s *param_2,OperandS
 
 // 0079ABF0  IsCurrentChallengeItemClassified  (universal/com_expressions_eval.cpp:9635)
 
-void __cdecl IsCurrentChallengeItemClassified(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+IsCurrentChallengeItemClassified(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int local_18;
-  Operand local_14;
-  int local_c;
-  uint local_8;
+  int isItemClassified;
+  Operand result;
+  int milestoneType;
+  int challengeNum;
   
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = 0;
-  local_c = 0;
-  local_18 = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  milestoneType = 0;
+  isItemClassified = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_14,(int *)&local_8,&local_c,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
     bVar1 = LiveStats_GetChallengeInfoParam
-                      (CHALLENGE_PARAM_IS_ITEM_CLASSIFIED,local_8,(char **)0x0,&local_18,local_c);
+                      (CHALLENGE_PARAM_IS_ITEM_CLASSIFIED,challengeNum,(char **)0x0,
+                       &isItemClassified,milestoneType);
     if (bVar1) {
-      local_14.internals.intVal = local_18;
+      result.internals.intVal = isItemClassified;
     }
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11782,31 +12193,32 @@ void __cdecl IsCurrentChallengeItemClassified(int param_1,itemDef_s *param_2,Ope
 
 // 0079AC90  GetXpReward  (universal/com_expressions_eval.cpp:9658)
 
-void __cdecl GetXpReward(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetXpReward(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int local_18;
-  Operand local_14;
-  int local_c;
-  uint local_8;
+  int xpReward;
+  Operand result;
+  int milestoneType;
+  int challengeNum;
   
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  local_8 = 0;
-  local_18 = 0;
-  local_c = 0;
-  bVar1 = GetCurrentIndex(param_1,param_2,param_3,&local_14,(int *)&local_8,&local_c,(char *)0x0);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  xpReward = 0;
+  milestoneType = 0;
+  bVar1 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)0x0);
   if (bVar1) {
     bVar1 = LiveStats_GetChallengeInfoParam
-                      (CHALLENGE_PARAM_XP_REWARD,local_8,(char **)0x0,&local_18,local_c);
+                      (CHALLENGE_PARAM_XP_REWARD,challengeNum,(char **)0x0,&xpReward,milestoneType);
     if (bVar1) {
-      local_14.internals.intVal = local_18;
+      result.internals.intVal = xpReward;
     }
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11814,32 +12226,33 @@ void __cdecl GetXpReward(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079AD30  GetCurrentChallengeCpReward  (universal/com_expressions_eval.cpp:9682)
 
-void __cdecl GetCurrentChallengeCpReward(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentChallengeCpReward(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  int local_10;
-  uint local_c;
-  int local_8;
+  Operand result;
+  int milestoneType;
+  int challengeNum;
+  int cpReward;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_c = 0;
-  local_8 = 0;
-  local_10 = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  cpReward = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_18,(int *)&local_c,&local_10,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
     bVar1 = LiveStats_GetChallengeInfoParam
-                      (CHALLENGE_PARAM_CP_REWARD,local_c,(char **)0x0,&local_8,local_10);
+                      (CHALLENGE_PARAM_CP_REWARD,challengeNum,(char **)0x0,&cpReward,milestoneType);
     if (bVar1) {
-      local_18.internals.intVal = local_8;
+      result.internals.intVal = cpReward;
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11847,31 +12260,32 @@ void __cdecl GetCurrentChallengeCpReward(int param_1,itemDef_s *param_2,OperandS
 
 // 0079ADD0  GetCpReward  (universal/com_expressions_eval.cpp:9704)
 
-void __cdecl GetCpReward(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCpReward(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  int local_10;
-  uint local_c;
-  int local_8;
+  Operand result;
+  int milestoneType;
+  int challengeNum;
+  int cpReward;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_c = 0;
-  local_8 = 0;
-  local_10 = 0;
-  bVar1 = GetCurrentIndex(param_1,param_2,param_3,&local_18,(int *)&local_c,&local_10,(char *)0x0);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  cpReward = 0;
+  milestoneType = 0;
+  bVar1 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)0x0);
   if (bVar1) {
     bVar1 = LiveStats_GetChallengeInfoParam
-                      (CHALLENGE_PARAM_CP_REWARD,local_c,(char **)0x0,&local_8,local_10);
+                      (CHALLENGE_PARAM_CP_REWARD,challengeNum,(char **)0x0,&cpReward,milestoneType);
     if (bVar1) {
-      local_18.internals.intVal = local_8;
+      result.internals.intVal = cpReward;
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11879,49 +12293,50 @@ void __cdecl GetCpReward(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079AE70  GetCurrentChallengeProgress  (universal/com_expressions_eval.cpp:9728)
 
-void __cdecl GetCurrentChallengeProgress(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCurrentChallengeProgress(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  char *pcVar2;
-  int iVar3;
-  char *pcVar4;
-  Operand local_28;
-  int local_20;
-  char *local_1c;
-  challengeInfo_t *local_18;
-  char *local_14;
-  int local_10;
-  uint local_c;
-  int local_8;
+  char *s0;
+  int iVar2;
+  char *s1;
+  Operand result;
+  int milestoneType;
+  char *targetTime;
+  challengeInfo_t *challenge;
+  char *currTime;
+  int currMinutes;
+  int challengeNum;
+  int targetMinutes;
   
-  local_28.dataType = VAL_STRING;
-  local_28.internals.floatVal = 1.8187723e-38;
-  local_c = 0;
-  local_20 = 0;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_28,(int *)&local_c,&local_20,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_18,local_c,local_20);
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
     if (bVar1) {
-      pcVar4 = local_18->name;
-      pcVar2 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_TIMEPLAYEDTOTAL);
-      iVar3 = I_stricmp(pcVar2,pcVar4);
-      if (iVar3 == 0) {
-        local_10 = (int)ROUND((float)local_18->currentValue / 60.0 + 9.313226e-10);
-        local_14 = va("%id %ih %im");
-        local_8 = (int)ROUND((float)local_18->targetValue / 60.0 + 9.313226e-10);
-        local_1c = va("%id %ih %im");
-        local_28.internals.string = va("%s / %s");
-        AddOperandToStack(param_3,&local_28);
+      s1 = challenge->name;
+      s0 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_TIMEPLAYEDTOTAL);
+      iVar2 = I_stricmp(s0,s1);
+      if (iVar2 == 0) {
+        currMinutes = (int)ROUND((float)challenge->currentValue / 60.0 + 9.313226e-10);
+        currTime = va("%id %ih %im");
+        targetMinutes = (int)ROUND((float)challenge->targetValue / 60.0 + 9.313226e-10);
+        targetTime = va("%id %ih %im");
+        result.internals.string = va("%s / %s");
+        AddOperandToStack(dataStack,&result);
         return;
       }
-      local_28.internals.string = va("%d / %d");
+      result.internals.string = va("%d / %d");
     }
-    AddOperandToStack(param_3,&local_28);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_28);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -11929,19 +12344,19 @@ void __cdecl GetCurrentChallengeProgress(int param_1,itemDef_s *param_2,OperandS
 
 // 0079B050  GetNumChallenges  (universal/com_expressions_eval.cpp:9770)
 
-void __cdecl GetNumChallenges(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetNumChallenges(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_18;
-  Operand local_10;
-  int local_8;
+  Operand source;
+  Operand result;
+  int type;
   
-  GetOperand(param_3,&local_18);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = GetSourceInt(&local_18);
-  local_10.internals.intVal = LiveStats_GetChallengeCount(local_8);
-  AddOperandToStack(param_3,&local_10);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  type = GetSourceInt(&source);
+  result.internals.intVal = LiveStats_GetChallengeCount(type);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -11950,81 +12365,82 @@ void __cdecl GetNumChallenges(int param_1,itemDef_s *param_2,OperandStack *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetChallengeProgressString(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetChallengeProgressString(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   char *pcVar2;
-  ConversionArguments *pCVar3;
-  uchar *puVar4;
-  int iVar5;
-  Operand local_448;
-  int local_440;
-  uchar local_43c [1024];
+  ConversionArguments *arguments;
+  uchar *outputString_00;
+  int outputStringSize;
+  Operand result;
+  int milestoneType;
+  uchar outputString [1024];
   uint local_3c;
-  float local_38;
-  challengeInfo_t *local_34;
-  uint local_30;
-  ConversionArguments local_2c;
+  float percentage;
+  challengeInfo_t *challenge;
+  int challengeNum;
+  ConversionArguments convArgs;
   
   local_3c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_448.dataType = VAL_STRING;
-  local_448.internals.floatVal = 1.8187723e-38;
-  local_30 = 0;
-  local_2c.argCount = 0;
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  memset(local_43c,'\0',0x400);
-  local_2c.argCount = 0;
-  local_440 = 0;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  convArgs.argCount = 0;
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  memset(outputString,'\0',0x400);
+  convArgs.argCount = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_448,(int *)&local_30,&local_440,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (!bVar1) {
-    AddOperandToStack(param_3,&local_448);
+    AddOperandToStack(dataStack,&result);
     return;
   }
-  bVar1 = LiveStats_GetChallengeInfo(&local_34,local_30,local_440);
+  bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
   if (bVar1) {
-    if (local_34->targetValue == 0) {
-      AddOperandToStack(param_3,&local_448);
+    if (challenge->targetValue == 0) {
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    if (local_34->targetValue == 1) {
-      local_448.internals.string = UI_SafeTranslateString("MPUI_CONTRACT_NOT_COMPLETE");
-      AddOperandToStack(param_3,&local_448);
+    if (challenge->targetValue == 1) {
+      result.internals.string = UI_SafeTranslateString("MPUI_CONTRACT_NOT_COMPLETE");
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    if ((local_34->targetValue == 1) && (local_34->currentValue == 1)) {
-      local_448.internals.string = UI_SafeTranslateString("STATS_CHALLENGE_COMPLETED");
-      AddOperandToStack(param_3,&local_448);
+    if ((challenge->targetValue == 1) && (challenge->currentValue == 1)) {
+      result.internals.string = UI_SafeTranslateString("STATS_CHALLENGE_COMPLETED");
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_38 = (float)(local_34->currentValue * 100) / (float)local_34->targetValue;
+    percentage = (float)(challenge->currentValue * 100) / (float)challenge->targetValue;
     floor();
     pcVar2 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar2;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar2;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar2 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar2;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar2;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar2 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar2;
-    local_2c.argCount = local_2c.argCount + 1;
-    puVar4 = local_43c;
-    iVar5 = 0x400;
-    pCVar3 = &local_2c;
+    convArgs.args[convArgs.argCount] = pcVar2;
+    convArgs.argCount = convArgs.argCount + 1;
+    outputString_00 = outputString;
+    outputStringSize = 0x400;
+    arguments = &convArgs;
     pcVar2 = UI_SafeTranslateString("STATS_STATSMILESTONE_PROGRESS");
-    UI_ReplaceConversions(pcVar2,pCVar3,(char *)puVar4,iVar5);
-    local_448.internals.string = CopyTempString((char *)local_43c);
+    UI_ReplaceConversions(pcVar2,arguments,(char *)outputString_00,outputStringSize);
+    result.internals.string = CopyTempString((char *)outputString);
   }
-  AddOperandToStack(param_3,&local_448);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -12033,26 +12449,26 @@ void __cdecl GetChallengeProgressString(int param_1,itemDef_s *param_2,OperandSt
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetLbTypeWithButtons(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLbTypeWithButtons(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  int iVar4;
-  StringTable *local_444;
-  Operand local_440;
-  char *local_438;
-  char local_434 [1024];
+  int valueColumn;
+  StringTable *gameTypesTable;
+  Operand result;
+  char *gameTypeName;
+  char outputString [1024];
   uint local_34;
-  char local_30 [4];
-  ConversionArguments local_2c;
+  char binding [4];
+  ConversionArguments convArgs;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_440.dataType = VAL_STRING;
-  local_440.internals.floatVal = 1.8187723e-38;
-  StringTable_GetAsset("mp/gametypesTable.csv",&local_444);
-  if (local_444 == (StringTable *)0x0) {
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  StringTable_GetAsset("mp/gametypesTable.csv",&gameTypesTable);
+  if (gameTypesTable == (StringTable *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x26a1,0,"%s");
     if (!bVar2) {
@@ -12061,116 +12477,119 @@ void __cdecl GetLbTypeWithButtons(int param_1,itemDef_s *param_2,OperandStack *p
       return;
     }
   }
-  iVar4 = 2;
+  valueColumn = 2;
   pcVar3 = Dvar_GetString("lb_type");
-  pcVar3 = StringTable_Lookup(local_444,1,pcVar3,iVar4);
-  local_438 = UI_SafeTranslateString(pcVar3);
-  local_30[0] = '\x05';
-  local_30[1] = 0;
-  local_30[2] = 6;
-  local_30[3] = 0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.args[0] = local_30;
-  local_2c.args[1] = local_30 + 2;
-  local_2c.argCount = 2;
-  UI_ReplaceConversions(local_438,&local_2c,local_434,0x400);
-  local_440.internals.string = CopyTempString(local_434);
-  AddOperandToStack(param_3,&local_440);
+  pcVar3 = StringTable_Lookup(gameTypesTable,1,pcVar3,valueColumn);
+  gameTypeName = UI_SafeTranslateString(pcVar3);
+  binding[0] = '\x05';
+  binding[1] = 0;
+  binding[2] = 6;
+  binding[3] = 0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.args[0] = binding;
+  convArgs.args[1] = binding + 2;
+  convArgs.argCount = 2;
+  UI_ReplaceConversions(gameTypeName,&convArgs,outputString,0x400);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079B4B0  PrepareProgressDescription  (universal/com_expressions_eval.cpp:9918)
 
-void __cdecl PrepareProgressDescription(int param_1,char *param_2,challengeInfo_t *param_3)
+void __cdecl
+PrepareProgressDescription(int milestoneType,char *outputString,challengeInfo_t *challenge)
 
 {
   char *pcVar1;
   int iVar2;
   ConversionArguments *pCVar3;
-  ConversionArguments local_2c;
+  float percentage_2;
+  float percentage;
+  ConversionArguments convArgs;
   
-  local_2c.args[0] = (char *)0x0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 0;
-  if ((param_3->targetValue == 1) && (param_3->currentValue == 0)) {
+  convArgs.args[0] = (char *)0x0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 0;
+  if ((challenge->targetValue == 1) && (challenge->currentValue == 0)) {
     iVar2 = 0x400;
-    pCVar3 = &local_2c;
+    pCVar3 = &convArgs;
     pcVar1 = UI_SafeTranslateString("MPUI_CONTRACT_NOT_COMPLETE");
-    UI_ReplaceConversions(pcVar1,pCVar3,param_2,iVar2);
+    UI_ReplaceConversions(pcVar1,pCVar3,outputString,iVar2);
   }
-  else if ((param_3->targetValue == 1) && (param_3->currentValue == 1)) {
+  else if ((challenge->targetValue == 1) && (challenge->currentValue == 1)) {
     iVar2 = 0x400;
-    pCVar3 = &local_2c;
+    pCVar3 = &convArgs;
     pcVar1 = UI_SafeTranslateString("STATS_CHALLENGE_COMPLETED");
-    UI_ReplaceConversions(pcVar1,pCVar3,param_2,iVar2);
+    UI_ReplaceConversions(pcVar1,pCVar3,outputString,iVar2);
   }
-  else if (param_1 == 0) {
+  else if (milestoneType == 0) {
     floor();
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
-    iVar2 = I_stricmp(param_3->name,"PERKS_MARATHON_MILE");
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
+    iVar2 = I_stricmp(challenge->name,"PERKS_MARATHON_MILE");
     if (iVar2 == 0) {
       pcVar1 = va("%.1f");
-      local_2c.args[local_2c.argCount] = pcVar1;
-      local_2c.argCount = local_2c.argCount + 1;
+      convArgs.args[convArgs.argCount] = pcVar1;
+      convArgs.argCount = convArgs.argCount + 1;
       pcVar1 = va("%.1f");
-      local_2c.args[local_2c.argCount] = pcVar1;
-      local_2c.argCount = local_2c.argCount + 1;
+      convArgs.args[convArgs.argCount] = pcVar1;
+      convArgs.argCount = convArgs.argCount + 1;
     }
     else {
-      iVar2 = I_stricmp(param_3->name,"time_played_total");
+      iVar2 = I_stricmp(challenge->name,"time_played_total");
       if (iVar2 == 0) {
         pcVar1 = va("%.1f");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
         pcVar1 = va("%.1f");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
       }
       else {
         pcVar1 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
         pcVar1 = va("%d");
-        local_2c.args[local_2c.argCount] = pcVar1;
-        local_2c.argCount = local_2c.argCount + 1;
+        convArgs.args[convArgs.argCount] = pcVar1;
+        convArgs.argCount = convArgs.argCount + 1;
       }
     }
     iVar2 = 0x400;
-    pCVar3 = &local_2c;
+    pCVar3 = &convArgs;
     pcVar1 = UI_SafeTranslateString("STATS_STATSMILESTONE_PROGRESS");
-    UI_ReplaceConversions(pcVar1,pCVar3,param_2,iVar2);
+    UI_ReplaceConversions(pcVar1,pCVar3,outputString,iVar2);
   }
-  else if (((param_1 == 5) || (param_1 == 6)) || (param_1 == 7)) {
+  else if (((milestoneType == 5) || (milestoneType == 6)) || (milestoneType == 7)) {
     floor();
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     pcVar1 = va("%d");
-    local_2c.args[local_2c.argCount] = pcVar1;
-    local_2c.argCount = local_2c.argCount + 1;
+    convArgs.args[convArgs.argCount] = pcVar1;
+    convArgs.argCount = convArgs.argCount + 1;
     iVar2 = 0x400;
-    pCVar3 = &local_2c;
+    pCVar3 = &convArgs;
     pcVar1 = UI_SafeTranslateString("STATS_STATSMILESTONE_PROGRESS");
-    UI_ReplaceConversions(pcVar1,pCVar3,param_2,iVar2);
+    UI_ReplaceConversions(pcVar1,pCVar3,outputString,iVar2);
   }
   return;
 }
@@ -12178,26 +12597,27 @@ void __cdecl PrepareProgressDescription(int param_1,char *param_2,challengeInfo_
 
 // 0079B830  IsItemUnlocked  (universal/com_expressions_eval.cpp:10019)
 
-void __cdecl IsItemUnlocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsItemUnlocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  int local_10;
-  challengeInfo_t *local_c;
-  uint local_8;
+  Operand result;
+  int milestoneType;
+  challengeInfo_t *challenge;
+  int challengeNum;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_8 = 0;
-  local_10 = 0;
-  bVar1 = GetCurrentIndex(param_1,param_2,param_3,&local_18,(int *)&local_8,&local_10,(char *)0x0);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  milestoneType = 0;
+  bVar1 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)0x0);
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_c,local_8,local_10);
-    if ((bVar1) && ((local_c->flags & 2) == 0)) {
-      local_18.internals.intVal = 1;
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
+    if ((bVar1) && ((challenge->flags & 2) == 0)) {
+      result.internals.intVal = 1;
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12205,37 +12625,38 @@ void __cdecl IsItemUnlocked(int param_1,itemDef_s *param_2,OperandStack *param_3
 
 // 0079B8C0  IsChallengeItemPurchased  (universal/com_expressions_eval.cpp:10047)
 
-void __cdecl IsChallengeItemPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsChallengeItemPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_18;
-  int local_10;
-  challengeInfo_t *local_c;
-  uint local_8;
+  Operand result;
+  int milestoneType;
+  challengeInfo_t *challenge;
+  int challengeNum;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_8 = 0;
-  local_10 = 0;
-  bVar2 = GetCurrentIndex(param_1,param_2,param_3,&local_18,(int *)&local_8,&local_10,(char *)0x0);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  milestoneType = 0;
+  bVar2 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)0x0);
   if (bVar2) {
-    bVar2 = LiveStats_GetChallengeInfo(&local_c,local_8,local_10);
+    bVar2 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
     if (bVar2) {
-      if ((local_c == (challengeInfo_t *)0x0) &&
+      if ((challenge == (challengeInfo_t *)0x0) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                    ,0x2750,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
         return;
       }
-      if ((((local_10 == 7) || (local_10 == 5)) && (local_c != (challengeInfo_t *)0x0)) &&
-         (local_c->flags == 0)) {
-        local_18.internals.intVal = 1;
+      if ((((milestoneType == 7) || (milestoneType == 5)) && (challenge != (challengeInfo_t *)0x0))
+         && (challenge->flags == 0)) {
+        result.internals.intVal = 1;
       }
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12243,37 +12664,38 @@ void __cdecl IsChallengeItemPurchased(int param_1,itemDef_s *param_2,OperandStac
 
 // 0079B990  IsWeaponItemPurchased  (universal/com_expressions_eval.cpp:10079)
 
-void __cdecl IsWeaponItemPurchased(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsWeaponItemPurchased(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  int local_10;
-  challengeInfo_t *local_c;
-  uint local_8;
+  Operand result;
+  int milestoneType;
+  challengeInfo_t *challenge;
+  int challengeNum;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_8 = 0;
-  local_10 = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_18,(int *)&local_8,&local_10,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_c,local_8,local_10);
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
     if (bVar1) {
-      if (local_10 == 1) {
-        if (local_c->flags == 0) {
-          local_18.internals.intVal = 1;
+      if (milestoneType == 1) {
+        if (challenge->flags == 0) {
+          result.internals.intVal = 1;
         }
       }
-      else if (local_10 == 4) {
-        local_18.internals.intVal = 1;
+      else if (milestoneType == 4) {
+        result.internals.intVal = 1;
       }
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12281,37 +12703,38 @@ void __cdecl IsWeaponItemPurchased(int param_1,itemDef_s *param_2,OperandStack *
 
 // 0079BA50  IsWeaponItemClassified  (universal/com_expressions_eval.cpp:10115)
 
-void __cdecl IsWeaponItemClassified(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsWeaponItemClassified(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  int local_10;
-  challengeInfo_t *local_c;
-  uint local_8;
+  Operand result;
+  int milestoneType;
+  challengeInfo_t *challenge;
+  int challengeNum;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_8 = 0;
-  local_10 = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_18,(int *)&local_8,&local_10,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_c,local_8,local_10);
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
     if (bVar1) {
-      if (local_10 == 1) {
-        if ((local_c->flags & 4) != 0) {
-          local_18.internals.intVal = 1;
+      if (milestoneType == 1) {
+        if ((challenge->flags & 4) != 0) {
+          result.internals.intVal = 1;
         }
       }
-      else if (local_10 == 4) {
-        local_18.internals.intVal = 1;
+      else if (milestoneType == 4) {
+        result.internals.intVal = 1;
       }
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12319,37 +12742,38 @@ void __cdecl IsWeaponItemClassified(int param_1,itemDef_s *param_2,OperandStack 
 
 // 0079BB10  IsWeaponItemUnlocked  (universal/com_expressions_eval.cpp:10151)
 
-void __cdecl IsWeaponItemUnlocked(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsWeaponItemUnlocked(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_18;
-  int local_10;
-  challengeInfo_t *local_c;
-  uint local_8;
+  Operand result;
+  int milestoneType;
+  challengeInfo_t *challenge;
+  int challengeNum;
   
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_8 = 0;
-  local_10 = 0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  challengeNum = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_18,(int *)&local_8,&local_10,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_c,local_8,local_10);
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
     if (bVar1) {
-      if (local_10 == 1) {
-        if ((local_c->flags & 2) == 0) {
-          local_18.internals.intVal = 1;
+      if (milestoneType == 1) {
+        if ((challenge->flags & 2) == 0) {
+          result.internals.intVal = 1;
         }
       }
-      else if (local_10 == 4) {
-        local_18.internals.intVal = 1;
+      else if (milestoneType == 4) {
+        result.internals.intVal = 1;
       }
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12359,36 +12783,36 @@ void __cdecl IsWeaponItemUnlocked(int param_1,itemDef_s *param_2,OperandStack *p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetProgressString(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetProgressString(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_420;
-  int local_418;
-  uchar local_414 [1028];
+  Operand result;
+  int milestoneType;
+  uchar outputString [1028];
   uint local_10;
-  challengeInfo_t *local_c;
-  uint local_8;
+  challengeInfo_t *challenge;
+  int challengeNum;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_420.dataType = VAL_STRING;
-  local_420.internals.floatVal = 1.8187723e-38;
-  local_8 = 0;
-  memset(local_414,'\0',0x400);
-  local_418 = 0;
-  bVar1 = GetCurrentIndex(param_1,param_2,param_3,&local_420,(int *)&local_8,&local_418,(char *)0x0)
-  ;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  memset(outputString,'\0',0x400);
+  milestoneType = 0;
+  bVar1 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)0x0);
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_c,local_8,local_418);
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,challengeNum,milestoneType);
     if (bVar1) {
-      if (local_c->targetValue == 0) {
-        AddOperandToStack(param_3,&local_420);
+      if (challenge->targetValue == 0) {
+        AddOperandToStack(dataStack,&result);
         return;
       }
-      PrepareProgressDescription(local_418,(char *)local_414,local_c);
-      local_420.internals.string = CopyTempString((char *)local_414);
+      PrepareProgressDescription(milestoneType,(char *)outputString,challenge);
+      result.internals.string = CopyTempString((char *)outputString);
     }
-    AddOperandToStack(param_3,&local_420);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12398,42 +12822,52 @@ void __cdecl GetProgressString(int param_1,itemDef_s *param_2,OperandStack *para
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_240;
-  statsMilestoneTypes_t local_238;
-  uchar local_234 [256];
-  uchar local_134 [256];
+  Operand result;
+  int milestoneType;
+  uchar outputString [256];
+  uchar challengeType [256];
   uint local_34;
-  int local_30 [11];
+  int challengeNum;
+  undefined4 convArgs;
+  undefined4 local_28;
+  undefined4 local_24;
+  undefined4 local_20;
+  undefined4 local_1c;
+  undefined4 local_18;
+  undefined4 local_14;
+  undefined4 local_10;
+  undefined4 local_c;
+  undefined4 local_8;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_240.dataType = VAL_STRING;
-  local_240.internals.floatVal = 1.8187723e-38;
-  local_30[0] = 0;
-  local_30[1] = 0;
-  local_30[2] = 0;
-  local_30[3] = 0;
-  local_30[4] = 0;
-  local_30[5] = 0;
-  local_30[6] = 0;
-  local_30[7] = 0;
-  local_30[8] = 0;
-  local_30[9] = 0;
-  local_30[10] = 0;
-  memset(local_234,'\0',0x100);
-  memset(local_134,'\0',0x100);
-  local_30[1] = 0;
-  local_238 = MILESTONE_GLOBAL;
-  bVar1 = GetCurrentIndex(param_1,param_2,param_3,&local_240,local_30,(int *)&local_238,
-                          (char *)local_134);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  convArgs = 0;
+  local_28 = 0;
+  local_24 = 0;
+  local_20 = 0;
+  local_1c = 0;
+  local_18 = 0;
+  local_14 = 0;
+  local_10 = 0;
+  local_c = 0;
+  local_8 = 0;
+  memset(outputString,'\0',0x100);
+  memset(challengeType,'\0',0x100);
+  convArgs = 0;
+  milestoneType = 0;
+  bVar1 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)challengeType);
   if (bVar1) {
     CL_GetFrontEndMilestoneLocalizedName
-              ((char *)local_234,0x100,local_30[0],local_238,(char *)local_134);
-    local_240.internals.string = CopyTempString((char *)local_234);
-    AddOperandToStack(param_3,&local_240);
+              ((char *)outputString,0x100,challengeNum,milestoneType,(char *)challengeType);
+    result.internals.string = CopyTempString((char *)outputString);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12443,42 +12877,52 @@ void __cdecl GetName(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetDescription(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetDescription(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_240;
-  statsMilestoneTypes_t local_238;
-  uchar local_234 [256];
-  uchar local_134 [256];
+  Operand result;
+  int milestoneType;
+  uchar outputString [256];
+  uchar challengeType [256];
   uint local_34;
-  int local_30 [11];
+  int challengeNum;
+  undefined4 convArgs;
+  undefined4 local_28;
+  undefined4 local_24;
+  undefined4 local_20;
+  undefined4 local_1c;
+  undefined4 local_18;
+  undefined4 local_14;
+  undefined4 local_10;
+  undefined4 local_c;
+  undefined4 local_8;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_240.dataType = VAL_STRING;
-  local_240.internals.floatVal = 1.8187723e-38;
-  local_30[0] = 0;
-  local_30[1] = 0;
-  local_30[2] = 0;
-  local_30[3] = 0;
-  local_30[4] = 0;
-  local_30[5] = 0;
-  local_30[6] = 0;
-  local_30[7] = 0;
-  local_30[8] = 0;
-  local_30[9] = 0;
-  local_30[10] = 0;
-  memset(local_234,'\0',0x100);
-  memset(local_134,'\0',0x100);
-  local_30[1] = 0;
-  local_238 = MILESTONE_GLOBAL;
-  bVar1 = GetCurrentIndex(param_1,param_2,param_3,&local_240,local_30,(int *)&local_238,
-                          (char *)local_134);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  convArgs = 0;
+  local_28 = 0;
+  local_24 = 0;
+  local_20 = 0;
+  local_1c = 0;
+  local_18 = 0;
+  local_14 = 0;
+  local_10 = 0;
+  local_c = 0;
+  local_8 = 0;
+  memset(outputString,'\0',0x100);
+  memset(challengeType,'\0',0x100);
+  convArgs = 0;
+  milestoneType = 0;
+  bVar1 = GetCurrentIndex(localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,
+                          (char *)challengeType);
   if (bVar1) {
     CL_GetFrontEndMilestoneLocalizedDesc
-              ((char *)local_234,0x100,local_30[0],local_238,(char *)local_134);
-    local_240.internals.string = CopyTempString((char *)local_234);
-    AddOperandToStack(param_3,&local_240);
+              ((char *)outputString,0x100,challengeNum,milestoneType,(char *)challengeType);
+    result.internals.string = CopyTempString((char *)outputString);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12486,51 +12930,56 @@ void __cdecl GetDescription(int param_1,itemDef_s *param_2,OperandStack *param_3
 
 // 0079BF20  GetWeaponName  (universal/com_expressions_eval.cpp:10291)
 
-void __cdecl GetWeaponName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+void __cdecl GetWeaponName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  Operand local_84;
-  int local_7c;
-  char *local_78;
-  char *local_74;
-  challengeInfo_t *local_70;
-  OperandList local_6c;
-  float local_10;
-  itemDef_s *local_c;
-  char *local_8;
+  Operand operand;
+  bool bVar1;
+  Operand result;
+  int milestoneType;
+  char *itemName;
+  char *stringResult;
+  challengeInfo_t *challenge;
+  OperandList list;
+  float currIndex;
+  itemDef_s *actualItem;
+  char *feederName;
   
-  local_84.dataType = VAL_STRING;
-  local_84.internals.floatVal = 1.8187723e-38;
-  local_78 = (char *)0x0;
-  local_7c = 0;
-  local_10 = 0.0;
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount == 2) {
-    OVar1.internals.intVal = local_6c.operands[0].internals.intVal;
-    OVar1.dataType = local_6c.operands[0].dataType;
-    local_8 = GetSourceString(OVar1);
-    local_7c = GetOperandValueInt(local_6c.operands + 1);
-    if ((local_8 != (char *)0x0) && (*local_8 != '\0')) {
-      local_c = Menu_GetMatchingItemByNumber(param_2->parent,0,local_8);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  itemName = (char *)0x0;
+  milestoneType = 0;
+  currIndex = 0.0;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    feederName = GetSourceString(operand);
+    milestoneType = GetOperandValueInt(list.operands + 1);
+    if ((feederName != (char *)0x0) && (*feederName != '\0')) {
+      actualItem = Menu_GetMatchingItemByNumber(item->parent,0,feederName);
     }
-    bVar2 = UI_FeederData(param_1,local_c,"selection",&local_74,&local_10);
-    if (bVar2) {
-      bVar2 = LiveStats_GetChallengeInfo(&local_70,(int)local_10,local_7c);
-      if (bVar2) {
-        local_78 = BG_UnlockablesGetItemName((uint)local_70->index);
-        local_84.internals.string = CopyTempString(local_78);
+    bVar1 = UI_FeederData(localClientNum,actualItem,"selection",&stringResult,&currIndex);
+    if (bVar1) {
+      bVar1 = LiveStats_GetChallengeInfo(&challenge,(int)currIndex,milestoneType);
+      if (bVar1) {
+        itemName = BG_UnlockablesGetItemName((uint)challenge->index);
+        result.internals.string = CopyTempString(itemName);
       }
-      AddOperandToStack(param_3,&local_84);
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      AddOperandToStack(param_3,&local_84);
+      AddOperandToStack(dataStack,&result);
     }
   }
   else {
     Expression_Error("Expected 2 parameters to GetName()\n");
-    AddOperandToStack(param_3,&local_84);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12539,39 +12988,42 @@ void __cdecl GetWeaponName(int param_1,itemDef_s *param_2,OperandStack *param_3)
 // 0079C060  GetChallengeAttachmentName  (universal/com_expressions_eval.cpp:10338)
 
 /* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl GetChallengeAttachmentName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetChallengeAttachmentName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  char *local_18;
-  char *local_14;
-  challengeInfo_t *local_10;
-  float local_c;
-  itemDef_s *local_8;
+  Operand result;
+  char *itemName;
+  char *stringResult;
+  challengeInfo_t *challenge;
+  float currIndex;
+  itemDef_s *actualItem;
   
-  local_20.dataType = VAL_STRING;
-  local_20.internals.floatVal = 1.8187723e-38;
-  local_18 = (char *)0x0;
-  local_c = 0.0;
-  local_8 = Menu_GetMatchingItemByNumber(param_2->parent,0,"stats_milestones_attachments");
-  bVar1 = UI_FeederData(param_1,local_8,"selection",&local_14,&local_c);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  itemName = (char *)0x0;
+  currIndex = 0.0;
+  actualItem = Menu_GetMatchingItemByNumber(item->parent,0,"stats_milestones_attachments");
+  bVar1 = UI_FeederData(localClientNum,actualItem,"selection",&stringResult,&currIndex);
   if (bVar1) {
-    bVar1 = LiveStats_GetChallengeInfo(&local_10,(int)local_c,5);
+    bVar1 = LiveStats_GetChallengeInfo(&challenge,(int)currIndex,5);
     if (bVar1) {
-      if (local_10->index < 0x18) {
-        local_18 = BG_GetAttachmentDisplayName((uint)local_10->index);
+      if (challenge->index < 0x18) {
+        itemName = BG_GetAttachmentDisplayName((uint)challenge->index);
       }
       else {
-        local_18 = BG_UnlockablesGetItemName((uint)local_10->index);
+        itemName = BG_UnlockablesGetItemName((uint)challenge->index);
       }
-      local_20.internals.string = CopyTempString(local_18);
+      result.internals.string = CopyTempString(itemName);
     }
-    AddOperandToStack(param_3,&local_20);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_20);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12581,42 +13033,54 @@ void __cdecl GetChallengeAttachmentName(int param_1,itemDef_s *param_2,OperandSt
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetChallengeName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetChallengeName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_140;
-  statsMilestoneTypes_t local_138;
-  uchar local_134 [256];
+  Operand result;
+  int milestoneType;
+  uchar outputString [256];
   uint local_34;
-  int local_30 [11];
+  int challengeNum;
+  undefined4 convArgs;
+  undefined4 local_28;
+  undefined4 local_24;
+  undefined4 local_20;
+  undefined4 local_1c;
+  undefined4 local_18;
+  undefined4 local_14;
+  undefined4 local_10;
+  undefined4 local_c;
+  undefined4 local_8;
   
   local_34 = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_140.dataType = VAL_STRING;
-  local_140.internals.floatVal = 1.8187723e-38;
-  local_30[0] = 0;
-  local_30[1] = 0;
-  local_30[2] = 0;
-  local_30[3] = 0;
-  local_30[4] = 0;
-  local_30[5] = 0;
-  local_30[6] = 0;
-  local_30[7] = 0;
-  local_30[8] = 0;
-  local_30[9] = 0;
-  local_30[10] = 0;
-  memset(local_134,'\0',0x100);
-  local_30[1] = 0;
-  local_138 = MILESTONE_GLOBAL;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  convArgs = 0;
+  local_28 = 0;
+  local_24 = 0;
+  local_20 = 0;
+  local_1c = 0;
+  local_18 = 0;
+  local_14 = 0;
+  local_10 = 0;
+  local_c = 0;
+  local_8 = 0;
+  memset(outputString,'\0',0x100);
+  convArgs = 0;
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_140,local_30,(int *)&local_138,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
-    CL_GetFrontEndMilestoneLocalizedName((char *)local_134,0x100,local_30[0],local_138,(char *)0x0);
-    local_140.internals.string = CopyTempString((char *)local_134);
-    AddOperandToStack(param_3,&local_140);
+    CL_GetFrontEndMilestoneLocalizedName
+              ((char *)outputString,0x100,challengeNum,milestoneType,(char *)0x0);
+    result.internals.string = CopyTempString((char *)outputString);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_140);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12626,31 +13090,33 @@ void __cdecl GetChallengeName(int param_1,itemDef_s *param_2,OperandStack *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetChallengeDescription(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetChallengeDescription(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_118;
-  statsMilestoneTypes_t local_110;
-  uchar local_10c [256];
+  Operand result;
+  int milestoneType;
+  uchar outputString [256];
   uint local_c;
-  int local_8;
+  int challengeNum;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  local_118.dataType = VAL_STRING;
-  local_118.internals.floatVal = 1.8187723e-38;
-  local_8 = 0;
-  memset(local_10c,'\0',0x100);
-  local_110 = MILESTONE_GLOBAL;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  challengeNum = 0;
+  memset(outputString,'\0',0x100);
+  milestoneType = 0;
   bVar1 = GetCurrentIndexOfHighlightedFeeder
-                    (param_1,param_2,param_3,&local_118,&local_8,(int *)&local_110,(char *)0x0);
+                    (localClientNum,item,dataStack,&result,&challengeNum,&milestoneType,(char *)0x0)
+  ;
   if (bVar1) {
-    CL_GetFrontEndMilestoneLocalizedDesc((char *)local_10c,0x100,local_8,local_110,(char *)0x0);
-    local_118.internals.string = CopyTempString((char *)local_10c);
-    AddOperandToStack(param_3,&local_118);
+    CL_GetFrontEndMilestoneLocalizedDesc
+              ((char *)outputString,0x100,challengeNum,milestoneType,(char *)0x0);
+    result.internals.string = CopyTempString((char *)outputString);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_118);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12658,48 +13124,48 @@ void __cdecl GetChallengeDescription(int param_1,itemDef_s *param_2,OperandStack
 
 // 0079C350  GetLBFilter  (universal/com_expressions_eval.cpp:10434)
 
-void __cdecl GetLBFilter(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLBFilter(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
   iVar1 = Dvar_GetInt("lb_filter");
   if (iVar1 == 0) {
-    local_c.internals.string = UI_SafeTranslateString("MPUI_LB_EVERYONE_CAPS");
+    result.internals.string = UI_SafeTranslateString("MPUI_LB_EVERYONE_CAPS");
   }
   else {
     iVar1 = Dvar_GetInt("lb_filter");
     if (iVar1 == 1) {
-      local_c.internals.string = UI_SafeTranslateString("MPUI_LB_FRIENDS_ONLY_CAPS");
+      result.internals.string = UI_SafeTranslateString("MPUI_LB_FRIENDS_ONLY_CAPS");
     }
     else {
       iVar1 = Dvar_GetInt("lb_filter");
       if (iVar1 == 2) {
-        local_c.internals.string = UI_SafeTranslateString("MPUI_LB_PLAYERS_IN_LOBBY_CAPS");
+        result.internals.string = UI_SafeTranslateString("MPUI_LB_PLAYERS_IN_LOBBY_CAPS");
       }
     }
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079C3F0  GetLBTypeByDuration  (universal/com_expressions_eval.cpp:10455)
 
-void __cdecl GetLBTypeByDuration(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLBTypeByDuration(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int currResetPeriod;
   
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  local_8 = Dvar_GetInt("lb_typeByResetPeriod");
-  local_10.internals.string = UI_SafeTranslateString(lbResetPeriodStrings[local_8]);
-  AddOperandToStack(param_3,&local_10);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  currResetPeriod = Dvar_GetInt("lb_typeByResetPeriod");
+  result.internals.string = UI_SafeTranslateString(lbResetPeriodStrings[currResetPeriod]);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -12708,47 +13174,49 @@ void __cdecl GetLBTypeByDuration(int param_1,itemDef_s *param_2,OperandStack *pa
 
 /* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
 
-void __cdecl GetUnlockedWeaponItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUnlockedWeaponItemIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
   itemGroup_t iVar2;
-  uint local_2c;
-  Operand local_28;
-  Operand local_20;
-  int local_18;
-  int local_14;
-  loadoutSlot_t local_10;
-  int local_c;
-  int local_8;
+  int currItem;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int itemNum;
+  loadoutSlot_t currLoadoutSlot;
+  int itemIndex;
+  int totalItemsUnlocked;
   
-  GetOperand(param_3,&local_28);
-  local_20.dataType = VAL_INT;
-  local_20.internals.intVal = 0;
-  local_18 = Com_LocalClient_GetControllerIndex(param_1);
-  local_14 = GetSourceInt(&local_28);
-  local_8 = LiveStats_GetNumRecentlyUnlockedItems(local_18);
-  local_c = 0;
-  local_2c = 0;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  itemNum = GetSourceInt(&source);
+  totalItemsUnlocked = LiveStats_GetNumRecentlyUnlockedItems(controllerIndex);
+  itemIndex = 0;
+  currItem = 0;
   do {
-    if (local_8 <= (int)local_2c) {
-      AddOperandToStack(param_3,&local_20);
+    if (totalItemsUnlocked <= currItem) {
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_c = LiveStats_GetRecentlyUnlockedItemIndex(local_18,local_2c);
-    local_10 = BG_UnlockablesGetItemLoadoutSlot(local_c);
-    if (((local_10 == LOADOUTSLOT_FIRST) || (local_10 == LOADOUTSLOT_SECONDARY_WEAPON)) ||
-       ((iVar2 = BG_UnlockablesGetItemGroupEnum(local_c), iVar2 == ITEMGROUP_SPECIALTY &&
-        (bVar1 = BG_UnlockablesIsProItem(local_c), bVar1)))) {
-      if (local_14 == 0) {
-        local_20.internals.intVal = local_c;
-        AddOperandToStack(param_3,&local_20);
+    itemIndex = LiveStats_GetRecentlyUnlockedItemIndex(controllerIndex,currItem);
+    currLoadoutSlot = BG_UnlockablesGetItemLoadoutSlot(itemIndex);
+    if (((currLoadoutSlot == LOADOUTSLOT_FIRST) || (currLoadoutSlot == LOADOUTSLOT_SECONDARY_WEAPON)
+        ) || ((iVar2 = BG_UnlockablesGetItemGroupEnum(itemIndex), iVar2 == ITEMGROUP_SPECIALTY &&
+              (bVar1 = BG_UnlockablesIsProItem(itemIndex), bVar1)))) {
+      if (itemNum == 0) {
+        result.internals.intVal = itemIndex;
+        AddOperandToStack(dataStack,&result);
         return;
       }
-      local_14 = local_14 + -1;
+      itemNum = itemNum + -1;
     }
-    local_2c = local_2c + 1;
+    currItem = currItem + 1;
   } while( true );
 }
 
@@ -12756,128 +13224,133 @@ void __cdecl GetUnlockedWeaponItemIndex(int param_1,itemDef_s *param_2,OperandSt
 // 0079C550  GetUnlockedFeatureItemIndex  (universal/com_expressions_eval.cpp:10503)
 
 /* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
 
-void __cdecl GetUnlockedFeatureItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetUnlockedFeatureItemIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  uint local_2c;
-  Operand local_28;
-  itemGroup_t local_20;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  int local_c;
-  int local_8;
+  int currItem;
+  Operand source;
+  itemGroup_t currItemGroup;
+  Operand result;
+  int controllerIndex;
+  int itemNum;
+  int itemIndex;
+  int totalItemsUnlocked;
   
-  GetOperand(param_3,&local_28);
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = 0;
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10 = GetSourceInt(&local_28);
-  local_8 = LiveStats_GetNumRecentlyUnlockedItems(local_14);
-  local_c = 0;
-  local_2c = 0;
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  itemNum = GetSourceInt(&source);
+  totalItemsUnlocked = LiveStats_GetNumRecentlyUnlockedItems(controllerIndex);
+  itemIndex = 0;
+  currItem = 0;
   do {
-    if (local_8 <= (int)local_2c) {
-      AddOperandToStack(param_3,&local_1c);
+    if (totalItemsUnlocked <= currItem) {
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_c = LiveStats_GetRecentlyUnlockedItemIndex(local_14,local_2c);
-    local_20 = BG_UnlockablesGetItemGroupEnum(local_c);
-    if (local_20 == ITEMGROUP_FEATURE) {
-      if (local_10 == 0) {
-        local_1c.internals.intVal = local_c;
-        AddOperandToStack(param_3,&local_1c);
+    itemIndex = LiveStats_GetRecentlyUnlockedItemIndex(controllerIndex,currItem);
+    currItemGroup = BG_UnlockablesGetItemGroupEnum(itemIndex);
+    if (currItemGroup == ITEMGROUP_FEATURE) {
+      if (itemNum == 0) {
+        result.internals.intVal = itemIndex;
+        AddOperandToStack(dataStack,&result);
         return;
       }
-      local_10 = local_10 + -1;
+      itemNum = itemNum + -1;
     }
-    local_2c = local_2c + 1;
+    currItem = currItem + 1;
   } while( true );
 }
 
 
 // 0079C630  GetTotalMatchesPlayed  (universal/com_expressions_eval.cpp:10538)
 
-void __cdecl GetTotalMatchesPlayed(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTotalMatchesPlayed(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   char *pcVar1;
-  int local_24;
-  int local_20;
-  Operand local_1c;
-  int local_14;
-  int local_10;
-  char local_9;
-  char *local_8;
+  int gameType;
+  int losses;
+  Operand result;
+  int controllerIndex;
+  int wins;
+  bool forFriend;
+  int numMatches;
   
-  local_1c.dataType = VAL_INT;
-  local_1c.internals.intVal = 0;
-  local_8 = (char *)0x0;
-  local_10 = 0;
-  local_20 = 0;
-  local_9 = Dvar_GetBool("ui_showFriendsCombatRecord");
-  local_14 = Com_LocalClient_GetControllerIndex(param_1);
-  if (local_9 == '\0') {
-    local_1c.internals.intVal = LiveStats_GetTotalMatchesPlayed(local_14);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  numMatches = 0;
+  wins = 0;
+  losses = 0;
+  forFriend = Dvar_GetBool("ui_showFriendsCombatRecord");
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  if (forFriend == false) {
+    result.internals.intVal = LiveStats_GetTotalMatchesPlayed(controllerIndex);
   }
   else {
-    for (local_24 = 0; local_24 < 0x10; local_24 = local_24 + 1) {
+    for (gameType = 0; gameType < 0x10; gameType = gameType + 1) {
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_WINS);
-      LiveStats_GetIntOtherPlayerStatByGameMode(local_14,&local_10,lbTypeEnum[local_24],pcVar1);
+      LiveStats_GetIntOtherPlayerStatByGameMode(controllerIndex,&wins,lbTypeEnum[gameType],pcVar1);
       pcVar1 = LiveStats_GetPlayerStatStringByKey(MP_PLAYERSTATSKEY_LOSSES);
-      LiveStats_GetIntOtherPlayerStatByGameMode(local_14,&local_20,lbTypeEnum[local_24],pcVar1);
-      local_8 = local_8 + local_10 + local_20;
+      LiveStats_GetIntOtherPlayerStatByGameMode(controllerIndex,&losses,lbTypeEnum[gameType],pcVar1)
+      ;
+      numMatches = wins + losses + numMatches;
     }
-    local_1c.internals.string = local_8;
+    result.internals.intVal = numMatches;
   }
-  AddOperandToStack(param_3,&local_1c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079C720  NeedToPerformCommunitySearch  (universal/com_expressions_eval.cpp:10571)
 
-void __cdecl NeedToPerformCommunitySearch(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+NeedToPerformCommunitySearch(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079C750  IsFileshareDataSummaryValid  (universal/com_expressions_eval.cpp:10584)
 
-void __cdecl IsFileshareDataSummaryValid(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsFileshareDataSummaryValid(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  float local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  float isValid;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  local_8 = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_HASSUMMARY,local_8,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     (char **)0x0,&local_c);
+                    (controllerIndex,FILESHARE_KEY_HASSUMMARY,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,(char **)0x0,&isValid);
   if (bVar1) {
-    if (0.0 < local_c) {
-      local_18.internals.intVal = 1;
+    if (0.0 < isValid) {
+      result.internals.intVal = 1;
     }
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12885,56 +13358,60 @@ void __cdecl IsFileshareDataSummaryValid(int param_1,itemDef_s *param_2,OperandS
 
 // 0079C7F0  GetFileshareRecentGamesCount  (universal/com_expressions_eval.cpp:10609)
 
-void __cdecl GetFileshareRecentGamesCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+/* WARNING: Enum "bdLobbyErrorCode": Some values do not have unique names */
+
+void __cdecl
+GetFileshareRecentGamesCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  int iVar2;
-  Operand local_10;
-  int local_8;
+  int controllerIndex_00;
+  Operand result;
+  int controllerIndex;
   
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = TaskManger2_TaskGetInProgressForControllerByName("LiveFileShareSearch",iVar2);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  controllerIndex_00 = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = TaskManger2_TaskGetInProgressForControllerByName("LiveFileShareSearch",controllerIndex_00)
+  ;
   if (bVar1) {
-    local_10.internals.intVal = 0;
+    result.internals.intVal = 0;
   }
   else {
-    local_10.internals.intVal = Live_FileShare_GetSearchResultsCount(local_8);
+    result.internals.intVal = Live_FileShare_GetSearchResultsCount(controllerIndex);
   }
-  AddOperandToStack(param_3,&local_10);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079C860  GetFileshareGameType  (universal/com_expressions_eval.cpp:10630)
 
-void __cdecl GetFileshareGameType(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareGameType(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  char *local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  char *gameType;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_c = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_GAMETYPE,local_c,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_8,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_GAMETYPE,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&gameType,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_8);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(gameType);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12942,30 +13419,30 @@ void __cdecl GetFileshareGameType(int param_1,itemDef_s *param_2,OperandStack *p
 
 // 0079C900  GetFileshareGameTypeName  (universal/com_expressions_eval.cpp:10654)
 
-void __cdecl GetFileshareGameTypeName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareGameTypeName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  char *gameTypeName;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_GAMETYPENAME,local_8,
-                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&local_c,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_GAMETYPENAME,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&gameTypeName,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_c);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(gameTypeName);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -12973,30 +13450,30 @@ void __cdecl GetFileshareGameTypeName(int param_1,itemDef_s *param_2,OperandStac
 
 // 0079C9A0  GetFileshareGameMap  (universal/com_expressions_eval.cpp:10678)
 
-void __cdecl GetFileshareGameMap(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareGameMap(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  char *map;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_MAP,local_8,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_c,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_MAP,index,FILESHARE_INFOLOCATION_SEARCHRESULTS,
+                     &map,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_c);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(map);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13004,30 +13481,30 @@ void __cdecl GetFileshareGameMap(int param_1,itemDef_s *param_2,OperandStack *pa
 
 // 0079CA40  GetFileshareGameMapName  (universal/com_expressions_eval.cpp:10702)
 
-void __cdecl GetFileshareGameMapName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareGameMapName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  char *mapName;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_MAPNAME,local_8,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_c,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_MAPNAME,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&mapName,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_c);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(mapName);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13035,30 +13512,30 @@ void __cdecl GetFileshareGameMapName(int param_1,itemDef_s *param_2,OperandStack
 
 // 0079CAE0  GetFileshareGameDate  (universal/com_expressions_eval.cpp:10726)
 
-void __cdecl GetFileshareGameDate(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareGameDate(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  char *local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  char *gameDate;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_c = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_DATETIME,local_c,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_8,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_DATETIME,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&gameDate,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_8);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(gameDate);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13066,30 +13543,30 @@ void __cdecl GetFileshareGameDate(int param_1,itemDef_s *param_2,OperandStack *p
 
 // 0079CB80  GetFileshareFileName  (universal/com_expressions_eval.cpp:10750)
 
-void __cdecl GetFileshareFileName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareFileName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  char *local_18;
-  Operand local_14;
-  int local_c;
-  int local_8;
+  Operand source;
+  char *fileName;
+  Operand result;
+  int controllerIndex;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_14.dataType = VAL_STRING;
-  local_14.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_20);
-  local_c = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_c,FILESHARE_KEY_FILENAME,local_8,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_18,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_FILENAME,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&fileName,(float *)0x0);
   if (bVar1) {
-    local_14.internals.string = CopyTempString(local_18);
-    AddOperandToStack(param_3,&local_14);
+    result.internals.string = CopyTempString(fileName);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_14);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13099,82 +13576,83 @@ void __cdecl GetFileshareFileName(int param_1,itemDef_s *param_2,OperandStack *p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl GetCacFactionNameWithButtons(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl
+GetCacFactionNameWithButtons(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  ConversionArguments *pCVar3;
-  char *pcVar4;
-  int iVar5;
-  Operand local_44c;
-  Operand local_444;
-  char local_43c [1028];
+  Operand operand;
+  char *sourceString;
+  ConversionArguments *arguments;
+  char *outputString_00;
+  int outputStringSize;
+  Operand source;
+  Operand result;
+  char outputString [1028];
   uint local_38;
-  char *local_34;
-  char local_30 [4];
-  ConversionArguments local_2c;
+  char *factionName;
+  char binding [4];
+  ConversionArguments convArgs;
   
   local_38 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperand(param_3,&local_44c);
-  local_444.dataType = VAL_STRING;
-  local_444.internals.floatVal = 1.8187723e-38;
-  OVar1.internals.intVal = local_44c.internals.intVal;
-  OVar1.dataType = local_44c.dataType;
-  local_34 = GetSourceString(OVar1);
-  local_30[0] = '\x05';
-  local_30[1] = 0;
-  local_30[2] = 6;
-  local_30[3] = 0;
-  local_2c.args[1] = (char *)0x0;
-  local_2c.args[2] = (char *)0x0;
-  local_2c.args[3] = (char *)0x0;
-  local_2c.args[4] = (char *)0x0;
-  local_2c.args[5] = (char *)0x0;
-  local_2c.args[6] = (char *)0x0;
-  local_2c.args[7] = (char *)0x0;
-  local_2c.args[8] = (char *)0x0;
-  local_2c.argCount = 3;
-  local_2c.args[0] = local_30;
-  local_2c.args[1] = UI_SafeTranslateString(local_34);
-  local_2c.args[2] = local_30 + 2;
-  iVar5 = 0x400;
-  pcVar4 = local_43c;
-  pCVar3 = &local_2c;
-  pcVar2 = UI_SafeTranslateString("MPUI_CAC_FACTION_NAME_WITH_BUTTONS");
-  UI_ReplaceConversions(pcVar2,pCVar3,pcVar4,iVar5);
-  local_444.internals.string = CopyTempString(local_43c);
-  AddOperandToStack(param_3,&local_444);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  factionName = GetSourceString(operand);
+  binding[0] = '\x05';
+  binding[1] = 0;
+  binding[2] = 6;
+  binding[3] = 0;
+  convArgs.args[1] = (char *)0x0;
+  convArgs.args[2] = (char *)0x0;
+  convArgs.args[3] = (char *)0x0;
+  convArgs.args[4] = (char *)0x0;
+  convArgs.args[5] = (char *)0x0;
+  convArgs.args[6] = (char *)0x0;
+  convArgs.args[7] = (char *)0x0;
+  convArgs.args[8] = (char *)0x0;
+  convArgs.argCount = 3;
+  convArgs.args[0] = binding;
+  convArgs.args[1] = UI_SafeTranslateString(factionName);
+  convArgs.args[2] = binding + 2;
+  outputStringSize = 0x400;
+  outputString_00 = outputString;
+  arguments = &convArgs;
+  sourceString = UI_SafeTranslateString("MPUI_CAC_FACTION_NAME_WITH_BUTTONS");
+  UI_ReplaceConversions(sourceString,arguments,outputString_00,outputStringSize);
+  result.internals.string = CopyTempString(outputString);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079CD30  GetFileshareFileSize  (universal/com_expressions_eval.cpp:10813)
 
-void __cdecl GetFileshareFileSize(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareFileSize(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  char *local_c;
-  int local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  char *fileSize;
+  int index;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_8 = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_FILESIZE,local_8,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_c,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_FILESIZE,index,
+                     FILESHARE_INFOLOCATION_SEARCHRESULTS,&fileSize,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_c);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(fileSize);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13182,30 +13660,30 @@ void __cdecl GetFileshareFileSize(int param_1,itemDef_s *param_2,OperandStack *p
 
 // 0079CDD0  GetFileshareFileId  (universal/com_expressions_eval.cpp:10837)
 
-void __cdecl GetFileshareFileId(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFileshareFileId(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_20;
-  Operand local_18;
-  int local_10;
-  int local_c;
-  char *local_8;
+  Operand source;
+  Operand result;
+  int controllerIndex;
+  int index;
+  char *fileId;
   
-  GetOperand(param_3,&local_20);
-  local_18.dataType = VAL_STRING;
-  local_18.internals.floatVal = 1.8187723e-38;
-  local_c = GetSourceInt(&local_20);
-  local_10 = Com_LocalClient_GetControllerIndex(param_1);
+  GetOperand(dataStack,&source);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  index = GetSourceInt(&source);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
   bVar1 = Live_FileShare_GetItemInfo
-                    (local_10,FILESHARE_KEY_FILEID,local_c,FILESHARE_INFOLOCATION_SEARCHRESULTS,
-                     &local_8,(float *)0x0);
+                    (controllerIndex,FILESHARE_KEY_FILEID,index,FILESHARE_INFOLOCATION_SEARCHRESULTS
+                     ,&fileId,(float *)0x0);
   if (bVar1) {
-    local_18.internals.string = CopyTempString(local_8);
-    AddOperandToStack(param_3,&local_18);
+    result.internals.string = CopyTempString(fileId);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_18);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13213,31 +13691,31 @@ void __cdecl GetFileshareFileId(int param_1,itemDef_s *param_2,OperandStack *par
 
 // 0079CE70  GetMySlotInfo  (universal/com_expressions_eval.cpp:10861)
 
-void __cdecl GetMySlotInfo(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetMySlotInfo(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_7c;
-  operandInternalDataUnion local_74;
-  int local_70;
-  char *local_6c;
-  float local_68;
-  OperandList local_64;
-  int local_8;
+  Operand result;
+  char *field;
+  int controllerIndex;
+  char *stringResult;
+  float floatResult;
+  OperandList list;
+  int slotNum;
   
-  GetOperandList(param_3,&local_64);
-  local_7c.dataType = VAL_STRING;
-  local_7c.internals.floatVal = 1.8187723e-38;
-  local_8 = GetOperandValueInt(local_64.operands);
-  local_74 = local_64.operands[1].internals;
-  local_70 = Com_LocalClient_GetControllerIndex(param_1);
-  bVar1 = Live_FileShare_GetMySlotInfo(local_70,local_8,local_74.string,&local_6c,&local_68);
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  slotNum = GetOperandValueInt(list.operands);
+  field = list.operands[1].internals.string;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  bVar1 = Live_FileShare_GetMySlotInfo(controllerIndex,slotNum,field,&stringResult,&floatResult);
   if (bVar1) {
-    local_7c.internals.string = CopyTempString(local_6c);
-    AddOperandToStack(param_3,&local_7c);
+    result.internals.string = CopyTempString(stringResult);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    AddOperandToStack(param_3,&local_7c);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13245,59 +13723,59 @@ void __cdecl GetMySlotInfo(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079CF10  GetImageWidth  (universal/com_expressions_eval.cpp:10887)
 
-void __cdecl GetImageWidth(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetImageWidth(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Material *pMVar2;
-  Operand local_18;
-  char *local_10;
-  Operand local_c;
+  Operand operand;
+  Material *mat;
+  Operand source;
+  char *imageName;
+  Operand result;
   
-  GetOperand(param_3,&local_18);
-  OVar1.internals.intVal = local_18.internals.intVal;
-  OVar1.dataType = local_18.dataType;
-  local_10 = GetSourceString(OVar1);
-  local_c.dataType = VAL_FLOAT;
-  pMVar2 = Material_RegisterHandle(local_10,3);
-  local_c.internals.floatVal = CG_GetPicWidth(pMVar2);
-  AddOperandToStack(param_3,&local_c);
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  imageName = GetSourceString(operand);
+  result.dataType = VAL_FLOAT;
+  mat = Material_RegisterHandle(imageName,3);
+  result.internals.floatVal = CG_GetPicWidth(mat);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079CF70  GetTextWidth  (universal/com_expressions_eval.cpp:10901)
 
-void __cdecl GetTextWidth(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTextWidth(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_78;
-  Font_s *local_70;
-  int local_6c;
-  ScreenPlacement *local_68;
-  OperandList local_64;
-  float local_c;
-  char *local_8;
+  Operand operand;
+  Operand result;
+  Font_s *font;
+  int fontInt;
+  ScreenPlacement *scrPlace;
+  OperandList list;
+  float scale;
+  char *text;
   
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 3) {
-    local_78.dataType = VAL_INT;
-    OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-    OVar1.dataType = local_64.operands[0].dataType;
-    local_8 = GetSourceString(OVar1);
-    local_6c = GetOperandValueInt(local_64.operands + 1);
-    local_c = GetSourceFloat(local_64.operands + 2);
-    local_68 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    local_70 = UI_GetFontHandle(local_68,local_6c,local_c);
-    local_78.internals.intVal = UI_TextWidth(local_8,0,local_70,local_c);
-    AddOperandToStack(param_3,&local_78);
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 3) {
+    result.dataType = VAL_INT;
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    text = GetSourceString(operand);
+    fontInt = GetOperandValueInt(list.operands + 1);
+    scale = GetSourceFloat(list.operands + 2);
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    font = UI_GetFontHandle(scrPlace,fontInt,scale);
+    result.internals.intVal = UI_TextWidth(text,0,font,scale);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 3 parameters to GetTextWidth()\n");
-    local_78.dataType = VAL_INT;
-    local_78.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_78);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13305,47 +13783,47 @@ void __cdecl GetTextWidth(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079D050  GetTextHeight  (universal/com_expressions_eval.cpp:10937)
 
-void __cdecl GetTextHeight(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetTextHeight(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  int iVar2;
-  int local_84;
-  Operand local_80;
-  Font_s *local_78;
-  int local_74;
-  ScreenPlacement *local_70;
-  OperandList local_6c;
-  float local_10;
-  char *local_c;
-  char *local_8;
+  Operand operand;
+  int iVar1;
+  int lineCount;
+  Operand result;
+  Font_s *font;
+  int fontInt;
+  ScreenPlacement *scrPlace;
+  OperandList list;
+  float scale;
+  char *text;
+  char *p;
   
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount == 3) {
-    local_80.dataType = VAL_INT;
-    OVar1.internals.intVal = local_6c.operands[0].internals.intVal;
-    OVar1.dataType = local_6c.operands[0].dataType;
-    local_c = GetSourceString(OVar1);
-    local_74 = GetOperandValueInt(local_6c.operands + 1);
-    local_10 = GetSourceFloat(local_6c.operands + 2);
-    local_8 = local_c;
-    local_84 = 1;
-    local_70 = (ScreenPlacement *)(&scrPlaceView + param_1 * 0x78);
-    local_78 = UI_GetFontHandle(local_70,local_74,local_10);
-    for (; (local_8 != (char *)0x0 && (*local_8 != '\0')); local_8 = local_8 + 1) {
-      if (*local_8 == '\n') {
-        local_84 = local_84 + 1;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 3) {
+    result.dataType = VAL_INT;
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    text = GetSourceString(operand);
+    fontInt = GetOperandValueInt(list.operands + 1);
+    scale = GetSourceFloat(list.operands + 2);
+    p = text;
+    lineCount = 1;
+    scrPlace = (ScreenPlacement *)(&scrPlaceView + localClientNum * 0x78);
+    font = UI_GetFontHandle(scrPlace,fontInt,scale);
+    for (; (p != (char *)0x0 && (*p != '\0')); p = p + 1) {
+      if (*p == '\n') {
+        lineCount = lineCount + 1;
       }
     }
-    iVar2 = UI_TextHeight(local_78,local_10);
-    local_80.internals.intVal = iVar2 * local_84;
-    AddOperandToStack(param_3,&local_80);
+    iVar1 = UI_TextHeight(font,scale);
+    result.internals.intVal = iVar1 * lineCount;
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("Expected 3 parameters to GetTextHeight()\n");
-    local_80.dataType = VAL_INT;
-    local_80.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_80);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -13353,86 +13831,86 @@ void __cdecl GetTextHeight(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079D170  HasFocus  (universal/com_expressions_eval.cpp:10984)
 
-void __cdecl HasFocus(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl HasFocus(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  itemDef_s *piVar4;
-  int iVar5;
-  Operand local_18;
-  Operand local_10;
-  itemDef_s *local_8;
+  Operand operand;
+  bool bVar1;
+  char *name;
+  itemDef_s *w;
+  int contextIndex;
+  Operand result;
+  Operand data;
+  itemDef_s *actualItem;
   
-  GetOperand(param_3,&local_10);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  OVar1.internals.intVal = local_10.internals.intVal;
-  OVar1.dataType = local_10.dataType;
-  pcVar3 = GetSourceString(OVar1);
-  piVar4 = Menu_GetMatchingItemByNumber(param_2->parent,0,pcVar3);
-  local_8 = piVar4;
-  if (piVar4 != (itemDef_s *)0x0) {
-    iVar5 = Com_LocalClient_GetUIContextIndex(param_1);
-    bVar2 = Window_HasFocus(iVar5,&piVar4->window);
-    if (bVar2) {
-      local_18.internals.intVal = 1;
+  GetOperand(dataStack,&data);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  operand.internals.intVal = data.internals.intVal;
+  operand.dataType = data.dataType;
+  name = GetSourceString(operand);
+  w = Menu_GetMatchingItemByNumber(item->parent,0,name);
+  actualItem = w;
+  if (w != (itemDef_s *)0x0) {
+    contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+    bVar1 = Window_HasFocus(contextIndex,&w->window);
+    if (bVar1) {
+      result.internals.intVal = 1;
     }
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D200  IsVisible  (universal/com_expressions_eval.cpp:11003)
 
-void __cdecl IsVisible(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsVisible(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  itemDef_s *piVar4;
-  int iVar5;
-  Operand local_18;
-  Operand local_10;
-  itemDef_s *local_8;
+  Operand operand;
+  bool bVar1;
+  char *name;
+  itemDef_s *w;
+  int contextIndex;
+  Operand result;
+  Operand data;
+  itemDef_s *actualItem;
   
-  GetOperand(param_3,&local_10);
-  local_18.dataType = VAL_INT;
-  local_18.internals.intVal = 0;
-  OVar1.internals.intVal = local_10.internals.intVal;
-  OVar1.dataType = local_10.dataType;
-  pcVar3 = GetSourceString(OVar1);
-  piVar4 = Menu_GetMatchingItemByNumber(param_2->parent,0,pcVar3);
-  local_8 = piVar4;
-  if (piVar4 != (itemDef_s *)0x0) {
-    iVar5 = Com_LocalClient_GetUIContextIndex(param_1);
-    bVar2 = Window_IsVisible(iVar5,&piVar4->window);
-    if (bVar2) {
-      local_18.internals.intVal = 1;
+  GetOperand(dataStack,&data);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  operand.internals.intVal = data.internals.intVal;
+  operand.dataType = data.dataType;
+  name = GetSourceString(operand);
+  w = Menu_GetMatchingItemByNumber(item->parent,0,name);
+  actualItem = w;
+  if (w != (itemDef_s *)0x0) {
+    contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+    bVar1 = Window_IsVisible(contextIndex,&w->window);
+    if (bVar1) {
+      result.internals.intVal = 1;
     }
   }
-  AddOperandToStack(param_3,&local_18);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D290  MenuHasFocus  (universal/com_expressions_eval.cpp:11022)
 
-void __cdecl MenuHasFocus(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl MenuHasFocus(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  int iVar3;
-  menuDef_t *pmVar4;
-  Operand local_c;
+  int contextIndex;
+  menuDef_t *w;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  if (param_2 == (itemDef_s *)0x0) {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (item == (itemDef_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x2b13,0,"%s");
     if (!bVar2) {
@@ -13441,7 +13919,7 @@ void __cdecl MenuHasFocus(int param_1,itemDef_s *param_2,OperandStack *param_3)
       return;
     }
   }
-  if (param_2->parent == (menuDef_t *)0x0) {
+  if (item->parent == (menuDef_t *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x2b14,0,"%s");
     if (!bVar2) {
@@ -13450,95 +13928,97 @@ void __cdecl MenuHasFocus(int param_1,itemDef_s *param_2,OperandStack *param_3)
       return;
     }
   }
-  pmVar4 = param_2->parent;
-  iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-  bVar2 = Window_HasFocus(iVar3,&pmVar4->window);
+  w = item->parent;
+  contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+  bVar2 = Window_HasFocus(contextIndex,&w->window);
   if (bVar2) {
-    local_c.internals.intVal = 1;
+    result.internals.intVal = 1;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D350  GetFeederData  (universal/com_expressions_eval.cpp:11036)
 
-void __cdecl GetFeederData(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFeederData(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  Operand OVar3;
-  bool bVar4;
-  char *pcVar5;
-  uiInfo_s *puVar6;
-  menuDef_t *pmVar7;
-  Operand local_78;
-  operandInternalDataUnion local_70;
-  char *local_6c;
-  char *local_68;
-  OperandList local_64;
-  itemDef_s *local_8;
+  Operand operand;
+  Operand operand_00;
+  Operand operand_01;
+  bool bVar1;
+  char *pcVar2;
+  uiInfo_s *dc;
+  menuDef_t *menu_00;
+  uiInfo_s *uiInfo;
+  menuDef_t *menu;
+  Operand result;
+  char *field;
+  char *stringResult;
+  float floatResult;
+  OperandList list;
+  itemDef_s *actualItem;
   
-  local_70.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_64);
-  local_78.dataType = VAL_INT;
-  local_78.internals.intVal = 0;
-  if (local_64.operandCount < 1) {
+  field = "";
+  GetOperandList(dataStack,&list);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  if (list.operandCount < 1) {
     Com_PrintError(0xd,"UI Expression Error: Expected at least 1 parameter to getFeederData()\n");
-    AddOperandToStack(param_3,&local_78);
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    if (local_64.operandCount == 1) {
-      local_8 = param_2;
-      if (local_64.operands[0].dataType == VAL_STRING) {
-        local_70.intVal = local_64.operands[0].internals.intVal;
+    if (list.operandCount == 1) {
+      actualItem = item;
+      if (list.operands[0].dataType == VAL_STRING) {
+        field = list.operands[0].internals.string;
       }
     }
-    else if (local_64.operandCount == 2) {
-      OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-      OVar1.dataType = local_64.operands[0].dataType;
-      pcVar5 = GetSourceString(OVar1);
-      local_8 = Menu_GetMatchingItemByNumber(param_2->parent,0,pcVar5);
-      if (local_64.operands[1].dataType == VAL_STRING) {
-        local_70 = local_64.operands[1].internals;
+    else if (list.operandCount == 2) {
+      operand.internals.intVal = list.operands[0].internals.intVal;
+      operand.dataType = list.operands[0].dataType;
+      pcVar2 = GetSourceString(operand);
+      actualItem = Menu_GetMatchingItemByNumber(item->parent,0,pcVar2);
+      if (list.operands[1].dataType == VAL_STRING) {
+        field = list.operands[1].internals.string;
       }
     }
     else {
-      puVar6 = UI_GetInfo(param_1);
-      OVar2.internals.intVal = local_64.operands[0].internals.intVal;
-      OVar2.dataType = local_64.operands[0].dataType;
-      pcVar5 = GetSourceString(OVar2);
-      pmVar7 = Menus_FindByName(&puVar6->uiDC,pcVar5);
-      if ((pmVar7 != (menuDef_t *)0x0) && (local_64.operands[1].dataType == VAL_STRING)) {
-        OVar3.internals.intVal = local_64.operands[1].internals.intVal;
-        OVar3.dataType = VAL_STRING;
-        pcVar5 = GetSourceString(OVar3);
-        local_8 = Menu_GetMatchingItemByNumber(pmVar7,0,pcVar5);
-        if (local_64.operands[2].dataType == VAL_STRING) {
-          local_70 = local_64.operands[2].internals;
+      dc = UI_GetInfo(localClientNum);
+      operand_00.internals.intVal = list.operands[0].internals.intVal;
+      operand_00.dataType = list.operands[0].dataType;
+      pcVar2 = GetSourceString(operand_00);
+      menu_00 = Menus_FindByName(&dc->uiDC,pcVar2);
+      if ((menu_00 != (menuDef_t *)0x0) && (list.operands[1].dataType == VAL_STRING)) {
+        operand_01.internals.intVal = list.operands[1].internals.intVal;
+        operand_01.dataType = VAL_STRING;
+        pcVar2 = GetSourceString(operand_01);
+        actualItem = Menu_GetMatchingItemByNumber(menu_00,0,pcVar2);
+        if (list.operands[2].dataType == VAL_STRING) {
+          field = list.operands[2].internals.string;
         }
       }
     }
-    if (local_8 == (itemDef_s *)0x0) {
-      AddOperandToStack(param_3,&local_78);
+    if (actualItem == (itemDef_s *)0x0) {
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      local_68 = (char *)0x0;
-      bVar4 = UI_FeederData(param_1,local_8,local_70.string,&local_6c,(float *)&local_68);
-      if (bVar4) {
-        if (local_6c == (char *)0x0) {
-          local_78.dataType = VAL_FLOAT;
-          local_78.internals.string = local_68;
+      floatResult = 0.0;
+      bVar1 = UI_FeederData(localClientNum,actualItem,field,&stringResult,&floatResult);
+      if (bVar1) {
+        if (stringResult == (char *)0x0) {
+          result.dataType = VAL_FLOAT;
+          result.internals.floatVal = floatResult;
         }
         else {
-          local_78.dataType = VAL_STRING;
-          local_78.internals.string = CopyTempString(local_6c);
+          result.dataType = VAL_STRING;
+          result.internals.string = CopyTempString(stringResult);
         }
-        AddOperandToStack(param_3,&local_78);
+        AddOperandToStack(dataStack,&result);
       }
       else {
-        AddOperandToStack(param_3,&local_78);
+        AddOperandToStack(dataStack,&result);
       }
     }
   }
@@ -13548,129 +14028,130 @@ void __cdecl GetFeederData(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079D510  GetRank  (universal/com_expressions_eval.cpp:11107)
 
-void __cdecl GetRank(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetRank(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  rankTableColumns_t rVar2;
-  Operand local_10;
-  int local_8;
+  int rank;
+  rankTableColumns_t column;
+  Operand result;
+  int controllerIndex;
   
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.dataType = VAL_STRING;
-  local_10.internals.floatVal = 1.8187723e-38;
-  rVar2 = MP_RANKTABLE_FULLRANK;
-  iVar1 = LiveStats_GetRank(local_8);
-  local_10.internals.string = CL_GetRankData(iVar1,rVar2);
-  AddOperandToStack(param_3,&local_10);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  column = MP_RANKTABLE_FULLRANK;
+  rank = LiveStats_GetRank(controllerIndex);
+  result.internals.string = CL_GetRankData(rank,column);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D570  GetPrestige  (universal/com_expressions_eval.cpp:11123)
 
-void __cdecl GetPrestige(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetPrestige(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int controllerIndex;
   
-  local_8 = Com_LocalClient_GetControllerIndex(param_1);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  local_10.internals.intVal = LiveStats_GetPrestige(local_8);
-  AddOperandToStack(param_3,&local_10);
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  result.internals.intVal = LiveStats_GetPrestige(controllerIndex);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D5C0  GetComposite  (universal/com_expressions_eval.cpp:11140)
 
-void __cdecl GetComposite(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetComposite(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand result;
+  Operand data;
   
-  GetOperand(param_3,&local_c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = 0;
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data);
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D600  IsCompositeValid  (universal/com_expressions_eval.cpp:11151)
 
-void __cdecl IsCompositeValid(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsCompositeValid(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand result;
+  Operand data;
   
-  GetOperand(param_3,&local_c);
-  local_14.dataType = VAL_INT;
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data);
+  result.dataType = VAL_INT;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079D640  TableLookup  (universal/com_expressions_eval.cpp:11160)
 
-void __cdecl TableLookup(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl TableLookup(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  Operand OVar3;
-  Operand OVar4;
-  char *pcVar5;
-  int iVar6;
-  int iVar7;
-  StringTable **ppSVar8;
-  StringTable *local_68;
-  OperandList local_64;
-  Operand local_c;
+  Operand operand;
+  Operand operand_00;
+  Operand operand_01;
+  Operand operand_02;
+  char *pcVar1;
+  int valueColumn;
+  int comparisonColumn;
+  StringTable **tablePtr_00;
+  StringTable *tablePtr;
+  OperandList list;
+  Operand operandResult;
   
-  GetOperandList(param_3,&local_64);
+  GetOperandList(dataStack,&list);
   if ((useFastFile->current).enabled == false) {
-    local_c.dataType = VAL_STRING;
-    local_c.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.dataType = VAL_STRING;
+    operandResult.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&operandResult);
   }
-  else if (local_64.operandCount == 4) {
-    ppSVar8 = &local_68;
-    OVar3.internals.intVal = local_64.operands[0].internals.intVal;
-    OVar3.dataType = local_64.operands[0].dataType;
-    pcVar5 = GetSourceString(OVar3);
-    StringTable_GetAsset(pcVar5,ppSVar8);
-    local_c.dataType = VAL_STRING;
-    iVar6 = GetSourceInt(local_64.operands + 3);
-    OVar4.internals.intVal = local_64.operands[2].internals.intVal;
-    OVar4.dataType = local_64.operands[2].dataType;
-    pcVar5 = GetSourceString(OVar4);
-    iVar7 = GetSourceInt(local_64.operands + 1);
-    local_c.internals.string = StringTable_Lookup(local_68,iVar7,pcVar5,iVar6);
+  else if (list.operandCount == 4) {
+    tablePtr_00 = &tablePtr;
+    operand_01.internals.intVal = list.operands[0].internals.intVal;
+    operand_01.dataType = list.operands[0].dataType;
+    pcVar1 = GetSourceString(operand_01);
+    StringTable_GetAsset(pcVar1,tablePtr_00);
+    operandResult.dataType = VAL_STRING;
+    valueColumn = GetSourceInt(list.operands + 3);
+    operand_02.internals.intVal = list.operands[2].internals.intVal;
+    operand_02.dataType = list.operands[2].dataType;
+    pcVar1 = GetSourceString(operand_02);
+    comparisonColumn = GetSourceInt(list.operands + 1);
+    operandResult.internals.string =
+         StringTable_Lookup(tablePtr,comparisonColumn,pcVar1,valueColumn);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
-      GetSourceInt(local_64.operands + 3);
-      OVar2.internals.intVal = local_64.operands[2].internals.intVal;
-      OVar2.dataType = local_64.operands[2].dataType;
-      GetSourceString(OVar2);
-      GetSourceInt(local_64.operands + 1);
-      OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-      OVar1.dataType = local_64.operands[0].dataType;
-      GetSourceString(OVar1);
+      GetSourceInt(list.operands + 3);
+      operand_00.internals.intVal = list.operands[2].internals.intVal;
+      operand_00.dataType = list.operands[2].dataType;
+      GetSourceString(operand_00);
+      GetSourceInt(list.operands + 1);
+      operand.internals.intVal = list.operands[0].internals.intVal;
+      operand.dataType = list.operands[0].dataType;
+      GetSourceString(operand);
       Expression_TraceInternal("tablelookup( %s, %i, %s, %i ) == %s\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
     Expression_Error(
                     "UI Expression Error: Expected 4 params to function StringTableLookup, found %i\n"
                     );
-    local_c.dataType = VAL_STRING;
-    local_c.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.dataType = VAL_STRING;
+    operandResult.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -13678,50 +14159,51 @@ void __cdecl TableLookup(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079D7A0  StatsTableLookup  (universal/com_expressions_eval.cpp:11198)
 
-void __cdecl StatsTableLookup(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl StatsTableLookup(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  int iVar3;
-  char *pcVar4;
-  int iVar5;
-  StringTable *local_68;
-  OperandList local_64;
-  Operand local_c;
+  Operand operand;
+  Operand operand_00;
+  int valueColumn;
+  char *value;
+  int comparisonColumn;
+  StringTable *tablePtr;
+  OperandList list;
+  Operand operandResult;
   
-  GetOperandList(param_3,&local_64);
+  GetOperandList(dataStack,&list);
   if ((useFastFile->current).enabled == false) {
-    local_c.dataType = VAL_STRING;
-    local_c.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.dataType = VAL_STRING;
+    operandResult.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&operandResult);
   }
-  else if (local_64.operandCount == 3) {
-    StringTable_GetAsset("mp/statstable.csv",&local_68);
-    local_c.dataType = VAL_STRING;
-    iVar3 = GetSourceInt(local_64.operands + 2);
-    OVar2.internals.intVal = local_64.operands[1].internals.intVal;
-    OVar2.dataType = local_64.operands[1].dataType;
-    pcVar4 = GetSourceString(OVar2);
-    iVar5 = GetSourceInt(local_64.operands);
-    local_c.internals.string = StringTable_Lookup(local_68,iVar5,pcVar4,iVar3);
+  else if (list.operandCount == 3) {
+    StringTable_GetAsset("mp/statstable.csv",&tablePtr);
+    operandResult.dataType = VAL_STRING;
+    valueColumn = GetSourceInt(list.operands + 2);
+    operand_00.internals.intVal = list.operands[1].internals.intVal;
+    operand_00.dataType = list.operands[1].dataType;
+    value = GetSourceString(operand_00);
+    comparisonColumn = GetSourceInt(list.operands);
+    operandResult.internals.string = StringTable_Lookup(tablePtr,comparisonColumn,value,valueColumn)
+    ;
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
-      GetSourceInt(local_64.operands + 2);
-      OVar1.internals.intVal = local_64.operands[1].internals.intVal;
-      OVar1.dataType = local_64.operands[1].dataType;
-      GetSourceString(OVar1);
-      GetSourceInt(local_64.operands);
+      GetSourceInt(list.operands + 2);
+      operand.internals.intVal = list.operands[1].internals.intVal;
+      operand.dataType = list.operands[1].dataType;
+      GetSourceString(operand);
+      GetSourceInt(list.operands);
       Expression_TraceInternal("statstablelookup( %i, %s, %i ) == %s\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
     Expression_Error(
                     "UI Expression Error: Expected 3 params to function StringTableLookup, found %i\n"
                     );
-    local_c.dataType = VAL_STRING;
-    local_c.internals.floatVal = 1.8187723e-38;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.dataType = VAL_STRING;
+    operandResult.internals.floatVal = 1.8187723e-38;
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -13731,25 +14213,25 @@ void __cdecl StatsTableLookup(int param_1,itemDef_s *param_2,OperandStack *param
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-bool __cdecl IsClassBonusMatch(char *param_1,char *param_2)
+bool __cdecl IsClassBonusMatch(char *tableData,char *playerData)
 
 {
   bool bVar1;
   int iVar2;
   char *pcVar3;
-  char local_40c [1024];
+  char slotData [1024];
   uint local_c;
-  char *local_8;
+  char *token;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  iVar2 = I_stricmp(param_1,"");
+  iVar2 = I_stricmp(tableData,"");
   if (iVar2 == 0) {
     bVar1 = true;
   }
   else {
-    iVar2 = I_stricmp(param_1,"<none>");
+    iVar2 = I_stricmp(tableData,"<none>");
     if (iVar2 == 0) {
-      pcVar3 = I_stristr(param_2,"_null");
+      pcVar3 = I_stristr(playerData,"_null");
       if (pcVar3 == (char *)0x0) {
         bVar1 = false;
       }
@@ -13758,14 +14240,14 @@ bool __cdecl IsClassBonusMatch(char *param_1,char *param_2)
       }
     }
     else {
-      I_strncpyz(local_40c,param_1,0x400);
-      local_8 = strtok(local_40c,"|");
-      while (local_8 != (char *)0x0) {
-        iVar2 = I_stricmp(local_8,param_2);
+      I_strncpyz(slotData,tableData,0x400);
+      token = strtok(slotData,"|");
+      while (token != (char *)0x0) {
+        iVar2 = I_stricmp(token,playerData);
         if (iVar2 == 0) {
           return true;
         }
-        local_8 = strtok((char *)0x0,"|");
+        token = strtok((char *)0x0,"|");
       }
       bVar1 = false;
     }
@@ -13776,7 +14258,12 @@ bool __cdecl IsClassBonusMatch(char *param_1,char *param_2)
 
 // 0079DDB0  ClassBonusStatQuery  (universal/com_expressions_eval.cpp:11273)
 
-char * __cdecl ClassBonusStatQuery(int param_1,char *param_2,char *param_3)
+/* WARNING: Enum "itemGroup_t": Some values do not have unique names */
+/* WARNING: Enum "eAttachment": Some values do not have unique names */
+/* WARNING: Enum "defaultClass_t": Some values do not have unique names */
+/* WARNING: Enum "loadoutSlot_t": Some values do not have unique names */
+
+char * __cdecl ClassBonusStatQuery(int controllerIndex,char *statName,char *className)
 
 {
   char cVar1;
@@ -13785,37 +14272,38 @@ char * __cdecl ClassBonusStatQuery(int param_1,char *param_2,char *param_3)
   char *pcVar4;
   uint uVar5;
   char *local_20;
-  ddlState_t local_18;
-  char local_5;
+  char *statData;
+  ddlState_t searchState;
+  bool group;
   
   pdVar2 = LiveStats_GetRootDDLState();
-  local_18.absoluteOffset = pdVar2->absoluteOffset;
-  local_18.arrayIndex = pdVar2->arrayIndex;
-  local_18.member = pdVar2->member;
-  local_18.ddl = pdVar2->ddl;
+  searchState.absoluteOffset = pdVar2->absoluteOffset;
+  searchState.arrayIndex = pdVar2->arrayIndex;
+  searchState.member = pdVar2->member;
+  searchState.ddl = pdVar2->ddl;
   iVar3 = Dvar_GetInt(ui_useCustomClassInfo);
   if (iVar3 == 0) {
-    local_5 = '\0';
-    pcVar4 = I_stristr(param_2,"<group>");
+    group = false;
+    pcVar4 = I_stristr(statName,"<group>");
     if (pcVar4 != (char *)0x0) {
       local_20 = "<group>";
       do {
         cVar1 = *local_20;
         local_20 = local_20 + 1;
       } while (cVar1 != '\0');
-      local_5 = '\x01';
+      group = true;
     }
-    iVar3 = DDL_MoveTo(&local_18,&local_18,3);
+    iVar3 = DDL_MoveTo(&searchState,&searchState,3);
     if (iVar3 == 0) {
       DDL_PrintError("DDL:Error getting player stat value for %s.\n");
       pcVar4 = "";
     }
-    else if (local_5 == '\0') {
-      uVar5 = LiveStats_GetDIntStat(param_1,&local_18);
+    else if (group == false) {
+      uVar5 = LiveStats_GetDIntStat(controllerIndex,&searchState);
       pcVar4 = BG_UnlockablesGetItemRef(uVar5);
     }
     else {
-      uVar5 = LiveStats_GetDIntStat(param_1,&local_18);
+      uVar5 = LiveStats_GetDIntStat(controllerIndex,&searchState);
       pcVar4 = BG_UnlockablesGetItemGroup(uVar5);
     }
   }
@@ -13830,61 +14318,68 @@ char * __cdecl ClassBonusStatQuery(int param_1,char *param_2,char *param_3)
 
 int __cdecl
 FindClassBonusMatches
-          (int param_1,StringTable *param_2,int *param_3,int param_4,char *param_5,char *param_6,
-          int param_7,int param_8)
+          (int localClientNum,StringTable *table,int *rowMatches,int numRows,char *statName,
+          char *className,int column,int ignoreRow)
 
 {
   bool bVar1;
-  int iVar2;
-  char *pcVar3;
-  int local_10;
-  int local_c;
+  int controllerIndex;
+  char *playerData_00;
+  int slot;
+  int row;
+  int numMatches;
+  char *playerData;
   
-  local_c = 0;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  pcVar3 = ClassBonusStatQuery(iVar2,param_5,param_6);
-  if (param_4 == 0) {
-    for (local_10 = 0; local_10 <= param_2->rowCount + -1; local_10 = local_10 + 1) {
-      if ((local_10 != param_8) &&
-         (bVar1 = IsClassBonusMatch(param_2->values[local_10 * param_2->columnCount + param_7].
-                                    string,pcVar3), bVar1)) {
-        param_3[local_c] = local_10;
-        local_c = local_c + 1;
+  numMatches = 0;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  playerData_00 = ClassBonusStatQuery(controllerIndex,statName,className);
+  if (numRows == 0) {
+    for (row = 0; row <= table->rowCount + -1; row = row + 1) {
+      if ((row != ignoreRow) &&
+         (bVar1 = IsClassBonusMatch(table->values[row * table->columnCount + column].string,
+                                    playerData_00), bVar1)) {
+        rowMatches[numMatches] = row;
+        numMatches = numMatches + 1;
       }
     }
   }
   else {
-    for (local_10 = 0; local_10 < param_4; local_10 = local_10 + 1) {
-      bVar1 = IsClassBonusMatch(param_2->values[param_3[local_10] * param_2->columnCount + param_7].
-                                string,pcVar3);
+    for (row = 0; row < numRows; row = row + 1) {
+      bVar1 = IsClassBonusMatch(table->values[rowMatches[row] * table->columnCount + column].string,
+                                playerData_00);
       if (bVar1) {
-        param_3[local_c] = param_3[local_10];
-        local_c = local_c + 1;
+        rowMatches[numMatches] = rowMatches[row];
+        numMatches = numMatches + 1;
       }
     }
   }
-  return local_c;
+  return numMatches;
 }
 
 
 // 0079D9F0  GetClassBonusInternal  (universal/com_expressions_eval.cpp:11358)
 
-int __cdecl GetClassBonusInternal(int param_1,StringTable *param_2,char *param_3)
+/* WARNING: Variable defined which should be unmapped: CLASS_BONUS_NONE */
+
+int __cdecl GetClassBonusInternal(int localClientNum,StringTable *table,char *className)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int ignoreRow;
   int iVar4;
-  int iVar5;
-  undefined4 uVar6;
-  int local_8c;
-  int local_88;
-  int local_84 [32];
+  int defaultRow;
+  int CLASS_BONUS_NONE;
+  int slot;
+  int statRow;
+  int CLASS_BONUS_MAX_ROW_MATCHES;
+  int numMatches;
+  int column;
+  int rowMatches [32];
   
-  uVar6 = 0;
-  local_8c = 0;
-  iVar3 = StringTable_LookupRowNumForValue(param_2,0,"stats");
+  numMatches = 0;
+  iVar3 = StringTable_LookupRowNumForValue(table,0,"stats");
   if ((iVar3 == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x2c6a,0,"%s"), !bVar2)) {
@@ -13892,33 +14387,34 @@ int __cdecl GetClassBonusInternal(int param_1,StringTable *param_2,char *param_3
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  iVar4 = StringTable_LookupRowNumForValue(param_2,0,"0");
-  if ((iVar4 == -1) &&
+  ignoreRow = StringTable_LookupRowNumForValue(table,0,"0");
+  if ((ignoreRow == -1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x2c6d,0,"%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
-    iVar3 = (*pcVar1)(uVar6);
+    iVar3 = (*pcVar1)(0);
     return iVar3;
   }
-  local_88 = 1;
+  column = 1;
   while( true ) {
-    if (param_2->columnCount <= local_88) {
-      if ((local_8c != 1) &&
+    if (table->columnCount <= column) {
+      if ((numMatches != 1) &&
          (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                    ,0x2c80,0,"%s"), !bVar2)) {
         pcVar1 = (code *)swi(3);
         iVar3 = (*pcVar1)();
         return iVar3;
       }
-      iVar3 = atoi(param_2->values[local_84[0] * param_2->columnCount].string);
+      iVar3 = atoi(table->values[rowMatches[0] * table->columnCount].string);
       return iVar3;
     }
-    iVar5 = iVar3 * param_2->columnCount + local_88;
-    if ((param_2->values[iVar5].hash != 0) &&
-       (local_8c = FindClassBonusMatches
-                             (param_1,param_2,local_84,local_8c,param_2->values[iVar5].string,
-                              param_3,local_88,iVar4), local_8c == 0)) break;
-    local_88 = local_88 + 1;
+    iVar4 = iVar3 * table->columnCount + column;
+    if ((table->values[iVar4].hash != 0) &&
+       (numMatches = FindClassBonusMatches
+                               (localClientNum,table,rowMatches,numMatches,
+                                table->values[iVar4].string,className,column,ignoreRow),
+       numMatches == 0)) break;
+    column = column + 1;
   }
   return 0;
 }
@@ -13926,40 +14422,40 @@ int __cdecl GetClassBonusInternal(int param_1,StringTable *param_2,char *param_3
 
 // 0079D8F0  GetClassBonus  (universal/com_expressions_eval.cpp:11397)
 
-void __cdecl GetClassBonus(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetClassBonus(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  char *pcVar3;
-  StringTable *local_68;
-  OperandList local_64;
-  Operand local_c;
+  Operand operand;
+  Operand operand_00;
+  char *className;
+  StringTable *tablePtr;
+  OperandList list;
+  Operand operandResult;
   
-  GetOperandList(param_3,&local_64);
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
+  GetOperandList(dataStack,&list);
+  operandResult.dataType = VAL_INT;
+  operandResult.internals.intVal = 0;
   if ((useFastFile->current).enabled == false) {
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&operandResult);
   }
-  else if (local_64.operandCount == 1) {
-    StringTable_GetAsset("mp/classbonustable.csv",&local_68);
-    OVar2.internals.intVal = local_64.operands[0].internals.intVal;
-    OVar2.dataType = local_64.operands[0].dataType;
-    pcVar3 = GetSourceString(OVar2);
-    local_c.internals.intVal = GetClassBonusInternal(param_1,local_68,pcVar3);
+  else if (list.operandCount == 1) {
+    StringTable_GetAsset("mp/classbonustable.csv",&tablePtr);
+    operand_00.internals.intVal = list.operands[0].internals.intVal;
+    operand_00.dataType = list.operands[0].dataType;
+    className = GetSourceString(operand_00);
+    operandResult.internals.intVal = GetClassBonusInternal(localClientNum,tablePtr,className);
     if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
-      OVar1.internals.intVal = local_64.operands[0].internals.intVal;
-      OVar1.dataType = local_64.operands[0].dataType;
-      GetSourceString(OVar1);
+      operand.internals.intVal = list.operands[0].internals.intVal;
+      operand.dataType = list.operands[0].dataType;
+      GetSourceString(operand);
       Expression_TraceInternal("getclassbonus( %s ) == %d\n");
     }
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
     Expression_Error("UI Expression Error: Expected 1 params to function GetClassBonus, found %i\n")
     ;
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -13967,33 +14463,35 @@ void __cdecl GetClassBonus(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079DED0  GetCustomClassLoadoutItem  (universal/com_expressions_eval.cpp:11432)
 
-void __cdecl GetCustomClassLoadoutItem(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCustomClassLoadoutItem(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  OperandList local_6c;
-  Operand local_10;
-  int local_8;
+  Operand operand;
+  char *itemName_00;
+  int result;
+  char *itemName;
+  OperandList list;
+  Operand operandResult;
+  int slotNum;
   
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount == 2) {
-    local_8 = GetSourceInt(local_6c.operands);
-    OVar1.internals.intVal = local_6c.operands[1].internals.intVal;
-    OVar1.dataType = local_6c.operands[1].dataType;
-    pcVar2 = GetSourceString(OVar1);
-    local_10.dataType = VAL_INT;
-    local_10.internals._0_1_ = GetCustomClassLoadoutItemForSlot(0,local_8,pcVar2);
-    local_10.internals.intVal._1_3_ = 0;
-    AddOperandToStack(param_3,&local_10);
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    slotNum = GetSourceInt(list.operands);
+    operand.internals.intVal = list.operands[1].internals.intVal;
+    operand.dataType = list.operands[1].dataType;
+    itemName_00 = GetSourceString(operand);
+    operandResult.dataType = VAL_INT;
+    operandResult.internals._0_1_ = GetCustomClassLoadoutItemForSlot(0,slotNum,itemName_00);
+    operandResult.internals.intVal._1_3_ = 0;
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
     Expression_Error(
                     "UI Expression Error: Expected at 2 parameters to GetCustomClassLoadoutItem()\n"
                     );
-    local_10.dataType = VAL_INT;
-    local_10.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_10);
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal = 0;
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -14001,30 +14499,32 @@ void __cdecl GetCustomClassLoadoutItem(int param_1,itemDef_s *param_2,OperandSta
 
 // 0079DF80  GetCustomClassModifier  (universal/com_expressions_eval.cpp:11461)
 
-void __cdecl GetCustomClassModifier(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCustomClassModifier(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  char *pcVar2;
-  OperandList local_6c;
-  Operand local_10;
-  int local_8;
+  Operand operand;
+  char *itemName_00;
+  int result;
+  char *itemName;
+  OperandList list;
+  Operand operandResult;
+  int slotNum;
   
-  GetOperandList(param_3,&local_6c);
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  if (local_6c.operandCount == 2) {
-    local_8 = GetSourceInt(local_6c.operands);
-    OVar1.internals.intVal = local_6c.operands[1].internals.intVal;
-    OVar1.dataType = local_6c.operands[1].dataType;
-    pcVar2 = GetSourceString(OVar1);
-    local_10.dataType = VAL_INT;
-    local_10.internals.intVal = GetCustomClassModifierForClass(0,local_8,pcVar2);
-    AddOperandToStack(param_3,&local_10);
+  GetOperandList(dataStack,&list);
+  operandResult.dataType = VAL_INT;
+  operandResult.internals.intVal = 0;
+  if (list.operandCount == 2) {
+    slotNum = GetSourceInt(list.operands);
+    operand.internals.intVal = list.operands[1].internals.intVal;
+    operand.dataType = list.operands[1].dataType;
+    itemName_00 = GetSourceString(operand);
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal = GetCustomClassModifierForClass(0,slotNum,itemName_00);
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
     Expression_Error("UI Expression Error: Expected at 2 parameters to GetCustomClassModifier()\n");
-    AddOperandToStack(param_3,&local_10);
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -14032,20 +14532,21 @@ void __cdecl GetCustomClassModifier(int param_1,itemDef_s *param_2,OperandStack 
 
 // 0079E030  GetCustomClassName  (universal/com_expressions_eval.cpp:11492)
 
-void __cdecl GetCustomClassName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCustomClassName(int localClienTNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  OperandList local_64;
-  Operand local_c;
+  int classNum;
+  OperandList list;
+  Operand operandResult;
   
-  GetOperandList(param_3,&local_64);
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.8187723e-38;
-  if (local_64.operandCount == 1) {
-    iVar3 = GetSourceInt(local_64.operands);
+  GetOperandList(dataStack,&list);
+  operandResult.dataType = VAL_STRING;
+  operandResult.internals.floatVal = 1.8187723e-38;
+  if (list.operandCount == 1) {
+    iVar3 = GetSourceInt(list.operands);
     if (iVar3 < 1) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x2cf6,0,"%s");
@@ -14059,12 +14560,12 @@ void __cdecl GetCustomClassName(int param_1,itemDef_s *param_2,OperandStack *par
       UI_SafeTranslateString("MPUI_CUSTOM_CLASS_NAME");
       Com_sprintf(g_customGameModeClassDescriptions[iVar3 + -1].name,0x10,"%s %d");
     }
-    local_c.internals.string = g_customGameModeClassDescriptions[iVar3 + -1].name;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.internals.string = g_customGameModeClassDescriptions[iVar3 + -1].name;
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
     Expression_Error("UI Expression Error: Expected 1 parameter to GetCustomClassName()\n");
-    AddOperandToStack(param_3,&local_c);
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -14072,7 +14573,7 @@ void __cdecl GetCustomClassName(int param_1,itemDef_s *param_2,OperandStack *par
 
 // 0079E130  GetCACItemIndex  (universal/com_expressions_eval.cpp:11521)
 
-void __cdecl GetCACItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetCACItemIndex(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   char cVar1;
@@ -14083,56 +14584,57 @@ void __cdecl GetCACItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_
   dvar_s *pdVar6;
   ddlState_t *pdVar7;
   operandInternalDataUnion local_88;
-  Operand local_80;
-  int local_78;
-  OperandList local_74;
-  ddlState_t local_18;
-  char local_5;
+  char *killstreakStr;
+  Operand result;
+  int controllerIndex;
+  OperandList list;
+  ddlState_t searchState;
+  bool isKillstreakSlot;
   
-  local_80.dataType = VAL_INT;
-  local_80.internals.intVal = 0;
-  GetOperandList(param_3,&local_74);
-  if (local_74.operandCount == 2) {
-    local_78 = Com_LocalClient_GetControllerIndex(param_1);
-    pcVar4 = I_stristr(local_74.operands[1].internals.string,"killstreak");
-    local_5 = pcVar4 != (char *)0x0;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+    pcVar4 = I_stristr(list.operands[1].internals.string,"killstreak");
+    isKillstreakSlot = pcVar4 != (char *)0x0;
     iVar5 = Dvar_GetInt(custom_killstreak_mode);
-    if ((iVar5 == 2) && (local_5 != '\0')) {
-      local_88.intVal = local_74.operands[1].internals.intVal;
+    if ((iVar5 == 2) && (isKillstreakSlot != false)) {
+      local_88.intVal = list.operands[1].internals.intVal;
       do {
         cVar1 = *local_88.string;
         local_88.string = (char *)(local_88.intVal + 1);
       } while (cVar1 != '\0');
       pcVar4 = va("custom_killstreak_%c");
       pdVar6 = Dvar_FindVar(pcVar4);
-      local_80.internals.intVal = atoi((pdVar6->current).string);
-      AddOperandToStack(param_3,&local_80);
+      result.internals.intVal = atoi((pdVar6->current).string);
+      AddOperandToStack(dataStack,&result);
     }
     else {
       iVar5 = Dvar_GetInt(ui_useCustomClassInfo);
-      if ((iVar5 == 0) || (local_5 != '\0')) {
-        iVar5 = I_stricmp(local_74.operands[0].internals.string,"cacLoadouts");
+      if ((iVar5 == 0) || (isKillstreakSlot != false)) {
+        iVar5 = I_stricmp(list.operands[0].internals.string,"cacLoadouts");
         if (iVar5 == 0) {
           pdVar7 = LiveStats_GetRootDDLState();
-          local_18.absoluteOffset = pdVar7->absoluteOffset;
-          local_18.arrayIndex = pdVar7->arrayIndex;
-          local_18.member = pdVar7->member;
-          local_18.ddl = pdVar7->ddl;
+          searchState.absoluteOffset = pdVar7->absoluteOffset;
+          searchState.arrayIndex = pdVar7->arrayIndex;
+          searchState.member = pdVar7->member;
+          searchState.ddl = pdVar7->ddl;
         }
         else {
           pdVar7 = LiveStats_GetCacDDLState();
-          local_18.absoluteOffset = pdVar7->absoluteOffset;
-          local_18.arrayIndex = pdVar7->arrayIndex;
-          local_18.member = pdVar7->member;
-          local_18.ddl = pdVar7->ddl;
+          searchState.absoluteOffset = pdVar7->absoluteOffset;
+          searchState.arrayIndex = pdVar7->arrayIndex;
+          searchState.member = pdVar7->member;
+          searchState.ddl = pdVar7->ddl;
         }
-        iVar5 = DDL_MoveTo(&local_18,&local_18,2);
+        iVar5 = DDL_MoveTo(&searchState,&searchState,2);
         if (iVar5 == 0) {
           DDL_PrintError("DDL: Could not find member name.");
-          AddOperandToStack(param_3,&local_80);
+          AddOperandToStack(dataStack,&result);
         }
         else {
-          if (local_18.member == (ddlMemberDef_t *)0x0) {
+          if (searchState.member == (ddlMemberDef_t *)0x0) {
             bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                      ,0x2d48,0,"%s");
             if (!bVar3) {
@@ -14141,23 +14643,23 @@ void __cdecl GetCACItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_
               return;
             }
           }
-          local_80.internals.intVal = LiveStats_GetDIntStat(local_78,&local_18);
-          AddOperandToStack(param_3,&local_80);
+          result.internals.intVal = LiveStats_GetDIntStat(controllerIndex,&searchState);
+          AddOperandToStack(dataStack,&result);
         }
       }
       else {
-        local_80.internals._0_1_ =
+        result.internals._0_1_ =
              GetCustomClassLoadoutItemForClassName
-                       (local_78,local_74.operands[0].internals.string,
-                        local_74.operands[1].internals.string);
-        local_80.internals.intVal._1_3_ = 0;
-        AddOperandToStack(param_3,&local_80);
+                       (controllerIndex,list.operands[0].internals.string,
+                        list.operands[1].internals.string);
+        result.internals.intVal._1_3_ = 0;
+        AddOperandToStack(dataStack,&result);
       }
     }
   }
   else {
     Expression_Error("Expected 2 parameters to getCACItemIndex()\n");
-    AddOperandToStack(param_3,&local_80);
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -14165,45 +14667,45 @@ void __cdecl GetCACItemIndex(int param_1,itemDef_s *param_2,OperandStack *param_
 
 // 0079E390  GetMachineID  (universal/com_expressions_eval.cpp:11602)
 
-void __cdecl GetMachineID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetMachineID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_STRING;
-  local_c.internals.floatVal = 1.9134697e-38;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.9134697e-38;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079E3C0  GetLocalClientNum  (universal/com_expressions_eval.cpp:11634)
 
-void __cdecl GetLocalClientNum(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLocalClientNum(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = param_1;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = localClientNum;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079E3F0  IsPrimaryLocalClient  (universal/com_expressions_eval.cpp:11642)
 
-void __cdecl IsPrimaryLocalClient(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsPrimaryLocalClient(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   bool bVar1;
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  bVar1 = Com_LocalClient_IsPrimary(param_1);
-  local_c.internals.intVal._1_3_ = 0;
-  local_c.internals.intVal._0_1_ = bVar1;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  bVar1 = Com_LocalClient_IsPrimary(localClientNum);
+  result.internals.intVal._1_3_ = 0;
+  result.internals.intVal._0_1_ = bVar1;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
@@ -14212,92 +14714,92 @@ void __cdecl IsPrimaryLocalClient(int param_1,itemDef_s *param_2,OperandStack *p
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl IsFriendFromXuid(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl IsFriendFromXuid(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char *pcVar1;
-  int iVar2;
-  long64 lVar3;
-  undefined4 uVar4;
-  undefined1 *puVar5;
-  FriendInfo *pFVar6;
-  undefined1 local_cc [188];
+  char *str;
+  int controllerIndex;
+  long64 lVar1;
+  undefined4 uVar2;
+  undefined1 *puVar3;
+  FriendInfo *pFVar4;
+  undefined1 info [188];
   uint local_10;
-  undefined8 local_c;
+  undefined8 selectedPlayerXuid;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  pcVar1 = Dvar_GetString("selectedPlayerXuid");
-  lVar3 = I_atoi64(pcVar1);
-  pFVar6 = (FriendInfo *)0x0;
-  puVar5 = local_cc;
-  local_c._4_4_ = (undefined4)((ulonglong)lVar3 >> 0x20);
-  uVar4 = local_c._4_4_;
-  local_c = lVar3;
-  iVar2 = Com_LocalClient_GetControllerIndex(param_1);
-  Friends_GetByID(iVar2,CONCAT44(puVar5,uVar4),pFVar6);
-  AddOperandToStack(param_3,(Operand *)&stack0xffffff2c);
+  str = Dvar_GetString("selectedPlayerXuid");
+  lVar1 = I_atoi64(str);
+  pFVar4 = (FriendInfo *)0x0;
+  puVar3 = info;
+  selectedPlayerXuid._4_4_ = (undefined4)((ulonglong)lVar1 >> 0x20);
+  uVar2 = selectedPlayerXuid._4_4_;
+  selectedPlayerXuid = lVar1;
+  controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
+  Friends_GetByID(controllerIndex,CONCAT44(puVar3,uVar2),pFVar4);
+  AddOperandToStack(dataStack,(Operand *)&stack0xffffff2c);
   return;
 }
 
 
 // 0079E4D0  CanSwitchToLobby  (universal/com_expressions_eval.cpp:11698)
 
-void __cdecl CanSwitchToLobby(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl CanSwitchToLobby(int locaClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 1;
+  result.dataType = VAL_INT;
+  result.internals.intVal = 1;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
     Expression_TraceInternal("CanSwitchToLobby() = %d\n");
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079E520  GetFeederCount  (universal/com_expressions_eval.cpp:11743)
 
-void __cdecl GetFeederCount(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetFeederCount(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  int iVar2;
-  float fVar3;
-  listBoxDef_s *plVar4;
-  Operand local_24;
-  Operand local_1c;
-  float local_14;
-  listBoxDef_s *local_10;
-  itemDef_s *local_c;
-  char *local_8;
+  Operand operand;
+  int contextIndex;
+  float feederID_00;
+  listBoxDef_s *listPtr_00;
+  Operand source;
+  Operand result;
+  float feederID;
+  listBoxDef_s *listPtr;
+  itemDef_s *feeder;
+  char *feederName;
   
-  local_1c.dataType = VAL_INT;
-  GetOperand(param_3,&local_24);
-  OVar1.internals.intVal = local_24.internals.intVal;
-  OVar1.dataType = local_24.dataType;
-  local_8 = GetSourceString(OVar1);
-  local_c = Menu_FindItemByName(param_2->parent,local_8);
-  if (local_c == (itemDef_s *)0x0) {
+  result.dataType = VAL_INT;
+  GetOperand(dataStack,&source);
+  operand.internals.intVal = source.internals.intVal;
+  operand.dataType = source.dataType;
+  feederName = GetSourceString(operand);
+  feeder = Menu_FindItemByName(item->parent,feederName);
+  if (feeder == (itemDef_s *)0x0) {
     Expression_Error("UI Expression Error: Unable to find item %s in GetFeederCount()\n");
-    local_1c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_1c);
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_10 = Item_GetListBoxDef(local_c);
-    if (local_10 == (listBoxDef_s *)0x0) {
+    listPtr = Item_GetListBoxDef(feeder);
+    if (listPtr == (listBoxDef_s *)0x0) {
       Expression_Error("UI Expression Error: Item %s is not a listbox in GetFeederCount()\n");
-      local_1c.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_1c);
+      result.internals.intVal = 0;
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      fVar3 = Item_GetListBoxFeederID(local_c);
-      plVar4 = local_10;
-      local_14 = fVar3;
-      iVar2 = Com_LocalClient_GetUIContextIndex(param_1);
-      local_1c.internals.intVal = UI_FeederCount(param_1,iVar2,fVar3,plVar4);
-      AddOperandToStack(param_3,&local_1c);
+      feederID_00 = Item_GetListBoxFeederID(feeder);
+      listPtr_00 = listPtr;
+      feederID = feederID_00;
+      contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+      result.internals.intVal = UI_FeederCount(localClientNum,contextIndex,feederID_00,listPtr_00);
+      AddOperandToStack(dataStack,&result);
     }
   }
   return;
@@ -14306,87 +14808,88 @@ void __cdecl GetFeederCount(int param_1,itemDef_s *param_2,OperandStack *param_3
 
 // 0079E630  GetMapIndexByName  (universal/com_expressions_eval.cpp:11779)
 
-void __cdecl GetMapIndexByName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetMapIndexByName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
+  Operand operand;
+  Operand operand_00;
+  int iVar1;
+  int contextIndex;
+  char *s1;
+  char *pcVar2;
   int iVar3;
-  int iVar4;
-  char *pcVar5;
-  char *pcVar6;
-  int iVar7;
-  float fVar8;
-  itemDef_s *piVar9;
-  int iVar10;
-  Material **ppMVar11;
-  float *pfVar12;
-  listBoxDef_s *plVar13;
-  bool *pbVar14;
-  bool local_85;
-  Operand local_84;
-  float local_7c;
-  Material *local_78;
-  listBoxDef_s *local_74;
-  float local_70;
-  OperandList local_6c;
-  char *local_14;
-  itemDef_s *local_10;
-  int local_c;
-  char *local_8;
+  float fVar4;
+  itemDef_s *item_00;
+  int column;
+  Material **handle;
+  float *angle_00;
+  listBoxDef_s *listPtr_00;
+  bool *useOwnerDraw;
+  int mapCount;
+  bool useOwnerdraw;
+  Operand result;
+  float feederID;
+  Material *material;
+  listBoxDef_s *listPtr;
+  float angle;
+  OperandList list;
+  char *mapName;
+  itemDef_s *feeder;
+  int mapIndex;
+  char *feederName;
   
-  local_84.dataType = VAL_INT;
-  local_84.internals.intVal = 0;
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount == 2) {
-    OVar1.internals.intVal = local_6c.operands[0].internals.intVal;
-    OVar1.dataType = local_6c.operands[0].dataType;
-    local_8 = GetSourceString(OVar1);
-    OVar2.internals.intVal = local_6c.operands[1].internals.intVal;
-    OVar2.dataType = local_6c.operands[1].dataType;
-    local_14 = GetSourceString(OVar2);
-    local_10 = Menu_FindItemByName(param_2->parent,local_8);
-    if (local_10 == (itemDef_s *)0x0) {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    feederName = GetSourceString(operand);
+    operand_00.internals.intVal = list.operands[1].internals.intVal;
+    operand_00.dataType = list.operands[1].dataType;
+    mapName = GetSourceString(operand_00);
+    feeder = Menu_FindItemByName(item->parent,feederName);
+    if (feeder == (itemDef_s *)0x0) {
       Expression_Error("UI Expression Error: Unable to find item %s in GetFeederCount()\n");
-      local_84.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_84);
+      result.internals.intVal = 0;
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      local_74 = Item_GetListBoxDef(local_10);
-      if (local_74 == (listBoxDef_s *)0x0) {
+      listPtr = Item_GetListBoxDef(feeder);
+      if (listPtr == (listBoxDef_s *)0x0) {
         Expression_Error("UI Expression Error: Item %s is not a listbox in GetFeederCount()\n");
-        local_84.internals.intVal = 0;
-        AddOperandToStack(param_3,&local_84);
+        result.internals.intVal = 0;
+        AddOperandToStack(dataStack,&result);
       }
       else {
-        fVar8 = Item_GetListBoxFeederID(local_10);
-        plVar13 = local_74;
-        local_7c = fVar8;
-        iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-        iVar3 = UI_FeederCount(param_1,iVar3,fVar8,plVar13);
-        for (local_c = 0; local_c < iVar3; local_c = local_c + 1) {
-          pbVar14 = &local_85;
-          pfVar12 = &local_70;
-          ppMVar11 = &local_78;
-          iVar10 = 1;
-          piVar9 = local_10;
-          fVar8 = local_7c;
-          iVar7 = local_c;
-          iVar4 = Com_LocalClient_GetUIContextIndex(param_1);
-          pcVar5 = UI_FeederItemText(param_1,iVar4,piVar9,fVar8,iVar7,iVar10,ppMVar11,pfVar12,
-                                     pbVar14);
-          pcVar6 = va("%s_CAPS");
-          pcVar6 = UI_SafeTranslateString(pcVar6);
-          iVar7 = I_strcmp(pcVar6,pcVar5);
-          if (iVar7 == 0) break;
+        fVar4 = Item_GetListBoxFeederID(feeder);
+        listPtr_00 = listPtr;
+        feederID = fVar4;
+        iVar1 = Com_LocalClient_GetUIContextIndex(localClientNum);
+        iVar1 = UI_FeederCount(localClientNum,iVar1,fVar4,listPtr_00);
+        for (mapIndex = 0; mapIndex < iVar1; mapIndex = mapIndex + 1) {
+          useOwnerDraw = &useOwnerdraw;
+          angle_00 = &angle;
+          handle = &material;
+          column = 1;
+          item_00 = feeder;
+          fVar4 = feederID;
+          iVar3 = mapIndex;
+          contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+          s1 = UI_FeederItemText(localClientNum,contextIndex,item_00,fVar4,iVar3,column,handle,
+                                 angle_00,useOwnerDraw);
+          pcVar2 = va("%s_CAPS");
+          pcVar2 = UI_SafeTranslateString(pcVar2);
+          iVar3 = I_strcmp(pcVar2,s1);
+          if (iVar3 == 0) break;
         }
-        if ((local_c < iVar3) && (-1 < local_c)) {
-          local_84.internals.intVal = local_c;
+        if ((mapIndex < iVar1) && (-1 < mapIndex)) {
+          result.internals.intVal = mapIndex;
         }
         else {
-          local_84.internals.intVal = 0;
+          result.internals.intVal = 0;
         }
-        AddOperandToStack(param_3,&local_84);
+        AddOperandToStack(dataStack,&result);
       }
     }
   }
@@ -14394,8 +14897,8 @@ void __cdecl GetMapIndexByName(int param_1,itemDef_s *param_2,OperandStack *para
     Expression_Error(
                     "UI Expression Error: Expected 2 parameters to GetMapIndexByName( <feeder name>, <map name> )\n"
                     );
-    local_84.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_84);
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -14403,86 +14906,86 @@ void __cdecl GetMapIndexByName(int param_1,itemDef_s *param_2,OperandStack *para
 
 // 0079E830  GetGamemodeIndexByName  (universal/com_expressions_eval.cpp:11851)
 
-void __cdecl GetGamemodeIndexByName(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetGamemodeIndexByName(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand OVar2;
-  int iVar3;
-  int iVar4;
-  char *pcVar5;
-  char *pcVar6;
-  float fVar7;
-  itemDef_s *piVar8;
-  int iVar9;
-  Material **ppMVar10;
-  float *pfVar11;
-  listBoxDef_s *plVar12;
-  bool *pbVar13;
-  bool local_89;
-  Operand local_88;
-  float local_80;
-  Material *local_7c;
-  char *local_78;
-  listBoxDef_s *local_74;
-  float local_70;
-  OperandList local_6c;
-  itemDef_s *local_14;
-  int local_10;
-  int local_c;
-  char *local_8;
+  Operand operand;
+  Operand operand_00;
+  int iVar1;
+  int contextIndex;
+  char *s1;
+  char *s0;
+  float fVar2;
+  itemDef_s *item_00;
+  int column;
+  Material **handle;
+  float *angle_00;
+  listBoxDef_s *listPtr_00;
+  bool *useOwnerDraw;
+  bool useOwnerdraw;
+  Operand result;
+  float feederID;
+  Material *material;
+  char *gamemodeName;
+  listBoxDef_s *listPtr;
+  float angle;
+  OperandList list;
+  itemDef_s *feeder;
+  int gamemodeIndex;
+  int gamemodeCount;
+  char *feederName;
   
-  local_88.dataType = VAL_INT;
-  local_88.internals.intVal = 0;
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount == 2) {
-    OVar1.internals.intVal = local_6c.operands[0].internals.intVal;
-    OVar1.dataType = local_6c.operands[0].dataType;
-    local_8 = GetSourceString(OVar1);
-    OVar2.internals.intVal = local_6c.operands[1].internals.intVal;
-    OVar2.dataType = local_6c.operands[1].dataType;
-    local_78 = GetSourceString(OVar2);
-    local_14 = Menu_FindItemByName(param_2->parent,local_8);
-    if (local_14 == (itemDef_s *)0x0) {
+  result.dataType = VAL_INT;
+  result.internals.intVal = 0;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    operand.internals.intVal = list.operands[0].internals.intVal;
+    operand.dataType = list.operands[0].dataType;
+    feederName = GetSourceString(operand);
+    operand_00.internals.intVal = list.operands[1].internals.intVal;
+    operand_00.dataType = list.operands[1].dataType;
+    gamemodeName = GetSourceString(operand_00);
+    feeder = Menu_FindItemByName(item->parent,feederName);
+    if (feeder == (itemDef_s *)0x0) {
       Expression_Error("UI Expression Error: Unable to find item %s in GetFeederCount()\n");
-      local_88.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_88);
+      result.internals.intVal = 0;
+      AddOperandToStack(dataStack,&result);
     }
     else {
-      local_74 = Item_GetListBoxDef(local_14);
-      if (local_74 == (listBoxDef_s *)0x0) {
+      listPtr = Item_GetListBoxDef(feeder);
+      if (listPtr == (listBoxDef_s *)0x0) {
         Expression_Error("UI Expression Error: Item %s is not a listbox in GetFeederCount()\n");
-        local_88.internals.intVal = 0;
-        AddOperandToStack(param_3,&local_88);
+        result.internals.intVal = 0;
+        AddOperandToStack(dataStack,&result);
       }
       else {
-        fVar7 = Item_GetListBoxFeederID(local_14);
-        plVar12 = local_74;
-        local_80 = fVar7;
-        iVar3 = Com_LocalClient_GetUIContextIndex(param_1);
-        local_c = UI_FeederCount(param_1,iVar3,fVar7,plVar12);
-        for (local_10 = 0; local_10 < local_c; local_10 = local_10 + 1) {
-          pbVar13 = &local_89;
-          pfVar11 = &local_70;
-          ppMVar10 = &local_7c;
-          iVar9 = 1;
-          piVar8 = local_14;
-          fVar7 = local_80;
-          iVar3 = local_10;
-          iVar4 = Com_LocalClient_GetUIContextIndex(param_1);
-          pcVar5 = UI_FeederItemText(param_1,iVar4,piVar8,fVar7,iVar3,iVar9,ppMVar10,pfVar11,pbVar13
-                                    );
-          pcVar6 = UI_SafeTranslateString(local_78);
-          iVar3 = I_strcmp(pcVar6,pcVar5);
-          if (iVar3 == 0) break;
+        fVar2 = Item_GetListBoxFeederID(feeder);
+        listPtr_00 = listPtr;
+        feederID = fVar2;
+        iVar1 = Com_LocalClient_GetUIContextIndex(localClientNum);
+        gamemodeCount = UI_FeederCount(localClientNum,iVar1,fVar2,listPtr_00);
+        for (gamemodeIndex = 0; gamemodeIndex < gamemodeCount; gamemodeIndex = gamemodeIndex + 1) {
+          useOwnerDraw = &useOwnerdraw;
+          angle_00 = &angle;
+          handle = &material;
+          column = 1;
+          item_00 = feeder;
+          fVar2 = feederID;
+          iVar1 = gamemodeIndex;
+          contextIndex = Com_LocalClient_GetUIContextIndex(localClientNum);
+          s1 = UI_FeederItemText(localClientNum,contextIndex,item_00,fVar2,iVar1,column,handle,
+                                 angle_00,useOwnerDraw);
+          s0 = UI_SafeTranslateString(gamemodeName);
+          iVar1 = I_strcmp(s0,s1);
+          if (iVar1 == 0) break;
         }
-        if ((local_10 < local_c) && (-1 < local_10)) {
-          local_88.internals.intVal = local_10;
+        if ((gamemodeIndex < gamemodeCount) && (-1 < gamemodeIndex)) {
+          result.internals.intVal = gamemodeIndex;
         }
         else {
-          local_88.internals.intVal = 0;
+          result.internals.intVal = 0;
         }
-        AddOperandToStack(param_3,&local_88);
+        AddOperandToStack(dataStack,&result);
       }
     }
   }
@@ -14490,8 +14993,8 @@ void __cdecl GetGamemodeIndexByName(int param_1,itemDef_s *param_2,OperandStack 
     Expression_Error(
                     "UI Expression Error: Expected 2 parameters to GetMapIndexByName( <feeder name>, <map name> )\n"
                     );
-    local_88.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_88);
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -14499,43 +15002,43 @@ void __cdecl GetGamemodeIndexByName(int param_1,itemDef_s *param_2,OperandStack 
 
 // 0079EA30  ServerSort  (universal/com_expressions_eval.cpp:11922)
 
-void __cdecl ServerSort(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ServerSort(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals = DAT_098c3d84;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals = DAT_098c3d84;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079EA60  ServerSortDirection  (universal/com_expressions_eval.cpp:11932)
 
-void __cdecl ServerSortDirection(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ServerSortDirection(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals = DAT_098c3d88;
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals = DAT_098c3d88;
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079EA90  GetServerCounts  (universal/com_expressions_eval.cpp:11942)
 
-void __cdecl GetServerCounts(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetServerCounts(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int count;
   
-  local_8 = 0;
+  count = 0;
   if ((ui_netSource == (dvar_s *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x2eab,0,"%s"), !bVar2)) {
@@ -14545,54 +15048,54 @@ void __cdecl GetServerCounts(int param_1,itemDef_s *param_2,OperandStack *param_
   }
   switch((ui_netSource->current).integer) {
   case 0:
-    local_8 = cls.numunrankedservers;
+    count = cls.numunrankedservers;
     break;
   case 1:
-    local_8 = cls.numrankedservers;
+    count = cls.numrankedservers;
     break;
   case 2:
-    local_8 = cls.numwagerservers;
+    count = cls.numwagerservers;
     break;
   case 3:
-    local_8 = cls.numfavoriteservers;
+    count = cls.numfavoriteservers;
     break;
   case 4:
-    local_8 = cls.numfriendsservers;
+    count = cls.numfriendsservers;
     break;
   case 5:
-    local_8 = DAT_098d7618;
+    count = DAT_098d7618;
   }
-  local_10.dataType = VAL_STRING;
+  result.dataType = VAL_STRING;
   UI_SafeTranslateString("MENU_SERVER_CAPS");
-  local_10.internals.string = va("%s %d(%d)");
-  AddOperandToStack(param_3,&local_10);
+  result.internals.string = va("%s %d(%d)");
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079EB90  RandomIntRange  (universal/com_expressions_eval.cpp:11986)
 
-void __cdecl RandomIntRange(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RandomIntRange(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  int iVar1;
-  int iVar2;
-  Operand local_64;
-  OperandList local_5c;
+  int max;
+  int min;
+  Operand result;
+  OperandList list;
   
-  GetOperandList(param_3,&local_5c);
-  if (local_5c.operandCount == 2) {
-    local_64.dataType = VAL_INT;
-    iVar1 = GetSourceInt(local_5c.operands + 1);
-    iVar2 = GetSourceInt(local_5c.operands);
-    local_64.internals.intVal = irand(iVar2,iVar1);
-    AddOperandToStack(param_3,&local_64);
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    result.dataType = VAL_INT;
+    max = GetSourceInt(list.operands + 1);
+    min = GetSourceInt(list.operands);
+    result.internals.intVal = irand(min,max);
+    AddOperandToStack(dataStack,&result);
   }
   else {
     Expression_Error("UI Expression Error: Expected at 2 parameters to RandomIntRange()\n");
-    local_64.dataType = VAL_INT;
-    local_64.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_64);
+    result.dataType = VAL_INT;
+    result.internals.intVal = 0;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -14600,47 +15103,48 @@ void __cdecl RandomIntRange(int param_1,itemDef_s *param_2,OperandStack *param_3
 
 // 0079EC20  GetSelectedEmblemLayer  (universal/com_expressions_eval.cpp:12004)
 
-void __cdecl GetSelectedEmblemLayer(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetSelectedEmblemLayer(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand result;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = UI_EmblemGetSelectedLayer();
-  AddOperandToStack(param_3,&local_c);
+  result.dataType = VAL_INT;
+  result.internals.intVal = UI_EmblemGetSelectedLayer();
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 0079EC50  MinValue  (universal/com_expressions_eval.cpp:12054)
 
-void __cdecl MinValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl MinValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   float fVar1;
-  OperandList local_6c;
-  int local_14;
-  Operand local_10;
-  float local_8;
+  float val;
+  OperandList list;
+  int operandNum;
+  Operand operandResult;
+  float min;
   
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount < 1) {
+  GetOperandList(dataStack,&list);
+  if (list.operandCount < 1) {
     Expression_Error("UI Expression Error: Expected at least 1 parameter to min()\n");
-    local_10.dataType = VAL_FLOAT;
-    local_10.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_10);
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.intVal = 0;
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
-    local_8 = GetSourceFloat(local_6c.operands);
-    for (local_14 = 1; local_14 < local_6c.operandCount; local_14 = local_14 + 1) {
-      fVar1 = GetSourceFloat(local_6c.operands + local_14);
-      if (fVar1 < local_8) {
-        local_8 = fVar1;
+    min = GetSourceFloat(list.operands);
+    for (operandNum = 1; operandNum < list.operandCount; operandNum = operandNum + 1) {
+      fVar1 = GetSourceFloat(list.operands + operandNum);
+      if (fVar1 < min) {
+        min = fVar1;
       }
     }
-    local_10.dataType = VAL_FLOAT;
-    local_10.internals.floatVal = local_8;
-    AddOperandToStack(param_3,&local_10);
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = min;
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -14648,33 +15152,34 @@ void __cdecl MinValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079ED20  MaxValue  (universal/com_expressions_eval.cpp:12086)
 
-void __cdecl MaxValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl MaxValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   float fVar1;
-  float local_74;
-  OperandList local_6c;
-  int local_10;
-  Operand local_c;
+  float max;
+  float val;
+  OperandList list;
+  int operandNum;
+  Operand operandResult;
   
-  GetOperandList(param_3,&local_6c);
-  if (local_6c.operandCount < 1) {
+  GetOperandList(dataStack,&list);
+  if (list.operandCount < 1) {
     Expression_Error("UI Expression Error: Expected at least 1 parameter to max()\n");
-    local_c.dataType = VAL_FLOAT;
-    local_c.internals.intVal = 0;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.intVal = 0;
+    AddOperandToStack(dataStack,&operandResult);
   }
   else {
-    local_74 = GetSourceFloat(local_6c.operands);
-    for (local_10 = 1; local_10 < local_6c.operandCount; local_10 = local_10 + 1) {
-      fVar1 = GetSourceFloat(local_6c.operands + local_10);
-      if (local_74 < fVar1) {
-        local_74 = fVar1;
+    max = GetSourceFloat(list.operands);
+    for (operandNum = 1; operandNum < list.operandCount; operandNum = operandNum + 1) {
+      fVar1 = GetSourceFloat(list.operands + operandNum);
+      if (max < fVar1) {
+        max = fVar1;
       }
     }
-    local_c.dataType = VAL_FLOAT;
-    local_c.internals.floatVal = local_74;
-    AddOperandToStack(param_3,&local_c);
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = max;
+    AddOperandToStack(dataStack,&operandResult);
   }
   return;
 }
@@ -14682,28 +15187,28 @@ void __cdecl MaxValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079EDF0  Select  (universal/com_expressions_eval.cpp:12118)
 
-void __cdecl Select(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Select(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_68;
-  int local_60;
-  OperandList local_5c;
+  Operand result;
+  int condition;
+  OperandList list;
   
-  GetOperandList(param_3,&local_5c);
-  if (local_5c.operandCount == 3) {
-    local_60 = GetOperandValueInt(local_5c.operands);
-    if (local_60 == 0) {
-      AddOperandToStack(param_3,local_5c.operands + 2);
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 3) {
+    condition = GetOperandValueInt(list.operands);
+    if (condition == 0) {
+      AddOperandToStack(dataStack,list.operands + 2);
     }
     else {
-      AddOperandToStack(param_3,local_5c.operands + 1);
+      AddOperandToStack(dataStack,list.operands + 1);
     }
   }
   else {
     Expression_Error("Expected 3 parameters to Select()\n");
-    local_68.internals.intVal = 0;
-    local_68.dataType = VAL_INT;
-    AddOperandToStack(param_3,&local_68);
+    result.internals.intVal = 0;
+    result.dataType = VAL_INT;
+    AddOperandToStack(dataStack,&result);
   }
   return;
 }
@@ -14711,27 +15216,27 @@ void __cdecl Select(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079EE80  Choose  (universal/com_expressions_eval.cpp:12142)
 
-void __cdecl Choose(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Choose(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int local_7c;
   int local_70;
-  Operand local_6c;
-  OperandList local_64;
-  int local_8;
+  Operand result;
+  OperandList list;
+  int sel;
   
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 1) {
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 1) {
     Expression_Error("Expected 3 parameters to Select()\n");
-    local_6c.internals.intVal = 0;
-    local_6c.dataType = VAL_INT;
-    AddOperandToStack(param_3,&local_6c);
+    result.internals.intVal = 0;
+    result.dataType = VAL_INT;
+    AddOperandToStack(dataStack,&result);
   }
   else {
-    local_70 = GetOperandValueInt(local_64.operands);
+    local_70 = GetOperandValueInt(list.operands);
     local_70 = local_70 + 1;
-    if (local_64.operandCount + -1 <= local_70) {
-      local_70 = local_64.operandCount + -1;
+    if (list.operandCount + -1 <= local_70) {
+      local_70 = list.operandCount + -1;
     }
     if (local_70 < 2) {
       local_7c = 1;
@@ -14739,8 +15244,8 @@ void __cdecl Choose(int param_1,itemDef_s *param_2,OperandStack *param_3)
     else {
       local_7c = local_70;
     }
-    local_8 = local_7c;
-    AddOperandToStack(param_3,local_64.operands + local_7c);
+    sel = local_7c;
+    AddOperandToStack(dataStack,list.operands + local_7c);
   }
   return;
 }
@@ -14748,7 +15253,7 @@ void __cdecl Choose(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079F2A0  LocalizationError  (universal/com_expressions_eval.cpp:12165)
 
-void __cdecl LocalizationError(char *param_1)
+void __cdecl LocalizationError(char *errorMessage)
 
 {
   code *pcVar1;
@@ -14756,7 +15261,7 @@ void __cdecl LocalizationError(char *param_1)
   
   bVar2 = Dvar_GetBool("loc_warnings");
   if (bVar2) {
-    if (param_1 == (char *)0x0) {
+    if (errorMessage == (char *)0x0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                ,0x2f88,0,"%s");
       if (!bVar2) {
@@ -14779,16 +15284,16 @@ void __cdecl LocalizationError(char *param_1)
 
 // 0079F330  ValidateLocalizedStringRef  (universal/com_expressions_eval.cpp:12179)
 
-void __cdecl ValidateLocalizedStringRef(char *param_1,int param_2)
+void __cdecl ValidateLocalizedStringRef(char *token,int tokenLen)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  char *pcVar4;
-  int local_8;
+  char *errorMessage;
+  int charIter;
   
-  if (param_1 == (char *)0x0) {
+  if (token == (char *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x2f96,0,"%s");
     if (!bVar2) {
@@ -14797,7 +15302,7 @@ void __cdecl ValidateLocalizedStringRef(char *param_1,int param_2)
       return;
     }
   }
-  if (param_2 < 1) {
+  if (tokenLen < 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x2f97,0,"%s");
     if (!bVar2) {
@@ -14806,13 +15311,13 @@ void __cdecl ValidateLocalizedStringRef(char *param_1,int param_2)
       return;
     }
   }
-  for (local_8 = 1; local_8 < param_2; local_8 = local_8 + 1) {
-    iVar3 = isalnum((int)param_1[local_8]);
-    if ((iVar3 == 0) && (param_1[local_8] != '_')) {
-      pcVar4 = va(
-                 "Illegal localized string reference: %s must contain only alpha-numeric characters and underscores"
-                 );
-      LocalizationError(pcVar4);
+  for (charIter = 1; charIter < tokenLen; charIter = charIter + 1) {
+    iVar3 = isalnum((int)token[charIter]);
+    if ((iVar3 == 0) && (token[charIter] != '_')) {
+      errorMessage = va(
+                       "Illegal localized string reference: %s must contain only alpha-numeric characters and underscores"
+                       );
+      LocalizationError(errorMessage);
     }
   }
   return;
@@ -14823,187 +15328,189 @@ void __cdecl ValidateLocalizedStringRef(char *param_1,int param_2)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl LocalizeString(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl LocalizeString(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   char cVar1;
-  Operand OVar2;
-  Operand OVar3;
-  int iVar4;
-  char *pcVar5;
+  Operand operand_00;
+  Operand operand_01;
+  int iVar2;
+  char *errorMessage;
   char *local_4a0;
   char *local_490;
-  Operand local_48c;
-  char local_484 [1024];
+  Operand result;
+  char string [1024];
   uint local_84;
-  undefined1 local_7d;
-  Operand *local_7c;
-  uint local_78;
-  OperandList local_74;
-  uint local_1c;
-  undefined1 local_15;
-  expDataType local_14;
-  int local_10;
-  char *local_c;
-  int local_8;
+  bool useLocalization;
+  Operand *operand;
+  uint charIndex;
+  OperandList list;
+  uint tokenLen;
+  bool enableLocalization;
+  expDataType type;
+  int parmIndex;
+  char *token;
+  uint stringLen;
   
   local_84 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetOperandList(param_3,&local_74);
-  local_7d = 1;
-  local_8 = 0;
-  local_10 = 0;
+  GetOperandList(dataStack,&list);
+  useLocalization = true;
+  stringLen = 0;
+  parmIndex = 0;
   do {
-    if (local_74.operandCount <= local_10) {
-      local_484[local_8] = '\0';
-      local_48c.dataType = VAL_STRING;
-      local_48c.internals.string = SEH_LocalizeTextMessage(local_484,"ui string",LOCMSG_NOERR);
-      if ((char *)local_48c.internals.intVal == (char *)0x0) {
-        local_48c.internals.floatVal = 1.8187723e-38;
+    if (list.operandCount <= parmIndex) {
+      string[stringLen] = '\0';
+      result.dataType = VAL_STRING;
+      result.internals.string = SEH_LocalizeTextMessage(string,"ui string",LOCMSG_NOERR);
+      if ((char *)result.internals.intVal == (char *)0x0) {
+        result.internals.floatVal = 1.8187723e-38;
       }
-      AddOperandToStack(param_3,&local_48c);
+      AddOperandToStack(dataStack,&result);
       return;
     }
-    local_7c = local_74.operands + local_10;
-    local_14 = local_7c->dataType;
-    local_15 = 0;
-    if (local_14 == VAL_STRING) {
-      OVar2.internals.intVal = local_74.operands[local_10].internals.intVal;
-      OVar2.dataType = local_7c->dataType;
-      local_c = GetSourceString(OVar2);
-      local_490 = local_c;
+    operand = list.operands + parmIndex;
+    type = operand->dataType;
+    enableLocalization = false;
+    if (type == VAL_STRING) {
+      operand_00.internals.intVal = list.operands[parmIndex].internals.intVal;
+      operand_00.dataType = operand->dataType;
+      token = GetSourceString(operand_00);
+      local_490 = token;
       do {
         cVar1 = *local_490;
         local_490 = local_490 + 1;
       } while (cVar1 != '\0');
-      local_1c = (int)local_490 - (int)(local_c + 1);
-      if (1 < local_1c) {
-        ValidateLocalizedStringRef(local_c,local_1c);
-        if (*local_c == '@') {
-          local_c = local_c + 1;
-          local_1c = local_1c - 1;
+      tokenLen = (int)local_490 - (int)(token + 1);
+      if (1 < tokenLen) {
+        ValidateLocalizedStringRef(token,tokenLen);
+        if (*token == '@') {
+          token = token + 1;
+          tokenLen = tokenLen - 1;
         }
-        if (0x3ff < local_8 + 1 + local_1c) {
+        if (0x3ff < stringLen + 1 + tokenLen) {
           Com_Error(ERR_LOCALIZATION,"Error: %s is too long. Max length is %i\n");
         }
-        if (local_8 != 0) {
-          local_484[local_8] = '\x14';
-          local_8 = local_8 + 1;
+        if (stringLen != 0) {
+          string[stringLen] = '\x14';
+          stringLen = stringLen + 1;
         }
-        local_7d = 1;
+        useLocalization = true;
         goto LAB_0079f1c7;
       }
     }
     else {
-      OVar3.internals.intVal = local_74.operands[local_10].internals.intVal;
-      OVar3.dataType = local_7c->dataType;
-      local_c = GetSourceString(OVar3);
-      local_4a0 = local_c;
+      operand_01.internals.intVal = list.operands[parmIndex].internals.intVal;
+      operand_01.dataType = operand->dataType;
+      token = GetSourceString(operand_01);
+      local_4a0 = token;
       do {
         cVar1 = *local_4a0;
         local_4a0 = local_4a0 + 1;
       } while (cVar1 != '\0');
-      local_1c = (int)local_4a0 - (int)(local_c + 1);
-      for (local_78 = 0; local_78 < local_1c; local_78 = local_78 + 1) {
-        if (((local_c[local_78] == '\x14') || (local_c[local_78] == '\x15')) ||
-           (local_c[local_78] == '\x16')) {
+      tokenLen = (int)local_4a0 - (int)(token + 1);
+      for (charIndex = 0; charIndex < tokenLen; charIndex = charIndex + 1) {
+        if (((token[charIndex] == '\x14') || (token[charIndex] == '\x15')) ||
+           (token[charIndex] == '\x16')) {
           Expression_Error(" bad escape character (%i) present in string");
         }
-        iVar4 = isalpha((int)local_c[local_78]);
-        if (iVar4 != 0) {
-          pcVar5 = va("Non-localized UI strings are not allowed to have letters in them: \"%s\"");
-          LocalizationError(pcVar5);
+        iVar2 = isalpha((int)token[charIndex]);
+        if (iVar2 != 0) {
+          errorMessage = va(
+                           "Non-localized UI strings are not allowed to have letters in them: \"%s\""
+                           );
+          LocalizationError(errorMessage);
           break;
         }
       }
-      if (0x3ff < local_8 + 1 + local_1c) {
+      if (0x3ff < stringLen + 1 + tokenLen) {
         Com_Error(ERR_LOCALIZATION,"Error: %s is too long. Max length is %i\n");
       }
-      if (local_1c != 0) {
-        local_484[local_8] = '\x15';
-        local_8 = local_8 + 1;
+      if (tokenLen != 0) {
+        string[stringLen] = '\x15';
+        stringLen = stringLen + 1;
       }
-      local_7d = 0;
+      useLocalization = false;
 LAB_0079f1c7:
-      for (local_78 = 0; local_78 < local_1c; local_78 = local_78 + 1) {
-        if (((local_c[local_78] == '\x14') || (local_c[local_78] == '\x15')) ||
-           (local_c[local_78] == '\x16')) {
-          local_484[local_8] = '.';
+      for (charIndex = 0; charIndex < tokenLen; charIndex = charIndex + 1) {
+        if (((token[charIndex] == '\x14') || (token[charIndex] == '\x15')) ||
+           (token[charIndex] == '\x16')) {
+          string[stringLen] = '.';
         }
         else {
-          local_484[local_8] = local_c[local_78];
+          string[stringLen] = token[charIndex];
         }
-        local_8 = local_8 + 1;
+        stringLen = stringLen + 1;
       }
     }
-    local_10 = local_10 + 1;
+    parmIndex = parmIndex + 1;
   } while( true );
 }
 
 
 // 0079F3F0  RPN_FUNC_TOINT  (universal/com_expressions_eval.cpp:12305)
 
-void __cdecl RPN_FUNC_TOINT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_FUNC_TOINT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand operandResult;
+  Operand data1;
   
-  GetOperand(param_3,&local_c);
-  local_14.dataType = VAL_INT;
-  local_14.internals.intVal = GetSourceInt(&local_c);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data1);
+  operandResult.dataType = VAL_INT;
+  operandResult.internals.intVal = GetSourceInt(&data1);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F430  RPN_FUNC_TOSTRING  (universal/com_expressions_eval.cpp:12315)
 
-void __cdecl RPN_FUNC_TOSTRING(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_FUNC_TOSTRING(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand OVar1;
-  Operand local_14;
-  Operand local_c;
+  Operand operand;
+  Operand operandResult;
+  Operand data1;
   
-  GetOperand(param_3,&local_c);
-  local_14.dataType = VAL_STRING;
-  OVar1.internals.intVal = local_c.internals.intVal;
-  OVar1.dataType = local_c.dataType;
-  local_14.internals.string = GetSourceString(OVar1);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data1);
+  operandResult.dataType = VAL_STRING;
+  operand.internals.intVal = data1.internals.intVal;
+  operand.dataType = data1.dataType;
+  operandResult.internals.string = GetSourceString(operand);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F480  RPN_FUNC_TOFLOAT  (universal/com_expressions_eval.cpp:12325)
 
-void __cdecl RPN_FUNC_TOFLOAT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_FUNC_TOFLOAT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand operandResult;
+  Operand data1;
   
-  GetOperand(param_3,&local_c);
-  local_14.dataType = VAL_FLOAT;
-  local_14.internals.floatVal = GetSourceFloat(&local_c);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data1);
+  operandResult.dataType = VAL_FLOAT;
+  operandResult.internals.floatVal = GetSourceFloat(&data1);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F4C0  RPN_FUNC_ISCLANOWNER  (universal/com_expressions_eval.cpp:12335)
 
-void __cdecl RPN_FUNC_ISCLANOWNER(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_FUNC_ISCLANOWNER(int localClientNum_3,itemDef_s *item_3,OperandStack *dataStack_3)
 
 {
-  IsRecommendedPlayerInvitable(param_1,param_2,param_3);
+  IsRecommendedPlayerInvitable(localClientNum_3,item_3,dataStack_3);
   return;
 }
 
 
 // 0079F4E0  RPN_OP_NOOP  (universal/com_expressions_eval.cpp:12362)
 
-void __cdecl RPN_OP_NOOP(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_NOOP(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   Expression_Error("Invalid operator NOOP made it into the stack!\n");
@@ -15013,7 +15520,7 @@ void __cdecl RPN_OP_NOOP(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 0079F500  RPN_FUNC_INVALID  (universal/com_expressions_eval.cpp:12367)
 
-void __cdecl RPN_FUNC_INVALID(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_FUNC_INVALID(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   Expression_Error("Invalid functionmade it into the stack!\n");
@@ -15023,22 +15530,24 @@ void __cdecl RPN_FUNC_INVALID(int param_1,itemDef_s *param_2,OperandStack *param
 
 // 0079FA20  MakeStringOperandNumber  (universal/com_expressions_eval.cpp:12372)
 
-void __cdecl MakeStringOperandNumber(Operand *param_1)
+void __cdecl MakeStringOperandNumber(Operand *op)
 
 {
   int iVar1;
   double dVar2;
+  float f;
+  int i;
   
-  if (param_1->dataType == VAL_STRING) {
-    dVar2 = atof((param_1->internals).string);
-    iVar1 = atoi((param_1->internals).string);
+  if (op->dataType == VAL_STRING) {
+    dVar2 = atof((op->internals).string);
+    iVar1 = atoi((op->internals).string);
     if ((float)dVar2 == (float)iVar1) {
-      param_1->dataType = VAL_INT;
-      (param_1->internals).intVal = iVar1;
+      op->dataType = VAL_INT;
+      (op->internals).intVal = iVar1;
     }
     else {
-      param_1->dataType = VAL_FLOAT;
-      (param_1->internals).floatVal = (float)dVar2;
+      op->dataType = VAL_FLOAT;
+      (op->internals).floatVal = (float)dVar2;
     }
   }
   return;
@@ -15047,196 +15556,196 @@ void __cdecl MakeStringOperandNumber(Operand *param_1)
 
 // 0079F520  RPN_OP_NOT  (universal/com_expressions_eval.cpp:12387)
 
-void __cdecl RPN_OP_NOT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_NOT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand operandResult;
+  Operand data1;
   
-  GetOperand(param_3,&local_c);
-  LogicalNot(param_1,&local_c,&local_14);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data1);
+  LogicalNot(localClientNum,&data1,&operandResult);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F630  RPN_OP_BITWISENOT  (universal/com_expressions_eval.cpp:12396)
 
-void __cdecl RPN_OP_BITWISENOT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_BITWISENOT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_14;
-  Operand local_c;
+  Operand operandResult;
+  Operand data1;
   
-  GetOperand(param_3,&local_c);
-  BitwiseNot(param_1,&local_c,&local_14);
-  AddOperandToStack(param_3,&local_14);
+  GetOperand(dataStack,&data1);
+  BitwiseNot(localClientNum,&data1,&operandResult);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F750  RPN_OP_BITSHIFTLEFT  (universal/com_expressions_eval.cpp:12405)
 
-void __cdecl RPN_OP_BITSHIFTLEFT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_BITSHIFTLEFT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  BitShiftLeft(param_1,&local_c,&local_1c,&local_14);
-  AddOperandToStack(param_3,&local_14);
+  GetTwoOperands(dataStack,&data1,&data2);
+  BitShiftLeft(localClientNum,&data1,&data2,&operandResult);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F810  RPN_OP_BITSHIFTRIGHT  (universal/com_expressions_eval.cpp:12414)
 
-void __cdecl RPN_OP_BITSHIFTRIGHT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_BITSHIFTRIGHT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  BitShiftRight(param_1,&local_c,&local_1c,&local_14);
-  AddOperandToStack(param_3,&local_14);
+  GetTwoOperands(dataStack,&data1,&data2);
+  BitShiftRight(localClientNum,&data1,&data2,&operandResult);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079F8D0  RPN_OP_NEGATE  (universal/com_expressions_eval.cpp:12422)
 
-void __cdecl RPN_OP_NEGATE(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_NEGATE(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  Operand data1;
   
-  GetOperand(param_3,&local_c);
-  if (local_c.dataType == VAL_INT) {
-    local_c.internals.intVal = -local_c.internals.intVal;
+  GetOperand(dataStack,&data1);
+  if (data1.dataType == VAL_INT) {
+    data1.internals.intVal = -data1.internals.intVal;
   }
   else {
-    if (local_c.dataType != VAL_FLOAT) {
+    if (data1.dataType != VAL_FLOAT) {
       Expression_Error(" trying to negate a string: %s\n");
       return;
     }
-    local_c.internals.intVal = local_c.internals.intVal ^ 0x80000000;
+    data1.internals.intVal = data1.internals.intVal ^ 0x80000000;
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&data1);
   return;
 }
 
 
 // 0079F940  RPN_OP_MULTIPLY  (universal/com_expressions_eval.cpp:12438)
 
-void __cdecl RPN_OP_MULTIPLY(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_MULTIPLY(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  MakeStringOperandNumber(&local_c);
-  MakeStringOperandNumber(&local_1c);
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  MakeStringOperandNumber(&data1);
+  MakeStringOperandNumber(&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal = local_c.internals.intVal * local_1c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal = data1.internals.intVal * data2.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_FLOAT;
-    local_14.internals.floatVal = (float)local_1c.internals.intVal * local_c.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = (float)data2.internals.intVal * data1.internals.floatVal;
     break;
   case 4:
-    local_14.dataType = VAL_FLOAT;
-    local_14.internals.floatVal = (float)local_c.internals.intVal * local_1c.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = (float)data1.internals.intVal * data2.internals.floatVal;
     break;
   case 5:
-    local_14.dataType = VAL_FLOAT;
-    local_14.internals.floatVal = local_c.internals.floatVal * local_1c.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = data1.internals.floatVal * data2.internals.floatVal;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079FAA0  RPN_OP_DIVIDE  (universal/com_expressions_eval.cpp:12467)
 
-void __cdecl RPN_OP_DIVIDE(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_DIVIDE(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   double dVar1;
   operandInternalDataUnion local_20;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  if (local_c.dataType == VAL_INT) {
-    local_c.dataType = VAL_FLOAT;
-    local_c.internals.floatVal = (float)local_c.internals.intVal;
+  GetTwoOperands(dataStack,&data1,&data2);
+  if (data1.dataType == VAL_INT) {
+    data1.dataType = VAL_FLOAT;
+    data1.internals.floatVal = (float)data1.internals.intVal;
   }
-  else if (local_c.dataType == VAL_STRING) {
-    local_c.dataType = VAL_FLOAT;
-    dVar1 = atof(local_c.internals.string);
-    local_c.internals.floatVal = (float)dVar1;
+  else if (data1.dataType == VAL_STRING) {
+    data1.dataType = VAL_FLOAT;
+    dVar1 = atof(data1.internals.string);
+    data1.internals.floatVal = (float)dVar1;
   }
-  if (local_1c.dataType == VAL_INT) {
-    local_1c.dataType = VAL_FLOAT;
-    local_1c.internals.floatVal = (float)local_1c.internals.intVal;
+  if (data2.dataType == VAL_INT) {
+    data2.dataType = VAL_FLOAT;
+    data2.internals.floatVal = (float)data2.internals.intVal;
   }
-  else if (local_1c.dataType == VAL_STRING) {
-    local_1c.dataType = VAL_FLOAT;
-    dVar1 = atof(local_1c.internals.string);
-    local_1c.internals.floatVal = (float)dVar1;
+  else if (data2.dataType == VAL_STRING) {
+    data2.dataType = VAL_FLOAT;
+    dVar1 = atof(data2.internals.string);
+    data2.internals.floatVal = (float)dVar1;
   }
-  local_14.dataType = VAL_FLOAT;
-  if (local_1c.internals.floatVal == 0.0) {
+  operandResult.dataType = VAL_FLOAT;
+  if (data2.internals.floatVal == 0.0) {
     local_20.floatVal = 1.0;
   }
   else {
-    local_20.intVal = local_1c.internals.intVal;
+    local_20.intVal = data2.internals.intVal;
   }
-  local_14.internals.floatVal = local_c.internals.floatVal / local_20.floatVal;
-  AddOperandToStack(param_3,&local_14);
+  operandResult.internals.floatVal = data1.internals.floatVal / local_20.floatVal;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079FB80  RPN_OP_MODULUS  (universal/com_expressions_eval.cpp:12493)
 
-void __cdecl RPN_OP_MODULUS(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_MODULUS(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   code *pcVar1;
   bool bVar2;
   operandInternalDataUnion local_38;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  if (local_c.dataType == VAL_FLOAT) {
-    local_c.dataType = VAL_INT;
-    local_c.internals.intVal = (int)ROUND(local_c.internals.floatVal + 9.313226e-10);
+  GetTwoOperands(dataStack,&data1,&data2);
+  if (data1.dataType == VAL_FLOAT) {
+    data1.dataType = VAL_INT;
+    data1.internals.intVal = (int)ROUND(data1.internals.floatVal + 9.313226e-10);
   }
-  else if (local_c.dataType == VAL_STRING) {
-    local_c.dataType = VAL_INT;
-    local_c.internals.intVal = atoi(local_c.internals.string);
+  else if (data1.dataType == VAL_STRING) {
+    data1.dataType = VAL_INT;
+    data1.internals.intVal = atoi(data1.internals.string);
   }
-  if (local_1c.dataType == VAL_FLOAT) {
-    local_1c.dataType = VAL_INT;
-    local_1c.internals.intVal = (int)ROUND(local_1c.internals.floatVal + 9.313226e-10);
+  if (data2.dataType == VAL_FLOAT) {
+    data2.dataType = VAL_INT;
+    data2.internals.intVal = (int)ROUND(data2.internals.floatVal + 9.313226e-10);
   }
-  else if (local_1c.dataType == VAL_STRING) {
-    local_1c.dataType = VAL_INT;
-    local_1c.internals.intVal = atoi(local_1c.internals.string);
+  else if (data2.dataType == VAL_STRING) {
+    data2.dataType = VAL_INT;
+    data2.internals.intVal = atoi(data2.internals.string);
   }
-  if ((local_c.dataType != VAL_INT) || (local_1c.dataType != VAL_INT)) {
+  if ((data1.dataType != VAL_INT) || (data2.dataType != VAL_INT)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x30df,0,"%s");
     if (!bVar2) {
@@ -15245,15 +15754,15 @@ void __cdecl RPN_OP_MODULUS(int param_1,itemDef_s *param_2,OperandStack *param_3
       return;
     }
   }
-  local_14.dataType = VAL_INT;
-  if ((char *)local_1c.internals.intVal == (char *)0x0) {
+  operandResult.dataType = VAL_INT;
+  if ((char *)data2.internals.intVal == (char *)0x0) {
     local_38.intVal = (int)&DAT_00000001;
   }
   else {
-    local_38.intVal = local_1c.internals.intVal;
+    local_38.intVal = data2.internals.intVal;
   }
-  local_14.internals.intVal = local_c.internals.intVal % local_38.intVal;
-  AddOperandToStack(param_3,&local_14);
+  operandResult.internals.intVal = data1.internals.intVal % local_38.intVal;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
@@ -15262,626 +15771,626 @@ void __cdecl RPN_OP_MODULUS(int param_1,itemDef_s *param_2,OperandStack *param_3
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl RPN_OP_ADD(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_ADD(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  char local_324 [256];
-  Operand local_224;
-  Operand local_21c;
-  char local_214 [256];
-  char local_114 [260];
+  char rightSideStr [256];
+  Operand data2;
+  Operand operandResult;
+  char leftSideStr [256];
+  char resultStr [260];
   uint local_10;
-  Operand local_c;
+  Operand data1;
   
   local_10 = __security_cookie ^ (uint)&stack0xfffffffc;
-  GetTwoOperands(param_3,&local_c,&local_224);
-  switch(local_224.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_21c.dataType = VAL_INT;
-    local_21c.internals.intVal = (int)(local_c.internals.string + local_224.internals.intVal);
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal = (int)(data1.internals.string + data2.internals.intVal);
     break;
   case VAL_FLOAT:
-    local_21c.dataType = VAL_FLOAT;
-    local_21c.internals.floatVal = (float)local_224.internals.intVal + local_c.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = (float)data2.internals.intVal + data1.internals.floatVal;
     break;
   case VAL_STRING:
-    local_21c.dataType = VAL_STRING;
-    I_strncpyz(local_214,local_c.internals.string,0x100);
-    Com_sprintf(local_114,0x100,"%s%i");
-    local_21c.internals.string = CopyTempString(local_114);
+    operandResult.dataType = VAL_STRING;
+    I_strncpyz(leftSideStr,data1.internals.string,0x100);
+    Com_sprintf(resultStr,0x100,"%s%i");
+    operandResult.internals.string = CopyTempString(resultStr);
     break;
   case 4:
-    local_21c.dataType = VAL_FLOAT;
-    local_21c.internals.floatVal = (float)local_c.internals.intVal + local_224.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = (float)data1.internals.intVal + data2.internals.floatVal;
     break;
   case 5:
-    local_21c.dataType = VAL_FLOAT;
-    local_21c.internals.floatVal = local_c.internals.floatVal + local_224.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = data1.internals.floatVal + data2.internals.floatVal;
     break;
   case 6:
-    local_21c.dataType = VAL_STRING;
-    I_strncpyz(local_214,local_c.internals.string,0x100);
-    Com_sprintf(local_114,0x100,"%s%f");
-    local_21c.internals.string = CopyTempString(local_114);
+    operandResult.dataType = VAL_STRING;
+    I_strncpyz(leftSideStr,data1.internals.string,0x100);
+    Com_sprintf(resultStr,0x100,"%s%f");
+    operandResult.internals.string = CopyTempString(resultStr);
     break;
   case 8:
-    local_21c.dataType = VAL_STRING;
-    I_strncpyz(local_324,local_224.internals.string,0x100);
-    Com_sprintf(local_114,0x100,"%i%s");
-    local_21c.internals.string = CopyTempString(local_114);
+    operandResult.dataType = VAL_STRING;
+    I_strncpyz(rightSideStr,data2.internals.string,0x100);
+    Com_sprintf(resultStr,0x100,"%i%s");
+    operandResult.internals.string = CopyTempString(resultStr);
     break;
   case 9:
-    local_21c.dataType = VAL_STRING;
-    I_strncpyz(local_324,local_224.internals.string,0x100);
-    Com_sprintf(local_114,0x100,"%f%s");
-    local_21c.internals.string = CopyTempString(local_114);
+    operandResult.dataType = VAL_STRING;
+    I_strncpyz(rightSideStr,data2.internals.string,0x100);
+    Com_sprintf(resultStr,0x100,"%f%s");
+    operandResult.internals.string = CopyTempString(resultStr);
     break;
   case 10:
-    local_21c.dataType = VAL_STRING;
-    I_strncpyz(local_214,local_c.internals.string,0x100);
-    I_strncpyz(local_324,local_224.internals.string,0x100);
-    Com_sprintf(local_114,0x100,"%s%s");
-    local_21c.internals.string = CopyTempString(local_114);
+    operandResult.dataType = VAL_STRING;
+    I_strncpyz(leftSideStr,data1.internals.string,0x100);
+    I_strncpyz(rightSideStr,data2.internals.string,0x100);
+    Com_sprintf(resultStr,0x100,"%s%s");
+    operandResult.internals.string = CopyTempString(resultStr);
   }
-  AddOperandToStack(param_3,&local_21c);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 0079FFF0  RPN_OP_LESSTHAN  (universal/com_expressions_eval.cpp:12591)
 
-void __cdecl RPN_OP_LESSTHAN(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_LESSTHAN(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   operandInternalDataUnion local_3c;
   operandInternalDataUnion local_38;
   operandInternalDataUnion local_34;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  MakeStringOperandNumber(&local_c);
-  MakeStringOperandNumber(&local_1c);
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  MakeStringOperandNumber(&data1);
+  MakeStringOperandNumber(&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = local_c.internals.intVal < local_1c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = data1.internals.intVal < data2.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_38.intVal._1_3_ = 0;
-    local_38.intVal._0_1_ = local_c.internals.floatVal < (float)local_1c.internals.intVal;
-    local_14.internals = local_38;
+    local_38.intVal._0_1_ = data1.internals.floatVal < (float)data2.internals.intVal;
+    operandResult.internals = local_38;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_3c.intVal._1_3_ = 0;
-    local_3c.intVal._0_1_ = (float)local_c.internals.intVal < local_1c.internals.floatVal;
-    local_14.internals = local_3c;
+    local_3c.intVal._0_1_ = (float)data1.internals.intVal < data2.internals.floatVal;
+    operandResult.internals = local_3c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_34.intVal._1_3_ = 0;
-    local_34.intVal._0_1_ = local_c.internals.floatVal < local_1c.internals.floatVal;
-    local_14.internals = local_34;
+    local_34.intVal._0_1_ = data1.internals.floatVal < data2.internals.floatVal;
+    operandResult.internals = local_34;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0110  RPN_OP_LESSTHANEQUALTO  (universal/com_expressions_eval.cpp:12620)
 
-void __cdecl RPN_OP_LESSTHANEQUALTO(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_LESSTHANEQUALTO(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   operandInternalDataUnion local_3c;
   operandInternalDataUnion local_38;
   operandInternalDataUnion local_34;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  MakeStringOperandNumber(&local_c);
-  MakeStringOperandNumber(&local_1c);
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  MakeStringOperandNumber(&data1);
+  MakeStringOperandNumber(&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = local_c.internals.intVal <= local_1c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = data1.internals.intVal <= data2.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_38.intVal._1_3_ = 0;
-    local_38.intVal._0_1_ = local_c.internals.floatVal <= (float)local_1c.internals.intVal;
-    local_14.internals = local_38;
+    local_38.intVal._0_1_ = data1.internals.floatVal <= (float)data2.internals.intVal;
+    operandResult.internals = local_38;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_3c.intVal._1_3_ = 0;
-    local_3c.intVal._0_1_ = (float)local_c.internals.intVal <= local_1c.internals.floatVal;
-    local_14.internals = local_3c;
+    local_3c.intVal._0_1_ = (float)data1.internals.intVal <= data2.internals.floatVal;
+    operandResult.internals = local_3c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_34.intVal._1_3_ = 0;
-    local_34.intVal._0_1_ = local_c.internals.floatVal <= local_1c.internals.floatVal;
-    local_14.internals = local_34;
+    local_34.intVal._0_1_ = data1.internals.floatVal <= data2.internals.floatVal;
+    operandResult.internals = local_34;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0230  RPN_OP_GREATERTHAN  (universal/com_expressions_eval.cpp:12649)
 
-void __cdecl RPN_OP_GREATERTHAN(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_GREATERTHAN(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   operandInternalDataUnion local_3c;
   operandInternalDataUnion local_38;
   operandInternalDataUnion local_34;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  MakeStringOperandNumber(&local_c);
-  MakeStringOperandNumber(&local_1c);
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  MakeStringOperandNumber(&data1);
+  MakeStringOperandNumber(&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = local_1c.internals.intVal < local_c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = data2.internals.intVal < data1.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_38.intVal._1_3_ = 0;
-    local_38.intVal._0_1_ = (float)local_1c.internals.intVal < local_c.internals.floatVal;
-    local_14.internals = local_38;
+    local_38.intVal._0_1_ = (float)data2.internals.intVal < data1.internals.floatVal;
+    operandResult.internals = local_38;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_3c.intVal._1_3_ = 0;
-    local_3c.intVal._0_1_ = local_1c.internals.floatVal < (float)local_c.internals.intVal;
-    local_14.internals = local_3c;
+    local_3c.intVal._0_1_ = data2.internals.floatVal < (float)data1.internals.intVal;
+    operandResult.internals = local_3c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_34.intVal._1_3_ = 0;
-    local_34.intVal._0_1_ = local_1c.internals.floatVal < local_c.internals.floatVal;
-    local_14.internals = local_34;
+    local_34.intVal._0_1_ = data2.internals.floatVal < data1.internals.floatVal;
+    operandResult.internals = local_34;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0350  RPN_OP_GREATERTHANEQUALTO  (universal/com_expressions_eval.cpp:12678)
 
-void __cdecl RPN_OP_GREATERTHANEQUALTO(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_GREATERTHANEQUALTO(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   operandInternalDataUnion local_3c;
   operandInternalDataUnion local_38;
   operandInternalDataUnion local_34;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  MakeStringOperandNumber(&local_c);
-  MakeStringOperandNumber(&local_1c);
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  MakeStringOperandNumber(&data1);
+  MakeStringOperandNumber(&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = local_1c.internals.intVal <= local_c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = data2.internals.intVal <= data1.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_38.intVal._1_3_ = 0;
-    local_38.intVal._0_1_ = (float)local_1c.internals.intVal <= local_c.internals.floatVal;
-    local_14.internals = local_38;
+    local_38.intVal._0_1_ = (float)data2.internals.intVal <= data1.internals.floatVal;
+    operandResult.internals = local_38;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_3c.intVal._1_3_ = 0;
-    local_3c.intVal._0_1_ = local_1c.internals.floatVal <= (float)local_c.internals.intVal;
-    local_14.internals = local_3c;
+    local_3c.intVal._0_1_ = data2.internals.floatVal <= (float)data1.internals.intVal;
+    operandResult.internals = local_3c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_34.intVal._1_3_ = 0;
-    local_34.intVal._0_1_ = local_1c.internals.floatVal <= local_c.internals.floatVal;
-    local_14.internals = local_34;
+    local_34.intVal._0_1_ = data2.internals.floatVal <= data1.internals.floatVal;
+    operandResult.internals = local_34;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0470  RPN_OP_EQUALS  (universal/com_expressions_eval.cpp:12707)
 
-void __cdecl RPN_OP_EQUALS(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_EQUALS(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   operandInternalDataUnion local_3c;
   operandInternalDataUnion local_38;
   operandInternalDataUnion local_34;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  if (local_c.dataType != local_1c.dataType) {
-    MakeStringOperandNumber(&local_c);
-    MakeStringOperandNumber(&local_1c);
+  GetTwoOperands(dataStack,&data1,&data2);
+  if (data1.dataType != data2.dataType) {
+    MakeStringOperandNumber(&data1);
+    MakeStringOperandNumber(&data2);
   }
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = local_c.internals.intVal == local_1c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = data1.internals.intVal == data2.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_38.intVal._1_3_ = 0;
-    local_38.intVal._0_1_ = local_c.internals.floatVal == (float)local_1c.internals.intVal;
-    local_14.internals = local_38;
+    local_38.intVal._0_1_ = data1.internals.floatVal == (float)data2.internals.intVal;
+    operandResult.internals = local_38;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_3c.intVal._1_3_ = 0;
-    local_3c.intVal._0_1_ = (float)local_c.internals.intVal == local_1c.internals.floatVal;
-    local_14.internals = local_3c;
+    local_3c.intVal._0_1_ = (float)data1.internals.intVal == data2.internals.floatVal;
+    operandResult.internals = local_3c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_34.intVal._1_3_ = 0;
-    local_34.intVal._0_1_ = local_c.internals.floatVal == local_1c.internals.floatVal;
-    local_14.internals = local_34;
+    local_34.intVal._0_1_ = data1.internals.floatVal == data2.internals.floatVal;
+    operandResult.internals = local_34;
     break;
   case 10:
-    local_14.dataType = VAL_INT;
-    iVar1 = I_stricmp(local_c.internals.string,local_1c.internals.string);
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = iVar1 == 0;
+    operandResult.dataType = VAL_INT;
+    iVar1 = I_stricmp(data1.internals.string,data2.internals.string);
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = iVar1 == 0;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A05E0  RPN_OP_NOTEQUAL  (universal/com_expressions_eval.cpp:12742)
 
-void __cdecl RPN_OP_NOTEQUAL(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_NOTEQUAL(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int iVar1;
   operandInternalDataUnion local_3c;
   operandInternalDataUnion local_38;
   operandInternalDataUnion local_34;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  if (local_c.dataType != local_1c.dataType) {
-    MakeStringOperandNumber(&local_c);
-    MakeStringOperandNumber(&local_1c);
+  GetTwoOperands(dataStack,&data1,&data2);
+  if (data1.dataType != data2.dataType) {
+    MakeStringOperandNumber(&data1);
+    MakeStringOperandNumber(&data2);
   }
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = local_c.internals.intVal != local_1c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = data1.internals.intVal != data2.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_38.intVal._1_3_ = 0;
-    local_38.intVal._0_1_ = local_c.internals.floatVal != (float)local_1c.internals.intVal;
-    local_14.internals = local_38;
+    local_38.intVal._0_1_ = data1.internals.floatVal != (float)data2.internals.intVal;
+    operandResult.internals = local_38;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_3c.intVal._1_3_ = 0;
-    local_3c.intVal._0_1_ = (float)local_c.internals.intVal != local_1c.internals.floatVal;
-    local_14.internals = local_3c;
+    local_3c.intVal._0_1_ = (float)data1.internals.intVal != data2.internals.floatVal;
+    operandResult.internals = local_3c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
+    operandResult.dataType = VAL_INT;
     local_34.intVal._1_3_ = 0;
-    local_34.intVal._0_1_ = local_c.internals.floatVal != local_1c.internals.floatVal;
-    local_14.internals = local_34;
+    local_34.intVal._0_1_ = data1.internals.floatVal != data2.internals.floatVal;
+    operandResult.internals = local_34;
     break;
   case 10:
-    local_14.dataType = VAL_INT;
-    iVar1 = I_stricmp(local_c.internals.string,local_1c.internals.string);
-    local_14.internals.intVal._1_3_ = 0;
-    local_14.internals.intVal._0_1_ = iVar1 != 0;
+    operandResult.dataType = VAL_INT;
+    iVar1 = I_stricmp(data1.internals.string,data2.internals.string);
+    operandResult.internals.intVal._1_3_ = 0;
+    operandResult.internals.intVal._0_1_ = iVar1 != 0;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0750  RPN_OP_AND  (universal/com_expressions_eval.cpp:12777)
 
-void __cdecl RPN_OP_AND(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_AND(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int local_30;
   int local_2c;
   int local_28;
   int local_24;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  if (local_c.dataType == VAL_STRING) {
-    local_c.dataType = VAL_INT;
-    local_c.internals = (operandInternalDataUnion)(int)*local_c.internals.string;
+  GetTwoOperands(dataStack,&data1,&data2);
+  if (data1.dataType == VAL_STRING) {
+    data1.dataType = VAL_INT;
+    data1.internals = (operandInternalDataUnion)(int)*data1.internals.string;
   }
-  if (local_1c.dataType == VAL_STRING) {
-    local_1c.dataType = VAL_INT;
-    local_1c.internals = (operandInternalDataUnion)(int)*local_1c.internals.string;
+  if (data2.dataType == VAL_STRING) {
+    data2.dataType = VAL_INT;
+    data2.internals = (operandInternalDataUnion)(int)*data2.internals.string;
   }
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    if (((char *)local_c.internals.intVal == (char *)0x0) ||
-       ((char *)local_1c.internals.intVal == (char *)0x0)) {
+    operandResult.dataType = VAL_INT;
+    if (((char *)data1.internals.intVal == (char *)0x0) ||
+       ((char *)data2.internals.intVal == (char *)0x0)) {
       local_30 = 0;
     }
     else {
       local_30 = 1;
     }
-    local_14.internals.intVal = local_30;
+    operandResult.internals.intVal = local_30;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
-    if ((local_c.internals.floatVal == 0.0) || ((char *)local_1c.internals.intVal == (char *)0x0)) {
+    operandResult.dataType = VAL_INT;
+    if ((data1.internals.floatVal == 0.0) || ((char *)data2.internals.intVal == (char *)0x0)) {
       local_28 = 0;
     }
     else {
       local_28 = 1;
     }
-    local_14.internals.intVal = local_28;
+    operandResult.internals.intVal = local_28;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
-    if (((char *)local_c.internals.intVal == (char *)0x0) || (local_1c.internals.floatVal == 0.0)) {
+    operandResult.dataType = VAL_INT;
+    if (((char *)data1.internals.intVal == (char *)0x0) || (data2.internals.floatVal == 0.0)) {
       local_2c = 0;
     }
     else {
       local_2c = 1;
     }
-    local_14.internals.intVal = local_2c;
+    operandResult.internals.intVal = local_2c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
-    if ((local_c.internals.floatVal == 0.0) || (local_1c.internals.floatVal == 0.0)) {
+    operandResult.dataType = VAL_INT;
+    if ((data1.internals.floatVal == 0.0) || (data2.internals.floatVal == 0.0)) {
       local_24 = 0;
     }
     else {
       local_24 = 1;
     }
-    local_14.internals.intVal = local_24;
+    operandResult.internals.intVal = local_24;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A08C0  RPN_OP_OR  (universal/com_expressions_eval.cpp:12812)
 
-void __cdecl RPN_OP_OR(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_OR(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   int local_30;
   int local_2c;
   int local_28;
   int local_24;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  if (local_c.dataType == VAL_STRING) {
-    local_c.dataType = VAL_INT;
-    local_c.internals = (operandInternalDataUnion)(int)*local_c.internals.string;
+  GetTwoOperands(dataStack,&data1,&data2);
+  if (data1.dataType == VAL_STRING) {
+    data1.dataType = VAL_INT;
+    data1.internals = (operandInternalDataUnion)(int)*data1.internals.string;
   }
-  if (local_1c.dataType == VAL_STRING) {
-    local_1c.dataType = VAL_INT;
-    local_1c.internals = (operandInternalDataUnion)(int)*local_1c.internals.string;
+  if (data2.dataType == VAL_STRING) {
+    data2.dataType = VAL_INT;
+    data2.internals = (operandInternalDataUnion)(int)*data2.internals.string;
   }
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    if (((char *)local_c.internals.intVal == (char *)0x0) &&
-       ((char *)local_1c.internals.intVal == (char *)0x0)) {
+    operandResult.dataType = VAL_INT;
+    if (((char *)data1.internals.intVal == (char *)0x0) &&
+       ((char *)data2.internals.intVal == (char *)0x0)) {
       local_30 = 0;
     }
     else {
       local_30 = 1;
     }
-    local_14.internals.intVal = local_30;
+    operandResult.internals.intVal = local_30;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_INT;
-    if ((local_c.internals.floatVal == 0.0) && ((char *)local_1c.internals.intVal == (char *)0x0)) {
+    operandResult.dataType = VAL_INT;
+    if ((data1.internals.floatVal == 0.0) && ((char *)data2.internals.intVal == (char *)0x0)) {
       local_28 = 0;
     }
     else {
       local_28 = 1;
     }
-    local_14.internals.intVal = local_28;
+    operandResult.internals.intVal = local_28;
     break;
   case 4:
-    local_14.dataType = VAL_INT;
-    if (((char *)local_c.internals.intVal == (char *)0x0) && (local_1c.internals.floatVal == 0.0)) {
+    operandResult.dataType = VAL_INT;
+    if (((char *)data1.internals.intVal == (char *)0x0) && (data2.internals.floatVal == 0.0)) {
       local_2c = 0;
     }
     else {
       local_2c = 1;
     }
-    local_14.internals.intVal = local_2c;
+    operandResult.internals.intVal = local_2c;
     break;
   case 5:
-    local_14.dataType = VAL_INT;
-    if ((local_c.internals.floatVal == 0.0) && (local_1c.internals.floatVal == 0.0)) {
+    operandResult.dataType = VAL_INT;
+    if ((data1.internals.floatVal == 0.0) && (data2.internals.floatVal == 0.0)) {
       local_24 = 0;
     }
     else {
       local_24 = 1;
     }
-    local_14.internals.intVal = local_24;
+    operandResult.internals.intVal = local_24;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0A30  RPN_OP_BITWISEAND  (universal/com_expressions_eval.cpp:12847)
 
-void __cdecl RPN_OP_BITWISEAND(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_BITWISEAND(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
   uint uVar2;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  local_14.dataType = VAL_INT;
-  uVar1 = GetSourceInt(&local_c);
-  uVar2 = GetSourceInt(&local_1c);
-  local_14.internals.intVal = uVar1 & uVar2;
-  AddOperandToStack(param_3,&local_14);
+  GetTwoOperands(dataStack,&data1,&data2);
+  operandResult.dataType = VAL_INT;
+  uVar1 = GetSourceInt(&data1);
+  uVar2 = GetSourceInt(&data2);
+  operandResult.internals.intVal = uVar1 & uVar2;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0A90  RPN_OP_BITWISEOR  (universal/com_expressions_eval.cpp:12857)
 
-void __cdecl RPN_OP_BITWISEOR(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_BITWISEOR(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   uint uVar1;
   uint uVar2;
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  local_14.dataType = VAL_INT;
-  uVar1 = GetSourceInt(&local_c);
-  uVar2 = GetSourceInt(&local_1c);
-  local_14.internals.intVal = uVar1 | uVar2;
-  AddOperandToStack(param_3,&local_14);
+  GetTwoOperands(dataStack,&data1,&data2);
+  operandResult.dataType = VAL_INT;
+  uVar1 = GetSourceInt(&data1);
+  uVar2 = GetSourceInt(&data2);
+  operandResult.internals.intVal = uVar1 | uVar2;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0AF0  RPN_OP_SUBTRACT  (universal/com_expressions_eval.cpp:12867)
 
-void __cdecl RPN_OP_SUBTRACT(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_SUBTRACT(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_1c;
-  Operand local_14;
-  Operand local_c;
+  Operand data2;
+  Operand operandResult;
+  Operand data1;
   
-  GetTwoOperands(param_3,&local_c,&local_1c);
-  MakeStringOperandNumber(&local_c);
-  MakeStringOperandNumber(&local_1c);
-  switch(local_1c.dataType << 2 | local_c.dataType) {
+  GetTwoOperands(dataStack,&data1,&data2);
+  MakeStringOperandNumber(&data1);
+  MakeStringOperandNumber(&data2);
+  switch(data2.dataType << 2 | data1.dataType) {
   case VAL_INT:
-    local_14.dataType = VAL_INT;
-    local_14.internals.string = local_c.internals.string + -local_1c.internals.intVal;
+    operandResult.dataType = VAL_INT;
+    operandResult.internals.string = data1.internals.string + -data2.internals.intVal;
     break;
   case VAL_FLOAT:
-    local_14.dataType = VAL_FLOAT;
-    local_14.internals.floatVal = local_c.internals.floatVal - (float)local_1c.internals.intVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = data1.internals.floatVal - (float)data2.internals.intVal;
     break;
   case 4:
-    local_14.dataType = VAL_FLOAT;
-    local_14.internals.floatVal = (float)local_c.internals.intVal - local_1c.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = (float)data1.internals.intVal - data2.internals.floatVal;
     break;
   case 5:
-    local_14.dataType = VAL_FLOAT;
-    local_14.internals.floatVal = local_c.internals.floatVal - local_1c.internals.floatVal;
+    operandResult.dataType = VAL_FLOAT;
+    operandResult.internals.floatVal = data1.internals.floatVal - data2.internals.floatVal;
   }
-  AddOperandToStack(param_3,&local_14);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0BD0  RPN_OP_COMMA  (universal/com_expressions_eval.cpp:12895)
 
-void __cdecl RPN_OP_COMMA(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl RPN_OP_COMMA(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   operandInternalDataUnion oVar1;
   code *pcVar2;
   bool bVar3;
-  Operand local_d0;
-  int local_c8;
-  OperandList local_c4;
-  OperandList *local_68;
-  OperandList local_64;
-  int local_c;
-  int local_8;
+  Operand operandResult;
+  int list1Operand;
+  OperandList list2;
+  Operand *finalList;
+  OperandList list1;
+  int operand;
+  int list2Operand;
   
-  bVar3 = GetOperandList(param_3,&local_c4);
-  if ((bVar3) && (bVar3 = GetOperandList(param_3,&local_64), bVar3)) {
-    if (local_64.operandCount + local_c4.operandCount < 0xb) {
-      param_3->stack[param_3->numOperandLists].operandCount =
-           local_64.operandCount + local_c4.operandCount;
-      local_68 = param_3->stack + param_3->numOperandLists;
-      local_c = 0;
-      for (local_c8 = 0; local_c8 < local_64.operandCount; local_c8 = local_c8 + 1) {
-        oVar1 = local_64.operands[local_c8].internals;
-        local_68->operands[local_c].dataType = local_64.operands[local_c8].dataType;
-        local_68->operands[local_c].internals = oVar1;
-        if (((local_68->operands[local_c].dataType == VAL_STRING) &&
-            (local_68->operands[local_c].internals.intVal == 0)) &&
+  bVar3 = GetOperandList(dataStack,&list2);
+  if ((bVar3) && (bVar3 = GetOperandList(dataStack,&list1), bVar3)) {
+    if (list1.operandCount + list2.operandCount < 0xb) {
+      dataStack->stack[dataStack->numOperandLists].operandCount =
+           list1.operandCount + list2.operandCount;
+      finalList = dataStack->stack[dataStack->numOperandLists].operands;
+      operand = 0;
+      for (list1Operand = 0; list1Operand < list1.operandCount; list1Operand = list1Operand + 1) {
+        oVar1 = list1.operands[list1Operand].internals;
+        finalList[operand].dataType = list1.operands[list1Operand].dataType;
+        finalList[operand].internals = oVar1;
+        if (((finalList[operand].dataType == VAL_STRING) &&
+            (finalList[operand].internals.intVal == 0)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                      ,0x327a,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_c = local_c + 1;
+        operand = operand + 1;
       }
-      for (local_8 = 0; local_8 < local_c4.operandCount; local_8 = local_8 + 1) {
-        oVar1 = local_c4.operands[local_8].internals;
-        local_68->operands[local_c].dataType = local_c4.operands[local_8].dataType;
-        local_68->operands[local_c].internals = oVar1;
-        if (((local_68->operands[local_c].dataType == VAL_STRING) &&
-            (local_68->operands[local_c].internals.intVal == 0)) &&
+      for (list2Operand = 0; list2Operand < list2.operandCount; list2Operand = list2Operand + 1) {
+        oVar1 = list2.operands[list2Operand].internals;
+        finalList[operand].dataType = list2.operands[list2Operand].dataType;
+        finalList[operand].internals = oVar1;
+        if (((finalList[operand].dataType == VAL_STRING) &&
+            (finalList[operand].internals.intVal == 0)) &&
            (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                      ,0x3280,0,"%s"), !bVar3)) {
           pcVar2 = (code *)swi(3);
           (*pcVar2)();
           return;
         }
-        local_c = local_c + 1;
+        operand = operand + 1;
       }
-      param_3->numOperandLists = param_3->numOperandLists + 1;
+      dataStack->numOperandLists = dataStack->numOperandLists + 1;
     }
     else {
       Expression_Error("UI Script error: No function takes %i parameters\n");
-      local_d0.dataType = VAL_INT;
-      local_d0.internals.intVal = 0;
-      AddOperandToStack(param_3,&local_d0);
+      operandResult.dataType = VAL_INT;
+      operandResult.internals.intVal = 0;
+      AddOperandToStack(dataStack,&operandResult);
     }
   }
   return;
@@ -15890,24 +16399,28 @@ void __cdecl RPN_OP_COMMA(int param_1,itemDef_s *param_2,OperandStack *param_3)
 
 // 007A0DC0  ApproxEquals  (universal/com_expressions_eval.cpp:12944)
 
-void __cdecl ApproxEquals(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl ApproxEquals(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
-  OperandList local_64;
-  Operand local_c;
+  float valueB;
+  float tolerance;
+  float valueA;
+  float difference;
+  OperandList list;
+  Operand operandResult;
   
-  local_c.dataType = VAL_INT;
-  local_c.internals.intVal = 0;
-  GetOperandList(param_3,&local_64);
-  if (local_64.operandCount == 3) {
-    fVar1 = GetSourceFloat(local_64.operands);
-    fVar2 = GetSourceFloat(local_64.operands + 1);
-    fVar3 = GetSourceFloat(local_64.operands + 2);
+  operandResult.dataType = VAL_INT;
+  operandResult.internals.intVal = 0;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 3) {
+    fVar1 = GetSourceFloat(list.operands);
+    fVar2 = GetSourceFloat(list.operands + 1);
+    fVar3 = GetSourceFloat(list.operands + 2);
     if (ABS(fVar1 - fVar2) < fVar3) {
-      local_c.internals.intVal = 1;
+      operandResult.internals.intVal = 1;
     }
   }
   else {
@@ -15915,164 +16428,165 @@ void __cdecl ApproxEquals(int param_1,itemDef_s *param_2,OperandStack *param_3)
                     "UI Expression Error: Expected at least 3 parameters to approxEquals( valueA, valueB, tolerance )\n"
                     );
   }
-  AddOperandToStack(param_3,&local_c);
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0E70  GetLeaderboardValue  (universal/com_expressions_eval.cpp:12974)
 
-void __cdecl GetLeaderboardValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetLeaderboardValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_c;
+  float lbValue;
+  Operand operandResult;
   
-  local_c.dataType = VAL_FLOAT;
-  local_c.internals.intVal = 0;
-  AddOperandToStack(param_3,&local_c);
+  operandResult.dataType = VAL_FLOAT;
+  operandResult.internals.intVal = 0;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0EB0  GetStatValue  (universal/com_expressions_eval.cpp:13028)
 
-void __cdecl GetStatValue(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl GetStatValue(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_10;
-  undefined4 local_8;
+  Operand operandResult;
+  int statValue;
   
-  local_8 = 0;
-  local_10.dataType = VAL_INT;
-  local_10.internals.intVal = 0;
-  AddOperandToStack(param_3,&local_10);
+  statValue = 0;
+  operandResult.dataType = VAL_INT;
+  operandResult.internals.intVal = 0;
+  AddOperandToStack(dataStack,&operandResult);
   return;
 }
 
 
 // 007A0EE0  Add64  (universal/com_expressions_eval.cpp:13059)
 
-void __cdecl Add64(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Add64(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_64;
-  OperandList local_5c;
+  Operand result;
+  OperandList list;
   
-  local_64.dataType = VAL_STRING;
-  local_64.internals.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_5c);
-  if (local_5c.operandCount == 2) {
-    I_atoi64(local_5c.operands[0].internals.string);
-    I_atoi64(local_5c.operands[1].internals.string);
-    local_64.internals.string = va("%llu");
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    I_atoi64(list.operands[0].internals.string);
+    I_atoi64(list.operands[1].internals.string);
+    result.internals.string = va("%llu");
   }
   else {
     Expression_Error("Binary operator function Add64() needs 2 operand parameters. Got %d\n");
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007A0F80  Sub64  (universal/com_expressions_eval.cpp:13083)
 
-void __cdecl Sub64(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Sub64(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_64;
-  OperandList local_5c;
+  Operand result;
+  OperandList list;
   
-  local_64.dataType = VAL_STRING;
-  local_64.internals.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_5c);
-  if (local_5c.operandCount == 2) {
-    I_atoi64(local_5c.operands[0].internals.string);
-    I_atoi64(local_5c.operands[1].internals.string);
-    local_64.internals.string = va("%llu");
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    I_atoi64(list.operands[0].internals.string);
+    I_atoi64(list.operands[1].internals.string);
+    result.internals.string = va("%llu");
   }
   else {
     Expression_Error("Binary operator function Sub64() needs 2 operand parameters. Got %d\n");
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007A1020  Div64  (universal/com_expressions_eval.cpp:13107)
 
-void __cdecl Div64(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Div64(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
   long64 lVar1;
-  int local_74;
+  int op2;
   int local_70;
-  Operand local_64;
-  OperandList local_5c;
+  Operand result;
+  OperandList list;
   
-  local_64.dataType = VAL_STRING;
-  local_64.internals.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_5c);
-  if (local_5c.operandCount == 2) {
-    I_atoi64(local_5c.operands[0].internals.string);
-    lVar1 = I_atoi64(local_5c.operands[1].internals.string);
-    local_74 = (int)lVar1;
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    I_atoi64(list.operands[0].internals.string);
+    lVar1 = I_atoi64(list.operands[1].internals.string);
+    op2 = (int)lVar1;
     local_70 = (int)((ulonglong)lVar1 >> 0x20);
-    if (local_74 != 0 || local_70 != 0) {
+    if (op2 != 0 || local_70 != 0) {
       _aulldiv();
-      local_64.internals.string = va("%llu");
+      result.internals.string = va("%llu");
     }
   }
   else {
     Expression_Error("Binary operator function Div64() needs 2 operand parameters. Got %d\n");
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007A10D0  Mul64  (universal/com_expressions_eval.cpp:13134)
 
-void __cdecl Mul64(int param_1,itemDef_s *param_2,OperandStack *param_3)
+void __cdecl Mul64(int localClientNum,itemDef_s *item,OperandStack *dataStack)
 
 {
-  Operand local_64;
-  OperandList local_5c;
+  Operand result;
+  OperandList list;
   
-  local_64.dataType = VAL_STRING;
-  local_64.internals.floatVal = 1.8187723e-38;
-  GetOperandList(param_3,&local_5c);
-  if (local_5c.operandCount == 2) {
-    I_atoi64(local_5c.operands[0].internals.string);
-    I_atoi64(local_5c.operands[1].internals.string);
+  result.dataType = VAL_STRING;
+  result.internals.floatVal = 1.8187723e-38;
+  GetOperandList(dataStack,&list);
+  if (list.operandCount == 2) {
+    I_atoi64(list.operands[0].internals.string);
+    I_atoi64(list.operands[1].internals.string);
     _allmul();
-    local_64.internals.string = va("%llu");
+    result.internals.string = va("%llu");
   }
   else {
     Expression_Error("Binary operator function Mul64() needs 2 operand parameters. Got %d\n");
   }
-  AddOperandToStack(param_3,&local_64);
+  AddOperandToStack(dataStack,&result);
   return;
 }
 
 
 // 007A1170  Expression_GetIndexForFunction  (universal/com_expressions_eval.cpp:13158)
 
-int __cdecl Expression_GetIndexForFunction(int param_1)
+int __cdecl Expression_GetIndexForFunction(int func)
 
 {
-  return s_functionToIndexMap[param_1];
+  return s_functionToIndexMap[func];
 }
 
 
 // 007A1180  Expression_GetFunctionForOp  (universal/com_expressions_eval.cpp:13163)
 
-int __cdecl Expression_GetFunctionForOp(int param_1)
+int __cdecl Expression_GetFunctionForOp(int op)
 
 {
-  if (0x17 < param_1) {
-    param_1 = *(int *)(s_tempOperandValueAsString[0x1f] + param_1 * 4 + 0xa8) + 0x18;
+  if (0x17 < op) {
+    op = *(int *)(s_tempOperandValueAsString[0x1f] + op * 4 + 0xa8) + 0x18;
   }
-  return param_1;
+  return op;
 }
 
 
@@ -16081,32 +16595,33 @@ int __cdecl Expression_GetFunctionForOp(int param_1)
 /* WARNING: Function: _chkstk replaced with injection: alloca_probe */
 
 bool __cdecl
-EvaluateExpression(int param_1,itemDef_s *param_2,ExpressionStatement *param_3,Operand *param_4,
-                  int param_5)
+EvaluateExpression(int localClientNum,itemDef_s *item,ExpressionStatement *statement,
+                  Operand *results,int resultCount)
 
 {
   bool bVar1;
   int iVar2;
-  expressionRpn *local_13c4;
-  OperandStack local_13bc;
+  expressionRpn *rpnNow;
+  expressionRpn *rpn;
+  OperandStack dataStack;
   undefined4 uStack_8;
   
   uStack_8 = 0x7a12cd;
-  local_13c4 = param_3->rpn;
-  s_currentStatement = param_3;
+  rpnNow = statement->rpn;
+  s_currentStatement = statement;
   if ((uiscript_debug != (dvar_s *)0x0) && ((uiscript_debug->current).integer != 0)) {
-    GamerProfile_WriteSettings((int)param_3);
+    GamerProfile_WriteSettings((int)statement);
   }
-  memset((uchar *)&local_13bc,'\0',0x13b4);
+  memset((uchar *)&dataStack,'\0',0x13b4);
   do {
-    if (local_13c4->type == 3) {
-      if (local_13bc.numOperandLists < 2) {
-        if (local_13bc.numOperandLists == 0) {
+    if (rpnNow->type == 3) {
+      if (dataStack.numOperandLists < 2) {
+        if (dataStack.numOperandLists == 0) {
           Expression_Error("At the end of EvaluateExpression, we have no operands!");
           bVar1 = false;
         }
-        else if (local_13bc.stack[0].operandCount == param_5) {
-          memcpy((uchar *)param_4,(uchar *)&local_13bc,param_5 << 3);
+        else if (dataStack.stack[0].operandCount == resultCount) {
+          memcpy((uchar *)results,(uchar *)&dataStack,resultCount << 3);
           bVar1 = true;
         }
         else {
@@ -16121,21 +16636,21 @@ EvaluateExpression(int param_1,itemDef_s *param_2,ExpressionStatement *param_3,O
       s_currentStatement = (ExpressionStatement *)0x0;
       return bVar1;
     }
-    iVar2 = local_13c4->type;
+    iVar2 = rpnNow->type;
     if (iVar2 == 0) {
-      AddOperandToStack(&local_13bc,&(local_13c4->data).constant);
+      AddOperandToStack(&dataStack,&(rpnNow->data).constant);
     }
     else {
       if (iVar2 == 1) {
-        local_13c4->type = 2;
-        iVar2 = Expression_GetFunctionForOp((local_13c4->data).cmdIdx);
-        (local_13c4->data).constant.dataType = (expDataType)rpnFunctions[iVar2];
+        rpnNow->type = 2;
+        iVar2 = Expression_GetFunctionForOp((rpnNow->data).cmdIdx);
+        (rpnNow->data).constant.dataType = (expDataType)rpnFunctions[iVar2];
       }
       else if (iVar2 != 2) goto LAB_007a1329;
-      (*(code *)(local_13c4->data).constant.dataType)(param_1,param_2,&local_13bc);
+      (*(code *)(rpnNow->data).constant.dataType)(localClientNum,item,&dataStack);
     }
 LAB_007a1329:
-    local_13c4 = local_13c4 + 1;
+    rpnNow = rpnNow + 1;
   } while( true );
 }
 
@@ -16143,26 +16658,26 @@ LAB_007a1329:
 // 007A11A0  GetExpressionResultString  (universal/com_expressions_eval.cpp:13317)
 
 char * __cdecl
-GetExpressionResultString(int param_1,itemDef_s *param_2,ExpressionStatement *param_3)
+GetExpressionResultString(int localClientNum,itemDef_s *item,ExpressionStatement *statement)
 
 {
   code *pcVar1;
   bool bVar2;
   char *pcVar3;
-  Operand local_10;
-  int local_8;
+  Operand result;
+  int len;
   
-  bVar2 = EvaluateExpression(param_1,param_2,param_3,&local_10,1);
+  bVar2 = EvaluateExpression(localClientNum,item,statement,&result,1);
   if (bVar2) {
-    local_8 = 0;
-    if (local_10.dataType == VAL_INT) {
-      local_8 = Com_sprintf(resultString,0x100,"%i");
+    len = 0;
+    if (result.dataType == VAL_INT) {
+      len = Com_sprintf(resultString,0x100,"%i");
     }
-    else if (local_10.dataType == VAL_FLOAT) {
-      local_8 = Com_sprintf(resultString,0x100,"%f");
+    else if (result.dataType == VAL_FLOAT) {
+      len = Com_sprintf(resultString,0x100,"%f");
     }
     else {
-      if (local_10.dataType != VAL_STRING) {
+      if (result.dataType != VAL_STRING) {
         pcVar3 = va("Unknown result datatype of %i");
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                                  ,0x341a,0,pcVar3);
@@ -16173,9 +16688,9 @@ GetExpressionResultString(int param_1,itemDef_s *param_2,ExpressionStatement *pa
         pcVar3 = (char *)(*pcVar1)();
         return pcVar3;
       }
-      local_8 = Com_sprintf(resultString,0x100,"%s");
+      len = Com_sprintf(resultString,0x100,"%s");
     }
-    if (local_8 < 0) {
+    if (len < 0) {
       Expression_Warn(
                      "Expression result string has been truncated, longer than %d characters: %s...\n"
                      );
@@ -16191,16 +16706,16 @@ GetExpressionResultString(int param_1,itemDef_s *param_2,ExpressionStatement *pa
 
 // 007A1470  IsExpressionTrue  (universal/com_expressions_eval.cpp:13350)
 
-bool __cdecl IsExpressionTrue(int param_1,itemDef_s *param_2,ExpressionStatement *param_3)
+bool __cdecl IsExpressionTrue(int localClientNum,itemDef_s *item,ExpressionStatement *statement)
 
 {
   bool bVar1;
   int iVar2;
-  Operand local_c;
+  Operand result;
   
-  bVar1 = EvaluateExpression(param_1,param_2,param_3,&local_c,1);
+  bVar1 = EvaluateExpression(localClientNum,item,statement,&result,1);
   if (bVar1) {
-    iVar2 = GetSourceInt(&local_c);
+    iVar2 = GetSourceInt(&result);
     bVar1 = iVar2 != 0;
   }
   else {
@@ -16212,16 +16727,16 @@ bool __cdecl IsExpressionTrue(int param_1,itemDef_s *param_2,ExpressionStatement
 
 // 007A14C0  GetExpressionInt  (universal/com_expressions_eval.cpp:13361)
 
-int __cdecl GetExpressionInt(int param_1,itemDef_s *param_2,ExpressionStatement *param_3)
+int __cdecl GetExpressionInt(int localClientNum,itemDef_s *item,ExpressionStatement *statement)
 
 {
   bool bVar1;
   int iVar2;
-  Operand local_c;
+  Operand result;
   
-  bVar1 = EvaluateExpression(param_1,param_2,param_3,&local_c,1);
+  bVar1 = EvaluateExpression(localClientNum,item,statement,&result,1);
   if (bVar1) {
-    iVar2 = GetSourceInt(&local_c);
+    iVar2 = GetSourceInt(&result);
   }
   else {
     iVar2 = 0;
@@ -16232,16 +16747,16 @@ int __cdecl GetExpressionInt(int param_1,itemDef_s *param_2,ExpressionStatement 
 
 // 007A1500  GetExpressionFloat  (universal/com_expressions_eval.cpp:13372)
 
-float __cdecl GetExpressionFloat(int param_1,itemDef_s *param_2,ExpressionStatement *param_3)
+float __cdecl GetExpressionFloat(int localClientNum,itemDef_s *item,ExpressionStatement *statement)
 
 {
   bool bVar1;
   float fVar2;
-  Operand local_c;
+  Operand result;
   
-  bVar1 = EvaluateExpression(param_1,param_2,param_3,&local_c,1);
+  bVar1 = EvaluateExpression(localClientNum,item,statement,&result,1);
   if (bVar1) {
-    fVar2 = GetSourceFloat(&local_c);
+    fVar2 = GetSourceFloat(&result);
   }
   else {
     fVar2 = 0.0;
@@ -16254,26 +16769,27 @@ float __cdecl GetExpressionFloat(int param_1,itemDef_s *param_2,ExpressionStatem
 
 bool __cdecl
 GetExpressionStringInt
-          (int param_1,itemDef_s *param_2,ExpressionStatement *param_3,char **param_4,int *param_5)
+          (int localClientNum,itemDef_s *item,ExpressionStatement *statement,char **outString,
+          int *outInt)
 
 {
-  Operand OVar1;
-  bool bVar2;
-  char *pcVar3;
-  int iVar4;
-  Operand local_14;
+  Operand operand;
+  bool bVar1;
+  char *pcVar2;
+  int iVar3;
+  Operand results;
   Operand local_c;
   
-  bVar2 = EvaluateExpression(param_1,param_2,param_3,&local_14,2);
-  if (bVar2) {
-    OVar1.internals.intVal = local_14.internals.intVal;
-    OVar1.dataType = local_14.dataType;
-    pcVar3 = GetSourceString(OVar1);
-    *param_4 = pcVar3;
-    iVar4 = GetSourceInt(&local_c);
-    *param_5 = iVar4;
+  bVar1 = EvaluateExpression(localClientNum,item,statement,&results,2);
+  if (bVar1) {
+    operand.internals.intVal = results.internals.intVal;
+    operand.dataType = results.dataType;
+    pcVar2 = GetSourceString(operand);
+    *outString = pcVar2;
+    iVar3 = GetSourceInt(&local_c);
+    *outInt = iVar3;
   }
-  return bVar2;
+  return bVar1;
 }
 
 
@@ -16281,18 +16797,18 @@ GetExpressionStringInt
 
 char * __cdecl
 GetExpressionResultStringCompile
-          (int param_1,itemDef_s *param_2,char **param_3,void *param_4,int param_5)
+          (int localClientNum,itemDef_s *item,char **text,void *compileBuffer,int compileBufferSize)
 
 {
   bool bVar1;
   char *pcVar2;
-  ExpressionStatement local_14;
+  ExpressionStatement statement;
   
-  local_14.filename = "runtime";
-  local_14.line = 0;
-  bVar1 = Expression_Parse(param_3,&local_14,param_4,param_5);
+  statement.filename = "runtime";
+  statement.line = 0;
+  bVar1 = Expression_Parse(text,&statement,compileBuffer,compileBufferSize);
   if (bVar1) {
-    pcVar2 = GetExpressionResultString(param_1,param_2,&local_14);
+    pcVar2 = GetExpressionResultString(localClientNum,item,&statement);
   }
   else {
     pcVar2 = "";
@@ -16303,15 +16819,15 @@ GetExpressionResultStringCompile
 
 // 007A1600  Expression_MapIndexToFunction  (universal/com_expressions_eval.cpp:13442)
 
-void __cdecl Expression_MapIndexToFunction(int param_1,char *param_2)
+void __cdecl Expression_MapIndexToFunction(int index,char *function)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
-  int local_8;
+  int i;
   
-  if (s_indexToFunctionMap[param_1] != 0) {
+  if (s_indexToFunctionMap[index] != 0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_expressions_eval.cpp"
                              ,0x3483,0,"%s");
     if (!bVar2) {
@@ -16320,11 +16836,11 @@ void __cdecl Expression_MapIndexToFunction(int param_1,char *param_2)
       return;
     }
   }
-  for (local_8 = 0; g_expFunctionNames[local_8] != (char *)0x0; local_8 = local_8 + 1) {
-    iVar3 = I_stricmp(g_expFunctionNames[local_8],param_2);
+  for (i = 0; g_expFunctionNames[i] != (char *)0x0; i = i + 1) {
+    iVar3 = I_stricmp(g_expFunctionNames[i],function);
     if (iVar3 == 0) {
-      s_indexToFunctionMap[param_1] = local_8;
-      s_functionToIndexMap[local_8] = param_1;
+      s_indexToFunctionMap[index] = i;
+      s_functionToIndexMap[i] = index;
     }
   }
   return;
@@ -16338,6 +16854,7 @@ bool __cdecl Expression_Throttle(void)
 {
   bool bVar1;
   int iVar2;
+  int ms;
   
   iVar2 = Sys_Milliseconds();
   if ((s_countErrorOutput < 0xb) || (4999 < iVar2 - s_lastErrorOutputMS)) {
@@ -16359,32 +16876,33 @@ bool __cdecl Expression_Throttle(void)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Expression_Error(char *param_1)
+void __cdecl Expression_Error(char *str)
 
 {
   char cVar1;
   bool bVar2;
   char *local_414;
-  char local_40c;
+  char *argptr;
+  char buf;
   char acStack_40b [1022];
   undefined1 local_d;
   uint local_c;
-  int local_8;
+  int offset;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = Expression_Throttle();
   if (!bVar2) {
-    _snprintf(&local_40c,0x400,"^1Expression Error (%s:%d): ");
-    local_414 = &local_40c;
+    _snprintf(&buf,0x400,"^1Expression Error (%s:%d): ");
+    local_414 = &buf;
     do {
       cVar1 = *local_414;
       local_414 = local_414 + 1;
     } while (cVar1 != '\0');
-    local_8 = (int)local_414 - (int)acStack_40b;
-    _vsnprintf(acStack_40b + local_8 + -1,0x400,param_1,&stack0x00000008);
+    offset = (int)local_414 - (int)acStack_40b;
+    _vsnprintf(acStack_40b + offset + -1,0x400,str,&stack0x00000008);
     local_d = 0;
     GamerProfile_WriteSettings((int)s_currentStatement);
-    Com_PrintMessage(0x10,&local_40c,3);
+    Com_PrintMessage(0x10,&buf,3);
   }
   return;
 }
@@ -16394,32 +16912,33 @@ void __cdecl Expression_Error(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Expression_Warn(char *param_1)
+void __cdecl Expression_Warn(char *str)
 
 {
   char cVar1;
   bool bVar2;
   char *local_414;
-  char local_40c;
+  char *argptr;
+  char buf;
   char acStack_40b [1022];
   undefined1 local_d;
   uint local_c;
-  int local_8;
+  int offset;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
   bVar2 = Expression_Throttle();
   if (!bVar2) {
-    _snprintf(&local_40c,0x400,"^3Expression Warning (%s:%d): ");
-    local_414 = &local_40c;
+    _snprintf(&buf,0x400,"^3Expression Warning (%s:%d): ");
+    local_414 = &buf;
     do {
       cVar1 = *local_414;
       local_414 = local_414 + 1;
     } while (cVar1 != '\0');
-    local_8 = (int)local_414 - (int)acStack_40b;
-    _vsnprintf(acStack_40b + local_8 + -1,0x400,param_1,&stack0x00000008);
+    offset = (int)local_414 - (int)acStack_40b;
+    _vsnprintf(acStack_40b + offset + -1,0x400,str,&stack0x00000008);
     local_d = 0;
     GamerProfile_WriteSettings((int)s_currentStatement);
-    Com_PrintMessage(0x10,&local_40c,2);
+    Com_PrintMessage(0x10,&buf,2);
   }
   return;
 }
@@ -16429,28 +16948,29 @@ void __cdecl Expression_Warn(char *param_1)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
 
-void __cdecl Expression_TraceInternal(char *param_1)
+void __cdecl Expression_TraceInternal(char *str)
 
 {
   char cVar1;
   char *local_414;
-  char local_40c;
+  char *argptr;
+  char buf;
   char acStack_40b [1022];
   undefined1 local_d;
   uint local_c;
-  int local_8;
+  int offset;
   
   local_c = __security_cookie ^ (uint)&stack0xfffffffc;
-  I_strncpyz(&local_40c,"^2Expression Trace: ",0x400);
-  local_414 = &local_40c;
+  I_strncpyz(&buf,"^2Expression Trace: ",0x400);
+  local_414 = &buf;
   do {
     cVar1 = *local_414;
     local_414 = local_414 + 1;
   } while (cVar1 != '\0');
-  local_8 = (int)local_414 - (int)acStack_40b;
-  _vsnprintf(acStack_40b + local_8 + -1,0x400,param_1,&stack0x00000008);
+  offset = (int)local_414 - (int)acStack_40b;
+  _vsnprintf(acStack_40b + offset + -1,0x400,str,&stack0x00000008);
   local_d = 0;
-  Com_PrintMessage(0x10,&local_40c,0);
+  Com_PrintMessage(0x10,&buf,0);
   return;
 }
 

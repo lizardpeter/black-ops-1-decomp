@@ -7,7 +7,7 @@
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __thiscall NitrousVehicle::_update_wheel_effect_states(NitrousVehicle *this,float param_1)
+void __thiscall NitrousVehicle::_update_wheel_effect_states(NitrousVehicle *this,float delta_t)
 
 {
   float *pfVar1;
@@ -157,7 +157,7 @@ void __thiscall NitrousVehicle::_update_wheel_effect_states(NitrousVehicle *this
 LAB_0082eef3:
         if (local_24 == local_14->m_wheel_state[local_1c].m_state) {
           local_14->m_wheel_state[local_1c].m_state_time =
-               local_14->m_wheel_state[local_1c].m_state_time + param_1;
+               local_14->m_wheel_state[local_1c].m_state_time + delta_t;
         }
         else {
           local_14->m_wheel_state[local_1c].m_last_state = local_24;
@@ -172,46 +172,47 @@ LAB_0082eef3:
 
 // 0082F820  operator-=  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:47)
 
-phys_vec3 * __thiscall phys_vec3::operator-=(phys_vec3 *this,phys_vec3 *param_1)
+phys_vec3 * __thiscall phys_vec3::operator-=(phys_vec3 *this,phys_vec3 *v)
 
 {
-  this->x = this->x - param_1->x;
-  this->y = this->y - param_1->y;
-  this->z = this->z - param_1->z;
+  this->x = this->x - v->x;
+  this->y = this->y - v->y;
+  this->z = this->z - v->z;
   return this;
 }
 
 
 // 0082F880  operator*  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:60)
 
-phys_vec3 * __cdecl operator*(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,float param_2)
+phys_vec3 * __cdecl operator*(phys_vec3 *__return_storage_ptr__,phys_vec3 *a,float d)
 
 {
   float fVar1;
   float fVar2;
   
-  fVar1 = param_1->y;
-  fVar2 = param_1->z;
-  __return_storage_ptr__->x = param_2 * param_1->x;
-  __return_storage_ptr__->y = param_2 * fVar1;
-  __return_storage_ptr__->z = param_2 * fVar2;
+  fVar1 = a->y;
+  fVar2 = a->z;
+  __return_storage_ptr__->x = d * a->x;
+  __return_storage_ptr__->y = d * fVar1;
+  __return_storage_ptr__->z = d * fVar2;
   return __return_storage_ptr__;
 }
 
 
 // 0082F8F0  operator/  (<external>/projects_pc/cod/codsrc/tl/physics/include/old_phys_math.h:66)
 
-phys_vec3 * __cdecl operator/(phys_vec3 *__return_storage_ptr__,phys_vec3 *param_1,float param_2)
+phys_vec3 * __cdecl operator/(phys_vec3 *__return_storage_ptr__,phys_vec3 *a,float d)
 
 {
   float fVar1;
   float fVar2;
   float fVar3;
+  float d_inv;
   
-  fVar3 = 1.0 / param_2;
-  fVar1 = param_1->y;
-  fVar2 = param_1->z;
-  __return_storage_ptr__->x = param_1->x * fVar3;
+  fVar3 = 1.0 / d;
+  fVar1 = a->y;
+  fVar2 = a->z;
+  __return_storage_ptr__->x = a->x * fVar3;
   __return_storage_ptr__->y = fVar1 * fVar3;
   __return_storage_ptr__->z = fVar2 * fVar3;
   return __return_storage_ptr__;
@@ -220,23 +221,23 @@ phys_vec3 * __cdecl operator/(phys_vec3 *__return_storage_ptr__,phys_vec3 *param
 
 // 0082EF60  GetWheelStateColor  (vehicle/nitrous_vehicle_effects.cpp:108)
 
-void __cdecl GetWheelStateColor(WheelEffectState param_1,float *param_2,float param_3)
+void __cdecl GetWheelStateColor(WheelEffectState state,float *color,float rate)
 
 {
-  if (param_1 == WHEEL_STATE_ROLLING) {
-    *param_2 = 0.0;
-    param_2[1] = 1.0;
-    param_2[2] = 0.0;
-    param_2[3] = 1.0;
+  if (state == WHEEL_STATE_ROLLING) {
+    *color = 0.0;
+    color[1] = 1.0;
+    color[2] = 0.0;
+    color[3] = 1.0;
   }
-  else if (param_1 == WHEEL_STATE_AIRBORN) {
-    *param_2 = 0.5;
-    param_2[1] = 0.5;
-    param_2[2] = 1.0;
-    param_2[3] = 1.0;
+  else if (state == WHEEL_STATE_AIRBORN) {
+    *color = 0.5;
+    color[1] = 0.5;
+    color[2] = 1.0;
+    color[3] = 1.0;
   }
-  else if (param_1 == WHEEL_STATE_SKIDDING) {
-    Vec4Lerp(colorYellow,colorRed,param_3,param_2);
+  else if (state == WHEEL_STATE_SKIDDING) {
+    Vec4Lerp(colorYellow,colorRed,rate,color);
   }
   return;
 }
@@ -249,12 +250,12 @@ void __cdecl GetWheelStateColor(WheelEffectState param_1,float *param_2,float pa
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-float __thiscall NitrousVehicle::debug_render_wheel_effects(NitrousVehicle *this,int param_1)
+float __thiscall NitrousVehicle::debug_render_wheel_effects(NitrousVehicle *this,int wheel)
 
 {
   bool bVar1;
   phys_vec3 *ppVar2;
-  phys_vec3 *ppVar3;
+  phys_vec3 *b;
   float *local_284;
   phys_vec3 local_280;
   float local_26c;
@@ -335,13 +336,13 @@ float __thiscall NitrousVehicle::debug_render_wheel_effects(NitrousVehicle *this
   rigid_body_constraint_wheel *local_18;
   NitrousVehicle *local_14;
   
-  local_18 = this->m_wheels[param_1];
+  local_18 = this->m_wheels[wheel];
   if (local_18 == (rigid_body_constraint_wheel *)0x0) {
     local_244 = 0.0;
   }
   else {
-    local_1c = this->m_wheel_state[param_1].m_state;
-    local_20 = this->m_wheel_state[param_1].m_rate;
+    local_1c = this->m_wheel_state[wheel].m_state;
+    local_20 = this->m_wheel_state[wheel].m_rate;
     local_24 = local_18->m_wheel_radius;
     local_28 = local_18->_padding_;
     local_14 = this;
@@ -350,9 +351,9 @@ float __thiscall NitrousVehicle::debug_render_wheel_effects(NitrousVehicle *this
                        &local_18->m_b1_suspension_dir_loc);
     operator-(&local_60,&local_18->m_b1_wheel_center_loc,ppVar2);
     local_64 = (phys_mat44 *)(local_28 + 0x30);
-    ppVar3 = (phys_vec3 *)(local_28 + 0x60);
+    b = (phys_vec3 *)(local_28 + 0x60);
     ppVar2 = phys_multiply33(&local_80,local_64,&local_60);
-    operator+(&local_90,ppVar2,ppVar3);
+    operator+(&local_90,ppVar2,b);
     local_60.x = local_90.x;
     local_60.y = local_90.y;
     local_60.z = local_90.z;
@@ -464,6 +465,7 @@ float __thiscall NitrousVehicle::debug_render_wheel_effects(NitrousVehicle *this
 // 0082F970  debug_render_effects  (vehicle/nitrous_vehicle_effects.cpp:172)
 
 /* WARNING: Function: __security_check_cookie replaced with injection: security_check_cookie */
+/* WARNING: Variable defined which should be unmapped: i */
 /* WARNING: Enum "team_t": Some values do not have unique names */
 /* WARNING: Enum "nodeType": Some values do not have unique names */
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
@@ -477,14 +479,15 @@ void __thiscall NitrousVehicle::debug_render_effects(NitrousVehicle *this)
   char local_248 [508];
   float local_4c [2];
   float local_44;
-  phys_vec3 local_40;
+  phys_vec3 textPos;
   phys_mat44 *local_30;
   float local_2c [4];
   int local_1c;
   NitrousVehicle *local_18;
   uint local_14;
+  int i;
   
-  local_14 = __security_cookie ^ (uint)&stack0xfffffff0;
+  local_14 = __security_cookie ^ (uint)&i;
   if (((phys_drawNitrousVehicleEffects->current).enabled != false) &&
      (this->m_phys_user_data != (PhysObjUserData *)0x0)) {
     local_18 = this;
@@ -494,14 +497,14 @@ void __thiscall NitrousVehicle::debug_render_effects(NitrousVehicle *this)
     }
     prVar1 = local_18->m_phys_user_data->body;
     local_30 = &prVar1->m_mat;
-    local_40.x = (prVar1->m_mat).w.x;
-    local_40.y = (prVar1->m_mat).w.y;
-    local_40.z = (prVar1->m_mat).w.z;
-    local_40.w = (prVar1->m_mat).w.w;
-    Phys_NitrousVecToVec3(&local_40,local_4c);
+    textPos.x = (prVar1->m_mat).w.x;
+    textPos.y = (prVar1->m_mat).w.y;
+    textPos.z = (prVar1->m_mat).w.z;
+    textPos.w = (prVar1->m_mat).w.w;
+    Phys_NitrousVecToVec3(&textPos,local_4c);
     local_44 = local_44 + 50.0;
     sprintf(local_248,"Wheel Speeds %.0f %.0f %.0f %.0f");
-    CL_AddDebugString(local_4c,colorWhite,scale,local_248,0);
+    CL_AddDebugString(local_4c,colorWhite,::scale,local_248,0);
   }
   return;
 }

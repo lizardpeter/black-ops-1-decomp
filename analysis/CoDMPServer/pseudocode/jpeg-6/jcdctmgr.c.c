@@ -2,7 +2,7 @@
 
 // 00B5FBB0  start_pass_fdctmgr  (jpeg-6/jcdctmgr.c:55)
 
-void __cdecl start_pass_fdctmgr(jpeg_compress_struct *param_1)
+void __cdecl start_pass_fdctmgr(jpeg_compress_struct *cinfo)
 
 {
   jpeg_forward_dct *pjVar1;
@@ -12,70 +12,75 @@ void __cdecl start_pass_fdctmgr(jpeg_compress_struct *param_1)
   _func___cdecl_void_jpeg_compress_struct_ptr_jpeg_component_info_ptr_uchar_ptr_ptr_short_64__ptr_uint_uint_uint
   *p_Var5;
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var6;
-  int local_28;
-  int local_24;
-  int local_18;
-  jpeg_component_info *local_10;
-  int local_8;
+  float *fdtbl;
+  int row;
+  int col;
+  my_fdct_controller *fdct;
+  int *dtbl;
+  int ci;
+  int qtblno;
+  jpeg_component_info *compptr;
+  JQUANT_TBL *qtbl;
+  int i;
   
-  pjVar1 = param_1->fdct;
-  local_18 = 0;
-  local_10 = param_1->comp_info;
-  for (; local_18 < param_1->num_components; local_18 = local_18 + 1) {
-    iVar2 = local_10->quant_tbl_no;
-    if (((iVar2 < 0) || (3 < iVar2)) || (param_1->quant_tbl_ptrs[iVar2] == (JQUANT_TBL *)0x0)) {
-      param_1->err->msg_code = 0x34;
-      (param_1->err->msg_parm).i[0] = iVar2;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+  pjVar1 = cinfo->fdct;
+  ci = 0;
+  compptr = cinfo->comp_info;
+  for (; ci < cinfo->num_components; ci = ci + 1) {
+    iVar2 = compptr->quant_tbl_no;
+    if (((iVar2 < 0) || (3 < iVar2)) || (cinfo->quant_tbl_ptrs[iVar2] == (JQUANT_TBL *)0x0)) {
+      cinfo->err->msg_code = 0x34;
+      (cinfo->err->msg_parm).i[0] = iVar2;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    pJVar3 = param_1->quant_tbl_ptrs[iVar2];
-    JVar4 = param_1->dct_method;
+    pJVar3 = cinfo->quant_tbl_ptrs[iVar2];
+    JVar4 = cinfo->dct_method;
     if (JVar4 == JDCT_ISLOW) {
       if ((&pjVar1[1].forward_DCT)[iVar2] ==
           (_func___cdecl_void_jpeg_compress_struct_ptr_jpeg_component_info_ptr_uchar_ptr_ptr_short_64__ptr_uint_uint_uint
            *)0x0) {
-        p_Var5 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x100);
+        p_Var5 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x100);
         (&pjVar1[1].forward_DCT)[iVar2] = p_Var5;
       }
       p_Var5 = (&pjVar1[1].forward_DCT)[iVar2];
-      for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-        *(uint *)(p_Var5 + local_8 * 4) = (uint)pJVar3->quantval[local_8] << 3;
+      for (i = 0; i < 0x40; i = i + 1) {
+        *(uint *)(p_Var5 + i * 4) = (uint)pJVar3->quantval[i] << 3;
       }
     }
     else if (JVar4 == JDCT_IFAST) {
       if ((&pjVar1[1].forward_DCT)[iVar2] ==
           (_func___cdecl_void_jpeg_compress_struct_ptr_jpeg_component_info_ptr_uchar_ptr_ptr_short_64__ptr_uint_uint_uint
            *)0x0) {
-        p_Var5 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x100);
+        p_Var5 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x100);
         (&pjVar1[1].forward_DCT)[iVar2] = p_Var5;
       }
       p_Var5 = (&pjVar1[1].forward_DCT)[iVar2];
-      for (local_8 = 0; local_8 < 0x40; local_8 = local_8 + 1) {
-        *(int *)(p_Var5 + local_8 * 4) =
-             (int)((uint)pJVar3->quantval[local_8] * (int)aanscales[local_8] + 0x400) >> 0xb;
+      for (i = 0; i < 0x40; i = i + 1) {
+        *(int *)(p_Var5 + i * 4) =
+             (int)((uint)pJVar3->quantval[i] * (int)aanscales[i] + 0x400) >> 0xb;
       }
     }
     else if (JVar4 == JDCT_FLOAT) {
       if ((&pjVar1[4].start_pass)[iVar2] == (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0) {
-        p_Var6 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x100);
+        p_Var6 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x100);
         (&pjVar1[4].start_pass)[iVar2] = p_Var6;
       }
       p_Var6 = (&pjVar1[4].start_pass)[iVar2];
-      local_8 = 0;
-      for (local_28 = 0; local_28 < 8; local_28 = local_28 + 1) {
-        for (local_24 = 0; local_24 < 8; local_24 = local_24 + 1) {
-          *(float *)(p_Var6 + local_8 * 4) =
-               (float)(1.0 / ((double)pJVar3->quantval[local_8] * aanscalefactor[local_28] *
-                              aanscalefactor[local_24] * 8.0));
-          local_8 = local_8 + 1;
+      i = 0;
+      for (row = 0; row < 8; row = row + 1) {
+        for (col = 0; col < 8; col = col + 1) {
+          *(float *)(p_Var6 + i * 4) =
+               (float)(1.0 / ((double)pJVar3->quantval[i] * aanscalefactor[row] *
+                              aanscalefactor[col] * 8.0));
+          i = i + 1;
         }
       }
     }
     else {
-      param_1->err->msg_code = 0x30;
-      (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+      cinfo->err->msg_code = 0x30;
+      (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
     }
-    local_10 = local_10 + 1;
+    compptr = compptr + 1;
   }
   return;
 }
@@ -84,8 +89,8 @@ void __cdecl start_pass_fdctmgr(jpeg_compress_struct *param_1)
 // 00B5FE60  forward_DCT  (jpeg-6/jcdctmgr.c:185)
 
 void __cdecl
-forward_DCT(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-           short (*param_4) [64],uint param_5,uint param_6,uint param_7)
+forward_DCT(jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **sample_data,
+           short (*coef_blocks) [64],uint start_row,uint start_col,uint num_blocks)
 
 {
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var1;
@@ -94,55 +99,60 @@ forward_DCT(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **p
   int iVar3;
   byte *pbVar4;
   int iVar5;
-  short local_128;
-  int local_124;
-  int local_11c;
-  int *local_118;
-  uint local_114;
-  int local_104 [64];
+  short *output_ptr;
+  int qval;
+  int temp;
+  int i;
+  uchar *elemptr;
+  int elemr;
+  int *workspaceptr;
+  uint bi;
+  my_fdct_controller *fdct;
+  int *divisors;
+  int workspace [64];
   
-  p_Var1 = param_1->fdct[1].start_pass;
-  p_Var2 = (&param_1->fdct[1].forward_DCT)[param_2->quant_tbl_no];
-  for (local_114 = 0; local_114 < param_7; local_114 = local_114 + 1) {
-    local_118 = local_104;
-    for (local_11c = 0; local_11c < 8; local_11c = local_11c + 1) {
-      pbVar4 = param_3[param_5 + local_11c] + param_6;
-      *local_118 = *pbVar4 - 0x80;
-      local_118[1] = pbVar4[1] - 0x80;
-      local_118[2] = pbVar4[2] - 0x80;
-      local_118[3] = pbVar4[3] - 0x80;
-      local_118[4] = pbVar4[4] - 0x80;
-      local_118[5] = pbVar4[5] - 0x80;
-      local_118[6] = pbVar4[6] - 0x80;
-      local_118[7] = pbVar4[7] - 0x80;
-      local_118 = local_118 + 8;
+  p_Var1 = cinfo->fdct[1].start_pass;
+  p_Var2 = (&cinfo->fdct[1].forward_DCT)[compptr->quant_tbl_no];
+  for (bi = 0; bi < num_blocks; bi = bi + 1) {
+    workspaceptr = workspace;
+    for (elemr = 0; elemr < 8; elemr = elemr + 1) {
+      pbVar4 = sample_data[start_row + elemr] + start_col;
+      *workspaceptr = *pbVar4 - 0x80;
+      workspaceptr[1] = pbVar4[1] - 0x80;
+      workspaceptr[2] = pbVar4[2] - 0x80;
+      workspaceptr[3] = pbVar4[3] - 0x80;
+      workspaceptr[4] = pbVar4[4] - 0x80;
+      workspaceptr[5] = pbVar4[5] - 0x80;
+      workspaceptr[6] = pbVar4[6] - 0x80;
+      workspaceptr[7] = pbVar4[7] - 0x80;
+      workspaceptr = workspaceptr + 8;
     }
-    (*p_Var1)((jpeg_compress_struct *)local_104);
-    for (local_124 = 0; local_124 < 0x40; local_124 = local_124 + 1) {
-      iVar3 = *(int *)(p_Var2 + local_124 * 4);
-      iVar5 = local_104[local_124];
+    (*p_Var1)((jpeg_compress_struct *)workspace);
+    for (i = 0; i < 0x40; i = i + 1) {
+      iVar3 = *(int *)(p_Var2 + i * 4);
+      iVar5 = workspace[i];
       if (iVar5 < 0) {
         iVar5 = (iVar3 >> 1) - iVar5;
         if (iVar5 < iVar3) {
-          local_128 = 0;
+          temp._0_2_ = 0;
         }
         else {
-          local_128 = (short)(iVar5 / iVar3);
+          temp._0_2_ = (short)(iVar5 / iVar3);
         }
-        local_128 = -local_128;
+        temp._0_2_ = -(short)temp;
       }
       else {
         iVar5 = (iVar3 >> 1) + iVar5;
         if (iVar5 < iVar3) {
-          local_128 = 0;
+          temp._0_2_ = 0;
         }
         else {
-          local_128 = (short)(iVar5 / iVar3);
+          temp._0_2_ = (short)(iVar5 / iVar3);
         }
       }
-      param_4[local_114][local_124] = local_128;
+      coef_blocks[bi][i] = (short)temp;
     }
-    param_6 = param_6 + 8;
+    start_col = start_col + 8;
   }
   return;
 }
@@ -150,53 +160,58 @@ forward_DCT(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **p
 
 // 00B60210  forward_DCT_float  (jpeg-6/jcdctmgr.c:275)
 
+/* WARNING: Variable defined which should be unmapped: output_ptr */
+/* WARNING: Variable defined which should be unmapped: temp */
+/* WARNING: Variable defined which should be unmapped: i */
+/* WARNING: Variable defined which should be unmapped: elemptr */
+/* WARNING: Variable defined which should be unmapped: elemr */
+/* WARNING: Variable defined which should be unmapped: workspaceptr */
+
 void __cdecl
-forward_DCT_float(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uchar **param_3,
-                 short (*param_4) [64],uint param_5,uint param_6,uint param_7)
+forward_DCT_float(jpeg_compress_struct *cinfo,jpeg_component_info *compptr,uchar **sample_data,
+                 short (*coef_blocks) [64],uint start_row,uint start_col,uint num_blocks)
 
 {
   _func___cdecl_void_jpeg_compress_struct_ptr_jpeg_component_info_ptr_uchar_ptr_ptr_short_64__ptr_uint_uint_uint
   *p_Var1;
   _func___cdecl_void_jpeg_compress_struct_ptr *p_Var2;
   byte *pbVar3;
-  jpeg_component_info *in_stack_fffffed4;
-  uchar **in_stack_fffffed8;
-  short (*in_stack_fffffedc) [64];
-  byte *in_stack_fffffee0;
-  uint uVar4;
-  float *pfVar5;
-  uint local_114;
-  float local_104 [64];
+  short *output_ptr;
+  float temp;
+  int i;
+  uchar *elemptr;
+  int elemr;
+  float *workspaceptr;
+  uint bi;
+  my_fdct_controller *fdct;
+  float *divisors;
+  float workspace [64];
   
-  p_Var1 = param_1->fdct[3].forward_DCT;
-  p_Var2 = (&param_1->fdct[4].start_pass)[param_2->quant_tbl_no];
-  for (local_114 = 0; local_114 < param_7; local_114 = local_114 + 1) {
-    pfVar5 = local_104;
-    for (uVar4 = 0; (int)uVar4 < 8; uVar4 = uVar4 + 1) {
-      pbVar3 = param_3[param_5 + uVar4] + param_6;
-      *pfVar5 = (float)(int)(*pbVar3 - 0x80);
-      pfVar5[1] = (float)(int)(pbVar3[1] - 0x80);
-      pfVar5[2] = (float)(int)(pbVar3[2] - 0x80);
-      pfVar5[3] = (float)(int)(pbVar3[3] - 0x80);
-      pfVar5[4] = (float)(int)(pbVar3[4] - 0x80);
-      pfVar5[5] = (float)(int)(pbVar3[5] - 0x80);
-      pfVar5[6] = (float)(int)(pbVar3[6] - 0x80);
-      pfVar5[7] = (float)(int)(pbVar3[7] - 0x80);
-      pfVar5 = pfVar5 + 8;
-      in_stack_fffffee0 = pbVar3 + 8;
+  p_Var1 = cinfo->fdct[3].forward_DCT;
+  p_Var2 = (&cinfo->fdct[4].start_pass)[compptr->quant_tbl_no];
+  for (bi = 0; bi < num_blocks; bi = bi + 1) {
+    workspaceptr = workspace;
+    for (elemr = 0; elemr < 8; elemr = elemr + 1) {
+      pbVar3 = sample_data[start_row + elemr] + start_col;
+      *workspaceptr = (float)(int)(*pbVar3 - 0x80);
+      workspaceptr[1] = (float)(int)(pbVar3[1] - 0x80);
+      workspaceptr[2] = (float)(int)(pbVar3[2] - 0x80);
+      workspaceptr[3] = (float)(int)(pbVar3[3] - 0x80);
+      workspaceptr[4] = (float)(int)(pbVar3[4] - 0x80);
+      workspaceptr[5] = (float)(int)(pbVar3[5] - 0x80);
+      workspaceptr[6] = (float)(int)(pbVar3[6] - 0x80);
+      workspaceptr[7] = (float)(int)(pbVar3[7] - 0x80);
+      workspaceptr = workspaceptr + 8;
+      elemptr = pbVar3 + 8;
     }
-    (*p_Var1)((jpeg_compress_struct *)local_104,in_stack_fffffed4,in_stack_fffffed8,
-              in_stack_fffffedc,(uint)in_stack_fffffee0,uVar4,(uint)pfVar5);
-    in_stack_fffffed4 = (jpeg_component_info *)(param_4 + local_114);
-    for (in_stack_fffffedc = (short (*) [64])0x0; (int)in_stack_fffffedc < 0x40;
-        in_stack_fffffedc = (short (*) [64])((int)*in_stack_fffffedc + 1)) {
-      in_stack_fffffed8 =
-           (uchar **)
-           (local_104[(int)in_stack_fffffedc] * *(float *)(p_Var2 + (int)in_stack_fffffedc * 4));
-      *(short *)((int)&in_stack_fffffed4->component_id + (int)in_stack_fffffedc * 2) =
-           (short)(int)((float)in_stack_fffffed8 + 16384.5) + -0x4000;
+    (*p_Var1)((jpeg_compress_struct *)workspace,(jpeg_component_info *)output_ptr,(uchar **)temp,
+              (short (*) [64])i,(uint)elemptr,elemr,(uint)workspaceptr);
+    output_ptr = coef_blocks[bi];
+    for (i = 0; i < 0x40; i = i + 1) {
+      temp = workspace[i] * *(float *)(p_Var2 + i * 4);
+      (*(short (*) [64])output_ptr)[i] = (short)(int)(temp + 16384.5) + -0x4000;
     }
-    param_6 = param_6 + 8;
+    start_col = start_col + 8;
   }
   return;
 }
@@ -204,17 +219,18 @@ forward_DCT_float(jpeg_compress_struct *param_1,jpeg_component_info *param_2,uch
 
 // 00B5FAC0  jinit_forward_dct  (jpeg-6/jcdctmgr.c:346)
 
-void __cdecl jinit_forward_dct(jpeg_compress_struct *param_1)
+void __cdecl jinit_forward_dct(jpeg_compress_struct *cinfo)
 
 {
   J_DCT_METHOD JVar1;
   jpeg_forward_dct *pjVar2;
-  int local_8;
+  my_fdct_controller *fdct;
+  int i;
   
-  pjVar2 = (*param_1->mem->alloc_small)((jpeg_common_struct *)param_1,1,0x30);
-  param_1->fdct = pjVar2;
+  pjVar2 = (*cinfo->mem->alloc_small)((jpeg_common_struct *)cinfo,1,0x30);
+  cinfo->fdct = pjVar2;
   pjVar2->start_pass = start_pass_fdctmgr;
-  JVar1 = param_1->dct_method;
+  JVar1 = cinfo->dct_method;
   if (JVar1 == JDCT_ISLOW) {
     pjVar2->forward_DCT = forward_DCT;
     pjVar2[1].start_pass = jpeg_fdct_islow;
@@ -228,14 +244,14 @@ void __cdecl jinit_forward_dct(jpeg_compress_struct *param_1)
     pjVar2[3].forward_DCT = jpeg_fdct_float;
   }
   else {
-    param_1->err->msg_code = 0x30;
-    (*param_1->err->error_exit)((jpeg_common_struct *)param_1);
+    cinfo->err->msg_code = 0x30;
+    (*cinfo->err->error_exit)((jpeg_common_struct *)cinfo);
   }
-  for (local_8 = 0; local_8 < 4; local_8 = local_8 + 1) {
-    (&pjVar2[1].forward_DCT)[local_8] =
+  for (i = 0; i < 4; i = i + 1) {
+    (&pjVar2[1].forward_DCT)[i] =
          (_func___cdecl_void_jpeg_compress_struct_ptr_jpeg_component_info_ptr_uchar_ptr_ptr_short_64__ptr_uint_uint_uint
           *)0x0;
-    (&pjVar2[4].start_pass)[local_8] = (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0;
+    (&pjVar2[4].start_pass)[i] = (_func___cdecl_void_jpeg_compress_struct_ptr *)0x0;
   }
   return;
 }

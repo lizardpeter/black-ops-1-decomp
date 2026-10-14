@@ -2,14 +2,14 @@
 
 // 00B10F70  R_GetCodeConstant  (gfx_d3d/r_shade.cpp:34)
 
-float * __cdecl R_GetCodeConstant(GfxCmdBufContext *param_1,uint param_2)
+float * __cdecl R_GetCodeConstant(GfxCmdBufContext *context,uint constant)
 
 {
   code *pcVar1;
   bool bVar2;
   float *pfVar3;
   
-  if ((param_1->field0_0x0)._s_0.state == (GfxCmdBufState *)0x0) {
+  if ((context->field0_0x0)._s_0.state == (GfxCmdBufState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x23,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -17,7 +17,7 @@ float * __cdecl R_GetCodeConstant(GfxCmdBufContext *param_1,uint param_2)
       return pfVar3;
     }
   }
-  if ((param_1->field0_0x0)._s_0.source == (GfxCmdBufSourceState *)0x0) {
+  if ((context->field0_0x0)._s_0.source == (GfxCmdBufSourceState *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x24,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -25,7 +25,7 @@ float * __cdecl R_GetCodeConstant(GfxCmdBufContext *param_1,uint param_2)
       return pfVar3;
     }
   }
-  if (0xc4 < param_2) {
+  if (0xc4 < constant) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x25,0,
                              "constant doesn\'t index CONST_SRC_CODE_COUNT_FLOAT4\n\t%i not in [0, %i)"
                             );
@@ -35,7 +35,7 @@ float * __cdecl R_GetCodeConstant(GfxCmdBufContext *param_1,uint param_2)
       return pfVar3;
     }
   }
-  return (((param_1->field0_0x0)._s_0.source)->input).consts[param_2];
+  return (((context->field0_0x0)._s_0.source)->input).consts[constant];
 }
 
 
@@ -43,36 +43,38 @@ float * __cdecl R_GetCodeConstant(GfxCmdBufContext *param_1,uint param_2)
 
 bool __cdecl
 R_IsShaderMatrixUpToDate
-          (GfxCmdBufSourceState *param_1,ulong64 *param_2,MaterialShaderArgument *param_3)
+          (GfxCmdBufSourceState *source,ulong64 *constant,MaterialShaderArgument *routingData)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   uint uVar4;
-  uint local_c;
+  uint rowCount;
+  uint versionIndex;
   
   uVar4 = (uint)*(ushort *)
-                 ((int)(param_1->skinnedPlacement).base.quat +
-                 ((int)((param_3->u).codeConst.index - 0xc5) >> 2) * 2 + -6);
-  if ((*(float **)param_2 == (param_3->u).literalConst) && (*(uint *)((int)param_2 + 4) == uVar4)) {
+                 ((int)(source->skinnedPlacement).base.quat +
+                 ((int)((routingData->u).codeConst.index - 0xc5) >> 2) * 2 + -6);
+  if ((*(float **)constant == (routingData->u).literalConst) &&
+     (*(uint *)((int)constant + 4) == uVar4)) {
     bVar2 = true;
   }
   else {
-    *(float **)param_2 = (param_3->u).literalConst;
-    *(uint *)((int)param_2 + 4) = uVar4;
-    local_c = (uint)(param_3->u).codeConst.rowCount;
-    if ((local_c == 0) &&
+    *(float **)constant = (routingData->u).literalConst;
+    *(uint *)((int)constant + 4) = uVar4;
+    rowCount = (uint)(routingData->u).codeConst.rowCount;
+    if ((rowCount == 0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x43,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       uVar3 = (*pcVar1)();
       return (bool)uVar3;
     }
-    while (local_c = local_c - 1, local_c != 0) {
-      *(undefined4 *)(param_2 + 1) = 0xffffffff;
-      *(undefined4 *)((int)param_2 + 0xc) = 0xffffffff;
-      param_2 = param_2 + 1;
+    while (rowCount = rowCount - 1, rowCount != 0) {
+      *(undefined4 *)(constant + 1) = 0xffffffff;
+      *(undefined4 *)((int)constant + 0xc) = 0xffffffff;
+      constant = constant + 1;
     }
     bVar2 = false;
   }
@@ -84,15 +86,16 @@ R_IsShaderMatrixUpToDate
 
 bool __cdecl
 R_IsShaderConstantUpToDate
-          (GfxCmdBufSourceState *param_1,ulong64 *param_2,MaterialShaderArgument *param_3)
+          (GfxCmdBufSourceState *source,ulong64 *constant,MaterialShaderArgument *routingData)
 
 {
   ushort uVar1;
   code *pcVar2;
   bool bVar3;
   undefined1 uVar4;
+  uint versionIndex;
   
-  if (param_1 == (GfxCmdBufSourceState *)0x0) {
+  if (source == (GfxCmdBufSourceState *)0x0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x53,0,"%s");
     if (!bVar3) {
       pcVar2 = (code *)swi(3);
@@ -100,15 +103,15 @@ R_IsShaderConstantUpToDate
       return (bool)uVar4;
     }
   }
-  uVar1 = param_1->constVersions[(param_3->u).codeConst.index + 0x18];
-  if ((*(float **)param_2 == (param_3->u).literalConst) &&
-     (*(uint *)((int)param_2 + 4) == (uint)uVar1)) {
+  uVar1 = source->constVersions[(routingData->u).codeConst.index + 0x18];
+  if ((*(float **)constant == (routingData->u).literalConst) &&
+     (*(uint *)((int)constant + 4) == (uint)uVar1)) {
     bVar3 = true;
   }
   else {
-    *(float **)param_2 = (param_3->u).literalConst;
-    *(uint *)((int)param_2 + 4) = (uint)uVar1;
-    if ((param_3->u).codeConst.rowCount != '\x01') {
+    *(float **)constant = (routingData->u).literalConst;
+    *(uint *)((int)constant + 4) = (uint)uVar1;
+    if ((routingData->u).codeConst.rowCount != '\x01') {
       bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5c,0,"%s"
                               );
       if (!bVar3) {
@@ -126,14 +129,14 @@ R_IsShaderConstantUpToDate
 // 00B11010  R_IsVertexShaderConstantUpToDate  (gfx_d3d/r_shade.cpp:97)
 
 bool __cdecl
-R_IsVertexShaderConstantUpToDate(GfxCmdBufContext param_1,MaterialShaderArgument *param_2)
+R_IsVertexShaderConstantUpToDate(GfxCmdBufContext context,MaterialShaderArgument *routingData)
 
 {
   code *pcVar1;
   bool bVar2;
   undefined1 uVar3;
   
-  if (0xff < param_2->dest) {
+  if (0xff < routingData->dest) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x62,0,
                              "routingData->dest doesn\'t index ARRAY_COUNT( context.state->vertexShaderConstState )\n\t%i not in [0, %i)"
                             );
@@ -143,17 +146,17 @@ R_IsVertexShaderConstantUpToDate(GfxCmdBufContext param_1,MaterialShaderArgument
       return (bool)uVar3;
     }
   }
-  if ((param_2->u).codeConst.index < 0xc5) {
+  if ((routingData->u).codeConst.index < 0xc5) {
     bVar2 = R_IsShaderConstantUpToDate
-                      (param_1.field0_0x0._s_0.source,
-                       (param_1.field0_0x0._s_0.state)->vertexShaderConstState + param_2->dest,
-                       param_2);
+                      (context.field0_0x0._s_0.source,
+                       (context.field0_0x0._s_0.state)->vertexShaderConstState + routingData->dest,
+                       routingData);
   }
   else {
     bVar2 = R_IsShaderMatrixUpToDate
-                      (param_1.field0_0x0._s_0.source,
-                       (param_1.field0_0x0._s_0.state)->vertexShaderConstState + param_2->dest,
-                       param_2);
+                      (context.field0_0x0._s_0.source,
+                       (context.field0_0x0._s_0.state)->vertexShaderConstState + routingData->dest,
+                       routingData);
   }
   return bVar2;
 }
@@ -165,7 +168,7 @@ R_IsVertexShaderConstantUpToDate(GfxCmdBufContext param_1,MaterialShaderArgument
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
 void __cdecl
-R_SetVertexShaderConstantFromCode_Old(GfxCmdBufContext param_1,MaterialShaderArgument *param_2)
+R_SetVertexShaderConstantFromCode_Old(GfxCmdBufContext context,MaterialShaderArgument *routingData)
 
 {
   IDirect3DDevice9 *pIVar1;
@@ -181,27 +184,26 @@ R_SetVertexShaderConstantFromCode_Old(GfxCmdBufContext param_1,MaterialShaderArg
   float *local_28;
   uint local_24;
   GfxCmdBufContext_u_0 local_10;
-  float *local_8;
+  float *data;
   
   pIStackY_3c = (IDirect3DDevice9 *)0xb10d97;
-  bVar2 = R_IsVertexShaderConstantUpToDate(param_1,param_2);
+  bVar2 = R_IsVertexShaderConstantUpToDate(context,routingData);
   if (!bVar2) {
-    pMVar6 = &param_2->u;
-    local_10._s_0.source = param_1.field0_0x0._s_0.source;
-    local_10._s_0.state = param_1.field0_0x0._s_0.state;
+    pMVar6 = &routingData->u;
+    local_10._s_0.source = context.field0_0x0._s_0.source;
+    local_10._s_0.state = context.field0_0x0._s_0.state;
     if ((pMVar6->codeConst).index < 0xc5) {
-      local_8 = R_GetCodeConstant((GfxCmdBufContext *)&local_10._s_0,(uint)(pMVar6->codeConst).index
-                                 );
+      data = R_GetCodeConstant((GfxCmdBufContext *)&local_10._s_0,(uint)(pMVar6->codeConst).index);
     }
     else {
       pIStackY_3c = (IDirect3DDevice9 *)0xb10de9;
-      local_8 = R_GetCodeMatrix(param_1.field0_0x0._s_0.source,(uint)(pMVar6->codeConst).index,
-                                (uint)(param_2->u).codeConst.firstRow);
+      data = R_GetCodeMatrix(context.field0_0x0._s_0.source,(uint)(pMVar6->codeConst).index,
+                             (uint)(routingData->u).codeConst.firstRow);
     }
-    local_2c = (uint)(param_2->u).codeConst.rowCount;
-    local_28 = local_8;
-    local_24 = (uint)param_2->dest;
-    pIVar1 = ((param_1.field0_0x0._s_0.state)->prim).field0_0x0.device;
+    local_2c = (uint)(routingData->u).codeConst.rowCount;
+    local_28 = data;
+    local_24 = (uint)routingData->dest;
+    pIVar1 = ((context.field0_0x0._s_0.state)->prim).field0_0x0.device;
     R_AssertDXDeviceOwnership();
     if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
       RB_LogPrint("device->SetVertexShaderConstantF( dest, data, rowCount )\n");
@@ -254,7 +256,7 @@ R_SetVertexShaderConstantFromCode_Old(GfxCmdBufContext param_1,MaterialShaderArg
 // 00B11240  R_SetVertexShaderConstantFromCode_New  (gfx_d3d/r_shade.cpp:125)
 
 void __cdecl
-R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *param_1,MaterialShaderArgument *param_2)
+R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *context,MaterialShaderArgument *routingData)
 
 {
   ushort uVar1;
@@ -275,10 +277,13 @@ R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *param_1,MaterialShaderAr
   undefined4 uVar12;
   int local_74;
   uint local_5c;
-  uint local_40;
-  ulong64 *local_30;
+  float *data;
+  uint rowLoop;
+  ulong64 *constant;
+  uint rowCount;
+  ushort index;
   
-  if ((0xff < param_2->dest) &&
+  if ((0xff < routingData->dest) &&
      (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x88,0,
                                "routingData->dest doesn\'t index ARRAY_COUNT( context.local.state->vertexShaderConstState )\n\t%i not in [0, %i)"
                               ), !bVar5)) {
@@ -286,27 +291,27 @@ R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *param_1,MaterialShaderAr
     (*pcVar4)();
     return;
   }
-  local_30 = ((param_1->field0_0x0)._s_0.state)->vertexShaderConstState + param_2->dest;
-  uVar1 = (param_2->u).codeConst.index;
+  constant = ((context->field0_0x0)._s_0.state)->vertexShaderConstState + routingData->dest;
+  uVar1 = (routingData->u).codeConst.index;
   _allshl();
   if (uVar1 < 0xc5) {
-    if (((param_2->u).codeConst.rowCount != '\x01') &&
+    if (((routingData->u).codeConst.rowCount != '\x01') &&
        (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xa9,0,
                                  "%s"), !bVar5)) {
       pcVar4 = (code *)swi(3);
       (*pcVar4)();
       return;
     }
-    pGVar2 = (param_1->field0_0x0)._s_0.source;
+    pGVar2 = (context->field0_0x0)._s_0.source;
     _allmul();
     uVar6 = extraout_EAX | *(ushort *)((int)pGVar2->constVersions + extraout_EAX_01 + 0x30);
-    if (((uint)*local_30 != uVar6) || (*(uint *)((int)local_30 + 4) != extraout_EDX)) {
-      *(uint *)local_30 = uVar6;
-      *(uint *)((int)local_30 + 4) = extraout_EDX;
-      pfVar7 = R_GetCodeConstant(param_1,(uint)uVar1);
+    if (((uint)*constant != uVar6) || (*(uint *)((int)constant + 4) != extraout_EDX)) {
+      *(uint *)constant = uVar6;
+      *(uint *)((int)constant + 4) = extraout_EDX;
+      pfVar7 = R_GetCodeConstant(context,(uint)uVar1);
       local_74 = 1;
-      uVar1 = param_2->dest;
-      pIVar3 = (((param_1->field0_0x0)._s_0.state)->prim).field0_0x0.device;
+      uVar1 = routingData->dest;
+      pIVar3 = (((context->field0_0x0)._s_0.state)->prim).field0_0x0.device;
       R_AssertDXDeviceOwnership();
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("device->SetVertexShaderConstantF( dest, data, rowCount )\n");
@@ -333,17 +338,17 @@ R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *param_1,MaterialShaderAr
   }
   else {
     iVar10 = (int)(uVar1 - 0xc5) >> 0x1f;
-    pGVar2 = (param_1->field0_0x0)._s_0.source;
+    pGVar2 = (context->field0_0x0)._s_0.source;
     uVar12 = 0;
     uVar11 = 2;
     _allmul();
     uVar6 = extraout_EAX |
             *(ushort *)((int)(pGVar2->skinnedPlacement).base.quat + extraout_EAX_00 + -6);
-    if (((uint)*local_30 != uVar6) || (*(uint *)((int)local_30 + 4) != extraout_EDX)) {
-      *(uint *)local_30 = uVar6;
-      *(uint *)((int)local_30 + 4) = extraout_EDX;
-      local_5c = (uint)(param_2->u).codeConst.rowCount;
-      local_40 = local_5c;
+    if (((uint)*constant != uVar6) || (*(uint *)((int)constant + 4) != extraout_EDX)) {
+      *(uint *)constant = uVar6;
+      *(uint *)((int)constant + 4) = extraout_EDX;
+      local_5c = (uint)(routingData->u).codeConst.rowCount;
+      rowLoop = local_5c;
       if ((local_5c == 0) &&
          (bVar5 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x9a,0,
                                    "%s"), !bVar5)) {
@@ -351,15 +356,15 @@ R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *param_1,MaterialShaderAr
         (*pcVar4)(iVar10,uVar11,uVar12);
         return;
       }
-      while (local_40 = local_40 - 1, local_40 != 0) {
-        *(uint *)(local_30 + 1) = 0xffffffff;
-        *(uint *)((int)local_30 + 0xc) = 0xffffffff;
-        local_30 = local_30 + 1;
+      while (rowLoop = rowLoop - 1, rowLoop != 0) {
+        *(uint *)(constant + 1) = 0xffffffff;
+        *(uint *)((int)constant + 0xc) = 0xffffffff;
+        constant = constant + 1;
       }
-      pfVar7 = R_GetCodeMatrix((param_1->field0_0x0)._s_0.source,(uint)uVar1,
-                               (uint)(param_2->u).codeConst.firstRow);
-      uVar1 = param_2->dest;
-      pIVar3 = (((param_1->field0_0x0)._s_0.state)->prim).field0_0x0.device;
+      pfVar7 = R_GetCodeMatrix((context->field0_0x0)._s_0.source,(uint)uVar1,
+                               (uint)(routingData->u).codeConst.firstRow);
+      uVar1 = routingData->dest;
+      pIVar3 = (((context->field0_0x0)._s_0.state)->prim).field0_0x0.device;
       R_AssertDXDeviceOwnership();
       if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
         RB_LogPrint("device->SetVertexShaderConstantF( dest, data, rowCount )\n");
@@ -391,24 +396,26 @@ R_SetVertexShaderConstantFromCode_New(GfxCmdBufContext *param_1,MaterialShaderAr
 // 00B11B60  R_HW_SetPixelShaderConstant  (gfx_d3d/r_setstate_d3d.h:157)
 
 void __cdecl
-R_HW_SetPixelShaderConstant(IDirect3DDevice9 *param_1,uint param_2,float *param_3,uint param_4)
+R_HW_SetPixelShaderConstant(IDirect3DDevice9 *device,uint dest,float *data,uint rowCount)
 
 {
   int iVar1;
-  int iVar2;
+  int hr_00;
+  int semaphore;
+  HRESULT hr;
   
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetPixelShaderConstantF( dest, data, rowCount )\n");
   }
   iVar1 = R_AcquireDXDeviceOwnership((_func___cdecl_void *)0x0);
-  iVar2 = (**(code **)((int)*param_1 + 0x1b4))(param_1,param_2,param_3,param_4);
+  hr_00 = (**(code **)((int)*device + 0x1b4))(device,dest,data,rowCount);
   if (iVar1 != 0) {
     R_ReleaseDXDeviceOwnership();
   }
-  if (iVar2 < 0) {
+  if (hr_00 < 0) {
     g_disableRendering = g_disableRendering + 1;
-    R_ErrorDescription(iVar2);
+    R_ErrorDescription(hr_00);
     Com_Error(ERR_FATAL,
               "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_setstate_d3d.h (%i) device->SetPixelShaderConstantF( dest, data, rowCount ) failed: %s\n"
              );
@@ -420,7 +427,7 @@ R_HW_SetPixelShaderConstant(IDirect3DDevice9 *param_1,uint param_2,float *param_
 // 00B11C20  R_IsPixelShaderConstantUpToDate  (gfx_d3d/r_shade.cpp:204)
 
 int __cdecl
-R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument *param_2)
+R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *context,MaterialShaderArgument *routingData)
 
 {
   ulong64 *puVar1;
@@ -430,7 +437,7 @@ R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument
   int iVar5;
   uint uVar6;
   
-  if (0xff < param_2->dest) {
+  if (0xff < routingData->dest) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xd0,0,
                              "routingData->dest doesn\'t index ARRAY_COUNT( context.state->pixelShaderConstState )\n\t%i not in [0, %i)"
                             );
@@ -440,7 +447,7 @@ R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument
       return iVar5;
     }
   }
-  if ((param_2->u).codeConst.rowCount != '\x01') {
+  if ((routingData->u).codeConst.rowCount != '\x01') {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xd1,0,
                              "%s\n\t(routingData->u.codeConst.rowCount) = %i");
     if (!bVar4) {
@@ -449,7 +456,7 @@ R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument
       return iVar5;
     }
   }
-  if ((param_1->field0_0x0)._s_0.source == (GfxCmdBufSourceState *)0x0) {
+  if ((context->field0_0x0)._s_0.source == (GfxCmdBufSourceState *)0x0) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xd2,0,"%s");
     if (!bVar4) {
       pcVar3 = (code *)swi(3);
@@ -457,9 +464,9 @@ R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument
       return iVar5;
     }
   }
-  pfVar2 = (param_2->u).literalConst;
-  uVar6 = (uint)((param_1->field0_0x0)._s_0.source)->constVersions
-                [(param_2->u).codeConst.index + 0x18];
+  pfVar2 = (routingData->u).literalConst;
+  uVar6 = (uint)((context->field0_0x0)._s_0.source)->constVersions
+                [(routingData->u).codeConst.index + 0x18];
   if (uVar6 == 0) {
     va("constant: %d, material: %s, technique: %s");
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xd7,0,
@@ -470,7 +477,7 @@ R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument
       return iVar5;
     }
   }
-  puVar1 = ((param_1->field0_0x0)._s_0.state)->pixelShaderConstState + param_2->dest;
+  puVar1 = ((context->field0_0x0)._s_0.state)->pixelShaderConstState + routingData->dest;
   if ((*(float **)puVar1 == pfVar2) && (*(uint *)((int)puVar1 + 4) == uVar6)) {
     iVar5 = 1;
   }
@@ -486,15 +493,16 @@ R_IsPixelShaderConstantUpToDate(GfxCmdBufContext *param_1,MaterialShaderArgument
 // 00B11DA0  R_SetPixelShaderConstantFromCode  (gfx_d3d/r_shade.cpp:226)
 
 void __cdecl
-R_SetPixelShaderConstantFromCode(GfxCmdBufContext *param_1,MaterialShaderArgument *param_2)
+R_SetPixelShaderConstantFromCode(GfxCmdBufContext *context,MaterialShaderArgument *routingData)
 
 {
   code *pcVar1;
   bool bVar2;
-  float *pfVar3;
+  float *data_00;
+  float *data;
   
-  if (((param_1->field0_0x0)._s_0.source)->constVersions[(param_2->u).codeConst.index + 0x18] == 0)
-  {
+  if (((context->field0_0x0)._s_0.source)->constVersions[(routingData->u).codeConst.index + 0x18] ==
+      0) {
     va("constant: %d, material: %s, technique: %s");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xe7,0,
                              "%s\n\t%s");
@@ -504,7 +512,7 @@ R_SetPixelShaderConstantFromCode(GfxCmdBufContext *param_1,MaterialShaderArgumen
       return;
     }
   }
-  if (0xc4 < (param_2->u).codeConst.index) {
+  if (0xc4 < (routingData->u).codeConst.index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0xea,0,
                              "routingData->u.codeConst.index doesn\'t index CONST_SRC_FIRST_CODE_MATRIX\n\t%i not in [0, %i)"
                             );
@@ -514,10 +522,10 @@ R_SetPixelShaderConstantFromCode(GfxCmdBufContext *param_1,MaterialShaderArgumen
       return;
     }
   }
-  pfVar3 = R_GetCodeConstant(param_1,(uint)(param_2->u).codeConst.index);
+  data_00 = R_GetCodeConstant(context,(uint)(routingData->u).codeConst.index);
   R_HW_SetPixelShaderConstant
-            ((((param_1->field0_0x0)._s_0.state)->prim).field0_0x0.device,(uint)param_2->dest,pfVar3
-             ,(uint)(param_2->u).codeConst.rowCount);
+            ((((context->field0_0x0)._s_0.state)->prim).field0_0x0.device,(uint)routingData->dest,
+             data_00,(uint)(routingData->u).codeConst.rowCount);
   return;
 }
 
@@ -525,14 +533,14 @@ R_SetPixelShaderConstantFromCode(GfxCmdBufContext *param_1,MaterialShaderArgumen
 // 00B10CF0  R_SetPassShaderPrimArguments  (gfx_d3d/r_shade.cpp:266)
 
 void __cdecl
-R_SetPassShaderPrimArguments(GfxCmdBufContext *param_1,uint param_2,MaterialShaderArgument *param_3)
+R_SetPassShaderPrimArguments(GfxCmdBufContext *context,uint argCount,MaterialShaderArgument *arg)
 
 {
   code *pcVar1;
   bool bVar2;
   
   do {
-    if (param_3->type != 3) {
+    if (arg->type != 3) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x114,0,
                                "unreachable");
       if (bVar2) {
@@ -543,14 +551,14 @@ R_SetPassShaderPrimArguments(GfxCmdBufContext *param_1,uint param_2,MaterialShad
       return;
     }
     if (Use_R_SetVertexShaderConstantFromCode_New == false) {
-      R_SetVertexShaderConstantFromCode_Old((GfxCmdBufContext)(param_1->field0_0x0)._s_0,param_3);
+      R_SetVertexShaderConstantFromCode_Old((GfxCmdBufContext)(context->field0_0x0)._s_0,arg);
     }
     else {
-      R_SetVertexShaderConstantFromCode_New(param_1,param_3);
+      R_SetVertexShaderConstantFromCode_New(context,arg);
     }
-    param_3 = param_3 + 1;
-    param_2 = param_2 - 1;
-  } while (param_2 != 0);
+    arg = arg + 1;
+    argCount = argCount - 1;
+  } while (argCount != 0);
   return;
 }
 
@@ -558,20 +566,20 @@ R_SetPassShaderPrimArguments(GfxCmdBufContext *param_1,uint param_2,MaterialShad
 // 00B11790  R_SetPassShaderObjectArguments  (gfx_d3d/r_shade.cpp:280)
 
 void __cdecl
-R_SetPassShaderObjectArguments
-          (GfxCmdBufContext *param_1,uint param_2,MaterialShaderArgument *param_3)
+R_SetPassShaderObjectArguments(GfxCmdBufContext *context,uint argCount,MaterialShaderArgument *arg)
 
 {
   code *pcVar1;
   bool bVar2;
   uint extraout_EAX;
-  GfxImage *pGVar3;
-  uchar local_5;
+  GfxImage *image_00;
+  GfxImage *image;
+  uchar samplerState;
   
   do {
-    if (param_3->type != 3) {
+    if (arg->type != 3) {
       while( true ) {
-        if (param_3->type != 4) {
+        if (arg->type != 4) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x14d,0
                                    ,"unreachable");
           if (bVar2) {
@@ -583,54 +591,56 @@ R_SetPassShaderObjectArguments
         }
         _aullshr();
         if ((extraout_EAX & 1) == 0) {
-          pGVar3 = R_GetTextureFromCode
-                             ((param_1->field0_0x0)._s_0.source,(param_3->u).codeSampler,&local_5);
-          if (pGVar3 == (GfxImage *)0x0) {
-            R_TextureFromCodeError(param_1,(param_3->u).codeSampler);
+          image_00 = R_GetTextureFromCode
+                               ((context->field0_0x0)._s_0.source,(arg->u).codeSampler,&samplerState
+                               );
+          if (image_00 == (GfxImage *)0x0) {
+            R_TextureFromCodeError(context,(arg->u).codeSampler);
           }
-          R_SetSampler((GfxCmdBufContext)(param_1->field0_0x0)._s_0,(uint)param_3->dest,local_5,
-                       pGVar3);
+          R_SetSampler((GfxCmdBufContext)(context->field0_0x0)._s_0,(uint)arg->dest,samplerState,
+                       image_00);
         }
         else {
           R_SetTextureSamplerCodeImageRenderTarget
-                    ((GfxCmdBufContext)(param_1->field0_0x0)._s_0,(uint)param_3->dest,
+                    ((GfxCmdBufContext)(context->field0_0x0)._s_0,(uint)arg->dest,
                      (GfxCodeImageRenderTarget)
                      (CONCAT44(extraout_EAX,
                                *(undefined4 *)
-                                ((int)(((param_1->field0_0x0)._s_0.source)->input).
-                                      codeImageRenderTargetControl +
-                                (param_3->u).codeSampler * 8 + 0x34)) & 0x1ffffffff));
+                                ((int)(((context->field0_0x0)._s_0.source)->input).
+                                      codeImageRenderTargetControl + (arg->u).codeSampler * 8 + 0x34
+                                )) & 0x1ffffffff));
         }
-        if (param_2 == 1) break;
-        param_3 = param_3 + 1;
-        param_2 = param_2 - 1;
+        if (argCount == 1) break;
+        arg = arg + 1;
+        argCount = argCount - 1;
       }
       return;
     }
     if (Use_R_SetVertexShaderConstantFromCode_New == false) {
-      R_SetVertexShaderConstantFromCode_Old((GfxCmdBufContext)(param_1->field0_0x0)._s_0,param_3);
+      R_SetVertexShaderConstantFromCode_Old((GfxCmdBufContext)(context->field0_0x0)._s_0,arg);
     }
     else {
-      R_SetVertexShaderConstantFromCode_New(param_1,param_3);
+      R_SetVertexShaderConstantFromCode_New(context,arg);
     }
-    param_3 = param_3 + 1;
-    param_2 = param_2 - 1;
-  } while (param_2 != 0);
+    arg = arg + 1;
+    argCount = argCount - 1;
+  } while (argCount != 0);
   return;
 }
 
 
 // 00B10CB0  R_SetupPassPerPrimArgs  (gfx_d3d/r_shade.cpp:341)
 
-void __cdecl R_SetupPassPerPrimArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassPerPrimArgs(GfxCmdBufContext context)
 
 {
   MaterialPass *pMVar1;
+  MaterialPass *pass;
   
-  pMVar1 = (param_1.field0_0x0._s_0.state)->pass;
+  pMVar1 = (context.field0_0x0._s_0.state)->pass;
   if (pMVar1->perPrimArgCount != '\0') {
     R_SetPassShaderPrimArguments
-              (&param_1,(uint)pMVar1->perPrimArgCount,(pMVar1->field7_0x10).localArgs);
+              (&context,(uint)pMVar1->perPrimArgCount,(pMVar1->field7_0x10).localArgs);
   }
   return;
 }
@@ -638,15 +648,16 @@ void __cdecl R_SetupPassPerPrimArgs(GfxCmdBufContext param_1)
 
 // 00B11740  R_SetupPassPerObjectArgs  (gfx_d3d/r_shade.cpp:354)
 
-void __cdecl R_SetupPassPerObjectArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassPerObjectArgs(GfxCmdBufContext context)
 
 {
   MaterialPass *pMVar1;
+  MaterialPass *pass;
   
-  pMVar1 = (param_1.field0_0x0._s_0.state)->pass;
+  pMVar1 = (context.field0_0x0._s_0.state)->pass;
   if (pMVar1->perObjArgCount != '\0') {
     R_SetPassShaderObjectArguments
-              (&param_1,(uint)pMVar1->perObjArgCount,
+              (&context,(uint)pMVar1->perObjArgCount,
                (pMVar1->field7_0x10).localArgs + pMVar1->perPrimArgCount);
   }
   return;
@@ -657,25 +668,26 @@ void __cdecl R_SetupPassPerObjectArgs(GfxCmdBufContext param_1)
 
 void __cdecl
 R_SetPassPixelShaderStableArguments
-          (GfxCmdBufContext *param_1,uint param_2,MaterialShaderArgument *param_3)
+          (GfxCmdBufContext *context,uint argCount,MaterialShaderArgument *arg)
 
 {
   Material *pMVar1;
   code *pcVar2;
   bool bVar3;
   int iVar4;
-  MaterialConstantDef *local_8;
+  Material *material;
+  MaterialConstantDef *constDef;
   
-  pMVar1 = ((param_1->field0_0x0)._s_0.state)->material;
+  pMVar1 = ((context->field0_0x0)._s_0.state)->material;
   do {
-    if (4 < param_3->type) {
+    if (4 < arg->type) {
       do {
-        if (param_3->type != 5) {
-          local_8 = (pMVar1->field10_0xb8).localConstantTable;
+        if (arg->type != 5) {
+          constDef = (pMVar1->field10_0xb8).localConstantTable;
           do {
-            if (param_3->type != 6) {
+            if (arg->type != 6) {
               do {
-                if (param_3->type != 7) {
+                if (arg->type != 7) {
                   bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp"
                                            ,0x1ac,0,"unreachable");
                   if (bVar3) {
@@ -686,16 +698,15 @@ R_SetPassPixelShaderStableArguments
                   return;
                 }
                 R_SetPixelShaderConstantFromLiteral
-                          ((param_1->field0_0x0)._s_0.state,(uint)param_3->dest,
-                           (param_3->u).literalConst);
-                param_3 = param_3 + 1;
-                param_2 = param_2 - 1;
-              } while (param_2 != 0);
+                          ((context->field0_0x0)._s_0.state,(uint)arg->dest,(arg->u).literalConst);
+                arg = arg + 1;
+                argCount = argCount - 1;
+              } while (argCount != 0);
               return;
             }
-            while ((float *)local_8->nameHash != (param_3->u).literalConst) {
-              local_8 = local_8 + 1;
-              if (local_8 == (pMVar1->field10_0xb8).localConstantTable + pMVar1->constantCount) {
+            while ((float *)constDef->nameHash != (arg->u).literalConst) {
+              constDef = constDef + 1;
+              if (constDef == (pMVar1->field10_0xb8).localConstantTable + pMVar1->constantCount) {
                 va("material \'%s\' is missing a required named constant");
                 bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",
                                          0x19f,0,"%s\n\t%s");
@@ -707,24 +718,24 @@ R_SetPassPixelShaderStableArguments
               }
             }
             R_SetPixelShaderConstantFromLiteral
-                      ((param_1->field0_0x0)._s_0.state,(uint)param_3->dest,local_8->literal);
-            param_3 = param_3 + 1;
-            param_2 = param_2 - 1;
-          } while (param_2 != 0);
+                      ((context->field0_0x0)._s_0.state,(uint)arg->dest,constDef->literal);
+            arg = arg + 1;
+            argCount = argCount - 1;
+          } while (argCount != 0);
           return;
         }
-        iVar4 = R_IsPixelShaderConstantUpToDate(param_1,param_3);
+        iVar4 = R_IsPixelShaderConstantUpToDate(context,arg);
         if (iVar4 == 0) {
-          R_SetPixelShaderConstantFromCode(param_1,param_3);
+          R_SetPixelShaderConstantFromCode(context,arg);
         }
-        param_3 = param_3 + 1;
-        param_2 = param_2 - 1;
-      } while (param_2 != 0);
+        arg = arg + 1;
+        argCount = argCount - 1;
+      } while (argCount != 0);
       return;
     }
-    param_3 = param_3 + 1;
-    param_2 = param_2 - 1;
-  } while (param_2 != 0);
+    arg = arg + 1;
+    argCount = argCount - 1;
+  } while (argCount != 0);
   return;
 }
 
@@ -733,45 +744,45 @@ R_SetPassPixelShaderStableArguments
 
 void __cdecl
 R_SetPassVertexShaderStableArguments
-          (GfxCmdBufContext *param_1,uint param_2,MaterialShaderArgument *param_3)
+          (GfxCmdBufContext *context,uint argCount,MaterialShaderArgument *arg)
 
 {
   do {
-    if (2 < param_3->type) {
+    if (2 < arg->type) {
       do {
-        if (param_3->type != 3) {
+        if (arg->type != 3) {
           return;
         }
         if (Use_R_SetVertexShaderConstantFromCode_New == false) {
-          R_SetVertexShaderConstantFromCode_Old
-                    ((GfxCmdBufContext)(param_1->field0_0x0)._s_0,param_3);
+          R_SetVertexShaderConstantFromCode_Old((GfxCmdBufContext)(context->field0_0x0)._s_0,arg);
         }
         else {
-          R_SetVertexShaderConstantFromCode_New(param_1,param_3);
+          R_SetVertexShaderConstantFromCode_New(context,arg);
         }
-        param_3 = param_3 + 1;
-        param_2 = param_2 - 1;
-      } while (param_2 != 0);
+        arg = arg + 1;
+        argCount = argCount - 1;
+      } while (argCount != 0);
       return;
     }
-    param_3 = param_3 + 1;
-    param_2 = param_2 - 1;
-  } while (param_2 != 0);
+    arg = arg + 1;
+    argCount = argCount - 1;
+  } while (argCount != 0);
   return;
 }
 
 
 // 00B11EA0  R_SetupPassPixelShaderArgs  (gfx_d3d/r_shade.cpp:473)
 
-void __cdecl R_SetupPassPixelShaderArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassPixelShaderArgs(GfxCmdBufContext context_2)
 
 {
   MaterialPass *pMVar1;
+  MaterialPass *pass_2;
   
-  pMVar1 = (param_1.field0_0x0._s_0.state)->pass;
+  pMVar1 = (context_2.field0_0x0._s_0.state)->pass;
   if (pMVar1->stableArgCount != '\0') {
     R_SetPassPixelShaderStableArguments
-              (&param_1,(uint)pMVar1->stableArgCount,
+              (&context_2,(uint)pMVar1->stableArgCount,
                (pMVar1->field7_0x10).localArgs +
                (uint)pMVar1->perPrimArgCount + (uint)pMVar1->perObjArgCount);
   }
@@ -781,15 +792,16 @@ void __cdecl R_SetupPassPixelShaderArgs(GfxCmdBufContext param_1)
 
 // 00B11EF0  R_SetupPassVertexShaderArgs  (gfx_d3d/r_shade.cpp:654)
 
-void __cdecl R_SetupPassVertexShaderArgs(GfxCmdBufContext param_1)
+void __cdecl R_SetupPassVertexShaderArgs(GfxCmdBufContext context)
 
 {
   MaterialPass *pMVar1;
+  MaterialPass *pass;
   
-  pMVar1 = (param_1.field0_0x0._s_0.state)->pass;
+  pMVar1 = (context.field0_0x0._s_0.state)->pass;
   if (pMVar1->stableArgCount != '\0') {
     R_SetPassVertexShaderStableArguments
-              (&param_1,(uint)pMVar1->stableArgCount,
+              (&context,(uint)pMVar1->stableArgCount,
                (pMVar1->field7_0x10).localArgs +
                (uint)pMVar1->perPrimArgCount + (uint)pMVar1->perObjArgCount);
   }
@@ -799,30 +811,31 @@ void __cdecl R_SetupPassVertexShaderArgs(GfxCmdBufContext param_1)
 
 // 00B12120  R_OverrideImage  (gfx_d3d/r_shade.cpp:669)
 
-void __cdecl R_OverrideImage(GfxImage **param_1,MaterialTextureDef *param_2)
+void __cdecl R_OverrideImage(GfxImage **image,MaterialTextureDef *texdef)
 
 {
   code *pcVar1;
   bool bVar2;
   GfxImage *pGVar3;
-  char *pcVar4;
+  char *fmt;
+  uchar semantic;
   
-  if ((param_1 == (GfxImage **)0x0) &&
+  if ((image == (GfxImage **)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x2a0,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == (MaterialTextureDef *)0x0) &&
+  if ((texdef == (MaterialTextureDef *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x2a1,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((*param_1)->mapType == '\x03') {
-    switch(param_2->semantic) {
+  if ((*image)->mapType == '\x03') {
+    switch(texdef->semantic) {
     case '\0':
     case '\x01':
     case '\v':
@@ -847,13 +860,13 @@ void __cdecl R_OverrideImage(GfxImage **param_1,MaterialTextureDef *param_2)
     case '\x1c':
       if ((r_colorMap->current).integer != 1) {
         pGVar3 = R_OverrideGrayscaleImage(r_colorMap);
-        *param_1 = pGVar3;
+        *image = pGVar3;
       }
       break;
     default:
-      pcVar4 = va("unhandled case %i");
-      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x2dd,1,
-                               pcVar4);
+      fmt = va("unhandled case %i");
+      bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x2dd,1,fmt
+                              );
       if (!bVar2) {
         pcVar1 = (code *)swi(3);
         (*pcVar1)();
@@ -862,7 +875,7 @@ void __cdecl R_OverrideImage(GfxImage **param_1,MaterialTextureDef *param_2)
       break;
     case '\x05':
       if ((r_normalMap->current).integer == 0) {
-        *param_1 = rgp.identityNormalMapImage;
+        *image = rgp.identityNormalMapImage;
       }
       else if (((r_normalMap->current).integer != 1) &&
               (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",
@@ -876,16 +889,16 @@ void __cdecl R_OverrideImage(GfxImage **param_1,MaterialTextureDef *param_2)
     case '\b':
       if ((r_specularRoughnessMap->current).integer != 0) {
         if ((r_specularRoughnessMap->current).integer == 1) {
-          *param_1 = rgp.blackTransparentImage;
+          *image = rgp.blackTransparentImage;
         }
         else if ((r_specularRoughnessMap->current).integer == 2) {
-          *param_1 = rgp.blackImage;
+          *image = rgp.blackImage;
         }
         else if ((r_specularRoughnessMap->current).integer == 3) {
-          *param_1 = rgp.whiteTransparentImage;
+          *image = rgp.whiteTransparentImage;
         }
         else if ((r_specularRoughnessMap->current).integer == 4) {
-          *param_1 = rgp.whiteImage;
+          *image = rgp.whiteImage;
         }
       }
     }
@@ -900,43 +913,43 @@ void __cdecl R_OverrideImage(GfxImage **param_1,MaterialTextureDef *param_2)
 
 MaterialTextureDef * __cdecl
 R_SetPixelSamplerFromMaterial
-          (GfxCmdBufContext *param_1,MaterialShaderArgument *param_2,MaterialTextureDef *param_3)
+          (GfxCmdBufContext *context,MaterialShaderArgument *arg,MaterialTextureDef *texDef)
 
 {
   code *pcVar1;
   bool bVar2;
   MaterialTextureDef *pMVar3;
-  GfxImage *local_10;
-  Material *local_c;
-  uchar local_5;
+  uint layerCount;
+  GfxImage *image;
+  Material *material;
+  uchar samplerState;
   
-  local_c = ((param_1->field0_0x0)._s_0.state)->material;
+  material = ((context->field0_0x0)._s_0.state)->material;
   do {
     do {
-      if ((float *)param_3->nameHash == (param_2->u).literalConst) {
-        if (param_3->semantic == '\v') {
-          local_10 = ((param_3->u).water)->image;
-          R_UploadWaterTexture((param_3->u).water,((param_1->field0_0x0)._s_0.source)->materialTime)
-          ;
+      if ((float *)texDef->nameHash == (arg->u).literalConst) {
+        if (texDef->semantic == '\v') {
+          image = ((texDef->u).water)->image;
+          R_UploadWaterTexture((texDef->u).water,((context->field0_0x0)._s_0.source)->materialTime);
         }
         else {
-          local_10 = (param_3->u).image;
+          image = (texDef->u).image;
         }
-        local_5 = param_3->samplerState;
+        samplerState = texDef->samplerState;
         if (rg.hasAnyImageOverrides != false) {
-          R_OverrideImage(&local_10,param_3);
+          R_OverrideImage(&image,texDef);
         }
-        if (((param_3->isMatureContent != '\0') &&
-            (*(int *)((int)(((param_1->field0_0x0)._s_0.source)->viewParms).viewMatrix.m[2][0] +
-                     0x16cf18) != 0)) && (1 < (local_c->info).layeredSurfaceTypes >> 0x1d)) {
-          local_10 = rgp.blankImage;
+        if (((texDef->isMatureContent != '\0') &&
+            (*(int *)((int)(((context->field0_0x0)._s_0.source)->viewParms).viewMatrix.m[2][0] +
+                     0x16cf18) != 0)) && (1 < (material->info).layeredSurfaceTypes >> 0x1d)) {
+          image = rgp.blankImage;
         }
-        R_SetSampler((GfxCmdBufContext)(param_1->field0_0x0)._s_0,(uint)param_2->dest,local_5,
-                     local_10);
-        return param_3;
+        R_SetSampler((GfxCmdBufContext)(context->field0_0x0)._s_0,(uint)arg->dest,samplerState,image
+                    );
+        return texDef;
       }
-      param_3 = param_3 + 1;
-    } while (param_3 != local_c->textureTable + local_c->textureCount);
+      texDef = texDef + 1;
+    } while (texDef != material->textureTable + material->textureCount);
     va("material \'%s\' is missing a required named texture");
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x2ed,1,
                              "%s\n\t%s");
@@ -950,89 +963,90 @@ R_SetPixelSamplerFromMaterial
 // 00B12310  R_SetPassShaderStableArguments  (gfx_d3d/r_shade.cpp:803)
 
 void __cdecl
-R_SetPassShaderStableArguments
-          (GfxCmdBufContext *param_1,uint param_2,MaterialShaderArgument *param_3)
+R_SetPassShaderStableArguments(GfxCmdBufContext *context,uint argCount,MaterialShaderArgument *arg)
 
 {
   Material *pMVar1;
   code *pcVar2;
   bool bVar3;
   uint extraout_EAX;
-  GfxImage *pGVar4;
-  MaterialTextureDef *local_10;
-  uchar local_9;
-  MaterialConstantDef *local_8;
+  GfxImage *image_00;
+  GfxImage *image;
+  Material *material;
+  MaterialTextureDef *texDef;
+  uchar samplerState;
+  MaterialConstantDef *constDef;
   
-  pMVar1 = ((param_1->field0_0x0)._s_0.state)->material;
-  local_8 = (pMVar1->field10_0xb8).localConstantTable;
+  pMVar1 = ((context->field0_0x0)._s_0.state)->material;
+  constDef = (pMVar1->field10_0xb8).localConstantTable;
   do {
-    if (param_3->type != 0) {
+    if (arg->type != 0) {
       do {
-        if (param_3->type != 1) {
-          local_10 = pMVar1->textureTable;
+        if (arg->type != 1) {
+          texDef = pMVar1->textureTable;
           do {
-            if (param_3->type != 2) {
+            if (arg->type != 2) {
               do {
-                if (param_3->type != 3) {
+                if (arg->type != 3) {
                   while( true ) {
-                    if (param_3->type != 4) {
+                    if (arg->type != 4) {
                       return;
                     }
                     _aullshr();
                     if ((extraout_EAX & 1) == 0) {
-                      pGVar4 = R_GetTextureFromCode
-                                         ((param_1->field0_0x0)._s_0.source,(param_3->u).codeSampler
-                                          ,&local_9);
-                      if (pGVar4 == (GfxImage *)0x0) {
-                        R_TextureFromCodeError(param_1,(param_3->u).codeSampler);
+                      image_00 = R_GetTextureFromCode
+                                           ((context->field0_0x0)._s_0.source,(arg->u).codeSampler,
+                                            &samplerState);
+                      if (image_00 == (GfxImage *)0x0) {
+                        R_TextureFromCodeError(context,(arg->u).codeSampler);
                       }
-                      R_SetSampler((GfxCmdBufContext)(param_1->field0_0x0)._s_0,(uint)param_3->dest,
-                                   local_9,pGVar4);
+                      R_SetSampler((GfxCmdBufContext)(context->field0_0x0)._s_0,(uint)arg->dest,
+                                   samplerState,image_00);
                     }
                     else {
                       R_SetTextureSamplerCodeImageRenderTarget
-                                ((GfxCmdBufContext)(param_1->field0_0x0)._s_0,(uint)param_3->dest,
+                                ((GfxCmdBufContext)(context->field0_0x0)._s_0,(uint)arg->dest,
                                  (GfxCodeImageRenderTarget)
                                  (CONCAT44(extraout_EAX,
                                            *(undefined4 *)
-                                            ((int)(((param_1->field0_0x0)._s_0.source)->input).
+                                            ((int)(((context->field0_0x0)._s_0.source)->input).
                                                   codeImageRenderTargetControl +
-                                            (param_3->u).codeSampler * 8 + 0x34)) & 0x1ffffffff));
+                                            (arg->u).codeSampler * 8 + 0x34)) & 0x1ffffffff));
                     }
-                    if (param_2 == 1) break;
-                    param_3 = param_3 + 1;
-                    param_2 = param_2 - 1;
+                    if (argCount == 1) break;
+                    arg = arg + 1;
+                    argCount = argCount - 1;
                   }
                   return;
                 }
                 if (Use_R_SetVertexShaderConstantFromCode_New == false) {
                   R_SetVertexShaderConstantFromCode_Old
-                            ((GfxCmdBufContext)(param_1->field0_0x0)._s_0,param_3);
+                            ((GfxCmdBufContext)(context->field0_0x0)._s_0,arg);
                 }
                 else {
-                  R_SetVertexShaderConstantFromCode_New(param_1,param_3);
+                  R_SetVertexShaderConstantFromCode_New(context,arg);
                 }
-                param_3 = param_3 + 1;
-                param_2 = param_2 - 1;
-              } while (param_2 != 0);
+                arg = arg + 1;
+                argCount = argCount - 1;
+              } while (argCount != 0);
               return;
             }
-            local_10 = R_SetPixelSamplerFromMaterial(param_1,param_3,local_10);
-            param_3 = param_3 + 1;
-            param_2 = param_2 - 1;
-          } while (param_2 != 0);
+            texDef = R_SetPixelSamplerFromMaterial(context,arg,texDef);
+            arg = arg + 1;
+            argCount = argCount - 1;
+          } while (argCount != 0);
           return;
         }
         R_SetVertexShaderConstantFromLiteral
-                  ((param_1->field0_0x0)._s_0.state,(uint)param_3->dest,(param_3->u).literalConst);
-        param_3 = param_3 + 1;
-        param_2 = param_2 - 1;
-      } while (param_2 != 0);
+                  ((context->field0_0x0)._s_0.state,(uint)arg->dest,(arg->u).literalConst);
+        arg = arg + 1;
+        argCount = argCount - 1;
+      } while (argCount != 0);
       return;
     }
-    while ((float *)local_8->nameHash != (param_3->u).literalConst) {
-      local_8 = local_8 + 1;
-      if (local_8 == (pMVar1->field10_0xb8).localConstantTable + pMVar1->constantCount) {
+    while ((float *)constDef->nameHash != (arg->u).literalConst) {
+      constDef = constDef + 1;
+      if (constDef == (pMVar1->field10_0xb8).localConstantTable + pMVar1->constantCount) {
         va("material \'%s\' is missing a required named constant");
         bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x33a,0,
                                  "%s\n\t%s");
@@ -1044,31 +1058,34 @@ R_SetPassShaderStableArguments
       }
     }
     R_SetVertexShaderConstantFromLiteral
-              ((param_1->field0_0x0)._s_0.state,(uint)param_3->dest,local_8->literal);
-    param_3 = param_3 + 1;
-    param_2 = param_2 - 1;
-  } while (param_2 != 0);
+              ((context->field0_0x0)._s_0.state,(uint)arg->dest,constDef->literal);
+    arg = arg + 1;
+    argCount = argCount - 1;
+  } while (argCount != 0);
   return;
 }
 
 
 // 00B127A0  R_ReserveIndexData  (gfx_d3d/r_shade.cpp:931)
 
-int __cdecl R_ReserveIndexData(GfxCmdBufPrimState *param_1,int param_2)
+int __cdecl R_ReserveIndexData(GfxCmdBufPrimState *state,int triCount)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int baseIndex;
+  bool indexBufferOverflowed;
+  int indexCount;
   
-  if (((gfxBuf.dynamicIndexBuffer)->total < param_2 * 3) &&
+  if (((gfxBuf.dynamicIndexBuffer)->total < triCount * 3) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x3a9,0,
                                "%s\n\t(indexCount) = %i"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     iVar3 = (*pcVar1)();
     return iVar3;
   }
-  if ((gfxBuf.dynamicIndexBuffer)->total < (gfxBuf.dynamicIndexBuffer)->used + param_2 * 3) {
+  if ((gfxBuf.dynamicIndexBuffer)->total < (gfxBuf.dynamicIndexBuffer)->used + triCount * 3) {
     (gfxBuf.dynamicIndexBuffer)->used = 0;
   }
   if ((gfxBuf.dynamicIndexBuffer)->used == 0) {
@@ -1080,73 +1097,78 @@ int __cdecl R_ReserveIndexData(GfxCmdBufPrimState *param_1,int param_2)
 
 // 00B12860  R_SetIndexData  (gfx_d3d/r_shade.cpp:962)
 
-int __cdecl R_SetIndexData(GfxCmdBufPrimState *param_1,ushort *param_2,int param_3)
+int __cdecl R_SetIndexData(GfxCmdBufPrimState *state,ushort *indices,int triCount)
 
 {
-  IDirect3DIndexBuffer9 *pIVar1;
-  code *pcVar2;
-  bool bVar3;
-  int iVar4;
-  uchar *puVar5;
-  int local_14;
+  IDirect3DIndexBuffer9 *handle;
+  code *pcVar1;
+  bool bVar2;
+  int iVar3;
+  uchar *dst;
+  int baseIndex;
+  int indexDataSize;
+  ulong lockFlags;
+  int indexCount;
+  IDirect3DIndexBuffer9 *ib;
+  ushort *bufferData;
   
-  iVar4 = R_ReserveIndexData(param_1,param_3);
-  pIVar1 = (gfxBuf.dynamicIndexBuffer)->buffer;
-  if (pIVar1 == (IDirect3DIndexBuffer9 *)0x0) {
-    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x3d5,0,"%s")
+  iVar3 = R_ReserveIndexData(state,triCount);
+  handle = (gfxBuf.dynamicIndexBuffer)->buffer;
+  if (handle == (IDirect3DIndexBuffer9 *)0x0) {
+    bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x3d5,0,"%s")
     ;
-    if (!bVar3) {
-      pcVar2 = (code *)swi(3);
-      iVar4 = (*pcVar2)();
-      return iVar4;
+    if (!bVar2) {
+      pcVar1 = (code *)swi(3);
+      iVar3 = (*pcVar1)();
+      return iVar3;
     }
   }
   if ((gfxBuf.dynamicIndexBuffer)->used == 0) {
-    local_14 = 0x2000;
+    lockFlags = 0x2000;
   }
   else {
-    local_14 = 0x1000;
+    lockFlags = 0x1000;
   }
-  puVar5 = R_LockIndexBuffer(pIVar1,(gfxBuf.dynamicIndexBuffer)->used << 1,param_3 * 6,local_14);
-  if (puVar5 != (uchar *)0x0) {
-    memcpy(puVar5,(uchar *)param_2,param_3 * 6);
+  dst = R_LockIndexBuffer(handle,(gfxBuf.dynamicIndexBuffer)->used << 1,triCount * 6,lockFlags);
+  if (dst != (uchar *)0x0) {
+    memcpy(dst,(uchar *)indices,triCount * 6);
   }
-  R_UnlockIndexBuffer(pIVar1);
-  if (param_1->indexBuffer != pIVar1) {
-    R_ChangeIndices(param_1,pIVar1);
+  R_UnlockIndexBuffer(handle);
+  if (state->indexBuffer != handle) {
+    R_ChangeIndices(state,handle);
   }
-  if (puVar5 != (uchar *)0x0) {
-    (gfxBuf.dynamicIndexBuffer)->used = (gfxBuf.dynamicIndexBuffer)->used + param_3 * 3;
+  if (dst != (uchar *)0x0) {
+    (gfxBuf.dynamicIndexBuffer)->used = (gfxBuf.dynamicIndexBuffer)->used + triCount * 3;
   }
-  return iVar4;
+  return iVar3;
 }
 
 
 // 00B12960  R_SetPixelShader  (gfx_d3d/r_shade.cpp:1037)
 
-void __cdecl R_SetPixelShader(GfxCmdBufState *param_1,MaterialPixelShader *param_2)
+void __cdecl R_SetPixelShader(GfxCmdBufState *state,MaterialPixelShader *pixelShader)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if ((param_2 == (MaterialPixelShader *)0x0) &&
+  if ((pixelShader == (MaterialPixelShader *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x40f,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (((param_2->prog).ps == (IDirect3DPixelShader9 *)0x0) &&
+  if (((pixelShader->prog).ps == (IDirect3DPixelShader9 *)0x0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x411,0,
                                "%s\n\t(pixelShader->name) = %s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1->pixelShader != param_2) {
-    R_HW_SetPixelShader((param_1->prim).field0_0x0.device,param_2);
-    param_1->pixelShader = param_2;
+  if (state->pixelShader != pixelShader) {
+    R_HW_SetPixelShader((state->prim).field0_0x0.device,pixelShader);
+    state->pixelShader = pixelShader;
   }
   return;
 }
@@ -1154,29 +1176,29 @@ void __cdecl R_SetPixelShader(GfxCmdBufState *param_1,MaterialPixelShader *param
 
 // 00B12B50  R_SetVertexShader  (gfx_d3d/r_shade.cpp:1174)
 
-void __cdecl R_SetVertexShader(GfxCmdBufState *param_1,MaterialVertexShader *param_2)
+void __cdecl R_SetVertexShader(GfxCmdBufState *state,MaterialVertexShader *vertexShader)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (param_1->vertexShader != param_2) {
-    if ((param_2 == (MaterialVertexShader *)0x0) &&
+  if (state->vertexShader != vertexShader) {
+    if ((vertexShader == (MaterialVertexShader *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x49a,0,
                                  "%s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    if (((param_2->prog).vs == (IDirect3DVertexShader9 *)0x0) &&
+    if (((vertexShader->prog).vs == (IDirect3DVertexShader9 *)0x0) &&
        (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x49c,0,
                                  "%s\n\t(vertexShader->name) = %s"), !bVar2)) {
       pcVar1 = (code *)swi(3);
       (*pcVar1)();
       return;
     }
-    R_HW_SetVertexShader((param_1->prim).field0_0x0.device,param_2);
-    param_1->vertexShader = param_2;
+    R_HW_SetVertexShader((state->prim).field0_0x0.device,vertexShader);
+    state->vertexShader = vertexShader;
   }
   return;
 }
@@ -1184,80 +1206,86 @@ void __cdecl R_SetVertexShader(GfxCmdBufState *param_1,MaterialVertexShader *par
 
 // 00B12A00  R_UpdateVertexDecl  (gfx_d3d/r_shade.cpp:1292)
 
-void __cdecl R_UpdateVertexDecl(GfxCmdBufState *param_1)
+void __cdecl R_UpdateVertexDecl(GfxCmdBufState *state)
 
 {
   MaterialPass *pMVar1;
-  MaterialVertexShader *pMVar2;
-  code *pcVar3;
-  bool bVar4;
+  MaterialVertexShader *vertexShader_00;
+  code *pcVar2;
+  bool bVar3;
+  char *formatMessage;
+  MaterialPass *pass;
+  MaterialVertexShader *vertexShader;
   
-  pMVar1 = param_1->pass;
+  pMVar1 = state->pass;
   if (pMVar1->vertexDecl == (MaterialVertexDeclaration *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x513,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x513,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  pMVar2 = pMVar1->vertexShader;
-  if (pMVar2 == (MaterialVertexShader *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x533,0,"%s")
+  vertexShader_00 = pMVar1->vertexShader;
+  if (vertexShader_00 == (MaterialVertexShader *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x533,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  R_SetVertexDecl(&param_1->prim,pMVar1->vertexDecl);
+  R_SetVertexDecl(&state->prim,pMVar1->vertexDecl);
   if ((pMVar1->field2_0x8).pixelShader == (MaterialPixelShader *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x539,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x539,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
   if (pMVar1->vertexDecl == (MaterialVertexDeclaration *)0xffffffdc) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x53c,0,"%s")
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x53c,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      (*pcVar3)();
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      (*pcVar2)();
       return;
     }
   }
-  if ((pMVar1->vertexDecl->routing).decl[(param_1->prim).vertDeclType] ==
+  if ((pMVar1->vertexDecl->routing).decl[(state->prim).vertDeclType] ==
       (IDirect3DVertexDeclaration9 *)0x0) {
     Com_Error(ERR_FATAL,
               "Vertex type %i doesn\'t have the information used by shader %s in material %s\n");
   }
-  R_SetVertexShader(param_1,pMVar2);
+  R_SetVertexShader(state,vertexShader_00);
   return;
 }
 
 
 // 00B12BF0  R_SetupPass  (gfx_d3d/r_shade.cpp:1366)
 
-void __cdecl R_SetupPass(GfxCmdBufContext param_1,uint param_2)
+void __cdecl R_SetupPass(GfxCmdBufContext context,uint passIndex)
 
 {
   MaterialPass *pMVar1;
   Material *pMVar2;
   code *pcVar3;
   bool bVar4;
-  uint local_c;
+  MaterialPass *pass;
+  Material *material;
+  GfxStateBits *refStateBits;
+  uint stateBits;
   uint local_8;
   
-  pMVar1 = (param_1.field0_0x0._s_0.state)->technique->passArray + param_2;
-  (param_1.field0_0x0._s_0.state)->pass = pMVar1;
-  (param_1.field0_0x0._s_0.state)->passIndex = param_2;
-  pMVar2 = (param_1.field0_0x0._s_0.state)->material;
-  if (pMVar2->stateBitsCount <= pMVar2->stateBitsEntry[(param_1.field0_0x0._s_0.state)->techType]) {
+  pMVar1 = (context.field0_0x0._s_0.state)->technique->passArray + passIndex;
+  (context.field0_0x0._s_0.state)->pass = pMVar1;
+  (context.field0_0x0._s_0.state)->passIndex = passIndex;
+  pMVar2 = (context.field0_0x0._s_0.state)->material;
+  if (pMVar2->stateBitsCount <= pMVar2->stateBitsEntry[(context.field0_0x0._s_0.state)->techType]) {
     bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x560,0,
                              "material->stateBitsEntry[context.local.state->techType] doesn\'t index material->stateBitsCount\n\t%i not in [0, %i)"
                             );
@@ -1267,17 +1295,17 @@ void __cdecl R_SetupPass(GfxCmdBufContext param_1,uint param_2)
       return;
     }
   }
-  local_c = pMVar2->stateBitsTable
-            [pMVar2->stateBitsEntry[(param_1.field0_0x0._s_0.state)->techType] + param_2].loadBits
-            [0];
+  stateBits = pMVar2->stateBitsTable
+              [pMVar2->stateBitsEntry[(context.field0_0x0._s_0.state)->techType] + passIndex].
+              loadBits[0];
   local_8 = pMVar2->stateBitsTable
-            [pMVar2->stateBitsEntry[(param_1.field0_0x0._s_0.state)->techType] + param_2].loadBits
+            [pMVar2->stateBitsEntry[(context.field0_0x0._s_0.state)->techType] + passIndex].loadBits
             [1];
-  R_SetState(param_1.field0_0x0._s_0.state,&local_c);
-  R_SetPixelShader(param_1.field0_0x0._s_0.state,(pMVar1->field2_0x8).pixelShader);
+  R_SetState(context.field0_0x0._s_0.state,&stateBits);
+  R_SetPixelShader(context.field0_0x0._s_0.state,(pMVar1->field2_0x8).pixelShader);
   if (pMVar1->stableArgCount != '\0') {
     R_SetPassShaderStableArguments
-              (&param_1,(uint)pMVar1->stableArgCount,
+              (&context,(uint)pMVar1->stableArgCount,
                (pMVar1->field7_0x10).localArgs +
                (uint)pMVar1->perPrimArgCount + (uint)pMVar1->perObjArgCount);
   }
@@ -1287,73 +1315,78 @@ void __cdecl R_SetupPass(GfxCmdBufContext param_1,uint param_2)
 
 // 00B12DA0  R_SetVertexData  (gfx_d3d/r_shade.cpp:1447)
 
-int __cdecl R_SetVertexData(GfxCmdBufState *param_1,void *param_2,int param_3,int param_4)
+int __cdecl R_SetVertexData(GfxCmdBufState *state,void *data,int vertexCount,int stride)
 
 {
-  IDirect3DVertexBuffer9 *pIVar1;
-  long lVar2;
-  code *pcVar3;
-  bool bVar4;
-  int iVar5;
-  void *pvVar6;
+  IDirect3DVertexBuffer9 *handle;
+  long lVar1;
+  code *pcVar2;
+  bool bVar3;
+  int iVar4;
+  void *dest;
+  IDirect3DVertexBuffer9 *vb;
+  int vertexOffset;
+  ulong lockFlags;
+  void *bufferData;
+  int totalSize;
   
-  if (param_3 < 1) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5b0,0,"%s")
+  if (vertexCount < 1) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5b0,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      iVar5 = (*pcVar3)();
-      return iVar5;
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
-  iVar5 = param_3 * param_4;
-  if ((gfxBuf.dynamicVertexBuffer)->total < iVar5) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5b6,0,
+  iVar4 = vertexCount * stride;
+  if ((gfxBuf.dynamicVertexBuffer)->total < iVar4) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5b6,0,
                              "%s\n\t(totalSize) = %i");
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      iVar5 = (*pcVar3)();
-      return iVar5;
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
-  if ((gfxBuf.dynamicVertexBuffer)->total < (gfxBuf.dynamicVertexBuffer)->used + iVar5) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5bb,0,"%s")
+  if ((gfxBuf.dynamicVertexBuffer)->total < (gfxBuf.dynamicVertexBuffer)->used + iVar4) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5bb,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      iVar5 = (*pcVar3)();
-      return iVar5;
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
-  pIVar1 = (gfxBuf.dynamicVertexBuffer)->buffer;
-  if (pIVar1 == (IDirect3DVertexBuffer9 *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5c8,0,"%s")
+  handle = (gfxBuf.dynamicVertexBuffer)->buffer;
+  if (handle == (IDirect3DVertexBuffer9 *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5c8,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      iVar5 = (*pcVar3)();
-      return iVar5;
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
-  pvVar6 = R_LockVertexBuffer(pIVar1,(gfxBuf.dynamicVertexBuffer)->used,iVar5,
-                              (-(uint)((gfxBuf.dynamicVertexBuffer)->used != 0) & 0xfffff000) +
-                              0x2000);
-  if (pvVar6 == (void *)0x0) {
-    bVar4 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5d7,0,"%s")
+  dest = R_LockVertexBuffer(handle,(gfxBuf.dynamicVertexBuffer)->used,iVar4,
+                            (-(uint)((gfxBuf.dynamicVertexBuffer)->used != 0) & 0xfffff000) + 0x2000
+                           );
+  if (dest == (void *)0x0) {
+    bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_shade.cpp",0x5d7,0,"%s")
     ;
-    if (!bVar4) {
-      pcVar3 = (code *)swi(3);
-      iVar5 = (*pcVar3)();
-      return iVar5;
+    if (!bVar3) {
+      pcVar2 = (code *)swi(3);
+      iVar4 = (*pcVar2)();
+      return iVar4;
     }
   }
-  if (pvVar6 != (void *)0x0) {
-    Com_Memcpy(pvVar6,param_2,iVar5);
+  if (dest != (void *)0x0) {
+    Com_Memcpy(dest,data,iVar4);
   }
-  R_UnlockVertexBuffer(pIVar1);
-  lVar2 = (gfxBuf.dynamicVertexBuffer)->used;
-  (gfxBuf.dynamicVertexBuffer)->used = (gfxBuf.dynamicVertexBuffer)->used + iVar5;
-  return lVar2;
+  R_UnlockVertexBuffer(handle);
+  lVar1 = (gfxBuf.dynamicVertexBuffer)->used;
+  (gfxBuf.dynamicVertexBuffer)->used = (gfxBuf.dynamicVertexBuffer)->used + iVar4;
+  return lVar1;
 }
 
 
@@ -1362,8 +1395,7 @@ int __cdecl R_SetVertexData(GfxCmdBufState *param_1,void *param_2,int param_3,in
 /* WARNING: Unable to track spacebase fully for stack */
 /* WARNING: Restarted to delay deadcode elimination for space: stack */
 
-void __cdecl
-R_SetVertexShaderConstantFromLiteral(GfxCmdBufState *param_1,uint param_2,float *param_3)
+void __cdecl R_SetVertexShaderConstantFromLiteral(GfxCmdBufState *state,uint dest,float *literal)
 
 {
   IDirect3DDevice9 *pIVar1;
@@ -1377,7 +1409,7 @@ R_SetVertexShaderConstantFromLiteral(GfxCmdBufState *param_1,uint param_2,float 
   float *local_18;
   uint local_14;
   
-  if ((0xff < param_2) &&
+  if ((0xff < dest) &&
      (bVar3 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x756,0,
                                "dest doesn\'t index ARRAY_COUNT( state->vertexShaderConstState )\n\t%i not in [0, %i)"
                               ), !bVar3)) {
@@ -1385,12 +1417,12 @@ R_SetVertexShaderConstantFromLiteral(GfxCmdBufState *param_1,uint param_2,float 
     (*pcVar2)();
     return;
   }
-  *(undefined4 *)(param_1->vertexShaderConstState + param_2) = 0xffffffff;
-  *(undefined4 *)((int)param_1->vertexShaderConstState + param_2 * 8 + 4) = 0xffffffff;
+  *(undefined4 *)(state->vertexShaderConstState + dest) = 0xffffffff;
+  *(undefined4 *)((int)state->vertexShaderConstState + dest * 8 + 4) = 0xffffffff;
   local_1c = 1;
-  local_18 = param_3;
-  local_14 = param_2;
-  pIVar1 = (param_1->prim).field0_0x0.device;
+  local_18 = literal;
+  local_14 = dest;
+  pIVar1 = (state->prim).field0_0x0.device;
   R_AssertDXDeviceOwnership();
   if ((r_logFile != (dvar_s *)0x0) && ((r_logFile->current).integer != 0)) {
     RB_LogPrint("device->SetVertexShaderConstantF( dest, data, rowCount )\n");
@@ -1439,14 +1471,13 @@ R_SetVertexShaderConstantFromLiteral(GfxCmdBufState *param_1,uint param_2,float 
 
 // 00B11AE0  R_SetPixelShaderConstantFromLiteral  (gfx_d3d/r_state.h:1887)
 
-void __cdecl
-R_SetPixelShaderConstantFromLiteral(GfxCmdBufState *param_1,uint param_2,float *param_3)
+void __cdecl R_SetPixelShaderConstantFromLiteral(GfxCmdBufState *state,uint dest,float *literal)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  if (0xff < param_2) {
+  if (0xff < dest) {
     bVar2 = Assert_MyHandler("c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.h",0x760,0,
                              "dest doesn\'t index ARRAY_COUNT( state->pixelShaderConstState )\n\t%i not in [0, %i)"
                             );
@@ -1456,25 +1487,25 @@ R_SetPixelShaderConstantFromLiteral(GfxCmdBufState *param_1,uint param_2,float *
       return;
     }
   }
-  *(undefined4 *)(param_1->pixelShaderConstState + param_2) = 0xffffffff;
-  *(undefined4 *)((int)param_1->pixelShaderConstState + param_2 * 8 + 4) = 0xffffffff;
-  R_HW_SetPixelShaderConstant((param_1->prim).field0_0x0.device,param_2,param_3,1);
+  *(undefined4 *)(state->pixelShaderConstState + dest) = 0xffffffff;
+  *(undefined4 *)((int)state->pixelShaderConstState + dest * 8 + 4) = 0xffffffff;
+  R_HW_SetPixelShaderConstant((state->prim).field0_0x0.device,dest,literal,1);
   return;
 }
 
 
 // 00B12D30  R_SetState  (gfx_d3d/r_state.h:2270)
 
-void __cdecl R_SetState(GfxCmdBufState *param_1,uint *param_2)
+void __cdecl R_SetState(GfxCmdBufState *state,uint *stateBits)
 
 {
-  if (*param_2 != param_1->refStateBits[0]) {
-    R_ChangeState_0(param_1,*param_2);
-    param_1->refStateBits[0] = *param_2;
+  if (*stateBits != state->refStateBits[0]) {
+    R_ChangeState_0(state,*stateBits);
+    state->refStateBits[0] = *stateBits;
   }
-  if (param_2[1] != param_1->refStateBits[1]) {
-    R_ChangeState_1(param_1,param_2[1]);
-    param_1->refStateBits[1] = param_2[1];
+  if (stateBits[1] != state->refStateBits[1]) {
+    R_ChangeState_1(state,stateBits[1]);
+    state->refStateBits[1] = stateBits[1];
   }
   return;
 }

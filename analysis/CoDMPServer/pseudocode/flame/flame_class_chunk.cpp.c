@@ -31,106 +31,106 @@ void __cdecl Flame_Class_Chunk_Init(void)
 
 // 0088A280  Flame_Class_Chunk_Alloc  (flame/flame_class_chunk.cpp:57)
 
-flameChunk_s * __cdecl Flame_Class_Chunk_Alloc(bool param_1)
+flameChunk_s * __cdecl Flame_Class_Chunk_Alloc(bool is_server)
 
 {
-  flameChunk_s *local_8;
+  flameChunk_s *freeChunk;
   
-  if (param_1) {
-    local_8 = sv_flameChunksFree;
+  if (is_server) {
+    freeChunk = sv_flameChunksFree;
   }
   else {
-    local_8 = flameChunksFree;
+    freeChunk = flameChunksFree;
   }
-  if (local_8 == (flameChunk_s *)0x0) {
-    local_8 = (flameChunk_s *)0x0;
+  if (freeChunk == (flameChunk_s *)0x0) {
+    freeChunk = (flameChunk_s *)0x0;
   }
-  else if (param_1) {
+  else if (is_server) {
     Flame_List_Move_Global
-              (&local_8->gen,(flameGeneric_s **)&sv_flameChunksFree,
+              (&freeChunk->gen,(flameGeneric_s **)&sv_flameChunksFree,
                (flameGeneric_s **)&sv_flameChunksUsed);
   }
   else {
     Flame_List_Move_Global
-              (&local_8->gen,(flameGeneric_s **)&flameChunksFree,(flameGeneric_s **)&flameChunksUsed
-              );
+              (&freeChunk->gen,(flameGeneric_s **)&flameChunksFree,
+               (flameGeneric_s **)&flameChunksUsed);
     g_ChunkCount = g_ChunkCount + 1;
     if (g_ChunkCountWaterMark < g_ChunkCount) {
       g_ChunkCountWaterMark = g_ChunkCount;
     }
   }
-  return local_8;
+  return freeChunk;
 }
 
 
 // 0088A310  Flame_Class_Chunk_Free  (flame/flame_class_chunk.cpp:94)
 
-void __cdecl Flame_Class_Chunk_Free(bool param_1,flameChunk_s *param_2)
+void __cdecl Flame_Class_Chunk_Free(bool is_server,flameChunk_s *chunk)
 
 {
-  if ((param_2->gen).stream != (flameStream_s *)0x0) {
-    Flame_List_Sub_Local(&param_2->gen,(flameGeneric_s **)&((param_2->gen).stream)->chunkList);
+  if ((chunk->gen).stream != (flameStream_s *)0x0) {
+    Flame_List_Sub_Local(&chunk->gen,(flameGeneric_s **)&((chunk->gen).stream)->chunkList);
   }
-  if (param_1) {
+  if (is_server) {
     Flame_List_Move_Global
-              (&param_2->gen,(flameGeneric_s **)&sv_flameChunksUsed,
+              (&chunk->gen,(flameGeneric_s **)&sv_flameChunksUsed,
                (flameGeneric_s **)&sv_flameChunksFree);
   }
   else {
     Flame_List_Move_Global
-              (&param_2->gen,(flameGeneric_s **)&flameChunksUsed,(flameGeneric_s **)&flameChunksFree
-              );
+              (&chunk->gen,(flameGeneric_s **)&flameChunksUsed,(flameGeneric_s **)&flameChunksFree);
     g_ChunkCount = g_ChunkCount + -1;
   }
-  Flame_Item_Init(&param_2->gen,0x70);
+  Flame_Item_Init(&chunk->gen,0x70);
   return;
 }
 
 
 // 0088A390  Flame_Phys_Spawn_Items  (flame/flame_class_chunk.cpp:133)
 
-void __cdecl Flame_Phys_Spawn_Items(bool param_1,int param_2,flameChunk_s *param_3)
+void __cdecl Flame_Phys_Spawn_Items(bool is_server,int curTime,flameChunk_s *trav)
 
 {
   int extraout_EAX;
   int iVar1;
   int iVar2;
-  float local_10;
+  float frac;
+  int max;
+  float minLife;
+  int min;
+  float lifeFrac;
   
-  if ((param_3->spawnFireInterval != 0) &&
-     (param_3->lastSpawnFire + param_3->spawnFireInterval <= param_2)) {
-    iVar1 = (int)(((param_3->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFracStart *
-                 1000.0);
-    iVar2 = (int)(((param_3->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFracEnd *
-                 1000.0);
-    if ((param_3->gen).age.lastUpdateTime - (param_3->gen).age.startTime < iVar1) {
-      local_10 = ((param_3->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFrac;
+  if ((trav->spawnFireInterval != 0) && (trav->lastSpawnFire + trav->spawnFireInterval <= curTime))
+  {
+    iVar1 = (int)(((trav->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFracStart * 1000.0
+                 );
+    iVar2 = (int)(((trav->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFracEnd * 1000.0);
+    if ((trav->gen).age.lastUpdateTime - (trav->gen).age.startTime < iVar1) {
+      minLife = ((trav->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFrac;
     }
-    else if (iVar2 < (param_3->gen).age.lastUpdateTime - (param_3->gen).age.startTime) {
-      local_10 = 0.0;
+    else if (iVar2 < (trav->gen).age.lastUpdateTime - (trav->gen).age.startTime) {
+      minLife = 0.0;
     }
     else {
-      local_10 = (1.0 - (float)((((param_3->gen).age.lastUpdateTime - (param_3->gen).age.startTime)
-                                - iVar1) / (iVar2 - iVar1))) *
-                 ((param_3->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFrac;
+      minLife = (1.0 - (float)((((trav->gen).age.lastUpdateTime - (trav->gen).age.startTime) - iVar1
+                               ) / (iVar2 - iVar1))) *
+                ((trav->gen).stream)->flameVars->flameVar_streamChunkFireMinLifeFrac;
     }
-    Flame_Class_Fire_Spawn(param_1,param_3,param_2,local_10);
-    param_3->lastSpawnFire = param_3->lastSpawnFire + param_3->spawnFireInterval;
-    Flame_Random(param_1);
+    Flame_Class_Fire_Spawn(is_server,trav,curTime,minLife);
+    trav->lastSpawnFire = trav->lastSpawnFire + trav->spawnFireInterval;
+    Flame_Random(is_server);
     _ftol2_sse();
-    param_3->spawnFireInterval = extraout_EAX;
+    trav->spawnFireInterval = extraout_EAX;
   }
-  if ((param_3->spawnDripsInterval != 0) &&
-     (param_3->spawnDripsInterval < (param_3->gen).age.lastUpdateTime - (param_3->gen).age.startTime
-     )) {
-    Flame_Class_Drips_Spawn(param_1,param_3,param_2,0.0);
-    param_3->spawnDripsInterval = 0;
+  if ((trav->spawnDripsInterval != 0) &&
+     (trav->spawnDripsInterval < (trav->gen).age.lastUpdateTime - (trav->gen).age.startTime)) {
+    Flame_Class_Drips_Spawn(is_server,trav,curTime,0.0);
+    trav->spawnDripsInterval = 0;
   }
-  if (((!param_1) && (param_3->spawnSmokeInterval != 0)) &&
-     (param_3->spawnSmokeInterval < (param_3->gen).age.lastUpdateTime - (param_3->gen).age.startTime
-     )) {
-    Flame_Class_Smoke_Spawn(param_3,param_2);
-    param_3->spawnSmokeInterval = 0;
+  if (((!is_server) && (trav->spawnSmokeInterval != 0)) &&
+     (trav->spawnSmokeInterval < (trav->gen).age.lastUpdateTime - (trav->gen).age.startTime)) {
+    Flame_Class_Smoke_Spawn(trav,curTime);
+    trav->spawnSmokeInterval = 0;
   }
   return;
 }
@@ -138,7 +138,7 @@ void __cdecl Flame_Phys_Spawn_Items(bool param_1,int param_2,flameChunk_s *param
 
 // 0088A5A0  Flame_Class_Chunk_Age  (flame/flame_class_chunk.cpp:189)
 
-void __cdecl Flame_Class_Chunk_Age(bool param_1,int param_2,int param_3)
+void __cdecl Flame_Class_Chunk_Age(bool is_server,int time,int localClientNum)
 
 {
   int iVar1;
@@ -146,65 +146,65 @@ void __cdecl Flame_Class_Chunk_Age(bool param_1,int param_2,int param_3)
   float *pfVar3;
   phys_static_array<flameGeneric_s_*,1000> *local_58;
   phys_static_array<flameGeneric_s_*,1000> *local_54;
-  float local_44 [13];
-  flameChunk_s *local_10;
-  int local_c;
-  flameChunk_s *local_8;
+  int realTime;
+  float physBackup [13];
+  flameChunk_s *nextTrav;
+  int curTime;
+  flameChunk_s *trav;
   
-  if (param_1) {
-    local_8 = sv_flameChunksUsed;
+  if (is_server) {
+    trav = sv_flameChunksUsed;
   }
   else {
-    local_8 = flameChunksUsed;
+    trav = flameChunksUsed;
   }
   do {
-    if (local_8 == (flameChunk_s *)0x0) {
-      Flame_Phys_Update_Items(param_1,param_3);
+    if (trav == (flameChunk_s *)0x0) {
+      Flame_Phys_Update_Items(is_server,localClientNum);
       return;
     }
-    local_10 = (flameChunk_s *)(local_8->gen).listGlobal.next;
-    local_c = param_2;
-    if ((((local_8->gen).age.lastUpdateTime < (local_8->gen).age.endTime) &&
-        (local_8->spawnFireInterval != 0)) &&
-       (local_8->lastSpawnFire + local_8->spawnFireInterval < param_2)) {
-      local_c = local_8->lastSpawnFire + local_8->spawnFireInterval;
+    nextTrav = (flameChunk_s *)(trav->gen).listGlobal.next;
+    curTime = time;
+    if ((((trav->gen).age.lastUpdateTime < (trav->gen).age.endTime) &&
+        (trav->spawnFireInterval != 0)) && (trav->lastSpawnFire + trav->spawnFireInterval < time)) {
+      curTime = trav->lastSpawnFire + trav->spawnFireInterval;
     }
-    if (((local_8->gen).delete_chunk == 0) &&
-       ((local_8->gen).age.lastUpdateTime - (local_8->gen).age.startTime <
-        (int)(((local_8->gen).stream)->flameVars->flameVar_streamChunkSpawnFireMaxLifeFrac * 1000.0)
-       )) {
-      while (local_c <= param_2) {
-        if ((local_8->gen).age.lastUpdateTime - (local_8->gen).age.startTime <
-            (int)(((local_8->gen).stream)->flameVars->flameVar_streamChunkSpawnFireMaxLifeFrac *
-                 1000.0)) {
-          if (local_c == param_2) {
-            if (param_1) {
+    if (((trav->gen).delete_chunk == 0) &&
+       ((trav->gen).age.lastUpdateTime - (trav->gen).age.startTime <
+        (int)(((trav->gen).stream)->flameVars->flameVar_streamChunkSpawnFireMaxLifeFrac * 1000.0)))
+    {
+      while (curTime <= time) {
+        if ((trav->gen).age.lastUpdateTime - (trav->gen).age.startTime <
+            (int)(((trav->gen).stream)->flameVars->flameVar_streamChunkSpawnFireMaxLifeFrac * 1000.0
+                 )) {
+          if (curTime == time) {
+            if (is_server) {
               local_58 = &sv_flames;
             }
             else {
               local_58 = &cl_flames;
             }
-            Flame_Phys_Update_Item_Chunk(&local_8->gen,local_c,local_58);
-            Flame_Phys_Spawn_Items(param_1,local_c,local_8);
+            Flame_Phys_Update_Item_Chunk(&trav->gen,curTime,local_58);
+            Flame_Phys_Spawn_Items(is_server,curTime,trav);
           }
           else {
-            pfVar2 = local_8;
-            pfVar3 = local_44;
+            pfVar2 = trav;
+            pfVar3 = physBackup;
             for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
               *pfVar3 = (pfVar2->gen).phys.origin[0];
               pfVar2 = (flameChunk_s *)((pfVar2->gen).phys.origin + 1);
               pfVar3 = pfVar3 + 1;
             }
-            if (param_1) {
+            if (is_server) {
               local_54 = &sv_flames;
             }
             else {
               local_54 = &cl_flames;
             }
-            Flame_Phys_Update_Item_Chunk(&local_8->gen,local_c,local_54);
-            Flame_Phys_Spawn_Items(param_1,local_c,local_8);
-            pfVar3 = local_44;
-            pfVar2 = local_8;
+            Flame_Phys_Update_Item_Chunk(&trav->gen,curTime,local_54);
+            Flame_Phys_Spawn_Items(is_server,curTime,trav);
+            pfVar3 = physBackup;
+            pfVar2 = trav;
             for (iVar1 = 0xd; iVar1 != 0; iVar1 = iVar1 + -1) {
               (pfVar2->gen).phys.origin[0] = *pfVar3;
               pfVar3 = pfVar3 + 1;
@@ -212,14 +212,14 @@ void __cdecl Flame_Class_Chunk_Age(bool param_1,int param_2,int param_3)
             }
           }
         }
-        if (local_c == param_2) break;
-        local_c = param_2;
+        if (curTime == time) break;
+        curTime = time;
       }
     }
     else {
-      Flame_Class_Chunk_Free(param_1,local_8);
+      Flame_Class_Chunk_Free(is_server,trav);
     }
-    local_8 = local_10;
+    trav = nextTrav;
   } while( true );
 }
 
@@ -301,57 +301,59 @@ void __cdecl _dynamic_initializer_for__PHYS_IDENTITY_MATRIX__(void)
 
 flameChunk_s * __cdecl
 Flame_Class_Chunk_Spawn
-          (bool param_1,flameChunkSpawnVars_t *param_2,flameChunk_s **param_3,float *param_4,
-          flameTable *param_5)
+          (bool is_server,flameChunkSpawnVars_t *spawnVars,flameChunk_s **chunkList,
+          float *velocityAdd,flameTable *fTable)
 
 {
-  flameChunk_s *pfVar1;
+  flameChunk_s *item;
   int extraout_EAX;
-  float fVar2;
+  float fVar1;
+  flameGeneric_s *gen;
+  flameChunk_s *chunk;
   
-  pfVar1 = Flame_Class_Chunk_Alloc(param_1);
-  if (pfVar1 == (flameChunk_s *)0x0) {
-    pfVar1 = (flameChunk_s *)0x0;
+  item = Flame_Class_Chunk_Alloc(is_server);
+  if (item == (flameChunk_s *)0x0) {
+    item = (flameChunk_s *)0x0;
   }
   else {
-    (pfVar1->gen).type = 1;
-    (pfVar1->gen).id = flame_spawn_id;
+    (item->gen).type = 1;
+    (item->gen).id = flame_spawn_id;
     flame_spawn_id = flame_spawn_id + 1;
-    (pfVar1->gen).delete_chunk = 0;
-    (pfVar1->gen).age.startTime = param_2->time;
-    (pfVar1->gen).age.endTime = param_2->time + param_2->duration;
-    (pfVar1->gen).age.lastUpdateTime = param_2->time;
-    (pfVar1->gen).size.current = param_2->sizeStart;
-    (pfVar1->gen).size.rate = param_2->sizeRate;
-    (pfVar1->gen).phys.origin[0] = param_2->origin[0];
-    (pfVar1->gen).phys.origin[1] = param_2->origin[1];
-    (pfVar1->gen).phys.origin[2] = param_2->origin[2];
-    AngleVectors(param_2->angle,(pfVar1->gen).phys.velocity,(float *)0x0,(float *)0x0);
-    fVar2 = param_2->speed;
-    (pfVar1->gen).phys.velocity[0] = fVar2 * (pfVar1->gen).phys.velocity[0];
-    (pfVar1->gen).phys.velocity[1] = fVar2 * (pfVar1->gen).phys.velocity[1];
-    (pfVar1->gen).phys.velocity[2] = fVar2 * (pfVar1->gen).phys.velocity[2];
-    (pfVar1->gen).phys.velocity[0] = (pfVar1->gen).phys.velocity[0] + *param_4;
-    (pfVar1->gen).phys.velocity[1] = (pfVar1->gen).phys.velocity[1] + param_4[1];
-    (pfVar1->gen).phys.velocity[2] = (pfVar1->gen).phys.velocity[2] + param_4[2];
-    fVar2 = Flame_CalcInvStartSpeed(1.0,param_2->speed);
-    (pfVar1->gen).phys.invStartSpeed = fVar2;
-    (pfVar1->gen).phys.gravity = param_2->gravityStart;
-    fVar2 = Flame_CRandom(param_1);
-    (pfVar1->gen).phys.rotation = fVar2 * param_5->flameVar_streamChunkRotationRange;
-    (pfVar1->gen).phys.rotVel = 0.0;
-    pfVar1->spawnFireInterval = (int)(param_5->flameVar_streamChunkSpawnFireIntervalStart * 1000.0);
-    fVar2 = param_5->flameVar_streamChunkSpawnFireMinLifeFrac;
-    Flame_Random(param_1);
+    (item->gen).delete_chunk = 0;
+    (item->gen).age.startTime = spawnVars->time;
+    (item->gen).age.endTime = spawnVars->time + spawnVars->duration;
+    (item->gen).age.lastUpdateTime = spawnVars->time;
+    (item->gen).size.current = spawnVars->sizeStart;
+    (item->gen).size.rate = spawnVars->sizeRate;
+    (item->gen).phys.origin[0] = spawnVars->origin[0];
+    (item->gen).phys.origin[1] = spawnVars->origin[1];
+    (item->gen).phys.origin[2] = spawnVars->origin[2];
+    AngleVectors(spawnVars->angle,(item->gen).phys.velocity,(float *)0x0,(float *)0x0);
+    fVar1 = spawnVars->speed;
+    (item->gen).phys.velocity[0] = fVar1 * (item->gen).phys.velocity[0];
+    (item->gen).phys.velocity[1] = fVar1 * (item->gen).phys.velocity[1];
+    (item->gen).phys.velocity[2] = fVar1 * (item->gen).phys.velocity[2];
+    (item->gen).phys.velocity[0] = (item->gen).phys.velocity[0] + *velocityAdd;
+    (item->gen).phys.velocity[1] = (item->gen).phys.velocity[1] + velocityAdd[1];
+    (item->gen).phys.velocity[2] = (item->gen).phys.velocity[2] + velocityAdd[2];
+    fVar1 = Flame_CalcInvStartSpeed(1.0,spawnVars->speed);
+    (item->gen).phys.invStartSpeed = fVar1;
+    (item->gen).phys.gravity = spawnVars->gravityStart;
+    fVar1 = Flame_CRandom(is_server);
+    (item->gen).phys.rotation = fVar1 * fTable->flameVar_streamChunkRotationRange;
+    (item->gen).phys.rotVel = 0.0;
+    item->spawnFireInterval = (int)(fTable->flameVar_streamChunkSpawnFireIntervalStart * 1000.0);
+    fVar1 = fTable->flameVar_streamChunkSpawnFireMinLifeFrac;
+    Flame_Random(is_server);
     _ftol2_sse();
-    pfVar1->lastSpawnFire = (int)(fVar2 * 1000.0) + (param_2->time - extraout_EAX);
-    pfVar1->spawnDripsInterval = 0;
-    pfVar1->spawnSmokeInterval = 0;
-    if (param_3 != (flameChunk_s **)0x0) {
-      Flame_List_Add_Local(&pfVar1->gen,(flameGeneric_s **)param_3);
+    item->lastSpawnFire = (int)(fVar1 * 1000.0) + (spawnVars->time - extraout_EAX);
+    item->spawnDripsInterval = 0;
+    item->spawnSmokeInterval = 0;
+    if (chunkList != (flameChunk_s **)0x0) {
+      Flame_List_Add_Local(&item->gen,(flameGeneric_s **)chunkList);
     }
   }
-  return pfVar1;
+  return item;
 }
 
 
@@ -362,32 +364,32 @@ Flame_Class_Chunk_Spawn
 /* WARNING: Enum "AISpecies": Some values do not have unique names */
 /* WARNING: Enum "ai_state_t": Some values do not have unique names */
 
-void __cdecl Flame_Class_Chunk_Render_Item(int param_1,flameChunk_s *param_2)
+void __cdecl Flame_Class_Chunk_Render_Item(int localClientNum,flameChunk_s *chunk)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  float local_74 [3];
-  float local_68 [9];
+  float fwd [3];
+  float points [9];
   float local_44;
   float local_40;
-  float local_3c;
+  float start;
   float local_38;
   float local_34;
-  float local_30;
+  float end;
   float local_2c;
   float local_28;
-  float local_24 [2];
+  float angles [2];
   float local_1c;
-  float local_18;
+  float down;
   float local_14;
   float local_10;
-  int local_c;
-  cg_s *local_8;
+  int i;
+  cg_s *clientGlobals;
   
-  local_8 = CG_GetLocalClientGlobals(param_1);
-  if (local_8 == (cg_s *)0x0) {
+  clientGlobals = CG_GetLocalClientGlobals(localClientNum);
+  if (clientGlobals == (cg_s *)0x0) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\flame\\flame_class_chunk.cpp",0x161
                              ,0,"%s\n\t%s");
     if (!bVar2) {
@@ -397,39 +399,39 @@ void __cdecl Flame_Class_Chunk_Render_Item(int param_1,flameChunk_s *param_2)
     }
   }
   if (0 < (flame_debug_render->current).integer) {
-    local_68[0] = -1.0;
-    local_68[1] = -1.0;
-    local_68[2] = 1.0;
-    local_68[3] = -1.0;
-    local_68[4] = 1.0;
-    local_68[5] = 1.0;
-    local_68[6] = -1.0;
-    local_68[7] = 1.0;
-    AxisToAngles((local_8->refdef).viewaxis,local_24);
-    local_1c = (param_2->gen).phys.rotation;
-    AngleVectors(local_24,local_74,local_68 + 8,&local_18);
-    fVar3 = (param_2->gen).size.current * 0.5;
-    local_68[8] = fVar3 * local_68[8];
+    points[0] = -1.0;
+    points[1] = -1.0;
+    points[2] = 1.0;
+    points[3] = -1.0;
+    points[4] = 1.0;
+    points[5] = 1.0;
+    points[6] = -1.0;
+    points[7] = 1.0;
+    AxisToAngles((clientGlobals->refdef).viewaxis,angles);
+    local_1c = (chunk->gen).phys.rotation;
+    AngleVectors(angles,fwd,points + 8,&down);
+    fVar3 = (chunk->gen).size.current * 0.5;
+    points[8] = fVar3 * points[8];
     local_44 = fVar3 * local_44;
     local_40 = fVar3 * local_40;
-    fVar3 = (param_2->gen).size.current * -0.5;
-    local_18 = fVar3 * local_18;
+    fVar3 = (chunk->gen).size.current * -0.5;
+    down = fVar3 * down;
     local_14 = fVar3 * local_14;
     local_10 = fVar3 * local_10;
-    local_3c = local_68[7] * local_18 + local_68[6] * local_68[8] + (param_2->gen).phys.origin[0];
-    local_38 = local_68[7] * local_14 + local_68[6] * local_44 + (param_2->gen).phys.origin[1];
-    local_34 = local_68[7] * local_10 + local_68[6] * local_40 + (param_2->gen).phys.origin[2];
-    for (local_c = 0; local_c < 4; local_c = local_c + 1) {
-      fVar3 = local_68[local_c * 2];
-      local_30 = fVar3 * local_68[8] + (param_2->gen).phys.origin[0];
-      local_2c = fVar3 * local_44 + (param_2->gen).phys.origin[1];
-      local_28 = fVar3 * local_40 + (param_2->gen).phys.origin[2];
-      fVar3 = local_68[local_c * 2 + 1];
-      local_30 = fVar3 * local_18 + local_30;
+    start = points[7] * down + points[6] * points[8] + (chunk->gen).phys.origin[0];
+    local_38 = points[7] * local_14 + points[6] * local_44 + (chunk->gen).phys.origin[1];
+    local_34 = points[7] * local_10 + points[6] * local_40 + (chunk->gen).phys.origin[2];
+    for (i = 0; i < 4; i = i + 1) {
+      fVar3 = points[i * 2];
+      end = fVar3 * points[8] + (chunk->gen).phys.origin[0];
+      local_2c = fVar3 * local_44 + (chunk->gen).phys.origin[1];
+      local_28 = fVar3 * local_40 + (chunk->gen).phys.origin[2];
+      fVar3 = points[i * 2 + 1];
+      end = fVar3 * down + end;
       local_2c = fVar3 * local_14 + local_2c;
       local_28 = fVar3 * local_10 + local_28;
-      G_DebugLineWithDuration(&local_3c,&local_30,colorRed,1,1);
-      local_3c = local_30;
+      G_DebugLineWithDuration(&start,&end,colorRed,1,1);
+      start = end;
       local_38 = local_2c;
       local_34 = local_28;
     }
@@ -440,15 +442,20 @@ void __cdecl Flame_Class_Chunk_Render_Item(int param_1,flameChunk_s *param_2)
 
 // 0088AD50  Flame_Class_Chunk_Render_All  (flame/flame_class_chunk.cpp:398)
 
-void __cdecl Flame_Class_Chunk_Render_All(int param_1)
+/* WARNING: Enum "team_t": Some values do not have unique names */
+/* WARNING: Enum "nodeType": Some values do not have unique names */
+/* WARNING: Enum "AISpecies": Some values do not have unique names */
+/* WARNING: Enum "ai_state_t": Some values do not have unique names */
+
+void __cdecl Flame_Class_Chunk_Render_All(int localClientNum)
 
 {
-  flameChunk_s *local_8;
+  flameChunk_s *chunk;
   
   if (0 < (flame_debug_render->current).integer) {
-    for (local_8 = flameChunksUsed; local_8 != (flameChunk_s *)0x0;
-        local_8 = (flameChunk_s *)(local_8->gen).listGlobal.next) {
-      Flame_Class_Chunk_Render_Item(param_1,local_8);
+    for (chunk = flameChunksUsed; chunk != (flameChunk_s *)0x0;
+        chunk = (flameChunk_s *)(chunk->gen).listGlobal.next) {
+      Flame_Class_Chunk_Render_Item(localClientNum,chunk);
     }
   }
   return;

@@ -11,14 +11,14 @@ uint __cdecl SND_GetSpeakerConfigCount(void)
 
 // 009542A0  Snd_GetSpeakerConfig  (sound/snd_utils.cpp:85)
 
-snd_speaker_config * __cdecl Snd_GetSpeakerConfig(uint param_1)
+snd_speaker_config * __cdecl Snd_GetSpeakerConfig(uint index)
 
 {
   code *pcVar1;
   bool bVar2;
   snd_speaker_config *psVar3;
   
-  if (2 < param_1) {
+  if (2 < index) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x56,0,"%s");
     if (!bVar2) {
       pcVar1 = (code *)swi(3);
@@ -26,38 +26,38 @@ snd_speaker_config * __cdecl Snd_GetSpeakerConfig(uint param_1)
       return psVar3;
     }
   }
-  return snd_speaker_configs + param_1;
+  return snd_speaker_configs + index;
 }
 
 
 // 009542E0  Snd_GetMixChannelCount  (sound/snd_utils.cpp:92)
 
-uint __cdecl Snd_GetMixChannelCount(uint param_1)
+uint __cdecl Snd_GetMixChannelCount(uint speakerConfig)
 
 {
   snd_speaker_config *psVar1;
   
-  psVar1 = Snd_GetSpeakerConfig(param_1);
+  psVar1 = Snd_GetSpeakerConfig(speakerConfig);
   return psVar1->speakerCount;
 }
 
 
 // 00954440  Snd_NormalizeAngle  (sound/snd_utils.cpp:105)
 
-float __cdecl Snd_NormalizeAngle(float param_1)
+float __cdecl Snd_NormalizeAngle(float x)
 
 {
-  for (; 6.2831855 <= param_1; param_1 = param_1 - 6.2831855) {
+  for (; 6.2831855 <= x; x = x - 6.2831855) {
   }
-  for (; param_1 < 0.0; param_1 = param_1 + 6.2831855) {
+  for (; x < 0.0; x = x + 6.2831855) {
   }
-  return param_1;
+  return x;
 }
 
 
 // 00954990  Snd_AngleInInterval  (sound/snd_utils.cpp:117)
 
-bool __cdecl Snd_AngleInInterval(float param_1,float param_2,float param_3)
+bool __cdecl Snd_AngleInInterval(float angle,float left,float right)
 
 {
   float fVar1;
@@ -66,9 +66,9 @@ bool __cdecl Snd_AngleInInterval(float param_1,float param_2,float param_3)
   undefined1 local_c;
   undefined1 local_8;
   
-  fVar1 = Snd_NormalizeAngle(param_1);
-  fVar2 = Snd_NormalizeAngle(param_2);
-  fVar3 = Snd_NormalizeAngle(param_3);
+  fVar1 = Snd_NormalizeAngle(angle);
+  fVar2 = Snd_NormalizeAngle(left);
+  fVar3 = Snd_NormalizeAngle(right);
   if (fVar3 <= fVar2) {
     if ((fVar2 <= fVar1) || (fVar1 <= fVar3)) {
       local_c = true;
@@ -91,7 +91,7 @@ bool __cdecl Snd_AngleInInterval(float param_1,float param_2,float param_3)
 
 // 00954300  Snd_PanMono  (sound/snd_utils.cpp:135)
 
-float __cdecl Snd_PanMono(float param_1)
+float __cdecl Snd_PanMono(float angle)
 
 {
   code *pcVar1;
@@ -99,8 +99,14 @@ float __cdecl Snd_PanMono(float param_1)
   float10 fVar3;
   float fVar4;
   float local_28;
+  float L;
+  float D;
+  float MIN_VOL;
+  float R;
+  float MAX_VOL;
+  float s;
   
-  fVar4 = Snd_NormalizeAngle(param_1);
+  fVar4 = Snd_NormalizeAngle(angle);
   if ((0.7853982 < fVar4) || (fVar4 < 5.4977875)) {
     fVar4 = 1.0;
   }
@@ -125,7 +131,7 @@ float __cdecl Snd_PanMono(float param_1)
 
 // 00954490  Snd_PanStereo  (sound/snd_utils.cpp:159)
 
-void __cdecl Snd_PanStereo(float param_1,float param_2,float *param_3,float *param_4)
+void __cdecl Snd_PanStereo(float angle,float boost,float *left,float *right)
 
 {
   code *pcVar1;
@@ -137,9 +143,11 @@ void __cdecl Snd_PanStereo(float param_1,float param_2,float *param_3,float *par
   float local_20;
   float local_18;
   float local_10;
+  float A;
+  float angleFromRight;
   
-  fVar4 = Snd_PanMono(param_1);
-  local_20 = Snd_NormalizeAngle(param_1 + 1.5707964);
+  fVar4 = Snd_PanMono(angle);
+  local_20 = Snd_NormalizeAngle(angle + 1.5707964);
   if (3.1415927 < local_20) {
     local_20 = 6.2831855 - local_20;
   }
@@ -150,8 +158,8 @@ void __cdecl Snd_PanStereo(float param_1,float param_2,float *param_3,float *par
     (*pcVar1)();
     return;
   }
-  SND_EqualPowerFadeCoefs(local_20 / 3.1415927,param_3,param_4);
-  fVar3 = *param_3 * fVar4 + param_2;
+  SND_EqualPowerFadeCoefs(local_20 / 3.1415927,left,right);
+  fVar3 = *left * fVar4 + boost;
   local_10 = fVar3;
   if (0.0 <= fVar3 - 1.0) {
     local_10 = 1.0;
@@ -162,8 +170,8 @@ void __cdecl Snd_PanStereo(float param_1,float param_2,float *param_3,float *par
   else {
     local_24 = 0.0;
   }
-  *param_3 = local_24;
-  fVar4 = *param_4 * fVar4 + param_2;
+  *left = local_24;
+  fVar4 = *right * fVar4 + boost;
   local_18 = fVar4;
   if (0.0 <= fVar4 - 1.0) {
     local_18 = 1.0;
@@ -174,30 +182,32 @@ void __cdecl Snd_PanStereo(float param_1,float param_2,float *param_3,float *par
   else {
     local_28 = 0.0;
   }
-  *param_4 = local_28;
+  *right = local_28;
   return;
 }
 
 
 // 00954670  Snd_Pan  (sound/snd_utils.cpp:177)
 
-void __cdecl Snd_Pan(uint param_1,float *param_2,float param_3,float *param_4)
+void __cdecl Snd_Pan(uint speakerCount,float *angles,float toSound,float *levels)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
   float fVar4;
-  uint local_20;
-  uint local_1c;
-  uint local_18;
-  uint local_10;
-  uint local_c;
+  uint i_3;
+  uint i_2;
+  uint i;
+  float spread;
+  uint rightIndex;
+  uint leftIndex;
+  float sound;
   
-  local_c = 0xffffffff;
-  local_10 = 0xffffffff;
-  for (local_18 = 0; local_18 < param_1; local_18 = local_18 + 1) {
-    if (param_2[local_18] < 0.0) {
+  leftIndex = 0xffffffff;
+  rightIndex = 0xffffffff;
+  for (i = 0; i < speakerCount; i = i + 1) {
+    if (angles[i] < 0.0) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xb6,0,"%s"
                               );
       if (!bVar2) {
@@ -206,7 +216,7 @@ void __cdecl Snd_Pan(uint param_1,float *param_2,float param_3,float *param_4)
         return;
       }
     }
-    if (6.2831855 < param_2[local_18] || param_2[local_18] == 6.2831855) {
+    if (6.2831855 < angles[i] || angles[i] == 6.2831855) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xb7,0,"%s"
                               );
       if (!bVar2) {
@@ -215,13 +225,13 @@ void __cdecl Snd_Pan(uint param_1,float *param_2,float param_3,float *param_4)
         return;
       }
     }
-    param_4[local_18] = 0.0;
+    levels[i] = 0.0;
   }
-  local_1c = 0;
+  i_2 = 0;
   do {
-    if (param_1 <= local_1c) {
+    if (speakerCount <= i_2) {
 LAB_00954799:
-      if (local_c == 0xffffffff) {
+      if (leftIndex == 0xffffffff) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xc5,0,
                                  "%s");
         if (!bVar2) {
@@ -230,7 +240,7 @@ LAB_00954799:
           return;
         }
       }
-      if (local_10 == 0xffffffff) {
+      if (rightIndex == 0xffffffff) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xc6,0,
                                  "%s");
         if (!bVar2) {
@@ -239,8 +249,8 @@ LAB_00954799:
           return;
         }
       }
-      fVar3 = Snd_NormalizeAngle(param_2[local_10] - param_2[local_c]);
-      fVar4 = Snd_NormalizeAngle(param_3 - param_2[local_c]);
+      fVar3 = Snd_NormalizeAngle(angles[rightIndex] - angles[leftIndex]);
+      fVar4 = Snd_NormalizeAngle(toSound - angles[leftIndex]);
       if (fVar3 - fVar4 <= -1.52879e-05) {
         bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xcb,0,
                                  "%s");
@@ -250,13 +260,13 @@ LAB_00954799:
           return;
         }
       }
-      SND_EqualPowerFadeCoefs(fVar4 / fVar3,param_4 + local_c,param_4 + local_10);
-      local_20 = 0;
+      SND_EqualPowerFadeCoefs(fVar4 / fVar3,levels + leftIndex,levels + rightIndex);
+      i_3 = 0;
       do {
-        if (param_1 <= local_20) {
+        if (speakerCount <= i_3) {
           return;
         }
-        if (((uint)param_4[local_20] & 0x7f800000) == 0x7f800000) {
+        if (((uint)levels[i_3] & 0x7f800000) == 0x7f800000) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xd1,0,
                                    "%s");
           if (!bVar2) {
@@ -265,7 +275,7 @@ LAB_00954799:
             return;
           }
         }
-        if (param_4[local_20] < 0.0) {
+        if (levels[i_3] < 0.0) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xd2,0,
                                    "%s");
           if (!bVar2) {
@@ -274,7 +284,7 @@ LAB_00954799:
             return;
           }
         }
-        if (1.0 < param_4[local_20]) {
+        if (1.0 < levels[i_3]) {
           bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xd3,0,
                                    "%s");
           if (!bVar2) {
@@ -283,16 +293,16 @@ LAB_00954799:
             return;
           }
         }
-        local_20 = local_20 + 1;
+        i_3 = i_3 + 1;
       } while( true );
     }
-    bVar2 = Snd_AngleInInterval(param_3,param_2[local_1c],param_2[(local_1c + 1) % param_1]);
+    bVar2 = Snd_AngleInInterval(toSound,angles[i_2],angles[(i_2 + 1) % speakerCount]);
     if (bVar2) {
-      local_c = local_1c;
-      local_10 = (local_1c + 1) % param_1;
+      leftIndex = i_2;
+      rightIndex = (i_2 + 1) % speakerCount;
       goto LAB_00954799;
     }
-    local_1c = local_1c + 1;
+    i_2 = i_2 + 1;
   } while( true );
 }
 
@@ -300,8 +310,8 @@ LAB_00954799:
 // 00954A40  Snd_Pan3d  (sound/snd_utils.cpp:224)
 
 void __cdecl
-Snd_Pan3d(snd_speaker_config *param_1,float *param_2,float *param_3,float *param_4,float param_5,
-         float param_6,float param_7,snd_speaker_map *param_8)
+Snd_Pan3d(snd_speaker_config *config,float *position,float *forward,float *listener,float centerSend
+         ,float lfeSend,float aliasOmni,snd_speaker_map *pan)
 
 {
   uint uVar1;
@@ -318,71 +328,74 @@ Snd_Pan3d(snd_speaker_config *param_1,float *param_2,float *param_3,float *param
   float local_dc;
   float local_d4;
   float local_c4;
-  uint local_84;
-  float local_7c;
-  int local_78;
-  uint local_74;
-  uint local_70;
-  uint local_6c;
-  float local_64;
-  float local_5c [8];
-  float local_3c [8];
-  float local_1c;
-  float local_18;
-  float local_14;
+  uint j;
+  snd_speaker_flag flag;
+  float scale;
+  int i_4;
+  uint i_3;
+  uint i_2;
+  uint i;
+  float d;
+  float angle;
+  float omniBaseVolume;
+  float levels [8];
+  float angles [8];
+  float d2;
+  float totalVolume;
+  float to;
   float local_10;
   float local_c;
-  float local_8;
+  float omni;
   
-  if ((param_1 == (snd_speaker_config *)0x0) &&
+  if ((config == (snd_speaker_config *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe1,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*position & 0x7f800000) == 0x7f800000) ||
+       (((uint)position[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)position[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe2,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-       (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-      (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) &&
+  if ((((((uint)*listener & 0x7f800000) == 0x7f800000) ||
+       (((uint)listener[1] & 0x7f800000) == 0x7f800000)) ||
+      (((uint)listener[2] & 0x7f800000) == 0x7f800000)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe3,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_5 < 0.0) || (1.0 < param_5)) &&
+  if (((centerSend < 0.0) || (1.0 < centerSend)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe4,0,
                                "%s\n\t(centerSend) = %g"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_6 < 0.0) || (1.0 < param_6)) &&
+  if (((lfeSend < 0.0) || (1.0 < lfeSend)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe5,0,
                                "%s\n\t(lfeSend) = %g"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if (((param_7 < 0.0) || (1.0 < param_7)) &&
+  if (((aliasOmni < 0.0) || (1.0 < aliasOmni)) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe6,0,
                                "%s\n\t(aliasOmni) = %g"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  fVar7 = Abs((phys_vec3 *)param_3);
-  if ((fVar7 <= 0.99998474) || (fVar7 = Abs((phys_vec3 *)param_3), 1.0000153 <= fVar7)) {
-    Abs((phys_vec3 *)param_3);
+  fVar7 = Abs((phys_vec3 *)forward);
+  if ((fVar7 <= 0.99998474) || (fVar7 = Abs((phys_vec3 *)forward), 1.0000153 <= fVar7)) {
+    Abs((phys_vec3 *)forward);
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe7,0,
                              "%s\n\t(Vec3Length(forward)) = %g");
     if (!bVar3) {
@@ -391,42 +404,42 @@ Snd_Pan3d(snd_speaker_config *param_1,float *param_2,float *param_3,float *param
       return;
     }
   }
-  if ((param_8 == (snd_speaker_map *)0x0) &&
+  if ((pan == (snd_speaker_map *)0x0) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xe8,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  if ((param_8->input_channel_count != 1) &&
+  if ((pan->input_channel_count != 1) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0xef,0,"%s"
                               ), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_14 = *param_2 - *param_4;
-  local_10 = param_2[1] - param_4[1];
-  local_c = param_2[2] - param_4[2];
-  fVar7 = local_14 * local_14 + local_10 * local_10;
-  local_1c = fVar7;
-  local_64 = 0.0;
-  local_8 = 0.0;
-  for (local_6c = 0; local_6c < param_1->angleCount; local_6c = local_6c + 1) {
-    local_5c[local_6c] = 0.0;
-    local_3c[local_6c] = param_1->angles[local_6c].angle;
+  to = *position - *listener;
+  local_10 = position[1] - listener[1];
+  local_c = position[2] - listener[2];
+  fVar7 = to * to + local_10 * local_10;
+  d2 = fVar7;
+  angle = 0.0;
+  omni = 0.0;
+  for (i = 0; i < config->angleCount; i = i + 1) {
+    levels[i] = 0.0;
+    angles[i] = config->angles[i].angle;
   }
-  if (local_1c <= 1.52879e-05) {
-    local_8 = 1.0;
+  if (d2 <= 1.52879e-05) {
+    omni = 1.0;
   }
   else {
-    dVar5 = (double)local_14;
+    dVar5 = (double)to;
     __libm_sse2_atan2((double)CONCAT44(in_stack_ffffff18,in_stack_ffffff14),
                       (double)CONCAT44(in_stack_ffffff20,in_stack_ffffff1c));
-    dVar6 = (double)*param_3;
+    dVar6 = (double)*forward;
     __libm_sse2_atan2((double)CONCAT44(in_stack_ffffff18,in_stack_ffffff14),
                       (double)CONCAT44(in_stack_ffffff20,in_stack_ffffff1c));
-    local_64 = Snd_NormalizeAngle((float)dVar5 - (float)dVar6);
+    angle = Snd_NormalizeAngle((float)dVar5 - (float)dVar6);
     fVar7 = SQRT(fVar7) / 10.0;
     local_c4 = fVar7;
     if (0.0 <= fVar7 - 1.0) {
@@ -438,97 +451,97 @@ Snd_Pan3d(snd_speaker_config *param_1,float *param_2,float *param_3,float *param
     else {
       local_dc = 0.0;
     }
-    local_8 = 1.0 - local_dc;
+    omni = 1.0 - local_dc;
   }
-  uVar1 = param_1->speakerCount;
-  if (local_8 != 1.0) {
-    if (param_1->angleCount == 1) {
-      local_5c[0] = Snd_PanMono(local_64);
+  uVar1 = config->speakerCount;
+  if (omni != 1.0) {
+    if (config->angleCount == 1) {
+      levels[0] = Snd_PanMono(angle);
     }
-    else if (param_1->angleCount == 2) {
-      Snd_PanStereo(local_64,param_5,local_5c,local_5c + 1);
+    else if (config->angleCount == 2) {
+      Snd_PanStereo(angle,centerSend,levels,levels + 1);
     }
     else {
-      Snd_Pan(param_1->angleCount,local_3c,local_64,local_5c);
+      Snd_Pan(config->angleCount,angles,angle,levels);
     }
   }
-  local_18 = 0.0;
-  for (local_70 = 0; local_70 < param_1->angleCount; local_70 = local_70 + 1) {
-    local_5c[local_70] = (1.0 - local_8) * local_5c[local_70] + SQRT(1.0 / (float)uVar1) * local_8;
-    local_18 = local_5c[local_70] * local_5c[local_70] + local_18;
+  totalVolume = 0.0;
+  for (i_2 = 0; i_2 < config->angleCount; i_2 = i_2 + 1) {
+    levels[i_2] = (1.0 - omni) * levels[i_2] + SQRT(1.0 / (float)uVar1) * omni;
+    totalVolume = levels[i_2] * levels[i_2] + totalVolume;
   }
-  local_18 = SQRT(local_18);
-  local_d4 = local_18;
-  if (0.0 <= local_18 - 1.0) {
+  fVar7 = SQRT(totalVolume);
+  local_d4 = fVar7;
+  if (0.0 <= fVar7 - 1.0) {
     local_d4 = 1.0;
   }
-  if (0.0 <= 0.0 - local_18) {
+  if (0.0 <= 0.0 - fVar7) {
     local_d4 = 0.0;
   }
-  local_18 = local_d4;
-  for (local_74 = 0; local_74 < param_1->angleCount; local_74 = local_74 + 1) {
-    local_5c[local_74] = (1.0 - param_7) * local_5c[local_74] + local_18 * param_7;
+  totalVolume = local_d4;
+  for (i_3 = 0; i_3 < config->angleCount; i_3 = i_3 + 1) {
+    levels[i_3] = (1.0 - aliasOmni) * levels[i_3] + totalVolume * aliasOmni;
   }
-  if ((param_8->output_channel_count != param_1->speakerCount) &&
+  if ((pan->output_channel_count != config->speakerCount) &&
      (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x128,0,
                                "%s"), !bVar3)) {
     pcVar2 = (code *)swi(3);
     (*pcVar2)();
     return;
   }
-  local_78 = 0;
+  i_4 = 0;
   do {
-    if ((int)param_1->speakerCount <= local_78) {
+    if ((int)config->speakerCount <= i_4) {
       return;
     }
-    local_7c = 0.0;
-    sVar4 = 1 << ((byte)local_78 & 0x1f);
-    if ((sVar4 & param_1->outputFormat) != 0) {
-      for (local_84 = 0; local_84 < param_1->angleCount; local_84 = local_84 + 1) {
-        if (param_1->angles[local_84].speaker == sVar4) {
-          local_7c = local_5c[local_84];
+    scale = 0.0;
+    sVar4 = 1 << ((byte)i_4 & 0x1f);
+    if ((sVar4 & config->outputFormat) != 0) {
+      for (j = 0; j < config->angleCount; j = j + 1) {
+        if (config->angles[j].speaker == sVar4) {
+          scale = levels[j];
           break;
         }
       }
-      if (local_78 == 2) {
-        if (0.0 <= param_5 - local_7c) {
-          local_7c = param_5;
+      if (i_4 == 2) {
+        if (0.0 <= centerSend - scale) {
+          scale = centerSend;
         }
       }
-      else if (local_78 == 3) {
-        local_7c = param_6;
+      else if (i_4 == 3) {
+        scale = lfeSend;
       }
     }
-    if ((((uint)local_7c & 0x7f800000) == 0x7f800000) &&
+    if ((((uint)scale & 0x7f800000) == 0x7f800000) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x145,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((local_7c < 0.0) &&
+    if ((scale < 0.0) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x146,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    if ((1.0 < local_7c) &&
+    if ((1.0 < scale) &&
        (bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x147,0,
                                  "%s"), !bVar3)) {
       pcVar2 = (code *)swi(3);
       (*pcVar2)();
       return;
     }
-    Snd_SpeakerMapSetVolume(param_8,0,local_78,local_7c);
-    local_78 = local_78 + 1;
+    Snd_SpeakerMapSetVolume(pan,0,i_4,scale);
+    i_4 = i_4 + 1;
   } while( true );
 }
 
 
 // 00955370  SND_EqualPowerFadeCoefs  (sound/snd_utils.cpp:335)
 
-void __cdecl SND_EqualPowerFadeCoefs(float param_1,float *param_2,float *param_3)
+void __cdecl SND_EqualPowerFadeCoefs(float t,float *a,float *b)
 
 {
   code *pcVar1;
@@ -542,20 +555,20 @@ void __cdecl SND_EqualPowerFadeCoefs(float param_1,float *param_2,float *param_3
   float local_14;
   float local_c;
   
-  if ((((uint)param_1 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)t & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x150,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if (param_1 - 1.0 < 0.0) {
-    local_c = param_1;
+  if (t - 1.0 < 0.0) {
+    local_c = t;
   }
   else {
     local_c = 1.0;
   }
-  if (0.0 - param_1 < 0.0) {
+  if (0.0 - t < 0.0) {
     local_28 = local_c;
   }
   else {
@@ -571,7 +584,7 @@ void __cdecl SND_EqualPowerFadeCoefs(float param_1,float *param_2,float *param_3
   if (0.0 <= 0.0 - fVar3) {
     local_14 = 0.0;
   }
-  *param_2 = local_14;
+  *a = local_14;
   dVar4 = (double)(local_28 * 1.5707964);
   __libm_sse2_sin((double)CONCAT44(local_14,in_stack_ffffffd0));
   fVar3 = (float)dVar4;
@@ -582,15 +595,15 @@ void __cdecl SND_EqualPowerFadeCoefs(float param_1,float *param_2,float *param_3
   if (0.0 <= 0.0 - fVar3) {
     local_1c = 0.0;
   }
-  *param_3 = local_1c;
-  if ((((uint)*param_2 & 0x7f800000) == 0x7f800000) &&
+  *b = local_1c;
+  if ((((uint)*a & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x155,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((((uint)*param_3 & 0x7f800000) == 0x7f800000) &&
+  if ((((uint)*b & 0x7f800000) == 0x7f800000) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x156,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
@@ -603,8 +616,7 @@ void __cdecl SND_EqualPowerFadeCoefs(float param_1,float *param_2,float *param_3
 
 // 009555D0  SND_GetNearestPointOnSegment  (sound/snd_utils.cpp:347)
 
-void __cdecl
-SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float *param_4)
+void __cdecl SND_GetNearestPointOnSegment(float *P,float *segmentA,float *segmentB,float *nearPoint)
 
 {
   code *pcVar1;
@@ -613,10 +625,11 @@ SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float 
   float fVar4;
   float fVar5;
   float fVar6;
+  float fraction;
+  float segmentLengthSq;
   
-  if (((((uint)*param_1 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_1[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_1[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*P & 0x7f800000) == 0x7f800000) || (((uint)P[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)P[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x15c,0,"%s")
     ;
     if (!bVar2) {
@@ -625,9 +638,9 @@ SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float 
       return;
     }
   }
-  if (((((uint)*param_2 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_2[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_2[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*segmentA & 0x7f800000) == 0x7f800000) ||
+      (((uint)segmentA[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)segmentA[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x15d,0,"%s")
     ;
     if (!bVar2) {
@@ -636,9 +649,9 @@ SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float 
       return;
     }
   }
-  if (((((uint)*param_3 & 0x7f800000) == 0x7f800000) ||
-      (((uint)param_3[1] & 0x7f800000) == 0x7f800000)) ||
-     (((uint)param_3[2] & 0x7f800000) == 0x7f800000)) {
+  if (((((uint)*segmentB & 0x7f800000) == 0x7f800000) ||
+      (((uint)segmentB[1] & 0x7f800000) == 0x7f800000)) ||
+     (((uint)segmentB[2] & 0x7f800000) == 0x7f800000)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x15e,0,"%s")
     ;
     if (!bVar2) {
@@ -647,36 +660,36 @@ SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float 
       return;
     }
   }
-  *param_4 = 0.0;
-  param_4[1] = 0.0;
-  param_4[2] = 0.0;
-  fVar3 = *param_3 - *param_2;
-  fVar4 = param_3[1] - param_2[1];
-  fVar5 = param_3[2] - param_2[2];
+  *nearPoint = 0.0;
+  nearPoint[1] = 0.0;
+  nearPoint[2] = 0.0;
+  fVar3 = *segmentB - *segmentA;
+  fVar4 = segmentB[1] - segmentA[1];
+  fVar5 = segmentB[2] - segmentA[2];
   fVar6 = fVar3 * fVar3 + fVar4 * fVar4 + fVar5 * fVar5;
   if (1.0 <= fVar6) {
-    fVar6 = (fVar3 * (*param_1 - *param_2) + fVar4 * (param_1[1] - param_2[1]) +
-            fVar5 * (param_1[2] - param_2[2])) / fVar6;
+    fVar6 = (fVar3 * (*P - *segmentA) + fVar4 * (P[1] - segmentA[1]) + fVar5 * (P[2] - segmentA[2]))
+            / fVar6;
     if (0.0 <= fVar6) {
       if (fVar6 <= 1.0) {
-        *param_4 = fVar6 * fVar3 + *param_2;
-        param_4[1] = fVar6 * fVar4 + param_2[1];
-        param_4[2] = fVar6 * fVar5 + param_2[2];
+        *nearPoint = fVar6 * fVar3 + *segmentA;
+        nearPoint[1] = fVar6 * fVar4 + segmentA[1];
+        nearPoint[2] = fVar6 * fVar5 + segmentA[2];
       }
       else {
-        *param_4 = *param_3;
-        param_4[1] = param_3[1];
-        param_4[2] = param_3[2];
+        *nearPoint = *segmentB;
+        nearPoint[1] = segmentB[1];
+        nearPoint[2] = segmentB[2];
       }
     }
     else {
-      *param_4 = *param_2;
-      param_4[1] = param_2[1];
-      param_4[2] = param_2[2];
+      *nearPoint = *segmentA;
+      nearPoint[1] = segmentA[1];
+      nearPoint[2] = segmentA[2];
     }
-    if (((((uint)*param_4 & 0x7f800000) == 0x7f800000) ||
-        (((uint)param_4[1] & 0x7f800000) == 0x7f800000)) ||
-       (((uint)param_4[2] & 0x7f800000) == 0x7f800000)) {
+    if (((((uint)*nearPoint & 0x7f800000) == 0x7f800000) ||
+        (((uint)nearPoint[1] & 0x7f800000) == 0x7f800000)) ||
+       (((uint)nearPoint[2] & 0x7f800000) == 0x7f800000)) {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x183,0,
                                "%s");
       if (!bVar2) {
@@ -687,9 +700,9 @@ SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float 
     }
   }
   else {
-    *param_4 = *param_2;
-    param_4[1] = param_2[1];
-    param_4[2] = param_2[2];
+    *nearPoint = *segmentA;
+    nearPoint[1] = segmentA[1];
+    nearPoint[2] = segmentA[2];
   }
   return;
 }
@@ -697,30 +710,31 @@ SND_GetNearestPointOnSegment(float *param_1,float *param_2,float *param_3,float 
 
 // 00955A10  SND_GetNearestPointOnStrip  (sound/snd_utils.cpp:393)
 
-void __cdecl
-SND_GetNearestPointOnStrip(float *param_1,float (*param_2) [3],uint param_3,float *param_4)
+void __cdecl SND_GetNearestPointOnStrip(float *point,float (*verts) [3],uint count,float *position)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
-  uint local_1c;
-  float local_14;
-  float local_10;
+  float d;
+  uint i;
+  bool copied;
+  float nearestDistance;
+  float nearestOnSegment;
   float local_c;
   float local_8;
   
-  local_14 = 3.4028235e+38;
+  nearestDistance = 3.4028235e+38;
   bVar2 = false;
-  for (local_1c = 0; local_1c < param_3 - 1; local_1c = local_1c + 1) {
-    SND_GetNearestPointOnSegment(param_1,param_2[local_1c],param_2[local_1c + 1],&local_10);
-    fVar3 = Vec3DistanceSq(param_1,&local_10);
-    if (fVar3 < local_14) {
-      *param_4 = local_10;
-      param_4[1] = local_c;
-      param_4[2] = local_8;
+  for (i = 0; i < count - 1; i = i + 1) {
+    SND_GetNearestPointOnSegment(point,verts[i],verts[i + 1],&nearestOnSegment);
+    fVar3 = Vec3DistanceSq(point,&nearestOnSegment);
+    if (fVar3 < nearestDistance) {
+      *position = nearestOnSegment;
+      position[1] = local_c;
+      position[2] = local_8;
       bVar2 = true;
-      local_14 = fVar3;
+      nearestDistance = fVar3;
     }
   }
   if (!bVar2) {
@@ -738,25 +752,25 @@ SND_GetNearestPointOnStrip(float *param_1,float (*param_2) [3],uint param_3,floa
 
 // 00955B00  SND_HashAlias  (sound/snd_utils.cpp:422)
 
-uint __cdecl SND_HashAlias(snd_alias_list_t *param_1)
+uint __cdecl SND_HashAlias(snd_alias_list_t *alias)
 
 {
-  return param_1->id;
+  return alias->id;
 }
 
 
 // 00955B10  SND_GetAliasName  (sound/snd_utils.cpp:428)
 
-char * __cdecl SND_GetAliasName(snd_alias_list_t *param_1)
+char * __cdecl SND_GetAliasName(snd_alias_list_t *alias)
 
 {
   char *local_8;
   
-  if ((param_1 == (snd_alias_list_t *)0x0) || (param_1->name == (char *)0x0)) {
+  if ((alias == (snd_alias_list_t *)0x0) || (alias->name == (char *)0x0)) {
     local_8 = "null";
   }
   else {
-    local_8 = param_1->name;
+    local_8 = alias->name;
   }
   return local_8;
 }
@@ -764,38 +778,39 @@ char * __cdecl SND_GetAliasName(snd_alias_list_t *param_1)
 
 // 00955B40  SND_dBToLinear  (sound/snd_utils.cpp:447)
 
-float __cdecl SND_dBToLinear(float param_1)
+/* WARNING: Variable defined which should be unmapped: x */
+
+float __cdecl SND_dBToLinear(float db)
 
 {
   undefined4 unaff_EBP;
-  float fVar1;
-  double dVar2;
+  double dVar1;
   undefined4 in_stack_fffffff0;
-  float fVar3;
+  float fVar2;
   undefined4 in_stack_fffffff4;
-  undefined4 in_stack_fffffff8;
+  float x;
   
-  dVar2 = 10.0;
+  dVar1 = 10.0;
   __libm_sse2_pow((double)CONCAT44(in_stack_fffffff4,in_stack_fffffff0),
-                  (double)CONCAT44(unaff_EBP,in_stack_fffffff8));
-  fVar1 = (float)dVar2;
-  if (fVar1 < 1.52879e-05) {
-    fVar1 = 0.0;
+                  (double)CONCAT44(unaff_EBP,x));
+  x = (float)dVar1;
+  if (x < 1.52879e-05) {
+    x = 0.0;
   }
-  fVar3 = fVar1;
-  if (0.0 <= fVar1 - 1.0) {
-    fVar3 = 1.0;
+  fVar2 = x;
+  if (0.0 <= x - 1.0) {
+    fVar2 = 1.0;
   }
-  if (0.0 <= 0.0 - fVar1) {
-    fVar3 = 0.0;
+  if (0.0 <= 0.0 - x) {
+    fVar2 = 0.0;
   }
-  return fVar3;
+  return fVar2;
 }
 
 
 // 00955BF0  SND_LinearToDb  (sound/snd_utils.cpp:458)
 
-float __cdecl SND_LinearToDb(float param_1)
+float __cdecl SND_LinearToDb(float linear)
 
 {
   float10 extraout_ST0;
@@ -807,78 +822,79 @@ float __cdecl SND_LinearToDb(float param_1)
 
 // 00955C30  SND_LinearToDbSpl  (sound/snd_utils.cpp:469)
 
-float __cdecl SND_LinearToDbSpl(float param_1)
+float __cdecl SND_LinearToDbSpl(float linear)
 
 {
-  undefined4 local_8;
+  float fVar1;
+  float db;
   
-  local_8 = SND_LinearToDb(param_1);
-  if (-95.0 < local_8) {
-    local_8 = local_8 + 100.0;
+  fVar1 = SND_LinearToDb(linear);
+  if (-95.0 < fVar1) {
+    db = fVar1 + 100.0;
   }
   else {
-    local_8 = 0.0;
+    db = 0.0;
   }
-  return local_8;
+  return db;
 }
 
 
 // 00955C80  SND_dBSPLToLinear  (sound/snd_utils.cpp:483)
 
-float __cdecl SND_dBSPLToLinear(float param_1)
+float __cdecl SND_dBSPLToLinear(float db)
 
 {
   float fVar1;
   
-  fVar1 = SND_dBToLinear(param_1 - 100.0);
+  fVar1 = SND_dBToLinear(db - 100.0);
   return fVar1;
 }
 
 
 // 00955CA0  SND_HashName  (sound/snd_utils.cpp:496)
 
-uint __cdecl SND_HashName(char *param_1)
+uint __cdecl SND_HashName(char *name)
 
 {
   char cVar1;
   int iVar2;
   char *local_14;
-  uint local_10;
-  uint local_c;
+  uint i;
+  int hash;
+  uint length;
   
-  if ((param_1 == (char *)0x0) || (*param_1 == '\0')) {
-    local_c = 0;
+  if ((name == (char *)0x0) || (*name == '\0')) {
+    hash = 0;
   }
   else {
-    local_14 = param_1;
+    local_14 = name;
     do {
       cVar1 = *local_14;
       local_14 = local_14 + 1;
     } while (cVar1 != '\0');
-    local_c = 0x1505;
-    for (local_10 = 0; local_10 < (uint)((int)local_14 - (int)(param_1 + 1));
-        local_10 = local_10 + 1) {
-      iVar2 = tolower((int)param_1[local_10]);
-      local_c = iVar2 + local_c * 0x1003f;
+    hash = 0x1505;
+    for (i = 0; i < (uint)((int)local_14 - (int)(name + 1)); i = i + 1) {
+      iVar2 = tolower((int)name[i]);
+      hash = iVar2 + hash * 0x1003f;
     }
-    if (local_c == 0) {
-      local_c = 1;
+    if (hash == 0) {
+      hash = 1;
     }
   }
-  return local_c;
+  return hash;
 }
 
 
 // 00955D50  Snd_SpeakerMapSetVolume  (sound/snd_utils.cpp:522)
 
-void __cdecl Snd_SpeakerMapSetVolume(snd_speaker_map *param_1,int param_2,int param_3,float param_4)
+void __cdecl Snd_SpeakerMapSetVolume(snd_speaker_map *map,int in,int out,float volume)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
   
-  if ((param_4 < 0.0) || (1.0 < param_4)) {
+  if ((volume < 0.0) || (1.0 < volume)) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x20b,0,
                              "%s\n\t(volume) = %g");
     if (!bVar2) {
@@ -887,21 +903,21 @@ void __cdecl Snd_SpeakerMapSetVolume(snd_speaker_map *param_1,int param_2,int pa
       return;
     }
   }
-  iVar3 = Snd_SpeakerMapGetIndex(param_1,param_2,param_3);
-  param_1->volumes[iVar3] = param_4;
+  iVar3 = Snd_SpeakerMapGetIndex(map,in,out);
+  map->volumes[iVar3] = volume;
   return;
 }
 
 
 // 00955DD0  Snd_SpeakerMapZero  (sound/snd_utils.cpp:536)
 
-void __cdecl Snd_SpeakerMapZero(snd_speaker_map *param_1)
+void __cdecl Snd_SpeakerMapZero(snd_speaker_map *map)
 
 {
-  int local_8;
+  int i;
   
-  for (local_8 = 0; local_8 < 0x10; local_8 = local_8 + 1) {
-    param_1->volumes[local_8] = 0.0;
+  for (i = 0; i < 0x10; i = i + 1) {
+    map->volumes[i] = 0.0;
   }
   return;
 }
@@ -909,14 +925,15 @@ void __cdecl Snd_SpeakerMapZero(snd_speaker_map *param_1)
 
 // 00955E10  Snd_SpeakerMapGetIndex  (sound/snd_utils.cpp:567)
 
-int __cdecl Snd_SpeakerMapGetIndex(snd_speaker_map *param_1,int param_2,int param_3)
+int __cdecl Snd_SpeakerMapGetIndex(snd_speaker_map *map,int in,int out)
 
 {
   code *pcVar1;
   bool bVar2;
   int iVar3;
+  int i;
   
-  if (param_1->input_channel_count <= param_2) {
+  if (map->input_channel_count <= in) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x238,0,"%s")
     ;
     if (!bVar2) {
@@ -925,7 +942,7 @@ int __cdecl Snd_SpeakerMapGetIndex(snd_speaker_map *param_1,int param_2,int para
       return iVar3;
     }
   }
-  if (param_1->output_channel_count <= param_3) {
+  if (map->output_channel_count <= out) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x239,0,"%s")
     ;
     if (!bVar2) {
@@ -934,7 +951,7 @@ int __cdecl Snd_SpeakerMapGetIndex(snd_speaker_map *param_1,int param_2,int para
       return iVar3;
     }
   }
-  iVar3 = param_2 * param_1->output_channel_count + param_3;
+  iVar3 = in * map->output_channel_count + out;
   if (0xf < iVar3) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x23b,0,"%s")
     ;
@@ -950,7 +967,7 @@ int __cdecl Snd_SpeakerMapGetIndex(snd_speaker_map *param_1,int param_2,int para
 
 // 00955EC0  Snd_SpeakerMapGetVolume  (sound/snd_utils.cpp:577)
 
-float __cdecl Snd_SpeakerMapGetVolume(snd_speaker_map *param_1,int param_2,int param_3)
+float __cdecl Snd_SpeakerMapGetVolume(snd_speaker_map *map,int in,int out)
 
 {
   float fVar1;
@@ -958,9 +975,10 @@ float __cdecl Snd_SpeakerMapGetVolume(snd_speaker_map *param_1,int param_2,int p
   bool bVar3;
   int iVar4;
   float10 fVar5;
+  float volume;
   
-  iVar4 = Snd_SpeakerMapGetIndex(param_1,param_2,param_3);
-  fVar1 = param_1->volumes[iVar4];
+  iVar4 = Snd_SpeakerMapGetIndex(map,in,out);
+  fVar1 = map->volumes[iVar4];
   if (fVar1 < 0.0) {
     bVar3 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x243,0,"%s")
     ;
@@ -985,7 +1003,7 @@ float __cdecl Snd_SpeakerMapGetVolume(snd_speaker_map *param_1,int param_2,int p
 
 // 00956350  SND_PanToSpeakermap11  (sound/snd_utils.cpp:586)
 
-void __cdecl SND_PanToSpeakermap11(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap11(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
@@ -994,22 +1012,22 @@ void __cdecl SND_PanToSpeakermap11(snd_pan *param_1,snd_speaker_map *param_2)
   float local_10;
   float local_8;
   
-  Snd_SpeakerMapZero(param_2);
-  if ((param_2->input_channel_count != 1) &&
+  Snd_SpeakerMapZero(map);
+  if ((map->input_channel_count != 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x24c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->output_channel_count != 1) &&
+  if ((map->output_channel_count != 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x24d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar3 = param_1->front + param_1->back;
+  fVar3 = pan->front + pan->back;
   local_8 = fVar3;
   if (0.0 <= fVar3 - 1.0) {
     local_8 = 1.0;
@@ -1020,14 +1038,14 @@ void __cdecl SND_PanToSpeakermap11(snd_pan *param_1,snd_speaker_map *param_2)
   else {
     local_10 = 0.0;
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,local_10);
+  Snd_SpeakerMapSetVolume(map,0,0,local_10);
   return;
 }
 
 
 // 00956450  SND_PanToSpeakermap12  (sound/snd_utils.cpp:595)
 
-void __cdecl SND_PanToSpeakermap12(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap12(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
@@ -1038,22 +1056,22 @@ void __cdecl SND_PanToSpeakermap12(snd_pan *param_1,snd_speaker_map *param_2)
   float local_10;
   float local_8;
   
-  Snd_SpeakerMapZero(param_2);
-  if ((param_2->input_channel_count != 1) &&
+  Snd_SpeakerMapZero(map);
+  if ((map->input_channel_count != 1) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x255,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2->output_channel_count != 2) &&
+  if ((map->output_channel_count != 2) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x256,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  fVar3 = param_1->front + param_1->back;
+  fVar3 = pan->front + pan->back;
   local_8 = fVar3;
   if (0.0 <= fVar3 - 1.0) {
     local_8 = 1.0;
@@ -1064,8 +1082,8 @@ void __cdecl SND_PanToSpeakermap12(snd_pan *param_1,snd_speaker_map *param_2)
   else {
     local_18 = 0.0;
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,local_18 * param_1->left);
-  fVar3 = param_1->front + param_1->back;
+  Snd_SpeakerMapSetVolume(map,0,0,local_18 * pan->left);
+  fVar3 = pan->front + pan->back;
   local_10 = fVar3;
   if (0.0 <= fVar3 - 1.0) {
     local_10 = 1.0;
@@ -1076,21 +1094,21 @@ void __cdecl SND_PanToSpeakermap12(snd_pan *param_1,snd_speaker_map *param_2)
   else {
     local_1c = 0.0;
   }
-  Snd_SpeakerMapSetVolume(param_2,0,1,local_1c * param_1->right);
+  Snd_SpeakerMapSetVolume(map,0,1,local_1c * pan->right);
   return;
 }
 
 
 // 009565F0  SND_PanToSpeakermap16  (sound/snd_utils.cpp:605)
 
-void __cdecl SND_PanToSpeakermap16(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap16(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  Snd_SpeakerMapZero(param_2);
-  if (param_2->input_channel_count != 1) {
+  Snd_SpeakerMapZero(map);
+  if (map->input_channel_count != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x25f,0,"%s")
     ;
     if (!bVar2) {
@@ -1099,7 +1117,7 @@ void __cdecl SND_PanToSpeakermap16(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  if (param_2->output_channel_count != 6) {
+  if (map->output_channel_count != 6) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x260,0,"%s")
     ;
     if (!bVar2) {
@@ -1108,26 +1126,26 @@ void __cdecl SND_PanToSpeakermap16(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,param_1->front * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,1,param_1->front * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,2,param_1->center);
-  Snd_SpeakerMapSetVolume(param_2,0,3,param_1->lfe);
-  Snd_SpeakerMapSetVolume(param_2,0,4,param_1->back * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,5,param_1->back * param_1->right);
+  Snd_SpeakerMapSetVolume(map,0,0,pan->front * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,1,pan->front * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,2,pan->center);
+  Snd_SpeakerMapSetVolume(map,0,3,pan->lfe);
+  Snd_SpeakerMapSetVolume(map,0,4,pan->back * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,5,pan->back * pan->right);
   return;
 }
 
 
 // 00956730  SND_PanToSpeakermap18  (sound/snd_utils.cpp:619)
 
-void __cdecl SND_PanToSpeakermap18(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap18(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  Snd_SpeakerMapZero(param_2);
-  if (param_2->input_channel_count != 1) {
+  Snd_SpeakerMapZero(map);
+  if (map->input_channel_count != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x26d,0,"%s")
     ;
     if (!bVar2) {
@@ -1136,7 +1154,7 @@ void __cdecl SND_PanToSpeakermap18(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  if (param_2->output_channel_count != 8) {
+  if (map->output_channel_count != 8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x26e,0,"%s")
     ;
     if (!bVar2) {
@@ -1145,28 +1163,28 @@ void __cdecl SND_PanToSpeakermap18(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,param_1->front * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,1,param_1->front * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,2,param_1->center);
-  Snd_SpeakerMapSetVolume(param_2,0,3,param_1->lfe);
-  Snd_SpeakerMapSetVolume(param_2,0,4,param_1->back * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,5,param_1->back * 0.5 * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,6,param_1->back * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,7,param_1->back * 0.5 * param_1->right);
+  Snd_SpeakerMapSetVolume(map,0,0,pan->front * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,1,pan->front * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,2,pan->center);
+  Snd_SpeakerMapSetVolume(map,0,3,pan->lfe);
+  Snd_SpeakerMapSetVolume(map,0,4,pan->back * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,5,pan->back * 0.5 * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,6,pan->back * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,7,pan->back * 0.5 * pan->right);
   return;
 }
 
 
 // 009568E0  SND_PanToSpeakermap21  (sound/snd_utils.cpp:635)
 
-void __cdecl SND_PanToSpeakermap21(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap21(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  Snd_SpeakerMapZero(param_2);
-  if (param_2->input_channel_count != 2) {
+  Snd_SpeakerMapZero(map);
+  if (map->input_channel_count != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x27d,0,"%s")
     ;
     if (!bVar2) {
@@ -1175,7 +1193,7 @@ void __cdecl SND_PanToSpeakermap21(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  if (param_2->output_channel_count != 1) {
+  if (map->output_channel_count != 1) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x27e,0,"%s")
     ;
     if (!bVar2) {
@@ -1184,23 +1202,24 @@ void __cdecl SND_PanToSpeakermap21(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,param_1->front * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,0,param_1->front * param_1->right);
+  Snd_SpeakerMapSetVolume(map,0,0,pan->front * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,0,pan->front * pan->right);
   return;
 }
 
 
 // 009569A0  SND_PanToSpeakermap22  (sound/snd_utils.cpp:645)
 
-void __cdecl SND_PanToSpeakermap22(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap22(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
   bool bVar2;
   float fVar3;
+  float total;
   
-  Snd_SpeakerMapZero(param_2);
-  if (param_2->input_channel_count != 2) {
+  Snd_SpeakerMapZero(map);
+  if (map->input_channel_count != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x287,0,"%s")
     ;
     if (!bVar2) {
@@ -1209,7 +1228,7 @@ void __cdecl SND_PanToSpeakermap22(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  if (param_2->output_channel_count != 2) {
+  if (map->output_channel_count != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x288,0,"%s")
     ;
     if (!bVar2) {
@@ -1218,23 +1237,23 @@ void __cdecl SND_PanToSpeakermap22(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  fVar3 = (param_1->front + param_1->back) / 2.0;
-  Snd_SpeakerMapSetVolume(param_2,0,0,fVar3 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,1,fVar3 * param_1->right);
+  fVar3 = (pan->front + pan->back) / 2.0;
+  Snd_SpeakerMapSetVolume(map,0,0,fVar3 * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,1,fVar3 * pan->right);
   return;
 }
 
 
 // 00956A80  SND_PanToSpeakermap26  (sound/snd_utils.cpp:656)
 
-void __cdecl SND_PanToSpeakermap26(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap26(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  Snd_SpeakerMapZero(param_2);
-  if (param_2->input_channel_count != 2) {
+  Snd_SpeakerMapZero(map);
+  if (map->input_channel_count != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x292,0,"%s")
     ;
     if (!bVar2) {
@@ -1243,7 +1262,7 @@ void __cdecl SND_PanToSpeakermap26(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  if (param_2->output_channel_count != 6) {
+  if (map->output_channel_count != 6) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x293,0,"%s")
     ;
     if (!bVar2) {
@@ -1252,28 +1271,28 @@ void __cdecl SND_PanToSpeakermap26(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,param_1->front * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,1,param_1->front * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,4,param_1->back * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,5,param_1->back * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,2,param_1->center * 0.7 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,3,param_1->lfe * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,2,param_1->center * 0.7 * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,1,3,param_1->lfe * 0.5 * param_1->right);
+  Snd_SpeakerMapSetVolume(map,0,0,pan->front * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,1,pan->front * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,4,pan->back * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,5,pan->back * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,2,pan->center * 0.7 * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,3,pan->lfe * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,2,pan->center * 0.7 * pan->right);
+  Snd_SpeakerMapSetVolume(map,1,3,pan->lfe * 0.5 * pan->right);
   return;
 }
 
 
 // 00956C40  SND_PanToSpeakermap28  (sound/snd_utils.cpp:673)
 
-void __cdecl SND_PanToSpeakermap28(snd_pan *param_1,snd_speaker_map *param_2)
+void __cdecl SND_PanToSpeakermap28(snd_pan *pan,snd_speaker_map *map)
 
 {
   code *pcVar1;
   bool bVar2;
   
-  Snd_SpeakerMapZero(param_2);
-  if (param_2->input_channel_count != 2) {
+  Snd_SpeakerMapZero(map);
+  if (map->input_channel_count != 2) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x2a3,0,"%s")
     ;
     if (!bVar2) {
@@ -1282,7 +1301,7 @@ void __cdecl SND_PanToSpeakermap28(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  if (param_2->output_channel_count != 8) {
+  if (map->output_channel_count != 8) {
     bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x2a4,0,"%s")
     ;
     if (!bVar2) {
@@ -1291,16 +1310,16 @@ void __cdecl SND_PanToSpeakermap28(snd_pan *param_1,snd_speaker_map *param_2)
       return;
     }
   }
-  Snd_SpeakerMapSetVolume(param_2,0,0,param_1->front * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,1,param_1->front * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,4,param_1->back * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,5,param_1->back * 0.5 * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,6,param_1->back * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,7,param_1->back * 0.5 * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,0,2,param_1->center * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,0,3,param_1->lfe * 0.5 * param_1->left);
-  Snd_SpeakerMapSetVolume(param_2,1,2,param_1->center * 0.5 * param_1->right);
-  Snd_SpeakerMapSetVolume(param_2,1,3,param_1->lfe * 0.5 * param_1->right);
+  Snd_SpeakerMapSetVolume(map,0,0,pan->front * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,1,pan->front * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,4,pan->back * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,5,pan->back * 0.5 * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,6,pan->back * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,7,pan->back * 0.5 * pan->right);
+  Snd_SpeakerMapSetVolume(map,0,2,pan->center * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,0,3,pan->lfe * 0.5 * pan->left);
+  Snd_SpeakerMapSetVolume(map,1,2,pan->center * 0.5 * pan->right);
+  Snd_SpeakerMapSetVolume(map,1,3,pan->lfe * 0.5 * pan->right);
   return;
 }
 
@@ -1308,8 +1327,8 @@ void __cdecl SND_PanToSpeakermap28(snd_pan *param_1,snd_speaker_map *param_2)
 // 00955F60  SND_PanToSpeakermap  (sound/snd_utils.cpp:697)
 
 void __cdecl
-SND_PanToSpeakermap(uint param_1,uint param_2,snd_pan *param_3,float param_4,
-                   snd_speaker_map *param_5)
+SND_PanToSpeakermap(uint inputChannelCount,uint outputChannelCount,snd_pan *pan,float centerSend,
+                   snd_speaker_map *map)
 
 {
   code *pcVar1;
@@ -1321,91 +1340,92 @@ SND_PanToSpeakermap(uint param_1,uint param_2,snd_pan *param_3,float param_4,
   float local_24;
   float local_20;
   float local_1c;
+  float center;
   
-  if ((param_1 == 0) &&
+  if ((inputChannelCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",0x2ba,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  if ((param_2 == 0) &&
+  if ((outputChannelCount == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_utils.cpp",699,0,"%s")
      , !bVar2)) {
     pcVar1 = (code *)swi(3);
     (*pcVar1)();
     return;
   }
-  Snd_SpeakerMapZero(param_5);
-  param_5->input_channel_count = param_1;
-  param_5->output_channel_count = param_2;
-  if (param_1 == 1) {
-    if (param_2 == 1) {
-      SND_PanToSpeakermap11(param_3,param_5);
+  Snd_SpeakerMapZero(map);
+  map->input_channel_count = inputChannelCount;
+  map->output_channel_count = outputChannelCount;
+  if (inputChannelCount == 1) {
+    if (outputChannelCount == 1) {
+      SND_PanToSpeakermap11(pan,map);
       return;
     }
-    if (param_2 == 2) {
-      SND_PanToSpeakermap12(param_3,param_5);
+    if (outputChannelCount == 2) {
+      SND_PanToSpeakermap12(pan,map);
       return;
     }
-    if (param_2 == 6) {
-      SND_PanToSpeakermap16(param_3,param_5);
-      local_1c = Snd_SpeakerMapGetVolume(param_5,0,2);
-      if (local_1c - param_4 < 0.0) {
-        local_1c = param_4;
+    if (outputChannelCount == 6) {
+      SND_PanToSpeakermap16(pan,map);
+      local_1c = Snd_SpeakerMapGetVolume(map,0,2);
+      if (local_1c - centerSend < 0.0) {
+        local_1c = centerSend;
       }
-      Snd_SpeakerMapSetVolume(param_5,0,2,local_1c);
+      Snd_SpeakerMapSetVolume(map,0,2,local_1c);
       return;
     }
-    if (param_2 == 8) {
-      SND_PanToSpeakermap18(param_3,param_5);
-      local_20 = Snd_SpeakerMapGetVolume(param_5,0,2);
-      if (local_20 - param_4 < 0.0) {
-        local_20 = param_4;
+    if (outputChannelCount == 8) {
+      SND_PanToSpeakermap18(pan,map);
+      local_20 = Snd_SpeakerMapGetVolume(map,0,2);
+      if (local_20 - centerSend < 0.0) {
+        local_20 = centerSend;
       }
-      Snd_SpeakerMapSetVolume(param_5,0,2,local_20);
+      Snd_SpeakerMapSetVolume(map,0,2,local_20);
       return;
     }
   }
-  else if (param_1 == 2) {
-    if (param_2 == 1) {
-      SND_PanToSpeakermap21(param_3,param_5);
+  else if (inputChannelCount == 2) {
+    if (outputChannelCount == 1) {
+      SND_PanToSpeakermap21(pan,map);
       return;
     }
-    if (param_2 == 2) {
-      SND_PanToSpeakermap22(param_3,param_5);
+    if (outputChannelCount == 2) {
+      SND_PanToSpeakermap22(pan,map);
       return;
     }
-    if (param_2 == 6) {
-      SND_PanToSpeakermap26(param_3,param_5);
-      fVar3 = Snd_SpeakerMapGetVolume(param_5,0,2);
-      local_24 = param_4 * 0.70710677;
+    if (outputChannelCount == 6) {
+      SND_PanToSpeakermap26(pan,map);
+      fVar3 = Snd_SpeakerMapGetVolume(map,0,2);
+      local_24 = centerSend * 0.70710677;
       if (0.0 <= fVar3 - local_24) {
         local_24 = fVar3;
       }
-      Snd_SpeakerMapSetVolume(param_5,0,2,local_24);
-      fVar3 = Snd_SpeakerMapGetVolume(param_5,1,2);
-      local_28 = param_4 * 0.70710677;
+      Snd_SpeakerMapSetVolume(map,0,2,local_24);
+      fVar3 = Snd_SpeakerMapGetVolume(map,1,2);
+      local_28 = centerSend * 0.70710677;
       if (0.0 <= fVar3 - local_28) {
         local_28 = fVar3;
       }
-      Snd_SpeakerMapSetVolume(param_5,1,2,local_28);
+      Snd_SpeakerMapSetVolume(map,1,2,local_28);
       return;
     }
-    if (param_2 == 8) {
-      SND_PanToSpeakermap28(param_3,param_5);
-      fVar3 = Snd_SpeakerMapGetVolume(param_5,0,2);
-      local_2c = param_4 * 0.70710677;
+    if (outputChannelCount == 8) {
+      SND_PanToSpeakermap28(pan,map);
+      fVar3 = Snd_SpeakerMapGetVolume(map,0,2);
+      local_2c = centerSend * 0.70710677;
       if (0.0 <= fVar3 - local_2c) {
         local_2c = fVar3;
       }
-      Snd_SpeakerMapSetVolume(param_5,0,2,local_2c);
-      fVar3 = Snd_SpeakerMapGetVolume(param_5,1,2);
-      local_30 = param_4 * 0.70710677;
+      Snd_SpeakerMapSetVolume(map,0,2,local_2c);
+      fVar3 = Snd_SpeakerMapGetVolume(map,1,2);
+      local_30 = centerSend * 0.70710677;
       if (0.0 <= fVar3 - local_30) {
         local_30 = fVar3;
       }
-      Snd_SpeakerMapSetVolume(param_5,1,2,local_30);
+      Snd_SpeakerMapSetVolume(map,1,2,local_30);
       return;
     }
   }

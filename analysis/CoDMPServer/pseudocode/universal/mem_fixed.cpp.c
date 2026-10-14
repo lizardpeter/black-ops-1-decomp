@@ -3,8 +3,8 @@
 // 007CCF20  Hunk_FixedInit  (universal/mem_fixed.cpp:24)
 
 HunkUser * __cdecl
-Hunk_FixedInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong param_4,void *param_5,
-              char *param_6,int param_7)
+Hunk_FixedInit(void *buffer,int size,HU_ALLOCATION_SCHEME scheme,ulong flags,
+              void *scheme_specific_data,char *name,int type)
 
 {
   code *pcVar1;
@@ -12,63 +12,69 @@ Hunk_FixedInit(void *param_1,int param_2,HU_ALLOCATION_SCHEME param_3,ulong para
   HunkUser *pHVar3;
   int *piVar4;
   int local_20;
-  int local_18;
+  int i;
+  _fixed_heapnode *node;
+  USERHEAP_FIXED_SCHEME_SPECIFIC *scheme_data;
+  FIXED_HUNKUSER *hunk;
+  int count;
   
-  if (((param_4 & 2) == 0) &&
+  if (((flags & 2) == 0) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_fixed.cpp",0x1c,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pHVar3 = (HunkUser *)(*pcVar1)();
     return pHVar3;
   }
-  if (((uint)param_2 < 0x21) &&
+  if (((uint)size < 0x21) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_fixed.cpp",0x1d,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pHVar3 = (HunkUser *)(*pcVar1)();
     return pHVar3;
   }
-  if ((*(uint *)param_5 != (*(int *)param_5 - 1U & *(uint *)param_5)) &&
+  if ((*(uint *)scheme_specific_data !=
+       (*(int *)scheme_specific_data - 1U & *(uint *)scheme_specific_data)) &&
      (bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_fixed.cpp",0x1e,0,
                                "%s"), !bVar2)) {
     pcVar1 = (code *)swi(3);
     pHVar3 = (HunkUser *)(*pcVar1)();
     return pHVar3;
   }
-  *(char **)((int)param_1 + 8) = param_6;
-  *(HU_ALLOCATION_SCHEME *)param_1 = param_3;
-  *(ulong *)((int)param_1 + 4) = param_4;
-  *(int *)((int)param_1 + 0xc) = param_7;
-  *(int *)((int)param_1 + 0x10) = param_2;
-  local_20 = *(int *)param_5;
+  *(char **)((int)buffer + 8) = name;
+  *(HU_ALLOCATION_SCHEME *)buffer = scheme;
+  *(ulong *)((int)buffer + 4) = flags;
+  *(int *)((int)buffer + 0xc) = type;
+  *(int *)((int)buffer + 0x10) = size;
+  local_20 = *(int *)scheme_specific_data;
   if (local_20 < 4) {
     local_20 = 4;
   }
-  *(int *)((int)param_1 + 0x14) = local_20;
-  piVar4 = (int *)((int)param_1 + 0x1c);
-  *(int **)((int)param_1 + 0x18) = piVar4;
-  for (local_18 = 0; local_18 < (int)((param_2 - 0x1cU) / (*(int *)((int)param_1 + 0x14) + 4U) - 1);
-      local_18 = local_18 + 1) {
-    *piVar4 = (int)piVar4 + *(int *)((int)param_1 + 0x14);
+  *(int *)((int)buffer + 0x14) = local_20;
+  piVar4 = (int *)((int)buffer + 0x1c);
+  *(int **)((int)buffer + 0x18) = piVar4;
+  for (i = 0; i < (int)((size - 0x1cU) / (*(int *)((int)buffer + 0x14) + 4U) - 1); i = i + 1) {
+    *piVar4 = (int)piVar4 + *(int *)((int)buffer + 0x14);
   }
   *piVar4 = 0;
-  return param_1;
+  return buffer;
 }
 
 
 // 007CD080  Hunk_FixedReset  (universal/mem_fixed.cpp:52)
 
-void __cdecl Hunk_FixedReset(HunkUser *param_1)
+void __cdecl Hunk_FixedReset(HunkUser *_user)
 
 {
   int *piVar1;
-  int local_14;
+  int i;
+  _fixed_heapnode *node;
+  FIXED_HUNKUSER *hunk;
+  int count;
   
-  piVar1 = &param_1[1].type;
-  param_1[1].name = (char *)piVar1;
-  for (local_14 = 0; local_14 < (int)((param_1[1].scheme - 0x1c) / (param_1[1].flags + 4) - 1);
-      local_14 = local_14 + 1) {
-    *piVar1 = (int)&param_1[2].scheme + param_1[1].flags;
+  piVar1 = &_user[1].type;
+  _user[1].name = (char *)piVar1;
+  for (i = 0; i < (int)((_user[1].scheme - 0x1c) / (_user[1].flags + 4) - 1); i = i + 1) {
+    *piVar1 = (int)&_user[2].scheme + _user[1].flags;
   }
   *piVar1 = 0;
   return;
@@ -77,48 +83,51 @@ void __cdecl Hunk_FixedReset(HunkUser *param_1)
 
 // 007CD100  Hunk_FixedDestroy  (universal/mem_fixed.cpp:64)
 
-void __cdecl Hunk_FixedDestroy(HunkUser *param_1)
+void __cdecl Hunk_FixedDestroy(HunkUser *_user)
 
 {
-  param_1->scheme = HU_SCHEME_DEFAULT;
-  param_1->flags = 0;
-  param_1->name = (char *)0x0;
-  param_1->type = 0;
-  param_1[1].scheme = HU_SCHEME_DEFAULT;
-  param_1[1].flags = 0;
-  param_1[1].name = (char *)0x0;
+  _user->scheme = HU_SCHEME_DEFAULT;
+  _user->flags = 0;
+  _user->name = (char *)0x0;
+  _user->type = 0;
+  _user[1].scheme = HU_SCHEME_DEFAULT;
+  _user[1].flags = 0;
+  _user[1].name = (char *)0x0;
   return;
 }
 
 
 // 007CD120  Hunk_FixedAlloc  (universal/mem_fixed.cpp:69)
 
-void * __cdecl Hunk_FixedAlloc(HunkUser *param_1,int param_2,int param_3,char *param_4)
+void * __cdecl Hunk_FixedAlloc(HunkUser *_user,int size,int alignment,char *name)
 
 {
-  char *local_c;
+  void *result;
+  FIXED_HUNKUSER *hunk;
   
-  local_c = (char *)0x0;
-  if (param_1[1].name != (char *)0x0) {
-    local_c = param_1[1].name;
-    param_1[1].name = *(char **)param_1[1].name;
+  result = (void *)0x0;
+  if (_user[1].name != (char *)0x0) {
+    result = _user[1].name;
+    _user[1].name = *(char **)_user[1].name;
   }
-  return local_c;
+  return result;
 }
 
 
 // 007CD160  Hunk_FixedFree  (universal/mem_fixed.cpp:84)
 
-void __cdecl Hunk_FixedFree(HunkUser *param_1,void *param_2)
+void __cdecl Hunk_FixedFree(HunkUser *_user,void *ptr)
 
 {
   code *pcVar1;
   bool bVar2;
+  _fixed_heapnode *node;
+  FIXED_HUNKUSER *hunk;
   
-  if (param_2 != (void *)0x0) {
-    if ((param_1 < param_2) && (param_2 < (void *)((int)&param_1->scheme + param_1[1].scheme))) {
-      *(char **)param_2 = param_1[1].name;
-      param_1[1].name = param_2;
+  if (ptr != (void *)0x0) {
+    if ((_user < ptr) && (ptr < (void *)((int)&_user->scheme + _user[1].scheme))) {
+      *(char **)ptr = _user[1].name;
+      _user[1].name = ptr;
     }
     else {
       bVar2 = Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\mem_fixed.cpp",99,0,
